@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 1
 // “Leslie gets cancelled ft. Kathryn Hahn | Parks And Rec” (the official Parks and Recreation channel, Season 4):
 // on TV, Leslie calls Nick Newport a jerk without knowing he died that day; Jen calls on her to cancel her campaign
 // events, and Leslie's team meeting decides whether to keep going.
@@ -8,7 +9,6 @@
 // drop half of it), 76–80 s (an insult image), 88–103 s (who says "you called the dead man a jerk"; the list ends on
 // mistresses), 111.5 s (an aside about Ben's body), 137–140 s (the panini aside, speaker unclear), 154.8 s ("sked" vs
 // "sketch").
-// REVIEW 2026-11-16: pass 9, fix 13, drop 0, new 0; ear checks 0
 // (The three authored ear checks, s1/x1/s2, came off: whisper and the captions agree on every key word.)
 import type { Clip } from '../types.ts';
 
@@ -18,92 +18,91 @@ export const leslieCancelled: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: clean it up ← a promise about a river heard as a clean-up; shut the factory ← "Sweetums" (a company) and
-    //   "stop" heard as closing it down
     { id: 'd1', skill: 'detail', level: 'B1', point: 'promise', seg: [0, 9.6],
       stem: 'What did Leslie promise to do if elected?',
-      choices: ['Stop companies from polluting the river', 'Clean up the river by the next election',
-                'Shut down the Sweetums candy factory'], a: 0,
-      cue: '「if elected」のあとの約束。',
+      ja: '当選したら、レスリーは何をすると約束した？',
+      choices: ['Stop firms polluting the river', 'Clean the river by next year', 'Close the candy factory'], a: 0,
+      choicesJa: ['会社が川を汚すのを止める', '来年までに川をきれいにする', 'お菓子工場を閉める'],
+      cue: '「if elected」のあと',
       line: 'I promise to stop the Newports and … from *blatantly dumping contaminants into the* … River.',
-      said: '「当選したら、川に汚染物質を捨てさせない」と約束する。',
-      mean: 'dump ＝ 捨てる、contaminants ＝ 汚染物質。工場の汚染をやめさせる公約。',
-      trap: '川の話なので「きれいにする」と取りやすい。stop ～ from -ing ＝ ～させない。',
+      said: '「当選したら、川に汚染物を捨てるのをやめさせる」と約束する。',
+      mean: 'stop A from 〜ing ＝「Aが〜するのを止める」。dumping ＝ 捨てること。',
+      trap: 'Sweetums（お菓子会社）が聞こえるので、工場を閉めると思いやすい。stop … from を聞く。',
       use: 'Can you stop the dog from barking?（犬が吠えないようにしてくれる？）' },
 
-    // R fix: V2 (blind 85 %): the only "twist" choice was the key; all three now share "only to learn…"
-    // why: about his son ← "Sorry, I meant" heard as a who-mix-up, and "his son" is in her answer; stopped backing
-    //   his son ← "buy this election for his son" plus a correction, heard as news about the father's support
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'died', seg: [8.2, 45.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'died', seg: [8.2, 45.2],
       stem: 'What goes wrong for Leslie in the TV interview?',
-      choices: ['She slams Nick, only to learn he died earlier that day',
-                'She slams Nick, only to learn the question was about his son',
-                'She slams Nick, only to learn he just stopped backing his son'], a: 0,
-      cue: '記者の「Sorry, I meant」のあと。',
-      said: '記者に父親のことを聞かれ、レスリーは厳しく批判する。実は彼はその日に亡くなっていた。',
-      mean: '質問の意味を取りちがえ、亡くなったばかりの人を攻撃してしまった。騒ぎの始まり。',
-      trap: 'Newport が二人出るので人ちがいと取りやすい。決め手は記者の言い直し。',
+      ja: 'テレビのインタビューで、レスリーは何をしくじる？',
+      choices: ['She insults a man who died', 'She forgets the man’s name', 'She calls his son a jerk'], a: 0,
+      choicesJa: ['亡くなったばかりの人を悪く言う', 'その人の名前を忘れる', '息子をいやなやつと言う'],
+      cue: '「Sorry, I meant」のあと',
+      said: 'ニックを「いやなやつ」と言った直後、「今日亡くなった件です」と言われる。',
+      mean: 'I meant 〜 ＝「〜のつもりで聞いた」。質問は死去へのコメントだった。',
+      trap: 'Bobby（息子）の名前が先に出るので、息子の話と思いやすい。dying を聞く。',
       use: 'Sorry, I meant the other one.（ごめん、もう一つの方のこと）' },
 
-    // R fix: V2 (blind 80 %): the distractors were unrelated plots; all three are now "use his money to…"
-    // why: for himself ← "for his son" lost at the end of a fast turn; get his son out ← "buy" + "his son" in the
-    //   wrong relation (paying the son off)
     { id: 'd2', skill: 'detail', level: 'B1', point: 'buy', seg: [13.3, 22.65],
       stem: 'What did Leslie say Nick Newport was trying to do?',
-      choices: ['Use his money to win the race for his son', 'Use his money to win the race for himself',
-                'Use his money to get his son out of the race'], a: 0,
-      cue: '「if he thinks he can」のあと。',
+      ja: 'レスリーは、ニックが何をしようとしていると言った？',
+      choices: ['Buy the election for his son', 'Win the election himself', 'Remove his son from the race'], a: 0,
+      choicesJa: ['息子のために選挙をお金で買う', '自分が選挙に勝つ', '息子を選挙から降ろす'],
+      cue: '「if he thinks he can」のあと',
       line: 'if he thinks he can *buy this election for his son*, he’s wrong.',
-      said: '「息子のために選挙を金で買えると思っているなら、大まちがい」と言う。',
-      mean: 'buy an election ＝ お金の力で選挙に勝つ。',
-      trap: '文末の for his son を落とすと本人が出るように聞こえる。誰のためかは for のあとで決まる。',
+      said: '「息子のために選挙を買えると思ってるなら、それは違う」と言う。',
+      mean: 'buy an election ＝ お金で選挙に勝とうとする。for his son ＝ 息子のために。',
+      trap: 'he（彼）が出るので本人が出ると思いやすい。for his son を聞く。',
       use: 'You can’t buy happiness.（幸せはお金で買えない）' },
 
-    // R fix: V2 (blind 65 %): "calm" and "annoyed" were off-scene; the distractors are now a sincere tribute and a
-    //   quick retraction
-    // why: heartfelt tribute ← "Sad." heard as a complete, sincere statement (the reporter even asks if it's
-    //   "official"); takes it back ← the usual script after a gaffe
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'sad', reveals: ['died'], seg: [27.3, 37],
-      stem: 'How did Leslie react to the reporter’s correction?',
-      choices: ['Thrown, she can barely put words together', 'Moved, she gives a short, heartfelt tribute',
-                'Guilty, she quickly takes back what she said'], a: 0,
-      cue: '返事の語数と、とぎれ方。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'frankly', seg: [17.4, 22.65],
+      stem: 'What does “Frankly” mean here?',
+      ja: '「Frankly」は、ここではどういう意味？',
+      choices: ['To be honest', 'To be very kind', 'To be quick'], a: 0,
+      choicesJa: ['正直に言うと', 'とてもやさしく言うと', '手短に言うと'],
+      cue: '「for years」のあと',
+      line: '*Frankly*, he’s a real jerk',
+      said: '「正直に言って、あの人は本当にいやなやつ」と言う。',
+      mean: 'Frankly, ＝「正直に言うと」。きつい本音の前置き。jerk ＝ いやなやつ。',
+      trap: 'frank（フランク＝気さく）から「親しく」と思いやすい。本音を言う合図。',
+      use: 'Frankly, I don’t like it.（正直、好きじゃない）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'sad', reveals: ['died'], seg: [27.3, 37],
+      stem: 'How does Leslie react to the news?',
+      ja: '知らせを聞いて、レスリーはどうなる？',
+      choices: ['Shocked, she can’t find words', 'Sad, she gives a nice speech', 'Guilty, she says sorry'], a: 0,
+      choicesJa: ['ショックで言葉が出ない', '悲しんで、いいスピーチをする', '悪く思って謝る'],
+      cue: '「He died?」のあと',
       line: 'He died? — I… *Sad*.',
-      said: '亡くなったと聞き、「死んだの？」「私…悲しい」としか言えない。',
-      mean: '文にならない返事は、動揺して言葉が出ないしるし。記者が「I sad?」とくり返すほど。',
-      trap: '一語の返事を、心のこもった短い追悼と取りやすい。語がとぎれたら、まず動揺を疑う。',
+      said: '「亡くなった？」と言い、「私…悲しい」としか言えない。',
+      mean: '言葉が続かず、Sad の一語だけ。ショックで頭が真っ白。',
+      trap: 'sad（悲しい）から、ちゃんとお悔やみを言ったと思いやすい。I… で止まっている。',
       use: 'Sorry, I’m at a loss for words.（ごめん、言葉が出ない）' },
 
-    // why: glad he's gone ← "bummer" is about bad luck, but a light word after a death can sound pleased; still not a
-    //   sentence ← the "I sad" joke just before, expected to repeat
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'bummer', seg: [33.8, 45.2],
-      stem: 'Why did her second try at an official statement get a laugh?',
-      choices: ['It’s far too casual for news of a death', 'It sounds as if she’s glad he’s gone',
-                'It’s still not a proper, full sentence'], a: 0,
-      cue: '「official statement」のあとの語の軽さ。',
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'bummer', seg: [33.8, 45.2],
+      stem: 'What does “a bummer” mean?',
+      ja: '「a bummer」はどういう意味？',
+      choices: ['A sad, bad thing', 'A very big surprise', 'A funny story'], a: 0,
+      choicesJa: ['悲しい、いやなこと', 'とても大きな驚き', 'おもしろい話'],
+      cue: '「statement is」のあと',
       line: 'My *official statement* is, that is *overall a bummer*.',
-      said: '「公式コメントは？」と聞かれ、「全体として、がっかりな話です」と言い直す。',
-      mean: 'bummer は「ついてない」のくだけた語。公式の場で人の死に使うには軽すぎる。',
-      trap: '喜んでいるとは言っていない。改まった前置きと、軽い中身の差が笑い。',
+      said: '「正式なコメントは…全体的に、がっかりですね」と言う。',
+      mean: 'a bummer ＝「がっかりなこと・ついてないこと」。くだけた言葉で、人の死には軽すぎる。',
+      trap: '公式コメントなので、かたい言葉と思いやすい。会話でしか使わない軽い言い方。',
       use: 'Rain on our day off? What a bummer.（休みに雨？ついてないね）' },
 
-    // R fix: V2 (blind 70 %): "would" didn't fit the contrast; "did" (same d-, emphatic, past) replaces it
-    // why: doesn't ← "Harsh words, but" sets up a contrast, and -n't hides easily in a weak syllable; did ← the
-    //   emphatic d- is caught and the ending lost, and the rally was in the past
     { id: 's1', skill: 'sound', level: 'B2', point: 'cannons', seg: [56, 61.95],
-      stem: 'Fill the gap: “Harsh words, but this reporter ___ love those t-shirt cannons.”',
-      choices: ['does', 'doesn’t', 'did'], a: 0,
-      cue: '「this reporter」のすぐあと、強い一語。',
-      line: 'Harsh words, but this reporter *does* love those t-shirt cannons.',
-      said: '司会者が「きつい言葉だ。でも、あのTシャツ大砲は本当に好きだ」と言う。',
-      mean: 'does は強調の do で、love を強めている。',
-      trap: 'but のあとなので否定を予想しやすい。強調の does は強く長く、doesn’t の「ン」はない。',
+      stem: 'Fill the gap: “but this reporter ___ those t-shirt cannons.”',
+      ja: '「but this reporter ___ those t-shirt cannons.」の空所は？',
+      choices: ['does love', 'doesn’t love', 'did love'], a: 0,
+      choicesJa: ['本当に大好き', '大好きではない', '大好きだった'],
+      cue: '「Harsh words, but」のあと',
+      line: 'Harsh words, but this reporter *does love* those t-shirt cannons.',
+      said: '「きつい言葉だが、Tシャツ大砲は本当に最高」と司会が言う。',
+      mean: 'does love ＝「本当に大好き」。動詞の前の does は気持ちを強める。',
+      trap: 'doesn’t なら「ン」が残り、did なら「ディ」。ここは強く「ダズ」と言う。',
       use: 'I do love a good burger.（いいハンバーガー、ほんと好き）' },
 
-    // R fix: V2 (blind 75 %, K6): the key was the only "but" (the mixed view); a second "but" choice now
-    // why: harsh and silly ← "Harsh words" heard as his verdict on everything; fair but silly ← "frankly" (the clip
-    //   he plays) heard as his own approval of her honesty, and "t-shirt cannons" as mockery
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cannons', seg: [56, 61.95],
+    // retired (A2): the host’s take rests on one tone; s1 keeps the line
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cannons', seg: [56, 61.95], retired: true,
       stem: 'What is the host’s take on the clip of Leslie he just played?',
       choices: ['He finds her words harsh, but the rally fun', 'He finds her words harsh, and the rally silly',
                 'He finds her words fair, but the rally silly'], a: 0,
@@ -114,25 +113,21 @@ export const leslieCancelled: Clip = {
       trap: 'harsh で全体を否定したと取りやすい。but のあとに本音が来る。',
       use: 'Pricey, but it’s worth it.（高いけど、その価値はある）' },
 
-    // why: apologize ← "out of respect for the Newport family" heard as the demand itself; drop out ← "cancel" and
-    //   the title ("gets cancelled") heard as quitting the race
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cancel', seg: [61.95, 72.5],
       stem: 'What did Jen call on Leslie to do?',
-      choices: ['Cancel all her campaign events', 'Apologize to the Newport family', 'Drop out of the race for good'],
+      ja: 'ジェンはレスリーに何をするよう求めた？',
+      choices: ['Cancel all her campaign events', 'Apologize to the Newport family', 'Quit the race for good'],
       a: 0,
-      cue: '「calling on Leslie Knope to」のあと。',
+      choicesJa: ['選挙の催しを全部中止する', 'ニューポート家に謝る', '選挙から完全に降りる'],
+      cue: '「I am calling on」のあと',
       line: 'I am calling on Leslie Knope *to cancel all of her campaign events* out of respect for the Newport family.',
-      said: 'ジェンが「遺族への敬意として、選挙活動をすべて中止すべき」と求める。',
-      mean: '予定の活動を取りやめること。選挙から降りろ、とまでは言っていない。',
-      trap: 'タイトルの cancelled から「撤退」と取りやすい。目的語 events まで聞く。',
+      said: '「ニューポート家に敬意を示し、選挙の催しを全部中止すべき」と言う。',
+      mean: 'call on 人 to 〜 ＝「人に〜するよう求める」。out of respect ＝ 敬意から。',
+      trap: 'respect（敬意）から「謝る」と思いやすい。to のあとの cancel を聞く。',
       use: 'We had to cancel all our plans.（予定を全部キャンセルしたよ）' },
 
-    // anchor: 64.1–72.2 s "This is not a time for politics. I am calling on Leslie Knope to cancel all of her
-    //   campaign events": the "no politics" line leads straight into a demand aimed at one candidate only
-    // R fix: V2 (blind 80 %): the key was the only cynical reading; a second one (a dodge) is now a near miss
-    // why: both sides ← "not a time for politics" heard as a general truce (the sincere reading); a dodge ← she is
-    //   answering the host's question, so "not a time" is heard as declining to answer it
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'cancel', seg: [61.95, 72.5],
+    // retired (A2): a C2 reading of a political move
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'cancel', seg: [61.95, 72.5], retired: true,
       stem: 'How should we hear Jen’s “This is not a time for politics”?',
       choices: ['As a political attack that sounds like respect', 'As a sincere call for both sides to pause',
                 'As a dodge of the host’s question about Leslie'], a: 0,
@@ -143,50 +138,44 @@ export const leslieCancelled: Clip = {
       trap: '言葉どおり休戦の呼びかけと取りやすい。名指しは一人だけ。誰に向けた要求かで、ねらいを聞く。',
       use: 'Now’s not the time. Let’s talk later.（今はその時じゃない、あとで話そう）' },
 
-    // why: 88 ← eighty and ninety share the -ty ending; 99 ← "ninety" heard clearly, and "eight years" blurs toward
-    //   "nine"
     { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.3, 92.92], keep: true,
       stem: 'How old was the man who died?',
+      ja: '亡くなった人は何歳だった？',
       choices: ['88', '98', '99'], a: 1,
-      cue: '「that man is」のあとの数。',
+      choicesJa: ['88歳', '98歳', '99歳'],
+      cue: '「that man is」のあと',
       line: 'that man is *98 years old* and he’s an awful man.',
-      said: '「でもその人は98歳で、ひどい男だった」と言う。',
-      mean: 'ninety-eight ＝ 98。高齢でひどい人、だから悲しみすぎなくていい、という理屈。',
-      trap: 'eighty と ninety は後ろが同じ -ty。最初の音（エイ／ナイ）で聞き分ける。',
+      said: '「でもその男は98歳で、ひどい男よ」と言う。',
+      mean: 'ninety-eight ＝ 98。years old ＝ 〜歳。',
+      trap: 'eighty-eight は「エイティ」で始まる。ninety のあとが eight か nine か。',
       use: 'My grandma just turned ninety.（祖母がちょうど90歳になった）' },
 
-    // R fix: V2 (blind 55 %): the key alone ended "to stop"; the first two choices now mirror each other
-    // why: going on ← "too high" heard as risk (stake ＝ 危険); too close ← "high stakes" heard as a tense, even race
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'lose', seg: [103.35, 110.88],
-      stem: 'When Ben weighed it up, what did he say about the race?',
-      choices: ['Stopping now would cost them too much', 'Going on now would cost them too much',
-                'The race is now too close to call'], a: 0,
-      cue: '「unfortunate, but」のあと。',
+      stem: 'What does Ben mean by “the stakes are too high”?',
+      ja: 'ベンの「the stakes are too high」はどういう意味？',
+      choices: ['Stopping would cost too much', 'Going on would cost too much', 'The race is too close'], a: 0,
+      choicesJa: ['やめたら失うものが大きすぎる', '続けたら失うものが大きすぎる', '選挙が接戦すぎる'],
+      cue: '「unfortunate, but」のあと',
       line: 'it’s unfortunate, but *the stakes are too high*. We can’t just stop campaigning.',
-      said: 'ベンが「気の毒だけど、かかっているものが大きすぎる」と言う。',
-      mean: 'stakes ＝ 賭けているもの。too high ＝ 負けたら失うものが大きすぎる。',
-      trap: 'high を「危険が高い」と取りやすい。直後の can’t stop で向きを確かめる。',
+      said: '「気の毒だけど、かかっているものが大きすぎる。止められない」と言う。',
+      mean: 'the stakes are high ＝「かかっているものが大きい」。だからやめられない。',
+      trap: '前半の unfortunate（気の毒）で、やめる話と思いやすい。but のあとが答え。',
       use: 'The stakes are high tonight.（今夜は負けられない）' },
 
-    // R fix: V2 (blind 70 %): the key was the only two-part answer; all three now have a "but"
-    // why: after saying sorry ← "keep campaigning" + Ann's "until you apologize to Bobby" merged; stop until sorry ←
-    //   Ann's proposal, and the title's "cancelled"
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'call', seg: [103.35, 155.1],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'call', seg: [110.1, 155.1],
       stem: 'After hearing everyone, what did Leslie decide?',
-      choices: ['To keep going, but in a more low-key way', 'To keep going, but only once she says sorry to Bobby',
-                'To stop for now, but just until she says sorry'], a: 0,
-      cue: '最後の「But we’re going to」のあと。',
+      ja: 'みんなの意見を聞いて、レスリーは何を決めた？',
+      choices: ['Keep going, but politely', 'Keep going after saying sorry', 'Stop until she says sorry'], a: 0,
+      choicesJa: ['続けるが、礼儀正しく', '謝ってから続ける', '謝るまでやめる'],
+      cue: '「what’s your call?」のあと',
       line: 'We’re going to keep campaigning, okay? *But* we’re going to do it in a *classy and respectful way*…',
-      said: 'アンはやめる派、ほかは続ける派。レスリーは「続ける。でも品よく」と決める。',
-      mean: '続けるか止めるかに、「続けるが、やり方を変える」と答えた。',
-      trap: 'keep campaigning だけだと「今までどおり」と取りやすい。But のあとまでが答え。',
+      said: '「選挙は続ける。でも上品に、敬意を持って」と決める。',
+      mean: 'keep 〜ing ＝「〜し続ける」。classy ＝ 上品な。respectful ＝ 敬意のある。',
+      trap: 'アンの「謝るまで」の案が出たので、謝ると思いやすい。答えは No のあと。',
       use: 'Let’s keep going, but slow down.（続けよう、でもペースは落として）' },
 
-    // R fix: V2 (blind 70 %): the choices are now parallel ("It takes her refusal to play as…"); the segment runs
-    //   on to "I think you should stop", which refutes the "vote for Ben" reading
-    // why: a threat ← "beat him" heard as hitting (殴る), the literal reading; a vote for Ben ← "I'm not going to
-    //   beat him" heard as giving in to his answer
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'attitude', reveals: ['annview'], seg: [110.9, 118.3],
+    // retired (A2): a “why does it get a laugh” item; x1 keeps the line
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'attitude', reveals: ['annview'], seg: [110.9, 118.3], retired: true,
       stem: 'Why did the quick comeback to “I’m not going to beat him” get a laugh?',
       choices: ['It takes her refusal to play as low confidence', 'It takes her refusal to play as a threat to Ben',
                 'It takes her refusal to play as a vote for Ben'], a: 0,
@@ -197,57 +186,55 @@ export const leslieCancelled: Clip = {
       trap: 'beat を「殴る」と取るとずれる。決まり文句は、場面とのずれで笑いになる。',
       use: 'Not with that attitude!（そんな弱気じゃ無理だよ）' },
 
-    // why: Ben ← the first to speak, and "what do we do?" makes him the one with doubts; April ← she answers right
-    //   after the "stop" idea; Andy ← "If… if the guy…" starts like a no
-    { id: 'w1', skill: 'who', level: 'B2', point: 'annview', seg: [110.9, 124.13],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'annview', seg: [110.9, 124.13],
       stem: 'In the meeting, who thinks Leslie should stop campaigning for now?',
-      choices: ['Ann', 'Ben', 'April', 'Andy'], a: 0,
-      cue: 'すぐあとのエイプリルの返事に出る名前。',
+      ja: '会議で「今は選挙をやめるべき」と思っているのはだれ？',
+      choices: ['Ann', 'Ben', 'April'], a: 0,
+      choicesJa: ['アン', 'ベン', 'エイプリル'],
+      cue: 'エイプリルの答えの最後',
       line: 'I think you should stop… — I wasn’t listening, but I strongly disagree with *Ann*.',
-      said: '一人が「やめるべき」と言い、エイプリルが「聞いてなかったけど、アンには反対」と続ける。',
-      mean: 'エイプリルの一言で、「やめるべき」と言ったのがアンだと分かる。ベンとアンディは続ける派。',
-      trap: '名前を聞く問題は、声だけでなく、あとで誰の名前が出るかで確かめる。',
+      said: '一人が「やめるべき」と言い、エイプリルが「アンに反対」と返す。',
+      mean: 'disagree with 〜 ＝「〜に反対する」。反対された人＝やめろと言った人。',
+      trap: '最初に意見を言ったベンと思いやすい。エイプリルが名前を出す。',
       use: 'I’m with Ann on this one.（これはアンに賛成）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'attitude', seg: [113.55, 116.35],
-      stem: 'Type the quick comeback to “I’m not going to beat him”. (4 words)', answer: 'not with that attitude',
-      cue: '「beat him」のすぐあと。',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'attitude', seg: [113.4, 116.4],
+      stem: 'Type the reply to “I’m not going to beat him.”', answer: 'not with that attitude',
+      ja: '「I’m not going to beat him」への返事を書こう（4語）',
+      cue: '「beat him」のあと',
       line: 'I’m not going to beat him. — *Not with that attitude*.',
-      said: '「勝つ気はない」に、すぐ「その態度じゃね」と返す。',
-      mean: 'with that が「ウィザッ」と一つにつながる。th が二つ続く所は一回に聞こえる。',
-      trap: 'つながった音で that を落としやすい。語数を数えて確かめる。',
-      use: 'Not with that haircut.（その髪型じゃね）' },
+      said: '「彼には勝てない」に、すぐ「そんな態度じゃね」と返す。',
+      mean: 'Not with that attitude ＝「そんな弱気じゃ無理だよ」。気持ちの持ち方を指す決まり文句。',
+      trap: 'that は「ザ」と小さく、with that がつながる。attitude は「アティテュード」。',
+      use: 'Not with that attitude!（そんな弱気じゃ無理だよ）' },
 
-    // why: on TV ← she said it on TV, so a TV apology seems to fit; a note ← the usual condolence script
     { id: 'd4', skill: 'detail', level: 'B1', point: 'apologize', reveals: ['annview'], seg: [116.1, 120.45],
       stem: 'What did Ann want Leslie to do before campaigning again?',
-      choices: ['Apologize to Bobby face to face', 'Apologize to Bobby on TV', 'Send Bobby a note of sympathy'],
+      ja: 'アンは、レスリーにまず何をしてほしい？',
+      choices: ['Apologize to Bobby in person', 'Apologize to Bobby on TV', 'Send Bobby a note of sympathy'],
       a: 0,
-      cue: '「At least until」のあと、文の最後。',
+      choicesJa: ['ボビーに会って謝る', 'テレビでボビーに謝る', 'ボビーにお悔やみの手紙を送る'],
+      cue: '「At least until」のあと',
       line: 'At least until you apologize to Bobby *in person*.',
-      said: '「やめるべき。少なくとも、ボビーに直接謝るまでは」と言う。',
-      mean: 'in person ＝ 本人に会って、直接。電話や手紙ではなく。',
-      trap: 'テレビでの発言なので「テレビで謝る」と取りやすい。文の最後の in person で決まる。',
+      said: '「少なくとも、ボビーに直接謝るまでは」と言う。',
+      mean: 'in person ＝「直接・会って」。at least until 〜 ＝「せめて〜までは」。',
+      trap: 'テレビの話のあとなので、テレビで謝ると思いやすい。最後の in person を聞く。',
       use: 'I’d like to thank you in person.（直接お礼が言いたい）' },
 
-    // why: was ← the -n't of "wasn't" shrinks to a short nasal; am ← "I am listening, but…" is the polite meeting
-    //   phrase
-    // R fix: V2 (blind 65 %): "but I strongly disagree" in the stem made "wasn't" the logical pick; the stem now
-    //   stops at "listening…", so only the sound decides
-    { id: 's2', skill: 'sound', level: 'B2', point: 'listen', reveals: ['annview'], seg: [120.35, 124.13],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'listen', reveals: ['annview'], seg: [120.35, 124.13],
       stem: 'Fill the gap: “April? — I ___ listening…”',
+      ja: '「April? — I ___ listening…」の空所は？',
       choices: ['wasn’t', 'was', 'am'], a: 0,
-      cue: '「I」のすぐあと、短い一語の終わり。',
+      choicesJa: ['〜していなかった', '〜していた', '〜している'],
+      cue: '「April?」のあと',
       line: 'April? — I *wasn’t* listening, but I strongly disagree with Ann.',
-      said: 'エイプリルが「聞いてなかったけど、アンには強く反対」と答える。',
-      mean: 'wasn’t の t はほぼ消え、「ワズン」と短い。was には「ン」がない。',
-      trap: 't が聞こえず was を選びやすい。最後の「ン」の有無と、but のつながりで聞く。',
+      said: '「聞いてなかったけど、アンには大反対」と言う。',
+      mean: 'I wasn’t listening ＝「聞いていなかった」。but のあとが変な本音。',
+      trap: 'was なら「ワズ」で終わる。「ン」が残れば wasn’t。am は「アム」。',
       use: 'Sorry, I wasn’t listening.（ごめん、聞いてなかった）' },
 
-    // R fix: V2 (blind 55 %): the choices are now parallel ("She has… view"), so the paradox isn't the odd one out
-    // why: no view ← "wasn't listening" caught and "but I strongly disagree" lost; Andy's point ← "Andy?" follows at
-    //   once (the captions even run them together as "an Andy")
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'listen', reveals: ['annview'], seg: [120.35, 124.13],
+    // retired (A2): a “why does it get a laugh” item
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'listen', reveals: ['annview'], seg: [120.35, 124.13], retired: true,
       stem: 'Why did April’s answer get a laugh?',
       choices: ['She has a strong view on what she didn’t hear', 'She has no view, since she didn’t hear it',
                 'She has a strong view, but on Andy’s point'], a: 0,
@@ -258,11 +245,8 @@ export const leslieCancelled: Clip = {
       trap: 'すぐ Andy? が続くので、アンディの話と混ざりやすい。but の前後が食い違うと笑いになる。',
       use: 'I didn’t read it, but I love it.（読んでないけど、最高）' },
 
-    // R fix: V2 (blind 50 %): the distractors are now reasons said in the scene by others (Leslie's list, sunk
-    //   effort); the cue no longer names "stop", the word the key turns on
-    // why: the man being awful ← Leslie's list just before ("an awful man… he polluted this town"); hard work ← the
-    //   usual "we've come this far" script of a campaign meeting
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'death', seg: [124.15, 136.9],
+    // retired (A2): a meta reading of Andy’s reasons
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'death', seg: [124.15, 136.9], retired: true,
       stem: 'What is odd about Andy’s reasons for keeping going?',
       choices: ['They mostly say again that stopping is bad', 'They mostly rest on the dead man being awful',
                 'They mostly rest on the team’s hard work so far'], a: 0,
@@ -273,35 +257,32 @@ export const leslieCancelled: Clip = {
       trap: '力強い言い方なので、根拠があるように聞こえる。同じ語のくり返しは、中身の薄さのサイン。',
       use: 'Quitting is not an option.（やめるという選択はない）' },
 
-    // R fix: V2 (blind 60 %): all three now point at what comes next (a no, a yes, a mocking no)
-    // why: a yes ← the Japanese frame: a warm compliment heard as the lead-in to agreeing; mocks ← "beautiful face"
-    //   heard as sarcasm right before turning her down
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'no', reveals: ['call'], seg: [140.6, 149.7],
-      stem: 'When Leslie gave her call, what did the line about Ann’s face do?',
-      choices: ['It softens the no that comes next', 'It leads up to a yes to Ann’s idea',
-                'It mocks Ann just before saying no'], a: 0,
-      cue: 'ほめ言葉のあとの「But」。',
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'no', reveals: ['call'], seg: [140.6, 149.7],
+      stem: 'Why does Leslie talk about Ann’s “beautiful face” first?',
+      ja: 'レスリーはなぜ先にアンの「beautiful face」の話をする？',
+      choices: ['To make her “no” softer', 'To agree with Ann after all', 'To make fun of Ann'], a: 0,
+      choicesJa: ['断りをやわらげるため', '結局アンに賛成するため', 'アンをからかうため'],
+      cue: '「what’s your call?」のあと',
       line: 'there is nothing harder… than *saying no to your beautiful face*. *But I’m going to*. No.',
-      said: '「あなたの美しい顔にノーと言うほど難しいことはない。でも言う。ノー」と答える。',
-      mean: '大げさなほめ言葉で、断りのショックを和らげている。but のあとが本題。',
-      trap: '温かい前置きは「はい」の前ぶれに聞こえやすい。英語では断りの前に置くことが多い。',
+      said: '「あなたの美しい顔にノーと言うほどつらいことはない。でも言う。ノー」と言う。',
+      mean: 'there is nothing harder than 〜 ＝「〜ほどつらいことはない」。やわらげてから断る。',
+      trap: 'ほめ言葉で始まるので賛成と思いやすい。But I’m going to のあとが答え。',
       use: 'I hate to say no, but I must.（断りたくないけど、断るね）' },
 
-    // why: out of respect ← Jen's "out of respect for the Newport family" earlier, and "respectful" in the same line;
-    //   wins votes ← Ben's "the stakes are too high" heard as the reason for the new style
     { id: 'i2', skill: 'infer', level: 'B2', point: 'backs', seg: [149.7, 154.05],
-      stem: 'Why did Leslie say they’d campaign in a classy, respectful way?',
-      choices: ['Mostly so that Ann will stop pushing her', 'Mostly out of respect for the Newports',
-                'Mostly because Ben says it wins votes'], a: 0,
-      cue: '文の最後、「to get」のあと。',
+      stem: 'Why will they campaign in a classy way?',
+      ja: 'なぜ上品なやり方で選挙をするの？',
+      choices: ['So Ann stops bothering them', 'Out of respect for the Newports', 'Because it wins more votes'], a: 0,
+      choicesJa: ['アンにうるさく言われないため', 'ニューポート家への敬意から', '票が多く取れるから'],
+      cue: '「respectful way」のあと',
       line: 'in a classy and respectful way *to get Ann off of our backs*.',
-      said: '「品よく、敬意をもって。アンにうるさく言われないように」と言う。',
-      mean: 'get ～ off one’s back ＝ 文句を言わせない。品のよさはアン対策という本音。',
-      trap: 'respectful から「遺族への敬意」と取りやすい。目的は to のあと。',
+      said: '「アンにうるさく言われないように、上品にやる」と言う。',
+      mean: 'get 人 off our backs ＝「人にうるさく言われないようにする」。本音の理由。',
+      trap: 'respectful（敬意）から、亡くなった人への敬意と思いやすい。to get のあとが理由。',
       use: 'Call her to get her off your back.（電話しときなよ、うるさく言われないように）' },
 
-    // anchor: 152.7–153.8 s both sources have "off of our backs": "off of" where grammar wants "off", at ≈ 300 wpm
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'backs', seg: [149.7, 154.05],
+    // retired (A2): a C2 dictation of a non-standard form (off of)
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'backs', seg: [149.7, 154.05], retired: true,
       stem: 'Type the end: “…to get Ann ___.” (4 words)', answer: 'off of our backs',
       cue: '「get Ann」のあと。文法より、聞こえた音を。',
       line: '…in a classy and respectful way to get Ann *off of our backs*.',

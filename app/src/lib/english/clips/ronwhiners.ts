@@ -135,7 +135,7 @@ export const ronWhiners: Clip = {
       cue: '最初の短い語と、次の文の either', line: 'I *can’t have* cheese, Larry. And I can’t have wine, either.',
       said: '「チーズもだめ、ワインもだめ」と言う。',
       mean: 'can’t は「キャーン」と長く強い。can は「クン」と弱く短い。',
-      trap: 't はほぼ聞こえない。母音の強さと、次の文の either（〜も）が決め手。',
+      trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱い。could は「クッ」。次の either も否定の印。',
       use: 'I can’t have caffeine after six.（6時以降カフェインはだめなんだ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.3, 94.8],

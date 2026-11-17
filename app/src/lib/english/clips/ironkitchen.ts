@@ -23,7 +23,7 @@ export const ironkitchen: Clip = {
       line: 'We’ve only got *12 hours and 36 minutes* left.',
       said: '「まずい。あと12時間36分しかない」と、みんなをせかす。',
       mean: 'only got 〜 left ＝「あと〜しかない」。twelve ＝ 12、thirty-six ＝ 36。',
-      trap: 'twelve と twenty は出だしが似ている。twelve は「ルヴ」で終わる。',
+      trap: 'twelve は「ルヴ」で終わり、twenty は「ティ」。分は thirty のあとに six があるかを聞く。',
       use: 'We’ve only got ten minutes left.（あと10分しかないよ）' },
 
     { id: 'c1', skill: 'dict', level: 'C2', point: 'hours', seg: [0, 3.8], retired: true,
@@ -232,7 +232,7 @@ export const ironkitchen: Clip = {
       line: 'All right, *ball of melon*.',
       said: '「よし、メロンを丸くくり抜く係ね」と、次の仕事を決める。',
       mean: 'ball ＝ ここでは「丸くくり抜く」。of は小さく「ア」に近い。',
-      trap: 'ball と bowl はどちらも「ボール」に聞こえやすい。bowl は「ボウル」。',
+      trap: 'bowl は「ボウル」、ball は「ボール」。真ん中が「ア」なら of、「アン」なら and。',
       use: 'Can you ball the melon?（メロンを丸くくり抜いて）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'stuck', reveals: ['ball'], seg: [52.1, 55.9],

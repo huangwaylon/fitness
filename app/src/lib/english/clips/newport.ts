@@ -94,7 +94,7 @@ export const newport: Clip = {
       line: 'we need an interim mayor *just for two months*',
       said: '「臨時の市長が必要なの。2か月だけ」と言う。',
       mean: 'just for 〜 ＝「〜だけ」。短い期間だと強調して、頼みを軽く見せている。',
-      trap: 'two と twelve は出だしが同じ。months の前が短い一音なら two。',
+      trap: 'two と twelve は出だしが同じ。短い「トゥー」なら two。そのあとの months を聞く。',
       use: 'It’s just for two weeks.（2週間だけだよ）' },
 
     { id: 'd1', skill: 'detail', level: 'B2', point: 'whyhim', seg: [23.3, 29.2],
@@ -245,7 +245,7 @@ export const newport: Clip = {
       line: 'You have *six hundred thousand dollars*?',
       said: '「60万ドルある？それが手付金に要るんだ」と言う。',
       mean: 'six hundred thousand ＝ 60万。deposit ＝ 手付金・頭金。',
-      trap: 'hundred で止まると600ドル。すぐあとに thousand が続くかを聞く。',
+      trap: 'six hundred thousand の順に聞く。sixty でも million でもない。hundred で止めない。',
       use: 'They need a deposit first.（まず手付金が要るって）' },
 
     // retired (A2): a “why does it get a laugh” item; f3 asks “Nice try”

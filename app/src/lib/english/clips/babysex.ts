@@ -111,7 +111,7 @@ export const babySex: Clip = {
       cue: 'What のすぐあと', line: 'What *could you possibly* need at six in the morning?',
       said: '朝早く来た2人に「いったい何の用だ」と聞く。',
       mean: 'could you は「クッジュ」とつながる。possibly と組むと「いったい」。',
-      trap: 'could と would は最初の音だけ違う。can は母音が違う。出だしを聞く。',
+      trap: '出だしが「ク」なら could、「ウ」なら would。can は「キャン」と n が残る。',
       use: 'Who could possibly be calling now?（今ごろいったい誰から？）' },
 
     // retired (A2): a “why is it funny” item
@@ -146,7 +146,7 @@ export const babySex: Clip = {
       cue: '「Give me」のあと', line: 'Give me *15 minutes*. I will get dressed.',
       said: '「15分くれ。着替えて、診療所に行こう」と言う。',
       mean: 'Give me ＋時間 ＝「〜待って」。fifteen は後ろの teen を強く言う。',
-      trap: 'fifty（50）は前を強く言う。強く言う所で聞き分ける。',
+      trap: 'fifteen は「ティーン」が長く強く、fifty は短い。five と one には「フィフ」がない。',
       use: 'Give me ten minutes to get ready.（準備に10分ちょうだい）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'thisisit', seg: [117.0, 120.6],

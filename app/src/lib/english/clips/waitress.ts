@@ -133,7 +133,7 @@ export const waitress: Clip = {
       cue: '「but」のすぐあと', line: 'but *I’ve* sort of started this whole independent thing',
       said: '「最近、自立ってやつを始めちゃって」と言う。',
       mean: 'I’ve started ＝「始めて、今もその最中」。I’ve は「アイv」と短く、v はほぼ聞こえない。',
-      trap: 'v が次の s に消えて I に聞こえやすい。I’d なら「始めていた」と過去の話。',
+      trap: 'v が s に消えて I に聞こえやすい。唇をかむ v が少し残れば I’ve、d の音なら I’d。',
       use: 'I’ve just started a new job.（新しい仕事を始めたばかりです）' },
 
     // retired (A2): a twin of i3's point, the phrase's sense too loose for one key
@@ -257,7 +257,7 @@ export const waitress: Clip = {
       cue: '文の最初、短く弱い音', line: '*Does anybody* need coffee?',
       said: 'レイチェルが店中に「コーヒー要る人いる？」と声をかける。',
       mean: 'Does anybody 〜? ＝「〜な人いる？」。つながって「ダゼニバディ」と聞こえる。',
-      trap: 'Doesn’t なら「誰も要らないの？」と不満になる。最後に「ン」が残るかを聞く。',
+      trap: 'Doesn’t なら「ン」が残り、Did なら「ディ」で始まる。ここは「ダ」で「ン」がない。',
       use: 'Does anybody want the last slice?（最後のひと切れ、要る人？）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'coffee', reveals: ['does'], seg: [49, 54.3],

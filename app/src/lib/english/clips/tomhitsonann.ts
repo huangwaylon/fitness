@@ -203,7 +203,7 @@ export const tomHitsOnAnn: Clip = {
       line: 'Look, *I’d love to* do it.',
       said: '「ねえ、ぜひそうしたいけど」と前置きする。',
       mean: 'I’d love to ＝「ぜひ〜したい」。I’d の d はほとんど聞こえず、love にくっつく。',
-      trap: 'd が弱いと I love to に聞こえる。それだと「〜するのが好き」で返事にならない。',
+      trap: 'd が弱いと I love to に聞こえる。I’d have to なら「ハフタ」。ここは「ラヴ」。',
       use: 'I’d love to, but I’m busy tonight.（ぜひ、でも今夜は忙しくて）' },
 
     { id: 'd5', skill: 'detail', level: 'B2', point: 'govt', seg: [153.1, 164.7],

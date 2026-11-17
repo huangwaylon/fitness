@@ -93,7 +93,7 @@ export const perfectCrime: Clip = {
       line: 'and I escape *in one of their* uniforms.',
       said: '「朝、警官が来て、その制服を着て逃げる」と言う。',
       mean: 'in ＋服 ＝「〜を着て」。their は前の cops（警官）を受ける。',
-      trap: 'their は弱く the に近くなる。最後の「ア」が残れば their。',
+      trap: 'their は the に近いが、最後に「ア」が残る。those なら「ゾウズ」と z で終わる。',
       use: 'She came down in one of my shirts.（彼女、僕のシャツを着て下りてきた）' },
 
     // A2: was an infer on his plan; now where he really goes
@@ -154,7 +154,7 @@ export const perfectCrime: Clip = {
       line: '*Thirty years* later, I get a postcard.',
       said: '「30年後、はがきが届く」と言う。',
       mean: 'thirty は前を強く言い、t が軽い「ラ」の音で「サーリィ」に近い。',
-      trap: 'thirteen なら後ろの teen を強く長く言う。強く言う所で聞き分ける。',
+      trap: 'thirteen は「ティーン」が長く強い。three は短く、forty は「フォー」で始まる。',
       use: 'Twenty years later, we met again.（20年後、また会った）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'son', seg: [26.5, 29.7],

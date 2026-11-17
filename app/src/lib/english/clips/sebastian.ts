@@ -83,7 +83,7 @@ export const sebastian: Clip = {
       line: 'Lil’ Sebastian made his debut at the last Harvest Festival in *1987*',
       said: '「1987年の前回のお祭りでデビューした」と説明する。',
       mean: '1987 ＝ nineteen eighty-seven。年は2けたずつ分けて読む。debut ＝ デビュー。',
-      trap: 'eighty-seven（87）を seventy-eight（78）と取り違えやすい。先に来るのは eighty。',
+      trap: 'nineteen のあとを聞く。eighty-seven、seventy-eight、ninety-seven は2つ目の語で分かれる。',
       use: 'I first came here in 1998.（初めてここに来たのは1998年）' },
 
     // A2: was an infer on what “the last festival” says about the festival; now the word's meaning
@@ -192,7 +192,7 @@ export const sebastian: Clip = {
       line: '*Does he* do something? What does he do?',
       said: 'ベンが「なんで有名なの？何かするの？」と聞く。',
       mean: 'does he は h が落ちて「ダズィ」とつながる。今できることを聞くので現在の形。',
-      trap: 'Did he だと昔の話。Doesn’t he なら「するんでしょ？」と確かめる意味。',
+      trap: '「ダ」なら does、「ディ」なら did。「ン」が聞こえたら doesn’t。ここは「ダズィ」。',
       use: 'Does he speak English?（彼、英語話せる？）' },
 
     // retired (A2): a “what makes the reply funny” item (an honorary degree)
@@ -240,7 +240,7 @@ export const sebastian: Clip = {
       line: 'Remember, this little guy’s *25* now',
       said: '「この子はもう25歳なんだから」と念を押す。',
       mean: 'guy’s ＝ guy is。little guy ＝「この子」と親しく呼ぶ言い方。馬としては高齢。',
-      trap: 'twenty だけで20と思いやすい。すぐあとの five まで聞くと25。',
+      trap: 'twenty で止めると20。twenty-five は最後に「ファイヴ」、thirty-five は「サー」で始まる。',
       use: 'My cat is fifteen now.（うちの猫ももう15歳）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['jerry'], seg: [62.4, 65.6],
@@ -252,7 +252,7 @@ export const sebastian: Clip = {
       line: '*Jerry’s going to* look after him.',
       said: '「ジェリーがこの子の世話をするのよ」と言う。',
       mean: 'going to は「ゴナ」と聞こえる（gonna）。決まった予定を言う形。',
-      trap: 'gonna と gotta は似ているが、gotta は「〜しなきゃ」。was なら「予定だったのに」。',
+      trap: 'gonna は「ナ」、gotta は「ラ」に近い。was なら名前のあとに「ワズ」が入る。',
       use: 'I’m going to look after the kids.（子どもたちの面倒は私が見るよ）' },
 
     { id: 'w1', skill: 'detail', level: 'B1', point: 'jerry', seg: [63.6, 67.6],

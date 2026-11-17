@@ -66,7 +66,7 @@ export const aprilTynnyfer: Clip = {
       cue: '「Who are」の質問のすぐあと', line: '*I’ve never* heard of them before.',
       said: '「その人たち、聞いたことない」と言う。',
       mean: 'I’ve never heard of 〜 ＝「〜は聞いたことがない」。v は小さく never につながる。',
-      trap: 'I’d never だと過去のある時点の話。v は唇を軽くかむ音、d は舌の音。',
+      trap: '唇をかむ v なら I’ve、舌の d なら I’d、何もなければ I never。',
       use: 'I’ve never been to Hawaii.（ハワイは行ったことがない）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'delay', seg: [67.7, 72],
@@ -86,7 +86,7 @@ export const aprilTynnyfer: Clip = {
       cue: '「So」のすぐあと', line: 'So, *did you have* a chance to compare notes',
       said: '「話し合う時間はあった？」と聞く。',
       mean: 'did you は「ディジュ」とつながる。待っていた間のことなので過去の形。',
-      trap: 'do you と似て聞こえるが、ここは「さっきまで」の話。「ディ」の音で判断。',
+      trap: '「ディジュ」なら did you、「ドゥユ」なら do you。have you なら「ハヴ」で始まる。',
       use: 'Did you have a chance to look?（見てもらえました？）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'notes', reveals: ['didyou'], seg: [71.6, 76.4],

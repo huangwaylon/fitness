@@ -151,7 +151,7 @@ export const benCriminal: Clip = {
       line: 'Bathroom breaks should be limited to *five minutes*. — I can’t shower in five minutes.',
       said: '「トイレ休憩は5分まで」に「5分じゃシャワーできない」と返される。',
       mean: 'be limited to 〜 ＝「〜までに限られる」。five minutes ＝ 5分。',
-      trap: 'five の v が弱く、fifteen に聞こえることも。fifteen なら teen が強く長い。',
+      trap: 'fifteen なら「ティーン」が強く長い。ten は「テン」。ここは短い「ファイヴ」。',
       use: 'Can you give me five minutes?（5分だけちょうだい）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'tight', seg: [78.0, 82.4],
@@ -209,7 +209,7 @@ export const benCriminal: Clip = {
       line: '*We’re gonna need you to* come down to the station.',
       said: '「署まで来てもらうことになる」と告げる。',
       mean: 'need you to が「ニージュタ」とつながり、you は短く小さい。gonna ＝ going to。',
-      trap: 'you がのみこまれると need to に聞こえる。だれが行くかで意味が変わる。',
+      trap: 'need のあとに「ジュ」があれば need you to。文の頭が「ウィア」なら we’re、「ユア」なら you’re。',
       use: 'I’m gonna need you to sign here.（ここにサインをお願いします）' },
 
     { id: 'i3', skill: 'infer', level: 'B1', point: 'bribe', seg: [108.8, 114.56],

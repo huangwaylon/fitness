@@ -113,7 +113,7 @@ export const ronsTeam: Clip = {
       line: 'They’re great. No, they’re trying to destroy us. There’s *three* of them.',
       said: '「元気。いや、壊されそう。3人もいるの」と言う。',
       mean: 'There’s three of them ＝「3人いる」。three ＝ 3。',
-      trap: 'two と three は短い音。「スリー」の r の音を聞く。',
+      trap: 'two は「トゥー」、four は「フォー」。「スリー」と r の音があれば three。',
       use: 'There are three of us.（私たちは3人です）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'kids', seg: [46.0, 51.45],
@@ -221,7 +221,7 @@ export const ronsTeam: Clip = {
       line: 'They *can* wrap shrimp. If it’s seven on this one, it’s a masterpiece.',
       said: '「彼らはエビを巻ける。この1本に7匹なら傑作だ」と言う。',
       mean: 'can は弱く「クン」と短い。can’t なら「キャーン」と長く強い。',
-      trap: 't はほぼ聞こえない。母音の長さと、次の「傑作だ」で can と分かる。',
+      trap: 'can’t なら「キャーン」と長い。could なら「クッ」。ここは短く弱い「クン」。',
       use: 'I can help you tomorrow.（明日なら手伝えるよ）' },
 
     { id: 'ph3', skill: 'phrase', level: 'B2', point: 'stab', reveals: ['can'], seg: [133.1, 137.4],
