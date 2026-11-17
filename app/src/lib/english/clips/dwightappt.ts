@@ -1,15 +1,9 @@
-// REVIEW 2026-11-16: pass 7, fix 15, drop 0, new 0; ear checks 1
-// OPEN: i2, h3 and nt2 all rest on the owner/salesman split; a reader who sees the whole bank gets them at 70–75 %, but
-//   a single draw shows far less of it. g1 is ~65 % for anyone who knows Season 8.
+// A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 3, new 1
 // “Scheduling an Appointment with Dwight - The Office US” (the official The Office channel, BEST OF The Office -
 // Season 8): Dwight, the new owner of the building, has been cutting costs; when Pam asks him about the cutbacks he
 // sends her to his assistant Nate for an appointment, Nate makes up an excuse, and Pam finally makes her case to
-// Dwight's face.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 112 s. Pam is named by Dwight (42.3 s,
-// 59.3 s, 80.3 s), Stanley by the two lines to him (16 s, 22.2 s), Nate by Pam (59.3 s). Untested on purpose: the
-// anus lines (9–15 s), who says "Which is you" (30 s) and "Are you gonna just sit there…" (34 s), Nate's "Yello"
-// greeting and "just for one itsy second" (captions "iny", whisper "ain'tsy", 66 s), how Nate says Dwight's name
-// (captions "sure truit", whisper "Dwight Truth", 72 s), and whether Dwight keeps his word after the clip ends.
+// Dwight's face. Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 112 s. Left out: the anus
+// lines (9–15 s), 34 s ("Are you gonna just sit there…", speaker unclear), 66 s and 72 s (whisper and captions split).
 // EAR CHECK: 100.25 s r1 — the cut falls in the pause after "You know what, Pam?", before "You're right"
 import type { Clip } from '../types.ts';
 
@@ -19,51 +13,40 @@ export const dwightAppt: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: printer paper / paper towels ← "paper" caught, "toilet" lost before it
     { id: 'd1', skill: 'detail', level: 'B1', point: 'tp', seg: [3.6, 8.3],
       stem: 'What is the first complaint about?',
+      ja: '最初の苦情は何について？',
       choices: ['The paper towels', 'The toilet paper', 'The printer paper'], a: 1,
-      cue: '最初の質問の、paper の前の語。',
-      line: 'why is the *toilet paper* only half-ply?',
-      said: '「トイレットペーパーが半分の薄さなのはなぜ？」とドワイトに聞く。',
-      mean: 'ply ＝ 紙の重ね枚数。費用を削った結果、紙まで薄くなった。',
-      trap: 'paper だけ拾うと、どの紙か分からない。名詞の前の語まで聞く。',
+      choicesJa: ['ペーパータオル', 'トイレットペーパー', 'プリンターの紙'],
+      cue: '最初の質問、paper の前の語',
+      line: 'Dwight, why is the *toilet paper* only half-ply?',
+      said: '「ドワイト、トイレットペーパーが半分の薄さなのはなぜ？」と聞く。',
+      mean: 'ply ＝ 紙の重ねの枚数。費用を減らした結果、紙まで薄くなった。',
+      trap: 'paper だけ聞くと、どの紙かわからない。paper の前の語まで聞く。',
       use: 'We’re out of toilet paper.（トイレットペーパーが切れてる）' },
-
-    // R fix: V2 (blind 75 %): "planning to sell" was off-scene; now "raising the rent", an owner's move from the same
-    //   "new building owner" frame. S4: the segment ended 0.3 s into "cutbacks"; now 42.0.
-    // why: rent ← "the new building owner" heard as a landlord squeezing tenants; staff hours ← "cutbacks" heard as cuts
-    //   to people
     { id: 'g1', skill: 'gist', level: 'B1', point: 'cuts', reveals: ['tp'], seg: [4, 42.0],
       stem: 'Why are people unhappy with Dwight at the start?',
-      choices: ['He’s been cutting back on building costs', 'He’s been raising the rent on the office',
-                'He’s been cutting back on staff hours'], a: 0,
-      cue: '最初の苦情と、Pam の最後の質問。',
-      line: 'why is the *toilet paper* only half-ply? … can we talk about these *cutbacks*?',
-      said: 'トイレットペーパーへの苦情から始まり、パムが「削減の話をしたい」と言う。',
-      mean: 'ビルの持ち主になったドワイトが、備品や設備の費用を削っている。',
-      trap: 'owner から家賃、cutbacks から人減らしと取りやすい。何を削ったかは最初の苦情で確かめる。',
+      ja: '最初、みんなはなぜドワイトに不満なの？',
+      choices: ['He’s cutting building costs', 'He’s raising the rent', 'He’s cutting staff hours'], a: 0,
+      choicesJa: ['ビルの経費を削っている', '家賃を上げている', '社員の勤務時間を減らしている'],
+      cue: '最初の苦情と、パムの最後の質問',
+      line: 'why is the *toilet paper* only half-ply? … Dwight, can we talk about these *cutbacks*?',
+      said: 'トイレットペーパーへの苦情から始まり、パムが「この削減について話せる？」と聞く。',
+      mean: 'cutback ＝ 削減。ビルの持ち主になったドワイトが、備品の費用を削っている。',
+      trap: 'owner（持ち主）から家賃、cutbacks から人減らしと思いやすい。最初の苦情は紙のこと。',
       use: 'Can we talk about the new rules?（新しいルールについて話せる？）' },
-
-    // R fix: V2 (blind 55 %) + N7: "thankful" was the filler; now "embarrassed" (a bathroom topic, the 恥ずかしい
-    //   frame). The stem no longer names the toilet paper, which gave d1's key away.
-    // why: embarrassed ← a bathroom topic raised in front of everyone, read through 恥ずかしい; amused ← the laugh
-    //   after it heard as his
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'business', seg: [15.0, 21.6],
       stem: 'How does Stanley take the suggestion he gets?',
+      ja: 'スタンリーは、言われた提案をどう受け取る？',
       choices: ['He’s offended by it', 'He’s embarrassed by it', 'He’s amused by it'], a: 0,
-      cue: 'Stanley と呼ばれたあとの、短い返事。',
-      line: '*Don’t tell me how to do my business*.',
-      said: '「多めに引き出せば」と言われ、「やり方を指図するな」と返す。',
-      mean: 'Don’t tell me how to 〜 ＝ 口出しするな。はっきりした不快。',
-      trap: '話題がトイレなので照れ、笑い声で面白がりと取りやすい。返事が Don’t で始まったら拒否。',
+      choicesJa: ['むっとしている', '恥ずかしがっている', 'おもしろがっている'],
+      cue: 'スタンリーの短い返事',
+      line: 'Stanley, maybe you can just unspool a little more each time… — *Don’t tell me how to do my business*.',
+      said: '「使うたびに少し多めに引き出せば」と言われ、「やり方に口を出すな」と返す。',
+      mean: 'Don’t tell me how to 〜 ＝ 〜のやり方に口を出すな。はっきりした不快。',
+      trap: 'トイレの話なので、恥ずかしがっていると思いやすい。Don’t で始まる返事は拒否。',
       use: 'Don’t tell me how to drive.（運転に口出ししないで）' },
-
-    // R fix: K1: "treats a toilet break like running a company" was a defensible second key (the double meaning is
-    //   exactly that); now "spends work hours in the bathroom". N7: the stem no longer names the toilet paper (d1).
-    // why: work hours ← "business" read as 仕事, set in the bathroom talk; none of her concern ← the "mind your own
-    //   business" frame, applied to the cuts instead of to how he uses the toilet
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'business', seg: [15.0, 21.6],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'business', seg: [15.0, 21.6], retired: true,
       stem: 'Why does Stanley’s reply to the suggestion get a laugh?',
       choices: ['It’s also a polite way to say “use the toilet”', 'It hints he spends work hours in the bathroom',
                 'It says the cuts are none of her concern'], a: 0,
@@ -73,39 +56,29 @@ export const dwightAppt: Clip = {
       mean: 'do one’s business は「用を足す」の遠回し。仕事の話にも聞こえる二重の意味が笑い。',
       trap: 'business を「商売」とだけ取ると笑いが分からない。場面の話題と重ねて聞く。',
       use: 'Mind your own business.（余計なお世話だよ）' },
-
-    // why: argued for supplies ← "I feel for you" heard as having taken their side; Dunder Mifflin ← "fellow Dunder
-    //   Mifflin employee" heard as where the cuts come from
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'powerless', seg: [22.0, 30.9],
-      stem: 'When Dwight says he’s as powerless as Stanley, what is he pretending?',
-      choices: ['That the building’s owner is someone else', 'That he already argued for more supplies',
-                'That the cuts were ordered by the company'], a: 0,
-      cue: 'like you のあとと、すぐあとの短いつっこみ。',
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'powerless', seg: [22.0, 30.9],
+      stem: 'Who is the new building owner?',
+      ja: 'ビルの新しい持ち主は誰？',
+      choices: ['Dwight himself', 'Nate, his helper', 'Dunder Mifflin'], a: 0,
+      choicesJa: ['ドワイト本人', '助手のネイト', 'ダンダー・ミフリン社'],
+      cue: '「new building owner」のすぐあと',
       line: 'like you, I am completely powerless to the whims of the *new building owner*. — *Which is you*.',
-      said: '「同情するが、私も持ち主には逆らえない」と言い、「それ、あなたでしょ」と返される。',
-      mean: '自分が持ち主なのに、別人のように話して逃げている。',
-      trap: 'I feel for you を味方の言葉と取りやすい。直後の Which is you が答え合わせ。',
-      use: 'I feel for you, I really do.（気持ちは分かるよ、本当に）' },
-
-    // R fix: B1/N7: the stem quotes "Which is you", which settles i1; reveals `powerless`
-    // why: grammar ← "is not a sentence" heard and the rest lost; a denial ← "disagree" caught on its own
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'sentence', reveals: ['powerless'], seg: [26.9, 33.95],
-      stem: 'How does Dwight’s reply to “Which is you” end up?',
-      choices: ['As an admission that he is the owner', 'As a complaint about bad grammar',
-                'As a denial that he is the owner'], a: 0,
-      cue: '「not a sentence」で終わらず、最後まで聞く。',
+      said: '「私も新しい持ち主には逆らえない」と言い、「それ、あなたでしょ」と返される。',
+      mean: 'Which is you ＝ それはあなたでしょ。持ち主は自分なのに、別人のように話している。',
+      trap: 'Dunder Mifflin（会社の名前）も聞こえるので、会社と思いやすい。Which is you が答え。',
+      use: 'I feel for you, I really do.（気持ちはわかるよ、本当に）' },
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'sentence', reveals: ['powerless'], seg: [26.9, 33.95],
+      stem: 'Why is “not a sentence I disagree with” funny?',
+      ja: '「not a sentence I disagree with」はなぜおかしい？',
+      choices: ['He admits he’s the owner', 'He complains about grammar', 'He says he isn’t the owner'], a: 0,
+      choicesJa: ['持ち主だと認めている', '文法に文句を言っている', '持ち主ではないと言っている'],
+      cue: '「not a sentence」の先まで聞く',
       line: '“Which is you” is not a sentence *I disagree with*.',
       said: '「『それ、あなたでしょ』は、私が反対する文ではない」と言う。',
-      mean: '文法の文句に聞こえる出だしから、最後で「その通り」に変わる。遠回しに認めている。',
-      trap: 'not a sentence で終わると思うと文法の話に聞こえる。英語は最後の語で意味が変わる。',
+      mean: 'not a sentence ＝ 文じゃない、と文法の話に聞こえるが、最後で「その通り」になる。',
+      trap: 'not a sentence で終わると思うと、文法の文句に聞こえやすい。最後の語まで聞く。',
       use: 'That’s not something I’d argue with.（それには反論しないよ）' },
-
-    // R fix: B1/N7: the stem and line quote "Which is you" (i1); reveals `powerless`
-    // why: "a sentence I disagree" ← the grammar instinct drops the stranded "with"; "sentence I agree with" ← the
-    //   "dis-" lost after "I"
-    // anchor: 31.6–33.3 s "is not a sentence I disagree with" (both sources), four words run together, ending on a
-    //   stranded preposition
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'sentence', reveals: ['powerless'], seg: [26.9, 33.95],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'sentence', reveals: ['powerless'], seg: [26.9, 33.95], retired: true,
       stem: 'Type the end: “‘Which is you’ is not a ___.” (4 words)', answer: 'sentence i disagree with',
       cue: 'not a のあと、最後の小さな語まで。',
       line: '“Which is you” is not a *sentence I disagree with*.',
@@ -113,117 +86,104 @@ export const dwightAppt: Clip = {
       mean: '文の最後に with が残る形は会話でふつう。with がないと意味が通らない。',
       trap: '最後の前置詞は弱く、聞き落としやすい。文が「〜を」で終わるはずの所は、最後の小さな語まで書く。',
       use: 'That’s a plan I can live with.（それなら受け入れられる）' },
-
-    // R fix: V2 (blind 70 %): "talk to him at his desk later" was the filler; now "salespeople aren't allowed", a rule
-    //   read into "when I'm sitting at this desk"
-    // why: busy with sales ← "I'm a salesman" heard as an excuse about time; not allowed ← the desk heard as a work rule
-    //   someone else set, not a role he puts on
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'desk', seg: [41.9, 49.25],
-      stem: 'What does Dwight mean by “when I’m sitting at this desk”?',
-      choices: ['Here he’s only a salesman, not the owner', 'He’s too busy making sales to talk now',
-                'Salespeople aren’t allowed to discuss it'], a: 0,
-      cue: 'desk の文のあと、If で始まる文。',
-      line: 'when I’m sitting at this desk, *I’m a salesman*. If you want to talk to the *new building owner*…',
-      said: '「この席では営業マンだ。持ち主と話したいならネイトに予約を」と言う。',
-      mean: '座る場所で役割を分けてみせる。持ち主としての話は、ここでは受けない。',
-      trap: 'desk を忙しさや職場の決まりと取りやすい。If 以下で、自分の持ち主の役を別人扱いしている。',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'desk', seg: [41.9, 49.25],
+      stem: '“…at this desk, I’m a salesman.” What does Dwight mean?',
+      ja: '「この席では営業マンだ」ドワイトが言いたいことは？',
+      choices: ['Here he is not the owner', 'He is too busy right now', 'Salesmen can’t talk about it'], a: 0,
+      choicesJa: ['ここでは持ち主ではない', '今は忙しすぎる', '営業マンはそのことを話せない'],
+      cue: 'desk の文のあとの If',
+      line: 'Pam, when I’m sitting at this desk, *I’m a salesman*. If you want to talk to the *new building owner*…',
+      said: '「この席では営業マンだ。持ち主と話したいなら、ネイトに予約を」と言う。',
+      mean: '座る場所で役を分けている。持ち主としての話は、ここでは受けない。',
+      trap: 'desk（机）から、忙しいと思いやすい。If 以下で、持ち主を別人のように扱っている。',
       use: 'At work, I’m not your brother.（職場では兄弟じゃない）' },
-
-    // why: reluctant yes ← the Japanese frame: a junior answers "I'll try" (検討します), not a flat no; asks for the
-    //   number ← "call Nate" heard as the next step she takes
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'refuse', seg: [42.2, 50.6],
-      stem: 'How does Pam first respond to being told to make an appointment?',
-      choices: ['She flatly refuses', 'She reluctantly agrees', 'She asks how to reach Nate'], a: 0,
-      cue: 'appointment のすぐあと、Pam の短い一文。',
-      line: '*I’m not going to do that*.',
-      said: '「ネイトに予約を」と言われ、「そんなことしない」と即答する。',
-      mean: 'I’m not going to do that ＝ きっぱりした拒否。「する気はない」。',
-      trap: '日本語の「検討します」のような含みはない。not going to はそのまま「しない」。',
+      stem: 'How does Pam answer when told to make an appointment?',
+      ja: '予約を取れと言われて、パムはどう答える？',
+      choices: ['She flatly says no', 'She slowly says yes', 'She asks for Nate’s number'], a: 0,
+      choicesJa: ['きっぱり断る', 'しぶしぶ受ける', 'ネイトの番号を聞く'],
+      cue: '「appointment」のすぐあと',
+      line: 'you should call Nate and schedule an appointment. — *I’m not gonna do that*.',
+      said: '「ネイトに電話して予約を」と言われ、「そんなことしない」とすぐに答える。',
+      mean: 'I’m not gonna do that ＝ そんなことはしない。きっぱりした断り。',
+      trap: '日本語の「検討します」のようなぼかしはない。not gonna はそのまま「しない」。',
       use: 'I’m not going to do that.（それはしないよ）' },
-
-    // R fix: V2 (blind 75 %): "never met the owner" and "the owner is strict" clashed with the scene; now "repeats what
-    //   Nate told him" (I hear, literally) and "teases Pam for not knowing" (the joke aimed at the wrong person)
-    // why: Nate ← "I hear" read literally, with Nate just named as the go-between; teases Pam ← the joke put on her
-    //   instead of on himself
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'reasonable', seg: [50.5, 58.2],
-      stem: 'Why is Dwight’s last remark about the building owner funny?',
-      choices: ['He praises himself as if talking about a stranger', 'He repeats what Nate has told him about the owner',
-                'He teases Pam for not knowing who the owner is'], a: 0,
-      cue: 'I hear のあと、誰のことを話しているか。',
+    { id: 'h3', skill: 'phrase', level: 'B1', point: 'reasonable', seg: [50.5, 58.2],
+      stem: 'What does “I hear he’s a very reasonable guy” mean?',
+      ja: '「I hear he’s a very reasonable guy」はどういう意味？',
+      choices: ['People say he’s fair', 'I can hear him now', 'I think he’s strict'], a: 0,
+      choicesJa: ['話のわかる人らしい', '今、彼の声が聞こえる', '厳しい人だと思う'],
+      cue: '「which is a shame」のあと',
       line: 'which is a shame, because *I hear he’s a very reasonable guy*.',
-      said: '「それは惜しい。うわさでは、とても話の分かる人らしいよ」と言う。',
-      mean: '持ち主は自分なのに、他人のうわさのように自分をほめている。',
-      trap: 'I hear を文字どおり「聞いた話」と取ると、別人の話に聞こえる。話し手と話題の人が同じか確かめる。',
+      said: '「それはもったいない。とても話のわかる人らしいから」と言う。',
+      mean: 'I hear 〜 ＝ 〜らしい、〜と聞いている。reasonable ＝ 話のわかる。自分のことをほめている。',
+      trap: 'hear（聞こえる）から、声が聞こえると思いやすい。I hear ＋ 文は「うわさでは」。',
       use: 'I hear the new place is great.（新しい店、いいらしいよ）' },
-
-    // R fix: S2: the stem's quote dropped a word ("itsy", garbled in both sources) without marking it; now "one… second"
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'meeting', seg: [57, 64.5],
+      stem: 'What does Pam ask Nate for?',
+      ja: 'パムはネイトに何を頼む？',
+      choices: ['A meeting with Dwight today', 'Dwight’s phone number', 'A new office chair'], a: 0,
+      choicesJa: ['今日ドワイトと会う約束', 'ドワイトの電話番号', '新しいオフィスのいす'],
+      cue: '「It’s Pam」のあと',
+      line: 'Hi, Nate. It’s Pam Halpert. — Oh, hey, Pam. — Hey, I would just love to *schedule a meeting today with Dwight*.',
+      said: '「ネイト、パムよ」と名乗り、「今日ドワイトと会う約束を入れたいの」と頼む。',
+      mean: 'It’s 〜 ＝ （電話で）〜です。schedule a meeting ＝ 会う予定を入れる。',
+      trap: '電話をかけているので、番号を聞くと思いやすい。schedule a meeting を聞く。',
+      use: 'I’d like to schedule a meeting.（打ち合わせの予定を入れたいです）' },
     { id: 'x1', skill: 'dict', level: 'B2', point: 'hold', seg: [64.1, 67.3],
       stem: 'Type what Nate says: “___ just for one… second.” (6 words)', answer: 'let me put you on hold',
-      cue: '電話の相手に、少し待たせる時の決まり文句。',
+      ja: 'ネイトの言葉を書こう：「___ just for one… second.」（6語）',
+      cue: '電話で少し待たせるときの言い方',
       line: '*Let me put you on hold* just for one… second.',
-      said: '「少し保留にさせて」。let me が「レミ」、put you が「プチュ」に。',
-      mean: 'put 人 on hold ＝ 電話を保留にする。電話の決まり文句。',
-      trap: 'let me と put you がつながり、語の数が分かりにくい。決まり文句ごと聞く。',
+      said: '「少しだけ保留にさせて」と言う。',
+      mean: 'put 〜 on hold ＝ 電話を保留にする。let me は「レミ」、put you は「プチュ」に近い。',
+      trap: 'let me と put you がつながり、語の数がわかりにくい。決まった言い方ごと聞く。',
       use: 'Can I put you on hold?（保留にしてもいいですか）' },
-
-    // why: him I'm ← "her" reduced to "er" and heard as "him"; her I was ← "I'm" heard as the past; them I'm ← the weak
-    //   vowel of "her" heard as "them"
     { id: 's1', skill: 'sound', level: 'B2', point: 'tellher', seg: [73.2, 77.1],
-      stem: 'Fill the gap: “Tell ___ busy.”',
-      choices: ['him I’m', 'her I’m', 'her I was', 'them I’m'], a: 1,
-      cue: 'Tell のすぐあと、h が消えてつながる所。',
+      stem: 'Which words do you hear: “Tell ___ busy”?',
+      ja: '「Tell ___ busy」どれが聞こえる？',
+      choices: ['him I’m', 'her I’m', 'her I was'], a: 1,
+      choicesJa: ['彼に、私は', '彼女に、私は', '彼女に、私は（過去）'],
+      cue: '「Tell」のすぐあと',
       line: '*Tell her I’m* busy.',
-      said: '「忙しいと言っておいて」とネイトに頼む。tell her が「テラー」に聞こえる。',
-      mean: 'her の h は弱く消え、前の語とつながる。tell her ＝「テラ」。',
-      trap: 'h が消えると him か her か迷う。電話の相手が誰かを思い出して聞く。',
+      said: '「忙しいと言っておけ」とネイトに頼む。',
+      mean: 'her の h は小さく消え、tell her が「テラー」に聞こえる。',
+      trap: 'him なら「イム」と m で終わる。was なら「ワズ」。「テラライム」なら her I’m。',
       use: 'Tell her I’ll call back.（折り返すと伝えて）' },
-
-    // R fix: V2 (blind 65 %): "a joke he and Pam often share" was the filler; now "the real reason" and "a cover story
-    //   Dwight had planned", a near miss that "Make something up" settles
-    // why: real reason ← Nate's message taken at face value; planned ← an excuse, but Dwight's, worked out beforehand
     { id: 'i3', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['tellher'], seg: [74.6, 87.4],
-      stem: 'What should we make of the reason Nate gives Pam?',
-      choices: ['It’s an excuse Nate made up on the spot', 'It’s the real reason Dwight can’t come',
-                'It’s a cover story Dwight had planned'], a: 0,
-      cue: 'Tell her I’m busy のあとの、もう一言。',
+      stem: 'Where does Nate’s reason for Pam come from?',
+      ja: 'ネイトがパムに言う理由は、どこから来た？',
+      choices: ['He made it up just now', 'It is the real reason', 'Dwight planned it before'], a: 0,
+      choicesJa: ['今その場で作った', '本当の理由', 'ドワイトが前から考えていた'],
+      cue: '「Tell her I’m busy」のあと',
       line: 'Tell her I’m busy. I don’t know. *Make something up*.',
-      said: 'ドワイトは「忙しいと言え。適当に作れ」と言い、ネイトがその理由をパムに伝える。',
-      mean: 'その場で作った言い訳。中身が大げさなのは、急に考えたから。',
-      trap: '伝言を本当の話や用意した話と取りやすい。直前の Make something up が答え合わせ。',
+      said: 'ドワイトが「忙しいと言え。適当に作れ」と言い、ネイトがその理由をパムに伝える。',
+      mean: 'make 〜 up ＝ 作り話をする。大げさな理由は、その場で考えたから。',
+      trap: '伝言を本当の話と思いやすい。直前の Make something up が答え。',
       use: 'Just make something up.（適当に言っといて）' },
-
-    // why: looking for a dog ← "dog" caught, "questioned" lost; reporting a theft ← "police" and "dognappings" caught
-    //   but the relation reversed (a victim, not a suspect)
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'police', seg: [79.5, 87.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'police', seg: [79.5, 87.4],
       stem: 'According to Nate, why can’t Dwight meet Pam?',
-      choices: ['He’s being questioned by the police', 'He’s out looking for his lost dog',
-                'He’s telling police his dog was stolen'], a: 0,
-      cue: 'Pam と呼んだあと、police の前の動詞。',
-      line: 'Dwight’s *being questioned by the police* in connection with…',
-      said: '「ドワイトは連続犬泥棒の件で取り調べ中」と言う。',
+      ja: 'ネイトによると、ドワイトはなぜパムに会えない？',
+      choices: ['The police are questioning him', 'He’s looking for his lost dog', 'His dog was stolen'], a: 0,
+      choicesJa: ['警察に取り調べを受けている', 'いなくなった犬をさがしている', '犬を盗まれた'],
+      cue: '「Hey, Pam」のあと',
+      line: 'Dwight’s *being questioned by the police* in connection with a string of dognappings…',
+      said: '「ドワイトは連続犬泥棒の件で、警察の取り調べを受けてる」と言う。',
       mean: 'be questioned ＝ 取り調べを受ける。疑われている側の話。',
-      trap: 'dog と police だけ拾うと被害者の話に聞こえる。受け身の being questioned を聞く。',
+      trap: 'dog と police だけ聞くと、犬が盗まれた話と思いやすい。being questioned を聞く。',
       use: 'He’s in a meeting right now.（今、会議中です）' },
-
-    // R fix: V2 + S1: the stem's plural "dognappings" gave the key; the stem now says "the crime"
-    // why: a single one ← "a string of" lost, so one big case is assumed; a cut leash ← string = ひも, read literally
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'string', reveals: ['police'], seg: [79.5, 87.4],
-      stem: 'What does Nate’s excuse say about the crime?',
-      choices: ['It’s one of several in a row', 'It’s a single, very big case', 'It involved a dog’s leash being cut'], a: 0,
-      cue: 'in connection with のあと、dog の前。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'string', reveals: ['police'], seg: [79.5, 87.4],
+      stem: 'What does “a string of dognappings” mean?',
+      ja: '「a string of dognappings」はどういう意味？',
+      choices: ['Several in a row', 'One very big case', 'A cut dog leash'], a: 0,
+      choicesJa: ['続けて何件も', 'とても大きな事件1つ', '切られた犬のひも'],
+      cue: '「in connection with」のあと',
       line: 'questioned by the police in connection with *a string of* dognappings',
       said: '「連続犬泥棒の件で取り調べ中」と言う。',
-      mean: 'a string of ＝ 続けて起きた一連の〜。事件や失敗などに使う。',
-      trap: 'string を「ひも」と取ると犬のひもに結びつく。a string of で「立て続け」と覚える。',
+      mean: 'a string of 〜 ＝ 続けて起きた一連の〜。dognapping ＝ 犬泥棒。',
+      trap: 'string（ひも）から、犬のひもの話と思いやすい。a string of で「立て続けの」。',
       use: 'We’ve had a string of bad days.（悪い日が続いてる）' },
-
-    // R fix: V2 (blind 60 %) + K5: "rather not face the owner" was refuted by her facing him, and the choices mixed "To…"
-    //   and "Because…"; now "make the complaint less personal" (the Japanese 遠回し frame), all "To…"
-    // why: real messenger ← Pam taken at her word, as if Dwight could pass it on; less personal ← indirect speech read as
-    //   softening (遠回し), though she ends on "His friends"
-    // anchor: 30 s "Which is you" and 46 s "if you want to talk to the new building owner… call Nate" set up the two-role
-    //   game; 88.4–97.9 s Pam turns to Dwight himself and asks him to "tell the new building owner"
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'gobetween', seg: [88.0, 98.4],
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'gobetween', seg: [88.0, 98.4], retired: true,
       stem: 'Why does Pam ask Dwight to “tell the new building owner” something?',
       choices: ['To turn his own game back on him, face to face', 'To have him pass the message on to the owner',
                 'To make the complaint sound less personal'], a: 0,
@@ -233,83 +193,71 @@ export const dwightAppt: Clip = {
       mean: '持ち主はドワイト本人。彼の「役割分け」の芝居に乗ったふりで、本人に直接ぶつけている。伝言は形だけ。',
       trap: '言葉どおり伝言の依頼と取りやすい。頼む相手と伝える相手が同じ人なら、それは皮肉な乗っかり。',
       use: 'Could you tell my boss I’m leaving early?（上司に早退すると伝えてくれる？）' },
-
-    // R fix: V2 (blind 50 %): "fixing things up" was the only kind choice in a complaint; now "putting pressure on
-    //   them" (putting the screws on)
-    // why: pressure ← "screw" read as ねじを締める, 締めつける; watching ← a near guess for a boss's verb
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'screw', seg: [88.0, 98.4],
-      stem: 'What does Pam say the owner is doing to the people he works with?',
-      choices: ['Treating them unfairly', 'Putting pressure on them', 'Watching them too closely'], a: 0,
-      cue: 'he is のあとの、動詞と over。',
-      line: 'he is *screwing over* all the people he works with',
-      said: '「一緒に働く人たちをひどい目にあわせている」と言う。',
-      mean: 'screw over ＝ 人に損をさせる、ずるく扱う。くだけた言い方なので場面を選ぶ。',
-      trap: 'screw を「ねじを締める」と取ると、圧力の意味に聞こえる。over が付くと人に損をさせる意味。',
+      stem: 'What does “screwing over” mean here?',
+      ja: 'ここでの「screwing over」はどういう意味？',
+      choices: ['Treating unfairly', 'Putting pressure on', 'Watching too closely'], a: 0,
+      choicesJa: ['ひどい扱いをする', 'プレッシャーをかける', '見張りすぎる'],
+      cue: '「he is」のあと',
+      line: 'Dwight, can you please tell the new building owner that he is *screwing over* all the people he works with?',
+      said: '「新しい持ち主に、一緒に働く人たちをひどい目にあわせてるって伝えて」と言う。',
+      mean: 'screw 〜 over ＝ 〜をずるく扱う、損をさせる。くだけた言い方。',
+      trap: 'screw（ねじ）から、しめつける、圧力の意味と思いやすい。over で「ひどい目にあわせる」。',
       use: 'The airline really screwed us over.（航空会社にひどい目にあわされた）' },
-
-    // R fix: V2 (blind 55 %): "the savings matter more" was refuted by the stem's own frame; now "discuss it later", the
-    //   検討します close
-    // why: back to Nate ← the earlier "call Nate" heard as where it ends; later ← a polite non-answer expected (検討します)
     { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['youknow'], seg: [88.0, 112.5],
-      stem: 'Where does Pam’s appeal leave things by the end of the clip?',
-      choices: ['Dwight says that she is right', 'Dwight sends her back to Nate', 'Dwight agrees to discuss it later'], a: 0,
-      cue: 'You know what のあとの一言。',
-      line: 'You know what, Pam? *You’re right*. This isn’t just a business.',
-      said: 'パムが直接訴えると、ドワイトは「君の言う通り。ただの会社じゃない」と答える。',
-      mean: 'ドワイトが、言葉の上ではパムに同意して終わる。',
-      trap: '前の断り方から、また Nate へ、または「あとで」と取りやすい。You know what のあとで決まる。',
+      stem: 'How does Pam’s talk with Dwight end?',
+      ja: 'パムとドワイトの話はどう終わる？',
+      choices: ['Dwight says she is right', 'Dwight sends her to Nate', 'Dwight says he’ll think about it'], a: 0,
+      choicesJa: ['ドワイトがパムの言う通りだと言う', 'ドワイトがネイトのところへ行かせる', 'ドワイトが考えておくと言う'],
+      cue: '「You know what」のあと',
+      line: 'You know what, Pam? *You’re right*. This isn’t just a business. This is a home.',
+      said: 'パムが直接うったえると、ドワイトは「君の言う通り。ここはただの会社じゃない」と答える。',
+      mean: 'You’re right ＝ 君の言う通り。言葉の上では、パムに賛成して終わる。',
+      trap: '前のかわし方から、またネイトへ行けと言うと思いやすい。You know what のあとを聞く。',
       use: 'You’re right. I hadn’t thought of that.（その通り。考えてなかった）' },
-
-    // R fix: V2 (blind 65 %) + K5: the key was the only "appeal" choice; now three things she could do to what she said
-    // why: correcting ← the Japanese frame: 言い直し, as if the first words were wrong; softening ← the follow-ups heard
-    //   as taking the edge off "screwing over"
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'friends', reveals: ['screw'], seg: [92.5, 98.5],
-      stem: 'What is Pam doing as she adds two short phrases at the end?',
-      choices: ['Making what she said hit harder', 'Correcting what she said at first',
-                'Softening what she said at first'], a: 0,
-      cue: 'people のあとに足される2つ。',
+      stem: 'Why does Pam add “People he’s worked with for years. His friends”?',
+      ja: 'パムはなぜ「何年も一緒の人たち。友だち」と付け足す？',
+      choices: ['To make her point stronger', 'To fix what she said first', 'To make it sound softer'], a: 0,
+      choicesJa: ['言いたいことを強めるため', '最初の言葉を直すため', 'やわらかく聞こえるようにするため'],
+      cue: '「people」のあとの2つ',
       line: 'all the people he works with. People he’s worked with *for years*. *His friends*.',
-      said: '「一緒に働く人たち。何年も一緒の人たち。友達よ」と言葉を重ねる。',
-      mean: '同じ人たちを、だんだん近い関係で言い直して気持ちに訴える。強調の重ね方。',
-      trap: '言い直しを訂正や和らげと取りやすい。同じ人をより近い言葉で重ねたら、強調のサイン。',
-      use: 'It’s my team. My people. My friends.（私のチーム、仲間、友達なの）' },
-
-    // predict: the segment stops after "You know what, Pam?"; the reveal plays "You're right. This isn't just a business…"
-    // R fix: V2 (blind 60 %): "a recap" was weak; now "a telling-off", the usual script after "You know what, <name>?"
-    // why: a real question ← "you know what?" read as asking if she knows something; telling-off ← the script this
-    //   scene breaks: a name plus "you know what" often opens a snap
+      said: '「一緒に働く人たち。何年も一緒の人たち。友だちよ」と重ねる。',
+      mean: '同じ人たちを、だんだん近い言葉で言い直して気持ちにうったえている。',
+      trap: '言い直しなので、まちがいを直していると思いやすい。より近い言葉を重ねるのは強調。',
+      use: 'It’s my team. My people. My friends.（私のチーム、仲間、友だちなの）' },
     { id: 'r1', skill: 'predict', level: 'B2', point: 'youknow', seg: [96.75, 100.25], then: [100.25, 106.7],
-      stem: 'Right after “You know what, Pam?”, what kind of move comes next?',
-      choices: ['A conclusion he has just reached', 'A real question for her to answer', 'A sharp telling-off for her tone'], a: 0,
-      cue: '名前で呼んだあと、少し間がある。',
+      stem: 'After “You know what, Pam?”, what comes next?',
+      ja: '「You know what, Pam?」のあと、何が来る？',
+      choices: ['A decision he just made', 'A real question for her', 'An angry scolding'], a: 0,
+      choicesJa: ['彼が今決めたこと', '彼女への本当の質問', '怒ったお説教'],
+      cue: '名前を呼んだあと、少し間がある',
       line: '*You know what*, Pam? You’re right.',
-      said: 'パムの訴えのあと「なあパム」と呼び、間を置いて「君の言う通りだ」と言う。',
-      mean: 'You know what? は質問ではなく、考えや結論を言う前の前置き。',
-      trap: '疑問文の形から質問、名前の呼びかけからお説教と取りやすい。このあとには、出した結論が来る。',
+      said: 'パムのうったえのあと「なあパム」と呼び、少し間をおいて「君の言う通りだ」と言う。',
+      mean: 'You know what? ＝ あのね。質問ではなく、考えや結論を言う前の前置き。',
+      trap: '質問の形なので、本当に聞いていると思いやすい。このあとは結論が来る。',
       use: 'You know what? Let’s just go.（もういいや、行こう）' },
-
-    // why: dozens ← a small amount guessed for "plumbing and electricity"; thousands ← "-dreds" heard as "-sands" with
-    //   the vowel lost
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [106.6, 112.5],
-      stem: 'How much does Dwight mention saving on plumbing and electricity?',
-      choices: ['Dozens', 'Hundreds', 'Thousands'], a: 1, keep: true,
-      cue: 'save のすぐあとの数の語。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [106.6, 112.5], keep: true,
+      stem: 'How much does Dwight say the cuts save on plumbing and electricity?',
+      ja: '水道と電気で、いくら浮くとドワイトは言っている？',
+      choices: ['Dozens', 'Hundreds', 'Thousands'], a: 1,
+      choicesJa: ['何十（ドル）', '何百（ドル）', '何千（ドル）'],
+      cue: '「save」のすぐあと',
       line: 'than save *hundreds* on plumbing and electricity.',
       said: '「水道や電気で何百ドルも浮かせるより」と言う。',
-      mean: 'hundreds ＝ 何百（ドル）。具体的な額を言わない言い方。',
-      trap: 'hundreds と thousands は語末が似ている。最初の音 h か th かで決める。',
+      mean: 'hundreds ＝ 何百。具体的な金額を言わない言い方。plumbing ＝ 水道の設備。',
+      trap: 'dozens は「ダズンズ」、thousands は「サウ」で始まる。「ハンドレッ」なら hundreds。',
       use: 'It saves us hundreds a year.（年に何百ドルも浮く）' },
-
-    // why: thanks from Pam ← she made the plea, so her thanks sounds like the prize; a home ← "this is a home" said just
-    //   before, heard as the thing he wants
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'kevin', reveals: ['hundreds'], seg: [106.6, 112.5],
-      stem: 'What does Dwight say he’d prefer to the savings?',
-      choices: ['A smile from Kevin', 'A thank-you from Pam', 'A real home for all'], a: 0,
-      cue: 'much rather のあと、than の前。',
-      line: 'I would *much rather see a smile from Kevin* than…',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'kevin', reveals: ['hundreds'], seg: [106.6, 112.5],
+      stem: 'What would Dwight rather see than the savings?',
+      ja: 'ドワイトは、お金が浮くことよりも何が見たい？',
+      choices: ['A smile from Kevin', 'A thank-you from Pam', 'Lower bills each month'], a: 0,
+      choicesJa: ['ケビンの笑顔', 'パムからのお礼', '毎月の請求が安くなること'],
+      cue: '「much rather」のあと',
+      line: 'And I would *much rather see a smile from Kevin* than save hundreds on plumbing and electricity.',
       said: '「何百ドル浮かせるより、ケビンの笑顔が見たい」と言う。',
-      mean: 'would rather A than B ＝ B より A がいい。A が先、B があと。',
-      trap: 'than の前と後を逆に取りやすい。rather のすぐあとが選んだ方。',
+      mean: 'would rather A than B ＝ B より A がいい。rather のすぐあとが選んだ方。',
+      trap: 'than の前と後を逆に思いやすい。rather のすぐあとを聞く。',
       use: 'I’d rather walk than wait.（待つより歩きたい）' },
   ]
 };

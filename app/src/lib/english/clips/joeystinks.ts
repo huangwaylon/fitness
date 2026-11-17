@@ -43,7 +43,7 @@ export const joeyStinks: Clip = {
       line: 'I was supposed to be on the set *half an hour* ago.',
       said: '「30分前に撮影現場にいるはずだった」と言う。',
       mean: 'half an hour ＝ 30分。half と an がつながり「ハーファナワー」に近い。',
-      trap: 'half が短く小さいので、an hour だけ耳に残りやすい。an の前の音に注意。',
+      trap: 'quarter なら「クォーター」、whole なら「ホール」と聞こえる。「ハーフ」なら30分。',
       use: 'The train left half an hour ago.（電車は30分前に出ちゃった）' },
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'cantgo', seg: [5.5, 9.0],
       stem: '“You can’t go like that.” What does the friend mean?',

@@ -139,7 +139,7 @@ export const ronFire: Clip = {
       line: 'I would say no to something you wanted to do, and *you’d* ignore me.',
       said: '「僕がだめと言うと、君は無視したものだ」と言う。',
       mean: 'you’d ＝ you would。前の I would と同じ「よく〜したものだ」。d は小さい。',
-      trap: 'd がとても小さく、you と思いやすい。前の I would と合わせて考える。',
+      trap: 'you だけなら次の ignore にすぐつながる。you’ll なら「ル」が残る。小さな「ド」で you’d。',
       use: 'We’d always stop for ice cream.（いつもアイスを食べに寄ったものだ）' },
     { id: 'h1', skill: 'humor', level: 'B2', point: 'bubbly', seg: [64.3, 68.45],
       stem: 'Why is “worst of all, bubbly” funny?',

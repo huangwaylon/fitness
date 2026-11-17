@@ -130,7 +130,7 @@ export const badReview: Clip = {
       line: 'no one in a *two-block* radius will ever know',
       said: '「2ブロック以内の人は誰も知らない」と言う。',
       mean: 'two-block radius ＝ 2ブロック以内。買い集めたのはご近所の分だけ。',
-      trap: 'two は短く、block とつながる。twenty なら「トゥエニ」と2つの音。',
+      trap: 'one（1）は「ワン」、ten（10）は「テン」、twenty は「トゥエニ」。短い「トゥー」なら2。',
       use: 'There’s a pharmacy two blocks away.（2ブロック先に薬局がある）' },
     { id: 'd2', skill: 'detail', level: 'B1', point: 'manhattan', seg: [39.3, 43.6],
       stem: 'What about the rest of Manhattan?',

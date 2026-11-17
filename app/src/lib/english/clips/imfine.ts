@@ -168,7 +168,7 @@ export const imFine: Clip = {
       line: 'had had an argument, one they *couldn’t* get past.',
       said: '「2人は、乗り越えられない口論をしていた」と話す。',
       mean: 'couldn’t は「クドゥン」に近い。get past ＝ 乗り越える。',
-      trap: 'wouldn’t（ウドゥン）と音が近く、迷いやすい。最初が「ク」かを聞く。',
+      trap: 'wouldn’t は「ウドゥン」、didn’t は「ディドン」。「ク」で始まれば couldn’t。',
       use: 'I couldn’t sleep last night.（昨夜は眠れなかった）' },
     { id: 'i2', skill: 'infer', level: 'B2', point: 'apart', seg: [89.4, 99.9],
       stem: 'What happened to Lydia and her husband?',

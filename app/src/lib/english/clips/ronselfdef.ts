@@ -106,7 +106,7 @@ export const ronSelfDefense: Clip = {
       line: 'I’m going to engage Andy in an attack hold, and he’s gonna *try and* break free.',
       said: '「アンディを技でおさえる。アンディは抜け出そうとする」と説明する。',
       mean: 'try and 〜 ＝ try to 〜（〜しようとする）。話し言葉でよく使う。and は「アン」と小さい。',
-      trap: '習った try to と思いやすい。and は「アン」、to は「タ」に近い。',
+      trap: 'to なら「タ」、have to なら「ハフタ」。小さい「アン」なら try and。',
       use: 'I’ll try and call you tonight.（今夜電話してみるね）' },
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'dontworry', reveals: ['cocky'], seg: [78.35, 86.45],
       stem: '“Don’t worry about that.” What does Ron mean?',

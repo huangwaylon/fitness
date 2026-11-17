@@ -130,7 +130,7 @@ export const ronHearing: Clip = {
       line: 'I don’t know. *Would you* have?',
       said: '「さあね。あなたならそうした？」と聞き返す。',
       mean: 'would you は「ウッジュ」とひと続き。Would you have? ＝ あなたならした？',
-      trap: '「ディジュ」（did you）と似て迷いやすい。あとの have が would の手がかり。',
+      trap: 'did you は「ディジュ」、could you は「クッジュ」。「ウッジュ」なら would you。',
       use: 'What would you have done?（あなたならどうしてた？）' },
     { id: 'p2', skill: 'pragma', level: 'C1', point: 'latin', seg: [87.0, 93.5], retired: true,
       stem: 'After the questioner defines a promise, what is Ron’s reply really doing?',

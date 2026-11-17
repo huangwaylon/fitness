@@ -142,7 +142,7 @@ export const dwightVsDwight: Clip = {
       line: 'False. I *did choke* you with your shoelace.',
       said: '「違う。本当にしめたんだ」と言い直す。',
       mean: 'did ＋ 動詞 ＝ 本当に〜した。did を強く言い、choke につながる。',
-      trap: 'False のあとなので、didn’t と思いやすい。「ン」がなければ did。',
+      trap: 'didn’t なら「ン」が残る。tried to なら「トライ」。強い「ディッド」なら did。',
       use: 'I did call you. Twice.（ちゃんと電話したよ。2回）' },
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'worthy', seg: [55.6, 61.2],
       stem: '“The most worthy opponent of you is you.” What is Jim doing?',
