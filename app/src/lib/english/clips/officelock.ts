@@ -160,8 +160,8 @@ export const officeLock: Clip = {
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'never', seg: [62.9, 76.8],
       stem: 'Why do they think Hank won’t come?', ja: 'みんなはなぜ、ハンクは来ないと思う？',
-      choices: ['They never tipped him', 'He sounded angry', 'Jim was rude to him'], a: 0,
-      choicesJa: ['チップを払っていない', '怒っているようだった', 'ジムが失礼だった'],
+      choices: ['They didn’t tip him', 'He sounded angry', 'Jim was rude to him'], a: 0,
+      choicesJa: ['チップを払わなかった', '怒っているようだった', 'ジムが失礼だった'],
       cue: '去年の話のあと',
       line: 'I don’t think I tipped him for last year’s… *he’s never gonna come*.',
       said: '去年のチップは誰も出していなかった。集める係はジムだった。それで「絶対来ないよ」となる。',

@@ -97,8 +97,8 @@ export const dwightFavors: Clip = {
       use: 'It just needs some elbow grease.（ちょっと手間をかければきれいになる）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'rule', seg: [98.6, 109],
-      stem: 'What is Dwight’s rule about favors?',
-      ja: 'ドワイトの、親切についての決まりは？',
+      stem: 'What is Andy’s rule about favors?',
+      ja: 'アンディの、親切についての決まりは？',
       choices: ['Pay back every kindness fast', 'Never take gifts from anyone', 'Keep a list of all favors'], a: 0,
       choicesJa: ['親切にはすぐお返しする', '誰からも贈り物を受け取らない', '親切を全部リストにする'],
       cue: '「bam」「wham」のあと',

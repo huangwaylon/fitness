@@ -146,7 +146,7 @@ export const dateMike: Clip = {
       choices: ['To fix what he just said', 'To agree with what he said', 'To start a new topic'], a: 0,
       choicesJa: ['今言ったことを言い直すため', '自分の言葉に賛成するため', '新しい話題を始めるため'],
       cue: '「the losers.」のあとのひと言',
-      line: 'the winners and the losers. *Actually*, I probably learn more from the losers.',
+      line: 'the winners and the losers. *Actually*, I probably learned more from the losers.',
       said: '「勝った人と負けた人から学ぶ」と言い、「実は、負けた人からの方が多いかも」と言い直す。',
       mean: 'Actually ＝ 実は。前に言ったことを少し直すときの言葉。',
       trap: 'actually を「本当に」と思って強めていると思いやすい。winners and losers から losers に直している。',

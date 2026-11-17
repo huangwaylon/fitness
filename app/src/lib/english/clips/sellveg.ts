@@ -216,15 +216,15 @@ export const sellVeg: Clip = {
       use: 'Is that an actual rule?（それ、正式な決まりなの？）' },
 
     { id: 'h2', skill: 'sound', level: 'B2', point: 'peas', reveals: ['sign'], seg: [73.0, 79.2],
-      stem: 'On the sign, “Peas be kind” sounds like which word?',
-      ja: '看板の「Peas be kind」の Peas は、何という語に聞こえる？',
+      stem: 'On the sign, which real word is “Peas”?',
+      ja: '看板の「Peas be kind」の Peas は、本当はどの語？',
       choices: ['Please', 'Peace', 'Pass'], a: 0,
       choicesJa: ['プリーズ（どうぞ）', 'ピース（平和）', 'パス（渡して）'],
       cue: '「that says」のあとの最初の語。',
       line: 'that says, “*Peas* be kind to others”?',
       said: '看板には「Peas be kind to others」と書いてある、と言う。',
       mean: 'peas（ピーズ、豆）と please（プリーズ）の音が近い、野菜のだじゃれ。',
-      trap: 'peace（ピース）は最後が「ス」、pass は「パ」。peas と please は「ピー」「プリー」と最後が「ズ」。',
+      trap: 'peace（ピース）も音は近いが、Peace be kind では文にならない。Please be kind（親切に）なら文になる。',
       use: 'Please be kind to others.（人には親切に）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'sign', seg: [73.6, 85.2], retired: true,

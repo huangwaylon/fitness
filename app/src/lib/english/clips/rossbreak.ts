@@ -16,13 +16,13 @@ export const rossBreak: Clip = {
   questions: [
     { id: 'g3', skill: 'gist', level: 'B1', point: 'found', seg: [0, 34.6],
       stem: 'What does Rachel find out at the start?', ja: '最初に、レイチェルは何を知る？',
-      choices: ['Ross was with another woman', 'Ross wants to break up', 'Ross told her friends first'], a: 0,
-      choicesJa: ['ロスがほかの女性と一緒だった', 'ロスが別れたがっている', 'ロスが先に友だちに話した'],
+      choices: ['Ross was with another woman', 'Ross wants to break up', 'Ross forgot about their date'], a: 0,
+      choicesJa: ['ロスがほかの女性と一緒だった', 'ロスが別れたがっている', 'ロスがデートを忘れていた'],
       cue: '「It was a mistake」のあと',
       line: 'It was a mistake. *I made a mistake*, okay?',
       said: '「近寄らないで」「まちがいだった」。ロスがほかの女性と寝たと分かる。',
       mean: 'I made a mistake ＝ まちがいをした。ロスはほかの女性と夜を過ごした。',
-      trap: '友だちが知っていたと分かる場面もあるので、そこに引っぱられやすい。最初の話が中心。',
+      trap: 'mistake だけだと小さな失敗に思いやすい。another woman で何があったか分かる。',
       use: 'I made a mistake. I’m sorry.（まちがえた。ごめん）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'nails', seg: [18.4, 24.2], retired: true,
@@ -104,7 +104,7 @@ export const rossBreak: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'important', seg: [118.1, 125.7],
       stem: 'What is Ross trying to do with “The important thing is”?', ja: '“The important thing is” で、ロスは何をしようとしている？',
-      choices: ['Move to a better point', 'Admit the worst part first', 'Talk about what happens next'], a: 0,
+      choices: ['Shift to a point that helps him', 'Admit the worst part first', 'Talk about what happens next'], a: 0,
       choicesJa: ['自分に都合のいい話に移る', '一番悪いことを先に認める', 'これからのことを話す'],
       cue: '「hey, hey」のあと',
       line: 'Hey, hey, *the important thing is* she meant nothing to me.',
@@ -136,8 +136,8 @@ export const rossBreak: Clip = {
       use: 'I don’t want to jeopardize my job.（仕事を危うくしたくない）' },
 
     { id: 'g1', skill: 'gist', level: 'B2', point: 'fight', reveals: ['brokenup'], seg: [118.5, 146.3],
-      stem: 'Why can’t they agree on whether Ross cheated?', ja: 'ロスが浮気したかどうかで、なぜ二人の意見が合わない？',
-      choices: ['If they were still a couple', 'If the woman meant anything', 'If he was too drunk'], a: 0,
+      stem: 'What do Ross and Rachel disagree about?', ja: 'ロスとレイチェルは何について意見が合わない？',
+      choices: ['Whether they were still a couple', 'Whether the woman meant anything', 'Whether he was too drunk'], a: 0,
       choicesJa: ['まだ付き合っていたかどうか', 'その女性が大事だったかどうか', '酔いすぎていたかどうか'],
       cue: '何度も出る relationship',
       line: '*I thought we were broken up.* — *We were on a break.* — That, for all I knew, could last forever.',
@@ -180,7 +180,7 @@ export const rossBreak: Clip = {
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'dead', seg: [135.6, 146.6],
       stem: 'How does Ross answer Rachel’s charge?', ja: 'レイチェルに責められて、ロスはどう答える？',
-      choices: ['He denies it and repeats', 'He admits it was weak', 'He blames her for it'], a: 0,
+      choices: ['He denies it, says it again', 'He admits it was weak', 'He blames her for it'], a: 0,
       choicesJa: ['否定して、同じことを言う', '弱い言いわけだと認める', '彼女のせいにする'],
       cue: '「okay?」のあと',
       line: 'I’m *not trying to get out of anything*, okay? *I thought our relationship was dead*.',

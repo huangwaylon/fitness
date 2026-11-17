@@ -220,7 +220,7 @@ export const pamGivenUp: Clip = {
       line: '*He was joking*, Toby, all right?… *That’s what friends do.*',
       said: '「冗談だよ」「友だちならからかい合うもの」と言い張る。',
       mean: 'He was joking ＝ 冗談だった。注意を受け止めず、話を終わらせようとする。',
-      trap: '上司が「あとで話す」と引き取ると思いやすい。最後まで何も認めていない。',
+      trap: 'スタンリーがあとで謝ると思いやすいが、謝る話は出ない。最後まで「冗談」と言い張る。',
       use: 'Relax, I was only joking.（落ち着いて、冗談だよ）' },
 
     { id: 's1', skill: 'sound', level: 'B1', point: 'blabber', reveals: ['nothing'], seg: [143.1, 150.1],

@@ -34,7 +34,7 @@ export const leslieRedFlag: Clip = {
       ja: 'レスリーがいない間に、条約はどうなった？',
       choices: ['Her partner left her out', 'Her partner finished it early', 'Her partner gave it up'], a: 0,
       choicesJa: ['相手が彼女を外した', '相手が早く仕上げた', '相手があきらめた'],
-      cue: '「I got sick of」のあと',
+      cue: '「my own treaty」の質問',
       line: 'I got *cut out of my own treaty*? — …so I swam over to Asia, *made a deal*.',
       said: '「私の条約から外されたの？」に、「アジアと話をまとめた」と返される。',
       mean: 'be cut out of 〜 ＝「〜から外される」。made a deal ＝「話をまとめた」。',
