@@ -1,22 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 6, new 1
 // “Andy Runs Into an Ambulance | Parks and Recreation” (the official Parks and Recreation channel, Season 5): after a
 // day of doctors, Andy is handed a $500 bill, insists his “free medicine card” and “the insurance thing” cover it, runs
 // out, hits an ambulance, and decides doctors are scam artists: he and April will just care for each other.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 94 s; music after.
-// Speakers: the long list (“my ankles”, “April had her sinuses removed”) and the lip are Andy's; the bill is the woman
-// at the desk. Only April is named in the audio, so no item asks who says what.
-// Untested on purpose: the doctor line at 17–22 s (sexual); “We won't be needing that” (whisper) vs “well we need that”
-// (captions) at 31.8 s; the shout at ≈ 49 s (whisper “Let's go! Dyna Dash”, captions “dinos”); the ambulance at
-// 55–60 s (visual, and whisper “I called an ambulance” vs captions “oh my god ambulance”); the last line at 93.3 s
-// (whisper “I don't know. Who cares?”, captions “oh no who could”).
-// EAR CHECK: 48.7 s r1 — the cut falls after “you know what?” and before the shout (captions put it at 49.1 s, whisper
-//   has “you know what?” running to 48.7 s)
-// EAR CHECK: 81.7 s a1 c2 — “Mm-hmm, so romantic” is sincere, not sarcastic (captions “mm-hmm so romantic”, whisper
-//   “Mmm, it's so romantic”)
-// REVIEW 2026-11-16: pass 8, fix 15, drop 0, new 0; ear checks 2
-// OPEN: c1 (C2) is still about 50 % blind. i4's new distractor ("mocking the desk's rules") is refuted only if "What is
-//   insurance?" is heard as a real question: confirm on the phone with the a1/c2 ear check.
-// OPEN: the short corrections ("X-rayed", "Cholesterol tests", "Looked at") are probably April's, not Andy's (the
-//   speakers note above says Andy). No item depends on it; i1's stem says only that Andy lists.
+// Talk ends at ≈ 94 s. Only April is named in the audio. Untested on purpose: 17–22 s (sexual), 31.8 s, ≈ 49 s,
+// 55–60 s, 93.3 s.
+// EAR CHECK: 81.7 s a1 — “Mm-hmm, so romantic” is sincere, not sarcastic (captions “mm-hmm so romantic”)
 import type { Clip } from '../types.ts';
 
 export const ambulance: Clip = {
@@ -25,25 +13,17 @@ export const ambulance: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 65 %): the key was the only allergy choice. The needle-marks filler is now an allergy to medicine.
-    // why: blood tests ← "blood… cholesterol tests" come a few seconds later; medicine ← "allergic" heard, and the next
-    //   line is about needles, so drugs come to mind
     { id: 'd1', skill: 'detail', level: 'B1', point: 'food', seg: [0, 3.6],
-      stem: 'At the start, what will they find out in a few days?',
-      choices: ['Whether he is allergic to any food', 'Whether his blood test results are fine',
-                'Whether he is allergic to any medicine'], a: 0,
-      cue: '最初の一文、if のあと。',
-      line: 'if you’re *allergic to any food*, we’ll know in a few days.',
-      said: '「食べ物のアレルギーがあれば、数日で分かります」と言われる。',
-      mean: 'アレルギー検査の結果待ち。何に反応するかは、数日後に出る。',
-      trap: 'すぐあとに needles や blood が出てくるので引かれやすい。if のあとが、調べている中身。',
-      use: 'We’ll know in a few days.（数日で分かるよ）' },
-
-    // R fix: V2 (blind 60 %): "stabbed him on purpose" was a filler. Now a rough-nurse reading of "stabbed", and the key
-    //   is worded like the others.
-    // why: rough nurse ← "stabbed" sounds violent, as if the shot was done badly; real allergy ← "allergic" taken at
-    //   face value, the literal reading
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'needles', seg: [2.5, 7.1],
+      stem: 'What will they find out in a few days?', ja: '数日でわかるのは何？',
+      choices: ['If he is allergic to food', 'If his blood test is fine', 'If he is allergic to drugs'], a: 0,
+      choicesJa: ['食べ物アレルギーがあるか', '血液検査が大丈夫か', '薬のアレルギーがあるか'],
+      cue: '最初の「if you’re」のあと',
+      line: 'Okay, if you’re *allergic to any food*, we’ll know in a few days.',
+      said: '「食べ物のアレルギーがあれば、数日でわかります」と言われる。',
+      mean: 'allergic to 〜 ＝ 〜のアレルギーがある。in a few days ＝ 数日後に。',
+      trap: 'allergic だけ聞くと、薬のことだと思いやすい。food を聞く。',
+      use: 'Are you allergic to any food?（食べ物のアレルギーはありますか）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'needles', seg: [2.5, 7.1], retired: true,
       stem: 'Why is Andy’s guess “based on the redness” funny?',
       choices: ['He calls the normal mark a needle leaves an allergy', 'He blames the redness on a rough, careless nurse',
                 'He has found a real allergy to the needles'], a: 0,
@@ -53,12 +33,7 @@ export const ambulance: Clip = {
       mean: '針を刺せば誰でも赤くなる。当たり前の反応を「アレルギー」と呼ぶのが笑い。',
       trap: 'stabbed は乱暴に聞こえるが、ただの注射。allergic を文字どおり取らず、何に対してかを聞く。',
       use: 'I think I’m allergic to Mondays.（月曜アレルギーかも）' },
-
-    // R fix: V2 (blind 60 %): the doctor's-name filler made the key the only sensible choice. Now a "medical word he
-    //   didn't follow" reading, which X-rayed and cholesterol invite.
-    // why: stranger thing ← the short words ("X-rayed", "Cholesterol tests") heard as new items on a growing list;
-    //   doctor's word ← both short words are medical terms, so they sound like what the doctors told him
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'fixes', reveals: ['science'], seg: [9, 14.3],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'fixes', reveals: ['science'], seg: [9, 14.3], retired: true,
       stem: 'As Andy lists what the doctors did, what follows each odd claim?',
       choices: ['A plainer word for what really happened', 'A second, even stranger thing they did',
                 'A doctor’s word he says he didn’t follow'], a: 0,
@@ -68,110 +43,85 @@ export const ambulance: Clip = {
       mean: '大げさな言い方のすぐあとに、実際の中身が来る。ありふれた検査を大事件のように話す。',
       trap: '短い語を新しい項目と取ると、治療が増えて聞こえる。直前の言い直しかを聞く。',
       use: 'Technically, it was just a checkup.（正確には、ただの健診）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'science', seg: [11.2, 14.3],
-      stem: 'Type what he says: “They took my blood ___ for science.” (3 words)', answer: 'away to use',
-      cue: '「blood」のすぐあと。短い語がつながる。',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'science', seg: [11, 14.3],
+      stem: 'Type: “They took my blood ___ for science.” (3 words)', ja: '空所の3語を書こう', answer: 'away to use',
+      cue: '「took my blood」のあと',
       line: 'They took my blood *away to use* for science.',
-      said: '「血を持っていって、科学に使ったんだ」と言う。',
-      mean: 'away to use が「アウェイタユーズ」とつながる。to は弱く、「タ」に近い音になる。',
-      trap: 'to が消えると away use のように聞こえる。動詞の前には to がある、と補って聞く。',
-      use: 'They took it away to fix it.（直すために持っていった）' },
-
-    // why: doctor said free ← "free" is heard, but it belongs to the card; already paid ← "Oh, yeah" heard as "that's
-    //   done already"
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'card', seg: [29.3, 34.2],
-      stem: 'When the bill comes, why does Andy think they won’t pay?',
-      choices: ['He has a card for free medicine', 'The doctor said the visit was free', 'He already paid when they arrived'],
-      a: 0,
-      cue: '「Here’s your bill」への返事の後半。',
-      line: 'I’ve got the *free medicine card*.',
-      said: '請求書を出されて、「無料で薬がもらえるカードがある」と答える。',
-      mean: 'カードがあるから払わなくていい、と思いこんでいる。',
-      trap: 'free だけ拾うと「医者が無料と言った」と取りやすい。free がどの名詞についているかを聞く。',
-      use: 'I’ve got a coupon for that.（それ、クーポンあるよ）' },
-
-    // why: card covers it ← "free medicine card" and "we're covered" are both heard; pay later ← the usual "can I pay
-    //   in parts" script
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'bill', reveals: ['youknow', 'card'], seg: [29.3, 52],
-      stem: 'How does the business with the bill end?',
-      choices: ['They leave with the bill unpaid', 'They leave once the card covers it',
-                'They leave after agreeing to pay later'], a: 0,
-      cue: '2回目の「500」のあと、何が起きる？',
-      said: '無料カードも保険も通じず、最後は「どいて！」と叫んで出ていく。',
-      mean: '払わないまま飛び出す。カードの話は、受付には最後まで通じなかった。',
-      trap: 'free や covered が何度も聞こえるので、払わずに済んだと思いやすい。相手の答えはずっと500。',
-      use: 'Can I pay for this later?（あとで払ってもいいですか）' },
-
-    // why: $50 ← "five" caught and "hundred" lost before "deductible"; $5,000 ← a big medical bill expected, the
-    //   hundred/thousand swap
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [34, 37.2], keep: true,
-      stem: 'What amount does the woman at the desk give?',
-      choices: ['$50', '$500', '$5,000'], a: 1,
-      cue: '数字は「deductible」の直前。',
+      said: 'アンディが「血を持っていって、科学に使ったんだ」と言う。',
+      mean: 'take 〜 away ＝ 〜を持っていく。to use for 〜 ＝ 〜に使うために。',
+      trap: 'away to がつながり「アウェイトゥ」。to は小さく短く言う。',
+      use: 'They took it away.（それを持っていかれた）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'card', seg: [29, 34.2],
+      stem: 'Why does Andy think they won’t need to pay?', ja: 'アンディはなぜ払わなくていいと思っている？',
+      choices: ['He has a free medicine card', 'The doctor said it was free', 'He paid when they came'], a: 0,
+      choicesJa: ['無料で薬がもらえるカードがある', '医者が無料だと言った', '来た時に払った'],
+      cue: '「Here’s your bill」のあと',
+      line: 'Here’s your bill. — … I’ve got the *free medicine card*.',
+      said: '請求書を出され、アンディが「無料の薬のカードがある」と言う。',
+      mean: 'bill ＝ 請求書。I’ve got 〜 ＝ 〜を持っている。',
+      trap: 'free（無料）だけ聞くと、医者がそう言ったと思いやすい。card を聞く。',
+      use: 'Can I have the bill, please?（お会計をお願いします）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'bill', reveals: ['youknow', 'card', 'amount'], seg: [29.3, 52],
+      stem: 'How does the talk about the bill end?', ja: '請求書の話はどう終わる？',
+      choices: ['They run out without paying', 'The card pays for it all', 'They will pay it later'], a: 0,
+      choicesJa: ['払わずに走って逃げる', 'カードで全部払える', 'あとで払うことにする'],
+      cue: '最後の叫び',
+      line: 'It’s still $500. … Oh, because, you know what? … *out of the way!*',
+      said: '何を言っても「500ドル」と言われ、アンディは「どいて！」と叫んで走り出す。',
+      mean: 'out of the way ＝ どいて。払わないまま出て行く。',
+      trap: 'insurance（保険）の話が続くので、保険で払えたと思いやすい。',
+      use: 'Excuse me, out of the way!（すみません、通して！）' },
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [34, 37.2],
+      stem: 'What amount does the woman at the desk give?', ja: '受付の女性が言う金額は？',
+      choices: ['$50', '$500', '$5,000'], a: 1, keep: true,
+      choicesJa: ['50ドル', '500ドル', '5,000ドル'],
+      cue: '「there’s a」のあと',
       line: 'there’s a *500* deductible for dental procedures.',
-      said: '「歯の治療は500ドルの自己負担」と言い、あとでもう一度「500」。',
-      mean: 'five hundred ＝ 500。保険があっても自分で払う額。',
-      trap: 'hundred は弱く短くなりやすい。thousand なら「サウ」の音がある。',
-      use: 'That’ll be fifty dollars, please.（50ドルになります）' },
-
-    // R fix: V2 (blind 85 %): only the key was a real definition. All three are now "the part…" readings, with the
-    //   reversed direction (insurance pays) as the strong distractor.
-    // why: insurance pays ← "deductible" next to insurance talk, the direction reversed; discount ← deduct = 差し引く,
-    //   read literally as money taken off
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'deduct', reveals: ['amount'], seg: [34, 43.6],
-      stem: 'What does the woman mean by a “deductible” here?',
-      choices: ['The part you pay before insurance pays', 'The part your insurance pays, not you',
-                'The part taken off the bill as a discount'], a: 0,
-      cue: '保険の話のあと、もう一度出る数字。',
+      said: '受付が「歯の治療は500ドルの自己負担です」と言う。',
+      mean: 'five hundred ＝ 500。hundred（百）を聞けば 50 でも 5,000 でもない。',
+      trap: 'five だけ聞くと迷いやすい。hundred があれば500、thousand なら5,000。',
+      use: 'It’s five hundred dollars.（500ドルです）' },
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'deduct', reveals: ['amount'], seg: [34, 43.6],
+      stem: 'What is a “*deductible*” here?', ja: 'ここでの「deductible」とは？',
+      choices: ['The part you pay first', 'The part insurance pays', 'A discount off the bill'], a: 0,
+      choicesJa: ['自分で先に払う分', '保険が払う分', '請求書の割引'],
+      cue: '「500」のあとの言葉',
       line: 'there’s a 500 *deductible*… — It’s *still* 500.',
-      said: '歯の治療は500の deductible、保険があっても「それでも500」。',
-      mean: 'deductible ＝ 保険が払う前に自分で払う分（自己負担額）。',
-      trap: 'deduct は「差し引く」なので割引と取りやすい。still 500 なら自分の負担。',
-      use: 'What’s the deductible on this plan?（このプランの自己負担額は？）' },
-
-    // R fix: V2 (blind 60 %): the key was the only "polite" choice. A polite request reading now sits beside it.
-    // why: check again ← "I think… you're wrong" heard as a polite request to look again; ready to pay ← the Japanese
-    //   frame: 〜と思います read as doubt, so he must be backing down
+      said: '受付が「保険があっても、それでも500です」と言う。',
+      mean: 'deductible ＝ 保険が払う前に自分で払う分（自己負担額）。保険の話でよく出る。',
+      trap: 'deduct（引く）から、割引だと思いやすい。still 500 で、払う必要があるとわかる。',
+      use: 'What’s the deductible?（自己負担はいくらですか）' },
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hedge', reveals: ['covered'], seg: [36.9, 42.2],
-      stem: 'When Andy tells her she has it wrong, what do his opening words do?',
-      choices: ['Soften what is really a flat no', 'Ask her politely to check again',
-                'Show he is ready to give in and pay'], a: 0,
-      cue: '「you’re wrong」の前と、「covered」の前。',
+      stem: 'Andy says, “*I think*, uh, you’re wrong.” Why “I think”?', ja: 'アンディはなぜ「I think」と付ける？',
+      choices: ['To say no softly', 'To ask her to check', 'To agree to pay'], a: 0,
+      choicesJa: ['やわらかく反対するため', '確認を頼むため', '払うと同意するため'],
+      cue: '金額を言われたあと',
       line: 'Oh, *I think*, uh, you’re wrong… *I believe* we’re covered.',
-      said: '「えっと、違うと思いますよ。保険でカバーされてるはず」と言う。',
-      mean: 'I think と I believe は反論をやわらげる前置き。中身は「払わない」のまま。',
-      trap: '日本語の「〜と思います」のように自信のなさと取りやすいが、引かずに言い返している。',
-      use: 'I think there’s been a mistake.（何か手違いがあると思うんですが）' },
-
-    // why: plan for teeth ← "dental" was the topic just before; waste of money ← "thing" heard as looking down on it
+      said: 'アンディが「えっと、違うと思いますよ。保険でカバーされてるはず」と言う。',
+      mean: 'I think, I believe ＝ 〜と思う。強い反対をやわらかくする言い方。',
+      trap: 'think（思う）から、迷っていると思いやすい。中身ははっきりした反対。',
+      use: 'I think there’s a mistake.（何かの手違いだと思います）' },
     { id: 'i2', skill: 'infer', level: 'B2', point: 'thing', reveals: ['amount'], seg: [38.4, 43.6],
-      stem: 'What does his name for their coverage suggest?',
-      choices: ['He doesn’t really know what it covers', 'He has a special plan just for teeth',
-                'He thinks insurance is a waste of money'], a: 0,
-      cue: '「insurance」のあとの、あいまいな一語。',
+      stem: 'Andy says, “We have *the insurance thing*.” What does it show?', ja: '「the insurance thing」から何がわかる？',
+      choices: ['He isn’t sure what it is', 'He has a teeth-only plan', 'He thinks it is a waste'], a: 0,
+      choicesJa: ['保険がよくわかっていない', '歯だけの保険がある', '保険はむだだと思う'],
+      cue: '「you’re wrong」のあと',
       line: 'We have *the insurance thing*. … — It’s still 500.',
-      said: '「保険のやつがあるから」と言い、すぐに「それでも500です」と返される。',
-      mean: '〜 thing ＝「〜ってやつ」。中身を説明できないとき、ぼかして言う形。',
-      trap: 'thing を見下した言い方と取りやすい。自分の保険なのに名前で言えない、という点に注目。',
-      use: 'I did the whole online check-in thing.（オンラインのやつ、やったよ）' },
-
-    // R fix: V2 (blind 50 %): with three choices the plain present stood out. Added "we'd be", a conditional that fits
-    //   the gap and the same short "wi-" onset.
-    // why: were ← the vowel of "we're" stretched, so it seems to have two syllables; will be / would be ← heard as a
-    //   promise or a guess, with "be" filled in
+      said: 'アンディが「保険のやつがあるから」と言い、「それでも500です」と返される。',
+      mean: 'the 〜 thing ＝ 〜のやつ。名前もよく知らない時の言い方。',
+      trap: 'insurance（保険）と聞いて、ちゃんとわかっていると思いやすい。thing が手がかり。',
+      use: 'You know, the online thing.（ほら、あのネットのやつ）' },
     { id: 's1', skill: 'sound', level: 'B2', point: 'covered', reveals: ['amount'], seg: [38.8, 43.6],
-      stem: 'Fill the gap: “I believe ___.”',
-      choices: ['we’re covered', 'we were covered', 'we’ll be covered', 'we’d be covered'], a: 0,
-      cue: '「believe」のあと、主語と動詞がつながる部分。',
+      stem: '“I believe ___.”', ja: '空所に入るのは？',
+      choices: ['we’re covered', 'we were covered', 'we’ll be covered'], a: 0,
+      choicesJa: ['保険がきく（今）', '保険がきいていた', '保険がきくようになる'],
+      cue: '「I believe」のあと',
       line: 'I believe *we’re covered*.',
-      said: '「保険でカバーされてるはず」と言い返す。',
-      mean: 'we’re は「ウィア」と一音節に近い。cover は保険で「補償される」という意味。',
-      trap: 'were なら「前は入っていた」になる。今の話なので短い we’re。音節の数で聞き分ける。',
-      use: 'Am I covered for this?（これ、保険きく？）' },
-
-    // why: his reason ← "because" sets up a reason; sorry ← the Japanese frame of apologizing after a payment problem
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'youknow', seg: [43.6, 48.7], then: [48.7, 52],
+      said: 'アンディが「保険でカバーされてるはず」と言う。',
+      mean: 'we’re ＝ we are（「ウィア」と短い）。be covered ＝ 保険がきく。',
+      trap: 'were なら「ワー」、we’ll be なら「ウィルビ」が入る。ここは短い「ウィア」。',
+      use: 'Am I covered by insurance?（保険はききますか）' },
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'youknow', seg: [43.6, 48.7], retired: true, then: [48.7, 52],
       stem: 'Right after “Oh, because, you know what?”, what is Andy about to do?',
       choices: ['Act on a sudden decision', 'Give his reason for not paying', 'Say sorry for the mix-up'], a: 0,
       cue: '「because」のあとの決まり文句の働き。',
@@ -180,54 +130,47 @@ export const ambulance: Clip = {
       mean: 'You know what? は「よし決めた」の合図。because は時間かせぎ。',
       trap: 'because のあとは理由と思いやすいが、文は続かない。you know what? の次は行動。',
       use: 'You know what? Let’s just go.（よし、もう行こう）' },
-
-    // R fix: V2 (blind 70 %): the key was the only warm, scene-level choice. All three are now plain plans built from
-    //   what is said.
-    // why: other doctor ← "one of the other doctors" is suggested first; insurance ← "insurance" comes up twice at the
-    //   end
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'plan', reveals: ['carefor', 'bridge'], seg: [61, 93.3],
-      stem: 'After the ambulance, what do they settle on?',
-      choices: ['Treating his lip themselves at home', 'Seeing one of the other doctors after all',
-                'Checking what their insurance will pay for'], a: 0,
-      cue: '「No more」のあと、「Let’s just」で始まる提案。',
-      said: '別の医者に行く案は却下。家で看病し合い、裁縫セットで唇を縫えばいい、と話す。',
-      mean: '医者をやめて、自分たちで何とかすると決める流れ。',
-      trap: '最後に insurance が何度も出るが、調べる気はない。会話は「保険って何？」で終わる。',
-      use: 'Let’s just stay in tonight.（今夜は家にいよう）' },
-
-    // R fix: V2 (blind 70 %): "Sorry for dragging her" was a filler. Now "tired, but willing", the soft reading of a
-    //   short "No".
-    // why: scared ← the needles from the start of the clip; tired but willing ← "No. No more" heard as weary, not firm
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nomore', reveals: ['scam'], seg: [63.5, 67.6],
-      stem: 'How does Andy answer the idea of seeing other doctors?',
-      choices: ['Angry, and sure they are all cheats', 'Scared, after so many needles today',
-                'Tired, but he would go if she wanted'], a: 0,
-      cue: '「No」の数と、そのあとの言い方。',
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'other', seg: [60.8, 64.5],
+      stem: 'What does April suggest after the crash?', ja: '事故のあと、エイプリルは何を提案する？',
+      choices: ['Seeing another doctor', 'Going home right now', 'Calling the police'], a: 0,
+      choicesJa: ['別の医者に行く', '今すぐ家に帰る', '警察を呼ぶ'],
+      cue: '「Maybe we should」のあと',
+      line: '*Maybe we should see one of the other doctors.*',
+      said: 'エイプリルが「ほかの医者に行った方がいいかも」と言う。',
+      mean: 'Maybe we should 〜 ＝ 〜した方がいいかも。やわらかい提案。',
+      trap: 'あとで家に帰る話になるので、家に帰ると思いやすい。',
+      use: 'Maybe we should take a taxi.（タクシーにした方がいいかも）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['carefor', 'bridge'], seg: [61, 93.3],
+      stem: 'After the crash, what do they decide to do?', ja: '事故のあと、2人はどうすることにする？',
+      choices: ['Care for each other at home', 'See another doctor today', 'Check their insurance plan'], a: 0,
+      choicesJa: ['家でお互いを看病する', '今日別の医者に行く', '保険の内容を調べる'],
+      cue: '「No more doctors」のあと',
+      line: 'No more doctors. … Let’s just go home and care for each other.',
+      said: '別の医者の案は却下。家で看病し合い、自分たちで唇を縫えばいい、と話す。',
+      mean: '医者をやめて、2人で何とかすることにする。',
+      trap: 'エイプリルが別の医者を提案するので、医者に行くと思いやすい。',
+      use: 'Let’s just go home.（もう家に帰ろう）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nomore', reveals: ['scam', 'other'], seg: [63.5, 67.6],
+      stem: 'How does Andy feel about seeing other doctors?', ja: 'アンディはほかの医者に行くことをどう思っている？',
+      choices: ['Angry at all doctors', 'Scared of the needles', 'Tired, but he’ll go'], a: 0,
+      choicesJa: ['医者みんなに怒っている', '注射がこわい', '疲れたが行く'],
+      cue: 'エイプリルの提案への返事',
       line: '*No. No more doctors.* They’re a bunch of *scam artists*.',
-      said: '「だめ。医者はもうたくさん。詐欺師の集まりだ」と言う。',
-      mean: 'No を重ね、no more で「もうこりごり」。強い言葉で医者全体を責める。',
-      trap: '最初の注射の話から「怖い」と取りやすいが、言っているのは怒り。no more ～ は「もう～はいらない」。',
-      use: 'No more fast food. I’m done.（ファストフードはもうやめた）' },
-
-    // R fix: V2 (blind 75 %) and S4: the key was the only money choice, so it matched the bill scene. Now three kinds
-    //   of people, two of them about money. The segment ended inside "reel" (67.8 s), so it now ends at 67.6 s.
-    // why: show-offs ← artist = 芸術家・名人, the katakana アーティスト; overcharge ← the $500 bill just before, a real
-    //   but different complaint
+      said: 'アンディが「だめ。医者はもうたくさん。詐欺師の集まりだ」と言う。',
+      mean: 'No more 〜 ＝ 〜はもうたくさん。強く断っている。',
+      trap: '注射の話が最初にあったので、こわがっていると思いやすい。scam（詐欺）。',
+      use: 'No more coffee for me.（コーヒーはもういいです）' },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'scam', seg: [63.5, 67.6],
-      stem: 'What is Andy calling the doctors?',
-      choices: ['People who trick you for cash', 'People who show off their skill', 'People who charge too much'], a: 0,
-      cue: '「a bunch of」のあとの2語。',
+      stem: 'What does Andy mean by “*scam artists*”?', ja: 'アンディの「scam artists」の意味は？',
+      choices: ['People who trick you', 'People with great skill', 'People who paint well'], a: 0,
+      choicesJa: ['人をだます人たち', 'すごい技術のある人たち', '絵が上手な人たち'],
+      cue: '「No more doctors」のあと',
       line: 'They’re a bunch of *scam artists*.',
-      said: '「医者なんて詐欺師の集まりだ」と言う。',
-      mean: 'scam ＝ 詐欺。scam artist ＝ 人をだましてお金を取る人。artist は「その道の人」。',
-      trap: 'アーティストで「腕のいい人」と取りやすい。前に scam があれば、だましの名人。',
-      use: 'That website is a total scam.（あのサイト、完全に詐欺だよ）' },
-
-    // R fix: V2 (blind 60 %) and S4: the key and "admits it was his own fault" were opposites, so one had to be the joke.
-    //   Now "the ambulance hit him", a misreading of "run into". The segment started on "They're" (66.0 s); now 65.6 s.
-    // why: drive badly ← "ambulance" is heard right after the doctors, the keyword trap; hit him ← "you run into an
-    //   ambulance" heard the other way round
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'bam', reveals: ['reel'], seg: [65.6, 75.2],
+      said: 'アンディが「医者なんて詐欺師の集まりだ」と言う。',
+      mean: 'scam ＝ 詐欺。scam artist ＝ 詐欺師。a bunch of 〜 ＝ 〜の集まり。',
+      trap: 'artist（芸術家）から、上手な人だと思いやすい。scam が大事。',
+      use: 'That website is a scam.（そのサイトは詐欺だ）' },
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'bam', reveals: ['reel'], seg: [65.6, 75.2], retired: true,
       stem: 'Why does Andy’s warning about doctors get a laugh?',
       choices: ['He blames the doctors for a crash he caused', 'He says doctors drive their ambulances badly',
                 'He claims the ambulance crashed into him'], a: 0,
@@ -237,14 +180,7 @@ export const ambulance: Clip = {
       mean: 'ぶつかったのは自分なのに、医者のせいの話にしている。その筋の通らなさが笑い。',
       trap: 'run into を「ぶつけられた」と逆に取りやすい。run into ～ はこちらからぶつかること。',
       use: 'Next thing you know, it’s midnight.（気づいたら夜中だった）' },
-
-    // R fix: V2 (blind 70 %): reworded the key so it isn't the only abstract choice, and both distractors now say what
-    //   "every time" would claim on a literal reading. Segment start moved to 65.6 s, as h2. Still near 50 % blind (open).
-    // why: before ← "Every time" taken literally, as his own history (a scope shift); warns her ← the generic "you"
-    //   heard as April
-    // anchor: 67.8–72.3 s every verb has the generic "you" ("reel you in", "Next thing you know", "you run into an
-    //   ambulance"): a pattern for anyone, not a memory; 74.1 s "Every time." is added after a pause as the rule's seal
-    { id: 'c1', skill: 'infer', level: 'C2', point: 'bam', reveals: ['reel'], seg: [65.6, 75.2],
+    { id: 'c1', skill: 'infer', level: 'C2', point: 'bam', reveals: ['reel'], seg: [65.6, 75.2], retired: true,
       stem: 'What does “Every time” do to his story about doctors?',
       choices: ['Makes his one crash sound like what always happens', 'Admits he has run into ambulances before',
                 'Warns April it will happen to her next'], a: 0,
@@ -254,50 +190,35 @@ export const ambulance: Clip = {
       mean: '一般の you を主語にして、一度きりの事故を「医者に行くと必ずこうなる」という法則にしている。大げさな一般化が笑い。',
       trap: 'every time を本当に何度もあった話と取りやすい。you が一般の人なら、話は法則になる。',
       use: 'You go out for one drink, and bam.（一杯だけのつもりが、ドーン）' },
-
-    // R fix: V2 (blind 60 %): only the key carried a "like…" picture. All three now do.
-    // why: wheel ← reel/wheel sound alike (/r/–/w/), and a hospital bed is on the mind; send home ← "free stuff" heard
-    //   as gifts handed out at the end
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'reel', seg: [67.2, 71.2],
-      stem: 'What does Andy say the doctors do with “the free stuff”?',
-      choices: ['Hook you with it, like a fish', 'Wheel you in with it, like a patient',
-                'Send you home with it, like a gift'], a: 0,
-      cue: '「free stuff」の前の、短い動詞。',
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'reel', reveals: ['bam'], seg: [67.2, 71.2],
+      stem: 'What does “*reel you in* with the free stuff” mean?', ja: '「reel you in with the free stuff」の意味は？',
+      choices: ['Pull you in, like a fish', 'Push you away from them', 'Send you home with gifts'], a: 0,
+      choicesJa: ['魚のように引きこむ', '遠ざける', 'おみやげを持たせて帰す'],
+      cue: '「scam artists」のあと',
       line: '*Reel you in* with the free stuff.',
-      said: '「タダのものでこっちを釣って、引きこむんだ」と言う。',
-      mean: 'reel in ＝ 釣り糸を巻いて魚を引き寄せる。無料をえさに客を呼ぶ、という悪口。',
-      trap: 'reel と wheel は出だしが似ている。in と with のつながりから、引き寄せる動きを聞く。',
-      use: 'They reel you in with low prices.（安さで客を釣るんだ）' },
-
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'carefor', seg: [74.8, 77.4],
-      stem: 'Type what he says: “Let’s just go home and ___.” (4 words)', answer: 'care for each other',
-      cue: '「go home and」のあと。',
+      said: 'アンディが「タダのもので釣って、引きこむんだ」と言う。',
+      mean: 'reel 〜 in ＝ 釣り糸を巻いて〜を引き寄せる。タダで人を引きつける話。',
+      trap: 'reel（リール）が wheel（車いす）に聞こえやすい。釣りの言葉。',
+      use: 'Free samples reel you in.（試食で引きつけられる）' },
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'carefor', seg: [74.6, 77.6],
+      stem: 'Type what he says: “Let’s just go home and ___.” (4 words)', ja: '空所の4語を書こう', answer: 'care for each other',
+      cue: '「go home and」のあと',
       line: 'Let’s just go home and *care for each other*.',
-      said: '「もう家に帰って、お互いを看病しよう」と言う。',
-      mean: 'care for ～ ＝ ～の世話をする。each other が「イーチャザ」とつながる。',
-      trap: 'for が弱く「ファ」になり、care とつながって一語に聞こえる。語の数で確かめる。',
-      use: 'We take care of each other.（お互いに助け合ってる）' },
-
-    // why: joke ← sewing your own lip under a bridge sounds absurd, so it must be a gag; met with doubt ← "Mm-hmm" heard
-    //   as a flat, unconvinced 相づち
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'romantic', reveals: ['carefor'], seg: [74.8, 83.5],
-      stem: 'How is the sewing-kit plan offered and received?',
-      choices: ['As a sweet idea, and taken that way', 'As a joke, and taken as one',
-                'As a sweet idea, but met with doubt'], a: 0,
-      cue: '提案の言葉と、相手の短い返事。',
-      line: 'Let’s just go home and *care for each other*… — Mm-hmm, *so romantic*.',
-      said: '「家で看病し合おう、橋の下で唇を縫って」に「うん、ロマンチック」。',
-      mean: '二人とも本気で甘い計画だと思っている。変な計画を本気で喜ぶ二人。',
-      trap: '中身が変なので冗談に聞こえるが、care for each other は本気の言葉で、返事もそのまま受ける。',
-      use: 'That’s so sweet of you.（優しいね）' },
-
-    // R fix: V2 (blind 60 %): the key was the only "couple" choice. All three now describe her, so the key is no longer
-    //   the odd one out.
-    // why: plays along ← "Mm-hmm" heard as a flat 相づち, the Japanese frame; teasing ← "so romantic" heard as sarcasm
-    //   about a sewing kit under a bridge
-    // anchor: 75.3–77.0 s "care for each other" is offered with no joke marker; 81.7–82.5 s "Mm-hmm, so romantic" has
-    //   no "but" and no change of subject; 87.8–91.9 s they keep planning it ("Do you think sewing kits are covered…?")
-    { id: 'c2', skill: 'attitude', level: 'C2', point: 'romantic', reveals: ['carefor', 'bridge'], seg: [74.8, 92],
+      said: 'アンディが「もう家に帰って、お互いを看病しよう」と言う。',
+      mean: 'care for 〜 ＝ 〜の世話をする。each other ＝ お互い。',
+      trap: 'care for がつながり「ケアフォー」。each other も「イーチャザー」とひと続き。',
+      use: 'We care for each other.（私たちは支え合っている）' },
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'romantic', reveals: ['carefor'], seg: [74.8, 83.5],
+      stem: 'How does April feel about Andy’s plan?', ja: 'エイプリルはアンディの計画をどう思っている？',
+      choices: ['She loves it', 'She hates it', 'She thinks it’s silly'], a: 0,
+      choicesJa: ['すごく気に入っている', '大嫌い', 'ばかげていると思う'],
+      cue: 'エイプリルの返事',
+      line: 'You could sew up my lip underneath the bridge somewhere. — Mm-hmm, *so romantic*.',
+      said: '「橋の下で唇を縫えばいい」に、エイプリルが「うん、ロマンチック」と言う。',
+      mean: 'so romantic ＝ すごくロマンチック。変な計画でも、エイプリルは喜んでいる。',
+      trap: '計画が変なので、からかっていると思いやすい。この2人は本気で喜ぶ。',
+      use: 'That’s so romantic.（すごくロマンチック）' },
+    { id: 'c2', skill: 'attitude', level: 'C2', point: 'romantic', reveals: ['carefor', 'bridge'], seg: [74.8, 92], retired: true,
       stem: 'What does the reply to the bridge plan tell us about the couple?',
       choices: ['She likes the odd plan as much as he does', 'She agrees only so the talk can end',
                 'She is teasing him about the cheap plan'], a: 0,
@@ -307,33 +228,25 @@ export const ambulance: Clip = {
       mean: '皮肉なら話はそこで止まるが、二人は乗り気で続ける。普通なら困る計画を甘いと感じる、似た者同士だと分かる。',
       trap: '中身の変さから皮肉と取りやすい。皮肉かどうかは、そのあと話がどう続くかで確かめる。',
       use: 'Cheap pizza at home? My kind of date.（家で安いピザ？最高のデート）' },
-
-    // R fix: V2 (blind 70 %): the key was the only odd place. "The back of the ambulance" (a word said earlier) is now as
-    //   odd as the key.
-    // why: home ← "go home" was said just before; ambulance ← the crash just before, and where first aid happens
     { id: 'd3', skill: 'detail', level: 'B1', point: 'bridge', seg: [77.2, 81.6],
-      stem: 'Where does he picture her sewing up his lip?',
-      choices: ['Under a bridge somewhere', 'At home on their couch', 'In the back of an ambulance'], a: 0,
-      cue: '「my lip」のあとの、場所の言葉。',
+      stem: 'Where could April sew up Andy’s lip?', ja: 'エイプリルはどこでアンディの唇を縫えばいい？',
+      choices: ['Under a bridge somewhere', 'At home on the couch', 'In the ambulance'], a: 0,
+      choicesJa: ['どこかの橋の下', '家のソファ', '救急車の中'],
+      cue: '「sew up my lip」のあと',
       line: 'You could sew up my lip *underneath the bridge* somewhere.',
-      said: '「どこかの橋の下で、君が僕の唇を縫えばいい」と言う。',
-      mean: 'underneath ＝ ～の下。家ですらなく橋の下、という発想が笑いどころ。',
-      trap: '直前の go home から家と取りやすい。場所は lip のあと、underneath で始まる。',
-      use: 'It’s just underneath the station.（駅のすぐ下だよ）' },
-
-    // R fix: V2 (blind 60 %): "only pays for doctors" was weak. Now a joking reading (they know and are making fun of
-    //   the desk), which "What is insurance?" refutes only if heard as a real question.
-    // why: cheat it ← groceries and Xbox games sound like slipping things past it; joking ← the list sounds like a gag
-    //   aimed at the woman at the desk
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'what', reveals: ['thing'], seg: [87, 93.3],
-      stem: 'What do the last questions about insurance show?',
-      choices: ['Neither of them knows what it is', 'He plans to cheat it on purpose', 'They are mocking the desk’s rules'],
-      a: 0,
-      cue: '質問の並びと、最後の短い質問。',
+      said: 'アンディが「どこかの橋の下で、君が僕の唇を縫えばいい」と言う。',
+      mean: 'underneath ＝ 〜の下で。sew up ＝ 縫い合わせる。',
+      trap: 'go home の直後なので、家でだと思いやすい。underneath the bridge を聞く。',
+      use: 'Let’s meet under the bridge.（橋の下で会おう）' },
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'what', reveals: ['thing'], seg: [87, 93.3],
+      stem: 'What do the last questions about insurance show?', ja: '最後の保険の質問からわかることは？',
+      choices: ['Neither knows what it is', 'He plans to cheat it', 'They make fun of the desk'], a: 0,
+      choicesJa: ['2人とも保険が何か知らない', 'ずるく使うつもり', '受付をばかにしている'],
+      cue: '最後の短い質問',
       line: 'covered by insurance? Or groceries? Or, like, *Xbox games*? — *What is insurance?*',
       said: '「裁縫セットは保険きく？食料品は？ゲームは？」に「保険って何？」と返る。',
-      mean: '保険が何かも知らずに「カバーされてる」と言っていた。二人とも仕組みを知らない。',
-      trap: 'ゲームまで並ぶとずるい計画に聞こえるが、最後の質問が答え。分かっていない人の質問の並び。',
-      use: 'Wait, what does that even mean?（待って、それってどういう意味？）' },
+      mean: 'What is 〜? ＝ 〜って何？ 2人とも保険がわかっていない。',
+      trap: 'ゲームまで出るので、ふざけていると思いやすい。本当にわかっていない。',
+      use: 'Is this covered by insurance?（これは保険がききますか）' },
   ]
 };
