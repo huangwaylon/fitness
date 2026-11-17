@@ -43,6 +43,7 @@ export const andyTest: Clip = {
       choices: ['His wife helps him get ready', 'Andy explains how tests work', 'His wife asks him to quit'], a: 0,
       choicesJa: ['妻が準備を手伝う', 'アンディが試験のしくみを説明する', '妻がやめてと頼む'],
       cue: '「quiz me」のあと',
+      line: 'You are going to *pass this test*… — Also, *I got you a lucky charm*.',
       said: '試験の前に妻が番号のクイズを出し、緊張すると励まし、お守りまで渡す。',
       mean: 'quiz me ＝ 問題を出して。妻が問題を出し、励まし、お守りをあげる。',
       trap: 'divorce（離婚）が聞こえて、やめてと言っていると思いやすい。あれは冗談。',
@@ -145,6 +146,7 @@ export const andyTest: Clip = {
       choices: ['He gives very strange answers', 'He answers every question well', 'The machine stops working'], a: 0,
       choicesJa: ['とても変な答えをする', 'どの質問にもうまく答える', '機械が止まる'],
       cue: '「Is your name Andy?」のあと',
+      line: '*I don’t know how to answer that*. … Well, first, I would be like, “*Dad, you’re alive?*”',
       said: '名前にも迷い、子どもに銃を渡すと答え、違反した父には「生きてたの？」と驚く。',
       mean: '警官に向いた答えではない。どれも変な答えばかり。',
       trap: '自信があると言っていたので、うまく答えると思いやすい。答えの中身を聞く。',
@@ -233,7 +235,7 @@ export const andyTest: Clip = {
 
     { id: 'g3', skill: 'gist', level: 'B1', point: 'result', reveals: ['hundred'], seg: [118.8, 136.6],
       stem: 'Why does the chief say “Such a shame”?',
-      ja: '署長がアンディの結果を「Such a shame」と言うのはなぜ？',
+      ja: '署長が「Such a shame」と言うのはなぜ？',
       choices: ['He passed one test, failed one', 'He failed both of the tests', 'He was caught cheating'], a: 0,
       choicesJa: ['一つは合格、一つは不合格', '二つとも落ちた', 'カンニングで見つかった'],
       cue: '「Such a shame」のあと',
@@ -252,7 +254,7 @@ export const andyTest: Clip = {
       line: 'he got *100%* on his written test. First guy in history to do it',
       said: '「筆記で100%を取った。史上初だ」と言う。',
       mean: 'a hundred percent ＝ 100%。First guy in history ＝ 史上初の人。',
-      trap: '「ハンドレッド」が聞こえれば100%。ninety（90）や ninety-nine（99）は「ナイン」で始まる。',
+      trap: '「ハンドレッド」なら100%。「ナインティ」で止まれば90、「ナインティファイブ」なら95、「ナインティナイン」なら99。',
       use: 'I’m a hundred percent sure.（100%確かです）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sweetkid', seg: [125.1, 136.6],

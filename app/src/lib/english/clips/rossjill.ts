@@ -55,7 +55,7 @@ export const rossJill: Clip = {
       line: '*Tomorrow night*, Valentine’s Day, the most romantic day of the year.',
       said: '「明日の夜、バレンタインデー。一年でいちばんロマンチックな日」と言う。',
       mean: 'tomorrow night ＝ 明日の夜。バレンタインデーが明日。',
-      trap: 'tonight は「トゥナイ」で始まる。「トゥモロー」と長ければ tomorrow night。',
+      trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend、「トゥモロー」と長ければ tomorrow night。',
       use: 'Are you free tomorrow night?（明日の夜、空いてる？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'hope', seg: [10.3, 16.6],
@@ -88,6 +88,7 @@ export const rossJill: Clip = {
       choices: ['To stop seeing her sister', 'To skip only Valentine’s Day', 'To keep the dates secret'], a: 0,
       choicesJa: ['妹と会うのをやめてほしい', 'バレンタインだけやめてほしい', 'デートを内緒にしてほしい'],
       cue: '「I can’t」のくり返し',
+      line: 'It’s just too weird… — Hey, it’s too weird for you. *I won’t see her again.* — *Thank you*.',
       said: '妹との組み合わせは変すぎて無理だと言い、ロスが「もう会わない」と言うとお礼を言う。',
       mean: 'I can’t do it ＝ 無理。二人が付き合うこと自体がいやだと言っている。',
       trap: '明日の夜の話が多いので、その日だけと思いやすい。I won’t see her again で納得する。',
@@ -126,7 +127,7 @@ export const rossJill: Clip = {
       line: 'Hey, it’s too weird for you. *I won’t see* her again.',
       said: '「君には変すぎるよね。もう会わない」と言う。',
       mean: 'won’t ＝ will not（〜しない）。「ウォウント」と口を丸める。',
-      trap: 'want は「ワント」、will は「ウィル」。口を丸めた「ウォウ」なら won’t。',
+      trap: 'want to なら「ワナ」、will なら「ウィル」。口を丸めた「ウォウント」なら won’t。',
       use: 'I won’t be late again.（もう遅れません）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [39.8, 44.6],
@@ -183,6 +184,7 @@ export const rossJill: Clip = {
       choices: ['Rachel wants him to call now', 'Ross goes on his date', 'Rachel calls her sister herself'], a: 0,
       choicesJa: ['レイチェルが今すぐ電話してほしがる', 'ロスがデートに行く', 'レイチェルが自分で妹に電話する'],
       cue: '最後の「Call her right now」',
+      line: 'Yeah, *do it now*. Call her right now.',
       said: '「今すぐ電話しようか？」に「いいの」と言うが、話を変えたあと「今して」と言う。',
       mean: 'do it now ＝ 今やって。最初は遠慮したが、本当はすぐ電話してほしかった。',
       trap: '最初に No と断るので、電話しないと思いやすい。最後の一言が本音。',
