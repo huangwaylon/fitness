@@ -64,7 +64,7 @@ export const ronWill: Clip = {
       cue: '「since I was」のあと。', line: 'I’ve had the same will *since I was eight* years old.',
       said: '「8歳のときから同じ遺言書を持っている」と言う。',
       mean: 'since I was eight ＝ 8歳のときから。子どものころに書いたものを今も使っている。',
-      trap: 'eight years が続くと eighteen に聞こえやすい。-teen なら「ティーン」と長く伸びる。',
+      trap: 'eighteen なら「ティーン」と長く伸び、twenty-eight なら「トゥエンティ」が先に来る。',
       use: 'I’ve lived here since I was eight.（8歳からここに住んでる）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'killer', seg: [30.94, 36.7],

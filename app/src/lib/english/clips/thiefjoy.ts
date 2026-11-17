@@ -44,7 +44,7 @@ export const thiefOfJoy: Clip = {
       cue: '曲の名前のあと、about のあと。', line: 'I viewed “Cookie Monster sings Chocolate Rain” *about 1,000 times*.',
       said: '同じ動画を「約1,000回見た」と言う。',
       mean: 'a thousand ＝ 1,000。about ＝ だいたい。',
-      trap: 'about a のあとが速く、hundred と迷いやすい。最後の「サウザンド」を聞く。',
+      trap: 'hundred（ハンドレッド）と thousand（サウザンド）を聞き分ける。ten がないので1万ではない。',
       use: 'I’ve seen that movie about a hundred times.（あの映画は百回くらい見た）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'dilemma', seg: [25.6, 33.9], retired: true,
       stem: 'When Holly asks what the dilemma was, why is his answer funny?',
@@ -135,7 +135,7 @@ export const thiefOfJoy: Clip = {
       cue: '病名のあと、動詞の音。', line: 'the pox. *I still come in*.',
       said: '病名を並べたあと「それでも出社する」と言い切る。',
       mean: 'come（現在形）で「いつもそうしている」。come in ＝ 出社する。',
-      trap: '前が昔の病気なので came と思いやすい。come は「カム」、came は「ケイム」。',
+      trap: 'came なら「ケイム」、will なら前に「ウィル」が入る。ここは短い「カム」。',
       use: 'Even when it rains, I still walk.（雨でも歩いて行く）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'whohasnt', seg: [72.55, 78.3],
@@ -146,7 +146,7 @@ export const thiefOfJoy: Clip = {
       cue: '告白の直後、短い二語。', line: 'Sometimes I download pirated music… — *Who hasn’t?*',
       said: '「会社のパソコンに違法な音楽を入れる」に「やってない人いる？」と返す。',
       mean: 'Who hasn’t? ＝ やってない人いる？＝みんなやってる。小さな告白として流している。',
-      trap: 'has と hasn’t は「ン」の音だけの差。最後の小さな「ント」を聞く。',
+      trap: 'has なら「ン」がなく、doesn’t なら「ダズン」。「ハズン」と聞こえたら hasn’t。',
       use: 'Who hasn’t done that?（それ、誰でもやるでしょ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'brunch', seg: [80.6, 88.6],

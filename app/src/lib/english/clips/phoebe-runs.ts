@@ -112,7 +112,7 @@ export const phoebeRuns: Clip = {
       cue: 'I のあと、弱く短い一語。', line: 'I don’t think I *can* ever run again.',
       said: '「もう二度と走れないと思う」と言う。',
       mean: 'can は弱く「クン」と短い。否定は don’t think の方に付けるので、ここは can。',
-      trap: 'can’t の t は聞こえにくいが、can’t は「キャーン」と強く長い。弱い「クン」なら can。',
+      trap: 'can’t は「キャーン」と強く長い。could なら「クッ」と d で止まる。弱い「クン」なら can。',
       use: 'I don’t think I can make it.（行けそうにない）' },
 
     { id: 's3', skill: 'sound', level: 'B2', point: 'ankles', reveals: ['wellsee'], seg: [71, 76],

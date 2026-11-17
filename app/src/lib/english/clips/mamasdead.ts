@@ -104,7 +104,7 @@ export const mamasDead: Clip = {
       cue: '「He」のすぐあと。', line: 'He *didn’t* seem like he was joking.',
       said: '「冗談を言ってるようには見えなかった」と返す。',
       mean: 'didn’t の t はほぼ消えて「ディドゥン」。n の音と小さな間が否定のしるし。',
-      trap: 't が聞こえないので did と思いやすい。「ン」と小さな間が残れば否定。',
+      trap: 't が聞こえず did と思いやすい。「ン」と小さな間があれば didn’t、「ダ」で始まれば doesn’t。',
       use: 'It didn’t look like a joke.（冗談には見えなかった）' },
 
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'unkind', seg: [37.5, 41.5],
@@ -179,7 +179,7 @@ export const mamasDead: Clip = {
       cue: '「Stanley was joking」のあと。', line: '*why don’t we* go ask him now?',
       said: '「今から本人に聞きに行こうよ」と言う。',
       mean: 'don’t の t が落ちて we とつながり「ワイドンウィ」。「〜しようよ」の誘い。',
-      trap: 'didn’t なら「なぜしなかった」と責める意味。「ディ」の音があるかを聞く。',
+      trap: 'didn’t なら「ディ」、can’t なら「キャン」が入る。「ドン」と聞こえたら don’t。',
       use: 'Why don’t we grab lunch?（お昼でも行かない？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['excuse', 'stomach'], seg: [63.4, 68.7],

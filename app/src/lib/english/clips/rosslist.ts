@@ -16,7 +16,7 @@ export const rossList: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'purpose', reveals: ['whatll'], seg: [0, 16],
       stem: 'Why does Ross bring up his idea?',
       ja: 'ロスはなぜその案を出す？',
-      choices: ['To help Rachel feel better', 'To hear what she likes', 'To show he can take it'], a: 0,
+      choices: ['To help Rachel feel better', 'To hear the things she likes', 'To show he can take it'], a: 0,
       choicesJa: ['レイチェルの気分をよくするため', '好きな所を聞くため', '批判に耐えられると見せるため'],
       cue: '提案の前、「I think」のあと。', line: 'I think I know *what’ll make you feel better*.',
       said: 'ロスは「気分がよくなる方法がある」と言って提案する。',
@@ -43,7 +43,7 @@ export const rossList: Clip = {
       cue: '「I know」の直後。', line: 'I think I know *what’ll* make you feel better.',
       said: '「気分がよくなるもの、分かると思う」と言う。',
       mean: 'what’ll は「ワルル」に近い。t が軽い「ラ」の音になり、will は「ル」だけ残る。',
-      trap: '「ド」が聞こえると what’d を選びやすい。最後が「ル」なら will。',
+      trap: 'what’d なら「ド」、could なら「クッ」が入る。最後が「ル」なら will。',
       use: 'That’ll be fine.（それで大丈夫です）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'refuse', seg: [8.6, 13.1],

@@ -45,7 +45,7 @@ export const pityFudge: Clip = {
       cue: 'huh のあと、ひと続きの音。', line: '…huh? *What do you* think?',
       said: '「ダーツ大会しよう、どう思う？」と反応を聞く。',
       mean: 'What do you が「ワダユ」とひとつにつながる。do はほとんど聞こえない。',
-      trap: 'did と思うと「どうだった？」になる。まだやっていない計画の話なので do。',
+      trap: 'did なら「ディ」、would なら「ウッ」が入る。まだやっていない計画の話なので do。',
       use: 'What do you think? Tacos tonight?（どう？今夜タコスは）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'when', reveals: ['nextwk'], seg: [9.5, 19],

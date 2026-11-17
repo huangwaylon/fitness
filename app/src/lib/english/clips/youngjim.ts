@@ -251,7 +251,7 @@ export const youngjim: Clip = {
       cue: 'teams of のあと。', line: 'We’re in *teams of two*, and we are on a mission.',
       said: '「二人一組のチームで、任務がある」と言う。',
       mean: 'teams of two ＝ 二人ずつのチーム。of のあとの数が人数。',
-      trap: 'two は短く、to と同じ音で聞き落としやすい。three なら「スリー」と長い。',
+      trap: 'two は短く、to と同じ音で聞き落としやすい。three は「スリー」、four は「フォー」。',
       use: 'A table for two, please.（2人です）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'seriously', seg: [162.5, 166.7],

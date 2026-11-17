@@ -68,7 +68,7 @@ export const aprilMeetings: Clip = {
       cue: '「because you」のすぐあと。', line: 'because you *haven’t had* a single meeting',
       said: '「一つも会議がなかったでしょ」と言う。',
       mean: 'haven’t の t は落ちて、had とつながり「ハヴンハッ」と聞こえる。',
-      trap: 't が消えると hadn’t had にも聞こえやすい。最初が「ハヴ」か「ハッ」かを聞く。',
+      trap: 'hadn’t なら最初が「ハッ」、never なら「ネヴァー」。「ハヴン」なら haven’t。',
       use: 'I haven’t had lunch yet.（まだお昼食べてない）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'march31', reveals: ['pileup'], seg: [27.2, 38.7],
@@ -99,7 +99,7 @@ export const aprilMeetings: Clip = {
       cue: '「how many meetings」への答え。', line: 'how many meetings do I have today? — *Ninety-three*.',
       said: '「今日の会議はいくつだ」と聞かれ、「93」と答える。',
       mean: 'ninety-three ＝ 93。一日でこなせる数ではないので、みんなで手分けする。',
-      trap: 'ninety のあとの three を落とすと 90 になる。最後の「スリー」まで聞く。',
+      trap: 'ninety のあとに three（スリー）。nine なら99、何もなければ90、「ティーン」なら19。',
       use: 'I have ninety-three emails to answer.（返事するメールが93通ある）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'postpone', seg: [56.5, 62],

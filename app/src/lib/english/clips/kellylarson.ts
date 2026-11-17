@@ -71,7 +71,7 @@ export const kellyLarson: Clip = {
       cue: '「more than」のあと。', line: 'they have sold more than *100 million* copies worldwide.',
       said: '「合わせて世界で1億部以上売れた」と言う。',
       mean: 'a hundred million ＝ 1億。英語は3けたごとに区切って数える。',
-      trap: 'hundred が弱いと a million（100万）に聞こえやすい。a と million の間を聞く。',
+      trap: 'hundred が弱いと a million（100万）に聞こえやすい。ten なら「テン」。a と million の間を聞く。',
       use: 'It sold over a million copies.（100万部以上売れたんだよ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [43.0, 46.6],
@@ -82,7 +82,7 @@ export const kellyLarson: Clip = {
       cue: 'Now のあとの弱い出だし。', line: 'Now, *have you seen* any of the Twilight movies? — No, I have not.',
       said: '映画を見たことがあるか聞き、レスリーは「ありません」と答える。',
       mean: 'have you は弱く「ハヴュ」とつながる。答えの I have not と対になる。',
-      trap: 'haven’t なら「見てないの？」と驚く意味。小さな「ン」があるかを聞く。',
+      trap: 'haven’t なら「ン」が入って「見てないの？」。did you see なら「ディジュ」で始まる。',
       use: 'Have you seen the new movie?（新しい映画、見た？）' },
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'shot', seg: [46.2, 55.8], retired: true,
       stem: 'How does Kelly offer to describe the movies to Leslie?',
@@ -167,7 +167,7 @@ export const kellyLarson: Clip = {
       cue: '「Give me」のあと。', line: 'I’ll take care of this trespasser. Give me *30 seconds*.',
       said: '「この侵入者は任せて。30秒くれ」と言う。',
       mean: 'Give me 〜 ＝ 〜ちょうだい。すぐ片づけられるという自信。',
-      trap: 'thirty と thirteen は強く言う所が違う。-ty は前、-teen は後ろが強い。',
+      trap: 'thirty は前、thirteen は後ろを強く言う。単位は minutes でなく seconds（セカンズ）。',
       use: 'Give me five minutes.（5分ちょうだい）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [115.2, 119.3],

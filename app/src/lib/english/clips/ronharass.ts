@@ -128,7 +128,7 @@ export const ronharass: Clip = {
       cue: '文の最初の短い語。', line: '*You’ll have to* be more specific.',
       said: '「もっと具体的に言ってもらわないと」と返す。',
       mean: 'You’ll have to が「ユーラフタ」とひと続きになる。’ll は小さな「ル」。',
-      trap: '’ll は小さく、You have to に聞こえやすい。you のあとが少し伸びたら ’ll。',
+      trap: '’ll は小さいが、you のあとが少し伸びる。had to なら「ハッタ」、have to なら「ハフタ」だけ。',
       use: 'You’ll have to ask the manager.（店長に聞いてもらわないと）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'projects', seg: [75.4, 84.0],
@@ -286,7 +286,7 @@ export const ronharass: Clip = {
       cue: '「I have me」のあと。', line: 'I’m not lonely. I have me. And *4,000 Facebook friends*…',
       said: '「さみしくない。自分がいるし、フェイスブックの友だちが4000人」と言う。',
       mean: 'four thousand ＝ 4000。さみしくない証拠に数を挙げる。',
-      trap: 'fourteen と forty は終わりで決まる。ここは four のすぐあとに thousand。',
+      trap: 'four のあとが hundred なら400、thousand なら4000。fourteen や forty なら「ティーン」「ティ」が入る。',
       use: 'I have about 4,000 photos on my phone.（スマホに写真が4000枚くらい）' },
   ]
 };

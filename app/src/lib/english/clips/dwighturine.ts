@@ -22,7 +22,7 @@ export const dwightUrine: Clip = {
       cue: 'Attention のあと。', line: 'Drug testers are coming *in a couple of hours*',
       said: '「検査の人があと2時間ほどで来る」と知らせる。',
       mean: 'a couple of ＝ 2つほど。in a couple of hours ＝ 2時間ほどで。',
-      trap: 'あとの within 24 hours が耳に残りやすい。来る時は in のあと。',
+      trap: 'あとの within 24 hours が耳に残りやすい。来るのは in のあと、hours（アワーズ）の単位。',
       use: 'I’ll be there in a couple of hours.（2時間ほどで着きます）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'problem', reveals: ['high'], seg: [17, 62],
@@ -119,7 +119,7 @@ export const dwightUrine: Clip = {
       cue: '「you cannot」のすぐあと。', line: 'No, you cannot. It *has to* be official, and it has to be urine.',
       said: '「だめ。正式な検査でなければならない」と言う。',
       mean: 'has to は「ハスタ」と縮む。規則として「〜でなければならない」。',
-      trap: 'got を足したくなるが、ここにはない。and のあとの2回目の has to で確かめる。',
+      trap: 'got があれば「ガッ」が入る。ought to なら「オータ」。ここは短い「ハスタ」。',
       use: 'It has to be in writing.（書面でなければいけません）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'filing', seg: [92.3, 101.7], retired: true,
       stem: 'Why does the audience laugh at Michael’s request about the St. Andrews account?',
@@ -221,7 +221,7 @@ export const dwightUrine: Clip = {
       cue: '「I know that.」のすぐあと。', line: 'I know that. *Don’t you* think I know that?',
       said: '「分かってる。分かってるに決まってるだろ？」と言う。',
       mean: 'Don’t you は t と y がつながり「ドンチュ」。「当然でしょ」という聞き方。',
-      trap: 't が you と溶けて、Do you に聞こえやすい。「ドンチュ」と「ン」があるかを聞く。',
+      trap: 'Do you なら「ン」がない。You don’t なら「ユー」で始まる。「ドンチュ」なら Don’t you。',
       use: 'Don’t you think it’s too late?（遅すぎると思わない？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'busted', seg: [230.9, 234.3],

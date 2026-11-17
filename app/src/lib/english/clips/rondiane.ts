@@ -76,7 +76,7 @@ export const ronDiane: Clip = {
       cue: '「well」のすぐあと。', line: 'Well, *it’s got to* be one of these, right?',
       said: '鍵の束を見て「この中のどれかのはずだよな」と言う。',
       mean: 'got to が「ガラ」とつながる（gotta）。t が軽い「ラ」の音になる。',
-      trap: 'gonna（going to）は「ナ」、gotta は「ラ」。真ん中の音で聞き分ける。',
+      trap: '「ガラ」なら got to、「ゴナ」なら going to、「オータ」なら ought to。真ん中の音を聞く。',
       use: 'It’s got to be here somewhere.（どこかにあるはずなんだけど）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'pressure', seg: [50.3, 55.15],
@@ -129,7 +129,7 @@ export const ronDiane: Clip = {
       cue: '文の最初のつながった音。', line: '*Did you* just say you love Diane?',
       said: '「今、ダイアンが好きって言った？」と聞き返す。',
       mean: 'did you が「ディジュ」とつながる。just say ＝ たった今言った。',
-      trap: 'Didn’t なら「言ったよね？」と詰める感じ。「ン」が聞こえるかで判断。',
+      trap: 'Didn’t なら「ン」が入り、Could なら「ク」で始まる。「ディジュ」なら Did you。',
       use: 'Did you just call me “sir”?（今「サー」って呼んだ？）' },
 
     { id: 't1', skill: 'attitude', level: 'B1', point: 'deny', seg: [92.4, 98.45],

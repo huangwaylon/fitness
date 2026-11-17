@@ -128,7 +128,7 @@ export const prefired: Clip = {
       cue: 'that のあと、とても短い音。', line: 'I promised other people that *I’d* be on my worst behavior.',
       said: '「ほかの人に、最悪の態度でいると約束した」と返す。',
       mean: 'I’d ＝ I would の短い形。promised（過去）のあとなので would。d は小さい。',
-      trap: 'd が弱いと I’ll に聞こえやすい。I’ll なら「ル」が残る。',
+      trap: 'I’ll なら「ル」が残る。I would なら「ウッド」がはっきり聞こえる。ここは短い「アイ(ド)」。',
       use: 'I said I’d be there by six.（6時までに行くって言ったよ）' },
 
     { id: 'h1', skill: 'humor', level: 'B2', point: 'worst', reveals: ['best'], seg: [22.2, 28.8],

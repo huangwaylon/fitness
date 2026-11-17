@@ -56,7 +56,7 @@ export const prairie: Clip = {
       cue: '「invented past」のあと。', line: 'Nothing can be used that was invented past *1817*.',
       said: '「1817年より後に発明された物は使えない」とルールを言う。',
       mean: 'past ＝ 〜より後。年は18と17に分けて「エイティーン・セブンティーン」と読む。',
-      trap: 'seventeen と seventy は終わりで区別する。-teen は長く強く、-ty は短い。',
+      trap: '前半は eighteen（18）。後半の seventeen は「ティーン」と長く、seventy（70）とちがう。',
       use: 'Nothing past nine, okay?（9時以降はなしね）' },
 
     { id: 'd1', skill: 'phrase', level: 'B2', point: 'referee', seg: [37, 41],
@@ -140,7 +140,7 @@ export const prairie: Clip = {
       cue: '「gonna last」のあと。', line: 'I thought he was gonna last *an hour, max*.',
       said: '「せいぜい1時間でやめると思ってた」と言う。',
       mean: 'max ＝ せいぜい、最大でも。それより長くはもたないという予想。',
-      trap: 'an hour がつながって「アナウア」に聞こえる。four の「フォー」は聞こえない。',
+      trap: 'an hour は「アナウア」とつながる。half（ハーフ）も four（フォー）も聞こえない。',
       use: 'It’ll take ten minutes, max.（せいぜい10分で終わる）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'livelike', seg: [135.3, 146.3],
@@ -171,7 +171,7 @@ export const prairie: Clip = {
       cue: 'email in のあと。', line: 'He hasn’t gotten an email in… *12 days*?',
       said: '「12日もメールが来てないの？」と驚く。',
       mean: '今の人には信じられない長さ。だから次に「幽霊？」と言う。',
-      trap: 'twelve と twenty は出だしが似ている。最後が「ヴ」か「ティ」かを聞く。',
+      trap: 'two は「トゥー」だけ。twelve は「トゥエルヴ」、twenty は「トゥエンティ」。最後の音を聞く。',
       use: 'I haven’t had coffee in three days.（3日コーヒーを飲んでない）' },
     { id: 'nt3', skill: 'humor', level: 'C2', point: 'mule', reveals: ['lonely'], seg: [180.7, 186.2], retired: true,
       stem: 'In the reply about the mule, who is the joke on?',
@@ -209,7 +209,7 @@ export const prairie: Clip = {
       cue: '「I’m」のあと、つながる二語。', line: 'I-I’m *gonna miss* saying huzzah. — Yeah.',
       said: '勝ったガースが「フザー（万歳）が言えなくなるのはさびしい」と言う。',
       mean: 'gonna miss 〜 ＝ 〜がなくなるとさびしい。miss と saying の s が重なる。',
-      trap: '勝った人の言葉なので「言い続ける」と思いやすい。「ガナミス」と聞こえる。',
+      trap: '「ナッ」がなければ not はない。miss（ミス）と keep（キープ）は母音で分かる。',
       use: 'I’m gonna miss this place.（ここがなくなるとさびしいな）' },
 
     { id: 'h4', skill: 'detail', level: 'B1', point: 'date', seg: [210.2, 218.8],

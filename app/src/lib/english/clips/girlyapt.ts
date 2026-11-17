@@ -239,7 +239,7 @@ export const girlyApt: Clip = {
       cue: 'Now のすぐあと。', line: 'Now *I’ve* upset you. What did I say?',
       said: '「あーあ、傷つけちゃった。何て言った？」と言う。',
       mean: 'I’ve upset you ＝ 傷つけてしまった（今もそう）。’ve は小さく「アイヴ」。',
-      trap: 'v が消えると I upset に聞こえやすい。小さな「ヴ」があるかを聞く。',
+      trap: 'v が消えると I upset に聞こえやすい。I’d なら「ド」。小さな「ヴ」を聞く。',
       use: 'Sorry, I’ve kept you waiting.（お待たせしました）' },
 
     { id: 'h7', skill: 'phrase', level: 'B2', point: 'wayyousaid', reveals: ['mean'], seg: [248.6, 258.4],

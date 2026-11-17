@@ -106,7 +106,7 @@ export const jointMission: Clip = {
       cue: '文の最初の速い語。', line: '*Are you going to* wear that shirt?',
       said: '「そのシャツ着ていくの？」と聞く。',
       mean: 'going to は「ゴナ」に縮む。「それでいいの？」という遠回しな聞き方。',
-      trap: 'Aren’t なら「着ないの？」と逆の意味。最初に「ン」の音があるかを聞く。',
+      trap: 'Aren’t なら最初に「ン」が入る。Do you want to なら「ドゥユワナ」。ここは「アーユー」。',
       use: 'Are you gonna finish that?（それ、全部食べる？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'money', reveals: ['shirtname'], seg: [97.4, 102.3], keep: true,
@@ -117,7 +117,7 @@ export const jointMission: Clip = {
       cue: '「I spent」のすぐあと。', line: 'I spent *120 bucks* to get it monogrammed.',
       said: '「名前を入れてもらうのに120ドル使った」と言う。',
       mean: 'bucks ＝ ドル（くだけた言い方）。a hundred and twenty ＝ 120。',
-      trap: 'hundred は弱く速いので、twenty だけ残りやすい。最初の音を落とさない。',
+      trap: 'hundred は弱く速い。two hundred なら「トゥー」で始まり、twenty は付かない。',
       use: 'It cost me fifty bucks.（50ドルかかった）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'shirtname', seg: [97.4, 104.05],
@@ -179,7 +179,7 @@ export const jointMission: Clip = {
       cue: 'shovel guitar のあと。', line: 'Leslie’s been playing shovel guitar *for about an hour* now.',
       said: '「もう1時間くらい弾いている」と言う。',
       mean: 'for about an hour ＝ 約1時間。have been 〜ing ＝ 今も続いている。',
-      trap: 'for は弱く「フォ」なので four に聞こえやすい。about のあとの語で長さが決まる。',
+      trap: 'for は弱く「フォ」なので four に聞こえやすい。half（ハーフ）は聞こえない。about のあとを聞く。',
       use: 'I’ve been here for about an hour.（ここに1時間くらいいるよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'talk', seg: [141.5, 176.75],
@@ -262,7 +262,7 @@ export const jointMission: Clip = {
       cue: '「Oh my God」のすぐあと。', line: 'Oh my God, *it looks like* Andy.',
       said: '写真を撮りながら「うそ、アンディみたい」と言う。',
       mean: 'looks like ＋人 ＝ 〜に見える。まだ確信はなく、次で言い切る。',
-      trap: 'looked の d は like の前で消えやすいが、looks の s は息が残る。終わりの音を聞く。',
+      trap: 'looked なら「ルックト」、he なら「ヒー」で始まる。「イッルックス」なら it looks。',
       use: 'It looks like rain.（雨が降りそう）' },
   ]
 };

@@ -44,7 +44,7 @@ export const ronTough: Clip = {
       cue: '文の最初の2語。', line: '*Isn’t there* a men’s gymnasium…?',
       said: '「男性用のジムがあるでしょう？」と、ここでやる理由を問う。',
       mean: 'Isn’t there が「イズンゼア」とつながる。t は消え、「ン」だけが残る。',
-      trap: 'Is there だとふつうの質問。小さな「ン」があるかを聞く。',
+      trap: 'Is there なら「ン」がない。Wasn’t なら「ワズン」で始まる。「イズン」なら Isn’t。',
       use: 'Isn’t there a later train?（もっと遅い電車はないの？）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'stop', seg: [4.4, 15.6],
@@ -66,7 +66,7 @@ export const ronTough: Clip = {
       cue: '「traditionally has」のあと。', line: 'the Parks Department *traditionally has 10 employees*. You have only seven.',
       said: '「この規模の町なら公園課は10人がふつう。君の所は7人だけだ」と言う。',
       mean: 'traditionally ＝ 昔から、ふつうは。ふつうの数とロンの数が並ぶ。',
-      trap: 'すぐあとに only seven が来るので7を選びやすい。ふつうの人数は has のあと。',
+      trap: 'すぐあとの only seven（7）に引かれやすい。has のあとは ten（テン）。eleven は「イレヴン」。',
       use: 'How many people usually work here?（ここはふつう何人で働いていますか）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'seven', reveals: ['ten'], seg: [22.95, 30.75],
@@ -119,7 +119,7 @@ export const ronTough: Clip = {
       cue: '「single-handedly」のあと。', line: 'Leslie Knope *single-handedly does the work of four people*',
       said: '「レスリーは一人で4人分の仕事をしている」と言う。',
       mean: 'single-handedly ＝ たった一人で。the work of four people ＝ 4人分の仕事。',
-      trap: '前に課の人数7が出ているので混ざりやすい。of のあとの数を聞く。',
+      trap: '前に出た7（seven）と混ざりやすい。of のあとは four（フォー）。three は「スリー」。',
       use: 'She does the work of two people.（彼女は二人分働く）' },
 
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'scaled', seg: [35.45, 45.65],

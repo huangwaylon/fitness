@@ -78,7 +78,7 @@ export const giantHead: Clip = {
       cue: '「holding off」のすぐあと。', line: 'I’ve been holding off *asking her out* in the past',
       said: '「誘うのを控えてきた」と言う。',
       mean: 'ask ＋人＋ out ＝ デートに誘う。her の h が落ちて「アスキンガーアウ」とつながる。',
-      trap: 'h が消えると一続きになり、around に聞こえやすい。真ん中の「ガー」を聞く。',
+      trap: 'taking なら「テイ」で始まる。around なら最後が「ラウンド」。真ん中の「ガー」（her）を聞く。',
       use: 'He finally asked her out.（彼はついに彼女をデートに誘った）' },
     { id: 'i1', skill: 'infer', level: 'B2', point: 'holdoff', reveals: ['askout'], seg: [8.3, 16.85], retired: true,
       stem: 'What does Chandler’s story suggest about his feelings for Allison?',
@@ -219,7 +219,7 @@ export const giantHead: Clip = {
       cue: '「list」の直後の数。', line: 'Quick, quick, list *five things* you like about her.',
       said: '「早く、彼女の好きなところを5つ挙げろ」と自分に言う。',
       mean: 'list ＝ 挙げる、並べる。良いところに目を向けて、気をそらそうとする。',
-      trap: 'five と nine は「アイ」の音が同じ。最初の「フ」の音で聞き分ける。',
+      trap: 'three は「スリー」。five と nine は「アイ」の音が同じなので、最初の「ファ」を聞く。',
       use: 'Name three things you like.（好きなことを3つ挙げて）' },
   ]
 };

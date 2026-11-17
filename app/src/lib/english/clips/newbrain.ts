@@ -190,7 +190,7 @@ export const joeyBrain: Clip = {
       cue: '文の頭、be の前。', line: 'she’s been on the show forever. *It’s gonna* be really hard to fill her shoes.',
       said: '長く出ていた女優の後任について「大変になる」と言う。',
       mean: 'gonna ＝ going to。「〜になるだろう」という見通し。「ガナ」。',
-      trap: 'gotta は「ガラ」。真ん中が「ナ」か「ラ」かを聞く。',
+      trap: 'gotta は「ガラ」、It’ll は「イドゥル」と短い。「ガナ」なら gonna。',
       use: 'It’s gonna be a long day.（長い一日になりそう）' },
 
     { id: 'at3', skill: 'attitude', level: 'B2', point: 'yeahyeah', reveals: ['beher'], seg: [70.4, 85],

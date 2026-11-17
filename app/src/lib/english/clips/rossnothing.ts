@@ -47,7 +47,7 @@ export const rossNothing: Clip = {
       cue: 'I を2回言ったあと。', line: 'and I, I *have loved* her in the past',
       said: '「昔は彼女を愛してたこともある」と認める。',
       mean: 'have は弱く「ァヴ」くらい。have loved ＝ 愛したことがある。',
-      trap: 'have が小さく、loved だけに聞こえやすい。動詞の前の小さな「ァヴ」を探す。',
+      trap: 'have が小さく loved だけに聞こえやすい。haven’t なら「ン」が入る。小さな「ァヴ」を探す。',
       use: 'I’ve been there before.（前に行ったことがある）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'helpout', seg: [8.5, 12.3],

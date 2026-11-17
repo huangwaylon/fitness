@@ -34,7 +34,7 @@ export const annVibes: Clip = {
       cue: 'エイプリルの最初の質問。', line: 'Is that where you’re *gonna* sit?',
       said: '「そこに座るつもり？」とエイプリルが聞く。',
       mean: 'gonna ＝ going to を短く言った形。「ガナ」と聞こえる。',
-      trap: 'gonna・wanna・gotta はどれも「〜ナ」「〜タ」で似ている。最初の「ガ」を聞く。',
+      trap: 'gotta は「ガラ」、wanna は「ワナ」。「ガ」で始まり「ナ」で終わるのが gonna。',
       use: 'I’m gonna be late.（遅れそう）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'orient', seg: [7.65, 13.45],
@@ -149,7 +149,7 @@ export const annVibes: Clip = {
       cue: '「my」のあと。', line: 'this is Ann, my *65-year-old* grandmother.',
       said: 'アンを「65歳のおばあちゃん」として紹介する。',
       mean: 'sixty-five-year-old とひと続きに言う。名詞の前では year に s が付かない。',
-      trap: 'fifty と sixty は出だしの「フィ」と「シ」の差。最初の音を聞く。',
+      trap: 'fifty は「フィ」、sixty は「シ」、seventy は「セ」で始まる。最初の音を聞く。',
       use: 'My grandpa is seventy-two.（うちのおじいちゃんは72歳）' },
     { id: 's2', skill: 'sound', level: 'B2', point: 'hip', seg: [109.1, 112.45], retired: true,
       stem: 'Fill the gap: “It seems like a real ___ kind of college town.”',
