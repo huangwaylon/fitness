@@ -80,7 +80,7 @@ export const chandlerAdopted: Clip = {
       line: 'You *want me to* wash my hands first, don’t you?',
       said: '「先に手を洗ってほしいんでしょ？」と先回りして言う。',
       mean: 'want me to が「ワンミトゥ」とつながる。want の t はほぼ消える。',
-      trap: 'wanted なら「ウォンティッド」と1音増える。won’t let me なら「レッ」が入る。',
+      trap: '「ワンミトゥ」なら want me to、「ウォンティッミ」と1音多ければ wanted me to、「ウォウンレッミ」なら won’t let me。',
       use: 'Do you want me to come with you?（一緒に行こうか？）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'adoptyou', seg: [59.8, 71],
@@ -104,7 +104,7 @@ export const chandlerAdopted: Clip = {
       line: 'Bathroom is *down the hall to your left*.',
       said: '「トイレは廊下の先、左側です」と教える。',
       mean: 'down the hall ＝ 廊下の先。to your left ＝ あなたから見て左。道案内の基本の言い方。',
-      trap: 'left と right は最初の音が似て聞こえやすい。「レフ」か「ライ」かを聞く。',
+      trap: '「ダウンザホール…レフト」なら廊下の左、最後が「ライト」なら右、「アップステアーズ」で始まれば2階。',
       use: 'The restroom is down the hall to your left.（お手洗いは廊下の先の左です）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'compass', seg: [83, 90.4],
@@ -232,12 +232,12 @@ export const chandlerAdopted: Clip = {
       line: 'And he *paid me $50* not to tell.',
       said: '「それに、言わないようにって50ドルくれた」とオーウェンが言う。',
       mean: 'fifty ＝ 50。最初の「フィ」を強く言う。not to tell ＝ 言わないように。',
-      trap: 'fifteen なら後ろの「ティーン」が強く長い。500 なら hundred が続く。',
+      trap: '前が強い「フィフティ」なら $50、後ろの「ティーン」が長ければ $15、「ファイブハンドレッド」なら $500。',
       use: 'I paid fifty dollars for this.（これに50ドル払った）' },
 
     { id: 'i3', skill: 'detail', level: 'B1', point: 'giveback', reveals: ['paid'], seg: [162.4, 169.4],
-      stem: 'What should Owen do with the money, says Chandler?',
-      ja: 'チャンドラーによると、オーウェンはお金をどうすべき？',
+      stem: 'What does Chandler say Owen should do with the money?',
+      ja: 'チャンドラーは、オーウェンはお金をどうすべきだと言う？',
       choices: ['Give it back', 'Keep it safe', 'Share it'], a: 0,
       choicesJa: ['返す', '大事にとっておく', '分ける'],
       cue: '「technically」のあと。',
