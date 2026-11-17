@@ -1,23 +1,12 @@
-// REVIEW 2026-11-16: pass 3, fix 16, drop 0, new 0; ear checks 8
-// OPEN: f1 ("I could use a challenge. It's getting pretty easy") answers the "trying to score" line, which is left
-//   untested as sexual. The chunk is useful and the key is clean, so it stays; drop it if the context is too much.
-//   Dropping it would leave no phrase item (minimum 1).
+// A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 4, new 2
 // “Joey Wants Rachel to Stay | Friends” (the official Friends channel, Best of Season 8): Rachel is looking for a new
 // place before the baby comes; Joey tries to talk her into staying, and they end up saying how much they'll miss it.
-// Segments from the captions, words from whisper (2026-11-16). The "trying to score" line (44.8–49.6 s) is left
-// untested (its point is sexual), and so is the "Dutch people" reference (backstory). The captions put "baby" at
-// 36.8 s, whisper ends that line at 33.7 s; no item uses 30–37 s.
-// EAR CHECK: 0.1 s w1 g1 — the first voice (male) is Joey and "Oh, yeah" is Rachel (assumed; used for all named stems)
-// EAR CHECK: 1.5 s w1 — captions "you're looking", whisper "you were looking" (no key depends on it)
+// Segments from the captions, words from whisper (2026-11-16). The "trying to score" line (44.8–49.6 s) is sexual and
+// its answer f1 ships retired; the "Dutch people" line (i1) is backstory and ships retired.
+// EAR CHECK: 0.1 s w1 — the first voice (male) is Joey and "Oh, yeah" is Rachel (assumed)
 // EAR CHECK: 10.5 s x1 — "kind of hoping": "kind of" shrinks to ≈ kinda
-// EAR CHECK: 22.8 s s1 — captions "you, you could put it", whisper "you know, you could put it"; "put it" flapped
-// EAR CHECK: 54.2 s t1 — Rachel's "It's so sweet…" is sincere, not sarcastic (key rests on tone)
-// EAR CHECK: 61.2 s t2 — speaker of "I just… I love living with you so much" unknown (stem doesn't name them); the
-//   stammer is emotion, not doubt (key rests on tone)
-// EAR CHECK: 78.6 s h2 — speakers of "I'm going to miss you" (captions; whisper "gonna") and "You're the hottest
-//   roommate I ever had" unknown (stem doesn't name them)
-// EAR CHECK: 44.8 s f1 — who says "imagine bringing home some girl…"? The turns suggest Rachel says it and Joey
-//   answers "I could use a challenge" (f1's stem assumes Joey for the answer)
+// EAR CHECK: 22.8 s s1 — captions "you, you could put it", whisper "you know, you could put it"
+// EAR CHECK: 78.6 s p4 — captions "I'm going to miss you", whisper "gonna" (p4 asks the meaning only)
 import type { Clip } from '../types.ts';
 
 export const joeyStay: Clip = {
@@ -26,45 +15,38 @@ export const joeyStay: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: blind 50 % and right; only the key had a story ("heard it from Ross"). Now all three say how.
-    // why: Rachel/Ross ← she is the one moving, so she "should" bring it up; Rachel/ad ← the usual house-hunt script
     { id: 'w1', skill: 'who', level: 'B1', point: 'heard', seg: [0, 3.6],
-      stem: 'Who brings up the new place first?',
-      choices: ['Rachel, who says she talked to Ross', 'Joey, who says he talked to Ross',
-                'Rachel, who says she saw an ad'], a: 1,
-      cue: '最初の声と、「Oh, yeah」と答える声。',
+      stem: 'Who talks about the new place first?',
+      ja: '新しい部屋の話を最初にするのはだれ？',
+      choices: ['Rachel, who heard from Ross', 'Joey, who heard from Ross', 'Rachel, who saw an ad'], a: 1,
+      choicesJa: ['レイチェル（ロスから聞いた）', 'ジョーイ（ロスから聞いた）', 'レイチェル（広告を見た）'],
+      cue: '最初の男性の声',
       line: 'I was *talking to Ross*, and he said that you’re looking for a new place.',
-      said: 'Joey が「Ross と話してたら、部屋を探してるって聞いた」と切り出す。',
-      mean: '人から聞いた話として、気になっていたことを持ち出している。',
-      trap: '引っ越すのは Rachel なので本人が言い出したと思いやすい。最初の声で判断。',
-      use: 'I was talking to Mia, and she said…（Mia と話してたら、言ってたんだけど…）' },
-
-    // R fix: blind 90 %; "night care" was a filler and the key was the only one about the move. Key shortened (C7).
-    // why: Ross's place ← Ross is named at the start and "put it" talk follows; help her find one ← "new place" +
-    //   "talking to Ross" read as an offer to help
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['hoping'], seg: [0, 60],
+      said: 'ジョーイが「ロスと話してたら、部屋を探してるって聞いた」と切り出す。',
+      mean: 'I was talking to 〜 ＝「〜と話してたんだけど」。人から聞いた話を持ち出す前置き。',
+      trap: '引っ越すのはレイチェルなので、本人が言い出すと思いやすい。',
+      use: 'I was talking to my boss, and…（上司と話してたんだけど…）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['hoping'], seg: [0, 44.5],
       stem: 'What are Joey and Rachel mainly talking about?',
-      choices: ['Where to put the baby in Ross’s apartment', 'Whether Rachel will move out or stay',
-                'Whether Joey can help her find a new place'], a: 1,
-      cue: '最初の「new place」と、そのあとの理由の話。',
-      said: '部屋を探す Rachel に、Joey が「残ってほしい」と言い、置き場所まで提案する。',
-      mean: '赤ちゃんが来る前に出て行くか、ここに残るかの話し合い。',
-      trap: 'put it over here が何度も出るが、それは引き止めるための提案。',
+      ja: 'ジョーイとレイチェルは、主に何の話をしている？',
+      choices: ['Buying things for the baby', 'Whether Rachel moves out', 'Finding Joey a new place'], a: 1,
+      choicesJa: ['赤ちゃんの物を買うこと', 'レイチェルが出て行くかどうか', 'ジョーイの新しい部屋さがし'],
+      cue: '最初の「new place」と、そのあと',
+      said: '部屋を探すレイチェルに、ジョーイが「残って」と言う。',
+      mean: 'looking for a new place ＝ 新しい部屋を探している。出て行くか、残るかの話。',
+      trap: 'put it over here（ここに置ける）が何度も出るが、引き止めるための話。',
       use: 'I’m looking for a new place.（新しい部屋を探してるの）' },
-
-    // why: in with Ross ← Ross is named just before; next door ← "across" heard only as "near"
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'where', seg: [2.2, 5.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'where', seg: [1.5, 5],
       stem: 'Where does Rachel hope to move?',
+      ja: 'レイチェルはどこに引っ越したい？',
       choices: ['In with Ross', 'Right next door', 'Across the street'], a: 2,
-      cue: '「Oh, yeah」のあと、「Hopefully」に続く場所。',
+      choicesJa: ['ロスの部屋', 'すぐとなり', '通りの向かい'],
+      cue: '「Hopefully」のあと',
       line: 'Oh, yeah. *Hopefully across the street*.',
-      said: '「うん。できれば通りの向かいがいい」と答えている。',
+      said: '「うん。できれば、通りの向かいがいいな」と答える。',
       mean: 'hopefully ＝ うまくいけば。across the street ＝ 通りをはさんだ向かい側。',
-      trap: '直前の Ross の名と結びつけやすい。across は「となり」ではなく「向こう側」。',
+      trap: '直前のロスの名前と結びつけやすい。across は「となり」ではなく「向こう側」。',
       use: 'There’s a café across the street.（通りの向かいにカフェがあります）' },
-
-    // R fix: blind 60 %; "hard to live with" didn't match "let go". Now a near-sound "let (her in)" reading competes.
-    // why: won't let her in ← "let" heard, "go" lost; costs ← the usual apartment-hunt script
     { id: 'i1', skill: 'infer', level: 'C1', point: 'letgo', reveals: ['where'], seg: [4.7, 9.9],
       stem: 'From what Rachel adds, what is the problem with that place?',
       choices: ['The people there won’t let her move in', 'Someone there won’t give it up yet',
@@ -74,110 +56,93 @@ export const joeyStay: Clip = {
       said: '「ある人たちが手放してくれさえすればね」と付け足す。',
       mean: 'let go ＝ 手放す。今の住人がなかなか出て行かない、という不満。',
       trap: 'let だけ聞くと「入れてくれない」に取りやすい。let go で「手放す」。最後の go まで聞く。',
-      use: 'You have to let it go.（もう手放さなきゃ）' },
-
-    // R fix: blind 85 %; "asking her to explain" was a filler. Now a literal past-tense reading competes.
-    // why: insisting ← "stay" heard as an order; assumed all along ← the past "was hoping" read literally
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'hoping', seg: [9.8, 13.3],
-      stem: 'What is Joey doing when he says he was “kind of hoping…”?',
-      choices: ['Telling her that she has to stay', 'Saying what he wants, without pushing',
-                'Saying he’d assumed all along she’d stay'], a: 1,
-      cue: '文の最初の「I was kind of」の働き。',
+      use: 'You have to let it go.（もう手放さなきゃ）', retired: true },
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'hoping', seg: [8, 13],
+      stem: 'How does Joey ask Rachel to stay?',
+      ja: 'ジョーイは、残ってほしいとどう伝える？',
+      choices: ['Gently, without pushing', 'Firmly, as if giving an order', 'As a joke, laughing'], a: 0,
+      choicesJa: ['やんわりと、押しつけずに', 'きっぱり、命令のように', '笑いながら冗談で'],
+      cue: 'ジョーイの最初の一言',
       line: 'I was *kind of hoping* you’d stay.',
       said: '「ちょっと、いてくれたらなって思ってた」と言う。',
-      mean: 'was hoping と kind of で二重にやわらげ、断る余地を残して気持ちを伝える。',
-      trap: 'stay だけだと命令に、was だけだと「前から」に聞こえる。kind of はクッション。',
+      mean: 'kind of（ちょっと）と was hoping（思ってた）で、やわらかくお願いしている。',
+      trap: 'stay だけ聞くと命令に聞こえやすい。kind of はやわらげる言葉。',
       use: 'I was kind of hoping to leave early.（ちょっと早めに帰れたらなと思って）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hoping', seg: [9.8, 13.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hoping', seg: [8, 13],
       stem: 'Type what Joey says: “I was ___ you’d stay.” (3 words)', answer: 'kind of hoping',
-      cue: '「I was」のすぐあと。短くつながる部分。',
+      ja: 'ジョーイの言葉を入力：「I was ___ you’d stay.」（3語）',
+      cue: '「I was」のすぐあと',
       line: 'I was *kind of hoping* you’d stay.',
-      said: '「いてくれたらなと思ってた」と言っている。',
+      said: '「いてくれたらなと思ってた」と言う。',
       mean: 'kind of は「カインダ」と一語のように縮まる。of の f はほぼ聞こえない。',
-      trap: 'kinda が一つの音に聞こえ、kind を「親切な」と取ることも。ここは「ちょっと」。',
+      trap: 'kind を「親切な」と思いやすい。ここは「ちょっと」の意味。',
       use: 'I’m kind of tired today.（今日はちょっと疲れてる）' },
-
-    // R fix: blind 85 %; "rather live with Ross" was weak. Now three parallel reasons, all about the baby.
-    // why: noisy ← "cry all the time" comes later, moved onto the place; rent ← the usual apartment script
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'room', seg: [13, 18],
-      stem: 'What reason does Rachel give for having to go?',
-      choices: ['Joey’s place is too noisy for a baby', 'There isn’t any space for a baby there',
-                'The rent there is too high with a baby'], a: 1,
-      cue: '「I have to go」の直後の理由。',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'room', seg: [12, 17],
+      stem: 'Why does Rachel say she has to go?',
+      ja: 'レイチェルは、なぜ出て行かなきゃと言う？',
+      choices: ['Joey’s place is too noisy', 'There’s no space for a baby', 'The rent is too high'], a: 1,
+      choicesJa: ['ジョーイの部屋がうるさい', '赤ちゃんの場所がない', '家賃が高すぎる'],
+      cue: '「I have to go」のすぐあと',
       line: 'Joey, I have to go. *There’s no room for a baby here*.',
       said: '「行かなきゃ。ここには赤ちゃんの場所がないもの」と言う。',
-      mean: 'room ＝ ここでは「部屋」ではなく「スペース・余地」。数えない名詞。',
-      trap: 'noisy は後の「泣く」の話に引かれた読み。理由は no room の一言。room を聞き取る。',
-      use: 'Is there room for one more?（もう一人入れますか）' },
-
-    // R fix: blind 50 % and right; "tiny bedroom" was weak. A teasing reading now competes; key shortened (C7).
-    // why: huge ← "this big" without the gesture sounds like "so big"; teasing ← "No room?" echoed back sounds mocking
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'big', seg: [16.5, 22.6],
-      stem: 'Why does the audience laugh at Joey’s answer to “no room”?',
-      choices: ['He is joking that the baby will be huge', 'He is teasing her for overreacting',
-                'He thinks size is the only problem'], a: 2,
-      cue: '「No room」と聞き返したあと、赤ちゃんの何の話をするか。',
+      mean: 'room ＝ ここでは「部屋」ではなく「スペース・場所」。no room ＝ 場所がない。',
+      trap: 'room を「部屋」と思いやすい。no room for 〜 で「〜の入る場所がない」。',
+      use: 'Is there room for one more?（もう1人入れますか）' },
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'big', seg: [15.5, 21],
+      stem: 'Why does Joey say the baby is “this big”?',
+      ja: 'ジョーイはなぜ、赤ちゃんは「this big」だと言う？',
+      choices: ['He thinks size is the problem', 'He believes the baby is huge', 'He is angry at Rachel'], a: 0,
+      choicesJa: ['大きさが問題だと思っている', '赤ちゃんはとても大きいと思っている', 'レイチェルに怒っている'],
+      cue: '「No room?」と聞き返したあと',
       line: 'No room? It’s a baby. *It’s, like, this big.*',
       said: '「場所がない？赤ちゃんだよ。こんなに小さいじゃん」と言う。',
-      mean: '赤ちゃんの問題を大きさだけで考えるずれが笑い。room は生活の余裕も含む。',
-      trap: 'this big は手で示す大きさなので、音だけだと「大きい」と取りやすい。',
+      mean: 'this big ＝「（手で見せて）これくらい」。room を物の置き場所だと思っているのが笑いどころ。',
+      trap: 'big から「大きい」と思いやすい。手で小ささを見せている。',
       use: 'The fish was, like, this big!（魚がこーんなに大きくて！）' },
-
-    // R fix: blind 50 % and right. "put" alone doesn't fit before "over here" and "pick it over here" isn't English,
-    //   so it was a two-way pick. Now 3 grammatical choices.
-    // why: put that ← the flap blurs "it" into a short "that"; push it ← the vowel and ending sound close
-    { id: 's1', skill: 'sound', level: 'B2', point: 'put', seg: [22.3, 25.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'put', seg: [20.5, 25.5],
       stem: 'Fill the gap: “You could ___ over here.”',
+      ja: 'すき間をうめよう：「You could ___ over here.」',
       choices: ['put it', 'put that', 'push it'], a: 0,
-      cue: '「could」のあと、「over」の直前まで。',
+      choicesJa: ['それを置く（put it）', 'あれを置く（put that）', 'それを押す（push it）'],
+      cue: '「could」と「over」の間',
       line: 'you could *put it* over here',
-      said: '「ここに置けるよ」と場所を提案している。',
-      mean: 'put it の t が母音にはさまれて弾み、「プディッ」のようにつながる。',
-      trap: 'put it は弾んでつながり、that や push にも聞こえる。t の弾みと短い it を聞く。',
+      said: '「ここに置けるよ」と場所を提案する。',
+      mean: 'put it は t が軽い「ラ」の音になり、「プリッ」のようにつながる。',
+      trap: 'つながって that や push にも聞こえやすい。短い「イッ」で終わるか聞く。',
       use: 'Just put it over there.（そこに置いといて）' },
-
-    // R fix: blind 65 %; the key was the only one that wasn't about a spot. Now a "doesn't like the spots" reading.
-    // why: bigger place ← "where you put it" heard as needing more space; spots ← "where you put it" heard, "not
-    //   just" missed
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'matter', reveals: ['imean', 'put'], seg: [37.3, 43.6],
-      stem: 'When Rachel answers Joey’s ideas, what is her point?',
-      choices: ['She doesn’t like the spots he picked', 'Where it goes isn’t the real problem',
-                'She needs a bigger place for it'], a: 1,
-      cue: '「Hey」で始まる返事。「not just」のあとに注目。',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'matter', reveals: ['imean', 'put'], seg: [36.5, 43],
+      stem: 'What is Rachel’s point about the baby?',
+      ja: '赤ちゃんについて、レイチェルが言いたいことは？',
+      choices: ['Where it goes isn’t the problem', 'She dislikes the spots he picks', 'She needs a bigger place'], a: 0,
+      choicesJa: ['置き場所の問題じゃない', 'ジョーイの選んだ場所がいや', 'もっと広い部屋が要る'],
+      cue: 'レイチェルの「Hey」のあと',
       line: 'it’s *not just a matter of where you put it*. I mean, a baby *changes everything*.',
       said: '「置き場所だけの問題じゃない。赤ちゃんで全部変わるの」と言う。',
-      mean: 'not just a matter of ～ ＝ 〜だけの話ではない。',
-      trap: 'where you put it だけ拾うと場所の相談に聞こえる。not just がポイント。',
+      mean: 'not just a matter of 〜 ＝「〜だけの話じゃない」。もっと大きな問題がある。',
+      trap: 'where you put it だけ聞くと、場所の相談に聞こえやすい。',
       use: 'It’s not just a matter of money.（お金だけの問題じゃない）' },
-
-    // R fix: blind 80 %; the stem named "I mean", so the textbook gloss won. The stem now names the moment only;
-    //   the listener has to catch the marker and what follows.
-    // why: takes back ← "I mean" as self-repair; new topic ← "a baby changes everything" heard as a fresh start
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['matter', 'put'], seg: [38.3, 43.6],
-      stem: 'Right after “…where you put it”, what does Rachel’s next sentence do?',
-      choices: ['Takes back what she just said', 'Puts the same point more broadly', 'Moves on to a new topic'],
-      a: 1,
-      cue: '「I mean」のあと、前の文より大きい話になるか。',
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['matter', 'put'], seg: [37.3, 43.6],
+      stem: 'Why does Rachel say “I mean” here?',
+      ja: 'レイチェルはここで、なぜ「I mean」と言う？',
+      choices: ['To explain her point more', 'To take back what she said', 'To change the topic'], a: 0,
+      choicesJa: ['言いたいことをもっと説明する', '言ったことを取り消す', '話題を変える'],
+      cue: '「where you put it」のあと',
       line: 'it’s not just a matter of where you put it. *I mean*, a baby changes everything.',
-      said: '「場所の問題じゃない。つまり、赤ちゃんで何もかも変わるの」と続ける。',
-      mean: 'I mean ＝「つまりね」。前の言葉を、もっと大きくはっきり言い直している。',
-      trap: 'I mean は訂正にも使うが、ここは前の文を打ち消していない。同じ方向に広げている。',
-      use: 'I mean, it’s your call.（つまり、決めるのは君だよ）' },
-
-    // R fix: blind 60 %; "cost money" was off the scene's track. Now two baby-noise readings compete.
-    // why: own room ← "no room" from earlier; up at night ← the night-crying script, close in meaning but not said
+      said: '「つまり、赤ちゃんで何もかも変わるのよ」と続ける。',
+      mean: 'I mean ＝「つまりね」。前に言ったことを、もっとはっきり言い直す合図。',
+      trap: 'I mean は言い直しにも使うので、取り消すと思いやすい。ここは同じ話を広げている。',
+      use: 'I mean, it’s your choice.（つまり、決めるのはあなたよ）' },
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cry', seg: [41.1, 44.8],
       stem: 'What does Rachel say babies do?',
+      ja: '赤ちゃんは何をすると、レイチェルは言う？',
       choices: ['Need their own room', 'Keep you up at night', 'Cry all the time'], a: 2,
-      cue: '「changes everything」のすぐあと、短い文。',
+      choicesJa: ['自分の部屋が要る', '夜ねかせてくれない', 'いつも泣いている'],
+      cue: '「changes everything」のあと',
       line: 'a baby changes everything. *They cry all the time.*',
-      said: '「赤ちゃんはずっと泣くのよ」と言っている。',
-      mean: 'They は赤ちゃん一般。all the time ＝ しょっちゅう、いつも。',
-      trap: '前の room の話や「夜泣き」の連想に引かれやすい。They のあとの動詞を聞く。',
+      said: '「赤ちゃんって、ずっと泣くのよ」と言う。',
+      mean: 'They は赤ちゃんのこと。all the time ＝ いつも、しょっちゅう。',
+      trap: '前の room の話や「夜泣き」を思いやすい。They のあとの動詞を聞く。',
       use: 'It rains all the time here.（ここはしょっちゅう雨が降る）' },
-
-    // why: use it ← "use" read as 使う (use the baby); challenge her ← challenge = 挑戦する read as "argue with him"
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'challenge', seg: [49.5, 53.9],
       stem: 'What does Joey mean by “I could use a challenge”?',
       choices: ['He could use the baby to his advantage', 'He would welcome something harder',
@@ -187,23 +152,28 @@ export const joeyStay: Clip = {
       said: '「ちょっと難しいほうがいい。最近楽すぎるし」と返す。',
       mean: 'I could use ～ ＝ 〜があるとありがたい。困るどころか歓迎だ、という強がり。',
       trap: 'use を「使う」と取ると意味が通らない。could use は「ほしい」の決まった言い方。',
-      use: 'I could use a coffee.（コーヒーが飲みたいな）' },
-
-    // R fix: blind 85 %; "tells him he's silly" was weak. A Japanese-style "I'll think about it" now competes.
-    // why: stays ← "you want me to stay" heard as her agreeing; think about it ← 「考えておくね」, a soft maybe
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'sweet', seg: [53.7, 59.8],
-      stem: 'What does Rachel do with “It’s so sweet that you want me to stay”?',
-      choices: ['Agrees to stay for a little while', 'Thanks him, and says she’ll think about it',
-                'Thanks him, then turns him down'], a: 2,
-      cue: '「sweet」の文のあと、「but」に続く部分。',
+      use: 'I could use a coffee.（コーヒーが飲みたいな）', retired: true },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['sweet'], seg: [53, 83.5],
+      stem: 'How does the scene end?',
+      ja: 'この場面はどう終わる？',
+      choices: ['Rachel is still moving out', 'Rachel will stay till the baby', 'Joey will move out too'], a: 0,
+      choicesJa: ['レイチェルはやはり出て行く', '赤ちゃんまでレイチェルは残る', 'ジョーイも出て行く'],
+      cue: '最後の「miss you」まで',
+      said: 'レイチェルは断ったまま。2人とも寂しいと言って終わる。',
+      mean: 'I’m gonna miss you ＝「寂しくなるね」。予定は変わらず、別れを受け入れる。',
+      trap: 'I love living with you（一緒に住むのが好き）から、残ると思いやすい。',
+      use: 'I’m really going to miss this place.（この場所、本当に寂しくなる）' },
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'sweet', seg: [53, 58],
+      stem: 'How does Rachel answer Joey’s idea?',
+      ja: 'レイチェルは、ジョーイの気持ちにどう答える？',
+      choices: ['She thanks him, then says no', 'She says yes, for a while', 'She says she’ll think about it'], a: 0,
+      choicesJa: ['お礼を言ってから断る', 'しばらくならいいと言う', '考えておくと言う'],
+      cue: '「sweet」の文のあと',
       line: 'It’s *so sweet* that you want me to stay, *but* I can’t do that to you.',
-      said: '「残ってほしいって言ってくれてうれしい。でも、できない」と言う。',
-      mean: 'まず気持ちに感謝し、but で断る。やわらかい断り方の型。',
-      trap: '「考えておくね」の保留に聞こえやすいが、but のあとの can’t ははっきりした断り。',
+      said: '「残ってほしいなんて、うれしい。でも、できない」と言う。',
+      mean: 'It’s so sweet ＝「やさしいね」。まず感謝して、but で断るやわらかい断り方。',
+      trap: '「考えておくね」に聞こえやすい。but のあとの can’t ははっきりした断り。',
       use: 'That’s so sweet, but I can’t.（ありがとう、でも無理なの）' },
-
-    // R fix: blind 85 %; "cold and distant" was weak. A light, amused reading now competes.
-    // why: sarcastic ← "so sweet" can be ironic in English; amused ← "so sweet" said to a friend's odd idea
     { id: 't1', skill: 'attitude', level: 'C1', point: 'sweet', seg: [53.7, 59.8],
       stem: 'How does Rachel feel about Joey wanting her to stay?',
       choices: ['Annoyed; she says it with sarcasm', 'Touched; she means it very warmly',
@@ -213,51 +183,51 @@ export const joeyStay: Clip = {
       said: '「うれしい」と言い、断る理由も「あなたの生活を乱しちゃう」と Joey のため。',
       mean: '本当に心を動かされている。皮肉なら理由も冷たくなる。',
       trap: '英語の so sweet は皮肉にも使うので迷いやすい。続く理由が相手思いなら本気。',
-      use: 'Aw, that means a lot.（わあ、すごくうれしい）' },
-
-    // R fix: blind 85 %; "changes her mind" was the only other outcome. A compromise now competes; key shortened (C7).
-    // why: stays till the baby ← "I love living with you" + "wish things didn't have to change" heard as a deal;
-    //   blame ← "I blame Ross" heard as a quarrel
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['sweet', 'change'], seg: [53.7, 83.1],
-      stem: 'Where do things stand at the end of the scene?',
-      choices: ['She agrees to stay until the baby comes', 'They argue over whose fault the move is',
-                'She is still leaving, and both feel sad'], a: 2,
-      cue: '最後の「miss you」まで、引っ越しの予定が変わったか。',
-      said: 'Rachel は断ったまま。二人とも寂しさを口にして終わる。',
-      mean: '予定は変わらず、別れを受け入れてしんみり終わる場面。',
-      trap: 'I love living with you で「残る」と取りやすいが、最後は miss you。予定は変わらない。',
-      use: 'I’m really going to miss this place.（この場所、本当に寂しくなる）' },
-
-    // R fix: blind 70 %; "can't say no" was weak. "Hurt his feelings" (do that to you = hurt you) now competes.
-    // why: not allowed ← "can't" read as a rule; hurt his feelings ← "do that to you" read as "hurt you", the
-    //   leaving taken as the thing she can't do
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'dothat', reveals: ['sweet'], seg: [55.5, 59.8],
+      use: 'Aw, that means a lot.（わあ、すごくうれしい）', retired: true },
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'dothat', reveals: ['sweet'], seg: [55, 60],
       stem: 'What does Rachel mean by “I can’t do that to you”?',
-      choices: ['She isn’t allowed to stay there anymore', 'She doesn’t want to hurt his feelings',
-                'She doesn’t want to be a burden on him'], a: 2,
-      cue: '直後の「I mean」から始まる説明。',
+      ja: '「I can’t do that to you」で、レイチェルは何が言いたい？',
+      choices: ['Rules say she can’t stay', 'She’d make his life hard', 'She doesn’t like his place'], a: 1,
+      choicesJa: ['決まりで残れない', 'ジョーイの生活を大変にしてしまう', 'ジョーイの部屋が好きじゃない'],
+      cue: 'すぐあとの「I mean」から',
       line: 'I can’t *do that to you*. I mean, it would *disrupt your entire life*.',
-      said: '「そんなことできない。生活が乱れちゃう」と言う。',
-      mean: 'do that to you ＝ そんな迷惑をかける。disrupt ＝ かき乱す。',
-      trap: 'do that to you を「傷つける」と取ると逆。that は残ること。I mean のあとを聞く。',
+      said: '「そんなことできない。あなたの生活が乱れちゃう」と言う。',
+      mean: 'do that to you ＝「あなたにそんな迷惑をかける」。disrupt ＝ かき乱す。',
+      trap: 'can’t から「決まりでだめ」と思いやすい。I mean のあとが理由。',
       use: 'I can’t do that to her.（彼女にそんなことできない）' },
-
-    // R fix: blind 80 %; "annoyed" didn't fit the words. An embarrassed reading of the stammer now competes.
-    // why: embarrassed ← the stammer read as awkwardness; unsure ← the stammer read as not knowing what to say
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'change', seg: [60.8, 69.1],
-      stem: 'In “I just… I love living with you so much…”, how does the speaker sound?',
-      choices: ['Embarrassed, trying to laugh it off', 'Too moved to get the words out',
-                'Unsure what they really want to say'], a: 1,
-      cue: '何度も「I just」で止まるところと、そのあとの中身。',
-      line: 'I just… I *love living with you so much*. I just, I *wish things didn’t have to change*.',
-      said: '「一緒に住むのが本当に好き。変わらなきゃいいのに」と、つまりながら言う。',
-      mean: '何度も言いかけて止まるのは、気持ちがいっぱいで言葉が出ないから。',
-      trap: '言いよどみは迷いにも聞こえるが、中身ははっきりしている。止まり方と中身をセットで。',
-      use: 'I wish we didn’t have to leave.（帰らなくてすめばいいのに）' },
-
-    // R fix: blind 80 %; "living together was hard" was weak. An over-reading ("only looks mattered") now competes;
-    //   key shortened (C7).
-    // why: other roommates ← "ever had" heard as a dig at the others; only looks ← the compliment read as a confession
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'change', seg: [60, 70],
+      stem: 'How do they feel about living apart?',
+      ja: '別々に住むことを、2人はどう感じている？',
+      choices: ['Sad about it', 'Glad about it', 'Angry about it'], a: 0,
+      choicesJa: ['悲しい', 'うれしい', '腹が立つ'],
+      cue: '何度も「I just」で止まる所',
+      line: 'I just… I *love living with you so much*. I just *wish things didn’t have to change*.',
+      said: '「一緒に住むのが大好き。変わらなきゃいいのに」とつまりながら言う。',
+      mean: 'I wish 〜 didn’t ＝「〜でなければいいのに」。変わってほしくない、悲しい気持ち。',
+      trap: 'love（大好き）が聞こえるので、うれしいと思いやすい。続く wish を聞く。',
+      use: 'I wish you didn’t have to go.（行かなくてすめばいいのに）' },
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'blame', seg: [70, 76.5],
+      stem: 'Who do they say is to blame?',
+      ja: '2人は、だれのせいだと言う？',
+      choices: ['Ross', 'Joey', 'The baby'], a: 0,
+      choicesJa: ['ロス', 'ジョーイ', '赤ちゃん'],
+      cue: '「You know」で始まる一言',
+      line: 'You know, I *blame Ross* for this. — I do, too, a little bit.',
+      said: '「これはロスのせいだと思う」「私もちょっとそう思う」と言う。',
+      mean: 'blame 〜 for … ＝「…を〜のせいにする」。冗談っぽく、ロスのせいにして笑っている。',
+      trap: '赤ちゃんの話が続いたので、赤ちゃんのせいと思いやすい。blame のすぐあとを聞く。',
+      use: 'Don’t blame me.（私のせいにしないで）' },
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'miss', seg: [75, 80],
+      stem: 'What does “I’m gonna miss you” mean?',
+      ja: '「I’m gonna miss you」はどういう意味？',
+      choices: ['I will feel sad without you', 'I will look for you later', 'I missed you a lot'], a: 0,
+      choicesJa: ['あなたがいないと寂しくなる', 'あとであなたを探す', 'すごく会いたかった'],
+      cue: '「a little bit」のあと',
+      line: 'I do, too, a little bit. — *I’m gonna miss you.*',
+      said: '「寂しくなるね」と言う。',
+      mean: 'miss ＝ ここでは「いなくて寂しい」。gonna ＝ going to（〜する）。別れのときの決まり文句。',
+      trap: 'miss から「のがす・はずす」を思いやすい。人が目的語なら「寂しい」。',
+      use: 'I’m gonna miss you.（寂しくなるよ）' },
     { id: 'h2', skill: 'humor', level: 'C1', point: 'hottest', seg: [78.1, 83.1],
       stem: 'Why does the audience laugh at the very last line?',
       choices: ['It pokes fun at all the other roommates', 'A sad goodbye ends with a remark on looks',
@@ -267,6 +237,6 @@ export const joeyStay: Clip = {
       said: '「寂しくなる」のあと、「今までで一番イケてるルームメイト」と言う。',
       mean: 'しんみりした別れを、見た目のほめ言葉で軽くしめるずれが笑い。',
       trap: 'hot を本音の告白と取ると重くなる。しんみりした流れを軽く外すのが笑いの形。',
-      use: 'Best trip I’ve ever had!（今までで最高の旅！）' }
+      use: 'Best trip I’ve ever had!（今までで最高の旅！）', retired: true }
   ]
 };
