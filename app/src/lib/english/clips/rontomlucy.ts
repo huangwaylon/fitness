@@ -1,15 +1,13 @@
+// A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 7, new 3
 // “Ron Interferes with Tom's Love Life | Parks and Recreation” (the official Parks and Recreation channel, Season 7): at
 // Donna's wedding Tom tells Ron he'd marry Lucy tomorrow, Ron repeats it to her, and his "fix" makes it bigger until
 // Tom has to say how he feels.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 221 s. Untested on purpose: 0–12 s and
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 221 s. Untested on purpose: 0–11 s and
 // 56.9–65 s (who hands out the hand cream, who says "Damn, Tommy, well done" and "Tommy's the man"), 91.4 s (captions
 // "strict life coats", whisper "codes"; x1's line stops before it), 100 s ("Tommy's Bahama" leans on a brand name),
 // 85.4 s ("the small hamburgers" rests on what Ron sees). Ron is named at 63.5 s and 189.9 s; "son" (36.9 s, 85.8 s)
 // marks his turns to Tom; Lucy is named at 116.4 s.
-// REVIEW 2026-11-16: pass 9, fix 15, drop 0, new 0; ear checks 0
-//   Open: d4 stays about 50 % blind (the break-up reason is the usual one in a romance); its distractors are sound
-//   traps. The authored ear check (215.4 s, Lucy's "free dresses" line) went: the turn-taking settles it ("I know you
-//   just got out of a relationship" → "I'm only dating you for the free dresses"; only Lucy gets the dresses).
+// Open: d4 stays about 50 % blind (the break-up reason is the usual one in a romance).
 import type { Clip } from '../types.ts';
 
 export const ronTomLucy: Clip = {
@@ -18,63 +16,68 @@ export const ronTomLucy: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // why: hand cream ← the clip's first gift talk (Lucy's own purchase, before this segment); a part in the wedding ←
-    //   "Donna's butler of honor" heard as Lucy's role, not Tom's
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'better', seg: [11.8, 18.4],
+      stem: 'What does Tom mean by “Better than well”?',
+      ja: 'トムの「Better than well」はどういう意味？',
+      choices: ['Things are going great', 'Things could be better', 'He feels a little sick'], a: 0,
+      choicesJa: ['すごくうまくいっている', 'もう少し良くなってほしい', '少し具合が悪い'],
+      cue: 'ロンの「going well」のあと',
+      line: 'Glad things are going well. — *Better than well.*',
+      said: '「うまくいっていてよかった」に、「うまく以上だよ」と返す。',
+      mean: 'Better than well ＝「うまく、どころじゃない」＝最高。相手の言葉を使って強める返事。',
+      trap: 'well（元気）から、体調の話と思いやすい。going well（うまくいく）への返事。',
+      use: 'How’s work? — Better than ever!（仕事どう？ー今までで最高！）' },
+
     { id: 'd1', skill: 'detail', level: 'B1', point: 'dress', seg: [15.9, 26.1],
-      stem: 'What surprise has Tom got for Lucy for tonight?',
-      choices: ['A dress that matches his outfit', 'A hand cream from the nail salon', 'A part in Donna’s wedding party'],
-      a: 0,
-      cue: '「As a surprise」のあと。',
+      stem: 'What surprise does Tom have for Lucy?',
+      ja: 'トムはルーシーにどんなサプライズを用意した？',
+      choices: ['A dress that matches his', 'Some hand cream to try', 'A role in the wedding'], a: 0,
+      choicesJa: ['彼とおそろいのドレス', '試せるハンドクリーム', '結婚式での役'],
+      cue: '「As a surprise」のあと',
       line: 'As a surprise, I got a *matching dress* for Lucy.',
-      said: 'ドナの結婚式で付き添い役を務めるトムは、ルーシーにも自分とおそろいのドレスを用意した。',
-      mean: 'matching ＝ おそろいの。同じ柄のドレスをサプライズで贈る。',
-      trap: 'butler of honor はトム自身の役目。誰の話か、主語を追って聞く。',
+      said: '「サプライズで、ルーシーにおそろいのドレスを買った」と言う。',
+      mean: 'matching ＝ おそろいの。I got 〜 for 人 ＝「人に〜を買った」。',
+      trap: 'butler of honor（付き添い役）はトム自身の役。I got のあとを聞く。',
       use: 'We got matching T-shirts.（おそろいのTシャツを買ったんだ）' },
 
-    // why: ninety ← a careful answer heard into "a hundred"; a hundred and ten ← the hype script ("110 percent") that
-    //   fits Tom's excitement
     { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [25.7, 32.6], keep: true,
-      stem: 'How sure is Tom that Lucy will be happy with the gift?',
+      stem: 'How sure is Tom that Lucy will like the gift?',
+      ja: 'トムは、ルーシーがプレゼントを喜ぶとどれくらい思っている？',
       choices: ['Ninety percent', 'A hundred percent', 'A hundred and ten percent'], a: 1,
-      cue: '「happy with this gift?」のあとの答え。',
+      choicesJa: ['90パーセント', '100パーセント', '110パーセント'],
+      cue: '「this gift?」のあと',
       line: 'do you believe Lucy will be happy with this gift? — *A hundred percent*.',
       said: '「喜ぶと思うか」に、「100パーセント。息ぴったりだから」と答える。',
       mean: 'A hundred percent ＝ 絶対に。迷いがないことを数字で言う。',
-      trap: '110パーセントと言う人もいるが、ここは100。数字のあとに and が続くかを聞く。',
+      trap: 'a hundred のあとに and ten は続かない。ninety（ナインティ）とも違う音。',
       use: 'Are you sure? — A hundred percent.（確か？ー絶対）' },
 
-    // R fix: V2. "I’m marrying" left the idiom "I’d marry" as the only natural choice; "I want to marry" is Tom's own
-    //   later wording (83.3 s), so a blind read can't lean on the idiom.
-    // why: I'll ← 'd and 'll both shrink to a short, dark sound after "I"; I want to ← Tom's own retelling at 83.3 s
-    //   ("You told Lucy I want to marry her?"), the same meaning in plainer words
     { id: 's1', skill: 'sound', level: 'B2', point: 'marry', seg: [32.4, 37.5],
       stem: 'Fill the gap: “___ her tomorrow.”',
+      ja: '「___ her tomorrow.」の空所は？',
       choices: ['I’d marry', 'I’ll marry', 'I want to marry'], a: 0,
-      cue: '「forever」の文のすぐあと、文頭の短い音。',
+      choicesJa: ['（できるなら）結婚する', '結婚する（予定）', '結婚したい'],
+      cue: '「forever」の文のすぐあと',
       line: 'I’m with the person I’m going to be with forever. *I’d marry* her tomorrow.',
-      said: '「ずっと一緒にいる相手だと思える。明日にでも結婚したい」と言う。',
-      mean: 'I’d ＝ I would。「明日でもいいくらい」という気持ちで、予定ではない。',
-      trap: 'I’ll なら「明日結婚する」予定になる。I のあとの短い音が d か ll か、意味ごと聞く。',
+      said: '「ずっと一緒にいる相手だ。明日にでも結婚したい」と言う。',
+      mean: 'I’d ＝ I would。「アイドゥ」の d は小さい。「明日でもいいくらい」で、予定ではない。',
+      trap: 'I’ll（アイル）なら予定の話。I want to なら「ワナ」が聞こえる。小さな d を聞く。',
       use: 'I’d move there tomorrow.（明日にでも引っ越したいくらい）' },
 
-    // R fix: K1. "Bully for you" is often sarcastic, so "scornful, but hiding it" was defensible. The key is hedged to
-    //   "pleased enough", and "shocked, trying to talk him out of it" (refuted: no objection, just food) replaces it.
-    // why: shocked ← "bully" heard as いじめっ子 plus "I'd marry her tomorrow", read as alarm; worried but silent ← the usual friend
-    //   script after "I'd marry her tomorrow" ("slow down"), held back as 遠慮
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'food', seg: [34.7, 43.3],
-      stem: 'How does Ron take Tom’s news about his feelings for Lucy?',
-      choices: ['Pleased enough, but keener on the food', 'Shocked, and trying to talk him out of it',
-                'Worried for him, but unwilling to say so'], a: 0,
-      cue: '「son」のあと、話題がどこへ行くか。',
+    { id: 'a1', skill: 'marker', level: 'B1', point: 'food', seg: [34.7, 43.3],
+      stem: 'What does Ron do with “More importantly”?',
+      ja: 'ロンは「More importantly」で何をする？',
+      choices: ['Moves to what he cares about', 'Asks Tom for more details', 'Tells Tom some bad news'], a: 0,
+      choicesJa: ['自分の気になる話に移る', 'トムにもっと詳しく聞く', 'トムに悪い知らせを言う'],
+      cue: '「Bully for you」のあと',
       line: '*Bully for you*, son. *More importantly*, do you have tri-tip for tonight?',
-      said: '「よかったな」と流し、「それより今夜トライチップ（牛肉）は？」と聞く。',
-      mean: 'Bully for you ＝ よかったね（古風）。肉の話が大事。',
-      trap: 'bully を「いじめっ子」と取ると冷たく聞こえる。関心は More importantly のあと。',
-      use: 'Good for you. Anyway, where’s the food?（よかったね。で、食べ物はどこ？）' },
+      said: '「よかったな」と流し、「それより今夜、牛肉はあるか」と聞く。',
+      mean: 'More importantly ＝「それより大事なのは」。Bully for you ＝ よかったね（古い言い方）。',
+      trap: 'more（もっと）から、もっと聞きたいと思いやすい。話は肉に移っている。',
+      use: 'More importantly, are you okay?（それより、大丈夫？）' },
 
-    // why: faith ← "organized religion" is said, so churches read as about faith; food ← "good food" opens the list,
-    //   and the speaker keeps chasing food all clip
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'church', seg: [44.6, 56.3],
+    // retired (A2): a “why is it funny” item on a vulgar line
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'church', seg: [44.6, 56.3], retired: true,
       stem: 'In the comment to the camera, why are churches top of the list?',
       choices: ['For how well the buildings are made', 'For the faith that is practiced there',
                 'For the food that is served after them'], a: 0,
@@ -85,90 +88,78 @@ export const ronTomLucy: Clip = {
       trap: 'religion や food も聞こえるが、ほめているのは construct（建てる）の部分。',
       use: 'Say what you will, it’s a great car.（何と言われようと、いい車だよ）' },
 
-    // R fix: V2. The title ("Ron Interferes…") made "told Lucy what Tom said" the only interfering choice. Both
-    //   distractors now interfere too.
-    // why: lied about a gift ← "sounds like lying" is said in the scene, plus the dress gift; not serious ← "walk back"
-    //   heard as Ron undercutting Tom (he said the opposite: "quite taken with you")
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'leak', reveals: ['walkback'], seg: [62.4, 115.4],
-      stem: 'Why does Tom end up needing Ron to fix things with Lucy?',
-      choices: ['Ron passed on to Lucy something Tom said to him', 'Ron warned Lucy that Tom wasn’t serious about her',
-                'Ron told Lucy that Tom had lied to her about a gift'], a: 0,
-      cue: '「You told Lucy」で始まるトムの質問。',
-      line: 'You *told Lucy* I want to marry her?',
-      said: 'トムが二人だけの話で言った「結婚したい」を、ロンがルーシーに伝えてしまった。',
-      mean: '本人のいない所での本音が相手に届き、トムは後始末をロンにさせようとする。',
-      trap: 'lying という語は出るが、うその話ではない。本当のことを言ってしまったのが問題。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'leak', reveals: ['walkback'], seg: [64.0, 94.2],
+      stem: 'Why is Tom upset with Ron?',
+      ja: 'トムはなぜロンに怒っている？',
+      choices: ['Ron told Lucy Tom’s secret', 'Ron ate all the food', 'Ron called Tom a liar'], a: 0,
+      choicesJa: ['トムの秘密をルーシーに言った', '料理を全部食べた', 'トムをうそつきと呼んだ'],
+      cue: 'トムの最初の質問',
+      line: 'He said he’d marry you tomorrow. — *You told Lucy* I want to marry her?',
+      said: '「君、ルーシーに僕が結婚したいって言ったの？」と責める。',
+      mean: 'You told 人 〜? ＝「〜って人に言ったの？」。二人だけの話が伝わってしまった。',
+      trap: 'lying（うそ）が聞こえるので、うその話と思いやすい。言ったのは本当のこと。',
       use: 'That was just between us!（それ、ここだけの話だったのに！）' },
 
-    // why: won't give an opinion ← the Japanese frame: "I normally don't get involved" heard as 遠慮, a polite refusal;
-    //   Lucy should stay out ← "personal affairs" heard as aimed at her, not at Ron himself
-    // R fix: V2. "Apologizes for missing part of the wedding" was a filler; the new distractor is a keyword trap.
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'preface', seg: [64.6, 74.6],
-      stem: 'What does Ron’s line about not getting involved do here?',
-      choices: ['It warns that he’s about to share something private', 'It explains why he won’t give an opinion on Tom',
-                'It tells Lucy to stay out of Tom’s private life'], a: 0,
-      cue: 'but のあと、何が始まるか。',
-      line: 'I normally don’t get involved in people’s personal affairs, *but* something about a wedding, *I’ll just say it*.',
-      said: '「普段は人の私生活に口を出さないが、結婚式だからな、言おう」と前置きする。',
-      mean: '「普段はしないが」は、立ち入ったことを言う合図。but のあとが本題。',
-      trap: '日本語の「口は出さないけど」は遠慮で終わることもあるが、英語は but のあとで言う。',
-      use: 'I don’t usually say this, but…（普段は言わないんだけど…）' },
+      stem: 'Why does Ron start with “I normally don’t get involved”?',
+      ja: 'ロンはなぜ「I normally don’t get involved」と前置きする？',
+      choices: ['To share something private', 'To keep his opinion to himself', 'To tell Lucy to stay away'], a: 0,
+      choicesJa: ['個人的なことを話すため', '意見を言わないため', 'ルーシーに離れていろと言うため'],
+      cue: '「but」のあと',
+      line: 'I normally don’t get involved in people’s personal affairs, *but*… *I’ll just say it*.',
+      said: '「ふだんは人の私生活に口は出さないが、言ってしまおう」と言う。',
+      mean: 'I normally don’t 〜, but ＝「ふだんは〜しないけど」。言いにくいことを言う前置き。',
+      trap: '「口を出さない」で終わると思いやすい。but のあとの I’ll just say it が本題。',
+      use: 'I don’t usually say this, but…（ふだんは言わないんだけど…）' },
 
-    // why: seeing someone ← "taken" alone = 恋人がいる ("Are you taken?"); surprised ← "taken aback" (驚く) heard in
-    //   "taken with"; fooled ← "taken in" (だまされる), one small word away
-    // R fix: V2. With three choices the only warm one was the key; a fourth "taken" phrase (taken in) joins.
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'taken', seg: [71.5, 79.6],
-      stem: 'What does Ron tell Lucy about Tom, in plain words?',
-      choices: ['He likes her very much', 'He is already seeing someone', 'He was surprised by her',
-                'He has been fooled by her'], a: 0,
-      cue: '「taken」のあとの短い語に注目。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'taken', seg: [71.5, 79.6],
+      stem: 'What does “quite taken with you” mean?',
+      ja: '「quite taken with you」はどういう意味？',
+      choices: ['He likes you a lot', 'He is seeing someone', 'He was surprised by you'], a: 0,
+      choicesJa: ['あなたのことがとても好き', 'ほかに付き合っている人がいる', 'あなたに驚いた'],
+      cue: '「Tom is」のあと',
       line: 'Tom is *quite taken with you*.',
       said: '「トムは君にかなり夢中だ」とルーシーに言う。',
-      mean: 'be taken with ～ ＝ ～に心をひかれている。with のあとが好きな相手。',
-      trap: 'taken だけなら「相手がいる」、taken aback なら「驚く」。後ろの with まで聞く。',
+      mean: 'be taken with 人 ＝「〜を気に入っている」。quite ＝ かなり。',
+      trap: 'taken だけなら「相手がいる」、taken aback なら「驚く」。with のあとが好きな相手。',
       use: 'She was really taken with the city.（彼女はその街がすっかり気に入った）' },
 
-    // R fix: V2. "Say it again slowly" was a filler; "back up his words" (the opposite, with "back") replaces it.
-    // why: walk Lucy back ← walk back = 歩いて戻る, the literal reading at a party; back up ← "back" + "what you
-    //   said" heard as support for the words, the opposite of taking them back
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'walkback', reveals: ['liar', 'leak'], seg: [82.7, 91.0],
       stem: 'What does Tom ask Ron to do after finding out?',
+      ja: '知ったあと、トムはロンに何をしろと言う？',
       choices: ['Take back his words to Lucy', 'Walk Lucy back to the party', 'Back up his words to Lucy'], a: 0,
-      cue: '「you have to」のあと。',
+      choicesJa: ['ルーシーへの言葉を取り消す', 'ルーシーを会場まで送る', 'ルーシーへの言葉を裏付ける'],
+      cue: '「you have to」のあと',
       line: 'you have to *walk back* what you said. — Walk back sounds like lying.',
-      said: '「取り消せ」と頼まれ、ロンは「取り消すのは、うそみたいだ」と渋る。',
-      mean: 'walk back ＝ 発言を撤回する。失言のニュースでよく聞く。',
-      trap: '「歩いて戻る」と取りやすいが、walk back のあとに what you said（言葉）が来ている。',
+      said: '「取り消せ」と頼まれ、ロンは「うそみたいだ」と渋る。',
+      mean: 'walk back ＝ 言ったことを取り消す。ニュースでもよく聞く。',
+      trap: '「歩いて戻る」と思いやすいが、walk back のあとに what you said（言葉）が来ている。',
       use: 'I need to walk that back a little.（さっきの話、少し訂正させて）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'helpout', seg: [91.0, 94.2],
-      stem: 'Type the end of Tom’s request: “…for a second and ___?” (3 words)', answer: 'help me out',
-      cue: '「for a second and」のあと。',
+      stem: 'Type the end: “…for a second and ___?” (3 words)', answer: 'help me out',
+      ja: 'トムの頼み「…for a second and ___?」の最後を書こう（3語）',
+      cue: '「for a second and」のあと',
       line: '…for a second and *help me out*?',
       said: '「ちょっとだけルールを曲げて、助けてくれ」と頼む。',
       mean: 'help me out ＝ 手を貸して。help me より気軽で、困った時によく使う。',
-      trap: '「ヘルプミアウ」とつながり、out の t はほぼ消える。最後の語を落とさない。',
+      trap: '「ヘルプミアウ」とつながり、out の t はほぼ消える。最後の out を落とさない。',
       use: 'Could you help me out with this bag?（このかばん、ちょっと手伝ってくれる？）' },
 
-    // R fix: V2. The key was the only nuanced "means it, but"; "meant it then, but not anymore" is nuanced too.
-    // why: not anymore ← he wants it walked back, so it sounds as if he took it back; start right now ← "tomorrow"
-    //   and "spending a life together" heard as a plan
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'future', reveals: ['marry'], seg: [93.9, 105.0],
-      stem: 'When Tom explains, how did he mean “I’d marry her tomorrow”?',
-      choices: ['He means it, but for far in the future', 'He meant it then, but not anymore',
-                'He means it, and wants to start right now'], a: 0,
-      cue: '長い夢の話のあと、最後の一言。',
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'future', reveals: ['marry'], seg: [93.9, 105.0],
+      stem: 'When does Tom see this life with Lucy happening?',
+      ja: 'トムは、ルーシーとのこの暮らしをいつのことだと言う？',
+      choices: ['Far in the future', 'Starting tomorrow', 'In about a year'], a: 0,
+      choicesJa: ['ずっと先', '明日から', '1年後くらい'],
+      cue: '夢の話の最後の一言',
       line: 'I could see myself spending a life together with her… *That’s way in the future*, man.',
-      said: '「一緒に人生を送り、子どもを持ち、島を買う」と語り、「それはずっと先の話」と言う。',
-      mean: '気持ちは本物だが、明日の予定ではない。way ＝ ずっと（強め）。',
-      trap: '取り消してと頼むので冗談と取りやすい。本気かどうかと、いつの話かは別。',
-      use: 'That’s way down the road.（それはずっと先の話だよ）' },
+      said: '「子どもを持って島で暮らす。でもそれはずっと先の話」と言う。',
+      mean: 'way in the future ＝ ずっと先。way ＝「ずっと・はるかに」と強める。',
+      trap: '「明日にでも結婚」と言っていたので、明日と思いやすい。way in the future を聞く。',
+      use: 'That’s way in the future.（それはずっと先の話）' },
 
-    // R fix: V2 + K1. "Ignores it all except one small word" read as the punchline, and "hurt that Tom spoke rudely"
-    //   was close to Ron's real reaction to "man". The key is plainer; "makes fun of the island plan" replaces "hurt".
-    // why: makes fun ← "Don't call me man" heard as a put-down of the whole dream; too far off ← "way in the future"
-    //   is Tom's own line, heard as Ron's objection
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'man', reveals: ['future'], seg: [102.9, 110.1],
+    // retired (A2): a “what makes Tom say” joke item
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'man', reveals: ['future'], seg: [102.9, 110.1], retired: true,
       stem: 'What makes Tom say “That’s what you took away from this?”',
       choices: ['Ron answers only the last word Tom said', 'Ron makes fun of Tom’s island plan',
                 'Ron says the plan is too far off'], a: 0,
@@ -179,11 +170,8 @@ export const ronTomLucy: Clip = {
       trap: '夢をばかにしたと取りやすいが、トムの不満は「そこ？」。took away ＝ 話から得たこと。',
       use: 'That’s what you got from all that?（あれだけ話して、そこ？）' },
 
-    // R fix: V2. The key was the only choice about Ron's own honesty, and "Lucy was upset with Tom" was weak. The
-    //   key is plainer, and "a lie would hurt Lucy" (also about lying) replaces it.
-    // why: forgot ← he starts with the wrong thing and stops, as if he lost his script; hurt Lucy ← the "What?" right
-    //   after, heard as Lucy's pain, so the retraction sounds like kindness
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'liar', seg: [116.1, 131.1],
+    // retired (A2): a “why” item over Ron’s honesty joke (camouflage)
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'liar', seg: [116.1, 131.1], retired: true,
       stem: 'Why does Ron take back his first words to Lucy right away?',
       choices: ['He can’t bring himself to say he lies', 'He forgot what Tom wanted him to tell her',
                 'He worried a lie would hurt Lucy more'], a: 0,
@@ -194,38 +182,32 @@ export const ronTomLucy: Clip = {
       trap: '言うことを忘れたと取りやすいが、続くのは自分の正直さの話だけ。',
       use: 'Let me rephrase that.（言い方を変えさせて）' },
 
-    // R fix: V2. "Plans sound bigger" against "words sound smaller" paired the key with its opposite. The new "Yes"
-    //   choice is what Ron was sent to do (take it back).
-    // why: takes it back ← the walk-back he was sent for, and "he likes you a great deal" sounds like a softer start;
-    //   Lucy thinks he's lying ← Ron's "I am a liar" just before
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'island', reveals: ['leak'], seg: [132.3, 147.1],
-      stem: 'Does Ron’s new version of Tom’s words help Tom?',
-      choices: ['No; it adds even more to what Tom said', 'Yes; it takes back most of what Tom said',
-                'No; it makes Lucy think Ron is lying'], a: 0,
-      cue: 'ルーシーの返事で、何が増えたか。',
-      line: 'marrying you and *living on an island with your kids*. — Wait, now we’re *on an island*? With *kids*? Plural?',
-      said: '「結婚して子どもと島で暮らす想像ができるそうだ」と言い直し、ルーシーは「島？子ども？」と驚く。',
-      mean: '取り消すはずが、島と子どもまで足して話が大きくなった。',
-      trap: 'a great deal は穏やかだが、続きで話が広がる。結果は相手の反応で確かめる。',
-      use: 'You’re making it worse.（余計にひどくしてるよ）' },
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'island', reveals: ['leak'], seg: [132.3, 147.1],
+      stem: 'Why does Lucy say “Now we’re on an island?”',
+      ja: 'ルーシーはなぜ「Now we’re on an island?」と言う？',
+      choices: ['Ron made Tom’s plan bigger', 'Ron said Tom lies a lot', 'Ron wants to buy an island'], a: 0,
+      choicesJa: ['ロンがトムの話を大きくした', 'ロンがトムはよくうそをつくと言った', 'ロンが島を買いたがっている'],
+      cue: 'ルーシーの驚いた声の前',
+      line: 'marrying you and *living on an island with your kids*. — Wait, now we’re on an island? With kids? Plural?',
+      said: '「結婚して、子どもと島で暮らしたいそうだ」と言われ、「島？子ども？」と驚く。',
+      mean: 'Wait, now 〜? ＝「待って、今度は〜？」。話がどんどん大きくなって驚いている。',
+      trap: 'island（島）から、ロンが島を買う話と思いやすい。島はトムの夢の話。',
+      use: 'Wait, now we’re going to Paris?（待って、今度はパリに行くの？）' },
 
-    // R fix: V2. "A fight about the island" was weak; "talked, and now feel awkward" fits "weirdos" with "not" lost.
-    // why: talked but can't agree / talked and awkward ← the weak "not yet" lost, leaving "you have… talked about what
-    //   happened", with "acting like weirdos" as the awkwardness
     { id: 'd3', skill: 'detail', level: 'B2', point: 'talk', reveals: ['nottalked'], seg: [152.3, 161.7],
-      stem: 'Later on, what does Ron suspect about Tom and Lucy?',
-      choices: ['They haven’t talked about what happened', 'They have talked, but still can’t agree',
-                'They have talked, and now feel awkward'], a: 0,
-      cue: '「I further suspect」のあと。',
+      stem: 'What does Ron suspect about Tom and Lucy?',
+      ja: 'ロンは、トムとルーシーについて何を疑っている？',
+      choices: ['They haven’t talked yet', 'They talked but disagree', 'They talked and feel bad'], a: 0,
+      choicesJa: ['まだ話していない', '話したが意見が合わない', '話して気まずい'],
+      cue: '「I further suspect」のあと',
       line: 'I further suspect you have *not yet talked about* what happened.',
-      said: '「二人とも様子が変だ。さっきの件、まだ話していないだろう」と言う。',
-      mean: 'have not yet talked ＝ まだ話していない。気まずくて避けている、という見立て。',
-      trap: 'not yet は弱く速いので落としやすい。落とすと「話はした」と逆になる。',
+      said: '「二人とも様子が変だ。まだあの件を話していないだろう」と言う。',
+      mean: 'have not yet talked ＝ まだ話していない。suspect ＝「〜ではないかと思う」。',
+      trap: 'not yet は弱く速いので、聞き落としやすい。落とすと「話した」と逆になる。',
       use: 'Have you talked to her yet?（もう彼女と話した？）' },
 
-    // anchor: 164.72–166.04 s both sources have "us having not talked about": five weak words in 1.3 s, a tangle that
-    //   grammar would rewrite as "that we haven't talked about"
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'nottalked', reveals: ['talk'], seg: [161.6, 166.07],
+    // retired (A2): a C2 dictation of a garbled, non-standard sentence
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'nottalked', reveals: ['talk'], seg: [161.6, 166.07], retired: true,
       stem: 'Type the end of the flustered reply: “…what you’re talking about ___.” (5 words)',
       answer: 'us having not talked about',
       cue: '「talking about」のあと。文法より、聞こえた音を。',
@@ -235,22 +217,20 @@ export const ronTomLucy: Clip = {
       trap: '文法どおり we haven’t に直したくなるが、言っていない。書き取りは聞こえた音を書く。',
       use: 'I don’t know what you’re talking about.（何の話だか分からないな）' },
 
-    // why: teasing ← "acting like weirdos" just before, heard as the tone of the whole visit; the food ← "missed out on
-    //   the food" right after, heard as his real aim
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'team', seg: [166.05, 176.5],
-      stem: 'When Ron says the two make a good team, is he sincere?',
-      choices: ['Yes; he means it, plain and simple', 'Partly; he’s teasing them a bit too',
-                'No; he just wants to get to the food'], a: 0,
-      cue: '「I’m sorry if」の文の、理由の部分。',
-      line: 'there’s no shame in declaring how you feel… I’m sorry if I caused a problem because *the two of you make a good team*.',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'team', seg: [166.05, 176.5],
+      stem: 'What does Ron think of Tom and Lucy together?',
+      ja: 'ロンは、トムとルーシーの二人をどう思っている？',
+      choices: ['They make a good team', 'They are moving too fast', 'They should take a break'], a: 0,
+      choicesJa: ['いいコンビだ', '話を急ぎすぎている', '少し距離を置くべき'],
+      cue: '「because」のあと',
+      line: 'I am sorry if I caused a problem *because the two of you make a good team*.',
       said: '「問題を起こしたならすまない。二人はいいチームだから」と言う。',
-      mean: 'ロンは思ったことをそのまま言う人。because 以下が、謝る理由そのもの。',
-      trap: 'weirdos の直後なので、からかいに聞こえやすい。謝罪と理由が一続きなら本気。',
+      mean: 'make a good team ＝「いいコンビになる」。the two of you ＝ あなたたち二人。',
+      trap: 'weirdos（変な人たち）とも言ったので、悪く思っていると思いやすい。because のあとが本音。',
       use: 'You two make a great team.（二人はいいコンビだね）' },
 
-    // why: the food ← "I missed out on the food" in the same turn, heard as where he's off to; skip ← "damned if I
-    //   don't" heard as a plain negative: "I don't honor"
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'damned', seg: [176.5, 188.6],
+    // retired (A2): “I’ll be damned if I don’t” is not for this learner
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'damned', seg: [176.5, 188.6], retired: true,
       stem: 'As he leaves, what does Ron say he is going to do?',
       choices: ['Properly honor the love being celebrated', 'Go and find the food he missed out on',
                 'Skip honoring the love being celebrated'], a: 0,
@@ -261,27 +241,20 @@ export const ronTomLucy: Clip = {
       trap: 'don’t だけ拾うと「祝わない」になる。前の damned if が全体を逆にする。',
       use: 'I’ll be damned if I miss this game.（この試合は絶対に見逃さない）' },
 
-    // why: never means a word ← the usual excuse ("he doesn't mean it") heard in place of "exactly what he means";
-    //   weird for minding his business ← "weird thing" + Ron's own "I normally don't get involved" (65.4 s)
-    // R fix: V2. "Makes Lucy trust Ron more" was a filler; the new distractor also "calls Ron weird".
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'weird', seg: [189.4, 194.8],
-      stem: 'Why is Tom’s explanation of Ron to Lucy funny?',
-      choices: ['He calls saying what you mean a weird habit', 'He says Ron never means a word he says',
-                'He calls Ron weird for minding his business'], a: 0,
-      cue: 'weird thing の中身と、そのあとの一言。',
-      line: 'Ron does this *weird thing* where he *says exactly what he means*. You just have to ignore him.',
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'weird', seg: [189.4, 194.8],
+      stem: 'What does Tom say is Ron’s weird habit?',
+      ja: 'トムが言う、ロンの変な癖は？',
+      choices: ['Saying just what he means', 'Saying things to be funny', 'Saying less than he means'], a: 0,
+      choicesJa: ['思ったことをそのまま言う', '笑わせるために言う', '思っているより少なく言う'],
+      cue: '「weird thing」のあと',
+      line: 'Ron does this weird thing where he *says exactly what he means*. You just have to ignore him.',
       said: '「ロンは思ったことをそのまま言う変な癖がある。気にしないで」と言う。',
-      mean: 'ふつうは長所の「本音を言う」を変な癖と呼ぶ。言い訳が逆さま。',
-      trap: 'よくある言い訳は「本気じゃない」。ここは逆に exactly what he means と言っている。',
-      use: 'He just says what he thinks.（あの人は思ったまま言うだけ）' },
+      mean: 'say what you mean ＝ 思ったとおりに言う。ふつうは長所だが、ここは「変な癖」扱い。',
+      trap: 'ignore him から、冗談ばかりの人と思いやすい。exactly what he means を聞く。',
+      use: 'I say what I mean.（思ったとおりに言うよ）' },
 
-    // anchor: 195.4–201.3 s Lucy asks "So you didn't mean what you said?" and Tom answers "Look, I'm all in. That's all
-    //   I meant": "ignore him" was cover for feelings he does have
-    // R fix: V2 + K5. "That he doesn't feel that way" is what "ignore him" seems to say, not what he holds back; the
-    //   new distractor is the face-value reading put as a hidden fact (it was just talk to Ron).
-    // why: embarrass him ← right target, wrong reason: "weird thing" heard as a complaint about Ron's mischief;
-    //   only said it to Ron ← "ignore him" taken at face value; "I'm all in" refutes it
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'weird', reveals: ['allin'], seg: [189.4, 201.45],
+    // retired (A2): a C2 reading of what Tom hides
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'weird', reveals: ['allin'], seg: [189.4, 201.45], retired: true,
       stem: 'When Tom tells Lucy to ignore Ron, what is he trying not to say?',
       choices: ['That Ron told her just how he feels', 'That Ron says things to embarrass him',
                 'That he only said it to sound good to Ron'], a: 0,
@@ -292,52 +265,57 @@ export const ronTomLucy: Clip = {
       trap: '「無視して」を「本気じゃない」と取りやすい。照れ隠しかは、問い返された時の答えで分かる。',
       use: 'Don’t listen to him. …Okay, it’s true.（あいつの話は気にしないで…まあ、本当だけど）' },
 
-    // R fix: V2. "Taking a break" and "Over" against "Still together" made the happy ending easy; "together, but she
-    //   asks him to slow down" (she never does) replaces "a break".
-    // why: slow down ← "I don't expect you to feel the same way" and "jumping the gun" heard as her request; over ←
-    //   "jumping the gun" heard as what actually happened
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['allin', 'dresses'], seg: [189.4, 221],
-      stem: 'By the end of the clip, where do Tom and Lucy stand?',
-      choices: ['Still together, and easy about it', 'Together, but she asks him to slow down',
-                'Over, since he moved much too fast'], a: 0,
-      cue: 'トムの長い告白のあと、ルーシーの返事。',
-      said: 'トムは「本気だけど、同じ気持ちは求めない」と伝え、ルーシーは軽い冗談で返す。',
-      mean: 'ロンの余計な一言のおかげで、トムは気持ちを言えた。関係はそのまま続く。',
-      trap: '「期待しない」「先走り」はトムの気づかい。最後のやりとりが結論。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['allin', 'dresses', 'fine'], seg: [189.4, 221],
+      stem: 'How do things end for Tom and Lucy?',
+      ja: 'トムとルーシーは最後にどうなる？',
+      choices: ['Still together and happy', 'She asks him to slow down', 'They break up for now'], a: 0,
+      choicesJa: ['仲良く続いている', '彼女がゆっくりにしてと頼む', 'いったん別れる'],
+      cue: '最後のふたりのやりとり',
+      said: 'トムが本気だと伝え、ルーシーは冗談で返し、トムも笑う。',
+      mean: 'ロンの余計な一言のおかげで、トムは気持ちを言えた。二人はこのまま続く。',
+      trap: '「同じ気持ちは期待しない」と言うので、別れ話と思いやすい。最後は冗談で和やか。',
       use: 'So we’re good?（じゃあ、私たち大丈夫だね？）' },
 
-    // R fix: V2. "Ready to end things" was a filler; "fine with going slowly" draws on his next lines.
-    // why: worn out ← "all in" = くたくた (an older meaning); going slowly ← "I don't expect you to feel the same way"
-    //   just after, pulled onto "all in"
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'allin', seg: [194.9, 201.45],
       stem: 'What does Tom tell Lucy with his first words after “Look”?',
-      choices: ['He is fully serious about her', 'He is worn out from the night', 'He is fine with going slowly'],
+      ja: '「Look」のすぐあと、トムはルーシーに何を伝える？',
+      choices: ['He is fully serious about her', 'He is tired from tonight', 'He is fine with going slowly'],
       a: 0,
-      cue: '「Look」のすぐあとの短い言い方。',
+      choicesJa: ['彼女に本気だ', '今夜で疲れた', 'ゆっくりでかまわない'],
+      cue: '「Look」のすぐあと',
       line: 'Look, *I’m all in*. That’s all I meant.',
-      said: '「本気じゃなかったの？」に、「僕は本気だ。言いたかったのはそれだけ」と答える。',
+      said: '「本気じゃなかったの？」に、「僕は本気だ。それだけ」と答える。',
       mean: 'all in ＝ 全部を賭けている。ポーカーの言葉で、迷いなく本気。',
-      trap: '「疲れた」の意味もあり、あとの「期待しない」に引かれやすいが、all in は迷わず本気。',
+      trap: '「疲れ切った」の意味もあり、あとの「期待しない」に引かれやすい。ここは本気の意味。',
       use: 'I’m all in on this plan.（この計画に全力で乗るよ）' },
 
-    // why: back from a trip ← "just got out of" heard as "just got back"; known him a short time ← the usual reason for
-    //   "jumping the gun"
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'gun', seg: [200.4, 205.0],
+      stem: 'What does “jumping the gun” mean?',
+      ja: '「jumping the gun」はどういう意味？',
+      choices: ['Moving too fast', 'Telling a lie', 'Getting angry'], a: 0,
+      choicesJa: ['先走る', 'うそをつく', '怒る'],
+      cue: '「crazy or」のあと',
+      line: 'I didn’t want you to think I was crazy or *jumping the gun*.',
+      said: '「おかしいとか、先走ってるとか思われたくなかった」と言う。',
+      mean: 'jump the gun ＝「先走る」。文字どおりは「合図のピストルより先に走る」（フライング）。',
+      trap: 'gun（銃）から、怒って乱暴になる話と思いやすい。フライングのイメージ。',
+      use: 'Let’s not jump the gun.（先走るのはやめよう）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'relationship', seg: [201.45, 211.4],
       stem: 'Why doesn’t Tom expect Lucy to feel the same way yet?',
-      choices: ['She just got out of a relationship', 'She just got back from a long trip',
-                'She has only known him a short time'], a: 0,
-      cue: '「I know you just」のあと。',
+      ja: 'トムはなぜ、ルーシーに同じ気持ちをまだ期待しない？',
+      choices: ['She just ended a relationship', 'She just got back from traveling',
+                'She hasn’t known him long'], a: 0,
+      choicesJa: ['恋人と別れたばかり', '旅行から戻ったばかり', '知り合ってまだ短い'],
+      cue: '「I know you just」のあと',
       line: 'I know you *just got out of a relationship*, so I don’t expect you to feel the same way',
       said: '「君は別れたばかりだから、同じ気持ちは期待しない」と言う。',
       mean: 'get out of a relationship ＝ 恋愛関係を終える、別れる。',
-      trap: 'got out of を「戻った」と取ると旅の話になる。out of のあとの語が中身。',
+      trap: 'got out of を「戻った」と思うと旅の話になる。out of のあとの語が中身。',
       use: 'She just got out of a long relationship.（彼女は長く付き合った人と別れたばかり）' },
 
-    // anchor: 207.2–217.6 s "I don't expect you to feel the same way", then "I'm only dating you for the free
-    //   dresses": a mock-mercenary reason, answered with "I'm fine with that"; the dress is Tom's gift (24.4 s)
-    // why: don't like me ← "only… for the free dresses" taken at face value (the mercenary reading); stop buying ← the
-    //   remark heard as a complaint about his gifts (the Japanese frame: 気をつかわせた)
-    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'dresses', seg: [204.4, 221],
+    // retired (A2): a C2 reply-matching item over a joke
+    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'dresses', seg: [204.4, 221], retired: true,
       stem: 'Which reply from Tom would match what Lucy meant by her answer?',
       choices: ['Ha. Then I’d better keep them coming.', 'Oh. So you don’t really like me?',
                 'Okay. I’ll stop buying you things.'], a: 0,
@@ -347,5 +325,17 @@ export const ronTomLucy: Clip = {
       mean: 'わざと打算的な理由を言う冗談。重い告白を軽く受け止め、「このままでいい」と伝えている。',
       trap: '言葉どおりなら冷たいが、冗談の「問題なし」。返事は言葉の形でなく、相手の気持ちに合わせる。',
       use: 'I’m only here for the snacks.（お菓子目当てで来てるだけだよ）' },
+
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'fine', seg: [214.0, 220.1],
+      stem: 'What does Tom mean by “I’m fine with that”?',
+      ja: 'トムの「I’m fine with that」はどういう意味？',
+      choices: ['That’s okay with me', 'I feel well today', 'I don’t agree with it'], a: 0,
+      choicesJa: ['それでかまわない', '今日は体調がいい', 'それには賛成できない'],
+      cue: 'ルーシーの冗談のあと',
+      line: 'I’m only dating you for the free dresses, so. — *I’m fine with that.*',
+      said: '「タダのドレス目当てだし」に、「それでいいよ」と笑う。',
+      mean: 'I’m fine with that ＝「それでかまわない」。fine with 〜 ＝ 〜でいい。',
+      trap: 'fine（元気）から、体調の話と思いやすい。with that（それで）がついている。',
+      use: 'Tuesday? I’m fine with that.（火曜？それでいいよ）' },
   ]
 };
