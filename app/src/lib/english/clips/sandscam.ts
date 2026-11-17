@@ -25,7 +25,7 @@ export const sandScam: Clip = {
       line: 'I did, but that netted me *50,000* bonus sand coins',
       said: '「1ケース売っただけで、5万枚のボーナスコインが入った」と言う。',
       mean: 'net ＝（結果として）手に入れる。fifty thousand ＝ 5万。',
-      trap: 'fifty は前が強く、fifteen は「ティーン」が長い。hundred が付けば50万。',
+      trap: '5万＝fifty thousand。5千＝five、1万5千＝fifteen、50万＝five hundred。',
       use: 'That netted me fifty dollars.（それで50ドルの稼ぎになった）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'buy', seg: [18.9, 27.6],

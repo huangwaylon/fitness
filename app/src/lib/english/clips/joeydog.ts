@@ -94,7 +94,7 @@ export const joeyDog: Clip = {
       line: 'at a reasonable price, say *$1,500*?',
       said: '「手ごろな値段で、そうだな、1,500ドルでどう？」と持ちかける。',
       mean: 'say ＝ ここでは「たとえば」。fifteen hundred ＝ 1,500。',
-      trap: 'fifteen のあとが hundred なら1,500、thousand なら15,000。',
+      trap: 'fifteen hundred＝1,500。thousand、five、one fifty とは違う。',
       use: 'How about, say, twenty dollars?（たとえば20ドルでどう？）' },
 
     // retired (A2): a “why does the audience laugh” item

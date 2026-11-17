@@ -93,7 +93,7 @@ export const asianjim: Clip = {
       line: 'Wellington Systems sold them *10 cases* of 24-pound letter stock.',
       said: '「ウェリントン・システムズに、24ポンドの用紙を10箱」と答える。',
       mean: 'case ＝ 箱。24-pound は紙の厚さの規格で、数量ではない。',
-      trap: 'すぐあとの 24 を数量と思いやすい。cases の直前の数が箱の数。',
+      trap: '24 は紙の厚さ（pound）。cases の直前は ten。four（フォー）は出てこない。',
       use: 'We need ten cases of water.（水を10ケースください）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [33.8, 45.5],

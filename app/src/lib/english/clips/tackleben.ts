@@ -37,7 +37,7 @@ export const tackleBen: Clip = {
       line: 'we have *less than an hour* to get the ad to the station.',
       said: '「局に広告を届けるまで1時間もない」と念を押す。',
       mean: 'less than an hour ＝ 1時間未満。締め切りが近いという合図。',
-      trap: 'an hour は「アナワー」とつながる。half や and a half が聞こえるかを聞く。',
+      trap: 'an hour は「アナワー」。half なら前に「ハーフ」、ninety なら「ナインティ」が聞こえる。',
       use: 'We have less than an hour left.（あと1時間もないよ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'twoads', seg: [9.0, 30.0],

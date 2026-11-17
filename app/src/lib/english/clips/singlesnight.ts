@@ -190,7 +190,7 @@ export const singlesNight: Clip = {
       line: '*Two shots* of Jameson. Don’t make too much eye contact.',
       said: '「ジェイムソンのショットを2つ」と頼み、「目を合わせすぎないで」と続ける。',
       mean: 'shot ＝ 小さなグラスの強い酒。two shots of 〜 ＝ 〜を2杯。',
-      trap: 'two と too は同じ音。数か「〜すぎ」かは、すぐあとの語で決まる。',
+      trap: 'shots の前の「トゥー」は two。one（ワン）、three（スリー）、four（フォー）とは音が違う。',
       use: 'Two coffees to go, please.（コーヒー2つ、持ち帰りで）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'available', reveals: ['shots'], seg: [113.3, 119.5],

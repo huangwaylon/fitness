@@ -164,7 +164,7 @@ export const rachelJob: Clip = {
       line: '*Tomorrow* is my last day, and I don’t have a lead.',
       said: '「明日が最後の日なのに、当てが一つもない」と言う。',
       mean: 'last day ＝ 最後の日。辞めるまであと1日で、焦っている。',
-      trap: 'last day だけ聞くと「今日」と思いやすい。文の最初の Tomorrow を聞く。',
+      trap: 'last day だけ聞くと「今日」と思いやすい。文の最初は Tomorrow。two days は出ない。',
       use: 'Tomorrow is my last day here.（明日でここは最後なんだ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'lead', reveals: ['lastday'], seg: [40.2, 46.6],

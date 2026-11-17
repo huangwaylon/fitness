@@ -119,7 +119,7 @@ export const tomFailure: Clip = {
       line: 'Over the next five years, there’s gonna be *20 Tom’s Bistros* across America.',
       said: '「この5年で、全米に20店のトムズ・ビストロができる」と宣言する。',
       mean: 'twenty ＝ 20。over the next five years ＝ これから5年で。',
-      trap: '先に five が聞こえるので混ざりやすい。five は年数、店の数は gonna be のあと。',
+      trap: 'five は年数。店の数は twenty（トゥエニ）。ten は「テン」、fifty は「フィフティ」。',
       use: 'There’ll be twenty of us at dinner.（夕食は20人になります）' },
 
     { id: 'h2', skill: 'humor', level: 'B2', point: 'blowup', seg: [86.1, 95.75],
@@ -247,7 +247,7 @@ export const tomFailure: Clip = {
       line: 'I once started an entertainment company. It failed in *four months*.',
       said: '「昔、エンタメ会社を始めた。4か月でつぶれた」と話す。',
       mean: 'four months ＝ 4か月。すぐに失敗した、ということ。',
-      trap: 'four のあとの単位が速い。months は「マンス」。fourteen なら「ティーン」が長い。',
+      trap: 'days でも weeks でもなく months（マンス）。14なら「ティーン」。',
       use: 'The shop closed after four months.（その店は4か月で閉店した）' },
 
     { id: 'i5', skill: 'infer', level: 'B1', point: 'chances', seg: [155.5, 170.15],
