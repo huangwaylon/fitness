@@ -1,16 +1,8 @@
-// REVIEW 2026-11-16: pass 4, fix 17, drop 1, new 0; ear checks 0
-// OPEN: n1 (monthly) and n3 (six minutes) were coin flips blind, not guessable; kept. g2's seg (64–128 s) runs through
-// Ann's body complaints (sore, butt); nothing is asked about them, but say if you'd rather trim it.
+// A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 2, new 2
 // “Ann gets kicked out of the exclusive club | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 6): Ann walks in on the staff's monthly venting club, uses her turn to pour out her pregnancy troubles, and
-// soon the members feel she has taken their club over.
-// Segments from the captions, words from whisper (2026-11-16). No laugh track (single camera), so humor stems ask what
-// makes a line funny, not why an audience laughs. Left out: 46–57 s (whisper “Hello, Walt… choke him”, captions only
-// “hello I'm sorry everybody”), 141–168 s (body talk, and whisper/captions split on its last words), and the “Sweet
-// Pea” / “I have a feeling” lines (captions “sweepy”, “I'm feeling”). Speakers are named only where the audio names
-// them (Ann, Larry, Ron, Donna, Chris); the HR speaker is “the boss”.
-// EAR CHECK: none. Every key's words agree in both sources. w1: the offer line differs (whisper "Well, have some
-// cheese", captions "oh I have some cheese"), but the key rests on "I can't have cheese, Larry", which both have.
+// soon the members feel she has taken their club over. Segments from the captions, words from whisper (2026-11-16).
+// Left out: 46–57 s (whisper and captions split), 141–168 s (body talk). Every key's words agree in both sources.
 import type { Clip } from '../types.ts';
 
 export const annclub: Clip = {
@@ -19,110 +11,116 @@ export const annclub: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: blind 75 % — "settles staff disputes for HR" was close to true (the boss says HR makes him hear disputes once
-    // a month, K1), and only the key kept wine and cheese; all three now share "over wine and cheese" (V2/K1/K6)
-    // why: "toasts good news" ← the party feel of fine wines, vent missed; "plans staff parties" ← "monthly gathering"
-    // heard as an event committee
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'club', seg: [17.38, 27.55],
-      stem: 'What does the club do, as it’s explained to Ann?',
-      choices: ['Vents about their jobs over wine and cheese', 'Toasts good news at work over wine and cheese',
-                'Plans staff parties over wine and cheese'], a: 0,
-      cue: '「gathering where we all」のあと。',
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'helpyou', seg: [8, 15],
+      stem: '“Can we help you, Ann?” What does it mean here?',
+      ja: '「Can we help you, Ann?」ここではどういう意味？',
+      choices: ['What do you need?', 'Can you help us?', 'Are you lost?'], a: 0,
+      choicesJa: ['何の用？', '手伝ってくれる？', '道に迷ったの？'],
+      cue: 'アンが入ってきた直後の一言',
+      line: 'Time out. Let’s take a brief recess. *Can we help you*, Ann?',
+      said: '「ちょっと中断。休憩にしよう。アン、何かご用？」と言う。',
+      mean: 'Can I help you? ＝ 何かご用ですか。店員の決まり文句。ここは「何しに来たの」に近い。',
+      trap: 'help から「手伝って」と頼んでいると思いやすい。we が手伝う側。',
+      use: 'Can I help you?（何かお探しですか）' },
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'club', seg: [17.38, 27.55],
+      stem: 'What does the club do?',
+      ja: 'このクラブは何をする会？',
+      choices: ['Complain about work', 'Celebrate good news', 'Plan staff parties'], a: 0,
+      choicesJa: ['仕事の不満を言う', 'いい知らせを祝う', '職場のパーティーを計画する'],
+      cue: '「gathering」のあと',
       line: 'a monthly gathering where we all get together and *vent about what annoys us at work*',
-      said: '「月一回集まって、職場の不満をワインとチーズで吐き出す会」と説明している。',
-      mean: 'vent ＝ 不満を吐き出す。仕事の愚痴を言い合うための集まり。',
-      trap: 'fine wines や gathering だけ拾うとお祝いの会に見えやすい。vent を聞く。',
-      use: 'I just need to vent for a minute.（ちょっと愚痴らせて）' },
-
-    // why: twice a month / once a week ← "the fourth time this month" (Kyle's parking) lands nearby
+      said: '「月一回集まって、仕事で頭にくることを吐き出す会」と説明する。',
+      mean: 'vent ＝ 不満を吐き出す。annoy ＝ イライラさせる。仕事の愚痴を言い合う会。',
+      trap: 'fine wines（いいワイン）から、お祝いの会と思いやすい。',
+      use: 'I just need to vent for a minute.（ちょっと愚痴を聞いて）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'monthly', reveals: ['club'], seg: [17.38, 27.55], keep: true,
       stem: 'How often does the club meet?',
+      ja: 'クラブはどのくらいの間かくで集まる？',
       choices: ['Once a month', 'Twice a month', 'Once a week'], a: 0,
-      cue: '「It’s a」のあとの、頻度を表す一語。', line: 'It’s a *monthly* gathering',
-      said: '「月に一度の集まり」と言っている。',
-      mean: 'monthly ＝ 月一回。このあと上司も「月一回」の決まりの話をする。',
-      trap: 'すぐあとに「今月四回目」という別の話が出るので、回数が混ざりやすい。',
-      use: 'We have a monthly team lunch.（毎月チームでランチをします）' },
-
-    // R fix: blind 55 % — "enjoys hearing their troubles" was a filler; both distractors now start "he must be there"
-    // and differ only in what he'll do (V2/K5)
-    // why: "takes it seriously" ← he cites the HR rule, so he must care; "may leave" ← "the rules do not specify whether
-    // or not I'm allowed to…" heard without its end
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'ron', seg: [27.35, 41.8],
-      stem: 'What does the boss’s comment about the HR rules suggest?',
-      choices: ['He must be there, but he plans to tune them out',
-                'He must be there, and he takes the job seriously',
-                'He must be there, but he may leave when he likes'], a: 0,
-      cue: '「The rules do not specify」のあと。',
+      choicesJa: ['月に1回', '月に2回', '週に1回'],
+      cue: '「It’s a」のすぐあと',
+      line: 'It’s a *monthly* gathering',
+      said: '「月に一度の集まり」と言う。',
+      mean: 'monthly ＝ 月に1回の。weekly ＝ 週に1回、daily ＝ 毎日。',
+      trap: 'あとの the fourth time this month（今月4回目）と、回数がまざりやすい。',
+      use: 'We have a monthly team lunch.（毎月チームでランチがある）' },
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'ron', seg: [29.5, 41.8],
+      stem: 'What will Ron do at the meetings?',
+      ja: 'ロンは会のあいだ、何をするつもり？',
+      choices: ['Listen to music', 'Give them advice', 'Leave early'], a: 0,
+      choicesJa: ['音楽を聞く', 'みんなに助言する', '早めに帰る'],
+      cue: '「The rules」で始まる文',
       line: 'The rules do not specify whether or not I’m allowed to *listen to Willie Nelson on my headphones*.',
-      said: '人事の決まりで月一回は相談に応じるが、ヘッドホンで音楽を聞くなとは書いていない、と言う。',
-      mean: '出席はするが、部下の話は聞かずに音楽を聞く、という遠回しな宣言。',
-      trap: '「決まりに書いてない」だけだと途中で帰る話にも取れる。headphones まで聞く。',
-      use: 'Technically, the rules don’t say I can’t.（厳密には、ダメとは書いてない）' },
-
-    // why: sixteen / sixty ← -teen/-ty after "six" are easy to blur
+      said: '「ヘッドホンで音楽を聞いてはいけない、とは決まりに書いていない」と言う。',
+      mean: '月1回は出るが、話は聞かずに音楽を聞く、という意味。',
+      trap: 'rules（決まり）と聞くと、まじめに話を聞くと思いやすい。headphones まで聞く。',
+      use: 'Can I listen to music here?（ここで音楽を聞いてもいいですか）' },
     { id: 'n3', skill: 'number', level: 'B1', point: 'pee', seg: [64.45, 72.95], keep: true,
-      stem: 'How often does Ann say she has to go to the bathroom?',
-      choices: ['Every six minutes', 'Every sixteen minutes', 'Every sixty minutes'], a: 0,
-      cue: '「pee every」のすぐあとの数字。', line: 'I have to pee *every six minutes*',
-      said: '「6分おきにトイレに行かなきゃいけない」と言っている。',
-      mean: 'お腹の中のビーチボールのせい、と続く。大げさな言い方で大変さを伝えている。',
-      trap: 'six のあとに -teen や -ty が付くかどうか。minutes の前で音が切れていれば six。',
+      stem: 'How often does Ann have to go to the bathroom?',
+      ja: 'アンはどのくらいの間かくでトイレに行かなきゃいけない？',
+      choices: ['Every 6 minutes', 'Every 16 minutes', 'Every 60 minutes'], a: 0,
+      choicesJa: ['6分ごと', '16分ごと', '60分ごと'],
+      cue: '「pee every」のすぐあと',
+      line: 'I have to pee *every six minutes*',
+      said: '「6分おきにトイレに行かなきゃいけない」と言う。',
+      mean: 'every 〜 minutes ＝ 〜分おきに。pee ＝ おしっこ（くだけた語）。',
+      trap: 'sixteen（16）や sixty（60）と迷いやすい。six の直後が minutes なら6。',
       use: 'The bus comes every ten minutes.（バスは10分おきに来ます）' },
-
-    // R fix: blind 75 % — the key was the one specific choice; "coworkers" is now her nursing job, named in the clip
-    // ("nurse") (V2/K3)
-    // why: "nursing job" ← she's called "nurse", and it's a work-venting club; "husband doesn't help" ← Chris comes up
-    // later, the usual script
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'complaints', seg: [64.45, 128.4],
-      stem: 'What are most of Ann’s complaints about?',
-      choices: ['The strain her pregnancy puts on her', 'The long hours her nursing job demands',
-                'Her husband not helping her enough'], a: 0,
-      cue: 'お腹のボール、食べ物、痛みの話をまとめると？',
-      said: 'トイレが近い、好きな物が食べられない、体のあちこちが痛い、と次々に話す。',
-      mean: 'pregnant とは言わないが、全部妊娠中のつらさの話。',
-      trap: '仕事の愚痴の会なので職場の話と思いやすい。夫の話はあとで出るが、内容は逆。',
-      use: 'Pregnancy is no joke.（妊娠って本当に大変）' },
-
-    // R fix: blind 85 % — the stem quoted the phrase under test, so it was a grammar question; it now names the moment
-    // (S2/§9.2)
-    // why: "never hungry" ← one of the two negatives is lost; "not hungry now" ← "not" heard, "never" lost
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'complaints', seg: [64.45, 101.6],
+      stem: 'What does Ann mostly talk about?',
+      ja: 'アンが主に話していることは何？',
+      choices: ['Her body and food', 'Her job as a nurse', 'Her husband Chris'], a: 0,
+      choicesJa: ['自分の体と食べ物', '看護師の仕事', '夫のクリス'],
+      cue: 'トイレの話から始まる長い話',
+      said: 'トイレが近い、好きな物が食べられない、あれが食べたい、と次々に話す。',
+      mean: 'beach ball in my stomach ＝ お腹のビーチボール。妊娠中のお腹のこと。',
+      trap: '仕事の愚痴の会なので、仕事の話と思いやすい。pee や hungry を聞く。',
+      use: 'I’m always hungry these days.（最近いつもお腹がすいてる）' },
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'hungry', seg: [72.95, 78.3],
-      stem: 'Right after “That sucks… I know”, what does Ann say about her appetite?',
-      choices: ['She is hungry all the time', 'She is never hungry these days', 'She isn’t hungry at the moment'], a: 0,
-      cue: '否定の語がいくつあるか数えて。', line: 'And I’m *never not hungry*.',
+      stem: '“I’m never not hungry.” What does Ann mean?',
+      ja: '「I’m never not hungry」アンが言いたいことは？',
+      choices: ['She is always hungry', 'She is never hungry', 'She is not hungry now'], a: 0,
+      choicesJa: ['いつもお腹がすいている', '全然お腹がすかない', '今はお腹がすいていない'],
+      cue: '「That sucks」「I know」のあと',
+      line: 'And I’m *never not hungry*.',
       said: '「それに、お腹がすいてない時がない」と言う。',
-      mean: 'never not ＝ 否定が二つで「いつも」。always より強く、うんざりした感じが出る。',
-      trap: 'never か not のどちらかを落とすと、逆の意味になる。否定が二つあれば肯定。',
-      use: 'He’s never not on his phone.（彼はいつもスマホを見てる）' },
-
-    // why: Ron / Donna ← both are named in the clip; the line itself gives only the name Ann answers to
+      mean: 'never not ＝「〜でない時がない」、つまり「いつも〜」。always より強い。',
+      trap: 'never だけ聞くと「全然すかない」と思いやすい。never と not の2つで「いつも」。',
+      use: 'I’m always hungry after work.（仕事のあとはいつもお腹がすく）' },
     { id: 'w1', skill: 'who', level: 'B1', point: 'cheese', seg: [75, 79.66],
       stem: 'Who offers Ann some cheese?',
+      ja: 'アンにチーズをすすめたのは誰？',
       choices: ['Larry', 'Ron', 'Donna'], a: 0,
-      cue: 'アンが断るとき、最後に付ける名前。', line: 'I can’t have cheese, *Larry*.',
-      said: 'チーズを勧められ、「チーズは無理なの、ラリー」と答えている。',
-      mean: '文の最後の呼びかけで、勧めた相手が分かる。',
-      trap: 'ほかの名前もこの場面に出てくる。断りの文末に付いた名前を聞く。',
-      use: 'I can’t have coffee, thanks.（コーヒーは飲めないんです、ありがとう）' },
-
-    // R fix: "don't" was the weakest choice; "won't" is a near sound and a refusal reading (K3)
-    // why: can ← the t of can't drops; won't ← a refusal ("I won't have any") with the same nasal end
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cheese', seg: [75, 79.66],
-      stem: 'Fill the gap: “I ___ have cheese, Larry.”',
+      choicesJa: ['ラリー', 'ロン', 'ドナ'],
+      cue: 'アンが断る文の最後',
+      line: 'I can’t have cheese, *Larry*.',
+      said: 'チーズをすすめられ、「チーズはだめなの、ラリー」と答える。',
+      mean: '文の最後に相手の名前を付けて呼びかけている。だからすすめたのはラリー。',
+      trap: 'ロンやドナの名前もこの場面に出る。断る文の最後の名前を聞く。',
+      use: 'I can’t have coffee, thanks.（コーヒーは飲めないんです）' },
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cheese', seg: [75, 79.66],
+      stem: 'Which word do you hear: “I ___ have cheese”?',
+      ja: '「I ___ have cheese」どれが聞こえる？',
       choices: ['can', 'can’t', 'won’t'], a: 1,
-      cue: '「I」のすぐあと、母音の長さに注目。', line: 'I *can’t* have cheese, Larry.',
-      said: '「チーズは食べられないの、ラリー」と断っている。',
-      mean: 'can’t の t はほぼ消えるが、母音が長く強い（キャーン）。can は弱く短い（クン）。',
-      trap: 't が聞こえないので can に取りやすい。強く長ければ can’t と考える。',
-      use: 'I can’t have dairy.（乳製品はだめなんです）' },
-
-    // R drop: d5 (what she's allowed; deleted, as the bank shows no sign of having shipped). "Liquefied flaxseed" is
-    // the only health food among the choices, so common sense picks it (V1/V2). The literal minimum still holds (d1,
-    // n1, n3, w1).
-
-    // why: "mixes up game and bakery" ← Pac-Man and cinnamon buns side by side; "gaming at work" ← Pac-Man taken literally
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'pacman', seg: [87.64, 101.6],
+      choicesJa: ['〜できる', '〜できない', '〜しないつもり'],
+      cue: '「I」のすぐあとの短い語',
+      line: 'I *can’t* have cheese, Larry.',
+      said: '「チーズはだめなの、ラリー。ワインもだめ」と言う。',
+      mean: 'can’t は「キャーン(ト)」と長く強い。can は「クン」と短く弱い。',
+      trap: 't はほぼ聞こえないので、can と思いやすい。長く強ければ can’t。',
+      use: 'I can’t have milk.（牛乳はだめなんです）' },
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'wants', seg: [80, 90],
+      stem: 'Which food does Ann say she wants?',
+      ja: 'アンが食べたいと言っているのはどれ？',
+      choices: ['Jelly beans', 'Flaxseed drinks', 'Salami slices'], a: 0,
+      choicesJa: ['ジェリービーンズ', '亜麻の種のドリンク', 'サラミ'],
+      cue: '「What I want?」のあと',
+      line: 'You know what I want? Pork rinds. *I want jelly beans*.',
+      said: '「何が欲しいかわかる？豚の皮のスナック。ジェリービーンズ」と言う。',
+      mean: 'You know what I want? ＝ 何が欲しいかわかる？言いたいことの前置き。',
+      trap: 'flaxseed（亜麻の種）も聞こえるが、それは「飲めるけど欲しくない」物。',
+      use: 'You know what I want? Ice cream.（何が食べたいかって？アイス）' },
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'pacman', seg: [87.64, 101.6], retired: true,
       stem: 'What makes Ann’s list of what she wants funny?',
       choices: ['Her cravings grow stranger as she goes on', 'She mixes up a video game with a real bakery',
                 'She admits she has been playing games at work'], a: 0,
@@ -132,27 +130,18 @@ export const annclub: Clip = {
       mean: '食べたい物の話が、どんどん大げさで変な想像になっていくのが笑い。',
       trap: 'パックマンを本当のゲームの話と取りやすい。食べたい気持ちのたとえ。',
       use: 'I could eat a whole pizza right now.（今ならピザ丸ごと食べられる）' },
-
-    // R fix: blind 55 % — "steers the talk back to work" didn't fit; both distractors now start with her first reply
-    // and differ in what follows (V2/K5)
-    // why: "says she's fine" ← the Japanese 大丈夫 frame; "keeps the details to herself" ← "You don't want to know" read
-    // as the end of it
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'asked', seg: [107.9, 117.93],
-      stem: 'How does Ann answer when asked how she’s feeling?',
-      choices: ['She warns him off, then tells him everything', 'She says she’s fine, then admits a little',
-                'She warns him off and keeps the details to herself'], a: 0,
-      cue: '最初の答えと、聞き返されたあとの一言。',
-      line: 'You don’t want to know. … All right, man. *You asked for it*.',
-      said: '「聞かないほうがいい」と言うが、「聞きたい」と返され、「じゃあ覚悟して」と話し出す。',
-      mean: 'You asked for it ＝「自分で聞いたんだからね」。このあと全部話す合図。',
-      trap: '最初の一言は断りに聞こえるが、前置きの警告。あとの一言で話し出す。',
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'asked', seg: [107.9, 117.93],
+      stem: 'Ann says, “You asked for it.” What does she mean?',
+      ja: 'アンの「You asked for it」はどういう意味？',
+      choices: ['Okay, I will tell you', 'Please stop asking me', 'Thank you for asking'], a: 0,
+      choicesJa: ['じゃあ、話すからね', 'もう聞かないで', '聞いてくれてありがとう'],
+      cue: '聞き返されたあとの返事',
+      line: 'You don’t want to know. — It’s all I want to know. — All right, man. *You asked for it*.',
+      said: '「わかった。聞いたのはそっちだからね」と言って話し出す。',
+      mean: 'You asked for it ＝ 自分で頼んだんだからね。このあと全部話す。',
+      trap: 'You don’t want to know で話さないと思いやすい。そのあと話し始める。',
       use: 'Okay, you asked for it.（いいよ、聞いたのはそっちだからね）' },
-
-    // R fix: blind 50 % — "blames the book's writer" was half true (the book did set her off, K1); it's now a keyword
-    // trap on the famous name (V2/K1)
-    // why: "mixes up two words" ← the made-up compound sounds like a slip; "a famous actress's advice" ← Brooke Shields
-    // heard, "book" lost
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'prepost', seg: [122.43, 128.4],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'prepost', seg: [122.43, 128.4], retired: true,
       stem: 'What is funny about what Ann says she has after reading the book?',
       choices: ['She worries about a problem that can only come later',
                 'She mixes up two medical words without noticing', 'She says a famous actress gave her the advice'], a: 0,
@@ -162,133 +151,112 @@ export const annclub: Clip = {
       mean: 'まだ産んでいないのに、産後の心配をしている。言葉を重ねた造語が笑い。',
       trap: 'うっかり出た言葉に聞こえるが、わざと pre を足した造語。本の内容を先取りしている。',
       use: 'Now I’m worried about being worried.（今度は心配するのが心配）' },
-
-    // R fix: blind 75 % — "told Leslie" was a filler; it's now "tells them how to fix their problems", the advice
-    // script the clip turns around (V2/K3). Reveals `club` too: the key says the club is for venting
-    // why: "scolds them for drinking" ← her first line about drinking at work; "fixing their problems" ← a nurse's job,
-    // and "I need to vent" read as wanting a talk
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'takeover', reveals: ['sushi', 'club'], seg: [168.3, 245.5],
-      stem: 'Why do the club members end up annoyed with Ann?',
-      choices: ['She has turned their venting time into her own', 'She keeps telling them how to fix their problems',
-                'She keeps scolding them for drinking at work'], a: 0,
-      cue: '「At first this was funny」から始まる不満。',
-      said: 'アンが自分の愚痴のために会を何度も開き、メンバーは「乗っ取られた」と不満を言う。',
-      mean: '仕事の愚痴の会が、アンの妊娠の愚痴の会になってしまった。',
-      trap: '最初に「職場で飲んでる」と言ったので注意する話に見えやすいが、そのあと自分も加わる。',
-      use: 'Sorry, I didn’t mean to hijack the meeting.（ごめん、会議を乗っ取るつもりはなかった）' },
-
-    // R fix: blind 60 % — "keep her secrets" was a filler; all three now start "to listen" and differ in what comes
-    // after (V2/K5)
-    // why: "tell her what to do" ← "I have a lot of complaints" read as a request for help; "share their own" ← the
-    // club's turn-taking, seen earlier
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'respond', seg: [174.76, 183.7],
-      stem: 'When Ann calls the emergency meeting, what does she want from the others?',
-      choices: ['To listen and not say anything back', 'To listen and then tell her what to do',
-                'To listen and then share their own troubles'], a: 0,
-      cue: '「Sit down」のあと、最後の命令の部分。',
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'takeover', reveals: ['sushi', 'club'], seg: [170, 212],
+      stem: 'Why are the club members unhappy with Ann?',
+      ja: 'クラブのメンバーは、なぜアンに不満なの？',
+      choices: ['She took over their club', 'She told them what to do', 'She stopped their drinking'], a: 0,
+      choicesJa: ['アンがクラブを乗っ取った', 'アンが指図した', 'アンがお酒をやめさせた'],
+      cue: '「At first」から始まる話',
+      said: 'アンが自分の愚痴のために会を開き、メンバーは「あなたに乗っ取られた」と言う。',
+      mean: 'take over ＝ 乗っ取る、自分のものにする。仕事の愚痴の会が、アンの会になった。',
+      trap: 'アンが最初に「仕事中に飲んでる」と言ったので、注意した話と思いやすい。',
+      use: 'Can you take over for a minute?（ちょっと代わってくれる？）' },
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'respond', seg: [174.76, 183.7],
+      stem: 'What does Ann ask the others not to do?',
+      ja: 'アンはみんなに、何をしないでと頼んでいる？',
+      choices: ['Answer anything she says', 'Put on their headphones', 'Leave the room'], a: 0,
+      choicesJa: ['何を言っても返事する', 'ヘッドホンをつける', '部屋を出る'],
+      cue: '「I need to vent」のあと',
       line: 'I need to *vent*. And do not, under any circumstances, *respond* to anything I say.',
-      said: '「吐き出したいの。何を言っても、絶対に返事しないで」と言っている。',
-      mean: '解決策はいらない。ただ聞いてほしい、という頼み。',
-      trap: '愚痴を言う＝相談と考えると「助言」に引かれる。respond するなと言っている。',
-      use: 'No advice, please. I just need to vent.（アドバイスはいらない、聞いてほしいだけ）' },
-
-    // R fix: blind 75 % — the title ("kicked out") pointed at the key alone; "staff only" now fits the title too, and
-    // "cheer Ann up" builds on her cravings (V2/§9.4)
-    // why: "staff only" ← the title, and "our chance to vent about work"; "fancier" ← a club upgrading its treats
+      said: '「吐き出したいの。何を言っても、絶対に返事しないで」と言う。',
+      mean: 'respond ＝ 返事をする。助言はいらない、ただ聞いて、という頼み。',
+      trap: '直前の Put your headphones on（ヘッドホンして）は、してほしいこと。',
+      use: 'I just need you to listen.（ただ聞いてほしいの）' },
     { id: 'i3', skill: 'infer', level: 'C1', point: 'sushi', reveals: ['takeover', 'cheese'], seg: [192.4, 206.8],
-      stem: 'Why do the members start their “Sushi and cigar club”?',
-      choices: ['To pick things Ann can’t be around, so she stays away',
-                'To make it a staff-only club that Ann can’t join', 'To try something fancier than wine and cheese'], a: 0,
-      cue: 'アンが「Donna」と怒る理由と、そのあとの不満。',
+      stem: 'Why is it “sushi and cigar club” now?',
+      ja: '会が「すしと葉巻の会」になったのはなぜ？',
+      choices: ['So Ann will stay away', 'To try fancier food', 'To make Ann happy'], a: 0,
+      choicesJa: ['アンが来ないように', 'もっと豪華な物を食べたいから', 'アンを喜ばせるため'],
+      cue: 'アンがドナに怒る一言',
       line: 'You know I *can’t be around smoke or fatty tuna*. … It’s *sushi and cigar club* now.',
-      said: 'アンは煙もトロもだめ。メンバーは「乗っ取られた」と言い、「今はすしと葉巻の会」と返す。',
-      mean: 'アンが近づけない物をわざと選んで、会を取り戻そうとしている。',
-      trap: 'sushi と cigar だけだと豪華になった話、タイトルからは会員制の話に見える。',
-      use: 'I can’t be around smoke.（煙のそばにはいられないの）' },
-
-    // R fix: blind 85 % — the stem quoted the phrase under test; it now names the moment, and "never the club's idea"
-    // (off the question) is now "too hard to hide" (S2/K5)
-    // why: "boring" ← funny → its opposite; "too hard to hide" ← out of hand read as slipping out of their hands
+      said: 'アンは「煙もトロもだめなの」と言う。メンバーは「今はすしと葉巻の会」と返す。',
+      mean: 'can’t be around 〜 ＝ 〜のそばにいられない。アンがだめな物をわざと選んだ。',
+      trap: 'すしと葉巻は高い物なので、豪華にしたと思いやすい。アンの一言とつなげる。',
+      use: 'I can’t be around smoke.（煙のそばにはいられないんです）' },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'outofhand', seg: [197.5, 206.8],
-      stem: 'Right after “At first, this was funny, but…”, what does the member say?',
-      choices: ['It has gone much too far', 'It has gotten boring', 'It has become too hard to hide'], a: 0,
-      cue: '「At first this was funny, but」のあとの言葉。',
+      stem: '“It’s gotten out of hand.” What does it mean?',
+      ja: '「It’s gotten out of hand」はどういう意味？',
+      choices: ['It has gone too far', 'It has gotten boring', 'It is hard to hide'], a: 0,
+      choicesJa: ['度が過ぎてしまった', 'つまらなくなった', '隠しにくい'],
+      cue: '「this was funny, but」のあと',
       line: 'At first, this was funny, but *it’s gotten out of hand*.',
-      said: '「最初は面白かったけど、もう手に負えない」と言っている。',
-      mean: 'out of hand ＝ 度を超えて収まらない。but の前の funny と対になる。',
-      trap: 'hand を「手」と取り、手から離れる＝隠せない、と読みやすい。but のあとは前と逆の評価。',
-      use: 'The party got a little out of hand.（パーティーがちょっと羽目を外しすぎた）' },
-
-    // R fix: blind 65 % — "and you taken it over" isn't grammatical (§9.5), and "we've" fit the club's view; it's now
-    // you've / you'd / she's (K5/V2). Reveals `club`: the stem says what the club was for
-    // why: "you'd" ← a v and a d both shrink to a short stop; "she's" ← the line heard as said about Ann, not to her
+      said: '「最初はおもしろかったけど、もうやりすぎだよ」と言う。',
+      mean: 'out of hand ＝ 手に負えない、度が過ぎた。but の前の funny と反対の気持ち。',
+      trap: 'hand（手）から「手から離れる＝隠せない」と思いやすい。but のあとが本音。',
+      use: 'The party got a little out of hand.（パーティーが少し羽目を外しすぎた）' },
     { id: 's2', skill: 'sound', level: 'B2', point: 'takeover', reveals: ['club'], seg: [197.5, 206.8],
-      stem: 'Fill the gap: “…our chance to vent about work, and ___ taken it over.”',
+      stem: 'Which word do you hear: “and ___ taken it over”?',
+      ja: '「and ___ taken it over」どれが聞こえる？',
       choices: ['you’ve', 'you’d', 'she’s'], a: 0,
-      cue: '「and」のあと、「taken」の前の短い音。', line: 'and *you’ve* taken it over',
+      choicesJa: ['あなたは（〜してしまった）', 'あなたは（〜していた）', '彼女は'],
+      cue: '「and」のあと、「taken」の前',
+      line: 'This was our chance to vent about work, and *you’ve* taken it over.',
       said: '「仕事の愚痴を言う場だったのに、あなたが乗っ取った」と言う。',
-      mean: 'you’ve の v はとても弱く、ほぼ「ユ」に聞こえる。',
-      trap: 'v が弱く聞き取りにくい。you’d なら had の過去完了、she’s なら第三者の話になる。',
-      use: 'You’ve done this before, right?（前にやったことあるよね？）' },
-
-    // R fix: blind 60 % — "glad she understands the rules" didn't fit; it's now "fine with it", the literal I see (V2/K3)
-    // why: "fine with it" ← I see = 分かった, read literally; "amused" ← "Wow" read as delight
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'seehow', seg: [204.1, 211.1],
-      stem: 'When Ann hears the club’s new name, how does she feel?',
-      choices: ['Hurt that they are shutting her out', 'Fine with it, since she sees their point',
-                'Amused by their idea for a new club'], a: 0,
-      cue: '「Wow. Okay.」に続く短い一文。', line: 'Wow. Okay. *I see how it is*.',
-      said: '「へえ。そう。そういうことね」と返している。',
-      mean: 'I see how it is ＝「そういうつもりなのね」。のけ者にされて傷ついた、すねた言い方。',
-      trap: 'I see を「分かった」と取ると、納得したように聞こえる。how it is が付くと不満。',
+      mean: 'you’ve の v はとても小さく、「ユヴ」がほぼ「ユ」に聞こえる。',
+      trap: 'v が聞こえにくいので you’d と迷いやすい。アンに向かって言うので she’s ではない。',
+      use: 'You’ve been here before, right?（前にも来たことあるよね？）' },
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'seehow', seg: [204.1, 211.1],
+      stem: 'How does Ann feel when she hears the new name?',
+      ja: '新しい会の名前を聞いて、アンはどんな気持ち？',
+      choices: ['Hurt and left out', 'Happy for them', 'Fine with it'], a: 0,
+      choicesJa: ['傷ついて、のけ者の気分', 'みんなのために喜んでいる', '別にかまわない'],
+      cue: '「Wow. Okay.」に続く一言',
+      line: 'Wow. Okay. *I see how it is*.',
+      said: '「へえ。そう。そういうことね」と返す。',
+      mean: 'I see how it is ＝ そういうつもりなのね。のけ者にされて、すねた言い方。',
+      trap: 'Okay や I see（わかった）から、納得したと思いやすい。how it is が付くと不満。',
       use: 'Oh, I see how it is.（へえ、そういうことね）' },
-
-    // R fix: the seg ended on the onset of the next speaker's "I feel bad" (211.4 s); it now ends at 211.1 (S4). a2 too
     { id: 'x1', skill: 'dict', level: 'B1', point: 'seehow', seg: [206.8, 211.1],
       stem: 'Type what Ann says: “Wow. Okay. ___.” (5 words)', answer: 'i see how it is',
-      cue: '「Okay」のあと、短くつながる五語。', line: 'Wow. Okay. *I see how it is*.',
-      said: '「そういうことね」とつぶやいている。',
-      mean: 'how it is がつながって「ハウィティズ」のように聞こえる。is は「ズ」だけに近い。',
-      trap: 'how と it がつながり、it の t も弱い。語の切れ目は意味から考える。',
+      ja: 'アンの言葉を書こう：「Wow. Okay. ___.」（5語）',
+      cue: '「Okay」のあとの短い5語',
+      line: 'Wow. Okay. *I see how it is*.',
+      said: '「へえ。そう。そういうことね」とつぶやく。',
+      mean: 'how it is がつながって「ハウイティズ」のように聞こえる。',
+      trap: 'how と it がつながり、it の t も小さい。is は「ズ」だけに近い。',
       use: 'That’s just how it is.（そういうものだよ）' },
-
-    // R fix: blind 55 % — "put the cigar out" was a filler; it's now "a little sorry, but sure it was needed" (V2/K3)
-    // why: "a little sorry" ← the polite script after "I feel bad"; "just as sorry" ← a guilty reading of the reply
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'amazing', seg: [210.9, 217.36],
-      stem: 'After one member says “I feel bad,” how does the next speaker feel?',
-      choices: ['Not sorry at all, and enjoying it', 'A little sorry, but sure it was needed',
-                'Just as sorry, and ready to stop'], a: 0,
-      cue: '「I don’t」のあと、最後の一言。', line: '*I don’t*. This is a Cuban. This is yellowtail. *I feel amazing*.',
-      said: '「私は平気。キューバの葉巻とハマチよ。最高の気分」と言う。',
-      mean: 'I don’t（悪いと思ってない）と言い切り、楽しんでいる。',
-      trap: '前の人に合わせて謝るのが日本の会話の流れだが、ここは真逆の返事。',
-      use: 'I don’t feel bad at all.（全然悪いと思ってない）' },
-
-    // R fix: blind 65 % — "complains more" was a filler; it's now "too busy", a common spouse complaint (V2/K3)
-    // why: "never listens" ← the usual husband complaint; "too busy" ← the other usual one
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'chris', seg: [217.37, 229.66],
-      stem: 'What is Ann’s biggest complaint about Chris?',
-      choices: ['His kindness leaves her no one to vent to', 'He never really listens when she complains',
-                'He is too busy at work to hear her out'], a: 0,
-      cue: '「can’t take them home because」のあと。',
+      stem: 'After “I feel bad,” how does Donna feel?',
+      ja: '「悪い気がする」のあと、ドナはどんな気持ち？',
+      choices: ['Happy, not sorry', 'A little sorry', 'Very sorry'], a: 0,
+      choicesJa: ['楽しくて、悪いと思っていない', '少し悪いと思っている', 'とても悪いと思っている'],
+      cue: '「I don’t」のあと、最後の一言',
+      line: 'I feel bad. — *I don’t*. This is a Cuban. This is yellowtail. *I feel amazing*.',
+      said: '「私は平気。キューバの葉巻にハマチ。最高の気分」と言う。',
+      mean: 'I don’t ＝ 私は（悪いと思わ）ない。I feel amazing ＝ 最高の気分。',
+      trap: '前の人の I feel bad に合わせると思いやすい。I don’t で反対を言っている。',
+      use: 'I feel amazing today.（今日は最高の気分）' },
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'chris', seg: [217.37, 229.66],
+      stem: 'Why can’t Ann complain at home?',
+      ja: 'アンはなぜ家で愚痴を言えない？',
+      choices: ['Chris wants to help', 'Chris never listens', 'Chris is too busy'], a: 0,
+      choicesJa: ['クリスがいつも助けようとするから', 'クリスが話を聞かないから', 'クリスが忙しすぎるから'],
+      cue: '「because」のあと',
       line: 'Chris is the *most considerate person* in the world, and he just *wants to help me*',
-      said: '夫は優しすぎて助けようとするので、愚痴を家に持ち帰れない、と言う。',
-      mean: '優しさがかえって負担になっている。だから職場で吐き出したかった。',
-      trap: '夫への不満と聞くと「話を聞かない」を予想しやすいが、中身は逆。because のあとを聞く。',
-      use: 'He’s almost too nice.（彼、ちょっと優しすぎるくらい）' },
-
-    // R fix: blind 70 % — the stem quoted the marker under test; it now names the moment. "New topic" is now "softens",
-    // the Japanese あのね reading (S2/V2)
-    // why: "asks if they know" ← you know what? taken as a real question; "softens" ← read as a polite lead-in
+      said: '「クリスは世界一思いやりがあって、私を助けたがる」と言う。',
+      mean: 'considerate ＝ 思いやりがある。優しすぎて、かえって愚痴を言えない。',
+      trap: '夫への不満と聞くと「話を聞かない」と思いやすい。because のあとはほめ言葉。',
+      use: 'He just wants to help.（彼は助けたいだけなんだ）' },
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', seg: [229.66, 238.42],
-      stem: 'Right before “I guess I was wrong,” what does Ann’s short question do?',
-      choices: ['It sets up a blunt, strong remark', 'It asks whether they know what she means',
-                'It softens what she is about to say'], a: 0,
-      cue: '「but」のすぐあと、答えを待たずに続く部分。',
+      stem: '“You know what?” What does it do here?',
+      ja: 'ここでの「You know what?」の働きは？',
+      choices: ['Starts a strong point', 'Asks a real question', 'Makes it softer'], a: 0,
+      choicesJa: ['強い一言の前置き', '本当に質問している', '言い方をやわらげる'],
+      cue: '「but」のすぐあと',
       line: 'but *you know what*? I guess I was wrong.',
-      said: '「でもね、私が間違ってたみたい」と言い放っている。',
-      mean: 'you know what? は答えを求めない。強い一言の前の「あのね」。',
-      trap: '疑問の形なので本当に聞いていると思いやすい。間を置かずに強い一言が続けば前置き。',
+      said: '「でもね、私が間違ってたみたい」と言い放つ。',
+      mean: 'You know what? ＝ あのね、いい？答えは待たず、強い一言の前に言う。',
+      trap: '質問の形なので、本当に聞いていると思いやすい。すぐに強い一言が続く。',
       use: 'You know what? Let’s just go.（もういいや、行こう）' },
   ]
 };
