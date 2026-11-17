@@ -195,7 +195,7 @@ export const saveJJs: Clip = {
       line: 'Andy, *you thinking* what I’m thinking?',
       said: '「アンディ、同じこと考えてる？」と聞く。are は言っていない。',
       mean: '会話では Are you 〜ing? の are が落ちて、You thinking …? になりやすい。',
-      trap: 'are を足したくなる。聞こえた音だけで選ぶ。',
+      trap: 'are を足したくなるが、前にその音はない。「シンキン」と ing があり、think だけではない。',
       use: 'You coming with us tonight?（今夜一緒に来る？）' },
     { id: 'p4', skill: 'phrase', level: 'B1', point: 'whatsay', seg: [120.5, 126.3],
       stem: 'What is Leslie asking with “Ron, what do you say?”',

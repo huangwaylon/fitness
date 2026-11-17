@@ -141,7 +141,7 @@ export const benLeslieKiss: Clip = {
       line: 'I’ve had *two and a half glasses* of red wine',
       said: 'レスリーが「赤ワインを2杯半飲んだ」と言う。',
       mean: 'two and a half ＝ 2と半分（2.5）。glass ＝ グラス1杯。',
-      trap: 'two だけ聞くと2杯。and a half まで聞く。',
+      trap: 'one でも three でもなく two。そこで止めず and a half まで聞く。',
       use: 'I’ve had two glasses of wine.（ワインを2杯飲んだ）' },
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'yay', reveals: ['talkout'], seg: [105.4, 114.6], retired: true,
       stem: 'When Ann says “No, don’t. Stop.”, how much does she mean it?',
