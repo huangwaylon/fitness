@@ -1,12 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 3, new 2
 // “Oh, the Wall - The Office US” (the official The Office channel, BEST OF SEASON 6): a company email and a news item
 // that cuts off before its last word leave the office fearing bankruptcy; people panic, Michael can't reach his boss,
 // and in the end they try to calm everyone by just getting on with work.
-// Segments from the captions, words from whisper (2026-11-16). The sources differ at 10.5 s ("What's" / "here's the
-// meaning"), 14.4 s ("get" / "got like eight"), 28.4 s ("Aaron" / "Erin"), 82.4 s ("shrewd" / "schrute farms"), 117 s,
-// 182 s and 193.8 s ("Monkey see" / "lucky sea"); no key rests on those words. Whisper is garbled over the music at
-// 148–168 s and loops one line from 226 s; no item uses those stretches, the bathroom bit (113–122 s) or the "Tuna"
-// nickname. Speakers are named only where the audio names them ("Dwight", "Michael", "Erin", "the Nard Dog").
-// REVIEW 2026-11-16: pass 9, fix 15, drop 0, new 0; ear checks 0
+// Segments from the captions, words from whisper (2026-11-16). The sources differ at 10.5 s, 14.4 s, 28.4 s, 82.4 s,
+// 117 s, 182 s and 193.8 s; no key rests on those words. Whisper is garbled over the music at 148–168 s; no item uses
+// it, the bathroom bit (113–122 s) or the "Tuna" nickname. Dwight by "Dwight" and Schrute Farms, Andy by "the Nard Dog".
 import type { Clip } from '../types.ts';
 
 export const ohTheWall: Clip = {
@@ -15,96 +13,79 @@ export const ohTheWall: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: badly ← "killed" read as a disaster (殺した, the stage "died"); quit ← "once" heard as he never finished
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'killed', seg: [4.3, 9.2],
-      stem: 'How did his one stand-up comedy show go, by his own account?',
-      choices: ['Really well; the crowd loved it', 'Badly; the crowd didn’t laugh', 'He quit partway through the show'],
-      a: 0,
-      cue: '「Yeah」のあとの短い動詞。',
+      stem: 'What does “*I killed*” mean here?',
+      ja: 'ここでの「I killed」はどういう意味？',
+      choices: ['It went really well', 'It went very badly', 'He hurt somebody'], a: 0,
+      choicesJa: ['大うけだった', 'ひどい失敗だった', 'だれかをけがさせた'],
+      cue: '「You did?」のあと',
       line: 'I did stand-up comedy once. — You did? — Yeah, *I killed*.',
-      said: '「一度スタンダップをやった」「ほんと？」「うん、大うけだった」と話す。',
-      mean: 'I killed ＝ 大成功だった。舞台やプレゼンで「ばっちりうけた」の意味。',
-      trap: 'kill を文字どおり「殺す」と取ると失敗に聞こえる。舞台の話なら大成功の意味。',
-      use: 'Your speech? You totally killed it.（スピーチ？最高だったよ）' },
+      said: '「一度お笑いの舞台に立った」「ほんと？」「うん、大うけだった」と話す。',
+      mean: 'kill ＝ 文字どおりは「殺す」、舞台なら「大成功する・大うけする」。',
+      trap: 'killed から、こわい話と思いやすい。お笑いの話で使うと「大うけ」。',
+      use: 'You killed it today!（今日は最高だったよ！）' },
 
-    // why: Erin ← her name comes up a few lines later; David Wallace ← the email's sender, heard as the one asking
-    { id: 'w1', skill: 'who', level: 'B2', point: 'dwight', reveals: ['haveto'], seg: [9.1, 16.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'dwight', reveals: ['haveto'], seg: [9.1, 16.2],
       stem: 'Who asks Michael about the email everyone got?',
+      ja: 'みんなに来たメールについてマイケルに聞くのはだれ？',
       choices: ['Dwight', 'Erin', 'David Wallace'], a: 0,
-      cue: 'Michael の返事の最後に付く名前。',
+      choicesJa: ['ドワイト', 'エリン', 'デビッド・ウォレス'],
+      cue: '「more specific」のあと',
       line: 'Hey, Michael? … — You’ll have to be more specific, *Dwight*.',
-      said: '「マイケル、みんなに来たメールって何？」と聞かれ、「もっと具体的に頼むよ、ドワイト」と返す。',
-      mean: '返事の最後の名前は呼びかけ。聞いたのはドワイトだと分かる。',
-      trap: 'メールの送り主の名前も出てくるので、取り違えやすい。返事の呼びかけで決める。',
-      use: 'You’ll have to be more specific.（もう少し具体的にお願い）' },
+      said: '「みんなに来たメールって何？」と聞かれ、「もっと具体的に頼むよ、ドワイト」と返す。',
+      mean: '返事の最後に相手の名前を呼んでいる。specific ＝ 具体的な。',
+      trap: 'メールを書いたのは David Wallace なので、選びやすい。聞いたのは返事で呼ばれた人。',
+      use: 'Can you be more specific?（もう少し具体的に言ってもらえますか）' },
 
-    // R fix: V2 (blind 70 %): "blame Michael" was a filler; both distractors now come from what's said (the email's
-    //   "conjecture", Dwight's joke offer)
-    // why: doubt it ← the email's "it's all conjecture" heard as everyone's view; joke ← the scarecrow offer and
-    //   "Woo-hoo! Shout out!" heard as the mood
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'reaction', seg: [9.1, 87.3],
-      stem: 'Once the article is read, how do most people in the office react?',
-      choices: ['They panic about what will happen to them', 'They doubt it because of the boss’s email',
-                'They joke about it and act unbothered'], a: 0,
-      cue: '記事を読んだ直後の短い反応の連続。',
-      said: 'メールと記事の続きを読んだあと、「仕事を失う」「会社が終わる」と次々に不安を口にする。',
-      mean: 'うわさの段階でも、オフィス全体が将来を心配して動揺している。',
-      trap: 'メールの「ただの推測」に引っぱられやすい。記事のあとの反応を聞く。',
-      use: 'Everyone’s freaking out about the news.（みんなそのニュースで大騒ぎ）' },
-
-    // why: eighteen / eighty ← -teen/-ty and the weak "like" before the number
     { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [12.3, 16.2],
       stem: 'How many emails a day does Michael say he gets?',
-      choices: ['Eight', 'Eighteen', 'Eighty'], a: 0, keep: true,
-      cue: '「like」のあと、emails の前の数。',
+      ja: 'マイケルは一日に何通メールが来ると言う？',
+      choices: ['Eight', 'Eighteen', 'Eighty'], a: 0,
+      choicesJa: ['8通', '18通', '80通'],
+      cue: '「I get like」のあと',
       line: 'I get like *eight emails a day*.',
       said: '「一日に8通くらいメールが来るんだ」と言う。',
-      mean: 'like は「〜くらい」。8通は少ないので、「どのメール？」と聞き返すのはおかしい、という笑い。',
-      trap: 'eighteen は後ろの teen が強く長い。eight は短く t で止まる。',
-      use: 'I get like ten calls a day.（一日に10件くらい電話が来る）' },
+      mean: 'like ＝ ここでは「〜くらい」。eight は短く「エイト」。',
+      trap: 'eighteen なら最後の「ティーン」が長い。すぐ emails が続くなら eight。',
+      use: 'It takes like ten minutes.（10分くらいかかる）' },
 
-    // R fix: V2 (blind 50 %): "a mistake by the paper" was the odd one out; "partly right, but overblown" is the
-    //   nearer miss
-    // why: true but not final ← "concrete news" heard as the news being real; overblown ← "stress" + "conjecture"
-    //   unknown, heard as playing it down
     { id: 'd1', skill: 'detail', level: 'B2', point: 'conjecture', seg: [20.6, 28.1],
-      stem: 'What does the boss’s email say about the item in the journal?',
-      choices: ['It’s only guesswork for now', 'It’s true, but not final yet', 'It’s partly right, but overblown'], a: 0,
-      cue: '「stress」のあとの一語と、次の「if」の文。',
-      line: 'Just want to stress *it’s all conjecture*. If there’s any concrete news…',
+      stem: 'What does the boss’s email say about the news?',
+      ja: '社長のメールは、そのニュースについて何と言っている？',
+      choices: ['It is only a guess', 'It is true but not final', 'It is partly right'], a: 0,
+      choicesJa: ['ただの推測だ', '本当だがまだ決まっていない', '一部は正しい'],
+      cue: '「Just want to stress」のあと',
+      line: 'Just want to stress *it’s all conjecture*. If there’s any concrete news, you will know ASAP.',
       said: '「すべて推測だと強調したい。確かなことはすぐ知らせる」とある。',
-      mean: 'conjecture ＝ 推測。記事を否定せず、まだ決まった話ではないと伝える。',
-      trap: 'concrete news を「本当の話」と取りやすい。if があるので、まだ無い。',
-      use: 'It’s just a guess at this point.（今の時点では推測にすぎない）' },
+      mean: 'conjecture ＝ 推測。ASAP ＝ as soon as possible（できるだけ早く）。',
+      trap: 'concrete news（確かな知らせ）を聞いて、本当だと思いやすい。conjecture は「推測」。',
+      use: 'Please reply ASAP.（できるだけ早く返信してください）' },
 
-    // R fix: V2 (blind 50 %): the time-capsule filler is now the print paper, so "online" decides it
-    // why: diary ← "Your Feelings Journal?" is the first answer heard; print edition ← "the Wall Street Journal"
-    //   heard, the last word "online" lost
     { id: 'i1', skill: 'infer', level: 'B2', point: 'journal', seg: [28.1, 36.5],
-      stem: 'Which “journal” did the boss’s email really mean?',
-      choices: ['A newspaper’s website', 'A newspaper’s print edition', 'Michael’s feelings diary'], a: 0,
-      cue: '「he means」のあとの名前。',
+      stem: 'Which “journal” did the boss’s email mean?',
+      ja: '社長のメールの「journal」はどれのこと？',
+      choices: ['A newspaper’s website', 'A newspaper on paper', 'Michael’s feelings diary'], a: 0,
+      choicesJa: ['新聞のウェブサイト', '紙の新聞', 'マイケルの気持ち日記'],
+      cue: '「he means」のあと',
       line: 'Your *Feelings Journal*? … — Michael, he means *the Wall Street Journal online*.',
-      said: 'Erin は「気持ち日記？」と聞き返し、別の人が新聞のサイトのことだと言う。',
-      mean: 'journal は日記にも新聞にも使う。メールが指すのは新聞のサイト。',
-      trap: 'Feelings Journal に引っぱられやすい。最後の online まで聞く。',
-      use: 'I read it in the paper this morning.（今朝の新聞で読んだ）' },
+      said: 'エリンは「気持ち日記？」と聞き、別の人が「新聞のサイトのこと」と言う。',
+      mean: 'journal ＝ 日記・新聞。online ＝ インターネット上の。',
+      trap: 'Feelings Journal（気持ち日記）が先に出るので選びやすい。he means のあとが答え。',
+      use: 'I read it online.（ネットで読んだ）' },
 
-    // why: $1.09 ← "dollar ninety-nine" with "ninety" shrunk; $1.90 ← the last "-nine" lost
     { id: 'n2', skill: 'number', level: 'B1', point: 'price', seg: [49, 52.4],
       stem: 'How much does it cost to finish the article?',
-      choices: ['$1.09', '$1.90', '$1.99'], a: 2, keep: true,
-      cue: '「It’s a dollar」のあとの数。',
+      ja: '記事の続きを読むのにいくらかかる？',
+      choices: ['$1.09', '$1.90', '$1.99'], a: 2,
+      choicesJa: ['1ドル9セント', '1ドル90セント', '1ドル99セント'],
+      cue: '「to finish the article」の前',
       line: 'It’s *a dollar ninety-nine* to finish the article.',
       said: '「続きを読むのに1ドル99セントかかる」と言う。',
-      mean: '値段は dollar のあとにセントを続けて言う。1.99 は「ワンダラー・ナインティナイン」。',
-      trap: 'ninety の t が弾んで「ナイニー」に近い。最後の nine まで聞く。',
-      use: 'It’s three ninety-nine for the large.（Lサイズは3ドル99です）' },
+      mean: '値段は a dollar ninety-nine のように、ドルとセントを続けて言う。',
+      trap: 'ninety（90）だけで止めると1.90になる。ninety-nine の nine まで聞く。',
+      use: 'It’s two ninety-nine.（2ドル99セントです）' },
 
-    // R fix: V2 (blind 70 %): "made the whole story up" was weak; the new miss takes the cut-off as the story's end
-    // why: knows the end ← "I wonder" heard as a teasing hint; cut-off is the end ← "the article cuts off" heard as
-    //   how it really ends
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'wonder', reveals: ['price'], seg: [49, 56.5],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'wonder', reveals: ['price'], seg: [49, 56.5], retired: true,
       stem: 'Why does “I wonder what it was going to say” get a laugh?',
       choices: ['He would rather wonder than pay to read it', 'He already knows how the article will end',
                 'He thinks the cut-off is how the story ends'], a: 0,
@@ -115,50 +96,54 @@ export const ohTheWall: Clip = {
       trap: 'I wonder を「知っている」ほのめかしと取りやすい。直後の反応が答え。',
       use: 'Are you serious? Just pay for it.（本気？払えばいいでしょ）' },
 
-    // R fix: V2 (blind 60 %) + K1: "read it before he did" was defensible (whoever paid reads first); now "got the
-    //   joke" and "hit him" carry the two literal readings
-    // why: got the joke ← "I got it" heard as "I understand"; hit ← beat read literally as 叩く, after "Oh!"
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'beat', seg: [56.6, 61.3],
-      stem: 'After someone says “I got it”, what does the next speaker mean?',
-      choices: ['Someone paid before he could', 'Someone got the joke before he did', 'Someone hit him by accident'],
-      a: 0,
-      cue: '「Oh!」のあと、me to it で終わる言い方。',
+      stem: 'What does “*beat me to it*” mean?',
+      ja: '「beat me to it」はどういう意味？',
+      choices: ['Did it before me', 'Hit me really hard', 'Got the joke first'], a: 0,
+      choicesJa: ['私より先にやった', '私を強くたたいた', '先に冗談が分かった'],
+      cue: '「I got it」のあと',
       line: 'I got it. I got it. — Oh! Tuna *beat me to it*.',
       said: '「払った」の声に、別の人が「先を越された」と言う。',
-      mean: 'beat someone to it ＝ 先にやられる。自分が払うつもりだったのに、先に払われた。',
-      trap: 'beat を「叩く」、got it を「分かった」と取りやすい。値段の直後なら「払う」。',
-      use: 'He beat me to the last seat.（最後の席、先に取られた）' },
+      mean: 'beat 〜 to it ＝ 〜より先にやる。beat ＝ 勝つ・たたく。',
+      trap: 'beat から「たたく」と思いやすい。to it がつくと「先を越す」。',
+      use: 'Oh, you beat me to it!（あ、先を越された！）' },
 
-    // R fix: V2 (blind 55 %): "Selling the company" is now "Restructuring", a word said a few seconds later
-    // why: closing branches ← the board-meeting topic heard as cuts; restructuring ← said at 72 s as one thing
-    //   bankruptcy can mean
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reaction', seg: [56.6, 87.3],
+      stem: 'How do people react to the article?',
+      ja: 'みんなは記事にどう反応する？',
+      choices: ['They get scared about their jobs', 'They don’t believe it at all', 'They laugh about it'], a: 0,
+      choicesJa: ['仕事がなくなるとこわがる', 'まったく信じない', '笑い話にする'],
+      cue: '「What?」のあと',
+      said: '「みんな仕事を失う」「会社が終わる」と、次々に不安を口にする。',
+      mean: 'lose our jobs ＝ 仕事を失う。うわさだけで、事務所じゅうがあわてる。',
+      trap: '社長のメールが「推測」と言っていたので、信じないと思いやすい。',
+      use: 'I’m worried about my job.（仕事が心配だ）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'bankrupt', seg: [61.2, 65.3],
-      stem: 'What is the board rumored to recommend?',
-      choices: ['Declaring bankruptcy', 'Closing some branches', 'Restructuring the company'], a: 0,
-      cue: '「recommend」のすぐあとの二語。',
+      stem: 'What will the board probably recommend?',
+      ja: '取締役会は何を勧めるらしい？',
+      choices: ['Declaring bankruptcy', 'Closing some offices', 'Selling the company'], a: 0,
+      choicesJa: ['破産を申し立てる', 'いくつかの支社を閉める', '会社を売る'],
+      cue: '「they will recommend」のあと',
       line: 'It is rumored that they will recommend *declaring bankruptcy*.',
       said: '「破産申請を勧めるとうわさされている」と記事の続きを読む。',
-      mean: 'declare bankruptcy ＝ 破産を申し立てる。全員の不安が一気に高まる。',
-      trap: 'board や rumored から別の話を想像しやすい。recommend のあとを最後まで。',
-      use: 'The airline declared bankruptcy last year.（その航空会社は去年破産した）' },
+      mean: 'bankruptcy ＝ 破産。It is rumored that 〜 ＝ 〜といううわさだ。',
+      trap: '会社の悪い知らせなので、支社を閉める話と思いやすい。recommend のあとを聞く。',
+      use: 'It is rumored that he quit.（彼が辞めたといううわさだ）' },
 
-    // R fix: V2 (blind 55 %): reworded so the key isn't the only nuanced choice
-    // why: not right away ← "Not necessarily" heard as "not yet"; can't be trusted ← the email's "conjecture"
-    //   carried over
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnec', reveals: ['bankrupt'], seg: [67.3, 73.75],
-      stem: 'When someone says they will all lose their jobs, what does the reply do?',
-      choices: ['Offers a less frightening reading', 'Admits it, but says not right away',
-                'Says the article can’t be trusted'], a: 0,
-      cue: '「Not necessarily」のあとの「Maybe」。',
-      line: '*Not necessarily*. Bankruptcy could mean a lot of things. *Maybe* they’re just restructuring…',
-      said: '「必ずしもそうじゃない。立て直しのためかも」と別の可能性を出す。',
-      mean: 'Not necessarily で決めつけをゆるめ、Maybe でましな見方を示している。',
-      trap: '記事の否定ではない。Not necessarily は「そうとは限らない」。',
-      use: 'Not necessarily. It could be good news.（そうとは限らないよ。いい話かも）' },
+      stem: 'What does “*Not necessarily*” mean here?',
+      ja: 'ここでの「Not necessarily」はどういう意味？',
+      choices: ['That may not be true', 'That is surely true', 'That is not important'], a: 0,
+      choicesJa: ['そうとは限らない', 'きっとそのとおり', 'それは大事じゃない'],
+      cue: '「lose our jobs」のあと',
+      line: 'We’re all going to lose our jobs. — *Not necessarily*. Bankruptcy could mean a lot of things.',
+      said: '「みんな失業だ」に、「そうとは限らない。破産にもいろいろある」と返す。',
+      mean: 'Not necessarily ＝ 必ずしもそうではない。相手の心配をやわらげる言い方。',
+      trap: 'necessary（必要な）から「必要ない」と思いやすい。ここは「そうとは限らない」。',
+      use: 'Expensive? Not necessarily.（高い？そうとは限らないよ）' },
 
-    // R fix: V2 (blind 75 %): the key was the only twist and the longest; shortened and rebalanced
-    // why: mocking ← "sounds awful" heard as sarcasm; never out of debt ← "get out of debt" heard as hopeless
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'awful', seg: [71.6, 78],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'awful', seg: [71.6, 78], retired: true,
       stem: 'Why does “Oh, that sounds awful” get a laugh?',
       choices: ['Even the hopeful option frightens him', 'He’s making fun of the bad news',
                 'He thinks they’ll never get out of debt'], a: 0,
@@ -169,24 +154,19 @@ export const ohTheWall: Clip = {
       trap: 'awful を皮肉と取りやすい。just restructuring は「ましな方」として出ている。',
       use: 'Relax, it’s just a small change.（落ち着いて、ちょっとした変更だよ）' },
 
-    // R fix: V2 (blind 50 %): "good pay" contradicted a line everyone hears; "low pay" now borrows it
-    // why: farm stand ← "jobs at Schrute Farms" heard as ordinary farm work; low pay ← "doesn't pay much" heard,
-    //   "as human scarecrows" lost
     { id: 'd5', skill: 'detail', level: 'B1', point: 'scarecrow', seg: [80.2, 87.3],
-      stem: 'What jobs does someone offer everyone at his farm?',
-      choices: ['Standing in the fields as scarecrows', 'Picking crops in the fields for low pay',
-                'Selling produce at the farm stand'], a: 0,
-      cue: '「as」のあとの二語と、そのあとの条件。',
+      stem: 'What jobs does Dwight offer everyone at his farm?',
+      ja: 'ドワイトは自分の農場でみんなにどんな仕事をくれると言う？',
+      choices: ['As scarecrows in the fields', 'Picking crops for low pay', 'Selling food at the farm'], a: 0,
+      choicesJa: ['人間かかしとして畑に立つ', '安い給料で作物をとる', '農場で食べ物を売る'],
+      cue: '「Schrute Farms」のあと',
       line: 'You can all have jobs at Schrute Farms, *as human scarecrows*. It *doesn’t pay much*…',
-      said: '「みんなうちの農場で雇ってやる。人間かかしとして。給料は安いし、組合も作れない」と言う。',
-      mean: '親切な申し出の形で、実はひどい条件を並べている。',
-      trap: 'farms から普通の農作業を想像しやすい。as のあとに仕事の中身が来る。',
-      use: 'You can stay with us, but it’s tiny.（うちに泊まっていいけど、狭いよ）' },
+      said: '「みんなうちの農場で雇ってやる。人間かかしとして。給料は安い」と言う。',
+      mean: 'scarecrow ＝ かかし。It doesn’t pay much ＝ 給料はあまり出ない。',
+      trap: 'doesn’t pay much（安い）から、作物とりと思いやすい。as のあとが仕事。',
+      use: 'The job doesn’t pay much.（その仕事は給料が安い）' },
 
-    // R fix: V2 (blind 55 %): "agrees to check on David" was a filler; "tells him off" is the other way to react
-    // why: plays along ← Michael's own "wouldn't that be hilarious" heard as shared fun; tells him off ← the pause
-    //   heard as disapproval (the Japanese frame: 沈黙は不快のしるし)
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'spy', seg: [87.3, 100],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'spy', seg: [87.3, 100], retired: true,
       stem: 'How does David’s assistant react to Michael’s idea about her boss?',
       choices: ['She lets it pass and wraps up the call', 'She tells him off for the idea',
                 'She laughs and plays along with it'], a: 0,
@@ -197,104 +177,101 @@ export const ohTheWall: Clip = {
       trap: '本人が「面白い」と言うので、うけたと取りやすい。返事が冗談に触れているかを聞く。',
       use: 'I’ll have her call you back.（彼女から折り返させます）' },
 
-    // why: happy ← "last day at work" heard as a holiday; annoyed ← "what if" heard as a complaint
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'lastday', seg: [122.6, 128],
-      stem: 'How does the speaker feel at “what if this is our last day”?',
-      choices: ['Scared of losing the people at work', 'Happy at the thought of a long break',
-                'Annoyed that the work might go on'], a: 0,
-      cue: '二つ目の「What if」の中身。',
-      line: 'What if *we never see each other ever again*?',
-      said: '「今日が最後の出社だったら？もう二度と会えなかったら？」と言う。',
-      mean: '仕事より、仲間と会えなくなることを心配している。',
-      trap: 'last day を休みと取ると明るく聞こえる。never … ever again が気持ちを決める。',
-      use: 'What if we never come back here?（もうここに来られなかったら？）' },
+    { id: 'f6', skill: 'detail', level: 'B1', point: 'callback', seg: [96.5, 101.3],
+      stem: 'What will David do when he is free?',
+      ja: 'デビッドは手があいたら何をする？',
+      choices: ['Call Michael back', 'Come to see Michael', 'Send Michael an email'], a: 0,
+      choicesJa: ['マイケルに電話をかけ直す', 'マイケルに会いに来る', 'マイケルにメールを送る'],
+      cue: '「I’ll just have him」のあと',
+      line: 'I’ll just have him *call you back* when he’s free.',
+      said: '「手があいたら、折り返し電話させます」と言う。',
+      mean: 'call 〜 back ＝ 〜に電話をかけ直す。have him 〜 ＝ 彼に〜させる。電話でよく聞く言い方。',
+      trap: 'メールの話から始まったので、メールと思いやすい。call you back を聞く。',
+      use: 'Can I call you back later?（あとでかけ直してもいい？）' },
 
-    // R fix: V2 (blind 65 %): both distractors were negative fillers; now a take-back (「なんてね」) and "already told
-    //   her", which the next line refutes
-    // why: half joking ← the Japanese frame 「…なんてね」 after a confession; told her ← "I said it" heard as said to
-    //   Erin
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'lastday', seg: [122.6, 128],
+      stem: 'What does this office worker worry about?',
+      ja: 'この社員は何を心配している？',
+      choices: ['Never seeing friends again', 'Not getting paid this month', 'Working too late tonight'], a: 0,
+      choicesJa: ['もう仲間に会えないこと', '今月の給料が出ないこと', '今夜遅くまで働くこと'],
+      cue: '「last day at work?」のあと',
+      line: 'What if this is our last day at work? *What if we never see each other ever again?*',
+      said: '「今日が最後の出社だったら？もう二度と会えなかったら？」と言う。',
+      mean: 'What if 〜? ＝ もし〜だったらどうする？ 不安なときによく使う。',
+      trap: 'last day at work から、仕事やお金の心配と思いやすい。次の文が心配の中身。',
+      use: 'What if it rains tomorrow?（明日雨だったらどうする？）' },
+
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'saidit', seg: [133.9, 137.5],
-      stem: 'Right after “I like Erin”, what do his next words show?',
-      choices: ['Saying it out loud took some nerve', 'He is half joking and takes it back',
-                'He has already told Erin to her face'], a: 0,
-      cue: '名前のあとの、短い三語。',
+      stem: 'What does “*There, I said it*” show?',
+      ja: '「There, I said it」から何が分かる？',
+      choices: ['It was hard to say', 'He is only joking', 'He told Erin already'], a: 0,
+      choicesJa: ['言うのに勇気がいった', '冗談で言っているだけ', 'もうエリンに言った'],
+      cue: '「I like Erin」のあと',
       line: 'I like Erin. *There, I said it.*',
       said: '「エリンが好きだ。よし、言ったぞ」とカメラに話す。',
-      mean: 'There, I said it ＝ 言いにくいことを思い切って口にしたときの決まり文句。',
-      trap: '照れ隠しの「なんてね」と取りやすいが、取り消してはいない。言い切ったあとの「よし」に近い。',
-      use: 'I hate that song. There, I said it.（あの歌、嫌い。言っちゃった）' },
+      mean: 'There, I said it ＝ よし、言ったぞ。言いにくいことを言ったあとの一言。',
+      trap: 'said（言った）から、エリン本人に言ったと思いやすい。話している相手はカメラ。',
+      use: 'I hate this song. There, I said it.（この曲きらい。言っちゃった）' },
 
-    // R fix: V2 (blind 55 %): "come up at work" was weak; "his main focus" reads "front" as a front line
-    // why: hard to admit ← the "There, I said it" just before carries over; main focus ← "on that front" read as
-    //   his top priority
-    { id: 'f5', skill: 'phrase', level: 'C1', point: 'panned', seg: [137.5, 142.6],
-      stem: 'What does he say about his hope that Erin would make the first move?',
-      choices: ['It hasn’t worked out so far', 'It hasn’t been easy to admit', 'It hasn’t been his main focus'],
-      a: 0,
-      cue: '「but things have not」のあとの動詞。',
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'panned', seg: [137.5, 142.6],
+      stem: 'What does “*not panned out*” mean?',
+      ja: '「not panned out」はどういう意味？',
+      choices: ['Not worked out', 'Not been easy to say', 'Not been important'], a: 0,
+      choicesJa: ['うまくいっていない', '言いにくかった', '大事ではなかった'],
+      cue: '「ask me out」のあと',
       line: 'I was kind of hoping she would ask me out, but things have not *panned out* on that front.',
       said: '「誘ってほしかったけど、そっちはうまくいってない」と言う。',
-      mean: 'pan out ＝ 思いどおりになる。on that front ＝ その方面では。',
-      trap: 'front を「最前線」と取ると力の入れ方の話になる。on that front は話題を指す。',
-      use: 'The plan didn’t pan out.（その計画はうまくいかなかった）' },
+      mean: 'pan out ＝ うまくいく。ask 〜 out ＝ 〜をデートに誘う。',
+      trap: 'pan（フライパン）から料理の話と思いやすい。but のあとは「うまくいかない」。',
+      use: 'My plan didn’t pan out.（計画はうまくいかなかった）' },
 
-    // R fix: V2 (blind 80 %): "give up" and "wait" were refuted by the stem's "decided to do"; both misses are now
-    //   indirect ways to act
-    // why: friend asks ← the Japanese frame of going through a friend; hints ← "hoping she would ask me out" heard as
-    //   still the plan, helped along
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'paws', seg: [137.5, 148.6],
-      stem: 'What has he decided to do about Erin?',
-      choices: ['Ask her out himself', 'Have a friend ask her for him', 'Hint until she asks him'], a: 0,
-      cue: '最後の「So」のあと、take matters で始まる言い方。',
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'paws', seg: [137.5, 148.6],
+      stem: 'What will Andy do about Erin?',
+      ja: 'アンディはエリンのことでどうする？',
+      choices: ['Ask her out himself', 'Ask a friend to help', 'Wait for her to ask'], a: 0,
+      choicesJa: ['自分からデートに誘う', '友だちに助けてもらう', '彼女から誘われるのを待つ'],
+      cue: '「So」のあと',
       line: 'So, it’s time for the Nard Dog to *take matters into his own paws*.',
-      said: '「ナード・ドッグが自ら動くときだ」と言う。',
-      mean: 'take matters into one’s own hands ＝ 自分で動く。待つのをやめる。',
-      trap: '前の hoping she would ask me out が残りやすい。So のあとが結論。',
-      use: 'Time to take matters into my own hands.（自分でどうにかするときだ）' },
+      said: '「ナード・ドッグが自分で動くときだ」と言う。',
+      mean: 'take matters into one’s own hands ＝ 自分で動く。待つのをやめて自分から誘う。',
+      trap: '前の「誘ってほしかった」に引かれやすい。So のあとで考えを変えている。',
+      use: 'I’ll take care of it myself.（自分でやるよ）' },
 
-    // why: gently ← paws heard as soft, careful hands; a slip ← the changed idiom heard as a mistake
-    { id: 'h5', skill: 'humor', level: 'C1', point: 'paws', seg: [141.9, 148.6],
-      stem: 'Why does he end the saying with “paws”?',
-      choices: ['He calls himself a dog, so hands become paws', 'He means he’ll go about it gently, like a pet',
-                'He mixes up the usual saying by mistake'], a: 0,
-      cue: '自分を何と呼んでいるか。',
+    { id: 'h5', skill: 'humor', level: 'B2', point: 'pawsj', reveals: ['paws'], seg: [141.9, 148.6],
+      stem: 'Why does Andy say “paws,” not “hands”?',
+      ja: 'アンディが hands ではなく paws と言うのはなぜ？',
+      choices: ['He calls himself a dog', 'He wants to be gentle', 'He made a mistake'], a: 0,
+      choicesJa: ['自分を犬と呼んでいるから', 'やさしくしたいから', '言いまちがえたから'],
+      cue: '「time for the」のあと',
       line: 'it’s time for *the Nard Dog* to take matters into his own *paws*.',
-      said: '自分を「ナード・ドッグ」と呼び、「自分の足で」と決め台詞を言う。',
-      mean: '本来は own hands。自分を犬と呼んだので、手を「肉球のある足」に替えた言葉遊び。',
-      trap: '決まり文句が変わると、うっかりと思いやすい。直前の自分の呼び名とつながっている。',
-      use: 'The chef took matters into his own hands.（シェフが自ら動いた）' },
+      said: '自分を「ナード・ドッグ」と呼び、「自分の足で」と決めぜりふを言う。',
+      mean: 'paws ＝ 動物の足。決まり文句の hands（手）を、犬なので paws にした冗談。',
+      trap: '言いまちがえと思いやすい。直前の Dog（犬）が手がかり。',
+      use: 'I’ll take matters into my own hands.（自分で何とかする）' },
 
-    // why: had to ← "have to" ≈ ハフタ heard as past; got to ← gotta, same meaning, different sound; need to ← meaning
-    //   fits, the sound doesn't
-    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [167.9, 172.1],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'haveto', seg: [167.9, 172.1],
       stem: 'Fill the gap: “We ___ do something.”',
-      choices: ['have to', 'had to', 'got to', 'need to'], a: 0,
-      cue: '文の最初、We のあとの二語の音。',
+      ja: '「We ___ do something.」の空所は？',
+      choices: ['have to', 'had to', 'got to'], a: 0,
+      choicesJa: ['〜しなければならない', '〜しなければならなかった', '〜しなきゃ'],
+      cue: '文の最初',
       line: 'We *have to* do something because people are losing it out there',
       said: '「何かしないと。みんな不安でどうにかなりそう」と言う。',
-      mean: 'have to は「ハフタ」と、v が f に変わって短くなる。今これからの話。',
-      trap: 'had to なら過去で、d の音が残る。後ろの are losing が今の話だと示す。',
-      use: 'We have to leave by six.（6時までに出なきゃ）' },
+      mean: 'have to ＝ 〜しなければならない。「ハフタ」と縮む。losing it ＝ 取り乱している。',
+      trap: 'had to なら「ハッタ」。「ハフ」の f の音なら have to。',
+      use: 'We have to leave now.（もう出なきゃ）' },
 
-    // R fix: V2 (blind 50 %) + K1: "promising the company is safe" was close to "no reason to think the company is
-    //   anything but fine"; replaced by going home early
-    // why: funny video ← "Anything new on YouTube?" is the first idea heard; go home ← "what if this is our last
-    //   day" heard as the plan
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'calm', seg: [167.9, 218.3],
-      stem: 'How do they finally try to calm the office down?',
-      choices: ['By acting normal and getting on with work', 'By finding a funny video for everyone',
-                'By letting everyone go home early'], a: 0,
-      cue: '会議室で最後に提案すること。',
-      said: '気をそらす方法を探したあと、自分たちが普段どおり働けばみんなも続く、と決めて会議で伝える。',
-      mean: '新しい情報はないので、手本を見せて落ち着かせる作戦。',
-      trap: 'YouTube の話が先に出るので、それが作戦に聞こえやすい。最後の会議の言葉で決める。',
-      use: 'Let’s just carry on as usual.（いつもどおりやろう）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'calm', seg: [172, 217],
+      stem: 'How do they finally try to calm the office?',
+      ja: '最後に、事務所を落ち着かせるために何をする？',
+      choices: ['Act normal and keep working', 'Show a funny video', 'Send everyone home early'], a: 0,
+      choicesJa: ['いつもどおり働く', '面白い動画を見せる', 'みんなを早く帰す'],
+      cue: '「Wallace said」のあと',
+      said: '気をそらす方法を探したあと、「自分たちが普段どおり働けば、みんなも続く」と決める。',
+      mean: 'go on with our work ＝ 仕事を続ける。Monkey see, monkey do ＝ 人はまねする。',
+      trap: 'YouTube の話が出るので、動画を見せると思いやすい。最後に決めたのは仕事を続けること。',
+      use: 'Let’s just keep working.（とにかく仕事を続けよう）' },
 
-    // why: what do we have ← grammar "fixes" it to the usual question form; what have you ← "we" heard as "you" in fast
-    //   speech
-    // anchor: 198.9–200.3 s both sources: "So, what have we on the docket today?" (no "do"), slow enough to hear
-    //   each word
-    // retired: one C2 alone is under 2 (c2 retired)
     { id: 'c1', skill: 'dict', level: 'C2', point: 'docket', seg: [198.3, 201.2], retired: true,
       stem: 'Type the start: “So, ___ on the docket today?” (3 words)', answer: 'what have we',
       cue: '「So」のあと。文法より、聞こえた語を。',
@@ -304,12 +281,6 @@ export const ohTheWall: Clip = {
       trap: '習った疑問文に合わせて do を足したくなる。言われた語をそのまま書く。',
       use: 'What have we here?（さて、これは何かな）' },
 
-    // R fix: V2 (blind 70 %): "everyone is relieved" was a filler; the new miss reads "when things are good" as now
-    // why: things are good ← "when things are good" heard as the present; slack till news ← "slack off" heard without
-    //   "only… when things are good"
-    // anchor: 212.3–215 s "doing our work will make us feel better", then 215.8–217.4 s "I only slack off when things
-    //   are good": things aren't good now, so the work everyone is doing is the sign of fear
-    // retired: for the draws (play 3+ under g2 drew no C2: it reveals g2's point)
     { id: 'c2', skill: 'infer', level: 'C2', point: 'slack', reveals: ['calm'], seg: [207.7, 218.3], retired: true,
       stem: 'After the call to keep working, what does the last line reveal?',
       choices: ['Hard work here is a sign things are bad', 'Things are good, so he can take it easy',
@@ -321,14 +292,26 @@ export const ohTheWall: Clip = {
       trap: 'slack off だけ聞くと「これからさぼる」と取りやすい。only … when の条件を裏返して考える。',
       use: 'I only cook when I’m stressed.（料理するのはストレスがあるときだけ）' },
 
-    // dict: "as of yet" runs together, "of" ≈ ə
     { id: 'x1', skill: 'dict', level: 'B2', point: 'yet', reveals: ['calm'], seg: [208.3, 212.25],
       stem: 'Type it: “There is no new information ___.” (3 words)', answer: 'as of yet',
-      cue: '「information」のすぐあと、so の前。',
+      ja: '「There is no new information ___.」の空所を書こう（3語）',
+      cue: '「new information」のあと',
       line: 'There is no new information *as of yet*, so I suggest we all just keep working.',
       said: '「今のところ新しい情報はない。みんな仕事を続けよう」と言う。',
-      mean: 'as of yet ＝ 今のところ（まだ）。as of が「アザヴ」とつながり、of はほぼ消える。',
-      trap: 'of が弱く、as yet に聞こえやすい。3語なので間の of を探す。',
-      use: 'No word from them as of yet.（今のところ先方から連絡なし）' },
+      mean: 'as of yet ＝ 今のところ（まだ）。no … yet と同じ。会議でよく使うかたい言い方。',
+      trap: 'as of がつながり「アゾヴ」と聞こえる。yet まで3語でひとまとまり。',
+      use: 'No news as of yet.（今のところ知らせはない）' },
+
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'nervous', reveals: ['calm'], seg: [211.5, 216.5],
+      stem: 'How does Michael feel about the news?',
+      ja: 'マイケルはこの知らせをどう感じている？',
+      choices: ['A little nervous', 'Very happy', 'Not worried at all'], a: 0,
+      choicesJa: ['少し不安', 'とてもうれしい', 'まったく心配していない'],
+      cue: '「Sure」のあと',
+      line: 'Sure, *I’m a little nervous*, but doing our work will make us feel better.',
+      said: '「もちろん少し不安だけど、仕事をすれば気分がよくなる」と言う。',
+      mean: 'nervous ＝ 不安・緊張している。Sure, 〜, but … ＝ たしかに〜だけど…。',
+      trap: '「仕事を続けよう」と言うので、心配していないと思いやすい。I’m a little nervous を聞く。',
+      use: 'I’m a little nervous about the test.（テストが少し不安）' },
   ]
 };
