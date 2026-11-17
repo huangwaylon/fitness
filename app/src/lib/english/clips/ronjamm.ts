@@ -1,13 +1,12 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 10, new 1
+// A2 LATE: a legal hearing about a punch; fast talk, legal words (recant, testimony, pull quote), few everyday chunks
 // “Ron Swanson Doesn't Regret Punching Jeremy Jamm | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): at a deposition, Tom takes back his earlier story and recalls Ron's many punch remarks; Ron's own
 // statement makes it worse, and Jamm leaves delighted.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 119 s. Speakers are settled by "Tom"
 // (56.8 s), "Ron" (44.8 s), "Mr. Swanson" (78.8 s) and "Swanson" (111.4 s, Jamm's "see you in court"). Untested: the
-// dental "trade" memory (20–26 s, a body-part joke), 50.6–51.7 s ("We get the picture, son" vs whisper "so"), 44.5 s
-// ("What's that" vs "What's up"), and who says "Keep going, Tom" / "Thank you, Ms. Ludgate".
-// REVIEW 2026-11-16: pass 5, fix 18, drop 0, new 0; ear checks 0
-// Open: nt1's segment is 21 s (C2 paraphrase of the whole statement; can't be shorter).
-// R: removed the s1 and x1 ear checks: both sources agree on "that'll make" and "could use a" (rubric addendum).
+// dental "trade" memory (20–26 s), 50.6–51.7 s ("son" vs whisper "so"; pr1 keys on "get the picture" only), 44.5 s
+// ("What's that" vs "What's up"), and who says "Keep going, Tom".
 import type { Clip } from '../types.ts';
 
 export const ronNoRegret: Clip = {
@@ -16,47 +15,43 @@ export const ronNoRegret: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2. "never heard" and "joke" were easy to rule out; both distractors now keep the charge and change who
-    //   meant harm or how Tom knows
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'recant', seg: [0.3, 16.5],
-      stem: 'What does Tom now tell the hearing about Ron?',
-      choices: ['That he did hear Ron say he meant to hurt Jamm', 'That he did hear Ron say Jamm meant to hurt him',
-                'That he heard from others that Ron meant to hurt Jamm'], a: 0,
-      cue: '「in fact」のあと、何を聞いたと言うか。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'recant', seg: [0.3, 16.5],
+      stem: 'What does Tom now say about Ron?',
+      ja: 'トムは今、ロンについて何と言う？',
+      choices: ['Ron said he’d hurt Jamm', 'Ron never said anything', 'Jamm said he’d hurt Ron'], a: 0,
+      choicesJa: ['ロンはジャムを傷つけると言った', 'ロンは何も言っていない', 'ジャムがロンを傷つけると言った'],
+      cue: '「in fact」のあと。',
       line: 'I did, *in fact*, hear Ron Swanson say *he intended to injure* Jeremy Jamm.',
-      said: '前の証言を変え、「ロンがジャムを傷つけるつもりだと言うのを、実は聞いた」と話す。',
-      mean: '撤回はロンに不利な方向。聞いていないと言っていたのを、聞いたと改めた。',
-      trap: 'he の指す人や伝聞と取りやすい。I did hear と名前で決める。',
-      use: 'I’d like to correct what I said earlier.（さっき言ったことを訂正したいです）' },
+      said: '前の話を変えて、「ロンがジャムを傷つけるつもりだと言うのを、実は聞いた」と話す。',
+      mean: 'in fact ＝ 実は。intend to 〜 ＝ 〜するつもり。injure ＝ けがをさせる。',
+      trap: 'he がだれか迷いやすい。Ron Swanson say he… なので、he はロン。',
+      use: 'I’d like to correct what I said.（さっき言ったことを訂正したいです）' },
 
-    // R fix: V2. "misled" and "missed" were weak; the choices are now parallel mis- verbs (remember/hear/say)
-    // why: misheard ← "mis-" plus a verb, heard as hearing; misspoke ← "mis-" heard as a slip of the tongue, the usual excuse
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'misremember', seg: [4.3, 7.4],
-      stem: 'How does Tom explain why his story has changed?',
-      choices: ['He says he had remembered some things wrong', 'He says he had heard some things wrong',
-                'He says he had said some things wrong'], a: 0,
-      cue: '「Yes」のすぐあと、長めの一語。',
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'misremember', seg: [3.5, 7.5],
+      stem: 'What does “I misremembered some things” mean?',
+      ja: '「I misremembered some things」の意味は？',
+      choices: ['He remembered them wrong', 'He heard them all wrong', 'He said them all wrong'], a: 0,
+      choicesJa: ['覚えちがいをしていた', '聞きちがいをしていた', '言いまちがいをしていた'],
+      cue: '「Yes」のすぐあと。',
       line: 'Yes, I *misremembered* some things.',
-      said: '「いくつか記憶違いをしていました」と答える。',
-      mean: 'misremember ＝ 覚え違える。うそをついたとは言わずに証言を変える、角の立たない言い方。',
-      trap: 'mis- だけで「聞き違い」「言い違い」と決めやすい。mis- のあとの動詞まで一語で聞く。',
-      use: 'Sorry, I must have misremembered the time.（すみません、時間を覚え違えたみたい）' },
+      said: '「はい、いくつか覚えちがいをしていました」と答える。',
+      mean: 'mis- ＝ まちがって。misremember ＝ 覚えちがえる。うそとは言わずに話を変える、角の立たない言い方。',
+      trap: 'mis- だけで「聞きちがい」「言いまちがい」と決めやすい。うしろの remember（覚える）まで聞く。',
+      use: 'Sorry, I misremembered the time.（すみません、時間を覚えちがえてました）' },
 
-    // why: startled ← a short loud outburst can be shock; annoyed ← "knew it" heard as "I've heard this before"
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'boom', seg: [7.4, 14.3],
-      stem: 'Right after Tom’s new account, how does the first reaction sound?',
-      choices: ['Triumphant: he had expected this all along', 'Startled: he had not seen this coming at all',
-                'Annoyed: he had heard this story too often'], a: 0,
-      cue: 'Jamm の名前のすぐあと、短い二語。',
+      stem: 'How does Jamm feel after Tom’s new story?',
+      ja: 'トムの新しい話を聞いて、ジャムはどう感じている？',
+      choices: ['Happy he was right', 'Very surprised by it', 'Bored and annoyed'], a: 0,
+      choicesJa: ['思ったとおりでうれしい', 'とてもおどろいている', 'うんざりしている'],
+      cue: 'Jamm の名前のすぐあと。',
       line: '*Boom*, *knew it*.',
-      said: '証言を聞いて「よし、やっぱりな」と声を上げる。',
-      mean: 'Boom は「決まった」という勝ちの合図。knew it は「思ったとおり」。予想が当たって喜んでいる。',
-      trap: '大きな短い声は驚きにも聞こえるが、knew it は前から分かっていたという意味。',
-      use: 'Boom! Knew you’d say yes.（よし！イエスって言うと思った）' },
+      said: '話を聞いて「よし、やっぱりな」と声を上げる。',
+      mean: 'Boom ＝ よし、決まった。（I）knew it ＝ やっぱりね、思ったとおり。',
+      trap: '短く大きな声なので、おどろいたと思いやすい。knew it は「前から分かっていた」。',
+      use: 'I knew it! You did it.（やっぱり！君がやったんだ）' },
 
-    // R fix: V2. "forgotten" and "which hearing" were weak; all three choices now say something happened often,
-    //   and differ in who did it. S4: segment starts at 7.4 s so it holds what "it" is
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'whichtime', seg: [7.4, 18.8],
+    { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'whichtime', seg: [7.4, 18.8],
       stem: 'Asked to tell them about it, why is Tom’s short reply funny?',
       choices: ['Ron said it so often that one story won’t do', 'Tom has told it so often he’s lost count himself',
                 'They have asked so often that Tom is fed up'], a: 0,
@@ -67,9 +62,7 @@ export const ronNoRegret: Clip = {
       trap: '答えたのがトムなので、くり返したのもトムと取りやすい。何度もあったのは、直前の「ロンが言った」こと。',
       use: 'Which time? There were a few.（どの時の？何回かあったよ）' },
 
-    // R fix: V2. the key was the only odd-sounding reason; the choices now differ only in "never met" / "just met" /
-    //   "met once"
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'nevermet', reveals: ['coulduse'], seg: [25.6, 33.7],
+    { id: 'h2', retired: true, skill: 'humor', level: 'C1', point: 'nevermet', reveals: ['coulduse'], seg: [25.6, 33.7],
       stem: 'In the first memory, why is the punch remark funny?',
       choices: ['He wants to hit a man he has never met', 'He wants to hit a man he has only just met',
                 'He wants to hit a man he met once, years ago'], a: 0,
@@ -80,32 +73,29 @@ export const ronNoRegret: Clip = {
       trap: 'never の n が弱く、just met などに聞こえやすい。否定の一語は文頭で聞く。',
       use: 'Never met him, but he seems nice.（会ったことないけど、いい人そう）' },
 
-    // A reduced stretch, both sources agree
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [30.4, 33.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [30.4, 33.9], keep: true,
       stem: 'Type the gap: “He looks like he ___ swift punch in the face.” (3 words)', answer: 'could use a',
-      cue: '「looks like he」のすぐあと、弱くつながる三語。',
+      ja: '「He looks like he」のあとの3語を書こう。',
+      cue: '「looks like he」のすぐあと。',
       line: 'He looks like he *could use a* swift punch in the face, though.',
-      said: '「一発殴られたほうがいい顔だ」。could use a が「クッジューザ」とつながる。',
-      mean: 'could use ＝ 〜があるとよさそう。コーヒーや休みに使う言い方を殴る話に当てている。',
-      trap: 'd が「ジュ」に変わり、a はほぼ消える。弱い a も書く。',
-      use: 'I could use a coffee.（コーヒー1杯飲みたいな）' },
+      said: '「一発なぐられたほうがいい顔をしてる」と言う。',
+      mean: 'could use 〜 ＝ 〜があるとよさそう。could use a は「クッジューザ」とつながる。',
+      trap: 'd が「ジュ」に変わり、a はほぼ消える。小さな a も書く。',
+      use: 'I could use a coffee.（コーヒー1杯ほしいな）' },
 
-    // R fix: V2. "jumped in" was weak; all three now use "shoved" and differ in what or whom
-    // why: past the man ← "run over, shove" heard as rushing past him; chair ← "him" is weak and easy to lose before "into"
     { id: 'd6', skill: 'detail', level: 'B1', point: 'pool', seg: [34.9, 38.8],
-      stem: 'In the pool story, what does the speaker say he did?',
-      choices: ['Shoved the man into the pool', 'Shoved past the man to the pool',
-                'Shoved the man’s chair into the pool'], a: 0,
-      cue: '「run over」のすぐあとの動詞。',
+      stem: 'In the pool story, what happens to the man?',
+      ja: 'プールの話で、その男の人はどうなる？',
+      choices: ['He’s pushed into the pool', 'He jumps into the water', 'He’s punched in the face'], a: 0,
+      choicesJa: ['プールに突き落とされる', '自分で水に飛びこむ', '顔をなぐられる'],
+      cue: '「run over」のすぐあと。',
       line: 'I just run over, *shove him into the pool*.',
-      said: '「相手が何か言う前に走っていって、プールに突き落とす」と話している。',
-      mean: 'shove ＝ 強く押す。殴ってはいない、という点が次のロンの返事につながる。',
-      trap: 'him が弱く短いので、押した相手を聞き落としやすい。動詞のすぐあとの小さな代名詞まで聞く。',
-      use: 'Don’t shove, there’s room for everyone.（押さないで、みんな入れるから）' },
+      said: '「相手が何か言う前に走っていって、プールに突き落とす」と話す。',
+      mean: 'shove ＝ 強く押す。shove him into 〜 ＝ 彼を〜に押しこむ。',
+      trap: 'punch（なぐる）はこのあとロンが言うこと。この話では押しただけ。',
+      use: 'Please don’t shove.（押さないでください）' },
 
-    // why: bully ← the word taken literally (いじめっ子); sincere praise ← "good for you" read at face value, missing
-    //   "If it were me…"
-    { id: 'p2', skill: 'phrase', level: 'C1', point: 'bully', seg: [38.3, 42.3],
+    { id: 'p2', retired: true, skill: 'phrase', level: 'C1', point: 'bully', seg: [38.3, 42.3],
       stem: 'What does Ron’s first reply to the pool story mean?',
       choices: ['Good for you, though I’m not impressed', 'You were a bully to the man you pushed',
                 'Good for you; that took real courage'], a: 0,
@@ -116,32 +106,43 @@ export const ronNoRegret: Clip = {
       trap: 'bully を「いじめる」と取りやすい。古い決まり文句は、後ろの一言で本気か皮肉かを決める。',
       use: 'You finished early? Well, bully for you.（早く終わった？そりゃよかったね）' },
 
-    // R fix: V2. "dream" distractor gave the key away; new distractors read "Just…" as a plan or a joke
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44.0, 48.6],
-      stem: 'In the next memory, what does Ron say he is doing?',
-      choices: ['Daydreaming about hitting Jamm', 'Deciding whether to hit Jamm', 'Joking about hitting Jamm'], a: 0,
-      cue: '「Ron」と呼ばれたあとの最初の語。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44.0, 48.6], keep: true,
+      stem: 'What does Ron say he is doing?',
+      ja: 'ロンは何をしていると言う？',
+      choices: ['Dreaming about hitting Jamm', 'Planning to hit Jamm', 'Joking about hitting Jamm'], a: 0,
+      choicesJa: ['ジャムをなぐるのを空想している', 'ジャムをなぐる計画を立てている', 'ジャムをなぐる冗談を言っている'],
+      cue: '「Ron」と呼ばれたあと。',
       line: 'Just *daydreaming* about punching Jamm in the face.',
-      said: '声をかけられ、「ジャムの顔を殴るのを空想してただけ」と答える。',
-      mean: 'daydream ＝ 起きたまま思いうかべる空想。何度も殴る話をしていた証拠の一つになる。',
-      trap: 'Just で「冗談だよ」と流したと取りやすい。Just のあとの長い一語を聞く。',
+      said: '声をかけられ、「ジャムをなぐるのを空想してただけ」と答える。',
+      mean: 'daydream ＝ 起きたまま空想する、ぼーっと考える。',
+      trap: 'Just から「冗談だよ」と流したと思いやすい。Just のあとの長い一語を聞く。',
       use: 'Sorry, I was just daydreaming.（ごめん、ぼーっとしてた）' },
 
-    // R fix: V2. "pictures" was absurd and "try" in the stem hinted at a failed stop; stem and distractors rewritten
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'picture', seg: [48.9, 52.7],
-      stem: 'After Tom mentions “a few other times”, what does the next line do?',
-      choices: ['Signals that they have heard enough examples', 'Asks which of the examples matters the most',
-                'Signals that the examples are hard to follow'], a: 0,
-      cue: '「too」のすぐあと、別の人の短い一言。',
-      line: '*We get the picture*… — Uh, hold on.',
-      said: '「もう分かった」と止めかけ、すぐ別の人に「待って」と言われる。',
-      mean: 'We get the picture ＝ もう十分分かった。話を切り上げる。',
-      trap: 'picture を「見えない」と取りやすい。get the picture は「分かった」の意味。',
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'picture', seg: [48.9, 52.7],
+      stem: 'What does “We get the picture” mean?',
+      ja: '「We get the picture」の意味は？',
+      choices: ['We understand already', 'We want to see a photo', 'We can’t follow you'], a: 0,
+      choicesJa: ['もう分かった', '写真が見たい', '話についていけない'],
+      cue: '「a few other times」のあと。',
+      line: 'And there were a few other times, too. — *We get the picture*…',
+      said: '「ほかにも何回か」と続けると、「もう分かったよ」と止められかける。',
+      mean: 'get the picture ＝ 話が分かる。「もう十分」と話を切り上げるときに使う。',
+      trap: 'picture から写真や絵を思いやすい。get the picture は「様子が分かる」。',
       use: 'Okay, I get the picture. Thanks.（はい、だいたい分かりました）' },
 
-    // R fix: V2/S2. the stem quoted "says a lot of things", which pointed at says-vs-does; stem now names the
-    //   moment, and the distractors use words that are said (Councilman, the government, Tom as witness)
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'didit', seg: [60.4, 73.5],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'holdon', seg: [49.2, 56.5],
+      stem: 'What does “Uh, hold on” mean here?',
+      ja: 'ここでの「Uh, hold on」の意味は？',
+      choices: ['Wait a moment', 'Hold this for me', 'Keep going'], a: 0,
+      choicesJa: ['ちょっと待って', 'これを持ってて', '続けて'],
+      cue: '「picture」のあとの別の声。',
+      line: 'We get the picture… — *Uh, hold on*. We need your full, truthful testimony on record.',
+      said: '「もう分かった」と止めかけたのを、「待って。正直な証言を全部記録しないと」と止める。',
+      mean: 'hold on ＝ ちょっと待って。電話でも Hold on, please.（少々お待ちください）と使う。',
+      trap: 'hold（持つ）から「持ってて」と思いやすい。このあと出る Keep going は「続けて」で別の言葉。',
+      use: 'Hold on, I’ll be right back.（ちょっと待って、すぐ戻る）' },
+
+    { id: 'i2', retired: true, skill: 'infer', level: 'C1', point: 'didit', seg: [60.4, 73.5],
       stem: 'Why does the defense that follows Tom’s summary fall flat?',
       choices: ['Ron’s words were followed by a real punch', 'Ron’s words were heard by a sworn witness',
                 'Ron’s words were aimed at an elected official'], a: 0,
@@ -152,20 +153,19 @@ export const ronNoRegret: Clip = {
       trap: 'Councilman が耳に残りやすい。never does と直前の he did を比べる。',
       use: 'He talks big, but he never does it.（口は大きいけど、やらないんだ）' },
 
-    // why: that'd ← the contraction 'll heard as 'd; made ← past tense from the weak, dark l; may make ← "make a" heard
-    //   with a softener
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [73.3, 78.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [73.3, 78.4], keep: true,
       stem: 'Fill the gap: “Well, ___ a nice pull quote for the article…”',
-      choices: ['that’ll make', 'that’d make', 'that made', 'that may make'], a: 0,
-      cue: '「Well」のすぐあと、短い二語。',
+      ja: '空いている所に入る語は？',
+      choices: ['that’ll make', 'that’d make', 'that made'], a: 0,
+      choicesJa: ['〜になるだろう', '〜になるかも', '〜になった'],
+      cue: '「Well」のすぐあと。',
       line: 'Well, *that’ll make* a nice pull quote for the article…',
-      said: '「記事にいい一文になるな」。that’ll は「ザロー」に近く、l は暗く短い。',
-      mean: 'that’ll ＝ that will。これから記事に使う、という未来の話。',
-      trap: '’ll の l は日本語のラ行にならず、こもった音。d や過去形と聞きやすい。',
+      said: '「それは記事にいい一文になるな」と言う。',
+      mean: 'that’ll ＝ that will。「ザロー」に近く、l はこもった短い音。これからの話。',
+      trap: 'that’d なら「ザッド」と d で止まる。made なら「メイド」で最後に「ク」がない。',
       use: 'That’ll be twenty dollars.（20ドルになります）' },
 
-    // R fix: V2. "Impressed" was weak; replaced with "Offended", the reaction a victim would have to "who cares?"
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'pullquote', reveals: ['cleaners'], seg: [73.3, 78.4],
+    { id: 'a1', retired: true, skill: 'attitude', level: 'B2', point: 'pullquote', reveals: ['cleaners'], seg: [73.3, 78.4],
       stem: 'How does Jamm feel about the defense he just heard?',
       choices: ['Pleased: it will help him look like the winner', 'Worried: it will make the papers side with Ron',
                 'Offended: it makes light of the punch he took'], a: 0,
@@ -176,9 +176,7 @@ export const ronNoRegret: Clip = {
       trap: '軽く扱われた側なので怒りと取りやすい。about のあと、誰が誰をどうするかを聞く。',
       use: 'That quote is going straight in my article.（その一言、記事にそのまま使うよ）' },
 
-    // R fix: V2. "money" in the key matched the lawsuit context and "clean up" was a giveaway literal; all three are
-    //   now serious harms of similar length
-    { id: 'p4', skill: 'phrase', level: 'C1', point: 'cleaners', seg: [73.3, 78.4],
+    { id: 'p4', retired: true, skill: 'phrase', level: 'C1', point: 'cleaners', seg: [73.3, 78.4],
       stem: 'In Jamm’s line about the article, what does he plan to do to Ron?',
       choices: ['Win big and take a lot of his money', 'Show him up in the papers for good',
                 'Have him cleared out of his office'], a: 0,
@@ -189,40 +187,31 @@ export const ronNoRegret: Clip = {
       trap: 'cleaners を「片づける」や article と結びつけやすい。形ごと覚える。',
       use: 'They took us to the cleaners at poker.（ポーカーでぼろ負けした）' },
 
-    // R fix: V2. the title gave away "better, thanks to Ron"; choices now pair a direction with what Jamm does next.
-    //   "sue" touches i4, so reveals checkbook
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['checkbook'], seg: [78.3, 118.8],
-      stem: 'By the end, how has the hearing gone for Jamm?',
-      choices: ['Better than he hoped, and he plans to sue Ron', 'Better than he hoped, so he lets the matter drop',
-                'Worse than he hoped, so he plans to sue Ron'], a: 0,
-      cue: 'ロンの話が終わったあとの、最初の一言。',
-      line: 'this turned out *better than I ever imagined*.',
-      said: 'ロンの発言のあと、ジャムは「思った以上にうまくいった」と言い、法廷で会おうと告げる。',
-      mean: 'ロン本人の話が相手の訴えを強めた。弁護のための発言が逆効果になった。',
-      trap: 'ロンが堂々としていて逆に聞こえやすい。better のあとも法廷の話が続く。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['checkbook'], seg: [78.3, 118.8],
+      stem: 'How did the hearing go for Jamm?',
+      ja: 'ジャムにとって、この聞き取りはどうだった？',
+      choices: ['Better than he imagined', 'Worse than he had hoped', 'Just as he had planned'], a: 0,
+      choicesJa: ['思っていたよりずっとよかった', '思っていたより悪かった', '計画どおりだった'],
+      cue: 'ロンの話が終わったあと。',
+      line: 'Well, this turned out *better than I ever imagined*.',
+      said: 'ロンの発言のあと、ジャムは「思った以上にうまくいった」と言い、法廷で会おうと言う。',
+      mean: 'turn out 〜 ＝ 結果が〜になる。better than I imagined ＝ 想像よりよかった。',
+      trap: 'ロンが堂々としているので、ジャムが負けたと思いやすい。ジャムの最初の一言を聞く。',
       use: 'That went better than I expected.（思ったよりうまくいった）' },
 
-    // R fix: V2. "say sorry" was weak; replaced with "calm down", the other usual warning
-    // why: fight back ← "back" is said ("back off"); calm down ← the usual warning before a fight
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82.0, 87.2],
-      stem: 'What does Ron say he did before he hit Jamm?',
-      choices: ['Told him again and again to back off', 'Told him again and again to fight back',
-                'Told him again and again to calm down'], a: 0,
-      cue: '「warned him」のあと、何をするように言ったか。',
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82.0, 87.2], keep: true,
+      stem: 'What did Ron tell Jamm several times?',
+      ja: 'ロンはジャムに何度も何と言った？',
+      choices: ['To back off', 'To fight back', 'To say sorry'], a: 0,
+      choicesJa: ['下がれ', 'やり返してこい', 'あやまれ'],
+      cue: '「warned him」のあと。',
       line: 'I *warned him several times to back off*…',
-      said: '「殴った夜、何度も下がれと警告した」と話す。',
-      mean: 'back off ＝ 引け、近づくな。先に止めた、と自分を守る言い方。',
-      trap: 'back だけ聞くと fight back と混ざる。back off は「下がる」で、戦う意味はない。',
-      use: 'Back off, please. Give me some space.（下がって、少し離れて）' },
+      said: '「なぐった夜、何度も下がれと注意した」と話す。',
+      mean: 'back off ＝ 下がれ、近づくな。warn ＝ 注意する、警告する。',
+      trap: 'back だけ聞くと fight back（やり返す）と混ざりやすい。back off は「下がる」。',
+      use: 'Please back off a little.（少し下がってください）' },
 
-    // R fix: V2. the key was the only three-part, "not sorry" choice; all three now end "not sorry" and differ in
-    //   one step
-    // C2 plain-English paraphrase
-    // anchor: 82.5–102.4 s it opens like self-defense ("warned him… attacked me twice"), then "barely registered his
-    //   attack… frail… arms are weak" removes the danger, and "I regret nothing" closes it
-    // why: danger ← "warned him… he attacked me twice" taken as the point; barely touched ← "barely" heard on his own
-    //   punch instead of on Jamm's attack
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'frail', reveals: ['twice'], seg: [82.0, 103.0],
+    { id: 'nt1', retired: true, skill: 'infer', level: 'C2', point: 'frail', reveals: ['twice'], seg: [82.0, 103.0],
       stem: 'Which plain-English version keeps what Ron’s statement adds up to?',
       choices: ['“He started it, he was no threat, and I’m not sorry.”',
                 '“He started it, he was a danger, so I’m not sorry.”',
@@ -234,19 +223,19 @@ export const ronNoRegret: Clip = {
       trap: '最初の筋だけで正当防衛と取りやすい。barely は誰の何に付くか。前置きは最後の一言で読み直す。',
       use: 'He started it, but honestly, I enjoyed it.（あっちが先だけど、正直楽しかった）' },
 
-    // why: once ← "him" before "twice" swallows the start; several times ← the warnings, said just before
     { id: 'n1', skill: 'number', level: 'B1', point: 'twice', seg: [84.6, 89.9], keep: true,
       stem: 'How many times does Ron say Jamm attacked him?',
+      ja: 'ジャムが何回おそってきたとロンは言う？',
       choices: ['Once', 'Twice', 'Three times', 'Several times'], a: 1,
+      choicesJa: ['1回', '2回', '3回', '何回も'],
       cue: '「attacked me」のすぐあと。',
-      line: 'he *attacked me twice*.',
-      said: '「なのに、あいつは2回襲ってきた」と言う。',
-      mean: '自分は警告したのに、先に手を出したのは相手だ、という主張の数字。',
-      trap: '直前の several times は警告の回数。数は、どの動詞に付いているかで聞き分ける。',
+      line: 'I warned him several times to back off, and instead, he *attacked me twice*.',
+      said: '「何度も下がれと言ったのに、あいつは2回おそってきた」と言う。',
+      mean: 'twice ＝ 2回。「トゥワイス」。先に手を出したのは相手だ、という話。',
+      trap: 'several times は注意した回数。attacked me のすぐあとの「トゥワイス」が答え。',
       use: 'I called you twice this morning.（今朝2回電話したよ）' },
 
-    // R fix: V2. "fight was over" was weak; distractors now both misread "barely registered"
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'frail', seg: [89.9, 99.8],
+    { id: 'i3', retired: true, skill: 'infer', level: 'C1', point: 'frail', seg: [89.9, 99.8],
       stem: 'What does Ron’s account of the attack end up admitting?',
       choices: ['The attack was never a real danger to him', 'The attack came too fast for him to see',
                 'The attack was worse than he first let on'], a: 0,
@@ -257,22 +246,19 @@ export const ronNoRegret: Clip = {
       trap: 'barely registered を「速くて見えない」と取りやすい。frail と weak が理由。',
       use: 'I barely noticed the rain.（雨にほとんど気づかなかった）' },
 
-    // R fix: V2/K5. choices now parallel ("Ends …: …") so the key isn't the only measured one
-    // why: hearing ← "the end" heard as a request to stop the whole meeting; gives up ← "the end" read as admitting the
-    //   case is lost
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'theend', seg: [99.3, 103.6],
-      stem: 'What does Ron’s final two-word sentence do?',
-      choices: ['Ends his statement: he won’t say any more', 'Ends the hearing: he wants everyone to go',
-                'Ends his case: he admits that he has lost'], a: 0,
+      stem: 'What does Ron mean by “The end”?',
+      ja: 'ロンの「The end」はどういう意味？',
+      choices: ['He won’t say any more', 'The meeting is over now', 'He knows he has lost'], a: 0,
+      choicesJa: ['もう話すことはない', '会議はもう終わり', '負けたと分かっている'],
       cue: '「I regret nothing」のすぐあと。',
       line: 'I regret nothing. *The end*.',
-      said: '「後悔はない。以上」と締める。',
-      mean: '物語の終わりの決まり文句を使い、質問は受けない、話は終わりと示している。',
-      trap: 'end を会議や裁判の終わりと取りやすい。誰の話を終わらせているかを聞く。',
+      said: '「後悔はない。以上」と話を終える。',
+      mean: 'The end ＝ おしまい。物語の終わりの言葉で、自分の話はここまで、と示す。',
+      trap: 'end から会議の終わりだと思いやすい。終わらせているのはロン自身の話。',
       use: 'We’re not going. The end.（行かない。以上）' },
 
-    // R fix: V2. the key was the only wordplay choice; a "slip of the tongue" reading of the name now competes
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'selfjam', reveals: ['outcome'], seg: [102.8, 110.4],
+    { id: 'h3', retired: true, skill: 'humor', level: 'C1', point: 'selfjam', reveals: ['outcome'], seg: [102.8, 110.4],
       stem: 'Why is Jamm’s comment about Ron’s own team funny?',
       choices: ['He makes his own name into a verb for defeat', 'He mixes up Ron’s name with his own by mistake',
                 'He says Ron is stuck, with no way out of the case'], a: 0,
@@ -283,13 +269,7 @@ export const ronNoRegret: Clip = {
       trap: 'jam の「詰まる」や言いそこないと取りやすい。名前と同じ音の動詞は名前遊びを疑う。',
       use: 'You got Steve-d. Classic Steve move.（スティーブにやられたね、いつものやつ）' },
 
-    // R fix: V2. "jokes… light note" was weak; replaced with a wrong-target reading of "you"
-    // C2 who is the joke on / what the line does
-    // anchor: 63.3–67.6 s the case is "said he intended to punch Councilman Jamm in the face"; 114.5–116.2 s Ron says
-    //   exactly that intent again, to Jamm, in the hearing ("see you in court", "self-jammed")
-    // why: judge ← "you" heard as the person who invited his statement ("Mr. Swanson, if you'd like…"); first admission ←
-    //   "punch you… again" heard as news, though he admitted the punch at 82.5 s
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'again', seg: [106.5, 117.3],
+    { id: 'nt2', retired: true, skill: 'humor', level: 'C2', point: 'again', seg: [106.5, 117.3],
       stem: 'After Jamm mentions court, why is Ron’s answer the worst thing to say?',
       choices: ['He states, at the hearing, the very intent being proven',
                 'He threatens, at the hearing, the man who will judge the case',
@@ -301,16 +281,16 @@ export const ronNoRegret: Clip = {
       trap: 'you を進行役と取りやすいが、again で前に殴った相手と分かる。殴ったことは前に認めている。言葉が争点に重なるかを聞く。',
       use: 'I would do it again, honestly.（正直、またやるね）' },
 
-    // R fix: V2. "bank records" was weak; replaced with "pay now and skip court", the literal "bring it" reading
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'checkbook', reveals: ['cleaners'], seg: [110.3, 114.3],
-      stem: 'What is Jamm telling Ron when he mentions court?',
-      choices: ['Ron will lose in court and have to pay him', 'Ron should pay him now and skip the court',
-                'Ron will need to pay a lot for a lawyer'], a: 0,
-      cue: '「court」のあと、持ってこいと言う物。',
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'checkbook', seg: [110.3, 114.3],
+      stem: 'What does “bring your checkbook” tell Ron?',
+      ja: '「bring your checkbook」はロンに何を伝えている？',
+      choices: ['He will have to pay Jamm', 'He should pay Jamm now', 'He needs to buy a lawyer'], a: 0,
+      choicesJa: ['ジャムにお金を払うことになる', '今すぐジャムに払うべき', '弁護士を雇う必要がある'],
+      cue: '「court」のあと。',
       line: 'I’ll see you in court, Swanson, and, uh, *bring your checkbook*.',
       said: '「法廷で会おう。小切手帳を持ってこい」と言う。',
-      mean: '小切手帳を持ってこい ＝ 払う準備をしておけ。裁判に勝ってお金を取る、という予告。',
-      trap: 'bring を「今すぐ払え」と取りやすい。先に see you in court があり、払うのは裁判のあと。',
+      mean: 'checkbook ＝ 小切手帳。持ってこい ＝ 払う準備をしておけ。裁判で勝つ、という予告。',
+      trap: '「今すぐ払え」と思いやすい。先に see you in court（法廷で会おう）があり、払うのは裁判のあと。',
       use: 'Dinner’s on you. Bring your wallet.（夕食はおごりね、財布持ってきて）' },
   ]
 };
