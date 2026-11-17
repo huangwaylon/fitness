@@ -24,7 +24,7 @@ export const oldSchool: Clip = {
       mean: 'never been more 〜 ＝ これ以上〜だったことはない＝今までで一番〜。',
       trap: 'never（一度もない）から、退屈ではないと思いやすい。more bored とセット。',
       use: 'I’ve never been more tired.（こんなに疲れたのは初めて）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'assign', reveals: ['font'], seg: [15.6, 47.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'assign', reveals: ['font', 'trouble'], seg: [15.6, 47.3],
       stem: 'Why is Jerry unsure about Tom’s big plan?',
       ja: 'ジェリーはなぜトムの大きな案に乗り気でない？',
       choices: ['Chris didn’t ask for it', 'It costs too much money', 'It copies a TV show'], a: 0,

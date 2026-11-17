@@ -26,7 +26,7 @@ export const scarnRead: Clip = {
       stem: 'What will Jim read?',
       ja: 'ジムは何を読む？',
       choices: ['The action descriptions', 'The main hero’s lines', 'Captain Zeta-Jones’s lines'], a: 0,
-      choicesJa: ['場面の説明（ト書き）', '主人公のせりふ', 'ゼタ＝ジョーンズ大尉のせりふ'],
+      choicesJa: ['場面の説明（ト書き）', '主人公のせりふ', 'ゼタ＝ジョーンズのせりふ'],
       cue: '「started」のあと',
       line: 'I’m gonna be *reading the action descriptions*.',
       said: '「僕はト書き（場面の説明）を読む」と言う。',

@@ -94,7 +94,7 @@ export const centralperk: Clip = {
       mean: 'live off 〜 ＝ 〜のお金に頼って暮らす。お金の話でよく使う。',
       trap: 'off から「離れて住む」と思いやすい。前の「誰が払うの？」がお金の話の合図。',
       use: 'I’m living off my savings.（貯金で暮らしている）' },
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'i1', seg: [35, 41], stem: 'Why was Rachel getting married, by her words?',
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'i1', reveals: ['s1'], seg: [35, 41], stem: 'Why was Rachel getting married, by her words?',
       ja: 'レイチェルの言葉では、なぜ結婚するつもりだった？',
       choices: ['So a husband could pay', 'To make her father happy', 'To find a new job'], a: 0,
       choicesJa: ['夫にお金を出してもらうため', '父親を喜ばせるため', '新しい仕事を見つけるため'],
