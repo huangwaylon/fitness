@@ -140,7 +140,7 @@ export const fakedating: Clip = {
       stem: '“Even though they are.” Who is right?',
       ja: '「Even though they are」。正しいのはだれ？',
       choices: ['The people who doubted them', 'Ann and Tom, the couple', 'Nobody at the cookout'], a: 0,
-      choicesJa: ['続かないと言った人たち', 'アンとトム自身', 'その場のだれでもない'],
+      choicesJa: ['続かないと言った人たち', 'アンとトムの二人', 'その場のだれでもない'],
       cue: '「being right」のすぐあと。',
       line: 'That way no one gets the satisfaction of being right. *Even though they are*, but still.',
       said: '「まあ、みんなが正しいんだけどね。でもさ」と付け足す。',
