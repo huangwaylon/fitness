@@ -1,14 +1,10 @@
-// REVIEW 2026-11-16: pass 10, fix 12, drop 1, new 0; ear checks 1
-// REVIEW open: who is the speaker at 2.8–16 s and 69.7–79 s ("I technically work for Gryzzl", "my biz", "Front Street")?
-//   No name in the audio, so the stems are speaker-neutral now. The same goes for the novel reader at 165 s.
+// A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 2
 // “Parks and Recreation | Gryzzl Goes Too Far (Episode Highlight)” (the official Parks and Recreation channel, Season
 // 7): free Gryzzl gift boxes are a little too perfect, Leslie's side sees data mining, April is talked into welcoming
 // the interns, and a town meeting turns out to be on Leslie's side.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 41–48 s (the book title and "a thousand and
-// one", garbled in the captions), 126–143 s (the genital-cream complaint, sexual), 119 s ("I've seen much" vs "too
-// much"), 77.6 s ("I'mma" vs "I'm gonna"), and 199–211 s (the toy-pig "Ron Swanson" bit, visual). Speakers are named
-// only where the audio names them (Leslie at 37 s, April at 84 s). No who item and no predict item.
-// EAR CHECK: 185.3 s nt2 — the stress in the crowd's first "We're not against you on this" assumed on "not" (if it's on "this", the key moves to the third choice)
+// Segments from the captions, words from whisper (2026-11-16). Untested: 41–48 s (garbled in the captions), 126–143 s
+// (sexual), 119 s and 77.6 s (the sources differ). Speakers are named only where the audio names them (Leslie at 37 s,
+// April at 84 s); the speaker at 2.8–16 s and 69.7–83 s and the novel reader at 165 s stay unnamed.
 import type { Clip } from '../types.ts';
 
 export const gryzzlBoxes: Clip = {
@@ -17,77 +13,66 @@ export const gryzzlBoxes: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: S1: the stem and key said "she", which no audio settles (the speaker isn't named); now speaker-neutral
-    // why: broke the law ← "illegal" comes later and "line" sounds like a legal line; switched sides ← "cross a
-    //   line" heard as crossing over, and she "technically works for" them
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'line', seg: [1.9, 6.95],
-      stem: 'What is meant by what “these fools” have done?',
-      choices: ['They have done something unacceptable', 'They have done something against the law',
-                'They have gone over to the other side'], a: 0,
-      cue: '「technically work for」のあと、but に続く部分。',
+      stem: 'What does “crossed a line” mean here?',
+      ja: 'ここで「crossed a line」はどういう意味？',
+      choices: ['Gone too far', 'Changed sides', 'Moved away'], a: 0,
+      choicesJa: ['やりすぎた', '寝返った', '引っ越した'],
+      cue: '「these fools have」のあと。',
       line: 'I know I technically work for Gryzzl, but these fools have *crossed a line*.',
-      said: '「一応グリズルで働いてるけど、一線を越えた」。',
-      mean: 'cross a line ＝ 許されない一線を越える。やりすぎだという非難。',
-      trap: 'line を「陣営」と取ると寝返りに、あとの illegal から違法に聞こえる。',
-      use: 'Okay, now you’ve crossed a line.（ちょっと、それは言いすぎ）' },
+      said: '「一応グリズルで働いてるけど、あいつら一線を越えた」と言う。',
+      mean: 'cross a line ＝ 越えてはいけない一線を越える。やりすぎだ、という非難。',
+      trap: 'line から「線をまたぐ、移る」と思いやすい。but のあとは相手への非難。',
+      use: 'Okay, now you’ve crossed a line.（ちょっと、それはやりすぎ）' },
 
-    // why: got ← "gotten" with its t flapped and n weak shrinks toward "got"; Haven't you ← a negative question,
-    //   the -n't easy to imagine; Did you get ← same meaning, only the opening differs
     { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [5.7, 8.9],
       stem: 'Fill the gap: “___ one of these Gryzzl boxes?”',
-      choices: ['Have you gotten', 'Have you got', 'Haven’t you gotten', 'Did you get'], a: 0,
-      cue: '「crossed a line」のあと、質問の頭。',
+      ja: '空所を埋める：「___ one of these Gryzzl boxes?」',
+      choices: ['Have you gotten', 'Have you got', 'Did you get'], a: 0,
+      choicesJa: ['もう受け取った？', '持ってる？', '受け取った？'],
+      cue: '「crossed a line」のあとの質問。',
       line: '*Have you gotten* one of these Gryzzl boxes?',
-      said: '「グリズルの箱、受け取った？」と聞いている。',
-      mean: 'アメリカ英語では get の過去分詞は gotten。have you は弱く「ハヴュ」とつながる。',
-      trap: 'gotten の t は弾んで「ガルン」に近く、got に聞こえやすい。最後の「ン」まで聞く。',
+      said: '「グリズルの箱、受け取った？」と聞く。',
+      mean: 'gotten ＝ get の形（アメリカ英語）。t が軽い「ラ」の音で「ガルン」に近い。',
+      trap: 'gotten の t が弱く、got に聞こえやすい。最後の「ン」まで聞く。',
       use: 'Have you gotten my email?（私のメール届いた？）' },
 
-    // why: keep it and complain ← "sternly worded letter" heard, but "sending it back" missed; thank-you letter ←
-    //   "letter" + "free gifts" fit the polite script
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [8.4, 16.35],
-      stem: 'What was Leslie planning to do with her box?',
-      choices: ['Send it back, along with a stern letter', 'Keep it, but write a stern letter about it',
-                'Open it after writing a thank-you letter'], a: 0,
-      cue: '「haven’t opened it yet」のあとの計画。',
-      line: 'planning on *sending it back* after I wrote a sternly worded letter',
-      said: '物では買収されない、という厳しい手紙を書いて、送り返すつもりだった。',
-      mean: 'sternly worded letter ＝ 厳しい調子の手紙。',
-      trap: 'letter が耳に残るが、計画の中心は sending it back。',
+      stem: 'What was the box’s owner going to do with it?',
+      ja: '箱を受け取った人は、それをどうするつもりだった？',
+      choices: ['Send it back', 'Keep it', 'Give it away'], a: 0,
+      choicesJa: ['送り返す', '取っておく', '人にあげる'],
+      cue: '「opened it yet」のあと。',
+      line: 'I was planning on *sending it back* after I wrote a sternly worded letter',
+      said: '「厳しい手紙を書いて、送り返すつもりだった」と言う。',
+      mean: 'send it back ＝ 送り返す。物ではつられない、と手紙で言うつもり。',
+      trap: 'letter が耳に残りやすいが、計画は sending it back。',
       use: 'I’m sending it back.（これ、返品するよ）' },
 
-    // R fix: V2 (blind 70 %): the title ("Goes Too Far") plus a data-reading key made it guessable; the key is now
-    //   scene-level ("too personal"), which also gives away i1's key, so reveals 'perfect'
-    // why: a bribe ← "I cannot be bought with free gifts" is said just before; an insider ← "How do they even know?"
-    //   heard as a question about who told
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'creepy', reveals: ['phone', 'mining', 'perfect'], seg: [16.3, 64.9],
-      stem: 'Why do the gift boxes alarm the people opening them?',
-      choices: ['The gifts are too personal to be chance', 'The gifts are a bribe to win their support',
-                'The gifts mean a friend has told their secrets'], a: 0,
-      cue: '箱の中身と、「How do they even know?」のあと。',
-      said: '夫婦だけの呼び名にちなんだ物や、ぴったりの品が届き、メールや文字を調べているに違いない、と話す。',
-      mean: '贈り物そのものより、好みを知りすぎていることが問題。',
-      trap: 'cannot be bought でわいろの話に聞こえる。中身がぴったりすぎる点が本題。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'creepy', reveals: ['phone', 'mining', 'perfect'], seg: [16.3, 61.0],
+      stem: 'Why are the gift boxes creepy?',
+      ja: 'ギフトの箱は、なぜ気味が悪い？',
+      choices: ['Gryzzl knows too much', 'The gifts are a bribe', 'A friend told secrets'], a: 0,
+      choicesJa: ['グリズルが二人のことを知りすぎている', '贈り物がわいろのようなもの', '友だちが秘密をしゃべった'],
+      cue: '箱の中身と、そのあとの話。',
+      said: '二人だけの呼び名の品や、ぴったりの物が届く。「メールを調べている」と話す。',
+      mean: 'creepy ＝ 気味が悪い。好みを知りすぎていることが問題。',
+      trap: 'cannot be bought（買収されない）から、わいろの話と思いやすい。本題は知りすぎ。',
       use: 'How do they even know that?（なんでそんなこと知ってるの？）' },
 
-    // R fix: S1: "she and Joe" assumed the speaker's gender; now "the couple"
-    // why: only at home ← pet names are usually private, so "at home" is the script; in letters ← "letter" was
-    //   heard a moment ago
     { id: 'd2', skill: 'detail', level: 'B1', point: 'phone', seg: [27.9, 34.4],
-      stem: 'When does the couple use those special names?',
-      choices: ['Only on the phone or in texts', 'Only at home, when they’re alone', 'Only in letters they write'], a: 0,
+      stem: 'When do the couple use those special names?',
+      ja: '夫婦は、その特別な呼び名をいつ使う？',
+      choices: ['On the phone or in texts', 'At home, when alone', 'In letters and cards'], a: 0,
+      choicesJa: ['電話かメッセージだけ', '家で二人のときだけ', '手紙だけ'],
       cue: '「creepy because」のあと。',
       line: 'we only call each other these things *on the phone or in texts*.',
-      said: '「この呼び名は電話かメッセージでしか使わない。だから気味が悪い」と言っている。',
-      mean: '人前で使わない言葉を会社が知っている。だから見られていると分かる。',
-      trap: 'あだ名は家で使うものと思いこみやすい。because のあとが理由。',
+      said: '「この呼び名は電話かメッセージでしか使わない」と言う。',
+      mean: 'texts ＝ 携帯のメッセージ。人前で使わない言葉を会社が知っている。',
+      trap: 'あだ名は家で使うものと思いやすい。because のあとが理由。',
       use: 'We only talk on the phone.（電話でしか話さないんだ）' },
 
-    // R fix: V2 (blind 70 %): "won over and will keep them" was off-scene; now the 「その通り」 agreement reading
-    //   of "exactly", refuted by "They must be data mining"
-    // why: pleased for Leslie ← "exactly" heard as happy agreement (Japanese frame); she told them ← the perfect fit
-    //   suggests she gave them a wish list
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'perfect', seg: [52.2, 57.6],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'perfect', seg: [52.2, 57.6], retired: true,
       stem: 'Why is Leslie’s delight met with “Yeah, exactly”?',
       choices: ['Gifts that perfect show how much Gryzzl knows', 'The speaker is happy the gifts please Leslie',
                 'Leslie must have told Gryzzl what she likes'], a: 0,
@@ -98,37 +83,31 @@ export const gryzzlBoxes: Clip = {
       trap: 'exactly を「賛成」と取ると、喜びへの同意に聞こえる。続く must be が言いたいこと。',
       use: 'Exactly. That’s my point.（そう、それが言いたいの）' },
 
-    // why: selling the data ← data talk often ends in selling it; phone calls ← "on the phone" was the earlier clue
     { id: 'd3', skill: 'detail', level: 'B1', point: 'mining', seg: [55.5, 61.1],
       stem: 'What do they think Gryzzl must be doing?',
-      choices: ['Going through their texts and emails', 'Selling their texts and emails to others',
-                'Listening in on their phone calls'], a: 0,
+      ja: 'グリズルは何をしているに違いないと思っている？',
+      choices: ['Reading their texts and emails', 'Selling their texts and emails', 'Listening to their phone calls'], a: 0,
+      choicesJa: ['メッセージやメールを読んでいる', 'メッセージやメールを売っている', '電話を盗み聞きしている'],
       cue: '「data mining」のすぐあと。',
       line: 'They must be data mining, *searching our texts and emails*',
-      said: '「メッセージやメールを調べて、情報を集めているに違いない」。',
-      mean: 'data mining ＝ 大量のデータを掘って情報を集めること。',
-      trap: 'データの話は「売る」に結びつきやすいが、言っているのは searching と gathering。',
+      said: '「メッセージやメールを調べて、情報を集めているはず」と言う。',
+      mean: 'must be ～ing ＝ 〜しているに違いない。search ＝ 調べる。',
+      trap: 'データの話から「売る」と思いやすい。言っているのは searching（調べる）。',
       use: 'They’re reading our emails?（メール読まれてるの？）' },
 
-    // R fix: S2/V1 (blind 85 %): the stem quoted the phrase under test, so knowing it answered the item; the stem now
-    //   names the moment, and C is a softening reading
-    // why: not worth saying ← "not to mention" read word by word as 「言うまでもない＝言わない」; keep it quiet ←
-    //   "mention" = 言う, so "don't say it"; goes too far ← a weak "not" heard as backing off
     { id: 'm1', skill: 'marker', level: 'B2', point: 'mention', seg: [60.7, 64.9],
-      stem: 'Right after “a huge invasion of privacy”, what does the rest of the line do?',
-      choices: ['Adds an even stronger point to the first one', 'Says a further point isn’t worth bringing up',
-                'Admits the first point goes a bit too far'], a: 0,
-      cue: '「invasion of privacy」のあと、二つ目の理由。',
+      stem: 'What does “not to mention” do here?',
+      ja: 'ここで「not to mention」はどんな働き？',
+      choices: ['Adds one more point', 'Says it isn’t important', 'Takes back the first point'], a: 0,
+      choicesJa: ['もう一つ理由を足す', '大したことではないと言う', '最初の話を取り消す'],
+      cue: '「invasion of privacy」のあと。',
       line: 'This is a huge invasion of privacy, *not to mention* illegal.',
-      said: '「ひどいプライバシーの侵害だ。おまけに違法だ」と言っている。',
-      mean: 'not to mention ＝「それに」「おまけに」。もっと強い点を足す。',
-      trap: '文字どおりだと「言わずに」だが、実際は言っている。日本語の「言うまでもなく」と同じ働き。',
+      said: '「ひどいプライバシーの侵害だ。それに違法だ」と言う。',
+      mean: 'not to mention ＝ それに、おまけに。もっと強い点を足すときに使う。',
+      trap: '文字どおりは「言わずに」だが、実際には言っている。日本語の「言うまでもなく」。',
       use: 'It’s cheap, not to mention delicious.（安いし、それにおいしい）' },
 
-    // R fix: V2 (blind 55 %): "a warning on every screen" had nothing to do with snooping; now a user switch for the
-    //   tracking, a privacy measure the audio doesn't name
-    // why: pick a language ← "language" = 言語; switch it off ← "preventing this" heard as a setting users control
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'language', seg: [64.5, 69.95],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'language', seg: [64.5, 69.95], retired: true,
       stem: 'When the town’s free Wi-Fi went in, what was made sure of?',
       choices: ['The deal had wording that banned this', 'The deal let users pick their language',
                 'The deal let users switch the tracking off'], a: 0,
@@ -139,19 +118,17 @@ export const gryzzlBoxes: Clip = {
       trap: 'language を「言語」と取ると意味が通らない。契約の話では「言い回し・条文」。',
       use: 'Is there language about refunds?（返金についての条項はある？）' },
 
-    // R fix: S1: "she" assumed the speaker's gender; now "Type what is said"
     { id: 'x1', skill: 'dict', level: 'B2', point: 'agreed', seg: [69.55, 73.95],
-      stem: 'Type what is said: “I ___ agreed to work with them…” (3 words)', answer: 'never would have',
-      cue: '「I」のすぐあと、agreed の前の3語。',
+      stem: 'Type it: “I ___ agreed to work with them…” (3 words)', answer: 'never would have',
+      ja: '書き取る：「I ___ agreed to work with them…」（3語）',
+      cue: '「I」のあと、agreed の前の3語。',
       line: 'I *never would have* agreed to work with them if I had known',
-      said: '「知っていたら、一緒に働くことに同意しなかった」。',
-      mean: 'would have は「ウダヴ」のように縮む。never が前に来て強い否定になる。',
-      trap: 'have が弱くて would だけに聞こえやすい。過去の「〜しなかったのに」には have が入る。',
+      said: '「知っていたら、組むことに同意しなかった」と言う。',
+      mean: 'never would have ＝ 絶対〜しなかった。would have は「ウダヴ」。',
+      trap: 'have が小さく短く、would だけに聞こえやすい。過去の「〜しなかった」には have。',
       use: 'I never would have guessed.（まさかと思ったよ）' },
 
-    // why: a street protest ← "Front Street" read literally as a place; making peace in public ← "put me on blast"
-    //   unknown, so the reply is guessed as friendly
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'blast', seg: [73.6, 79.1],
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'blast', seg: [73.6, 79.1], retired: true,
       stem: 'What does the “Front Street” line mean, judging from what comes before it?',
       choices: ['A threat to show them up in public', 'A plan to protest out on the main street',
                 'An offer to settle things out in public'], a: 0,
@@ -162,63 +139,66 @@ export const gryzzlBoxes: Clip = {
       trap: 'Front Street を地名と取ると抗議の場所に。going down のあとなら攻撃。',
       use: 'You’re going down!（覚悟しとけよ！）' },
 
-    // why: pretends to know ← the usual script of nodding at slang; thinks it's aimed at her ← "put me on" heard
-    //   as about the listener
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'context', seg: [75.5, 83.6],
-      stem: 'What’s funny about the reply to the “Front Street” line?',
-      choices: ['She admits she doesn’t get it, yet loves it', 'She pretends to know the slang to seem cool',
-                'She takes the threat to be aimed at her'], a: 0,
-      cue: '「I don’t understand」と、最後の「I love it」。',
+    { id: 'h1', skill: 'attitude', level: 'B1', point: 'context', seg: [75.5, 83.6],
+      stem: 'How does the listener feel about the “Front Street” line?',
+      ja: '「Front Street」のセリフを、聞いた人はどう思う？',
+      choices: ['She loves it', 'She hates it', 'She is scared'], a: 0,
+      choicesJa: ['すごく気に入った', '大嫌い', 'こわい'],
+      cue: '文の最後の3語。',
       line: '*I don’t understand* what that means, but I think I get the context, and *I love it*.',
-      said: '「意味は分からないけど、流れは分かる。気に入った」と返す。',
-      mean: '分からないと正直に言いつつ、勢いだけで大喜び。そのずれが笑い。',
-      trap: '若者言葉にうなずくお決まりの場面に見えるが、ここは分からないと先に言っている。',
+      said: '「意味は分からないけど、気に入った」と返す。',
+      mean: 'I don’t understand what that means ＝ その意味は分からない。',
+      trap: 'I don’t understand で始まるので、嫌がると思いやすい。but のあとが本音。',
       use: 'I don’t get it, but I love it.（よく分からないけど、いいね）' },
 
-    // why: party list ← "welcome speech" and "interns start today" just before; praising April ← it follows her
-    //   "Go away", so it sounds like flattery
-    { id: 'd5', skill: 'detail', level: 'B2', point: 'therapist', seg: [89.9, 103.3],
-      stem: 'Why does the man asking April suddenly list three nice things?',
-      choices: ['His therapist told him to, instead of yelling', 'He is planning the interns’ welcome party',
-                'He is trying to flatter April into a yes'], a: 0,
-      cue: '「Why did you just say」への答え。',
-      line: 'whenever I feel like *yelling*, I just take a deep breath and say *three great things*',
-      said: 'セラピストの助言で、怒鳴りたくなったら深呼吸して、生きる喜びを三つ言う。',
-      mean: 'April の「消えて」に怒りそうになったので、三つ並べて気を静めた。',
-      trap: '頼みごとの直後でお世辞に聞こえるが、Why への答えはセラピストの助言。',
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'wondering', seg: [83.0, 88.6],
+      stem: 'What is “I was wondering if you would…”?',
+      ja: '「I was wondering if you would…」は何をしている？',
+      choices: ['A polite request', 'A story about the past', 'A way to say no'], a: 0,
+      choicesJa: ['丁寧なお願い', '昔の話', '断り方'],
+      cue: '「April,」で始まる文の後半。',
+      line: 'and *I was wondering if you would* deliver a little welcome speech.',
+      said: '「歓迎のスピーチをしてもらえないかな」と頼む。',
+      mean: 'I was wondering if you would ～ ＝ 〜してもらえませんか。丁寧な頼み方。',
+      trap: 'was（過去）があるので昔の話と思いやすい。過去の形で、頼みをやわらかくしている。',
+      use: 'I was wondering if you could help me.（手伝っていただけませんか）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'therapist', seg: [93.5, 103.3],
+      stem: 'Why does the man suddenly say three nice things?',
+      ja: '男の人は、なぜ急にいいことを三つ言う？',
+      choices: ['His therapist told him to', 'He wants to flatter April', 'He is planning a party'], a: 0,
+      choicesJa: ['セラピストに言われたから', 'エイプリルにお世辞を言いたいから', 'パーティーを計画しているから'],
+      cue: '「Why」と聞かれた答え。',
+      line: 'On the advice of my therapist… whenever I feel like *yelling*, I just take a deep breath and say *three great things*',
+      said: '「セラピストの助言で、怒鳴りたいとき三つ言う」と答える。',
+      mean: 'feel like yelling ＝ 怒鳴りたくなる。take a deep breath ＝ 深呼吸。',
+      trap: '頼みごとの直後なので、お世辞と思いやすい。答えはセラピストの助言。',
       use: 'Take a deep breath and count to ten.（深呼吸して10数えて）' },
 
-    // R fix: V2 (blind 65 %): "finally" in the stem pointed at reluctance; the stem is neutral now and the choices
-    //   are tone + reason pairs
-    // why: pleased ← "Fine" = 良い in katakana; calm ← the breathing trick comes just before
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'whatever', seg: [102.9, 108.25],
-      stem: 'How does April sound when she agrees to give the speech?',
-      choices: ['Grudging: she just wants the asking to end', 'Pleased: he asked her nicely in the end',
-                'Calm: his breathing trick has relaxed her'], a: 0,
-      cue: '「Please talk to my interns」のあとの短い返事。',
+      stem: 'How does April feel when she agrees to the speech?',
+      ja: 'スピーチを引き受けるとき、エイプリルはどんな気持ち？',
+      choices: ['She doesn’t want to', 'She is happy to do it', 'She feels calm now'], a: 0,
+      choicesJa: ['本当はやりたくない', '喜んでやる', '落ち着いた気分'],
+      cue: '「Please talk to」への返事。',
       line: '*Fine. Whatever.* I’ll do it.',
       said: '「はいはい、どうでもいい。やるよ」と引き受ける。',
-      mean: 'Fine. Whatever. ＝ しぶしぶの承諾。早く終わらせたい気持ち。',
-      trap: 'fine を「良い」と取ると快諾に聞こえる。Whatever が付けば投げやり。',
+      mean: 'Fine. Whatever. ＝ はいはい、もういいよ。しぶしぶ引き受ける言い方。',
+      trap: 'fine を「いい」と取ると喜んでいるように聞こえる。Whatever がつけば投げやり。',
       use: 'Whatever. I’ll go.（どうでもいいけど、行くよ）' },
 
-    // why: ten ← "10 years ago" comes right after; twelve ← "twenty" and "twelve" share "tw-"; thirty ← her age now
-    //   (20 plus "10 years"), heard together with "now I'm old"
     { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [107.8, 113.3], keep: true,
       stem: 'How old was April when she started working here?',
+      ja: 'ここで働き始めたとき、エイプリルは何歳だった？',
       choices: ['Ten', 'Twelve', 'Twenty', 'Thirty'], a: 2,
+      choicesJa: ['10歳', '12歳', '20歳', '30歳'],
       cue: '「when I was」の直後の数。',
       line: 'I started here when I was *20*, and now I’m old and gross and directionless.',
-      said: '「ここに来たのは20歳。今は年寄りで、目標もない」。',
-      mean: '20歳で入って、今は30歳くらい。それを「年寄り」と言っている。',
-      trap: 'すぐあとに 10 years ago が来るので ten や、今の年齢に引かれやすい。when I was の直後を聞く。',
+      said: '「ここに来たのは20歳。今は年寄り」と言う。',
+      mean: 'twenty ＝ 20。今は30歳くらい。それを「年寄り」と大げさに言う。',
+      trap: 'すぐあとに 10 years ago が来るので ten に引かれやすい。when I was の直後を聞く。',
       use: 'I started here when I was twenty.（ここで働き始めたのは20歳のとき）' },
 
-    // anchor: 108.3–115.2 s "I started here when I was 20, and now I'm old and gross and directionless. Those kids
-    //   are me 10 years ago": she rates herself at about 30 as old
-    // why: the interns ← she calls them "kids", which sounds like a put-down; the man ← he forced the speech on her,
-    //   so the dark line seems aimed at him
-    // retired: with nt2 (one C2 alone is under the tier's 2)
     { id: 'nt1', skill: 'humor', level: 'C2', retired: true, point: 'old', reveals: ['age'], seg: [107.8, 115.4],
       stem: 'In April’s little talk about the interns, who is the joke on?',
       choices: ['April herself, calling herself old already', 'The interns, being treated as silly kids',
@@ -230,8 +210,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'kids で若者をからかうように聞こえる。主語が I と me なら、笑いの的は話し手自身。',
       use: 'I’m too old for this.（もうこういうのは年だわ）' },
 
-    // why: a test ← "internship" + horror-film words read as a trial to pass; filmed ← "videotape" read literally
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'ring', seg: [113.0, 124.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'ring', seg: [113.0, 124.8], retired: true,
       stem: 'What does April suggest the internship does to people?',
       choices: ['It slowly ruins whoever gets drawn in', 'It is a scary test that they must pass',
                 'It gets filmed and shown to everyone'], a: 0,
@@ -242,73 +221,53 @@ export const gryzzlBoxes: Clip = {
       trap: 'videotape を文字どおり取ると撮影の話に。too late と save で呪いと分かる。',
       use: 'Save yourself while you can.（今のうちに逃げて）' },
 
-    // R fix: V2 (blind 55 %): the key was the only nuanced choice; C is nuanced too now. The said note had three
-    //   broken characters (気に入って)
-    // why: angry at Leslie ← the town-meeting script where the crowd blames the official; defending Gryzzl ← "I am
-    //   keeping it" and "I like their phones" are heard
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', reveals: ['pig'], seg: [143.0, 191.4],
-      stem: 'What does the town meeting reveal about people’s feelings?',
-      choices: ['Even people who liked their gifts back Leslie', 'They blame Leslie for letting Gryzzl in at all',
-                'They like their gifts too much to turn on Gryzzl'], a: 0,
-      cue: '贈り物への文句のあと、最後の三回のくり返し。',
-      said: '住民は、物は気に入っても家に送るのはやりすぎ、と言い、彼女の味方だと答える。',
-      mean: '贈り物は好評でも、のぞき見には町全体が反対。',
-      trap: 'keeping it や I like their phones で会社の味方に聞こえる。but のあとが本音。',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', reveals: ['pig'], seg: [148.0, 191.4],
+      stem: 'What does the town think by the end of the meeting?',
+      ja: '会議の最後、町の人たちはどう思っている？',
+      choices: ['Gryzzl has gone too far', 'Gryzzl is a great company', 'Leslie is to blame'], a: 0,
+      choicesJa: ['グリズルはやりすぎ', 'グリズルはすばらしい会社', '悪いのはレスリー'],
+      cue: '最後に3回くり返す言葉。',
+      said: '住民は「家に送るのはやりすぎ」と言い、「味方だ」と答える。',
+      mean: 'We’re not against you ＝ あなたの敵ではない。町全体がグリズルに反対。',
+      trap: 'I like their phones で、会社の味方に聞こえる。but のあとが本音。',
       use: 'We’re all on the same side here.（ここではみんな味方だよ）' },
 
-    // R fix: V2 (blind 60 %): "only one pig" was a filler; now "I am keeping it" misheard as having to give it back
-    // why: a cheap fake ← "rare" heard with suspicion, as if it isn't real; must give it back ← "no right to give me"
-    //   heard as the gift being taken away
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'pig', seg: [153.3, 164.7],
-      stem: 'What’s funny about the pig collector’s complaint?',
-      choices: ['He’s upset that the gift is too wonderful', 'He’s upset that the rare pig is a fake',
-                'He’s upset that he has to give it back'], a: 0,
-      cue: '「But still」のあと、何に文句を言っているか。',
-      line: 'I am *keeping it*. But still, they have no right to give me something I will *treasure* the rest of my life.',
-      said: '「とても珍しいから返さない。でも、一生の宝物になる物を贈る権利はない」と言う。',
-      mean: '抗議の形なのに、中身は最高の贈り物だという告白。言葉と気持ちがずれている。',
-      trap: 'no right で本気の抗議に聞こえる。何に怒っているか、目的語まで聞く。',
-      use: 'I hate how much I love this.（好きすぎてくやしい）' },
+    { id: 'h4', skill: 'humor', level: 'B1', point: 'pig', seg: [153.3, 164.7],
+      stem: 'What will the man do with the rare toy pig?',
+      ja: '男の人は、珍しいブタのおもちゃをどうする？',
+      choices: ['Keep it', 'Send it back', 'Sell it'], a: 0,
+      choicesJa: ['取っておく', '送り返す', '売る'],
+      cue: '「extremely rare」のあと。',
+      line: 'It’s extremely rare, and *I am keeping it*. But still, they have no right…',
+      said: '「すごく珍しいから、もらっておく。でも、こんな物を送る権利はない」と言う。',
+      mean: 'keep ＝ 取っておく。文句を言いながら、贈り物はしっかりもらう。そこが笑い。',
+      trap: '文句を言う会なので、送り返すと思いやすい。and I am のあとを聞く。',
+      use: 'Can I keep it?（これ、もらっていい？）' },
 
-    // R fix: S1: "her" assumed the speaker's gender; the choices are speaker-neutral now
-    // why: hide from parents ← the usual teen secret; friends borrowing ← "in front of all my friends" heard as the
-    //   worry
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'woolf', seg: [164.6, 174.1],
-      stem: 'How does the speaker who got novels feel about it?',
-      choices: ['Embarrassed that friends now know about it', 'Worried that parents will see the books',
-                'Annoyed that friends will borrow the books'], a: 0,
-      cue: '「Now」で始まる一文と、最後の質問。',
+      stem: 'How does the girl with the novels feel?',
+      ja: '小説をもらった女の子はどんな気持ち？',
+      choices: ['Worried they will tell', 'Happy to get new books', 'Angry at her friends'], a: 0,
+      choicesJa: ['人に言われないか心配', '新しい本がもらえてうれしい', '友だちに怒っている'],
+      cue: '「Now」で始まる文と最後の質問。',
       line: 'Now Miley and Haley *know I like to read*. What if they tell Evan?',
-      said: '友だちの前で箱を開けたら小説だった。「本好きだとばれた。エヴァンに言われたら？」と心配する。',
-      mean: '読書好きが知られるのを、かっこ悪いと気にしている。',
-      trap: '秘密は親に隠すものと考えやすいが、心配しているのは友だちと Evan。',
-      use: 'What if they tell everyone?（みんなに言われたらどうしよう）' },
+      said: '「本好きだとばれた。エヴァンに言われたらどうしよう」と心配する。',
+      mean: 'What if ～? ＝ 〜したらどうしよう。読書好きが知られるのを気にしている。',
+      trap: '本をもらったので、喜んでいると思いやすい。What if は心配の言い方。',
+      use: 'What if it rains tomorrow?（明日雨だったらどうしよう）' },
 
-    // R fix: V2 (blind 65 %): the distractors didn't build on the line; now "I like" heard as a trade-off or as a
-    //   defense. "his" dropped (the speaker isn't named)
-    // why: phones make up for it ← "I like their phones" heard as the conclusion; defends Gryzzl ← "I like" heard as
-    //   taking Gryzzl's side
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'phones', seg: [173.7, 181.35],
-      stem: 'What does the next speaker do with “I like their phones…”?',
-      choices: ['Grants a good point, then makes a complaint', 'Says the good phones make up for the snooping',
-                'Defends Gryzzl against the earlier complaints'], a: 0,
+      stem: 'What does “I like their phones, but…” do?',
+      ja: '「I like their phones, but…」は何をしている？',
+      choices: ['Says a good point, then complains', 'Says the phones make it okay', 'Takes Gryzzl’s side on it'], a: 0,
+      choicesJa: ['良い点を言ってから文句を言う', '電話がいいから許すと言う', 'グリズルの味方をする'],
       cue: '「phones」のあとの but。',
       line: 'I like their phones, *but they’ve gone too far*',
-      said: '「電話はいいけど、家にこんな物を送るのはやりすぎ。個人データを調べる権利はない」と言う。',
-      mean: '先に良い点を認めて、but のあとで本題の不満を言う、よくある形。',
-      trap: '最初の一言で味方に聞こえるが、英語は but のあとに本音が来る。',
+      said: '「電話はいいけど、家にこんな物を送るのはやりすぎ」と言う。',
+      mean: 'I like ～, but… ＝ 〜はいいけど…。先に良い点を言い、but のあとで本題の不満。',
+      trap: '最初の一言で味方に聞こえやすい。英語は but のあとに本音が来る。',
       use: 'I like the place, but it’s too loud.（いい店だけど、うるさすぎる）' },
 
-    // R drop: i4 (K1 + V1): "on this" doesn't settle that the town usually opposes her; Leslie's next lines ("after
-    //   months… The town is behind us") fit "it had sided with Gryzzl" just as well, and the key leaned on the show's
-    //   history. Never shipped, so deleted
-
-    // anchor: 185.3–186.6 s the first "We're not against you on this", answering "you guys are not against us on
-    //   this?" (stress assumed on "not": EAR CHECK)
-    // why: on "you" ← a contrast reading (us vs Gryzzl) that fits the fight; on "this" ← the reading that "this time"
-    //   is the exception, a fluent listener's favorite
-    // retired: the ear-check policy: a C2 stress item (the stress in “We're not against you on this” on “not”,
-    //   185.3 s); back after the ear check
     { id: 'nt2', skill: 'sound', level: 'C2', retired: true, point: 'stress', seg: [181.0, 187.2],
       stem: 'In the crowd’s first answer, where is the stress, and why?',
       choices: ['On “not”: denying what she feared', 'On “you”: siding with her, not Gryzzl',
@@ -319,5 +278,17 @@ export const gryzzlBoxes: Clip = {
       mean: '聞かれた not をそのまま強めて「その心配はない」と打ち消している。強勢は答えの焦点を示す。',
       trap: 'on this を強めると「今回だけ」の含みになり、対比の読みに引かれる。質問の焦点が答えの焦点。',
       use: 'I’m NOT mad at you.（怒ってないってば）' },
+
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'needback', seg: [203.4, 210.6],
+      stem: 'What does “I’m gonna need that back” mean?',
+      ja: '「I’m gonna need that back」はどういう意味？',
+      choices: ['Please give it back', 'I will buy it from you', 'Put it on my back'], a: 0,
+      choicesJa: ['それ、返してください', 'それを買います', '背中に乗せて'],
+      cue: '最後の「Actually」のあと。',
+      line: 'Actually, *I’m gonna need that back*.',
+      said: '「あの、それ返してもらわないと」と言う。',
+      mean: 'I’m gonna need that back ＝ それ返して。命令せずに、やわらかく返してと頼む言い方。',
+      trap: 'back を「背中」と思いやすい。need ～ back ＝ 〜を返してほしい。',
+      use: 'I’m going to need my pen back.（ペン、返してもらえる？）' },
   ]
 };
