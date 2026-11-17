@@ -49,7 +49,7 @@ export const ronTomLucy: Clip = {
       line: 'do you believe Lucy will be happy with this gift? — *A hundred percent*.',
       said: '「喜ぶと思うか」に、「100パーセント。息ぴったりだから」と答える。',
       mean: 'A hundred percent ＝ 絶対に。迷いがないことを数字で言う。',
-      trap: 'a hundred のあとに and ten は続かない。ninety（ナインティ）とも違う音。',
+      trap: '「ア・ハンドレッド」で終われば100、続けて「アンド・テン」なら110、「ナインティ」で始まれば90。',
       use: 'Are you sure? — A hundred percent.（確か？ー絶対）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'marry', seg: [32.4, 37.5],
@@ -271,6 +271,7 @@ export const ronTomLucy: Clip = {
       choices: ['Still together and happy', 'She asks him to slow down', 'They break up for now'], a: 0,
       choicesJa: ['仲良く続いている', '彼女がゆっくりにしてと頼む', 'いったん別れる'],
       cue: '最後のふたりのやりとり',
+      line: 'I’m only dating you for the free dresses, so. — *I’m fine with that.*',
       said: 'トムが本気だと伝え、ルーシーは冗談で返し、トムも笑う。',
       mean: 'ロンの余計な一言のおかげで、トムは気持ちを言えた。二人はこのまま続く。',
       trap: '「同じ気持ちは期待しない」と言うので、別れ話と思いやすい。最後は冗談で和やか。',

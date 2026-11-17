@@ -120,7 +120,7 @@ export const leslieObama: Clip = {
       line: 'they get *hundreds of millions* of visitors each year.',
       said: '「国立公園には毎年、何億人もの人が来る」と話す。',
       mean: 'hundreds of millions ＝「何億」。英語に「億」はなく、million（百万）で数える。',
-      trap: 'millions の前の hundreds of は小さく速い。前から順に組み立てて聞く。',
+      trap: '「ハンドレッツオブ」＋ミリオンズなら何億、ミリオンズだけなら何百万、サウザンズなら何十万、「ビ」で始まれば何十億。',
       use: 'Millions of people visit every year.（毎年何百万人もの人が訪れる）' },
 
     // retired (A2): a gentle tease read from a question
@@ -162,7 +162,7 @@ export const leslieObama: Clip = {
     { id: 'd3', skill: 'detail', level: 'B2', point: 'letsmove', seg: [28.8, 38.5],
       stem: 'What has Grant helped Michelle do?',
       ja: 'グラントはミシェルの何を手伝った？',
-      choices: ['Bring it into the parks', 'Move her program to Chicago', 'Take her program into schools'], a: 0,
+      choices: ['Bring her program into parks', 'Move her program to Chicago', 'Take her program into schools'], a: 0,
       choicesJa: ['取り組みを公園に取り入れる', '取り組みをシカゴに移す', '取り組みを学校に広げる'],
       cue: '「He’s helped me」のあと',
       line: 'He’s helped me *integrate the Let’s Move program into our national parks*.',

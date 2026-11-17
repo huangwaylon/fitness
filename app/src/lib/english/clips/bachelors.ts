@@ -92,7 +92,7 @@ export const threeBachelors: Clip = {
       line: 'I want to see the Colts beat the Patriots *49–nothing*',
       said: '「コルツがペイトリオッツに49対0で勝つのが見たい」と言う。',
       mean: 'nothing ＝ スコアの 0。forty-nine は前の「フォー」を強く言う。',
-      trap: 'nineteen なら後ろの「ティーン」が強い。forty-nine のあとの nothing が 0。',
+      trap: '「ナインティーン」なら19対0、「フォーティ」で切れて最後が「ナイン」なら40対9、「フォーティナイン・ナッシング」なら49対0。',
       use: 'We won three to nothing.（3対0で勝った）' },
 
     { id: 'a1', skill: 'phrase', level: 'B1', point: 'specific', seg: [56.3, 61],

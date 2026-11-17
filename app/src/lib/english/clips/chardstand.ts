@@ -204,7 +204,7 @@ export const chardStand: Clip = {
       line: 'if you’re looking for a reason to kick them out, here’s *158*.',
       said: 'レスリーが「追い出す理由が欲しいなら、ここに158個ある」と言う。',
       mean: 'one fifty-eight ＝ 158。英語では「1・58」と区切って言うことが多い。',
-      trap: 'one を聞き落とすと 58。fifty-eight の「エイト」まで聞くと 150 や 180 ではない。',
+      trap: 'one を落とすと58。「フィフティ」で終われば150、「ワン・エイティ」なら180。最後の「エイト」まで聞く。',
       use: 'Here’s one reason.（理由をひとつ挙げるね）' },
     { id: 'd5', skill: 'detail', level: 'B1', point: 'allnight', seg: [181.6, 184.7],
       stem: 'When did Leslie make the rule book?', ja: 'レスリーはいつ規則集を作った？',

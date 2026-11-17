@@ -45,6 +45,7 @@ export const policeExam: Clip = {
       a: 0,
       choicesJa: ['問題を出して、それから応援する', '彼の暗記法をみんな笑う', 'テストを受けるなと言う'],
       cue: '最後にかける言葉',
+      line: 'Okay, quiz me. — Okay, what does it mean…? … Babe, look at me. *You are going to pass this test*',
       said: '問題を出し、「あなたは絶対受かる」と言って、お守りをわたす。',
       mean: 'quiz me ＝「問題を出して」。You are going to pass ＝「きっと受かる」と応援している。',
       trap: '離婚の話が出るので、おどしていると思いやすい。その前の pass this test が本音。',
@@ -59,7 +60,7 @@ export const policeExam: Clip = {
       line: 'when an officer calls in a *35-42*?',
       said: '「警官が無線で35-42と言ったら？」と問題を出す。',
       mean: 'thirty-five forty-two ＝ 35-42。番号は2けたずつ区切って読む。',
-      trap: '2けたの順番を入れかえやすい。すぐあとの「35 … and 42 batteries」で確かめる。',
+      trap: '「フォーティトゥー」で終われば35-42、「トゥエンティフォー」なら35-24、「フィフティ」で始まれば53-42。',
       use: 'My room number is fourteen twenty.（部屋番号は1420です）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'trick', reveals: ['arson', 'code'], seg: [17.0, 31.1],
@@ -94,7 +95,7 @@ export const policeExam: Clip = {
       line: 'And if you don’t, *I’ll just* divorce you…',
       said: '「もし落ちたら、離婚して別の人と結婚するだけ」と言う。',
       mean: 'I’ll ＝ I will。「オール」のように短く、こもった音になる。',
-      trap: 'I just と思いやすい。just の前に小さな「ル」があれば I’ll、「ド」で止まれば I’d。',
+      trap: 'just の前に小さな「ル」があれば I’ll、「ド」で止まれば I’d、すぐ「アイジャスト」なら I just。',
       use: 'If it rains, I’ll just take a taxi.（雨なら、タクシーにするだけ）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'plan', reveals: ['divorce'], seg: [32.6, 44.5],
@@ -183,6 +184,7 @@ export const policeExam: Clip = {
       a: 0,
       choicesJa: ['正直に答えるが、ひどい答え', '質問に答えようとしない', '全部正しく答える'],
       cue: '銃の質問への答え',
+      line: 'Yes. *I gave it to him.* … Dad? You’re alive? What the hell?',
       said: '名前で迷い、子どもに銃をわたしたと答え、父親の話では家族の話を始める。',
       mean: 'どの答えも本人はまじめ。でも警官の答えとしてはずれている。',
       trap: '係の人が that’s what being a cop’s all about とほめるので、正解と思いやすい。それは皮肉。',

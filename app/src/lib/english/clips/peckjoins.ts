@@ -60,7 +60,7 @@ export const peckJoins: Clip = {
       line: 'I think she’s 28 years old. I mean, I met her *when she was eight*.',
       said: '「今は28歳かな。初めて会ったときは8歳だった」と言う。',
       mean: '今の年齢と出会った年齢を並べ、付き合いの長さを伝えている。',
-      trap: '直前の28が耳に残りやすい。eighteen なら「ティーン」と長く伸びる音がある。',
+      trap: '「エイト」で切れれば8、「エイティーン」と伸びれば18、前に twenty が付けば28。',
       use: 'I’ve known her since she was eight.（彼女が8歳のころから知ってる）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'favor', seg: [36.5, 41.5],
@@ -96,7 +96,7 @@ export const peckJoins: Clip = {
       line: 'when the right part comes along, *I’d love* to come and play',
       said: '「ちょうどいい役が来たら、ぜひ出たい」と言う。',
       mean: 'I’d love to ＝「ぜひ〜したい」。仮の話なので would（’d）が入る。',
-      trap: 'd は次の l に消えて I love に聞こえやすい。like なら k が聞こえる。',
+      trap: '「アイドラヴ」と小さくつまれば I’d love、「アイラヴ」なら I love、「ライク」なら I’d like。',
       use: 'I’d love to come, if you’ll have me.（よければぜひ行きたい）' },
 
     // retired (A2): a C2 dictation (what would become) with little daily use
@@ -269,6 +269,7 @@ export const peckJoins: Clip = {
       choices: ['Most fail, but this one works', 'Reboots usually work well', 'This one stayed the same'], a: 0,
       choicesJa: ['たいてい失敗するが、これはうまくいった', 'リブートはたいていうまくいく', 'これは何も変えなかった'],
       cue: '後半の「But」のあと',
+      line: 'it’s *really hard to recapture that magic*. *But* for something like this show… they *figured out a way*',
       said: '「再現は難しい。でもこの番組は登場人物を大人にして、うまく新しくした」と話す。',
       mean: 'it’s really hard to 〜 ＝「〜はとても難しい」。but のあとでこの番組をほめている。',
       trap: 'reinvent しなかった（作り直さなかった）から、何も変えないと思いやすい。age up は変化。',
@@ -295,7 +296,7 @@ export const peckJoins: Clip = {
       line: 'people who are in their *late 20s or early 30s* who loved the show originally',
       said: '昔この番組を好きだった20代後半から30代前半の人も楽しめる、と言う。',
       mean: 'late 20s ＝ 20代後半、early 30s ＝ 30代前半。',
-      trap: 'twenties と thirties は語尾が似ている。late（後半）と early（前半）も聞く。',
+      trap: '「トゥエンティーズ」と「サーティーズ」が聞こえる。teens や forties は出てこない。',
       use: 'Most of us are in our early thirties.（ほとんど30代前半です）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'getback', seg: [363.5, 373.2],

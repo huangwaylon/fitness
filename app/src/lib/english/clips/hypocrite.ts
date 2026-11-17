@@ -154,7 +154,7 @@ export const hypocrite: Clip = {
       line: 'I’m in fashion. I was looking at *her skirt*.',
       said: '「ファッションの仕事だから、スカートを見てた」と言い訳する。',
       mean: 'in fashion ＝ ファッションの仕事をしている。I’m in 〜 で業界を言える。',
-      trap: 'skirt と shirt は出だしだけの差。sk は「スク」、sh は「シュ」。',
+      trap: 'skirt と shirt は出だしの差。「スカート」なら skirt、「シャート」なら shirt、「シューズ」なら shoes。',
       use: 'I’m in sales.（営業の仕事をしています）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'creep', seg: [50.0, 54.0],
@@ -262,7 +262,7 @@ export const hypocrite: Clip = {
       line: 'That is totally different *for two reasons*. One, … And two, …',
       said: '「全然違うわ、理由は2つ」と言い、順に数える。',
       mean: 'for two reasons ＝ 理由が2つ。One, … And two, … と数える。',
-      trap: 'すぐ One, と数え始めるので one と思いやすい。reasons の前の two を聞く。',
+      trap: 'すぐ One, と数え始めるので1と思いやすい。reasons の前は「トゥー」。「スリー」なら3。',
       use: 'No, for two reasons.（いや、理由は2つあって）' },
 
     // retired (A2): a “why does it get a laugh” item

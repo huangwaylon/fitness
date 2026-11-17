@@ -235,7 +235,7 @@ export const ronDentist: Clip = {
       line: 'All I wanted was *two hours* where I got to forget that I was a parent.',
       said: 'ロンが「親だと忘れられる時間が、2時間ほしかっただけ」と言う。',
       mean: 'All I wanted was 〜 ＝ ほしかったのは〜だけ。two hours ＝ 2時間。',
-      trap: 'two と ten は最初の音が似ている。「トゥー」を聞く。',
+      trap: '「トゥー・アワーズ」なら2時間、「テン」なら10時間、「ワン」なら1時間、「デイズ」なら2日。',
       use: 'All I want is some sleep.（ほしいのは睡眠だけ）' },
     { id: 'h4', skill: 'detail', level: 'B1', point: 'pictures', seg: [144.2, 150.4],
       stem: 'What does Ron say about the two pictures?', ja: 'ロンは2枚の絵について何と言う？',

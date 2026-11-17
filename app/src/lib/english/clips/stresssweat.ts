@@ -84,7 +84,7 @@ export const stressSweat: Clip = {
       line: 'to sell it on the black market *for 150 bucks*.',
       said: '「闇市場で150ドルで売るためにね」と言う。',
       mean: 'one fifty ＝ 150。bucks ＝ ドル（くだけた言い方）。',
-      trap: '115 なら「ワン・フィフティーン」と後ろが長い。1500 なら「フィフティーン・ハンドレッド」。「ワン・フィフティ」なら150。',
+      trap: '「ワン・フィフティ」なら150、「フィフティ」だけなら50、「ワン・フィフティーン」なら115、「フィフティーン・ハンドレッド」なら1500。',
       use: 'I got it for twenty bucks.（20ドルで買ったよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'gary', seg: [57.5, 69],

@@ -194,7 +194,7 @@ export const icSetTour: Clip = {
       choices: ['It feels dirty now', 'It feels too childish', 'The walls cost too much'], a: 0,
       choicesJa: ['今は不潔に感じる', '子どもっぽすぎる', 'かべが高すぎる'],
       cue: '「In a post-COVID world」のあと',
-      line: 'In a *post-COVID world*, we’re not ever going to do that again… we’re not gonna *stick food on anything*.',
+      line: 'In a *post-COVID world*, we’re not ever gonna do that again… we’re not gonna *stick food on anything*.',
       said: '「コロナのあとの世界で、もう二度とやらない。食べ物を何かにつけるのはなし」と言う。',
       mean: 'post-COVID ＝ コロナのあと。食べ物をつけるのは、今はきたないと感じる。',
       trap: 'grown-ups（大人）の話のあとなので、子どもっぽいと思いやすい。理由は post-COVID。',

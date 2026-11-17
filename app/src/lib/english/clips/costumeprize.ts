@@ -175,7 +175,7 @@ export const costumePrize: Clip = {
       line: 'Kelly, you *cannot change costumes in the middle of the day*. Pam, she’s out.',
       said: '「途中で衣装を変えちゃだめ。パム、彼女は失格」と訴える。',
       mean: 'in the middle of the day ＝「一日の途中で」。she’s out ＝ 失格だ。',
-      trap: 'cannot の t は弱いが、can では she’s out（失格）と合わない。',
+      trap: 'costume だけ聞くと、人の衣装を着たと思いやすい。change costumes（衣装を変える）を聞く。',
       use: 'You can’t change plans halfway through.（途中で予定は変えられないよ）' },
 
     { id: 'r1', skill: 'pragma', level: 'B2', point: 'sue', seg: [100.3, 105.7],
@@ -295,7 +295,7 @@ export const costumePrize: Clip = {
       line: 'everyone has to vote for who gets the coupon book, and *you can’t vote for yourself*.',
       said: '「ランウェイを歩いたら全員が投票。自分には投票できません」と説明する。',
       mean: 'vote for 〜 ＝「〜に投票する」。自分以外に入れる、というルール。',
-      trap: 'can と can’t は t がほぼ聞こえない。can’t は「キャーン」と長く強く、can は弱く短い。',
+      trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱く短い。最後は your team ではなく yourself。',
       use: 'Sorry, you can’t vote twice.（すみません、2回は投票できません）' },
 
     // retired (A2): “as it were” is rare

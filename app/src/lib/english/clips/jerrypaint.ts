@@ -175,8 +175,8 @@ export const jerryPainting: Clip = {
       cue: '「taken me」の直後',
       line: '…the Jay-Z vibe that’s *taken me years* to cultivate',
       said: '「何年もかけて育ててきたジェイ・Z風の雰囲気」と言う。',
-      mean: 'take 人 years to 〜 ＝ 〜するのに何年もかかる。cultivate ＝ 育てる。',
-      trap: '少し前に for months（何か月も）が出てくるので、まぎれやすい。take のすぐあとを聞く。',
+      mean: 'take 人 years to 〜 ＝ 〜するのに何年もかかる。taken me のあと「イヤーズ」と聞こえる。',
+      trap: '前の for months にまぎれやすい。「マンス」なら months、「ウィークス」なら weeks、「ライフ」なら life。',
       use: 'It took me years to learn.（覚えるのに何年もかかった）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'cool', reveals: ['vibe', 'coolof'], seg: [121.4, 131.4], retired: true,

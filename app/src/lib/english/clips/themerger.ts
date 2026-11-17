@@ -63,7 +63,7 @@ export const theMerger: Clip = {
       line: 'I’ll be the number two guy here in Scranton *in six weeks*.',
       said: '「6週間でスクラントンのナンバー2になる」と言う。',
       mean: 'in six weeks ＝「6週間で（あと6週間のうちに）」。自信たっぷりの宣言。',
-      trap: 'six は短い「スィクス」、sixteen は「ティーン」が長い。two は number two の two。',
+      trap: '「スィクス」なら six、「スィクスティーン」と伸びれば sixteen。two は前の number two。',
       use: 'I’ll be done in two hours.（2時間で終わるよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', seg: [97.8, 113.6],

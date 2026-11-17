@@ -143,6 +143,7 @@ export const craigTemp: Clip = {
       choices: ['Her staff want to leave', 'Donna is getting married', 'Craig refuses to leave'], a: 0,
       choicesJa: ['部下たちがやめたがっている', 'ドナが結婚する', 'クレイグがやめようとしない'],
       cue: '「What the hell」のあと',
+      line: '*Even Larry wants out?* … people can *come and go as they please*?',
       said: 'クレイグをへらす案にドナが反対し、ドナもラリーも「やめてもいい」と言い出す。',
       mean: 'come and go as they please ＝ 好きに来たりやめたりする。みんながやめそうで怒る。',
       trap: 'Denver の婚約者の話が耳に残りやすい。最後の come and go が怒りの中身。',

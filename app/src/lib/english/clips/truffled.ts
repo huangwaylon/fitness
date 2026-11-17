@@ -95,7 +95,7 @@ export const truffled: Clip = {
       line: 'Pam and Ryan and I have been through a lot in the last *six weeks*.',
       said: '「この6週間、三人でいろいろ乗り越えてきた」と言う。',
       mean: 'go through a lot ＝ いろいろ苦労する。in the last 〜 ＝ この〜の間。',
-      trap: 'six と weeks がつながる。sixteen なら「ティーン」が長い。months なら「マンス」。',
+      trap: '最後が「ウィークス」なら週、「デイズ」なら日、「マンス」なら月。「シックスティーン」と長ければ16。',
       use: 'We’ve been through a lot together.（いろいろ一緒に乗り越えてきた）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [86.5, 89.9],
@@ -130,7 +130,7 @@ export const truffled: Clip = {
       line: 'He was my client for *ten years*.',
       said: '「あの人は10年もおれの顧客だったんだ」と怒る。',
       mean: 'for ten years ＝ 10年間。長年の大事な顧客を失った、という怒り。',
-      trap: 'ten は短く、n が次の years とつながる。twenty なら「トゥエ」で始まる。',
+      trap: '「テン」なら10、「トゥー」だけなら2。「トゥエルヴ」なら12、「トゥエニ」なら20。',
       use: 'I’ve been coming here for ten years.（ここには10年通ってる）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'quit', seg: [190.8, 199.0],
@@ -249,6 +249,7 @@ export const truffled: Clip = {
       choices: ['Clients back, apology taken back', 'Clients back, apology turned down', 'No clients, apology accepted'], a: 0,
       choicesJa: ['顧客は返し、謝罪は取り消す', '顧客は返し、謝罪は断られる', '顧客は返さず、謝罪は受け入れられる'],
       cue: '「However」のあと',
+      line: 'Fine. *Have your clients*. … However, *I rescind my apology*.',
       said: '結局、顧客は返す。でも「ただし謝罪は取り消す」と言う。',
       mean: 'rescind ＝ 取り消す。Have your clients ＝ 顧客は持っていけ。',
       trap: 'That’s fair（いいよ）を断りと思いやすい。取り消したのはマイケル。',

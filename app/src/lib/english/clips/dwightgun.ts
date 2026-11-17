@@ -204,6 +204,7 @@ export const dwightGun: Clip = {
       choices: ['Messy and a bit selfish', 'Calm and very quiet', 'Kind and helpful to Andy'], a: 0,
       choicesJa: ['ばたばたで、少し自分勝手', '落ち着いていて静か', 'アンディに親切で協力的'],
       cue: '保険の話から最後まで',
+      line: 'make a list of what’s lost *for the insurance*. — I lost a necklace, a ring, a painting.',
       said: '保険で得しようとする人、話を大げさにする人、ごまかす人がいる。',
       mean: 'みんな自分のことばかり。心配して助ける空気は薄い。',
       trap: '病院の話が出るので、みんなで助けていると思いやすい。中心は保険とごまかし。',

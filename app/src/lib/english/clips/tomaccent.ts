@@ -165,7 +165,7 @@ export const tomAccent: Clip = {
       line: 'I got you a cappuccino, a latte, *four bags* of coffee beans and mini espresso machine.',
       said: '「カプチーノとラテと、豆4袋とミニエスプレッソマシンを買ってきた」と言う。',
       mean: 'four bags ＝ 4袋。気に入られたくて、買いすぎている。',
-      trap: '14 なら「フォーティーン」と後ろが長い。40 なら「フォーティ」。「フォー」のすぐあとに bags なら4。',
+      trap: '「フォー」のすぐあとに bags なら4、「トゥー」なら2。「フォーティーン」と後ろが長ければ14、「フォーティ」なら40。',
       use: 'I got you a little of everything.（いろいろ少しずつ買ってきたよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cold', seg: [134.2, 141.48], keep: true,
@@ -259,7 +259,7 @@ export const tomAccent: Clip = {
       line: 'You filled out form 3208. You’re supposed to fill out form *3248*.',
       said: '「3208番に記入したね。本当は3248番だよ」と言う。',
       mean: 'be supposed to 〜 ＝「〜することになっている」。2つの番号は3けた目だけがちがう。',
-      trap: '先に聞く3208が耳に残りやすい。supposed to のあと、「フォーティ」が聞こえれば3248。',
+      trap: '後半が「フォーティエイト」なら3248、「オーエイト」なら3208、「エイティーン」なら3218、「エイティ」で終われば3280。',
       use: 'You’re supposed to use the other door.（反対のドアを使うことになってるよ）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'stall', seg: [210.85, 217.7], keep: true,

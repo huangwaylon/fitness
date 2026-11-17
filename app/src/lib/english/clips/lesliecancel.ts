@@ -36,6 +36,7 @@ export const leslieCancelled: Clip = {
       choices: ['She insults a man who died', 'She forgets the man’s name', 'She calls his son a jerk'], a: 0,
       choicesJa: ['亡くなったばかりの人を悪く言う', 'その人の名前を忘れる', '息子をいやなやつと言う'],
       cue: '「Sorry, I meant」のあと',
+      line: 'he’s a real jerk… — Sorry, I meant can you comment on Nick Newport *dying earlier today*?',
       said: 'ニックを「いやなやつ」と言った直後、「今日亡くなった件です」と言われる。',
       mean: 'I meant 〜 ＝「〜のつもりで聞いた」。質問は死去へのコメントだった。',
       trap: 'Bobby（息子）の名前が先に出るので、息子の話と思いやすい。dying を聞く。',
@@ -147,7 +148,7 @@ export const leslieCancelled: Clip = {
       line: 'that man is *98 years old* and he’s an awful man.',
       said: '「でもその男は98歳で、ひどい男よ」と言う。',
       mean: 'ninety-eight ＝ 98。years old ＝ 〜歳。',
-      trap: 'eighty-eight は「エイティ」で始まる。ninety のあとが eight か nine か。',
+      trap: '「エイティ」で始まれば88。「ナインティ・エイト」なら98、「ナインティ・ナイン」なら99。',
       use: 'My grandma just turned ninety.（祖母がちょうど90歳になった）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'lose', seg: [103.35, 110.88],

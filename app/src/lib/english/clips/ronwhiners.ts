@@ -81,7 +81,7 @@ export const ronWhiners: Clip = {
       cue: '「that is the」のあと', line: 'that is the *fourth time this month*',
       said: '「カイルがまた私の場所にとめた。今月4回目だ」と言う。',
       mean: 'the fourth time ＝ 4回目。this month ＝ 今月。回数で不満の大きさを伝える。',
-      trap: 'fourth の th は弱く、third と混ざりやすい。最後の month まで聞く。',
+      trap: '「フォース」なら4回目、「サード」なら3回目。最後が month（マンス）か week（ウィーク）かも聞く。',
       use: 'That’s the third time this week.（今週これで3回目だよ）' },
 
     // retired (A2): whisper hears “Time?”, so whether it ends a turn is unsure
@@ -221,6 +221,7 @@ export const ronWhiners: Clip = {
       choices: ['She has no place to complain', 'Chris doesn’t help her at home', 'Her body hurts all the time'], a: 0,
       choicesJa: ['愚痴を言える場所がない', 'クリスが家で手伝ってくれない', '体がいつも痛い'],
       cue: '「biggest complaint」のあと',
+      line: 'I have a million things I need to complain about, and *I can’t take them home*',
       said: '「家では言えない。ここなら言えると思ったのに」と怒る。',
       mean: 'complain ＝ 愚痴を言う。一番の不満は、吐き出す場所がないこと。',
       trap: 'クリスの名前が出て「夫への不満」と思いやすいが、彼は優しすぎるほう。',

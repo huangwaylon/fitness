@@ -203,7 +203,7 @@ export const getIn: Clip = {
       use: 'We’re cool. See you.（大丈夫。またね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [154.2, 161.4], keep: true,
-      stem: 'What length of time does Jim talk about?',
+      stem: 'How many minutes does Jim say?',
       ja: 'ジムは何分と言う？',
       choices: ['5 minutes', '15 minutes', '50 minutes'], a: 1,
       choicesJa: ['5分', '15分', '50分'],
@@ -232,6 +232,7 @@ export const getIn: Clip = {
       choices: ['He missed her party', 'He was rude to Darryl', 'He sided with Dwight'], a: 0,
       choicesJa: ['彼女のパーティーに来なかった', 'ダリルに失礼だった', 'ドワイトの味方をした'],
       cue: '最後の電話の答え',
+      line: 'Her America’s Got Talent finale party… You were there. — *I wasn’t.*',
       said: '同じマグから、ジムはケリーのパーティーに行かなかったと気づく。',
       mean: 'party favors（パーティーのおみやげ）のマグから、行かなかった会にたどりつく。',
       trap: 'Dwight や Darryl の名前が先に出るので、それが原因と思いやすい。最後の答えを待つ。',

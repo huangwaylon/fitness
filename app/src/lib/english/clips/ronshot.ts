@@ -26,7 +26,7 @@ export const ronShot: Clip = {
       line: 'at my house, I got *a wife and three beautiful daughters*.',
       said: '「家には妻と、かわいい娘が3人いる」と話す。',
       mean: 'a wife and three daughters ＝ 妻と娘3人で4人。I got は I have のくだけた形。',
-      trap: 'three が一番強く聞こえるので、そのまま選びやすい。a wife の a も1人と数える。',
+      trap: 'three が一番強く聞こえるので選びやすい。妻1人＋娘3人で4人。本人は数えない。',
       use: 'I live with my wife and two kids.（妻と子ども2人と暮らしてる）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'pain', seg: [42.8, 48.0],

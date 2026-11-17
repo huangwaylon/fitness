@@ -16,12 +16,13 @@ export const setStraight: Clip = {
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['tired'], seg: [10, 55],
       stem: 'What happens after Ben hands the microphone to Leslie?', ja: 'ベンがマイクをレスリーに渡したあと、どうなる？',
-      choices: ['Ben stops her and defends her', 'Ben takes back the microphone', 'She speaks, then Ben speaks'], a: 0,
-      choicesJa: ['ベンが止めて、彼女をかばう', 'ベンがマイクを取り戻す', '彼女が話し、次にベンが話す'],
+      choices: ['Ben stops her and defends her', 'Ben walks off the stage', 'Leslie won’t say anything'], a: 0,
+      choicesJa: ['ベンが止めて、彼女をかばう', 'ベンが壇上から去る', 'レスリーは何も言わない'],
       cue: '「hang on」のあと',
+      line: 'Actually, *hang on. Stop.* … Leslie is a great mother… *So you can say whatever you want.*',
       said: '妻に話を振るが、途中で止めて、彼女を守る話を始める。',
       mean: 'hang on ＝ ちょっと待って。止めたのは、彼女を責める人たちに言い返すため。',
-      trap: 'Stop. でマイクを取り戻すように聞こえやすい。最後に「好きに話していい」と言う。',
+      trap: 'Stop. で、レスリーが話せずに終わると思いやすい。ベンは最後に「好きに話していい」と言う。',
       use: 'Change of plans. Let me say something first.（予定変更。先に一言いいかな）' },
 
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'weather', seg: [12.5, 18.7],
@@ -162,8 +163,8 @@ export const setStraight: Clip = {
       cue: '3つめの質問の最初',
       line: '*Do you* miss your kids while you’re at work? — Yes, of course I do.',
       said: '「仕事中、子どもが恋しくなる？」と読み上げ、「もちろん」と自分で答える。',
-      mean: 'Do you は小さく短く「ジュ」と言う。答えも I do と do で返している。',
-      trap: 'Don’t なら「ン」が残り、Did なら答えも I did。答えの形でも確かめられる。',
+      mean: 'Do you は小さく短く「ドゥユ」と言う。答えも I do と do で返している。',
+      trap: '「ドゥユ」なら Do you、「ドンチュ」と「ン」が残れば Don’t you、「ディジュ」なら Did you。',
       use: 'Do you ever miss home?（家が恋しくなることある？）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'miss', seg: [88.9, 97.2], retired: true,

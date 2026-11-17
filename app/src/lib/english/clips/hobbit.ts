@@ -99,6 +99,7 @@ export const dwightHobbit: Clip = {
       choices: ['Friends tease Dwight a lot', 'Dwight teases the friends', 'Dwight gets angry at everyone'], a: 0,
       choicesJa: ['友だちにたくさんからかわれる', 'ドワイトが友だちをからかう', 'ドワイトがみんなに怒る'],
       cue: 'ドワイトについて言われること',
+      line: 'Not a wizard. *A hobbit*. … Do you live in a *regular-sized house*?',
       said: 'ライアンの友人がドワイトの見た目や農場をネタに何度もからかい、ドワイトはまじめに答える。',
       mean: 'tease ＝ からかう。からかう側と、気づかずに本気で答える側のずれ。',
       trap: 'ドワイトの短い返事は冷たく聞こえやすい。どれも本気の答えで、ネタにされているのは彼。',

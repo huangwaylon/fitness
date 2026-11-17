@@ -130,8 +130,8 @@ export const fakingIt: Clip = {
       use: 'But you said it was fine!（でも大丈夫って言ってたよね！）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'now', reveals: ['said'], seg: [95.7, 107.85],
-      stem: 'How does Andy change his Chuck Norris comparison?',
-      ja: 'アンディはチャック・ノリスのたとえをどう変える？',
+      stem: 'What kind of Chuck Norris is Andy now?',
+      ja: 'アンディは、今の自分はどんなチャック・ノリスだと言う？',
       choices: ['Old and not good anymore', 'New and still learning', 'Strong but tired'], a: 0,
       choicesJa: ['年を取って、もう強くない', '新人で、まだ学んでいる', '強いが、疲れている'],
       cue: '「now」のあと',
@@ -208,7 +208,7 @@ export const fakingIt: Clip = {
       line: '*Half the documents* I get, I put right into the shredder…',
       said: '「届く書類の半分は、つまらないからすぐシュレッダー」と言う。',
       mean: 'half ＝ 半分。half the documents ＝ 書類の半分。',
-      trap: 'all（全部）や most（ほとんど）と思いやすい。文の最初の一語 Half を聞く。',
+      trap: '「ハーフ」なら Half、「モウスト」なら Most、「オール」なら All、「フュー」なら A few。',
       use: 'Half the time, I’m just guessing.（半分くらいは勘でやってる）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], seg: [122.95, 130.4],
