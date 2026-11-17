@@ -108,7 +108,7 @@ export const leslieMom: Clip = {
       use: 'Sorry, you know how busy I am.（ごめん、忙しいの知ってるでしょ）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'tom', seg: [67.7, 81.95],
-      stem: 'Why does Tom praise the man’s fences?',
+      stem: 'Why does Tom praise the fences?',
       ja: 'トムはなぜその人のフェンスをほめる？',
       choices: ['To please the fence builder', 'To thank him for past work', 'To make fun of his fences'], a: 0,
       choicesJa: ['フェンス業者に気に入られるため', '前の仕事のお礼のため', 'フェンスをからかうため'],
