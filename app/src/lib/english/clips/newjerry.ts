@@ -1,15 +1,11 @@
-// REVIEW 2026-11-16: pass 7, fix 16, drop 1, new 0; ear checks 2
-// OPEN: i1 rests on hearing “a Jerry you don't have to pay”, though both sources write “jury”; if the ear says
-//   “jury”, drop i1 (d1 still covers the pitch)
+// A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 6, new 3
 // “Ron Swanson Saves Tom's Swagger | Parks and Recreation” (the official Parks and Recreation channel, Season 5): with
 // Jerry gone, the office hunts for a new person to tease, a stumble over words makes it Tom, his intern plan fails, and
 // Ron brings Jerry back once a week.
-// Segments from the captions, words from whisper (2026-11-16). The captions garble names ("Eddie Hayes" for Andy,
-// "jury" for Jerry at 142.9 s) and miss 59.7–65.9 s; no key rests on those stretches. Whisper's timings drift after
-// 60 s, so every segment is from the captions. Skipped on purpose: April's opening ("making out"), Donna and Taylor at
-// 154–161 s (innuendo), and who says "Barking up the wrong tree" (stems leave the speaker out).
-// EAR CHECK: 142.9 s i1 — both sources write “It's like a jury you don't have to pay”; the key reads it as “a Jerry”
-// EAR CHECK: 200.2 s p1 h2 — whisper “Ask me if I'm sad”, captions “asked me if I'm sad”; both items need “Ask me”
+// Segments from the captions, words from whisper (2026-11-16). The captions garble names and miss 59.7–65.9 s; no key
+// rests on those stretches. Whisper's timings drift after 60 s, so every segment is from the captions.
+// EAR CHECK: 142.9 s i1 (retired) — both sources write “It's like a jury you don't have to pay”; the key read “a Jerry”
+// EAR CHECK: 200.2 s p1 h2 (retired) — whisper “Ask me if I'm sad”, captions “asked me if I'm sad”
 import type { Clip } from '../types.ts';
 
 export const tomSwagger: Clip = {
@@ -19,45 +15,39 @@ export const tomSwagger: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %): "cover his work" was a filler; the near miss is now the reply's "one of you will be
-    //   ridiculed", heard as the reason for the sad day
-    // why: friend ← "a sad day" read as real grief over a colleague leaving (the farewell script); next ← "Soon, one of
-    //   you will be ridiculed" comes right after, but it answers the worry; "Who are we gonna make fun of now?" settles it
     { id: 'g1', skill: 'gist', level: 'B1', point: 'sadday', seg: [7.3, 30.5],
-      stem: 'Why is it “a sad day” for the coworkers?',
-      choices: ['They’ve lost the one they all teased', 'One of them will now be teased instead', 'They lost a friend they’ll all miss'], a: 0,
-      cue: 'sad day のすぐあと、疑問文の最後の部分。',
+      stem: 'Why is it “a sad day” for the coworkers?', ja: '同僚たちにとって、なぜ「悲しい日」なの？',
+      choices: ['No one is left to tease', 'One of them will be teased', 'They lost a good friend'], a: 0,
+      choicesJa: ['からかう相手がいなくなった', '自分たちの誰かがからかわれる', '仲のいい友だちがいなくなった'],
+      cue: '「sad day」のすぐあと',
       line: 'This is a sad day. Who are we gonna *make fun of* now?',
-      said: '「悲しい日だ。誰をからかえばいい？」と言い、「すぐ次が決まる」と返される。',
-      mean: '悲しいのは別れではなく、いじる相手がいなくなったこと。',
-      trap: 'sad day だけで送別と取りやすい。次にいじられる話は、その心配への返事。',
-      use: 'Who are we going to blame now?（今度は誰のせいにする？）' },
+      said: '「悲しい日だ。これから誰をからかえばいい？」と言う。',
+      mean: 'make fun of 〜 ＝ 〜をからかう。悲しいのは別れではなく、からかう相手がいなくなったこと。',
+      trap: 'sad day だけで、送別の話だと思いやすい。すぐあとの質問が理由。',
+      use: 'Don’t make fun of me.（からかわないでよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'spill', seg: [37.1, 42.05],
-      stem: 'Type the reply to “What are you doing?”: “Just ___ spill anything.” (3 words)', answer: 'trying not to',
-      cue: 'Just のすぐあと、spill の前まで。',
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'spill', seg: [37.1, 42.05],
+      stem: 'Type the reply: “Just ___ spill anything.” (3 words)', ja: '返事を書こう：“Just ___ spill anything.”（3語）',
+      answer: 'trying not to',
+      cue: '「Just」のすぐあと',
       line: 'Just *trying not to* spill anything.',
-      said: '「何かこぼさないようにしてるだけ」。trying not to は「トライン・ナッタ」。',
-      mean: 'not to の t が弾み、to は「タ」と弱くなる。',
-      trap: 'not と to が一つに聞こえ、trying to と取りやすい。not は短くても残る。',
+      said: '「何かこぼさないようにしてるだけ」と答える。',
+      mean: 'trying not to 〜 ＝ 〜しないようにしている。「トライン・ナッタ」と聞こえる。',
+      trap: 'not と to がひと続きになり、trying to と聞こえやすい。not は短くても残る。',
       use: 'I’m trying not to laugh.（笑わないようにしてるの）' },
 
-    // why: 13 ← -teen/-ty: "thirty" with a flapped t and weak -ty sounds like "thirteen"; 3 ← "thirty" cut short to
-    //   "three", an "it starts small" reading
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [65.4, 77.8], keep: true,
-      stem: 'In Tom’s picture of his future, how many years later is it?',
-      choices: ['3 years', '13 years', '30 years'], a: 2,
-      cue: 'sentence のすぐあと、later の前の数。',
-      line: 'One screwed-up sentence. And *30 years later*…',
-      said: '「言葉のつまずき一つで、30年後には…」と未来を思い描く。',
-      mean: 'thirty は前が強く、ty は短い。thirteen は teen が強く長い。',
-      trap: 'thirty の t が弾んで「サーディ」になり、thirteen と混ざりやすい。強い所で判断。',
-      use: 'Ten years from now, who knows?（10年後なんて、誰にも分からない）' },
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'ahead', seg: [42.5, 47],
+      stem: 'What does Tom mean by “Way ahead of you”?', ja: '“Way ahead of you” で、トムは何を言いたい？',
+      choices: ['I already did it', 'I’m walking in front', 'You are too slow'], a: 0,
+      choicesJa: ['もうやってあるよ', '前を歩いている', 'きみは遅すぎる'],
+      cue: '「by year」のあとの返事',
+      line: 'I believe Leslie said to organize these by year. — *Way ahead of you.*',
+      said: '「年ごとに整理って言ってたよね」「もうやってるよ」。',
+      mean: 'way ahead of you ＝ きみよりずっと先を行っている、つまり「もうやってある」。',
+      trap: 'ahead（前に）から、歩く場所の話だと思いやすい。頼まれた仕事への返事。',
+      use: 'Book a table? Way ahead of you.（予約？もうしてあるよ）' },
 
-    // R fix: V2 (blind 60 %): both distractors contradicted the dread; now a present-tense misreading and a blame reading
-    // why: already ← "I'm wearing… listening…" heard as the present, a self-reveal joke, but "30 years later" frames it;
-    //   blame ← "the office selects a new Jerry" earlier; he blames one sentence, not the others
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'future', seg: [65.4, 77.8],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'future', seg: [65.4, 77.8], retired: true,
       stem: 'What makes Tom’s talk to the camera about his future funny?',
       choices: ['He leaps from one slip to a whole dull future', 'He admits he already dresses and lives that way',
                 'He blames the others for the life he’ll end up in'], a: 0,
@@ -68,74 +58,83 @@ export const tomSwagger: Clip = {
       trap: 'I’m wearing を今の話と取りやすいが、This is how it begins から先は未来の想像。',
       use: 'This is how it starts.（こうやって始まるんだよ）' },
 
-    // R fix: V2 (blind 50 %): "his choice" pointed at a wrong pick; the stem is now neutral and the distractors are the
-    //   literal "bark" (noise) and "Game over" (spoke too soon)
-    // why: noise ← "barking" read literally as making a fuss; too soon ← "Game over" right before makes it sound like a
-    //   rushed call; "Andy will never be the new Jerry" settles that the target itself is wrong
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrongtree', seg: [104.7, 113.1],
-      stem: 'After Andy’s squid joke, what is Tom told?',
-      choices: ['He has picked the wrong target', 'He is making too much fuss about it', 'He has called it over too soon'], a: 0,
-      cue: 'Philo と呼ぶ直前、木に関する言い方。',
-      line: '*Barking up the wrong tree*, Philo.',
-      said: '「見当違いだ」と言い、Andy は新しい Jerry にならないと続ける。',
-      mean: '狙う相手を間違える、という決まり文句。犬が違う木に吠える姿から。',
-      trap: 'barking を「騒ぐ」と文字通り取りやすい。次の never で、相手選びが違うと分かる。',
-      use: 'You’re barking up the wrong tree.（お門違いだよ）' },
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [66, 77.8], keep: true,
+      stem: 'In Tom’s picture of his future, how many years later is it?', ja: 'トムが想像する未来は、何年後？',
+      choices: ['3 years', '13 years', '30 years'], a: 2,
+      choicesJa: ['3年', '13年', '30年'],
+      cue: '「later」の前の数',
+      line: 'One screwed-up sentence. And *30 years later*…',
+      said: '「言いまちがい一つで、30年後には…」と未来を思い描く。',
+      mean: 'thirty は前を強く、ty は短い。thirteen は teen を強く長く言う。',
+      trap: 't が軽い「ラ」の音になり、thirteen とまぎれやすい。',
+      use: 'Ten years from now, who knows?（10年後なんて、誰にも分からない）' },
 
-    // R fix: V2 (blind 50 %): the key was the only choice about embarrassment; a distractor now misreads the same words
-    // why: liked ← "giant puppy" heard as cute and loved; never does ← "Nothing embarrasses him" read as "he never does
-    //   anything embarrassing", right after his ink-Dracula act; "with no shame" settles that he feels none
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'andy', reveals: ['wrongtree'], seg: [104.7, 113.1],
-      stem: 'Why does Tom’s pick fail, according to the reply?',
-      choices: ['Teasing never makes him feel ashamed', 'Everyone likes him too much to tease', 'He never does anything embarrassing'], a: 0,
-      cue: 'never の文のあと、短い理由の文。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrongtree', seg: [104.7, 113.1],
+      stem: 'What does “barking up the wrong tree” mean?', ja: '“barking up the wrong tree” はどういう意味？',
+      choices: ['Choosing the wrong person', 'Making too much noise', 'Talking too soon'], a: 0,
+      choicesJa: ['相手を選びまちがえている', 'うるさく騒ぎすぎ', '言うのが早すぎる'],
+      cue: '「Philo」と呼ぶ前',
+      line: '*Barking up the wrong tree*, Philo.',
+      said: '「見当ちがいだよ」と言う。',
+      mean: 'bark up the wrong tree ＝ 文字どおりは「ちがう木に吠える」。ここでは「相手をまちがえる」。',
+      trap: 'barking（吠える）から、騒ぐ話だと思いやすい。続く never が決め手。',
+      use: 'You’re barking up the wrong tree.（それはお門ちがいだよ）' },
+
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'andy', reveals: ['wrongtree'], seg: [104.7, 113.1],
+      stem: 'Why can’t Andy be the new Jerry?', ja: 'アンディはなぜ新しいジェリーになれない？',
+      choices: ['He never feels ashamed', 'Everyone likes him too much', 'He never does silly things'], a: 0,
+      choicesJa: ['何をされても恥ずかしがらない', 'みんなに好かれすぎている', 'ばかなことをしない'],
+      cue: '「never」の文のあと',
       line: 'Andy will never be the new Jerry. *Nothing embarrasses him.*',
-      said: '「Andy は新しい Jerry にならない。何をされても恥ずかしがらない」。',
-      mean: 'からかいは相手が恥ずかしがって初めて成り立つ。',
-      trap: '「恥ずかしいことをしない」と取りやすい。主語は Nothing で、何をされても恥ずかしく感じない、の意味。',
+      said: '「アンディは何をされても恥ずかしがらない」。',
+      mean: 'Nothing embarrasses him ＝ 何があっても恥ずかしがらない。からかっても効かない。',
+      trap: '「恥ずかしいことをしない」と思いやすい。直前にインクで遊んでいるので逆。',
       use: 'Nothing embarrasses her.（彼女は何があっても動じない）' },
 
-    // C2 dict: four weak words that run into one ("whatchaneedis") at native speed
-    // anchor: 113.1–114.0 s "what you need is" (both sources), unstressed before the stressed "fresh meat"
     { id: 'nt3', skill: 'dict', level: 'C2', point: 'freshmeat', seg: [110.8, 115.8],
-      stem: 'Type the start: “___ some fresh meat in the office.” (4 words)', answer: 'what you need is',
-      cue: 'puppy の文のあと、fresh の前まで。弱い語も全部。',
+      stem: 'Type the start: “___ some fresh meat in the office.” (4 words)', ja: '出だしを書こう：“___ some fresh meat in the office.”（4語）',
+      answer: 'what you need is',
+      cue: '「fresh」の前まで全部',
       line: '*What you need is* some fresh meat in the office.',
-      said: '「必要なのは職場の新しい獲物だ」。4語が「ワチュニーディズ」と一続き。',
-      mean: 'what you が「ワチュ」になり、need is もつながる。強いのは fresh meat だけ。',
-      trap: '文法から You need… と書きがち。弱い what と is も聞こえたまま書く。',
+      said: '「必要なのは、職場の新しい獲物だ」と言う。',
+      mean: 'What you need is 〜 ＝ 必要なのは〜。4語が「ワチュニーディズ」とひと続き。',
+      trap: '文法から You need… と書きやすい。小さく短く言う what と is も、聞こえたとおり書く。',
       use: 'What you need is a good night’s sleep.（必要なのはぐっすり眠ること）' },
 
-    // R fix: V2 (blind 55 %): "couldn't just" and "would just" don't fit the sentence; now could/can/should, all
-    //   grammatical, with "can" the near sound
-    // why: can ← "could" weakens to "kəd", close to "kən", and both make a suggestion; should ← same meaning, only the
-    //   first sound /k/ vs /ʃ/ decides
     { id: 's1', skill: 'sound', level: 'B2', point: 'couldjust', seg: [111.0, 118.9],
-      stem: 'Fill the gap: “Or you guys ___ stop making fun of me.”',
+      stem: 'Fill the gap: “Or you guys ___ stop making fun of me.”', ja: '空所に入るのは？ “Or you guys ___ stop making fun of me.”',
       choices: ['could just', 'can just', 'should just'], a: 0,
-      cue: 'you guys のすぐあと、とても短い2語。',
+      choicesJa: ['〜すればいいだけ（could）', '〜していい（can）', '〜すべき（should）'],
+      cue: '「you guys」のすぐあと',
       line: 'Or you guys *could just* stop making fun of me.',
       said: '「それか、からかうのをやめればいいだけだろ」と言う。',
-      mean: 'could は「クd」と弱く just とつながる。提案の形の「やめてくれ」。',
-      trap: 'can なら n が残り「クン」になる。should とは最初の音（ク／シュ）で聞き分ける。',
+      mean: 'could just ＝ 〜すればいいだけ。could は小さく短く言い、just とつながる。',
+      trap: 'can なら「キャン」の「ン」が残る。should とは最初の音（ク／シュ）で聞き分ける。',
       use: 'You could just ask me.（普通に聞いてくれればいいのに）' },
 
-    // why: ease tension ← slack = ゆるみ, "pick up" heard as cheering up; files ← the dropped files earlier and "pick up"
-    //   read literally; "now that Jerry's gone… hire someone" ties it to the work
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'kidding', seg: [121.5, 125.8],
+      stem: 'How does Tom feel when he says “Are you kidding me?”', ja: '“Are you kidding me?” と言うとき、トムはどんな気持ち？',
+      choices: ['Annoyed', 'Happy', 'Scared'], a: 0,
+      choicesJa: ['うんざりしている', 'うれしい', 'こわい'],
+      cue: '「Philo, Pilo」のあと',
+      line: 'Philo, Pilo. — *Are you kidding me?*',
+      said: 'また変なあだ名で呼ばれて、「冗談だろ？」と言う。',
+      mean: 'Are you kidding me? ＝ 冗談でしょ？ ここでは「いいかげんにしてよ」といういら立ち。',
+      trap: 'kidding（冗談）から、楽しんでいると思いやすい。からかわれた直後の一言。',
+      use: 'Are you kidding me? It’s closed?（うそでしょ？閉まってるの？）' },
+
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'slack', seg: [125.4, 133.3],
-      stem: 'What does Tom say a new hire would need to do?',
+      stem: 'What does Tom say a new hire would need to do?', ja: '新しく雇う人は何をする必要があると、トムは言う？',
       choices: ['Take on the work Jerry left', 'Ease the tension in the office', 'Pick up the files Jerry dropped'], a: 0,
-      cue: 'Jerry’s gone のあと、hire someone に続く言い方。',
+      choicesJa: ['ジェリーが残した仕事を引き受ける', '職場の空気をやわらげる', 'ジェリーが落とした書類を拾う'],
+      cue: '「hire someone」のあと',
       line: 'now that Jerry’s gone, we need to hire someone to *pick up the slack*',
-      said: '「Jerry が抜けたから、穴を埋める人を雇わないと」と言う。',
+      said: '「ジェリーが抜けたから、穴を埋める人を雇わないと」と言う。',
       mean: 'pick up the slack ＝ 抜けた人の分の仕事を引き受ける。',
-      trap: 'pick up を「拾う」、slack を「ゆるみ」と一語ずつ取ると別の意味。まとめて覚える。',
+      trap: 'pick up を「拾う」と一語ずつ取ると、別の意味に思いやすい。まとめて覚える。',
       use: 'Can you pick up the slack this week?（今週、穴を埋めてくれる？）' },
 
-    // R fix: V2 (blind 65 %): "forgets the word" was a filler; now "a kid, not an adult", a literal reading of "not a person"
-    // why: part-time ← "not a person" heard as "not a full person" = less than full-time; kid ← "not a person" heard as
-    //   "not a grown-up", since interns are young; "Not a person. An intern." sets intern against person, nothing else
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'notperson', seg: [125.4, 133.3],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'notperson', seg: [125.4, 133.3], retired: true,
       stem: 'Why is Tom’s correction after “A new person in the office?” funny?',
       choices: ['He talks as if interns aren’t real people', 'He means the hire would only be part-time',
                 'He means a kid, not a grown adult'], a: 0,
@@ -146,24 +145,17 @@ export const tomSwagger: Clip = {
       trap: '「人じゃない」を「大人じゃない」と取りやすいが、ここは「人」か「インターン」かの区別そのもの。',
       use: 'Not a vacation. A work trip.（休暇じゃない。出張だよ）' },
 
-    // why: cheap/hard-working ← the usual case for interns (the script); learn fast ← "cost nothing" heard right, the
-    //   second half filled in with the usual praise; "stupid and terrible, so they get no work done" settles it
     { id: 'd1', skill: 'detail', level: 'B1', point: 'whyintern', seg: [133.1, 143.7],
-      stem: 'What two reasons does Tom give Ron for an intern?',
-      choices: ['They’re free, and they get nothing done', 'They’re cheap, and they work very hard',
-                'They’re free, and they learn the job fast'], a: 0,
-      cue: 'importantly のあと、so で終わる部分。',
+      stem: 'What two reasons does Tom give Ron for an intern?', ja: 'インターンを入れる理由として、トムがロンに言う二つは？',
+      choices: ['They’re free and do nothing', 'They’re cheap and work hard', 'They’re free and learn fast'], a: 0,
+      choicesJa: ['タダで、仕事をしない', '安くて、よく働く', 'タダで、覚えるのが早い'],
+      cue: '「so」のあとの部分',
       line: 'Interns *cost nothing*… they’re usually stupid and terrible, so they *get no work done*.',
-      said: '「インターンは税金がかからない。しかも大抵ダメだから、仕事が進まない」。',
-      mean: '仕事が進まないことを長所として挙げている。政府嫌いの Ron に向けた売り込み。',
-      trap: 'インターンをほめる話だと思うと「よく働く」を選びやすい。so のあとの結果を聞く。',
+      said: '「インターンは税金がかからない。しかもダメだから仕事が進まない」。',
+      mean: 'cost nothing ＝ お金がかからない。仕事が進まないことを長所にしている。',
+      trap: 'インターンをほめる話だと思うと「よく働く」を選びやすい。so のあとを聞く。',
       use: 'More importantly, it’s free.（もっと大事なのは、タダってこと）' },
 
-    // R fix: V2 (blind 60 %): two "work" distractors left the key as the odd one out; "files" is now "take the blame for
-    //   slow work", a wrong implication of "no work done"
-    // why: Jerry's work ← his opening "pick up the slack" taken at face value; blame ← "they get no work done" heard as a
-    //   handy excuse; "like a Jerry you don't have to pay" names the role
-    // retired: the ear-check policy: the key reads “a Jerry”, both sources write “jury” (142.9 s); back if the ear says Jerry
     { id: 'i1', skill: 'infer', level: 'C1', point: 'jerrypay', reveals: ['whyintern'], seg: [133.1, 146.2], retired: true,
       stem: 'From Tom’s pitch, what would an intern mainly be for?',
       choices: ['Someone to be the new office joke', 'Someone to finish Jerry’s old work', 'Someone to blame when work is slow'], a: 0,
@@ -174,23 +166,28 @@ export const tomSwagger: Clip = {
       trap: '最初の「穴を埋める」を信じやすい。no work done の時点で仕事のためではない。',
       use: 'It’s like a gym you never have to go to.（行かなくていいジムみたいなもの）' },
 
-    // why: amused ← "Damn, son" heard as a joke reaction; annoyed ← "no work done" sounds like laziness Ron would hate;
-    //   "That is one compelling argument… we may destroy this government one day after all" is real praise
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'damnson', seg: [140.9, 151.0],
-      stem: 'How does Ron feel about Tom’s case for an intern?',
-      choices: ['Genuinely won over by it', 'Amused, but not convinced', 'Annoyed by how lazy it is'], a: 0,
-      cue: 'Damn, son のあと、argument と government の部分。',
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'damnson', seg: [140.9, 151.0],
+      stem: 'How does Ron feel about Tom’s idea?', ja: 'トムの案について、ロンはどう思っている？',
+      choices: ['He really likes it', 'He thinks it’s a joke', 'He hates how lazy it is'], a: 0,
+      choicesJa: ['すごく気に入っている', '冗談だと思っている', 'なまけた案でいやだ'],
+      cue: '「Damn, son」のあと',
       line: '*Damn, son.* That is one *compelling argument*… We may destroy this government one day after all.',
-      said: '「やるな。説得力がある。いつか政府をつぶせるかもな」。',
-      mean: '政府が小さくなるのが Ron の望み。仕事が進まないのは本気でほめる理由。',
-      trap: 'Damn は悪口に聞こえるが感心の声。皮肉なら keep it up と後押しはしない。',
-      use: 'That’s a pretty compelling argument.（なかなか説得力があるね）' },
+      said: '「やるな。説得力がある」と感心する。',
+      mean: 'compelling argument ＝ 説得力のある話。Damn, son ＝ 「やるじゃないか」と感心する声。',
+      trap: 'Damn を悪口だと思いやすい。ここは感心の声で、すぐ argument をほめている。',
+      use: 'That’s a pretty good argument.（なかなか説得力があるね）' },
 
-    // R fix: V2 (blind 55 %): the key was the only choice where Tom wants to talk; "hiding hurt" is now "teasing Ron for
-    //   never asking", a sarcastic reading of the same request
-    // why: test ← "Ask me…" heard as setting up a quiz; teasing ← an order to ask heard as a dig at Ron's coldness;
-    //   "I'm the new Jerry", said straight right after, shows he wants Ron to ask so he can pour it out
-    // retired: the ear-check policy: the key needs “Ask me” (whisper), the captions have “asked me” (200.2 s)
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wishicould', seg: [183, 188],
+      stem: 'How does Taylor answer the marriage question?', ja: '結婚の質問に、テイラーはどう答える？',
+      choices: ['He says no nicely', 'He says yes happily', 'He says maybe later'], a: 0,
+      choicesJa: ['やさしく断る', '喜んで受ける', 'またあとでと言う'],
+      cue: '質問のすぐあとの返事',
+      line: 'Do you want to marry me in April? — *Wish I could, man.* But I’m not a marriage dude.',
+      said: '「4月に結婚しない？」「できたらいいんだけど」。',
+      mean: 'Wish I could ＝ できたらいいんだけど（できない）。やわらかく断る決まり文句。',
+      trap: 'wish（願う）から、乗り気だと思いやすい。I could は「できない」の気持ち。but が続く。',
+      use: 'Wish I could, but I have work.（行きたいけど、仕事があって）' },
+
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'askme', seg: [198.2, 202.6], retired: true,
       stem: 'When Tom tells Ron what to ask him, what is he doing?',
       choices: ['Getting Ron to ask so he can vent', 'Testing whether Ron is listening', 'Teasing Ron for never asking about him'], a: 0,
@@ -201,10 +198,6 @@ export const tomSwagger: Clip = {
       trap: 'Ask me は命令形なので試験のように聞こえるが、自分の気持ちを話すきっかけ作り。',
       use: 'Ask me how my day was.（今日どうだったか聞いてよ）' },
 
-    // R fix: V2 (blind 60 %): "wasn't listening" was a filler; now "cuts Tom off", and the key no longer says "simply"
-    // why: Tom not sad ← "No" heard as the answer to "am I sad?"; cuts off ← a fast one-word reply heard as an
-    //   interruption, but Tom has finished; the request was to ask, and "No" refuses the request
-    // retired: the ear-check policy: the key needs “Ask me” (whisper), the captions have “asked me” (200.2 s)
     { id: 'h2', skill: 'humor', level: 'C1', point: 'askme', seg: [198.2, 202.6], retired: true,
       stem: 'Why is Ron’s one-word reply funny?',
       choices: ['He turns down the request itself', 'He answers for Tom that he isn’t sad', 'He cuts Tom off before he can finish'], a: 0,
@@ -215,54 +208,41 @@ export const tomSwagger: Clip = {
       trap: 'No を「君は悲しくない」という答えと取りやすい。頼まれたのは聞くこと。何への No かを考える。',
       use: 'Can I vent for a minute? — No.（ちょっと愚痴っていい？—だめ）' },
 
-    // R fix: V2 (blind 60 %): "Coldly: earned it" was weak; now a near miss that shares "Bluntly: stop complaining" and
-    //   differs only in the push ("accept it" vs "fight back")
-    // why: gently ← "Ask me if I'm sad" just before, so a kind question seems due; accept ← "is whining gonna do anything"
-    //   heard as "nothing can be done"; "Stand up for yourself" is a push to fight back
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'whining', seg: [202.5, 211.0],
-      stem: 'How does Ron answer when Tom says he’s the new Jerry?',
-      choices: ['Bluntly: stop complaining and fight back', 'Gently: he asks Tom why he feels sad',
-                'Bluntly: stop complaining and accept it'], a: 0,
-      cue: 'whining のある疑問文と、最後の命令文。',
-      line: '…*whining* gonna do anything about it? … *Stand up for yourself.*',
-      said: '「泣き言で何か変わるか？やられ役になりたくないなら、立ち向かえ」と言う。',
-      mean: '慰めはしないが、見捨ててもいない。Ron なりの厳しい励まし。',
-      trap: '最初の疑問文を「どうにもならない」と取りやすい。最後の命令文が、言い返せというひと押し。',
+    { id: 'a3', skill: 'phrase', level: 'B1', point: 'whining', seg: [202.5, 211.0],
+      stem: 'What does Ron tell Tom to do?', ja: 'ロンはトムに何をしろと言う？',
+      choices: ['Fight back for himself', 'Accept being the Jerry', 'Talk about his feelings'], a: 0,
+      choicesJa: ['自分のために立ち向かう', 'いじられ役を受け入れる', '気持ちを話す'],
+      cue: '最後の短い命令',
+      line: 'Is whining gonna do anything about it? … *Stand up for yourself.*',
+      said: '「泣き言で何か変わるか？自分のために立ち向かえ」と言う。',
+      mean: 'stand up for yourself ＝ 自分を守るために言い返す。whining ＝ 泣き言、文句。',
+      trap: '最初の質問で「どうにもならない」と言われたと思いやすい。最後の命令が答え。',
       use: 'Stand up for yourself.（自分のために言い返しなよ）' },
 
-    // why: 2 ← "twelve" heard without its first sound as "two" plus "years"; 20 ← twelve/twenty, both start "tw"
     { id: 'n2', skill: 'number', level: 'B1', point: 'twelve', seg: [213.2, 219.95], keep: true,
-      stem: 'How long did it take Tom to reinvent himself?',
+      stem: 'How long did it take Tom to change himself?', ja: 'トムが自分を変えるのに、どれくらいかかった？',
       choices: ['2 years', '12 years', '20 years'], a: 1,
-      cue: 'it sucked のあと、took me に続く数。',
+      choicesJa: ['2年', '12年', '20年'],
+      cue: '「took me」のあと',
       line: 'It took me *12 years*, but I reinvented myself.',
-      said: '「12年かかったけど、自分を作り変えた」と話す。',
-      mean: 'いじられた子ども時代から、長い時間で今の自分になった。',
-      trap: 'twelve と twenty は最初が同じ。twelve は lv で短く終わり、twenty は ty が付く。',
+      said: '「12年かかったけど、自分を変えた」と話す。',
+      mean: 'It took me 〜 ＝ 〜かかった。',
+      trap: 'twelve と twenty は出だしが同じ。twelve は短く終わり、twenty は ty がつく。',
       use: 'It took me two years to save up.（貯めるのに2年かかった）' },
 
-    // R fix: V2 (blind 60 %): "show he doesn't care" was weak; now "blend in", a wrong reading of "lean into it"
-    // why: cheer up ← shopping after a bad day is the usual comfort script; blend in ← "lean into it" heard as fitting in
-    //   quietly; "Back to being a Jerry… might as well" gives up and goes all in
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'leaninto', seg: [221.5, 233.7],
-      stem: 'Why does Tom plan to buy sweatpants and a Nicholas Sparks novel?',
-      choices: ['To go all in on being the Jerry', 'To cheer himself up after a bad day',
-                'To blend in so they’ll leave him alone'], a: 0,
-      cue: 'novel の文のあと、最後の短い一言。',
-      line: 'Back to being a Jerry… might as well *lean into it*.',
-      said: '「また Jerry に逆戻り。どうせなら、とことんそれらしく」。',
-      mean: 'lean into it ＝ 避けられないことを、むしろ進んで受け入れる。',
-      trap: '買い物は気晴らしと取りやすい。might as well（どうせなら）が「あきらめて乗る」合図。',
-      use: 'It’s raining, so let’s lean into it.（雨だし、いっそ楽しもう）' },
+    { id: 'f3', skill: 'infer', level: 'B2', point: 'leaninto', seg: [222, 233.7],
+      stem: 'Why does Tom plan to buy sweatpants and a novel?', ja: 'トムはなぜスウェットパンツと小説を買うつもり？',
+      choices: ['He gives up and accepts it', 'He wants to cheer himself up', 'He wants to fit in quietly'], a: 0,
+      choicesJa: ['あきらめて受け入れる', '自分を元気づけたい', '目立たずなじみたい'],
+      cue: '最後の短い一言',
+      line: 'Back to being a Jerry… *might as well lean into it*.',
+      said: '「またジェリーに逆戻り。どうせならとことん」。',
+      mean: 'might as well 〜 ＝ どうせなら〜しよう。lean into it ＝ むしろ進んで受け入れる。',
+      trap: '買い物は気晴らしだと思いやすい。might as well が決め手。',
 
-    // C2 humor: who the joke is on, and how a self-correction lands
-    // anchor: 234.1–242.1 s "He's a grown man. Well, half grown." then "he rents out his clothes to twelve-year-olds":
-    //   the subject is "he" throughout, and kid-sized clothes prove the dig
-    // R fix: V2 (blind 55 %): the kids distractor was weak; it is now a fond joke that backs up the praise, the near miss
-    //   a fluent non-native picks
-    // why: worry ← "half grown" heard as "too young", but he opens with "Tom can take care of himself"; fond ← a light
-    //   tone heard as support, yet "Well, half" lowers "grown man" and the clothes line proves the dig
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'grown', seg: [233.6, 242.3],
+      use: 'It’s late. We might as well stay.（遅いし、もう泊まっていこう）' },
+
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'grown', seg: [233.6, 242.3], retired: true,
       stem: 'To the camera, how does Ron’s “Well, half grown” land?',
       choices: ['As a dig that half takes back his praise', 'As a worry that Tom is too young for this',
                 'As a fond joke that backs up his praise'], a: 0,
@@ -273,61 +253,48 @@ export const tomSwagger: Clip = {
       trap: '軽い言い方なので味方の冗談と取りやすい。Well, half は直前のほめ言葉を下げる合図。',
       use: 'She’s an expert. Well, sort of.（彼女は専門家。まあ、一応ね）' },
 
-    // R fix: V2 (blind 50 %): "quit to try something new" was weak; now "quit; wasn't fired", sharing the key's second half
-    // why: fired ← fired/retired share "-ired", and "fired" comes first; quit ← "wasn't fired" heard right, but "retired"
-    //   swapped for the commoner "quit"; "I wasn't fired. I retired." settles it
     { id: 'd2', skill: 'detail', level: 'B1', point: 'fired', seg: [243.8, 250.6],
-      stem: 'What does Jerry say about how he left his job?',
-      choices: ['He retired; he wasn’t fired', 'He was fired; he didn’t retire', 'He quit; he wasn’t fired'], a: 0,
-      cue: '最初の否定文と、そのあとの短い文。',
+      stem: 'How did Jerry leave his job, he says?', ja: 'ジェリーは、自分はどうやって仕事を辞めたと言う？',
+      choices: ['He retired', 'He was fired', 'He quit'], a: 0,
+      choicesJa: ['退職した', 'クビになった', '自分で辞めた'],
+      cue: '否定の文のあとの短い文',
       line: 'I *wasn’t fired*. I *retired*.',
       said: '「クビじゃない。退職したんだ」と言うが、「みんなそう言う」と返される。',
-      mean: 'retire ＝ 定年などで仕事を辞める。fire ＝ 解雇する。',
-      trap: 'fired と retired は語尾が同じ。最初の wasn’t の否定と、re の音で聞き分ける。',
-      use: 'I didn’t quit. I was let go.（辞めたんじゃない、切られたの）' },
+      mean: 'retire ＝ 引退する、退職する。fire ＝ クビにする。',
 
-    // R fix: V2 (blind 65 %): "stop the teasing" was weak; now "gives Jerry his old job back", the near miss that
-    //   "a couple hours a week until we find a permanent replacement" refutes
-    // why: new intern ← Tom's own plan earlier (an intern to tease), and Ron says the intern "wasn't working out";
-    //   old job ← "I asked Jerry to come in" heard as rehiring him; it is a few hours a week, until a replacement
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['hearing'], seg: [243.8, 288.4],
-      stem: 'In the end, how does Ron deal with Tom’s problem?',
-      choices: ['He has Jerry drop in once a week', 'He hires another intern to be teased', 'He gives Jerry his old job back'], a: 0,
-      cue: '最後に戻ってきた人と、来る時間の長さ。',
-      said: 'インターンは辞めさせ、Jerry を週に一度呼び戻す。',
-      mean: 'いじられ役を Jerry に戻して、Tom を「新しい Jerry」から外している。',
-      trap: 'Jerry が戻るので復職と取りやすい。週に数時間、代わりが見つかるまで、という条件を聞く。',
+      trap: 'fired と retired は終わりが同じ音。最初の wasn’t の否定と、re の音で聞き分ける。',
+      use: 'My father retired last year.（父は去年退職した）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'fix', reveals: ['hearing'], seg: [243.8, 288.4],
+      stem: 'In the end, how does Ron help Tom?', ja: '最後に、ロンはどうやってトムを助ける？',
+      choices: ['Jerry comes back once a week', 'He hires another intern', 'He gives Jerry his old job'], a: 0,
+      choicesJa: ['ジェリーが週に一度来る', '別のインターンを雇う', 'ジェリーを元の仕事に戻す'],
+      cue: '最後に戻ってきた人',
+      said: 'インターンは辞めさせ、ジェリーを週に一度呼び戻す。',
+      mean: 'once a week ＝ 週に一度。からかわれ役をジェリーに戻して、トムを助けている。',
+      trap: 'ジェリーが戻るので、元の仕事に戻ったと思いやすい。週に数時間だけ。',
       use: 'Welcome back! We missed you.（おかえり！寂しかったよ）' },
 
-    // R fix: V2 (blind 60 %): "in writing" was a filler; now "accepts it and backs down", "noted" read as agreement
-    // why: think again ← Japanese 検討します frame (noted = 承りました, a soft promise); backs down ← "noted" heard as "you're
-    //   right"; "Once again, noted" right after "Once again, I object" mirrors and dismisses it, and the plan goes ahead
-    //   (seg now runs on through "I have also asked Jerry to come in…", which shows the plan going ahead)
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'noted', seg: [255.1, 265.9],
-      stem: 'When the objection comes again, what does Ron’s short reply do?',
-      choices: ['Hears the complaint and changes nothing', 'Promises to think it over once more',
-                'Accepts the complaint and backs down'], a: 0,
-      cue: '反対の言葉と、同じ出だしで始まる返事。',
+      stem: 'What does Ron mean by “Once again, noted”?', ja: '“Once again, noted” で、ロンは何を言いたい？',
+      choices: ['I heard you, but no change', 'I will think about it again', 'You are right, I’ll stop'], a: 0,
+      choicesJa: ['聞いたけど、何も変えない', 'もう一度考えてみる', 'きみが正しい、やめるよ'],
+      cue: '反対の言葉への返事',
       line: 'Once again, I object in the strongest possible terms. — *Once again, noted.*',
-      said: '「改めて強く反対」に、「改めて、聞いておく」と同じ形で返す。',
-      mean: 'noted は「聞いた」だけ。同じ形で返して、反対を受け流している。',
-      trap: '日本語の「承りました」のように前向きに取りやすい。行動が続かなければ、そのまま。',
-      use: 'Your concern is noted.（ご意見は承りました）' },
+      said: '「改めて強く反対します」に、「改めて、聞いておく」と返す。',
+      mean: 'noted ＝ 聞いておく、メモした。聞くだけで、考えは変えないという返事。',
+      trap: '「承りました」のように前向きに思いやすい。すぐあとにジェリーの話を続けている。',
+      use: 'Thanks, noted.（了解、覚えておきます）' },
 
-    // R fix: V2 (blind 70 %): "help Tom clear his work" was a filler; now "watched to make sure he works", built on
-    //   "watch him eat… anything he might do or say"
-    // why: train intern ← "until we find a permanent replacement" heard as Jerry training the next hire; watched ← "watch
-    //   him" and "anything he might do" heard as checking up on him; "everyone will get to" makes it a treat, not a check
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'hearing', seg: [266.2, 279.0],
-      stem: 'What do Ron’s words about Jerry’s weekly visit suggest?',
-      choices: ['The teasing will land on Jerry, not Tom', 'Jerry will train the next new intern', 'Jerry will be watched to make sure he works'], a: 0,
-      cue: 'son のあと、みんなが「何をできるか」の列。',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hearing', seg: [266.6, 278.6],
+      stem: 'Why does Ron bring Jerry back?', ja: 'ロンはなぜジェリーを呼び戻す？',
+      choices: ['So people tease Jerry, not Tom', 'So Jerry can train an intern', 'So Jerry can finish his work'], a: 0,
+      choicesJa: ['トムでなくジェリーがからかわれるように', 'ジェリーがインターンを教えるため', 'ジェリーが仕事を終えるため'],
+      cue: '「everyone will get to」のあと',
       line: 'Are you hearing me, son? … everyone will get to *watch him eat* and *talk to him about anything*…',
-      said: '「聞いてるか。Jerry は週1で来て、みんなが何でも話のネタにできる」。',
-      mean: 'いじられ役を Jerry に戻して、Tom を助ける手。',
-      trap: 'watch him を「見張る」と取りやすい。get to（〜できる）は楽しみの言い方で、列はからかう材料。',
-      use: 'Are you hearing me?（ちゃんと聞いてる？分かってる？）' },
-    // R drop: nt1 (C2 pragma) — the same fact as i2 (point `hearing`), and blind-guessable at 60 % (only the key named
-    //   Jerry); never shipped, so deleted; the bank keeps two C2 items (nt3, nt2)
+      said: '「聞いてるか。ジェリーは週1で来て、みんな何でも話のネタにできる」。',
+      mean: 'get to 〜 ＝ 〜できる（楽しみ）。からかう相手をジェリーに戻して、トムを助けている。',
+      trap: 'watch him を「見張る」と思いやすい。並ぶのは、からかう材料。',
+      use: 'Are you hearing me?（ちゃんと聞いてる？）' },
   ]
 };
