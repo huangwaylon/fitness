@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 11, rewrite 7, retire 3, new 3
 // “Monica Helps Rachel Connect with Mark | Friends” (the official Friends channel, Best of Season 3): Mark hasn't
 // called, a friend talks Rachel into calling him herself (over Ross's "only good things for you"), the call gets her a
 // job interview and a prep lunch, and once she's gone Ross rants about the lunch until he's told to trust her and
@@ -5,16 +6,9 @@
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈150.5 s. Ross is addressed by name at
 // 128.7 s, and his lines are tied together by "Look, Rach", "you only want good things for me" and "my girlfriend";
 // the other friends are never named, so stems say "a friend" and no item turns on who they are. Untested on purpose:
-// 56–58 s (whisper "I'll hold", captions "a hole"), 64–66 s (whisper "But it's", captions "That is": only "so made
-// up" is used), 93–96 s (whisper "I call her in baggy pants, say I'm a pro", captions "High collar and baggy pants.
-// See, I'm a pro"; speakers unclear), 100.9 s ("You go get 'em": speaker), 112 s (whisper "now he's gonna prep her",
-// captions "now I was going to prep her": kept out of every line and key), 134–137 s ("sleep with her": trimmed from
-// nt2's line), 141.3–142.6 s (whisper "Well, yeah, I—", captions "Well, yeah, I do").
-// REVIEW 2026-11-16: pass 6, fix 16, drop 0, new 0; ear checks 1 (s1 and x2 dropped: both sources agree on the words).
-// Open: d2's worrier is probably Ross (the reply says "He gave *her*…"); the stem no longer names anyone, but the
-//   header's "Ross's lines are tied together…" reading should be checked by ear if any later item leans on it.
-// EAR CHECK: 149.5 s nt3, g2 — "You grow up!" is Ross's (the one just told "Grow up!"), after a gap of ≈5 s
-//   (captions 144.4–149.5 s, whisper 144–147 s; both have the words)
+// 56–58 s ("I'll hold" / "a hole"), 64–66 s (only "so made up" is used), 93–96 s (speakers unclear), 100.9 s, 110–117 s
+// (the "surgically remove the boyfriend" joke), 134–137 s ("sleep with her"), 141.3–142.6 s.
+// EAR CHECK: 149.5 s g2 — "You grow up!" is Ross's (the one just told "Grow up!"), after a gap of ≈5 s
 import type { Clip } from '../types.ts';
 
 export const markCall: Clip = {
@@ -23,27 +17,35 @@ export const markCall: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %): only the key was upsetting; "called… to cancel" is now an upsetting near-sound reading
-    // why: called late ← the t of "didn't" lost, so it sounds like "did", and "Sunday night" heard as the time of a
-    //   call; to cancel ← "did call" plus "Sunday night" heard as a call about their plans
     { id: 'd1', skill: 'detail', level: 'B1', point: 'nocall', seg: [0, 4.25],
       stem: 'What is Rachel upset about at the start?',
-      choices: ['Mark didn’t call her by Sunday night', 'Mark called her late on Sunday night',
-                'Mark called on Sunday night to cancel'], a: 0,
+      ja: '最初、レイチェルは何に怒っている？',
+      choices: ['Mark didn’t call', 'Mark called late', 'Mark called to cancel'], a: 0,
+      choicesJa: ['マークが電話してこない', 'マークの電話が遅かった', 'マークが断りの電話をした'],
       cue: 'he のあと、動詞の前の短い語の終わり。',
       line: 'I can’t believe Mark *didn’t call*! It’s Sunday night, and he *didn’t call*.',
       said: '「マークが電話してこない。もう日曜の夜なのに」と2回くり返す。',
-      mean: '日曜の夜までに連絡が来るはずだった。待ちくたびれている。',
-      trap: 'didn’t の t は消えやすく did に聞こえる。can’t believe だけで決めず、n の音を聞く。',
+      mean: 'can’t believe 〜 ＝ 〜なんて信じられない。日曜の夜までに連絡が来るはずだった。',
+      trap: 'didn’t の t は消えやすく did に聞こえる。n の音を聞く。',
       use: 'I can’t believe she didn’t text back.（返信が来ないなんて信じられない）' },
 
-    // R fix: V2 (blind 65 %): "bored" was a filler; now "cheer her up", a kind reading of the reply
-    // why: truly sorry ← "Yeah" heard as agreement (the Japanese そうだね frame), helped by Ross's "genuinely sorry"
-    //   next; cheer her up ← "Look at you" heard as fond teasing to lift her mood
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'giddy', seg: [6.1, 9.9],
-      stem: 'How does Rachel take Ross’s one-word reply to her news?',
-      choices: ['She thinks he’s secretly glad about it', 'She thinks he truly feels sorry for her',
-                'She thinks he’s trying to cheer her up'], a: 0,
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bummer', seg: [1.5, 6.0],
+      stem: 'What does “Bummer” mean here?',
+      ja: 'ここでの「Bummer」はどういう意味？',
+      choices: ['That’s too bad', 'That’s great news', 'That’s not true'], a: 0,
+      choicesJa: ['それはがっかりだね', 'それはいい知らせ', 'それはうそだ'],
+      cue: '「he didn’t call」のあとの一語。',
+      line: 'It’s Sunday night, and he didn’t call. — *Bummer*.',
+      said: '「日曜の夜なのに電話がない」に、ロスが「がっかりだね」と一言。',
+      mean: 'Bummer ＝ がっかりだね・ついてないね（くだけた言い方）。',
+      trap: 'ロスはうれしそうなので、いい知らせと思いやすい。言葉の意味は「がっかり」。',
+      use: 'You can’t come? Bummer.（来られないの？がっかり）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'giddy', reveals: ['bummer'], seg: [6.1, 9.9],
+      stem: 'How does Rachel take Ross’s “Bummer”?',
+      ja: 'ロスの「Bummer」を、レイチェルはどう受け取る？',
+      choices: ['He’s secretly glad', 'He’s truly sorry', 'He wants to help'], a: 0,
+      choicesJa: ['本当は喜んでいる', '本当に気の毒に思っている', '助けたい'],
       cue: '「Yeah」のあとの決まり文句と、最後の形容詞。',
       line: '*Yeah, right.* Look at you. You’re *practically giddy*.',
       said: '「よく言うよ。ほとんど浮かれてるじゃない」と言い返す。',
@@ -52,35 +54,32 @@ export const markCall: Clip = {
       use: 'Yeah, right. You never get up early.（よく言うよ、早起きなんてしないくせに）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'workout', seg: [9.6, 13.3],
-      stem: 'Type what Ross says: “I’m genuinely sorry the Mark thing ___.” (3 words)', answer: "didn't work out",
+      stem: 'Type it: “I’m sorry the Mark thing ___.” (3 words)', answer: "didn't work out",
+      ja: '「…the Mark thing ___.」の3語を書こう。',
       cue: 'thing のあと、文の最後の3語。',
       line: 'No, I’m genuinely sorry the Mark thing *didn’t work out*.',
       said: '「マークの件がうまくいかなくて、本当に気の毒だと思ってる」と言う。',
       mean: 'work out ＝ うまくいく。計画や恋が実らなかったときの決まった言い方。',
-      trap: 'didn’t の t は消え、work‿out もつながって一語のように聞こえる。',
+      trap: 'didn’t の t は消え、work out もつながって一語のように聞こえる。',
       use: 'Sorry the trip didn’t work out.（旅行、だめになっちゃったね）' },
 
-    // R fix: K5 (§9.5): "Why do you just call Mark?" isn't real English; "Why'd you" (= why did you) is, and sounds close.
-    //   Ear check dropped: both sources say "don't you" (rubric addendum)
-    // why: why'd you ← the n of "don't" swallowed, "whydja" for "whydoncha"; won't ← the don't/won't vowel; didn't ←
-    //   the "why didn't you…" scolding script, as if the chance were already gone
     { id: 's1', skill: 'sound', level: 'B2', point: 'callmark', seg: [16.7, 20.0],
       stem: 'Fill the gap: “Wait a minute. ___ just call Mark?”',
-      choices: ['Why don’t you', 'Why’d you', 'Why won’t you', 'Why didn’t you'], a: 0,
-      cue: 'Wait a minute のあと、文頭の3語。',
+      ja: '「___ just call Mark?」の空所は？',
+      choices: ['Why don’t you', 'Why’d you', 'Why didn’t you'], a: 0,
+      choicesJa: ['〜したら？', 'なぜ〜したの？', 'なぜ〜しなかったの？'],
+      cue: 'Wait a minute のあと。',
       line: 'Wait a minute. *Why don’t you* just call Mark?',
       said: '「ちょっと待って。マークに電話しちゃえば？」と言う。',
-      mean: 'Why don’t you ～? は「～したら？」という提案。「ドンチュ」とつながる。',
-      trap: 'don’t の t が消えると Why’d you に聞こえやすい。n の鼻の音が残れば don’t。',
+      mean: 'Why don’t you 〜? は「〜したら？」という提案。「ドンチュ」とつながる。',
+      trap: 'don’t の t が消えると Why’d you に聞こえる。n が残れば don’t。didn’t なら「ディ」が入る。',
       use: 'Why don’t you just ask her?（彼女に聞いてみたら？）' },
 
-    // R fix: K5/V2 (blind 55 %): "Act yourself" isn't natural English and stood out; now "Make the first move"
-    // why: other plans ← "make stuff" heard as "make plans"; keep busy ← "make stuff happen" heard as doing things
-    //   to fill the time (the literal reading), against "sit here and wait"
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'happen', seg: [21.6, 26.4],
-      stem: 'What does the friend’s advice after “I mean…” come down to?',
-      choices: ['Make the first move instead of waiting', 'Make other plans instead of waiting',
-                'Keep busy so the waiting feels shorter'], a: 0,
+      stem: 'What does “make stuff happen” mean here?',
+      ja: 'ここでの「make stuff happen」はどういう意味？',
+      choices: ['Act instead of waiting', 'Make other plans', 'Keep busy while waiting'], a: 0,
+      choicesJa: ['待たずに自分から動く', 'ほかの予定を作る', '待つ間忙しくする'],
       cue: 'wait for him のあとの一文。',
       line: 'who says you have to sit here and wait for him? You’ve got to *make stuff happen*.',
       said: '「待ってるだけなんて誰が決めたの？自分から動かなきゃ」と勧める。',
@@ -88,14 +87,11 @@ export const markCall: Clip = {
       trap: 'make を「作る」と取ると、予定作りや気晴らしに聞こえる。happen までで一つ。',
       use: 'Don’t wait for luck. Make it happen.（運を待たずに、自分で動こう）' },
 
-    // R fix: S1/V1: the stem said Rachel voices the worry, but the reply "He gave *her* his home number" points to
-    //   someone else saying it (likely Ross); the stem is now speaker-free, so nothing turns on who
-    // why: too late ← "Sunday night" from her opening line; no number ← "home number" is said, in the opposite
-    //   relation (he gave it to her)
     { id: 'd2', skill: 'detail', level: 'B2', point: 'pushy', seg: [26.0, 32.3],
-      stem: 'What worry is raised about Rachel calling Mark herself?',
-      choices: ['That she’ll come across as too pushy', 'That Sunday night is too late to call',
-                'That she doesn’t have his home number'], a: 0,
+      stem: 'What worry is raised about calling Mark?',
+      ja: 'マークに電話することに、どんな心配が出る？',
+      choices: ['Seeming too pushy', 'Calling too late', 'Not having his number'], a: 0,
+      choicesJa: ['しつこく見える', '電話が遅すぎる', '番号を知らない'],
       cue: 'Yeah, but のあと、文の最後の語。',
       line: 'Yeah, but you don’t want to seem *too pushy*. — Honey, it’s not pushy.',
       said: '「しつこいと思われたくないでしょ」と心配が出るが、「全然しつこくない」と返される。',
@@ -103,13 +99,11 @@ export const markCall: Clip = {
       trap: 'home number は「もらった」話。Yeah, but のあとが本当の理由。',
       use: 'I don’t want to sound pushy, but…（しつこく聞こえたら悪いけど…）' },
 
-    // R fix: V2 (blind 70 %): "work line" was a filler; now a manners reading (calling a home is rude), the Japanese frame
-    // why: by mistake ← "He what?" heard as disbelief that Mark would give it out; rude ← "to his home?" heard as
-    //   worry about intruding (the Japanese frame), though Mark gave it himself
     { id: 'i1', skill: 'infer', level: 'C1', point: 'homenumber', seg: [29.6, 36.4],
-      stem: 'What lies behind Ross’s questions about the phone number?',
-      choices: ['A fear that Mark is interested in her', 'A doubt that Mark meant to give it out',
-                'A worry that calling him at home is rude'], a: 0,
+      stem: 'Why does Ross ask twice about the home number?',
+      ja: 'ロスはなぜ、自宅の番号のことを2回聞く？',
+      choices: ['He fears Mark likes her', 'He thinks Mark slipped up', 'He thinks calling home is rude'], a: 0,
+      choicesJa: ['マークが彼女を好きなのではと心配', 'マークがうっかりしたと思う', '家に電話するのは失礼だと思う'],
       cue: '「He what?」のあと、くり返しと言い直し。',
       line: 'He gave you his *home number*? *As in, like, to his home?*',
       said: '「自宅の番号を？つまり、彼の家につながる番号？」と2回確かめる。',
@@ -117,28 +111,23 @@ export const markCall: Clip = {
       trap: '聞き返しは事実確認に聞こえるが、同じ点を言い直すのは動揺の印。何をくり返すかを聞く。',
       use: 'Wait, his personal number? Like, his cell?（え、個人の番号？携帯ってこと？）' },
 
-    // R fix: V2/K6 (blind 60 %): the key had no clip words and an unclear "it"; choices now parallel, and the thank-you
-    //   one echoes "good things"
-    // why: his okay ← "you don't mind if I call" heard as asking permission (the literal reading); thanking ← "you
-    //   only want good things for me" taken as sincere praise (a sincerity flip)
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'goodthings', seg: [36.0, 43.8],
-      stem: 'Before dialing, what is Rachel doing with Ross’s earlier words?',
-      choices: ['Using them so he can’t say no to the call', 'Asking for his okay before she makes the call',
-                'Thanking him for wanting the best for her'], a: 0,
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'goodthings', seg: [36.0, 43.8],
+      stem: 'Why does Rachel repeat Ross’s “good things” words?',
+      ja: 'レイチェルはなぜ、ロスの「good things」を持ち出す？',
+      choices: ['So he can’t say no', 'To ask for his okay', 'To thank him'], a: 0,
+      choicesJa: ['彼が反対できないように', '彼の許可をもらうため', '彼にお礼を言うため'],
       cue: '「because」のあと、前に誰が言った言葉か。',
       line: 'you *don’t mind* if I call, *because you only want good things for me*. — That’s right. Good things.',
       said: '「電話していいよね。私にいいことだけ願ってるんだから」。彼は「そう」と返すしかない。',
-      mean: '相手の言葉で、反対できなくする逃げ道ふさぎ。',
+      mean: '相手が前に言った言葉を使って、反対できなくしている。',
       trap: 'don’t mind if は許可を聞く形だが、ここは言い切り。相手の言葉を持ち出したら、くぎを刺す合図。',
       use: 'You said you’d help, right? Great.（手伝うって言ったよね？よかった）' },
 
-    // R fix: V2 (blind 65 %): "dinner that night" was easy to rule out; now a lunch-date reading and a call-back reading
-    // why: lunch date ← "meet me for lunch" plus the date script with a man who gave out his home number; apology ←
-    //   "don't you apologize" is the clearest line early in the call
     { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['lunch'], seg: [46.6, 84.7],
       stem: 'What does Rachel get out of the phone call?',
-      choices: ['A job interview and help getting ready', 'A lunch date with Mark, and nothing more',
-                'An apology and a promise to call back'], a: 0,
+      ja: '電話で、レイチェルは何を手に入れる？',
+      choices: ['A job interview', 'A dinner date', 'An apology only'], a: 0,
+      choicesJa: ['仕事の面接', 'ディナーのデート', '謝罪だけ'],
       cue: '電話を切ったあと、最初の報告。',
       line: '*I got the interview.*',
       said: '電話を切って「面接が決まった」。ランチで準備も手伝ってもらえる。',
@@ -146,25 +135,35 @@ export const markCall: Clip = {
       trap: 'apologize は初めに聞こえるが、結果ではない。結果は切ったあとの一言で聞く。',
       use: 'Guess what? I got the job!（聞いて、仕事決まったの！）' },
 
-    // why: stuck at work ← "work" is said, in the wrong relation; lost it at home ← "left" heard as "lost", with
-    //   "home number" just before
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'excuse', seg: [59.3, 64.6],
-      stem: 'What excuse does Rachel pass on for Mark’s not calling?',
-      choices: ['He’d left her number at work', 'He’d been stuck at work all weekend', 'He’d lost her number at home'],
-      a: 0,
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'apologize', seg: [52.0, 57.0],
+      stem: 'What does Rachel tell Mark on the phone?',
+      ja: '電話で、レイチェルはマークに何と言う？',
+      choices: ['No need to say sorry', 'Please call back later', 'Say sorry once more'], a: 0,
+      choicesJa: ['謝らなくていい', 'あとでかけ直して', 'もう一度謝って'],
+      cue: '電話の最初のほう、Oh, no のあと。',
+      line: 'Oh, no, *don’t you apologize*.',
+      said: '「いえいえ、謝らないで」と明るく言う。',
+      mean: 'don’t you apologize ＝ 謝らないで（you を入れて強めた言い方）。',
+      trap: 'apologize（謝る）が聞こえるので「謝って」と思いやすい。前の don’t を聞く。',
+      use: 'Oh, don’t apologize. It’s fine.（謝らないで、大丈夫だよ）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'excuse', seg: [59.3, 64.6],
+      stem: 'What excuse does Rachel pass on for Mark?',
+      ja: 'マークの言い訳として、レイチェルは何を伝える？',
+      choices: ['He left it at work', 'He was busy all weekend', 'He lost it at home'], a: 0,
+      choicesJa: ['番号を職場に置いてきた', '週末ずっと忙しかった', '家でなくした'],
       cue: '「He」で始まる最初の文の最後。',
       line: 'He *left my number at work*. He was going to get it, but…',
       said: '「番号を職場に置いてきたんだって。姪の宿題を手伝ってたって」と伝える。',
       mean: 'left ＝ 置き忘れた。マーク本人の説明を、そのまま伝えている。',
-      trap: 'left を lost と聞くと「なくした」になる。leave ＋物＋場所は「～に置き忘れる」。',
+      trap: 'left を lost と聞くと「なくした」になる。leave ＋物＋場所は「〜に置き忘れる」。',
       use: 'I left my phone at the hotel.（ホテルに携帯を置いてきた）' },
 
-    // why: made peace ← "make up" as in making up after a fight; made up his mind ← "make up one's mind", the other
-    //   common "made up"
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [59.3, 67.5],
-      stem: 'What does the comment right after the excuse claim?',
-      choices: ['That Mark invented the whole story', 'That Mark and Rachel have made peace',
-                'That Mark has made up his mind'], a: 0,
+      stem: 'What does “so made up” mean here?',
+      ja: 'ここでの「so made up」はどういう意味？',
+      choices: ['A story he invented', 'They made peace', 'He made up his mind'], a: 0,
+      choicesJa: ['作り話', '仲直りした', '決心した'],
       cue: '「pioneers」のすぐあと、短い一言。',
       line: '…helping his niece with her report on the pioneers. — …so *made up*.',
       said: '姪の宿題の話に、すかさず「どう考えても作り話だ」と言う。',
@@ -172,38 +171,31 @@ export const markCall: Clip = {
       trap: 'make up には「仲直りする」「決める」もある。be＋made up は「作り話」。',
       use: 'That excuse sounds totally made up.（その言い訳、完全に作り話っぽい）' },
 
-    // why: tonight ← "Sunday night" from the opening, with "perfect" heard as eager; next Sunday ← "Sunday" is the
-    //   only day named before the call
     { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [68.1, 72.4], keep: true,
       stem: 'Which day does Mark suggest on the phone?',
+      ja: 'マークは電話で、いつを提案する？',
       choices: ['Tonight', 'Tomorrow', 'Next Sunday'], a: 1,
+      choicesJa: ['今夜', '明日', '次の日曜'],
       cue: '「oh my God」のあと、驚いた一語。',
       line: 'Yeah, oh, my God, *tomorrow*? That— no, it’s perfect.',
       said: '「えっ、明日？いや、ちょうどいい」と、驚きながら受ける。',
       mean: '急な日程に一瞬とまどうが、すぐ「完璧」と言い直す。それだけ乗り気だと分かる。',
-      trap: '冒頭の Sunday night が耳に残ると「今夜」に引かれる。驚いて聞き返した語が日にち。',
+      trap: '最初の Sunday night で「今夜」に引かれる。tonight は「トゥナイト」、tomorrow は「トゥモロウ」。',
       use: 'Tomorrow? Sure, that works for me.（明日？うん、大丈夫）' },
 
-    // R fix: K6 (blind 60 %): the key was the only choice without "interview"; no choice has it now
-    // why: dinner ← "lunch" swapped for a date-like dinner; drive her ← "prep" missed, and the offer guessed from
-    //   "meet me"
     { id: 'd4', skill: 'detail', level: 'B1', point: 'lunch', seg: [79.6, 84.7],
       stem: 'What else has Mark offered to do for Rachel?',
-      choices: ['Meet her for lunch and help her get ready', 'Take her out to dinner once it’s over',
-                'Drive her there and wait outside for her'], a: 0,
+      ja: 'マークは、ほかに何をすると言った？',
+      choices: ['Lunch and help getting ready', 'Dinner after it is over', 'A ride there and back'], a: 0,
+      choicesJa: ['ランチと準備の手伝い', '終わったあとのディナー', '行き帰りの送り迎え'],
       cue: '「even offered」のあと、文の最後まで。',
       line: 'He even offered to *meet me for lunch and prep me for it*.',
       said: '「ランチで会って、面接の準備まで手伝ってくれるって」と言う。',
       mean: 'prep は prepare の短い形。聞かれそうなことを一緒に練習してくれる。',
-      trap: 'lunch を夕食や送り迎えと取りやすい。even のあとは「そこまで」の追加。',
+      trap: 'lunch を夕食や送り迎えと思いやすい。even のあとは「そこまで」の追加。',
       use: 'Can you prep me for the meeting?（会議の準備、手伝ってくれる？）' },
 
-    // R fix: C2/V2 (blind 75 %): "barely knows Mark" was weak; now "showing off", the right target with the wrong motive
-    // why: doubts the job ← "expect nothing less" heard about how she'll do (the right mechanism, a doubt, aimed at
-    //   the wrong target); showing off ← the grudging "Yeah, well" heard as scorn for Mark's generosity, not suspicion
-    // anchor: 85–91 s a praise-shaped line opened by a grudging "Yeah, well," right after "that is amazing"; 113–128 s
-    //   Ross names it himself: "before you surgically remove the boyfriend", "taking my girlfriend out for a meal"
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'expect', seg: [84.6, 93.1],
+    { id: 'nt1', retired: true, skill: 'attitude', level: 'C2', point: 'expect', seg: [84.6, 93.1],
       stem: 'When Ross says he’d “expect nothing less”, what is he trying not to say?',
       choices: ['That he suspects Mark wants Rachel', 'That he doubts Rachel will get the job',
                 'That he thinks Mark is just showing off'], a: 0,
@@ -214,41 +206,43 @@ export const markCall: Clip = {
       trap: 'expect nothing less を彼女の結果の予想や、見せびらかしへの皮肉と取りやすい。的はあとの言葉で確かめる。',
       use: 'Oh, he’s generous. Very generous.（ああ、気前いいよね。すごくね）' },
 
-    // R fix: V2/V4 (blind 60 %): "let down" undersold the sarcasm; the key now says annoyed, and "grateful" became a
-    //   mixed reading so it isn't a flat sincerity filler
-    // why: hurt the friend ← "Did I hurt you in some way?" taken as a real question; glad ← "thank you very much"
-    //   taken at face value (a sincerity flip), softened by the hurt tone
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'blame', reveals: ['callmark'], seg: [102.9, 117.8],
-      stem: 'When Ross turns on the friend who suggested the call, how does he feel?',
-      choices: ['Annoyed that the friend gave Rachel the idea', 'Worried that he upset the friend earlier',
-                'Glad the friend helped Rachel, if a bit hurt'], a: 0,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'gotta', seg: [89.5, 93.5],
+      stem: 'Fill the gap: “I ___ figure out what I’m gonna wear.”',
+      ja: '「I ___ figure out what I’m gonna wear.」の空所は？',
+      choices: ['gotta', 'wanna', 'gonna'], a: 0,
+      choicesJa: ['〜しなきゃ', '〜したい', '〜するつもり'],
+      cue: '「I」のすぐあと。',
+      line: 'I *gotta* figure out what I’m gonna wear.',
+      said: '「何を着ていくか決めなきゃ」とレイチェルが言う。',
+      mean: 'gotta ＝ got to（〜しなきゃ）。t が軽い「ラ」の音で「ガラ」に近い。',
+      trap: '後ろの gonna（ガナ）と混ざりやすい。「ガラ」なら gotta、「ワナ」なら wanna。',
+      use: 'I gotta go. See you!（もう行かなきゃ。またね）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', reveals: ['callmark'], seg: [102.9, 111.0],
+      stem: 'How does Ross feel about the friend’s idea?',
+      ja: '友だちの案を、ロスはどう思っている？',
+      choices: ['Annoyed by it', 'Thankful for it', 'Happy about it'], a: 0,
+      choicesJa: ['いらいらしている', '感謝している', '喜んでいる'],
       cue: '相手の言葉をまねしたあとの、お礼の言い方。',
       line: 'What did I do to you? … “Why don’t you call him?” Well, *thank you very much*.',
       said: '「僕が何かした？」と詰め寄り、「電話したら？」をまねして「どうもありがとう」。',
-      mean: '本気のお礼ではない。「余計なことを言ってくれたな」という皮肉。',
-      trap: 'Did I hurt you? を本当の質問と取りやすい。まねのあとのお礼は、ほぼ皮肉。',
-      use: 'Oh, great idea. Thanks a lot.（ああ、名案だね。どうもありがとう）' },
+      mean: 'thank you very much は本気のお礼ではない。「余計なことを言ってくれたな」という気持ち。',
+      trap: 'お礼の言葉なので感謝と思いやすい。相手の言葉をまねしたあとのお礼は、たいてい皮肉。',
+      use: 'What did I do to you?（僕が何かした？）' },
 
-    // R fix: V2 (blind 75 %): "phones Mark himself" was a filler; now "agrees to try", which shares the key's first half
-    //   C4: 嫉妬 left the notes and 'expect' left reveals; with it, a drawn g2 shut out every C2 on play 3 (nt3 shares
-    //   its point), which the draw sim flagged
-    // why: drops it ← "Well, yeah, I do" (he does trust her) heard as the end of it; agrees ← the told-off half heard,
-    //   the reply after the gap missed
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'growup', seg: [102.9, 150.9],
-      stem: 'After Rachel leaves, how does the argument with Ross end?',
-      choices: ['He’s told to grow up, and says it back', 'He’s told to grow up, and agrees to try',
-                'He admits he trusts her and lets it go'], a: 0,
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'growup', seg: [106.0, 150.9],
+      stem: 'How does Ross’s argument with the friend end?',
+      ja: '友だちとの言い合いは、どう終わる？',
+      choices: ['He just says it back', 'He agrees to grow up', 'He calms down at last'], a: 0,
+      choicesJa: ['同じ言葉を言い返す', '大人になると約束する', 'やっと落ち着く'],
       cue: '最後のやりとりと、少し間をおいた一言。',
       line: '*Grow up!* … *You grow up!*',
       said: '「信じてるなら大人になって」と言われ、間をおいて「そっちこそ」と返す。',
-      mean: '言い合いは解決せず、子どもっぽい言い返しで終わる。本人の気はおさまっていない。',
+      mean: 'grow up ＝ 大人になる。言い合いは解決せず、子どもっぽい言い返しで終わる。',
       trap: 'yeah, I do で信じると認めるが、話は終わらない。結末は最後の一言で聞く。',
       use: 'Fine. We’ll talk about it later.（分かった。またあとで話そう）' },
 
-    // R fix: B1/N7: the key names the lunch (d4's point); reveals now has 'lunch'
-    // why: hospital job ← "surgically" taken literally and tied to the interview; work words ← "prep her as in…"
-    //   heard as poking fun at Mark's jargon, not at what the lunch is for
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'prep', reveals: ['expect', 'lunch'], seg: [110.4, 117.8],
+    { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'prep', reveals: ['expect', 'lunch'], seg: [110.4, 117.8],
       stem: 'Why is Ross’s second meaning of “prep” a joke?',
       choices: ['He makes the lunch sound like prep for cutting him out',
                 'He thinks Mark will be coaching her for a hospital job',
@@ -260,38 +254,31 @@ export const markCall: Clip = {
       trap: 'surgically を文字どおり取ると病院の話になる。the boyfriend は本人。',
       use: 'Dinner, as in a real date?（ディナーって、本当のデートってこと？）' },
 
-    // why: overreacting ← "Am I out of my mind?" heard as real self-doubt (the Japanese 反省 frame); honest opinion ←
-    //   the questions taken as real questions (the literal reading)
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['expect'], seg: [118.6, 128.7],
-      stem: 'When asked if he’s crazy, what do Ross’s own questions do?',
-      choices: ['Insist he’s being perfectly reasonable', 'Admit he might be overreacting a bit',
-                'Ask the friend for an honest opinion'], a: 0,
+      stem: 'What does Ross mean with “Am I out of my mind?”',
+      ja: '「Am I out of my mind?」で、ロスは何を言いたい？',
+      choices: ['He thinks he’s right', 'He thinks he’s wrong', 'He wants an opinion'], a: 0,
+      choicesJa: ['自分は正しいと思っている', '自分が悪いと思っている', '意見を聞きたい'],
       cue: '問いのくり返しのあとに続く、言い分。',
       line: '*Am I?* Am I out of my mind? … This dreamy guy is *taking my girlfriend out* for a meal.',
       said: '「僕が？正気じゃない？」と重ね、「素敵な男が僕の彼女を食事に連れ出すんだぞ」と言う。',
-      mean: '答えを求めない反語。「心配して当然だろ」と言い返している。',
-      trap: '自分を責める問いに聞こえやすい。問いのあとに理由が来たら反語。',
+      mean: 'out of my mind ＝ 正気じゃない。答えを求めない問いで「心配して当然だろ」と言い返す。',
+      trap: '自分を責める問いに聞こえやすい。問いのあとに理由が来たら、言い返し。',
       use: 'Am I wrong? It’s two in the morning!（僕が悪い？夜中の2時だよ！）' },
 
-    // why: keep it from her ← "even if you're right" (next line) heard as the point; help instead ← "about Rachel"
-    //   heard as a reproach that he isn't helping her
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'aboutyou', seg: [128.5, 134.3],
-      stem: 'When a friend first answers Ross’s rant, what is the point?',
-      choices: ['He is making Rachel’s good news about himself', 'He is right, but should keep it from Rachel',
-                'He is the one who should help Rachel instead'], a: 0,
-      cue: '名前を呼んだあとの2文の対比。',
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'aboutyou', seg: [128.5, 134.3],
+      stem: 'What is the friend’s point to Ross?',
+      ja: '友だちは、ロスに何を言いたい？',
+      choices: ['He makes it about himself', 'He should keep it secret', 'He should help Rachel'], a: 0,
+      choicesJa: ['自分の話にしている', '秘密にすべき', 'レイチェルを手伝うべき'],
+      cue: '名前を呼んだあとの2文。',
       line: 'this *isn’t even about you*. I mean, this is about Rachel and *something wonderful happening for her*.',
       said: '「これは君の話じゃない。レイチェルにいいことが起きてる話だ」と言う。',
-      mean: '自分の不安ばかり話す彼に、主役はレイチェルだと示す。',
-      trap: 'about Rachel を「手伝って」と取りやすい。not A, B の形は A を消して B を立てる。',
+      mean: 'it isn’t about you ＝ あなたの話じゃない。主役はレイチェルだと示す。',
+      trap: 'about Rachel を「手伝って」と思いやすい。not A, B の形は A を消して B を立てる。',
       use: 'This isn’t about me. It’s about the team.（これは私の話じゃない。チームの話だ）' },
 
-    // R fix: C2/V2 (blind 65 %): "warn her before the lunch" was far off; now "it's only a lunch", a scope near miss
-    // why: only a lunch ← the concession heard, then the point taken as "it's harmless", not "it's her call"; he won't want anything
-    //   ← the concession missed, heard as plain reassurance that Mark is harmless (the wrong direction)
-    // anchor: 134.9–141 s "even if you're right" grants Mark's motive; "Does that mean he gets to?" and "don't you
-    //   trust her?" put the choice with Rachel
-    { id: 'nt2', skill: 'infer', level: 'C2', point: 'trust', seg: [133.9, 141.25],
+    { id: 'nt2', retired: true, skill: 'infer', level: 'C2', point: 'trust', seg: [133.9, 141.25],
       stem: 'Which plain-English version keeps the friend’s point after “even if you’re right”?',
       choices: ['“Wanting her doesn’t mean he gets her; it’s her call.”',
                 '“Even if he wants her, it’s only a lunch.”',
@@ -303,23 +290,16 @@ export const markCall: Clip = {
       trap: 'you’re right だけ拾うと同意に聞こえる。even if は仮の話で、言いたいことは続く問いにある。',
       use: 'Even if it rains, so what?（雨が降ったとしても、だから何？）' },
 
-    // R fix: B1/N7: the stem shows "Grow up!" (g2/nt3's point); reveals now has 'growup'. Ear check dropped: both
-    //   sources say "get over yourself" (rubric addendum)
     { id: 'x2', skill: 'dict', level: 'B2', point: 'overyourself', reveals: ['growup'], seg: [141.2, 145.2],
       stem: 'Type the friend’s reply: “Then ___. Grow up!” (3 words)', answer: 'get over yourself',
+      ja: '「Then ___. Grow up!」の3語を書こう。',
       cue: 'Then のあと、Grow up の前の3語。',
       line: 'Then *get over yourself*. Grow up!',
       said: '「だったら自分中心はやめて。大人になって！」と突き放す。',
       mean: 'get over yourself ＝ 自分を特別扱いするな。信じているなら騒ぐな、という結論。',
-      trap: 'get over の t は弾んで「ゲロウヴァ」に近く、yourself ともつながる。',
+      trap: 'get の t は軽い「ラ」の音で「ゲロウヴァ」に近く、yourself ともつながる。',
       use: 'Oh, get over yourself. It’s just a game.（もう、大げさだよ。ただのゲームでしょ）' },
 
-    // R fix: C2/V2 (blind 70 %): the key was the only one explaining itself at length; all three now give a target and
-    //   a reason of the same size
-    // why: the friend ← the mirrored "you" heard as a fair hit back at the one who started it (the right mechanism,
-    //   the wrong target); Mark ← he's the cause of the anger, so the line heard as meant for him (a scope shift)
-    // anchor: 143.9 s "Grow up!", then after a gap of ≈5 s (captions 144.4–149.5, whisper 144–147) "You grow up!":
-    //   a late "no, you" that copies the two words, the very childishness he was just told off for
     { id: 'nt3', skill: 'humor', level: 'C2', point: 'growup', seg: [141.2, 151.0],
       stem: 'Who is the joke on in the reply to “Grow up!”?',
       choices: ['Ross, whose comeback is just what he was told off for',
