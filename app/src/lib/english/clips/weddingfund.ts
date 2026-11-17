@@ -1,14 +1,10 @@
-// REVIEW 2026-11-16: pass 5, fix 14, drop 1, new 0; ear checks 1
-// Open question: nt1's notes assume “Clearly I did not start drinking enough…” (54.4 s) is Chandler's; confirm by ear.
+// A2 REVIEW 2026-11-17: keep 8, rewrite 6, retire 4, new 1
 // “Monica's Parents Spent All of Her Wedding Money | Friends” (the official Friends channel, Best of Season 7): at
 // dinner Monica brings up the wedding fund, and her parents explain, one excuse at a time, that it became the beach
 // house, that the second savings became a kitchen, and that the rest went on her father's plan to sell ice online.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 75 s. Her mother is placed by her own
 // words (“your father”, 61.5 s) and her father by her reply to him (“Stupid, Jack”, 68.1 s). Untested on purpose:
-// 11–13.6 s (captions “what you tell Jack I can't do it”, whisper “what you told jack”: who says what is unclear),
-// 57–60 s (Monica's “I can't believe… no money”: captions start at “money”), 73.8 s (who says “Good luck, Chandler”).
-// EAR CHECK: 54.4 s nt1 — “Clearly I did not start drinking enough…” taken as Chandler's (no name is said; whisper
-//   has “clearly”, the captions start at “I”); the key rests on “it was Chandler”, the wince only confirms it
+// 11–13.6 s (who says what is unclear), 54.4 s (who says “Clearly I did not start drinking enough”), 73.8 s.
 import type { Clip } from '../types.ts';
 
 export const weddingFund: Clip = {
@@ -17,48 +13,42 @@ export const weddingFund: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // why: how much ← "big withdrawal" heard as a question about the amount; cost a lot ← "big" taken as the price of
-    //   the wedding, said as a warning
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'withdraw', seg: [0, 6.1],
-      stem: 'At the start, how does Monica bring up the money?',
-      choices: ['Announcing, lightly, that they’ll want it soon', 'Asking, politely, how much is in the fund',
-                'Warning, gently, that the wedding will cost a lot'], a: 0,
-      cue: '「wedding plans」のあと、I guess で始まる部分。',
+      stem: 'How does Monica bring up the money?',
+      ja: 'モニカはお金の話をどう切り出す？',
+      choices: ['She says they’ll need it soon', 'She asks how much it holds', 'She says it costs a lot'], a: 0,
+      choicesJa: ['もうすぐ必要になると言う', 'いくらあるか聞く', 'お金がかかると言う'],
+      cue: '「wedding plans」のあと',
       line: 'I guess pretty soon *we’ll be making a big withdrawal* from the Monica wedding fund.',
-      said: '「そろそろ結婚資金から大きく引き出すことになるかな」と言う。',
-      mean: '銀行の言い方を借りた、軽い「お金をお願いね」。I guess で頼みを柔らかくしている。',
-      trap: 'big を金額や費用の質問と取りやすい。聞いているのでなく、これからの予定として伝えている。',
-      use: 'I guess I’ll be needing a ride soon.（そろそろ車で送ってもらうことになるかな）' },
+      said: '「そろそろ結婚資金から、大きく引き出すことになるかな」と言う。',
+      mean: 'make a withdrawal ＝ 預金を引き出す。銀行で使う言葉で、軽く話を切り出している。',
+      trap: 'big（大きい）から、お金がかかる話と思いやすい。pretty soon（もうすぐ）が大事。',
+      use: 'I’d like to make a withdrawal.（お金を引き出したいのですが）' },
 
-    // why: pay back ← "I really do feel bad" and "we might still have some money" heard as making amends; Chandler ←
-    //   "you'd pay for it yourself" plus "Good luck, Chandler" at the end heard as the groom paying
-    // R fix: V2/K6 — the key was the only nuanced choice ("more than"); all three now read "They say sorry, then…"
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'excuses', seg: [11, 73],
-      stem: 'Across the whole talk, how do her parents handle what they did?',
-      choices: ['They say sorry, then keep making excuses', 'They say sorry, then promise to pay it back',
-                'They say sorry, then say Chandler should pay'], a: 0,
-      cue: '謝る言葉と、そのあとに続く説明の量。',
-      said: 'お金の行き先を聞かれるたびに、両親は理由や言い訳を重ねていく。',
-      mean: '「悪いとは思う」とは言うが、話の中心は事情の説明。返す話は一度も出ない。',
-      trap: 'feel bad や some money から「返す気がある」と取りやすい。謝罪のあとに続く話を聞く。',
-      use: 'I feel bad, but here’s what happened.（悪いとは思うけど、事情はこう）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'excuses', seg: [13, 57],
+      stem: 'How do her parents explain the money?',
+      ja: '両親はお金のことをどう説明する？',
+      choices: ['With one excuse after another', 'By promising to pay it back', 'By saying Chandler should pay'], a: 0,
+      choicesJa: ['言いわけを次々に言う', '返すと約束する', 'チャンドラーが払うべきだと言う'],
+      cue: '「We have it」のあと',
+      said: 'お金の行き先を聞かれるたびに、両親は理由や言いわけを重ねていく。',
+      mean: 'one 〜 after another ＝ 次々に。ビーチハウス、キッチン、と使ってしまっていた。',
+      trap: 'We’re sorry と何度も言うので、返すと思いやすい。返すとは一度も言わない。',
+      use: 'It was one problem after another.（問題が次々に起きた）' },
 
-    // why: kitchen ← the second savings, spent later in the talk; business ← the father's plan blamed at the end
-    // R fix: N7/B1 — the third choice named d3's key ("selling ice" online); now "Her father's business idea"
     { id: 'd1', skill: 'detail', level: 'B1', point: 'beach', seg: [13.1, 19.6],
-      stem: 'When Monica asks about the wedding fund, what has it become?',
+      stem: 'What has the wedding fund become?',
+      ja: '結婚資金は何になった？',
       choices: ['The family’s beach house', 'The family’s new kitchen', 'Her father’s business idea'], a: 0,
-      cue: '「only now we call it」のあと。',
+      choicesJa: ['家族のビーチハウス', '家族の新しいキッチン', '父の商売のアイデア'],
+      cue: '「only now we call it」のあと',
       line: 'We have it, only now we call it *the beach house*.',
       said: '「あるよ。ただ今は『ビーチハウス』と呼んでるけど」と答える。',
-      mean: '結婚資金で別荘を買ってしまった、という意味。今はお金ではなく家になっている。',
-      trap: 'kitchen も父の商売も出てくるが、それは後の話。最初の資金の行き先はこの一言。',
-      use: 'We still have it, sort of.（一応、まだあるよ）' },
+      mean: 'only now we call it 〜 ＝ ただ今は〜と呼んでいる。お金は家に使ってしまった。',
+      trap: 'We have it（ある）から、お金が残っていると思いやすい。only のあとを聞く。',
+      use: 'We call it the blue house.（私たちは青い家と呼んでいます）' },
 
-    // why: gift ← "we have it" heard as the fund still being there for her, in house form; meant for a house ← "the
-    //   beach house" heard as the fund's plan from the start (it was the "Monica wedding fund")
-    // R fix: V2/K5 — the key was the only choice about the wording; all three now read "It claims…"
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'beach', seg: [13.1, 20.5],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'beach', seg: [13.1, 20.5], retired: true,
       stem: 'Why does the answer about the fund get a laugh?',
       choices: ['It claims money they spent is still there', 'It claims the house was her wedding gift',
                 'It claims the fund was always for a house'], a: 0,
@@ -69,48 +59,51 @@ export const weddingFund: Clip = {
       trap: 'We have it を「まだある」と取ると、家が贈り物に聞こえる。only のあとで中身が変わる。',
       use: 'It’s not gone. It’s a boat now.（なくなってない。今はボートなだけ）' },
 
-    // why: you'll ← the d is swallowed by the p, leaving "you", and will feels natural for a plan; you ← the same lost
-    //   d, with the present tense
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'believe', seg: [21, 24.5],
+      stem: 'Type: “I ___ you spent my wedding fund…” (2 words)', answer: 'can\'t believe',
+      ja: '「I ___ you spent my wedding fund…」の空所を書こう（2語）',
+      cue: 'ビーチハウスの話のあと',
+      line: 'I *can’t believe* you spent my wedding fund on the beach house.',
+      said: '「私の結婚資金をビーチハウスに使ったなんて、信じられない」と言う。',
+      mean: 'I can’t believe 〜 ＝ 〜なんて信じられない。驚きや怒りを言うときに使う。',
+      trap: 'can’t の t が消えて can に聞こえやすい。「キャーン」と長ければ can’t。',
+      use: 'I can’t believe it’s so cheap!（こんなに安いなんて信じられない！）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'youd', seg: [24, 29],
       stem: 'Fill the gap: “…after you turned 30, ___ pay for it yourself.”',
+      ja: '「…after you turned 30, ___ pay for it yourself.」の空所は？',
       choices: ['you', 'you’d', 'you’ll'], a: 1,
-      cue: 'pay の直前、とても短い音。',
+      choicesJa: ['あなたは', '（それなら）あなたは〜だろう', 'あなたは〜するだろう'],
+      cue: '「turned 30」のあと',
       line: 'if you got married after you turned 30, *you’d* pay for it yourself.',
-      said: '「30歳を過ぎて結婚するなら、自分で払うだろうと思った」。',
-      mean: 'assumed の中なので would の形。d は次の p にのまれ、ほぼ「ユッ」。',
-      trap: 'd が消えると you や you’ll に聞こえる。過去の「思った」の中は would。',
-      use: 'I figured you’d say that.（そう言うと思った）' },
+      said: '「30歳を過ぎて結婚するなら、自分で払うと思った」と言う。',
+      mean: 'you’d ＝ you would。「もし〜なら…だろう」という話。d は小さく短い。',
+      trap: 'd がほとんど聞こえず、you と思いやすい。「ユード」の小さな d を聞く。',
+      use: 'I thought you’d like it.（気に入ると思ったんだ）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'assumed', seg: [24, 29],
       stem: 'Type what she says: “We’re sorry, honey, but ___…” (3 words)', answer: 'we just assumed',
-      cue: '「honey, but」のあと。3語がつながって聞こえる。',
+      ja: '「We’re sorry, honey, but ___…」の空所を書こう（3語）',
+      cue: '「sorry, honey, but」のあと',
       line: 'We’re sorry, honey, but *we just assumed*…',
-      said: '「ごめんね。でも思ってたのよ」と理由を言い始める。',
-      mean: 'assume ＝ 確かめずにそう思い込む。謝ったあと、すぐ言い訳に移る。',
-      trap: 'just の t が消えて「ジャスタ」、assumed の d も弱い。最後の子音まで書く。',
-      use: 'I just assumed you were coming.（来ると思い込んでた）' },
+      said: '「ごめんね。でも、そう思いこんでたのよ」と理由を言い始める。',
+      mean: 'assume ＝ 思いこむ・決めつける。we just assumed ＝ ただそう思っていた。',
+      trap: 'assumed の d は小さく、just とつながる。3語でひとまとまり。',
+      use: 'Sorry, I just assumed you knew.（ごめん、知ってると思いこんでた）' },
 
-    // why: 30 ← "after you turned 30" just before; 33 ← twenty/thirty confused at the start; 20 ← "twenty" caught,
-    //   "-three" lost
-    // R fix: S1/N7 — the stem named d1's key (the beach house); it now asks about "the money", and reveals beach
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age23', reveals: ['beach'], seg: [24, 31.6], keep: true,
-      stem: 'How old does Monica say she was when the money was spent?',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age23', reveals: ['beach'], seg: [24, 31.6],
+      stem: 'How old was Monica when they bought the beach house?',
+      ja: 'ビーチハウスを買ったとき、モニカは何歳だった？',
       choices: ['Twenty', 'Twenty-three', 'Thirty', 'Thirty-three'], a: 1,
-      cue: 'Monica が言い返す一言の最後、年齢。',
+      choicesJa: ['20歳', '23歳', '30歳', '33歳'],
+      cue: '「when I was」のあと',
       line: 'You bought the beach house *when I was 23*.',
-      said: '「ビーチハウスを買ったのは私が23歳の時でしょ」と言い返す。',
-      mean: '30歳を過ぎたら自分で払う、という理屈より、ずっと前に使っていたという指摘。',
-      trap: '直前の30が耳に残りやすい。twenty と thirty は語頭の音で聞き分ける。',
-      use: 'I was 23 when I moved here.（ここに来たのは23歳の時）' },
+      said: '「ビーチハウスを買ったのは、私が23歳のときでしょ」と言い返す。',
+      mean: 'twenty-three ＝ 23。30歳まで7年もあった、と言いたい。',
+      trap: '直前に 30 が聞こえるので、迷いやすい。twenty の「トゥエ」で始まる。',
+      use: 'I moved here when I was twenty.（20歳のときにここに来た）' },
 
-    // why: husband ← "you'd pay for it yourself" plus "Good luck, Chandler" heard as the groom's side paying (but
-    //   "yourself" is Monica); before 30 ← "30" caught without "after", read as a deadline (but then they'd have kept
-    //   the fund, and they spent it)
-    // anchor: 24.5–28.4 s "if you got married after you turned 30, you'd pay for it yourself"; 29.1–31.1 s "You bought
-    //   the beach house when I was 23"; 31.6–33.6 s "seven years": the money was spent at 23, so the bet was made then
-    // R fix: V2 (C2 rewrite) — "refill" was easy to rule out; "marry before 30" is the near miss on "after you turned
-    //   30". Its line names the beach house: reveals beach
-    { id: 'nt2', skill: 'infer', level: 'C2', point: 'age23', reveals: ['assumed', 'beach'], seg: [24, 36.4],
+    { id: 'nt2', skill: 'infer', level: 'C2', point: 'age23', reveals: ['assumed', 'beach'], seg: [24, 36.4], retired: true,
       stem: 'Set against Monica’s reply, what does the parents’ “we just assumed…” admit?',
       choices: ['Even when she was 23, they bet she’d be single at 30', 'Even when she was 23, they bet she’d marry before 30',
                 'Even when she was 23, they expected her husband to pay'], a: 0,
@@ -121,65 +114,55 @@ export const weddingFund: Clip = {
       trap: '30 だけ拾うと「30までに結婚」と逆に取りやすい。after と使った年齢を並べる。',
       use: 'We figured you’d never move out.（どうせ家を出ないと思ってた）' },
 
-    // why: regret ← "sweetie" heard as the soft start of an apology; wedding venue ← "beach" plus the wedding plans
-    //   heard as an offer of the house
-    // R fix: S1/N7 — the stem named d1's key; now "how do her parents present it?", and reveals beach
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'beachfun', reveals: ['age23', 'beach'], seg: [31.1, 36.4],
-      stem: 'Right after Monica’s age remark, how do her parents present the spending?',
-      choices: ['As a fun thing she got out of the deal', 'As a mistake they now deeply regret',
-                'As a place she can use for the wedding'], a: 0,
-      cue: '「which means」のあと、何を「得た」と言うか。',
+      stem: 'How do her parents describe the beach house?',
+      ja: '両親はビーチハウスのことをどう言う？',
+      choices: ['As fun she got to have', 'As a big mistake', 'As a place for her wedding'], a: 0,
+      choicesJa: ['彼女も楽しめたもの', '大きなまちがい', '結婚式の場所'],
+      cue: '「which means」のあと',
       line: 'which means *you had seven years of beach fun*, and you can’t put a price on that, sweetie.',
-      said: '「7年もビーチで楽しめた。お金に代えられないよ」と言う。',
-      mean: '損をさせた話を、得をさせた話に言いかえている。謝るどころか、良い面を売りこむ。',
-      trap: 'sweetie を謝る前の優しい呼びかけと取りやすい。which means のあとで話をすり替えている。',
-      use: 'Look on the bright side: free parking!（いい面を見よう、駐車は無料！）' },
+      said: '「つまり7年もビーチで楽しめたってこと」と言う。',
+      mean: 'which means 〜 ＝ つまり〜ということ。悪いことを、いい話に言いかえている。',
+      trap: 'sorry と謝っていたので、失敗だったと言うと思いやすい。beach fun（ビーチの楽しみ）を聞く。',
+      use: 'Which means we have more time.（つまり、時間がもっとあるってこと）' },
 
-    // why: house worth more ← "price" taken literally, as the house's value (but "that" is the seven years of fun);
-    //   rude to ask ← a Japanese frame, where talk of price is impolite, so "can't" read as "shouldn't"
-    // R fix: V2 — the key was the only fitting reading of a known idiom; both distractors now turn on "price"/"can't"
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'beachfun', seg: [31.1, 36.4],
-      stem: 'At the end of the reply about “seven years”, what does the closing phrase mean?',
-      choices: ['The fun was worth more than money', 'The house is worth more than it cost',
-                'It’s rude to ask what it all cost'], a: 0,
-      cue: '「seven years」のあと、that が指すもの。',
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'price', reveals: ['beachfun'], seg: [31.1, 36.4],
+      stem: 'What does “*you can’t put a price on that*” mean?',
+      ja: '「you can’t put a price on that」はどういう意味？',
+      choices: ['It’s worth more than money', 'It cost far too much money', 'Don’t ask what it cost'], a: 0,
+      choicesJa: ['お金より価値がある', 'お金がかかりすぎた', '値段は聞かないで'],
+      cue: '「beach fun」のあと',
       line: 'and *you can’t put a price on that*, sweetie.',
-      said: '「7年分のビーチの楽しみは値段がつけられない」と言う。',
-      mean: 'can’t put a price on ＝ お金では測れない価値がある。決まり文句。',
-      trap: 'price から家の値段の話と取りやすい。that は直前の beach fun を指す。',
-      use: 'You can’t put a price on sleep.（睡眠はお金に代えられない）' },
+      said: '「それはお金に代えられないよ」と言う。',
+      mean: 'can’t put a price on 〜 ＝ 〜に値段はつけられない＝お金より大事。',
+      trap: 'price（値段）から、高かったという話と思いやすい。can’t put で「つけられない」。',
+      use: 'You can’t put a price on health.（健康はお金に代えられない）' },
 
-    // why: save again ← "we started saving again" heard as a promise; father ← she does blame him, but later and for
-    //   the ice (61 s), not here, where it's "we redid the kitchen"
-    // R fix: V2/K6 — the key was the only "yet" and the stem hinted at a turn; choices now parallel, stem neutral
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'feelbad', reveals: ['kitchen'], seg: [38.7, 46.2],
-      stem: 'After “I really do feel bad about this”, how does her apology go on?',
-      choices: ['It turns into news of more spending', 'It turns into a promise to save again',
-                'It turns into blame for Monica’s father'], a: 0,
-      cue: '「feel bad」のあと、though に続く話。',
-      line: 'I *really do feel bad* about this, though. We started saving again… so *we redid the kitchen*.',
-      said: '「本当に悪いと思ってる」と言ったあと、二度目の貯金もキッチンに使ったと話す。',
-      mean: '謝りながら、さらに悪い知らせを足している。言葉は謝罪、中身は告白の続き。',
-      trap: 'saving again を約束と取りやすいが、過去の話。-ed を聞く。',
-      use: 'I feel bad about this, though.（これは悪いと思ってるんだけど）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelbad', seg: [37.5, 43],
+      stem: 'How does her mother say she feels about it?',
+      ja: '母はこのことをどう感じていると言う？',
+      choices: ['She feels bad', 'She feels proud', 'She feels angry'], a: 0,
+      choicesJa: ['悪いと思っている', '得意に思っている', '怒っている'],
+      cue: '「I really do」のあと',
+      line: 'I *really do feel bad* about this, though.',
+      said: '「でも、本当に悪いと思ってるのよ」と言う。',
+      mean: 'I do feel bad ＝ 本当に悪いと思う。do を入れて強めている。',
+      trap: 'feel bad を「気分が悪い（体調）」と思いやすい。about this がつくと「悪いと思う」。',
+      use: 'I really do feel bad about it.（本当に申し訳なく思ってる）' },
 
-    // why: Richard ← his name heard as where the money went; beach house ← the house named earlier, and "redid"
-    //   sounds like fixing something already owned
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'kitchen', reveals: ['hell'], seg: [38.7, 46.2],
-      stem: 'What happened to the money they started saving again?',
-      choices: ['They spent it on a new kitchen', 'They spent it on Monica and Richard',
-                'They spent it fixing the beach house'], a: 0,
-      cue: '「went to hell」のあと、so に続く部分。',
-      line: 'but then *that went to hell*, so *we redid the kitchen*.',
-      said: '「リチャードの頃にまた貯めたけど、だめになってキッチンを改装した」。',
-      mean: 'redid ＝ redo の過去形で、作り直した。二度目の貯金も結婚以外に使われた。',
-      trap: 'Richard の名前が聞こえると、その人のためと思いやすい。so のあとが使い道。',
-      use: 'We redid the bathroom last year.（去年お風呂を改装した）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'kitchen', seg: [38.7, 46.2],
+      stem: 'What happened to the money they saved again?',
+      ja: 'もう一度ためたお金はどうなった？',
+      choices: ['It paid for a new kitchen', 'It went to Richard instead', 'It fixed the beach house'], a: 0,
+      choicesJa: ['新しいキッチンに使った', 'かわりにリチャードに渡った', 'ビーチハウスの修理に使った'],
+      cue: '「so we」のあと',
+      line: 'We started saving again when you were dating Richard… *so we redid the kitchen*.',
+      said: '「リチャードのころにまた貯めたけど、だめになってキッチンを改装した」と言う。',
+      mean: 'redo ＝ やり直す・改装する。二度目のお金もキッチンに使ってしまった。',
+      trap: 'Richard の名前が出るので、彼にお金が行ったと思いやすい。so のあとを聞く。',
+      use: 'We redid the bathroom.（お風呂を改装した）' },
 
-    // why: worked out ← "went to hell" heard as a rough patch only (but the savings then went on a kitchen, so no
-    //   wedding); far away ← "went to" heard as someone going somewhere
-    // R fix: V2 — "fell apart" vs two weaker readings; all three now read "It went…, and/but…"
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'hell', seg: [40.7, 46.2],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'hell', seg: [40.7, 46.2], retired: true,
       stem: 'What does her mother say happened with Monica and Richard?',
       choices: ['It went badly, and they split up', 'It went badly, but they worked it out',
                 'He went away, so it went long-distance'], a: 0,
@@ -190,26 +173,19 @@ export const weddingFund: Clip = {
       trap: 'hell を一時のけんか、went to を「行った」と取りやすい。so のあとの使い道が結末を示す。',
       use: 'The plan went to hell fast.（計画はすぐにだめになった）' },
 
-    // why: afford ← the money talk all around it; take years ← "ever" heard as "for a long time", a delay, not a never
-    // R fix: V2 — "commit" matched the show's known Chandler; the near miss is now a late proposal
     { id: 'i1', skill: 'infer', level: 'B2', point: 'propose', seg: [48.3, 53],
-      stem: 'What does her mother’s answer about Chandler suggest?',
-      choices: ['They thought he’d never ask her to marry him', 'They thought he’d take years to ask her',
-                'They thought he couldn’t afford a big wedding'], a: 0,
-      cue: '「Well, it was Chandler.」の次の文。',
+      stem: 'Why didn’t they save for Chandler?',
+      ja: 'チャンドラーのときにお金をためなかったのはなぜ？',
+      choices: ['They thought he’d never propose', 'They thought he was rich', 'They didn’t like him at all'], a: 0,
+      choicesJa: ['プロポーズしないと思った', 'お金持ちだと思った', '彼がまったく好きではなかった'],
+      cue: '「it was Chandler」のあと',
       line: 'Well, *it was Chandler*. We didn’t think he’d *ever propose*.',
-      said: '「だってチャンドラーだもの。プロポーズするとは思わなかった」。',
-      mean: '彼は結婚まで踏み切らない人だと思われていた。だから貯金もしなかった、という含み。',
-      trap: '周りがお金の話なので「払えない」と取りやすい。ever は「いつか」でなく否定と組んで「一度も」。',
-      use: 'I didn’t think he’d ever call.（彼が電話してくるとは思わなかった）' },
+      said: '「だってチャンドラーだもの。プロポーズするとは思わなかった」と言う。',
+      mean: 'propose ＝ 結婚を申し込む。it was Chandler ＝ 相手が彼だったから。',
+      trap: 'it was Chandler だけ聞くと、きらいだと思いやすい。次の文が理由。',
+      use: 'He finally proposed!（彼がついにプロポーズした！）' },
 
-    // why: Monica ← her two relationships come up back to back, so it sounds like a jab at her track record; Richard ←
-    //   "we didn't think he'd ever propose" heard as about the earlier man, since his story came just before
-    // anchor: 50.3–52.4 s "Well, it was Chandler. We didn't think he'd ever propose": the name fixes the target;
-    //   54.4–57.0 s the next line, "I did not start drinking enough at the start of the meal", is the target's wince
-    // R fix: V2 (C2 rewrite) — the stem named Chandler; it now names the moment ("Well, …"), and Richard's choice
-    //   is the near miss (they did save for him, so a listener can think "he'd ever propose" is about him)
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'propose', seg: [48.3, 57.5],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'propose', seg: [48.3, 57.5], retired: true,
       stem: 'In her mother’s answer that starts “Well, …”, who is the joke on?',
       choices: ['Chandler, whom they never saw marrying her', 'Monica, who picks men who won’t marry her',
                 'Richard, whom they once saw marrying her'], a: 0,
@@ -220,61 +196,52 @@ export const weddingFund: Clip = {
       trap: '直前のリチャードの話から、Monica の男運の話に聞こえやすい。名前と次の「I」を追う。',
       use: 'Well, it’s Kevin. What did you expect?（だってケビンだよ。何を期待してたの）' },
 
-    // why: sells ← "if your father" heard as an open condition, a way out still to come; tied up ← "still have some
-    //   money" heard without "might… if… hadn't"
     { id: 'i2', skill: 'infer', level: 'C1', point: 'hadnt', reveals: ['ice'], seg: [57, 66.2],
-      stem: 'After Monica’s complaint about money, what does her mother’s reply imply?',
-      choices: ['Some would be left if he hadn’t tried his plan', 'Some will be left once he sells his ice business',
-                'Some is left, but it’s tied up in his plan'], a: 0,
-      cue: '「your father」の前後、動詞の形。',
+      stem: 'What does “if your father hadn’t…” tell us?',
+      ja: '「お父さんが〜しなければ」から何が分かる？',
+      choices: ['His plan lost the money', 'His plan made them money', 'He still has the money'], a: 0,
+      choicesJa: ['父の計画でお金がなくなった', '父の計画でお金がもうかった', '父がまだお金を持っている'],
+      cue: '「We might still have」のあと',
       line: 'We *might still have* some money *if* your father *hadn’t* thought…',
-      said: '「お父さんがあんな事を考えなければ、まだあったかも」と言う。',
-      mean: 'hadn’t thought ＝ 実際は考えた。だから今はお金がない、という仮定の形。',
-      trap: 'some money だけだと残りがあるように聞こえる。if…hadn’t は事実の逆。',
-      use: 'If I hadn’t overslept, I’d be there.（寝坊しなければ着いてたのに）' },
+      said: '「お父さんがあんなことを考えなければ、まだあったかもね」と言う。',
+      mean: 'might still have 〜 if … hadn’t ＝ …しなければ〜がまだあったかも。実際はなくなった。',
+      trap: 'still have（まだある）が聞こえて、残っていると思いやすい。if … hadn’t は「実際はした」。',
+      use: 'If I hadn’t missed the bus…（バスに乗り遅れなければ…）' },
 
-    // why: sell the house ← the beach house is the money's main home, so it sounds like the fix; she and Chandler ←
-    //   "you'd pay for it yourself" earlier, and "Good luck, Chandler" right after
     { id: 'g2', skill: 'gist', level: 'B1', point: 'enough', seg: [57, 73],
       stem: 'How does Monica end the talk about the money?',
-      choices: ['She says she doesn’t want to hear any more', 'She asks her parents to sell the beach house',
-                'She says she and Chandler will pay for it'], a: 0,
-      cue: '最後の Monica の発言。誰に何を求めている？',
+      ja: 'モニカはお金の話をどう終わらせる？',
+      choices: ['She doesn’t want to hear more', 'She asks them to sell it', 'She says they’ll pay themselves'], a: 0,
+      choicesJa: ['もう聞きたくないと言う', '家を売ってと頼む', '自分たちで払うと言う'],
+      cue: '「All right」のあと',
       line: 'All right, *enough*. I don’t want to *hear about it anymore*.',
       said: '「もういい。これ以上聞きたくない」と話を打ち切る。',
-      mean: 'All right, enough. ＝ もうたくさん。返金などの話にはならず、そこで終わる。',
-      trap: '直前のお金の話から解決策を期待しやすいが、出てくるのは打ち切りの言葉だけ。',
-      use: 'Okay, enough. Let’s change the subject.（もういい、話を変えよう）' },
-    // why: ice cream ← "ice" plus the beach house, with "cream" filled in; from the house ← "ice" plus the beach house
-    //   talk all around it
-    // R fix: V2 — "ice over the internet" was the only odd choice, so the key; all three now keep "ice"
+      mean: 'Enough ＝ もうたくさん。not … anymore ＝ もう〜ない。',
+      trap: 'お金の話なので、家を売る話と思いやすい。Enough で話を止めている。',
+      use: 'Enough! I don’t want to hear it.（もういい！聞きたくない）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'ice', reveals: ['hadnt'], seg: [60.5, 66.2],
       stem: 'Which business idea of her father’s gets the blame?',
-      choices: ['Selling ice over the internet', 'Selling ice cream over the internet', 'Selling ice from the beach house'],
-      a: 0,
-      cue: '「a good idea to」のあと。',
+      ja: '父のどの商売のアイデアのせいにされる？',
+      choices: ['Selling ice over the internet', 'Selling ice cream on the internet', 'Selling ice at the beach'], a: 0,
+      choicesJa: ['ネットで氷を売る', 'ネットでアイスクリームを売る', 'ビーチで氷を売る'],
+      cue: '「a good idea to」のあと',
       line: 'if your father hadn’t thought it was a good idea to *sell ice over the internet*.',
       said: '「お父さんがネットで氷を売るなんて考えなければ」と言う。',
-      mean: 'お金が消えた最後の理由。夫のおかしな商売を、娘の前ではっきり責めている。',
-      trap: 'ice から「アイスクリーム」と補いやすい。cream は言っていない。聞こえた語だけで選ぶ。',
-      use: 'It was a good idea on paper.（理屈の上ではいい案だった）' },
+      mean: 'over the internet ＝ インターネットで。氷は溶けるので、ばかげた商売。',
+      trap: 'ice から、アイスクリームと思いやすい。ice のあとすぐ over が来る。',
+      use: 'I bought it over the internet.（ネットで買った）' },
 
-    // R drop: w1 (who says "It seemed like such a simple idea") — V1: whoever had the idea defends it, so common
-    //   sense gives the key without the voices, and it needed an ear check. Never shipped, deleted.
-    // why: him not the idea ← "Stupid, Jack" heard as calling Jack stupid (but "the word is" swaps his adjective for
-    //   the idea); herself ← "stupid" heard without "Jack", as her blaming herself for letting him
-    // R fix: V2 — the key was the only choice about words; all three now read "She says…". reveals 'simple' removed
-    //   (w1 dropped)
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'stupid', seg: [65.4, 70],
-      stem: 'Why does the line about “the word” get a laugh?',
-      choices: ['She says his idea wasn’t simple but stupid', 'She says he is stupid, not his idea',
-                'She says she was stupid to let him try'], a: 0,
-      cue: '父の言い訳と、それに返す一語。',
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'stupid', seg: [65.4, 70],
+      stem: 'What does “*The word is stupid*” mean?',
+      ja: '「The word is stupid」はどういう意味？',
+      choices: ['It was stupid, not simple', 'Jack himself is stupid', 'She was stupid to agree'], a: 0,
+      choicesJa: ['簡単じゃなくて、ばかげた案だった', 'ジャック本人がばかだ', '賛成した自分がばかだった'],
+      cue: '「It seemed like」のあと',
       line: 'It seemed like such a *simple* idea. — *Stupid*, Jack. *The word is stupid*.',
-      said: '「簡単な案だと思った」に「バカな案、でしょ」と言い直す。',
-      mean: 'simple を stupid に言い直し、夫の言いわけを一語で切る。そのやりとりが笑い。',
-      trap: 'Stupid の相手を聞きのがすと、自分を責めているように聞こえる。直後の Jack が相手。',
-      use: 'Not “brave”. The word is “reckless”.（「勇敢」じゃない、「無謀」よ）' },
-
+      said: '「簡単な案だと思った」に「ばかな案、でしょ。正しい言葉はそれ」と言い直す。',
+      mean: 'The word is 〜 ＝ 正しい言葉は〜。simple を stupid に言い直している。',
+      trap: 'Stupid, Jack から、ジャック本人をばかと言ったと思いやすい。idea の言い直し。',
+      use: 'It’s not cheap. The word is free.（安いじゃない。タダ、だよ）' },
   ]
 };
