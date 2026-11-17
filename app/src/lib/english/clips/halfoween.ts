@@ -1,19 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
 // “"iHalfoween" 🎃 iCarly Halloween Episode in 5 Minutes!” (NickRewind, Best of iCarly): the gang throws a
 // "Halfoween" party; a guest in a purple robot suit hands out candy, the kids' voices go strange, and they hunt the
 // robot. Neville gloats to Freddie and has him put in the robot suit, so the girls beat up the wrong "Neville".
-// Segments from the captions, words from whisper (2026-11-17). Speakers come from the words: Freddie is named at
-// 149 s and 163 s; Neville at 183 s and 226 s, and he is the one who orders "Dimitri, Yvonne" at 191 s and 280 s;
-// "you girls" (248 s) are the ones who caught the robot. The adult who asks about the voices (103–134 s) and the one
-// at the door (54 s) are unnamed, so no stem names them. No item asks who says what.
-// Untested: the holiday's name (whisper "Hap-A-Ween", captions "half a week"/"halloween"); 30–42 s (whisper only);
-// "Lubert"/"luberne" and "wart"/"work" (65, 198 s); 92–101 s ("he"/"you wouldn't like it"; "didn't mean to be rude"
-// is past-or-present ambiguous); 106 s "off"/"all" (x2 and f2 use the 103 s line, where both say "off"); 216–218 s
-// ("your voice is bad/back", "we're off/more off"); "Papperman"/"peppermint" (221, 255 s); 288–299 s.
-// Reduction claims in s1, x1 and x2 rest on words both sources agree on (GUIDE §9.7).
-// REVIEW 2026-11-17: pass 3, fix 19, drop 0, new 1; ear checks 1
-// Open: i3's "gagged" and a2's "hiding fear" are new near misses; both are refuted by the words ("in a purple robot
-//   costume"; "Ooh" right after "quite funny"), but a2 still leans on tone, so it stays on the ear-check list.
-// EAR CHECK: 178.0 s a2 — "Ooh, am I?" read as mock fear (tone; the words "Ooh" + the gloat just before point there)
+// Segments from the captions, words from whisper (2026-11-17). Freddie is named at 149 s and 163 s, Neville at 183 s
+// and 226 s; the adults at the door (54 s) and asking about the voices (103–134 s) are unnamed. Untested: the
+// holiday's name, 30–38 s, 62–75 s, 92–101 s, 106 s, 216–218 s, 221 s and 255 s (the surname), 288–299 s.
 import type { Clip } from '../types.ts';
 
 export const halfoween: Clip = {
@@ -23,25 +14,19 @@ export const halfoween: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %): the two "half" distractors were weak beside the title; now all three are midpoints,
-    //   so "previous Halloween and the future Halloween" has to be heard
-    // why: Christmas ← "halfway point between" heard, the second Halloween lost: the usual next holiday fills it;
-    //   October ← "halfway" + "Halloween" read as the middle of Halloween's own month
     { id: 'd1', skill: 'detail', level: 'B1', point: 'halfway', seg: [9.1, 19.0],
-      stem: 'By the hosts’ account, when does the new holiday fall?',
-      choices: ['Halfway between one Halloween and the next', 'Halfway between Halloween and Christmas',
-                'Halfway through the month of October'], a: 0,
-      cue: '「halfway point」のあとに続く語。',
-      line: '…at the *halfway point between* the previous Halloween and the future Halloween.',
-      said: '去年と次のハロウィンの、ちょうど真ん中で祝う日だと説明する。',
-      mean: 'half＋Halloween で、半年ごとのハロウィンという作られた祝日。',
-      trap: '二つ目を次の祝日で補いやすい。between A and B は B まで聞く。',
+      stem: 'When is the new holiday?',
+      ja: '新しい祝日はいつ？',
+      choices: ['Between two Halloweens', 'Between Halloween and Christmas', 'In the middle of October'], a: 0,
+      choicesJa: ['二つのハロウィンの間', 'ハロウィンとクリスマスの間', '10月の半ば'],
+      cue: '「halfway point」のあと。',
+      line: '…at the *halfway point between the previous Halloween and the future Halloween*.',
+      said: '「去年のハロウィンと次のハロウィンの、ちょうど真ん中」と説明する。',
+      mean: 'halfway ＝ 半分の所、中間。between A and B ＝ A と B の間。',
+      trap: 'between のあとを次の祝日で補いやすい。and のあとも Halloween。',
       use: 'It’s halfway between here and the airport.（ここと空港の中間です）' },
 
-    // R fix: V2 (blind 60 %): the key was the only absurd penalty; both distractors are odd penalties now
-    // why: hosts' beating ← "arrest and beating" heard, the "of your mother" lost: keyword in the wrong relation;
-    //   your best friend ← the joke's shape (someone else pays) kept, the person misheard
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'penalty', seg: [18.4, 27.0],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'penalty', seg: [18.4, 27.0], retired: true,
       stem: 'Why does the warning about copying the holiday get a laugh?',
       choices: ['The penalty lands on your mother or your cat', 'The penalty is a beating from the hosts themselves',
                 'The penalty lands on you and your best friend'], a: 0,
@@ -52,10 +37,7 @@ export const halfoween: Clip = {
       trap: 'beating だけだと殴るのは司会者に聞こえる。of のあとの語まで聞く。',
       use: 'Cash and/or card is fine.（現金でもカードでも、両方でも大丈夫）' },
 
-    // R fix: V2 (blind 70 %): "permission in writing" was the only permission; a spoken-permission near miss now
-    // why: given on the show ← "consent" heard, "written" lost (weak, before the stressed noun); a paid license ←
-    //   "iCarly Enterprises" named right after: copying a product usually costs money
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'consent', seg: [18.5, 23.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'consent', seg: [18.5, 23.1], retired: true,
       stem: 'What does the warning say you’d need before copying the holiday?',
       choices: ['Their permission, put in writing', 'Their permission, given on the show',
                 'A paid license from their company'], a: 0,
@@ -66,127 +48,125 @@ export const halfoween: Clip = {
       trap: '前の written は弱く短く、落としやすい。名詞の前の語も拾う。',
       use: 'Do I need your consent for this?（これにはあなたの同意が必要ですか）' },
 
-    // R fix: V2 (blind 50 %): "early" was a filler and the key the only candy choice; a trick-or-treat script now
-    // why: asking for candy ← "candy" heard, the direction lost: the Halloween script has the guest take candy;
-    //   costume ← a guest in a full robot suit is the visible "great" thing, but the comment is about candy
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'guest', seg: [53.4, 60.9],
-      stem: 'What’s so great about the robot, by the comment at the door?',
-      choices: ['It hands out candy to the people there', 'It came asking for candy, trick-or-treat style',
-                'It came in a costume that took real work'], a: 0,
-      cue: '「how great is it」のあとの動詞と相手。',
-      line: 'How great is it when a party guest *brings you candy*?',
-      said: '「客がお菓子を持ってきてくれるなんて最高」と言い、ロボットが配る。',
-      mean: 'ハロウィンは普通もらう側が来るのに、この客は配る側。',
-      trap: 'candy だけだと、いつものもらう側に取りやすい。brings you の向きを聞く。',
-      use: 'Love it when the bus is on time!（バスが時間通りって最高）' },
+    { id: 'f6', skill: 'detail', level: 'B1', point: 'invite', seg: [40.5, 46.0],
+      stem: 'What does the robot thank them for?',
+      ja: 'ロボットは何のお礼を言う？',
+      choices: ['Inviting it to the party', 'Giving it some candy', 'Opening the door'], a: 0,
+      choicesJa: ['パーティーに招いてくれたこと', 'お菓子をくれたこと', 'ドアを開けてくれたこと'],
+      cue: '「Happy Hap-A-Ween!」のあと。',
+      line: '*Thank you for inviting me to your party.*',
+      said: '「パーティーに招いてくれてありがとう」と言う。',
+      mean: 'Thank you for 〜ing ＝ 〜してくれてありがとう。invite ＝ 招く。',
+      trap: 'すぐあとに candy の話が出るが、それはロボットが配る側。お礼は inviting。',
+      use: 'Thank you for inviting me.（招いてくれてありがとう）' },
 
-    // R fix: S4: the segment ended at 86.0 s, inside "I'm"; now 85.6 s, after "Sure"
-    // why: why not eat together ← "Why don't you…" read as a real why-question (Japanese frame: なぜ…しないの);
-    //   takes a side ← one of them sent away; but "you guys" sends both
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'guest', seg: [53.4, 60.9],
+      stem: 'What does the robot do at the party?',
+      ja: 'ロボットはパーティーで何をしている？',
+      choices: ['Gives out candy', 'Asks for candy', 'Plays loud music'], a: 0,
+      choicesJa: ['お菓子を配る', 'お菓子をねだる', '大きな音で音楽をかける'],
+      cue: '「how great is it」のあと。',
+      line: 'How great is it when a party guest *brings you candy*? — Please have some candy.',
+      said: '「お客がお菓子を持ってきてくれるなんて最高」と言い、ロボットが「どうぞ」と配る。',
+      mean: 'bring you 〜 ＝ あなたに〜を持ってくる。ふつうハロウィンはもらいに来るのに、この客は配る側。',
+      trap: 'candy だけ聞くと、もらいに来たと思いやすい。brings you の向きを聞く。',
+      use: 'Please have some cookies.（クッキーをどうぞ）' },
+
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'corndogs', seg: [81.2, 85.6],
-      stem: 'After the two trade “No, you’re not!”, what does the next line do?',
-      choices: ['It ends the fight by sending them off', 'It asks why they won’t go eat together',
-                'It takes a side and sends one away'], a: 0,
-      cue: '言い合いの直後、Why で始まる一言。',
+      stem: 'What does “*Why don’t you* go get corn dogs?” mean?',
+      ja: '「Why don’t you go get corn dogs?」はどういう意味？',
+      choices: ['You should go get some', 'Why aren’t you going?', 'Please don’t go'], a: 0,
+      choicesJa: ['買ってきたら？', 'なんで行かないの？', '行かないで'],
+      cue: '言い合いの直後の一言。',
       line: '*Why don’t you guys go get* some corn dogs?',
       said: '言い合う二人に「コーンドッグ買ってきたら？」と言う。',
-      mean: 'Why don’t you…? は理由を聞くのでなく提案。ここでは二人を引き離す役目。',
-      trap: 'Why を「なぜ」と取ると理由の質問に聞こえる。Why don’t you＋動詞は「〜したら？」。',
+      mean: 'Why don’t you 〜? ＝ 〜したら？ 理由ではなく提案。ここでは二人を引き離している。',
+      trap: 'Why から「なぜ」と思いやすい。Why don’t you＋動詞は「〜したら？」。',
       use: 'Why don’t you take a break?（ちょっと休んだら？）' },
 
-    // R fix: V2 (blind 60 %): "sorry" was a filler; now a one-side-gives-in reading. Segment end to 88.2 s (+0.5 s)
-    // why: calm ← "'Kay. — Sure." sounds like the fight is settled; one gives in ← "I'm Carly!" heard once, the
-    //   reply "You're really not!" taken as the other side letting it go
-    { id: 'a4', skill: 'attitude', level: 'B2', point: 'bicker', reveals: ['corndogs'], seg: [83.4, 88.2],
-      stem: 'As the two head off for the corn dogs, how do they sound?',
-      choices: ['Still at it, neither one backing down', 'One giving in, the other still pushing',
-                'Calm, the corn dogs ending the fight'], a: 0,
-      cue: 'Sure のあとの二人の声。',
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'bicker', reveals: ['corndogs'], seg: [83.4, 88.2],
+      stem: 'How do the two act as they leave?',
+      ja: '二人は出ていくとき、どんな様子？',
+      choices: ['Still arguing', 'Friends again', 'Too tired to talk'], a: 0,
+      choicesJa: ['まだ言い合っている', '仲直りした', '疲れて話さない'],
+      cue: '「Sure」のあと。',
       line: 'I’m Carly! — You’re *really* not!',
-      said: '素直に返事をしたあと、また「私が Carly」「ぜんぜん違う」と言い合う。',
-      mean: 'really を足して前より強く否定。言い合いはまだ終わっていない。',
-      trap: '’Kay や Sure で仲直りと思いやすい。返事のあとにもう一回やりとりがあるか聞く。',
+      said: '返事をしたあと、また「私がカーリー」「ぜんぜん違う」と言い合う。',
+      mean: 'really を足して、前より強く打ち消している。言い合いは終わっていない。',
+      trap: '’Kay や Sure で仲直りと思いやすい。そのあともう一回言い合う。',
       use: 'You’re really not helping.（ぜんぜん助けになってないよ）' },
 
-    // R fix: V2 (blind 70 %): the key was the only choice about the voices; all three are about the voices now
-    // why: punch ← "ate or drank" leaves room for a drink, and a party has one; knows who ← "who was in the purple
-    //   robot costume? — We don't know" heard as asking the robot, not blaming it
     { id: 'g1', skill: 'gist', level: 'B2', point: 'cause', reveals: ['candy'], seg: [102.3, 141.5],
-      stem: 'Why do the kids decide to hunt down the purple robot?',
-      choices: ['They think its candy changed their voices', 'They think its punch changed their voices',
-                'They think it knows who changed their voices'], a: 0,
-      cue: '「ate or drank」への答えと、そのあとの決意。',
-      line: 'Is there anything… you ate or drank? … *we all had that candy*.',
-      said: '声がおかしい三人に、全員が口にした物を聞く。答えはロボットのお菓子で、犯人探しが始まる。',
-      mean: '声が変わった原因はお菓子、と三人が気づく流れ。ここが話の転機。',
-      trap: 'drank で飲み物に引かれやすい。we all had のあとまで聞く。',
+      stem: 'Why do the kids hunt the purple robot?',
+      ja: '子どもたちはなぜ紫のロボットを探す？',
+      choices: ['Its candy changed their voices', 'Its drink changed their voices', 'It knows who did it'], a: 0,
+      choicesJa: ['そのお菓子で声が変わったから', 'その飲み物で声が変わったから', '犯人を知っているから'],
+      cue: '「ate or drank」への答え。',
+      line: 'Is there anything that all three of you ate or drank? … *we all had that candy*. — From the robots!',
+      said: '声が変な三人に、全員が口にした物を聞く。答えはロボットのお菓子で、探しに行く。',
+      mean: 'ate or drank ＝ 食べたか飲んだか。原因はお菓子だと気づく。',
+      trap: 'drank で飲み物に引かれやすい。we all had のあとの candy を聞く。',
       use: 'Did you eat anything strange today?（今日何か変な物を食べた？）' },
 
-    // R fix: V2 (blind 60 %): two literal "turn" readings left the key alone; now a "how = method" reading too
-    // why: how do you make ← "how come" read as "how" (方法); cut out ← "off" read as a switch (電源が切れる)
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'off', seg: [102.4, 105.6],
-      stem: 'What is the first question about the voices asking?',
-      choices: ['Why does your voice sound strange?', 'How do you make your voice sound like that?',
-                'Why did your voice just cut out?'], a: 0,
-      cue: '文頭の二語と、最後の短い一語。',
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'off', seg: [102.4, 105.6],
+      stem: 'What does “*How come*” mean?',
+      ja: '「How come」はどういう意味？',
+      choices: ['For what reason', 'By what means', 'Since what time'], a: 0,
+      choicesJa: ['なぜ', 'どうやって', 'いつから'],
+      cue: '質問の最初の2語。',
       line: '*How come* your voice *sounds off*?',
       said: '「なんで声が変なの？」と聞く。',
-      mean: 'How come ＝ why のくだけた形。sound off ＝ いつもと違って聞こえる。',
-      trap: 'How come を how と取ると方法の質問になる。sound＋形容詞は「〜に聞こえる」。',
+      mean: 'How come ＝ なぜ（くだけた言い方）。sound off ＝ いつもと違って聞こえる。',
+      trap: 'how から「どうやって」と思いやすい。How come は why と同じ。',
       use: 'How come the store’s closed today?（なんで今日は店が閉まってるの？）' },
 
-    // anchor: 103.1–104.2 s, both sources: "how come your voice sounds off", with no inversion after "how come"
-    // why: the grammar-correcting instinct: "how come does your voice sound…" or "…voice sound…" (third-person -s lost)
     { id: 'x2', skill: 'dict', level: 'C2', point: 'off', seg: [102.6, 105.0],
       stem: 'Type the question: “___?” (6 words)',
       answer: 'how come your voice sounds off',
-      cue: '一秒ほどで六語。語順と -s に注意。',
+      ja: '書こう：声についての質問（6語）',
+      cue: '一息の6語。',
       line: '*How come your voice sounds off*?',
-      said: '六語を一息で言い、sounds と off がつながる。',
-      mean: 'How come のあとは疑問の語順にならず、普通の文の形のまま。だから does も入らない。',
-      trap: '学校文法で does を足したり、sound の -s を落としたりしやすい。How come の後は普通の文の形。',
+      said: '「なんで声が変なの？」と6語を一息で言う。',
+      mean: 'How come のあとは普通の文の形のまま。does は入らず、sounds の -s が残る。',
+      trap: 'does を足したり、sounds の -s を落としたりしやすい。sounds と off がつながる。',
       use: 'How come you’re up so early?（なんでそんなに早起きなの？）' },
 
-    // why: fifteen, fifty ← -teen/-ty: "five" said twice, but a listener braced for a longer time hears a longer one
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fivemin', seg: [115.8, 121.2],
-      stem: 'When did the strange talking start, by the answer given?',
-      choices: ['About five minutes ago', 'About fifteen minutes ago', 'About fifty minutes ago'], a: 0, keep: true,
-      cue: 'About のあとの数、二回目も同じ。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fivemin', seg: [115.8, 121.2], keep: true,
+      stem: 'When did the strange talking start?',
+      ja: '変なしゃべり方はいつ始まった？',
+      choices: ['About 5 minutes ago', 'About 15 minutes ago', 'About 50 minutes ago'], a: 0,
+      choicesJa: ['5分くらい前', '15分くらい前', '50分くらい前'],
+      cue: '「About」のあとの数。',
       line: 'When did the weird talking start? — About *five minutes* ago.',
-      said: '「変なしゃべり方はいつから？」に「五分くらい前」と答え、もう一人もくり返す。',
-      mean: '始まったばかり。このあと、直前に何を口にしたかを探す話になる。',
-      trap: 'five と fifteen、fifty は語尾が似る。-teen は後ろが強く長い、と聞き分ける。',
-      use: 'The bus left about five minutes ago.（バスは五分くらい前に出ました）' },
+      said: '「変なしゃべり方はいつから？」に「5分くらい前」と答え、もう一人もくり返す。',
+      mean: 'About 〜 ago ＝ 〜くらい前。five ＝ 5。',
+      trap: 'fifteen なら後ろの「ティーン」が長く強い。fifty なら「フィフティ」と「ティ」が付く。',
+      use: 'The bus left about five minutes ago.（バスは5分くらい前に出ました）' },
 
-    // R fix: V2 (blind 70 %): the punch choice was weak; now a second candy source, so "from the robots" decides
-    // why: corn dogs ← they were sent for corn dogs a moment ago: keyword trap; candy bowl ← "that candy" heard,
-    //   "from the robots" lost: candy at a party is usually in a bowl at the door
     { id: 'd2', skill: 'detail', level: 'B1', point: 'candy', seg: [121.1, 132.2],
-      stem: 'What turns out to be the one thing all three of them had?',
-      choices: ['The candy from the robot', 'The candy from the bowl by the door', 'The corn dogs from the stand'], a: 0,
-      cue: 'Wait のあと、we all had…。',
-      line: 'Wait. Yeah, we all had *that candy*. — From the robots!',
-      said: '最初は「思いつかない」と答え、少し考えて「みんなあのお菓子を食べた」と気づく。',
-      mean: 'all three of you の問いに、三人に共通する物を答えている。',
-      trap: 'that candy だけで決めやすい。続く from… まで聞く。',
-      use: 'Wait, I left it on the train!（待って、電車に置いてきた！）' },
+      stem: 'What did all three of them have?',
+      ja: '三人とも口にしたものは？',
+      choices: ['The candy from the robot', 'The candy by the door', 'The corn dogs from the stand'], a: 0,
+      choicesJa: ['ロボットのお菓子', 'ドアのそばのお菓子', '売り場のコーンドッグ'],
+      cue: '「Wait」のあと。',
+      line: 'Wait. Yeah, we all had *that candy*. — *From the robots!*',
+      said: '少し考えて「みんなあのお菓子を食べた」「ロボットからの！」と気づく。',
+      mean: 'we all had 〜 ＝ みんな〜を食べた。have はここで「食べる」。',
+      trap: 'that candy だけで決めやすい。続く From the robots まで聞く。',
+      use: 'We all had the fish.（みんな魚料理にした）' },
 
-    // R fix: S4: the segment ended at 139.0 s, on "and" (138.96 s); now 138.9 s, after "robot"
-    // why: the grammar-correcting instinct writes "we just have to find" or "we just got to find"
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotta', seg: [136.5, 138.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'gotta', seg: [136.5, 138.9],
       stem: 'Type what comes before “that purple robot”: “Okay, ___ …” (4 words)',
       answer: 'we just gotta find',
-      cue: 'Okay のあとの四語。真ん中が縮む。',
+      ja: '書こう：「Okay, ___ that purple robot」（4語）',
+      cue: '「Okay」のあと。',
       line: 'Okay, *we just gotta find* that purple robot…',
-      said: '「あのロボットを見つけなきゃ」。gotta は「ガラ」に近い。',
-      mean: 'gotta ＝ have to。会話ではこの形がふつう。',
-      trap: '文法どおり have to や got to と書きやすい。聞こえたまま gotta と書く。',
+      said: '「よし、あの紫のロボットを見つけなきゃ」と言う。',
+      mean: 'gotta ＝ have to（〜しなきゃ）。t が軽い「ラ」の音で「ガラ」に近い。',
+      trap: 'have to や got to と書きやすい。聞こえたまま gotta と書く。',
       use: 'I gotta go. See you tomorrow.（もう行かなきゃ。また明日）' },
 
-    // R fix: V2 (blind 65 %): "say sorry" was a filler; now "beat the truth out of", the real idiom it's built on
-    // why: tell the truth ← "beat the … out of" is also "beat the truth out of": the frame heard, the filler word lost;
-    //   eat the fudge ← fudge = a chocolate candy, and candy is the topic: literal reading
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'fudge', seg: [136.5, 141.4],
+    { id: 'f3', skill: 'phrase', level: 'C1', point: 'fudge', seg: [136.5, 141.4], retired: true,
       stem: 'What do they plan to do once they find whoever is inside?',
       choices: ['Beat them up as hard as they possibly can', 'Make them tell the truth about the candy',
                 'Make them eat the fudge they handed out'], a: 0,
@@ -197,39 +177,31 @@ export const halfoween: Clip = {
       trap: 'fudge をお菓子、型を「白状させる」と取りやすい。型の中の語は言いかえを疑う。',
       use: 'Oh, fudge! I forgot my keys.（あーもう！鍵を忘れた）' },
 
-    // R new: a third gist, because with two the head alternates g2/g1 and c1 (point twist, g2's) could never be
-    //   drawn on plays 3 and 5: the C2 draw check failed. Blind read: 45 % (the key vs "catches Neville")
-    // why: catches him ← "Carly, I found the purple robot. It's Neville" heard as the win, the orders after lost;
-    //   make peace ← "An old friend" taken at face value
-    { id: 'g3', skill: 'gist', level: 'B2', point: 'faceoff', seg: [143.0, 209.8],
-      stem: 'How does Freddie’s face-off with the robot turn out?',
-      choices: ['Neville turns the tables and has him seized', 'He catches Neville and calls Carly for help',
-                'They make peace, since Neville is an old friend'], a: 0,
-      cue: 'Carly への電話のあと、命令する声。',
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'gloat', seg: [160.5, 166.0],
+      stem: 'What does “You don’t *sound like yourself*” mean?',
+      ja: '「You don’t sound like yourself」はどういう意味？',
+      choices: ['Your voice is different', 'You sound very happy today', 'You look very tired'], a: 0,
+      choicesJa: ['声がいつもと違う', '今日はすごくうれしそう', 'すごく疲れて見える'],
+      cue: '「Are you feeling all right」のあと。',
+      line: 'Are you feeling all right, Freddie? *You don’t sound like yourself.*',
+      said: '「大丈夫かい、フレディ？いつもの声じゃないね」とからかう。',
+      mean: 'sound like yourself ＝ いつものあなたらしく聞こえる。not でその逆。',
+      trap: 'feeling all right から体調の話と思いやすい。sound は「聞こえる」で声の話。',
+      use: 'You don’t sound like yourself. Are you okay?（いつもと声が違うね。大丈夫？）' },
+
+    { id: 'g3', skill: 'gist', level: 'B2', point: 'faceoff', seg: [161.0, 206.0],
+      stem: 'What happens to Freddie in the end?',
+      ja: '最後にフレディはどうなる？',
+      choices: ['Neville’s helpers grab him', 'He catches Neville', 'He makes friends with Neville'], a: 0,
+      choicesJa: ['ネヴィルの手下に捕まる', 'ネヴィルを捕まえる', 'ネヴィルと仲よくなる'],
+      cue: 'カーリーへの電話のあとの命令。',
       line: 'Carly, I found the purple robot. It’s Neville… — *Dimitri, Yvonne, help Mr. Benson out of his clothes.*',
-      said: 'Freddie は Carly に電話するが、Neville は手下に彼の服を脱がせろと命じる。',
-      mean: '見つけた側が逆にやられ、立場が入れかわる。',
-      trap: '「見つけた」で Freddie の勝ちに聞こえやすい。最後の命令が誰の声か聞く。',
+      said: 'フレディはカーリーに電話するが、ネヴィルは手下に彼の服を脱がせろと命じる。',
+      mean: 'help 人 out of his clothes ＝ 人の服を脱がせる。見つけた側が逆にやられる。',
+      trap: 'I found（見つけた）でフレディの勝ちに聞こえやすい。最後の命令を聞く。',
       use: 'Wait, where are you right now?（待って、今どこにいるの？）' },
 
-    // R fix: V2 (blind 65 %): the key was the only tease; now a tease with the wrong target too
-    // why: looks silly ← a tease is heard, but its object isn't: the words are about his voice ("don't sound like
-    //   yourself"); real worry ← the question's form is a caring one, and Freddie's voice is odd: sincerity flip
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'gloat', seg: [161.4, 171.3],
-      stem: 'How does Neville mean his question about how Freddie is feeling?',
-      choices: ['As a tease: he knows why Freddie sounds odd', 'As a tease: Freddie looks silly tonight',
-                'As real worry: Freddie sounds like he’s ill'], a: 0,
-      cue: '「It’s not funny」への返し方。',
-      line: 'Are you feeling all right, Freddie? … On the contrary, it is *quite funny*.',
-      said: '「大丈夫？いつもの声じゃないね」と聞き、怒る Freddie に「いや、実におかしい」と返す。',
-      mean: '心配の形をした、からかい。声が変わった理由を知っているそぶり。',
-      trap: '気づかう言葉は本心に聞こえやすい。何をからかうかは sound の語で決まる。',
-      use: 'Are you feeling all right? You look pale.（大丈夫？顔色が悪いよ）' },
-
-    // R fix: V2 (blind 50 %): "laughing so hard it hurts" was a second "amused a lot"; now an "annoyed" reading
-    // why: amused him less ← "I don't think… ever" heard as a plain negative; annoyed ← funny bone (肘のしびれる所)
-    //   read literally: a knock there hurts
-    { id: 'f5', skill: 'phrase', level: 'C1', point: 'gloat', seg: [168.4, 175.4],
+    { id: 'f5', skill: 'phrase', level: 'C1', point: 'gloat', seg: [168.4, 175.4], retired: true,
       stem: 'What does Neville’s line about his “funny bone” mean?',
       choices: ['Nothing has ever amused him as much as this', 'Nothing has ever amused him less than this',
                 'It annoys him, like a knock on the elbow'], a: 0,
@@ -240,11 +212,7 @@ export const halfoween: Clip = {
       trap: 'don’t で「おもしろくない」と取りやすい。not＋ever＋so は最上級と同じ。',
       use: 'That movie really tickled my funny bone.（あの映画、本当に笑えた）' },
 
-    // R fix: V2 (blind 60 %): the key was the only non-literal reading; now a "scared but hiding it" bravado reading.
-    //   S4: seg starts at 168.4 s so "it is quite funny" (the evidence against it) is inside
-    // why: hiding fear ← "Ooh" read as a real flinch covered by a brave question; unsure ← the rising "am I?"
-    //   heard as asking what trouble
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'trouble', reveals: ['gloat'], seg: [168.4, 180.6],
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'trouble', reveals: ['gloat'], seg: [168.4, 180.6], retired: true,
       stem: 'Told he’s in big trouble, how does Neville answer?',
       choices: ['Acting scared, though he isn’t at all', 'Scared, and trying hard to hide it',
                 'Unsure, really asking what trouble'], a: 0,
@@ -255,67 +223,55 @@ export const halfoween: Clip = {
       trap: 'Ooh を本当にひるんだ声と取りやすい。直前まで笑っていた人の大げさな Ooh は、ふりを疑う。',
       use: 'Oh, am I in trouble now?（え、私、怒られるの？）' },
 
-    // R fix: V2 (blind 60 %): the candy choice was weak; now a "gagged" reading built on "no one can hear you scream"
-    // why: gagged ← "no one can hear you scream" heard, "in a purple robot costume" lost; a room downstairs ←
-    //   "wait downstairs" (188 s) heard as where Freddie is
     { id: 'i3', skill: 'infer', level: 'B2', point: 'suit', reveals: ['twist'], seg: [192.6, 209.3],
-      stem: 'What has Neville done with Freddie, judging by his last line here?',
-      choices: ['Put him inside the purple robot suit', 'Had him gagged so no one can hear him',
-                'Locked him in a room downstairs'], a: 0,
-      cue: 'scream のあと、in で始まる場所。',
-      line: '…help Mr. Benson out of his clothes. … No one can hear you scream *in a purple robot costume*.',
-      said: 'Freddie の服を脱がせ、「ロボットの中じゃ叫んでも聞こえない」と言う。',
-      mean: 'Freddie に自分の着ぐるみを着せた、ということ。勘違いの元。',
-      trap: '口をふさいだと取りやすい。in＋場所の名詞まで聞くと理由がわかる。',
+      stem: 'Where is Freddie now?',
+      ja: 'フレディは今どこにいる？',
+      choices: ['In the purple robot suit', 'In a room downstairs', 'Outside Carly’s front door'], a: 0,
+      choicesJa: ['紫のロボットの着ぐるみの中', '下の階の部屋', 'カーリーの家の玄関の外'],
+      cue: '「scream」のあと、in で始まる場所。',
+      line: 'No one can hear you scream *in a purple robot costume*.',
+      said: 'フレディの服を脱がせ、「紫のロボットの中じゃ叫んでも聞こえない」と言う。',
+      mean: 'costume ＝ 着ぐるみ、衣装。フレディに自分の着ぐるみを着せた。',
+      trap: '少し前の wait downstairs（下で待って）から下の階と思いやすい。in のあとを聞く。',
       use: 'Sorry, I can’t hear you in here.（ごめん、ここだと聞こえない）' },
 
-    // R fix: V2 (blind 60 %): the pockets choice was a filler; now a voice near miss ("off" → "on", "your voice")
-    // why: call Freddie ← Freddie phoned to say it's Neville (181 s), so asking him fits; turn its voice on ← "your
-    //   voice is back" and "off" just before, rebuilt as a way to hear who it is
     { id: 'd3', skill: 'detail', level: 'B1', point: 'head', seg: [218.3, 223.5],
-      stem: 'What did the girls try to do to the robot they caught?',
-      choices: ['Take its head off to see who was inside', 'Call Freddie so he could tell them who it was',
-                'Turn its voice back on to hear who it was'], a: 0,
-      cue: 'tried to のあとの動詞と、その目的。',
+      stem: 'What did the girls try to do to the robot?',
+      ja: '女の子たちはロボットに何をしようとした？',
+      choices: ['Take its head off', 'Call Freddie', 'Turn on its voice'], a: 0,
+      choicesJa: ['頭を外す', 'フレディに電話する', '声を出させる'],
+      cue: '「tried to」のあと。',
       line: 'We tried to *take his head off* to see who it is.',
-      said: '捕まえたロボットの頭を外して、中が誰か確かめようとした、と話す。',
-      mean: '中が誰かを確かめるための行動。頭は外れなかった。',
-      trap: 'Freddie の電話や直前の voice に引かれやすい。tried to のあとの動詞と、その目的語をそのまま聞く。',
+      said: '「中がだれか見ようと、頭を外そうとした」と話す。',
+      mean: 'take 〜 off ＝ 〜を外す、脱ぐ。to see 〜 ＝ 〜を確かめるために。',
+      trap: '直前の voice（声）に引かれやすい。tried to のあとの take を聞く。',
       use: 'Take your shoes off at the door, please.（玄関で靴を脱いでください）' },
 
-    // R fix: V2 (blind 50 %): "would have" was a weak choice; now "has" (the had lost after 's), so each wrong
-    //   choice drops one of the two sounds
-    // why: had ← the 's swallowed before "had"; has ← the 's heard, the short "had" lost before "enough"
     { id: 's1', skill: 'sound', level: 'B2', point: 'hadenough', seg: [238.1, 242.3],
       stem: 'Which words come right before “enough”?',
+      ja: '「enough」の直前に入る語は？',
       choices: ['Neville has had', 'Neville had', 'Neville has'], a: 0,
-      cue: '名前の最後の音と had の間。',
+      choicesJa: ['ネヴィルはもう〜した', 'ネヴィルは〜した', 'ネヴィルは〜を持つ'],
+      cue: '名前の最後の音と、そのあと。',
       line: 'Okay, I think *Neville’s had* enough.',
-      said: '「もう Neville も十分こりただろう」。has は ’s になり名前につく。',
-      mean: 'has had enough ＝ もう十分ひどい目にあった。今やめる、という合図。',
-      trap: '’s も had も弱く落としやすい。名前の最後の z と h を聞く。',
+      said: '「よし、ネヴィルはもう十分こりただろう」と言う。',
+      mean: 'has had enough ＝ もう十分ひどい目にあった。has は ’s になって名前につく。',
+      trap: '「ネヴィルズ」と z のあとに「ハッ」が続く。had だけなら z がなく、has だけなら「ハッ」がない。',
       use: 'I think I’ve had enough coffee today.（今日はもうコーヒーは十分）' },
 
-    // R fix: V2 (blind 65 %): "let go once he says sorry" was a filler; now an escape reading on "ropes off him"
-    // why: owns up ← "Neville!" "Yep." heard as a confession; slips his ropes ← "get the ropes off him" heard,
-    //   but the girls untie him themselves
     { id: 'g2', skill: 'gist', level: 'B2', point: 'twist', seg: [238.1, 267.0],
-      stem: 'How does the girls’ hunt for the culprit turn out?',
-      choices: ['They beat up the wrong person in the suit', 'They catch Neville, and he owns up to it',
-                'They catch Neville, but he slips his ropes'], a: 0,
-      cue: 'ロープをほどいたあとの、問いかけの声。',
-      line: '…what makes you girls think that? — Neville? … *Then who’s in the robot costume?*',
-      said: '「Neville はもう来ない」と話す二人に、本人が声をかける。',
-      mean: 'やっつけたのは Neville ではなかった。着ぐるみの中は誰か、という話になる。',
-      trap: '名前や ropes で捕まえたのは本人に聞こえる。意外な声は状況が変わる合図。',
-      use: 'Wait, then who called me?（待って、じゃあ誰が電話してきたの？）' },
+      stem: 'What surprise do the girls get?',
+      ja: '女の子たちはどんなことに驚く？',
+      choices: ['They beat up the wrong person', 'Neville says sorry to them', 'Neville runs away from them'], a: 0,
+      choicesJa: ['別の人をやっつけていた', 'ネヴィルが謝る', 'ネヴィルが逃げる'],
+      cue: 'ロープをほどいたあとの声。',
+      line: 'And what makes you girls think that? — Neville? … *Then who’s in the robot costume?*',
+      said: '「ネヴィルはもう来ない」と言った二人に、本人が声をかける。「じゃあ着ぐるみの中はだれ？」',
+      mean: 'Then who’s in 〜? ＝ じゃあ〜の中はだれ？ やっつけたのはネヴィルではなかった。',
+      trap: 'Neville の名前が何度も出るので本人を捕まえたと思いやすい。最後の質問を聞く。',
+      use: 'What makes you think that?（どうしてそう思うの？）' },
 
-    // anchor: 247.1 s "And what makes you girls think that?" comes from the man they think they just beat; 252.4 s
-    //   "Neville?" from the girls, and the sentence "'Cause we just slammed you in…" breaks off
-    // R fix: V2 (blind 55 %), C2 one rewrite: "no one" was a filler; now a foiled-villain reading. Anchor holds
-    // why: beaten Neville ← the girls' version believed (he's the one beaten): right mechanism, wrong target; plan
-    //   fallen apart ← the usual villain-caught script; his smug question says the plan worked
-    { id: 'c1', skill: 'humor', level: 'C2', point: 'twist', seg: [243.2, 256.0],
+    { id: 'c1', skill: 'humor', level: 'C2', point: 'twist', seg: [243.2, 256.0], retired: true,
       stem: 'When the girls say Neville won’t bother them soon, who is the joke on?',
       choices: ['The girls: the real Neville is right there', 'Neville: he has just been beaten and tied up',
                 'Neville: his plan has fallen apart at last'], a: 0,
@@ -326,16 +282,16 @@ export const halfoween: Clip = {
       trap: '二人の話を信じると、笑いの的はやられた Neville に見える。言い切った直後の返事が誰の声かを聞く。',
       use: 'What makes you think that?（どうしてそう思うの？）' },
 
-    // why: get ready ← "muscles" heard, "won't be needing" lost; stay close ← "tonight" heard as "stay for tonight"
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'dismiss', seg: [279.4, 285.3],
-      stem: 'Near the end, what is Neville doing when he speaks to Dimitri and Yvonne?',
-      choices: ['Sending them off for the rest of the night', 'Telling them to get ready to use their muscles',
-                'Asking them to stay close for the night'], a: 0,
-      cue: '最後の短い三語。',
+      stem: 'What does “*You may go*” mean?',
+      ja: '「You may go」はどういう意味？',
+      choices: ['You can leave now', 'You might go later', 'You must stay here'], a: 0,
+      choicesJa: ['もう帰っていい', 'あとで行くかも', 'ここにいなさい'],
+      cue: '最後の短い3語。',
       line: 'I *won’t be needing* your muscles anymore tonight. *You may go.*',
       said: '手下に「今夜はもう力は要らない。帰ってよい」と言う。',
-      mean: 'You may go ＝ 下がってよい。目上のかしこまった言い方。',
-      trap: 'muscles が耳に残ると「出番だ」と取りやすい。won’t be needing は「もう要らない」と覚える。',
-      use: 'That’s all for today. You may go.（今日はここまで。帰っていいよ）' }
+      mean: 'You may go ＝ 下がってよい。may は「〜してよい」。かしこまった言い方。',
+      trap: 'may を「〜かもしれない」と思いやすい。ここは許可の may。',
+      use: 'That’s all for today. You may go.（今日はここまで。帰っていいよ）' },
   ]
 };
