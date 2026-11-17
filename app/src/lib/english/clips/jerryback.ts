@@ -1,17 +1,9 @@
+// A2 REVIEW 2026-11-17: keep 13, rewrite 5, retire 5, new 1 (nt3 stays retired)
 // “The only time Ron fought against nature | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): with Jerry retired, Ron says the office will pick a new person to tease; Tom's stumble over words makes
 // it him, his intern plan brings in someone nobody can tease, and Ron, after saying Tom can look after himself, brings
-// Jerry back once a week.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈303 s. Untested on purpose: 0–9 s (the
-// "making out" opening), 48–56 s (Tom's tangle: whisper “pile-of-piles”, captions “Philo Pilots”), 59–61 s (whisper
-// “the new Jerry is”, captions “ninja areas”), 107–119 s (Andy's ink: captions “Zink”, speakers unclear), 121 s
-// (“Barking up the wrong tree”: whisper “Parking”, captions “marking”), 137 s (a book title), 170–180 s (Donna's
-// innuendo), 200–202 s (who proposes to Taylor), 221 s (whisper “is whining going to”, captions “is wine ain't
-// gonna”), 236–239 s and 289–293 s (crude lines), 270–276 s (“I object… noted”: the objector isn't named).
-// REVIEW 2026-11-16: pass 8, fix 16, drop 0, new 0; ear checks 0
-// Open: a1, g1, nt3 and g2 still lean on the sitcom reading (the teasing, the twist); a show-savvy reader may get them.
-// No EAR CHECK lines: every key's words agree in whisper and the captions; no who, predict or stress items, and no key
-// rests on tone alone (Ron is named or addressed in each of his items: “Ron, ask me…”, “I don't know, Ron.”).
+// Jerry back once a week. Talk ends at ≈303 s. Untested on purpose: 0–9 s, 48–56 s, 59–61 s, 107–119 s, 121 s,
+// 137 s, 170–180 s (innuendo), 200–202 s, 221 s, 236–239 s and 289–293 s (crude lines), 270–276 s.
 import type { Clip } from '../types.ts';
 
 export const jerryBack: Clip = {
@@ -20,88 +12,65 @@ export const jerryBack: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 65 %): grief and regret left the ironic key as the only sitcom reading; now "made them laugh"
-    //   ("make fun" without "of") and "the dull jobs".
-    // why: made them laugh ← "make fun" heard without the weak "of": a funny coworker missed; dull jobs ← what a
-    //   Jerry is usually kept around for, read into "sad day"
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'sadday', seg: [9.7, 14.1],
-      stem: 'When Jerry’s leaving is called a sad day, what is the sadness about?',
-      choices: ['Losing the one they all made fun of', 'Losing the one who made them all laugh',
-                'Losing the one who did the dull jobs'], a: 0,
-      cue: '「sad day」のすぐあとの質問。',
+      stem: 'Jerry leaving is “a sad day.” Why are they sad?', ja: 'ジェリーが去って「悲しい日」。なぜ悲しい？',
+      choices: ['No one to make fun of', 'No one to make them laugh', 'No one to do dull jobs'], a: 0,
+      choicesJa: ['からかう相手がいない', '笑わせてくれる人がいない', 'つまらない仕事をする人がいない'],
+      cue: '「This is a sad day」のあと',
       line: 'This is a *sad day*. Who are we gonna *make fun of* now?',
       said: '「悲しい日だ。これから誰をからかえばいいの？」と言う。',
-      mean: '寂しいのはジェリー本人ではなく、からかう相手がいなくなったこと。',
-      trap: 'make fun of の of は弱く、落とすと「笑わせてくれる人」に聞こえる。of のあとの相手が、笑われる側。',
-      use: 'Who am I going to talk to now?（これから誰と話せばいいの？）' },
-
-    // R fix: V2 (blind 60 %): only the key fit "Ah, nature"; now three outcomes Ron could mean: one of them / a new
-    //   hire / the teasing fades.
-    // why: a new hire ← "fill that role" heard as a job opening; fades away ← "naturally" heard as "it'll sort
-    //   itself out"
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'nature', reveals: ['one'], seg: [11.4, 30.6],
-      stem: 'Asked who they’ll make fun of now, why is Ron not worried?',
-      choices: ['One of them will slip into Jerry’s role', 'A new hire will be brought in for that role',
-                'The teasing will just fade away by itself'], a: 0,
-      cue: '「Every place I’ve ever worked」から最後まで。',
+      mean: 'make fun of 〜 ＝ 〜をからかう、ばかにする。本当に悲しいのではない冗談。',
+      trap: 'sad day（悲しい日）で、ジェリーが好きだったと思いやすい。make fun of を聞く。',
+      use: 'Don’t make fun of me.（からかわないで）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'nature', reveals: ['one'], seg: [11.4, 30.6],
+      stem: 'What does Ron say will happen now?', ja: 'ロンはこれから何が起きると言う？',
+      choices: ['Someone new will be the joke', 'A new worker will be hired', 'The teasing will stop for good'], a: 0,
+      choicesJa: ['別の誰かがからかわれ役になる', '新しい人が雇われる', 'からかいがすっかりなくなる'],
+      cue: '「No need to worry」のあと',
       line: 'the office *naturally selects a new Jerry*… Soon, *one of you* will be ridiculed mercilessly.',
-      said: '「一人去れば、職場が自然に次のジェリーを選ぶ」と話す。',
-      mean: '弱い者がいじられる役は自然に生まれる、という考え。次はこの中の誰か、と予告している。',
-      trap: 'fill that role を求人と取りやすいが、選ぶのは「職場」で、人を雇う話ではない。',
-      use: 'Every office has one of those.（どの職場にもそういう人はいる）' },
-
-    // why: month ← the same kind of time word, a near miss if the last word is lost; animal ← "animal control
-    //   reports" just before
+      said: 'ロンが「一人去れば、職場が自然に次のジェリーを選ぶ。すぐ君たちの誰かがそうなる」と言う。',
+      mean: 'select ＝ 選ぶ。ridicule ＝ 笑いものにする。one of you ＝ 君たちのうちの誰か。',
+      trap: 'select（選ぶ）から、新しく雇うと思いやすい。one of you が答え。',
+      use: 'No need to worry.（心配いらないよ）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'year', seg: [43.1, 47.6],
-      stem: 'How did Leslie want the reports organized?',
-      choices: ['In order of year', 'In order of month', 'In order of animal'], a: 0,
-      cue: '「Leslie said」のあと、文の最後の語。',
+      stem: 'How did Leslie want the reports put in order?', ja: 'レスリーは報告書をどう並べてほしかった？',
+      choices: ['By year', 'By month', 'By animal'], a: 0,
+      choicesJa: ['年ごと', '月ごと', '動物ごと'],
+      cue: '「organize these」のあと',
       line: 'I believe Leslie said to *organize these by year*.',
-      said: '「レスリーは年ごとに整理しろと言ってた」と、資料の扱いを確かめる。',
-      mean: 'organize ～ by year ＝ 年ごとに分けて並べる。',
-      trap: '直前の animal control が耳に残ると、動物ごとに思える。by のあとの語が分け方を決める。',
-      use: 'Can you sort these by date?（これ日付順に並べてくれる？）' },
-
+      said: '「レスリーは年ごとに整理しろと言ってた」と言う。',
+      mean: 'organize ＝ 整理する。by year ＝ 年ごとに。',
+      trap: 'animal control reports（動物管理の報告書）なので、動物ごとだと思いやすい。',
+      use: 'Please organize these by date.（日付ごとに整理してください）' },
     { id: 'x1', skill: 'dict', level: 'B2', point: 'ahead', seg: [43.55, 48.25],
-      stem: 'Type Tom’s reply to the reminder: “___.” (4 words)', answer: 'way ahead of you',
-      cue: '指示の直後の返事。4語がひと続き。',
+      stem: 'Type Tom’s reply: “___.” (4 words)', ja: 'トムの返事の4語を書こう', answer: 'way ahead of you',
+      cue: '「by year」のあと',
       line: '*Way ahead of you*. I made two…',
-      said: '「とっくにやってるよ」と返す。',
-      mean: 'way ahead of you ＝ 君よりずっと先、もう済んでる。way は「ずっと」の強め。',
-      trap: 'ahead‿of‿you がつながり「アヘダヴユ」に。of は弱く「ア」程度で、聞き落としやすい。',
-      use: 'Way ahead of you, it’s booked.（もう予約済みだよ）' },
-
-    // why: admits it ← "said it wrong" is heard, but after "barely"; blames them ← "Are you broken?" just before,
-    //   heard as the others' fault
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'barely', seg: [58.93, 66.0],
-      stem: 'When the others jump on his slip, how does Tom react?',
-      choices: ['He insists it was hardly a mistake at all', 'He laughs and admits he got it wrong',
-                'He says the others rushed him into it'], a: 0,
-      cue: '「No, it doesn’t.」のあとの一文。',
-      line: 'No, it doesn’t. I *barely even said it wrong*.',
-      said: '「そんなことない。ほぼちゃんと言えてた」と打ち消す。',
-      mean: 'barely ＝ ほとんど〜ない。小さく言って、失敗をなかったことにしたい。',
-      trap: 'said it wrong だけ拾うと、認めたように聞こえる。前の barely が意味をひっくり返す。',
-      use: 'I barely touched it!（ほとんど触ってないって！）' },
-
-    // why: 13 ← thirteen/thirty, the -teen/-ty pair; 3 ← "three" heard inside "thirty"; 50 ← a "whole lifetime"
-    //   guess from the sad picture he paints
-    // R fix: S4: the end fell 0.06 s after "vests", inside "and listening"; it now runs to the sentence's end.
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [67.6, 78.9], keep: true,
-      stem: 'How many years later does Tom picture himself in sweater vests?',
-      choices: ['3 years', '13 years', '30 years', '50 years'], a: 2,
-      cue: '「And」のあと、years の前の数。',
+      said: 'トムが「とっくにやってるよ」と返す。',
+      mean: 'way ahead of you ＝ あなたより先に、もうやっている。way は「ずっと」と強める。',
+      trap: 'ahead of がつながり「アヘダヴ」。way を聞き落とさない。',
+      use: 'Way ahead of you.（もうやってあるよ）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'barely', seg: [58.93, 66],
+      stem: 'Tom says, “I *barely* even said it wrong.” What does he mean?', ja: 'トムの「I barely even said it wrong」の意味は？',
+      choices: ['It was almost right', 'He said it all wrong', 'He didn’t say a thing'], a: 0,
+      choicesJa: ['ほぼ正しかった', '全部まちがえた', '何も言っていない'],
+      cue: '「No, it doesn’t」のあと',
+      line: 'No, it doesn’t. *I barely even said it wrong*.',
+      said: 'トムが「そんなことない。ほとんどまちがえてない」と打ち消す。',
+      mean: 'barely ＝ ほとんど〜ない。barely said it wrong ＝ ほとんどまちがえていない。',
+      trap: 'wrong（まちがい）が聞こえるので、全部まちがえたと思いやすい。barely を聞く。',
+      use: 'I barely slept.（ほとんど寝てない）' },
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [67.6, 78.9],
+      stem: 'How many years later does Tom picture himself in sweater vests?', ja: 'トムは何年後にセーターベストを着ている自分を想像する？',
+      choices: ['3 years', '13 years', '30 years', '50 years'], a: 2, keep: true,
+      choicesJa: ['3年後', '13年後', '30年後', '50年後'],
+      cue: '「One screwed up sentence」のあと',
       line: 'And *30 years* later, I’m wearing aquamarine sweater vests…',
-      said: '「そして30年後、ぼくは水色のセーターベストを着てる」と想像する。',
-      mean: 'たった一つの失敗から、30年後のさえない自分まで一気に飛ぶ。',
-      trap: 'thirty は前が強く、ty は弾んで「サーディ」。thirteen なら後ろの「ティーン」が強く長い。',
-      use: 'Thirty years later, still friends.（30年後も、まだ友だち）' },
-
-    // R fix: V2 (blind 60 %): "little slip" in the stem invited the big reading, and the Andy choice was weak; now an
-    //   "old man" reading and a one-day tease.
-    // why: old man ← "30 years later… sweater vests" heard as being about age; for a day ← "one screwed up
-    //   sentence" heard as a small, passing slip
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'slip', reveals: ['thirty', 'one'], seg: [67.6, 78.9],
+      said: 'トムが「30年後には、水色のセーターベストを着てる」と言う。',
+      mean: 'thirty ＝ 30。〜 years later ＝ 〜年後。',
+      trap: 'thirteen は後ろを強く「サーティーン」。three は「スリー」、fifty は「フィフ」。ここは「サーティ」。',
+      use: 'Thirty years later, he came back.（30年後、彼は戻ってきた）' },
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'slip', reveals: ['thirty', 'one'], seg: [67.6, 78.9], retired: true,
       stem: 'In Tom’s comment to the camera, what does he make of the slip?',
       choices: ['The start of a lifetime as the office joke', 'A sign he is already turning into an old man',
                 'A slip they’ll tease him about for a day'], a: 0,
@@ -111,61 +80,47 @@ export const jerryBack: Clip = {
       mean: 'begins が鍵。小さなミスを、いじられ役の人生の入口と見ている。',
       trap: '30年後やセーターから「老け込む」話と取りやすい。The next Jerry が、何の始まりかを決める。',
       use: 'This is how it starts.（こうやって始まるんだよ）' },
-
-    // R fix: V2 (blind 55 %), S2: the chess choice quoted the word under test, and "sizes up… note" pointed at a list.
-    // why: take a look ← "check" as in "check this out"; being watched ← "check" as in "check on someone"
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'check', seg: [89.15, 94.2],
-      stem: 'When Tom names Andy as the next Jerry, what does his repeated word do?',
-      choices: ['Ticks off each trait on a mental list', 'Asks the others to go take a look',
-                'Warns Andy that he’s being watched'], a: 0,
-      cue: '「Big guy,」「Goofy,」のあとの同じ一語。',
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'check', seg: [89.15, 94.2],
+      stem: 'Tom says, “Big guy, *check*.” What does “check” mean here?', ja: '「Big guy, check」の check の意味は？',
+      choices: ['Yes, that fits', 'Go and look at it', 'Pay the bill'], a: 0,
+      choicesJa: ['そう、当てはまる', '行って見てきて', 'お会計して'],
+      cue: '「It’s Andy」のあと',
       line: 'It’s Andy. Big guy, *check*. Goofy, *check*.',
-      said: '「でかい、当てはまる。間抜け、当てはまる」と照らす。',
-      mean: 'check ＝ リストに印をつける「チェック済み」。ジェリーの条件を一つずつ確かめている。',
-      trap: 'check を「見て」や「見張る」と取りやすい。特徴のあとに一語で置くと、リストの確認。',
-      use: 'Passport, check. Tickets, check.（パスポートよし、チケットよし）' },
-
-    // why: 12 ← twelve/twenty start alike ("twe-"); 2 ← "two" heard, "-enty" lost; 30 ← "30 years" from Tom's
-    //   comment just before
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [94.2, 99.25], keep: true,
-      stem: 'How often does Tom say Andy usually messes up like that?',
-      choices: ['Every 2 minutes', 'Every 12 minutes', 'Every 20 minutes', 'Every 30 minutes'], a: 2,
-      cue: '「usually happens」のあと。',
+      said: 'トムが「アンディだ。でかい、当てはまる。間抜け、当てはまる」と言う。',
+      mean: 'check ＝ （リストに）チェック、当てはまる。1つずつ確かめる時の言い方。',
+      trap: 'check（調べる、お会計）の意味が多い。ここはリストの印。',
+      use: 'Passport, check. Ticket, check.（パスポートよし、チケットよし）' },
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [94.2, 99.25],
+      stem: 'How often does Andy usually mess up, says Tom?', ja: 'トムによると、アンディはどのくらいの間隔で失敗する？',
+      choices: ['Every 2 minutes', 'Every 12 minutes', 'Every 20 minutes', 'Every 30 minutes'], a: 2, keep: true,
+      choicesJa: ['2分おき', '12分おき', '20分おき', '30分おき'],
+      cue: '「which usually happens」のあと',
       line: 'which usually happens *every 20 minutes*.',
-      said: '「アンディの失敗は、だいたい20分おきに起きる」と待つ。',
-      mean: 'every 20 minutes ＝ 20分ごと。からかい半分の見積もり。',
-      trap: 'twenty の nt は t が消えて「トゥエニー」に近い。twelve は最後の「ルヴ」で聞き分ける。',
-      use: 'The bus comes every 20 minutes.（バスは20分おきに来る）' },
-
-    // why: too big ← "Big guy" from Tom's list and "giant puppy" here; liked ← "puppy" heard as cute and loved
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'shame', seg: [123.8, 129.0],
-      stem: 'Why can’t Andy be the new Jerry, in the speaker’s view?',
-      choices: ['Teasing just doesn’t bother him', 'He’s too big for anyone to pick on',
-                'Everyone likes him way too much'], a: 0,
-      cue: '「never be the new Jerry」のあとの二文。',
+      said: 'トムが「だいたい20分おきに起きる」と言う。',
+      mean: 'twenty ＝ 20。every 〜 minutes ＝ 〜分おきに。',
+      trap: 'twelve は最後が「ルヴ」、thirty は「サ」で始まり、two は短い「トゥー」だけ。ここは「トゥエニ」。',
+      use: 'The train comes every twenty minutes.（電車は20分おきに来る）' },
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'shame', seg: [123.8, 129],
+      stem: 'Why can’t Andy be the new Jerry?', ja: 'なぜアンディは新しいジェリーになれない？',
+      choices: ['Nothing embarrasses him', 'He is too big', 'Everyone likes him'], a: 0,
+      choicesJa: ['何をしても恥ずかしがらない', '体が大きすぎる', 'みんなに好かれている'],
+      cue: '「Andy’ll never be」のあと',
       line: '*Nothing embarrasses him*. He’s like a giant puppy *with no shame*.',
-      said: '「何をしても恥ずかしがらない。恥知らずの子犬だ」と言う。',
-      mean: 'いじられ役は、からかわれて困る人。恥ずかしがらない人は、からかっても面白くない。',
-      trap: 'giant puppy から「大きい」「かわいい」を拾いやすい。理由は no shame の方。',
+      said: '「アンディは何をしても恥ずかしがらない。恥知らずの大きな子犬だ」と言う。',
+      mean: 'embarrass ＝ 恥ずかしい思いをさせる。no shame ＝ 恥ずかしいと思わない。',
+      trap: 'giant（大きい）が聞こえるので、体の大きさが理由だと思いやすい。',
       use: 'Nothing embarrasses her.（彼女は何があっても動じない）' },
-
-    // R fix: V2 (blind 55 %): "Says nobody is teasing him" was a filler; now a grudging yes and a pass-the-buck.
-    // why: grudging yes ← "Yeah" heard as はい, "no" as a sigh; someone else ← a two-word reply read as a dodge
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'yeahno', seg: [129.0, 135.3],
-      stem: 'When Tom says they could just stop teasing him, what does the reply do?',
-      choices: ['Turns it down without a second thought', 'Goes along with it, though not happily',
-                'Says that it’s up to someone else'], a: 0,
-      cue: '二語だけの返事。どちらの語が答えか。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'yeahno', seg: [129, 135.3],
+      stem: 'Tom asks them to stop. What does “*Yeah, no*” mean?', ja: 'トムが「やめて」と言うと「Yeah, no」。その意味は？',
+      choices: ['No, we won’t', 'Yes, we will', 'Maybe later'], a: 0,
+      choicesJa: ['いや、やめないよ', 'うん、やめるよ', 'あとでね'],
+      cue: 'トムの提案への短い返事',
       line: 'Or you guys could just stop making fun of me. — *Yeah, no.*',
       said: '「からかうのをやめればいいだけじゃない？」に、「うん、ないね」と即答。',
-      mean: 'Yeah, no ＝ 「分かるけど、それはない」。答えは no の方。',
-      trap: 'Yeah を「はい」と取ると賛成に聞こえる。二語の返事は、最後の語が答え。',
-      use: 'Yeah, no, that’s not happening.（うん、それはないね）' },
-
-    // R fix: V2 (blind 60 %): "done by a machine" was absurd; "part-time help" replaces it.
-    // why: part-time ← "not a person" heard as "not a full staff member"; someone else pays ← "cost nothing to the
-    //   taxpayer" comes right after
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'intern', seg: [142.1, 149.3],
+      mean: 'Yeah, no ＝ いや、ない（くだけた言い方）。最初の yeah は聞いた、の意味で、答えは no。',
+      trap: 'Yeah（うん）が先に聞こえるので、OK だと思いやすい。最後の no が答え。',
+      use: 'Yeah, no. That won’t work.（いや、それは無理だね）' },
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'intern', seg: [142.1, 149.3], retired: true,
       stem: 'Why does Tom’s answer to “A new person in the office?” get a laugh?',
       choices: ['He talks as if an intern isn’t really a person', 'He means the intern would only be part-time help',
                 'He means someone else would pay the new hire'], a: 0,
@@ -175,16 +130,7 @@ export const jerryBack: Clip = {
       mean: 'インターンを人の数に入れない言い方。ひどい理屈を真顔で言うのが笑い。',
       trap: 'Not a person を「正規の人員ではない」程度に取りやすい。言葉どおり人扱いしていない所を聞く。',
       use: 'Not a meeting. A quick chat.（会議じゃないよ、ちょっと話すだけ）' },
-
-    // C2: a plain-English paraphrase (cf. s1)
-    // anchor: 154.8–158.2 s "more importantly, they're usually stupid and terrible, so they get no work done";
-    //   159.9–161.9 s Ron is won over by exactly that; 164.1–166.3 s "after all": wrecking the government is what he
-    //   has hoped for all along
-    // R fix: V2 (blind 70 %): "Be careful…" broke the frame, so the hopeful key stood out; all three now open "Good
-    //   work. With luck…", and only "destroy" and "after all" decide.
-    // why: fix it ← "destroy" missed and "Keep it up" heard as praise for reform (the sincerity flip); run it ← "Keep
-    //   it up… one day" heard as praise for Tom's future
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'argument', seg: [154.7, 166.8],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'argument', seg: [154.7, 166.8], retired: true,
       stem: 'Which plain-English version keeps what Ron means by his last line?',
       choices: ['“Good work. With luck, this government may fall apart yet.”',
                 '“Good work. With luck, we may fix this government yet.”',
@@ -195,54 +141,37 @@ export const jerryBack: Clip = {
       mean: '仕事が進まないことを長所として喜ぶ。after all は「前からの願いがついに」という含み。',
       trap: 'destroy を聞き逃すと、ほめ言葉の続きで「立て直す」「出世する」に聞こえる。何に感心したかを先に聞く。',
       use: 'We might pull this off after all.（結局うまくいくかもね）' },
-
-    // why: a ← the usual article, and the word is quick here; such a ← a common pattern before an adjective; some ←
-    //   "some" + noun as praise ("that's some argument")
     { id: 's1', skill: 'sound', level: 'B2', point: 'one', reveals: ['argument'], seg: [158.2, 162.5],
-      stem: 'Fill the gap: “That is ___ compelling argument.”',
-      choices: ['a', 'one', 'some', 'such a'], a: 1,
-      cue: '「That is」のあと、短い一語。',
+      stem: '“That is ___ compelling argument.”', ja: '空所に入るのは？',
+      choices: ['a', 'one', 'some'], a: 1,
+      choicesJa: ['（ある）', '実に', 'いくらかの'],
+      cue: '「That is」のあと',
       line: 'Damn, son. That is *one* compelling argument.',
-      said: '「おいおい、そいつは実に説得力のある話だ」と感心する。',
-      mean: 'one＋形容詞＋名詞 ＝ 「実に〜な」。a より強く、本気で感心したときの言い方。',
-      trap: 'one は w で始まり「ワン」と聞こえる。a なら「ア」だけ。文法で予想せず、音の始まりを聞く。',
-      use: 'That is one good burger.（こいつは実にうまいバーガーだ）' },
-
-    // R fix: V2 (blind 60 %): three "Something…" choices; the 実は frame (a confession) replaces "a new subject".
-    // why: backs it up ← "Actually" heard as "in fact, yes"; private ← 実は read as the start of a confession
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [187.4, 194.55],
-      stem: 'When Taylor replies to Tom’s guess, what does his first word set up?',
-      choices: ['Something that goes against Tom’s guess', 'Something that backs up Tom’s guess',
-                'Something private he’s about to share'], a: 0,
-      cue: '相手の決めつけのあと、返事の最初の一語。',
-      line: '…jock type, huh? — *Actually*, I quit football senior year…',
-      said: '「脳筋だろ」に、「実は、フットボールはやめた」と返す。',
-      mean: 'Actually ＝ 相手の思い込みをやんわり正す前置き。予想と逆の話が来る。',
-      trap: '日本語の「実は」は打ち明け話にも使うので、同意の続きに聞こえやすい。Actually は訂正の合図。',
-      use: 'Actually, I’m from Osaka, not Tokyo.（実は東京じゃなくて大阪出身です）' },
-
-    // R fix: V2 (blind 75 %, helped by nt2's old stem): "pastor" ≈ "pasture" gives a farm near sound in place of the
-    //   intern choice.
-    // why: farm ← "my pastor" heard as "pasture"; Natalie ← "my sister, Natalie" said just before
+      said: 'ロンが「おいおい、それは実に説得力のある話だ」と感心する。',
+      mean: 'That is one 〜 ＝ それは実に〜だ。one を強く言うと「すごい」の意味。',
+      trap: 'a なら小さく「ア」、some なら「サム」。ここは強く「ワン」と言っている。',
+      use: 'That is one big dog!（なんて大きな犬！）' },
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', seg: [187.4, 194.55],
+      stem: 'What comes after Taylor’s “*Actually*”?', ja: 'テイラーの「Actually」のあとに来るのは？',
+      choices: ['Something against Tom’s guess', 'Something that agrees with Tom', 'Something very private'], a: 0,
+      choicesJa: ['トムの思い込みと逆のこと', 'トムに賛成すること', 'とても個人的なこと'],
+      cue: '「jock type, huh?」のあと',
+      line: 'Oh, meathead jock type, huh? — *Actually*, I quit football senior year…',
+      said: '「脳筋だろ」に、テイラーが「実は、フットボールはやめたんだ」と返す。',
+      mean: 'Actually ＝ 実は。相手の思い込みをやわらかく正す前置き。',
+      trap: 'football の話を続けるので、賛成していると思いやすい。quit（やめた）を聞く。',
+      use: 'Actually, I don’t drink.（実は、お酒は飲まないんです）' },
     { id: 'd2', skill: 'detail', level: 'B1', point: 'shelter', seg: [190.75, 194.55],
-      stem: 'Why did Taylor quit football in his senior year?',
-      choices: ['To help run a homeless shelter', 'To help out on his family farm', 'To spend more time with Natalie'],
-      a: 0,
-      cue: '「so I could」のあと。',
+      stem: 'Why did Taylor quit football?', ja: 'テイラーはなぜフットボールをやめた？',
+      choices: ['To help run a homeless shelter', 'To help on his family’s farm', 'To spend more time with Natalie'], a: 0,
+      choicesJa: ['ホームレス施設を手伝うため', '家の農場を手伝うため', 'ナタリーともっと過ごすため'],
+      cue: '「so I could」のあと',
       line: 'I quit football senior year so I could help my pastor *run a homeless shelter*.',
-      said: '「牧師さんのホームレス施設を手伝うため、フットボールをやめた」と話す。',
-      mean: 'so I could ～ ＝ 〜できるように。立派すぎる理由。',
-      trap: 'pastor（牧師）は pasture（牧草地）に似た音。理由は so I could のあとで聞く。',
-      use: 'I left early so I could rest.（休めるように早めに出た）' },
-
-    // C2: who is the joke on? (cf. m1)
-    // anchor: 197.9–200.2 s "Anybody would be lucky to marry him." answers Tom's dig at once; 202.2–207.0 s Taylor's
-    //   reply, then 208.2–208.9 s "He gets it.": the room takes Taylor's side each time, and Tom is left alone
-    // R fix: V2 (blind 55 %), N7: the stem named "love for the homeless" (d2's key); the Taylor choice is now the
-    //   dig's literal effect; reveals shelter (the line).
-    // why: Taylor ← the dig's literal target: right mechanism, wrong target (the room's reply praises him); the proposer ← the laugh after the
-    //   turn-down heard as on the one turned down
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'backfire', reveals: ['shelter'], seg: [194.55, 211.0],
+      said: 'テイラーが「牧師さんのホームレス施設を手伝うために、やめた」と言う。',
+      mean: 'so I could 〜 ＝ 〜できるように。shelter ＝ 保護施設。',
+      trap: 'Natalie（姉の名前）が前に出たので、彼女のためだと思いやすい。',
+      use: 'I quit so I could study.（勉強できるようにやめた）' },
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'backfire', reveals: ['shelter'], seg: [194.55, 211.0], retired: true,
       stem: 'After Tom’s dig at Taylor, who does the joke end up on?',
       choices: ['Tom, whose dig gets turned into praise', 'Taylor, whom the dig makes look foolish',
                 'The one who proposes and gets turned down'], a: 0,
@@ -252,9 +181,7 @@ export const jerryBack: Clip = {
       mean: 'けなしたつもりが、ほめる流れを作ってしまう。笑われるのは、悪口が空振りしたトムの方。',
       trap: '悪口の対象＝笑いの対象と取りやすい。誰が味方を得て、誰が浮いたかで決める。',
       use: 'Well, that backfired.（あーあ、裏目に出たね）' },
-
-    // why: not sad ← "No" heard as the answer to "am I sad?"; didn't catch it ← the bare reply read as a mishearing
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'askme', seg: [214.4, 220.9],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'askme', seg: [214.4, 220.9], retired: true,
       stem: 'When Tom tells Ron what to ask him, why does Ron’s answer get a laugh?',
       choices: ['He simply refuses to ask the question', 'He’s telling Tom he isn’t sad at all',
                 'He didn’t catch what Tom wanted to know'], a: 0,
@@ -264,53 +191,36 @@ export const jerryBack: Clip = {
       mean: '慰めてほしい前ふりを、一語で断る。相手の期待を平然と無視するのが笑い。',
       trap: 'No を「悲しくない」と取りやすいが、頼まれたのは「聞くこと」。何への No かを確かめる。',
       use: 'Ask me how my day was.（今日どうだったか聞いてよ）' },
-
-    // why: back to work ← "stand up" read literally (立ち上がる); accept it ← "is whining going to do anything"
-    //   heard as "nothing can be done"
-    // R fix: N6: notes were 122 characters; "泣き言より行動を" cut from mean.
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'standup', seg: [220.9, 226.6],
-      stem: 'What does Ron tell Tom to do about being the new Jerry?',
-      choices: ['Push back and defend himself', 'Get up and get back to work', 'Stop complaining and accept it'], a: 0,
-      cue: '最後の短い命令文。',
+      stem: 'Ron says, “*Stand up for yourself*.” What does he mean?', ja: 'ロンの「Stand up for yourself」の意味は？',
+      choices: ['Defend yourself', 'Get back to work', 'Stop complaining'], a: 0,
+      choicesJa: ['自分を守れ（言い返せ）', '仕事に戻れ', '文句を言うな'],
+      cue: '「whipping boy」のあと',
       line: 'You don’t want to be a whipping boy. *Stand up for yourself.*',
-      said: '「いじられ役は嫌だろ。自分のために立ち向かえ」と言う。',
-      mean: 'stand up for yourself ＝ 自分を守って言い返す。',
-      trap: 'stand up を「立ち上がる」と取ると、仕事に戻れに聞こえる。for yourself まで聞く。',
-      use: 'You have to stand up for yourself.（自分の身は自分で守らなきゃ）' },
-
-    // R fix: V2 (blind 65 %): a nickname reading replaces "close friend".
-    // why: nickname ← "was Jerry" taken as a name he was called; Jerry's job ← "was Jerry" taken as the same post
+      said: 'ロンが「いじられ役は嫌だろ。自分のために立ち向かえ」と言う。',
+      mean: 'stand up for 〜 ＝ 〜を守る、〜のために立ち向かう。whipping boy ＝ いじられ役。',
+      trap: 'stand up（立ち上がる）から、席を立つ話だと思いやすい。',
+      use: 'Stand up for your friends.（友だちを守ってあげて）' },
     { id: 'i2', skill: 'infer', level: 'B2', point: 'already', seg: [226.6, 233.3],
-      stem: 'What does Tom mean when he says he already was Jerry?',
-      choices: ['He was the one picked on growing up', 'He was called Jerry as a nickname once',
-                'He once had the job Jerry just left'], a: 0,
-      cue: '次の文で、いつ、どこの話をするか。',
+      stem: 'Tom says, “I *already was* Jerry.” What does he mean?', ja: 'トムの「I already was Jerry」の意味は？',
+      choices: ['He was picked on as a kid', 'He was once called Jerry', 'He once had Jerry’s job'], a: 0,
+      choicesJa: ['子どものころいじめられていた', 'ジェリーと呼ばれていた', 'ジェリーの仕事をしていた'],
+      cue: '「You don’t understand, Ron」のあと',
       line: 'I *already was Jerry*. I was a skinny… kid in South Carolina and *it sucked*.',
-      said: '「ぼくはもうジェリーだった。やせっぽちの子で、最悪だった」と言う。',
-      mean: 'Jerry が「いじられ役」という意味で使われている。子どものころ、からかわれる側だった。',
-      trap: '名前をそのまま取ると、あだ名や仕事の話に聞こえる。次の子どもの話で役の名と分かる。',
-      use: 'I was the new kid once too.（ぼくも昔は転校生だった）' },
-
-    // why: fight it ← Ron's "Stand up for yourself" just before; start over ← "I reinvented myself" heard as his
-    //   plan again
-    // R fix: N7: the trap names f3's key (「立ち向かえ」), so it reveals standup.
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'lean', reveals: ['standup'], seg: [239.2, 249.4],
-      stem: 'In the end, what does Tom decide to do about being a Jerry?',
-      choices: ['Go along with it all the way', 'Fight it until people stop', 'Leave and start over again'], a: 0,
-      cue: '最後の文、Might as well のあと。',
-      line: 'I’m gonna go buy some sweatpants… *Might as well lean into it.*',
-      said: '「いっそ受け入れるか」と、スウェットと恋愛小説を買いに行く。',
-      mean: 'lean into it ＝ 逆らわず乗っかる。might as well は「どうせなら」。',
-      trap: '直前の「立ち向かえ」から「戦う」を期待しやすい。lean into は逆らわない方向。',
-      use: 'It’s raining. Might as well relax.（雨だし、のんびりしよう）' },
-
-    // C2: the talking head against the scene (cf. g2)
-    // anchor: 250.2–252.7 s "Tom can take care of himself", then 265.7–270.6 s "I asked Jerry to come in… so I got
-    //   rid of him": the intern nobody could tease goes, and the old target is back, on Ron's own call
-    // R fix: V2 (blind 60 %): "quietly… after all" made the key the only nuanced choice; now three parallel say/do
-    //   pairs.
-    // why: and he doesn't ← the comment to the camera taken at face value (the sincerity flip); he'll help ← "Tom can
-    //   take care of himself" missed, and the Jerry move heard as a promise kept
+      said: 'トムが「ぼくはもうジェリーだった。やせっぽちの子で、最悪だった」と言う。',
+      mean: 'Jerry ＝ ここでは「からかわれ役」。子どものころ、いじめられる側だった。',
+      trap: 'Jerry を人の名前どおりに取りやすい。続く skinny kid（やせた子）が手がかり。',
+      use: 'It sucked.（最悪だった）' },
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'lean', reveals: ['standup'], seg: [239.2, 249.4],
+      stem: 'Tom says, “Might as well *lean into it*.” What does he mean?', ja: '「Might as well lean into it」の意味は？',
+      choices: ['Accept it all the way', 'Fight it very hard', 'Leave and start again'], a: 0,
+      choicesJa: ['とことん受け入れる', '全力で戦う', '辞めてやり直す'],
+      cue: 'スウェットの話のあと',
+      line: 'I’m gonna go buy some sweatpants and a Nicholas Sparks novel. *Might as well lean into it.*',
+      said: 'トムが「スウェットと恋愛小説を買ってくる。いっそ受け入れるか」と言う。',
+      mean: 'lean into 〜 ＝ 〜に身をまかせる、受け入れる。might as well ＝ いっそ〜しよう。',
+      trap: 'lean（寄りかかる）の意味がつかみにくい。sweatpants を買う＝ジェリーになる。',
+      use: 'It’s raining. Might as well stay in.（雨だし、家にいようか）' },
     { id: 'nt3', skill: 'attitude', level: 'C2', point: 'plan', seg: [249.4, 270.7], retired: true,
       stem: 'How do Ron’s comment to the camera and his next moves fit together?',
       choices: ['He says he won’t help Tom, yet he does', 'He says he won’t help Tom, and he doesn’t',
@@ -321,33 +231,35 @@ export const jerryBack: Clip = {
       mean: 'カメラへの言葉と行動が逆。口では突き放し、裏ではトムからいじられ役を外す手を打っている。',
       trap: 'カメラへの一言をそのまま信じやすい。この形式では、言ったことより次にしたことが本音。',
       use: 'I didn’t do it for you, okay?（別に君のためじゃないからね）' },
-
-    // why: glad he retired ← "all" heard as everyone agreeing; all want to ← "they all say" read as everyone wishing
-    //   to retire
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'retired', seg: [258.9, 265.65],
-      stem: 'When Jerry says he retired, what does the reply suggest?',
-      choices: ['That he was fired and is just saying that', 'That everyone is happy he got to retire',
-                'That everyone here would love to retire too'], a: 0,
-      cue: '「I retired.」への返事。they は誰のことか。',
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'himself', seg: [249.4, 253.5],
+      stem: 'What does Ron tell the camera about Tom?', ja: 'ロンはトムについてカメラに何と言う？',
+      choices: ['He can take care of himself', 'He needs a lot of help', 'He should quit his job'], a: 0,
+      choicesJa: ['自分で何とかできる', '助けがたくさん必要', '仕事を辞めるべき'],
+      cue: 'カメラの前の最初の一文',
+      line: '*Tom can take care of himself*. He’s a grown man.',
+      said: 'ロンが「トムは自分で何とかできる。大人だ」と言う。',
+      mean: 'take care of oneself ＝ 自分のことは自分でする。grown man ＝ 大人の男。',
+      trap: 'このあとロンは手を打つので、助けると言ったと思いやすい。言葉は take care of himself。',
+      use: 'I can take care of myself.（自分のことは自分でできる）' },
+    { id: 'h4', skill: 'pragma', level: 'B2', point: 'retired', seg: [258.9, 265.65],
+      stem: 'Jerry says he retired. What does “*That’s what they all say*” mean?', ja: '「That’s what they all say」の意味は？',
+      choices: ['I don’t believe you', 'Everyone retires one day', 'Good for you'], a: 0,
+      choicesJa: ['信じないよ', 'いつかはみんな引退する', 'よかったね'],
+      cue: '「I retired」のあと',
       line: 'I wasn’t fired. I retired. — *That’s what they all say.*',
       said: '「クビじゃない、引退したんだ」に、「みんなそう言うんだよ」と返す。',
-      mean: 'クビの人はみんな「引退」と言う、という決めつけ。言い分を言い訳扱いするいじり。',
-      trap: 'all を「みんな賛成」と取りやすい。they は「クビになった人たち」のこと。',
+      mean: 'That’s what they all say ＝ みんなそう言う（信じないよ）。からかう決まり文句。',
+      trap: 'all（みんな）から、みんな引退するという話だと思いやすい。',
       use: 'That’s what they all say.（みんなそう言うんだよね）' },
-
-    // R fix: V2 (blind 50 %): "treat him better" was weak; a kind reading now shares the weekly frame. ("Until we
-    //   find a permanent replacement" is not a distractor: Ron does say it.)
-    // why: full-time ← "until we find a permanent replacement" heard as filling the intern's job; lonely ←
-    //   "Welcome back, Jerry" and the visits heard as a kindness
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'plan', reveals: ['one'], seg: [265.65, 293.9],
-      stem: 'What is Ron’s plan for Jerry, as he explains it to the staff?',
-      choices: ['Bring him in weekly so there’s someone to tease', 'Bring him back full-time to cover the intern’s work',
-                'Bring him in weekly so he isn’t lonely in retirement'], a: 0,
-      cue: '「Are you hearing me, son?」のあとの説明。',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'plan', reveals: ['one'], seg: [274.2, 289.7],
+      stem: 'What is Ron’s plan for Jerry?', ja: 'ジェリーについてのロンの計画は？',
+      choices: ['Bring him in weekly to tease', 'Bring him back full-time', 'Keep him from being lonely'], a: 0,
+      choicesJa: ['週1回呼んで、からかう相手にする', 'フルタイムで戻す', 'さびしくないようにする'],
+      cue: '「Are you hearing me」のあと',
       line: 'Jerry will come in *once a week* and *everyone will get to watch him eat*…',
-      said: 'ジェリーを週に数時間呼び、不満の声に「みんなで眺めてネタにできる」と説明する。',
-      mean: '目的は、からかう相手を戻すこと。これでいじられ役がトムから離れる。',
-      trap: 'permanent replacement から正式な後任に聞こえるが、来るのは週に数時間。',
-      use: 'Are you hearing me? This is good news.（分かる？いい知らせなんだよ）' },
+      said: 'ロンが「ジェリーは週1回来る。みんなで食べるところを眺められる」と言う。',
+      mean: 'once a week ＝ 週1回。get to 〜 ＝ 〜できる。またからかえる、という意味。',
+      trap: 'until we find a replacement（代わりが見つかるまで）で、仕事の穴埋めだと思いやすい。',
+      use: 'I go once a week.（週に1回行きます）' },
   ]
 };
