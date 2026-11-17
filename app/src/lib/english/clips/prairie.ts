@@ -56,7 +56,7 @@ export const prairie: Clip = {
       cue: '「invented past」のあと。', line: 'Nothing can be used that was invented past *1817*.',
       said: '「1817年より後に発明された物は使えない」とルールを言う。',
       mean: 'past ＝ 〜より後。年は18と17に分けて「エイティーン・セブンティーン」と読む。',
-      trap: '前半は eighteen（18）。後半の seventeen は「ティーン」と長く、seventy（70）とちがう。',
+      trap: '「オー・セヴン」なら 1807、「セヴンティ」なら 1870、「ナインティーン」始まりなら 1917。',
       use: 'Nothing past nine, okay?（9時以降はなしね）' },
 
     { id: 'd1', skill: 'phrase', level: 'B2', point: 'referee', seg: [37, 41],

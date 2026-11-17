@@ -73,7 +73,7 @@ export const blindDate: Clip = {
       line: 'we *only* talked for *five minutes*',
       said: '「5分しか話していない」と言う。only が「たった」の気持ち。',
       mean: 'only ＝ たった〜だけ。運命の人と言うには短すぎるので、hard to tell（何とも言えない）。',
-      trap: 'fifteen なら後ろの「ティーン」が長い。fifty は「フィフ」で始まる。「ファイヴ」なら5。',
+      trap: '「フィフティーン」と後ろを伸ばせば 15、「フィフティ」と前が強ければ 50。「ファイヴ」なら 5。',
       use: 'I only slept for four hours.（4時間しか寝てない）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'night', seg: [5.2, 11.6],

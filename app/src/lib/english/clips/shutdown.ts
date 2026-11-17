@@ -154,7 +154,7 @@ export const shutdown: Clip = {
       line: 'we need to cut expenditures by *32%*.',
       said: '「赤字のため、支出を32パーセント減らす必要がある」と言う。',
       mean: 'cut 〜 by 32% ＝ 〜を32%減らす。expenditures ＝ 支出（硬い語）。',
-      trap: '22なら「トゥエ」で始まる。thirty で止まれば30。40はすぐあとに出る別の数。',
+      trap: '「トゥエ」で始まれば 22、thirty で止まれば 30、「フォーティ」なら 40（すぐあとの別の数）。',
       use: 'We need to cut costs by ten percent.（経費を10%削らないと）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], seg: [64.4, 72.3],
@@ -182,8 +182,8 @@ export const shutdown: Clip = {
       use: 'Right off the bat, I liked her.（会ってすぐ彼女が気に入った）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'creative', seg: [87.4, 93.95],
-      stem: 'What does the official’s answer to the City Hall idea do?',
-      ja: '市役所を売る案に、職員の答えはどう返している？',
+      stem: 'How does the official answer the City Hall idea?',
+      ja: '市役所を売る案に、職員はどう答える？',
       choices: ['Says no, nicely', 'Says yes, with a condition', 'Says yes, wants more'], a: 0,
       choicesJa: ['やんわり断る', '条件つきで賛成する', '賛成して、もっと求める'],
       cue: 'ほめ言葉のあと、but に続く話。',

@@ -181,7 +181,7 @@ export const ronConfession: Clip = {
       line: 'JJ’s Diner, *12:30*. — Excellent. See you then.',
       said: '「JJ’s ダイナーで12時半」と決め、ロンが「では、その時に」と答える。',
       mean: '12:30 は twelve thirty と読む。See you then ＝ じゃあその時に。',
-      trap: 'thirty が弱いと12時ちょうどに聞こえやすい。始めは twelve で、two ではない。',
+      trap: '「トゥエルヴ」だけなら 12:00、「トゥー・サーティ」なら 2:30。「トゥエルヴ・サーティ」なら 12:30。',
       use: 'Lunch tomorrow? Twelve thirty works.（明日ランチ？12時半なら大丈夫）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'missed', seg: [109.3, 141.8],
