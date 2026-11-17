@@ -1,17 +1,11 @@
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 2
-// REVIEW open: f2 is still near the line on a cold read (a broke learner's common sense says "spend"); g1 rests on
-//   the title's "broke" less, but rent is still the most direct money worry
+// A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 1
 // “Monica Is Broke | Friends” (the official Friends channel, Best of Season 2): out of work after a bad interview,
 // Monica turns down a loan, is told to borrow from her parents, finds them turning her room into a gym, admits at
 // dinner that she was let go (her dad says she has savings), and finally takes a loan paid in dinosaur checks.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Monica (13.2 s, 106.5 s), Jack
 // (91.1 s), Judy (130.9 s); Ross only as "Ross's room" and "your brother". The lender at 13–29 s and 155–175 s is never
-// named, so stems say "the lender" or "the suggestion" and no key rests on who it is.
-// Untested on purpose: 64–75 s (Steffi Graf's "tush": the point is the body); 78–89 s (Carol and Susan, "a woman in my
-// office is a lesbian": backstory); 90–94 s (the TV ad); 132–136 s ("our little harmonica": a pet-name pun); 151 s
-// ("Anything larger back there?": who says it and to whom isn't clear); 176–188 s (the bathing suit and the
-// Connecticut joke: a jab at her old weight). Small splits no key rests on: 22 s captions "why don't you why don't
-// you", whisper "why don't you want you"; 183 s "bigger then" (captions) / "than" (whisper).
+// named, so stems say "the lender" and no key rests on who it is. Untested on purpose: 64–75 s, 78–89 s, 90–94 s,
+// 132–136 s, 151 s, 176–188 s (a jab at her old weight).
 // EAR CHECK: 17.3 s s1 d1 — "couldn't" (both sources): said with the t dropped, ending on the n (≈ "couldn")
 // EAR CHECK: 8.0 s x2 — "do you have any" (both sources): do you runs into one weak syllable, have any linked
 import type { Clip } from '../types.ts';
@@ -22,46 +16,41 @@ export const monicabroke: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 50 %, right). The title "Monica Is Broke" pointed at the only money choice; all three are about
-    //   money or family now
-    // why: owes a friend ← "pay you back" + "guilty" heard as a debt she already has, not a loan she's refusing;
-    //   telling parents ← "mom and dad… guilty and tense around them" comes at the end of the same scene
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rent', reveals: ['possib'], seg: [1.5, 29.4],
       stem: 'At the start, what is Monica’s main worry?',
-      choices: ['Not having the money for this month’s rent', 'Feeling guilty about money she owes a friend',
-                'Telling her parents she lost her job'], a: 0,
-      cue: '「ほかの当ては？」と聞かれたあとの答え。',
+      ja: '最初、モニカのいちばんの心配は？',
+      choices: ['Paying this month’s rent', 'Owing money to a friend', 'Telling her parents the news'], a: 0,
+      choicesJa: ['今月の家賃を払うこと', '友だちにお金を借りていること', '両親に知らせること'],
+      cue: '「ほかの当ては？」の答え。',
       line: 'Well, there is a *possibility that I won’t make rent*.',
-      said: '面接が終わったあと、「家賃が払えないかも」と言っている。',
-      mean: 'make rent ＝ 家賃を期日までに用意する。お金の心配が、この場面の出発点。',
-      trap: 'guilty は借りたらの「もしも」で、借金はまだない。両親の話は相手が最後に出すだけ。',
+      said: '面接のあと、「家賃が払えないかも」と言う。',
+      mean: 'make rent ＝ 家賃を期日までに用意する。お金の心配が、この場面の始まり。',
+      trap: '借りる話も出るが、まだだれにも借りていない。両親の話は最後に出るだけ。',
       use: 'I might not make rent this month.（今月の家賃、払えないかも）' },
 
-    // why: fifteenth ← fifth and fifteenth share "fif-" and the -th; fourth ← the same f onset and -th ending
     { id: 'n1', skill: 'number', level: 'B1', point: 'shower', seg: [3.1, 6.2], keep: true,
-      stem: 'Which shower does Monica say finally got the interview off her?',
+      stem: 'Which shower washed off the interview, Monica says?',
+      ja: 'モニカは、何回目のシャワーで面接の気分が落ちたと言う？',
       choices: ['Her fourth', 'Her fifth', 'Her fifteenth'], a: 1,
-      cue: 'shower の直前の短い語。',
+      choicesJa: ['4回目', '5回目', '15回目'],
+      cue: '「shower」の直前。',
       line: 'I think that *fifth shower* actually got the interview off me.',
       said: '「5回目のシャワーで、やっと面接が落ちた気がする」と言う。',
-      mean: '面接がよほど嫌だったので、何度も洗い流したという大げさな冗談。',
-      trap: 'fifth と fifteenth は出だしが同じ。fifteenth なら -teen の長く強い音が入る。',
+      mean: 'fifth ＝ 5番目。面接がよほどいやで、何度も洗い流したという大げさな冗談。',
+      trap: 'fourth は「フォース」、fifteenth は「ティーンス」と長い。「フィフス」なら5回目。',
       use: 'This is my third coffee today.（今日これで3杯目）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'anyother', seg: [7.3, 10.0],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'anyother', seg: [7.3, 10.0],
       stem: 'Type the question: “So, ___ other possibilities?” (4 words)', answer: 'do you have any',
-      cue: 'So のあと、弱くつながる4語。',
+      ja: '「So,」のあとの4語を書こう。',
+      cue: '「So」のあと。',
       line: 'So, *do you have any* other possibilities?',
-      said: '「ほかに当てはあるの？」と聞いている。',
+      said: '「で、ほかに当てはあるの？」と聞く。',
       mean: 'do you は「ジュ」に近く縮み、have any は「ハヴェニ」とつながる。',
-      trap: 'do you が一音に聞こえ、Have you any や Are there any と書きやすい。語数で確かめる。',
+      trap: 'do you が一音に聞こえ、語数をまちがえやすい。4語あると思って書く。',
       use: 'Do you have any other sizes?（ほかのサイズ、ありますか）' },
 
-    // R fix: V2 (blind 60 %, right) and K6: "at all" was the only absolute, and the key was the odd one out. Both
-    //   distractors now tie a lead to the rent/possibility words
-    // why: low pay ← "possibility" heard as a job option, and "rent" heard right after it; won't discuss ← her joke
-    //   read as dodging the question
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'possib', reveals: ['rent'], seg: [7.3, 13.0],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'possib', reveals: ['rent'], seg: [7.3, 13.0], retired: true,
       stem: 'From Monica’s reply about her options, what can we tell?',
       choices: ['She has no job leads, only a bill coming due', 'She has a lead, but the pay won’t cover rent',
                 'She has leads, but won’t discuss them now'], a: 0,
@@ -72,10 +61,7 @@ export const monicabroke: Clip = {
       trap: 'Oh, yeah と a possibility で「当てがある」と思いやすい。何の possibility かまで聞く。',
       use: 'Plans tonight? Well, there’s laundry.（今夜の予定？まあ、洗濯ならあるけど）' },
 
-    // R fix: V2 (blind 55 %, right), K3: "brags… lots of job offers" was absurd. Now an upbeat-then-giving-up reading
-    // why: mishears ← the answer doesn't fit a jobs question, so a mishearing seems likely; upbeat ← "Oh, yeah" sounds
-    //   like a confident yes before the letdown
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'possib', reveals: ['rent'], seg: [7.3, 13.0],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'possib', reveals: ['rent'], seg: [7.3, 13.0], retired: true,
       stem: 'Why does Monica’s answer about other possibilities get a laugh?',
       choices: ['She uses “possibility” for a bad outcome, not a hope', 'She mishears “possibilities” as a question on rent',
                 'She sounds upbeat, then admits she quit looking'], a: 0,
@@ -86,40 +72,32 @@ export const monicabroke: Clip = {
       trap: '聞き違えたのではなく、わざと言葉を拾って遊んでいる。Oh, yeah は皮肉の前置き。',
       use: 'Good news? Well, it can’t get worse.（いい知らせ？まあ、これ以上悪くはならないよ）' },
 
-    // why: could ← the -n't's t drops, so only a faint n is left; can't ← the same "k-n" frame, a vowel apart;
-    //   didn't ← a weak d-n syllable in the same slot
     { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', reveals: ['guilty'], seg: [15.4, 20.6],
       stem: 'Fill the gap: “cuz if I ___ pay you back right away…”',
-      choices: ['could', 'couldn’t', 'can’t', 'didn’t'], a: 1,
-      cue: 'if I のすぐあと、短い一語の終わり方。',
+      ja: '空いている所に入る語は？',
+      choices: ['could', 'couldn’t', 'can’t'], a: 1,
+      choicesJa: ['〜できた', '〜できなかった', '〜できない'],
+      cue: '「if I」のすぐあと。',
       line: 'cuz if I *couldn’t* pay you back right away, then I’d feel guilty',
-      said: '「すぐに返せなかったら、気まずくなる」と言う。',
-      mean: 'couldn’t の t はほぼ消え、「クドゥン」と n で止まる。仮の話なので過去形。',
-      trap: 'could だと「返せたら気まずい」と話が逆になる。最後の n の響きと意味の流れで決める。',
+      said: '「すぐに返せなかったら、気まずくなるから」と言う。',
+      mean: 'couldn’t の t はほぼ消え、「クドゥン」と「ン」で止まる。もしもの話なので過去の形。',
+      trap: 'could には「ン」がなく、can’t は「キャン」で始まる。「クドゥン」なら couldn’t。',
       use: 'If I couldn’t come, I’d call you.（来られなかったら電話するね）' },
 
-    // R fix: V2 (blind 70 %, right). The key was the only reason about feelings; "pride" is a feelings reason too, and
-    //   "job soon" was weak
-    // why: parents ← mom and dad come up right after, as the other person's idea; pride ← "every time I saw you"
-    //   heard as embarrassment at being seen broke
     { id: 'd1', skill: 'detail', level: 'B1', point: 'guilty', reveals: ['couldnt'], seg: [15.4, 21.0],
-      stem: 'Why does Monica turn down the offer of a loan?',
-      choices: ['She’d feel awkward if she was slow to repay it', 'She would rather ask her parents for the money',
-                'She is too proud to let a friend see her broke'], a: 0,
-      cue: '「No, no, no」のあと、「もし〜なら」の部分。',
+      stem: 'Why does Monica say no to the loan?',
+      ja: 'モニカはなぜお金を借りるのを断る？',
+      choices: ['She’d feel bad if she paid late', 'She’d rather ask her parents', 'She’s too proud to borrow'], a: 0,
+      choicesJa: ['すぐ返せないと気まずいから', '両親に頼みたいから', 'プライドが高くて借りられない'],
+      cue: '「No, no, no」のあと。',
       line: 'if I *couldn’t pay you back right away*, then I’d *feel guilty and tense*',
-      said: 'すぐに返せなかったら、会うたびに気まずくなる、と断っている。',
-      mean: 'お金の貸し借りで、相手との関係がぎくしゃくするのを避けたいという理由。',
-      trap: 'mom and dad は相手があとで出す話。見栄ではなく、返せないときの気まずさが理由。',
+      said: 'すぐに返せなかったら、会うたびに気まずくなる、と断る。',
+      mean: 'pay 人 back ＝ 人にお金を返す。お金の貸し借りで関係がぎくしゃくするのがいや。',
+      trap: 'mom and dad（両親）は相手があとで出す話。理由は返せないときの気まずさ。',
       use: 'I don’t want things to get weird.（気まずくなりたくないの）' },
 
     // anchor: 24.4–25.9 s "guilty and tense" are Monica's own words from 18.9–19.4 s, now pinned on her and her parents
-    //   ("around them already"); the loan offer itself was made in earnest at 13.2 s
-    // R fix: V2 (blind 55 %, right), K6: "always" was an absolute in the key only. The lender distractor now points
-    //   at the refused offer, and the parents one at an easy source of cash
-    // why: parents ← "make some money off of them" sounds like a dig at a soft touch; the lender ← "Oh, okay" after
-    //   her refusal, heard as the joke being on the turned-down offer
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'already', seg: [21.5, 29.4],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'already', seg: [21.5, 29.4], retired: true,
       stem: 'In the suggestion to borrow from her parents, who is the joke on?',
       choices: ['Monica, whose guilt around her parents is old news', 'Her parents, who would be an easy source of cash',
                 'The lender, whose offer she has just turned down'], a: 0,
@@ -130,57 +108,45 @@ export const monicabroke: Clip = {
       trap: 'money off of them は親への悪口に聞こえやすい。誰の言葉のくり返しかを追うと、相手が分かる。',
       use: 'You’re late anyway, so grab a coffee.（どうせ遅刻なんだし、コーヒー買っていけば）' },
 
-    // R fix: V2 (blind 60 %, right), K3: "just as good with money" was a filler. Now "make money off of them" read
-    //   as earning it, and the key no longer echoes "feel bad"
-    // why: small chance ← might = かもしれない, the literal reading; earn ← "make some money off of them" heard as
-    //   earning money by working for them
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'already', seg: [21.5, 29.4],
-      stem: 'In the last part of the suggestion about her parents, what is being said?',
-      choices: ['She has nothing to lose by asking them for it', 'There is a small chance that they will pay',
-                'She could earn some money by working for them'], a: 0,
-      cue: '文の最後、might で始まるひとかたまり。',
+      stem: 'What does “You might as well make some money” mean?',
+      ja: '「You might as well make some money」の意味は？',
+      choices: ['She has nothing to lose', 'There’s a small chance', 'She could work for them'], a: 0,
+      choicesJa: ['（借りても）損はない', '少しは見込みがある', '両親のところで働ける'],
+      cue: '文の最後、might のかたまり。',
       line: 'You *might as well* make some money off of them.',
-      said: '「どうせ気まずいなら、お金ももらえば」という提案。',
-      mean: 'might as well ＝ 損はないからそうすれば、という言い方。',
-      trap: 'might を「かもしれない」、make money を「稼ぐ」と分けて取るとずれる。ひとかたまりで覚える。',
+      said: '「どうせ気まずいなら、お金ももらっちゃえば」とすすめる。',
+      mean: 'might as well 〜 ＝ どうせなら〜すればいい。損はないから、という言い方。',
+      trap: 'might を「かもしれない」と分けて思うと「少し見込みがある」に聞こえる。ひとかたまりで覚える。',
       use: 'We might as well walk.（どうせなら歩こうか）' },
 
-    // R fix: V2 (blind 70 %, right). "Moving out" was weak; renting the room out is the other usual empty-nest plan
-    // why: to Ross ← "Ross's room" comes up next, as if his room were the one moving; renting ← boxes of her old
-    //   stuff mean the room is being cleared for someone
     { id: 'd2', skill: 'detail', level: 'B1', point: 'gym', seg: [39.1, 45.6],
       stem: 'What is the surprise her parents have for Monica?',
-      choices: ['They are turning her room into a gym', 'They are clearing her room for Ross to use',
-                'They are renting her old room out to a lodger'], a: 0,
-      cue: '「surprise for you」のすぐあと。',
+      ja: '両親がモニカに用意したサプライズは？',
+      choices: ['Turning her room into a gym', 'Giving her room to Ross', 'Renting out her room'], a: 0,
+      choicesJa: ['モニカの部屋をジムにする', '部屋をロスにあげる', '部屋を人に貸す'],
+      cue: '「surprise for you」のあと。',
       line: 'We’re *turning your room into a gym*.',
-      said: '「あなたの部屋をジムにするの」と告げる。',
-      mean: 'turn A into B ＝ AをBに変える。だから昔の荷物を出してきた。',
-      trap: '古い荷物が出てくると「誰かに貸す」と想像しやすい。turning … into のあとが答え。',
+      said: '「あなたの部屋をジムにするの」と言う。',
+      mean: 'turn A into B ＝ A を B に変える。だから昔の荷物を出してきた。',
+      trap: '古い荷物が出てくるので「人に貸す」と思いやすい。turning … into のあとが答え。',
       use: 'We turned the garage into an office.（ガレージを仕事部屋にしたんだ）' },
 
-    // R fix: V2 (blind 60 %, right), K6: the key was the only two-part, nuanced choice. Now all three are "X, but Y"
-    // why: caught off guard ← "Wow, that is a surprise" taken at face value; curious ← "Just one little question"
-    //   taken as a plain question (the Japanese frame), not a polite objection
     { id: 't1', skill: 'attitude', level: 'B2', point: 'whynot', seg: [46.8, 52.0],
-      stem: 'How does Monica sound when she replies to the surprise?',
-      choices: ['Upset, but keeping it polite', 'Pleased, but a little caught off guard',
-                'Fine with it, but curious why'], a: 0,
-      cue: '「Wow」のあと、ていねいな前置きと質問。',
+      stem: 'How does Monica sound when she answers the surprise?',
+      ja: 'サプライズへの返事で、モニカはどんな感じ？',
+      choices: ['Upset, but polite', 'Happy, but surprised', 'Calm and fine with it'], a: 0,
+      choicesJa: ['不満だけど、ていねい', 'うれしいけど、おどろいている', '落ち着いていて、平気'],
+      cue: '「Wow」のあとの質問。',
       line: 'Wow, that is a surprise. Just *one little question*, uh, *why not Ross’s room*?',
-      said: '「驚いた。ひとつだけ、なんで Ross の部屋じゃないの？」と言う。',
-      mean: '自分の部屋が先に消えることへの不満を、礼儀正しい言い方で包んでいる。',
-      trap: 'one little question は質問に聞こえるが、「なぜ兄でなく私？」は不満のしるし。',
+      said: '「驚いた。ひとつだけ聞くけど、なんでロスの部屋じゃないの？」と言う。',
+      mean: 'Just one little question ＝ ひとつだけ聞かせて。不満を、ていねいな言い方で包んでいる。',
+      trap: 'Wow、surprise から喜んでいると思いやすい。「なぜ兄じゃなく私？」は不満のしるし。',
       use: 'Just one little question: why me?（ひとつだけ聞いていい？なんで私？）' },
 
     // anchor: 51.0 s the only question she asks is "why not Ross's room?"; the parents' answer is all about "your
-    //   brother" (53.8–60.2 s), and "God forbid" (61.2 s) answers that
-    // R fix: V2 (blind 70 %, right). "Move back home" was weak and "always" marked the key; both distractors name Ross
-    //   now (C2 recipe: sincerity flip)
-    // why: prizes ← the reason is all trophies and badges, so the parents seem to value awards; proud ← "God forbid"
-    //   heard as sincere, as if she shares their pride and only wants space
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'forbid', reveals: ['whynot', 'gym', 'trophies'],
-      seg: [46.8, 62.5],
+      seg: [46.8, 62.5], retired: true,
       stem: 'What does this talk about the rooms suggest about Monica and her parents?',
       choices: ['She feels they put Ross ahead of her', 'She feels they care more for prizes than people',
                 'She is proud of Ross, but wants a room too'], a: 0,
@@ -191,25 +157,19 @@ export const monicabroke: Clip = {
       trap: 'トロフィーの話なので「賞好きの親」と取りやすいが、問うのは「なぜ兄でなく私か」。',
       use: 'Why is it always me?（なんでいつも私なの？）' },
 
-    // R fix: V2 (blind 65 %, right). The key was the only specific reason; both distractors are Ross-specific now
-    // why: science kits ← "science" and "so many" heard, the awards missed; his son ← "your brother" plus the grandson
-    //   asked about later in the clip
     { id: 'd3', skill: 'detail', level: 'B2', point: 'trophies', seg: [49.2, 60.8],
-      stem: 'Why did her parents decide against using Ross’s room?',
-      choices: ['They didn’t want to move his science awards', 'His old science kits still fill up the room',
-                'They keep it for his visits with his son'], a: 0,
-      cue: '「your brother has」のあとに並ぶもの。',
+      stem: 'Why didn’t her parents use Ross’s room?',
+      ja: '両親はなぜロスの部屋を使わなかった？',
+      choices: ['They won’t move his awards', 'His old science kits fill it', 'They keep it for his son'], a: 0,
+      choicesJa: ['ロスの賞を動かしたくない', '昔の理科の道具でいっぱい', 'ロスの息子のために取ってある'],
+      cue: '「your brother has」のあと。',
       line: 'your brother has so many *science trophies and plaques and merit badges*… we *didn’t want to disturb them*.',
-      said: 'Ross の部屋には科学のトロフィーや盾、バッジが多く、動かしたくなかった。',
-      mean: 'disturb ＝ 動かして乱す。賞の数々をそのまま飾っておきたい、という理由。',
-      trap: 'science だけ拾うと「道具」に聞こえる。並ぶのは賞の数々。',
+      said: 'ロスの部屋には科学のトロフィーや盾、バッジが多く、動かしたくなかった、と言う。',
+      mean: 'disturb ＝ 動かして乱す。trophies, plaques, badges ＝ どれも賞の品。',
+      trap: 'science だけ聞くと理科の道具に思いやすい。並ぶのは賞の品ばかり。',
       use: 'Please don’t disturb my desk.（机の上、いじらないでね）' },
 
-    // R fix: V2 (blind 55 %, right). "Fearfully" was weak; a second sarcastic reading aimed at Ross (C2 recipe:
-    //   right mechanism, wrong target) makes the key one of two sarcastic choices
-    // why: sincere ← "God forbid" is literally a polite wish that nothing bad happens; Ross ← the trophies are his, but
-    //   the choice not to move them was the parents'
-    { id: 't2', skill: 'attitude', level: 'C1', point: 'forbid', seg: [58.4, 62.5],
+    { id: 't2', skill: 'attitude', level: 'C1', point: 'forbid', seg: [58.4, 62.5], retired: true,
       stem: 'When Monica answers her parents’ last reason, how does she mean it?',
       choices: ['Sarcastically: his trophies get more care than she does', 'Sincerely: his trophies really are worth keeping safe',
                 'Sarcastically: Ross is too old to keep his trophies'], a: 0,
@@ -220,53 +180,55 @@ export const monicabroke: Clip = {
       trap: '言葉どおりなら同意だが、自分の部屋は片づけられた直後。状況と言葉が逆なら皮肉を疑う。',
       use: 'Oh, God forbid we’re five minutes late.（5分遅れたら大変だもんね（皮肉））' },
 
-    // R fix: V2 (blind 50 %, right). "Worked up the nerve" was the only inferred choice; all three are inferences now
-    // why: turned down ← "No" comes right after "did they lend you the money"; waiting ← "yet" twice, with haven't
-    //   heard as have
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'asked', seg: [101.9, 107.6],
-      stem: 'At her parents’ place, where do things stand with the loan?',
-      choices: ['She keeps putting off asking them for it', 'She asked, and they turned her down',
-                'She asked, and is waiting for an answer'], a: 0,
-      cue: '「No, but」のあと、何をしていないか。',
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'asked', seg: [101.9, 107.6],
+      stem: 'Did her parents lend Monica the money?',
+      ja: '両親はモニカにお金を貸した？',
+      choices: ['She hasn’t asked yet', 'They said no to her', 'They gave her the money'], a: 0,
+      choicesJa: ['まだ頼んでいない', '断られた', 'お金を貸してくれた'],
+      cue: '「No, but」のあと。',
       line: 'No, but that’s probably cuz I *haven’t asked them yet*.',
       said: '「借りられた？」「ううん、たぶんまだ頼んでないから」と答える。',
-      mean: '断られたのではなく、言い出せていない。だから「ほら」と背中を押される。',
-      trap: 'No が先に来るので断られたと思いやすい。but のあとが事情。haven’t の t が弱くても否定。',
+      mean: 'haven’t 〜 yet ＝ まだ〜していない。断られたのではなく、言い出せていない。',
+      trap: 'No が先に来るので断られたと思いやすい。but のあとが事情。',
       use: 'I haven’t asked yet, but I will.（まだ聞いてないけど、聞いてみる）' },
 
-    // why: dad angry ← the first shocked "You were fired?" sounds like an accusation; hurt ← "sorry I didn't tell you
-    //   this before" heard as the real issue
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'panic', reveals: ['dip'], seg: [110.0, 150.8],
-      stem: 'How do Monica’s parents take her news at dinner?',
-      choices: ['Her mom panics, and her dad calms her down', 'Her dad gets angry, and her mom defends her',
-                'Both are hurt that she kept it from them'], a: 0,
-      cue: '「どうするの」のあとの、名前の呼びかけ。',
+    { id: 'sorry', skill: 'pragma', level: 'B1', point: 'sorry', seg: [106.5, 113.5],
+      stem: 'What does Monica say sorry for?',
+      ja: 'モニカは何を謝る？',
+      choices: ['Not telling them sooner', 'Losing her old job', 'Coming home so late'], a: 0,
+      choicesJa: ['もっと早く言わなかったこと', '前の仕事を失ったこと', '帰りがとても遅れたこと'],
+      cue: '「Monica has some news」のあと。',
+      line: 'I’m sorry *I didn’t tell you this before*, but um, I’m no longer at my job.',
+      said: '「前に言わなくてごめん。実はもう仕事にいないの」と話し始める。',
+      mean: 'I’m sorry I didn’t 〜 ＝ 〜しなくてごめん。言いにくい話の前の謝り方。',
+      trap: '仕事の話なので、仕事を失ったことを謝ったと思いやすい。謝ったのは言わなかったこと。',
+      use: 'Sorry I didn’t tell you before.（前に言わなくてごめん）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'panic', reveals: ['dip'], seg: [110.0, 150.8],
+      stem: 'How do Monica’s parents react to her news?',
+      ja: 'モニカの知らせに、両親はどうする？',
+      choices: ['Mom panics, Dad calms her', 'Dad gets angry at Monica', 'Both feel hurt and sad'], a: 0,
+      choicesJa: ['母はあわて、父がなだめる', '父がモニカに怒る', '二人とも傷ついて悲しむ'],
+      cue: '「どうするの」のあと。',
       line: 'What are you going to do? — *Judy, Judy, relax*.',
       said: '母が「どうするの」とあわて、父が「ジュディ、落ち着け。貯金があるだろう」となだめる。',
-      mean: '心配する母と、楽観的な父。父は娘の育て方に自信を見せている。',
-      trap: '最初の驚きの声は責めて聞こえやすいが、そのあとは心配と励まし。黙っていた件は誰も責めない。',
+      mean: 'relax ＝ 落ち着いて。心配する母と、楽観的な父。',
+      trap: '最初の驚きの声が責めているように聞こえやすいが、そのあとは心配となだめ。',
       use: 'Relax, it’s going to be fine.（落ち着いて、大丈夫だから）' },
 
-    // R fix: V2 (blind 60 %, right), K6: the key was the only nuanced choice and the only one with "firing". Now
-    //   vague / straight out / chose to quit
-    // why: straight out ← "You were fired?" comes right after, as if she had said it; chose to quit ← "I had to leave
-    //   it" read literally as her own choice
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'fired', seg: [112.9, 125.0],
-      stem: 'What is Monica doing when she first tells them about her job?',
-      choices: ['Avoiding saying plainly what has happened', 'Telling them straight out she was fired',
-                'Making it clear that she chose to quit'], a: 0,
-      cue: '仕事のことを言う言い方と、理由を聞かれた答え。',
+      stem: 'How does Monica first tell them about her job?',
+      ja: 'モニカは最初、仕事のことをどう伝える？',
+      choices: ['She avoids saying she was fired', 'She tells them she was fired', 'She says she chose to quit'], a: 0,
+      choicesJa: ['クビになったとは言わない', 'クビになったと言う', '自分で辞めたと言う'],
+      cue: '仕事の言い方と、「Why?」の答え。',
       line: 'I’m *no longer at my job*. I had to *leave* it. — Why? — Because *they made me*.',
       said: '「もうその仕事にはいないの。辞めるしかなくて」。理由は「向こうがそうさせたから」。',
-      mean: 'クビという語を避け、ぼかして伝えている。',
-      trap: 'had to leave は自分で辞めたようにも聞こえるが、they made me で辞めさせられたと分かる。',
+      mean: 'no longer ＝ もう〜ない。fired（クビ）という語をさけて、ぼかしている。',
+      trap: 'had to leave から、自分で辞めたと思いやすい。they made me でやめさせられたと分かる。',
       use: 'We’re no longer together.（もう付き合ってないの）' },
 
-    // R fix: V2 (blind 60 %, right). "Falls apart in three words" was the only clever-sounding choice; the joke
-    //   distractor is now a dodge, which a quick quip also sounds like
-    // why: blames parents ← "they" heard as the people at the table; dodge ← a quick quip sounds like an effort to
-    //   avoid the question
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'fired', seg: [117.8, 129.5],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'fired', seg: [117.8, 129.5], retired: true,
       stem: 'Why does the audience laugh at Monica’s answer to “Why?”',
       choices: ['It gives away what she was trying to hide', 'It blames her parents for what happened',
                 'She dodges the question with a quick joke'], a: 0,
@@ -277,83 +239,76 @@ export const monicabroke: Clip = {
       trap: 'they は目の前の両親ではなく会社。代名詞が誰を指すかは、話の流れで決める。',
       use: 'Let’s just say it didn’t work out.（まあ、うまくいかなかったってこと）' },
 
-    // why: 20% ← "twenty" and the -ty ending, also a common savings rule; 15% ← "-teen" heard in place of "ten"
     { id: 'n2', skill: 'number', level: 'B1', point: 'tenpct', seg: [135.0, 140.2], keep: true,
-      stem: 'How much of her paycheck does Jack say goes into the bank?',
+      stem: 'How much of her paycheck goes into the bank, Jack says?',
+      ja: 'ジャックによると、給料のどれだけを銀行に入れる？',
       choices: ['10%', '15%', '20%'], a: 0,
-      cue: '「paycheck」の直前の数字。',
+      choicesJa: ['10パーセント', '15パーセント', '20パーセント'],
+      cue: '「paycheck」の直前。',
       line: '*10% of your paycheck*, where does it go? — Into the bank.',
       said: '父が「給料の10パーセントはどこへ？」と聞き、娘が「銀行」と答える。',
-      mean: '昔から教えた習慣をクイズの形で確かめ、だから大丈夫だと言っている。',
-      trap: 'ten は短い一音。fifteen なら -teen が長く強く、twenty なら「トゥエ」の音がある。',
+      mean: 'paycheck ＝ 給料。昔から教えた習慣をクイズの形で確かめ、だから大丈夫と言う。',
+      trap: 'ten は短い「テン」。fifteen なら「ティーン」と長く、twenty なら「トゥエ」で始まる。',
       use: 'I save 10% of every paycheck.（給料の1割は必ず貯金してる）' },
 
-    // R fix: V2 (blind 50 %, right). The choices are shorter and parallel now. Still near the line: a broke learner's
-    //   common sense points at spending, but only "dip into" says it
-    // why: keep adding ← dip read as "dip into a pool" (putting in); emergency ← "that's what it's there for" heard
-    //   as "save it for an emergency"
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'dip', seg: [141.4, 145.9],
-      stem: 'What does Jack want Monica to do with her savings?',
-      choices: ['Use some of them to get by', 'Keep adding a bit to them', 'Save them for a real emergency'], a: 0,
-      cue: '「So, she」のあとの動詞。',
+      stem: 'What does “she dips into her savings” mean?',
+      ja: '「she dips into her savings」の意味は？',
+      choices: ['She uses some of them', 'She adds a bit to them', 'She saves them for later'], a: 0,
+      choicesJa: ['貯金を少し使う', '貯金を少し増やす', '貯金をあとに取っておく'],
+      cue: '「So, she」のあと。',
       line: 'So, she *dips into her savings*. That’s what it’s there for.',
-      said: '「だから貯金を少し使えばいい。そのためにあるんだ」。',
-      mean: 'dip into ＝ 蓄えに手をつけて少し使う。今がその「困ったとき」だと父は言っている。',
-      trap: 'dip を「入れる」と取ると「貯金を増やす」に聞こえる。into の先から取り出す動き。',
+      said: '「だから貯金を少し使えばいい。そのためにあるんだ」と言う。',
+      mean: 'dip into 〜 ＝ 〜（貯金など）に手をつけて少し使う。今がその困ったとき。',
+      trap: 'dip を「入れる」と思うと「貯金を増やす」に聞こえる。into の中から取り出す動き。',
       use: 'I had to dip into my travel fund.（旅行資金に手をつけちゃった）' },
 
-    // R fix: V2 (blind 55 %, right), K6: "without saying it outright" was the only nuanced choice. All three are
-    //   hints now
-    // why: savings enough ← "find it" taken right after "savings"; look for work ← "you know where to find it" heard
-    //   as "you know where to find a job"
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'extra', seg: [145.9, 150.8],
-      stem: 'At the end of Jack’s speech, what is he doing?',
-      choices: ['Hinting that they’ll help if she’s short', 'Hinting that she should look harder for work',
-                'Hinting that her savings should be enough'], a: 0,
-      cue: '最後の文、条件をつける部分。',
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'extra', seg: [145.9, 150.8],
+      stem: 'What is Jack offering at the end?',
+      ja: 'ジャックは最後に何を申し出ている？',
+      choices: ['More money if she needs it', 'Help finding a new job', 'A room in their house'], a: 0,
+      choicesJa: ['足りなければお金を出す', '新しい仕事探しを手伝う', '家の部屋'],
+      cue: '最後の文。',
       line: 'if you need *a little extra*, *you know where to find it*.',
       said: '「少し足りなければ、どこにあるか分かってるだろ」と言う。',
-      mean: '「うちに来れば出すよ」という申し出を、遠回しに伝えている。',
-      trap: 'find it を仕事や貯金と取りやすいが、前に a little extra がある。',
+      mean: 'you know where to find it ＝ どこにあるか知ってるよね。「うちに来れば出すよ」の遠回しな言い方。',
+      trap: 'find から仕事探しを思いやすいが、前に a little extra（少し余分なお金）がある。',
       use: 'You know where to find me.（何かあったら声をかけてね）' },
 
-    // why: end of month ← a usual loan deadline; find a job ← her job loss is the reason for the loan
     { id: 'd6', skill: 'detail', level: 'B1', point: 'payback', seg: [155.0, 158.5],
       stem: 'When does Monica have to pay the money back?',
+      ja: 'モニカはいつお金を返せばいい？',
       choices: ['Whenever she likes', 'By the end of the month', 'Once she finds a job'], a: 0,
+      choicesJa: ['いつでもいい', '月末までに', '仕事が見つかったら'],
       cue: '「Here you go」のあと。',
       line: 'You can pay me back *whenever you like*.',
-      said: '「返すのはいつでもいいよ」と小切手を渡す。',
-      mean: '期限なしで貸す、という気前のいい申し出。最初に断られた理由への答えにもなっている。',
+      said: '「返すのはいつでもいいよ」と小切手をわたす。',
+      mean: 'whenever you like ＝ いつでも好きなときに。期限なしで貸す、という気前のいい申し出。',
       trap: '「月末まで」「仕事が決まったら」は貸し借りでよくある条件だが、ここでは何の条件もない。',
       use: 'No rush. Pay me back whenever.（急がないよ。返すのはいつでも）' },
 
-    // why: correcting ← "I mean" as a self-repair (いや、つまり); joke ← dinosaur checks seem silly, and the double
-    //   "Yeah" sounds sheepish
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [161.2, 166.6],
-      stem: 'Right after the “Yeah. Yeah,” about the checks, what is the lender doing?',
-      choices: ['Explaining why the checks make sense', 'Correcting something said a moment ago',
-                'Admitting that the checks are a joke'], a: 0,
-      cue: '「Yeah. Yeah,」のすぐあとの短いつなぎ。',
+      stem: 'What does “I mean” do after “Yeah, yeah”?',
+      ja: '「Yeah, yeah」のあとの「I mean」の働きは？',
+      choices: ['Gives a reason for it', 'Corrects what she said', 'Says it was a joke'], a: 0,
+      choicesJa: ['理由を言う', '言ったことを直す', '冗談だったと言う'],
+      cue: '恐竜の小切手の話のあと。',
       line: 'Yeah, *I mean*, you get your money and you learn a little something.',
-      said: '「うん。だってさ、お金はもらえるし、ちょっと勉強にもなる。何が悪いの？」。',
-      mean: 'I mean はここで「だって」。言い訳や理由を足すときの前置き。',
-      trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。後ろに理由が続くかを聞く。',
+      said: '「うん。だってさ、お金はもらえるし、ちょっと勉強にもなる」と言う。',
+      mean: 'この I mean ＝「だって」。言いわけや理由を足すときの前置き。',
+      trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。後ろに理由が続く。',
       use: 'I mean, it’s free, so why not?（だって無料だし、いいじゃん）' },
 
-    // R fix: V2 (blind 70 %, right), K6: the key was the only kind choice. "Praise" is kind too (cheap read as
-    //   thrifty), and "cash instead" was weak
-    // why: complaint ← "cheap" is an insult, so it sounds like a real gripe; praise ← cheap read as 節約上手, careful
-    //   with money
-    { id: 't3', skill: 'attitude', level: 'B2', point: 'saurus', seg: [166.5, 175.6],
-      stem: 'When Monica gives the lender a dinosaur nickname, how does she mean it?',
-      choices: ['As a tease, quickly taken back', 'As praise for being careful with money',
-                'As a real complaint about the amount'], a: 0,
-      cue: 'あだ名のあと、同じ言葉を2回くり返すところ。',
+    { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.5, 175.6],
+      stem: 'How does Monica really feel about the loan?',
+      ja: 'お金を貸してもらって、モニカは本当はどう思っている？',
+      choices: ['Very grateful', 'Upset it’s so small', 'Embarrassed by it'], a: 0,
+      choicesJa: ['とても感謝している', '少なくて不満', '恥ずかしい'],
+      cue: '「I’m kidding」のあと。',
       line: 'Hey, you’re a *cheap-a-saurus*. … *I’m kidding*. Thank you. I’m very grateful.',
-      said: '「ケチザウルスね」と言い、すぐ「冗談。ありがとう、感謝してる」。',
-      mean: 'cheap（ケチ）に恐竜の -saurus を付けた造語。すぐお礼で打ち消す。',
-      trap: 'cheap は悪口なので本気の不満に聞こえやすい。直後の冗談だという一言とお礼が本音。',
-      use: 'I’m kidding! Thanks so much.（冗談だよ！本当にありがとう）' }
+      said: '「ケチザウルスね」と言い、すぐ「冗談。ありがとう、感謝してる」と言う。',
+      mean: 'grateful ＝ 感謝している。cheap（ケチ）に恐竜の -saurus を付けた冗談のあと、すぐお礼。',
+      trap: 'cheap は悪口なので、本気の不満に聞こえやすい。I’m kidding（冗談）とお礼が本音。',
+      use: 'I’m kidding! Thanks so much.（冗談だよ！本当にありがとう）' },
   ]
 };
