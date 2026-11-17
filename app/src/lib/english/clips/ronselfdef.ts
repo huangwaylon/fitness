@@ -1,16 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 3, new 1
 // “Ron Swanson's Self-Defense Class | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Ron
 // opens a self-defense class that promises "maximum damage", turns a classmate's headlock idea back on them, teaches a
 // wrist grab, and takes on a cocky Andy, who ends up out cold and then asks to learn the move; a talking head explains
-// why TV movies brought her to the class.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 155 s; music after. Names said: Ron (11.0,
-// 79.7 s), Mark (13.0 s), Andy (30.2, 74.9, 108.2, 118.9, 143.8 s); "Ann" only in whisper (31.2 s; captions "and"), so
-// no item names her. Untested on purpose: 22.4 s ("You wish": speaker unclear), 33–34 s (whisper "watch", captions
-// "watched"), 35–40 s (the movie's title, garbled in both), 47–49.5 s (a sexual line in the movie plot), 54–72 s (the
-// wrist-grab demo: speakers never named; "that/it was awesome"), 96.9–101 s (captions "I see what's going on with
-// this", whisper "Let's see where we're going with this"), 109–123 s (the hold itself: physical), 146.3 s (captions
-// "she wants", whisper "Do you want"), 152–155 s (a crude closing line).
-// REVIEW 2026-11-16: pass 8, fix 10, drop 1, new 1; ear checks 0
-// REVIEW: s1 and x1 came off the ear-check list: both sources agree on the words (GUIDE §9.7).
+// why TV movies brought her to the class. Segments from the captions, words from whisper (2026-11-16). Talk ends at
+// ≈ 155 s. "Ann" only in whisper (31.2 s), so no item names her. Left out: 47–49.5 s (a sexual line), 54–72 s (the
+// wrist-grab demo, speakers unnamed), 109–123 s (the hold itself), 152–155 s (a crude closing line).
 import type { Clip } from '../types.ts';
 
 export const ronSelfDefense: Clip = {
@@ -19,24 +13,18 @@ export const ronSelfDefense: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2, blind 60 %; the distractors are now other aims a class could add to escaping
-    // why: holding them ← "escape… situations" plus the usual "until help comes" script; scaring off ← the textbook
-    //      aim of self-defense, avoiding a fight
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'damage', seg: [0.3, 11.6],
-      stem: 'Besides escaping, what does Ron say his class will teach?',
-      choices: ['Hurting attackers as badly as possible', 'Holding attackers until help comes',
-                'Scaring attackers off without a fight'], a: 0,
-      cue: '「while」のあと、escape に足される目的。',
-      line: 'how to escape… *while inflicting maximum damage* on your attackers.',
-      said: 'いろいろな場面から逃げる方法を、相手に最大のダメージを与えながら教える、と言う。',
-      mean: 'inflict ＝（害を）与える。逃げるだけでなく、相手を痛めつけるのも目標。',
-      trap: '護身術なら「戦わずに済ませる」が定番。while のあとを最後まで聞く。',
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'damage', seg: [0.3, 11.6],
+      stem: 'Besides escaping, what will Ron’s class teach?',
+      ja: '逃げ方のほかに、ロンの教室では何を教える？',
+      choices: ['Hurting attackers badly', 'Holding attackers for police', 'Scaring attackers off'], a: 0,
+      choicesJa: ['相手をひどく痛めつける', '警察が来るまで相手をおさえる', '相手をおどして追い払う'],
+      cue: '「while」のあと',
+      line: 'how to escape from a variety of situations *while inflicting maximum damage* on your attackers.',
+      said: '「いろいろな場面からの逃げ方を、相手に最大のダメージを与えながら教える」と言う。',
+      mean: 'inflict ＝（ダメージを）与える。maximum ＝ 最大の。逃げるだけでなく、痛めつけるのも目標。',
+      trap: '護身術なら「戦わずにすむ」が多いので、そう思いやすい。while のあとを最後まで聞く。',
       use: 'I’ll show you how to fix it.（直し方を教えるね）' },
-
-    // R fix: V2, blind 55 %, and K1: "get back at Mark with a real headlock" was close to what they literally ask
-    // why: show off ← volunteering a hold heard as wanting to show a move they know; avoid the attacker ← Ron's
-    //      "attackers" just before, and in the asker's own picture they are the one escaping
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'pervert', seg: [10.6, 22.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'pervert', seg: [10.6, 22.3], retired: true,
       stem: 'What does the classmate who brings up Mark really want?',
       choices: ['To make Mark look like the pervert', 'To show off a hold they already know',
                 'To avoid playing the attacker role'], a: 0,
@@ -46,12 +34,7 @@ export const ronSelfDefense: Clip = {
       mean: 'Mark を変質者の役にして、皆の前で笑いものにしたい。デモを借りた悪口。',
       trap: 'headlock が強く響き、技の話に聞こえやすい。That way 以下が「何のためか」。',
       use: 'That way, everyone can see it.（そうすれば、みんなに見える）' },
-
-    // anchor: 17.2–22.0 s "in the scenario you just laid out, you're the pervert. You understand that, right?":
-    //         "you" is the asker, who meant Mark to be the pervert
-    // why: Mark ← the asker aimed the joke at him, and "pervert" comes right after "Mark" (right mechanism, wrong
-    //      target); Ron ← his flat, careful wording heard as the joke being on his own literal mind
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'pervert', seg: [10.6, 22.3],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'pervert', seg: [10.6, 22.3], retired: true,
       stem: 'In Ron’s reply to the headlock idea, who is the joke on?',
       choices: ['The classmate who suggested the idea', 'Mark, the one who would be in the headlock',
                 'Ron, for taking a silly idea too seriously'], a: 0,
@@ -61,209 +44,181 @@ export const ronSelfDefense: Clip = {
       mean: 'Mark を笑うはずの案が、理屈で本人に返る。Ron は淡々と確かめるだけ。',
       trap: 'pervert が Mark のすぐあとに来るので、Mark が的に聞こえる。ねらいと当たりは別。you を追う。',
       use: 'So in your plan, you’re the bad guy.（君の案だと、悪者は君だね）' },
-
-    // why: acted it out ← they wanted a demo, so "laid out" is heard as a performance; put it aside ← lay = 置く,
-    //      read literally as laying the idea down
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'laidout', reveals: ['pervert'], seg: [17.15, 22.3],
-      stem: 'When Ron answers, what does he say the classmate did with the scenario?',
-      choices: ['Described it', 'Acted it out', 'Put it aside'], a: 0,
-      cue: 'scenario のすぐあと、you just に続く動詞。',
-      line: 'in the scenario you just *laid out*, you’re the pervert.',
-      said: '「君が今説明した設定だと、変質者は君の方」と言う。',
-      mean: 'lay out ＝ 順を追って説明する。案を「並べて見せる」イメージ。',
-      trap: 'lay を「置く」と取ると「わきに置いた」になる。plan や scenario と組むと「説明する」。',
+      stem: 'What does “the scenario you just laid out” mean?',
+      ja: '「the scenario you just laid out」はどういう意味？',
+      choices: ['The plan you just told us', 'The plan you just acted out', 'The plan you just put aside'], a: 0,
+      choicesJa: ['今あなたが説明した設定', '今あなたが演じた設定', '今あなたがやめた設定'],
+      cue: '「scenario」のあと',
+      line: 'Uh, in the scenario you just *laid out*, you’re the pervert. You understand that, right?',
+      said: '「君が今説明した設定だと、悪い役は君のほうだよ。わかってるよね？」と言う。',
+      mean: 'lay out ＝ 順を追って説明する。案を目の前に並べて見せるイメージ。',
+      trap: 'lay（置く）から、わきに置いたと思いやすい。plan や scenario と組むと「説明する」。',
       use: 'Let me lay out the plan.（計画を説明させて）' },
-
     { id: 'x1', skill: 'dict', level: 'B1', point: 'simple', seg: [23.55, 27.4],
       stem: 'Type what Ron says: “I’m gonna ___ and demonstrate…” (3 words)', answer: 'start off simple',
-      cue: '「I’m gonna」のあと、つながって聞こえる3語。',
+      ja: 'ロンの言葉を書こう：「I’m gonna ___ and demonstrate…」（3語）',
+      cue: '「I’m gonna」のあと',
       line: 'I’m gonna *start off simple* and demonstrate…',
-      said: '「まずは簡単なところから始めて、見せる」と言う。',
-      mean: 'start off ＝ 始める。start‿off がつながり「スターロフ」に近い。',
-      trap: 't が弾んで off とくっつき、1語に聞こえやすい。simple の前で区切る。',
+      said: '「まずは簡単なところから始めて、やって見せる」と言う。',
+      mean: 'start off ＝ 始める。start off がつながり「スターロフ」に近い。',
+      trap: 't が軽い「ラ」の音になり off とくっつくので、1語に聞こえやすい。',
       use: 'Let’s start off with something easy.（簡単なことから始めよう）' },
-
-    // why: headlock ← said just before, in the classmate's idea; a hold on the arms ← "arms are pinned" comes later in
-    //      Andy's turn, and "grab" heard as any hold
     { id: 'd2', skill: 'detail', level: 'B1', point: 'wrist', seg: [24.2, 32.9],
-      stem: 'What does Ron say he’ll show the class first?',
-      choices: ['Getting free from a wrist grab', 'Getting free from a headlock',
-                'Getting free from a hold on the arms'], a: 0,
-      cue: '「from a」のあと、体の部分を表す語。',
+      stem: 'What will Ron show the class first?',
+      ja: 'ロンが最初に見せるのは何？',
+      choices: ['Getting free from a wrist grab', 'Getting free from a headlock', 'Getting free from an arm hold'], a: 0,
+      choicesJa: ['手首をつかまれたときの抜け方', 'ヘッドロックからの抜け方', '腕をおさえられたときの抜け方'],
+      cue: '「from a」のあと',
       line: 'demonstrate how to extract oneself from a *wrist grab*.',
       said: '「手首をつかまれたときの抜け方を見せる」と言う。',
-      mean: 'extract oneself ＝ 抜け出す。硬い言い方で、Ron らしい。',
-      trap: '直前の headlock が耳に残りやすい。見せるものは demonstrate のあとに来る。',
+      mean: 'wrist ＝ 手首。grab ＝ つかむこと。extract oneself ＝ 抜け出す（かたい言い方）。',
+      trap: '直前の headlock が耳に残りやすい。from a のあとを聞く。',
       use: 'Let me demonstrate how it works.（どう動くか、やって見せるね）' },
-
-    // R fix: V2, blind 50 %; all three are now stories of an attack, told apart by whose
-    // why: a friend ← "This woman… he attacked her" heard as someone she knows; her therapist ← "her therapist" heard
-    //      as hers, giving advice
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'reason', reveals: ['there'], seg: [32.8, 54.2],
-      stem: 'What does the woman talking to the camera say led her to the class?',
-      choices: ['A TV movie about a woman who was attacked', 'A friend of hers who was attacked at home',
-                'Her own therapist, who told her to come'], a: 0,
-      cue: '話の最初の一文と、最後の so のあと。',
-      line: '*Lifetime movies*… her therapist was obsessed with her… So, yeah, free self-defense class…',
-      said: 'テレビ映画をよく見る。ある作品ではセラピストが女性を襲った。だから来た、と話す。',
-      mean: '怖い映画を見て、身を守りたくなった。きっかけは作り話。',
-      trap: 'this woman や her で知人の話に聞こえる。this one から始まるのは映画の筋。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'reason', reveals: ['there'], seg: [32.8, 54.2],
+      stem: 'What brought the woman to the class?',
+      ja: 'その女性はなぜこの教室に来た？',
+      choices: ['A TV movie she watched', 'A friend who was attacked', 'Her doctor’s advice'], a: 0,
+      choicesJa: ['見たテレビ映画', '襲われた友だち', '医者のすすめ'],
+      cue: '話の最初の一文',
+      line: '*I watch a lot of “Lifetime” movies.* There was this one… her therapist was obsessed with her…',
+      said: '「テレビ映画をよく見るの。ある作品で、セラピストが女性を襲ったの。だから来た」と話す。',
+      mean: 'There was this one 〜 ＝ こういうのがあってね。怖い映画を見て、身を守りたくなった。',
+      trap: 'this woman や her から、知り合いの話と思いやすい。最初の movies が手がかり。',
       use: 'There was this one movie where…（こんな映画があってね…）' },
-
-    // why: not by choice ← "I'm there" read as a place (she is at the class); if I have time ← "free" heard as free
-    //      time, not "costs nothing"
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'there', seg: [46.55, 54.2],
-      stem: 'At the end of her talk to the camera, what does she mean?',
-      choices: ['“Count me in, for sure.”', '“I’m here, but not by choice.”', '“I’ll go if I have the time.”'], a: 0,
-      cue: 'free のあと、最後の短い2語。',
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'there', seg: [46.55, 54.2],
+      stem: 'What does “I’m there” mean here?',
+      ja: 'ここでの「I’m there」はどういう意味？',
+      choices: ['I will surely come', 'I came here by force', 'I’ll come if I’m free'], a: 0,
+      choicesJa: ['絶対に行く', 'むりやり来させられた', 'ひまなら行く'],
+      cue: '最後の2語',
       line: 'So, yeah, *free* self-defense class, *I’m there*.',
-      said: '「というわけで、無料の護身術教室なら行く」としめくくる。',
-      mean: 'I’m there ＝ 絶対行く。free ＝ 無料。場所の説明ではない。',
-      trap: 'free を「暇」、there を「そこにいる」と取るとずれる。誘いへの I’m there は「乗った」。',
+      said: '「というわけで、無料の護身術教室なら、行くに決まってる」としめくくる。',
+      mean: 'I’m there ＝ 絶対行く、乗った。free ＝ 無料の。誘いに乗るときの言い方。',
+      trap: 'free ＝「ひま」と思いやすい。ここは「無料」。I’m there は場所の話ではない。',
       use: 'Pizza night? I’m there.（ピザの夜？行く行く）' },
-
-    // why: try to ← the textbook form, and weak "and" (ən) sits close to weak "to" (tə); have to ← "gonna" + a short
-    //      weak chunk heard as an obligation
-    { id: 's1', skill: 'sound', level: 'C1', point: 'tryand', seg: [72.85, 78.5],
-      stem: 'Fill the gap: “He’s gonna ___ break free.”',
+    { id: 's1', skill: 'sound', level: 'B2', point: 'tryand', seg: [72.85, 78.5],
+      stem: 'Which words do you hear: “He’s gonna ___ break free”?',
+      ja: '「He’s gonna ___ break free」どれが聞こえる？',
       choices: ['try and', 'try to', 'have to'], a: 0,
-      cue: '動詞のあとの、とても弱く短い一語。',
-      line: 'he’s gonna *try and* break free.',
-      said: '「Andy が抜け出そうとする」。try and は「トライアン」と弱くつながる。',
-      mean: '話し言葉では try to の代わりに try and も使う。意味は同じ。',
-      trap: '習った try to に寄せて聞きがち。and は「ン」、to は「タ」に近い。',
+      choicesJa: ['〜しようとする', '〜しようとする', '〜しなければならない'],
+      cue: '「gonna」のあと',
+      line: 'I’m going to engage Andy in an attack hold, and he’s gonna *try and* break free.',
+      said: '「アンディを技でおさえる。アンディは抜け出そうとする」と説明する。',
+      mean: 'try and 〜 ＝ try to 〜（〜しようとする）。話し言葉でよく使う。and は「アン」と小さい。',
+      trap: '習った try to と思いやすい。and は「アン」、to は「タ」に近い。',
       use: 'I’ll try and call you tonight.（今夜電話してみるね）' },
-
-    // R fix: V2, blind 60 %
-    // why: reassures ← "don't worry" is what you say to a scared person, with the roles flipped; thanks ← the
-    //      Japanese frame, a kind offer answered with thanks
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'dontworry', reveals: ['cocky'], seg: [78.35, 86.45],
-      stem: 'What does Ron’s first answer to Andy do?',
-      choices: ['Dismisses the idea he could get hurt', 'Reassures Andy that he won’t get hurt',
-                'Thanks Andy politely for his concern'], a: 0,
-      cue: '直前の Andy の心配が、誰の身についてか。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dontworry', reveals: ['cocky'], seg: [78.35, 86.45],
+      stem: '“Don’t worry about that.” What does Ron mean?',
+      ja: '「Don’t worry about that」ロンが言いたいことは？',
+      choices: ['You can’t hurt me', 'I won’t hurt you', 'Thanks for caring'], a: 0,
+      choicesJa: ['君にはぼくを傷つけられない', '君を傷つけないよ', '気にかけてくれてありがとう'],
+      cue: 'アンディの心配のすぐあと',
       line: 'I don’t want to hurt you, Ron. — *Don’t worry about that.* Just try to escape my attack.',
-      said: 'Andy の「ケガさせたくない」に、「その心配は要らない。抜けてみろ」と返す。',
-      mean: '心配を「無用」と払いのける返事。やられるとは少しも思っていない。',
-      trap: 'don’t worry は励ましで習うので、なだめる言葉に聞こえる。何の心配かを先に押さえる。',
-      use: 'Don’t worry about me. Just go.（僕のことは気にしないで、行って）' },
-
-    // R fix: V2, blind 50 %; the distractors now turn on when and what
-    // why: while held ← "counter-strike" caught, "when I get out" lost; any way he likes ← "allowed to" heard as a
-    //      general request for a free hand
+      said: 'アンディの「傷つけたくない」に、「その心配はいらない。抜けてみろ」と返す。',
+      mean: 'Don’t worry about that ＝ その心配はいらない。やられるとは少しも思っていない。',
+      trap: 'don’t worry ＝ 励ましと習うので、なぐさめと思いやすい。何の心配かを考える。',
+      use: 'Don’t worry about me. Just go.（ぼくのことは気にしないで、行って）' },
     { id: 'd3', skill: 'detail', level: 'B1', point: 'counter', seg: [81.9, 91.95],
-      stem: 'What does Andy ask Ron’s permission to do?',
-      choices: ['Hit back at Ron once he gets out', 'Hit back at Ron while still in the hold',
-                'Get out of the hold any way he likes'], a: 0,
-      cue: '質問の頭の「抜けたら」と、allowed to のあと。',
-      line: 'am I *allowed to counter-strike*? — Sure… you may *counter-attack*.',
-      said: '反撃してもいいかと聞き、Ron は「いいとも」と答える。',
-      mean: 'counter-strike ＝ 反撃。Ron は counter-attack で返す。',
-      trap: 'counter だけだと「つかまれたまま」にも取れる。when I get out が順番。',
+      stem: 'What does Andy ask if he can do?',
+      ja: 'アンディは何をしていいか聞いている？',
+      choices: ['Hit back once he gets out', 'Hit back while still held', 'Get out any way he likes'], a: 0,
+      choicesJa: ['抜けたら反撃する', 'おさえられたまま反撃する', '好きな方法で抜ける'],
+      cue: '「am I allowed to」のあと',
+      line: 'Now, when I get out, *am I allowed to counter-strike*? — Sure. When you get out, you may counter-attack.',
+      said: '「抜けたら、反撃してもいい？」と聞き、ロンは「いいとも」と答える。',
+      mean: 'Am I allowed to 〜? ＝ 〜してもいいですか。counter-strike ＝ 反撃する。',
+      trap: 'counter（反撃）だけ聞くと、おさえられたままと思いやすい。when I get out が先。',
       use: 'Am I allowed to take photos here?（ここで写真を撮ってもいいですか）' },
-
-    // R fix: V2, blind 60 % ("leaving the class" was weak)
-    // why: soon ← "when" heard as about timing, so the hold will be short; let out ← "get out" heard as being let out,
-    //      something Ron would have to agree to
     { id: 'i1', skill: 'infer', level: 'C1', point: 'cocky', reveals: ['counter'], seg: [81.9, 91.95],
-      stem: 'What does the way Andy starts his question take for granted?',
-      choices: ['That he will surely get out of the hold', 'That Ron will let him out if he asks',
-                'That the hold will only last a moment'], a: 0,
-      cue: '質問の前半、「抜けたら」の部分の一語目。',
+      stem: 'Andy says “when I get out,” not “if.” What does it show?',
+      ja: 'アンディは if でなく when と言う。何がわかる？',
+      choices: ['He’s sure he will get out', 'He thinks Ron will free him', 'He thinks the hold is short'], a: 0,
+      choicesJa: ['必ず抜けられると思っている', 'ロンが放してくれると思っている', '技はすぐ終わると思っている'],
+      cue: '質問の最初の部分',
       line: 'Now, *when* I get out, am I allowed to counter-strike?',
-      said: '「抜けたら、反撃していい？」と聞く。if でなく when。',
-      mean: 'when は「抜けるのは確実」という前提。Ron も when で返して受け流す。',
-      trap: 'when を時間の話と取りやすい。if でなく when を選ぶのは、起きると決めている証拠。',
+      said: '「抜けたら、反撃してもいい？」と聞く。if でなく when。',
+      mean: 'when ＝ 〜したら（必ず起きる）。if ＝ もし〜なら。抜けるのは確実だと決めている。',
+      trap: 'when を時間の話と思いやすい。if を使わないのは、起きると決めているから。',
       use: 'When we win, dinner’s on me.（勝ったら夕食はおごる）' },
-
-    // R fix: V2, blind 50 %, and K1: "gentle, and against real fighting" could be argued from “I don't want to hurt you”
-    // why: afraid ← "I don't want to destroy you" heard with the roles flipped; unsure ← "promise me you'll be ready"
-    //      heard as stalling
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'cocky', seg: [88.15, 98.6],
-      stem: 'How does Andy come across before Ron’s hold?',
-      choices: ['Sure he’ll beat Ron with ease', 'Afraid he’ll get hurt by Ron', 'Unsure whether to really fight Ron'], a: 0,
-      cue: 'Andy が心配しているのは、誰の身か。',
-      line: 'promise me you’ll *be ready*, because, I mean, I don’t want to *destroy you*.',
-      said: 'Ron に「本気でつぶしたくないから、準備しておいて」と言う。',
-      mean: '心配しているのは Ron の身。勝つのは自分だと決めている。',
-      trap: 'destroy you を逆向きに聞くと「怖がっている」になる。誰が誰を、を確かめる。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'cocky', seg: [88.15, 98.6],
+      stem: 'How does Andy feel before Ron’s hold?',
+      ja: 'ロンの技の前、アンディはどんな気持ち？',
+      choices: ['Sure he’ll win easily', 'Afraid of getting hurt', 'Unsure about fighting'], a: 0,
+      choicesJa: ['楽に勝てると思っている', 'けがをするのが怖い', '戦うか迷っている'],
+      cue: 'アンディが心配しているのは誰か',
+      line: 'But just promise me you’ll *be ready*, because, I mean, I don’t want to *destroy you*.',
+      said: 'ロンに「準備しておいてよ。本気でつぶしたくないから」と言う。',
+      mean: 'destroy ＝ こわす、たたきのめす。心配しているのはロンの身。勝つのは自分だと思っている。',
+      trap: 'destroy you を逆に聞くと、怖がっていると思いやすい。誰が誰を、を聞く。',
       use: 'Don’t worry, I’ll go easy on you.（心配しないで、手加減するから）' },
-
-    // why: his legs ← said first, as the right way; his arms ← the first body word, and what you'd push with
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'neck', seg: [102.0, 109.6],
-      stem: 'According to Ron, what is Andy using to try to break free?',
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'neck', seg: [102.0, 109.6],
+      stem: 'What is Andy using to try to break free?',
+      ja: 'アンディは体のどこを使って抜けようとしている？',
       choices: ['His neck', 'His legs', 'His arms'], a: 0,
-      cue: '「instead of」のあとと、Andy の名前の前。',
+      choicesJa: ['首', '脚', '腕'],
+      cue: '「instead of」のあと',
       line: 'use your legs to break free *instead of your neck*, which is what Andy’s trying to do.',
-      said: '「首でなく脚を使って抜けろ。首でやっているのが Andy だ」と言う。',
-      mean: 'which は「首を使う」を指す。Andy は悪い見本にされている。',
+      said: '「首じゃなく脚を使って抜けろ。首でやろうとしているのがアンディだ」と言う。',
+      mean: 'A instead of B ＝ B の代わりに A。which は「首を使う」こと。アンディは悪い見本。',
       trap: '先に聞こえる legs が残りやすい。instead of のあとが「しない方」。',
       use: 'Use the stairs instead of the elevator.（エレベーターでなく階段を使って）' },
-
-    // R fix: V2, blind 60 % (m1's choices gave the key; "Andy won" was out once the apology is heard). All three
-    //   now share "Ron won"; Andy's request tells them apart.
-    // why: rematch ← "show me… that move" heard as "let's go again"; sit out ← "take it easy" and "I'm fine" heard as
-    //      Andy stepping back
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['move', 'sorry'], seg: [118.5, 151.95],
-      stem: 'How does Andy’s turn with Ron end, judging by the talk after?',
-      choices: ['Ron won; Andy asks to learn the move', 'Ron won; Andy asks for a rematch',
-                'Ron won; Andy asks to sit the rest out'], a: 0,
-      cue: 'Ron の謝る一言と、Andy の頼みごと。',
-      line: 'Sorry I *squeezed your lights out* there, son. — No worries. *Will you show me* how to do that move…',
-      said: 'Ron が「気絶させて悪かった」と謝り、Andy は「その技教えて」。',
-      mean: 'Andy は負けたが、怒るどころか技を習いたがる。その反応がオチ。',
-      trap: 'take it easy は別の人の言葉。Andy の頼みは show me how で、再戦ではない。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['move', 'sorry'], seg: [118.5, 151.95],
+      stem: 'How does Andy’s turn with Ron end?',
+      ja: 'アンディとロンの勝負はどう終わる？',
+      choices: ['Andy loses but wants to learn', 'Andy loses and wants a rematch', 'Andy wins and Ron is upset'], a: 0,
+      choicesJa: ['アンディは負けるが、技を習いたがる', 'アンディは負けて、再戦したがる', 'アンディが勝ち、ロンは怒っている'],
+      cue: 'ロンが謝ったあとの頼みごと',
+      line: 'Sorry I squeezed your lights out there, son. — No worries. *Will you show me how to do that move*, though?',
+      said: 'ロンが「気絶させて悪かった」と謝り、アンディは「その技、教えてくれる？」と頼む。',
+      mean: 'squeeze 〜’s lights out ＝ 〜を気絶させる。負けたのに、怒らず技を習いたがる。',
+      trap: 'Ron が謝るので、ロンが負けたと思いやすい。謝ったのは気絶させたから。',
       use: 'No worries. Can you show me how?（大丈夫。やり方教えてくれる？）' },
-
-    // R drop: nt2 (C2 infer, never shipped): K1, ambiguous at heart. "you never know" as "you, Andy" or "people in
-    //   general" both lead to "the test proves nothing", and Andy's "That's kind of true. I'm super bad at days" fits
-    //   either. Replaced by nt3.
-
-    // R fix: V2, blind 65 %; three parallel manner words now
-    // why: heavy ← "Sorry" after a knockout, the Japanese frame where an apology means deep regret; stiff ← "son"
-    //      heard as a formal, teacherly address
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'sorry', reveals: ['outcome'], seg: [135.85, 143.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'whatday', seg: [123, 129],
+      stem: 'What can’t Andy answer after he wakes up?',
+      ja: '目がさめたあと、アンディは何に答えられない？',
+      choices: ['What day it is', 'What his name is', 'Where he is now'], a: 0,
+      choicesJa: ['今日が何曜日か', '自分の名前', '今どこにいるか'],
+      cue: '「Okay」のあとの質問',
+      line: 'Okay, *what day is it today*? — I don’t know.',
+      said: '「さあ、今日は何曜日？」に「わからない」と答える。',
+      mean: 'What day is it today? ＝ 今日は何曜日？ 気を失った人に、頭がはっきりしているか聞く質問。',
+      trap: 'day（日）から、何日か（日付）と思いやすい。What day は曜日を聞くことが多い。',
+      use: 'What day is it today?（今日は何曜日？）' },
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'sorry', reveals: ['outcome'], seg: [135.85, 143.2],
       stem: 'How does Ron’s apology to Andy sound?',
-      choices: ['Casual, as if it were nothing much', 'Heavy, full of real regret', 'Stiff, as a duty to the class'], a: 0,
-      cue: '「Sorry」のあとの呼びかけと、次の Ron の返事。',
+      ja: 'ロンのアンディへの謝り方は、どう聞こえる？',
+      choices: ['Casual, not serious', 'Very, very sorry', 'Stiff and formal'], a: 0,
+      choicesJa: ['軽くて、深刻ではない', 'とても申し訳なさそう', 'かたくて形式ばっている'],
+      cue: '「Sorry」のあとの呼びかけ',
       line: 'Sorry I squeezed your lights out *there, son*. … *Sure. I can teach you right now.*',
-      said: '「気絶させて悪かったな」と言い、技を頼まれると「今すぐ教える」と答える。',
-      mean: 'there, son は気軽な言い方。すぐまたやろうとするので、大ごとではない。',
-      trap: '「すみません」の感覚だと深い反省に聞こえる。直後の一言で重さを測る。',
+      said: '「気絶させて悪かったな」と言い、技を頼まれると「今すぐ教えるよ」と答える。',
+      mean: 'there, son は気軽な言い方。すぐまたやろうとするので、大ごととは思っていない。',
+      trap: '「すみません」の感覚だと、深く反省していると思いやすい。すぐあとの返事で重さがわかる。',
       use: 'Sorry I kept you waiting there.（待たせちゃって、ごめん）' },
-
-    // R fix: V2, blind 60 %; the choices are now one frame with different openers
-    // why: also ← "though" heard as "too" (/ð/ vs /t/, the same long vowel); if it's okay ← "though" heard as a hedge,
-    //      like a soft 「〜けど」
     { id: 'm1', skill: 'marker', level: 'B2', point: 'move', reveals: ['outcome'], seg: [136.3, 143.2],
-      stem: 'What does the last word of Andy’s request add?',
-      choices: ['“Even so, I want to learn it.”', '“Also, I want to learn that.”',
-                '“If it’s okay, I want to learn it.”'], a: 0,
-      cue: '謝られたあとの頼みで、文末に付く短い一語。',
+      stem: 'What does “though” add to Andy’s request?',
+      ja: 'アンディの頼みの最後の though は何を足している？',
+      choices: ['Even so', 'Also', 'If it’s okay'], a: 0,
+      choicesJa: ['それでも', 'それに', 'もしよければ'],
+      cue: '頼みの文の最後の一語',
       line: 'No worries. Will you show me how to do that move, *though*?',
-      said: '謝る Ron に「平気。でもさ、あの技教えてくれる？」と聞く。',
-      mean: '文末の though ＝「それはそれとして」。やられても習いたい、を足す。',
-      trap: '「〜けど」の感覚でためらいと、too と聞いて「も」と取りやすい。文末の though は逆向き。',
+      said: '謝るロンに「平気だよ。それより、あの技教えてくれる？」と聞く。',
+      mean: '文の最後の though ＝ それでも、それはそれとして。やられても習いたい、と足している。',
+      trap: 'too（〜も）と聞きまちがえやすい。though は「ゾウ」に近い。',
       use: 'Nice hotel. It’s a bit far, though.（いいホテル。ちょっと遠いけどね）' },
-
-    // why: annoyed ← "No, no, no" heard as a scolding; teasing ← "pancakes" sounds like a joke, so the offer is heard
-    //      as teasing
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'worry', seg: [141.6, 151.95],
-      stem: 'How does the next speaker sound, right after Ron’s offer?',
-      choices: ['Worried, and fussing over Andy', 'Annoyed at Andy for showing off', 'Amused, and teasing Andy a bit'], a: 0,
-      cue: '「No, no, no」のあと、すすめている物。',
-      line: 'No, no, no. Andy, you should really just *take it easy*… more *water* or maybe some *pancakes*?',
-      said: 'Ron をさえぎり、「Andy は休んでて。水かパンケーキでもどう？」と言う。',
-      mean: '休ませて、飲み物や食べ物をすすめる。心配して世話を焼いている。',
-      trap: 'No を3回重ねると怒っているようだが、続くのは気づかい。no のあとで読む。',
+    { id: 'a3', skill: 'infer', level: 'B1', point: 'worry', seg: [141.6, 151.95],
+      stem: 'Why is Andy told to “take it easy”?',
+      ja: 'アンディはなぜ「take it easy」と言われる？',
+      choices: ['He may still be hurt', 'He was showing off', 'He was rude to Ron'], a: 0,
+      choicesJa: ['まだけがが治っていないかも', '見せびらかしていた', 'ロンに失礼だった'],
+      cue: '「No, no, no」のあと',
+      line: 'No, no, no. Andy, you should really just *take it easy*, I think. Do you want some more *water* or maybe some *pancakes*?',
+      said: 'ロンをさえぎり、「アンディは休んで。水かパンケーキでもどう？」と言う。',
+      mean: 'take it easy ＝ 無理しないで、休んで。気絶したばかりなので心配している。',
+      trap: 'No を3回言うので、怒っていると思いやすい。続く water や pancakes は気づかい。',
       use: 'Just take it easy today.（今日はゆっくりして）' },
-
-    // R new: nt3 replaces nt2 (C2 minimum 2). Blind (fresh read of stem + choices): no pick above 40 %.
-    // anchor: 143.3–145.7 s "No, no, no. Andy, you should really just take it easy"; 146.3–148.5 s "…more water or
-    //   maybe some pancakes?": rest, water and food are what you offer someone recovering, said to Andy about Andy
-    // why: Ron's too rough ← she cuts in right on Ron's offer, so the "No, no, no" is heard as aimed at him; embarrassed
-    //   ← after a public knockout, "take it easy" heard as "don't make it worse"
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'worry', seg: [141.6, 151.95],
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'worry', seg: [141.6, 151.95], retired: true,
       stem: 'When Ron offers to teach the move, what does the reply leave unsaid?',
       choices: ['That Andy may still be hurt from the hold', `That Ron is too rough to learn from`,
                 'That Andy has embarrassed himself enough'], a: 0,
