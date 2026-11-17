@@ -6,17 +6,6 @@
 // “Monica and I” (57.3 s) and “Ross and I” (77.5 s). Untested: 274–290 s, 35.5 s, 41.4 s, 128–135 s.
 // EAR CHECK: 49.1 s s1 — “I'll play” (both sources): the 'll is heard, not just “I play”
 // EAR CHECK: 90.0 s x1 — “so not an accident” (both sources): “not an” links into one stretch
-
-// “The One With the Thanksgiving Football Game | Friends” (the official Friends channel, Best of Season 3): the friends
-// want a halftime game; Chandler is talked into it, and Ross and Monica explain why their mom banned them from football
-// (the Geller Bowl, a broken nose, a trophy in a lake) before they decide to play anyway.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 176 s; 176–307 s is a music montage, and
-// whisper repeats one line through it. Speakers are settled by “Chandler” (36.5 s), “Ross?… What?” (51.7 s), “Monica and
-// I” (57.3 s) and “Ross and I” (77.5 s). Untested: the captions-only lines at 274–290 s (“you're 5 ft short so we win”),
-// 35.5 s (“goals”/“ghouls”), 41.4 s (“you'll”/“they'll”), and the gap at 128–135 s (whisper ends “trophy” at 128.8 s, the
-// captions put it at 135.2 s).
-// EAR CHECK: 49.1 s s1 — “I'll play” (both sources): the 'll is heard, not just “I play”
-// EAR CHECK: 90.0 s x1 — “so not an accident” (both sources): “not an” links into one stretch
 import type { Clip } from '../types.ts';
 
 export const gellerBowl: Clip = {
