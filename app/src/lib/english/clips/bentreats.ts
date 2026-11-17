@@ -176,7 +176,7 @@ export const benTreats: Clip = {
       line: 'and *three Burberrys*. … they gotta specify which one.',
       said: 'モールの自慢として、昔風の列車に続き「バーバリーが3軒」と言う。',
       mean: 'three Burberrys ＝ バーバリーが3軒。だから「どの店か言わないと」と続く。',
-      trap: '最後の which one の one に引かれやすい。数は and のすぐあと。',
+      trap: '最後の which one に引かれやすい。and のすぐあとが「スリー」なら3、「トゥー」なら2、「フォー」なら4、「ワン」なら1。',
       use: 'There are three cafés on this street.（この通りにカフェが3軒ある）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [182.75, 189],
@@ -282,7 +282,7 @@ export const benTreats: Clip = {
       line: 'That’s why *you’ve been* off your game.',
       said: '最近別れたと聞き、「だから調子が出なかったんだ」と言う。',
       mean: 'you’ve been ＝ 最近ずっと〜だった。「ユヴビン」とつながる。off your game ＝ 調子が悪い。',
-      trap: '’ve は小さく消えやすい。「ビン」が聞こえれば you’ve been。you were なら「ワー」。',
+      trap: '’ve は小さく消えやすい。「ビン」が聞こえれば you’ve been、「ワー」なら you were、「ユア」だけなら you’re。',
       use: 'You’ve been quiet lately.（最近静かだね）' },
 
     { id: 'h3', skill: 'phrase', level: 'B1', point: 'cry', seg: [271.65, 277],

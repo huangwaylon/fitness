@@ -58,7 +58,7 @@ export const ronAprilTakeOver: Clip = {
       line: 'traditionally has ten employees. You have *only seven*.',
       said: '「この大きさの町なら普通は10人。君の所は7人だけ。なぜ？」と聞く。',
       mean: 'only seven ＝ たった7人。only がつくと「少ない」という意味になる。',
-      trap: '最初の ten に引っぱられやすい。only の直後の数が今の数。',
+      trap: '最初の ten に引かれやすい。only の直後が「セヴン」なら7、「テン」なら10、「フォー」なら4。',
       use: 'We only have two rooms left.（空き部屋は2つだけです）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'small', seg: [24.9, 38.1], retired: true,
@@ -81,7 +81,7 @@ export const ronAprilTakeOver: Clip = {
       line: 'Leslie Knope single-handedly does the work of *four* people',
       said: '「レスリーが一人で4人分の仕事をしているからだ」と言う。',
       mean: 'the work of four people ＝ 4人分の仕事。single-handedly ＝ 一人だけで。',
-      trap: 'of four が for に聞こえやすい。two なら「トゥー」、seven なら「セヴン」。people の前を聞く。',
+      trap: 'of four は「オフォー」とつながる。「フォー」なら4、「トゥー」なら2、「セヴン」なら7。',
       use: 'She runs the shop single-handedly.（彼女は一人で店を回している）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'slack', seg: [42.35, 52],
@@ -175,7 +175,7 @@ export const ronAprilTakeOver: Clip = {
       line: '*I’d like* to complete this project by tomorrow.',
       said: '「この事業を明日までに終わらせたい」と言う。',
       mean: 'I’d like to ～ ＝ 〜したい（丁寧）。d は次の l にのまれて「アイライク」に近い。',
-      trap: 'like と love は最後の音、I’d と We’d は最初の音で分ける。',
+      trap: '「アイライク」なら I’d like、最後が「ラヴ」なら I’d love、「ウィー」で始まれば We’d like。',
       use: 'I’d like to check out, please.（チェックアウトをお願いします）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'shop', seg: [116.9, 122.4],

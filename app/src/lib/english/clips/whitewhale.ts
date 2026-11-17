@@ -49,7 +49,7 @@ export const whiteWhale: Clip = {
       line: 'They have apparently dropped their supplier for *the last ten years*.',
       said: '「10年使ってきた仕入れ先を、切ったらしい」と伝える。',
       mean: 'for the last ten years ＝ この10年ずっと。長い取引が空いた。',
-      trap: 'あとの three times と混ざりやすい。twenty なら「トゥエンティ」と長い。ここは短い「テン」。',
+      trap: 'あとの three times と混ざりやすい。短い「テン」なら10、「スリー」なら3、「トゥエンティ」なら20。',
       use: 'I’ve lived here for the last five years.（この5年ここに住んでいます）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['tenyears'], seg: [26.7, 59.5],

@@ -23,7 +23,7 @@ export const ronSlash: Clip = {
       line: 'we need to cut expenditures by *32%*. — Let’s make it an even 40.',
       said: '「支出を32%減らす必要がある」に、ロンが「きりよく40に」と返す。',
       mean: 'thirty-two percent ＝ 32%。an even 40 ＝ きりのいい40。',
-      trap: 'thirty-two は「サーティ」で始まる。23なら「トゥエンティ」。40はロンの上乗せ。',
+      trap: '「サーティ・トゥー」なら32、「トゥエンティ・スリー」なら23、「フォーティ」はロンが上乗せした40。',
       use: 'Let’s make it an even ten.（きりよく10にしよう）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'bat', seg: [19.3, 26.2],
@@ -220,7 +220,7 @@ export const ronSlash: Clip = {
       line: 'Leslie does *95%* of the work.',
       said: '「俺の主義のせいで、仕事の95%はレスリーがやっている」と言う。',
       mean: 'ninety-five ＝ 95。ほとんど全部を彼女一人がやっている。',
-      trap: 'ninety のあとの five が短く、90に聞こえやすい。59なら「フィフティ」で始まる。',
+      trap: '「ナインティ・ファイヴ」は95、「ナインティ」だけなら90、「フィフティ」で始まれば59、「ファイヴ」だけなら5。',
       use: 'She does ninety percent of the cooking.（料理の9割は彼女がしている）' },
 
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'share', seg: [97.8, 104.6], retired: true,

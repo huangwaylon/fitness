@@ -22,6 +22,7 @@ export const fakeCall: Clip = {
       choices: ['Bring him a fake phone call', 'Make a real phone call for him', 'Keep the client busy'], a: 0,
       choicesJa: ['うその電話を知らせに来る', '本当に電話をかけてくれる', '客の相手をしてくれる'],
       cue: '前半の説明全体。',
+      line: 'tell me that I have a really important phone call. I’m not gonna take it… *It’s not a real call.*',
       said: '「会議中に、大事な電話ですと言いに来て。でも僕は出ない」と頼む。',
       mean: '客の前で電話を断って、この会議が一番大事だと見せる作戦。',
       trap: 'phone call が何度も出るので、本当の電話と思いやすい。not a real call を聞く。',

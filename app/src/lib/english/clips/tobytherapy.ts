@@ -49,7 +49,7 @@ export const tobyTherapy: Clip = {
       line: 'assigned *six hours* of mandatory counseling',
       said: '「6時間のカウンセリングが義務になった」と説明される。',
       mean: 'six hours ＝ 6時間。mandatory ＝ 義務の、必ずやる。',
-      trap: 'sixteen なら後ろの「ティーン」が強く長い。six は「スィックス」で短く切れる。',
+      trap: '「スィックス」と短く切れれば6、「スィックスティーン」と後ろが強く長ければ16、「ワン」なら1。',
       use: 'It’s a six-hour flight.（6時間のフライトです）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodhere', seg: [40.3, 50.7],
@@ -85,7 +85,7 @@ export const tobyTherapy: Clip = {
       line: '*One hour.* We’ve done *one hour*. … I want to do all six hours.',
       said: 'トビーの質問をさえぎり「1時間。1時間やった」と言い、「6時間全部やりたい」と続ける。',
       mean: 'We’ve done one hour ＝ 1時間やった。話より、早く終えることが目的。',
-      trap: '最後の six hours が耳に残りやすい。We’ve done のあとの one hour が答え。',
+      trap: '最後の six hours に引かれやすい。We’ve done のあと「ワン」なら1時間、「トゥー」なら2時間、「サーティ」なら30分。',
       use: 'We’ve done one hour. Five to go.（1時間終わった。あと5時間）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'speedup', seg: [76.4, 80.4],
@@ -155,8 +155,8 @@ export const tobyTherapy: Clip = {
     { id: 'g2', skill: 'gist', level: 'B2', point: 'tactic', reveals: ['clock', 'anywhere'], seg: [147.8, 187.6],
       stem: 'How does Toby get Michael to talk?',
       ja: 'トビーはどうやってマイケルに話させる？',
-      choices: ['He stops pushing and plays games', 'He says the hour won’t count', 'He talks about his daughter'], a: 0,
-      choicesJa: ['押すのをやめて、ゲームをする', '1時間を数えないと言う', '自分の娘の話をする'],
+      choices: ['He stops pushing and plays games', 'He promises to end early', 'He talks about his daughter'], a: 0,
+      choicesJa: ['押すのをやめて、ゲームをする', '早く終わると約束する', '自分の娘の話をする'],
       cue: '「You win」のあとの提案。',
       line: 'You’re right. You win. This is pointless… Why don’t we just run out the clock by *playing games*…',
       said: '「君の勝ち。意味がない」と引き、ゲームをしようと言う。するとマイケルがジェフの話を始める。',
