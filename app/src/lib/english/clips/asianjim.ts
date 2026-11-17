@@ -21,7 +21,7 @@ export const asianjim: Clip = {
       line: 'Who am I? *I’m Jim.* … Wellington Systems sold them 10 cases…',
       said: '「誰だ？」と聞かれても売上の話をされても、ジムとして平然と答える。',
       mean: '一度もジム役をやめないのが、いたずらの肝。疑うドワイトのほうが変に見える。',
-      trap: '会社名が二つ出るので迷ったと思いやすいが、細かく答えたうえで確かめている。',
+      trap: 'ドワイトが言い張るので、ぼろが出たと思いやすい。男は一度もジム役をやめない。',
       use: 'He didn’t miss a beat.（彼は少しも動じなかった）' },
 
     // retired (A2): a tone reading (surprised by the question)
@@ -45,7 +45,7 @@ export const asianjim: Clip = {
       line: 'We’ve been working together for *12 years*.',
       said: '「もう12年も一緒に働いてるじゃないか」と言う。',
       mean: 'twelve ＝ 12。長い付き合いを持ち出し、疑うほうがおかしいと示す。',
-      trap: 'twelve と twenty は出だしが同じ。twelve は「ルヴ」で終わり、twenty は「ティ」。',
+      trap: 'two だけなら「トゥー」。twelve は最後が「ルヴ」、twenty は「トゥエニ」で終わる。',
       use: 'We’ve been friends for 12 years.（もう12年来の友だちだ）' },
 
     // retired (A2): a “why does it get a laugh” item on race
@@ -61,10 +61,10 @@ export const asianjim: Clip = {
       use: 'Hats off to you for finishing that.（やり遂げたなんて脱帽だよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'allright', reveals: ['test'], seg: [28.1, 33.3],
-      stem: 'What does Dwight’s “All right, then” signal?',
-      ja: 'ドワイトの「All right, then」は何の合図？',
-      choices: ['Going along with it for now', 'Believing it for now', 'Dropping it for today'], a: 0,
-      choicesJa: ['ひとまず話に乗る', 'ひとまず信じる', '今日はもうやめる'],
+      stem: 'Why does Dwight say “All right, then”?',
+      ja: 'ドワイトはなぜ「All right, then」と言う？',
+      choices: ['To go along with it for now', 'To show he believes it now', 'To drop it for today'], a: 0,
+      choicesJa: ['ひとまず話に乗るため', 'もう信じたと示すため', '今日はもうやめるため'],
       cue: '「Jim」と呼ぶ前',
       line: '*All right, then*, Jim.',
       said: '「じゃあいいだろう、ジム」と、いったん呼び方を合わせる。',
@@ -73,10 +73,10 @@ export const asianjim: Clip = {
       use: 'All right, then. Show me.（じゃあいいよ、見せて）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'test', seg: [28.1, 33.3],
-      stem: 'What is Dwight doing when he asks about yesterday’s sale?',
-      ja: '昨日の売上について聞くとき、ドワイトは何をしている？',
-      choices: ['Testing what he knows', 'Changing the subject', 'Checking a missing sale'], a: 0,
-      choicesJa: ['知っているか試す', '話を変える', '記録のない売上を確かめる'],
+      stem: 'Why does Dwight ask about yesterday’s sale?',
+      ja: 'ドワイトはなぜ昨日の売上について聞く？',
+      choices: ['To test what the man knows', 'To change the subject', 'To check a missing sale'], a: 0,
+      choicesJa: ['男が知っているか試すため', '話を変えるため', '記録のない売上を確かめるため'],
       cue: '「why don’t you」のあと',
       line: 'why don’t you *tell me about that sale* that you made yesterday?',
       said: '「じゃあ昨日決めた売上の話をしてくれよ」と持ちかける。',
@@ -93,7 +93,7 @@ export const asianjim: Clip = {
       line: 'Wellington Systems sold them *10 cases* of 24-pound letter stock.',
       said: '「ウェリントン・システムズに、24ポンドの用紙を10箱」と答える。',
       mean: 'case ＝ 箱。24-pound は紙の厚さの規格で、数量ではない。',
-      trap: '24 は紙の厚さ（pound）。cases の直前は ten。four（フォー）は出てこない。',
+      trap: 'cases の前は「テン」。four なら「フォー」、24 なら「トゥエニフォー」で pound の前。',
       use: 'We need ten cases of water.（水を10ケースください）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [33.8, 45.5],
@@ -133,8 +133,8 @@ export const asianjim: Clip = {
       use: 'Did you get my voicemail?（留守電、聞いてくれた？）' },
 
     { id: 'i3', skill: 'detail', level: 'B1', point: 'outsider', reveals: ['voicemail'], seg: [53.8, 61.9],
-      stem: 'Why does Dwight stop the message, he says?',
-      ja: 'ドワイトはなぜ伝言を止めると言う？',
+      stem: 'What reason does Dwight give for stopping the message?',
+      ja: 'ドワイトは、伝言を止める理由を何と言う？',
       choices: ['It’s only for employees', 'It’s meant for Dwight', 'It’s a fake message'], a: 0,
       choicesJa: ['社員だけのものだから', 'ドワイトあてだから', '偽の伝言だから'],
       cue: '「No, no, no」のあと',
@@ -169,7 +169,7 @@ export const asianjim: Clip = {
     { id: 'h2', skill: 'humor', level: 'B2', point: 'workhere', seg: [61.7, 65.7],
       stem: 'Why is “You don’t work here” a funny reply?',
       ja: '「You don’t work here」はなぜおかしい返事？',
-      choices: ['He twists the meaning of “work”', 'He admits he’s stopping work', 'He says work somewhere else'], a: 0,
+      choices: ['He twists the meaning of “work”', 'He admits he’s in the way', 'He says work somewhere else'], a: 0,
       choicesJa: ['work を「ここの社員」の意味にすり替える', '邪魔しているのは自分だと認める', 'よそで働けと言う'],
       cue: '返事の中の work',
       line: 'I’m trying to *work*. — You don’t *work here*.',
@@ -199,7 +199,7 @@ export const asianjim: Clip = {
       line: 'I got us that dinner reservation. … *7:30*.',
       said: '「夕食の予約が取れたよ。7時半」と伝える。',
       mean: 'seven thirty ＝ 7時半。時刻は数を二つ並べて言う。',
-      trap: '店の名前に気を取られて、後ろの thirty を落としやすい。eight なら「エイ」で始まる。',
+      trap: '「セブン」に「サーティ」が続けば 7:30、seven だけなら 7:00、「エイト」で始まれば 8:30。',
       use: 'Table for two at seven thirty?（7時半に2名で）' },
 
     // retired (A2): a tone reading (pleased, not sarcastic)
@@ -234,7 +234,7 @@ export const asianjim: Clip = {
       line: '*Jim’s at the dentist* this morning.',
       said: '「ジムは今朝、歯医者に行ってる」とカメラに話す。',
       mean: 'dentist ＝ 歯医者。本物のジムがいない間に、別人を座らせた。',
-      trap: 'dentist の t は弱く「デニスト」に近い。doctor と迷いやすい。',
+      trap: '「デニスト」なら dentist、「ダクターズ」なら doctor’s、「セイルズ」なら sales call。',
       use: 'I have a dentist appointment at ten.（10時に歯医者の予約がある）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'steve', reveals: ['plan'], seg: [73.2, 77.6],

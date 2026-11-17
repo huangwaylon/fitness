@@ -94,7 +94,7 @@ export const joeyDog: Clip = {
       line: 'at a reasonable price, say *$1,500*?',
       said: '「手ごろな値段で、そうだな、1,500ドルでどう？」と持ちかける。',
       mean: 'say ＝ ここでは「たとえば」。fifteen hundred ＝ 1,500。',
-      trap: 'fifteen hundred＝1,500。thousand、five、one fifty とは違う。',
+      trap: '1,500 は「フィフティーンハンドレッド」。150 は「ワンフィフティ」、500 は「ファイブ」、15,000 は「サウザンド」付き。',
       use: 'How about, say, twenty dollars?（たとえば20ドルでどう？）' },
 
     // retired (A2): a “why does the audience laugh” item
@@ -182,10 +182,10 @@ export const joeyDog: Clip = {
       use: 'She called me out of the blue.（彼女から突然電話が来た）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'helpout', seg: [65.65, 69.7],
-      stem: 'When Chandler answers the charity complaint, what is he doing?',
-      ja: '施しの文句に答えて、チャンドラーは何をしている？',
-      choices: ['Saying he only wants to help', 'Taking his offer back now', 'Saying it was all a joke'], a: 0,
-      choicesJa: ['助けたいだけだと言う', '今、申し出を取り消す', '全部冗談だったと言う'],
+      stem: 'Why does Chandler say he’s “just trying to help”?',
+      ja: 'チャンドラーはなぜ「just trying to help」と言う？',
+      choices: ['To show he cares about Joey', 'To take his offer back', 'To say it was all a joke'], a: 0,
+      choicesJa: ['ジョーイを心配していると示すため', '申し出を取り消すため', '全部冗談だったと言うため'],
       cue: '文の最初の just',
       line: 'I’m *just trying to help you out*, okay? I want to *make sure that you’re okay*.',
       said: '「助けたいだけなんだ。君が大丈夫か確かめたい」と言う。',
@@ -216,7 +216,7 @@ export const joeyDog: Clip = {
       use: 'Get that idea out of your head.（その考えは捨てて）' },
 
     { id: 'a2', skill: 'detail', level: 'B1', point: 'missyou', reveals: ['manage'], seg: [76.2, 84.6],
-      stem: 'What will Joey miss, he says?',
+      stem: 'What does Joey say he will miss?',
       ja: 'ジョーイは何が恋しくなると言う？',
       choices: ['Chandler himself', 'Chandler’s money', 'Their card games'], a: 0,
       choicesJa: ['チャンドラー本人', 'チャンドラーのお金', '二人のカードゲーム'],
@@ -236,7 +236,7 @@ export const joeyDog: Clip = {
       line: 'Look, I’m *not going to* miss you helping me out with money.',
       said: '「お金で助けてもらえなくなるのは寂しくない」と言う。',
       mean: 'not going to ＝「〜しない」。次の「寂しいのは君だけ」への前置き。',
-      trap: 'not は弱くなりやすい。「ナッ」が聞こえれば否定。only なら「オウン」で始まる。',
+      trap: '「ナッ」が入れば not、「アイムゴナ」だけなら going to、「オウンリ」なら only。',
       use: 'I’m not going to miss this weather.（この天気は恋しくならないな）' },
 
     // retired (A2): a predict item whose next line isn’t a set phrase
