@@ -9,6 +9,7 @@ import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { roomRelay } from '#lib/components/rooms/roomRelay.ts';
+import { hook } from '#lib/world/devHooks.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
@@ -56,9 +57,11 @@ function hear(m: Relayed): void {
 }
 
 let started = false;
-/** Listen (once): the island's relay (the demo's own: its tabs share a channel). */
-export function listen(): void {
-  if (started || typeof window === 'undefined') return;
+/** Listen (once): the island's relay (the demo's own: its tabs share a channel). `eager` (the island's opening): not
+ *  with an e2e's test relay, where a socket of its own would be a second one of the same key (the sheet's opening still
+ *  listens). */
+export function listen(eager = false): void {
+  if (started || typeof window === 'undefined' || (eager && week.demo && hook('relay'))) return;
   started = true;
   online.cur = read();
   const r = roomRelay(!!week.demo, me());

@@ -49,7 +49,7 @@
   onMount(prefetchSheets);
   // 英語すごろく's online games: heard from the island on (an invitation comes while the sheet's closed), its small part
   // fetched once the island's in
-  onMount(() => void import('#lib/sugoroku/online.svelte.ts').then((m) => m.listen()).catch(() => {}));
+  onMount(() => void import('#lib/sugoroku/online.svelte.ts').then((m) => m.listen(true)).catch(() => {}));
   /** A one-time param read: it goes (a reload opens the island as ever), the rest of the query stays as it was written. */
   function take(k: string, v: string): boolean {
     if (new URLSearchParams(location.search).get(k) !== v) return false;
