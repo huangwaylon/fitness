@@ -50,13 +50,13 @@ export const chrisFlu: Clip = {
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], seg: [8.5, 13.5],
       stem: 'Why is Chris wearing a mask?', ja: 'クリスはなぜマスクをしている？',
-      choices: ['So he won’t catch the flu', 'So he won’t give anyone flu', 'To keep dust out on runs'], a: 0,
-      choicesJa: ['インフルにかからないため', '人にインフルをうつさないため', '走るときにほこりを防ぐため'],
+      choices: ['So he won’t catch the flu', 'Because he already has flu', 'To keep dust out on runs'], a: 0,
+      choicesJa: ['インフルにかからないため', 'もうインフルにかかっているから', '走るときにほこりを防ぐため'],
       cue: '質問への最初の答え',
       line: 'What’s with the mask? — *Flu prevention*.',
       said: '「そのマスクは？」と聞かれ、「インフルエンザ予防」と答える。',
-      mean: 'prevention ＝ 予防。まだかかっていない。自分がかからないためのマスク。',
-      trap: 'マスクは「うつさないため」とも思いやすい。あとで、インフルで体が止まると心配している。',
+      mean: 'prevention ＝ 予防。病気になる前に防ぐこと。まだかかっていない自分を守るマスク。',
+      trap: 'マスクを見ると「もうかかっている」と思いやすい。prevention（予防）なので、まだかかっていない。',
       use: 'I wear a mask on the train.（電車ではマスクをしている）' },
 
     { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 22.2],

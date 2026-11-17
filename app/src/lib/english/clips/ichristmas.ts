@@ -177,8 +177,8 @@ export const iChristmas: Clip = {
       use: 'Do you want to hang out this weekend?（今週末遊ばない？）' },
 
     { id: 'i5', skill: 'infer', level: 'C1', point: 'fault', reveals: ['wish'], seg: [191.5, 199.5],
-      stem: 'How does Sam take Carly’s “It’s my fault you’re in here”?',
-      ja: 'カーリーの「It’s my fault you’re in here」を、サムはどう受け取る？',
+      stem: 'What does Sam think “It’s my fault” means?',
+      ja: 'サムは「It’s my fault」をどういう意味だと思う？',
       choices: ['Carly called the cops on her', 'Carly is sorry she didn’t visit', 'Carly got her into crime'], a: 0,
       choicesJa: ['カーリーが警察に通報した', '面会に来なかったことを謝っている', 'カーリーが悪いことに誘った'],
       cue: 'サムの返事の質問。',

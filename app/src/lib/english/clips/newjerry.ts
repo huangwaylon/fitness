@@ -267,12 +267,12 @@ export const tomSwagger: Clip = {
       use: 'My father retired last year.（父は去年退職した）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'fix', reveals: ['hearing'], seg: [243.8, 288.4],
-      stem: 'In the end, how does Ron help Tom?', ja: '最後に、ロンはどうやってトムを助ける？',
+      stem: 'In the end, what does Ron decide?', ja: '最後に、ロンは何を決める？',
       choices: ['Jerry comes back once a week', 'He hires another intern', 'He gives Jerry his old job'], a: 0,
       choicesJa: ['ジェリーが週に一度来る', '別のインターンを雇う', 'ジェリーを元の仕事に戻す'],
       cue: '最後に戻ってきた人',
       said: 'インターンは辞めさせ、ジェリーを週に一度呼び戻す。',
-      mean: 'once a week ＝ 週に一度。からかわれ役をジェリーに戻して、トムを助けている。',
+      mean: 'once a week ＝ 週に一度。新しい人が見つかるまで、ジェリーに週に一度来てもらう。',
       trap: 'ジェリーが戻るので、元の仕事に戻ったと思いやすい。週に数時間だけ。',
       use: 'Welcome back! We missed you.（おかえり！寂しかったよ）' },
 

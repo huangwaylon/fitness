@@ -66,8 +66,8 @@ export const dwightPunch: Clip = {
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'after', seg: [15.4, 22.7],
       stem: 'When did Michael learn they were black belts?', ja: 'マイケルは、相手が黒帯だといつ知った？',
-      choices: ['After the fight', 'By how they hit', 'Before the fight'], a: 0,
-      choicesJa: ['ケンカのあと', '殴られ方で分かった', 'ケンカの前'],
+      choices: ['After the fight', 'During the fight', 'Before the fight'], a: 0,
+      choicesJa: ['ケンカのあと', 'ケンカの最中', 'ケンカの前'],
       cue: '答えの最後の一語',
       line: 'how did you know there were black belts? — They told me, *after*.',
       said: '「なぜ黒帯だと分かった？」に「あとで本人たちが言ってた」と答える。',
@@ -265,9 +265,9 @@ export const dwightPunch: Clip = {
       use: 'It started to rain right at noon.（ちょうど正午に雨が降り出した）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'harm', seg: [125.8, 136.7],
-      stem: 'How does Dwight sound after the punch?', ja: '殴ったあと、ドワイトはどう聞こえる？',
-      choices: ['He says he meant no harm', 'He says sorry for it', 'He is proud of the punch'], a: 0,
-      choicesJa: ['傷つけるつもりはなかったと言う', 'ごめんと謝る', '殴ったことを自慢する'],
+      stem: 'What does Dwight say about the punch?', ja: 'ドワイトはパンチについて何と言う？',
+      choices: ['He meant no harm', 'He is sorry for it', 'He is proud of it'], a: 0,
+      choicesJa: ['傷つけるつもりはなかった', '悪かったと思っている', '殴ったのが自慢だ'],
       cue: '自分への二つの質問と答え',
       line: '*Did I want to harm Michael?* The one man I’ve been hired to protect? *No, I did not.*',
       said: '「マイケルを傷つけたかったか？守るべき人を？いいや」と自分で聞き、自分で答える。',

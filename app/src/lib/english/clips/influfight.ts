@@ -172,8 +172,8 @@ export const influencerFightClub: Clip = {
       use: 'Sorry, I couldn’t help myself.（ごめん、つい）' },
 
     { id: 'i8', skill: 'infer', level: 'B2', point: 'app', reveals: ['derek'], seg: [172.8, 180.8], keep: true,
-      stem: 'How does Millicent take the picture of old Derek?',
-      ja: '年を取ったデレクの写真を、ミリセントはどう受け取る？',
+      stem: 'What does Millicent think the old-Derek picture means?',
+      ja: '年を取ったデレクの写真を、ミリセントはどういう意味だと思う？',
       choices: ['They’ll grow old together', 'Derek won’t stay cute', 'Derek is older than he looks'], a: 0,
       choicesJa: ['2人でいっしょに年を取る', 'デレクはずっとかわいくはない', 'デレクは見た目より年上'],
       cue: '「Woof」のあとの質問',
