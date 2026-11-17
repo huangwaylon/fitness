@@ -154,8 +154,8 @@ export const dwightAmyAdams: Clip = {
       use: 'If we hit a problem, call me.（何か問題が起きたら電話して）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'listen', seg: [125.2, 131.4], keep: true,
-      stem: 'What does “you are spending way too much time talking to me” mean?',
-      ja: '「you are spending way too much time talking to me」はどういう意味？',
+      stem: 'What is the coach really telling Dwight?',
+      ja: 'コーチは本当はドワイトに何を伝えている？',
       choices: ['Go and talk to her now', 'I’m too busy for this', 'You talk too much'], a: 0,
       choicesJa: ['今すぐ彼女と話しに行け', '今いそがしい', 'しゃべりすぎだ'],
       cue: '「Listen」のあと。',

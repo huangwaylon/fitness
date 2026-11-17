@@ -109,8 +109,8 @@ export const monicabroke: Clip = {
       use: 'You’re late anyway, so grab a coffee.（どうせ遅刻なんだし、コーヒー買っていけば）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'already', seg: [21.5, 29.4],
-      stem: 'What does “You might as well make some money” mean?',
-      ja: '「You might as well make some money」の意味は？',
+      stem: 'What does “You might as well” mean here?',
+      ja: 'ここでの「You might as well」の意味は？',
       choices: ['She has nothing to lose', 'There’s a small chance', 'She could work for them'], a: 0,
       choicesJa: ['（借りても）損はない', '少しは見込みがある', '両親のところで働ける'],
       cue: '文の最後、might のかたまり。',
