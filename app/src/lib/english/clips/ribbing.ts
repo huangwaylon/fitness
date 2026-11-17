@@ -1,21 +1,12 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 14, retire 2, new 0
 // “Just guys gently ribbing each other - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office
 // US): Jim is having a party tonight and hasn't invited Michael. Michael, who hears about it, tries hard to be “one of
 // the guys”; Jim teases him and calls it “gently ribbing”; Jim tells Dwight the party is a surprise to keep him quiet;
-// and at five Michael asks around for evening plans and is turned down by everyone, Dwight last (“Clarinet”).
-// Segments from the captions, words from whisper (2026-11-16). Jim is named at 88.3 s (“Jim, this is hardly the time”,
-// which his reply answers) and Dwight at 226–253 s; the party is Jim's (“Barbecue at Jim's”, “your house for the
-// party”). Untested, and no key rests on them: 46–48 s (“so like taking it off”/“It's all like taking it off”), 67 s
-// (“you've had a slump”/“We've hit a slump”), 87 s (“no one can snap at the little thing”/“with their little
-// finger”), 113 s (“a meal and a cup”/“in a cup”), 122.8 s (“free”/“pretty spicy tuna roll”), 124–132 s (who turns
-// the delivery down), 158–160 s (“I was wondering”, whisper only), 255.6 s (“You too, Dwight”) and 265.9 s (“He has no
-// idea”: whose).
-// REVIEW 2026-11-16: pass 5, fix 18, drop 0, new 0; ear checks 1 (unchanged)
-// OPEN: c2's anchor (154–171 s, Dwight asking for directions and told “it's a surprise”) lies outside its segment
-//   (245.9–255.3 s), so a replay can't show it (S4); kept because the clip-internal callback is the point of the item
-// OPEN: play-3 draws (seed 5, and 2/5/14/18 with “harder” on) can't place an unseen C2 (c1 reveals g2's `evening`;
-//   c2 shares `clarinet` with h2). This was there before the review
-// EAR CHECK: 11.2 s p1 — “Wonder where my e-vitation is” is Michael's (assumed: he is the one not invited, and his
-//   talking head follows); if it's someone else, p1 goes
+// and at five Michael asks around for evening plans and is turned down by everyone, Dwight last.
+// Segments from the captions, words from whisper (2026-11-16). Jim is named at 88.3 s, Dwight at 226–253 s. Untested,
+// and no key rests on them: 46–48 s, 67 s, 87 s, 113 s, 122.8 s, 124–132 s, 158–160 s, 175–209 s (improv), 252–266 s
+// (the "Clarinet" excuse and after).
+// EAR CHECK: 11.2 s p1 — “Wonder where my e-vitation is” is Michael's (assumed: he is the one not invited)
 import type { Clip } from '../types.ts';
 
 export const ribbing: Clip = {
@@ -24,106 +15,87 @@ export const ribbing: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2/K3, the distractors were incoherent (Michael planning the party); now Jim's cover story taken as true,
-    //   and the “respect him” talk taken as his goal
-    // why: surprise party ← “it's a surprise” (171 s) heard as the truth; respect as boss ← “I really respect him” and
-    //   “You are the boss” kept, the “one of the guys” goal lost
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'snub', reveals: ['evite'], seg: [0, 175],
-      stem: 'What is the first part of the clip mostly about?',
-      choices: ['Michael tries to fit in while the staff plan a night without him',
-                'Jim plans a surprise party for Michael and keeps it from him',
-                'Michael tries to earn more respect from the staff as boss'], a: 0,
-      cue: '招待の話と、Michael が何度も言う「仲間」。',
-      said: 'パーティーの話が出る中で、Michael は部下たちに溶けこもうとする。',
-      mean: '親しくなりたい上司と、上司抜きで楽しみたい部下たちのずれが場面の軸。',
-      trap: 'サプライズは Jim が Dwight を黙らせる口実。Michael の望みは尊敬より仲間入り。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'snub', seg: [4, 48],
+      stem: 'What does Michael want in the first part?', ja: '最初の場面で、マイケルは何を望んでいる？',
+      choices: ['To be one of the guys', 'To get more respect', 'To plan a surprise party'], a: 0,
+      choicesJa: ['仲間の一人になること', 'もっと尊敬されること', 'サプライズパーティーを計画すること'],
+      cue: 'カメラに話す最後の部分',
+      said: 'ジムの家のバーベキューに呼ばれていないと知り、「自分は仲間の一人として話しやすい」とカメラに話す。',
+      mean: 'one of the guys ＝ 仲間の一人。上司ではなく、仲間として扱われたい。',
+      trap: 'boss や respect が出るので、尊敬されたいと思いやすい。本人が言うのは one of the guys。',
       use: 'I just want to fit in.（ただ仲間に入りたいだけ）' },
 
-    // why: birthday ← a b-start and a party word, the rest lost; ball game ← “b…” + “at Jim's”, a guys' night out
     { id: 'd1', skill: 'detail', level: 'B1', point: 'bbq', seg: [4, 9.6],
-      stem: 'What is happening at Jim’s tonight?',
+      stem: 'What is happening at Jim’s tonight?', ja: '今夜、ジムの家で何がある？',
       choices: ['A barbecue', 'A birthday', 'A ball game'], a: 0,
-      cue: '「e-vite」のすぐあと、Jim’s の前の語。',
+      choicesJa: ['バーベキュー', '誕生日会', '球技の試合'],
+      cue: '「e-vite」のすぐあと',
       line: 'Meredith has an e-vite. *Barbecue at Jim’s tonight.*',
-      said: '「メレディスに招待メールが来てる。今夜 Jim の家でバーベキュー」と話している。',
-      mean: 'e-vite ＝ メールで送る招待状。今夜、Jim の家で集まりがある。',
-      trap: 'barbecue は最初の「バー」が強く短い。b で始まる別の語に聞こえやすい。',
+      said: '「メレディスに招待メールが来てる。今夜ジムの家でバーベキュー」と話している。',
+      mean: 'e-vite ＝ メールで送る招待状。at Jim’s ＝ ジムの家で。',
+      trap: 'birthday なら「バース」、ball game なら「ボール」。「バーベキュー」と聞こえれば barbecue。',
       use: 'We’re having a barbecue on Sunday.（日曜にバーベキューするよ）' },
 
-    // R fix: V2/S1, the stem said “his own invitation”, which settled it; the distractors now are acts he could mean
-    // why: doesn't care ← the flat “Tonight.” heard as a shrug (Japanese 強がり frame); checking it reached everyone ←
-    //   “where is my e-vitation” heard as an admin check on Meredith's e-vite
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'evite', reveals: ['bbq'], seg: [6.2, 12.9],
-      stem: 'After hearing about the barbecue, what is Michael doing with his next line?',
-      choices: ['Hinting that he was left off the list', 'Showing he doesn’t care much about it',
-                'Checking the e-vite reached everyone'], a: 0,
-      cue: '「Tonight」をくり返したあと、ひとり言のような一文。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'evite', seg: [6.2, 12.9],
+      stem: 'What is Michael doing with “Wonder where my e-vitation is”?', ja: '“Wonder where my e-vitation is” で、マイケルは何をしている？',
+      choices: ['Hinting he wasn’t invited', 'Showing he doesn’t care', 'Checking everyone got it'], a: 0,
+      choicesJa: ['呼ばれていないとほのめかす', '気にしていないと見せる', 'みんなに届いたか確かめる'],
+      cue: '「Tonight」をくり返したあと',
       line: 'Barbecue at Jim’s tonight. — Tonight. … *Wonder where my e-vitation is.*',
       said: 'パーティーの話を聞き、「僕の招待メールはどこかな」とつぶやく。',
-      mean: '本当に探しているのではなく、自分が呼ばれていないことへの遠回しなアピール。',
-      trap: 'ひとり言なので強がりや確認にも聞こえる。I wonder は答えを求めず、気持ちをにじませる言い方。',
+      mean: 'I wonder 〜 ＝ 〜かなあ。本当に探しているのではなく、呼ばれていないことへの遠回しなアピール。',
+      trap: 'ひとり言なので、確かめているだけだと思いやすい。I wonder は気持ちをにじませる言い方。',
       use: 'I wonder where my invitation is.（私の招待状はどこかなあ）' },
 
-    // R fix: V2, “spoil the party” and “don't respect him” were easy to rule out; now a busy-boss keyword trap and a
-    //   strict-boss reading of “distance”. B1/N7: the key matches Jim's reason (d3), so it reveals `reason`
-    // why: too busy ← “No, I'm busy right now” (3 s) kept as the reason; too strict ← “distance between a boss and the
-    //   employees” heard as strictness, the spinach-dip worry lost
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'distance', reveals: ['reason'], seg: [12.6, 26.3],
-      stem: 'In his talk to the camera, why does Michael think he isn’t invited?',
-      choices: ['Staff would feel nervous around their boss', 'A boss is usually too busy for staff parties',
-                'Staff think he is too strict to have fun with'], a: 0,
-      cue: '「They’re thinking」のあとの、部下の心の声。',
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'distance', seg: [12.6, 26.3],
+      stem: 'Why does Michael think he isn’t invited?', ja: 'マイケルは、なぜ自分が呼ばれないと思っている？',
+      choices: ['Staff feel nervous with a boss', 'A boss is always too busy', 'He seems too strict'], a: 0,
+      choicesJa: ['部下は上司の前で緊張する', '上司はいつも忙しすぎる', '自分が厳しすぎる'],
+      cue: '「They’re thinking」のあと',
       line: 'There’s always a *distance between a boss and the employees*. They’re thinking…',
       said: '「上司と部下には距離がある。部下は上司の目を気にするものだ」と話す。',
-      mean: '呼ばれないのは、部下が緊張するからだと考えている。自分が原因だとは思っていない。',
-      trap: 'distance を厳しさと取りやすいが、心の声はディップをこぼす心配。部下側の緊張の話。',
+      mean: 'distance ＝ 距離。呼ばれないのは部下が緊張するからだと考えていて、自分が原因とは思っていない。',
+      trap: 'distance を「厳しさ」と思いやすい。心の声は「ディップをこぼしたらどうしよう」という緊張。',
       use: 'There’s always some distance with a new boss.（新しい上司とは距離があるものだ）' },
 
-    // why: What do I ← the flapped t in “what'll” drops and “'ll” is lost; What would I ← a d-like flap heard as
-    //   “would”; What did I ← the past heard in the flap
     { id: 's1', skill: 'sound', level: 'B2', point: 'whatll', seg: [21.5, 25.4],
-      stem: 'Fill the gap: “___ do if I drop spinach dip on him?”',
-      choices: ['What’ll I', 'What do I', 'What would I', 'What did I'], a: 0,
-      cue: '「respect him」のすぐあと、文の最初の短い音。',
+      stem: 'Fill the gap: “___ do if I drop spinach dip on him?”', ja: '空所に入るのは？ “___ do if I drop spinach dip on him?”',
+      choices: ['What’ll I', 'What do I', 'What would I'], a: 0,
+      choicesJa: ['何を〜するだろう', '何を〜する', '何を〜するかな'],
+      cue: '「respect him」のすぐあと',
       line: '*What’ll I* do if I drop spinach dip on him at a party?',
       said: '部下の心の声として「ディップをこぼしたらどうしよう」と言う。',
-      mean: 'What’ll ＝ What will。t が弾んで「ワロー」に近く、’ll はほぼ「ル」だけ。',
-      trap: '’ll が消えると What do I に聞こえる。弱い ’ll を待って聞く。',
+      mean: 'What’ll ＝ What will。t が軽い「ラ」の音で「ワロー」に近く、’ll は短い「ル」だけ。',
+      trap: 'What do I なら「ワドゥアイ」、would I なら「ウダイ」。「ワロー」と短い「ル」が入れば What’ll I。',
       use: 'What’ll I say if she calls?（彼女から電話が来たら何て言おう）' },
 
-    // R fix: V2/K6, “at all” sat only in a distractor and the key was the only nuanced choice; now three two-part ratings
-    // why: less since boss ← “distance between a boss and the employees” just before, heard as a change over time; only
-    //   to friends ← “as one of the guys” heard as a limit on whom he's approachable to
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'approach', seg: [28.2, 39.6],
-      stem: 'How does Michael rate himself as “one of the guys”?',
-      choices: ['Already very approachable, but could be more so', 'Less approachable since he became the boss',
-                'Approachable to his friends, but not to staff'], a: 0,
-      cue: '笑いのあとに続く、最後の一文。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'approach', seg: [28.2, 39.6],
+      stem: 'How does Michael see himself as “one of the guys”?', ja: '「仲間の一人」として、マイケルは自分をどう見ている？',
+      choices: ['Very friendly, could be more', 'Less friendly since he’s boss', 'Friendly to friends only'], a: 0,
+      choicesJa: ['とても話しやすいが、もっとなれる', '上司になって話しにくくなった', '友だちにだけ話しやすい'],
+      cue: '最後の一文',
       line: 'I do think that I am *very approachable*… *But maybe I need to be even* approachable…',
       said: '「自分はとても話しやすい。でも、もっと話しやすくならないと」と言う。',
-      mean: '欠点とは思わず、長所をさらに伸ばせばいいと考えている。',
-      trap: 'distance の話から「上司で距離ができた」と取りやすいが、今も very approachable と言う。',
+      mean: 'approachable ＝ 話しかけやすい。欠点とは思わず、長所をもっと伸ばせばいいと考えている。',
+      trap: 'distance の話から「上司で距離ができた」と思いやすい。本人は very approachable と言う。',
       use: 'Maybe I need to be even friendlier.（もっと気さくにならないとね）' },
 
-    // R fix: V2/K3/K6, “worked hard for this moment” didn't fit a reply, and only the key lacked a clip word; the stem
-    //   no longer calls Jim's line a joke
-    // why: barely any time ← hardly = ほとんど〜ない, read as a time limit; already hard for him ← “hard” heard in
-    //   “hardly”, tied to the slump talk just before (a plea, not a rebuke)
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hardly', seg: [84.4, 92.8],
-      stem: 'What is Michael telling Jim right after the little-finger line?',
-      choices: ['Now is not the time for that', 'There’s hardly any time left today', 'This is already hard enough for him'], a: 0,
-      cue: '名前を呼んだあと、time の前の語。',
+      stem: 'What does “this is hardly the time” mean?', ja: '“this is hardly the time” はどういう意味？',
+      choices: ['Now is not the time for that', 'There’s little time left', 'This is very hard'], a: 0,
+      choicesJa: ['今はそんなことをする時じゃない', '時間がほとんど残っていない', 'これはとても難しい'],
+      cue: '「Jim,」のあと',
       line: 'Jim, this is *hardly the time*. — No, it’s completely the time.',
-      said: '「今そんな時じゃない」に Jim は「今こそだ」と返す。',
-      mean: 'hardly the time ＝ そんな場面ではない。軽くたしなめる言い方。',
-      trap: 'hardly は hard と別の語。返事の completely the time で場面の話と分かる。',
+      said: '「今そんな時じゃない」にジムは「今こそだ」と返す。',
+      mean: 'hardly ＝ ほとんど〜ない。hardly the time ＝ そんな場面ではない。軽くたしなめる言い方。',
+      trap: 'hardly を hard（難しい）と思いやすい。返事の completely the time で、場面の話と分かる。',
       use: 'This is hardly the place for that.（ここでそんな話はないでしょう）' },
 
     // R fix: V2, the distractors were long and off the words; now a boss-frame reading and a Japanese frame (he's too
     //   sensitive)
     // why: a boss takes a joke ← the boss frame of the scene (“You are the boss”); too touchy ← “this is hardly the time”
     //   heard as Jim blaming Michael's mood, a Japanese 空気 frame
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'perfect', reveals: ['hardly', 'ribbing'], seg: [87.8, 100],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'perfect', reveals: ['hardly', 'ribbing'], seg: [87.8, 100], retired: true,
       stem: 'How does Jim answer Michael’s complaint about the timing?',
       choices: ['He says friendly teasing is what guys do together', 'He says a good boss can take a joke from staff',
                 'He says Michael is too touchy to take a joke'], a: 0,
@@ -134,148 +106,123 @@ export const ribbing: Clip = {
       trap: '上司と部下の話に取ると「冗談を受け流せ」に引かれるが、Jim は guys と言う。',
       use: 'That’s what friends are for.（友だちってそういうものでしょ）' },
 
-    // R fix: V2/K3, “a serious argument” went against “gently”; now “gently” read as the meaning
-    // why: poking in the ribs ← ribbing taken literally (rib = あばら骨); going easy ← “gently” heard as the whole point
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'ribbing', seg: [93, 100],
-      stem: 'What does Jim say the guys are doing to each other?',
-      choices: ['Teasing in a friendly way', 'Poking at each other’s ribs', 'Going easy on each other'], a: 0,
-      cue: '「gently」のあとの語。each other の前。',
+      stem: 'What does “gently ribbing each other” mean?', ja: '“gently ribbing each other” はどういう意味？',
+      choices: ['Teasing in a friendly way', 'Poking each other’s ribs', 'Being very kind to each other'], a: 0,
+      choicesJa: ['悪気なくからかい合う', 'あばら骨をつつき合う', 'お互いにとてもやさしくする'],
+      cue: '「gently」のあと',
       line: 'This is just guys *gently ribbing* each other.',
       said: '「これは男同士の、ちょっとしたからかいだよ」と言う。',
       mean: 'rib ＝ からかう、冷やかす。gently が付いて「悪気のない」いじり。',
-      trap: 'rib は「あばら骨」でもあるので、体をつつくと取りやすい。ここは言葉でのいじり。',
+      trap: 'rib は「あばら骨」でもあるので、体をつつくと思いやすい。ここは言葉でのいじり。',
       use: 'Don’t worry, I’m just ribbing you.（気にしないで、からかってるだけ）' },
 
-    // R fix: §9.5, “Are you going eat” doesn't fit the gap; “Did you wanna” replaces it
-    // why: Aren't you ← the “Are you” blur can carry an n, and a complaint reading fits a boss; Do you wanna ← “gonna”
-    //   heard as the more common invite form; Did you wanna ← the same vowel run, the past as a polite form
     { id: 's2', skill: 'sound', level: 'B2', point: 'eat', seg: [100.6, 104],
-      stem: 'Fill the gap: “___ eat with us?”',
-      choices: ['Are you gonna', 'Aren’t you gonna', 'Do you wanna', 'Did you wanna'], a: 0,
-      cue: '文の最初、速くつながる3語。',
+      stem: 'Fill the gap: “___ eat with us?”', ja: '空所に入るのは？ “___ eat with us?”',
+      choices: ['Are you gonna', 'Aren’t you gonna', 'Do you wanna'], a: 0,
+      choicesJa: ['〜するつもり？', '〜しないの？', '〜したい？'],
+      cue: '文の最初',
       line: '*Are you gonna* eat with us? — Of course.',
-      said: '「一緒に食べる？」と聞かれ、Michael は「もちろん」と答える。',
-      mean: 'Are you gonna が「アユガナ」とつながる。gonna ＝ going to。',
-      trap: 'Aren’t なら「食べないの？」になる。',
+      said: '「一緒に食べる？」と聞かれ、マイケルは「もちろん」と答える。',
+      mean: 'Are you gonna 〜? ＝ 〜するの？ 「アユガナ」とつながる。gonna ＝ going to。',
+      trap: 'Aren’t なら「アーンチュ」と n が入る。Do you wanna なら「ドゥユワナ」。「アユガナ」なら Are you gonna。',
       use: 'Are you gonna finish that?（それ、全部食べる？）' },
 
-    // R fix: K3, “fix a slip in the grammar” was a filler; now a self-mocking reading (Japanese 照れ frame)
-    // why: laughs at himself ← the odd add-on heard as embarrassment at the word “crew”; reminding them he's in charge ←
-    //   “my crew” heard as a boss's ownership
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'crew', seg: [102.7, 111.5],
-      stem: 'Why does Michael add a second line about his “crew”?',
-      choices: ['To stress that he really belongs to it', 'To laugh at himself for using the word',
-                'To remind them that he is the one in charge'], a: 0,
-      cue: '「my crew」のすぐあと、言い足した部分。',
-      line: 'Hanging with my crew. *Crew that I am one of.*',
-      said: '「仲間と過ごすんだ。僕もその一人の仲間とね」とわざわざ言い足す。',
-      mean: 'my crew だと上司が部下を持つように聞こえる。仲間の一人だと念を押していて、必死さが出る。',
-      trap: 'my から「自分のもの」と取ると上司らしさに聞こえるが、言い足したのは逆の意味。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'crew', seg: [102.7, 111.5],
+      stem: 'Why does Michael add “Crew that I am one of”?', ja: 'マイケルはなぜ “Crew that I am one of” と言い足す？',
+      choices: ['To say he really belongs', 'To make fun of himself', 'To show he’s the boss'], a: 0,
+      choicesJa: ['本当に仲間だと言うため', '自分を笑うため', '上司だと示すため'],
+      cue: '「my crew」のすぐあと',
+      line: 'Hang in with my crew. *Crew that I am one of.*',
+      said: '「仲間と過ごすんだ。僕もその一人の仲間とね」と、わざわざ言い足す。',
+      mean: 'crew ＝ 仲間。my crew だと上司が部下を持つように聞こえるので、仲間の一人だと念を押している。',
+      trap: 'my から「自分のもの」と思うと、上司らしさに聞こえやすい。言い足したのは逆の意味。',
       use: 'I’m one of you guys, right?（僕もみんなの仲間だよね？）' },
 
-    // why: got lost ← the usual delivery excuse, not in the words; mixed up the order ← “order” heard, in the wrong
-    //   relation
     { id: 'd4', skill: 'detail', level: 'B1', point: 'late', seg: [116.9, 121.6],
-      stem: 'Why is the food delivery late?',
-      choices: ['A big order came in just before', 'The driver got lost on the way', 'The shop mixed up the order'],
-      a: 0,
-      cue: '「so late」のあと、理由の一文。',
+      stem: 'Why is the food delivery late?', ja: '料理の配達はなぜ遅れた？',
+      choices: ['A big order came in first', 'The driver got lost', 'The shop mixed up the order'], a: 0,
+      choicesJa: ['先に大きな注文があった', '配達の人が道に迷った', '店が注文をまちがえた'],
+      cue: '「so late」のあと',
       line: 'Sorry this is so late. There was *a big order right before yours*.',
       said: '配達の人が「遅くなってすみません。直前に大きな注文があって」と言う。',
-      mean: 'right before ＝ すぐ前に。ほかの注文が先だったという説明。',
-      trap: 'order が聞こえると、注文の取りちがえを想像しやすい。理由は right before の一文。',
+      mean: 'right before 〜 ＝ 〜のすぐ前に。ほかの注文が先だった、という説明。',
+      trap: 'order が聞こえると、注文のまちがいを思いやすい。理由は right before の一文。',
       use: 'Sorry I’m late. Traffic was terrible.（遅れてごめん。道がひどく混んでて）' },
 
-    // why: free ← /θ/–/f/: “three” heard with an f, and “free” is a word in the clip; two ← a short number, the first
-    //   sound lost
     { id: 'n1', skill: 'number', level: 'B1', point: 'beer', seg: [132.4, 138.5], keep: true,
-      stem: 'How many cases of beer has Jim got for the party?',
-      choices: ['Two', 'Three', 'Four'], a: 1,
-      cue: '「I’ve got」のすぐあと。', line: 'I’ve got *three cases* of imported beer. Karaoke machine.',
-      said: 'Jim がカメラに「輸入ビールを3ケース、カラオケも用意した」と話す。',
+      stem: 'How many cases of beer has Jim got?', ja: 'ジムはビールを何ケース用意した？',
+      choices: ['2', '3', '4'], a: 1,
+      choicesJa: ['2ケース', '3ケース', '4ケース'],
+      cue: '「I’ve got」のすぐあと',
+      line: 'I’ve got *three cases* of imported beer. Karaoke machine.',
+      said: 'ジムがカメラに「輸入ビールを3ケース、カラオケも用意した」と話す。',
       mean: 'case ＝ 1箱（24本ほど）。かなり本格的なパーティー。',
-      trap: 'three の th は舌を軽くかむ音。free と聞こえても、数を言う場面なら three。',
+      trap: '2 なら「トゥー」、4 なら「フォー」。舌を軽くかむ th の「スリー」なら3。',
       use: 'We need three cases of water.（水が3ケース要る）' },
 
-    // R fix: V2/K6, the key was the only kind choice; now an apology reading (Japanese すみません frame) and personal =
-    //   private
-    // why: close friends only ← personal = 個人的, a private party; apologizing ← the softener heard as a Japanese
-    //   「すみません」
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'personal', reveals: ['reason'], seg: [138.3, 146.1],
-      stem: 'What is Jim doing right after saying he didn’t invite Michael?',
-      choices: ['Softening the snub before giving his reason', 'Saying the party is just for close friends',
-                'Apologizing to Michael for leaving him out'], a: 0,
-      cue: '「didn’t invite Michael」の直後の短い一文。',
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'personal', seg: [138.3, 146.1],
+      stem: 'What does “it’s nothing personal” do here?', ja: 'ここでの “it’s nothing personal” は何をしている？',
+      choices: ['Softens the bad news', 'Says it’s for close friends', 'Says sorry to Michael'], a: 0,
+      choicesJa: ['悪い知らせをやわらげる', '親しい友だちだけだと言う', 'マイケルに謝る'],
+      cue: '「didn’t invite Michael」の直後',
       line: 'And I didn’t invite Michael. And *it’s nothing personal*. I just think…',
-      said: '「Michael は呼んでない。個人的な理由じゃない。ただ…」',
-      mean: 'nothing personal ＝ 嫌いなわけではない。断りを和らげる前置き。',
-      trap: '前置きは謝罪に聞こえやすいが sorry はない。I just think の理由へつなぐ。',
+      said: '「マイケルは呼んでない。個人的な理由じゃない。ただ…」と話す。',
+      mean: 'nothing personal ＝ あなたが嫌いなわけではない。断りをやわらげる前置き。',
+      trap: '謝っていると思いやすいが、sorry はない。このあと I just think で理由を言う。',
       use: 'It’s nothing personal. I’m just busy.（あなたのせいじゃない。忙しいだけ）' },
 
-    // R fix: V2/K6, “always… on purpose” put an absolute in a distractor only
-    // why: talks about work ← the boss frame (“affect my salary”, 26 s) and “wouldn't be able to relax”; no room ←
-    //   “wants to meet everybody”, “three cases” and “karaoke machine” suggest a crowd
     { id: 'd3', skill: 'detail', level: 'B1', point: 'reason', seg: [138.3, 146.1],
-      stem: 'Why didn’t Jim invite Michael?',
-      choices: ['People couldn’t relax with him there', 'Michael would talk about work all night',
-                'There isn’t room for everybody at his place'], a: 0,
-      cue: '「if you were there」のあと。', line: 'if you were there, *people wouldn’t be able to relax*',
+      stem: 'Why didn’t Jim invite Michael?', ja: 'ジムはなぜマイケルを呼ばなかった？',
+      choices: ['People couldn’t relax with him', 'He would talk about work', 'There isn’t enough room'], a: 0,
+      choicesJa: ['みんながくつろげない', '仕事の話ばかりする', '場所が足りない'],
+      cue: '「if you were there」のあと',
+      line: 'if you were there, *people wouldn’t be able to relax*',
       said: '「あなたがいると、みんながくつろげないと思うんだ」とカメラに話す。',
-      mean: '上司がいると気をつかう。わざと邪魔をするという話ではない。',
-      trap: '上司なので「仕事の話」を想像しやすいが、Jim の理由は relax。周りが気をつかうこと。',
+      mean: 'relax ＝ くつろぐ。上司がいると気をつかう、という理由。',
+      trap: '上司なので「仕事の話」を思いやすい。ジムの理由は relax。',
       use: 'I just want everyone to relax.（みんなにくつろいでほしいだけ）' },
 
-    // R fix: V2/K6, “never once” was an absolute in a distractor; now curiosity (the meet-everybody wish taken alone)
-    // why: curious ← “wants to meet everybody” heard as the whole point; a nickname ← “making Dwight up” heard as
-    //   “making up a name”
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'madeup', seg: [145.4, 151.8],
-      stem: 'Why does Jim’s roommate want to meet everybody, as Jim tells it?',
-      choices: ['Jim’s Dwight stories sound too odd to be true', 'Jim talks about Dwight so much that he’s curious',
-                'Jim calls Dwight by a funny nickname at home'], a: 0,
-      cue: '「pretty sure」のあと、Dwight のあとの短い語。',
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'madeup', seg: [145.4, 151.8],
+      stem: 'What does Jim’s roommate think about Dwight?', ja: 'ジムのルームメイトは、ドワイトのことをどう思っている？',
+      choices: ['Jim made him up', 'He is very funny', 'He is Jim’s boss'], a: 0,
+      choicesJa: ['ジムの作り話', 'とても面白い', 'ジムの上司'],
+      cue: '「pretty sure」のあと',
       line: 'I’m pretty sure he thinks I’m *making Dwight up*.',
-      said: '「ルームメイトは、僕が Dwight を作り話だと思ってるらしい」と言う。',
-      mean: 'make up ＝ でっち上げる。Dwight の話が変すぎて、実在を疑われている。',
-      trap: 'make up を「名前を作る」と取るとあだ名の話になる。疑われているのは存在。',
+      said: '「ルームメイトは、僕がドワイトを作り話だと思ってるらしい」と言う。',
+      mean: 'make up ＝ でっち上げる。ドワイトの話が変すぎて、本当にいるのか疑われているのが笑い。',
+      trap: 'make up を「化粧」と思いやすい。make 人 up ＝ その人を作り話にする。',
       use: 'You’re making that up!（それ、作り話でしょ！）' },
 
-    // R fix: K3, “put his phone away” was weak; now “slow down”, another “down” phrasal verb
-    // why: write them down ← down = 書き留める, as in “write it down”; slow down ← keep … down heard as speed
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'down', seg: [153.8, 161.3],
-      stem: 'What does Jim ask Dwight to do about the party directions?',
-      choices: ['Talk about them more quietly', 'Write them down on paper', 'Slow down as he reads them'], a: 0,
-      cue: '道順の話のあと、Jim の短い命令。',
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'down', seg: [153.8, 161.3],
+      stem: 'What does “Keep that down” mean?', ja: '“Keep that down” はどういう意味？',
+      choices: ['Talk more quietly', 'Write it all down on paper', 'Slow down'], a: 0,
+      choicesJa: ['もっと小さい声で話して', '全部紙に書いて', 'ゆっくりして'],
+      cue: '道順の話のあとの短い命令',
       line: '…to get to your house for the party tonight. — *Keep that down.*',
-      said: 'Dwight が大声でパーティーへの道順を話し、Jim が「声を落として」と言う。',
-      mean: 'keep it down ＝ 声を小さくして。パーティーを聞かれたくない。',
-      trap: 'down を「書き留める」「ゆっくり」と取りやすい。keep ～ down は音量。',
+      said: 'ドワイトが大声でパーティーへの道順を話し、ジムが「声を落として」と言う。',
+      mean: 'keep it down ＝ 声を小さくして。パーティーのことを聞かれたくない。',
+      trap: 'down から「書きとめる」「ゆっくり」と思いやすい。keep 〜 down は音の大きさ。',
       use: 'Could you keep it down, please?（少し静かにしてもらえますか）' },
 
-    // R fix: K5, the third choice wasn't parallel; all three now say what the party is
-    // why: secret from the office ← “not everybody knows” heard as the whole party being hidden; a surprise for Dwight ←
-    //   “it's a surprise” said to Dwight, so he seems the target
-    { id: 'i5', skill: 'infer', level: 'C1', point: 'surprise', seg: [159.9, 174.9],
-      stem: 'After Jim’s last answer, what does Dwight come to believe?',
-      choices: ['The party is a surprise for Michael', 'The party is a secret from the whole office',
-                'The party is a surprise for Dwight'], a: 0,
-      cue: '最後の問いへの答えと、Dwight の反応。',
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'surprise', seg: [159.9, 174.9],
+      stem: 'What does Dwight come to believe?', ja: 'ドワイトは何を信じこむ？',
+      choices: ['It’s a surprise for Michael', 'It’s a secret from everyone', 'It’s a surprise for Dwight'], a: 0,
+      choicesJa: ['マイケルへのサプライズ', '全員に秘密', 'ドワイトへのサプライズ'],
+      cue: '最後の質問への答え',
       line: 'Like who? — Michael. — Why just Michael? — Because *it’s a surprise*. … Oh, *that’s perfect*.',
-      said: '「なぜ Michael だけ？」「サプライズだから」。Dwight は喜ぶ。',
-      mean: 'Michael へのサプライズだと思いこむ。Jim は本当の理由を隠した。',
-      trap: 'not everybody を全員に内緒と取りやすい。答えは Michael について。',
+      said: '「なぜマイケルだけ？」「サプライズだから」。ドワイトは喜ぶ。',
+      mean: 'surprise ＝ サプライズ。マイケルへのサプライズだと思いこむ。ジムは本当の理由を隠した。',
+      trap: 'not everybody から、全員に内緒だと思いやすい。答えはマイケルについて。',
       use: 'Don’t tell him. It’s a surprise.（彼には言わないで。サプライズだから）' },
 
-    // R fix: K1, Pam and Oscar don't say they have plans (“No, thanks”, “I'm on a call”), so the key now says turned
-    //   down; K3, Pam's walk replaces “talks his way into Jim's party”
-    // why: Dwight agrees ← “You and I are hanging tonight” heard as a done deal; Pam ← “walk you to your vehicular
-    //   transport” heard, her “No, thanks” lost
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'evening', reveals: ['plans'], seg: [208.9, 263],
-      stem: 'How does Michael’s search for company tonight go?',
-      choices: ['Everyone he asks turns him down', 'Dwight agrees to watch TV with him',
-                'Pam lets him walk her to her car'], a: 0,
-      cue: 'Pam、Oscar、それから二人に聞いたときの返事。',
-      said: 'Pam、Oscar、もう一人に今夜の予定を聞くが全員だめ。最後の Dwight も予定がある。',
-      mean: '誰も Michael と夜を過ごしてくれない。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'evening', seg: [208.9, 253],
+      stem: 'How does Michael’s search for company tonight go?', ja: '今夜一緒にいてくれる人探しは、どうなる？',
+      choices: ['Everyone says no to him', 'Dwight watches TV with him', 'Pam lets him walk her out'], a: 0,
+      choicesJa: ['みんなに断られる', 'ドワイトがテレビを一緒に見る', 'パムを車まで送る'],
+      cue: 'パム、オスカー、そのあとの二人の返事',
+      said: 'パム、オスカー、もう一人に今夜の予定を聞くが全員だめ。最後のドワイトも予定がある。',
+      mean: 'turn down ＝ 断る。誰もマイケルと夜を過ごしてくれない。',
       trap: 'hanging tonight は誘いで、約束ではない。返事まで聞く。',
       use: 'Any plans tonight?（今夜、何か予定ある？）' },
 
@@ -297,18 +244,19 @@ export const ribbing: Clip = {
       use: 'Whatever you want to do, I’m in.（何をするにしても、私も乗るよ）', retired: true },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'plans', seg: [245.9, 249.5],
-      stem: 'Type what Dwight says: “Unfortunately, ___.” (3 words)', answer: "i've got plans",
-      cue: '「Unfortunately」のすぐあと。短い3語。',
+      stem: 'Type what Dwight says: “Unfortunately, ___.” (3 words)', ja: '書こう：“Unfortunately, ___.”（3語）',
+      answer: "i've got plans",
+      cue: '「Unfortunately」のすぐあと',
       line: 'Unfortunately, *I’ve got plans*.',
-      said: 'Michael の誘いに「あいにく予定があるんです」と断る。',
+      said: 'マイケルの誘いに「あいにく予定があるんです」と断る。',
       mean: 'I’ve got ＝ I have。’ve はほとんど聞こえず「アイガッ」に近い。',
-      trap: 'I got plans と書きたくなるが、弱い ’ve が入っている。意味はどちらも同じ。',
+      trap: 'I got plans と書きたくなるが、小さい ’ve が入っている。意味はどちらも同じ。',
       use: 'Sorry, I’ve got plans tonight.（ごめん、今夜は予定があるの）' },
 
     // R fix: K3, “clarinet for his soccer team” was absurd; now an honest mix-up (the near miss to a made-up excuse)
     // why: forgot ← the switch heard as honest confusion, but he answered at once and changed only when questioned;
     //   Michael's slip ← Michael says “soccer” only because Dwight just did
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'clarinet', seg: [245.9, 255.3],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'clarinet', seg: [245.9, 255.3], retired: true,
       stem: 'Why does Dwight’s last word about his practice get a laugh?',
       choices: ['His made-up excuse changes as he goes', 'He forgot which practice he has tonight',
                 'Michael got the sport wrong, not Dwight'], a: 0,
