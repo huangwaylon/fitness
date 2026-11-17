@@ -34,8 +34,9 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
 - **The plan** (`plan.ts`): one order every phone offers the clips in, so both members meet the same clip most days
-  without seeing each other's. A slow ramp by ease (wpm's rank 0.7, the bank's C1+ share's 0.3; a bank under 16 the
-  mean) with variety: each pick the one of the nearest five that avoids three of a show or a situation in a row and
+  without seeing each other's. A slow ramp by ease (wpm's rank 0.8, the rank of the bank's non-B1 share among live non-C2 items 0.2; a bank
+  under 16 the mean; since 2026-11-17, for the A1–A2 learner), a bank with a `// A2 LATE:` line after all the others (as planned: a written place stays till a `--fresh` run),
+  with variety: each pick the one of the nearest five that avoids three of a show or a situation in a row and
   keeps the shows near their share. `plan-order.ts` keeps it as written (`npm run english:plan`; `-- --fresh` only
   while nobody is part-way); a clip added since goes after it. The build orders the index by it.
 

@@ -27,6 +27,11 @@ describe('the shared plan', () => {
     expect(plan[0]).toBe('c0');
   });
 
+  it('puts the late clips after all the others, however easy', () => {
+    const lib = [clip('a', 100, 'F'), clip('b', 150, 'O', ['職場']), clip('c', 180, 'P', ['電話'])];
+    expect(planOf(lib, [], new Set(['a'])).map((c) => c.id)).toEqual(['b', 'c', 'a']);
+  });
+
   it('never three of a show or a situation in a row when a near clip avoids it, the shows at about their share', () => {
     // by ease the shows would come in runs of three
     const lib = Array.from({ length: 12 }, (_, i) => clip(`c${i}`, 100 + i, 'FOP'[Math.floor(i / 3) % 3] as 'F', [Math.floor(i / 3) % 2 ? '職場' : '家']));
