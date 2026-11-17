@@ -239,6 +239,9 @@
   };
   const again = $derived(end ? againOf(qs, st) : []);
   /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
+  /** 訳: the choices' Japanese before answering (this lesson's; a form item's never: it would answer it), always at the reveal. */
+  let tr = $state(false);
+  const FORM = new Set<Question['skill']>(['marker', 'phrase', 'sound', 'dict']);
   const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
@@ -291,15 +294,21 @@
     {:else if q && cur}
       {#key at}
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
-          <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+          <div class="qhead">
+            <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
+            {#if q.choicesJa && !cur.r && !FORM.has(q.skill)}
+              <button type="button" class="chip s" aria-pressed={tr} aria-label={s('trLabel')} data-sfx="tick" data-en-tr={tr ? 'on' : 'off'} onclick={() => (tr = !tr)}>{s('tr')}</button>
+            {/if}
+          </div>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
+          {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
           <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
             <div class="choices">
-              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}
+              {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (tr && !FORM.has(q.skill)) ? q.choicesJa?.[i] : undefined}
                 <button type="button" class="prow choice" class:ans={!!cur.r && i === q.a} lang="en" data-sfx="tick" data-choice={i} data-ans={(!!cur.r && i === q.a) || undefined}
-                  aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}</span></button>
+                  aria-disabled={!!cur.r || undefined} onclick={() => !cur.r && choose(i)}><span class="prl">{c}{#if ja}<small lang="ja" data-en-choice-ja>{ja}</small>{/if}</span></button>
               {/each}
             </div>
           {:else}
@@ -378,6 +387,7 @@
   .tag.hard { padding: 0 7px; margin-left: 2px; }
   .lead b { display: block; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
+  .qhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
   .quiet.flag { justify-self: end; display: inline-flex; align-items: center; gap: 3px; margin: -4px -4px -8px 0; padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .btn { margin: 0; }

@@ -33,8 +33,13 @@ export interface Question {
   then?: readonly [number, number];
   /** The question, in English. */
   stem: string;
+  /** The question in Japanese (≤ 60), shown under the English (docs/english.md "The page"). */
+  ja?: string;
   /** Its choices (English, 3 or 4); absent for a dictation. */
   choices?: readonly string[];
+  /** Each choice in Japanese (≤ 40 each), in `choices`' order: under its choice at the reveal, and before answering on
+   *  訳 (never before for a form item: marker, phrase, sound). */
+  choicesJa?: readonly string[];
   /** The right choice's index. */
   a?: number;
   /** Keep the authored order (numbers, a scale); else shuffled per player. */

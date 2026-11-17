@@ -761,6 +761,37 @@ test('セリフ: from ツール when the bank has lines, every line in time orde
   await expect(page.locator('dialog[open] [data-en-tools-sheet] [data-en-transcript-open]')).toHaveCount(0);
 });
 
+test('a question’s Japanese, when written: the stem’s under it; the choices’ on 訳 before answering (never a form item’s), always at the reveal', async ({ page }) => {
+  await fakeYoutube(page);
+  // the bank with every question's Japanese (no bank has them yet): 訳<the choice's authored index>
+  await page.route('**/english/c/waitress.*.json', async (r) => {
+    const bank = (await (await r.fetch()).json()) as { questions: { choices?: string[] }[] };
+    for (const q of bank.questions) Object.assign(q, { ja: '質問の日本語', ...(q.choices && { choicesJa: q.choices.map((_, k) => `訳${k}`) }) });
+    await r.fulfill({ json: bank });
+  });
+  await open(page);
+  await start(page);
+  await lesson(page).locator('[data-en-to-q]').click();
+  const card = cardAt(page, 0); // a gist, first
+  await expect(card.locator('[data-en-stem-ja]')).toHaveText('質問の日本語');
+  await expect(card.locator('[data-en-choice-ja]')).toHaveCount(0);
+  await card.locator('[data-en-tr]').click();
+  // each under its own choice, the shuffle kept
+  for (const c of await card.locator('[data-choice]').all()) await expect(c.locator('[data-en-choice-ja]')).toHaveText(`訳${await c.getAttribute('data-choice')}`);
+  await card.locator('[data-en-tr]').click();
+  await expect(card.locator('[data-en-choice-ja]')).toHaveCount(0);
+  await card.locator(`[data-choice="${(await questionAt(page, 0)).a}"]`).click();
+  await expect(card.locator('[data-en-tr]')).toHaveCount(0);
+  await expect(card.locator('[data-en-choice-ja]')).toHaveCount(await card.locator('[data-choice]').count());
+  // a form item: no 訳 before answering
+  for (let i = 1; ; i++) {
+    await lesson(page).locator('[data-en-next]').click();
+    if (!(await cardAt(page, i).count())) break;
+    const q = await questionAt(page, i);
+    if (q.choices) await expect(cardAt(page, i).locator('[data-en-tr]')).toHaveCount(['marker', 'phrase', 'sound'].includes(q.skill) ? 0 : 1);
+  }
+});
+
 test('a lesson plays on the silent switch: iOS audio session “playback” while it’s open, paused when the page is hidden, the island’s “ambient” again after', async ({ page }) => {
   // WebKit's navigator.audioSession, stood in for (Playwright's WebKit has none): the types the page sets, in order
   await page.addInitScript(() => {

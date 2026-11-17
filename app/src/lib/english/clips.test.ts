@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { bandsOf, CLIPS } from './clips/index.ts';
 import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
 import { cleanLine } from '#lib/contract/text.ts';
+import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import type { Clip, Question } from './types.ts';
 
 const SKILLS = Object.keys(GROUP_OF);
@@ -23,6 +24,15 @@ const words = (t: string) => t.toLowerCase().replace(/[’']/g, "'").replace(/[^
 const starred = (line: string) => [...line.matchAll(/\*([^*]+)\*/g)].map((m) => m[1]).join(' ');
 const sentence = (q: Question) => q.choices && q.skill !== 'number' && q.skill !== 'sound';
 const len = (t: string) => [...t].length;
+/** What's wrong with a Japanese field (a stem's or a choice's `ja`): none, if trimmed, 1–`max` long, Japanese, clean, no
+ *  banned word and every character in the trimmed font. */
+const jaOk = (t: string, max: number): string[] => [
+  ...(t.trim() === t && len(t) >= 1 && len(t) <= max ? [] : [`1–${max} characters, trimmed: ${len(t)}`]),
+  ...(JA.test(t) ? [] : ['no Japanese']),
+  ...(cleanLine(t, 400) === t ? [] : ['not a clean line']),
+  ...(BANNED.test(t) ? ['a banned word'] : []),
+  ...notInTrimmedFont(t).map((ch) => `not in the font: ${ch}`)
+];
 /** Banks let off the level shares, and why (an ear check may bring them back). */
 const LEVELS_RELAXED: Record<string, string> = { seatingchart: 'h1 (C1) retired pending its ear check, 2026-11-16: B1 6/17, C1 3/17' };
 /** The native tier's skills (native-level.md §5). */
@@ -73,6 +83,12 @@ describe('the clips', () => {
           for (const k of ['stem', 'cue', 'said', 'mean', 'trap', 'use'] as const) expect(q[k].trim().length, `${at} ${k}`).toBeGreaterThan(0);
           // what a flag quotes is clean enough for the record (contract/eflag.ts)
           for (const t of [q.stem, q.line ?? '']) expect(cleanLine(t, 400), at).toBe(t);
+          // the stem's and the choices' Japanese, when written: one a choice, in its order; short, Japanese, the font's
+          if (q.ja !== undefined) expect(jaOk(q.ja, 60), `${at} ja`).toEqual([]);
+          if (q.choicesJa !== undefined) {
+            expect(q.choicesJa.length, `${at} choicesJa: one a choice`).toBe(q.choices?.length ?? -1);
+            for (const t of q.choicesJa) expect(jaOk(t, 40), `${at} choicesJa`).toEqual([]);
+          }
         }
       });
 

@@ -11,6 +11,8 @@ English questions, Japanese notes (言っていること / 意味 / 迷いやす
 second listen. A question quotes one short line at most (*key words* starred); no audio is ours to ship (the
 transcript is, since 2026-11-16: Transcripts).
 `clips/index.ts` lists them; one file a clip, each checked by the unit tests.
+A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choicesJa` (one a choice, in `choices`' order,
+≤ 40 each), trimmed, Japanese, every character in the trimmed font (`clips.test.ts`); without them nothing is shown.
 
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
   label: 大意 詳細 数字 誰が 本当の意味 気持ち 一言のねらい 笑いどころ 次の一言 つなぎ言葉 フレーズ 音の聞き分け 書き取り), a `level` (B1/B2/C1), a
@@ -83,7 +85,9 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
   choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card's
-  meta is 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
+  meta is 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
+  it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
+  marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (the lesson bar's one labelled button, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕): 字幕
   オフ / 英語 / 日本語 and 字幕の大きさ (The player), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
   lines only) and この動画のフレーズ (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
