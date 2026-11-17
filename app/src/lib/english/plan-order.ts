@@ -380,5 +380,15 @@ export const PLANNED: readonly string[] = [
   'replaceharry',
   'halfoween',
   'dwightamy',
-  'catfreddie'
+  'catfreddie',
+  'ronshare',
+  'godfather',
+  'markcall',
+  'fumble',
+  'bondtux',
+  'ronpothole',
+  'drschiff',
+  'cantafford',
+  'practicedate',
+  'joeyhoops'
 ];

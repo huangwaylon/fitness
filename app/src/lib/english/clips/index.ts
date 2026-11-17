@@ -383,6 +383,16 @@ import { goPublic } from './gopublic.ts';
 import { dwightAmyAdams } from './dwightamy.ts';
 import { dateMike } from './datemike.ts';
 import { ribbing } from './ribbing.ts';
+import { ronShare } from './ronshare.ts';
+import { ronpothole } from './ronpothole.ts';
+import { joeyHoops } from './joeyhoops.ts';
+import { godfather } from './godfather.ts';
+import { rachelFlirtsDoctor } from './drschiff.ts';
+import { markCall } from './markcall.ts';
+import { officeFumble } from './fumble.ts';
+import { cantAfford } from './cantafford.ts';
+import { bondtux } from './bondtux.ts';
+import { practiceDate } from './practicedate.ts';
 
 export const CLIPS: readonly Clip[] = [
   // ゆっくり
@@ -410,6 +420,7 @@ export const CLIPS: readonly Clip[] = [
   dwightVsAndy,
   chickParent,
   shelbyFight,
+  ronShare,
   staceySwab,
   newIcarly,
   chrisFlu,
@@ -424,6 +435,8 @@ export const CLIPS: readonly Clip[] = [
   dwightGun,
   michaelsNephew,
   ronFixes,
+  godfather,
+  officeFumble,
   chairModel,
   nanaclub,
   ronsReviews,
@@ -433,6 +446,7 @@ export const CLIPS: readonly Clip[] = [
   mostLovedDenmark,
   poachBen,
   icFirstShow,
+  bondtux,
   dwightHobbit,
   doingAlcohol,
   ambulance,
@@ -447,6 +461,7 @@ export const CLIPS: readonly Clip[] = [
   birthdayGuide,
   benTreats,
   ribbing,
+  ronpothole,
   ronHumour,
   mriBlindDate,
   fakeCall,
@@ -455,6 +470,7 @@ export const CLIPS: readonly Clip[] = [
   singlesNight,
   gingerbread,
   dateMike,
+  cantAfford,
   dwightFetish,
   benpunch,
   dwightAppt,
@@ -470,6 +486,7 @@ export const CLIPS: readonly Clip[] = [
   charityPick,
   influencerFightClub,
   firstPrank,
+  markCall,
   charity,
   ronAprilTakeOver,
   michaelBlastPast,
@@ -515,6 +532,7 @@ export const CLIPS: readonly Clip[] = [
   ronShowHost,
   senatorOscar,
   leslieDate,
+  rachelFlirtsDoctor,
   roomie,
   furniture,
   ronDiane,
@@ -660,6 +678,7 @@ export const CLIPS: readonly Clip[] = [
   ronMeditation,
   rentASwag,
   joeyTeachesActing,
+  practiceDate,
   oldSchool,
   joeyCrossword,
   pamGivenUp,
@@ -742,6 +761,7 @@ export const CLIPS: readonly Clip[] = [
   disadulation,
   pitchWomen,
   truffled,
+  joeyHoops,
   badReview,
   ohTheWall,
   kathybook,
