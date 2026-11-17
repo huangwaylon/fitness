@@ -1,17 +1,12 @@
-// REVIEW 2026-11-16: pass 5, fix 14, drop 0, new 0; ear checks 1
-// REVIEW open: the blind pass for this clip was contaminated (the header, which sums up the scene, was read before the
-//   stems): g2, d2 and i1 were fixed and d3 kept on a cautious estimate; a fresh cold read would settle them.
+// A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 5, new 1
 // “Joey and Ross Get Ready for Barbados | Friends” (the official Friends channel, Best of Season 9): Ross, flying out
 // today for the conference where he gives a speech, surprises the friends with passes to every lecture; they'll hear
 // his speech but want the rest of the trip for the island, and one says David will want lectures only to stay out of
 // the sun.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈74.5 s (music after; whisper loops
-// "All right, let's do it" from 79 s, and the captions park "invisibility" at 84.4 s). Untested: 13.8–20.4 s (the
-// captions have "Barbados" twice and "got to say", whisper one "Barbados" and "I was about to say"; no name says who
-// answers the baby), 29.7 s (captions "everything one passes", whisper "everyone passes"; no key uses the word), and
-// 69.4–74.5 s (the blanket lines are innuendo; n2 stops at "drinks").
-// EAR CHECK: 61.6–62.3 s nt2 — both sources have "we better go" with no "'d"; confirm no "we'd" is heard before the
-//   C2 dictation keys on "we better"
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈74.5 s. Untested: 13.8–20.4 s (no name
+// says who answers the baby), 29.7 s, and 69.4–74.5 s (the blanket lines are innuendo; n2 stops at "drinks").
+// EAR CHECK: 0.5 s packed — “I'm all packed and ready to go” is Ross or Joey (unnamed; the key doesn't need it)
+// EAR CHECK: 61.6–62.3 s nt2 — both sources have "we better go" with no "'d"; confirm no "we'd" is heard
 import type { Clip } from '../types.ts';
 
 export const barbados: Clip = {
@@ -20,81 +15,79 @@ export const barbados: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 90 %, though the header was read first): the science-course filler gave way to a Joey-speaks
-    //   swap, refuted by "to hear *me* give my speech"
-    // why: beach holiday ← "all packed", "island stuff" and an eager Joey build a vacation story; Joey's talk ←
-    //   "Daddy and Uncle Joey are going on a trip" puts Joey at the centre, and "conference" is said in the same breath
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'trip', seg: [5.3, 50.65],
+    { id: 'packed', skill: 'phrase', level: 'B1', point: 'packed', seg: [0, 5.5],
+      stem: 'What does “I’m all packed” mean?',
+      ja: '「I’m all packed」の意味は？',
+      choices: ['My bags are ready', 'I am very full', 'The room is crowded'], a: 0,
+      choicesJa: ['荷造りがすんだ', 'お腹がいっぱい', '部屋が混んでいる'],
+      cue: '最初の一言。',
+      line: 'Hey, *I’m all packed* and ready to go.',
+      said: '「荷造りはすんだ。いつでも出られる」と言う。',
+      mean: 'pack ＝ 荷物をつめる。all packed ＝ 荷造りが全部すんだ。旅行の前の決まり文句。',
+      trap: 'packed には「満員」の意味もあるので、混んでいると思いやすい。ready to go と一緒なら荷造り。',
+      use: 'I’m all packed and ready to go.（荷造りすんだ、いつでも出られる）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'trip', seg: [6, 50.65],
       stem: 'What is taking the group to Barbados?',
-      choices: ['A conference where Ross is giving a speech', 'A beach holiday that Joey has been planning',
-                'A conference where Joey is giving a talk'], a: 0,
-      cue: '行き先の前の名詞と、みんなが何を聞きに行くか。',
+      ja: 'みんなは何のためにバルバドスへ行く？',
+      choices: ['Ross is giving a talk there', 'Joey planned a beach trip', 'Joey is giving a big talk'], a: 0,
+      choicesJa: ['ロスがそこで発表する', 'ジョーイがビーチ旅行を計画した', 'ジョーイが大きな発表をする'],
+      cue: '「conference」のあと。',
       line: 'We’re going to a *conference* in Barbados… to hear me *give my speech*.',
       said: '「バルバドスの学会に行く」「スピーチを聞きに来てくれる」と話す。',
-      mean: '旅の目的は Ross の学会での発表。仲間はそれを聞きに行く。',
-      trap: 'island stuff や lectures が耳に残ると、休暇や講座に引かれる。目的は最初の説明で決まる。',
+      mean: 'conference ＝ 学会、会議。旅の目的はロスの学会での発表。',
+      trap: 'island stuff（島で遊ぶ）が耳に残ると、休暇の旅と思いやすい。目的は最初の説明。',
       use: 'I’m giving a talk at a conference.（学会で発表するんだ）' },
 
-    // R fix: V2 + K6 (blind 70 %): the key was the only warm choice; "surprised they bothered" became "nervous about
-    //   the speech", which "means so much to me" refutes
-    // why: nervous ← "to hear me give my speech" ends the line, so stage fright seems the point; sorry ← "all the way
-    //   over there" heard through the Japanese わざわざすみません frame (gratitude said as an apology)
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'means', seg: [18.5, 25.45],
-      stem: 'How does Ross feel about his friends making the trip?',
-      choices: ['Touched that they’d come all this way for him', 'Nervous that they’ll be there to watch his speech',
-                'Sorry that they have to come so far for him'], a: 0,
-      cue: 'it means のあと。距離の言い方も手がかり。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'means', seg: [18.5, 25.45],
+      stem: 'How does Ross feel about his friends coming?',
+      ja: '友だちが来てくれることを、ロスはどう感じている？',
+      choices: ['Very thankful', 'Very nervous', 'Very sorry for them'], a: 0,
+      choicesJa: ['とても感謝している', 'とても緊張している', 'みんなに悪いと思っている'],
+      cue: '「it means」のあと。',
       line: 'it *means so much to me* that you guys are coming *all the way over there*',
       said: '「わざわざあそこまで来てくれて、本当にうれしい」と言う。',
-      mean: 'means so much ＝ とてもうれしい。all the way は「わざわざ」。',
-      trap: 'all the way を「遠くまで悪いね」と取りやすい。means so much は感謝。',
+      mean: 'it means so much to me ＝ 本当にうれしい。all the way ＝ わざわざ遠くまで。',
+      trap: 'all the way から「遠くまで悪いね」と思いやすい。means so much は感謝。',
       use: 'Thanks for coming all the way out here.（遠いところをありがとう）' },
 
-    // R fix: V2 (blind 65 %): the key was the only choice about people; all three are now ways of getting a favour
-    // why: paid ← a costly-gift script, since passes for everyone sound expensive; extra talk ← "had to" heard as a
-    //   deal he made with the organizers
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'strings', reveals: ['passes'], seg: [25.45, 35.0],
-      stem: 'How does Ross say he managed his surprise?',
-      choices: ['By calling in favors from people he knows', 'By paying for them out of his own pocket',
-                'By offering to give a second talk for free'], a: 0,
-      cue: 'surprise のあと、had to に続く決まった言い方。',
+      stem: 'What does “pull some strings” mean?',
+      ja: '「pull some strings」の意味は？',
+      choices: ['Ask people he knows for help', 'Pay for it all himself', 'Give a second talk for free'], a: 0,
+      choicesJa: ['知り合いに頼んで動いてもらう', '全部自分で払う', '無料でもう一回発表する'],
+      cue: '「I had to」のあと。',
       line: 'I had to *pull some strings*, but I was able to get everyone passes',
       said: '「ちょっとコネを使って、全員分のパスを取った」と言う。',
-      mean: 'pull strings ＝ 知り合いの力で、ふつうは無理なことを通す。',
-      trap: 'had to で「条件を飲んだ」と取りやすいが、strings は人のつながり。お金の話は出てこない。',
+      mean: 'pull strings ＝ 知り合いの力で、ふつうは無理なことを通す（ひもを引いて人形を動かすイメージ）。',
+      trap: 'strings（ひも）をそのまま考えると分からない。お金の話は出てこない。',
       use: 'Maybe my uncle can pull some strings.（おじさんに口をきいてもらえるかも）' },
 
-    // R fix: V2 (blind 70 %): "passes" now sits in two choices, so the key turns on "entire", not on the noun
-    // why: his talk only ← "my speech" is said just before, and "passes" is heard; flight seats ← travel talk plus
-    //   "get everyone"
     { id: 'd2', skill: 'detail', level: 'B1', point: 'passes', seg: [25.45, 35.0],
-      stem: 'What did Ross manage to get for the friends?',
-      choices: ['Passes to the entire conference', 'Passes to his own talk only', 'Seats on the same flight as him'], a: 0,
-      cue: 'but I was able のあと、get everyone に続く部分。',
+      stem: 'What did Ross get for the friends?',
+      ja: 'ロスは友だちのために何を手に入れた？',
+      choices: ['Passes to the whole conference', 'Passes to just his own talk', 'Seats on the same flight'], a: 0,
+      choicesJa: ['学会全体のパス', '自分の発表だけのパス', '同じ飛行機の席'],
+      cue: '「get everyone」のあと。',
       line: 'I was able to get everyone *passes to the entire conference*.',
       said: '「全員分、学会全体のパスを取れた」と言う。',
       mean: 'entire ＝ 全部の。スピーチだけでなく、講演もセミナーも全部入れるパス。',
-      trap: '直前に speech が出るので「スピーチの席」に引かれやすい。the entire のあとの名詞まで聞く。',
+      trap: '直前に speech が出るので、スピーチだけと思いやすい。entire（全部）を聞く。',
       use: 'I got us passes for the whole weekend.（週末ずっと使えるパスを取ったよ）' },
 
-    // R fix: V2 (blind 60 %): "Teasing, knowing they'll hate it" was a filler; "Modest" reads "had to pull some strings,
-    //   but…" as playing the effort down, and "That's right. These babies…" refutes it
-    // why: unsure ← "I had to pull some strings, but…" heard as a worry; modest ← the same "but" heard as a shrug
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [25.45, 40.4],
-      stem: 'How does Ross feel as he gives out his surprise?',
-      choices: ['Proud, sure the gift will thrill them', 'Unsure, afraid they won’t want it',
-                'Modest, playing down what it took'], a: 0,
-      cue: 'That’s right の言い方と、そのあとの売り込み。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'surprise', seg: [25.45, 40.4],
+      stem: 'How does Ross feel about his surprise?',
+      ja: 'ロスは自分のサプライズをどう思っている？',
+      choices: ['Proud of it', 'Unsure about it', 'Sorry about it'], a: 0,
+      choicesJa: ['得意になっている', '自信がない', '悪いと思っている'],
+      cue: '「That’s right」のあと。',
       line: 'Oh, and I have *a surprise*… *That’s right.* These babies will get you into *all* the paleontology lectures',
-      said: '「サプライズがあるんだ」と切り出し、「そうさ。これで講演も全部入れる」と続ける。',
-      mean: '最高の贈り物だと思い、得意になっている。',
-      trap: 'but や babies の軽さで、謙遜や冗談に聞こえやすい。That’s right は本気の得意顔。',
+      said: '「サプライズがあるんだ」と切り出し、「そうさ。これで講演に全部入れる」と続ける。',
+      mean: 'That’s right ＝「そうさ」。最高の贈り物だと思い、得意になっている。',
+      trap: 'みんなは喜んでいないので、ロスも自信がないと思いやすい。ロス本人は得意げ。',
       use: 'I have a surprise for you!（サプライズがあるの！）' },
 
-    // R fix: V2 (blind 80 %): "he just got everyone" in the key echoed the line before; the choices are now parallel
-    // why: children ← babies taken literally (a baby was talked to at the start); his talks ← "my baby" for a project
-    //   you made, and "lectures" follows
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'babies', reveals: ['passes'], seg: [25.45, 40.4],
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'babies', reveals: ['passes'], seg: [25.45, 40.4], retired: true,
       stem: 'When Ross starts a line with “These babies…”, what is he referring to?',
       choices: ['The passes he got for everyone', 'The children coming on the trip', 'The talks he will give there'], a: 0,
       cue: 'これより前に Ross が全員分そろえた物。',
@@ -104,25 +97,18 @@ export const barbados: Clip = {
       trap: 'babies を赤ちゃんと取ると話が通らない。自慢げな these babies は直前の物を指す。',
       use: 'Check out these babies. New shoes!（見てよこれ、新しい靴！）' },
 
-    // R fix: V2 + §9.6 (blind 70 %): the key was the only middle path; "go to all of it, though they'd rather not" is
-    //   the sitcom ending, refuted by "the rest of the time… island stuff"
-    // why: skip even his talk ← "get us out of them" heard as covering the speech too; go to it all ← "Yeah, Ross…
-    //   excited" heard as polite acceptance (the Japanese 遠慮 frame)
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['island', 'passes'], seg: [25.45, 60.3],
-      stem: 'How do the friends take Ross’s surprise?',
-      choices: ['They’ll hear his talk but want the rest free', 'They’ll skip even his talk to enjoy the island',
-                'They’ll go to it all, though they’d rather not'], a: 0,
-      cue: 'パスの話への返事を、最後まで聞いて。',
-      said: 'Ross は講演も全部入れるパスを配るが、仲間は「スピーチは聞く。でもあとは島で遊ぶ」と返す。',
-      mean: '自慢の贈り物と、仲間の休暇気分のずれが中心。',
-      trap: '抜け出す冗談だけ聞くと、スピーチにも行かないように聞こえる。スピーチは楽しみ、と言っている。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['island', 'passes'], seg: [25.45, 60.3],
+      stem: 'What do the friends want to do on the trip?',
+      ja: '友だちは旅行で何をしたい？',
+      choices: ['Hear his talk, then relax', 'Go to all the lectures', 'Skip even his own talk'], a: 0,
+      choicesJa: ['発表を聞いて、あとはのんびり', '講演に全部行く', '発表も聞かない'],
+      cue: 'パスの話への返事。',
+      said: 'ロスは講演に全部入れるパスを配るが、仲間は「スピーチは聞く。でもあとは島で遊ぶ」と返す。',
+      mean: '自慢の贈り物と、仲間の休みの気分がずれている。',
+      trap: '「抜け出せる物は？」だけ聞くと、スピーチにも行かないように聞こえる。スピーチは楽しみ。',
       use: 'Count me in for dinner, not drinks.（夕食は行く、飲みはパス）' },
 
-    // R fix: V2 + N7 (blind 50 %): the strings distractor gave away f1's key, and the stem names the passes (d2); now a
-    //   literal reading of "get into" (= get hooked on), and reveals passes
-    // why: hooked on ← "get into" also means "start to like", and a Japanese ear may take the reply as playing on that;
-    //   babies ← the last odd word Ross used, heard as what the reply plays on
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'getout', reveals: ['island', 'passes'], seg: [34.95, 45.4],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'getout', reveals: ['island', 'passes'], seg: [34.95, 45.4], retired: true,
       stem: 'What makes the first reply to Ross’s passes a joke?',
       choices: ['It asks for a way out of what Ross just offered', 'It hears “get you into” as “get you hooked on”',
                 'It plays on the word “babies” Ross just used'], a: 0,
@@ -135,72 +121,64 @@ export const barbados: Clip = {
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [40.45, 45.4],
       stem: 'Type the question: “Do you have anything that will ___ them?” (4 words)', answer: 'get us out of',
-      cue: 'will のあと、them の前。4語がつながる。',
+      ja: '「will」のあとの4語を書こう。',
+      cue: '「will」のあと、them の前。',
       line: 'Do you have anything that will *get us out of* them?',
-      said: '「それから抜け出させてくれる物はある？」と聞く。',
-      mean: 'get us out of は「ゲラサウロヴ」に近い。t が弾み、語がつながる。',
-      trap: 'us と of は弱く、消えたように聞こえる。get ＋人＋out of の形で覚える。',
+      said: '「それから抜け出せる物はある？」と聞く。',
+      mean: 'get 人 out of 〜 ＝ 人を〜から抜けさせる。「ゲラサウロヴ」のようにつながる。',
+      trap: 'us と of は小さく短く、消えたように聞こえる。4語あると思って書く。',
       use: 'Can you get me out of this meeting?（この会議から抜けさせてくれない？）' },
 
-    // R fix: V2 + K6 (blind 75 %): the key was the only kind-but-no; all three are now hedged, and "lectures" replaces
-    //   "talks" (Ross's speech is a talk they will hear)
-    // why: grudging yes ← "Yeah" read as a yes (the Japanese はい frame) and "excited" as polite; joking along ← the
-    //   first reply was a joke, so "I mean" sounds like more of it
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'island', seg: [45.35, 50.65],
-      stem: 'When the next friend starts with “Yeah, Ross, I mean…”, what is the reply doing?',
-      choices: ['Turning down the lectures, but kindly', 'Accepting the lectures, if a bit grudgingly',
-                'Joking along, but planning to go'], a: 0,
-      cue: 'speech のすぐあとの一語から、最後の stuff まで。',
+      stem: 'What is the friend saying with “we’re excited… but”?',
+      ja: '「we’re excited… but」で、友だちは何を伝えている？',
+      choices: ['A kind no to the lectures', 'A happy yes to the lectures', 'A joke about the island'], a: 0,
+      choicesJa: ['講演はやんわりお断り', '講演に喜んで行く', '島についての冗談'],
+      cue: '「Yeah, Ross, I mean」のあと。',
       line: 'we’re *excited to hear the speech*, *but* the rest of the time… *island stuff*.',
       said: '「スピーチは楽しみ。でもそれ以外の時間は、島っぽいことがしたい」と言う。',
       mean: 'まずほめてから but で本音。講演には行かない、を角を立てずに伝えている。',
-      trap: 'Yeah を「はい」と取ると賛成に聞こえる。ここは話の入り口で、本音は but のあと。',
+      trap: 'Yeah や excited から賛成と思いやすい。本音は but のあと。',
       use: 'I’d love to, but I already have plans.（行きたいけど、もう予定があって）' },
 
-    // why: have to ← "wanna" and "hafta" share the weak ending; want to ← "going to" shrinks to a quick "gonna" and is
-    //   lost; going to ← "want to" fades into "do"
-    { id: 's1', skill: 'sound', level: 'C1', point: 'gonna', reveals: ['island'], seg: [45.35, 50.65],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['island'], seg: [45.35, 50.65],
       stem: 'Fill the gap: “…the rest of the time ___ do, you know, island stuff.”',
-      choices: ['we’re going to want to', 'we’re going to have to', 'we want to', 'we’re going to'], a: 0,
-      cue: 'the rest of the time のあと、短い音が続く所。',
+      ja: '空いている所に入る言葉は？',
+      choices: ['we’re going to want to', 'we’re going to have to', 'we want to'], a: 0,
+      choicesJa: ['〜したくなるだろう', '〜しなければならないだろう', '〜したい'],
+      cue: '「rest of the time」のあと。',
       line: 'the rest of the time *we’re going to want to* do, you know, island stuff',
-      said: '「残りの時間は島らしいことがしたくなるはず」と言う。',
+      said: '「残りの時間は、島っぽいことがしたくなると思う」と言う。',
       mean: 'going to want to は「ゴナワナ」と縮む。先の気持ちを言う形。',
-      trap: 'wanna と hafta は語尾が似ている。縮んだ音の頭の w と h を聞く。',
+      trap: 'want to（ワナ）と have to（ハフタ）は語尾が似ている。最初が「ワ」か「ハ」かを聞く。',
       use: 'You’re going to want a jacket.（上着が要ると思うよ）' },
 
-    // why: give ← "give my speech" earlier, so hear/give swap; only the speech ← "excited to hear the speech" just before
     { id: 'd3', skill: 'detail', level: 'B1', point: 'david', seg: [45.35, 53.0],
-      stem: 'What does a friend say David will probably want to do?',
-      choices: ['Hear a few of the lectures', 'Give a few of the lectures', 'Hear only Ross’s speech'], a: 0,
-      cue: 'David の名前のあと、want to に続く動詞。',
+      stem: 'What will David probably want to do?',
+      ja: 'デビッドはたぶん何をしたがる？',
+      choices: ['Hear some lectures', 'Give some lectures', 'Hear only Ross’s talk'], a: 0,
+      choicesJa: ['講演をいくつか聞く', '講演をいくつかする', 'ロスの発表だけ聞く'],
+      cue: 'デビッドの名前のあと。',
       line: 'I think *David* will probably want to *hear a few lectures*.',
-      said: '「David はたぶん講演をいくつか聞きたがると思う」と言う。',
-      mean: '仲間の中で一人だけ、講演に行きそうな人がいる、という話。',
+      said: '「デビッドはたぶん講演をいくつか聞きたがると思う」と言う。',
+      mean: 'a few ＝ いくつか。仲間の中で一人だけ、講演に行きそうな人がいる。',
       trap: '前に give my speech があるので give に引かれやすい。want to のあとの動詞を聞く。',
       use: 'I think I’ll probably skip the party.（たぶんパーティーはパスするかな）' },
 
-    // R fix: V2 (blind 80 %, header read first): the key was the only odd, specific reason; "away from crowds" is a
-    //   near miss (indoors, wrong reason)
-    // why: scientist ← said in the clip, then turned down by "No, no"; crowds ← "been in Minsk for eight years" heard
-    //   as someone who isn't used to busy places, and lectures are quiet
     { id: 'i1', skill: 'infer', level: 'B2', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3],
-      stem: 'Why will David want lectures, from what his friend explains?',
-      choices: ['They’ll keep him out of the sun', 'They’ll keep him away from crowds',
-                'He’s a scientist and loves the topic'], a: 0,
-      cue: '「No, no」のあと、because に続く理由。',
+      stem: 'Why will David want to go to lectures?',
+      ja: 'デビッドは、なぜ講演に行きたがる？',
+      choices: ['To stay out of the sun', 'To get away from crowds', 'He loves science'], a: 0,
+      choicesJa: ['日に当たらないため', '人ごみからにげるため', '科学が大好きだから'],
+      cue: '「No, no」のあと。',
       line: '*No, no*… if he gets too much *direct sunlight*, he’ll die.',
       said: '「ちがうの、日光を浴びすぎると死んじゃうから」と言う。',
-      mean: '講演は室内なので、日に当たらずに済む。科学が好きだからではない、という話。',
-      trap: 'scientist が先に出るので、それが理由だと思いやすい。No, no のあとに本当の理由が来る。',
+      mean: 'direct sunlight ＝ 直射日光。講演は室内なので、日に当たらずにすむ。',
+      trap: 'scientist（科学者）が先に出るので、それが理由と思いやすい。No, no のあとが本当の理由。',
       use: 'Let’s stay inside, out of the sun.（中にいよう、日に当たらないように）' },
 
     // C2: the scope of "No, no" (cf. i1)
-    // anchor: 50.7–52.9 s the same friend has just said David "will probably want to hear a few lectures"; 54.8–59.5 s
-    //   "No, no, well, because…" restarts the "because" with a new reason (sunlight) and never says what David is instead
-    // why: not a scientist ← "No, no" lands right after "he's a scientist", so it sounds like a denial of the fact;
-    //   won't want lectures ← "No" heard as dropping the plan itself
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3], retired: true,
       stem: 'In the talk about David, what does the friend’s “No, no” reject?',
       choices: ['The reason given for David wanting lectures', 'The idea that David is a scientist at all',
                 'The plan that David will go to the lectures'], a: 0,
@@ -211,11 +189,7 @@ export const barbados: Clip = {
       trap: 'No を聞くと事実や予定ごと否定したと取りやすい。No のあとに何を言い直すかで範囲が決まる。',
       use: 'No, not because it’s cheap. Because it’s close.（安いからじゃなくて、近いから）' },
 
-    // R fix: V2 + V3 (blind 50 %): the key restated i1's fact (sun kills him); it now names the mechanism, and both
-    //   distractors are jokes a listener could hear in it
-    // why: bookish ← "scientist" + "lectures" + Minsk read as a dig at a dull academic, but "No, no" drops that reason;
-    //   skip the trip ← lectures read as his excuse not to come, though he is coming and stays indoors
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3], retired: true,
       stem: 'What makes the friend’s reason for David funny?',
       choices: ['It turns a little sun into a death threat', 'It mocks David as a dull, bookish scientist',
                 'It hints David would rather skip the trip'], a: 0,
@@ -226,57 +200,52 @@ export const barbados: Clip = {
       trap: 'scientist から堅物いじりと取りやすいが、No, no でその理由は消える。笑いは he’ll die。',
       use: 'If I don’t eat soon, I’ll die.（早く食べないと死にそう）' },
 
-    // R fix: V2 (blind 50 %): two of three choices said "eight years"; four choices cross eight/eighteen with
-    //   months/years, ascending
-    // why: months ← "years" is weak mid-sentence, and eight months sounds like a normal stay; eighteen ← eight and
-    //   eighteen differ only in the -teen ending
     { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [53.0, 60.3], keep: true,
       stem: 'How long has David been in Minsk?',
+      ja: 'デビッドはミンスクにどのくらいいる？',
       choices: ['Eight months', 'Eighteen months', 'Eight years', 'Eighteen years'], a: 2,
-      cue: 'Minsk のすぐあと、for に続く部分。',
+      choicesJa: ['8か月', '18か月', '8年', '18年'],
+      cue: '「Minsk」のすぐあと。',
       line: 'he’s been in Minsk *for eight years*',
-      said: '「ミンスクに8年いた」と言う。',
-      mean: 'for ＋期間で「〜の間ずっと」。has been と合わせて、今まで続いている。',
-      trap: 'eighteen なら -teen が長く強く聞こえる。years は文の途中で弱くなるが、s まで聞く。',
+      said: '「ミンスクに8年いたから」と言う。',
+      mean: 'for ＋期間 ＝ 〜の間ずっと。has been と合わせて、今まで続いている。',
+      trap: 'eighteen なら「ティーン」と長い。years は弱くなるが、最後まで聞く。',
       use: 'I’ve lived here for eight years.（ここに住んで8年です）' },
 
     // C2: exact words in fast speech (the dropped "'d")
     // anchor: 61.64–62.24 s both sources have "okay we better go" (no "'d"), run together at 185 wpm before "yeah?"
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'better', seg: [61.1, 63.3],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'better', seg: [60.2, 63.3],
       stem: 'Type what’s said: “Okay, ___ go, yeah?” (2 words)', answer: 'we better',
-      cue: 'Okay のすぐあと。文法より、聞こえた音を。',
+      ja: '「Okay,」のあとの2語を書こう。',
+      cue: '「Okay」のすぐあと。',
       line: 'Okay, *we better* go, yeah?',
-      said: '「よし、もう行かなきゃ、だよね？」。we と better がひと続きで、間に音はない。',
-      mean: '文法では we’d better だが、会話では d が落ちて we better が多い。',
-      trap: '習った形に合わせて we’d と書きたくなる。書き取りは、聞こえた音を書く。',
+      said: '「よし、もう行かなきゃ、だよね？」と言う。',
+      mean: '文法では we’d better（〜したほうがいい）だが、会話では d が落ちて we better が多い。',
+      trap: '習った形に合わせて we’d と書きたくなる。聞こえた音のとおり、2語で書く。',
       use: 'We better hurry, or we’ll miss it.（急がないと間に合わないよ）' },
 
-    // why: together tomorrow ← "tomorrow" attached to the flight; back tomorrow ← "see you tomorrow" heard as the two
-    //   coming back
-    // R fix: S4: the segment ended on the first sound of "get" (69.4 s) and held a line it doesn't need; it now ends
-    //   after "let's do it", before "Five-hour" (66.7 s)
     { id: 'i2', skill: 'infer', level: 'B2', point: 'tomorrow', seg: [61.1, 66.65],
-      stem: 'From the goodbye at the end, what is the travel plan?',
-      choices: ['The others will join them a day later', 'They will all fly out together tomorrow',
-                'The two will fly back home tomorrow'], a: 0,
-      cue: 'see you guys のあとの一語と、出発の言葉。',
+      stem: 'What is the travel plan, from the goodbye?',
+      ja: '別れのあいさつから分かる旅の予定は？',
+      choices: ['The others come a day later', 'They all fly together tomorrow', 'The two fly home tomorrow'], a: 0,
+      choicesJa: ['ほかの人は1日おくれて来る', '明日みんなで一緒に飛ぶ', '二人は明日帰る'],
+      cue: '「see you guys」のあと。',
       line: '…so we’ll see you guys *tomorrow*. — All right, *let’s do it*.',
       said: '「じゃあ、また明日」と言い、もう一人が「よし、行こう」と出発する。',
-      mean: '先に二人が出て、ほかの仲間は明日来る。明日、向こうで会うということ。',
-      trap: 'tomorrow を飛行機の日と取ると全員一緒に聞こえる。今出る二人の言葉なので、明日来るのは残る側。',
+      mean: '先に二人が出て、ほかの仲間は明日来る。明日、向こうで会う。',
+      trap: 'tomorrow を飛行機の日と思うと、全員一緒に聞こえる。今出る二人の言葉。',
       use: 'Go ahead. I’ll meet you there tomorrow.（先に行って。明日向こうで会おう）' },
 
-    // why: nine ← five and nine share the "ai" vowel, so only the first consonant differs; fifteen ← "five" heard with
-    //   a -teen
-    // R fix: S4: the end moved from 69.4 s (the start of "get under that blanket") to 69.1 s, just after "drinks"
     { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [65.25, 69.1], keep: true,
       stem: 'How long is the flight they’re about to take?',
+      ja: 'これから乗る飛行機は何時間？',
       choices: ['Five hours', 'Nine hours', 'Fifteen hours'], a: 0,
-      cue: 'let’s do it のすぐあと、flight の前。',
+      choicesJa: ['5時間', '9時間', '15時間'],
+      cue: '「let’s do it」のすぐあと。',
       line: '*Five-hour flight* with Charlie…',
       said: '「チャーリーと5時間のフライト」と言う。',
-      mean: '数字＋hour が名詞の前に来ると hours にしない。',
-      trap: 'five と nine は母音が同じ。最初の f と n で聞き分ける。fifteen なら -teen が長い。',
+      mean: 'five-hour flight ＝ 5時間の飛行機。数＋hour が名詞の前に来ると s は付かない。',
+      trap: 'five と nine は母音が同じ。最初の「フ」と「ナ」で聞き分ける。',
       use: 'It’s a three-hour drive from here.（ここから車で3時間です）' },
   ]
 };
