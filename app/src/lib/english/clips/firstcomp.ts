@@ -102,7 +102,7 @@ export const firstComplaint: Clip = {
       stem: 'When the box is empty, what does someone suggest?',
       ja: '箱が空のとき、誰かが何を提案する？',
       choices: ['Buying a new box', 'Using a blank card', 'Taking a card off'], a: 1,
-      choicesJa: ['新しい箱を買う', '白紙のカードを使う', '塔からカードを取る'],
+      choicesJa: ['新しい箱を買う', '白紙のカードを使う', 'カードを1枚取る'],
       cue: '「we could use」のあと。',
       line: 'It’s empty. — … Oh, come on, we could use a *blank card*.',
       said: '「空っぽだ」のあと、「白紙のカードでいいじゃん」と言い、「だめ」と返される。',

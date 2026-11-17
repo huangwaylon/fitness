@@ -30,7 +30,7 @@ export const pamGivenUp: Clip = {
       stem: 'Why is Pam wearing glasses today?',
       ja: 'パムはなぜ今日、眼鏡をかけている？',
       choices: ['She forgot contact solution', 'She lost a contact lens', 'She broke her other glasses'], a: 0,
-      choicesJa: ['コンタクトの保存液を忘れた', 'コンタクトを1枚なくした', 'いつもの眼鏡を壊した'],
+      choicesJa: ['コンタクトの保存液を忘れた', 'コンタクトを1枚なくした', 'もう一つの眼鏡を壊した'],
       cue: '眼鏡の話の前、何がなかったか。',
       line: 'I forgot my *contact solution*, so I had to wear my backup glasses.',
       said: '「保存液を忘れて、予備の眼鏡にした」と話す。',

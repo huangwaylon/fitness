@@ -158,7 +158,7 @@ export const ronSlash: Clip = {
       stem: 'What do they say about Leslie’s pay?',
       ja: 'レスリーの給料について、何と言っている？',
       choices: ['It is the second highest', 'It is the very highest', 'It is the second lowest'], a: 0,
-      choicesJa: ['部署で2番目に高い', '部署で一番高い', '部署で2番目に低い'],
+      choicesJa: ['2番目に高い', '一番高い', '2番目に低い'],
       cue: '「in the department」の前。',
       line: 'she makes the *second highest salary* in the department. It’ll go a long way.',
       said: '「部署で2番目に高い給料だ。削れば効果は大きい」と言う。',

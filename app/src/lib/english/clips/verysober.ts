@@ -213,7 +213,7 @@ export const verySober: Clip = {
       stem: 'How does the shop owner answer the tattoo request?',
       ja: '入れ墨を頼まれて、店の人はどう答える？',
       choices: ['He can do the tattoos', 'He can’t help them', 'He knows a tattoo shop'], a: 0,
-      choicesJa: ['できるよ', '手伝えない', '入れ墨の店を知っている'],
+      choicesJa: ['入れ墨を入れられる', '手伝えない', '入れ墨の店を知っている'],
       cue: '「This is a」の文と、続く But。',
       line: 'Tattoos? *This is a pawn shop.* *But, yeah, sure, I can do that.*',
       said: '「入れ墨？ここは質屋だよ。でもまあ、いいよ、できるよ」と答える。',

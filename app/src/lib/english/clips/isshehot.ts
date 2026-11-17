@@ -44,7 +44,7 @@ export const isSheHot: Clip = {
       stem: 'How does the vote end?',
       ja: '多数決はどうなる？',
       choices: ['It ends in a tie', 'Most say she is hot', 'Most say she is not hot'], a: 0,
-      choicesJa: ['引き分け', 'ほとんどが「ホット」', 'ほとんどが「ホットじゃない」'],
+      choicesJa: ['引き分けになる', '多くの人がホットだと言う', '多くの人がホットじゃないと言う'],
       cue: '手を挙げさせたあと、数を言う声。',
       line: 'Five. *Five to five*.',
       said: '言い合いのあと多数決をとるが、結果は5対5。',
