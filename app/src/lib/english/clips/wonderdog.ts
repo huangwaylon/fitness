@@ -1,13 +1,10 @@
-// REVIEW 2026-11-16: pass 3, fix 16, drop 0, new 0; ear checks 0
-//   Open: none. Blind pass ran on stems + choices only (header unread); 16 of 18 choice items were ≥ 50 % and right.
+// A2 REVIEW 2026-11-17: keep 10, rewrite 7, retire 2, new 0
 // “Parks and Recreation | Chris Loves Champion (Episode Highlight)” (the official Parks and Recreation channel,
 // Season 4): Chris hands Champion, April and Andy's three-legged dog, back after minding him for a night, raves about
 // him, explains his dog-only German to camera, and ends on a gentle hint about how Andy lives.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈60 s. Untested: 0–4 s (“Hey, bud, I
-// missed you” vs “hey but I'm with you”), 6.8 s (“Not in the slightest” vs “out of the slightest”), 9–12 s (the German
-// line, “Er ist ein Wunderhund” vs “and is I know”), 28–31 s (“Ich bin ein three-legged dog”: who says it), 39–43 s
-// (“did his leg go back?” vs “which is like go back?”), 49.6 s (“sit on” vs “sew in”) and the speaker of “Right?”.
-// EAR CHECK: none (every key rests on words both sources agree on; no item names who says “Who wouldn't?”)
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈60 s. Untested: 0–4 s, 6.8 s, 9–12 s
+// (the German line), 28–31 s, 39–43 s, 49.6 s (the sources differ) and the speaker of “Right?”. No item names who
+// says “Who wouldn't?”. Retired: the C2 tier (nt1, nt2).
 import type { Clip } from '../types.ts';
 
 export const wonderDog: Clip = {
@@ -16,53 +13,42 @@ export const wonderDog: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 75 %): "class" and "adopted" were fillers next to a plain handover. All three are now handovers
-    //   with a different reason.
-    // why: found ← "Hey, bud, I missed you" and "Thank you so much" fit a lost dog brought home; training ← "the dog
-    //   training course I took" is said, and "took" can be heard as taking the dog
     { id: 'g1', skill: 'gist', level: 'B1', point: 'handover', seg: [0, 24.6],
       stem: 'What is going on between Chris and the dog’s owner?',
-      choices: ['Chris is bringing back a dog he minded for them', 'Chris is bringing back a dog he found wandering',
-                'Chris is bringing back a dog he took to training'], a: 0,
-      cue: '「Thank you so much」と、カメラへの説明の後半。',
-      said: '飼い主のお礼に、クリスはドイツ語まで使ってほめ、カメラには二人の外出中に預かっていたと話す。',
-      mean: '旅行中の友だちの犬を預かり、返しに来た場面。お礼と、預かった理由が答え。',
-      trap: '訓練コースの話が出るので「教室帰り」に思えるが、それは本人の昔の話。',
+      ja: 'クリスと犬の飼い主の間で、何が起きている？',
+      choices: ['Chris looked after their dog', 'Chris found their lost little dog', 'Chris trained their dog'], a: 0,
+      choicesJa: ['クリスが犬を預かっていた', 'クリスが迷子の小さな犬を見つけた', 'クリスが犬を訓練した'],
+      cue: 'お礼と、カメラへの説明。',
+      said: '飼い主のお礼に、クリスは犬をほめ、カメラには二人の外出中に預かっていたと話す。',
+      mean: 'look after ＝ 世話をする。友だちの犬を一晩預かり、返しに来た場面。',
+      trap: '訓練コースの話が出るので、訓練の帰りに思いやすい。それはクリスの昔の話。',
       use: 'Thanks for watching my dog.（犬を見ててくれてありがとう）' },
 
-    // R fix: V2 (blind 50 %): the key was the one stock phrase. Now three everyday owner worries; only "handful" settles it.
-    // why: ate properly ← handful = 一握り, a handful of food; missed us ← "I missed you" comes just before
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'handful', reveals: ['wasnt'], seg: [0, 7.65],
-      stem: 'Right after “Thank you so much”, what does the owner hope?',
-      choices: ['That the dog behaved himself', 'That the dog ate his food properly',
-                'That the dog didn’t miss them much'], a: 0,
-      cue: '「I hope」のあと、最後の一語のたとえ。',
+      stem: 'What does “I hope he wasn’t a handful” mean?',
+      ja: '「I hope he wasn’t a handful」はどういう意味？',
+      choices: ['I hope he was easy', 'I hope he ate enough', 'I hope he missed us'], a: 0,
+      choicesJa: ['手がかからなかったならいい', 'ちゃんと食べたならいい', 'さみしがってたならいい'],
+      cue: '「I hope」のあと、最後の語。',
       line: 'Thank you so much. I hope he *wasn’t a handful*.',
       said: 'お礼を言ってから「この子、手がかからなかったならいいけど」と言う。',
-      mean: 'a handful ＝ 手に負えない人や動物。預けた側の決まり文句で、気づかいの一言。',
-      trap: 'handful を「一握り」と取ると食べ物の量に聞こえる。人や犬なら「手がかかる」。',
+      mean: 'a handful ＝ 手に負えない人や動物。預けた側の気づかいの決まり文句。',
+      trap: 'handful を「ひとつかみ」と取ると、食べ物の量に聞こえる。人や犬なら「手がかかる」。',
       use: 'My kids can be a handful.（うちの子たち、手がかかるんだ）' },
 
-    // R fix: V2 + K3 (blind 55 %): "was" makes no sense with "I hope", so grammar alone left two choices. Cut; trap rewritten.
-    // why: isn't ← the dog is right there, so the present fits, and izn/wazn differ only in the first sound; won't be ←
-    //   "hope" often looks ahead
     { id: 's1', skill: 'sound', level: 'B2', point: 'wasnt', reveals: ['handful'], seg: [1.2, 7.65],
       stem: 'Fill the gap: “I hope he ___ a handful.”',
+      ja: '空所を埋める：「I hope he ___ a handful.」',
       choices: ['wasn’t', 'isn’t', 'won’t be'], a: 0,
-      cue: 'he のすぐあと、短い一語の終わりの音。',
+      choicesJa: ['〜ではなかった', '〜ではない', '〜ではないだろう'],
+      cue: '「he」のすぐあとの一語。',
       line: 'I hope he *wasn’t* a handful.',
-      said: '「手がかからなかったならいいけど」。預けていた間のことを聞いている。',
-      mean: 'wasn’t a が「ワズンタ」のようにつながり、t はほぼ消えて「ン」が残る。',
-      trap: 'isn’t だと「今」の話になる。he のあとの w の音と時制を聞く。',
+      said: '「手がかからなかったならいいけど」と、預けていた間のことを聞く。',
+      mean: 'wasn’t a が「ワズンタ」とつながる。t はほぼ消えて「ン」が残る。',
+      trap: 'isn’t なら「イズン」と「イ」で始まる。won’t be なら最後に「ビー」が聞こえる。',
       use: 'I hope it wasn’t too much trouble.（ご迷惑でなかったらいいのですが）' },
 
-    // R fix: V2 (blind 60 %): the key was the only hedged choice ("the little… he has"). Now three parallel sources for
-    //   the line, and the stem no longer says "how should we hear".
-    // why: fluent ← "fluent" taken at face value; a proverb ← "As the Germans would say" heard as a proverb
-    //   introduction
-    // anchor: 13.5–20.1 s "now I'm fluent in German — words relating to dogs": his German is dog words only, so the
-    //   earlier "As the Germans would say… He is a wonder dog" uses the little he has
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'fluent', reveals: ['german'], seg: [6.4, 21.2],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'fluent', reveals: ['german'], seg: [6.4, 21.2], retired: true,
       stem: 'Given what Chris later says about his German, what is his German line?',
       choices: ['A bit of the narrow German his course taught him', 'A bit of the fluent German his course taught him',
                 'A bit of a proverb Germans use about loyal dogs'], a: 0,
@@ -73,169 +59,148 @@ export const wonderDog: Clip = {
       trap: 'ことわざの前置きにも、fluent の自慢にも聞こえる。あとの付け足しで答え合わせをする。',
       use: 'As the French would say, voilà!（フランス人風に言えば、ほらね）' },
 
-    // R fix: V2 (blind 65 %): the key was the only one with the clip's "entirely", and "language class" was weak.
-    //   Parallel "Its lessons…" choices now.
-    // why: in Germany ← German/Germany sound alike; German breeds ← "German" next to "dog training" (German shepherds)
     { id: 'd1', skill: 'detail', level: 'B1', point: 'german', seg: [13.45, 17.5],
-      stem: 'What was unusual about the dog training course Chris took?',
-      choices: ['Its lessons were all in German', 'Its lessons were held in Germany',
-                'Its lessons were for German breeds'], a: 0,
-      cue: '「course I took」のあとの説明。',
+      stem: 'What was unusual about Chris’s dog training course?',
+      ja: 'クリスの犬の訓練コースは、何が変わっていた？',
+      choices: ['It was all in German', 'It was held in Germany', 'It was for German dogs'], a: 0,
+      choicesJa: ['全部ドイツ語だった', 'ドイツで行われた', 'ドイツの犬向けだった'],
+      cue: '「course I took」のあと。',
       line: 'The dog training course I took was *conducted entirely in German*',
       said: '「僕が受けた犬の訓練コースは、全部ドイツ語で行われた」と話す。',
-      mean: 'conducted ＝ 行われた。場所や語学の授業ではなく、使われた言葉の話。',
-      trap: 'German から「ドイツで」と取りやすい。in German は「ドイツ語で」。',
+      mean: 'conducted ＝ 行われた。entirely ＝ 全部。in German ＝ ドイツ語で。',
+      trap: 'German から「ドイツで」と思いやすい。in German は「ドイツ語で」。',
       use: 'The tour was conducted in English.（ツアーは英語で行われた）' },
 
-    // why: talks to dogs ← "words relating to dogs" heard as who he speaks to; trip ← "fluent" suggests real study
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'fluent', seg: [13.45, 21.2],
-      stem: 'Why does Chris’s claim to be fluent in German get a laugh?',
-      choices: ['His German covers only words about dogs', 'He uses his German only to talk to dogs',
-                'He learned his German for a trip abroad'], a: 0,
-      cue: '「fluent in German」の直後の、短い付け足し。',
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'fluent', seg: [13.45, 21.2],
+      stem: 'What kind of German is Chris fluent in?',
+      ja: 'クリスは、どんなドイツ語がぺらぺら？',
+      choices: ['Only words about dogs', 'All the German there is', 'Words for travel'], a: 0,
+      choicesJa: ['犬に関する言葉だけ', 'ドイツ語なら何でも', '旅行の言葉'],
+      cue: '「fluent in German」の直後。',
       line: 'now I’m *fluent in German* — *words relating to dogs*.',
       said: '「今ではドイツ語がぺらぺら…犬に関する言葉なら」と付け足す。',
-      mean: 'fluent と大きく言ってから、範囲を犬の単語だけに絞る。期待を落とす付け足しが笑い。',
-      trap: 'relating to は「〜に関する」。犬と話すという意味ではない。付け足しで話が縮む。',
+      mean: 'fluent ＝ ぺらぺら。大きく言ってから、犬の単語だけにしぼる付け足しが笑い。',
+      trap: 'fluent だけ聞くと、何でも話せるように聞こえる。直後の付け足しを聞く。',
       use: 'I’m fluent in Spanish — restaurant Spanish.（スペイン語ぺらぺら。レストラン限定）' },
 
-    // why: weekend/week ← the usual length of a getaway; only "for the night" is said
-    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [19.35, 23.65],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [19.35, 23.65], keep: true,
       stem: 'How long were April and Andy away?',
-      choices: ['One night', 'A weekend', 'A week'], a: 0, keep: true,
+      ja: 'エイプリルとアンディはどのくらい出かけていた？',
+      choices: ['One night', 'A weekend', 'A week'], a: 0,
+      choicesJa: ['一晩', '週末', '1週間'],
       cue: '「went away」のあと。',
       line: 'April and Andy *went away for the night*',
       said: '「エイプリルとアンディが一晩出かけていたので」と説明する。',
-      mean: 'for the night ＝ その晩だけ、一泊。旅行より短い外出。',
-      trap: '出かけたと聞くと週末旅行を思い浮かべやすい。night は一晩だけ。',
+      mean: 'for the night ＝ その晩だけ、一泊。',
+      trap: '出かけたと聞くと、週末旅行を思いやすい。night は一晩、week なら「ウィーク」。',
       use: 'We’re just staying for the night.（一泊だけです）' },
 
-    // R fix: V2 (blind 70 %) + N7: the stem's "the night" and the choice "overnight" gave n1's key, and the
-    //   distractors were weak. The new choices are three things a sitter's report could cover.
-    // why: behaved ← "I hope he wasn't a handful" invites a report on behaviour; will need ← the advice to Andy at the
-    //   end sounds like care instructions
     { id: 'g2', skill: 'gist', level: 'B2', point: 'care', seg: [19.35, 40.6],
-      stem: 'What does most of Chris’s report to the owners cover?',
-      choices: ['What he did for the dog while they were out', 'How the dog behaved while they were out',
-                'What the dog will need once he is home'], a: 0,
-      cue: 'ほめ言葉と、店でしたことの報告の量。',
-      said: 'ほめ言葉を重ねてから、店に連れて行き、あれこれ世話をした話を詳しく報告する。',
-      mean: '預かった一晩でどれだけ大事にしたかを、一つずつ並べて伝えている。全体の流れが答え。',
-      trap: '「いい子だった？」の報告を予想しやすいが、中身は自分がした世話。',
+      stem: 'What does Chris mostly tell the owners about?',
+      ja: 'クリスは飼い主に、主に何を話している？',
+      choices: ['What he did for the dog', 'How the dog behaved', 'What the dog needs at home'], a: 0,
+      choicesJa: ['犬のためにしたこと', '犬の様子', '家で犬に必要なもの'],
+      cue: '店でしたことの報告。',
+      said: 'ほめ言葉のあと、店に連れて行き、あれこれ世話をした話をくわしく報告する。',
+      mean: '預かった一晩でどれだけ大事にしたかを、一つずつ並べて伝えている。',
+      trap: '「いい子だった？」の報告を思いやすいが、中身は自分がした世話。',
       use: 'He had the best time with us.（うちで最高に楽しんでたよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'lookedafter', seg: [21.2, 24.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'lookedafter', seg: [21.2, 24.6],
       stem: 'Type what Chris says: “and I ___ Champion here.” (2 words)', answer: 'looked after',
-      // R fix: N7: the cue quoted "for the night", n1's key.
-      cue: '「and I」のあとの2語。音がつながる。',
+      ja: 'クリスの言葉を書き取る：「and I ___ Champion here.」（2語）',
+      cue: '「and I」のあとの2語。',
       line: 'and I *looked after* Champion here.',
-      said: '「それで僕がチャンピオンを預かった」。',
-      mean: 'looked after ＝ 世話をした。looked の d と after がつながり「ルッカフター」に近い。',
+      said: '「それで僕がチャンピオンを預かった」と言う。',
+      mean: 'look after ＝ 世話をする。looked の d と after がつながり「ルッカフター」に近い。',
       trap: 'd が after とつながって消えやすい。look at と取ると意味が変わる。',
       use: 'Could you look after my bag?（荷物を見ててもらえますか）' },
 
-    // R fix: V2 (blind 55 %): "not two breeds" in the key spelled out the contrast. Three parallel "He…" descriptions.
-    // why: takes it back ← "mutt" can sound rude (雑種), so the praise sounds like a quick fix; wrong breeds ← "half…
-    //   half" is the usual way to name two breeds
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'mutt', seg: [22.35, 27.95],
-      stem: 'After calling Champion a mutt, what makes Chris’s description funny?',
-      choices: ['He fills in the two halves with praise, not breeds', 'He calls the dog a mutt, then takes it back quickly',
-                'He names two breeds that the dog clearly isn’t'], a: 0,
-      cue: '「half」が2回。そのあとに来る語の種類。',
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'mutt', seg: [22.35, 27.95],
+      stem: 'What does “half amazing, half terrific” say about the dog?',
+      ja: '「half amazing, half terrific」は、犬について何と言っている？',
+      choices: ['He is great in every way', 'He is two kinds of dog', 'He is only half good'], a: 0,
+      choicesJa: ['どこもかしこもすばらしい', '2種類の犬のまざり', '半分だけいい犬'],
+      cue: '「half」のあとに来る語。',
       line: 'He’s a mutt — *half amazing, half terrific*.',
       said: '「この子は雑種だ。半分すごくて、半分すばらしい」と言う。',
-      mean: '雑種なら「半分〇〇犬」と犬種が来るはずが、ほめ言葉が2つ。型をずらした笑い。',
-      trap: 'mutt は悪口にも聞こえるが、本人はうれしそう。half のあとに何が来るかを聞く。',
+      mean: 'half A, half B ＝ 半分A、半分B。雑種なら犬種が来るはずが、ほめ言葉が2つ。',
+      trap: 'mutt（雑種）から、2種類の犬の話と思いやすい。half のあとは犬種ではなく、ほめ言葉。',
       use: 'It’s half work, half vacation.（半分仕事で、半分休暇）' },
 
-    // R fix: V2 (blind 50 %): the key shared "shots" with one distractor, so it was a coin toss. Three separate pairs now.
-    // why: collar and chip / bed and training ← what a sitter would plausibly do at a pet store; the fast "got him…"
-    //   run invites filling in from one caught word
     { id: 'd2', skill: 'detail', level: 'B1', point: 'petsmart', seg: [31.25, 40.6],
-      stem: 'Besides toys and exercise, what does Chris say he did for Champion?',
-      choices: ['Got him his shots and had him groomed', 'Got him a collar and had him chipped',
-                'Got him a bed and had him trained'], a: 0,
-      cue: '「various toys」のあとに続く、got him の並び。',
+      stem: 'Besides toys and exercise, what did Chris get the dog?',
+      ja: 'おもちゃと運動のほかに、クリスは犬に何をした？',
+      choices: ['Shots and a grooming', 'A collar and a chip', 'A bed and training'], a: 0,
+      choicesJa: ['予防注射とトリミング', '首輪とチップ', 'ベッドと訓練'],
+      cue: '「various toys」のあと。',
       line: 'got him *shots*, got him *groomed*, and gave him plenty of exercise.',
-      said: '店でおもちゃを買い、予防注射、トリミング、運動まで済ませた。',
-      mean: 'shots ＝ 予防注射、groomed ＝ 毛を整えた。get him ＋過去分詞で「〜してもらう」。',
-      trap: 'got him の並びが速く、拾えた一語から想像で補いやすい。一つずつ聞く。',
+      said: '店でおもちゃを買い、予防注射、トリミング、運動まで済ませた、と言う。',
+      mean: 'shots ＝ 予防注射。groomed ＝ 毛を整えた。got him ～ ＝ 〜してもらった。',
+      trap: 'got him の並びが速く、聞こえた一語から想像で補いやすい。一つずつ聞く。',
       use: 'I need to get my hair cut.（髪を切ってもらわなきゃ）' },
 
-    // why: other dogs ← "healthier than" heard as a comparison with others; from now on ← "ever" heard as forever
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'healthier', seg: [32.45, 40.6],
-      stem: 'What does Chris’s last line about Champion’s health suggest?',
-      choices: ['He’s in better shape now than with his owners', 'He’s healthier than other dogs his age now',
-                'He’ll stay this healthy for the rest of his life'], a: 0,
-      // R fix: N7: the cue and notes said 一晩, n1's key.
-      cue: '世話の報告の、締めくくりの比較。',
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'healthier', seg: [32.45, 40.6],
+      stem: 'What does “He’s healthier than ever” mean?',
+      ja: '「He’s healthier than ever」はどういう意味？',
+      choices: ['He is healthier than before', 'He is healthier than other dogs', 'He will always be healthy'], a: 0,
+      choicesJa: ['前よりも健康', 'ほかの犬より健康', 'ずっと健康でいる'],
+      cue: '世話の報告の、最後の一言。',
       line: 'He’s *healthier than ever*.',
-      said: '預かった間の世話をひと通り報告して「今までで一番健康だ」と締める。',
-      mean: 'than ever ＝ これまでのどの時より。飼い主の家にいた時より、と遠回しに言っている。',
-      trap: '他の犬との比較や「永遠に」と取りやすい。比べる相手は過去の本人。',
+      said: '世話をひと通り報告して「今までで一番健康だ」と締める。',
+      mean: 'than ever ＝ これまでのどの時より。飼い主の家にいた時より、という意味にもなる。',
+      trap: 'ほかの犬と比べていると思いやすい。比べる相手は、前のチャンピオン自身。',
       use: 'I feel better than ever.（今までで一番調子がいい）' },
 
-    // R fix: V2 (blind 65 %): "say bye" was weak and "advice" stood out. Three requests, two about the dog.
-    // why: see again / mind again ← "may" read as plain permission (〜してもいい？) plus how much he loves the dog
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ifimay', seg: [42.3, 48.25],
-      stem: 'When Chris stops Andy with his name, what is he doing?',
-      choices: ['Asking to share a thought before they go', 'Asking to see Champion again sometime',
-                'Asking to mind Champion again some time'], a: 0,
-      cue: '名前の呼びかけと、短い返事のあと何が始まるか。',
+      stem: 'What is Chris doing with “Andy, if I may”?',
+      ja: '「Andy, if I may」で、クリスは何をしている？',
+      choices: ['Asking to give some advice', 'Asking to see the dog again', 'Asking to keep the dog'], a: 0,
+      choicesJa: ['意見を言わせてと頼んでいる', 'また犬に会いたいと頼んでいる', '犬を飼いたいと頼んでいる'],
+      cue: '名前と短い返事のあと。',
       line: 'Andy, *if I may* — Yes? — Dogs tend to take on…',
       said: '「アンディ、ちょっといいかな」と切り出し、犬と飼い主の話を始める。',
-      mean: 'if I may ＝ 言わせてもらえるなら。頼まれていない助言や意見の前置き。',
-      trap: 'may を許可と取ると、また預かる話や会う約束に聞こえる。後ろに続くのは意見。',
+      mean: 'if I may ＝ 言わせてもらえるなら。頼まれていない意見や助言の前置き。',
+      trap: 'may を許可と取ると、また預かる話に聞こえる。あとに続くのは意見。',
       use: 'If I may, one small suggestion.（よければ、一つだけ提案を）' },
 
-    // R fix: V2 (blind 60 %): the key was the only kind, nuanced choice. All three now name a manner and a mechanism.
-    // why: doubtful ← "tend to" and "if you were to" read as real doubt (the Japanese frame: 〜かもしれない = 自信がない);
-    //   playful ← the silly picture (cartoons, Cheetos) heard as a joke with no point
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'tact', reveals: ['hint'], seg: [42.3, 53.85],
-      stem: 'How does Chris come across as he raises his last topic with Andy?',
-      choices: ['Indirect: he hides a criticism in a general rule', 'Doubtful: he isn’t sure the dog rule is true',
-                'Playful: he’s teasing Andy just for a laugh'], a: 0,
-      cue: '名前の呼びかけの前置きと、「もし」の形。',
+      stem: 'How does Chris give Andy his advice?',
+      ja: 'クリスはどんなふうにアンディに助言する？',
+      choices: ['Gently, without blaming him', 'Angrily, in a loud voice', 'As a joke, for a laugh'], a: 0,
+      choicesJa: ['責めずにやんわりと', '大声で怒って', '笑いをとる冗談として'],
+      cue: '前置きと、「もし」の形。',
       line: 'Andy, *if I may* — … so *if you were to* sit on your couch all day…',
       said: '「ちょっといいかな」と断ってから、一般論と「もし〜なら」の形で話す。',
-      mean: '前置き、一般論、仮定の三つで、相手を直接責めずに言いにくいことを伝えている。',
-      trap: 'tend to や if を自信のなさと取りやすいが、ここは角を立てないための形。',
+      mean: '前置き、一般論、「もし」の三つで、相手を直接責めずに言いにくいことを伝える。',
+      trap: 'if から、自信がないと思いやすい。ここは角を立てないための形。',
       use: 'Just a thought, if you don’t mind…（よければ、ちょっと思ったんだけど）' },
 
-    // R fix: V2 (blind 70 %): the key was the familiar saying. The other familiar saying (they look alike) is now a choice.
-    // why: stand up to ← take on = 立ち向かう (take on a challenge); looking like ← the better-known saying, which
-    //   "personalities" rules out
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'takeon', seg: [44.55, 48.85],
-      stem: 'In Chris’s point about dogs and their owners, what do dogs tend to do?',
-      choices: ['Start acting like their owners', 'Start standing up to their owners', 'Start looking like their owners'], a: 0,
-      cue: '「tend to」のあとの動詞のかたまり。',
+      stem: 'What does “take on the personalities of their owners” mean?',
+      ja: '「take on the personalities of their owners」はどういう意味？',
+      choices: ['Start acting like their owners', 'Start fighting their owners', 'Start looking like their owners'], a: 0,
+      choicesJa: ['飼い主のようにふるまう', '飼い主とけんかする', '飼い主と見た目が似る'],
+      cue: '「tend to」のあと。',
       line: 'Dogs tend to *take on the personalities* of their owners',
       said: '「犬は飼い主の性格に似てくるものだ」と言う。',
-      mean: 'take on ＝ （性質などを）帯びる、身につける。ここでは「似てくる」。',
+      mean: 'take on ～ ＝ （性質などを）身につける。personality ＝ 性格。',
       trap: 'take on には「立ち向かう」もあるが、後ろが personalities なら「身につける」。',
-      use: 'The town takes on a festive mood.（町がお祭りの雰囲気になる）' },
+      use: 'Kids take on their parents’ habits.（子どもは親のくせが移る）' },
 
-    // R fix: V2 (blind 60 %): "more time together" was weak. It's replaced by the same idea in reverse.
-    // why: already lazy ← "tend to take on" heard as a fact about Champion now; dog's energy on Andy ← right idea, wrong
-    //   direction (who copies whom)
     { id: 'i2', skill: 'infer', level: 'C1', point: 'hint', reveals: ['couch', 'takeon'], seg: [44.55, 53.85],
-      stem: 'With his couch example, what is Chris really suggesting to Andy?',
-      choices: ['Andy’s habits could rub off on the dog', 'The dog has already picked up Andy’s habits',
-                'The dog’s energy could rub off on Andy'], a: 0,
-      cue: '「if you were to」の仮定と、would の形。',
+      stem: 'What is Chris really telling Andy?',
+      ja: 'クリスは本当はアンディに何を言いたい？',
+      choices: ['His habits could hurt the dog', 'The dog is already lazy', 'The dog will make him active'], a: 0,
+      choicesJa: ['彼の生活が犬に悪いかも', '犬はもうなまけている', '犬のおかげで元気になる'],
+      cue: '「if you were to」の文。',
       line: 'Dogs tend to take on the personalities of their owners, so *if you were to* sit on your couch all day…',
-      said: '犬は飼い主に似るから、一日中ソファでお菓子なら犬もそうしたがる、と話す。',
-      mean: 'if you were to ＝ 仮に〜なら。「その生活は犬に良くない」という遠回しな忠告。',
+      said: '「犬は飼い主に似るから、一日中ソファでお菓子なら、犬もそうしたがる」と話す。',
+      mean: 'if you were to ～ ＝ 仮に〜なら。「その生活は犬によくない」という遠回しな忠告。',
       trap: 'もう似ている話ではない。were to と would は「もし」のしるし。',
       use: 'If you were to ask me, I’d wait.（もし聞かれたら、待つと答えるかな）' },
 
-    // R fix: V2 (blind 70 %): "More couch time for us both!" was a joke nobody would pick. Now "he'll be just like me"
-    //   (the point taken as a compliment, not advice), with parallel "Got it. …, then." choices.
-    // why: like me ← the line taken as a compliment (Andy's own reading); Cheetos away ← the advice heard as about
-    //   the dog's diet, not Andy's life
-    // anchor: 45.2–53.7 s "Dogs tend to take on the personalities of their owners… that's what he would want to do,
-    //   too": the habit to change is the owner's
-    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'hint', reveals: ['couch', 'takeon'], seg: [44.55, 57.45],
+    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'hint', reveals: ['couch', 'takeon'], seg: [44.55, 57.45], retired: true,
       stem: 'Which reply from Andy would show he got Chris’s point?',
       choices: ['Got it. Less couch for me, then.', 'Got it. He’ll be just like me, then.',
                 'Got it. No more Cheetos for him, then.'], a: 0,
@@ -246,30 +211,28 @@ export const wonderDog: Clip = {
       trap: '犬の食べ物の話と取ると、犬からお菓子を遠ざける返事を選びやすい。忠告は誰の行動に向いているかを聞く。',
       use: 'Point taken. I’ll cut back.（ごもっとも。控えるよ）' },
 
-    // why: sports and chips / games and pizza ← the usual couch-potato picture; only cartoons and Cheetos are said
     { id: 'd3', skill: 'detail', level: 'B1', point: 'couch', seg: [48.25, 53.85],
       stem: 'In Chris’s couch example, what is Andy doing all day?',
-      choices: ['Watching cartoons and eating Cheetos', 'Watching sports and eating chips',
-                'Playing games and eating pizza'], a: 0,
-      cue: '「all day」のあとの2つの動作。',
+      ja: 'クリスのソファの例で、アンディは一日中何をしている？',
+      choices: ['Watching cartoons, eating Cheetos', 'Watching sports, eating chips', 'Playing video games and eating pizza'], a: 0,
+      choicesJa: ['アニメを見てチートスを食べる', 'スポーツを見てポテチを食べる', 'テレビゲームをしてピザを食べる'],
+      cue: '「all day」のあとの2つ。',
       line: 'sit on your couch all day *watching cartoons and eating nothing but Cheetos*',
       said: '「一日中ソファでアニメを見て、チートスばかり食べていたら」とたとえる。',
-      mean: 'nothing but ＝ 〜ばかり。テレビとお菓子だけの一日、という例。',
+      mean: 'nothing but ～ ＝ 〜ばかり。テレビとお菓子だけの一日、という例。',
       trap: 'よくある「ソファでだらだら」の絵で選びやすい。言われた番組と食べ物を聞く。',
       use: 'I ate nothing but rice this week.（今週はご飯ばかり食べた）' },
 
-    // R fix: V2 (blind 50 %): the key echoed "amazing day", and the others were loosely worded. Parallel now.
-    // why: joking admission ← "Who wouldn't?" read as a playful "guilty"; pushing back ← a short question after advice
-    //   heard as an objection (the Japanese frame: 反論)
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'whowouldnt', seg: [48.25, 57.45],
-      stem: 'How is the reply to Chris’s couch example meant?',
-      choices: ['Sincerely: he’d love a day like that', 'Jokingly: he’s owning up to the habit',
-                'Crossly: he’s pushing back on the advice'], a: 0,
-      cue: '短い問い返しのあとの、一日の感想。',
+      stem: 'What does the reply “Who wouldn’t?” mean?',
+      ja: '返事の「Who wouldn’t?」はどういう意味？',
+      choices: ['He would love that day', 'He is angry at Chris for it', 'He wants to say sorry'], a: 0,
+      choicesJa: ['そんな日は最高だ', 'そのことでクリスに怒っている', '謝りたい'],
+      cue: '短い問い返しのあとの感想。',
       line: '*Who wouldn’t?* That sounds like an *amazing day*.',
       said: '「そりゃそうしたいでしょ。最高の一日じゃない」と返す。',
-      mean: 'Who wouldn’t? ＝ 誰だってそうでしょ。忠告を、すてきな提案として受け取っている。',
-      trap: '短い問い返しは反論にも聞こえるが、続く amazing day が本気のしるし。',
+      mean: 'Who wouldn’t? ＝ 誰だってそうでしょ。忠告を、すてきな話として受け取っている。',
+      trap: '短い問い返しは反論にも聞こえる。続く amazing day が本気のしるし。',
       use: 'Free pizza? Who wouldn’t want that?（ピザ無料？誰だって欲しいよ）' },
   ]
 };
