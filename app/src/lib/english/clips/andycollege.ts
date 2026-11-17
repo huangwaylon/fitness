@@ -15,7 +15,7 @@ export const andyCollege: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'choose', seg: [0, 4.9],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'choose', seg: [0, 7.7],
       stem: 'Why can’t Andy choose a class?',
       ja: 'アンディはなぜ授業を選べない？',
       choices: ['They all look amazing', 'They all look boring', 'They are all full'], a: 0,
@@ -27,7 +27,7 @@ export const andyCollege: Clip = {
       trap: 'can’t の t はほぼ聞こえず、can と思いやすい。理由は前の amazing。',
       use: 'I can’t choose. They all look good.（選べない。どれも良さそう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shopping', seg: [2.9, 7.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shopping', seg: [2.3, 9.7],
       stem: 'What can students do in the “shopping period”?',
       ja: '「ショッピング期間」に学生は何ができる？',
       choices: ['Try classes before choosing', 'Pay less for their classes', 'Sign up for only one class'], a: 0,
@@ -50,7 +50,7 @@ export const andyCollege: Clip = {
       trap: 'crash には「衝突」「潜り込む」もある。course と組めば短期集中。決まった組み合わせで覚える。',
       use: 'I took a crash course in Spanish.（スペイン語の短期集中講座を受けた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'attend', seg: [14.9, 21.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'attend', seg: [13.3, 23.6],
       stem: 'Why didn’t Andy graduate from college?',
       ja: 'アンディはなぜ大学を卒業していない？',
       choices: ['He never went there', 'He left after a year', 'He failed his classes'], a: 0,
@@ -73,7 +73,7 @@ export const andyCollege: Clip = {
       trap: 'because を言いわけと取ると、学校のせいにしているように聞こえる。中身は当然の事実。',
       use: 'I didn’t win because I didn’t enter.（出場しなかったから勝たなかった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'oneclass', seg: [19.1, 24.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'oneclass', seg: [15.6, 23.6], keep: true,
       stem: 'How many classes is Andy going to start with?',
       ja: 'アンディは最初にいくつ授業を取る？',
       choices: ['Just one', 'Just two', 'A few', 'As many as he likes'], a: 0,
@@ -96,7 +96,7 @@ export const andyCollege: Clip = {
       trap: '最後の easy A が残ると、二人とも楽を勧めたと思いやすい。',
       use: 'Everyone’s giving me different advice.（みんな言うことがばらばら）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'horizons', seg: [23.5, 31.7],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'horizons', seg: [23.5, 32.1],
       stem: 'What does Ron tell Andy to do?',
       ja: 'ロンはアンディに何をすすめる？',
       choices: ['Try a new subject', 'Travel to new places', 'Take an easy class'], a: 0,
@@ -108,7 +108,7 @@ export const andyCollege: Clip = {
       trap: 'horizons から旅の話と思いやすい。直後の「楽に A を」はエイプリルの助言。',
       use: 'This job will broaden your horizons.（この仕事で視野が広がるよ）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nooffense', seg: [32.5, 40.6],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nooffense', seg: [32, 40.9],
       stem: 'Why does Andy say “No offense, Ron” here?',
       ja: 'アンディは、なぜここで「No offense, Ron」と言う？',
       choices: ['To say no to Ron kindly', 'To say sorry for being late', 'To ask Ron for some help'], a: 0,
@@ -141,7 +141,7 @@ export const andyCollege: Clip = {
       trap: 'not の付いた言い方を「応援している」と取りやすい。少数を例外にするほめ方は、多数の側を考える。',
       use: 'You’re one of the few I can stand.（我慢できる数少ない一人だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'advanced', seg: [54.9, 66.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'advanced', seg: [59.5, 68.9],
       stem: 'What does the teacher think of Andy?',
       ja: '先生はアンディをどう思っている？',
       choices: ['He knows a lot already', 'He needs to learn basics', 'He is in the wrong room'], a: 0,
@@ -153,7 +153,7 @@ export const andyCollege: Clip = {
       trap: '「別のクラスに」を部屋のまちがいと思いやすい。理由は直前のアンディの答え。',
       use: 'Maybe you should try the advanced class.（上級クラスに行ったら？）' },
 
-    { id: 'nt1', skill: 'infer', level: 'C1', point: 'beginner', reveals: ['advanced'], seg: [65.8, 77.0],
+    { id: 'nt1', skill: 'infer', level: 'C1', point: 'beginner', reveals: ['advanced'], seg: [65, 76.4],
       stem: 'Why does Andy say he’s “just a beginner”?',
       ja: 'アンディはなぜ「ただの初心者だ」と言う？',
       choices: ['He wants the easy class', 'He feels very nervous', 'He has never played'], a: 0,
@@ -165,7 +165,7 @@ export const andyCollege: Clip = {
       trap: '謙遜と思いやすいが、直前に部品の名前を全部答えている。楽をしたい本音。',
       use: 'Me? Oh, I’m just a beginner.（私？いえ、ただの初心者です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [77.6, 83.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [76.7, 84.2], keep: true,
       stem: 'How long will the class work on basic chords?',
       ja: '基本のコードは何週間やる？',
       choices: ['Two weeks', 'Four weeks', 'Fourteen weeks', 'Forty weeks'], a: 1,
@@ -177,7 +177,7 @@ export const andyCollege: Clip = {
       trap: 'for と four は同じ音。数は2つ目の「フォー」。fourteen なら「ティーン」、forty なら「ティ」が付く。',
       use: 'It takes about four weeks.（4週間くらいかかります）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'weeks', seg: [80.8, 85.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'weeks', seg: [78, 88.1],
       stem: 'How does Andy feel about the class plan?',
       ja: 'クラスの予定を聞いて、アンディはどう感じる？',
       choices: ['Already bored', 'A little nervous', 'Very excited'], a: 0,
@@ -189,7 +189,7 @@ export const andyCollege: Clip = {
       trap: 'Oh my God を「すごい！」の喜びと思いやすい。直後の bored（退屈）で決まる。',
       use: 'I’m already bored.（もう飽きちゃった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'ofcourse', seg: [84.0, 88.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'ofcourse', seg: [83.8, 91],
       stem: 'Ron says, “Of course you are.” What does he mean?',
       ja: '「Of course you are.」で、ロンは何を言いたい？',
       choices: ['I knew you would be', 'I am bored, too', 'I am sorry for you'], a: 0,
@@ -201,7 +201,7 @@ export const andyCollege: Clip = {
       trap: '「そうだよね」と同情していると思いやすい。続く理由は、アンディの選び方を責めている。',
       use: 'Of course you’re tired. You skipped lunch.（そりゃ疲れるよ、昼抜いたんだから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'sample', seg: [87.7, 90.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'sample', seg: [85.8, 93.5],
       stem: 'Type the suggestion: “I suggest we ___.” (5 words)', answer: 'sample a few more classes',
       ja: '「I suggest we ___.」の5語を書こう。',
       cue: '「I suggest we」のあと。',
@@ -222,7 +222,7 @@ export const andyCollege: Clip = {
       trap: '安全の話を予想しやすいが、教授はここまで理論しか話していない。前の流れから次を読む。',
       use: 'I’m afraid that’s not part of the course.（あいにく、それは授業に含まれません）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'lasers', seg: [148.9, 152.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'lasers', seg: [147.9, 153.3],
       stem: 'Fill the gap: “We ___ be using actual lasers in this course.”',
       ja: '「We ___ be using actual lasers」の空所は？',
       choices: ['won’t', 'want to', 'wouldn’t'], a: 0,
@@ -234,7 +234,7 @@ export const andyCollege: Clip = {
       trap: 't が消えると want（ワント）に近い。won’t は「オウ」と口が丸い。wouldn’t なら「ウドゥン」。',
       use: 'I won’t be home until late.（帰りは遅くなるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'theory', reveals: ['lasers'], seg: [148.9, 153.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'theory', reveals: ['lasers'], seg: [148.9, 154],
       stem: 'What does the professor say the course is really about?',
       ja: '教授によると、この授業は本当は何について？',
       choices: ['The theory of lasers', 'The history of lasers', 'Using lasers safely'], a: 0,
@@ -246,7 +246,7 @@ export const andyCollege: Clip = {
       trap: 'theory と history は終わりの「リー」が同じ。最初が「スィ」か「ヒ」かを聞く。',
       use: 'It’s more theory than practice.（実習より理論が中心です）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'bummer', reveals: ['lasers', 'theory'], seg: [153.0, 159.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'bummer', reveals: ['lasers', 'theory'], seg: [153, 160.4],
       stem: 'How does Andy feel about having no real lasers?',
       ja: '本物のレーザーはないと知って、アンディはどう感じる？',
       choices: ['Very disappointed', 'A little scared', 'Happy and relieved'], a: 0,
@@ -258,7 +258,7 @@ export const andyCollege: Clip = {
       trap: 'significant や lifetime のかたい語で真剣に聞こえるが、中身は「がっかり」。',
       use: 'What a bummer. The shop’s closed.（がっかり、店が閉まってる）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [167.5, 173.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [165.6, 173.5],
       stem: 'Andy says, “Look, you guys…” What does “Look” mean here?',
       ja: '「Look, you guys…」の Look は、ここではどんな意味？',
       choices: ['Listen to me', 'Look at this list', 'I am sorry'], a: 0,
@@ -270,7 +270,7 @@ export const andyCollege: Clip = {
       trap: 'look から「見て」と思いやすい。最初の Look は、これから言い切る合図。',
       use: 'Look, I just need five minutes.（いいかい、5分だけちょうだい）' },
 
-    { id: 'd5', skill: 'phrase', level: 'B2', point: 'random', seg: [170.0, 177.8],
+    { id: 'd5', skill: 'phrase', level: 'B2', point: 'random', seg: [170, 178.1],
       stem: 'How does Andy say he always makes choices?',
       ja: 'アンディはいつもどうやって選ぶと言う？',
       choices: ['Completely at random', 'With help from friends', 'By looking at prices'], a: 0,
@@ -294,7 +294,7 @@ export const andyCollege: Clip = {
       trap: 'lasers が聞こえるので、レーザーが理由と思いやすい。理由は then の前。',
       use: 'Well then, it’s decided.（じゃあ、決まりだね）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'propose', seg: [210.0, 217.7],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'propose', seg: [209.7, 218.9],
       stem: 'What does Ron think of the teacher?',
       ja: 'ロンは先生のことをどう思っている？',
       choices: ['He likes her a lot', 'He disagrees with her', 'He is afraid of her'], a: 0,
@@ -306,7 +306,7 @@ export const andyCollege: Clip = {
       trap: 'opposed（反対）で、苦情に聞こえやすい。後半の propose が本音。',
       use: 'If it weren’t so far, I’d go.（あんなに遠くなければ行くのに）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'womlasers', seg: [217.5, 224.0],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'womlasers', seg: [217, 228.6],
       stem: 'Which class does Andy finally choose?',
       ja: 'アンディが最後に選ぶ授業は？',
       choices: ['Women’s studies', 'Intro to Lasers', 'Guitar for beginners'], a: 0,

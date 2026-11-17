@@ -25,7 +25,7 @@ export const partyEarly: Clip = {
       trap: 'お礼への返事は謙遜、という型で聞きやすい。決まり文句の直後の一言が、本当の意味を決める。',
       use: 'Honestly, I didn’t think it through.（正直、よく考えてなかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'going', seg: [3.3, 7.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'going', seg: [2.9, 7.9],
       stem: 'Fill the gap: “Wait, ___ be going?”',
       ja: '空所を埋める：「Wait, ___ be going?」',
       choices: ['should you', 'shouldn’t you', 'should I'], a: 0,
@@ -46,7 +46,7 @@ export const partyEarly: Clip = {
       trap: '文法どおり I を足したくなるが、言っていない。書き取りは、聞こえた語だけを書く。',
       use: 'Didn’t see you there. Hi!（いるの気づかなかった、やあ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [11.9, 15.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [10.9, 16.7], keep: true,
       stem: 'On the phone, how soon will someone be there?',
       ja: '電話で、あとどのくらいで着くと言う？',
       choices: ['In about 5', 'In about 15', 'In about 50'], a: 1,
@@ -58,7 +58,7 @@ export const partyEarly: Clip = {
       trap: 'fifty なら前の「フィフ」が強い。five なら「ファイヴ」で終わる。ここは「フィフティーン」。',
       use: 'I’ll be there in fifteen.（15分で着くよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'speaker', seg: [22.3, 26.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'speaker', seg: [22.2, 28.1],
       stem: 'What does Jan ask Michael to do?',
       ja: 'ジャンはマイケルに何をたのむ？',
       choices: ['Take her off speakerphone', 'Put her on speakerphone', 'Put Dwight on the line'], a: 0,
@@ -70,7 +70,7 @@ export const partyEarly: Clip = {
       trap: 'off は短く弱いので on と思いやすい。take me のあとの off を聞く。',
       use: 'Can you take me off speaker?（スピーカー、切ってくれる？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'speaker', seg: [22.3, 26.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'speaker', seg: [22.2, 28.1],
       stem: 'Why does Jan ask to come off speakerphone?',
       ja: 'ジャンはなぜスピーカーをやめてとたのむ？',
       choices: ['She doesn’t want Dwight to hear', 'She wants Dwight to hear too', 'She can’t hear Michael well'], a: 0,
@@ -94,7 +94,7 @@ export const partyEarly: Clip = {
       trap: 'change から「着がえに帰る」と思いやすい。shirts と複数なので、二人のシャツの交換。',
       use: 'Let’s change seats.（席を替わろう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'servants', seg: [59.3, 64.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'servants', seg: [59.3, 65.1],
       stem: 'What is wrong with how one of them is dressed?',
       ja: '一人の服装の何がまずい？',
       choices: ['He looks just like the staff', 'He is much too casual', 'He looks just like the party host'], a: 0,
@@ -106,7 +106,7 @@ export const partyEarly: Clip = {
       trap: '服の話なので「カジュアルすぎ」と思いやすい。exactly like のあとの servants で決まる。',
       use: 'You look exactly like the waiter.（ウェイターにそっくりだよ）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B1', point: 'shirts', seg: [65.3, 71.7],
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'shirts', seg: [65.3, 72.6],
       stem: 'What does “I don’t care” mean here?',
       ja: 'ここで「I don’t care」はどういう意味？',
       choices: ['The size doesn’t matter', 'He hates that shirt', 'He doesn’t like clothes'], a: 0,
@@ -118,7 +118,7 @@ export const partyEarly: Clip = {
       trap: '「服に興味がない」と思いやすい。何がどうでもいいかは、直前の fit（サイズ）。',
       use: 'I don’t care if it’s small. Try it.（小さくてもいいから、着てみて）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'embarr', seg: [84.3, 88.3],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'embarr', seg: [82.4, 90.3],
       stem: 'Fill the gap: “That ___ really embarrassing.”',
       ja: '空所を埋める：「That ___ really embarrassing.」',
       choices: ['would have been', 'could have been', 'would be'], a: 0,
@@ -129,6 +129,18 @@ export const partyEarly: Clip = {
       mean: 'would have been ＝ （もしそうなら）〜だっただろう。「ウダビン」と短くなる。',
       trap: 'could なら「ク」で始まる。would be なら最後が「ビー」。ここは「ビン」が聞こえる。',
       use: 'That would have been a disaster.（それは大変なことになってたね）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'crisis', reveals: ['embarr'], seg: [82.4, 91],
+      stem: 'How do they feel after swapping shirts?',
+      ja: 'シャツを取りかえたあと、二人はどんな気持ち？',
+      choices: ['Relieved it got fixed', 'Embarrassed it happened', 'Worried it still shows'], a: 0,
+      choicesJa: ['直ってほっとしている', '起きたことが恥ずかしい', 'まだばれそうで心配'],
+      cue: '「would have been」の文と、そのあとの返事。',
+      line: 'That *would have been* really embarrassing. — Yes, *crisis averted*.',
+      said: '「あのままなら恥ずかしかった」「危機回避だ」と言い合う。',
+      mean: 'would have been ＝ もしそうなら〜だった。もう避けられたので、ほっとしている。',
+      trap: 'embarrassing が残ると「恥ずかしい」を選びやすい。would have been は起きなかったこと。',
+      use: 'Phew, that was close.（ふう、危なかった）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'crisis', seg: [84.3, 91.0],
       stem: 'What does “crisis averted” mean?',
@@ -142,19 +154,7 @@ export const partyEarly: Clip = {
       trap: 'avert は「目をそらす」にも使うので、見ないふりと思いやすい。crisis と組むと「回避」。',
       use: 'Found my keys. Crisis averted!（鍵あった。危機回避！）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'crisis', reveals: ['embarr'], seg: [84.3, 91.0],
-      stem: 'How do they feel after swapping shirts?',
-      ja: 'シャツを取りかえたあと、二人はどんな気持ち？',
-      choices: ['Relieved it got fixed', 'Embarrassed it happened', 'Worried it still shows'], a: 0,
-      choicesJa: ['直ってほっとしている', '起きたことが恥ずかしい', 'まだばれそうで心配'],
-      cue: '「would have been」の文と、そのあとの返事。',
-      line: 'That *would have been* really embarrassing. — Yes, *crisis averted*.',
-      said: '「あのままなら恥ずかしかった」「危機回避だ」と言い合う。',
-      mean: 'would have been ＝ もしそうなら〜だった。もう避けられたので、ほっとしている。',
-      trap: 'embarrassing が残ると「恥ずかしい」を選びやすい。would have been は起きなかったこと。',
-      use: 'Phew, that was close.（ふう、危なかった）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', seg: [91.1, 106.15],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', seg: [91.1, 108],
       stem: 'Why is arriving early good, he says?',
       ja: '早く着くのはなぜいい、と彼は言う？',
       choices: ['You become a good friend', 'You help the host get ready', 'You get the best food'], a: 0,
@@ -166,7 +166,7 @@ export const partyEarly: Clip = {
       trap: 'polite（礼儀正しい）が聞こえるので、礼儀の話と思いやすい。最後は become a friend。',
       use: 'Come early and grab a good seat.（早めに来て、いい席を取って）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [93.9, 98.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [92.9, 102],
       stem: 'What two words does he use for arriving early?',
       ja: '早く着くことを、彼はどんな2語で言う？',
       choices: ['Polite and smart', 'Polite but risky', 'Rude but smart'], a: 0,
@@ -200,7 +200,7 @@ export const partyEarly: Clip = {
       trap: '直前の「ポテトサラダね」への返事と思いやすい。返事は both of us に向いている。',
       use: 'Actually, that one’s just from me.（実はそれ、私からだけなの）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'cover', reveals: ['mayo'], seg: [115.8, 123.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'cover', reveals: ['mayo'], seg: [115.3, 123.3],
       stem: 'How does he use “You probably want to…”?',
       ja: '彼は「You probably want to…」をどう使っている？',
       choices: ['To give gentle advice', 'To ask what she wants', 'To give a strict order'], a: 0,
@@ -212,7 +212,7 @@ export const partyEarly: Clip = {
       trap: 'want を「あなたが望む」と思うと、希望を聞く質問に聞こえる。ここは遠回しな注意。',
       use: 'You probably want to bring a jacket.（上着は持っていったほうがいいよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'cover', seg: [115.8, 120.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'cover', seg: [115.3, 123.3],
       stem: 'Type the advice: “You probably want to ___ until the guests get here.” (4 words)',
       answer: 'leave the cover on',
       ja: 'アドバイスを書き取る：「want to ___ until the guests…」（4語）',
@@ -233,7 +233,7 @@ export const partyEarly: Clip = {
       trap: 'sun が耳に残ると天気の話と取りやすい。my car の my で、誰の持ち物の話かが決まる。',
       use: 'Just in case. You never know.（念のためね、何があるか分からないし）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'mayo', seg: [119.95, 129.9],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'mayo', seg: [117.9, 129.9],
       stem: 'Why does he talk about the sun and the mayonnaise?',
       ja: '彼はなぜ日差しとマヨネーズの話をする？',
       choices: ['The salad may have gone bad', 'The salad is still warm', 'He worked very hard to make it'], a: 0,

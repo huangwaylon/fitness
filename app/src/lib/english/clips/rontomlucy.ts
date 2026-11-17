@@ -16,7 +16,7 @@ export const ronTomLucy: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'better', seg: [11.8, 18.4],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'better', seg: [11.8, 18.8],
       stem: 'What does Tom mean by “Better than well”?',
       ja: 'トムの「Better than well」はどういう意味？',
       choices: ['Things are going great', 'Things could be better', 'He feels a little sick'], a: 0,
@@ -88,6 +88,18 @@ export const ronTomLucy: Clip = {
       trap: 'religion や food も聞こえるが、ほめているのは construct（建てる）の部分。',
       use: 'Say what you will, it’s a great car.（何と言われようと、いい車だよ）' },
 
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'preface', seg: [63.8, 75],
+      stem: 'Why does Ron start with “I normally don’t get involved”?',
+      ja: 'ロンはなぜ「I normally don’t get involved」と前置きする？',
+      choices: ['To share something private', 'To keep his opinion to himself', 'To tell Lucy to stay away'], a: 0,
+      choicesJa: ['個人的なことを話すため', '意見を言わないため', 'ルーシーに離れていろと言うため'],
+      cue: '「but」のあと',
+      line: 'I normally don’t get involved in people’s personal affairs, *but*… *I’ll just say it*.',
+      said: '「ふだんは人の私生活に口は出さないが、言ってしまおう」と言う。',
+      mean: 'I normally don’t 〜, but ＝「ふだんは〜しないけど」。言いにくいことを言う前置き。',
+      trap: '「口を出さない」で終わると思いやすい。but のあとの I’ll just say it が本題。',
+      use: 'I don’t usually say this, but…（ふだんは言わないんだけど…）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'leak', reveals: ['walkback'], seg: [64.0, 94.2],
       stem: 'Why is Tom upset with Ron?',
       ja: 'トムはなぜロンに怒っている？',
@@ -99,18 +111,6 @@ export const ronTomLucy: Clip = {
       mean: 'You told 人 〜? ＝「〜って人に言ったの？」。二人だけの話が伝わってしまった。',
       trap: 'lying（うそ）が聞こえるので、うその話と思いやすい。言ったのは本当のこと。',
       use: 'That was just between us!（それ、ここだけの話だったのに！）' },
-
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'preface', seg: [64.6, 74.6],
-      stem: 'Why does Ron start with “I normally don’t get involved”?',
-      ja: 'ロンはなぜ「I normally don’t get involved」と前置きする？',
-      choices: ['To share something private', 'To keep his opinion to himself', 'To tell Lucy to stay away'], a: 0,
-      choicesJa: ['個人的なことを話すため', '意見を言わないため', 'ルーシーに離れていろと言うため'],
-      cue: '「but」のあと',
-      line: 'I normally don’t get involved in people’s personal affairs, *but*… *I’ll just say it*.',
-      said: '「ふだんは人の私生活に口は出さないが、言ってしまおう」と言う。',
-      mean: 'I normally don’t 〜, but ＝「ふだんは〜しないけど」。言いにくいことを言う前置き。',
-      trap: '「口を出さない」で終わると思いやすい。but のあとの I’ll just say it が本題。',
-      use: 'I don’t usually say this, but…（ふだんは言わないんだけど…）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'taken', seg: [71.5, 79.6], retired: true,
       stem: 'What does “quite taken with you” mean?',
@@ -124,7 +124,7 @@ export const ronTomLucy: Clip = {
       trap: 'taken だけなら「相手がいる」、taken aback なら「驚く」。with のあとが好きな相手。',
       use: 'She was really taken with the city.（彼女はその街がすっかり気に入った）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'walkback', reveals: ['liar', 'leak'], seg: [82.7, 91.0],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'walkback', reveals: ['liar', 'leak'], seg: [82.7, 94.5],
       stem: 'What does Tom ask Ron to do after finding out?',
       ja: '知ったあと、トムはロンに何をしろと言う？',
       choices: ['Take back his words to Lucy', 'Walk Lucy back to the party', 'Back up his words to Lucy'], a: 0,
@@ -136,7 +136,7 @@ export const ronTomLucy: Clip = {
       trap: '「歩いて戻る」と思いやすいが、walk back のあとに what you said（言葉）が来ている。',
       use: 'I need to walk that back a little.（さっきの話、少し訂正させて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'helpout', seg: [91.0, 94.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'helpout', seg: [89.2, 94.2],
       stem: 'Type the end: “…for a second and ___?” (3 words)', answer: 'help me out',
       ja: 'トムの頼み「…for a second and ___?」の最後を書こう（3語）',
       cue: '「for a second and」のあと',
@@ -146,7 +146,7 @@ export const ronTomLucy: Clip = {
       trap: '「ヘルプミアウ」とつながり、out の t はほぼ消える。最後の out を落とさない。',
       use: 'Could you help me out with this bag?（このかばん、ちょっと手伝ってくれる？）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'future', reveals: ['marry'], seg: [93.9, 105.0],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'future', reveals: ['marry'], seg: [94.3, 105.3],
       stem: 'When does Tom see this life with Lucy happening?',
       ja: 'トムは、ルーシーとのこの暮らしをいつのことだと言う？',
       choices: ['Far in the future', 'Starting tomorrow', 'In about a year'], a: 0,
@@ -194,7 +194,7 @@ export const ronTomLucy: Clip = {
       trap: 'island（島）から、ロンが島を買う話と思いやすい。島はトムの夢の話。',
       use: 'Wait, now we’re going to Paris?（待って、今度はパリに行くの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'talk', reveals: ['nottalked'], seg: [152.3, 161.7],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'talk', reveals: ['nottalked'], seg: [152.3, 162.2],
       stem: 'What does Ron suspect about Tom and Lucy?',
       ja: 'ロンは、トムとルーシーについて何を疑っている？',
       choices: ['They haven’t talked yet', 'They talked but disagree', 'They talked and feel bad'], a: 0,
@@ -217,7 +217,7 @@ export const ronTomLucy: Clip = {
       trap: '文法どおり we haven’t に直したくなるが、言っていない。書き取りは聞こえた音を書く。',
       use: 'I don’t know what you’re talking about.（何の話だか分からないな）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'team', seg: [166.05, 176.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'team', seg: [170.8, 176.9],
       stem: 'What does Ron think of Tom and Lucy together?',
       ja: 'ロンは、トムとルーシーの二人をどう思っている？',
       choices: ['They make a good team', 'They are moving too fast', 'They should take a break'], a: 0,
@@ -241,7 +241,7 @@ export const ronTomLucy: Clip = {
       trap: 'don’t だけ拾うと「祝わない」になる。前の damned if が全体を逆にする。',
       use: 'I’ll be damned if I miss this game.（この試合は絶対に見逃さない）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'weird', seg: [189.4, 194.8],
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'weird', seg: [188.4, 198.2],
       stem: 'What does Tom say is Ron’s weird habit?',
       ja: 'トムが言う、ロンの変な癖は？',
       choices: ['Saying just what he means', 'Saying things to be funny', 'Saying less than he means'], a: 0,
@@ -265,7 +265,7 @@ export const ronTomLucy: Clip = {
       trap: '「無視して」を「本気じゃない」と取りやすい。照れ隠しかは、問い返された時の答えで分かる。',
       use: 'Don’t listen to him. …Okay, it’s true.（あいつの話は気にしないで…まあ、本当だけど）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['allin', 'dresses', 'fine'], seg: [189.4, 221],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['allin', 'dresses', 'fine'], seg: [189.4, 226.6],
       stem: 'How do things end for Tom and Lucy?',
       ja: 'トムとルーシーは最後にどうなる？',
       choices: ['Still together and happy', 'She asks him to slow down', 'They break up for now'], a: 0,
@@ -277,7 +277,7 @@ export const ronTomLucy: Clip = {
       trap: '「同じ気持ちは期待しない」と言うので、別れ話と思いやすい。最後は冗談で和やか。',
       use: 'So we’re good?（じゃあ、私たち大丈夫だね？）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'allin', seg: [194.9, 201.45],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'allin', seg: [194.9, 201.5],
       stem: 'What does Tom tell Lucy with his first words after “Look”?',
       ja: '「Look」のすぐあと、トムはルーシーに何を伝える？',
       choices: ['He is fully serious about her', 'He is tired from tonight', 'He is fine with going slowly'],
@@ -290,7 +290,7 @@ export const ronTomLucy: Clip = {
       trap: '「疲れ切った」の意味もあり、あとの「期待しない」に引かれやすい。ここは本気の意味。',
       use: 'I’m all in on this plan.（この計画に全力で乗るよ）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'gun', seg: [200.4, 205.0],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'gun', seg: [200, 208.9],
       stem: 'What does “jumping the gun” mean?',
       ja: '「jumping the gun」はどういう意味？',
       choices: ['Moving too fast', 'Telling a lie', 'Getting angry'], a: 0,
@@ -302,7 +302,7 @@ export const ronTomLucy: Clip = {
       trap: 'gun（銃）から、怒って乱暴になる話と思いやすい。フライングのイメージ。',
       use: 'Let’s not jump the gun.（先走るのはやめよう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'relationship', seg: [201.45, 211.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'relationship', seg: [201.3, 211.9],
       stem: 'Why doesn’t Tom expect Lucy to feel the same way yet?',
       ja: 'トムはなぜ、ルーシーに同じ気持ちをまだ期待しない？',
       choices: ['She just ended a relationship', 'She just got back from traveling',
@@ -327,7 +327,7 @@ export const ronTomLucy: Clip = {
       trap: '言葉どおりなら冷たいが、冗談の「問題なし」。返事は言葉の形でなく、相手の気持ちに合わせる。',
       use: 'I’m only here for the snacks.（お菓子目当てで来てるだけだよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'fine', seg: [214.0, 220.1],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'fine', seg: [214, 225.9],
       stem: 'What does Tom mean by “I’m fine with that”?',
       ja: 'トムの「I’m fine with that」はどういう意味？',
       choices: ['That’s okay with me', 'I feel well today', 'I don’t agree with it'], a: 0,

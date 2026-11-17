@@ -15,7 +15,7 @@ export const dwightquits: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'attention', reveals: ['moment'], seg: [4.8, 10.8],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'attention', reveals: ['moment'], seg: [4.1, 11.8],
       stem: 'Why does Dwight say “Your *attention*, please”?',
       ja: 'ドワイトは、なぜ「Your attention, please」と言う？',
       choices: ['To get everyone to listen', 'To say sorry to everyone', 'To ask everyone for help'], a: 0,
@@ -27,7 +27,7 @@ export const dwightquits: Clip = {
       trap: 'お詫びや頼みごとに聞こえやすいが、求めているのは注目だけ。前置きのあとに本題。',
       use: 'Could I have everyone’s attention, please?（皆さん、ご注目ください）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'speech', seg: [4.8, 46.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'speech', seg: [4.8, 47.5],
       stem: 'What is Dwight’s big news?',
       ja: 'ドワイトの大事な知らせは何？',
       choices: ['He is quitting his job', 'He is getting married', 'He is the new boss'], a: 0,
@@ -39,7 +39,7 @@ export const dwightquits: Clip = {
       trap: 'family（家族）が出てくるので、結婚の話と思いやすい。最後の一文が答え。',
       use: 'Long story short, I’m moving.（要するに、引っ越すんだ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'moment', seg: [7.8, 10.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'moment', seg: [6.8, 11.8],
       stem: 'Type the end of his line: “This will only take ___.” (5 words)', answer: 'a moment of your time',
       ja: '最後の部分を書こう：「This will only take ___.」（5語）',
       cue: 'only take のあと。',
@@ -60,7 +60,7 @@ export const dwightquits: Clip = {
       trap: '理由を言葉どおりに受け取りやすい。Although で始まる愛着と、のちの本音を合わせて聞く。',
       use: 'I’m leaving to pursue other interests.（ほかの道に進むため退職します）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'family', seg: [15.7, 20.25],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'family', seg: [12.6, 22.4],
       stem: 'What reason does Dwight give for leaving?',
       ja: 'ドワイトは辞める理由として何を言う？',
       choices: ['More time with his family', 'Problems with his boss', 'Getting away from his doubters'], a: 0,
@@ -72,7 +72,7 @@ export const dwightquits: Clip = {
       trap: '辞める話なので、職場のもめごとと思いやすい。理由は and のあとの family。',
       use: 'I want to spend more time with my kids.（子どもともっと過ごしたい）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'fear', seg: [20.0, 28.95],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'fear', seg: [18.8, 29],
       stem: 'How does Dwight sound about what comes next?',
       ja: 'これからのことを話すドワイトは、どんな様子？',
       choices: ['Very bold and sure', 'Nervous but trying to be calm', 'Humble and thankful'], a: 0,
@@ -84,7 +84,7 @@ export const dwightquits: Clip = {
       trap: '話し方が硬いので緊張に聞こえやすい。中身は強気の宣言ばかり。',
       use: 'I’m not afraid of a challenge.（挑戦は怖くない）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'headon', seg: [21.4, 24.45],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'headon', seg: [20.1, 29],
       stem: 'Dwight will meet his challenges “*head-on*.” Meaning?',
       ja: '挑戦に「head-on」で立ち向かう。どういう意味？',
       choices: ['Facing them straight on', 'Thinking them through first', 'Leading the way for others'], a: 0,
@@ -96,7 +96,7 @@ export const dwightquits: Clip = {
       trap: 'head を「頭・トップ」と思うと「先頭に立つ」に聞こえる。head-on は向き合い方。',
       use: 'Let’s deal with it head-on.（正面から向き合おう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'doubt', seg: [25.3, 28.95],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'doubt', seg: [22, 29],
       stem: 'What will Dwight do to those who doubt him?',
       ja: 'ドワイトは自分を疑う人たちに何をする？',
       choices: ['Laugh in their faces', 'Ignore them completely', 'Forget them quickly'], a: 0,
@@ -108,7 +108,7 @@ export const dwightquits: Clip = {
       trap: '「無視する」「忘れる」と思いやすい。動詞は laugh で、目の前で笑う。',
       use: 'They laughed in my face.（面と向かって笑われた）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'some', seg: [28.55, 31.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'some', seg: [27.5, 35.6],
       stem: 'Fill the gap: “It’s been a pleasure working with ___.”',
       ja: '空いている所に入る語は？「It’s been a pleasure working with ___.」',
       choices: ['some of you', 'all of you', 'most of you'], a: 0,
@@ -120,7 +120,7 @@ export const dwightquits: Clip = {
       trap: '「サマヴュ」なら some、「オーラヴュ」なら all、「モウスタヴュ」なら most。',
       use: 'Some of you have met Sarah.（何人かはサラに会ってますね）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'some', seg: [28.55, 33.8],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'some', seg: [27.5, 35.6],
       stem: 'Why is Dwight’s goodbye “thank you” funny?',
       ja: 'ドワイトの別れのお礼はなぜおかしい？',
       choices: ['He thanks only some coworkers', 'He thanks his doubters', 'He mixes up their names'], a: 0,
@@ -132,7 +132,7 @@ export const dwightquits: Clip = {
       trap: '決まり文句を知っていると all と聞いてしまいやすい。小さな一語で意味が変わる。',
       use: 'Thanks, everyone. It’s been a pleasure.（皆さん、ありがとう。楽しかったです）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'words', seg: [33.8, 46.3],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'words', seg: [42.5, 47.5],
       stem: 'Why does Dwight say “*In other words*”?',
       ja: 'ドワイトはなぜ「In other words」と言う？',
       choices: ['To say the news more simply', 'To add one more reason', 'To take back what he said'], a: 0,
@@ -144,7 +144,7 @@ export const dwightquits: Clip = {
       trap: 'other を「別の」と思うと、新しい話に聞こえる。前の話を言い直す合図。',
       use: 'In other words, we’re out of time.（つまり、時間切れです）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [51.9, 56.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [50.9, 58.5],
       stem: 'How does the first coworker feel about Dwight leaving?',
       ja: '最初の同僚は、ドワイトが辞めることをどう思っている？',
       choices: ['Happy to see him go', 'Sorry to see him go', 'Happy for his new start'], a: 0,
@@ -156,7 +156,7 @@ export const dwightquits: Clip = {
       trap: 'gone（いない）だけ聞くと寂しい知らせに思えやすい。which のあとに評価が来る。',
       use: 'No more meetings, which is great.（会議がなくなって最高）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'react', seg: [51.9, 91.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'react', seg: [50.9, 91.3],
       stem: 'Are most people sad to see Dwight go?',
       ja: 'ドワイトが辞めて、ほとんどの人は悲しんでいる？',
       choices: ['No, most are not sad', 'Yes, most are very sad', 'No, most are angry'], a: 0,
@@ -168,7 +168,7 @@ export const dwightquits: Clip = {
       trap: 'missed（惜しまれる）が聞こえるので、悲しいと思いやすい。そのあとの Not by me を聞く。',
       use: 'Nobody seemed too upset about it.（だれもそんなに気にしてなかった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'belong', seg: [67.3, 74.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'belong', seg: [66.3, 74.5],
       stem: 'Who will get the rest of Dwight’s things?',
       ja: 'ドワイトの残りの持ち物はだれがもらう？',
       choices: ['Michael Scott', 'His family', 'The company'], a: 0,
@@ -180,7 +180,7 @@ export const dwightquits: Clip = {
       trap: '演説で family と言ったので家族に聞こえやすい。to のあとの名前を聞く。',
       use: 'Please keep your belongings with you.（お荷物はお手元に）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'missed', seg: [83.3, 91.2],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'missed', seg: [82.3, 92],
       stem: '“*Not by me so much*, but he will be missed.” Meaning?',
       ja: '「Not by me so much, but he will be missed」とはどういう意味？',
       choices: ['Others will miss him more', 'The speaker will miss him most', 'Nobody will miss him'], a: 0,
@@ -203,7 +203,7 @@ export const dwightquits: Clip = {
       trap: 'much を強めると「少しは惜しむ」の話になる。but の後で他の人と比べているので、対比の me。',
       use: 'You might like it. I don’t.（君は好きかもね。私は違う）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'honor', seg: [95.3, 100.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'honor', seg: [94.4, 100.8],
       stem: 'How is Dwight described in the kind comment?',
       ja: 'ほめるコメントでは、ドワイトはどう言われる？',
       choices: ['Honorable and efficient', 'Honest and hard-working', 'Loyal and friendly'], a: 0,
@@ -215,7 +215,7 @@ export const dwightquits: Clip = {
       trap: 'honorable と honest は出だしが同じで混ざりやすい。h は読まず「オナラブル」。',
       use: 'She’s one of the most efficient people I know.（彼女は一番手際のいい人の一人）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'chair', seg: [100.4, 109.4],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'chair', seg: [99.4, 110.2],
       stem: 'His goal: “to die right here, in my desk chair.” Meaning?',
       ja: '「人生の目標はこの机の椅子で死ぬことだった」とはどういう意味？',
       choices: ['He meant to stay here forever', 'He meant to retire with honor', 'He meant to move up someday'], a: 0,

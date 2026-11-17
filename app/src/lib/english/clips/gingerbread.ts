@@ -15,7 +15,7 @@ export const gingerbread: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'gift', seg: [0, 31.0], keep: true,
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'gift', seg: [0, 34.1], keep: true,
       stem: 'What is the group trying to come up with?',
       ja: 'みんなは何を考えようとしている？',
       choices: ['A gift idea for Leslie', 'A party idea for Leslie', 'A slogan idea for Leslie'], a: 0,
@@ -38,7 +38,7 @@ export const gingerbread: Clip = {
       trap: 'darling は恋人と取りやすいが、友人をからかう時にも使う。言葉の中身で判断する。',
       use: 'Correction: we had cake. It’s gone.（訂正、ケーキは「あった」。もうない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'had', seg: [3.0, 8.0], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'had', seg: [0.4, 10.6], keep: true,
       stem: 'Fill the gap: “Correction, darling, you ___ some right here.”',
       ja: '空いている所に入る語は？',
       choices: ['had', 'have', 'hid'], a: 0,
@@ -50,7 +50,7 @@ export const gingerbread: Clip = {
       trap: 'have なら最後が「ヴ」。hid なら「ヒッド」と「イ」の音。「ハッド」と d で止まれば had。',
       use: 'I had my keys a minute ago.（さっきまで鍵、持ってたのに）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'off', seg: [9.5, 13.0], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'off', seg: [7.5, 14.7], keep: true,
       stem: 'Type what the fluff eater says: “I can’t ___.” (3 words)', answer: 'get it off',
       ja: '「I can’t」のあとの3語を書こう。',
       cue: '「Yes」のあと。',
@@ -60,7 +60,7 @@ export const gingerbread: Clip = {
       trap: '3語が1語に聞こえやすい。get it 〜 は「ゲリ」になる、と覚えておく。',
       use: 'Can you help me get it off?（取るの、手伝ってくれる？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'century', seg: [13.0, 20.0],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'century', seg: [13, 20.5],
       stem: 'What century is it, Tom is told?',
       ja: 'トムは「今は何世紀」と言われる？',
       choices: ['The 21st', 'The 20th', 'The 19th'], a: 0,
@@ -72,7 +72,7 @@ export const gingerbread: Clip = {
       trap: '20th（トゥエンティエス）はトムが言った語。19th は「ナインティーンス」。「トゥエンティ・ファースト」なら21世紀。',
       use: 'It’s the twenty-first of May.（5月21日です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'wood', seg: [39.0, 44.5], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'wood', seg: [38.3, 48.1], keep: true,
       stem: 'What does Ron first offer to build?',
       ja: 'ロンが最初に作ると言うのは何？',
       choices: ['A small wood model', 'A gingerbread house', 'A wooden sign'], a: 0,
@@ -84,7 +84,7 @@ export const gingerbread: Clip = {
       trap: 'タイトルのお菓子の家を選びやすい。ロンの最初の案は wood（木）。',
       use: 'I’ll build a small shelf for you.（小さな棚を作ってあげるよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'better', reveals: ['wood'], seg: [44.5, 57.3], keep: true,
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'better', reveals: ['wood'], seg: [50.6, 59.1], keep: true,
       stem: 'Why say “Wait. Better idea?” here?',
       ja: 'ここで「Wait. Better idea?」と言うのはなぜ？',
       choices: ['To give a new plan instead', 'To help with Ron’s plan', 'To ask the others for ideas'], a: 0,
@@ -107,7 +107,7 @@ export const gingerbread: Clip = {
       trap: 'ロンなら文句を言うと思いやすいが、出るのは木材のほめ言葉だけ。語の中身を聞く。',
       use: 'I already have some wood at home.（家に木材ならあるよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'arms', seg: [88.2, 98.3], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'arms', seg: [92.8, 100.1], keep: true,
       stem: 'Why are marshmallow Ron’s arms crossed?',
       ja: 'マシュマロのロンはなぜ腕を組んでいる？',
       choices: ['He’s mad at the others', 'He’s mad at himself', 'He’s tired of waiting'], a: 0,
@@ -130,7 +130,7 @@ export const gingerbread: Clip = {
       trap: 'put out を「捨てる」「消す」と取りやすい。飾りを並べる場面なら「出す」。',
       use: 'Can you put the snacks out?（お菓子、出しておいてくれる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fudge', seg: [123.3, 132.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fudge', seg: [127.2, 132.2], keep: true,
       stem: 'How much does the gourmet fudge cost?',
       ja: '高級ファッジはいくら？',
       choices: ['$5 an ounce', '$15 an ounce', '$50 an ounce', '$55 an ounce'], a: 3,
@@ -153,7 +153,7 @@ export const gingerbread: Clip = {
       trap: '直前の高いファッジの話と混ざりやすい。毒の話の直後のやり取りを聞く。',
       use: 'Don’t eat that. It’s for decoration.（それ食べないで。飾りだから）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'canoe', seg: [154.2, 161.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'canoe', seg: [153.2, 163.4], keep: true,
       stem: 'How long are the canoes Ron says he can make?',
       ja: 'ロンが作れると言うカヌーの長さは？',
       choices: ['7 feet', '17 feet', '27 feet', '70 feet'], a: 1,
@@ -187,7 +187,7 @@ export const gingerbread: Clip = {
       trap: '指示の形なので仕切っていると取りやすい。自分が何をするかを聞く。',
       use: 'I’ll make myself useful in the kitchen.（キッチンで何か手伝うよ）', retired: true },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'eightyear', seg: [196.0, 205.3],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'eightyear', seg: [196, 205.7],
       stem: 'Does failing at gingerbread bother Ron?',
       ja: 'お菓子の家に失敗して、ロンは気にしている？',
       choices: ['No, it’s a kid’s skill', 'No, the others did it', 'Yes, he feels like a kid'], a: 0,
@@ -199,7 +199,7 @@ export const gingerbread: Clip = {
       trap: 'bother（気にさせる）が聞こえるので、気にしていると思いやすい。if I were は本当とは逆の話。',
       use: 'It would bother me if I were you.（私があなたなら気にするけど）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'stepup', seg: [205.0, 214.0], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'stepup', seg: [204.3, 211.9], keep: true,
       stem: 'What does “stepped up” mean here?',
       ja: 'ここでの「stepped up」の意味は？',
       choices: ['Offered to do the work', 'Took his side in it', 'Got much better at it'], a: 0,
@@ -234,7 +234,7 @@ export const gingerbread: Clip = {
       trap: 'damn を不満と聞きやすい。何を引き受けると言っているか、語の範囲で判断する。',
       use: 'Whatever you need, just say the word.（必要なことがあれば何でも言って）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'muchwork', seg: [262.0, 268.55], keep: true,
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'muchwork', seg: [262, 268.7], keep: true,
       stem: 'How does Leslie feel about their offer?',
       ja: 'レスリーはみんなの申し出をどう感じている？',
       choices: ['Thankful, but it’s too much', 'Unsure they can really do it', 'Upset nobody asked her'], a: 0,
@@ -257,7 +257,7 @@ export const gingerbread: Clip = {
       trap: '直前の申し出から主語を逆に聞きやすい。help した人と、後回しにした life の持ち主を追う。',
       use: 'Name one time I let you down.（私が裏切ったこと、一度でもある？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hold', reveals: ['muchwork'], seg: [264.0, 268.6], keep: true,
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hold', reveals: ['muchwork'], seg: [263.7, 268.7], keep: true,
       stem: 'What does “put your lives on hold” mean?',
       ja: '「put your lives on hold」の意味は？',
       choices: ['Stop their lives for her', 'Wait by the phone', 'Risk their lives for her'], a: 0,

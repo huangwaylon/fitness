@@ -15,7 +15,7 @@ export const dwightFavors: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pumpernickel', seg: [4.7, 11.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pumpernickel', seg: [4.7, 12.1],
       stem: 'Why does Dwight say “No, no, no” to Stanley?',
       ja: 'ドワイトがスタンリーに「No, no, no」と言うのはなぜ？',
       choices: ['He has a special one for him', 'He wants him to wait', 'The first one is for Michael'], a: 0,
@@ -27,7 +27,7 @@ export const dwightFavors: Clip = {
       trap: 'No が続くので「だめ」と止めたと思いやすい。あとの just for you が理由。',
       use: 'I got this just for you.（これ、あなたのために買ったの）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'oweone', seg: [19.5, 26.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'oweone', seg: [19.5, 26.9],
       stem: 'What does “You owe me one” mean?',
       ja: '「You owe me one」はどういう意味？',
       choices: ['You must do me a favor later', 'You must give me one bagel', 'You don’t need to thank me'], a: 0,
@@ -39,7 +39,7 @@ export const dwightFavors: Clip = {
       trap: 'don’t mention it（お礼はいい）だけ聞くと、ただの親切と思いやすい。one は頼みごと一つ。',
       use: 'Thanks, I owe you one!（ありがとう、借りができたね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mindif', seg: [45.75, 49.55],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mindif', seg: [45.7, 51.5],
       stem: 'What does Michael mean by “I don’t mind if I do”?',
       ja: 'マイケルの「I don’t mind if I do」はどういう意味？',
       choices: ['Yes, I’ll have one', 'No, I’m still full', 'Maybe later, thanks'], a: 0,
@@ -51,7 +51,7 @@ export const dwightFavors: Clip = {
       trap: 'don’t から断りと思いやすい。mind ＝ いやがる、なので「いやじゃない」＝もらう。',
       use: 'More cake? Don’t mind if I do.（ケーキもっと？じゃあ遠慮なく）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'motive', seg: [57.4, 67.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'motive', seg: [57.4, 67.8],
       stem: 'What does Dwight want to use the favors for?',
       ja: 'ドワイトは貸しを何に使いたい？',
       choices: ['To get someone fired', 'To get help with work', 'To make new friends'], a: 0,
@@ -74,7 +74,7 @@ export const dwightFavors: Clip = {
       trap: '嘆きの対象がみんななので、皮肉の的もみんなに見える。誰の行動が一番ひねくれているかを比べる。',
       use: 'Ugh, when did everyone get so serious?（もう、みんな、いつからそんなに真面目に？）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'theyllowe', seg: [59, 64.5],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'theyllowe', seg: [59.3, 67.3],
       stem: 'Type the fast part: “…for his friends so ___ a favor.” (3 words)', answer: "they'll owe him",
       ja: '「…for his friends so ___ a favor.」の空所を書こう（3語）',
       cue: '「friends so」のあと',
@@ -84,7 +84,7 @@ export const dwightFavors: Clip = {
       trap: 'him が消えたように聞こえやすい。owe のあとに小さな「イム」があれば him。',
       use: 'I’ll call them so they’ll know.（分かるように電話しておく）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'elbow', seg: [84.6, 95.4],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'elbow', seg: [86.2, 98.2],
       stem: 'What does “a little elbow grease” mean here?',
       ja: 'ここでの「a little elbow grease」はどういう意味？',
       choices: ['Some hard rubbing by hand', 'Some oil for his shoes', 'A quick wipe with a cloth'], a: 0,
@@ -96,7 +96,7 @@ export const dwightFavors: Clip = {
       trap: 'grease（油）から、本物の油と思いやすい。体を使う「がんばり」のこと。',
       use: 'It just needs some elbow grease.（ちょっと手間をかければきれいになる）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'rule', seg: [99.6, 112.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'rule', seg: [98.6, 109],
       stem: 'What is Dwight’s rule about favors?',
       ja: 'ドワイトの、親切についての決まりは？',
       choices: ['Pay back every kindness fast', 'Never take gifts from anyone', 'Keep a list of all favors'], a: 0,
@@ -108,7 +108,7 @@ export const dwightFavors: Clip = {
       trap: '最後の Do not test my politeness が強いので、受け取らないと思いやすい。bam のあとは自分がすること。',
       use: 'You cooked, so I’ll do the dishes.（作ってくれたから、皿洗いは私が）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'knees', seg: [118.3, 126.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'knees', seg: [118.3, 126.8],
       stem: 'What does the fitness tip help with?',
       ja: '健康のコツは何に効く？',
       choices: ['Your knees', 'Your lower back', 'The way you stand'], a: 0,
@@ -131,7 +131,7 @@ export const dwightFavors: Clip = {
       trap: '知らない語は勘で「大きい」「ボタン」と埋めやすい。直後の言い直しや反対語から意味を決める。',
       use: 'Your collar’s a little crooked.（えりがちょっと曲がってるよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'upgame', seg: [157.5, 163.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'upgame', seg: [155.6, 164.6],
       stem: 'How does Dwight feel about Andy’s favors?',
       ja: 'ドワイトはアンディの親切をどう思う？',
       choices: ['Ready to try harder', 'Worried Andy will win', 'Glad to get help'], a: 0,
@@ -155,7 +155,7 @@ export const dwightFavors: Clip = {
       trap: 'favor（頼みごと）が何度も聞こえるので、頼み合っていると思いやすい。二人とも「私がやる」側。',
       use: 'Come on, this isn’t a contest.（ちょっと、張り合うことじゃないでしょ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'lunch', seg: [166.6, 171.0],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'lunch', seg: [165.6, 170.6],
       stem: 'Who bought lunch for everyone?',
       ja: 'みんなに昼ごはんを買ったのは誰？',
       choices: ['Andy', 'Dwight', 'Michael'], a: 0,
@@ -178,7 +178,7 @@ export const dwightFavors: Clip = {
       trap: 'book を本物の本と取りやすい。直後の「朝食をおごったから」が答え合わせ。',
       use: 'I took a page out of your book.（あなたのやり方をまねたよ）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'allowme', seg: [180.0, 188.8],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'allowme', seg: [177.3, 189.3],
       stem: 'What does Dwight mean by “Allow me”?',
       ja: 'ドワイトの「Allow me」はどういう意味？',
       choices: ['Let me do it for you', 'Please give me some time', 'Excuse me, please move'], a: 0,
@@ -201,7 +201,7 @@ export const dwightFavors: Clip = {
       trap: '「大変」は助けを求める型に聞こえる。直前の Allow me が、自分がやる流れを示す。',
       use: 'That looks heavy. Here, allow me.（重そう。貸して、持つよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', seg: [191.2, 194.8],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', seg: [191.2, 197.1],
       stem: 'Fill the gap: “Whoa, whoa, Dwight, ___ this.”',
       ja: '「Whoa, whoa, Dwight, ___ this.」の空所は？',
       choices: ['I’m gonna do', 'I wanna do', 'I can do'], a: 0,
@@ -213,7 +213,7 @@ export const dwightFavors: Clip = {
       trap: 'wanna は「ワナ」、can は「キャン」。「ガナ」と聞こえれば gonna。',
       use: 'I’m gonna grab some coffee.（ちょっとコーヒー買ってくる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'covered', seg: [193.6, 197.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'covered', seg: [192.5, 200.3],
       stem: 'Type what Dwight says after “relax”: “I ___.” (3 words)', answer: 'got it covered',
       ja: '「relax」のあと「I ___.」の空所を書こう（3語）',
       cue: '「relax」のあと',
@@ -235,7 +235,7 @@ export const dwightFavors: Clip = {
       trap: 'No で始まるので、断っていると思いやすい。「自分がやる」と強く言っている。',
       use: 'No, I insist. Let me pay.（いえ、ぜひ。私が払います）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justowe', reveals: ['oweone'], seg: [201.2, 206.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justowe', reveals: ['oweone'], seg: [201.2, 207],
       stem: 'What does Dwight mean by “you can just owe me”?',
       ja: 'ドワイトの「you can just owe me」はどういう意味？',
       choices: ['Pay me back another time', 'Pay me for the tacos now', 'It’s free, so forget it'], a: 0,
@@ -270,7 +270,7 @@ export const dwightFavors: Clip = {
       trap: 'dies が強く響き、死を望む話に聞こえやすい。笑いの中心は最後の名詞。',
       use: 'That’s a recipe for disaster.（それは失敗のもとだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'value', seg: [227.3, 235.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'value', seg: [226.7, 236], keep: true,
       stem: 'How much is the gift card worth?',
       ja: 'ギフトカードはいくら分？',
       choices: ['$5', '$15', '$50'], a: 1,
@@ -282,7 +282,7 @@ export const dwightFavors: Clip = {
       trap: '5ドルなら「ファイブ」だけ。fifteen は「フィフティーン」と後ろが長く、fifty は短い。',
       use: 'Sorry, was that fifteen or fifty?（すみません、15？それとも50？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'waste', reveals: ['outcome'], seg: [236.2, 245.7],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'waste', reveals: ['outcome'], seg: [235.3, 245.7],
       stem: 'How does Dwight feel at the end?',
       ja: '最後、ドワイトはどんな気持ち？',
       choices: ['Upset, the day was wasted', 'Upset, Andy beat him today', 'Calm, everyone is even'], a: 0,

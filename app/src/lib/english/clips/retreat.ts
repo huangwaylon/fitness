@@ -14,7 +14,7 @@ export const retreat: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'goodtime', seg: [0.6, 3.9],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'goodtime', seg: [0, 5.5],
       stem: 'How does Toby feel about the weekend?',
       ja: 'トビーは週末をどう思っている？',
       choices: ['Happy, better than expected', 'Unhappy, worse than he hoped', 'Okay, just as expected'], a: 0,
@@ -26,7 +26,7 @@ export const retreat: Clip = {
       trap: '前半の didn’t think だけ聞くと、楽しくなかったと思いやすい。but のあとが答え。',
       use: 'I didn’t expect to like it, but I did.（好きになると思わなかったけど、なった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goodtime', seg: [0.6, 3.0], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goodtime', seg: [0, 5], keep: true,
       stem: 'Type what Toby says: “I really ___ have a good time.” (6 words)',
       answer: "didn't think i was going to",
       ja: '「I really ___ have a good time.」の空所を書こう（6語）',
@@ -37,7 +37,7 @@ export const retreat: Clip = {
       trap: 'didn’t の「ン」を聞き落とすと逆の意味になる。was も小さく、落としやすい。',
       use: 'I didn’t think I was going to make it.（間に合わないと思ってた）' },
 
-    { id: 't2', skill: 'detail', level: 'B1', point: 'retreatword', seg: [3.4, 10.2],
+    { id: 't2', skill: 'detail', level: 'B1', point: 'retreatword', seg: [3.4, 12.1],
       stem: 'What does Toby call the trip instead of camping?',
       ja: 'トビーは旅行をキャンプのかわりに何と呼ぶ？',
       choices: ['A wilderness retreat', 'A trip for the company', 'A summer holiday'], a: 0,
@@ -49,7 +49,7 @@ export const retreat: Clip = {
       trap: 'retreat から会社の研修旅行と思いやすい。前に wilderness（大自然）が付いている。',
       use: 'It’s more of a café than a restaurant.（レストランというよりカフェかな）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guests', seg: [11.3, 19.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guests', seg: [10.3, 19.2],
       stem: 'Who did Ryan invite into the woods?',
       ja: 'ライアンは誰を森に招いた？',
       choices: ['Some managers, and Toby', 'All managers, but not Toby', 'Just Toby and Michael'], a: 0,
@@ -61,7 +61,7 @@ export const retreat: Clip = {
       trap: 'some of the は速いので、聞き落とすと「全員」と思いやすい。and Toby も聞く。',
       use: 'She invited some of her coworkers.（同僚の何人かを招いた）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'gtky', seg: [11.3, 16.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'gtky', seg: [11.3, 17.6],
       stem: 'What is a “get-to-know-you weekend”?',
       ja: '「get-to-know-you weekend」とは何？',
       choices: ['A weekend to know each other', 'A weekend to learn the woods', 'A weekend to plan work'], a: 0,
@@ -107,7 +107,7 @@ export const retreat: Clip = {
       trap: 'already を落とすと「まだ知らない」に、主語を逆にすると Michael 側の話になる。',
       use: 'I think I know all I need to know.（もう十分分かったと思う）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'stars', seg: [24.1, 27.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'stars', seg: [20.7, 29.2],
       stem: 'Where did they sleep on the trip?',
       ja: '旅行ではどこで寝た？',
       choices: ['Outside, under the sky', 'In small wooden cabins', 'In a hotel nearby'], a: 0,
@@ -119,7 +119,7 @@ export const retreat: Clip = {
       trap: '質問の cabins（小屋）が耳に残りやすい。答えは質問とは別の場所。',
       use: 'We slept under the stars.（星空の下で寝た）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'shouldcome', seg: [26.9, 30.0],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'shouldcome', seg: [25.9, 32.8],
       stem: 'What does “You should come” mean here?',
       ja: 'ここでの「You should come」はどういう意味？',
       choices: ['Please join us next time', 'You must come right now', 'You came too late'], a: 0,
@@ -131,7 +131,7 @@ export const retreat: Clip = {
       trap: 'should を「〜しなければならない」と思いやすい。ここは軽い誘い。',
       use: 'You should come to the party!（パーティーにおいでよ！）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'rock', seg: [27.4, 32.6],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'rock', seg: [27.4, 33.5],
       stem: 'Type the reply: “Bob and I took ___ once.” (3 words)', answer: 'rock climbing lessons',
       ja: '返事の「Bob and I took ___ once.」の空所を書こう（3語）',
       cue: '「You should come」のあと',
@@ -164,7 +164,7 @@ export const retreat: Clip = {
       trap: '名前の入れ替わりで混乱に、didn’t go だけだと本人の選択に聞こえる。最後の文まで聞く。',
       use: 'I said no. N-O. No.（ダメって言ったの。ダメ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'didntgo', seg: [35.6, 41.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'didntgo', seg: [35.6, 43.5],
       stem: 'Fill the gap: “Toby went, but Michael ___.”',
       ja: '「Toby went, but Michael ___.」の空所は？',
       choices: ['didn’t go', 'didn’t know', 'didn’t mind'], a: 0,
@@ -199,7 +199,7 @@ export const retreat: Clip = {
       trap: 'obvious を「目立つ」と覚えていると迷いやすい。名前のあとなら「もちろん」。',
       use: 'And me, obviously.（あと私もね、もちろん）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'smores', seg: [49.9, 56.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'smores', seg: [46.5, 56.1],
       stem: 'Why did Toby say “No more s’mores”?',
       ja: 'トビーが「No more s’mores」と言ったのはなぜ？',
       choices: ['They ate too many', 'They ran out of them', 'Nobody liked them'], a: 0,
@@ -211,7 +211,7 @@ export const retreat: Clip = {
       trap: 'no more から、なくなったと思いやすい。前の so many が理由。',
       use: 'No more coffee for me, thanks.（コーヒーはもう結構です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reaction', reveals: ['wrapup', 'room', 'cares'], seg: [58.5, 76.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reaction', reveals: ['wrapup', 'room', 'cares'], seg: [58.5, 76.9],
       stem: 'What does Michael do while Toby talks?',
       ja: 'トビーが話している間、マイケルは何をする？',
       choices: ['Tells Toby to finish', 'Asks to join next time', 'Listens with interest'], a: 0,
@@ -223,7 +223,7 @@ export const retreat: Clip = {
       trap: 'Toby の話がとても楽しそうなので、聞いていると思いやすい。Nobody cares で分かる。',
       use: 'Sorry to cut you off, but we’re out of time.（さえぎってごめん、時間なの）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'cares', seg: [64.0, 70.0],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'cares', seg: [60.3, 72.3],
       stem: 'What does Michael mean by “Nobody cares”?',
       ja: 'マイケルの「Nobody cares」はどういう意味？',
       choices: ['No one wants to hear it', 'No one is worried about it', 'No one is careful'], a: 0,
@@ -235,7 +235,7 @@ export const retreat: Clip = {
       trap: 'care を「心配」や「注意」と思いやすい。ここは「気にかける、興味がある」。',
       use: 'I don’t really care.（別にどっちでもいいよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'room', seg: [66.8, 74.5], keep: true,
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'room', seg: [66.8, 76.9], keep: true,
       stem: 'How soon does Michael need the room?',
       ja: 'マイケルはどのくらいすぐ部屋が必要？',
       choices: ['Right away, this minute', 'In the next few minutes', 'Sometime later, no rush'], a: 2,
@@ -269,7 +269,7 @@ export const retreat: Clip = {
       trap: '部屋の話を言葉どおりに、いら立ちを忙しさと取りやすい。急がない用事で人を止めたら、話題が痛いと疑う。',
       use: 'Sorry, I didn’t mean to rub it in.（ごめん、追い打ちするつもりはなかった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'wrapup', seg: [70.2, 74.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'wrapup', seg: [70.2, 76.9],
       stem: 'What does “wrap it up” mean?',
       ja: '「wrap it up」はどういう意味？',
       choices: ['Finish talking now', 'Pack up your things', 'Save it for later'], a: 0,

@@ -18,7 +18,7 @@ export const medicalMess: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'drugs', seg: [3.0, 9.0],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'drugs', seg: [0, 9.9],
       stem: 'What does “I bet you are” mean?',
       ja: '「I bet you are」はどういう意味？',
       choices: ['I’m sure you are', 'I hope you aren’t', 'I don’t know if you are'], a: 0,
@@ -53,7 +53,7 @@ export const medicalMess: Clip = {
       trap: 'about right を all right と聞くと「大丈夫」になる。直前の話への返事。',
       use: 'Two hours? That sounds about right.（2時間？まあそんなもんだね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'worry', seg: [23.0, 27.2],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'worry', seg: [22.7, 28.9],
       stem: 'What does the doctor tell Andy about his head?',
       ja: '医者はアンディの頭について何と言う？',
       choices: ['Don’t worry about it', 'Come back next week', 'Go and see a specialist'], a: 0,
@@ -65,7 +65,7 @@ export const medicalMess: Clip = {
       trap: 'specialist はあとで別の症状について言う言葉。頭については so のあと。',
       use: 'I wouldn’t worry about it. It happens.（気にしなくていいよ。よくあること）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [26.3, 34.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [23.1, 34.2],
       stem: 'What does Andy do right after “Nope”?',
       ja: '「Nope」のすぐあと、アンディはどうする？',
       choices: ['Changes his no to yes', 'Says no more politely', 'Says no again, more strongly'], a: 0,
@@ -89,7 +89,7 @@ export const medicalMess: Clip = {
       trap: 'リストが長いので、全部みてくれると思いやすい。the other 1,000 things は専門医行き。',
       use: 'I can help you with your bags.（荷物、お手伝いしますよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ankles', seg: [37.3, 42.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ankles', seg: [34.1, 42.7],
       stem: 'What does Andy say his ankles do?',
       ja: 'アンディは、足首がどうなると言う？',
       choices: ['Make a weird sound', 'Shake a little', 'Swell up a little bit'], a: 0,
@@ -101,7 +101,7 @@ export const medicalMess: Clip = {
       trap: 'rattle だけだと「ゆれる」と思いやすい。最後の sound を聞く。',
       use: 'My car makes a weird sound.（車から変な音がする）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [50.0, 54.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [49.6, 55.3], keep: true,
       stem: 'For how long has Andy swallowed his gum?',
       ja: 'アンディは何年間ガムを飲みこんできた？',
       choices: ['20 years', '25 years', '35 years'], a: 1,
@@ -113,7 +113,7 @@ export const medicalMess: Clip = {
       trap: 'twenty-five の five は弱く、twenty だけに聞こえやすい。thirty なら「サー」で始まる。',
       use: 'I’ve lived here for the past ten years.（この10年ここに住んでいます）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'thumb', seg: [54.4, 59.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'thumb', seg: [50.3, 58.9],
       stem: 'When did Andy break his thumb?',
       ja: 'アンディはいつ親指を折った？',
       choices: ['On the way to the doctor', 'When he fell while reading', 'When he hit the wall'], a: 0,
@@ -148,7 +148,7 @@ export const medicalMess: Clip = {
       trap: '言い返しや謝罪を期待すると外れる。決まり文句をそのまま返す、ずれが笑い。',
       use: 'Thanks a lot. — Anytime!（どうもね。—いつでもどうぞ！）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'drove', seg: [68.8, 83.4],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'drove', seg: [75.4, 87.4],
       stem: 'What does “you drove us here” show?',
       ja: '「you drove us here」から何が分かる？',
       choices: ['Andy can’t see but drove', 'Andy will drive them home', 'Andy is faking the test'], a: 0,
@@ -160,7 +160,7 @@ export const medicalMess: Clip = {
       trap: 'drive の話なので帰りのことと思いやすい。drove と here で、来るときの話。',
       use: 'Wait, you walked here? In this rain?（待って、歩いてきたの？この雨で？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [81.4, 112.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [81.4, 114.7],
       stem: 'What is Andy and April’s plan this week?',
       ja: 'アンディとエイプリルの今週の計画は？',
       choices: ['Do all their doctor visits', 'Get Andy new glasses', 'Find April’s food allergy'], a: 0,
@@ -172,7 +172,7 @@ export const medicalMess: Clip = {
       trap: 'メガネやアレルギーの話も出るが、それは計画の一部。予約の文が中心。',
       use: 'I have a doctor’s appointment at three.（3時に病院の予約がある）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'tenyears', reveals: ['wont'], seg: [86.6, 90.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'tenyears', reveals: ['wont'], seg: [83.2, 92.7], keep: true,
       stem: 'After this week, how long can they skip doctors?',
       ja: '今週のあと、どのくらい医者に行かなくていい？',
       choices: ['1 year', '10 years', '100 years'], a: 1,
@@ -184,7 +184,7 @@ export const medicalMess: Clip = {
       trap: '直前の 100 million に引っぱられやすい。like のあと「テン」なら 10、「ワン」なら 1、「ハンドレッド」なら 100。',
       use: 'I waited for, like, an hour.（1時間くらい待ったよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [86.6, 90.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [83.2, 92.7],
       stem: 'Fill the gap: “After this, we ___ go to the doctor…”',
       ja: '空所を埋める：「After this, we ___ go to the doctor…」',
       choices: ['won’t have to', 'want to', 'don’t have to'], a: 0,
@@ -230,7 +230,7 @@ export const medicalMess: Clip = {
       trap: '直前の food に引かれやすい。何へのアレルギーかは、最後の needles で決まる。',
       use: 'Based on the smell, I think dinner’s ready.（においからして、夕飯できたかな）' },
 
-    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [109.5, 121.3],
+    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [111.1, 121.6],
       stem: 'Why does someone say “X-rayed” after Andy?',
       ja: 'アンディのあと、なぜ「X-rayed」と言う？',
       choices: ['To fix Andy’s word', 'To add another test', 'To make fun of the test'], a: 0,
@@ -242,7 +242,7 @@ export const medicalMess: Clip = {
       trap: '短い言葉を、別の検査と思いやすい。直前の語と入れかわっているか聞く。',
       use: 'He ran ten miles. — Ten blocks.（10マイル走ったって。—10ブロックね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'icecream', seg: [129.6, 132.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'icecream', seg: [128.6, 136.4],
       stem: 'Type what she says: “Let’s ___ and get me some ice cream.” (3 words)', answer: 'get you home',
       ja: '彼女の言葉を書き取る：「Let’s ___ and get me some ice cream.」（3語）',
       cue: '「Let’s」のすぐあと。',

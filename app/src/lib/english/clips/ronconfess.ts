@@ -30,7 +30,7 @@ export const ronConfession: Clip = {
       trap: 'I feel extremely angry が強く響くが、それは服への一言。最後の質問が目的。',
       use: 'There’s nothing to do but wait.（待つしかないね）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'apparently', seg: [5.5, 12.5],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'apparently', seg: [5.5, 14.7],
       stem: 'What does “Apparently” mean in Ron’s first line?',
       ja: 'ロンの最初の一言の Apparently はどういう意味？',
       choices: ['It seems that', 'I’m sure that', 'I hope that'], a: 0,
@@ -42,7 +42,7 @@ export const ronConfession: Clip = {
       trap: 'apparent（明らか）から「絶対に」と思いやすい。文頭の Apparently は「〜らしい」。',
       use: 'Apparently, the train is late.（電車が遅れているらしい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'clothes', seg: [7.0, 14.3], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'clothes', seg: [7, 14.7], keep: true,
       stem: 'Why is Ron wearing these clothes?',
       ja: 'ロンはなぜこの服を着ている？',
       choices: ['They were the only dry ones', 'He was going to do yoga', 'Craig left them for him'], a: 0,
@@ -54,7 +54,7 @@ export const ronConfession: Clip = {
       trap: 'yoga が先に聞こえるので、ヨガをする話と思いやすい。理由は only のあと。',
       use: 'This is the only seat I could find.（空いてる席はここしかなかった）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'angry', seg: [12.9, 18.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'angry', seg: [10.7, 19.3],
       stem: 'When Leslie says he looks great, how does Ron feel?',
       ja: '「似合ってる」と言われて、ロンはどんな気持ち？',
       choices: ['Angry about the clothes', 'Happy about the compliment', 'Shy but secretly pleased'], a: 0,
@@ -66,7 +66,7 @@ export const ronConfession: Clip = {
       trap: '照れ隠しと思いやすいが、言葉どおり怒っている。だから次に「すねないの」と言われる。',
       use: 'Honestly, I feel a little angry.（正直、ちょっと腹が立ってる）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'seenall', seg: [18.0, 24.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'seenall', seg: [16.9, 25.5],
       stem: 'Leslie says, “I’ve seen it all.” What does she mean?',
       ja: 'レスリーの「I’ve seen it all.」はどういう意味？',
       choices: ['Nothing about Ron shocks her', 'She saw Ron doing yoga', 'She misses the old Ron'], a: 0,
@@ -78,7 +78,7 @@ export const ronConfession: Clip = {
       trap: '昔の姿を並べるので、からかいに聞こえやすい。言いたいのは「何を見ても平気」。',
       use: 'Relax, I’ve seen it all before.（大丈夫、そんなの見慣れてる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'spill', seg: [33.0, 39.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'spill', seg: [28.9, 39.8],
       stem: 'Leslie says, “Spill it.” What does she mean?',
       ja: 'レスリーの「Spill it.」はどういう意味？',
       choices: ['Tell me everything', 'Clean up the mess', 'Say sorry to me'], a: 0,
@@ -89,6 +89,18 @@ export const ronConfession: Clip = {
       mean: 'Spill it ＝ 隠さずに全部話して。spill は文字どおりは「こぼす」。中身をこぼすイメージ。',
       trap: 'spill を「こぼす」と取ると、ぬれた服の話に聞こえる。命令の Spill it は「白状して」。',
       use: 'Come on, spill it. Who called?（ほら、白状して。誰からの電話？）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'month', seg: [38.2, 50.1], keep: true,
+      stem: 'How long after Leslie left did Terry go too?',
+      ja: 'レスリーが辞めてからどのくらいで、テリーも辞めた？',
+      choices: ['A week later', 'A month later', 'A year later'], a: 1,
+      choicesJa: ['1週間後', '1か月後', '1年後'],
+      cue: '「You left」のあと、Then に続く部分。',
+      line: 'You left. Then *a month later* you took Terry with you.',
+      said: '「君が辞めた。その1か月後、テリーも連れていった」と言う。',
+      mean: 'a month later ＝ 1か月後。一人ずつ抜けていった順番を話し始めている。',
+      trap: 'a week は「ウィーク」、a year は「イヤー」。口を閉じた「マ」で始まれば month。',
+      use: 'A month later, I moved to Boston.（1か月後、ボストンに引っ越した）' },
 
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'mindless', seg: [39.4, 50.1],
       stem: 'Why does Leslie’s reason for taking Terry get a laugh?',
@@ -101,18 +113,6 @@ export const ronConfession: Clip = {
       trap: 'the best だけ聞くとほめ言葉に聞こえる。直前の mindless が何の最高かを決める。',
       use: 'She’s the best there is at this.（この分野では彼女が一番）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'month', seg: [39.4, 50.1], keep: true,
-      stem: 'How long after Leslie left did Terry go too?',
-      ja: 'レスリーが辞めてからどのくらいで、テリーも辞めた？',
-      choices: ['A week later', 'A month later', 'A year later'], a: 1,
-      choicesJa: ['1週間後', '1か月後', '1年後'],
-      cue: '「You left」のあと、Then に続く部分。',
-      line: 'You left. Then *a month later* you took Terry with you.',
-      said: '「君が辞めた。その1か月後、テリーも連れていった」と言う。',
-      mean: 'a month later ＝ 1か月後。一人ずつ抜けていった順番を話し始めている。',
-      trap: 'a week は「ウィーク」、a year は「イヤー」。口を閉じた「マ」で始まれば month。',
-      use: 'A month later, I moved to Boston.（1か月後、ボストンに引っ越した）' },
-
     { id: 'nt1', retired: true, skill: 'attitude', level: 'C2', point: 'acquaint', seg: [50.1, 63.0],
       stem: 'Calling April a “workplace acquaintance,” what is Ron trying not to say?',
       choices: ['That she was a dear friend he missed', 'That he begged her to stay, but she left',
@@ -124,7 +124,7 @@ export const ronConfession: Clip = {
       trap: 'acquaintance を「ただの知り合い」と取りやすい。堅い言葉の横にある気持ちの言葉を拾う。',
       use: 'He’s, uh, a close colleague. Fine, a friend.（えっと、親しい同僚。…友だちだよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'passup', seg: [52.4, 63.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'passup', seg: [57.7, 65.6],
       stem: 'What does “too good to pass up” mean?',
       ja: '「too good to pass up」はどういう意味？',
       choices: ['Too good to say no to', 'Too good to be true', 'Too good to wait for'], a: 0,
@@ -136,7 +136,7 @@ export const ronConfession: Clip = {
       trap: 'too good to be true（話がうますぎる）と混ざりやすい。to のあとの pass up まで聞く。',
       use: 'This deal is too good to pass up.（このセール、見逃せない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'business', seg: [61.5, 67.2],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'business', seg: [58.9, 69.3],
       stem: 'Why did Tom and Donna leave?',
       ja: 'トムとドナはなぜ辞めた？',
       choices: ['To run their own businesses', 'To work for Leslie', 'To start one business together'], a: 0,
@@ -148,7 +148,7 @@ export const ronConfession: Clip = {
       trap: '前の二人と同じでレスリーの所へと思いやすい。hers は短いが「彼女自身の（事業）」。',
       use: 'She left to start her own company.（自分の会社を始めるために辞めた）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'recognize', seg: [66.9, 74.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'recognize', seg: [65.1, 76],
       stem: 'What did Ron see when he “looked up”?',
       ja: 'ロンが「ふと顔を上げた」とき、何が見えた？',
       choices: ['Only new faces', 'An empty office', 'Old friends who had changed'], a: 0,
@@ -160,7 +160,7 @@ export const ronConfession: Clip = {
       trap: '皆が辞めたから誰もいない、と思いやすい。分からない人がいる＝知らない顔がいる。',
       use: 'I didn’t recognize anyone at the party.（パーティーに知ってる人がいなかった）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lunch', seg: [98.5, 106.0],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lunch', seg: [98.2, 106.7],
       stem: 'How does Leslie answer Ron’s lunch invitation?',
       ja: 'ロンのランチの誘いに、レスリーはどう答える？',
       choices: ['She says yes gladly', 'She says she’s too busy', 'She asks for another day'], a: 0,
@@ -184,7 +184,7 @@ export const ronConfession: Clip = {
       trap: '「トゥエルヴ」だけなら 12:00、「トゥー・サーティ」なら 2:30。「トゥエルヴ・サーティ」なら 12:30。',
       use: 'Lunch tomorrow? Twelve thirty works.（明日ランチ？12時半なら大丈夫）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'missed', seg: [109.3, 141.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'missed', seg: [109.2, 142.3],
       stem: 'Why does Leslie miss her lunch with Ron?',
       ja: 'レスリーはなぜロンとのランチに行かなかった？',
       choices: ['She flies to Washington', 'She picks up her kids', 'She has a long phone call'], a: 0,
@@ -196,7 +196,7 @@ export const ronConfession: Clip = {
       trap: 'pick up the kids は夫への頼みで、本人の用事ではない。理由は Washington。',
       use: 'Sorry, something came up at work.（ごめん、仕事で急用が入って）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'flight', seg: [113.0, 119.2], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'flight', seg: [113, 119.9], keep: true,
       stem: 'Type the request: “Get us the ___.” (5 words)', answer: 'first flight out of here',
       ja: '「Get us the ___.」の5語を書こう。',
       cue: '「Okay,」のあと、Get us the に続く部分。',
@@ -206,7 +206,7 @@ export const ronConfession: Clip = {
       trap: 'out of が「アウラ」と縮んで1語に聞こえやすい。of は小さくても必ずある。',
       use: 'I’ll take the first flight out tomorrow.（明日いちばんの便で行く）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [118.0, 124.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [118, 124.9],
       stem: 'Fill the gap: “Hey, babe, I ___ go to Washington.”',
       ja: '「Hey, babe, I ___ go to Washington.」の空所は？',
       choices: ['gotta', 'have to', 'had to'], a: 0,
@@ -228,7 +228,7 @@ export const ronConfession: Clip = {
       trap: '人に頼む気まずさの話と取りやすい。本題のあとの付け足しと dirty に答えがある。',
       use: 'Just saying it out loud feels weird.（口に出すだけで変な感じ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'imagine', seg: [164.0, 170.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'imagine', seg: [164, 172.7],
       stem: 'Leslie says, “I can’t even imagine how hard…” Why?',
       ja: '「I can’t even imagine how hard…」とレスリーが言うのはなぜ？',
       choices: ['To show she cares', 'To say she doesn’t know', 'To say it was easy'], a: 0,
@@ -240,7 +240,7 @@ export const ronConfession: Clip = {
       trap: 'can’t imagine を「分からない」と文字どおり取りやすい。how hard と続けば思いやり。',
       use: 'I can’t imagine how tired you must be.（どれほど疲れていることか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', seg: [170.0, 177.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', seg: [167.9, 179.9],
       stem: 'How does Leslie feel after “Why didn’t I see that?”',
       ja: '「Why didn’t I see that?」のあと、レスリーはどんな気持ち？',
       choices: ['Sorry, she blames herself', 'Angry that Ron hid it', 'Surprised he wanted a job'], a: 0,
@@ -252,7 +252,7 @@ export const ronConfession: Clip = {
       trap: '「なぜ言ってくれなかったの」と聞こえやすいが、主語は I。ロンを責めていない。',
       use: 'I should have called you sooner.（もっと早く電話すべきだった）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'honestly', seg: [176.0, 181.0],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'honestly', seg: [175.1, 181],
       stem: 'What does “Honestly” mean in “Honestly, it’s fine”?',
       ja: '「Honestly, it’s fine」の Honestly はどういう意味？',
       choices: ['I really mean it', 'I am sad about it', 'Here is some bad news'], a: 0,
@@ -264,7 +264,7 @@ export const ronConfession: Clip = {
       trap: '「正直に言うと」から厳しい話を思いやすいが、ここは安心させる言葉の前。',
       use: 'Honestly, don’t worry about it.（本当に、気にしないで）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'punct', seg: [177.3, 186.1],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'punct', seg: [177.3, 186.2],
       stem: 'How did the missed lunch change Ron’s plan?',
       ja: 'すっぽかされたランチで、ロンの考えはどう変わった？',
       choices: ['Not at all, he had decided', 'It made him decide to leave', 'It made him stay longer'], a: 0,
@@ -287,7 +287,7 @@ export const ronConfession: Clip = {
       trap: 'beautiful を文字通りのほめ言葉と取りやすい。ほめ言葉と中身の差が大きければ皮肉。',
       use: 'Wow, what a lovely way to put it.（まあ、なんて素敵な言い方）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'headsup', seg: [198.6, 210.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'headsup', seg: [198.8, 213.9],
       stem: 'What does Ron regret not giving Leslie?',
       ja: 'ロンは、レスリーに何をしなかったことを悔やんでいる？',
       choices: ['A warning ahead of time', 'A friendly hello in person', 'A look at the plans'], a: 0,

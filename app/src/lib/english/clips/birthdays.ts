@@ -51,7 +51,7 @@ export const birthdayGuide: Clip = {
       trap: 'only を「一人で」と取ると、皆が歌い終えてから歌う話に聞こえる。only がどの語にかかるかを聞く。',
       use: 'I only sing in the shower.（シャワーのときしか歌わない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', seg: [30.0, 36.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', seg: [30, 38.4],
       stem: 'What does “to a fault” mean here?',
       ja: 'ここでの「to a fault」の意味は？',
       choices: ['More than is good', 'With no faults', 'Only a little'], a: 0,
@@ -85,7 +85,7 @@ export const birthdayGuide: Clip = {
       trap: 'No を聞くと反対か格下げを待ちやすい。No は語を直して程度を上げることもある。',
       use: 'Good? No. It was amazing.（良かった？いや、最高だった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [77.5, 81.0], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [77.2, 82.2], keep: true,
       stem: 'Fill the gap: “Oh, ___ see my memo, by the way?”',
       ja: '空いている所に入る語は？',
       choices: ['did you', 'do you', 'didn’t you'], a: 0,
@@ -97,7 +97,7 @@ export const birthdayGuide: Clip = {
       trap: 'do you なら「ドゥユ」で「ディ」がない。didn’t you なら「ディドゥンチュ」と「ン」が入る。',
       use: 'Oh, did you get my email?（そうだ、メール届いた？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', seg: [81.0, 87.1], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', seg: [81, 90.7], keep: true,
       stem: 'What does the memo want a break from?',
       ja: 'メモには、何から一休みしたいと書いてある？',
       choices: ['All the cake', 'All the songs', 'All the gifts'], a: 0,
@@ -109,7 +109,7 @@ export const birthdayGuide: Clip = {
       trap: '冒頭で歌やプレゼントの話も出るので、それだと思いやすい。名前が出るのはケーキだけ。',
       use: 'I could use a break.（ちょっと休みたいな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', seg: [96.5, 102.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', seg: [95.8, 103.8], keep: true,
       stem: 'Type the words: “This way we ___ out of the way at once.” (3 words)', answer: 'get it all',
       ja: '「This way we」のあとの3語を書こう。',
       cue: '「This way we」のすぐあと。',
@@ -119,7 +119,7 @@ export const birthdayGuide: Clip = {
       trap: 'it と all が get にくっつき、1語に聞こえやすい。3語あると思って書く。',
       use: 'Let’s get the hard part out of the way.（大変なところを先に片づけよう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'devils', seg: [109.5, 115.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'devils', seg: [108.7, 116],
       stem: 'What does Jim get asked for first?',
       ja: 'ジムが最初に頼まれるのは何？',
       choices: ['Her own cake', 'Her own pie', 'Her own party'], a: 0,
@@ -131,7 +131,7 @@ export const birthdayGuide: Clip = {
       trap: 'パイはあとで別の人が頼むもの。最初に頼まれるのは cake。',
       use: 'Can I have my own room?（自分の部屋をもらえますか）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['devils', 'likeme'], seg: [109.5, 144.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['devils', 'likeme'], seg: [108.7, 145.1],
       stem: 'How do people react to Jim’s one-party plan?',
       ja: 'ジムの「パーティーは1回」案に、みんなはどう反応する？',
       choices: ['Each wants their own cake', 'Everyone happily agrees with it', 'Nobody cares about it'], a: 0,
@@ -143,7 +143,7 @@ export const birthdayGuide: Clip = {
       trap: '「Wow, that was easy」から、うまくいったと思いやすい。続く注文の数で分かる。',
       use: 'Can I pick the cake this time?（今回はケーキを選んでいい？）' },
 
-    { id: 'i2', skill: 'attitude', level: 'B1', point: 'likeme', reveals: ['devils'], seg: [119.5, 124.4],
+    { id: 'i2', skill: 'attitude', level: 'B1', point: 'likeme', reveals: ['devils'], seg: [118.5, 127],
       stem: 'How does the next man feel about devil’s food?',
       ja: '次に来た男性は、デビルズフードをどう思っている？',
       choices: ['He hates it', 'He loves it', 'He wants it too'], a: 0,
@@ -166,7 +166,7 @@ export const birthdayGuide: Clip = {
       trap: 'birthday が聞こえると祝いの言葉に取りやすい。どの語を言いかえたかを聞く。',
       use: 'It’s not your trip. It’s our trip.（君の旅じゃない、僕らの旅だよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twomonths', reveals: ['include'], seg: [163.1, 166.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twomonths', reveals: ['include'], seg: [162.6, 168.9], keep: true,
       stem: 'When was Toby’s birthday?',
       ja: 'トビーの誕生日はいつだった？',
       choices: ['Two weeks ago', 'Two months ago', 'Two years ago'], a: 1,
@@ -178,7 +178,7 @@ export const birthdayGuide: Clip = {
       trap: 'weeks なら「ウィー」、years なら「イヤー」と始まる。「マン」と聞こえたら months。',
       use: 'My birthday was last week, actually.（実は先週が誕生日だったんだ）' },
 
-    { id: 'i1', skill: 'number', level: 'B1', point: 'fourfiftyeight', seg: [169.6, 175.3],
+    { id: 'i1', skill: 'number', level: 'B1', point: 'fourfiftyeight', seg: [167.9, 177.2],
       stem: 'When was Toby’s party?',
       ja: 'トビーの会はいつだった？',
       choices: ['4:58 on a Friday', '4:48 on a Friday', '4:58 on a Monday'], a: 0,
@@ -190,7 +190,7 @@ export const birthdayGuide: Clip = {
       trap: '48 は「フォーティ」、58 は「フィフティ」で始まる。Monday は「マン」、Friday は「フライ」。',
       use: 'They scheduled the meeting for five.（会議は5時に入れられた）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'include', reveals: ['fourfiftyeight'], seg: [177, 182.1],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'include', reveals: ['fourfiftyeight'], seg: [176.7, 185.7],
       stem: 'What is Toby asking for?',
       ja: 'トビーは何を頼んでいる？',
       choices: ['To be in the party', 'A party of his own', 'A better party time'], a: 0,
@@ -202,7 +202,7 @@ export const birthdayGuide: Clip = {
       trap: '前の自分の会の話から、新しい会がほしいと思いやすい。include me（自分も入れて）が答え。',
       use: 'I just thought maybe I could join you.（よかったら一緒にいいかなと思って）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'much', seg: [185.5, 189.9],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'much', seg: [181.7, 191.6],
       stem: 'How does Jim feel about Toby?',
       ja: 'ジムはトビーのことをどう思っている？',
       choices: ['Nice, but a bit annoying', 'Great, with no problems', 'Sad about his party'], a: 0,
@@ -214,7 +214,7 @@ export const birthdayGuide: Clip = {
       trap: 'great を2回重ねるので、本気でほめていると思いやすい。本音は but のあと。',
       use: 'He’s nice, but a bit much.（いい人だけど、ちょっとしつこい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [195, 199.8], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [194.4, 200.9], keep: true,
       stem: 'What does “the more the merrier” mean?',
       ja: '「the more the merrier」の意味は？',
       choices: ['More people, more fun', 'One more won’t matter', 'Everyone gets a turn'], a: 0,
@@ -237,7 +237,7 @@ export const birthdayGuide: Clip = {
       trap: '似た音のくり返しは「何度も」に聞こえやすい。音遊びの語は、文全体の不満から意味を決める。',
       use: 'Don’t change the plan willy-nilly.（思いつきで予定を変えないで）' },
 
-    { id: 'pr3', skill: 'phrase', level: 'B2', point: 'bummer', seg: [210.5, 214.6],
+    { id: 'pr3', skill: 'phrase', level: 'B2', point: 'bummer', seg: [209.9, 217.3],
       stem: 'What does “That’s a bummer” mean?',
       ja: '「That’s a bummer」の意味は？',
       choices: ['That’s too bad', 'That’s great', 'That’s a lie'], a: 0,
@@ -249,7 +249,7 @@ export const birthdayGuide: Clip = {
       trap: 'bummer は知らない語なので、意味を当てずっぽうにしやすい。I’m allergic（アレルギー）のあとの返事なので、悪い知らせへの返し。',
       use: 'Rain again? That’s a bummer.（また雨？ついてないね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hands'], seg: [218, 245],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hands'], seg: [218, 246.4],
       stem: 'What happens to Jim’s plan in the end?',
       ja: 'ジムの案は最後にどうなる？',
       choices: ['Jim calls the party off', 'Jim moves it to Friday', 'Michael takes it over'], a: 0,
@@ -261,7 +261,7 @@ export const birthdayGuide: Clip = {
       trap: 'すぐあとに「Hey, Michael」と呼ぶ声があるが、ジムをまちがえて呼んだだけ。',
       use: 'Okay, let’s not do it, then.（じゃあ、やめにしよう）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'righthere', seg: [219.5, 231.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'righthere', seg: [219.6, 231.6],
       stem: 'Where does Jim want to talk about it?',
       ja: 'ジムはどこでその話をしたい？',
       choices: ['Right here', 'The conference room', 'The parking lot'], a: 0,
@@ -273,7 +273,7 @@ export const birthdayGuide: Clip = {
       trap: 'conference room（会議室）がはっきり聞こえるが、そのあと No と打ち消す。最後の right here が答え。',
       use: 'Could I have your attention, please?（ちょっと聞いてください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'hands', reveals: ['outcome'], seg: [231.3, 238.8], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'hands', reveals: ['outcome'], seg: [231.3, 241.1], keep: true,
       stem: 'How many people have problems with the plan?',
       ja: 'この案に不満がある人は何人？',
       choices: ['Three people', 'About half', 'All of them'], a: 2,
@@ -296,7 +296,7 @@ export const birthdayGuide: Clip = {
       trap: 'take を「返品に持っていく」と取りやすい。嘆きの質問にまじめな答えが返ったら笑いどころ。',
       use: 'What am I supposed to do with all this?（これ全部どうしろっていうの）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['outcome'], seg: [242.5, 247.7],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['outcome'], seg: [242, 248.7],
       stem: 'Why does Jim’s coworker say “I mean” here?',
       ja: '同僚は、なぜここで「I mean」と言う？',
       choices: ['To fix a wrong name', 'To give a reason', 'To make a little joke'], a: 0,

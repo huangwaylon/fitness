@@ -13,7 +13,7 @@ export const joeyCrossword: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['clue'], seg: [0, 23],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['clue'], seg: [0, 23.8],
       stem: 'Why are the friends excited at the start?', ja: '最初に、友だちはなぜ盛り上がっている？',
       choices: ['Joey is in a crossword', 'Joey got a new job', 'Joey is on TV tonight'], a: 0,
       choicesJa: ['ジョーイがクロスワードに出ている', 'ジョーイが新しい仕事を得た', 'ジョーイが今夜テレビに出る'],
@@ -24,7 +24,7 @@ export const joeyCrossword: Clip = {
       trap: '盛り上がり方から、テレビや仕事の話だと思いやすい。最初の crossword が答え。',
       use: 'You’re famous now!（もう有名人だね！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'clue', seg: [2.0, 7.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'clue', seg: [0, 7.5], keep: true,
       stem: 'Which crossword clue is Joey?', ja: 'ジョーイはクロスワードの何番のヒント？',
       choices: ['Three Down', 'Thirteen Down', 'Thirty Down'], a: 0,
       choicesJa: ['タテの3番', 'タテの13番', 'タテの30番'],
@@ -34,7 +34,7 @@ export const joeyCrossword: Clip = {
       trap: 'thirteen や thirty なら終わりに「ティーン」「ティ」がつく。three は短く終わる。',
       use: 'I’m stuck on seven across.（ヨコの7番で詰まってる）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'thatsme', seg: [6.7, 13.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'thatsme', seg: [6.7, 15.1],
       stem: 'How does Joey feel when he reads the clue?', ja: 'ヒントを読んだとき、ジョーイはどんな気持ち？',
       choices: ['Very happy and excited', 'Hurt and a little sad', 'Surprised and worried'], a: 0,
       choicesJa: ['すごくうれしくて興奮している', '傷ついて少し悲しい', '驚いて心配している'],
@@ -44,7 +44,7 @@ export const joeyCrossword: Clip = {
       trap: 'Blank を「名前が抜けた」と思うと、不満に聞こえやすい。短い文が続くのは喜び。',
       use: 'That’s me! I’m in the paper!（それ私！新聞に載ってる！）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'howcool', seg: [12.5, 16.5],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'howcool', seg: [12.1, 18],
       stem: 'What does “How cool is this?” mean?', ja: '“How cool is this?” はどういう意味？',
       choices: ['This is so cool', 'Is this cold?', 'How does this work?'], a: 0,
       choicesJa: ['これ、すごくいいね', 'これ、冷たい？', 'これ、どうやって使うの？'],
@@ -66,7 +66,7 @@ export const joeyCrossword: Clip = {
       trap: 'What’s ～ doing? を文字通り「何してる？」と取りやすい。直後の Sorry が答え合わせ。',
       use: 'Easy there, I’m married.（ちょっと、私結婚してるのよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'call', seg: [23.3, 30.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'call', seg: [22.3, 27.6],
       stem: 'Did the magazine tell Joey about the puzzle?', ja: '雑誌はクロスワードのことをジョーイに知らせた？',
       choices: ['No, nobody told him', 'Yes, they phoned him', 'Not yet, but they will'], a: 0,
       choicesJa: ['いいえ、誰も知らせていない', 'はい、電話で知らせた', 'まだだが、これから知らせる'],
@@ -76,7 +76,7 @@ export const joeyCrossword: Clip = {
       trap: '質問の中の call you to tell you が耳に残りやすい。答えは最初の No。',
       use: 'Nobody told me about it.（誰も教えてくれなかった）' },
 
-    { id: 'p1', skill: 'marker', level: 'B2', point: 'though', reveals: ['call'], seg: [23.3, 30.2],
+    { id: 'p1', skill: 'marker', level: 'B2', point: 'though', reveals: ['call'], seg: [23.3, 30.8],
       stem: 'What does “though” mean at the end of Joey’s line?', ja: 'ジョーイの言葉の最後の “though” はどういう意味？',
       choices: ['But still', 'Because', 'For example'], a: 0,
       choicesJa: ['でも、それでも', 'なぜなら', 'たとえば'],
@@ -96,7 +96,7 @@ export const joeyCrossword: Clip = {
       trap: 'own lines（自分のセリフ）も聞こえるが、それは前回の話。今の中心は取材。',
       use: 'Should I take the interview?（その取材、受けるべきかな）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'profile', seg: [26.1, 30.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'profile', seg: [26.1, 32.2],
       stem: 'What did they want to do with “a big profile on me”?', ja: '“a big profile on me” で、雑誌は何をしたかった？',
       choices: ['Write a long story about him', 'Print a list of his facts', 'Print a big photo of him'], a: 0,
       choicesJa: ['彼についての長い記事を書く', '彼の情報を短く並べて載せる', '彼の大きな写真を載せる'],
@@ -106,7 +106,7 @@ export const joeyCrossword: Clip = {
       trap: 'カタカナの「プロフィール」は短い紹介だと思いやすい。英語では記事一本分。',
       use: 'They did a profile on our chef.（うちのシェフの特集記事が出た）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whyd', seg: [26.1, 31.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whyd', seg: [26.1, 35.2],
       stem: 'Fill the gap: “___ say no?”', ja: '空所に入るのは？ “___ say no?”',
       choices: ['Why do you', 'Why’d you', 'Why didn’t you'], a: 1,
       choicesJa: ['なぜ（いつも）〜する？', 'なぜ〜した？', 'なぜ〜しなかった？'],
@@ -116,7 +116,7 @@ export const joeyCrossword: Clip = {
       trap: 'Why do you なら「ワイドゥユ」と3拍。didn’t なら「ディドゥン」の「ン」。「ワイジュ」と2拍なら Why’d you。',
       use: 'Why’d you leave so early?（なんでそんなに早く帰ったの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'lines', seg: [31.55, 40.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'lines', seg: [31.7, 43.7],
       stem: 'What did Joey say in his last interview?', ja: '前回の取材で、ジョーイは何と言った？',
       choices: ['He wrote many of his lines', 'The writers were not good', 'He did his own stunts'], a: 0,
       choicesJa: ['セリフの多くを自分で書いている', '脚本家たちがよくない', 'スタントを自分でやった'],
@@ -146,7 +146,7 @@ export const joeyCrossword: Clip = {
       trap: 'what と I がつながり「ワライ」と聞こえやすい。1語ずつ数えて書く。',
       use: 'Who knows what will happen?（どうなるか分からないよ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'head', reveals: ['pep'], seg: [42.95, 49.2],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'head', reveals: ['pep'], seg: [40.8, 49.6],
       stem: 'What is Joey told with “If only there was…”?', ja: 'ジョーイは「If only there was…」で、何を言われている？',
       choices: ['Joey has no brain at all', 'Joey should plan his answers', 'The writers control Joey'], a: 0,
       choicesJa: ['ジョーイには頭がない', 'ジョーイは答えを準備すべき', '脚本家がジョーイを操っている'],
@@ -157,17 +157,7 @@ export const joeyCrossword: Clip = {
       trap: 'アドバイスに聞こえやすい。If only は「ない」が前提の言い方。',
       use: 'If only I had a map.（地図さえあればなあ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'check', seg: [47.3, 51.5],
-      stem: 'What does Rachel mean by “keep it in check”?', ja: '“keep it in check” で、レイチェルは何を言いたい？',
-      choices: ['Control what you say', 'Check your facts first', 'Control your anger'], a: 0,
-      choicesJa: ['言うことを抑える', '先に事実を確かめる', '怒りを抑える'],
-      cue: '直前の友だちの言葉', line: 'You will totally *keep it in check* this time.',
-      said: '「今回はちゃんと抑えられるって」と励ます。',
-      mean: 'keep 〜 in check ＝ 〜を抑える。前の control と同じ意味。',
-      trap: 'カタカナの「チェック（確認）」だと思いやすい。in check は「抑えた状態」。',
-      use: 'Try to keep your spending in check.（出費は抑えめにね）' },
-
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'pep', reveals: ['head'], seg: [47.3, 56.3],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'pep', reveals: ['head'], seg: [46.3, 56.5],
       stem: 'How does Rachel feel about the interview?', ja: '取材について、レイチェルはどう思っている？',
       choices: ['She wants him to do it', 'She thinks it’s a bad idea', 'She is teasing him too'], a: 0,
       choicesJa: ['受けてほしい', 'よくない考えだと思う', '彼をからかっている'],
@@ -177,7 +167,17 @@ export const joeyCrossword: Clip = {
       trap: '前の人のからかいに続くので、同じ冷やかしだと思いやすい。理由を並べたら説得。',
       use: 'Oh, come on. You’d be great at it.（そう言わずに。きみなら絶対うまくいく）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'career', seg: [47.3, 56.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'check', seg: [46.6, 51.6],
+      stem: 'What does Rachel mean by “keep it in check”?', ja: '“keep it in check” で、レイチェルは何を言いたい？',
+      choices: ['Control what you say', 'Check your facts first', 'Control your anger'], a: 0,
+      choicesJa: ['言うことを抑える', '先に事実を確かめる', '怒りを抑える'],
+      cue: '直前の友だちの言葉', line: 'You will totally *keep it in check* this time.',
+      said: '「今回はちゃんと抑えられるって」と励ます。',
+      mean: 'keep 〜 in check ＝ 〜を抑える。前の control と同じ意味。',
+      trap: 'カタカナの「チェック（確認）」だと思いやすい。in check は「抑えた状態」。',
+      use: 'Try to keep your spending in check.（出費は抑えめにね）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'career', seg: [47.3, 56.5],
       stem: 'What other reason does Rachel give for doing it?', ja: 'レイチェルが言う、もう一つの理由は？',
       choices: ['It would help his career', 'The magazine would pay well', 'The writers would like him'], a: 0,
       choicesJa: ['彼の仕事のためになる', '雑誌がお金をたくさん払う', '脚本家に好かれる'],
@@ -188,18 +188,7 @@ export const joeyCrossword: Clip = {
       trap: '取材と聞くと、お金の話だと思いやすい。お金の言葉は一度も出ない。',
       use: 'It’d be good for your career.（キャリアのためになるよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'mention', seg: [47.3, 61.9],
-      stem: 'What does Rachel really want from Joey?', ja: 'レイチェルが本当にジョーイに頼みたいことは？',
-      choices: ['To say her name in it', 'To be more careful', 'To name all his friends'], a: 0,
-      choicesJa: ['取材で自分の名前を言ってほしい', 'もっと気をつけてほしい', '友だち全員の名前を言ってほしい'],
-      cue: '「mention」のあと',
-      line: 'you could mention, oh, I don’t know, *Gal Pal Rachel Green*?',
-      said: '最後に「取材で、そうね、仲良しのレイチェル・グリーンとか？」と付け足す。',
-      mean: 'mention ＝ 名前を出す。前の励ましは、自分の名前を載せてもらうための前置き。',
-      trap: '励ましをそのまま取ると、彼のためだと思いやすい。最後に出る名前が本音。',
-      use: 'Feel free to mention my name.（私の名前、出してくれていいよ）' },
-
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'deserve', seg: [51, 56.3],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'deserve', seg: [51, 56.5],
       stem: 'What does “you deserve that” mean?', ja: '“you deserve that” はどういう意味？',
       choices: ['You have earned it', 'You must pay for it', 'You don’t need it'], a: 0,
       choicesJa: ['あなたにはその価値がある', 'その分を払わないといけない', 'あなたには必要ない'],
@@ -229,5 +218,16 @@ export const joeyCrossword: Clip = {
       mean: '主語の that gal pal は Rachel が自分に付けた肩書き。それを「負け犬」とつづり、売り込みを笑う。',
       trap: '直前に Joey の頭をからかう流れがあり、Joey 向けに聞こえやすい。主語を追えば的は一人。',
       use: 'Is that “on time” spelled L-A-T-E?（その「時間どおり」って、つづりは L-A-T-E？）' },
+
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'mention', seg: [56.2, 64.9],
+      stem: 'What does Rachel really want from Joey?', ja: 'レイチェルが本当にジョーイに頼みたいことは？',
+      choices: ['To say her name in it', 'To be more careful', 'To name all his friends'], a: 0,
+      choicesJa: ['取材で自分の名前を言ってほしい', 'もっと気をつけてほしい', '友だち全員の名前を言ってほしい'],
+      cue: '「mention」のあと',
+      line: 'you could mention, oh, I don’t know, *Gal Pal Rachel Green*?',
+      said: '最後に「取材で、そうね、仲良しのレイチェル・グリーンとか？」と付け足す。',
+      mean: 'mention ＝ 名前を出す。前の励ましは、自分の名前を載せてもらうための前置き。',
+      trap: '励ましをそのまま取ると、彼のためだと思いやすい。最後に出る名前が本音。',
+      use: 'Feel free to mention my name.（私の名前、出してくれていいよ）' },
   ]
 };

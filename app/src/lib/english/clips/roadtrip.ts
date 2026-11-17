@@ -14,7 +14,7 @@ export const unsexyRoadTrip: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['change'], seg: [7.1, 42.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['change'], seg: [7.1, 42.7],
       stem: 'What are Leslie and Ann planning before the trip?', ja: '旅行の前に、レスリーとアンは何を考えている？',
       choices: ['How to keep it boring', 'How to say no to Ben nicely', 'Which songs to play'], a: 0,
       choicesJa: ['旅を退屈にする方法', 'ベンにやんわり断る方法', 'どの曲をかけるか'],
@@ -36,7 +36,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'swim なら「スウィ」。sweatshirt なら最後が「シャー」。ここは「スウェッスーッ」。',
       use: 'I’m just going to wear a sweatsuit.（スウェットで行くよ）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'insane', reveals: ['dying'], seg: [11, 17.6],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'insane', reveals: ['dying'], seg: [9.2, 17.8],
       stem: 'Why does Ann say “this is insane”?', ja: 'アンはなぜ “this is insane” と言う？',
       choices: ['Their love is so obvious', 'The dress looks so good', 'The trip will take so long'], a: 0,
       choicesJa: ['二人の気持ちが見え見えだから', 'ドレスがすごく似合うから', '旅にとても時間がかかるから'],
@@ -47,7 +47,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '直前の服の話に反応したと思いやすい。すぐあとの It’s so obvious が理由。',
       use: 'Come on, it’s so obvious.（ねえ、見え見えだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dying', seg: [13, 16.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dying', seg: [11.3, 17.8],
       stem: 'What does “dying to be together” mean?', ja: '“dying to be together” はどういう意味？',
       choices: ['They really want to be together', 'They are afraid to be together', 'They hate being together'], a: 0,
       choicesJa: ['一緒になりたくてたまらない', '一緒になるのがこわい', '一緒にいるのがいや'],
@@ -78,7 +78,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '文法どおり get fired と書きたくなる。書き取りは正しい文より、聞こえた音を。',
       use: 'Sure, and I could literally get lost.（そうね、で私は本当に迷うけど）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'hopkins', seg: [47.6, 56.7],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'hopkins', seg: [47.6, 58],
       stem: 'Did Leslie go to Johns Hopkins?', ja: 'レスリーはジョンズ・ホプキンス大学に行った？',
       choices: ['No, she didn’t', 'Yes, she did', 'She doesn’t say'], a: 0,
       choicesJa: ['いいえ、行っていない', 'はい、行った', '言っていない'],
@@ -89,7 +89,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '寮にくわしいので、出身だと思いやすい。長い話のあとの短い No が答え。',
       use: 'Did you go to college here?（こっちの大学に通ってたの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [63.5, 75.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [60.7, 72.7],
       stem: 'What is on the CD Leslie and Ann made?', ja: 'レスリーとアンが作ったCDには何が入っている？',
       choices: ['A speech and a language lesson', 'Pop songs and love songs', 'A comedy show and jokes'], a: 0,
       choicesJa: ['演説と語学レッスン', 'ポップスとラブソング', 'お笑い番組と冗談'],
@@ -100,7 +100,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '曲のCDだと思いやすい。並ぶ中身を一つずつ聞く。',
       use: 'We made a CD for the trip.（旅行用にCDを作った）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'horn', seg: [66.3, 71.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'horn', seg: [64.3, 75.5], keep: true,
       stem: 'How long is the car horn track on the CD?', ja: 'CDの車のクラクションは何分？',
       choices: ['Six minutes', 'Sixteen minutes', 'Sixty minutes'], a: 1,
       choicesJa: ['6分', '16分', '60分'],
@@ -111,7 +111,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'six なら teen も ty もない。sixty は前が強い。うしろが長ければ sixteen。',
       use: 'It’s about sixteen minutes long.（だいたい16分くらい）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'loud', seg: [79.4, 86.6],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'loud', seg: [78.4, 87.4],
       stem: 'What does Ben mean by “this loud”?', ja: '“this loud” で、ベンは何を言いたい？',
       choices: ['The music is too loud', 'The banjo is wonderful', 'He likes loud music'], a: 0,
       choicesJa: ['音楽がうるさすぎる', 'バンジョーはすばらしい', '大きい音楽が好き'],
@@ -122,7 +122,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'Yeah から賛成だと思いやすい。Yeah のあとの loud が本音。',
       use: 'Yeah, I didn’t expect it to be this spicy.（うん、こんなに辛いとは）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'change', seg: [93.5, 96.8],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'change', seg: [92.5, 97.6],
       stem: 'Fill the gap: “You ___ change it if you want.”', ja: '空所に入るのは？ “You ___ change it if you want.”',
       choices: ['can', 'can’t', 'should'], a: 0,
       choicesJa: ['〜してもいい', '〜してはだめ', '〜すべき'],
@@ -133,7 +133,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'can’t なら強く長い「キャーン」。should は「シュ」で始まる。小さい「クン」なら can。',
       use: 'You can sit here if you want.（よかったらここに座っていいよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'snuck', seg: [103.4, 110.65],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'snuck', seg: [103.4, 111],
       stem: 'Why did Ann put that song on the CD?', ja: 'アンはなぜその曲をCDに入れた？',
       choices: ['To bring Leslie and Ben together', 'To make the CD less boring', 'It got on by mistake'], a: 0,
       choicesJa: ['レスリーとベンをくっつけるため', 'CDを退屈でなくするため', 'まちがって入った'],
@@ -144,7 +144,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'snuck を「うっかり」と思いやすい。こっそり、つまりわざと。',
       use: 'I want you two to get along.（二人に仲良くしてほしいな）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'sueme', reveals: ['snuck'], seg: [106.6, 110.65],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'sueme', reveals: ['snuck'], seg: [103.7, 112.6],
       stem: 'How does Ann feel about what she did?', ja: '自分のしたことを、アンはどう思っている？',
       choices: ['Not sorry at all', 'A little sorry', 'Worried about trouble'], a: 0,
       choicesJa: ['まったく悪いと思っていない', '少し悪いと思っている', '面倒になるのが心配'],
@@ -155,7 +155,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'sue（訴える）から、心配していると思いやすい。告白のあとの Sue me は開き直り。',
       use: 'I ate the last cookie. Sue me.（最後のクッキー食べた。文句ある？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'beento', seg: [123, 128],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'beento', seg: [123, 130.4],
       stem: 'What does “Have you been to the Granville Hotel?” ask?', ja: '“Have you been to the Granville Hotel?” は何を聞いている？',
       choices: ['If he ever went there', 'If he is going there soon', 'If he works there'], a: 0,
       choicesJa: ['そこに行ったことがあるか', '近いうちにそこに行くか', 'そこで働いているか'],
@@ -166,7 +166,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'been を「今いる、行く予定」と思いやすい。have been to は経験を聞く形。',
       use: 'Have you been to Kyoto?（京都に行ったことある？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'towels', reveals: ['gotta', 'difference', 'plan'], seg: [127.4, 138.75],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'towels', reveals: ['gotta', 'difference', 'plan'], seg: [126.3, 137],
       stem: 'What happens with the boring towel talk?', ja: '退屈なはずのタオルの話は、どうなる？',
       choices: ['They enjoy it together', 'They are both bored', 'They plan where they will stay'], a: 0,
       choicesJa: ['二人で楽しく盛り上がる', '二人とも退屈している', 'どこに泊まるか決める'],
@@ -177,7 +177,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '話題が退屈なので、作戦どおりだと思いやすい。中身より二人の乗り方を聞く。',
       use: 'Oh, I love a hot shower after a flight.（フライトのあとの熱いシャワー、最高）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'gotta', seg: [130, 133.25],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'gotta', seg: [128.6, 134],
       stem: 'Type: “Oh, I ___, I love a nice towel.” (3 words)'
 , ja: '言葉を書こう：“Oh, I ___, I love a nice towel.”（3語）',
       answer: 'gotta tell you',
@@ -188,7 +188,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'gotta の t は軽い「ラ」の音で「ガラ」、tell you も「テリュ」とつながる。',
       use: 'I gotta tell you, this is great.（ほんと、これ最高）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'difference', reveals: ['towels'], seg: [133.2, 137.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'difference', reveals: ['towels'], seg: [133.2, 139.1],
       stem: 'What is said about a simple luxury like a nice towel?', ja: 'いいタオルのような小さなぜいたくについて、何と言っている？',
       choices: ['It makes things much better', 'It’s worth paying much more for', 'It makes things a bit different'], a: 0,
       choicesJa: ['ずっとよくなる', 'もっとお金を払う価値がある', '少しちがってくる'],
@@ -199,7 +199,7 @@ export const unsexyRoadTrip: Clip = {
       trap: 'difference を「ちがい」とだけ取ると、よいか悪いか分からない。ほめ言葉。',
       use: 'A good pillow makes all the difference.（いい枕で全然ちがう）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'silence', seg: [147, 168],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'silence', seg: [147, 168.5],
       stem: 'What does Leslie decide by the end?', ja: '最後に、レスリーは何を決める？',
       choices: ['Not to talk to Ben', 'To talk about dull things', 'To tell Ben her feelings'], a: 0,
       choicesJa: ['ベンと話さない', '退屈な話をする', 'ベンに気持ちを伝える'],

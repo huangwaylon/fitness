@@ -17,7 +17,7 @@ export const doingAlcohol: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'narcjoke', seg: [9.4, 14.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'narcjoke', seg: [9.4, 16.2],
       stem: 'Who was the one joking around?',
       ja: 'ふざけていたのはだれ？',
       choices: ['Michael', 'Dwight', 'Everyone but Michael'], a: 0,
@@ -41,7 +41,7 @@ export const doingAlcohol: Clip = {
       trap: 'failed と言われると反省したくなる。言い訳には中身でなく、言い出したタイミングで返す。',
       use: 'Sure you were. Nice try.（はいはい。うまいこと言うね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'test', reveals: ['narcjoke'], seg: [13.2, 22.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'test', reveals: ['narcjoke'], seg: [11.8, 22.6],
       stem: 'Why does Michael say “That was a test”?',
       ja: 'マイケルはなぜ「That was a test」と言う？',
       choices: ['To make up an excuse', 'To say he was wrong', 'To test Dwight for real'], a: 0,
@@ -53,7 +53,7 @@ export const doingAlcohol: Clip = {
       trap: 'No. No. を反省と思いやすいが、打ち消してから話を作りかえている。',
       use: 'I was just testing you.（ちょっと試しただけだよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'failed', seg: [16.8, 22.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'failed', seg: [15.7, 22.7],
       stem: 'Type what he says: “I was testing you, and ___.” (4 words)', answer: 'you all failed miserably',
       ja: '聞こえた言葉を書こう：「I was testing you, and ___.」（4語）',
       cue: '「testing you」のあと。',
@@ -108,7 +108,7 @@ export const doingAlcohol: Clip = {
       trap: 'funny と pot が並ぶので「薬のおかげ」と取りやすい。didn’t は「吸わなければ」。',
       use: 'Take me, for example.（たとえば私がそう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cocaine', seg: [73.6, 79.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cocaine', seg: [73.2, 81.5],
       stem: 'What does Michael compare cocaine use with?',
       ja: 'マイケルはコカインを使う人を、何をする人と比べる？',
       choices: ['Read books to their kids', 'Drink wine at home', 'Smoke with their friends'], a: 0,
@@ -120,7 +120,7 @@ export const doingAlcohol: Clip = {
       trap: 'あとで wine の話が出るので迷いやすい。than のあとが比べる相手。',
       use: 'More people walk than drive here.（ここは車より歩く人が多い）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'facts', seg: [79.3, 84.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'facts', seg: [78.3, 84.7],
       stem: 'How does Michael answer the question about his facts?',
       ja: '話の出どころを聞かれて、マイケルはどう答える？',
       choices: ['With a question of his own', 'With the name of a study', 'By saying he made them up'], a: 0,
@@ -132,7 +132,7 @@ export const doingAlcohol: Clip = {
       trap: '聞かれたら答えると思いやすい。返しが答えになっているかを聞く。',
       use: 'Why do you ask?（どうしてそんなこと聞くの？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'scared', seg: [80.8, 84.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'scared', seg: [79.7, 88.3],
       stem: 'How do they reply to “Are these facts scaring you?”',
       ja: '「Are these facts scaring you?」にどう答える？',
       choices: ['Flatly, they’re not scared', 'Politely, they say yes', 'Jokingly, they act scared'], a: 0,
@@ -156,7 +156,7 @@ export const doingAlcohol: Clip = {
       trap: '毎晩と思いやすいが「ワンス・ア・ウィーク」。twice なら「トゥワイス」、day なら「デイ」。',
       use: 'I go to the gym twice a week.（ジムは週2回）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'enough', seg: [94.6, 98.9],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'enough', seg: [91.6, 100.2],
       stem: 'How does Michael react to the answer about wine?',
       ja: 'ワインの答えに、マイケルはどう反応する？',
       choices: ['He stops it, fed up', 'He agrees and listens', 'He asks for more'], a: 0,
@@ -168,7 +168,7 @@ export const doingAlcohol: Clip = {
       trap: 'Okay を「なるほど」と思いやすいが、すぐ enough が続く。',
       use: 'Okay, okay, I get it.（はいはい、分かったよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'gander', seg: [98.6, 107.4],
+    { id: 'f3', skill: 'phrase', level: 'C1', point: 'gander', seg: [97.5, 107.9],
       stem: 'What does Michael mean by “Take a gander”?',
       ja: 'マイケルの「Take a gander」はどういう意味？',
       choices: ['Have a quick look at it', 'Take a guess at it', 'Take turns reading it'], a: 0,
@@ -180,7 +180,7 @@ export const doingAlcohol: Clip = {
       trap: 'すぐあとのクイズから take a guess（当てる）と思いやすい。',
       use: 'Take a look at this menu.（このメニュー、見てみて）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'takedown', seg: [117.9, 125.6],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'takedown', seg: [117.8, 126.9],
       stem: 'What does Michael want Pam to do?',
       ja: 'マイケルはパムに何をしてほしい？',
       choices: ['Write down what he says next', 'Take his list off the wall', 'Take Toby out of the room'], a: 0,
@@ -192,7 +192,7 @@ export const doingAlcohol: Clip = {
       trap: 'take down には「外す」の意味もある。すぐ話し始めるので、言うことの記録。',
       use: 'Let me take down your number.（番号を控えさせて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hair', reveals: ['random'], seg: [120.5, 125.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hair', reveals: ['random'], seg: [120.5, 126.6],
       stem: 'What else does Michael want to test besides urine?',
       ja: '尿のほかに、マイケルは何を検査したい？',
       choices: ['Toby’s blood and hair', 'Toby’s blood and heart', 'Toby’s breath and hair'], a: 0,
@@ -204,7 +204,7 @@ export const doingAlcohol: Clip = {
       trap: '初めは「ブラッド」で blood（breath なら「ブレス」）。最後は「ヘア」で hair（heart なら「ハート」）。',
       use: 'They tested my blood and my eyes.（血液と目の検査をした）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [124.8, 130.9],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [124.1, 132.2],
       stem: 'Fill the gap: “You ___ do that.”',
       ja: '空いている所に入る語は？「You ___ do that.」',
       choices: ['can’t', 'can', 'could'], a: 0,
@@ -216,7 +216,7 @@ export const doingAlcohol: Clip = {
       trap: 't が消えて can と思いやすい。長く強い「キャーン」は can’t、「クン」は can、「クッド」は could。',
       use: 'You can’t park here.（ここは駐車できません）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'random', reveals: ['cant'], seg: [126.2, 131.85],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'random', reveals: ['cant'], seg: [125.1, 135.6],
       stem: 'Why is Michael’s word “randomly” funny?',
       ja: 'マイケルの「randomly」はなぜおかしい？',
       choices: ['He picked Toby on purpose', 'He picked Toby by lottery', 'He picked Toby to help him'], a: 0,
@@ -228,7 +228,7 @@ export const doingAlcohol: Clip = {
       trap: 'chosen（選んだ）と randomly（無作為に）は合わない。その矛盾が笑い。',
       use: 'Totally random, I swear.（ほんとにたまたまだって）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'volunteer', seg: [136.2, 147.3],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'volunteer', seg: [136.6, 148.6],
       stem: 'What does Michael want the volunteer to do?',
       ja: 'マイケルはボランティアに何をしてほしい？',
       choices: ['Tell a sad true story', 'Explain why drugs are bad', 'Say if they’ve tried one'], a: 0,
@@ -240,7 +240,7 @@ export const doingAlcohol: Clip = {
       trap: 'select one of these words で薬の説明と思いやすい。and のあとが本題。',
       use: 'Can anyone tell us a story?（だれか話してくれる人？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'letout', seg: [161.4, 164.8],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'letout', seg: [161.1, 166.6],
       stem: 'Type it: “This would be a good place to ___, Jim.” (3 words)', answer: 'let it out',
       ja: '聞こえた言葉を書こう：「This would be a good place to ___, Jim.」（3語）',
       cue: '「a good place to」のあと。',
@@ -273,7 +273,7 @@ export const doingAlcohol: Clip = {
       trap: 'good を「Jim のためになる」と取りやすい。it が何を指すかを聞く。',
       use: 'Aw, I was looking forward to that.（えー、楽しみにしてたのに）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bigguns', reveals: ['story'], seg: [203.6, 211.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bigguns', reveals: ['story'], seg: [203, 212.9],
       stem: 'What does “pulled out the big guns” mean here?',
       ja: '「pulled out the big guns」はここではどういう意味？',
       choices: ['He used his best trick', 'He got angry and hit back', 'He asked for strong help'], a: 0,

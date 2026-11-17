@@ -15,18 +15,7 @@ export const janiceSocks: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'called', seg: [1.0, 5.2],
-      stem: 'Who made the phone call?', ja: '電話をかけたのは誰？',
-      choices: ['Chandler called Janice', 'Janice called Chandler', 'Nobody called anyone'], a: 0,
-      choicesJa: ['チャンドラーがジャニスに', 'ジャニスがチャンドラーに', 'どちらもかけていない'],
-      cue: '「so glad」のあと',
-      line: 'I am so glad *you called me*.',
-      said: '「電話してくれて、本当にうれしい」と言う。',
-      mean: 'you called me ＝ あなたが私に電話した。かけたのはチャンドラーの方。',
-      trap: 'called だけ聞くと、どちらがかけたか分からない。you と me の順番を聞く。',
-      use: 'Thanks for calling me back.（折り返しありがとう）' },
-
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'called', seg: [1.0, 9.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'called', seg: [0.7, 10],
       stem: 'How does Janice feel when she greets Chandler?', ja: 'チャンドラーに会ったとき、ジャニスはどんな気持ち？',
       choices: ['Very happy to see him', 'Too tired to talk', 'Angry at him for calling'], a: 0,
       choicesJa: ['会えてとてもうれしい', '疲れて話せない', '電話してきたことに怒っている'],
@@ -37,7 +26,18 @@ export const janiceSocks: Clip = {
       trap: 'あとの awful day（最悪の日）が強く聞こえて、疲れていると思いやすい。最初の一言が気持ち。',
       use: 'I’m so glad to see you.（会えてすごくうれしい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'called', seg: [1.8, 5.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'called', seg: [1, 7.9],
+      stem: 'Who made the phone call?', ja: '電話をかけたのは誰？',
+      choices: ['Chandler called Janice', 'Janice called Chandler', 'Nobody called anyone'], a: 0,
+      choicesJa: ['チャンドラーがジャニスに', 'ジャニスがチャンドラーに', 'どちらもかけていない'],
+      cue: '「so glad」のあと',
+      line: 'I am so glad *you called me*.',
+      said: '「電話してくれて、本当にうれしい」と言う。',
+      mean: 'you called me ＝ あなたが私に電話した。かけたのはチャンドラーの方。',
+      trap: 'called だけ聞くと、どちらがかけたか分からない。you と me の順番を聞く。',
+      use: 'Thanks for calling me back.（折り返しありがとう）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'called', seg: [1.2, 7.9],
       stem: 'Fill the gap: “I am so glad you ___.”', ja: '空所に入るのは？ “I am so glad you ___.”',
       choices: ['called me', 'caught me', 'called back'], a: 0,
       choicesJa: ['私に電話した', '私をつかまえた', '電話をかけ直した'],
@@ -48,7 +48,7 @@ export const janiceSocks: Clip = {
       trap: 'caught（コート）も似ている。called back なら「バック」が残る。「ゥ」の音なら called。',
       use: 'So glad you made it!（来てくれてうれしい！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [11.9, 15.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [9.7, 17.7],
       stem: 'What drinks are ordered?', ja: '注文した飲み物は？',
       choices: ['An espresso and a latte', 'Two espressos and a tea', 'A latte and a tea'], a: 0,
       choicesJa: ['エスプレッソ1つとラテ1つ', 'エスプレッソ2つと紅茶', 'ラテと紅茶1杯'],
@@ -59,7 +59,7 @@ export const janiceSocks: Clip = {
       trap: 'and a が「アンナ」とつながり、数が聞き取りにくい。an は「1つ」。',
       use: 'Can I get a coffee, please?（コーヒーをください）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['order'], seg: [11.9, 15.3],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['order'], seg: [9.7, 17.7],
       stem: 'What does “over here” mean in the order?', ja: '注文の中の “over here” はどういう意味？',
       choices: ['To this table', 'Right now', 'To take away'], a: 0,
       choicesJa: ['このテーブルに', '今すぐ', '持ち帰りで'],
@@ -69,6 +69,17 @@ export const janiceSocks: Clip = {
       mean: 'over here ＝ こっち（に）。席から店員に「このテーブルに」と頼む言い方。',
       trap: 'here（ここ）から「今すぐ」と思いやすい。over here は場所を言っている。',
       use: 'Could we get the check over here?（こっちにお会計をお願いします）' },
+
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'proofs', reveals: ['sucked'], seg: [12.2, 22.2],
+      stem: 'Why was Janice’s day so bad?', ja: 'ジャニスの一日は、なぜひどかった？',
+      choices: ['Her photos came out badly', 'The vegetables went bad', 'Her photo shoot was canceled'], a: 0,
+      choicesJa: ['写真の出来が悪かった', '野菜がいたんだ', '撮影が中止になった'],
+      cue: '「Anyway」のあと',
+      line: 'we got *the proofs back* in that photo shoot… Anyway, they *pretty much sucked*.',
+      said: '撮影の確認用の写真が届いたが、「ほぼ最悪だった」と言う。',
+      mean: 'proofs ＝ 仕上がりを確かめる写真。sucked ＝ 最悪だった（くだけた言い方）。',
+      trap: 'vegetables は撮った物の説明。そのあとの Anyway からが本題。',
+      use: 'The pictures came out great!（写真、すごくよく撮れてた！）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', seg: [14, 57.4],
       stem: 'What does Janice do on this visit?', ja: '今回、ジャニスは何をする？',
@@ -81,18 +92,7 @@ export const janiceSocks: Clip = {
       trap: '写真の話が出るので、写真を見せに来たと思いやすい。写真は手元にない。',
       use: 'I got you these. Do you like them?（これ買ってきたよ。気に入った？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'proofs', reveals: ['sucked'], seg: [15.2, 20.3],
-      stem: 'Why was Janice’s day so bad?', ja: 'ジャニスの一日は、なぜひどかった？',
-      choices: ['Her photos came out badly', 'The vegetables went bad', 'Her photo shoot was canceled'], a: 0,
-      choicesJa: ['写真の出来が悪かった', '野菜がいたんだ', '撮影が中止になった'],
-      cue: '「Anyway」のあと',
-      line: 'we got *the proofs back* in that photo shoot… Anyway, they *pretty much sucked*.',
-      said: '撮影の確認用の写真が届いたが、「ほぼ最悪だった」と言う。',
-      mean: 'proofs ＝ 仕上がりを確かめる写真。sucked ＝ 最悪だった（くだけた言い方）。',
-      trap: 'vegetables は撮った物の説明。そのあとの Anyway からが本題。',
-      use: 'The pictures came out great!（写真、すごくよく撮れてた！）' },
-
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [17.0, 20.3],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [15.5, 22.2],
       stem: 'Why does Janice say “Anyway” here?', ja: 'ジャニスはなぜ、ここで「Anyway」と言う？',
       choices: ['To go back to her story', 'To start a new topic', 'To say she doesn’t care'], a: 0,
       choicesJa: ['自分の話に戻るため', '新しい話を始めるため', '気にしていないと言うため'],
@@ -103,7 +103,7 @@ export const janiceSocks: Clip = {
       trap: '新しい話を始めると思いやすい。このあとも同じ写真の話が続く。',
       use: 'Anyway, that’s what happened.（とにかく、そういうことがあったの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sucked', reveals: ['proofs'], seg: [18.35, 20.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sucked', reveals: ['proofs'], seg: [17.2, 22.2],
       stem: 'Type what she says: “Anyway, they ___ sucked.” (2 words)', ja: '彼女の言葉を書こう：“Anyway, they ___ sucked.”（2語）',
       answer: 'pretty much',
       cue: '「they」のすぐあと',
@@ -113,7 +113,7 @@ export const janiceSocks: Clip = {
       trap: 'pretty の t は軽い「ラ」の音で「プリディ」。much とつながって短く聞こえる。',
       use: 'I’m pretty much done here.（もうほとんど終わったよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'blewoff', reveals: ['shopping'], seg: [19.7, 23.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'blewoff', reveals: ['shopping'], seg: [18.7, 26.7],
       stem: 'What did Janice do with her afternoon?', ja: 'ジャニスは午後をどう過ごした？',
       choices: ['She skipped the rest of work', 'She got angry all afternoon', 'She stayed late to fix photos'], a: 0,
       choicesJa: ['残りの仕事をサボった', '午後ずっと怒っていた', '残って写真を直した'],
@@ -124,7 +124,7 @@ export const janiceSocks: Clip = {
       trap: 'blow up（かっとなる）とまぎれやすい。off は「やめて離れる」感じ。',
       use: 'I blew off the gym today.（今日はジムをサボった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'shopping', seg: [19.7, 23.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'shopping', seg: [19.7, 26.7],
       stem: 'What did Janice do after hearing about the photos?', ja: '写真のことを聞いたあと、ジャニスは何をした？',
       choices: ['She went shopping', 'She went to bed', 'She went back to work'], a: 0,
       choicesJa: ['買い物に行った', '寝た', '仕事に戻った'],
@@ -135,7 +135,7 @@ export const janiceSocks: Clip = {
       trap: 'I went がつながって短い。went のあとの -ing の言葉をしっかり聞く。',
       use: 'I went shopping to cheer myself up.（気晴らしに買い物に行った）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'sweet', seg: [42, 46.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'sweet', seg: [41.6, 46.6],
       stem: 'Why does Chandler say “That’s so sweet”?', ja: 'チャンドラーはなぜ「That’s so sweet」と言う？',
       choices: ['To thank Janice', 'To say no to the socks', 'To ask for candy'], a: 0,
       choicesJa: ['ジャニスにお礼を言うため', '靴下を断るため', 'あめをほしがるため'],
@@ -156,7 +156,7 @@ export const janiceSocks: Clip = {
       trap: 'Rockies は山脈の名前でもあり、旅行の話に聞こえやすい。続く組み合わせの話で判断。',
       use: 'I knew you liked blue, so…（青が好きだって知ってたから…）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mix', seg: [51.6, 57.4],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mix', seg: [48.7, 60.7],
       stem: 'How can Chandler wear the socks, Janice says?', ja: 'ジャニスによると、チャンドラーは靴下をどうはける？',
       choices: ['Wear two different kinds', 'Swap them for others', 'Match them to his clothes'], a: 0,
       choicesJa: ['ちがう種類を組み合わせる', '別のものと交換する', '服に合わせる'],
@@ -167,7 +167,7 @@ export const janiceSocks: Clip = {
       trap: 'match を「服に合わせる」と思いやすい。mix とセットで「組み合わせる」。',
       use: 'You can mix and match the toppings.（トッピングは自由に組み合わせられます）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'working', reveals: ['order'], seg: [63, 75],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'working', reveals: ['order'], seg: [62.3, 76.5],
       stem: 'Why does Chandler say no to more latte?', ja: 'チャンドラーはなぜラテのおかわりを断る？',
       choices: ['His first cup isn’t finished', 'He must go back to work'
 , 'He wants an espresso instead'], a: 0,
@@ -191,7 +191,7 @@ export const janiceSocks: Clip = {
       trap: 'brutal や hard をそのまま取ると、同情に聞こえやすい。何に言っているかを聞く。',
       use: 'Wow, that sounds brutal.（うわ、それはきつそう）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B1', point: 'thatsit', seg: [75.2, 78.3],
+    { id: 'i3', skill: 'phrase', level: 'B1', point: 'thatsit', seg: [74.2, 81.3],
       stem: 'What does “That’s it?” mean here?', ja: 'ここでの “That’s it?” はどういう意味？',
       choices: ['Is that all?', 'Is that true?', 'Are you okay?'], a: 0,
       choicesJa: ['それだけ？', 'それ本当？', '大丈夫？'],

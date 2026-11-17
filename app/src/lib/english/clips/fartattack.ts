@@ -15,7 +15,7 @@ export const fartAttack: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', seg: [21.0, 58.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', seg: [21, 59.7],
       stem: 'How does the plan to scare Tom end?',
       ja: 'トムを驚かせる計画は、どうなる？',
       choices: ['Jerry falls ill', 'Tom gets scared', 'Tom laughs at them'], a: 0,
@@ -26,19 +26,7 @@ export const fartAttack: Clip = {
       trap: 'いたずらは成功して終わると思いやすい。Jerry! と heart attack がヒント。',
       use: 'The joke kind of backfired.（その冗談、ちょっと裏目に出た）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'plan', seg: [21.5, 27.3],
-      stem: 'What does someone suggest doing to cheer things up?',
-      ja: '元気を出すために、何をしようと言う？',
-      choices: ['Scare Tom by the bathroom', 'Help Tom in the bathroom', 'Wait for Tom by his desk'], a: 0,
-      choicesJa: ['トイレのそばでトムを驚かせる', 'トイレでトムを手伝う', 'トムの机のそばで待つ'],
-      cue: '「for Tom and」のあとの動詞。',
-      line: 'Let’s go *wait outside the bathroom for Tom* and *scare him*.',
-      said: '「トイレの外でトムを待ちぶせして、驚かせよう」と言う。',
-      mean: 'wait for 人 and 〜 ＝ 人を待って〜する。いたずらの計画。',
-      trap: 'wait outside だけだと「手伝いに待つ」とも取れる。and のあとの動詞が目的。',
-      use: 'Let’s wait outside and surprise her.（外で待って、彼女を驚かせよう）' },
-
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'cheerup', seg: [23.7, 31.7],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'cheerup', seg: [21.1, 32.2],
       stem: 'What does “That would cheer me up” mean here?',
       ja: 'ここでの「That would cheer me up」はどういう意味？',
       choices: ['That sounds like fun', 'I don’t want to do that', 'I’m already happy'], a: 0,
@@ -49,6 +37,18 @@ export const fartAttack: Clip = {
       mean: 'cheer 人 up ＝ 元気づける。相手の言葉をくり返して「いいね」と乗っている。',
       trap: 'would を遠回しの断りと思いやすいが、すぐ計画が始まる。返事のあとも聞く。',
       use: 'Pizza tonight? — That would make my day.（今夜ピザ？ーそれ最高）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'plan', seg: [21.5, 29.3],
+      stem: 'What does someone suggest doing to cheer things up?',
+      ja: '元気を出すために、何をしようと言う？',
+      choices: ['Scare Tom by the bathroom', 'Help Tom in the bathroom', 'Wait for Tom by his desk'], a: 0,
+      choicesJa: ['トイレのそばでトムを驚かせる', 'トイレでトムを手伝う', 'トムの机のそばで待つ'],
+      cue: '「for Tom and」のあとの動詞。',
+      line: 'Let’s go *wait outside the bathroom for Tom* and *scare him*.',
+      said: '「トイレの外でトムを待ちぶせして、驚かせよう」と言う。',
+      mean: 'wait for 人 and 〜 ＝ 人を待って〜する。いたずらの計画。',
+      trap: 'wait outside だけだと「手伝いに待つ」とも取れる。and のあとの動詞が目的。',
+      use: 'Let’s wait outside and surprise her.（外で待って、彼女を驚かせよう）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'breathe', seg: [50.5, 56.0],
       stem: 'What is Jerry told to do?',
@@ -62,7 +62,7 @@ export const fartAttack: Clip = {
       trap: 'breathe（息をする）は breath（息）と似ているが、ここは動詞。fine で安心させている。',
       use: 'Just breathe. You’re gonna be fine.（ゆっくり息をして。大丈夫だよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'grip', seg: [55.6, 59.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'grip', seg: [55.6, 62.6],
       stem: 'What does “Jerry, get a grip” mean?',
       ja: '「Jerry, get a grip」はどういう意味？',
       choices: ['Calm down', 'Hold on tight', 'Get the phone'], a: 0,
@@ -96,7 +96,7 @@ export const fartAttack: Clip = {
       trap: 'boring だけだと Jerry の感想に聞こえるが、you like to do が続く。',
       use: 'I got you that weird tea you like.（君が好きな、あの変なお茶を買ってきたよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'straight', seg: [83.2, 88.05],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'straight', seg: [82.3, 88.4],
       stem: 'What does “Give it to me straight” mean?',
       ja: '「Give it to me straight」はどういう意味？',
       choices: ['Tell me honestly', 'Tell me quickly', 'Tell me very gently'], a: 0,
@@ -108,7 +108,7 @@ export const fartAttack: Clip = {
       trap: 'straight を「すぐに」と思いやすい。ここは「飾らずに」。',
       use: 'Doctor, just give it to me straight.（先生、はっきり言ってください）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'day', seg: [83.2, 88.05], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'day', seg: [83.2, 91.3], keep: true,
       stem: 'When does Ann say Jerry should leave the hospital?',
       ja: 'アンによると、ジェリーはいつ退院できる？',
       choices: ['Later today', 'Tomorrow morning', 'In a day or two', 'In a week or two'], a: 2,
@@ -120,7 +120,7 @@ export const fartAttack: Clip = {
       trap: 'out of here だけだと今すぐに聞こえる。in のあとが「デイ」なら1、2日、「ウィーク」なら1、2週間。',
       use: 'I’ll be back in a day or two.（1、2日で戻ります）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [87.6, 92.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'mild', seg: [87.6, 93.2],
       stem: 'How does the doctor describe what happened to Jerry?',
       ja: '医者は、ジェリーに何が起きたと言う？',
       choices: ['A mild heart attack', 'A serious heart attack', 'A mild stomach upset'], a: 0,
@@ -143,7 +143,7 @@ export const fartAttack: Clip = {
       trap: '入院費や「原因は彼ら」が耳に残るが、ジェリーは怒らず、払ってとも言わない。',
       use: 'I’m taking this as a sign.（これを合図だと受け止めるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'notreally', seg: [97.3, 106.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'notreally', seg: [97.3, 109.3],
       stem: 'What does the doctor say about a name for it?',
       ja: 'その呼び名について、医者は何と言う？',
       choices: ['There isn’t really one', 'It’s called a fart attack', 'It is a secret word'], a: 0,
@@ -155,7 +155,7 @@ export const fartAttack: Clip = {
       trap: 'Not really を「言いにくい」と思いやすい。続く common が理由。',
       use: 'Any questions? — Not really.（質問は？ー特にないです）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'toomuch', seg: [97.3, 110.4],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'toomuch', seg: [102.8, 112.1],
       stem: 'What does “Is that too much to ask?” mean?',
       ja: '「Is that too much to ask?」はどういう意味？',
       choices: ['It’s a small thing to want', 'How much will it cost?', 'It’s too much, he knows'], a: 0,
@@ -167,7 +167,7 @@ export const fartAttack: Clip = {
       trap: 'too much を値段や「無理でした」と思いやすい。ここは「大した頼みじゃない」と押す。',
       use: 'I just want one quiet day. Too much?（静かな一日がほしいだけ。無理？）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'sweet', seg: [109.0, 117.0],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'sweet', seg: [109, 118.9],
       stem: 'What does Jerry mean by “you’re so sweet”?',
       ja: 'ジェリーの「you’re so sweet」はどういう意味？',
       choices: ['You are very kind', 'You are very funny', 'You are very late'], a: 0,
@@ -190,7 +190,7 @@ export const fartAttack: Clip = {
       trap: 'they を直前の food と取りやすい。visit への返しなので they は見舞い客。did が前半を指す。',
       use: 'Well, you did break it.（まあ、壊したのは君だしね）', retired: true },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'glad', reveals: ['wakeup'], seg: [118.5, 129.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'glad', reveals: ['wakeup'], seg: [117.2, 125.8],
       stem: 'How does Jerry feel about what happened to him?',
       ja: 'ジェリーは、自分に起きたことをどう感じている？',
       choices: ['Glad, and ready to change', 'Angry, but too polite', 'Shy, and wants to forget'], a: 0,
@@ -213,7 +213,7 @@ export const fartAttack: Clip = {
       trap: 'I mean を言い直しと取ると、「よかった」を取り消したように聞こえる。but no のあとが着地点。',
       use: 'I mean, yeah, it’s far, but worth it.（まあ遠いけど、行く価値あり）', retired: true },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'without', seg: [121.3, 126.7],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'without', seg: [120.2, 127],
       stem: 'What does Jerry say about the hospital bills?',
       ja: 'ジェリーは入院費について何と言う？',
       choices: ['He’d rather not have them', 'He won’t pay them', 'He can pay them easily'], a: 0,
@@ -225,7 +225,7 @@ export const fartAttack: Clip = {
       trap: 'do without は「なしで済ます」とも読めるので、払わずに済むと思いやすい。',
       use: 'I could do without the rain.（雨はなくていいんだけどな）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'wakeup', seg: [121.3, 126.7],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'wakeup', seg: [121.3, 129.9],
       stem: 'After “but no”, what does Jerry call the whole thing?',
       ja: '「but no」のあと、ジェリーは今回のことを何だと言う？',
       choices: ['A warning to change', 'A lucky little break', 'A sign he’s better'], a: 0,
@@ -237,7 +237,7 @@ export const fartAttack: Clip = {
       trap: 'wake-up を「回復」や「幸運」と思いやすい。後ろの make some changes が決め手。',
       use: 'That exam was a real wake-up call.（あの試験で目が覚めた）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', seg: [125.45, 129.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', seg: [125.2, 131.9], keep: true,
       stem: 'How many more years does Jerry say he wants with his family?',
       ja: 'ジェリーは、家族とあと何年一緒にいたいと言う？',
       choices: ['At least 13', 'At least 30', 'At least 40'], a: 1,
@@ -249,7 +249,7 @@ export const fartAttack: Clip = {
       trap: 'thirty と thirteen は似ている。-teen は後ろを強く長く、-ty は前を強く言う。40 は「フォーティ」。',
       use: 'I need another ten minutes.（あと10分ください）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'leave', reveals: ['planned'], seg: [129.2, 136.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'leave', reveals: ['planned'], seg: [129.2, 137.2],
       stem: 'What do the coworkers promise Jerry at the end?',
       ja: '最後に、同僚はジェリーに何を約束する？',
       choices: ['To help with his plans', 'To pay his hospital bills', 'To leave him alone'], a: 0,
@@ -261,7 +261,7 @@ export const fartAttack: Clip = {
       trap: 'leave を「放っておく」と取ると逆になる。leave it to 人 は「人に任せる」。',
       use: 'Don’t worry about dinner. Leave it to me.（夕食は心配しないで。任せて）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'planned', seg: [131.4, 136.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'planned', seg: [129.4, 136.5],
       stem: 'Fill the gap: “…the future that ___ planned.”',
       ja: '「…the future that ___ planned.」の空所は？',
       choices: ['you’ve always', 'you always', 'you’d always'], a: 0,
@@ -273,7 +273,7 @@ export const fartAttack: Clip = {
       trap: '’ve は消えやすい。「ユヴォーウェイズ」なら you’ve、d で止まれば you’d、すぐ「オー」なら you always。',
       use: 'It’s the trip you’ve always wanted.（ずっと行きたかった旅だよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [133.1, 136.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [131.7, 137.2],
       stem: 'Type the last words: “Just ___.” (4 words)', answer: 'leave it to us',
       ja: '「Just ___.」の4語を書こう。',
       cue: '「planned」のあと、Just に続く短い語。',

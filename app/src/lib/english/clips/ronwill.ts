@@ -14,7 +14,7 @@ export const ronWill: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldnt', seg: [0.9, 4.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldnt', seg: [0.3, 7.3],
       stem: 'Fill the gap: “…you ___ have a weapon at work.”',
       ja: '「…you ___ have a weapon at work.」の空所は？',
       choices: ['shouldn’t', 'couldn’t', 'can’t'], a: 0,
@@ -25,7 +25,7 @@ export const ronWill: Clip = {
       trap: 'couldn’t なら「クドゥン」、can’t なら「キャン」で始まる。「シュ」で始まれば shouldn’t。',
       use: 'You shouldn’t park here.（ここに停めちゃだめだよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'witness', seg: [12.35, 18.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'witness', seg: [12.4, 19.9],
       stem: 'What does Ben ask Ron to do?',
       ja: 'ベンはロンに何を頼む？',
       choices: ['Sign it as a witness', 'Help them write it', 'Meet their lawyer today'], a: 0,
@@ -36,7 +36,7 @@ export const ronWill: Clip = {
       trap: 'putting together から「手伝い」と思いやすい。just finished ＝ もう書き終えた。',
       use: 'Would you be a witness for us?（証人になってもらえる？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'witness', seg: [16.5, 19.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'witness', seg: [13.1, 19.9],
       stem: 'Type Ben’s short question after “the witness”. (4 words)', answer: 'you mind signing it',
       ja: '「the witness」のあとのベンの短い質問を書こう（4語）',
       cue: '「witness」のすぐあと。', line: '…the witness. *You mind signing it*?',
@@ -45,7 +45,7 @@ export const ronWill: Clip = {
       trap: '文法どおり Do を足したくなるが、言っていない。it の t も消えるので語数で確かめる。',
       use: 'You mind closing the window?（窓、閉めてもらえる？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'pages', seg: [18.35, 22.45],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'pages', seg: [18.1, 24.5],
       stem: 'What does Ron think is wrong with Ben’s will?',
       ja: 'ベンの遺言書の何がよくないとロンは思う？',
       choices: ['It is far too long', 'It leaves out his kids', 'It gives too much away'], a: 0,
@@ -56,7 +56,7 @@ export const ronWill: Clip = {
       trap: 'give my stuff to my wife から中身への不満と思いやすい。問題は長さ。',
       use: 'You need ten pages to say no?（ノーと言うのに10ページも要る？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [25.18, 29.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [24.2, 30.6], keep: true,
       stem: 'Since what age has Ron had the same will?',
       ja: 'ロンは何歳から同じ遺言書を持っている？',
       choices: ['8', '18', '28'], a: 0,
@@ -67,7 +67,7 @@ export const ronWill: Clip = {
       trap: '「エイト」だけなら8。eighteen なら「ティーン」と長く伸び、twenty-eight なら「トゥエンティ」が先に来る。',
       use: 'I’ve lived here since I was eight.（8歳からここに住んでる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'killer', seg: [30.94, 36.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'killer', seg: [30.7, 39.2],
       stem: 'Who gets Ron’s things when he dies?',
       ja: 'ロンが死んだら、持ち物は誰のものになる？',
       choices: ['Whoever kills him', 'His wife and kids', 'His best friend'], a: 0,
@@ -78,7 +78,7 @@ export const ronWill: Clip = {
       trap: '遺言なら家族、と思いやすい。killed me まで聞くと、受け取るのは殺した相手。',
       use: 'All my stuff goes to my sister.（持ち物は全部妹に）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'push', seg: [41, 66],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'push', seg: [40.5, 66.5],
       stem: 'After reading Ron’s will, what does Ben want him to do?',
       ja: 'ロンの遺言書を読んで、ベンはロンに何をしてほしい？',
       choices: ['Get a real will', 'Witness Ben’s will', 'See a doctor'], a: 0,
@@ -89,7 +89,7 @@ export const ronWill: Clip = {
       trap: '最初は証人を頼みに来たが、話はロンの遺言書に移っている。should のあとを聞く。',
       use: 'You should really see a doctor.（本当に医者に行った方がいい）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduce', seg: [46, 49.5],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduce', seg: [43.9, 48.9],
       stem: 'What does Ben offer Ron?',
       ja: 'ベンはロンに何を申し出る？',
       choices: ['To introduce him to a lawyer', 'To write his will for him', 'To pay for the lawyer himself'], a: 0,
@@ -100,7 +100,7 @@ export const ronWill: Clip = {
       trap: 'could から過去の話と思いやすい。ここは今の申し出。',
       use: 'I could give you a ride.（車で送ろうか）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'pass', seg: [46.95, 55.15],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'pass', seg: [47, 56.9],
       stem: 'What does Ron mean by “Pass”?',
       ja: 'ロンの「Pass」はどういう意味？',
       choices: ['No, thank you', 'Give it to me', 'I did well'], a: 0,
@@ -111,7 +111,7 @@ export const ronWill: Clip = {
       trap: 'pass から「渡す」や「合格」を思いやすい。誘いへの Pass は「やめとく」。',
       use: 'Karaoke tonight? I’ll pass.（今夜カラオケ？私はパス）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'govt', reveals: ['speakof'], seg: [55.1, 66],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'govt', reveals: ['speakof'], seg: [56.9, 68.9],
       stem: 'Why does Ron suddenly want to see the lawyer?',
       ja: 'ロンはなぜ急に弁護士に会いたくなる？',
       choices: ['The government may take it', 'He has a family now', 'His will isn’t signed right'], a: 0,
@@ -122,7 +122,7 @@ export const ronWill: Clip = {
       trap: 'wife and kids も聞こえるが、ロンは動かなかった。反応したのは government の直後。',
       use: 'Okay, where do I sign?（よし、どこにサインすればいい？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'speakof', seg: [62.8, 66.1],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'speakof', seg: [62.5, 68.9],
       stem: 'Type the end: “Where’s this lawyer ___?” (3 words)', answer: 'you speak of',
       ja: '「Where’s this lawyer ___?」の空所を書こう（3語）',
       cue: '「lawyer」のすぐあと。', line: 'Where’s this lawyer *you speak of*?',
@@ -131,7 +131,7 @@ export const ronWill: Clip = {
       trap: 'of は弱く、speak にくっついて聞こえやすい。文の最後の小さな of まで書く。',
       use: 'Is this the café you spoke of?（これが話してたカフェ？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'talking', seg: [65.5, 69.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'talking', seg: [63.8, 72.1],
       stem: 'What does Ben mean by “let me do the talking”?',
       ja: 'ベンの「let me do the talking」はどういう意味？',
       choices: ['I will speak for us', 'Please talk to me', 'Let’s talk about it later'], a: 0,
@@ -142,7 +142,7 @@ export const ronWill: Clip = {
       trap: 'talk から「話しかけて」と思いやすい。do the talking ＝ 話す役をやる。',
       use: 'Let me do the talking, okay?（話は私に任せて、いい？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'over', seg: [70.5, 78.75],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'over', seg: [70.5, 79.8],
       stem: 'How does Ron feel about Ben’s talk?',
       ja: 'ベンの話を、ロンはどう感じている？',
       choices: ['Bored and tired of it', 'Very interested in it', 'Worried about it'], a: 0,
@@ -153,7 +153,7 @@ export const ronWill: Clip = {
       trap: '質問の形なので、本当に時間を聞いていると思いやすい。長い話のあとなら退屈のしるし。',
       use: 'How much longer will this take?（あとどれくらいかかるの？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'puns', seg: [79.9, 92.75],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'puns', seg: [89.1, 96.4],
       stem: 'What does Trevor’s “As I’ve said before” tell us?',
       ja: 'トレバーの「As I’ve said before」から何が分かる？',
       choices: ['Ben has made puns before', 'Trevor knows Ron very well', 'They just met today'], a: 0,
@@ -164,7 +164,7 @@ export const ronWill: Clip = {
       trap: 'before をロンの話と結びつけやすい。何を前に言ったかは文の後半の puns。',
       use: 'As I said before, I can’t go.（前にも言ったけど、行けないんだ）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'nicetry', seg: [99.75, 103.7],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'nicetry', seg: [98.7, 109.9],
       stem: 'What does Ron mean by “Nice try”?',
       ja: 'ロンの「Nice try」はどういう意味？',
       choices: ['I won’t fall for that', 'Good job, well done', 'Please try once more'], a: 0,
@@ -193,7 +193,7 @@ export const ronWill: Clip = {
       mean: 'check ～ at the door ＝ 入口で預ける。ここでは「その話はここに持ちこむな」。',
       trap: 'check を「確認する」と取ると別の意味になる。コートを預ける check と同じ。',
       use: 'Check your ego at the door.（プライドは置いてきて）' },
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'unintent', seg: [116.7, 123.95],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'unintent', seg: [116.7, 125.7],
       stem: 'Why does Ben say “Unintentional” after “I will”?',
       ja: 'ベンはなぜ「I will」のあとに「Unintentional」と言う？',
       choices: ['“I will” sounded like a pun', 'He didn’t mean to be rude', 'He forgot to sign the form'], a: 0,
@@ -204,7 +204,7 @@ export const ronWill: Clip = {
       trap: '失礼をわびたと思いやすい。直前の I will と、話題の will を結ぶ。',
       use: 'No pun intended.（しゃれのつもりじゃないよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'ballpark', seg: [123.65, 127.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'ballpark', seg: [122.5, 128],
       stem: 'What does “Just ballpark it” mean?',
       ja: '「Just ballpark it」はどういう意味？',
       choices: ['Give a rough number', 'Say where it is kept', 'List the biggest things'], a: 0,
@@ -215,7 +215,7 @@ export const ronWill: Clip = {
       trap: 'ballpark（球場）から場所の話と思いやすい。exact number（正確な数）と対になっている。',
       use: 'Can you give me a ballpark figure?（だいたいの金額を教えてもらえる？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'library', reveals: ['govt'], seg: [127.62, 134.5],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'library', reveals: ['govt'], seg: [126.1, 137],
       stem: 'Why does Ben talk about a library?',
       ja: 'ベンはなぜ図書館の話をする？',
       choices: ['To scare Ron into answering', 'To help a good cause', 'To change the topic again'], a: 0,
@@ -226,7 +226,7 @@ export const ronWill: Clip = {
       trap: '図書館はいい使い道に聞こえやすい。ロンの返事 Fine（分かった）が手がかり。',
       use: 'Fine. Do it your way.（分かった。好きにして）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [133.1, 172.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [133.1, 173],
       stem: 'How does the meeting with Trevor end?',
       ja: 'トレバーとの話し合いはどう終わる？',
       choices: ['Ron gives him his old will', 'Ron makes plans for his kids', 'Ron agrees to everything'], a: 0,
@@ -237,7 +237,7 @@ export const ronWill: Clip = {
       trap: 'trusts や children は弁護士の提案。ロンは That’s enough と打ち切る。',
       use: 'Just make it official.（正式な形にしておいて）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'joke', seg: [143.8, 152],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'joke', seg: [143.8, 152.5],
       stem: 'Is the number Ron wrote real?',
       ja: 'ロンが書いた数字は本当？',
       choices: ['Yes, he never jokes', 'No, it is a joke', 'He doesn’t say either way'], a: 0,
@@ -248,7 +248,7 @@ export const ronWill: Clip = {
       trap: 'joke が何度も聞こえるので冗談だと思いやすい。I do not joke が答え。',
       use: 'I’m not joking. It’s true.（冗談じゃない、本当だよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'children', reveals: ['hidden'], seg: [151.95, 157.1],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'children', reveals: ['hidden'], seg: [152, 159.3],
       stem: 'What does Trevor say about Ron’s kids?',
       ja: 'トレバーはロンの子どもについて何と言う？',
       choices: ['They’d never need to work', 'They’d have to work very hard', 'They’d pay big taxes'], a: 0,

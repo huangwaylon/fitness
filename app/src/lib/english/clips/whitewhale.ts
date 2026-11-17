@@ -16,7 +16,7 @@ export const whiteWhale: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'jimcall', seg: [5.1, 16.0],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'jimcall', seg: [10.6, 16.9],
       stem: 'What does Dwight mean by “That seems significant”?',
       ja: 'ドワイトの「That seems significant」はどういう意味？',
       choices: ['That means something', 'That seems like a mistake', 'That is bad news'], a: 0,
@@ -28,7 +28,7 @@ export const whiteWhale: Clip = {
       trap: 'significant を「重大＝悪い知らせ」と思いやすい。ここは自分がえらばれた喜び。',
       use: 'That’s a significant change.（それは大きな変化だね）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B1', point: 'shouldnt', seg: [15.3, 19.5],
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'shouldnt', seg: [14, 21],
       stem: 'What does Dwight say when David invites Jim?',
       ja: 'デイビッドがジムも呼ぶと、ドワイトは何と言う？',
       choices: ['Jim shouldn’t hear it', 'Jim should hear it too', 'Jim already heard it'], a: 0,
@@ -40,7 +40,7 @@ export const whiteWhale: Clip = {
       trap: 'should が2回聞こえるので、賛成と思いやすい。最初の no と、最後の n’t で決まる。',
       use: 'No, you shouldn’t. It’s a secret.（いや、だめ。秘密なの）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [26.7, 35.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [26.7, 35.8], keep: true,
       stem: 'How long did the White Pages use their old supplier?',
       ja: 'ホワイトページは前の仕入れ先を何年使っていた？',
       choices: ['3 years', '10 years', '20 years'], a: 1,
@@ -52,7 +52,7 @@ export const whiteWhale: Clip = {
       trap: 'あとの three times と混ざりやすい。短い「テン」なら10、「スリー」なら3、「トゥエンティ」なら20。',
       use: 'I’ve lived here for the last five years.（この5年ここに住んでいます）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['tenyears'], seg: [26.7, 59.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['tenyears'], seg: [26.7, 60],
       stem: 'What is David’s big news?',
       ja: 'デイビッドの大ニュースは何？',
       choices: ['A client needs a new supplier', 'Dwight is the new manager', 'Jim is leaving the company'], a: 0,
@@ -74,7 +74,7 @@ export const whiteWhale: Clip = {
       trap: 'eat を「食べる」と取ると、おごりの話に聞こえる。人の名前に向けて叫ぶならあおり。',
       use: 'Yes! Eat it, guys! I won!（よっしゃ、見たか！勝ったぞ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'newbuyer', seg: [82.0, 92.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'newbuyer', seg: [82, 92.9],
       stem: 'Who is in charge of the account now?',
       ja: '今、この取引の担当は誰？',
       choices: ['Someone new', 'Tom Peterman', 'The receptionist'], a: 0,
@@ -86,7 +86,7 @@ export const whiteWhale: Clip = {
       trap: '先に聞こえた名前や receptionist に引かれやすい。No のあとが答え。',
       use: 'Who’s in charge of this now?（今これの担当はどなたですか）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hangup', seg: [90.9, 99.15],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hangup', seg: [90.9, 99.5],
       stem: 'What does Dwight do when David starts to say more?',
       ja: 'デイビッドがまだ何か言おうとすると、ドワイトはどうする？',
       choices: ['Ends the call with thanks', 'Lets David finish talking', 'Puts David on hold again'], a: 0,
@@ -98,7 +98,7 @@ export const whiteWhale: Clip = {
       trap: 'お礼は丁寧に聞こえるが、デイビッドの文はとちゅうで切れている。',
       use: 'Thank you so much for calling.（お電話ありがとうございました）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'whyhelp', reveals: ['blow'], seg: [98.9, 127.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'whyhelp', reveals: ['blow'], seg: [98.9, 127.7],
       stem: 'Why do the coworkers want to help Dwight?',
       ja: '同僚たちはなぜドワイトを手伝いたい？',
       choices: ['He can’t sell to women', 'David asked them to help', 'He forgot the buyer’s name'], a: 0,
@@ -110,7 +110,7 @@ export const whiteWhale: Clip = {
       trap: '前に「名前を聞けなかった」とあるので、名前の話と思いやすい。can’t sell to them が理由。',
       use: 'I’m not good at selling.（売るのは苦手なんだ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'blow', seg: [118.2, 123.05],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'blow', seg: [116.9, 125.3],
       stem: 'What does “blow this” mean here?',
       ja: 'ここで「blow this」はどういう意味？',
       choices: ['Ruin this chance', 'Win a big bonus', 'Tell everyone about this'], a: 0,
@@ -122,7 +122,7 @@ export const whiteWhale: Clip = {
       trap: 'あとの bonuses に引かれやすい。can’t let（させられない）なので悪いこと。',
       use: 'Don’t blow it. You’ve got one chance.（しくじるなよ、チャンスは一回）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'thing', seg: [130.95, 135.2],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'thing', seg: [129.9, 136],
       stem: 'What does “I have the thing” mean here?',
       ja: 'ここで「I have the thing」はどういう意味？',
       choices: ['I have other plans', 'Yes, I can go', 'I have what we need'], a: 0,
@@ -156,7 +156,7 @@ export const whiteWhale: Clip = {
       trap: 'wrong を罪悪感と取りやすい。that が何を指すかを、すぐ前の文で確かめる。',
       use: 'I’m early for once. That feels weird.（めずらしく早く着いた。変な感じ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'walked', seg: [156.7, 160.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'walked', seg: [155.4, 162.5],
       stem: 'Fill the gap: “___ walked into her office.”',
       ja: '空所を埋める：「___ walked into her office.」',
       choices: ['You’ve just', 'You just', 'You’d just'], a: 0,
@@ -168,7 +168,7 @@ export const whiteWhale: Clip = {
       trap: 'v が小さく You just と思いやすい。You’d なら「ユード」と d の音。',
       use: 'I’ve just arrived.（ちょうど着いたところです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'stand', seg: [182.6, 190.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'stand', seg: [182.6, 192.5],
       stem: 'Why doesn’t Dwight sit down?',
       ja: 'ドワイトはなぜ座らない？',
       choices: ['To look strong and scary', 'To look full of energy', 'To show respect to her'], a: 0,
@@ -180,7 +180,7 @@ export const whiteWhale: Clip = {
       trap: '立つのは礼儀、と思いやすい。aggressive は「積極的」より強く、相手をおどす感じ。',
       use: 'I want to look confident.（自信があるように見せたい）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'twelve', seg: [188.3, 192.15], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'twelve', seg: [187.6, 196.1], keep: true,
       stem: 'How fast does Dwight say he will sell?',
       ja: 'ドワイトは、どのくらいで売ると言う？',
       choices: ['In 2 minutes', 'In 12 minutes', 'In 20 minutes'], a: 1,
@@ -192,7 +192,7 @@ export const whiteWhale: Clip = {
       trap: 'two なら「トゥー」で終わる。twelve は最後が「ルヴ」、twenty は「ティ」。',
       use: 'I’ll be ready in twelve minutes.（12分で準備できるよ）' },
 
-    { id: 'i5', skill: 'detail', level: 'B1', point: 'needs', seg: [191.7, 198.6],
+    { id: 'i5', skill: 'detail', level: 'B1', point: 'needs', seg: [190, 201],
       stem: 'What will Dwight do about the buyer’s needs?',
       ja: '客の希望について、ドワイトはどうするつもり？',
       choices: ['Tell her what she needs', 'Ask her what she needs', 'Give her lots of time'], a: 0,
@@ -227,7 +227,7 @@ export const whiteWhale: Clip = {
       trap: '毛の話を「耳が悪い」と取りやすい。our は人間全体、don’t は否定。',
       use: 'Show me you’re listening.（ちゃんと聞いてるって態度で見せて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'nod', seg: [249.9, 254.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'nod', seg: [248.9, 255.2],
       stem: 'Type what the coach says: “___ shows that I hear you.” (6 words)', answer: 'a little smile and a nod',
       ja: 'コーチの言葉を書き取る：「___ shows that I hear you.」（6語）',
       cue: '「What are you doing?」の答え。',
@@ -260,7 +260,7 @@ export const whiteWhale: Clip = {
       trap: '会社の方針の話と取りやすいが、話しているのは絵のこと。直前の絵の中身とつなげる。',
       use: 'It’s casual, but not in a sloppy way.（ラフだけど、だらしない感じじゃない）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'face', seg: [285.9, 292.6],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'face', seg: [285.9, 292.7],
       stem: 'How does Nellie feel about Dwight’s face?',
       ja: 'ネリーはドワイトの顔をどう感じている？',
       choices: ['It scares her', 'It makes her laugh', 'It makes her sad'], a: 0,

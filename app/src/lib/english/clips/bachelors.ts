@@ -40,7 +40,7 @@ export const threeBachelors: Clip = {
       trap: '質問の形でも、答えを知りたいのではない。挙げる理由がどれも不幸なら、からかい。',
       use: 'What led to you two hitting it off?（二人はどうして意気投合したの？）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'toast', seg: [19.2, 23.6],
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'toast', seg: [15.9, 23.3],
       stem: 'What does “All that matters is…” mean?', ja: '“All that matters is…” はどういう意味？',
       choices: ['The important thing is…', 'The only problem is…', 'The funny thing is…'], a: 0,
       choicesJa: ['大事なのは〜だ', 'ただ一つの問題は〜だ', '面白いのは〜だ'],
@@ -51,7 +51,7 @@ export const threeBachelors: Clip = {
       trap: 'matter を「問題」と思うと「ただ一つの問題」に聞こえやすい。matter は動詞で「大事だ」。',
       use: 'All that matters is you’re safe.（無事なのが一番だよ）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'cone', seg: [22.4, 28.6],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'cone', seg: [22.4, 28.7],
       stem: 'What does “raise a cone to Jerry” mean?', ja: '“raise a cone to Jerry” はどういう意味？',
       choices: ['Toast Jerry with ice cream', 'Buy Jerry more ice cream', 'Vote for Jerry'], a: 0,
       choicesJa: ['アイスでジェリーに乾杯する', 'ジェリーにアイスを買う', 'ジェリーに投票する'],
@@ -62,7 +62,7 @@ export const threeBachelors: Clip = {
       trap: 'raise から「手を挙げる（投票）」と思いやすい。raise 〜 to 人 は乾杯の決まり文句。',
       use: 'Let’s raise a glass to the happy couple.（お二人に乾杯しましょう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'backup', seg: [35.8, 42.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'backup', seg: [35.8, 44.4],
       stem: 'Why was a new cone ready so fast?', ja: '新しいコーンがすぐ出てきたのはなぜ？',
       choices: ['Jerry often drops his', 'Every cone comes with a spare', 'It was for someone else'], a: 0,
       choicesJa: ['ジェリーがよく落とすから', 'どのコーンにも予備が付くから', 'ほかの人の分だったから'],
@@ -73,7 +73,7 @@ export const threeBachelors: Clip = {
       trap: 'always から、店の決まりだと思いやすい。理由は次の文の He（ジェリー）にある。',
       use: 'I always bring a backup charger.（予備の充電器をいつも持ってる）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'dream', seg: [42.4, 76],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'dream', seg: [42.4, 77.2],
       stem: 'What happens to Andy’s “impossible” dream?', ja: 'アンディの「無理な」夢はどうなる？',
       choices: ['Chris makes part of it real', 'Everyone laughs at it', 'Andy gives up on it for now'], a: 0,
       choicesJa: ['クリスが一部をかなえる', 'みんなが笑う', 'アンディがひとまずあきらめる'],
@@ -84,7 +84,7 @@ export const threeBachelors: Clip = {
       trap: 'very specific dream で話が終わったと思いやすい。そのあとの電話と、次の場所を聞く。',
       use: 'I need a favor. Are you free tonight?（頼みがあるんだ。今夜空いてる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'score', seg: [47.5, 52], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'score', seg: [47.5, 57.7], keep: true,
       stem: 'What score does Andy want for the Colts?', ja: 'アンディが見たいコルツのスコアは？',
       choices: ['19–0', '40–9', '49–0'], a: 2,
       choicesJa: ['19対0', '40対9', '49対0'],
@@ -95,7 +95,7 @@ export const threeBachelors: Clip = {
       trap: '「ナインティーン」なら19対0、「フォーティ」で切れて最後が「ナイン」なら40対9、「フォーティナイン・ナッシング」なら49対0。',
       use: 'We won three to nothing.（3対0で勝った）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'specific', seg: [56.3, 61],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'specific', seg: [55.9, 64],
       stem: 'What is “a very specific dream”?', ja: '“a very specific dream” とは？',
       choices: ['A dream full of details', 'A very special dream', 'A very short dream'], a: 0,
       choicesJa: ['細かいところまである夢', 'とても特別な夢', 'とても短い夢'],
@@ -106,7 +106,7 @@ export const threeBachelors: Clip = {
       trap: 'specific と special は似た音なので「特別な」と思いやすい。「スペシフィック」は「具体的」。',
       use: 'Can you be more specific?（もっと具体的に言ってくれる？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'heaven', seg: [65, 71.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'heaven', seg: [64, 74.1],
       stem: 'How does Andy feel when he says “I’m dead”?', ja: '“I’m dead” と言うとき、アンディはどんな気持ち？',
       choices: ['Very, very happy', 'Very tired from the trip', 'In big trouble'], a: 0,
       choicesJa: ['最高にうれしい', '移動ですごく疲れている', '大ピンチ'],
@@ -131,7 +131,7 @@ export const threeBachelors: Clip = {
       trap: 'hope だけ聞くと素直に喜んでいるように聞こえる。前の can’t tell も聞く。',
       use: 'I can’t tell if you’re serious.（本気か冗談か分からないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'joking', seg: [89.5, 94.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'joking', seg: [87.2, 95.3],
       stem: 'Fill the gap: “I ___ tell if you’re joking…”', ja: '空所に入るのは？ “I ___ tell if you’re joking…”',
       choices: ['can’t', 'can', 'couldn’t'], a: 0,
       choicesJa: ['〜できない', '〜できる', '〜できなかった'],
@@ -142,7 +142,7 @@ export const threeBachelors: Clip = {
       trap: 'can は「クン」と短く弱い。couldn’t は「クドゥン」。「キャーン」と長く強ければ can’t。',
       use: 'I can’t tell the difference.（違いが分からない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [94.4, 101.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [92.4, 99.3],
       stem: 'How did Chris and Jim Irsay become friends?', ja: 'クリスとジム・アーセイはどうやって友だちになった？',
       choices: ['Helping teens as volunteers', 'Working at the Statehouse', 'Coaching a youth football team'], a: 0,
       choicesJa: ['ボランティアで十代を助けて', '州議会で働いて', '少年フットボールチームを教えて'],
@@ -169,7 +169,7 @@ export const threeBachelors: Clip = {
       trap: 'preferred の主語が若者なので、彼らへの皮肉に聞こえやすい。負けたのは話し手の贈り物。',
       use: 'I brought salad. They preferred the pizza.（私はサラダ。みんなピザがよかった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'jersey', seg: [110.2, 115.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'jersey', seg: [109.1, 117.1],
       stem: 'How does Reggie Wayne react to the jersey story?', ja: 'ジャージの話に、レジー・ウェインはどう反応する？',
       choices: ['It’s weird, but okay', 'He feels very honored', 'He thinks it’s a lie'], a: 0,
       choicesJa: ['変だけど、いいと思う', 'とても光栄に思う', 'うそだと思う'],
@@ -180,7 +180,7 @@ export const threeBachelors: Clip = {
       trap: 'respect から、とても感激したと思いやすい。前の weird と合わせて一つの反応。',
       use: 'Odd choice, but I respect it.（変わった選び方だけど、いいと思う）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'honor', seg: [119.4, 126.4],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'honor', seg: [119.2, 127.9],
       stem: 'Why does Andy say “Could you do me the honor?”', ja: 'アンディはなぜ「Could you do me the honor?」と言う？',
       choices: ['To ask politely', 'To say thank you', 'To say sorry'], a: 0,
       choicesJa: ['ていねいに頼むため', 'お礼を言うため', '謝るため'],
@@ -205,7 +205,7 @@ export const threeBachelors: Clip = {
       trap: 'I’ll try は投げる側の返事。誰が誰に言ったかは返事で分かる。',
       use: 'Could you do me the honor?（お願いできますか）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'rubit', seg: [159.4, 163.8],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'rubit', seg: [158.6, 166.3],
       stem: 'What does “rub it in” mean?', ja: '“rub it in” はどういう意味？',
       choices: ['Brag to make her jealous', 'Share the fun with her', 'Check on her night'], a: 0,
       choicesJa: ['自慢してうらやましがらせる', '楽しさを分けてあげる', '彼女の夜の様子を聞く'],
@@ -230,7 +230,7 @@ export const threeBachelors: Clip = {
       trap: '派手な話をそのまま信じやすい。lying to は相手を聞く質問ではなく、うその指摘。',
       use: 'Who are you kidding?（誰をだますつもり？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'table', seg: [198.6, 208.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'table', seg: [198.6, 208.4],
       stem: 'Why did Jerry think the table was theirs?', ja: 'ジェリーはなぜ、その席を自分たちの席だと思った？',
       choices: ['He misheard a name', 'It had four seats', 'He booked it last week'], a: 0,
       choicesJa: ['名前を聞きまちがえた', '席が4つあった', '先週予約した'],
@@ -255,7 +255,7 @@ export const threeBachelors: Clip = {
       trap: '量への驚きではない。返事は specify（わざわざ言う）に対するもの。',
       use: 'You’d be surprised how often that happens.（それ、意外とよくあるんだよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'likeher', seg: [232.6, 241.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'likeher', seg: [231.1, 242.6],
       stem: 'What does Ron say about Diane?', ja: 'ロンはダイアンについて何と言う？',
       choices: ['He likes her', 'He misses her', 'He will marry her'], a: 0,
       choicesJa: ['彼女が好き', '彼女に会いたい', '彼女と結婚する'],
@@ -296,7 +296,7 @@ export const threeBachelors: Clip = {
       trap: 'so many things … but は悪口の前置きではない。理由は新郎に合わせること。',
       use: 'I’ll keep it short, like the man himself.（本人らしく、手短にします）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'paid', seg: [260.9, 266.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'paid', seg: [260.9, 267.6],
       stem: 'Type it: “Your meal has already been ___ by Mr. Hibbert.” (3 words)', ja: '書こう：“Your meal has already been ___ by Mr. Hibbert.”（3語）',
       answer: 'taken care of',
       cue: '「already been」のあと',
@@ -306,7 +306,7 @@ export const threeBachelors: Clip = {
       trap: '「世話をする」の意味で考えると話が通らない。お店で聞いたら「支払い済み」。',
       use: 'Don’t worry, the bill’s taken care of.（心配しないで、会計は済んでるから）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'owes', seg: [275.3, 280.3],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'owes', seg: [275.3, 281.7],
       stem: 'Fill the gap: “I am not paying for that guy. He ___ money.”', ja: '空所に入るのは？ “He ___ money.”',
       choices: ['owes me a lot of', 'owed me a lot of', 'owes me a load of'], a: 0,
       choicesJa: ['私にたくさん借りがある', '私にたくさん借りがあった', '私に山ほど借りがある'],

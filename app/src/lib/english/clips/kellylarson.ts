@@ -14,7 +14,7 @@ export const kellyLarson: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', reveals: ['plead'], seg: [0, 26],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', reveals: ['plead'], seg: [0, 27.4],
       stem: 'What does Kelly want from Leslie?',
       ja: 'ケリーはレスリーに何を求めている？',
       choices: ['Twilight in the time capsule', 'A job in Leslie’s own office', 'Leslie to email him back'], a: 0,
@@ -25,7 +25,7 @@ export const kellyLarson: Clip = {
       trap: 'e-mailing が聞こえるのでメールの話と思いやすい。本題は suggestion のあと。',
       use: 'Can I make a suggestion?（ひとつ提案してもいい？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'refuse', seg: [7.4, 10.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'refuse', seg: [4.3, 10.3],
       stem: 'Why does Leslie begin with “I’m sorry” here?',
       ja: 'レスリーは、なぜここで「I’m sorry」から言う？',
       choices: ['To soften saying no', 'To say sorry for being late', 'To ask him to wait'], a: 0,
@@ -52,7 +52,7 @@ export const kellyLarson: Clip = {
       mean: 'plead your case ＝ 自分の主張を述べる。裁判の言い方を軽く使っている。',
       trap: 'plead を「頼みこむ・謝る」と取りやすい。case は「言い分」の意味。',
       use: 'Okay, go ahead and make your case.（じゃあ、言い分をどうぞ）' },
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'birth', seg: [36.2, 39.7],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'birth', seg: [32.9, 43.5],
       stem: 'How does Leslie feel when Kelly starts with the author’s birth?',
       ja: '作者の誕生から話し始めたケリーに、レスリーはどう感じている？',
       choices: ['Tired of it already', 'Very interested in it', 'Angry at Kelly now'], a: 0,
@@ -63,7 +63,7 @@ export const kellyLarson: Clip = {
       trap: '言葉だけならほめているようにも聞こえやすい。最後の Okay でしかたなく聞く感じ。',
       use: 'Oh, we’re starting from the very beginning.（あ、最初から話すのね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [39.3, 43.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [36.5, 46.2], keep: true,
       stem: 'How many copies have the books sold, says Kelly?',
       ja: '本は何部売れたとケリーは言う？',
       choices: ['More than 1 million', 'More than 10 million', 'More than 100 million'], a: 2,
@@ -74,7 +74,7 @@ export const kellyLarson: Clip = {
       trap: 'hundred が弱いと a million（100万）に聞こえやすい。ten なら「テン」。a と million の間を聞く。',
       use: 'It sold over a million copies.（100万部以上売れたんだよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [43.0, 46.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [39.6, 48.5],
       stem: 'Fill the gap: “Now, ___ any of the Twilight movies?”',
       ja: '「Now, ___ any of the Twilight movies?」の空所は？',
       choices: ['have you seen', 'haven’t you seen', 'did you see'], a: 0,
@@ -94,7 +94,7 @@ export const kellyLarson: Clip = {
       mean: 'shot for shot ＝ 1カットずつそのまま。とても長くなる予告。',
       trap: 'ショットを「写真」と取りやすい。映画の shot は1つのカットのこと。',
       use: 'He told me the whole plot in detail.（話を一から全部聞かされた）' },
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [55.5, 67.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [57, 69],
       stem: 'Why does Leslie say no to the books?',
       ja: 'レスリーはなぜその本を断る？',
       choices: ['They aren’t about Pawnee', 'They are too new for it', 'They are only for kids'], a: 0,
@@ -105,7 +105,7 @@ export const kellyLarson: Clip = {
       trap: 'moment in time から「新しすぎる」と思いやすい。理由は Pawnee との関係。',
       use: 'It has nothing to do with our town.（うちの町とは関係ないよ）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'forks', seg: [67.6, 75.1],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'forks', seg: [67.6, 77.2],
       stem: 'What does “except for” mean here?',
       ja: 'ここでの「except for」はどういう意味？',
       choices: ['But not', 'And also', 'Because of'], a: 0,
@@ -116,7 +116,7 @@ export const kellyLarson: Clip = {
       trap: 'exactly like のあとなので、同じ点を足すと思いやすい。except は「除いて」。',
       use: 'The room is nice, except for the noise.（音以外は、いい部屋だね）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'leave', seg: [76.5, 80],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'leave', seg: [75.9, 82],
       stem: 'What does Leslie mean by “ask you to leave”?',
       ja: 'レスリーの「ask you to leave」はどういう意味？',
       choices: ['Please go home now', 'I will ask you later', 'I have a question for you'], a: 0,
@@ -137,7 +137,7 @@ export const kellyLarson: Clip = {
       mean: '大人が子どもに言う決まり文句で、この場面と合っていない。',
       trap: '話の流れから April を責めていると取りやすいが、those kids は誰も指していない。',
       use: 'Who are you even talking about?（それ、誰の話？）' },
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'annoyed', seg: [100.6, 104.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'annoyed', seg: [98.7, 103.7],
       stem: 'How does Leslie feel, she says?',
       ja: 'レスリーは自分の気持ちを何と言う？',
       choices: ['A bit annoyed', 'Very scared', 'Really sad'], a: 0,
@@ -148,7 +148,7 @@ export const kellyLarson: Clip = {
       trap: '説教のあとなので、怒りや心配と思いやすい。本人が just annoyed と言っている。',
       use: 'Sorry, I’m just a little tired.（ごめん、ちょっと疲れてるだけ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'subject', seg: [103.3, 109.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'subject', seg: [102.3, 110],
       stem: 'Why does Leslie say “while we’re on the subject”?',
       ja: 'レスリーは、なぜ「while we’re on the subject」と言う？',
       choices: ['To add more on the same topic', 'To change to a new topic', 'To end the talk'], a: 0,
@@ -159,7 +159,7 @@ export const kellyLarson: Clip = {
       trap: 'subject（話題）から新しい話題と思いやすい。while は「〜のうちに」で同じ話の続き。',
       use: 'While we’re on the subject, who’s paying?（その話のついでに、誰が払う？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'seconds', seg: [110.2, 115.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'seconds', seg: [108.8, 115.5], keep: true,
       stem: 'How much time does Leslie’s coworker ask for?',
       ja: 'レスリーの同僚は、どれだけ時間がほしいと言う？',
       choices: ['13 seconds', '30 seconds', '3 minutes', '30 minutes'], a: 1,
@@ -170,7 +170,7 @@ export const kellyLarson: Clip = {
       trap: 'thirty は前、thirteen は後ろを強く言う。単位は minutes でなく seconds（セカンズ）。',
       use: 'Give me five minutes.（5分ちょうだい）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [115.2, 119.3],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [114, 119.8],
       stem: 'What does Leslie want to do with the meeting?',
       ja: 'レスリーは会議をどうしたい？',
       choices: ['Move it an hour later', 'Make it an hour longer', 'Start it an hour earlier'], a: 0,
@@ -181,7 +181,7 @@ export const kellyLarson: Clip = {
       trap: 'push（押す）から「前に早める」と思いやすい。予定の push はふつう遅らせる。',
       use: 'Can we push dinner to eight?（夕食を8時にずらせる？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'again', seg: [119.2, 126.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'again', seg: [119.2, 127.2],
       stem: 'What does the reply “Again?” tell us?',
       ja: '「Again?」という返事から何が分かる？',
       choices: ['This has happened before', 'This is the very first time', 'Leslie did it herself'], a: 0,
@@ -192,7 +192,7 @@ export const kellyLarson: Clip = {
       trap: 'Damn it だけなら驚いただけにも聞こえやすい。最後の Again? が手がかり。',
       use: 'The train is late? Again?（電車遅れてる？また？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'girl', seg: [128.4, 135.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'girl', seg: [128.4, 139.6],
       stem: 'Why is the coworker sad, Kelly guesses?',
       ja: 'その同僚が悲しいのはなぜだとケリーは思う？',
       choices: ['Trouble with a girl', 'Trouble with his boss', 'Trouble with his mom'], a: 0,
@@ -203,7 +203,7 @@ export const kellyLarson: Clip = {
       trap: 'あとで mom が出てくるが、それは言い返しの悪口。ケリーの推測は最初。',
       use: 'You look tired. Long day?（疲れてるね。大変な日だった？）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'cantell', reveals: ['girl'], seg: [132.5, 135.5],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'cantell', reveals: ['girl'], seg: [130, 139.6],
       stem: 'What does Kelly mean by “I can tell”?',
       ja: 'ケリーの「I can tell」はどういう意味？',
       choices: ['I can see it', 'I will tell you', 'I can say it'], a: 0,
@@ -214,7 +214,7 @@ export const kellyLarson: Clip = {
       trap: 'tell から「言う・教える」を思いやすい。can tell は「見分けられる」。',
       use: 'You’re nervous. I can tell.（緊張してるね。分かるよ）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'timeup', seg: [175.8, 179.5],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'timeup', seg: [175, 181.7],
       stem: 'What does “Time is up” mean here?',
       ja: 'ここでの「Time is up」はどういう意味？',
       choices: ['There is no more time', 'It is time to wake up', 'It is a good time'], a: 0,
@@ -225,7 +225,7 @@ export const kellyLarson: Clip = {
       trap: 'up から「起きる」を思いやすい。Time’s up は「時間が終わった」。',
       use: 'Time’s up. Pens down, please.（時間です。ペンを置いてください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'keys', seg: [176.3, 181.35],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'keys', seg: [176.3, 183.1],
       stem: 'Where are the handcuff keys, says Kelly?',
       ja: '手錠の鍵はどこにあるとケリーは言う？',
       choices: ['Hidden somewhere far away', 'In his car out in front', 'Thrown away in the trash'], a: 0,
@@ -256,7 +256,7 @@ export const kellyLarson: Clip = {
       mean: 'the fact remains は議論を決める言い方。根拠なしで使うので空回りしている。',
       trap: 'fact と legal で法律に詳しいように聞こえるが、何も示していない。',
       use: 'The fact remains, we’re late.（とにかく、遅刻は遅刻だよ）' },
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'trouble', seg: [190.2, 196.1],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'trouble', seg: [188.4, 199.1],
       stem: 'Why does Kelly say “don’t want to cause any trouble”?',
       ja: 'ケリーは、なぜ「don’t want to cause any trouble」と言う？',
       choices: ['To soften a strong demand', 'To say sorry and leave', 'To say he will fight'], a: 0,
@@ -267,7 +267,7 @@ export const kellyLarson: Clip = {
       trap: 'trouble から謝っていると思いやすい。but が来たら本題の合図。',
       use: 'I don’t mean to be rude, but…（失礼なつもりはないけど…）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [191.8, 196.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [190.8, 196.6],
       stem: 'Type what Kelly says: “But I am ___ until…” (3 words)', answer: 'not gonna leave',
       ja: '「But I am ___ until…」の空所を書こう（3語）',
       cue: '「But I am」のあと。', line: 'But I am *not gonna leave* until you put Twilight in the time capsule.',
@@ -276,7 +276,7 @@ export const kellyLarson: Clip = {
       trap: 'not の t は止まるだけで「ナッ」、gonna は「ガナ」。2語が1つに聞こえやすい。',
       use: 'I’m not gonna give up.（あきらめないよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'pillow', seg: [207.2, 221.3],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'pillow', seg: [211.7, 223.7],
       stem: 'What does Kelly’s pillow tell Leslie?',
       ja: 'ケリーの枕から、レスリーは何が分かる？',
       choices: ['He will stay a long time', 'He is hungry already', 'He wants to go home'], a: 0,

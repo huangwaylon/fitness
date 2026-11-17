@@ -27,7 +27,7 @@ export const truffled: Clip = {
       trap: '最初の「仕事はあるの？」に引かれやすい。stole from us で持ち主の争いと分かる。',
       use: 'So how is that going to work?（で、それってどうなるの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'getback', seg: [23.5, 28.6],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'getback', seg: [23.5, 29],
       stem: 'Fill the gap: “Yeah, ___ those clients back?”',
       ja: '「Yeah, ___ those clients back?」の空所は？',
       choices: ['aren’t we getting', 'are we getting', 'aren’t we giving'], a: 0,
@@ -39,7 +39,7 @@ export const truffled: Clip = {
       trap: '「ン」が残るかを聞く。残らなければ are we。giving なら「ギヴィン」と v の音。',
       use: 'Aren’t we supposed to check in first?（先にチェックインするんじゃないの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'lost', reveals: ['getback'], seg: [25.0, 28.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'lost', reveals: ['getback'], seg: [24.9, 30.5],
       stem: 'When the salespeople ask for the clients back, what is the answer?',
       ja: '営業たちが顧客を返してと言うと、答えは？',
       choices: ['No, they lost those clients', 'No, they were never really theirs', 'Not yet, corporate decides'], a: 0,
@@ -62,7 +62,7 @@ export const truffled: Clip = {
       trap: 'call を「求める」、foul を「ひどい失敗」と取りやすい。スポーツの決まり文句として聞く。',
       use: 'Wait, I call foul on that.（ちょっと、それは反則だよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'boughtout', seg: [30.1, 37.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'boughtout', seg: [28.5, 38],
       stem: 'What is Dwight’s argument for getting the clients back?',
       ja: '顧客を取り戻すための、ドワイトの言い分は？',
       choices: ['The company now owns the clients', 'The clients were his first', 'Pam and Ryan work there now'], a: 0,
@@ -74,7 +74,7 @@ export const truffled: Clip = {
       trap: '「元は自分の顧客」と言いそうだが、理屈は買収。so のあとを聞く。',
       use: 'The company was bought out last year.（その会社は去年買収された）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'trash', seg: [35.5, 50.3],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'trash', seg: [41.6, 50.8],
       stem: 'What does Michael mean by the “complaint department”?',
       ja: 'マイケルの「complaint department」はどういう意味？',
       choices: ['He won’t listen to complaints', 'He’ll pass complaints upstairs', 'He wants to hear them out'], a: 0,
@@ -86,7 +86,7 @@ export const truffled: Clip = {
       trap: '冗談の形なので、聞いてくれると思いやすい。It’s a trash can（ゴミ箱）を聞く。',
       use: 'Where can I make a complaint?（苦情はどこで言えますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [50.5, 55.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [49.5, 54.5], keep: true,
       stem: 'How long have Michael, Pam and Ryan been through a lot together?',
       ja: 'マイケルとパムとライアンは、どれくらいの間いっしょに苦労してきた？',
       choices: ['Six days', 'Six weeks', 'Sixteen weeks', 'Six months'], a: 1,
@@ -98,7 +98,7 @@ export const truffled: Clip = {
       trap: '最後が「ウィークス」なら週、「デイズ」なら日、「マンス」なら月。「シックスティーン」と長ければ16。',
       use: 'We’ve been through a lot together.（いろいろ一緒に乗り越えてきた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [86.5, 89.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [84.4, 91.8],
       stem: 'Type the advice: “I think ___ cool it with that.” (4 words)', answer: "you're gonna want to",
       ja: '忠告「I think ___ cool it with that.」の空所を書こう（4語）',
       cue: '「I think」のあと',
@@ -121,7 +121,7 @@ export const truffled: Clip = {
       trap: 'may or may not を本当の迷いと取りやすい。ぼかしのあとに but と強い語が来たら、そちらが本音。',
       use: 'I hate to say it, but we’re lost.（言いたくないけど、道に迷った）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [167.2, 171.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [167.2, 174.9], keep: true,
       stem: 'How long does the angry salesman say the lost client was his?',
       ja: '怒った営業は、失った客が何年自分の顧客だったと言う？',
       choices: ['Two years', 'Ten years', 'Twelve years', 'Twenty years'], a: 1,
@@ -133,7 +133,7 @@ export const truffled: Clip = {
       trap: '「テン」なら10、「トゥー」だけなら2。「トゥエルヴ」なら12、「トゥエニ」なら20。',
       use: 'I’ve been coming here for ten years.（ここには10年通ってる）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'quit', seg: [190.8, 199.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'quit', seg: [189.1, 199],
       stem: 'What do the salespeople tell Michael they will do?',
       ja: '営業たちはマイケルに、何をすると言う？',
       choices: ['Quit unless they get the clients', 'Quit unless Michael says sorry', 'Win the clients back alone'], a: 0,
@@ -171,7 +171,7 @@ export const truffled: Clip = {
       trap: '「遅れた」の意味や認めた返事と取りやすい。back を front に変えただけ。',
       use: 'You’ve got it backwards.（それ、逆だよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'family', seg: [233.3, 244.5],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'family', seg: [238.4, 245.8],
       stem: 'What point does the line about being “a family” make?',
       ja: '「a family」の話で、何を言いたい？',
       choices: ['He turned on his own people', 'Family should always forgive him', 'He let corporate hurt them'], a: 0,
@@ -183,7 +183,7 @@ export const truffled: Clip = {
       trap: 'family から「身内なら許す」と思いやすい。言いたいのは Then のあと。',
       use: 'I thought we were friends.（友だちだと思ってたのに）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wrong', seg: [246.0, 249.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wrong', seg: [245, 250],
       stem: 'In his talk to camera, how does Michael see the fight now?',
       ja: 'カメラに向かって、マイケルは今、けんかをどう見ている？',
       choices: ['He is in the wrong', 'Both sides share blame', 'The salespeople are wrong'], a: 0,
@@ -195,7 +195,7 @@ export const truffled: Clip = {
       trap: 'the wrong だけ聞くと、相手の話にも聞こえる。主語の I を聞く。',
       use: 'I was in the wrong. I’m sorry.（悪いのは私でした。ごめんなさい）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'hundred', reveals: ['wrong'], seg: [250.2, 265.2],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'hundred', reveals: ['wrong'], seg: [250.7, 264.8],
       stem: 'Why is his count of “a hundred” ways funny?',
       ja: '「a hundred」通りの数え方は、なぜおかしい？',
       choices: ['He counts exactly, 2 plus 98', 'He only saw it two ways', 'He loses count partway through'], a: 0,
@@ -207,7 +207,7 @@ export const truffled: Clip = {
       trap: '二つしか挙げていないと思いやすいが、残りを 98 others と言って100にしている。',
       use: 'I’ve told you, like, a hundred times.（もう百回は言ったよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'bottomline', reveals: ['wrong'], seg: [259.5, 265.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'bottomline', reveals: ['wrong'], seg: [258.4, 266.1],
       stem: 'What does “bottom line” signal here?',
       ja: 'ここでの「bottom line」は何の合図？',
       choices: ['A summing-up after all that', 'A brand new point', 'An aside before more counting'], a: 0,
@@ -231,7 +231,7 @@ export const truffled: Clip = {
       trap: 'looks をほめ言葉の出だしと取りやすい。it は直前の「手伝いなし」を指す。',
       use: 'You look tired. — I feel it.（疲れてるね。—実際疲れてる）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'favorites', seg: [288.4, 292.9],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'favorites', seg: [287.3, 292.9],
       stem: 'What does Michael apologize for at the meeting?',
       ja: 'マイケルは会議で何を謝る？',
       choices: ['Treating Pam and Ryan better', 'Playing around with Pam and Ryan', 'Letting Pam and Ryan pick clients'], a: 0,
@@ -255,7 +255,7 @@ export const truffled: Clip = {
       trap: 'That’s fair（いいよ）を断りと思いやすい。取り消したのはマイケル。',
       use: 'I take that back.（今のは取り消す）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'givingus', seg: [296.3, 299.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'givingus', seg: [294.5, 299.5],
       stem: 'Fill the gap: “___ clients back?”',
       ja: '「___ clients back?」の空所は？',
       choices: ['Are you giving us our', 'Aren’t you giving us our', 'Are you giving up our'], a: 0,
@@ -279,7 +279,7 @@ export const truffled: Clip = {
       trap: 'if の文を交換条件と思いやすい。yes も no も言っていない。',
       use: 'Let’s not get off track here.（話をそらさないでいこう）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'notenough', seg: [319.0, 325.8],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'notenough', seg: [319, 326.9],
       stem: 'Why doesn’t Michael want to give the clients back?',
       ja: 'マイケルはなぜ顧客を返したくない？',
       choices: ['Pam and Ryan would lack clients', 'He promised them the best ones', 'Pam and Ryan would quit'], a: 0,

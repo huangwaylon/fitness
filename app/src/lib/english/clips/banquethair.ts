@@ -17,7 +17,7 @@ export const banquetHair: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hype', seg: [2.0, 13.2],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hype', seg: [1.9, 13.9],
       stem: 'How does Leslie feel about tonight’s event?',
       ja: 'レスリーは今夜の会のことをどう思っている？',
       choices: ['Very excited about it', 'A little bored by the event', 'Worried about it'], a: 0,
@@ -29,7 +29,7 @@ export const banquetHair: Clip = {
       trap: 'local（地方の）から地味な会と思いやすいが、言葉は全部ほめている。',
       use: 'This party is going to be huge!（このパーティー、すごいことになるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'change', seg: [2.0, 16.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'change', seg: [10.7, 22.7],
       stem: 'Ann says, “I should probably change.” What will she change?',
       ja: 'アンの「I should probably change」。何を変える？',
       choices: ['Her clothes', 'Her plans for tonight', 'Her mind'], a: 0,
@@ -41,7 +41,7 @@ export const banquetHair: Clip = {
       trap: 'change から「予定を変える」と思いやすい。服装（dressy）の話の直後なら着替え。',
       use: 'Give me a minute to change.（着替えるからちょっと待って）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'since', seg: [16.5, 23.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'since', seg: [14.3, 23.8], keep: true,
       stem: 'Since when has Salvatore been cutting hair in town?',
       ja: 'サルヴァトーレは何年から髪を切っている？',
       choices: ['1948', '1958', '1968', '1985'], a: 1,
@@ -76,7 +76,7 @@ export const banquetHair: Clip = {
       trap: 'classic を「彼らしい」と取ると昔なじみに聞こえる。Do I know you? への答えで初対面と分かる。',
       use: 'Late again? Classic Dave.（また遅刻？さすがデイブ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'honor', reveals: ['mother'], seg: [48.2, 72.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'honor', reveals: ['mother'], seg: [48.2, 72.4],
       stem: 'Why is tonight special for Leslie?',
       ja: 'レスリーにとって、今夜はなぜ特別？',
       choices: ['Her mom is being honored', 'She is getting an award', 'She is running for mayor'], a: 0,
@@ -88,7 +88,7 @@ export const banquetHair: Clip = {
       trap: '自分が受賞すると思いやすい。in a way（ある意味）が付いている。',
       use: 'In a way, it’s my night too.（ある意味、私の夜でもある）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'mother', seg: [48.2, 57.4],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'mother', seg: [48.2, 58.2],
       stem: 'How is Leslie related to Marlene?',
       ja: 'レスリーとマーリーンの関係は？',
       choices: ['She is Marlene’s daughter', 'She is Marlene’s sister', 'They are not related at all'], a: 0,
@@ -111,7 +111,7 @@ export const banquetHair: Clip = {
       trap: '有名人の娘と知って驚いたとも取れるが、返事は答え方への文句。the hell は不満の強め。',
       use: 'What else would you call it?（ほかに何て言うの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [57.3, 60.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [55.8, 61.1],
       stem: 'Fill the gap: “Now, ___ me to do with this?”',
       ja: '空いている所に入る言葉は？',
       choices: ['what do you want', 'what did you want', 'what would you want'], a: 0,
@@ -123,7 +123,7 @@ export const banquetHair: Clip = {
       trap: 'did なら「ディ」、would なら「ウッ」が入る。ここは「ワダヤ」と「ダ」。',
       use: 'What do you want me to do?（どうしてほしい？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'mixup', seg: [60.0, 71.6],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'mixup', seg: [60.4, 72.4],
       stem: 'What does Leslie mean by “mix things up”?',
       ja: 'レスリーの「mix things up」の意味は？',
       choices: ['Try something new', 'Mix two hair styles', 'Keep it simple'], a: 0,
@@ -135,7 +135,7 @@ export const banquetHair: Clip = {
       trap: 'mix から「混ぜる」と思いやすい。things up と組むと「変化をつける」。',
       use: 'Let’s mix things up this weekend.（今週末はいつもと変えよう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [64.8, 68.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [64.4, 72.4],
       stem: 'Type what Leslie suggests: “you know, ___, something sassy” (3 words)', answer: 'pin it up',
       ja: '「you know」のあとの3語を書こう。',
       cue: '「you know」のあと。',
@@ -169,7 +169,7 @@ export const banquetHair: Clip = {
       trap: '今夜は母の会なので、パーティーのときと思いやすい。when のあとが答え。',
       use: 'When I’m rich, I’ll buy a boat.（お金持ちになったら船を買う）' },
 
-    { id: 'overdr', skill: 'phrase', level: 'B2', point: 'overdressed', seg: [90.5, 95.5],
+    { id: 'overdr', skill: 'phrase', level: 'B2', point: 'overdressed', seg: [90.5, 99.1],
       stem: 'What does “I’m way overdressed” mean?',
       ja: '「I’m way overdressed」の意味は？',
       choices: ['My clothes are too fancy', 'My clothes are too plain', 'My dress is too big'], a: 0,
@@ -181,7 +181,7 @@ export const banquetHair: Clip = {
       trap: 'over から「大きすぎる」を思いやすい。over-dressed ＝ 着かざりすぎ。',
       use: 'Am I overdressed for this place?（この店にこの服、気合い入れすぎ？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'drink', seg: [94.3, 104.9],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'drink', seg: [94.6, 106.2],
       stem: 'How much does Ann want a drink?',
       ja: 'アンはどのくらい飲み物がほしい？',
       choices: ['Very much', 'A little', 'Not at all'], a: 0, keep: true,
@@ -204,7 +204,7 @@ export const banquetHair: Clip = {
       trap: '文字通り「空気が薄い」と取りやすい。直前に大物の名前があれば、格の高さの話。',
       use: 'We’re in rarefied air tonight.（今夜は特別な人ばかりだね）' },
 
-    { id: 'becool', skill: 'pragma', level: 'B1', point: 'becool', seg: [110.5, 116.5],
+    { id: 'becool', skill: 'pragma', level: 'B1', point: 'becool', seg: [110.5, 116.7],
       stem: 'What does Leslie mean by “Be cool”?',
       ja: 'レスリーの「Be cool」の意味は？',
       choices: ['Stay calm', 'Feel cold', 'Look stylish'], a: 0,
@@ -239,7 +239,7 @@ export const banquetHair: Clip = {
       trap: 'wow を最上級のほめ言葉と取りやすい。ほめたあとの but は、反対向きの合図。',
       use: 'The cake looks great. But the frosting… wow.（ケーキは素敵。でもクリームが…すごいね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'imokay', seg: [160.5, 164.8],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'imokay', seg: [160.5, 165.9],
       stem: 'The shrimp comes by. What does Leslie’s “I’m okay” mean?',
       ja: 'エビが運ばれてきて、レスリーの「I’m okay」はどういう意味？',
       choices: ['No, thank you', 'Yes, I’ll take one', 'What is in it?'], a: 0,
@@ -251,7 +251,7 @@ export const banquetHair: Clip = {
       trap: 'thanks から受け取ると思いやすい。I’m okay はていねいな「結構です」。',
       use: 'I’m good, thanks.（大丈夫です、ありがとう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'rezone', seg: [168.6, 174.8],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'rezone', seg: [168.6, 176.2],
       stem: 'Why does Leslie want to talk to Janine?',
       ja: 'レスリーはなぜジャニーンと話したい？',
       choices: ['To make the pit a park', 'To join the zoning board', 'To ask her for a job'], a: 0,
@@ -263,7 +263,7 @@ export const banquetHair: Clip = {
       trap: '委員会に入る話と思いやすいが、on the board ＝ もう委員。',
       use: 'They turned the old school into a hotel.（古い学校がホテルになった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', seg: [176.7, 182.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', seg: [176.7, 183.1], keep: true,
       stem: 'How many award winners are at that table?',
       ja: 'あのテーブルには受賞者が何人いる？',
       choices: ['Four', 'Eight', 'Eighteen', 'Eighty'], a: 1,
@@ -285,7 +285,7 @@ export const banquetHair: Clip = {
       trap: 'brilliant をそのままほめ言葉と取りやすい。すぐ別の案を出すなら皮肉の合図。',
       use: 'Brilliant idea. Really.（すばらしい案だね。ほんとに）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'overthink', seg: [213.8, 217.6],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'overthink', seg: [213.8, 222.7],
       stem: 'What does “You’re overthinking this” mean?',
       ja: '「You’re overthinking this」の意味は？',
       choices: ['You think about it too much', 'You don’t think about it enough', 'You make it sound easy'], a: 0,

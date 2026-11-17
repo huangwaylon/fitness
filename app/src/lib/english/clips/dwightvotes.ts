@@ -20,7 +20,7 @@ export const dwightVotes: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'flatter', seg: [0.5, 28.15],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'flatter', seg: [0.5, 28.5],
       stem: 'Why does Dwight praise Jim, then take it back?',
       ja: 'ドワイトはなぜジムをほめて、それを取り消す？',
       choices: ['To show what others will do', 'To get Jim’s vote', 'To teach Jim to praise staff'], a: 0,
@@ -32,7 +32,7 @@ export const dwightVotes: Clip = {
       trap: '自分の票集めに思いやすいが、あとの from everyone（みんなから）は警告。',
       use: 'Sorry, I didn’t mean it.（ごめん、本気じゃなかった）' },
 
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nip', seg: [18.5, 25.7],
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nip', seg: [18.5, 28.5],
       stem: 'What does “nip it in the bud” mean?',
       ja: '「nip it in the bud」はどういう意味？',
       choices: ['Stop it early', 'Make it smaller', 'Wait until later'], a: 0,
@@ -44,7 +44,7 @@ export const dwightVotes: Clip = {
       trap: 'nip（つまむ）から「小さくする」と思いやすい。つぼみ＝始まったばかり、なので「早く止める」。',
       use: 'Let’s nip this problem in the bud.（この問題は早めに手を打とう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'work', seg: [24.9, 28.15],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'work', seg: [24.5, 30.7],
       stem: 'Type what Dwight says: “___.” (5 words)', answer: 'make it about the work',
       ja: 'ドワイトの言葉を書こう（5語）',
       cue: '「in the bud」のすぐあと、短い一文。',
@@ -54,7 +54,7 @@ export const dwightVotes: Clip = {
       trap: 't が軽い「ラ」の音になり、語の切れ目が消える。it を落としやすい。',
       use: 'Let’s make it about the customer.（お客さんを中心に考えよう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'data', seg: [30.3, 38.5],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'data', seg: [30.3, 38.6],
       stem: 'What does Dwight’s chart measure?',
       ja: 'ドワイトの表は何を測っている？',
       choices: ['Hours, lateness and sick days', 'Sales, calls and sick days', 'Hours, lunches and overtime'], a: 0,
@@ -66,7 +66,7 @@ export const dwightVotes: Clip = {
       trap: '営業の会社なので売上を想像しやすいが、出てくるのは hours と sick days。',
       use: 'I need to take a sick day.（今日は病欠します）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'random', seg: [38.1, 44.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'random', seg: [38.1, 47.3],
       stem: 'Why has everyone been given a number?',
       ja: 'なぜ全員に番号がつけられた？',
       choices: ['To keep scores fair and open', 'To pick the winner by chance', 'To let people vote by number'], a: 0,
@@ -78,7 +78,7 @@ export const dwightVotes: Clip = {
       trap: 'random から「くじ引き」と思いやすいが、ランダムなのは番号のほう。理由は for のあと。',
       use: 'For fairness, we’ll take turns.（公平にするため、順番にやろう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'ideal', seg: [44.0, 53.05],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'ideal', seg: [44, 53.1],
       stem: 'What is Jim starting to do with “in an ideal world”?',
       ja: 'ジムは「in an ideal world」で何を言いかけている？',
       choices: ['Saying no in a kind way', 'Saying yes, with a condition', 'Saying what prize he wants'], a: 0,
@@ -101,7 +101,7 @@ export const dwightVotes: Clip = {
       trap: 'punching を本気の脅しと取りやすいが、ありえない手の話なので冗談。',
       use: 'In a perfect world, Mondays wouldn’t exist.（理想の世界なら、月曜はない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'allsame', seg: [52.2, 56.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'allsame', seg: [51.1, 56.9],
       stem: 'What does “if it’s all the same to you” mean?',
       ja: '「if it’s all the same to you」はどういう意味？',
       choices: ['If you don’t mind', 'Since nothing changes', 'Whatever you decide'], a: 0,
@@ -113,7 +113,7 @@ export const dwightVotes: Clip = {
       trap: 'same（同じ）から「何も変わらない」と思いやすい。相手への軽い前置き。',
       use: 'If it’s all the same, I’ll sit here.（よければ、ここに座るね）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'survival', seg: [52.2, 56.9],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'survival', seg: [51.9, 56.9],
       stem: 'What does Jim take off the chart?',
       ja: 'ジムは表から何を外す？',
       choices: ['Survival skills and self-defense', 'Hours, tardiness and sick days', 'Sales numbers and phone calls'], a: 0,
@@ -147,7 +147,7 @@ export const dwightVotes: Clip = {
       trap: 'タイトルからドワイトの勝ちを思いやすいが、読まれた名前はジム。',
       use: 'There must be some mistake.（何かの手違いでしょう）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'anon', reveals: ['random'], seg: [134.6, 144.35],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'anon', reveals: ['random'], seg: [134.1, 144.7],
       stem: 'Why does Jim say he could not have picked himself?',
       ja: '自分を選べたはずがない、とジムはなぜ言う？',
       choices: ['He didn’t know who was who', 'He never saw the scores', 'Toby checked the scores first'], a: 0,
@@ -180,7 +180,7 @@ export const dwightVotes: Clip = {
       trap: '習った形に直して by と書きたくなる。to は「タ」と弱い。聞こえた音のまま書く。',
       use: 'By my count, we’re one short.（私の数えでは、一人足りない）' },
 
-    { id: 'n2', skill: 'number', level: 'B2', point: 'prize', seg: [143.6, 151.35], keep: true,
+    { id: 'n2', skill: 'number', level: 'B2', point: 'prize', seg: [143.6, 154.7], keep: true,
       stem: 'How much prize money is Jim told he has won?',
       ja: 'ジムはいくらの賞金を取ったと言われる？',
       choices: ['$25', '$250', '$750', '$1,000'], a: 1,
@@ -192,7 +192,7 @@ export const dwightVotes: Clip = {
       trap: 'thousand だけだと1000、quarter から25を思いやすい。750なら three quarters と言う。',
       use: 'That’s a quarter of the price.（定価の4分の1だよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'notaking', reveals: ['jimwins'], seg: [150.9, 158.25],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'notaking', reveals: ['jimwins'], seg: [150, 158.3],
       stem: 'How does Jim feel about winning?',
       ja: '勝ったことについて、ジムはどう感じている？',
       choices: ['Nervous and embarrassed', 'Happy and very proud', 'Angry with Dwight'], a: 0,
@@ -246,7 +246,7 @@ export const dwightVotes: Clip = {
       trap: 'obviously を皮肉と取りやすいが、すぐまじめな提案に移っている。',
       use: 'Okay, let’s get back to the point.（はい、本題に戻ろう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'record', seg: [185.35, 188.75],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'record', seg: [184.1, 196.1],
       stem: 'Why does Pam say “for the record” here?',
       ja: 'パムは、なぜここで「for the record」と言う？',
       choices: ['To make a fact clear', 'To start a written note', 'To add a small joke'], a: 0,
@@ -258,7 +258,7 @@ export const dwightVotes: Clip = {
       trap: 'record から「記録、録音」を思いやすい。会話では「はっきりさせておく」の合図。',
       use: 'For the record, I was on time.（言っておくけど、時間どおりに来たよ）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'nextscore', reveals: ['record'], seg: [188.5, 197.6],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'nextscore', reveals: ['record'], seg: [186.5, 198.5],
       stem: 'What does Pam suggest?',
       ja: 'パムは何を提案する？',
       choices: ['Jim picks the next one', 'Jim gives the prize to Dwight', 'Everyone votes again'], a: 0,
@@ -270,7 +270,7 @@ export const dwightVotes: Clip = {
       trap: 'Why（なぜ）から理由を聞いているように思いやすい。ここは「〜したら？」という提案。',
       use: 'Why don’t we just take a taxi?（タクシーで行けばいいんじゃない？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'three', seg: [200.2, 204.9], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'three', seg: [198, 204.9], keep: true,
       stem: 'Which employee number has the next highest score?',
       ja: '次に点が高いのは、従業員番号何番？',
       choices: ['3', '13', '30'], a: 0,

@@ -16,7 +16,7 @@ export const dwightHobbit: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [0, 5.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [0, 6.1],
       stem: 'Why is “I mean” said in the Cabo talk?', ja: 'カボの話では、なぜ “I mean” と言う？',
       choices: ['To lead into his reason', 'To fix a wrong word', 'To take back his doubt'], a: 0,
       choicesJa: ['理由を話し始めるため', 'まちがえた言葉を直すため', '迷いを取り消すため'],
@@ -27,7 +27,7 @@ export const dwightHobbit: Clip = {
       trap: 'I mean は言い直しにも使うので、まちがいを直したと思いやすい。何も直していない。',
       use: 'I don’t know. I mean, it’s pretty far.（どうかな。だって結構遠いし）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'cabo', seg: [0, 6.95],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'cabo', seg: [0, 8],
       stem: 'How does Ryan’s friend sound, talking about Cabo?', ja: 'カボの話をするライアンの友だちは、どんな人に聞こえる？',
       choices: ['He looks down on poor places', 'He worries about safety', 'He is tired of fancy trips'], a: 0,
       choicesJa: ['貧しい国を見下している', '安全を心配している', 'ぜいたくな旅にあきている'],
@@ -38,7 +38,7 @@ export const dwightHobbit: Clip = {
       trap: 'third world（第三世界）から、治安の心配だと思いやすい。I don’t go to see に注目。',
       use: 'I’m not really a luxury traveler.（ぜいたく旅行はあまりしない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'cabo', seg: [3.0, 6.95],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'cabo', seg: [2.9, 8],
       stem: 'What does Ryan’s friend say people go to Cabo for?', ja: 'カボに行くと何が手に入ると、ライアンの友だちは言う？',
       choices: ['Some glamour', 'Real local life', 'Peace and quiet'], a: 0,
       choicesJa: ['華やかさ', '本当の地元の暮らし', '静かな時間'],
@@ -49,7 +49,7 @@ export const dwightHobbit: Clip = {
       trap: 'see more poverty が聞こえて、地元の暮らしだと思いやすい。前に don’t がある。',
       use: 'I just want a little luxury.（ちょっとぜいたくしたいだけ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'offer', seg: [6.8, 29.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'offer', seg: [6.8, 30.1],
       stem: 'Why have Michael and Dwight come to the club?', ja: 'マイケルとドワイトはなぜクラブに来た？',
       choices: ['Ryan had invited them to party', 'They promised Ryan a night out', 'They came to check on Ryan'], a: 0,
       choicesJa: ['ライアンにパーティーに誘われたから', 'ライアンと遊ぶ約束をしたから', 'ライアンの様子を見に来たから'],
@@ -61,7 +61,7 @@ export const dwightHobbit: Clip = {
       trap: 'your offer の your に注意。誘ったのはライアン。様子見ではない。',
       use: 'We’re here for the party.（パーティーに来たんだ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'offer', seg: [9.8, 13.85],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'offer', seg: [9.8, 15.4],
       stem: 'What does “taking you up on your offer” mean?', ja: '“taking you up on your offer” はどういう意味？',
       choices: ['Accepting Ryan’s invite', 'Raising Ryan’s offer', 'Checking the offer still stands'], a: 0,
       choicesJa: ['ライアンの誘いに乗る', 'ライアンの申し出を上げる', '誘いがまだ有効か確かめる'],
@@ -72,7 +72,7 @@ export const dwightHobbit: Clip = {
       trap: 'up を「上げる」と思うと、値上げの話に聞こえやすい。take 〜 up on でひとまとまり。',
       use: 'I’ll take you up on that coffee.（そのコーヒーの話、乗るよ）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'tada', seg: [11.2, 15.55],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'tada', seg: [11.1, 17.6],
       stem: 'Why does Michael say “So, ta-da”?', ja: 'マイケルはなぜ “So, ta-da” と言う？',
       choices: ['To show off a surprise', 'To say sorry for coming', 'To cut his story short'], a: 0,
       choicesJa: ['サプライズのように登場を見せるため', '来たことを謝るため', '話を短く切るため'],
@@ -83,7 +83,7 @@ export const dwightHobbit: Clip = {
       trap: '急に来たので、謝っていると思いやすい。マイケルはむしろ得意げ。',
       use: 'Ta-da! I made dinner.（じゃーん！夕飯作ったよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'iknow', seg: [23.8, 27.4],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'iknow', seg: [23, 29.3],
       stem: 'What does “I know it’s you guys” mean here?', ja: 'ここでの “I know it’s you guys” はどういう意味？',
       choices: ['They didn’t need to say it', 'He expected them tonight', 'He’s glad it’s really them'], a: 0,
       choicesJa: ['言わなくても分かる', '今夜来ると思っていた', '本当に二人でよかった'],
@@ -93,6 +93,17 @@ export const dwightHobbit: Clip = {
       mean: 'I know ＝ 分かってる。見れば分かることを言われ、「言わなくていい」と返している。',
       trap: 'I know を「来ると思ってた」と思いやすい。名乗りへの返事。',
       use: 'I know, I know. You told me.（分かってるって。聞いたよ）' },
+
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'howyou', seg: [36.5, 42.1],
+      stem: 'What does “How you doing?” mean here?', ja: 'ここでの “How you doing?” はどういう意味？',
+      choices: ['Hello, nice to meet you', 'What are you doing?', 'How did you get here?'], a: 0,
+      choicesJa: ['こんにちは、よろしく', '何してるの？', 'どうやって来たの？'],
+      cue: '「This is Troy」のあと',
+      line: 'This is Troy. — Hey, nice to meet you. — *How you doing?*',
+      said: '「こちらトロイ」「どうも、はじめまして」「やあ、元気？」とあいさつする。',
+      mean: 'How you doing? ＝ How are you doing?（元気？）。あいさつで、答えは求めていない。',
+      trap: 'doing から「何してる？」と思いやすい。会ったときのあいさつ。',
+      use: 'Hey, how you doing?（やあ、元気？）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wizard', 'house'], seg: [36.8, 81.7],
       stem: 'What keeps happening to Dwight at the club?', ja: 'クラブで、ドワイトに何度も起きることは？',
@@ -105,18 +116,7 @@ export const dwightHobbit: Clip = {
       trap: 'ドワイトの短い返事は冷たく聞こえやすい。どれも本気の答えで、ネタにされているのは彼。',
       use: 'Stop teasing me. It isn’t funny.（からかわないで。面白くないよ）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'howyou', seg: [38.5, 42.5],
-      stem: 'What does “How you doing?” mean here?', ja: 'ここでの “How you doing?” はどういう意味？',
-      choices: ['Hello, nice to meet you', 'What are you doing?', 'How did you get here?'], a: 0,
-      choicesJa: ['こんにちは、よろしく', '何してるの？', 'どうやって来たの？'],
-      cue: '「This is Troy」のあと',
-      line: 'This is Troy. — Hey, nice to meet you. — *How you doing?*',
-      said: '「こちらトロイ」「どうも、はじめまして」「やあ、元気？」とあいさつする。',
-      mean: 'How you doing? ＝ How are you doing?（元気？）。あいさつで、答えは求めていない。',
-      trap: 'doing から「何してる？」と思いやすい。会ったときのあいさつ。',
-      use: 'Hey, how you doing?（やあ、元気？）' },
-
-    { id: 's1', skill: 'sound', level: 'B2', point: 'resemble', seg: [43.0, 46.15],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'resemble', seg: [42, 47.9],
       stem: 'Fill the gap: “You ___ the…”', ja: '空所に入るのは？ “You ___ the…”',
       choices: ['resemble', 'remember', 'resent'], a: 0,
       choicesJa: ['似ている', '覚えている', '腹を立てる'],
@@ -138,7 +138,7 @@ export const dwightHobbit: Clip = {
       trap: '中身の訂正に聞こえるが、正しているのはほめ方。訂正は何を守るためかを聞く。',
       use: 'No, no, I meant that as a joke.（いやいや、冗談のつもりだったの）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wizard', seg: [45.9, 48.95],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wizard', seg: [45.7, 50.7],
       stem: 'What does “a regular banking wizard” say about Dwight?', ja: '“a regular banking wizard” は、ドワイトについて何と言っている？',
       choices: ['A real genius with money', 'An ordinary bank worker', 'Just okay with money'], a: 0,
       choicesJa: ['お金の本物の天才', 'ふつうの銀行員', 'お金はまあまあ'],
@@ -160,7 +160,7 @@ export const dwightHobbit: Clip = {
       trap: '家の質問は財産の話にも聞こえる。hobbit に続く size の語なら、ネタは体の小ささ。',
       use: 'Ha ha. Very funny.（はいはい、面白いね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'nofood', seg: [52.3, 61.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'nofood', seg: [57.1, 62.1],
       stem: 'Why can’t Dwight have the first thing he orders?', ja: 'ドワイトはなぜ最初に頼んだものを食べられない？',
       choices: ['The place doesn’t serve any food', 'The chicken fingers ran out', 'He must order a bottle'], a: 0,
       choicesJa: ['店に食べ物がないから', 'チキンフィンガーが売り切れたから', 'ボトルで頼まないといけないから'],
@@ -182,7 +182,7 @@ export const dwightHobbit: Clip = {
       trap: '断られたら謝る、と思いやすい。then は「それなら」で切りかえの合図。',
       use: 'Oh, okay. Then I’ll have tea.（あ、そう。じゃあ紅茶で）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'cups', seg: [61.0, 68.9],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'cups', seg: [61, 69.7],
       stem: 'What does Dwight order instead?', ja: '代わりに、ドワイトは何を頼む？',
       choices: ['Olives and cherries', 'Two cups of coffee', 'Two Midori Sours'], a: 0,
       choicesJa: ['オリーブとチェリー', 'コーヒー2杯', 'ミドリサワー2杯'],
@@ -204,7 +204,7 @@ export const dwightHobbit: Clip = {
       trap: 'Yeah を「冗談に乗った」と取りやすい。続く normal、cool は本気でかばう言葉。',
       use: 'Don’t worry, he’s cool.（心配ないよ、いいやつだから）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'ownsown', seg: [78.6, 82.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'ownsown', seg: [77.1, 85.4],
       stem: 'Fill the gap: “This guy ___ beet farm.”', ja: '空所に入るのは？ “This guy ___ beet farm.”',
       choices: ['owns his own', 'owns a whole', 'owned his own'], a: 0,
       choicesJa: ['自分の〜を持っている', '〜をまるごと持っている', '自分の〜を持っていた'],
@@ -215,7 +215,7 @@ export const dwightHobbit: Clip = {
       trap: 'h が消えると a whole に聞こえやすい。「ズィゾ」の音が残るか聞く。owned なら「ド」で止まる。',
       use: 'She owns her own café.（彼女は自分のカフェを持っている）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'evenknow', seg: [86.2, 89.05],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'evenknow', seg: [85.7, 90.7],
       stem: 'Type: “What a crazy word, man. ___ what that means.” (4 words)', ja: '書こう：“What a crazy word, man. ___ what that means.”（4語）',
       answer: "i don't even know",
       cue: '「crazy word, man」のすぐあと',
@@ -225,7 +225,7 @@ export const dwightHobbit: Clip = {
       trap: 'don’t の t が次の even にくっつき、2語が1語に聞こえる。「ン」を手がかりにする。',
       use: 'I don’t even know where to start.（どこから始めればいいかも分からない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'weevil', seg: [89.0, 95.35],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'weevil', seg: [88.9, 96.4],
       stem: 'What does Dwight say weevils do?', ja: 'ゾウムシは何をすると、ドワイトは言う？',
       choices: ['Eggs inside, babies eat out', 'Eggs outside, babies eat in', 'Eggs in soil, babies eat roots'], a: 0,
       choicesJa: ['中に卵、幼虫が食べて出る', '外に卵、幼虫が食べて入る', '土に卵、幼虫が根を食べる'],
@@ -236,7 +236,7 @@ export const dwightHobbit: Clip = {
       trap: '卵は外、幼虫が中へ、と思いやすい。inside と out の向きを聞く。',
       use: 'The dog chewed its way out.（犬がかじって外に出た）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'spring', seg: [91.75, 95.35],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'spring', seg: [90.2, 96.4],
       stem: 'When do the babies eat their way out?', ja: '幼虫はいつ食べながら出てくる？',
       choices: ['When spring arrives', 'Just before spring', 'Once spring is over'], a: 0,
       choicesJa: ['春になったら', '春の少し前', '春が終わったら'],
@@ -247,7 +247,7 @@ export const dwightHobbit: Clip = {
       trap: 'come を「近づいている」と思うと、春の前に聞こえやすい。文の頭の come ＋時は「その時が来たら」。',
       use: 'Come Friday, we’ll be on the beach.（金曜になれば、もうビーチだ）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'toomuch', seg: [95.2, 98.85],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'toomuch', seg: [93.9, 100.4],
       stem: 'What is “too much” for Ryan’s friend?', ja: 'ライアンの友だちにとって「too much」なのは何？',
       choices: ['The gross details', 'The strange word', 'The drinks he had'], a: 0,
       choicesJa: ['気持ち悪い話の中身', '変な言葉', '飲んだお酒'],
@@ -258,7 +258,7 @@ export const dwightHobbit: Clip = {
       trap: 'バーなので、お酒の量だと思いやすい。答えているのは説明の中身。',
       use: 'Okay, that’s too much information.（もういい、それ以上は聞きたくない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'bathroom', seg: [98.6, 101.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'bathroom', seg: [98.3, 103.3], keep: true,
       stem: 'How often has Ryan already gone to the bathroom, says Dwight?', ja: 'ドワイトによると、ライアンはもう何回トイレに行った？',
       choices: ['Once', 'Twice', 'Several times'], a: 2,
       choicesJa: ['1回', '2回', '何回も'],
@@ -269,7 +269,7 @@ export const dwightHobbit: Clip = {
       trap: 'once なら「ワンス」、twice なら「トゥワイス」と短い。「セヴラル」と長ければ several。',
       use: 'I’ve called you several times.（何回も電話したよ）' },
 
-    { id: 'p5', skill: 'pragma', level: 'B2', point: 'maybe', seg: [102.2, 105.8],
+    { id: 'p5', skill: 'pragma', level: 'B2', point: 'maybe', seg: [101.5, 108.4],
       stem: 'Why does Ryan say “I don’t know, maybe”?', ja: 'ライアンはなぜ “I don’t know, maybe” と言う？',
       choices: ['To avoid a real answer', 'To agree to see a doctor', 'To thank Dwight for caring'], a: 0,
       choicesJa: ['軽く受け流すため', '医者に行くと言うため', '心配してくれたお礼を言うため'],
@@ -280,7 +280,7 @@ export const dwightHobbit: Clip = {
       trap: 'maybe を「そうかも」と賛成に思いやすい。I don’t know と並ぶと、流す合図。',
       use: 'I don’t know, maybe later.（さあ、またあとでかな）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'cranberry', seg: [102.2, 107.9],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'cranberry', seg: [101.5, 109.1],
       stem: 'Why does Dwight offer cranberry juice?', ja: 'ドワイトはなぜクランベリージュースを頼もうとする？',
       choices: ['He wants to help Ryan', 'He wants to tease Ryan', 'He thinks Ryan drank too much'], a: 0,
       choicesJa: ['ライアンを助けたい', 'ライアンをからかいたい', 'ライアンが飲みすぎだと思う'],

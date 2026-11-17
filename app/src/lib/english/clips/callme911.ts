@@ -27,7 +27,7 @@ export const callMe911: Clip = {
       trap: 'surface を体の表面と取ると、隠れたけがの話に。but のあとの気持ちを聞く。',
       use: 'On the surface, she seems fine.（表面上は、彼女は平気そう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'text911', seg: [48.9, 55.9],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'text911', seg: [48.9, 56.2],
       stem: 'Why does Michael text “911”?',
       ja: 'マイケルはなぜ「911」とメッセージを送る？',
       choices: ['People don’t call him back', 'People don’t read his texts', 'David’s assistant won’t help'], a: 0,
@@ -62,7 +62,7 @@ export const callMe911: Clip = {
       trap: '「話し合いになっていない」の不満から、謝ってほしいと思いやすい。本題は最後の質問。',
       use: 'Is there any way we can change seats?（席を替えてもらう方法はありますか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'reasons', seg: [62.7, 68.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'reasons', seg: [62.7, 70.1],
       stem: 'What is David’s last reason for hiring Toby back?',
       ja: 'トビーを戻した理由のうち、デビッドの最後の理由は？',
       choices: ['David likes him', 'Michael likes him', 'The staff like him'], a: 0,
@@ -74,7 +74,7 @@ export const callMe911: Clip = {
       trap: '電話の話なので、I が誰か取り違えやすい。話しているのはデビッド。',
       use: 'It’s close, it’s cheap, and I like it.（近いし安いし、気に入ってる）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'decided', seg: [62.7, 69.75],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'decided', seg: [62.7, 73],
       stem: 'What does David mean by “And that’s that”?',
       ja: 'デビッドの「And that’s that.」はどういう意味？',
       choices: ['It’s decided, no more talk', 'Please tell me if it’s okay', 'Those are all my reasons'], a: 0,
@@ -86,7 +86,7 @@ export const callMe911: Clip = {
       trap: 'Okay? を本当の質問と思いやすい。that’s that が来たら返事は求めていない。',
       use: 'We’re leaving at six, and that’s that.（6時に出る。以上）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [69.4, 74.8],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [68.3, 75],
       stem: 'Why does Michael say “With all due respect” here?',
       ja: 'マイケルは、なぜここで「With all due respect」と言う？',
       choices: ['To disagree with David politely', 'To thank David for his help', 'To ask David to repeat it'], a: 0,
@@ -98,7 +98,7 @@ export const callMe911: Clip = {
       trap: 'respect から尊敬やお礼と思いやすい。この前置きのあとには、ほぼ反論が来る。',
       use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'decided', seg: [69.4, 74.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'decided', seg: [69.4, 75.5],
       stem: 'David says, “That’s because it isn’t.” What does he mean?',
       ja: '「That’s because it isn’t.」で、デビッドは何を言いたい？',
       choices: ['It’s not a discussion', 'He will listen now', 'Michael can talk later'], a: 0,
@@ -110,7 +110,7 @@ export const callMe911: Clip = {
       trap: 'That’s because を言い訳の始まりと思いやすい。it は直前の a dialogue を指す。',
       use: 'That’s because it isn’t up to you.（それは君が決めることじゃないからだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [75.0, 81.15], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [75, 81], keep: true,
       stem: 'How long was Toby back before Michael noticed, according to David?',
       ja: 'デビッドによると、マイケルはどのくらいトビーに気づかなかった？',
       choices: ['A day', 'A week', 'A month'], a: 1,
@@ -122,7 +122,7 @@ export const callMe911: Clip = {
       trap: 'entire で長い期間を想像しやすい。day は「デイ」、week は「ウィーク」、month は「マンス」。',
       use: 'I spent an entire week on it.（丸一週間かけたんだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'annex', seg: [80.5, 88.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'annex', seg: [79.5, 88.5],
       stem: 'Why didn’t Michael go to the annex?',
       ja: 'マイケルはなぜ別館に行かなかった？',
       choices: ['Holly used to work there', 'Toby is always there', 'It is too far away'], a: 0,
@@ -134,7 +134,7 @@ export const callMe911: Clip = {
       trap: 'トビーの席がある場所なので、トビーが理由と思いやすい。because のあとは Holly。',
       use: 'That’s where we first met.（そこは私たちが初めて会った場所）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'havetogo', reveals: ['haveto'], seg: [88.5, 96.0],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'havetogo', reveals: ['haveto'], seg: [88.5, 98.2],
       stem: 'Why does David say “I have to go” here?',
       ja: 'デビッドは、なぜここで「I have to go」と言う？',
       choices: ['To end the phone call', 'To go and see Toby', 'To ask Michael to leave'], a: 0,
@@ -146,7 +146,7 @@ export const callMe911: Clip = {
       trap: 'go（行く）から、どこかへ出かけると思いやすい。電話では「切るね」の意味。',
       use: 'Sorry, I have to go. Talk later!（ごめん、もう切るね。またあとで！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [94.9, 97.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [93.9, 99.9],
       stem: 'Type it: “Is there no way we can ___?” (4 words)', answer: 'get rid of him',
       ja: '「Is there no way we can ___?」の4語を書こう。',
       cue: '「we can」のあと、つながった四語。',
@@ -156,7 +156,7 @@ export const callMe911: Clip = {
       trap: 'of と him が弱く、二語に聞こえやすい。get rid of はひとまとまりで覚える。',
       use: 'How do I get rid of this smell?（このにおい、どうやって消すの？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cause', seg: [94.9, 100.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cause', seg: [94.9, 101.3],
       stem: 'What does David mean by “Not without cause”?',
       ja: 'デビッドの「Not without cause.」はどういう意味？',
       choices: ['Only with a good reason', 'Only when his contract ends', 'Only if Toby wants to go'], a: 0,
@@ -179,7 +179,7 @@ export const callMe911: Clip = {
       trap: 'I have cause で本当の問題を期待しやすい。because のあとで中身を確かめる。',
       use: 'I have a reason: I don’t like it.（理由はある。気に入らないだけ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [103.4, 106.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [102.6, 107.6],
       stem: 'Fill the gap: “You ___ get along with Toby.”',
       ja: '「You ___ get along with Toby.」の空所は？',
       choices: ['have to', 'had to', '’ll have to'], a: 0,
@@ -203,7 +203,7 @@ export const callMe911: Clip = {
       trap: '電話で「嫌いだ」と言ったので、辞めさせると思いやすい。電話では断られている。',
       use: 'Nice to see you again.（また会えてうれしい）' },
 
-    { id: 'nt1', skill: 'infer', level: 'B2', point: 'acting', reveals: ['sweet'], seg: [113.5, 126.5],
+    { id: 'nt1', skill: 'infer', level: 'B2', point: 'acting', reveals: ['sweet'], seg: [114.9, 127.9],
       stem: 'Does Michael really mean his warm welcome?',
       ja: 'マイケルの温かい歓迎は本心？',
       choices: ['No, it is an act', 'Yes, he missed Toby', 'He is not sure yet'], a: 0,
@@ -215,7 +215,7 @@ export const callMe911: Clip = {
       trap: '「仲良くしろ」のあとなので、本気の努力と思いやすい。acting の一語で決まる。',
       use: 'Just act natural.（自然にふるまって）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'back', seg: [124.5, 133.5],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'back', seg: [124.4, 133.6],
       stem: 'What does “Great to have you back” mean?',
       ja: '「Great to have you back」はどういう意味？',
       choices: ['I’m glad you’re here again', 'I want you to go back', 'Please come back soon'], a: 0,
@@ -227,7 +227,7 @@ export const callMe911: Clip = {
       trap: 'back から「帰って」と思いやすい。have you back で「あなたが戻ってくる」。',
       use: 'Welcome! Great to have you back.（おかえり！戻ってくれてうれしい）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'sweet', seg: [133.8, 142.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'sweet', seg: [133.8, 143.8],
       stem: 'How does Toby take Michael’s welcome?',
       ja: 'トビーはマイケルの歓迎をどう受け取る？',
       choices: ['Happy and touched', 'Sure it is a joke', 'Cold and doubtful'], a: 0,
@@ -239,7 +239,7 @@ export const callMe911: Clip = {
       trap: 'Wow を驚きや疑いと思いやすい。続く sweet と too が、素直に喜ぶ合図。',
       use: 'Aw, that’s sweet of you.（わあ、優しいね）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'mustfun', seg: [144.5, 150.5],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'mustfun', seg: [144.5, 153],
       stem: 'What does “That must have been fun” mean?',
       ja: '「That must have been fun.」はどういう意味？',
       choices: ['I’m sure it was fun', 'It has to be fun', 'Was it really fun?'], a: 0,
@@ -273,7 +273,7 @@ export const callMe911: Clip = {
       trap: 'ただの質問やうらやみに聞こえやすい。続けて聞く「戻る」「残る」の二つで本音が出る。',
       use: 'Why don’t you stay a little longer?（もう少しいたら？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'kindof', seg: [163.7, 166.0],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'kindof', seg: [162.7, 168.1],
       stem: 'Type what Toby says: “It’s actually ___ to meet people.” (3 words)', answer: 'kind of hard',
       ja: '「It’s actually ___ to meet people.」の3語を書こう。',
       cue: '「actually」のすぐあと、速い三語。',
@@ -294,7 +294,7 @@ export const callMe911: Clip = {
       trap: '努力不足の話とも取れるが、for you は人柄を指す。文のあとの付け足しは、皮肉が出やすい場所。',
       use: 'Mornings are hard. For me, anyway.（朝はつらいよ。少なくとも僕はね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'dying', seg: [179.2, 193.9],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'dying', seg: [179.1, 194.8],
       stem: 'How does Michael feel after trying to be nice?',
       ja: '仲良くしようとしたあと、マイケルはどう感じている？',
       choices: ['Very unhappy inside', 'Angry at David', 'Hopeful about Toby'], a: 0,
@@ -306,7 +306,7 @@ export const callMe911: Clip = {
       trap: '文字どおりの「死ぬ」ではない。I tried と dying inside は落ちこみの言葉。',
       use: 'I tried, but it didn’t work.（やってみたけど、だめだった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'snail', seg: [185.5, 190.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'snail', seg: [184.8, 191.8],
       stem: 'What does Michael say trying to be Toby’s friend is like?',
       ja: 'トビーと友だちになろうとするのは、何のようだとマイケルは言う？',
       choices: ['Being friends with an evil snail', 'Being friends with an evil snake',

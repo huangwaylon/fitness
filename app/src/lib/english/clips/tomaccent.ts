@@ -40,7 +40,7 @@ export const tomAccent: Clip = {
       trap: 'your guy で味方に聞こえやすい。本人が慌てて打ち消したら、からかいの合図。',
       use: 'Ask Mike. He’s your guy.（マイクに聞いて。彼が適任）', retired: true },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sorted', seg: [59.0, 66.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sorted', seg: [59, 67.1],
       stem: 'What does Tom mean by “get you sorted”?',
       ja: 'トムの「get you sorted」はどういう意味？',
       choices: ['Help you with everything', 'Put your papers in order', 'Send you to someone else'], a: 0,
@@ -76,7 +76,7 @@ export const tomAccent: Clip = {
       trap: 'wins を「得をする」と取りやすい。何と何を比べた直後かを聞く。',
       use: 'Looks like I win this round.（今回は私の勝ちみたい）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'forms', seg: [87.0, 94.2], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'forms', seg: [86, 94], keep: true,
       stem: 'Type what Tom says: “Uh, just ___ and we will be all set.” (4 words)', answer: 'fill out these forms',
       ja: 'トムの言葉を入力：「Uh, just ___ and we will be all set.」（4語）',
       cue: '「just」のすぐあと',
@@ -86,7 +86,7 @@ export const tomAccent: Clip = {
       trap: 'out が小さく短く、fill these と聞こえやすい。4語あるか数える。',
       use: 'Please fill out this form first.（まずこの用紙に記入してください）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'insane', seg: [96.8, 100.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'insane', seg: [95.9, 102.5],
       stem: 'Fill the gap: “So, ___ insane. That’s fun.”',
       ja: 'すき間をうめよう：「So, ___ insane. That’s fun.」',
       choices: ['you’ve gone', 'you went', 'you’re going'], a: 0,
@@ -98,7 +98,7 @@ export const tomAccent: Clip = {
       trap: 'went なら最後に t の音、going なら「ング」。「ガン」と n で終われば gone。',
       use: 'Prices have gone up again.（また値段が上がった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'league', seg: [99.0, 104.65],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'league', seg: [98.7, 105],
       stem: 'What does “She’s so out of my league” mean?',
       ja: '「She’s so out of my league」はどういう意味？',
       choices: ['She is too good for me', 'She is from another country', 'She doesn’t like sports'], a: 0,
@@ -110,7 +110,7 @@ export const tomAccent: Clip = {
       trap: 'league からスポーツのリーグを思いやすい。ここは「自分より上のレベル」という意味。',
       use: 'She’s out of my league.（彼女はぼくには高嶺の花だ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'amazing', seg: [104.0, 108.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'amazing', seg: [102, 108.6],
       stem: 'How does April feel about Tom’s problem?',
       ja: 'トムの困りごとを、エイプリルはどう思っている？',
       choices: ['She enjoys it a lot', 'She feels sorry for him', 'She is angry at him'], a: 0,
@@ -133,7 +133,7 @@ export const tomAccent: Clip = {
       trap: '名前だけだと何の合図か迷いやすい。直後の返事が、言葉の働きを教えてくれる。',
       use: 'Come on. I’m serious.（ねえ、本気なんだって）', retired: true },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'stop', seg: [108.3, 115.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'stop', seg: [108, 115.7],
       stem: 'What does April tell Tom to do?',
       ja: 'エイプリルはトムに何をしろと言う？',
       choices: ['Stop the British accent', 'Ask Nadia out to dinner', 'Buy Nadia some coffee'], a: 0,
@@ -156,7 +156,7 @@ export const tomAccent: Clip = {
       trap: '唐突な結婚の話は照れ隠しに聞こえやすい。警告のどの語に飛びついたかを聞く。',
       use: 'Either you tell her, or I will.（君が言うか、私が言うかだ）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'bags', seg: [119.6, 128.38], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'bags', seg: [119.6, 130.7], keep: true,
       stem: 'How many bags of coffee beans does Tom bring Nadia?',
       ja: 'トムはナディアに、コーヒー豆を何袋持ってくる？',
       choices: ['2', '4', '14', '40'], a: 1,
@@ -168,7 +168,7 @@ export const tomAccent: Clip = {
       trap: '「フォー」のすぐあとに bags なら4、「トゥー」なら2。「フォーティーン」と後ろが長ければ14、「フォーティ」なら40。',
       use: 'I got you a little of everything.（いろいろ少しずつ買ってきたよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cold', seg: [134.2, 141.48], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cold', seg: [133.5, 145.3], keep: true,
       stem: 'How does Tom explain why his accent is gone?',
       ja: 'なまりが消えたわけを、トムはどう説明する？',
       choices: ['He had a cold', 'He went to London', 'He talked too much'], a: 0,
@@ -180,7 +180,7 @@ export const tomAccent: Clip = {
       trap: 'British が聞こえると、イギリス旅行と思いやすい。理由は I had a のあとの一語。',
       use: 'Sorry, I had a cold last week.（ごめん、先週かぜをひいてて）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'noqs', reveals: ['cold'], seg: [140.0, 147.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'noqs', reveals: ['cold'], seg: [140, 148.2],
       stem: 'Why does Tom say “no need for any more questions”?',
       ja: 'トムはなぜ「もう質問はいらないね」と言う？',
       choices: ['To stop all talk about it', 'To ask if she believes him', 'To say his story was made up'], a: 0,
@@ -192,19 +192,7 @@ export const tomAccent: Clip = {
       trap: 'story から「作り話」と思いやすい。ここの story は「その件」。no need for で終わりにする。',
       use: 'That’s all there is to it.（それだけの話だよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'leave', seg: [172.6, 183.9],
-      stem: 'How does Nadia feel about Pawnee?',
-      ja: 'ナディアはポーニーをどう思っている？',
-      choices: ['She wants to leave soon', 'She wants to come back', 'She wants to stay longer'], a: 0,
-      choicesJa: ['早く出て行きたい', 'また来たい', 'もっといたい'],
-      cue: '許可証をたのむ文の最後',
-      line: 'so I can go home to Indianapolis and *never come back here*.',
-      said: '「家に帰って、二度とここに来なくていいように、許可証をください」とたのむ。',
-      mean: 'never come back here ＝「二度とここに来ない」。早くこの町を出たいという本音。',
-      trap: 'come back が聞こえて、また来たいと思いやすい。前の never で反対の意味になる。',
-      use: 'I’ll never come back here.（もう二度とここには来ない）' },
-
-    { id: 's2', skill: 'sound', level: 'B2', point: 'attend', seg: [174.3, 179.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'attend', seg: [174.3, 184],
       stem: 'Fill the gap: “Um, well, I’m ___ be attending the event.”',
       ja: 'すき間をうめよう：「Um, well, I’m ___ be attending the event.」',
       choices: ['not actually gonna', 'actually not gonna', 'now actually gonna'], a: 0,
@@ -216,7 +204,19 @@ export const tomAccent: Clip = {
       trap: 'I’m のすぐあとが「アクチュ」なら actually not。「ナウ」と口が開けば now。「ナッ」と止まれば not。',
       use: 'I’m not actually going tonight.（実は今夜は行かないんだ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', seg: [184.0, 194.1],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'leave', seg: [175, 184.5],
+      stem: 'How does Nadia feel about Pawnee?',
+      ja: 'ナディアはポーニーをどう思っている？',
+      choices: ['She wants to leave soon', 'She wants to come back', 'She wants to stay longer'], a: 0,
+      choicesJa: ['早く出て行きたい', 'また来たい', 'もっといたい'],
+      cue: '許可証をたのむ文の最後',
+      line: 'so I can go home to Indianapolis and *never come back here*.',
+      said: '「家に帰って、二度とここに来なくていいように、許可証をください」とたのむ。',
+      mean: 'never come back here ＝「二度とここに来ない」。早くこの町を出たいという本音。',
+      trap: 'come back が聞こえて、また来たいと思いやすい。前の never で反対の意味になる。',
+      use: 'I’ll never come back here.（もう二度とここには来ない）' },
+
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', seg: [184.2, 196.2],
       stem: 'How will Tom keep Nadia in town, he says?',
       ja: 'トムは、どうやってナディアを町に引き止めると言う？',
       choices: ['By slowing down her paperwork', 'By helping out at her clinic', 'By buying her more coffee'], a: 0,
@@ -250,7 +250,7 @@ export const tomAccent: Clip = {
       trap: '白状にも聞こえるが、すぐ Bureaucracy と役所のせいにする。カメラへの作戦を思い出す。',
       use: 'I know, it sounds crazy, right?（でしょ、変な話だよね）', retired: true },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'form', seg: [195.9, 202.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'form', seg: [194.2, 206.1], keep: true,
       stem: 'Which form does Tom say Nadia should have filled out?',
       ja: 'ナディアが書くべきだったのは何番の書類だとトムは言う？',
       choices: ['3208', '3218', '3248', '3280'], a: 2,
@@ -262,7 +262,7 @@ export const tomAccent: Clip = {
       trap: '後半が「フォーティエイト」なら3248、「オーエイト」なら3208、「エイティーン」なら3218、「エイティ」で終われば3280。',
       use: 'You’re supposed to use the other door.（反対のドアを使うことになってるよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'stall', seg: [210.85, 217.7], keep: true,
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'stall', seg: [209.3, 220.7], keep: true,
       stem: 'Why does Tom bring out the blender and fruit?',
       ja: 'トムはなぜ、ミキサーと果物を出してくる？',
       choices: ['To keep her there longer', 'To say sorry for the mix-up', 'To celebrate the done forms'], a: 0,
@@ -286,7 +286,7 @@ export const tomAccent: Clip = {
       trap: 'トムがピクニックや別の公園をすすめるので、行くと思いやすい。彼女は怒って断る。',
       use: 'Well, that was a wasted trip.（来ただけむだだった）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B1', point: 'offer', seg: [256.0, 264.8],
+    { id: 'r1', skill: 'pragma', level: 'B1', point: 'offer', seg: [256, 267.2],
       stem: 'Why does Tom say “Maybe I can drive you around”?',
       ja: 'トムはなぜ「Maybe I can drive you around」と言う？',
       choices: ['To offer to help her', 'To ask her to drive', 'To say sorry to her'], a: 0,

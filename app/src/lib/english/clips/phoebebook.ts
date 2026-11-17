@@ -15,7 +15,7 @@ export const phoebebook: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'kind', seg: [0, 4.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'kind', seg: [0, 4.8],
       stem: 'Which kind did they buy?',
       ja: '買ってきたのはどの種類？',
       choices: ['The kind with a little girl', 'The kind with a baby', 'The kind with a little boy'], a: 0,
@@ -27,7 +27,7 @@ export const phoebebook: Clip = {
       trap: 'baby と little girl が何度も入れかわる。最初の一文だけを聞く。',
       use: 'You got the wrong kind.（違う種類を買ってきたね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'were', reveals: ['kind'], seg: [0, 4.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'were', reveals: ['kind'], seg: [0, 6.6],
       stem: 'Fill the gap: “You said ___ get the kind with the baby.”',
       ja: '「You said ___ get the kind with the baby.」の空所は？',
       choices: ['we’re going to', 'we were going to', 'we weren’t going to'], a: 1,
@@ -49,7 +49,7 @@ export const phoebebook: Clip = {
       trap: 'relationships（恋愛関係）が聞こえると、助言していると思いやすい。彼女がしていることを聞く。',
       use: 'Do you mind if I take notes?（メモを取ってもいいですか）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'creep', seg: [4, 7.9],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'creep', seg: [2.2, 11],
       stem: 'What does “*creeps me out*” mean?',
       ja: '「creeps me out」はどういう意味？',
       choices: ['It feels weird and scary', 'It makes me a little angry', 'It moves slowly toward me'], a: 0,
@@ -61,7 +61,7 @@ export const phoebebook: Clip = {
       trap: 'creep は「ゆっくり進む」の意味もあり、迷いやすい。out がつくと「ぞっとする」。',
       use: 'This old hotel creeps me out.（この古いホテル、なんだか不気味）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['slower'], seg: [12.9, 16],
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['slower'], seg: [11.9, 17.7],
       stem: 'Why does Phoebe say “I’m sorry” here?',
       ja: 'フィービーは、なぜここで「I’m sorry」と言う？',
       choices: ['To stop them and ask something', 'To say sorry before she leaves', 'To show she feels bad for them'], a: 0,
@@ -73,7 +73,7 @@ export const phoebebook: Clip = {
       trap: 'sorry から「謝っている」と思いやすい。すぐあとに頼みが来たら、割り込みの合図。',
       use: 'Sorry, could you say that again?（すみません、もう一度言ってもらえますか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'slower', seg: [13.2, 16.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'slower', seg: [12.7, 17.7],
       stem: 'Type what Phoebe asks: “Can you please ___?” (4 words)', answer: 'talk a little slower',
       ja: '「Can you please ___?」の空所を書こう（4語）',
       cue: '「please」のあと', line: 'Can you please *talk a little slower*?',
@@ -82,7 +82,7 @@ export const phoebebook: Clip = {
       trap: 'talk a が「トーカ」と一語に聞こえ、a を落としやすい。little は「リロ」に近い。',
       use: 'Could you speak a little slower?（もう少しゆっくり話してもらえますか）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'caught', reveals: ['book'], seg: [14.2, 18.6],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'caught', reveals: ['book'], seg: [14, 19],
       stem: 'What do Monica and Chandler find out here?',
       ja: 'ここでモニカとチャンドラーが気づくことは？',
       choices: ['Phoebe is writing about them', 'Phoebe has finished her book', 'Phoebe has lost her book'], a: 0,
@@ -94,7 +94,7 @@ export const phoebebook: Clip = {
       trap: 'going と book から「本の進み具合」と思いやすい。This（このけんか）が主語。',
       use: 'Is this going online?（これ、ネットに出すの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'about', reveals: ['pitfalls'], seg: [15.9, 21.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'about', reveals: ['pitfalls'], seg: [15.9, 23.4],
       stem: 'What is Phoebe’s book about?',
       ja: 'フィービーの本は何についての本？',
       choices: ['Mistakes couples make', 'Her old boyfriends', 'How to win a fight'], a: 0,
@@ -106,7 +106,7 @@ export const phoebebook: Clip = {
       trap: 'relationships だけ聞くと、自分の恋愛の本と思いやすい。',
       use: 'It’s a book about travel mistakes.（旅の失敗についての本だよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknow', reveals: ['about'], seg: [16.9, 21.4],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknow', reveals: ['about'], seg: [16.1, 21.7],
       stem: 'Why does Phoebe say “*you know*” here?',
       ja: 'フィービーがここで「you know」と言うのはなぜ？',
       choices: ['To start her examples', 'To ask if they know', 'To get time to think'], a: 0,
@@ -128,7 +128,7 @@ export const phoebebook: Clip = {
       trap: 'trap を「人にしかけるわな」と取りやすい。言いかえは what not to do で意味をつかむ。',
       use: 'What are the pitfalls of renting a car?（レンタカーの注意点は？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'excuse', seg: [18.6, 25.9],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'excuse', seg: [17.2, 26.2],
       stem: 'How do Monica and Chandler feel at “Excuse me?”',
       ja: '「Excuse me?」のとき、二人はどんな気持ち？',
       choices: ['Angry about her words', 'Sorry for being loud', 'Happy to be in her book'], a: 0,
@@ -140,7 +140,7 @@ export const phoebebook: Clip = {
       trap: 'Excuse me を「すみません」と取りやすい。悪い例と言われた直後の、強い上がり調子。',
       use: 'Excuse me? That’s my seat.（ちょっと、そこ私の席ですけど）' },
 
-    { id: 't2', skill: 'phrase', level: 'B1', point: 'great', seg: [20.9, 24],
+    { id: 't2', skill: 'phrase', level: 'B1', point: 'great', seg: [18.5, 24.1],
       stem: 'Phoebe says, “*Keep going*.” What does she want?',
       ja: 'フィービーの「Keep going」はどういう意味？',
       choices: ['They should not stop', 'They should go home', 'They should talk quietly'], a: 0,
@@ -152,7 +152,7 @@ export const phoebebook: Clip = {
       trap: 'going から「行く・帰る」と思いやすい。keep 〜ing は「〜し続ける」。',
       use: 'Keep going, I’m listening.（続けて、聞いてるよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'matters', reveals: ['excuse'], seg: [23.9, 29.8],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'matters', reveals: ['excuse'], seg: [23.9, 30.9],
       stem: 'What does Phoebe add after “Excuse me?”',
       ja: '「Excuse me?」のあと、フィービーは何を付け足す？',
       choices: ['Fights don’t matter with love', 'All couples fight like this',
@@ -165,7 +165,7 @@ export const phoebebook: Clip = {
       trap: '「どのカップルもけんかする」はよくある慰めだが、ここでは言っていない。',
       use: 'None of that matters now.（今となってはどうでもいいよ）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'compliment', reveals: ['matters'], seg: [31, 37.5],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'compliment', reveals: ['matters'], seg: [30.2, 37.5],
       stem: 'What does “*as long as* it’s a compliment” mean?',
       ja: '「as long as it’s a compliment」はどういう意味？',
       choices: ['Only if it is nice', 'Even if it is not nice', 'Because it is long'], a: 0,
@@ -177,7 +177,7 @@ export const phoebebook: Clip = {
       trap: 'long から「長い」と思いやすい。as long as でひとまとまりの言い方。',
       use: 'It’s fine as long as it’s quick.（すぐ済むなら大丈夫）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'marsha', seg: [53.2, 62.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'marsha', seg: [53.2, 63.4],
       stem: 'Who does Phoebe say she is writing about?',
       ja: 'フィービーは、だれのことを書いていると言う？',
       choices: ['Two other people', 'Herself and her ex', 'Joey and his date'], a: 0,
@@ -200,7 +200,7 @@ export const phoebebook: Clip = {
       trap: 'OK, fine. を「分かった、やめる」と思いやすい。このあと仕返しが来る。',
       use: 'Okay, fine. Your turn.（分かった、じゃあ次はきみの番）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'knowwhat', reveals: ['turn'], seg: [62.5, 68.5],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'knowwhat', reveals: ['turn'], seg: [62.4, 69.2],
       stem: 'What comes after “Then *you know what*?”',
       ja: '「Then you know what?」のあとに来るのは？',
       choices: ['A new plan', 'A real question', 'An apology'], a: 0,
@@ -212,7 +212,7 @@ export const phoebebook: Clip = {
       trap: '最後が上がるので、質問と思いやすい。答えを待たずに話が続く。',
       use: 'You know what? Let’s just take a taxi.（じゃあさ、もうタクシーで行こう）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'phyllis', reveals: ['see'], seg: [65.2, 75],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'phyllis', reveals: ['see'], seg: [64.3, 75.8],
       stem: 'Who is “Phyllis” really?',
       ja: '「フィリス」は本当はだれのこと？',
       choices: ['Phoebe herself', 'Marsha', 'A new friend'], a: 0,
@@ -224,7 +224,7 @@ export const phoebebook: Clip = {
       trap: 'Phyllis を本当にいる人と思いやすい。いすに座っているのはだれかを見る。',
       use: 'Oh, I see what you’re doing.（あ、何をしてるか分かったよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'see', reveals: ['phyllis'], seg: [70.6, 73.6],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'see', reveals: ['phyllis'], seg: [69.1, 75],
       stem: 'Type what Phoebe says: “Oh. I ___.” (4 words)', answer: 'see what you\'re doing',
       ja: '「Oh. I ___.」の空所を書こう（4語）',
       cue: '「Oh.」のあと', line: 'Oh. I *see what you\'re doing*.',
@@ -233,7 +233,7 @@ export const phoebebook: Clip = {
       trap: 'what you’re がつながって「ワッチャ」に聞こえ、you’re を落としやすい。',
       use: 'I see what you’re doing.（ねらいは分かってるよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'medicine', seg: [76.2, 80.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'medicine', seg: [75.3, 81.4],
       stem: 'What does “*my own medicine*” mean here?',
       ja: 'ここでの「my own medicine」はどういう意味？',
       choices: ['What I did to others', 'My advice to others', 'The pills I take'], a: 0,

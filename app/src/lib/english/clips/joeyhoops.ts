@@ -26,7 +26,7 @@ export const joeyHoops: Clip = {
       trap: 'smaller から「天狗」の話と深読みしやすいが、返事は事実の訂正だけ。',
       use: 'Wait, this isn’t the same place?（あれ、ここ同じ場所じゃないの？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'while', seg: [0, 4.0],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'while', seg: [0, 6.8],
       stem: 'What does Joey mean by “It’s been a while”?',
       ja: 'ジョーイの「It’s been a while」はどういう意味？',
       choices: ['A long time since we met', 'We met a short time ago', 'We have been waiting'], a: 0,
@@ -38,7 +38,7 @@ export const joeyHoops: Clip = {
       trap: 'a while ago（少し前）と混ざりやすい。It’s been ＝ 時間がたった。',
       use: 'Nice to see you again. It’s been a while.（また会えてうれしい。久しぶりだね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'start', seg: [13.3, 16.55],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'start', seg: [11.4, 16.9],
       stem: 'Fill the gap: “When ___ start?”',
       ja: '「When ___ start?」の空所は？',
       choices: ['do you want me to', 'do you want to', 'do you need me to'], a: 0,
@@ -50,7 +50,7 @@ export const joeyHoops: Clip = {
       trap: 'me が飲みこまれて want to に聞こえやすい。need なら「ニー」で始まる。',
       use: 'When do you want me to come by?（いつ寄ればいい？）' },
 
-    { id: 'pw', skill: 'pragma', level: 'B1', point: 'whydont', seg: [13.3, 17.3],
+    { id: 'pw', skill: 'pragma', level: 'B1', point: 'whydont', seg: [12.6, 17.6],
       stem: 'When Joey asks when to start, what does Terry say?',
       ja: 'いつ始めるかと聞かれ、テリーは何と言う？',
       choices: ['Let’s start now', 'Why haven’t you started?', 'Let’s start later'], a: 0,
@@ -62,7 +62,7 @@ export const joeyHoops: Clip = {
       trap: 'why を「なぜ」と文字どおりに取ると、理由を聞いているように聞こえる。we と組なら提案。',
       use: 'Why don’t we start right now?（今すぐ始めない？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'scenes', seg: [17.3, 20.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'scenes', seg: [16.1, 21.1],
       stem: 'What does Terry say he is giving Joey?',
       ja: 'テリーはジョーイに何を渡すと言う？',
       choices: ['The audition scenes', 'The first episode script', 'A list of times'], a: 0,
@@ -86,7 +86,7 @@ export const joeyHoops: Clip = {
       trap: 'ジョーイが昔の役を説明するので「忘れていた」に見えるが、テリーは理由を聞いているだけ。',
       use: 'Why would you think that?（なんでそう思ったの？）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'think', seg: [24.9, 31.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'think', seg: [24.9, 31.7],
       stem: 'Fill the gap: “___ think that?”',
       ja: '「___ think that?」の空所は？',
       choices: ['Why would you', 'Why did you', 'Why do you'], a: 0,
@@ -98,7 +98,7 @@ export const joeyHoops: Clip = {
       trap: 'd だけが残るので did に聞こえやすい。did なら「ディ」、do なら「ドゥ」の母音が出る。',
       use: 'Why would you think that?（なんでそう思うの？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'twin', seg: [27.3, 34.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'twin', seg: [26.8, 34.5],
       stem: 'Why did Joey expect to be offered the part?',
       ja: 'ジョーイはなぜ、役をもらえると思った？',
       choices: ['He played Striker’s twin', 'He played Striker before', 'He was promised the part'], a: 0,
@@ -121,19 +121,7 @@ export const joeyHoops: Clip = {
       trap: '語順どおりに訳すと意味が通らない。言いそこないは、直前の話から言いたいことを組み立てる。',
       use: 'Nobody knows this job better than me.（この仕事を一番わかってるのは私）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['sorry', 'hoop'], seg: [34.0, 76.3],
-      stem: 'Does Joey get the part without an audition?',
-      ja: 'ジョーイは、オーディションなしで役をもらえる？',
-      choices: ['No, the rule stays', 'Yes, Terry gives in', 'Yes, for his old role'], a: 0,
-      choicesJa: ['いいえ、決まりは変わらない', 'はい、テリーが折れる', 'はい、昔の役のおかげで'],
-      cue: 'テリーの返事の固さ。',
-      line: '*Everybody has to audition*. … I’m sorry, Joey.',
-      said: '全員オーディションだと言われ、ジョーイは自慢や文句で言い返すが、テリーは変えない。',
-      mean: 'rules are rules ＝ 決まりは決まり。どちらも折れない場面。',
-      trap: '昔の役の話が続くので、それで決まると思いやすい。I’m sorry のあとの答えを聞く。',
-      use: 'Sorry, rules are rules.（ごめん、決まりは決まりなんだ）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'everybody', seg: [34.4, 37.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'everybody', seg: [33.1, 38.1],
       stem: 'What is Joey told about auditions?',
       ja: 'オーディションについて、ジョーイは何と言われる？',
       choices: ['Everybody has to do one', 'Everybody else did one', 'Most actors have to'], a: 0,
@@ -145,7 +133,19 @@ export const joeyHoops: Clip = {
       trap: 'has to は「ハスタ」とつながり、has done にも聞こえる。主語と has to を聞く。',
       use: 'Everybody has to show their ticket.（全員チケットを見せてください）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'need', reveals: ['series'], seg: [39.0, 45.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['sorry', 'hoop'], seg: [33.8, 76.3],
+      stem: 'Does Joey get the part without an audition?',
+      ja: 'ジョーイは、オーディションなしで役をもらえる？',
+      choices: ['No, the rule stays', 'Yes, Terry gives in', 'Yes, for his old role'], a: 0,
+      choicesJa: ['いいえ、決まりは変わらない', 'はい、テリーが折れる', 'はい、昔の役のおかげで'],
+      cue: 'テリーの返事の固さ。',
+      line: '*Everybody has to audition*. … I’m sorry, Joey.',
+      said: '全員オーディションだと言われ、ジョーイは自慢や文句で言い返すが、テリーは変えない。',
+      mean: 'rules are rules ＝ 決まりは決まり。どちらも折れない場面。',
+      trap: '昔の役の話が続くので、それで決まると思いやすい。I’m sorry のあとの答えを聞く。',
+      use: 'Sorry, rules are rules.（ごめん、決まりは決まりなんだ）' },
+
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'need', reveals: ['series'], seg: [39, 45.9],
       stem: 'Why does Joey say “I don’t really need to do this”?',
       ja: 'ジョーイはなぜ「I don’t really need to do this」と言う？',
       choices: ['To act like he doesn’t care', 'To say no to the part', 'To say he dislikes the part'], a: 0,
@@ -157,7 +157,7 @@ export const joeyHoops: Clip = {
       trap: 'ていねいな辞退に聞こえやすいが、断ってはいない。自慢が続くのが合図。',
       use: 'I don’t need this, you know.（別に困ってないんだけどね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'series', seg: [42.4, 45.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'series', seg: [39.6, 45.9],
       stem: 'What does Joey say he already has?',
       ja: 'ジョーイは、何をもう持っていると言う？',
       choices: ['His own cable TV show', 'A small part in a show', 'A show on a big network'], a: 0,
@@ -169,7 +169,7 @@ export const joeyHoops: Clip = {
       trap: 'my own を聞き逃すと「出演」に聞こえる。my own と cable の両方を聞く。',
       use: 'I have my own room now.（もう自分の部屋があるんだ）' },
 
-    { id: 'h3', skill: 'humor', level: 'B1', point: 'robot', reveals: ['series'], seg: [42.4, 48.6],
+    { id: 'h3', skill: 'humor', level: 'B1', point: 'robot', reveals: ['series'], seg: [39.6, 48.6],
       stem: 'What does Joey add about his show?',
       ja: 'ジョーイは、自分の番組について何を付け足す？',
       choices: ['It has a robot', 'It is very popular', 'It is on every night'], a: 0,
@@ -181,7 +181,7 @@ export const joeyHoops: Clip = {
       trap: '自慢の続きなので「人気」と思いやすい。間をおいた with のあとを聞く。',
       use: 'I have a car. Well, a scooter.（車があるんだ。まあ、スクーターだけど）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'sorry', seg: [48.5, 52.3],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'sorry', seg: [47.7, 53.9],
       stem: 'How does Terry answer Joey?',
       ja: 'テリーは、ジョーイにどう答える？',
       choices: ['Kind but firm', 'Sorry and ready to change', 'Polite but angry'], a: 0,
@@ -193,7 +193,7 @@ export const joeyHoops: Clip = {
       trap: '日本語の「すみません」は譲る前ぶれにもなるが、英語の sorry のあとは断りが多い。',
       use: 'I’m sorry, but that’s our policy.（申し訳ありませんが、規則でして）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sorry', seg: [48.6, 52.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sorry', seg: [47.7, 53.9],
       stem: 'Type what Terry says after “I’m sorry, Joey.” (5 words)', answer: "that's the way it is",
       ja: '「I’m sorry, Joey.」のあとの5語を書こう。',
       cue: 'Joey のあと。最初の語は二回聞こえても一回で。',
@@ -215,7 +215,7 @@ export const joeyHoops: Clip = {
       trap: 'huh? や special は冗談にも聞こえるが、相手を責める言い方。話の向きをつかむ。',
       use: 'Who do you think you are?（何様のつもり？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'special', seg: [54.4, 60.9],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'special', seg: [53.5, 61.9],
       stem: 'How does Joey sound after his long pause?',
       ja: '長い間のあと、ジョーイはどんな話し方？',
       choices: ['Mocking, with hurt pride', 'Hurt and begging', 'Teasing in a warm way'], a: 0,
@@ -238,7 +238,7 @@ export const joeyHoops: Clip = {
       trap: '狙っている相手が笑いの的とは限らない。言いかけで止まる文は、話し手が崩れている合図。',
       use: 'Let me start over. What I mean is…（言いなおすね。つまり…）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hoops', seg: [62.1, 65.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hoops', seg: [61.1, 66.9],
       stem: 'What does “jump through hoops” mean here?',
       ja: 'ここでの「jump through hoops」はどういう意味？',
       choices: ['Do pointless tests for him', 'Compete with each other', 'Do circus tricks'], a: 0,

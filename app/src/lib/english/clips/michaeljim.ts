@@ -17,7 +17,7 @@ export const michaelJim: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'hair', seg: [6.4, 16.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'hair', seg: [8.4, 20.4],
       stem: 'How is Pam thinking of wearing her hair for the wedding?',
       ja: 'パムは結婚式で髪をどうするつもり？',
       choices: ['Down and loose, with big curls', 'Up, with a few loose curls', 'Down and straight, under the veil'],
@@ -30,7 +30,7 @@ export const michaelJim: Clip = {
       trap: 'curls（巻き髪）だけ拾うとアップを思いやすい。down と up のどちらが聞こえたかで決まる。',
       use: 'I think I’ll wear my hair up today.（今日は髪をアップにしようかな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'torture', seg: [28.3, 42.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'torture', seg: [27.4, 38.5],
       stem: 'Why does Michael think the hair talk is hard for Jim?',
       ja: '髪の話はジムにはつらい、とマイケルはなぜ思う？',
       choices: ['Jim had feelings for Pam', 'Jim was still sad about Katie', 'Jim drinks when things go badly'], a: 0,
@@ -42,7 +42,7 @@ export const michaelJim: Clip = {
       trap: 'あとの Katie や drinks（お酒）に引かれやすい。話したのは feelings for Pam。',
       use: 'Waiting for the results is torture.（結果待ちはほんとにつらい）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'confidant', reveals: ['blurt'], seg: [38.4, 47],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'confidant', reveals: ['blurt'], seg: [38.4, 47.8],
       stem: 'What does Jim mean by “the world’s worst confidant”?',
       ja: 'ジムの言う「the world’s worst confidant」はどういう意味？',
       choices: ['Michael can’t keep secrets', 'Michael isn’t confident', 'Michael is bad at drinking'], a: 0,
@@ -54,7 +54,7 @@ export const michaelJim: Clip = {
       trap: 'confident（自信がある）と音がほぼ同じ。すぐ前の confided（打ち明けた）がヒント。',
       use: 'I’m the world’s worst cook.（私、料理は世界一下手なの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'between', seg: [55.3, 64.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'between', seg: [55.3, 65.8],
       stem: 'What is Jim asking Michael to do?',
       ja: 'ジムはマイケルに何を頼んでいる？',
       choices: ['Keep it just between them', 'Remember the boat trip', 'Ask Pam about it'], a: 0,
@@ -66,7 +66,7 @@ export const michaelJim: Clip = {
       trap: '最初の You remember…? は質問に聞こえやすいが、前置き。頼みは so のあとに来る。',
       use: 'Let’s keep this between us, okay?（これはここだけの話ね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'whoknows', seg: [64.2, 68.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'whoknows', seg: [63.2, 69.7],
       stem: 'Type the question after “Really?”: “___?” (3 words)', answer: 'who else knows',
       ja: '「Really?」のあとの質問を書こう（3語）',
       cue: '「Really?」のすぐあと。短い質問。',
@@ -76,7 +76,7 @@ export const michaelJim: Clip = {
       trap: 'else と knows がつながって、ひと続きに聞こえやすい。「エルス・ノウズ」と区切って書く。',
       use: 'Who else is coming tonight?（今夜はほかに誰が来るの？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'onlyme', seg: [64.2, 75.2],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'onlyme', seg: [65.6, 77.6],
       stem: 'How does Michael feel when he hears nobody else knows?',
       ja: 'ほかに誰も知らないと聞いて、マイケルはどう感じる？',
       choices: ['Proud and happy', 'Worried and nervous', 'Sorry for Jim'], a: 0,
@@ -88,7 +88,7 @@ export const michaelJim: Clip = {
       trap: 'Wow は驚きにも困った時にも使う。直後の great friends で、うれしい Wow だと分かる。',
       use: 'Wow, thanks for telling me.（わあ、話してくれてありがとう）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'mostlywork', seg: [69.9, 75.3],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'mostlywork', seg: [68.9, 80.6],
       stem: 'Where do Michael and Jim hang out the most?',
       ja: 'マイケルとジムは、どこで一番一緒にいる？',
       choices: ['At work', 'At bars', 'At Jim’s home'], a: 0,
@@ -111,7 +111,7 @@ export const michaelJim: Clip = {
       trap: '直前の friendship と結びつけやすい。as long as I possibly can は自分の力の限度。',
       use: 'I’ll stay awake as long as I can.（がんばれるだけ起きてるよ）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'sealed', seg: [83.5, 89.5],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'sealed', seg: [82, 94],
       stem: 'What does Michael mean by “My lips are sealed”?',
       ja: 'マイケルの「My lips are sealed」はどういう意味？',
       choices: ['I won’t tell anyone', 'I’m too angry to talk', 'My mouth hurts'], a: 0,
@@ -123,7 +123,7 @@ export const michaelJim: Clip = {
       trap: '文字どおりだと口が開かない話に聞こえやすい。直前の keeping that secret が答え。',
       use: 'Don’t worry. My lips are sealed.（心配しないで。絶対言わないから）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'vending', reveals: ['updates'], seg: [99.6, 131.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'vending', reveals: ['updates'], seg: [99.6, 132],
       stem: 'What does Michael want from Jim at the soda machine?',
       ja: 'ジュースの自販機の所で、マイケルはジムから何を聞きたい？',
       choices: ['News about Pam', 'Plans for a game', 'Help with Stan'], a: 0,
@@ -146,7 +146,7 @@ export const michaelJim: Clip = {
       trap: '「どれでも」をスポーツ好きの答えと取りやすい。聞き返されて具体名が出なければ、中身はない。',
       use: 'Did you catch the game last night?（昨日の試合見た？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'updates', seg: [113.7, 118.4],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'updates', seg: [112.4, 119.2],
       stem: 'What does “Any updates?” mean here?',
       ja: 'ここでの「Any updates?」はどういう意味？',
       choices: ['Any news?', 'Any plans?', 'Any problems?'], a: 0,
@@ -158,7 +158,7 @@ export const michaelJim: Clip = {
       trap: '前の 411 は古いくだけた言い方で、番号の話ではない。分からない語は直後の言いかえで確かめる。',
       use: 'Any updates on my order?（注文の件、何か進展ありますか）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'stan', seg: [124.1, 128.05],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'stan', seg: [123.8, 132],
       stem: 'Why does Michael ask Stan “how long”?',
       ja: 'マイケルはなぜスタンに「how long」と聞く？',
       choices: ['He wants Stan to leave', 'He wants soda advice', 'He wants Stan to join in'], a: 0,
@@ -170,7 +170,7 @@ export const michaelJim: Clip = {
       trap: 'Listen, you know の前置きで、雑談に聞こえやすい。スタンは「もう行くよ」と答える。',
       use: 'How long does it take to get there?（そこまでどれくらいかかりますか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'suspect', seg: [152.9, 161.3],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'suspect', seg: [148.8, 160.1],
       stem: 'How does Dwight feel about Michael’s answer “Nothing”?',
       ja: 'マイケルの「Nothing」という答えを、ドワイトはどう思う？',
       choices: ['He doesn’t believe it', 'He is happy with it', 'He thinks it’s funny'], a: 0,
@@ -182,7 +182,7 @@ export const michaelJim: Clip = {
       trap: 'Oh, really? を素直な「本当？」と思いやすい。続けて fact（事実）を並べるので、疑っている。',
       use: 'Oh, really? Nothing at all?（へえ、本当に何もないの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'facts', seg: [158.2, 165.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'facts', seg: [157.3, 164.4],
       stem: 'What does Dwight say Michael never does?',
       ja: 'マイケルが普段しないこととして、ドワイトは何を挙げる？',
       choices: ['Drink grape soda, talk to Jim', 'Drink grape soda, keep secrets', 'Drink iced tea, talk to Jim'], a: 0,
@@ -194,7 +194,7 @@ export const michaelJim: Clip = {
       trap: 'iced tea は自販機での話、secrets はマイケルの返事。fact のたびに区切って聞く。',
       use: 'You never drink coffee. What’s up?（コーヒー飲まないのに、どうしたの？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'slip', seg: [165.1, 173.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'slip', seg: [165.1, 173.9],
       stem: 'Which “fact” from Michael makes Dwight ask more?',
       ja: 'マイケルのどの「事実」で、ドワイトはさらに聞いてくる？',
       choices: ['They tell each other secrets', 'He always loved grape soda', 'They talk all the time'], a: 0,
@@ -206,7 +206,7 @@ export const michaelJim: Clip = {
       trap: 'grape soda や talk all the time も出るが、聞き返されるのは secret。',
       use: 'Wait, I didn’t mean it like that.（待って、そういう意味じゃない）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'cover', seg: [170.85, 183.6],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'cover', seg: [170.9, 183.6],
       stem: 'Why does Jim tell the story about the Oscar job?',
       ja: 'ジムはなぜオスカーの調査の話をする？',
       choices: ['To hide the real secret', 'To complain about Michael', 'To take the job from Dwight'], a: 0,
@@ -230,7 +230,7 @@ export const michaelJim: Clip = {
       trap: '「分かる」を皮肉や、察して流したと読みやすい。礼と誓いが続けば本気で信じている。',
       use: 'I can tell you mean it.（本気なのが分かるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'letdown', seg: [199.1, 202.75],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'letdown', seg: [197.5, 204],
       stem: 'Fill the gap: “I ___ let you down.”',
       ja: '空所に入る語は？「I ___ let you down.」',
       choices: ['won’t', 'want to', 'wouldn’t'], a: 0,
@@ -254,7 +254,7 @@ export const michaelJim: Clip = {
       trap: 'clients（見込み客）は手品の店の話。トビーの許可は「No, he did not」でなかったと分かる。',
       use: 'I’ve been a little depressed lately.（最近ちょっと落ち込んでるんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [237.9, 243.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [233.8, 244.4], keep: true,
       stem: 'How much did Michael spend at the magic shop?',
       ja: 'マイケルは手品の店でいくら使った？',
       choices: ['$18', '$80', '$800'], a: 1,
@@ -266,7 +266,7 @@ export const michaelJim: Clip = {
       trap: 'eighteen なら後ろの「ティーン」が強く長い。800 なら hundred が聞こえる。',
       use: 'It only cost me twenty bucks.（たった20ドルだったよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'clients', seg: [243.3, 250.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'clients', seg: [243.3, 251.2],
       stem: 'Why did Michael buy the magic tricks?',
       ja: 'マイケルはなぜ手品の道具を買った？',
       choices: ['To impress new clients', 'To give clients as gifts', 'To use at an office party'], a: 0,
@@ -278,7 +278,7 @@ export const michaelJim: Clip = {
       trap: 'bought と clients だけだと贈り物に聞こえやすい。to のあとの impress が目的。',
       use: 'I want to impress my new boss.（新しい上司にいいところを見せたい）' },
 
-    { id: 'h3', skill: 'detail', level: 'B2', point: 'almost', seg: [250.1, 256.9],
+    { id: 'h3', skill: 'detail', level: 'B2', point: 'almost', seg: [249.4, 258],
       stem: 'What did the clients do after the trick?',
       ja: '手品のあと、お客さんはどうした？',
       choices: ['They didn’t quite buy', 'They bought from Michael', 'They bought magic tricks'], a: 0,
@@ -290,7 +290,7 @@ export const michaelJim: Clip = {
       trap: 'bought from us だけ拾うと「買った」と思いやすい。前の almost を聞く。',
       use: 'I almost missed the train.（もう少しで電車に乗り遅れるところだった）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'slack', seg: [265.9, 274.8],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'slack', seg: [265.9, 275.7],
       stem: 'What does “cut me some slack” mean?',
       ja: '「cut me some slack」はどういう意味？',
       choices: ['Please don’t be strict', 'Please give me time', 'Please pay me back'], a: 0,

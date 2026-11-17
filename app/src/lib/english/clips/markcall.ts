@@ -17,7 +17,7 @@ export const markCall: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'nocall', seg: [0, 4.25],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'nocall', seg: [0, 5.2],
       stem: 'What is Rachel upset about at the start?',
       ja: '最初、レイチェルは何に怒っている？',
       choices: ['Mark didn’t call', 'Mark called late', 'Mark called to cancel'], a: 0,
@@ -29,7 +29,7 @@ export const markCall: Clip = {
       trap: 'didn’t の t は消えやすく did に聞こえる。n の音を聞く。',
       use: 'I can’t believe she didn’t text back.（返信が来ないなんて信じられない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bummer', seg: [1.5, 6.0],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bummer', seg: [0, 6.1],
       stem: 'What does “Bummer” mean here?',
       ja: 'ここでの「Bummer」はどういう意味？',
       choices: ['That’s too bad', 'That’s great news', 'That’s not true'], a: 0,
@@ -41,7 +41,7 @@ export const markCall: Clip = {
       trap: 'ロスはうれしそうなので、いい知らせと思いやすい。言葉の意味は「がっかり」。',
       use: 'You can’t come? Bummer.（来られないの？がっかり）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'giddy', reveals: ['bummer'], seg: [6.1, 9.9],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'giddy', reveals: ['bummer'], seg: [5.1, 13],
       stem: 'How does Rachel take Ross’s “Bummer”?',
       ja: 'ロスの「Bummer」を、レイチェルはどう受け取る？',
       choices: ['He’s secretly glad', 'He’s truly sorry', 'He wants to help'], a: 0,
@@ -53,7 +53,7 @@ export const markCall: Clip = {
       trap: 'Yeah を「そうだね」と取ると同意に聞こえる。Yeah, right は疑いの決まり文句。',
       use: 'Yeah, right. You never get up early.（よく言うよ、早起きなんてしないくせに）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'workout', seg: [9.6, 13.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'workout', seg: [7.6, 12.6],
       stem: 'Type it: “I’m sorry the Mark thing ___.” (3 words)', answer: "didn't work out",
       ja: '「…the Mark thing ___.」の3語を書こう。',
       cue: 'thing のあと、文の最後の3語。',
@@ -63,7 +63,7 @@ export const markCall: Clip = {
       trap: 'didn’t の t は消え、work out もつながって一語のように聞こえる。',
       use: 'Sorry the trip didn’t work out.（旅行、だめになっちゃったね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'callmark', seg: [16.7, 20.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'callmark', seg: [15.7, 20.9],
       stem: 'Fill the gap: “Wait a minute. ___ just call Mark?”',
       ja: '「___ just call Mark?」の空所は？',
       choices: ['Why don’t you', 'Why’d you', 'Why didn’t you'], a: 0,
@@ -75,7 +75,7 @@ export const markCall: Clip = {
       trap: 'don’t の t が消えると Why’d you に聞こえる。n が残れば don’t。didn’t なら「ディ」が入る。',
       use: 'Why don’t you just ask her?（彼女に聞いてみたら？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'happen', seg: [21.6, 26.4],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'happen', seg: [20.8, 29.3],
       stem: 'What does “make stuff happen” mean here?',
       ja: 'ここでの「make stuff happen」はどういう意味？',
       choices: ['Act instead of waiting', 'Make other plans', 'Keep busy while waiting'], a: 0,
@@ -87,7 +87,7 @@ export const markCall: Clip = {
       trap: 'make を「作る」と取ると、予定作りや気晴らしに聞こえる。happen までで一つ。',
       use: 'Don’t wait for luck. Make it happen.（運を待たずに、自分で動こう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'pushy', seg: [26.0, 32.3],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'pushy', seg: [24.4, 32.7],
       stem: 'What worry is raised about calling Mark?',
       ja: 'マークに電話することに、どんな心配が出る？',
       choices: ['Seeming too pushy', 'Calling too late', 'Not having his number'], a: 0,
@@ -99,7 +99,7 @@ export const markCall: Clip = {
       trap: 'home number は「もらった」話。Yeah, but のあとが本当の理由。',
       use: 'I don’t want to sound pushy, but…（しつこく聞こえたら悪いけど…）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'homenumber', seg: [29.6, 36.4],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'homenumber', seg: [29.6, 36.5],
       stem: 'Why does Ross ask twice about the home number?',
       ja: 'ロスはなぜ、自宅の番号のことを2回聞く？',
       choices: ['He fears Mark likes her', 'He thinks Mark slipped up', 'He thinks calling home is rude'], a: 0,
@@ -111,7 +111,7 @@ export const markCall: Clip = {
       trap: '聞き返しは事実確認に聞こえるが、同じ点を言い直すのは動揺の印。何をくり返すかを聞く。',
       use: 'Wait, his personal number? Like, his cell?（え、個人の番号？携帯ってこと？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'goodthings', seg: [36.0, 43.8],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'goodthings', seg: [34.3, 44.1],
       stem: 'Why does Rachel repeat Ross’s “good things” words?',
       ja: 'レイチェルはなぜ、ロスの「good things」を持ち出す？',
       choices: ['So he can’t say no', 'To ask for his okay', 'To thank him'], a: 0,
@@ -135,7 +135,7 @@ export const markCall: Clip = {
       trap: 'apologize は初めに聞こえるが、結果ではない。結果は切ったあとの一言で聞く。',
       use: 'I got the interview!（面接までこぎつけた！）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'apologize', seg: [52.0, 57.0],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'apologize', seg: [52, 59.6],
       stem: 'What does Rachel tell Mark on the phone?',
       ja: '電話で、レイチェルはマークに何と言う？',
       choices: ['No need to say sorry', 'Please call back later', 'Say sorry once more'], a: 0,
@@ -147,7 +147,7 @@ export const markCall: Clip = {
       trap: 'apologize（謝る）が聞こえるので「謝って」と思いやすい。前の don’t を聞く。',
       use: 'Oh, don’t apologize. It’s fine.（謝らないで、大丈夫だよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'excuse', seg: [59.3, 64.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'excuse', seg: [56.6, 64.6],
       stem: 'What excuse does Rachel pass on for Mark?',
       ja: 'マークの言い訳として、レイチェルは何を伝える？',
       choices: ['He left it at work', 'He was busy all weekend', 'He lost it at home'], a: 0,
@@ -159,7 +159,7 @@ export const markCall: Clip = {
       trap: 'left を lost と聞くと「なくした」になる。leave ＋物＋場所は「〜に置き忘れる」。',
       use: 'I left my phone at the hotel.（ホテルに携帯を置いてきた）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [59.3, 67.5],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [59.3, 68.4],
       stem: 'What does “so made up” mean here?',
       ja: 'ここでの「so made up」はどういう意味？',
       choices: ['He invented the story', 'They made peace', 'He made up his mind'], a: 0,
@@ -171,7 +171,7 @@ export const markCall: Clip = {
       trap: 'make up には「仲直りする」「決める」もある。be＋made up は「作り話」。',
       use: 'That excuse sounds totally made up.（その言い訳、完全に作り話っぽい）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [68.1, 72.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [67.1, 75.3], keep: true,
       stem: 'Which day does Mark suggest on the phone?',
       ja: 'マークは電話で、いつを提案する？',
       choices: ['Tonight', 'Tomorrow', 'Next Sunday'], a: 1,
@@ -183,7 +183,7 @@ export const markCall: Clip = {
       trap: 'tonight なら「トゥナイト」、next Sunday なら「ネクスト」で始まる。「トゥモロウ」なら明日。',
       use: 'Tomorrow? Sure, that works for me.（明日？うん、大丈夫）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'lunch', seg: [79.6, 84.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'lunch', seg: [78.8, 85.1],
       stem: 'What else has Mark offered to do for Rachel?',
       ja: 'マークは、ほかに何をすると言った？',
       choices: ['Lunch and help getting ready', 'Dinner after it is over', 'A ride there and back'], a: 0,
@@ -218,7 +218,7 @@ export const markCall: Clip = {
       trap: '後ろの gonna（ガナ）と混ざりやすい。「ガラ」なら gotta、「ワナ」なら wanna。',
       use: 'I gotta go. See you!（もう行かなきゃ。またね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', reveals: ['callmark'], seg: [102.9, 111.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'blame', reveals: ['callmark'], seg: [101.9, 113.6],
       stem: 'How does Ross feel about the “call him” idea?',
       ja: '「電話してみたら」という案を、ロスはどう思っている？',
       choices: ['Annoyed by it', 'Thankful for it', 'Happy about it'], a: 0,
@@ -254,7 +254,7 @@ export const markCall: Clip = {
       trap: 'surgically を文字どおり取ると病院の話になる。the boyfriend は本人。',
       use: 'Dinner, as in a real date?（ディナーって、本当のデートってこと？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['expect'], seg: [118.6, 128.7],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['expect'], seg: [119, 129],
       stem: 'What does Ross mean with “Am I out of my mind?”',
       ja: '「Am I out of my mind?」で、ロスは何を言いたい？',
       choices: ['He thinks he’s right', 'He thinks he’s wrong', 'He wants an opinion'], a: 0,
@@ -266,7 +266,7 @@ export const markCall: Clip = {
       trap: '自分を責める問いに聞こえやすい。問いのあとに理由が来たら、言い返し。',
       use: 'Am I wrong? It’s two in the morning!（僕が悪い？夜中の2時だよ！）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'aboutyou', seg: [128.5, 134.3],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'aboutyou', seg: [125.2, 137],
       stem: 'What is Ross told about this?',
       ja: 'ロスは、このことについて何と言われる？',
       choices: ['He makes it about himself', 'He should keep it secret', 'He should help Rachel'], a: 0,
@@ -290,7 +290,7 @@ export const markCall: Clip = {
       trap: 'you’re right だけ拾うと同意に聞こえる。even if は仮の話で、言いたいことは続く問いにある。',
       use: 'Even if it rains, so what?（雨が降ったとしても、だから何？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'overyourself', reveals: ['growup'], seg: [141.2, 145.2],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'overyourself', reveals: ['growup'], seg: [141.1, 146.2],
       stem: 'Type the reply to Ross: “Then ___. Grow up!” (3 words)', answer: 'get over yourself',
       ja: 'ロスへの返事の3語を書こう：「Then ___. Grow up!」',
       cue: 'Then のあと、Grow up の前の3語。',

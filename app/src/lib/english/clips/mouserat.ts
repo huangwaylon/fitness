@@ -17,19 +17,7 @@ export const aprilMouserat: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'bands', reveals: ['mouserat'], seg: [32.9, 57.4],
-      stem: 'What are Andy and April fighting about?',
-      ja: 'アンディとエイプリルは何についてけんかしている？',
-      choices: ['Each other’s favorite band', 'Another man she likes', 'Their answers in the game'], a: 0,
-      choicesJa: ['お互いの好きなバンド', '彼女が好きなほかの男', 'ゲームでの答え'],
-      cue: '二人がそれぞれ相手に言う不満。',
-      line: 'You like some other dude’s *band* more than me. … Because *their music* is sad and depressing and weird…',
-      said: '彼は「ほかの男のバンドのほうが好きなんだろ」、彼女は「頼んでも聴いてくれない」と言う。',
-      mean: '好きなバンドを相手が認めてくれない、という不満のぶつけ合い。',
-      trap: 'other dude（ほかの男）からやきもちに思いやすい。dude’s のあとの band まで聞く。',
-      use: 'You never even listened to it!（一度も聴いてくれなかったじゃない！）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'overit', reveals: ['mouserat'], seg: [32.9, 36.5],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'overit', reveals: ['mouserat'], seg: [30.9, 36.9],
       stem: 'What does “get over it” mean here?',
       ja: 'ここでの「get over it」はどういう意味？',
       choices: ['Stop being upset about it', 'Go on to the next question', 'Give a real answer'], a: 0,
@@ -41,7 +29,19 @@ export const aprilMouserat: Clip = {
       trap: 'over から「次へ」を思うと、ゲームの話に聞こえやすい。言い返しが続くので、気持ちの話。',
       use: 'It was one bad game. Get over it.（1試合負けただけ。引きずらないで）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'mouserat', reveals: ['notfeel'], seg: [35.15, 39.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'bands', reveals: ['mouserat'], seg: [32.8, 57.4],
+      stem: 'What are Andy and April fighting about?',
+      ja: 'アンディとエイプリルは何についてけんかしている？',
+      choices: ['Each other’s favorite band', 'Another man she likes', 'Their answers in the game'], a: 0,
+      choicesJa: ['お互いの好きなバンド', '彼女が好きなほかの男', 'ゲームでの答え'],
+      cue: '二人がそれぞれ相手に言う不満。',
+      line: 'You like some other dude’s *band* more than me. … Because *their music* is sad and depressing and weird…',
+      said: '彼は「ほかの男のバンドのほうが好きなんだろ」、彼女は「頼んでも聴いてくれない」と言う。',
+      mean: '好きなバンドを相手が認めてくれない、という不満のぶつけ合い。',
+      trap: 'other dude（ほかの男）からやきもちに思いやすい。dude’s のあとの band まで聞く。',
+      use: 'You never even listened to it!（一度も聴いてくれなかったじゃない！）' },
+
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'mouserat', reveals: ['notfeel'], seg: [34, 41.3],
       stem: 'What is Andy doing with his question about Mouse Rat?',
       ja: 'マウス・ラットについての質問で、アンディは何をしている？',
       choices: ['Saying she doesn’t like it', 'Teasing her about her taste', 'Asking if she has heard it'], a: 0,
@@ -62,7 +62,7 @@ export const aprilMouserat: Clip = {
       trap: '習った語順に直して not to と書きたくなる。語順は音のまま書く。',
       use: 'I’m starting to not care anymore.（もうどうでもよくなってきた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'listen', seg: [40.9, 44.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'listen', seg: [39.3, 44.5],
       stem: 'Type: “I’ve asked you to ___ like a million times.” (3 words)',
       answer: 'listen to them',
       ja: '書こう：「何百回も ___ って頼んだ」（3語）',
@@ -73,7 +73,7 @@ export const aprilMouserat: Clip = {
       trap: 'to them が弱くつながり、一語に聞こえやすい。listen のあとには to が来る。',
       use: 'You have to listen to this song.（この曲、絶対聴いて）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sad', seg: [44.3, 52.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'sad', seg: [41.3, 53.3],
       stem: 'Why has Andy never listened to April’s band?',
       ja: 'アンディはなぜエイプリルの好きなバンドを聴かない？',
       choices: ['It’s too sad and weird', 'It’s too slow and boring', 'She likes the singer too much'], a: 0,
@@ -85,7 +85,7 @@ export const aprilMouserat: Clip = {
       trap: 'さっきの other dude からやきもちに思いやすい。because の直後の sad を聞く。',
       use: 'It’s a little too sad for me.（ちょっと暗すぎるかな）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'forget', seg: [52.0, 57.4],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'forget', seg: [50.8, 58.5],
       stem: 'What does “Whatever, forget it” mean here?',
       ja: 'ここでの「Whatever, forget it」はどういう意味？',
       choices: ['I don’t want to talk now', 'Let’s forget the fight', 'I forgot what I said'], a: 0,
@@ -108,7 +108,7 @@ export const aprilMouserat: Clip = {
       trap: 'damn を困った声と取ると心配や不満に聞こえる。そのあとの語がほめ言葉かどうかで決める。',
       use: 'This party’s got some energy!（このパーティー、盛り上がってるね！）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guitar', seg: [63.4, 71.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guitar', seg: [63.4, 73.5],
       stem: 'According to April, what has Andy done since the fight?',
       ja: 'エイプリルによると、けんかのあとアンディは何をした？',
       choices: ['He has sold his guitar', 'He will sell his guitar soon', 'He has broken his guitar'], a: 0,
@@ -120,7 +120,7 @@ export const aprilMouserat: Clip = {
       trap: 'just を「これから」と思いやすい。sold は過去の形で、もう売ってしまった。',
       use: 'I just sold my old bike.（古い自転車、さっき売ったんだ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'wantme', seg: [70.6, 73.6],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'wantme', seg: [68.3, 74],
       stem: 'Type Tom’s reply: “What do you ___ do about it?” (3 words)', answer: 'want me to',
       ja: 'トムの返事を書こう：「僕に何を ___ の？」（3語）',
       cue: '「quitting music」のあと。',
@@ -130,7 +130,7 @@ export const aprilMouserat: Clip = {
       trap: 'want の t が消え、me と to も小さい。「ワンミタ」は3語に分けて書く。',
       use: 'What do you want me to say?（何て言ってほしいの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['setup', 'wrong'], seg: [73.0, 114.0],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['setup', 'wrong'], seg: [73, 114.5],
       stem: 'How does April try to make up with Andy?',
       ja: 'エイプリルはどうやってアンディと仲直りしようとする？',
       choices: ['With a quiz he can’t lose', 'With a sorry on stage', 'With a long love letter'], a: 0,
@@ -142,7 +142,7 @@ export const aprilMouserat: Clip = {
       trap: '舞台の上なので謝る場面に思いやすいが、謝る言葉は出てこない。外れても点が入る。',
       use: 'Let me make it up to you.（埋め合わせさせて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mac', seg: [79.9, 91.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mac', seg: [78, 92.8],
       stem: 'Whose mac and cheese did April name as the best?',
       ja: '一番おいしいマカロニチーズは誰のだとエイプリルは答えた？',
       choices: ['Andy’s', 'Kraft’s', 'Andy’s mom’s'], a: 0,
@@ -154,7 +154,7 @@ export const aprilMouserat: Clip = {
       trap: '最初の Kraft はアンディの予想。司会の April said のあとが答え。',
       use: 'You make the best pancakes.（あなたのパンケーキが一番）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'wrong', reveals: ['mac', 'fifty'], seg: [87.8, 96.25],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'wrong', reveals: ['mac', 'fifty'], seg: [87.8, 98.3],
       stem: 'Why is Andy surprised by the 50 points?',
       ja: 'アンディはなぜ50点に驚く？',
       choices: ['His answer was wrong', 'He wanted more points', 'April gave no answer'], a: 0,
@@ -166,7 +166,7 @@ export const aprilMouserat: Clip = {
       trap: 'won（取った）を聞くと、喜ぶ場面に思いやすい。あとの wrong（外れ）を聞く。',
       use: 'Sorry, I got it wrong.（ごめん、まちがえた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [91.9, 95.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [91.1, 96.6], keep: true,
       stem: 'How many points does the host give for that answer?',
       ja: 'マカロニチーズの答えに、司会は何点あげる？',
       choices: ['15', '50', '100'], a: 1,
@@ -178,7 +178,7 @@ export const aprilMouserat: Clip = {
       trap: 'fifteen なら後ろの「ティーン」が強く長い。100なら hundred と聞こえる。',
       use: 'That’s fifty, not fifteen.（15じゃなくて50だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'setup', reveals: ['unmad'], seg: [104.3, 110.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'setup', reveals: ['unmad'], seg: [104.1, 110.9],
       stem: 'What has Andy figured out about the bonus round?',
       ja: 'ボーナス問題について、アンディは何に気づいた？',
       choices: ['April planned it to make up', 'The host planned it all alone', 'April planned it to win'], a: 0,
@@ -210,7 +210,7 @@ export const aprilMouserat: Clip = {
       trap: 'ain’t の t が消え、not や it’s に聞こえやすい。文頭の「エイン」は否定。',
       use: 'That ain’t gonna happen.（そうはいかないよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', reveals: ['setup'], seg: [110.3, 114.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', reveals: ['setup'], seg: [109.2, 115.2], keep: true,
       stem: 'How many points is spotting April’s trick worth, says the host?',
       ja: 'エイプリルの作戦を見破ると何点だ、と司会は言う？',
       choices: ['50 points', '100 points', '1,000 points'], a: 1,
@@ -222,7 +222,7 @@ export const aprilMouserat: Clip = {
       trap: 'fifty なら「フィフ」で始まる。「ハン」なら百、「サウ」なら千（thousand）。',
       use: 'That’s worth a hundred bucks.（それ、100ドルの価値があるよ）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'stole', reveals: ['guitar'], seg: [157.4, 166.9],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'stole', reveals: ['guitar'], seg: [155.1, 166.9],
       stem: 'How did April get the guitar back?',
       ja: 'エイプリルはどうやってギターを取り戻した？',
       choices: ['She stole it', 'She bought it back', 'She borrowed it'], a: 0,
@@ -234,6 +234,18 @@ export const aprilMouserat: Clip = {
       trap: '質問の bought back（買い戻した）を答えと思いやすい。actually のあとが本当のこと。',
       use: 'Actually, I made it myself.（実は自分で作ったの）' },
 
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'whocares', seg: [167.5, 177.8],
+      stem: 'How does Andy feel at the end?',
+      ja: '最後に、アンディはどう感じている？',
+      choices: ['Happy that she loves him', 'Sad about his band', 'Still angry at April'], a: 0,
+      choicesJa: ['彼女に愛されていて幸せ', 'バンドのことで悲しい', 'まだエイプリルに怒っている'],
+      cue: '「but man」のあとと、最後の一言。',
+      line: 'Maybe April doesn’t think that we’re the greatest band in the world, but man, *she loves me*. And I love her. So… *who cares?*',
+      said: '「世界一のバンドとは思ってないかも。でも彼女はぼくを愛してる。ならいいさ」と話す。',
+      mean: 'who cares? ＝ 誰が気にする？→「どうでもいい」。バンドの評価より、彼女の気持ちが大事。',
+      trap: '前半の doesn’t think（思ってない）だけ聞くと、悲しそうに思いやすい。but のあとが本音。',
+      use: 'Maybe it’s not perfect, but who cares?（完璧じゃないかもだけど、いいじゃん）' },
+
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'whocares', reveals: ['mouserat'], seg: [168.4, 177.4], retired: true,
       stem: 'Which plain-English version keeps what Andy says to the camera?',
       choices: ['“She may not rate my band, but she loves me. That’s enough.”',
@@ -244,18 +256,6 @@ export const aprilMouserat: Clip = {
       said: '「世界一のバンドとは思ってないかも。でも彼女はぼくを愛してる。ならいいさ」と話す。',
       mean: 'けんかの元の問いに自分で答えを出した。バンドの評価より彼女の気持ちが大事。',
       trap: 'バンドで演奏した場面から、彼女が考えを変えたと取りやすい。maybe と who cares で、評価は変わらないまま。',
-      use: 'Maybe it’s not perfect, but who cares?（完璧じゃないかもだけど、いいじゃん）' },
-
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'whocares', seg: [168.4, 177.4],
-      stem: 'How does Andy feel at the end?',
-      ja: '最後に、アンディはどう感じている？',
-      choices: ['Happy that she loves him', 'Sad about his band', 'Still angry at April'], a: 0,
-      choicesJa: ['彼女に愛されていて幸せ', 'バンドのことで悲しい', 'まだエイプリルに怒っている'],
-      cue: '「but man」のあとと、最後の一言。',
-      line: 'Maybe April doesn’t think that we’re the greatest band in the world, but man, *she loves me*. And I love her. So… *who cares?*',
-      said: '「世界一のバンドとは思ってないかも。でも彼女はぼくを愛してる。ならいいさ」と話す。',
-      mean: 'who cares? ＝ 誰が気にする？→「どうでもいい」。バンドの評価より、彼女の気持ちが大事。',
-      trap: '前半の doesn’t think（思ってない）だけ聞くと、悲しそうに思いやすい。but のあとが本音。',
       use: 'Maybe it’s not perfect, but who cares?（完璧じゃないかもだけど、いいじゃん）' },
   ]
 };

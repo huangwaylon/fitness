@@ -38,7 +38,7 @@ export const spencerFriends: Clip = {
       trap: 'I lost の直後なので「誰に負けたか」の質問に聞こえる。right? は決めつけて確かめる形。',
       use: 'You went with someone, right?（誰かと行ったんでしょ？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'bathroom', seg: [33.8, 38.9],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'bathroom', seg: [32.8, 39.5],
       stem: 'Type what Ryan asks: “Hey, man, can I ___?” (3 words)', answer: 'use your bathroom',
       ja: 'ライアンの質問を書き取る：「Hey, man, can I ___?」（3語）',
       cue: '「can I」のあとの3語。',
@@ -71,19 +71,7 @@ export const spencerFriends: Clip = {
       trap: '数を直しただけに聞こえるが、笑いは「冗談より現実が上」の部分。誇張の上を行く答えに注目。',
       use: 'What is he, five? — Four.（何、5歳？ー4歳）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [40.8, 70.8],
-      stem: 'What do the girls set out to find?',
-      ja: '女の子たちは何をさがしに行く？',
-      choices: ['Men Spencer’s age as friends', 'Kids Ryan’s age to play with', 'A better tennis partner'], a: 0,
-      choicesJa: ['スペンサーと同じ年の友だち', 'ライアンと同じ年の子', 'もっといいテニスの相手'],
-      cue: '「we have to find」のあと。',
-      line: 'we have to find *Spencer some friends his own age*.',
-      said: '「スペンサーに同じ年くらいの友だちを」と決め、公園で候補をさがす。',
-      mean: 'his own age ＝ 彼と同じくらいの年。大人の兄に、大人の友だちを。',
-      trap: 'his を直前の子ども（ライアン）と思いやすい。find のあとの Spencer で決まる。',
-      use: 'You need friends your own age.（同い年の友だちを作らなきゃ）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'grade', seg: [41.1, 44.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'grade', seg: [39.9, 44.9], keep: true,
       stem: 'What grade is Ryan in?',
       ja: 'ライアンは何年生？',
       choices: ['Second', 'Third', 'Fourth', 'Fifth'], a: 1,
@@ -95,7 +83,19 @@ export const spencerFriends: Clip = {
       trap: '質問の fourth が耳に残りやすい。返事は「サード」。second なら「セカンド」、fifth なら「フィフス」。',
       use: 'What grade is she in?（あの子、何年生？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', reveals: ['racket'], seg: [45.2, 49.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [40.8, 71.9],
+      stem: 'What do the girls set out to find?',
+      ja: '女の子たちは何をさがしに行く？',
+      choices: ['Men Spencer’s age as friends', 'Kids Ryan’s age to play with', 'A better tennis partner'], a: 0,
+      choicesJa: ['スペンサーと同じ年の友だち', 'ライアンと同じ年の子', 'もっといいテニスの相手'],
+      cue: '「we have to find」のあと。',
+      line: 'we have to find *Spencer some friends his own age*.',
+      said: '「スペンサーに同じ年くらいの友だちを」と決め、公園で候補をさがす。',
+      mean: 'his own age ＝ 彼と同じくらいの年。大人の兄に、大人の友だちを。',
+      trap: 'his を直前の子ども（ライアン）と思いやすい。find のあとの Spencer で決まる。',
+      use: 'You need friends your own age.（同い年の友だちを作らなきゃ）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', reveals: ['racket'], seg: [44.5, 49.5],
       stem: 'Fill the gap: “Ah, ___ fix my floppy racket!”',
       ja: '空所を埋める：「Ah, ___ fix my floppy racket!」',
       choices: ['I gotta go', 'I’m gonna go', 'I’d better go'], a: 0,
@@ -107,7 +107,7 @@ export const spencerFriends: Clip = {
       trap: 'gonna なら真ん中が「ナ」、better なら「ベラ」。ここは「ガラ」。',
       use: 'I gotta go fix my bike.（自転車を直しに行かなきゃ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'criteria', seg: [62.6, 70.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'criteria', seg: [62.6, 71.9],
       stem: 'What do the girls say about how the stranger looks?',
       ja: 'その知らない男性の見た目について、女の子たちは何と言う？',
       choices: ['Not too stupid or smart', 'Not too young or too old', 'Not too smart or loud'], a: 0,
@@ -119,7 +119,7 @@ export const spencerFriends: Clip = {
       trap: '直前の Perfect age で年の話が続くと思いやすい。look のあとは stupid と smart。',
       use: 'Not too hot, not too cold.（暑すぎず寒すぎず）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hitup', seg: [68.5, 71.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hitup', seg: [67.6, 72.6],
       stem: 'What does “Let’s hit him up” mean?',
       ja: '「Let’s hit him up」はどういう意味？',
       choices: ['Let’s go talk to him', 'Let’s bump into him', 'Let’s watch him more'], a: 0,
@@ -131,7 +131,7 @@ export const spencerFriends: Clip = {
       trap: 'hit を「たたく、ぶつかる」と思いやすい。hit up は人に話しかけるときのくだけた言い方。',
       use: 'Hit me up when you’re in town.（こっちに来たら連絡して）' },
 
-    { id: 'h2', skill: 'pragma', level: 'B1', point: 'darnell', seg: [95.0, 104.6],
+    { id: 'h2', skill: 'pragma', level: 'B1', point: 'darnell', seg: [93.3, 105.3],
       stem: 'What does “And?” ask for here?',
       ja: 'ここで「And?」は何を求めている？',
       choices: ['The rest of the story', 'Another man’s name', 'A simple yes or no answer'], a: 0,
@@ -143,7 +143,7 @@ export const spencerFriends: Clip = {
       trap: 'and を「そして」と思うと意味が分からない。一語だけなら「それで？」。',
       use: 'And? What happened next?（で？それからどうなったの？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'pushy', seg: [130.4, 137.4],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'pushy', seg: [129.5, 140.7],
       stem: 'What does “You know you would” mean?',
       ja: '「You know you would」はどういう意味？',
       choices: ['Come on, you want to', 'You probably won’t', 'Do you know him?'], a: 0,
@@ -167,7 +167,7 @@ export const spencerFriends: Clip = {
       trap: '最初の cilantro（パクチー）のプレゼントで仲よくなると思いやすい。最後は言い合い。',
       use: 'Well, that went badly.（うーん、散々だったね）' },
 
-    { id: 'a3', skill: 'phrase', level: 'B2', point: 'abouttime', seg: [177.6, 182.5],
+    { id: 'a3', skill: 'phrase', level: 'B2', point: 'abouttime', seg: [177.2, 183.4],
       stem: 'What does “About time” mean here?',
       ja: 'ここで「About time」はどういう意味？',
       choices: ['Finally! You were slow', 'Thank you very much', 'Wow, that was fast'], a: 0,
@@ -179,7 +179,7 @@ export const spencerFriends: Clip = {
       trap: 'time から「ちょうどいい時間」と思いやすい。About time は「おそい」の文句。',
       use: 'About time you showed up!（やっと来たか、おそいよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'fries', reveals: ['abouttime'], seg: [178.1, 188.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'fries', reveals: ['abouttime'], seg: [178.1, 189.3],
       stem: 'Why does one of the men say “What the heck?”',
       ja: '男性の一人はなぜ「What the heck?」と言う？',
       choices: ['Spencer took their fries', 'The fries came very late', 'Spencer wanted nachos'], a: 0,
@@ -191,7 +191,7 @@ export const spencerFriends: Clip = {
       trap: 'About time や nachos が耳に残りやすい。文句の中身はすぐ次の文。',
       use: 'Hey, you said you didn’t want any!（いらないって言ったよね！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'fries', seg: [182.7, 188.9],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'fries', seg: [182.7, 191.7],
       stem: 'Why had Spencer said no to the fries?',
       ja: 'スペンサーはなぜポテトをいらないと言っていた？',
       choices: ['He thought his nachos would come too', 'He thought they’d be too spicy', 'He thought they’d take too long'], a: 0,
@@ -214,7 +214,7 @@ export const spencerFriends: Clip = {
       trap: '直前の悪口で、笑いの的が相手側に見えやすい。否定の言い方自体が childish の証拠。',
       use: 'I am not! — See? Like a kid.（違うもん！ーほら、子どもみたい）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'chance', seg: [213.6, 221.8],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'chance', seg: [212.8, 222.3],
       stem: 'How does Spencer answer “Just give them a chance”?',
       ja: '「Just give them a chance」に、スペンサーはどう答える？',
       choices: ['He says no right away', 'He agrees to try again', 'He asks for more time'], a: 0,
@@ -237,7 +237,7 @@ export const spencerFriends: Clip = {
       trap: 'politics や taxes から「年寄り」「議論好き」を想像しやすいが、返事は own age。',
       use: 'So, they act like adults. And?（つまり大人っぽいってこと？で？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'topics', seg: [215.6, 221.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'topics', seg: [214.6, 222.3],
       stem: 'Type what the men talk about: “they talk about ___…” (3 words)', answer: 'politics and taxes',
       ja: '男性たちが話すことを書き取る：「they talk about ___…」（3語）',
       cue: '「talk about」のあとの3語。',

@@ -17,7 +17,7 @@ export const ryankelly: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'badly', seg: [1.5, 8.35],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'badly', seg: [1.5, 11.5],
       stem: 'What does Pam say she told Kelly about Ryan?',
       ja: 'パムは、ライアンについてケリーに何と言ったと言う？',
       choices: ['He used to treat her badly', 'He still treats her badly', 'He talks badly about her'], a: 0,
@@ -50,7 +50,7 @@ export const ryankelly: Clip = {
       trap: 'face から「顔・表情」の言い方を思いやすい。to my face は場所でなく「本人に直接」。',
       use: 'He’d never say that to my face.（あの人、面と向かってはそう言わないよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'fair', reveals: ['dislike'], seg: [14.5, 21.5],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'fair', reveals: ['dislike'], seg: [12.9, 24.9],
       stem: 'What does Pam mean by “Fair enough”?',
       ja: 'パムの「Fair enough」の意味は？',
       choices: ['That’s reasonable', 'That’s not fair', 'That’s enough talk'], a: 0,
@@ -62,7 +62,7 @@ export const ryankelly: Clip = {
       trap: 'fair（公平）と enough（十分）から「もういい」と思いやすい。ここは「なるほど」。',
       use: 'Fair enough. I’ll pay next time.（もっともだね。次はぼくが払うよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'dislike', seg: [19.2, 25.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'dislike', seg: [18.2, 25.9],
       stem: 'How does Pam feel about Ryan?',
       ja: 'パムはライアンのことをどう思っている？',
       choices: ['She doesn’t like him', 'She likes him a lot', 'She is afraid of him'], a: 0,
@@ -74,7 +74,7 @@ export const ryankelly: Clip = {
       trap: 'forgive me（ゆるして）から謝っていると思いやすい。最後の I don’t like you が本音。',
       use: 'Forgive me, but I disagree.（失礼ですが、反対です）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'match', seg: [25.85, 29.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'match', seg: [24.6, 32.9],
       stem: 'What does Ryan say a lot of people would say?',
       ja: 'ライアンは、多くの人が何と言うだろうと言う？',
       choices: ['He’s a better match than Ravi', 'He’d treat her better than Ravi', 'He knows her better than Ravi'], a: 0,
@@ -86,7 +86,7 @@ export const ryankelly: Clip = {
       trap: 'better が聞こえるので、扱いの話と思いやすい。match（お似合い）を聞く。',
       use: 'You two are a great match.（二人はお似合いだね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'crowd', seg: [26, 56],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'crowd', seg: [26, 56.7],
       stem: 'What do the coworkers think?',
       ja: '同僚たちはどう思っている？',
       choices: ['They all like Ravi better', 'They cheer for Ryan to win', 'Some like Ryan, some Ravi'], a: 0,
@@ -98,7 +98,7 @@ export const ryankelly: Clip = {
       trap: '「多くの人が言う」と聞くと、ライアンに味方がいると思いやすい。返事はすべてラヴィ。',
       use: 'This one is way better.（こっちのほうがずっといい）' },
 
-    { id: 'really', skill: 'pragma', level: 'B1', point: 'really', seg: [30, 34],
+    { id: 'really', skill: 'pragma', level: 'B1', point: 'really', seg: [28.8, 36.2],
       stem: 'What does “Come on, Ryan, really?” mean?',
       ja: '「Come on, Ryan, really?」の意味は？',
       choices: ['You can’t be serious', 'Please come with me', 'Hurry up a little, please'], a: 0,
@@ -110,7 +110,7 @@ export const ryankelly: Clip = {
       trap: 'come on（来て）から「いっしょに来て」と思いやすい。ここはあきれの声。',
       use: 'Come on, really? That’s too much.（えー、本気？それはないよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'package', seg: [36.3, 40.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'package', seg: [35.7, 40.7],
       stem: 'What does “the whole package” mean?',
       ja: '「the whole package」の意味は？',
       choices: ['He has every good quality', 'He and Kelly are a set', 'He is only good-looking'], a: 0,
@@ -122,7 +122,7 @@ export const ryankelly: Clip = {
       trap: 'package（包み）から「セット」と思いやすい。一人に使うと「全部入り」。',
       use: 'Smart, kind, funny. He’s the whole package.（頭よし、優しい、面白い。完璧だね）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'nevermet', seg: [40.4, 51.65],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'nevermet', seg: [39.2, 52.7],
       stem: 'Has this coworker ever met Ravi?',
       ja: 'この同僚はラヴィに会ったことがある？',
       choices: ['No, never', 'Yes, once', 'Yes, many times'], a: 0,
@@ -146,7 +146,7 @@ export const ryankelly: Clip = {
       trap: 'あだ名や Ravi との取り違えと取りやすい。Ravi は同じ文で正しく呼んでいる。',
       use: 'Thanks, uh… Mike? — It’s Mark.（ありがとう、えーと…マイク？　マークだよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'scene', seg: [53.2, 59.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'scene', seg: [53.2, 62.9],
       stem: 'How does Kelly feel when Ryan says nobody believes in them?',
       ja: '「だれも信じてくれない」とライアンが言うとき、ケリーの気持ちは？',
       choices: ['Embarrassed by him', 'Touched by him', 'Very worried about him'], a: 0,
@@ -169,7 +169,7 @@ export const ryankelly: Clip = {
       trap: '照れや、からかわれる心配と取りやすい。本人が挙げる理由は、痛みと詩の威力だけ。',
       use: 'Trust me, it’s too good to show you.（信じて、すごすぎて見せられない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'pain', seg: [69.0, 73.15],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'pain', seg: [69, 74.9],
       stem: 'Fill the gap: “No, ___ too much pain.”',
       ja: '空いている所に入る言葉は？',
       choices: ['it would cause me', 'it could cause me', 'it would cost me'], a: 0,
@@ -181,7 +181,7 @@ export const ryankelly: Clip = {
       trap: 'cost は「コスト」とにごらず、could は「ク」で始まる。「ウッ…コーズ」なら would。',
       use: 'It would cause too much trouble.（面倒なことになりすぎる）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'cookie', seg: [83.85, 90],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'cookie', seg: [83.5, 90.8],
       stem: 'What is a “cookie-cutter world”?',
       ja: '「cookie-cutter world」とは？',
       choices: ['A world where all is alike', 'A sweet but childish world', 'A world with strict rules'], a: 0,
@@ -205,7 +205,7 @@ export const ryankelly: Clip = {
       trap: 'absolutely を全面的な賛成と取りやすい。but が認めた範囲を決める。',
       use: 'True, but that’s not the point.（確かに。でもそこじゃないんだよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'interrupt', seg: [118.2, 121.35],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'interrupt', seg: [117.5, 122.5],
       stem: 'Type what Kelly says: “I ___ interrupt.” (3 words)', answer: 'wasn\'t going to',
       ja: '「I」と「interrupt」の間の3語を書こう。',
       cue: '「don’t interrupt」と言われた直後。',
@@ -226,7 +226,7 @@ export const ryankelly: Clip = {
       trap: '「理由はともかく、ごめん」と取りやすい。挟んだ語は彼女の気持ちにかかる。',
       use: 'For whatever reason, he likes me.（なぜだか、彼は私が好きらしい）' },
 
-    { id: 'h4', skill: 'attitude', level: 'B2', point: 'probably', seg: [129, 137],
+    { id: 'h4', skill: 'attitude', level: 'B2', point: 'probably', seg: [129, 138],
       stem: 'How sure is Ryan about marrying Kelly “someday”?',
       ja: '「いつか」結婚することに、ライアンはどのくらい自信がある？',
       choices: ['Fairly sure', 'Totally certain', 'Not sure at all'], a: 0, keep: true,
@@ -238,7 +238,7 @@ export const ryankelly: Clip = {
       trap: 'someday（いつか）で力強く終わると思いやすい。最後の probably で自信が下がる。',
       use: 'I’ll call you tomorrow. Probably.（明日電話するよ。たぶん）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['choose'], seg: [153, 186.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['choose'], seg: [153, 187.2],
       stem: 'How does Ryan’s big speech to Kelly end?',
       ja: 'ケリーへのライアンの長い話は、どう終わる？',
       choices: ['She picks Ravi', 'She picks Ryan', 'She picks neither'], a: 0,
@@ -250,7 +250,7 @@ export const ryankelly: Clip = {
       trap: '最初の温かい一言で yes に聞こえやすい。答えは but のあと。',
       use: 'I hope we can still be friends.（これからも友だちでいたいな）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'article', seg: [159.4, 165.08],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'article', seg: [159.4, 166.5],
       stem: 'What does Ryan offer to email Kelly?',
       ja: 'ライアンはケリーに何をメールで送ると言う？',
       choices: ['A very interesting article', 'The love poem he wrote her', 'A list of his promises'], a: 0,
@@ -262,7 +262,7 @@ export const ryankelly: Clip = {
       trap: '前に出た love poem（愛の詩）を思い出しやすい。email の前の名詞を聞く。',
       use: 'I’ll email you the link.（リンクをメールで送るね）' },
 
-    { id: 'n1', skill: 'number', level: 'B2', point: 'odds', seg: [165.7, 170.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B2', point: 'odds', seg: [164.7, 172.4], keep: true,
       stem: 'What chance does Ryan give that they’ll break up within the week?',
       ja: '1週間以内に別れる見込みを、ライアンはどのくらいと言う？',
       choices: ['15%', '50%', '55%'], a: 1,
@@ -274,7 +274,7 @@ export const ryankelly: Clip = {
       trap: '15 は「フィフティーン」、55 は「フィフティファイヴ」。「フィフティ」が2回なら50/50。',
       use: 'It’s fifty-fifty whether it rains.（雨になるかは五分五分）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'dice', reveals: ['odds'], seg: [165.7, 172.6],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'dice', reveals: ['odds'], seg: [165.7, 174.5],
       stem: 'What does “I want to roll those dice” mean?',
       ja: '「I want to roll those dice」の意味は？',
       choices: ['He’ll take the risk anyway', 'He’s betting she’ll choose him', 'He’ll keep trying until it works'], a: 0,
@@ -286,7 +286,7 @@ export const ryankelly: Clip = {
       trap: 'dice から、彼女を賭けた勝負と思いやすい。直前の確率は別れる見込みの話。',
       use: 'Let’s just roll the dice and apply.（ダメもとで応募してみよう）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'choose', seg: [176.4, 186],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'choose', seg: [174.5, 186.5],
       stem: 'Why does Kelly say “You mean so much to me”?',
       ja: 'ケリーが「You mean so much to me」と言うのはなぜ？',
       choices: ['To soften the no that comes', 'To lead into a happy yes', 'To show she can’t decide yet'], a: 0,

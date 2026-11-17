@@ -14,7 +14,7 @@ export const benTreats: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'yearly', seg: [16.4, 21.45], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'yearly', seg: [14.5, 21.9], keep: true,
       stem: 'How often do Tom and Donna do this?',
       ja: 'トムとドナはどのくらいの間隔でこれをする？',
       choices: ['Once a year', 'Twice a year', 'Once a month', 'Once a week'], a: 0,
@@ -49,7 +49,7 @@ export const benTreats: Clip = {
       trap: 'could を「〜できる」と思うと、休んでいいという話になる。could use でひとまとまり。',
       use: 'I could use a coffee.（コーヒーが飲みたいな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'rubber', seg: [40.1, 46.85],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'rubber', seg: [40.1, 49.5],
       stem: 'What does “about to snap” say about Ben?',
       ja: '「about to snap」はベンについて何を言っている？',
       choices: ['He is very stressed', 'He is very thin', 'He is very calm and relaxed'], a: 0,
@@ -83,7 +83,7 @@ export const benTreats: Clip = {
       trap: 'keep up を速さの話と取りやすい。反対の言葉が並んだら、何を競っているかを先に聞く。',
       use: 'I can’t slow down enough to sleep.（気が張って眠れない）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'tomfine', seg: [65.2, 74.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'tomfine', seg: [65.2, 75.3],
       stem: 'What does “Fine” mean after “Tom”?',
       ja: '「Tom」のあとの「Fine」はどういう意味？',
       choices: ['Okay, Ben can come', 'I’m feeling fine now', 'That’s very good'], a: 0,
@@ -95,7 +95,7 @@ export const benTreats: Clip = {
       trap: 'fine を「元気」と思いやすい。お願いへの返事なら、しぶしぶ「いいよ」。',
       use: 'Oh, fine. You win.（はいはい、分かったよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'what', seg: [75.4, 86.25],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'what', seg: [81.4, 86.4],
       stem: 'How does Ben feel when they take him?',
       ja: '連れ出されるとき、ベンはどんな気持ち？',
       choices: ['He is confused', 'He is very angry', 'He is excited'], a: 0,
@@ -107,7 +107,7 @@ export const benTreats: Clip = {
       trap: 'No arguing（文句なし）と言われるので、怒っていると思いやすい。ベンの言葉は質問だけ。',
       use: 'Wait, what’s happening right now?（え、今どうなってるの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'getit', seg: [92.25, 94.35],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'getit', seg: [91.5, 97.1],
       stem: 'Type the reply to Ben’s question. (6 words)', answer: "i knew you wouldn't get it",
       ja: 'ベンの質問への返事を書き取る（6語）',
       cue: 'ベンの質問のすぐあと。',
@@ -130,7 +130,7 @@ export const benTreats: Clip = {
       trap: 'relax が何度も聞こえるので、落ち着いたと思いやすい。最後は Help me と言う。',
       use: 'I’m so stressed out.（ストレスでいっぱいだよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'harps', reveals: ['spa'], seg: [101.5, 108.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'harps', reveals: ['spa'], seg: [101.5, 110.9],
       stem: 'What makes Ben nervous at the spa?',
       ja: 'スパで、ベンは何に落ち着かない？',
       choices: ['The sound of the harps', 'The price of the treatments', 'The quiet of the room'], a: 0,
@@ -142,7 +142,7 @@ export const benTreats: Clip = {
       trap: 'お金に細かい人なので値段と思いやすい。理由は makes me nervous の前の sound of harps。',
       use: 'Something about this place makes me nervous.（ここはなんだか落ち着かない）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mindoff', seg: [132.35, 138],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mindoff', seg: [132.4, 139.6],
       stem: 'What does “take your mind off the needles” mean?',
       ja: '「take your mind off the needles」はどういう意味？',
       choices: ['Stop thinking about them', 'Take the needles out', 'Think hard about them'], a: 0,
@@ -166,7 +166,7 @@ export const benTreats: Clip = {
       trap: 'stamps が最後に聞こえるので、切手と思いやすい。more of a のあとが好きな物。',
       use: 'I’m more of a tea person.（どちらかというと紅茶派）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'burberry', seg: [145.7, 159.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'burberry', seg: [150.8, 161.8], keep: true,
       stem: 'How many Burberry stores does the mall have?',
       ja: 'モールにはバーバリーが何軒ある？',
       choices: ['1', '2', '3', '4'], a: 2,
@@ -177,18 +177,6 @@ export const benTreats: Clip = {
       mean: 'three Burberrys ＝ バーバリーが3軒。だから「どの店か言わないと」と続く。',
       trap: '最後の which one に引かれやすい。and のすぐあとが「スリー」なら3、「トゥー」なら2、「フォー」なら4、「ワン」なら1。',
       use: 'There are three cafés on this street.（この通りにカフェが3軒ある）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [182.75, 189],
-      stem: 'What did Ben buy for himself?',
-      ja: 'ベンは自分に何を買った？',
-      choices: ['Plain white socks', 'Soft cashmere socks', 'Velvet slippers'], a: 0,
-      choicesJa: ['白い無地の靴下', 'やわらかいカシミアの靴下', 'ベルベットのスリッパ'],
-      cue: '「did you buy anything」への返事。',
-      line: 'I got this *pack of socks*. — *Plain white socks*? That’s not a treat.',
-      said: '何か買ったかと聞かれ、ベンは「靴下のパック」。白い無地と知って、あきれられる。',
-      mean: 'a pack of socks ＝ 靴下ひと袋。plain ＝ 無地の。ごほうびにならない安い物。',
-      trap: '前にカシミアの靴下やスリッパが出るので混ざりやすい。それはドナの物。',
-      use: 'I just got a pack of socks.（靴下をひと袋買っただけ）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'getaway', reveals: ['socks'], seg: [182.75, 191.45], retired: true,
       stem: 'Right after “That’s not a treat”, how is the next line meant?',
@@ -201,7 +189,19 @@ export const benTreats: Clip = {
       trap: '言葉だけ取ると本気の拒絶に聞こえる。理由の小ささと反応の大きさの差で冗談と分かる。',
       use: 'Please, get me out of here.（お願い、ここから出して）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'version', seg: [188.95, 201.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [182.8, 191.8],
+      stem: 'What did Ben buy for himself?',
+      ja: 'ベンは自分に何を買った？',
+      choices: ['Plain white socks', 'Soft cashmere socks', 'Velvet slippers'], a: 0,
+      choicesJa: ['白い無地の靴下', 'やわらかいカシミアの靴下', 'ベルベットのスリッパ'],
+      cue: '「did you buy anything」への返事。',
+      line: 'I got this *pack of socks*. — *Plain white socks*? That’s not a treat.',
+      said: '何か買ったかと聞かれ、ベンは「靴下のパック」。白い無地と知って、あきれられる。',
+      mean: 'a pack of socks ＝ 靴下ひと袋。plain ＝ 無地の。ごほうびにならない安い物。',
+      trap: '前にカシミアの靴下やスリッパが出るので混ざりやすい。それはドナの物。',
+      use: 'I just got a pack of socks.（靴下をひと袋買っただけ）' },
+
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'version', seg: [189, 201.5],
       stem: 'After the socks, what idea comes up for Ben?',
       ja: '靴下のあと、ベンについてどんな考えが出る？',
       choices: ['Treat himself his own way', 'Treat himself their way', 'Buy some cheaper socks'], a: 0,
@@ -213,7 +213,7 @@ export const benTreats: Clip = {
       trap: 'our version が先に聞こえるので、二人のやり方と思いやすい。he needs のあとは his version。',
       use: 'Let’s do it your way this time.（今回は君のやり方でやろう）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['version', 'nerd'], seg: [191.4, 232.4],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['version', 'nerd'], seg: [191.4, 233.1],
       stem: 'What finally gets Ben to treat himself?',
       ja: '最後に、ベンが自分にごほうびをする決め手は？',
       choices: ['He picks his own treat', 'He copies Tom and Donna', 'He gets a day off work'], a: 0,
@@ -225,7 +225,7 @@ export const benTreats: Clip = {
       trap: '二人の買い物を見てまねしたと思いやすい。変わるのは「君なら何に使う？」のあと。',
       use: 'You know what? I deserve this.（よし、これくらいいいよね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'nerd', seg: [206.8, 213.15],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'nerd', seg: [206.8, 214.3],
       stem: 'Why does Ben say “This is ridiculous”?',
       ja: 'ベンはなぜ「This is ridiculous」と言う？',
       choices: ['He thinks they’re laughing at him', 'He thinks it costs too much', 'He doesn’t like the costume'],
@@ -260,7 +260,7 @@ export const benTreats: Clip = {
       trap: 'going to を予想と覚えていると占いに聞こえる。重ねて言い切るときは指示。',
       use: 'You’re going to rest. No arguing.（休むんだよ。反論なし）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'seeing', seg: [250.85, 260.95],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'seeing', seg: [249.9, 261.1],
       stem: 'What does “I was seeing a woman” mean?',
       ja: '「I was seeing a woman」はどういう意味？',
       choices: ['I was dating a woman', 'I saw a woman once', 'I was looking for a woman'], a: 0,
@@ -272,7 +272,7 @@ export const benTreats: Clip = {
       trap: 'seeing を「見る」と思いやすい。for a while（しばらく）が続くので付き合いの話。',
       use: 'Are you seeing anyone?（今付き合ってる人いる？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'youvebeen', reveals: ['seeing'], seg: [259.5, 263.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'youvebeen', reveals: ['seeing'], seg: [259.5, 265.1],
       stem: 'Fill the gap: “That’s why ___ off your game.”',
       ja: '空所を埋める：「That’s why ___ off your game.」',
       choices: ['you’ve been', 'you were', 'you’re'], a: 0,
@@ -284,7 +284,7 @@ export const benTreats: Clip = {
       trap: '’ve は小さく消えやすい。「ビン」が聞こえれば you’ve been、「ワー」なら you were、「ユア」だけなら you’re。',
       use: 'You’ve been quiet lately.（最近静かだね）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B1', point: 'cry', seg: [271.65, 277],
+    { id: 'h3', skill: 'phrase', level: 'B1', point: 'cry', seg: [271.7, 277.6],
       stem: 'What does “let it out” mean here?',
       ja: 'ここで「let it out」はどういう意味？',
       choices: ['Cry, don’t hold it in', 'Go outside for a while', 'Tell everyone a secret'], a: 0,

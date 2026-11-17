@@ -29,7 +29,7 @@ export const empOfMonth: Clip = {
       trap: '本人の病気の話と取りやすい。呼びかけの Dr. が誰を指すかを聞く。',
       use: 'Wait, which one of us is driving?（待って、運転するのはどっち？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'mondays', seg: [5.4, 18.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'mondays', seg: [4.4, 13],
       stem: 'What does “come down with” mean here?', ja: 'ここでの “come down with” はどういう意味？',
       choices: ['Catch, like an illness', 'Go downstairs with', 'Get angry about'], a: 0,
       choicesJa: ['（病気に）かかる', '〜と一緒に下りる', '〜に怒る'],
@@ -40,7 +40,7 @@ export const empOfMonth: Clip = {
       trap: 'down から「下りる」と思いやすい。come down with ＋病気で「かかる」。',
       use: 'I think I’m coming down with a cold.（風邪をひきかけてるみたい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'chances', seg: [10.3, 13.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'chances', seg: [9.2, 14.2],
       stem: 'Fill the gap: “What ___ put our chances at?”', ja: '空所に入るのは？ “What ___ put our chances at?”',
       choices: ['do you', 'did you', 'would you'], a: 0,
       choicesJa: ['（今）〜する', '〜した', '〜するだろう'],
@@ -51,7 +51,7 @@ export const empOfMonth: Clip = {
       trap: 'did you なら「ディジュ」、would you なら「ウッジュ」。「ワダヤ」と聞こえれば do you。',
       use: 'What do you think our chances are?（見込みはどのくらいだと思う？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'notbad', seg: [32.4, 37],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'notbad', seg: [31, 37.6],
       stem: 'What does Jim think of Andy’s idea?', ja: 'ジムはアンディの考えをどう思う？',
       choices: ['He thinks it’s pretty good', 'He hates it, but is polite', 'He thinks it’s brilliant'], a: 0,
       choicesJa: ['なかなかいいと思う', 'いやだけど、ていねいに言う', 'すばらしいと思う'],
@@ -62,7 +62,7 @@ export const empOfMonth: Clip = {
       trap: 'bad が耳に残ると、反対だと思いやすい。not such a bad ＝「なかなかいい」。',
       use: 'That’s not such a bad idea.（それ、なかなかいい考えだね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wentfor', seg: [40.1, 44.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wentfor', seg: [40.1, 45.7],
       stem: 'What does “They totally went for our idea” mean?', ja: '“They totally went for our idea” はどういう意味？',
       choices: ['They liked our idea', 'They went to talk about it', 'They said no to it'], a: 0,
       choicesJa: ['アイデアに乗ってきた', '相談しに行った', '断った'],
@@ -73,7 +73,7 @@ export const empOfMonth: Clip = {
       trap: 'went を「行った」と思うと、相談しに行った話に聞こえやすい。go for ＋案 ＝ 賛成。',
       use: 'I think the boss will go for it.（上司は乗ってくると思う）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [40.1, 60],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [40.1, 62.4],
       stem: 'What does Dwight hope the award will lead to?', ja: 'ドワイトは、この賞が何につながってほしい？',
       choices: ['Jim getting fired', 'Jim getting promoted', 'Dwight winning it'], a: 0,
       choicesJa: ['ジムがクビになる', 'ジムが昇進する', 'ドワイトが受賞する'],
@@ -101,7 +101,7 @@ export const empOfMonth: Clip = {
       trap: '手柄をゆずる言葉は謙遜に聞こえやすい。この形式では、カメラへの一言が答え合わせになる。',
       use: 'It was all your idea, remember?（全部君の案だったよね？）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'traced', seg: [44.2, 52.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'traced', seg: [44.2, 53.6],
       stem: 'Why should Andy think the idea is his?', ja: 'なぜアンディに、自分の案だと思わせたい？',
       choices: ['So no one traces it to Dwight', 'So Michael likes it more', 'So Andy tells David Wallace'], a: 0,
       choicesJa: ['ドワイトまでたどられないように', 'マイケルがもっと気に入るように', 'アンディが上司に話すように'],
@@ -112,7 +112,7 @@ export const empOfMonth: Clip = {
       trap: 'マイケルの名前から、上司受けのためと思いやすい。so のあとが本当の理由。',
       use: 'Pay cash so it can’t be traced.（足がつかないよう現金で）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [53.3, 60], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [52.3, 60], keep: true,
       stem: 'When does Dwight say Jim gets the call?', ja: 'ドワイトは、ジムに電話が来るのはいつだと言う？',
       choices: ['in about 6 hours', 'in about 16 hours', 'in about 60 hours', 'in about 6 days'], a: 0,
       choicesJa: ['約6時間後', '約16時間後', '約60時間後', '約6日後'],
@@ -134,7 +134,7 @@ export const empOfMonth: Clip = {
       trap: '「全員が受賞」と字のまま取りやすい。このあと一人を発表するので、やさしい前置き。',
       use: 'You’re all winners to me.（僕にとってはみんなが勝者だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'flustered', seg: [82.4, 91.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'flustered', seg: [81.4, 91.4],
       stem: 'How does Jim react when his name is read?', ja: '名前を読まれて、ジムはどう反応する？',
       choices: ['Flustered, can’t finish', 'Pleased, but acts modest', 'Angry at Andy'], a: 0,
       choicesJa: ['あわてて、言い終えられない', 'うれしいが、けんそんする', 'アンディに怒る'],
@@ -145,7 +145,7 @@ export const empOfMonth: Clip = {
       trap: '受賞して照れていると思いやすい。not で切れる文は、否定しようとしている。',
       use: 'Wait, I didn’t… that’s not what I meant.（待って、そういう意味じゃ…）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'score', seg: [93, 101.9],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'score', seg: [91.6, 101.8],
       stem: 'How does Jim say the winner was picked?', ja: 'ジムは、受賞者をどう選んだと言う？',
       choices: ['By score, without names', 'By a secret vote', 'By score, with names'], a: 0,
       choicesJa: ['名前を伏せて、点数で', '秘密の投票で', '名前を見て、点数で'],
@@ -156,7 +156,7 @@ export const empOfMonth: Clip = {
       trap: 'anonymous から「無記名投票」を思いやすい。決め方は score（点数）。',
       use: 'The survey is anonymous.（アンケートは無記名です）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'myself', seg: [95.1, 98],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'myself', seg: [94.1, 100],
       stem: 'Type: “There’s no way I ___ to myself.” (4 words)', ja: '書こう：“There’s no way I ___ to myself.”（4語）',
       answer: 'could have given it',
       cue: '「There’s no way I」のあと',
@@ -181,7 +181,7 @@ export const empOfMonth: Clip = {
       trap: '祝いに聞こえやすいが、your own と from all of us がとげ。',
       use: 'Nice work getting your own way.（自分の思いどおりにできてよかったね）' },
 
-    { id: 'n2', skill: 'number', level: 'B2', point: 'cash', seg: [104.3, 108.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B2', point: 'cash', seg: [101.6, 112.1], keep: true,
       stem: 'How much cash is Jim told he has won?', ja: 'ジムは賞金をいくらもらったと言われる？',
       choices: ['$25', '$250', '$400', '$1,000'], a: 1,
       choicesJa: ['25ドル', '250ドル', '400ドル', '1,000ドル'],
@@ -192,7 +192,7 @@ export const empOfMonth: Clip = {
       trap: '「クォーター」だけなら25、「サウザンド」だけなら1,000。「フォー」は聞こえない。両方で250。',
       use: 'A quarter of the cake is left.（ケーキが4分の1残ってる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'ideal', seg: [116.6, 120.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'ideal', seg: [115.4, 120.4],
       stem: 'Why does Dwight think there was a cash prize?', ja: 'ドワイトはなぜ、賞金があると思った？',
       choices: ['Jim had mentioned one', 'Andy promised one', 'The rules said so'], a: 0,
       choicesJa: ['ジムが話に出していた', 'アンディが約束した', 'ルールにあった'],
@@ -252,7 +252,7 @@ export const empOfMonth: Clip = {
       trap: 'why から、理由を聞いていると思いやすい。why doesn’t ＋ just は軽い提案。',
       use: 'Why don’t we just order in?（出前にしない？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'pam', seg: [160.8, 169.6],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'pam', seg: [159.8, 169.9],
       stem: 'Whose name comes up with the next highest score?', ja: '次に点数が高いのは誰？',
       choices: ['It’s Pam’s name', 'It’s Dwight’s name', 'It’s Jim’s name again'], a: 0,
       choicesJa: ['パム', 'ドワイト', 'またジム'],
@@ -274,7 +274,7 @@ export const empOfMonth: Clip = {
       trap: 'score（点数）から、公平に決まったと思いやすい。最後の He knew all along を聞く。',
       use: 'This looks bad, but I can explain.（まずく見えるけど、説明させて）' },
 
-    { id: 'h4', skill: 'humor', level: 'B1', point: 'doubled', seg: [179, 188.6],
+    { id: 'h4', skill: 'humor', level: 'B1', point: 'doubled', seg: [179, 189.4],
       stem: 'Pam doubled her sales. To how many?', ja: 'パムは売上を倍にした。何件になった？',
       choices: ['4', '12', '20'], a: 0, keep: true,
       choicesJa: ['4件', '12件', '20件'],

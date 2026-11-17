@@ -15,7 +15,7 @@ export const snowCones: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'cut', reveals: ['putt'], seg: [0, 34.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cut', reveals: ['putt'], seg: [0, 35.5],
       stem: 'Why is Leslie angry at the start?',
       ja: '最初、レスリーはなぜ怒っている？',
       choices: ['Ron wants to cut mini golf', 'Ron blames her for cuts', 'Ron canceled her council plan'], a: 0,
@@ -39,7 +39,7 @@ export const snowCones: Clip = {
       trap: 'roads and bridges も後で出てくるので、抜けてはいない。並び順の落差を聞く。',
       use: 'Some things you just don’t cut.（削っちゃいけない物もある）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'ronview', seg: [24.6, 32.9],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'ronview', seg: [24.6, 35.5],
       stem: 'Which projects does Ron want to cut?',
       ja: 'ロンはどの事業を削りたい？',
       choices: ['Almost all of them', 'Only useless ones', 'Only new ones'], a: 0,
@@ -51,7 +51,7 @@ export const snowCones: Clip = {
       trap: '最初の useless だけ聞くと、ふつうの節約に聞こえる。also のあとが本音。',
       use: 'I also believe in second chances.（やり直しのチャンスも大事だと思う）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [34.8, 39.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [34.7, 39.7],
       stem: 'What does “Why don’t you go…?” mean here?',
       ja: '「Why don’t you go…?」は、ここではどういう意味？',
       choices: ['Go and do that', 'Tell me the reason', 'You did it well'], a: 0,
@@ -75,7 +75,7 @@ export const snowCones: Clip = {
       trap: '反政府のロンなので「市のためには作らない」と取りやすいが、返事は材料の話。',
       use: 'That’s not quite the right word.（それはちょっと言葉が違うね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'putt', seg: [43.5, 48.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'putt', seg: [42.7, 48.7],
       stem: 'What is on tomorrow’s council agenda?',
       ja: '明日の市議会の議題は何？',
       choices: ['Ending money for mini golf', 'Ending money for a golf club', 'Ending money for merry-go-rounds'], a: 0,
@@ -87,7 +87,7 @@ export const snowCones: Clip = {
       trap: 'golf course だけ聞くと本物のゴルフ場と思いやすい。mini は短く弱い。',
       use: 'It’s on the agenda for Monday.（それは月曜の議題に入ってる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'double', seg: [55.9, 63.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'double', seg: [55.9, 67.5], keep: true,
       stem: 'How much electricity does Leslie say the course will produce?',
       ja: 'コースは電気をどのくらい作るとレスリーは言う？',
       choices: ['Half the dam’s', 'The same as the dam', 'Double the dam’s', 'Ten times the dam’s'], a: 2,
@@ -111,7 +111,7 @@ export const snowCones: Clip = {
       trap: '風車を本気の策と取りやすいが、I’ll figure it out は「これから考える」。',
       use: 'I’ll figure it out as I go.（やりながら考えるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'figure', seg: [63.2, 66.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'figure', seg: [61.7, 69.7],
       stem: 'Type what Leslie says after “How?”: “___.” (4 words)', answer: 'i\'ll figure it out',
       ja: '「How?」のあとの言葉を書こう（4語）',
       cue: '「How?」のすぐあと',
@@ -121,7 +121,7 @@ export const snowCones: Clip = {
       trap: 'figure it out が「フィギャリラウ」とつながる。I’ll の ll も小さい。',
       use: 'We’ll figure something out.（何とかなるよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'carpet', seg: [70.5, 75.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'carpet', seg: [69.2, 78.2],
       stem: 'What is Leslie planning to do for Jamm?',
       ja: 'レスリーはジャムに何をするつもり？',
       choices: ['Treat him as a special guest', 'Throw a big party for him', 'Ask him straight for his vote'], a: 0,
@@ -133,7 +133,7 @@ export const snowCones: Clip = {
       trap: 'red carpet から式典やパーティーを思いやすい。もてなし方の決まり文句。',
       use: 'They rolled out the red carpet for us.（私たちを大歓迎してくれた）' },
 
-    { id: 'a5', skill: 'attitude', level: 'B1', point: 'lovecaddy', seg: [84.4, 89.4],
+    { id: 'a5', skill: 'attitude', level: 'B1', point: 'lovecaddy', seg: [82.1, 92.7],
       stem: 'How does Chris feel about being a caddy?',
       ja: 'クリスはキャディの仕事をどう思っている？',
       choices: ['He loves it', 'He hates it', 'He is bored of it'], a: 0,
@@ -169,7 +169,7 @@ export const snowCones: Clip = {
       trap: '大げさなほめ言葉は皮肉にも聞こえるが、続けて食べ物を勧めている。怒らせる気はない。',
       use: 'Wow, what a great story!（へえ、いい話ですね！）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'onme', seg: [123.2, 127.6],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'onme', seg: [123.1, 128.1],
       stem: 'What does Leslie mean by “On me”?',
       ja: 'レスリーの「On me」はどういう意味？',
       choices: ['I’ll pay for it', 'Put it on me', 'I will eat it'], a: 0,
@@ -181,7 +181,7 @@ export const snowCones: Clip = {
       trap: 'on から「上に」と思いやすい。お金の話で on me は「私が払う」。',
       use: 'Lunch is on me today.（今日のお昼は私のおごり）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bargain', reveals: ['subsidy'], seg: [145.2, 157.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bargain', reveals: ['subsidy'], seg: [147.3, 159.7],
       stem: 'Ron says it costs a lot. What does Leslie say?',
       ja: '高いと言うロンに、レスリーは何と言う？',
       choices: ['It’s good value', 'It’s too expensive', 'It should be free'], a: 0,
@@ -216,7 +216,7 @@ export const snowCones: Clip = {
       trap: '文字通りに「言うな」と取ると返事がずれる。事実を並べる皮肉には、その裏の意味に返す。',
       use: 'Are you saying I can be bought?（僕が買収されるって言いたいの？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'buying', reveals: ['dontsay'], seg: [160.8, 165.4],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'buying', reveals: ['dontsay'], seg: [160.8, 166.6],
       stem: 'Who is buying the snow cones all night?',
       ja: '一晩中かき氷をおごるのはだれ？',
       choices: ['Leslie', 'Chris', 'Ron'], a: 0,
@@ -240,7 +240,7 @@ export const snowCones: Clip = {
       trap: 'facts（事実）が聞こえるので、まじめに受け取ったように思える。前の unrelated を聞く。',
       use: 'Enough talk. Let’s get started.（話はいいから、始めよう）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'dibs', seg: [180.5, 188.7],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'dibs', seg: [180.5, 189.3],
       stem: 'What does “I got dibs on” mean?',
       ja: '「I got dibs on」はどういう意味？',
       choices: ['I want it first', 'I already own it', 'I give it away'], a: 0,
@@ -252,7 +252,7 @@ export const snowCones: Clip = {
       trap: 'got を「持っている」と思いやすい。dibs は「先取り」の決まった言い方。',
       use: 'Dibs on the front seat!（助手席は僕ね！）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'fire', seg: [197.1, 201.7],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'fire', seg: [197.1, 202.1],
       stem: 'What does “you are on fire” mean here?',
       ja: '「you are on fire」は、ここではどういう意味？',
       choices: ['He is playing very well', 'He is getting really angry', 'He is taking it too seriously'], a: 0,
@@ -264,7 +264,7 @@ export const snowCones: Clip = {
       trap: 'fire から「怒り」を思いやすい。直前の「プロになれる」と合わせる。',
       use: 'You’re on fire today!（今日は絶好調だね！）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'subsidy', seg: [208.6, 213.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'subsidy', seg: [208.6, 215], keep: true,
       stem: 'How much a year does Ron say the course costs taxpayers?',
       ja: 'コースの費用は年にいくらとロンは言う？',
       choices: ['$900', '$9,000', '$19,000', '$90,000'], a: 1,
@@ -276,7 +276,7 @@ export const snowCones: Clip = {
       trap: 'nine と nineteen、ninety は語尾で区別する。thousand の「サウ」まで聞く。',
       use: 'It costs about nine thousand a year.（年に約9,000かかる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'anything', reveals: ['losing'], seg: [226.9, 249.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'anything', reveals: ['losing'], seg: [226.9, 249.8],
       stem: 'How does the argument with Ron end?',
       ja: 'ロンとの言い合いはどう終わる？',
       choices: ['Leslie says she’ll do anything', 'Leslie says she is playing badly', 'Ron agrees the course is good'], a: 0,
@@ -288,7 +288,7 @@ export const snowCones: Clip = {
       trap: '「今夜は調子が悪い」で終わったと思いやすい。最後の長い文が結論。',
       use: 'I’ll do whatever it takes.（何でもやるよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'losing', seg: [227.2, 231.6],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'losing', seg: [227.2, 233.2],
       stem: 'What does Ron say is even worse?',
       ja: 'ロンが「もっと悪い」と言うのは何？',
       choices: ['She is losing on purpose', 'She is lying about the cost', 'She is praising Jamm too much'], a: 0,
@@ -300,7 +300,7 @@ export const snowCones: Clip = {
       trap: 'lying（うそ）は次の文で出る言葉。worse のすぐあとを聞く。',
       use: 'Did you do that on purpose?（それ、わざとやった？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'offnight', seg: [231.2, 234.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'offnight', seg: [231.2, 237.2],
       stem: 'Fill the gap: “I’m having a very ___ night.”',
       ja: '「I’m having a very ___ night.」の空所は？',
       choices: ['off', 'awful', 'odd'], a: 0,

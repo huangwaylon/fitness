@@ -49,7 +49,7 @@ export const andyTest: Clip = {
       trap: 'divorce（離婚）が聞こえて、やめてと言っていると思いやすい。あれは冗談。',
       use: 'Can you quiz me?（問題を出してくれる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'code1', seg: [11.9, 18.05],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'code1', seg: [11.9, 18.1],
       stem: 'What does an officer mean by a 35-42?',
       ja: '警官の「35-42」はどういう意味？',
       choices: ['Breaking and entering', 'Assault and battery', 'Driving over the limit'], a: 1,
@@ -84,7 +84,7 @@ export const andyTest: Clip = {
       trap: '数字に気を取られると絵の中身を聞き逃す。前に出た語が戻ってきたら笑いの合図。',
       use: 'Here’s how I remember it.（覚え方はこうだよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'nervous', seg: [30.5, 34.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'nervous', seg: [29.6, 37.4],
       stem: 'How does Andy feel before the test?',
       ja: '試験の前、アンディはどんな気持ち？',
       choices: ['He is nervous', 'He is bored', 'He is angry'], a: 0,
@@ -128,7 +128,7 @@ export const andyTest: Clip = {
       trap: 'creepy（気味が悪い）から、いやがっていると思いやすい。最後の I love it が答え。',
       use: 'Thank you, I love it!（ありがとう、気に入った！）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'machine', seg: [58.6, 67.5],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'machine', seg: [58.6, 70.2],
       stem: 'Why does the examiner first ask Andy’s name?',
       ja: '検査官が最初にアンディの名前を聞くのはなぜ？',
       choices: ['To check the machine works', 'To check it’s the right man', 'To check he can say yes'], a: 0,
@@ -163,7 +163,7 @@ export const andyTest: Clip = {
       trap: 'Andrew が別名に聞こえると、わざとの嘘と取りやすい。迷う声と言い直しを聞く。',
       use: 'I don’t know how to answer that.（なんて答えればいいか…）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'moveon', seg: [79, 84],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'moveon', seg: [78, 83],
       stem: 'What does “*Let’s move on*” mean here?',
       ja: 'ここでの「Let’s move on」はどういう意味？',
       choices: ['Go to the next question', 'Walk to another room', 'Start the test again'], a: 0,
@@ -187,7 +187,7 @@ export const andyTest: Clip = {
       trap: 'cop（警官）が聞こえて、その子が警官になると思いやすい。When I was a kid を聞く。',
       use: 'I always wanted to visit Paris.（ずっとパリに行きたかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gave', seg: [86.3, 90.55],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gave', seg: [84.8, 89.8],
       stem: 'Fill the gap: “Yes, I ___ to him.”',
       ja: '「Yes, I ___ to him.」の空所は？',
       choices: ['give it', 'gave it', 'gave ’em'], a: 1,
@@ -198,18 +198,6 @@ export const andyTest: Clip = {
       mean: 'gave it ＝ それを渡した。「ゲイヴィッ」とつながる。',
       trap: 'give は「ギヴ」、gave ’em は「ゲイヴム」。「ゲイ」で始まり「イッ」で終われば gave it。',
       use: 'I gave it to my sister.（それは妹にあげた）' },
-
-    { id: 'r1', skill: 'marker', level: 'B2', point: 'belike', reveals: ['dad'], seg: [97.4, 108],
-      stem: 'What does “*I would be like*” mean here?',
-      ja: 'ここでの「I would be like」はどういう意味？',
-      choices: ['I would say this', 'I would look like this', 'I would like this'], a: 0,
-      choicesJa: ['こう言うだろう', 'こんな見た目になる', 'これが気に入る'],
-      cue: '「Well, first」のあと',
-      line: 'Well, first, I would *be like*, “Dad, you’re alive?”',
-      said: '「まずはこんな感じ。『父さん、生きてたの？』」とセリフを演じる。',
-      mean: 'be like ＝ 〜って言う・〜って感じ。人の言葉や反応をまねるときの話し言葉。',
-      trap: 'like から「好き」や「〜に似ている」と思いやすい。あとにセリフが続く。',
-      use: 'And he was like, “No way!”（で、彼は「まさか！」って言ったの）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'dad', seg: [97.4, 110.8], retired: true,
       stem: 'What does “*Dad, you’re alive?*” tell us?',
@@ -223,7 +211,19 @@ export const andyTest: Clip = {
       trap: '警察の話なので、父も警官と思いやすい。驚きの中身で分かる。',
       use: 'You’re alive! I was worried.（生きてた！心配したよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'knowwhere', seg: [110.3, 113.4],
+    { id: 'r1', skill: 'marker', level: 'B2', point: 'belike', reveals: ['dad'], seg: [101.6, 111.3],
+      stem: 'What does “*I would be like*” mean here?',
+      ja: 'ここでの「I would be like」はどういう意味？',
+      choices: ['I would say this', 'I would look like this', 'I would like this'], a: 0,
+      choicesJa: ['こう言うだろう', 'こんな見た目になる', 'これが気に入る'],
+      cue: '「Well, first」のあと',
+      line: 'Well, first, I would *be like*, “Dad, you’re alive?”',
+      said: '「まずはこんな感じ。『父さん、生きてたの？』」とセリフを演じる。',
+      mean: 'be like ＝ 〜って言う・〜って感じ。人の言葉や反応をまねるときの話し言葉。',
+      trap: 'like から「好き」や「〜に似ている」と思いやすい。あとにセリフが続く。',
+      use: 'And he was like, “No way!”（で、彼は「まさか！」って言ったの）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'knowwhere', seg: [109.3, 114.3],
       stem: 'Type what Andy asks: “Also, ___ my catcher’s mitt is?” (4 words)', answer: 'do you know where',
       ja: '「Also, ___ my catcher’s mitt is?」の空所を書こう（4語）',
       cue: '「Also」のあと',
@@ -233,7 +233,7 @@ export const andyTest: Clip = {
       trap: 'do you が小さく短く「ドゥユ」と know につながる。4語でひとまとまり。',
       use: 'Do you know where the station is?（駅がどこか知っていますか）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'result', reveals: ['hundred'], seg: [118.8, 136.6],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'result', reveals: ['hundred'], seg: [118.8, 137.1],
       stem: 'Why does the chief say “Such a shame”?',
       ja: '署長が「Such a shame」と言うのはなぜ？',
       choices: ['He passed one test, failed one', 'He failed both of the tests', 'He was caught cheating'], a: 0,
@@ -245,7 +245,7 @@ export const andyTest: Clip = {
       trap: 'failed（落ちた）だけ聞くと、両方落ちたと思いやすい。but の前後で分かれる。',
       use: 'What a shame!（それは惜しいね！）' },
 
-    { id: 'g4', skill: 'gist', level: 'B1', point: 'chiefview', reveals: ['genius', 'sweetkid', 'doesnt'], seg: [119.5, 143.3],
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'chiefview', reveals: ['genius', 'sweetkid', 'doesnt'], seg: [119.5, 143.5],
       stem: 'What does the chief think of Andy?',
       ja: '署長は、アンディをどう思っている？',
       choices: ['Smart, but wrong for the job', 'Kind, but not smart enough for it', 'Ready to be a great cop'], a: 0,
@@ -257,7 +257,7 @@ export const andyTest: Clip = {
       trap: 'sweet kid（いい子）から、ほめているだけと思いやすい。Just doesn’t have が本音。',
       use: 'She has what it takes.（彼女には素質がある）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', seg: [125.1, 133.1],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', seg: [125.1, 134.9],
       stem: 'What did Andy score on the written test?',
       ja: 'アンディの筆記試験の点数は？',
       choices: ['90%', '95%', '99%', '100%'], a: 3,
@@ -269,7 +269,7 @@ export const andyTest: Clip = {
       trap: '「ハンドレッド」なら100%。「ナインティ」で止まれば90、「ナインティファイブ」なら95、「ナインティナイン」なら99。',
       use: 'I’m a hundred percent sure.（100%確かです）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sweetkid', seg: [125.1, 136.6],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sweetkid', seg: [126.3, 138.3],
       stem: 'Why does the chief say “He’s a sweet kid”?',
       ja: '署長が「いい子なんだ」と言うのはなぜ？',
       choices: ['To make the bad news softer', 'To show it was hard to decide', 'To say he is too young'], a: 0,
@@ -281,7 +281,7 @@ export const andyTest: Clip = {
       trap: 'kid（子ども）から、若すぎると思いやすい。あとの Just doesn’t 〜 が本題。',
       use: 'He’s nice, but he’s always late.（いい人だけど、いつも遅れる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'doesnt', seg: [133.05, 136.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'doesnt', seg: [133.1, 138.3],
       stem: 'Fill the gap: “Just ___ what it takes to be a cop.”',
       ja: '「Just ___ what it takes to be a cop.」の空所は？',
       choices: ['doesn’t have', 'didn’t have', 'don’t have'], a: 0,
@@ -293,7 +293,7 @@ export const andyTest: Clip = {
       trap: 'didn’t は「ディドゥン」、don’t は「ドン」。「ダ」で始まれば doesn’t。',
       use: 'He doesn’t have time today.（彼は今日、時間がない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'genius', seg: [136.5, 140.95],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'genius', seg: [136.5, 143.5],
       stem: 'What does “*something of a genius*” mean?',
       ja: '「something of a genius」はどういう意味？',
       choices: ['Quite a genius', 'A genius at one thing', 'Not a genius at all'], a: 0,

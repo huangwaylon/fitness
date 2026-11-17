@@ -15,7 +15,7 @@ export const shelbyFight: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'rock', seg: [32.5, 44.4],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'rock', seg: [32.5, 44.5],
       stem: 'What does “let’s get ready to rock and roll” mean here?',
       ja: 'ここでの「let’s get ready to rock and roll」はどういう意味？',
       choices: ['Let’s start the fight', 'Let’s play some music', 'Let’s all dance now'], a: 0,
@@ -50,7 +50,7 @@ export const shelbyFight: Clip = {
       trap: 'only や doesn’t matter で安心させる話に聞こえやすい。so の前の理由とつなげて聞く。',
       use: 'I doubt it’ll even come up.（たぶん話にも出ないよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'stupid', seg: [65.3, 69.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'stupid', seg: [65.3, 74.7],
       stem: 'What does Carly mean by “thanks for making me feel stupid”?',
       ja: 'カーリーの「thanks for making me feel stupid」はどういう意味？',
       choices: ['Your words made me feel bad', 'Thank you for telling me that', 'I feel silly, sorry'], a: 0,
@@ -73,7 +73,7 @@ export const shelbyFight: Clip = {
       trap: 'we have をお願いと取りやすいが、聞いてはいない。timeout は休みで、やめるのではない。',
       use: 'Let’s call it a coffee break.（コーヒー休みってことで）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [101.5, 106.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [101.5, 107.1],
       stem: 'Fill the gap: “You ___ a timeout.”',
       ja: '「You ___ a timeout.」の空所は？',
       choices: ['can call', 'can’t call', 'could call'], a: 1,
@@ -129,7 +129,7 @@ export const shelbyFight: Clip = {
       trap: '試合なので、なぐったと思いやすい。Let go of my leg!（足を離して！）を聞く。',
       use: 'I made it through the whole day.（なんとか一日乗り切った）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dearlife', seg: [162.4, 171.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dearlife', seg: [161.5, 171.8],
       stem: 'What does “for dear life” mean?',
       ja: '「for dear life」はどういう意味？',
       choices: ['As hard as she can', 'Gently and with love', 'Just a little bit'], a: 0,
@@ -141,7 +141,7 @@ export const shelbyFight: Clip = {
       trap: 'dear（大切な）から、やさしく、と思いやすい。for dear life はひとまとまりで「必死に」。',
       use: 'I held on for dear life.（必死でつかまってた）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'pry', seg: [170.6, 174.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'pry', seg: [170.2, 176.1],
       stem: 'How does Shelby feel when she shouts “Will someone…”?',
       ja: '「Will someone…」と叫ぶとき、シェルビーはどんな気持ち？',
       choices: ['Annoyed she can’t punch', 'Calm and very patient', 'Worried about Carly'], a: 0,
@@ -153,7 +153,7 @@ export const shelbyFight: Clip = {
       trap: 'Will someone…? は頼む形なので、落ち着いていると思いやすい。so I can punch her が本音。',
       use: 'Can someone help me with this?（誰かこれ手伝ってくれない？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'left', seg: [174.1, 183.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'left', seg: [174.1, 183.3], keep: true,
       stem: 'How long is left in the round?',
       ja: 'ラウンドの残りはどのくらい？',
       choices: ['5 seconds', '8 seconds', '10 seconds'], a: 2,
@@ -188,7 +188,7 @@ export const shelbyFight: Clip = {
       trap: '欠点が続くと、取り消しや注意に聞こえる。but のあとが本音。',
       use: 'It wasn’t pretty, but you did it!（かっこ悪くても、やりとげたね！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'cause', reveals: ['easy', 'gym', 'claim', 'getit', 'must'], seg: [262.6, 288.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'cause', reveals: ['easy', 'gym', 'claim', 'getit', 'must'], seg: [262.6, 289.2],
       stem: 'Why did Shelby fight hard after all?',
       ja: 'シェルビーが結局本気で戦ったのはなぜ？',
       choices: ['She saw a fake video', 'She wanted to win big', 'Her coach told her to'], a: 0,
@@ -212,7 +212,7 @@ export const shelbyFight: Clip = {
       trap: 'kid、gym、press が聞こえ、指示やからかいと取りやすい。その子は動画を見せただけ。',
       use: 'All I know is what he told me.（彼から聞いたことしか知らない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'gym', seg: [267.9, 274.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'gym', seg: [267.7, 276.1],
       stem: 'Where did the kid show Shelby the video?',
       ja: 'その子はどこでシェルビーに動画を見せた？',
       choices: ['At the gym where she trains', 'At the big press conference', 'At her grandmother’s house'], a: 0,
@@ -224,7 +224,7 @@ export const shelbyFight: Clip = {
       trap: 'press conference も聞こえるが、それは動画の中の場面。came to のあとが場所。',
       use: 'Some guy came to the door.（知らない男が玄関に来た）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'claim', seg: [268.0, 275.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'claim', seg: [268, 276.8],
       stem: 'What did the video show Carly and her friends saying?',
       ja: '動画では、カーリーたちは何と言っていた？',
       choices: ['They’d push her grandmother', 'They’d bring her grandmother', 'They’d push Shelby around'], a: 0,
@@ -236,7 +236,7 @@ export const shelbyFight: Clip = {
       trap: 'push だけ、grandmother だけだと別の話になる。push my grandmother down を続けて聞く。',
       use: 'They were talking about how they’d win.（勝つって話してたよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'getit', seg: [279.8, 284.6],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'getit', seg: [279.8, 285],
       stem: 'Type the short line after the name: “___.” (4 words)', answer: 'now i get it',
       ja: '名前のあとの短い一言を書こう（4語）',
       cue: '「Neville」が2回聞こえたあと',
@@ -269,7 +269,7 @@ export const shelbyFight: Clip = {
       trap: '語順だけで方向を取りちがえやすい。前に出た語は対比。Okay は降参の合図。',
       use: 'Coffee I can skip. Sleep I can’t.（コーヒーはなくていい。睡眠はむり）' },
 
-    { id: 'nt1', skill: 'detail', level: 'B1', point: 'admit', seg: [342.85, 354.4],
+    { id: 'nt1', skill: 'detail', level: 'B1', point: 'admit', seg: [343.6, 355.6],
       stem: 'What does Neville finally admit?',
       ja: 'ネビルは最後に何を認める？',
       choices: ['He tricked Shelby', 'He helped Carly win', 'He fought Shelby too'], a: 0,

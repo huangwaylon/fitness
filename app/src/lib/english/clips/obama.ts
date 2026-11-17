@@ -14,7 +14,7 @@ export const leslieObama: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'howyou', seg: [0.5, 6],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'howyou', seg: [0, 5.2],
       stem: 'What does “How you doing?” mean?',
       ja: '「How you doing?」はどういう意味？',
       choices: ['How are you?', 'What are you doing?', 'How did you do it?'], a: 0,
@@ -26,7 +26,7 @@ export const leslieObama: Clip = {
       trap: 'doing から「何してる？」と思いやすい。返事が Doing good（元気）なのであいさつ。',
       use: 'How you doing? Good to see you.（元気？会えてうれしいよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [3.8, 9.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [3.8, 12.4],
       stem: 'What job is Leslie thinking about taking?',
       ja: 'レスリーはどんな仕事を考えている？',
       choices: ['Running a new Midwest office', 'Running Michelle’s Chicago program', 'Running a park near Chicago'], a: 0,
@@ -38,7 +38,7 @@ export const leslieObama: Clip = {
       trap: 'Chicago が聞こえるので、シカゴの別の話と混ざりやすい。running のすぐあとを聞く。',
       use: 'I’m considering a job in Boston.（ボストンの仕事を考えてる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'feel', reveals: ['thatsright'], seg: [9.35, 15.05],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'feel', reveals: ['thatsright'], seg: [8.8, 18.9],
       stem: 'What does Michelle mean by “you know how I feel about Chicago”?',
       ja: 'ミシェルの「you know how I feel about Chicago」はどういう意味？',
       choices: ['She loves the city', 'She knows the city well', 'She won’t talk about it'], a: 0,
@@ -74,7 +74,7 @@ export const leslieObama: Clip = {
       trap: '変な返事には訂正か聞き流しを予想しやすい。and のあとの you が誰に向くかを聞く。',
       use: 'That’s right, and speaking of which…（そうそう、それで言うと…）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'passionate', seg: [12.85, 18.55],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'passionate', seg: [12, 21.7],
       stem: 'What kind of people does Michelle bring up next?',
       ja: 'ミシェルは次に、どんな人の話をする？',
       choices: ['Passionate people like Leslie', 'Young people who love to hike', 'People from Chicago like her'], a: 0,
@@ -111,7 +111,7 @@ export const leslieObama: Clip = {
       trap: '仕事の話になると落ち着く、と思いやすい。後半の I can’t stop が答え。',
       use: 'Sorry, I’m a little starstruck.（すみません、ちょっと舞い上がってて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'visitors', seg: [18.55, 21.75], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'visitors', seg: [17.7, 24.1], keep: true,
       stem: 'How many visitors a year do the parks get, says Michelle?',
       ja: '国立公園には毎年何人来ると言う？',
       choices: ['Hundreds of thousands', 'Millions', 'Hundreds of millions', 'Billions'], a: 2,
@@ -159,7 +159,7 @@ export const leslieObama: Clip = {
       trap: '最初の I do agree だけなら公園の話への賛成。続く on all things で範囲が変わる。',
       use: 'Whatever you say, I’m in.（あなたが言うなら何でも乗るよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'letsmove', seg: [28.8, 38.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'letsmove', seg: [28.8, 38.8],
       stem: 'What has Grant helped Michelle do?',
       ja: 'グラントはミシェルの何を手伝った？',
       choices: ['Bring her program into parks', 'Move her program to Chicago', 'Take her program into schools'], a: 0,
@@ -171,7 +171,7 @@ export const leslieObama: Clip = {
       trap: 'Let’s Move の move（移る）から「移転」と思いやすい。ここは取り組みの名前。',
       use: 'Let’s fit it into our schedule.（予定に組み込もう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['outside'], seg: [31.85, 38.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['outside'], seg: [31.7, 40.8],
       stem: 'What does Michelle’s “You know,” lead into?',
       ja: 'ミシェルの「You know,」のあとには何が来る？',
       choices: ['Some examples', 'A question to Leslie', 'A long pause'], a: 0,
@@ -183,7 +183,7 @@ export const leslieObama: Clip = {
       trap: '「知ってる？」と質問に思いやすいが、答えを待たずに例が続く。',
       use: 'You know, small stuff, like dishes.（ほら、皿洗いみたいな細かいこと）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outside', seg: [35.25, 38.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outside', seg: [32.8, 40.8],
       stem: 'Type the gap: “You know, ___, rock climbing, hiking.” (3 words)', answer: 'getting kids outside',
       ja: '「You know, ___, rock climbing, hiking.」の空所を書こう（3語）',
       cue: '「You know」のあと',
@@ -193,7 +193,7 @@ export const leslieObama: Clip = {
       trap: 'getting の t は軽い「ラ」の音で「ゲリン」。kids outside は「キッザウ」とつながる。',
       use: 'Let’s get the kids outside.（子どもたちを外に出そう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'loud', seg: [38.45, 44],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'loud', seg: [38.3, 43.9],
       stem: 'What does Leslie’s apology show?',
       ja: 'レスリーの謝罪から何が分かる？',
       choices: ['She is too excited to stop', 'She thinks she cut Michelle off', 'She thinks Michelle is angry'], a: 0,
@@ -205,7 +205,7 @@ export const leslieObama: Clip = {
       trap: 'sorry から、相手に悪いことをしたと思いやすい。謝っているのは自分の声の大きさ。',
       use: 'Sorry, I get loud when I’m excited.（ごめん、興奮すると声が大きくなるの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'loud', seg: [40.45, 44],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'loud', seg: [38.9, 43.9],
       stem: 'Fill the gap: “I’m getting ___ and I can’t stop.”',
       ja: '「I’m getting ___ and I can’t stop.」の空所は？',
       choices: ['louder now', 'lower now', 'loud enough'], a: 0,
@@ -217,7 +217,7 @@ export const leslieObama: Clip = {
       trap: 'louder は「ラウダー」、lower は「ロウワー」。loud enough なら最後が「イナフ」。',
       use: 'It’s getting colder now.（だんだん寒くなってきた）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'warm', reveals: ['takejob'], seg: [43.95, 57.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'warm', reveals: ['takejob'], seg: [44, 57.8],
       stem: 'How does Michelle feel about Leslie at the end?',
       ja: '最後に、ミシェルはレスリーのことをどう思っている？',
       choices: ['Warm, she wants Leslie to join', 'Polite, she wants to leave soon', 'Unsure if Leslie fits'], a: 0,
@@ -229,7 +229,7 @@ export const leslieObama: Clip = {
       trap: 'Yeah, well は話を切り上げる合図にも聞こえるが、続く言葉は励まし。',
       use: 'Good to meet you.（会えてよかったです）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'onetime', seg: [48.5, 56],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'onetime', seg: [48.1, 57.2],
       stem: 'What does “one person at a time” mean here?',
       ja: '「one person at a time」は、ここではどういう意味？',
       choices: ['One by one, each person', 'Only one person, never more', 'Everyone all at once'], a: 0,

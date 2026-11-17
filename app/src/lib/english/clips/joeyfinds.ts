@@ -15,7 +15,7 @@ export const joeyfinds: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [17.3, 21.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [16.3, 21.4], keep: true,
       stem: 'What time does Monica say it is?',
       ja: 'モニカは今何時だと言う？',
       choices: ['Nine', 'Ten', 'Noon'], a: 0,
@@ -27,7 +27,7 @@ export const joeyfinds: Clip = {
       trap: 'noon は「ヌーン」と「ウー」をのばす。ten は「テン」。「ナイン」なら9。',
       use: 'What time is it? — Ten-thirty.（今何時？—10時半）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'dark', reveals: ['nine'], seg: [22.5, 31.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'dark', reveals: ['nine'], seg: [22.5, 32],
       stem: 'Why is it dark, Monica says?',
       ja: 'モニカによると、なぜ外が暗い？',
       choices: ['He sleeps till noon', 'It is nine at night', 'It is still winter'], a: 0,
@@ -51,7 +51,7 @@ export const joeyfinds: Clip = {
       trap: 'nine と dark から夜だと思いやすい。最後の sunrise で、朝早くだと分かる。',
       use: 'I’m up before sunrise.（日の出前に起きてる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sneak', seg: [39.6, 43.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sneak', seg: [38.6, 44.9],
       stem: 'What does “sneaking around” mean here?',
       ja: 'ここでの「sneaking around」の意味は？',
       choices: ['Hiding what they do', 'Getting up so early', 'Being busy all day'], a: 0,
@@ -63,7 +63,7 @@ export const joeyfinds: Clip = {
       trap: 'all the time（いつも）から「いそがしい」と思いやすい。sneak は「こっそり動く」。',
       use: 'I’m tired of sneaking around.（こそこそするのはもういや）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['whatif'], seg: [39.6, 67.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['whatif'], seg: [39.6, 68.2],
       stem: 'What do Chandler and Monica decide to do?',
       ja: 'チャンドラーとモニカは何をすることにする？',
       choices: ['Go away, with cover stories', 'Go away and tell Joey', 'Stay home all weekend'], a: 0,
@@ -75,7 +75,7 @@ export const joeyfinds: Clip = {
       trap: '最後の What about Joey?（ジョーイは？）で、話すことにしたと思いやすい。二人は言い訳を作る。',
       use: 'Let’s go away for the weekend.（週末どこかへ行こう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'whatif', seg: [43.7, 47.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'whatif', seg: [39.9, 50.3],
       stem: 'What is “What if we went away…?” here?',
       ja: 'ここでの「What if we went away…?」は何？',
       choices: ['A real idea for a trip', 'A worry about a trip', 'A dream that can’t happen'], a: 0,
@@ -87,7 +87,7 @@ export const joeyfinds: Clip = {
       trap: 'went（過去形）から「ありえない話」、what if から心配だと思いやすい。これは提案の形。',
       use: 'What if we got takeout tonight?（今夜はテイクアウトにしない？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [53.6, 58.0], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [52.7, 61.7], keep: true,
       stem: 'What cover story does Chandler plan for himself?',
       ja: 'チャンドラーは自分のために、どんな言い訳を考える？',
       choices: ['A work conference', 'A cooking festival', 'A trip to Jersey'], a: 0,
@@ -110,7 +110,7 @@ export const joeyfinds: Clip = {
       trap: 'you’re not を「そんなものはない」と取りやすいが、「行かない」の意味。',
       use: 'You know that’s just an excuse, right?（それ、ただの口実だよね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bust', seg: [97.9, 103.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bust', seg: [96.9, 103.3],
       stem: 'What does “a total bust” mean?',
       ja: '「a total bust」の意味は？',
       choices: ['It went really badly', 'It was a big surprise', 'It was found out'], a: 0,
@@ -122,7 +122,7 @@ export const joeyfinds: Clip = {
       trap: 'busted（ばれた）と似ていて、秘密がばれた話に聞こえやすい。a bust は「失敗」。',
       use: 'The party was a total bust.（パーティーは大失敗だった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'curler', seg: [112.3, 119.3], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'curler', seg: [111.3, 120.6], keep: true,
       stem: 'What did the hotel say was left in Chandler’s room?',
       ja: 'ホテルは、チャンドラーの部屋に何が残っていたと言った？',
       choices: ['An eyelash curler', 'A pair of earrings', 'A woman’s sweater'], a: 0,
@@ -134,7 +134,7 @@ export const joeyfinds: Clip = {
       trap: 'eyelash も curler も聞きなれない語。left のうしろのかたまりをそのまま聞く。',
       use: 'I left my charger in the room.（部屋に充電器を忘れました）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'mine', reveals: ['curler'], seg: [116.2, 123.5],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'mine', reveals: ['curler'], seg: [115.2, 124.5],
       stem: 'What does Chandler say about the curler?',
       ja: 'チャンドラーはビューラーについて何と言う？',
       choices: ['It was his', 'A girl left it', 'The last guest left it'], a: 0,
@@ -146,7 +146,7 @@ export const joeyfinds: Clip = {
       trap: '女の子の物、というのはこのあとジョーイが言う考え。チャンドラーの返事は mine。',
       use: 'Oh, that’s mine. Thanks.（あ、それ私のです。どうも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'sense', seg: [125.1, 131.0], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'sense', seg: [125.1, 132], keep: true,
       stem: 'Fill the gap: “Yes, that ___ more sense.”',
       ja: '空いている所に入る語は？',
       choices: ['would have made', 'would make', 'will make'], a: 0,
@@ -169,7 +169,7 @@ export const joeyfinds: Clip = {
       trap: 'made more sense を「その通り」と取りやすい。would have は事実と別。',
       use: 'That would’ve been the smart move.（それが賢いやり方だったろうね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'know', seg: [128.6, 135.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'know', seg: [128.6, 136.8],
       stem: 'How does Joey feel about Chandler now?',
       ja: 'ジョーイは今、チャンドラーのことをどう感じている？',
       choices: ['Sad, like they’re strangers', 'Happy to learn more about him', 'Angry about a lie he told'], a: 0,
@@ -192,7 +192,7 @@ export const joeyfinds: Clip = {
       trap: '真剣な前置きのあとは謝罪や対決が来そうに思える。質問の中身を聞く。',
       use: 'I’ll only ask this once.（一度しか聞かないよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'believe', seg: [139.9, 142.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'believe', seg: [136.6, 143.2], keep: true,
       stem: 'Type what Joey says: “…and ___, I’ll believe you.” (3 words)', answer: 'whatever you say',
       ja: '「and」のあとの3語を書こう。',
       cue: '「this one time」のあと。',
@@ -213,7 +213,7 @@ export const joeyfinds: Clip = {
       trap: '別の大会で偶然、と取りやすいが、細部まで同じなら同じ場所。聞いた話なら「見た」と言わない。',
       use: 'Funny, he told the exact same story.（おかしいな、彼もまったく同じ話をしてた）' },
 
-    { id: 'i3', skill: 'pragma', level: 'B1', point: 'curler2', reveals: ['curler', 'mine'], seg: [163.9, 168.0],
+    { id: 'i3', skill: 'pragma', level: 'B1', point: 'curler2', reveals: ['curler', 'mine'], seg: [162.9, 168.1],
       stem: 'What does Monica ask Rachel?',
       ja: 'モニカはレイチェルに何を頼む？',
       choices: ['To lend her a curler', 'To find her curler', 'To buy her a curler'], a: 0,
@@ -225,7 +225,7 @@ export const joeyfinds: Clip = {
       trap: 'I lost mine（なくした）から「探して」と思いやすい。頼んでいるのは borrow（借りる）。',
       use: 'Can I borrow your pen? I lost mine.（ペン借りていい？なくしちゃって）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'talk', seg: [174.5, 178.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'talk', seg: [173.5, 178.5],
       stem: 'What is Joey asked at the door?',
       ja: 'ジョーイはドアのところで何と頼まれる？',
       choices: ['To talk for a second', 'To wait just a second', 'To come back later'], a: 0,
@@ -237,7 +237,7 @@ export const joeyfinds: Clip = {
       trap: 'for a second（少しの間）から「待って」と思いやすい。前の talk to you（話す）が答え。',
       use: 'Excuse me, can I talk to you for a minute?（すみません、少しお話ししてもいいですか）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'promise', seg: [203.6, 230.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'promise', seg: [203.6, 230.7],
       stem: 'What do Chandler and Monica want from Joey?',
       ja: 'チャンドラーとモニカはジョーイに何をしてほしい？',
       choices: ['Keep it to himself', 'Help tell the others', 'Not be upset at them'], a: 0,
@@ -249,7 +249,7 @@ export const joeyfinds: Clip = {
       trap: 'telling everyone（みんなに話す）が聞こえると、話す手伝いだと思いやすい。頼んでいるのは言わないこと。',
       use: 'Promise you won’t tell anyone.（だれにも言わないって約束して）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'reason', seg: [209.2, 213.45], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'reason', seg: [209.2, 215.6], keep: true,
       stem: 'Why didn’t they tell anyone, they say?',
       ja: '二人はなぜだれにも言わなかったと言う？',
       choices: ['They didn’t want a fuss', 'They weren’t sure it’d last', 'It was nobody’s business'], a: 0,
@@ -261,7 +261,7 @@ export const joeyfinds: Clip = {
       trap: '隠す理由は「続くか分からない」もよくあるが、ここではさわぎを避けたいこと。',
       use: 'Please don’t make a big deal about my birthday.（誕生日のこと、大げさにしないでね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', reveals: ['reason'], seg: [209.2, 217.3],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', reveals: ['reason'], seg: [209.2, 218.5],
       stem: 'What does Joey mean by “it is a big deal”?',
       ja: 'ジョーイの「it is a big deal」はどういう意味？',
       choices: ['It’s really big news', 'It’s only a small thing', 'It’s a real problem'], a: 0,

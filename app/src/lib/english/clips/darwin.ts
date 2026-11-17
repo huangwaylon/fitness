@@ -14,7 +14,7 @@ export const darwin: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd4', skill: 'phrase', level: 'B1', point: 'okay', seg: [5.5, 13.5],
+    { id: 'd4', skill: 'phrase', level: 'B1', point: 'okay', seg: [4.8, 13.5],
       stem: 'How does Andy answer “Are you okay, man?”',
       ja: '「Are you okay, man?」に、アンディはどう答える？',
       choices: ['Not at all, but thanks', 'Yes, I’m fine, thanks', 'I don’t want to talk'], a: 0,
@@ -25,6 +25,18 @@ export const darwin: Clip = {
       mean: 'Not at all ＝ 全然（〜ない）。thanks for asking ＝ 気にかけてくれてありがとう。',
       trap: 'thanks が聞こえると「平気」と思いやすい。最初の No と not at all で決まる。',
       use: 'Not really. But thanks for asking.（あまり。でも聞いてくれてありがとう）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'thanks', seg: [11.7, 22.1],
+      stem: 'How does Andy really feel about the office?',
+      ja: 'アンディは、職場のみんなを本当はどう思っている？',
+      choices: ['Angry they lied to him', 'Thankful they were kind', 'Happy to be back'], a: 0,
+      choicesJa: ['嘘をつかれて怒っている', '優しくしてくれて感謝', '戻れてうれしい'],
+      cue: '2回目の「thank」のあと。',
+      line: 'I’d also like to… *thank all of you for lying to my face*…',
+      said: '「顔を見て嘘をつき、何も言わずにいてくれてありがとう」と全員に言う。',
+      mean: 'お礼の形で、黙っていた全員を責めている。lie to my face ＝ 面と向かって嘘をつく。',
+      trap: '1回目のお礼は本物なので、2回目も感謝と思いやすい。何へのお礼かで決める。',
+      use: 'Please don’t lie to me.（嘘はつかないで）' },
 
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'welcome', reveals: ['thanks'], seg: [12.3, 22],
       stem: 'Why does the reply right after Andy’s speech get a laugh?',
@@ -48,19 +60,7 @@ export const darwin: Clip = {
       trap: 'ありがとうには「どういたしまして」という型で選びやすい。返事は言葉の形でなく、相手のしたことに返す。',
       use: 'You’re right. I should have said something.（そうだね、言うべきだった）', retired: true },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'thanks', seg: [12.5, 22],
-      stem: 'How does Andy really feel about the office?',
-      ja: 'アンディは、職場のみんなを本当はどう思っている？',
-      choices: ['Angry they lied to him', 'Thankful they were kind', 'Happy to be back'], a: 0,
-      choicesJa: ['嘘をつかれて怒っている', '優しくしてくれて感謝', '戻れてうれしい'],
-      cue: '2回目の「thank」のあと。',
-      line: 'I’d also like to… *thank all of you for lying to my face*…',
-      said: '「顔を見て嘘をつき、何も言わずにいてくれてありがとう」と全員に言う。',
-      mean: 'お礼の形で、黙っていた全員を責めている。lie to my face ＝ 面と向かって嘘をつく。',
-      trap: '1回目のお礼は本物なので、2回目も感謝と思いやすい。何へのお礼かで決める。',
-      use: 'Please don’t lie to me.（嘘はつかないで）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'over', seg: [27.5, 64],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'over', seg: [27.5, 64.9],
       stem: 'What does Andy want Dwight to do?',
       ja: 'アンディはドワイトに何をしてほしい？',
       choices: ['Stop seeing Angela', 'Say he loves Angela', 'Let Angela choose'], a: 0,
@@ -72,7 +72,7 @@ export const darwin: Clip = {
       trap: 'ドワイトが I am not giving up（あきらめない）と返すので、要求は「手を引け」。',
       use: 'It’s over between us.（私たち、もう終わりね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'brokeup', seg: [32.9, 40],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'brokeup', seg: [32.9, 41.7],
       stem: 'When Andy says “It’s over,” what does Dwight think?',
       ja: '「It’s over」を聞いて、ドワイトは最初どう思う？',
       choices: ['Angela left Andy', 'Andy quit his job', 'Their fight is over'], a: 0,
@@ -84,7 +84,7 @@ export const darwin: Clip = {
       trap: 'over から「けんかが終わる」と思いやすい。答えは Oh good のあと。',
       use: 'Did you two break up?（二人、別れたの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [41.2, 45.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [41.2, 48.1],
       stem: 'Fill the gap: “I am not giving up.” — “___ to.”',
       ja: '「あきらめない」への返事「___ to.」の空所は？',
       choices: ['You have', 'You had', 'You’ve got'], a: 0,
@@ -107,7 +107,7 @@ export const darwin: Clip = {
       trap: '言い合いでは話し手を取り違えやすい。誰が never と返したかを聞く。',
       use: 'She’s taking his last name.（彼女は彼の名字になる）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cooloff', seg: [63.5, 67.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cooloff', seg: [62.5, 68.7],
       stem: 'What does “Why don’t we just cool off?” mean?',
       ja: '「Why don’t we just cool off a bit?」はどういう意味？',
       choices: ['Let’s calm down a bit', 'Why are you so angry?', 'Let’s go outside now'], a: 0,
@@ -119,7 +119,7 @@ export const darwin: Clip = {
       trap: 'Why から質問と思いやすい。cool off も「涼む」ではない。',
       use: 'Why don’t we take five?（ちょっと休憩しない？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'backdown', reveals: ['over'], seg: [66.9, 70.8],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'backdown', reveals: ['over'], seg: [64.4, 71.9],
       stem: 'What does Andy mean by “back down”?',
       ja: 'アンディの「back down」はどういう意味？',
       choices: ['Give up the fight', 'Step back a little', 'Talk more quietly'], a: 0,
@@ -131,7 +131,7 @@ export const darwin: Clip = {
       trap: '体の動きと取ると「後ろに下がる」に聞こえる。前後の話で決める。',
       use: 'I’m not going to back down on this.（これは譲らないよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'makeyou', reveals: ['backdown'], seg: [66.9, 72.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'makeyou', reveals: ['backdown'], seg: [66.9, 72.9],
       stem: 'Fill the gap in Andy’s answer: “Then ___ you.”',
       ja: 'アンディの返事「Then ___ you.」の空所は？',
       choices: ['I’ll take', 'I’ll make', 'I’d make'], a: 1,
@@ -143,7 +143,7 @@ export const darwin: Clip = {
       trap: 'I’d なら d で止まる音がある。make は「メイク」、take は「テイク」と最初の音がちがう。',
       use: 'If you won’t tell him, I will.（君が言わないなら、僕が言う）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'gonna', seg: [69.95, 72.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'gonna', seg: [68.2, 74.5],
       stem: 'Type what Dwight says: “Oh, really? ___ do that?” (4 words)', answer: 'how are you gonna',
       ja: '「Oh, really? ___ do that?」の4語を書こう。',
       cue: '「make you」のすぐあと、短い問い返し。',
@@ -164,7 +164,7 @@ export const darwin: Clip = {
       trap: 'scare me だけ拾うと怖がって聞こえる。not … in the slightest は「少しも」。',
       use: 'That’s a little too general.（それはちょっと大まかすぎる）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'prize', seg: [78.0, 86.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'prize', seg: [76.9, 86.7],
       stem: 'What does the winner of the duel get?',
       ja: '決闘で勝った人は何をもらう？',
       choices: ['Angela', 'A sword', 'A new job'], a: 0,
@@ -176,7 +176,7 @@ export const darwin: Clip = {
       trap: 'このあと武器の話が続くので、剣と思いやすい。gets のあとを聞く。',
       use: 'The winner gets a free coffee.（勝った人はコーヒー無料）' },
 
-    { id: 'pr2', skill: 'phrase', level: 'B2', point: 'business', seg: [87.9, 98.5],
+    { id: 'pr2', skill: 'phrase', level: 'B2', point: 'business', seg: [86.2, 92.8],
       stem: 'What does “None of your business” mean?',
       ja: '「None of your business」はどういう意味？',
       choices: ['It’s not your problem', 'It’s not your company', 'It’s bad for business'], a: 0,
@@ -188,7 +188,7 @@ export const darwin: Clip = {
       trap: 'business から「商売」を思いやすい。ここは「関わること」の意味。',
       use: 'Sorry, but that’s none of your business.（悪いけど、あなたには関係ない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'length', seg: [111.6, 116.75],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'length', seg: [109.2, 117.1],
       stem: 'How long is the samurai sword Dwight offers to use?',
       ja: 'ドワイトが使うと言う日本刀の長さは？',
       choices: ['63 centimeters', '70 centimeters', '73 centimeters', '83 centimeters'], a: 2, keep: true,
@@ -200,7 +200,7 @@ export const darwin: Clip = {
       trap: '70 は seventy だけ。73 は「セヴンティスリー」。63 は「シックスティ」、83 は「エイティ」で始まる。',
       use: 'It’s about seventy centimeters long.（長さは70センチくらい）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'nosword', seg: [114.6, 123.6],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'nosword', seg: [113.5, 118.5],
       stem: 'What does Andy say about the samurai sword?',
       ja: '日本刀について、アンディは何と言う？',
       choices: ['He doesn’t have one', 'He has two of them', 'He wants to buy one'], a: 0,
@@ -212,7 +212,7 @@ export const darwin: Clip = {
       trap: '言いよどみの Mmm を「考え中」と思いやすい。中身は don’t have。',
       use: 'Sorry, I don’t have one.（すみません、持っていません）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'match', seg: [123.4, 129.7],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'match', seg: [123.4, 131.7],
       stem: 'Why does Dwight pick the Nitro Express?',
       ja: 'ドワイトはなぜその銃を選ぶ？',
       choices: ['It’s like Andy’s weapon', 'It’s his best weapon', 'It’s his only weapon'], a: 0,
@@ -224,7 +224,7 @@ export const darwin: Clip = {
       trap: 'closest を best と聞くと「一番いい物」。to that（それに）が要。',
       use: 'The closest thing we have is this one.（一番近いのはこれですね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'elephant', seg: [132.2, 137.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'elephant', seg: [131.2, 139.4],
       stem: 'What does the coworker say about the two guns?',
       ja: '同僚は、二人の銃について何と言う？',
       choices: ['Dwight’s is much stronger', 'Both are for birds', 'Andy’s is more dangerous'], a: 0,
@@ -236,7 +236,7 @@ export const darwin: Clip = {
       trap: 'pheasant だけ聞くと、両方とも鳥用に思える。比べる物の差を聞く。',
       use: 'That’s not a fair fight.（それじゃ勝負にならない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'hangon', seg: [137.0, 141.5],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'hangon', seg: [136.3, 144],
       stem: 'What does “Hang on, Pam” mean?',
       ja: '「Hang on, Pam」はどういう意味？',
       choices: ['Wait a moment, Pam', 'Hold this, Pam', 'Hurry up, Pam'], a: 0,
@@ -259,7 +259,7 @@ export const darwin: Clip = {
       trap: 'help me を文字通りに取ると「助けて」。決まり文句は形で覚える。',
       use: 'I promise you, I’ll be there.（約束する、必ず行く）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.35, 164.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 165.7],
       stem: 'What does Stanley want to see?',
       ja: 'スタンリーは何が見たい？',
       choices: ['One of them beaten up', 'Angela with the right man', 'Andy finally win'], a: 0,
@@ -282,7 +282,7 @@ export const darwin: Clip = {
       trap: '問いの形だけだと心配に聞こえる。beaten up はやられる側。',
       use: 'Unless… you want to come too?（それとも…一緒に来る？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'toby', seg: [170, 191.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'toby', seg: [170, 192.3],
       stem: 'Why does Toby come over at the end?',
       ja: '最後に、トビーはなぜ来る？',
       choices: ['To say fighting is banned', 'To ask about the fight', 'To move the duel outside'], a: 0,
@@ -304,7 +304,7 @@ export const darwin: Clip = {
       trap: '補って聞くと「けんか禁止」になる。文がどこで終わったかを聞く。',
       use: 'No exceptions whatsoever.（例外は一切なし）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'whatever', seg: [186.4, 191.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'whatever', seg: [186.3, 192.9],
       stem: 'When Toby asks if they understand, how do they answer?',
       ja: '「分かった？」と聞かれ、みんなはどう答える？',
       choices: ['Quickly, to end it', 'Firmly, to obey', 'Warmly, to be kind'], a: 0,

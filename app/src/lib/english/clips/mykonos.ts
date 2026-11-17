@@ -25,7 +25,7 @@ export const mykonos: Clip = {
       trap: 'plant を植物やスパイと思いやすい。My job is のあとを聞く。',
       use: 'This jacket makes you look good.（このジャケット似合ってるね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'technique', reveals: ['plant'], seg: [19.4, 27.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'technique', reveals: ['plant'], seg: [19.4, 31.4],
       stem: 'How does Michael make Andy look good?',
       ja: 'マイケルはどうやってアンディをよく見せる？',
       choices: ['Helpful questions and laughing', 'Tough questions and laughing', 'Helpful questions and clapping'], a: 0,
@@ -37,7 +37,7 @@ export const mykonos: Clip = {
       trap: 'jokes から拍手を想像しやすい。and のあとの laughing を聞く。',
       use: 'He laughs at all my jokes.（彼は私の冗談に全部笑ってくれる）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notup', seg: [37.7, 48.6],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notup', seg: [43.7, 48.7],
       stem: 'What does Holly say to the Greek couple idea?',
       ja: 'ギリシャ人夫婦の案に、ホリーは何と言う？',
       choices: ['She doesn’t feel like it', 'She will think about it', 'She thinks it sounds fun'], a: 0,
@@ -49,7 +49,7 @@ export const mykonos: Clip = {
       trap: 'I don’t know から「考えておく」と思いやすい。not feeling up to で断り。',
       use: 'Sorry, I’m not feeling up to it.（ごめん、そんな元気がなくて）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'breakup', seg: [48.2, 57.7],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'breakup', seg: [48.2, 57.9],
       stem: 'How does Michael feel about Holly’s breakup?',
       ja: 'ホリーの失恋を、マイケルはどう感じている？',
       choices: ['Very happy about it', 'Very sad about it', 'Worried about her'], a: 0,
@@ -61,7 +61,7 @@ export const mykonos: Clip = {
       trap: 'the worst week も聞こえるが、それはホリーの気持ち。to me の前を聞く。',
       use: 'That’s the best news all week!（今週いちばんの朗報だ！）' },
 
-    { id: 'pr2', skill: 'phrase', level: 'B1', point: 'offer', seg: [72.1, 77.3],
+    { id: 'pr2', skill: 'phrase', level: 'B1', point: 'offer', seg: [70.2, 80.9],
       stem: 'What does “*If you change your mind*” mean?',
       ja: '「If you change your mind」はどういう意味？',
       choices: ['If you decide differently', 'If you start to feel sick', 'If you forget about it'], a: 0,
@@ -84,7 +84,7 @@ export const mykonos: Clip = {
       trap: '最初のひと言だけだと批判に聞こえる。直後の maybe の案で、手伝いと分かる。',
       use: 'Maybe he grew up in Paris?（パリ育ちって設定はどう？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifth', seg: [78.7, 82.75], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifth', seg: [78.7, 86.2], keep: true,
       stem: 'Counting Holly, how many people said that today?',
       ja: 'ホリーを入れて、今日それを言ったのは何人？',
       choices: ['3', '5', '15'], a: 1,
@@ -96,7 +96,7 @@ export const mykonos: Clip = {
       trap: 'third（3番目）なら「サード」。fifteenth なら「ティーンス」と長く続く。fifth は「フィフス」と短い。',
       use: 'You’re the third person to ask me.（聞かれたの、君で3人目だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'tired', reveals: ['fifth'], seg: [78.7, 82.75],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'tired', reveals: ['fifth'], seg: [78.7, 86.2],
       stem: 'How does Michael feel about hearing it again?',
       ja: 'またそう言われて、マイケルはどんな気持ち？',
       choices: ['Tired of it', 'Proud of it', 'Surprised by it'], a: 0,
@@ -119,7 +119,7 @@ export const mykonos: Clip = {
       trap: 'home を「くつろげる場所」と取りやすい。同じ音の言葉遊びを疑う。',
       use: 'It feels like home to me.（私には故郷みたいな場所）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'tryout', seg: [111.45, 115.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'tryout', seg: [110.6, 118.3],
       stem: 'What do they decide they have to do next?',
       ja: '二人は次に何をしなきゃと決める？',
       choices: ['Try the act on someone', 'Try the act on Andy', 'Write a story for it'], a: 0,
@@ -131,7 +131,7 @@ export const mykonos: Clip = {
       trap: 'アンディのセミナーの話なのでアンディと思いやすい。on のあとは somebody（だれか）。',
       use: 'Let’s try it out on my sister.（妹で試してみよう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [115.5, 118.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [113, 118],
       stem: 'What does “*Look*” mean here?',
       ja: 'ここでの「Look」はどういう意味？',
       choices: ['Listen, hurry up', 'Please look at this', 'Welcome to the shop'], a: 0,
@@ -143,7 +143,7 @@ export const mykonos: Clip = {
       trap: 'look から「見て」と思いやすい。何かを見せてはいない。',
       use: 'Look, I don’t have much time.（あのね、あまり時間がないの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'couldyou', seg: [160.7, 164.85],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'couldyou', seg: [159.4, 165.3],
       stem: 'Fill the gap: “Andrew, ___ come in here a minute?”',
       ja: '空いている所に入る語は？「Andrew, ___ come in here a minute?」',
       choices: ['could you', 'would you', 'can you'], a: 0,
@@ -155,7 +155,7 @@ export const mykonos: Clip = {
       trap: 'would は「ウッジュ」と w で始まる。can you は「キャニュ」と n が聞こえる。',
       use: 'Could you come here a minute?（ちょっと来てくれる？）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [168.5, 172.1],
+    { id: 'p5', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [167.7, 172.7],
       stem: 'What does “*pull this off*” mean?',
       ja: '「pull this off」はどういう意味？',
       choices: ['Do it well', 'Do it your way', 'Stop doing it'], a: 0,
@@ -178,7 +178,7 @@ export const mykonos: Clip = {
       trap: '自信があると言うので前向きに聞こえやすい。何についての自信か、聞かれた中身と比べる。',
       use: 'I’ll do my best. No promises.（全力は尽くす。約束はできないけど）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'wrapup', seg: [176.0, 187.1],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'wrapup', seg: [176, 187.7],
       stem: 'How does Andy end his talk?',
       ja: 'アンディは話をどう終える？',
       choices: ['Without asking anyone to buy', 'By asking everyone to buy', 'By planning more calls'], a: 0,
@@ -201,7 +201,7 @@ export const mykonos: Clip = {
       trap: 'be past it は「もう歳だ」の意味もあるので迷う。ここは to との対比。',
       use: 'You’re not getting to it, you’re avoiding it.（やるんじゃなくて、避けてるだけ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'nice', seg: [202.6, 206.75],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'nice', seg: [202.6, 211.1],
       stem: 'Why is closing hard for Andy, he says?',
       ja: 'アンディによると、売り込みを決めるのが難しいのはなぜ？',
       choices: ['He’s a nice guy', 'He’s a new guy', 'He’s a shy guy'], a: 0,
@@ -213,7 +213,7 @@ export const mykonos: Clip = {
       trap: 'new なら「ニュー」と伸びる。shy は「シャ」で始まる。nice は最後に「ス」。',
       use: 'I’m just not a pushy person.（押しが強いタイプじゃないんだ）' },
 
-    { id: 'p9', skill: 'phrase', level: 'B2', point: 'letdown', seg: [207.5, 216.5],
+    { id: 'p9', skill: 'phrase', level: 'B2', point: 'letdown', seg: [205.4, 214.9],
       stem: 'What does “*Don’t let them down*” mean?',
       ja: '「Don’t let them down」はどういう意味？',
       choices: ['Don’t disappoint them', 'Don’t look down on them', 'Don’t leave them alone'], a: 0,
@@ -225,7 +225,7 @@ export const mykonos: Clip = {
       trap: 'down から「見下す」と思いやすい。見下すは look down on。',
       use: 'I won’t let you down.（がっかりさせないよ）' },
 
-    { id: 'p7', skill: 'phrase', level: 'B2', point: 'snowball', seg: [222.0, 230.3],
+    { id: 'p7', skill: 'phrase', level: 'B2', point: 'snowball', seg: [222, 232.8],
       stem: 'What does “*the snowball is rolling*” mean?',
       ja: '「the snowball is rolling」はどういう意味？',
       choices: ['More sales will come', 'Things are out of control', 'Time is almost up'], a: 0,
@@ -249,7 +249,7 @@ export const mykonos: Clip = {
       trap: 'Sold や Yes が何度も聞こえるので全員と思いやすい。The rest of you で残りがいると分かる。',
       use: 'I’ll take one, please.（1つください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'putoff', seg: [230.3, 233.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'putoff', seg: [227.5, 232.5],
       stem: 'Type what Andy says: “You can ___ for a couple of days.” (3 words)', answer: 'put it off',
       ja: '書こう：「You can ___ for a couple of days.」（3語）',
       cue: '「You can」のあと。',
@@ -270,7 +270,7 @@ export const mykonos: Clip = {
       trap: '決まり文句の「値上がり」や、behind から「他社に遅れる」と取りやすい。比較は自分と。',
       use: 'You’ll need it anyway, so why wait?（どうせ要るなら、なぜ待つ？）' },
 
-    { id: 'f8', skill: 'phrase', level: 'B1', point: 'anytime', seg: [271.5, 277.0],
+    { id: 'f8', skill: 'phrase', level: 'B1', point: 'anytime', seg: [271.5, 278.2],
       stem: 'What does “*feel free to call anytime*” mean?',
       ja: '「feel free to call anytime」はどういう意味？',
       choices: ['Call whenever you like', 'Calls are free today', 'Please call right now'], a: 0,
@@ -282,7 +282,7 @@ export const mykonos: Clip = {
       trap: 'free から「無料」と思いやすい。feel free は「気軽に」。',
       use: 'Feel free to ask me anything.（何でも気軽に聞いてね）' },
 
-    { id: 'nt2', skill: 'detail', level: 'B1', point: 'realname', seg: [288.5, 293.5],
+    { id: 'nt2', skill: 'detail', level: 'B1', point: 'realname', seg: [288.5, 295.7],
       stem: 'What does Holly say she should do?',
       ja: 'ホリーは何をしなきゃと言う？',
       choices: ['Get back to work', 'Eat some grapes', 'Go to the seminar'], a: 0,

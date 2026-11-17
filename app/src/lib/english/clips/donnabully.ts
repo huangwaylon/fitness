@@ -18,7 +18,7 @@ export const donnaBully: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'skip', seg: [6.2, 11.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'skip', seg: [6.2, 14],
       stem: 'What is the lesson for Donna supposed to be about?',
       ja: 'ドナに教えたい「教訓」は何について？',
       choices: ['When you skip work', 'When you come in late', 'When your desk is messy'], a: 0,
@@ -30,7 +30,7 @@ export const donnaBully: Clip = {
       trap: 'desk（机）が聞こえるので、机の話と思いやすい。when you のあとを聞く。',
       use: 'Let’s not skip class today.（今日は授業をサボらないでおこう）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'notsure', seg: [10.5, 15.7],
+    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'notsure', seg: [10.1, 18.2],
       stem: 'What does Ron mean by “I’m not sure that’s how…”?',
       ja: 'ロンの「I’m not sure that’s how…」はどういう意味？',
       choices: ['That’s a bad idea', 'He doesn’t know how', 'That’s a great idea'], a: 0,
@@ -54,7 +54,7 @@ export const donnaBully: Clip = {
       trap: 'ロンは「目を見て言え」と言ったので、直接言ったと思いやすい。実際は逆。',
       use: 'Can we talk about this face to face?（直接話せる？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'advice', seg: [18.6, 25.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'advice', seg: [17.5, 27.4],
       stem: 'What does Ron tell her to do?',
       ja: 'ロンは彼女に何をしろと言う？',
       choices: ['Tell Donna directly', 'Tell Donna gently', 'Tell Donna in writing'], a: 0,
@@ -66,7 +66,7 @@ export const donnaBully: Clip = {
       trap: 'mature（大人の）から、やさしく言うと思いやすい。firm（きっぱり）と言っている。',
       use: 'Just tell him straight.（彼にはっきり言えばいいよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'slammed', seg: [26.0, 29.2],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'slammed', seg: [25.6, 30.8],
       stem: 'What does “slammed me on Yelp” mean?',
       ja: '「slammed me on Yelp」はどういう意味？',
       choices: ['Criticized her badly online', 'Reported her to the city', 'Posted a bad photo of her'], a: 0,
@@ -90,7 +90,7 @@ export const donnaBully: Clip = {
       trap: '最初の一文で、助言を守った話だと思いやすい。ほめ言葉と行動が合っているかを確かめる。',
       use: 'I handled it like a total grown-up.（完全に大人の対応をしたよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'review', seg: [36.3, 41.95],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'review', seg: [35.6, 44.8],
       stem: 'What does the review say went wrong at the shelter?',
       ja: 'レビューには、保護施設で何がまずかったと書いてある？',
       choices: ['Donna wasn’t there', 'There were no dogs left', 'Donna gave the dog away'], a: 0,
@@ -102,7 +102,7 @@ export const donnaBully: Clip = {
       trap: 'adopt a dog（犬をもらう）が聞こえるので、犬の話と思いやすい。but のあとが答え。',
       use: 'The waiter was nowhere to be found.（店員がどこにも見当たらなかった）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'haveto', seg: [47.6, 50.6],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'haveto', seg: [47, 54.1],
       stem: 'Fill the gap: “Just ___ work harder, I guess, huh?”',
       ja: '「Just ___ work harder, I guess, huh?」の空所は？',
       choices: ['have to', 'had to', 'got to'], a: 0,
@@ -114,7 +114,7 @@ export const donnaBully: Clip = {
       trap: 'had to なら「ハッタ」、got to なら「ガタ」。ここは「ハフ」の f の音。',
       use: 'I just have to try harder.（もっと頑張るしかない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hunt', seg: [53.3, 56.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hunt', seg: [50.6, 57.9],
       stem: 'Type what Donna says: “I’m about to ___.” (3 words)', answer: 'hunt you down',
       ja: '「I’m about to ___.」の空所を書こう（3語）',
       cue: '「anonymous username?」のあと',
@@ -124,7 +124,7 @@ export const donnaBully: Clip = {
       trap: 'hunt you がつながり「ハンチュ」に聞こえる。down まで3語で書く。',
       use: 'I’ll track down that recipe.（あのレシピ、探し出すよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'building', seg: [62.0, 69.5],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'building', seg: [61.3, 70.8],
       stem: 'How does Donna react when she hears where it came from?',
       ja: '出どころを聞いて、ドナはどうなる？',
       choices: ['Angry, she wants to find him', 'Angry, but she will ignore it', 'Scared to face the person'], a: 0,
@@ -136,7 +136,7 @@ export const donnaBully: Clip = {
       trap: '次に「無視したら？」と言われるので、無視すると思いやすい。ドナは逆に怒る。',
       use: 'Cut in line? Oh, heck no.（割り込み？冗談じゃない）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [73.6, 77.1],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [71.7, 77.1],
       stem: 'What does “come down on this dude” mean?',
       ja: '「come down on this dude」はどういう意味？',
       choices: ['Punish him very hard', 'Go down to his floor', 'Get the review taken down'], a: 0,
@@ -148,7 +148,7 @@ export const donnaBully: Clip = {
       trap: 'down から「下の階へ行く」と思いやすい。人に対して使うと「厳しくする」。',
       use: 'My boss came down hard on me.（上司にきつく叱られた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [81.4, 90.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [80.1, 91.3],
       stem: 'What does Ron’s “Speaking of bad reviews” mean?',
       ja: 'ロンの「Speaking of bad reviews」はどういう意味？',
       choices: ['On the topic of reviews', 'I wrote that bad review', 'Let’s stop talking now'], a: 0,
@@ -172,7 +172,7 @@ export const donnaBully: Clip = {
       trap: '「味が最悪」や愛称に取りやすい。すぐあとの「アイスになれ」が、何のまねかを示す。',
       use: 'Decaf is the celery of coffee.（カフェインレスはコーヒー界のセロリだ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'grudge', seg: [123.65, 132.6],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'grudge', seg: [122.5, 133.8],
       stem: 'Why does Donna think this man wrote the review?',
       ja: 'ドナはなぜこの男がレビューを書いたと思う？',
       choices: ['She wouldn’t give him a cat', 'She made him wait too long', 'He was fired from her office'], a: 0,
@@ -184,7 +184,7 @@ export const donnaBully: Clip = {
       trap: 'このあと You’re fired と言うので、クビの話と思いやすい。それは結果で、理由ではない。',
       use: 'You’re still mad about last week?（まだ先週のことで怒ってるの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [126.3, 129.75],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [123.8, 132.3],
       stem: 'How many cats does Donna say he already has?',
       ja: '男はもう猫を何匹飼っている？',
       choices: ['6', '16', '60'], a: 0, keep: true,
@@ -255,7 +255,7 @@ export const donnaBully: Clip = {
       trap: 'クビになったカイルの話が出るので、彼を戻すと思いやすい。最後の約束が答え。',
       use: 'From now on, just tell me.（これからは、ただ言ってね）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'funeral', seg: [203.4, 210.3],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'funeral', seg: [203.4, 212.9],
       stem: 'How did Donna work out who wrote the review?',
       ja: 'ドナはどうやってレビューを書いた人を見つけた？',
       choices: ['Another review by that user', 'The user’s home address', 'Kyle told her the truth'], a: 0,
@@ -267,7 +267,7 @@ export const donnaBully: Clip = {
       trap: 'IP アドレスの話が前にあるので、住所と思いやすい。I checked のあとを聞く。',
       use: 'I checked his other posts.（彼のほかの投稿を見てみた）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'clean', seg: [206.85, 212.55],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'clean', seg: [206.9, 212.6],
       stem: 'What does “come clean” mean?',
       ja: '「come clean」はどういう意味？',
       choices: ['Tell the truth by herself', 'Take the review down', 'Clean up her desk at last'], a: 0,
@@ -291,7 +291,7 @@ export const donnaBully: Clip = {
       trap: 'クビの直後なので同情の告白に見えやすい。直前の You do? から、ばれたとも知らなかった。',
       use: 'Not for him. For us.（彼のためじゃない。私たちのため）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'bailed', seg: [221.3, 226.6],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'bailed', seg: [219.3, 226.3],
       stem: 'What does Donna mean by “I bailed on work”?',
       ja: 'ドナの「I bailed on work」はどういう意味？',
       choices: ['I skipped work', 'I worked too late', 'I lost my job'], a: 0,
@@ -303,7 +303,7 @@ export const donnaBully: Clip = {
       trap: 'bail を難しい語と思いやすい。最初の skip work（サボる）を思い出す。',
       use: 'Sorry I bailed on you last night.（昨日はドタキャンしてごめん）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'wantto', seg: [230.5, 234.2],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'wantto', seg: [230.5, 235.5],
       stem: 'What does “You’re gonna want to shut your mouth” mean?',
       ja: '「You’re gonna want to shut your mouth」はどういう意味？',
       choices: ['Stop talking, or else', 'Please tell me more now', 'You will want food'], a: 0,

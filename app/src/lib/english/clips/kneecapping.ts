@@ -18,7 +18,7 @@ export const kneecapping: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n2', skill: 'number', level: 'B1', point: 'half', seg: [0, 5.5],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'half', seg: [0, 5.8],
       stem: 'How much of the money is paid now?',
       ja: 'お金は、今どのくらい払われる？',
       choices: ['Half of it', 'All of it', 'None of it'], a: 0,
@@ -42,7 +42,7 @@ export const kneecapping: Clip = {
       trap: 'books を「本」と思いやすい。ここは帳簿（お金の記録）。no taxes で分かる。',
       use: 'They paid him off the books.（記録に残らない形で払った）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'motive', seg: [9.3, 49.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'motive', seg: [9.3, 50.7],
       stem: 'Who does Angela want to hurt?',
       ja: 'アンジェラは誰を痛い目にあわせたい？',
       choices: ['Her husband’s secret lover', 'Her husband himself', 'Someone who took money'], a: 0,
@@ -54,7 +54,7 @@ export const kneecapping: Clip = {
       trap: 'husband が聞こえるので、夫に仕返しと思いやすい。主語の They が相手。',
       use: 'What did they do to you?（何をされたの？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'upfor', seg: [31.5, 36.0],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'upfor', seg: [31.5, 38.1],
       stem: 'What does “I think I’m up for it” mean here?',
       ja: 'ここで「I think I’m up for it」はどういう意味？',
       choices: ['I am willing to do it', 'I am getting out of bed', 'I am against it'], a: 0,
@@ -77,7 +77,7 @@ export const kneecapping: Clip = {
       trap: 'end を「終わり」と取ると意味が消える。receiving（受ける）が聞こえたら「される側」と覚える。',
       use: 'I’ve been on the receiving end of that.（それ、やられたことある）' },
 
-    { id: 'w1', skill: 'phrase', level: 'B1', point: 'kneecap', seg: [49.9, 55.6],
+    { id: 'w1', skill: 'phrase', level: 'B1', point: 'kneecap', seg: [48.7, 56],
       stem: 'What does “you’re not helping” mean here?',
       ja: 'ここで「you’re not helping」はどういう意味？',
       choices: ['You are making it worse', 'Please come and help', 'You are working too slowly'], a: 0,
@@ -89,7 +89,7 @@ export const kneecapping: Clip = {
       trap: 'helping から「手伝って」と思いやすい。not があるので、止める言い方。',
       use: 'Thanks, but you’re not helping.（ありがとう、でも逆効果だよ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'there', seg: [55.6, 61.45],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'there', seg: [55.6, 61.5],
       stem: 'Why does Angela say, “you said you would be there for me”?',
       ja: 'アンジェラはなぜ「you said you would be there for me」と言う？',
       choices: ['To remind him of his promise', 'To ask him to come along with her', 'To thank him for coming'], a: 0,
@@ -101,7 +101,7 @@ export const kneecapping: Clip = {
       trap: 'be there を「その場にいる」と取ると「一緒に来て」に聞こえる。for me なら「支える」。',
       use: 'I’ll always be there for you.（いつでも味方だよ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'okay', seg: [66.0, 77.7],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'okay', seg: [66.7, 77.8],
       stem: 'After the long pause, what does Dwight’s “Okay, but…” mean?',
       ja: '長い間のあと、ドワイトの「Okay, but…」はどういう意味？',
       choices: ['He agrees, but unhappily', 'He still says no', 'He wants to leave now'], a: 0,
@@ -135,7 +135,7 @@ export const kneecapping: Clip = {
       trap: 'a woman を Angela と取りやすいが、話題は標的。前の一言は、あとの事実と並べる。',
       use: 'Wait, I assumed you meant someone else.（あ、別の人のことだと思ってた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [77.4, 83.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [76.4, 83.6], keep: true,
       stem: 'What time will the attack happen?',
       ja: '襲うのは何時？',
       choices: ['At one o’clock', 'At two o’clock', 'At four o’clock'], a: 2,
@@ -147,7 +147,7 @@ export const kneecapping: Clip = {
       trap: '直前の One kneecapping の one が残りやすい。two なら「トゥー」。at の直後は「フォー」。',
       use: 'Let’s meet at four o’clock sharp.（4時ちょうどに会おう）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'noturn', reveals: ['four'], seg: [78.0, 83.5],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'noturn', reveals: ['four'], seg: [77.7, 85.7],
       stem: 'What does “there’s no turning back” mean?',
       ja: '「there’s no turning back」はどういう意味？',
       choices: ['It can’t be stopped then', 'Don’t look behind you', 'You can come back again later'], a: 0,
@@ -159,7 +159,7 @@ export const kneecapping: Clip = {
       trap: 'turning back を「振り向く」と思いやすい。ここは「引き返す、やめる」。',
       use: 'Once you sign, there’s no turning back.（サインしたら、もう後戻りはできない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'callout', seg: [83, 88.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'callout', seg: [80.3, 91.7],
       stem: 'Why did Dwight call Angela out here?',
       ja: 'ドワイトはなぜアンジェラを呼び出した？',
       choices: ['To talk about the target', 'To ask what Oscar did', 'To warn her about Trevor'], a: 0,
@@ -171,7 +171,7 @@ export const kneecapping: Clip = {
       trap: 'オスカーの名前が出るので、彼のことを聞くと思いやすい。最初の短い答えが用件。',
       use: 'Why did you call me here?（なんで呼び出したの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'nostrils', reveals: ['again'], seg: [91.3, 99.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'nostrils', reveals: ['again'], seg: [91.3, 99.9],
       stem: 'How can Dwight tell Angela is lying?',
       ja: 'ドワイトは、アンジェラのうそをどうやって見抜く？',
       choices: ['Her nostrils get wider', 'Her voice goes up', 'Her eyes look away from him'], a: 0,
@@ -194,7 +194,7 @@ export const kneecapping: Clip = {
       trap: '鼻の話なので体調や怒りと結びつけやすい。every time の後ろを聞く。',
       use: 'Hello again, old friend.（やあ、また会ったね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'sowhat', seg: [99.4, 102.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'sowhat', seg: [97.5, 102.6],
       stem: 'How does Angela sound when she says “so what?”',
       ja: '「so what?」と言うとき、アンジェラはどんな様子？',
       choices: ['Not sorry at all', 'Very sorry', 'Happy and relieved'], a: 0,
@@ -251,19 +251,7 @@ export const kneecapping: Clip = {
       trap: 'the first ones だけだと、夫が先と考えやすい。were のあとの you and me が答え。',
       use: 'To be fair, we started it.（正直、始めたのはこっちだよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'save', reveals: ['tribe'], seg: [187.9, 229.6],
-      stem: 'What does Dwight try to do for Oscar?',
-      ja: 'ドワイトはオスカーのために何をしようとする？',
-      choices: ['Save his knees', 'Find out the truth', 'Make him say sorry'], a: 0,
-      choicesJa: ['ひざを守る', '本当のことを調べる', '謝らせる'],
-      cue: '「I’m trying to」のあと。',
-      line: 'I’m trying to *save those precious knees* you’re always bragging about.',
-      said: '事情を話し、「自慢のひざを守ろうとしてるんだ」と言って逃がそうとする。',
-      mean: 'save ＝ 守る、救う。一度は折れたが、同僚と知って守る側に回る。',
-      trap: '浮気の話が出るので、白状させたいと思いやすい。save という動詞で目的が分かる。',
-      use: 'I’m just trying to help you.（助けようとしてるだけだよ）' },
-
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', seg: [188, 195.6],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', seg: [187, 195.7],
       stem: 'Why does Dwight say “actually” here?',
       ja: 'ドワイトは、なぜここで「actually」と言う？',
       choices: ['To take back what he said', 'To say it again more strongly', 'To ask Oscar for time'], a: 0,
@@ -274,6 +262,18 @@ export const kneecapping: Clip = {
       mean: 'actually ＝ やっぱり、実は。自分の言葉を直すときの合図。',
       trap: 'no time と is time は no の一語の差。actually のあとで反対のことを言う。',
       use: 'Actually, I do have a minute.（あ、やっぱり少し時間あるよ）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'save', reveals: ['tribe'], seg: [187.9, 230.1],
+      stem: 'What does Dwight try to do for Oscar?',
+      ja: 'ドワイトはオスカーのために何をしようとする？',
+      choices: ['Save his knees', 'Find out the truth', 'Make him say sorry'], a: 0,
+      choicesJa: ['ひざを守る', '本当のことを調べる', '謝らせる'],
+      cue: '「I’m trying to」のあと。',
+      line: 'I’m trying to *save those precious knees* you’re always bragging about.',
+      said: '事情を話し、「自慢のひざを守ろうとしてるんだ」と言って逃がそうとする。',
+      mean: 'save ＝ 守る、救う。一度は折れたが、同僚と知って守る側に回る。',
+      trap: '浮気の話が出るので、白状させたいと思いやすい。save という動詞で目的が分かる。',
+      use: 'I’m just trying to help you.（助けようとしてるだけだよ）' },
 
     { id: 'nt2', skill: 'sound', level: 'C2', point: 'wrong', seg: [199.3, 209.1], retired: true,
       stem: 'Where is the stress in the second “What is wrong with you?”, and why?',
@@ -286,7 +286,7 @@ export const kneecapping: Clip = {
       trap: 'くり返しは驚きの強調に聞こえやすい。すぐあとの and you choose で、責める相手が分かる。',
       use: 'Me? What about you?（僕？君はどうなの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'front', reveals: ['actually'], seg: [217.4, 222],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'front', reveals: ['actually'], seg: [213.9, 221.1],
       stem: 'Type Dwight’s correction: “Actually, he’s ___.” (5 words)', answer: 'right in front of us',
       ja: 'ドワイトの言い直しを書き取る：「Actually, he’s ___.」（5語）',
       cue: '「behind us」の言い直し。',
@@ -296,7 +296,7 @@ export const kneecapping: Clip = {
       trap: 'of と us が小さく短いので、front で終わったと思いやすい。最後まで書く。',
       use: 'The taxi is right in front of us.（タクシーはすぐ目の前だよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['gonna'], seg: [220.35, 234.8],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['gonna'], seg: [220.4, 234.8],
       stem: 'How does Trevor seem as he gets ready?',
       ja: '準備をするトレバーはどんな様子？',
       choices: ['Scared, but going ahead', 'Calm and sure of himself', 'Angry at Oscar'], a: 0,
@@ -308,7 +308,7 @@ export const kneecapping: Clip = {
       trap: '殺し屋の役なので、慣れたプロを思いやすい。本人が自分について言う言葉で決める。',
       use: 'For once, I’m going to finish something.（一度くらい、最後までやるぞ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['nervous'], seg: [221.6, 227.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['nervous'], seg: [221.6, 227.9],
       stem: 'Fill the gap: “I might puke, but ___ do this.”',
       ja: '空所を埋める：「I might puke, but ___ do this.」',
       choices: ['I’m gonna', 'I wanna', 'I’m not gonna'], a: 0,
@@ -320,7 +320,7 @@ export const kneecapping: Clip = {
       trap: 'gonna と wanna は似た音。最初の I’m の「ム」と、not があるかを聞く。',
       use: 'I’m gonna grab a coffee.（コーヒー買ってくる）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'tribe', reveals: ['save', 'gonna'], seg: [225.3, 234.8],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'tribe', reveals: ['save', 'gonna'], seg: [223.1, 234.8],
       stem: 'Why won’t Dwight let Trevor do it?',
       ja: 'ドワイトはなぜトレバーにやらせない？',
       choices: ['Oscar is one of his people', 'Oscar did nothing wrong', 'Oscar is good at his job'], a: 0,

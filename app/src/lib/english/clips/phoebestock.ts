@@ -14,7 +14,7 @@ export const phoebeStock: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'errands', seg: [0.1, 9.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'errands', seg: [0, 10.9],
       stem: 'What is on the list to pick up?',
       ja: 'リストで「受け取ってくる」ものは？',
       choices: ['His vitamins', 'His dry cleaning', 'His new jeans'], a: 0,
@@ -26,7 +26,7 @@ export const phoebeStock: Clip = {
       trap: 'dry cleaning も最初に出るが、動詞は drop off（出す）。pick up のあとの物を聞く。',
       use: 'Can you pick up the kids at five?（5時に子どもを迎えに行ける？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'jeans', seg: [6.0, 11.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'jeans', seg: [6, 15.3],
       stem: 'What does “wear in my new jeans” mean?',
       ja: '「wear in my new jeans」はどういう意味？',
       choices: ['Wear them until they’re soft', 'Wear them only at home', 'Try them on for size'], a: 0,
@@ -61,7 +61,7 @@ export const phoebeStock: Clip = {
       trap: 'office や little dip が耳に残りやすいが、最後は体の話で終わる。',
       use: 'I think I need to see a doctor.（医者に診てもらわないと）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'react', reveals: ['clients', 'panic'], seg: [18.2, 39.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'react', reveals: ['clients', 'panic'], seg: [18.2, 41.5],
       stem: 'After the loss, what can’t Phoebe do?',
       ja: '大損のあと、フィービーにできないことは？',
       choices: ['Call her office', 'Eat his candy bars', 'Look at the market'], a: 0,
@@ -73,7 +73,7 @@ export const phoebeStock: Clip = {
       trap: 'market や Kit Kats が先に出るが、できないことは can’t のあとに言う。',
       use: 'I can’t call my boss right now.（今は上司に電話できない）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'snacks', seg: [19.0, 23.5],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'snacks', seg: [18.5, 24.3],
       stem: 'What does he worry Phoebe sat on?',
       ja: 'フィービーが何の上に座ったと心配している？',
       choices: ['His candy bars', 'His new jeans', 'His vitamins'], a: 0,
@@ -85,7 +85,7 @@ export const phoebeStock: Clip = {
       trap: 'jeans や vitamins はリストに出た物。sit on のすぐあとを聞く。',
       use: 'Don’t sit on my bag!（私のかばんに座らないで）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'snacks', seg: [19.0, 23.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'snacks', seg: [18.5, 24.3],
       stem: 'Fill the gap: “Wait, you ___ sit on my Kit Kats?”',
       ja: '「Wait, you ___ sit on my Kit Kats?」の空所は？',
       choices: ['didn’t just', 'did just', 'didn’t even'], a: 0,
@@ -108,19 +108,7 @@ export const phoebeStock: Clip = {
       trap: '慰めの前置きと取りやすいが、損の話が先で、お菓子はあと。話の順番を確かめる。',
       use: 'The car’s gone, but the coffee survived.（車はダメ、でもコーヒーは無事）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [23.8, 29.6], keep: true,
-      stem: 'How much does Phoebe say she lost?',
-      ja: 'フィービーはいくら失ったと言う？',
-      choices: ['$13 thousand', '$3 million', '$13 million', '$30 million'], a: 2,
-      choicesJa: ['1万3千ドル', '300万ドル', '1300万ドル', '3000万ドル'],
-      cue: '「I lost」のあと、数字と単位。',
-      line: 'and I lost *$13 million*.',
-      said: '「市場がちょっと下がって、1300万ドル失った」と言う。',
-      mean: 'thirteen は「サーティーン」と後ろを強く言い、n で終わる。million ＝ 100万。',
-      trap: '「サーティ」と前が強く n がなければ30、「スリー」なら3。後ろが「サウザンド」なら1万3千ドル、「ミリオン」なら million。',
-      use: 'That’s fifteen, not fifty, right?（50じゃなくて15だよね？）' },
-
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'dip', reveals: ['amount'], seg: [23.8, 29.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'dip', reveals: ['amount'], seg: [23.5, 32.5],
       stem: 'Phoebe says “a little dip.” How big is the loss?',
       ja: 'フィービーは「a little dip」と言う。損はどのくらい？',
       choices: ['Really big', 'Small', 'Not known yet'], a: 0,
@@ -132,7 +120,19 @@ export const phoebeStock: Clip = {
       trap: 'little から「小さい損」と思いやすいが、すぐあとの 13 million が答え。',
       use: 'There’s a little problem with the car.（車にちょっとした問題が…）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'whattodo', seg: [31.9, 34.15],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [23.8, 32.5], keep: true,
+      stem: 'How much does Phoebe say she lost?',
+      ja: 'フィービーはいくら失ったと言う？',
+      choices: ['$13 thousand', '$3 million', '$13 million', '$30 million'], a: 2,
+      choicesJa: ['1万3千ドル', '300万ドル', '1300万ドル', '3000万ドル'],
+      cue: '「I lost」のあと、数字と単位。',
+      line: 'and I lost *$13 million*.',
+      said: '「市場がちょっと下がって、1300万ドル失った」と言う。',
+      mean: 'thirteen は「サーティーン」と後ろを強く言い、n で終わる。million ＝ 100万。',
+      trap: '「サーティ」と前が強く n がなければ30、「スリー」なら3。後ろが「サウザンド」なら1万3千ドル、「ミリオン」なら million。',
+      use: 'That’s fifteen, not fifty, right?（50じゃなくて15だよね？）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'whattodo', seg: [29.5, 36.3],
       stem: 'Type what she says twice: “What ___ do?” (4 words)', answer: 'am i going to',
       ja: '2回言う「What ___ do?」の4語を書こう。',
       cue: '同じ問いを2回。2回目も手がかりに。',
@@ -142,7 +142,7 @@ export const phoebeStock: Clip = {
       trap: 'am と I が「アマイ」とくっつき、語の数が分かりにくい。4語を指で数えて書く。',
       use: 'What am I going to wear?（何を着ていこう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'panic', reveals: ['whattodo'], seg: [31.9, 39.4],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'panic', reveals: ['whattodo'], seg: [31.7, 41.5],
       stem: 'How does Phoebe feel after the loss?',
       ja: '大損のあと、フィービーはどんな気持ち？',
       choices: ['Panicked and lost', 'Angry at her clients', 'Too shocked to speak'], a: 0,
@@ -154,7 +154,7 @@ export const phoebeStock: Clip = {
       trap: 'kill という強い語から「怒り」を選びやすいが、怒りそうなのは相手のほう。',
       use: 'Okay, okay, what do I do now?（どうしよう、どうしたらいい？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'office', seg: [32.9, 35.95],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'office', seg: [32.2, 39.5],
       stem: 'Phoebe says, “They’ll *kill* me.” What does she mean?',
       ja: 'フィービーの「They’ll kill me.」はどういう意味？',
       choices: ['They’ll be very angry', 'They’ll be very sad', 'They’ll call her in'], a: 0,
@@ -188,7 +188,7 @@ export const phoebeStock: Clip = {
       trap: '直前の kill me に引っぱられて「顧客も私に怒る」と聞きやすい。同じ形が続いたら、変わった一語に意味がある。',
       use: 'It wasn’t my money to lose.（失っていいお金じゃなかった）', retired: true },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'chest', seg: [37.6, 47.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'chest', seg: [37.8, 49.8],
       stem: 'Where does Phoebe first feel pain?',
       ja: 'フィービーが最初に痛いと言うのはどこ？',
       choices: ['Her chest', 'Her head', 'Her left arm'], a: 0,
@@ -212,7 +212,7 @@ export const phoebeStock: Clip = {
       trap: 'great を「すばらしい」と取りやすいが、あとに chest hurts が続く。',
       use: 'Great, now it’s raining.（もう、今度は雨だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'symptoms', reveals: ['heart'], seg: [47.2, 56.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'symptoms', reveals: ['heart'], seg: [47.2, 57.5],
       stem: 'What is Phoebe really telling him with “if I were”?',
       ja: '「if I were…」で、フィービーが本当に言っていることは？',
       choices: ['Her left arm hurts now', 'She has no pain at all', 'Her pain is only in her chest'], a: 0,
@@ -246,7 +246,7 @@ export const phoebeStock: Clip = {
       trap: 'if I were を「違うけど」と取りやすい。仮定の質問が、言いにくい本当の話を包んでいることがある。',
       use: 'Hypothetically, if I broke your lamp…（もし仮に、ランプを割ったら…）', retired: true },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'then', reveals: ['symptoms', 'heart'], seg: [52.0, 56.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'then', reveals: ['symptoms', 'heart'], seg: [49.3, 57.5],
       stem: 'What does “Then” mean in “Then yes”?',
       ja: '「Then yes」の Then はどういう意味？',
       choices: ['In that case', 'After that', 'At that time'], a: 0,

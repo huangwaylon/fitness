@@ -15,7 +15,7 @@ export const tomNegotiate: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'owner', seg: [30, 43.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'owner', seg: [30.6, 44],
       stem: 'In Tom’s restaurant example, who is Tom?',
       ja: 'トムのレストランのたとえで、トムはだれ？',
       choices: ['The owner who gets the money', 'The chef who cooks the food', 'The waiter who serves the food'], a: 0,
@@ -27,7 +27,7 @@ export const tomNegotiate: Clip = {
       trap: '最初に chef が出るので、トムをシェフと思いやすい。最後の一言が答え。',
       use: 'I get 10% just for showing up.（顔を出すだけで10％もらえる）' },
 
-    { id: 'quick', skill: 'phrase', level: 'B1', point: 'quick', seg: [42.5, 47],
+    { id: 'quick', skill: 'phrase', level: 'B1', point: 'quick', seg: [41.1, 47.6],
       stem: 'What does “Let’s make this quick” mean?',
       ja: '「Let’s make this quick」の意味は？',
       choices: ['Let’s not take long', 'Let’s eat very fast', 'Let’s walk there fast'], a: 0,
@@ -39,7 +39,7 @@ export const tomNegotiate: Clip = {
       trap: 'quick（速い）から、食べる・歩くを思いやすい。ここは話の長さ。',
       use: 'I’m late, so let’s make this quick.（遅れてるから手短にね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cities', seg: [43.3, 49.85], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cities', seg: [43.3, 50.2], keep: true,
       stem: 'In how many cities is Andy’s show a big hit?',
       ja: 'アンディの番組は、いくつの都市で大人気？',
       choices: ['Three', 'Thirteen', 'Thirty'], a: 0,
@@ -51,7 +51,7 @@ export const tomNegotiate: Clip = {
       trap: 'thirteen は「ティーン」と長く、thirty は「サーティ」。ここは短い「スリー」。',
       use: 'It’s popular in three cities.（3つの街で人気だ）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'son', seg: [59.5, 66],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'son', seg: [59.5, 66.4],
       stem: 'What does “drive my ex-wife crazy” mean?',
       ja: '「drive my ex-wife crazy」の意味は？',
       choices: ['Make her very angry', 'Make her very happy', 'Drive her in the car'], a: 0,
@@ -63,7 +63,7 @@ export const tomNegotiate: Clip = {
       trap: 'drive から「車で送る」を思いやすい。crazy と組むと「いらいらさせる」。',
       use: 'The noise drives me crazy.（その音、本当にいらいらする）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sofar', seg: [65.1, 72],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sofar', seg: [62.3, 72.2],
       stem: 'What does Tom mean by “So far, so good”?',
       ja: 'トムの「So far, so good」の意味は？',
       choices: ['It’s good up to now', 'We can finish it now', 'We came a long way'], a: 0,
@@ -108,18 +108,7 @@ export const tomNegotiate: Clip = {
       trap: 'different を言い方の訂正と取りやすい。人について different と言えば「別の人」。',
       use: 'Oh, a different John. Never mind.（ああ、別のジョンね。気にしないで）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'demands', reveals: ['invented'], seg: [83.4, 128],
-      stem: 'What do Tom and Andy ask the boss for?',
-      ja: 'トムとアンディは局長に何を求める？',
-      choices: ['More pay and the rights', 'A better parking spot', 'A role for the boss’s son'], a: 0,
-      choicesJa: ['給料アップと権利', 'もっといい駐車場', '局長の息子の役'],
-      cue: 'トムが求めるもの、二つ。',
-      said: 'トムはアンディの給料アップと、ジョニー・カラテの権利を求める。',
-      mean: 'rights ＝ 権利。駐車場や息子の役は、局長の側から出た話。',
-      trap: '局長の話も長く耳に残る。だれが出した条件かを分けて聞く。',
-      use: 'Here’s what we’re asking for.（こちらの要求はこれです）' },
-
-    { id: 's1', skill: 'sound', level: 'B1', point: 'donthave', seg: [83.4, 87.65],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'donthave', seg: [81.9, 87.7],
       stem: 'Fill the gap: “Look, ___ the money for a raise.”',
       ja: '空いている所に入る言葉は？',
       choices: ['I don’t have', 'I won’t have', 'I didn’t have'], a: 0,
@@ -131,7 +120,18 @@ export const tomNegotiate: Clip = {
       trap: 't が消えると三つとも似る。最初の母音が「ドン」か「ウォン」か「ディ」かを聞く。',
       use: 'I don’t have time for that.（そんな時間はない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'salary', seg: [87.65, 92.8], keep: true,
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'demands', reveals: ['invented'], seg: [83.4, 128],
+      stem: 'What do Tom and Andy ask the boss for?',
+      ja: 'トムとアンディは局長に何を求める？',
+      choices: ['More pay and the rights', 'A better parking spot', 'A role for the boss’s son'], a: 0,
+      choicesJa: ['給料アップと権利', 'もっといい駐車場', '局長の息子の役'],
+      cue: 'トムが求めるもの、二つ。',
+      said: 'トムはアンディの給料アップと、ジョニー・カラテの権利を求める。',
+      mean: 'rights ＝ 権利。駐車場や息子の役は、局長の側から出た話。',
+      trap: '局長の話も長く耳に残る。だれが出した条件かを分けて聞く。',
+      use: 'Here’s what we’re asking for.（こちらの要求はこれです）' },
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'salary', seg: [87.4, 92.9], keep: true,
       stem: 'What pay does Tom ask for, for Andy?',
       ja: 'トムはアンディの給料をいくらと求める？',
       choices: ['$50 a week', '$500 a week', '$5,000 a week'], a: 1,
@@ -154,7 +154,7 @@ export const tomNegotiate: Clip = {
       trap: '「出て行け」のあとは謝るのが普通の流れ。ここは命令に命令で返している。',
       use: 'Sit down. Let’s talk.（座って。話をしよう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'perks', seg: [96.6, 104.38],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'perks', seg: [96.6, 104.7],
       stem: 'What won’t Andy have to do anymore?',
       ja: 'アンディがもうしなくていいことは？',
       choices: ['Clean the TV station', 'Drive himself to work', 'Work with the kids'], a: 0,
@@ -166,7 +166,7 @@ export const tomNegotiate: Clip = {
       trap: 'parking spot（駐車場）から車の話を思いやすい。no more のあとが答え。',
       use: 'No more night shifts for me.（もう夜勤はなし）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bend', seg: [109.75, 115.33],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bend', seg: [109.6, 115.7],
       stem: 'What does “I can’t bend on that one” mean?',
       ja: '「I can’t bend on that one」の意味は？',
       choices: ['I won’t change my mind', 'I can’t talk about it', 'I can’t sell it cheaply'], a: 0,
@@ -178,7 +178,7 @@ export const tomNegotiate: Clip = {
       trap: 'bend を知らないと「話せない」と思いやすい。can’t のあとの bend を聞く。',
       use: 'Sorry, I can’t bend on the price.（すみません、値段はゆずれません）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'invented', seg: [111.45, 115.33],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'invented', seg: [111.3, 117],
       stem: 'Why does Andy think the rights should be his?',
       ja: 'アンディは、なぜ権利は自分のものだと思う？',
       choices: ['He made up the character', 'He played it for years', 'Viewers watch just for him'], a: 0,
@@ -190,7 +190,7 @@ export const tomNegotiate: Clip = {
       trap: '演じた年数の話を思いやすいが、年数は出てこない。but のあとの invented を聞く。',
       use: 'I came up with that idea.（そのアイデアは私が考えた）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'names', seg: [116.7, 126.85],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'names', seg: [118.2, 130.2],
       stem: 'What does Andy think of the boss’s new names?',
       ja: '局長が出した新しい名前を、アンディはどう思う？',
       choices: ['He likes them, but says no', 'He hates every one of them', 'He wants to pick one now'], a: 0,
@@ -202,7 +202,7 @@ export const tomNegotiate: Clip = {
       trap: '変な名前なので「いやだ」と思いやすい。pretty great は本当のほめ言葉。',
       use: 'That’s actually pretty good.（それ、意外といいね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'walk', seg: [126.85, 130.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'walk', seg: [124.1, 130.9],
       stem: 'Type the end: “If we can’t get the rights, ___.” (3 words)', answer: "i'm gonna walk",
       ja: '「the rights」のあとの3語を書こう。',
       cue: '「rights」のあと、文の終わりまで。',
@@ -226,7 +226,7 @@ export const tomNegotiate: Clip = {
       trap: '「人生最大の失敗」から、Andy が笑われていると取りやすい。主語の I / my を追うと、ずっと自分の話。',
       use: 'I once shook hands with a senator.（議員と握手したことがあるんだ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'janitor', seg: [143.25, 149.95],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'janitor', seg: [142.9, 151.7],
       stem: 'How does Andy feel about his new job?',
       ja: '新しい仕事について、アンディの気持ちは？',
       choices: ['Very happy about it', 'Really upset about it', 'Not sure about it'], a: 0,
@@ -238,7 +238,7 @@ export const tomNegotiate: Clip = {
       trap: '条件が悪いので落ちこんでいると思いやすい。good news は本気の喜び。',
       use: 'Get this: the hotel upgraded us!（聞いて、ホテルが部屋をアップグレードしてくれた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'how', reveals: ['plea', 'free'], seg: [143.25, 183.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'how', reveals: ['plea', 'free'], seg: [143.3, 183.6],
       stem: 'How does Tom get the rights?',
       ja: 'トムはどうやって権利を手に入れた？',
       choices: ['He begs and offers free food', 'He says Andy will quit', 'He gives up Andy’s raise'], a: 0,
@@ -286,7 +286,7 @@ export const tomNegotiate: Clip = {
       trap: 'every が残ると毎日に聞こえる。言い直しが「ワンス」なら1回、「トワイス」なら2回。',
       use: 'You can come once a week.（週に1回来ていいよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [172.8, 175.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [171.9, 178],
       stem: 'What does Tom’s “See” mean here?',
       ja: 'ここでのトムの「See」の意味は？',
       choices: ['I was right all along', 'Please look at this', 'Do you understand me?'], a: 0,

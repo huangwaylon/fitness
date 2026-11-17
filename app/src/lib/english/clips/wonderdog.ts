@@ -13,7 +13,7 @@ export const wonderDog: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'handover', reveals: ['lookedafter'], seg: [0, 24.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'handover', reveals: ['lookedafter'], seg: [0, 28],
       stem: 'What is going on between Chris and the dog’s owner?',
       ja: 'クリスと犬の飼い主の間で、何が起きている？',
       choices: ['Chris looked after their dog', 'Chris found their lost little dog', 'Chris trained their dog'], a: 0,
@@ -25,7 +25,7 @@ export const wonderDog: Clip = {
       trap: '訓練コースの話が出るので、訓練の帰りに思いやすい。それはクリスの昔の話。',
       use: 'Thanks for watching my dog.（犬を見ててくれてありがとう）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'handful', reveals: ['wasnt'], seg: [0, 7.65],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'handful', reveals: ['wasnt'], seg: [0, 7.7],
       stem: 'What does “I hope he wasn’t a handful” mean?',
       ja: '「I hope he wasn’t a handful」はどういう意味？',
       choices: ['I hope he was easy', 'I hope he ate enough', 'I hope he missed us'], a: 0,
@@ -37,7 +37,7 @@ export const wonderDog: Clip = {
       trap: 'handful を「ひとつかみ」と取ると、食べ物の量に聞こえる。人や犬なら「手がかかる」。',
       use: 'My kids can be a handful.（うちの子たち、手がかかるんだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wasnt', reveals: ['handful'], seg: [1.2, 7.65],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wasnt', reveals: ['handful'], seg: [1.2, 7.7],
       stem: 'Fill the gap: “I hope he ___ a handful.”',
       ja: '空所を埋める：「I hope he ___ a handful.」',
       choices: ['wasn’t', 'isn’t', 'won’t be'], a: 0,
@@ -60,7 +60,7 @@ export const wonderDog: Clip = {
       trap: 'ことわざの前置きにも、fluent の自慢にも聞こえる。あとの付け足しで答え合わせをする。',
       use: 'As the French would say, voilà!（フランス人風に言えば、ほらね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'german', seg: [13.45, 17.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'german', seg: [11.2, 20.1],
       stem: 'What was unusual about Chris’s dog training course?',
       ja: 'クリスの犬の訓練コースは、何が変わっていた？',
       choices: ['It was all in German', 'It was held in Germany', 'It was for German dogs'], a: 0,
@@ -72,7 +72,7 @@ export const wonderDog: Clip = {
       trap: 'German から「ドイツで」と思いやすい。in German は「ドイツ語で」。',
       use: 'The tour was conducted in English.（ツアーは英語で行われた）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'fluent', seg: [13.45, 21.2],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'fluent', seg: [13.3, 21.2],
       stem: 'What kind of German is Chris fluent in?',
       ja: 'クリスは、どんなドイツ語がぺらぺら？',
       choices: ['Only words about dogs', 'All the German there is', 'Words for travel'], a: 0,
@@ -84,7 +84,7 @@ export const wonderDog: Clip = {
       trap: 'fluent だけ聞くと、何でも話せるように聞こえる。直後の付け足しを聞く。',
       use: 'I’m fluent in Spanish — restaurant Spanish.（スペイン語ぺらぺら。レストラン限定）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [19.35, 23.65], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [18.6, 28], keep: true,
       stem: 'How long were April and Andy away?',
       ja: 'エイプリルとアンディはどのくらい出かけていた？',
       choices: ['One night', 'A weekend', 'A week'], a: 0,
@@ -96,7 +96,7 @@ export const wonderDog: Clip = {
       trap: '週末旅行と思いやすい。「ナイト」なら一晩、「ウィーク」で切れれば1週間、「ウィークエンド」なら週末。',
       use: 'We’re just staying for the night.（一泊だけです）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'care', seg: [19.35, 40.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'care', seg: [19.4, 41.2],
       stem: 'What does Chris mostly tell the owners about?',
       ja: 'クリスは飼い主に、主に何を話している？',
       choices: ['What he did for the dog', 'How the dog behaved', 'What the dog needs at home'], a: 0,
@@ -108,17 +108,7 @@ export const wonderDog: Clip = {
       trap: '「いい子だった？」の報告を思いやすいが、中身は自分がした世話。',
       use: 'He had the best time with us.（うちで最高に楽しんでたよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'lookedafter', seg: [21.2, 24.6],
-      stem: 'Type what Chris says: “and I ___ Champion here.” (2 words)', answer: 'looked after',
-      ja: 'クリスの言葉を書き取る：「and I ___ Champion here.」（2語）',
-      cue: '「and I」のあとの2語。',
-      line: 'and I *looked after* Champion here.',
-      said: '「それで僕がチャンピオンを預かった」と言う。',
-      mean: 'look after ＝ 世話をする。looked の d と after がつながり「ルッカフター」に近い。',
-      trap: 'd が after とつながって消えやすい。look at と取ると意味が変わる。',
-      use: 'Who will look after your dog?（犬の世話はだれがするの？）' },
-
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'mutt', seg: [22.35, 27.95],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'mutt', seg: [19.9, 28],
       stem: 'What does “half amazing, half terrific” say about the dog?',
       ja: '「half amazing, half terrific」は、犬について何と言っている？',
       choices: ['He is great in every way', 'He is two kinds of dog', 'He is only half good'], a: 0,
@@ -130,7 +120,17 @@ export const wonderDog: Clip = {
       trap: 'mutt（雑種）から、2種類の犬の話と思いやすい。half のあとは犬種ではなく、ほめ言葉。',
       use: 'It’s half work, half vacation.（半分仕事で、半分休暇）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'petsmart', seg: [31.25, 40.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'lookedafter', seg: [20, 28],
+      stem: 'Type what Chris says: “and I ___ Champion here.” (2 words)', answer: 'looked after',
+      ja: 'クリスの言葉を書き取る：「and I ___ Champion here.」（2語）',
+      cue: '「and I」のあとの2語。',
+      line: 'and I *looked after* Champion here.',
+      said: '「それで僕がチャンピオンを預かった」と言う。',
+      mean: 'look after ＝ 世話をする。looked の d と after がつながり「ルッカフター」に近い。',
+      trap: 'd が after とつながって消えやすい。look at と取ると意味が変わる。',
+      use: 'Who will look after your dog?（犬の世話はだれがするの？）' },
+
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'petsmart', seg: [31.3, 41.2],
       stem: 'Besides toys and exercise, what did Chris get the dog?',
       ja: 'おもちゃと運動のほかに、クリスは犬に何をした？',
       choices: ['Shots and a grooming', 'A collar and a chip', 'A bed and training'], a: 0,
@@ -142,7 +142,7 @@ export const wonderDog: Clip = {
       trap: 'got him の並びが速く、聞こえた一語から想像で補いやすい。一つずつ聞く。',
       use: 'I need to get my hair cut.（髪を切ってもらわなきゃ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'healthier', seg: [32.45, 40.6],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'healthier', seg: [31.3, 41.2],
       stem: 'What does “He’s healthier than ever” mean?',
       ja: '「He’s healthier than ever」はどういう意味？',
       choices: ['He is healthier than before', 'He is healthier than other dogs', 'He will always be healthy'], a: 0,
@@ -154,7 +154,7 @@ export const wonderDog: Clip = {
       trap: 'ほかの犬と比べていると思いやすい。比べる相手は、前のチャンピオン自身。',
       use: 'I feel better than ever.（今までで一番調子がいい）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ifimay', seg: [42.3, 48.25],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ifimay', seg: [42.3, 54.3],
       stem: 'Why does Chris say “Andy, if I may” here?',
       ja: 'クリスは、なぜここで「Andy, if I may」と言う？',
       choices: ['To ask to give some advice', 'To ask to see the dog again', 'To ask to keep the dog'], a: 0,
@@ -166,7 +166,7 @@ export const wonderDog: Clip = {
       trap: 'may を許可と取ると、また預かる話に聞こえる。あとに続くのは意見。',
       use: 'If I may, one small suggestion.（よければ、一つだけ提案を）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'tact', reveals: ['hint'], seg: [42.3, 53.85],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'tact', reveals: ['hint'], seg: [42.3, 54.3],
       stem: 'How does Chris give Andy his advice?',
       ja: 'クリスはどんなふうにアンディに助言する？',
       choices: ['Gently, without blaming him', 'Angrily, in a loud voice', 'As a joke, for a laugh'], a: 0,
@@ -178,7 +178,7 @@ export const wonderDog: Clip = {
       trap: 'if から、自信がないと思いやすい。ここは角を立てないための形。',
       use: 'Just a thought, if you don’t mind…（よければ、ちょっと思ったんだけど）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'takeon', seg: [44.55, 48.85],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'takeon', seg: [43.7, 55.1],
       stem: 'What does “take on the personalities of their owners” mean?',
       ja: '「take on the personalities of their owners」はどういう意味？',
       choices: ['Start acting like their owners', 'Start fighting their owners', 'Start looking like their owners'], a: 0,
@@ -190,7 +190,7 @@ export const wonderDog: Clip = {
       trap: 'take on には「立ち向かう」もあるが、後ろが personalities なら「身につける」。',
       use: 'Kids take on their parents’ habits.（子どもは親のくせが移る）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'hint', reveals: ['couch', 'takeon'], seg: [44.55, 53.85],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'hint', reveals: ['couch', 'takeon'], seg: [43.7, 55.1],
       stem: 'What is Chris really telling Andy?',
       ja: 'クリスは本当はアンディに何を言いたい？',
       choices: ['His habits could hurt the dog', 'The dog is already lazy', 'The dog will make him active'], a: 0,
@@ -213,7 +213,7 @@ export const wonderDog: Clip = {
       trap: '犬の食べ物の話と取ると、犬からお菓子を遠ざける返事を選びやすい。忠告は誰の行動に向いているかを聞く。',
       use: 'Point taken. I’ll cut back.（ごもっとも。控えるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'couch', seg: [48.25, 53.85],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'couch', seg: [45, 56.2],
       stem: 'In Chris’s couch example, what is Andy doing all day?',
       ja: 'クリスのソファの例で、アンディは一日中何をしている？',
       choices: ['Watching cartoons, eating Cheetos', 'Watching sports, eating chips', 'Playing games, eating pizza'], a: 0,
@@ -225,7 +225,7 @@ export const wonderDog: Clip = {
       trap: 'よくある「ソファでだらだら」の絵で選びやすい。言われた番組と食べ物を聞く。',
       use: 'I ate nothing but rice this week.（今週はご飯ばかり食べた）' },
 
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'whowouldnt', seg: [48.25, 57.45],
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'whowouldnt', seg: [48.3, 57.7],
       stem: 'What does the reply “Who wouldn’t?” mean?',
       ja: '返事の「Who wouldn’t?」はどういう意味？',
       choices: ['He would love that day', 'He is angry at Chris for it', 'He wants to say sorry'], a: 0,

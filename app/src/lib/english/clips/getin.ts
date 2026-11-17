@@ -19,7 +19,7 @@ export const getIn: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [23.2, 28.6], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [22.2, 28.6], keep: true,
       stem: 'In the car, who does Dwight say might be listening?',
       ja: '車の中で、ドワイトはだれが聞いているかもと言う？',
       choices: ['People in customer service', 'People at the car rental desk', 'People in the head office'], a: 0,
@@ -31,7 +31,7 @@ export const getIn: Clip = {
       trap: 'すぐあとの In this car? から、車の会社と思いやすい。だれかは文の最初に来る。',
       use: 'This call may be monitored.（この通話は録音されることがあります）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'safe', seg: [23.2, 28.6],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'safe', seg: [23.2, 31.3],
       stem: 'What does “Better safe than sorry” mean?',
       ja: '「Better safe than sorry」はどういう意味？',
       choices: ['Be careful now, not sorry later', 'Say sorry first, then fight', 'Keep quiet so you’re safe'], a: 0,
@@ -54,7 +54,7 @@ export const getIn: Clip = {
       trap: 'ばかげた名前は冗談に聞こえやすい。名前を挙げ、理由まで考えるのは Dwight。',
       use: 'Who benefits from this?（これで得するのは誰？）', retired: true },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [36.95, 42.4], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [37, 42.9], keep: true,
       stem: 'Fill the gap: “and there’s ___ evidence of that.”',
       ja: 'すき間をうめよう：「and there’s ___ evidence of that.」',
       choices: ['little', 'a little', 'a lot of'], a: 0,
@@ -66,7 +66,7 @@ export const getIn: Clip = {
       trap: 'a little なら前に小さな「ア」、a lot of なら「ロッ」。「ゼアズ リル」と続けば little。',
       use: 'There’s little time left.（もうほとんど時間がない）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [63.36, 66.5],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [60.8, 68.1],
       stem: 'What does the customer mean by “I’m sorry?”',
       ja: 'お客さんの「I’m sorry?」はどういう意味？',
       choices: ['What did you just say?', 'I really apologize.', 'I feel very sad.'], a: 0,
@@ -78,18 +78,6 @@ export const getIn: Clip = {
       trap: 'I’m sorry から「すみません」と思いやすい。急に「だまれ」と言われたので、おどろいて聞き返している。',
       use: 'I’m sorry? Could you say that again?（はい？もう一度言ってもらえますか）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'listen', seg: [66.1, 80.6],
-      stem: 'Why does Dwight tell the customer to hold his breath?',
-      ja: 'ドワイトはなぜ、お客さんに息を止めさせる？',
-      choices: ['To hear if someone else is there', 'To take the order more quickly', 'To stop him from talking'], a: 0,
-      choicesJa: ['ほかにだれかいるか聞くため', '注文を早く取るため', '彼を話させないため'],
-      cue: '息を止めさせたあとの言葉',
-      line: 'Well, stop. *Hold your breath.* … *Who’s there?* … Kelly, is that you?',
-      said: '息を止めさせ、まだ聞こえる息に「だれだ？ケリーか？」と呼びかける。',
-      mean: 'Who’s there? ＝「だれかいるの？」。電話をだれかが聞いていると思っている。',
-      trap: '息がうるさいから止めさせたと思いやすい。止めたあとの Who’s there? が目的。',
-      use: 'Is someone else on the line?（ほかにだれか電話に出てる？）' },
-
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'breath', seg: [66.1, 75.5],
       stem: 'In the breathing exchange on the phone, who is the joke on?',
       choices: ['Dwight, whose question has an obvious answer', 'The customer, who doesn’t see what Dwight means',
@@ -100,6 +88,18 @@ export const getIn: Clip = {
       mean: '客の返事は当然の事実。それを問題扱いする Dwight のほうがおかしい。',
       trap: '客がずれた返事をしたように聞こえやすい。言葉どおりの答えが一番まともなら、笑いは質問した側に向く。',
       use: 'Well, I am human, yeah.（まあ、人間ですからね）', retired: true },
+
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'listen', seg: [71.9, 81.6],
+      stem: 'Why does Dwight tell the customer to hold his breath?',
+      ja: 'ドワイトはなぜ、お客さんに息を止めさせる？',
+      choices: ['To hear if someone else is there', 'To take the order more quickly', 'To stop him from talking'], a: 0,
+      choicesJa: ['ほかにだれかいるか聞くため', '注文を早く取るため', '彼を話させないため'],
+      cue: '息を止めさせたあとの言葉',
+      line: 'Well, stop. *Hold your breath.* … *Who’s there?* … Kelly, is that you?',
+      said: '息を止めさせ、まだ聞こえる息に「だれだ？ケリーか？」と呼びかける。',
+      mean: 'Who’s there? ＝「だれかいるの？」。電話をだれかが聞いていると思っている。',
+      trap: '息がうるさいから止めさせたと思いやすい。止めたあとの Who’s there? が目的。',
+      use: 'Is someone else on the line?（ほかにだれか電話に出てる？）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'reviews', seg: [79, 124],
       stem: 'What does Dwight think is behind his bad reviews?',
@@ -124,7 +124,7 @@ export const getIn: Clip = {
       trap: '問いつめられた人はとぼけるのが普通の流れ。ここは本気。almost never ＝ ほとんど〜ない。',
       use: 'You always say that.（いつもそう言うよね）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [96.1, 98.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [93.9, 99.4], keep: true,
       stem: 'Type Dwight’s question: “___, girl, huh?” (5 words)', answer: 'what are you up to',
       ja: 'ドワイトの質問を入力：「___, girl, huh?」（5語）',
       cue: '「girl」の前まで',
@@ -134,7 +134,7 @@ export const getIn: Clip = {
       trap: 'are と you が小さく短く、what とひとまとまりに聞こえる。5語あるか数える。',
       use: 'Hey, what are you up to?（ねえ、何してるの？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'putup', seg: [97.85, 100.87],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'putup', seg: [96.4, 102.7],
       stem: 'What does “put you up to this” mean?',
       ja: '「put you up to this」はどういう意味？',
       choices: ['Made you do this', 'Paid you for this', 'Helped you with this'], a: 0,
@@ -157,7 +157,7 @@ export const getIn: Clip = {
       trap: '後半を「手下だ」と取りやすいが、言うのは too stupid。矛盾が笑い。',
       use: 'You’re the brains of this, aren’t you?（これを考えたのは君だろ）', retired: true },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nook', reveals: ['polite'], seg: [109, 115.72],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nook', reveals: ['polite'], seg: [106.8, 115.7],
       stem: 'How does Kelly feel when Dwight calls her stupid?',
       ja: 'ドワイトにバカと言われて、ケリーはどう思う？',
       choices: ['She is angry', 'She is sorry', 'She is scared'], a: 0,
@@ -169,7 +169,7 @@ export const getIn: Clip = {
       trap: '前に you scared me と言うので、こわがっていると思いやすい。ここは強く言い返している。',
       use: 'You can’t just yell at me.（いきなりどなるなんてないでしょ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 115.72], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 116], keep: true,
       stem: 'Why does Dwight get bad reviews, Kelly says?',
       ja: 'ケリーによると、ドワイトの評価が悪いのはなぜ？',
       choices: ['He isn’t nice or polite', 'He pushes people to buy', 'He makes order mistakes'], a: 0,
@@ -190,7 +190,7 @@ export const getIn: Clip = {
       trap: '習った nicer に直したくなり、a や bit も落としやすい。聞こえた5語を書く。',
       use: 'Could you be a little bit more careful?（もうちょっと気をつけてくれる？）', retired: true },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'curt', reveals: ['noactually'], seg: [139.7, 153.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'curt', reveals: ['noactually'], seg: [139.8, 153.3],
       stem: 'How does Kelly talk to Jim?',
       ja: 'ケリーはジムとどう話す？',
       choices: ['Short and cold', 'Long and happy', 'Sad about Darryl'], a: 0,
@@ -202,7 +202,7 @@ export const getIn: Clip = {
       trap: 'Darryl の名前が出るので、彼のことで悲しいと思いやすい。we’re cool で問題はない。',
       use: 'We’re cool. See you.（大丈夫。またね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [154.2, 161.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [154.2, 162.9], keep: true,
       stem: 'How many minutes does Jim say?',
       ja: 'ジムは何分と言う？',
       choices: ['5 minutes', '15 minutes', '50 minutes'], a: 1,
@@ -214,7 +214,7 @@ export const getIn: Clip = {
       trap: '5 なら「ファイブ」だけ。fifty（50）は前が強く短い。後ろが「ティーン」と長ければ15。',
       use: 'She went on for an hour.（彼女は1時間しゃべり続けた）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'noactually', reveals: ['minutes'], seg: [154.2, 162.53],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'noactually', reveals: ['minutes'], seg: [154.2, 164.6],
       stem: 'What does “No, actually” mean here?',
       ja: 'ここでの「No, actually」はどういう意味？',
       choices: ['Kelly always talks a long time', 'Kelly rarely talks very much', 'She never talks with Kelly'], a: 0,
@@ -238,7 +238,7 @@ export const getIn: Clip = {
       trap: 'Dwight や Darryl の名前が先に出るので、それが原因と思いやすい。最後の答えを待つ。',
       use: 'Wait, did I miss a party?（待って、パーティーをのがした？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'politics', seg: [175.3, 178.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'politics', seg: [173.5, 180.4],
       stem: 'What does “I don’t play the politics game” mean?',
       ja: '「I don’t play the politics game」はどういう意味？',
       choices: ['I stay out of office drama', 'I don’t play games at work', 'I don’t talk about elections'], a: 0,
@@ -250,7 +250,7 @@ export const getIn: Clip = {
       trap: 'politics から国の政治、game から遊びを思いやすい。職場の politics は「かけひき」。',
       use: 'I stay out of office politics.（社内のかけひきにはかかわらない）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'wait', seg: [187.1, 193.6],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'wait', seg: [185.7, 196.6],
       stem: 'Why does Jim stop the talk with “Wait”?',
       ja: 'ジムはなぜ「Wait」と話を止める？',
       choices: ['He sees the same mug', 'He needs time to think', 'He has to take a call'], a: 0,
@@ -262,7 +262,7 @@ export const getIn: Clip = {
       trap: 'pretty weird（かなり変）を、相手の話への感想と思いやすい。すぐあとの mug の話が理由。',
       use: 'Wait, isn’t that my jacket?（待って、それ私の上着じゃない？）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'favors', seg: [190.85, 196.5],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'favors', seg: [190.9, 198],
       stem: 'What were the mugs?',
       ja: 'マグは何だった？',
       choices: ['Gifts from Kelly’s party', 'Gifts the guests gave Kelly', 'Prizes from a contest'], a: 0,
@@ -274,7 +274,7 @@ export const getIn: Clip = {
       trap: 'favor から「親切」や「お礼」を思いやすい。配ったのは主催のケリー。',
       use: 'We gave out candy as party favors.（パーティーのおみやげにおかしを配った）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 201.8], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 202.6], keep: true,
       stem: 'What was Kelly’s party for?',
       ja: 'ケリーのパーティーは何のため？',
       choices: ['A TV show’s last episode', 'The end of the summer', 'A contest at the office'], a: 0,
@@ -286,7 +286,7 @@ export const getIn: Clip = {
       trap: 'summer が最後に聞こえるので、夏のパーティーと思いやすい。party の前の finale が中身。',
       use: 'We’re having a finale party on Sunday.（日曜に最終回を見る会をする）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 212.85], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 213.9], keep: true,
       stem: 'Why did Jim skip the party, he hears?',
       ja: 'ジムがパーティーに行かなかったのは、なぜだと分かる？',
       choices: ['He went to visit someone', 'He had to work late', 'Nobody told him about it'], a: 0,

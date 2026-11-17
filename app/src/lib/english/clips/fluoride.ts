@@ -12,7 +12,7 @@ export const fluoride: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'chemical', seg: [0.2, 9.95],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'chemical', seg: [0.2, 10],
       stem: 'On the TV show, what is fluoride called first?',
       ja: 'テレビ番組で、フッ素は最初に何と呼ばれる？',
       choices: ['A chemical', 'A poison', 'A drug'], a: 0,
@@ -24,7 +24,7 @@ export const fluoride: Clip = {
       trap: 'すぐあとに毒の名前が続くので「毒」と思いやすい。which is のあとの語を聞く。',
       use: 'Is there anything in this I’m allergic to?（これ、アレルギーのもの入ってますか）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'callnum', seg: [16.5, 27.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'callnum', seg: [15.7, 27.7],
       stem: 'Why does the TV man want viewers to call?',
       ja: 'テレビの男は、なぜ視聴者に電話してほしい？',
       choices: ['To complain about the fluoride plan', 'To vote on the fluoride plan', 'To ask the show their questions'],
@@ -48,7 +48,7 @@ export const fluoride: Clip = {
       trap: '最初の一言は事実の説明なので、落ち着いていると思いやすい。そのあとの言い方の変化を追う。',
       use: 'Sorry, I lost my temper.（ごめん、カッとなった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'healthy', seg: [28.7, 34.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'healthy', seg: [28.7, 37.5],
       stem: 'On her first call, what does Leslie say about fluoride?',
       ja: '最初の電話で、レスリーはフッ素について何と言う？',
       choices: ['It’s perfectly healthy for you', 'It’s healthy in very small amounts', 'It’s safe once it’s in water'], a: 0,
@@ -60,7 +60,7 @@ export const fluoride: Clip = {
       trap: '「少量なら」「水に入れば」とは言っていない。強める語 perfectly を聞き落とさない。',
       use: 'It’s perfectly safe for kids.（子どもにもまったく安全です）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [40, 44.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [40, 45.1],
       stem: 'Fill the gap: “You ___ do that.”',
       ja: '空いている所に入る語は？「You ___ do that.」',
       choices: ['can’t', 'can', 'could'], a: 0,
@@ -72,7 +72,7 @@ export const fluoride: Clip = {
       trap: 't が消えて can に聞こえやすい。長く強い音と、返事の Why not? で否定と分かる。',
       use: 'You can’t bring food in here.（ここは食べ物の持ち込みができません）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'free', reveals: ['cant'], seg: [42.15, 57.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'free', reveals: ['cant'], seg: [42.2, 57.1],
       stem: 'After “Why not?”, how does Leslie feel?',
       ja: '「Why not?」のあと、レスリーはどんな気持ち？',
       choices: ['Free, like nothing can hurt her', 'Sorry for what she said', 'Worried about losing her job'], a: 0,
@@ -107,7 +107,7 @@ export const fluoride: Clip = {
       trap: 'sorry で話が終わったと思いやすい。謝ったあとにまだ話が続くかを最後まで聞く。',
       use: 'Honestly, I expected more from you.（正直、もう少し期待してたよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'expected', seg: [64, 70.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'expected', seg: [64, 71.6],
       stem: 'At the end of the call, how does Leslie feel?',
       ja: '電話の終わりに、レスリーはどんな気持ち？',
       choices: ['Disappointed in her mom', 'Proud of her mom', 'Thankful to her mom'], a: 0,
@@ -119,7 +119,7 @@ export const fluoride: Clip = {
       trap: 'expected（期待した）から、ほめていると思いやすい。過去の期待なので「期待はずれ」。',
       use: 'Honestly, I expected more from this hotel.（正直、このホテルにはもっと期待してた）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'loosecannon', reveals: ['free'], seg: [71.4, 75.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'loosecannon', reveals: ['free'], seg: [70.5, 75.9],
       stem: 'Leslie says, “I’m a *loose cannon*.” What does she mean?',
       ja: '「I’m a loose cannon」とはどういう意味？',
       choices: ['I may do wild things', 'I have lost my power', 'I have a big weapon'], a: 0,
@@ -131,7 +131,7 @@ export const fluoride: Clip = {
       trap: 'loose を lose（失う）と思いやすい。loose は「ゆるい」。',
       use: 'He’s a bit of a loose cannon.（あの人はちょっと何をするか分からない）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'fire', seg: [71.4, 75.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'fire', seg: [70.6, 75.6],
       stem: 'What does Leslie say they need to do now?',
       ja: 'レスリーは、今から何をする必要があると言う？',
       choices: ['Fight back the same way', 'Stop the trouble quickly', 'Wait and stay calm'], a: 0,
@@ -143,7 +143,7 @@ export const fluoride: Clip = {
       trap: 'fire を「火事」と思うと「消し止める」に聞こえる。fire with fire で「同じ手で」。',
       use: 'Sometimes you have to fight fire with fire.（時には同じ手でやり返すしかない）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'yellow', seg: [75.3, 84.9],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'yellow', seg: [75.3, 85.5],
       stem: 'What color are Leslie’s binders now?',
       ja: 'レスリーのバインダーは今度は何色？',
       choices: ['Bright yellow', 'Bright red', 'Bright white'], a: 0,
@@ -176,7 +176,7 @@ export const fluoride: Clip = {
       trap: 'Too が聞こえると「やりすぎ」に同意したと取りやすい。入れ替えた語の意味を聞く。',
       use: 'Too spicy? Not even close.（辛すぎ？ 全然）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'scared', reveals: ['rebrand'], seg: [89.3, 93.85],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'scared', reveals: ['rebrand'], seg: [88.1, 94.2],
       stem: 'Why does Tom want a new name for fluoride?',
       ja: 'トムはなぜフッ素に新しい名前がほしい？',
       choices: ['People are scared of it now', 'The word is hard to say', 'Kids think the word is boring'], a: 0,
@@ -188,19 +188,7 @@ export const fluoride: Clip = {
       trap: 'boring はあとで聞こえる語なので選びやすい。ここで言う理由は直前の一文にある。',
       use: 'The rain ruined our picnic.（雨でピクニックが台無しになった）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['rebrand'], seg: [92, 96.1],
-      stem: 'Why does Tom say “I mean” here?',
-      ja: 'トムは、なぜここで「I mean」と言う？',
-      choices: ['To say it more clearly', 'To show he isn’t sure', 'To make bad news softer'], a: 0,
-      choicesJa: ['もっとはっきり言い直すため', '自信がないことを示すため', '悪い知らせをやわらげるため'],
-      cue: '答えの最初の2語。',
-      line: 'What do you mean? — *I mean*, we rebrand.',
-      said: '「どういうこと？」と聞かれ、「つまり、名前を変えるんだ」と答える。',
-      mean: 'この I mean は「つまり」。前の話をもっとはっきり言い直す合図。',
-      trap: 'I mean を迷いの「えっと」と思いやすい。質問への答えの頭なら、言い直しが続く。',
-      use: 'I mean, we could just take a taxi.（つまり、タクシーで行けばいいってこと）' },
-
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'rebrand', reveals: ['imean'], seg: [92.6, 101],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'rebrand', reveals: ['imean'], seg: [89.4, 96.2],
       stem: 'What does Tom want to do with fluoride?',
       ja: 'トムはフッ素をどうしたい？',
       choices: ['Give it a new name', 'Make a new kind of it', 'Get a singer to sell it'], a: 0,
@@ -212,7 +200,19 @@ export const fluoride: Clip = {
       trap: '歌手の名前が出るので、歌手に頼むと思いやすい。歌手は「名前を変えた例」。',
       use: 'What if we called it something else?（別の名前で呼んだらどう？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [103.1, 108.35],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['rebrand'], seg: [91.2, 96.2],
+      stem: 'Why does Tom say “I mean” here?',
+      ja: 'トムは、なぜここで「I mean」と言う？',
+      choices: ['To say it more clearly', 'To show he isn’t sure', 'To make bad news softer'], a: 0,
+      choicesJa: ['もっとはっきり言い直すため', '自信がないことを示すため', '悪い知らせをやわらげるため'],
+      cue: '答えの最初の2語。',
+      line: 'What do you mean? — *I mean*, we rebrand.',
+      said: '「どういうこと？」と聞かれ、「つまり、名前を変えるんだ」と答える。',
+      mean: 'この I mean は「つまり」。前の話をもっとはっきり言い直す合図。',
+      trap: 'I mean を迷いの「えっと」と思いやすい。質問への答えの頭なら、言い直しが続く。',
+      use: 'I mean, we could just take a taxi.（つまり、タクシーで行けばいいってこと）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [103.1, 108.7],
       stem: 'Tom imagines the singer’s next name. When?',
       ja: 'トムは歌手の次の名前を想像する。いつのこと？',
       choices: ['in 10 years', 'in 12 years', 'in 20 years'], a: 0, keep: true,
@@ -235,7 +235,7 @@ export const fluoride: Clip = {
       trap: '返事の前に間があるので、迷っていると思いやすい。最後の Do your thing が答え。',
       use: 'Go ahead, do your thing.（どうぞ、好きにやって）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'gotta', seg: [112.8, 116],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'gotta', seg: [111.3, 117.7],
       stem: 'Fill the gap: “Leslie, you ___ give people something.”',
       ja: '空いている所に入る語は？「Leslie, you ___ give people something.」',
       choices: ['gotta', 'gonna', 'wanna'], a: 0,
@@ -247,7 +247,7 @@ export const fluoride: Clip = {
       trap: 'gonna（ガナ）と音が近い。真ん中が軽い「ラ」の音なら gotta。',
       use: 'I gotta go. See you tomorrow.（もう行かなきゃ。また明日）' },
 
-    { id: 'd4', skill: 'phrase', level: 'B2', point: 'makemost', seg: [113, 118.6],
+    { id: 'd4', skill: 'phrase', level: 'B2', point: 'makemost', seg: [112.9, 121.3],
       stem: 'What did Leslie once tell Tom to do?',
       ja: 'レスリーは以前、トムに何をするように言った？',
       choices: ['Get the best from his job', 'Work as much as he can', 'Take his job more seriously'], a: 0,
@@ -270,7 +270,7 @@ export const fluoride: Clip = {
       trap: '答えの前の間を、日本語のためらいと取りやすい。最後の一言が任せる言葉なら本気の同意。',
       use: 'Go ahead, do your thing.（どうぞ、好きにやって）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'dry', seg: [136.2, 142.4],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'dry', seg: [136.2, 143.6],
       stem: 'What does Tom think of the speech before his?',
       ja: 'トムは、自分の前のスピーチをどう思っている？',
       choices: ['It was boring', 'It was unkind', 'It was too short'], a: 0,
@@ -282,7 +282,7 @@ export const fluoride: Clip = {
       trap: 'カタカナのドライから「冷たい」と思いやすい。話について言う dry は「退屈」。',
       use: 'The lecture was a little dry.（講義はちょっと退屈だった）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'whatsay', seg: [138.5, 143.1],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'whatsay', seg: [138.4, 143.6],
       stem: 'Why does Tom say “What do you say we…”?',
       ja: 'トムは、なぜ「What do you say we…」と言う？',
       choices: ['To suggest something fun', 'To ask for their opinion', 'To say no to the plan'], a: 0,
@@ -294,7 +294,7 @@ export const fluoride: Clip = {
       trap: 'What do you say を「どう思う？」と思いやすい。we のあとが提案の中身。',
       use: 'What do you say we get lunch?（お昼食べに行かない？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'stronger', seg: [154.6, 160.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'stronger', seg: [154.6, 160.7],
       stem: 'Type what the ad says: “That water contains Teeth Dazzler, which ___.” (4 words)',
       ja: '広告の言葉を書こう：「…Teeth Dazzler, which ___.」（4語）',
       answer: 'makes your teeth stronger',

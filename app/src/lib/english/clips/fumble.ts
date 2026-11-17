@@ -16,7 +16,7 @@ export const officeFumble: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'eitherway', seg: [6.0, 15.2],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'eitherway', seg: [4.7, 15.5],
       stem: 'What does “Could go either way” mean?',
       ja: '「Could go either way」はどういう意味？',
       choices: ['It may be yes or no', 'It will surely be yes', 'It will surely be no'], a: 0,
@@ -28,7 +28,7 @@ export const officeFumble: Clip = {
       trap: 'yes や no が続くので、答えが決まっていると思いやすい。either は「どちらも」。',
       use: 'It could go either way.（どっちに転ぶか分からない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'cannot', seg: [20.4, 25.1],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'cannot', seg: [15.9, 25.3],
       stem: 'What does “Can we not?” mean here?',
       ja: 'ここでの「Can we not?」はどういう意味？',
       choices: ['Let’s not do this', 'Are we allowed to?', 'We are not able to'], a: 0,
@@ -40,7 +40,7 @@ export const officeFumble: Clip = {
       trap: 'can を「してもいい？」と取ると許可の質問になる。not があれば「やめない？」。',
       use: 'Can we not talk about work tonight?（今夜は仕事の話、やめない？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'cooped', seg: [24.4, 29.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'cooped', seg: [23.2, 30.2],
       stem: 'What does Michael say is wrong with his office?',
       ja: 'マイケルは、自分のオフィスの何が嫌だと言う？',
       choices: ['He feels shut in all day', 'It is too noisy to think', 'It is far from his staff'], a: 0,
@@ -52,7 +52,7 @@ export const officeFumble: Clip = {
       trap: 'office から人や仕事の多さを思いやすい。知らない言葉は、直後の言いかえがヒント。',
       use: 'I’ve been cooped up inside all week.（一週間ずっと家にこもってた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'copy', seg: [93.4, 98.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'copy', seg: [93.4, 99.6],
       stem: 'What does Dwight ask Michael for?',
       ja: 'ドワイトはマイケルに何を頼む？',
       choices: ['A copy of a speech', 'Help writing a speech', 'To hear a speech again'], a: 0,
@@ -64,7 +64,7 @@ export const officeFumble: Clip = {
       trap: 'speeches が耳に残ると「聞きたい」「手伝って」に流れやすい。have a copy は「もらう」。',
       use: 'Could I get a copy of that?（それのコピー、もらえますか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'both', seg: [94, 97.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'both', seg: [93.6, 98.6],
       stem: 'Type Michael’s answer: “I do, ___.” (3 words)', answer: 'both of them',
       ja: '「I do, ___.」の3語を書こう。',
       cue: '「remember」への短い答えのあと。',
@@ -74,7 +74,7 @@ export const officeFumble: Clip = {
       trap: 'of と them が弱く、both だけが残りやすい。代名詞の前の of はほぼ「ア」。',
       use: 'I’ll take both of them.（両方ください）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'remember', reveals: ['copy'], seg: [94, 99.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'remember', reveals: ['copy'], seg: [94, 99.6],
       stem: 'Why won’t Michael hand over one of his speeches?',
       ja: 'マイケルはなぜ、スピーチを渡さない？',
       choices: ['People would remember it', 'He forgot both speeches', 'Dwight should write his own'], a: 0,
@@ -86,7 +86,7 @@ export const officeFumble: Clip = {
       trap: 'remember だけ拾うと本人の記憶の話に聞こえる。主語の they が誰かで意味が決まる。',
       use: 'They’d remember me from last time.（前回のこと、覚えてるよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['remember', 'demo'], seg: [98.4, 106.3],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['remember', 'demo'], seg: [97.5, 106.7],
       stem: 'What does Michael’s “Look” mean here?',
       ja: 'ここでのマイケルの「Look」はどういう意味？',
       choices: ['Listen to me', 'Watch me now', 'I give up'], a: 0,
@@ -98,7 +98,7 @@ export const officeFumble: Clip = {
       trap: 'look を「見て」と思いやすい。あとの Watch this（見てろ）とは別。',
       use: 'Look, it’s not a big problem.（いい？大した問題じゃないよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'demo', seg: [98.4, 133.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'demo', seg: [98.4, 134.7],
       stem: 'Why does Michael make the big announcement?',
       ja: 'マイケルはなぜ、大きな発表をする？',
       choices: ['To show Dwight how it works', 'To share real good news', 'To play a trick on Jim'], a: 0,
@@ -122,7 +122,7 @@ export const officeFumble: Clip = {
       trap: 'care about を自分の思いと取ると「心をこめて話せ」になる。主語の people を追う。',
       use: 'Just tell them what they want to hear.（相手が聞きたいことを言えばいい）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [110.6, 119.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [110.6, 120.9], keep: true,
       stem: 'How big does Michael say each bonus will be?',
       ja: 'マイケルは、ボーナスは1人いくらだと言う？',
       choices: ['$100', '$1,000', '$10,000'], a: 1,
@@ -134,7 +134,7 @@ export const officeFumble: Clip = {
       trap: '「ハンドレッド」なら100ドル、「サウザンド」なら1,000ドル、前に「テン」が付けば1万ドル。',
       use: 'It’s about a thousand dollars.（だいたい1,000ドルです）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'proud', reveals: ['had'], seg: [128, 132.4],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'proud', reveals: ['had'], seg: [127.7, 134.7],
       stem: 'How does Michael feel after the cheering?',
       ja: '歓声のあと、マイケルはどんな気持ち？',
       choices: ['Proud of himself', 'Laughing at them', 'Surprised it worked'], a: 0,
@@ -146,7 +146,7 @@ export const officeFumble: Clip = {
       trap: 'だました直後なので、笑いや驚きを想像しやすい。話の中心は「自分への反応」。',
       use: 'Did you see how they reacted?（みんなの反応、見た？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'had', seg: [128, 132.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'had', seg: [128, 134.7],
       stem: 'What does “I had them” mean here?',
       ja: 'ここでの「I had them」はどういう意味？',
       choices: ['They were all with him', 'He got them in a room', 'They were nervous'], a: 0,
@@ -158,7 +158,7 @@ export const officeFumble: Clip = {
       trap: 'have を文字どおり「集めた」と思いやすい。人が目的語なら「つかんだ」。',
       use: 'For a minute there, I had them.（一瞬、みんなの心をつかんだ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'believed', seg: [129, 135.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'believed', seg: [129, 137.7],
       stem: 'What does “That is so great about the bonus” show?',
       ja: '「That is so great about the bonus」から何が分かる？',
       choices: ['The bonus news was believed', 'The news was known as fake', 'Michael was being mocked'], a: 0,
@@ -170,7 +170,7 @@ export const officeFumble: Clip = {
       trap: 'so great を皮肉と取ると「見抜いていた」になる。すぐの打ち消しが手がかり。',
       use: 'Wait, that’s not true, is it?（え、それ本当じゃないよね？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'justtalk', reveals: ['believed', 'demo'], seg: [134, 141.9],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'justtalk', reveals: ['believed', 'demo'], seg: [132.3, 142.3],
       stem: 'How does Michael feel about his fake news?',
       ja: 'マイケルは、自分のうその知らせをどう思っている？',
       choices: ['Not worried at all', 'Very sorry about it', 'Angry at the staff'], a: 0,
@@ -182,7 +182,7 @@ export const officeFumble: Clip = {
       trap: 'だましたら気まずいはず、と思いやすい。謝る言葉があるかを聞く。',
       use: 'Don’t worry, I was just talking.（気にしないで、ただ言ってみただけ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'attention', seg: [145.5, 150.0],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'attention', seg: [145.5, 153.2],
       stem: 'What does “May I have your attention?” mean?',
       ja: '「May I have your attention?」はどういう意味？',
       choices: ['Please listen to me', 'Please give me money', 'Please be careful'], a: 0,
@@ -206,7 +206,7 @@ export const officeFumble: Clip = {
       trap: 'skidded や cars から天気や渋滞を思いやすい。最初の名詞 accident で決める。',
       use: 'There was an accident on the highway.（高速で事故があったんだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hasbeen', reveals: ['accident'], seg: [148.9, 152.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hasbeen', reveals: ['accident'], seg: [147.4, 156.1],
       stem: 'Fill the gap: “___ an accident on 84 West.”',
       ja: '「___ an accident on 84 West.」の空所は？',
       choices: ['There’s', 'There has been', 'There had been'], a: 1,
@@ -230,7 +230,7 @@ export const officeFumble: Clip = {
       trap: '「失業？」「はい」で、皆が出て行く話に聞こえやすい。最後にだれが責められるかで決まる。',
       use: 'Well, that backfired.（まあ、裏目に出たね）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'unrelated', reveals: ['accident'], seg: [168.3, 173.5],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'unrelated', reveals: ['accident'], seg: [167.3, 175],
       stem: 'What does Dwight say about the crash and the bonuses?',
       ja: '事故とボーナスについて、ドワイトは何と言う？',
       choices: ['They’re not related', 'The crash used the money', 'The bonus pays for cars'], a: 0,
@@ -242,7 +242,7 @@ export const officeFumble: Clip = {
       trap: '事故の直後なので、原因と結果に聞こえやすい。also は「ついでに」。',
       use: 'Totally unrelated, but I love your shoes.（全然関係ないけど、その靴いいね）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'branch', seg: [176.1, 181.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'branch', seg: [174.5, 184.9],
       stem: 'What does Dwight say about the branch at the end?',
       ja: '最後に、ドワイトは支店について何と言う？',
       choices: ['It is going to close', 'It closes early today', 'It is going to be sold'], a: 0,
@@ -254,7 +254,7 @@ export const officeFumble: Clip = {
       trap: 'closing だけ拾うと、今日の閉店に聞こえる。主語の this branch と Yes まで聞く。',
       use: 'Is the store closing early today?（今日はお店、早く閉まりますか）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'kidding', seg: [184.4, 190.9],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'kidding', seg: [181.6, 192.6],
       stem: 'Why does Michael say “Dwight was kidding”?',
       ja: 'マイケルはなぜ「Dwight was kidding」と言う？',
       choices: ['To blame it all on Dwight', 'To say sorry for Dwight', 'To defend Dwight’s joke'], a: 0,
@@ -277,7 +277,7 @@ export const officeFumble: Clip = {
       trap: '名指しされたドワイトが的に聞こえやすい。Michael でも、うそはドワイトのではない。You said を聞く。',
       use: 'Says the guy who did the same thing.（同じことした人が言う？）', retired: true },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'room', seg: [192.0, 198.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'room', seg: [192, 199.7],
       stem: 'Where does Michael want everyone to go?',
       ja: 'マイケルは、みんなにどこへ行けと言う？',
       choices: ['The conference room', 'The parking lot', 'His office'], a: 0,

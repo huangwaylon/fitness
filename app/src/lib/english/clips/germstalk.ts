@@ -30,7 +30,7 @@ export const germsTalk: Clip = {
       trap: 'you なら「ユー」とのびる。had なら最後に「ド」。「アス」のあとに小さな「ヴ」なら us have。',
       use: 'A lot of us have been busy lately.（最近みんないそがしくて）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'weather', seg: [0, 3.9],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'weather', seg: [0, 5],
       stem: 'What does “under the weather” mean?',
       ja: '「under the weather」はどういう意味？',
       choices: ['A little sick', 'Very busy', 'Wet from the rain'], a: 0,
@@ -42,7 +42,7 @@ export const germsTalk: Clip = {
       trap: 'weather（天気）から、雨や天気の話と思いやすい。決まり文句で「ちょっと具合が悪い」。',
       use: 'I’m feeling a bit under the weather today.（今日はちょっと具合が悪くて）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'season', seg: [0, 3.9],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'season', seg: [0, 5],
       stem: 'What does “It’s that time of year” mean here?',
       ja: '「It’s that time of year」は、ここでどういう意味？',
       choices: ['It’s the season for colds', 'The year is almost over', 'This year is a special one'], a: 0,
@@ -54,7 +54,7 @@ export const germsTalk: Clip = {
       trap: 'year から年末を思いやすい。毎年くり返すことを言う決まり文句。',
       use: 'It’s that time of year again.（またこの季節が来たね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [3.5, 13.4], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [2.5, 13.7], keep: true,
       stem: 'Who did the study the presenter talks about?',
       ja: '発表する人が話す調査は、だれがした？',
       choices: ['A university', 'A health office', 'Their own company'], a: 0,
@@ -66,7 +66,7 @@ export const germsTalk: Clip = {
       trap: '健康の話なので、国の機関と思いやすい。by のあとの University を聞く。',
       use: 'According to a recent study…（最近の調査によると）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [3.5, 13.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [4.6, 16.6], keep: true,
       stem: 'How many times more bacteria do keyboards have?',
       ja: 'キーボードには、便座の何倍の細菌がいる？',
       choices: ['Ten times', 'Dozens of times', 'Hundreds of times', 'Thousands of times'], a: 2,
@@ -124,7 +124,7 @@ export const germsTalk: Clip = {
       trap: '相づちは賛成に聞こえやすい。すぐあとに And や But で反論が来るかを聞く。',
       use: 'Uh-huh. Right. And who pays for that?（へえ。で、誰が払うの？）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'flushot', seg: [46.5, 48.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'flushot', seg: [40.2, 48.2], keep: true,
       stem: 'Type the presenter’s last tip: “and ___.” (4 words)', answer: 'get your flu shot',
       ja: '最後のアドバイスを入力：「and ___.」（4語）',
       cue: '手洗いと休む話のあと',
@@ -134,7 +134,7 @@ export const germsTalk: Clip = {
       trap: 'get と your がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'Did you get your flu shot yet?（もう予防接種した？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'stations', seg: [46.9, 52.0], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'stations', seg: [46.9, 53.9], keep: true,
       stem: 'What will the presenter set up around the office?',
       ja: '発表する人は、オフィスのあちこちに何を置く？',
       choices: ['Places to clean your hands', 'Places to get a flu shot', 'Places to pick up some tissues'], a: 0,
@@ -146,7 +146,7 @@ export const germsTalk: Clip = {
       trap: 'すぐ前の flu shot が耳に残りやすい。Also のあとは新しい話。',
       use: 'Is there a place to wash my hands?（手を洗える所はありますか）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'cost', reveals: ['stations', 'coddle'], seg: [51.6, 60.8],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'cost', reveals: ['stations', 'coddle'], seg: [48.8, 60.8],
       stem: 'What does “They will cost you your life” mean?',
       ja: '「They will cost you your life」はどういう意味？',
       choices: ['They could kill you', 'They cost a lot of money', 'They take a lot of time'], a: 0,
@@ -170,7 +170,7 @@ export const germsTalk: Clip = {
       trap: 'cost が聞こえて、お金の話と思いやすい。best way to のあとが彼の考え。',
       use: 'Walking is the best way to stay healthy.（歩くのが健康でいるいちばんの方法）' },
 
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'coddle', seg: [55.8, 60.8],
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'coddle', seg: [53.4, 61.2],
       stem: 'What is the worst thing for your immune system, he says?',
       ja: '彼によると、免疫にいちばん悪いことは何？',
       choices: ['Protecting it too much', 'Pushing it too hard', 'Feeding it too little'], a: 0,
@@ -182,7 +182,7 @@ export const germsTalk: Clip = {
       trap: 'あとの fight から、無理をさせると思いやすい。最悪なのは守りすぎのほう。',
       use: 'Don’t coddle him. He’ll be fine.（あまやかさないで。大丈夫だから）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'bowl', seg: [65.4, 71.0], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'bowl', seg: [64.4, 71], keep: true,
       stem: 'What would fill the bowls the coworker wants?',
       ja: '同僚がほしいボウルには、何が入る？',
       choices: ['Dirt and filth', 'Soap and water', 'Candy and snacks'], a: 0,
@@ -194,7 +194,7 @@ export const germsTalk: Clip = {
       trap: '消毒の話の流れで、石けんを思いやすい。filled with のあとを聞く。',
       use: 'The bowl was filled with candy.（ボウルはおかしでいっぱいだった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'rationale', seg: [70.9, 79.3],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'rationale', seg: [70.8, 80.3],
       stem: 'Why does another coworker talk about sneezing on him?',
       ja: '別の同僚は、なぜ「くしゃみをかける」話をする？',
       choices: ['To show his idea is silly', 'To agree with his idea', 'Because she feels sick'], a: 0,
@@ -206,7 +206,7 @@ export const germsTalk: Clip = {
       trap: '例を足すので、賛成と思いやすい。by that で始まる極端な例は、たいてい反論。',
       use: 'By that logic, we should never sleep.（その理屈なら、寝ちゃいけないことになる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'welcome', seg: [74.7, 81.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'welcome', seg: [74.7, 82.7],
       stem: 'How does the coworker answer the sneezing idea?',
       ja: 'くしゃみの話に、同僚はどう答える？',
       choices: ['He is happy about it', 'He is angry about it', 'He says no politely'], a: 0,
@@ -217,18 +217,6 @@ export const germsTalk: Clip = {
       mean: 'I would welcome it ＝「喜んで受ける、大歓迎」。自分の考えどおり、本気。',
       trap: '強がりで断っていると思いやすい。最初が Yes で、welcome は「歓迎する」。',
       use: 'Any ideas? I’d welcome them.（アイデアがあれば、ぜひ）' },
-
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'yourewelcome', reveals: ['welcome'], seg: [74.7, 86.1],
-      stem: 'Why does she say “You’re welcome” after the sneeze?',
-      ja: 'くしゃみのあと、彼女はなぜ「You’re welcome」と言う？',
-      choices: ['He said he would welcome it', 'He thanked her for it', 'She wants to say sorry'], a: 0,
-      choicesJa: ['彼が「大歓迎」と言ったから', '彼がお礼を言ったから', 'あやまりたいから'],
-      cue: 'くしゃみの前の彼の一言',
-      line: 'I would *welcome* it. … *You’re welcome*.',
-      said: '「大歓迎だ」と言った彼にくしゃみをかけて、「どういたしまして」と言う。',
-      mean: 'You’re welcome ＝「どういたしまして」。彼の welcome をそのまま返して、贈り物のようにあつかう。',
-      trap: 'お礼への返事と思いやすいが、彼はお礼を言っていない。前の I would welcome it が元。',
-      use: 'Thank you! — You’re welcome.（ありがとう！—どういたしまして）' },
 
     { id: 'c2', skill: 'infer', level: 'C2', point: 'welcome', reveals: ['principle', 'forever'], seg: [74.9, 99.9],
       stem: 'After the comment to the camera, how should we hear “I would welcome it”?',
@@ -241,6 +229,18 @@ export const germsTalk: Clip = {
       trap: '挑発への Yes は強がりに見えやすい。この形式では、カメラへの本音で場面を読み直す。',
       use: 'I meant every word of it.（全部本気で言ったんだ）', retired: true },
 
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'yourewelcome', reveals: ['welcome'], seg: [75.5, 87.5],
+      stem: 'Why does she say “You’re welcome” after the sneeze?',
+      ja: 'くしゃみのあと、彼女はなぜ「You’re welcome」と言う？',
+      choices: ['He said he would welcome it', 'He thanked her for it', 'She wants to say sorry'], a: 0,
+      choicesJa: ['彼が「大歓迎」と言ったから', '彼がお礼を言ったから', 'あやまりたいから'],
+      cue: 'くしゃみの前の彼の一言',
+      line: 'I would *welcome* it. … *You’re welcome*.',
+      said: '「大歓迎だ」と言った彼にくしゃみをかけて、「どういたしまして」と言う。',
+      mean: 'You’re welcome ＝「どういたしまして」。彼の welcome をそのまま返して、贈り物のようにあつかう。',
+      trap: 'お礼への返事と思いやすいが、彼はお礼を言っていない。前の I would welcome it が元。',
+      use: 'Thank you! — You’re welcome.（ありがとう！—どういたしまして）' },
+
     { id: 'f3', skill: 'phrase', level: 'C1', point: 'principle', seg: [85.2, 92.8],
       stem: 'Speaking to the camera, what does the coworker say about the idea?',
       choices: ['It holds up well', 'It sounds nice', 'It is well known'], a: 0,
@@ -251,7 +251,7 @@ export const germsTalk: Clip = {
       trap: 'sound を「音」や sounds good と取りやすい。be 動詞のあとなら「健全な」。',
       use: 'The plan is sound. Let’s go.（計画はしっかりしてる。やろう）', retired: true },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'forever', seg: [93.8, 100.2],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'forever', seg: [93.1, 101.1],
       stem: 'What does “have something against” mean here?',
       ja: '「have something against」は、ここでどういう意味？',
       choices: ['Don’t like it', 'Own something', 'Want it badly'], a: 0,

@@ -15,7 +15,7 @@ export const cantAfford: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [2.1, 8.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [2.1, 11.9],
       stem: 'What is Monica’s new job?',
       ja: 'モニカの新しい役職は？',
       choices: ['Head lunch chef', 'Head brunch chef', 'Head dinner chef'], a: 0,
@@ -27,7 +27,7 @@ export const cantAfford: Clip = {
       trap: '夕食の席なので dinner と思いやすい。head のあとの一語を、最初の音から聞く。',
       use: 'She was just made head of sales.（彼女、営業部長になったばかり）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'ready', seg: [34.5, 39.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'ready', seg: [34, 40.9],
       stem: 'Why can’t they order yet?',
       ja: 'みんなはなぜ、まだ注文できない？',
       choices: ['They haven’t looked yet', 'Monica isn’t there yet', 'The kitchen is closed'], a: 0,
@@ -50,7 +50,7 @@ export const cantAfford: Clip = {
       trap: '文字通り取ると本気の熱意。値段の話はこのあと。場違いな大げささは皮肉のサイン。',
       use: 'The ending had me on the edge of my seat.（結末はずっとハラハラした）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'letmeknow', seg: [37.0, 43.1],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'letmeknow', seg: [36.8, 43.3],
       stem: 'What does the waiter mean by “Just let me know”?',
       ja: '店員の「Just let me know」はどういう意味？',
       choices: ['Tell me when you’re ready', 'Please decide very fast', 'Read the menu to me'], a: 0,
@@ -62,7 +62,7 @@ export const cantAfford: Clip = {
       trap: 'このあと「身を乗り出して待つ」と大げさに言うので、急かしていると思いやすい。',
       use: 'Let me know if you need anything.（何か要るなら言ってね）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'same', seg: [57.5, 63.5],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'same', seg: [56.8, 63.8],
       stem: 'What does “Same for me” mean?',
       ja: '「Same for me」はどういう意味？',
       choices: ['I’ll have that too', 'I’m not very hungry', 'That’s too expensive'], a: 0,
@@ -74,7 +74,7 @@ export const cantAfford: Clip = {
       trap: '値段に驚いた直後なので、断りと思いやすい。sounds great と言っている。',
       use: 'Same for me, please.（私も同じものをお願いします）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'nuts', seg: [64.6, 71.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'nuts', seg: [63.6, 72.5],
       stem: 'What does Joey ask about his pizza?',
       ja: 'ジョーイはピザについて何を聞く？',
       choices: ['If it’s cheaper without toppings', 'If it can come without nuts', 'If a small one is cheaper'], a: 0,
@@ -86,7 +86,7 @@ export const cantAfford: Clip = {
       trap: 'without the nuts だけだとアレルギーの相談に聞こえる。is it cheaper まで聞く。',
       use: 'Is it cheaper without the cheese?（チーズなしだと安くなる？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'youdthink', reveals: ['nuts'], seg: [67.0, 74.6],
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'youdthink', reveals: ['nuts'], seg: [63.6, 75.6],
       stem: 'What does the waiter’s “You’d think” mean?',
       ja: '店員の「You’d think, wouldn’t you?」はどういう意味？',
       choices: ['No, it costs the same', 'Yes, it is cheaper', 'Maybe, he will check'], a: 0,
@@ -98,7 +98,7 @@ export const cantAfford: Clip = {
       trap: 'think から同意に聞こえやすい。You’d think は「普通はそう思うが、実は違う」。',
       use: 'You’d think it’d be open on Sunday.（日曜は開いてると思うでしょ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'side', seg: [76.5, 88.7],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'side', seg: [77.6, 89.6],
       stem: 'Where does Rachel ask for her side salad?',
       ja: 'レイチェルは、サイドサラダをどこに置いてと言う？',
       choices: ['Next to her water', 'Next to her main dish', 'In a box to go'], a: 0,
@@ -110,7 +110,7 @@ export const cantAfford: Clip = {
       trap: 'on the side of は、本当は「何の付け合わせ？」という質問。横に置く場所の話ではない。',
       use: 'Can I get the dressing on the side?（ドレッシングは別でください）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cup', seg: [92.5, 97.45],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cup', seg: [91.1, 102.9],
       stem: 'Fill the gap: “I’m gonna have ___ cucumber soup.”',
       ja: '「I’m gonna have ___ cucumber soup.」の空所は？',
       choices: ['a cup of the', 'a cup of', 'a cup of that'], a: 0,
@@ -122,7 +122,7 @@ export const cantAfford: Clip = {
       trap: 'the は弱く消えそうだが、of のあとに短い「ザ」が残る。that なら強く「ザッ」と t で止まる。',
       use: 'Can I get a slice of the cheesecake?（そのチーズケーキを1切れください）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'owe', seg: [110.6, 114.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'owe', seg: [108.4, 114.5], keep: true,
       stem: 'When the bill comes, how much does everyone owe?',
       ja: '会計で、1人いくら払う？',
       choices: ['$8', '$28', '$30'], a: 1,
@@ -145,7 +145,7 @@ export const cantAfford: Clip = {
       trap: '値段に驚く声があるので、請求額そのものと思いやすい。反対の理由を聞く。',
       use: 'Should we just split it evenly?（普通に割り勘にする？）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'misread', seg: [114.0, 124.3],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'misread', seg: [112.9, 124.9],
       stem: 'Who shouldn’t pay, they decide?',
       ja: '払わなくていいのは誰？',
       choices: ['Monica', 'Phoebe', 'Rachel'], a: 0,
@@ -157,7 +157,7 @@ export const cantAfford: Clip = {
       trap: '「全員？」と聞いた人は不満だが、返事はモニカの話。she はモニカ。',
       use: 'It’s your big night. You shouldn’t pay.（今夜の主役なんだから払わないで）' },
 
-    { id: 'n2', skill: 'number', level: 'B2', point: 'share', seg: [124.0, 129.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B2', point: 'share', seg: [122.4, 132.5], keep: true,
       stem: 'When the share is worked out again, how much is it?',
       ja: '計算し直した1人分はいくら？',
       choices: ['$30.15', '$30.50', '$33.15', '$33.50'], a: 3,
@@ -169,7 +169,7 @@ export const cantAfford: Clip = {
       trap: 'fifty は前が強く、fifteen は後ろが長い。30 なら「サーティ」だけ、33 は「サーティスリー」。',
       use: 'That’s twelve fifty apiece.（1人12ドル50セントね）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B1', point: 'noway', seg: [124.0, 132.05],
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'noway', seg: [124, 134.5],
       stem: 'How is the new share answered?',
       ja: '新しい金額に、どんな答えが返ってくる？',
       choices: ['A strong no', 'A happy yes', 'A maybe later'], a: 0,
@@ -181,7 +181,7 @@ export const cantAfford: Clip = {
       trap: 'Sorry を、折れる前ぶれと思いやすい。ここは言い方を和らげるだけ。',
       use: 'Sorry, not gonna happen.（悪いけど、それはないわ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'promoted', seg: [136.6, 142.8],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'promoted', seg: [135.6, 143.7],
       stem: 'Why does Phoebe say “I’m really happy… but”?',
       ja: 'フィービーは、なぜ「I’m really happy… but」と言う？',
       choices: ['To say no after kind words', 'To offer to pay Monica’s share', 'To say she has to leave'], a: 0,
@@ -193,7 +193,7 @@ export const cantAfford: Clip = {
       trap: '祝う言葉と sorry から、払う話や帰る話と思いやすい。本音は but のあと。',
       use: 'I love the idea, but it’s too pricey.（いい考えだけど、高すぎる）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'notforyou', seg: [154.0, 160.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'notforyou', seg: [152.4, 161.5],
       stem: 'What does “Not for you” mean here?',
       ja: 'ここでの「Not for you」はどういう意味？',
       choices: ['It’s a big deal for us', 'It’s small for everyone', 'You should pay for us'], a: 0,
@@ -205,7 +205,7 @@ export const cantAfford: Clip = {
       trap: '短い返事は同意に聞こえやすい。Not で始まり、前の文を打ち消している。',
       use: 'Easy for you to say.（あなたは簡単に言うけどね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getinto', seg: [167.3, 171.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getinto', seg: [166.5, 171.7],
       stem: 'Type it: “I really don’t want to ___ right now.” (3 words)', answer: 'get into this',
       ja: '「I really don’t want to ___ right now.」の3語を書こう。',
       cue: '「want to」のあと、3語がひと続き。',
@@ -215,7 +215,7 @@ export const cantAfford: Clip = {
       trap: 'get の t が軽い「ラ」の音になり「ゲリントゥ」。get が消えて into だけ残りやすい。',
       use: 'Let’s not get into politics tonight.（今夜は政治の話はやめよう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'itsus', seg: [173.5, 178.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'itsus', seg: [171.6, 179.3],
       stem: 'What does “Hello, it’s us” mean here?',
       ja: 'ここでの「Hello, it’s us」はどういう意味？',
       choices: ['We’re friends, you can tell us', 'Speak up, we can’t hear', 'We’re friends, we’ll pay for you'], a: 0,
@@ -227,7 +227,7 @@ export const cantAfford: Clip = {
       trap: 'Hello を「こんにちは」と思いやすい。ここは We’ll be fine と続く。',
       use: 'Hello? It’s me. You can tell me.（ちょっと、私だよ。言っていいよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'telling', seg: [183.8, 198.8],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'telling', seg: [182.8, 192.5],
       stem: 'How do the three start to explain?',
       ja: '3人は、どんな話し方で説明し始める？',
       choices: ['Unsure, it’s hard to say', 'Angry, it’s been too long', 'Relaxed, it’s easy to say'], a: 0,
@@ -251,7 +251,7 @@ export const cantAfford: Clip = {
       trap: '料理に文句を言っていたので、料理の話と思いやすい。as much money を聞く。',
       use: 'I don’t have as much time as you.（あなたほど時間がないの）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'havent', seg: [228.2, 232.55],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'havent', seg: [227.2, 234.5],
       stem: 'Fill the gap: “How come you guys ___ about this before?”',
       ja: '「How come you guys ___ about this before?」の空所は？',
       choices: ['haven’t talked', 'have talked', 'didn’t talk'], a: 0,

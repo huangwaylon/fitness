@@ -29,7 +29,7 @@ export const shutdown: Clip = {
       trap: '新聞の話を「読んでみて」という案内と取りやすい。当たり前のことを付け足すのは、あきれのしるし。',
       use: 'It’s been all over the news.（ニュースでずっとやってるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'lucky', seg: [15.5, 21.0],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'lucky', seg: [15.5, 21.5],
       stem: 'How long does Ron hope the building stays empty?',
       ja: '建物が空っぽのままなのは、どれくらいだといいとロンは思っている？',
       choices: ['For months', 'Forever', 'A few weeks'], a: 0,
@@ -41,7 +41,7 @@ export const shutdown: Clip = {
       trap: 'あとの公園の話の Could be forever（ずっとかも）と混ざりやすい。ここは for months。',
       use: 'If we’re lucky, it’ll be quiet all day.（運が良ければ一日静かだよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'closures', seg: [20.8, 58.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'closures', seg: [20.8, 58.9],
       stem: 'What do the people at the meeting ask about?',
       ja: '集会で、人々は何について聞いている？',
       choices: ['The parks and their kids', 'The city’s money problems', 'How to reopen City Hall'], a: 0,
@@ -53,7 +53,7 @@ export const shutdown: Clip = {
       trap: '「政府閉鎖」と聞くとお金の話に思いやすい。住民の質問を順に聞くと、公園と子どもの話。',
       use: 'How will this affect us?（これ、私たちにどう影響するの？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'notice', seg: [20.8, 26.0],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'notice', seg: [20.8, 26.9],
       stem: 'What does “until further notice” mean?',
       ja: '「until further notice」はどういう意味？',
       choices: ['No end date yet', 'Until next week', 'Until the budget passes'], a: 0,
@@ -76,7 +76,7 @@ export const shutdown: Clip = {
       trap: '打ち消す形を気持ちの裏返しと取りやすい。the point is で脇へ置いた話に戻る。',
       use: 'Not that it matters, but I was right.（どうでもいいけど、私が正しかった）', retired: true },
 
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'neither', seg: [31.9, 36.9],
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'neither', seg: [30, 37.3],
       stem: 'What does “neither here nor there” mean?',
       ja: '「neither here nor there」はどういう意味？',
       choices: ['It doesn’t matter now', 'It can’t be proven', 'It is very far away'], a: 0,
@@ -88,7 +88,7 @@ export const shutdown: Clip = {
       trap: 'here（ここ）と there（そこ）から、場所の話に思いやすい。決まり文句でひとまとまり。',
       use: 'Anyway, that’s neither here nor there.（まあ、それは関係ないけど）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'onething', seg: [37.5, 42.4],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'onething', seg: [37.5, 45.2],
       stem: 'What does “One thing at a time” mean here?',
       ja: 'ここでの「One thing at a time」はどういう意味？',
       choices: ['Let’s not talk about that now', 'Let’s talk about that next', 'Please speak one by one'], a: 0,
@@ -100,7 +100,7 @@ export const shutdown: Clip = {
       trap: '文字どおり「順番に話して」と思いやすい。急に話が飛んだときの受け流し。',
       use: 'Let’s take it one thing at a time.（一つずつ片づけよう）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'twoweeks', seg: [42.1, 46.9],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'twoweeks', seg: [41.2, 47.3],
       stem: 'When does school let out, according to one parent?',
       ja: 'ある親によると、学校はいつ休みに入る？',
       choices: ['In two days', 'In ten days', 'In two weeks', 'In two months'], a: 2, keep: true,
@@ -123,7 +123,7 @@ export const shutdown: Clip = {
       trap: '役所に向けた苦情なので、市への皮肉と聞きやすい。my と I を追えば、ずっと自分の話。',
       use: 'Cook dinner? In my own kitchen?（夕食を作れって？自分の台所で？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'tell', seg: [49.4, 53.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'tell', seg: [48.3, 54.2],
       stem: 'Type the reply: “I ___ you.” (5 words)', answer: "don't know what to tell",
       ja: '返事を書こう：「I ___ you.」（5語）',
       cue: '質問のすぐあと。I と you の間の5語。',
@@ -133,7 +133,7 @@ export const shutdown: Clip = {
       trap: 'don’t know が「ドンノ」と縮み、what to も「ワラ」とつながる。5語を数えて書く。',
       use: 'I don’t know what to say.（何て言ったらいいか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'tomorrow', seg: [49.4, 55.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tomorrow', seg: [49.4, 56.1],
       stem: 'When was the kids’ concert supposed to happen?',
       ja: '子ども向けのコンサートは、いつの予定だった？',
       choices: ['Tonight', 'Tomorrow', 'This weekend'], a: 1,
@@ -157,7 +157,7 @@ export const shutdown: Clip = {
       trap: '「トゥエ」で始まれば 22、thirty で止まれば 30、「フォーティ」なら 40（すぐあとの別の数）。',
       use: 'We need to cut costs by ten percent.（経費を10%削らないと）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], seg: [64.4, 72.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], seg: [65.6, 77.6],
       stem: 'How does Ron feel about the cuts?',
       ja: '支出を減らすことについて、ロンはどう感じている？',
       choices: ['He wants even more cuts', 'He thinks they’re too big', 'He doesn’t care at all'], a: 0,
@@ -204,7 +204,7 @@ export const shutdown: Clip = {
       trap: '強がりや皮肉と取りやすい。相手の心配は but のあと（資産を売りたくない）にあり、ロンの「案」がまさにそれ。',
       use: 'Relax, I’ve got plenty more where that came from.（安心して、まだまだあるから）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'revenue', reveals: ['creative'], seg: [89.3, 93.95],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'revenue', reveals: ['creative'], seg: [89.3, 95.1],
       stem: 'Why doesn’t the official want to sell City Hall?',
       ja: '職員はなぜ市役所を売りたくない？',
       choices: ['They’d lose future money', 'They’d have no office left', 'They’d get a bad price'], a: 0,
@@ -216,7 +216,7 @@ export const shutdown: Clip = {
       trap: '「職場がなくなる」と思いやすいが、理由は because のあと。future（将来）まで聞く。',
       use: 'We can’t afford to lose that income.（その収入を失うわけにはいかない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'revenue', seg: [89.3, 93.95],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'revenue', seg: [89.3, 95.1],
       stem: 'Fill the gap: “don’t want to ___ any future revenue streams.”',
       ja: '空所に入る語は？「将来の収入源を ___ たくないので」',
       choices: ['lose out on', 'lose all of', 'lose hold of'], a: 0,
@@ -240,7 +240,7 @@ export const shutdown: Clip = {
       trap: 'hear（聞こえる）から音の話に思いやすい。あとの tons more ideas で、あきらめていない。',
       use: 'I hear you. But let’s try anyway.（言いたいことは分かる。でもやってみよう）' },
 
-    { id: 'i3', skill: 'pragma', level: 'B2', point: 'without', seg: [100.7, 105.5],
+    { id: 'i3', skill: 'pragma', level: 'B2', point: 'without', seg: [99.7, 106.7],
       stem: 'What does Ron mean by “Don’t cut anything without me”?',
       ja: 'ロンの「Don’t cut anything without me」はどういう意味？',
       choices: ['Wait for me to cut', 'Don’t cut anything at all', 'Cut more while I’m out'], a: 0,
@@ -252,7 +252,7 @@ export const shutdown: Clip = {
       trap: 'Don’t cut から「削るな」と思いやすい。without me が付くと「私も混ぜて」の意味。',
       use: 'Don’t start the movie without me!（私抜きで映画始めないでね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'defy', reveals: ['both'], seg: [101.0, 121.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'defy', reveals: ['both'], seg: [101, 122],
       stem: 'How does the clip’s final phone call end?',
       ja: '最後の電話はどう終わる？',
       choices: ['Leslie will do the concert anyway', 'Leslie gives up the concert', 'Ron agrees to help Leslie'], a: 0,
@@ -264,7 +264,7 @@ export const shutdown: Clip = {
       trap: 'You can’t do that（できない）で、あきらめる話に思いやすい。あとの Watch me が答え。',
       use: 'You think I can’t? Watch me.（できないと思う？見てなさい）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'both', seg: [106.4, 111.05],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'both', seg: [106.1, 111.1],
       stem: 'How does Leslie feel about Ron hating their work?',
       ja: 'ロンが仕事を嫌っていることを、レスリーはどう思っている？',
       choices: ['She doesn’t mind it at all', 'She is very hurt by it', 'She wants him to change'], a: 0,
@@ -276,7 +276,7 @@ export const shutdown: Clip = {
       trap: 'both of us から「二人とも好き」と思いやすい。enough for は「私一人で二人分」。',
       use: 'I’m excited enough for both of us.（二人分ワクワクしてるから）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'lot', seg: [109.4, 115.3],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'lot', seg: [109.4, 116.9],
       stem: 'Where will Leslie hold the concert?',
       ja: 'レスリーはどこでコンサートを開く？',
       choices: ['On lot 14', 'On lot 40', 'On lot 48'], a: 2, keep: true,

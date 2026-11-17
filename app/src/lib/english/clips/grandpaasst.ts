@@ -14,7 +14,7 @@ export const grandpaAssistant: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'words', seg: [5.3, 12.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'words', seg: [5.3, 14.9],
       stem: 'What does “Use your words!” mean?',
       ja: '「Use your words!」はどういう意味？',
       choices: ['Tell me what you need', 'Choose your words carefully', 'Say it in your own way'], a: 0,
@@ -26,7 +26,7 @@ export const grandpaAssistant: Clip = {
       trap: 'your words を「自分の言葉で」と思いやすい。何がほしいかを言って、という意味。',
       use: 'Use your words, buddy. What’s wrong?（言葉で言ってごらん。どうしたの？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'wigs', seg: [12.4, 20.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'wigs', seg: [12.4, 20.4],
       stem: 'What does Carly say about the wigs?',
       ja: 'カツラについて、カーリーは何と言う？',
       choices: ['She will never buy one', 'She has bought too many', 'She needs one for a show'], a: 0,
@@ -38,7 +38,7 @@ export const grandpaAssistant: Clip = {
       trap: 'shopping と聞くと買い物好きに聞こえる。never gonna buy まで聞く。',
       use: 'I’m never gonna use this, am I?（これ、どうせ使わないよね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'face', reveals: ['wigs'], seg: [12.4, 20.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'face', reveals: ['wigs'], seg: [12.4, 20.4],
       stem: 'What does “let’s face it” mean here?',
       ja: 'ここで「let’s face it」はどういう意味？',
       choices: ['To be honest', 'Let’s look at it', 'Let’s agree on it'], a: 0,
@@ -84,7 +84,7 @@ export const grandpaAssistant: Clip = {
       trap: '直前にカーリーの busy があるので混ざりやすい。retired のあとの2語を聞く。',
       use: 'I’ve gotten used to working from home.（在宅勤務に慣れた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'sched', seg: [40.8, 49.5],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'sched', seg: [39.8, 49.9],
       stem: 'What happens when Carly checks her schedule?',
       ja: '予定を確かめると、どうなる？',
       choices: ['She finds no free time', 'She finds a free evening', 'Granddad is busy then'], a: 0,
@@ -96,7 +96,7 @@ export const grandpaAssistant: Clip = {
       trap: 'not then を、おじいちゃんの都合と思いやすい。自分の予定を見て言っている。',
       use: 'Tuesday? No. Not then either.（火曜？だめだ。そこもだめ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'hire', seg: [41.0, 84.95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'hire', seg: [41, 85],
       stem: 'How does Carly fix her busy life?',
       ja: 'カーリーは忙しい生活をどうやって解決する？',
       choices: ['She makes Granddad her assistant', 'She uses Granddad’s system', 'She clears her days for him'], a: 0,
@@ -108,7 +108,7 @@ export const grandpaAssistant: Clip = {
       trap: 'amazing とほめるので、やり方をまねると思いやすい。すぐあとの Wait のあとが答え。',
       use: 'You should be my travel buddy.（旅の相棒になってよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'system', seg: [52.6, 64.95],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'system', seg: [53.4, 65.8],
       stem: 'What does Granddad’s schedule show?',
       ja: 'おじいちゃんの予定表から何が分かる？',
       choices: ['Every day is the same', 'He watches many shows', 'He is very busy'], a: 0,
@@ -119,6 +119,18 @@ export const grandpaAssistant: Clip = {
       mean: 'all just say ～ ＝ 全部〜としか書いていない。毎日同じ番組を見るだけ。',
       trap: 'show（番組）の話なので、いろいろ見ると思いやすい。all just say で全部同じ。',
       use: 'It all just says “meeting.”（全部「会議」としか書いてない）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'wait', reveals: ['hire'], seg: [65, 73.6],
+      stem: 'What does “Wait” mean here?',
+      ja: 'ここで「Wait」はどういう意味？',
+      choices: ['I just had an idea', 'Please stop talking', 'Something is wrong'], a: 0,
+      choicesJa: ['今いい考えがうかんだ', '話すのをやめて', '何かおかしい'],
+      cue: '「amazing」のすぐあとの一語。',
+      line: 'that system is actually amazing. *Wait*, you should be my assistant.',
+      said: 'ほめた直後に「待って、私のアシスタントになればいいんだ」と言う。',
+      mean: '文の最初の Wait ＝ あ、そうだ。話の途中で思いついた合図。',
+      trap: '「待って」から相手を止めると思いやすいが、おじいちゃんは話していない。次に提案が来る。',
+      use: 'Wait, why don’t we take the train?（あ、電車で行けばいいんじゃない？）' },
 
     { id: 't1', skill: 'attitude', level: 'C1', point: 'amazing', reveals: ['hire', 'wait'], seg: [65.1, 75.75], retired: true,
       stem: 'When Carly calls Granddad’s system “actually amazing”, is she being sarcastic?',
@@ -131,18 +143,6 @@ export const grandpaAssistant: Clip = {
       trap: '中身がテレビだけなので皮肉や気づかいに聞こえる。次の頼みごとが本気の証拠。',
       use: 'That’s actually a great idea.（それ、意外といい考えだね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'wait', reveals: ['hire'], seg: [65.1, 72.4],
-      stem: 'What does “Wait” mean here?',
-      ja: 'ここで「Wait」はどういう意味？',
-      choices: ['I just had an idea', 'Please stop talking', 'Something is wrong'], a: 0,
-      choicesJa: ['今いい考えがうかんだ', '話すのをやめて', '何かおかしい'],
-      cue: '「amazing」のすぐあとの一語。',
-      line: 'that system is actually amazing. *Wait*, you should be my assistant.',
-      said: 'ほめた直後に「待って、私のアシスタントになればいいんだ」と言う。',
-      mean: '文の最初の Wait ＝ あ、そうだ。話の途中で思いついた合図。',
-      trap: '「待って」から相手を止めると思いやすいが、おじいちゃんは話していない。次に提案が来る。',
-      use: 'Wait, why don’t we take the train?（あ、電車で行けばいいんじゃない？）' },
-
     { id: 'c2', skill: 'humor', level: 'C2', point: 'dishes', seg: [71.9, 84.95], retired: true,
       stem: 'Why does Carly’s third reason, about the dishwasher, get a laugh?',
       choices: ['It’s a chore she’s passing off as a reason', 'She’s offering to share that chore with him',
@@ -154,7 +154,7 @@ export const grandpaAssistant: Clip = {
       trap: '理由が3つ並ぶと全部まじめに聞こえる。you love のあとに好きでもない家事が来たら冗談。',
       use: 'And you love doing the dishes, right?（それに皿洗い、好きでしょ？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'weird', seg: [75.75, 80.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'weird', seg: [75.8, 83.2],
       stem: 'Fill the gap: “Unless you think ___ weird.”',
       ja: '空所を埋める：「Unless you think ___ weird.」',
       choices: ['it’s', 'it’d be', 'it’ll be'], a: 1,
@@ -166,7 +166,7 @@ export const grandpaAssistant: Clip = {
       trap: 'it’s なら be がない。it’ll なら「イル」と l の音。ここは「イッビ」。',
       use: 'Unless you think it’d be too much.（多すぎると思うなら別だけど）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'juice', seg: [98.0, 107.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'juice', seg: [98, 107.5],
       stem: 'What is new about the J-smops?',
       ja: 'J-smops の新しいところは？',
       choices: ['They’re made with juice', 'They’re made from smoothies', 'They’re on the final menu'], a: 0,
@@ -178,7 +178,7 @@ export const grandpaAssistant: Clip = {
       trap: 'smoothie は元の材料。menu も聞こえるが、まだ決まっていない（not finalized）。',
       use: 'I made them with honey this time.（今回ははちみつで作ったの）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'smops', seg: [112.7, 118.5],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'smops', seg: [111.7, 118.7],
       stem: 'What does “Yeah, but I copyrighted J-smops” show?',
       ja: '「Yeah, but I copyrighted J-smops」から何が分かる？',
       choices: ['She agrees but is proud', 'She says they aren’t popsicles', 'She is sorry they are plain'], a: 0,
@@ -201,7 +201,7 @@ export const grandpaAssistant: Clip = {
       trap: 'just kidding で全部うそだったと取りやすい。そのあとの「本当の話」まで聞く。',
       use: 'Just kidding. I actually flipped a coin.（冗談。実はコインで決めたの）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'gig', seg: [129.3, 134.6],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'gig', seg: [129.3, 136.7],
       stem: 'What does “get the gig” mean?',
       ja: '「get the gig」はどういう意味？',
       choices: ['Get the job', 'Get a treat', 'Play a show'], a: 0,
@@ -213,7 +213,7 @@ export const grandpaAssistant: Clip = {
       trap: 'カタカナの「ギグ」はライブのこと。英語の gig は仕事全般にも使う。',
       use: 'I got the gig!（その仕事、決まった！）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'astro', seg: [159.8, 167.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'astro', seg: [159.8, 169.8],
       stem: 'Why does Granddad want to learn astrology?',
       ja: 'おじいちゃんはなぜ星占いを知りたい？',
       choices: ['To talk about it with Pearl', 'To read Millicent’s chart', 'To feel young like Millicent'], a: 0,
@@ -225,7 +225,7 @@ export const grandpaAssistant: Clip = {
       trap: 'Millicent と feel young が直前に出るが、理由は and のあと。',
       use: 'I want to talk to Mom about it.（母とその話がしたい）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'shoes', reveals: ['hire'], seg: [249.1, 257.6],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'shoes', reveals: ['hire'], seg: [249.1, 258.5],
       stem: 'What does “but here goes” mean?',
       ja: '「but here goes」はどういう意味？',
       choices: ['I’ll say it anyway', 'I’ll keep quiet', 'May I say something?'], a: 0,
@@ -237,7 +237,7 @@ export const grandpaAssistant: Clip = {
       trap: '「私なんかが」で、だまると思いやすい。but here goes は言う合図。',
       use: 'Not my place to say, but here goes.（私が言うことじゃないけど、言うね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'job', reveals: ['shoes', 'hire', 'promo', 'young'], seg: [251.0, 294.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'job', reveals: ['shoes', 'hire', 'promo', 'young'], seg: [250.9, 295.2],
       stem: 'How is Granddad doing as Carly’s assistant?',
       ja: 'おじいちゃんはアシスタントとしてどう？',
       choices: ['Helpful, but very honest', 'Tired of the job already', 'Too shy to help much'], a: 0,
@@ -249,7 +249,7 @@ export const grandpaAssistant: Clip = {
       trap: '最初に「退屈」と言っていたので、あきたと思いやすい。後半はずっと動いている。',
       use: 'Is there anything else I can do for you?（ほかに何かできることはある？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'promo', reveals: ['hire'], seg: [271.2, 278.85],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'promo', reveals: ['hire'], seg: [271.1, 279.2],
       stem: 'What does “begging for a promotion” mean here?',
       ja: 'ここで「begging for a promotion」はどういう意味？',
       choices: ['You deserve a better job', 'You keep asking for a raise', 'You are making me angry'], a: 0,

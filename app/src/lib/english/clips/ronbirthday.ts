@@ -14,7 +14,7 @@ export const ronBirthday: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sizes', seg: [0.5, 7.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sizes', seg: [0, 9.3],
       stem: 'What does “Do those come in different sizes?” ask?', ja: '“Do those come in different sizes?” は何を聞いている？',
       choices: ['If there are other sizes', 'If they are very big', 'When they will arrive'], a: 0,
       choicesJa: ['ほかのサイズがあるか', 'とても大きいか', 'いつ届くか'],
@@ -25,7 +25,7 @@ export const ronBirthday: Clip = {
       trap: 'come から「届く」と思いやすい。come in sizes は「サイズがそろっている」。',
       use: 'Does this come in blue?（これ、青もありますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'dozen', seg: [4.0, 8.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'dozen', seg: [4, 12.8], keep: true,
       stem: 'How many inflatable saxophones does the caller say she needs?', ja: '電話の人は、ふくらませるサックスがいくつ要ると言う？',
       choices: ['About 4 dozen', 'About 14 dozen', 'About 40 dozen'], a: 2,
       choicesJa: ['約4ダース', '約14ダース', '約40ダース'],
@@ -36,7 +36,7 @@ export const ronBirthday: Clip = {
       trap: 'four なら ty も teen もない。fourteen はうしろが長い。前が強ければ forty。',
       use: 'I’ll need about two dozen eggs.（卵が2ダースくらい要る）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'workcall', seg: [14.3, 22.6],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'workcall', seg: [14.3, 23.8],
       stem: 'What kind of call does April say it was?', ja: 'エイプリルは、何の電話だったと言う？',
       choices: ['A personal call', 'A work call', 'Just a wrong number'], a: 0,
       choicesJa: ['私用の電話', '仕事の電話', 'ただのまちがい電話'],
@@ -58,7 +58,7 @@ export const ronBirthday: Clip = {
       trap: '電話の場面から、私用電話をやめさせる話だと思いやすい。質問の中身で決める。',
       use: 'Just tell me what’s going on.（何が起きてるのか教えて）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'street', seg: [25.3, 36.55],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'street', seg: [29.8, 40.4],
       stem: 'What does Ron say about his house?', ja: 'ロンは自分の家について何と言う？',
       choices: ['It isn’t even on a street', 'Its street is too narrow', 'It has space for few cars'], a: 0,
       choicesJa: ['道路にすら面していない', '前の道がせますぎる', '車は少ししか止められない'],
@@ -69,7 +69,7 @@ export const ronBirthday: Clip = {
       trap: '直前の twenty cars が耳に残りやすい。not even のあとが答え。',
       use: 'It’s not even on the map.（地図にすら載っていない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'once', seg: [53.1, 61.05],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'once', seg: [53.1, 63.9],
       stem: 'What does Ron mean by “I’m only gonna ask you this once”?', ja: '“I’m only gonna ask you this once” で、ロンは何を言いたい？',
       choices: ['He wants a true answer now', 'This is his very last question', 'He is in a hurry'], a: 0,
       choicesJa: ['今すぐ本当のことを答えろ', 'これが本当に最後の質問だ', '急いでいる'],
@@ -80,7 +80,7 @@ export const ronBirthday: Clip = {
       trap: 'only once から、もう聞かないと思いやすい。Don’t care のあとなので、おどし。',
       use: 'I’m only going to say this once.（一度しか言わないよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whydont', seg: [69.3, 75.15],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whydont', seg: [69.3, 77.3],
       stem: 'Why does Ron say “Why don’t you tell me…”?', ja: 'ロンはなぜ “Why don’t you tell me…” と言う？',
       choices: ['To ask him for a story', 'To ask why he won’t talk', 'To make friendly small talk'], a: 0,
       choicesJa: ['話をしてくれと頼むため', 'なぜ話さないのか聞くため', '気軽に世間話をするため'],
@@ -91,7 +91,7 @@ export const ronBirthday: Clip = {
       trap: 'Why から、理由を聞いていると思いやすい。うしろに動詞が来たら頼みや提案。',
       use: 'Why don’t you tell me what happened?（何があったか話してよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kidnap', seg: [75.0, 80.25],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kidnap', seg: [75, 84],
       stem: 'What does the coworker mean by “She kidnapped me from work”?', ja: '“She kidnapped me from work” で、同僚は何を言いたい？',
       choices: ['Took him from work for fun', 'Had the police take him', 'Called in sick for him'], a: 0,
       choicesJa: ['サプライズで職場から連れ出した', '警察に連れて行かせた', '代わりに病欠の電話をした'],
@@ -102,7 +102,7 @@ export const ronBirthday: Clip = {
       trap: 'kidnap をそのまま「誘拐」と取ると、事件に聞こえやすい。surprised のあとなら遊び。',
       use: 'We kidnapped her for a birthday lunch.（誕生日ランチに彼女を連れ出した）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'early', seg: [97.0, 102.75],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'early', seg: [96.6, 105.3],
       stem: 'What does this part of the story warn Ron about?', ja: '話のこの部分は、ロンに何を気づかせる？',
       choices: ['The party could come early', 'The party may come late', 'He will get a warning'], a: 0,
       choicesJa: ['パーティーは早めに来るかも', 'パーティーは遅れて来るかも', '前もって知らせがある'],
@@ -113,7 +113,7 @@ export const ronBirthday: Clip = {
       trap: 'a week が耳に残りやすい。before と no idea から「不意打ち」。',
       use: 'I had no idea it was coming.（来るなんて全然思ってなかった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'birdie', seg: [115.8, 121.65],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'birdie', seg: [114.3, 122],
       stem: 'How does Andy say he heard about Ron’s birthday?', ja: 'ロンの誕生日のことを、アンディはどうやって聞いたと言う？',
       choices: ['From someone he won’t name', 'From the office calendar', 'From a real bird'], a: 0,
       choicesJa: ['名前を言えない人から', '職場のカレンダーから', '本物の鳥から'],
@@ -135,7 +135,7 @@ export const ronBirthday: Clip = {
       trap: 'getting anything を「何ももらえない」と取ると、贈り物の話になる。',
       use: 'Nice try, but I’m not telling.（うまいね、でも言わないよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'outof', seg: [125.0, 128.1],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'outof', seg: [121.5, 130.3],
       stem: 'Fill the gap: “You’re not getting anything ___ me.”', ja: '空所に入るのは？ “You’re not getting anything ___ me.”',
       choices: ['out of', 'off', 'off of'], a: 0,
       choicesJa: ['〜から（聞き出す）', '〜から（離れて）', '〜の上から'],
@@ -157,7 +157,7 @@ export const ronBirthday: Clip = {
       trap: 'father を養子の願い、職業名を本人の夢と取りやすい。you’re my なら Ron の話。',
       use: 'You’re like a big brother to me.（お兄さんみたいな存在だよ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'getit', seg: [142.0, 146.65],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'getit', seg: [142, 148.4],
       stem: 'How does Ron react to Andy’s speech?', ja: 'アンディの話に、ロンはどう反応する？',
       choices: ['He wants Andy to finish', 'He is quietly touched', 'He is very confused by it'], a: 0,
       choicesJa: ['早く終わってほしい', '静かに感動している', 'とても混乱している'],
@@ -168,7 +168,7 @@ export const ronBirthday: Clip = {
       trap: 'I get it は「分かった」なので、混乱とは逆。二回くり返すと、いらいらのサイン。',
       use: 'Okay, I get it. What’s the point?（分かったよ。で、要点は？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'owe', seg: [146.5, 153.15],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'owe', seg: [146.5, 156.1],
       stem: 'Why won’t Andy tell Ron the plan?', ja: 'アンディはなぜロンに計画を話さない？',
       choices: ['He owes Leslie too much', 'He doesn’t know the plan', 'He’s afraid Ron will be angry'], a: 0,
       choicesJa: ['レスリーに大きな恩があるから', '計画を知らないから', 'ロンが怒るのがこわいから'],
@@ -190,7 +190,7 @@ export const ronBirthday: Clip = {
       trap: '連れ去られる Ron が的に見えやすい。誰が何を口にしたかを追うと、ばらしたのは話し手。',
       use: 'Don’t worry, my lips are sealed.（大丈夫、口は堅いから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'seeyou', seg: [156.15, 160.65],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'seeyou', seg: [155.2, 160.7],
       stem: 'Type Andy’s answer: “Okay, ___, Uncle Ron.” (6 words)', ja: 'アンディの返事を書こう：“Okay, ___, Uncle Ron.”（6語）',
       answer: 'not if i see you first',
       cue: '「Okay」のあと',
@@ -200,7 +200,7 @@ export const ronBirthday: Clip = {
       trap: '短い語が続くので、if や I が消えて聞こえやすい。語の数を数えて確かめる。',
       use: 'Not if I see you first!（先に見つけてやる！）' },
 
-    { id: 'p4', skill: 'attitude', level: 'B1', point: 'overwith', seg: [172, 178],
+    { id: 'p4', skill: 'attitude', level: 'B1', point: 'overwith', seg: [170.1, 179.6],
       stem: 'How does Ron feel about the meeting?', ja: '会議について、ロンはどう思っている？',
       choices: ['He doesn’t want to go', 'He is excited about it', 'He is nervous about it'], a: 0,
       choicesJa: ['行きたくない', '楽しみにしている', '緊張している'],
@@ -211,7 +211,7 @@ export const ronBirthday: Clip = {
       trap: 'Let’s から、乗り気だと思いやすい。over with は「早く終わらせたい」。',
       use: 'Let’s just get this over with.（さっさと済ませよう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'annparty', seg: [189.2, 198.05],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'annparty', seg: [190, 202],
       stem: 'Why didn’t Leslie throw Ron a big party?', ja: 'レスリーはなぜロンに大きなパーティーをしなかった？',
       choices: ['Each party fits the person', 'Big parties are only for Ann', 'She did one and won’t repeat'], a: 0,
       choicesJa: ['パーティーはその人に合わせるから', '大きなパーティーはアンだけだから', '一度やったから、もうしない'],
@@ -222,7 +222,7 @@ export const ronBirthday: Clip = {
       trap: 'Why would I を、本当の質問だと思いやすい。答えを求めない言い方。',
       use: 'Why would I wear that to work?（それを仕事に着てくわけないでしょ）' },
 
-    { id: 'i4', skill: 'phrase', level: 'B2', point: 'messwith', seg: [197.9, 206.4],
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'messwith', seg: [197.9, 207],
       stem: 'What does “ways to mess with you” mean?', ja: '“ways to mess with you” はどういう意味？',
       choices: ['Ways to tease you', 'Ways to clean up', 'Ways to help you'], a: 0,
       choicesJa: ['からかう方法', '片付ける方法', '助ける方法'],
@@ -244,7 +244,7 @@ export const ronBirthday: Clip = {
       trap: 'それまでのパーティーの話から、大さわぎだと思いやすい。最後の場面の中身で決める。',
       use: 'I planned something low-key.（控えめなのを用意したよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'alone', seg: [208, 220],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'alone', seg: [207.6, 219.6],
 
       stem: 'What has Leslie set up for Ron?', ja: 'レスリーはロンに何を用意した？',
       choices: ['Films, a guard and a cab', 'Films and a cake for all', 'A guard to drive him home'], a: 0,
@@ -256,7 +256,7 @@ export const ronBirthday: Clip = {
       trap: 'security（警備）の人が送ると思いやすい。送るのは cab。',
       use: 'No one will bother you here.（ここなら誰にもじゃまされないよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'fiveyears', seg: [224.6, 230.95], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'fiveyears', seg: [224.5, 233.3], keep: true,
       stem: 'When did Eagleton offer Leslie a job?', ja: 'イーグルトンがレスリーに仕事の話をしたのはいつ？',
       choices: ['Five years ago', 'Nine years ago', 'Fifteen years ago'], a: 0,
       choicesJa: ['5年前', '9年前', '15年前'],
@@ -278,7 +278,7 @@ export const ronBirthday: Clip = {
       trap: 'hometown だけで町のため、好きにしろを遠慮と取りやすい。we と respected you は二人の話。',
       use: 'Do what you want. But I’d miss you.（好きにしなよ。でも寂しくなるな）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'rager', seg: [260.7, 267.0],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'rager', seg: [259.7, 268],
       stem: 'What does Leslie promise for next year?', ja: 'レスリーは来年について何を約束する？',
       choices: ['A big, wild party', 'A party to make him angry', 'Another quiet day'], a: 0,
       choicesJa: ['大さわぎのパーティー', '彼を怒らせるパーティー', 'また静かな一日'],

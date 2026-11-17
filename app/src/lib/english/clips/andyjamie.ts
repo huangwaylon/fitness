@@ -15,7 +15,7 @@ export const andyJamie: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'quarter', seg: [5.9, 9.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'quarter', seg: [1.1, 10], keep: true,
       stem: 'How often does Andy’s joke get a laugh?',
       ja: 'アンディの冗談はどのくらいウケる？',
       choices: ['About a quarter of the time', 'About a third of the time', 'About half of the time',
@@ -28,7 +28,7 @@ export const andyJamie: Clip = {
       trap: 'third は「サード」、half は「ハーフ」。three が付けば4分の3。a quarter だけなら4分の1。',
       use: 'It takes like twenty minutes.（20分くらいかかるかな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'quarter', seg: [5.9, 9.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'quarter', seg: [1.1, 10],
       stem: 'What does Andy admit about his joke?',
       ja: 'アンディは自分の冗談について何を認めている？',
       choices: ['It rarely gets a laugh', 'It always gets a laugh', 'He almost never says it'], a: 0,
@@ -52,17 +52,7 @@ export const andyJamie: Clip = {
       trap: 'アンディが歌うので、楽しそうと思いやすい。ジムの短い返事を聞く。',
       use: 'Sorry, I’m not much of a talker.（ごめん、あまりしゃべる方じゃなくて）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'music', reveals: ['cd'], seg: [21.6, 35.0], retired: true,
-      stem: 'When Jim brings up music, what is he most likely after?',
-      choices: ['A way to end the small talk', 'A chance to hear Andy sing', 'A new topic to keep the chat going'], a: 0,
-      cue: '短い返事が続いたあと、話題を変える一言。',
-      line: 'I bet. *What about music?*',
-      said: '部屋や天気の話に短く返したあと、「音楽はどう？」と聞く。',
-      mean: '音楽をかければ話さずに済む。「黙って」と言わずに会話を終わらせる方法。',
-      trap: 'Andy が歌い出すので、それが頼みに見える。話題を変える一言は、何を終わらせたいかを聞く。',
-      use: 'Mind if I put some music on?（音楽かけてもいい？）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'weather', seg: [21.6, 29.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'weather', seg: [20.6, 32.6],
       stem: 'What does Andy say about today’s weather?',
       ja: 'アンディは今日の天気について何と言う？',
       choices: ['It was supposed to be cold', 'It is colder than expected', 'It will get cold later'], a: 0,
@@ -73,6 +63,16 @@ export const andyJamie: Clip = {
       mean: 'was supposed to 〜 ＝ 〜のはずだった。予報が外れて晴れている。',
       trap: 'really cold だけ聞くと、寒いと思いやすい。was supposed to は「はずだった（のに）」。',
       use: 'The train was supposed to be here by now.（電車はもう来ているはずなのに）' },
+
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'music', reveals: ['cd'], seg: [21.6, 35.0], retired: true,
+      stem: 'When Jim brings up music, what is he most likely after?',
+      choices: ['A way to end the small talk', 'A chance to hear Andy sing', 'A new topic to keep the chat going'], a: 0,
+      cue: '短い返事が続いたあと、話題を変える一言。',
+      line: 'I bet. *What about music?*',
+      said: '部屋や天気の話に短く返したあと、「音楽はどう？」と聞く。',
+      mean: '音楽をかければ話さずに済む。「黙って」と言わずに会話を終わらせる方法。',
+      trap: 'Andy が歌い出すので、それが頼みに見える。話題を変える一言は、何を終わらせたいかを聞く。',
+      use: 'Mind if I put some music on?（音楽かけてもいい？）' },
 
     { id: 'h1', skill: 'phrase', level: 'B2', point: 'cd', seg: [44.3, 53.8],
       stem: 'What does Jim mean by “more like a CD”?',
@@ -86,7 +86,7 @@ export const andyJamie: Clip = {
       trap: 'CD から、歌がCDみたいに上手いと思いやすい。more like は「むしろ〜」。',
       use: 'I was thinking more like pizza.（どっちかというとピザの気分だった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'yourcall', seg: [49.7, 59.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'yourcall', seg: [47.5, 59.5],
       stem: 'What does “Your call” mean here?',
       ja: 'ここでの「Your call」はどういう意味？',
       choices: ['You get to decide', 'You should phone', 'Your turn to sing'], a: 0,
@@ -142,7 +142,7 @@ export const andyJamie: Clip = {
       trap: '同じ口ぐせなので楽しんでいるように見える。誰の言葉を何のために借りたかを聞く。',
       use: 'Give me strength.（もう勘弁して）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'needsaid', seg: [63.4, 74.85],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'needsaid', seg: [64, 76],
       stem: 'What does Jim mean by “Did that really need to be said?”',
       ja: 'ジムの「Did that really need to be said?」はどういう意味？',
       choices: ['You didn’t need to say that', 'Please say that again', 'I didn’t hear what you said'], a: 0,
@@ -165,7 +165,7 @@ export const andyJamie: Clip = {
       trap: 'music で歌の話に戻ると取りやすい。ここは会話の「響き・ノリ」のたとえ。',
       use: 'I’m just making conversation.（ただの世間話だよ）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'here', seg: [74.2, 78.9],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'here', seg: [70.5, 79.9],
       stem: 'How does Andy feel when he sees his girlfriend?',
       ja: '彼女を見たとき、アンディはどんな気持ち？',
       choices: ['Surprised to see her there', 'Happy she came to meet him', 'Worried that she is sick'], a: 0,
@@ -177,7 +177,7 @@ export const andyJamie: Clip = {
       trap: 'why と where は聞きちがえやすい。「なぜ？」と聞くのは、もう見つけているから。',
       use: 'Wait, why are you here?（あれ、なんでここにいるの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'job', seg: [78.5, 84.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'job', seg: [77.5, 89.5],
       stem: 'What does Andy say his girlfriend does for work?',
       ja: 'アンディによると、彼女の仕事は？',
       choices: ['Makes frozen yogurt', 'Teaches at this school', 'Tutors kids after school'], a: 0,
@@ -189,7 +189,7 @@ export const andyJamie: Clip = {
       trap: 'teacher が先に聞こえるので引かれやすい。No のあとが本当の答え。',
       use: 'I work part-time at a café.（カフェでアルバイトしてます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [104.0, 106.7], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [102.7, 107.7], keep: true,
       stem: 'Type the words: “We ___ time…” (5 words)', answer: "don't have a lot of",
       ja: '「We ___ time…」の空所を書こう（5語）',
       cue: '「you know what」のあと',
@@ -199,7 +199,7 @@ export const andyJamie: Clip = {
       trap: 'have a が「ハヴァ」とつながり、a を落としやすい。5語なので a と of も書く。',
       use: 'I don’t have a lot of cash on me.（今あまり現金を持ってなくて）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'doinghere', seg: [107.9, 112.0],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'doinghere', seg: [106, 118],
       stem: 'Fill the gap: “Oh, ___ doing here?”',
       ja: '「Oh, ___ doing here?」の空所は？',
       choices: ['what are you', 'what were you', 'what are they'], a: 0,
@@ -223,7 +223,7 @@ export const andyJamie: Clip = {
       trap: 'I had no idea を落ち着いた説明と思いやすい。oh my god をくり返して、あわてている。',
       use: 'I swear, I had no idea.（本当に、全然知らなかったんだ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'court', reveals: ['outcome'], seg: [129.0, 140.4],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'court', reveals: ['outcome'], seg: [135, 145.9],
       stem: 'What does Jim mean by “not gonna hold up in court”?',
       ja: 'ジムの「not gonna hold up in court」はどういう意味？',
       choices: ['That excuse won’t work', 'It will slow down their visit', 'He didn’t know either'], a: 0,
@@ -235,7 +235,7 @@ export const andyJamie: Clip = {
       trap: 'hold up には「遅らせる」の意味もある。in court（法廷で）が付けば「通用する」。',
       use: 'That excuse won’t work with my boss.（その言い訳は上司には通じない）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'mailbox', seg: [135.9, 146.5],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'mailbox', seg: [135.9, 146.6],
       stem: 'What does Andy say they did that was wrong?',
       ja: 'アンディは、二人でした悪いことは何だと言う？',
       choices: ['Knocked over a mailbox', 'Drank some beer', 'Skipped school together'], a: 0,

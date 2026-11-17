@@ -15,7 +15,7 @@ export const fakeWedding: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [8.0, 13.88], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [6.5, 17.1], keep: true,
       stem: 'How many years is the party celebrating?',
       ja: 'このパーティーは何年のお祝い？',
       choices: ['25 years', '35 years', '45 years'], a: 1,
@@ -38,19 +38,7 @@ export const fakeWedding: Clip = {
       trap: 'pearls を本物の真珠と取ると話が合わない。pearls of wisdom は「ためになる言葉」。',
       use: 'Any words of wisdom before I go?（行く前に何かひとことある？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'wedding', seg: [26.4, 36.05],
-      stem: 'How do Ross and Rachel feel about “your wedding”?',
-      ja: '「your wedding」と言われて、ロスとレイチェルはどう感じる？',
-      choices: ['Confused by it', 'Pleased by it', 'Amused by it'], a: 0,
-      choicesJa: ['わけが分からない', 'うれしい', 'おもしろがっている'],
-      cue: '「wedding」の直後の返事。',
-      line: 'Oh, and also, congratulations on your *wedding*. — *What?*',
-      said: '赤ちゃんに続いて「結婚もおめでとう」と言われ、二人は「えっ？」と返す。',
-      mean: 'What? ＝ えっ？何？ 結婚していないので、何の話か分からない。',
-      trap: 'We’re so excited（すごく楽しみ）は赤ちゃんへの返事。結婚のお祝いへの返事は What?。',
-      use: 'Wait, what? What wedding?（え、何？何の結婚式？）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'ask', reveals: ['told', 'pretend', 'thanks'], seg: [26.4, 66.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ask', reveals: ['told', 'pretend', 'thanks'], seg: [26.4, 67.4],
       stem: 'What do Ross’s parents want the couple to do?',
       ja: 'ロスの両親は二人に何をしてほしい？',
       choices: ['Act married tonight', 'Get married tonight', 'Say they’re engaged'], a: 0,
@@ -62,7 +50,19 @@ export const fakeWedding: Clip = {
       trap: 'wedding（結婚式）が何度も聞こえて「今夜結婚して」と思いやすい。もう結婚していることになっている。',
       use: 'Can you just play along tonight?（今夜だけ話を合わせてくれる？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'moment', seg: [34.7, 41.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'wedding', seg: [27.3, 39.3],
+      stem: 'How do Ross and Rachel feel about “your wedding”?',
+      ja: '「your wedding」と言われて、ロスとレイチェルはどう感じる？',
+      choices: ['Confused by it', 'Pleased by it', 'Amused by it'], a: 0,
+      choicesJa: ['わけが分からない', 'うれしい', 'おもしろがっている'],
+      cue: '「wedding」の直後の返事。',
+      line: 'Oh, and also, congratulations on your *wedding*. — *What?*',
+      said: '赤ちゃんに続いて「結婚もおめでとう」と言われ、二人は「えっ？」と返す。',
+      mean: 'What? ＝ えっ？何？ 結婚していないので、何の話か分からない。',
+      trap: 'We’re so excited（すごく楽しみ）は赤ちゃんへの返事。結婚のお祝いへの返事は What?。',
+      use: 'Wait, what? What wedding?（え、何？何の結婚式？）' },
+
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'moment', seg: [31.1, 40.3],
       stem: 'What do Ross’s parents ask the couple?',
       ja: 'ロスの両親は二人に何と頼む？',
       choices: ['To talk for a moment', 'To wait a moment', 'To give a speech'], a: 0,
@@ -74,7 +74,7 @@ export const fakeWedding: Clip = {
       trap: 'for just a moment（少しの間）から「待って」と思いやすい。頼んでいるのは talk（話す）こと。',
       use: 'Can I talk to you for a moment?（ちょっとお話しできますか）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'little', reveals: ['told'], seg: [40.95, 55.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'little', reveals: ['told'], seg: [40, 56.3],
       stem: 'Why do Ross’s parents say “it’s just a little thing”?',
       ja: 'ロスの両親は、なぜ「it’s just a little thing」と言う？',
       choices: ['To make big news sound small', 'To ask a really small favor', 'To say sorry for a small mistake'], a: 0,
@@ -97,7 +97,7 @@ export const fakeWedding: Clip = {
       trap: '心が狭いのは友だちだと言うが、隠したのは両親。言葉より、何をしたかを聞く。',
       use: 'I’m totally fine with it. Really.（全然気にしてないよ。ほんとに）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'openminded', reveals: ['told'], seg: [49.6, 55.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'openminded', reveals: ['told'], seg: [48.7, 59.1],
       stem: 'Why did the parents say the couple is married?',
       ja: '両親はなぜ二人が結婚していると言った？',
       choices: ['Some friends wouldn’t like it', 'Some friends kept asking', 'Some friends heard rumors'], a: 0,
@@ -109,7 +109,7 @@ export const fakeWedding: Clip = {
       trap: '友だちの話なので「しつこく聞かれた」と思いやすい。理由は friends are のあとの言葉。',
       use: 'My parents are a bit old-fashioned.（うちの親、ちょっと考えが古いの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'told', seg: [49.6, 55.0], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'told', seg: [49.6, 59.1], keep: true,
       stem: 'Fill the gap: “…which is why ___ told them all you’re married.”',
       ja: '空いている所に入る語は？',
       choices: ['we', 'we’ve', 'we’d'], a: 1,
@@ -132,7 +132,7 @@ export const fakeWedding: Clip = {
       trap: 'Thanks で「落ち着いてくれた」お礼と取りやすいが、二人は驚いたまま。for のあとを聞く。',
       use: 'Thanks for covering for me tomorrow!（明日の代わり、よろしくね！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'thanks', seg: [55.0, 58.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'thanks', seg: [54.5, 62], keep: true,
       stem: 'Type what the parent says: “Thanks for ___ this.” (3 words)', answer: 'going along with',
       ja: '「Thanks for」のあとの3語を書こう。',
       cue: '「What?」のすぐあと。',
@@ -142,7 +142,7 @@ export const fakeWedding: Clip = {
       trap: 'going の g はほぼ消えて along とつながる。with も小さく this と続く。3語で書く。',
       use: 'I’ll go along with whatever you decide.（君が決めたことに合わせるよ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'pretend', reveals: ['ears'], seg: [55.0, 66.6],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'pretend', reveals: ['ears'], seg: [55.4, 67.4],
       stem: 'Who asks if they have to pretend?',
       ja: '「ふりをしなきゃいけないの？」と聞くのはだれ？',
       choices: ['Ross', 'Rachel', 'Ross’s mom'], a: 0,
@@ -154,7 +154,7 @@ export const fakeWedding: Clip = {
       trap: '頼まれた二人のどちらでもありそうに聞こえる。答える父の Son で決まる。',
       use: 'Do we have to pretend we like it?（気に入ったふりをしなきゃだめ？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'ears', reveals: ['pretend'], seg: [58.0, 66.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'ears', reveals: ['pretend'], seg: [58, 69.1],
       stem: 'Why does Jack talk about his ears?',
       ja: 'ジャックはなぜ自分の耳の話をする？',
       choices: ['He did a hard thing too', 'Ross should shave too', 'He can’t hear very well'], a: 0,
@@ -166,7 +166,7 @@ export const fakeWedding: Clip = {
       trap: 'ears（耳）から「聞こえ」の話だと思いやすい。had to（〜しなければならなかった）と You can do this をつなげる。',
       use: 'If I can do it, you can too.（私にできるなら、君にもできる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', seg: [65.7, 77.25],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', seg: [65.8, 77.6],
       stem: 'How does Ross feel about the parents’ plan?',
       ja: 'ロスは両親の計画をどう思っている？',
       choices: ['Upset about lying', 'Amused by the ears', 'Glad it’s one night'], a: 0,
@@ -199,7 +199,7 @@ export const fakeWedding: Clip = {
       trap: 'I know は同意に聞こえるが、続くのは耳の話。may as well は「ついでに」。',
       use: 'While you’re at it, do the windows too.（ついでに窓もお願い）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', seg: [81.0, 84.3], keep: true,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', seg: [78.6, 88.3], keep: true,
       stem: 'Fill the gap: “…we just ___ say anything.”',
       ja: '空いている所に入る語は？',
       choices: ['won’t', 'want to', 'don’t'], a: 0,
@@ -211,7 +211,7 @@ export const fakeWedding: Clip = {
       trap: 'want to なら「ワナ」と「ア」の音。don’t なら d で始まる「ドウン」。「ウォウ」なら won’t。',
       use: 'I won’t say a word.（だれにも言わないよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'treating', seg: [100.5, 106.7],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'treating', seg: [100.4, 106.7],
       stem: 'What does “How’s married life treating you?” ask?',
       ja: '「How’s married life treating you?」は何を聞いている？',
       choices: ['How is married life going?', 'Is your partner kind to you?', 'Who pays for the house?'], a: 0,
@@ -223,7 +223,7 @@ export const fakeWedding: Clip = {
       trap: 'treat（あつかう）から「相手は優しい？」と思いやすい。主語は married life（結婚生活）。',
       use: 'How’s the new job treating you?（新しい仕事はどう？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['wont'], seg: [113.9, 154.5],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['wont'], seg: [113.9, 155.1],
       stem: 'What do they tell the relatives about the wedding?',
       ja: '二人は親せきに結婚式のことをどう話す？',
       choices: ['They make up a big story', 'They just smile and nod', 'They tell the truth'], a: 0,
@@ -235,7 +235,7 @@ export const fakeWedding: Clip = {
       trap: '前の相談で「ほほえんでうなずく」と決めたので、それだと思いやすい。実際は話をどんどん盛る。',
       use: 'It was small, but really special.（小さいけど、すごく特別だった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'where', seg: [128.85, 134.2], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'where', seg: [127.6, 136.9], keep: true,
       stem: 'Where was the wedding, in their story?',
       ja: '二人の話では、結婚式はどこだった？',
       choices: ['On a cliff in Barbados', 'On a beach in the Bahamas', 'On a boat off Barbados'], a: 0,
@@ -292,7 +292,7 @@ export const fakeWedding: Clip = {
       trap: '前半だけなら謙遜に見える。「どうかな、でも」の but のあとが本音。',
       use: 'I don’t like to brag, but I won.（自慢じゃないけど、勝ったよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'firstdate', seg: [206.8, 214.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'firstdate', seg: [206.8, 214.8],
       stem: 'Why did Ross propose at the planetarium?',
       ja: 'ロスはなぜプラネタリウムでプロポーズした？',
       choices: ['Their first date was there', 'Her favorite flower was there', 'She worked there before'], a: 0,

@@ -24,7 +24,7 @@ export const fiftyYears: Clip = {
       trap: '町の名前が二つ出るので、張り合いに聞こえやすい。溝は meaningless（意味がない）。',
       use: 'This could bring people together.（これでみんながまとまるかも）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'firstmet', seg: [2.5, 6.6],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'firstmet', seg: [0.4, 8.4],
       stem: 'Type the host’s request: “Tell us ___.” (4 words)', answer: 'how you first met',
       ja: '「Tell us ___.」の空所を書こう（4語）',
       cue: '「50 years!」のあと', line: 'Tell us *how you first met*.',
@@ -33,7 +33,7 @@ export const fiftyYears: Clip = {
       trap: 'first met がつながり「ファーストメッ」と聞こえる。最後の t はほとんど聞こえない。',
       use: 'How did you two first meet?（お二人はどうやって出会ったの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [3.7, 8.8],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [3.7, 8.9],
       stem: 'When did the couple first meet?',
       ja: '夫婦が出会ったのはいつ？',
       choices: ['1953', '1963', '1973', '1979'], a: 1, keep: true,
@@ -56,7 +56,7 @@ export const fiftyYears: Clip = {
       trap: 'great があるので楽しい話に聞こえるが、何が良かったのかは言っていない。中身の量を聞く。',
       use: 'It was fine, I guess.（まあ、良かったかな）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'bridge', seg: [14.6, 21],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'bridge', seg: [13.1, 23.2],
       stem: 'What does Leslie say the marriage helps do?',
       ja: 'レスリーは、この結婚が何の役に立っていると言う？',
       choices: ['Bring two towns closer', 'Pay for a new bridge', 'End a family fight'], a: 0,
@@ -68,7 +68,7 @@ export const fiftyYears: Clip = {
       trap: 'bridge を名詞の「橋」と取ると、工事の話に聞こえる。ここは「つなぐ」。',
       use: 'Let’s try to bridge the gap.（歩み寄ってみよう）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'myshow', seg: [14.6, 22.7],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'myshow', seg: [17.8, 22.8],
       stem: 'What does the host mean by “*my show, my questions*”?',
       ja: '司会者の「my show, my questions」はどういう意味？',
       choices: ['I ask the questions here', 'Please ask me more questions', 'This is my favorite show'], a: 0,
@@ -80,7 +80,7 @@ export const fiftyYears: Clip = {
       trap: 'Yeah で始まるので賛成に聞こえやすい。ここの Yeah は話を切る合図。',
       use: 'My car, my rules.（私の車だから、私が決める）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [22.3, 27.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [20.8, 30.3],
       stem: 'What does “*secret sauce*” mean here?',
       ja: 'ここでの「secret sauce」はどういう意味？',
       choices: ['Why it works so well', 'A secret they keep', 'A food they both love'], a: 0,
@@ -92,7 +92,7 @@ export const fiftyYears: Clip = {
       trap: 'secret から「隠しごと」と思いやすい。ここは「ひけつ」の意味。',
       use: 'What’s your secret for staying healthy?（健康のひけつは何ですか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'advice', seg: [22.3, 29.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'advice', seg: [22.3, 32.3],
       stem: 'What is the couple’s marriage advice?',
       ja: '夫婦の結婚のアドバイスは？',
       choices: ['Never go to bed angry', 'Never keep secrets', 'Always laugh together'], a: 0,
@@ -127,7 +127,7 @@ export const fiftyYears: Clip = {
       trap: 'keep your money（お金はいらない）は夫婦の言葉。お金を返すのは司会者ではない。',
       use: 'Sorry, I can’t do this anymore.（ごめん、もう無理）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'bribe', seg: [33.6, 41.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'bribe', seg: [33.6, 40.8],
       stem: 'What does “*keep your money*” tell us?',
       ja: '「keep your money」から何が分かる？',
       choices: ['Leslie paid them to come', 'Leslie owes them money', 'They won a prize'], a: 0,
@@ -139,7 +139,7 @@ export const fiftyYears: Clip = {
       trap: 'keep を「もらっておく」と取りやすい。your money なので、相手に返している。',
       use: 'Keep the change.（おつりは取っておいて）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [41.2, 46.2],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [38.9, 48.5],
       stem: 'How much did Leslie offer them?',
       ja: 'レスリーは二人にいくら出すと言った？',
       choices: ['$20 each', '$100 each', '$200 each', '$2,000 each'], a: 2, keep: true,
@@ -151,7 +151,7 @@ export const fiftyYears: Clip = {
       trap: '「トゥーハンドレッド」なら200。one hundred は「ワン」、twenty や thousand とも違う。',
       use: 'They paid us fifty bucks each.（一人50ドルずつもらった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [41.2, 46.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [40.7, 48.5],
       stem: 'Type the end: “…to ___, but it’s impossible.” (3 words)', answer: 'keep this going',
       ja: '「…to ___, but it’s impossible.」の空所を書こう（3語）',
       cue: '「bucks to」のあと',
@@ -161,7 +161,7 @@ export const fiftyYears: Clip = {
       trap: 'this の th は小さく、keep の p とつながってひと続きに聞こえる。',
       use: 'Let’s keep this going.（この調子で続けよう）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', seg: [45.9, 52.2],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', seg: [44.9, 52.5],
       stem: 'The host says, “*Bring it*.” What does she mean?',
       ja: '司会者の「Bring it」はどういう意味？',
       choices: ['Yes, tell me now', 'Give back the money', 'Please stop talking'], a: 0,
@@ -197,7 +197,7 @@ export const fiftyYears: Clip = {
       trap: 'has なら「ズ」の音が聞こえる。「ハダン」なら had an。',
       use: 'I had an early flight.（朝早い便だったんだ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'reasons', reveals: ['prospects', 'turn'], seg: [50.3, 62.3],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'reasons', reveals: ['prospects', 'turn'], seg: [50.9, 62.9],
       stem: 'Why did they really get married?',
       ja: '二人が本当に結婚した理由は？',
       choices: ['Bad reasons, not love', 'Love at first sight', 'Their parents wanted it'], a: 0,
@@ -209,7 +209,7 @@ export const fiftyYears: Clip = {
       trap: 'parents が聞こえるので親が決めたと思いやすい。夫は親を怒らせたかった。',
       use: 'Frankly, I had no other choice.（正直、ほかに道がなかった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tickoff', reveals: ['turn'], seg: [56.9, 62.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tickoff', reveals: ['turn'], seg: [55.5, 62.9],
       stem: 'What does “*tick off* my parents” mean?',
       ja: '「tick off my parents」はどういう意味？',
       choices: ['Make them very angry', 'Make them notice him', 'Make them worry'], a: 0,
@@ -244,7 +244,7 @@ export const fiftyYears: Clip = {
       trap: '文字どおりの「一日の終わり」と思いやすい。but のあとの結論の合図。',
       use: 'At the end of the day, you decide.（結局はあなたが決めることだよ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [62.8, 73.3],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [63.7, 75.7],
       stem: 'Why does Leslie ask, “Who likes tap dancing?”',
       ja: 'レスリーが「タップダンス好きな人？」と聞くのはなぜ？',
       choices: ['To change the subject', 'To start a dance show', 'To ask about their hobby'], a: 0,

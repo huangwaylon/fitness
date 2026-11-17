@@ -34,7 +34,7 @@ export const waitress: Clip = {
       trap: 'thinking / hoping も文としては自然。音で wondering を聞き分けましょう。',
       use: 'I was wondering if you could help me.（手伝ってもらえないかと思って）' },
 
-    { id: 'p0', skill: 'pragma', level: 'B2', point: 'preface', reveals: ['wondering', 'amount', 'ask'], seg: [0.9, 10.2],
+    { id: 'p0', skill: 'pragma', level: 'B2', point: 'preface', reveals: ['wondering', 'amount', 'ask'], seg: [0.8, 12.2],
       stem: 'Why does Rachel first say she is new here?',
       ja: 'レイチェルはなぜ最初に「まだ新人だ」と言う？',
       choices: ['To make her request softer', 'To explain her slow work', 'To thank Terry for the job'], a: 0,
@@ -46,16 +46,7 @@ export const waitress: Clip = {
       trap: '言いわけやお礼に聞こえやすいが、but のあとが本題の頼みごと。',
       use: 'I know it’s short notice, but…（急なのは分かってるけど…）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'wondering', seg: [3.7, 6.7],
-      stem: 'Type what she says: “but I ___, do you think…” (2 words)', answer: 'was wondering',
-      ja: '「but I ___, do you think…」の空所を書こう（2語）',
-      cue: '「but I」のすぐあと', line: 'but I *was wondering*, do you think it would be possible…',
-      said: '「〜かなと思って」と頼み始める。',
-      mean: 'I was wondering ＝「〜かなと思って」。丁寧に頼む決まった出だし。was は「ワz」と小さく短く言う。',
-      trap: 'was が聞こえず、I wondering と書きやすい。',
-      use: 'I was wondering if I could leave early.（早めに帰れないかなと思って）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [6.2, 10.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [1.2, 12.2],
       stem: 'How much money does Rachel ask for?',
       ja: 'レイチェルが頼んだ金額は？',
       choices: ['$100', '$200', '$1,000'], a: 0, keep: true,
@@ -65,6 +56,15 @@ export const waitress: Clip = {
       mean: 'a hundred ＝ 100。名詞の前なので dollars でなく dollar。',
       trap: '弱い a が two に、hundred が thousand に聞こえやすい。最初の短い音を聞く。',
       use: 'Can I borrow twenty dollars?（20ドル借りてもいい？）' },
+
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'wondering', seg: [2.8, 10.7],
+      stem: 'Type what she says: “but I ___, do you think…” (2 words)', answer: 'was wondering',
+      ja: '「but I ___, do you think…」の空所を書こう（2語）',
+      cue: '「but I」のすぐあと', line: 'but I *was wondering*, do you think it would be possible…',
+      said: '「〜かなと思って」と頼み始める。',
+      mean: 'I was wondering ＝「〜かなと思って」。丁寧に頼む決まった出だし。was は「ワz」と小さく短く言う。',
+      trap: 'was が聞こえず、I wondering と書きやすい。',
+      use: 'I was wondering if I could leave early.（早めに帰れないかなと思って）' },
 
     // A2: was a pragma on what the echo “does” (tone and the speaker unsure); now what Rachel does after it
     { id: 'a1', skill: 'detail', level: 'B1', point: 'echo', seg: [9, 16],
@@ -79,7 +79,18 @@ export const waitress: Clip = {
       trap: '聞き返しで話が終わると思いやすいが、すぐ理由が続く。',
       use: 'It’s so that I can see my family.（家族に会うためなんです）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'reason', reveals: ['father'], seg: [11.6, 19.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [13.3, 25.3],
+      stem: 'Rachel says “See, every year…”. What does “See” mean here?',
+      ja: '「See, every year…」の See は、ここではどんな意味？',
+      choices: ['Let me explain', 'Look at this', 'I told you so'], a: 0,
+      choicesJa: ['説明するとね', 'これを見て', 'ほら、言ったでしょ'],
+      cue: '文の最初の短い一語', line: '*See*, every year we go skiing in Vail…',
+      said: '「というのはね、毎年スキーに行くの」と事情を話し始める。',
+      mean: 'See, ＝「というのはね」。文の頭の See は「見て」ではなく、事情を説明し始める合図。',
+      trap: 'see ＝ 見る と思いやすいが、何も見せていない。すぐ説明が続く。',
+      use: 'See, I usually take the train.（というのも、いつもは電車なんです）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'reason', reveals: ['father'], seg: [13.5, 25.5],
       stem: 'What does Rachel need the money for?',
       ja: 'レイチェルは何のためにお金が要る？',
       choices: ['A ticket for a ski trip', 'A dinner for Thanksgiving', 'Money she owes her father'], a: 0,
@@ -91,18 +102,7 @@ export const waitress: Clip = {
       trap: 'Thanksgiving から「ディナー」を思いやすい。ticket（チケット）を聞く。',
       use: 'I need to book my ticket home.（帰りのチケットを予約しないと）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [11.6, 19.8],
-      stem: 'Rachel says “See, every year…”. What does “See” mean here?',
-      ja: '「See, every year…」の See は、ここではどんな意味？',
-      choices: ['Let me explain', 'Look at this', 'I told you so'], a: 0,
-      choicesJa: ['説明するとね', 'これを見て', 'ほら、言ったでしょ'],
-      cue: '文の最初の短い一語', line: '*See*, every year we go skiing in Vail…',
-      said: '「というのはね、毎年スキーに行くの」と事情を話し始める。',
-      mean: 'See, ＝「というのはね」。文の頭の See は「見て」ではなく、事情を説明し始める合図。',
-      trap: 'see ＝ 見る と思いやすいが、何も見せていない。すぐ説明が続く。',
-      use: 'See, I usually take the train.（というのも、いつもは電車なんです）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'father', reveals: ['reason'], seg: [14.3, 19.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'father', reveals: ['reason'], seg: [14.3, 25.5],
       stem: 'Who normally pays for Rachel’s ticket?',
       ja: 'いつもレイチェルのチケット代を払うのはだれ？',
       choices: ['Her father', 'Terry, her boss', 'Rachel herself'], a: 0,
@@ -113,7 +113,18 @@ export const waitress: Clip = {
       trap: '前借りの話なので「店長が払う」と思いやすい。normally のすぐあとの my father を聞く。',
       use: 'Normally I take the bus.（ふだんはバスで行きます）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'independent', reveals: ['ive', 'father'], seg: [16.3, 26],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'ive', seg: [14.6, 25.5],
+      stem: 'Fill the gap: “but ___ sort of started this whole…”',
+      ja: '「but ___ sort of started this whole…」の空所は？',
+      choices: ['I', 'I’ve', 'I’d'], a: 1,
+      choicesJa: ['I ＝ 私は', 'I’ve ＝ 私は〜した（今も）', 'I’d ＝ 私は〜していた'],
+      cue: '「but」のすぐあと', line: 'but *I’ve* sort of started this whole independent thing',
+      said: '「最近、自立ってやつを始めちゃって」と言う。',
+      mean: 'I’ve started ＝「始めて、今もその最中」。I’ve は「アイv」と短く、v はほぼ聞こえない。',
+      trap: 'v が s に消えて I に聞こえやすい。唇をかむ v が少し残れば I’ve、d の音なら I’d。',
+      use: 'I’ve just started a new job.（新しい仕事を始めたばかりです）' },
+
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'independent', reveals: ['ive', 'father'], seg: [17.8, 27.7],
       stem: 'Why isn’t Rachel letting her father pay this year?',
       ja: '今年、レイチェルが父親に払ってもらわないのはなぜ？',
       choices: ['She wants to pay for herself', 'Her father said no this time', 'She is angry with her father'], a: 0,
@@ -124,17 +135,6 @@ export const waitress: Clip = {
       mean: 'independent ＝ 自立した（人に頼らない）。父に頼らず、自分で払いたいということ。',
       trap: '「父が断った」と思いやすいが、そうは言っていない。but のあとが本当の理由。',
       use: 'I’m trying to pay my own way.（自分のお金でやっていこうとしてるの）' },
-
-    { id: 's3', skill: 'sound', level: 'B2', point: 'ive', seg: [18.7, 22.3],
-      stem: 'Fill the gap: “but ___ sort of started this whole…”',
-      ja: '「but ___ sort of started this whole…」の空所は？',
-      choices: ['I', 'I’ve', 'I’d'], a: 1,
-      choicesJa: ['I ＝ 私は', 'I’ve ＝ 私は〜した（今も）', 'I’d ＝ 私は〜していた'],
-      cue: '「but」のすぐあと', line: 'but *I’ve* sort of started this whole independent thing',
-      said: '「最近、自立ってやつを始めちゃって」と言う。',
-      mean: 'I’ve started ＝「始めて、今もその最中」。I’ve は「アイv」と短く、v はほぼ聞こえない。',
-      trap: 'v が s に消えて I に聞こえやすい。唇をかむ v が少し残れば I’ve、d の音なら I’d。',
-      use: 'I’ve just started a new job.（新しい仕事を始めたばかりです）' },
 
     // retired (A2): a twin of i3's point, the phrase's sense too loose for one key
     { id: 'p2', skill: 'phrase', level: 'C1', point: 'independent', reveals: ['ive'], seg: [18.7, 26], retired: true,
@@ -203,7 +203,7 @@ export const waitress: Clip = {
       use: 'I hear what you’re saying, but…（おっしゃることは分かりますが…）' },
 
     // predict: the segment stops before “but”; the reveal plays the rest
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'hear', reveals: ['reply'], seg: [37.9, 42.3], then: [42.3, 50.2],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'hear', reveals: ['reply'], seg: [37.2, 42.3], then: [42.3, 50.6],
       stem: 'What will Rachel say after “I’m with you”?',
       ja: '「I’m with you」のあと、レイチェルは何を言う？',
       choices: ['She gives her side', 'She says sorry', 'She thanks Terry'], a: 0,
@@ -215,7 +215,7 @@ export const waitress: Clip = {
       trap: '「分かる」で終わると思いやすいが、このあと but が来やすい。',
       use: 'I hear you, but I’m doing my best.（分かるけど、精一杯やってるよ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'with', seg: [38.4, 44],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'with', seg: [37.2, 42.5],
       stem: 'Rachel says “I’m with you.” What does she mean?',
       ja: 'レイチェルの「I’m with you」はどういう意味？',
       choices: ['I understand you', 'I am next to you', 'I will come with you'], a: 0,
@@ -228,7 +228,7 @@ export const waitress: Clip = {
       use: 'I hear you. I’m with you.（分かるよ。同じ意見だよ）' },
 
     // A2: was “How does Rachel take the criticism?” (two-part choices); now her plain view of her work
-    { id: 't3', skill: 'attitude', level: 'B1', point: 'better', reveals: ['hear', 'reply'], seg: [41, 50.4],
+    { id: 't3', skill: 'attitude', level: 'B1', point: 'better', reveals: ['hear', 'reply'], seg: [41, 52.3],
       stem: 'How does Rachel feel about her own work?',
       ja: 'レイチェルは自分の仕事ぶりをどう思っている？',
       choices: ['It is getting better', 'It is really awful', 'It is too hard for her'], a: 0,
@@ -240,7 +240,7 @@ export const waitress: Clip = {
       trap: 'terrible や awful（ひどい）はテリーの言葉。本人は「良くなってる」と言う。',
       use: 'I think I’m getting better.（上達してると思う）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', reveals: ['reply'], seg: [44.9, 47.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', reveals: ['reply'], seg: [42.6, 50.6],
       stem: 'Type what she says: “I’m ___.” (2 words)', answer: 'doing better',
       ja: '「I’m ___.」の空所を書こう（2語）',
       cue: '「I think」のあと', line: 'and I think I’m — I’m *doing better*.',
@@ -249,7 +249,7 @@ export const waitress: Clip = {
       trap: 'better の t は軽い「ラ」の音で「ベラー」。言い直しの I’m は1回だけ書く。',
       use: 'I’m doing better, thanks.（だいぶ良くなったよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'does', seg: [49, 53.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'does', seg: [47.8, 53.8],
       stem: 'Fill the gap: “___ need coffee?”',
       ja: '「___ need coffee?」の空所は？',
       choices: ['Does anybody', 'Doesn’t anybody', 'Did anybody'], a: 0,
@@ -260,7 +260,7 @@ export const waitress: Clip = {
       trap: 'Doesn’t なら「ン」が残り、Did なら「ディ」で始まる。ここは「ダ」で「ン」がない。',
       use: 'Does anybody want the last slice?（最後のひと切れ、要る人？）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'coffee', reveals: ['does'], seg: [49, 54.3],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'coffee', reveals: ['does'], seg: [49, 60.7],
       stem: 'Who answers “Does anybody need coffee?”',
       ja: '「Does anybody need coffee?」に答えるのはだれ？',
       choices: ['Some customers', 'Terry himself', 'No one at all'], a: 0,
@@ -293,7 +293,7 @@ export const waitress: Clip = {
       trap: 'Terry は頼んでいない。会話の途中で急に言うのがポイント。',
       use: 'Anyway… does anyone need anything?（ところで、何かいる？）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['coffee'], seg: [50, 54.3],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['coffee'], seg: [49.3, 54.3],
       stem: 'A customer says “Over here.” What does it mean?',
       ja: '客の「Over here」はどういう意味？',
       choices: ['Bring it to me', 'Put it over there', 'I don’t need it'], a: 0,

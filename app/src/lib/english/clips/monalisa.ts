@@ -17,7 +17,7 @@ export const monaLisa: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'obvious', seg: [0, 10.0],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'obvious', seg: [0, 10.3],
       stem: 'Ben answers, “Yep, *that’s how it works*.” What does he mean?',
       ja: 'ベンの「Yep, that’s how it works」はどういう意味？',
       choices: ['That’s just normal', 'That’s a great idea', 'That’s how to fix it'], a: 0,
@@ -29,7 +29,7 @@ export const monaLisa: Clip = {
       trap: 'works を「働く」と思うと意味がずれる。ここは「仕組みがそうなっている」。',
       use: 'You pay first. That’s how it works here.（先に払うの。ここはそういう決まり）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'decision', seg: [10.0, 29.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'decision', seg: [9.7, 30.5],
       stem: 'What is Chris trying to decide?',
       ja: 'クリスは何を決めようとしている？',
       choices: ['To help Ann have a baby', 'To adopt one of the kids', 'To ask Ann to marry him'], a: 0,
@@ -41,7 +41,7 @@ export const monaLisa: Clip = {
       trap: '二人の家庭の話に聞こえやすいが、so she can の she（アン）を聞く。',
       use: 'Have you made up your mind yet?（もう決めた？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'unsure', seg: [12.7, 17.5],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'unsure', seg: [11, 17.3],
       stem: 'How sure is Chris about the decision?',
       ja: 'クリスはこの決断にどのくらい自信がある？',
       choices: ['Not sure at all', 'Sure, but not saying', 'About half sure'], a: 0,
@@ -53,7 +53,7 @@ export const monaLisa: Clip = {
       trap: '最初の100％に引かれやすい。何について100％なのかを聞く。',
       use: 'I honestly have no idea yet.（正直まだ全然分からない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'fear', seg: [21.2, 29.8],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'fear', seg: [21.2, 32.4],
       stem: 'What fear holds Chris back?',
       ja: 'クリスを迷わせている不安は何？',
       choices: ['Hurting any living thing', 'Being too old for kids', 'Ann changing her mind'], a: 0,
@@ -65,7 +65,7 @@ export const monaLisa: Clip = {
       trap: '年や相手の気持ちの話は出てこない。fear of のあとの中身を聞く。',
       use: 'I’m afraid of letting people down.（人をがっかりさせるのが怖い）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'register', seg: [29.8, 33.75], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'register', seg: [28.8, 34.1], keep: true,
       stem: 'How much is missing from the register?',
       ja: 'レジからいくらなくなっている？',
       choices: ['$16', '$60', '$600'], a: 1,
@@ -77,7 +77,7 @@ export const monaLisa: Clip = {
       trap: '「シクスティ」と前が強ければ60、「シクスティーン」と後ろが長ければ16、「シックスハンドレッド」なら600。',
       use: 'There’s ten dollars missing.（10ドル足りない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'party', seg: [41.7, 47.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'party', seg: [39, 48.3],
       stem: 'Why can’t Tom fire Mona Lisa right now?',
       ja: 'トムはなぜ今すぐモナ・リザをクビにできない？',
       choices: ['He has a big party tomorrow', 'She is his friend’s sister', 'He was told to wait'], a: 0,
@@ -89,7 +89,7 @@ export const monaLisa: Clip = {
       trap: '友だちの妹の話はあとで別の人が言う推測。ここは時間の話。',
       use: 'I don’t have time to train someone new.（新人を教える時間がない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'week', reveals: ['flour'], seg: [47.8, 54.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'week', reveals: ['flour'], seg: [47.8, 58.5], keep: true,
       stem: 'How long did Ben’s class carry a sack of flour?',
       ja: 'ベンのクラスは小麦粉の袋をどのくらい持ち歩いた？',
       choices: ['A day', 'A week', 'A month'], a: 1,
@@ -101,7 +101,7 @@ export const monaLisa: Clip = {
       trap: 'a が弱く次の語とつながる。「アウィーク」なら1週間、「アデイ」なら1日、「アマンス」なら1か月。',
       use: 'I spent a week cooking for myself.（1週間自炊して過ごした）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'flour', seg: [54.5, 61.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'flour', seg: [53.5, 61.2],
       stem: '“Make *Tom your sack of flour*.” What does Ben mean?',
       ja: '「トムを君の小麦粉の袋にしたら？」とはどういう意味？',
       choices: ['Practice being a parent on Tom', 'Have Tom carry a flour sack', 'Ask Tom how to parent'], a: 0,
@@ -124,7 +124,7 @@ export const monaLisa: Clip = {
       trap: '注意しているように聞こえるが、最後に自分も加わりたいと言う。文の最後まで聞く。',
       use: 'If you’re ordering pizza, I want in.（ピザ頼むなら、私も入れて）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wantsin', seg: [68.7, 72.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wantsin', seg: [67.1, 73.4],
       stem: 'The passer-by says, “This guy *wants in*.” What does he mean?',
       ja: '通りがかりの人の「This guy wants in」はどういう意味？',
       choices: ['He wants to join them', 'He wants to come inside', 'He wants to hear more'], a: 0,
@@ -136,7 +136,7 @@ export const monaLisa: Clip = {
       trap: 'in を「部屋の中」と思いやすい。want in は計画に加わること。',
       use: 'Are you guys going? I want in.（みんな行くの？ 私も行く）' },
 
-    { id: 'p5', skill: 'pragma', level: 'B1', point: 'talkabout', seg: [73.5, 78],
+    { id: 'p5', skill: 'pragma', level: 'B1', point: 'talkabout', seg: [72.4, 77.7],
       stem: 'What is Chris doing when he sits Tom down?',
       ja: 'トムを座らせて、クリスは何をしようとしている？',
       choices: ['Starting a serious talk', 'Inviting Tom to dinner', 'Telling Tom a joke'], a: 0,
@@ -148,7 +148,7 @@ export const monaLisa: Clip = {
       trap: '軽い声なので雑談に聞こえやすい。need to が付くと、まじめな話の合図。',
       use: 'I need to talk to you about something.（ちょっと話があるんだけど）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'practice', reveals: ['flour', 'son'], seg: [73.5, 115.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'practice', reveals: ['flour', 'son'], seg: [73.5, 116.3],
       stem: 'How does Chris talk to Tom?',
       ja: 'クリスはトムにどんなふうに話す？',
       choices: ['Like a dad to his son', 'Like a big brother', 'Like a business coach'], a: 0,
@@ -160,7 +160,7 @@ export const monaLisa: Clip = {
       trap: '店の話なので仕事の助言に見えやすい。最後の son の呼びかけで親役と分かる。',
       use: 'Think of it as practice.（練習だと思って）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dearfriend', seg: [78.0, 83.75],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dearfriend', seg: [78, 85.6],
       stem: 'Why does Chris say “*I’m sure that it’s not easy*”?',
       ja: 'クリスは、なぜ「I’m sure that it’s not easy」と言う？',
       choices: ['To show he understands Tom', 'To warn Tom about his friend', 'To tell Tom to fire her now'], a: 0,
@@ -172,7 +172,7 @@ export const monaLisa: Clip = {
       trap: '「分かるけど…」は命令の前置きにも聞こえるが、ここで終わる。',
       use: 'I know it’s not easy for you.（簡単じゃないのは分かるよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'scared', reveals: ['dearfriend'], seg: [80.3, 89.2],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'scared', reveals: ['dearfriend'], seg: [80.1, 89.6],
       stem: 'What is the real reason Tom hasn’t acted?',
       ja: 'トムが何もしていない本当の理由は？',
       choices: ['He is scared of her', 'She is his friend’s sister', 'He thinks she did nothing'], a: 0,
@@ -184,7 +184,7 @@ export const monaLisa: Clip = {
       trap: '直前の推測に引かれやすい。not that のあとに本当の理由が来る。',
       use: 'It’s not that. I’m just tired.（そうじゃなくて、ただ疲れてるの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'directly', seg: [89.0, 92.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'directly', seg: [86.5, 94.2],
       stem: 'Type Chris’s advice: “___ and tell her…” (4 words)', answer: 'speak directly to her',
       ja: 'クリスの助言を書こう：「___ and tell her…」（4語）',
       cue: '助言の最初。',
@@ -205,7 +205,7 @@ export const monaLisa: Clip = {
       trap: '体の話は悪口、並ぶほめ言葉は皮肉と取りやすいが、adorable は親が子に言うほめ言葉。',
       use: 'You’re smart, you’re kind, you’ve got this.（賢くて優しい君なら大丈夫）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'standup', seg: [98.6, 103.0],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'standup', seg: [98.6, 104.7],
       stem: 'Chris tells Tom, “*Stand up for yourself*.” Meaning?',
       ja: '「Stand up for yourself」とはどういう意味？',
       choices: ['Don’t let people push you', 'Get up from your chair now', 'Take care of your health'], a: 0,
@@ -217,7 +217,7 @@ export const monaLisa: Clip = {
       trap: '座って話しているので「立ちなさい」と思いやすい。for yourself と組むと「立ち向かう」。',
       use: 'You have to stand up for yourself.（自分の意見は言わないと）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'talktoher', seg: [102.0, 105.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'talktoher', seg: [100.7, 108],
       stem: 'Fill the gap: “Yeah. ___ before the party.”',
       ja: '空いている所に入る語は？「Yeah. ___ before the party.」',
       choices: ['I’ll talk to her', 'I talked to her', 'I’ll talk to him'], a: 0,
@@ -240,7 +240,7 @@ export const monaLisa: Clip = {
       trap: 'son をからかいや名前の言いまちがいと取りやすい。Nothing とごまかすので、親役が出た自覚がある。',
       use: 'What was that? — Nothing!（今の何？—何でもない！）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'ultimatum', seg: [115.6, 122.05],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'ultimatum', seg: [115.6, 125.8],
       stem: 'What did Tom tell Mona Lisa?',
       ja: 'トムはモナ・リザに何と言った？',
       choices: ['Change, or be fired', 'Pay it back, or be fired', 'Say sorry, or be fired'], a: 0,
@@ -263,7 +263,7 @@ export const monaLisa: Clip = {
       trap: '否定は分かっても、何に対してかを取り違えやすい。things with Mona Lisa は2人の仲のこと。',
       use: 'Well, the food was… interesting.（まあ、料理は…個性的だったね）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'victory', seg: [187.5, 194.6],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'victory', seg: [187.5, 195.7],
       stem: 'What does Tom’s “small victories” line really admit?',
       ja: 'トムの「小さな勝利」の話は、本当は何を認めている？',
       choices: ['She is still pretty bad', 'He has stopped trying', 'She was never really bad'], a: 0,
@@ -275,7 +275,7 @@ export const monaLisa: Clip = {
       trap: 'victories（勝利）から、うまくいったと思いやすい。to のあとも terrible。',
       use: 'It’s the little things, you know?（小さなことが大事なんだよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'coaster', seg: [201.7, 205.2],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'coaster', seg: [200.5, 205.5],
       stem: '“I’m just gonna *see where this roller coaster goes*.” Meaning?',
       ja: '「see where this roller coaster goes」とはどういう意味？',
       choices: ['He’ll wait and see', 'He’ll take her to a park', 'He’ll end it very soon'], a: 0,
@@ -298,7 +298,7 @@ export const monaLisa: Clip = {
       trap: 'Yeah を「やっと乗れた」と取りやすい。理由に年齢を出したら、冷めた「当然」の返事。',
       use: 'Yeah, I’m an adult.（そりゃね、大人だから）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'age', seg: [208.0, 213.6], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'age', seg: [207.9, 214.1], keep: true,
       stem: 'How old does Tom say he is?',
       ja: 'トムは自分が何歳だと言う？',
       choices: ['18', '28', '38'], a: 1,

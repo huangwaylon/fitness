@@ -15,7 +15,7 @@ export const textsMean: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'boyf', seg: [0, 7.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'boyf', seg: [0, 8.6],
       stem: 'Who is Brandon to Val?',
       ja: 'ブランドンはヴァルの何？',
       choices: ['Her boyfriend', 'Her best friend', 'Her boss'], a: 0,
@@ -38,7 +38,7 @@ export const textsMean: Clip = {
       trap: '一語ずつ訳すと「ほかに誰もいない」になる。驚きの前置きとして覚える。',
       use: 'And the winner is none other than you!（そして勝者は、なんとあなた！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'jamaican', seg: [11.2, 18.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'jamaican', seg: [11.2, 20.1],
       stem: 'Fill the gap: “I’m ___ Jamaican.”',
       ja: '空所を埋める：「I’m ___ Jamaican.」',
       choices: ['not actually', 'actually', 'not exactly'], a: 0,
@@ -61,7 +61,7 @@ export const textsMean: Clip = {
       trap: 'terrific を文字どおり「よかった」と取りやすい。英語は明るい一語で流すこともある。',
       use: 'Great. Well, moving on…（そっか。じゃあ次へ…）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['readtext'], seg: [18.8, 53.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['readtext'], seg: [18.8, 54],
       stem: 'Why is Brandon angry with Darryl?',
       ja: 'ブランドンはなぜダリルに怒っている？',
       choices: ['He thinks Darryl dates Val', 'The guests don’t like goat', 'Someone called him Jamaican'], a: 0,
@@ -73,7 +73,7 @@ export const textsMean: Clip = {
       trap: 'Jamaican の話が最初にあるので、それに怒ったと思いやすい。怒りの中心は girlfriend と text。',
       use: 'I think there’s a misunderstanding.（誤解があると思います）' },
 
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [19.9, 23.4],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [19.5, 26.2],
       stem: 'Type what Brandon asks Darryl: “I heard about you. ___?” (3 words)', answer: 'you doing good',
       ja: 'ブランドンの質問を書き取る：「I heard about you. ___?」（3語）',
       cue: 'I heard about you のすぐあと。',
@@ -83,7 +83,7 @@ export const textsMean: Clip = {
       trap: '教科書の形に直して Are を足したくなる。書き取りは、聞こえた3語だけを書く。',
       use: 'Hey, you doing okay?（ねえ、大丈夫？）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'dumb', seg: [32.4, 36.3],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'dumb', seg: [30.9, 37],
       stem: 'What does “Don’t play dumb with me” mean?',
       ja: '「Don’t play dumb with me」はどういう意味？',
       choices: ['Don’t act like you don’t know', 'Don’t say bad words to me', 'Don’t talk so loud to me'], a: 0,
@@ -95,7 +95,7 @@ export const textsMean: Clip = {
       trap: 'play を「遊ぶ」と思いやすい。ここは「ふりをする」。I know what’s up が続く。',
       use: 'Don’t play dumb. I saw you.（とぼけないで。見たんだから）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'topic', seg: [33.5, 43.1],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'topic', seg: [33.5, 45.2],
       stem: 'Why does a guest say “Let’s get back to the food”?',
       ja: '客の一人はなぜ「Let’s get back to the food」と言う？',
       choices: ['To stop the fight', 'To start the meal', 'To praise the dishes'], a: 0,
@@ -107,7 +107,7 @@ export const textsMean: Clip = {
       trap: 'delicious と言うので、ほめていると思いやすい。get back で「話を戻そう」。',
       use: 'Okay, let’s get back to the menu.（さて、メニューの話に戻ろう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'readtext', seg: [47.3, 53.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'readtext', seg: [47.3, 54],
       stem: 'What does Brandon say he did?',
       ja: 'ブランドンは何をしたと言う？',
       choices: ['Read Darryl’s text to Val', 'Got a text from Val', 'Sent Val a text'], a: 0,
@@ -119,18 +119,7 @@ export const textsMean: Clip = {
       trap: 'text と Val だけ拾うと、もらった話に聞こえる。you sent で、送ったのはダリル。',
       use: 'Did you read the text I sent?（送ったメッセージ読んだ？）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'snoop', reveals: ['readtext'], seg: [50.4, 58.2], retired: true,
-      stem: 'When someone calls his snooping messed up, how does Brandon defend it?',
-      choices: ['It’s only wrong if you find nothing', 'It was wrong, but he needed to know',
-                'Anyone would check, in his shoes'], a: 0,
-      cue: 'it would be のあと、文の組み立て。',
-      line: 'It would be messed up *if I didn’t find anything, but I did*, so…',
-      said: '「見るなんておかしい」に「何も見つからなきゃおかしいけど、見つけたから」と返す。',
-      mean: 'のぞき見を、見つけたもので正当化する。悪いとは認めていない。',
-      trap: '謝ってから言い訳する型を当てはめやすい。I did のあとに謝罪はなく、so… で開き直っている。',
-      use: 'I had a good reason, okay?（ちゃんと理由があったんだ）' },
-
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'messed', seg: [50.4, 53.6],
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'messed', seg: [49, 54.7],
       stem: 'What does “That’s messed up” mean here?',
       ja: 'ここで「That’s messed up」はどういう意味？',
       choices: ['That’s not okay', 'That’s very funny', 'That’s a big mess'], a: 0,
@@ -142,7 +131,7 @@ export const textsMean: Clip = {
       trap: 'mess から「散らかる」と思いやすい。人の行動に言うと「ひどい」。',
       use: 'That’s messed up. Don’t do that.（それはひどいよ、やめて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'spicy', seg: [52.1, 56.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'spicy', seg: [50.3, 58.6],
       stem: 'What does a guest ask about the food?',
       ja: '客の一人は、料理について何を聞く？',
       choices: ['If it is spicy', 'If it is goat', 'If there is more'], a: 0,
@@ -153,6 +142,17 @@ export const textsMean: Clip = {
       mean: 'Is this spicy? ＝ これ辛い？ 店でも使える質問。',
       trap: '少し前に goat（ヤギ）と言うので混ざりやすい。Is this のあとの語を聞く。',
       use: 'Excuse me, is this spicy?（すみません、これ辛いですか）' },
+
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'snoop', reveals: ['readtext'], seg: [50.4, 58.2], retired: true,
+      stem: 'When someone calls his snooping messed up, how does Brandon defend it?',
+      choices: ['It’s only wrong if you find nothing', 'It was wrong, but he needed to know',
+                'Anyone would check, in his shoes'], a: 0,
+      cue: 'it would be のあと、文の組み立て。',
+      line: 'It would be messed up *if I didn’t find anything, but I did*, so…',
+      said: '「見るなんておかしい」に「何も見つからなきゃおかしいけど、見つけたから」と返す。',
+      mean: 'のぞき見を、見つけたもので正当化する。悪いとは認めていない。',
+      trap: '謝ってから言い訳する型を当てはめやすい。I did のあとに謝罪はなく、so… で開き直っている。',
+      use: 'I had a good reason, okay?（ちゃんと理由があったんだ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'napkins', seg: [58.1, 69.85], retired: true,
       stem: 'Why does the hospital example get a laugh?',
@@ -176,7 +176,7 @@ export const textsMean: Clip = {
       trap: '落ち着かせる言葉のあとは収める話、という型。この場面では型が裏切られるのが笑いになる。',
       use: 'Let’s all be grown-ups about this.（みんな大人になろうよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'stay', seg: [75.3, 83.75],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'stay', seg: [75.3, 85.9],
       stem: 'How does the guest feel about going home now?',
       ja: 'その客は、今帰ることをどう思っている？',
       choices: ['She wants to stay', 'She wants to go home', 'She feels sorry'], a: 0,
@@ -188,7 +188,7 @@ export const textsMean: Clip = {
       trap: 'I’m leaving が聞こえるので、帰ると思いやすい。前の no way で「絶対帰らない」。',
       use: 'No way. I’m staying.（絶対いや。ここにいる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'foronce', reveals: ['stay'], seg: [80.45, 83.75],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'foronce', reveals: ['stay'], seg: [78.7, 83.9],
       stem: 'Type the end: “Something interesting is happening here ___.” (5 words)', answer: 'for once in my life',
       ja: '最後を書き取る：「Something interesting is happening here ___.」（5語）',
       cue: 'happening here のあと、文の終わりまで。',
@@ -210,7 +210,7 @@ export const textsMean: Clip = {
       trap: 'ダリルの regular text talk（ふつうの文）を聞くと、疑いが晴れたと思いやすい。まわりの反応を聞く。',
       use: 'That only made it worse.（かえって悪くなったね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'icecream', seg: [85.9, 89.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'icecream', seg: [85, 92.4],
       stem: 'In the first text, what does Darryl offer Val?',
       ja: '一通目で、ダリルはヴァルに何をすすめている？',
       choices: ['Some of his ice cream', 'Some of his fries', 'A ride back home tonight'], a: 0,
@@ -244,7 +244,7 @@ export const textsMean: Clip = {
       trap: '深夜の話はもう出ていて、隠すことではない。指摘された「飛ばしたもの」が何かを追う。',
       use: 'You skipped the best part.（一番いいところを飛ばしたね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kidding', seg: [102.2, 109.45],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kidding', seg: [102.2, 111.6],
       stem: 'What does “Are you kidding me?” show here?',
       ja: 'ここで「Are you kidding me?」は何を表す？',
       choices: ['Shock and anger', 'Fun and laughter', 'Calm agreement'], a: 0,
@@ -256,7 +256,7 @@ export const textsMean: Clip = {
       trap: 'kid を「冗談」と思うと、楽しそうに聞こえる。数を言って問いつめる形は責める調子。',
       use: 'Are you kidding me? Again?（うそでしょ？また？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'dotrule', seg: [109.3, 113.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'dotrule', seg: [106, 113.9], keep: true,
       stem: 'How many dots mean a typo?',
       ja: '点がいくつだと打ちまちがい？',
       choices: ['3', '4', '5'], a: 1,
@@ -268,7 +268,7 @@ export const textsMean: Clip = {
       trap: '三つの数が続くので混ざりやすい。「スリー」は「つづく」、typo の前は「フォー」、「ファイヴ」は but のあと。',
       use: 'Sorry, that was a typo.（ごめん、打ちまちがいだった）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'fivedots', reveals: ['dotrule'], seg: [109.3, 121.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'fivedots', reveals: ['dotrule'], seg: [109.8, 122.1],
       stem: 'What do five dots mean to the guest?',
       ja: 'その客によると、点5つはどういう意味？',
       choices: ['Strong romantic feelings', 'More news is coming', 'A typing mistake'], a: 0,

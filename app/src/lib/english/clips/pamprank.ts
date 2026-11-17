@@ -16,7 +16,7 @@ export const pamprank: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B2', point: 'felt', seg: [0, 3.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'felt', seg: [0, 5.3],
       stem: 'Fill the gap: “So, uh, ___ the vibe yet?”',
       ja: '空所を埋める：「So, uh, ___ the vibe yet?」',
       choices: ['did you feel', 'have you felt', 'can you feel'], a: 1,
@@ -39,7 +39,7 @@ export const pamprank: Clip = {
       trap: '上司の言葉なので部下への皮肉に聞こえやすい。主語が we なら、話し手も含めた自分たちの話。',
       use: 'We’re not on time, but we’re fun!（時間は守らないけど、楽しいよ！）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'friendfirst', seg: [7.9, 18.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'friendfirst', seg: [8.8, 20.8], keep: true,
       stem: 'In Michael’s list, where does “boss” come?',
       ja: 'マイケルの並べ方で、「上司」は何番目？',
       choices: ['First', 'Second', 'Third'], a: 1,
@@ -51,7 +51,7 @@ export const pamprank: Clip = {
       trap: 'first と third も同じ文に出るので、順番が混ざりやすい。boss のすぐあとの語を聞く。',
       use: 'Safety first, speed second.（安全第一、速さは二の次）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'along', seg: [27.9, 33.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'along', seg: [27.9, 34.2],
       stem: 'What does “go along with it” mean?',
       ja: '「go along with it」はどういう意味？',
       choices: ['Act as if it’s real', 'Walk with me to Pam', 'Watch and learn'], a: 0,
@@ -75,7 +75,7 @@ export const pamprank: Clip = {
       trap: 'my life so much easier（楽になった）が聞こえるので、いい話と思いやすい。そのあとが本題。',
       use: 'I’m sorry, we have to let you go.（申し訳ないが、辞めてもらいます）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'downsizing', seg: [47.5, 51.3],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'downsizing', seg: [46.5, 54.5],
       stem: 'What does Michael tell Pam is coming?',
       ja: 'マイケルは、何があるとパムに言う？',
       choices: ['Job cuts at the company', 'A move to a smaller office', 'Pay cuts for the whole staff'], a: 0,
@@ -87,7 +87,7 @@ export const pamprank: Clip = {
       trap: 'size から事務所の大きさや給料の話と思いやすい。会社の話なら人の数。',
       use: 'They’re downsizing, so I’m job hunting.（人員削減で、仕事を探してる）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'letgo', seg: [51.3, 60.6],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'letgo', seg: [50.7, 61.8],
       stem: 'What does “let you go” mean here?',
       ja: 'ここで「let you go」はどういう意味？',
       choices: ['Fire you from this job', 'Let you leave early today', 'Give you a day off'], a: 0,
@@ -110,7 +110,7 @@ export const pamprank: Clip = {
       trap: 'and でつなぐと2つの罪に聞こえる。並んだ語が同じ意味かどうかを確かめる。',
       use: 'It’s late, and it’s also not early.（遅いし、それに早くもない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'postits', seg: [67.4, 74.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'postits', seg: [66.6, 74.5],
       stem: 'What is Pam supposed to have stolen?',
       ja: 'パムは何を盗んだことになっている？',
       choices: ['Post-it notes', 'Paper clips', 'Printer paper'], a: 0,
@@ -122,7 +122,7 @@ export const pamprank: Clip = {
       trap: 'paper clip はあとでパムが言う言葉。盗んだとされる物は、質問のすぐあと。',
       use: 'What am I supposed to have done?（私が何をしたっていうの？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: '50cents', seg: [73.8, 80.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: '50cents', seg: [71.9, 76.9], keep: true,
       stem: 'How much is each Post-it note worth?',
       ja: 'ふせん1つの値段はいくら？',
       choices: ['15 cents', '50 cents', '$5'], a: 1,
@@ -134,7 +134,7 @@ export const pamprank: Clip = {
       trap: 'fifteen なら後ろの「ティーン」を強く長く言う。fifty は前を強く。dollars は聞こえない。',
       use: 'It’s only fifty cents.（たった50セントだよ）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'thousand', reveals: ['postits', '50cents'], seg: [76.5, 80.0], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'thousand', reveals: ['postits', '50cents'], seg: [74.4, 86.4], keep: true,
       stem: 'In Michael’s example, how many does Pam steal?',
       ja: 'マイケルのたとえで、パムはいくつ盗む？',
       choices: ['100', '1,000', '10,000'], a: 1,
@@ -157,7 +157,7 @@ export const pamprank: Clip = {
       trap: '強い言葉をそのまま信じやすい。小さな数字から大きな結論に飛んだら、大げさを疑う。',
       use: 'One cookie won’t ruin your diet.（クッキー1枚でダイエットは台無しにならない）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'serious', seg: [85.9, 97.6],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'serious', seg: [86.2, 98.2],
       stem: 'How does Pam feel after “Are you serious?”',
       ja: '「Are you serious?」のあと、パムはどんな気持ち？',
       choices: ['Shocked and hurt', 'Sorry and guilty', 'Happy and amused'], a: 0,
@@ -169,7 +169,7 @@ export const pamprank: Clip = {
       trap: 'stolen が聞こえるので、盗みを認めたと思いやすい。前に never even がある。',
       use: 'I can’t believe this is happening.（こんなことになるなんて）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'paperclip', seg: [92.6, 97.6],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'paperclip', seg: [92.4, 98.2],
       stem: 'What does Pam mean by “as much as a paper clip”?',
       ja: 'パムの「as much as a paper clip」はどういう意味？',
       choices: ['She never stole anything', 'She only took paper clips', 'She took just a little'], a: 0,
@@ -192,7 +192,7 @@ export const pamprank: Clip = {
       trap: '慰めや本当の節約の話に聞こえやすい。これは芝居で、中身は誰の得かを聞く。',
       use: 'The best part? It’s free.（いちばんいいところ？無料なんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'severance', seg: [98.4, 108.4],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'severance', seg: [99.8, 111.8],
       stem: 'What does Michael say they won’t have to do?',
       ja: 'マイケルは、何をしなくていいと言う？',
       choices: ['Give her money for leaving', 'Give her two weeks’ notice', 'Report it to head office'], a: 0,
@@ -204,7 +204,7 @@ export const pamprank: Clip = {
       trap: '解雇なので予告の話かと思いやすい。give you any のあとの pay を聞く。',
       use: 'Do I get severance pay?（解雇手当は出ますか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'desk', seg: [108.6, 111.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'desk', seg: [106.7, 112.5],
       stem: 'Type what Michael says: “So just ___.” (4 words)', answer: 'clean out your desk',
       ja: 'マイケルの言葉を書き取る：「So just ___.」（4語）',
       cue: 'gross misconduct のあと。',
@@ -237,7 +237,7 @@ export const pamprank: Clip = {
       trap: '本人の「冗談」という枠で聞きやすい。自分の説明より、相手の反応を答え合わせにする。',
       use: 'He says he’s a good listener. He isn’t.（聞き上手だって言うけど、違う）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'inonit', seg: [135.5, 138.7],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'inonit', seg: [134, 139],
       stem: 'Type how Michael describes Ryan: “He was ___.” (3 words)', answer: 'in on it',
       ja: 'マイケルがライアンのことを言う言葉を書き取る：「He was ___.」（3語）',
       cue: 'Okay のあと、新人についての短い文。',
@@ -247,7 +247,7 @@ export const pamprank: Clip = {
       trap: 'in on it は3語が1語に聞こえやすい。最後の t はほぼ消える。',
       use: 'Was everyone in on the surprise?（みんなサプライズ知ってたの？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'morale', seg: [139.5, 148.4],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'morale', seg: [138.8, 148.6],
       stem: 'What is Michael doing when he explains the joke?',
       ja: 'いたずらを説明するとき、マイケルは何をしている？',
       choices: ['Making excuses', 'Saying sorry to Pam', 'Admitting it went too far'], a: 0,
@@ -259,7 +259,7 @@ export const pamprank: Clip = {
       trap: '説明が長いので、謝っていると思いやすい。sorry という言葉は出てこない。',
       use: 'It was just kind of a joke.（ほんの冗談みたいなもんだよ）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'jerk', reveals: ['reaction'], seg: [150.0, 156.6],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'jerk', reveals: ['reaction'], seg: [150, 157.6],
       stem: 'What does “I don’t know about that” mean here?',
       ja: 'ここで「I don’t know about that」はどういう意味？',
       choices: ['I don’t agree', 'I have no idea', 'I didn’t hear you'], a: 0,

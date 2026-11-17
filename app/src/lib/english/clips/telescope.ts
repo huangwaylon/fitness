@@ -16,7 +16,7 @@ export const leaveTelescope: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notsofast', seg: [6.4, 13.0],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notsofast', seg: [5.6, 13.7],
       stem: 'What does Dwight mean by “Not so fast”?',
       ja: 'ドワイトの「Not so fast」はどういう意味？',
       choices: ['Wait, it isn’t free', 'Do it more slowly', 'I’ll put it up for you'], a: 0,
@@ -28,7 +28,7 @@ export const leaveTelescope: Clip = {
       trap: 'fast（速い）から「ゆっくり」と思いやすい。相手の「うん」を止める決まり文句。',
       use: 'Not so fast. You owe me one.（ちょっと待った。貸しがあるでしょ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['bytrade', 'notsofast'], seg: [6.4, 33.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['bytrade', 'notsofast'], seg: [6.4, 34.8],
       stem: 'What is Dwight’s plan for the garage sale?',
       ja: 'ガレージセールでのドワイトの作戦は？',
       choices: ['Trade up from a small thing', 'Trade his farm food', 'Buy the best thing cheaply'], a: 0,
@@ -40,7 +40,7 @@ export const leaveTelescope: Clip = {
       trap: 'walk out with 〜 だけだと「買う」に聞こえやすい。お金でなく swap（交換）。',
       use: 'Want to swap seats with me?（席、替わってくれる？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'bytrade', seg: [9.4, 13.4],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'bytrade', seg: [8.5, 13.9],
       stem: 'What does “traders by trade” mean?',
       ja: '「traders by trade」はどういう意味？',
       choices: ['Trading is their real job', 'Trading is their hobby', 'They trade with farmers'], a: 0,
@@ -52,7 +52,7 @@ export const leaveTelescope: Clip = {
       trap: '農家と聞くとそちらが本業に思いやすい。by trade の前にある traders が本当の仕事。',
       use: 'She’s a nurse by trade.（彼女の本職は看護師）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'candle', seg: [20.5, 26.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'candle', seg: [19.5, 28.9],
       stem: 'In his first swap, what does Dwight ask for?',
       ja: '最初の交換で、ドワイトは何をほしがる？',
       choices: ['Her half-used candle', 'A new pack of candles', 'Her crooked sign'], a: 0,
@@ -64,7 +64,7 @@ export const leaveTelescope: Clip = {
       trap: 'candle だけだと新品にも聞こえる。used まで聞く。sign（看板）は画びょうで直す物。',
       use: 'I’ll trade you my apple for your banana.（りんごとバナナ、交換しよう）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'getout', seg: [33.9, 39.4],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'getout', seg: [33.9, 44.1],
       stem: 'What does “Get out of here, Dwight” mean here?',
       ja: 'ここでの「Get out of here, Dwight」はどういう意味？',
       choices: ['Move out of my way', 'I don’t believe you', 'Let’s leave together'], a: 0,
@@ -98,7 +98,7 @@ export const leaveTelescope: Clip = {
       trap: 'half-used から節約と取りやすい。心の声の Who else が嫉妬の合図。',
       use: 'Lock it in before the price goes up.（値上がり前に決めちゃおう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'jamaica', seg: [77.8, 89.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'jamaica', seg: [84.4, 90.1],
       stem: 'Where does Jim say the beans came from?',
       ja: '豆はどこから来た、とジムは言う？',
       choices: ['A man with a cart', 'A shop in Jamaica', 'A professor he met'], a: 0,
@@ -110,7 +110,7 @@ export const leaveTelescope: Clip = {
       trap: 'Professor（教授）は商品名の一部。来たのは this guy（この男）。',
       use: 'A guy with a cart sells coffee here.（ここは屋台の人がコーヒーを売ってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'nowhere', seg: [84.6, 87.75],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'nowhere', seg: [84.4, 90.1],
       stem: 'Type what Jim says: “And then ___, this guy comes…” (3 words)', answer: 'out of nowhere',
       ja: 'ジムの言葉を書こう：「そしたら ___ 男が来て…」（3語）',
       cue: 'And then のあと、3語がひと続き。',
@@ -120,7 +120,7 @@ export const leaveTelescope: Clip = {
       trap: 'of は弱く「ア」になるので2語に聞こえやすい。決まった3語のかたまりで覚える。',
       use: 'A taxi showed up out of nowhere.（どこからともなくタクシーが来た）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'told', seg: [89.9, 96.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'told', seg: [89, 96.5],
       stem: 'Why did Jim believe the seller at first?',
       ja: 'ジムはなぜ最初、売り手を信じた？',
       choices: ['He knew things about Jim', 'He showed proof they worked', 'He said he was a professor'], a: 0,
@@ -132,7 +132,7 @@ export const leaveTelescope: Clip = {
       trap: 'Miracle（奇跡の）から、効き目を見せたと思いやすい。信じた理由は told me things。',
       use: 'There’s no way she could have known.（彼女が知ってたはずがない）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'gone', seg: [97.5, 104.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gone', seg: [96.8, 105.5],
       stem: 'What happened when Jim went back for his money?',
       ja: 'お金を取り返しに戻ると、どうなっていた？',
       choices: ['The man was already gone', 'He got all his money back', 'The man sold him more'], a: 0,
@@ -155,7 +155,7 @@ export const leaveTelescope: Clip = {
       trap: '本気の断りや照れと取りやすい。大げさな正式名での言い直しは、気を引く合図。',
       use: 'I’m not selling it. It’s too special.（売らないよ。特別なものだから）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B2', point: 'nicetry', seg: [111.2, 119.6],
+    { id: 'a2', skill: 'phrase', level: 'B2', point: 'nicetry', seg: [111.2, 120.6],
       stem: 'What does Dwight mean by “Nice try”?',
       ja: 'ドワイトの「Nice try」はどういう意味？',
       choices: ['I won’t fall for it', 'You almost fooled me', 'That was very smart'], a: 0,
@@ -167,7 +167,7 @@ export const leaveTelescope: Clip = {
       trap: 'nice（いい）からほめ言葉に思いやすい。Nice try は、たくらみを見抜いたときの決まり文句。',
       use: 'Nice try. I’m not falling for it.（その手には乗らないよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [135.4, 147.0],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [137.5, 147.2],
       stem: 'How does Ryan get his mom to make so much pesto?',
       ja: 'ライアンはどうやって母親にペストをたくさん作らせる？',
       choices: ['It’s for a big party', 'He’ll share the money', 'The family wants it'], a: 0,
@@ -179,7 +179,7 @@ export const leaveTelescope: Clip = {
       trap: 'sell（売る）が何度も出るので、売ると言ったと思いやすい。母への理由は for a pesto party。',
       use: 'Can you make extra for my friends?（友達の分も多めに作れる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'bottles', seg: [146.5, 150.6],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'bottles', seg: [145.9, 151.3],
       stem: 'How much pesto does Ryan say his mom made?',
       ja: '母親はペストをどれくらい作った、とライアンは言う？',
       choices: ['About 50 bottles', 'About 100 bottles', 'About 1,000 bottles'], a: 1, keep: true,
@@ -213,7 +213,7 @@ export const leaveTelescope: Clip = {
       trap: 'traded を「買った」と取ると損の話に聞こえる。物の呼び方がずっと junk、crap、garbage。',
       use: 'Things are going very well, thanks.（おかげさまで順調です）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'werethe', seg: [210.1, 213.75],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'werethe', seg: [208.8, 215.6],
       stem: 'Fill the gap: “Just out of curiosity, ___ claims for those beans?”',
       ja: '空所に入る語は？「ちょっと気になるんだけど、あの豆の効き目は ___？」',
       choices: ['what were the', 'what are the', 'what were their'], a: 0,
@@ -225,7 +225,7 @@ export const leaveTelescope: Clip = {
       trap: 'are なら「ワ」が入らず短い。their なら「ゼア」と長い。弱い「ワ」と短い「ザ」なら were the。',
       use: 'Just out of curiosity, what time is it?（ちょっと気になるんだけど、今何時？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'curiosity', reveals: ['werethe'], seg: [210.1, 217.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'curiosity', reveals: ['werethe'], seg: [208.8, 217.9],
       stem: 'Why does Dwight bring up the beans again?',
       ja: 'ドワイトはなぜまた豆の話をする？',
       choices: ['He really wants the beans', 'He wants to laugh at Jim', 'He wants proof they’re fake'], a: 0,

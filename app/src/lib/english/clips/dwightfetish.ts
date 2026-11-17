@@ -27,7 +27,7 @@ export const dwightFetish: Clip = {
       trap: 'fetish（趣味）と言い張るので、集めるのが目的と思いやすい。作業員の compare が本当のねらい。',
       use: 'We need another approach.（別のやり方が必要だ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'business', seg: [4.45, 11],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'business', seg: [4.3, 11.4],
       stem: 'What does “*no one’s business but my own*” mean?',
       ja: '「no one’s business but my own」はどういう意味？',
       choices: ['It’s private, so don’t ask', 'It’s a small shop I run', 'Only I can draw them'], a: 0,
@@ -39,7 +39,7 @@ export const dwightFetish: Clip = {
       trap: 'business から「商売」を思いやすい。ここの business は「関わること」。',
       use: 'It’s none of your business.（あなたには関係ないでしょ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'compare', reveals: ['purpose'], seg: [7.7, 11.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'compare', reveals: ['purpose'], seg: [5.6, 13.2],
       stem: 'What does a worker think Dwight will do?',
       ja: '作業員は、ドワイトが何をすると思っている？',
       choices: ['Compare them with the wall', 'Hang them on the wall', 'Take them upstairs'], a: 0,
@@ -62,7 +62,7 @@ export const dwightFetish: Clip = {
       trap: 'サインを有名人のサインと取りやすい。言い訳のあとの付け足しは、本音が出やすい所。',
       use: 'Oh, and one more thing.（あ、それともう一つ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'weakest', seg: [36.4, 41.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'weakest', seg: [34.8, 42.6],
       stem: 'Which worker do they decide to single out?',
       ja: 'どの作業員を一人にすることにする？',
       choices: ['The weakest one', 'The newest one', 'The quietest one'], a: 0,
@@ -74,7 +74,7 @@ export const dwightFetish: Clip = {
       trap: '-est の形が三つ並ぶので、迷いやすい。最初の「ウィー」の音を聞く。',
       use: 'Which one is the cheapest?（どれがいちばん安いですか）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'crack', seg: [42.6, 46.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'crack', seg: [42.3, 49],
       stem: 'What does “*crack him*” mean here?',
       ja: 'ここでの「crack him」はどういう意味？',
       choices: ['Make him tell the truth', 'Make him start to cry', 'Hit him very hard'], a: 0,
@@ -86,7 +86,7 @@ export const dwightFetish: Clip = {
       trap: 'crack から、なぐると思いやすい。ここは話をさせること。',
       use: 'He finally cracked and told me.（彼はついに白状した）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mother', seg: [46.7, 50.55],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mother', seg: [45.5, 52.8],
       stem: 'What excuse do they plan to use to get Nate alone?',
       ja: 'ネイトを一人にするための口実は？',
       choices: ['His mother is dying', 'His mother is outside', 'His mother is on the phone'], a: 0,
@@ -109,7 +109,7 @@ export const dwightFetish: Clip = {
       trap: '「よかった」を皮肉と取りやすいが、話したいと頼むのは本気の印。前の「口実」とつなげて聞く。',
       use: 'Wait, you fell for that again?（え、またそれに引っかかったの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'works', seg: [48.7, 52.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'works', seg: [48.5, 53.5],
       stem: 'Type what he says next: “That ___.” (4 words)', answer: 'usually works on him',
       ja: '「That ___.」の空所を書こう（4語）',
       cue: '「his mother is dying」のあと',
@@ -119,7 +119,7 @@ export const dwightFetish: Clip = {
       trap: 'works on がつながり「ワークソン」と聞こえる。usually は「ユージュアリ」。',
       use: 'This medicine works on me.（この薬は私に効く）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'feelbad', seg: [56, 62.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'feelbad', seg: [51.1, 64.2],
       stem: 'How does one of them feel about the lie?',
       ja: '一人はうそについてどんな気持ち？',
       choices: ['He feels bad about it', 'He is proud of it', 'He thinks it is funny'], a: 0,
@@ -143,7 +143,7 @@ export const dwightFetish: Clip = {
       trap: 'give him his gum が聞こえて、ガムをもらうと思いやすい。返事は no gum。',
       use: 'He did it, not me.（やったのは彼で、私じゃない）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'talkher', reveals: ['again'], seg: [66.5, 70.2],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'talkher', reveals: ['again'], seg: [64.6, 72.4],
       stem: 'Type Nate’s question: “Can I ___?” (3 words)', answer: 'talk to her',
       ja: '「Can I ___?」の空所を書こう（3語）',
       cue: '「That’s great」のあと',
@@ -153,7 +153,7 @@ export const dwightFetish: Clip = {
       trap: 'her の h が消えて「トゥア」、talk とつながり「トークトゥア」と短く聞こえる。',
       use: 'Can I talk to the manager?（責任者と話せますか）' },
 
-    { id: 'pr1', skill: 'marker', level: 'B1', point: 'listen', reveals: ['purpose'], seg: [71.3, 76.1],
+    { id: 'pr1', skill: 'marker', level: 'B1', point: 'listen', reveals: ['purpose'], seg: [69.8, 77.8],
       stem: 'What comes after “*Now listen*”?',
       ja: '「Now listen」のあとに来るのは？',
       choices: ['The real topic', 'A warning to Nate', 'Some news about Mom'], a: 0,
@@ -176,7 +176,7 @@ export const dwightFetish: Clip = {
       trap: '日本語の「〜ですよね」のような柔らかい確認と取りやすい。前提で言い切るのは、逃げ道をふさぐ言い方。',
       use: 'You know what I’m going to ask.（何を聞くか、分かってるよね）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'friends', seg: [76.1, 82.95],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'friends', seg: [76, 85.8],
       stem: 'Why might Nate not want to talk?',
       ja: 'ネイトが話したがらないかもしれないのはなぜ？',
       choices: ['The workers are his friends', 'He may lose his job', 'He is scared of the vandal'], a: 0,
@@ -188,7 +188,7 @@ export const dwightFetish: Clip = {
       trap: 'vandal（犯人）の話のあとなので、こわがっていると思いやすい。your friends を聞く。',
       use: 'I know you’re busy, but…（忙しいのは分かってるけど…）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'lot', seg: [76.6, 80.55],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'lot', seg: [76, 85.8],
       stem: 'Fill the gap: “Now I know ___ warehouse guys are your friends.”',
       ja: '「Now I know ___ warehouse guys are your friends.」の空所は？',
       choices: ['a lot of these', 'a lot of those', 'all of these'], a: 0,
@@ -211,7 +211,7 @@ export const dwightFetish: Clip = {
       trap: '話がそれると「時間かせぎ」と読みやすい。そのあとすぐ答えているかで判断する。',
       use: 'Sorry, where was I?（ごめん、何の話だっけ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'minty', seg: [82.95, 89.65],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'minty', seg: [81.5, 90],
       stem: 'What does Nate think of gum these days?',
       ja: 'ネイトは最近のガムをどう思っている？',
       choices: ['It is too minty', 'It is too sweet', 'It is bad for him'], a: 0,
@@ -234,7 +234,7 @@ export const dwightFetish: Clip = {
       trap: 'He は弱く、I did it に聞こえやすい。自白なら主語は I。脱線に引きずられず返事を聞く。',
       use: 'That was easier than I thought.（思ったより簡単だった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'nogum', seg: [95, 100.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'nogum', seg: [95, 101.4],
       stem: 'What do they say about the gum?',
       ja: 'ガムについて何と言う？',
       choices: ['There never was any', 'It has all been eaten', 'He will get it later'], a: 0,
@@ -246,7 +246,7 @@ export const dwightFetish: Clip = {
       trap: 'give him his gum が先に聞こえるので、もらえると思いやすい。返事の no gum を聞く。',
       use: 'There’s no time.（時間がない）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'rude', reveals: ['nogum'], seg: [97.5, 104.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'rude', reveals: ['nogum'], seg: [97.5, 105],
       stem: 'How does Nate feel when he hears about the gum?',
       ja: 'ガムのことを聞いて、ネイトはどんな気持ち？',
       choices: ['He’s offended', 'He’s relieved', 'He’s amused'], a: 0,

@@ -25,7 +25,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'Eagleton（イーグルトン）が出るので「移る」話と思いやすい。paired up が中心。',
       use: 'We’ll be paired up for the project.（この企画ではペアを組みます）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'rebrand', seg: [20.4, 28.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'rebrand', seg: [20.4, 28.6],
       stem: 'What does Tynnyfer say about the name Jennifer?',
       ja: 'ティニファーは Jennifer という名前について何と言う？',
       choices: ['It was her old name', 'People call her that by mistake', 'She can’t stand that name'], a: 0,
@@ -36,7 +36,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'No と打ち消してから話すので、嫌いな名前と思いやすい。used to be を聞く。',
       use: 'This used to be a bookstore.（ここは前は本屋だった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'rebrand', seg: [20.4, 28.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'rebrand', seg: [20.4, 28.6],
       stem: 'What does she mean by “rebrand myself”?',
       ja: '「rebrand myself」はどういう意味？',
       choices: ['She changed her image and name', 'She changed her name to marry', 'She changed it for her business'], a: 0,
@@ -47,7 +47,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'brand から会社や商売を思いやすいが、ここは自分のイメージの話。',
       use: 'The café rebranded last year.（そのカフェは去年イメージを一新した）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dress', seg: [41.6, 49.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dress', seg: [38.9, 49.4],
       stem: 'Where did Tynnyfer first see the dress?',
       ja: 'ティニファーはそのドレスを最初どこで見た？',
       choices: ['On her spinning instructor', 'On a woman at her office', 'In a shop window in Eagleton'], a: 0,
@@ -58,7 +58,7 @@ export const aprilTynnyfer: Clip = {
       trap: '「どこで買うの？」と言うので店を思いやすいが、見たのは人が着ていたとき。',
       use: 'I saw my friend wearing it.（友だちが着てるのを見て）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'heard', seg: [54.4, 57.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'heard', seg: [52.4, 59],
       stem: 'Fill the gap: “___ heard of them before.”',
       ja: '「___ heard of them before.」の空所は？',
       choices: ['I’ve never', 'I’d never', 'I never'], a: 0,
@@ -69,7 +69,7 @@ export const aprilTynnyfer: Clip = {
       trap: '唇をかむ v なら I’ve、舌の d なら I’d、何もなければ I never。',
       use: 'I’ve never heard of that place.（そこ、聞いたことないな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'delay', seg: [67.7, 72],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'delay', seg: [64.7, 72.3],
       stem: 'Type the first words on her return: “___, ladies.” (4 words)', answer: 'sorry for the delay',
       ja: '戻ってきたときの最初の言葉を書こう（4語）',
       cue: '戻ってきたときの最初の一言', line: '*Sorry for the delay*, ladies.',
@@ -78,7 +78,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'for the は小さく「フォザ」とつながる。the はほとんど聞こえない。',
       use: 'Sorry for the delay. I’m here now.（遅れてごめん、着いたよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'didyou', seg: [71.6, 76.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'didyou', seg: [70.2, 76.7],
       stem: 'Fill the gap: “So, ___ a chance to compare notes…”',
       ja: '「So, ___ a chance to compare notes…」の空所は？',
       choices: ['did you have', 'do you have', 'have you had'], a: 0,
@@ -89,7 +89,7 @@ export const aprilTynnyfer: Clip = {
       trap: '「ディジュ」なら did you、「ドゥユ」なら do you。have you なら「ハヴ」で始まる。',
       use: 'Did you have a chance to look?（見てもらえました？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'notes', reveals: ['didyou'], seg: [71.6, 76.4],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'notes', reveals: ['didyou'], seg: [70.2, 79.1],
       stem: 'What does “compare notes” mean here?',
       ja: '「compare notes」は、ここではどういう意味？',
       choices: ['Talk about their jobs', 'Swap their written notes', 'Split up the work'], a: 0,
@@ -112,7 +112,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'long から「長時間」と思いやすいが、続ける期間の長さの話。',
       use: 'We’re in it for the long haul.（長い目で取り組みます）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'one', reveals: ['haul'], seg: [104.5, 113.85],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'one', reveals: ['haul'], seg: [107.9, 114.8],
       stem: 'How many of them will get the job?',
       ja: '二人のうち何人がこの仕事に残れる？',
       choices: ['Only one of them', 'Both of them', 'Neither of them'], a: 0,
@@ -124,7 +124,7 @@ export const aprilTynnyfer: Clip = {
       trap: '仲良しを喜んだ直後なので「二人とも」と思いやすい。one of you を聞く。',
       use: 'Only one of us can get the room.（部屋を取れるのは一人だけ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'say', reveals: ['fake'], seg: [121.6, 129.9],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'say', reveals: ['fake'], seg: [119.9, 130.5],
       stem: 'What is “Can I just say something?” used for here?',
       ja: 'ここでの「Can I just say something?」は何のため？',
       choices: ['Starting to share a feeling', 'Asking them to be quiet', 'Asking what they said'], a: 0,
@@ -137,7 +137,7 @@ export const aprilTynnyfer: Clip = {
       use: 'Can I just say something? I love this place.（ちょっと言わせて。ここ大好き）' },
 
     // A2: was “What is April really up to?” over 138 s; now her plain advice in 36 s
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['offer'], seg: [129.8, 165.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['offer'], seg: [129.8, 166.4],
       stem: 'What does April tell Tynnyfer to do?',
       ja: 'エイプリルはティニファーに何をすすめる？',
       choices: ['Skip the job, go to Miami', 'Take the job in Pawnee', 'Work with her and Leslie'], a: 0,
@@ -160,7 +160,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'pit（穴）から、古い建物の話と思いやすい。決まった言い方。',
       use: 'This weather is the pits.（この天気、最悪）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [133.9, 140.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [133.9, 142.9],
       stem: 'What does “be like” mean in April’s story?',
       ja: 'エイプリルの話の「be like」はどういう意味？',
       choices: ['What you would say', 'Similar to someone else', 'Just a pause word'], a: 0,
@@ -171,7 +171,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'like は「〜のような」や口ぐせにもなるが、あとに声まねが来たら引用。',
       use: 'And he was like, “Really?”（で、彼「本当？」って）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'jail', seg: [141, 148.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'jail', seg: [141, 149.4],
       stem: 'Where does Tynnyfer say her husband is?',
       ja: 'ティニファーの夫はどこにいる？',
       choices: ['In jail', 'In Miami', 'Somewhere warm'], a: 0,
@@ -195,7 +195,7 @@ export const aprilTynnyfer: Clip = {
       trap: '前置きが重いので本音の告白を予想しやすいが、この前置きは仲良しの演技。',
       use: 'You should totally come with us.（ぜひ一緒においでよ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['say'], seg: [150, 153.5],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['say'], seg: [148.9, 155.2],
       stem: 'Why does April say “You should totally stay…”?',
       ja: 'エイプリルは、なぜ「You should totally stay…」と言う？',
       choices: ['To invite her to stay', 'To ask to stay with her', 'To tell her to go home'], a: 0,
@@ -207,7 +207,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'should を「〜すべき」と命令のように思いやすいが、ここは親しい誘い。',
       use: 'You should totally come with us.（ぜひ一緒においでよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'gate', seg: [157.4, 161.8],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gate', seg: [154.7, 164.2],
       stem: 'What does April say to do if the gate sticks?',
       ja: '門が引っかかったら、どうすればいい？',
       choices: ['Climb over it', 'Call her to open it', 'Push it hard'], a: 0,
@@ -218,7 +218,7 @@ export const aprilTynnyfer: Clip = {
       trap: '引っかかる門なので「押す」と思いやすい。but のあとが答え。',
       use: 'The door sticks, so pull it hard.（ドアが固いから強く引いて）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fooled', reveals: ['fake', 'offer'], seg: [161.4, 166.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fooled', reveals: ['fake', 'offer'], seg: [157.7, 166.6],
       stem: 'How does Tynnyfer feel about April’s offer?',
       ja: 'エイプリルの申し出に、ティニファーはどんな気持ち？',
       choices: ['Very thankful', 'A bit worried', 'Embarrassed'], a: 0,
@@ -229,7 +229,7 @@ export const aprilTynnyfer: Clip = {
       trap: '少し前の What?（え？）で疑っているように思いやすいが、そのあと信じる。',
       use: 'You’re a lifesaver.（本当に助かる）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'house', reveals: ['fake', 'offer'], seg: [166.4, 175.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'house', reveals: ['fake', 'offer'], seg: [165.3, 175.4],
       stem: 'Whose house in Miami is it really?',
       ja: 'マイアミの家は、本当はだれの家？',
       choices: ['A famous stranger’s', 'April’s own', 'April’s friend’s'], a: 0,
@@ -241,7 +241,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'my house と言っていたので信じやすい。一人語りでは本音が出る。',
       use: 'I found the address online.（住所はネットで見つけた）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wade', reveals: ['house', 'fake'], seg: [166.4, 175.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wade', reveals: ['house', 'fake'], seg: [166.4, 176.6],
       stem: 'How does April feel about Tynnyfer’s trip?',
       ja: 'ティニファーの旅行を、エイプリルはどう思っている？',
       choices: ['She hopes it goes badly', 'She feels sorry about it', 'She hopes Tynnyfer has fun'], a: 0,

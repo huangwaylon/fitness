@@ -15,7 +15,7 @@ export const beefMilk: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a0', skill: 'phrase', level: 'B1', point: 'roscoe', seg: [1.26, 10.3],
+    { id: 'a0', skill: 'phrase', level: 'B1', point: 'roscoe', seg: [1.3, 12],
       stem: 'What does “*kick back*” mean here?',
       ja: 'ここでの「kick back」はどういう意味？',
       choices: ['Relax and take it easy', 'Kick the chair back', 'Go back home now'], a: 0,
@@ -27,7 +27,7 @@ export const beefMilk: Clip = {
       trap: 'kick から「ける」と思いやすい。kick back でひとまとまりの「くつろぐ」。',
       use: 'Feel free to kick back and relax.（遠慮なくくつろいでね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'celeb', seg: [10.3, 50.05],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'celeb', seg: [10.3, 50.1],
       stem: 'Why did Gryzzl call this meeting?',
       ja: 'グリズルがこの会議を開いたのはなぜ？',
       choices: ['To find a local star', 'To help Leslie’s plan', 'To plan a phone ad'], a: 0,
@@ -70,7 +70,7 @@ export const beefMilk: Clip = {
       trap: 'Brit や pretty に聞こえやすい。知らない語は、すぐあとの言いかえを待つ。',
       use: 'In other words, we need a celebrity.（つまり、有名人が要るってこと）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'minority', seg: [24.32, 28.38],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'minority', seg: [24.3, 32.9],
       stem: 'How would a celebrity help Gryzzl?',
       ja: '有名人がいると、グリズルにどう役立つ？',
       choices: ['By making their bid stronger', 'By selling more phones', 'By judging all the bids'], a: 0,
@@ -93,7 +93,7 @@ export const beefMilk: Clip = {
       trap: 'refuse を聞き落とすと「書けない」告白に聞こえる。That’s why の前後の大きさを比べる。',
       use: 'I prefer quality over quantity.（量より質が好きなんだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'outsider', seg: [43.28, 50.05],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'outsider', seg: [43.2, 50.1],
       stem: 'Why do they want a celebrity from Pawnee?',
       ja: 'なぜポーニー出身の有名人がほしい？',
       choices: ['To make people feel at ease', 'To save a lot of money', 'Because the town’s rules say so'], a: 0,
@@ -105,7 +105,7 @@ export const beefMilk: Clip = {
       trap: 'so のあとが理由の結果。お金や決まりの話は出ていない。',
       use: 'Please feel at ease.（どうぞ気楽にしてください）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'context', seg: [50.05, 58.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'context', seg: [49.9, 58.7],
       stem: 'What does “*I got it from context*” mean?',
       ja: '「I got it from context」はどういう意味？',
       choices: ['I already understood', 'Please say it slower', 'I only got half of it'], a: 0,
@@ -117,7 +117,7 @@ export const beefMilk: Clip = {
       trap: 'got it（分かった）を聞き落とすと、もっと説明してほしいと思いやすい。',
       use: 'It’s okay, I got it from context.（大丈夫、話の流れで分かったよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'context', seg: [55.5, 58.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'context', seg: [50.7, 58.7],
       stem: 'Type the reply: “I ___.” (4 words)', answer: 'got it from context',
       ja: '「I ___.」の空所を書こう（4語）',
       cue: '「think of ideas」のあと',
@@ -138,7 +138,7 @@ export const beefMilk: Clip = {
       trap: 'bull だけ聞くと牛、shot だけだと猟犬に取りやすい。名前の直後の説明が正体。',
       use: 'I don’t really follow celebrities.（有名人にはあまり興味がない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.6, 83.65],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [78.5, 86.9],
       stem: 'How does Ron feel about Magnus the elk?',
       ja: 'ロンはヘラジカのマグナスをどう思っている？',
       choices: ['He wants to catch it', 'He loves the elk', 'He is scared of it'], a: 0,
@@ -150,7 +150,7 @@ export const beefMilk: Clip = {
       trap: '名前で呼びかけるので、好きだと思いやすい。wear you as a jacket を聞く。',
       use: 'One day, I’ll visit Paris.（いつかパリに行く）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'handwriting', seg: [87.2, 92.78],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'handwriting', seg: [87.2, 92.8],
       stem: 'What does “that’s your handwriting” tell us?',
       ja: '「それ、お前の字だろ」から何が分かる？',
       choices: ['Tom wrote his own name', 'Tom wrote the list neatly', 'Tom can’t read the list'], a: 0,
@@ -162,7 +162,7 @@ export const beefMilk: Clip = {
       trap: 'トムは遠慮しているように聞こえる。字がトムのものなら、名前を書いたのも本人。',
       use: 'Is this your handwriting?（これ、あなたの字？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigfish', seg: [92.78, 98.55],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigfish', seg: [92.9, 104.9],
       stem: 'What does “*Pawnee’s biggest fish*” mean?',
       ja: '「Pawnee’s biggest fish」はどういう意味？',
       choices: ['The most famous person', 'The best seafood place', 'The biggest company'], a: 0,
@@ -174,7 +174,7 @@ export const beefMilk: Clip = {
       trap: 'fish から魚の話と思いやすい。すぐあとに人の名前が来る。',
       use: 'He’s a big fish in this town.（彼はこの町の大物だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nightmare', seg: [98.55, 106.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nightmare', seg: [97.6, 109.6],
       stem: 'How does Ron feel about Annabelle Porter?',
       ja: 'ロンはアナベル・ポーターをどう思っている？',
       choices: ['He can’t stand her', 'He likes her work', 'He wants to meet her'], a: 0,
@@ -186,7 +186,7 @@ export const beefMilk: Clip = {
       trap: 'Forget it を「忘れて」とだけ取りやすい。ここは強い「お断り」。',
       use: 'Karaoke? Forget it.（カラオケ？お断り）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'apology', seg: [121, 133.15],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'apology', seg: [122, 133.5],
       stem: 'Ron says, “*Apology accepted*.” What does he mean?',
       ja: 'ロンの「Apology accepted」はどういう意味？',
       choices: ['It’s okay that you’re late', 'Say sorry one more time', 'I like your oyster forks'], a: 0,
@@ -198,7 +198,7 @@ export const beefMilk: Clip = {
       trap: 'accepted（受け入れた）を聞き落とすと、もっと謝れと思いやすい。',
       use: 'Apology accepted. Let’s move on.（謝罪は受け取ったよ。先に進もう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'beefmilk', seg: [157, 172],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'beefmilk', seg: [156.3, 167.9],
       stem: 'What is “beef milk” really?',
       ja: '「ビーフミルク」とは本当は何？',
       choices: ['Just normal milk', 'A kind of almond milk', 'A drink made of meat'], a: 0,
@@ -233,7 +233,7 @@ export const beefMilk: Clip = {
       trap: 'ロンはアナベルがきらいだったので、怒って帰ると思いやすい。',
       use: 'I’d love to be part of it.（ぜひ参加したいです）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [169.3, 176.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [168.1, 179.8], keep: true,
       stem: 'How much does a gallon of the beef milk cost?',
       ja: 'ビーフミルクは1ガロンいくら？',
       choices: ['$6', '$16', '$60'], a: 2,
@@ -256,7 +256,7 @@ export const beefMilk: Clip = {
       trap: 'ほめ言葉を商品のことと取るか、皮肉と取るか。何の直後に言ったかで、ほめる対象が決まる。',
       use: 'That guy really knows how to sell.（あの人、売り方を分かってるね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'waitlist', seg: [176.6, 179.65],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'waitlist', seg: [174.8, 181.9],
       stem: 'What does Annabelle add about the beef milk?',
       ja: 'アナベルはビーフミルクについて何を付け足す？',
       choices: ['There’s a wait list', 'It sells out daily', 'Only friends can buy it'], a: 0,
@@ -268,7 +268,7 @@ export const beefMilk: Clip = {
       trap: '人気の話なので、売り切れと思いやすい。wait list ＝ 待っている人の名簿。',
       use: 'Is there a wait list?（順番待ちはありますか）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'knows', reveals: ['price', 'waitlist'], seg: [176.6, 182.2],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'knows', reveals: ['price', 'waitlist'], seg: [174.8, 181.5],
       stem: 'What does Ron think of Annabelle now?',
       ja: '今、ロンはアナベルをどう思っている？',
       choices: ['She is good at business', 'She is a bad person', 'She is very funny'], a: 0,
@@ -280,7 +280,7 @@ export const beefMilk: Clip = {
       trap: '前に「悪夢」と言っていたので、悪く言うと思いやすい。knows business はほめ言葉。',
       use: 'She really knows her job.（彼女は本当に仕事ができる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'yurt', seg: [183.1, 186.3],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'yurt', seg: [181.4, 187.6],
       stem: 'Fill the gap: “___ discuss it in my yurt?”',
       ja: '「___ discuss it in my yurt?」の空所は？',
       choices: ['Shall we', 'Should we', 'Can we'], a: 0,
@@ -292,7 +292,7 @@ export const beefMilk: Clip = {
       trap: 'Should なら「シュド」、Can なら「キャン」。「シャル」の l の音なら Shall。',
       use: 'Shall we go?（行きましょうか）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'sign', seg: [192.3, 197.0],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'sign', seg: [190.5, 196.8],
       stem: 'Type: “All pages accounted for. Just ___.” (3 words)', answer: 'sign right here',
       ja: '「All pages accounted for. Just ___.」の空所を書こう（3語）',
       cue: '「All pages」のあと',
@@ -302,7 +302,7 @@ export const beefMilk: Clip = {
       trap: 'sign の g は読まず「サイン」。right here がつながり「ライヒア」。',
       use: 'Could you sign right here?（ここにサインをお願いします）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'press', seg: [205.3, 214.3],
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'press', seg: [203.9, 215.1],
       stem: 'What is Leslie getting ready for?',
       ja: 'レスリーは何の準備をしている？',
       choices: ['A big press conference', 'A big birthday party', 'A job interview'], a: 0,

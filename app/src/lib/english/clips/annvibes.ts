@@ -26,7 +26,7 @@ export const annVibes: Clip = {
       mean: '隣に座られたくない、という悪口を一語で言う冗談。',
       trap: 'trunk を荷物の置き場と聞くと、ふつうの旅の会話に取れる。誰の席の話かを追う。',
       use: 'Where else would I be?（ほかにどこにいるっていうの）' },
-    { id: 's3', skill: 'sound', level: 'B2', point: 'gonna', seg: [3, 7],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'gonna', seg: [2.3, 7.6],
       stem: 'Fill the gap: “Is that where you’re ___ sit?”',
       ja: '「Is that where you’re ___ sit?」の空所は？',
       choices: ['gonna', 'wanna', 'gotta'], a: 0,
@@ -37,7 +37,7 @@ export const annVibes: Clip = {
       trap: 'gotta は「ガラ」、wanna は「ワナ」。「ガ」で始まり「ナ」で終わるのが gonna。',
       use: 'I’m gonna be late.（遅れそう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'orient', seg: [7.65, 13.45],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'orient', seg: [6, 13.5],
       stem: 'What is happening at the vet school today?',
       ja: '今日、獣医学校では何がある？',
       choices: ['April’s interview', 'April’s first class', 'April’s orientation'], a: 2,
@@ -48,7 +48,7 @@ export const annVibes: Clip = {
       trap: 'get into から「これから面接」と思いやすい。helped は過去で、合格はもう済んだ話。',
       use: 'Today is my first day of orientation.（今日は新人説明会の日）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'refinery', reveals: ['funfact'], seg: [13.9, 22.5],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'refinery', reveals: ['funfact'], seg: [13.9, 25.7],
       stem: 'Why won’t Ann buy a blanket in Pawnee?',
       ja: 'アンはなぜポーニーで毛布を買わない？',
       choices: ['The store is by a factory', 'The store sells nothing organic', 'The store is too far away'], a: 0,
@@ -68,7 +68,7 @@ export const annVibes: Clip = {
       mean: '楽しい小ネタの前置きを、ぞっとする事実に付けた乾いた冗談。',
       trap: 'fun を文字通り取りやすい。前置きと中身がずれたら、わざとの皮肉を疑う。',
       use: 'Fun fact: I’ve never been on a plane.（小ネタ：飛行機に乗ったことがない）' },
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'list', seg: [30.5, 42.7],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'list', seg: [31.1, 43.3],
       stem: 'What does April’s list of things show?',
       ja: 'エイプリルが並べた持ち物から何が分かる？',
       choices: ['She doesn’t take it seriously', 'She packed everything very carefully', 'She is nervous about today'], a: 0,
@@ -79,7 +79,7 @@ export const annVibes: Clip = {
       trap: '本当の持ち物だと思いやすい。答えがばかげていたら、ふざけているしるし。',
       use: 'Yep, I’ve got everything I need.（うん、必要な物は全部ある）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'allset', seg: [39.8, 43],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'allset', seg: [39.2, 44.2],
       stem: 'Type how April ends her list: “___.” (3 words)', answer: "i'm all set",
       ja: 'エイプリルが最後に言う3語を書こう',
       cue: '「roller coaster」のすぐあと。', line: '*I’m all set*.',
@@ -88,7 +88,7 @@ export const annVibes: Clip = {
       trap: 'all と set がつながり一語に聞こえやすい。最後の t はほぼ消えるが、語は3つ。',
       use: 'No thanks, I’m all set.（いえ、大丈夫です）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'happyto', seg: [43, 50.5],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'happyto', seg: [43, 52.4],
       stem: 'What does Laura mean by “Happy to”?',
       ja: 'ローラの「Happy to」はどういう意味？',
       choices: ['I will gladly do it', 'I am happy to be here', 'I want to go too'], a: 0,
@@ -108,7 +108,7 @@ export const annVibes: Clip = {
       mean: 'Laura の説明の形で、April に「意地悪しないで」と釘を刺している。',
       trap: 'tortured を「ツアーがつらい」と取りやすい。誰が誰を苦しめるかを聞く。',
       use: 'Be nice. He doesn’t deserve that.（優しくね。あの人は悪くないんだから）' },
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'lame', reveals: ['orient'], seg: [80.0, 87.7],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'lame', reveals: ['orient'], seg: [80, 90],
       stem: 'Why did April leave the orientation?',
       ja: 'エイプリルはなぜオリエンテーションを抜けた？',
       choices: ['It was boring', 'It started late', 'It was too hard'], a: 0,
@@ -119,7 +119,7 @@ export const annVibes: Clip = {
       trap: 'lame は late に似ていて「遅れた」に聞こえやすい。「レイム」と m で終わる。',
       use: 'The party was lame, so we left.（パーティーがつまらなくて帰った）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'younglady', seg: [86.8, 91.4],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'younglady', seg: [86.2, 91.6],
       stem: 'How does Ann talk to April here?',
       ja: 'ここでアンはエイプリルにどんな話し方をしている？',
       choices: ['Like a mom to a child', 'Like a boss to a worker', 'Like a friend, very softly'], a: 0,
@@ -130,7 +130,7 @@ export const annVibes: Clip = {
       trap: 'lady から丁寧でやさしい言い方と思いやすい。命令のあとなら叱る言い方。',
       use: 'Come back here, young lady!（こら、戻ってきなさい！）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'grandma', reveals: ['age', 'younglady'], seg: [99.5, 106.6],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'grandma', reveals: ['age', 'younglady'], seg: [99.5, 108.2],
       stem: 'Who does April say Ann is?',
       ja: 'エイプリルはアンを誰だと紹介する？',
       choices: ['Her grandmother', 'Her mother', 'Her older sister'], a: 0,
@@ -141,7 +141,7 @@ export const annVibes: Clip = {
       trap: 'さっき母親のように叱っていたので、お母さんと思いやすい。紹介の最後の語を聞く。',
       use: 'This is my grandmother.（こちらは祖母です）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'age', reveals: ['grandma'], seg: [100.4, 106.6],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'age', reveals: ['grandma'], seg: [100.4, 108.2],
       stem: 'How old does April say Ann is?',
       ja: 'エイプリルはアンが何歳だと言う？',
       choices: ['55', '65', '75'], a: 1, keep: true,
@@ -169,7 +169,7 @@ export const annVibes: Clip = {
       mean: 'おばあちゃん役の Ann を、若者言葉を知らない人扱いする演技。',
       trap: 'くり返しは耳の遠い人向けや Laura いじりにも聞こえる。続く意味の説明まで聞く。',
       use: 'Translation: he likes it.（訳すと、気に入ったってこと）' },
-    { id: 'n3', skill: 'number', level: 'B1', point: 'weeks', seg: [136.5, 142.3],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'weeks', seg: [136.2, 142.7],
       stem: 'When will Laura see April again?',
       ja: 'ローラは次にいつエイプリルに会う？',
       choices: ['In a couple of weeks', 'Next month', 'Tomorrow'], a: 0,
@@ -191,7 +191,7 @@ export const annVibes: Clip = {
       trap: 'アンがほめ続けるので、前向きになったと思いやすい。本人の not going を聞く。',
       use: 'I’m not going. I don’t want to.（行かない。行きたくないの）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'flake', reveals: ['decide'], seg: [148.95, 153.3],
+    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'flake', reveals: ['decide'], seg: [147.5, 153.7],
       stem: 'What does “don’t flake out on this” mean?',
       ja: '「don’t flake out on this」はどういう意味？',
       choices: ['Don’t give up on this', 'Don’t get angry about this', 'Don’t stop listening to me'], a: 0,
@@ -222,7 +222,7 @@ export const annVibes: Clip = {
       trap: 'please があるので謝っていると思いやすい。Can we のあとが頼んでいる中身。',
       use: 'Can we please talk about this?（このこと、話してもいい？）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C1', point: 'bigdeal', seg: [173.2, 176.5],
+    { id: 'nt2', skill: 'dict', level: 'C1', point: 'bigdeal', seg: [171.1, 179.1],
       stem: 'Type the end: “It’s not ___.” (5 words)', answer: 'that big of a deal',
       ja: '「It’s not ___.」の空所を書こう（5語）',
       cue: '「What, Ann?」で始まる返事の最後。', line: 'It’s not *that big of a deal*.',
@@ -231,7 +231,7 @@ export const annVibes: Clip = {
       trap: '教科書の形 that big a deal に合わせて of を書き落としやすい。聞こえた音を書く。',
       use: 'Relax, it’s not that big of a deal.（落ち着いて、大ごとじゃないよ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'care', reveals: ['decide'], seg: [175.45, 183.1],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'care', reveals: ['decide'], seg: [175.3, 186.1],
       stem: 'How does Ann feel about April’s choice?',
       ja: 'エイプリルの決めたことを、アンはどう感じている？',
       choices: ['A little disappointed', 'Very angry with her', 'Happy and very proud'], a: 0,
@@ -253,7 +253,7 @@ export const annVibes: Clip = {
       trap: '説得が続くと思いやすい。急に音楽の話に変わったら、言い合いをやめた合図。',
       use: 'My gut says pizza tonight.（直感だと今夜はピザだね）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'fence', seg: [183.1, 188.4],
+    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'fence', seg: [184.4, 193.6],
       stem: 'What does “on the fence” mean here?',
       ja: 'ここでの「on the fence」はどういう意味？',
       choices: ['Not sure yet', 'Very sure', 'Against it from the start'], a: 0,
@@ -264,7 +264,7 @@ export const annVibes: Clip = {
       trap: 'fence（柵）から「反対」を思いやすい。about whether が続けば、迷っている印。',
       use: 'I’m still on the fence about the trip.（旅行に行くか、まだ迷ってる）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'gut', reveals: ['decide', 'lame'], seg: [185.9, 193.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gut', reveals: ['decide', 'lame'], seg: [185.7, 196.6],
       stem: 'What made April decide, once she got there?',
       ja: '着いてから、エイプリルは何で決めた？',
       choices: ['A feeling it wasn’t right', 'A feeling it would be boring', 'A feeling she would fail'], a: 0,
@@ -275,7 +275,7 @@ export const annVibes: Clip = {
       trap: '前に lame と言ったので、退屈が理由に思いやすい。ここで言うのは wasn’t right。',
       use: 'I have a gut feeling about this.（なんだか予感がする）' },
 
-    { id: 'a5', skill: 'attitude', level: 'B2', point: 'boom', reveals: ['decide'], seg: [190.6, 196.25],
+    { id: 'a5', skill: 'attitude', level: 'B2', point: 'boom', reveals: ['decide'], seg: [190.6, 198.4],
       stem: 'What does Ann think of April’s quick decision?',
       ja: 'エイプリルのすばやい決め方を、アンはどう思う？',
       choices: ['She doubts it', 'She loves it', 'She is hurt by it'], a: 0,
@@ -286,7 +286,7 @@ export const annVibes: Clip = {
       trap: 'boom の勢いから感心していると思いやすい。「大決断」と「あっさり」が並ぶ。',
       use: 'Just like that? No discussion?（そんなにあっさり？相談もなし？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'listen', seg: [210.8, 217.2],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'listen', seg: [210.8, 217.3],
       stem: 'What should you do with your gut, says April?',
       ja: 'エイプリルによると、直感にはどうすればいい？',
       choices: ['Just listen when it speaks', 'Ask it a question every time', 'Train it every day'], a: 0,

@@ -50,7 +50,7 @@ export const craigTemp: Clip = {
       trap: 'wasn’t を was と聞くと「変える気だった」になる。短い返事ほど否定の n を確かめる。',
       use: 'Relax, I wasn’t going to.（大丈夫、そのつもりはないよ）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'wasnt', reveals: ['planning'], seg: [38.0, 42.0], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'wasnt', reveals: ['planning'], seg: [36.4, 43.4], keep: true,
       stem: 'Type what Donna says: “___.” (2 words)', answer: "wasn't gonna",
       ja: 'ドナの言葉を入力：「___.」（2語）',
       cue: '「Never change it!」のすぐあと',
@@ -60,7 +60,7 @@ export const craigTemp: Clip = {
       trap: 'wasn’t の t が消えて「ワズン」と聞こえる。「ン」が残れば否定。gonna ＝ going to。',
       use: 'Don’t tell her. — Wasn’t gonna.（言わないでね—言う気ないよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'name', seg: [41.6, 48.9], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'name', seg: [41.6, 49.3], keep: true,
       stem: 'What does Craig think of his own name?',
       ja: 'クレイグは自分の名前をどう思っている？',
       choices: ['It is boring', 'It is perfect', 'It is too long'], a: 0,
@@ -72,7 +72,7 @@ export const craigTemp: Clip = {
       trap: 'perfect は、少し前にドナの名前をほめた言葉。自分の名前には hate と言う。',
       use: 'I hate my handwriting. It’s so messy.（自分の字がきらい。きたなくて）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'shoulders', seg: [58.8, 67.2],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'shoulders', seg: [58.8, 67.3],
       stem: 'What does “carried the department on my shoulders” mean?',
       ja: '「carried the department on my shoulders」はどういう意味？',
       choices: ['He did most of the work', 'He took the blame for everything', 'He kept everyone happy'], a: 0,
@@ -84,7 +84,7 @@ export const craigTemp: Clip = {
       trap: '肩から「責任を負わされた」と思いやすいが、loved every second（全部楽しかった）と言う。',
       use: 'She carried the team on her shoulders.（彼女がチームをせおっていた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'grass', seg: [68.0, 73.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'grass', seg: [68, 73.6], keep: true,
       stem: 'How much more per square foot is Bermuda grass?',
       ja: 'バミューダグラスは、1平方フィートあたりいくら高い？',
       choices: ['18 cents', '80 cents', '8 dollars'], a: 1,
@@ -137,7 +137,7 @@ export const craigTemp: Clip = {
       trap: 'Also を「実は」と取ると、うその告白に聞こえる。大きな話のすぐあとの小さな話は、たいていオチ。',
       use: 'I’m tired, broke, and also hungry.（疲れてて金欠で、あと腹ぺこ）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'cuts', reveals: ['cut', 'keep', 'leave', 'larry', 'even'], seg: [108.0, 150.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cuts', reveals: ['cut', 'keep', 'leave', 'larry', 'even'], seg: [108, 151.3],
       stem: 'Why is Leslie upset at the end?',
       ja: '最後に、レスリーはなぜ怒っている？',
       choices: ['Her staff want to leave', 'Donna is getting married', 'Craig refuses to leave'], a: 0,
@@ -161,7 +161,7 @@ export const craigTemp: Clip = {
       trap: 'ドナの給料の話と思いやすい。but のあとの名前を聞くと、ほかの人の話。',
       use: 'You’re great, but we need to talk.（きみは最高。でも話がある）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'glue', seg: [108.0, 114.2],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'glue', seg: [108, 117.1],
       stem: 'What does “the glue of this department” mean?',
       ja: '「the glue of this department」はどういう意味？',
       choices: ['She holds everyone together', 'She follows every rule', 'She has been here the longest'], a: 0,
@@ -197,7 +197,7 @@ export const craigTemp: Clip = {
       trap: '上司としての注意と思いやすい。直前の「だれより cares more」への反応。',
       use: 'Hello? I’m right here.（ちょっと、本人ここにいるんですけど）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'choose', seg: [126.5, 129.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'choose', seg: [124.4, 131.2],
       stem: 'Fill the gap: “If I had to choose…, ___ choose him.”',
       ja: 'すき間をうめよう：「If I had to choose…, ___ choose him.」',
       choices: ['I’d', 'I’ll', 'I'], a: 0,
@@ -245,7 +245,7 @@ export const craigTemp: Clip = {
       trap: 'cut から給料をへらす話と思いやすい。cut the staff は人の数をへらすこと。',
       use: 'I would be happy to help.（よろこんでお手伝いします）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'even', reveals: ['larry'], seg: [137.1, 144.1],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'even', reveals: ['larry'], seg: [137.1, 144.5],
       stem: 'What does “Even Larry wants out?” show?',
       ja: '「Even Larry wants out?」から何が分かる？',
       choices: ['She didn’t expect Larry to go', 'She is glad Larry will go', 'She thinks Larry is just joking'], a: 0,
@@ -257,7 +257,7 @@ export const craigTemp: Clip = {
       trap: '人をへらしたいのだから喜ぶはず、と思いやすい。even はおどろきの言葉。',
       use: 'Even my mom liked it!（母でさえ気に入った！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'game', seg: [142.4, 149.3],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'game', seg: [141.3, 151.3],
       stem: 'Why does Leslie ask, “Does everybody think…?”',
       ja: 'レスリーはなぜ「みんな〜と思ってるの？」と聞く？',
       choices: ['To show she is angry', 'To get honest answers', 'To see who will leave'], a: 0,
@@ -269,7 +269,7 @@ export const craigTemp: Clip = {
       trap: 'Does で始まるので、答えを聞いていると思いやすい。What the hell のあとの強い調子で怒りと分かる。',
       use: 'Do you think money grows on trees?（お金が木になるとでも思ってるの？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'dvr', seg: [151.0, 158.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'dvr', seg: [151, 160.2], keep: true,
       stem: 'How many months of shows has Craig saved?',
       ja: 'クレイグは何か月分の番組を録画している？',
       choices: ['3', '13', '30'], a: 1,

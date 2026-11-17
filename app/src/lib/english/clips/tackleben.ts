@@ -28,7 +28,7 @@ export const tackleBen: Clip = {
       trap: 'president を本当の役職と取りやすい。疑問文のあとの冗談に本音が出る。',
       use: 'He’s on every channel these days.（最近どこにでも出てるね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [8.95, 13.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [7.3, 14.8], keep: true,
       stem: 'How long do they have to get the ad to the station?',
       ja: '局に広告を届けるまで、どれくらい時間がある？',
       choices: ['Less than half an hour', 'Less than an hour', 'Less than ninety minutes'], a: 1,
@@ -40,7 +40,7 @@ export const tackleBen: Clip = {
       trap: 'an hour は「アナワー」。half なら前に「ハーフ」、ninety なら「ナインティ」が聞こえる。',
       use: 'We have less than an hour left.（あと1時間もないよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'twoads', seg: [9.0, 30.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'twoads', seg: [9, 36.8],
       stem: 'What is the team trying to decide in this meeting?',
       ja: 'この会議で、チームは何を決めようとしている？',
       choices: ['How to fix Leslie’s ad', 'Which ad to send in', 'Who takes the ad there'], a: 1,
@@ -52,7 +52,7 @@ export const tackleBen: Clip = {
       trap: '局へ届ける話に引かれやすいが、2本を流して比べる流れ。two ads を聞く。',
       use: 'Let’s compare the two and pick one.（2つを比べて1つ選ぼう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'bias', seg: [13.8, 21.2],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'bias', seg: [12.6, 23.1],
       stem: 'What reason does Leslie give before playing the two ads?',
       ja: '2本の広告を流す前に、レスリーはどんな理由を言う？',
       choices: ['She wants it done in time', 'She doesn’t want to sway anyone', 'She wants Ben to feel included'], a: 1,
@@ -77,7 +77,7 @@ export const tackleBen: Clip = {
       trap: '相手の作品を先にほめる礼儀に聞こえるが、流れるのは本人の広告。誰の物かを確かめる。',
       use: 'Oh, look, my favorite. What a coincidence.（あら、私のお気に入り。偶然ね）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'nameone', reveals: ['council'], seg: [66.5, 71.5],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'nameone', reveals: ['council'], seg: [66.3, 74.3],
       stem: 'Why does Leslie say “Name one thing”?',
       ja: 'レスリーはなぜ「Name one thing」と言う？',
       choices: ['To make Ben name a problem', 'To learn the name of Ben’s ad', 'To hear one thing Ben liked'], a: 0,
@@ -89,7 +89,7 @@ export const tackleBen: Clip = {
       trap: 'name（名前）から、名前を聞いていると思いやすい。ここは「挙げる」という動詞。',
       use: 'Name one thing you liked about it.（気に入った所を一つ挙げて）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'council', seg: [68.7, 77.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'council', seg: [68.7, 77.8],
       stem: 'What does Ben say is wrong with Leslie’s ad?',
       ja: 'ベンは、レスリーの広告の何がだめだと言う？',
       choices: ['It lists far too many things', 'It never attacks Bobby at all', 'It never says she’s running'], a: 2,
@@ -101,7 +101,7 @@ export const tackleBen: Clip = {
       trap: '本人も a lot of things と言うので多すぎに思えるが、指摘は never のあと。',
       use: 'You never even mentioned the price.（値段を一度も言わなかったよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'implied', reveals: ['putitin'], seg: [71.1, 82.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'implied', reveals: ['putitin'], seg: [71.1, 82.3],
       stem: 'Why is “city council” missing from Leslie’s ad?',
       ja: 'レスリーの広告に、なぜ「city council」がない？',
       choices: ['She just forgot to say it', 'She wanted to seem modest', 'Ben cut it out of the ad'], a: 0,
@@ -125,7 +125,7 @@ export const tackleBen: Clip = {
       trap: '広告ではすらすら話していたので、話し方の問題ではない。that は直前の話題を指す。',
       use: 'He’s great at many things, but not that.（色々得意だけど、それだけは苦手）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'putitin', seg: [78.8, 82.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'putitin', seg: [77.3, 82.3],
       stem: 'Type the quick fix: “We can just ___.” (3 words)', answer: 'put it in',
       ja: 'すぐできる直し方「We can just ___.」の空所を書こう（3語）',
       cue: '「I didn’t」のあと',
@@ -135,7 +135,7 @@ export const tackleBen: Clip = {
       trap: 't が軽い「ラ」の音になり「プリリン」と一続きに聞こえる。3語で書く。',
       use: 'Just put it in the email.（メールに入れておいて）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'platter', seg: [88.6, 97.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'platter', seg: [86, 93.6],
       stem: 'What does Ben’s ad say about how Bobby got what he has?',
       ja: 'ベンの広告は、ボビーがどうやって今の物を得たと言う？',
       choices: ['He was waited on by servants', 'He bought everything he has', 'He got it all without working'], a: 2,
@@ -147,7 +147,7 @@ export const tackleBen: Clip = {
       trap: '銀の大皿から、給仕される話と思いやすい。このたとえは「楽に手に入る」の意味。',
       use: 'Nothing was handed to me on a platter.（何も楽に手に入ったわけじゃない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'boat', reveals: ['platter'], seg: [96.7, 105.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'boat', reveals: ['platter'], seg: [96.7, 105.5], keep: true,
       stem: 'How old was Bobby when he got his boat?',
       ja: '広告によると、ボビーは何歳で船をもらった？',
       choices: ['12', '20', '60'], a: 0,
@@ -159,7 +159,7 @@ export const tackleBen: Clip = {
       trap: 'twelve は最後が「ルヴ」、twenty は「トゥエニ」、sixty は「シクスティ」で船の長さ。',
       use: 'I got my first bike at 12.（12歳で初めて自転車をもらった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'earned', reveals: ['platter'], seg: [102.0, 110.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'earned', reveals: ['platter'], seg: [102, 110.7],
       stem: 'What does Ben’s ad say about Leslie?',
       ja: 'ベンの広告はレスリーについて何と言う？',
       choices: ['She has more years in government', 'She worked for everything she has', 'She wants a higher office'], a: 1,
@@ -171,7 +171,7 @@ export const tackleBen: Clip = {
       trap: 'too を聞き落とすと別の役職の話と思いやすい。広告が言うのは得た方法。earned を聞く。',
       use: 'She earned that promotion.（あの昇進は実力で勝ち取った）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'dont', seg: [110.5, 117.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'dont', seg: [109.3, 118.7],
       stem: 'At the end of Ben’s ad, what does “Don’t” ask viewers?',
       ja: 'ベンの広告の最後の「Don’t」は、見る人に何を求める？',
       choices: ['Not to believe Bobby’s ads', 'Not to give Bobby the election', 'Not to skip voting day'], a: 1,
@@ -195,7 +195,7 @@ export const tackleBen: Clip = {
       trap: '実際の広告は「Don’t. — I won’t.」で終わる。名乗りの型はまねると冗談になる。',
       use: 'I’m Tom, and I approve this pizza.（トムです、このピザを承認します）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'vote', reveals: ['split'], seg: [131.5, 168.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'vote', reveals: ['split'], seg: [131.5, 169.2],
       stem: 'How does the argument over the two ads end?',
       ja: '2本の広告をめぐる言い合いはどう終わる？',
       choices: ['They agree to keep debating', 'Leslie gets her own ad aired', 'Leslie agrees to air Ben’s ad'], a: 2,
@@ -206,18 +206,6 @@ export const tackleBen: Clip = {
       mean: 'air ＝（テレビで）流す。negative ad ＝ 相手を攻撃する広告、つまりベンの方。',
       trap: '「議論を続けよう」はレスリーの提案だが通らない。最後の I’m going to air を聞く。',
       use: 'Okay, you win. We’ll do it your way.（分かった、君の案でいこう）' },
-
-    { id: 'w1', skill: 'who', level: 'B1', point: 'better', reveals: ['garage', 'vote'], seg: [133.0, 145.4],
-      stem: 'Who tells Leslie “I want you to win”?',
-      ja: 'レスリーに「I want you to win」と言うのは誰？',
-      choices: ['Ann', 'Ben', 'Charlie'], a: 0,
-      choicesJa: ['アン', 'ベン', 'チャーリー'],
-      cue: '直前にレスリーが名前を呼んだ相手',
-      line: '*Ann*, I painted your garage pink. — I did not ask you to do that. Leslie, look, *I want you to win*…',
-      said: 'レスリーがアンの名前を呼ぶと、相手が「頼んでない。勝ってほしいの」と返す。',
-      mean: '名前で呼ばれた人がすぐ答える、という順番から話し手が分かる。',
-      trap: 'Ben’s ad という語が同じ文にあるので Ben を選びやすいが、ベンは話題の人。',
-      use: 'Look, I want you to succeed.（ねえ、うまくいってほしいの）' },
 
     { id: 'c2', skill: 'infer', level: 'C2', point: 'split', seg: [133.0, 156.5],
       stem: 'Which plain-English version keeps what Leslie means by “keep debating”?',
@@ -230,7 +218,7 @@ export const tackleBen: Clip = {
       trap: 'ぼかし言葉を本当の迷いと取りやすい。結果が明らかなのにぼかしたら、認めたくない合図。',
       use: 'Let’s not decide yet. Sleep on it?（まだ決めないで、一晩考えよう？）', retired: true },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'garage', reveals: ['better'], seg: [135.6, 142.3],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'garage', reveals: ['better'], seg: [133.7, 145.7],
       stem: 'Why does Leslie say “I painted your garage pink”?',
       ja: 'レスリーはなぜ「I painted your garage pink」と言う？',
       choices: ['To admit a favor Ann didn’t want', 'To make Ann feel she owes her', 'To show they’re still friends'], a: 1,
@@ -241,6 +229,18 @@ export const tackleBen: Clip = {
       mean: '前の親切を持ち出し、恩を返せと迫っている。アンの返事はそれを断るもの。',
       trap: '仲直りにも聞こえるが、直前は Traitors!（裏切り者）。投票の直後に恩を出している。',
       use: 'After all I’ve done for you!（あんなにしてあげたのに！）' },
+
+    { id: 'w1', skill: 'who', level: 'B1', point: 'better', reveals: ['garage', 'vote'], seg: [134.3, 146.7],
+      stem: 'Who tells Leslie “I want you to win”?',
+      ja: 'レスリーに「I want you to win」と言うのは誰？',
+      choices: ['Ann', 'Ben', 'Charlie'], a: 0,
+      choicesJa: ['アン', 'ベン', 'チャーリー'],
+      cue: '直前にレスリーが名前を呼んだ相手',
+      line: '*Ann*, I painted your garage pink. — I did not ask you to do that. Leslie, look, *I want you to win*…',
+      said: 'レスリーがアンの名前を呼ぶと、相手が「頼んでない。勝ってほしいの」と返す。',
+      mean: '名前で呼ばれた人がすぐ答える、という順番から話し手が分かる。',
+      trap: 'Ben’s ad という語が同じ文にあるので Ben を選びやすいが、ベンは話題の人。',
+      use: 'Look, I want you to succeed.（ねえ、うまくいってほしいの）' },
 
     // retired (A2): a C2 tone reading
     { id: 'c3', skill: 'attitude', level: 'C2', point: 'over', reveals: ['better'], seg: [141.5, 149.7], retired: true,
@@ -254,7 +254,7 @@ export const tackleBen: Clip = {
       trap: '「絶交」を真に受けると本当の仲たがいに見える。強い言葉がすぐ大げさに返されたら、じゃれ合い。',
       use: 'You’re dead to me. — Love you too.（もう絶交。— 私も好きだよ）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'split', seg: [149.75, 156.5],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'split', seg: [148.2, 156.8],
       stem: 'Why is Leslie’s “evenly split” comment funny?',
       ja: 'レスリーの「evenly split」はなぜおかしい？',
       choices: ['Only two people voted at all', 'Every vote went to Ben’s ad', 'Her side lost by one vote'], a: 1,
@@ -278,7 +278,7 @@ export const tackleBen: Clip = {
       trap: '言いよどみを怒りと思いやすいが、反論の言葉は出ない。',
       use: 'It’s not how I pictured it.（思っていたのと違う）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'call', reveals: ['vote'], seg: [155.0, 163.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'call', reveals: ['vote'], seg: [155, 164.7],
       stem: 'What does “the right call” mean here?',
       ja: '「the right call」は、ここではどういう意味？',
       choices: ['The right phone call', 'The right decision', 'The right time to call'], a: 1,
@@ -302,7 +302,7 @@ export const tackleBen: Clip = {
       trap: '皮肉なら笑わせる言い方になるが、本人は本気のつもり。言葉と直後の行動がずれたら行動を信じる。',
       use: 'I’m totally calm. Totally.（全然平気。ほんとに）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'outofmy', seg: [164.0, 169.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'outofmy', seg: [164, 169.9],
       stem: 'Fill the gap: “It’s ___ hands now.”',
       ja: '「It’s ___ hands now.」の空所は？',
       choices: ['off of my', 'out of my', 'out of our'], a: 1,

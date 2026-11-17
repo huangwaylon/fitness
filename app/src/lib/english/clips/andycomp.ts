@@ -15,7 +15,7 @@ export const andyComputer: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'see', seg: [14, 22.1],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'see', seg: [14, 22.2],
       stem: 'What does Andy’s “See,” mean here?',
       ja: 'アンディの文の最初の「See,」は、ここではどういう意味？',
       choices: ['Let me explain', 'Please look at this', 'Please agree with me'], a: 0,
@@ -27,7 +27,7 @@ export const andyComputer: Clip = {
       trap: 'see（見る）から、何かを見せると思いやすい。文の最初で、説明が続く。',
       use: 'See, the thing is, I’m new here.（というのも、ここは初めてで）' },
 
-    { id: 'd1', skill: 'number', level: 'B1', point: 'month', reveals: ['steal'], seg: [21.35, 27.6],
+    { id: 'd1', skill: 'number', level: 'B1', point: 'month', reveals: ['steal'], seg: [20.7, 27.7],
       stem: 'When did Andy ask the office to steal from him?',
       ja: 'アンディはいつ、オフィスの皆に盗んでと頼んだ？',
       choices: ['About a week ago', 'About a month ago', 'About a year ago'], a: 1, keep: true,
@@ -39,7 +39,7 @@ export const andyComputer: Clip = {
       trap: 'month の th は弱い。「マン」の短い音で、week（ウィーク）や year（イヤー）と分ける。',
       use: 'I booked it about a month ago.（1か月くらい前に予約しました）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'steal', seg: [21.35, 27.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'steal', seg: [21.4, 30],
       stem: 'What had Andy asked everyone in the office to do?',
       ja: 'アンディはオフィスの皆に何を頼んでいた？',
       choices: ['Steal something from his desk', 'Report anything stolen to him', 'Keep an eye on his desk'], a: 0,
@@ -73,7 +73,7 @@ export const andyComputer: Clip = {
       trap: 'Yes の形に返すと、本気の自白と受け取ったことになる。返事は言葉の形でなく、相手のしたことに返す。',
       use: 'Okay, fair. Dumb question.（そうだね、ばかな質問だった）' },
 
-    { id: 'd3', skill: 'number', level: 'B1', point: 'bucks', seg: [43.3, 53.5],
+    { id: 'd3', skill: 'number', level: 'B1', point: 'bucks', seg: [48.3, 56.4],
       stem: 'For how much does Gary say he sold the computer?',
       ja: 'ゲイリーはパソコンをいくらで売ったと言う？',
       choices: ['$50', '$115', '$150'], a: 2, keep: true,
@@ -85,7 +85,7 @@ export const andyComputer: Clip = {
       trap: '「ワン・フィフティ」なら150、「ワン・フィフティーン」なら115、one がなく「フィフティ」だけなら50。',
       use: 'I got it for twenty bucks.（20ドルで買ったよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'giveaway', seg: [53.5, 57.7],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'giveaway', seg: [52.4, 57.9],
       stem: 'Type the gap: “…but you just ___.” (3 words)', answer: 'gave yourself away',
       ja: '「…but you just ___.」の空所を書こう（3語）',
       cue: '「but you just」のあと',
@@ -95,7 +95,7 @@ export const andyComputer: Clip = {
       trap: 'yourself と away がつながり、一語に聞こえやすい。3語を数える。',
       use: 'Your smile gave you away.（笑顔でバレバレだよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'suspects', reveals: ['sorry', 'letdown', 'tell'], seg: [56, 100.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'suspects', reveals: ['sorry', 'letdown', 'tell'], seg: [56, 100.8],
       stem: 'Who does Andy question, and in what order?',
       ja: 'アンディは、だれをどの順で問いつめる？',
       choices: ['Gary, then Chris', 'Chris, then Gary', 'Gary, then the officer'], a: 0,
@@ -131,7 +131,7 @@ export const andyComputer: Clip = {
       trap: 'entrapment が耳に残り、それが決まりだと取りやすい。have to のあとの tell が主張。',
       use: 'Tell me if it’s too spicy.（辛すぎたら言ってね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['letdown'], seg: [78.7, 83.4],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['letdown'], seg: [77.7, 84.9],
       stem: 'Why does Gary say “I’m sorry, Andy”?',
       ja: 'ゲイリーはなぜ「I’m sorry, Andy」と言う？',
       choices: ['To soften his no', 'To admit he took it', 'To make Andy stop'], a: 0,
@@ -143,7 +143,7 @@ export const andyComputer: Clip = {
       trap: '「すみません」から、白状すると思いやすい。すぐ It wasn’t me（僕じゃない）と続く。',
       use: 'Sorry, we’re all sold out.（すみません、売り切れです）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'letdown', seg: [78.7, 83.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'letdown', seg: [78.7, 84.9],
       stem: 'How does Andy feel when Gary says “It wasn’t me”?',
       ja: 'ゲイリーの「It wasn’t me」に、アンディはどんな気持ち？',
       choices: ['Disappointed', 'Relieved', 'Angry'], a: 0,
@@ -166,7 +166,7 @@ export const andyComputer: Clip = {
       trap: '直前にゲイリーのうその話があるので、彼が的に聞こえやすい。主語の I と my を追えば自分の話。',
       use: 'I hate blood. Hopefully that’s fine for nursing.（血が苦手。看護師で大丈夫だといいけど）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'tell', seg: [86.0, 90.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'tell', seg: [84.9, 95.1],
       stem: 'What does “I can never tell” mean here?',
       ja: '「I can never tell」は、ここではどういう意味？',
       choices: ['I never know', 'I never say', 'I never ask'], a: 0,
@@ -188,7 +188,7 @@ export const andyComputer: Clip = {
       trap: 'doesn’t が弱く「ダズン」程度になる。否定が抜けると逆の意味。「ン」を聞く。',
       use: 'If it comes up, I’ll let you know.（その話が出たら知らせるね）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'playstupid', seg: [98, 109.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'playstupid', seg: [98.1, 110.1],
       stem: 'When Andy accuses Chris, what does he tell Chris to stop doing?',
       ja: 'クリスを疑うアンディは、クリスに何をやめろと言う？',
       choices: ['Pretending he doesn’t know', 'Goofing around with him',
@@ -201,7 +201,7 @@ export const andyComputer: Clip = {
       trap: 'stupid から「ふざける」と思いやすい。play ＋形容詞は「〜のふりをする」。',
       use: 'Don’t play dumb. You knew.（とぼけないで。知ってたでしょ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'another', seg: [111.95, 117.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'another', seg: [111.5, 120.9],
       stem: 'What new report comes in?',
       ja: '新しく何の知らせが来る？',
       choices: ['Another computer was stolen nearby', 'Andy’s computer was found nearby',
@@ -214,7 +214,7 @@ export const andyComputer: Clip = {
       trap: 'courtyard（中庭）など場所の語に気を取られやすい。文の頭の主語を聞く。',
       use: 'Another bag was left on the train.（電車にもう一つ、かばんの忘れ物が）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'robbed', reveals: ['another'], seg: [111.95, 124.7],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'robbed', reveals: ['another'], seg: [112, 124.7],
       stem: 'What does the second theft show?',
       ja: '2件目の盗難から何が分かる？',
       choices: ['The theft is real', 'Chris took both', 'It’s a bigger test'], a: 0,
@@ -297,7 +297,7 @@ export const andyComputer: Clip = {
       trap: 'down だけ聞くと、chase down（追いかける）と思いやすい。前の writing を聞く。',
       use: 'Most of my job is just email.（仕事のほとんどはメールだよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'boring', reveals: ['oughta'], seg: [157.9, 164.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'boring', reveals: ['oughta'], seg: [157.9, 165.2],
       stem: 'What does the officer suggest to Andy?',
       ja: '警官はアンディに何をすすめる？',
       choices: ['Maybe do another job', 'Take a short break first', 'Let him write the report'], a: 0,

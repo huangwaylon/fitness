@@ -36,7 +36,7 @@ export const leslieMom: Clip = {
       trap: '話題になる＝悪い噂と取ると「噂を止めて」に聞こえる。直前の自慢の続きとして聞く。',
       use: 'Word gets around fast here.（ここは噂が広まるのが早い）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'heard', seg: [37.8, 40.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'heard', seg: [36.5, 41.5],
       stem: 'Fill the gap: “I’m sure ___ something about it.”',
       ja: '空所を埋める：「I’m sure ___ something about it.」',
       choices: ['you heard', 'you’ve heard', 'you’ll hear'], a: 1,
@@ -48,7 +48,7 @@ export const leslieMom: Clip = {
       trap: 'v が聞こえないと you heard と思いやすい。you’ll なら「ユール」と伸び、hear に d がない。',
       use: 'You’ve heard about the delay, right?（遅れの件、聞いてるよね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [40.8, 44.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [39.5, 47.2],
       stem: 'What does Leslie do after “Anyway”?',
       ja: '「Anyway」のあと、レスリーはどうする？',
       choices: ['Gets to her real point', 'Says goodbye and leaves now', 'Thanks her mother'], a: 0,
@@ -60,7 +60,7 @@ export const leslieMom: Clip = {
       trap: '「とにかく」と訳すと話を終える感じがする。anyway のあとに本題が来ることが多い。',
       use: 'Anyway, the meeting is tomorrow.（それはともかく、会議は明日です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [42.95, 46.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [41.1, 47.2], keep: true,
       stem: 'What time is the town hall meeting?',
       ja: '集会は何時から？',
       choices: ['11 a.m.', '6 p.m.', '7 p.m.'], a: 2,
@@ -72,7 +72,7 @@ export const leslieMom: Clip = {
       trap: 'eleven なら頭に「イ」、six なら「スィックス」と短い。ここは「セヴン」。',
       use: 'The meeting’s at 7 p.m.（集会は午後7時です）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'biggie', seg: [46.6, 53.4],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'biggie', seg: [44.7, 53.7],
       stem: 'What does “no biggie” mean?',
       ja: '「no biggie」はどういう意味？',
       choices: ['Not important', 'Very exciting', 'A secret'], a: 0,
@@ -95,7 +95,7 @@ export const leslieMom: Clip = {
       trap: '言葉どおり「社交辞令の誘い」と取りやすい。断られた直後の否定は、たいてい本音の裏返し。',
       use: 'I was only kidding anyway.（どうせ冗談だったし）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B1', point: 'busy', seg: [54.0, 58.75],
+    { id: 'r2', skill: 'pragma', level: 'B1', point: 'busy', seg: [54, 60.6],
       stem: 'What does her mom say about coming?',
       ja: '来るかどうか、お母さんは何と言う？',
       choices: ['She’s too busy', 'It’s too late to ask', 'Of course she’ll come'], a: 0,
@@ -107,7 +107,7 @@ export const leslieMom: Clip = {
       trap: 'honey はやさしい呼び方なので、いい返事と思いやすい。そのあとの busy が答え。',
       use: 'Sorry, you know how busy I am.（ごめん、忙しいの知ってるでしょ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'tom', seg: [67.7, 81.95],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'tom', seg: [67.7, 82],
       stem: 'Why does Tom praise the fences?',
       ja: 'トムはなぜその人のフェンスをほめる？',
       choices: ['To please the fence builder', 'To thank him for past work', 'To make fun of his fences'], a: 0,
@@ -130,7 +130,7 @@ export const leslieMom: Clip = {
       trap: 'gun と boom で脅しに聞こえやすい。決まり文句を文字通り演じる笑い。',
       use: 'Let’s not jump the gun here.（先走るのはやめよう）' },
 
-    { id: 'r3', skill: 'pragma', level: 'B2', point: 'hate', seg: [123.6, 129.25],
+    { id: 'r3', skill: 'pragma', level: 'B2', point: 'hate', seg: [123.6, 129.6],
       stem: 'What does “How much can they hate a park?” mean?',
       ja: '「How much can they hate a park?」はどういう意味？',
       choices: ['They won’t hate it much', 'They hate it a lot', 'Nobody knows the answer yet'], a: 0,
@@ -142,7 +142,7 @@ export const leslieMom: Clip = {
       trap: '次の人の「昨日はかなり嫌ってた」と混ざりやすい。この質問は「大丈夫」の意味。',
       use: 'How hard can it be?（そんなに難しいわけないでしょ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'april', seg: [128.75, 136.95],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'april', seg: [128.8, 138.1],
       stem: 'What should April do if questions get negative?',
       ja: '質問が否定的になったら、エイプリルは何をする？',
       choices: ['Speak up for the park', 'Leave the meeting', 'Ask the very first question'], a: 0,
@@ -154,7 +154,7 @@ export const leslieMom: Clip = {
       trap: 'call on you を「最初に当てる」と思いやすい。頼みは if のあと。',
       use: 'If things get bad, help me out.（まずくなったら助けて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'callon', seg: [131.4, 134.95],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'callon', seg: [129.3, 137.3],
       stem: 'Type what Leslie says: “I’m ___ you.” (3 words)', answer: 'gonna call on',
       ja: 'レスリーの言葉を書き取る：「I’m ___ you.」（3語）',
       cue: 'negative のあと、つながった3語。',
@@ -175,7 +175,7 @@ export const leslieMom: Clip = {
       trap: 'sell を「売る」、crap を「悪いところ」と取りやすい。ひとまとまりで「思いきり」。',
       use: 'You need to sell yourself in interviews.（面接では自分を売り込まないと）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'probably', seg: [136.3, 144.95],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'probably', seg: [135.5, 145.3],
       stem: 'How does April answer Leslie?',
       ja: 'エイプリルはレスリーにどう答える？',
       choices: ['A weak maybe', 'A clear no', 'A very happy yes'], a: 0,
@@ -222,7 +222,7 @@ export const leslieMom: Clip = {
       trap: '最初に「支持者が大勢いる」と言うので、応援されると思いやすい。その人たちは来ていない。',
       use: 'I’m against this plan.（この計画には反対です）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'study', seg: [205.0, 214.65],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'study', seg: [206.4, 218.4],
       stem: 'Why is Kate against the park?',
       ja: 'ケイトはなぜ公園に反対？',
       choices: ['No environmental study was done', 'The neighbors play loud music', 'The park lot is too small'],
@@ -235,7 +235,7 @@ export const leslieMom: Clip = {
       trap: 'あとで音楽の苦情も出るので混ざりやすい。それは別の人の話。',
       use: 'I can’t believe they did it without asking.（聞かずにやるなんて信じられない）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'oversold', seg: [257.3, 261.25],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'oversold', seg: [257.3, 262.9],
       stem: 'What does Mark mean by “oversold me”?',
       ja: 'マークの「oversold me」はどういう意味？',
       choices: ['She praised me too much', 'She said too little about me', 'She talked about me too long'], a: 0,
@@ -247,7 +247,7 @@ export const leslieMom: Clip = {
       trap: 'sell を「売る」と思いやすい。ここは「良さを言う」で、over が付いて言いすぎ。',
       use: 'I think I oversold the hotel.（ホテルをほめすぎたかも）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'garage', seg: [285.9, 292.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'garage', seg: [285.9, 296.6],
       stem: 'What does the neighbor say Andy does?',
       ja: '近所の人は、アンディが何をしていると言う？',
       choices: ['Plays music all night', 'Fixes cars all night', 'Leaves lights on all night'], a: 0,
@@ -259,7 +259,7 @@ export const leslieMom: Clip = {
       trap: 'garage と all night だけだと、車や明かりの話にも聞こえる。直後の動詞 plays を聞く。',
       use: 'That noise is driving me nuts.（あの音、ほんとイライラする）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'birds', seg: [302.1, 312.85],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'birds', seg: [302.1, 312.9],
       stem: 'What does Andy think when he asks “You have birds now?”',
       ja: '「You have birds now?」と聞くアンディは、どう思っている？',
       choices: ['The birds are something new', 'He wants to see the birds', 'He likes birds too'], a: 0,
@@ -271,7 +271,7 @@ export const leslieMom: Clip = {
       trap: 'now を聞き落とすと、ただの興味の質問に聞こえる。最後の now で「いつから？」。',
       use: 'Wait, you play golf now?（え、今はゴルフやってるの？）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B2', point: 'guilty', seg: [312.4, 318.8],
+    { id: 'p5', skill: 'phrase', level: 'B2', point: 'guilty', seg: [312.4, 319.4],
       stem: 'What does Andy mean by “Guilty as charged”?',
       ja: 'アンディの「Guilty as charged」はどういう意味？',
       choices: ['Yes, I do it', 'I’m very sorry', 'I will pay a fine'], a: 0,
@@ -283,7 +283,7 @@ export const leslieMom: Clip = {
       trap: 'guilty から謝っていると思いやすい。冗談まじりに認めるだけで、反省はしていない。',
       use: 'Who ate the cake? — Guilty as charged.（ケーキ食べたの誰？—はい、私です）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'break', seg: [324.4, 327.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'break', seg: [323.5, 328.5], keep: true,
       stem: 'How long a break does Leslie call?',
       ja: 'レスリーは何分の休憩にする？',
       choices: ['5 minutes', '10 minutes', '15 minutes'], a: 0,

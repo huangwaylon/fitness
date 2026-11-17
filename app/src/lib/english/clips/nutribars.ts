@@ -17,17 +17,6 @@ export const nutribars: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'syrup', seg: [0.5, 10.7],
-      stem: 'What makes the energy bars unhealthy, says Ann?', ja: 'アンによると、エナジーバーが体に悪いのはなぜ？',
-      choices: ['Corn syrup and fatty oils', 'Corn syrup and added salt', 'Corn flour and added salt'], a: 0,
-      choicesJa: ['コーンシロップと脂っこい油', 'コーンシロップと塩', 'コーンの粉と塩'],
-      cue: '「loaded with」のあと',
-      line: 'loaded with *high-fructose corn syrup and fatty oils*',
-      said: 'バーにはコーンシロップと脂っこい油がたっぷり入っている、と説明する。',
-      mean: 'loaded with 〜 ＝ 〜がたっぷり入っている。体に悪い物が詰まっている、という言い方。',
-      trap: 'corn だけ拾うと、残りをよくある材料で埋めやすい。and の前後の二つを最後まで聞く。',
-      use: 'This soup is loaded with salt.（このスープ、塩がすごく多い）' },
-
     { id: 'g1', skill: 'gist', level: 'B2', point: 'views', seg: [0.5, 24.4],
       stem: 'What is Ron’s point about the bars?', ja: 'エナジーバーについて、ロンの言いたいことは？',
       choices: ['People can choose to eat them', 'The bars are not so bad', 'Leslie should take them away'], a: 0,
@@ -39,7 +28,18 @@ export const nutribars: Clip = {
       trap: 'ロンが反対するので、「バーは悪くない」と言っていると思いやすい。eat garbage は認めている。',
       use: 'It’s your choice.（それはあなたが決めることだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slice', seg: [5.95, 10.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'syrup', seg: [0.9, 12.9],
+      stem: 'What makes the energy bars unhealthy, says Ann?', ja: 'アンによると、エナジーバーが体に悪いのはなぜ？',
+      choices: ['Corn syrup and fatty oils', 'Corn syrup and added salt', 'Corn flour and added salt'], a: 0,
+      choicesJa: ['コーンシロップと脂っこい油', 'コーンシロップと塩', 'コーンの粉と塩'],
+      cue: '「loaded with」のあと',
+      line: 'loaded with *high-fructose corn syrup and fatty oils*',
+      said: 'バーにはコーンシロップと脂っこい油がたっぷり入っている、と説明する。',
+      mean: 'loaded with 〜 ＝ 〜がたっぷり入っている。体に悪い物が詰まっている、という言い方。',
+      trap: 'corn だけ拾うと、残りをよくある材料で埋めやすい。and の前後の二つを最後まで聞く。',
+      use: 'This soup is loaded with salt.（このスープ、塩がすごく多い）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slice', seg: [1, 12.9],
       stem: 'What does “any way you slice it” mean?', ja: '“any way you slice it” はどういう意味？',
       choices: ['However you look at it', 'However you cut them', 'Even a little'], a: 0,
       choicesJa: ['どう考えても', 'どう切っても', '少しだけでも'],
@@ -50,7 +50,7 @@ export const nutribars: Clip = {
       trap: 'slice は「切る」なので、食べ方の話だと思いやすい。結論の前に来る決まり文句。',
       use: 'Any way you slice it, we’re late.（どう考えても遅刻だね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buttout', seg: [10.5, 14.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buttout', seg: [7.6, 12.6],
       stem: 'What does Ron want Leslie to do?', ja: 'ロンはレスリーにどうしてほしい？',
       choices: ['Stop getting involved', 'Help out more', 'Listen to everyone here'], a: 0,
       choicesJa: ['口を出すのをやめる', 'もっと手伝う', 'ここのみんなの話を聞く'],
@@ -60,17 +60,6 @@ export const nutribars: Clip = {
       mean: 'butt out ＝ 人のことに首を突っ込まない。くだけた、少しきつい言い方。',
       trap: 'out から「外に出る」と思いやすい。butt out でひとまとまり、「口出ししない」。',
       use: 'Sorry, I’ll butt out.（ごめん、口出しはやめとく）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [10.5, 20.5], keep: true,
-      stem: 'In Ron’s example, how old are you at the heart attack?', ja: 'ロンのたとえで、心臓発作は何歳のとき？',
-      choices: ['33', '40', '43', '60'], a: 2,
-      choicesJa: ['33歳', '40歳', '43歳', '60歳'],
-      cue: '「heart attack」のすぐあと',
-      line: 'balloon up to 600 pounds and … a heart attack at *43*',
-      said: '「600ポンドまで太って、43歳で心臓発作」という例を出す。',
-      mean: 'at 43 ＝ 43歳で。極端な例を出して、それでも自由だと言っている。',
-      trap: '「フォーティスリー」なら43。「フォーティ」で止まれば40、「サーティ」で始まれば33、「シックスティ」なら60。',
-      use: 'I had my first kid at thirty-three.（33歳で最初の子が生まれた）' },
 
     // R fix: blind 60–85 % (the key was the only sincere reading, and the stem's "To me" pointed at it); the stem no
     //   longer quotes the line, and a second sincere reading is wrong on content ("garbage")
@@ -104,7 +93,18 @@ export const nutribars: Clip = {
       trap: '極端な例は、皮肉か渋々の譲歩に聞こえやすい。最後の評価の語が、話し手の本当の立場を決める。',
       use: 'Your life, your choice.（あなたの人生、あなたが決めること）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'doso', seg: [19.5, 22.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [10.6, 22.6], keep: true,
+      stem: 'In Ron’s example, how old are you at the heart attack?', ja: 'ロンのたとえで、心臓発作は何歳のとき？',
+      choices: ['33', '40', '43', '60'], a: 2,
+      choicesJa: ['33歳', '40歳', '43歳', '60歳'],
+      cue: '「heart attack」のすぐあと',
+      line: 'balloon up to 600 pounds and … a heart attack at *43*',
+      said: '「600ポンドまで太って、43歳で心臓発作」という例を出す。',
+      mean: 'at 43 ＝ 43歳で。極端な例を出して、それでも自由だと言っている。',
+      trap: '「フォーティスリー」なら43。「フォーティ」で止まれば40、「サーティ」で始まれば33、「シックスティ」なら60。',
+      use: 'I had my first kid at thirty-three.（33歳で最初の子が生まれた）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'doso', seg: [16.6, 24.6],
       stem: 'Type what Ron says: “You are ___.” (4 words)', ja: '書こう：“You are ___.”（4語）',
       answer: 'free to do so',
       cue: '「you can」のあと',
@@ -136,7 +136,7 @@ export const nutribars: Clip = {
       trap: 'yes を質問への「はい」と思いやすい。司会の yes は、次の人を指すことが多い。',
       use: 'Yes, you in the back?（はい、後ろの方どうぞ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'lasagna', seg: [31.8, 39.7],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'lasagna', seg: [31.8, 42.1],
       stem: 'How does the lasagna man say he feels?', ja: 'ラザニアの男性は、体調をどう言う？',
       choices: ['Terrible', 'Just fine', 'Very healthy'], a: 0,
       choicesJa: ['最悪', 'まあ元気', 'とても健康'],
@@ -147,7 +147,7 @@ export const nutribars: Clip = {
       trap: 'every day for 40 years と聞くと、自慢だと思いやすい。最後の terrible を聞く。',
       use: 'I feel terrible today.（今日は体調が最悪）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'ohboy', seg: [38.95, 46.5],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'ohboy', seg: [39, 48.9],
       stem: 'How does Ann feel after the corn syrup question?', ja: 'コーンシロップの質問のあと、アンはどんな気持ち？',
       choices: ['Worried by what he said', 'Happy that he asked', 'Laughing along with him'], a: 0,
       choicesJa: ['彼の話に困っている', '聞いてくれてうれしい', '一緒に笑っている'],
@@ -158,7 +158,7 @@ export const nutribars: Clip = {
       trap: 'Oh boy は喜ぶときにも使うので、明るいと思いやすい。直前の話がおかしいかを聞く。',
       use: 'Oh, boy. This is going to be hard.（やれやれ、これは大変だ）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'pretext', seg: [46.5, 55.9],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'pretext', seg: [46.1, 56.3],
       stem: 'What does this guest really want from Ann?', ja: 'この参加者が、本当にアンにほしいものは？',
       choices: ['Her phone number', 'Proof she’s a nurse', 'Her advice on food'], a: 0,
       choicesJa: ['電話番号', '看護師だという証拠', '食べ物のアドバイス'],
@@ -169,7 +169,7 @@ export const nutribars: Clip = {
       trap: 'St. Joe’s（病院）が出るので、仕事の確認だと思いやすい。the point is のあとを聞く。',
       use: 'Anyway, the point is, I need help.（とにかく、要は手伝ってほしいの）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'refuse', seg: [53.65, 61],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'refuse', seg: [50.8, 61],
       stem: 'What does Ann mean by “that’s not gonna happen”?', ja: 'アンの “that’s not gonna happen” はどういう意味？',
       choices: ['No, never', 'Maybe later', 'Yes, for your friend'], a: 0,
       choicesJa: ['絶対いや', 'またあとでね', 'いいよ、友だちのためなら'],
@@ -191,7 +191,7 @@ export const nutribars: Clip = {
       trap: 'address だけ拾うと住所になる。前の短い email まで聞く。',
       use: 'Can I get your email address?（メールアドレスを教えてもらえますか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ham', reveals: ['ought'], seg: [60.4, 65.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ham', reveals: ['ought'], seg: [59.1, 66.9],
       stem: 'What does the next person want to do with the bars?', ja: '次の人は、バーをどうしたい？',
       choices: ['Swap them for sandwiches', 'Put ham inside the bars', 'Eat them with ham'], a: 0,
       choicesJa: ['サンドイッチに替える', 'バーにハムを入れる', 'ハムと一緒に食べる'],
@@ -202,7 +202,7 @@ export const nutribars: Clip = {
       trap: 'out が弱く、bars and eat がつながって聞こえやすい。throw のあとの out まで聞く。',
       use: 'Let’s throw out the old milk.（古い牛乳は捨てよう）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'ought', seg: [60.4, 64.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'ought', seg: [59.1, 66.9],
       stem: 'Fill the gap: “I think we ___ throw those bars out.”', ja: '空所に入るのは？ “I think we ___ throw those bars out.”',
       choices: ['ought to', 'got to', 'want to'], a: 0,
       choicesJa: ['〜したほうがいい', '〜しなきゃ', '〜したい'],
@@ -213,7 +213,7 @@ export const nutribars: Clip = {
       trap: 'got to なら「ガラ」、want to なら「ワナ」。頭が「オー」なら ought to。',
       use: 'We ought to leave soon.（そろそろ出たほうがいいね）' },
 
-    { id: 'w1', skill: 'who', level: 'B2', point: 'week', reveals: ['usual'], seg: [71.4, 77.5],
+    { id: 'w1', skill: 'who', level: 'B2', point: 'week', reveals: ['usual'], seg: [69.9, 77.5],
       stem: 'Who says “I can’t believe you do this every week”?', ja: '“I can’t believe you do this every week” と言うのは誰？',
       choices: ['Ann, to Leslie', 'Leslie, to Ann', 'A man, to Ann'], a: 0,
       choicesJa: ['アンがレスリーに', 'レスリーがアンに', '男性がアンに'],
@@ -223,17 +223,6 @@ export const nutribars: Clip = {
       mean: '毎週会を開くのはレスリー。今日が初めてのアンが、レスリーに言っている。',
       trap: 'どちらも女性の声で区別しにくい。返事 I’m actually encouraged から、you が誰か決める。',
       use: 'I can’t believe you do this every day.（これを毎日やってるなんて）' },
-
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'usual', seg: [71.4, 77.5],
-      stem: 'Leslie says “more relevant than usual.” What are usual questions like?', ja: 'レスリーは「いつもより的を射ていた」と言う。いつもの質問は？',
-      choices: ['Even worse', 'Much better', 'About the same'], a: 0,
-      choicesJa: ['もっとひどい', 'ずっといい', 'だいたい同じ'],
-      cue: '「more … than」のあと',
-      line: 'The questions were *more relevant than usual*.',
-      said: '「今日の質問は、いつもより的を射ていた」と言う。',
-      mean: 'more 〜 than usual ＝ いつもより〜。あの質問で「いつもよりまし」なら、普段はもっとひどい。',
-      trap: 'relevant（的を射た）だけ拾うと、普段はいいと思いやすい。than usual まで聞く。',
-      use: 'That went better than usual.（いつもよりうまくいった）' },
 
     // anchor: 71.9–73.3 s both sources have "I can't believe you do this every week": 8 words in ≈ 1.4 s, with "you
     //   do" run together
@@ -246,5 +235,16 @@ export const nutribars: Clip = {
       mean: '毎週の習慣なので、過去形でなく現在形の do。驚きにも呆れにも使う形。',
       trap: '終わった会の話なので did と書きたくなる。every week ならくり返しの do。',
       use: 'I can’t believe you made this yourself!（これ自分で作ったなんて！）' },
+
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'usual', seg: [73.1, 86.6],
+      stem: 'Leslie says “more relevant than usual.” What are usual questions like?', ja: 'レスリーは「いつもより的を射ていた」と言う。いつもの質問は？',
+      choices: ['Even worse', 'Much better', 'About the same'], a: 0,
+      choicesJa: ['もっとひどい', 'ずっといい', 'だいたい同じ'],
+      cue: '「more … than」のあと',
+      line: 'The questions were *more relevant than usual*.',
+      said: '「今日の質問は、いつもより的を射ていた」と言う。',
+      mean: 'more 〜 than usual ＝ いつもより〜。あの質問で「いつもよりまし」なら、普段はもっとひどい。',
+      trap: 'relevant（的を射た）だけ拾うと、普段はいいと思いやすい。than usual まで聞く。',
+      use: 'That went better than usual.（いつもよりうまくいった）' },
   ]
 };

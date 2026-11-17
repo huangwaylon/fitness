@@ -13,7 +13,7 @@ export const carlyRoom: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'lamp', seg: [14.6, 21.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'lamp', seg: [14.6, 23],
       stem: 'What started the fire in Carly’s room?',
       ja: 'カーリーの部屋の火事の原因は？',
       choices: ['A lamp by the bed', 'Candles by the bed', 'Wires behind the bed'], a: 0,
@@ -25,7 +25,7 @@ export const carlyRoom: Clip = {
       trap: 'bedside table が長くて目立つので、ランプを聞き落としやすい。fire の前の lamp を聞く。',
       use: 'Is there a lamp by the bed?（ベッドの横にランプある？）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'nolamp', reveals: ['lamp'], seg: [14.6, 22.8],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'nolamp', reveals: ['lamp'], seg: [14.6, 23.7],
       stem: 'What does Carly say about the lamp?',
       ja: 'カーリーはランプについて何と言う？',
       choices: ['She doesn’t have one', 'She threw it away', 'It is in another room'], a: 0,
@@ -37,7 +37,7 @@ export const carlyRoom: Clip = {
       trap: 'lamp が何度も聞こえるので、自分のランプの話と思いやすい。don’t have が答え。',
       use: 'That’s not mine.（それは私のじゃない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takeback', seg: [23.7, 33.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takeback', seg: [22.7, 34],
       stem: 'What does “Let’s take it back” mean here?',
       ja: 'ここでの「Let’s take it back」はどういう意味？',
       choices: ['Let’s go back in time', 'Let’s return the gift', 'I take back my words'], a: 0,
@@ -49,7 +49,7 @@ export const carlyRoom: Clip = {
       trap: 'take it back は「返品する」「取り消す」でもよく使う。すぐあとの it all started で分かる。',
       use: 'Let’s take it back to the start.（最初に戻ろう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'gift', reveals: ['lamp'], seg: [33.55, 37.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'gift', reveals: ['lamp'], seg: [30.5, 37.6],
       stem: 'How did Carly get the gummy bear lamp?',
       ja: 'カーリーはグミベアのランプをどうやって手に入れた？',
       choices: ['A friend made it for her', 'A friend bought it for her', 'She won it as a prize'], a: 0,
@@ -61,7 +61,7 @@ export const carlyRoom: Clip = {
       trap: 'プレゼントと聞くと、買ったと思いやすい。made は「メイド」、bought なら「ボート」。',
       use: 'I made it myself.（自分で作ったんだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'pound', reveals: ['lamp'], seg: [37.55, 45.95], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'pound', reveals: ['lamp'], seg: [36.7, 48.7], keep: true,
       stem: 'How heavy is the gummy bear at the base of the lamp?',
       ja: 'ランプの台のグミベアの重さは？',
       choices: ['5 pounds', '9 pounds', '15 pounds', '50 pounds'], a: 0,
@@ -73,7 +73,7 @@ export const carlyRoom: Clip = {
       trap: 'nine は「ナイン」、fifteen は「フィフティーン」、fifty は「フィフティ」。ここは「ファイブ」。',
       use: 'It weighs about five pounds.（5ポンドくらいあるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notlie', seg: [45.25, 50.45],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notlie', seg: [44.5, 52.6],
       stem: 'What does “I want this too” show?',
       ja: '「I want this too」から何が分かる？',
       choices: ['Loving the lamp', 'Thinking it is unsafe', 'Secretly hating it'], a: 0,
@@ -85,7 +85,7 @@ export const carlyRoom: Clip = {
       trap: '「正直に言うと」は日本語だと悪口の前置きになりやすい。すぐあとの I love this で分かる。',
       use: 'Not gonna lie, I’m a bit jealous.（正直、ちょっとうらやましい）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'favor', reveals: ['lamp'], seg: [50.2, 56.5],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'favor', reveals: ['lamp'], seg: [49.7, 56.9],
       stem: 'What does “do me a favor” mean here?',
       ja: 'ここでの「do me a favor」はどういう意味？',
       choices: ['Please help me with something', 'Let me help you with that', 'Thank you very much'], a: 0,
@@ -97,7 +97,7 @@ export const carlyRoom: Clip = {
       trap: 'favor（親切）から、自分が何かしてあげると思いやすい。me が受け取る側。',
       use: 'Could you do me a favor?（ちょっとお願いしていい？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'plug', seg: [50.2, 56.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'plug', seg: [51.8, 59.8], keep: true,
       stem: 'Type the step before turning it on: “___ and turn it on.” (3 words)', answer: 'plug it in',
       ja: '「___ and turn it on.」の空所を書こう（3語）',
       cue: '「Carly’s bed」のあと',
@@ -119,7 +119,7 @@ export const carlyRoom: Clip = {
       trap: '誕生日プレゼントの話が前にあるので、そこからと思いやすい。insurance money を聞く。',
       use: 'Will the insurance cover it?（保険でまかなえる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'melt', seg: [59.35, 70.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'melt', seg: [59.3, 70.2], keep: true,
       stem: 'How hot does a light bulb’s surface get?',
       ja: '電球の表面は何度まで熱くなる？',
       choices: ['150 °F', '215 °F', '250 °F', '350 °F'], a: 2,
@@ -131,7 +131,7 @@ export const carlyRoom: Clip = {
       trap: '215は「フィフティーン」で後ろが強い。150は「ワン」、350は「スリー」で始まる。ここは「ツー・フィフティ」。',
       use: 'It can get up to 40 degrees here.（ここは40度まで上がることがある）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'matter', reveals: ['melt', 'lamp'], seg: [70.1, 76.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'matter', reveals: ['melt', 'lamp'], seg: [69.2, 76.8],
       stem: 'What does “only a matter of time” mean?',
       ja: '「only a matter of time」はどういう意味？',
       choices: ['It was sure to happen', 'Nobody saw it coming', 'It took a long time'], a: 0,
@@ -143,7 +143,7 @@ export const carlyRoom: Clip = {
       trap: 'time から、長くかかった話と思いやすい。「いつ起きるかだけの問題」という意味。',
       use: 'It’s only a matter of time.（時間の問題だよ）' },
 
-    { id: 'c3', skill: 'dict', level: 'C2', point: 'letout', seg: [78.6, 83.7], keep: true,
+    { id: 'c3', skill: 'dict', level: 'C2', point: 'letout', seg: [78.6, 86.1], keep: true,
       stem: 'Type: “It’s probably time to ___ emotions.” (4 words)', answer: 'let out all those',
       ja: '「It’s probably time to ___ emotions.」の空所を書こう（4語）',
       cue: '「time to」のあと',
@@ -153,7 +153,7 @@ export const carlyRoom: Clip = {
       trap: 't が軽い「ラ」の音になり、語の切れ目が消えやすい。小さい those も聞き落としやすい。',
       use: 'Let it all out. You’ll feel better.（全部吐き出しな。楽になるよ）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'neversaw', seg: [106.6, 117.5],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'neversaw', seg: [106.5, 118.3],
       stem: 'What does “judging by” mean here?',
       ja: 'ここでの「judging by」はどういう意味？',
       choices: ['Going by what we see', 'Asking a real judge', 'Guessing at random'], a: 0,
@@ -176,7 +176,7 @@ export const carlyRoom: Clip = {
       trap: 'upgrade だけ拾うと、言い方や語選びの話に聞こえる。疑うのは -iest の語。',
       use: 'Is that even a word?（それって言葉としてある？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'theme', seg: [144.55, 148.55],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'theme', seg: [143.6, 148.6],
       stem: 'What does “go all the way with it” mean?',
       ja: '「go all the way with it」はどういう意味？',
       choices: ['Do it completely', 'Do it for a long time', 'Do it only a little'], a: 0,
@@ -222,7 +222,7 @@ export const carlyRoom: Clip = {
       trap: 'very hard を軽く、または嘆く文と取りやすい。but のあとで気にもしていない。',
       use: 'It’s useless, and I love it anyway.（役に立たないけど、それでも好き）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'coffee', seg: [208.6, 219.0],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'coffee', seg: [208.3, 219.6],
       stem: 'How does the narrator feel about the water table?',
       ja: 'ナレーターは水のテーブルをどう思っている？',
       choices: ['He loves it all the same', 'He thinks it is useless', 'He is worried it will leak'], a: 0,
@@ -234,7 +234,7 @@ export const carlyRoom: Clip = {
       trap: '悪い点の文が長いので、それが答えと思いやすい。but のあとが本音。',
       use: 'Admittedly, it’s pricey, but worth it.（確かに高いけど、その価値はある）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'evenmatter', reveals: ['coffee'], seg: [214.4, 219.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'evenmatter', reveals: ['coffee'], seg: [210.5, 222.5],
       stem: 'Fill the gap: “…actual water, ___”',
       ja: '「…actual water, ___」の空所は？',
       choices: ['it doesn’t even matter', 'it didn’t even matter', 'does it even matter'], a: 0,
@@ -258,7 +258,7 @@ export const carlyRoom: Clip = {
       trap: 'sandwich や seat にだじゃれを探しがち。種明かしは because のあと。',
       use: 'That gives new meaning to “early bird.”（「早起き」の新しい意味だね）', retired: true },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'verdict', seg: [228.3, 270.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'verdict', seg: [228.3, 272.5],
       stem: 'How does the narrator feel about the new room?',
       ja: 'ナレーターは新しい部屋をどう思っている？',
       choices: ['He loves everything in it', 'He thinks it cost too much', 'He thinks it is too small'], a: 0,
@@ -270,7 +270,7 @@ export const carlyRoom: Clip = {
       trap: '題名の8万2000ドルから、高すぎるという話と思いやすい。値段の話はしていない。',
       use: 'There are no words. It’s amazing.（言葉が出ない。すごい）' },
 
-    { id: 'h5', skill: 'humor', level: 'B2', point: 'pun', seg: [254.9, 269.4],
+    { id: 'h5', skill: 'humor', level: 'B2', point: 'pun', seg: [254.2, 270.6],
       stem: 'What does “I’m blown away” mean here?',
       ja: 'ここでの「I’m blown away」はどういう意味？',
       choices: ['Very impressed, and hit by air', 'Very tired, and want to sleep', 'Very angry, and want to leave'], a: 0,

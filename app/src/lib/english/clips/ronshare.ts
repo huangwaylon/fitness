@@ -17,6 +17,18 @@ export const ronShare: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'congrats', seg: [4.3, 11.6],
+      stem: 'Why did Tom come to the party?',
+      ja: 'トムはなぜパーティーに来た？',
+      choices: ['To congratulate Leslie', 'To show Ron his work', 'To meet a new investor'], a: 0,
+      choicesJa: ['レスリーにおめでとうを言うため', 'ロンに仕事を見せるため', '新しい投資家に会うため'],
+      cue: 'I just came by のあと。',
+      line: 'I just came by to *congratulate Leslie* and then I’m *heading back*.',
+      said: '「レスリーにおめでとうを言いに寄っただけ。すぐ戻る」と話す。',
+      mean: 'come by ＝ ちょっと寄る。head back ＝ 戻る。発表の準備はまだ続いている。',
+      trap: '先に presentation と言うので、それが目的と思いやすい。came by to のあとが目的。',
+      use: 'I just came by to say hi.（ちょっと顔を出しに来ただけ）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', seg: [5.0, 49.6],
       stem: 'What does Tom ask Ron for?',
       ja: 'トムはロンに何を頼む？',
@@ -29,19 +41,7 @@ export const ronShare: Clip = {
       trap: 'investments や money でお金の話と思いやすい。頼みは about that のあと。',
       use: 'Could we reschedule for next week?（来週に変更できますか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'congrats', seg: [5.0, 10.4],
-      stem: 'Why did Tom come to the party?',
-      ja: 'トムはなぜパーティーに来た？',
-      choices: ['To congratulate Leslie', 'To show Ron his work', 'To meet a new investor'], a: 0,
-      choicesJa: ['レスリーにおめでとうを言うため', 'ロンに仕事を見せるため', '新しい投資家に会うため'],
-      cue: 'I just came by のあと。',
-      line: 'I just came by to *congratulate Leslie* and then I’m *heading back*.',
-      said: '「レスリーにおめでとうを言いに寄っただけ。すぐ戻る」と話す。',
-      mean: 'come by ＝ ちょっと寄る。head back ＝ 戻る。発表の準備はまだ続いている。',
-      trap: '先に presentation と言うので、それが目的と思いやすい。came by to のあとが目的。',
-      use: 'I just came by to say hi.（ちょっと顔を出しに来ただけ）' },
-
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'admire', seg: [8.6, 13.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'admire', seg: [6.8, 13.2],
       stem: 'How does Ron feel about Tom’s hard work?',
       ja: 'トムが働いていることを、ロンはどう思う？',
       choices: ['He likes it', 'He thinks it’s silly', 'He is jealous'], a: 0,
@@ -53,7 +53,7 @@ export const ronShare: Clip = {
       trap: '口調が平らなので皮肉に聞こえやすい。あとに投資の話が続くので本気。',
       use: 'I admire your work ethic.（その仕事ぶり、尊敬するよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [12.8, 17.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [11.1, 21.8], keep: true,
       stem: 'How old was Ron when he got his first job?',
       ja: 'ロンは何歳で初めて仕事をした？',
       choices: ['Five', 'Nine', 'Fifteen', 'Nineteen'], a: 1,
@@ -65,7 +65,7 @@ export const ronShare: Clip = {
       trap: 'five は「ファイヴ」、fifteen は「フィフ」。nineteen なら最後に「ティーン」が残る。',
       use: 'I started working at sixteen.（16歳で働き始めた）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'alltime', seg: [15.3, 20.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'alltime', seg: [13.1, 21.8],
       stem: 'What does Ron say about the price of gold?',
       ja: '金の値段について、ロンは何と言う？',
       choices: ['Higher than ever before', 'High, but starting to fall', 'Too high to buy now'], a: 0,
@@ -77,7 +77,7 @@ export const ronShare: Clip = {
       trap: 'currently を「今は下がり始めた」と取りやすい。all-time がつけば過去最高。',
       use: 'Prices are at an all-time high.（物価が過去最高だ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'secret', seg: [19.6, 27.2],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'secret', seg: [18.6, 28],
       stem: 'Ron says, “I’ve said too much.” What does he mean?',
       ja: 'ロンの「I’ve said too much.」はどういう意味？',
       choices: ['He shared too much', 'He talked too long', 'He was too rude'], a: 0,
@@ -100,7 +100,7 @@ export const ronShare: Clip = {
       trap: '間を「言いかけて止めた」と取りやすいが、文はもう終わっている。',
       use: 'Let’s just say I’m doing fine.（まあ、困ってはいないとだけ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'forward', seg: [27.3, 30.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'forward', seg: [25.4, 30.4],
       stem: 'Type what is said: “___ tomorrow.” (3 words)', answer: 'looking forward to',
       ja: '「___ tomorrow.」の3語を書こう。',
       cue: '間のあと、tomorrow の前の3語。',
@@ -110,7 +110,7 @@ export const ronShare: Clip = {
       trap: 'to は小さく、tomorrow とくっついて消えやすい。forward のあとの一語を聞く。',
       use: 'Looking forward to seeing you!（会えるのを楽しみにしてる）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'wonder', seg: [29.9, 34.5],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'wonder', seg: [29, 34.7],
       stem: 'Why does Tom say “I was wondering”?',
       ja: 'トムは、なぜ「I was wondering」と言う？',
       choices: ['To ask politely for something', 'To say he was unsure before', 'To say yes to the plan'], a: 0,
@@ -122,7 +122,7 @@ export const ronShare: Clip = {
       trap: 'was から「前から迷っていた」と取りやすい。頼みの前の I was wondering はていねいさ。',
       use: 'I was wondering if you could help.（手伝ってもらえないかなと思って）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'could', seg: [31.6, 34.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'could', seg: [30.3, 38.4],
       stem: 'Fill the gap: “Is there any chance ___ reschedule?”',
       ja: '「Is there any chance ___ reschedule?」の空所は？',
       choices: ['we could', 'we can', 'you could'], a: 0,
@@ -134,7 +134,7 @@ export const ronShare: Clip = {
       trap: 'can なら「キャン」と n が残る。you なら「ユ」で始まる。「ウィクッ」なら we could。',
       use: 'Is there any chance we could talk?（少し話せませんか）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'ready', seg: [34.3, 38.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'ready', seg: [30.3, 38.1],
       stem: 'Why does Tom want to move the meeting?',
       ja: 'トムはなぜ打ち合わせを動かしたい？',
       choices: ['His work isn’t ready', 'He is too tired', 'He has another party'], a: 0,
@@ -146,7 +146,7 @@ export const ronShare: Clip = {
       trap: '疲れや予定の話は出てこない。理由は make sure のあと。',
       use: 'I just want to make sure it’s perfect.（完璧にしておきたいだけ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'appoint', seg: [37.7, 42.8],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'appoint', seg: [34.5, 44.9],
       stem: 'What does Ron mean by “I like to keep my appointments”?',
       ja: 'ロンの「I like to keep my appointments」はどういう意味？',
       choices: ['No, the day stays', 'Yes, but just this once', 'Tom can pick the day'], a: 0,
@@ -158,7 +158,7 @@ export const ronShare: Clip = {
       trap: '「今回だけだぞ」のような渋い OK と取りやすい。others to do the same ＝ 君も守れ。',
       use: 'I like to stick to the plan.（予定どおりにやりたいんだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'backdown', reveals: ['appoint', 'eight'], seg: [41.9, 47.9], keep: true,
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'backdown', reveals: ['appoint', 'eight'], seg: [38, 48.9], keep: true,
       stem: 'How does Tom answer Ron’s reply about appointments?',
       ja: '約束についてのロンの返事に、トムはどう答える？',
       choices: ['He gives in at once', 'He asks for another day', 'He argues a little'], a: 0,
@@ -170,7 +170,7 @@ export const ronShare: Clip = {
       trap: 'Of course は反論の前置きにもなるが、but が来ない。同意が続けば引き下がり。',
       use: 'Of course, no problem at all.（もちろん、全然大丈夫です）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', reveals: ['appoint'], seg: [43.4, 47.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', reveals: ['appoint'], seg: [42, 48.9], keep: true,
       stem: 'What time is the meeting tomorrow?',
       ja: '明日の打ち合わせは何時？',
       choices: ['7 a.m.', '8 a.m.', '10 a.m.', '8 p.m.'], a: 1,
@@ -182,7 +182,7 @@ export const ronShare: Clip = {
       trap: 'seven は「セヴン」、ten は「テン」。あとが「エイエム」なら朝、「ピーエム」なら夜。',
       use: 'Let’s meet at eight a.m. sharp.（朝8時ちょうどに会おう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'our', seg: [44.7, 52.0],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'our', seg: [44.4, 53.2],
       stem: 'Why does Ron ask, “Who else is joining you?”',
       ja: 'ロンはなぜ「ほかに誰が来るんだ？」と聞く？',
       choices: ['Tom said “our,” not “my”', 'Tom picked 8 a.m.', 'Tom named his partner'], a: 0,
@@ -194,7 +194,7 @@ export const ronShare: Clip = {
       trap: '時刻や名前に気を取られやすい。聞き返しは、相手の語をそのままくり返す。',
       use: 'Wait, “we”? Who else is coming?（待って、「僕たち」？ほかに誰が来るの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['rethink'], seg: [49.0, 85.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['rethink'], seg: [49, 86.6],
       stem: 'How does Ron feel about Tom’s partner?',
       ja: 'ロンはトムの相棒をどう思っている？',
       choices: ['Not happy with him', 'Happy to meet him', 'Excited by his jokes'], a: 0,
@@ -206,7 +206,7 @@ export const ronShare: Clip = {
       trap: 'トムの明るい紹介に引かれやすい。ロンの短い返事の冷たさで判断する。',
       use: 'I didn’t know you were coming.（来るとは知らなかった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'realize', seg: [58.0, 61.8],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'realize', seg: [57.9, 63.8],
       stem: 'What does Ron mean by “I didn’t realize”?',
       ja: 'ロンの「I didn’t realize」はどういう意味？',
       choices: ['I didn’t know', 'I didn’t like it', 'I didn’t agree'], a: 0,
@@ -218,7 +218,7 @@ export const ronShare: Clip = {
       trap: 'realize をカタカナの「リアライズ（実現）」と取りやすい。会話では「気づく」。',
       use: 'Sorry, I didn’t realize you were busy.（ごめん、忙しいとは知らなかった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'partner', seg: [58.4, 63.4], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'partner', seg: [58.4, 64.5], keep: true,
       stem: 'How does Tom describe the newcomer’s role?',
       ja: 'トムは、来た男の役割をどう説明する？',
       choices: ['His business partner', 'His business assistant', 'His business backer'], a: 0,
@@ -251,7 +251,7 @@ export const ronShare: Clip = {
       trap: 'That’s just を「ただの〜です」とかばう言い方と取りやすい。one of many は売り込み。',
       use: 'And that’s just one of his talents.（それも彼の才能のほんの一つ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'rethink', seg: [79.4, 85.3],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'rethink', seg: [76.6, 85.9],
       stem: 'Ron says, “Rethink that move, son.” What does he mean?',
       ja: 'ロンの「Rethink that move, son.」はどういう意味？',
       choices: ['Don’t take my shrimp', 'Ask before you take one', 'Change your business plan'], a: 0,

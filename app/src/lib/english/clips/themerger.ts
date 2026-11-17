@@ -18,7 +18,7 @@ export const theMerger: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'dad', seg: [17.2, 26.6],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'dad', seg: [17.2, 26.7],
       stem: 'Why does Michael say the words on his mug fit him?',
       ja: 'マイケルはなぜマグの言葉が自分に合うと言う？',
       choices: ['Many have no other family', 'He is a father himself', 'He looks after their families'], a: 0,
@@ -30,7 +30,7 @@ export const theMerger: Clip = {
       trap: 'Dad（パパ）から本人の子どもを思いやすい。理由は so の前にある。',
       use: 'As far as I’m concerned, you’re family.（僕に言わせれば、君は家族だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'knew', seg: [27.3, 34.9],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'knew', seg: [27.3, 36.7],
       stem: 'Did Michael really know Tony’s last name?',
       ja: 'マイケルはトニーの名字を本当に知っていた？',
       choices: ['No, he had to ask', 'Yes, he knew it well', 'Yes, but said it wrong'], a: 0,
@@ -42,7 +42,7 @@ export const theMerger: Clip = {
       trap: 'I knew that を文字どおり取りやすい。直前に自分で聞いているのが答え。',
       use: 'Oh, right. I knew that.（あ、そうそう。知ってた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'giftbag', seg: [37.4, 44.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'giftbag', seg: [37.4, 45.1],
       stem: 'What does Michael say to the worker with no gift bag?',
       ja: 'ギフトバッグがもらえなかった人に、マイケルは何と言う？',
       choices: ['Leftovers can be bought later', 'Leftovers will be free later', 'More will be ordered for staff'], a: 0,
@@ -54,7 +54,7 @@ export const theMerger: Clip = {
       trap: 'left over と later で「あとでもらえる」と思いやすい。動詞の buy（買う）を聞く。',
       use: 'Any left? Can I buy one?（余ってたら一つ買えますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [97.8, 101.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [96.4, 101.4],
       stem: 'How soon does Andy say he’ll reach his goal in Scranton?',
       ja: 'アンディはどのくらいで目標に届くと言う？',
       choices: ['In two weeks', 'In six weeks', 'In sixteen weeks'], a: 1, keep: true,
@@ -66,7 +66,7 @@ export const theMerger: Clip = {
       trap: '「スィクス」なら six、「スィクスティーン」と伸びれば sixteen。two は前の number two。',
       use: 'I’ll be done in two hours.（2時間で終わるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', seg: [97.8, 113.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', seg: [96.8, 113.6],
       stem: 'What is Andy mainly telling the camera about?',
       ja: 'アンディはカメラに主に何を話している？',
       choices: ['How he will get ahead fast', 'How he will make friends fast', 'How he will go back home'], a: 0,
@@ -102,7 +102,7 @@ export const theMerger: Clip = {
       trap: '出世の話なので「一段ずつ」と取りやすい。たとえが言葉遊びだけかを聞く。',
       use: 'She’s always one step ahead of us.（彼女はいつも一枚上手だ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'mirror', seg: [127.0, 141.0],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'mirror', seg: [127.4, 142.2],
       stem: 'Why does Andy say “your little kingdom, Mike”?',
       ja: 'アンディはなぜ「your little kingdom, Mike」と言う？',
       choices: ['To repeat Michael’s own words', 'To correct Michael’s words', 'To show he knows Michael'], a: 0,
@@ -126,7 +126,7 @@ export const theMerger: Clip = {
       trap: 'まねが下手なのでアンディが笑われていると取りやすい。カメラへの一言で、作戦が効いたかを確かめる。',
       use: 'Weird, but I kind of like him already.（変だけど、もう何となく好き）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hasgot', reveals: ['mirror'], seg: [147.3, 153.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hasgot', reveals: ['mirror'], seg: [147.3, 154],
       stem: 'Type it: “___ this very likable way about him.” (3 words)', answer: 'he has got',
       ja: '「___ this very likable way about him.」の空所を書こう（3語）',
       cue: '「Andy Bernard」のあと',
@@ -136,7 +136,7 @@ export const theMerger: Clip = {
       trap: 'he’s got と思うと has を書きのがす。3語なので縮めずに書く。',
       use: 'She’s got a really nice way about her.（彼女には感じのいい雰囲気がある）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'back', seg: [173.9, 185.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'back', seg: [172.8, 186.5],
       stem: 'Why does Jim say “I’m new here”?',
       ja: 'ジムはなぜ「I’m new here」と言う？',
       choices: ['As a joke, he’s back', 'He was just hired here', 'To test if anyone remembers'], a: 0,
@@ -160,7 +160,7 @@ export const theMerger: Clip = {
       trap: 'awesome を文字どおり喜びと取りやすい。前の言葉と合わない返事は受け流しの合図。',
       use: 'You’re late again? Great. Awesome.（また遅刻？最高だね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'stand', seg: [189.3, 192.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'stand', seg: [187.1, 192.9],
       stem: 'Fill the gap: “___ stand with Pam?”',
       ja: '「___ stand with Pam?」の空所は？',
       choices: ['Where do I', 'Where did I', 'Where would I'], a: 0,
@@ -172,7 +172,7 @@ export const theMerger: Clip = {
       trap: '「ドゥ」なら do、「ディ」なら did。would なら「ウッ」で始まる。',
       use: 'Where do I stand with the team?（チームでの私の立場は？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['pam'], seg: [189.4, 199.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['pam'], seg: [189.8, 201.8],
       stem: 'What does Jim’s “I mean” lead into?',
       ja: 'ジムの「I mean」のあとには何が来る？',
       choices: ['A clearer answer', 'A disagreement', 'A whole new topic'], a: 0,
@@ -184,7 +184,7 @@ export const theMerger: Clip = {
       trap: '「意味する」と直訳すると反論に聞こえる。I mean のあとには言い直しが来る。',
       use: 'No idea. I mean, I just got here.（さあ。だって、今来たばかりだし）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', reveals: ['imean'], seg: [189.4, 201.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', reveals: ['imean'], seg: [190.4, 201.8],
       stem: 'How sure is Jim about him and Pam?',
       ja: 'ジムはパムとの関係にどのくらい自信がある？',
       choices: ['Not sure at all', 'Very sure', 'He doesn’t care'], a: 0,
@@ -196,7 +196,7 @@ export const theMerger: Clip = {
       trap: 'friends のくり返しで満足と思いやすい。最初の no idea が答え。',
       use: 'Honestly? No idea where we stand.（正直、どういう関係か分からない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'cat', seg: [201.35, 207.45],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'cat', seg: [198.5, 207.8],
       stem: 'What does “Look what the cat dragged in” mean?',
       ja: '「Look what the cat dragged in」はどういう意味？',
       choices: ['Look who’s back', 'Welcome, we missed you', 'What did you bring?'], a: 0,
@@ -208,7 +208,7 @@ export const theMerger: Clip = {
       trap: '文字どおり「何を持ってきた」と思いやすい。人が現れたときの決まり文句。',
       use: 'Well, look what the cat dragged in.（おや、誰かと思えば）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'soundsgood', seg: [206.4, 214.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'soundsgood', seg: [206.1, 214.9],
       stem: 'Dwight warns Jim. What does Jim’s “Sounds good” show?',
       ja: 'ドワイトの警告に、ジムの「Sounds good」は何を表す？',
       choices: ['He isn’t worried at all', 'He is scared of Dwight', 'He will fight back hard'], a: 0,
@@ -220,7 +220,7 @@ export const theMerger: Clip = {
       trap: 'Okay を「従います」と思いやすい。何に返した言葉かを考える。',
       use: 'Pizza at seven? Sounds good.（7時にピザ？いいね）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'donot', seg: [209.3, 213.1],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'donot', seg: [208.2, 214.7],
       stem: 'Type Dwight’s warning: “___ with me.” (3 words)', answer: 'do not mess',
       ja: '「___ with me.」の空所を書こう（3語）',
       cue: '「I am wiser」のあと',
@@ -242,7 +242,7 @@ export const theMerger: Clip = {
       trap: '目を合わせないのは争いを避けるためと取りやすい。否定しながら見続ける点を聞く。',
       use: 'What? I’m not doing anything.（何？何もしてないよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'eyeline', reveals: ['forehead'], seg: [219.6, 226.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'eyeline', reveals: ['forehead'], seg: [219.6, 228.7],
       stem: 'What does Dwight mean by “Meet my eyeline”?',
       ja: 'ドワイトの「Meet my eyeline」はどういう意味？',
       choices: ['Look me in the eyes', 'Stop looking at me', 'Look down at your desk'], a: 0,
@@ -254,7 +254,7 @@ export const theMerger: Clip = {
       trap: 'meet（会う）がよく聞こえず「見るな」と思いやすい。I am（合わせてる）の返事が手がかり。',
       use: 'Look me in the eye and say it.（目を見て言って）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'deskend', reveals: ['call', 'desk'], seg: [237.6, 276.3],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'deskend', reveals: ['call', 'desk'], seg: [237.6, 277.1],
       stem: 'Who gets the desk in the end?',
       ja: '最後に、机はだれのものになる？',
       choices: ['The new man keeps it', 'Jim gets it back again', 'The two of them share it'], a: 0,
@@ -266,7 +266,7 @@ export const theMerger: Clip = {
       trap: 'unless の申し出で「返してもらえる」と思いやすい。最後の一言で決まる。',
       use: 'Is this seat taken?（この席、空いてますか）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'call', reveals: ['deskend'], seg: [246.7, 255.6],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'call', reveals: ['deskend'], seg: [246.7, 256.4],
       stem: 'When offered his old desk back, how does Jim answer?',
       ja: '昔の机を返そうかと言われ、ジムはどう答える？',
       choices: ['He lets the other man decide', 'He wants it back right away', 'He says they can share it'], a: 0,

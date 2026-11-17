@@ -15,7 +15,7 @@ export const lewTrial: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrific', seg: [12.9, 17.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrific', seg: [12, 19.5],
       stem: 'How does Freddie answer “Pretty horrific, wouldn’t you say?”',
       ja: '「かなりひどいよね？」に、フレディはどう答える？',
       choices: ['He says no right away', 'He agrees politely', 'He doesn’t answer clearly'], a: 0,
@@ -27,7 +27,7 @@ export const lewTrial: Clip = {
       trap: '日本語では「いいえ」で同意することもあるが、英語の No は中身の否定。',
       use: 'No, I wouldn’t say that.（いや、そうは思わないな）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'whyname', seg: [27.3, 32.45],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'whyname', seg: [27.3, 34.4],
       stem: 'Why wasn’t the other name used, says Freddie?',
       ja: 'もう一つの名前はなぜ使われなかった、とフレディは言う？',
       choices: ['It did badly in a test', 'They never talked about it', 'It was like another show'], a: 0,
@@ -39,7 +39,7 @@ export const lewTrial: Clip = {
       trap: 'discuss が聞こえるが、did discuss は「ちゃんと話した」。but のあとが理由。',
       use: 'We tried it, but it tested poorly.（試したけど、反応がいまいちだった）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'tested', reveals: ['whyname', 'apparently'], seg: [29.5, 35.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'tested', reveals: ['whyname', 'apparently'], seg: [27.6, 35.3],
       stem: 'Who really turned the name down?',
       ja: '本当にその名前に反対したのは誰？',
       choices: ['Only Carly', 'A group of viewers', 'The TV bosses'], a: 0,
@@ -93,7 +93,7 @@ export const lewTrial: Clip = {
       trap: '習った形に合わせて of を消したくなる。書き取りは聞こえた語を書く。',
       use: 'Going off of the map, we’re close.（地図で見る限り、もうすぐだ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'become', seg: [61.1, 73.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'become', seg: [63.1, 73.6],
       stem: 'How does Freddie feel when he says “What has become of me?”',
       ja: '「What has become of me?」と言うとき、フレディはどんな気持ち？',
       choices: ['Upset with himself', 'Proud of himself', 'Angry at the questioner'], a: 0,
@@ -105,7 +105,7 @@ export const lewTrial: Clip = {
       trap: '「全部カーリーのため」は美しい話にも聞こえる。Oh, God が続くので、なげき。',
       use: 'Ugh, what have I become?（うわ、私どうなっちゃったの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [74.9, 79.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [73.3, 80],
       stem: 'Fill the gap: “Spencer, you ___ do something.”',
       ja: '空所を埋める：「Spencer, you ___ do something.」',
       choices: ['gotta', 'gonna', 'wanna'], a: 0,
@@ -117,7 +117,7 @@ export const lewTrial: Clip = {
       trap: 'gonna なら真ん中が「ナ」、wanna なら「ワ」で始まる。ここは「ガラ」。',
       use: 'You gotta try this place.（この店、絶対行ってみて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'side', seg: [74.9, 79.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'side', seg: [75.7, 83.7],
       stem: 'Type the request: “Get Freddie ___.” (4 words)', answer: 'back on our side',
       ja: 'たのみを書き取る：「Get Freddie ___.」（4語）',
       cue: '「Get Freddie」のあと、文の終わりまで。',
@@ -127,7 +127,7 @@ export const lewTrial: Clip = {
       trap: 'on と our がつながり「オナワ」と一語に聞こえやすい。',
       use: 'Are you on my side or not?（味方なの、どっちなの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'hug', seg: [79.3, 84.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'hug', seg: [77.6, 85.4],
       stem: 'What does Spencer ask the judge for?',
       ja: 'スペンサーは裁判官に何をたのむ？',
       choices: ['To hug Freddie', 'A short break', 'To ask a question'], a: 0,
@@ -139,7 +139,7 @@ export const lewTrial: Clip = {
       trap: 'Your Honor や permission でまじめな話に聞こえるが、中身は hug。',
       use: 'Permission to sit down? My feet hurt.（座ってもいい？足が痛くて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'most', seg: [118.3, 121.55], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'most', seg: [117.7, 124], keep: true,
       stem: 'How often did Gibby want to do the stunts?',
       ja: 'ギビーはどのくらいスタントをやりたがっていた？',
       choices: ['Some of the time', 'Most of the time', 'All of the time'], a: 1,
@@ -163,7 +163,7 @@ export const lewTrial: Clip = {
       trap: 'Let the record show（記録に残して）を聞き直しと思いやすい。グッピーには聞いていない。',
       use: 'So you’re saying sometimes you don’t?（つまり、そうじゃない時もあるってこと？）' },
 
-    { id: 'h2', skill: 'attitude', level: 'B2', point: 'guppy', reveals: ['twist', 'most'], seg: [121.9, 134.9],
+    { id: 'h2', skill: 'attitude', level: 'B2', point: 'guppy', reveals: ['twist', 'most'], seg: [131, 136.6],
       stem: 'How does Guppy feel after his answer is used?',
       ja: '答えを使われたあと、グッピーはどう感じている？',
       choices: ['He wishes he hadn’t talked', 'He is proud of his answer', 'He wants to say more'], a: 0,
@@ -175,7 +175,7 @@ export const lewTrial: Clip = {
       trap: 'happy birthday が明るく聞こえるので、楽しいと思いやすい。liked it better で後悔。',
       use: 'I liked it better when we didn’t know.（知らなかった頃の方がよかった）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'liar', seg: [175.8, 183.7],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'liar', seg: [175.8, 184],
       stem: 'What does Spencer mean by “You did all that stuff to me!”?',
       ja: 'スペンサーの「You did all that stuff to me!」はどういう意味？',
       choices: ['Chuck did it to him', 'Chuck did it to Carly', 'Chuck made it all up'], a: 0,
@@ -187,7 +187,7 @@ export const lewTrial: Clip = {
       trap: 'Liar! だけ聞くと「全部作り話」と思いやすい。you と to me で、誰が誰にしたかを聞く。',
       use: 'No, it was the other way around.（いや、逆だよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'offgame', seg: [182.0, 186.3],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'offgame', seg: [181.4, 186.4],
       stem: 'What does “throw you off your game” mean?',
       ja: '「throw you off your game」はどういう意味？',
       choices: ['Make you lose focus', 'Make you lose on purpose', 'Make you feel sorry'], a: 0,
@@ -199,7 +199,7 @@ export const lewTrial: Clip = {
       trap: 'throw the game（わざと負ける）に似るが、off your game なら「調子をくずす」。',
       use: 'Don’t let him throw you off your game.（あいつにペースを乱されないで）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'plan', seg: [222.0, 229.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'plan', seg: [222.3, 234.3],
       stem: 'Who has been called in to help?',
       ja: '助けに呼ばれたのはどんな人？',
       choices: ['Someone who hates Lewbert too', 'Someone who never met Lewbert', 'Someone who worked with Lewbert'], a: 0,
@@ -222,7 +222,7 @@ export const lewTrial: Clip = {
       trap: '言いそこないと取りやすいが、本人は得意げ。',
       use: 'Nailed it!（バッチリ決まった！）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B2', point: 'mine', seg: [251.1, 258.8],
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'mine', seg: [250.8, 261],
       stem: 'What does “the witness is all yours” mean?',
       ja: '「the witness is all yours」はどういう意味？',
       choices: ['You can ask her now', 'She belongs to you', 'She is on your side'], a: 0,
@@ -234,7 +234,7 @@ export const lewTrial: Clip = {
       trap: 'yours を「あなたのもの」と文字どおり思いやすい。ここは「あなたの番、どうぞ」。',
       use: 'The bathroom’s free. It’s all yours.（トイレ空いたよ、どうぞ）' },
 
-    { id: 'f7', skill: 'phrase', level: 'B2', point: 'fell', seg: [268.8, 277.7],
+    { id: 'f7', skill: 'phrase', level: 'B2', point: 'fell', seg: [267.8, 277.7],
       stem: 'What does “I’m not falling for it” mean?',
       ja: '「I’m not falling for it」はどういう意味？',
       choices: ['You can’t trick me', 'I won’t fall down', 'I won’t help you'], a: 0,
@@ -246,7 +246,7 @@ export const lewTrial: Clip = {
       trap: 'fall から「ころぶ」と思いやすい。for it が付くと「引っかかる」。',
       use: 'Don’t fall for that old trick.（その古い手に引っかからないで）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['amount', 'more'], seg: [291.0, 324.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['amount', 'more'], seg: [291, 325.3],
       stem: 'How do things end for Carly’s side?',
       ja: 'カーリーたちにとって、最後はどうなる？',
       choices: ['Worse: he wants even more', 'Better: he drops the case', 'The same: nothing changes'], a: 0,
@@ -258,7 +258,7 @@ export const lewTrial: Clip = {
       trap: 'dropping the case（取り下げ）が聞こえて、よくなると思いやすい。すぐ Wrong again と返される。',
       use: 'That just made things worse.（それで余計に悪くなった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [308.0, 314.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [308, 316.9], keep: true,
       stem: 'What amount does Lewbert name to the judge?',
       ja: 'ルーバートは裁判官にいくらと言う？',
       choices: ['$100,000', '$1 million', '$10 million'], a: 1,

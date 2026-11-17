@@ -17,7 +17,7 @@ export const paulManager: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'fox', seg: [18.4, 25.05],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'fox', seg: [17.4, 25.1],
       stem: 'Why is Freddie dressed as a chicken?',
       ja: 'フレディはなぜ鶏の格好をしている？',
       choices: ['To catch a lost fox', 'To scare a fox away', 'To film a funny video'], a: 0,
@@ -29,7 +29,7 @@ export const paulManager: Clip = {
       trap: 'fox と chicken から「追い払う」を思いやすい。can’t catch him が理由。',
       use: 'Our dog has been loose for an hour.（うちの犬が1時間も逃げてるの）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'pearl', seg: [24.3, 33.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'pearl', seg: [23.6, 35.4],
       stem: 'Why did Freddie say yes in the end?',
       ja: 'フレディは結局なぜ「いいよ」と言った？',
       choices: ['Pearl asked in a cute way', 'Pearl looked very sad', 'Pearl asked him many times'], a: 0,
@@ -41,7 +41,7 @@ export const paulManager: Clip = {
       trap: 'bit her lip（唇をかむ）から、悲しそうに思いやすい。really cute way を聞く。',
       use: 'I said no, but then she smiled.（断ったけど、笑顔を見せられて）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'busy', seg: [33.6, 41.25],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'busy', seg: [33.6, 42.9],
       stem: 'Why does Carly want Paul on the team?',
       ja: 'カーリーはなぜポールをチームに入れたい？',
       choices: ['Freddie has been very busy', 'Freddie asked for more help', 'The show needs new ideas'], a: 0,
@@ -53,7 +53,7 @@ export const paulManager: Clip = {
       trap: 'あとでポールがアイデアを次々出すので、新しいアイデアに引かれやすい。ここの理由は busy。',
       use: 'You’ve been so busy. Let me help.（すごく忙しそうだね。手伝うよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'rather', reveals: ['gonna'], seg: [34, 47.3],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'rather', reveals: ['gonna'], seg: [36.5, 49.8],
       stem: 'How does Freddie answer Carly’s idea?',
       ja: 'カーリーの提案に、フレディはどう答える？',
       choices: ['No, said politely', 'Not now, maybe later', 'Maybe, after some thought'], a: 0,
@@ -65,7 +65,7 @@ export const paulManager: Clip = {
       trap: 'やわらかい言い方なので「あとで」や「考える」に聞こえやすい。Oh, shoot（しまった）で断りと分かる。',
       use: 'Thanks, but I’d rather not.（ありがとう、でも遠慮しておく）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'rather', seg: [40.4, 43.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'rather', seg: [39.8, 45.9],
       stem: 'Type Freddie’s reply: “Honestly, ___. I’m sorry.” (3 words)', answer: 'i\'d rather not',
       ja: 'フレディの返事を書こう：「正直、___。ごめん」（3語）',
       cue: '「Honestly」のすぐあと。',
@@ -74,6 +74,18 @@ export const paulManager: Clip = {
       mean: 'I’d rather not ＝ できればしたくない。やわらかく断る決まり文句。',
       trap: 'I’d の d が消えて I rather に聞こえやすい。rather の前には ’d が入る。',
       use: 'I’d rather not say.（それは言わないでおきたい）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [43.5, 49.8],
+      stem: 'Fill the gap: “I really thought ___ say yes.”',
+      ja: '空所に入る語は？「絶対 yes って ___ と思った」',
+      choices: ['you were gonna', 'you weren’t gonna', 'you’d wanna'], a: 0,
+      choicesJa: ['あなたは言うつもりだった', 'あなたは言うつもりがなかった', 'あなたは言いたいだろう'],
+      cue: '「really thought」のあと。',
+      line: 'I really thought *you were gonna* say yes',
+      said: 'カーリーが「絶対イエスって言うと思ったのに」と言う。',
+      mean: 'gonna ＝ going to。you were gonna が「ユワガナ」とつながる。were は弱く、ほぼ「ワ」。',
+      trap: 'weren’t なら「ン」の音が残る。you’d wanna なら「ワナ」で「ガ」がない。',
+      use: 'I thought you were gonna call.（電話くれると思ってた）' },
 
     { id: 'c1', skill: 'attitude', level: 'C2', point: 'sorry', reveals: ['gonna'], seg: [43.6, 53.6], retired: true,
       stem: 'When Carly adds “so I’m sorry too”, what isn’t she saying outright?',
@@ -85,18 +97,6 @@ export const paulManager: Clip = {
       mean: 'so は「だから先に動いた」。もう Paul を呼んである、という謝り。',
       trap: '断られたあとの sorry は気づかいや不満にも聞こえる。so と次の声で決める。',
       use: 'I assumed yes, so I already booked it.（イエスだと思って、もう予約しちゃった）' },
-
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [44.7, 49.5],
-      stem: 'Fill the gap: “I really thought ___ say yes.”',
-      ja: '空所に入る語は？「絶対 yes って ___ と思った」',
-      choices: ['you were gonna', 'you weren’t gonna', 'you’d wanna'], a: 0,
-      choicesJa: ['あなたは言うつもりだった', 'あなたは言うつもりがなかった', 'あなたは言いたいだろう'],
-      cue: '「really thought」のあと。',
-      line: 'I really thought *you were gonna* say yes',
-      said: 'カーリーが「絶対イエスって言うと思ったのに」と言う。',
-      mean: 'gonna ＝ going to。you were gonna が「ユワガナ」とつながる。were は弱く、ほぼ「ワ」。',
-      trap: 'weren’t なら「ン」の音が残る。you’d wanna なら「ワナ」で「ガ」がない。',
-      use: 'I thought you were gonna call.（電話くれると思ってた）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'cluck', seg: [74.9, 88.7], retired: true,
       stem: 'Why does the line “Funny how I didn’t laugh…” get a laugh?',
@@ -110,7 +110,7 @@ export const paulManager: Clip = {
       trap: 'Funny how ～ は「～なのは妙だね」という皮肉の型。「面白い」ではない。',
       use: 'Funny how you vanish on cleaning day.（掃除の日に限って消えるのは妙だね）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'trap', seg: [116.9, 126.1],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'trap', seg: [116.9, 127.9],
       stem: 'What does “keep them to myself” mean here?',
       ja: 'ここでの「keep them to myself」はどういう意味？',
       choices: ['Not tell anyone', 'Take them home', 'Write them down'], a: 0,
@@ -122,7 +122,7 @@ export const paulManager: Clip = {
       trap: 'keep から「持っておく、持ち帰る」を思いやすい。share の反対の意味で使っている。',
       use: 'Please keep it to yourself.（それ、人には言わないでね）' },
 
-    { id: 's3', skill: 'sound', level: 'B2', point: 'begun', seg: [126, 130.5],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'begun', seg: [126, 132.9],
       stem: 'Fill the gap in the short reply: “Oh, ___.”',
       ja: '短い返事の空所に入る語は？「Oh, ___.」',
       choices: ['it’s begun', 'it’s beginning', 'it began'], a: 0,
@@ -157,7 +157,7 @@ export const paulManager: Clip = {
       trap: 'bank を聞き流すと、人気や知名度の話に聞こえる。make bank で「かせぐ」。make a name とは別。',
       use: 'She makes bank as a nurse.（彼女は看護師でかなりかせいでる）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'whynot', reveals: ['tour'], seg: [142.9, 148.6],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'whynot', reveals: ['tour'], seg: [142.9, 151.3],
       stem: 'What does Paul mean by “Why not you, Carly?”',
       ja: 'ポールの「Why not you, Carly?」はどういう意味？',
       choices: ['You should do it too', 'You can’t do that one', 'Tell me your reason'], a: 0,
@@ -169,7 +169,7 @@ export const paulManager: Clip = {
       trap: 'Why（なぜ）と not から、理由を聞くか「だめ」に思いやすい。前の話を受けた勧め。',
       use: 'Why not try the local food?（地元の料理を食べてみたら？）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'tour', seg: [144.3, 154.6],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'tour', seg: [144.3, 155.8],
       stem: 'Why won’t Freddie go on tour?',
       ja: 'フレディはなぜツアーに行かない？',
       choices: ['He thinks hotel beds are dirty', 'He gets homesick on long trips', 'He can’t miss a TV show'], a: 0,
@@ -181,7 +181,7 @@ export const paulManager: Clip = {
       trap: 'watched と番組名から、番組の話に思いやすい。about hotel sheets が中身。',
       use: 'Are the sheets clean?（シーツはきれいですか）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'amazing', seg: [156, 160.9],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'amazing', seg: [155.1, 161.4],
       stem: 'In the end, how does Paul describe his last idea?',
       ja: '結局、ポールは最後のアイデアを何と言う？',
       choices: ['Amazing', 'Not great', 'Just okay'], a: 0,
@@ -193,7 +193,7 @@ export const paulManager: Clip = {
       trap: 'not great で止めると、いまいちに聞こえやすい。次の It’s amazing で反対になる。',
       use: 'It’s not good. It’s amazing!（いいどころじゃない、最高！）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shake', seg: [161.1, 168.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shake', seg: [160.1, 167.7],
       stem: 'What does “shake things up” mean here?',
       ja: 'ここでの「shake things up」はどういう意味？',
       choices: ['Make a change', 'Mix up his ideas', 'Wake everyone up'], a: 0,
@@ -227,7 +227,7 @@ export const paulManager: Clip = {
       trap: 'don’t tell me だけ聞くと「拒否」に見える。すぐあとの do tell me で向きが変わる。',
       use: 'No, don’t tell me. Okay, tell me.（いや、言わないで。やっぱり教えて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cameras', seg: [235.9, 242.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cameras', seg: [235.9, 242.8], keep: true,
       stem: 'How many cameras does the prototype phone have?',
       ja: '試作品の電話には、カメラがいくつある？',
       choices: ['7', '11', '20'], a: 1,
@@ -239,7 +239,7 @@ export const paulManager: Clip = {
       trap: 'seven なら「セ」、twenty なら「トゥエ」で始まる。「イレ」と聞こえたら11。',
       use: 'It’s like a ten-minute walk.（歩いて10分くらいです）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'chickcard', seg: [250.3, 260.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'chickcard', seg: [250.3, 261.6],
       stem: 'What does the chicken card stand for?',
       ja: '鶏のカードは何を表す？',
       choices: ['Too busy to do your job', 'Too scared to try things', 'Too slow at work'], a: 0,
@@ -263,7 +263,7 @@ export const paulManager: Clip = {
       trap: 'How much（いくら）だけ聞くと料金の話に思いやすい。to say this まで聞く。',
       use: 'Did you pay him to say that?（お金で言わせたでしょ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'denies', reveals: ['begun', 'paid'], seg: [283.7, 295.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'denies', reveals: ['begun', 'paid'], seg: [289.8, 296.1],
       stem: 'How does Paul answer Freddie after the fox card?',
       ja: 'キツネのカードのあと、ポールはフレディにどう答える？',
       choices: ['Says no, then brags a bit', 'Says sorry and stops', 'Says he planned it all'], a: 0,
@@ -298,7 +298,7 @@ export const paulManager: Clip = {
       trap: '電話を貸す申し出だけなら和解に見える。not は弱いが、鶏とは呼んでいない。',
       use: 'Let’s start over. Lunch is on me.（仕切り直そう。昼はおごるよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'chickensay', seg: [325.5, 328.6],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'chickensay', seg: [324.3, 330.7],
       stem: 'Type the reply: “That’s exactly ___.” (5 words)', answer: 'what a chicken would say',
       ja: '返事を書こう：「それこそ ___ だ」（5語）',
       cue: '「either him or me」の直後。',

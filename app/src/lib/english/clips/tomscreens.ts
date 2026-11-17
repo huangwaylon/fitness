@@ -14,7 +14,7 @@ export const tomScreenBan: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', seg: [0.4, 5.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', seg: [0.4, 8.1],
       stem: 'How does Ron answer “We still on for breakfast?”', ja: '“We still on for breakfast?” に、ロンはどう答える？',
       choices: ['He just says Tom is late', 'He says yes, see you there', 'He says no, not today'], a: 0,
       choicesJa: ['トムが遅刻だと言うだけ', 'いいよ、向こうで会おう', 'だめ、今日は無理'],
@@ -61,7 +61,7 @@ export const tomScreenBan: Clip = {
       trap: 'drove around in が「ドロウヴァラウンディン」とつながる。in はほぼ「ン」。',
       use: 'We’re going around in circles here.（話が堂々めぐりだね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'miles', seg: [11.5, 15.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'miles', seg: [8.9, 19.3], keep: true,
       stem: 'How far does Tom live from work, by his GPS?', ja: 'トムのGPSでは、家から職場まで何マイル？',
       choices: ['3 miles', '3.4 miles', '4.3 miles', '34 miles'], a: 1,
       choicesJa: ['3マイル', '3.4マイル', '4.3マイル', '34マイル'],
@@ -72,7 +72,7 @@ export const tomScreenBan: Clip = {
       trap: 'three point four と point が聞こえれば小数。4.3 は four が先、34 は「サーティ」。',
       use: 'It’s about two point five kilometers.（だいたい2.5キロです）' },
 
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'usedto', seg: [14.3, 17.15],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'usedto', seg: [11.8, 19.3],
       stem: 'Type the words: “…according to my GPS, ___ every day.” (5 words)', ja: '書こう：“…according to my GPS, ___ every day.”（5語）',
       answer: 'which i used to use',
       cue: '「GPS」のすぐあと',
@@ -82,7 +82,7 @@ export const tomScreenBan: Clip = {
       trap: 'use が2回続くので1つにまとめたくなる。聞こえた語を全部書く。',
       use: 'This is where I used to live.（ここが前に住んでいた所）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adapting', seg: [16.9, 29],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adapting', seg: [17.7, 29.3],
       stem: 'How is Tom really doing without screens?', ja: '画面なしで、トムは本当はどうしている？',
       choices: ['Not well, but acting fine', 'Fine, he doesn’t miss them', 'Great, he found a fix'], a: 0,
       choicesJa: ['つらいのに、平気なふり', '平気で、恋しくない', '絶好調、うまい方法を見つけた'],
@@ -93,7 +93,7 @@ export const tomScreenBan: Clip = {
       trap: 'I’m adapting だけ聞くと、平気だと思いやすい。最後の I really wish が本音。',
       use: 'It’s fine. I’m getting used to it.（大丈夫、慣れてきたよ）' },
 
-    { id: 'i2', skill: 'detail', level: 'B2', point: 'jerry', seg: [33, 39.6],
+    { id: 'i2', skill: 'detail', level: 'B2', point: 'jerry', seg: [33, 39.9],
       stem: 'How does Jerry get to his email?', ja: 'ジェリーはどうやってメールを開く？',
       choices: ['He searches for yahoo.com', 'He uses a bookmark', 'He asks someone to help'], a: 0,
       choicesJa: ['yahoo.com を検索する', 'ブックマークを使う', '人に手伝ってもらう'],
@@ -104,7 +104,7 @@ export const tomScreenBan: Clip = {
       trap: 'bookmarks が出てくるので、ブックマークを使うと思いやすい。ジェリーは What’s bookmarks? と聞く。',
       use: 'Is there a quicker way to do this?（もっと早いやり方ある？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'deserve', seg: [41.5, 46],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'deserve', seg: [41.5, 47.7],
       stem: 'How does Tom feel about Jerry and the internet?', ja: 'ジェリーとネットのことを、トムはどう思う？',
       choices: ['Fed up with Jerry', 'Amused by Jerry', 'Sorry for Jerry'], a: 0,
       choicesJa: ['ジェリーにあきれている', 'ジェリーを面白がっている', 'ジェリーを気の毒に思う'],
@@ -126,7 +126,7 @@ export const tomScreenBan: Clip = {
       trap: '最初の GPS の話から、運転の練習だと思いやすい。You need to detox を聞く。',
       use: 'I need a digital detox.（スマホ断ちが必要だ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'cabin', seg: [57.8, 66.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'cabin', seg: [57.8, 68.5],
       stem: 'What does the electric company line tell us?', ja: '電力会社の話から、何が分かる？',
       choices: ['The cabin has no power', 'The cabin is hard to find', 'Ron hides the cabin'], a: 0,
       choicesJa: ['小屋には電気がない', '小屋は見つけにくい', 'ロンは小屋を隠している'],
@@ -148,7 +148,7 @@ export const tomScreenBan: Clip = {
       trap: '最初に車で迷った話があるので、車の故障だと思いやすい。理由はすぐあとの文。',
       use: 'There’s no chance I’ll finish today.（今日中に終わるわけがない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'ride', seg: [69.3, 72.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'ride', seg: [68, 73.5],
       stem: 'Fill the gap: “There’s no chance I ___ find my way home.”', ja: '空所に入るのは？ “There’s no chance I ___ find my way home.”',
       choices: ['can', 'can’t', 'could'], a: 0,
       choicesJa: ['〜できる', '〜できない', '〜できた'],
@@ -159,7 +159,7 @@ export const tomScreenBan: Clip = {
       trap: 'can’t なら「キャーン」と長く、t で止まる。could は「クッド」。短く弱い「クン」なら can。',
       use: 'There’s no way I can eat all that.（あれを全部食べるなんて無理）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'chopping', seg: [79.2, 84.4],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'chopping', seg: [76.7, 84.6],
       stem: 'What is Tom getting good at?',
       ja: 'トムは何が上手になってきている？',
       choices: ['Chopping wood', 'Driving a car', 'Using a map'], a: 0,
@@ -182,7 +182,7 @@ export const tomScreenBan: Clip = {
       trap: 'iPhone と聞くと、電話で助けを呼ぶと思いやすい。目的は WebMD で調べること。',
       use: 'Let me just look it up.（ちょっと調べてみる）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'idea', seg: [100.4, 111],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'idea', seg: [100.4, 111.3],
       stem: 'What does Ron’s new idea ask Tom to do?', ja: 'ロンの新しいアイデアでは、トムは何をする？',
       choices: ['Talk about all his screen habits', 'Write down all his screen habits', 'Stop thinking about screens'], a: 0,
       choicesJa: ['画面でしていることを全部話す', '画面でしていることを全部書く', '画面のことを考えない'],
@@ -193,7 +193,7 @@ export const tomScreenBan: Clip = {
       trap: 'words（言葉）から、書く作業だと思いやすい。最初の動詞は Talk。',
       use: 'Just talk it out.（とにかく話して吐き出しなよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'shot', seg: [109.6, 112.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'shot', seg: [107.8, 112.8],
       stem: 'What does “worth a shot” mean?', ja: '“worth a shot” はどういう意味？',
       choices: ['Worth a try', 'Sure to work', 'Not worth it'], a: 0,
       choicesJa: ['やってみる価値はある', '絶対うまくいく', 'やる価値はない'],
@@ -204,7 +204,7 @@ export const tomScreenBan: Clip = {
       trap: 'shot を「命中」と思うと、自信満々に聞こえやすい。worth は「価値がある」くらい。',
       use: 'It’s worth a shot.（ダメもとでやってみよう）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'easy', seg: [112.4, 122.6], then: [122.6, 131],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'easy', seg: [110.8, 122.6], then: [122.6, 131],
       stem: 'After Ron’s “See, that was easy”, what comes next?', ja: 'ロンの “See, that was easy” のあと、何が来る？',
       choices: ['More of Tom’s list', 'Tom feels better', 'A new task from Ron'], a: 0,
       choicesJa: ['トムのリストの続き', 'トムが楽になったと言う', 'ロンからの新しい課題'],
@@ -215,7 +215,7 @@ export const tomScreenBan: Clip = {
       trap: 'See, that was easy は終わりの言葉に聞こえやすい。トムの start by で先を読む。',
       use: 'I usually start by checking email.（いつもまずメールを見る）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'throwin', seg: [114.3, 118.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'throwin', seg: [112.7, 120.9],
       stem: 'What does “throw in LinkedIn” mean?', ja: '“throw in LinkedIn” はどういう意味？',
       choices: ['Add LinkedIn too', 'Stop using LinkedIn', 'Post on LinkedIn'], a: 0,
       choicesJa: ['LinkedIn も加える', 'LinkedIn をやめる', 'LinkedIn に投稿する'],
@@ -252,7 +252,7 @@ export const tomScreenBan: Clip = {
       trap: '吐き出してすっきりした、と思いやすい。最後は No more talking で止められる。',
       use: 'Okay, that’s enough for today.（よし、今日はここまで）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.4, 183.4],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.4, 185.4],
       stem: 'What do Tom and Jean-Ralphio do on their podcast?', ja: 'トムとジャン・ラルフィオは、ポッドキャストで何をする？',
       choices: ['Rate different kinds of nachos', 'Review places that sell nachos', 'Teach how to make nachos'], a: 0,
       choicesJa: ['いろんなナチョスを採点する', 'ナチョスの店を紹介する', 'ナチョスの作り方を教える'],

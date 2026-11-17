@@ -38,7 +38,7 @@ export const aprilWedding: Clip = {
       trap: 'welcome（歓迎）が2回出るが、それはもう済んだ話。頼みはもめる家族の世話。',
       use: 'I need you to keep the peace.（場を収めてほしいの）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'tough', seg: [34.6, 42.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tough', seg: [34.6, 45.3],
       stem: 'Why else did Donna choose April?',
       ja: 'ドナがエイプリルを選んだ、もう一つの理由は？',
       choices: ['She’s tough', 'She plans well', 'She knows the family'], a: 0,
@@ -73,7 +73,7 @@ export const aprilWedding: Clip = {
       trap: 'eighteen なら「エイティーン」で始まる。eighty はあとの80歳の話。ここは「トゥエニ」から。',
       use: 'There are going to be 28 of us.（28人集まるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'care', seg: [53.6, 61.1],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'care', seg: [53.6, 61.3],
       stem: 'How does April feel about caring so much?',
       ja: 'こんなに気にかけることを、エイプリルはどう感じている？',
       choices: ['It feels strange to her', 'It makes her angry', 'It makes her proud'], a: 0,
@@ -85,7 +85,7 @@ export const aprilWedding: Clip = {
       trap: 'actually を自慢と思いやすいが、最後の weird で「とまどい」と分かる。',
       use: 'I actually miss the office. It’s weird.（会社が恋しい。変な感じ）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'grudge', seg: [60.95, 65.15],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'grudge', seg: [60.2, 65.2],
       stem: 'What does “grudge holders” mean?',
       ja: '「grudge holders」はどういう意味？',
       choices: ['People who never forgive', 'People who fight over money', 'People who hide their feelings'], a: 0,
@@ -97,7 +97,7 @@ export const aprilWedding: Clip = {
       trap: 'cold-blooded（冷血）から、気持ちをかくす人と思いやすい。中心は grudge。',
       use: 'He still holds a grudge.（彼はまだ根に持ってる）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'coaster', reveals: ['grudge'], seg: [64.9, 70.15],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'coaster', reveals: ['grudge'], seg: [64.4, 70.2],
       stem: 'What does the coaster story show about the family?',
       ja: 'コースターの話から、家族の何が分かる？',
       choices: ['Small mistakes cost a lot', 'They love a clean home', 'They often fight over money'], a: 0,
@@ -109,7 +109,7 @@ export const aprilWedding: Clip = {
       trap: 'will（遺言）から、お金の話と思いやすい。要点は罰の重さ。',
       use: 'Don’t forget to use a coaster.（コースターを使ってね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'pictionary', seg: [70.05, 74.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'pictionary', seg: [68.7, 74.3], keep: true,
       stem: 'How many family game nights ended at the hospital?',
       ja: '家族のゲーム大会は何回、病院で終わった？',
       choices: ['3', '4', '14'], a: 1,
@@ -154,7 +154,7 @@ export const aprilWedding: Clip = {
       trap: '親族の悪口に聞こえるが、自分で言った語に気づかない話し手がおかしい。',
       use: 'There’s a word for that, you know.（それ、ちゃんと言葉があるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'separate', seg: [104.3, 112.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'separate', seg: [103.3, 112.4],
       stem: 'What did someone just have to do with two old men?',
       ja: '二人のおじいさんに対して、何をしなければならなかった？',
       choices: ['Pull the two men apart', 'Help them find a store', 'Find a singer for them'], a: 0,
@@ -166,7 +166,7 @@ export const aprilWedding: Clip = {
       trap: '歌手や店はもめた話の中身。したことは had to のあとの separate。',
       use: 'I had to separate the kids.（子どもたちを引きはなさなきゃいけなかった）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hidden', seg: [119.45, 134.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hidden', seg: [129.1, 137.9],
       stem: 'Why do Donna and Joe see no drama?',
       ja: 'ドナとジョーはなぜ、もめごとがないと思っている？',
       choices: ['April hides the trouble from them', 'The family is being very nice', 'Nobody came to the wedding'], a: 0,
@@ -178,7 +178,7 @@ export const aprilWedding: Clip = {
       trap: '二人の言葉だけ聞くと、家族がいい子にしていると思いやすい。直後の troublemakers が答え。',
       use: 'It went smoothly, thanks to you.（あなたのおかげで順調だった）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'killing', seg: [168.3, 172.0],
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'killing', seg: [167, 172],
       stem: 'What does “you are killing it” mean?',
       ja: '「you are killing it」はどういう意味？',
       choices: ['You’re doing great', 'You’re ruining the party', 'You’re drinking too much'], a: 0,
@@ -190,7 +190,7 @@ export const aprilWedding: Clip = {
       trap: 'kill を「殺す」と文字どおり思うと悪い意味。返事の I am, right? でほめ言葉と分かる。',
       use: 'You killed it up there!（ステージ、最高だったよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'congress', seg: [170.35, 175.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'congress', seg: [170.2, 177.9],
       stem: 'What does Ben mean by “just thinking I’m a congressman”?',
       ja: 'ベンの「just thinking I’m a congressman」はどういう意味？',
       choices: ['He only imagines it', 'He just won an election', 'People keep calling him one'], a: 0,
@@ -202,7 +202,7 @@ export const aprilWedding: Clip = {
       trap: 'congressman だけ聞くと本物に聞こえる。just thinking が「想像」の合図。',
       use: 'Just thinking about it makes me hungry.（考えるだけでお腹がすく）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'sip', seg: [179.3, 183.38], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'sip', seg: [178.4, 183.4], keep: true,
       stem: 'Since having kids, how much wine makes her drunk?',
       ja: '子どもができてから、どのくらいのワインで酔う？',
       choices: ['One sip', 'One glass', 'One bottle'], a: 0,
@@ -225,7 +225,7 @@ export const aprilWedding: Clip = {
       trap: 'Con— で言い直すので言葉を探しているようだが、助けは求めていない。',
       use: 'Sorry, I’m tongue-tied today.（ごめん、今日はうまく話せない）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'toast', reveals: ['congress'], seg: [189.35, 195.45],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'toast', reveals: ['congress'], seg: [189.4, 197.7],
       stem: 'Why does Leslie want Ben to give a toast?',
       ja: 'レスリーはなぜベンに乾杯のあいさつをさせたい？',
       choices: ['As practice for speeches', 'Because it is his job today', 'To say he is running'], a: 0,
@@ -237,7 +237,7 @@ export const aprilWedding: Clip = {
       trap: '出馬の発表と思いやすいが、if の付いた「もしも」の話。',
       use: 'You should try it. It’s good practice.（やってみたら？いい練習になるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [193.85, 197.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [192.2, 200.9],
       stem: 'Fill the gap: “___ make a toast?”',
       ja: '空所を埋める：「___ make a toast?」',
       choices: ['You want me to', 'Do you want me to', 'You want to'], a: 0,
@@ -249,7 +249,7 @@ export const aprilWedding: Clip = {
       trap: 'Do があれば頭に「ドゥ」の音。me がなければ「ミ」がない。ここは「ユワンミタ」。',
       use: 'You want me to drive?（ぼくが運転しようか？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'brown', seg: [196.4, 200.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'brown', seg: [196.2, 203.5],
       stem: 'Type the gap: “toast it ___ on both sides.” (3 words)', answer: "till it's brown",
       ja: '空所を書き取る：「toast it ___ on both sides.」（3語）',
       cue: '「toast it」のあと。',

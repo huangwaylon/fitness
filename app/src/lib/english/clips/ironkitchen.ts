@@ -13,7 +13,7 @@ export const ironkitchen: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 4.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 5.9], keep: true,
       stem: 'How much time does Monica say they have left?',
       ja: 'モニカは残り時間がどのくらいだと言う？',
       choices: ['12 hours and 30 minutes', '12 hours and 36 minutes', '20 hours and 30 minutes', '20 hours and 36 minutes'],
@@ -47,7 +47,7 @@ export const ironkitchen: Clip = {
       trap: '急いでいるので客がもう来ると思いやすいが、時間はまだ半日ある。',
       use: 'We’re in trouble here.（これはまずいことになった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'move', seg: [0.5, 5.6],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'move', seg: [0.5, 8.5],
       stem: 'What does “Move, move, move!” mean?',
       ja: '「Move, move, move!」はどういう意味？',
       choices: ['Hurry up!', 'Get out!', 'Change seats!'], a: 0,
@@ -59,7 +59,7 @@ export const ironkitchen: Clip = {
       trap: 'move（動く・引っ越す）から「どいて」や「移動」と思いやすい。せかしている。',
       use: 'Come on, move! We’re late!（ほら急いで！遅れてる！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'speed', seg: [10.4, 17.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'speed', seg: [9.4, 14.4],
       stem: 'Type the order to Joey: “Joey, ___.” (3 words)', answer: 'speed it up',
       ja: '「Joey, ___.」の空所を書こう（3語）',
       cue: '「Joey」のすぐあと',
@@ -69,7 +69,7 @@ export const ironkitchen: Clip = {
       trap: 'speed it up がつながって「スピーディダップ」に聞こえる。3語に分けて書く。',
       use: 'Can you speed it up a little?（もう少し急いでもらえる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pigs', seg: [10.5, 17.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pigs', seg: [10.5, 19.8],
       stem: 'When told to hurry, what does Joey blame?',
       ja: '急げと言われて、ジョーイは何のせいにする？',
       choices: ['The pigs won’t go in', 'The blankets won’t close', 'The knife isn’t sharp'], a: 0,
@@ -93,7 +93,7 @@ export const ironkitchen: Clip = {
       trap: 'they を周りの人と取ると人のせいに聞こえる。they は直前の the pigs。',
       use: 'I’m a little reluctant to say yes.（ちょっと引き受けにくいな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'planned', seg: [17.5, 21.5],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'planned', seg: [16.9, 23.1],
       stem: 'What did Monica’s friend expect of her?',
       ja: 'モニカの友だちは、モニカがどうしていると思っていた？',
       choices: ['A complete plan', 'A late plan', 'No plan at all'], a: 0,
@@ -105,7 +105,7 @@ export const ironkitchen: Clip = {
       trap: '問いを責めと思いやすいが、I thought のあとに期待していたことが来る。',
       use: 'I thought you had it all planned out.（全部決めてあると思ってた）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'cry', seg: [17.5, 30.5],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'cry', seg: [17.7, 30.7],
       stem: 'How is Monica feeling when asked how it happened?',
       ja: 'どうしてこうなったか聞かれて、モニカはどんな気持ち？',
       choices: ['Stressed and angry', 'Sad and hurt', 'Calm and joking'], a: 0,
@@ -129,7 +129,7 @@ export const ironkitchen: Clip = {
       trap: '女性に sir は変なので聞き流しやすい。答え方の型が、相手をどう見ているかを表す。',
       use: 'Yes, sir! Right away!（了解です！すぐやります！）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['refuse'], seg: [33.4, 38.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['refuse'], seg: [33.4, 40.5],
       stem: 'What does Ross’s “Look,” mean here?',
       ja: 'ロスの「Look,」は、ここではどういう意味？',
       choices: ['Listen to me', 'Look at this', 'Okay, I give in'], a: 0,
@@ -141,7 +141,7 @@ export const ironkitchen: Clip = {
       trap: '「見て」と文字どおり思いやすい。何も見せていない。',
       use: 'Look, I’m not doing this again.（いいかい、もうこれはやらないよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'refuse', seg: [33.4, 38.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'refuse', seg: [33.4, 40.5],
       stem: 'What has Ross already told Monica?',
       ja: 'ロスは前にモニカに何と言った？',
       choices: ['He won’t be part of it', 'He can’t cook at all', 'He is too busy today'], a: 0,
@@ -153,7 +153,7 @@ export const ironkitchen: Clip = {
       trap: '料理が苦手という理由は言っていない。not のあとを聞く。',
       use: 'I’m not a part of this.（僕はこの件に関わってないよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'threat', reveals: ['feelfor', 'refuse'], seg: [33.4, 50.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'threat', reveals: ['feelfor', 'refuse'], seg: [33.4, 51.1],
       stem: 'How does Monica get Ross to help in the end?',
       ja: 'モニカは最後にどうやってロスに手伝わせる？',
       choices: ['Kind words, then a threat', 'Tears and lots of begging', 'A promise he made before'], a: 0,
@@ -165,7 +165,7 @@ export const ironkitchen: Clip = {
       trap: '泣くのは前の場面の話。I told you はロスの言葉で、約束ではない。',
       use: 'Help me out, or else.（手伝ってよ、さもないと…）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'refuse', seg: [35, 40],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'refuse', seg: [34.9, 43.9],
       stem: 'Who says he isn’t taking part?',
       ja: '「関わらない」と言うのはだれ？',
       choices: ['Joey', 'Ross', 'Chandler'], a: 1,
@@ -176,18 +176,6 @@ export const ironkitchen: Clip = {
       mean: '返事の最初の呼びかけで、だれに答えているかが分かる。',
       trap: '前に呼ばれたジョーイの名前が残りやすい。断った直後に呼ばれる名前を聞く。',
       use: 'Okay, listen to me.（いい、聞いて）' },
-
-    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'feelfor', seg: [38.6, 50.5],
-      stem: 'What does “I feel for you” mean?',
-      ja: '「I feel for you」はどういう意味？',
-      choices: ['I understand your pain', 'I have feelings for you', 'I’m angry with you'], a: 0,
-      choicesJa: ['つらい気持ちは分かる', 'あなたが好き', 'あなたに怒っている'],
-      cue: '「issues」のあと',
-      line: 'I realize that you have issues… and *I feel for you, I do. But*…',
-      said: '「事情があるのは分かるし、同情する。本当に。でも…」と言う。',
-      mean: 'feel for 〜 ＝「〜を気の毒に思う」。気持ちを先に認めてから、but で頼む。',
-      trap: 'feelings for you（好き）と思いやすい。for 〜 だけなら「同情する」。',
-      use: 'I feel for you. That sounds really hard.（気の毒に。本当に大変そうだね）' },
 
     // retired (A2): predicting “what kind of move” is meta; pr1 teaches the phrase
     { id: 'r1', skill: 'predict', level: 'B2', point: 'feelfor', seg: [38.6, 43.3], retired: true, then: [43.3, 50.5],
@@ -200,6 +188,18 @@ export const ironkitchen: Clip = {
       mean: '相手を受け止める前置きは、たいてい but の予告。本題はそのあと。',
       trap: '同情の言葉で、許してくれると読みやすい。I do と念を押したら、次は but が多い。',
       use: 'I get it. That said, we need you.（分かるよ。とはいえ、君が必要なんだ）' },
+
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'feelfor', seg: [38.7, 49],
+      stem: 'What does “I feel for you” mean?',
+      ja: '「I feel for you」はどういう意味？',
+      choices: ['I understand your pain', 'I have feelings for you', 'I’m angry with you'], a: 0,
+      choicesJa: ['つらい気持ちは分かる', 'あなたが好き', 'あなたに怒っている'],
+      cue: '「issues」のあと',
+      line: 'I realize that you have issues… and *I feel for you, I do. But*…',
+      said: '「事情があるのは分かるし、同情する。本当に。でも…」と言う。',
+      mean: 'feel for 〜 ＝「〜を気の毒に思う」。気持ちを先に認めてから、but で頼む。',
+      trap: 'feelings for you（好き）と思いやすい。for 〜 だけなら「同情する」。',
+      use: 'I feel for you. That sounds really hard.（気の毒に。本当に大変そうだね）' },
 
     { id: 'c2', skill: 'sound', level: 'C2', point: 'feelfor', seg: [39.7, 44.75], retired: true,
       stem: 'Where is the stress in Monica’s “I do,” and why?',
@@ -236,7 +236,7 @@ export const ironkitchen: Clip = {
       trap: 'bowl は「ボウル」、ball は「ボール」。真ん中が「ア」なら of、「アン」なら and。',
       use: 'Can you ball the melon?（メロンを丸くくり抜いて）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'stuck', reveals: ['ball'], seg: [52.1, 55.9],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'stuck', reveals: ['ball'], seg: [50.8, 60.7],
       stem: 'What does “I’m stuck dicing” mean?',
       ja: '「I’m stuck dicing」はどういう意味？',
       choices: ['I have the boring job', 'I can’t move from here', 'I can’t finish dicing'], a: 0,
@@ -248,7 +248,7 @@ export const ironkitchen: Clip = {
       trap: 'stuck を「動けない」と思いやすい。-ing が続けば押しつけられた役。',
       use: 'I’m stuck working this weekend.（今週末は仕事に縛られてる）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B1', point: 'howcome', reveals: ['ball', 'stuck'], seg: [52.1, 55.9],
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'howcome', reveals: ['ball', 'stuck'], seg: [50.8, 60.7],
       stem: 'What does “how come” mean here?',
       ja: '「how come」は、ここではどういう意味？',
       choices: ['Why', 'How', 'When'], a: 0,

@@ -24,7 +24,7 @@ export const movember: Clip = {
       trap: 'Toby の名前から、彼のコンテストだと思いやすい。It’s a charity と説明している。',
       use: 'It’s for a good cause.（いいことのためなんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 16],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 18.6],
       stem: 'What do you do first for Movember?', ja: 'モーベンバーでは、まず何をする？',
       choices: ['Promise some money', 'Bet a lot of money', 'Get a checkup'], a: 0,
       choicesJa: ['お金を出すと約束する', '大金を賭ける', '健康診断を受ける'],
@@ -35,7 +35,7 @@ export const movember: Clip = {
       trap: 'money だけ聞くと、賭けだと思いやすい。pledge は「出すと約束する」こと。',
       use: 'I pledged twenty dollars.（20ドル寄付すると約束した）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'got', seg: [26.9, 31.2],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'got', seg: [24.6, 35.1],
       stem: 'What did this man do about Movember?', ja: 'この男性は、モーベンバーで何をした？',
       choices: ['Made all the men join', 'Joined after the other men', 'Started a new charity'], a: 0,
       choicesJa: ['男性みんなを参加させた', 'ほかの男性のあとに参加した', '新しいチャリティーを始めた'],
@@ -91,7 +91,7 @@ export const movember: Clip = {
       trap: '前立腺という語そのものや、女性への冗談と取りやすい。pick up babes の直後の、彼の決めぜりふ。',
       use: 'I thought it was smooth. It wasn’t.（うまく言えたと思ったのに）' },
 
-    { id: 'i1', skill: 'who', level: 'B1', point: 'on', seg: [44.6, 51.2],
+    { id: 'i1', skill: 'who', level: 'B1', point: 'on', seg: [43.2, 51.7],
       stem: 'Who is on the phone line?', ja: '電話でつながっているのは誰？',
       choices: ['Only the caller', 'Everyone in the room', 'No one yet'], a: 0,
       choicesJa: ['電話をかけている人だけ', '部屋にいる全員', 'まだ誰も'],
@@ -113,7 +113,7 @@ export const movember: Clip = {
       trap: 'three months や ideas が聞こえて、計画が進んだと思いやすい。最後は call you right back。',
       use: 'Can you hear me okay?（ちゃんと聞こえてる？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [51.6, 56.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [51.2, 60.3], keep: true,
       stem: 'How far ahead does the meeting plan?', ja: '会議では、どのくらい先まで計画する？',
       choices: ['3 weeks', '30 days', '3 months', '13 months'], a: 2,
       choicesJa: ['3週間', '30日', '3か月', '13か月'],
@@ -124,7 +124,7 @@ export const movember: Clip = {
       trap: '30 は「サーティ」、13 は「サーティーン」。「スリー」のあと「マンス」なら3か月、「ウィーク」なら3週間。',
       use: 'Over the next three months, I’ll save money.（この先3か月で貯金する）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [59.6, 66],
+    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 66.3],
       stem: 'What does Jim mean by “Trust me”?', ja: 'ジムの “Trust me” はどういう意味？',
       choices: ['Believe me', 'Keep it secret', 'Do what I say'], a: 0,
       choicesJa: ['本当だって', '秘密にして', '言うとおりにして'],
@@ -135,7 +135,7 @@ export const movember: Clip = {
       trap: 'trust（信用する）から、何かを任せる話だと思いやすい。ここは「本当だよ」の前置き。',
       use: 'Trust me, this place is good.（本当だって、この店いいよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [62.5, 65.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [61.3, 66.3],
       stem: 'Fill the gap: “Trust me, ___ be with you guys.”', ja: '空所に入るのは？ “Trust me, ___ be with you guys.”',
       choices: ['I’d rather', 'I’d better', 'I’d like to'], a: 0,
       choicesJa: ['むしろ〜したい', '〜したほうがいい', '〜したい'],
@@ -175,7 +175,7 @@ export const movember: Clip = {
       trap: 'mistake を本当の人違い、Batman をヒーロー気取りへの皮肉と取りやすい。話題は声。',
       use: 'Sorry, I think you have the wrong number.（番号をお間違えのようです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'spot', seg: [85.6, 89.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'spot', seg: [82.5, 92],
       stem: 'What does Jim say he’ll do next?', ja: 'ジムは、次に何をすると言う？',
       choices: ['Call back from another spot', 'Send them his ideas by email', 'Have them call his cell'], a: 0,
       choicesJa: ['別の場所からかけ直す', 'アイデアをメールで送る', '携帯にかけてもらう'],
@@ -186,7 +186,7 @@ export const movember: Clip = {
       trap: '前の my cell から「携帯にかけてもらう」と思いやすい。あれは「そうすればよかった」の話。',
       use: 'Let me call you right back.（すぐかけ直します）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'eyebrow', seg: [107.4, 112],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'eyebrow', seg: [107.4, 113.2],
       stem: 'What does Erin say the mustache looks like?', ja: 'エリンは、口ひげが何みたいだと言う？',
       choices: ['An eyebrow in the middle', 'His eyebrows grown together', 'A smile above his lip'], a: 0,
       choicesJa: ['顔の真ん中の眉毛', 'つながった眉毛', '唇の上の笑顔'],
@@ -197,7 +197,7 @@ export const movember: Clip = {
       trap: 'eyebrow から「眉がつながる」と思いやすい。in the middle of your face まで聞く。',
       use: 'That hat makes you look taller.（その帽子だと背が高く見えるね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'but', reveals: ['socket'], seg: [112.8, 118],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'but', reveals: ['socket'], seg: [111.9, 119],
       stem: 'What comes after Erin’s “but, um”?', ja: 'エリンの “but, um” のあとに来るのは？',
       choices: ['Something not so nice', 'Another nice thing to say', 'A brand-new topic'], a: 0,
       choicesJa: ['あまりよくないこと', 'もう一つのほめ言葉', 'まったく新しい話'],
@@ -208,7 +208,7 @@ export const movember: Clip = {
       trap: 'handsome（かっこいい）のあとなので、ほめ言葉が続くと思いやすい。but のあとが本音。',
       use: 'It’s nice, but, um, a bit loud.（いいけど、えっと、ちょっと派手かな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'socket', seg: [114.4, 118],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'socket', seg: [113.2, 119],
       stem: 'Type what Erin says: “makes your mouth ___ eye socket.” (3 words)', ja: '書こう：“makes your mouth ___ eye socket.”（3語）',
       answer: 'look like an',
       cue: '「mouth」のあと',
@@ -218,7 +218,7 @@ export const movember: Clip = {
       trap: 'k と l、n と eye がつながって、語の切れ目が消える。like のあとの短い an を落としやすい。',
       use: 'You look like a movie star.（映画スターみたい）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'notbad', seg: [115.6, 119],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'notbad', seg: [113.2, 123],
       stem: 'Fill the gap: “___ bad.”', ja: '空所に入るのは？ “___ bad.”',
       choices: ['Which isn’t', 'Which is', 'It isn’t'], a: 0,
       choicesJa: ['（それは）〜ではない', '（それは）〜だ', 'それは〜ではない'],
@@ -229,7 +229,7 @@ export const movember: Clip = {
       trap: 'n’t が弱いと Which is に聞こえやすい。最後の「ン」が否定。出だしは「ウィッチ」で It ではない。',
       use: 'Which isn’t a bad thing.（それは悪いことじゃないけど）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cover', seg: [118.8, 128],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cover', seg: [117.8, 129.2],
       stem: 'How does Erin feel as she talks?', ja: '話しながら、エリンはどんな気持ち？',
       choices: ['Nervous, trying to be nice', 'Happy, joking with him', 'Angry, being mean to him'], a: 0,
       choicesJa: ['あせって、やさしくしようとしている', '楽しく、冗談を言っている', '怒って、意地悪をしている'],
@@ -258,7 +258,7 @@ export const movember: Clip = {
       trap: 'cause を活動への本音と、handsome や great を好意と取りやすい。直前のたとえが本音。',
       use: 'Well, it’s the thought that counts.（まあ、気持ちが大事だよね）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'cause', reveals: ['cover'], seg: [122.5, 128.4],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'cause', reveals: ['cover'], seg: [122.5, 129.2],
       stem: 'Why does Erin end with “such a great cause”?', ja: 'エリンはなぜ “such a great cause” で終える？',
       choices: ['To end on something nice', 'To ask him for some money', 'To change the plan'], a: 0,
       choicesJa: ['最後はいいことを言うため', '彼にお金を頼むため', '計画を変えるため'],

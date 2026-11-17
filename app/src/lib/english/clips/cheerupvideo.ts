@@ -14,7 +14,7 @@ export const michaelCheerUp: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'aka', seg: [5.2, 14.6],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'aka', seg: [4.3, 14.9],
       stem: 'What does “otherwise known as” mean?',
       ja: '「otherwise known as」はどういう意味？',
       choices: ['Also called', 'Never called', 'Once called'], a: 0,
@@ -26,7 +26,7 @@ export const michaelCheerUp: Clip = {
       trap: 'otherwise（そうでなければ）から、否定と思いやすい。known as とひとまとまりで「別名」。',
       use: 'Bob, otherwise known as the boss.（ボブ、またの名をボス）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'freak', seg: [10.95, 18.1],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'freak', seg: [6.1, 18.1],
       stem: 'What does “This is freaking me out” mean?',
       ja: '「This is freaking me out」はどういう意味？',
       choices: ['This is upsetting me', 'This is making me happy', 'This is making me shy'], a: 0,
@@ -38,7 +38,7 @@ export const michaelCheerUp: Clip = {
       trap: 'freak out は大はしゃぎにも使う。何を聞いたあとかで向きを決める。',
       use: 'Heights totally freak me out.（高い所、ほんとに無理）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'push', seg: [17.9, 25.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'push', seg: [17.1, 25.9],
       stem: 'What does “let’s push through” mean here?',
       ja: 'ここで「let’s push through」はどういう意味？',
       choices: ['Keep going, though it’s hard', 'Skip to the happy part', 'Push the button again'], a: 0,
@@ -50,7 +50,7 @@ export const michaelCheerUp: Clip = {
       trap: 'push を「ボタンを押す」と取りやすい。through がつくと「やり通す」。',
       use: 'I’m tired, but let’s push through.（疲れたけど、がんばろう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', seg: [22.9, 46.6],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', seg: [22.9, 53.8],
       stem: 'Why will Michael need help, whatever the news is?',
       ja: 'どんな知らせでも、マイケルにはなぜ助けが必要？',
       choices: ['He may go wild either way', 'He will cry either way', 'He has to see Holly'], a: 0,
@@ -62,7 +62,7 @@ export const michaelCheerUp: Clip = {
       trap: 'worst day だけ聞くと、悲しい方に寄りやすい。either way は両方をまとめる。',
       use: 'Either way, I’ll call you tonight.（どっちにしても、今夜電話するね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'ultimatum', seg: [25.9, 30.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'ultimatum', seg: [25.9, 31.7],
       stem: 'What did Holly tell AJ?',
       ja: 'ホリーはAJに何と言った？',
       choices: ['Propose by New Year’s or split', 'Pick a wedding date or split', 'Propose by Christmas or split'], a: 0,
@@ -74,7 +74,17 @@ export const michaelCheerUp: Clip = {
       trap: '年末の話なのでクリスマスと思いやすい。by のあとは New Year’s、or のあとは break up。',
       use: 'Either you call her, or I will.（君が電話するか、僕がするか）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'burn', reveals: ['eitherway'], seg: [30.6, 39.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'attack', seg: [27.9, 35.9],
+      stem: 'Type the words: “and I’m ___ attacking people.” (2 words)', answer: 'gonna start',
+      ja: '書き取る：「and I’m ___ attacking people.」（2語）',
+      cue: '「and I’m」のすぐあと。',
+      line: 'and I’m *gonna start* attacking people.',
+      said: '「婚約してたら、おかしくなって、人に襲いかかりはじめる」と言う。',
+      mean: 'gonna ＝ going to。start の t は弱く、attacking とつながる。',
+      trap: '文法どおり going to と書きたくなる。聞こえた音のまま gonna と書く。',
+      use: 'I’m gonna start running again.（またランニング始めるんだ）' },
+
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'burn', reveals: ['eitherway'], seg: [30.6, 40.8],
       stem: 'Why might Michael burn the place down if she isn’t engaged?',
       ja: '婚約していなかったら、マイケルはなぜここを燃やすかもしれない？',
       choices: ['Out of happiness', 'Out of anger at AJ', 'By accident'], a: 0,
@@ -86,17 +96,7 @@ export const michaelCheerUp: Clip = {
       trap: 'burn（燃やす）だけ聞くと、怒りと思いやすい。理由は out of のあとに来る。',
       use: 'I almost cried out of joy.（うれしくて泣きそうだった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'attack', seg: [32.35, 34.9],
-      stem: 'Type the words: “and I’m ___ attacking people.” (2 words)', answer: 'gonna start',
-      ja: '書き取る：「and I’m ___ attacking people.」（2語）',
-      cue: '「and I’m」のすぐあと。',
-      line: 'and I’m *gonna start* attacking people.',
-      said: '「婚約してたら、おかしくなって、人に襲いかかりはじめる」と言う。',
-      mean: 'gonna ＝ going to。start の t は弱く、attacking とつながる。',
-      trap: '文法どおり going to と書きたくなる。聞こえた音のまま gonna と書く。',
-      use: 'I’m gonna start running again.（またランニング始めるんだ）' },
-
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.75, 46.6],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.1, 51.1],
       stem: 'What does “I am going to need some talking down” mean?',
       ja: '「I am going to need some talking down」はどういう意味？',
       choices: ['Someone must calm me down', 'Someone must talk to me less', 'Someone must keep me company'], a: 0,
@@ -119,7 +119,7 @@ export const michaelCheerUp: Clip = {
       trap: 'nobody… like は他人への不満に聞こえやすい。比べた結果、選ばれたのが誰かを聞くと、本人の話。',
       use: 'Nobody makes pancakes like my dad.（パンケーキは父のが一番）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.35, 59.15],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.4, 61.3],
       stem: 'Why does Michael say “Sorry” after “It’s not”?',
       ja: '「It’s not」のあと、マイケルはなぜ「Sorry」と言う？',
       choices: ['The two words ran together', 'The word “not” was lost', 'It was too loud'], a: 0,
@@ -131,7 +131,7 @@ export const michaelCheerUp: Clip = {
       trap: 'Sorry を態度へのおわびと思いやすい。sounded like ＝ 〜に聞こえた、で音の話。',
       use: 'Sorry, it sounded like you said “nine”.（ごめん、「9」って聞こえた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sort', seg: [66.2, 92.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sort', seg: [65.9, 92.5],
       stem: 'What are Michael and Erin doing with the items?',
       ja: 'マイケルとエリンは品物で何をしている？',
       choices: ['Things for happy or sad news', 'Gifts for Holly and Erin', 'Things to keep or to throw out'], a: 0,
@@ -143,7 +143,7 @@ export const michaelCheerUp: Clip = {
       trap: 'Chocolates for you で贈り物と思いやすい。毎回の happy / sad を聞く。',
       use: 'This pile is keep, that one is toss.（こっちは残す、あっちは捨てる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sponge', seg: [70, 73.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'sponge', seg: [69.1, 74.4],
       stem: 'What is the sponge for?',
       ja: 'スポンジは何のため？',
       choices: ['Soaking up his tears', 'Mopping up champagne', 'Wiping down a table'], a: 0,
@@ -155,7 +155,7 @@ export const michaelCheerUp: Clip = {
       trap: '直前のシャンパンと結びつけて「こぼれたのをふく」と思いやすい。to のあとを聞く。',
       use: 'Use bread to soak up the sauce.（パンでソースをすくって）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'choc', seg: [80.1, 88.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'choc', seg: [80.1, 89.6],
       stem: 'Where do the chocolates go?',
       ja: 'チョコレートはどうなる？',
       choices: ['To Erin, as thanks', 'Into the happy pile', 'Into the sad pile'], a: 0,
@@ -167,7 +167,7 @@ export const michaelCheerUp: Clip = {
       trap: 'それまでの流れで、happy か sad を待ちやすい。流れが変わった所を聞く。',
       use: 'These are for you. Thanks for everything.（これ、どうぞ。いろいろありがとう）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'stage', seg: [99.7, 102.8],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'stage', seg: [98.8, 105.3],
       stem: 'Fill the gap: “I hope she ___ call us up on stage.”',
       ja: '空所を埋める：「I hope she ___ call us up on stage.」',
       choices: ['doesn’t', 'does', 'won’t'], a: 0,
@@ -179,7 +179,7 @@ export const michaelCheerUp: Clip = {
       trap: 't が聞こえず does を選びやすい。最後の「ン」を聞く。won’t なら「ウォウン」で始まる。',
       use: 'I hope it doesn’t rain tomorrow.（明日、雨が降りませんように）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'erin', seg: [108.7, 119.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'erin', seg: [106.3, 111.3],
       stem: 'How does Erin feel about Michael’s day?',
       ja: 'マイケルの今日のことを、エリンはどう思っている？',
       choices: ['Happy either way', 'Happy only if Holly says yes', 'Worried either way'], a: 0,
@@ -202,7 +202,7 @@ export const michaelCheerUp: Clip = {
       trap: 'よくある励まし「彼女が後悔する」に聞こえやすい。主語 he と avoiding を聞くと、失敗は彼の側。',
       use: 'You dodged a bullet there.（危ないところだったね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'board', seg: [120.5, 127.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'board', seg: [120.5, 128.4],
       stem: 'How does Holly sound when she comes in?',
       ja: '入ってきたとき、ホリーはどんな様子？',
       choices: ['Happy and playful', 'Tired and bored', 'Nervous and quiet'], a: 0,
@@ -214,7 +214,7 @@ export const michaelCheerUp: Clip = {
       trap: '最後通告の日なので、緊張と思いやすい。friend や his name で気分が分かる。',
       use: 'I’d like to introduce you to my friend.（友だちを紹介させて）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'ring', seg: [136.4, 149.05],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'ring', seg: [135.4, 147.1],
       stem: 'Why does Michael keep asking to feel Holly’s hand?',
       ja: 'マイケルはなぜ何度もホリーの手をさわろうとする？',
       choices: ['To see what’s under her mitten', 'To start a pretend interview', 'To calm her down'], a: 0,
@@ -237,7 +237,7 @@ export const michaelCheerUp: Clip = {
       trap: '取引先の名前が出るので、本当の仕事の話と取りやすい。直前の一言を受けた返しかを聞く。',
       use: 'Yes, sir. Right away, sir.（はい、ただちに）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'heat', seg: [156.2, 160.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'heat', seg: [156, 161.3], keep: true,
       stem: 'What temperature does someone offer to set the heat to?',
       ja: '暖房を何度にしようかと言っている？',
       choices: ['19', '80', '90'], a: 2,
@@ -249,7 +249,7 @@ export const michaelCheerUp: Clip = {
       trap: '19℃ならふつうの室温で選びやすい。nineteen は後ろが強く長い。eighty なら「エイ」で始まる。',
       use: 'Can you turn the heat up a bit?（暖房、少し上げてくれる？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'mittens', reveals: ['ring'], seg: [156.2, 160.95],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'mittens', reveals: ['ring'], seg: [156.2, 162],
       stem: 'Why turn the heat way up?',
       ja: 'なぜ暖房をうんと上げる？',
       choices: ['So Holly takes off her mittens', 'So Holly takes off her big coat', 'So Holly leaves early'], a: 0,
@@ -261,7 +261,7 @@ export const michaelCheerUp: Clip = {
       trap: 'smoke out を「追い出す」と取りやすい。最後の文が目的。',
       use: 'You can’t hide in there forever.（ずっとそこに隠れてはいられないよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'yesno', seg: [156.2, 163.6],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'yesno', seg: [156.2, 164.7],
       stem: 'What is Michael’s real answer to the heat idea?',
       ja: '暖房の案に、マイケルの本当の答えは？',
       choices: ['Yes', 'No', 'He doesn’t know'], a: 0,
@@ -273,7 +273,7 @@ export const michaelCheerUp: Clip = {
       trap: 'No や Stop だけ聞くと反対に聞こえる。最後に何と言ったかで決まる。',
       use: 'No. Well… okay, yes.（だめ。いや…まあ、いいよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'told', seg: [173.2, 178.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'told', seg: [172.6, 179.4],
       stem: 'What does Holly finally figure out?',
       ja: 'ホリーは最後に何に気づく？',
       choices: ['Everyone knows about the ultimatum', 'Everyone knows she is engaged', 'Everyone likes her new board'], a: 0,

@@ -28,7 +28,7 @@ export const realityExposed: Clip = {
       trap: 'Oh, do we live together? That’s fun. の明るい返事は、けんかをかわしただけ。ほしいのは conflict。',
       use: 'Let’s try this one more time.（もう一回やってみよう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'jar', seg: [26.3, 34.8], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'jar', seg: [25.3, 37.1], keep: true,
       stem: 'What went wrong with the peanut butter?',
       ja: 'ピーナッツバターで何がまずかった？',
       choices: ['The empty jar went back', 'The jar was in the wrong place', 'The lid was left off'], a: 0,
@@ -52,7 +52,7 @@ export const realityExposed: Clip = {
       trap: '小さな不満への明るい返事は皮肉にも聞こえるが、ここは本当に知らなかった、という返し。',
       use: 'Wait, since when do we do that?（え、いつからそうなってたの？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'hitme', seg: [38.9, 46.0], keep: true,
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'hitme', seg: [37.9, 46.2], keep: true,
       stem: 'What is “Why don’t you just hit me”?',
       ja: '「Why don’t you just hit me」は何？',
       choices: ['A suggestion to do it', 'A question asking why', 'A complaint about it'], a: 0,
@@ -86,7 +86,7 @@ export const realityExposed: Clip = {
       trap: 'riders と音が近く、wine から waiters も浮かぶ。番組に欠けた物、という流れで決める。',
       use: 'The writers really nailed this episode.（この回の脚本は最高だね）' },
 
-    { id: 'i6', skill: 'infer', level: 'B2', point: 'feelings', seg: [85.1, 91.2], keep: true,
+    { id: 'i6', skill: 'infer', level: 'B2', point: 'feelings', seg: [85.1, 90.7], keep: true,
       stem: 'What does “but it’s complicated” show?',
       ja: '「but it’s complicated」から何が分かる？',
       choices: ['She may have some feelings', 'She is sure she has none', 'Freddie has feelings for her'], a: 0,
@@ -98,7 +98,7 @@ export const realityExposed: Clip = {
       trap: 'I don’t have feelings だけ聞くと、はっきり否定に聞こえる。but のあとに本音が来る。',
       use: 'I’m fine, but it’s complicated.（大丈夫。でもちょっと複雑で）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dino', seg: [110.8, 117.8], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dino', seg: [110.8, 118.6], keep: true,
       stem: 'What happened on their last TV show?',
       ja: '前のテレビ番組で何があった？',
       choices: ['A dinosaur replaced them', 'They played a dinosaur', 'A dinosaur was their co-star'], a: 0,
@@ -133,7 +133,7 @@ export const realityExposed: Clip = {
       trap: '質問の形なので給料の話やほめ言葉に取りやすい。返事は言葉の形でなく、相手のしたことに返す。',
       use: 'Sorry, that was way too much info.（ごめん、話しすぎたね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'watch', seg: [130.9, 139.8], keep: true,
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'watch', seg: [130.9, 140.6], keep: true,
       stem: 'What does “arms crossed, watching closely” show?',
       ja: '「腕を組んで、じっと見る」から何が分かる？',
       choices: ['She doesn’t trust him', 'She is proud of him', 'She waits calmly'], a: 0,
@@ -145,7 +145,7 @@ export const realityExposed: Clip = {
       trap: 'watching closely だけなら応援にも思える。arms crossed（腕組み）は警戒のしるし。',
       use: 'I’ll be watching closely.（しっかり見てるからね）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'sayno', seg: [140.5, 143.8],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'sayno', seg: [139.3, 144.3],
       stem: 'What does Freddie mean by “how can I say no?”',
       ja: 'フレディの「how can I say no?」はどういう意味？',
       choices: ['Yes, of course I will', 'Let me think about it', 'Help me say no'], a: 0,
@@ -157,7 +157,7 @@ export const realityExposed: Clip = {
       trap: '質問の形なので、断り方を聞いていると思いやすい。答えはいらない、「イエス」の言い方。',
       use: 'Free pizza? How can I say no?（タダのピザ？断れないよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fee', seg: [143.9, 148.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fee', seg: [140.8, 149.5], keep: true,
       stem: 'What hourly pay comes up after the story?',
       ja: '話のあとに出てくる時給はいくら？',
       choices: ['$20', '$200', '$2,000'], a: 1,
@@ -169,7 +169,7 @@ export const realityExposed: Clip = {
       trap: 'twenty なら「トゥエンティ」。thousand なら「サウ」の音。「トゥー・ハンドレッ」なら200。',
       use: 'It’s twenty dollars an hour.（時給20ドルです）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'toolate', seg: [149.5, 156.0],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'toolate', seg: [149.5, 156.8],
       stem: 'What does “Is it too late to…?” ask?',
       ja: '「Is it too late to…?」は何を聞いている？',
       choices: ['Can we still do it?', 'Why are we so late?', 'What time is it now?'], a: 0,
@@ -192,7 +192,7 @@ export const realityExposed: Clip = {
       trap: 'height で安全の話に取りやすい。理由は use … to のあとの confrontation。',
       use: 'Use that energy to fuel your workout.（そのエネルギーを運動に回して）' },
 
-    { id: 'x3', skill: 'dict', level: 'B1', point: 'helmet', seg: [175.7, 179.3], keep: true,
+    { id: 'x3', skill: 'dict', level: 'B1', point: 'helmet', seg: [174.7, 181.2], keep: true,
       stem: 'Type the request: “___ helmet?” (4 words)', answer: 'can i get a',
       ja: '「helmet?」の前の4語を書こう。',
       cue: '空中の話のすぐあと。',
@@ -222,7 +222,7 @@ export const realityExposed: Clip = {
       trap: 'should be と書きたくなるが、言われたのは have been。弱い語ほど音の数を数える。',
       use: 'That should have been done yesterday.（それは昨日やるべきだった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'receipts', seg: [230.1, 236.6], keep: true,
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'receipts', seg: [230.1, 238.9], keep: true,
       stem: 'What does “I’ve got the receipts” mean here?',
       ja: 'ここでの「I’ve got the receipts」の意味は？',
       choices: ['I have proof of it', 'I have store bills', 'I was paid to say it'], a: 0,
@@ -234,7 +234,7 @@ export const realityExposed: Clip = {
       trap: 'receipt はふつう「レシート」だが、言い争いの場面では「証拠」の意味で使う。',
       use: 'Don’t lie. I’ve got the receipts.（ごまかさないで。証拠あるから）' },
 
-    { id: 'h6', skill: 'humor', level: 'C1', point: 'cvs', reveals: ['receipts'], seg: [230.1, 241.7],
+    { id: 'h6', skill: 'humor', level: 'C1', point: 'cvs', reveals: ['receipts'], seg: [231.1, 243.1],
       stem: 'Why is “Those are from CVS” funny?',
       ja: '「Those are from CVS」はなぜおかしい？',
       choices: ['They’re real store receipts', 'Someone went shopping', 'The receipts are blank'], a: 0,

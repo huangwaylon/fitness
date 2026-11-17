@@ -17,7 +17,7 @@ export const bondtux: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'deal', seg: [1.4, 8.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'deal', seg: [1.4, 11],
       stem: 'What is Chandler offered on the tuxes?',
       ja: 'タキシードについて、チャンドラーは店に何を言われる？',
       choices: ['A special lower price', 'A tux made just for him', 'A free second tux'], a: 0,
@@ -29,7 +29,7 @@ export const bondtux: Clip = {
       trap: 'make は「作る」なので「新しく作る」と思いやすい。a のあとの deal まで聞く。',
       use: 'Buy two and I’ll make you a deal.（2つ買うならまけますよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [8.1, 11.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [6.7, 11.7], keep: true,
       stem: 'How many tuxes has Monica already approved?',
       ja: 'モニカが前もって OK したのは何着？',
       choices: ['Two', 'Three', 'Four'], a: 1,
@@ -41,7 +41,7 @@ export const bondtux: Clip = {
       trap: 'these と three は出だしが似る。three は「スリー」と r が入る。two は「トゥー」、four は「フォー」。',
       use: 'These three are already approved.（この3つはもう承認ずみです）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'guest', seg: [13.4, 24.4],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'guest', seg: [14.1, 24.2],
       stem: 'What is Rachel’s job at the wedding?',
       ja: '結婚式でのレイチェルの役目は？',
       choices: ['Monica’s maid of honor', 'Chandler’s special guest', 'The wedding planner'], a: 0,
@@ -53,7 +53,7 @@ export const bondtux: Clip = {
       trap: '先に as my guest（僕の客として）が聞こえ、そう思いやすい。答えは返事。',
       use: 'Thanks a lot for helping me.（手伝ってくれて本当にありがとう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [30.6, 36.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [30.6, 39.2],
       stem: 'Once the celebrities are done with the tuxes, what do they do?',
       ja: '有名人は、使い終わったタキシードをどうする？',
       choices: ['They send them back', 'They sell them cheaply', 'They give them away'], a: 0,
@@ -76,7 +76,7 @@ export const bondtux: Clip = {
       trap: 'fabulous で見た目、less で「TV を減らせ」と取りやすい。何と何の比較かを聞く。',
       use: 'Might I suggest a little less coffee?（コーヒー、少し控えたら？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'oneill', seg: [60.4, 70.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'oneill', seg: [65.8, 71.4],
       stem: 'Who is the second celebrity, says Rachel?',
       ja: 'レイチェルによると、2人目の有名人は誰？',
       choices: ['A sports team player', 'An actor in a TV show', 'A TV news reporter'], a: 0,
@@ -88,7 +88,7 @@ export const bondtux: Clip = {
       trap: 'plays だけだと俳優を思いやすい。play のあとの for が目印。',
       use: 'My brother plays for a local team.（兄は地元のチームでプレーしてる）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'background', seg: [68.6, 74.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'background', seg: [68.6, 75],
       stem: 'What does Rachel tell Chandler to do with sports TV?',
       ja: 'レイチェルは、スポーツ番組をどうしてと言う？',
       choices: ['Leave it on, not watching', 'Watch it from the back', 'Watch it very closely'], a: 0,
@@ -112,7 +112,7 @@ export const bondtux: Clip = {
       trap: 'Seriously を強い命令と取りやすい。要求が下がり続けたら、本気の指示より冗談を疑う。',
       use: 'Just one vegetable. Once a week. Please.（野菜1つでいい。週1でいいから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'while', seg: [71.3, 74.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'while', seg: [69.4, 74.4],
       stem: 'Type what Rachel says: “Just ___.” (4 words)', answer: 'once in a while',
       ja: '「Just ___.」の4語を書こう。',
       cue: 'Seriously, ESPN のすぐあと。',
@@ -122,7 +122,7 @@ export const bondtux: Clip = {
       trap: 'once の s と in、in と a がつながって1語に聞こえやすい。a も弱く短い。',
       use: 'I cook once in a while.（たまに料理するよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'brosnan', seg: [77.5, 86.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'brosnan', seg: [77.4, 89.2],
       stem: 'How does Chandler feel about the Bond tux?',
       ja: 'ボンドのタキシードと聞いて、チャンドラーはどう感じる？',
       choices: ['Very excited', 'A bit bored', 'Quite angry'], a: 0,
@@ -145,7 +145,7 @@ export const bondtux: Clip = {
       trap: 'not で反対意見に取りやすい。not just なら「それだけじゃない」。',
       use: 'It’s not just good. It’s amazing.（いいなんてもんじゃない、最高だよ）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'guess', seg: [104.5, 111.0],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'guess', seg: [104.5, 111.3],
       stem: 'Ross says, “Guess what…?” What is he about to do?',
       ja: 'ロスの「Guess what…?」は、何をする前の言葉？',
       choices: ['Share some news', 'Ask a quiz question', 'Say he is sorry'], a: 0,
@@ -169,7 +169,7 @@ export const bondtux: Clip = {
       trap: '最初の date の冗談で、デートの話と思いやすい。No のあとが本題。',
       use: 'Wait, we have the same shirt!（待って、同じシャツだ！）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hookup', seg: [111.8, 118.0],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hookup', seg: [110.8, 118.1],
       stem: 'What did Rachel do about Ross’s tux?',
       ja: 'ロスのタキシードについて、レイチェルは何をした？',
       choices: ['She got it for him', 'She hung it up for him', 'She told him to rent one'], a: 0,
@@ -203,7 +203,7 @@ export const bondtux: Clip = {
       trap: 'あいまいさを「見ていない」と取りやすいが、そうは言っていない。言い直しは物忘れの合図。',
       use: 'You know, that movie with the dog in it.（ほら、犬が出てたあの映画）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'lessspecial', seg: [128.5, 135.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'lessspecial', seg: [128.5, 136.4],
       stem: 'Why doesn’t Chandler want Ross to wear his tux?',
       ja: 'チャンドラーはなぜ、ロスにそのタキシードを着てほしくない？',
       choices: ['It would make his less special', 'Batman and Bond don’t match', 'Monica didn’t approve it'], a: 0,
@@ -226,7 +226,7 @@ export const bondtux: Clip = {
       trap: 'Bond の話のあとなので、それが欲しいと取りやすい。立派な話のあと、その人が何を手放したかを見る。',
       use: 'Money isn’t everything. So, my turn to pick.（お金がすべてじゃない。じゃ、僕が選ぶね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'pretty', seg: [149.7, 156.6],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'pretty', seg: [149.7, 157.2],
       stem: 'How does Ross answer Chandler’s “Pretty please”?',
       ja: 'チャンドラーの「Pretty please」に、ロスはどう返す？',
       choices: ['He teases him', 'He says yes', 'He gets angry'], a: 0,
@@ -238,7 +238,7 @@ export const bondtux: Clip = {
       trap: 'くり返すので同情していると思いやすい。続く Not very 007 がからかい。',
       use: 'Can I have one? Pretty please?（1つちょうだい？お願い！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 163.6],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 164.1],
       stem: 'Why does Chandler say, “It’s my wedding day”?',
       ja: 'チャンドラーはなぜ「今日は僕の結婚式だ」と言う？',
       choices: ['To make Ross say yes', 'To say sorry to Ross', 'To end the talk'], a: 0,
@@ -250,7 +250,7 @@ export const bondtux: Clip = {
       trap: 'Look, … okay? は謝りにも聞こえるが、続くのはロスに求める話。',
       use: 'Come on, it’s my birthday.（ねえ、今日は私の誕生日だよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stinks', seg: [173.5, 179.0],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stinks', seg: [173.5, 183.4],
       stem: 'What does “That stinks” mean here?',
       ja: 'ここでの「That stinks」はどんな意味？',
       choices: ['That’s too bad', 'That smells bad', 'That’s so funny'], a: 0,
@@ -262,7 +262,7 @@ export const bondtux: Clip = {
       trap: 'stinks から、においの話と思いやすい。ここは悪い知らせへの返事。',
       use: 'You have to work Sunday? That stinks.（日曜も仕事？最悪だね）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'notgonna', seg: [180.9, 185.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'notgonna', seg: [180.1, 185.8],
       stem: 'Fill the gap: “Does that mean ___ gonna be wearing yours?”',
       ja: '「Does that mean ___ gonna be wearing yours?」の空所は？',
       choices: ['you’re', 'you’re not', 'you were'], a: 1,

@@ -15,7 +15,7 @@ export const ronDiane: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'doctors', seg: [5.7, 12.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'doctors', seg: [5.7, 11.8],
       stem: 'What do the girls want to be, says Ann?',
       ja: '女の子たちは何になりたいとアンは言う？',
       choices: ['Doctors', 'Babysitters', 'Nurses'], a: 0,
@@ -46,7 +46,7 @@ export const ronDiane: Clip = {
       trap: 'surgery（手術）からけがを思いやすいが、あとで Nobody got hurt と言う。',
       use: 'Put the scissors down, please.（ハサミを置いてちょうだい）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'negotiation', seg: [18.7, 24.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'negotiation', seg: [17.8, 24.9],
       stem: 'What does “this is not a negotiation” mean?',
       ja: '「this is not a negotiation」はどういう意味？',
       choices: ['Just do it, no talking', 'Let’s talk about it first', 'This is only a game'], a: 0,
@@ -57,7 +57,7 @@ export const ronDiane: Clip = {
       trap: 'negotiation から取引の話を思いやすいが、not が付いている。すぐあとの命令が答え。',
       use: 'This is not up for discussion.（これは話し合う余地なし）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'jerry', seg: [32.4, 38.65],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'jerry', seg: [32.4, 41.1],
       stem: 'What does “I never thought I would say this” show?',
       ja: '「I never thought I would say this」から何が分かる？',
       choices: ['Ann doesn’t usually feel this', 'Ann tells him this daily', 'Ann forgot what to say'], a: 0,
@@ -68,7 +68,7 @@ export const ronDiane: Clip = {
       trap: 'glad だけ聞くと、いつも歓迎しているように思いやすい。前置きがふだんとの違い。',
       use: 'I never thought I’d say this, but thanks.（まさか言うとは。でもありがとう）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [38.0, 41.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [34.8, 41.8],
       stem: 'Fill the gap: “Well, ___ be one of these, right?”',
       ja: '「Well, ___ be one of these, right?」の空所は？',
       choices: ['it’s got to', 'it’s going to', 'it ought to'], a: 0,
@@ -79,7 +79,7 @@ export const ronDiane: Clip = {
       trap: '「ガラ」なら got to、「ゴナ」なら going to、「オータ」なら ought to。真ん中の音を聞く。',
       use: 'It’s got to be here somewhere.（どこかにあるはずなんだけど）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'pressure', seg: [50.3, 55.15],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'pressure', seg: [49.4, 55.2],
       stem: 'Type: “I’m not good ___ like this.” (2 words)', answer: 'under pressure',
       ja: '「Okay, I’m not good ___ like this.」の空所を書こう（2語）',
       cue: '「I’m not good」のあと。', line: 'Okay, I’m not good *under pressure* like this.',
@@ -88,7 +88,7 @@ export const ronDiane: Clip = {
       trap: 'good under が「グダンダー」とひと続きになる。under の u は「ア」に近い。',
       use: 'I don’t work well under pressure.（追いつめられると力が出ない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [70.6, 75.8],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [69.6, 78.1],
       stem: 'Why does Ann say “Why don’t you girls…”?',
       ja: 'アンは、なぜ「Why don’t you girls…」と言う？',
       choices: ['To tell them what to do', 'To ask why they didn’t clean', 'To say they did well'], a: 0,
@@ -99,7 +99,7 @@ export const ronDiane: Clip = {
       trap: 'why から「なぜ」と思うと「なぜ片付けないの？」になる。ここは「〜して」。',
       use: 'Why don’t you sit down for a minute?（ちょっと座ったら？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hurt', seg: [79.4, 84.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hurt', seg: [79.4, 84.8],
       stem: 'Why does Ann think it’s not that bad?',
       ja: 'アンはなぜそれほどひどくないと思う？',
       choices: ['Nobody got hurt', 'The girls cleaned up', 'Hair grows back'], a: 0,
@@ -110,7 +110,7 @@ export const ronDiane: Clip = {
       trap: '「髪は伸びる」は言いそうだが、言っていない。not that bad のすぐあとを聞く。',
       use: 'It’s not that bad. Nobody got hurt.（そこまでひどくないよ。誰もけがしてない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'show', seg: [83.4, 91.5],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'show', seg: [83.4, 92.6],
       stem: 'What does Ron want to show Diane?',
       ja: 'ロンはダイアンに何を見せたい？',
       choices: ['He can watch her kids safely', 'He can make her kids happy', 'He can cook for her kids'], a: 0,
@@ -121,7 +121,7 @@ export const ronDiane: Clip = {
       trap: 'children で止めると「楽しませる」とも思いやすい。without のあとは事故の話。',
       use: 'I’m capable of handling this.（これくらい自分でできます）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'didyou', seg: [92.4, 95.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'didyou', seg: [91.4, 97.6],
       stem: 'Fill the gap: “___ just say you love Diane?”',
       ja: '「___ just say you love Diane?」の空所は？',
       choices: ['Did you', 'Didn’t you', 'Could you'], a: 0,
@@ -132,7 +132,7 @@ export const ronDiane: Clip = {
       trap: 'Didn’t なら「ン」が入り、Could なら「ク」で始まる。「ディジュ」なら Did you。',
       use: 'Did you just call me “sir”?（今「サー」って呼んだ？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'deny', seg: [92.4, 98.45],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'deny', seg: [92.4, 98.5],
       stem: 'How does Ron answer Ann’s question?',
       ja: 'アンの質問に、ロンはどう答える？',
       choices: ['He says he didn’t say it', 'He says he loves the girls', 'He says yes, only to Ann'], a: 0,
@@ -143,7 +143,7 @@ export const ronDiane: Clip = {
       trap: '最後の Yes, you did をロンの返事と思いやすい。声が替わったところに注意。',
       use: 'I did not. — You totally did.（言ってないって。——絶対言った）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'focus', reveals: ['deny'], seg: [97.0, 103.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'focus', reveals: ['deny'], seg: [97, 104.7],
       stem: 'Why does Ron tell Ann to “focus on the larger problem”?',
       ja: 'ロンはなぜ「focus on the larger problem」と言う？',
       choices: ['To change the topic', 'To end the babysitting', 'To ask her for help'], a: 0,
@@ -163,7 +163,7 @@ export const ronDiane: Clip = {
       mean: '聞き違いなら口止めはいらない。頼むほど本当だとばれる。',
       trap: 'incorrectly を信じると「うそを叱る」に見える。否定と口止めがセットなら本音は口止め。',
       use: 'Whatever you heard, keep it to yourself.（何を聞いたにせよ、内緒でね）' },
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'incident', seg: [122.0, 129.8],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'incident', seg: [121, 130.5],
       stem: 'How does Ann start telling Diane the news?',
       ja: 'アンはダイアンにどう話し始める？',
       choices: ['Everyone’s fine, but something happened', 'Someone got hurt, but not badly', 'Everyone’s fine, nothing happened'], a: 0,
@@ -174,7 +174,7 @@ export const ronDiane: Clip = {
       trap: 'fine と no one だけ拾うと「何もない」に聞こえやすい。but のあとに本題。',
       use: 'First of all, everyone’s okay, but…（まず、みんな無事なんだけど…）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['calm', 'lovetoo'], seg: [128, 168.05],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['calm', 'lovetoo'], seg: [128, 168.1],
       stem: 'How does Diane take the news?',
       ja: 'ダイアンは知らせをどう受け止める？',
       choices: ['Calmly, she isn’t angry', 'She is angry at Ann', 'She is very upset'], a: 0,
@@ -185,7 +185,7 @@ export const ronDiane: Clip = {
       trap: 'アンが「私のせい」と言うので責められる話に思いやすいが、ダイアンは怒っていない。',
       use: 'It turned out fine in the end.（結局うまくいったよ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'fault', seg: [132.0, 137.4],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'fault', seg: [131.1, 138.4],
       stem: 'Who tells Diane “this is all my fault”?',
       ja: '「this is all my fault」とダイアンに言うのは誰？',
       choices: ['Ann', 'Ron', 'Jerry'], a: 0,
@@ -196,7 +196,7 @@ export const ronDiane: Clip = {
       trap: '一番気にしていたのはロンなので、ロンと思いやすい。女性の声と nurse’s bag で判断。',
       use: 'That’s my fault. I’m sorry.（それは私のせいです。ごめんなさい）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'calm', seg: [139.4, 142.8],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'calm', seg: [137.8, 143.8],
       stem: 'How does Diane sound when she asks about the scissors?',
       ja: 'ハサミのことを聞くとき、ダイアンはどんな調子？',
       choices: ['Playful, not angry', 'Angry, wanting a name', 'Upset, but hiding it'], a: 0,
@@ -207,7 +207,7 @@ export const ronDiane: Clip = {
       trap: 'who で始まる質問は犯人探しに聞こえやすい。having fun（楽しんだ）の言い方で分かる。',
       use: 'Who’s been eating my cookies, huh?（クッキー食べてたのは誰かな？）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'calm', seg: [144.9, 150.55],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'calm', seg: [144.9, 153.8],
       stem: 'Why does Diane tell the story about Zoe?',
       ja: 'ダイアンはなぜゾーイの話をする？',
       choices: ['Worse things happened before', 'Zoe is the one to blame', 'Zoe’s games are getting worse'], a: 0,
@@ -218,7 +218,7 @@ export const ronDiane: Clip = {
       trap: 'ゾーイの名前が出るので犯人の話に聞こえやすい。Once（前に一度）は昔の話の合図。',
       use: 'Don’t worry. Once I locked myself out.（気にしないで。私なんか締め出されたことある）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'sorry', seg: [146.3, 153.45],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'sorry', seg: [146.3, 157],
       stem: 'How does Ron feel after Diane says it’s fine?',
       ja: 'ダイアンが平気と言ったあと、ロンはどんな気持ち？',
       choices: ['Still very sorry', 'Happy and relaxed', 'Angry at the girls'], a: 0,
@@ -247,7 +247,7 @@ export const ronDiane: Clip = {
       mean: 'さっきは「言ってない」と否定し、子どもに口止めまでした言葉。本人に言われると、すんなり出てくる。',
       trap: 'Ann への返事を「黙った」「認めた」と覚えがち。前の場面の言葉そのものを思い出すと落差が分かる。',
       use: 'Well, since you asked… yes.（まあ、聞かれたから言うけど…うん）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cue', seg: [163.8, 168.05],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cue', seg: [163.1, 169.4],
       stem: 'What does Ann mean by “That’s my cue”?',
       ja: 'アンの「That’s my cue」はどういう意味？',
       choices: ['It’s time for me to go', 'It’s time to take the girls', 'It’s my turn to talk'], a: 0,

@@ -16,7 +16,7 @@ export const sandScam: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'coins', seg: [18.9, 25.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'coins', seg: [18.9, 27.9], keep: true,
       stem: 'How many bonus sand coins did Freddie’s one case earn?',
       ja: 'フレディは1ケース売って、ボーナスのコインを何枚もらった？',
       choices: ['5,000', '15,000', '50,000', '500,000'], a: 2,
@@ -28,7 +28,7 @@ export const sandScam: Clip = {
       trap: '「フィフティ」なら 50,000、「ファイブ」なら 5,000、「フィフティーン」なら 15,000、hundred 付きは 500,000。',
       use: 'That netted me fifty dollars.（それで50ドルの稼ぎになった）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'buy', seg: [18.9, 27.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'buy', seg: [18.9, 27.9],
       stem: 'What did Freddie do with his bonus sand coins?',
       ja: 'フレディはボーナスのコインで何をした？',
       choices: ['He bought more sand', 'He got the sand scooter', 'He saved it for his daughter'], a: 0,
@@ -40,7 +40,7 @@ export const sandScam: Clip = {
       trap: 'scooter は最初に見せた景品。daughter はこのあとの話。which のあとが使い道。',
       use: 'I used it to buy a new phone.（それで新しい携帯を買ったの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'rich', seg: [27.4, 31.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'rich', seg: [26.4, 34.5],
       stem: 'Fill the gap: “Oh, ___ rich…”',
       ja: '「Oh, ___ rich…」の空所は？',
       choices: ['I’m gonna be', 'I wanna be', 'I’m gonna get'], a: 0,
@@ -52,7 +52,7 @@ export const sandScam: Clip = {
       trap: 'wanna は「ワナ」、gonna は「ゴナ」。get なら最後に「ゲッ」と聞こえる。',
       use: 'I’m gonna be late, sorry.（ごめん、遅れそう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'net', seg: [38.4, 45.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'net', seg: [38.1, 46.3],
       stem: 'What does “leaps without a net” mean?',
       ja: '「leaps without a net」はどういう意味？',
       choices: ['Takes big risks', 'Sells things online', 'Learns very fast'], a: 0,
@@ -76,7 +76,7 @@ export const sandScam: Clip = {
       trap: '文頭の Yeah は同意に聞こえるが、続きが本音。相手の言葉の言い換えに注意。',
       use: 'Yeah, straight into trouble.（うん、まっすぐトラブルにね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'scheme', seg: [66.4, 74.6],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'scheme', seg: [66.4, 75.1],
       stem: 'In the podcast fan’s explanation, what is a seller’s only way out?',
       ja: 'ポッドキャスト好きの説明では、売り手の唯一の逃げ道は？',
       choices: ['Getting more people to sell', 'Buying a lot more stock', 'Selling stock off cheap'], a: 0,
@@ -124,7 +124,7 @@ export const sandScam: Clip = {
       trap: 'brave だけならほめ言葉。長い副詞は話し手の評価なので、最後まで聞く。',
       use: 'He bravely, and unwisely, said yes.（勇敢に、そして軽率に引き受けた）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'head', reveals: ['brushoff'], seg: [100.2, 109.3],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'head', reveals: ['brushoff'], seg: [100.2, 109.6],
       stem: 'What does “I’ve got my head in the sand” mean?',
       ja: '「I’ve got my head in the sand」はどういう意味？',
       choices: ['I won’t look at the problem', 'I’m way too busy to talk', 'I’ll hide for a while'], a: 0,
@@ -148,7 +148,7 @@ export const sandScam: Clip = {
       trap: 'pretended は砂を使う前の話。大げさな前置きのあとは、オチを待つ。',
       use: 'Long story short, I forgot.（要するに、忘れてたの）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'promo', seg: [167.4, 176.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'promo', seg: [167.4, 177.8], keep: true,
       stem: 'How much off does the promo code give?',
       ja: 'プロモコードで何パーセント引きになる？',
       choices: ['5%', '15%', '50%'], a: 0,
@@ -184,7 +184,7 @@ export const sandScam: Clip = {
       trap: '効き目の話に聞こえるが、問いは a fraud か。she が誰を指すか考える。',
       use: 'Is it still lying if you didn’t know?（知らなかったら嘘にならない？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'spin', seg: [228.9, 236.3],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'spin', seg: [228.9, 237.7],
       stem: 'Why does the show say “before calm sand” here?',
       ja: '番組ではここでなぜ「before calm sand」と言う？',
       choices: ['To make it a sales demo', 'To call it all a joke', 'To cut to a commercial'], a: 0,
@@ -196,7 +196,7 @@ export const sandScam: Clip = {
       trap: '冗談扱いに聞こえるが、続くのは before calm sand。使用前の実演にしている。',
       use: 'And that’s what it looked like before.（そしてこれが以前の姿です）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'drink', seg: [236.1, 239.6],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'drink', seg: [235.1, 241.8],
       stem: 'Fill the gap: “Here, Carly. ___ take a nice big drink?”',
       ja: '「Here, Carly. ___ take a nice big drink?」の空所は？',
       choices: ['Why don’t you', 'Why won’t you', 'Won’t you'], a: 0,
@@ -208,7 +208,7 @@ export const sandScam: Clip = {
       trap: 'won’t なら「ウォウン」と口を丸める。Won’t you なら最初に Why がない。',
       use: 'Why don’t you have some water?（お水でも飲んだら？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'fishfood', seg: [241.6, 252.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'fishfood', seg: [247.6, 255],
       stem: 'When Carly refuses the drink, what does she say is in it?',
       ja: '飲むのを断るとき、カーリーは中に何が入っていると言う？',
       choices: ['Fish food', 'Antioxidants', 'Beach sand'], a: 0,
@@ -232,7 +232,7 @@ export const sandScam: Clip = {
       trap: 'legally proven を「お墨付き」と聞きやすい。not が何を打ち消すかを追う。',
       use: 'Technically, it’s not illegal.（厳密に言えば、違法ではない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'meetup', seg: [262.2, 266.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'meetup', seg: [262.1, 269.2],
       stem: 'Type the gap: “That’s why you ___, so…” (4 words)',
       answer: 'wanted to meet up',
       ja: '「That’s why you ___, so…」の空所を書こう（4語）',
@@ -243,7 +243,7 @@ export const sandScam: Clip = {
       trap: 'wanted の t と to の t が重なり消えやすい。4語に分けて書く。',
       use: 'Do you want to meet up later?（あとで会わない？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'yesno', reveals: ['meetup'], seg: [266.8, 271.8],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'yesno', reveals: ['meetup'], seg: [266.8, 274.1],
       stem: 'How does the co-host answer Carly?',
       ja: '共同司会の男は、カーリーにどう答える？',
       choices: ['Caught, and keeps changing', 'Hurt by what she thinks', 'Relaxed and honest about it'], a: 0,
@@ -255,7 +255,7 @@ export const sandScam: Clip = {
       trap: '最初の Yes だけなら正直に見えるが、すぐ打ち消す。最後まで聞く。',
       use: 'Yes. No. I mean, it’s complicated.（うん。いや、その、複雑なんだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ew', seg: [271.8, 279.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ew', seg: [271.8, 280.2],
       stem: 'How does Carly take his offer to get back together?',
       ja: 'よりを戻そうという話を、カーリーはどう受け取る？',
       choices: ['Disgusted, no chance at all', 'Touched, but needs some time', 'Amused, thinks he’s joking'], a: 0,
@@ -267,7 +267,7 @@ export const sandScam: Clip = {
       trap: '日本語の断り方は「考えさせて」とぼかしがち。ここは迷いのない拒絶。',
       use: 'Ew, no. Not even for a second.（うわ、ないない。一瞬もない）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'panic', seg: [288.2, 302.0],
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'panic', seg: [287, 303.4],
       stem: 'How does Freddie’s mood change during this speech?',
       ja: 'この話の間に、フレディの気持ちはどう変わる？',
       choices: ['From proud to panicked', 'From panicked to proud', 'From angry to calm'], a: 0,

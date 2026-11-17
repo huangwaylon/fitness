@@ -35,7 +35,7 @@ export const jerryMugged: Clip = {
       trap: 'your が続くので視聴者への悪口に聞こえる。リストの最後は、前に出た語と比べる。',
       use: 'Present company excluded, of course.（ここにいる人は別だけどね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'cityhall', seg: [40.9, 49.25],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'cityhall', seg: [40.9, 49.3],
       stem: 'What does Leslie say is stopping the parks from being safe?', ja: '公園を安全にできない理由を、レスリーは何だと言う？',
       choices: ['City Hall won’t give money', 'The money is on its way', 'City Hall cut their money'], a: 0,
       choicesJa: ['市役所がお金を出さない', 'お金は届く途中', '市役所がお金を減らした'],
@@ -78,7 +78,7 @@ export const jerryMugged: Clip = {
       trap: 'possess（取りつく）から、誰かにやらされた話だと思いやすい。叱るときの決まった言い方。',
       use: 'What possessed you to buy that?（なんでそんなの買ったの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'sorrybut', seg: [61.2, 66.0],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'sorrybut', seg: [59.4, 67.2],
       stem: 'Why does Leslie say “I’m sorry, Paul, but” here?', ja: 'レスリーは、なぜここで「I’m sorry, Paul, but」と言う？',
       choices: ['To explain why she did it', 'To say sorry and stop', 'To blame the security head'], a: 0,
       choicesJa: ['なぜやったかを説明するため', '謝って、もうやめるため', '警備の責任者のせいにするため'],
@@ -89,7 +89,7 @@ export const jerryMugged: Clip = {
       trap: '日本語の「すみません」と同じだと、反省していると思いやすい。but のあとが本音。',
       use: 'Sorry, but I have to say something.（悪いけど、言わせて）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'badmouth', seg: [64.2, 70.8],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'badmouth', seg: [61.5, 71.5],
       stem: 'What does Paul tell Leslie she must never do?', ja: 'ポールはレスリーに、何を絶対するなと言う？',
       choices: ['Say bad things about the city', 'Show her anger on TV', 'Go on TV without asking him'], a: 0,
       choicesJa: ['市の悪口を言う', 'テレビで怒りを見せる', '彼に聞かずにテレビに出る'],
@@ -100,7 +100,7 @@ export const jerryMugged: Clip = {
       trap: 'upset が先に聞こえ、「怒りを見せるな」と思いやすい。禁止の中身は do not のあと。',
       use: 'Never badmouth your old boss.（前の上司の悪口は言わないこと）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [71.0, 80.5],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80.5],
       stem: 'How does Paul feel when he tells her the news?', ja: '知らせを伝えるとき、ポールはどんな気持ち？',
       choices: ['Annoyed her trick worked', 'Glad the money finally came', 'Happy the mayor agreed'], a: 0,
       choicesJa: ['彼女の作戦がうまくいって不満', 'やっとお金が来てうれしい', '市長が賛成してうれしい'],
@@ -111,7 +111,7 @@ export const jerryMugged: Clip = {
       trap: 'happy や worked をそのまま取ると、喜んでいると思いやすい。見下す言葉が本音。',
       use: 'Happy now? You got your way.（満足？思いどおりだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [74.4, 80.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80.5], keep: true,
       stem: 'How much will the mayor move to the parks?', ja: '市長は公園にいくら回す？',
       choices: ['$250', '$2,500', '$25,000'], a: 1,
       choicesJa: ['250ドル', '2,500ドル', '25,000ドル'],
@@ -123,7 +123,7 @@ export const jerryMugged: Clip = {
 
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 91.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 92.2],
       stem: 'Why does Leslie say “We treat everyone with respect”?', ja: 'レスリーは、なぜ「We treat everyone with respect」と言う？',
       choices: ['To stand up for Jerry', 'To ask who he means', 'To go along with his joke'], a: 0,
       choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に乗るため'],
@@ -134,7 +134,7 @@ export const jerryMugged: Clip = {
       trap: '「分からない」をそのまま取ると、本当に聞いていると思いやすい。次の respect が本音。',
       use: 'Sorry, who are you referring to?（失礼、誰のことでしょう）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [102.9, 110.0],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 111.3],
       stem: 'How does Leslie talk to Jerry just before the event?', ja: 'イベントの直前、レスリーはジェリーにどう話す？',
       choices: ['Gently, to settle his nerves', 'Gently, but hurrying him along', 'Firmly, telling him what to say'], a: 0,
       choicesJa: ['やさしく、落ち着かせる', 'やさしいが、急かしている', '強く、言うことを指示している'],
@@ -145,7 +145,7 @@ export const jerryMugged: Clip = {
       trap: 'Just talk about… を指示と聞くと、押しつけに思いやすい。最後は安心させる言葉。',
       use: 'Take a breath. You’ll be fine.（深呼吸して。大丈夫）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'heart', seg: [104.5, 109.6],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'heart', seg: [103.2, 109.9],
       stem: 'What does Leslie tell Jerry to do in his speech?', ja: 'スピーチで何をするよう、レスリーはジェリーに言う？',
       choices: ['Say honestly how he feels', 'Learn what to say by heart', 'Talk about his health'], a: 0,
       choicesJa: ['気持ちを正直に話す', '言うことを暗記する', '自分の健康の話をする'],
@@ -188,7 +188,7 @@ export const jerryMugged: Clip = {
       trap: '直前の Is this fake? から、けがを疑っていると思いやすい。けがは本物だと答えたあと。',
       use: 'Were you even listening?（そもそも聞いてた？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'way', seg: [141.9, 146.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'way', seg: [140, 148.2],
       stem: 'Where was Jerry going when it all started?', ja: 'ことの始まりのとき、ジェリーはどこへ行くところだった？',
       choices: ['To feed the hummingbirds', 'To buy a breakfast burrito', 'To walk his dog'], a: 0,
       choicesJa: ['ハチドリにえさをやりに', '朝食のブリトーを買いに', '犬の散歩に'],
@@ -220,7 +220,7 @@ export const jerryMugged: Clip = {
       trap: 'dropped に合わせて landed と書きたくなる。書き取りは文法でなく、聞こえた -s の音を書く。',
       use: 'So I walk in, and guess who’s there?（で、入ったら誰がいたと思う？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'reach', reveals: ['fall'], seg: [153.2, 157.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'reach', reveals: ['fall'], seg: [152.2, 158.1],
       stem: 'Type what he does: “So I go to ___.” (3 words)', ja: '彼がしたことを書こう：“So I go to ___.”（3語）',
       answer: 'reach for it',
       cue: '「So I go to」のあと',
@@ -230,7 +230,7 @@ export const jerryMugged: Clip = {
       trap: 'for と it がつながり、最後の t もほぼ聞こえない。3語として書く。',
       use: 'Can you reach that top shelf?（あの一番上の棚、届く？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'reach', reveals: ['fall'], seg: [153.2, 157.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'reach', reveals: ['fall'], seg: [152.2, 158.1],
       stem: 'Fill the gap: “So I ___ reach for it.”', ja: '空所に入るのは？ “So I ___ reach for it.”',
       choices: ['go to', 'got to', 'went to'], a: 0,
       choicesJa: ['〜しに行く（今の形）', '〜しなきゃ', '〜しに行った'],
@@ -241,7 +241,7 @@ export const jerryMugged: Clip = {
       trap: 'went to なら「ウェン」、got to なら「ガラ」。「ゴウタ」と聞こえれば go to。過去の話でも今の形。',
       use: 'So I go up and say hi.（で、近づいてあいさつするわけ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 167.1],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 167.5],
       stem: 'Why didn’t Jerry tell everyone the truth?', ja: 'ジェリーはなぜ本当のことを言わなかった？',
       choices: ['Everyone would laugh at him', 'Tom would never believe him', 'Tom would tell the boss'], a: 0,
       choicesJa: ['みんなに笑われるから', 'トムが絶対に信じないから', 'トムが上司に言いつけるから'],

@@ -14,7 +14,7 @@ export const parksMakeover: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'font', seg: [0, 30.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'font', seg: [0, 30.7],
       stem: 'What does Chris want Tom to do?', ja: 'クリスはトムに何をしてほしい？',
       choices: ['Pick a new font', 'Give the parks a new look', 'Write a new slogan'], a: 0,
       choicesJa: ['新しい書体を選ぶ', '公園の見た目を変える', '新しい標語を書く'],
@@ -25,7 +25,7 @@ export const parksMakeover: Clip = {
       trap: 'rethink our visual brand（見た目を考え直す）から、大きな仕事だと思いやすい。',
       use: 'So basically, you want me to…?（要するに、私に〜してほしいと？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sofar', seg: [2, 7],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'sofar', seg: [0, 5.8],
       stem: 'What does Tom mean by “Sounds cool so far”?', ja: '“Sounds cool so far” で、トムは何を言いたい？',
       choices: ['I like it until now', 'It’s much too cold in here', 'I’m done listening'], a: 0,
       choicesJa: ['今のところいいね', 'ここは寒すぎる', 'もう聞きたくない'],
@@ -58,18 +58,7 @@ export const parksMakeover: Clip = {
       trap: '最初の「ツー」が残りやすい。you’re のあとが「スリー」なら3番。「ワン」は一度も出ない。',
       use: 'You’re my number two on this.（この件ではきみが右腕だ）' },
 
-    { id: 'h2', skill: 'number', level: 'B1', point: 'two', seg: [19.4, 24.6], keep: true,
-      stem: 'How many people are on the font team?', ja: '書体チームは何人？',
-      choices: ['2 people', '3 people', '4 people'], a: 0,
-      choicesJa: ['2人', '3人', '4人'],
-      cue: 'ジェリーの短い返事',
-      line: '*There’s only two of us.*',
-      said: '「3番」と言われ、ジェリーが「二人しかいないけど」と返す。',
-      mean: 'only two of us ＝ 私たち二人だけ。二人のチームで3番という扱いの軽さが笑い。',
-      trap: 'number three の「スリー」が残りやすい。返事が「トゥー」なら2人。「フォー」はここでは出ない。',
-      use: 'There are only two of us tonight.（今夜は二人だけです）' },
-
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'fair', seg: [19.5, 23.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'fair', seg: [18.2, 24.4],
       stem: 'What does “Fair enough” mean here?', ja: 'ここでの “Fair enough” はどういう意味？',
       choices: ['Okay, that’s reasonable', 'That is not fair', 'That is enough work'], a: 0,
       choicesJa: ['いいよ、もっともだ', 'それはずるい', '仕事はもう十分だ'],
@@ -80,7 +69,18 @@ export const parksMakeover: Clip = {
       trap: 'fair（公平）から、ずるいかどうかの話だと思いやすい。ここは「了解」。',
       use: 'You’re tired? Fair enough. Let’s stop.（疲れた？だよね、やめよう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'screams', seg: [37.4, 42.8],
+    { id: 'h2', skill: 'number', level: 'B1', point: 'two', seg: [19.4, 28.1], keep: true,
+      stem: 'How many people are on the font team?', ja: '書体チームは何人？',
+      choices: ['2 people', '3 people', '4 people'], a: 0,
+      choicesJa: ['2人', '3人', '4人'],
+      cue: 'ジェリーの短い返事',
+      line: '*There’s only two of us.*',
+      said: '「3番」と言われ、ジェリーが「二人しかいないけど」と返す。',
+      mean: 'only two of us ＝ 私たち二人だけ。二人のチームで3番という扱いの軽さが笑い。',
+      trap: 'number three の「スリー」が残りやすい。返事が「トゥー」なら2人。「フォー」はここでは出ない。',
+      use: 'There are only two of us tonight.（今夜は二人だけです）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'screams', seg: [37.4, 42.9],
       stem: 'What does Jerry mean about Comic Sans?', ja: 'コミックサンスについて、ジェリーは何を言いたい？',
       choices: ['It looks fun right away', 'It is too loud to read', 'It is only for little kids'], a: 0,
       choicesJa: ['見るからに楽しい感じ', 'うるさすぎて読めない', '小さい子ども向けだけ'],
@@ -91,7 +91,7 @@ export const parksMakeover: Clip = {
       trap: 'scream（叫ぶ）から、うるさいと思いやすい。うしろの fun が印象の中身。',
       use: 'That jacket screams tourist.（その上着、いかにも観光客だね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bored', seg: [42.5, 53.7],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bored', seg: [43.7, 55.7],
       stem: 'While Jerry talks about fonts, how does Tom feel?', ja: 'ジェリーが書体の話をする間、トムはどんな気持ち？',
       choices: ['Very bored', 'Very interested', 'Impressed with Jerry'], a: 0,
       choicesJa: ['すごく退屈', 'すごく興味がある', 'ジェリーに感心している'],
@@ -102,7 +102,7 @@ export const parksMakeover: Clip = {
       trap: 'すぐあとで好きな書体を言うので、乗り気だと思いやすい。bored を聞く。',
       use: 'I’ve never been more tired in my life.（人生でいちばん疲れた）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'makeover', seg: [53.3, 58.85],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'makeover', seg: [53.3, 58.9],
       stem: 'What does Tom suggest instead?', ja: '代わりに、トムは何を提案する？',
       choices: ['A new look for everything', 'New paint for the building', 'A new team and boss'], a: 0,
       choicesJa: ['すべての見た目を新しく', '建物を塗り直す', '新しいチームと上司'],
@@ -113,7 +113,7 @@ export const parksMakeover: Clip = {
       trap: 'top と bottom から、建物の上下を思いやすい。ここは「全部」という意味。',
       use: 'The kitchen needs a top-to-bottom cleaning.（台所は全部掃除しないと）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'pushback', reveals: ['stick'], seg: [63.75, 68.45],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'pushback', reveals: ['stick'], seg: [62.3, 68.8],
       stem: 'Why does Jerry say “I don’t know”?', ja: 'ジェリーはなぜ「I don’t know」と言う？',
       choices: ['To gently say no to it', 'To say he doesn’t understand', 'To ask to call Chris first'], a: 0,
       choicesJa: ['やんわり反対するため', '分からないと言うため', '先にクリスに電話したいと言うため'],
@@ -124,7 +124,7 @@ export const parksMakeover: Clip = {
       trap: '「分からない」と取ると、理解できない話に聞こえやすい。続く isn’t が本音。',
       use: 'I don’t know, it seems kind of risky.（どうかな、ちょっと危なそう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'stick', seg: [66.5, 69.05],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'stick', seg: [64.3, 69.3],
       stem: 'Type what Jerry says: “Maybe we should just ___.” (4 words)', ja: 'ジェリーの言葉を書こう：“Maybe we should just ___.”（4語）',
       answer: 'stick to the assignment',
       cue: '「should just」のあと',
@@ -134,7 +134,7 @@ export const parksMakeover: Clip = {
       trap: 'stick の k と to がつながり、to が消えたように聞こえる。4語として書く。',
       use: 'Let’s stick to the plan.（計画どおりにいこう）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cool', seg: [68.5, 72.65],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cool', seg: [66.5, 76.2],
       stem: 'How does Tom answer Jerry’s suggestion?', ja: 'ジェリーの提案に、トムはどう答える？',
       choices: ['He says no, rudely', 'He agrees with Jerry', 'He thanks Jerry kindly'], a: 0,
       choicesJa: ['失礼な言い方で断る', 'ジェリーに賛成する', 'やさしくお礼を言う'],
@@ -145,7 +145,7 @@ export const parksMakeover: Clip = {
       trap: 'I’d take your advice だけ聞くと、受け入れたと思いやすい。if のあとが本音。',
       use: 'Thanks, but no thanks.（ありがたいけど、遠慮しとく）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'itake', seg: [68.5, 72.65],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'itake', seg: [66.5, 73.8],
       stem: 'Fill the gap: “Cool, Jerry. ___ your advice…”', ja: '空所に入るのは？ “Cool, Jerry. ___ your advice…”',
       choices: ['I’d take', 'I take', 'I’ll take'], a: 0,
       choicesJa: ['（もし〜なら）聞くだろう', '（いつも）聞く', '（これから）聞く'],
@@ -156,7 +156,7 @@ export const parksMakeover: Clip = {
       trap: 'd が消えて I take に聞こえやすい。I’ll なら暗い「ゥ」が残る。うしろに if があれば I’d。',
       use: 'I’d go if I had time.（時間があれば行くんだけど）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'oldjob', seg: [72.6, 78.95],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'oldjob', seg: [69.2, 80.3],
       stem: 'What does Tom admit about his new job?', ja: '新しい仕事について、トムは何を認める？',
       choices: ['It is his old job', 'It is a better job', 'It is two jobs'], a: 0,
       choicesJa: ['前と同じ仕事', 'もっといい仕事', '仕事が二つ'],
@@ -177,7 +177,7 @@ export const parksMakeover: Clip = {
       trap: '会話は isn’t と縮むと思いこむと拍を数えない。縮めない否定は強調のサイン。',
       use: 'Trust me, you’re not gonna regret it.（大丈夫、後悔しないよ）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'pickmeup', seg: [109.4, 116.5],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'pickmeup', seg: [107.9, 119.9],
       stem: 'What has Jerry brought Tom?', ja: 'ジェリーはトムに何を持ってきた？',
       choices: ['A snack to cheer him up', 'A coffee to keep him awake', 'A ride home after work'], a: 0,
       choicesJa: ['元気が出る食べ物', '目が覚めるコーヒー', '仕事のあとの送り'],
@@ -210,7 +210,7 @@ export const parksMakeover: Clip = {
       trap: 'beautiful が耳に残ると、ほめているように聞こえる。最初と最後の評価の語を聞く。',
       use: 'Home by six, dinner with family. Tragic.（6時に帰宅、家族と夕食。悲劇だね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [132.6, 136.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [130.6, 135.6], keep: true,
       stem: 'How long has Jerry been in the department?', ja: 'ジェリーはこの部にどれくらいいる？',
       choices: ['13 years', '30-some years', '40-some years'], a: 1,
       choicesJa: ['13年', '30何年', '40何年'],
@@ -221,7 +221,7 @@ export const parksMakeover: Clip = {
       trap: 'thirteen はうしろを長く強く言う。forty は「フォー」で始まる。「サーティ」なら thirty。',
       use: 'I’ve lived here twenty-some years.（ここに20何年住んでる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cope', seg: [135.9, 141.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cope', seg: [132.3, 141.7],
       stem: 'What is Jerry’s way of coping with the job?', ja: 'ジェリーの仕事の乗り切り方は？',
       choices: ['Do things the same way daily', 'Try something new each day', 'Never plan anything ahead of time'], a: 0,
       choicesJa: ['毎日同じやり方でやる', '毎日何か新しいことをする', '前もって何も計画しない'],
@@ -243,7 +243,7 @@ export const parksMakeover: Clip = {
       trap: 'タイトルの makeover から、大改造が通ったと思いやすい。最後の案の中身を聞く。',
       use: 'People love limited editions.（みんな限定品が好き）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'decade', seg: [155.5, 163.0], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'decade', seg: [155.5, 165.2], keep: true,
       stem: 'Which old logo does Tom want to bring back?', ja: 'トムはどの古いロゴを復活させたい？',
       choices: ['The one from the 1960s', 'The one from the 1970s', 'The one from the 1990s'], a: 1,
       choicesJa: ['1960年代のもの', '1970年代のもの', '1990年代のもの'],
@@ -255,7 +255,7 @@ export const parksMakeover: Clip = {
       trap: 'sixties は「シックス」、nineties は「ナイン」で始まる。v の音なら seventies。',
       use: 'It’s a song from the seventies.（70年代の曲だよ）' },
 
-    { id: 'f7', skill: 'phrase', level: 'B2', point: 'swept', seg: [164.4, 169.95],
+    { id: 'f7', skill: 'phrase', level: 'B2', point: 'swept', seg: [162.9, 172.7],
       stem: 'What does Tom expect parents to feel?', ja: '親たちはどう感じると、トムは考えている？',
       choices: ['Carried away by old memories', 'Sad their youth is gone', 'Pushed into buying things'], a: 0,
       choicesJa: ['昔の思い出に引きこまれる', '若いころが終わって悲しい', '無理に買わされる'],

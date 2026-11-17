@@ -28,7 +28,7 @@ export const tobyTherapy: Clip = {
       trap: 'corporate を「会社全体」と取ると話が大きすぎる。妙な語は似た音の語を疑う。',
       use: 'Sorry, wrong word. I meant “borrow.”（ごめん、言いたかったのは borrow）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'mybad', seg: [21.2, 27.3],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'mybad', seg: [21.2, 29.3],
       stem: 'What does “My bad” mean?',
       ja: '「My bad」はどういう意味？',
       choices: ['It’s my fault', 'I feel sick', 'That’s too bad'], a: 0,
@@ -40,7 +40,7 @@ export const tobyTherapy: Clip = {
       trap: 'bad から「気分が悪い」と思いやすい。前の I made a mistake とつなげて聞く。',
       use: 'Oops, my bad. I’ll fix it.（あ、ごめん。直すね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [36.4, 40.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [35.9, 43.3], keep: true,
       stem: 'How many hours of counseling must Michael do?',
       ja: 'マイケルは何時間カウンセリングを受けなければならない？',
       choices: ['1 hour', '6 hours', '16 hours'], a: 1,
@@ -52,7 +52,7 @@ export const tobyTherapy: Clip = {
       trap: '「スィックス」と短く切れれば6、「スィックスティーン」と後ろが強く長ければ16、「ワン」なら1。',
       use: 'It’s a six-hour flight.（6時間のフライトです）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodhere', seg: [40.3, 50.7],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodhere', seg: [41.7, 53.7],
       stem: 'How does Toby feel about these sessions?',
       ja: 'トビーはこのカウンセリングをどう思っている？',
       choices: ['He wants to do some good', 'He thinks they are boring', 'He wants to show off his degree'], a: 0,
@@ -64,7 +64,7 @@ export const tobyTherapy: Clip = {
       trap: '最初に degree（資格）と言うので、自慢と思いやすい。but のあとが言いたいこと。',
       use: 'I want to do something good here.（ここで何かいいことをしたい）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'blinds', seg: [61.6, 66.0],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'blinds', seg: [60.4, 66.3],
       stem: 'Fill the gap: “___ leave the blinds open.”',
       ja: '空所を埋める：「___ leave the blinds open.」',
       choices: ['We’re gonna', 'We were gonna', 'We weren’t gonna'], a: 0,
@@ -76,7 +76,7 @@ export const tobyTherapy: Clip = {
       trap: 'We were なら「ウィ・ワー」と2つの音。weren’t なら「ン」が残る。ここは短い「ウィア」。',
       use: 'We’re gonna leave the door open.（ドアは開けておくね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'onehour', reveals: ['hours'], seg: [71.2, 82.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'onehour', reveals: ['hours'], seg: [73.1, 85.1], keep: true,
       stem: 'How much time does Michael say they’ve done?',
       ja: 'マイケルは、もうどのくらいやったと言う？',
       choices: ['30 minutes', '1 hour', '2 hours', '6 hours'], a: 1,
@@ -88,7 +88,7 @@ export const tobyTherapy: Clip = {
       trap: '最後の six hours に引かれやすい。We’ve done のあと「ワン」なら1時間、「トゥー」なら2時間、「サーティ」なら30分。',
       use: 'We’ve done one hour. Five to go.（1時間終わった。あと5時間）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'speedup', seg: [76.4, 80.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'speedup', seg: [75.8, 82.9],
       stem: 'Type what Michael says: “Let’s just ___, okay?” (3 words)', answer: 'speed this up',
       ja: 'マイケルの言葉を書き取る：「Let’s just ___, okay?」（3語）',
       cue: 'just のあとの短い3語。',
@@ -98,7 +98,7 @@ export const tobyTherapy: Clip = {
       trap: 'this と up がつながり一語に聞こえやすい。speed と up の間に this が入る。',
       use: 'Can we speed this up a little?（もう少し急げますか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cant', reveals: ['onehour'], seg: [81.5, 84.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cant', reveals: ['onehour'], seg: [81.1, 86.4],
       stem: 'What does Toby say about the hour?',
       ja: 'トビーは、その1時間について何と言う？',
       choices: ['It won’t count without talking', 'It counts if Michael sits there', 'It counts after he signs'], a: 0,
@@ -120,7 +120,7 @@ export const tobyTherapy: Clip = {
       trap: 'time を「勤務時間」と取りやすい。my rights と並ぶと刑務所の言葉と分かる。',
       use: 'Just doing my time until Friday.（金曜までの辛抱だ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'tellme', seg: [91.2, 103.0],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'tellme', seg: [93.5, 105.5],
       stem: 'What does Toby want when he says “Tell me!”?',
       ja: '「Tell me!」と言うとき、トビーは何をしてほしい？',
       choices: ['Michael to talk more', 'Michael to calm down', 'Michael to leave now'], a: 0,
@@ -152,7 +152,7 @@ export const tobyTherapy: Clip = {
       trap: 'Yes, I will だけなら前向きな約束。皮肉の「話さない」なら、カメラに警告する意味がない。',
       use: 'Careful what you wish for.（願いごとには気をつけて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'tactic', reveals: ['clock', 'anywhere'], seg: [147.8, 187.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'tactic', reveals: ['clock', 'anywhere'], seg: [147.8, 188.1],
       stem: 'How does Toby get Michael to talk?',
       ja: 'トビーはどうやってマイケルに話させる？',
       choices: ['He stops pushing and plays games', 'He promises to end early', 'He talks about his daughter'], a: 0,
@@ -176,7 +176,7 @@ export const tobyTherapy: Clip = {
       trap: 'anywhere から場所の話と思いやすい。前の pointless（意味がない）と同じ気持ち。',
       use: 'We’re not getting anywhere. Let’s take a break.（進まないね。休もう）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'clock', seg: [153.7, 164.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'clock', seg: [153.7, 164.9],
       stem: 'What does “run out the clock” mean here?',
       ja: 'ここで「run out the clock」はどういう意味？',
       choices: ['Just let the time pass', 'Hurry to finish early', 'Stop and leave now'], a: 0,
@@ -188,7 +188,7 @@ export const tobyTherapy: Clip = {
       trap: 'run を「走る、急ぐ」と思いやすい。by playing games が続くので、のんびり過ごす話。',
       use: 'Let’s just run out the clock.（あとは時間が過ぎるのを待とう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'jeff', seg: [172.5, 187.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'jeff', seg: [176.1, 188.1],
       stem: 'What does “I never thought of it that way” show?',
       ja: '「I never thought of it that way」から何が分かる？',
       choices: ['He never saw Jeff as a stepdad', 'He forgot all about Jeff', 'He didn’t know Jeff married'], a: 0,
@@ -200,7 +200,7 @@ export const tobyTherapy: Clip = {
       trap: '結婚を知らなかったと思いやすいが、who she married と自分で言っている。',
       use: 'I never thought of it that way.（そんなふうに考えたことなかった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'pitcher', seg: [195.4, 208.05],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'pitcher', seg: [195.2, 203.4],
       stem: 'Why did Michael feel bad at the game?',
       ja: 'マイケルは試合でなぜ悲しくなった？',
       choices: ['The pitcher had to stop playing', 'Jeff liked the manager more', 'His team lost the game'], a: 0,
@@ -223,7 +223,7 @@ export const tobyTherapy: Clip = {
       trap: 'afraid と park から犬の身を案じたと取りやすい。怖いのは犬が他の子と幸せそうなこと。',
       use: 'I was afraid you’d find someone better.（もっといい人を見つけるかと不安だった）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ridic', seg: [229.9, 240.2],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ridic', seg: [228.2, 240.2],
       stem: 'How does Michael feel about his dog story now?',
       ja: '今、マイケルは犬の話をどう感じている？',
       choices: ['It sounds silly to him', 'It still makes him angry', 'It makes him want a dog'], a: 0,
@@ -291,7 +291,7 @@ export const tobyTherapy: Clip = {
       trap: 'ほめ言葉で打ち解けたと取りやすいが、すぐ but で攻撃に戻る。ゲームは話させる道具だった。',
       use: 'You’re good. I didn’t see that coming.（やるね。読めなかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'marriage', seg: [275.3, 278.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'marriage', seg: [274.6, 280.7],
       stem: 'Fill the gap: “You ___ your marriage.”',
       ja: '空所を埋める：「You ___ your marriage.」',
       choices: ['couldn’t help', 'could help', 'can’t help'], a: 0,

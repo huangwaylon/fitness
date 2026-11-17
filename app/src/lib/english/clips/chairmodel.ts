@@ -16,7 +16,7 @@ export const chairModel: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'while', seg: [0, 6.3],
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'while', seg: [0, 9.4],
       stem: 'Pam asks about the chair. “*It’s been a while*.” Meaning?',
       ja: 'イスのことを聞くパムの「It’s been a while」はどういう意味？',
       choices: ['A long time has passed', 'Wait a little longer', 'It happened a minute ago'], a: 0,
@@ -61,7 +61,7 @@ export const chairModel: Clip = {
       trap: 'found something は良い知らせに聞こえる。あとの distract（気をそらす）を聞く。',
       use: 'Instead, you’re still on your phone.（なのに、まだスマホ見てるじゃない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [15.3, 19.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [12.1, 23.9],
       stem: 'When did Michael start choosing a new chair?',
       ja: 'マイケルはいつ新しいイスを選び始めた？',
       choices: ['About 3 days ago', 'About 3 weeks ago', 'About 13 weeks ago', 'About 3 months ago'], a: 1, keep: true,
@@ -73,7 +73,7 @@ export const chairModel: Clip = {
       trap: 'three と thirteen は終わりの長さと強さで分かれる。数のあとの単位まで聞く。',
       use: 'I ordered it about three weeks ago.（3週間くらい前に注文しました）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'promise', seg: [15.3, 22.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'promise', seg: [15.3, 23.9],
       stem: 'Why does Pam care which chair Michael picks?',
       ja: 'パムはなぜマイケルのイス選びが気になる？',
       choices: ['He promised her his old one', 'She can get one too', 'She orders it for him'], a: 0,
@@ -85,7 +85,7 @@ export const chairModel: Clip = {
       trap: '受付の仕事だから注文係だと思いやすい。but のあとに本当の理由が来る。',
       use: 'He promised me his old laptop.（古いパソコンをくれるって約束したの）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'way', seg: [19.6, 24.5],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'way', seg: [19.6, 25.8],
       stem: 'Pam says Michael’s old chair is “*way better*.” Meaning?',
       ja: 'マイケルの古いイスは「way better」。どういう意味？',
       choices: ['It’s much, much better', 'It’s better in some ways', 'It’s better for her work'], a: 0,
@@ -119,7 +119,7 @@ export const chairModel: Clip = {
       trap: 'Her? は確認や驚きにも聞こえるが、そのあと語られるのはイスの特徴だけ。',
       use: 'You mean the one by the window?（窓のそばのやつのこと？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'yet', seg: [41.7, 49.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'yet', seg: [39.6, 51.6],
       stem: '“She dresses like a professional, *and yet*…” What does “and yet” mean?',
       ja: '「…like a professional, and yet…」の and yet はどういう意味？',
       choices: ['But still', 'And for that reason', 'And also'], a: 0,
@@ -131,7 +131,7 @@ export const chairModel: Clip = {
       trap: 'and だけ聞くと「そして」に思いやすい。yet が付くと逆の向きになる。',
       use: 'It’s small, and yet it’s really comfy.（小さいのに、すごく快適）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'swear', seg: [51.2, 58.5],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'swear', seg: [51.1, 61.2],
       stem: 'Michael once said he was “*swearing off* women.” Meaning?',
       ja: '「swearing off women」と言っていた。どういう意味？',
       choices: ['He was giving them up', 'He was shouting at them', 'He was promising to be nicer'], a: 0,
@@ -154,7 +154,7 @@ export const chairModel: Clip = {
       trap: 'completely が強いので厳しくしたと思いやすい。women と one woman の差を聞く。',
       use: 'What I meant was just this once.（言いたかったのは、今回だけってこと）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'fate', seg: [68.2, 74.6],
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'fate', seg: [67.9, 76.8],
       stem: '“Fate put this catalog in my hands.” — “*Actually*, I put…” Pam is…?',
       ja: '「運命がカタログを」「Actually, I put…」。パムは何をしている？',
       choices: ['Correcting what he said', 'Agreeing with surprise', 'Changing the subject'], a: 0,
@@ -166,7 +166,7 @@ export const chairModel: Clip = {
       trap: '「実は」から打ち明け話に聞こえやすい。相手の言葉の直後なら、たいてい訂正。',
       use: 'Actually, it starts at seven.（いや、7時からだよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'haveto', seg: [71.2, 74.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'haveto', seg: [71.2, 76.8],
       stem: 'Type what Pam says: “…because you ___ a new chair.” (4 words)', answer: 'have to pick out',
       ja: 'パムの言葉を書こう：「…because you ___ a new chair.」（4語）',
       cue: 'because you のあと。',
@@ -176,7 +176,7 @@ export const chairModel: Clip = {
       trap: 'have to の v が「フ」になり、別の語に聞こえやすい。4語を数えて聞く。',
       use: 'I have to pick out a gift.（プレゼントを選ばなきゃ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'single', reveals: ['littlemore'], seg: [76.5, 88.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'single', reveals: ['littlemore'], seg: [75.2, 89.5],
       stem: 'How does Michael really feel about being single?',
       ja: 'マイケルは独身について、本当はどう感じている？',
       choices: ['Worried and a bit desperate', 'Happy and free at last', 'Bored with dating'], a: 0,
@@ -199,7 +199,7 @@ export const chairModel: Clip = {
       trap: '「底まで落ちればあとは上がる」と取りやすいが、ここでは必死さそのものが早い結果の原因。何が何を生むかを聞く。',
       use: 'At this point, I’m not picky.（もうこの際、選り好みしない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'littlemore', seg: [85.2, 88.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'littlemore', seg: [84.8, 92.5],
       stem: 'Fill the gap: “every day I get ___ desperate.”',
       ja: '空いている所に入る語は？「every day I get ___ desperate.」',
       choices: ['a little more', 'a lot more', 'a bit more'], a: 0,
@@ -211,7 +211,7 @@ export const chairModel: Clip = {
       trap: 'little の t は軽い「ラ」で lot と迷いやすい。「リル」と2音なら little、bit は1音。',
       use: 'Could you make it a little more?（もう少し多めにできますか）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'page', seg: [91.7, 96.8],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'page', seg: [91.7, 98],
       stem: 'Which page is everyone asked to turn to?',
       ja: 'みんなは何ページを開くように言われる？',
       choices: ['18', '80', '85', '95'], a: 2, keep: true,
@@ -223,7 +223,7 @@ export const chairModel: Clip = {
       trap: 'eighty と eighteen は強く言う所が違う。ninety ではなく eighty、そのあとの five まで聞く。',
       use: 'Please turn to page 85.（85ページを開いてください）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'notyet', seg: [100.5, 104.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'notyet', seg: [99.6, 104.6],
       stem: '“Is this his new chair?” What is the answer?',
       ja: '「これが新しいイス？」への答えは？',
       choices: ['He hasn’t picked one yet', 'He picked one at last', 'It hasn’t come in yet'], a: 0,
@@ -235,7 +235,7 @@ export const chairModel: Clip = {
       trap: 'hasn’t の t は消えやすく has に聞こえる。文の最後の yet が否定の手がかり。',
       use: 'Sorry, I haven’t decided yet.（すみません、まだ決めてません）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'chain', reveals: ['promise'], seg: [105.3, 111.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'chain', reveals: ['promise'], seg: [104.3, 112],
       stem: 'Which chair will the coworker get?',
       ja: 'その同僚はどのイスをもらう？',
       choices: ['Pam’s old chair', 'Michael’s old chair', 'Michael’s new chair'], a: 0,
@@ -247,7 +247,7 @@ export const chairModel: Clip = {
       trap: '先に Michael’s が聞こえるので引っぱられやすい。I get のあとが自分の分。',
       use: 'Got a new phone? Can I have yours?（新しいの買った？古いのちょうだい）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'onetogo', reveals: ['chain'], seg: [105.3, 113.6],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'onetogo', reveals: ['chain'], seg: [105.3, 116.7],
       stem: '“Two chairs. *Only one to go*.” What does he want?',
       ja: '「Then I’ll have two chairs. Only one to go.」彼は何がしたい？',
       choices: ['To have three chairs', 'To wait one more day', 'To get Michael’s chair'], a: 0,
@@ -259,7 +259,7 @@ export const chairModel: Clip = {
       trap: 'to go を「行く」や残りの時間と思いやすい。数のあとの to go は「残り」。',
       use: 'Two done, one to go.（2つ終わり、あと1つ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'dating', seg: [113, 117.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'dating', seg: [112, 118.4],
       stem: 'What is Michael ready to do now?',
       ja: 'マイケルは今、何をする準備ができている？',
       choices: ['Start dating again', 'Buy a new chair', 'Go back to his old job'], a: 0,
@@ -271,7 +271,7 @@ export const chairModel: Clip = {
       trap: 'market（市場）から買い物を思いやすい。ready to start のあとの dating を聞く。',
       use: 'I’m ready to start again.（また始める準備ができた）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'ending', reveals: ['dating', 'fixup', 'template'], seg: [113, 131.4],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'ending', reveals: ['dating', 'fixup', 'template'], seg: [113, 132.1],
       stem: 'What does Michael ask the office at the end?',
       ja: '最後に、マイケルは会社のみんなに何を頼む？',
       choices: ['To find a woman like her', 'To help him pick a chair', 'To leave him alone'], a: 0,
@@ -282,7 +282,7 @@ export const chairModel: Clip = {
       trap: 'イスの話の場面なので、イス選びを頼むと思いやすい。最後のお知らせの中身を聞く。',
       use: 'Let me know if you meet someone nice.（いい人がいたら教えて）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'fixup', reveals: ['template'], seg: [113.6, 124.7],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'fixup', reveals: ['template'], seg: [118.4, 130.4],
       stem: 'Some coworkers are “*fixing him up* with” friends. Meaning?',
       ja: '同僚が友だちと「fixing him up」する。どういう意味？',
       choices: ['Setting him up on a date', 'Cheering him up after Jan', 'Taking him out with friends'], a: 0,
@@ -294,7 +294,7 @@ export const chairModel: Clip = {
       trap: 'fix を「直す」と思うと「元気づける」に聞こえる。fix 人 up with 人 は紹介。',
       use: 'My sister wants to fix me up with her coworker.（姉が同僚を紹介したがってる）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'template', reveals: ['page'], seg: [118.0, 131.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'template', reveals: ['page'], seg: [118.7, 132.1],
       stem: 'What kind of woman should they look for?',
       ja: 'どんな女性を探してほしいと言っている？',
       choices: ['Someone like the model', 'Someone just like him', 'Someone like their friends'], a: 0,

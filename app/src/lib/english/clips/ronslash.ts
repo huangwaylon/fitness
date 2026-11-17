@@ -14,7 +14,7 @@ export const ronSlash: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'pct', seg: [2.4, 7.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'pct', seg: [0, 9.2], keep: true,
       stem: 'By how much must spending be cut?',
       ja: '支出をどのくらい減らす必要がある？',
       choices: ['23%', '32%', '40%'], a: 1,
@@ -26,7 +26,7 @@ export const ronSlash: Clip = {
       trap: '「サーティ・トゥー」なら32、「トゥエンティ・スリー」なら23、「フォーティ」はロンが上乗せした40。',
       use: 'Let’s make it an even ten.（きりよく10にしよう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'bat', seg: [19.3, 26.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'bat', seg: [16.8, 26.7],
       stem: 'What does “Right off the bat” mean here?',
       ja: 'ここで「Right off the bat」はどういう意味？',
       choices: ['First of all', 'Just as a guess', 'Only as a joke'], a: 0,
@@ -38,7 +38,7 @@ export const ronSlash: Clip = {
       trap: 'bat（バット）から当てずっぽうと思いやすい。ここは順番の話。本人は大まじめ。',
       use: 'Right off the bat, I liked her.（最初からすぐ彼女が気に入った）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'creative', seg: [25.9, 32.55],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'creative', seg: [22.8, 33.9],
       stem: 'Why is Ron told it’s “a very creative idea”?',
       ja: 'ロンは、なぜ「a very creative idea」と言われる？',
       choices: ['To say no in a kind way', 'To say yes with a condition', 'To make fun of the idea'], a: 0,
@@ -61,7 +61,7 @@ export const ronSlash: Clip = {
       trap: 'major assets から値段や使い道の話と取りやすい。理由は because の後。',
       use: 'Don’t lose out on the discount.（割引を逃さないで）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'tons', seg: [32.1, 35.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'tons', seg: [28.1, 38.3],
       stem: 'How does Ron feel when his idea is turned down?',
       ja: '案を断られて、ロンはどう感じる？',
       choices: ['Fine, he has more ideas', 'Hurt, and goes quiet', 'Angry at all of them'], a: 0,
@@ -84,7 +84,7 @@ export const ronSlash: Clip = {
       trap: 'it’s not that ～（～というわけではない）を聞き落とすと「もまれたい」に聞こえる。',
       use: 'It’s not that I’m hungry, but…（お腹がすいてるわけじゃないけど…）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', seg: [62.8, 104.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', seg: [62.8, 105.2],
       stem: 'What does Ron think about firing Leslie?',
       ja: 'レスリーをクビにすることを、ロンはどう思っている？',
       choices: ['He is strongly against it', 'He thinks it is a good idea', 'He doesn’t really care'], a: 0,
@@ -96,7 +96,7 @@ export const ronSlash: Clip = {
       trap: '前半は「もっと切れ」と乗り気なので、賛成と思いやすい。名前のあとの反応を聞く。',
       use: 'Oh, no, no, no. Not that one.（だめだめ、それはだめ）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'mightas', seg: [68.3, 73.8],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'mightas', seg: [68.3, 75.8],
       stem: 'What does Ron mean about Leslie and the department?',
       ja: 'レスリーと部署について、ロンは何を言いたい？',
       choices: ['She keeps it all running', 'He wants to close it', 'Everyone else will leave'], a: 0,
@@ -108,7 +108,7 @@ export const ronSlash: Clip = {
       trap: '削減好きのロンなので、本当に閉めたいと思いやすい。直前の no の連続を聞く。',
       use: 'Then we might as well stay home.（それなら家にいたほうがいいね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'runout', seg: [73.6, 77.05],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'runout', seg: [73.6, 79.3],
       stem: 'Fill the gap: “But ___ options.”',
       ja: '空所を埋める：「But ___ options.」',
       choices: ['we run out of', 'we’ve run out of', 'we ran out of'], a: 1,
@@ -120,7 +120,7 @@ export const ronSlash: Clip = {
       trap: 'we と run の間に小さな「ヴ」がある。なければ we run。ran なら「ア」と口が大きく開く。',
       use: 'Sorry, we’ve run out of milk.（すみません、牛乳を切らしています）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'zoo', seg: [79.5, 86.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'zoo', seg: [79.5, 88.6],
       stem: 'Who does Ron say would buy the zoo animals?',
       ja: 'ロンは、動物園の動物を誰が買うと言う？',
       choices: ['Labs and odd restaurants', 'Circuses and collectors', 'Farms and other zoos'], a: 0,
@@ -154,7 +154,7 @@ export const ronSlash: Clip = {
       trap: 'just から「冗談だよ」と取りやすいが、本人は案として出している。前の「山ほどある」とも別の話。',
       use: 'I’m just spitballing, but what about Friday?（思いつきだけど、金曜はどう？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'salary', seg: [89, 93],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'salary', seg: [88, 95.9],
       stem: 'What do they say about Leslie’s pay?',
       ja: 'レスリーの給料について、何と言っている？',
       choices: ['It is the second highest', 'It is the very highest', 'It is the second lowest'], a: 0,
@@ -166,7 +166,7 @@ export const ronSlash: Clip = {
       trap: 'second は短く弱いので、highest だけ残りやすい。最上級の前の順番を聞く。',
       use: 'It’s the second-biggest city in Japan.（日本で2番目に大きい都市です）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'option', reveals: ['runout'], seg: [91.4, 95.2],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'option', reveals: ['runout'], seg: [91.4, 97.4],
       stem: 'What does Ron mean by “it’s just not an option”?',
       ja: 'ロンの「it’s just not an option」はどういう意味？',
       choices: ['It cannot happen', 'There are no other ideas', 'He has not decided yet'], a: 0,
@@ -201,7 +201,7 @@ export const ronSlash: Clip = {
       trap: '「名誉の戦死」から辞めたかったと取りやすい。主義は口に出している。何を守っていたかを聞く。',
       use: 'Take me instead. I’ll go.（代わりに私が行きます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sec', seg: [95.2, 98.25],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sec', seg: [93.3, 98.3],
       stem: 'Type what Ron says: “Just ___.” (4 words)', answer: 'give me a sec',
       ja: 'ロンの言葉を書き取る：「Just ___.」（4語）',
       cue: '「focus up」と言われた直後。',
@@ -211,7 +211,7 @@ export const ronSlash: Clip = {
       trap: '「ギミ」で一語に聞こえやすい。間の a も小さく短いので落としやすい。',
       use: 'Give me a sec, I’ll be right there.（ちょっと待って、すぐ行く）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'share', seg: [97.8, 102.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'share', seg: [97.8, 105.2], keep: true,
       stem: 'How much of the work does Ron say Leslie does?',
       ja: 'ロンは、仕事のどのくらいをレスリーがしていると言う？',
       choices: ['5%', '59%', '90%', '95%'], a: 3,
@@ -255,7 +255,7 @@ export const ronSlash: Clip = {
       trap: '仕事が残るのは良い知らせと聞くと、感謝や渋々の了承に取りやすい。Ron には逆。',
       use: 'I object. That’s not fair.（異議あり。それはずるい）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'moveon', seg: [112.0, 115.6],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'moveon', seg: [112, 118.1],
       stem: 'What does “we’re moving on” mean here?',
       ja: 'ここで「we’re moving on」はどういう意味？',
       choices: ['Let’s go to the next topic', 'We are leaving the room', 'We are moving house'], a: 0,
@@ -278,7 +278,7 @@ export const ronSlash: Clip = {
       trap: '「どこも同じ」は Ben の言い分。one を削減の話と取ると別の意味になる。',
       use: 'There’s only one of her.（彼女の代わりはいない）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'lousy', seg: [121.55, 127.9],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'lousy', seg: [119.3, 128],
       stem: 'What does “single-handedly” mean here?',
       ja: 'ここで「single-handedly」はどういう意味？',
       choices: ['All by herself', 'With only one hand', 'Very quickly'], a: 0,

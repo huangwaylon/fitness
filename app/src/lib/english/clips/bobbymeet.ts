@@ -27,7 +27,7 @@ export const bobbyMeet: Clip = {
       trap: '選挙と聞くと政策の話を想像しやすい。最後は free Bobby bars のさそい。',
       use: 'So far, so good.（今のところ順調）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [14.9, 19.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [12.7, 21.6], keep: true,
       stem: 'How long has the campaign been going?',
       ja: '選挙運動が始まって、どのくらい？',
       choices: ['2 days', '10 days', '2 weeks'], a: 0,
@@ -50,7 +50,7 @@ export const bobbyMeet: Clip = {
       trap: '前半だけで不満と取りやすい。because のあとにオチが来る。',
       use: 'Honestly, it’s been a breeze.（正直、楽勝だった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'heir', seg: [29.9, 34.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'heir', seg: [28.9, 34.2],
       stem: 'What does “heir to the candy fortune” mean?',
       ja: '「heir to the candy fortune」はどういう意味？',
       choices: ['He will get his family’s money', 'He runs the candy company', 'He is in the candy ads'], a: 0,
@@ -62,7 +62,7 @@ export const bobbyMeet: Clip = {
       trap: 'heir は air（エア）と同じ音で聞きのがしやすい。fortune（財産）とセットで聞く。',
       use: 'She’s heir to the family business.（彼女は家業の跡つぎだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'polls', seg: [34.3, 39.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'polls', seg: [34.1, 40.4], keep: true,
       stem: 'How far ahead in the polls is Bobby?',
       ja: 'ボビーは世論調査で何ポイントリードしている？',
       choices: ['7 points', '17 points', '70 points'], a: 2,
@@ -74,19 +74,7 @@ export const bobbyMeet: Clip = {
       trap: 'seventeen なら後ろの「ティーン」が強い。seven なら短い。ここは前が強い「セヴンティ」。',
       use: 'We’re ten points up.（10点リードしてる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'employs', seg: [38.7, 43.8],
-      stem: 'What does Leslie say about Bobby’s family?',
-      ja: 'レスリーはボビーの家について何と言う？',
-      choices: ['They give jobs to half the town', 'They own half the land in town', 'Half the people in town like them'], a: 0,
-      choicesJa: ['町の半分の人を雇っている', '町の土地の半分を持っている', '町の半分の人に好かれている'],
-      cue: 'his family のあとの動詞。',
-      line: 'his family *employs half the town*',
-      said: '「彼の家の会社が、町の半分の人を雇っている」と言う。',
-      mean: 'employ ＝ 雇う。町の多くの人が彼の家の会社で働いていて、選挙でも強い。',
-      trap: 'half the town だけ聞くと土地や人気の話に思える。直前の employs で決まる。',
-      use: 'The factory employs most of the town.（町の大半があの工場で働いている）' },
-
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'sowhat', seg: [38.8, 44.9],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'sowhat', seg: [37.4, 44.3],
       stem: 'What does Leslie mean by “so what?”',
       ja: 'レスリーの「so what?」はどういう意味？',
       choices: ['It doesn’t matter', 'That’s really very good', 'I don’t know why'], a: 0,
@@ -98,7 +86,19 @@ export const bobbyMeet: Clip = {
       trap: 'ライバルの長所を並べるので弱気に聞こえやすい。but のあとが本音。',
       use: 'It’s raining. So what? Let’s go.（雨？だから何、行こう）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'versed', seg: [43.9, 48.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'employs', seg: [38.7, 44.3],
+      stem: 'What does Leslie say about Bobby’s family?',
+      ja: 'レスリーはボビーの家について何と言う？',
+      choices: ['They give jobs to half the town', 'They own half the land in town', 'Half the people in town like them'], a: 0,
+      choicesJa: ['町の半分の人を雇っている', '町の土地の半分を持っている', '町の半分の人に好かれている'],
+      cue: 'his family のあとの動詞。',
+      line: 'his family *employs half the town*',
+      said: '「彼の家の会社が、町の半分の人を雇っている」と言う。',
+      mean: 'employ ＝ 雇う。町の多くの人が彼の家の会社で働いていて、選挙でも強い。',
+      trap: 'half the town だけ聞くと土地や人気の話に思える。直前の employs で決まる。',
+      use: 'The factory employs most of the town.（町の大半があの工場で働いている）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'versed', seg: [43.5, 53.7],
       stem: 'What does “well-versed in the issues” mean?',
       ja: '「well-versed in the issues」はどういう意味？',
       choices: ['She knows them very well', 'She talks about them well', 'She has always loved them'], a: 0,
@@ -121,7 +121,7 @@ export const bobbyMeet: Clip = {
       trap: '直前に相手の長所が並ぶので、相手への皮肉と聞きやすい。主語の I と those が誰の話かを追う。',
       use: 'Paperwork is my idea of a fun night.（書類仕事こそ楽しい夜）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'knew', seg: [51.9, 55.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'knew', seg: [51.9, 57.4],
       stem: 'What does “you probably knew that already” show?',
       ja: '「you probably knew that already」から何が分かる？',
       choices: ['He thinks everyone knows him', 'He is sorry to say his name', 'He thinks nobody knows him'], a: 0,
@@ -145,7 +145,7 @@ export const bobbyMeet: Clip = {
       trap: '明るい返事が多いので、話がまとまったと思いやすい。最後の質問で、聞いていなかったと分かる。',
       use: 'Well, that went nowhere.（まあ、何も進まなかったね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'atlast', seg: [55.2, 58.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'atlast', seg: [53.5, 58.5],
       stem: 'What does “we meet at last” mean?',
       ja: '「we meet at last」はどういう意味？',
       choices: ['We finally meet', 'This is our last meeting', 'We meet once again'], a: 0,
@@ -157,7 +157,7 @@ export const bobbyMeet: Clip = {
       trap: 'last を「最後」と思いやすい。at last は「やっと」で、待っていた気持ち。',
       use: 'At last, the weekend!（やっと週末だ！）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'sign', seg: [59.4, 64.2],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'sign', seg: [56.9, 64.2],
       stem: 'What does Bobby think Leslie wants?',
       ja: 'ボビーは、レスリーが何をほしいと思っている？',
       choices: ['His autograph', 'A photo with him', 'His name on a form'], a: 0,
@@ -169,7 +169,7 @@ export const bobbyMeet: Clip = {
       trap: 'sign は書類の署名にも使うが、to Miss（〜さんへ）と宛名を聞くのはファンへのサイン。',
       use: 'Could you sign it to Emma?（エマさんへ、とサインしてもらえますか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'debate', seg: [65.5, 72.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'debate', seg: [65.5, 73.8],
       stem: 'Why has Leslie’s side been calling Bobby’s office?',
       ja: 'レスリーたちはなぜボビーの事務所に電話していた？',
       choices: ['To set up a debate', 'To set up a meeting', 'To set up an interview'], a: 0,
@@ -181,7 +181,7 @@ export const bobbyMeet: Clip = {
       trap: 'office が聞こえると打ち合わせの話に思える。set up のあとの debate を聞く。',
       use: 'I’ve been trying to set up a meeting.（打ち合わせを入れようとしてたんだ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'unopposed', seg: [70.9, 76.0],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'unopposed', seg: [68.8, 78.5],
       stem: 'What does “I’m pretty sure… right?” show?',
       ja: '「I’m pretty sure… right?」から何が分かる？',
       choices: ['He didn’t know he had a rival', 'He knows he has already won', 'He wants to scare Leslie'], a: 0,
@@ -204,7 +204,7 @@ export const bobbyMeet: Clip = {
       trap: '似た語が続くので言い違いに聞こえやすい。わざと相手の語を拾って返している。',
       use: 'Not so fast. You’ve got competition.（ちょっと待って。ライバルがいるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrific', reveals: ['unopposed'], seg: [78.1, 84.1],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrific', reveals: ['unopposed'], seg: [78, 86],
       stem: 'How does Bobby take the news about Leslie?',
       ja: 'レスリーが対立候補だと聞いて、ボビーはどう反応する？',
       choices: ['Happily, with no worry', 'Nervously, but trying to stay calm', 'Angrily, and loudly'], a: 0,
@@ -216,7 +216,7 @@ export const bobbyMeet: Clip = {
       trap: 'terrific を「受けて立つ」と思いやすい。続くのは I love meeting people だけ。',
       use: 'Great, the more the merrier!（いいね、多いほど楽しい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whatdo', seg: [82.6, 85.95],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whatdo', seg: [82, 88],
       stem: 'Fill the gap: “___ guys do?”',
       ja: '空所を埋める：「___ guys do?」',
       choices: ['What do you', 'What did you', 'What would you'], a: 0,
@@ -228,7 +228,7 @@ export const bobbyMeet: Clip = {
       trap: 'did なら「ディジュ」、would なら「ウッジュ」。ここは短い「ワダユ」。',
       use: 'So, what do you do?（で、お仕事は？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'told', seg: [85.4, 89.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'told', seg: [84.1, 89.1],
       stem: 'Type the reply: “We ___.” (3 words)', answer: 'just told you',
       ja: '返事を書き取る：「We ___.」（3語）',
       cue: '質問のすぐあと。We のあとの3語。',
@@ -238,7 +238,7 @@ export const bobbyMeet: Clip = {
       trap: 'just の t と told の t が重なり、一つに聞こえやすい。語の数を手がかりに。',
       use: 'Like I just told you, it’s full.（さっき言ったとおり、満席です）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'bar', reveals: ['told'], seg: [87.5, 93.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'bar', reveals: ['told'], seg: [85.8, 94.9],
       stem: 'What does Bobby do after “We just told you”?',
       ja: '「We just told you」のあと、ボビーはどうする？',
       choices: ['Gives them candy and moves on', 'Says sorry for not listening', 'Agrees to the debate'], a: 0,

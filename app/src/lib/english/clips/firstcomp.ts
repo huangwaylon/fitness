@@ -15,7 +15,7 @@ export const firstComplaint: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'easy', seg: [27.7, 34.4],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'easy', seg: [26.7, 35.6],
       stem: 'What does “Easy does it” mean here?',
       ja: 'ここで「Easy does it」はどういう意味？',
       choices: ['Be very careful', 'This part is easy', 'Take a short break'], a: 0,
@@ -27,7 +27,7 @@ export const firstComplaint: Clip = {
       trap: 'easy を「簡単」と取ると「楽勝」に聞こえる。息もするな、と続くので慎重さの話。',
       use: 'Easy does it. That box is heavy.（そーっとね。その箱重いから）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'mistake', seg: [40.3, 46.4],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'mistake', seg: [39.3, 46.4],
       stem: 'Why does the coworker say “It’s just a mistake”?',
       ja: '同僚は、なぜ「It’s just a mistake」と言う？',
       choices: ['To calm everyone down', 'To tell someone off', 'To say sorry for it'], a: 0,
@@ -39,7 +39,7 @@ export const firstComplaint: Clip = {
       trap: 'hey が続くと叱っているように聞こえやすい。just a mistake はなぐさめの言葉。',
       use: 'Hey, it’s okay. It happens.（まあまあ、大丈夫。よくあることだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'screwup', seg: [46.7, 50.45],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'screwup', seg: [46, 54.1],
       stem: 'What does “afraid of screwing up” mean here?',
       ja: 'ここで「afraid of screwing up」はどういう意味？',
       choices: ['Afraid of making mistakes', 'Afraid of being laughed at', 'Afraid of high places'], a: 0,
@@ -51,7 +51,7 @@ export const firstComplaint: Clip = {
       trap: 'screw（ねじ）や高い塔から、物や高さの話と思いやすい。直前の mistakes を聞く。',
       use: 'Sorry, I screwed up the order.（ごめん、注文しくじった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'hands', seg: [50.1, 59],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'hands', seg: [47, 59],
       stem: 'Why does he ask for a “show of hands”?',
       ja: '彼はなぜ「show of hands（手を挙げて）」と言う？',
       choices: ['To show everyone has one', 'To find the one with none', 'To pick the next person'], a: 0,
@@ -86,7 +86,7 @@ export const firstComplaint: Clip = {
       trap: '直後に ceiling の話が来るので「高さ」に引かれやすい。不死鳥は「復活」のたとえ。',
       use: 'He came back like a phoenix.（彼は不死鳥のように復活した）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ceiling', seg: [75.8, 79.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ceiling', seg: [74.8, 82.1],
       stem: 'What does someone say will happen pretty soon?',
       ja: 'もうすぐ何が起きると言っている？',
       choices: ['They will run out of cards', 'The tower will reach the ceiling', 'The tower will fall down'], a: 1,
@@ -98,7 +98,7 @@ export const firstComplaint: Clip = {
       trap: 'カードが切れるのはこのすぐあと。言ったことと、そのあと起きることを分ける。',
       use: 'Pretty soon we’ll be out of milk.（もうすぐ牛乳がなくなるよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'blank', seg: [82.8, 89.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'blank', seg: [82.1, 89.4],
       stem: 'When the box is empty, what does someone suggest?',
       ja: '箱が空のとき、誰かが何を提案する？',
       choices: ['Buying a new box', 'Using a blank card', 'Taking a card off'], a: 1,
@@ -143,7 +143,7 @@ export const firstComplaint: Clip = {
       trap: 'wouldn’t の t は消えやすく、would に聞こえると逆の意味になる。no と合わせて判断。',
       use: 'I can’t even relate to that.（その気持ち、全然わからない）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'try', reveals: ['getus'], seg: [96, 103.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'try', reveals: ['getus'], seg: [96, 105],
       stem: 'How does Pam feel about getting a complaint?',
       ja: '苦情を取ってくることを、パムはどう思っている？',
       choices: ['Sure she can do it', 'Not interested at all', 'Hurt and sad'], a: 0,
@@ -155,7 +155,7 @@ export const firstComplaint: Clip = {
       trap: 'からかわれた直後なので、傷ついたと思いやすい。I bet で自信が分かる。',
       use: 'Let me try. I bet I can.（やらせて。たぶんできる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getus', seg: [99.4, 101.95],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getus', seg: [97.2, 103.8],
       stem: 'Type it: “I bet I could ___ customer complaint.” (3 words)', answer: 'get us a',
       ja: '書き取る：「I bet I could ___ customer complaint.」（3語）',
       cue: '「could」のすぐあとの3語。',
@@ -165,7 +165,7 @@ export const firstComplaint: Clip = {
       trap: 't が軽い「ラ」の音になり、us と a も小さいので一語に聞こえやすい。',
       use: 'Can you get us a table for four?（4人の席をお願いできますか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'family', seg: [116.8, 122.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'family', seg: [116.3, 124.9],
       stem: 'What does the coworker say about the client company?',
       ja: '同僚は、相手の会社について何と言う？',
       choices: ['It is quite new', 'It is family owned', 'It is their biggest client'], a: 1,
@@ -177,7 +177,7 @@ export const firstComplaint: Clip = {
       trap: '会社名のあとなので「大きい」と思いやすい。owned を聞き取る。',
       use: 'It’s a family-owned restaurant.（家族経営のレストランです）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'edge', reveals: ['family'], seg: [116.8, 122.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'edge', reveals: ['family'], seg: [116.8, 124.9],
       stem: 'What does the coworker tell Pam not to do?',
       ja: '同僚は、パムに何をするなと言っている？',
       choices: ['Be too nice to them', 'Talk about families', 'Be scared of them'], a: 0,
@@ -189,7 +189,7 @@ export const firstComplaint: Clip = {
       trap: 'family と don’t が近いので「家族の話はするな」と思いやすい。that は家族経営のこと。',
       use: 'Don’t let that scare you.（そんなことでこわがらないで）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'canfail', seg: [122.6, 126.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'canfail', seg: [121.3, 126.3],
       stem: 'Fill the gap: “Come on, I know you ___ fail.”',
       ja: '空所を埋める：「Come on, I know you ___ fail.」',
       choices: ['can', 'can’t', 'could'], a: 0,
@@ -245,7 +245,7 @@ export const firstComplaint: Clip = {
       trap: '悪口の中身から母親が的に見えるが、それは型どおりの冗談。名乗り方と結果の感想で誰の話か決まる。',
       use: 'I tried to sound tough. It didn’t work.（強気に言おうとしたけど無理だった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['lost', 'file'], seg: [140.0, 183.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['lost', 'file'], seg: [140, 184.4],
       stem: 'How does Pam’s call turn out in the end?',
       ja: 'パムの電話は、結局どうなる？',
       choices: ['They lose the client', 'The client just laughs', 'They keep the client'], a: 0,
@@ -257,7 +257,7 @@ export const firstComplaint: Clip = {
       trap: 'エリンが苦情を記録するので、苦情だけで済んだと思いやすい。最後の発表を聞く。',
       use: 'It worked better than we expected.（思った以上にうまくいった）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'confused', reveals: ['call'], seg: [150.6, 157.9],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'confused', reveals: ['call'], seg: [150.6, 158.3],
       stem: 'How does Pam feel about how the call went?',
       ja: '電話がどうだったか、パムはどう感じている？',
       choices: ['Not sure, but hopeful', 'Sure it went badly', 'Sure they laughed'], a: 0,
@@ -269,7 +269,7 @@ export const firstComplaint: Clip = {
       trap: 'パムはやさしいので、心配していると思いやすい。at least は小さな期待の合図。',
       use: 'Well, at least we tried.（まあ、少なくともやってはみたね）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'file', reveals: ['call', 'canfail'], seg: [163.9, 172.4],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'file', reveals: ['call', 'canfail'], seg: [163.9, 173.4],
       stem: 'What does Erin promise the caller?',
       ja: 'エリンは電話の相手に何を約束する？',
       choices: ['To tell Pam the message', 'To call them back later', 'To put it on file'], a: 2,

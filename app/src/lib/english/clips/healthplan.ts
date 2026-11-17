@@ -24,7 +24,7 @@ export const healthPlan: Clip = {
       trap: 'I did my job を「言われた通り」と思いやすいが、胸を張っている。赤字の話も出ない。',
       use: 'I was just doing my job.（仕事をしただけだよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bone', seg: [3, 9.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bone', seg: [3, 9.7],
       stem: 'What does “*to the bone*” mean here?',
       ja: '「to the bone」はここではどういう意味？',
       choices: ['Almost to nothing', 'By about half', 'Just a little'], a: 0,
@@ -47,7 +47,7 @@ export const healthPlan: Clip = {
       trap: 'maybe を迷いと取りやすいが、考えは変わらない。次の一文が続きか別の話かで判断。',
       use: 'Was it expensive? Maybe. Worth it? Yes.（高かった？まあね。でも価値はあった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'coddle', seg: [9.2, 13.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'coddle', seg: [9.2, 17.6],
       stem: 'What does “*coddling* people” mean?',
       ja: '「coddling people」はどういう意味？',
       choices: ['Being too kind to people', 'Getting close to people', 'Trusting people too easily'], a: 0,
@@ -70,7 +70,7 @@ export const healthPlan: Clip = {
       trap: '最初の I は「だれか」の意味で、本人の話ではない。英語の I や you は例え話にも使う。',
       use: 'Say I lose my passport. Then what?（例えばパスポートをなくしたら？）' },
 
-    { id: 't2', skill: 'detail', level: 'B1', point: 'notmad', seg: [38, 43.2],
+    { id: 't2', skill: 'detail', level: 'B1', point: 'notmad', seg: [38, 44.6],
       stem: 'What does Dwight want to do to the person?',
       ja: 'ドワイトはやった人をどうしたい？',
       choices: ['Punish them', 'Forgive them', 'Thank them'], a: 0,
@@ -82,7 +82,7 @@ export const healthPlan: Clip = {
       trap: 'I’m not mad から許すと思いやすい。so I can のあとが本当の目的。',
       use: 'I’m not mad. I’m just curious.（怒ってないよ、気になるだけ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'forged', seg: [44.2, 55.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'forged', seg: [43.2, 53.5],
       stem: 'What does Dwight say someone did?',
       ja: 'ドワイトは、だれかが何をしたと言う？',
       choices: ['Faked medical information', 'Leaked medical information', 'Signed someone else’s name'], a: 0,
@@ -105,7 +105,7 @@ export const healthPlan: Clip = {
       trap: '最初の2つは本当にある病気なので「名前が変なだけ」と思いやすい。後ろほど作り話。',
       use: 'That sounds made up.（それ、作り話っぽいね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [69.4, 75.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [69.4, 77.7],
       stem: 'What does Dwight mean by “*You know what?*”',
       ja: 'ドワイトの「You know what?」はどういう意味？',
       choices: ['Listen, I’ve decided', 'Do you know the answer?', 'Okay, I believe you'], a: 0,
@@ -117,7 +117,7 @@ export const healthPlan: Clip = {
       trap: '質問の形なので「知ってる？」と思いやすい。答えを待たずに次を話す。',
       use: 'You know what? I’ll call them myself.（よし、自分で電話するよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'nocover', seg: [74.5, 81.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'nocover', seg: [74.5, 82.8],
       stem: 'What will Dwight take away from everyone?',
       ja: 'ドワイトはみんなから何を取り上げる？',
       choices: ['Their health care', 'Their day off', 'Their pay'], a: 0,
@@ -129,7 +129,7 @@ export const healthPlan: Clip = {
       trap: '取り上げるのは休みや給料だと思いやすい。no のあとの health care を聞く。',
       use: 'No dessert until you finish dinner.（夕ご飯を食べ終わるまでデザートなし）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [90.6, 98.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [89.7, 101.7],
       stem: 'Fill the gap: “…___ the care they need”',
       ja: '空いている所に入る語は？「…___ the care they need」',
       choices: ['won’t receive', 'want to receive', 'will receive'], a: 0,
@@ -152,7 +152,7 @@ export const healthPlan: Clip = {
       trap: 'Sounds tough を同情と取りやすいが皮肉。理由は because のあと。',
       use: 'Is this because I was late?（私が遅れたからなの？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'whoisthis', seg: [135.4, 138.45],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'whoisthis', seg: [134.6, 140],
       stem: 'Why does Jim ask, “Who is this?”',
       ja: 'ジムはなぜ「Who is this?」と聞く？',
       choices: ['He is teasing Dwight', 'He can’t hear well', 'He is waiting for Pam'], a: 0,
@@ -164,7 +164,7 @@ export const healthPlan: Clip = {
       trap: '電話の普通の質問なので本気に思いやすい。閉じこめたのはジム自身。',
       use: 'Sorry, who’s calling, please?（失礼ですが、どちら様ですか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cant', seg: [137.5, 141.25],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cant', seg: [137.5, 143.3],
       stem: 'Type what Jim says: “No, ___ fire me.” (2 words)', answer: "you can't",
       ja: '書こう：「No, ___ fire me.」（2語）',
       cue: '「fired」と言われた直後の返事。',
@@ -174,7 +174,7 @@ export const healthPlan: Clip = {
       trap: 't が聞こえず can と書きやすい。強さと長さで決める。続く Yes, I can もヒント。',
       use: 'You can’t eat in the library.（図書館では食べられません）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'day', reveals: ['cant'], seg: [139.6, 142.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'day', reveals: ['cant'], seg: [139, 144], keep: true,
       stem: 'For how long is Dwight manager, he says?',
       ja: 'ドワイトは、どのくらいの間マネージャーだと言う？',
       choices: ['For the day', 'For the week', 'For the month'], a: 0,
@@ -186,7 +186,7 @@ export const healthPlan: Clip = {
       trap: 'day は短く、聞き落としやすい。the のあとの「デイ」「ウィー」「マン」で決める。',
       use: 'We’re only here for the day.（今日一日だけの滞在です）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'beep', seg: [143.8, 147],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'beep', seg: [142.7, 147.7],
       stem: 'Why does Jim ask Dwight to hold on?',
       ja: 'ジムはなぜドワイトに「待って」と言う？',
       choices: ['He has another call', 'He wants a voice message', 'His battery is dying'], a: 0,
@@ -198,7 +198,7 @@ export const healthPlan: Clip = {
       trap: 'beep から留守電や電池の音を思いやすい。hold on と一緒なら別の電話の話。',
       use: 'Can you hold on? I have another call.（ちょっと待って、別の電話が）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', reveals: ['beep'], seg: [146.6, 176.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', reveals: ['beep'], seg: [146.6, 179.8],
       stem: 'What do Jim and Pam talk about on the phone?',
       ja: 'ジムとパムは電話で何を話している？',
       choices: ['Their weekend plans', 'Firing Dwight', 'The health care plan'], a: 0,
@@ -221,7 +221,7 @@ export const healthPlan: Clip = {
       trap: 'weekend や up to で誘いの電話に見えるが、誘う言葉は出てこない。何のための電話かを考える。',
       use: 'Sorry, I got stuck on another call.（ごめん、別の電話につかまってた）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'upto', seg: [157.7, 160],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'upto', seg: [156.5, 161.7],
       stem: 'Type the question about weekend plans: “What ___?” (4 words)', answer: 'are you up to',
       ja: '書こう：週末の予定を聞く「What ___?」（4語）',
       cue: '「Yeah?」に続く質問。',
@@ -231,7 +231,7 @@ export const healthPlan: Clip = {
       trap: 'up to を「〜まで」と思うと意味が通らない。are はほとんど聞こえないこともある。',
       use: 'What are you up to tonight?（今夜は何するの？）' },
 
-    { id: 's3', skill: 'sound', level: 'B2', point: 'needed', seg: [184, 187.8],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'needed', seg: [182, 189.8],
       stem: 'Fill the gap: “Listen, ___ your permission to fire Jim Halpert.”',
       ja: '入る語は？「Listen, ___ your permission to fire Jim Halpert.」',
       choices: ['I need', 'I needed', 'I’ll need'], a: 1,
@@ -243,7 +243,7 @@ export const healthPlan: Clip = {
       trap: 'need なら「ニード」で終わる。I’ll need なら I のあとに小さい「ル」が入る。',
       use: 'I needed to ask you something.（ちょっと聞きたいことがあって）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'charge', seg: [199.5, 210],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'charge', seg: [204.8, 212.1],
       stem: 'What did Michael ask Dwight to pick?',
       ja: 'マイケルはドワイトに何を選ぶ係を任せた？',
       choices: ['The health care plan', 'The new manager', 'The office party'], a: 0,
@@ -255,7 +255,7 @@ export const healthPlan: Clip = {
       trap: 'manager という語が何度も出るので引かれやすい。picking のあとを聞く。',
       use: 'I’m in charge of the music.（音楽は私の担当です）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'callme', seg: [212.5, 216.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'callme', seg: [211.4, 216.4],
       stem: 'What does Jan want Michael to do when he gets back?',
       ja: 'ジャンは、マイケルが戻ったら何をしてほしい？',
       choices: ['Call her right away', 'Call Dwight right away', 'Fire Jim right away'], a: 0,
@@ -267,7 +267,7 @@ export const healthPlan: Clip = {
       trap: 'ドワイトが call you immediately とくり返すので、me と you が入れかわりやすい。',
       use: 'Please tell her to call me back.（折り返し電話するよう伝えてください）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'since', seg: [216.3, 222.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'since', seg: [215.3, 223.2],
       stem: 'What does “*since I have you on the phone*” mean?',
       ja: '「since I have you on the phone」はどういう意味？',
       choices: ['While we’re talking anyway', 'Because this is urgent', 'Ever since you called'], a: 0,
@@ -279,7 +279,7 @@ export const healthPlan: Clip = {
       trap: 'since から「〜以来」と思いやすい。ここは「〜だから」。',
       use: 'Since you’re here, can you help me?（せっかく来たなら、手伝ってくれる？）' },
 
-    { id: 'i5', skill: 'infer', level: 'B1', point: 'cell', seg: [221.8, 227.5],
+    { id: 'i5', skill: 'infer', level: 'B1', point: 'cell', seg: [221.8, 227.9],
       stem: 'Why is Jan upset at the end?',
       ja: '最後にジャンはなぜ怒っている？',
       choices: ['He called her cell phone', 'He called too many times', 'He called the wrong office'], a: 0,

@@ -13,7 +13,7 @@ export const spencerRoastsCarly: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'board', seg: [5.8, 13.4],
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'board', seg: [4.8, 13.9],
       stem: 'What does “he’s *on board with* the meme” mean?',
       ja: '「he’s on board with the meme」はどういう意味？',
       choices: ['He’s happy to join in', 'He’s in charge of it', 'He’s tired of it'], a: 0,
@@ -36,7 +36,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'Love を文字通り取ると「ほめている」になる。直前が悪口なら、ほめ言葉は逆を疑う。',
       use: 'Oh great, love that for me.（あーあ、最高だね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'soul', seg: [39.9, 44.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'soul', seg: [39.9, 46.5],
       stem: 'Fill the gap: “___ make your empty soul feel better?”',
       ja: '空いている所に入る語は？「___ make your empty soul feel better?」',
       choices: ['Does this', 'Doesn’t this', 'Did this'], a: 0,
@@ -48,7 +48,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'Doesn’t なら「ン」が残る。Did なら「ディッ」と「イ」の音になる。',
       use: 'Does this look okay on me?（これ、似合ってる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'comments', seg: [60.8, 71.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'comments', seg: [60.8, 71.9],
       stem: 'Why does Carly want to talk to art fans?',
       ja: 'カーリーはなぜ美術好きの人と話したい？',
       choices: ['Most viewers don’t like the show', 'Most viewers want more of it', 'Most viewers think she’s mean'], a: 0,
@@ -71,7 +71,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'in your mouth で「食べる」と取りやすい。狙いはアヒルの見た目。',
       use: 'Everyone knows the best part is the crust.（いちばんおいしいのは耳だって常識）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'willow', reveals: ['together'], seg: [99.0, 140.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'willow', reveals: ['together'], seg: [99, 141.4],
       stem: 'How does Carly’s talk with Willow end?',
       ja: 'カーリーとウィローの話はどう終わる？',
       choices: ['Willow is on Carly’s side', 'Willow stays to enjoy the show', 'Willow leaves angry at Carly'], a: 0,
@@ -92,7 +92,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'I, for one に合わせて hand を消したくなる。書き取りは、正しい形でなく聞こえた音を書く。',
       use: 'I, for one, love this idea.（私としては、この案大好き）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'oneway', reveals: ['personally'], seg: [99.6, 109.3],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'oneway', reveals: ['personally'], seg: [99.6, 109.5],
       stem: 'What does Carly mean by “That’s *one way to look at it*”?',
       ja: 'カーリーの「That’s one way to look at it」はどういう意味？',
       choices: ['I don’t quite agree', 'I totally agree', 'Please tell me more'], a: 0,
@@ -104,7 +104,7 @@ export const spencerRoastsCarly: Clip = {
       trap: '日本語の「そうですね」のように同意に聞こえやすい。すぐあとの But が本音。',
       use: 'That’s one way to see it, sure.（まあ、そういう見方もあるね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'personally', seg: [105.5, 109.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'personally', seg: [103.7, 109.5],
       stem: 'Type what Carly asks: “But don’t you think you’re ___ personally?” (5 words)',
       answer: 'taking this a little too',
       ja: '書こう：「But don’t you think you’re ___ personally?」（5語）',
@@ -115,7 +115,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'taking this と a little がひと続きに聞こえる。5語を数えて書く。',
       use: 'Please don’t take this too personally.（あまり深刻に受け止めないでね）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'together', seg: [133.4, 140.6],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'together', seg: [132.4, 140.7],
       stem: 'Who says influencers have to stick together?',
       ja: 'インフルエンサーは団結しなきゃ、と言うのはだれ？',
       choices: ['Willow', 'Carly', 'Millicent'], a: 0,
@@ -127,7 +127,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'Carly の名前が聞こえるのでカーリーと思いやすい。文の頭の名前は呼びかけ。',
       use: 'Listen, Tom, we’re in this together.（ねえトム、僕らは一緒だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'mission', seg: [149.5, 157.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'mission', seg: [149.5, 158.1],
       stem: 'What does “*Mission accomplished*” mean here?',
       ja: 'ここでの「Mission accomplished」はどういう意味？',
       choices: ['I meant it to be mean', 'I finished it in time', 'I wanted you to like it'], a: 0,
@@ -174,7 +174,7 @@ export const spencerRoastsCarly: Clip = {
       trap: '質問の形なので「知ってる？」と思いやすい。答えを待たずに本音を言う。',
       use: 'You know what? I’m really tired.（あのね、本当に疲れてるの）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'miss', seg: [203.5, 206.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'miss', seg: [202.5, 208],
       stem: 'Type what Millicent asks: “Did I ___?” (2 words)', answer: 'miss anything',
       ja: '書こう：「Did I ___?」（2語）',
       cue: '「Hey, Millicent」のあと。',
@@ -219,7 +219,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'not me を信じると、なりすましの話になる。すぐあとの fine は言い訳をやめた合図。',
       use: 'Fine. It was me.（はいはい、私だよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'parent', seg: [262.5, 270.3],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'parent', seg: [262.5, 270.9],
       stem: 'How did Millicent get the new things?',
       ja: 'ミリセントはどうやって新しい物をもらった？',
       choices: ['She used his worries as a parent', 'She asked him very nicely for them', 'She paid for them herself'], a: 0,
@@ -231,7 +231,7 @@ export const spencerRoastsCarly: Clip = {
       trap: 'cool stuff（いい物）だけ聞くと、普通にもらった話に聞こえる。take advantage を聞く。',
       use: 'Don’t take advantage of his kindness.（彼の優しさにつけこまないで）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'apology', seg: [271.9, 279.1],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'apology', seg: [271.1, 279.1],
       stem: 'What does Freddie want from Millicent?',
       ja: 'フレディはミリセントに何を求めている？',
       choices: ['A real apology', 'A thank-you', 'Money for the keyboard'], a: 0,
@@ -255,7 +255,7 @@ export const spencerRoastsCarly: Clip = {
       trap: '最後の one が弱いと twenty twenty に聞こえる。2012 なら twenty twelve。最後まで聞く。',
       use: 'Not in this day and age.（今の時代にそれはない）' },
 
-    { id: 'a2', skill: 'infer', level: 'B2', point: 'easy', seg: [288.2, 303.9],
+    { id: 'a2', skill: 'infer', level: 'B2', point: 'easy', seg: [287.2, 304.8],
       stem: 'Why does Millicent thank Freddie?',
       ja: 'ミリセントはなぜフレディにお礼を言う？',
       choices: ['To get the keyboard back', 'To make Freddie laugh', 'To end the talk fast'], a: 0,

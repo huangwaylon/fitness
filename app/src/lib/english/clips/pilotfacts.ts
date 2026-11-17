@@ -16,7 +16,7 @@ export const pilotFacts: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'boss', seg: [0, 15.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'boss', seg: [0, 16],
       stem: 'How does Michael feel about himself as a boss?',
       ja: 'マイケルは上司としての自分をどう思っている？',
       choices: ['Proud of himself', 'Unsure of himself', 'Tired of his job'], a: 0,
@@ -39,7 +39,7 @@ export const pilotFacts: Clip = {
       trap: '本気の叱責に聞こえやすい。オチまで聞いてから判断する。',
       use: 'How many times have I told you?（何回言ったらわかるの？）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'tell', seg: [64.95, 72.0],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'tell', seg: [63.7, 72],
       stem: 'What has Michael decided about the bad news?',
       ja: 'マイケルは悪い知らせについてどう決めた？',
       choices: ['To tell them later', 'To let someone else tell', 'Not to tell them'], a: 2,
@@ -62,7 +62,7 @@ export const pilotFacts: Clip = {
       trap: '本人の「意味がない」に引っぱられ、軽い話と取りやすい。たとえ話では、選んだ例の重さが本音を表す。',
       use: 'That’s like saying the Titanic had a leak.（タイタニックが少し漏れた、と言うようなもの）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'guilty', seg: [72.8, 75.8],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'guilty', seg: [72.5, 79.3],
       stem: 'What does Michael mean by “Guilty”?',
       ja: 'マイケルの「Guilty」はどういう意味？',
       choices: ['Yes, that’s me', 'Sorry, my fault', 'No, not me'], a: 0,
@@ -74,7 +74,7 @@ export const pilotFacts: Clip = {
       trap: '「有罪」から謝っていると思いやすい。名前を聞かれた返事なので「本人です」。',
       use: 'Who ate the cake? — Guilty.（ケーキ食べたの誰？—私です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'temp', seg: [76.95, 81.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'temp', seg: [75.6, 82.9],
       stem: 'Why has Ryan come to the office?',
       ja: 'ライアンはなぜ会社に来た？',
       choices: ['To start work today', 'To have a job interview', 'To drop off papers'], a: 0,
@@ -86,7 +86,7 @@ export const pilotFacts: Clip = {
       trap: 'sent me down（よこされた）から、届け物と思いやすい。最後の start today が答え。',
       use: 'I’m new here. I start today.（新人です。今日からです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'safety', seg: [95.0, 103.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'safety', seg: [95, 103.9],
       stem: 'What reason is given for “You can’t do that”?',
       ja: '「You can’t do that」の理由は何？',
       choices: ['He could fall and get hurt', 'It breaks the noise rules', 'It blocks the way out'], a: 0,
@@ -98,7 +98,7 @@ export const pilotFacts: Clip = {
       trap: 'violation（違反）から、別の規則を思いやすい。I could のあとが理由。',
       use: 'Careful, you could fall.（気をつけて、転ぶかもよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bother', seg: [108.0, 112.4],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bother', seg: [107.9, 114.1],
       stem: 'What does “doesn’t bother me” mean?',
       ja: '「doesn’t bother me」はどういう意味？',
       choices: ['I don’t mind it', 'It makes me mad', 'I don’t know about it'], a: 0,
@@ -120,7 +120,7 @@ export const pilotFacts: Clip = {
       trap: '来た時から、と聞くと削減役で雇われたと取りやすい。勧めたのは本人。',
       use: 'I even brought it up at the meeting.（会議でも言ったんだよ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'bringiton', seg: [120.6, 124.6],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'bringiton', seg: [115.8, 125.1],
       stem: 'What does “bring it on” mean here?',
       ja: 'ここでの「bring it on」はどういう意味？',
       choices: ['I’m ready, let it come', 'Let’s talk about it again', 'Let’s finish it fast'], a: 0,
@@ -132,7 +132,7 @@ export const pilotFacts: Clip = {
       trap: '直前の brought it up（話に出した）に引かれやすい。on が付くと「来い」。',
       use: 'A hard test? Bring it on!（難しいテスト？どんと来い！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'salary', seg: [150.6, 158.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'salary', seg: [150.8, 162.8], keep: true,
       stem: 'What salary does Michael say would suit him?',
       ja: 'マイケルが自分にちょうどいいと言う給料は？',
       choices: ['$6,000', '$6 million', '$16 million', '$60 million'], a: 1,
@@ -144,7 +144,7 @@ export const pilotFacts: Clip = {
       trap: '6000なら thousand。sixteen は「シックスティーン」、sixty は「シックスティ」。ここは「シックス」。',
       use: 'What’s the starting salary?（初任給はいくらですか）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B2', point: 'raise', seg: [158.2, 162.3],
+    { id: 'r2', skill: 'pragma', level: 'B2', point: 'raise', seg: [157.5, 163.4],
       stem: 'What does “Don’t we all?” mean here?',
       ja: 'ここでの「Don’t we all?」はどういう意味？',
       choices: ['Everyone wants that, too', 'Yes, you work so hard', 'Do we all get one?'], a: 0,
@@ -156,7 +156,7 @@ export const pilotFacts: Clip = {
       trap: '質問の形なので、本当に聞いていると思いやすい。答えを待たずに流している。',
       use: 'I need a vacation. — Don’t we all?（休みが欲しい。—みんなそうだよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'raise', seg: [158.2, 162.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'raise', seg: [157.5, 163.4],
       stem: 'Fill the gap in the reply: “___ all?”',
       ja: '返事の「___ all?」の空所は？',
       choices: ['Don’t we', 'Do we', 'Didn’t we'], a: 0,
@@ -168,7 +168,7 @@ export const pilotFacts: Clip = {
       trap: 'Do we なら「ン」がない。Didn’t we は「ディ」で始まる。「ドン」と聞こえれば Don’t we。',
       use: 'Don’t you love this song?（この曲、いいよね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'prank', seg: [162.3, 174.95],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'prank', seg: [162.3, 175],
       stem: 'What does Michael want the temp to do?',
       ja: 'マイケルは派遣の新人に何をしてほしい？',
       choices: ['Help him play a trick', 'Watch TV shows with him', 'Copy all of his work'], a: 0,
@@ -180,7 +180,7 @@ export const pilotFacts: Clip = {
       trap: '番組の名前が出るので、テレビを見る話と思いやすい。go along with it が頼みごと。',
       use: 'Just go along with it, okay?（話、合わせてね）' },
 
-    { id: 'g1', skill: 'gist', level: 'C1', point: 'prank', reveals: ['theft', 'letgo'], seg: [163.4, 207.2],
+    { id: 'g1', skill: 'gist', level: 'C1', point: 'prank', reveals: ['theft', 'letgo'], seg: [163.4, 208],
       stem: 'What is Michael doing with Pam?',
       ja: 'マイケルはパムに何をしている？',
       choices: ['Pretending to fire her', 'Really firing her', 'Giving her a new job'], a: 0,
@@ -204,7 +204,7 @@ export const pilotFacts: Clip = {
       trap: '「行かせる」から早く帰すと思いやすい。downsizing（人を減らす）のあとなので仕事の話。',
       use: 'The company let ten people go.（会社は10人を解雇した）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'theft', seg: [203.85, 206.85], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'theft', seg: [202.5, 207.6], keep: true,
       stem: 'Type Michael’s reason: “Well, ___.” (3 words)', answer: 'theft and stealing',
       ja: 'マイケルの理由「Well, ___.」を書こう（3語）',
       cue: '「Why?」のあと',
@@ -236,19 +236,7 @@ export const pilotFacts: Clip = {
       trap: '発表をじらす上司が笑いの的に見えるが、彼は「今言う」と言っている。最後の一言が誰の返しかを流れで追う。',
       use: 'You may go. — I wasn’t asking.（行ってよし。—聞いてないけど）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'branch', seg: [233.78, 245.4],
-      stem: 'What is Jan thinking about?',
-      ja: 'ジャンは何を考えている？',
-      choices: ['Cutting one of two branches', 'Joining two branches into one', 'Moving Michael to a new branch'], a: 0,
-      choicesJa: ['2つの支店のどちらかを縮小する', '2つの支店を1つにまとめる', 'マイケルを別の支店に移す'],
-      cue: '「either」のあと',
-      line: 'Jan is thinking about *downsizing either the Stamford branch or this branch*.',
-      said: '「ジャンは、向こうの支店かこの支店の縮小を考えている」と発表する。',
-      mean: 'either A or B ＝ AかBのどちらか。2つの支店のうち、片方が小さくなる。',
-      trap: '支店が2つ並ぶので、合併と思いやすい。either 〜 or は「どちらか一方」。',
-      use: 'Either Friday or Monday is fine.（金曜か月曜なら大丈夫）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'meeting', reveals: ['downsize', 'branch'], seg: [233.78, 259.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'meeting', reveals: ['downsize', 'branch'], seg: [233.8, 261.7],
       stem: 'How does the staff feel after the news?',
       ja: '発表のあと、社員たちはどんな気持ち？',
       choices: ['Worried about their jobs', 'Happy about the news', 'Sure their jobs are safe'], a: 0,
@@ -260,7 +248,19 @@ export const pilotFacts: Clip = {
       trap: 'もう一つの支店かもしれないので、安心と思いやすい。「自分だ」「くそっ」で分かる。',
       use: 'Should I be worried?（心配したほうがいい？）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'downsize', seg: [245.3, 252.1],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'branch', seg: [239.2, 248.5],
+      stem: 'What is Jan thinking about?',
+      ja: 'ジャンは何を考えている？',
+      choices: ['Cutting one of two branches', 'Joining two branches into one', 'Moving Michael to a new branch'], a: 0,
+      choicesJa: ['2つの支店のどちらかを縮小する', '2つの支店を1つにまとめる', 'マイケルを別の支店に移す'],
+      cue: '「either」のあと',
+      line: 'Jan is thinking about *downsizing either the Stamford branch or this branch*.',
+      said: '「ジャンは、向こうの支店かこの支店の縮小を考えている」と発表する。',
+      mean: 'either A or B ＝ AかBのどちらか。2つの支店のうち、片方が小さくなる。',
+      trap: '支店が2つ並ぶので、合併と思いやすい。either 〜 or は「どちらか一方」。',
+      use: 'Either Friday or Monday is fine.（金曜か月曜なら大丈夫）' },
+
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'downsize', seg: [244.3, 254],
       stem: 'What does Michael tell the staff to do?',
       ja: 'マイケルは社員たちに何をするように言う？',
       choices: ['Update their resumes', 'Ask Jan for time', 'Work harder this week'], a: 0,
@@ -294,7 +294,7 @@ export const pilotFacts: Clip = {
       trap: 'Yeah を相づちと取りやすいが、it’ll be you が同意を決める。',
       use: 'Don’t worry, it won’t be you.（大丈夫、君じゃないよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'professional', seg: [264.5, 273.7],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'professional', seg: [264.5, 275],
       stem: 'How does Dwight feel about finding his things in Jell-O?',
       ja: 'ドワイトは、自分の物がゼリーに入っていてどう思う？',
       choices: ['Annoyed, it’s not funny', 'Amused, it’s a good joke', 'Calm, but a bit sad'], a: 0,
@@ -306,7 +306,7 @@ export const pilotFacts: Clip = {
       trap: 'professional や Thanks だけ聞くと、ほめていると思いやすい。wasn’t funny で決まる。',
       use: 'That wasn’t funny.（それ、面白くなかったよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'third', seg: [269.8, 273.9],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'third', seg: [269.7, 275],
       stem: 'How many times has Dwight’s stuff been put in Jell-O?',
       ja: 'ドワイトの物がゼリーに入れられたのは何回目？',
       choices: ['2', '3', '4'], a: 1,

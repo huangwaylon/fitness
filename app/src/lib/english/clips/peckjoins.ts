@@ -27,7 +27,7 @@ export const peckJoins: Clip = {
       trap: '監督の話はあとの Nathan のこと。最初の文の Miranda again を聞く。',
       use: 'It’s a dream to work with you again.（また一緒に働けるなんて夢みたい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'friends', seg: [9, 21],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'friends', seg: [10.4, 22.4],
       stem: 'How does Josh describe his friendship with Miranda?',
       ja: 'ジョシュはミランダとの友情をどう言う？',
       choices: ['Real friends, not coworkers', 'Best friends since school', 'Friends only when they work'], a: 0,
@@ -39,7 +39,7 @@ export const peckJoins: Clip = {
       trap: 'weekend（週末）の話は、比べるための例。not just のあとは「そうではない」側。',
       use: 'We’re actually friends, not just neighbors.（ただのご近所じゃなく、本当の友だち）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['eight'], seg: [21, 28.65],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['eight'], seg: [20.6, 30.9],
       stem: 'Why does Josh say “I mean” after Miranda’s age?',
       ja: 'ジョシュはなぜミランダの年齢のあとで「I mean」と言う？',
       choices: ['To say why it feels strange', 'To correct the age he gave', 'To sound a bit less rude'], a: 0,
@@ -51,7 +51,7 @@ export const peckJoins: Clip = {
       trap: 'I mean は言い直しにも使うが、28 は直されていない。理由を足す合図。',
       use: 'So tall now! I mean, he was tiny.（すごく背が伸びた。だって小さかったのに）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [24.3, 28.65], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [21.9, 30.9], keep: true,
       stem: 'How old was Miranda when Josh first met her?',
       ja: 'ジョシュが初めて会ったとき、ミランダは何歳だった？',
       choices: ['8', '18', '28'], a: 0,
@@ -63,7 +63,7 @@ export const peckJoins: Clip = {
       trap: '「エイト」で切れれば8、「エイティーン」と伸びれば18、前に twenty が付けば28。',
       use: 'I’ve known her since she was eight.（彼女が8歳のころから知ってる）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'favor', seg: [36.5, 41.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'favor', seg: [36.1, 41.8],
       stem: 'What does “do me a favor” mean?',
       ja: '「do me a favor」はどういう意味？',
       choices: ['Please help me with something', 'I’ll help you with something', 'Thank you very much'], a: 0,
@@ -75,7 +75,7 @@ export const peckJoins: Clip = {
       trap: 'favor（好意）から、何かしてあげる話と思いやすい。do me（私に）なので頼む側。',
       use: 'Do me a favor and call me later.（あとで電話してくれる？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'part', seg: [48.0, 59.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'part', seg: [48, 59.8],
       stem: 'What did Josh tell Miranda about the reboot?',
       ja: 'リブートについて、ジョシュはミランダに何と言った？',
       choices: ['He’d join for the right part', 'He’d join for a whole season', 'He’d join if she asked'], a: 0,
@@ -87,7 +87,7 @@ export const peckJoins: Clip = {
       trap: 'right part を「大きな役」と思いやすい。right は「ぴったりの」。',
       use: 'When the right job comes along, I’ll know.（ぴったりの仕事が来たら分かるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'love', reveals: ['part'], seg: [49, 55.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'love', reveals: ['part'], seg: [48.8, 59.8],
       stem: 'Fill the gap: “…comes along, ___ to come and play.”',
       ja: '「…comes along, ___ to come and play.」の空所は？',
       choices: ['I’d love', 'I love', 'I’d like'], a: 0,
@@ -109,7 +109,7 @@ export const peckJoins: Clip = {
       trap: 'what を落として would become だけ書きやすい。',
       use: 'We found what would become our favorite café.（のちに行きつけになるカフェを見つけた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'crackup', seg: [92.2, 100.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'crackup', seg: [93, 100.5],
       stem: 'Type the gap: “He’s always made me just ___.” (2 words)', answer: 'crack up',
       ja: '「He’s always made me just ___.」の空所を書こう（2語）',
       cue: '「genius」のあと',
@@ -168,7 +168,7 @@ export const peckJoins: Clip = {
       trap: 'watching と working は語頭が似ている。二人の共演は今回が初めて、と Josh も話している。',
       use: 'He was one of my childhood heroes.（子どものころのヒーローの一人だった）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'scary', seg: [158.85, 173.85],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'scary', seg: [158.3, 168.5],
       stem: 'How did Nathan feel about directing Josh’s scenes?',
       ja: 'ジョシュの場面を監督して、ネイサンはどう感じた？',
       choices: ['Excited but also scared', 'Bored and a bit tired', 'Calm and relaxed'], a: 0,
@@ -192,7 +192,7 @@ export const peckJoins: Clip = {
       trap: 'eleven（イレヴン）は seven と似る。最初の「イ」を聞く。17 なら「ティーン」がある。',
       use: 'It has like ten rooms.（部屋が10くらいある）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'unprof', seg: [235.8, 245.1],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'unprof', seg: [238.1, 250.1],
       stem: 'How does this actor feel about being “unprofessional”?',
       ja: '「プロらしくない」と言われることを、この俳優はどう思っている？',
       choices: ['Agrees with a laugh', 'Disagrees with them', 'Feels hurt by it'], a: 0,
@@ -204,7 +204,7 @@ export const peckJoins: Clip = {
       trap: 'not（〜ない）が入るので反論と思いやすい。not wrong ＝ right（正しい）。',
       use: 'People call me picky. They’re not wrong.（細かいと言われる。その通り）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'together', seg: [241.75, 245.1],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'together', seg: [241.2, 249.2],
       stem: 'Type the gap: “It’s really hard for me to ___.” (3 words)', answer: 'keep it together',
       ja: '「It’s really hard for me to ___.」の空所を書こう（3語）',
       cue: '「hard for me to」のあと',
@@ -239,7 +239,7 @@ export const peckJoins: Clip = {
       trap: 'not great で止めると、謙遜に聞こえやすい。次の It’s amazing まで聞く。',
       use: 'It’s not good. It’s perfect.（いいどころか、完璧）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'aversion', seg: [292.2, 298.1],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'aversion', seg: [290.6, 297.3],
       stem: 'How does this actor say they dislike reboots?',
       ja: 'この俳優は、リブートが苦手なことをどう言う？',
       choices: ['Softly, so it sounds nicer', 'Unsure, still deciding', 'Bluntly, being totally honest'], a: 0,
@@ -287,7 +287,7 @@ export const peckJoins: Clip = {
       trap: 'いなずまは「ひらめき」、alchemy は「作り方」に聞こえるが、recapture が手がかり。',
       use: 'That team was lightning in a bottle.（あのチームは奇跡みたいなものだった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'ages', seg: [332, 341.25], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'ages', seg: [332.7, 344.7], keep: true,
       stem: 'Who else does this actor think the show can reach?',
       ja: '若い人のほかに、この俳優は誰が楽しめると言う？',
       choices: ['Late teens or early 20s', 'Late 20s or early 30s', 'Late 30s or early 40s'], a: 1,
@@ -299,7 +299,7 @@ export const peckJoins: Clip = {
       trap: '「トゥエンティーズ」と「サーティーズ」が聞こえる。teens や forties は出てこない。',
       use: 'Most of us are in our early thirties.（ほとんど30代前半です）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'getback', seg: [363.5, 373.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'getback', seg: [361.8, 373.2],
       stem: 'What does “get back to filming” mean?',
       ja: '「get back to filming」はどういう意味？',
       choices: ['Return to filming', 'Stop filming today', 'Watch the filming'], a: 0,

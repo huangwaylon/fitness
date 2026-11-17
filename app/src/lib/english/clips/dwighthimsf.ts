@@ -13,7 +13,7 @@ export const dwightHimself: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'seminar', reveals: ['yearly'], seg: [8.6, 23.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'seminar', reveals: ['yearly'], seg: [7.7, 23.6],
       stem: 'What is Dwight’s seminar for?', ja: 'ドワイトのセミナーは何のため？',
       choices: ['To teach the newest karate', 'To try his own new moves', 'To review last year’s class'], a: 0,
       choicesJa: ['空手の最新情報を教える', '自分の新しい技を試す', '去年の授業を復習する'],
@@ -35,7 +35,7 @@ export const dwightHimself: Clip = {
       trap: '「ワンス」なら1回、「トゥワイス」なら2回。最後が year（イヤー）か month（マンス）かも聞く。',
       use: 'I go to the dentist once a year.（歯医者には年に1回行く）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [13.5, 19.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [13.5, 19.8], keep: true,
       stem: 'How old are martial arts, says the coworker?', ja: '武術は何年前からあると、同僚は言う？',
       choices: ['100 years', '1,000 years', '10,000 years'], a: 1,
       choicesJa: ['100年', '1,000年', '1万年'],
@@ -78,7 +78,7 @@ export const dwightHimself: Clip = {
 
     // why: escape ← "arrives" heard as the attackers coming, so they must get out first; the trolley ← "Trolley
     //   Museum" is the last place word heard
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'museum', seg: [23.2, 29.6],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'museum', seg: [23.2, 32.1],
       stem: 'Where are they visiting in Dwight’s story?', ja: 'ドワイトの話では、みんなはどこを訪れている？',
       choices: ['A trolley museum', 'A karate school', 'A train station'], a: 0,
       choicesJa: ['路面電車の博物館', '空手の道場', '駅'],
@@ -122,7 +122,7 @@ export const dwightHimself: Clip = {
       trap: 'know から「知ってる」と思いやすい。It’s good to know の It’s を落とした形。',
       use: 'The shop opens at nine? Good to know.（店は9時開店？いいこと聞いた）' },
 
-    { id: 'x3', skill: 'dict', level: 'B1', point: 'letme', seg: [42.0, 45.6],
+    { id: 'x3', skill: 'dict', level: 'B1', point: 'letme', seg: [39.7, 47.7],
       stem: 'Type: “No, there is a defense for that. ___ demonstrate.” (2 words)', ja: '書こう：“No, there is a defense for that. ___ demonstrate.”（2語）',
       answer: 'let me',
       cue: '「defense for that」のすぐあと',
@@ -132,7 +132,7 @@ export const dwightHimself: Clip = {
       trap: 't が聞こえないので lemme のように書きやすい。let と me の2語で書く。',
       use: 'Let me help you with that.（それ、手伝わせて）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'noway', seg: [45.5, 50.0],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'noway', seg: [43.7, 48.7],
       stem: 'What does Kevin mean by “No way”?', ja: 'ケビンの “No way” はどういう意味？',
       choices: ['He won’t do it', 'He can’t find the way', 'He is very surprised'], a: 0,
       choicesJa: ['やらない', '道が分からない', 'すごく驚いている'],
@@ -143,7 +143,7 @@ export const dwightHimself: Clip = {
       trap: 'No way は「うそでしょ！」と驚くときにも使う。ここは「来い」への返事なので断り。',
       use: 'Sing at the party? No way!（パーティーで歌う？絶対いや！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'lasttime', seg: [46.9, 53.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'lasttime', seg: [46.9, 56.5],
       stem: 'Why does Kevin say no to Dwight?', ja: 'ケビンはなぜドワイトに「いや」と言う？',
       choices: ['Dwight hurt him last time', 'He hurt Dwight last time', 'He ripped his pants last time'], a: 0,
       choicesJa: ['前回ドワイトにひどい目にあった', '前回ドワイトにけがをさせた', '前回ズボンを破いた'],
@@ -204,7 +204,7 @@ export const dwightHimself: Clip = {
       trap: 'come at me が「カマッミー」のようにつながり、at が消えやすい。前置詞を一語足して書く。',
       use: 'Come at me with your best offer.（いちばんいい条件で来てよ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'respect', seg: [56.2, 62.4],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'respect', seg: [55.9, 63.7],
       stem: 'Why does the coworker say “with all due respect”?', ja: '同僚はなぜ “with all due respect” と言う？',
       choices: ['To say something hard, politely', 'To thank everyone for coming', 'To show he loves karate'], a: 0,
       choicesJa: ['言いにくいことを、ていねいに言うため', '来てくれたみんなにお礼を言うため', '空手が好きだと伝えるため'],
@@ -215,7 +215,7 @@ export const dwightHimself: Clip = {
       trap: 'respect を「尊敬」と思いやすい。この前置きのあとには、相手が喜ばない話が来る。',
       use: 'With all due respect, I see it differently.（お言葉ですが、私の考えは違います）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'correct', seg: [62.2, 65.75],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'correct', seg: [61.2, 69.8],
       stem: 'How does Dwight take the coworker’s words?', ja: 'ドワイトは同僚の言葉をどう受けとる？',
       choices: ['He agrees right away', 'He laughs it off', 'He gets a little shy'], a: 0,
       choicesJa: ['すぐに「そのとおり」と認める', '笑ってごまかす', '少し照れる'],
@@ -240,7 +240,7 @@ export const dwightHimself: Clip = {
       trap: 'Unless を「実は負けるかも」と取りやすいが、出てくるのは人でなく病気。',
       use: 'I never get lost. Unless there’s no signal.（迷子にはならない。電波がなければ別）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'letssay', seg: [65.35, 71.95],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'letssay', seg: [63.7, 72.3],
       stem: 'What does “let’s just say” mean here?', ja: 'ここでの “let’s just say” はどういう意味？',
       choices: ['Let’s imagine', 'Let’s be honest', 'Let’s stop here'], a: 0,
       choicesJa: ['仮に〜としよう', '正直に言おう', 'ここでやめよう'],
@@ -261,7 +261,7 @@ export const dwightHimself: Clip = {
       mean: '止めずに実況して盛り上げている。ドワイトは本気で受けて戦い続ける。',
       trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',
       use: 'Come on, keep going!（ほら、続けて！）' },
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'wrist', seg: [76.2, 80.2],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'wrist', seg: [73.8, 83.7],
       stem: 'What does Dwight grab after “Block”?', ja: '「Block」のあと、ドワイトはどこをつかむ？',
       choices: ['The wrist', 'The nose', 'The elbow'], a: 0,
       choicesJa: ['手首', '鼻', 'ひじ'],
@@ -297,7 +297,7 @@ export const dwightHimself: Clip = {
       trap: '少し前に Block と言ったので「防ぐ」を選びやすい。absorb は吸収、つまり受ける側。',
       use: 'The company can absorb the cost.（会社がその費用をかぶれる）' },
 
-    { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', seg: [96.6, 101.6],
+    { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', seg: [94.7, 104.2],
       stem: 'What does Dwight mean by “But not for long”?', ja: 'ドワイトの “But not for long” はどういう意味？',
       choices: ['He’ll turn it around soon', 'He’ll stop the fight soon', 'He’ll take a break soon'], a: 0,
       choicesJa: ['すぐに逆転する', 'すぐに試合をやめる', 'すぐにひと休みする'],
@@ -335,7 +335,7 @@ export const dwightHimself: Clip = {
       trap: '実況の言葉をそのまま取りやすい。相手が何人かを確かめれば、ほめ言葉でないと分かる。',
       use: 'Wow, a tie. Who saw that coming?（へえ、引き分け。誰が予想した？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'surprise', seg: [115, 121.6],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'surprise', seg: [115.1, 123.1],
       stem: 'Type the end of Dwight’s tip to Jim: “what is called the ___.” (3 words)', ja: '書こう：“what is called the ___.”（3語）',
       answer: 'element of surprise',
       cue: '「what is called the」のあと',

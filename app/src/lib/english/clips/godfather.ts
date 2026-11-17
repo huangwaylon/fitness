@@ -19,7 +19,7 @@ export const godfather: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'planning', seg: [11.2, 18.2],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'planning', seg: [11.2, 18.4],
       stem: 'How do the parents feel about the office being there?',
       ja: '職場の人が来ていることを、両親はどう感じている？',
       choices: ['Surprised, not happy', 'Surprised and glad', 'Expecting it, nervous'], a: 0,
@@ -43,7 +43,7 @@ export const godfather: Clip = {
       trap: '客は親が招くもの、と思いやすい。we weren’t planning と I invited を結ぶ。',
       use: 'Who invited all these people?（誰がこの人たちを呼んだの？）' },
 
-    { id: 's3', skill: 'sound', level: 'B2', point: 'planning', seg: [13.9, 18.1],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'planning', seg: [11.5, 18.4],
       stem: 'Fill the gap: “We ___ planning on that.”',
       ja: '「We ___ planning on that.」の空所は？',
       choices: ['weren’t', 'were', 'aren’t'], a: 0,
@@ -78,7 +78,7 @@ export const godfather: Clip = {
       trap: 'your needs から質問と思いやすいが、疑問の形ではない。くり返しは宣伝の言い方。',
       use: 'For all your travel needs, call us.（旅行のことなら何でもお電話を）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [68.65, 72.55], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [66.8, 75.7], keep: true,
       stem: 'In the comment about Sunday church, how long has it been?',
       ja: '日曜の礼拝は、どのくらいぶり？',
       choices: ['A few days', 'A few weeks', 'A few months', 'A few years'], a: 3,
@@ -90,7 +90,7 @@ export const godfather: Clip = {
       trap: 'years は「イヤーズ」と伸びる。days は「デイズ」、weeks は「ウィークス」、months は「マンス」。',
       use: 'It’s been a few years, hasn’t it?（何年かぶりだね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'catchup', reveals: ['years'], seg: [68.65, 75.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'catchup', reveals: ['years'], seg: [66.8, 76.4],
       stem: 'What does “we got some catching up to do” mean?',
       ja: '「we got some catching up to do」はどういう意味？',
       choices: ['Talk after a long time', 'Hurry to get to church', 'Finish some late work'], a: 0,
@@ -102,7 +102,7 @@ export const godfather: Clip = {
       trap: 'catch up を「追いつく・急ぐ」と思いやすい。会っていない相手なら「近況を話す」。',
       use: 'Let’s grab coffee and catch up.（お茶して近況を話そう）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sayit', 'family'], seg: [77.0, 118.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sayit', 'family'], seg: [77, 119.2],
       stem: 'How does Michael’s attempt to sit with the family end?',
       ja: '家族の席に座ろうとしたマイケルは、最後どうなる？',
       choices: ['He admits he isn’t godfather', 'He sits with the family', 'They laugh and give in'], a: 0,
@@ -114,7 +114,7 @@ export const godfather: Clip = {
       trap: '冗談をほめられるので、押し切れたと思いやすい。but と、最後の I’m not を聞く。',
       use: 'Fine. I admit it. I was wrong.（分かった、認める。僕が悪かった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'scooch', reveals: ['family'], seg: [79.5, 84.85],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'scooch', reveals: ['family'], seg: [79.5, 86.5],
       stem: 'What does Michael ask the family to do?',
       ja: 'マイケルは家族に何をしてと言う？',
       choices: ['Move over a little', 'Stand up for a moment', 'Hurry up and start'], a: 0,
@@ -137,7 +137,7 @@ export const godfather: Clip = {
       trap: '本気で代父のつもりと取りやすいが、二人は really funny と冗談で受けている。',
       use: 'Ha, I see what you did there.（うまいこと言うね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'family', seg: [81.95, 86.35],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'family', seg: [81.5, 86.5],
       stem: 'What does “This is just for family” mean here?',
       ja: 'ここでの「This is just for family」はどういう意味？',
       choices: ['You can’t sit here', 'Please sit with us', 'These are our family'], a: 0,
@@ -149,7 +149,7 @@ export const godfather: Clip = {
       trap: 'family の温かい響きで誘いに聞こえやすい。just（〜だけ）が断りの中心。',
       use: 'Sorry, this table is just for staff.（すみません、このテーブルは職員用です）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'funny', seg: [86.05, 91.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'funny', seg: [84.7, 94.1],
       stem: 'What does the reply to “I’m the godfather” mainly say?',
       ja: '「I’m the godfather」への返事は、主に何を言っている？',
       choices: ['Funny, but please stop', 'Funny, please keep doing it', 'Funny, tell it again'], a: 0,
@@ -161,7 +161,7 @@ export const godfather: Clip = {
       trap: 'really funny で一緒に笑っていると思いやすい。but のあとに本音が来る。',
       use: 'That’s funny, but let’s keep it down.（面白いけど、静かにしようか）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'tellme', seg: [103.6, 108.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'tellme', seg: [103.3, 109.8],
       stem: 'Fill the gap: “Tell me that ___ not Cece’s godfather.”',
       ja: '「tell me that ___ not Cece’s godfather」の空所は？',
       choices: ['you know you’re', 'you’re', 'you know you were'], a: 0,
@@ -185,7 +185,7 @@ export const godfather: Clip = {
       trap: '声の大きさや口調の問題と思いやすい。say it の it は、求めた文そのもの。',
       use: 'Don’t just nod. Say it.（うなずくだけじゃなくて、言って）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'sayit', seg: [110.1, 114.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'sayit', seg: [109, 114],
       stem: 'Type the request: “I’m sorry, Michael. I ___.” (5 words)', answer: 'need you to say it',
       ja: '「I’m sorry, Michael. I ___.」の5語を書こう。',
       cue: 'Michael と呼んだあと、I から。',
@@ -195,7 +195,7 @@ export const godfather: Clip = {
       trap: 'you to が一つに聞こえ need to と書きやすい。「誰に」の you が入る。',
       use: 'I need you to call me back.（折り返し電話してほしい）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'seth', seg: [118.8, 124.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'seth', seg: [118.8, 125.4],
       stem: 'When Michael asks who the godfather is, what is he told?',
       ja: '代父は誰かと聞くと、何と言われる？',
       choices: ['Their friend Seth', 'Their cousin Seth', 'Someone from work'], a: 0,
@@ -207,7 +207,7 @@ export const godfather: Clip = {
       trap: '家族の席の話が続いたので、親戚と思いやすい。最初の our friend を聞く。',
       use: 'This is our friend Mark.（友だちのマークです）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'mommy', seg: [126.2, 133.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'mommy', seg: [126.2, 134.3],
       stem: 'Where did they meet Seth’s wife?',
       ja: 'セスの奥さんとは、どこで知り合った？',
       choices: ['At a class for moms', 'In kindergarten', 'At the office'], a: 0,
@@ -230,7 +230,7 @@ export const godfather: Clip = {
       trap: 'old を年齢、kindergarten を自分の過去と取りやすい。比べているのは、二人との近さ。',
       use: 'So, have you two known each other long?（二人は長い付き合いなの？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'plenty', seg: [126.2, 137.3],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'plenty', seg: [130, 139.1],
       stem: 'How does Michael answer “You should meet them”?',
       ja: '「You should meet them」に、マイケルはどう答える？',
       choices: ['Hurt, but acting fine', 'Happy to meet them', 'Polite but very busy'], a: 0,
@@ -253,7 +253,7 @@ export const godfather: Clip = {
       trap: '場面の口調だけで決めない。この形式では、カメラへの一言が答え合わせになる。',
       use: 'I’m fine. Totally fine.（平気。ぜんぜん平気）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'boxing', seg: [150.6, 154.4],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'boxing', seg: [148.6, 155.2],
       stem: 'What does “boxing me out” mean?',
       ja: '「boxing me out」はどういう意味？',
       choices: ['Keeping him away', 'Packing his things', 'Fighting with him'], a: 0,
@@ -265,7 +265,7 @@ export const godfather: Clip = {
       trap: 'box を「箱に詰める」や「ボクシング」と思いやすい。out が付くと「締め出す」。',
       use: 'I feel boxed out of the planning.（計画から外されてる気がする）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [176.3, 182.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [173.7, 184.5], keep: true,
       stem: 'How long will the young adult group be away?',
       ja: '若者の会は、どのくらい出かける？',
       choices: ['Three weeks', 'Three months', 'Six months', 'A year'], a: 1,

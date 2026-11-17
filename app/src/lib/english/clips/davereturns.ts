@@ -24,7 +24,7 @@ export const daveReturns: Clip = {
       trap: 'romantical は詩的に聞こえるが、involvement や terminated は書類の語。語の種類を見る。',
       use: 'We used to date, a long time ago.（ずっと前に付き合ってたんだ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'stay', seg: [52.5, 57.2],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'stay', seg: [51.2, 59.7],
       stem: 'How long is Dave staying in town?',
       ja: 'デイブはどのくらい町にいる？',
       choices: ['Just tonight', 'For a week', 'For a few days'], a: 0,
@@ -36,7 +36,7 @@ export const daveReturns: Clip = {
       trap: '質問の for a while が耳に残りやすい。答えの No のあとを聞く。',
       use: 'I’m only here for tonight.（今夜だけここにいます）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'burrito', seg: [61, 71.4],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'burrito', seg: [59.9, 71.9],
       stem: 'What will Dave eat for dinner?',
       ja: 'デイブは夕食に何を食べるつもり？',
       choices: ['A frozen burrito', 'French food with them', 'Dinner at the party'], a: 0,
@@ -48,7 +48,7 @@ export const daveReturns: Clip = {
       trap: 'French restaurant はレスリーとベンの予定。Cool のあとがデイブの予定。',
       use: 'I’ll just grab something on the way.（途中で何か買って食べるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', reveals: ['first'], seg: [77.5, 114],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', reveals: ['first'], seg: [77.5, 114.5],
       stem: 'What do Ben and Dave keep doing at dinner?',
       ja: '夕食の間、ベンとデイブは何をくり返している？',
       choices: ['Trying to praise Leslie more', 'Talking about their own jobs', 'Planning Leslie’s campaign'], a: 0,
@@ -95,7 +95,7 @@ export const daveReturns: Clip = {
       trap: '署長の退職パーティーの話が前に出るので、引かれやすい。',
       use: 'Can you support my plan?（私の案を応援してもらえますか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'idprob', reveals: ['endorse'], seg: [99, 102.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'idprob', reveals: ['endorse'], seg: [96.7, 103.4],
       stem: 'Fill the gap: “___ get him to endorse you.”',
       ja: '「___ get him to endorse you.」の空所は？',
       choices: ['I’ll probably', 'I’d probably', 'I probably'], a: 1,
@@ -107,19 +107,7 @@ export const daveReturns: Clip = {
       trap: '小さな「ド」があれば I’d。I’ll なら「アイル」と「ル」、I だけなら「アイプロ」とすぐつながる。',
       use: 'I’d probably take the train.（たぶん電車にするかな）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['unaware', 'refuse'], seg: [117.6, 147.5],
-      stem: 'What happens while Ben is in the bathroom?',
-      ja: 'ベンがトイレに行っている間に何が起こる？',
-      choices: ['Dave says he still loves Leslie', 'Dave asks Leslie for a job', 'Dave says he is moving back'], a: 0,
-      choicesJa: ['デイブが「まだ好きだ」と言う', 'デイブがレスリーに仕事を頼む', 'デイブが「戻ってくる」と言う'],
-      cue: 'レスリーの「Did you just say」',
-      line: 'Did you just say you were *still in love with me*?',
-      said: 'デイブが「まだ好きだ」と言い、レスリーが「今なんて言った？」と聞き返す。',
-      mean: 'still in love with 〜 ＝ まだ〜を好き。元恋人の告白で、レスリーは困る。',
-      trap: '戻ってくる話はあとで出る。ここはベンがいない間の告白。',
-      use: 'Did you just say that?（今、そう言った？）' },
-
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [120.2, 131],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [117.2, 126.5],
       stem: 'Why does Dave say “Nothing was said”?',
       ja: 'デイブは、なぜ「Nothing was said」と言う？',
       choices: ['To hide what he just said', 'To say it once more', 'To ask Ben to listen'], a: 0,
@@ -131,7 +119,19 @@ export const daveReturns: Clip = {
       trap: 'said が聞こえて、もう一度言うと思いやすい。Nothing のくり返しを聞く。',
       use: 'Forget I said anything.（今のは聞かなかったことにして）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'refuse', reveals: ['bringup'], seg: [126.4, 132],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['unaware', 'refuse'], seg: [117.6, 148.5],
+      stem: 'What happens while Ben is in the bathroom?',
+      ja: 'ベンがトイレに行っている間に何が起こる？',
+      choices: ['Dave says he still loves Leslie', 'Dave asks Leslie for a job', 'Dave says he is moving back'], a: 0,
+      choicesJa: ['デイブが「まだ好きだ」と言う', 'デイブがレスリーに仕事を頼む', 'デイブが「戻ってくる」と言う'],
+      cue: 'レスリーの「Did you just say」',
+      line: 'Did you just say you were *still in love with me*?',
+      said: 'デイブが「まだ好きだ」と言い、レスリーが「今なんて言った？」と聞き返す。',
+      mean: 'still in love with 〜 ＝ まだ〜を好き。元恋人の告白で、レスリーは困る。',
+      trap: '戻ってくる話はあとで出る。ここはベンがいない間の告白。',
+      use: 'Did you just say that?（今、そう言った？）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'refuse', reveals: ['bringup'], seg: [126.2, 132],
       stem: 'How does Leslie feel about Dave’s words?',
       ja: 'デイブの言葉に、レスリーはどんな気持ち？',
       choices: ['Upset that he said it now', 'Happy that he said it', 'Glad Ben was not there'], a: 0,
@@ -143,7 +143,7 @@ export const daveReturns: Clip = {
       trap: '告白なので、うれしいと思いやすい。here and now（今ここで）を責めている。',
       use: 'Why would you say that?（なんでそんなこと言うの？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'whynow', seg: [129.4, 136],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'whynow', seg: [129.4, 138.2],
       stem: 'Why does Dave pick this moment?',
       ja: 'デイブがこのタイミングを選んだのはなぜ？',
       choices: ['Ben is not at the table', 'He flies out tomorrow', 'Leslie asked him to'], a: 0,
@@ -155,7 +155,7 @@ export const daveReturns: Clip = {
       trap: '明日発つ話はあとで出る。and because のあとが理由。',
       use: 'Is this a good time?（今、大丈夫ですか）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'minutes', seg: [135.2, 138.2], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'minutes', seg: [132.3, 141.3], keep: true,
       stem: 'How long does Dave ask to talk to her?',
       ja: 'デイブは何分話したいと頼む？',
       choices: ['One minute', 'Five minutes', 'Fifteen minutes', 'Fifty minutes'], a: 1,
@@ -167,7 +167,7 @@ export const daveReturns: Clip = {
       trap: '「ファイヴ」の「アイ」なら five。fifteen は「ティーン」、fifty は「ティ」で終わる。',
       use: 'Can I have five minutes?（5分だけいいですか）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [137.6, 141.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [135.6, 143],
       stem: 'What does “*bring this up*” mean?',
       ja: '「bring this up」はどういう意味？',
       choices: ['Talk about this', 'Say this loudly', 'Carry this upstairs'], a: 0,
@@ -190,7 +190,7 @@ export const daveReturns: Clip = {
       trap: '「今はだめ」を「また今度」と取りやすい。返事は言葉の形より、次に何をしようとするかで聞く。',
       use: 'Not now. — Okay, later then?（今はだめ。—じゃあ、あとで？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [140, 143.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [137.7, 144.9],
       stem: 'Type the 4 words Dave says before “that’s a good call.”', answer: 'get rid of him',
       ja: '「that’s a good call」の前の4語を書こう',
       cue: '「good call」の直前',
@@ -211,7 +211,7 @@ export const daveReturns: Clip = {
       trap: 'funny name をからかいと取りやすい。another と I thought of は手柄の話。',
       use: 'I came up with that one myself.（それは自分で考えたんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [159.8, 165.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [159.8, 166.3], keep: true,
       stem: 'How many bad guys does Dave say he caught?',
       ja: 'デイブは悪いやつを何人捕まえたと言う？',
       choices: ['About six', 'About sixteen', 'About sixty'], a: 0,
@@ -235,7 +235,7 @@ export const daveReturns: Clip = {
       trap: 'fifteen は「ティーン」が長く、fifty は短い。oh five や two で始まる時刻とも分ける。',
       use: 'My train leaves at six fifteen.（電車は6時15分発です）' },
 
-    { id: 'd5', skill: 'infer', level: 'B2', point: 'interview', seg: [172.4, 179.4],
+    { id: 'd5', skill: 'infer', level: 'B2', point: 'interview', seg: [170.8, 180.6],
       stem: 'Why is Dave really in town?',
       ja: 'デイブが町に来た本当の理由は？',
       choices: ['For a job interview', 'For the chief’s party', 'To see Leslie again'], a: 0,
@@ -258,7 +258,7 @@ export const daveReturns: Clip = {
       trap: '決まった形に合わせて you と聞きたくなる。言いそこないは、ずれた一語に本音が出る。',
       use: 'You look like you could use a coffee.（コーヒーが要りそうな顔だね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'caughtup', reveals: ['six'], seg: [197.2, 205.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'caughtup', reveals: ['six'], seg: [194.2, 205],
       stem: 'Leslie says, “*I think we’re good*.” What does she mean?',
       ja: 'レスリーの「I think we’re good」はどういう意味？',
       choices: ['No, thank you', 'Yes, let’s go', 'We are good friends'], a: 0,
@@ -281,7 +281,7 @@ export const daveReturns: Clip = {
       trap: '行く理由の説明と取りやすい。断られた直後に大げさな言葉が出たら、照れかくしを疑う。',
       use: 'Well, I said I’d leave, so I’m leaving.（まあ、帰るって言ったし帰るよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'time', seg: [208.5, 214.6],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'time', seg: [206.7, 213.8],
       stem: 'What does “*Take your time*” mean here?',
       ja: 'ここでの「Take your time」はどういう意味？',
       choices: ['There is no need to hurry', 'Please come back very soon', 'It is time to go now'], a: 0,
@@ -293,7 +293,7 @@ export const daveReturns: Clip = {
       trap: 'time から「時間だ」と思いやすい。take your time は「自分のペースで」。',
       use: 'Take your time. There’s no rush.（ごゆっくり。急がなくていいですよ）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'unaware', reveals: ['interview', 'leslie'], seg: [214.9, 224.1],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'unaware', reveals: ['interview', 'leslie'], seg: [214.5, 226.5],
       stem: 'What doesn’t Ben know yet?',
       ja: 'ベンがまだ知らないことは？',
       choices: ['Dave still loves Leslie', 'Dave may move back', 'Dave asked Leslie outside'], a: 0,
@@ -305,7 +305,7 @@ export const daveReturns: Clip = {
       trap: '戻る話や外への誘いは、ベンもその場で聞いていた。いない間のことを考える。',
       use: 'While you were out, someone called.（留守の間に電話があったよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'freak', seg: [224.5, 236],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'freak', seg: [223.6, 233.1],
       stem: 'How does Ben feel about the news?',
       ja: 'その話を聞いて、ベンはどんな気持ち？',
       choices: ['Scared, but says he’s fine', 'Jealous, but says he’s fine', 'Calm, and really is fine'], a: 0,

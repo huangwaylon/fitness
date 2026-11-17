@@ -17,7 +17,7 @@ export const ronShot: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'home', seg: [0, 7.53], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'home', seg: [0, 7.5], keep: true,
       stem: 'How many people does the first hunter live with?',
       ja: '最初に話す狩り仲間は、家で何人と暮らしている？',
       choices: ['Three', 'Four', 'Five'], a: 1,
@@ -41,7 +41,7 @@ export const ronShot: Clip = {
       trap: 'hat（帽子）の話が直前にあるので、帽子と思いやすい。pain（痛み）を聞く。',
       use: 'I’m in a lot of pain.（すごく痛いです）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'serious', seg: [45.3, 52.38],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'serious', seg: [45.3, 54.2],
       stem: 'Why is “actually” said in the reply to Ron?',
       ja: 'ロンへの返事では、なぜ「actually」と言う？',
       choices: ['To correct what Ron thinks', 'To agree that it is serious', 'To bring him some bad news'], a: 0,
@@ -65,7 +65,7 @@ export const ronShot: Clip = {
       trap: '最初の Yeah で同意に聞こえる。Yeah のあとの中身で、返事の向きを決める。',
       use: 'Oddly, coffee relaxes me.（不思議とコーヒーで落ち着く）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'rangers', seg: [55.38, 63.54],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'rangers', seg: [55.4, 65.2],
       stem: 'Why is Ron upset to hear a ranger is coming?',
       ja: 'レンジャーが来ると聞いて、ロンはなぜ困る？',
       choices: ['They won’t let them return', 'They’ll send everyone home', 'They’ll give them a big fine'], a: 0,
@@ -77,7 +77,7 @@ export const ronShot: Clip = {
       trap: '銃の事故なので、罰金や帰される話と思いやすい。come back next year を聞く。',
       use: 'They won’t let us back in.（もう中に入れてもらえない）' },
 
-    { id: 's3', skill: 'sound', level: 'B1', point: 'rangers', seg: [59.07, 63.54],
+    { id: 's3', skill: 'sound', level: 'B1', point: 'rangers', seg: [58.9, 65.2],
       stem: 'Fill the gap: “The rangers ___ let us…”',
       ja: '「The rangers ___ let us…」の空所は？',
       choices: ['won’t', 'want to', 'will'], a: 0,
@@ -89,7 +89,7 @@ export const ronShot: Clip = {
       trap: 'will（ウィル）なら逆の意味。want to なら「ワナ」。「ウォウン」は won’t。',
       use: 'The hotel won’t let us check in early.（ホテルが早めに入れてくれない）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notnow', reveals: ['rangers'], seg: [59.07, 65.4],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notnow', reveals: ['rangers'], seg: [59.1, 68.3],
       stem: 'Why is “We’re not gonna think about that” said?',
       ja: 'なぜ「We’re not gonna think about that」と言う？',
       choices: ['To put it aside for now', 'To say it will be fine', 'To agree it is a mess'], a: 0,
@@ -113,7 +113,7 @@ export const ronShot: Clip = {
       trap: '北米一は大きすぎて皮肉に聞こえやすいが、相手はロン。けが人を安心させたい一心の言葉。',
       use: 'Don’t worry, you’re in good hands.（大丈夫、安心して任せて）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'didyou', seg: [108.82, 112.33],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'didyou', seg: [107.3, 112.4],
       stem: 'Fill the gap: “___ shoot me?”',
       ja: '「___ shoot me?」の空所は？',
       choices: ['Did you', 'Didn’t you', 'Would you'], a: 0,
@@ -125,7 +125,7 @@ export const ronShot: Clip = {
       trap: 'Didn’t なら「ン」が残る。Would なら「ウ」で始まる。「ディジュ」は Did you。',
       use: 'Did you take my umbrella?（私の傘、持っていった？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'bird', seg: [108.82, 116.8],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'bird', seg: [108.8, 118.8],
       stem: 'Why does Ron think Leslie shot him?',
       ja: 'ロンはなぜレスリーが撃ったと思う？',
       choices: ['She wanted to prove herself', 'She was standing behind him', 'She is bad with guns'], a: 0,
@@ -147,7 +147,7 @@ export const ronShot: Clip = {
       trap: '意味に要らない語は耳が落としやすく、a bird near me と書きがち。語の数を手がかりに。',
       use: 'It was kind of near the station.（駅のわりと近くだった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'findout', seg: [119.4, 122.65],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'findout', seg: [118.6, 126.6],
       stem: 'Type the gap: “___ who it was.” (4 words)', answer: 'you better find out',
       ja: '「___ who it was.」の空所を書こう（4語）',
       cue: '「Well,」のあと',
@@ -181,7 +181,7 @@ export const ronShot: Clip = {
       trap: 'wash（洗う）から、口をすすいだと思いやすい。down がつくと「飲み込む」。',
       use: 'I washed it down with tea.（お茶で流し込んだ）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'fluids', seg: [145.08, 150.82],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'fluids', seg: [144.9, 152.7],
       stem: 'By Ann’s reply, what were Ron’s “fluids”?',
       ja: 'アンの返事から、ロンの「fluids」は何だった？',
       choices: ['Scotch', 'Water', 'Beer'], a: 0,
@@ -253,7 +253,7 @@ export const ronShot: Clip = {
       trap: '画面の返事につられやすい。事実だけ言う返事は、直前の説への反論として聞くと狙いが分かる。',
       use: 'Right, so it couldn’t be him.（なるほど、じゃあ彼じゃありえない）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'smell', seg: [224.51, 230.06],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'smell', seg: [223.8, 233.1],
       stem: 'What does “That was pine trees” tell the others?',
       ja: '「That was pine trees」は、みんなに何を伝える？',
       choices: ['There’s nothing to fear', 'A wild animal is near', 'Someone is hiding there'], a: 0,
@@ -277,7 +277,7 @@ export const ronShot: Clip = {
       trap: 'over one’s head（難しすぎる）を知っていると迷う。ここは文字通りの位置。',
       use: 'That went right over my head.（それ、全然わからなかった）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'outofit', seg: [257.75, 264.47],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'outofit', seg: [257.8, 265.5],
       stem: 'What does Ann mean about how Ron is doing?',
       ja: 'アンは、ロンの様子をどう言っている？',
       choices: ['He’s not fully awake', 'He’s out of danger now', 'He’s up and walking around'],
@@ -290,7 +290,7 @@ export const ronShot: Clip = {
       trap: 'out of（〜から出た）から、危険を脱したと思いやすい。it は何も指さない。',
       use: 'Sorry, I’m a bit out of it today.（ごめん、今日はちょっとぼーっとしてて）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'sleep', seg: [260.0, 265.18],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'sleep', seg: [259.8, 267.1],
       stem: 'What does Ron say about Leslie in his sleep?',
       ja: 'ロンは寝言でレスリーのことをどう言っている？',
       choices: ['Bad things', 'Nice things', 'Nothing clear'], a: 0,
@@ -302,7 +302,7 @@ export const ronShot: Clip = {
       trap: 'out of it（ぼーっとしている）のあとなので、意味のない寝言と思いやすい。No を聞く。',
       use: 'Was it good news or bad?（いい知らせ？悪い知らせ？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'blame', seg: [274.9, 279.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'blame', seg: [274.9, 280.5],
       stem: 'What does the visitor near the end want to find out?',
       ja: '最後に来た人は、何を知りたい？',
       choices: ['Who is to blame', 'How the accident happened', 'Whether anyone saw it'],

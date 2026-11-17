@@ -14,7 +14,7 @@ export const janicedump: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [0.8, 5.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [0, 5.9],
       stem: 'What is wrong with Ross’s coffee?',
       ja: 'ロスのコーヒーの何がいけない？',
       choices: ['It isn’t what he ordered', 'It isn’t hot enough', 'It costs too much'], a: 0,
@@ -26,7 +26,7 @@ export const janicedump: Clip = {
       trap: 'coffee の話なので温度や値段と思いやすい。isn’t のあとの what I ordered を聞く。',
       use: 'Excuse me, this isn’t what I ordered.（すみません、これ頼んだものと違います）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'right', reveals: ['order'], seg: [3.5, 10.3],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'right', reveals: ['order'], seg: [2.3, 10.5],
       stem: 'How does Ross feel about the wrong order?',
       ja: '注文違いについて、ロスはどんな気持ち？',
       choices: ['Sorry for himself', 'Angry at the waiter', 'Angry at himself'], a: 0,
@@ -38,7 +38,7 @@ export const janicedump: Clip = {
       trap: '注文違いなので、店員に怒ると思いやすい。my life と言うので、自分の不運を嘆いている。',
       use: 'Why does this always happen to me?（なんでいつも私ばっかり）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'right', seg: [5.9, 10.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'right', seg: [3.9, 10.5],
       stem: 'Fill the gap: “___ go right in my life?”',
       ja: '空いている所に入る語は？「___ go right in my life?」',
       choices: ['Can’t anything', 'Can anything', 'Couldn’t anything'], a: 0,
@@ -50,7 +50,7 @@ export const janicedump: Clip = {
       trap: 'can なら弱く短い「クン」。couldn’t なら「クッドゥン」。長く強い「キャー」なら can’t。',
       use: 'Can’t anyone help me?（だれか手伝ってくれないの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'first', reveals: ['exwife'], seg: [10.0, 13.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'first', reveals: ['exwife'], seg: [9.1, 21.1],
       stem: 'What is the first of Ross’s troubles?',
       ja: 'ロスの不運の最初は何？',
       choices: ['His marriage ended', 'He lost his apartment', 'He lost his job'], a: 0,
@@ -62,7 +62,7 @@ export const janicedump: Clip = {
       trap: 'あとで apartment や job も出てくるので迷いやすい。First のすぐあとを聞く。',
       use: 'First, I lost my keys, and then…（まず鍵をなくして、それから…）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'list', seg: [13.6, 23.3],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'list', seg: [10.9, 22.9],
       stem: 'After “I know, I know”, who goes on with the list?',
       ja: '「分かってる、分かってる」のあと、だれが続きを言う？',
       choices: ['Janice', 'Ross', 'The waiter'], a: 0,
@@ -74,17 +74,7 @@ export const janicedump: Clip = {
       trap: 'ロスの不運の話なので、ロスが続けていると思いやすい。I ではなく you に変わる。',
       use: 'I know, I know. I’m late again.（分かってる、また遅刻だよね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'lose', seg: [13.6, 18.95],
-      stem: 'Type the next item: “…lose your apartment, and then ___.” (4 words)', answer: 'you lose your job',
-      ja: '次の部分を書こう：「…lose your apartment, and then ___.」（4語）',
-      cue: '「and then」のあと。',
-      line: 'and then *you lose your job*',
-      said: '「それから仕事も失って」と付け足す。',
-      mean: 'lose ＝ 失う。you と your は弱く短く「ユ」「ヨ」に近い。',
-      trap: 'you と your が弱く、lose job と聞こえやすい。4語を数えて聞く。',
-      use: 'I don’t want to lose my job.（仕事を失いたくない）' },
-
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'list', seg: [13.6, 23.3],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'list', seg: [11.3, 23.3],
       stem: 'What does Janice’s “I know, I know” show?',
       ja: 'ジャニスの「I know, I know」から何が分かる？',
       choices: ['She has heard it many times', 'She had the same troubles', 'She wants the whole story'], a: 0,
@@ -119,7 +109,17 @@ export const janicedump: Clip = {
       trap: '本人に代わって愚痴を言うのは同情ではない。大小の差がある物を並べたら、からかいを疑う。',
       use: 'Rain, traffic, and now my coffee spilled.（雨に渋滞、そのうえコーヒーまでこぼれた）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'talk', seg: [23.5, 34.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'lose', seg: [14.9, 22.9],
+      stem: 'Type the next item: “…lose your apartment, and then ___.” (4 words)', answer: 'you lose your job',
+      ja: '次の部分を書こう：「…lose your apartment, and then ___.」（4語）',
+      cue: '「and then」のあと。',
+      line: 'and then *you lose your job*',
+      said: '「それから仕事も失って」と付け足す。',
+      mean: 'lose ＝ 失う。you と your は弱く短く「ユ」「ヨ」に近い。',
+      trap: 'you と your が弱く、lose job と聞こえやすい。4語を数えて聞く。',
+      use: 'I don’t want to lose my job.（仕事を失いたくない）' },
+
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'talk', seg: [23.5, 34.6],
       stem: 'Why does Janice say “I’m going to talk”?',
       ja: 'ジャニスはなぜ「I’m going to talk」と言う？',
       choices: ['To cut in so she can talk', 'To refuse to talk about it', 'To say his feeling is wrong'], a: 0,
@@ -131,7 +131,7 @@ export const janicedump: Clip = {
       trap: 'No が続くので、話すのを断ったと思いやすい。そのあと I’m going to talk と言う。',
       use: 'Wait, let me talk first.（待って、先に話させて）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sun', seg: [34.1, 44.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sun', seg: [33.1, 44.9],
       stem: 'What does Janice mean about “our day in the sun”?',
       ja: 'ジャニスの「our day in the sun」の話はどういう意味？',
       choices: ['Their good times are over', 'Their best days are coming', 'Their time was too short'], a: 0,
@@ -143,7 +143,7 @@ export const janicedump: Clip = {
       trap: 'sun（太陽）が2回出るので明るい話に聞こえやすい。has set（沈んだ）は終わりの合図。',
       use: 'Our day in the sun is over.（私たちの全盛期は終わった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sweet', seg: [44.6, 58.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sweet', seg: [43.7, 55.7],
       stem: 'Why does Janice say “You’re a very sweet person” first?',
       ja: 'ジャニスはなぜ先に「とても優しい人ね」と言う？',
       choices: ['To soften the bad news', 'To say the problem is small', 'To say it’s her fault'], a: 0,
@@ -191,7 +191,7 @@ export const janicedump: Clip = {
       trap: 'second を「2番目」や「少し待って」と思いやすい。can’t take で「耐えられない」。',
       use: 'I can’t take it anymore.（もう耐えられない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['now'], seg: [58, 96.4],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['now'], seg: [58, 97],
       stem: 'How does Ross feel at the end?',
       ja: '最後に、ロスはどんな気持ち？',
       choices: ['Glad it’s over', 'Sad and hurt', 'Angry at Janice'], a: 0,
@@ -203,7 +203,7 @@ export const janicedump: Clip = {
       trap: 'ふられた場面なので、悲しいと思いやすい。now（今は）がポイント。',
       use: 'Are you okay? — I am now.（大丈夫？—今はね）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'hearing', seg: [59.2, 71.0],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'hearing', seg: [58.3, 63.8],
       stem: 'Why does Ross say “let me make sure”?',
       ja: 'ロスはなぜ「let me make sure」と言う？',
       choices: ['To check he understood her', 'To say he can’t hear her', 'To agree before arguing'], a: 0,
@@ -215,7 +215,7 @@ export const janicedump: Clip = {
       trap: 'hearing から、耳が聞こえない話と思いやすい。ここは「意味を正しく受け取ったか」。',
       use: 'Let me make sure I understand.（ちゃんと分かってるか確認させて）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'whiny', reveals: ['reason'], seg: [59.2, 71.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'whiny', reveals: ['reason'], seg: [59.2, 71.1],
       stem: 'What does Ross find hard to believe?',
       ja: 'ロスは何が信じられない？',
       choices: ['Her reason for ending it', 'That she is ending it', 'That she calls him sweet'], a: 0,
@@ -227,7 +227,7 @@ export const janicedump: Clip = {
       trap: 'ending this（別れる）だけ聞くと、別れに驚いていると思いやすい。because のあとを聞く。',
       use: 'Wait, because I’m late?（待って、遅れたから？）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'yeah', seg: [72.6, 87.6],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'yeah', seg: [71.6, 88.6],
       stem: 'How does Janice answer “I annoy you”?',
       ja: '「I annoy you」に、ジャニスはどう答える？',
       choices: ['Bluntly, of course', 'Gently, to spare him', 'Unsure, after a pause'], a: 0,

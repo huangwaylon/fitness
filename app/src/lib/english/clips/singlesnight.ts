@@ -15,7 +15,7 @@ export const singlesNight: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'allset', seg: [2.5, 7.5],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'allset', seg: [2, 7.1],
       stem: 'What does “you’re all set” mean?',
       ja: '「you’re all set」はどういう意味？',
       choices: ['You’re ready to go', 'You need to sit down', 'You have to pay now'], a: 0,
@@ -39,7 +39,7 @@ export const singlesNight: Clip = {
       trap: '元カレの話はずっとあとで出る。来た理由は because of のあと。',
       use: 'I’m trying to be more adventurous.（もっと冒険してみようと思って）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'awkward', reveals: ['outthere'], seg: [18.7, 29.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'awkward', reveals: ['outthere'], seg: [18.7, 30.6],
       stem: 'How is the new Ann finding it so far?',
       ja: '新しいアンは、今のところどう感じている？',
       choices: ['Awkward, despite her plans', 'Fun, just as she planned', 'Tiring, with so many people'], a: 0,
@@ -51,7 +51,7 @@ export const singlesNight: Clip = {
       trap: '前半の明るい言葉で気分を決めやすい。最後の awkward が本音。',
       use: 'I’m trying, but it’s awkward.（がんばってるけど、ぎこちない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'outthere', seg: [20.4, 26.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'outthere', seg: [19, 27.9],
       stem: 'What does Ann mean by “putting myself out there”?',
       ja: 'アンの「putting myself out there」はどういう意味？',
       choices: ['Opening herself up to new people', 'Going out to bars more', 'Putting herself first for once'], a: 0,
@@ -63,7 +63,7 @@ export const singlesNight: Clip = {
       trap: 'out（外）から、外出の話と思いやすい。場所でなく、心を開くという意味。',
       use: 'You have to put yourself out there.（自分から出ていかなきゃ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'alone', seg: [32.8, 39.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'alone', seg: [32.8, 40.8],
       stem: 'Why is Ann so glad to see Donna there?',
       ja: 'アンはなぜドナに会えてうれしい？',
       choices: ['She hates these things alone', 'She wants someone to teach her', 'She needs a ride home'], a: 0,
@@ -75,7 +75,7 @@ export const singlesNight: Clip = {
       trap: '教わる話はもっとあと。うれしい理由は by yourself（一人だと）の所。',
       use: 'These things are hard on your own.（こういうのは一人だとつらいよね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'herself', seg: [42.1, 49.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'herself', seg: [41.5, 50.5],
       stem: 'What does Donna mean by “every woman for herself”?',
       ja: 'ドナの「every woman for herself」はどういう意味？',
       choices: ['Each woman looks out for herself', 'Each woman should be herself', 'Each woman came on her own'], a: 0,
@@ -87,7 +87,7 @@ export const singlesNight: Clip = {
       trap: 'for herself を by herself（一人で）と聞きやすい。「自分のためだけ」の意味。',
       use: 'It’s every man for himself.（自分のことは自分で、だよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'joking', reveals: ['herself'], seg: [50.0, 53.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'joking', reveals: ['herself'], seg: [49.1, 55.7],
       stem: 'Why does Donna say “Do I look like I’m joking?”',
       ja: 'ドナはなぜ「Do I look like I’m joking?」と言う？',
       choices: ['To tell Ann she is serious', 'To ask Ann to look at her', 'To admit she is half joking'], a: 0,
@@ -123,7 +123,7 @@ export const singlesNight: Clip = {
       trap: 'beat を「打ち負かす」と取りやすい。命令の二語なら「どっか行け」。',
       use: 'Beat it, I’m busy.（あっち行って、忙しいの）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'job', seg: [67.4, 79.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'job', seg: [74, 80.4],
       stem: 'What does Ann admit right after saying “Me too”?',
       ja: '「Me too」のすぐあと、アンは何を認める？',
       choices: ['She was only teasing him', 'She works at another store', 'She had that job before'], a: 0,
@@ -135,7 +135,7 @@ export const singlesNight: Clip = {
       trap: 'was が聞こえて「昔の仕事」と思いやすい。was just 〜ing は「〜しただけ」。',
       use: 'Relax, I was just joking.（落ち着いて、冗談だよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'drinking', seg: [79.9, 83.0],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'drinking', seg: [78, 83],
       stem: 'Fill the gap: “___ drinking?”',
       ja: '「___ drinking?」の空所は？',
       choices: ['What are you', 'What were you', 'Why are you'], a: 0,
@@ -147,7 +147,7 @@ export const singlesNight: Clip = {
       trap: 'were なら「ワー」と長くのびる。Why なら「ワイ」。「ワダユ」は What are you。',
       use: 'What are you having?（何にする？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'yeah', reveals: ['drinking'], seg: [79.9, 90.8],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'yeah', reveals: ['drinking'], seg: [79.9, 91.3],
       stem: 'Why did Ann answer “Yeah” to Brian’s question?',
       ja: 'アンはなぜブライアンの質問に「Yeah」と答えた？',
       choices: ['She didn’t hear his question', 'She said yes to a drink', 'She wanted his same drink'], a: 0,
@@ -159,7 +159,7 @@ export const singlesNight: Clip = {
       trap: 'Yeah を「飲む」への返事と思いやすい。聞き返されたあとの説明が答え。',
       use: 'Sorry, I couldn’t hear you.（ごめん、聞こえなかった）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'scribble', seg: [104.6, 111.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'scribble', seg: [103.6, 112.5],
       stem: 'Why should Ann write her name tag badly, according to Donna?',
       ja: 'ドナによると、アンはなぜ名札を雑に書くべき？',
       choices: ['So men come closer to read', 'So nobody learns her name', 'So her writing looks cute'], a: 0,
@@ -171,7 +171,7 @@ export const singlesNight: Clip = {
       trap: 'なぐり書きは名前を隠すためと思いやすい。make them read で目的が分かる。',
       use: 'Make them come to you.（向こうから来させるの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'workfor', reveals: ['scribble'], seg: [108.0, 111.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'workfor', reveals: ['scribble'], seg: [106, 114],
       stem: 'Type the advice: “Draw them in, make them ___.” (3 words)', answer: 'work for it',
       ja: '助言「Draw them in, make them ___.」の空所を書こう（3語）',
       cue: '「make them」のあと',
@@ -181,7 +181,7 @@ export const singlesNight: Clip = {
       trap: 'for と it が弱く、work だけ残りやすい。最後の t はほぼ消える。3語で書く。',
       use: 'You’ll have to work for it.（簡単には手に入らないよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'shots', seg: [110.9, 115.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'shots', seg: [110.8, 119.7], keep: true,
       stem: 'How many shots are ordered at the bar?',
       ja: 'バーでショットをいくつ頼む？',
       choices: ['One', 'Two', 'Three', 'Four'], a: 1,
@@ -193,7 +193,7 @@ export const singlesNight: Clip = {
       trap: 'shots の前の「トゥー」は two。one（ワン）、three（スリー）、four（フォー）とは音が違う。',
       use: 'Two coffees to go, please.（コーヒー2つ、持ち帰りで）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'available', reveals: ['shots'], seg: [113.3, 119.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'available', reveals: ['shots'], seg: [113.3, 121.5],
       stem: 'What impression does Donna tell Ann to give the men?',
       ja: 'ドナはアンに、男性にどんな印象を与えろと言う？',
       choices: ['Open, but in no hurry', 'Busy, but looking their way', 'Friendly, but not flirty'], a: 0,
@@ -205,7 +205,7 @@ export const singlesNight: Clip = {
       trap: 'available を「手が空いている」と仕事の意味に思いやすい。恋愛では「フリー」。',
       use: 'Act interested, but not too interested.（興味はあるけど、ありすぎない感じで）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'goodfornow', reveals: ['shots'], seg: [119.2, 122.6],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'goodfornow', reveals: ['shots'], seg: [116, 122.9],
       stem: 'Why does Ann say “I think I’m good for now”?',
       ja: 'アンはなぜ「I think I’m good for now」と言う？',
       choices: ['To say no to it politely', 'To say she feels fine now', 'To save the drink for later'], a: 0,
@@ -217,19 +217,7 @@ export const singlesNight: Clip = {
       trap: 'good（元気）、for now（今は）から、あとで飲むと思いやすい。I’m good は断り。',
       use: 'I think I’m good for now, thanks.（今は大丈夫です、ありがとう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'donna', reveals: ['choice'], seg: [146.0, 188.6],
-      stem: 'How does Donna treat Ann at the end?',
-      ja: '最後に、ドナはアンにどう接する？',
-      choices: ['She cheers her on', 'She tells her to leave', 'She ignores her'], a: 0,
-      choicesJa: ['励ます', '帰れと言う', '無視する'],
-      cue: '最後の長い励まし',
-      line: 'But I do know that *you can fix your attitude*.',
-      said: '帰ろうとするアンに「態度は直せる。あの子と話しておいで」と励ます。',
-      mean: '最初は敵あつかいだったドナが、最後はアンの味方になる。',
-      trap: '最初の「あっち行って」が強く残りやすい。最後の長い話は励まし。',
-      use: 'Come on, you can do this.（ほら、あなたならできる）' },
-
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'maybe', seg: [146.0, 149.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'maybe', seg: [144.8, 152.1],
       stem: 'Does Ann’s chat partner plan to see her again?',
       ja: 'アンの話し相手は、またアンに会うつもり？',
       choices: ['Probably not', 'Yes, very soon', 'Yes, later tonight'], a: 0,
@@ -241,7 +229,19 @@ export const singlesNight: Clip = {
       trap: 'see you で「また会える」と思いやすい。最後の maybe が気持ちを表す。',
       use: 'See you around, I guess.（じゃあ、またどこかで）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'ex', seg: [156.0, 165.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'donna', reveals: ['choice'], seg: [146, 189.3],
+      stem: 'How does Donna treat Ann at the end?',
+      ja: '最後に、ドナはアンにどう接する？',
+      choices: ['She cheers her on', 'She tells her to leave', 'She ignores her'], a: 0,
+      choicesJa: ['励ます', '帰れと言う', '無視する'],
+      cue: '最後の長い励まし',
+      line: 'But I do know that *you can fix your attitude*.',
+      said: '帰ろうとするアンに「態度は直せる。あの子と話しておいで」と励ます。',
+      mean: '最初は敵あつかいだったドナが、最後はアンの味方になる。',
+      trap: '最初の「あっち行って」が強く残りやすい。最後の長い話は励まし。',
+      use: 'Come on, you can do this.（ほら、あなたならできる）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'ex', seg: [156, 166.2],
       stem: 'Why does Ann tell Donna she wants to go home?',
       ja: 'アンはなぜドナに帰りたいと言う？',
       choices: ['Her ex-boyfriend is getting married', 'She has to work early tomorrow',
@@ -254,7 +254,7 @@ export const singlesNight: Clip = {
       trap: '男性たちにうんざりと思いやすいが、理由は found out と so のあと。',
       use: 'I just found out my ex is engaged.（元カレが婚約したって聞いた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'so', reveals: ['ex'], seg: [157.8, 165.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'so', reveals: ['ex'], seg: [156.3, 166.2],
       stem: 'What does Donna’s one-word reply to Ann’s news mean?',
       ja: 'アンの知らせへの、ドナの一語の返事はどういう意味？',
       choices: ['Why should that matter?', 'And what will you do now?', 'Wait, is that really true?'], a: 0,
@@ -300,7 +300,7 @@ export const singlesNight: Clip = {
       trap: '弱い you が消えて「彼が結婚したくなかった」と聞きやすい。didn’t の前の主語を拾う。',
       use: 'You didn’t even want that job!（その仕事、そもそも欲しくなかったでしょ）', retired: true },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'choice', reveals: ['didntwant', 'shots'], seg: [173.9, 183.4],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'choice', reveals: ['didntwant', 'shots'], seg: [174.3, 186.3],
       stem: 'Why does Donna ask two “Do you want…” questions?',
       ja: 'ドナはなぜ「Do you want…」を2回聞く？',
       choices: ['To push Ann to stay', 'To let Ann go home', 'To learn what Ann wants'], a: 0,

@@ -29,7 +29,7 @@ export const leslieRedFlag: Clip = {
       trap: 'デンマーク語を期待し、似た語や別の意味を探しやすい。as they say in ～ は肩すかしに注意。',
       use: 'Or, as they say in Paris, “bonjour.”（パリ風に言えば「ボンジュール」）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'treaty', seg: [14.9, 22.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'treaty', seg: [11.7, 23.3],
       stem: 'What happened to Leslie’s treaty while she was away?',
       ja: 'レスリーがいない間に、条約はどうなった？',
       choices: ['Her partner left her out', 'Her partner finished it early', 'Her partner gave it up'], a: 0,
@@ -53,7 +53,7 @@ export const leslieRedFlag: Clip = {
       trap: 'table や needs から場所や食糧と取りやすい。かたい言葉の最後の、小さな理由で笑う。',
       use: 'I formally request a coffee break.（コーヒー休憩を正式に要求します）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'conflict', reveals: ['friends', 'agreed'], seg: [38.2, 67.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'conflict', reveals: ['friends', 'agreed'], seg: [38.2, 67.8],
       stem: 'What do Leslie and Ben argue about?',
       ja: 'レスリーとベンは何について言い合う？',
       choices: ['If they can still be friends', 'If they should date again', 'Whose fault the break-up was'], a: 0,
@@ -65,7 +65,7 @@ export const leslieRedFlag: Clip = {
       trap: 'romantic（恋愛の）が聞こえて、復縁の話と思いやすい。friends を何度も言う。',
       use: 'Can we still be friends?（まだ友だちでいられる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'friends', seg: [38.2, 44.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'friends', seg: [38.2, 44.9],
       stem: 'When Ben stops Leslie, what does he say he can’t do?',
       ja: 'ベンは何ができないと言う？',
       choices: ['Stay friends with her', 'Talk about it right now', 'Keep working beside her'], a: 0,
@@ -77,7 +77,7 @@ export const leslieRedFlag: Clip = {
       trap: 'can’t の t は弱く、can に聞こえやすい。but のあとは前と逆の内容。',
       use: 'I thought I could, but I can’t.（できると思ったけど無理だ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'agreed', reveals: ['friends'], seg: [44.4, 55.0],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'agreed', reveals: ['friends'], seg: [43.9, 54.8],
       stem: 'What does Leslie say they agreed on?',
       ja: 'レスリーによると、二人は何を決めた？',
       choices: ['Not to date, but stay friends', 'To never see each other again', 'To talk after the conference'], a: 0,
@@ -89,7 +89,7 @@ export const leslieRedFlag: Clip = {
       trap: '前半だけ聞くと「一切会わない」に聞こえる。but のあとで範囲をしぼっている。',
       use: 'We can still hang out as friends.（友だちとしてなら会えるよ）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'call', seg: [46.5, 51.5],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'call', seg: [46.5, 53.1],
       stem: 'What does “the right call” mean here?',
       ja: '「the right call」は、ここではどういう意味？',
       choices: ['The right choice', 'The right phone call', 'The right time'], a: 0,
@@ -101,7 +101,7 @@ export const leslieRedFlag: Clip = {
       trap: 'call から「電話」を思いやすい。決めたことを話している。',
       use: 'Leaving early was the right call.（早めに出たのは正解だった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buffet', seg: [54.4, 62.1],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buffet', seg: [54.3, 63.2],
       stem: 'What does Ben mean by “like a buffet”?',
       ja: 'ベンの「like a buffet」はどういう意味？',
       choices: ['Choose only the parts she likes', 'Date him and others at once', 'Keep going back for more food'], a: 0,
@@ -113,7 +113,7 @@ export const leslieRedFlag: Clip = {
       trap: 'buffet から「おかわり」を思いやすい。直前の select（選ぶ）とセットで聞く。',
       use: 'You can’t just pick the parts you like.（好きなところだけ選ぶのはずるい）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'coming', reveals: ['unfair'], seg: [68.0, 72.8],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'coming', reveals: ['unfair'], seg: [67.5, 77.1],
       stem: 'What does “I understand where he’s coming from” mean?',
       ja: '「I understand where he’s coming from」はどういう意味？',
       choices: ['I see his point of view', 'I know where he grew up', 'I agree with him fully'], a: 0,
@@ -125,7 +125,7 @@ export const leslieRedFlag: Clip = {
       trap: 'from から「出身地」と思いやすい。考えの出どころの話。',
       use: 'I see where you’re coming from, but…（言いたいことは分かるけど…）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'unfair', reveals: ['coming', 'friends'], seg: [68.0, 83.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'unfair', reveals: ['coming', 'friends'], seg: [76.4, 85],
       stem: 'How does Leslie feel about Ben’s decision?',
       ja: 'ベンの決断を、レスリーはどう思っている？',
       choices: ['She thinks it is unfair', 'She thinks it is fair', 'She thinks it is her fault'], a: 0,
@@ -149,7 +149,7 @@ export const leslieRedFlag: Clip = {
       trap: '条約の件も裏切りに聞こえるが、相手はペルーではない。カメラへの一言が答え合わせ。',
       use: 'You know what? This means war.（よし、こうなったら受けて立つ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'option', seg: [83.4, 86.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'option', seg: [82.5, 88],
       stem: 'Type what Leslie says: “That ___ only one option.” (3 words)', answer: 'leaves me with',
       ja: '「That ___ only one option.」の空所を書こう（3語）',
       cue: '「you know what?」のあと',
@@ -171,7 +171,7 @@ export const leslieRedFlag: Clip = {
       trap: '先生の教訓に聞こえやすい。一般論の途中で主語が I に変わったら本人の話。',
       use: 'Things change, and suddenly you’re like, what?（状況が変わって、急に「え？」ってなる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'tanks', seg: [124.8, 127.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'tanks', seg: [123.2, 130.3],
       stem: 'Fill the gap: “Who has ___ for me?”',
       ja: '「Who has ___ for me?」の空所は？',
       choices: ['tanks', 'tasks', 'tags'], a: 0,
@@ -207,7 +207,7 @@ export const leslieRedFlag: Clip = {
       trap: 'brave をほめ言葉と取りやすい。brave enough to は皮肉にもなる。',
       use: 'Look who decided to show up.（やっと来たか、誰かさん）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'lions', seg: [138.6, 142.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'lions', seg: [135.6, 147],
       stem: 'What does one delegate offer to do for Leslie?',
       ja: 'ある代表は、レスリーのために何をすると言う？',
       choices: ['Send his army of lions', 'Send his army of allies', 'Send his army to Denmark'], a: 0,
@@ -219,7 +219,7 @@ export const leslieRedFlag: Clip = {
       trap: 'lions と allies（同盟国）は音が近い。army of のあとまで聞く。',
       use: 'Please send help right away!（すぐ助けを送ってください）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'sayword', reveals: ['lions'], seg: [138.6, 142.5],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'sayword', reveals: ['lions'], seg: [135.6, 147],
       stem: 'What does “Say the word” mean here?',
       ja: '「Say the word」は、ここではどういう意味？',
       choices: ['Tell me and I’ll do it', 'Say it more loudly', 'Say sorry to me right now'], a: 0,
@@ -255,7 +255,7 @@ export const leslieRedFlag: Clip = {
       trap: '話し方の確認と取りやすい。聞き返しへの Do I ～? は、確認でなく念押し。',
       use: 'You heard me. Clean your room.（聞こえたでしょ。部屋を片づけなさい）' },
 
-    { id: 'f7', skill: 'phrase', level: 'B1', point: 'fair', seg: [151.5, 155.5],
+    { id: 'f7', skill: 'phrase', level: 'B1', point: 'fair', seg: [150.5, 156.2],
       stem: 'What does Ben mean by “Fair enough”?',
       ja: 'ベンの「Fair enough」はどういう意味？',
       choices: ['Okay, that’s reasonable', 'That’s not fair at all', 'I’ve had enough of this'], a: 0,
@@ -267,7 +267,7 @@ export const leslieRedFlag: Clip = {
       trap: 'enough から「もううんざり」と思いやすいが、受け入れる返事。',
       use: 'You’re busy? Fair enough.（忙しい？それなら仕方ないね）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'flag', seg: [153.2, 163.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'flag', seg: [156.9, 168.3],
       stem: 'What is Ben saying with the white flag?',
       ja: '白旗でベンは何を言いたい？',
       choices: ['Leslie should give up', 'Ben is ready to give up', 'Ben is giving back her things'], a: 0,
@@ -326,7 +326,7 @@ export const leslieRedFlag: Clip = {
       trap: 'interesting を言葉どおりの驚きや関心と取りやすい。前置きの意味は、あとの一言で決まる。',
       use: 'Oh, would you look at that. I win.（おや、見てよ。私の勝ち）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'moon', seg: [232.3, 239.4],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'moon', seg: [232.3, 240.5],
       stem: 'How does Leslie feel when the moon joins her?',
       ja: '月が仲間に入ると、レスリーはどんな気持ち？',
       choices: ['Very happy', 'A little sad', 'Quite angry'], a: 0,

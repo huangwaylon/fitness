@@ -30,7 +30,7 @@ export const michaelsNephew: Clip = {
       trap: '9時だけ聞くと、時間どおりと思いやすい。supposed to は「予定ではそうだった（のに）」。',
       use: 'I thought we were supposed to meet at 7.（7時に会う約束じゃなかった？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'decaf', seg: [13.1, 17.4], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'decaf', seg: [12.8, 18.7], keep: true,
       stem: 'What’s wrong with one of the coffees Luke brings?',
       ja: 'ルークが持ってきたコーヒーの1つは、何がおかしい？',
       choices: ['It’s decaf', 'It’s cold', 'It’s the wrong size'], a: 0,
@@ -42,7 +42,7 @@ export const michaelsNephew: Clip = {
       trap: 'decaf は「ディーキャフ」と短く、知らないと音が残りにくい。カフェでよく使う言葉。',
       use: 'Is this decaf or regular?（これ、デカフェ？ふつうの？）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'mixup', reveals: ['decaf'], seg: [18.6, 27],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'mixup', reveals: ['decaf'], seg: [18.1, 27],
       stem: 'What does “some sort of mix-up” mean?',
       ja: '「some sort of mix-up」はどういう意味？',
       choices: ['A small mistake', 'A kind of drink', 'A fight between them'], a: 0,
@@ -54,7 +54,7 @@ export const michaelsNephew: Clip = {
       trap: 'mix（まぜる）から、飲み物の話と思いやすい。mix-up は「取りちがえ」。',
       use: 'Sorry, there was a mix-up with the rooms.（すみません、部屋の手ちがいがありました）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [38.9, 44], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [38.8, 44.4], keep: true,
       stem: 'How long has the new assistant been working there?',
       ja: '新しいアシスタントは、どのくらい働いている？',
       choices: ['1 day', '1 week', '4 weeks'], a: 1,
@@ -88,7 +88,7 @@ export const michaelsNephew: Clip = {
       trap: '次の「父」の一言から I’m を強めたくなるが、直すのは直前の Man。強勢は、何と比べるかで決まる。',
       use: 'Not the red one. The BLUE one.（赤じゃなくて、青いほう）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', seg: [55, 99.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', seg: [55, 99.6],
       stem: 'What is the staff’s main problem with Luke?',
       ja: 'みんなは、ルークの何がいちばん困る？',
       choices: ['He gets simple jobs wrong', 'He talks about movies too much', 'He comes in late every day'], a: 0,
@@ -100,7 +100,7 @@ export const michaelsNephew: Clip = {
       trap: '映画好きの自己紹介が耳に残りやすい。同僚が怒っているのは、仕事の失敗。',
       use: 'He keeps getting my order wrong.（いつも注文をまちがえるんだ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'deflect', seg: [57.55, 69.3],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'deflect', seg: [57.7, 69.7],
       stem: 'Why does Michael ask “You know who’s the worst?”',
       ja: 'マイケルはなぜ「最悪なのはだれか知ってる？」と聞く？',
       choices: ['To talk about someone else', 'To have them name someone', 'To say Luke is still new'], a: 0,
@@ -112,7 +112,7 @@ export const michaelsNephew: Clip = {
       trap: '質問なので、みんなに答えさせたいと思いやすい。すぐ自分で That intern と答える。',
       use: 'You know who’s the best? My mom.（だれが一番か知ってる？うちの母だよ）' },
 
-    { id: 'h1', skill: 'marker', level: 'B2', point: 'intern', seg: [63.7, 75.3],
+    { id: 'h1', skill: 'marker', level: 'B2', point: 'intern', seg: [63.7, 75.5],
       stem: 'What does “though” mean in “Good worker, though”?',
       ja: '「Good worker, though」の though はどういう意味？',
       choices: ['It means “but”', 'It means “so”', 'It means “also”'], a: 0,
@@ -124,7 +124,7 @@ export const michaelsNephew: Clip = {
       trap: 'though は文の最後に来ると気づきにくい。but と同じで、前の話を少し打ち消す。',
       use: 'Nice place. Kind of pricey, though.（いい店。ちょっと高いけどね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', seg: [77.7, 81.78],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', seg: [77.1, 82.1],
       stem: 'Fill the gap: “He’s ___ go, Mike.”',
       ja: 'すき間をうめよう：「He’s ___ go, Mike.」',
       choices: ['got to', 'good to', 'gonna'], a: 0,
@@ -136,7 +136,7 @@ export const michaelsNephew: Clip = {
       trap: 'good なら短い「グッ」、gonna なら「ガナ」と n が入る。「ガラ」なら got to。',
       use: 'I’ve got to go. Talk later!（もう行かなきゃ。またね）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [80.3, 84.2], keep: true,
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [77.6, 85], keep: true,
       stem: 'What does Michael promise to do?',
       ja: 'マイケルは何をすると約束する？',
       choices: ['Check on the problem', 'Keep a close eye on Luke', 'Let Luke go soon'], a: 0,
@@ -148,7 +148,7 @@ export const michaelsNephew: Clip = {
       trap: 'look から「見る」と思い、「見はる」に聞こえやすい。look into は中身を調べること。',
       use: 'I’ll look into it and get back to you.（確認して折り返します）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'ifasked', seg: [90.65, 99.3],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'ifasked', seg: [90.7, 99.6],
       stem: 'Does Luke remember sending the samples?',
       ja: 'ルークは見本を送ったことを覚えている？',
       choices: ['No, he isn’t really sure', 'Yes, he remembers it well', 'He says nobody asked him'], a: 0,
@@ -193,7 +193,7 @@ export const michaelsNephew: Clip = {
       trap: 'Anyway で流すので、ただの思い出に聞こえる。in a forest で lose は文字どおり。',
       use: 'Anyway, the car’s fine now. Mostly.（ともかく、車はもう大丈夫。だいたい）', retired: true },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [140.3, 153.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [140, 154.9], keep: true,
       stem: 'How long since Michael last saw Luke, in the end?',
       ja: '最後に、マイケルがルークに会ってから何年と分かる？',
       choices: ['5 years', '14 years', '15 years', '50 years'], a: 2,
@@ -225,7 +225,7 @@ export const michaelsNephew: Clip = {
       trap: '文法どおり Do you just want と書きたくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'So you’re not coming tonight?（じゃあ今夜は来ないってこと？）', retired: true },
 
-    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [178.15, 182.28], keep: true,
+    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [178, 184.5], keep: true,
       stem: 'What does Michael want Luke to do with the pointer?',
       ja: 'マイケルは、ルークにポインターをどうしてほしい？',
       choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,
@@ -237,7 +237,7 @@ export const michaelsNephew: Clip = {
       trap: 'down から「下に向ける」と思いやすい。機械の話の power down は電源のこと。',
       use: 'Please power down your phones now.（携帯の電源をお切りください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [179.55, 181.75], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [178.1, 184.5], keep: true,
       stem: 'Type what Luke says: “I’m just gonna ___ it.” (4 words)', answer: 'go ahead and move',
       ja: 'ルークの言葉を入力：「I’m just gonna ___ it.」（4語）',
       cue: '「unclear here」のすぐあと',
@@ -247,7 +247,7 @@ export const michaelsNephew: Clip = {
       trap: 'ahead と and がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'I’ll go ahead and order for us.（先に注文しておくね）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'kidding', seg: [204, 209.6],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'kidding', seg: [201.8, 211.4],
       stem: 'What does “I’m not kidding” mean?',
       ja: '「I’m not kidding」はどういう意味？',
       choices: ['I am serious', 'I am not a child', 'I am not angry'], a: 0,
@@ -282,7 +282,7 @@ export const michaelsNephew: Clip = {
       trap: 'capital を「資本」と取るとお金の話になる。2語で一つの言い方。',
       use: 'There are different schools of thought on that.（それには色々な考え方がある）', retired: true },
 
-    { id: 'at2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [243.6, 250.2], keep: true,
+    { id: 'at2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [241.6, 253.6], keep: true,
       stem: 'How do the coworkers feel right afterward?',
       ja: 'そのすぐあと、同僚たちはどう思っている？',
       choices: ['Happy about it', 'Worried about Michael', 'Sorry for Luke'], a: 0,
@@ -294,7 +294,7 @@ export const michaelsNephew: Clip = {
       trap: '上司が部下をばっすると引くはず、と思いやすい。最初の awesome で決まる。',
       use: 'That was awesome! Let’s do it again.（最高！もう一回やろう）' },
 
-    { id: 'd6', skill: 'detail', level: 'B2', point: 'betty', seg: [255.15, 265.3], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B2', point: 'betty', seg: [255.2, 266.4], keep: true,
       stem: 'Why does one coworker follow Luke on Twitter?',
       ja: '同僚の1人は、なぜルークのツイッターをフォローしている？',
       choices: ['He doesn’t talk about Betty White', 'He posts jokes about Betty White', 'His posts about work need watching'], a: 0,

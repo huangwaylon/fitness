@@ -16,7 +16,7 @@ export const jerryPainting: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'myth', seg: [0.8, 10.0],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'myth', seg: [0.8, 12.4],
       stem: 'What does Jerry say his painting shows?', ja: 'ジェリーは、自分の絵に何が描かれていると言う？',
       choices: ['A goddess saving a great deer', 'A goddess killing a great deer', 'A goddess riding a great horse'], a: 1,
       choicesJa: ['女神が大きな鹿を助ける', '女神が大きな鹿を倒す', '女神が大きな馬に乗る'],
@@ -27,7 +27,7 @@ export const jerryPainting: Clip = {
       trap: 'slaying と saving は一音ちがい。「スレイ」の l の音を聞く。馬は女神の体そのもの。',
       use: 'It’s based on an old Greek myth.（古いギリシャ神話がもとです）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'react', reveals: ['leave', 'anywhere'], seg: [15.5, 56.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'react', reveals: ['leave', 'anywhere'], seg: [15.5, 58.6],
       stem: 'How does Leslie’s reaction to the painting change?', ja: '絵への、レスリーの反応はどう変わる？',
       choices: ['Shocked, then she loves it', 'Pleased, then she hates it', 'Shocked, then it must go'], a: 0,
       choicesJa: ['驚いて、そのあと気に入る', '喜んで、そのあといやになる', '驚いて、外してほしくなる'],
@@ -38,7 +38,7 @@ export const jerryPainting: Clip = {
       trap: '謝られたら「外して」と言いそうに思いやすい。No のあとの返事で決まる。',
       use: 'Leave it. I actually like it.（そのままでいいよ。実は気に入ってる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'why', seg: [38.5, 50.4],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'why', seg: [38.6, 50.6],
       stem: 'How does Jerry explain painting Leslie?', ja: 'レスリーを描いたわけを、ジェリーはどう説明する？',
       choices: ['He did it without meaning to', 'He chose her on purpose', 'Someone asked him to'], a: 0,
       choicesJa: ['そのつもりはなく、つい描いた', 'わざと彼女を選んだ', '誰かに頼まれた'],
@@ -49,7 +49,7 @@ export const jerryPainting: Clip = {
       trap: 'powerful women から、尊敬して選んだと思いやすい。subconsciously が答え。',
       use: 'I didn’t mean to. It just happened.（わざとじゃないの、つい）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'leave', seg: [48.4, 55.9],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'leave', seg: [47.9, 55.9],
       stem: 'What does Leslie mean by “Leave it up”?', ja: '“Leave it up” で、レスリーは何を言いたい？',
       choices: ['Keep it on the wall', 'Stop saying sorry', 'Let her decide'], a: 0,
       choicesJa: ['壁に掛けたままにして', '謝るのはやめて', '自分に決めさせて'],
@@ -60,7 +60,7 @@ export const jerryPainting: Clip = {
       trap: 'leave it up to me（任せて）とまぎれやすい。to はなく、down と up の反対。',
       use: 'Leave the lights on, please.（電気はつけたままでお願い）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'power', seg: [53.9, 62.7],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'power', seg: [53.9, 65.6],
       stem: 'Why does Leslie love the painting?', ja: 'レスリーはなぜその絵が大好き？',
       choices: ['She looks young and pretty', 'She feels she can do anything', 'Others look up to her'], a: 1,
       choicesJa: ['若くてきれいに見える', '何でもできる気がする', 'みんなに尊敬される'],
@@ -82,7 +82,7 @@ export const jerryPainting: Clip = {
       trap: '車の運転を「できること」と取りやすい。Besides は「〜以外は」の例外。',
       use: 'Besides that, it’s perfect.（それ以外は完璧）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'favorite', seg: [70.4, 77.0],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'favorite', seg: [70.3, 78.7],
       stem: 'How does someone feel once the baby turns out to be Tom?', ja: '赤ちゃんがトムだと分かって、ある人はどう感じる？',
       choices: ['Even happier with it', 'Sorry for Tom', 'Less keen on it now'], a: 0,
       choicesJa: ['もっと気に入った', 'トムがかわいそう', '今は少し気に入らない'],
@@ -93,7 +93,7 @@ export const jerryPainting: Clip = {
       trap: 'easily を「簡単に」と思うと、気持ちが弱く聞こえやすい。一番だと強めている。',
       use: 'This is easily the best pizza in town.（町で文句なしに一番のピザ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'belly', seg: [77.0, 82.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'belly', seg: [76.9, 84.2],
       stem: 'How does Tom say he looks in the painting?', ja: 'トムは、絵の中の自分がどう見えると言う？',
       choices: ['Chubby and angry', 'Chubby and frightened', 'Skinny and frightened'], a: 1,
       choicesJa: ['太っていて怒っている', '太っていておびえている', 'やせていておびえている'],
@@ -104,7 +104,7 @@ export const jerryPainting: Clip = {
       trap: '最初の What the hell で、怒った顔を思いやすい。怒っているのは本人で、絵はおびえ顔。',
       use: 'I’ve got a bit of a pot belly.（ちょっとお腹が出てきた）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [80.6, 85.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [80.5, 85.7],
       stem: 'Fill the gap: “All right, ___ take this down now.”', ja: '空所に入るのは？ “All right, ___ take this down now.”',
       choices: ['we gotta', 'we ought to', 'we’re gonna'], a: 0,
       choicesJa: ['〜しなきゃ', '〜すべきだ', '〜するつもり'],
@@ -115,7 +115,7 @@ export const jerryPainting: Clip = {
       trap: 'ought to は「オーラ」、gonna は「ガナ」。「ガ」で始まり「ラ」なら gotta。',
       use: 'We gotta leave now.（もう出なきゃ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'anywhere', seg: [82.3, 85.4],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'anywhere', seg: [82.3, 88.9],
       stem: 'What does “this painting isn’t going anywhere” mean?', ja: '“this painting isn’t going anywhere” はどういう意味？',
       choices: ['It will stay right here', 'It can come down later', 'They are getting nowhere'], a: 0,
       choicesJa: ['ここにずっと置いておく', 'あとで外してもいい', '話が進まない'],
@@ -126,7 +126,7 @@ export const jerryPainting: Clip = {
       trap: '「話が進まない」の意味でも使うので、まぎれやすい。主語が絵なら「動かない」。',
       use: 'Don’t worry, I’m not going anywhere.（心配しないで、ずっとここにいるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'guy', seg: [95.7, 99.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'guy', seg: [95, 100],
       stem: 'Type the words before “too”. (4 words)', ja: '“too” の前の言葉を書こう。（4語）', answer: 'this guy\'s in it',
       cue: '「little fat baby」の前の文',
       line: '… *this guy’s in it*, too.',
@@ -135,7 +135,7 @@ export const jerryPainting: Clip = {
       trap: 'in it がひと続きに聞こえ、guys（複数）とも思いやすい。is の「ズ」が次につく。',
       use: 'My sister’s in it, too.（妹も出てるよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'light', seg: [102.8, 114.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'light', seg: [108.1, 114.9],
       stem: 'Why does Chris say “Thank her” about the light?', ja: '照明のことで、クリスはなぜ “Thank her” と言う？',
       choices: ['She made him do it', 'She fixed it herself', 'He was just being polite'], a: 0,
       choicesJa: ['彼女にやらされたから', '彼女が自分で直したから', 'ただ礼儀として'],
@@ -146,7 +146,7 @@ export const jerryPainting: Clip = {
       trap: '日本の謙遜のように、手柄をゆずったと思いやすい。すぐあとの説明が理由。',
       use: 'Don’t thank me, thank her.（私じゃなくて彼女にお礼を）' },
 
-    { id: 't3', skill: 'attitude', level: 'B2', point: 'someone', seg: [113.9, 117.2],
+    { id: 't3', skill: 'attitude', level: 'B2', point: 'someone', seg: [111.8, 116.8],
       stem: 'How does Tom feel when he says “I’m glad someone’s feeling good”?', ja: '“I’m glad someone’s feeling good” と言うとき、トムはどんな気持ち？',
       choices: ['Unhappy, his day is bad', 'Glad the light is fixed', 'Just being polite'], a: 0,
       choicesJa: ['不機嫌、自分の一日は最悪', '照明が直ってうれしい', 'ただ礼儀正しく'],
@@ -157,7 +157,7 @@ export const jerryPainting: Clip = {
       trap: 'glad（うれしい）をそのまま取ると、喜んでいると思いやすい。someone が本音。',
       use: 'Glad someone’s having fun.（楽しそうな人がいてよかったね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'vibe', reveals: ['someone'], seg: [114.6, 131.4],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'vibe', reveals: ['someone'], seg: [114.6, 134.7],
       stem: 'Why is Tom upset, in his talk to the camera?', ja: 'カメラの前で、トムはなぜ怒っている？',
       choices: ['It ruins his cool image', 'He was painted without asking', 'It shows a babyish side'], a: 0,
       choicesJa: ['かっこいいイメージが台なし', '断りなく描かれた', '子どもっぽい面がばれた'],
@@ -168,7 +168,7 @@ export const jerryPainting: Clip = {
       trap: 'baby から、かくしていた面がばれたと思いやすい。replaced は「別のものに変えた」。',
       use: 'That totally killed the mood.（それで雰囲気が台なし）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['vibe'], seg: [121.4, 127.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['vibe'], seg: [121.4, 131.3], keep: true,
       stem: 'How long does Tom say his old image took to build?', ja: '前のイメージを作るのに、どれくらいかかったとトムは言う？',
       choices: ['A few weeks', 'Months', 'Years', 'His whole life'], a: 2,
       choicesJa: ['数週間', '何か月も', '何年も', '一生'],
@@ -210,7 +210,7 @@ export const jerryPainting: Clip = {
       trap: '文法で直して of を落としやすい。cool と a の間に弱い音がもう一つあるか聞く。',
       use: 'It’s not that big of a deal.（そんなに大したことじゃない）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'demand', seg: [141.5, 148.4],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'demand', seg: [139.6, 148.4],
       stem: 'Besides getting rid of the painting, what does Marsha want?', ja: '絵をなくすことのほかに、マーシャは何を求める？',
       choices: ['An apology from the office', 'A new painting in its place', 'An apology from Jerry himself'], a: 0,
       choicesJa: ['役所からの謝罪', 'かわりの新しい絵', 'ジェリー本人からの謝罪'],
@@ -221,7 +221,7 @@ export const jerryPainting: Clip = {
       trap: 'apologizing が聞こえて、描いた本人の謝罪だと思いやすい。from のあとを聞く。',
       use: 'We’d like a written apology.（書面での謝罪をお願いします）' },
 
-    { id: 'pg1', skill: 'pragma', level: 'B2', point: 'hear', seg: [159.05, 165.3],
+    { id: 'pg1', skill: 'pragma', level: 'B2', point: 'hear', seg: [158.7, 165.9],
       stem: 'Why does Chris say “we hear you, we understand you”?', ja: 'クリスはなぜ「we hear you, we understand you」と言う？',
       choices: ['To calm her, promising nothing', 'To agree to destroy it', 'To tell her to calm down'], a: 0,
       choicesJa: ['何も約束せず、落ち着かせるため', 'こわすことに賛成するため', '落ち着けと言うため'],
@@ -254,7 +254,7 @@ export const jerryPainting: Clip = {
       trap: 'inappropriate で同意、経験談で反対、と片方だけ取りやすい。「自分は平気」と「場所」を両方聞く。',
       use: 'I don’t mind it, just not at work.（いいけど、職場ではね）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'care', seg: [190.2, 194.85],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'care', seg: [190.2, 197.4],
       stem: 'What does “take care of the situation” mean here?', ja: 'ここでの “take care of the situation” はどういう意味？',
       choices: ['Deal with the problem', 'Look after the painting', 'Be careful from now on'], a: 0,
       choicesJa: ['問題を片づける', '絵を大切に守る', 'これから気をつける'],

@@ -12,7 +12,7 @@ export const chandlerAdopted: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', seg: [1, 31.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', seg: [1, 32.7],
       stem: 'Why are Monica and Chandler visiting this couple?',
       ja: 'モニカとチャンドラーはなぜこの夫婦を訪ねた？',
       choices: ['To learn about adopting', 'To meet a boy to adopt', 'To learn about pregnancy'], a: 0,
@@ -35,7 +35,7 @@ export const chandlerAdopted: Clip = {
       trap: 'I mean を「つまり」、ほめ言葉を頼みの前置きと取りやすい。沈黙のあとは空気の立て直し。',
       use: 'Anyway, you have a lovely place.（それはそうと、素敵なお宅ですね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'binder', seg: [27, 39.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'binder', seg: [27.6, 40.1],
       stem: 'How is the information in the book sorted?',
       ja: '本の情報はどうやって整理されている？',
       choices: ['By category and color', 'By date, in a timeline', 'By agency, with forms'], a: 0,
@@ -47,7 +47,7 @@ export const chandlerAdopted: Clip = {
       trap: '最後に forms（書類）が聞こえ、書類で分けたと思いやすい。into のすぐあとを聞く。',
       use: 'Let’s break it down into steps.（段階に分けて考えよう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'worth', seg: [46.2, 53],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'worth', seg: [45.2, 53.2],
       stem: 'What does the host say about the adoption process?',
       ja: '養子の手続きについて、夫婦は何と言う？',
       choices: ['Frustrating, but worth it', 'Simple, if you’re organized', 'Frustrating, but it gets easier'], a: 0,
@@ -59,7 +59,7 @@ export const chandlerAdopted: Clip = {
       trap: 'frustrating は2つの選択肢にある。but のあとの so worth it で決まる。',
       use: 'Long trip, but so worth it.（長旅だったけど、行く価値はあった）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'hands', seg: [53.8, 66],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'hands', seg: [52.7, 62.7],
       stem: 'Why does Chandler go to wash his hands?',
       ja: 'チャンドラーはなぜ手を洗いに行く？',
       choices: ['To keep the book clean', 'To say hello to Owen', 'To get ready to eat'], a: 0,
@@ -71,7 +71,7 @@ export const chandlerAdopted: Clip = {
       trap: '手洗いは食事の前と思いやすい。直前の Can I see the book? とつなげて聞く。',
       use: 'Can I wash my hands first?（先に手を洗ってもいい？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', reveals: ['hands'], seg: [56.2, 59.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', reveals: ['hands'], seg: [55.5, 62.7],
       stem: 'Fill the gap: “You ___ wash my hands first…”',
       ja: '空いている所に入る語は？「You ___ wash my hands first…」',
       choices: ['wanted me to', 'want me to', 'won’t let me'], a: 1,
@@ -83,19 +83,7 @@ export const chandlerAdopted: Clip = {
       trap: '「ワンミトゥ」なら want me to、「ウォンティッミ」と1音多ければ wanted me to、「ウォウンレッミ」なら won’t let me。',
       use: 'Do you want me to come with you?（一緒に行こうか？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adoptyou', seg: [59.8, 71],
-      stem: 'How does Monica feel about the host?',
-      ja: 'モニカはこの夫婦（奥さん）をどう思っている？',
-      choices: ['She really likes her', 'She is jealous of her', 'She feels sorry for her'], a: 0,
-      choicesJa: ['すごく気に入った', 'うらやましい', '気の毒に思う'],
-      cue: '「I would have told him」のあと。',
-      line: '*I would have told him to do it, too*. *Can I adopt you?*',
-      said: '「私も夫に洗わせたわ。あなたを養子にしていい？」と言う。',
-      mean: 'Can I adopt you? ＝ 文字どおりは「養子にしていい？」。ここは「気が合う、大好き」という冗談。',
-      trap: 'adopt を文字どおりに取ると意味が通らない。直前の「私もそうする」で気が合うと分かる。',
-      use: 'You’re my kind of person.（あなたとは気が合うね）' },
-
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'hall', reveals: ['hands'], seg: [62.0, 66.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'hall', reveals: ['hands'], seg: [61.8, 66.8],
       stem: 'Where is the bathroom?',
       ja: 'トイレはどこ？',
       choices: ['Down the hall, on the left', 'Down the hall, on the right', 'Upstairs, on the left'], a: 0,
@@ -107,7 +95,19 @@ export const chandlerAdopted: Clip = {
       trap: '「ダウンザホール…レフト」なら廊下の左、最後が「ライト」なら右、「アップステアーズ」で始まれば2階。',
       use: 'The restroom is down the hall to your left.（お手洗いは廊下の先の左です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'compass', seg: [83, 90.4],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adoptyou', seg: [66.2, 71.8],
+      stem: 'How does Monica feel about the host?',
+      ja: 'モニカはこの夫婦（奥さん）をどう思っている？',
+      choices: ['She really likes her', 'She is jealous of her', 'She feels sorry for her'], a: 0,
+      choicesJa: ['すごく気に入った', 'うらやましい', '気の毒に思う'],
+      cue: '「I would have told him」のあと。',
+      line: '*I would have told him to do it, too*. *Can I adopt you?*',
+      said: '「私も夫に洗わせたわ。あなたを養子にしていい？」と言う。',
+      mean: 'Can I adopt you? ＝ 文字どおりは「養子にしていい？」。ここは「気が合う、大好き」という冗談。',
+      trap: 'adopt を文字どおりに取ると意味が通らない。直前の「私もそうする」で気が合うと分かる。',
+      use: 'You’re my kind of person.（あなたとは気が合うね）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'compass', seg: [82.7, 92.8],
       stem: 'What does Owen have a Scout badge for?',
       ja: 'オーウェンは何のバッジを持っている？',
       choices: ['Using a compass', 'Reading a map', 'Tying knots'], a: 0,
@@ -119,7 +119,7 @@ export const chandlerAdopted: Clip = {
       trap: '方位磁石と地図はセットで思い浮かびやすい。聞こえた語で選ぶ。',
       use: 'Do you know how to use this?（これの使い方、分かる？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lovetobut', seg: [89.2, 95.2],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lovetobut', seg: [88.9, 95.2],
       stem: 'What does Chandler say to Owen’s offer?',
       ja: 'オーウェンの申し出に、チャンドラーは何と答える？',
       choices: ['No, he has to go back', 'Yes, but a bit later', 'Maybe, if his parents agree'], a: 0,
@@ -131,7 +131,7 @@ export const chandlerAdopted: Clip = {
       trap: 'I’d love to だけ聞くと「ぜひ」に聞こえる。but のあとが本当の返事。',
       use: 'I’d love to, but I have plans tonight.（行きたいけど、今夜は予定があるんだ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'gotnothing', seg: [102.5, 111],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'gotnothing', seg: [102.5, 111.7],
       stem: 'What does Chandler mean by “I *got nothing*”?',
       ja: 'チャンドラーの「I got nothing」はどういう意味？',
       choices: ['I don’t know what to say', 'I had nothing to do with it', 'I don’t have any money'], a: 0,
@@ -143,7 +143,7 @@ export const chandlerAdopted: Clip = {
       trap: 'nothing から「関係ない」「何も持ってない」と思いやすい。返す言葉に詰まったときの決まり文句。',
       use: 'Any ideas? — Sorry, I got nothing.（何か案ある？—ごめん、全然）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'bathroom', seg: [116.6, 122.3],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'bathroom', seg: [115.6, 124.9],
       stem: 'What does Monica first think happened?',
       ja: 'モニカは最初、何があったと思う？',
       choices: ['He did something in the bathroom', 'He saw something in the bathroom', 'He broke the book'], a: 0,
@@ -166,7 +166,7 @@ export const chandlerAdopted: Clip = {
       trap: 'may have を本当の迷いと取りやすい。控えめな語が並んだら隠し事を疑う。',
       use: 'I may have eaten your leftovers.（君の残り物、食べちゃったかも）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'purse', seg: [131, 135.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'purse', seg: [130.1, 136.3],
       stem: 'What does Monica decide about her purse?',
       ja: 'モニカはバッグをどうすることにした？',
       choices: ['To leave it behind', 'To look for it first', 'To ask Chandler for it'], a: 0,
@@ -178,7 +178,7 @@ export const chandlerAdopted: Clip = {
       trap: 'No を相手への「いいえ」と思いやすい。自分の考えを打ち消す No。',
       use: 'No, you know what? Let’s just go.（いや、やっぱりもう行こう）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.2, 143.4],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.2, 145],
       stem: 'What does the host mean about the sour worms?',
       ja: 'すっぱいグミについて、夫婦は何を言いたい？',
       choices: ['Please don’t eat them', 'Eat them if you like', 'Take some home'], a: 0,
@@ -202,7 +202,7 @@ export const chandlerAdopted: Clip = {
       trap: '正直に謝る流れを予想しやすいが、この場面の彼は先に言い訳を用意している。',
       use: 'Kids pick up on everything.（子どもは何でも気づくよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'haventtold', seg: [144.4, 148.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'haventtold', seg: [143.5, 150.9],
       stem: 'Type what the host says: “we ___ he’s adopted yet.” (3 words)', answer: "haven't told him",
       ja: '書こう：「we ___ he’s adopted yet.」（3語）',
       cue: '「you should know」のあと。',
@@ -223,7 +223,7 @@ export const chandlerAdopted: Clip = {
       trap: '両親への反論に聞こえるが、直後の一言で笑われているのは本人だと分かる。',
       use: 'See? I told you so.（ほらね、言ったでしょ）' },
 
-    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 165.6], keep: true,
+    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 166.7], keep: true,
       stem: 'How much did Chandler pay Owen to keep quiet?',
       ja: 'チャンドラーは口止めにオーウェンにいくら払った？',
       choices: ['$15', '$50', '$500'], a: 1,
@@ -235,7 +235,7 @@ export const chandlerAdopted: Clip = {
       trap: '前が強い「フィフティ」なら $50、後ろの「ティーン」が長ければ $15、「ファイブハンドレッド」なら $500。',
       use: 'I paid fifty dollars for this.（これに50ドル払った）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'giveback', reveals: ['paid'], seg: [162.4, 169.4],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'giveback', reveals: ['paid'], seg: [162.4, 170.3],
       stem: 'What does Chandler say Owen should do with the money?',
       ja: 'チャンドラーは、オーウェンはお金をどうすべきだと言う？',
       choices: ['Give it back', 'Keep it safe', 'Share it'], a: 0,
@@ -259,7 +259,7 @@ export const chandlerAdopted: Clip = {
       trap: 'I’m so sorry が聞こえるので仲直りと思いやすい。最後の報告まで聞く。',
       use: 'Long story short, it didn’t go well.（手短に言うと、うまくいかなかった）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'sign', seg: [174, 180.5],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'sign', seg: [172.3, 181.1],
       stem: 'What does Chandler do after “I’m so sorry”?',
       ja: '「I’m so sorry」のあと、チャンドラーは何をする？',
       choices: ['He blames the parents', 'He blames Owen', 'He offers to fix it'], a: 0,
@@ -282,7 +282,7 @@ export const chandlerAdopted: Clip = {
       trap: 'you should を常識的な助言と取ると「本人に話せ」に聞こえる。誰にささやくかを聞く。',
       use: 'Maybe put up a sign or something?（看板でも出しといたら？）', retired: true },
 
-    { id: 'h1', skill: 'infer', level: 'B2', point: 'santa', reveals: ['sign'], seg: [176.5, 186],
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'santa', reveals: ['sign'], seg: [176.5, 186.5],
       stem: 'What new secret does Owen hear?',
       ja: 'オーウェンが新しく聞いてしまった秘密は？',
       choices: ['Santa isn’t real', 'He was adopted', 'His parents are angry'], a: 0,
@@ -294,7 +294,7 @@ export const chandlerAdopted: Clip = {
       trap: '養子の話はもう知っている。new（新しい）秘密は also のあと。',
       use: 'Oops. Forget I said that.（おっと、今のは忘れて）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'headsup', reveals: ['outcome'], seg: [190.4, 195],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'headsup', reveals: ['outcome'], seg: [189.5, 196.5],
       stem: 'What does “give you *a heads-up*” mean?',
       ja: '「give you a heads-up」はどういう意味？',
       choices: ['Tell you ahead of time', 'Ask you what to do', 'Ask you to keep quiet'], a: 0,

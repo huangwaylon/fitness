@@ -14,7 +14,7 @@ export const tomFailure: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'canijust', seg: [10.15, 21.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'canijust', seg: [8.9, 15.7],
       stem: 'Why does Leslie say “Can I just say, Tom”?',
       ja: 'レスリーはなぜ「Can I just say, Tom」と言う？',
       choices: ['To start a warm compliment', 'To calm him about the problem', 'To lead up to a favor'], a: 0,
@@ -38,7 +38,7 @@ export const tomFailure: Clip = {
       trap: 'よくある proud of you too に聞こえやすい。of me の一語を聞く。',
       use: 'Thanks! I’m pretty proud of it.（ありがとう、けっこう自信作なんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'wine', seg: [25.2, 34.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'wine', seg: [25.2, 35],
       stem: 'What has a guest at the bar sent over?',
       ja: 'バーにいる客は、何を届けさせた？',
       choices: ['Wine and a business card', 'Wine and a thank-you note', 'Wine and the bill for it'], a: 0,
@@ -74,7 +74,7 @@ export const tomFailure: Clip = {
       trap: 'whining を自慢と取りやすい。理由は before のあと。',
       use: 'You’re still just Mike to me.（私にとっては今もただのマイクだよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'homework', seg: [55.2, 62.4],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'homework', seg: [53.7, 62.8],
       stem: 'What does “you’ve done your homework” mean here?',
       ja: '「you’ve done your homework」は、ここではどういう意味？',
       choices: ['You looked into it carefully', 'You did the paperwork already', 'You asked everyone first'], a: 0,
@@ -86,7 +86,7 @@ export const tomFailure: Clip = {
       trap: 'homework を「書類仕事」と思いやすい。仕事の話では「下調べ」。',
       use: 'Do your homework before you buy a car.（車を買う前に下調べを）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'ron', seg: [69.5, 75.45],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'ron', seg: [69.5, 78.9],
       stem: 'What is Ron’s view of the plan?',
       ja: 'ロンはこの計画をどう思っている？',
       choices: ['For it, a risk worth taking', 'Against it, too reckless', 'Unsure, it’s all luck'], a: 0,
@@ -98,7 +98,7 @@ export const tomFailure: Clip = {
       trap: 'gambit が gamble（ギャンブル）に聞こえて反対と思いやすい。but のあとが結論。',
       use: 'Nothing ventured, nothing gained. Let’s apply.（やってみなきゃ。応募しよう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'realestate', seg: [76.25, 80.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'realestate', seg: [75.3, 83.2],
       stem: 'What reason does the next friend give for doing it now?',
       ja: '次の仲間は、今やるべき理由を何と言う？',
       choices: ['Property is cheap right now', 'Restaurants are popular right now', 'Loans are easy right now'], a: 0,
@@ -110,7 +110,7 @@ export const tomFailure: Clip = {
       trap: 'right now は三つの選択肢すべてに合う。前の real estate を聞く。',
       use: 'Prices are pretty low right now.（今はかなり安いよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'twenty', reveals: ['expand'], seg: [80.6, 88.25], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'twenty', reveals: ['expand'], seg: [80.6, 88.6], keep: true,
       stem: 'How many Tom’s Bistros does Tom say there will be?',
       ja: 'トムズ・ビストロは何店になるとトムは言う？',
       choices: ['Five', 'Ten', 'Twenty', 'Fifty'], a: 2,
@@ -122,7 +122,7 @@ export const tomFailure: Clip = {
       trap: '店の数は「トゥエニ」で twenty。「ファイブ」は年数の方、ten は「テン」、fifty は「フィフティ」。',
       use: 'There’ll be twenty of us at dinner.（夕食は20人になります）' },
 
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'blowup', seg: [86.1, 95.75],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'blowup', seg: [86.1, 96.1],
       stem: 'Why is the narrator’s “blow up he did” funny?',
       ja: 'ナレーションの「blow up he did」はなぜおかしい？',
       choices: ['His word for success means crash', 'It means Tom got very angry', 'Tom really became a hit'], a: 0,
@@ -146,7 +146,7 @@ export const tomFailure: Clip = {
       trap: '声だけだと他人がからかっていると取りやすい。That you made が、だれの言葉かを変える。',
       use: 'You wrote this about yourself?（これ自分で自分のこと書いたの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'lucy', reveals: ['careful'], seg: [101.95, 144.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'lucy', reveals: ['careful'], seg: [102, 145.2],
       stem: 'What is Tom’s talk with Lucy mainly about?',
       ja: 'トムとルーシーの話は、主に何について？',
       choices: ['Why this failure hurts more', 'Whether to stop watching the film', 'What business to try next'], a: 0,
@@ -158,7 +158,7 @@ export const tomFailure: Clip = {
       trap: '映像の話や「次はどうする」も出るが、中心は後半の「今回は何がちがうか」。',
       use: 'That’s the part that really hurts.（そこが本当につらいところ）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', seg: [101.95, 108.15],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', seg: [102, 108.5],
       stem: 'What does “I can’t tear myself away” mean?',
       ja: '「I can’t tear myself away」はどういう意味？',
       choices: ['I can’t stop watching it', 'I can’t watch without crying', 'I can’t bear to watch it'], a: 0,
@@ -182,18 +182,6 @@ export const tomFailure: Clip = {
       trap: '服の話なので「服にお金を使った」と取りやすいが、売ったのは失ったあと。',
       use: 'I lost my wallet and, worse, my lucky pen.（財布と、もっと痛いのは幸運のペン）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'beef', seg: [121.35, 130.1],
-      stem: 'Why does Lucy ask “Who could have predicted…?”',
-      ja: 'ルーシーはなぜ「Who could have predicted…?」と聞く？',
-      choices: ['To say nobody could have known', 'To say he should have known', 'To ask why beef ran out'], a: 0,
-      choicesJa: ['だれにも分からなかったと言うため', '彼は分かるべきだったと言うため', 'なぜ牛肉がなくなったか聞くため'],
-      cue: '質問のあと、答えを待つかどうか',
-      line: '*Who could have predicted* that the country would run out of beef? You just gotta move on.',
-      said: '「国から牛肉がなくなるなんて、だれが予想できた？前に進むしかないよ」と言う。',
-      mean: 'Who could have 〜? ＝「だれが〜できた？（だれもできない）」。トムを責めずに慰めている。',
-      trap: '疑問文なので答えを探しやすい。答えを待たずに続くなら、問いの形の励まし。',
-      use: 'Who could have known it would rain?（雨なんてだれが分かった？）' },
-
     // retired (A2): “credit dried up” is economics jargon
     { id: 'f7', skill: 'phrase', level: 'C1', point: 'credit', seg: [121.35, 128.3], retired: true,
       stem: 'What does Lucy say happened with credit?',
@@ -205,7 +193,19 @@ export const tomFailure: Clip = {
       trap: 'カタカナのクレジットでカードの話と取りやすい。株と並ぶ、経済全体の話。',
       use: 'The money just dried up.（お金がすっかり底をついた）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'careful', reveals: ['bust'], seg: [128.25, 138.9],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'beef', seg: [121.4, 131.8],
+      stem: 'Why does Lucy ask “Who could have predicted…?”',
+      ja: 'ルーシーはなぜ「Who could have predicted…?」と聞く？',
+      choices: ['To say nobody could have known', 'To say he should have known', 'To ask why beef ran out'], a: 0,
+      choicesJa: ['だれにも分からなかったと言うため', '彼は分かるべきだったと言うため', 'なぜ牛肉がなくなったか聞くため'],
+      cue: '質問のあと、答えを待つかどうか',
+      line: '*Who could have predicted* that the country would run out of beef? You just gotta move on.',
+      said: '「国から牛肉がなくなるなんて、だれが予想できた？前に進むしかないよ」と言う。',
+      mean: 'Who could have 〜? ＝「だれが〜できた？（だれもできない）」。トムを責めずに慰めている。',
+      trap: '疑問文なので答えを探しやすい。答えを待たずに続くなら、問いの形の励まし。',
+      use: 'Who could have known it would rain?（雨なんてだれが分かった？）' },
+
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'careful', reveals: ['bust'], seg: [128.3, 139.5],
       stem: 'Why is this failure harder for Tom than his earlier ones?',
       ja: '今回の失敗は、なぜ前の失敗よりつらい？',
       choices: ['He was careful and still failed', 'He made the same mistake again', 'He has only himself to blame'], a: 0,
@@ -217,7 +217,7 @@ export const tomFailure: Clip = {
       trap: 'reckless から「反省」と思いやすいが、それは昔の話。This time のあとが今回。',
       use: 'I did everything right, and it still failed.（全部ちゃんとやったのに、だめだった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'bust', seg: [130.05, 134.65],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'bust', seg: [130, 137.8],
       stem: 'Fill the gap: “___ bust in the past.”',
       ja: '「___ bust in the past.」の空所は？',
       choices: ['I’ve gone', 'I went', 'I’d gone'], a: 0,
@@ -229,7 +229,7 @@ export const tomFailure: Clip = {
       trap: 'went なら「ウェン」、gone は「ゴン」。I’d gone なら「アイド」と d が入る。',
       use: 'I’ve lost money in the past.（前にもお金を失ったことがある）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'comeup', seg: [140.4, 143.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'comeup', seg: [139.1, 145.2],
       stem: 'Type what Lucy says: “and you’ll ___ a new idea.” (3 words)', answer: 'come up with',
       ja: 'ルーシーの「and you’ll ___ a new idea.」の空所を書こう（3語）',
       cue: '「you’ll」のあと',
@@ -239,7 +239,7 @@ export const tomFailure: Clip = {
       trap: 'up と with が弱く、一語に聞こえやすい。3語に分けて書く。',
       use: 'Can you come up with a better name?（もっといい名前、思いつく？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'four', seg: [145.8, 150.5], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'four', seg: [144.8, 153.3], keep: true,
       stem: 'How soon did Tom’s entertainment company fail?',
       ja: 'トムのエンタメ会社は、どれくらいでつぶれた？',
       choices: ['In four days', 'In four weeks', 'In four months', 'In fourteen months'], a: 2,
@@ -251,7 +251,7 @@ export const tomFailure: Clip = {
       trap: '「マンス」なら months、「デイズ」なら days、「ウィークス」なら weeks。14 なら「フォーティーン」。',
       use: 'The shop closed after four months.（その店は4か月で閉店した）' },
 
-    { id: 'i5', skill: 'infer', level: 'B1', point: 'chances', seg: [155.5, 170.15],
+    { id: 'i5', skill: 'infer', level: 'B1', point: 'chances', seg: [155.5, 170.2],
       stem: 'What is Tom’s point about chances?',
       ja: 'チャンスについて、トムは何を言いたい？',
       choices: ['Success can take many tries', 'America gives second chances', 'Two or three tries are enough'], a: 0,
@@ -275,7 +275,7 @@ export const tomFailure: Clip = {
       trap: '「～みたいな人」という一般名詞に聞こえやすい。名前が仲間のものと気づくと、特定の一人だと分かる。',
       use: 'Don’t be that guy.（ああいう人にはならないで）' },
 
-    { id: 'h5', skill: 'phrase', level: 'B2', point: 'take', seg: [221.4, 230.35],
+    { id: 'h5', skill: 'phrase', level: 'B2', point: 'take', seg: [221.4, 232.4],
       stem: 'What does “I don’t know how to take that” mean?',
       ja: '「I don’t know how to take that」はどういう意味？',
       choices: ['I’m not sure it’s a compliment', 'I don’t know where it goes', 'I can’t carry the book'], a: 0,

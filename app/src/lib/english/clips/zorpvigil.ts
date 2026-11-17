@@ -27,18 +27,7 @@ export const zorpVigil: Clip = {
       trap: 'afraid から「こわい」と思いやすい。I’m afraid は「あいにく」の前置きにもなる。',
       use: 'Is the shop closed? — Afraid so.（店、閉まってる？ーあいにく）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vigil', seg: [22.5, 33.5],
-      stem: 'What do the group’s members do every few years?', ja: 'このグループは、数年ごとに何をする？',
-      choices: ['Stay up all night in the park', 'Stay up all night on a hill', 'Walk through the park at dawn'], a: 0,
-      choicesJa: ['公園で一晩中起きている', '丘の上で一晩中起きている', '夜明けに公園を歩く'],
-      cue: '「and they have」のあと',
-      line: 'they have an *all-night vigil in the park*',
-      said: '残った信者が数年ごとに世界の終わりを予言し、公園で徹夜の集まりを開く、と説明する。',
-      mean: 'all-night ＝ 一晩中の。vigil ＝ 夜通し起きて待つ集まり。',
-      trap: '前に at dawn が2回出るので、夜明けに集まると思いやすい。all-night は一晩中。',
-      use: 'The store is open all night.（その店は一晩中開いている）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'go', seg: [27.0, 68.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'go', seg: [27, 68.6],
       stem: 'Why does Leslie go to the park tonight?', ja: 'レスリーはなぜ今夜公園に行く？',
       choices: ['She insists on going along', 'The city fears the group', 'A reporter asks her to'], a: 0,
       choicesJa: ['一緒に行くと言いはる', '市がグループをこわがっている', '記者に頼まれる'],
@@ -48,6 +37,17 @@ export const zorpVigil: Clip = {
       mean: 'accompany ＝ 一緒に行く。I insist ＝ ぜひそうさせて。危険だからではなく、自分から行く。',
       trap: 'cult（カルト）で危険な話だと思いやすい。本人は nothing to worry about と言う。',
       use: 'No, no, I insist. Let me pay.（いやいや、ぜひ私に払わせて）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vigil', seg: [27.2, 35.5],
+      stem: 'What do the group’s members do every few years?', ja: 'このグループは、数年ごとに何をする？',
+      choices: ['Stay up all night in the park', 'Stay up all night on a hill', 'Walk through the park at dawn'], a: 0,
+      choicesJa: ['公園で一晩中起きている', '丘の上で一晩中起きている', '夜明けに公園を歩く'],
+      cue: '「and they have」のあと',
+      line: 'they have an *all-night vigil in the park*',
+      said: '残った信者が数年ごとに世界の終わりを予言し、公園で徹夜の集まりを開く、と説明する。',
+      mean: 'all-night ＝ 一晩中の。vigil ＝ 夜通し起きて待つ集まり。',
+      trap: '前に at dawn が2回出るので、夜明けに集まると思いやすい。all-night は一晩中。',
+      use: 'The store is open all night.（その店は一晩中開いている）' },
 
     // R fix: V2 (blind 55 %): the key was the only choice about critics; three "Anyone who…" choices now, built on who
     //   does what to whom
@@ -66,7 +66,7 @@ export const zorpVigil: Clip = {
       trap: '名前は入る人のため、という型で取りやすい。if のあと、誰が誰を批判するかを聞く。',
       use: 'Complain, and you look like the bad guy.（文句を言うと、こっちが悪者に見える）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [50.5, 55.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [49.5, 59.9], keep: true,
       stem: 'How many times has the group said the world would end?', ja: 'このグループは、世界が終わると何回言った？',
       choices: ['5', '15', '50'], a: 1,
       choicesJa: ['5回', '15回', '50回'],
@@ -77,7 +77,7 @@ export const zorpVigil: Clip = {
       trap: 'fifty なら「フィフティ」と前が強い。five は「ファイヴ」だけ。「ティーン」と伸びれば15。',
       use: 'I’ve told you fifteen times!（もう15回は言ったよ！）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'rate', seg: [62.1, 65.8],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'rate', seg: [59.4, 67.8],
       stem: 'What does “At any rate” mean?', ja: '“At any rate” はどういう意味？',
       choices: ['Anyway', 'At a good price', 'At last'], a: 0,
       choicesJa: ['とにかく', 'いい値段で', 'ついに'],
@@ -87,17 +87,6 @@ export const zorpVigil: Clip = {
       mean: 'At any rate ＝ とにかく、それはさておき。脱線した話を本題に戻す。',
       trap: 'rate から「料金」と思いやすい。文の頭の3語は、話を切りかえる合図。',
       use: 'At any rate, let’s order.（それはさておき、注文しよう）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'weird', seg: [78.4, 87.3],
-      stem: 'Why won’t Ben stay long tonight?', ja: 'ベンはなぜ今夜長くいない？',
-      choices: ['Things with Leslie feel weird', 'He has work early tomorrow', 'The vigil seems silly'], a: 0,
-      choicesJa: ['レスリーとまだ気まずい', '明日は朝早く仕事がある', '集まりがばかばかしい'],
-      cue: '「It’s just」のあと',
-      line: 'I’ll *come for a bit*, but… I’m not gonna stay. It’s just… *still kind of weird*, right?',
-      said: '「少しは行くけど、長くはいない。まだちょっと気まずいでしょ」と言う。',
-      mean: 'weird ＝ 変な。ここでは二人の間が気まずいこと。for a bit ＝ 少しの間。',
-      trap: '行事がいやなのだと思いやすい。It’s just のあとに本当の理由が来る。',
-      use: 'I’ll come for a bit, but I can’t stay.（少し顔を出すけど、長くはいられない）' },
 
     // R fix: V2 (blind 50 %): "joking, doesn't mind" was the easy throw-away; it's now a second "she cares" reading
     //   that the words don't support, so the key isn't the only choice where she minds
@@ -116,7 +105,18 @@ export const zorpVigil: Clip = {
       trap: '会わない＝疎遠になった、と取りやすい。慰めの例が苦しいほど、本人は気にしている。',
       use: 'It’s fine. Lots of people eat alone.（平気。一人で食べる人なんて大勢いる）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B1', point: 'getit', seg: [86.0, 92.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'weird', seg: [78.5, 88.7],
+      stem: 'Why won’t Ben stay long tonight?', ja: 'ベンはなぜ今夜長くいない？',
+      choices: ['Things with Leslie feel weird', 'He has work early tomorrow', 'The vigil seems silly'], a: 0,
+      choicesJa: ['レスリーとまだ気まずい', '明日は朝早く仕事がある', '集まりがばかばかしい'],
+      cue: '「It’s just」のあと',
+      line: 'I’ll *come for a bit*, but… I’m not gonna stay. It’s just… *still kind of weird*, right?',
+      said: '「少しは行くけど、長くはいない。まだちょっと気まずいでしょ」と言う。',
+      mean: 'weird ＝ 変な。ここでは二人の間が気まずいこと。for a bit ＝ 少しの間。',
+      trap: '行事がいやなのだと思いやすい。It’s just のあとに本当の理由が来る。',
+      use: 'I’ll come for a bit, but I can’t stay.（少し顔を出すけど、長くはいられない）' },
+
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'getit', seg: [86, 94.3],
       stem: 'What does Leslie mean by “totally get it”?', ja: 'レスリーの “totally get it” はどういう意味？',
       choices: ['I fully understand', 'I’ll go and get it', 'I totally forgot'], a: 0,
       choicesJa: ['よく分かる', '取ってくる', 'すっかり忘れてた'],
@@ -141,7 +141,7 @@ export const zorpVigil: Clip = {
       trap: '記者の質問はむだ遣いの批判に聞こえやすい。So の前の質問とつなげて聞く。',
       use: 'So I shouldn’t read anything into that?（じゃあ、深い意味はないってこと？）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'nothing', seg: [107.1, 116.6],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'nothing', seg: [107.1, 118.8],
       stem: 'Why is the city worker at the park, he says?', ja: '市の職員は、公園に来た理由を何と言う？',
       choices: ['He had nothing better to do', 'The city is worried', 'He wants to join the group'], a: 0,
       choicesJa: ['ほかにすることがなかった', '市が心配している', 'グループに入りたい'],
@@ -152,7 +152,7 @@ export const zorpVigil: Clip = {
       trap: '記者が「市の職員が二人いる」と言うので、市が心配していると思いやすい。答えは nothing better to do。',
       use: 'I had nothing better to do, so I came.（ひまだったから来たんだ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'story', seg: [139.1, 144.1],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'story', seg: [139.1, 146.1],
       stem: 'What does “What’s his story?” ask?', ja: '“What’s his story?” は何を聞いている？',
       choices: ['What kind of man he is', 'What news he is writing', 'Where he went tonight'], a: 0,
       choicesJa: ['どんな人なのか', '何の記事を書いているか', '今夜どこへ行ったか'],
@@ -163,7 +163,7 @@ export const zorpVigil: Clip = {
       trap: '記者なので story を「記事」と思いやすい。人について聞くときは「どんな人か」。',
       use: 'Who’s the new guy? What’s his story?（新人は誰？どんな人？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fluster', seg: [143.7, 150.5],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fluster', seg: [142.3, 150.5],
       stem: 'How does Leslie sound when asked about Ben?', ja: 'ベンのことを聞かれて、レスリーはどう聞こえる？',
       choices: ['Nervous, lost for words', 'Calm, not interested', 'Angry at the reporter'], a: 0,
       choicesJa: ['あせって、言葉が出ない', '落ち着いていて、興味がない', '記者に怒っている'],
@@ -186,7 +186,7 @@ export const zorpVigil: Clip = {
       trap: 'nay を「いいえ」と取ると、取り消しや反対に聞こえる。後ろの語が前より強いかを聞く。',
       use: 'It was good, nay, amazing.（良かった、いや、最高だった）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'happyhelp', seg: [166.5, 170.5],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'happyhelp', seg: [166.1, 172.1],
       stem: 'What does Leslie mean by “Happy to help”?', ja: 'レスリーの “Happy to help” はどういう意味？',
       choices: ['You’re welcome', 'I’m happy today', 'Please help me'], a: 0,
       choicesJa: ['どういたしまして', '今日はうれしい', '手伝って'],
@@ -208,7 +208,7 @@ export const zorpVigil: Clip = {
       trap: 'I wanna なら「ワナ」、I have to なら「ハフタ」。「アムガナ」と g が聞こえれば gonna。',
       use: 'I’m gonna be honest with you.（正直に言うね）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'council', seg: [191.35, 196.85],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'council', seg: [191.4, 200.2],
       stem: 'Why isn’t Leslie dating Ben, she is reminded?', ja: 'レスリーは、なぜベンと付き合っていないと言われる？',
       choices: ['She chose to run for council', 'She works for the city manager', 'He chose to run for council'], a: 0,
       choicesJa: ['彼女が市議会選に出ると決めた', '彼女が市の管理官の下で働いている', '彼が市議会選に出ると決めた'],
@@ -219,7 +219,7 @@ export const zorpVigil: Clip = {
       trap: 'city が聞こえるので、市の仕事の話と混ざりやすい。decided の前の you を聞く。',
       use: 'She’s going to run for mayor.（彼女は市長選に出るつもりだ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'canta', seg: [191.35, 199.85],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'canta', seg: [191.4, 201.4],
       stem: 'How does Leslie answer the reminder about Ben?', ja: 'ベンのことを言われて、レスリーはどう答える？',
       choices: ['She argues back', 'She agrees with her', 'She says sorry'], a: 0,
       choicesJa: ['言い返す', '「そうだね」と認める', '謝る'],
@@ -281,7 +281,7 @@ export const zorpVigil: Clip = {
       trap: 'chance から「チャンスをもらう」と思いやすい。ここは「危険を承知で行く」。',
       use: 'It might rain, but I’ll take my chances.（雨かもしれないけど、行ってみる）' },
 
-    { id: 'h5', skill: 'pragma', level: 'B1', point: 'alsono', seg: [278.0, 290.5],
+    { id: 'h5', skill: 'pragma', level: 'B1', point: 'alsono', seg: [278.6, 291.8],
       stem: 'What is Ron’s answer to Leslie’s request?', ja: 'レスリーの頼みに、ロンはどう答える？',
       choices: ['No, not even today', 'Yes, but only today', 'Yes, any time'], a: 0,
       choicesJa: ['だめ、今日でもだめ', 'いいよ、今日だけ', 'いいよ、いつでも'],
@@ -292,7 +292,7 @@ export const zorpVigil: Clip = {
       trap: 'But given で「今日は特別にいい」と思いやすい。最後の also no を聞く。',
       use: 'Normally, no. But today is okay.（普段はだめ。でも今日はいいよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [282.7, 290.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [282.7, 293.1], keep: true,
       stem: 'How long does Ron say is left until the end?', ja: '終わりまであと何分だと、ロンは言う？',
       choices: ['12 minutes', '20 minutes', '30 minutes'], a: 1,
       choicesJa: ['12分', '20分', '30分'],
@@ -303,7 +303,7 @@ export const zorpVigil: Clip = {
       trap: 'twelve なら「トゥエルヴ」、thirty なら「サ」で始まる。「トゥエニ」と聞こえれば20。',
       use: 'There’s only twenty minutes left.（あと20分しかない）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'want', seg: [299.3, 306.9], then: [306.9, 313.6],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'want', seg: [297.7, 306.9], then: [306.9, 315.2],
       stem: 'After “I have to tell you, Ron…”, what comes next?', ja: '“I have to tell you, Ron…” のあとに来るのは？',
       choices: ['How she still feels', 'What she did to Ben', 'A plan to fix things'], a: 0,
       choicesJa: ['今の本当の気持ち', 'ベンにしたこと', '元に戻す計画'],

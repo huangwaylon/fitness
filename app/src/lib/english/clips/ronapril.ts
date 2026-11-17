@@ -13,7 +13,7 @@ export const ronAprilTakeOver: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'perspective', seg: [2.1, 11.1],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'perspective', seg: [5.2, 14],
       stem: 'What does “from a different perspective” mean?',
       ja: '「from a different perspective」はどういう意味？',
       choices: ['From a new point of view', 'From the top of a hill', 'With both his eyes closed'], a: 0,
@@ -37,7 +37,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '本当にジムの場所を聞いていると思いやすい。相手が「やめる」と返せば、頼みだった。',
       use: 'Isn’t there somewhere else you could do that?（どこか別の所でやってくれない？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', reveals: ['deputy'], seg: [24.9, 58.95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', reveals: ['deputy'], seg: [24.9, 59.3],
       stem: 'What must Ron do instead of hiring someone?',
       ja: '人を雇う代わりに、ロンは何をしなければならない？',
       choices: ['Show they are fine without Leslie', 'Ask Leslie not to run for it', 'Do all of Leslie’s work himself'], a: 0,
@@ -49,7 +49,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '雇う話はクリスの案で、ロンは断っている。誰の案かを分けて聞く。',
       use: 'Okay, prove it.（じゃあ、証明してみせて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'staff', seg: [24.9, 33.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'staff', seg: [24.9, 33.2], keep: true,
       stem: 'How many employees does Ron’s department have now?',
       ja: 'ロンの部署には、今何人いる？',
       choices: ['Four', 'Seven', 'Ten'], a: 1,
@@ -84,7 +84,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'of four は「オフォー」とつながる。「フォー」なら4、「トゥー」なら2、「セヴン」なら7。',
       use: 'She runs the shop single-handedly.（彼女は一人で店を回している）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'slack', seg: [42.35, 52],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'slack', seg: [42.4, 52],
       stem: 'What does “pick up the slack” mean here?',
       ja: 'ここで「pick up the slack」はどういう意味？',
       choices: ['Do the work Leslie can’t do', 'Help Leslie win the election', 'Watch the lazy workers'], a: 0,
@@ -130,7 +130,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '子どもの頃のつらい話は、悲しみや自虐で終わると予想しやすい。最後の一言が話の向きを決める。',
       use: 'Long story short, it worked out.（結局、うまくいったんだ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'friends', seg: [81.6, 89.1],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'friends', seg: [81.6, 90.7],
       stem: 'Why does Ron call Ann a “close friend”?',
       ja: 'ロンはなぜアンを「親友」と呼ぶ？',
       choices: ['He is acting friendly', 'He is saying sorry to her', 'They really are close'], a: 0,
@@ -142,7 +142,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'Nonsense を謝りと取りやすい。指摘を打ち消すだけ。アンの驚きと比べる。',
       use: 'Hey, buddy! Got a minute?（よう、相棒！ちょっといい？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'fountain', seg: [89, 94.55],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'fountain', seg: [88.3, 95.6],
       stem: 'What does Ron make the top priority?',
       ja: 'ロンは何を最優先にする？',
       choices: ['Cleaner water fountains', 'Fixing broken fountains', 'More hand washing'], a: 0,
@@ -154,7 +154,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'hygiene を聞き落とすと修理に、hygiene だけだと手洗いに聞こえる。',
       use: 'Safety is our number-one priority.（安全が最優先です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'spouts', seg: [94.5, 105.98],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'spouts', seg: [94.5, 106],
       stem: 'What do people in Pawnee do at water fountains?',
       ja: 'ポーニーの人は水飲み場で何をする？',
       choices: ['Put their mouths over the spout', 'Fill their own water bottles', 'Wash their hands in the water'], a: 0,
@@ -166,7 +166,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'spout だけでは水の出口の話。put their mouths over の動きまで聞く。',
       use: 'For some reason, it keeps happening.（なぜか、いつもそうなるの）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'idlike', seg: [111.4, 117],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'idlike', seg: [111.3, 119.5],
       stem: 'Fill the gap: “___ to complete this project by tomorrow.”',
       ja: '空所を埋める：「___ to complete this project by tomorrow.」',
       choices: ['I’d like', 'I’d love', 'We’d like'], a: 0,
@@ -190,7 +190,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'shop を「店」、desk を「役職」と取りやすい。ここは作業する場所の話。',
       use: 'Feel free to set up shop here.（ここを自由に使って作業していいよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'credit', reveals: ['begged'], seg: [142.45, 153.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'credit', reveals: ['begged'], seg: [148.5, 153.7],
       stem: 'Why did April say Ron solved the problem?',
       ja: 'エイプリルはなぜ、ロンが問題を解決したと言った？',
       choices: ['She hides that she cares', 'She wants a reward later', 'She thought it was nothing'], a: 0,
@@ -202,7 +202,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '手柄をゆずるのは見返りのためと思いやすい。want you to think まで聞く。',
       use: 'He acts cool, but he actually cares.（クールぶってるけど、本当は気にしてる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'answer', seg: [153.3, 160.55],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'answer', seg: [153.3, 163.1],
       stem: 'What does Ron think of April as Leslie’s fill-in?',
       ja: 'レスリーの代わりとして、ロンはエイプリルをどう思っている？',
       choices: ['Hard, but the right person', 'Too hard to work with at all', 'Fine until someone better'], a: 0,
@@ -226,7 +226,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '上司なので命令と思いやすい。言葉は asking と please。',
       use: 'We really need you on this. Please.（どうしても君が必要なんだ。頼む）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'stepup', seg: [174.6, 185.3],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'stepup', seg: [174.6, 185.7],
       stem: 'What does Ron mean by “step up”?',
       ja: 'ロンの「step up」はどういう意味？',
       choices: ['Take on more work', 'Take over Leslie’s job', 'Walk up the stairs'], a: 0,
@@ -238,7 +238,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '直後に Leslie が出るので「代わり」と思いやすい。Not replacing と言っている。',
       use: 'Someone needs to step up and help.（誰かが進んで手伝わないと）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'notdo', seg: [184.9, 189.85],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'notdo', seg: [183.9, 190.2],
       stem: 'Type what April says next: “I want ___ things.” (3 words)', answer: 'to not do',
       ja: 'エイプリルの次の言葉を書き取る：「I want ___ things.」（3語）',
       cue: '前の文の言いかえ。',
@@ -259,7 +259,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'want を強めると「すごくしたい」になる。言い直しでは、くり返す語は弱く、動いた語が強い。',
       use: 'I’m not tired. I’m bored.（疲れてるんじゃなくて、退屈なの）' },
 
-    { id: 'h3', skill: 'attitude', level: 'B1', point: 'taught', seg: [185.2, 191.05],
+    { id: 'h3', skill: 'attitude', level: 'B1', point: 'taught', seg: [185.2, 193.8],
       stem: 'How does Ron feel about teaching April this?',
       ja: 'これをエイプリルに教えたことを、ロンはどう思っている？',
       choices: ['Proud', 'Sorry', 'Angry'], a: 0,
@@ -271,7 +271,7 @@ export const ronAprilTakeOver: Clip = {
       trap: '上司なら叱る場面なので、怒っていると思いやすい。well（よく）で誇らしさが分かる。',
       use: 'I taught you well.（さすが私の教え子だ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'rather', seg: [189.85, 202.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'rather', seg: [193.3, 203.3],
       stem: 'What would Ron like April to do one day?',
       ja: 'ロンは、エイプリルにいつか何をしてほしい？',
       choices: ['Leave her government job', 'Become his boss one day', 'Work under Leslie for years'], a: 0,
@@ -283,7 +283,7 @@ export const ronAprilTakeOver: Clip = {
       trap: 'too smart（頭がいい）から、出世をすすめていると思いやすい。rather のあとを聞く。',
       use: 'I’d rather you stayed home tonight.（今夜はできれば家にいてほしい）' },
 
-    { id: 'a3', skill: 'attitude', level: 'C1', point: 'begged', seg: [203.1, 210.4],
+    { id: 'a3', skill: 'attitude', level: 'C1', point: 'begged', seg: [202.1, 210.6],
       stem: 'Why does April add “only because you begged”?',
       ja: 'エイプリルはなぜ「only because you begged」と足す？',
       choices: ['So she won’t look keen', 'She is still not sure', 'To do less of the work'], a: 0,

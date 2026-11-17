@@ -14,7 +14,7 @@ export const rachelJob: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'help', seg: [0, 4.35],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'help', seg: [0, 8.5],
       stem: 'When Rachel stops everybody, what kind of help does she want?',
       ja: 'みんなを止めて、レイチェルはどんな手伝いを頼む？',
       choices: ['Help mailing out her resumes', 'Help printing more resumes', 'Help calling places about jobs'], a: 0,
@@ -49,7 +49,7 @@ export const rachelJob: Clip = {
       trap: 'last day（最後の日）から、今日辞めると思いやすい。最後に not quitting と言う。',
       use: 'I think I’ll stay put for now.（今はこのままでいようかな）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'font', reveals: ['help'], seg: [8.3, 17.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'font', reveals: ['help'], seg: [8.3, 18.2],
       stem: 'How does Rachel explain the size of the letters?',
       ja: 'レイチェルは、字が大きい理由をどう説明する？',
       choices: ['Her jobs didn’t fill the page', 'Her jobs needed more room', 'She wanted her jobs seen'], a: 0,
@@ -96,19 +96,7 @@ export const rachelJob: Clip = {
       trap: '前置きの形どおりに冗談が来ると思いやすい。前置きのあとの中身で働きを決める。',
       use: 'You know what else would be great?（ほかに何があったら助かるか分かる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'quit', seg: [29.3, 35.6],
-      stem: 'What does Rachel say Chandler told her to do?',
-      ja: 'チャンドラーは何をしろと言ったと、レイチェルは言う？',
-      choices: ['Quit with nothing lined up', 'Keep her job until later', 'Ask for a better position'], a: 0,
-      choicesJa: ['次がないのに辞める', 'しばらく仕事を続ける', 'もっといい役職を頼む'],
-      cue: '「told me to」のあと',
-      line: 'told me to *quit my job* when I had *absolutely nothing else* to do?',
-      said: '「当てもないのに辞めろと言ったのは、あなたよね」と言う。',
-      mean: 'tell 人 to 〜 ＝「人に〜しろと言う」。nothing else to do ＝ 次の当てがない。',
-      trap: 'quit だけ拾うと「当てもないのに」が落ちる。不満の中身は when 以下。',
-      use: 'Don’t quit until you have something lined up.（次が決まるまで辞めないで）' },
-
-    { id: 's1', skill: 'sound', level: 'B2', point: 'quit', seg: [29.3, 35.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'quit', seg: [28.9, 36],
       stem: 'Fill the gap: “___ you the guy that told me…?”',
       ja: '「___ you the guy that told me…?」の空所は？',
       choices: ['Weren’t', 'Were', 'Aren’t'], a: 0,
@@ -120,7 +108,19 @@ export const rachelJob: Clip = {
       trap: 't が消えて Were に聞こえやすい。「ン」が残れば否定。Aren’t は「アーン」で w の音がない。',
       use: 'Weren’t you the one who booked this?（予約したの、君じゃなかった？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'calm', seg: [37.5, 42.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'quit', seg: [29.3, 36.7],
+      stem: 'What does Rachel say Chandler told her to do?',
+      ja: 'チャンドラーは何をしろと言ったと、レイチェルは言う？',
+      choices: ['Quit with nothing lined up', 'Keep her job until later', 'Ask for a better position'], a: 0,
+      choicesJa: ['次がないのに辞める', 'しばらく仕事を続ける', 'もっといい役職を頼む'],
+      cue: '「told me to」のあと',
+      line: 'told me to *quit my job* when I had *absolutely nothing else* to do?',
+      said: '「当てもないのに辞めろと言ったのは、あなたよね」と言う。',
+      mean: 'tell 人 to 〜 ＝「人に〜しろと言う」。nothing else to do ＝ 次の当てがない。',
+      trap: 'quit だけ拾うと「当てもないのに」が落ちる。不満の中身は when 以下。',
+      use: 'Don’t quit until you have something lined up.（次が決まるまで辞めないで）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'calm', seg: [37.5, 46.8],
       stem: 'Why does Ross say “It’s gonna be okay”?',
       ja: 'ロスはなぜ「It’s gonna be okay」と言う？',
       choices: ['To calm her down', 'To make a joke about her', 'To say sorry to her'], a: 0,
@@ -132,7 +132,7 @@ export const rachelJob: Clip = {
       trap: 'レイチェルが怒って返すので、からかったと思いやすい。言葉は励まし。',
       use: 'Don’t worry. It’s gonna be okay.（心配しないで。大丈夫だよ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'okay', reveals: ['calm'], seg: [38.4, 43.0],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'okay', reveals: ['calm'], seg: [38.4, 46.8],
       stem: 'Who tells Rachel that it’s going to be okay?',
       ja: 'レイチェルに「大丈夫」と言うのは誰？',
       choices: ['Ross', 'Joey', 'Chandler'], a: 0,
@@ -155,7 +155,7 @@ export const rachelJob: Clip = {
       trap: '最後の名前や形容詞を強く聞きやすい。くり返しの返事では、足した語に耳を向ける。',
       use: 'It’s not a small thing to me.（私には小さなことじゃないの）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'lastday', seg: [40.2, 46.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'lastday', seg: [40.2, 48.2], keep: true,
       stem: 'When is Rachel’s last day at work?',
       ja: 'レイチェルの最後の出勤日はいつ？',
       choices: ['Today', 'Tomorrow', 'In two days'], a: 1,
@@ -167,7 +167,7 @@ export const rachelJob: Clip = {
       trap: 'tomorrow は「トゥモロウ」、today は「トゥデイ」、two days は「トゥーデイズ」。',
       use: 'Tomorrow is my last day here.（明日でここは最後なんだ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'lead', reveals: ['lastday'], seg: [40.2, 46.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'lead', reveals: ['lastday'], seg: [40.2, 48.2],
       stem: 'What does “I don’t have a lead” mean here?',
       ja: '「I don’t have a lead」は、ここではどういう意味？',
       choices: ['No possible job yet', 'No one to guide her', 'No head start on others'], a: 0,
@@ -179,7 +179,7 @@ export const rachelJob: Clip = {
       trap: 'カタカナのリード（先に出ている）と思いやすい。ここは、たどれる手がかり。',
       use: 'Any leads on an apartment?（部屋探し、何か当てある？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'decide', seg: [46.4, 51.45],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'decide', seg: [42.8, 54.4],
       stem: 'Why does Rachel say “Okay, you know what?” here?',
       ja: 'レイチェルはここでなぜ「Okay, you know what?」と言う？',
       choices: ['To tell them her new plan', 'To ask Ross a real question', 'To make Ross admit her point'], a: 0,
@@ -191,7 +191,7 @@ export const rachelJob: Clip = {
       trap: '疑問の形なので「知ってる？」と思いやすい。答えを待たずに続く。',
       use: 'You know what? I’m just going to call him.（もういい、彼に電話しちゃう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'gunther', reveals: ['decide'], seg: [46.4, 51.45],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'gunther', reveals: ['decide'], seg: [46.4, 54.4],
       stem: 'From her plan to call Gunther, what has Rachel already done?',
       ja: 'ガンターに電話する計画から、レイチェルがもうしたことは？',
       choices: ['Told Gunther that she is leaving', 'Been let go by Gunther already', 'Promised Gunther she would stay'], a: 0,
@@ -214,7 +214,7 @@ export const rachelJob: Clip = {
       trap: '電話する相手から理由を考えやすい。言い返しが中身の否定か、相手への攻撃かで本心を見る。',
       use: 'Okay, maybe I’m a little scared.（まあ、ちょっと怖いのかも）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fear', seg: [51.0, 54.15],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fear', seg: [50.9, 57.4],
       stem: 'Type the gap: “You don’t want to ___ the fear?” (3 words)', answer: 'give in to',
       ja: '「You don’t want to ___ the fear?」の空所を書こう（3語）',
       cue: '「want to」のあと',
@@ -224,7 +224,7 @@ export const rachelJob: Clip = {
       trap: 'in と to が弱く、give だけ聞こえやすい。3語に分けて書く。',
       use: 'Don’t give in to the pressure.（プレッシャーに負けないで）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hatefear', seg: [51.5, 60.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hatefear', seg: [51, 60.4],
       stem: 'How does Rachel feel about his talk of fear?',
       ja: '恐れの話を聞いて、レイチェルはどう感じている？',
       choices: ['Sick of hearing about it', 'Ashamed of being so afraid', 'Glad he understands her'], a: 0,

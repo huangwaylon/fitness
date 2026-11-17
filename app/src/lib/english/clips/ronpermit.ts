@@ -36,7 +36,7 @@ export const ronPermit: Clip = {
       trap: '「Ron が冗談を言った」と取りやすいが、not joking は前の話が本当だという念押し。',
       use: 'I’m not joking. He actually showed up early.（冗談じゃなく、本当に早く来たんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'event', seg: [9.0, 15.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'event', seg: [9, 15.7],
       stem: 'What kind of barbecue will Ron throw?',
       ja: 'ロンが開くのはどんなバーベキュー？',
       choices: ['A yearly thank-you barbecue', 'A goodbye barbecue for Leslie', 'A welcome barbecue for new staff'], a: 0,
@@ -48,7 +48,7 @@ export const ronPermit: Clip = {
       trap: '直前の Leslie’s gone から送別会と思いやすい。名前の中身を聞く。',
       use: 'We’re having our annual office party.（毎年恒例の会社のパーティーがあるんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'point', seg: [9.0, 49.0],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'point', seg: [9, 49.6],
       stem: 'What will Ron’s barbecue be like?',
       ja: 'ロンのバーベキューはどんなものになる？',
       choices: ['None of Leslie’s fun extras', 'Bigger than Leslie’s ever was', 'Just like Leslie’s every year'], a: 0,
@@ -60,7 +60,7 @@ export const ronPermit: Clip = {
       trap: '出し物の名前がたくさん聞こえるので、全部やると思いやすい。not doing any of that を聞く。',
       use: 'No speeches this time. That’s the point.（今回はスピーチなし。それが狙い）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrify', reveals: ['event'], seg: [43.6, 52.9],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrify', reveals: ['event'], seg: [42.6, 50.8],
       stem: 'How does Ron feel about Leslie’s summer barbecue?',
       ja: 'レスリーの夏のバーベキューを、ロンはどう思っている？',
       choices: ['He really hates it', 'He is scared of it', 'He is jealous of it'], a: 0,
@@ -72,7 +72,7 @@ export const ronPermit: Clip = {
       trap: 'horror（ホラー）から「怖い」と思いやすい。好みの話では強い「嫌い」。',
       use: 'That song is horrifying. Turn it off.（あの曲ひどい。止めて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'meat', seg: [49.0, 54.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'meat', seg: [49, 57.7],
       stem: 'What should a barbecue be about, says Ron?',
       ja: 'ロンによると、バーベキューは何のためにある？',
       choices: ['Meat that everyone shares', 'Meat that each person grills', 'Meat cooked slowly over a fire'], a: 0,
@@ -84,7 +84,7 @@ export const ronPermit: Clip = {
       trap: 'meat は聞こえても、前の shared を落としやすい。名詞の前の語まで聞く。',
       use: 'Vacations should be about one thing: rest.（休暇は休むためにある）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'banned', seg: [55, 66],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'banned', seg: [59.7, 69.8],
       stem: 'What does Ron ban “most of all”?',
       ja: 'ロンが「何より」禁止するものは？',
       choices: ['Vegetables', 'Desserts', 'Men in costumes'], a: 0,
@@ -96,7 +96,7 @@ export const ronPermit: Clip = {
       trap: '直前の costumes を選びやすい。most of all のあとの語がいちばん強い。',
       use: 'And most of all, no phones at dinner.（そして何より、夕食中はスマホなし）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'atleast', reveals: ['banned'], seg: [63.9, 69.4],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'atleast', reveals: ['banned'], seg: [63.9, 70.5],
       stem: '“Can we *at least* have corn?” What does “at least” mean?',
       ja: '「Can we at least have corn?」の at least はどういう意味？',
       choices: ['Just this one thing', 'As much as we want', 'Instead of the meat'], a: 0,
@@ -119,7 +119,7 @@ export const ronPermit: Clip = {
       trap: 'at least の頼み方だと妥協が来そうに思えるが、Ron は交渉に乗らない。',
       use: 'The answer is no. Sorry.（答えはノー。ごめんね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'job', seg: [74.4, 78.75],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'job', seg: [73.4, 81],
       stem: 'Type what is said: “I offered Ron a job… and he ___.” (3 words)', answer: 'turned me down',
       ja: '聞こえた言葉を書こう：「I offered Ron a job… and he ___.」（3語）',
       cue: '「last month and he」のあと。',
@@ -129,7 +129,7 @@ export const ronPermit: Clip = {
       trap: 'turned の -ed は弱く、me とつながって「ターンミー」に近い。3語を数える。',
       use: 'I had to turn down the offer.（その申し出は断るしかなかった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'belongs', reveals: ['job'], seg: [74.4, 88.3],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'belongs', reveals: ['job'], seg: [75, 88.9],
       stem: 'How does he feel about Ron staying now?',
       ja: 'ロンが残ったことを、彼は今どう思っている？',
       choices: ['Happy Ron stayed here', 'Still sad Ron said no', 'Worried Ron is unhappy'], a: 0,
@@ -141,7 +141,7 @@ export const ronPermit: Clip = {
       trap: 'broke my heart が強く残るが、それは過去。but のあとが今。',
       use: 'I was upset, but now I get it.（最初は落ち込んだけど、今は分かる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hear', seg: [84.3, 91.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hear', seg: [83.3, 94],
       stem: 'Fill the gap: “He ___ hear me.”',
       ja: '空いている所に入る語は？「He ___ hear me.」',
       choices: ['can’t', 'can', 'could'], a: 0,
@@ -153,7 +153,7 @@ export const ronPermit: Clip = {
       trap: 't の音を探すと can と思いやすい。強く長い音が否定の手がかり。',
       use: 'Sorry, I can’t hear you.（ごめん、聞こえない）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'meet', seg: [96.4, 100.1],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'meet', seg: [96.4, 101.4],
       stem: 'Fill the gap: “Everyone, ___.”',
       ja: '空いている所に入る語は？「Everyone, ___.」',
       choices: ['meet your meat', 'meet our meat', 'meet the meat'], a: 0,
@@ -165,7 +165,7 @@ export const ronPermit: Clip = {
       trap: 'your は弱く、our や the と区別しにくい。「ユァ」を聞く。',
       use: 'Everyone, meet my sister, Yuki.（みんな、妹のユキです）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'circle', seg: [101.8, 108.95],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'circle', seg: [101.8, 110.8],
       stem: 'What does Ron think people should do?',
       ja: 'ロンは、人は何をするべきだと思っている？',
       choices: ['Look at the animal they eat', 'Thank the animal before eating', 'Raise their own animals'], a: 0,
@@ -208,18 +208,7 @@ export const ronPermit: Clip = {
       trap: 'ほめ言葉で情が移ったと取りやすいが、最後の三つの動詞で考えが変わっていないと分かる。',
       use: 'He’s basically family.（もう家族みたいなもんだ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'kids', seg: [125.2, 131.95], retired: true,
-      stem: 'When someone warns Ron about the kids, how does Ron treat the warning?',
-      choices: ['As a chance to get the kids to help', 'As a reason to send the kids away first',
-                'As a reason to do it out of their sight'], a: 0,
-      cue: '「Good point」のすぐあと、子どもに向けた言葉。',
-      line: 'Dude, there’s *kids around* here! — *Good point.* Which one of you youngsters wants to *help me*…',
-      said: '「子どもがいるよ」と言われ、「確かに」と答えて、子どもに血抜きの手伝いを募る。',
-      mean: '「やめて」という注意を、「手伝える子がいる」という情報として受け取った。',
-      trap: 'Good point で止めると思いやすい。次の言葉で、何に同意したかを確かめる。',
-      use: 'Good point. I hadn’t thought of that.（確かに。それは考えてなかった）' },
-
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'goodpoint', seg: [125.5, 129],
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'goodpoint', seg: [122.8, 132.3],
       stem: 'Ron answers, “*Good point*.” What does it mean?',
       ja: 'ロンの「Good point」はどういう意味？',
       choices: ['You’re right about that', 'That’s a funny joke', 'Point at the kids'], a: 0,
@@ -231,7 +220,18 @@ export const ronPermit: Clip = {
       trap: 'point を「指さす」と思いやすい。ここは「言いたいこと・指摘」。',
       use: 'Good point. Let’s ask first.（確かに。先に聞いてみよう）' },
 
-    { id: 'pd2', skill: 'phrase', level: 'B1', point: 'worry', seg: [135.25, 141.6],
+    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'kids', seg: [125.2, 131.95], retired: true,
+      stem: 'When someone warns Ron about the kids, how does Ron treat the warning?',
+      choices: ['As a chance to get the kids to help', 'As a reason to send the kids away first',
+                'As a reason to do it out of their sight'], a: 0,
+      cue: '「Good point」のすぐあと、子どもに向けた言葉。',
+      line: 'Dude, there’s *kids around* here! — *Good point.* Which one of you youngsters wants to *help me*…',
+      said: '「子どもがいるよ」と言われ、「確かに」と答えて、子どもに血抜きの手伝いを募る。',
+      mean: '「やめて」という注意を、「手伝える子がいる」という情報として受け取った。',
+      trap: 'Good point で止めると思いやすい。次の言葉で、何に同意したかを確かめる。',
+      use: 'Good point. I hadn’t thought of that.（確かに。それは考えてなかった）' },
+
+    { id: 'pd2', skill: 'phrase', level: 'B1', point: 'worry', seg: [133.7, 142.4],
       stem: 'Ron says, “*Not to worry*. I have a permit.” Meaning?',
       ja: 'ロンの「Not to worry. I have a permit.」はどういう意味？',
       choices: ['Don’t worry, it’s okay', 'Don’t do it here', 'It’s a big problem'], a: 0,
@@ -255,7 +255,7 @@ export const ronPermit: Clip = {
       trap: 'permit で押し通すと思いやすいが、Fine で引き下がる。延期は中止ではない。',
       use: 'The meeting is postponed until Friday.（会議は金曜に延期です）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'permit', reveals: ['worry'], seg: [139.0, 145.55],
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'permit', reveals: ['worry'], seg: [136.8, 145.7],
       stem: 'What does Ron’s permit say?',
       ja: 'ロンの許可証には何と書いてある？',
       choices: ['He can do what he wants', 'He can cook a pig here', 'He can close the park'], a: 0,
@@ -278,7 +278,7 @@ export const ronPermit: Clip = {
       trap: '許可証と聞くと市が出したと思いやすい。根拠が自分の肩書だけなら、自分で出した許可を疑う。',
       use: 'I’m the boss, so it’s fine.（責任者は私だから、いいの）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['codes'], seg: [149.7, 154.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['codes'], seg: [149.5, 155.7],
       stem: '“It’s against *like* three laws.” What does “like” mean?',
       ja: '「It’s against like three laws」の like はどういう意味？',
       choices: ['About', 'Similar to', 'Enjoy'], a: 0,
@@ -290,7 +290,7 @@ export const ronPermit: Clip = {
       trap: 'like を「〜のような」と思うと意味が通らない。数字の前なら about と同じ。',
       use: 'It took like two hours to get there.（行くのに2時間くらいかかった）' },
 
-    { id: 'n1', skill: 'number', level: 'B2', point: 'codes', reveals: ['like'], seg: [149.7, 154.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B2', point: 'codes', reveals: ['like'], seg: [149.5, 155.7], keep: true,
       stem: 'How many health codes does the slaughter break?',
       ja: '豚をつぶすと、衛生規則をいくつ破る？',
       choices: ['3', '12', '24'], a: 1,

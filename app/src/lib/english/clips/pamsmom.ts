@@ -15,7 +15,7 @@ export const pamsMom: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'react', seg: [7.2, 20.45],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'react', seg: [5.3, 17.3],
       stem: 'How does Jim feel when he hears “Pam’s mom”?',
       ja: '「パムのお母さん」と聞いて、ジムはどう思う？',
       choices: ['He can’t believe it', 'He is very happy', 'He thinks it’s funny'], a: 0,
@@ -27,7 +27,7 @@ export const pamsMom: Clip = {
       trap: '最初の congratulations から、喜んでいると思いやすい。名前のあとの What? を聞く。',
       use: 'Wait, what? Are you serious?（え、ちょっと待って、本気？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'wedding', seg: [15.4, 20.45], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'wedding', seg: [13.9, 19.3], keep: true,
       stem: 'Where does Michael say Jim has seen her before?',
       ja: 'ジムはどこで彼女に会ったと、マイケルは言う？',
       choices: ['At Jim’s wedding', 'At Pam’s birthday party', 'At the office party'], a: 0,
@@ -39,7 +39,7 @@ export const pamsMom: Clip = {
       trap: 'パムのお母さんなので、パムの誕生日と思いやすい。from のあとの your wedding を聞く。',
       use: 'Remember? From the party last week.（覚えてる？先週のパーティーで）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', seg: [15.4, 20.45],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', seg: [13.9, 20.8],
       stem: 'What does “You’re messing with me” mean?',
       ja: '「You’re messing with me」はどういう意味？',
       choices: ['You’re joking with me', 'You’re getting in my way', 'You’re mixing her up'], a: 0,
@@ -50,6 +50,18 @@ export const pamsMom: Clip = {
       mean: 'mess with 人 ＝「人をからかう」。信じられない話を聞いたときに言う。',
       trap: 'mess（ぐちゃぐちゃ）から「じゃま」と思いやすい。messing と mixing も音が近い。',
       use: 'Come on, you’re messing with me.（もう、からかってるでしょ）' },
+
+    { id: 'r1', skill: 'detail', level: 'B1', point: 'pact', seg: [35, 45.3],
+      stem: 'What do Michael and Helene plan to do tonight?',
+      ja: 'マイケルとヘレンは、今夜何をするつもり？',
+      choices: ['Tell Pam over dinner', 'Break up over dinner', 'Have dinner with Jim'], a: 0,
+      choicesJa: ['夕食でパムに話す', '夕食で別れる', 'ジムと夕食を食べる'],
+      cue: '「Although」のあと',
+      line: 'A pact. *Although I may have to break it tonight when Helene and I tell Pam over dinner*.',
+      said: '「約束だ。でも今夜やぶるかも。夕食でヘレンとパムに話すから」と言う。',
+      mean: 'although ＝「とはいえ、でも」。約束した直後に、すぐやぶるかもと言う。',
+      trap: 'break から「別れる」と思いやすい。break it の it は約束（pact）のこと。',
+      use: 'Sure. Although I might be late.（いいよ。おくれるかもしれないけど）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', seg: [37.5, 82.3],
       stem: 'What does Jim want Michael to do?',
@@ -63,18 +75,6 @@ export const pamsMom: Clip = {
       trap: 'tell Pam over dinner はマイケルの予定。ジムは cancel that（やめて）と言う。',
       use: 'Promise me you won’t tell anyone.（だれにも言わないって約束して）' },
 
-    { id: 'r1', skill: 'detail', level: 'B1', point: 'pact', seg: [37.5, 44.3],
-      stem: 'What do Michael and Helene plan to do tonight?',
-      ja: 'マイケルとヘレンは、今夜何をするつもり？',
-      choices: ['Tell Pam over dinner', 'Break up over dinner', 'Have dinner with Jim'], a: 0,
-      choicesJa: ['夕食でパムに話す', '夕食で別れる', 'ジムと夕食を食べる'],
-      cue: '「Although」のあと',
-      line: 'A pact. *Although I may have to break it tonight when Helene and I tell Pam over dinner*.',
-      said: '「約束だ。でも今夜やぶるかも。夕食でヘレンとパムに話すから」と言う。',
-      mean: 'although ＝「とはいえ、でも」。約束した直後に、すぐやぶるかもと言う。',
-      trap: 'break から「別れる」と思いやすい。break it の it は約束（pact）のこと。',
-      use: 'Sure. Although I might be late.（いいよ。おくれるかもしれないけど）' },
-
     { id: 'i2', skill: 'infer', level: 'C1', point: 'sakes', reveals: ['goal'], seg: [52.4, 61.0],
       stem: 'When Jim asks Michael to stop, whose trouble is he thinking of?',
       choices: ['His own and Michael’s, if Pam finds out', 'Pam’s and her mom’s, if the romance goes on',
@@ -86,7 +86,7 @@ export const pamsMom: Clip = {
       trap: 'both を話題の二人の女性やカップルと取りやすい。our は話し手を含む。',
       use: 'For both our sakes, let’s leave early.（お互いのために、早めに出よう）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'sakes', seg: [54.9, 59.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'sakes', seg: [54.5, 61.8], keep: true,
       stem: 'Type what Jim says: “please, for ___” (4 words)', answer: 'both of our sakes',
       ja: 'ジムの言葉を入力：「please, for ___」（4語）',
       cue: '「please, for」のあと',
@@ -96,7 +96,7 @@ export const pamsMom: Clip = {
       trap: 'of と our が小さく、「ボウサヴァ」のように1つに聞こえる。4語あるか数える。',
       use: 'For your own sake, get some sleep.（自分のためにも、少し寝て）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'morethan', seg: [60.6, 68.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'morethan', seg: [60.6, 68.7],
       stem: 'What does Jim mean by “Not more than anything”?',
       ja: 'ジムの「Not more than anything」はどういう意味？',
       choices: ['Pam cares, but not that much', 'Pam doesn’t care at all', 'Pam cares more about Jim'], a: 0,
@@ -108,7 +108,7 @@ export const pamsMom: Clip = {
       trap: 'No から、全然気にしないと思いやすい。not のすぐあとの more than anything だけを打ち消している。',
       use: 'I like it, just not more than pizza.（好きだけど、ピザほどじゃない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'route', seg: [70.4, 76.9], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'route', seg: [69.5, 74.9], keep: true,
       stem: 'What problem does Michael raise about Helene?',
       ja: 'マイケルはヘレンについて、どんな問題を言う？',
       choices: ['She lives on his way home', 'She lives on his way to work', 'She lives next to the office'], a: 0,
@@ -120,7 +120,7 @@ export const pamsMom: Clip = {
       trap: 'work が耳に残ると、行く道や会社と思いやすい。way のあとの home を聞く。',
       use: 'The bakery is right on my way.（そのパン屋、ちょうど通り道なんだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'lastthing', seg: [75.0, 80.6], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'lastthing', seg: [75, 83], keep: true,
       stem: 'What does Michael call “the last thing” he’d want?',
       ja: 'マイケルが「いちばんしたくないこと」と言うのは？',
       choices: ['To upset Pam', 'To lie to Pam', 'To lose Helene'], a: 0,
@@ -154,7 +154,7 @@ export const pamsMom: Clip = {
       trap: 'it is を同意と取りやすいが、相手はまだ選んでいない。保留のあとの即答は「決めた」。',
       use: 'Pizza it is, then.（じゃあ、ピザで決まりね）', retired: true },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'later', seg: [122.0, 132.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'later', seg: [121.1, 133.1],
       stem: 'What does the busy coworker suggest?',
       ja: 'いそがしい同僚は何を提案する？',
       choices: ['Doing it some other time', 'Doing it in two seconds', 'Asking Michael about it first'], a: 0,
@@ -166,7 +166,7 @@ export const pamsMom: Clip = {
       trap: 'two seconds は相手の言葉。この人は when things are less crazy と、時期をぼかしている。',
       use: 'Can we do this when things calm down?（落ち着いてからにしない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seconds', seg: [130.0, 138.05],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seconds', seg: [130, 139.5],
       stem: 'Fill the gap: “Come on, ___ two seconds.”',
       ja: 'すき間をうめよう：「Come on, ___ two seconds.」',
       choices: ['it’ll take', 'it takes', 'I’ll take'], a: 0,
@@ -178,7 +178,7 @@ export const pamsMom: Clip = {
       trap: 'it takes なら最後に「ス」。I’ll take なら「アイル」とはっきり。「イロ」と短く始まれば it’ll。',
       use: 'It’ll only take a minute.（すぐ終わるよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'resv', seg: [165.0, 171.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'resv', seg: [163.5, 174], keep: true,
       stem: 'How many people is Michael’s booking for now?',
       ja: 'マイケルの予約は今、何人？',
       choices: ['1', '2', '3'], a: 1,
@@ -213,7 +213,7 @@ export const pamsMom: Clip = {
       trap: 'nobody を文字通り「一人で」と取りやすい。質問と答えのずれに注目。',
       use: 'Who’s the card from? — Oh, nobody.（誰からのカード？—ああ、別に）', retired: true },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'parts', seg: [201.0, 207.15],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'parts', seg: [196.7, 207.4],
       stem: 'What does “a lot of moving parts” mean?',
       ja: '「a lot of moving parts」はどういう意味？',
       choices: ['Many people and things involved', 'It changes every single day', 'It is moving too fast'], a: 0,
@@ -259,7 +259,7 @@ export const pamsMom: Clip = {
       trap: '同僚の方が遠いので「言い直して距離を置いた」と取りやすい。more than が付くと格上げの言い方。',
       use: 'He’s more than a client. He’s a friend.（彼は客以上、友だちなんだ）', retired: true },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'gossip', seg: [219.2, 226.0],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'gossip', seg: [219.2, 227.3],
       stem: 'How does Pam react to “a co-worker”?',
       ja: '「同僚」と聞いて、パムはどうする？',
       choices: ['Excited to hear gossip', 'Careful not to ask', 'Worried it’s about her'], a: 0,

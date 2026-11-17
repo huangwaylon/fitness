@@ -16,7 +16,7 @@ export const monicabroke: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'rent', reveals: ['possib'], seg: [1.5, 29.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'rent', reveals: ['possib'], seg: [1.5, 29.9],
       stem: 'At the start, what is Monica’s main worry?',
       ja: '最初、モニカのいちばんの心配は？',
       choices: ['Paying this month’s rent', 'Owing money to a friend', 'Telling her parents the news'], a: 0,
@@ -28,7 +28,7 @@ export const monicabroke: Clip = {
       trap: '借りる話も出るが、まだだれにも借りていない。両親の話は最後に出るだけ。',
       use: 'I might not make rent this month.（今月の家賃、払えないかも）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'shower', seg: [3.1, 6.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'shower', seg: [1.8, 7.5], keep: true,
       stem: 'Which shower washed off the interview, Monica says?',
       ja: 'モニカは、何回目のシャワーで面接の気分が落ちたと言う？',
       choices: ['Her fourth', 'Her fifth', 'Her fifteenth'], a: 1,
@@ -40,7 +40,7 @@ export const monicabroke: Clip = {
       trap: 'fourth は「フォース」、fifteenth は「ティーンス」と長い。「フィフス」なら5回目。',
       use: 'This is my third coffee today.（今日これで3杯目）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'anyother', seg: [7.3, 10.0],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'anyother', seg: [5.1, 10.1],
       stem: 'Type the question: “So, ___ other possibilities?” (4 words)', answer: 'do you have any',
       ja: '「So,」のあとの4語を書こう。',
       cue: '「So」のあと。',
@@ -72,7 +72,7 @@ export const monicabroke: Clip = {
       trap: '聞き違えたのではなく、わざと言葉を拾って遊んでいる。Oh, yeah は皮肉の前置き。',
       use: 'Good news? Well, it can’t get worse.（いい知らせ？まあ、これ以上悪くはならないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', reveals: ['guilty'], seg: [15.4, 20.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', reveals: ['guilty'], seg: [15, 27],
       stem: 'Fill the gap: “cuz if I ___ pay you back right away…”',
       ja: '空いている所に入る語は？',
       choices: ['could', 'couldn’t', 'can’t'], a: 1,
@@ -84,7 +84,7 @@ export const monicabroke: Clip = {
       trap: 'could には「ン」がなく、can’t は「キャン」で始まる。「クドゥン」なら couldn’t。',
       use: 'If I couldn’t come, I’d call you.（来られなかったら電話するね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guilty', reveals: ['couldnt'], seg: [15.4, 21.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guilty', reveals: ['couldnt'], seg: [15, 27],
       stem: 'Why does Monica say no to the loan?',
       ja: 'モニカはなぜお金を借りるのを断る？',
       choices: ['She’d feel bad if she paid late', 'She’d rather ask her parents', 'She’s too proud to borrow'], a: 0,
@@ -108,7 +108,7 @@ export const monicabroke: Clip = {
       trap: 'money off of them は親への悪口に聞こえやすい。誰の言葉のくり返しかを追うと、相手が分かる。',
       use: 'You’re late anyway, so grab a coffee.（どうせ遅刻なんだし、コーヒー買っていけば）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'already', seg: [21.5, 29.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'already', seg: [21.5, 30.6],
       stem: 'What does “You might as well” mean here?',
       ja: 'ここでの「You might as well」の意味は？',
       choices: ['She has nothing to lose', 'There’s a small chance', 'She could work for them'], a: 0,
@@ -120,7 +120,7 @@ export const monicabroke: Clip = {
       trap: 'might を「かもしれない」と分けて思うと「少し見込みがある」に聞こえる。ひとかたまりで覚える。',
       use: 'We might as well walk.（どうせなら歩こうか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'gym', seg: [39.1, 45.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'gym', seg: [36.6, 46.4],
       stem: 'What is the surprise her parents have for Monica?',
       ja: '両親がモニカに用意したサプライズは？',
       choices: ['Turning her room into a gym', 'Giving her room to Ross', 'Renting out her room'], a: 0,
@@ -132,7 +132,7 @@ export const monicabroke: Clip = {
       trap: '古い荷物が出てくるので「人に貸す」と思いやすい。turning … into のあとが答え。',
       use: 'We turned the garage into an office.（ガレージを仕事部屋にしたんだ）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'whynot', seg: [46.8, 52.0],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'whynot', seg: [45.8, 53.2],
       stem: 'How does Monica sound when she answers the surprise?',
       ja: 'サプライズへの返事で、モニカはどんな感じ？',
       choices: ['Upset, but polite', 'Happy, but surprised', 'Calm and fine with it'], a: 0,
@@ -157,7 +157,7 @@ export const monicabroke: Clip = {
       trap: 'トロフィーの話なので「賞好きの親」と取りやすいが、問うのは「なぜ兄でなく私か」。',
       use: 'Why is it always me?（なんでいつも私なの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'trophies', seg: [49.2, 60.8],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'trophies', seg: [50.5, 62.5],
       stem: 'Why didn’t her parents use Ross’s room?',
       ja: '両親はなぜロスの部屋を使わなかった？',
       choices: ['They won’t move his awards', 'His old science kits fill it', 'They keep it for his son'], a: 0,
@@ -180,7 +180,7 @@ export const monicabroke: Clip = {
       trap: '言葉どおりなら同意だが、自分の部屋は片づけられた直後。状況と言葉が逆なら皮肉を疑う。',
       use: 'Oh, God forbid we’re five minutes late.（5分遅れたら大変だもんね（皮肉））' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'asked', seg: [101.9, 107.6],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'asked', seg: [99.9, 111.9],
       stem: 'Did her parents lend Monica the money?',
       ja: '両親はモニカにお金を貸した？',
       choices: ['She hasn’t asked yet', 'They said no to her', 'They gave her the money'], a: 0,
@@ -191,18 +191,6 @@ export const monicabroke: Clip = {
       mean: 'haven’t 〜 yet ＝ まだ〜していない。断られたのではなく、言い出せていない。',
       trap: 'No が先に来るので断られたと思いやすい。but のあとが事情。',
       use: 'I haven’t asked yet, but I will.（まだ聞いてないけど、聞いてみる）' },
-
-    { id: 'sorry', skill: 'pragma', level: 'B1', point: 'sorry', seg: [106.5, 113.5],
-      stem: 'What does Monica say sorry for?',
-      ja: 'モニカは何を謝る？',
-      choices: ['Not telling them sooner', 'Losing her old job', 'Coming home so late'], a: 0,
-      choicesJa: ['もっと早く言わなかったこと', '前の仕事を失ったこと', '帰りがとても遅れたこと'],
-      cue: '「Monica has some news」のあと。',
-      line: 'I’m sorry *I didn’t tell you this before*, but um, I’m no longer at my job.',
-      said: '「前に言わなくてごめん。実はもう仕事にいないの」と話し始める。',
-      mean: 'I’m sorry I didn’t 〜 ＝ 〜しなくてごめん。言いにくい話の前の謝り方。',
-      trap: '仕事の話なので、仕事を失ったことを謝ったと思いやすい。謝ったのは言わなかったこと。',
-      use: 'Sorry I didn’t tell you before.（前に言わなくてごめん）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'panic', reveals: ['dip'], seg: [110.0, 150.8],
       stem: 'How do Monica’s parents react to her news?',
@@ -216,7 +204,19 @@ export const monicabroke: Clip = {
       trap: '最初の驚きの声が責めているように聞こえやすいが、そのあとは心配となだめ。',
       use: 'Relax, it’s going to be fine.（落ち着いて、大丈夫だから）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fired', seg: [112.9, 125.0],
+    { id: 'sorry', skill: 'pragma', level: 'B1', point: 'sorry', seg: [113, 123.5],
+      stem: 'What does Monica say sorry for?',
+      ja: 'モニカは何を謝る？',
+      choices: ['Not telling them sooner', 'Losing her old job', 'Coming home so late'], a: 0,
+      choicesJa: ['もっと早く言わなかったこと', '前の仕事を失ったこと', '帰りがとても遅れたこと'],
+      cue: '「Monica has some news」のあと。',
+      line: 'I’m sorry *I didn’t tell you this before*, but um, I’m no longer at my job.',
+      said: '「前に言わなくてごめん。実はもう仕事にいないの」と話し始める。',
+      mean: 'I’m sorry I didn’t 〜 ＝ 〜しなくてごめん。言いにくい話の前の謝り方。',
+      trap: '仕事の話なので、仕事を失ったことを謝ったと思いやすい。謝ったのは言わなかったこと。',
+      use: 'Sorry I didn’t tell you before.（前に言わなくてごめん）' },
+
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fired', seg: [114.2, 126.2],
       stem: 'How does Monica first tell them about her job?',
       ja: 'モニカは最初、仕事のことをどう伝える？',
       choices: ['She avoids saying she was fired', 'She tells them she was fired', 'She says she chose to quit'], a: 0,
@@ -239,7 +239,7 @@ export const monicabroke: Clip = {
       trap: 'they は目の前の両親ではなく会社。代名詞が誰を指すかは、話の流れで決める。',
       use: 'Let’s just say it didn’t work out.（まあ、うまくいかなかったってこと）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'tenpct', seg: [135.0, 140.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'tenpct', seg: [135, 140.8], keep: true,
       stem: 'How much of her paycheck goes into the bank, Jack says?',
       ja: 'ジャックによると、給料のどれだけを銀行に入れる？',
       choices: ['10%', '15%', '20%'], a: 0,
@@ -251,7 +251,7 @@ export const monicabroke: Clip = {
       trap: 'ten は短い「テン」。fifteen なら「ティーン」と長く、twenty なら「トゥエ」で始まる。',
       use: 'I save 10% of every paycheck.（給料の1割は必ず貯金してる）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dip', seg: [141.4, 145.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dip', seg: [140.9, 150.8],
       stem: 'What does “she dips into her savings” mean?',
       ja: '「she dips into her savings」の意味は？',
       choices: ['She uses some of them', 'She adds a bit to them', 'She saves them for later'], a: 0,
@@ -263,7 +263,7 @@ export const monicabroke: Clip = {
       trap: 'dip を「入れる」と思うと「貯金を増やす」に聞こえる。into の中から取り出す動き。',
       use: 'I had to dip into my travel fund.（旅行資金に手をつけちゃった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'extra', seg: [145.9, 150.8],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'extra', seg: [141.4, 153.1],
       stem: 'What is Jack offering at the end?',
       ja: 'ジャックは最後に何を申し出ている？',
       choices: ['More money if she needs it', 'Help finding a new job', 'A room in their house'], a: 0,
@@ -275,7 +275,7 @@ export const monicabroke: Clip = {
       trap: 'find から仕事探しを思いやすいが、前に a little extra（少し余分なお金）がある。',
       use: 'You know where to find me.（何かあったら声をかけてね）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'payback', seg: [155.0, 158.5],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'payback', seg: [154.7, 160.9],
       stem: 'When does Monica have to pay the money back?',
       ja: 'モニカはいつお金を返せばいい？',
       choices: ['Whenever she likes', 'By the end of the month', 'Once she finds a job'], a: 0,
@@ -287,7 +287,7 @@ export const monicabroke: Clip = {
       trap: '「月末まで」「仕事が決まったら」は貸し借りでよくある条件だが、ここでは何の条件もない。',
       use: 'No rush. Pay me back whenever.（急がないよ。返すのはいつでも）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [161.2, 166.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [161.1, 170.2],
       stem: 'What does “I mean” do after “Yeah, yeah”?',
       ja: '「Yeah, yeah」のあとの「I mean」の働きは？',
       choices: ['Gives a reason for it', 'Corrects what she said', 'Says it was a joke'], a: 0,
@@ -299,7 +299,7 @@ export const monicabroke: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。後ろに理由が続く。',
       use: 'I mean, it’s free, so why not?（だって無料だし、いいじゃん）' },
 
-    { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.5, 175.6],
+    { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.3, 178.3],
       stem: 'How does Monica really feel about the loan?',
       ja: 'お金を貸してもらって、モニカは本当はどう思っている？',
       choices: ['Very grateful', 'Upset it’s so small', 'Embarrassed by it'], a: 0,

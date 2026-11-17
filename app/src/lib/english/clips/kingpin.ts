@@ -19,7 +19,7 @@ export const kingpin: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'thrill', seg: [15.4, 30.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'thrill', seg: [16.9, 31.4],
       stem: 'How does Leslie feel about the stakeout?',
       ja: 'レスリーは張り込みをどう感じている？',
       choices: ['Excited, like real police', 'Worried about the danger', 'Bored already'], a: 0,
@@ -54,7 +54,7 @@ export const kingpin: Clip = {
       trap: 'お金やブランドとの縁の自慢と取りやすいが、喜んでいるのはブランドと思われること。',
       use: 'People think it’s designer. It’s not.（ブランド物だと思われるけど、違うんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [34.9, 38.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [34.9, 40.5], keep: true,
       stem: 'How much did Tom pay to put his name on the shirt?',
       ja: 'トムはシャツに名前を入れるのにいくら払った？',
       choices: ['$20', '$120', '$200'], a: 1,
@@ -66,7 +66,7 @@ export const kingpin: Clip = {
       trap: '20 なら「トゥエンティ」だけ、200 は「トゥーハンドレッ」。前に「ワン」があれば120。',
       use: 'I paid twenty bucks for this shirt.（このシャツに20ドル払った）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'black', seg: [39.7, 45.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'black', seg: [39, 48.1],
       stem: 'What does Leslie tell Tom to wear instead?',
       ja: 'レスリーはトムに、代わりに何を着るように言う？',
       choices: ['Something all in black', 'Something all in navy', 'Something in camouflage'], a: 0,
@@ -78,7 +78,7 @@ export const kingpin: Clip = {
       trap: '張り込みと聞いて迷彩や紺を思いやすいが、言っているのは black。',
       use: 'Wear something warm tonight.（今夜は暖かい服を着てね）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bummed', seg: [45.4, 50.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bummed', seg: [45.4, 54.3],
       stem: 'What does “Pretty bummed this fits” mean?',
       ja: '「Pretty bummed this fits」の意味は？',
       choices: ['Sad that it fits', 'Happy that it fits', 'Surprised it fits'], a: 0,
@@ -103,7 +103,7 @@ export const kingpin: Clip = {
       use: 'Why don’t you join us?（いっしょにどう？）' },
 
     // R drop: c1 (C2, never shipped)
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', seg: [100.2, 108.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', seg: [100.2, 110.2],
       stem: 'What does Andy’s reaction to the weed show?',
       ja: 'weed（マリファナ）と聞いたアンディの反応から、何が分かる？',
       choices: ['He didn’t know it was weed', 'He knew who grew it', 'He thinks they’re all lying'], a: 0,
@@ -115,7 +115,7 @@ export const kingpin: Clip = {
       trap: '問い返しは疑いにも聞こえるが、何とまちがえたかまで言うのは本気の驚き。',
       use: 'Wait, that’s not parsley?（え、それパセリじゃないの？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'whydont', seg: [109.4, 115.6],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'whydont', seg: [109.4, 116],
       stem: 'What does “why don’t you come to the van” mean?',
       ja: '「why don’t you come to the van」はどういう意味？',
       choices: ['Please come with us', 'Why didn’t you come?', 'Please go away'], a: 0,
@@ -127,7 +127,7 @@ export const kingpin: Clip = {
       trap: '「なぜ〜しないの」と思うと、責めているように聞こえる。あとが行動ならさそい。',
       use: 'Why don’t you sit with us?（いっしょに座ったら？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'rock', seg: [115.2, 118.3],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'rock', seg: [113.1, 119.4],
       stem: 'Type Andy’s reply: “___ have a rock fight with this crazy guy.” (3 words)', answer: "i'm supposed to",
       ja: '「have a rock fight」の前の3語を書こう。',
       cue: 'さそいへの返事の最初。',
@@ -137,7 +137,7 @@ export const kingpin: Clip = {
       trap: 'supposed to は「サポースタ」とつながり、d と t がひとつになる。to を落とさずに書く。',
       use: 'I’m supposed to meet her at six.（6時に彼女と会うことになってる）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.2, 121.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.2, 123.1], keep: true,
       stem: 'How late is the person Andy is waiting for?',
       ja: 'アンディが待っている相手は、どのくらい遅れている？',
       choices: ['2 minutes', '12 minutes', '20 minutes'], a: 2,
@@ -149,7 +149,7 @@ export const kingpin: Clip = {
       trap: 'twelve は「トゥエルヴ」、two は「トゥー」だけ。「トゥエンティ」なら20。',
       use: 'The bus is like ten minutes late.（バスが10分くらい遅れてる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'lonely', seg: [122.3, 130.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'lonely', seg: [121.3, 131.9],
       stem: 'How does Andy feel in the van?',
       ja: '車の中で、アンディはどんな気持ち？',
       choices: ['Lonely, and missing Ann', 'Happy, and over Ann', 'Angry at Ann for leaving'], a: 0,
@@ -161,7 +161,7 @@ export const kingpin: Clip = {
       trap: 'ridiculous（ばかげた）を相手への文句と思いやすいが、気持ちの強さの表現。',
       use: 'I miss home so much. It’s ridiculous.（家が恋しくて、自分でも笑っちゃう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'sugar', seg: [145.2, 151.5],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'sugar', seg: [144.6, 151.5],
       stem: 'Why does one candy necklace hit Andy so hard?',
       ja: 'キャンディ1本で、なぜアンディはこんなに効いてしまう？',
       choices: ['He’s eaten only healthy food', 'He hasn’t eaten for days', 'He hasn’t slept for many weeks'], a: 0,
@@ -173,7 +173,7 @@ export const kingpin: Clip = {
       trap: 'for weeks だけ残ると、何も食べていないと思いやすい。All I’ve had is のあとを聞く。',
       use: 'Too much coffee. I’m so wired.（コーヒー飲みすぎてハイだ）' },
 
-    { id: 'imin', skill: 'phrase', level: 'B1', point: 'imin', seg: [168, 176.5],
+    { id: 'imin', skill: 'phrase', level: 'B1', point: 'imin', seg: [168.5, 180.5],
       stem: 'What does Andy mean by “I’m in”?',
       ja: 'アンディの「I’m in」の意味は？',
       choices: ['I’ll join you', 'I’m inside now', 'I’m too busy'], a: 0,
@@ -185,7 +185,7 @@ export const kingpin: Clip = {
       trap: 'in（中に）から「中にいる」と思いやすい。さそいへの返事なら「乗った」。',
       use: 'Pizza tonight? — I’m in!（今夜ピザ？―乗った！）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'stays', seg: [172.1, 180.0],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'stays', seg: [172.1, 181.2],
       stem: 'What does “bring me back two cheeseburgers” tell us?',
       ja: '「bring me back two cheeseburgers」から何が分かる？',
       choices: ['He’ll stay in the van', 'He’ll order for them', 'He’s too full to eat'], a: 0,
@@ -197,7 +197,7 @@ export const kingpin: Clip = {
       trap: '食べ物を頼むので、いっしょに行くと思いやすい。bring me back は「ここで待つ」の合図。',
       use: 'Can you bring me back a coffee?（帰りにコーヒー買ってきてくれる？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'infact', seg: [196.3, 205.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'infact', seg: [196.2, 205.5],
       stem: 'What does “In fact” mean after “a perfect gentleman”?',
       ja: '「a perfect gentleman」のあとの「In fact」はどういう意味？',
       choices: ['Here’s proof of what I said', 'No, I said that wrong', 'Okay, I wasn’t polite'], a: 0,
@@ -220,19 +220,7 @@ export const kingpin: Clip = {
       trap: '誰が誘い誰が答えたかを追う。最初の一言を No, no と打ち消している。',
       use: 'Oops. Wait, I meant no.（あ、待って、今のなし）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'does', seg: [219.3, 225.4],
-      stem: 'Fill the gap: “___ like he’s breaking into that van.”',
-      ja: '空いている所に入る言葉は？',
-      choices: ['It looks', 'It does look', 'It doesn’t look'], a: 1,
-      choicesJa: ['〜に見える', '確かに〜に見える', '〜には見えない'],
-      cue: '「You know what?」のあと。',
-      line: 'You know what? *It does look* like he’s breaking into that van.',
-      said: '「車に押し入ろうとしてる」と言われ、「確かにそう見える」と返す。',
-      mean: 'does を入れると「確かに」と強める。相手の言葉を認める言い方。',
-      trap: 'It looks なら間に何もない。doesn’t なら「ン」が残る。「ダズ」だけなら does。',
-      use: 'You do look tired today.（今日はほんとに疲れて見える）' },
-
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'report', reveals: ['cop'], seg: [219.3, 247.3],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'report', reveals: ['cop'], seg: [218.3, 248],
       stem: 'Who most likely called the police about Tom?',
       ja: 'トムのことを警察に通報したのは、たぶんだれ？',
       choices: ['The couple near the van', 'The officer himself', 'Tom, after getting locked out'], a: 0,
@@ -243,6 +231,18 @@ export const kingpin: Clip = {
       mean: 'suspicious person ＝ 怪しい人。二つの場面の言葉が同じなので、通報したのは二人。',
       trap: 'locked out から自分で助けを呼んだと思いやすいが、通報の中身は「怪しい人」。',
       use: 'Somebody called it in.（だれかが通報したんだ）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'does', seg: [219.3, 227.6],
+      stem: 'Fill the gap: “___ like he’s breaking into that van.”',
+      ja: '空いている所に入る言葉は？',
+      choices: ['It looks', 'It does look', 'It doesn’t look'], a: 1,
+      choicesJa: ['〜に見える', '確かに〜に見える', '〜には見えない'],
+      cue: '「You know what?」のあと。',
+      line: 'You know what? *It does look* like he’s breaking into that van.',
+      said: '「車に押し入ろうとしてる」と言われ、「確かにそう見える」と返す。',
+      mean: 'does を入れると「確かに」と強める。相手の言葉を認める言い方。',
+      trap: 'It looks なら間に何もない。doesn’t なら「ン」が残る。「ダズ」だけなら does。',
+      use: 'You do look tired today.（今日はほんとに疲れて見える）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'cop', reveals: ['stays'], seg: [244, 289.0],
       stem: 'How does Tom’s night in the van end?',
@@ -302,7 +302,7 @@ export const kingpin: Clip = {
       trap: 'Nice job をほめ言葉と取ると逆。名前を知らなくても back to the mall が手がかり。',
       use: 'Nice job, Sherlock.（お見事、名探偵さん。皮肉で）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'arrest', seg: [278.1, 282.7],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'arrest', seg: [277.1, 283.1],
       stem: 'What does the officer mean by “I’m very close right now”?',
       ja: '警官の「I’m very close right now」の意味は？',
       choices: ['Stop, or I’ll arrest you', 'You are under arrest now', 'I’m almost done with you'], a: 0,

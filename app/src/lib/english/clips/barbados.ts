@@ -15,7 +15,7 @@ export const barbados: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'packed', skill: 'phrase', level: 'B1', point: 'packed', seg: [0, 5.5],
+    { id: 'packed', skill: 'phrase', level: 'B1', point: 'packed', seg: [0, 6.7],
       stem: 'What does “I’m all packed” mean?',
       ja: '「I’m all packed」の意味は？',
       choices: ['My bags are ready', 'I am very full', 'The room is crowded'], a: 0,
@@ -27,7 +27,7 @@ export const barbados: Clip = {
       trap: 'packed には「満員」の意味もあるので、混んでいると思いやすい。ready to go と一緒なら荷造り。',
       use: 'I’m all packed and ready to go.（荷造りすんだ、いつでも出られる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'trip', seg: [6, 50.65],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'trip', seg: [6, 50.7],
       stem: 'What is taking the group to Barbados?',
       ja: 'みんなは何のためにバルバドスへ行く？',
       choices: ['Ross is giving a talk there', 'Joey planned a beach trip', 'Joey is giving a big talk'], a: 0,
@@ -39,7 +39,7 @@ export const barbados: Clip = {
       trap: 'island stuff（島で遊ぶ）が耳に残ると、休暇の旅と思いやすい。目的は最初の説明。',
       use: 'I’m giving a talk at a conference.（学会で発表するんだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'means', seg: [18.5, 25.45],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'means', seg: [18.5, 27.1],
       stem: 'How does Ross feel about his friends coming?',
       ja: '友だちが来てくれることを、ロスはどう感じている？',
       choices: ['Very thankful', 'Very nervous', 'Very sorry for them'], a: 0,
@@ -51,31 +51,7 @@ export const barbados: Clip = {
       trap: 'all the way から「遠くまで悪いね」と思いやすい。means so much は感謝。',
       use: 'Thanks for coming all the way out here.（遠いところをありがとう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'strings', reveals: ['passes'], seg: [25.45, 35.0],
-      stem: 'What does “pull some strings” mean?',
-      ja: '「pull some strings」の意味は？',
-      choices: ['Ask people he knows for help', 'Pay for it all himself', 'Give a second talk for free'], a: 0,
-      choicesJa: ['知り合いに頼んで動いてもらう', '全部自分で払う', '無料でもう一回発表する'],
-      cue: '「I had to」のあと。',
-      line: 'I had to *pull some strings*, but I was able to get everyone passes',
-      said: '「ちょっとコネを使って、全員分のパスを取った」と言う。',
-      mean: 'pull strings ＝ 知り合いの力で、ふつうは無理なことを通す（ひもを引いて人形を動かすイメージ）。',
-      trap: 'strings（ひも）をそのまま考えると分からない。お金の話は出てこない。',
-      use: 'Maybe my uncle can pull some strings.（おじさんに口をきいてもらえるかも）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'passes', seg: [25.45, 35.0],
-      stem: 'What did Ross get for the friends?',
-      ja: 'ロスは友だちのために何を手に入れた？',
-      choices: ['Passes to the whole conference', 'Passes to just his own talk', 'Seats on the same flight'], a: 0,
-      choicesJa: ['学会全体のパス', '自分の発表だけのパス', '同じ飛行機の席'],
-      cue: '「get everyone」のあと。',
-      line: 'I was able to get everyone *passes to the entire conference*.',
-      said: '「全員分、学会全体のパスを取れた」と言う。',
-      mean: 'entire ＝ 全部の。スピーチだけでなく、講演もセミナーも全部入れるパス。',
-      trap: '直前に speech が出るので、スピーチだけと思いやすい。entire（全部）を聞く。',
-      use: 'I got us passes for the whole weekend.（週末ずっと使えるパスを取ったよ）' },
-
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'surprise', seg: [25.45, 40.4],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'surprise', seg: [24.1, 39.8],
       stem: 'How does Ross feel about his surprise?',
       ja: 'ロスは自分のサプライズをどう思っている？',
       choices: ['Proud of it', 'Unsure about it', 'Sorry about it'], a: 0,
@@ -87,6 +63,18 @@ export const barbados: Clip = {
       trap: 'みんなは喜んでいないので、ロスも自信がないと思いやすい。ロス本人は得意げ。',
       use: 'I have a surprise for you!（サプライズがあるの！）' },
 
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'strings', reveals: ['passes'], seg: [25.4, 35.5],
+      stem: 'What does “pull some strings” mean?',
+      ja: '「pull some strings」の意味は？',
+      choices: ['Ask people he knows for help', 'Pay for it all himself', 'Give a second talk for free'], a: 0,
+      choicesJa: ['知り合いに頼んで動いてもらう', '全部自分で払う', '無料でもう一回発表する'],
+      cue: '「I had to」のあと。',
+      line: 'I had to *pull some strings*, but I was able to get everyone passes',
+      said: '「ちょっとコネを使って、全員分のパスを取った」と言う。',
+      mean: 'pull strings ＝ 知り合いの力で、ふつうは無理なことを通す（ひもを引いて人形を動かすイメージ）。',
+      trap: 'strings（ひも）をそのまま考えると分からない。お金の話は出てこない。',
+      use: 'Maybe my uncle can pull some strings.（おじさんに口をきいてもらえるかも）' },
+
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'babies', reveals: ['passes'], seg: [25.45, 40.4], retired: true,
       stem: 'When Ross starts a line with “These babies…”, what is he referring to?',
       choices: ['The passes he got for everyone', 'The children coming on the trip', 'The talks he will give there'], a: 0,
@@ -97,7 +85,19 @@ export const barbados: Clip = {
       trap: 'babies を赤ちゃんと取ると話が通らない。自慢げな these babies は直前の物を指す。',
       use: 'Check out these babies. New shoes!（見てよこれ、新しい靴！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['island', 'passes'], seg: [25.45, 60.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'passes', seg: [25.5, 35.5],
+      stem: 'What did Ross get for the friends?',
+      ja: 'ロスは友だちのために何を手に入れた？',
+      choices: ['Passes to the whole conference', 'Passes to just his own talk', 'Seats on the same flight'], a: 0,
+      choicesJa: ['学会全体のパス', '自分の発表だけのパス', '同じ飛行機の席'],
+      cue: '「get everyone」のあと。',
+      line: 'I was able to get everyone *passes to the entire conference*.',
+      said: '「全員分、学会全体のパスを取れた」と言う。',
+      mean: 'entire ＝ 全部の。スピーチだけでなく、講演もセミナーも全部入れるパス。',
+      trap: '直前に speech が出るので、スピーチだけと思いやすい。entire（全部）を聞く。',
+      use: 'I got us passes for the whole weekend.（週末ずっと使えるパスを取ったよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['island', 'passes'], seg: [25.5, 60.3],
       stem: 'What do the friends want to do on the trip?',
       ja: '友だちは旅行で何をしたい？',
       choices: ['Hear his talk, then relax', 'Go to all the lectures', 'Skip even his own talk'], a: 0,
@@ -119,7 +119,7 @@ export const barbados: Clip = {
       trap: '目立つ語（babies など）に笑いを探しやすい。相手の言葉を逆にした返しを聞く。',
       use: 'Any way to get out of it?（なんとか抜けられない？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [40.45, 45.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [39.4, 45.8],
       stem: 'Type the question: “Do you have anything that will ___ them?” (4 words)', answer: 'get us out of',
       ja: '「will」のあとの4語を書こう。',
       cue: '「will」のあと、them の前。',
@@ -129,7 +129,7 @@ export const barbados: Clip = {
       trap: 'us と of は小さく短く、消えたように聞こえる。4語あると思って書く。',
       use: 'Can you get me out of this meeting?（この会議から抜けさせてくれない？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'island', seg: [45.35, 50.65],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'island', seg: [45.1, 53.3],
       stem: 'What is Ross told with “we’re excited… but”?',
       ja: 'ロスは「we’re excited… but」で、何を伝えられている？',
       choices: ['A kind no to the lectures', 'A happy yes to the lectures', 'A joke about the island'], a: 0,
@@ -141,7 +141,7 @@ export const barbados: Clip = {
       trap: 'Yeah や excited から賛成と思いやすい。本音は but のあと。',
       use: 'I’d love to, but I already have plans.（行きたいけど、もう予定があって）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['island'], seg: [45.35, 50.65],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['island'], seg: [45.4, 53.3],
       stem: 'Fill the gap: “…the rest of the time ___ do, you know, island stuff.”',
       ja: '空いている所に入る言葉は？',
       choices: ['we’re going to want to', 'we’re going to have to', 'we want to'], a: 0,
@@ -153,7 +153,7 @@ export const barbados: Clip = {
       trap: 'have to は「ハフタ」。we want to なら「ゴナ」がない。「ゴナワナ」なら going to want to。',
       use: 'You’re going to want a jacket.（上着が要ると思うよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'david', seg: [45.35, 53.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'david', seg: [45.4, 55.1],
       stem: 'What will David probably want to do?',
       ja: 'デビッドはたぶん何をしたがる？',
       choices: ['Hear some lectures', 'Give some lectures', 'Hear only Ross’s talk'], a: 0,
@@ -165,7 +165,7 @@ export const barbados: Clip = {
       trap: '前に give my speech があるので give に引かれやすい。want to のあとの動詞を聞く。',
       use: 'I think I’ll probably skip the party.（たぶんパーティーはパスするかな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'sunlight', reveals: ['david'], seg: [50.6, 60.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'sunlight', reveals: ['david'], seg: [50.6, 61.3],
       stem: 'Why will David want to go to lectures?',
       ja: 'デビッドは、なぜ講演に行きたがる？',
       choices: ['To stay out of the sun', 'To get away from crowds', 'He loves science'], a: 0,
@@ -200,7 +200,7 @@ export const barbados: Clip = {
       trap: 'scientist から堅物いじりと取りやすいが、No, no でその理由は消える。笑いは he’ll die。',
       use: 'If I don’t eat soon, I’ll die.（早く食べないと死にそう）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [53.0, 60.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [53, 60.6], keep: true,
       stem: 'How long has David been in Minsk?',
       ja: 'デビッドはミンスクにどのくらいいる？',
       choices: ['Eight months', 'Eighteen months', 'Eight years', 'Eighteen years'], a: 2,
@@ -214,7 +214,7 @@ export const barbados: Clip = {
 
     // C2: exact words in fast speech (the dropped "'d")
     // anchor: 61.64–62.24 s both sources have "okay we better go" (no "'d"), run together at 185 wpm before "yeah?"
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'better', seg: [60.2, 63.3],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'better', seg: [60.1, 65.7],
       stem: 'Type what’s said: “Okay, ___ go, yeah?” (2 words)', answer: 'we better',
       ja: '「Okay,」のあとの2語を書こう。',
       cue: '「Okay」のすぐあと。',
@@ -224,7 +224,7 @@ export const barbados: Clip = {
       trap: '習った形に合わせて we’d と書きたくなる。聞こえた音のとおり、2語で書く。',
       use: 'We better hurry, or we’ll miss it.（急がないと間に合わないよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'tomorrow', seg: [61.1, 66.65],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'tomorrow', seg: [61.1, 66.7],
       stem: 'What is the travel plan, from the goodbye?',
       ja: '別れのあいさつから分かる旅の予定は？',
       choices: ['The others come a day later', 'They all fly together tomorrow', 'The two fly home tomorrow'], a: 0,
@@ -236,7 +236,7 @@ export const barbados: Clip = {
       trap: 'tomorrow を飛行機の日と思うと、全員一緒に聞こえる。今出る二人の言葉。',
       use: 'Go ahead. I’ll meet you there tomorrow.（先に行って。明日向こうで会おう）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [65.25, 69.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [65.2, 74.7], keep: true,
       stem: 'How long is the flight they’re about to take?',
       ja: 'これから乗る飛行機は何時間？',
       choices: ['Five hours', 'Nine hours', 'Fifteen hours'], a: 0,

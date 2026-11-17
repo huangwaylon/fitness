@@ -16,7 +16,7 @@ export const ronHumour: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'pitch', seg: [4.3, 41.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'pitch', seg: [4.3, 43.6],
       stem: 'Why have they come to see Barney?',
       ja: 'みんなは、なぜバーニーに会いに来た？',
       choices: ['To get April a job there', 'To get Ben his job back', 'To ask about April’s money'], a: 0,
@@ -28,7 +28,7 @@ export const ronHumour: Clip = {
       trap: 'ベンが大歓迎されるので、ベンの話と思いやすい。目的は we just think のあと。',
       use: 'I think she’d be a great hire.（彼女はきっといい人材です）' },
 
-    { id: 'at1', skill: 'attitude', level: 'B1', point: 'welcome', seg: [13.4, 28.2],
+    { id: 'at1', skill: 'attitude', level: 'B1', point: 'welcome', seg: [12.4, 28.9],
       stem: 'How do the people at the firm feel when Ben walks in?',
       ja: 'ベンが来たとき、事務所の人たちはどう感じている？',
       choices: ['Very happy to see him', 'A bit nervous about him', 'Not sure who he is'], a: 0,
@@ -62,7 +62,7 @@ export const ronHumour: Clip = {
       trap: 'すぐあとの consulting につられやすい。that 以下が事務所のした仕事。',
       use: 'We worked on the same project last year.（去年、同じ案件をやったんです）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'whydont', seg: [41.0, 48.8],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'whydont', seg: [41, 49.3],
       stem: 'Why does he ask Barney to “tell my friends”?',
       ja: '彼はなぜバーニーに「友だちに説明して」と頼む？',
       choices: ['He doesn’t know it himself', 'His friends asked him to', 'He wants to test Barney'], a: 0,
@@ -75,7 +75,7 @@ export const ronHumour: Clip = {
       use: 'Could you explain it for my friends?（友だちのために説明してもらえますか）' },
 
     // anchor: 45.9–46.4 s six words inside about half a second, right after "what consulting is, but"; both sources
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'whydont', seg: [45.2, 48.5],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'whydont', seg: [43.1, 49.3],
       stem: 'Type the start of the request: “___ tell my friends here” (6 words)', answer: "why don't you go ahead and",
       ja: '「tell my friends here」の前の6語を書こう。',
       cue: '「but」のすぐあと。',
@@ -85,7 +85,7 @@ export const ronHumour: Clip = {
       trap: 'why don’t you tell と書きやすい。音の数を数え、短い go ahead and を探す。',
       use: 'Go ahead and take a seat.（どうぞ座ってください）' },
 
-    { id: 'at2', skill: 'attitude', level: 'B1', point: 'excited', seg: [55.0, 64.4],
+    { id: 'at2', skill: 'attitude', level: 'B1', point: 'excited', seg: [55, 65.6],
       stem: 'How does one friend feel about the job for April?',
       ja: '仲間の一人は、その仕事をエイプリルにどう思う？',
       choices: ['Sure it’s right for her', 'Shocked that it’s so harsh', 'Not sure she’ll take it'], a: 0,
@@ -97,7 +97,7 @@ export const ronHumour: Clip = {
       trap: '前の「きらわれがち」から、ショックを受けたと思いやすい。続く This is the job で決まる。',
       use: 'This is the one. I can feel it.（これだ、そんな気がする）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'major', seg: [66.8, 74.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'major', seg: [66.8, 76.6],
       stem: 'What did April study in college?',
       ja: 'エイプリルは大学で何を勉強した？',
       choices: ['A major she made up', 'Economics and business', 'Accounting and math'], a: 0,
@@ -120,7 +120,7 @@ export const ronHumour: Clip = {
       trap: '文字通りだとお金の話。uh は言いよどみでなく、しゃれの前の「ため」。',
       use: 'Does that pique your interest?（ちょっと興味わいた？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'toolate', reveals: ['qualified'], seg: [89.8, 96.6],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'toolate', reveals: ['qualified'], seg: [88.8, 96],
       stem: 'What is Barney’s answer about April?',
       ja: 'エイプリルについて、バーニーの答えは？',
       choices: ['No, it’s too late to apply', 'No, she isn’t good enough', 'Yes, if she applies today'], a: 0,
@@ -132,7 +132,7 @@ export const ronHumour: Clip = {
       trap: 'あとで仲間が「資格が足りない」と話すので、それが理由に思いやすい。',
       use: 'I’m sorry, but we’re fully booked.（申し訳ありませんが、満席です）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'exception', seg: [95.0, 102.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'exception', seg: [93, 105],
       stem: 'Who could Barney make an exception for?',
       ja: 'バーニーが例外にしてもいいのはだれ？',
       choices: ['Ben', 'April', 'Nobody'], a: 0,
@@ -144,7 +144,7 @@ export const ronHumour: Clip = {
       trap: 'exception をエイプリルへの特別扱いと思いやすい。someone else（ほかの人）を聞く。',
       use: 'Thanks, but I’m not interested.（ありがとう、でも興味ないです）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'shot', seg: [104.0, 107.65],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'shot', seg: [102.8, 110.2],
       stem: 'Type the plan: “We just have to convince Barney to ___.” (4 words)', answer: 'give her a shot',
       ja: '「convince Barney to」のあとの4語を書こう。',
       cue: '「convince Barney to」のあと。',
@@ -154,7 +154,7 @@ export const ronHumour: Clip = {
       trap: 'give it a shot に聞こえやすい。4語あると思って、her を書く。',
       use: 'Just give me a shot.（一度だけやらせてみて）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'qualified', seg: [106.0, 110.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'qualified', seg: [104.5, 110.9],
       stem: 'Fill the gap: “She’s ___ qualified as the other applicants.”',
       ja: '空いている所に入る2語は？',
       choices: ['not as', 'just as', 'nearly as'], a: 0,
@@ -166,7 +166,7 @@ export const ronHumour: Clip = {
       trap: 'just as は「ジャ」、nearly as は「ニア」で始まる。「ナラズ」なら not as。',
       use: 'It’s not as hard as it looks.（見た目ほど難しくないよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'degree', seg: [109.4, 114.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'degree', seg: [109.4, 116.9],
       stem: 'What “simple solution” does one friend come up with?',
       ja: '仲間の一人が思いつく「簡単な解決策」は？',
       choices: ['Break in and change her degree', 'Send her back to study accounting', 'Have her college call Barney'], a: 0,
@@ -190,7 +190,7 @@ export const ronHumour: Clip = {
       trap: '主役の目線だと教授が笑われ役に見える。答えの中身を確かめてから、誰がおかしいかを決める。',
       use: 'Trust me, I’m basically a genius.（任せて、ほぼ天才だから）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [122.6, 127.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifty', seg: [122.6, 128.2], keep: true,
       stem: 'How long has the professor been working on the problem?',
       ja: '教授はその問題に何年取り組んできた？',
       choices: ['5 years', '15 years', '50 years'], a: 2,
@@ -202,7 +202,7 @@ export const ronHumour: Clip = {
       trap: '「ファイヴ」だけなら 5、後ろを強く「フィフティーン」なら 15、前が強い「フィフティ」なら 50。',
       use: 'I’ve been waiting for 50 minutes.（50分待ってるんだけど）' },
 
-    { id: 'i2', skill: 'detail', level: 'B2', point: 'resume', seg: [136.5, 147.9],
+    { id: 'i2', skill: 'detail', level: 'B2', point: 'resume', seg: [139, 150.5],
       stem: 'What was April’s old resume?',
       ja: 'エイプリルの前の履歴書は何だった？',
       choices: ['A signed photo of a puppet', 'A list of her old jobs', 'A short letter about herself'], a: 0,
@@ -214,7 +214,7 @@ export const ronHumour: Clip = {
       trap: 'resume（履歴書）から、ふつうの職歴リストを思いやすい。just a のあとを聞く。',
       use: 'Let’s make you an actual plan.（ちゃんとした計画を立てよう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hands', seg: [146.0, 154.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hands', seg: [146, 156],
       stem: 'What does “all hands on deck” mean?',
       ja: '「all hands on deck」の意味は？',
       choices: ['Everyone has to help', 'Only the best people help', 'People should raise their hands'], a: 0,
@@ -237,7 +237,7 @@ export const ronHumour: Clip = {
       trap: '直前の most importantly で重要な役に聞こえやすい。雑用の行き先を追う。',
       use: 'Dishes, anyone? Didn’t think so.（皿洗いしたい人？だよね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'accountable', seg: [183.0, 190.2],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'accountable', seg: [182, 188.1],
       stem: 'What does “you can hold me accountable” mean?',
       ja: '「you can hold me accountable」の意味は？',
       choices: ['You can blame me', 'You can pay me', 'You can watch me'], a: 0,
@@ -249,7 +249,7 @@ export const ronHumour: Clip = {
       trap: 'account から「口座・会計」を思いやすい。hold 人 accountable で覚える。',
       use: 'If it fails, hold me responsible.（失敗したら私の責任にして）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'meet', reveals: ['accountable'], seg: [189.0, 197.2],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'meet', reveals: ['accountable'], seg: [188.5, 197.3],
       stem: 'Why does Barney agree to meet April?',
       ja: 'バーニーはなぜエイプリルに会うことにする？',
       choices: ['Her friends are trying so hard', 'The presentation impressed him', 'A friend will take the blame'], a: 0,
@@ -273,7 +273,7 @@ export const ronHumour: Clip = {
       trap: '最後の I see でバーニーが取り消したように思いやすい。断ったのはだれかを聞く。',
       use: 'Thanks, but I’ll pass.（ありがとう、でも遠慮しとく）' },
 
-    { id: 'holdon', skill: 'phrase', level: 'B1', point: 'holdon', seg: [196.5, 200.6],
+    { id: 'holdon', skill: 'phrase', level: 'B1', point: 'holdon', seg: [195.5, 202.6],
       stem: 'What does “Hold on” mean here?',
       ja: 'ここでの「Hold on」の意味は？',
       choices: ['Wait a moment', 'Hold it tightly', 'Hang up the phone'], a: 0,
@@ -285,7 +285,7 @@ export const ronHumour: Clip = {
       trap: 'hold（持つ）から「つかむ」と思いやすい。hold on ＝ 待つ。',
       use: 'Hold on, let me check.（ちょっと待って、確認するね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'ohboy', reveals: ['outcome'], seg: [200.4, 212.8],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'ohboy', reveals: ['outcome'], seg: [199.3, 214.1],
       stem: 'What does “Oh, boy” show here?',
       ja: 'ここでの「Oh, boy」は何を示す？',
       choices: ['Something is going wrong', 'The news makes April happy', 'April has a surprise'], a: 0,
@@ -297,7 +297,7 @@ export const ronHumour: Clip = {
       trap: '喜びにも使うので、good news と合わせて明るく思いやすい。続く報告で決める。',
       use: 'Oh, boy. That’s not good.（あーあ、それはまずいね）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'awkward', reveals: ['outcome'], seg: [212.0, 221.4],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'awkward', reveals: ['outcome'], seg: [212, 221.8],
       stem: 'Why say “Well, this is uncomfortable” here?',
       ja: 'ここで「Well, this is uncomfortable」と言うのはなぜ？',
       choices: ['To admit it feels awkward', 'To say sorry to Barney', 'To blame April for this'], a: 0,

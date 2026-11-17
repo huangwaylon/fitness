@@ -17,7 +17,7 @@ export const pacMan: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'serious', reveals: ['clark'], seg: [0, 44],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'serious', reveals: ['clark'], seg: [0, 44.5],
       stem: 'What are they fighting about?',
       ja: 'みんなは何でもめている？',
       choices: ['Whose turn it is', 'Who broke the game', 'Who paid for the game'], a: 0,
@@ -40,7 +40,7 @@ export const pacMan: Clip = {
       trap: 'look at that は驚きにも聞こえるが、Monica への見せつけ。直前の Yes! を聞く。',
       use: 'Oh no, I won again. How sad.（あら、また勝っちゃった）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'scores', seg: [3, 9.1], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'scores', seg: [2.6, 9.2], keep: true,
       stem: 'What has Phoebe just done to Monica’s scores?',
       ja: 'フィービーはモニカのスコアをどうした？',
       choices: ['Beaten every one of them', 'Beaten a few of them', 'Erased every one of them'], a: 0,
@@ -52,7 +52,7 @@ export const pacMan: Clip = {
       trap: 'off から「消した」と思いやすいが、勝って順位から落とした意味。all も聞きのがさない。',
       use: 'She knocked me off the top spot.（彼女に1位を取られた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'next', seg: [10, 13.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'next', seg: [8.9, 15.1], keep: true,
       stem: 'Type what Monica says: “No, don’t start another game. ___.” (5 words)', answer: 'i said i was next',
       ja: 'モニカの言葉を入力：「No, don’t start another game. ___.」（5語）',
       cue: '「another game」のあと',
@@ -73,7 +73,7 @@ export const pacMan: Clip = {
       trap: 'I’m sorry を本気の謝罪と取りやすい。over のあとに何が来るかで冗談だと分かる。',
       use: 'Sorry, I couldn’t hear you over the music.（音楽で聞こえなかった）', retired: true },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', seg: [13.9, 17.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', seg: [13.3, 20.7],
       stem: 'Fill the gap: “Oh, I’m sorry. I ___ hear you…”',
       ja: 'すき間をうめよう：「Oh, I’m sorry. I ___ hear you…」',
       choices: ['could', 'couldn’t', 'can’t'], a: 1,
@@ -85,7 +85,7 @@ export const pacMan: Clip = {
       trap: 'can’t なら「キャン」で始まる。could なら「クッド」で終わる。「クドゥン」と「ン」が残れば couldn’t。',
       use: 'I couldn’t hear you. Say again?（聞こえなかった。もう一回？）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'whocares', seg: [17.7, 22], keep: true,
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'whocares', seg: [17.7, 25.8], keep: true,
       stem: 'What does Chandler mean by “Who cares?”',
       ja: 'チャンドラーの「Who cares?」はどういう意味？',
       choices: ['I don’t care about it', 'Tell me who is upset', 'Someone should take care of it'], a: 0,
@@ -97,7 +97,7 @@ export const pacMan: Clip = {
       trap: 'who から、本当の質問と思いやすい。続く It’s a stupid game で「どうでもいい」と分かる。',
       use: 'Who cares what they think?（人がどう思おうと関係ない）' },
 
-    { id: 'w1', skill: 'who', level: 'B2', point: 'whosucks', reveals: ['suckat'], seg: [19.9, 29.9], keep: true,
+    { id: 'w1', skill: 'who', level: 'B2', point: 'whosucks', reveals: ['suckat'], seg: [19.9, 30.1], keep: true,
       stem: 'Who answers “I don’t suck”?',
       ja: '「I don’t suck」と言い返すのはだれ？',
       choices: ['Chandler', 'Monica', 'Phoebe'], a: 0,
@@ -109,7 +109,7 @@ export const pacMan: Clip = {
       trap: 'モニカがずっと話しているので、同じ人と思いやすい。だれが言われたかを追う。',
       use: 'I’m not bad at it. It’s just hard.（下手じゃない、むずかしいだけ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'suckat', seg: [20.2, 25.4], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'suckat', seg: [20.2, 28.6], keep: true,
       stem: 'Why does Chandler call the game stupid, she says?',
       ja: 'チャンドラーがゲームをくだらないと言うのはなぜだと、彼女は言う？',
       choices: ['He can’t play it well', 'He can’t get a turn on it', 'It’s too easy for him'], a: 0,
@@ -143,7 +143,7 @@ export const pacMan: Clip = {
       trap: 'don’t の t が消えると、認めたように聞こえる。主語の I と It を聞き分ける。',
       use: 'I’m not late. The bus is.（遅れたのは私じゃない、バスだ）', retired: true },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'problems', seg: [32.3, 37.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'problems', seg: [31.8, 38.8],
       stem: 'Why does the gift giver offer to keep the game?',
       ja: 'ゲームをくれた人は、なぜ持って帰ろうかと言う？',
       choices: ['It’s causing fights', 'They don’t like it much', 'Chandler hates it'], a: 0,
@@ -155,7 +155,7 @@ export const pacMan: Clip = {
       trap: '直前の stupid game から、きらっているからと思いやすい。理由は if のあと。',
       use: 'If it’s a problem, I’ll take it back.（迷惑なら引き取るよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'gift', reveals: ['love'], seg: [32.3, 40.2],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'gift', reveals: ['love'], seg: [32.3, 39.7],
       stem: 'What was the game?',
       ja: 'このゲームは何だった？',
       choices: ['A present from the friend', 'Something he lent them', 'Something just for today'], a: 0,
@@ -167,7 +167,7 @@ export const pacMan: Clip = {
       trap: 'keep から、貸した物を返してもらう話と思いやすい。返事の present がポイント。',
       use: 'Keep it. It’s a gift.（持ってて。プレゼントだから）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'love', reveals: ['gift'], seg: [32.3, 40.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'love', reveals: ['gift'], seg: [32.3, 39.7],
       stem: 'How do they answer the gift giver’s offer?',
       ja: 'ゲームをくれた人の「持って帰ろうか」に、どう答える？',
       choices: ['No, they want to keep it', 'Yes, to stop the fights', 'Only for a little while'], a: 0,
@@ -179,7 +179,7 @@ export const pacMan: Clip = {
       trap: 'けんかが止まるなら喜ぶと思いやすい。No の数と I love it が答え。',
       use: 'No, no, I love it!（いやいや、すごく気に入ってる！）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'thankyou', seg: [37, 44.1],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'thankyou', seg: [37, 46.3],
       stem: 'What does “why don’t you go home” really mean here?',
       ja: '「why don’t you go home」は、ここで本当はどういう意味？',
       choices: ['Please leave now', 'Don’t worry about it', 'We’ll send a card soon'], a: 0,
@@ -214,7 +214,7 @@ export const pacMan: Clip = {
       trap: 'maybe that’s it（もういいかも）で終わると思いやすい。続く come on と Get out が答え。',
       use: 'Come on, give someone else a turn.（ほら、ほかの人にも順番を）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'clark', seg: [43.9, 49.5],
+    { id: 'i3', skill: 'phrase', level: 'B2', point: 'clark', seg: [43.9, 51.2],
       stem: 'What does “it’s not like it spits out a Clark bar” mean?',
       ja: '「it’s not like it spits out a Clark bar」はどういう意味？',
       choices: ['The game gives no prize', 'The game gives out candy', 'The game used to give candy'], a: 0,
@@ -226,7 +226,7 @@ export const pacMan: Clip = {
       trap: 'Clark bar が聞こえて、おかしが出ると思いやすい。最初の it’s not like が全体を打ち消す。',
       use: 'It’s not like it’s free, you know.（タダってわけじゃないんだよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'chair', seg: [50.4, 53.6], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'chair', seg: [49.5, 54.5], keep: true,
       stem: 'Type the last words: “Come on. Come on. ___.” (4 words)', answer: 'out of the chair',
       ja: '最後の言葉を入力：「Come on. Come on. ___.」（4語）',
       cue: '最後の「come on」2回のあと',

@@ -36,7 +36,7 @@ export const asianjim: Clip = {
       trap: '仕込みの役者なので、落ち着いて待っていたと取りやすい。問い返しは「何を言ってるの？」という驚きの形。',
       use: 'Who am I? I’m your neighbor!（誰って、隣の者ですよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [11.8, 17.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [11.8, 19.2], keep: true,
       stem: 'How long does the fake Jim say they’ve worked together?',
       ja: 'ニセのジムは、どれくらい一緒に働いてきたと言う？',
       choices: ['2 years', '12 years', '20 years'], a: 1,
@@ -60,7 +60,7 @@ export const asianjim: Clip = {
       trap: 'race の話題なので、たしなめていると取りやすい。hats off to you はほめる言い方。',
       use: 'Hats off to you for finishing that.（やり遂げたなんて脱帽だよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'allright', reveals: ['test'], seg: [28.1, 33.3],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'allright', reveals: ['test'], seg: [27.1, 33.9],
       stem: 'Why does Dwight say “All right, then”?',
       ja: 'ドワイトはなぜ「All right, then」と言う？',
       choices: ['To go along with it for now', 'To show he believes it now', 'To drop it for today'], a: 0,
@@ -72,7 +72,7 @@ export const asianjim: Clip = {
       trap: 'Jim と呼ぶので信じたと思いやすい。直後に試す質問が来る。',
       use: 'All right, then. Show me.（じゃあいいよ、見せて）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'test', seg: [28.1, 33.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'test', seg: [28.1, 34.3],
       stem: 'Why does Dwight ask about yesterday’s sale?',
       ja: 'ドワイトはなぜ昨日の売上について聞く？',
       choices: ['To test what the man knows', 'To change the subject', 'To check a missing sale'], a: 0,
@@ -84,7 +84,7 @@ export const asianjim: Clip = {
       trap: 'why don’t you は提案の形なので雑談と思いやすい。聞く中身が本人確認。',
       use: 'Why don’t you tell me about your trip?（旅行の話を聞かせてよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'cases', seg: [33.8, 38.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'cases', seg: [33.1, 40.9], keep: true,
       stem: 'How many cases did Wellington Systems buy?',
       ja: 'ウェリントン・システムズは何箱買った？',
       choices: ['4', '10', '24'], a: 1,
@@ -96,7 +96,7 @@ export const asianjim: Clip = {
       trap: 'cases の前は「テン」。four なら「フォー」、24 なら「トゥエニフォー」で pound の前。',
       use: 'We need ten cases of water.（水を10ケースください）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [33.8, 45.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [34.1, 46.1],
       stem: 'How well does the fake Jim answer about the sale?',
       ja: 'ニセのジムは、売上の質問にどれくらいうまく答える？',
       choices: ['Smoothly, with exact details', 'Shakily, guessing the client', 'Vaguely, changing the subject'], a: 0,
@@ -108,7 +108,7 @@ export const asianjim: Clip = {
       trap: '会社名が二つ出るので迷ったと思いやすいが、どちらの件か確かめているだけ。',
       use: 'Or were you talking about the other one?（それとも、もう一つの方の話？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'close', seg: [38.3, 42.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'close', seg: [36.9, 41.9],
       stem: 'Fill the gap: “Because I ___ that one yet.”',
       ja: '「Because I ___ that one yet.」の空所は？',
       choices: ['didn’t close', 'couldn’t close', 'haven’t closed'], a: 0,
@@ -120,7 +120,7 @@ export const asianjim: Clip = {
       trap: 'didn’t は「ディドゥン」。couldn’t は「クドゥン」、haven’t は「ハヴン」で始まる。',
       use: 'I didn’t finish it yet.（まだ終わってないんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'voicemail', seg: [41.4, 45.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'voicemail', seg: [40.5, 46.1],
       stem: 'What is the fake Jim hoping for from Paul?',
       ja: 'ニセのジムは、ポールから何が来ていればいいと思っている？',
       choices: ['A voicemail from the client', 'A call back from the client', 'An email from the client'], a: 0,
@@ -132,7 +132,7 @@ export const asianjim: Clip = {
       trap: 'mail だけ聞くとメールと思いやすい。voice ＋ mail で、声の伝言。',
       use: 'Did you get my voicemail?（留守電、聞いてくれた？）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'outsider', reveals: ['voicemail'], seg: [53.8, 61.9],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'outsider', reveals: ['voicemail'], seg: [53.8, 64.1],
       stem: 'What reason does Dwight give for stopping the message?',
       ja: 'ドワイトは、伝言を止める理由を何と言う？',
       choices: ['It’s only for employees', 'It’s meant for Dwight', 'It’s a fake message'], a: 0,
@@ -144,7 +144,7 @@ export const asianjim: Clip = {
       trap: '偽物だと疑っていると思いやすい。理由として言うのは、相手が部外者だということ。',
       use: 'Sorry, staff only beyond this point.（ここから先は関係者のみです）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'cutout', seg: [61.0, 64.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'cutout', seg: [58.3, 66.1],
       stem: 'Type the gap: “Dwight, ___. I’m trying to work.” (3 words)', answer: 'cut it out',
       ja: '「Dwight, ___. I’m trying to work.」の空所を書こう（3語）',
       cue: '「Dwight」のすぐあと',
@@ -154,7 +154,7 @@ export const asianjim: Clip = {
       trap: '3語がひとつに聞こえやすい。cut / it / out の3語に分けて書く。',
       use: 'Cut it out, I’m on the phone.（やめて、電話中なんだ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'cutout', seg: [61.7, 64.9],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'cutout', seg: [58.3, 66.1],
       stem: 'What does the fake Jim tell Dwight to do?',
       ja: 'ニセのジムはドワイトに何をしろと言う？',
       choices: ['Stop bothering him', 'Cut the message off', 'Clear out of the office'], a: 0,
@@ -166,7 +166,7 @@ export const asianjim: Clip = {
       trap: 'cut や out だけ聞くと「切る」「出ていけ」と思いやすい。3語でひとつの命令。',
       use: 'Okay, cut it out, you two.（はいはい、二人ともやめなさい）' },
 
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'workhere', seg: [61.7, 65.7],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'workhere', seg: [60.8, 65.8],
       stem: 'Why is “You don’t work here” a funny reply?',
       ja: '「You don’t work here」はなぜおかしい返事？',
       choices: ['He twists the meaning of “work”', 'He admits he’s in the way', 'He says work somewhere else'], a: 0,
@@ -178,7 +178,7 @@ export const asianjim: Clip = {
       trap: '「よそでやれ」と言っていると思いやすい。ポイントは here（ここで）。',
       use: 'You don’t even work here!（あなた、ここの人じゃないでしょ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'notjim', seg: [62.0, 81.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'notjim', seg: [62, 83.7],
       stem: 'By the end of the clip, where does Dwight stand?',
       ja: '最後に、ドワイトはどう考えている？',
       choices: ['He still says it isn’t Jim', 'He gives up but still doubts', 'He knows Pam set it up'], a: 0,
@@ -190,7 +190,7 @@ export const asianjim: Clip = {
       trap: 'パムの種明かしでドワイトも気づいたと思いやすい。あれはカメラへの話。',
       use: 'Sorry, I just don’t buy it.（悪いけど、信じられない）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'dinner', seg: [65.3, 68.8], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'dinner', seg: [64.6, 70.6], keep: true,
       stem: 'What time is the dinner reservation?',
       ja: '夕食の予約は何時？',
       choices: ['7:00', '7:30', '8:30'], a: 1,
@@ -225,7 +225,7 @@ export const asianjim: Clip = {
       trap: '芝居と分かっても、誰の側かを取りちがえやすい。of ours の「私たち」が仕掛けた側。',
       use: 'She was in on it the whole time.（彼女、最初からグルだった）', retired: true },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dentist', reveals: ['plan'], seg: [73.2, 77.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dentist', reveals: ['plan'], seg: [72.2, 77.7],
       stem: 'Where is the real Jim this morning, according to Pam?',
       ja: 'パムによると、本物のジムは今朝どこにいる？',
       choices: ['At the dentist', 'At the doctor’s', 'At a sales call'], a: 0,
@@ -237,7 +237,7 @@ export const asianjim: Clip = {
       trap: '「デニスト」なら dentist、「ダクターズ」なら doctor’s、「セイルズ」なら sales call。',
       use: 'I have a dentist appointment at ten.（10時に歯医者の予約がある）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'steve', reveals: ['plan'], seg: [73.2, 77.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'steve', reveals: ['plan'], seg: [73.2, 81.6],
       stem: 'Who is Steve, according to Pam?',
       ja: 'パムによると、スティーブは誰？',
       choices: ['An actor friend of theirs', 'An old school friend of Jim’s', 'A salesman from another branch'], a: 0,

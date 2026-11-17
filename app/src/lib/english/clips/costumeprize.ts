@@ -27,7 +27,7 @@ export const costumePrize: Clip = {
       trap: '有名人の名で政治の話に聞こえる。kind of look like が答えの中身。',
       use: 'That outfit really makes a statement.（その服、すごく主張してるね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kindof', seg: [2.4, 8.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kindof', seg: [0, 9.4],
       stem: 'What does Kevin mean by “I kind of look like”?',
       ja: 'ケビンの「I kind of look like」はどういう意味？',
       choices: ['I look a bit like', 'I don’t look like', 'I want to look like'], a: 0,
@@ -62,7 +62,7 @@ export const costumePrize: Clip = {
       trap: 'パムの企画の話が先に来るので、それが理由と思いやすい。理由は Might のあと。',
       use: 'Everyone’s really into it this year.（今年はみんなすごくハマってる）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dowith', seg: [33.4, 37.3],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dowith', seg: [31.4, 37.8],
       stem: 'What does “have something to do with” mean?',
       ja: '「have something to do with」はどういう意味？',
       choices: ['Be part of the reason', 'Be a job they must finish', 'Be still not quite ready'], a: 0,
@@ -74,7 +74,7 @@ export const costumePrize: Clip = {
       trap: 'something to do（やること）から、作業の話と思いやすい。with まで続けて「関係」。',
       use: 'Maybe it has to do with the weather.（天気のせいかもね）' },
 
-    { id: 'n1', skill: 'number', level: 'B2', point: 'fifteen', seg: [37.1, 43.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B2', point: 'fifteen', seg: [37.1, 44.4], keep: true,
       stem: 'How much does the coupon book say it can save you?',
       ja: '割引券の本では、どれだけ節約できると言う？',
       choices: ['Over $1,500', 'Over $15,000', 'Over $50,000'], a: 1,
@@ -121,7 +121,7 @@ export const costumePrize: Clip = {
       trap: 'chicken には「弱虫」の意味もあり、悪口に聞こえやすい。my が付くので自分の鶏。',
       use: 'To my kids, I’m the bad guy.（子どもたちから見れば、私は悪者）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'popeye', reveals: ['putcost'], seg: [70.35, 78.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'popeye', reveals: ['putcost'], seg: [70.4, 80.1],
       stem: 'Why doesn’t Pam’s costume work yet?',
       ja: 'パムの仮装が、まだうまく伝わらないのはなぜ？',
       choices: ['Jim won’t wear his costume', 'Jim isn’t at work yet', 'Jim picked another costume'], a: 0,
@@ -133,7 +133,7 @@ export const costumePrize: Clip = {
       trap: 'Jim と costume だけ聞くと、別の衣装の話と思いやすい。doesn’t want to を聞く。',
       use: 'It makes more sense with the photo.（写真があればもっと分かるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'putcost', seg: [74.0, 78.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'putcost', seg: [72.1, 80.1],
       stem: 'Type what Pam says: “Jim doesn’t ___ his costume on.” (3 words)', answer: 'want to put',
       ja: 'パムの「Jim doesn’t ___ his costume on.」の空所を書こう（3語）',
       cue: '「doesn’t」のあと',
@@ -143,7 +143,7 @@ export const costumePrize: Clip = {
       trap: 'want to が「ワナ」に縮み、put の t も弱い。3語に分けて書く。',
       use: 'I don’t want to put a tie on.（ネクタイしたくない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'costumeguy', seg: [79.8, 89.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'costumeguy', seg: [78.4, 89.9],
       stem: 'How does Jim feel about costumes?',
       ja: 'ジムは仮装をどう思っている？',
       choices: ['He has never liked them', 'He loved them as a kid', 'He likes the one Pam chose'], a: 0,
@@ -166,7 +166,7 @@ export const costumePrize: Clip = {
       trap: 'number を数字や番号と取りやすい。this little number は服を指す。',
       use: 'Check out this little number I bought.（この服見て、買っちゃった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'kelly', seg: [96.3, 101.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'kelly', seg: [95.3, 102.4],
       stem: 'Why does someone say Kelly should be out?',
       ja: 'ケリーは失格だと言われるのはなぜ？',
       choices: ['She changed costumes midday', 'She wore someone else’s costume', 'She voted for herself'], a: 0,
@@ -178,7 +178,7 @@ export const costumePrize: Clip = {
       trap: 'costume だけ聞くと、人の衣装を着たと思いやすい。change costumes（衣装を変える）を聞く。',
       use: 'You can’t change plans halfway through.（途中で予定は変えられないよ）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'sue', seg: [100.3, 105.7],
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'sue', seg: [100.3, 105.9],
       stem: 'Why does Kelly say “If I’m out…”?',
       ja: 'ケリーはなぜ「If I’m out…」と言う？',
       choices: ['To threaten to sue the company', 'To threaten to quit her job', 'To ask Pam about the rules'], a: 0,
@@ -190,7 +190,7 @@ export const costumePrize: Clip = {
       trap: 'entire company から、辞める話と思いやすい。gonna のあとの sue（訴える）を聞く。',
       use: 'If you cancel, I want a refund.（キャンセルするなら返金してね）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'sue', seg: [100.6, 105.7],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'sue', seg: [100.6, 105.9],
       stem: 'Fill the gap: “If I’m out, ___ sue this entire company.”',
       ja: '「If I’m out, ___ sue this entire company.」の空所は？',
       choices: ['I’m gonna', 'I wanna', 'I gotta'], a: 0,
@@ -202,7 +202,7 @@ export const costumePrize: Clip = {
       trap: 'wanna は「ワナ」、gotta は「ガラ」に近い。ここは「ゴナ」で、前に「アイム」がある。',
       use: 'I’m gonna call you later.（あとで電話するね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'odds', seg: [105.4, 108.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'odds', seg: [102.3, 112.9], keep: true,
       stem: 'What are their chances of winning, according to Oscar?',
       ja: 'オスカーによると、勝つ確率は？',
       choices: ['1 in 6', '1 in 16', '1 in 60'], a: 1,
@@ -214,7 +214,7 @@ export const costumePrize: Clip = {
       trap: 'sixteen は「ティーン」が強く長い。sixty は前が強く、six なら「ティーン」がない。',
       use: 'There’s a one in ten chance of rain.（雨の確率は10分の1）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'worth', reveals: ['forty', 'odds', 'fifteen'], seg: [105.4, 113.65],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'worth', reveals: ['forty', 'odds', 'fifteen'], seg: [102.3, 112.9],
       stem: 'What point is Oscar making to the others?',
       ja: 'オスカーはみんなに何を言いたい？',
       choices: ['The prize isn’t worth the fight', 'They should share the prize', 'They have a good chance'], a: 0,
@@ -226,7 +226,7 @@ export const costumePrize: Clip = {
       trap: '1 in 16 から、勝ちやすいと思いやすい。worth 40 bucks（40ドルの価値）が言いたいこと。',
       use: 'It’s not worth fighting over.（取り合うほどのものじゃない）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [107.85, 111.05], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [105.7, 112.9], keep: true,
       stem: 'How much does Oscar say the prize is really worth?',
       ja: 'オスカーは、賞品の本当の価値はいくらだと言う？',
       choices: ['$14', '$40', '$400'], a: 1,
@@ -238,19 +238,7 @@ export const costumePrize: Clip = {
       trap: 'forty は前が強く、fourteen は「ティーン」が強い。400 なら hundred が聞こえる。',
       use: 'It cost me forty bucks.（40ドルかかった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'grudge', seg: [113.4, 123.2],
-      stem: 'In her talk to camera, how does she feel about Pam?',
-      ja: 'カメラに向かって、彼女はパムをどう思っていると話す？',
-      choices: ['Dislikes her but praises her', 'Thinks Pam did a bad job', 'Likes Pam very much'], a: 0,
-      choicesJa: ['嫌いだが、ほめている', 'パムはよくなかったと思う', 'パムが大好き'],
-      cue: '「compliment」のあと',
-      line: 'I don’t even want to give Pam a compliment… *but she did a good job*.',
-      said: '「パムをほめたくもないけど、よくやった」と話す。',
-      mean: 'compliment ＝ ほめ言葉。嫌いな相手でも、but のあとで良さを認めている。',
-      trap: '前半だけ聞くと、悪く言っていると思いやすい。but のあとが本音。',
-      use: 'I hate to say it, but you’re right.（言いたくないけど、君が正しい）' },
-
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [113.4, 121.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [112.4, 123.7],
       stem: 'Why is “I mean” said here?',
       ja: 'ここではなぜ「I mean」と言う？',
       choices: ['To explain what she just said', 'To ask Pam a quick question', 'To change to a new topic'], a: 0,
@@ -261,6 +249,18 @@ export const costumePrize: Clip = {
       mean: 'I mean ＝「つまり・というか」。今言ったことを説明したり、言い足したりする前置き。',
       trap: 'mean（意味する）から、質問と思いやすい。前の amazing prize の話が続く。',
       use: 'It’s great. I mean, really great.（いいよ。というか、本当にいい）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'grudge', seg: [113.4, 123.7],
+      stem: 'In her talk to camera, how does she feel about Pam?',
+      ja: 'カメラに向かって、彼女はパムをどう思っていると話す？',
+      choices: ['Dislikes her but praises her', 'Thinks Pam did a bad job', 'Likes Pam very much'], a: 0,
+      choicesJa: ['嫌いだが、ほめている', 'パムはよくなかったと思う', 'パムが大好き'],
+      cue: '「compliment」のあと',
+      line: 'I don’t even want to give Pam a compliment… *but she did a good job*.',
+      said: '「パムをほめたくもないけど、よくやった」と話す。',
+      mean: 'compliment ＝ ほめ言葉。嫌いな相手でも、but のあとで良さを認めている。',
+      trap: '前半だけ聞くと、悪く言っていると思いやすい。but のあとが本音。',
+      use: 'I hate to say it, but you’re right.（言いたくないけど、君が正しい）' },
 
     // retired (A2): a joke on “rational consumer” (C1)
     { id: 'h3', skill: 'humor', level: 'C1', point: 'rational', seg: [132.0, 136.6], retired: true,
@@ -274,7 +274,7 @@ export const costumePrize: Clip = {
       trap: '人名や買い物の予定と取りがち。you could say ＝ 言ってみれば。',
       use: 'Let’s be rational about this.（ここは冷静に考えよう）' },
 
-    { id: 'i3', skill: 'who', level: 'B1', point: 'line', seg: [143.6, 148.3],
+    { id: 'i3', skill: 'who', level: 'B1', point: 'line', seg: [143.4, 148.4],
       stem: 'Who did Oscar say his line to before?',
       ja: 'オスカーは前に、そのセリフを誰に言った？',
       choices: ['Phyllis', 'Michael', 'Kelly'], a: 0,
@@ -286,7 +286,7 @@ export const costumePrize: Clip = {
       trap: 'マイケルやケリーの話も多いので迷いやすい。say it to のあとの名前を聞く。',
       use: 'I heard you say that before.（前にもそう言うのを聞いたよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'rule', seg: [148.3, 155.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'rule', seg: [148.3, 158.1],
       stem: 'What is the one rule for voting?',
       ja: '投票のルールは何？',
       choices: ['You can’t vote for yourself', 'You can’t vote for your team', 'You can vote for yourself once'], a: 0,
@@ -310,7 +310,7 @@ export const costumePrize: Clip = {
       trap: 'were を過去と取ったり as you were と聞いたりしがち。決まり文句で覚える。',
       use: 'He’s our leader, as it were.（彼はいわば私たちのリーダー）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'winner', seg: [258.4, 288.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'winner', seg: [258.1, 288],
       stem: 'How does the costume contest end?',
       ja: '仮装コンテストはどう終わる？',
       choices: ['Oscar wins with no costume', 'Kelly wins in her new costume', 'Kevin wins as Michael Moore'], a: 0,

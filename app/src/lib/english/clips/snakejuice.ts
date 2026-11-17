@@ -15,7 +15,7 @@ export const snakeJuice: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'never', seg: [2.9, 10.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'never', seg: [0, 11.1],
       stem: 'Why is Ron talking to a stranger?',
       ja: 'ロンはなぜ知らない人に話しかけている？',
       choices: ['The drink made him chatty', 'He wants to warn this man', 'He knows the man well'], a: 0,
@@ -27,7 +27,7 @@ export const snakeJuice: Clip = {
       trap: 'never（決して〜ない）から、飲むなと注意していると思いやすい。but のあとが本題。',
       use: 'In general, I don’t drink coffee.（ふだんはコーヒーを飲みません）' },
 
-    { id: 'p1', skill: 'detail', level: 'B1', point: 'guarantee', seg: [10.3, 18.9],
+    { id: 'p1', skill: 'detail', level: 'B1', point: 'guarantee', seg: [9.3, 20.2],
       stem: 'What does Ron tell the stranger to do?',
       ja: 'ロンは、知らない人に何をしろと言う？',
       choices: ['Drink it right now', 'Buy a bottle later', 'Leave the club'], a: 0,
@@ -39,7 +39,7 @@ export const snakeJuice: Clip = {
       trap: '前の You should buy it（買うべきだ）が残りやすい。最後の Drink this, now が答え。',
       use: 'Trust me, you’ll love it.（信じて、きっと気に入るよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'conflict', reveals: ['shares'], seg: [26.6, 61.4],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'conflict', reveals: ['shares'], seg: [26.6, 61.9],
       stem: 'Why does Chris need to talk to the club’s owner?',
       ja: 'クリスはなぜ店のオーナーと話す必要がある？',
       choices: ['He used his job to make money', 'His new drink is far too strong', 'He skipped work for his club'], a: 0,
@@ -51,7 +51,7 @@ export const snakeJuice: Clip = {
       trap: '最初の強いお酒の話に引かれやすい。We need to talk の本題は、あとから来る。',
       use: 'We need to talk about the email.（あのメールのことで話がある）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'proof', seg: [30.25, 34.45], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'proof', seg: [27.8, 37.6], keep: true,
       stem: 'How much of the snake juice is alcohol?',
       ja: 'スネークジュースのアルコールは何％？',
       choices: ['17%', '40%', '70%', '140%'], a: 2,
@@ -63,7 +63,7 @@ export const snakeJuice: Clip = {
       trap: '140は proof の数。17は「セブンティーン」、40は「フォーティ」。which means のあとの「セブンティ」。',
       use: 'It’s about forty percent alcohol.（アルコール40％くらいだよ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ounce', seg: [34.3, 40.6],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ounce', seg: [34.3, 40.9],
       stem: 'How does Chris feel about the snake juice?',
       ja: 'クリスはスネークジュースをどう思う？',
       choices: ['Scared it could hurt him', 'Happy to try a little of it', 'Angry it is a gift'], a: 0,
@@ -75,7 +75,7 @@ export const snakeJuice: Clip = {
       trap: 'ounce（少しの量）から、少しなら飲むと思いやすい。kill me までが一文。',
       use: 'That would literally kill me.（そんなの本当に死んじゃう）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'wayaround', seg: [53.25, 58.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'wayaround', seg: [52.5, 61.1],
       stem: 'What does Chris mean by “I don’t see any way around it”?',
       ja: 'クリスの「I don’t see any way around it」はどういう意味？',
       choices: ['A promise isn’t enough', 'He doesn’t know what to do', 'It’s okay this one time'], a: 0,
@@ -87,7 +87,7 @@ export const snakeJuice: Clip = {
       trap: '文字どおり「分からない」と思いやすい。次に「持ち分を売れ」と決まりを言う。',
       use: 'Sorry, I don’t see any way around it.（悪いけど、どうにもならないんだ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'again', seg: [53.3, 57.3],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'again', seg: [52.5, 58.9],
       stem: 'What does “It won’t happen again” mean?',
       ja: '「It won’t happen again」はどういう意味？',
       choices: ['I won’t do it again', 'It never happened', 'It will happen later'], a: 0,
@@ -99,7 +99,7 @@ export const snakeJuice: Clip = {
       trap: 'won’t（〜しない）が小さく聞こえると、また起こると思いやすい。「ウォウント」と口を丸める。',
       use: 'Sorry I’m late. It won’t happen again.（遅れてすみません。もうしません）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'shares', seg: [56.45, 61.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'shares', seg: [56.3, 61.8],
       stem: 'What does the club’s owner have to do?',
       ja: '店のオーナーは何をしなければならない？',
       choices: ['Sell his part of the club', 'Sell the whole club', 'Stop selling the snake juice'], a: 0,
@@ -155,7 +155,7 @@ export const snakeJuice: Clip = {
       trap: 'offense（気分を害すること）から、謝っていると思いやすい。but のあとに失礼なことが来る。',
       use: 'No offense, but I don’t like it.（悪いけど、好きじゃないな）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'acton', seg: [80.38, 84.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'acton', seg: [80.4, 88.9],
       stem: 'What does “acting on your feelings” mean?',
       ja: '「acting on your feelings」はどういう意味？',
       choices: ['Doing something about them', 'Pretending to have them', 'Talking about them a lot'], a: 0,
@@ -167,7 +167,7 @@ export const snakeJuice: Clip = {
       trap: 'act から「演技」を思いやすい。act on ＋ 気持ちやアドバイスは「それに従って動く」。',
       use: 'I acted on your advice.（あなたのアドバイスどおりにしたよ）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B2', point: 'notbest', seg: [98.45, 104.25],
+    { id: 'p4', skill: 'pragma', level: 'B2', point: 'notbest', seg: [96.5, 105.3],
       stem: 'What does “maybe not the best idea” mean here?',
       ja: 'ここでの「maybe not the best idea」はどういう意味？',
       choices: ['You shouldn’t do that', 'That is a great idea', 'I can’t decide yet'], a: 0,
@@ -237,7 +237,7 @@ export const snakeJuice: Clip = {
       trap: 'right direction（正しい方向）から、方向の話と思いやすい。最後の standing still が答え。',
       use: 'Sometimes you need a little push.（ときには少し背中を押されないとね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'favor', seg: [151.0, 153.15], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'favor', seg: [150.1, 156.9], keep: true,
       stem: 'Type what Leslie says: “I was just trying to ___.” (4 words)', answer: 'do you a favor',
       ja: '「I was just trying to ___.」の空所を書こう（4語）',
       cue: '「standing still」のあと',
@@ -247,7 +247,7 @@ export const snakeJuice: Clip = {
       trap: 'you a がひとつの音に聞こえ、a を落としやすい。4語なので a も書く。',
       use: 'I’m happy to do you a favor.（喜んで力になるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'together', seg: [161.0, 165.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'together', seg: [160.1, 167],
       stem: 'Fill the gap: “Maybe we ___ work together then.”',
       ja: '「Maybe we ___ work together then.」の空所は？',
       choices: ['shouldn’t', 'should', 'couldn’t'], a: 0,
@@ -259,7 +259,7 @@ export const snakeJuice: Clip = {
       trap: 'should には「ン」がない。couldn’t は「ク」で始まる。「シュドゥン」なら shouldn’t。',
       use: 'Maybe we shouldn’t go tonight.（今夜は行かないほうがいいかも）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'alert', seg: [182.9, 191.5],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'alert', seg: [182.7, 191.5],
       stem: 'Why does someone need to be alert tonight?',
       ja: '今夜、誰かがしっかりしていないといけないのはなぜ？',
       choices: ['Everyone will get very drunk', 'The boss is watching them', 'They must start work very early'], a: 0,
@@ -271,7 +271,7 @@ export const snakeJuice: Clip = {
       trap: 'alert を「警戒」と思うと、外の危険の話に聞こえる。直後の Everybody’s wasted（みんな泥酔）。',
       use: 'Someone has to stay sober tonight.（今夜は誰かしらふでいないと）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'walking', seg: [238.9, 243.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'walking', seg: [237.9, 244.6],
       stem: 'What happens if anyone dry-heaves in the car?',
       ja: '誰かが車で吐きそうになったら、どうなる？',
       choices: ['Everyone walks home', 'Only that person walks', 'That person cleans up'], a: 0,
@@ -283,7 +283,7 @@ export const snakeJuice: Clip = {
       trap: 'one of you が耳に残り、その人だけと思いやすい。後半の all が答え。',
       use: 'If even one of you is late, we all wait.（一人でも遅れたら全員待つ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'hire', seg: [250.45, 254.3], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'hire', seg: [249.5, 257.8], keep: true,
       stem: 'The next morning, what do they have to go and do?',
       ja: '次の朝、何をしに行かなければならない？',
       choices: ['Hire a new PR director', 'Fire the PR director', 'Become the new PR director'], a: 0,

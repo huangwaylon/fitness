@@ -15,7 +15,7 @@ export const ronNoRegret: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'recant', seg: [0.3, 16.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'recant', seg: [0.3, 17.1],
       stem: 'What does Tom now say about Ron?',
       ja: 'トムは今、ロンについて何と言う？',
       choices: ['Ron said he’d hurt Jamm', 'Ron never said anything', 'Jamm said he’d hurt Ron'], a: 0,
@@ -27,7 +27,7 @@ export const ronNoRegret: Clip = {
       trap: 'he がだれか迷いやすい。Ron Swanson say he… なので、he はロン。',
       use: 'I’d like to correct what I said.（さっき言ったことを訂正したいです）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'misremember', seg: [3.5, 7.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'misremember', seg: [1.8, 7.4],
       stem: 'What does “I misremembered some things” mean?',
       ja: '「I misremembered some things」の意味は？',
       choices: ['He remembered them wrong', 'He heard them all wrong', 'He said them all wrong'], a: 0,
@@ -39,7 +39,7 @@ export const ronNoRegret: Clip = {
       trap: 'mis- だけで「聞きちがい」「言いまちがい」と決めやすい。うしろの remember（覚える）まで聞く。',
       use: 'Sorry, I misremembered the time.（すみません、時間を覚えちがえてました）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'boom', seg: [7.4, 14.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'boom', seg: [7.4, 16],
       stem: 'How does Jamm feel after Tom’s new story?',
       ja: 'トムの新しい話を聞いて、ジャムはどう感じている？',
       choices: ['Happy he was right', 'Very surprised by it', 'Bored and annoyed'], a: 0,
@@ -73,7 +73,7 @@ export const ronNoRegret: Clip = {
       trap: 'never の n が弱く、just met などに聞こえやすい。否定の一語は文頭で聞く。',
       use: 'Never met him, but he seems nice.（会ったことないけど、いい人そう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [30.4, 33.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [29, 35], keep: true,
       stem: 'Type the gap: “He looks like he ___ swift punch in the face.” (3 words)', answer: 'could use a',
       ja: '「He looks like he」のあとの3語を書こう。',
       cue: '「looks like he」のすぐあと。',
@@ -83,7 +83,7 @@ export const ronNoRegret: Clip = {
       trap: 'd が「ジュ」に変わり、a はほぼ消える。小さな a も書く。',
       use: 'You look like you could use a break.（ひと休みしたほうがよさそうだね）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'pool', seg: [34.9, 38.8],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'pool', seg: [34.9, 42.7],
       stem: 'In the pool story, what happens at the pool?',
       ja: 'プールの話で、プールで何が起きる？',
       choices: ['Someone is pushed in', 'Someone jumps in', 'Someone is punched'], a: 0,
@@ -106,7 +106,7 @@ export const ronNoRegret: Clip = {
       trap: 'bully を「いじめる」と取りやすい。古い決まり文句は、後ろの一言で本気か皮肉かを決める。',
       use: 'You finished early? Well, bully for you.（早く終わった？そりゃよかったね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44.0, 48.6], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44, 50.9], keep: true,
       stem: 'What does Ron say he is doing?',
       ja: 'ロンは何をしていると言う？',
       choices: ['Dreaming about hitting Jamm', 'Planning to hit Jamm', 'Joking about hitting Jamm'], a: 0,
@@ -118,7 +118,7 @@ export const ronNoRegret: Clip = {
       trap: 'Just から「冗談だよ」と流したと思いやすい。Just のあとの長い一語を聞く。',
       use: 'Sorry, I was just daydreaming.（ごめん、ぼーっとしてた）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'picture', seg: [48.9, 52.7],
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'picture', seg: [45.8, 53],
       stem: 'What does “We get the picture” mean?',
       ja: '「We get the picture」の意味は？',
       choices: ['We understand already', 'We want to see a photo', 'We can’t follow you'], a: 0,
@@ -130,7 +130,7 @@ export const ronNoRegret: Clip = {
       trap: 'picture から写真や絵を思いやすい。get the picture は「様子が分かる」。',
       use: 'Okay, I get the picture. Thanks.（はい、だいたい分かりました）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'holdon', seg: [49.2, 56.5],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'holdon', seg: [49.1, 57.9],
       stem: 'What does “Uh, hold on” mean here?',
       ja: 'ここでの「Uh, hold on」の意味は？',
       choices: ['Wait a moment', 'Hold this for me', 'Keep going'], a: 0,
@@ -153,7 +153,7 @@ export const ronNoRegret: Clip = {
       trap: 'Councilman が耳に残りやすい。never does と直前の he did を比べる。',
       use: 'He talks big, but he never does it.（口は大きいけど、やらないんだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [73.3, 78.4], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [70.5, 78.5], keep: true,
       stem: 'Fill the gap: “Well, ___ a nice pull quote for the article…”',
       ja: '空いている所に入る語は？',
       choices: ['that’ll make', 'that’d make', 'that made'], a: 0,
@@ -199,7 +199,7 @@ export const ronNoRegret: Clip = {
       trap: 'ロンが堂々としているので、ジャムが負けたと思いやすい。ジャムの最初の一言を聞く。',
       use: 'That went better than I expected.（思ったよりうまくいった）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82.0, 87.2], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82, 90.4], keep: true,
       stem: 'What did Ron tell Jamm several times?',
       ja: 'ロンはジャムに何度も何と言った？',
       choices: ['To back off', 'To fight back', 'To say sorry'], a: 0,
@@ -223,7 +223,7 @@ export const ronNoRegret: Clip = {
       trap: '最初の筋だけで正当防衛と取りやすい。barely は誰の何に付くか。前置きは最後の一言で読み直す。',
       use: 'He started it, but honestly, I enjoyed it.（あっちが先だけど、正直楽しかった）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'twice', seg: [84.6, 89.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'twice', seg: [82.3, 93.2], keep: true,
       stem: 'How many times does Ron say Jamm attacked him?',
       ja: 'ジャムが何回おそってきたとロンは言う？',
       choices: ['Once', 'Twice', 'Three times', 'Several times'], a: 1,
@@ -246,7 +246,7 @@ export const ronNoRegret: Clip = {
       trap: 'barely registered を「速くて見えない」と取りやすい。frail と weak が理由。',
       use: 'I barely noticed the rain.（雨にほとんど気づかなかった）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'theend', seg: [99.3, 103.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'theend', seg: [99.2, 104.2],
       stem: 'What does Ron mean by “The end”?',
       ja: 'ロンの「The end」はどういう意味？',
       choices: ['He won’t say any more', 'The meeting is over now', 'He knows he has lost'], a: 0,
@@ -281,7 +281,7 @@ export const ronNoRegret: Clip = {
       trap: 'you を進行役と取りやすいが、again で前に殴った相手と分かる。殴ったことは前に認めている。言葉が争点に重なるかを聞く。',
       use: 'I would do it again, honestly.（正直、またやるね）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'checkbook', seg: [110.3, 114.3],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'checkbook', seg: [107.3, 117.3],
       stem: 'What does “bring your checkbook” tell Ron?',
       ja: '「bring your checkbook」はロンに何を伝えている？',
       choices: ['He will have to pay Jamm', 'He should pay Jamm now', 'He needs to hire a lawyer'], a: 0,

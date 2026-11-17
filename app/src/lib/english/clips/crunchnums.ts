@@ -54,7 +54,7 @@ export const crunchNumbers: Clip = {
       trap: '親への問いかけで始まるので親への皮肉と取りやすい。主語の I と me を追えば、ずっと自分の話。',
       use: 'Don’t worry, I’m totally normal.（心配しないで、まったく普通の人です）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [11.0, 16.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [11, 17.8], keep: true,
       stem: 'How old does Michael say he is?',
       ja: 'マイケルは自分を何歳だと言う？',
       choices: ['14', '40', '44', '54'], a: 2,
@@ -66,7 +66,7 @@ export const crunchNumbers: Clip = {
       trap: '新聞配達のイメージで 14 に引かれやすい。forty-four は「フォーティフォー」。54 は「フィフティ」で始まる。',
       use: 'I’m a forty-four-year-old guy.（44歳の男です）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'weeks', seg: [41.3, 44.8], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'weeks', seg: [40.3, 45.9], keep: true,
       stem: 'How long have they been making the early deliveries?',
       ja: '早朝の配達を、どのくらい続けている？',
       choices: ['A couple of days', 'A couple of weeks', 'A couple of months'], a: 1,
@@ -89,7 +89,7 @@ export const crunchNumbers: Clip = {
       trap: 'sick の俗語「すごい」と違い、makes me sick は「むかつく」。clean も掃除ではない。',
       use: 'There’s something about Mondays I hate.（月曜日ってなんだか嫌い）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'van', reveals: ['church'], seg: [76.2, 80.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'van', reveals: ['church'], seg: [74.1, 81.3],
       stem: 'What do they think the writing on the van says?',
       ja: 'バンの文字には何と書いてあると思っている？',
       choices: ['The name of a church', 'The name of the car lot', 'The name of a school'], a: 0,
@@ -101,7 +101,7 @@ export const crunchNumbers: Clip = {
       trap: '前後に used car lot と school bus が出るので、引かれやすい。says のあとを聞く。',
       use: 'I think it says “exit” in Korean.（韓国語で「出口」って書いてあると思う）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'lifesaver', seg: [85.3, 92.0],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'lifesaver', seg: [85.3, 93],
       stem: 'What does “You’re a lifesaver” mean here?',
       ja: 'ここでの「You’re a lifesaver」はどういう意味？',
       choices: ['That helps me a lot', 'You saved my life', 'You didn’t need to'], a: 0,
@@ -113,7 +113,7 @@ export const crunchNumbers: Clip = {
       trap: '文字どおりは「命の恩人」。大げさに言う、日常のお礼の言い方。',
       use: 'Thanks, you’re a lifesaver!（ありがとう、本当に助かる！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'milk', seg: [94.9, 102.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'milk', seg: [94.3, 102.9],
       stem: 'What turns out to be in the cup Michael brings?',
       ja: 'マイケルが持ってきたカップの中身は？',
       choices: ['Only milk and sugar', 'Coffee, milk and sugar', 'Just milk, no sugar'], a: 0,
@@ -125,7 +125,7 @@ export const crunchNumbers: Clip = {
       trap: 'Milk and sugar! はコーヒーの注文のように聞こえる。just ＝「だけ」。',
       use: 'Is this just hot water?（これ、ただのお湯？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'everyday', seg: [97.5, 101.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'everyday', seg: [97.5, 103.6],
       stem: 'How often does Michael drink it?',
       ja: 'マイケルはそれを、どのくらい飲む？',
       choices: ['Every morning', 'Only on Mondays', 'Once a week'], a: 0,
@@ -137,7 +137,7 @@ export const crunchNumbers: Clip = {
       trap: '質問の every day が耳に残りやすい。答えは短い2語。',
       use: 'I drink coffee every morning.（毎朝コーヒーを飲みます）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'church', reveals: ['van'], seg: [114.85, 126.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'church', reveals: ['van'], seg: [115, 127],
       stem: 'Why is someone told it’s “a paper company now”?',
       ja: 'なぜ「今は紙の会社だ」と言う？',
       choices: ['They think it’s a church van', 'They think it’s for sale', 'They want to buy paper'], a: 0,
@@ -149,7 +149,7 @@ export const crunchNumbers: Clip = {
       trap: 'paper company から「紙を買いたい人」と思いやすい。最後の一言が、相手の勘ちがいを示す。',
       use: 'Sorry, this bus isn’t in service.（すみません、このバスは回送です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'loft', seg: [128.5, 162.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'loft', seg: [128.5, 163.3],
       stem: 'What does Michael want instead of a delivery guy?',
       ja: 'マイケルは、配達係のかわりに何がほしい？',
       choices: ['A loft in the office', 'A second van', 'A bigger office'], a: 0,
@@ -172,7 +172,7 @@ export const crunchNumbers: Clip = {
       trap: 'you would love を配達係の話と取りやすい。love のあとの内容と、相手の聞き返しを聞く。',
       use: 'You know what would be fun?（何が楽しいか分かる？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'afford', reveals: ['loft'], seg: [139.6, 144.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'afford', reveals: ['loft'], seg: [138.5, 145.3],
       stem: 'Fill the gap: “___ afford a delivery guy?”',
       ja: '「___ afford a delivery guy?」の空所は？',
       choices: ['Can we', 'Can’t we', 'Could we'], a: 0,
@@ -184,7 +184,7 @@ export const crunchNumbers: Clip = {
       trap: 'can’t の t は消えやすい。弱く短い「クン」なら can、強く長ければ can’t。could は「クッ」。',
       use: 'Can we afford a new car?（新しい車を買う余裕ある？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'loftknow', seg: [143.3, 152.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'loftknow', seg: [143.3, 152.5],
       stem: 'How does “I know what a loft is” sound?',
       ja: '「I know what a loft is」はどんな言い方？',
       choices: ['A bit annoyed', 'Very happy', 'Surprised'], a: 0,
@@ -196,7 +196,7 @@ export const crunchNumbers: Clip = {
       trap: 'Yeah で始まるので同意に聞こえやすい。I know what 〜 is は「説明はいらない」の合図。',
       use: 'Yeah, I know what Wi-Fi is.（Wi-Fi ぐらい知ってるよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'magazines', seg: [148.55, 155.4],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'magazines', seg: [148.6, 155.8],
       stem: 'What does “Most do in the magazines” show?',
       ja: '「Most do in the magazines」から何が分かる？',
       choices: ['He only saw it in pictures', 'He read about dorm life', 'He saw a loft for sale'], a: 0,
@@ -208,7 +208,7 @@ export const crunchNumbers: Clip = {
       trap: 'most do を証拠と思いやすい。in the magazines が「現実ではない」と示す。',
       use: 'It looks great in the photos.（写真ではすてきに見える）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'lookinto', seg: [152.5, 159.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'lookinto', seg: [152, 160.6],
       stem: 'What does “We should look into that” mean?',
       ja: '「We should look into that」はどういう意味？',
       choices: ['We should check that', 'We should look inside', 'We should forget that'], a: 0,
@@ -220,7 +220,7 @@ export const crunchNumbers: Clip = {
       trap: 'into から「中をのぞく」と思いやすい。look into はひとまとまりで「調べる」。',
       use: 'I’ll look into it.（調べておきます）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'lame', seg: [163.0, 175.5],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'lame', seg: [163.7, 176.2],
       stem: 'How is “you can’t pay him anything” taken?',
       ja: '「雇う人に何も払えない」は、どう受け取られる？',
       choices: ['As a bad joke', 'As good news', 'As a fair point'], a: 0,
@@ -244,7 +244,7 @@ export const crunchNumbers: Clip = {
       trap: '大手の名前に引かれやすく、low と high の聞き分けも要る。Lowest in town が決め手。',
       use: 'Your prices are way too low.（値段が安すぎるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'volume', seg: [184.0, 189.8],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'volume', seg: [184, 192.2],
       stem: 'How do they expect to make a profit?',
       ja: 'どうやって利益を出すつもり？',
       choices: ['By selling more over time', 'By raising prices later', 'By cutting delivery costs'], a: 0,
@@ -267,7 +267,7 @@ export const crunchNumbers: Clip = {
       trap: '本人の言う理由をそのまま信じやすい。口実を聞いたら、その人が自分では何をしないかを見る。',
       use: 'Why don’t you explain it to everyone?（みんなに説明してあげてよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'explain', seg: [194.0, 205.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'explain', seg: [195.3, 207.3],
       stem: 'Why does Michael say “Why don’t you explain…” here?',
       ja: 'マイケルは、なぜここで「Why don’t you explain…」と言う？',
       choices: ['To ask him to explain', 'To say he will explain', 'To say no to his plan'], a: 0,
@@ -279,7 +279,7 @@ export const crunchNumbers: Clip = {
       trap: 'why（なぜ）から理由を聞いていると思いやすい。Why don’t you は「〜して」。',
       use: 'Why don’t you sit down?（座ったら？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', reveals: ['outof', 'prices'], seg: [216.3, 221.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', reveals: ['outof', 'prices'], seg: [213.1, 222.6],
       stem: 'What does “actually” mean in the reply?',
       ja: '返事の中の actually は、どういう意味？',
       choices: ['It says the opposite', 'It tells a secret', 'It softens bad news'], a: 0,
@@ -291,7 +291,7 @@ export const crunchNumbers: Clip = {
       trap: '「実は」から打ち明け話と思いやすいが、ここは反論。',
       use: 'Actually, it’s the other way around.（実は、その逆なんだ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outof', reveals: ['prices'], seg: [219.0, 221.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outof', reveals: ['prices'], seg: [216.6, 222.6],
       stem: 'Type the reply: “They’re actually ___.” (5 words)', answer: 'putting you out of business',
       ja: '「They’re actually ___.」の5語を書こう。',
       cue: '「actually」のあとの5語。',
@@ -301,7 +301,7 @@ export const crunchNumbers: Clip = {
       trap: 'out of が一語に聞こえやすい。of を落とさず、5語で書く。',
       use: 'This will put us out of business.（これじゃ店がつぶれる）' },
 
-    { id: 'h5', skill: 'phrase', level: 'B2', point: 'crunch', seg: [224.5, 232.5],
+    { id: 'h5', skill: 'phrase', level: 'B2', point: 'crunch', seg: [224.5, 233.3],
       stem: 'What does “crunch those numbers” mean?',
       ja: '「crunch those numbers」はどういう意味？',
       choices: ['Do the math', 'Cut the costs', 'Hide the numbers'], a: 0,

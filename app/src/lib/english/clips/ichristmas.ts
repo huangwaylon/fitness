@@ -26,7 +26,7 @@ export const iChristmas: Clip = {
       trap: 'everything changes から、自分の生活の話と思いやすい。wishes のあとを聞く。',
       use: 'I wish it was Friday.（金曜だったらいいのに）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'fire', seg: [20.6, 29.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'fire', seg: [18.7, 30.7],
       stem: 'What happens just before Carly’s wish?',
       ja: 'カーリーが願う直前に何が起きる？',
       choices: ['The tree catches fire', 'A fight starts over the tree', 'A big storm hits'], a: 0,
@@ -38,7 +38,7 @@ export const iChristmas: Clip = {
       trap: 'freak（変な）から、けんかや嵐を想像しやすい。tree のあとの fire を聞く。',
       use: 'There was a fire in the kitchen.（台所で火事があった）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'cops', seg: [35.9, 43.0],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'cops', seg: [35.5, 43.5],
       stem: 'Why does Carly say “or I’ll call the cops”?',
       ja: 'カーリーはなぜ「or I’ll call the cops」と言う？',
       choices: ['To warn him to leave', 'To give him kind advice', 'To offer to call for help'], a: 0,
@@ -50,7 +50,7 @@ export const iChristmas: Clip = {
       trap: 'better（よりよい）から親切な助言と思いやすい。or 以下で警告と分かる。',
       use: 'You better hurry, or you’ll miss the bus.（急いだほうがいい、バスに乗り遅れるよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'rough', seg: [42.8, 49.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'rough', seg: [42.8, 50.6],
       stem: 'What does “rough around the edges” mean here?',
       ja: '「rough around the edges」はここではどういう意味？',
       choices: ['A bit messy', 'A bit scary', 'A bit sick'], a: 0,
@@ -62,7 +62,7 @@ export const iChristmas: Clip = {
       trap: 'rough（荒い）から、乱暴で怖いと思いやすい。ここは見た目がきちんとしていないこと。',
       use: 'He’s a bit rough around the edges, but kind.（ちょっと雑だけど、優しい人だよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'trick', seg: [53.4, 59.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'trick', seg: [52.3, 60.1],
       stem: 'How does Carly feel when she says “So, anyone can do card tricks?”',
       ja: '「So, anyone can do card tricks?」と言うとき、カーリーはどんな気持ち？',
       choices: ['Not impressed at all', 'Amazed by the card trick', 'Scared of the man'], a: 0,
@@ -84,7 +84,7 @@ export const iChristmas: Clip = {
       trap: 'scary と母音一つの差。s のあとの r と、長い「ルーイ」の音を聞く。',
       use: 'This plan sounds a little screwy.（この計画、ちょっと変だよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'office', reveals: ['wish'], seg: [86.0, 92.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'office', reveals: ['wish'], seg: [86, 93.7],
       stem: 'What does the stomach medicine tell us about the new Spencer?',
       ja: '胃薬の話から、新しいスペンサーについて何が分かる？',
       choices: ['He has a stressful office job', 'His art isn’t selling well', 'Christmas dinner upset his stomach'], a: 0,
@@ -108,7 +108,7 @@ export const iChristmas: Clip = {
       trap: 'scary novel が直前なので、その本が怖いと取りやすい。中身は bread for peasants。',
       use: 'It’s a charming read.（心温まる本だよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'baker', seg: [113.85, 118.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'baker', seg: [113.9, 118.9], keep: true,
       stem: 'When is the baker novel set?',
       ja: 'パン屋の小説はいつの時代の話？',
       choices: ['the 1600s', 'the 1700s', 'the 1800s', 'the 1900s'], a: 1,
@@ -131,7 +131,7 @@ export const iChristmas: Clip = {
       trap: 'aren’t の n’t が弱いと「唯一の」に聞こえる。also が続けば「ほかにも」。',
       use: 'You’re not the only one who’s tired.（疲れてるのは君だけじゃない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'rona', seg: [136.7, 147.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'rona', seg: [140.2, 152.2],
       stem: 'What reason does Carly give that Rona can’t be Freddie’s girlfriend?',
       ja: 'ロナがフレディの彼女のはずがない理由を、カーリーは何と言う？',
       choices: ['Freddie hates her', 'Freddie never met her', 'Freddie has a girlfriend'], a: 0,
@@ -154,7 +154,7 @@ export const iChristmas: Clip = {
       trap: 'not so special を「大事でない友だち」と取りやすい。someone は恋人。',
       use: 'Are you bringing a special someone?（誰か大切な人を連れてくる？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'sam', seg: [173.1, 181.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'sam', seg: [173.1, 184.6],
       stem: 'Why did Carly and Sam never become friends?',
       ja: 'カーリーとサムはなぜ友だちにならなかった？',
       choices: ['Spencer kept them apart', 'Sam moved far away from her', 'Carly didn’t like Sam'], a: 0,
@@ -166,7 +166,7 @@ export const iChristmas: Clip = {
       trap: 'a bad kid から、カーリーが嫌ったと思いやすい。そう思ったのは Spencer。',
       use: 'So we never met.（だから会うことはなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'hangout', reveals: ['sam'], seg: [177.35, 181.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hangout', reveals: ['sam'], seg: [175.4, 182.1],
       stem: 'Type: “He never let you ___ her when you were little.” (3 words)', answer: 'hang out with',
       ja: '書こう：「He never let you ___ her when you were little.」（3語）',
       cue: '「never let you」のあと。',
@@ -176,7 +176,7 @@ export const iChristmas: Clip = {
       trap: 'hang と out がつながり、out の t も弱い。with まで入れて3語。',
       use: 'Do you want to hang out this weekend?（今週末遊ばない？）' },
 
-    { id: 'i5', skill: 'infer', level: 'C1', point: 'fault', reveals: ['wish'], seg: [195.2, 203.8],
+    { id: 'i5', skill: 'infer', level: 'C1', point: 'fault', reveals: ['wish'], seg: [191.5, 199.5],
       stem: 'How does Sam take Carly’s “It’s my fault you’re in here”?',
       ja: 'カーリーの「It’s my fault you’re in here」を、サムはどう受け取る？',
       choices: ['Carly called the cops on her', 'Carly is sorry she didn’t visit', 'Carly got her into crime'], a: 0,
@@ -188,7 +188,7 @@ export const iChristmas: Clip = {
       trap: 'fault（せい）から、悪いことに誘ったと思いやすい。サムの質問が受け取り方を示す。',
       use: 'Sorry, it’s my fault.（ごめん、私のせいだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'swear', reveals: ['fault'], seg: [195.2, 201.4],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'swear', reveals: ['fault'], seg: [195.2, 204.4],
       stem: 'How does Sam feel when she says “I swear when I get out of here”?',
       ja: '「I swear when I get out of here」と言うとき、サムはどんな気持ち？',
       choices: ['Angry, about to threaten', 'Happy, she’s about to escape', 'Sad, about to cry'], a: 0,
@@ -209,7 +209,7 @@ export const iChristmas: Clip = {
       trap: '習った well に直したくなる。正しい文でなく、言われた音を書く。',
       use: 'You know me better than that.（私がそんなことしないって知ってるでしょ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'married', seg: [213.6, 225.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'married', seg: [221.3, 228.1],
       stem: 'What surprising news comes out at the party?',
       ja: 'パーティーでどんな驚きの知らせがある？',
       choices: ['Spencer is getting married', 'Spencer is moving away', 'Spencer is having a baby'], a: 0,
@@ -221,7 +221,7 @@ export const iChristmas: Clip = {
       trap: 'shocking news から悪い知らせを想像しやすい。are のあとを聞く。',
       use: 'My sister is getting married in June.（姉は6月に結婚する）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'straw', seg: [224.75, 231.2],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'straw', seg: [224.3, 233.5],
       stem: 'What does “the final straw” mean here?',
       ja: '「the final straw」はここではどういう意味？',
       choices: ['The last thing she could take', 'Her last bit of hope', 'Something she never saw coming'], a: 0,
@@ -244,7 +244,7 @@ export const iChristmas: Clip = {
       trap: 'only は隠す言い方でも照れでもない。教会でなら人前で歌う人。まじめな本気の返事。',
       use: 'I only drink coffee in the morning.（コーヒーは朝しか飲まない）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'wanna', seg: [259.9, 263.1],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'wanna', seg: [257.6, 265.5],
       stem: 'Fill the gap: “I don’t ___ calm down!”',
       ja: '空いている所に入る語は？「I don’t ___ calm down!」',
       choices: ['wanna', 'gonna', 'gotta'], a: 0,
@@ -256,7 +256,7 @@ export const iChristmas: Clip = {
       trap: 'gonna は「ガナ」、gotta は「ガラ」。最初が「ワ」なら wanna。',
       use: 'I don’t wanna go to bed yet.（まだ寝たくない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'back', reveals: ['abnormal'], seg: [270.3, 301.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'back', reveals: ['abnormal'], seg: [270.3, 304.4],
       stem: 'Back in the old world, how does Carly feel about the burned tree?',
       ja: '元の世界に戻って、カーリーは焼けたツリーをどう思っている？',
       choices: ['She loves it now', 'She still hates it', 'She wants it gone'], a: 0,
@@ -268,7 +268,7 @@ export const iChristmas: Clip = {
       trap: 'I thought you hated it（嫌いだと思ってた）と言われるが、すぐ I do not! と打ち消す。',
       use: 'This is my favorite mug ever.（今までで一番好きなマグなの）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'abnormal', seg: [273.95, 281.4],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'abnormal', seg: [273.9, 283.4],
       stem: 'Why is “Or… abnormal?” funny?',
       ja: '「Or… abnormal?」はなぜおかしい？',
       choices: ['Their “normal” was always odd', 'The wish isn’t over yet, sadly', 'Now Carly is the odd one'], a: 0,

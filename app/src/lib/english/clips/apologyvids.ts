@@ -15,7 +15,7 @@ export const apologyVideos: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'limit', seg: [14.0, 20.2],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'limit', seg: [14, 23.6],
       stem: 'By the rule, how much can a gift be worth at most?',
       ja: '決まりでは、贈り物は最大いくらまで？',
       choices: ['$20', '$25', '$250'], a: 1, keep: true,
@@ -27,7 +27,7 @@ export const apologyVideos: Clip = {
       trap: '「トゥエニファイヴ」なら $25、「トゥエニ」で止まれば $20、「トゥーフィフティ」なら $250。',
       use: 'We’re not allowed to take tips.（チップは受け取れないんです）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'fishbowl', seg: [19.4, 29.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'fishbowl', seg: [18.3, 23.3],
       stem: 'What does Leslie mean by “We live in a fishbowl”?',
       ja: 'レスリーの「We live in a fishbowl」はどういう意味？',
       choices: ['People see all they do', 'They must watch each other', 'The rules are too strict'], a: 0,
@@ -39,7 +39,7 @@ export const apologyVideos: Clip = {
       trap: 'fish（魚）から自然の話と思いやすい。すぐあとの always watching が意味を教える。',
       use: 'Famous people live in a fishbowl.（有名人はいつも見られている）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'lock', seg: [29.6, 35.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'lock', seg: [29.6, 35.9],
       stem: 'What will Leslie do with the gift basket?',
       ja: 'レスリーは贈り物のかごをどうする？',
       choices: ['Lock it away', 'Send it back', 'Give Tom the cheese'], a: 0,
@@ -51,7 +51,7 @@ export const apologyVideos: Clip = {
       trap: 'I’m so sorry と謝るので、送り返すと思いやすい。I’m going to のあとを聞く。',
       use: 'Please lock up when you leave.（出るときは鍵をかけてね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'whatsup', seg: [39.3, 44.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'whatsup', seg: [38.8, 45.1],
       stem: 'Type Leslie’s answer: “I’ll ___.” (4 words)', answer: "tell you what's up",
       ja: 'レスリーの答えを書こう：「I’ll ___.」（4語）',
       cue: '「What is up?」への答え。',
@@ -61,7 +61,7 @@ export const apologyVideos: Clip = {
       trap: 'tell you がひと続きで1語に聞こえやすい。what’s の s も弱い。4語を数える。',
       use: 'I’ll tell you what’s going on.（何が起きてるか教えるよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'ceiling', seg: [64.0, 70.15],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'ceiling', seg: [64, 73.9],
       stem: 'When Leslie talks of “a glass ceiling,” what is she happy about?',
       ja: '「a glass ceiling」と言うとき、レスリーは何を喜んでいる？',
       choices: ['Getting into a men-only group', 'Getting a new, better job', 'Being given a beer'], a: 0,
@@ -73,7 +73,7 @@ export const apologyVideos: Clip = {
       trap: '音の話なので、本当に何か割れたと思いやすい。たとえで「壁を破った」。',
       use: 'She broke the glass ceiling.（彼女は見えない壁を破った）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'topic', seg: [69, 75.3],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'topic', seg: [66.1, 75.7],
       stem: 'What does a man say the “boys club” is mostly about?',
       ja: '男の人は、「ボーイズクラブ」は主に何の集まりだと言う？',
       choices: ['Having fun together', 'Talking about work', 'Planning city events'], a: 0,
@@ -97,7 +97,7 @@ export const apologyVideos: Clip = {
       trap: 'お祝いの話のあとなので、お祝いと思いやすい。みんなが帰り始めた直後に出している。',
       use: 'We’re out of milk.（牛乳が切れた）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goodfeeling', seg: [93, 96.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goodfeeling', seg: [91.9, 99.9],
       stem: 'What does Leslie want when she says “Let’s keep this good feeling going”?',
       ja: '「Let’s keep this good feeling going」でレスリーは何を望んでいる？',
       choices: ['Everyone to stay longer', 'Everyone to go home now', 'Everyone to cheer up'], a: 0,
@@ -131,7 +131,7 @@ export const apologyVideos: Clip = {
       trap: '明るい「Hey!」だけだと、ただの差し入れに聞こえる。場面とカメラへの一言は、つなげて聞く。',
       use: 'Wait, is this from the gift basket?（待って、これって贈答品のかごの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ethics', reveals: ['basket'], seg: [128.9, 137.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ethics', reveals: ['basket'], seg: [128.9, 136.5],
       stem: 'In her first video, what does Leslie say she broke?',
       ja: '最初の動画で、レスリーは何を破ったと言う？',
       choices: ['The state’s ethics code', 'The club’s men-only rule', 'A law on drinking outside'], a: 0,
@@ -154,7 +154,7 @@ export const apologyVideos: Clip = {
       trap: 'Republican と Democrat が両方出るので党の話ではない。範囲は in America。',
       use: 'Let’s go one by one, in alphabetical order.（一人ずつ、名前順でいこう）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'air', reveals: ['basket'], seg: [167.5, 174.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'air', reveals: ['basket'], seg: [167.2, 175.3],
       stem: 'Why does Leslie say “Let’s clear the air”?',
       ja: 'レスリーはなぜ「Let’s clear the air」と言う？',
       choices: ['To start admitting something', 'To ask everyone to calm down', 'To change to a lighter topic'], a: 0,
@@ -166,7 +166,7 @@ export const apologyVideos: Clip = {
       trap: 'air（空気）から、窓を開ける話と思いやすい。あとに打ち明け話が続く。',
       use: 'Let’s talk and clear the air.（話してすっきりさせよう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'stickler', seg: [174.1, 182.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'stickler', seg: [174.1, 185.5],
       stem: 'What does the coworker say Leslie is usually like?',
       ja: '同僚は、レスリーはいつもはどんな人だと言う？',
       choices: ['Very strict about rules', 'Easy about the rules', 'Quiet about her life'], a: 0,
@@ -178,7 +178,7 @@ export const apologyVideos: Clip = {
       trap: '今回規則を破ったので、ゆるい人と思いやすい。usually（いつもは）を聞く。',
       use: 'My boss is a stickler for time.（上司は時間にうるさい）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'writeup', seg: [181.7, 188.55],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'writeup', seg: [181.6, 190.8],
       stem: 'About the phone calls last year, what does Leslie say?',
       ja: '去年の電話の件について、レスリーは何と言う？',
       choices: ['She would do it again', 'She is sorry about it', 'The rules made her do it'], a: 0,
@@ -190,7 +190,7 @@ export const apologyVideos: Clip = {
       trap: '謝りの場面なので、これも謝ると思いやすい。and のあとで引かないと分かる。',
       use: 'I’d do it again.（またやるよ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'email', seg: [212.3, 220.9],
+    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'email', seg: [211.6, 220.9],
       stem: 'What does Ron mean by “Put it in an email?”',
       ja: 'ロンの「Put it in an email?」は何を言いたい？',
       choices: ['He doesn’t want to hear it', 'It’s important, so write it', 'Make it short, quickly'], a: 0,
@@ -202,7 +202,7 @@ export const apologyVideos: Clip = {
       trap: 'important（大事）から、きちんと記録したいと思いやすい。long への返事として聞く。',
       use: 'Can you put it in an email?（メールで送ってもらえる？）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'proportion', seg: [226.9, 232.2],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'proportion', seg: [225.4, 232.7],
       stem: 'Why is Leslie’s “I will blow this in proportion” funny?',
       ja: 'レスリーの「I will blow this in proportion」はなぜおかしい？',
       choices: ['She turns his words around', 'She gets the words wrong', 'She says he overreacts'], a: 0,
@@ -226,7 +226,7 @@ export const apologyVideos: Clip = {
       trap: 'city manager の話が出るので、命令されたと思いやすい。理由は But のあと。',
       use: 'I hold myself to a high standard.（自分に厳しくしている）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'reprimand', reveals: ['limit'], seg: [232.3, 236.65],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'reprimand', reveals: ['limit'], seg: [231.2, 238.3],
       stem: 'What does Leslie say is the smallest punishment?',
       ja: 'レスリーは、いちばん軽い罰は何だと言う？',
       choices: ['A formal warning', 'A formal apology', 'A $25 fine'], a: 0,
@@ -238,7 +238,7 @@ export const apologyVideos: Clip = {
       trap: '謝る話が続いているので、謝罪と思いやすい。reprimand は「叱られる」ほう。',
       use: 'What’s the minimum price?（最低価格はいくら？）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'bigdeal', seg: [236.65, 240.0],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'bigdeal', seg: [232.5, 240.4],
       stem: 'Type the reply: “It’s ___.” (5 words)', answer: 'not that big a deal',
       ja: '返事を書こう：「It’s ___.」（5語）',
       cue: '「city manager」のあとの返事。',
@@ -248,7 +248,7 @@ export const apologyVideos: Clip = {
       trap: 'that を落としたり、of を足したりしやすい。文法ではなく、聞こえた5語を書く。a も1語。',
       use: 'It’s not that big a deal, honestly.（正直、そこまでのことじゃないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'isnt', reveals: ['bigdeal'], seg: [236.65, 243.6],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'isnt', reveals: ['bigdeal'], seg: [236.5, 244],
       stem: 'Fill the gap: “…in your world it ___ a big deal.”',
       ja: '空いている所に入る語は？「…in your world it ___ a big deal.」',
       choices: ['isn’t', 'is', 'wasn’t'], a: 0,
@@ -271,7 +271,7 @@ export const apologyVideos: Clip = {
       trap: 'What do you suggest は相談に聞こえるが、反論の前ふり。続く質問で本音が分かる。',
       use: 'So what, you want me to just ignore it?（じゃあ何、放っておけって言うの？）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'confession', seg: [278.95, 286.1],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'confession', seg: [279, 286.3],
       stem: 'Who will Leslie email her confession to?',
       ja: 'レスリーは告白文をだれにメールする？',
       choices: ['Everyone in Pawnee’s government', 'Every woman in public office', 'Just Ron and the city manager'], a: 0,

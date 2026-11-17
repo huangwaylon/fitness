@@ -26,7 +26,7 @@ export const newHairdo: Clip = {
       trap: 'political（政治の）髪型と言うので、新しい仕事と思いやすい。理由は母の表彰。',
       use: 'In a way, it’s my fault.（ある意味、私のせい）' },
 
-    { id: 'h1', skill: 'infer', level: 'B1', point: 'scoop', seg: [1.3, 10.3],
+    { id: 'h1', skill: 'infer', level: 'B1', point: 'scoop', seg: [0.1, 10.7],
       stem: 'What does “*Do I know you?*” tell us?',
       ja: '「Do I know you?」から何が分かる？',
       choices: ['They have never met', 'He forgot her name', 'He is happy to see her'], a: 0,
@@ -49,7 +49,7 @@ export const newHairdo: Clip = {
       trap: '母について先に聞いたので興味ありと取りやすい。the hell else は強いいらだち。',
       use: 'What else would you call it?（それ以外に何て言うの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'style', seg: [32.2, 39.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'style', seg: [31.7, 40.3],
       stem: 'What kind of hairdo does Leslie ask for?',
       ja: 'レスリーはどんな髪型を頼む？',
       choices: ['Pinned up and powerful', 'Pinned up and simple', 'Down and soft'], a: 0,
@@ -61,7 +61,7 @@ export const newHairdo: Clip = {
       trap: 'sassy（生意気な）が聞きなれず、迷いやすい。but のあとの powerful を聞く。',
       use: 'Could you pin it up?（アップにしてもらえますか）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'clock', seg: [45.4, 52.6],
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'clock', seg: [45.4, 55.6],
       stem: 'What does “*off the clock*” mean?',
       ja: '「off the clock」はどういう意味？',
       choices: ['Not at work now', 'In a hurry now', 'Late for work again'], a: 0,
@@ -73,7 +73,7 @@ export const newHairdo: Clip = {
       trap: 'clock から時間の話、急いでいると思いやすい。仕事中かどうかの話。',
       use: 'I’m off the clock now.（もう勤務時間外です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mayor', seg: [52.4, 60],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mayor', seg: [51.2, 61],
       stem: 'When will Leslie wear her hair this way?',
       ja: 'レスリーはいつこの髪型にする？',
       choices: ['When she becomes mayor', 'At every city event', 'When she runs for mayor'], a: 0,
@@ -85,7 +85,7 @@ export const newHairdo: Clip = {
       trap: 'run for mayor（市長選に出る）とまぎれやすい。when I am the … mayor を聞く。',
       use: 'When I’m rich, I’ll travel.（お金持ちになったら旅をする）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'drink', seg: [67.3, 71.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'drink', seg: [67, 73],
       stem: 'Type the question: “You ___?” (3 words)', answer: 'want a drink',
       ja: '「You ___?」の空所を書こう（3語）',
       cue: '「Yeah, I know」のあと',
@@ -106,7 +106,7 @@ export const newHairdo: Clip = {
       trap: '気取った人への皮肉にも聞こえるが、直前の Oh は感激。rare の音にも引かれやすい。',
       use: 'Wow, we’re in rarefied air here.（すごい、ここは別世界だね）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'couple', reveals: ['legs'], seg: [88.5, 100.3],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'couple', reveals: ['legs'], seg: [89.3, 101.3],
       stem: 'What does the councilman think about Leslie and Ann?',
       ja: '元市議はレスリーとアンをどう思っている？',
       choices: ['They are a couple', 'They are running for office', 'They are sisters'], a: 0,
@@ -118,7 +118,7 @@ export const newHairdo: Clip = {
       trap: 'レスリーは政治の話をしたいので、選挙の話と思いやすい。you two と who you are を聞く。',
       use: 'Just be who you are.（ありのままでいて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'mark', seg: [129.2, 135.35],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'mark', seg: [129.2, 137.1],
       stem: 'Why is Leslie looking for Mark?',
       ja: 'レスリーがマークを探しているのはなぜ？',
       choices: ['She needs his help', 'He has her car keys', 'She wants him to meet Mom'], a: 0,
@@ -130,7 +130,7 @@ export const newHairdo: Clip = {
       trap: 'Shoot を「撃つ」と思いやすい。ここは「しまった」。and のあとが理由。',
       use: 'Shoot, I forgot my phone.（しまった、携帯忘れた）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'twist', seg: [135.3, 143],
+    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'twist', seg: [135.3, 143.1],
       stem: 'What does “*twist her arm*” mean?',
       ja: '「twist her arm」はどういう意味？',
       choices: ['Push her to say yes', 'Hurt her arm a little', 'Trick her with a lie'], a: 0,
@@ -142,7 +142,7 @@ export const newHairdo: Clip = {
       trap: '文字どおり「腕をひねる」と思いやすい。圧力をかけるたとえ。',
       use: 'Okay, you twisted my arm.（分かった、負けたよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'blowoff', seg: [137.3, 140.45],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'blowoff', seg: [135.9, 143.4],
       stem: 'Type: “…trying to ___, so my mom has a plan.” (3 words)', answer: 'blow us off',
       ja: '「…trying to ___, so my mom has a plan.」の空所を書こう（3語）',
       cue: '「is trying to」のあと',
@@ -151,18 +151,6 @@ export const newHairdo: Clip = {
       mean: 'blow 〜 off ＝ 〜をすっぽかす・相手にしない。約束をやぶるときにも使う。',
       trap: 'blow us off がつながり「ブロウアソフ」。us を落としやすい。',
       use: 'He blew me off again.（彼にまたすっぽかされた）' },
-
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'mom', reveals: ['slimy'], seg: [149.8, 160.8],
-      stem: 'What does Ann think is going on?',
-      ja: 'アンはどういうことだと思っている？',
-      choices: ['Leslie just obeys her mom', 'Leslie is too soft', 'Leslie likes to play dirty'], a: 0,
-      choicesJa: ['レスリーは母の言いなり', 'レスリーは優しすぎる', 'レスリーはずるいのが好き'],
-      cue: '「That sounds slimy」のあと',
-      line: 'That sounds slimy. *It sounds like your mom’s telling you to be slimy*.',
-      said: '「ずるく聞こえる。お母さんにずるくなれと言われてるみたい」と言う。',
-      mean: 'slimy ＝ ずるい・卑怯な。悪いのは母の作戦で、レスリーはそれに従っている。',
-      trap: 'slimy から、レスリー本人がずるいと思いやすい。your mom’s telling you を聞く。',
-      use: 'It sounds like a bad idea.（悪い考えに聞こえる）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'slimy', seg: [149.8, 159.2], retired: true,
       stem: 'Which plain-English version keeps what Ann means about “getting tough”?',
@@ -186,7 +174,19 @@ export const newHairdo: Clip = {
       trap: '途中で boyfriend の話が出るので、彼氏のけんかと思いやすい。始まりは母の作戦。',
       use: 'I think that’s unfair.（それはずるいと思う）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'nursing', seg: [160.4, 167.85],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'mom', reveals: ['slimy'], seg: [156.2, 163.1],
+      stem: 'What does Ann think is going on?',
+      ja: 'アンはどういうことだと思っている？',
+      choices: ['Leslie just obeys her mom', 'Leslie is too soft', 'Leslie likes to play dirty'], a: 0,
+      choicesJa: ['レスリーは母の言いなり', 'レスリーは優しすぎる', 'レスリーはずるいのが好き'],
+      cue: '「That sounds slimy」のあと',
+      line: 'That sounds slimy. *It sounds like your mom’s telling you to be slimy*.',
+      said: '「ずるく聞こえる。お母さんにずるくなれと言われてるみたい」と言う。',
+      mean: 'slimy ＝ ずるい・卑怯な。悪いのは母の作戦で、レスリーはそれに従っている。',
+      trap: 'slimy から、レスリー本人がずるいと思いやすい。your mom’s telling you を聞く。',
+      use: 'It sounds like a bad idea.（悪い考えに聞こえる）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'nursing', seg: [159.1, 169.4],
       stem: 'How does Leslie talk about Ann’s job?',
       ja: 'レスリーはアンの仕事のことをどう話す？',
       choices: ['As if it is easy', 'With real respect', 'As if it is scary'], a: 0,
@@ -209,7 +209,7 @@ export const newHairdo: Clip = {
       trap: 'pain から「我慢する」側と取りやすい。bring は相手に持っていく、つまり与える側。',
       use: 'Our team is ready to bring the pain.（うちのチームは本気で攻めるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [167.5, 173.35],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [167.5, 176.1],
       stem: 'Fill the gap: “You ___ let yourself get taken advantage of.”',
       ja: '「You ___ let yourself get taken advantage of.」の空所は？',
       choices: ['can', 'can’t', 'don’t'], a: 1,
@@ -221,7 +221,7 @@ export const newHairdo: Clip = {
       trap: 'can は「クン」と小さく、don’t は「ドン」。強く長い「キャーン」なら can’t。',
       use: 'You can’t pay by card here.（ここではカードで払えません）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'backatyou', seg: [173.2, 183.95],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'backatyou', seg: [173.2, 184.4],
       stem: 'What does Leslie do with Ann’s question?',
       ja: 'アンの質問に、レスリーはどうする？',
       choices: ['Asks the same thing back', 'Says yes to it', 'Changes the subject'], a: 0,
@@ -242,7 +242,7 @@ export const newHairdo: Clip = {
       trap: 'lately があるので made や have made に直したくなる。書き取りは、言われた音を書く。',
       use: 'Get any sleep last night?（昨夜は眠れた？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'legs', seg: [179.95, 187.7],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'legs', seg: [180, 188.8],
       stem: 'How many broken legs does Ann’s boyfriend have?',
       ja: 'アンの彼氏は何本の脚を骨折している？',
       choices: ['One', 'Two', 'Three'], a: 1,
@@ -254,7 +254,7 @@ export const newHairdo: Clip = {
       trap: 'すぐあとに three crutches（松葉づえ3本）が出るので、3を選びやすい。',
       use: 'I broke my leg skiing.（スキーで脚を折った）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'crutch', reveals: ['legs'], seg: [185.3, 190.2],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'crutch', reveals: ['legs'], seg: [183.9, 192.6],
       stem: 'What does Leslie mean by “one of them is you”?',
       ja: 'レスリーの「one of them is you」はどういう意味？',
       choices: ['He leans on Ann too much', 'Ann is hurt as well', 'Ann carries his crutches'], a: 0,

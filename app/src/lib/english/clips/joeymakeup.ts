@@ -11,7 +11,7 @@ export const joeymakeup: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'makeup', seg: [7.2, 11.7],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'makeup', seg: [5.4, 11.7],
       stem: 'Type the question: “Are you ___?” (2 words)', answer: 'wearing makeup',
       ja: '「Are you ___?」の空所を書こう（2語）',
       cue: 'ジョーイが来たあとの質問', line: 'Are you *wearing makeup*?',
@@ -31,7 +31,7 @@ export const joeymakeup: Clip = {
       trap: 'Lyme disease など病気の話が出るが、それはポスターの役のこと。',
       use: 'I got a new job!（新しい仕事が決まったよ！）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'proud', seg: [7.7, 17.7],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'proud', seg: [9.1, 21.1],
       stem: 'How does Joey feel about his new job?',
       ja: 'ジョーイは新しい仕事をどう思っている？',
       choices: ['He is proud of it', 'He is shy about it', 'He is bored with it'], a: 0,
@@ -54,7 +54,7 @@ export const joeymakeup: Clip = {
       trap: 'That’s so funny を文字通りに取りやすい。cause のあとにオチが来る形に注意。',
       use: 'That’s funny, because I heard the opposite.（おかしいな、逆の話を聞いたよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['clinic'], seg: [24.5, 29.3],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['clinic'], seg: [24.5, 32],
       stem: 'Joey asks, “*You know* those posters?” What does he mean?',
       ja: 'ジョーイの「You know those posters?」はどういう意味？',
       choices: ['You have seen them, right?', 'I don’t know about them.', 'Please listen to me now.'], a: 0,
@@ -77,7 +77,7 @@ export const joeymakeup: Clip = {
       trap: 'モデルと聞くと雑誌を思いやすい。posters（ポスター）の一語で決まる。',
       use: 'Is there a clinic near here?（この近くに診療所はありますか）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'posters', reveals: ['lyme'], seg: [28.75, 40.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'posters', reveals: ['lyme'], seg: [28.8, 40.8],
       stem: 'What do the clinic posters show?',
       ja: '診療所のポスターには何が写っている？',
       choices: ['People who are sick', 'Healthy young men', 'Doctors at the clinic'], a: 0,
@@ -89,7 +89,7 @@ export const joeymakeup: Clip = {
       trap: 'healthy が3回聞こえるが、それは予想。あとに病名が続く。',
       use: 'I have asthma.（ぜんそくがあります）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'which', seg: [34.6, 37.75],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'which', seg: [32.8, 37.8],
       stem: 'Fill the gap: “Do you know which one ___ be?”',
       ja: '「Do you know which one ___ be?」の空所は？',
       choices: ['you’re going to', 'you want to', 'you were going to'], a: 0,
@@ -113,7 +113,7 @@ export const joeymakeup: Clip = {
       trap: 'open を「お店が開いている」の意味で取りやすい。ここは役の空きのこと。',
       use: 'Is this seat open?（この席、空いてますか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'luck', seg: [40.2, 43.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'luck', seg: [39.7, 44.8],
       stem: 'Type the end: “Good luck, man. I ___.” (4 words)', answer: 'hope you get it',
       ja: '「Good luck, man. I ___.」の空所を書こう（4語）',
       cue: '「Good luck, man」のすぐあと', line: 'Good luck, man. I *hope you get it*.',
@@ -133,7 +133,7 @@ export const joeymakeup: Clip = {
       trap: 'going home が聞こえると帰省の話と思いやすい。帰るのはジョーイだけ。',
       use: 'Why don’t you come over for dinner?（うちに夕食を食べに来ない？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'tellyou', reveals: ['offer'], seg: [52.2, 56.8],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'tellyou', reveals: ['offer'], seg: [50.2, 55.2],
       stem: 'Monica says, “I’ll tell you what.” What comes next?',
       ja: 'モニカが「I’ll tell you what」と言う。次に来るのは？',
       choices: ['An offer to help', 'A secret about Mom', 'Some bad news'], a: 0,
@@ -145,7 +145,7 @@ export const joeymakeup: Clip = {
       trap: 'tell から「秘密を話す」と思いやすい。あとに How about が続く。',
       use: 'I’ll tell you what, let’s split it.（じゃあこうしよう、割り勘にしよう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'potatoes', seg: [55.15, 60.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'potatoes', seg: [55, 60.8],
       stem: 'Which food is Monica asked to make?',
       ja: 'モニカが作ってと頼まれた料理は？',
       choices: ['Mashed potatoes with lumps', 'Mashed potatoes with no lumps', 'Gravy with no lumps'], a: 0,
@@ -156,7 +156,7 @@ export const joeymakeup: Clip = {
       trap: 'ダマはふつうない方がいいので「なし」を選びやすい。with the lumps と聞こえる。',
       use: 'Can I have it without onions?（玉ねぎ抜きにできますか）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'willyou', reveals: ['potatoes'], seg: [56.6, 60.7],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'willyou', reveals: ['potatoes'], seg: [55, 60.8],
       stem: 'Fill the gap: “___ make the mashed potatoes with the lumps?”',
       ja: '「___ make the mashed potatoes with the lumps?」の空所は？',
       choices: ['Will you', 'Would you', 'Can you'], a: 0,
@@ -167,7 +167,7 @@ export const joeymakeup: Clip = {
       trap: 'Would なら d の音、Can なら「キャ」の音。「ウィリュ」なら Will you。',
       use: 'Will you pass me the salt?（塩を取ってくれる？）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'lumps', reveals: ['potatoes'], seg: [58.5, 65.5],
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'lumps', reveals: ['potatoes'], seg: [58.5, 66],
       stem: 'Monica says, “I’ll *work on* the lumps.” What does she mean?',
       ja: 'モニカの「I’ll work on the lumps」はどういう意味？',
       choices: ['She will try to make lumps', 'She will take out the lumps', 'She will ask Mom about it'], a: 0,
@@ -179,7 +179,7 @@ export const joeymakeup: Clip = {
       trap: 'not supposed to（〜はずじゃない）で断ると思いやすい。途中でやめて引き受けている。',
       use: 'Okay, I’ll work on it.（分かった、やってみる）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'right', seg: [63.4, 68.3],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'right', seg: [63.4, 72.5],
       stem: 'Why does Monica add “*right*” to her question?',
       ja: 'モニカが質問の最後に「right」をつけるのはなぜ？',
       choices: ['To check what she thinks', 'To say Joey is correct', 'To tell Joey to leave'], a: 0,
@@ -191,7 +191,7 @@ export const joeymakeup: Clip = {
       trap: 'right を「正しい」や「右」と取りやすい。文の最後で上がる right は確認の合図。',
       use: 'The station is this way, right?（駅はこっちですよね？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'boycott', seg: [68.3, 76.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'boycott', seg: [66.4, 76.3],
       stem: 'Monica says Chandler is “*still* boycotting.” What does “still” tell us?',
       ja: 'モニカの言う「still」から何が分かる？',
       choices: ['He did it last year too', 'He just started this year', 'He has to work this year'], a: 0,
@@ -203,7 +203,7 @@ export const joeymakeup: Clip = {
       trap: 'boycotting に気を取られ、still を聞き落としやすい。',
       use: 'Are you still working there?（まだそこで働いてるの？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'single', seg: [69.5, 76.3],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'single', seg: [69.5, 78.7],
       stem: 'Chandler says, “Yes, *every single one* of them.” What does he mean?',
       ja: 'チャンドラーの「every single one of them」はどういう意味？',
       choices: ['Yes, all of them', 'Only one of them', 'Most of them'], a: 0,
@@ -215,7 +215,7 @@ export const joeymakeup: Clip = {
       trap: 'single（ひとつ）から「一つだけ」と思いやすい。every なら全部。',
       use: 'I read every single page.（一ページ残らず読んだ）' },
 
-    { id: 'd4', skill: 'who', level: 'B2', point: 'grandma', seg: [76.2, 83.3],
+    { id: 'd4', skill: 'who', level: 'B2', point: 'grandma', seg: [75.9, 83.4],
       stem: 'Who is Phoebe spending Thanksgiving with?',
       ja: 'フィービーは感謝祭をだれと過ごす？',
       choices: ['Grandma and Grandma’s boyfriend', 'Grandma and Phoebe’s boyfriend', 'Grandma and Grandma’s husband'], a: 0,
@@ -237,7 +237,7 @@ export const joeymakeup: Clip = {
       trap: '12月と聞いてクリスマスと混同したと取りやすいが、わざと動かしている。lunar がオチ。',
       use: 'She’s a vegetarian, so we’re having pasta.（彼女はベジタリアンだから、パスタにする）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'december', reveals: ['grandma'], seg: [78.15, 83.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'december', reveals: ['grandma'], seg: [78.2, 84.1], keep: true,
       stem: 'When will Phoebe’s group celebrate Thanksgiving?',
       ja: 'フィービーたちは感謝祭をいつ祝う？',
       choices: ['In November', 'In December', 'In January'], a: 1,

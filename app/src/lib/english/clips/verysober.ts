@@ -14,7 +14,7 @@ export const verySober: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'scary', reveals: ['chapter'], seg: [8.35, 18.6],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'scary', reveals: ['chapter'], seg: [8.2, 19.2],
       stem: 'What scary things does Leslie talk about?',
       ja: 'レスリーは、どんな怖いものの話をする？',
       choices: ['Broken dreams', 'Ghosts and monsters', 'Dark rooms'], a: 0,
@@ -38,7 +38,7 @@ export const verySober: Clip = {
       trap: 'sweeter（もっと甘い）から食べ物を思いやすい。少し間をおいた The truth が答え。',
       use: 'Can we have some candy?（お菓子もらえる？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'downhill', reveals: ['truth'], seg: [23.55, 28.85],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'downhill', reveals: ['truth'], seg: [23.6, 31.4],
       stem: 'What does “It’s all downhill from here” mean?',
       ja: '「It’s all downhill from here」はどういう意味？',
       choices: ['Things will only get worse', 'The hard part is over', 'The next house is downhill'], a: 0,
@@ -50,7 +50,7 @@ export const verySober: Clip = {
       trap: 'downhill は「楽になる」の意味でも使う。直前の peaked（頂上を過ぎた）で悪いほう。',
       use: 'After thirty, it’s all downhill.（30過ぎたら下り坂だよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'chapter', seg: [31, 35.55],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'chapter', seg: [30.9, 37.5],
       stem: 'What does Leslie say about being City Councilwoman?',
       ja: '市議会議員だったことについて、レスリーは何と言う？',
       choices: ['That time is over', 'She still wants the name', 'She will run again'], a: 0,
@@ -62,7 +62,7 @@ export const verySober: Clip = {
       trap: 'Councilwoman で今も議員に聞こえる。not と already over まで聞く。',
       use: 'That chapter of my life is over.（人生のあの時期はもう終わった）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'must', seg: [89, 93.15],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'must', seg: [88.9, 94.2],
       stem: 'Why does Ben say, “I know you must feel awful”?',
       ja: 'ベンはなぜ「I know you must feel awful」と言う？',
       choices: ['To show that he cares', 'To say she should feel bad', 'To talk about himself'], a: 0,
@@ -74,7 +74,7 @@ export const verySober: Clip = {
       trap: 'must を「〜しなければならない」と思いやすい。feel の前の must は「きっと」。',
       use: 'You must be tired after the flight.（長旅で疲れたでしょう）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'awful', seg: [91.3, 94.9],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'awful', seg: [88.9, 97.3],
       stem: 'Fill the gap: “I ___ feel awful.”',
       ja: '空所を埋める：「I ___ feel awful.」',
       choices: ['don’t', 'do', 'didn’t'], a: 0,
@@ -98,7 +98,7 @@ export const verySober: Clip = {
       trap: 'keep climbing（登り続けて）で元気づけたと思いやすい。最後に揺らぐのはベン。',
       use: 'Wait, now I’m worried about me.（待って、今度は自分が心配になってきた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'relax', reveals: ['awful'], seg: [93.15, 99.35],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'relax', reveals: ['awful'], seg: [93, 100.3],
       stem: 'How does Leslie say she feels now?',
       ja: 'レスリーは、今どんな気分だと言う？',
       choices: ['She can finally relax', 'She is far too tired', 'She feels really awful'], a: 0,
@@ -110,7 +110,7 @@ export const verySober: Clip = {
       trap: '直前の awful が耳に残りやすい。I feel like のあとを聞く。',
       use: 'I can finally relax.（やっとゆっくりできる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eighteen', seg: [99.2, 103.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eighteen', seg: [97, 106.6], keep: true,
       stem: 'How old was Ben when he was impeached?',
       ja: 'ベンが職を追われたのは何歳のとき？',
       choices: ['Thirteen', 'Eighteen', 'Thirty'], a: 1,
@@ -122,7 +122,7 @@ export const verySober: Clip = {
       trap: '似た数に聞こえやすい。「エイティーン」と「エ」で始まれば18、「サーティーン」は13、「サーティ」と短ければ30。',
       use: 'I moved out when I was eighteen.（18で家を出た）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hill', seg: [103.4, 106.28],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hill', seg: [100.3, 108.3],
       stem: 'Type it: “you have to keep ___ that hill.” (3 words)', answer: 'climbing back up',
       ja: 'ベンの言葉を書き取る：「you have to keep ___ that hill.」（3語）',
       cue: '「keep」のあと、hill の前。',
@@ -143,7 +143,7 @@ export const verySober: Clip = {
       trap: 'do you を「あなたは？」と取りやすい。have to を受けた問いで、主語は人一般。',
       use: 'You have to go. — Or do I?（行かなきゃ。—本当に？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'appealing', seg: [116.5, 122.8],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'appealing', seg: [115.7, 123.1],
       stem: 'How does Ben feel about Leslie’s idea of a chill life?',
       ja: 'のんびり生きるというレスリーの考えを、ベンはどう思う？',
       choices: ['He likes some of it', 'He loves all of it', 'He is shocked by it'], a: 0,
@@ -155,7 +155,7 @@ export const verySober: Clip = {
       trap: 'sure で全部賛成と思いやすい。part of のような言い方は、反対の前ぶれ。',
       use: 'Part of me wants to say yes.（ちょっとイエスと言いたい気もする）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'candyjob', seg: [122.8, 134.85],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'candyjob', seg: [122.8, 134.9],
       stem: 'Why does Ben stop and say “Oh God”?',
       ja: 'ベンはなぜ話を止めて「Oh God」と言う？',
       choices: ['He thinks he peaked too', 'He thinks he hurt Leslie', 'His charity is in trouble'], a: 0,
@@ -178,7 +178,7 @@ export const verySober: Clip = {
       trap: '物を指す「はい、どうぞ」や、年の訂正と取りやすい。返しているのは問いの気づきのほう。',
       use: 'And there it is: the real reason.（ほら出た、本当の理由が）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tattoo', reveals: ['pawnshop'], seg: [141, 178.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tattoo', reveals: ['pawnshop'], seg: [141, 179.2],
       stem: 'Why do Leslie and Ben go to the pawn shop?',
       ja: 'レスリーとベンはなぜ質屋に行く？',
       choices: ['To get tattoos', 'To buy rings', 'To sell things'], a: 0,
@@ -201,16 +201,7 @@ export const verySober: Clip = {
       trap: '愛の言葉が多いので、夫婦の不安と取りやすい。愛は確かで、気にしているのは「頂点」のほう。',
       use: 'I’m totally fine. Now, where’s the wine?（全然平気。で、ワインはどこ？）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'inour', seg: [171.8, 174.25], retired: true,
-      stem: 'Type the request: “We would like to get tattoos ___.” (3 words)', answer: 'in our bodies',
-      cue: '「tattoos」のすぐあと。文法より、聞こえた音を。',
-      line: 'We would like to get tattoos *in our bodies* because we love each other.',
-      said: '「しらふです。愛し合っているので、体の中に入れ墨を入れたいです」と頼む。',
-      mean: 'ふつうは on our bodies。in と言ってしまうのが、しらふではないしるしで、そこも笑い。',
-      trap: '習った形に合わせて on と書きたくなる。書き取りは正しい文でなく、言われた音を書く。',
-      use: 'We’re sober. Very, very sober.（しらふです。とっても）' },
-
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'pawnshop', seg: [174.25, 178.6],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'pawnshop', seg: [171.7, 179.9],
       stem: 'How does the shop owner answer the tattoo request?',
       ja: '入れ墨を頼まれて、店の人はどう答える？',
       choices: ['He can do the tattoos', 'He can’t help them', 'He knows a tattoo shop'], a: 0,
@@ -222,7 +213,16 @@ export const verySober: Clip = {
       trap: 'This is a pawn shop で断ったと思いやすい。But のあとが本当の答え。',
       use: 'Not my job, but sure, I can do that.（担当じゃないけど、いいよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'question', seg: [191.0, 195.0],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'inour', seg: [171.8, 174.25], retired: true,
+      stem: 'Type the request: “We would like to get tattoos ___.” (3 words)', answer: 'in our bodies',
+      cue: '「tattoos」のすぐあと。文法より、聞こえた音を。',
+      line: 'We would like to get tattoos *in our bodies* because we love each other.',
+      said: '「しらふです。愛し合っているので、体の中に入れ墨を入れたいです」と頼む。',
+      mean: 'ふつうは on our bodies。in と言ってしまうのが、しらふではないしるしで、そこも笑い。',
+      trap: '習った形に合わせて on と書きたくなる。書き取りは正しい文でなく、言われた音を書く。',
+      use: 'We’re sober. Very, very sober.（しらふです。とっても）' },
+
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'question', seg: [191, 196.5],
       stem: 'Type it: “Can I ___?” (4 words)', answer: 'ask you a question',
       ja: '書き取る：「Can I ___?」（4語）',
       cue: '「Can I」のあとの4語。',
@@ -232,7 +232,7 @@ export const verySober: Clip = {
       trap: 'ask you がつながって「アスキュー」に聞こえる。a は小さく短いので落としやすい。',
       use: 'Excuse me, can I ask you a question?（すみません、ちょっといいですか）' },
 
-    { id: 'a3', skill: 'detail', level: 'B1', point: 'cutest', seg: [192.6, 197.4],
+    { id: 'a3', skill: 'detail', level: 'B1', point: 'cutest', seg: [192.5, 200],
       stem: 'How does the shop owner answer the “cutest couple” question?',
       ja: '「一番かわいいカップル？」と聞かれて、店の人は何と答える？',
       choices: ['No', 'Yes', 'Maybe'], a: 0,
@@ -255,7 +255,7 @@ export const verySober: Clip = {
       trap: '人名に気を取られやすいが、笑いは最後の subtle。中身と評価のずれを聞く。',
       use: 'Nothing fancy, just something subtle.（派手じゃなく、控えめなので）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'scratch', seg: [212.85, 216.68],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'scratch', seg: [212.8, 218.8],
       stem: 'Leslie says, “No, scratch that.” What does she mean?',
       ja: 'レスリーの「No, scratch that」はどういう意味？',
       choices: ['Forget what I just said', 'Draw it lightly first', 'Add that to the idea'], a: 0,

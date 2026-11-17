@@ -15,7 +15,7 @@ export const charity: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'task', seg: [2.8, 43.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'task', seg: [2.8, 46.7],
       stem: 'Why has Ben asked his friends to come?',
       ja: 'ベンはなぜ友だちを呼んだ？',
       choices: ['He needs help picking a charity', 'He wants money for a charity', 'He wants to show his office'], a: 0,
@@ -39,7 +39,7 @@ export const charity: Clip = {
       trap: 'ゲームの「パス（順番を回す）」と思いやすい。誘いへの Pass は「やめとく」。',
       use: 'Dessert? I’ll pass, thanks.（デザート？ 遠慮しとく、ありがとう）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'worth', seg: [8.6, 15.4],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'worth', seg: [8.1, 17.6],
       stem: 'April says, “It was *totally worth it*.” What does she mean?',
       ja: '「It was totally worth it」とはどういう意味？',
       choices: ['Coming was a good idea', 'It cost a lot of money', 'It was a waste of time'], a: 0,
@@ -51,7 +51,7 @@ export const charity: Clip = {
       trap: 'worth から値段の話と思いやすい。worth it は「やったかいがあった」。',
       use: 'The view was totally worth it.（景色、来たかいがあったね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fine', seg: [15.7, 26.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fine', seg: [15.7, 26.8],
       stem: 'How is Andy really doing?',
       ja: 'アンディは本当はどんな様子？',
       choices: ['Very down about everything', 'Just tired from no sleep', 'Fine, just joking around'], a: 0,
@@ -62,6 +62,18 @@ export const charity: Clip = {
       mean: 'I’m fine, it’s just that 〜 ＝ 大丈夫、ただ〜なだけ。中身はかなり落ち込んでいる。',
       trap: 'fine と tired だけだと軽く聞こえる。it’s just that のあとが本当の気持ち。',
       use: 'I’m fine, it’s just that I’m tired.（大丈夫、ちょっと疲れてるだけ）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'hobbies', reveals: ['fine'], seg: [20.5, 26.6],
+      stem: 'What does Andy say about his old hobbies?',
+      ja: 'アンディは、昔の趣味について何と言う？',
+      choices: ['They don’t interest him now', 'He has no time for them', 'He wants to find some new ones'], a: 0,
+      choicesJa: ['今は興味がわかない', 'する時間がない', '新しい趣味を見つけたい'],
+      cue: '「overeating」のあとの一文。',
+      line: 'Also, I can’t sleep, I’m overeating. *None of my old hobbies interest me*.',
+      said: '「眠れないし、食べすぎるし、昔の趣味もどれもつまらない」と言う。',
+      mean: 'None of 〜 ＝ 〜のどれも…ない。interest me ＝ 私の興味をひく。昔の趣味が全部つまらなくなった。',
+      trap: 'old hobbies から「新しい趣味を探す」と思いやすい。None で始まるので「どれも〜ない」。',
+      use: 'None of these shoes fit me.（どの靴も足に合わない）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'symptoms', reveals: ['fine'], seg: [21.0, 26.3], retired: true,
       stem: 'Which of these does Andy say about himself?',
@@ -75,19 +87,7 @@ export const charity: Clip = {
       trap: 'tired（疲れている）から「よく寝る」と思いやすい。can’t sleep と言っている。',
       use: 'I’ve been overeating lately.（最近食べすぎてる）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'hobbies', reveals: ['fine'], seg: [23.0, 27.4],
-      stem: 'What does Andy say about his old hobbies?',
-      ja: 'アンディは、昔の趣味について何と言う？',
-      choices: ['They don’t interest him now', 'He has no time for them', 'He wants to find some new ones'], a: 0,
-      choicesJa: ['今は興味がわかない', 'する時間がない', '新しい趣味を見つけたい'],
-      cue: '「overeating」のあとの一文。',
-      line: 'Also, I can’t sleep, I’m overeating. *None of my old hobbies interest me*.',
-      said: '「眠れないし、食べすぎるし、昔の趣味もどれもつまらない」と言う。',
-      mean: 'None of 〜 ＝ 〜のどれも…ない。interest me ＝ 私の興味をひく。昔の趣味が全部つまらなくなった。',
-      trap: 'old hobbies から「新しい趣味を探す」と思いやすい。None で始まるので「どれも〜ない」。',
-      use: 'None of these shoes fit me.（どの靴も足に合わない）' },
-
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bottom', reveals: ['fine'], seg: [26.2, 31.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bottom', reveals: ['fine'], seg: [24.2, 34.3],
       stem: 'Andy’s self-esteem “has *hit rock bottom*.” Meaning?',
       ja: 'アンディの自信は「hit rock bottom」。どういう意味？',
       choices: ['It’s at its lowest point', 'It’s getting better now', 'It’s a little shaken'], a: 0,
@@ -110,7 +110,7 @@ export const charity: Clip = {
       trap: '最初の文だけで汗を症状と取りやすい。同じ形の2文は、違う語と同じ語を比べる。',
       use: 'He’s usually late, so no change there.（彼はいつも遅れるから、そこは変わらない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', reveals: ['task'], seg: [36.8, 41.55], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', reveals: ['task'], seg: [34.5, 44], keep: true,
       stem: 'By when does Ben have to choose the charity?',
       ja: 'ベンはいつまでに支援先を決めないといけない？',
       choices: ['By tonight', 'By tomorrow', 'By next week'], a: 1,
@@ -122,7 +122,7 @@ export const charity: Clip = {
       trap: '「トゥナイ」で切れれば tonight、「トゥモロウ」と「モ」が続けば tomorrow、「ネクスト」で始まれば next week。',
       use: 'I need it by tomorrow.（明日までに必要です）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'sort', reveals: ['task'], seg: [39.9, 43.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'sort', reveals: ['task'], seg: [39.9, 46.7],
       stem: 'Fill the gap: “Can you guys help me ___ out?”',
       ja: '空いている所に入る語は？「Can you guys help me ___ out?」',
       choices: ['sort them', 'sort it', 'sort this'], a: 0,
@@ -169,7 +169,7 @@ export const charity: Clip = {
       trap: 'donation で Tom が寄付すると取りやすい。accept（受け取る）側。',
       use: 'On behalf of the team, thank you.（チームを代表して、ありがとう）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'later', seg: [69.9, 76.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'later', seg: [69.9, 79.6],
       stem: 'Why does Ben say “We’ll just put it aside”?',
       ja: 'ベンは、なぜ「We’ll just put it aside」と言う？',
       choices: ['To put it off for now', 'To promise to read it now', 'To say he already read it'], a: 0,
@@ -181,7 +181,7 @@ export const charity: Clip = {
       trap: 'I’ll read it を約束と思いやすい。just と later が並ぶと、たいてい後回し。',
       use: 'Let’s put that aside for now.（それはいったん置いておこう）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'push', reveals: ['fine'], seg: [76.2, 80.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'push', reveals: ['fine'], seg: [73.7, 83.7],
       stem: 'Why does April want Andy to talk right now?',
       ja: 'エイプリルはなぜ今すぐアンディに話させたい？',
       choices: ['To help Andy feel good', 'To end the meeting fast', 'To make Ben listen to her'], a: 0,
@@ -193,7 +193,7 @@ export const charity: Clip = {
       trap: 'right now から「早く済ませたい」と思いやすい。Go, babe は応援の言葉。',
       use: 'Go on, tell them your idea.（ほら、アイデアを話して）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'redwood', seg: [80.5, 89.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'redwood', seg: [79.9, 89.7],
       stem: 'What does the Redwood Music Program do?',
       ja: 'レッドウッド音楽プログラムは何をしている？',
       choices: ['Music class after school', 'Big shows to raise money', 'A summer music camp'], a: 0,
@@ -216,7 +216,7 @@ export const charity: Clip = {
       trap: '大げさなのでからかいと取りやすいが本人は大まじめ。決め言葉の場違いさが笑い。',
       use: 'In conclusion, let’s order pizza.（結論として、ピザを頼もう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'ambulance', seg: [139.8, 148.32],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'ambulance', seg: [139.8, 150.1],
       stem: 'What does Ben’s chosen charity want to do?',
       ja: 'ベンが選んだ団体は何をしたい？',
       choices: ['Buy an ambulance', 'Build a new hospital', 'Train more drivers'], a: 0,
@@ -228,7 +228,7 @@ export const charity: Clip = {
       trap: 'hospital が聞こえるので「病院を建てる」と思いやすい。動詞は buy（買う）。',
       use: 'I live far away from the station.（駅から遠くに住んでいます）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'dumb', reveals: ['music'], seg: [147.85, 152.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'dumb', reveals: ['music'], seg: [144.6, 154.1],
       stem: 'Why does April say ambulances are dumb?',
       ja: 'エイプリルはなぜ救急車はくだらないと言う？',
       choices: ['She wants Andy’s idea picked', 'She had a bad ambulance ride', 'She thinks the hospital is close'], a: 0,
@@ -240,7 +240,7 @@ export const charity: Clip = {
       trap: '強い言い方なので本気の意見と思いやすい。What about 〜? で本当の話題が出る。',
       use: 'What about my idea?（私の案はどう？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'music', seg: [149.5, 153],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'music', seg: [149.1, 154.1],
       stem: 'Type April’s question: “___ Andy’s music thing?” (2 words)', answer: 'what about',
       ja: 'エイプリルの質問を書こう：「___ Andy’s music thing?」（2語）',
       cue: '「helped anyone?」のすぐあと。',
@@ -250,7 +250,7 @@ export const charity: Clip = {
       trap: 'what の t が軽い「ラ」の音になり、about とつながる。1語に聞こえたら what about。',
       use: 'What about Friday instead?（代わりに金曜はどう？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'happy', seg: [155.0, 165.3],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'happy', seg: [155, 165.6],
       stem: 'How does Andy feel when his idea loses?',
       ja: '自分の案が選ばれず、アンディはどんな気持ち？',
       choices: ['Sad, but hiding it', 'Sad, and sulking openly', 'Fine, just a bit too hot'], a: 0,

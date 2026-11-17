@@ -17,7 +17,7 @@ export const benSaves: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'lookgood', skill: 'phrase', level: 'B1', point: 'lookgood', seg: [0, 4.5],
+    { id: 'lookgood', skill: 'phrase', level: 'B1', point: 'lookgood', seg: [0, 5],
       stem: 'What does “Wow, looking good” mean?',
       ja: '「Wow, looking good」の意味は？',
       choices: ['It looks really nice', 'Look at it carefully', 'I am looking for it'], a: 0,
@@ -55,7 +55,7 @@ export const benSaves: Clip = {
       trap: 'canceled が聞こえても、前に not がある。「中止じゃない」と言っている。',
       use: 'We’re putting on a show this weekend.（今週末、ショーをやる）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'saysno', seg: [45.5, 53.8],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'saysno', seg: [45.5, 54.2],
       stem: 'Who says no to the concert?',
       ja: 'コンサートに「だめ」と言うのはだれ？',
       choices: ['Ben', 'Chris', 'Leslie'], a: 0,
@@ -67,7 +67,7 @@ export const benSaves: Clip = {
       trap: 'クリスがみんなに伝えるので、クリスが決めたように聞こえやすい。Ben says が答え。',
       use: 'My boss says no. Sorry.（上司がだめだって。ごめんね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hasto', seg: [46.5, 50.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hasto', seg: [46.1, 51.5],
       stem: 'Fill the gap: “Surely there ___ be a solution, Ben?”',
       ja: '空いている所に入る言葉は？',
       choices: ['has to', 'had to', 'used to'], a: 0,
@@ -79,7 +79,7 @@ export const benSaves: Clip = {
       trap: 'had to（ハッタ）や used to（ユースタ）と似ている。最初の「ハス」を聞く。',
       use: 'There has to be a better way.（もっといい方法があるはず）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'thing', reveals: ['goeson'], seg: [51.7, 57.15],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'thing', reveals: ['goeson'], seg: [51.6, 57.2],
       stem: 'Why does Leslie say “here’s the thing, though”?',
       ja: 'レスリーは、なぜ「here’s the thing, though」と言う？',
       choices: ['To start to disagree with Ben', 'To hand Ben something', 'To agree with what Ben said'], a: 0,
@@ -91,7 +91,7 @@ export const benSaves: Clip = {
       trap: 'here（ここに）から、物をわたすと思いやすいが、何も渡していない。',
       use: 'Here’s the thing, though. I’m broke.（でもね、お金がないんだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'donated', reveals: ['goeson'], seg: [56.8, 66.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'donated', reveals: ['goeson'], seg: [55.9, 66.7],
       stem: 'Which reason does Leslie give for going ahead?',
       ja: '続ける理由として、レスリーは何と言う？',
       choices: ['It was all given for free', 'All tickets are sold', 'The vendors were all paid'], a: 0,
@@ -114,7 +114,7 @@ export const benSaves: Clip = {
       trap: '謝罪やお願いを予想しやすいが、but のあとは「もっと良いもの」の型。',
       use: 'It may not be fancy, but it’s tasty.（豪華じゃないけど、おいしいよ）' },
 
-    { id: 'h2', skill: 'attitude', level: 'B2', point: 'cooler', seg: [71.9, 81.1],
+    { id: 'h2', skill: 'attitude', level: 'B2', point: 'cooler', seg: [71.9, 81.6],
       stem: 'How sure is Leslie about “something much cooler”?',
       ja: '「もっとすごいこと」について、レスリーはどのくらい自信がある？',
       choices: ['Very sure', 'Not really sure', 'Sure it won’t happen'], a: 1, keep: true,
@@ -126,7 +126,7 @@ export const benSaves: Clip = {
       trap: '前半は自信満々に聞こえるので「とても自信がある」と思いやすい。最後の I think を聞く。',
       use: 'It’ll be fine. I think.（大丈夫だよ。たぶん）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'gig', seg: [89.8, 95.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'gig', seg: [89.8, 98.2],
       stem: 'Where is Freddy playing instead?',
       ja: 'フレディは代わりにどこで歌う？',
       choices: ['At a library in Eagleton', 'At a school in Eagleton', 'At a big mall in Eagleton'], a: 0,
@@ -138,7 +138,7 @@ export const benSaves: Clip = {
       trap: '子ども向けの歌手なので学校を思いやすい。最後に足された一語を聞く。',
       use: 'I’ve got a gig on Friday.（金曜にライブの仕事がある）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'literally', reveals: ['gig'], seg: [94.9, 101.9],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'literally', reveals: ['gig'], seg: [93.2, 102.3],
       stem: 'What does Leslie think of the library?',
       ja: 'レスリーは、図書館のことをどう思っている？',
       choices: ['She hates it, but goes on', 'She wants to stop the show', 'She is happy for Freddy'], a: 0,
@@ -162,7 +162,7 @@ export const benSaves: Clip = {
       trap: 'I don’t know は不満にも聞こえるが、ここは迷い。feel like の否定が気持ち。',
       use: 'I don’t really feel like going out.（あまり出かける気分じゃない）' },
 
-    { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [120.5, 124.5],
+    { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [119.6, 124.6],
       stem: 'What does “I’ll be back shortly” mean?',
       ja: '「I’ll be back shortly」の意味は？',
       choices: ['I’ll come back soon', 'I’ll be short', 'I’ll come back tomorrow'], a: 0,
@@ -185,7 +185,7 @@ export const benSaves: Clip = {
       trap: 'there’s nothing で詰まったようにも聞こえるが、切れた理由は直後の叫び声。',
       use: 'What could go wrong?（何が問題になるっていうの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'bones', seg: [136.3, 142.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'bones', seg: [136.1, 143.1], keep: true,
       stem: 'How many bones are broken in his hand?',
       ja: '手の骨は何本折れている？',
       choices: ['Two', 'Four', 'Six'], a: 1,
@@ -197,7 +197,7 @@ export const benSaves: Clip = {
       trap: '先に聞こえる two は腕の数。and のあとの数と場所をセットで聞く。',
       use: 'Two in the morning, one at night.（朝に2錠、夜に1錠）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'tenmin', seg: [147.3, 153.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'tenmin', seg: [145.1, 153.5], keep: true,
       stem: 'How soon does Andy want to be fixed?',
       ja: 'アンディは、どのくらいで治してほしい？',
       choices: ['In two minutes', 'In ten minutes', 'In thirty minutes'], a: 1,
@@ -209,7 +209,7 @@ export const benSaves: Clip = {
       trap: 'two は「トゥー」、ten は「テン」。すぐあとの30は医師が言う数。',
       use: 'Can you be here in the next hour?（1時間以内に来られる？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'sure', seg: [147.3, 153.8],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'sure', seg: [147.1, 156.4],
       stem: 'What does the doctor really answer?',
       ja: '医師の本当の答えは？',
       choices: ['No, it’s impossible', 'Yes, in thirty years', 'Yes, with a new medicine'], a: 0,
@@ -244,7 +244,7 @@ export const benSaves: Clip = {
       trap: 'tried once を聞き落とすと「やったことがない」に取りやすい。最後の awful が評価。',
       use: 'We tried once. It was a mess.（一度やったけど、ひどかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'somebody', seg: [158.95, 162.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'somebody', seg: [158, 166],
       stem: 'Type the line: “But you’ve ___.” (4 words)', answer: 'got to find somebody',
       ja: '「But you’ve」のあとの4語を書こう。',
       cue: '「they’re awful」のあと。',
@@ -254,7 +254,7 @@ export const benSaves: Clip = {
       trap: 'got の t が軽い「ラ」の音になり、to と一つに聞こえる。',
       use: 'You’ve got to try this.（これ、絶対食べてみて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'gowrong', seg: [162.4, 170.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'gowrong', seg: [162.4, 171.3],
       stem: 'What does Andy mean with his “old saying”?',
       ja: 'アンディの「古い言葉」は、どういう意味？',
       choices: ['Problems happen, so keep going', 'Problems happen, so just give up', 'Problems only happen on stage'], a: 0,
@@ -288,7 +288,7 @@ export const benSaves: Clip = {
       trap: 'noodle を食べ物と取ると料理の話に聞こえる。bump（ぶつける）と組なら体の部分。',
       use: 'Use your noodle!（頭を使って！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['gig'], seg: [190, 233.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['gig'], seg: [190, 234.1],
       stem: 'How does the kids’ concert finally work out?',
       ja: '子どもコンサートは、最後にどうなる？',
       choices: ['Freddy comes and plays', 'Andy plays with one arm', 'Renata plays the whole show'], a: 0,
@@ -300,7 +300,7 @@ export const benSaves: Clip = {
       trap: '代役が先に歌うので「代役で終わり」と思いやすい。最後の会話の相手を聞く。',
       use: 'I thought you were out of town!（町にいないと思ってた！）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'offer', reveals: ['ending', 'gig'], seg: [215.3, 223.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'offer', reveals: ['ending', 'gig'], seg: [215.3, 223.7],
       stem: 'Why did Freddy come after all?',
       ja: 'フレディは、なぜ結局来た？',
       choices: ['Someone offered him more money', 'His Eagleton show was called off', 'He felt bad about the kids'], a: 0,

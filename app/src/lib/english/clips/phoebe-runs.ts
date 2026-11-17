@@ -16,7 +16,7 @@ export const phoebeRuns: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'catchup', seg: [0, 3.6],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'catchup', seg: [0, 5],
       stem: 'What does Rachel mean by “I’ll catch up”?',
       ja: 'レイチェルの「I’ll catch up」はどういう意味？',
       choices: ['I will join you soon', 'We will talk about it later', 'I will wait here'], a: 0,
@@ -27,7 +27,7 @@ export const phoebeRuns: Clip = {
       trap: 'catch up には「近況を話す」の意味もあるが、ここは先に行ってのあと。追いつく話。',
       use: 'You go ahead. I’ll catch up.（先に行って。すぐ追いつくから）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B2', point: 'crush', seg: [24.5, 33.2],
+    { id: 'p6', skill: 'phrase', level: 'B2', point: 'crush', seg: [24, 34.1],
       stem: 'What does “had a crush on him” mean?',
       ja: '「had a crush on him」はどういう意味？',
       choices: ['Liked him a lot', 'Was scared of him', 'Felt sorry for him'], a: 0,
@@ -49,7 +49,7 @@ export const phoebeRuns: Clip = {
       trap: 'live with her から引っ越しの話に思いやすい。悩みは don’t know how のあと。',
       use: 'I don’t know how to say no.（どう断ればいいか分からない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'live', seg: [46.5, 52.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'live', seg: [46.5, 54.9],
       stem: 'Why is it hard for Rachel to avoid Phoebe?',
       ja: 'レイチェルがフィービーを避けられないのはなぜ？',
       choices: ['They live together', 'They work together', 'They run in a club'], a: 0,
@@ -60,7 +60,7 @@ export const phoebeRuns: Clip = {
       trap: 'live を「ライブ」や「生きる」と思いやすい。live with her は「彼女と住んでいる」。',
       use: 'I live with two roommates.（ルームメイト2人と住んでいる）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'getout', seg: [47, 52.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'getout', seg: [47, 53.3],
       stem: 'What does Rachel mean by “get out of it”?',
       ja: 'レイチェルの「get out of it」はどういう意味？',
       choices: ['Find a way not to go', 'Leave the apartment', 'Stop feeling tired'], a: 0,
@@ -71,7 +71,7 @@ export const phoebeRuns: Clip = {
       trap: 'out から「外に出る」を思いやすい。of のあとが約束や予定なら「やらずに済ませる」。',
       use: 'Can I get out of the meeting?（会議を抜けてもいい？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['live'], seg: [49.4, 52.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['live'], seg: [48.2, 54.9],
       stem: 'Why does Rachel say “I mean” here?',
       ja: 'レイチェルは、なぜここで「I mean」と言う？',
       choices: ['To give a reason', 'To fix a mistake', 'To change the topic'], a: 0,
@@ -82,7 +82,7 @@ export const phoebeRuns: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは前の言葉を直していない。あとが理由なら「だって」。',
       use: 'I can’t go. I mean, I have work.（行けない。だって仕事があるし）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'straight', seg: [52.6, 56.1],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'straight', seg: [51.2, 57.9],
       stem: 'What does “Why don’t you just…” mean here?',
       ja: '「Why don’t you just…」はここでどういう意味？',
       choices: ['You should just do this', 'Tell me why you won’t', 'You did a bad thing'], a: 0,
@@ -93,7 +93,7 @@ export const phoebeRuns: Clip = {
       trap: '「なぜ〜しないの？」と訳すと責める感じに聞こえやすい。あとの Tell her が合図。',
       use: 'Why don’t you just tell him the truth?（彼に本当のことを言ったら？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['can'], seg: [55.9, 66.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'excuse', reveals: ['can'], seg: [55.9, 67],
       stem: 'Why does Rachel say “Monica tripped me”?',
       ja: 'レイチェルはなぜ「モニカに転ばされた」と言う？',
       choices: ['So she doesn’t have to run', 'Because Monica really did it', 'To get Monica in trouble'], a: 0,
@@ -104,7 +104,7 @@ export const phoebeRuns: Clip = {
       trap: 'モニカが本当にやったと思いやすい。直前に「本当のことを言う」と決めて、すぐこれ。',
       use: 'I think I hurt my ankle.（足首を痛めたみたい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'can', reveals: ['excuse'], seg: [61.5, 66.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'can', reveals: ['excuse'], seg: [61.1, 67],
       stem: 'Fill the gap: “I don’t think I ___ ever run again.”',
       ja: '「I don’t think I ___ ever run again.」の空所は？',
       choices: ['can', 'can’t', 'could'], a: 0,
@@ -115,7 +115,7 @@ export const phoebeRuns: Clip = {
       trap: 'can’t は「キャーン」と強く長い。could なら「クッ」と d で止まる。弱い「クン」なら can。',
       use: 'I don’t think I can make it.（行けそうにない）' },
 
-    { id: 's3', skill: 'sound', level: 'B2', point: 'ankles', reveals: ['wellsee'], seg: [71, 76],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'ankles', reveals: ['wellsee'], seg: [70.5, 76.5],
       stem: 'Fill the gap: “I’m sorry that I hurt your ___.”',
       ja: '「I’m sorry that I hurt your ___.」の空所は？',
       choices: ['ankles', 'ankle', 'uncle'], a: 0,
@@ -136,7 +136,7 @@ export const phoebeRuns: Clip = {
       trap: 'We’ll see を「様子を見よう」とそのまま取ると気づきにくい。直前の単数への直しと組で聞く。',
       use: 'We’ll see about that.（それはどうかな）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'shoes', reveals: ['sneak'], seg: [87, 90.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'shoes', reveals: ['sneak'], seg: [85.8, 93.3],
       stem: 'What did Phoebe see Rachel do this morning?',
       ja: '今朝、フィービーはレイチェルが何をするのを見た？',
       choices: ['Take her shoes and leave quietly', 'Hide Phoebe’s running shoes', 'Tie her shoes by the door'], a: 0,
@@ -147,7 +147,7 @@ export const phoebeRuns: Clip = {
       trap: 'shoes だけ拾うと靴ひもの場面を思いやすい。動きを表す grab と sneak を聞く。',
       use: 'Let me grab my jacket.（上着を取ってくるね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sneak', seg: [87, 90.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sneak', seg: [87, 93.3],
       stem: 'Type what Phoebe says: “…this morning and ___.” (2 words)', answer: 'sneak out',
       ja: '「…this morning and ___.」の空所を書こう（2語）',
       cue: 'this morning and のあと。', line: '…this morning and *sneak out*.',
@@ -156,7 +156,7 @@ export const phoebeRuns: Clip = {
       trap: 'sneak と out がつながり「スニーカウ」に聞こえやすい。out の t も弱い。',
       use: 'I sneaked out of the meeting early.（会議をこっそり早めに抜けた）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'checking', reveals: ['can'], seg: [92.9, 100.6],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'checking', reveals: ['can'], seg: [92.9, 103.2],
       stem: 'What excuse does Rachel give?',
       ja: 'レイチェルはどんな言い訳をする？',
       choices: ['She was checking her ankle', 'She was practicing to be faster', 'She was looking for Phoebe'], a: 0,
@@ -178,7 +178,7 @@ export const phoebeRuns: Clip = {
       trap: 'please から「お願い」を思いやすい。あとの I am not an idiot で気持ちが分かる。',
       use: 'Oh, please. Nobody believes that.（よしてよ。誰も信じないよ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'second', reveals: ['can'], seg: [105.3, 109.5],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'second', reveals: ['can'], seg: [105.3, 113.4],
       stem: 'What does “for a second” mean here?',
       ja: '「for a second」はここでどういう意味？',
       choices: ['For a short time', 'For the second time', 'In second place'], a: 0,
@@ -199,7 +199,7 @@ export const phoebeRuns: Clip = {
       trap: '口ごもりや okay? を、早く終わらせたい謝罪と取りやすい。horribly など自分を責める語が本気の合図。',
       use: 'I handled that badly. I’m sorry.（対応がまずかった。ごめん）' },
 
-    { id: 's2', skill: 'sound', level: 'C1', point: 'shouldhave', seg: [127.6, 132.4],
+    { id: 's2', skill: 'sound', level: 'C1', point: 'shouldhave', seg: [126.6, 133],
       stem: 'Fill the gap: “So, what ___ done?”',
       ja: '「So, what ___ done?」の空所は？',
       choices: ['should you have', 'could you have', 'would you have'], a: 0,
@@ -210,7 +210,7 @@ export const phoebeRuns: Clip = {
       trap: 'd と y がつながって「ジュ」になる。最初の音が「シュ」か「ク」か「ウ」かを聞く。',
       use: 'What should I have done?（どうすればよかった？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'whichis', reveals: ['shouldhave'], seg: [130, 135.5],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'whichis', reveals: ['shouldhave'], seg: [127.9, 135.8],
       stem: 'Phoebe says “Which is?” What does she want?',
       ja: 'フィービーの「Which is?」は何を求めている？',
       choices: ['Rachel to say the truth', 'Rachel to choose one of two', 'Rachel to stop talking'], a: 0,
@@ -221,7 +221,7 @@ export const phoebeRuns: Clip = {
       trap: 'which から「どっち」を思いやすい。ここは直前の the truth を受けて「その中身は？」。',
       use: 'And the reason is…?（で、理由は？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'embarrass', seg: [141.5, 152],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'embarrass', seg: [147.2, 153.7],
       stem: 'How does Rachel feel running with Phoebe?',
       ja: 'フィービーと走るとき、レイチェルはどう感じる？',
       choices: ['Embarrassed', 'Very tired', 'A bit scared'], a: 0,
@@ -232,7 +232,7 @@ export const phoebeRuns: Clip = {
       trap: '途中で言葉が止まるので、疲れの話かと思いやすい。So? のあとの一言が本音。',
       use: 'It’s a little embarrassing.（ちょっと恥ずかしい）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'strangers', seg: [151.8, 158.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'strangers', seg: [151.8, 162.3],
       stem: 'Why does Phoebe say Rachel shouldn’t care?',
       ja: 'フィービーはなぜ気にしなくていいと言う？',
       choices: ['She will never see them again', 'Nobody was really looking at them', 'Everybody looks at everyone'], a: 0,
@@ -263,7 +263,7 @@ export const phoebeRuns: Clip = {
       trap: 'man を冗談や悪口と取るとずれる。むきになった声と、似合わない気楽な man の組み合わせが笑い。',
       use: 'Chill out, man.（落ち着けって）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'kid', seg: [193.2, 198.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'kid', seg: [192.3, 198.7],
       stem: 'Why does Phoebe run the way she does?',
       ja: 'フィービーはなぜあんな走り方をする？',
       choices: ['It is more fun that way', 'A coach taught her that', 'It keeps her from getting tired'], a: 0,
@@ -284,7 +284,7 @@ export const phoebeRuns: Clip = {
       trap: 'Satan を本当の悪魔と取ると話が重くなる。間のあとの説明で正体が分かることが多い。',
       use: 'You know, the guy next door.（ほら、隣の人）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [231.9, 250.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [231.2, 250.5],
       stem: 'How does Rachel feel at the end?',
       ja: '最後、レイチェルはどんな気持ち？',
       choices: ['She loves running this way', 'She is still too embarrassed', 'She runs only for Phoebe'], a: 0,

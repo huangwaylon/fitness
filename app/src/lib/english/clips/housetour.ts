@@ -14,7 +14,7 @@ export const housetour: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'number', level: 'B1', point: 'hour', seg: [16.2, 24.3],
+    { id: 'pr1', skill: 'number', level: 'B1', point: 'hour', seg: [15.2, 24.5],
       stem: 'When did the guest last see the hosts?',
       ja: 'お客さんが前に二人に会ったのはいつ？',
       choices: ['An hour ago', 'Two hours ago', 'A day ago'], a: 0,
@@ -37,7 +37,7 @@ export const housetour: Clip = {
       trap: 'except を「〜もした」と取りやすい。except のあとは、同じでない部分。',
       use: 'Same here, except the long drive.（こっちも同じ。長い運転以外はね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'gift', seg: [29.4, 35.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'gift', seg: [29.4, 35.9], keep: true,
       stem: 'What does the host say the gift is good for?',
       ja: 'もらった贈り物は何に使えると言う？',
       choices: ['To cook with', 'To serve food on', 'To put on a table'], a: 0,
@@ -49,7 +49,7 @@ export const housetour: Clip = {
       trap: 'パーティーなので、客に出す物だと思いやすい。cook with は「料理するときに使う」。',
       use: 'This will be great to cook with.（料理に使えそう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['home'], seg: [35.5, 42.2], keep: true,
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['home'], seg: [33.6, 42.6], keep: true,
       stem: 'How does Michael sound as he asks them in?',
       ja: '二人を中へ案内するとき、マイケルはどんな様子？',
       choices: ['Nervous and unsure', 'Bossy and strict', 'Calm and relaxed'], a: 0,
@@ -61,7 +61,7 @@ export const housetour: Clip = {
       trap: '「座って」は命令に聞こえるが、すぐ言い直す。言い直しの多さは緊張のしるし。',
       use: 'I always get nervous before meetings.（会議の前はいつも緊張する）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'home', seg: [35.5, 42.2],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'home', seg: [35.5, 44.4],
       stem: 'What does “make yourself at home” mean?',
       ja: '「make yourself at home」の意味は？',
       choices: ['Relax like you’re home', 'Take any food you like', 'Look around the house'], a: 0,
@@ -82,7 +82,7 @@ export const housetour: Clip = {
       trap: '習った at home に直したくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'Uh, I mean, have a seat.（えっと、つまり、座って）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'call', seg: [48.4, 52.4], keep: true,
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'call', seg: [48.4, 54.3], keep: true,
       stem: 'What does “Totally your call” mean?',
       ja: '「Totally your call」の意味は？',
       choices: ['You decide', 'I have no idea', 'Good idea'], a: 0,
@@ -94,7 +94,7 @@ export const housetour: Clip = {
       trap: 'good call（いい判断）と混ざりやすい。your call は「あなたに任せる」。',
       use: 'It’s your call. I’m fine either way.（任せるよ。どっちでもいい）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', reveals: ['twospaces', 'candles'], seg: [61.0, 105.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', reveals: ['twospaces', 'candles'], seg: [61, 105.7],
       stem: 'What rooms does Jan show first?',
       ja: 'ジャンが最初に見せる部屋は？',
       choices: ['Her office and workspace', 'The kitchen and bedroom', 'The big TV room'], a: 0,
@@ -106,7 +106,7 @@ export const housetour: Clip = {
       trap: 'テレビの部屋と寝室はあとで出てくる。最初は office と workspace。',
       use: 'This is my office. Check it out.（ここが私の仕事部屋。見て）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'twospaces', seg: [80.3, 87.45], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'twospaces', seg: [80.3, 89.7], keep: true,
       stem: 'Why does Jan have a workspace and an office?',
       ja: 'ジャンはなぜ作業部屋と仕事部屋を両方持っている？',
       choices: ['She can’t create where she works', 'Her office is much too small', 'The candles smell too strong'], a: 0,
@@ -140,7 +140,7 @@ export const housetour: Clip = {
       trap: 'the same は共感に聞こえるが、呼び方に本音が出る。相手の物を何と呼ぶかを聞く。',
       use: 'I’m sure you’re the same way.（あなたもきっと同じでしょう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'candles', seg: [101.7, 110.6], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'candles', seg: [101.7, 113.1], keep: true,
       stem: 'What does Jan do when she gets angry?',
       ja: 'ジャンは怒ったとき、何をする？',
       choices: ['Smells her candles', 'Lights her candles', 'Sits in silence'], a: 0,
@@ -152,7 +152,7 @@ export const housetour: Clip = {
       trap: 'キャンドルなら火をつけると思いやすいが、動詞は smell。',
       use: 'When I’m stressed, I go for a walk.（ストレスがたまったら散歩する）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'candles', seg: [106.1, 110.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'candles', seg: [105.9, 111.1], keep: true,
       stem: 'Type what she does up here: “I just ___.” (4 words)', answer: 'smell all my candles',
       ja: '「I just」のあとの4語を書こう。',
       cue: '「I come up here and」のあと。',
@@ -162,7 +162,7 @@ export const housetour: Clip = {
       trap: 'all が smell に溶けて聞こえにくい。4語とあるので、消えた語を探す。',
       use: 'I just smell the coffee.（コーヒーの香りをかぐだけ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'poof', seg: [106.5, 112.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'poof', seg: [106.4, 115.6],
       stem: 'What does the guest mean by “Just like that?”',
       ja: 'お客さんの「Just like that?」はどういう意味？',
       choices: ['He doubts it works so fast', 'He wants her to show him', 'He wants her to say it again'], a: 0,
@@ -174,7 +174,7 @@ export const housetour: Clip = {
       trap: '質問の形なので、やり方を聞いていると思いやすい。短いくり返しは「本当に？」の合図。',
       use: 'Just like that? Really?（そんな簡単に？本当に？）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'eggshell', seg: [114.8, 124.7],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'eggshell', seg: [114.8, 126],
       stem: 'What happened with the new wall color?',
       ja: '新しい壁の色はどうなった？',
       choices: ['It was the same as before', 'It was much too dark for her', 'It was the wrong color'], a: 0,
@@ -208,7 +208,7 @@ export const housetour: Clip = {
       trap: 'space を部屋の広さと取りやすい。言いよどんだあとの遠回しな語は、言いにくい本当の理由。',
       use: 'She has some, uh, scheduling issues.（彼女はちょっと、その、予定の都合が）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151.0, 184.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151, 184.9],
       stem: 'What is Michael showing off here?',
       ja: 'ここでマイケルが自慢しているのは何？',
       choices: ['His new TV', 'His new bed', 'His candles'], a: 0,
@@ -220,7 +220,7 @@ export const housetour: Clip = {
       trap: 'ベッドはこの前のベンチの話、キャンドルはジャンの物。ここは TV。',
       use: 'Check it out. I did it myself.（見て、自分でやったんだ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'brokedown', seg: [154.6, 161.6], keep: true,
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'brokedown', seg: [153.6, 164.1], keep: true,
       stem: 'What does “I finally broke down and bought” mean?',
       ja: '「I finally broke down and bought」の意味は？',
       choices: ['He gave in at last', 'His old TV broke down', 'He had a bad day'], a: 0,
@@ -232,7 +232,7 @@ export const housetour: Clip = {
       trap: 'broke（こわれた）から、古いテレビがこわれたと思いやすい。主語は I で、折れたのは本人。',
       use: 'I finally broke down and called her.（とうとう折れて彼女に電話した）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hung', seg: [162.2, 166.2], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hung', seg: [162.2, 168.4], keep: true,
       stem: 'Fill the gap: “I actually ___ this on the wall myself.”',
       ja: '空いている所に入る語は？',
       choices: ['hung', 'hanged', 'had'], a: 0,
@@ -244,7 +244,7 @@ export const housetour: Clip = {
       trap: 'hanged なら最後に「ド」がつく。had なら「ハッド」で「ング」がない。',
       use: 'I hung the picture myself.（絵は自分でかけた）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'tv', seg: [173.5, 181.6], keep: true,
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'tv', seg: [172.5, 182.7], keep: true,
       stem: 'How does Michael feel about his new TV?',
       ja: 'マイケルは新しいテレビをどう思っている？',
       choices: ['He loves it a lot', 'He rarely uses it', 'He liked the old one'], a: 0,
@@ -256,7 +256,7 @@ export const housetour: Clip = {
       trap: 'sometimes（ときどき）だけ聞くと「あまり見ない」と思いやすいが、続きは for hours。',
       use: 'I love this place.（ここ、大好き）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [193.1, 197.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [193.1, 201.4], keep: true,
       stem: 'How long was the guest’s TV without sound?',
       ja: 'お客さんのテレビは、どのくらい音が出なかった？',
       choices: ['For a day', 'For a week', 'For two weeks', 'For a month'], a: 1,

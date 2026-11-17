@@ -15,7 +15,7 @@ export const dinnerplan: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B2', point: 'well', seg: [3.0, 9.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'well', seg: [3, 11.3],
       stem: 'Fill the gap: “… what time ___ out of here?”',
       ja: '空所に入る語は？「何時にここを出られるか…」',
       choices: ['we get', 'we’ll get', 'will we get'], a: 1,
@@ -27,7 +27,7 @@ export const dinnerplan: Clip = {
       trap: 'we get なら「ウィ」で切れて「ゥ」がない。will we なら「ウィル」が先に来る。',
       use: 'Any idea when we’ll get there?（いつ着くか分かる？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'least', seg: [6.8, 11.0],
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'least', seg: [3.3, 12],
       stem: 'What does Michael mean by “Least of all me”?',
       ja: 'マイケルの「Least of all me」はどういう意味？',
       choices: ['I hate it the most', 'I don’t mind it much', 'I’ll stay the latest'], a: 0,
@@ -51,7 +51,7 @@ export const dinnerplan: Clip = {
       trap: '残業したかったと思いやすいが、誰も残業は好きじゃない。told us not to を聞く。',
       use: 'Remember when you said you’d help?（手伝うって言ったの、覚えてる？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'mad', seg: [20.4, 29.0],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'mad', seg: [21.2, 33.2],
       stem: 'How does Michael sound before the phone call?',
       ja: '電話の前、マイケルはどんな様子？',
       choices: ['Angry and ready to fight', 'Tired and ready to go home', 'Calm and happy to wait'], a: 0,
@@ -75,7 +75,7 @@ export const dinnerplan: Clip = {
       trap: 'overtime（残業）が聞こえるので、残業が続く話に思いやすい。最後の go enjoy が答え。',
       use: 'Go enjoy the rest of your day.（残りの一日を楽しんでね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [44.2, 47.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [42.5, 47.5],
       stem: 'What does “I just got off the horn” mean here?',
       ja: 'ここでの「I just got off the horn」はどういう意味？',
       choices: ['I just ended a phone call', 'I just started a phone call', 'I just heard a car horn'], a: 0,
@@ -97,7 +97,7 @@ export const dinnerplan: Clip = {
       trap: 'where を文字どおり取ると「送り先」に、文句の調子だけだと渋々の承知に聞こえる。',
       use: 'He told them where to stick it.（あいつ、きっぱり突っぱねたよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', seg: [53.8, 85.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', seg: [53.8, 88.4],
       stem: 'Who does Michael invite to dinner tonight?',
       ja: 'マイケルは今夜、誰を夕食に誘う？',
       choices: ['Jim and Pam', 'Everybody in the office', 'Only Dwight'], a: 0,
@@ -156,7 +156,7 @@ export const dinnerplan: Clip = {
       trap: 'nineteen なら後ろの「ティーン」が強く長い。ninety なら最初が強く「ナインティ」。',
       use: 'I’ve called at least nine times.（少なくとも9回は電話した）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'getout', seg: [69.5, 76.5],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'getout', seg: [69.5, 77.7],
       stem: 'What has happened each time Michael invited them before?',
       ja: 'これまでマイケルに誘われたとき、毎回どうなった？',
       choices: ['They managed not to go', 'They went but left early', 'Michael ended up canceling'], a: 0,
@@ -168,7 +168,7 @@ export const dinnerplan: Clip = {
       trap: 'get out から「外に出る」を思い、早く帰った話に聞こえやすい。主語は we、it ＝ 夕食の誘い。',
       use: 'I got out of the meeting.（会議をうまく抜けられた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [73.6, 76.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getout', seg: [69.8, 77.7],
       stem: 'Type what Jim says: “We’ve been able to ___.” (4 words)', answer: 'get out of it',
       ja: 'ジムの言葉を書こう：「毎回___できた」（4語）',
       cue: 'able to のあと、つながる4語。',
@@ -178,7 +178,7 @@ export const dinnerplan: Clip = {
       trap: 'out の t と of が消えやすく、get out it と書きやすい。of を入れて4語。',
       use: 'Can I get out of it?（それ、断れるかな）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'credit', seg: [76.5, 80.6],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'credit', seg: [75.5, 87.5],
       stem: 'How does Jim feel about Michael’s trick?',
       ja: 'マイケルのやり方を、ジムはどう思っている？',
       choices: ['A bit impressed', 'Hurt and angry', 'Glad to go there'], a: 0,
@@ -190,7 +190,7 @@ export const dinnerplan: Clip = {
       trap: 'credit をお礼と思うと喜んでいるように聞こえやすい。He got me（やられた）で気持ちが分かる。',
       use: 'I have to give her credit. She’s good.（認めるよ。彼女うまいね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'noassign', seg: [80.3, 85.7],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'noassign', seg: [80.1, 88.4],
       stem: 'What is Jim beginning to believe about the late work?',
       ja: '残業について、ジムは何を疑い始めている？',
       choices: ['Michael lied about it', 'Head office canceled it', 'Michael asked head office for it'], a: 0,
@@ -202,7 +202,7 @@ export const dinnerplan: Clip = {
       trap: 'no assignment を「取り消された」と思いやすい。there was no 〜 は最初からない。',
       use: 'I suspect there was no meeting at all.（会議なんてなかったんじゃないかな）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'arriving', seg: [85.3, 90.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'arriving', seg: [84.3, 96.3],
       stem: 'Who asks Michael what time to arrive?',
       ja: '何時に行けばいいかマイケルに聞くのは誰？',
       choices: ['Dwight', 'Andy', 'Angela'], a: 0,
@@ -225,7 +225,7 @@ export const dinnerplan: Clip = {
       trap: 'arriving を出勤と取ると仕事の話になる。直前の会話は夕食の誘い。',
       use: 'Wait, am I even invited?（待って、私って招待されてる？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'couples', reveals: ['arriving'], seg: [88.4, 92.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'couples', reveals: ['arriving'], seg: [87.1, 98.9],
       stem: 'What is the first reason Michael gives Dwight?',
       ja: 'マイケルがドワイトに言う最初の理由は？',
       choices: ['The dinner is for couples only', 'There isn’t room at his table', 'Dwight must work late tonight'], a: 0,
@@ -237,7 +237,7 @@ export const dinnerplan: Clip = {
       trap: 'あとのワイングラスの話から「席がない」と思いやすい。最初の理由は名前の直後。',
       use: 'Sorry, it’s members only.（すみません、会員限定です）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'besides', reveals: ['couples', 'six'], seg: [88.4, 94.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'besides', reveals: ['couples', 'six'], seg: [87.2, 98.9],
       stem: 'What does “and besides” mean here?',
       ja: 'ここでの「and besides」の意味は？',
       choices: ['And also', 'But actually', 'To be honest'], a: 0,
@@ -261,7 +261,7 @@ export const dinnerplan: Clip = {
       trap: 'couples only を本当の条件と取ると「相手がいれば」に、丁寧な断りと取ると「あいにく」に聞こえる。重ねた理由は拒否。',
       use: 'Let’s just say it’s a no.（まあ、答えはノーってこと）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [90.0, 97.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [88.4, 98.9], keep: true,
       stem: 'How many wine glasses does Michael say he has?',
       ja: 'マイケルはワイングラスが何個あると言う？',
       choices: ['4', '6', '16'], a: 1,

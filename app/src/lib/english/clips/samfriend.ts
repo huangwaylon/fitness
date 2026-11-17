@@ -16,7 +16,7 @@ export const samFriend: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'edges', seg: [2.98, 6.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'edges', seg: [0, 6.5],
       stem: 'What does “rough around the edges” mean?', ja: '“rough around the edges” はどういう意味？',
       choices: ['A bit rude, but good inside', 'Having a very hard life', 'Not very loyal to her friends'], a: 0,
       choicesJa: ['少し荒っぽいが、根はいい', 'とても苦労している', '友だちに誠実でない'],
@@ -27,7 +27,7 @@ export const samFriend: Clip = {
       trap: 'rough だけだと「つらい」と思いやすい。around the edges まででひとまとまり。',
       use: 'He’s a bit rough around the edges.（ちょっと粗削りな人だよ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'punch', seg: [10.86, 16.6],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'punch', seg: [10.5, 17.4],
       stem: 'Who would punch her best friend, says Sam?', ja: 'サムによると、親友を殴るのは誰？',
       choices: ['Anybody but Sam', 'Only Sam herself', 'Nobody at all'], a: 0,
       choicesJa: ['サム以外の誰でも', 'サムだけ', '誰も殴らない'],
@@ -54,7 +54,7 @@ export const samFriend: Clip = {
       trap: 'why are you mine を本気の疑いと取りやすい。Good to know で軽く受けたあとの問いは遊び。',
       use: 'Good to know. Now, your turn.（それはどうも。で、そっちは？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wingman', seg: [23.4, 27.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wingman', seg: [23.2, 28.2],
       stem: 'What is a “wingman” for Carly?', ja: 'カーリーにとっての “wingman” とは？',
       choices: ['Someone helping her get a boy', 'Someone keeping boys away', 'Someone checking boys first'], a: 0,
       choicesJa: ['男の子に近づく手助けをする人', '男の子を遠ざける人', '先に男の子を調べる人'],
@@ -65,7 +65,7 @@ export const samFriend: Clip = {
       trap: 'wingman を見張り役だと思いやすい。直後の場面では、話しかけるよう背中を押している。',
       use: 'Can you be my wingman tonight?（今夜、応援役をお願いできる？）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [40.8, 43.72],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [39, 45.3],
       stem: 'Fill the gap: “You ___ just say hi to a guy like Jake…”', ja: '空所に入るのは？ “You ___ just say hi to a guy like Jake…”',
       choices: ['can’t', 'can', 'could'], a: 0,
       choicesJa: ['〜できない', '〜できる', '〜できた'],
@@ -76,7 +76,7 @@ export const samFriend: Clip = {
       trap: 'can なら「クン」と弱く短い。could なら「クッド」。強く長い「キャーン」なら can’t。',
       use: 'I can’t just leave without saying bye.（黙って帰るわけにいかない）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'hiback', seg: [40.8, 46.3],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'hiback', seg: [40.8, 50],
       stem: 'How does Carly feel about saying hi to Jake?', ja: 'ジェイクにあいさつすることを、カーリーはどう感じている？',
       choices: ['Scared of what comes next', 'Scared he won’t say hi', 'Excited and ready to go'], a: 0,
       choicesJa: ['そのあと何を言うかが不安', '返してくれないのが不安', 'わくわくして準備万端'],
@@ -101,7 +101,7 @@ export const samFriend: Clip = {
       trap: 'sorry I hit you の I をカーリーと取りやすい。最後の一言で誰のせいかが分かる。',
       use: 'Just say sorry and start from there.（まず謝って、そこから話せばいい）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'try', seg: [62.1, 70.9],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'try', seg: [62.1, 72],
       stem: 'How does the other girl react to “Rip her head off”?', ja: '“Rip her head off” に、相手の女の子はどう反応する？',
       choices: ['Not scared, she dares Sam', 'Shocked by the threat', 'Very happy to watch a fight'], a: 0,
       choicesJa: ['怖がらず、挑発する', 'おどしに驚く', 'けんかを見るのが楽しみ'],
@@ -126,7 +126,7 @@ export const samFriend: Clip = {
       trap: 'for saying を聞き落とすと、自分の乱暴さを謝ったように聞こえる。for の後まで聞く。',
       use: 'Sorry for saying that.（あんなこと言ってごめん）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'scores', seg: [119.65, 126.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'scores', seg: [119.7, 128.8], keep: true,
       stem: 'In the scoring, what does Freddie get?', ja: '採点で、フレディは何点？',
       choices: ['−2', '2', '7', '9'], a: 0,
       choicesJa: ['マイナス2点', '2点', '7点', '9点'],
@@ -137,7 +137,7 @@ export const samFriend: Clip = {
       trap: '7 は「セヴン」、9 は「ナイン」。「トゥー」だけなら2、前に「ネガティヴ」があればマイナス2。',
       use: 'I’d give it a nine out of ten.（10点中9点かな）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'quality', seg: [154.1, 159.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'quality', seg: [151.8, 159.4],
       stem: 'What does the narrator call Sam’s greatest quality?', ja: 'ナレーターが言う、サムのいちばんの長所は？',
       choices: ['Her confidence', 'Her loyalty', 'Her sense of fun'], a: 0,
       choicesJa: ['自信', '誠実さ', '楽しさ'],
@@ -173,7 +173,7 @@ export const samFriend: Clip = {
       trap: 'concert が何度も聞こえるので、コンサートの話だと思いやすい。怒る理由は gave it away。',
       use: 'I can’t believe you sold it!（売っちゃったなんて信じられない）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'another', seg: [209.2, 214.2],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'another', seg: [209.2, 217.3],
       stem: 'What does Sam think about the shirt?', ja: 'サムはTシャツのことをどう思っている？',
       choices: ['She can just make another', 'She feels very sorry', 'She will get it back'], a: 0,
       choicesJa: ['また作ればいい', 'とても申し訳ない', '取り戻すつもり'],
@@ -184,7 +184,7 @@ export const samFriend: Clip = {
       trap: 'make から「つぐなう」と思いやすい。謝る言葉はなく、先に予定を言っている。',
       use: 'Don’t worry, I’ll get you another one.（大丈夫、また買ってくるよ）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'care', seg: [219.1, 224.78],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'care', seg: [219.1, 228.4],
       stem: 'What are they arguing about here?', ja: 'ここで二人は何を言い合っている？',
       choices: ['Who cares less', 'Who is more hurt', 'Who is right'], a: 0,
       choicesJa: ['どっちがより気にしていないか', 'どっちがより傷ついたか', 'どっちが正しいか'],
@@ -195,7 +195,7 @@ export const samFriend: Clip = {
       trap: 'don’t が弱く消えると、気にしていると言ったように聞こえやすい。less や don’t まで拾う。',
       use: 'I don’t care what they think.（あの人たちがどう思おうと気にしない）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'stupid', reveals: ['cant'], seg: [227.95, 231.42],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'stupid', reveals: ['cant'], seg: [227.9, 233.5],
       stem: 'Type the missing words: “I ___ this stupid conversation.” (4 words)', ja: '書こう：“I ___ this stupid conversation.”（4語）',
       answer: "can't believe we're having",
       cue: 'I のあと',
@@ -205,7 +205,7 @@ export const samFriend: Clip = {
       trap: 'we’re を were と書きやすい。続く having が今の話なので、we are の短い形。',
       use: 'I can’t believe we’re lost again.（また迷うなんて信じられない）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'algebra', seg: [239.95, 257],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'algebra', seg: [241.4, 258.5],
       stem: 'Why does Sam suddenly talk about algebra class?', ja: 'サムはなぜ急に数学の授業の話をする？',
       choices: ['To stop before Carly hears', 'To end a boring talk', 'To say they’re late for class'], a: 0,
       choicesJa: ['カーリーに聞かれる前にやめるため', '退屈な話を終えるため', '授業に遅れると伝えるため'],
@@ -216,7 +216,7 @@ export const samFriend: Clip = {
       trap: '退屈で逃げたと思いやすい。すぐあとに You went to the concert? と聞こえる。',
       use: 'Look at the time! I have to go.（もうこんな時間！行かなきゃ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'waste', seg: [253.2, 261.15],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'waste', seg: [253.2, 262.7],
       stem: 'Why did Sam go to the concert without Carly?', ja: 'サムはなぜカーリーなしでコンサートに行った？',
       choices: ['Not to waste the tickets', 'Tureen paid for hers', 'Carly told her to go'], a: 0,
       choicesJa: ['チケットをむだにしないため', 'テュリーンが自分で払ったから', 'カーリーに行けと言われたから'],
@@ -227,7 +227,7 @@ export const samFriend: Clip = {
       trap: 'took Tureen が耳に残り、テュリーンの事情だと思いやすい。理由は wasn’t のあと。',
       use: 'I didn’t want to waste the food.（食べ物をむだにしたくなかった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'makeup', seg: [261.9, 278.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'makeup', seg: [261.9, 279.2],
       stem: 'How does the shirt fight end?', ja: 'Tシャツのけんかは、どう終わる？',
       choices: ['More fighting, then both say sorry', 'Both say sorry, no more fighting', 'Only Carly says sorry'], a: 0,
       choicesJa: ['もっとけんかして、二人とも謝る', '二人とも謝り、それ以上けんかしない', 'カーリーだけ謝る'],
@@ -238,7 +238,7 @@ export const samFriend: Clip = {
       trap: 'ごめんが二つ聞こえても、その前に hair-pulling（髪の引っぱり合い）がある。after で順番を聞く。',
       use: 'We had a fight, but we made up.（けんかしたけど、仲直りした）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'backat', seg: [264.2, 271.35],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'backat', seg: [264.2, 271.4],
       stem: 'What does “Back at you” mean here?', ja: 'ここでの “Back at you” はどういう意味？',
       choices: ['Same to you', 'It’s all your fault', 'Let’s make up now'], a: 0,
       choicesJa: ['こっちも同じ', '全部あなたのせい', 'もう仲直りしよう'],
@@ -264,7 +264,7 @@ export const samFriend: Clip = {
       trap: '文法どおり I love the と聞きたくなる。s と me は弱いが、聞こえた音を文法で直さない。',
       use: 'I do love me a good pizza.（いいピザには目がない）', retired: true },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'verdict', seg: [312.6, 333.2],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'verdict', seg: [312.6, 334],
       stem: 'What does the narrator say about Sam in the end?', ja: '最後に、ナレーターはサムをどう言う？',
       choices: ['A great friend despite her faults', 'A great friend because of her faults', 'Not worth the trouble'], a: 0,
       choicesJa: ['欠点があっても良い友だち', '欠点のおかげで良い友だち', '面倒なだけ'],
@@ -275,7 +275,7 @@ export const samFriend: Clip = {
       trap: 'with から「〜のおかげで」と思いやすい。even with は「〜があっても」。',
       use: 'Even with the rain, we had fun.（雨でも楽しかった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pudding', seg: [317.6, 325],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pudding', seg: [317.6, 326],
       stem: 'What is the answer to the pudding-cup question?', ja: 'プリンの質問への答えは？',
       choices: ['Just one, promised to Freddie', 'None, Freddie ate them all', 'A few, for after the show ends'], a: 0,
       choicesJa: ['一つだけ、フレディにあげる約束', 'ない、フレディが全部食べた', 'いくつか、番組のあと用'],

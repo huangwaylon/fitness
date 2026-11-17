@@ -19,7 +19,7 @@ export const galBrunch: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 6.85],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 11.4],
       stem: 'How long will Leslie be in her office?',
       ja: 'レスリーはどのくらいオフィスにいると言う？',
       choices: ['1 or 2 hours', '1 to 7 hours', '2 to 7 hours'], a: 1, keep: true,
@@ -65,7 +65,7 @@ export const galBrunch: Clip = {
       trap: 'town や good を文字通りに取ると、町の話に聞こえる。返事の内容に引っぱられず、あいさつは形で覚える。',
       use: 'Hey, what’s good? Long time!（よう、元気？久しぶり！）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'girltalk', seg: [55.3, 63.95],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'girltalk', seg: [55.3, 65],
       stem: 'When Leslie asks about her love life, how does April feel?',
       ja: '恋の話を聞かれて、エイプリルはどんな気持ち？',
       choices: ['Annoyed, she wants to work', 'Happy to talk about him', 'Too shy to answer'], a: 0,
@@ -77,7 +77,7 @@ export const galBrunch: Clip = {
       trap: 'husband（夫）の話なので、のろけと思いやすい。weirdo（変な人）と Bye で、うんざりと分かる。',
       use: 'Can I get back to work now?（もう仕事に戻っていい？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tryout', seg: [71.7, 100.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tryout', seg: [71.7, 104.8],
       stem: 'Why is Leslie having the brunch?',
       ja: 'レスリーはなぜブランチを開く？',
       choices: ['To find a new best friend', 'To make the women one group', 'To cheer herself up'], a: 0,
@@ -89,7 +89,7 @@ export const galBrunch: Clip = {
       trap: 'bonding（仲良くなる）と言うので、みんなの仲の話と思いやすい。I need のあとが本音。',
       use: 'I need a friend who lives nearby.（近くに住む友だちがほしい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', seg: [75.5, 82.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', seg: [74.8, 82.9],
       stem: 'Fill the gap: “I thought you ___ do Galentine’s Day this year…”',
       ja: '空いている所は？「I thought you ___ do Galentine’s Day this year…」',
       choices: ['weren’t gonna', 'were gonna', 'wouldn’t'], a: 0,
@@ -101,7 +101,7 @@ export const galBrunch: Clip = {
       trap: '「ワーントガナ」なら weren’t gonna、「ン」がなく「ワーガナ」なら were gonna、「ウドゥン」で止まれば wouldn’t。',
       use: 'I thought you weren’t coming.（来ないと思ってた）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'boast', seg: [125.2, 130.95],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'boast', seg: [125.2, 132.2],
       stem: 'Why does Donna ask “Where do you think I got that”?',
       ja: 'ドナはなぜ「Where do you think I got that」と聞く？',
       choices: ['To show off her trips', 'To make them guess a shop', 'To change the topic to her house'], a: 0,
@@ -113,7 +113,7 @@ export const galBrunch: Clip = {
       trap: '質問の形なので、本当に当ててほしいと思いやすい。I go all the time が先に答え。',
       use: 'Guess where I got this bag.（このバッグ、どこで買ったと思う？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'wayback', seg: [134.3, 139.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'wayback', seg: [133.2, 141.2],
       stem: 'Type what Leslie says about Donna: “Confident, worldly, we ___.” (3 words)', answer: 'go way back',
       ja: 'ドナについての言葉を書こう：「Confident, worldly, we ___.」（3語）',
       cue: '「worldly」のあと。',
@@ -123,7 +123,7 @@ export const galBrunch: Clip = {
       trap: 'way を「道」と思うと意味が分からない。go way back でひとまとまり。',
       use: 'We go way back. We met in school.（昔からの仲なの。学校で会った）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sohot', seg: [140.4, 148.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sohot', seg: [140.4, 151.6],
       stem: 'What does Leslie mean by “not like Ann was doing so hot”?',
       ja: 'レスリーの「not like Ann was doing so hot」はどういう意味？',
       choices: ['Ann wasn’t doing well then', 'Ann wasn’t good-looking then', 'Ann was very popular then'], a: 0,
@@ -146,7 +146,7 @@ export const galBrunch: Clip = {
       trap: '悪口に聞こえやすいが、when I met her で話は過去。but のあとは、誰の弁護かを聞く。',
       use: 'Sure, he’s messy. But look, so was I.（確かにだらしない。でも、僕だってそうだった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'darkhorse', seg: [147.3, 151.9],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'darkhorse', seg: [146.2, 154],
       stem: 'What does Leslie mean when she calls Ethel “a bit of a dark horse”?',
       ja: 'レスリーがエセルを「a bit of a dark horse」と言うのはどういう意味？',
       choices: ['She may surprise everyone', 'She has dark moods', 'She works hard with no thanks'], a: 0,
@@ -158,7 +158,7 @@ export const galBrunch: Clip = {
       trap: 'dark（暗い）から、暗い性格と思いやすい。dark horse でひとまとまり。',
       use: 'He’s the dark horse in this race.（彼はこのレースのダークホースだ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'bodies', seg: [151.9, 159.65],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'bodies', seg: [147.5, 156.9],
       stem: 'Why is Evelyn at the brunch?',
       ja: 'イヴリンはなぜブランチにいる？',
       choices: ['To fill the seats', 'She is a lot like Ann', 'She is an old friend'], a: 0,
@@ -170,7 +170,7 @@ export const galBrunch: Clip = {
       trap: 'fake Ann（ニセのアン）から、アンに似た人と思いやすい。名字も知らない人。',
       use: 'We just need more people for the game.（ゲームにもっと人数がほしいだけ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'date', seg: [159.4, 169.55],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'date', seg: [159.4, 169.6],
       stem: 'What does Leslie admit about today?',
       ja: 'レスリーは今日について何を認める？',
       choices: ['It isn’t the right date', 'It isn’t a real holiday', 'It isn’t just for women'], a: 0,
@@ -193,7 +193,7 @@ export const galBrunch: Clip = {
       trap: '「私をどれだけ知ってるか」のクイズではない。うそを見抜くのは本人の答え。軽い言葉のあとの but に本気。',
       use: 'Just a quick chat. Nothing serious.（ちょっと話すだけ。深い話じゃない）' },
 
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'scandal', seg: [186.5, 201.1],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'scandal', seg: [191.2, 202.2],
       stem: 'Why is Donna’s answer about her favorite show funny?',
       ja: '好きな番組についてのドナの答えはなぜおかしい？',
       choices: ['Every answer is the same show', 'She names a different show', 'She says she never watches TV'], a: 0,
@@ -205,7 +205,7 @@ export const galBrunch: Clip = {
       trap: 'But が聞こえるので、別の番組が来ると思いやすい。最後まで同じ名前。',
       use: 'My answer is pizza. Always pizza.（私の答えはピザ。いつもピザ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'test', seg: [219.9, 227],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'test', seg: [217.9, 227.1],
       stem: 'What does Leslie’s “correct answer” show?',
       ja: 'レスリーの「correct answer」から何が分かる？',
       choices: ['She is grading their answers', 'She is joking to lighten things', 'She is fixing Donna’s mistake'], a: 0,
@@ -229,7 +229,7 @@ export const galBrunch: Clip = {
       trap: 'blog（ブログ）や Rome（ローマ）の話も出るので迷いやすい。it’s about のあとを聞く。',
       use: 'It’s about finding your way.（自分の道を見つける話です）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'workwith', seg: [242.6, 254.1],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'workwith', seg: [250.4, 256.1],
       stem: 'How does Leslie feel when she says “I can work with that”?',
       ja: '「I can work with that」と言うとき、レスリーはどんな気持ち？',
       choices: ['Not wowed, but it’s a start', 'Very impressed by the whole idea', 'Keen to write it with her'], a: 0,
@@ -241,7 +241,7 @@ export const galBrunch: Clip = {
       trap: 'work から「一緒に仕事する」と思いやすい。ここは「それでなんとかやれる」。',
       use: 'It’s not perfect, but I can work with that.（完璧じゃないけど、何とかなる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['default', 'notwhat', 'firstplace'], seg: [253.75, 293.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['default', 'notwhat', 'firstplace'], seg: [253.8, 293.8],
       stem: 'How does the brunch end?',
       ja: 'ブランチはどう終わる？',
       choices: ['All but Shauna leave', 'Donna stays as best friend', 'They all become friends'], a: 0,
@@ -253,7 +253,7 @@ export const galBrunch: Clip = {
       trap: 'Donna が一位だったので、ドナが残ると思いやすい。最後に名前が出るのはショーナ。',
       use: 'Everyone left except me.（私以外みんな帰った）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B2', point: 'notwhat', reveals: ['test'], seg: [258.5, 267.5],
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'notwhat', reveals: ['test'], seg: [257.4, 269.4],
       stem: 'What does Leslie mean by “It’s not what it sounds like”?',
       ja: 'レスリーの「It’s not what it sounds like」はどういう意味？',
       choices: ['Don’t get the wrong idea', 'I can’t hear you well', 'It sounds very nice'], a: 0,
@@ -265,7 +265,7 @@ export const galBrunch: Clip = {
       trap: 'sounds から「音」の話と思いやすい。ここは「〜のように聞こえる」。',
       use: 'Wait, it’s not what it sounds like!（待って、そういうんじゃないの！）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'firstplace', seg: [267.6, 276.2],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'firstplace', seg: [267.6, 279.1],
       stem: 'What does Leslie think when she says “You were in first place”?',
       ja: '「You were in first place」と言うとき、レスリーはどう考えている？',
       choices: ['First place should make her happy', 'Donna is only joking around', 'Donna was in last place'], a: 0,
@@ -288,7 +288,7 @@ export const galBrunch: Clip = {
       trap: '言葉に詰まると、感動で言葉が出ないようにも聞こえる。前後の「帰る」「呼ばないで」と合わせて聞く。',
       use: 'Well, that was… an experience.（いやあ、なんというか…いい経験だったよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'default', seg: [286.5, 293.8],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'default', seg: [285.5, 293.8],
       stem: 'Why does Leslie pick Shauna “by default”?',
       ja: 'レスリーはなぜ「by default」でショーナを選ぶ？',
       choices: ['No one else is left', 'She showed she’s loyal', 'She was the safe pick'], a: 0,

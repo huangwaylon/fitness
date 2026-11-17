@@ -48,7 +48,7 @@ export const bestBurger: Clip = {
       trap: 'guessing を味の推測と取りやすい。何を推測しているかは、直前の比べた相手で決まる。',
       use: 'It’s worth it, I’m guessing.（たぶん、その価値はあるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'palate', seg: [20.9, 27.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'palate', seg: [20.9, 27.8],
       stem: 'What does Chris’s reply tell the taster?',
       ja: 'クリスの返事は、試食した人に何を伝えている？',
       choices: ['The guess is right', 'The guess is wrong', 'It is a secret'], a: 0,
@@ -60,7 +60,7 @@ export const bestBurger: Clip = {
       trap: 'Yes と言っていないので、外れたと思いやすい。ほめ言葉が答え。',
       use: 'You’ve got a sharp eye.（よく気づくね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'pretentious', seg: [25.2, 30.9],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'pretentious', seg: [23.6, 32.5],
       stem: 'How does someone feel about Kyle’s words?',
       ja: 'カイルの言葉に、ある人はどんな気持ち？',
       choices: ['Annoyed that he shows off', 'Happy that he likes it', 'Sad that he is wrong'], a: 0,
@@ -84,7 +84,7 @@ export const bestBurger: Clip = {
       trap: 'ketchup が聞こえるので選びやすい。かけるかどうかは if you want（お好みで）。',
       use: 'A burger with nothing on it, please.（何ものせないバーガーをください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'meat', seg: [31.8, 36.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'meat', seg: [30.8, 37.1],
       stem: 'Type: “It’s a hamburger ___ on a bun.” (4 words)', answer: 'made out of meat',
       ja: '「It’s a hamburger ___ on a bun.」の空所を書こう（4語）',
       cue: '「It’s a hamburger」のあと',
@@ -94,7 +94,7 @@ export const bestBurger: Clip = {
       trap: 'made out of がつながり「メイダウラヴ」と聞こえる。of は小さく短い。',
       use: 'It’s made out of wood.（それは木でできている）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'care', seg: [36.8, 40.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'care', seg: [35.9, 41.5],
       stem: 'What does “*I couldn’t care less*” mean?',
       ja: '「I couldn’t care less」はどういう意味？',
       choices: ['I don’t care at all', 'I care a little', 'I care about it a lot'], a: 0,
@@ -106,7 +106,7 @@ export const bestBurger: Clip = {
       trap: 'less（より少なく）から「少し気にする」と思いやすい。全体で「まったく気にしない」。',
       use: 'I couldn’t care less about the rain.（雨なんてまったく気にしない）' },
 
-    { id: 'a2', skill: 'detail', level: 'B2', point: 'disappoint', seg: [41.4, 46.6],
+    { id: 'a2', skill: 'detail', level: 'B2', point: 'disappoint', seg: [40.5, 48.6],
       stem: 'Why does Chris say he is disappointed?',
       ja: 'クリスが「がっかりだ」と言うのはなぜ？',
       choices: ['He wanted a harder contest', 'Ron made fun of him', 'Ron’s burger looks bad'], a: 0,
@@ -118,7 +118,7 @@ export const bestBurger: Clip = {
       trap: 'disappointed から、ばかにされたと思いやすい。I thought that のあとが理由。',
       use: 'I’m so disappointed.（すごくがっかり）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'nevermind', reveals: ['winner'], seg: [41.4, 49.3],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'nevermind', reveals: ['winner'], seg: [41.4, 51.3],
       stem: 'What does “*Never mind*” mean here?',
       ja: 'ここでの「Never mind」はどういう意味？',
       choices: ['Forget what I just said', 'Don’t worry about me now', 'I don’t mind it at all'], a: 0,
@@ -165,7 +165,7 @@ export const bestBurger: Clip = {
       trap: '負けた料理人に気をつかったと取りやすいが、謝っている相手と、その反応を聞く。',
       use: 'Sorry, but I have to say no.（悪いけど、断らなきゃ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [63, 67.75],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [62.9, 67.9],
       stem: 'How long has Chris been working on his recipe?',
       ja: 'クリスはどのくらいレシピを工夫してきた？',
       choices: ['For weeks', 'For months', 'For years'], a: 2,
@@ -177,7 +177,7 @@ export const bestBurger: Clip = {
       trap: 'years は「イヤーズ」と最後の z が聞こえる。months なら「マンス」、weeks なら「ウィークス」。',
       use: 'I’ve lived here for years.（何年もここに住んでいる）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'tinker', reveals: ['years'], seg: [63, 67.75],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'tinker', reveals: ['years'], seg: [62.9, 67.9],
       stem: 'What does “*tinkered with*” mean?',
       ja: '「tinkered with」はどういう意味？',
       choices: ['Made small changes to', 'Thought about sometimes', 'Made the same way'], a: 0,
@@ -189,7 +189,7 @@ export const bestBurger: Clip = {
       trap: '聞きなれない言葉なので、ただ考えていたと思いやすい。with のあとが手を加えた物。',
       use: 'He likes to tinker with old cars.（彼は古い車をいじるのが好き）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'granted', reveals: ['years', 'tinker'], seg: [63, 72],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'granted', reveals: ['years', 'tinker'], seg: [63, 72.6],
       stem: 'Why might Chris have lost?',
       ja: 'クリスが負けたのはなぜかもしれない？',
       choices: ['He forgot how burgers taste', 'He didn’t taste his own burger', 'He likes beef better'], a: 0,
@@ -201,7 +201,7 @@ export const bestBurger: Clip = {
       trap: 'beef（牛肉）が好きとは言っていない。a long time since のあとを聞く。',
       use: 'It’s been a long time since we met.（会うのは久しぶりだね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'grantedm', seg: [66.5, 72],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'grantedm', seg: [64.8, 72.6],
       stem: 'What does “*Granted*” mean here?',
       ja: 'ここでの「Granted」はどういう意味？',
       choices: ['I have to admit', 'Thank you very much', 'Of course not'], a: 0,
@@ -213,7 +213,7 @@ export const bestBurger: Clip = {
       trap: 'grant（与える）から、お礼の言葉と思いやすい。文の頭なら「確かに」。',
       use: 'Granted, it’s a little expensive.（確かに、ちょっと高いけど）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'granted', seg: [67.4, 72],
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'granted', seg: [64.8, 72.6],
       stem: 'Type the words: “It’s been a long time ___ hamburger.” (4 words)', answer: 'since i\'ve had a',
       ja: '「It’s been a long time ___ hamburger.」の空所を書こう（4語）',
       cue: '「a long time」のすぐあと',
@@ -223,7 +223,7 @@ export const bestBurger: Clip = {
       trap: 'I’ve の v はほとんど聞こえない。since の s と I’ve がつながり「シンサイヴ」になる。',
       use: 'It’s been years since I’ve had sushi.（お寿司は何年ぶりだろう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'commissary', reveals: ['winner'], seg: [77.3, 86],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'commissary', reveals: ['winner'], seg: [77.3, 86.6],
       stem: 'What will the commissary keep serving?',
       ja: '食堂はこれからも何を出し続ける？',
       choices: ['The same hamburgers', 'Healthier food instead', 'The turkey burger'], a: 0,
@@ -235,7 +235,7 @@ export const bestBurger: Clip = {
       trap: '勝負の前は新しいバーガーの話だったので、変わると思いやすい。continue ＝ 続ける。',
       use: 'We will continue to serve breakfast.（朝食は引き続きご用意します）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'commissary', seg: [77.3, 86],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'commissary', seg: [77.3, 86.6],
       stem: 'What does the announcer think of the burgers?',
       ja: '発表する人はハンバーガーをどう思っている？',
       choices: ['They are bad for you', 'They are the best', 'They are much too small'], a: 0,
@@ -247,7 +247,7 @@ export const bestBurger: Clip = {
       trap: '勝ったバーガーなので、ほめていると思いやすい。前に付いた二つの言葉を聞く。',
       use: 'This food is bad for you.（この食べ物は体に悪い）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'commissary', seg: [78.4, 85.6],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'commissary', seg: [77.4, 86.6],
       stem: 'Fill the gap: “The commissary ___ continue to serve…”',
       ja: '「The commissary ___ continue to serve…」の空所は？',
       choices: ['will', 'won’t', 'would'], a: 0,

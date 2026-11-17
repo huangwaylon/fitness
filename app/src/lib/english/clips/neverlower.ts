@@ -25,7 +25,7 @@ export const neverLower: Clip = {
       line: 'I am going to have to *fix you, manage you*… on a more personal scale, a more *micro* form of management.',
       use: 'I don’t need you watching my every move.（いちいち見張らなくていいよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'purpose', seg: [0, 22.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'purpose', seg: [0, 23.2],
       stem: 'What is Michael setting up at the start?', ja: '最初に、マイケルは何を始めようとしている？',
       choices: ['A practice sales call', 'A real call to a client', 'A meeting with his boss'], a: 0,
       choicesJa: ['営業電話の練習', 'お客さんへの本当の電話', '上司との会議'],
@@ -35,7 +35,7 @@ export const neverLower: Clip = {
       trap: 'Bring, bring（電話の音のまね）が聞こえて、本当の電話だと思いやすい。役を決めている。',
       use: 'Let’s do a practice run first.（まず練習してみよう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'rules', seg: [14.5, 22.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'rules', seg: [14.5, 23.2],
       stem: 'What must Dwight avoid while selling to Jim?', ja: 'ジムに売るとき、ドワイトがしてはいけないことは？',
       choices: ['Being aggressive, hostile or difficult', 'Being impatient, aggressive or rude',
                 'Being pushy, hostile or loud'], a: 0,
@@ -47,7 +47,7 @@ export const neverLower: Clip = {
       trap: '1語だけ聞くと、似た悪口の組を選びやすい。without のあとの3語とも聞く。',
       use: 'Try to say no without being rude.（失礼にならずに断ってみて）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'thisis', seg: [26.5, 29.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'thisis', seg: [24.4, 32.4],
       stem: 'Type how Dwight starts: “Hello, ___ Dwight Schrute.” (2 words)', ja: 'ドワイトの最初の言葉を書こう：“Hello, ___ Dwight Schrute.”（2語）',
       answer: 'this is',
       cue: '「Hello」のすぐあと',
@@ -57,7 +57,7 @@ export const neverLower: Clip = {
       trap: 'this と is がつながり「ディシズ」と聞こえる。I’m と思いやすい。',
       use: 'Hello, this is Ken from ABC Hotel.（もしもし、ABCホテルのケンです）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'luck', seg: [31, 37.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'luck', seg: [30, 39.3],
       stem: 'What does Dwight mean by “you are in luck”?', ja: '“you are in luck” で、ドワイトは何を言いたい？',
       choices: ['Good news for you', 'You must be careful', 'You have to wait'], a: 0,
       choicesJa: ['あなたにいい知らせです', '気をつけてください', '待たないといけません'],
@@ -68,7 +68,7 @@ export const neverLower: Clip = {
       trap: 'luck（運）から、運だのみの話だと思いやすい。うしろの because が理由。',
       use: 'You’re in luck, we have one room left.（ついてますね、1部屋空いています）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'realname', seg: [42.0, 49.5],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'realname', seg: [40.1, 50.8],
       stem: 'How does Jim react when Dwight questions his name?', ja: '名前を疑われたとき、ジムはどう反応する？',
       choices: ['He acts angry and insulted', 'He acts caught and sorry', 'He acts like he misheard'], a: 0,
       choicesJa: ['怒って、失礼だと言う', 'ばれたと思い、謝る', '聞きまちがえたふりをする'],
@@ -90,7 +90,7 @@ export const neverLower: Clip = {
       trap: 'Really だけなら驚きで済むが、返事が「失礼な」なので疑いと分かる。強勢は返事でも確かめられる。',
       use: 'Is that your real phone number?（それ本当の電話番号？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'hold', seg: [50.7, 54.4],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'hold', seg: [49, 55.9],
       stem: 'What does the client ask Dwight to do?', ja: 'お客はドワイトに何を頼む？',
       choices: ['Wait for him on the line', 'Call him back later', 'Look up his order'], a: 0,
       choicesJa: ['電話を切らずに待つ', 'あとでかけ直す', '注文を調べる'],
@@ -101,7 +101,7 @@ export const neverLower: Clip = {
       trap: 'other line から、かけ直してと頼まれたと思いやすい。hold on は「待って」。',
       use: 'Could you hold on one second?（少々お待ちいただけますか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'otherline', seg: [54.3, 64.6],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'otherline', seg: [58.9, 64.8],
       stem: 'On his other call, what does Jim say he plans to do?', ja: '別の電話で、ジムは何をするつもりだと言う？',
       choices: ['Talk long and buy nothing', 'Wait, then buy a little', 'Hang up and buy elsewhere'], a: 0,
       choicesJa: ['長く話して、何も買わない', '待たせてから、少し買う', '切って、ほかで買う'],
@@ -112,7 +112,7 @@ export const neverLower: Clip = {
       trap: '悪口から、すぐ切ると思いやすい。最後の not buy anything まで聞く。',
       use: 'Sorry to keep you on the line.（お待たせしてすみません）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'otherline', seg: [59.85, 64.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'otherline', seg: [58.9, 64.6],
       stem: 'Type the words: “Probably just gonna ___ forever…” (5 words)', ja: '言葉を書こう：“Probably just gonna ___ forever…”（5語）',
       answer: 'keep him on the line',
       cue: '「gonna」のあと',
@@ -122,7 +122,7 @@ export const neverLower: Clip = {
       trap: 'h が消えると keep in に聞こえやすい。keep ＋人＋ on the line で覚える。',
       use: 'They kept me on hold for an hour.（1時間も保留にされた）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'emergency', seg: [67.75, 71.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'emergency', seg: [64.7, 71.5],
       stem: 'What reason does Jim give for the other call?', ja: '別の電話について、ジムはどんな理由を言う？',
       choices: ['A family emergency', 'An office emergency', 'A friend in trouble'], a: 0,
       choicesJa: ['家族の緊急事態', '職場の緊急事態', '友だちが困っている'],
@@ -133,7 +133,7 @@ export const neverLower: Clip = {
       trap: 'emergency だけ聞くと、中身を想像で補いやすい。その前の一語まで聞く。',
       use: 'Sorry, I had a family emergency.（すみません、家の急用で）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'private', seg: [70.3, 75.0],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'private', seg: [69, 76.3],
       stem: 'What does Jim do when Dwight asks “What’s wrong?”', ja: '“What’s wrong?” と聞かれて、ジムはどうする？',
       choices: ['He refuses to tell him', 'He tells him the problem', 'He asks Dwight for help'], a: 0,
       choicesJa: ['話すのを断る', '何があったか話す', 'ドワイトに助けを求める'],
@@ -143,6 +143,17 @@ export const neverLower: Clip = {
       mean: 'That’s private ＝ それは個人的なこと（言えない）。自分から話を出したのに断っている。',
       trap: 'You know what を「何だと思う？」と思いやすい。ここは話を切る前の「あのさ」。',
       use: 'Sorry, that’s private.（すみません、それは個人的なことなので）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hearing', seg: [76.1, 81.5],
+      stem: 'What does the client say about himself?', ja: 'お客は自分のことを何と言う？',
+      choices: ['He has trouble hearing', 'He is hard to hear', 'He is very hard to please'], a: 0,
+      choicesJa: ['耳が遠い', '声が聞き取りにくい', 'とても気難しい'],
+      cue: '「I’m」で始まる短い文',
+      line: '…a little bit louder. I’m *hard of hearing*.',
+      said: '「もう少し大きな声で。耳が遠いんだ」と言う。',
+      mean: 'hard of hearing ＝ 耳が遠い。ていねいな言い方。',
+      trap: 'hard を「難しい」と思うと、気難しい客に聞こえやすい。of でひとまとまり。',
+      use: 'My grandma is a little hard of hearing.（祖母は少し耳が遠いんです）' },
 
     { id: 'p2', skill: 'phrase', level: 'B1', point: 'speakup', seg: [77, 81],
       stem: 'What does “speak up” mean here?', ja: 'ここでの “speak up” はどういう意味？',
@@ -155,18 +166,7 @@ export const neverLower: Clip = {
       trap: 'up から「立つ」を思いやすい。うしろの louder（もっと大きく）がヒント。',
       use: 'Sorry, could you speak up?（すみません、もう少し大きな声でお願いします）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hearing', seg: [77.9, 80.95],
-      stem: 'What does the client say about himself?', ja: 'お客は自分のことを何と言う？',
-      choices: ['He has trouble hearing', 'He is hard to hear', 'He is very hard to please'], a: 0,
-      choicesJa: ['耳が遠い', '声が聞き取りにくい', 'とても気難しい'],
-      cue: '「I’m」で始まる短い文',
-      line: '…a little bit louder. I’m *hard of hearing*.',
-      said: '「もう少し大きな声で。耳が遠いんだ」と言う。',
-      mean: 'hard of hearing ＝ 耳が遠い。ていねいな言い方。',
-      trap: 'hard を「難しい」と思うと、気難しい客に聞こえやすい。of でひとまとまり。',
-      use: 'My grandma is a little hard of hearing.（祖母は少し耳が遠いんです）' },
-
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'louder', reveals: ['yell', 'hearing', 'speakup'], seg: [78.0, 92.7],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'louder', reveals: ['yell', 'hearing', 'speakup'], seg: [79.2, 93.9],
       stem: 'Why does Jim keep saying “louder”?', ja: 'ジムはなぜ何度も「もっと大きく」と言う？',
       choices: ['To make Dwight shout', 'To help Dwight sound sure', 'He really can’t hear well'], a: 0,
       choicesJa: ['ドワイトにどならせるため', 'ドワイトを自信ありげにするため', '本当に耳が遠いから'],
@@ -177,7 +177,7 @@ export const neverLower: Clip = {
       trap: '耳が遠いと言うので、本当の理由だと思いやすい。前の電話の話を思い出す。',
       use: 'Can you speak up a little?（もう少し大きな声で話してもらえますか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'yell', seg: [84.5, 96.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'yell', seg: [88.3, 100.3],
       stem: 'How is Dwight feeling when he shouts the prices?', ja: '値段のことを叫ぶとき、ドワイトはどんな気持ち？',
       choices: ['Angry and fed up', 'Happy and excited', 'Calm and relaxed'], a: 0,
       choicesJa: ['怒って、うんざりしている', 'うれしくて、わくわくしている', '落ち着いている'],
@@ -209,7 +209,7 @@ export const neverLower: Clip = {
       trap: 'ジム自身も意地悪なので、自分のことと取りやすい。describe you の you はドワイト。',
       use: 'In three words: tired, hungry, done.（ひとことで言うと、疲れた、腹ぺこ、もう無理）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hope', seg: [111.9, 115.2],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hope', seg: [109.5, 115.2],
       stem: 'What does Jim mean by “I should hope so”?', ja: '“I should hope so” で、ジムは何を言いたい？',
       choices: ['Of course you should', 'Maybe, if he has time', 'I doubt he’ll help'], a: 0,
       choicesJa: ['当然そうすべきだ', '時間があればね', '役に立たないだろう'],
@@ -220,7 +220,7 @@ export const neverLower: Clip = {
       trap: 'hope から「〜だといいな」と控えめに思いやすい。should とセットで「当然」。',
       use: 'They gave me a refund. — I should hope so!（返金された—当然でしょ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [121.3, 128.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [121.3, 128.9], keep: true,
       stem: 'How much does the client say he will buy?', ja: 'お客はどれだけ買うと言う？',
       choices: ['$100,000 worth', '$1 million worth', '$10 million worth', '$1 billion worth'], a: 1,
       choicesJa: ['10万ドル分', '100万ドル分', '1000万ドル分', '10億ドル分'],
@@ -231,7 +231,7 @@ export const neverLower: Clip = {
       trap: '100,000 なら hundred thousand、10 million なら ten、billion なら「ビ」。「ワンミリオン」なら100万。',
       use: 'Twenty dollars’ worth of gas, please.（ガソリン20ドル分お願いします）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'regret', seg: [129.6, 133.75],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'regret', seg: [128.9, 135.4],
       stem: 'Fill the gap: “I don’t think ___ regret it.”', ja: '空所に入るのは？ “I don’t think ___ regret it.”',
       choices: ['you’ll', 'you', 'we’ll'], a: 0,
       choicesJa: ['あなたは〜するだろう', 'あなたは（いつも）〜する', '私たちは〜するだろう'],
@@ -242,7 +242,7 @@ export const neverLower: Clip = {
       trap: 'you なら「ユー」ですぐ regret。we’ll なら「ウィ」で始まる。「ユーォ」と暗い音が残れば you’ll。',
       use: 'I don’t think you’ll need a coat.（コートは要らないと思うよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'condition', seg: [134.4, 140.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'condition', seg: [134.4, 141.4],
       stem: 'What would the client’s condition mean for Dwight?', ja: 'お客の条件は、ドワイトにとってどういうこと？',
       choices: ['He may lose his job', 'He may lose this client', 'He must say sorry'], a: 0,
       choicesJa: ['仕事を失うかもしれない', 'このお客を失うかもしれない', '謝らなければならない'],

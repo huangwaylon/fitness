@@ -29,7 +29,7 @@ export const twodates: Clip = {
       trap: '男性が二人いるので「取り合い」と思いやすい。売り込んでいるのは友だちのほう。',
       use: 'Can you set me up with someone?（だれか紹介してくれない？）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B1', point: 'middle', seg: [12.6, 16.9],
+    { id: 'r1', skill: 'pragma', level: 'B1', point: 'middle', seg: [11.7, 18.1],
       stem: 'Rachel says, “I’m in the middle of something.” What does she mean?',
       ja: '「I’m in the middle of something」とはどういう意味？',
       choices: ['She is busy right now', 'She wants them to sit', 'She will finish soon'], a: 0,
@@ -41,7 +41,7 @@ export const twodates: Clip = {
       trap: 'just から「すぐ終わる」と思いやすいが、時間の話はしていない。',
       use: 'I’m in the middle of dinner.（今、夕食の最中なの）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'winning', seg: [17, 26.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'winning', seg: [17, 28.7],
       stem: 'What does “We’re winning” show about the friends?',
       ja: '「We’re winning」から、友だちについて何が分かる？',
       choices: ['They see it as a contest', 'They are watching a game', 'Rachel is having fun'], a: 0,
@@ -53,7 +53,7 @@ export const twodates: Clip = {
       trap: 'winning から試合を思いやすいが、試合の話は出てこない。だれと比べた「勝ち」かを考える。',
       use: 'It’s not a competition.（勝ち負けじゃないよ）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'go', seg: [20.4, 29.9],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'go', seg: [25.1, 31.1],
       stem: 'Why does Rachel’s first guy say “Maybe I should go”?',
       ja: 'レイチェルと話していた男性は、なぜ「Maybe I should go」と言う？',
       choices: ['He feels in the way', 'He is angry at Rachel', 'He is bored with Rachel'], a: 0,
@@ -77,7 +77,7 @@ export const twodates: Clip = {
       trap: 'have ＝「持つ」から「席を取る」と思いやすい。人にすすめる決まり文句。',
       use: 'Have a seat. I’ll be right back.（座ってて。すぐ戻るね）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'havent', seg: [29.6, 33.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'havent', seg: [29, 35],
       stem: 'Fill the gap: “Rachel, you ___ touched Eldon’s hair.”',
       ja: '空いている所に入る語は？',
       choices: ['have', 'haven’t', 'hadn’t'], a: 1,
@@ -88,7 +88,7 @@ export const twodates: Clip = {
       trap: 'have には「ン」がない。hadn’t は「ハドゥン」と d が入る。ここは「ハヴン」。',
       use: 'You haven’t tried the soup yet.（まだスープ飲んでないでしょ）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B1', point: 'good', reveals: ['havent'], seg: [29.6, 36.1],
+    { id: 'r2', skill: 'pragma', level: 'B1', point: 'good', reveals: ['havent'], seg: [29.6, 38.8],
       stem: 'Rachel is told “Touch it.” What does “I’m good” mean?',
       ja: '「触って」と言われて「I’m good」。どういう意味？',
       choices: ['No, thanks', 'Sure, OK', 'I feel fine'], a: 0,
@@ -100,7 +100,7 @@ export const twodates: Clip = {
       trap: '日本語の「大丈夫」と同じで、「はい」にも聞こえやすい。すすめの直後なら断り。',
       use: 'More coffee? — I’m good, thanks.（コーヒーもっと？―大丈夫、ありがとう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'rich', seg: [35.8, 42.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'rich', seg: [34.5, 42.6],
       stem: 'What do we hear about Patrick?',
       ja: 'パトリックについて何と言っている？',
       choices: ['He’s really rich', 'He can dance', 'His hair is soft'], a: 0,
@@ -111,7 +111,7 @@ export const twodates: Clip = {
       trap: '髪とダンスはもう一人、エルドンの話。名前のすぐあとを聞く。',
       use: 'He’s really nice, and he cooks.（すごくいい人で、料理もするの）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'massage', seg: [42.2, 46.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'massage', seg: [41.2, 46.9],
       stem: 'What was Patrick promised for coming?',
       ja: 'パトリックは、来るお礼に何をもらう約束だった？',
       choices: ['A free massage', 'Some cash', 'A free dinner'], a: 0,
@@ -123,7 +123,7 @@ export const twodates: Clip = {
       trap: 'お金の話も出るので「お金」と思いやすい。お金はレイチェルに渡す話。',
       use: 'This isn’t really worth the wait.（これ、待つほどの価値はないな）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'eldon', seg: [46.8, 52.6],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'eldon', seg: [46.2, 52.9],
       stem: 'What two things are said about Eldon?',
       ja: 'エルドンについて言われる二つのことは？',
       choices: ['Cooperative, and he can dance', 'Creative, and he can sing', 'Rich, and very good-looking'], a: 0,
@@ -135,7 +135,7 @@ export const twodates: Clip = {
       trap: 'cooperative は creative と出だしが似ている。more のあとを聞く。',
       use: 'This one is much more comfortable.（こっちのほうがずっと楽だよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'dont', reveals: ['eldon'], seg: [52.3, 55.35],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'dont', reveals: ['eldon'], seg: [50.4, 57.9],
       stem: 'Fill the gap: “___ dance for me, please.”',
       ja: '空いている所に入る語は？',
       choices: ['Do', 'Don’t', 'Won’t you'], a: 1,
@@ -168,7 +168,7 @@ export const twodates: Clip = {
       trap: 'soft hair をほめるので「選んだ」と思いやすい。but のあとで断っている。',
       use: 'I’d rather go by myself.（一人で行くほうがいいな）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'needdate', seg: [69.4, 74.15],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'needdate', seg: [68.3, 77],
       stem: 'How does Rachel feel at “Thank you very much, but…”?',
       ja: '「Thank you very much, but…」のとき、レイチェルの気持ちは？',
       choices: ['Angry with her friends', 'Thankful to her friends', 'Happy with the men'], a: 0,
@@ -180,7 +180,7 @@ export const twodates: Clip = {
       trap: 'thank you から感謝と思いやすい。本音は but のあとの強い no。',
       use: 'Thanks, but I can do it myself.（ありがとう、でも自分でできるから）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'chase', seg: [76.4, 80.1],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'chase', seg: [74, 82.3],
       stem: 'What does “chase away” mean here?',
       ja: 'ここでの「chase away」の意味は？',
       choices: ['Make someone leave', 'Run after someone', 'Keep someone waiting'], a: 0,
@@ -203,7 +203,7 @@ export const twodates: Clip = {
       trap: '途中で帰りたがった人を思い浮かべやすいが、そのあと本人に声をかけている。',
       use: 'He’s the only one I really liked.（本当に気に入ったのは彼だけ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [79.8, 86.1],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [76.7, 86.1],
       stem: 'Why does Rachel say “I mean” here?',
       ja: 'レイチェルは、なぜここで「I mean」と言う？',
       choices: ['To soften what she said', 'To explain a hard word', 'To start a new complaint'], a: 0,
@@ -215,7 +215,7 @@ export const twodates: Clip = {
       trap: 'mean ＝ 意味、から「説明」と思いやすい。続く no offense（悪気はない）が手がかり。',
       use: 'I mean, no offense, but it’s too loud.（悪気はないけど、ちょっとうるさいかな）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ball', reveals: ['byself'], seg: [87.55, 95.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ball', reveals: ['byself'], seg: [86.1, 95.7],
       stem: 'Where does Rachel say she would go by herself?',
       ja: 'レイチェルは、どこにひとりで行くと言う？',
       choices: ['To the ball', 'To the bar', 'To the mall'], a: 0,
@@ -226,7 +226,7 @@ export const twodates: Clip = {
       trap: 'bar（バー）や mall（モール）と似て聞こえやすい。最初が b の音で、最後に軽い「ル」が残れば ball。',
       use: 'Are you going to the party alone?（パーティーはひとりで行くの？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'rather', reveals: ['ball', 'byself'], seg: [87.55, 95.2],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'rather', reveals: ['ball', 'byself'], seg: [86.1, 96.4],
       stem: 'What does Rachel mean with “I would much rather”?',
       ja: '「I would much rather…」でレイチェルが言いたいことは？',
       choices: ['She prefers to go alone', 'She will go if they stop', 'She will not go alone'], a: 0,
@@ -238,7 +238,7 @@ export const twodates: Clip = {
       trap: 'than を「〜なら」と思うと条件に聞こえやすい。二つを比べる言い方。',
       use: 'I’d rather walk than wait for the bus.（バスを待つより歩きたい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'byself', reveals: ['ball'], seg: [89.3, 93.43],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'byself', reveals: ['ball'], seg: [87.7, 95.7],
       stem: 'Type what Rachel says: “go to the ball ___.” (3 words)', answer: 'all by myself',
       ja: '「go to the ball ___」の3語を書こう。',
       cue: '「ball」のあとの短いひとまとまり。', line: 'go to the ball *all by myself*',
@@ -258,7 +258,7 @@ export const twodates: Clip = {
       trap: 'Goodbye のあとの Now を「さあ追いかけよう」と取りやすい。続く話題の中身を聞く。',
       use: 'Anyway, where were we?（で、何の話だっけ？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'conditioner', reveals: ['outcome'], seg: [97.9, 102.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'conditioner', reveals: ['outcome'], seg: [97.2, 104.1],
       stem: 'After Rachel leaves, what is Eldon asked about?',
       ja: 'レイチェルが出ていったあと、エルドンは何を聞かれる？',
       choices: ['What he uses on his hair', 'Where he gets his hair cut', 'Whether he’ll dance now'], a: 0,

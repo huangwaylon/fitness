@@ -16,7 +16,7 @@ export const ronDesk: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'equality', seg: [8.4, 15.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'equality', seg: [6.4, 17.2],
       stem: 'What idea does Chris say the desk stands for?',
       ja: 'クリスによると、この机はどんな考えを表している？',
       choices: ['Equality', 'Simplicity', 'Teamwork'], a: 0,
@@ -39,7 +39,7 @@ export const ronDesk: Clip = {
       trap: 'What is it? は用件を聞く形なので、話があったと思いやすい。直前の指示に戻る。',
       use: 'You told me to, so I did.（そう言われたから、やったんだよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'walls', seg: [35.7, 41.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'walls', seg: [35.7, 44.2],
       stem: '“What about my office and its many walls?” What does Ron like?',
       ja: '「僕の部屋と、たくさんの壁は？」ロンは何が好き？',
       choices: ['Being away from people', 'Wall space for his things', 'A room that shows his rank'], a: 0,
@@ -51,7 +51,7 @@ export const ronDesk: Clip = {
       trap: 'walls から「飾る場所」と思いやすい。人に会いたくないロンらしい心配。',
       use: 'What about my parking space?（私の駐車場はどうなるの？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'access', seg: [36.6, 57.3],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'access', seg: [36.6, 58.7],
       stem: 'What does Chris want to change about Ron?',
       ja: 'クリスはロンの何を変えたい？',
       choices: ['Make him easy to reach', 'Make him look more modern', 'Make him work much faster'], a: 0,
@@ -74,7 +74,7 @@ export const ronDesk: Clip = {
       trap: 'annoying を本人の不満と取ると皮肉に聞こえる。誰にとって面倒なのかを聞く。',
       use: 'I like my quiet corner.（静かな自分の隅っこが好き）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'getover', seg: [48.88, 56.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'getover', seg: [48.7, 56.9],
       stem: 'About the pillar, Chris says, “*Get over it*.” Meaning?',
       ja: '柱について、クリスの「Get over it」はどういう意味？',
       choices: ['Stop being upset about it', 'Stay calm, it may come back', 'Think it over first'], a: 0,
@@ -121,7 +121,7 @@ export const ronDesk: Clip = {
       trap: 'Sir があると、ていねいなままに思える。最後の一文が本音。',
       use: 'Excuse me, I’m talking to you.（すみません、あなたに話しているんです）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'dodge', seg: [82.0, 89.65],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'dodge', seg: [82, 92.9],
       stem: 'What is Ron using the new desk for?',
       ja: 'ロンは新しい机を何に使っている？',
       choices: ['Turning away from the man', 'Finding someone to help him', 'Pointing to another desk'], a: 0,
@@ -133,7 +133,7 @@ export const ronDesk: Clip = {
       trap: '机の話なので、人を助けるのに使うと思いやすい。swivel away ＝ くるっと背を向ける。',
       use: 'Don’t walk away while I’m talking.（話している途中で行かないで）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'minute', seg: [89.65, 99.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'minute', seg: [89.5, 99], keep: true,
       stem: 'How fast can he type on the new keyboard?',
       ja: '新しいキーボードで、彼はどのくらいの速さで打てる？',
       choices: ['1 word a minute', '2 words a minute', '1 word a second'], a: 0,
@@ -145,7 +145,7 @@ export const ronDesk: Clip = {
       trap: '「ワンワード」なら1語、「トゥーワーズ」と「ズ」が付けば2語。「ミニッ」なら分、「セカンド」なら秒。',
       use: 'I’m down to my last ten dollars.（残り10ドルになっちゃった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'aswell', seg: [99.0, 102.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'aswell', seg: [97.6, 105.6],
       stem: 'Type what Ron says: “Donna, you know ___, these…” (5 words)', answer: 'as well as i do',
       ja: 'ロンの言葉を書こう：「Donna, you know ___, these…」（5語）',
       cue: '「you know」のすぐあと。',
@@ -177,7 +177,7 @@ export const ronDesk: Clip = {
       trap: 'shakeup の勢いで悪化の話と取りやすい。次の「待てばいい」が意味を決める。',
       use: 'The rain should peter out soon.（雨はそのうち弱まるはず）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'pork', seg: [113.9, 118.33],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'pork', seg: [113.5, 121.1],
       stem: 'Fill the gap: “Webster’s Dictionary describes a ___ as a…”',
       ja: '空いている所に入る語は？「Webster’s Dictionary describes a ___ as a…」',
       choices: ['pork', 'park', 'perk'], a: 0,
@@ -189,7 +189,7 @@ export const ronDesk: Clip = {
       trap: '口を丸めた「ポー」なら pork、大きく開けた「パー」なら park、口を小さくこもった「ア〜」なら perk。',
       use: 'I’ll have the pork, please.（ポークをお願いします）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'startover', seg: [120.4, 127.7],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'startover', seg: [121.6, 133.6],
       stem: 'Ron asks, “Can we *start over*?” What does he want?',
       ja: '「Can we start over?」でロンは何をしたい？',
       choices: ['To begin again', 'To stop for today', 'To go home now'], a: 0,
@@ -201,7 +201,7 @@ export const ronDesk: Clip = {
       trap: 'over を「終わり」と思うと「やめる」に聞こえる。start over は「やり直し」。',
       use: 'Sorry, can we start over?（ごめん、最初からやり直していい？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'request', reveals: ['goback'], seg: [132.3, 166.7],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'request', reveals: ['goback'], seg: [132.3, 169.1],
       stem: 'Why does Ron want the old setup back?',
       ja: 'ロンはなぜ前のやり方に戻したい？',
       choices: ['His staff are very unhappy', 'It costs the city too much', 'His new desk is too small'], a: 0,
@@ -236,7 +236,7 @@ export const ronDesk: Clip = {
       trap: 'pains me を「恐縮です」と取りやすい。前の compliment と so でつながる。',
       use: 'I hate to say it, but you’re right.（認めたくないけど、君の言う通り）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'goback', seg: [141.5, 152.95],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'goback', seg: [141.5, 153],
       stem: 'What must happen to Ron’s department, he says?',
       ja: 'ロンによると、部署はどうしなければならない？',
       choices: ['Go back to how it was', 'Get more time to adjust', 'Be left alone for a while'], a: 0,
@@ -248,7 +248,7 @@ export const ronDesk: Clip = {
       trap: '直後の Give them time はクリスの返事。だれの言葉かを順番で分ける。',
       use: 'Can we go back to the old way?（前のやり方に戻せない？）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'tom', seg: [151.55, 159.15],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'tom', seg: [151.5, 162.4],
       stem: 'When does Tom work well, says Ron?',
       ja: 'ロンによると、トムはどんなときにちゃんと働く？',
       choices: ['When someone can be impressed', 'When nobody is watching him', 'When his boss gives clear tasks'], a: 0,
@@ -260,7 +260,7 @@ export const ronDesk: Clip = {
       trap: 'あとに「だれも見ていないと働ける」ジェリーの話が来て混ざりやすい。名前の直後を聞く。',
       use: 'He works best with an audience.（人に見られているほど力を出す）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'april', seg: [159.15, 166.25],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'april', seg: [158.6, 165.2],
       stem: 'Who does April hate, says Ron?',
       ja: 'ロンによると、エイプリルが嫌いなのはだれ？',
       choices: ['Everyone', 'Only Chris', 'Only Tom'], a: 0,

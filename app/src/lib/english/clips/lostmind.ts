@@ -27,7 +27,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'actual（実際の）から「今まさに」と思いやすい。苦手と言う前の「実は」。',
       use: 'I’m actually enjoying this.（意外と楽しんでる）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'day', seg: [0, 15.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'day', seg: [0, 17.1],
       stem: 'What is special about today at the office?',
       ja: '今日のオフィスは何が特別？',
       choices: ['Kids come to the office', 'A school class visits', 'Staff take a class on kids'], a: 0,
@@ -39,7 +39,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '子どもが大勢来るので、学校の見学だと思いやすい。daughter（娘）と work で分かる。',
       use: 'Are you bringing your kids to work?（子どもを職場に連れてくる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'married', seg: [2.9, 8.3], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'married', seg: [2.9, 8.7], keep: true,
       stem: 'Why does Pam want to get better with kids?',
       ja: 'パムはなぜ子どもの相手がうまくなりたい？',
       choices: ['She’s getting married', 'Her daughter starts school', 'She’ll work with kids'], a: 0,
@@ -51,7 +51,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'Daughter という語から自分の娘を思いやすいが、娘の話はしていない。理由は because のあと。',
       use: 'I want to get better at cooking.（料理がうまくなりたい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'candy', seg: [8.3, 13], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'candy', seg: [7.5, 13.7], keep: true,
       stem: 'Why has Pam put extra candy on her desk?',
       ja: 'パムはなぜ机にお菓子を多めに置いた？',
       choices: ['So kids will talk to her', 'To keep the kids quiet', 'As a treat when kids leave'], a: 0,
@@ -63,7 +63,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '職場なので「静かにさせるため」と思いやすい。so のあとが目的。',
       use: 'I put snacks out for visitors.（来客用にお菓子を出した）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'forgot', seg: [29.4, 33.2],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'forgot', seg: [28.5, 36.8],
       stem: 'What does “Is that today?” show about Michael?',
       ja: '「Is that today?」から、マイケルについて何が分かる？',
       choices: ['He forgot about it', 'Nobody told him', 'He is excited about it'], a: 0,
@@ -75,7 +75,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '知らなかったように聞こえるが、reminded you last night（昨夜言った）で、忘れていたと分かる。',
       use: 'Wait, is that today?（え、それ今日だっけ？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'likebut', reveals: ['rrated'], seg: [32.9, 41.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'likebut', reveals: ['rrated'], seg: [31.4, 41.7],
       stem: 'What does Michael really want to say?',
       ja: 'マイケルが本当に言いたいことは？',
       choices: ['Kids don’t belong here', 'He doesn’t like kids', 'Kids will love it here'], a: 0,
@@ -99,7 +99,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '子どもの話なので、子どもが何かすると思いやすい。心配しているのは自分の口。',
       use: 'Who knows what I’ll say next?（次に何を言うか分からないよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'fine', seg: [58.3, 64.2],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'fine', seg: [56.3, 64.2],
       stem: 'How does Michael say “Fine, fine, fine”?',
       ja: 'マイケルはどんな気持ちで「Fine, fine, fine」と言う？',
       choices: ['He gives in, not happy', 'He’s glad to do it', 'He says all is well'], a: 0,
@@ -122,7 +122,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'citizens を「ヒーロー」と取ると別の話になる。短い一言がたとえへのツッコミ。',
       use: 'Okay, bad example.（今のはたとえが悪かった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'grade', seg: [102.55, 107.95], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'grade', seg: [100, 109.6], keep: true,
       stem: 'What grade is Melissa in?',
       ja: 'メリッサは何年生？',
       choices: ['Eighth grade', 'Eleventh grade', 'She’s eighteen'], a: 0,
@@ -145,7 +145,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'amazing を文字通り取ると、ほめ言葉に思える。短い Oh. と同じ語のくり返しは動揺のサイン。',
       use: 'Oh. Well, that’s… great.（あ、えっと…いいね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [113.7, 118.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [112.4, 118.9],
       stem: 'What comes after “It’s just that”?',
       ja: '「It’s just that」のあとに来るのは何？',
       choices: ['The real reason', 'A second problem', 'The same thing again'], a: 0,
@@ -156,16 +156,6 @@ export const boyHaveYouLostYourMind: Clip = {
       mean: 'It’s not that A. It’s just that B. ＝ A というわけじゃない。ただ B なんだ。',
       trap: 'just を「さらに」と思うと、問題が1つ増えたように聞こえる。not that と組で本当の理由。',
       use: 'It’s not that I’m busy, it’s just…（忙しいわけじゃなくて、ただ…）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [113.7, 118.9], keep: true,
-      stem: 'Type what he says: “…when you can be a ___?” (2 words)', answer: 'fun uncle',
-      ja: '「when you can be a」のあとの2語を書こう。',
-      cue: '「when you can be a」のあと。',
-      line: 'why be a dad when you can be a *fun uncle*?',
-      said: '「父親になるより、楽しいおじさんでいればいい」と言う。',
-      mean: 'fun uncle ＝ たまに遊んでくれる楽しいおじさん。fun と uncle がつながり「ファナンコー」。',
-      trap: 'n が続くので1語に聞こえやすい。2語あると思って書く。',
-      use: 'He’s the fun uncle at parties.（彼はパーティーで楽しいおじさん役）' },
 
     { id: 'i3', retired: true, skill: 'infer', level: 'C1', point: 'rebel', reveals: ['uncle', 'notthat'], seg: [113.7, 122],
       stem: 'What does Michael’s talking head about kids suggest he really wants?',
@@ -178,7 +168,17 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dad が聞こえるので父親になりたい話と取りやすい。why be a dad は「なる必要ない」の反語。',
       use: 'Why pay more when you can rent?（借りられるのに、なぜ高く払う？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'macchiato', seg: [121.75, 126.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [114.4, 122.4], keep: true,
+      stem: 'Type what he says: “…when you can be a ___?” (2 words)', answer: 'fun uncle',
+      ja: '「when you can be a」のあとの2語を書こう。',
+      cue: '「when you can be a」のあと。',
+      line: 'why be a dad when you can be a *fun uncle*?',
+      said: '「父親になるより、楽しいおじさんでいればいい」と言う。',
+      mean: 'fun uncle ＝ たまに遊んでくれる楽しいおじさん。fun と uncle がつながり「ファナンコー」。',
+      trap: 'n が続くので1語に聞こえやすい。2語あると思って書く。',
+      use: 'He’s the fun uncle at parties.（彼はパーティーで楽しいおじさん役）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'macchiato', seg: [118.8, 126.8], keep: true,
       stem: 'How many iced drinks a day does Melissa claim?',
       ja: 'メリッサは1日に何杯アイスドリンクを飲むと言う？',
       choices: ['About a dozen', 'About a hundred', 'About a thousand'], a: 1,
@@ -190,7 +190,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dozen は「ダズン」、thousand は「サウザンド」。「ハンドレッド」なら100。like は「好き」ではない。',
       use: 'I walked like ten miles today.（今日10マイルくらい歩いた）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'dorky', reveals: ['gimme'], seg: [132.35, 139.3],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'dorky', reveals: ['gimme'], seg: [132.4, 140],
       stem: 'How does Melissa feel about Ryan?',
       ja: 'メリッサはライアンのことをどう思っている？',
       choices: ['She likes him', 'She hates him', 'She feels sorry for him'], a: 0,
@@ -202,7 +202,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dorky を本気の悪口と思いやすい。すぐあとの Give me your number で気持ちが分かる。',
       use: 'Give me your number, I’ll text you.（番号教えて、メッセージ送るね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gimme', seg: [136.3, 139.5], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gimme', seg: [134.4, 140], keep: true,
       stem: 'Fill the gap: “___ number…”',
       ja: '空いている所に入る語は？',
       choices: ['Give me your', 'Give me the', 'Give him your'], a: 0,
@@ -249,7 +249,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'fish（魚）から「くさい」と思いやすい。is going on（起きている）なので出来事の話。',
       use: 'Something seems fishy about this deal.（この取引、何かあやしい）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mind', seg: [160.4, 166.85],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mind', seg: [160.4, 167.2],
       stem: 'What does “Have you lost your mind?” mean?',
       ja: '「Have you lost your mind?」の意味は？',
       choices: ['Are you crazy?', 'Did you forget?', 'Are you lost?'], a: 0,
@@ -272,7 +272,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '否定が二つで「肯定」と計算しやすいが、話し言葉では強調。直後の Jesus の文で確かめる。',
       use: 'Ain’t nobody got time for that.（そんなのやってられない）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'scared', seg: [171.4, 177], keep: true,
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'scared', seg: [171.3, 177.6], keep: true,
       stem: 'How does Ryan feel about what happened?',
       ja: 'ライアンは、起きたことをどう感じている？',
       choices: ['Very scared', 'Secretly amused', 'A bit embarrassed'], a: 0,

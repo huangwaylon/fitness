@@ -15,7 +15,7 @@ export const promSeason: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'ph6', skill: 'phrase', level: 'B2', point: 'tellme', seg: [5.5, 9.5],
+    { id: 'ph6', skill: 'phrase', level: 'B2', point: 'tellme', seg: [4.4, 11.7],
       stem: '“*Tell me about it*.” What does it mean here?',
       ja: 'ここでの「Tell me about it」はどういう意味？',
       choices: ['I feel the same way', 'Please tell me more', 'I don’t know about it'], a: 0,
@@ -50,7 +50,7 @@ export const promSeason: Clip = {
       trap: 'すぐあとに parents が出るので外出禁止と思いやすい。egged を聞く。',
       use: 'I can’t go out without being recognized.（外に出ると必ず気づかれる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pastproms', seg: [17.5, 42.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pastproms', seg: [17.5, 42.8],
       stem: 'How did these two men’s proms go?',
       ja: 'この二人のプロムはどうだった？',
       choices: ['Neither one went well', 'Both were perfect nights', 'Both went with their parents'], a: 0,
@@ -62,7 +62,7 @@ export const promSeason: Clip = {
       trap: 'looked fly（かっこよかった）で満足そうに聞こえる。でも相手は怒っていた。',
       use: 'My prom was a total disaster.（私のプロムは散々だった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messedup', seg: [22.4, 29.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messedup', seg: [21.8, 31.7],
       stem: '“I’m still *messed up* from it.” What does he mean?',
       ja: '「I’m still messed up from it」とはどういう意味？',
       choices: ['It still bothers him today', 'He still has to clean up', 'He feels sorry for his parents'], a: 0,
@@ -74,7 +74,7 @@ export const promSeason: Clip = {
       trap: 'mess（散らかす）から片づけの話と思いやすい。from it は「そのせいで」。',
       use: 'That movie messed me up for weeks.（あの映画、何週間も引きずった）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [28.9, 36.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [26.4, 31.4], keep: true,
       stem: 'In the second story, how long was he at his prom?',
       ja: '二つ目の話で、彼はプロムにどのくらいいた？',
       choices: ['5 minutes', '15 minutes', '50 minutes'], a: 1,
@@ -97,7 +97,7 @@ export const promSeason: Clip = {
       trap: '相手が怒った話で反省と取りやすい。but のあとに本人の評価が来る。',
       use: 'It was expensive, but it looked amazing.（高かったけど、最高だった）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'writing', seg: [43.0, 52.3],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'writing', seg: [44.1, 56.1],
       stem: 'Leslie asks, “Can I get that *in writing*?” What does she want?',
       ja: '「Can I get that in writing?」でレスリーは何がほしい？',
       choices: ['The praise written down', 'A letter for her to sign', 'A new grade from the school'], a: 0,
@@ -109,7 +109,7 @@ export const promSeason: Clip = {
       trap: 'in writing は「信用しない」ときにも使うが、ここは Thank you と喜んでいる。',
       use: 'Could I get that in writing?（それ、書面でもらえますか）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'changed', reveals: ['writing'], seg: [47.0, 55.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'changed', reveals: ['writing'], seg: [47, 57.7],
       stem: '“You haven’t changed since high school.” What does he mean?',
       ja: '「高校のころから変わってないね」とはどういう意味？',
       choices: ['She was like this then too', 'She looks as young as then', 'She still plans school dances'], a: 0,
@@ -132,7 +132,7 @@ export const promSeason: Clip = {
       trap: '言葉どおりなら「知らなかった」になる。直前の言動と食い違う返事は、ふりを疑う。',
       use: 'Oh, that? No big deal.（ああ、あれ？大したことないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [52.3, 57.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [52.1, 59.2],
       stem: 'Fill the gap: “I ___ believe he gave you an A-plus.”',
       ja: '空いている所に入る語は？「I ___ believe he gave you an A-plus.」',
       choices: ['can’t', 'can', 'don’t'], a: 0,
@@ -166,7 +166,7 @@ export const promSeason: Clip = {
       trap: 'がっかり役を探してアリソンと取りやすいが、彼女は快く受ける。笑われるのは本気すぎる側。',
       use: 'I take my snack duty very seriously.（おやつ係は本気でやってるの）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [78.0, 84.4], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [78, 84.9], keep: true,
       stem: 'How much does Ron offer Allison to help him?',
       ja: 'ロンは手伝いのお礼にアリソンにいくら払うと言う？',
       choices: ['$14', '$40', '$400'], a: 1,
@@ -190,7 +190,7 @@ export const promSeason: Clip = {
       trap: 'ただのお礼やアルバイトの話に見えやすい。I will defeat you は相手を敵と見ている言い方。',
       use: 'I know what you’re up to.（何たくらんでるか分かってるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'quarry', seg: [98.4, 105.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'quarry', seg: [98.4, 108.3],
       stem: 'Why did Ron leave his prom early?',
       ja: 'ロンはなぜプロムを早く出た？',
       choices: ['To go to his job', 'To drive his date home', 'To see a singer play'], a: 0,
@@ -213,7 +213,7 @@ export const promSeason: Clip = {
       trap: 'outgrow を服のサイズの意味で取りやすい。直前の仕事の話とつなげると、心の成長の意味になる。',
       use: 'I think I’ve outgrown video games.（もうゲームは卒業したかな）' },
 
-    { id: 'n4', skill: 'number', level: 'B1', point: 'twelve', reveals: ['quarry'], seg: [102.9, 108.6], keep: true,
+    { id: 'n4', skill: 'number', level: 'B1', point: 'twelve', reveals: ['quarry'], seg: [102.9, 109], keep: true,
       stem: 'How old was Ron at that prom?',
       ja: 'そのプロムのとき、ロンは何歳だった？',
       choices: ['12', '17', '20'], a: 0,
@@ -225,7 +225,7 @@ export const promSeason: Clip = {
       trap: '「トゥエルヴ」と短く終われば12、「トゥエンティ」と「ティ」で終われば20、「セヴン」で始まれば17。',
       use: 'I was twelve when we moved here.（ここに越してきたのは12歳のとき）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'leave', seg: [115.8, 130.8],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'leave', seg: [114.7, 131.7],
       stem: 'How does April feel about the prom?',
       ja: 'エイプリルはプロムをどう思っている？',
       choices: ['She wants to leave', 'She loves the music', 'She wants to dance'], a: 0,
@@ -237,7 +237,7 @@ export const promSeason: Clip = {
       trap: 'Yay!（わーい）で喜んでいると思いやすい。すぐ Let’s go now と言う。',
       use: 'Okay, we did it. Let’s go now.（よし、終わった。もう行こう）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'chance', seg: [128.8, 133.8],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'chance', seg: [128.8, 136.9],
       stem: 'Andy says, “If you *give this a chance*…” What does he want?',
       ja: '「If you give this a chance…」でアンディは何をしてほしい？',
       choices: ['April to try it first', 'April to take a break', 'April to wait for him'], a: 0,
@@ -249,7 +249,7 @@ export const promSeason: Clip = {
       trap: 'chance を「チャンスを見つける」と思いやすい。give 〜 a chance でひとまとまり。',
       use: 'Give it a chance. You might like it.（試してみて。気に入るかもよ）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'expendables', seg: [137, 148.6],
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'expendables', seg: [140.8, 152.8],
       stem: 'After watching the movie ten times, what did Andy realize?',
       ja: '映画を10回見て、アンディは何に気づいた？',
       choices: ['It’s not a good movie', 'It’s his favorite movie', 'It gets better each time'], a: 0,
@@ -261,7 +261,7 @@ export const promSeason: Clip = {
       trap: 'The third time, it was OK で好きになる流れに聞こえる。最後の一文まで聞く。',
       use: 'Give it a few tries.（何回か試してみて）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'excuse', seg: [150.4, 159.8],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'excuse', seg: [148.8, 160.4],
       stem: 'How does April answer “Why don’t we go dance?”',
       ja: '「踊りに行こうよ」に、エイプリルはどう答える？',
       choices: ['She makes an excuse not to', 'She’ll join him after a break', 'She says she hates dancing'], a: 0,
@@ -273,7 +273,7 @@ export const promSeason: Clip = {
       trap: 'トイレのあとで合流すると思いやすい。you だけが主語なので、彼女は踊らない。',
       use: 'I’ll sit this one out. You go ahead.（今回はパス、どうぞ行って）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'trick', seg: [203.6, 207.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'trick', seg: [202.9, 207.9],
       stem: 'Type what Leslie says: “There’s ___.” (5 words)', answer: 'a little trick to it',
       ja: 'レスリーの言葉を書こう：「There’s ___.」（5語）',
       cue: '「cord before?」のあと。',
@@ -294,7 +294,7 @@ export const promSeason: Clip = {
       trap: '説明が細かいので本当のコツと取りやすい。聞き手の要約が、説明の中身をあばいている。',
       use: 'So basically, just push the button?（要するに、ボタンを押すだけ？）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thankme', seg: [217.4, 223.4],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thankme', seg: [215.2, 226.3],
       stem: 'Why does Leslie say “You don’t have to thank me”?',
       ja: 'レスリーは、なぜ「You don’t have to thank me」と言う？',
       choices: ['To answer thanks kindly', 'To ask for more thanks', 'To tell her to thank Ron'], a: 0,
@@ -306,7 +306,7 @@ export const promSeason: Clip = {
       trap: 'have to から「お礼を言わなきゃ」と思いやすい。don’t have to は「しなくていい」。',
       use: 'You don’t have to thank me. It was easy.（お礼なんていいよ。簡単だったし）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'reward', seg: [218.0, 225.9],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'reward', seg: [218, 228.9],
       stem: '“Working for the government *is its own reward*.” Meaning?',
       ja: '「is its own reward」とはどういう意味？',
       choices: ['The work itself is thanks enough', 'The government pays very well', 'It’s just part of her job'], a: 0,

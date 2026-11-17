@@ -13,7 +13,7 @@ export const goodHusband: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 's2', skill: 'sound', level: 'B1', point: 'wanna', seg: [0.5, 4.5],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'wanna', seg: [0, 5.5],
       stem: 'Fill the gap: “You don’t ___ know.”',
       ja: '「You don’t ___ know.」の空所は？',
       choices: ['want to', 'have to', 'need to'], a: 0,
@@ -37,7 +37,7 @@ export const goodHusband: Clip = {
       trap: 'asked から「頼み方」の話と思いやすい。ここは「聞いたのはそっち」。',
       use: 'Okay, you asked for it.（いいよ、聞いたのはそっちだからね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pains', seg: [6.4, 10.95],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pains', seg: [5.5, 13.8],
       stem: 'Where do Ann’s pains go?',
       ja: 'アンの痛みはどこまで来る？',
       choices: ['Up to her neck', 'Down to her legs', 'Across her stomach'], a: 0,
@@ -60,7 +60,7 @@ export const goodHusband: Clip = {
       trap: '本の話のあとなので、本でうつになったと取りやすい。最後の anxiety まで聞く。',
       use: 'I have pre-vacation stress.（休み前のストレスがある）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'fix', seg: [20.7, 32.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'fix', seg: [19.7, 33.7],
       stem: 'How does Chris answer Ann’s complaints?',
       ja: 'クリスはアンの不満にどう答える？',
       choices: ['He tries to fix each one', 'He calls a doctor for her', 'He laughs at all of them'], a: 0,
@@ -72,7 +72,7 @@ export const goodHusband: Clip = {
       trap: '薬の話が出るので、医者の話と思いやすい。答えを出しているのはクリス自身。',
       use: 'Never fear, I’ll take care of it.（心配しないで、何とかするから）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'smoke', seg: [64.6, 72.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'smoke', seg: [64.6, 73.7],
       stem: 'What can’t Ann be around?',
       ja: 'アンがそばにいられないものは？',
       choices: ['Smoke or fatty tuna', 'Wine or fatty tuna', 'Smoke or soft cheese'], a: 0,
@@ -96,7 +96,7 @@ export const goodHusband: Clip = {
       trap: '煙や魚はアンの抗議の話。仲間の不満は、場を取られたこと。',
       use: 'Sorry, I didn’t mean to take over.（ごめん、仕切るつもりじゃなかった）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'sushi', reveals: ['smoke'], seg: [66.85, 78.5],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'sushi', reveals: ['smoke'], seg: [68.9, 80],
       stem: 'Why is it a sushi and cigar club now?',
       ja: 'なぜ今は「寿司と葉巻の会」になった？',
       choices: ['To make Ann leave', 'To make the club fun', 'To vent about work'], a: 0,
@@ -108,7 +108,7 @@ export const goodHusband: Clip = {
       trap: 'funny（面白い）から、会を楽しくしたいと思いやすい。アンが避ける物を思い出す。',
       use: 'Things got out of hand.（手に負えなくなった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'vent', seg: [73, 76.25],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'vent', seg: [71.9, 77.3],
       stem: 'Type: “This was our chance ___ about work.” (2 words)', answer: 'to vent',
       ja: '「This was our chance ___ about work.」の空所を書こう（2語）',
       cue: '「chance」のすぐあと',
@@ -176,7 +176,7 @@ export const goodHusband: Clip = {
       trap: '日本語では、ほめてから本題に入ることが多い。ここは前置きでなく本題。and then を最後まで聞く。',
       use: 'You’re too nice. It makes me feel bad.（優しすぎて、こっちが申し訳ない）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'pass', seg: [119.8, 125.8],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'pass', seg: [119.8, 127.4],
       stem: 'What does “*Hard pass*” mean?',
       ja: '「Hard pass」はどういう意味？',
       choices: ['No, not at all', 'Yes, but only a bit', 'Maybe, if it’s short'], a: 0,
@@ -188,7 +188,7 @@ export const goodHusband: Clip = {
       trap: 'pass を「通る・合格」と思いやすい。誘いへの pass は「パスする＝断る」。',
       use: 'Karaoke till 3 a.m.? Hard pass.（朝3時までカラオケ？絶対ムリ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'qs', seg: [129.55, 132.55], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'qs', seg: [126.9, 133.8], keep: true,
       stem: 'How many questions does Chris say he has?',
       ja: 'クリスは質問がいくつあると言う？',
       choices: ['A hundred', 'A thousand', 'A million'], a: 1,
@@ -200,7 +200,7 @@ export const goodHusband: Clip = {
       trap: 'literally を「文字どおり」と取ると本当の数に聞こえる。thousand の「サウ」を聞く。',
       use: 'I have a thousand things to do.（やることが山ほどある）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'upset', reveals: ['fix'], seg: [134.7, 144.6],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'upset', reveals: ['fix'], seg: [134.7, 145],
       stem: 'Why does Chris repeat what he hears?',
       ja: 'クリスが聞いたことをくり返すのはなぜ？',
       choices: ['He is surprised by it', 'He didn’t hear it well', 'He agrees with it'], a: 0,
@@ -212,7 +212,7 @@ export const goodHusband: Clip = {
       trap: '疑問の形なので、聞き取れなかったと思いやすい。驚きのサイン。',
       use: 'You’re mad that I cleaned up?（片付けたのに怒ってるの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'herself', seg: [152.2, 156.35],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'herself', seg: [150.8, 155.8],
       stem: 'Fill the gap: “If Ann needs Tylenol, ___ herself.”',
       ja: '「If Ann needs Tylenol, ___ herself.」の空所は？',
       choices: ['she can get it', 'she can’t get it', 'she’ll get it'], a: 0,
@@ -235,7 +235,7 @@ export const goodHusband: Clip = {
       trap: 'Chris への助言の途中なので、Chris がからかわれていると聞きやすい。主語の I を追えば自分の話。',
       use: 'Trust me, I’ve failed at this a lot.（信じて、これは何度も失敗してきたから）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'dontfix', reveals: ['fix'], seg: [168.5, 176.2],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'dontfix', reveals: ['fix'], seg: [168.3, 179.5],
       stem: 'What is Chris told not to do?',
       ja: 'クリスは何をしないように言われる？',
       choices: ['Try to fix the problem', 'Look her in the eyes', 'Say that it sucks'], a: 0,
@@ -269,7 +269,7 @@ export const goodHusband: Clip = {
       trap: 'クリスは前のように解決しようとすると思いやすい。今回は一言だけ。',
       use: 'I don’t need advice. Just listen.（アドバイスより、聞いてほしいの）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'calves', seg: [184.75, 192.4],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'calves', seg: [184.8, 192.9],
       stem: 'What new pain does Ann talk about?',
       ja: 'アンは新しくどこが痛いと言う？',
       choices: ['Her legs hurt badly', 'Her head hurts badly', 'Her neck hurts badly'], a: 0,
@@ -281,7 +281,7 @@ export const goodHusband: Clip = {
       trap: 'headache（頭痛）がはっきり聞こえるので、頭を選びやすい。but のあとを聞く。',
       use: 'My legs really hurt.（脚がすごく痛い）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', seg: [202.95, 210.4],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', seg: [202.3, 211.3],
       stem: 'How does Ann feel after “That really sucks”?',
       ja: '「That really sucks」のあと、アンはどんな気持ち？',
       choices: ['She is thankful', 'She is annoyed', 'She is amused'], a: 0,
@@ -293,7 +293,7 @@ export const goodHusband: Clip = {
       trap: '短い返事なので、冷たいと思いやすい。アンは同意して、お礼を言う。',
       use: 'Ugh, that sucks. I’m sorry.（うわ、それはきついね）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'apology', seg: [211.8, 219.4],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'apology', seg: [211.8, 219.7],
       stem: 'What does Ann say when Chris says sorry?',
       ja: 'クリスが謝ると、アンは何と言う？',
       choices: ['She says sorry too', 'She thanks him for it', 'She is still angry'], a: 0,
@@ -305,7 +305,7 @@ export const goodHusband: Clip = {
       trap: 'don’t apologize を「許さない」と思いやすい。すぐあとの I’m sorry が本心。',
       use: 'Don’t apologize. It’s my fault.（謝らないで、私のせいだから）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'askfor', seg: [219.2, 223.9],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'askfor', seg: [216.5, 224.9],
       stem: 'What does “*a girl could ask for*” mean here?',
       ja: 'ここでの「a girl could ask for」はどういう意味？',
       choices: ['The best there is', 'Someone girls ask out', 'More than she asked'], a: 0,

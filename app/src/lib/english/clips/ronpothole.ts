@@ -31,7 +31,7 @@ export const ronpothole: Clip = {
       trap: '口論や大人への敬語と取りやすい。急に古めかしくなったら、ごっこ遊び。',
       use: 'Your Majesty, may I have the remote?（王さま、リモコンをお借りしても？）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'govt', seg: [48.0, 54.3],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'govt', seg: [45.9, 55.8],
       stem: 'Why did Ron decide to fix the hole himself?',
       ja: 'ロンはなぜ自分で穴を直すことにした？',
       choices: ['No one else was going to', 'Diane asked him to fix it', 'Andy wanted to help'], a: 0,
@@ -43,7 +43,7 @@ export const ronpothole: Clip = {
       trap: 'Diane の穴なので頼まれたと思いやすいが、理由は no one … was gonna fix。',
       use: 'Nobody else was going to, so I did it myself.（誰もやらないから、自分でやった）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'yesmaam', seg: [53.0, 59.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'yesmaam', seg: [53, 60],
       stem: 'How does Ron answer “Do you know what you’re doing?”',
       ja: '「何をしているか分かってるの？」に、ロンはどう答える？',
       choices: ['Calm and sure', 'Polite but unsure', 'Annoyed by the question'], a: 0,
@@ -55,19 +55,7 @@ export const ronpothole: Clip = {
       trap: 'ma’am を遠慮と取りやすいが、ていねいな呼びかけ。言い足しがないのは自信の印。',
       use: 'Do you know the way? — Yes, I do.（道分かる？うん、分かる）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'please', seg: [59.0, 69.9],
-      stem: 'Diane offers lemonade. What does Ron answer?',
-      ja: 'ダイアンがレモネードをすすめる。ロンの答えは？',
-      choices: ['Yes, please', 'No, thank you', 'Maybe later'], a: 0,
-      choicesJa: ['はい、お願いします', 'いいえ、けっこうです', 'あとでいただきます'],
-      cue: '短い答えの最初の一語。',
-      line: 'Lemonade? — *Please* and thank you.',
-      said: '「レモネードは？」に「お願いします、ありがとう」と答える。',
-      mean: 'Please and thank you ＝ お願いします、ありがとう。ていねいで、はっきりした yes。',
-      trap: 'thank you だけだと断りにも聞こえるが、断るなら No, thank you。please が決め手。',
-      use: 'Coffee? — Yes, please.（コーヒーは？はい、お願いします）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstmeet', seg: [64.0, 108.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstmeet', seg: [64, 108.7],
       stem: 'How does Diane feel about Ron by the end?',
       ja: '最後には、ダイアンはロンをどう思っている？',
       choices: ['Thankful and friendly', 'Still doubtful of him', 'Angry with him'], a: 0,
@@ -79,7 +67,19 @@ export const ronpothole: Clip = {
       trap: 'curt（そっけない）が耳に残りやすいが、それは前の自分を謝る言葉。最後は thank you。',
       use: 'Sorry, I wasn’t sure about you at first.（ごめん、最初はちょっと疑ってた）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'curt', seg: [69.0, 72.2],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'please', seg: [65.7, 72.5],
+      stem: 'Diane offers lemonade. What does Ron answer?',
+      ja: 'ダイアンがレモネードをすすめる。ロンの答えは？',
+      choices: ['Yes, please', 'No, thank you', 'Maybe later'], a: 0,
+      choicesJa: ['はい、お願いします', 'いいえ、けっこうです', 'あとでいただきます'],
+      cue: '短い答えの最初の一語。',
+      line: 'Lemonade? — *Please* and thank you.',
+      said: '「レモネードは？」に「お願いします、ありがとう」と答える。',
+      mean: 'Please and thank you ＝ お願いします、ありがとう。ていねいで、はっきりした yes。',
+      trap: 'thank you だけだと断りにも聞こえるが、断るなら No, thank you。please が決め手。',
+      use: 'Coffee? — Yes, please.（コーヒーは？はい、お願いします）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'curt', seg: [68.3, 75.6],
       stem: 'Diane says she was “curt.” What does that mean?',
       ja: 'ダイアンの言う「curt」はどういう意味？',
       choices: ['Short and unfriendly', 'Busy and tired', 'Curious and nosy'], a: 0,
@@ -91,7 +91,7 @@ export const ronpothole: Clip = {
       trap: '次の「家がばたばた」とつなげて「忙しい」を選びやすい。謝っている中身は態度。',
       use: 'Sorry if I sounded curt on the phone.（電話でそっけなくてごめん）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'noneed', seg: [71.0, 79.5],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'noneed', seg: [71, 81.3],
       stem: 'Ron says, “No need to apologize.” What does he mean?',
       ja: 'ロンの「No need to apologize.」はどういう意味？',
       choices: ['It’s okay, don’t say sorry', 'You should say sorry to me', 'I want to say sorry'], a: 0,
@@ -103,7 +103,7 @@ export const ronpothole: Clip = {
       trap: 'need から「必要だ」と思いやすいが、No need は「必要ない」。',
       use: 'No need to apologize. It’s fine.（謝らなくていいよ。大丈夫）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 95.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 98.5], keep: true,
       stem: 'Type what Ron says: “I dug the loose gravel ___ hole.” (3 words)', answer: 'out of the',
       ja: '「I dug the loose gravel ___ hole.」の3語を書こう。',
       cue: 'gravel のすぐあとの短い3語。',
@@ -113,7 +113,7 @@ export const ronpothole: Clip = {
       trap: 'of がほとんど聞こえず、out the と聞きやすい。outta と縮む形も覚えておく。',
       use: 'Get the milk out of the fridge.（冷蔵庫から牛乳を出して）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'steps', seg: [97.8, 103.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'steps', seg: [95, 105.7],
       stem: 'What will Ron fill the hole with?',
       ja: 'ロンは穴を何で埋める？',
       choices: ['Cold patch asphalt', 'Hot asphalt', 'The loose gravel'], a: 0,
@@ -125,7 +125,7 @@ export const ronpothole: Clip = {
       trap: '道路工事は熱いものと思いやすいが cold と言う。砂利は最初に取り出した物。',
       use: 'Fill the glass with water, please.（グラスに水を入れてください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'nextone', seg: [103.8, 108.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'nextone', seg: [102.8, 108.7],
       stem: 'Why did Diane want the steps explained?',
       ja: 'ダイアンはなぜ手順を聞きたかった？',
       choices: ['To fix the next one herself', 'To check that he did it right', 'To know how long it takes'], a: 0,
@@ -137,7 +137,7 @@ export const ronpothole: Clip = {
       trap: 'さっき疑っていたので「確認」と思いやすい。Now のあとの「次は自分で」を聞く。',
       use: 'Show me once, and I can do it myself.（一度見せて。あとは自分でやる）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'lasttime', seg: [121.5, 127.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'lasttime', seg: [121, 128.1],
       stem: 'Andy says, “For the last time.” What does he mean?',
       ja: 'アンディの「For the last time」はどういう意味？',
       choices: ['I’ve told you many times', 'This is my last game', 'Say it just one more time'], a: 0,
@@ -149,7 +149,7 @@ export const ronpothole: Clip = {
       trap: '「最後に一回」と思いやすい。言い直しの前なら「何度言えば分かるの」。',
       use: 'For the last time, I’m not hungry.（何度も言うけど、お腹すいてない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldyou', seg: [136.7, 141.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldyou', seg: [135.7, 141.8],
       stem: 'Fill the gap: “___ please come help me tamp this down?”',
       ja: '「___ please come help me tamp this down?」の空所は？',
       choices: ['Could you', 'Would you', 'Won’t you'], a: 1,
@@ -183,7 +183,7 @@ export const ronpothole: Clip = {
       trap: 'sorry のあとは言い訳や反省が来ると思いがち。It’s just のあとの中身まで聞く。',
       use: 'I’m sorry, it’s just… your hat.（ごめん、ただ…その帽子が）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [161.9, 167.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [161.9, 169.5], keep: true,
       stem: 'When will the new asphalt be ready?',
       ja: '新しいアスファルトはいつ使えるようになる？',
       choices: ['In half an hour', 'In an hour', 'In two hours'], a: 1,
@@ -206,7 +206,7 @@ export const ronpothole: Clip = {
       trap: 'messy を子どもの話と取りやすい。強い否定を重ねて話を切ったら、隠したい本心を疑う。',
       use: 'I’m not upset. End of story.（怒ってない。この話は終わり）', retired: true },
 
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'recall', seg: [186.5, 191.0],
+    { id: 'p3', skill: 'pragma', level: 'C1', point: 'recall', seg: [186.5, 192.8],
       stem: 'Ron says, “I don’t recall inviting you in.” Meaning?',
       ja: 'ロンの「I don’t recall inviting you in」の意味は？',
       choices: ['You weren’t invited in', 'I forgot I invited you', 'I asked you to come in'], a: 0,
@@ -242,7 +242,7 @@ export const ronpothole: Clip = {
       trap: '「実は…」を照れの前置きと思いやすい。相手の予想のすぐあとなら「実は違う」。',
       use: 'Actually, I came to say thanks.（実は、お礼を言いに来たの）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrary', seg: [234.5, 243.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrary', seg: [234.5, 245.1],
       stem: 'Ron says, “No. On the contrary.” What does he mean?',
       ja: 'ロンの「No. On the contrary.」はどういう意味？',
       choices: ['He likes it', 'It scares him a bit', 'He doesn’t care'], a: 0,
@@ -276,7 +276,7 @@ export const ronpothole: Clip = {
       trap: '言葉どおり鈍感と取りやすい。カメラへの一言は、直前の場面と比べて答え合わせをする。',
       use: 'No idea why she called. Anyway, work.（なぜ電話してきたのかな。とにかく仕事）', retired: true },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'begrudging', seg: [250.8, 257.1],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'begrudging', seg: [249.8, 257.5],
       stem: 'How does Ron feel about praising the program?',
       ja: '制度をほめることを、ロンはどう感じている？',
       choices: ['Unhappy to admit it', 'Delighted with it', 'Sure that it is failing'], a: 0,
@@ -288,7 +288,7 @@ export const ronpothole: Clip = {
       trap: 'success だけ聞くと大ほめに聞こえる。begrudgingly と moderate でほめ方は弱い。',
       use: 'I hate to admit it, but you were right.（認めたくないけど、君が正しかった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: '311', seg: [250.8, 257.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: '311', seg: [250.8, 257.5], keep: true,
       stem: 'Which program does Ron call a moderate success?',
       ja: 'ロンが「まあまあの成功」と言う制度は？',
       choices: ['3-1-1', '4-1-1', '9-1-1'], a: 0,

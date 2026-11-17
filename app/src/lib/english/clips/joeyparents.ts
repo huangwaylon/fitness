@@ -17,7 +17,7 @@ export const joeyParents: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tables', seg: [2.3, 9.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tables', seg: [2.3, 13], keep: true,
       stem: 'How will Monica set up the tables now?',
       ja: 'モニカはテーブルをどう並べ直す？',
       choices: ['2 tables of 6', '2 tables of 8', '3 tables of 6', '3 tables of 8'], a: 2,
@@ -29,7 +29,7 @@ export const joeyParents: Clip = {
       trap: 'into のあとを聞く。「スリー」なら3つ、「トゥー」なら2つ。最後が「シックス」なら6人席、「エイト」なら8人席。',
       use: 'A table for six, please.（6人席をお願いします）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtogo', seg: [8.7, 12.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtogo', seg: [7.9, 14.3],
       stem: 'What does Monica mean by “We are good to go”?',
       ja: 'モニカの「We are good to go」はどういう意味？',
       choices: ['Everything is ready now', 'It is time to leave now', 'We did a good job'], a: 0,
@@ -41,7 +41,7 @@ export const joeyParents: Clip = {
       trap: 'go から「出かける」と思いやすい。good to go でひとまとまり。',
       use: 'Your car is fixed. You’re good to go.（車は直りました。もう大丈夫です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'unwanted', reveals: ['owe'], seg: [16.6, 36.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'unwanted', reveals: ['owe'], seg: [16.6, 37.2],
       stem: 'What does Joey want Monica to tell his mom?',
       ja: 'ジョーイはモニカに、母親に何を伝えてほしい？',
       choices: ['She really wants them there', 'She is sorry they feel hurt', 'There are seats for them'], a: 0,
@@ -53,7 +53,7 @@ export const joeyParents: Clip = {
       trap: '席の話があったので「席がある」と思いやすい。let her know のあとを聞く。',
       use: 'Let me know if you can come.（来られるか教えてね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'unwanted', reveals: ['fake'], seg: [17.3, 23.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'unwanted', reveals: ['fake'], seg: [17, 23.5],
       stem: 'What idea did Joey’s parents get?',
       ja: 'ジョーイの両親はどう思い込んだ？',
       choices: ['They’re only asked for Joey', 'They’re only asked to fill seats', 'They’re asked too late'], a: 0,
@@ -76,7 +76,7 @@ export const joeyParents: Clip = {
       trap: 'too bad を本気の同情と取りやすい。It’s true が本音。',
       use: 'Fair enough, but that’s their problem.（まあね、でもそれはあっちの問題）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'owe', seg: [30.0, 36.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'owe', seg: [29.5, 38.4],
       stem: 'Why does Joey talk about the lasagnas?',
       ja: 'ジョーイはなぜラザニアの話をする？',
       choices: ['So Monica feels she owes her', 'So Monica thanks her for them', 'So Monica knows she cooks well'], a: 0,
@@ -88,7 +88,7 @@ export const joeyParents: Clip = {
       trap: 'お礼や料理自慢の話に聞こえやすい。電話を頼んでいる最中なので、お願いの押し。',
       use: 'Let’s not forget, he helped us a lot.（忘れないで、彼にはずいぶん助けられた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'lasagna', reveals: ['makeit', 'fault'], seg: [32.9, 41.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'lasagna', reveals: ['makeit', 'fault'], seg: [32.9, 41.6],
       stem: 'How does Joey answer “No, she hasn’t”?',
       ja: '「No, she hasn’t」に、ジョーイは何と答える？',
       choices: ['Some got lost on the way', 'They came very late', 'Monica forgot about them'], a: 0,
@@ -100,7 +100,7 @@ export const joeyParents: Clip = {
       trap: 'fault（せい）から、モニカが忘れたと思いやすい。didn’t make it は「届かなかった」。',
       use: 'Did my package make it to you?（荷物、届いた？）' },
 
-    { id: 'c3', skill: 'dict', level: 'C2', point: 'fault', reveals: ['lasagna', 'makeit'], seg: [37.6, 41.2],
+    { id: 'c3', skill: 'dict', level: 'C2', point: 'fault', reveals: ['lasagna', 'makeit'], seg: [36.6, 41.6],
       stem: 'Type the words: “Is it her fault if ___ to you?” (6 words)', answer: "some of them didn't make it",
       ja: '書こう：「Is it her fault if ___ to you?」（6語）',
       cue: '「fault if」のすぐあと。',
@@ -110,7 +110,7 @@ export const joeyParents: Clip = {
       trap: 'some them、did と書きやすい。弱い語も落とさず、6語の文の形に戻す。',
       use: 'Some of them didn’t show up.（何人かは来なかった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mixup', seg: [41.3, 46.45],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mixup', seg: [41.3, 48.1],
       stem: 'What does Joey suggest Monica say first?',
       ja: 'ジョーイは最初に、モニカに何と言えばいいと言う？',
       choices: ['The invitations got mixed up', 'The seating got mixed up', 'Chandler forgot to mail them'], a: 0,
@@ -134,7 +134,7 @@ export const joeyParents: Clip = {
       trap: 'invitations（招待状）の手違いの案も出るが、最後は post office のせいにする。',
       use: 'I think the mail lost it.（郵便でなくなったんだと思う）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'postoffice', reveals: ['mixup'], seg: [42.5, 50],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'postoffice', reveals: ['mixup'], seg: [42.5, 50.2],
       stem: 'What does Joey finally say to blame?',
       ja: 'ジョーイは最後に、何のせいにしろと言う？',
       choices: ['The post office', 'The caterer', 'Chandler'], a: 0,
@@ -146,7 +146,7 @@ export const joeyParents: Clip = {
       trap: '先に invitations（招待状）が聞こえるので迷いやすい。blame it on のあとを聞く。',
       use: 'Don’t blame it on me!（私のせいにしないで！）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.5, 50],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.4, 51.4],
       stem: 'Why does Joey say the post office story will work?',
       ja: 'ジョーイは、郵便局の話がうまくいくのはなぜだと言う？',
       choices: ['His parents hate the post office', 'Their mail often goes missing', 'They believe Monica'], a: 0,
@@ -158,7 +158,7 @@ export const joeyParents: Clip = {
       trap: '郵便が届かない話なので、よくなくなるからと思いやすい。hate（大嫌い）を聞く。',
       use: 'My dad hates traffic.（父は渋滞が大嫌い）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'makeit', seg: [62.3, 66.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'makeit', seg: [62.7, 67.2],
       stem: 'Type the words: “…really hope that you can ___ the wedding.” (3 words)', answer: 'make it to',
       ja: '書こう：「…really hope that you can ___ the wedding.」（3語）',
       cue: '「you can」のあと。',
@@ -168,7 +168,7 @@ export const joeyParents: Clip = {
       trap: 'make it の it が弱く、make to に聞こえやすい。3語を数えて聞く。',
       use: 'I hope you can make it to the party.（パーティーに来られるといいな）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'apparently', reveals: ['werent', 'bunch'], seg: [66.6, 70.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'apparently', reveals: ['werent', 'bunch'], seg: [65.6, 70.7],
       stem: 'Why does Monica say “Apparently” here?',
       ja: 'モニカはここでなぜ「Apparently」と言う？',
       choices: ['To show she was only told it', 'To show it’s plain to see', 'To say she is very sorry'], a: 0,
@@ -180,7 +180,17 @@ export const joeyParents: Clip = {
       trap: 'apparent（明らかな）から「はっきり」と思いやすい。apparently は「〜らしい」。',
       use: 'Apparently, the store is closed today.（どうやら、店は今日休みらしい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', reveals: ['bunch'], seg: [66.6, 70.6],
+    { id: 'c4', skill: 'dict', level: 'C2', point: 'bunch', reveals: ['apparently'], seg: [65.6, 70.7],
+      stem: 'Type the words: “Yeah, apparently ___ invitations…” (4 words)', answer: 'a bunch of the',
+      ja: '書こう：「Yeah, apparently ___ invitations…」（4語）',
+      cue: '「apparently」のすぐあと。',
+      line: 'Yeah, apparently *a bunch of the* invitations…',
+      said: '「どうやら、招待状のかなりの数が…」と切り出す。',
+      mean: 'a bunch of ＝ たくさんの。a、of、the は弱く「アバンチャヴザ」とひと続き。',
+      trap: 'bunch だけ書いて a や the を落としやすい。4語の小さな語も入れる。',
+      use: 'A bunch of us are going out tonight.（今夜、何人かで出かけるよ）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', reveals: ['bunch'], seg: [65.7, 70.7],
       stem: 'Fill the gap: “…that we sent, uh, ___ delivered.”',
       ja: '空いている所に入る語は？「…that we sent, uh, ___ delivered.」',
       choices: ['weren’t', 'were', 'were never'], a: 0,
@@ -192,17 +202,7 @@ export const joeyParents: Clip = {
       trap: '「ワーント」と「ン」が残れば weren’t、「ワー」だけなら were、「ワーネヴァ」なら were never。',
       use: 'The emails weren’t sent.（メールは送られていなかった）' },
 
-    { id: 'c4', skill: 'dict', level: 'C2', point: 'bunch', reveals: ['apparently'], seg: [66.6, 70.6],
-      stem: 'Type the words: “Yeah, apparently ___ invitations…” (4 words)', answer: 'a bunch of the',
-      ja: '書こう：「Yeah, apparently ___ invitations…」（4語）',
-      cue: '「apparently」のすぐあと。',
-      line: 'Yeah, apparently *a bunch of the* invitations…',
-      said: '「どうやら、招待状のかなりの数が…」と切り出す。',
-      mean: 'a bunch of ＝ たくさんの。a、of、the は弱く「アバンチャヴザ」とひと続き。',
-      trap: 'bunch だけ書いて a や the を落としやすい。4語の小さな語も入れる。',
-      use: 'A bunch of us are going out tonight.（今夜、何人かで出かけるよ）' },
-
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tellme', reveals: ['postoffice'], seg: [70.4, 78.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tellme', reveals: ['postoffice'], seg: [70.1, 81.1],
       stem: 'What does Monica mean by “Tell me about it”?',
       ja: 'モニカの「Tell me about it」はどういう意味？',
       choices: ['I know just what you mean', 'Please tell me more', 'I’m sorry for the trouble'], a: 0,
@@ -225,7 +225,7 @@ export const joeyParents: Clip = {
       trap: 'damn の強さで本気に聞こえるが、言い訳は自分たちの作り話。前の場面と結んで聞く。',
       use: 'Ugh, don’t get me started on traffic.（渋滞の話はもう、やめて）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'lostoffice', reveals: ['postoffice'], seg: [78.6, 84.4],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'lostoffice', reveals: ['postoffice'], seg: [78.1, 84.6],
       stem: 'What is the joke in “US Lost Office”?',
       ja: '「US Lost Office」はどんな冗談？',
       choices: ['It loses mail, so “lost”', 'It is slow, so “lost”', 'It costs a lot, so “lost”'], a: 0,

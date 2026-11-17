@@ -15,7 +15,7 @@ export const replaceHarry: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'friday', seg: [0.6, 8.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'friday', seg: [0, 8.5],
       stem: 'What happens if Harry isn’t better by Friday?',
       ja: '金曜までにハリーが治らないと、どうなる？',
       choices: ['They cancel their shows', 'They move their shows later', 'They go on without him'], a: 0,
@@ -27,7 +27,7 @@ export const replaceHarry: Clip = {
       trap: 'San Francisco が強く聞こえ、動詞を聞きのがしやすい。have to のあとの cancel を聞く。',
       use: 'We’ll have to cancel our trip.（旅行を中止しないといけない）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelawful', seg: [12.3, 15.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelawful', seg: [11.4, 17.7],
       stem: 'How does Carly feel about Harry?',
       ja: 'カーリーはハリーのことをどう思っている？',
       choices: ['Sorry he isn’t getting better', 'Sick, like she caught it too', 'Angry that he won’t get better'], a: 0,
@@ -50,7 +50,7 @@ export const replaceHarry: Clip = {
       trap: '直後なので慰めに聞こえやすい。最後の stupid と、Carly の返事で決まる。',
       use: 'Oh, honey, no.（あらら、違うってば）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [26.2, 34.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [26.2, 35.2],
       stem: 'What does Sam say Carly does for Harry?',
       ja: 'サムによると、カーリーはハリーに何をしている？',
       choices: ['She warms his socks', 'She washes his socks', 'She cuts his hair'], a: 0,
@@ -62,7 +62,7 @@ export const replaceHarry: Clip = {
       trap: 'warm と wash は出だしが似ている。hair も聞こえるが、するのは brush（とかす）。',
       use: 'Could you warm up my coffee?（コーヒー温め直してもらえる？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'leave', seg: [36.5, 44.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'leave', seg: [36.5, 46.3],
       stem: 'What does the boy think about Harry staying in bed?',
       ja: 'その男の子は、ハリーが寝ていることをどう思っている？',
       choices: ['He understands why', 'Harry should leave now', 'Carly is too strict'], a: 0,
@@ -120,7 +120,7 @@ export const replaceHarry: Clip = {
       trap: 'replace（入れ替える）が何度も聞こえるが、not for real（本当じゃない）。',
       use: 'What are we gonna do about this?（これ、どうする？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'proud', seg: [51.6, 56.0],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'proud', seg: [50.6, 56],
       stem: 'What does “You did not just say that” mean?',
       ja: '「You did not just say that」はどういう意味？',
       choices: ['I can’t believe you said that', 'You didn’t say anything at all', 'Please say that again'], a: 0,
@@ -143,7 +143,7 @@ export const replaceHarry: Clip = {
       trap: '「言った」と認めたら次は謝る、と思いやすいが、proud で開き直っている。',
       use: 'Guilty as charged. I’d do it again.（その通り。また言うよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.9, 63.55], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.2, 65.6], keep: true,
       stem: 'Type the words: “…motivate Harry to ___ and back on stage.” (4 words)', answer: 'get out of bed',
       ja: '「…motivate Harry to ___ and back on stage.」の空所を書こう（4語）',
       cue: '「Harry to」のあと',
@@ -153,17 +153,7 @@ export const replaceHarry: Clip = {
       trap: '切れ目が聞こえにくく、get up にも聞こえる。最後の bed から逆に組み立てる。',
       use: 'I can’t get out of bed today.（今日は起きられない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'workover', seg: [59.9, 66.7], retired: true,
-      stem: 'With the butter sock, what does the speaker offer to do to Harry?',
-      choices: ['Beat him until he gets up', 'Talk him into getting up', 'Treat him with a home remedy'], a: 0,
-      cue: '「should」のあと、him をはさむ動詞句。',
-      line: 'You think I should *work him over* with a butter sock?',
-      said: 'バター入りの靴下で「ぼこぼこにする」か、と言っている。',
-      mean: 'work someone over ＝ 痛めつける（くだけた言い方）。Sam らしい乱暴な案。',
-      trap: 'work on（説得）と形が似て、靴下は看病にも出てきた。over が付くと手荒な意味。',
-      use: 'They really worked him over in the interview.（面接でかなり絞られてたよ）' },
-
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'reallydont', seg: [59.9, 66.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'reallydont', seg: [59.2, 68.9],
       stem: 'What does “I really, really don’t” mean here?',
       ja: 'ここでの「I really, really don’t」はどういう意味？',
       choices: ['No, I don’t think so', 'I really don’t know', 'Yes, but not right now'], a: 0,
@@ -175,7 +165,17 @@ export const replaceHarry: Clip = {
       trap: 'You know から「分からない」と思いやすい。You think…? への答えなので think を省いた形。',
       use: 'Do I want to? I really don’t.（したいかって？全然）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'didshe', seg: [66.5, 71.0],
+    { id: 'f1', skill: 'phrase', level: 'C1', point: 'workover', seg: [59.9, 66.7], retired: true,
+      stem: 'With the butter sock, what does the speaker offer to do to Harry?',
+      choices: ['Beat him until he gets up', 'Talk him into getting up', 'Treat him with a home remedy'], a: 0,
+      cue: '「should」のあと、him をはさむ動詞句。',
+      line: 'You think I should *work him over* with a butter sock?',
+      said: 'バター入りの靴下で「ぼこぼこにする」か、と言っている。',
+      mean: 'work someone over ＝ 痛めつける（くだけた言い方）。Sam らしい乱暴な案。',
+      trap: 'work on（説得）と形が似て、靴下は看病にも出てきた。over が付くと手荒な意味。',
+      use: 'They really worked him over in the interview.（面接でかなり絞られてたよ）' },
+
+    { id: 's1', skill: 'sound', level: 'B1', point: 'didshe', seg: [65.1, 71.9],
       stem: 'Fill the gap: “___ say butter sock?”',
       ja: '「___ say butter sock?」の空所は？',
       choices: ['Did she', 'Does she', 'Did you'], a: 0,
@@ -187,7 +187,7 @@ export const replaceHarry: Clip = {
       trap: 'Does she は「ダズ」、Did you は「ディジュ」。「ディシ」なら Did she。',
       use: 'Did she say what time?（何時って言ってた？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['replace'], seg: [78.3, 85.1],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['replace'], seg: [77.3, 85.3],
       stem: 'Why does she say “Look” before her idea?',
       ja: 'アイデアの前に、彼女はなぜ「Look」と言う？',
       choices: ['To get them to listen', 'To show them something', 'To show she is angry'], a: 0,
@@ -199,7 +199,7 @@ export const replaceHarry: Clip = {
       trap: 'look（見る）から、何かを見せると思いやすい。文の最初の Look は「ねえ」。',
       use: 'Look, I’ve got an idea.（ねえ、いい考えがあるんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'replace', reveals: ['friday'], seg: [78.3, 91.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'replace', reveals: ['friday'], seg: [78.8, 91.5],
       stem: 'What is the idea to get Harry back on stage?',
       ja: 'ハリーをステージに戻すアイデアは？',
       choices: ['Make him think he’ll be replaced', 'Cancel all of their shows now', 'Replace him for real'], a: 0,
@@ -211,7 +211,7 @@ export const replaceHarry: Clip = {
       trap: 'replace が何度も聞こえるので、本当の交代と思いやすい。not for real を聞く。',
       use: 'Not for real, just pretend.（本気じゃなくて、ふりだけ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sing', 'hour'], seg: [111.8, 137.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sing', 'hour'], seg: [111.8, 137.7],
       stem: 'How does the plan turn out?',
       ja: '作戦はどうなる？',
       choices: ['Harry says he can perform', 'Harry says sorry for faking', 'Harry asks for more rest'], a: 0,
@@ -223,7 +223,7 @@ export const replaceHarry: Clip = {
       trap: '「良くなった」を仮病の白状と思いやすい。謝る言葉はない。Yes が答え。',
       use: 'I’m feeling much better now.（もうだいぶ良くなったよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [118.0, 122.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [116.3, 123], keep: true,
       stem: 'When does iCarly start?',
       ja: 'iCarly はいつ始まる？',
       choices: ['In about half an hour', 'In about an hour', 'In about two hours'], a: 1,
@@ -246,7 +246,7 @@ export const replaceHarry: Clip = {
       trap: '悪口のあとは理由かフォロー、と思いやすいが、間のあとに注文をもう一つ重ねる。',
       use: 'Please don’t call me… or text me.（電話しないで…メールもね）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [122.8, 129.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [122.8, 130.7],
       stem: 'What does Harry’s last request tell us about the new singer?',
       ja: 'ハリーの最後のお願いから、新しい歌手について何が分かる？',
       choices: ['His singing was awful', 'He was too good a singer', 'He is Harry’s good friend'], a: 0,

@@ -13,7 +13,7 @@ export const benCriminal: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'opendoor', seg: [12.2, 21.9],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'opendoor', seg: [12.2, 22.2],
       stem: 'What does Ben mean by a “total open-door policy”?',
       ja: 'ベンの「total open-door policy」はどういう意味？',
       choices: ['They can come any time', 'He shares all his plans', 'He will visit them often'], a: 0,
@@ -49,7 +49,7 @@ export const benCriminal: Clip = {
       trap: 'Can I join? を「仲間に入りたい」と素直に取りやすい。次の一言で冗談だと分かる。',
       use: 'Are you okay? This is weird.（大丈夫？なんか変だよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'manager', seg: [27.8, 33.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'manager', seg: [26.8, 33.3],
       stem: 'What is Ben’s new job?',
       ja: 'ベンの新しい仕事は？',
       choices: ['City manager', 'Office manager', 'City planner'], a: 0,
@@ -61,7 +61,7 @@ export const benCriminal: Clip = {
       trap: '直後の office hours（相談の時間）と混ざりやすい。as の直後を聞く。',
       use: 'It’s my first day as a manager.（今日から管理職なんです）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hammer', seg: [33.0, 38.0],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'hammer', seg: [32, 41.5],
       stem: 'What does “I brought down the hammer” mean?',
       ja: '「I brought down the hammer」はどういう意味？',
       choices: ['He played the strict one', 'He played the fun one', 'He did the heavy lifting'], a: 0,
@@ -120,7 +120,7 @@ export const benCriminal: Clip = {
       trap: '「保険の話をしよう」を良い話の前置きと取りやすい。中身は打ち切り。',
       use: 'Here, have a cookie. Sorry about that.（ほら、クッキーどうぞ。ごめんね）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'insurance', seg: [61.9, 68.7],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'insurance', seg: [61.6, 71.3],
       stem: 'What change does Ben announce about health insurance?',
       ja: '健康保険について、ベンは何を発表する？',
       choices: ['Their families lose health cover', 'They lose their own health cover', 'Their families get new cover'], a: 0,
@@ -143,7 +143,7 @@ export const benCriminal: Clip = {
       trap: '抗議なら「仕事に要る」と続くのが普通。型どおりに聞かず、avoid の意味まで聞く。',
       use: 'That’s exactly the problem.（まさにそれが問題なんだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'five', seg: [73.6, 78.08], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'five', seg: [71.7, 78], keep: true,
       stem: 'How long can bathroom breaks last under the new rules?',
       ja: '新しいルールでは、トイレ休憩は何分まで？',
       choices: ['5 minutes', '10 minutes', '15 minutes'], a: 0,
@@ -155,7 +155,7 @@ export const benCriminal: Clip = {
       trap: 'fifteen なら「ティーン」が強く長い。ten は「テン」。ここは短い「ファイヴ」。',
       use: 'Can you give me five minutes?（5分だけちょうだい）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'tight', seg: [78.0, 82.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'tight', seg: [76.2, 84],
       stem: 'What does “so tight he’s gonna pop” mean?',
       ja: '「so tight he’s gonna pop」はどういう意味？',
       choices: ['Very stressed inside', 'Very angry at them', 'Very tired from work'], a: 0,
@@ -177,7 +177,7 @@ export const benCriminal: Clip = {
       trap: 'かけ声だけ聞けば楽しそうだが、並べ方に意味がある。直前の評価を答え合わせに使う。',
       use: 'He’s trying a little too hard.（ちょっと無理してるね）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'blue', seg: [86.8, 89.8],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'blue', seg: [85.5, 90.5],
       stem: 'Who does Ben greet as “the boys in blue”?',
       ja: 'ベンが「the boys in blue」と呼ぶのはだれ？',
       choices: ['Police officers', 'The sanitation crew', 'Customs agents'], a: 0,
@@ -189,7 +189,7 @@ export const benCriminal: Clip = {
       trap: '直前まで清掃チームに声をかけていたので混ざりやすい。次の用件で分かる。',
       use: 'Uh-oh, here come the boys in blue.（あ、警察が来た）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'justcheese', seg: [96.3, 102.0],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'justcheese', seg: [95.8, 102.3],
       stem: 'How does Ben feel when the officers mention the tip?',
       ja: '警官が通報の話をすると、ベンはどんな気持ち？',
       choices: ['He is very nervous', 'He is very calm', 'He is very happy'], a: 0,
@@ -201,7 +201,7 @@ export const benCriminal: Clip = {
       trap: 'just cheese だけだと落ち着いた冗談にも聞こえる。その前の no の数が本音。',
       use: 'It’s nothing, really.（ほんと、何でもないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'station', seg: [105.9, 109.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'station', seg: [105.4, 111],
       stem: 'Fill the gap: “___ come down to the station.”',
       ja: '「___ come down to the station.」の空所は？',
       choices: ['We’re gonna need you to', 'We’re gonna need to', 'You’re gonna need to'], a: 0,
@@ -213,7 +213,7 @@ export const benCriminal: Clip = {
       trap: 'need のあとに「ジュ」があれば need you to。文の頭が「ウィア」なら we’re、「ユア」なら you’re。',
       use: 'I’m gonna need you to sign here.（ここにサインをお願いします）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'bribe', seg: [108.8, 114.56],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'bribe', seg: [108.8, 116.5],
       stem: 'Why do the officers ask if Ben is bribing them?',
       ja: '警官はなぜ「買収する気か」と聞く？',
       choices: ['He offers them some cheese', 'He offers them money', 'He asks to skip the form'], a: 0,
@@ -237,7 +237,7 @@ export const benCriminal: Clip = {
       trap: 'I mean を「つまり」の説明と思いやすい。前と逆のことが続いたら、言い直し。',
       use: 'I never eat sweets. I mean, almost never.（甘い物は食べない。いや、ほぼね）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'story', seg: [139.3, 146.05],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'story', seg: [138.8, 147.1],
       stem: 'What does “you can’t keep your story straight” mean?',
       ja: '「you can’t keep your story straight」はどういう意味？',
       choices: ['Your story keeps on changing', 'Your story is far too long', 'Your story keeps wandering off'], a: 0,
@@ -271,7 +271,7 @@ export const benCriminal: Clip = {
       trap: 'you got me を素直に取ると、見抜いていた余裕に聞こえる。切れ目と prison の話で本心を聞く。',
       use: 'Ha, good one. You really got me.（はは、やられた。完全にだまされた）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'uptight', reveals: ['prank'], seg: [156.3, 161.0],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'uptight', reveals: ['prank'], seg: [155.7, 161.2],
       stem: 'What reason do they give for the joke?',
       ja: 'いたずらの理由は何と言う？',
       choices: ['He seemed a bit too tense', 'He looked very bored', 'He bragged about Paris'], a: 0,
@@ -283,7 +283,7 @@ export const benCriminal: Clip = {
       trap: '厳しいルールへの仕返しと思いやすいが、言っているのは彼の固さ。',
       use: 'Don’t be so uptight.（そんなに堅くならないで）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', reveals: ['prank'], seg: [157.2, 161.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', reveals: ['prank'], seg: [156.9, 163.7],
       stem: 'Type the gap: “Thought ___ some fun…” (2 words)', answer: "we'd have",
       ja: '「Thought ___ some fun with our new boss.」の空所を書こう（2語）',
       cue: '「Thought」のすぐあと',

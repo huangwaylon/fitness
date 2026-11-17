@@ -13,7 +13,7 @@ export const rossJill: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'again', reveals: ['askout'], seg: [0.8, 7.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'again', reveals: ['askout'], seg: [0.8, 7.9],
       stem: 'Why does Ross think she likes him?',
       ja: 'ロスは、なぜ彼女に好かれていると思う？',
       choices: ['She asked him out again', 'She met his whole family', 'She said yes to him'], a: 0,
@@ -25,7 +25,7 @@ export const rossJill: Clip = {
       trap: 'said yes（はいと言った）と思いやすい。誘ったのは彼女の方。',
       use: 'She asked me out again!（彼女にまた誘われた！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'askout', seg: [3, 6.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'askout', seg: [1.2, 7.9],
       stem: 'Type what he says: “Why would she ___?” (4 words)', answer: 'ask me out again',
       ja: '「Why would she ___?」の空所を書こう（4語）',
       cue: '「why would she」のあと',
@@ -46,7 +46,7 @@ export const rossJill: Clip = {
       trap: '驚きの問い返しは喜びにも聞こえる。くり返された語と、そのあとの本音を合わせて読む。',
       use: 'Wait, you’re still seeing him?（え、まだ会ってるの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [7.8, 14.3],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [7.8, 17],
       stem: 'When is Ross’s next date with her?',
       ja: 'ロスの次のデートはいつ？',
       choices: ['Tonight', 'Tomorrow night', 'This weekend'], a: 1,
@@ -58,7 +58,7 @@ export const rossJill: Clip = {
       trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend、「トゥモロー」と長ければ tomorrow night。',
       use: 'Let’s meet tomorrow night.（明日の夜に会おう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hope', seg: [10.3, 16.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hope', seg: [8.6, 20.6],
       stem: 'What does “*Who knows what could happen?*” show?',
       ja: '「Who knows what could happen?」から何が分かる？',
       choices: ['He hopes for romance', 'He is afraid of the date', 'He has no plans at all'], a: 0,
@@ -70,7 +70,7 @@ export const rossJill: Clip = {
       trap: '分からないと言うので、こわがっていると思いやすい。romantic のあとの期待の声。',
       use: 'Who knows? Maybe we’ll win.（分からないよ、勝つかも）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'gotit', seg: [19.4, 25.2],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'gotit', seg: [16.7, 26.1],
       stem: 'What does Rachel mean by “*I got it, I got it*”?',
       ja: 'レイチェルの「I got it, I got it」はどういう意味？',
       choices: ['I understand, so stop', 'I caught the ball', 'I have it here with me'], a: 0,
@@ -94,7 +94,7 @@ export const rossJill: Clip = {
       trap: '明日の夜の話が多いので、その日だけと思いやすい。I won’t see her again で納得する。',
       use: 'Please don’t see her again.（もう彼女に会わないで）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'weird', reveals: ['freak'], seg: [23.4, 32.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'weird', reveals: ['freak'], seg: [23.3, 33.5],
       stem: 'How does Rachel feel about Ross and her sister?',
       ja: 'レイチェルはロスと妹のことをどう感じている？',
       choices: ['It feels too weird', 'She worries for her sister', 'She thinks it is funny'], a: 0,
@@ -106,7 +106,7 @@ export const rossJill: Clip = {
       trap: 'my sister から、妹が心配と思いやすい。too weird（変すぎる）が気持ち。',
       use: 'That’s too weird for me.（それは私には変すぎる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'freak', reveals: ['weird'], seg: [27, 32.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'freak', reveals: ['weird'], seg: [27, 33.5],
       stem: 'What does “*It freaks me out*” mean?',
       ja: '「It freaks me out」はどういう意味？',
       choices: ['It makes me very uneasy', 'It makes me very angry', 'It makes me feel very sad'], a: 0,
@@ -118,7 +118,7 @@ export const rossJill: Clip = {
       trap: 'freak を「変な人（フリーク）」と思いやすい。気持ちが乱れること。',
       use: 'Spiders freak me out.（クモはぞっとする）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [37.8, 41.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [36.9, 42.5],
       stem: 'Fill the gap: “I ___ her again.”',
       ja: '「I ___ her again.」の空所は？',
       choices: ['won’t see', 'want to see', 'will see'], a: 0,
@@ -130,7 +130,7 @@ export const rossJill: Clip = {
       trap: 'want to なら「ワナ」、will なら「ウィル」。口を丸めた「ウォウント」なら won’t。',
       use: 'I won’t be late again.（もう遅れません）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [39.8, 44.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [38.2, 45],
       stem: 'What does Ross’s “*I mean*” do to his promise?',
       ja: 'ロスの「I mean」は約束をどう変える？',
       choices: ['It adds one condition', 'It makes it much stronger', 'It gives the reason'], a: 0,
@@ -142,7 +142,7 @@ export const rossJill: Clip = {
       trap: 'I mean のあとは理由が来ると思いやすい。ここは「明日のあとで」という条件。',
       use: 'I’ll call you. I mean, after work.（電話するね。つまり、仕事のあとで）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [39.8, 44.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [38.2, 45],
       stem: 'What does Ross still want?',
       ja: 'ロスはまだ何をしたい？',
       choices: ['One last date', 'A night to think', 'To stay friends'], a: 0,
@@ -154,7 +154,7 @@ export const rossJill: Clip = {
       trap: 'I won’t see her again だけ聞くと、すぐやめると思いやすい。after 〜 が条件。',
       use: 'I’ll start my diet after the party.（パーティーのあとでダイエットする）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'please', seg: [43.6, 47],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'please', seg: [42.4, 48.8],
       stem: 'How does Rachel sound as she answers?',
       ja: '答えるとき、レイチェルはどんな様子？',
       choices: ['She is begging him', 'She is joking with him', 'She is angry at him'], a: 0,
@@ -166,7 +166,7 @@ export const rossJill: Clip = {
       trap: 'No が何度も続くので、怒っていると思いやすい。Please が気持ち。',
       use: 'Please, I really need help.（お願い、本当に助けが要るの）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'tonight', seg: [48.8, 55.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'tonight', seg: [48.8, 56.4],
       stem: 'What will Ross do tonight?',
       ja: 'ロスは今夜何をする？',
       choices: ['Tell her it’s over', 'Take her out once more', 'Ask her to wait'], a: 0,
@@ -178,7 +178,7 @@ export const rossJill: Clip = {
       trap: 'tonight（今夜）が聞こえて、今夜デートすると思いやすい。tell her を聞く。',
       use: 'I can’t see you anymore.（もう会えない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic'], seg: [56, 79],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic'], seg: [56, 88],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Rachel wants him to call now', 'Ross goes on his date', 'Rachel calls her sister herself'], a: 0,
@@ -190,7 +190,7 @@ export const rossJill: Clip = {
       trap: '最初に No と断るので、電話しないと思いやすい。最後の一言が本音。',
       use: 'Call her right now.（今すぐ彼女に電話して）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['scene'], seg: [56.5, 60.5],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['scene'], seg: [56.5, 63.6],
       stem: 'What is Ross doing when he asks about calling her?',
       ja: '電話のことを聞くとき、ロスは何をしている？',
       choices: ['Offering to call her now', 'Asking for her phone number', 'Saying he won’t call'], a: 0,
@@ -213,7 +213,7 @@ export const rossJill: Clip = {
       trap: '断りの言葉をそのまま本音と取りやすい。遠慮のあとに態度が変わったら、そちらが本音。',
       use: 'No, you don’t have to… okay, do it.（いいよいいよ…やっぱりお願い）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'topic', seg: [67.6, 71],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'topic', seg: [66.6, 71.6],
       stem: 'Why does Rachel ask, “What’s going on with you?”',
       ja: 'レイチェルが「あなたはどうなの？」と聞くのはなぜ？',
       choices: ['To change the subject', 'To ask his opinion', 'Because she is worried'], a: 0,
@@ -237,7 +237,7 @@ export const rossJill: Clip = {
       trap: 'do it を直前の「授業」に結びつけやすいが、it は電話のこと。',
       use: 'Anyway, enough about me.（まあ、私の話はいいとして）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'teach', seg: [70.4, 75.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'teach', seg: [70.4, 77.6],
       stem: 'What news does Ross start to share?',
       ja: 'ロスはどんな近況を話し始める？',
       choices: ['He may teach another class', 'He may take another class', 'He may stop teaching'], a: 0,

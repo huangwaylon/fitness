@@ -14,7 +14,7 @@ export const babySex: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'shave', seg: [0, 7.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'shave', seg: [0, 6.9],
       stem: 'Why does Chris want a boy?',
       ja: 'クリスはなぜ男の子がほしい？',
       choices: ['To teach him how to shave', 'To teach him to play sports', 'To give him his own name'], a: 0,
@@ -24,6 +24,19 @@ export const babySex: Clip = {
       mean: 'pass 〜 on ＝「〜を次の人に伝える」。that は直前のひげそりの技。',
       trap: 'スポーツはよくある話なので選びやすい。shaving（ひげそり）を聞く。',
       use: 'My dad passed his recipe on to me.（父がレシピを伝えてくれた）' },
+
+    // A2: was an infer on why the first reading comes out oddly; now what the note says (“It says…”)
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'distrib', reveals: ['writing'], seg: [18.9, 31.9],
+      stem: 'What does the note really say?',
+      ja: 'メモには本当は何と書いてある？',
+      choices: ['Congratulations', 'Distributions', 'Contributions'], a: 0,
+      choicesJa: ['おめでとう', '分配', '寄付'],
+      cue: '「Let me see that」のあと',
+      line: 'We are having a… *distributions*. — Let me see that. — It says *congratulations*, I think.',
+      said: '「distributions」と読み、もう一人が「おめでとう、かな」と直す。',
+      mean: 'It says 〜 ＝「〜と書いてある」。メモや看板を読むときの言い方。',
+      trap: '最初に2回 distributions と言うので、それと思いやすい。読み直しを聞く。',
+      use: 'What does that sign say?（あの看板、何て書いてある？）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'writing', seg: [19.0, 62.2],
       stem: 'Why do Ann and Chris go to the doctor’s home?',
@@ -35,19 +48,6 @@ export const babySex: Clip = {
       mean: 'couldn’t read your writing ＝「あなたの字が読めなかった」。writing ＝ 書いた字。',
       trap: '家まで行くので「呼ばれた」と思いやすい。玄関での説明が理由。',
       use: 'I can’t read your handwriting.（あなたの字が読めない）' },
-
-    // A2: was an infer on why the first reading comes out oddly; now what the note says (“It says…”)
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'distrib', reveals: ['writing'], seg: [19.0, 30.8],
-      stem: 'What does the note really say?',
-      ja: 'メモには本当は何と書いてある？',
-      choices: ['Congratulations', 'Distributions', 'Contributions'], a: 0,
-      choicesJa: ['おめでとう', '分配', '寄付'],
-      cue: '「Let me see that」のあと',
-      line: 'We are having a… *distributions*. — Let me see that. — It says *congratulations*, I think.',
-      said: '「distributions」と読み、もう一人が「おめでとう、かな」と直す。',
-      mean: 'It says 〜 ＝「〜と書いてある」。メモや看板を読むときの言い方。',
-      trap: '最初に2回 distributions と言うので、それと思いやすい。読み直しを聞く。',
-      use: 'What does that sign say?（あの看板、何て書いてある？）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'suspense', seg: [38.3, 43],
       stem: 'What does “The suspense is killing me” mean?',
@@ -72,7 +72,7 @@ export const babySex: Clip = {
       trap: 'Domino’s で配達先を家と思いやすい。this restaurant が今いる場所。',
       use: 'Do you deliver to this address?（この住所に配達できますか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'out', reveals: ['writing'], seg: [46.0, 49.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'out', reveals: ['writing'], seg: [44.1, 49.2],
       stem: 'How long will the doctor be out?',
       ja: '医者はいつまで不在？',
       choices: ['For the rest of the day', 'For the rest of the week', 'Until later this morning'], a: 0,
@@ -83,7 +83,7 @@ export const babySex: Clip = {
       trap: 'day と week は最後の一語だけの差。rest of the のあとを聞く。',
       use: 'She’s out for the rest of the day.（彼女は今日はもう戻りません）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'stressed', seg: [49.1, 53.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'stressed', seg: [47.7, 54.7],
       stem: 'Type the end: “I have literally never been more ___.” (2 words)', answer: 'stressed out',
       ja: '「I have literally never been more ___.」の空所を書こう（2語）',
       cue: '「never been more」のあと', line: 'I have literally never been more *stressed out*.',
@@ -92,7 +92,7 @@ export const babySex: Clip = {
       trap: 'd と out がつながり「ストレスタウ」に聞こえる。2語で書く。',
       use: 'I’m so stressed out about work.（仕事でかなり参ってる）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'early', reveals: ['could'], seg: [55.3, 59.0],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'early', reveals: ['could'], seg: [54.4, 62],
       stem: 'How does the doctor feel about the early visit?',
       ja: '朝早い訪問に、医者はどんな気持ち？',
       choices: ['Annoyed', 'Worried', 'Excited'], a: 0,
@@ -103,7 +103,7 @@ export const babySex: Clip = {
       trap: '医者なので心配していると思いやすい。six in the morning で分かる。',
       use: 'What could you possibly want now?（今度はいったい何？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'could', reveals: ['early'], seg: [55.3, 59.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'could', reveals: ['early'], seg: [54.4, 62],
       stem: 'Fill the gap: “What ___ need at six in the morning?”',
       ja: '「What ___ need at six in the morning?」の空所は？',
       choices: ['could you possibly', 'would you possibly', 'can you possibly'], a: 0,
@@ -126,7 +126,7 @@ export const babySex: Clip = {
       trap: '他の人のせいにしていると取りやすいが、だれの名前も出していない。',
       use: 'Sorry, my handwriting is terrible.（ごめん、字が汚くて）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'remember', seg: [93.7, 98.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'remember', seg: [90.3, 100.2],
       stem: 'Why doesn’t the doctor just tell them?',
       ja: '医者はなぜすぐに答えを言わない？',
       choices: ['He isn’t sure he is right', 'He wants to tell them later', 'He likes to surprise people'], a: 0,
@@ -138,7 +138,7 @@ export const babySex: Clip = {
       trap: 'このあと office（診療所）の話が出るが、それは確かめに行くため。',
       use: 'I kind of remember, but I’m not sure.（なんとなく覚えてるけど自信ない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [98.2, 102.3],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [96.9, 102.4],
       stem: 'How long does the doctor ask them to wait?',
       ja: '医者はどのくらい待ってと言う？',
       choices: ['1 minute', '5 minutes', '15 minutes', '50 minutes'], a: 2, keep: true,
@@ -149,7 +149,7 @@ export const babySex: Clip = {
       trap: 'fifteen は「ティーン」が長く強く、fifty は短い。five と one には「フィフ」がない。',
       use: 'Give me ten minutes to get ready.（準備に10分ちょうだい）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'thisisit', seg: [117.0, 120.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'thisisit', seg: [114.9, 122.6],
       stem: 'What does “this is it” mean here?',
       ja: '「this is it」は、ここではどういう意味？',
       choices: ['The big moment is here', 'That is all he knows', 'He found the right file'], a: 0,
@@ -172,7 +172,7 @@ export const babySex: Clip = {
       trap: '発表の前に長く話すので聞き逃しやすい。Raise your hand のすぐあと。',
       use: 'It’s a boy! Congratulations!（男の子です！おめでとう！）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'either', seg: [120.6, 126.1],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'either', seg: [120.6, 127],
       stem: 'Type the end: “I will honestly be happy ___.” (2 words)', answer: 'either way',
       ja: '「I will honestly be happy ___.」の空所を書こう（2語）',
       cue: '「happy」のあと', line: 'I will honestly be happy *either way*.',
@@ -181,7 +181,7 @@ export const babySex: Clip = {
       trap: 'either は「イーザー」とも「アイザー」とも言う。どちらも同じ語。',
       use: 'Tea or coffee? Either way is fine.（紅茶でもコーヒーでもいいよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'greatest', seg: [126.2, 134.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'greatest', seg: [126.2, 136.8],
       stem: 'How does Chris feel about the baby?',
       ja: 'クリスは赤ちゃんのことをどう思っている？',
       choices: ['Very excited', 'A little nervous', 'Not interested'], a: 0,
@@ -193,7 +193,7 @@ export const babySex: Clip = {
       trap: 'doesn’t matter を「関心がない」と思いやすい。because のあとが本当の気持ち。',
       use: 'Either way, it’s going to be great.（どっちにしても最高になるよ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'you', seg: [134.0, 139.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'you', seg: [132.7, 141.2],
       stem: 'What does the one-word reply “You?” mean?',
       ja: '一語の返事「You?」はどういう意味？',
       choices: ['What about you?', 'Are you sure?', 'Is it you?'], a: 0,
@@ -206,7 +206,7 @@ export const babySex: Clip = {
       use: 'What about you?（あなたはどうなの？）' },
 
     // A2: was “What does the exchange show?”; now the plain admission
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'preference', seg: [142.3, 148.0],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'preference', seg: [141.5, 150.2],
       stem: 'After “It’s a boy!”, what does one of them admit?',
       ja: '「男の子だ！」のあと、一人は何を認める？',
       choices: ['They really wanted a boy', 'They really wanted a girl', 'They didn’t care at all'], a: 0,
@@ -230,7 +230,7 @@ export const babySex: Clip = {
       trap: 'adopt から赤ちゃんを思い浮かべやすい。年齢と terrible で中身が分かる。',
       use: 'Would you be interested in joining us?（一緒にどうですか）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twenties', seg: [151.5, 156.6],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twenties', seg: [151.5, 158.3],
       stem: 'How old does the doctor say his children are?',
       ja: '医者の子どもは何歳くらい？',
       choices: ['In their late teens', 'In their early 20s', 'In their late 20s'], a: 2, keep: true,
@@ -241,7 +241,7 @@ export const babySex: Clip = {
       trap: 'late と early は最初の語、teens と 20s は最後の語。両方を聞く。',
       use: 'She’s in her early thirties.（彼女は30代前半だよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nogo', seg: [155.6, 160.5],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nogo', seg: [154.4, 161.1],
       stem: 'After they both say “No,” what does “No go?” mean?',
       ja: '二人が No と言ったあとの「No go?」はどういう意味？',
       choices: ['So that’s a no?', 'You don’t want to go?', 'Too soon to say?'], a: 0,

@@ -15,7 +15,7 @@ export const chickParent: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'doing', skill: 'phrase', level: 'B1', point: 'doing', seg: [12.4, 17.8],
+    { id: 'doing', skill: 'phrase', level: 'B1', point: 'doing', seg: [11.9, 20.6],
       stem: 'What does “How’s she doing?” ask?',
       ja: '「How’s she doing?」は何を聞いている？',
       choices: ['Is the chick OK?', 'What is she doing now?', 'Where did she go?'], a: 0,
@@ -27,7 +27,7 @@ export const chickParent: Clip = {
       trap: 'doing から「何をしている？」と思いやすい。How で始まれば「様子はどう？」。',
       use: 'How’s your mom doing?（お母さん、元気？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [30.5, 39.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [30.5, 39.8],
       stem: 'Why does Joey say “anyway” here?',
       ja: 'ジョーイはなぜここで「anyway」と言う？',
       choices: ['To move on to a new topic', 'To answer the last question', 'To say sorry for something'], a: 0,
@@ -39,7 +39,7 @@ export const chickParent: Clip = {
       trap: '前の質問に答えていると思いやすい。I can’t tell（分からない）で話は終わっている。',
       use: 'Anyway, I should get going.（まあとにかく、そろそろ行くね）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [31.5, 39.2],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [31.5, 39.8],
       stem: 'Fill the gap: “Well, anyway, I ___ change.”',
       ja: '空いている所に入る言葉は？',
       choices: ['gotta go', 'better go', 'have to go'], a: 0,
@@ -51,7 +51,7 @@ export const chickParent: Clip = {
       trap: 'gotta も better も「ラ」の音が入る。最初の音が「ガ」か「ベ」か「ハ」かを聞く。',
       use: 'I gotta go. See you later.（もう行かなきゃ、またね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'drinks', seg: [35.5, 40],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'drinks', seg: [35.5, 41.1],
       stem: 'Why does Joey need to go and change?',
       ja: 'ジョーイはなぜ着替えに行く？',
       choices: ['Drinks with the cast', 'A late rehearsal', 'Dinner with the cast'], a: 0,
@@ -75,7 +75,7 @@ export const chickParent: Clip = {
       trap: 'your friends（友だち）が聞こえるので、誘われなかった話と思いやすい。文句の中身は世話。',
       use: 'I feel like I’m doing everything here.（私ばかりやってる気がする）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'excuse', seg: [35.5, 47.4],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'excuse', seg: [35.9, 47.9],
       stem: 'What does Chandler mean by “Excuse me?”',
       ja: 'チャンドラーの「Excuse me?」はどういう意味？',
       choices: ['I can’t believe this!', 'Please say it again.', 'Can I come with you?'], a: 0,
@@ -87,7 +87,7 @@ export const chickParent: Clip = {
       trap: 'excuse me ＝「すみません、もう一度」と思いやすい。続く文句で抗議と分かる。',
       use: 'Excuse me? You’re going out now?（は？今から出かけるの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'stayhome', seg: [41, 47.4],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'stayhome', seg: [41, 47.7],
       stem: 'Why did Chandler stay home from work today?',
       ja: 'チャンドラーは今日、なぜ仕事を休んだ？',
       choices: ['So the chick wasn’t alone', 'To catch up on his sleep', 'Because the chick was sick'], a: 0,
@@ -99,7 +99,7 @@ export const chickParent: Clip = {
       trap: '休む理由なら「病気」と思いやすいが、だれも病気とは言っていない。so のあとが目的。',
       use: 'I stayed home so someone could be here.（だれかがいられるよう家にいた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [47.2, 54.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'night', seg: [46.7, 54.5], keep: true,
       stem: 'Between which hours was someone up with the chick?',
       ja: 'だれかがひよこのために起きていたのは何時から何時？',
       choices: ['From 2 to 4', 'From 2 to 5', 'From 2 to 9'], a: 1,
@@ -111,7 +111,7 @@ export const chickParent: Clip = {
       trap: 'four は「フォー」、nine は「ナイン」。「ファイヴ」と聞こえれば5。',
       use: 'I was up until three last night.（昨夜は3時まで起きてた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', seg: [47.2, 57.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', seg: [53, 59.5],
       stem: 'What does the reply about getting up mean?',
       ja: '起きることについての返事は、どういう意味？',
       choices: ['I get up too, every time', 'I sleep through the night', 'I get up before you'], a: 0,
@@ -123,7 +123,17 @@ export const chickParent: Clip = {
       trap: 'don’t から「起きない」と思いやすい。when you get up とセットで「そのたびに」。',
       use: 'You don’t think I worry too?（僕だって心配してないと思う？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'herecomes', seg: [47.2, 60.75],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'list', reveals: ['herecomes'], seg: [54, 60.75], then: [60.75, 70.75], retired: true,
+      stem: 'After “Yes, here it comes”, what kind of thing is about to follow?',
+      choices: ['The complaint he has been saving up', 'An apology for raising his voice', 'A denial that he always complains'], a: 0,
+      cue: '「ほら来た」をそのまま認めて受ける、その言い方。',
+      line: 'Yes, here it comes. *I’m stuck here all day*…',
+      said: '「そうだ、来たぞ」と受けて、「一日中ここに缶詰めで…」と不満を並べ始める。',
+      mean: '相手の「ほら来た」をあえて認め、ためていた文句の前置きにしている。',
+      trap: '謝るか「そんなことない」と否定する、と予想しやすい。Yes で受けたら、その中身が来る。',
+      use: 'Yes, I’m going to say it.（ええ、言わせてもらうわ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'herecomes', seg: [54.3, 63.1],
       stem: 'How does he feel when he says “Oh, here it comes”?',
       ja: '「Oh, here it comes」と言うとき、どんな気持ち？',
       choices: ['Tired of the same fight', 'Sorry for what he did', 'Happy to talk about it now'], a: 0,
@@ -134,16 +144,6 @@ export const chickParent: Clip = {
       mean: 'Here it comes ＝「お決まりのが始まるぞ」。また同じ文句か、とうんざりしている。',
       trap: '身がまえる＝悪いと思っている、と思いやすい。その前に自分も言い返している。',
       use: 'Here we go again.（また始まった）' },
-
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'list', reveals: ['herecomes'], seg: [54, 60.75], then: [60.75, 70.75], retired: true,
-      stem: 'After “Yes, here it comes”, what kind of thing is about to follow?',
-      choices: ['The complaint he has been saving up', 'An apology for raising his voice', 'A denial that he always complains'], a: 0,
-      cue: '「ほら来た」をそのまま認めて受ける、その言い方。',
-      line: 'Yes, here it comes. *I’m stuck here all day*…',
-      said: '「そうだ、来たぞ」と受けて、「一日中ここに缶詰めで…」と不満を並べ始める。',
-      mean: '相手の「ほら来た」をあえて認め、ためていた文句の前置きにしている。',
-      trap: '謝るか「そんなことない」と否定する、と予想しやすい。Yes で受けたら、その中身が来る。',
-      use: 'Yes, I’m going to say it.（ええ、言わせてもらうわ）' },
 
     // anchor: 61.1–70.8 s "I'm stuck here all day and then you come in and spend 2 seconds with us… with your friends":
     // retired: g1 reveals its point, so play 3+ under g1 drew no C2
@@ -179,7 +179,7 @@ export const chickParent: Clip = {
       trap: '控えめな「〜と思わない」や、おふざけと取りがち。相手が本気で言い返すのが答え合わせ。',
       use: 'Oh no you don’t, mister.（そうはいかないわよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'relax', seg: [73, 78.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'relax', seg: [71.1, 81.5],
       stem: 'What reason does Joey give for going out?',
       ja: 'ジョーイは出かける理由を何と言う？',
       choices: ['He needs to relax after work', 'He promised the cast he’d come', 'He was stuck at home too'], a: 0,
@@ -191,7 +191,7 @@ export const chickParent: Clip = {
       trap: 'stuck here all day（一日中家）は相手の言葉。それぞれの「一日中」を分けて聞く。',
       use: 'I need to relax after work.（仕事のあとは息抜きしたい）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'work', seg: [75.4, 84],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'work', seg: [75.4, 86.4],
       stem: 'What does Chandler say is work too?',
       ja: 'チャンドラーは、ほかに何が仕事だと言う？',
       choices: ['Taking care of the chick', 'Going out with friends', 'Going to his rehearsal'], a: 0,
@@ -203,7 +203,7 @@ export const chickParent: Clip = {
       trap: 'work が何度も出て、だれの何が仕事か入れかわりやすい。taking care of のあとを聞く。',
       use: 'Taking care of a baby is work too.（赤ちゃんの世話も仕事だよ）' },
 
-    { id: 'notsaid', skill: 'phrase', level: 'B1', point: 'notsaid', seg: [83, 87.2],
+    { id: 'notsaid', skill: 'phrase', level: 'B1', point: 'notsaid', seg: [82.7, 89.9],
       stem: 'What does “That’s not what I said” mean?',
       ja: '「That’s not what I said」の意味は？',
       choices: ['You got my words wrong', 'I didn’t say anything', 'Please listen to me now'], a: 0,
@@ -228,7 +228,7 @@ export const chickParent: Clip = {
       trap: '理解や「謝らなくていい」と取りやすい。I just meant は謝罪でなく説明。それを切るのは聞く気がない印。',
       use: 'Oh, I know exactly what you meant.（何が言いたいか、よく分かってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'meant', seg: [85.4, 90],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'meant', seg: [84, 90.6],
       stem: 'Type the reply: “___.” (5 words)', answer: 'i know what you meant',
       ja: '返事の5語を書こう。',
       cue: '「I just meant」で切れたすぐあと。',
@@ -272,7 +272,7 @@ export const chickParent: Clip = {
       trap: '返金の心配と文字通りに取りやすいが、笑いは「わが子」が3ドルの買い物に落ちる落差。',
       use: 'Can I get my money back?（返金してもらえますか）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [110.9, 116.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [108.6, 120.6], keep: true,
       stem: 'What did they pay for the chick?',
       ja: 'ひよこはいくらだった？',
       choices: ['$3', '$13', '$30'], a: 0,
@@ -284,7 +284,7 @@ export const chickParent: Clip = {
       trap: 'thirteen は「ティーン」と長く、thirty は「サーティ」。ここは短い「スリー」。',
       use: 'It’s only five bucks.（たった5ドルだよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'well', reveals: ['bucks', 'ending'], seg: [110.9, 116.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'well', reveals: ['bucks', 'ending'], seg: [108.6, 120.6],
       stem: 'Fill the gap: “You think ___ get our three bucks back?”',
       ja: '空いている所に入る語は？',
       choices: ['we’ll', 'we', 'we’d'], a: 0,

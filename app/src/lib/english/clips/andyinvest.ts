@@ -16,7 +16,7 @@ export const andyInvestigates: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'practice', seg: [0, 29.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'practice', seg: [0, 29.9],
       stem: 'Why is Andy glad to find his computer gone?',
       ja: 'パソコンがなくなって、アンディはなぜ喜ぶ？',
       choices: ['It’s the practice case he wanted', 'His police exam has begun', 'A co-worker hid it for fun'], a: 0,
@@ -40,7 +40,7 @@ export const andyInvestigates: Clip = {
       trap: 'a のあとは短く流れる。「マンス」なら month、「ウィーク」なら week、「イヤ」なら year。',
       use: 'I moved here about a month ago.（1か月くらい前に引っ越してきた）' },
 
-    { id: 'dothis', skill: 'phrase', level: 'B1', point: 'dothis', seg: [25.5, 30],
+    { id: 'dothis', skill: 'phrase', level: 'B1', point: 'dothis', seg: [22, 30.6],
       stem: 'What does Andy mean by “Let’s do this”?',
       ja: 'アンディの「Let’s do this」の意味は？',
       choices: ['Let’s start now', 'Let’s stop this', 'Let’s do it later'], a: 0,
@@ -117,7 +117,7 @@ export const andyInvestigates: Clip = {
       trap: '直前の「Jerry ではない」と矛盾する点に目が行きやすい。笑いは最後の一文の願いにある。',
       use: 'Hopefully that won’t come up.（それが話に出ないといいけど）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'doesnt', seg: [92.0, 95.05],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'doesnt', seg: [89, 96.8],
       stem: 'Fill the gap: “Hopefully that ___ up in my police work.”',
       ja: '空いている所に入る言葉は？',
       choices: ['doesn’t come', 'does come', 'won’t come'], a: 0,
@@ -152,7 +152,7 @@ export const andyInvestigates: Clip = {
       trap: 'another computer だけ聞くと、クリスの物もと思いやすい。from のあとの場所を聞く。',
       use: 'Another bag was reported missing.（ほかのカバンも紛失届が出た）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'better', seg: [124.15, 128.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'better', seg: [122.8, 130.1],
       stem: 'How does Andy take the news that the crime is real?',
       ja: '本物の事件だと聞いて、アンディはどう感じる？',
       choices: ['Even more excited', 'Less excited than before', 'Calm and serious'], a: 0,
@@ -164,7 +164,7 @@ export const andyInvestigates: Clip = {
       trap: '事件なので心配すると思いやすい。even better（もっといい）を聞く。',
       use: 'Free shipping? Even better.（送料無料？さらにいいね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'play', seg: [127.6, 130.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'play', seg: [127.2, 132.8],
       stem: 'Type what Andy asks: “___, officer?” (4 words)', answer: "what's the play here",
       ja: '「officer」の前の4語を書こう。',
       cue: '「even better」のあと。',
@@ -174,7 +174,7 @@ export const andyInvestigates: Clip = {
       trap: 'what’s the がつながって短く聞こえる。here まで4語あると思って聞く。',
       use: 'So what’s the plan here?（で、ここではどうするの？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], seg: [139.6, 146.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], seg: [139.5, 146.3],
       stem: 'Why does the officer say “I love your enthusiasm” here?',
       ja: '警官は、なぜここで「I love your enthusiasm」と言う？',
       choices: ['To say no kindly', 'To say yes to the plan', 'To ask Andy to work harder'], a: 0,
@@ -186,7 +186,7 @@ export const andyInvestigates: Clip = {
       trap: 'I love（大好き）から賛成と思いやすい。I love 〜, but は断りの前置き。',
       use: 'I love the idea, but it’s too expensive.（いい案だけど、高すぎる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'money', seg: [142.5, 146.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'money', seg: [140.8, 146.8],
       stem: 'Why won’t they start a big investigation?',
       ja: 'なぜ大きな捜査をしない？',
       choices: ['There isn’t enough money', 'The loss isn’t big enough', 'There isn’t enough proof'], a: 0,
@@ -198,7 +198,7 @@ export const andyInvestigates: Clip = {
       trap: '捜査の話なので、証拠や被害の大きさを思いやすい。have のあとの money を聞く。',
       use: 'I don’t have that kind of money.（そんな大金は持ってない）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'letgo', seg: [146.8, 152.8],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'letgo', seg: [146.8, 156.5],
       stem: 'What does Andy say he can’t do as a future cop?',
       ja: 'アンディは、未来の警官として何ができないと言う？',
       choices: ['Let this guy go', 'Fill out the report', 'Pay for the search'], a: 0,
@@ -234,7 +234,7 @@ export const andyInvestigates: Clip = {
       trap: '落ち込んだ本人をからかう冗談にも聞こえる。「盗んだ人」は誰を指すか、直前の発言で決める。',
       use: 'What happened? You look down.（どうしたの？元気ないね）' },
 
-    { id: 'd7', skill: 'detail', level: 'B2', point: 'account', seg: [183.8, 189.9],
+    { id: 'd7', skill: 'detail', level: 'B2', point: 'account', seg: [183.4, 189.7],
       stem: 'Who is Andy told to listen to?',
       ja: 'アンディは、だれの話を聞くように言われる？',
       choices: ['The policeman', 'Chris Traeger', 'His coworker Gary'], a: 0,
@@ -282,7 +282,7 @@ export const andyInvestigates: Clip = {
       trap: '警察の話なので bail を「保釈金」と思いやすい。bail on ＋ 予定 ＝ やめる。',
       use: 'Sorry, I have to bail on dinner.（ごめん、夕食は行けなくなった）' },
 
-    { id: 'mind', skill: 'phrase', level: 'B1', point: 'keepmind', reveals: ['clothes'], seg: [215.5, 220.7],
+    { id: 'mind', skill: 'phrase', level: 'B1', point: 'keepmind', reveals: ['clothes'], seg: [212.8, 223.3],
       stem: 'What does “keep in mind” mean?',
       ja: '「keep in mind」の意味は？',
       choices: ['Remember this', 'Forget this', 'Write this down'], a: 0,
@@ -293,6 +293,18 @@ export const andyInvestigates: Clip = {
       mean: 'keep in mind ＝ 覚えておく、心に留める。条件や注意の前の一言。',
       trap: 'mind（心）から「気にする」と思いやすい。keep in mind ＝ 忘れないで。',
       use: 'Keep in mind, the shop closes at six.（お店は6時に閉まるから覚えておいて）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'clothes', seg: [215.9, 223],
+      stem: 'What must Andy do if he takes the job?',
+      ja: 'その仕事を受けるなら、アンディは何をしなければならない？',
+      choices: ['Keep his clothes on', 'Carry a gun', 'Work every night'], a: 0,
+      choicesJa: ['服を着たままでいる', '銃を持つ', '毎晩働く'],
+      cue: '「you must」のあと',
+      line: 'if you take this job, *you must keep your clothes on* at all times, even if you get sad.',
+      said: '「この仕事をするなら、悲しくなっても、いつも服を着ていること」と言われる。',
+      mean: 'must ＝ しなければならない。keep 〜 on ＝ 着たままでいる。落ちこむと服を脱ぐアンディへの条件。',
+      trap: 'あとで gun（銃）の話が出るので、銃と思いやすい。must のすぐあとが答え。',
+      use: 'You must keep your seatbelt on.（シートベルトはずっと締めてください）' },
 
     { id: 'i3', skill: 'infer', level: 'C1', point: 'clothes', seg: [216.15, 226.15], retired: true,
       stem: 'Why does Andy first turn the job down?',
@@ -305,19 +317,7 @@ export const andyInvestigates: Clip = {
       trap: 'part-time などの情報も聞こえるので理由を取り違えやすい。No deal の直前の条件が理由。',
       use: 'One condition: no phones.（条件が一つ。スマホは禁止）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'clothes', seg: [216.3, 222.1],
-      stem: 'What must Andy do if he takes the job?',
-      ja: 'その仕事を受けるなら、アンディは何をしなければならない？',
-      choices: ['Keep his clothes on', 'Carry a gun', 'Work every night'], a: 0,
-      choicesJa: ['服を着たままでいる', '銃を持つ', '毎晩働く'],
-      cue: '「you must」のあと',
-      line: 'if you take this job, *you must keep your clothes on* at all times, even if you get sad.',
-      said: '「この仕事をするなら、悲しくなっても、いつも服を着ていること」と言われる。',
-      mean: 'must ＝ しなければならない。keep 〜 on ＝ 着たままでいる。落ちこむと服を脱ぐアンディへの条件。',
-      trap: 'あとで gun（銃）の話が出るので、銃と思いやすい。must のすぐあとが答え。',
-      use: 'You must keep your seatbelt on.（シートベルトはずっと締めてください）' },
-
-    { id: 'nodeal', skill: 'phrase', level: 'B1', point: 'nodeal', seg: [220.5, 226.4],
+    { id: 'nodeal', skill: 'phrase', level: 'B1', point: 'nodeal', seg: [220.5, 227.7],
       stem: 'What does “No deal” mean?',
       ja: '「No deal」の意味は？',
       choices: ['I won’t agree to that', 'That’s a really good price', 'I don’t know yet'], a: 0,
@@ -329,7 +329,7 @@ export const andyInvestigates: Clip = {
       trap: 'deal（取引）から値段の話と思いやすい。No deal は条件への「ノー」。',
       use: 'Ten dollars? No deal.（10ドル？それはお断り）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'incorrect', seg: [227.9, 232.0],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'incorrect', seg: [227.1, 233],
       stem: 'Andy says he’ll get a gun. What does the answer mean?',
       ja: '銃がもらえると言うアンディ。返事の意味は？',
       choices: ['No, you won’t', 'Yes, of course', 'Maybe later on'], a: 0,

@@ -15,7 +15,7 @@ export const leslieReady: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'askthem', seg: [8.9, 12.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'askthem', seg: [8.2, 13.9],
       stem: 'Type the gap: “I ___ to ask them.” (4 words)',
       answer: "haven't had a chance",
       ja: '「I ___ to ask them.」の空所を書こう（4語）',
@@ -26,7 +26,7 @@ export const leslieReady: Clip = {
       trap: 't や d が弱く、語が足りなく聞こえやすい。4語に分けて書く。',
       use: 'I haven’t had a chance to check.（まだ確認できてないんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sides', seg: [12.0, 16.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sides', seg: [8.2, 19.3],
       stem: 'What does one of them say they hate?',
       ja: '二人のうち一人は、何が嫌だと言う？',
       choices: ['Being on opposite sides', 'Being too busy to talk', 'Losing the election'], a: 0,
@@ -38,7 +38,7 @@ export const leslieReady: Clip = {
       trap: '直前の busy や、次の win に引っぱられやすい。I hate のすぐあとを聞く。',
       use: 'I hate it when we argue.（ケンカするの、ほんとに嫌）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'plus', seg: [15.0, 19.4],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'plus', seg: [13.4, 19.9],
       stem: 'What does “Plus” mean here?',
       ja: 'ここでの「Plus」はどういう意味？',
       choices: ['And another reason is', 'Add these numbers', 'Now a new topic'], a: 0,
@@ -50,7 +50,7 @@ export const leslieReady: Clip = {
       trap: 'plus（足し算の「プラス」）から、数の話と思いやすい。ここは理由を足している。',
       use: 'It’s cheap. Plus, it’s close.（安いし、それに近い）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'good', seg: [21.4, 25.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'good', seg: [19.4, 27.6],
       stem: 'What does “we are good” mean here?',
       ja: '「we are good」は、ここではどういう意味？',
       choices: ['We are fine together', 'We are good people', 'We are good at work'], a: 0,
@@ -74,7 +74,7 @@ export const leslieReady: Clip = {
       trap: '「みんなに伝えよう」と言うので、友達が決めると思いやすい。決めるのはコイン。',
       use: 'Let’s just flip a coin.（コインで決めちゃおう）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'literally', reveals: ['coin'], seg: [26.7, 32.3],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'literally', reveals: ['coin'], seg: [26.7, 35.4],
       stem: 'What does Leslie mean by “I mean it”?',
       ja: 'レスリーの「I mean it」はどういう意味？',
       choices: ['She is really serious', 'She is only joking', 'She is saying it differently'], a: 0,
@@ -98,7 +98,7 @@ export const leslieReady: Clip = {
       trap: 'does に聞こえやすいが、「ン」が残れば否定。won’t は「ウォウン」で「ダ」がない。',
       use: 'Whoever doesn’t cook does the dishes.（作らない方が皿洗いね）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'chance', reveals: ['coin'], seg: [44.3, 53.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'chance', reveals: ['coin'], seg: [42.8, 54.8],
       stem: 'Why is Ben surprised by the coin idea?',
       ja: 'ベンはなぜコインの案に驚く？',
       choices: ['Leslie always plans everything', 'Leslie hates playing games', 'Leslie lost a coin toss before'], a: 0,
@@ -110,7 +110,7 @@ export const leslieReady: Clip = {
       trap: 'queen（女王）から、ほめていると思いやすい。運任せが彼女らしくない、と驚いている。',
       use: 'Let’s not leave it to chance.（運任せにはしないでおこう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'together', seg: [53.4, 59.3],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'together', seg: [50.9, 61.6],
       stem: 'How sure is Leslie about the coin idea?',
       ja: 'レスリーはコインの案にどれくらい自信がある？',
       choices: ['Very sure', 'Not sure at all', 'A little worried'], a: 0,
@@ -134,7 +134,7 @@ export const leslieReady: Clip = {
       trap: '大げさな博物館の話を皮肉と取りやすいが、本人は大まじめ。運任せのはずが計画だらけ、というずれ。',
       use: 'Let’s keep it simple this time.（今回はシンプルにいこう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sign', reveals: ['coin'], seg: [60.5, 64.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'sign', reveals: ['coin'], seg: [59.4, 66.9],
       stem: 'What does Leslie say everybody can do with the coin?',
       ja: 'レスリーは、みんながコインで何をできると言う？',
       choices: ['Sign their names on it', 'Take turns tossing it', 'Call heads or tails'], a: 0,
@@ -159,7 +159,7 @@ export const leslieReady: Clip = {
       trap: 'it’s like の言いよどみを控えめと取りやすい。小さな事に大きすぎる言葉が付いたら、喜びの誇張。',
       use: 'This is the best day in human history.（人類史上最高の日だよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'shot', seg: [89.3, 93.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'shot', seg: [88.3, 93.3],
       stem: 'What does “a great shot to win” mean?',
       ja: '「a great shot to win」はどういう意味？',
       choices: ['A good chance to win', 'A small chance to win', 'Only one try to win'], a: 0,
@@ -171,7 +171,7 @@ export const leslieReady: Clip = {
       trap: 'shot（一発）から、一回だけのチャンスと思いやすい。great（大きな）がつく。',
       use: 'I think we have a good shot.（いけそうな気がする）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'genius', seg: [110.1, 114.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'genius', seg: [109.2, 114.2],
       stem: 'Why does Leslie say Ben is running her campaign?',
       ja: 'レスリーはなぜベンに選挙運動を任せる？',
       choices: ['He is extremely smart', 'He is an Indiana native', 'The party asked for him'], a: 0,
@@ -195,7 +195,7 @@ export const leslieReady: Clip = {
       trap: 'スポーツカーを速さのたとえと取りやすいが、ほめているのは body。little も愛情。',
       use: 'He’s smart, and cute, too.（頭がいいし、かわいいし）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'message', seg: [119.4, 154.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'message', seg: [119.4, 160.6],
       stem: 'What makes work worth doing, says Leslie?',
       ja: 'レスリーによると、仕事をやりがいのあるものにするのは何？',
       choices: ['Working with people you love', 'Making a lot of money', 'Winning a big election'], a: 0,
@@ -231,7 +231,7 @@ export const leslieReady: Clip = {
       trap: 'work worth doing だけ聞くと引用そのものに思える。どこからが本人の言葉かを聞く。',
       use: 'Like I said back then, it’s the people.（あの頃も言ったけど、大事なのは人だよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['terms'], seg: [153.3, 160.3],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['terms'], seg: [152.3, 160.3],
       stem: 'When Leslie looks back, how long ago did she start her career?',
       ja: 'レスリーは、どれくらい前にキャリアを始めた？',
       choices: ['More than 3 years ago', 'More than 13 years ago', 'More than 30 years ago'], a: 2, keep: true,
@@ -243,7 +243,7 @@ export const leslieReady: Clip = {
       trap: 'thirteen なら「ティーン」が強く長い。three なら「ティ」の音がない。',
       use: 'I moved here more than thirty years ago.（ここに来て30年以上になる）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'terms', seg: [159.9, 165.7],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'terms', seg: [158.8, 165.7],
       stem: 'What job has Leslie had for two terms?',
       ja: 'レスリーが2期務めた仕事は？',
       choices: ['Governor', 'Mayor', 'Park director'], a: 0,
@@ -255,7 +255,7 @@ export const leslieReady: Clip = {
       trap: '公園課で始めた話が先に来るので、公園の仕事と思いやすい。as your のあとを聞く。',
       use: 'I’ve had a few jobs, including this one.（いくつか仕事をしたよ、これも含めて）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'thrilling', reveals: ['terms'], seg: [165.3, 175.45],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'thrilling', reveals: ['terms'], seg: [165.3, 175.8],
       stem: 'How does Leslie feel about her next challenge?',
       ja: 'レスリーは次の挑戦をどう感じている？',
       choices: ['Excited', 'Worried', 'Tired'], a: 0,
@@ -278,7 +278,7 @@ export const leslieReady: Clip = {
       trap: '長い副詞 definitely に強勢を置きたくなる。否定のすぐあとの短い動詞が強ければ、対比の返し。',
       use: 'Not that I mind. Okay, I do.（気にしてないよ。いや、してる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'library', seg: [210.4, 221.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'library', seg: [213.2, 223],
       stem: 'Besides the doctorate, what honor does Leslie get?',
       ja: '名誉博士号のほかに、レスリーは何を受ける？',
       choices: ['The library gets her name', 'She will teach at the school', 'Her papers go to the library'], a: 0,

@@ -16,7 +16,7 @@ export const icFirstShow: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'luke', seg: [11.6, 15], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'luke', seg: [10.8, 17], keep: true,
       stem: 'What does Carly regret at the start?',
       ja: '最初、カーリーは何を後悔している？',
       choices: ['Starting a channel with Luke', 'Breaking up with Luke last year', 'Ending the old show with Sam'], a: 0,
@@ -28,7 +28,7 @@ export const icFirstShow: Clip = {
       trap: 'ルークの名前だけ拾うと「別れた」話に思いやすい。Why did I ever のあとが後悔の中身。',
       use: 'Why did I ever buy these shoes?（なんでこの靴買っちゃったんだろう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'desperate', seg: [14.6, 18.6], keep: true,
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'desperate', seg: [12.1, 19.4], keep: true,
       stem: 'Why does Carly say “Don’t answer that”?',
       ja: 'カーリーはなぜ「Don’t answer that」と言う？',
       choices: ['She fears the honest answer', 'She wants them to think first', 'She wants their advice'], a: 0,
@@ -62,7 +62,7 @@ export const icFirstShow: Clip = {
       trap: '同じ「I hope ～ okay」が続くので、同じ心配に聞こえやすい。主語が変わる所を聞く。',
       use: 'It’s my brother. Worry about the other team.（兄だよ？心配なのは相手チーム）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'own', seg: [42, 45.4], keep: true,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'own', seg: [42, 47.7], keep: true,
       stem: 'Fill the gap: “Do you think I ___ on my own?”',
       ja: '空いている所に入る語は？',
       choices: ['could do it', 'couldn’t do it', 'would do it'], a: 0,
@@ -74,7 +74,7 @@ export const icFirstShow: Clip = {
       trap: 'couldn’t なら「ン」が残る。would なら「ウ」で始まり「ク」がない。',
       use: 'Do you think I could do it?（私にできると思う？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'want', seg: [42, 48.6], keep: true,
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'want', seg: [42, 52], keep: true,
       stem: 'How does Carly’s friend answer her question?',
       ja: 'カーリーの友だちは、カーリーの質問にどう答える？',
       choices: ['Leaves it up to her', 'Says it doesn’t matter', 'Gives an honest view'], a: 0,
@@ -95,7 +95,7 @@ export const icFirstShow: Clip = {
       trap: '習った文法どおり It を足したくなる。書き取りは、正しい文ではなく言われた音を書く。',
       use: 'Doesn’t matter. Let’s just go.（どうでもいいよ。行こう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'producer', seg: [51.4, 57.7], keep: true,
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'producer', seg: [48.5, 57.8], keep: true,
       stem: 'How does Carly’s friend feel about “my new producer”?',
       ja: '「my new producer」と聞いて、カーリーの友だちはどう感じる？',
       choices: ['Happy, but checking', 'Sure that it’s him', 'Hurt by the news'], a: 0,
@@ -118,7 +118,7 @@ export const icFirstShow: Clip = {
       trap: 'me を強めると「ほかの人でなく僕」の対比になる。肯定文にわざわざ do があれば、強いのはそこ。',
       use: 'I do like it, honestly.（ほんとに気に入ってるんだって）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'gym', seg: [71.3, 74.8], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'gym', seg: [69.1, 75.8], keep: true,
       stem: 'Type the missing words: “If Spencer ever ___ building that home gym.” (3 words)',
       answer: 'got around to',
       ja: '「ever」と「building」の間の3語を書こう。',
@@ -140,7 +140,7 @@ export const icFirstShow: Clip = {
       trap: 'never use だけだと「作ったが使っていない」に聞こえる。was going to は「するつもりだった」。',
       use: 'I never got around to it.（結局やらずじまいだった）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'puppet', seg: [98, 101.7],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'puppet', seg: [97.1, 104.1],
       stem: 'Who asks why one puppet looks like Carly?',
       ja: '「なんであの人形はカーリーに似てるの？」と聞くのはだれ？',
       choices: ['Freddie', 'Carly', 'Spencer'], a: 0,
@@ -152,7 +152,7 @@ export const icFirstShow: Clip = {
       trap: '人形の話なので、作った人やカーリー本人を選びやすい。返事の最後の名前で決まる。',
       use: 'I got one for you too, Mom.（お母さんの分も買ったよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'gofrom', seg: [106.0, 116.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'gofrom', seg: [111.3, 119.9],
       stem: 'What does “Go from there” mean?',
       ja: '「Go from there」の意味は？',
       choices: ['Start there, then build on it', 'Leave this place right now', 'Go back to the very start'], a: 0,
@@ -164,7 +164,7 @@ export const icFirstShow: Clip = {
       trap: 'go と there から「そこへ行く」「ここを出る」と思いやすい。from there は「そこを出発点に」。',
       use: 'Let’s try this first and go from there.（まずこれをやって、そこから考えよう）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'sack', seg: [137.8, 143.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'sack', seg: [137.8, 145.9], keep: true,
       stem: 'How long was he left in the sack?',
       ja: '彼は袋の中にどのくらい置いていかれた？',
       choices: ['About an hour', 'All night', 'Two whole days'], a: 1,
@@ -187,7 +187,7 @@ export const icFirstShow: Clip = {
       trap: 'superglue と studio の場面から「床に貼った」と想像しやすい。何を接着したかを聞く。',
       use: 'Pull the drawstring to close it.（ひもを引いて閉じてください）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['cameup'], seg: [138.0, 162.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['cameup'], seg: [138, 165.7],
       stem: 'What do Carly’s friends tell her?',
       ja: '友だちはカーリーに何と言う？',
       choices: ['She can do it, and they’ll help', 'She should go and find Sam', 'She should stop the show now'], a: 0,
@@ -199,7 +199,7 @@ export const icFirstShow: Clip = {
       trap: 'サムの思い出話が続くので、サムの話だと思いやすい。最後の励ましが中心。',
       use: 'We’ll help however we can.（できるかぎり手伝うよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cameup', seg: [155.2, 158.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cameup', seg: [154.5, 160.3], keep: true,
       stem: 'Type: “You ___ all this stuff when you were a kid.” (3 words)',
       answer: 'came up with',
       ja: '「You」のあとの3語を書こう。',
@@ -210,7 +210,7 @@ export const icFirstShow: Clip = {
       trap: 'up with が短くなり、came だけ聞こえやすい。3語でひとつの意味。',
       use: 'I came up with a better plan.（もっといい案を思いついた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'show', reveals: ['bots', 'baby'], seg: [183.7, 223.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'show', reveals: ['bots', 'baby'], seg: [183.7, 223.7],
       stem: 'What does Carly share on the new show?',
       ja: '新しい番組で、カーリーは何を紹介する？',
       choices: ['Her skincare routine', 'Her old puppets from the studio', 'Her new home gym'], a: 0,
@@ -222,7 +222,7 @@ export const icFirstShow: Clip = {
       trap: '人形やジムはその前の話。番組で見せるのは skincare。',
       use: 'Today I thought I’d share a recipe.（今日はレシピを紹介しようと思って）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'bots', seg: [186.2, 191.3], keep: true,
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'bots', seg: [185.5, 191.8], keep: true,
       stem: 'What does “Probably bots from Brazil” mean?',
       ja: '「Probably bots from Brazil」はどういう意味？',
       choices: ['They may not be real people', 'Most of her fans live in Brazil', 'They are friends she invited'], a: 0,
@@ -234,7 +234,7 @@ export const icFirstShow: Clip = {
       trap: 'Brazil が耳に残ると国の話に聞こえる。大事なのは前の bots。',
       use: 'Those likes are probably bots.（そのいいね、たぶんボットだよ）' },
 
-    { id: 'w2', skill: 'who', level: 'B1', point: 'baby', seg: [206.4, 213.4], keep: true,
+    { id: 'w2', skill: 'who', level: 'B1', point: 'baby', seg: [205.6, 213.4], keep: true,
       stem: 'Who is the “baby” in Carly’s skincare show?',
       ja: 'カーリーの番組の「赤ちゃん」はだれ？',
       choices: ['Spencer, acting as a baby', 'Freddie, acting as a baby', 'A puppet of Spencer'], a: 0,
@@ -268,7 +268,7 @@ export const icFirstShow: Clip = {
       trap: '言葉どおり「平気」と取りやすい。聞かれてもいないのに強く否定したら、逆を疑う。',
       use: 'I’m not nervous at all. Nope.（全然緊張してないよ。ほんとに）' },
 
-    { id: 'i4', skill: 'detail', level: 'B2', point: 'maam', seg: [238.6, 244],
+    { id: 'i4', skill: 'detail', level: 'B2', point: 'maam', seg: [238.6, 246],
       stem: 'Why did Carly panic buy the serum?',
       ja: 'カーリーはなぜあわてて美容液を買った？',
       choices: ['A clerk called her “ma’am”', 'A clerk said it was cheap', 'A clerk said it was new'], a: 0,
@@ -291,7 +291,7 @@ export const icFirstShow: Clip = {
       trap: '少し前の「早すぎることはない」を本人の意見と取りやすい。but still が来たら前を打ち消す合図。',
       use: 'It won’t help, but I’ll buy it anyway.（意味ないけど、どうせ買っちゃう）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'emo', seg: [253.5, 262.5], keep: true,
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'emo', seg: [253.5, 264.3], keep: true,
       stem: 'What does Carly’s friend mean by “a little emo”?',
       ja: 'カーリーの友だちの「a little emo」はどういう意味？',
       choices: ['Keep it a bit lighter', 'That line was very moving', 'Stop the show now'], a: 0,

@@ -13,7 +13,7 @@ export const leslieDate: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'cando', seg: [0.5, 3.8],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'cando', seg: [0, 5.3],
       stem: 'What does “What can I do for you?” mean?',
       ja: '「What can I do for you?」はどういう意味？',
       choices: ['How can I help you?', 'What are you doing?', 'What do you want to eat?'], a: 0,
@@ -25,7 +25,7 @@ export const leslieDate: Clip = {
       trap: 'do から「何をしているの？」と思いやすい。for you は「あなたのために」。',
       use: 'Hi! What can I do for you today?（いらっしゃいませ。今日はどうされました？）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'farasi', seg: [3.0, 8.0],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'farasi', seg: [1.4, 12],
       stem: 'What does “as far as I know” mean here?',
       ja: 'ここでの「as far as I know」はどういう意味？',
       choices: ['Probably, but not sure', 'It is very far away', 'I know it all for sure'], a: 0,
@@ -37,7 +37,7 @@ export const leslieDate: Clip = {
       trap: 'far（遠い）から、場所の話と思いやすい。as far as I know はひとまとまり。',
       use: 'As far as I know, the shop is open.（私の知る限り、店は開いてるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'resched', seg: [8.6, 12.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'resched', seg: [7.4, 12.4],
       stem: 'Fill the gap: “___ unusual to reschedule the meeting?”',
       ja: '「___ unusual to reschedule the meeting?」の空所は？',
       choices: ['Would it be', 'Wouldn’t it be', 'Will it be'], a: 0,
@@ -48,6 +48,18 @@ export const leslieDate: Clip = {
       mean: 'Would it be ＝ 〜でしょうか。「ウディッビ」とつながる。ていねいに聞くときの形。',
       trap: 'Wouldn’t なら「ン」が入る。Will なら「ウィル」。「ウディ」なら Would it。',
       use: 'Would it be okay to pay by card?（カードで払っても大丈夫ですか）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flaky', seg: [11.5, 18.6],
+      stem: 'What does “flaky” mean here?',
+      ja: 'ここでの「flaky」はどういう意味？',
+      choices: ['Someone you can’t rely on', 'Someone playing hard to get', 'Someone too nervous to go'], a: 0,
+      choicesJa: ['当てにならない人', 'わざとじらす人', '緊張して行けない人'],
+      cue: '「come off as a little」のあと',
+      line: 'you would come off… a little *flaky*.',
+      said: '会合を延ばすと少し当てにならない人に見える、と母が言う。',
+      mean: 'flaky ＝ 予定や約束が当てにならない。come off as 〜 ＝ 〜に見える。',
+      trap: '日を延ばす＝じらす、と思いやすい。flaky は「約束を守らない」。',
+      use: 'Sorry to be flaky. Can we do Friday?（予定を変えてごめん、金曜でもいい？）' },
 
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'unless', reveals: ['flaky'], seg: [12.0, 21.3], retired: true,
       stem: 'When her mother adds “Unless that’s the impression…”, what is she doing?',
@@ -60,19 +72,7 @@ export const leslieDate: Clip = {
       trap: 'impression を「好印象」と取ると話がずれる。本音は unless の前。',
       use: 'Sure, cancel. Unless you want them mad.（キャンセルしてもいいよ、怒らせたいならね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flaky', seg: [12.0, 21.3],
-      stem: 'What does “flaky” mean here?',
-      ja: 'ここでの「flaky」はどういう意味？',
-      choices: ['Someone you can’t rely on', 'Someone playing hard to get', 'Someone too nervous to go'], a: 0,
-      choicesJa: ['当てにならない人', 'わざとじらす人', '緊張して行けない人'],
-      cue: '「come off as a little」のあと',
-      line: 'you would come off… a little *flaky*.',
-      said: '会合を延ばすと少し当てにならない人に見える、と母が言う。',
-      mean: 'flaky ＝ 予定や約束が当てにならない。come off as 〜 ＝ 〜に見える。',
-      trap: '日を延ばす＝じらす、と思いやすい。flaky は「約束を守らない」。',
-      use: 'Sorry to be flaky. Can we do Friday?（予定を変えてごめん、金曜でもいい？）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [27.0, 37.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [27, 38.8],
       stem: 'What is George’s job?',
       ja: 'ジョージの仕事は？',
       choices: ['A city manager', 'A city council member', 'A park planner'], a: 0,
@@ -84,7 +84,7 @@ export const leslieDate: Clip = {
       trap: 'city council（市議会）は、あとの夕食でレスリーが言う。He’s the のあとを聞く。',
       use: 'He’s the manager here. Ask him.（彼がここの責任者だよ、聞いてみて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'dater', seg: [42.8, 51.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'dater', seg: [43.4, 54.3],
       stem: 'Why doesn’t Leslie date much, says her mother?',
       ja: '母によると、レスリーがあまりデートしないのはなぜ？',
       choices: ['She goes where few men go', 'She is far too busy at work', 'She finds men boring'], a: 0,
@@ -96,7 +96,7 @@ export const leslieDate: Clip = {
       trap: 'あとでレスリー本人が「仕事に集中してる」と言う。ここは母の説明。',
       use: 'You don’t meet many people working from home.（在宅勤務だと出会いがない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'outfit', seg: [59.4, 64.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'outfit', seg: [59.4, 65.8],
       stem: 'What is Leslie planning to wear?',
       ja: 'レスリーは何を着るつもり？',
       choices: ['Something more formal', 'Something more stylish', 'What she has on now'], a: 0,
@@ -119,7 +119,7 @@ export const leslieDate: Clip = {
       trap: 'Leslie と同じく「もっとかたく」と聞きやすい。質問の本音は、次に何を勧めるかで分かる。',
       use: 'Is that what you’re wearing? Maybe a jacket?（それで行くの？上着は？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'blowit', seg: [61.0, 67.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'blowit', seg: [61, 67.7],
       stem: 'What does “blow it” mean here?',
       ja: 'ここでの「blow it」はどういう意味？',
       choices: ['Mess it all up', 'Skip it after all', 'Lose my temper'], a: 0,
@@ -131,7 +131,7 @@ export const leslieDate: Clip = {
       trap: 'blow（吹く）からは意味が分かりにくい。blow it ＝ しくじる、とまとめて覚える。',
       use: 'It’s my one chance. I can’t blow it.（一度きりのチャンス、しくじれない）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'stylish', seg: [61.0, 71.4],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'stylish', seg: [61, 71.9],
       stem: 'What does her mother mean by “Why don’t you try…?”',
       ja: '母の「Why don’t you try…?」はどういう意味？',
       choices: ['Maybe wear something else', 'Why do you dress like that?', 'Your plan sounds good'], a: 0,
@@ -143,7 +143,7 @@ export const leslieDate: Clip = {
       trap: 'why（なぜ）から、理由を聞いていると思いやすい。答えは理由でなく、するかしないか。',
       use: 'Why don’t you try the fish?（魚料理にしてみたら？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'now', reveals: ['zoning'], seg: [70.3, 80.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'now', reveals: ['zoning'], seg: [68.4, 80.2],
       stem: 'Why does Leslie start the dinner with “Now”?',
       ja: 'レスリーが夕食の話を「Now」で始めるのはなぜ？',
       choices: ['To start the main topic', 'To say it starts soon', 'To show she is angry'], a: 0,
@@ -176,7 +176,7 @@ export const leslieDate: Clip = {
       trap: '習った形に合わせて kinds と書きたくなる。書き取りは、言われた音のとおりに。',
       use: 'I like all kinds of music.（いろんな音楽が好き）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'boring', seg: [104.2, 111.8],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'boring', seg: [103.3, 111.8],
       stem: 'How does George feel about Leslie’s questions?',
       ja: 'ジョージはレスリーの質問をどう思っている？',
       choices: ['Happy, it’s refreshing', 'Bored, but being polite', 'Confused by them'], a: 0,
@@ -211,7 +211,7 @@ export const leslieDate: Clip = {
       trap: '前半は仕事の話だったので、まだ規則の話と思いやすい。divorce が何度も出る。',
       use: 'Can we get back to business?（本題に戻ってもいい？）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'mother', seg: [116.0, 123.8],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'mother', seg: [116, 124.1],
       stem: 'What did Leslie’s mother tell George?',
       ja: 'レスリーの母はジョージに何と言った？',
       choices: ['Leslie doesn’t date much', 'Leslie works very late', 'Leslie is very picky'], a: 0,
@@ -223,7 +223,7 @@ export const leslieDate: Clip = {
       trap: 'あとの「仕事に集中してる」はレスリーの返事。母が言ったのは mentioned のあと。',
       use: 'My sister mentioned you like hiking.（姉から、山歩きが好きだって聞いたよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'what', reveals: ['mother'], seg: [119.6, 131.9],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'what', reveals: ['mother'], seg: [121.1, 133.4],
       stem: 'How does Leslie feel when George asks about dating?',
       ja: 'デートの話をされて、レスリーはどんな気持ち？',
       choices: ['Surprised and uneasy', 'Angry at her mom', 'Happy to talk about it'], a: 0,
@@ -235,7 +235,7 @@ export const leslieDate: Clip = {
       trap: 'mother が聞こえるので、母に怒っていると思いやすい。短い What? は驚きの合図。',
       use: 'Why do you ask? Is something wrong?（なんで聞くの？何かあった？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'nodate', seg: [124.7, 133.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'nodate', seg: [124.7, 135.4],
       stem: 'Since when hasn’t George been dating much?',
       ja: 'ジョージはいつからあまりデートしていない？',
       choices: ['Since his divorce', 'Since he retired', 'Since his kids grew up'], a: 0,
@@ -258,7 +258,7 @@ export const leslieDate: Clip = {
       trap: 'not my kids で連れ子と取りやすい。最後の their で誰の子か決まる。',
       use: 'Not me. My brother.（僕じゃなくて、兄のこと）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'firstdate', reveals: ['boring', 'nodate'], seg: [149.4, 161.3],
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'firstdate', reveals: ['boring', 'nodate'], seg: [149.8, 161.8],
       stem: 'How does George see the evening?',
       ja: 'ジョージはこの夜をどう思っている？',
       choices: ['As their first date', 'As a business dinner', 'As a bad date'], a: 0,
@@ -270,7 +270,7 @@ export const leslieDate: Clip = {
       trap: '謝っているので、失敗したデートと思いやすい。そのあと「何でも話せる」と喜んでいる。',
       use: 'Sorry, I shouldn’t bring up work at dinner.（ごめん、食事中に仕事の話はやめよう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'night', reveals: ['firstdate'], seg: [169.4, 172.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'night', reveals: ['firstdate'], seg: [166.1, 172.9], keep: true,
       stem: 'Type what comes after “Let’s have some more wine.” (6 words)',
       answer: 'see where the night takes us',
       ja: '「Let’s have some more wine.」のあとを書こう（6語）',
@@ -292,7 +292,17 @@ export const leslieDate: Clip = {
       trap: 'neither だけでは向きが不明。直後の he で、彼の年の話と決まる。',
       use: 'Neither are you, my friend.（それはお互いさまだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [180.5, 187.3], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'younger', seg: [179.9, 187.2], keep: true,
+      stem: 'Type what her mother says: “Leslie, you’re ___.” (4 words)', answer: 'not getting any younger',
+      ja: '「Leslie, you’re ___.」の空所を書こう（4語）',
+      cue: '「Leslie」のあと',
+      line: 'Leslie, you’re *not getting any younger*.',
+      said: '「レスリー、あなたももう若くないのよ」と母が言う。',
+      mean: 'not getting any younger ＝ もう若くない。急がせるときの決まり文句。',
+      trap: 'getting の t が軽い「ラ」の音で「ゲリン」になり、any とつながる。4語を数えて書く。',
+      use: 'We’re not getting any younger. Let’s go!（もう若くないんだし、行こう！）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [180.5, 189.6], keep: true,
       stem: 'How old is George, according to Leslie?',
       ja: 'レスリーによると、ジョージは何歳？',
       choices: ['52', '62', '72'], a: 1,
@@ -303,15 +313,5 @@ export const leslieDate: Clip = {
       mean: 'sixty-two ＝ 62。sixty の t は軽く「シクスティ」。',
       trap: '52は「フィフティ」、72は「セブンティ」で始まる。「シクスティ」なら62。',
       use: 'She just turned sixty.（彼女は60歳になったばかり）' },
-
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'younger', seg: [180.5, 185.0], keep: true,
-      stem: 'Type what her mother says: “Leslie, you’re ___.” (4 words)', answer: 'not getting any younger',
-      ja: '「Leslie, you’re ___.」の空所を書こう（4語）',
-      cue: '「Leslie」のあと',
-      line: 'Leslie, you’re *not getting any younger*.',
-      said: '「レスリー、あなたももう若くないのよ」と母が言う。',
-      mean: 'not getting any younger ＝ もう若くない。急がせるときの決まり文句。',
-      trap: 'getting の t が軽い「ラ」の音で「ゲリン」になり、any とつながる。4語を数えて書く。',
-      use: 'We’re not getting any younger. Let’s go!（もう若くないんだし、行こう！）' },
   ]
 };

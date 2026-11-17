@@ -33,7 +33,7 @@ export const aprilGetFired: Clip = {
       mean: 'initiative ＝ 自分から動くこと。言われた通りにしただけで大げさにほめる。',
       trap: 'way to ～ は皮肉にもなるが、ここは本気。返事が、呼ばれて来たと示す。',
       use: 'Way to go! Great job.（やったね！よくできました）' },
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'swamped', seg: [6.3, 15.4],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'swamped', seg: [4.5, 15.5],
       stem: 'Why can’t Chris have lunch with Ann?',
       ja: 'クリスはなぜアンとランチできない？',
       choices: ['He has too much work', 'He isn’t feeling well', 'He has to leave town'], a: 0,
@@ -44,7 +44,7 @@ export const aprilGetFired: Clip = {
       trap: 'unable to enjoy から体調の話と思いやすい。理由は as のあと。',
       use: 'Sorry, I’m swamped this week.（ごめん、今週は手いっぱいで）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'copy', seg: [11.5, 15.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'copy', seg: [11.5, 17.6],
       stem: 'What does April mean by “Copy that”?',
       ja: 'エイプリルの「Copy that」はどういう意味？',
       choices: ['Got it, I’ll do it', 'I’ll write that down', 'I’ll send you a copy'], a: 0,
@@ -55,7 +55,7 @@ export const aprilGetFired: Clip = {
       trap: 'copy から「写す」「コピー」を思いやすい。無線の言葉で「聞こえた、了解」。',
       use: 'Copy that. On my way.（了解、すぐ行く）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'letknow', seg: [18, 21.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'letknow', seg: [17.2, 24.4],
       stem: 'Type: “calling to ___ that Chris can’t make lunch.” (3 words)', answer: 'let you know',
       ja: '「calling to ___ that Chris can’t make lunch.」の空所を書こう（3語）',
       cue: 'calling to のすぐあと。', line: 'I’m just calling to *let you know* that Chris can’t make lunch today.',
@@ -64,7 +64,7 @@ export const aprilGetFired: Clip = {
       trap: 'let と you がくっついて一語に聞こえやすい。語は3つ。',
       use: 'I’ll let you know tomorrow.（明日お知らせします）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'stoodup', reveals: ['call'], seg: [33.2, 38.35],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'stoodup', reveals: ['call'], seg: [31, 39.7],
       stem: 'Why has Ann come to the office?',
       ja: 'アンはなぜ職場に来た？',
       choices: ['To ask why Chris missed lunch', 'To ask why Chris moved lunch', 'To say she can’t come either'], a: 0,
@@ -75,7 +75,7 @@ export const aprilGetFired: Clip = {
       trap: 'stood up（立った）から「延期」などを思いやすい。人を stand up ＝ すっぽかす。',
       use: 'I got stood up last night.（昨日、すっぽかされた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'figured', reveals: ['call'], seg: [33.2, 43.85],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'figured', reveals: ['call'], seg: [35.6, 47.6],
       stem: 'What has Ann figured out?',
       ja: 'アンは何が分かった？',
       choices: ['April never called her', 'Chris doesn’t like her', 'Chris forgot the lunch'], a: 0,
@@ -93,7 +93,7 @@ export const aprilGetFired: Clip = {
       mean: '教科書なら it’s not that。会話では it がそのまま「その理由」を指すこともある。',
       trap: '習った形に直して that と書きたくなる。最後の音は短い it。書き取りは聞こえた語を書く。',
       use: 'Nah, I don’t think that’s it.（いや、それは違うと思う）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'call', seg: [40.45, 48.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'call', seg: [39.2, 50.9],
       stem: 'What does April want Ann to tell Chris?',
       ja: 'エイプリルはアンにクリスへ何と言ってほしい？',
       choices: ['April didn’t call on purpose', 'April forgot and is very sorry', 'April called, but no answer'], a: 0,
@@ -104,7 +104,7 @@ export const aprilGetFired: Clip = {
       trap: 'deliberately を聞き落とすと「忘れた」と思いやすい。',
       use: 'I didn’t do it on purpose!（わざとじゃないよ！）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'noproblem', seg: [55, 59.5],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'noproblem', seg: [54.3, 62.6],
       stem: 'Chris says sorry about lunch. What does Ann say?',
       ja: 'クリスがランチのことを謝る。アンは何と言う？',
       choices: ['It’s okay, no problem', 'She is very angry at him', 'She wants lunch now'], a: 0,
@@ -115,7 +115,7 @@ export const aprilGetFired: Clip = {
       trap: 'not が2回聞こえるので、怒っていると思いやすい。Not at all は「気にしないで」。',
       use: 'Not at all. It’s not a problem.（全然。問題ないよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'cover', reveals: ['call'], seg: [55.3, 64.4],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'cover', reveals: ['call'], seg: [55.3, 65.4],
       stem: 'Why does Ann say nice things about April?',
       ja: 'アンはなぜエイプリルのことをほめる？',
       choices: ['To keep April from being fired', 'April really did say sorry', 'To thank April for the call'], a: 0,
@@ -126,7 +126,7 @@ export const aprilGetFired: Clip = {
       trap: '言葉どおりならエイプリルが謝ったことになる。でも本人が「電話しなかった」と言っている。',
       use: 'She was very sorry about it.（彼女、とても申し訳なさそうだった）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'touch', reveals: ['cover'], seg: [62.5, 67.5],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'touch', reveals: ['cover'], seg: [59.7, 68.2],
       stem: 'How does Chris feel about the flowers?',
       ja: '花のことを聞いて、クリスはどう感じる？',
       choices: ['Pleased with April', 'Sure April is lying', 'Sad he sent none'], a: 0,
@@ -137,7 +137,7 @@ export const aprilGetFired: Clip = {
       trap: '見ている人はうそと知っているので、疑っていると思いやすい。クリスの言葉はほめ言葉。',
       use: 'The candles are a nice touch.（キャンドル、いい工夫だね）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'headed', seg: [69.5, 74],
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'headed', seg: [69, 78.7],
       stem: 'What does “Ann and I are headed out” mean?',
       ja: '「Ann and I are headed out」はどういう意味？',
       choices: ['We’re leaving now', 'We’re going to bed', 'We’re getting angry'], a: 0,
@@ -148,7 +148,7 @@ export const aprilGetFired: Clip = {
       trap: 'head（頭）から別の意味を思いやすい。headed ＝ 向かっている。',
       use: 'I’m headed out. See you tomorrow.（もう出るね。また明日）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'release', seg: [92, 101],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'release', seg: [92, 101.5],
       stem: 'What does the letter ask Chris to do?',
       ja: '手紙はクリスに何を頼んでいる？',
       choices: ['Send April back for good', 'Lend April for a short time', 'Help with an emergency'], a: 0,
@@ -170,7 +170,7 @@ export const aprilGetFired: Clip = {
       trap: '手紙の「返して」が通ったと思いやすいが、クリスは応じていない。',
       use: 'I’m not going to force you.（無理にとは言わないよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'force', seg: [107.7, 114.1],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'force', seg: [107.7, 117.4],
       stem: 'What is Chris telling April with “I’m not gonna force you”?',
       ja: '「I’m not gonna force you」でクリスは何を伝えている？',
       choices: ['She can leave if she wants', 'She is fired right now', 'She must never do this again'], a: 0,
@@ -181,7 +181,7 @@ export const aprilGetFired: Clip = {
       trap: 'didn’t have to do this を叱っていると思いやすいが、「しなくてよかったのに」。',
       use: 'You didn’t have to do that.（そこまでしなくてよかったのに）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [117.3, 123.35],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [114.7, 123.4],
       stem: 'Why does Chris say “Look” here?',
       ja: 'クリスは、なぜここで「Look」と言う？',
       choices: ['To start an honest talk', 'To ask her to look at him', 'To show he is angry'], a: 0,
@@ -192,7 +192,7 @@ export const aprilGetFired: Clip = {
       trap: 'look から「見て」や叱る前ぶれを思いやすい。すぐあとの I get it で前置きと分かる。',
       use: 'Look, I know you’re busy, but…（あのさ、忙しいのは分かるけど…）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'goingback', seg: [123.6, 128.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'goingback', seg: [121.9, 129.3],
       stem: 'Fill the gap: “___ going back to Indianapolis soon.”',
       ja: '「___ going back to Indianapolis soon.」の空所は？',
       choices: ['I’m gonna be', 'I’ve gotta be', 'I might be'], a: 0,
@@ -203,7 +203,7 @@ export const aprilGetFired: Clip = {
       trap: 'gonna と gotta は似ている。真ん中が「ナ」か「ラ」かを聞く。might なら「マイ」。',
       use: 'I’m gonna be late tonight.（今夜は遅くなりそう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'offer', reveals: ['goingback'], seg: [123.6, 128.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'offer', reveals: ['goingback'], seg: [121.9, 129.2],
       stem: 'What does Chris want April to do?',
       ja: 'クリスはエイプリルに何をしてほしい？',
       choices: ['Work for him in Indianapolis', 'Go back to the parks office', 'Find a better job alone'], a: 0,
@@ -214,7 +214,7 @@ export const aprilGetFired: Clip = {
       trap: 'going back をエイプリルのことと思うと「公園課に戻る」に引かれる。戻るのはクリス。',
       use: 'I think you should come with us.（一緒に来たらいいと思う）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'vitamins', reveals: ['offer'], seg: [127.75, 134.25],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'vitamins', reveals: ['offer'], seg: [126.7, 136],
       stem: 'How does April feel about Chris’s offer?',
       ja: 'エイプリルはクリスの誘いをどう思っている？',
       choices: ['Not interested', 'Very excited', 'Scared to move'], a: 0,
@@ -233,7 +233,7 @@ export const aprilGetFired: Clip = {
       mean: '皮肉の形はほめも怒りもせず流し、中の不満「雑用だ」にだけ答えている。皮肉を正しく受け取った返事。',
       trap: '軽い返事なので聞き流したと取りやすい。返事が相手の不満の中身に合っていれば、伝わっている。',
       use: 'Fair point. But think about it.（それはそう。でも考えてみて）' },
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'starts', reveals: ['vitamins'], seg: [133, 138],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'starts', reveals: ['vitamins'], seg: [132.8, 142],
       stem: 'What does “Everybody starts somewhere” mean?',
       ja: '「Everybody starts somewhere」はどういう意味？',
       choices: ['Everyone begins with small jobs', 'Everyone moves away sometime', 'You can start any job'], a: 0,

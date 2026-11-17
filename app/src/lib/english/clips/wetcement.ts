@@ -13,19 +13,7 @@ export const wetCement: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'write', reveals: ['dream'], seg: [6.0, 14.2],
-      stem: 'What does Michael ask everyone?',
-      ja: 'マイケルはみんなに何を聞いている？',
-      choices: ['What to write in the cement', 'Who should write in it first', 'How long it takes to dry'], a: 0,
-      choicesJa: ['セメントに何を書くか', 'だれが最初に書くか', '乾くまでどのくらいか'],
-      cue: '最後の質問。',
-      line: 'Wet cement, outside, it’s drying, fast… *what do I write?*',
-      said: '「外のセメントが乾いていく、急げ。何を書けばいい？」と言う。',
-      mean: 'What do I write? ＝ 何を書けばいい？ 書く中身のアイデアを求めている。',
-      trap: 'drying（乾いていく）が聞こえるので、乾く時間の話と思いやすい。質問は what。',
-      use: 'What do I write here?（ここには何を書けばいいですか）' },
-
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'lost', seg: [6.0, 11.1],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'lost', seg: [3.8, 11.2],
       stem: 'What does a coworker tell Michael at first?',
       ja: '同僚は最初にマイケルに何と言う？',
       choices: ['They don’t understand him', 'They have no ideas', 'They are too busy now'], a: 0,
@@ -37,7 +25,19 @@ export const wetCement: Clip = {
       trap: 'don’t know から「アイデアがない」と思いやすい。分からないのは話の中身。',
       use: 'Sorry, I don’t know what you’re talking about.（ごめん、何の話か分からない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'dream', reveals: ['write'], seg: [10.4, 14.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'write', reveals: ['dream'], seg: [6, 16.3],
+      stem: 'What does Michael ask everyone?',
+      ja: 'マイケルはみんなに何を聞いている？',
+      choices: ['What to write in the cement', 'Who should write in it first', 'How long it takes to dry'], a: 0,
+      choicesJa: ['セメントに何を書くか', 'だれが最初に書くか', '乾くまでどのくらいか'],
+      cue: '最後の質問。',
+      line: 'Wet cement, outside, it’s drying, fast… *what do I write?*',
+      said: '「外のセメントが乾いていく、急げ。何を書けばいい？」と言う。',
+      mean: 'What do I write? ＝ 何を書けばいい？ 書く中身のアイデアを求めている。',
+      trap: 'drying（乾いていく）が聞こえるので、乾く時間の話と思いやすい。質問は what。',
+      use: 'What do I write here?（ここには何を書けばいいですか）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'dream', reveals: ['write'], seg: [8.2, 16.3],
       stem: 'What does “a *lifelong dream*” mean here?',
       ja: '「a lifelong dream」はここではどういう意味？',
       choices: ['Something he always wanted', 'Something he dreamed last night', 'Something that lasts forever'], a: 0,
@@ -49,7 +49,7 @@ export const wetCement: Clip = {
       trap: 'dream から寝て見る夢を思いやすい。ここは「ずっとやりたかったこと」。',
       use: 'Seeing Paris is my lifelong dream.（パリに行くのは昔からの夢）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'initials', seg: [13.5, 17.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'initials', seg: [10.7, 17.1],
       stem: 'What does a coworker suggest first?',
       ja: '同僚が最初に出す案は？',
       choices: ['His initials', 'A picture', 'His handprints'], a: 0,
@@ -61,7 +61,7 @@ export const wetCement: Clip = {
       trap: 'あとで絵や手形の案も出るので混ざりやすい。最初の案は put のすぐあと。',
       use: 'Just put your initials here.（ここにイニシャルだけ書いて）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'credit', reveals: ['initials'], seg: [13.5, 24.15],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'credit', reveals: ['initials'], seg: [13.4, 24.5],
       stem: 'What does “*claim credit* for it” mean here?',
       ja: '「claim credit for it」はここではどういう意味？',
       choices: ['Say he made it', 'Get blamed for it', 'Ask for money for it'], a: 0,
@@ -73,7 +73,7 @@ export const wetCement: Clip = {
       trap: 'credit からクレジット（お金）を思いやすい。credit ＝ 手柄。',
       use: 'She took credit for my idea.（彼女が私のアイデアを自分の手柄にした）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['initials', 'handprints'], seg: [17.0, 61.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['initials', 'handprints'], seg: [17, 61.4],
       stem: 'Which idea does Michael like best?',
       ja: 'マイケルが一番気に入った案はどれ？',
       choices: ['Putting his face in it', 'Making handprints in it', 'Writing his initials in it'], a: 0,
@@ -108,7 +108,7 @@ export const wetCement: Clip = {
       trap: '速さの話や「関係ない」という返しに取りやすい。新しく出た語に注目。',
       use: 'What she means is, we need more time.（つまり、もっと時間が要るってこと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'handprints', seg: [52.2, 56.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'handprints', seg: [51.2, 58.9],
       stem: 'What is the E! story about?',
       ja: 'E! の話は何についての話？',
       choices: ['Stars’ handprints in cement', 'Stars’ footprints in cement', 'Stars’ names in cement'], a: 0,
@@ -120,7 +120,7 @@ export const wetCement: Clip = {
       trap: 'prints だけ聞くと足形かもと思いやすい。前の hand まで聞く。',
       use: 'There are handprints on the window.（窓に手の跡がついてる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'star', seg: [56.6, 59.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'star', seg: [52.4, 61.4],
       stem: 'Fill the gap: “If you were a real star, ___ your face in it.”',
       ja: '空いている所に入る語は？「If you were a real star, ___ your face in it.」',
       choices: ['you’d put', 'you could put', 'you’d have put'], a: 0,
@@ -132,7 +132,7 @@ export const wetCement: Clip = {
       trap: '「ユッ・プッ」なら you’d put、「ユークッ」と「クッ」が入れば you could put、「ユダヴ」と「ァヴ」が入れば you’d have put。',
       use: 'If I were you, I’d ask.（私なら聞いてみる）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'safe', seg: [56.6, 61.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'safe', seg: [56.5, 62.1],
       stem: 'What does the coworker want Michael to do?',
       ja: '同僚はマイケルにどうしてほしい？',
       choices: ['Not do the face idea', 'Do the face idea fast', 'Do the handprints first'], a: 0,
@@ -167,7 +167,7 @@ export const wetCement: Clip = {
       trap: 'immortalize で葬式の話に聞こえやすい。Maybe は前言を引っこめる合図。',
       use: 'Well, maybe not a party, but dinner.（パーティーじゃなくても、夕食なら）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'skin', seg: [76.4, 80.45],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'skin', seg: [73.6, 80.5],
       stem: 'What does “only *skin deep*” mean?',
       ja: '「only skin deep」はどういう意味？',
       choices: ['Only on the outside', 'Deep down inside', 'There from birth'], a: 0,
@@ -213,7 +213,7 @@ export const wetCement: Clip = {
       trap: '孫の話を本心と取りやすい。前置きの否定は、あとの言葉と比べてから信じる。',
       use: 'It’s not about me. Okay, maybe a little.（私の話じゃない。まあ、少しはね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hundred', seg: [95.9, 101.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hundred', seg: [95.9, 105.9], keep: true,
       stem: 'At what age does Michael picture coming back?',
       ja: 'マイケルは何歳でここに戻ってくると思い描いている？',
       choices: ['60', '80', '90', '100'], a: 3,
@@ -225,7 +225,7 @@ export const wetCement: Clip = {
       trap: '「ハンドレッ」なら 100。「シックスティ」なら 60、「エイティ」なら 80、「ナインティ」なら 90。',
       use: 'I want to live to 100.（100歳まで生きたい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'piece', seg: [101.35, 105.05],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'piece', seg: [97.9, 105.9],
       stem: 'Type what he says: “and I can find ___ cement” (3 words)', answer: 'that piece of',
       ja: '書こう：「and I can find ___ cement」（3語）',
       cue: '「find」のあと、3語がつながる。',
@@ -235,7 +235,7 @@ export const wetCement: Clip = {
       trap: 'of が小さく短くなり、2語に聞こえやすい。piece のあとは of が来やすい。',
       use: 'Can I have a piece of cake?（ケーキを一切れもらえる？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'goodfeel', seg: [104.9, 112.9],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'goodfeel', seg: [104.9, 113.7],
       stem: 'How does Michael feel at the end?',
       ja: '最後にマイケルはどんな気持ち？',
       choices: ['Good about it', 'Sorry about it', 'Bored with it'], a: 0,

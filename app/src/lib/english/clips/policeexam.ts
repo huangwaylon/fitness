@@ -51,7 +51,7 @@ export const policeExam: Clip = {
       trap: '離婚の話が出るので、おどしていると思いやすい。その前の pass this test が本音。',
       use: 'You are going to pass this test.（あなたはきっとこのテストに受かる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'code', seg: [12.0, 22.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'code', seg: [11.9, 22.7], keep: true,
       stem: 'Which code does April ask about first?',
       ja: 'エイプリルが最初に聞く番号はどれ？',
       choices: ['35-24', '35-42', '53-42'], a: 1,
@@ -86,7 +86,7 @@ export const policeExam: Clip = {
       trap: '最初が「ファイブ」なら5。次が「サーティ」で、最後が「スリー」なら533。',
       use: 'We’re in room five thirty-three.（533号室です）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'divorce', seg: [32.6, 42.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'divorce', seg: [32.6, 42.6],
       stem: 'Fill the gap: “And if you don’t, ___ divorce you…”',
       ja: 'すき間をうめよう：「And if you don’t, ___ divorce you…」',
       choices: ['I’ll just', 'I’d just', 'I just'], a: 0,
@@ -108,7 +108,17 @@ export const policeExam: Clip = {
       trap: 'on と with は弱く、them と you の役が入れかわりやすい。最後の一言と反応まで聞く。',
       use: 'You’re stuck with me either way.（どっちにしても離れないよ）', retired: true },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'creepy', seg: [45.0, 56.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'road', seg: [46.1, 53.6],
+      stem: 'Type what April says: “I found a dead rabbit on the ___.” (4 words)', answer: 'side of the road',
+      ja: 'エイプリルの言葉を入力：「I found a dead rabbit on the ___.」（4語）',
+      cue: '「rabbit」のあと',
+      line: 'I found a dead rabbit on the *side of the road*',
+      said: '「道ばたで死んだウサギを見つけた」と言う。',
+      mean: 'side of the road ＝ 道ばた。side of the が「サイダザ」とつながる。',
+      trap: 'of と the が小さく短く、side road の2語に聞こえやすい。4語あるか数える。',
+      use: 'He parked on the side of the road.（彼は道ばたに車を止めた）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'creepy', seg: [47.4, 59.1],
       stem: 'How does Andy feel about April’s lucky charm?',
       ja: 'エイプリルのお守りを、アンディはどう思う？',
       choices: ['He loves it a lot', 'He wants to give it back', 'He finds it too sad'], a: 0,
@@ -120,17 +130,7 @@ export const policeExam: Clip = {
       trap: 'creepy から、いやがっていると思いやすい。最後の I love it が本心。',
       use: 'Thank you. I love it.（ありがとう、すごく気に入った）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'road', seg: [47.1, 51.15],
-      stem: 'Type what April says: “I found a dead rabbit on the ___.” (4 words)', answer: 'side of the road',
-      ja: 'エイプリルの言葉を入力：「I found a dead rabbit on the ___.」（4語）',
-      cue: '「rabbit」のあと',
-      line: 'I found a dead rabbit on the *side of the road*',
-      said: '「道ばたで死んだウサギを見つけた」と言う。',
-      mean: 'side of the road ＝ 道ばた。side of the が「サイダザ」とつながる。',
-      trap: 'of と the が小さく短く、side road の2語に聞こえやすい。4語あるか数える。',
-      use: 'He parked on the side of the road.（彼は道ばたに車を止めた）' },
-
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'up', seg: [56.0, 59.0],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'up', seg: [54.1, 59.1],
       stem: 'The officer says, “You’re up.” What does that mean?',
       ja: '係の人が「You’re up」と言う。どういう意味？',
       choices: ['It’s your turn now', 'Please stand up now', 'You’re next after one more'], a: 0,
@@ -154,7 +154,7 @@ export const policeExam: Clip = {
       trap: '名前を聞くので、本人確認と思いやすい。Just to のあとが理由。',
       use: 'Just to make sure, is this seat free?（念のため、この席空いてますか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'yesno', seg: [64.6, 71.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'yesno', seg: [64.6, 71.6],
       stem: 'What kind of answer does the officer want?',
       ja: '係の人は、どんな答えがほしい？',
       choices: ['A simple yes or no', 'His full name', 'A long story about himself'], a: 0,
@@ -190,7 +190,7 @@ export const policeExam: Clip = {
       trap: '係の人が that’s what being a cop’s all about とほめるので、正解と思いやすい。それは皮肉。',
       use: 'He means well, but…（悪気はないんだけど…）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'well', reveals: ['name'], seg: [69.8, 75.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'well', reveals: ['name'], seg: [69.8, 76.8],
       stem: 'Andy starts with “Well”. What does that tell us?',
       ja: 'アンディは「Well」で始める。何が分かる？',
       choices: ['A long answer is coming', 'A quick yes is coming', 'An angry answer is coming'], a: 0,
@@ -202,7 +202,7 @@ export const policeExam: Clip = {
       trap: '「ええ」に似ていて、「はい」と思いやすい。Well のあとは説明が続く。',
       use: 'Well, it’s a little difficult.（えっと、ちょっとむずかしくて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'sono', reveals: ['name'], seg: [71.2, 79.3], keep: true,
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'sono', reveals: ['name'], seg: [71.2, 80.7], keep: true,
       stem: 'Why does the officer say, “So, no?”',
       ja: '係の人はなぜ「じゃあ、いいえ？」と言う？',
       choices: ['Andy says his name is Andrew', 'Andy gives no answer at all', 'No one calls him Andy'], a: 0,
@@ -226,7 +226,7 @@ export const policeExam: Clip = {
       trap: '言い直したので、もう一度聞くと思いやすい。move on は先へ進むこと。',
       use: 'Okay, let’s move on to the next item.（では、次の話に進みましょう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'gun', seg: [83.0, 94.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'gun', seg: [85.3, 97.3],
       stem: 'Why did Andy give the boy his gun?',
       ja: 'アンディはなぜ、男の子に銃をわたした？',
       choices: ['He wanted that as a kid', 'A police officer let him once', 'He can’t say no'], a: 0,
@@ -249,7 +249,7 @@ export const policeExam: Clip = {
       trap: '言葉だけなら褒め言葉に聞こえる。答えの中身と褒め方が合わないときは、皮肉を疑う。',
       use: 'Great, that’s exactly what we needed.（最高、まさに必要だったやつね）', retired: true },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'dad', seg: [97.4, 110.9],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'dad', seg: [105.4, 113.9],
       stem: 'What does “You’re alive?” tell us about Andy’s dad?',
       ja: '「生きてたの？」から、アンディの父親について何が分かる？',
       choices: ['Andy hasn’t seen him in years', 'He was very sick in the hospital', 'He is a police officer'],

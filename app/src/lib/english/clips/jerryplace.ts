@@ -41,7 +41,7 @@ export const jerryPlace: Clip = {
       trap: 'He died? の前の悪口が長いので、記者に怒ったと思いやすい。Sorry, I meant のあとが本当の質問。',
       use: 'Sorry, I meant Tuesday, not Thursday.（すみません、木曜じゃなく火曜のことです）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'frankly', seg: [17.6, 22.55],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'frankly', seg: [16.7, 22.6],
       stem: 'What does “Frankly” tell us here?',
       ja: 'ここでの「Frankly」から何が分かる？',
       choices: ['She’ll say what she thinks', 'She’ll say something kind', 'She’ll change the topic'], a: 0,
@@ -53,7 +53,7 @@ export const jerryPlace: Clip = {
       trap: '前置きなので、やわらかくすると思いやすい。Frankly のあとは強い本音が来る。',
       use: 'Frankly, I liked the first hotel better.（正直、最初のホテルの方がよかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [22.55, 26.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [21.1, 27.9], keep: true,
       stem: 'Type what the reporter says: “comment on Nick Newport ___ today?” (2 words)', answer: 'dying earlier',
       ja: '記者の言葉を入力：「comment on Nick Newport ___ today?」（2語）',
       cue: '名前のすぐあと',
@@ -97,7 +97,7 @@ export const jerryPlace: Clip = {
       trap: 'respect を本心と取りやすい。求めているのは謝罪でなく中止、それも her の分だけ。',
       use: 'Out of respect, let’s skip the speeches.（敬意を込めて、スピーチはなしで）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.4, 93.25], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.4, 94.9], keep: true,
       stem: 'How old was Nick Newport?',
       ja: 'ニック・ニューポートは何歳だった？',
       choices: ['88', '90', '98', '99'], a: 2,
@@ -120,7 +120,7 @@ export const jerryPlace: Clip = {
       trap: '途中の逆接で結論や謝罪と取りやすい。逆接が続くなら、最後まで聞いて決める。',
       use: 'It’s pricey. However, it’s really good.（高い。とはいえ、本当においしい）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'work', seg: [96.5, 103.3], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'work', seg: [96.4, 104.4], keep: true,
       stem: 'What did Nick do to a lot of people?',
       ja: 'ニックは多くの人に何をした？',
       choices: ['Put them out of work', 'Took all of their savings', 'Took their homes away'], a: 0,
@@ -132,7 +132,7 @@ export const jerryPlace: Clip = {
       trap: 'a lot of people だけだと、中身を想像でうめやすい。out of work を聞く。',
       use: 'The storm put the shop out of business.（あらしで店がつぶれた）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [103.2, 110.75], keep: true,
+    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [101.6, 107.6], keep: true,
       stem: 'Who does Leslie ask first for advice?',
       ja: 'レスリーが最初に意見を聞くのはだれ？',
       choices: ['Ben', 'Ann', 'April'], a: 0,
@@ -144,7 +144,7 @@ export const jerryPlace: Clip = {
       trap: 'Ben は短く、Okay のすぐあとで聞き落としやすい。よびかけの名前は文の最初か最後に来る。',
       use: 'Okay, Maya, what do you think?（じゃあマヤ、どう思う？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'unfortunate', reveals: ['ben', 'cant'], seg: [103.2, 110.75],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'unfortunate', reveals: ['ben', 'cant'], seg: [103.1, 110.8],
       stem: 'How does Ben feel about Nick’s death?',
       ja: 'ニックの死について、ベンはどう思っている？',
       choices: ['Sorry, but they must go on', 'Very sad and unsure', 'Happy, but quiet about it'], a: 0,
@@ -156,7 +156,7 @@ export const jerryPlace: Clip = {
       trap: 'unfortunate から、とても悲しんでいると思いやすい。but のあとの短く強い文が本当の考え。',
       use: 'It’s unfortunate, but we have to go.（気の毒だけど、行かなきゃ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [105.6, 110.75],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [104.4, 112.4],
       stem: 'Fill the gap: “We ___ stop campaigning.”',
       ja: 'すき間をうめよう：「We ___ stop campaigning.」',
       choices: ['can’t just', 'can just', 'could just'], a: 0,
@@ -168,7 +168,7 @@ export const jerryPlace: Clip = {
       trap: 'can なら「キャン」と短い。could なら「クッ」で始まる。「キャーン」と長く強ければ can’t。',
       use: 'We can’t just leave it here.（ここに置いていくわけにはいかない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.75, 116.1], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.8, 118.6], keep: true,
       stem: 'What does “Not with that attitude” mean?',
       ja: '「Not with that attitude」はどういう意味？',
       choices: ['You can if you believe', 'You should be nicer', 'You’re right, so give up'], a: 0,
@@ -192,7 +192,7 @@ export const jerryPlace: Clip = {
       trap: '最初の No で「やめる」と思いやすい。No はアンへの返事で、決めたのは keep campaigning。',
       use: 'We’ll keep going, but quietly.（続けるけど、静かにね）' },
 
-    { id: 'i2', skill: 'marker', level: 'B2', point: 'fine', seg: [113.4, 120.25],
+    { id: 'i2', skill: 'marker', level: 'B2', point: 'fine', seg: [113.4, 120.6],
       stem: 'What does “Okay, fine” mean here?',
       ja: 'ここでの「Okay, fine」はどういう意味？',
       choices: ['All right, I’ll say it', 'I agree with Ben', 'I will try a lot harder'], a: 0,
@@ -203,6 +203,18 @@ export const jerryPlace: Clip = {
       mean: 'Okay, fine ＝「そこまで言うなら、分かった」。おされて本音を言う前置き。',
       trap: 'fine から賛成や「がんばる」と思いやすい。すぐあとの文がベンと反対なので、本音の前置き。',
       use: 'Okay, fine. I’ll tell you what happened.（分かった、何があったか話すよ）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'apologize', seg: [114.8, 120.3], keep: true,
+      stem: 'Until when does the teammate want Leslie to stop?',
+      ja: 'そのチームの人は、いつまでレスリーにやめてほしい？',
+      choices: ['Until she says sorry to Bobby', 'Until the family has the funeral', 'Until people forget the clip'], a: 0,
+      choicesJa: ['ボビーにあやまるまで', '家族が葬式をするまで', 'みんながその映像を忘れるまで'],
+      cue: '「at least until」のあと',
+      line: 'I think you should stop. *At least until you apologize to Bobby in person.*',
+      said: '「やめるべき。少なくとも、ボビーに直接あやまるまでは」と言う。',
+      mean: 'in person ＝ 本人に会って直接。at least until 〜 ＝「少なくとも〜までは」。',
+      trap: 'ジェンの family という言葉から、葬式と思いやすい。until のあとが条件。',
+      use: 'I’d like to thank you in person.（直接お礼を言いたいです）' },
 
     { id: 'w2', skill: 'who', level: 'B2', point: 'ann', reveals: ['april'], seg: [116.05, 123.65], retired: true,
       stem: 'Who thinks Leslie should stop, at least for now?',
@@ -216,18 +228,6 @@ export const jerryPlace: Clip = {
       trap: 'strongly が耳に残り、エイプリルの意見と思いやすい。with のあとの名前を聞く。',
       use: 'I strongly disagree with that.（それには強く反対です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'apologize', seg: [116.05, 120.25], keep: true,
-      stem: 'Until when does the teammate want Leslie to stop?',
-      ja: 'そのチームの人は、いつまでレスリーにやめてほしい？',
-      choices: ['Until she says sorry to Bobby', 'Until the family has the funeral', 'Until people forget the clip'], a: 0,
-      choicesJa: ['ボビーにあやまるまで', '家族が葬式をするまで', 'みんながその映像を忘れるまで'],
-      cue: '「at least until」のあと',
-      line: 'I think you should stop. *At least until you apologize to Bobby in person.*',
-      said: '「やめるべき。少なくとも、ボビーに直接あやまるまでは」と言う。',
-      mean: 'in person ＝ 本人に会って直接。at least until 〜 ＝「少なくとも〜までは」。',
-      trap: 'ジェンの family という言葉から、葬式と思いやすい。until のあとが条件。',
-      use: 'I’d like to thank you in person.（直接お礼を言いたいです）' },
-
     { id: 'h2', skill: 'humor', level: 'C1', point: 'april', reveals: ['ann'], seg: [120.25, 123.65],
       stem: 'Why does April’s answer get a laugh?',
       choices: ['She takes a strong side in a debate she didn’t hear', 'She backs Ann without having heard what Ann said',
@@ -238,7 +238,7 @@ export const jerryPlace: Clip = {
       mean: '中身を聞かずに反対するのは、意見ではなく「アンに逆らいたいだけ」だから。そのずれが笑い。',
       trap: 'but のあとを正式な意見と取りやすい。前半とセットで、理由のない反対と分かる。',
       use: 'I didn’t read it, but I love it.（読んでないけど、気に入った）', retired: true },
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', seg: [123.9, 139.8],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', seg: [123.9, 140.9],
       stem: 'What does Andy think the team should do?', ja: 'アンディは、チームはどうすべきだと思っている？',
       choices: ['Keep campaigning, no matter what', 'Stop until Leslie says sorry', 'Take a short break first'], a: 0,
       choicesJa: ['何があっても選挙活動を続ける', 'レスリーが謝るまでやめる', 'まず少し休む'],
@@ -261,7 +261,7 @@ export const jerryPlace: Clip = {
       trap: 'Anyone? Everyone? を賛成の確認と聞きやすい。何が欲しいかを聞いている文。',
       use: 'Okay, enough of that. Who wants coffee?（その話はもういい。コーヒー欲しい人？）', retired: true },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'face', reveals: ['call', 'ann'], seg: [142.75, 149.05],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'face', reveals: ['call', 'ann'], seg: [142.5, 151.1],
       stem: 'Why does Leslie say “your beautiful face” to Ann?',
       ja: 'レスリーはなぜアンに「your beautiful face」と言う？',
       choices: ['To say no to her kindly', 'To agree with her idea', 'To ask her for some help'], a: 0,

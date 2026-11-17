@@ -14,7 +14,7 @@ export const ronLeslieLocked: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'locks', seg: [3.7, 9.15], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'locks', seg: [1.4, 9.5], keep: true,
       stem: 'When were the locks on the room put in?',
       ja: 'この部屋の鍵が付けられたのはいつ？',
       choices: ['A year ago', 'Two years ago', 'Ten years ago'], a: 1,
@@ -26,7 +26,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'あとで ten hours が何度も出るので ten に引かれやすい。years の前を聞く。',
       use: 'They put in new locks two years ago.（2年前に新しい鍵を付けたんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['madeup'], seg: [8.9, 37.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['madeup'], seg: [8.9, 39.4],
       stem: 'What is Leslie’s plan to get out?',
       ja: '部屋から出るための、レスリーの作戦は？',
       choices: ['Tell Ben they made up', 'Break the window', 'Talk for ten hours'], a: 0,
@@ -38,7 +38,7 @@ export const ronLeslieLocked: Clip = {
       trap: '本当に話すように聞こえるが、wait a few minutes（数分待つ）でふりと分かる。',
       use: 'Let’s just tell them we worked it out.（解決したって言っちゃおう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'window', seg: [12.0, 16.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'window', seg: [9.9, 15.8],
       stem: 'Why does Leslie stop Ron from punching the window?',
       ja: 'レスリーはなぜ、窓をなぐろうとするロンを止める？',
       choices: ['He will cut his arm', 'The glass is too thick', 'An alarm will ring'], a: 0,
@@ -50,7 +50,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'security から「警報」を思いやすい。続く slice your arm でけがの話と分かる。',
       use: 'Careful, you’ll cut your hand.（気をつけて、手を切るよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bleed', seg: [15.3, 21.2],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bleed', seg: [12.3, 21.5],
       stem: 'What does Ron hate most?',
       ja: 'ロンがいちばんいやなことは？',
       choices: ['Talking about his feelings', 'Waiting a few minutes', 'Cutting his arm open'], a: 0,
@@ -62,7 +62,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'bleed（血が出る）が先に聞こえ、けがの話と思いやすい。than のあとが答え。',
       use: 'I’d rather walk than wait an hour.（1時間待つなら歩くほうがいい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [20.4, 28.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'madeup', seg: [20.4, 27.9],
       stem: 'What does “made up” mean here?',
       ja: 'ここでの「made up」の意味は？',
       choices: ['Became friends again', 'Put on some makeup', 'Made a new plan together'], a: 0,
@@ -85,7 +85,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'for whatever で適当に謝ると聞こえるが、続く heroically で自慢と分かる。',
       use: 'I’m sorry I care so much.（気にかけすぎてごめんね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'stubborn', seg: [36.5, 42.85],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'stubborn', seg: [35.5, 42.9],
       stem: 'Leslie’s story calls Ron stubborn. How does he feel?',
       ja: 'レスリーの話ではロンは頑固。ロンはどう思っている？',
       choices: ['He doesn’t like it', 'He thinks it’s true', 'He thinks it’s funny'], a: 0,
@@ -119,7 +119,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'Fine は「折れた」に聞こえやすい。言い方が極端すぎたら皮肉を疑う。',
       use: 'Fine, it’s all my fault, then.（はいはい、全部私のせいね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'blue', seg: [62.6, 66.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'blue', seg: [62, 68.4],
       stem: 'Type what she says: “decided to ruin it ___ for no good reason.” (4 words)', answer: 'out of the blue',
       ja: '「ruin it」のあとの4語を書こう。',
       cue: '「ruin it」のすぐあと。',
@@ -129,7 +129,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'of と the が小さく短く、「アウラダ」のようにひと続きになる。blue だけはっきり聞こえる。',
       use: 'He called me out of the blue.（彼から突然電話が来た）' },
 
-    { id: 'gowith', skill: 'phrase', level: 'B1', point: 'gowith', seg: [63.5, 68.2],
+    { id: 'gowith', skill: 'phrase', level: 'B1', point: 'gowith', seg: [63.5, 70.6],
       stem: 'What does Ron mean by “Let’s go with that”?',
       ja: 'ロンの「Let’s go with that」の意味は？',
       choices: ['Let’s use that story', 'Let’s leave together now', 'Let’s talk about that'], a: 0,
@@ -141,7 +141,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'go から「一緒に行こう」と思いやすい。ここは「その案を選ぶ」。',
       use: 'I’ll go with the chicken, please.（チキンにします）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [81.9, 88.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [81, 90.7],
       stem: 'What does “I mean” do after “Everything’s different”?',
       ja: '「Everything’s different」のあとの「I mean」の働きは？',
       choices: ['Gives some examples', 'Takes it back', 'Shows she is unsure'], a: 0,
@@ -185,7 +185,7 @@ export const ronLeslieLocked: Clip = {
       trap: '文法どおり choose to sit と書きたくなる。相手の言葉を借りた返事は形が崩れやすい。聞こえない to は足さない。',
       use: 'Pizza or pasta? — I choose pizza.（ピザかパスタ？ピザにする）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'whydont', seg: [107.2, 111.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'whydont', seg: [107.1, 112.3],
       stem: 'Fill the gap: “Come on, Ron. ___ just…”',
       ja: '空いている所に入る言葉は？',
       choices: ['Why don’t we', 'Why don’t you', 'Why won’t you'], a: 0,
@@ -208,7 +208,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'sit here だけ聞くと誘いに聞こえる。同じ二語をくり返すのは「話さない」の意思表示。',
       use: 'Let’s just… — Go home? Yes, please.（もう…—帰る？賛成）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B2', point: 'bet', seg: [114.3, 124.2],
+    { id: 'a4', skill: 'attitude', level: 'B2', point: 'bet', seg: [114.3, 125],
       stem: 'How sure is Ron that he will win the bet?',
       ja: 'ロンは、かけに勝つ自信がどのくらいある？',
       choices: ['Completely sure', 'A little sure', 'Not sure at all'], a: 0, keep: true,
@@ -220,7 +220,7 @@ export const ronLeslieLocked: Clip = {
       trap: '単語が難しく、迷っているように聞こえやすい。any が何度も続くのは強い自信。',
       use: 'I’ll take that bet.（その賭け、乗った）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'bait', seg: [133.4, 145.2],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'bait', seg: [132.4, 143.5],
       stem: 'Why does Leslie say “wood is stupid”?',
       ja: 'レスリーはなぜ「wood is stupid」と言う？',
       choices: ['To get Ron to talk', 'She really thinks so', 'To tell the others about Ron'], a: 0,
@@ -232,7 +232,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'You guys（みんな）と呼ぶので周りへの話に思いやすい。直前の one word が目的。',
       use: 'Just say one word and I’ll stop.（一言言えばやめるから）' },
 
-    { id: 'wanna', skill: 'sound', level: 'B1', point: 'wanna', seg: [140.5, 145.2],
+    { id: 'wanna', skill: 'sound', level: 'B1', point: 'wanna', seg: [139.7, 145.7],
       stem: 'Fill the gap: “Last chance, Ron. You ___ talk?”',
       ja: '空いている所に入る語は？',
       choices: ['wanna', 'gonna', 'gotta'], a: 0,
@@ -244,7 +244,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'gonna（ガナ）や gotta（ガラ）と似ている。最初が「ワ」なら wanna。',
       use: 'Do you wanna get coffee?（コーヒー飲みに行かない？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mix', seg: [150.6, 158.95],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mix', seg: [150.7, 162.7],
       stem: 'For the mix, what did Leslie ask everyone to do?',
       ja: 'ミックスCDのために、レスリーはみんなに何を頼んだ？',
       choices: ['Choose one song for it', 'Bring one dish to it', 'Sing one song for it'], a: 0,
@@ -256,7 +256,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'barbecue から料理を、song から歌うことを思いやすい。to のあとの動詞を聞く。',
       use: 'Everyone, please choose one song.（みなさん、1曲ずつ選んでください）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'trap', seg: [161.6, 167.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'trap', seg: [161.6, 170.7],
       stem: 'Leslie says her mind is a “steel trap.” What does that mean?',
       ja: '頭が「steel trap」とは、どういう意味？',
       choices: ['She remembers everything', 'She can’t stop thinking', 'She keeps secrets well'], a: 0,
@@ -268,7 +268,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'trap（わな）から「秘密を閉じこめる」と思いやすい。直前の remember が手がかり。',
       use: 'I never forget a face.（人の顔は絶対に忘れない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', seg: [169.5, 180.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', seg: [169.5, 180.9],
       stem: 'What will Leslie do while she sings along?',
       ja: '一緒に歌いながら、レスリーは何をすると言う？',
       choices: ['Look Ron in the eye', 'Turn the music up loud', 'Jump up and down'], a: 0,
@@ -291,7 +291,7 @@ export const ronLeslieLocked: Clip = {
       trap: '長く黙っていたので、レスリーがあきらめたように見える。最後の一言で決まる。',
       use: 'Okay, you win. Five minutes.（分かった、負けたよ。5分だけね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['end'], seg: [213.0, 216.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['end'], seg: [212, 217.5], keep: true,
       stem: 'How long does Ron agree to talk with Leslie?',
       ja: 'ロンはレスリーとどのくらい話すと言う？',
       choices: ['Three minutes', 'Ten minutes', 'Thirty minutes'], a: 0,

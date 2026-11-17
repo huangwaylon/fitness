@@ -26,7 +26,7 @@ export const ronLeslieLunch: Clip = {
       trap: '名前を聞くのを本当の確認と取りやすい。分かっていて聞くのは、おどけた驚きの決まり文句。',
       use: 'Well, look who it is!（あら、誰かと思ったら！）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'busy', seg: [11.6, 23.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'busy', seg: [18.3, 26.3],
       stem: '“Sorry, *this is a crazy day*.” What do we learn about Leslie?',
       ja: '「Sorry, this is a crazy day」から、レスリーについて何が分かる？',
       choices: ['She’s too busy to talk long', 'She’s showing off her new job', 'She’s trying to avoid Ron'], a: 0,
@@ -60,7 +60,7 @@ export const ronLeslieLunch: Clip = {
       trap: '久しぶりの再会なので、寂しさや不満を隠していると取りやすい。答えはあとの本人の言葉にある。',
       use: 'Oh, it’s nothing. Just wanted to chat.（ううん、何でもない。ちょっと話したくて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [22.6, 26.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [21.3, 29.6], keep: true,
       stem: 'When does Ron suggest they have lunch?',
       ja: 'ロンはいつ昼食をと誘う？',
       choices: ['Today', 'Tomorrow', 'Next week'], a: 1,
@@ -72,7 +72,7 @@ export const ronLeslieLunch: Clip = {
       trap: '「お昼に」と聞くと今日の話に思える。間のあとの一語が日にち。',
       use: 'Lunch tomorrow? My treat.（明日お昼どう？ おごるよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'toolong', seg: [26.0, 29.45],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'toolong', seg: [25.5, 31.2],
       stem: 'Fill the gap: “I would love to. It’s been ___.”',
       ja: '空いている所に入る語は？「I would love to. It’s been ___.」',
       choices: ['too long', 'so long', 'that long'], a: 0,
@@ -84,7 +84,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'so long も同じ意味でよく使う。最初の音「トゥ」と「ソ」を聞く。',
       use: 'Great to see you! It’s been too long.（会えてうれしい！ 久しぶりだね）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'seeyou', seg: [28.5, 32],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'seeyou', seg: [27.9, 32.9],
       stem: 'Leslie says, “Excellent. *See you then*.” What does she mean?',
       ja: 'レスリーの「Excellent. See you then.」はどういう意味？',
       choices: ['See you at that time', 'See you some other day', 'I can’t see you then'], a: 0,
@@ -96,7 +96,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'then を「それから」と思いやすい。日時を決めたあとの then は「その時に」。',
       use: 'Seven o’clock? Great, see you then.（7時？ いいね、じゃあその時に）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vote', seg: [31.8, 37.15],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vote', seg: [31.8, 38.7],
       stem: 'Why does Leslie have to go to Washington?',
       ja: 'レスリーはなぜワシントンに行かなければならない？',
       choices: ['To get ready for a vote', 'To vote there herself', 'To have lunch with Randy'], a: 0,
@@ -108,7 +108,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'voting から本人の投票と思いやすい。投票するのは議会。to prep が目的。',
       use: 'I need an hour to prep.（準備に1時間ください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'kids', seg: [41.5, 47],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'kids', seg: [41.5, 48.7],
       stem: 'What does Leslie ask her husband to do?',
       ja: 'レスリーは夫に何を頼む？',
       choices: ['Pick up the kids', 'Book her a flight', 'Make them some lunch'], a: 0,
@@ -120,7 +120,7 @@ export const ronLeslieLunch: Clip = {
       trap: '直前に first flight（一番早い便）と言うので、飛行機の予約と思いやすい。それは別の人への指示。',
       use: 'Can you pick me up at the station?（駅に迎えに来てくれる？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'stoodup', seg: [47.1, 56.45],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'stoodup', seg: [47.1, 58.8],
       stem: '“Ron, I *stood you up* for lunch.” What does Leslie mean?',
       ja: '「I stood you up for lunch」とはどういう意味？',
       choices: ['She didn’t show up', 'She came late to it', 'She left it early'], a: 0,
@@ -132,7 +132,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'stood up（立った）と思いやすい。人が間に入ると「すっぽかす」。',
       use: 'I can’t believe he stood me up.（彼にすっぽかされた）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'calm', reveals: ['busy'], seg: [51.2, 58.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'calm', reveals: ['busy'], seg: [51.2, 61.3],
       stem: 'How does Ron feel about being stood up?',
       ja: 'すっぽかされたことを、ロンはどう思っている？',
       choices: ['He understands why', 'He is still hurt', 'He finds it silly'], a: 0,
@@ -155,7 +155,7 @@ export const ronLeslieLunch: Clip = {
       trap: '謝罪や「その後」の話と思いやすいが、隠れた理由を掘る合図。',
       use: 'Is there more to the story?（それだけじゃないでしょ？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'job', seg: [71.0, 77.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'job', seg: [70.6, 78.7],
       stem: 'What was Ron going to ask Leslie for?',
       ja: 'ロンはレスリーに何を頼むつもりだった？',
       choices: ['A job on her team', 'Help to quit his job', 'Money for a company'], a: 0,
@@ -167,7 +167,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'job から「辞める」話と思いやすい。ask you for のあとが頼みの中身。',
       use: 'Can I ask you for a favor?（お願いがあるんだけど）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dirty', seg: [75.5, 81.3],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dirty', seg: [74.5, 82.4],
       stem: '“Just saying it out loud *feels dirty*.” How does Ron feel?',
       ja: '「口に出すだけで汚れた気分」。ロンはどんな気持ち？',
       choices: ['He hates saying it', 'He feels guilty about it', 'He is nervous about it'], a: 0,
@@ -179,7 +179,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'dirty を「悪いことをした」と思うと罪の意識に聞こえる。何の直後に言ったかで分かる。',
       use: 'Just saying it makes me sad.（口にするだけで悲しくなる）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'fine', seg: [95.0, 102.1],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'fine', seg: [93, 103.2],
       stem: 'Leslie says sorry. Ron answers, “*Honestly*, Leslie, *it’s fine*.” Meaning?',
       ja: '謝られたロンの「Honestly, Leslie, it’s fine」はどういう意味？',
       choices: ['She doesn’t need to feel bad', 'He is still hurt inside', 'He doesn’t want to talk'], a: 0,
@@ -191,7 +191,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'it’s fine は「本当は怒ってる」の言い方にもなる。続く説明で本心と分かる。',
       use: 'Honestly, it’s no big deal.（ほんとに、大したことないよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'should', seg: [97.3, 100.35],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'should', seg: [96.8, 102.7],
       stem: 'Type what Leslie says: “I ___ a better friend to you.” (3 words)', answer: 'should have been',
       ja: 'レスリーの言葉を書こう：「I ___ a better friend to you.」（3語）',
       cue: '「so sorry」のあと。',
@@ -246,7 +246,7 @@ export const ronLeslieLunch: Clip = {
       trap: '辞めたこと自体は「もう決まっていた」。悔やむのは、そのあとのこと。',
       use: 'Thanks for the heads-up.（前もって教えてくれてありがとう）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'run', seg: [133.6, 142.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'run', seg: [133.6, 145.6],
       stem: 'Ron says, “*I had a good run here*.” What does he mean?',
       ja: '「I had a good run here」とはどういう意味？',
       choices: ['It went well for years', 'He ran the office very well', 'He left at the right time'], a: 0,
@@ -258,7 +258,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'run を「経営する」と思いやすい。a good run は「好調な期間」。',
       use: 'We had a good run.（いい時期だったね）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'friends', seg: [138.0, 147.5],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'friends', seg: [137.2, 148.3],
       stem: 'What was the real reason Ron left, it seems?',
       ja: 'ロンが辞めた本当の理由は何らしい？',
       choices: ['His friends were gone', 'He hated his work', 'He had done enough'], a: 0,
@@ -270,7 +270,7 @@ export const ronLeslieLunch: Clip = {
       trap: 'a good run（いい時期）から、やり切ったと思いやすい。But のあとに本音が来る。',
       use: 'It wasn’t the same without you.（君がいないと違ったよ）' },
 
-    { id: 'mk1', skill: 'marker', level: 'B2', point: 'well', seg: [143.0, 150.3],
+    { id: 'mk1', skill: 'marker', level: 'B2', point: 'well', seg: [143, 151.3],
       stem: 'Why does Leslie say “Yeah, well” here?',
       ja: 'レスリーは、なぜここで「Yeah, well」と言う？',
       choices: ['To agree, then offer a fix', 'To agree, then say goodbye', 'To doubt him and argue'], a: 0,

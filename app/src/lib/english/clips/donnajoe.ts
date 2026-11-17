@@ -15,7 +15,7 @@ export const donnaJoe: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'askfavor', seg: [0, 7.0],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'askfavor', seg: [0, 7.9],
       stem: 'Ron asks Donna for “a favor.” What does he want?',
       ja: 'ロンはドナに「a favor」を頼む。何を求めている？',
       choices: ['Her help with something', 'A date with her', 'Her advice on love'], a: 0,
@@ -27,7 +27,7 @@ export const donnaJoe: Clip = {
       trap: 'favor から「好み・ひいき」を思いやすい。ここは「頼みごと」。',
       use: 'Can I ask you a favor?（ちょっとお願いしてもいい？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'favor', seg: [17.5, 27.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'favor', seg: [17.5, 29.2],
       stem: 'What does Ron need Donna’s help with?',
       ja: 'ロンは、何をドナに手伝ってほしい？',
       choices: ['Make costumes for kids', 'Write a show on history', 'Set up a school concert'], a: 0,
@@ -48,7 +48,7 @@ export const donnaJoe: Clip = {
       trap: '覚えた形の a を書きたくなるが、聞こえたのは this。書き取りは音どおりに。',
       use: 'Can you do me a solid?（ちょっと頼まれてくれる？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'eyeout', seg: [28.4, 32.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'eyeout', seg: [28.4, 36.1],
       stem: 'Type it: “You’re gonna have to ___ for my ex.” (4 words)', answer: 'keep an eye out',
       ja: '「You’re gonna have to ___ for my ex.」の4語を書こう。',
       cue: 'have to のあと、4語がひと続きに。',
@@ -58,7 +58,7 @@ export const donnaJoe: Clip = {
       trap: 'an は弱く、eye と out もつながるので、語の数を手がかりに区切る。',
       use: 'Keep an eye out for our bus.（バスが来ないか見ててね）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'music', seg: [31.5, 37.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'music', seg: [28.7, 37.5],
       stem: 'What does Joe teach at the school?',
       ja: 'ジョーは学校で何を教えている？',
       choices: ['Music', 'Art', 'Science'], a: 0,
@@ -81,7 +81,7 @@ export const donnaJoe: Clip = {
       trap: '「理解する」は「検討します」のような保留に聞こえやすい。硬くても agree は了解。',
       use: 'Deal. Consider it done.（了解、任せといて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'blackmail', seg: [67.3, 74.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'blackmail', seg: [67.3, 77.2],
       stem: 'Why does Donna take a picture of Ron?',
       ja: 'ドナはなぜロンの写真を撮る？',
       choices: ['To use it against him', 'To show his daughter', 'To put it online'], a: 0,
@@ -93,7 +93,7 @@ export const donnaJoe: Clip = {
       trap: '小学校の写真なので、娘に見せると思いやすい。in case のあとが理由。',
       use: 'Take an umbrella, just in case.（念のため傘を持って）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'oclock', seg: [74.2, 77.2],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'oclock', seg: [73.5, 78.9],
       stem: 'Right after “that’s Joe,” what does Donna tell Ron?',
       ja: '「that’s Joe」のすぐあと、ドナはロンに何を伝える？',
       choices: ['He’s straight ahead', 'He’s off to the right', 'He’s coming at noon'], a: 0,
@@ -116,7 +116,7 @@ export const donnaJoe: Clip = {
       trap: 'associate を assistant と聞くと謙遜の冗談に聞こえる。硬すぎる言葉が笑い。',
       use: 'This is Ken, my coworker.（同僚のケンです）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'face', seg: [90.0, 96.0],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'face', seg: [87.9, 96.6],
       stem: 'What does “put a face to the name” mean?',
       ja: '「put a face to the name」はどういう意味？',
       choices: ['Finally meet in person', 'Draw someone’s face', 'Forget someone’s name'], a: 0,
@@ -128,7 +128,7 @@ export const donnaJoe: Clip = {
       trap: 'face から顔を描く話と思いやすい。名前と顔がつながった、という意味。',
       use: 'Nice to finally put a face to the name.（やっとお会いできてうれしいです）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'hesitate', seg: [100.5, 106.0],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'hesitate', seg: [99.9, 107.9],
       stem: 'What does Joe mean by “do not hesitate to ask”?',
       ja: 'ジョーの「do not hesitate to ask」はどういう意味？',
       choices: ['Feel free to ask me', 'Don’t ask me anything', 'Ask me later, not now'], a: 0,
@@ -140,7 +140,7 @@ export const donnaJoe: Clip = {
       trap: 'not が聞こえて「聞かないで」と思いやすい。not は hesitate（ためらう）にかかる。',
       use: 'Please don’t hesitate to contact me.（遠慮なくご連絡ください）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'onto', seg: [101.4, 109.5],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'onto', seg: [101.4, 111.6],
       stem: 'How does Ron answer Joe’s kind offer?',
       ja: 'ジョーの親切な申し出に、ロンはどう返す？',
       choices: ['With a warning', 'With a thank-you', 'With a joke'], a: 0,
@@ -164,7 +164,7 @@ export const donnaJoe: Clip = {
       trap: 'リズムのある言い方なので、歌や遊びに聞こえやすい。closed や still が目的を示す。',
       use: 'Okay, everyone, eyes on me.（はい、みんなこっちを見て）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wellplayed', seg: [133.8, 136.85],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wellplayed', seg: [132.8, 140.5],
       stem: 'How does Ron react to Joe’s chant?',
       ja: 'ジョーの唱え歌に、ロンはどう反応する？',
       choices: ['He praises it', 'He laughs at it', 'He gets angry'], a: 0,
@@ -176,7 +176,7 @@ export const donnaJoe: Clip = {
       trap: '子ども向けの歌なので皮肉に聞こえやすい。皮肉なら茶化す言葉が続く。',
       use: 'Well played. You got me.（うまいね、一本取られた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'melody', seg: [136.4, 141.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'melody', seg: [135.4, 141.9],
       stem: 'According to Joe, what do girls that age respond well to?',
       ja: 'ジョーによると、あの年の女の子たちは何によく反応する？',
       choices: ['Melody and rhyme', 'Music and movement', 'Rhythm and rules'], a: 0,
@@ -188,7 +188,7 @@ export const donnaJoe: Clip = {
       trap: 'rhyme は rhythm と、melody は music と取り違えやすい。to のあとの2語を拾う。',
       use: 'Kids respond well to music.（子どもは音楽によく反応する）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'view', reveals: ['onto', 'honestly'], seg: [150.0, 180.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'view', reveals: ['onto', 'honestly'], seg: [150, 180.5],
       stem: 'What does Ron think of Joe in the end?',
       ja: '最後に、ロンはジョーをどう思っている？',
       choices: ['He really likes him', 'He doesn’t trust him', 'He thinks he’s boring'], a: 0,
@@ -200,7 +200,7 @@ export const donnaJoe: Clip = {
       trap: '最初に「お見通しだ」と警告したので、信用していないと思いやすい。最後の I like Joe。',
       use: 'He grew on me.（だんだん好きになった）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'honestly', reveals: ['view'], seg: [168.6, 173.4],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'honestly', reveals: ['view'], seg: [167.6, 174],
       stem: 'Why does Ron say “I honestly don’t care, but”?',
       ja: 'ロンは、なぜ「I honestly don’t care, but」と言う？',
       choices: ['To give his opinion anyway', 'To say he won’t talk', 'To give some bad news'], a: 0,
@@ -212,7 +212,7 @@ export const donnaJoe: Clip = {
       trap: 'just gonna say it は悪口の前にも使うので身構えやすい。前置きのあとの中身で決める。',
       use: 'Not my business, but I’ll say it.（余計なお世話だけど、言わせて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'qualities', reveals: ['view'], seg: [171.9, 177.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'qualities', reveals: ['view'], seg: [171.9, 180.5],
       stem: 'How does Ron describe Joe to Donna?',
       ja: 'ロンはジョーをどんな人だと言う？',
       choices: ['Nice, smart and patient', 'Clever with his tools', 'Nice but too eager'], a: 0,
@@ -246,7 +246,7 @@ export const donnaJoe: Clip = {
       trap: '自分の話や昔の恨みと取りやすいが、主語はずっと he。文句の形で長所を並べたら笑い。',
       use: 'The worst part? He’s too nice.（最悪なのは？優しすぎること）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'drama', seg: [196.1, 201.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'drama', seg: [195.1, 202.5],
       stem: 'What does Ron tell Donna about her life?',
       ja: 'ロンは、ドナの生活について何と言う？',
       choices: ['Calm can be happiness', 'She needs more fun', 'She should live alone'], a: 0,
@@ -258,7 +258,7 @@ export const donnaJoe: Clip = {
       trap: '前半だけだと「一人で好きに」と聞こえる。but のあとが本音。',
       use: 'Do what you want, but think it over.（好きにすればいい。でもよく考えて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'tire', seg: [201.0, 211.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'tire', seg: [201, 211.6],
       stem: 'What did Joe do for Donna without asking?',
       ja: 'ジョーは、頼まれずにドナに何をした？',
       choices: ['Fixed her flat tire', 'Took her car to a garage', 'Called a garage for her'], a: 0,
@@ -282,7 +282,7 @@ export const donnaJoe: Clip = {
       trap: '条件の話が長いので、断っているように聞こえる。最後の誘いで決める。',
       use: 'You can take me to lunch Sunday.（日曜にランチおごってね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [215.4, 221.0],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [213.4, 221.6],
       stem: 'How long does Donna say she sometimes disappears for?',
       ja: 'ドナは、ときどきどのくらいいなくなると言う？',
       choices: ['An hour or two', 'A day or two', 'A week or two'], a: 1, keep: true,
@@ -294,7 +294,7 @@ export const donnaJoe: Clip = {
       trap: 'for a の a は弱い。day は「デイ」、hour は「アウア」、week は「ウィーク」。',
       use: 'I’ll be gone for a day or two.（1、2日留守にするね）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'pindown', seg: [221.5, 228.3],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'pindown', seg: [221.5, 230.8],
       stem: 'What does Donna ask Joe not to do?',
       ja: 'ドナは、ジョーに何をしないでと頼む？',
       choices: ['Rush things too fast', 'Ask where she goes', 'Make her quit hobbies'], a: 0,
@@ -306,7 +306,7 @@ export const donnaJoe: Clip = {
       trap: '直前の「1、2日いなくなる」から、行き先の報告と思いやすい。too fast は時期の話。',
       use: 'Let’s not rush things.（あせらずにいこう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'someone', seg: [252.6, 265.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'someone', seg: [255.1, 266.2],
       stem: 'Who does Donna mean by “someone” changing?',
       ja: '良い方に変わった「someone」とは誰のこと？',
       choices: ['Ron', 'Joe', 'Donna herself'], a: 0,
@@ -318,7 +318,7 @@ export const donnaJoe: Clip = {
       trap: '直前がジョーとの食事の話なので、ジョーの事だと思いやすい。言い直しの you を聞く。',
       use: 'I wasn’t talking about her. I meant you.（彼女じゃなくて、君の事だよ）' },
 
-    { id: 'h3', skill: 'humor', level: 'B1', point: 'takeback', reveals: ['someone'], seg: [265.4, 270.6],
+    { id: 'h3', skill: 'humor', level: 'B1', point: 'takeback', reveals: ['someone'], seg: [263.9, 271.7],
       stem: 'What does Ron say to Donna’s kind words?',
       ja: 'ドナのほめ言葉に、ロンは何と言う？',
       choices: ['Take that back', 'Thank you so much', 'That’s very true'], a: 0,
@@ -330,7 +330,7 @@ export const donnaJoe: Clip = {
       trap: '「いえいえ」の謙遜と思いやすい。take that back は悪口を取り消させる言い方。',
       use: 'Take that back! I’m not old.（取り消して！年寄りじゃない）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'youdbe', seg: [270.6, 276.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'youdbe', seg: [270.3, 277.8],
       stem: 'Fill the gap: “Did you think two years ago ___ playing matchmaker?”',
       ja: '「…two years ago ___ playing matchmaker」の空所は？',
       choices: ['you’d be', 'you’d ever be', 'you could be'], a: 0,

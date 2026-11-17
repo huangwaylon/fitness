@@ -18,7 +18,7 @@ export const dwightPunch: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'provoked', seg: [0, 3.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'provoked', seg: [0, 3.7],
       stem: 'When would Dwight fight women or children?', ja: 'ドワイトは、どんなとき女性や子どもとも戦う？',
       choices: ['Only if they start it', 'Never, no matter what', 'Only if they are armed'], a: 0,
       choicesJa: ['向こうから仕掛けてきたときだけ', 'どんなときも絶対にしない', '武器を持っているときだけ'],
@@ -29,7 +29,7 @@ export const dwightPunch: Clip = {
       trap: 'No women or children で止めると、絶対しないと思いやすい。最後の unless が例外。',
       use: 'No refunds, unless the item is damaged.（破損品以外は返金なし）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', seg: [5.4, 35.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', seg: [5.4, 37.6],
       stem: 'What does Michael keep saying about himself?', ja: 'マイケルは自分のことを何度も何と言う？',
       choices: ['He could beat Dwight', 'Dwight is much stronger', 'He never fights'], a: 0,
       choicesJa: ['ドワイトに勝てる', 'ドワイトの方がずっと強い', '自分はケンカをしない'],
@@ -53,7 +53,7 @@ export const dwightPunch: Clip = {
       trap: '先の friends を Michael の理由と取りやすい。Because が答え。',
       use: 'I’d beat you at tennis any day.（テニスならいつでも勝てる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'friends', seg: [8.9, 11.9],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'friends', seg: [5.8, 13.5],
       stem: 'Fill the gap in Dwight’s reply: “___ friends.”', ja: 'ドワイトの返事の空所は？ “___ friends.”',
       choices: ['’Cause we’re', 'Of course we’re', '’Cause we were'], a: 0,
       choicesJa: ['だって〜だから', 'もちろん〜だ', 'だって〜だったから'],
@@ -64,7 +64,7 @@ export const dwightPunch: Clip = {
       trap: 'Of course なら「オブコース」と長い。we were なら「ワー」が2回。短い「カズウィア」なら ’Cause we’re。',
       use: 'I’ll go, ’cause you asked.（行くよ、頼まれたから）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'after', seg: [15.4, 22.6],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'after', seg: [15.4, 22.7],
       stem: 'When did Michael learn they were black belts?', ja: 'マイケルは、相手が黒帯だといつ知った？',
       choices: ['After the fight', 'By how they hit', 'Before the fight'], a: 0,
       choicesJa: ['ケンカのあと', '殴られ方で分かった', 'ケンカの前'],
@@ -75,7 +75,7 @@ export const dwightPunch: Clip = {
       trap: 'They told me で止めると、前に聞いたと思いやすい。最後の after まで待つ。',
       use: 'I only found out after.（あとになって知った）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [22.2, 29.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', seg: [20.3, 32.3],
       stem: 'Why does Michael say “See,” here?', ja: 'マイケルはなぜ、ここで「See,」と言う？',
       choices: ['To start his reason', 'To ask if they can see', 'To show he is surprised'], a: 0,
       choicesJa: ['理由を話し始めるため', '見えるか聞くため', '驚きを示すため'],
@@ -86,7 +86,7 @@ export const dwightPunch: Clip = {
       trap: 'see から「見る」「分かる？」と思いやすい。文の頭の See, は説明の前置き。',
       use: 'See, I grew up in a small town.（というのも、小さな町で育ったから）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'crowd', seg: [22.2, 29.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'crowd', seg: [22.2, 32.3],
       stem: 'What does “run with a tough crowd” mean?', ja: '“run with a tough crowd” はどういう意味？',
       choices: ['Spend time with rough people', 'Train with street fighters', 'Run a fighting club'], a: 0,
       choicesJa: ['荒っぽい連中とつるむ', 'ストリートファイターと練習する', 'ケンカのクラブを経営する'],
@@ -97,7 +97,7 @@ export const dwightPunch: Clip = {
       trap: 'run を「走る」「経営する」と思いやすい。run with ＋人は「つき合う」。',
       use: 'He runs with the wrong crowd.（彼は悪い仲間とつるんでる）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'lucky', seg: [22.2, 35.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'lucky', seg: [25.5, 36],
       stem: 'How does Michael tell his old-crowd story?', ja: 'マイケルは昔の仲間の話を、どんなふうに話す？',
       choices: ['Proudly, showing off', 'Sadly, with regret', 'Angrily, as a warning'], a: 0,
       choicesJa: ['得意げに、自慢して', '悲しそうに、後悔して', '怒って、警告として'],
@@ -108,7 +108,7 @@ export const dwightPunch: Clip = {
       trap: 'lucky I got out（抜けられてよかった）を後悔だと思いやすい。最後の一文は自慢。',
       use: 'Nobody messes with my sister.（妹には誰も手を出せない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'theory', seg: [39.95, 47.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'theory', seg: [37.1, 47.5],
       stem: 'What does Michael mean by “In theory, I have”?', ja: 'マイケルの “In theory, I have” はどういう意味？',
       choices: ['Not really, not yet', 'Yes, all done', 'He can’t really remember'], a: 0,
       choicesJa: ['本当はまだ', 'はい、全部終わった', '覚えていない'],
@@ -134,7 +134,7 @@ export const dwightPunch: Clip = {
       trap: 'Yes に合わせてお礼や段取りで返しやすい。返事は言葉の形でなく実際の状態に。some は書類の数ではない。',
       use: 'So that’s a no, then?（つまり、まだってこと？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tees', seg: [43, 47.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tees', seg: [42.7, 47.7],
       stem: 'What does “cross some T’s and dot some I’s” mean?', ja: '“cross some T’s and dot some I’s” はどういう意味？',
       choices: ['Finish small details', 'Fix spelling mistakes', 'Learn the alphabet'], a: 0,
       choicesJa: ['細かいところを仕上げる', 'つづりのまちがいを直す', 'アルファベットを習う'],
@@ -160,7 +160,7 @@ export const dwightPunch: Clip = {
       trap: 'best friends を前提にじゃれ合いと取りやすい。But のあとの本音で、誰に何を伝えるかが決まる。',
       use: 'Just so you know, I notice these things.（念のため、ちゃんと見てるからね）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'dentist', seg: [70.7, 80.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'dentist', seg: [74.3, 86.3],
       stem: 'What does Michael say about some dentist appointments?', ja: 'マイケルは、一部の歯医者の予約について何と言う？',
       choices: ['They are fake excuses', 'They make people late', 'They are real but too many'], a: 0,
       choicesJa: ['うその口実', '人を遅刻させる', '本物だけど多すぎる'],
@@ -171,7 +171,7 @@ export const dwightPunch: Clip = {
       trap: '前の coming in late に引っぱられやすい。that aren’t のあとの同じ言葉で「名前だけ」と分かる。',
       use: 'It was a meeting that wasn’t really a meeting.（名ばかりの会議だった）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'manicure', seg: [84.35, 89],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'manicure', seg: [82.9, 90.1],
       stem: 'Fill the gap: “I ___, ’cause, uh, I just got a manicure.”', ja: '空所に入るのは？ “I ___, ’cause, uh, I just got a manicure.”',
       choices: ['can’t', 'couldn’t', 'won’t'], a: 0,
       choicesJa: ['できない', 'できなかった', 'しない'],
@@ -182,7 +182,7 @@ export const dwightPunch: Clip = {
       trap: 't が消えると、どれも「〜ン」で終わる。最初の母音「キャ」と、一拍かどうかで聞き分ける。',
       use: 'I can’t, I’m driving tonight.（無理なんだ、今夜は運転するから）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'manicure', seg: [84.35, 89],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'manicure', seg: [82.9, 90.1],
       stem: 'Why is “I just got a manicure” said here?', ja: 'ここではなぜ「I just got a manicure」と言う？',
       choices: ['To say no with an excuse', 'To say yes, but later', 'To ask Michael to wait'], a: 0,
       choicesJa: ['理由をつけて断るため', 'あとでならいいと言うため', 'マイケルに待ってと頼むため'],
@@ -193,7 +193,7 @@ export const dwightPunch: Clip = {
       trap: '最後の so… を「ちょっと待って」と思いやすい。I can’t で始まれば断り。',
       use: 'I can’t, I just washed my hair.（無理、髪洗ったばかりだから）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'taunt', seg: [95.4, 120.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'taunt', seg: [95.4, 120.9],
       stem: 'Why does Dwight finally agree to punch Michael?', ja: 'ドワイトはなぜ、最後にマイケルを殴ることにする？',
       choices: ['Michael keeps calling him weak', 'Michael orders him to', 'Michael says he can take it'], a: 0,
       choicesJa: ['弱虫と言われ続けたから', '命令されたから', '平気だと言われたから'],
@@ -204,7 +204,7 @@ export const dwightPunch: Clip = {
       trap: 'マイケルが殴られたがっているので、命令だと思いやすい。直前の Dwight is a wuss を聞く。',
       use: 'Fine, you asked for it.（いいよ、そっちが言ったんだからね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'worthless', seg: [96.9, 101.55],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'worthless', seg: [95.9, 103.9],
       stem: 'Type what Michael says: “Well, that would be ___.” (3 words)', ja: '書こう：“Well, that would be ___.”（3語）',
       answer: 'kind of worthless',
       cue: '「would be」のあと',
@@ -236,17 +236,6 @@ export const dwightPunch: Clip = {
       trap: '年齢の話が出たあとなので、何歳かを聞いたと思いやすい。belt を聞く。',
       use: 'What level are you?（どのレベル？）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'armageddon', seg: [105.3, 115.6],
-      stem: 'Why did Dwight cry that night, he says?', ja: 'ドワイトによると、あの夜泣いたのはなぜ？',
-      choices: ['It began to snow at midnight', 'The film ended at midnight', 'He was alone that night'], a: 0,
-      choicesJa: ['夜中の12時に雪が降り出した', '映画が夜中の12時に終わった', 'その夜は一人だった'],
-      cue: '「That was because」のあと',
-      line: 'That was because it was New Year’s Eve, and *it started to snow at exactly midnight*.',
-      said: '「大みそかで、ちょうど0時に雪が降り始めたからだ」と言い返す。',
-      mean: 'exactly midnight ＝ ちょうど夜12時。映画のせいではないと言いたい。',
-      trap: '映画の話なので、映画が終わったからだと思いやすい。and のあとの snow を聞く。',
-      use: 'It started to rain right at noon.（ちょうど正午に雨が降り出した）' },
-
     // anchor: 105.8–114.6 s "Dwight is a wuss… Michael, I told you. That was because it was New Year's Eve, and it
     //   started to snow at exactly midnight" — "That was because" explains the tears instead of denying them
     // why: Michael ← "I told you" heard as Dwight winning the exchange, so Michael's story falls apart (right
@@ -264,7 +253,18 @@ export const dwightPunch: Clip = {
       trap: '言い返しなので Michael の負けと取りやすい。否定でなく理由を言ったら、事実は認めている。',
       use: 'I only cried because of the music.（泣いたのは音楽のせいだけ）', retired: true },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'harm', seg: [126.8, 133.2],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'armageddon', seg: [108.9, 116.4],
+      stem: 'Why did Dwight cry that night, he says?', ja: 'ドワイトによると、あの夜泣いたのはなぜ？',
+      choices: ['It began to snow at midnight', 'The film ended at midnight', 'He was alone that night'], a: 0,
+      choicesJa: ['夜中の12時に雪が降り出した', '映画が夜中の12時に終わった', 'その夜は一人だった'],
+      cue: '「That was because」のあと',
+      line: 'That was because it was New Year’s Eve, and *it started to snow at exactly midnight*.',
+      said: '「大みそかで、ちょうど0時に雪が降り始めたからだ」と言い返す。',
+      mean: 'exactly midnight ＝ ちょうど夜12時。映画のせいではないと言いたい。',
+      trap: '映画の話なので、映画が終わったからだと思いやすい。and のあとの snow を聞く。',
+      use: 'It started to rain right at noon.（ちょうど正午に雨が降り出した）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'harm', seg: [125.8, 136.7],
       stem: 'How does Dwight sound after the punch?', ja: '殴ったあと、ドワイトはどう聞こえる？',
       choices: ['He says he meant no harm', 'He says sorry for it', 'He is proud of the punch'], a: 0,
       choicesJa: ['傷つけるつもりはなかったと言う', 'ごめんと謝る', '殴ったことを自慢する'],
@@ -275,7 +275,7 @@ export const dwightPunch: Clip = {
       trap: '反省しているように思いやすい。sorry がなく、No, I did not で終わる。',
       use: 'I didn’t mean to hurt you.（傷つけるつもりはなかった）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'hired', seg: [127, 131.9],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'hired', seg: [127, 133.8],
       stem: 'Type what Dwight says: “The one man ___ to protect?” (3 words)', ja: '書こう：“The one man ___ to protect?”（3語）',
       answer: "i've been hired",
       cue: '「The one man」のあと',

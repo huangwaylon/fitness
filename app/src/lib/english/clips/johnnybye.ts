@@ -14,7 +14,7 @@ export const johnnyGoodbye: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'thanks', seg: [3.7, 11.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'thanks', seg: [3.7, 11.2],
       stem: 'Who does Andy thank first?', ja: 'アンディが最初にお礼を言う相手は？',
       choices: ['Everyone who worked on the show', 'Everyone who has watched the show', 'Everyone at this last show'], a: 0,
       choicesJa: ['番組に関わった全員', '番組を見たことがある全員', '最終回に来た全員'],
@@ -25,7 +25,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'お別れのあいさつなので、見てくれた人へのお礼だと思いやすい。has ever のあとの動詞を聞く。',
       use: 'Thanks to everyone who worked on this.（関わったみんなに感謝します）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'saying', seg: [13.9, 19.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'saying', seg: [11, 22.4],
       stem: 'What does “that’s saying something” mean here?', ja: 'ここでの “that’s saying something” はどういう意味？',
       choices: ['That is a big claim', 'He is only joking', 'He has more to say'], a: 0,
       choicesJa: ['それはすごいことだ', 'ただの冗談だ', 'まだ言いたいことがある'],
@@ -36,7 +36,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'saying から、まだ何か言うと思いやすい。前の「人生最高の日」を強めている。',
       use: 'He was on time, and that’s saying something.（彼が時間どおり。これはすごい）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'rock', reveals: ['saying'], seg: [13.9, 23.4],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'rock', reveals: ['saying'], seg: [13.9, 23.6],
       stem: 'What did Andy once find?', ja: 'アンディは前に何を見つけた？',
       choices: ['A rock like Santa Claus', 'A Santa Claus hat', 'A toy that looked like Santa'], a: 0,
       choicesJa: ['サンタそっくりの石', 'サンタの帽子', 'サンタに似たおもちゃ'],
@@ -47,7 +47,7 @@ export const johnnyGoodbye: Clip = {
       trap: '最後の Hat が耳に残り、帽子だと思いやすい。found のすぐあとの a rock が答え。',
       use: 'He looks exactly like his dad.（彼はお父さんにそっくり）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'nice', seg: [40.8, 49.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'nice', seg: [40.8, 52.1],
       stem: 'What is the last and most important item on the checklist?', ja: 'チェックリストの最後の、一番大事なことは？',
       choices: ['Be nice to someone', 'Be honest with someone', 'Be kind to yourself'], a: 0,
       choicesJa: ['誰かに優しくする', '誰かに正直になる', '自分に優しくする'],
@@ -58,7 +58,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'あとの kind and honest から選びやすい。nice と、to のあとの相手を聞く。',
       use: 'Be nice to your little brother.（弟に優しくしてね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wreck', seg: [76.3, 82.25],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wreck', seg: [76.3, 83.7],
       stem: 'What does April mean by “an amazing train wreck”?', ja: '“an amazing train wreck” で、エイプリルは何を言いたい？',
       choices: ['Messy but fun to watch', 'Messy and hard to watch', 'About to end badly'], a: 0,
       choicesJa: ['めちゃくちゃだけど、見ていて楽しい', 'めちゃくちゃで、見ていられない', 'ひどい終わり方をしそう'],
@@ -68,6 +68,17 @@ export const johnnyGoodbye: Clip = {
       mean: 'train wreck ＝ 文字どおりは「列車事故」、ここでは「大混乱」。amazing で「楽しい混乱」。',
       trap: 'wreck（事故）だけ聞くと、悪口に思いやすい。amazing と love で、ほめていると分かる。',
       use: 'The party was a total train wreck.（パーティーは大混乱だった）' },
+
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [78.7, 90.7],
+      stem: 'Why does April say “Like, even better than” here?', ja: 'エイプリルは、なぜここで「Like, even better than」と言う？',
+      choices: ['To add a bigger compliment', 'To make the praise smaller', 'To give an example'], a: 0,
+      choicesJa: ['もっと大きなほめ言葉を足すため', 'ほめ言葉を小さくするため', '例を出すため'],
+      cue: '「the best host」のあと',
+      line: 'you’re the best host. *Like, even better than* my all-time favorite host',
+      said: '「最高の司会者。っていうか、大好きな司会者より上」と言う。',
+      mean: 'Like ＝ 「っていうか」。even better ＝ もっといい。前のほめ言葉にさらに重ねている。',
+      trap: 'like を「〜みたいな」や「例えば」と思いやすい。うしろに even が来たら言い足し。',
+      use: 'It’s good. Like, really good.（いいよ。っていうか、すごくいい）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'deal', reveals: ['plan'], seg: [80, 125.0],
       stem: 'What do Andy and April decide in the end?', ja: '最後に、アンディとエイプリルは何を決める？',
@@ -79,17 +90,6 @@ export const johnnyGoodbye: Clip = {
       trap: 'エイプリルの心配を聞くと、別々になると思いやすい。we で二人一緒と分かる。',
       use: 'Let’s go, and figure it out there.（行こう、あとは向こうで考えよう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [81.9, 88.1],
-      stem: 'Why does April say “Like, even better than” here?', ja: 'エイプリルは、なぜここで「Like, even better than」と言う？',
-      choices: ['To add a bigger compliment', 'To make the praise smaller', 'To give an example'], a: 0,
-      choicesJa: ['もっと大きなほめ言葉を足すため', 'ほめ言葉を小さくするため', '例を出すため'],
-      cue: '「the best host」のあと',
-      line: 'you’re the best host. *Like, even better than* my all-time favorite host',
-      said: '「最高の司会者。っていうか、大好きな司会者より上」と言う。',
-      mean: 'Like ＝ 「っていうか」。even better ＝ もっといい。前のほめ言葉にさらに重ねている。',
-      trap: 'like を「〜みたいな」や「例えば」と思いやすい。うしろに even が来たら言い足し。',
-      use: 'It’s good. Like, really good.（いいよ。っていうか、すごくいい）' },
-
     { id: 't1', skill: 'attitude', level: 'B2', point: 'crazy', seg: [81.9, 88.1], retired: true,
       stem: 'When April adds “which is crazy”, what is she saying?',
       choices: ['She’s surprised at how high she rates him', 'She’s joking that no one rates him that high', 'She means the show itself is wild and crazy'], a: 0,
@@ -100,7 +100,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'crazy を「ばかげた」と取ると皮肉になる。which は直前の文全体を指す。',
       use: 'Better than the book, which is crazy.（原作より上。自分でも驚き）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'lose', reveals: ['cant'], seg: [88.2, 95.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'lose', reveals: ['cant'], seg: [88.2, 99.2],
       stem: 'What is April worried about?', ja: 'エイプリルは何を心配している？',
       choices: ['Making him lose his show', 'The kids losing their host', 'He isn’t ready to leave'], a: 0,
       choicesJa: ['自分のせいで彼が番組を失うこと', '子どもたちが司会者を失うこと', '彼にやめる準備ができていないこと'],
@@ -111,7 +111,7 @@ export const johnnyGoodbye: Clip = {
       trap: '直前の kids が耳に残りやすい。最後の文の I で、心配の中心が分かる。',
       use: 'I don’t want to be why you quit.（私のせいで辞めてほしくない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [91.2, 95.55],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [90.5, 99.2],
       stem: 'Fill the gap: “And I ___ be the person…”', ja: '空所に入るのは？ “And I ___ be the person…”',
       choices: ['can', 'can’t', 'won’t'], a: 1,
       choicesJa: ['なれる', 'なれない', 'なるつもりはない'],
@@ -122,7 +122,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'can なら「クン」と弱く短い。won’t なら「ウォウン」。強く長い「キャーン」なら can’t。',
       use: 'I can’t make it tonight.（今夜は行けないんだ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'what', seg: [92.8, 98.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'what', seg: [92.8, 99.2],
       stem: 'What does Andy mean by “you’re what I love”?', ja: '“you’re what I love” で、アンディは何を言いたい？',
       choices: ['April is more important', 'He agrees with April', 'The show is most important'], a: 0,
       choicesJa: ['エイプリルのほうが大切', 'エイプリルに賛成だ', '番組が一番大切'],
@@ -143,7 +143,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'kids love you から「僕も」の対比を考えやすい。何と比べるかで強勢が決まる。',
       use: 'Not the beach. You’re the reason I came.（海じゃない、君に会いに来た）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'reason', seg: [95.3, 109.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'reason', seg: [95.1, 110.7],
       stem: 'What does “the only reason I have any of this” mean?', ja: '“the only reason I have any of this” はどういう意味？',
       choices: ['She gave him all of this', 'He wants to quit all this', 'He doesn’t need any of it'], a: 0,
       choicesJa: ['全部、彼女がくれた', '全部やめたい', 'どれも必要ない'],
@@ -154,7 +154,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'any of this を「いらない」と思いやすい。I have（持っている）の理由が彼女。',
       use: 'You’re the reason I’m here.（きみのおかげでここにいる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'believed', seg: [98.5, 103.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'believed', seg: [96.4, 107.3],
       stem: 'What does Andy say April did for him?', ja: 'エイプリルが自分に何をしてくれたと、アンディは言う？',
       choices: ['Believed in him and supported him', 'Believed him and helped him', 'Believed in him and surprised him'], a: 0,
       choicesJa: ['彼の力を信じて、支えた', '彼の言葉を信じて、助けた', '彼の力を信じて、驚かせた'],
@@ -165,7 +165,7 @@ export const johnnyGoodbye: Clip = {
       trap: '小さく短く言う in を落とすと、「言葉を信じた」になる。supported と surprised も近い。',
       use: 'You always supported me. Thank you.（いつも支えてくれてありがとう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'happier', seg: [103.6, 107.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'happier', seg: [102, 110],
       stem: 'Type what Andy says: “Happier than I ___.” (5 words)', ja: 'アンディの言葉を書こう：“Happier than I ___.”（5語）',
       answer: 'ever thought i could be',
       cue: '「Happier than I」のあと', line: 'Happier than I *ever thought I could be*.',
@@ -174,7 +174,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'thought I が「ソーライ」とつながり、could be は短く小さい。語の数で確かめる。',
       use: 'It was easier than I ever thought.（思ってたよりずっと簡単だった）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'going', seg: [105, 110.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'going', seg: [104, 114.6],
       stem: 'What does “what keeps me going” mean?', ja: '“what keeps me going” はどういう意味？',
       choices: ['What gives me energy', 'What makes me want to leave', 'What makes me tired'], a: 0,
       choicesJa: ['自分に元気をくれるもの', '出ていきたくさせるもの', '自分を疲れさせるもの'],
@@ -205,7 +205,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'テレビなのでスポンサー紹介に聞こえやすい。You’re my のあとは彼女の話。',
       use: 'You’re my morning coffee.（君は僕の朝のコーヒーだ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'aslong', seg: [112, 117.5],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'aslong', seg: [112, 121.6],
       stem: 'What does “As long as I’m with you” mean?', ja: '“As long as I’m with you” はどういう意味？',
       choices: ['If I am with you', 'For a long time', 'Even without you'], a: 0,
       choicesJa: ['きみと一緒にいれば', '長い間', 'きみがいなくても'],
@@ -216,7 +216,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'long（長い）から、時間の長さの話だと思いやすい。as long as でひとまとまり。',
       use: 'As long as you’re happy, I’m happy.（きみが幸せなら、それでいい）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'sure', reveals: ['plan'], seg: [115.9, 124.6],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'sure', reveals: ['plan'], seg: [115.2, 125.1],
       stem: 'How does Andy feel about leaving?', ja: '番組を去ることを、アンディはどう感じている？',
       choices: ['Excited about what’s next', 'Sad to leave the kids', 'Worried about her answer'], a: 0,
       choicesJa: ['次のことが楽しみ', '子どもたちと別れて悲しい', '彼女の返事が心配'],
@@ -227,7 +227,7 @@ export const johnnyGoodbye: Clip = {
       trap: '夢を手放す話なので、悲しいと思いやすい。明るい言葉があるかを聞く。',
       use: 'Let’s see what’s next. I’m excited.（次は何かな。楽しみ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'plan', seg: [115.9, 124.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'plan', seg: [115.2, 125.8],
       stem: 'What is Andy’s plan once they get to Washington?', ja: 'ワシントンに着いたら、アンディはどうするつもり？',
       choices: ['Decide what’s next there', 'Start a new show right away', 'Decide whether to come back'], a: 0,
       choicesJa: ['次に何をするか向こうで考える', 'すぐに新しい番組を始める', '戻るかどうか決める'],

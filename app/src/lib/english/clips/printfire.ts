@@ -16,7 +16,7 @@ export const printfire: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'look', seg: [5.2, 12.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'look', seg: [2.3, 7.3],
       stem: 'What does “Look” mean here?',
       ja: 'ここで「Look」はどういう意味？',
       choices: ['Listen, this is important', 'Look at the printer', 'I don’t agree with you'], a: 0,
@@ -28,7 +28,7 @@ export const printfire: Clip = {
       trap: 'look を「見る」と思いやすい。続くのが話なら、注意を引く合図。',
       use: 'Look, I’ll be honest with you.（あのね、正直に言うよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [5.2, 12.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [5.2, 13.6],
       stem: 'What was the client doing when the trouble started?',
       ja: 'トラブルが起きたとき、客は何をしていた？',
       choices: ['A big print job', 'Fixing a paper jam', 'Ordering more paper'], a: 0,
@@ -74,7 +74,7 @@ export const printfire: Clip = {
       trap: '先に聞こえる warehouse を原因と思いやすい。that のあとの he forgot まで聞く。',
       use: 'Don’t blame me for your mistake.（自分のミスを人のせいにしないで）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'wait', seg: [62.45, 70.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'wait', seg: [62.4, 70.6],
       stem: 'What was Darryl waiting for?',
       ja: 'ダリルは何を待っていた？',
       choices: ['A chance to get back at Andy', 'Andy to say sorry to him', 'His anger to go away'], a: 0,
@@ -86,19 +86,7 @@ export const printfire: Clip = {
       trap: '「待つ」を怒りがおさまるのを待つと思いやすい。fool と opportunity が並ぶので、ねらう話。',
       use: 'Just be patient. Your chance will come.（あせらないで。チャンスは来るよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'words', reveals: ['makeout'], seg: [99.8, 106.55],
-      stem: 'Which words did he hear clearly?',
-      ja: 'はっきり聞こえた言葉はどれ？',
-      choices: ['Andy, problem, eliminate', 'Andy, printer, eliminate', 'Gabe, problem, investigate'], a: 0,
-      choicesJa: ['アンディ、問題、消す', 'アンディ、プリンター、消す', 'ゲイブ、問題、調べる'],
-      cue: 'clearly was のあとの3語。',
-      line: 'Only thing I can make out clearly was *Andy, problem, eliminate* something.',
-      said: '「はっきり聞こえたのはアンディ、問題、消す、だけ」と、わざと切れはしだけ伝える。',
-      mean: 'eliminate ＝ 消す、なくす。3語だけ渡して、意味は相手に考えさせる。',
-      trap: '仕事の話なので printer と思いやすい。2語目は problem。音で拾う。',
-      use: 'I only caught a few words.（少ししか聞き取れなかった）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'makeout', seg: [99.8, 106.55],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'makeout', seg: [96.3, 106.9],
       stem: 'What does “make out” mean here?',
       ja: 'ここで「make out」はどういう意味？',
       choices: ['Hear it clearly', 'Understand what it means', 'Write it all down'], a: 0,
@@ -109,6 +97,18 @@ export const printfire: Clip = {
       mean: 'make out ＝ 聞きにくい音や見えにくい物を、なんとか聞き取る、見分ける。',
       trap: '「意味が分かる」と思いやすいが、すぐあとで「意味は分からない」と言っている。',
       use: 'I can’t make out the sign from here.（ここからだと看板が読めない）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'words', reveals: ['makeout'], seg: [97.2, 107.2],
+      stem: 'Which words did he hear clearly?',
+      ja: 'はっきり聞こえた言葉はどれ？',
+      choices: ['Andy, problem, eliminate', 'Andy, printer, eliminate', 'Gabe, problem, investigate'], a: 0,
+      choicesJa: ['アンディ、問題、消す', 'アンディ、プリンター、消す', 'ゲイブ、問題、調べる'],
+      cue: 'clearly was のあとの3語。',
+      line: 'Only thing I can make out clearly was *Andy, problem, eliminate* something.',
+      said: '「はっきり聞こえたのはアンディ、問題、消す、だけ」と、わざと切れはしだけ伝える。',
+      mean: 'eliminate ＝ 消す、なくす。3語だけ渡して、意味は相手に考えさせる。',
+      trap: '仕事の話なので printer と思いやすい。2語目は problem。音で拾う。',
+      use: 'I only caught a few words.（少ししか聞き取れなかった）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'eliminate', reveals: ['words', 'getreal'], seg: [99.8, 111.4], retired: true,
       stem: 'Why does the reply to “I don’t know what it meant” get a laugh?',
@@ -132,7 +132,7 @@ export const printfire: Clip = {
       trap: 'mumbled を本当の言いわけ、「分からない」を気遣いと取りやすい。直後に相手が何をしたかを聞く。',
       use: 'I’m not saying anything. You decide.（僕は何も言ってないよ。君が決めて）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrapped', seg: [129.2, 134.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrapped', seg: [129.1, 134.2],
       stem: 'What does “wrapped up in this” mean?',
       ja: '「wrapped up in this」はどういう意味？',
       choices: ['Part of this', 'Finished with this', 'In charge of this'], a: 0,
@@ -144,7 +144,7 @@ export const printfire: Clip = {
       trap: 'wrap up ＝「終える」と思いやすい。in ＋事件なら「からんでいる」。',
       use: 'Don’t get wrapped up in this.（この件に関わらないで）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [134.6, 141.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [131.7, 142.3], keep: true,
       stem: 'How much is the coworker offered?',
       ja: 'その同僚はいくらもらえる？',
       choices: ['$3', '$5', '$30'], a: 0,
@@ -178,7 +178,7 @@ export const printfire: Clip = {
       trap: 'chump を怒りと取ると「もっと取れた」不満に聞こえる。誰が損をしたかを聞く。',
       use: 'I’d have done it for free.（タダでもやったのに）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'excuse', seg: [155.9, 160],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'excuse', seg: [154.3, 160],
       stem: 'What does “Could you excuse us?” mean?',
       ja: '「Could you excuse us?」はどういう意味？',
       choices: ['Please leave us alone', 'Sorry for stopping you', 'Please let us pass'], a: 0,
@@ -201,7 +201,7 @@ export const printfire: Clip = {
       trap: '慌てた声の続きと聞きやすい。still は前の「計画はない」を受ける。声の変化を聞く。',
       use: 'I’m making it up as I go.（その場で考えながらやってる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'proof', seg: [169.3, 177.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'proof', seg: [169.3, 178.7],
       stem: 'Why does Andy want a printer to catch fire?',
       ja: 'アンディはなぜプリンターに火がついてほしい？',
       choices: ['So people will believe him', 'So he can sue the company', 'So Gabe tells corporate'], a: 0,
@@ -213,7 +213,7 @@ export const printfire: Clip = {
       trap: 'go public（公表する）から、うったえる話と思いやすい。need proof を聞く。',
       use: 'Do you have any proof?（何か証拠はある？）' },
 
-    { id: 'n3', skill: 'number', level: 'B2', point: 'reports', seg: [185, 191.3], keep: true,
+    { id: 'n3', skill: 'number', level: 'B2', point: 'reports', seg: [185, 194.5], keep: true,
       stem: 'Out of how many printers were there 12 reports?',
       ja: '12件の報告は、何台のうちの数？',
       choices: ['4,000', '40,000', '400,000', '4,000,000'], a: 2,
@@ -225,7 +225,7 @@ export const printfire: Clip = {
       trap: 'hundred と thousand の両方が聞こえる。four hundred thousand なら40万。million なら400万。',
       use: 'It’s one in a million.（めったにないことだよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'rare', reveals: ['reports'], seg: [185, 195.95],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'rare', reveals: ['reports'], seg: [185, 196.3],
       stem: 'What does Gabe mean by those numbers?',
       ja: 'ゲイブはその数で何を言いたい？',
       choices: ['The problem is very rare', 'The problem is spreading fast', 'The problem is fixed now'], a: 0,
@@ -248,7 +248,7 @@ export const printfire: Clip = {
       trap: 'からかいや口止めと取りやすい。thank you と any の念押しは本気の口ぶり。',
       use: 'It’s a small thing, but thank you.（ささやかだけど、ありがとう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'watching', seg: [229.5, 232.55],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'watching', seg: [228.1, 236.1],
       stem: 'Type what Andy says after his name: “and ___, it’s because…” (4 words)',
       answer: "if you're watching this",
       ja: '名前のあとのアンディの言葉を書き取る：「and ___, it’s because…」（4語）',
@@ -270,7 +270,7 @@ export const printfire: Clip = {
       trap: 'カメラの理由をそのまま信じやすい。名前を名乗っているので、声を隠す意味もない。',
       use: 'Can you speak up a little?（もう少し大きな声で話してくれる？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'test', seg: [252.4, 271.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'test', seg: [252.4, 273.7],
       stem: 'What does Andy think at the end of the test?',
       ja: 'テストの終わりに、アンディはどう思う？',
       choices: ['He was right all along', 'He should say sorry to Gabe', 'The printers are safe'], a: 0,
@@ -293,7 +293,7 @@ export const printfire: Clip = {
       trap: '「笑えない」を相手への反省と取りやすい。Andy は喜んでいるので、怖いのは話が本物になった事。',
       use: 'This just got real.（これはもう冗談じゃない）', retired: true },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'quit', seg: [273, 285.38],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'quit', seg: [271.9, 283.5],
       stem: 'How does Darryl feel at the end?',
       ja: '最後に、ダリルはどんな気持ち？',
       choices: ['Scared, done with pranks', 'Bored with pranks now', 'Glad it is all over'], a: 0,
@@ -305,7 +305,7 @@ export const printfire: Clip = {
       trap: 'It’s not funny を「つまらない」と思うと、あきた話に聞こえる。ここは「笑えない」。',
       use: 'I’m done with this. I mean it.（もうやめる。本気だよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'getreal', seg: [275.1, 278.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'getreal', seg: [273.2, 280.7],
       stem: 'Fill the gap: “Things ___ real. It’s not funny.”',
       ja: '空所を埋める：「Things ___ real. It’s not funny.」',
       choices: ['get', 'got', 'are getting'], a: 0,

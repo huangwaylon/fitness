@@ -26,7 +26,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'fourth month を区切りと取ると「もう終わる」に聞こえる。start が始まりの合図。',
       use: 'Don’t worry, that’s completely normal.（心配しないで、よくあることだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fourth', seg: [16.2, 25], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fourth', seg: [16.2, 27.1], keep: true,
       stem: 'According to Phoebe, which month of pregnancy is Rachel in?',
       ja: 'フィービーによると、レイチェルは妊娠何か月目？',
       choices: ['The third', 'The fourth', 'The fifth'], a: 1,
@@ -38,7 +38,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'あとの triplets（三つ子）から3を選びやすい。fourth は「フォース」、third は「サード」、fifth は「フィフス」。',
       use: 'I’m in my fourth month.（今、妊娠4か月なんです）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'santa', seg: [35.6, 43.2],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'santa', seg: [34.5, 44.1],
       stem: 'What does “This explains so much” mean?',
       ja: '「This explains so much」はどういう意味？',
       choices: ['Now I understand', 'I need more help', 'That’s too much'], a: 0,
@@ -50,7 +50,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'much から「多すぎる」と思いやすい。explains（説明する）が中心。',
       use: 'Oh, that explains a lot.（ああ、それで納得）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cutout', seg: [44.4, 51.6],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cutout', seg: [43.5, 51.6],
       stem: 'Why does Phoebe tell the cutout story?',
       ja: 'フィービーはなぜ、等身大パネルの話をする？',
       choices: ['To show she did it too', 'To warn Rachel about it', 'To make Rachel laugh'], a: 0,
@@ -62,7 +62,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'steal（盗む）が強く聞こえ、注意の話と思いやすい。Yeah, yeah のあとは共感。',
       use: 'Oh, I’ve been there.（ああ、その気持ち分かる）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pill', seg: [52, 58],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pill', seg: [51.8, 60.5],
       stem: 'What does Rachel plan to do about how she feels?',
       ja: '自分の気持ちについて、レイチェルはどうするつもり？',
       choices: ['Ask her doctor tomorrow', 'Call her doctor today', 'Book a visit for next week'], a: 0,
@@ -74,7 +74,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '今の形の go を「これから予約」と思いやすい。tomorrow まで聞くと、もう決まった予定。',
       use: 'I’ll ask my doctor about it.（お医者さんに聞いてみる）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'justso', reveals: ['hospital'], seg: [63.4, 70.3],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'justso', reveals: ['hospital'], seg: [62.4, 71],
       stem: 'What does “Just so you know” mean here?',
       ja: 'ここでの「Just so you know」はどういう意味？',
       choices: ['I’m letting you know', 'You are a little late', 'This is a secret'], a: 0,
@@ -86,7 +86,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '前置きがあると警告や内緒話と思いやすい。ここはただの事務的な連絡。',
       use: 'Just so you know, I’m running late.（一応言っとくと、少し遅れるね）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'hospital', reveals: ['seeing'], seg: [65, 70.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'hospital', reveals: ['seeing'], seg: [63.7, 71],
       stem: 'Why can’t Rachel’s usual doctor see her today?',
       ja: 'いつもの先生は、なぜ今日診られない？',
       choices: ['She was called to the hospital', 'She is on vacation', 'She is with another patient'], a: 0,
@@ -98,7 +98,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'seeing you が聞こえ、別の患者を診ていると思いやすい。called のあとの場所を聞く。',
       use: 'She got called into a meeting.（彼女は会議に呼ばれちゃって）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'seeing', seg: [67.4, 70.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'seeing', seg: [65.3, 71],
       stem: 'Type what Rachel is told: “so Dr. Schiff ___.” (4 words)', answer: 'will be seeing you',
       ja: '「so Dr. Schiff ___.」の4語を書こう。',
       cue: '「Dr. Schiff」のあと、最後まで。',
@@ -108,7 +108,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'will be は弱く「ウルビ」とつながる。seeing は「見る」ではなく「診る」。',
       use: 'The manager will be seeing you shortly.（担当者がまもなく参ります）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wasitme', seg: [70.8, 77],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wasitme', seg: [70.8, 77.9],
       stem: 'Fill the gap: “___ me or was the guy… really cute?”',
       ja: '「___ me or was the guy… really cute?」の空所は？',
       choices: ['Is it', 'Was it', 'Wasn’t it'], a: 1,
@@ -154,7 +154,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '医者の how’s it going は体調のこと。返事のあとの質問で受け取り方が分かる。',
       use: 'So, how’s it going?（で、調子はどう？）' },
 
-    { id: 'n2', skill: 'phrase', level: 'B2', point: 'howsitgoing', seg: [89.6, 95],
+    { id: 'n2', skill: 'phrase', level: 'B2', point: 'howsitgoing', seg: [89.6, 96.3],
       stem: 'What does “enough about me” mean?',
       ja: '「enough about me」はどういう意味？',
       choices: ['Let’s talk about you', 'I’m tired of talking', 'Please listen to me'], a: 0,
@@ -166,7 +166,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'enough から「もうたくさん」と疲れた話に思いやすい。相手に話をふる言い方。',
       use: 'But enough about me. How are you?（私の話はこれくらいで。あなたは？）' },
 
-    { id: 'h4', skill: 'humor', level: 'B2', point: 'doctor', seg: [96, 101.6],
+    { id: 'h4', skill: 'humor', level: 'B2', point: 'doctor', seg: [94.9, 102.4],
       stem: 'Why is “What do you do?” strange here?',
       ja: 'ここで「What do you do?」と聞くのは、なぜ変？',
       choices: ['He is clearly a doctor', 'He has no job', 'It is much too personal'], a: 0,
@@ -178,7 +178,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '仕事を聞くのは失礼と思いやすいが、ふつうの質問。診察中の医者に聞くからおかしい。',
       use: 'And what do you do for a living?（で、お仕事は何を？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'meant', seg: [100.6, 109.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'meant', seg: [99.4, 109.4],
       stem: 'After his answer, how does Rachel try to save her question?',
       ja: '先生の答えのあと、レイチェルは質問をどう言い直す？',
       choices: ['She meant his free time', 'She meant his home town', 'She meant his medicine'], a: 0,
@@ -190,7 +190,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'Right で同意して終わりと思いやすいが、言い直しが続く。actually は修正の前ぶれ。',
       use: 'Sorry, I meant the other one.（ごめん、もう一つの方のこと）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ski', seg: [104.5, 113],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ski', seg: [104.5, 115],
       stem: 'What does the doctor say about himself?',
       ja: '先生は自分について何と言う？',
       choices: ['He is single, and he skis', 'He is single, and he cooks', 'He is married, and he skis'], a: 0,
@@ -202,7 +202,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'don’t の t が消えると have a wife に聞こえる。料理は彼女の質問の中だけ。',
       use: 'I don’t cook, but I do eat.（料理はしないけど、食べるのは好き）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', reveals: ['ski'], seg: [112.8, 117.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', reveals: ['ski'], seg: [109.5, 117.6],
       stem: 'How does Rachel feel about the skiing?',
       ja: 'スキーの話で、レイチェルはどう感じる？',
       choices: ['Very excited about it', 'Teasing him about skiing', 'Trying to act cool'], a: 0,
@@ -214,7 +214,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '大げさな言い方を皮肉と思いやすいが、本気で盛り上がっている。',
       use: 'How cool is that?（それ、すごくない？）' },
 
-    { id: 'h5', skill: 'phrase', level: 'B2', point: 'comfortable', seg: [118, 126.8],
+    { id: 'h5', skill: 'phrase', level: 'B2', point: 'comfortable', seg: [117, 126.8],
       stem: 'What does the doctor mean by “discomfort”?',
       ja: '先生の「discomfort」はどういう意味？',
       choices: ['Any pain or problems', 'The chair she sits on', 'How shy she feels'], a: 0,
@@ -226,7 +226,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'comfortable（居心地がいい）の返事で、いすの話と思いやすい。先生は体のことを聞いている。',
       use: 'I feel some discomfort here.（ここに少し違和感があります）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'gas', seg: [118, 131.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'gas', seg: [120.3, 132.3],
       stem: 'How does Rachel feel about the gas question?',
       ja: 'ガスの質問に、レイチェルはどう感じる？',
       choices: ['Upset, it’s not romantic', 'Happy, he cares', 'Scared, she feels sick'], a: 0,
@@ -238,7 +238,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: '口説かれたと思うと話が逆になる。ふつうの診察の質問に怒るずれが笑い。',
       use: 'What kind of question is that?（何その質問？）' },
 
-    { id: 'nt1', skill: 'infer', level: 'C1', point: 'feelit', seg: [139.3, 143.3],
+    { id: 'nt1', skill: 'infer', level: 'C1', point: 'feelit', seg: [138.3, 144.1],
       stem: 'What does the doctor mean by “something going on”?',
       ja: '先生の「something going on」はどういう意味？',
       choices: ['Something feels strange', 'He likes her as well', 'She looks quite sick'], a: 0,

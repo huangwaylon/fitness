@@ -14,7 +14,7 @@ export const senatorOscar: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [11.2, 18.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [10.3, 18.8], keep: true,
       stem: 'After what time is the senator more likely to pick up?',
       ja: '議員は、何時以降なら電話に出やすい？',
       choices: ['After five', 'After seven', 'After nine'], a: 2,
@@ -26,7 +26,7 @@ export const senatorOscar: Clip = {
       trap: 'say は「たとえば」。そのあとの数を聞く。「ナイン」なら9、five は「ファ」、seven は「セ」。',
       use: 'Call me in the evening, say after seven.（夕方、そうね7時以降に電話して）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'gotit', seg: [21, 27.45],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'gotit', seg: [19.9, 31.9],
       stem: 'What does Oscar mean by “I still got it”?',
       ja: 'オスカーの「I still got it」の意味は？',
       choices: ['I am still attractive', 'I still have the number', 'I still understand it'], a: 0,
@@ -73,7 +73,7 @@ export const senatorOscar: Clip = {
       trap: 'よく出る名前（アンジェラ）に引っぱられやすい。about のあとの一語を聞く。',
       use: 'We were just talking about work.（仕事の話をしてただけだよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dying', seg: [41.1, 45.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'dying', seg: [41.1, 46.4],
       stem: 'What does “he was just dying for me to have it” mean?',
       ja: '「he was just dying for me to have it」の意味は？',
       choices: ['He wanted Oscar to have it', 'He felt really sick that day', 'He didn’t want to give it'], a: 0,
@@ -85,7 +85,7 @@ export const senatorOscar: Clip = {
       trap: 'dying（死にそう）から、病気の話と思いやすい。dying for は強い願い。',
       use: 'I’m dying for a cup of coffee.（コーヒーが飲みたくてたまらない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dreamy', seg: [45.2, 51.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dreamy', seg: [41.3, 50.6],
       stem: 'After “but”, what is the coworker really saying?',
       ja: '「but」のあと、同僚が本当に言いたいことは？',
       choices: ['He was just being friendly', 'Oscar is very good-looking', 'The senator loves animals'], a: 0,
@@ -107,7 +107,7 @@ export const senatorOscar: Clip = {
       trap: '習った形に直して had seen と書きたくなる。書き取りは、正しい文でなく聞こえた音を。',
       use: 'If you would’ve been there, you’d get it.（その場にいたら分かるよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'glance', seg: [66, 69.1],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'glance', seg: [60.6, 69.8],
       stem: 'What does “Not every glance means something” mean?',
       ja: '「Not every glance means something」の意味は？',
       choices: ['A look can mean nothing', 'Stop teasing Oscar now', 'Let Oscar finish talking'], a: 0,
@@ -131,7 +131,7 @@ export const senatorOscar: Clip = {
       trap: '同僚が疑っていたので、「勘違いだと聞いた」と思いやすい。渡された物を聞く。',
       use: 'Let me check that for myself.（自分で確かめてみる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'bet', seg: [71, 75.95],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'bet', seg: [71.3, 83.3],
       stem: 'What does the coworker say the senator does?',
       ja: '同僚は、議員がどうしていると言う？',
       choices: ['Gives his number to everyone', 'Never gives out his cell number', 'Gives it only to voters'], a: 0,
@@ -143,7 +143,7 @@ export const senatorOscar: Clip = {
       trap: 'out から否定を思うと逆になる。最後の to everybody が答え。',
       use: 'They give out free samples here.（ここで試供品を配ってるよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'door', seg: [75.7, 79.4],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'door', seg: [74.2, 83.3],
       stem: 'What does “my door is always open” mean?',
       ja: '「my door is always open」の意味は？',
       choices: ['Come and talk any time', 'His office door has no lock', 'I like new ideas'], a: 0,
@@ -155,7 +155,7 @@ export const senatorOscar: Clip = {
       trap: 'door（ドア）から鍵の話と思いやすい。気軽に話せる、という意味。',
       use: 'Any questions, my door is always open.（質問があればいつでもどうぞ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'office', seg: [79.1, 82.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'office', seg: [77.7, 83.3],
       stem: 'Which numbers does the senator give the coworker?',
       ja: '議員は同僚にどの番号を渡す？',
       choices: ['His office and cell numbers', 'His office and home numbers', 'Only his office number'], a: 0,
@@ -166,6 +166,18 @@ export const senatorOscar: Clip = {
       mean: 'cell number ＝ 携帯の番号。二つとも渡している。オスカーにだけ特別ではなさそう。',
       trap: '最初の office だけで止まりやすい。and のあとにもう一つ続く。',
       use: 'Here’s my office and cell number.（事務所と携帯の番号です）' },
+
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'issues', reveals: ['office'], seg: [83.2, 88.7],
+      stem: 'What did the senator want, the coworker says?',
+      ja: '同僚によると、議員は何がしたかった？',
+      choices: ['Just to talk about issues', 'To ask Oscar out to dinner', 'To get Oscar’s vote'], a: 0,
+      choicesJa: ['政策の話をしたかっただけ', 'オスカーを食事に誘う', 'オスカーの票をもらう'],
+      cue: '「looks like」のあと。',
+      line: 'looks like he really did *just want to talk about the issues*. I’m sorry, Oscar.',
+      said: '「本当に政策の話がしたかっただけみたい。ごめんね、オスカー」と言う。',
+      mean: 'issues ＝（政治の）問題、政策。really did just ＝ 本当にそれだけ。',
+      trap: '番号をもらったので「誘いたかった」と思いやすい。just want to talk が答え。',
+      use: 'Looks like it really was just a mistake.（本当にただのミスだったみたい）' },
 
     { id: 'g2', skill: 'gist', level: 'C1', point: 'ending', reveals: ['call', 'poor'], seg: [83.3, 120.3], retired: true,
       stem: 'By the end of the clip, what does Oscar believe?',
@@ -178,19 +190,7 @@ export const senatorOscar: Clip = {
       trap: '途中の「政策の話だけ」で止めやすい。最後の this が何を指すかを聞く。',
       use: 'Why does this always happen to me?（なんでいつも私ばっかり）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'issues', reveals: ['office'], seg: [83.3, 87.85],
-      stem: 'What did the senator want, the coworker says?',
-      ja: '同僚によると、議員は何がしたかった？',
-      choices: ['Just to talk about issues', 'To ask Oscar out to dinner', 'To get Oscar’s vote'], a: 0,
-      choicesJa: ['政策の話をしたかっただけ', 'オスカーを食事に誘う', 'オスカーの票をもらう'],
-      cue: '「looks like」のあと。',
-      line: 'looks like he really did *just want to talk about the issues*. I’m sorry, Oscar.',
-      said: '「本当に政策の話がしたかっただけみたい。ごめんね、オスカー」と言う。',
-      mean: 'issues ＝（政治の）問題、政策。really did just ＝ 本当にそれだけ。',
-      trap: '番号をもらったので「誘いたかった」と思いやすい。just want to talk が答え。',
-      use: 'Looks like it really was just a mistake.（本当にただのミスだったみたい）' },
-
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'sorry', seg: [86.4, 100.75],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'sorry', seg: [86.4, 102],
       stem: 'How does Oscar really feel about the news?',
       ja: 'その知らせに、オスカーは本当はどう感じている？',
       choices: ['Disappointed', 'Relieved', 'Very pleased'], a: 0,
@@ -225,7 +225,7 @@ export const senatorOscar: Clip = {
       trap: '最初の否定を本気と取ったり、怪物を一般論と取りやすい。強い否定に自分の姿を足したら自白。',
       use: 'I’m not jealous. Okay, maybe a little.（嫉妬してないよ。まあ、少しはね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'idhave', seg: [94.3, 97.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'idhave', seg: [93.6, 101.3],
       stem: 'Fill the gap: “___ to be a monster to root for that.”',
       ja: '空いている所に入る言葉は？',
       choices: ['I have', 'I’d have', 'I’ll have'], a: 1,
@@ -236,6 +236,16 @@ export const senatorOscar: Clip = {
       mean: 'I’d have to ＝（もしそうなら）〜でなければ。d はほとんど聞こえない。',
       trap: 'I’ll なら「アイル」と「ル」が残る。I のあとで小さく止まれば I’d、止まらなければ I have。',
       use: 'I’d have to check my calendar.（予定を確認しないと）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'call', seg: [102, 108.9],
+      stem: 'Type the parting words: “And ___.” (4 words)', answer: "don't forget to call",
+      ja: '「And」のあとの4語を書こう。',
+      cue: '「It was lovely」のあと。',
+      line: 'It was lovely. And *don’t forget to call*.',
+      said: '別れぎわに「楽しかった。電話、忘れないでね」と言う。',
+      mean: 'don’t forget to 〜 ＝ 忘れずに〜して。軽い念押し。',
+      trap: 'don’t の t と forget の t が弱く、「ドンフォゲッ」のように聞こえる。',
+      use: 'Don’t forget to text me.（忘れずにメッセージしてね）' },
 
     // anchor: 107 s “don't forget to call”, then 113.7–119.4 s “Why does this always happen to me? I just feel so
     // retired: shares g2's point (each reveals the other), so play 3+ under g2 drew no C2
@@ -249,15 +259,5 @@ export const senatorOscar: Clip = {
       mean: '「いつも」と困ったふりで、実はモテる自慢。同情の一言は、うれしさを隠すための飾り。',
       trap: '愚痴の形を本気と取りやすい。「いつも自分ばかり」と困ってみせる言い方は、自慢のことが多い。',
       use: 'Ugh, everyone keeps asking me out.（はあ、みんなに誘われて困る）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'call', seg: [105.3, 108.4],
-      stem: 'Type the parting words: “And ___.” (4 words)', answer: "don't forget to call",
-      ja: '「And」のあとの4語を書こう。',
-      cue: '「It was lovely」のあと。',
-      line: 'It was lovely. And *don’t forget to call*.',
-      said: '別れぎわに「楽しかった。電話、忘れないでね」と言う。',
-      mean: 'don’t forget to 〜 ＝ 忘れずに〜して。軽い念押し。',
-      trap: 'don’t の t と forget の t が弱く、「ドンフォゲッ」のように聞こえる。',
-      use: 'Don’t forget to text me.（忘れずにメッセージしてね）' },
   ]
 };

@@ -16,7 +16,7 @@ export const canvassing: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'humble', seg: [6.2, 10.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'humble', seg: [4.8, 11],
       stem: 'How does Leslie tell the team to look?',
       ja: 'レスリーはチームに、どう見えるようにと言う？',
       choices: ['Friendly but serious', 'Humble but confident', 'Confident but relaxed'], a: 1,
@@ -28,7 +28,7 @@ export const canvassing: Clip = {
       trap: 'humble は「ハンブル」と短く、聞きのがしやすい。but の前と後を一語ずつ聞く。',
       use: 'Be polite, but don’t be shy.（礼儀正しく、でも遠慮しないで）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'intro', seg: [11.1, 18.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'intro', seg: [11.1, 18.6],
       stem: 'Who does Leslie say they are at the door?',
       ja: 'レスリーは玄関で、自分たちをだれだと言う？',
       choices: ['Some volunteers from a park group', 'People from the local government', 'A team running for office'], a: 1,
@@ -40,7 +40,7 @@ export const canvassing: Clip = {
       trap: '公園の話なので市民の会と思いやすい。government（役所）を聞く。',
       use: 'Hi, I’m calling from the hotel.（もしもし、ホテルの者ですが）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', reveals: ['when', 'voice'], seg: [11.1, 51.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', reveals: ['when', 'voice'], seg: [11.1, 54.1],
       stem: 'What does Leslie ask people to do?',
       ja: 'レスリーは人々に何をたのむ？',
       choices: ['To come to a park meeting', 'To give money for the park', 'To sign a park form'], a: 0,
@@ -51,7 +51,7 @@ export const canvassing: Clip = {
       trap: 'support（支援）から「お金」と思いやすいが、たのみは集まりに来ること。come のあとを聞く。',
       use: 'Can we count on your support?（応援をお願いできますか）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'sure', seg: [14.9, 21.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'sure', seg: [12.7, 21.9],
       stem: 'What did the resident say “Sure” to?',
       ja: '住民の「Sure」は、何への返事？',
       choices: ['Talking for a moment', 'The plan for the park', 'Coming to the meeting'], a: 0,
@@ -75,7 +75,7 @@ export const canvassing: Clip = {
       trap: '一言の返事が笑いに聞こえやすい。笑いの的は、誰の言葉が大げさかで決まる。',
       use: 'He said hi. That’s basically a yes.（あいさつしてくれた。ほぼイエスだね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thatd', seg: [25.0, 28.35],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thatd', seg: [22.2, 29.1],
       stem: 'Fill the gap: “Oh, yeah. ___ be a great idea.”',
       ja: '空いている所に入る語は？',
       choices: ['That’d', 'That’ll', 'It’ll'], a: 0,
@@ -87,7 +87,7 @@ export const canvassing: Clip = {
       trap: 'd は次の be に吸われて弱い。That’ll なら「ル」が残る。最初が「ザ」か「イ」かも聞く。',
       use: 'That’d be great, thanks.（それは助かる、ありがとう）' },
 
-    { id: 'i2', skill: 'gist', level: 'B1', point: 'support', seg: [26.0, 51.0],
+    { id: 'i2', skill: 'gist', level: 'B1', point: 'support', seg: [26, 54.1],
       stem: 'What does the first resident really say?',
       ja: '最初の住民の返事は、つまりどういうこと？',
       choices: ['She likes it but won’t come', 'She will come on another day', 'She will come if she can'], a: 0,
@@ -98,7 +98,7 @@ export const canvassing: Clip = {
       trap: '最初の great idea で来てくれそうに思いやすい。賛成と来ることは別。',
       use: 'Great idea. Count me out, though.（いい考え。でも私は抜けるね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [34.4, 39.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [33.4, 43.8], keep: true,
       stem: 'When is the public forum?',
       ja: '住民の集まりはいつ？',
       choices: ['Tonight', 'Tomorrow afternoon', 'Tomorrow night'], a: 2,
@@ -110,7 +110,7 @@ export const canvassing: Clip = {
       trap: '最初の Good afternoon が耳に残りやすい。forum の直後の2語を聞く。',
       use: 'We’re having a meeting tomorrow night.（明日の夜、集まりがあります）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'voice', seg: [36.8, 43.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'voice', seg: [34.7, 43.7],
       stem: 'What does “voice your strong support” mean?',
       ja: '「voice your strong support」の意味は？',
       choices: ['Say that you agree', 'Vote on the plan', 'Just come and listen'], a: 0,
@@ -122,7 +122,7 @@ export const canvassing: Clip = {
       trap: 'come だけ聞くと「来るだけ」と思いやすい。voice が動詞で、言うことがたのまれている。',
       use: 'I’d like to voice a concern.（ひとつ心配な点を言わせてください）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'busy', seg: [42.3, 49.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'busy', seg: [42.3, 50.6],
       stem: 'What does Leslie do after “I’m busy”?',
       ja: '「I’m busy」と言われて、レスリーはどうする？',
       choices: ['Asks again anyway', 'Offers another day', 'Says she doesn’t believe it'], a: 0,
@@ -134,7 +134,7 @@ export const canvassing: Clip = {
       trap: '別の日を出すと思いやすい。we understand は前置きで、本題は but のあと。',
       use: 'I understand, but it would mean a lot.（分かります、でもぜひ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'luck', seg: [45.9, 51.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'luck', seg: [45.8, 54.1],
       stem: 'How does the resident sound at “Good luck, though”?',
       ja: '「Good luck, though」のとき、住民はどんな感じ？',
       choices: ['Friendly but done talking', 'Sarcastic about the plan', 'Angry at being kept so long'], a: 0,
@@ -146,7 +146,7 @@ export const canvassing: Clip = {
       trap: 'good luck を皮肉と思いやすいが、Sorry と though が気持ちを和らげている。',
       use: 'I can’t make it. Good luck, though!（行けないけど、がんばって！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'mind', seg: [50.6, 53.75],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'mind', seg: [48.8, 55.2],
       stem: 'Type it: “___ if we told you that…” (5 words)', answer: 'would it change your mind',
       ja: '「if we told you」の前の5語を書こう。',
       cue: '断られたあとの、最後のひと押し。',
@@ -167,7 +167,7 @@ export const canvassing: Clip = {
       trap: 'change your mind から、気が変わったと取りやすい。she と gone を聞く。',
       use: 'And… he’s gone.（で…もういないし）' },
 
-    { id: 'willing', skill: 'phrase', level: 'B1', point: 'willing', seg: [56.5, 61],
+    { id: 'willing', skill: 'phrase', level: 'B1', point: 'willing', seg: [54.7, 60.6],
       stem: 'Why does Leslie say “Would you be willing to come…?”',
       ja: 'レスリーは、なぜ「Would you be willing to come…?」と言う？',
       choices: ['To ask politely', 'To give an order', 'To say thank you'], a: 0,
@@ -179,7 +179,7 @@ export const canvassing: Clip = {
       trap: 'willing（〜する気がある）を知らないと命令に聞こえやすい。Would you で始まればお願い。',
       use: 'Would you be willing to help me?（手伝っていただけませんか）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'solo', seg: [93.2, 102.2],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'solo', seg: [92.2, 102.2],
       stem: 'Why does one team member say he is leaving?',
       ja: 'チームの一人は、なぜ抜けると言う？',
       choices: ['He works better alone', 'He has another job', 'He feels sick'], a: 0,
@@ -191,7 +191,7 @@ export const canvassing: Clip = {
       trap: 'artist から仕事の話と思いやすい。work better as 〜 ＝ 〜のほうがうまくやれる。',
       use: 'I work better alone.（一人のほうがはかどるんだ）' },
 
-    { id: 'headout', skill: 'phrase', level: 'B1', point: 'headout', seg: [98, 103.1],
+    { id: 'headout', skill: 'phrase', level: 'B1', point: 'headout', seg: [93.4, 103.1],
       stem: 'What does “I’m gonna head out” mean?',
       ja: '「I’m gonna head out」の意味は？',
       choices: ['I’m going to leave', 'I’m going to sleep', 'I’m going to think'], a: 0,
@@ -214,7 +214,7 @@ export const canvassing: Clip = {
       trap: '日本語なら文句を言う場面。言葉にあるのは走り方だけ、という点がおかしみ。',
       use: 'He talks weird. He really does.（あの人、しゃべり方が変。ほんとに）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notsure', seg: [109.9, 114.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notsure', seg: [107.5, 114.4],
       stem: 'How does the last resident feel about the plan?',
       ja: '最後の住民は、計画をどう思っている？',
       choices: ['Not sure about it', 'Excited about it', 'Angry about it'], a: 0,
@@ -226,7 +226,17 @@ export const canvassing: Clip = {
       trap: 'good idea から「賛成」と思いやすい。but のあとに本音が来る。',
       use: 'It sounds nice, but I’m just not sure.（よさそうだけど、どうかな）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whichpart', seg: [109.9, 118.55],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'notsure', seg: [107.5, 114.4],
+      stem: 'Type it: “It’s a good idea, but ___.” (4 words)', answer: "i'm just not sure",
+      ja: '「but」のあとの4語を書こう。',
+      cue: '「but」のすぐあと。',
+      line: 'It’s a good idea, but *I’m just not sure*.',
+      said: '「いい考えだけど、どうもね」と言う。',
+      mean: 'just は「ただ、どうも」と和らげる語。はっきり断らずに、乗り気でないと伝える。',
+      trap: 'just の t は not の前で消え、「ジャスノッ」とつながる。',
+      use: 'I’m just not sure it’s worth it.（それだけの価値があるか、どうも分からない）' },
+
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whichpart', seg: [109.8, 118.9],
       stem: 'Why does Leslie ask “Which part are you not sure about?”',
       ja: 'レスリーはなぜ「どの部分が？」と聞く？',
       choices: ['To find what worries him', 'To end the visit politely', 'To check if he means no'], a: 0,
@@ -250,17 +260,7 @@ export const canvassing: Clip = {
       trap: 'kind of を「少し」と取ると一部の話に聞こえる。控えめな語より、あとの語の大きさで決める。',
       use: 'That’s kind of the whole point.（それがまさに肝心なところなんだけど）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'notsure', seg: [110.3, 114.2],
-      stem: 'Type it: “It’s a good idea, but ___.” (4 words)', answer: "i'm just not sure",
-      ja: '「but」のあとの4語を書こう。',
-      cue: '「but」のすぐあと。',
-      line: 'It’s a good idea, but *I’m just not sure*.',
-      said: '「いい考えだけど、どうもね」と言う。',
-      mean: 'just は「ただ、どうも」と和らげる語。はっきり断らずに、乗り気でないと伝える。',
-      trap: 'just の t は not の前で消え、「ジャスノッ」とつながる。',
-      use: 'I’m just not sure it’s worth it.（それだけの価値があるか、どうも分からない）' },
-
-    { id: 'h1', skill: 'infer', level: 'B2', point: 'whole', seg: [112.9, 122.4],
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'whole', seg: [112.9, 123],
       stem: 'What does the last resident’s answer show?',
       ja: '最後の住民の答えから何が分かる？',
       choices: ['His doubt is the whole plan', 'He likes most of the plan', 'He didn’t hear the question'], a: 0,

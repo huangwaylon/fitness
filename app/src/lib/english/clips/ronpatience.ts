@@ -13,7 +13,7 @@ export const ronPatience: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'stillon', seg: [0.8, 4.5],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'stillon', seg: [0.6, 5.9],
       stem: 'Tom asks, “We still *on* for breakfast?” What does he mean?', ja: 'トムの「We still on for breakfast?」の意味は？',
       choices: ['Is our plan still okay?', 'Are you eating now?', 'Is breakfast ready yet?'], a: 0,
       choicesJa: ['約束はまだ大丈夫？', '今食べてるの？', '朝食はもうできた？'],
@@ -24,7 +24,7 @@ export const ronPatience: Clip = {
       trap: 'on（上に）が短くて聞き落としやすい。予定の話で、食事中かではない。',
       use: 'Are we still on for dinner tonight?（今夜の夕食の約束、まだ大丈夫？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'howlate', seg: [2.4, 6],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'howlate', seg: [1.9, 9.4],
       stem: 'How late is Tom for work?', ja: 'トムは仕事に何分遅れている？',
       choices: ['Half an hour', 'An hour', 'An hour and a half', 'Two and a half hours'], a: 2, keep: true,
       choicesJa: ['30分', '1時間', '1時間半', '2時間半'],
@@ -35,7 +35,7 @@ export const ronPatience: Clip = {
       trap: 'half で30分と思いやすい。「ハーファナワー」なら30分、「アナワー」で切れたら1時間、two なら2時間半。',
       use: 'I’m an hour late.（1時間遅れています）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'lost', seg: [5.3, 12],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'lost', seg: [3.2, 13.9],
       stem: 'Why was Tom late?', ja: 'トムはなぜ遅れた？',
       choices: ['He drove around in circles', 'His GPS took a long way', 'He stopped for breakfast'], a: 0,
       choicesJa: ['ぐるぐる回って運転していた', 'GPS が遠回りした', '朝食で寄り道した'],
@@ -57,7 +57,7 @@ export const ronPatience: Clip = {
       trap: 'three はロンの数。「スリーポイントフォー」なら3.4、「フォーポイントスリー」なら4.3、「サーティフォー」なら34。',
       use: 'It’s three point four kilometers.（3.4キロです）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'bigdeal', seg: [16, 21],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'bigdeal', seg: [13.4, 23.7],
       stem: 'Tom says, “*Big deal*, I’m adapting.” What does “big deal” mean?', ja: 'トムの「Big deal」の意味は？',
       choices: ['It’s no problem', 'It’s a huge problem', 'It’s a good deal'], a: 0,
       choicesJa: ['たいしたことない', 'すごく大きな問題', 'いい取引'],
@@ -68,7 +68,7 @@ export const ronPatience: Clip = {
       trap: 'big（大きい）から、大問題だと思いやすい。続く I’m adapting が手がかり。',
       use: 'So I lost. Big deal.（負けたけど、たいしたことない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'click', seg: [26.5, 29.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'click', seg: [25.3, 30.3],
       stem: '“I really wish you ___ those.”', ja: '空所に入るのは？',
       choices: ['could click', 'could pick', 'would click'], a: 0,
       choicesJa: ['クリックできたら', '選べたら', 'クリックしてくれたら'],
@@ -99,7 +99,7 @@ export const ronPatience: Clip = {
       trap: '習った文法に合わせて what are と書きたくなる。書き取りは、正しい文でなく聞こえた音を書く。',
       use: 'Sorry, what’s “carpool”?（すみません、カープールって何？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'coping', reveals: ['bigdeal'], seg: [45.3, 51.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'coping', reveals: ['bigdeal'], seg: [44, 53],
       stem: 'How is Tom’s week without screens going?', ja: '画面なしの1週間、トムはどんな様子？',
       choices: ['Badly', 'Fine', 'Better each day'], a: 0,
       choicesJa: ['ひどい', '大丈夫', '日に日によくなる'],
@@ -110,7 +110,7 @@ export const ronPatience: Clip = {
       trap: '前に I’m adapting（慣れてきた）と言っていたので、平気だと思いやすい。going crazy が今の本音。',
       use: 'I’m going crazy.（頭がおかしくなりそう）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'remote', seg: [57.5, 66.5],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'remote', seg: [57.5, 68.3],
       stem: 'Where is Ron’s cabin?', ja: 'ロンの小屋はどこにある？',
       choices: ['Very far from towns', 'Close to the office', 'In the middle of town'], a: 0,
       choicesJa: ['町からとても遠い', '職場の近く', '町の真ん中'],
@@ -121,7 +121,7 @@ export const ronPatience: Clip = {
       trap: 'electric company（電力会社）が聞こえるので、町にあると思いやすい。',
       use: 'It’s far away from the station.（駅から遠いです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ride', seg: [66.4, 72.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ride', seg: [66.4, 73.7],
       stem: 'Why does Tom ask Ron for a ride?', ja: 'トムはなぜロンに車で送ってほしいと頼む？',
       choices: ['He can’t find his way home', 'He wants to see the cabin', 'He is too tired to drive'], a: 0,
       choicesJa: ['家への道がわからない', '小屋を見たい', '疲れて運転できない'],
@@ -185,7 +185,7 @@ export const ronPatience: Clip = {
       trap: 'worth a はつながり「ワーサ」と聞こえやすい。shot の t は小さい。',
       use: 'It’s worth a shot.（やってみる価値はある）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'easy', seg: [118.4, 122.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'easy', seg: [118.4, 124.6],
       stem: 'What does “*See*, that was easy” mean?', ja: '「See, that was easy」の意味は？',
       choices: ['I told you so', 'Look at this', 'Do you understand?'], a: 0,
       choicesJa: ['ほら、言った通りだろ', 'これを見て', 'わかった？'],
@@ -196,7 +196,7 @@ export const ronPatience: Clip = {
       trap: 'see（見る）から、何かを見せると思いやすい。',
       use: 'See? I told you.（ほらね、言ったでしょ）' },
 
-    { id: 'd3', skill: 'who', level: 'B1', point: 'brad', seg: [148, 156],
+    { id: 'd3', skill: 'who', level: 'B1', point: 'brad', seg: [146.3, 156.7],
       stem: 'Who is the Brad that Tom chats with?', ja: 'トムがチャットするブラッドは誰？',
       choices: ['A teacher in Pittsburgh', 'The famous actor', 'An old school friend'], a: 0,
       choicesJa: ['ピッツバーグの先生', '有名な俳優', '昔の同級生'],
@@ -207,7 +207,7 @@ export const ronPatience: Clip = {
       trap: 'Brad Pitt と聞いて俳優だと思いやすい。wasn’t the actor が答え。',
       use: 'I’ll hit you up later.（あとで連絡するね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'toldme', seg: [183.2, 190.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'toldme', seg: [181.9, 190.6],
       stem: 'Ron stops Tom. What does Tom answer?', ja: 'ロンが止めると、トムは何と返す？',
       choices: ['He did what Ron asked', 'He is sorry for it', 'He needs more time'], a: 0,
       choicesJa: ['ロンに言われた通りにした', '悪かったと謝る', 'もっと時間がほしい'],
@@ -218,7 +218,7 @@ export const ronPatience: Clip = {
       trap: '止められたので、謝ると思いやすい。But you told me が言い返し。',
       use: 'But you told me to.（でも、そうしろって言ったじゃない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'addict', seg: [189.5, 195.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'addict', seg: [187.4, 198.7],
       stem: 'What does Ron say Tom is?', ja: 'ロンはトムを何だと言う？',
       choices: ['An addict', 'A liar', 'A genius'], a: 0,
       choicesJa: ['依存症の人', 'うそつき', '天才'],
@@ -240,7 +240,7 @@ export const ronPatience: Clip = {
       trap: 'You’re right を素直な反省、番組を気づきと取りやすい。直前の一言が、あとを台本に変える。',
       use: 'Don’t worry, I know the drill.（大丈夫、いつもの流れは分かってる）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'hurt', reveals: ['addict'], seg: [203.2, 208.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'hurt', reveals: ['addict'], seg: [202, 210.7],
       stem: 'Who has Tom hurt, he says?',
       ja: 'トムは、だれを傷つけたと言う？',
       choices: ['His friends and family', 'His coworkers at work', 'Ron and the whole office'], a: 0,
@@ -252,7 +252,7 @@ export const ronPatience: Clip = {
       trap: 'ロンと話しているので、ロンと思いやすい。all my のあとを聞く。',
       use: 'I’m sorry if I hurt your feelings.（気を悪くさせたならごめんね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'feelings', seg: [210.5, 219],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'feelings', seg: [207.5, 219.5],
       stem: 'How does Ron feel after Tom’s confession?', ja: 'トムの告白のあと、ロンはどんな気持ち？',
       choices: ['Proud, but uneasy', 'Proud and very happy', 'Angry and tired'], a: 0,
       choicesJa: ['誇らしいが、落ち着かない', '誇らしくて、とてもうれしい', '怒っていて、疲れている'],
@@ -284,7 +284,7 @@ export const ronPatience: Clip = {
       trap: 'say（言う）から、言い直しを頼むと思いやすい。あとに計画が続く。',
       use: 'What do you say we take a break?（ひと休みしない？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'chopwood', reveals: ['whatdo'], seg: [220.4, 226.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'chopwood', reveals: ['whatdo'], seg: [219, 226.5],
       stem: 'What does Tom ask Ron to do?',
       ja: 'トムはロンに何をしてと言う？',
       choices: ['Chop more wood', 'Stare at the fire', 'Drive him home'], a: 0,

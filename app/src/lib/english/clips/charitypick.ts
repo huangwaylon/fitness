@@ -26,7 +26,7 @@ export const charityPick: Clip = {
       trap: '最初に新しい部屋の話、途中でアンディの話が出るが、呼んだ理由は寄付先選び。',
       use: 'Could you help me sort these out?（これ、仕分けるの手伝ってくれる？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'pass', seg: [2.55, 15.6],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'pass', seg: [2.6, 15.6],
       stem: 'What does “Pass” mean here?',
       ja: '「Pass」は、ここでどういう意味？',
       choices: ['No, I won’t help', 'Yes, I’ll help', 'Give it to me'], a: 0,
@@ -38,7 +38,7 @@ export const charityPick: Clip = {
       trap: 'pass を「合格」や「渡す」と思うと意味が逆になる。すぐあとの「断るために来たの？」で分かる。',
       use: 'I’ll pass on dessert, thanks.（デザートは遠慮しておきます）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'swamped', seg: [2.55, 8.35], keep: true,
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'swamped', seg: [2.6, 11.1], keep: true,
       stem: 'What does “I’m super swamped” mean?',
       ja: '「I’m super swamped」の意味は？',
       choices: ['He is very busy', 'He doesn’t know how', 'He feels a bit sick'], a: 0,
@@ -62,7 +62,7 @@ export const charityPick: Clip = {
       trap: '断ったら謝るもの、と思いやすい。worth it は満足しているしるし。',
       use: 'The view was totally worth it.（景色は来たかいがあった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'symptoms', seg: [15.7, 26.6], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'symptoms', seg: [15.7, 26.7], keep: true,
       stem: 'What does Andy say about his sleep and eating?',
       ja: 'アンディは睡眠と食事について何と言う？',
       choices: ['Can’t sleep, eats too much', 'Sleeps all day, eats little', 'Can’t sleep, doesn’t eat'], a: 0,
@@ -74,7 +74,7 @@ export const charityPick: Clip = {
       trap: 'over- が小さく聞こえ、eating だけ残って「食べない」と思いやすい。',
       use: 'I’ve been overeating lately.（最近食べすぎてる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'exam', seg: [26.15, 31.95], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'exam', seg: [24.3, 34.1], keep: true,
       stem: 'What happened to Andy?',
       ja: 'アンディに何があった？',
       choices: ['He failed the police exam', 'He quit the police school', 'He lost his police job'], a: 0,
@@ -109,7 +109,7 @@ export const charityPick: Clip = {
       trap: 'sad と sweaty を原因と結果と取りやすい。usually は「ふだんは」。',
       use: 'She’s always tired, sick or not.（彼女は具合に関係なく、いつも眠そう）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B1', point: 'million', seg: [36.6, 43.55],
+    { id: 'i1', skill: 'phrase', level: 'B1', point: 'million', seg: [34.4, 43.9],
       stem: 'What does “a million applications” mean?',
       ja: '「a million applications」の意味は？',
       choices: ['A great many of them', 'Exactly one million', 'A million dollars’ worth'], a: 0,
@@ -121,7 +121,7 @@ export const charityPick: Clip = {
       trap: '数を文字どおり思いやすい。会話の a million は「山ほど」。',
       use: 'I have a million things to do.（やることが山ほどある）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'itll', seg: [45.75, 49.35], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'itll', seg: [43.8, 51.6], keep: true,
       stem: 'Fill the gap: “Come on, let’s help him. ___ fun.”',
       ja: '空いている所に入る語は？',
       choices: ['It’s', 'It’ll be', 'It was'], a: 1,
@@ -133,7 +133,7 @@ export const charityPick: Clip = {
       trap: 'It’s なら be がなく「イッツ」とすぐ fun。It was なら「ワズ」が聞こえる。「ビ」が聞こえたら It’ll be。',
       use: 'Come with us. It’ll be fun.（一緒に行こう。楽しいよ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'covered', seg: [49.35, 55.65], keep: true,
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'covered', seg: [47.9, 57.6], keep: true,
       stem: 'Why does Tom say “you guys got it covered”?',
       ja: 'トムはなぜ「you guys got it covered」と言う？',
       choices: ['To have an excuse to leave', 'To offer to pay for it', 'To offer to help them'], a: 0,
@@ -145,7 +145,7 @@ export const charityPick: Clip = {
       trap: 'cover を「お金を払う」と思いやすい。すぐあとの head out（帰る）が本当の目的。',
       use: 'Sounds like you’ve got it covered.（もう大丈夫そうだね）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'lunch', seg: [55.65, 61.45], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'lunch', seg: [54.3, 61.5], keep: true,
       stem: 'What does Ben offer to get Tom to stay?',
       ja: 'ベンはトムを引き止めるために何をすすめる？',
       choices: ['Some fancy lunch', 'Some of the money', 'Credit for the pick'], a: 0,
@@ -201,7 +201,7 @@ export const charityPick: Clip = {
       trap: '決まり文句だけ聞くと、ふつうの意味だと思いやすい。例が何の危険かを聞く。',
       use: 'Sports keep kids out of trouble.（スポーツは子どもを悪い道から守る）' },
 
-    { id: 'h4', skill: 'marker', level: 'B1', point: 'speech', seg: [89.25, 99.5],
+    { id: 'h4', skill: 'marker', level: 'B1', point: 'speech', seg: [91, 101.7],
       stem: 'What does Andy mean by “In conclusion”?',
       ja: 'アンディの「In conclusion」の意味は？',
       choices: ['To sum up', 'For example', 'Let me ask you'], a: 0,
@@ -213,7 +213,7 @@ export const charityPick: Clip = {
       trap: '前に Example（例えば）があるので、例の続きだと思いやすい。conclusion は「まとめ」。',
       use: 'In conclusion, let’s order pizza.（結論として、ピザを頼もう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'across', seg: [102.9, 107], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'across', seg: [102.9, 108], keep: true,
       stem: 'Type Ben’s question: “Anyone else ___ anything good?” (2 words)', answer: 'come across',
       ja: '「Anyone else」のあとの2語を書こう。',
       cue: '「Anyone else」のすぐあと。',
@@ -223,7 +223,7 @@ export const charityPick: Clip = {
       trap: '1語に聞こえやすいが2語。前の Did が落ちた、くだけた聞き方。',
       use: 'Did you come across my keys?（私の鍵、見かけなかった？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'ambulance', seg: [142.3, 152.65],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'ambulance', seg: [144.6, 153.7],
       stem: 'Why are ambulances called “dumb”?',
       ja: '救急車は、なぜ「くだらない」と言われる？',
       choices: ['Andy’s idea seems better', 'The homes are too far', 'The hospital is too small'], a: 0,
@@ -270,7 +270,7 @@ export const charityPick: Clip = {
       trap: '救急車を dumb と言う声もあったが、責める理由はアンディの気持ち。',
       use: 'He really needed some good news.（彼にはいい知らせが必要だった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'weeks', seg: [180.75, 188.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'weeks', seg: [180.8, 188.8], keep: true,
       stem: 'It’s the most excited Andy has been in how long?',
       ja: 'アンディがこんなに張り切ったのは、どのくらいぶり？',
       choices: ['Days', 'Weeks', 'Months'], a: 1,

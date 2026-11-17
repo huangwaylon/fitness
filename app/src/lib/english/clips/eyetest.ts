@@ -14,7 +14,7 @@ export const andyEyeTest: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'again', seg: [3.9, 10.3],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'again', seg: [2.8, 11.7],
       stem: 'What does Ann want with “Do you want to try that again?”', ja: 'アンの “Do you want to try that again?” は何を求めている？',
       choices: ['Ask again, more politely', 'Say it again, but louder', 'Say sorry first'], a: 0,
       choicesJa: ['もっとていねいに聞き直して', 'もっと大きな声で言って', 'まず謝って'],
@@ -25,7 +25,7 @@ export const andyEyeTest: Clip = {
       trap: '「まず謝って」と思いやすい。すぐあとに来るのは、ていねいな言い直し。',
       use: 'Want to try that again, politely?（ていねいに言い直してみる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'help', seg: [6.4, 22.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'help', seg: [6, 23],
       stem: 'Why have they come to Ann?', ja: '二人はなぜアンのところに来た？',
       choices: ['Andy is not feeling well', 'Andy needs an eye test', 'They need money for a doctor'], a: 0,
       choicesJa: ['アンディの具合が悪い', 'アンディは目の検査が必要', '医者代が必要'],
@@ -36,7 +36,7 @@ export const andyEyeTest: Clip = {
       trap: '題名の目の検査や、あとのお金の話に引っぱられやすい。目的は最初の Because のあと。',
       use: 'I’m not feeling well today.（今日は具合が悪い）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'eyes', seg: [10.3, 16.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'eyes', seg: [8.4, 16.7],
       stem: 'What does Andy say is wrong with his eyes?', ja: 'アンディは、目がどうだと言う？',
       choices: ['He’s seeing double', 'They really hurt a lot', 'He’s seeing spots'], a: 0,
       choicesJa: ['物が二重に見える', 'すごく痛い', '点々が見える'],
@@ -47,18 +47,7 @@ export const andyEyeTest: Clip = {
       trap: 'hurt はすぐあとの teeth（歯）の話。seeing のあとの一語まで聞く。',
       use: 'I’m so tired I’m seeing double.（疲れすぎて物が二重に見える）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'person', seg: [10.3, 22.5],
-      stem: 'What does Ann say about Andy’s list?', ja: 'アンは、アンディの症状のリストについて何と言う？',
-      choices: ['Some are just normal life', 'Some he’s just making up', 'Some come from being hungry'], a: 0,
-      choicesJa: ['ただの普通の生活のものもある', 'でっちあげたものもある', '空腹のせいのものもある'],
-      cue: '「some of them are」のあと',
-      line: 'some of those things are *symptoms*, and some of them are *just being a person*.',
-      said: '「症状のものもあるし、ただ人間として普通のこともある」と答える。',
-      mean: 'symptom ＝ 症状。頭の中の曲や空腹は病気ではなく、誰にでもあること。やんわりした皮肉。',
-      trap: 'being a person を、うそや空腹の話だと思いやすい。some… and some… で二つに分けている。',
-      use: 'That’s not a symptom. That’s Monday.（それは症状じゃない、月曜日なだけ）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'stuck', seg: [12.2, 16.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'stuck', seg: [11.2, 18.8],
       stem: 'What does “a song stuck in my head” mean?', ja: '“a song stuck in my head” はどういう意味？',
       choices: ['He keeps hearing a tune', 'He hears a ringing sound', 'He forgot a song’s name'], a: 0,
       choicesJa: ['曲が頭の中で流れ続ける', 'キーンという音がする', '曲名を忘れた'],
@@ -69,7 +58,18 @@ export const andyEyeTest: Clip = {
       trap: 'stuck を「詰まって出てこない」と思うと、忘れた話に聞こえやすい。',
       use: 'That song is stuck in my head.（あの曲が頭から離れない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'gold', seg: [31, 44.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'person', seg: [16.2, 24.8],
+      stem: 'What does Ann say about Andy’s list?', ja: 'アンは、アンディの症状のリストについて何と言う？',
+      choices: ['Some are just normal life', 'Some he’s just making up', 'Some come from being hungry'], a: 0,
+      choicesJa: ['ただの普通の生活のものもある', 'でっちあげたものもある', '空腹のせいのものもある'],
+      cue: '「some of them are」のあと',
+      line: 'some of those things are *symptoms*, and some of them are *just being a person*.',
+      said: '「症状のものもあるし、ただ人間として普通のこともある」と答える。',
+      mean: 'symptom ＝ 症状。頭の中の曲や空腹は病気ではなく、誰にでもあること。やんわりした皮肉。',
+      trap: 'being a person を、うそや空腹の話だと思いやすい。some… and some… で二つに分けている。',
+      use: 'That’s not a symptom. That’s Monday.（それは症状じゃない、月曜日なだけ）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'gold', seg: [39.2, 44.2],
       stem: 'What does “Point is” mean here?', ja: 'ここでの “Point is” はどういう意味？',
       choices: ['The important thing is', 'By the way', 'I’m not sure, but'], a: 0,
       choicesJa: ['大事なのは', 'ところで', 'よく分からないけど'],
@@ -80,7 +80,7 @@ export const andyEyeTest: Clip = {
       trap: '話が変わるので「ところで」と思いやすい。Point is のあとが言いたいこと。',
       use: 'Point is, we made it on time.（要するに、間に合ったってこと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [44.1, 48],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [41.9, 49.8],
       stem: 'What can Ann help Andy with?', ja: 'アンは、何なら手当てできる？',
       choices: ['Small cuts and bruises', 'His head and his eyes', 'His teeth and his tongue'], a: 0,
       choicesJa: ['小さな切り傷やあざ', '頭と目', '歯と舌'],
@@ -108,7 +108,7 @@ export const andyEyeTest: Clip = {
       trap: '悪口が強いので、言われた二人が笑われていると取りやすい。誰の説明が外れているかを追う。',
       use: 'Says the guy who got lost twice.（2回も道に迷った人が言う？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'insurance', seg: [52.4, 61.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'insurance', seg: [52.4, 61.9],
       stem: 'What do they say insurance is for?', ja: '二人は、保険は何のためだと言う？',
       choices: ['When your car gets damaged', 'When your house gets damaged', 'When you get sick'], a: 0,
       choicesJa: ['車に何かあったとき', '家に何かあったとき', '病気になったとき'],
@@ -179,7 +179,7 @@ export const andyEyeTest: Clip = {
       trap: 'あいまいな話し方を、けがを隠す強がりと取りやすい。迷いは作り話の跡で、本当の話はすぐ横にある。',
       use: 'I was “studying,” not napping.（「勉強してた」の、昼寝じゃなくて）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B2', point: 'sneeze', seg: [78.7, 89.8],
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'sneeze', seg: [82.3, 94],
       stem: 'What does “That sounds about right” mean here?', ja: 'ここでの “That sounds about right” はどういう意味？',
       choices: ['That’s just what I’d expect', 'That’s a strange story', 'That can’t be true'], a: 0,
       choicesJa: ['いかにもありそうだ', 'それは変な話だ', 'そんなはずはない'],
@@ -190,7 +190,7 @@ export const andyEyeTest: Clip = {
       trap: 'right から「正しい・すばらしい」とほめていると思いやすい。about right で「だいたいそんなもの」。',
       use: 'Late again? Sounds about right.（また遅刻？まあ、そうだろうね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'mild', seg: [89.6, 93.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'mild', seg: [89.6, 95.6],
       stem: 'Fill the gap: “…it’s extremely mild, so I ___ worry about it.”', ja: '空所に入るのは？ “…so I ___ worry about it.”',
       choices: ['wouldn’t', 'won’t', 'don’t'], a: 0,
       choicesJa: ['（私なら）〜しない', '〜しないつもり', '〜しない'],
@@ -212,7 +212,7 @@ export const andyEyeTest: Clip = {
       trap: '遠慮して終わると思いやすい。I mean のあとの yeah で、話がひっくり返る。',
       use: 'No. Well, I mean, maybe.（ううん、まあ、ていうか、たぶん）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'twix', seg: [111.4, 116.85],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'twix', seg: [109, 116.9],
       stem: 'What does Andy say once happened with a Twix?', ja: 'アンディは、ツイックスで何があったと言う？',
       choices: ['He ate one with the wrapper', 'He choked on one while driving', 'He swallowed one whole'], a: 0,
       choicesJa: ['包み紙ごと食べた', '運転中にのどに詰まらせた', 'まるごと飲みこんだ'],
@@ -234,7 +234,7 @@ export const andyEyeTest: Clip = {
       trap: '20 なら「トゥエニ」ですぐ years。35 は「サーティ」で始まる。最後に「ファイヴ」があれば25。',
       use: 'I’ve lived here for the past ten years.（この10年ここに住んでいる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'thumb', seg: [121.3, 123.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'thumb', seg: [120.1, 126.1],
       stem: 'Type how the thumb news ends: “I broke my thumb ___.” (5 words)', ja: '書こう：“I broke my thumb ___.”（5語）',
       answer: 'on the way over here',
       cue: '「thumb」のあと',
@@ -255,7 +255,7 @@ export const andyEyeTest: Clip = {
       trap: 'need glasses で決まりと思いやすい。そのあと誰が何と言い返すかまで聞く。',
       use: 'You definitely need a break.（絶対に休みが必要だよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'thanks', seg: [125.4, 134.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'thanks', seg: [130.5, 136.1],
       stem: 'How does Andy feel about what the doctor can do?', ja: '医者にできることを聞いて、アンディはどう思う？',
       choices: ['Let down, not much help', 'Thankful for the thumb help', 'Worried about specialists'], a: 0,
       choicesJa: ['がっかり、あまり助けにならない', '親指の手当てに感謝', '専門医のことが心配'],
@@ -277,7 +277,7 @@ export const andyEyeTest: Clip = {
       trap: '前の100 million に引かれやすい。2 なら「トゥー」、100 なら「ハンドレッド」。like のあとの「テン」で10。',
       use: 'I’ll be there in like ten minutes.（10分くらいで着く）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'divorce', seg: [159.4, 165.7],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'divorce', seg: [159.4, 167],
       stem: 'How serious is the wife’s threat about glasses?', ja: 'メガネについての妻のおどしは、どのくらい本気？',
       choices: ['Playful, she likes his face', 'Serious, she wants control', 'Serious, she fears the cost'], a: 0,
       choicesJa: ['冗談、彼の顔が好き', '本気、思いどおりにしたい', '本気、値段が心配'],
@@ -288,7 +288,7 @@ export const andyEyeTest: Clip = {
       trap: 'divorce（離婚）だけ聞くと、本気だと思いやすい。直前の理由とセットで聞く。',
       use: 'I like it the way it is.（今のままが好き）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'handsome', seg: [165.6, 168.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'handsome', seg: [164.6, 169.6],
       stem: 'Type the reason given: “___ for glasses.” (2 words)', ja: '書こう：“___ for glasses.”（2語）',
       answer: 'too handsome',
       cue: '「Doc」のあと',

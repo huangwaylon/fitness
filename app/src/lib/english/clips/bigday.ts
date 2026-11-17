@@ -14,7 +14,7 @@ export const bigDay: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'raise', seg: [0.5, 10.88],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'raise', seg: [1.3, 13.3],
       stem: 'What does the caller promise Roz?', ja: '電話の人は、ロズに何を約束する？',
       choices: ['A raise and things from home', 'A day off and a ride', 'A raise once kids are home'], a: 0,
       choicesJa: ['昇給と、家の物を何でも', '休みと、車での送り', '子どもが帰ったら昇給'],
@@ -25,7 +25,7 @@ export const bigDay: Clip = {
       trap: '前の文の home が残って、「子どもが帰ったら」とつなげやすい。Also は新しい話の合図。',
       use: 'Take anything you want from the fridge.（冷蔵庫の物、何でも食べてね）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'worry', seg: [2.8, 6.4],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'worry', seg: [2.4, 10.4],
       stem: 'Type what the caller says: “Tell the kids ___.” (3 words)', ja: '書こう：“Tell the kids ___.”（3語）',
       answer: 'not to worry',
       cue: '「Tell the kids」のすぐあと',
@@ -35,7 +35,7 @@ export const bigDay: Clip = {
       trap: 'not が弱いと to worry だけ残り、意味が逆に聞こえる。tell のあとの not を探す。',
       use: 'Tell her not to wait for me.（待たなくていいって伝えて）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'inworld', seg: [10.32, 21.36],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'inworld', seg: [9.4, 18.3],
       stem: 'What does Ben mean by “How in the world…?”', ja: 'ベンの “How in the world…?” はどういう意味？',
       choices: ['He thinks it can’t work', 'He asks how campaigns work', 'He is too busy to talk'], a: 0,
       choicesJa: ['うまくいくはずがないと思う', '選挙のやり方を聞いている', '忙しくて話せない'],
@@ -46,7 +46,7 @@ export const bigDay: Clip = {
       trap: '質問の形なので、やり方を聞いていると思いやすい。in the world が付くと「無理でしょ」。',
       use: 'How in the world do I finish this?（こんなのどうやって終わらせるの？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'decide', seg: [10.32, 43.95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'decide', seg: [10.3, 44],
       stem: 'What are Ben and Leslie trying to decide?', ja: 'ベンとレスリーは、何を決めようとしている？',
       choices: ['Whether Ben should run for office', 'When Ben should run for office', 'Whether Leslie should quit work'], a: 0,
       choicesJa: ['ベンが選挙に出るかどうか', 'ベンがいつ選挙に出るか', 'レスリーが仕事をやめるかどうか'],
@@ -90,7 +90,7 @@ export const bigDay: Clip = {
       trap: '生活の心配を本音と取りやすい。折れた直後の一文が本音。中立宣言は意見を隠す前置きになりやすい。',
       use: 'Okay, fine, I’ll say it. Take the job.（分かった、言うよ。その仕事受けなよ）', retired: true },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'pockets', seg: [20.16, 28.6],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'pockets', seg: [20.2, 30.1],
       stem: 'What does Leslie say about pockets?', ja: 'レスリーはポケットについて何と言う？',
       choices: ['They should all be bigger', 'They should be smaller', 'She has no opinion'], a: 0,
       choicesJa: ['全部もっと大きくすべき', 'もっと小さくすべき', '意見はない'],
@@ -101,7 +101,7 @@ export const bigDay: Clip = {
       trap: '直前に I’m neutral（中立）と言うので、意見はないと思いやすい。すぐ Yes と答える。',
       use: 'In my opinion, it should be bigger.（私の意見では、もっと大きくすべき）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'work', seg: [30.56, 38.5],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'work', seg: [30.6, 38.5],
       stem: 'What does “make it work” mean?', ja: '“make it work” はどういう意味？',
       choices: ['Find a way to do it', 'Work much harder', 'Wait until much later'], a: 0,
       choicesJa: ['何とかやる方法を見つける', 'もっと働く', 'あとまで待つ'],
@@ -123,7 +123,7 @@ export const bigDay: Clip = {
       trap: 'beside（〜のとなりに）と似ていて、場所の話だと思いやすい。s が付いた文頭の Besides は「それに」。',
       use: 'Besides, it’s too late to go out.（それに、出かけるにはもう遅い）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'cantalk', seg: [43.95, 49.2],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'cantalk', seg: [43.2, 52.5],
       stem: 'Why does Ben say “I can’t talk about this”?', ja: 'ベンはなぜ「I can’t talk about this」と言う？',
       choices: ['To say no to answering now', 'To give a full answer', 'To ask them a question'], a: 0,
       choicesJa: ['今は答えないと断るため', 'しっかり答えるため', '記者に質問するため'],
@@ -133,6 +133,17 @@ export const bigDay: Clip = {
       mean: 'I can’t talk about this right now ＝ 今は話せない。ていねいに答えを断る決まった言い方。',
       trap: 'I’m sorry で謝っていると思いやすい。ここは断りの前置き。',
       use: 'Sorry, I can’t talk right now.（ごめん、今は話せない）' },
+
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'mayor', seg: [46.8, 52.2],
+      stem: 'What does the reporter say about Ben’s past?', ja: '記者は、ベンの過去について何と言う？',
+      choices: ['He was a mayor who did badly', 'He lost a race for mayor', 'He worked for a mayor'], a: 0,
+      choicesJa: ['市長になったが、うまくいかなかった', '市長選に落ちた', '市長の下で働いた'],
+      cue: '「mayor」の前',
+      line: 'Your only experience in politics was as *a failed mayor* at age 18.',
+      said: '「政治経験は、18歳でダメ市長だったことだけ」と記者が言う。',
+      mean: 'a failed mayor ＝ 市長になったが、うまくいかなかった人。落選ではない。',
+      trap: 'failed を「落ちた」と思いやすい。failed ＋仕事は「その仕事で失敗した人」。',
+      use: 'He’s a failed actor turned chef.（俳優で芽が出ずシェフになった人）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', seg: [47.0, 92.0],
       stem: 'How does Ben’s talk with the reporters end?', ja: 'ベンと記者たちの話は、どう終わる？',
@@ -145,18 +156,7 @@ export const bigDay: Clip = {
       trap: '断りや実績の話で終わると思いやすい。最後の一文 My name is Ben Wyatt… を聞く。',
       use: 'Fine. You want an answer? Here it is.（いいよ、答えが欲しいなら言うよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'mayor', seg: [48.48, 52.72],
-      stem: 'What does the reporter say about Ben’s past?', ja: '記者は、ベンの過去について何と言う？',
-      choices: ['He was a mayor who did badly', 'He lost a race for mayor', 'He worked for a mayor'], a: 0,
-      choicesJa: ['市長になったが、うまくいかなかった', '市長選に落ちた', '市長の下で働いた'],
-      cue: '「mayor」の前',
-      line: 'Your only experience in politics was as *a failed mayor* at age 18.',
-      said: '「政治経験は、18歳でダメ市長だったことだけ」と記者が言う。',
-      mean: 'a failed mayor ＝ 市長になったが、うまくいかなかった人。落選ではない。',
-      trap: 'failed を「落ちた」と思いやすい。failed ＋仕事は「その仕事で失敗した人」。',
-      use: 'He’s a failed actor turned chef.（俳優で芽が出ずシェフになった人）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'wedding', seg: [51.76, 56.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'wedding', seg: [51.3, 56.3],
       stem: 'Why does Ben want the reporters to stop?', ja: 'ベンはなぜ、記者にやめてほしい？',
       choices: ['He’s busy at a wedding', 'He hasn’t decided yet', 'He must call home'], a: 0,
       choicesJa: ['結婚式で手がふさがっている', 'まだ決めていない', '家に電話しないといけない'],
@@ -167,7 +167,7 @@ export const bigDay: Clip = {
       trap: '迷っていた話が頭にあると、「まだ決めていない」を選びやすい。言った理由だけで選ぶ。',
       use: 'Not now, my hands are full.（今は手がふさがってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'living', seg: [65.5, 69.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'living', seg: [63.8, 68.8],
       stem: 'Type what Ben says: “Which, by the way, is ___.” (6 words)', ja: '書こう：“Which, by the way, is ___.”（6語）',
       answer: 'what i do for a living',
       cue: '「by the way, is」のあと',
@@ -177,7 +177,7 @@ export const bigDay: Clip = {
       trap: 'for a が一つの弱い音になり、語が足りなく聞こえやすい。a を数える。',
       use: 'So, what do you do for a living?（お仕事は何を？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years5', seg: [69.6, 75.44], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years5', seg: [68.7, 75.4], keep: true,
       stem: 'How long was Ben city manager, he says?', ja: 'ベンはシティマネージャーを何年やった？',
       choices: ['5 years', '9 years', '15 years'], a: 0,
       choicesJa: ['5年', '9年', '15年'],
@@ -188,7 +188,7 @@ export const bigDay: Clip = {
       trap: 'fifteen なら「ティーン」と長く伸びる。nine は「ナイン」。短い「ファイヴ」がすぐ years に続く。',
       use: 'I lived there for five years.（そこに5年住んでいました）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'goodat', seg: [72.72, 76.08],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'goodat', seg: [68.7, 75.4],
       stem: 'Fill the gap: “…city manager, and I’m ___.”', ja: '空所に入るのは？ “…city manager, and I’m ___.”',
       choices: ['pretty good at this', 'pretty good with it', 'pretty good at it'], a: 2,
       choicesJa: ['これがけっこう得意', 'それの扱いがけっこう上手', 'それがけっこう得意'],
@@ -199,7 +199,7 @@ export const bigDay: Clip = {
       trap: 'this なら舌を歯にあてる「ズィス」、with なら「ウィ」。短い「アディッ」なら at it。',
       use: 'I’m pretty good at cooking.（料理はわりと得意です）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'miracle', seg: [97.0, 103.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'miracle', seg: [96.7, 106.8],
       stem: 'What does “You are a miracle worker” mean?', ja: '“You are a miracle worker” はどういう意味？',
       choices: ['You did amazing work', 'You work at a church', 'You work too hard'], a: 0,
       choicesJa: ['すばらしい仕事をした', '教会で働いている', '働きすぎ'],
@@ -210,7 +210,7 @@ export const bigDay: Clip = {
       trap: 'miracle（奇跡）から、宗教の話だと思いやすい。Everything was perfect に続くほめ言葉。',
       use: 'You fixed it? You’re a miracle worker!（直したの？すごい！）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'drama', seg: [103, 111.28],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'drama', seg: [103, 111.2],
       stem: 'How did the wedding go, says Donna?', ja: 'ドナによると、結婚式はどうだった？',
       choices: ['Well, but maybe too calm', 'Badly, a guest went crazy', 'Well, after a family fight'], a: 0,
       choicesJa: ['よかったが、少し穏やかすぎ', 'ひどかった、客が暴れた', 'よかった、家族げんかのあとで'],
@@ -235,17 +235,6 @@ export const bigDay: Clip = {
       trap: 'not が弱く消えると「ハグする」と聞こえる。try not to の not を逃さない。',
       use: 'I’ll try not to cry.（泣かないようにするね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'thunder', seg: [120.78, 128.16],
-      stem: 'What does “steal your thunder” mean?', ja: '“steal your thunder” はどういう意味？',
-      choices: ['Take attention away from you', 'Give your story to reporters', 'Spoil your wedding food'], a: 0,
-      choicesJa: ['あなたから注目を奪う', '記者にあなたの話を渡す', '結婚式の料理をだめにする'],
-      cue: '「we didn’t want to」のあと',
-      line: 'why didn’t you tell us…? — Well, we didn’t want to *steal your thunder*.',
-      said: '「なぜ黙ってたの？」と聞かれ、「主役の座を奪いたくなかった」と答える。',
-      mean: 'steal someone’s thunder ＝ 人の注目を横取りする。今日の主役は花嫁のドナ。',
-      trap: 'steal（盗む）や thunder（雷）を字のまま取ると、意味が通らない。thunder は「注目」のたとえ。',
-      use: 'I don’t want to steal your thunder.（あなたの見せ場を取りたくない）' },
-
     // C2: which reply would show he understood?
     // why: apology ← "why didn't you tell us" heard as the point, so an apology fits (i5's hurt reading); later ← the
     //   wedding setting heard as "not today" (i5's politics reading)
@@ -262,6 +251,17 @@ export const bigDay: Clip = {
       trap: 'なぜ言わなかったのかが頭に残り、謝る返事を選びやすい。返事は相手の最後の一言の意図に合わせる。',
       use: 'Well, in that case, yes.（それなら、はい、そうです）', retired: true },
 
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'thunder', seg: [120.8, 130.4],
+      stem: 'What does “steal your thunder” mean?', ja: '“steal your thunder” はどういう意味？',
+      choices: ['Take attention away from you', 'Give your story to reporters', 'Spoil your wedding food'], a: 0,
+      choicesJa: ['あなたから注目を奪う', '記者にあなたの話を渡す', '結婚式の料理をだめにする'],
+      cue: '「we didn’t want to」のあと',
+      line: 'why didn’t you tell us…? — Well, we didn’t want to *steal your thunder*.',
+      said: '「なぜ黙ってたの？」と聞かれ、「主役の座を奪いたくなかった」と答える。',
+      mean: 'steal someone’s thunder ＝ 人の注目を横取りする。今日の主役は花嫁のドナ。',
+      trap: 'steal（盗む）や thunder（雷）を字のまま取ると、意味が通らない。thunder は「注目」のたとえ。',
+      use: 'I don’t want to steal your thunder.（あなたの見せ場を取りたくない）' },
+
     // R fix: V2 (blind 55 %): "No news of theirs could outshine her" was the only bold, quotable choice; the three are now
     //   plain "She…" readings
     // why: upset ← "why didn't you tell us" just before heard as the real complaint; politics ← a wedding plus "Steal my
@@ -277,7 +277,7 @@ export const bigDay: Clip = {
       trap: 'I’m sorry を謝罪や不満と取りやすい。ここは「ちょっと待って」という前置き。',
       use: 'Me, nervous? Have you met me?（私が緊張？私を知らないの？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'toast', seg: [136.8, 144.2],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'toast', seg: [136.8, 144.3],
       stem: 'How does the guest who toasts himself sound?', ja: '自分に乾杯する客は、どう聞こえる？',
       choices: ['Proud, and he means it', 'Shy, hiding it in a joke', 'Teasing people who brag'], a: 0,
       choicesJa: ['得意げで、本気', '照れて、冗談でごまかす', '自慢する人をからかっている'],
@@ -305,18 +305,7 @@ export const bigDay: Clip = {
       trap: '笑い声だけで、からかわれて傷ついたと取りやすい。この形式では、カメラへの一言が答え合わせ。',
       use: 'Joke’s on you. That’s my real name.（おあいにくさま、それ本名だから）', retired: true },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'gary', seg: [157.76, 166.9],
-      stem: 'How does Gary feel about his name now?', ja: '今の名前の呼ばれ方を、ゲーリーはどう思う？',
-      choices: ['Very happy, at last', 'Hurt, being laughed at', 'Annoyed, he hates it'], a: 0,
-      choicesJa: ['やっとで、とてもうれしい', '笑われて傷ついている', 'その名前が嫌いでいらいら'],
-      cue: '「finally」と最後の一言',
-      line: 'my coworkers are *finally* going to call me by my real name. *Oh, boy, I’m blessed.*',
-      said: '「同僚がやっと本当の名前で呼んでくれる。ああ、ありがたい」とカメラに話す。',
-      mean: 'finally ＝ やっと。I’m blessed ＝ ありがたい、恵まれている。心から喜んでいる。',
-      trap: 'I’m blessed を皮肉だと思いやすい。前の finally が本気のしるし。',
-      use: 'Finally, a day off. I’m so lucky.（やっと休み。ついてる）' },
-
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years30', seg: [158.96, 164.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years30', seg: [157.6, 167], keep: true,
       stem: 'How long has it taken, says Gary?', ja: 'ゲーリーによると、何年かかった？',
       choices: ['3 years', '13 years', '30 years'], a: 2,
       choicesJa: ['3年', '13年', '30年'],
@@ -326,5 +315,16 @@ export const bigDay: Clip = {
       mean: 'after 30 years ＝ 30年たって。thirty は前の「サー」が強い。',
       trap: 'thirteen なら後ろの「ティーン」が強く長い。three なら「スリー」だけ。前が強ければ30。',
       use: 'After ten years, I finally visited Kyoto.（10年越しにやっと京都へ）' },
+
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'gary', seg: [157.8, 167.7],
+      stem: 'How does Gary feel about his name now?', ja: '今の名前の呼ばれ方を、ゲーリーはどう思う？',
+      choices: ['Very happy, at last', 'Hurt, being laughed at', 'Annoyed, he hates it'], a: 0,
+      choicesJa: ['やっとで、とてもうれしい', '笑われて傷ついている', 'その名前が嫌いでいらいら'],
+      cue: '「finally」と最後の一言',
+      line: 'my coworkers are *finally* going to call me by my real name. *Oh, boy, I’m blessed.*',
+      said: '「同僚がやっと本当の名前で呼んでくれる。ああ、ありがたい」とカメラに話す。',
+      mean: 'finally ＝ やっと。I’m blessed ＝ ありがたい、恵まれている。心から喜んでいる。',
+      trap: 'I’m blessed を皮肉だと思いやすい。前の finally が本気のしるし。',
+      use: 'Finally, a day off. I’m so lucky.（やっと休み。ついてる）' },
   ]
 };

@@ -16,7 +16,7 @@ export const emmaLocked: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'key', seg: [0, 6.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'key', seg: [0, 7.6],
       stem: 'How will they get in, according to Ross?',
       ja: 'ロスによると、どうやって中に入る？',
       choices: ['His mother will bring a key', 'The super will come back soon', 'Ross will break the door'], a: 0,
@@ -39,7 +39,7 @@ export const emmaLocked: Clip = {
       trap: 'ロスも大声を出すので、二人ともあわてていると思いやすい。答えが心配を消しているかを聞く。',
       use: 'Okay, let’s not panic.（よし、あわてないでいこう）' },
 
-    { id: 'i3', skill: 'attitude', level: 'B1', point: 'wait', reveals: ['key'], seg: [3.1, 7.3],
+    { id: 'i3', skill: 'attitude', level: 'B1', point: 'wait', reveals: ['key'], seg: [0.3, 8.9],
       stem: 'How does Rachel feel about waiting for the key?',
       ja: 'かぎを待つことを、レイチェルはどう思っている？',
       choices: ['Too worried to wait', 'Happy to wait a minute', 'Angry at Ross’s mother'], a: 0,
@@ -51,7 +51,7 @@ export const emmaLocked: Clip = {
       trap: 'in a minute（すぐ）から、待てると思いやすい。あとの can’t を聞く。',
       use: 'I can’t wait that long.（そんなに待てない）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'knockwho', reveals: ['knock'], seg: [3.1, 11.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'knockwho', reveals: ['knock'], seg: [3.1, 11.6],
       stem: 'Who wants to break the door down?',
       ja: 'ドアを壊したいのはだれ？',
       choices: ['Rachel', 'Ross', 'Ross’s mother'], a: 0,
@@ -63,7 +63,7 @@ export const emmaLocked: Clip = {
       trap: '力仕事なのでロスの案と思いやすい。ロスは I would, but と答える側。',
       use: 'You have to do something!（何とかしてよ！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'knock', reveals: ['knockwho'], seg: [5.8, 9.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'knock', reveals: ['knockwho'], seg: [3.6, 11.6],
       stem: 'Type what Rachel says: “___!” (4 words)', answer: 'knock that door down',
       ja: 'レイチェルの言葉を書こう：「___!」（4語）',
       cue: '「do something」のすぐあと。',
@@ -73,7 +73,7 @@ export const emmaLocked: Clip = {
       trap: 'knock を「ノック」とだけ思うと、最後の down を聞きのがしやすい。',
       use: 'They knocked down the old wall.（古い壁を取り壊した）' },
 
-    { id: 'f1', skill: 'pragma', level: 'B2', point: 'iwould', seg: [6.7, 11.5],
+    { id: 'f1', skill: 'pragma', level: 'B2', point: 'iwould', seg: [6.5, 12.3],
       stem: 'Why does Ross say “I would, but” here?',
       ja: 'ロスは、なぜここで「I would, but」と言う？',
       choices: ['To say no, with an excuse', 'To say yes, right away', 'To ask Rachel to help'], a: 0,
@@ -85,7 +85,7 @@ export const emmaLocked: Clip = {
       trap: 'I would で「やる」と思いやすい。but のあとが断る理由。',
       use: 'I would, but I’m really tired.（そうしたいけど、すごく疲れてて）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [13, 19.2],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [12.1, 19.5],
       stem: 'Ross begins, “*Besides*…” What does “besides” mean here?',
       ja: 'ロスの「Besides…」はどういう意味？',
       choices: ['And also', 'But then', 'Anyway'], a: 0,
@@ -97,7 +97,7 @@ export const emmaLocked: Clip = {
       trap: '話を変える anyway と思いやすい。besides は同じ方向に話を足す語。',
       use: 'Besides, it’s too late to go now.（それに、もう行くには遅いよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'sleeping', seg: [13, 19.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'sleeping', seg: [13, 19.5],
       stem: 'What is the baby doing, says Ross?',
       ja: 'ロスによると、赤ちゃんは何をしている？',
       choices: ['Sleeping', 'Crying', 'Jumping'], a: 0,
@@ -120,7 +120,7 @@ export const emmaLocked: Clip = {
       trap: 'yeah で同意と取りやすい。前半の事実と後半がかみ合わないときは皮肉。',
       use: 'Oh yeah, that’s gonna happen.（はいはい、そうなるよね）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'leftwater', seg: [22.8, 27],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'leftwater', seg: [19, 27.2],
       stem: 'What does Rachel suddenly think she left on?',
       ja: 'レイチェルは急に、何をつけっぱなしにしたと思う？',
       choices: ['The water', 'The stove', 'The lights'], a: 0,
@@ -132,7 +132,7 @@ export const emmaLocked: Clip = {
       trap: 'すぐあとに stove（コンロ）も出てくるので迷いやすい。最初の心配は water。',
       use: 'I think I left the water running.（水を出しっぱなしにしたかも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'water', reveals: ['leftwater'], seg: [23.4, 27.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'water', reveals: ['leftwater'], seg: [22.4, 29.2],
       stem: 'Fill the gap: “You ___ leave the water running.”',
       ja: '空いている所に入る語は？「You ___ leave the water running.」',
       choices: ['did not', 'did', 'do not'], a: 0,
@@ -144,7 +144,7 @@ export const emmaLocked: Clip = {
       trap: 'not を聞きのがすと did（した）に聞こえやすい。did のあとの「ナッ」を聞く。',
       use: 'No, I did not eat your cake.（いや、君のケーキは食べてないって）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pull', seg: [24.9, 29.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pull', seg: [24.7, 30.6],
       stem: 'Ross says, “*Pull yourself together*.” What does he want?',
       ja: '「Pull yourself together」で、ロスは何をしてほしい？',
       choices: ['Calm down and be strong', 'Stay close to him', 'Pack her things to go'], a: 0,
@@ -156,7 +156,7 @@ export const emmaLocked: Clip = {
       trap: 'together を「一緒に」と思うと「そばにいて」に聞こえる。yourself と組むと別の意味。',
       use: 'Pull yourself together. You can do this.（しっかり。きっとできるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'cooked', seg: [28.1, 33.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'cooked', seg: [26.7, 33.4],
       stem: '“Did I leave the stove on?” What does Ross’s answer mean?',
       ja: '「コンロつけっぱなし？」へのロスの答えはどういう意味？',
       choices: ['No, since she never cooks', 'Yes, since she cooked today', 'No, since he turned it off'], a: 0,
@@ -168,7 +168,7 @@ export const emmaLocked: Clip = {
       trap: 'cooked だけ拾うと「料理した」に聞こえる。haven’t の否定と since を合わせて聞く。',
       use: 'You haven’t cooked in years!（もう何年も料理してないじゃん）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cooked', seg: [29.8, 33.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cooked', seg: [28.4, 33.4], keep: true,
       stem: 'Since when has Rachel not cooked, according to Ross?',
       ja: 'ロスによると、レイチェルはいつから料理していない？',
       choices: ['1990', '1996', '1999'], a: 1,
@@ -180,7 +180,7 @@ export const emmaLocked: Clip = {
       trap: '最後の six は短く弱いので、ninety で切れたように聞こえやすい。年は最後の語まで聞く。',
       use: 'I’ve lived here since 2019.（2019年からここに住んでいます）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'window', reveals: ['eagle'], seg: [33.5, 36.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'window', reveals: ['eagle'], seg: [32.5, 38.9],
       stem: 'Type Rachel’s question: “___?” (4 words)', answer: 'is the window open',
       ja: 'レイチェルの質問を書こう：「___?」（4語）',
       cue: '「cooked since」のあと、次の心配。',
@@ -234,7 +234,7 @@ export const emmaLocked: Clip = {
       trap: 'No が続くと「やっぱりない」と引くように聞こえやすいが、ここは自分の言葉の訂正。',
       use: 'It was big. No, no — huge.（大きかった。いや、巨大だった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'aid', seg: [51.2, 58.6],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'aid', seg: [50.2, 57.8],
       stem: 'In Ross’s story, what does the baby do?',
       ja: 'ロスの話で、赤ちゃんは何をする？',
       choices: ['Jumps across to help the bird', 'Climbs out of the window', 'Wakes up and starts crying'], a: 0,
@@ -267,7 +267,7 @@ export const emmaLocked: Clip = {
       trap: '頭の mis- が聞こえないと「正しく理解する」になる。mis- は「〜し損なう」。',
       use: 'Please don’t read this as a no.（これを断りだと思わないで）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'sorry', seg: [76, 79],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'sorry', seg: [75.1, 80.1],
       stem: 'Fill the gap: “___ gonna be sorry if that’s true.”',
       ja: '空いている所に入る語は？「___ gonna be sorry if that’s true.」',
       choices: ['Boy, are you', 'Oh boy, you’re', 'Boy, aren’t you'], a: 0,

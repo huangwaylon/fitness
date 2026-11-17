@@ -17,7 +17,7 @@ export const liceOffice: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [0, 6.9],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'times', seg: [0, 9.4],
       stem: 'How many times does the head-checker say she has had lice?',
       ja: '頭を調べる人は、シラミに何回なったと言う？',
       choices: ['12 times', '20 times', '22 times'], a: 2,
@@ -29,7 +29,7 @@ export const liceOffice: Clip = {
       trap: '12 は「トゥエルヴ」と短い。「トゥエニ」のあと two まで続けば22。',
       use: 'I’ve been to Paris three times.（パリには3回行ったことがある）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pencils', seg: [7.4, 11.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pencils', seg: [7.4, 14.9],
       stem: 'What does “*pencils down*” mean here?',
       ja: 'ここでの「pencils down」はどういう意味？',
       choices: ['Stop working for now', 'Sharpen your pencils', 'Write this down now'], a: 0,
@@ -64,7 +64,7 @@ export const liceOffice: Clip = {
       trap: 'all because を信じると昔話。理由と中身が合わないところが笑いどころ。',
       use: 'It’s all because of that one mistake.（全部あの一つのミスのせい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'break', seg: [67.7, 71.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'break', seg: [65.9, 72.9],
       stem: 'What does “*give her a break*” mean here?',
       ja: 'ここでの「give her a break」はどういう意味？',
       choices: ['Stop being hard on her', 'Let her take a short rest', 'Keep away from her'], a: 0,
@@ -76,7 +76,7 @@ export const liceOffice: Clip = {
       trap: 'break から「休憩」と思いやすい。あとの「彼女のせいとは限らない」で分かる。',
       use: 'Give him a break. He’s new.（大目に見てあげて。新人なんだから）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'really', reveals: ['break'], seg: [68, 75.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'really', reveals: ['break'], seg: [68, 77.8],
       stem: 'How does someone react to Pam’s words?',
       ja: 'パムの言葉に、ある人はどう反応する？',
       choices: ['Surprised that Pam said that', 'Thankful to Pam for saying that', 'Worried that Pam is sick'], a: 0,
@@ -99,7 +99,7 @@ export const liceOffice: Clip = {
       trap: 'What do you want? をけんか腰と取ると周りへの皮肉に聞こえる。主語が自分の名前なら的は本人。',
       use: 'I’m no chef, and I know it.（料理人じゃないのは自分でも分かってる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'angela', seg: [95.2, 104],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'angela', seg: [95.2, 105.3],
       stem: 'Why does Angela say she still got lice?',
       ja: 'アンジェラは、なぜシラミがうつったと言う？',
       choices: ['Because of Meredith', 'She forgot to wash', 'Washing never helps'], a: 0,
@@ -111,7 +111,7 @@ export const liceOffice: Clip = {
       trap: 'どれも足りない、から「洗っても効かない」と思いやすい。',
       use: 'When it comes to food, I’m picky.（食べ物のこととなると、うるさいんです）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'rent', seg: [115.6, 119.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'rent', seg: [114.4, 123.4],
       stem: 'What does Dwight’s remark about renting tell us?',
       ja: '借りる話から、ドワイトについて何が分かる？',
       choices: ['He uses the suit often', 'He rented it just today', 'He rented it four times'], a: 0,
@@ -123,7 +123,7 @@ export const liceOffice: Clip = {
       trap: 'four times（4回）が聞こえて、4回借りたと思いやすい。more than 〜（〜以上）。',
       use: 'It makes sense to buy a pass.（パスを買う方が得だね）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'warehouse', seg: [129.9, 138.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'warehouse', seg: [129.6, 139.6],
       stem: 'Where does Dwight send the people without lice?',
       ja: 'ドワイトはシラミのない人をどこへ行かせる？',
       choices: ['To the warehouse', 'To the break room', 'Home for the day'], a: 0,
@@ -146,7 +146,7 @@ export const liceOffice: Clip = {
       trap: '「残って戦う」で緊張した場面だと思いやすい。最後の一文で、話が急に小さくなる。',
       use: 'Text me when you get there.（着いたらメッセージちょうだい）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'cake', reveals: ['looklike'], seg: [147.5, 153.6],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'cake', reveals: ['looklike'], seg: [147.5, 154.5],
       stem: 'What is Meredith really doing?',
       ja: 'メレディスは本当は何をしている？',
       choices: ['Killing the lice', 'Baking a cake', 'Washing her hair'], a: 0,
@@ -158,7 +158,7 @@ export const liceOffice: Clip = {
       trap: 'Baking a cake が先に聞こえるので、選びやすい。見て分かるでしょ、という冗談。',
       use: 'I’m getting rid of old clothes.（古い服を処分している）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'looklike', reveals: ['cake'], seg: [149.6, 152.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'looklike', reveals: ['cake'], seg: [147.6, 152.7],
       stem: 'Type: “Baking a cake. ___ I’m doing?” (5 words)', answer: 'what does it look like',
       ja: '「Baking a cake. ___ I’m doing?」の空所を書こう（5語）',
       cue: '「Baking a cake」のあと',
@@ -179,7 +179,7 @@ export const liceOffice: Clip = {
       trap: 'not the time を「もう言わない」と取りやすい。先に「言うつもり」がある。',
       use: 'I’ll tell him, just not today.（彼には言う。今日じゃないだけ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'notime', seg: [163, 174.6],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'notime', seg: [162.6, 171.6],
       stem: 'What does Pam decide about telling Meredith?',
       ja: 'パムはメレディスに話すことをどう決める？',
       choices: ['To tell her later', 'To never tell her', 'To tell her right now'], a: 0,
@@ -191,7 +191,7 @@ export const liceOffice: Clip = {
       trap: 'Nothing（何でもない）から、話すのをやめたと思いやすい。',
       use: 'Now is not the time.（今はその時じゃない）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'mayo', reveals: ['remedy'], seg: [192.6, 199.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'mayo', reveals: ['remedy'], seg: [191.5, 200.7],
       stem: 'What do they say is all they need for their heads?',
       ja: '頭には何さえあればいいと言う？',
       choices: ['Mayonnaise', 'Olive oil', 'Lice shampoo'], a: 0,
@@ -214,7 +214,7 @@ export const liceOffice: Clip = {
       trap: 'メレディスが頭を刈ったので、みんなもと思いやすい。I’ll go と言うのはパム。',
       use: 'I’ll go to the store.（お店に行ってくるね）' },
 
-    { id: 'h5', skill: 'humor', level: 'B2', point: 'picture', reveals: ['lastlonger'], seg: [220.8, 225.4],
+    { id: 'h5', skill: 'humor', level: 'B2', point: 'picture', reveals: ['lastlonger'], seg: [219.9, 227.6],
       stem: 'Why is “We don’t want it to last longer” funny?',
       ja: '「We don’t want it to last longer」がおかしいのはなぜ？',
       choices: ['They don’t like her new look', 'They want a real photo now', 'They love her new look'], a: 0,
@@ -226,7 +226,7 @@ export const liceOffice: Clip = {
       trap: 'picture から、写真がほしいと思いやすい。It’s horrible（ひどい）が気持ち。',
       use: 'Stop staring at me!（じろじろ見ないで！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'lastlonger', seg: [221.9, 225.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'lastlonger', seg: [221.2, 227.6],
       stem: 'Fill the gap: “We ___ last longer.”',
       ja: '「We ___ last longer.」の空所は？',
       choices: ['don’t want it to', 'want it to', 'won’t let it'], a: 0,
@@ -238,7 +238,7 @@ export const liceOffice: Clip = {
       trap: 'don’t が小さく、want it to に聞こえやすい。won’t なら「ウォウ」。最初の「ドン」を聞く。',
       use: 'I don’t want it to rain.（雨が降ってほしくない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [234.6, 241.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [234.6, 244.5],
       stem: 'What does “*Not that* it looks bad” mean?',
       ja: '「Not that it looks bad」はどういう意味？',
       choices: ['I don’t mean it looks bad', 'It looks really bad', 'Don’t look at it'], a: 0,
@@ -261,7 +261,7 @@ export const liceOffice: Clip = {
       trap: 'ひどい言葉は悪口に聞こえやすい。awesome と cute はほめるつもりの印。',
       use: 'I mean that in a good way!（いい意味で言ってるんだよ！）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'fifty', seg: [243.9, 248],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'fifty', seg: [242.9, 248.6],
       stem: 'In the baby comparison, how many years has it suddenly aged?',
       ja: '赤ちゃんのたとえで、急に何歳老けた？',
       choices: ['15 years', '50 years', '60 years'], a: 1,
@@ -273,7 +273,7 @@ export const liceOffice: Clip = {
       trap: 'sixty は「シック」で始まる。「フィフ」で始まり、最後がのびなければ fifty。',
       use: 'My dad is fifty years old.（父は50歳です）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'getyou', seg: [256, 264.5],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'getyou', seg: [254.4, 265.2],
       stem: 'Why does Pam say “Can I get you something?”',
       ja: 'パムは、なぜ「Can I get you something?」と言う？',
       choices: ['To offer to buy her something', 'To ask her for a little money', 'To ask her to come along'], a: 0,

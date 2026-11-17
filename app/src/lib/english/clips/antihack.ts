@@ -14,7 +14,7 @@ export const antiHack: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'shoe', seg: [2.6, 11.65],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'shoe', seg: [2.6, 13.9],
       stem: 'Where had the missing speech been all along?',
       ja: 'なくなった原稿は、ずっとどこにあった？',
       choices: ['Inside his shoe', 'Inside his suit', 'Inside his shirt'], a: 0,
@@ -26,7 +26,7 @@ export const antiHack: Clip = {
       trap: 'suit なら「スート」、shirt なら「シャート」。「シュー」なら shoe。moist も手がかり。',
       use: 'I put it here for safekeeping.（なくさないようにここに入れておいた）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'leak', seg: [3.0, 13.4],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'leak', seg: [9.3, 14.3],
       stem: 'What does Leslie ask when the speech turns up?',
       ja: '原稿が見つかったとき、レスリーは何と聞く？',
       choices: ['How Kim got the speech', 'Why he lost the speech', 'Who wrote the speech'], a: 0,
@@ -38,7 +38,7 @@ export const antiHack: Clip = {
       trap: '原稿をなくした話が先にあるので「なぜなくした」に思いやすい。でも実はなくしていない。',
       use: 'Then how did they find out?（じゃあ、どうやって知ったの？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'ahead', seg: [13.8, 17.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'ahead', seg: [12.6, 17.6],
       stem: 'What does “one step ahead of me” mean?',
       ja: '「one step ahead of me」はどういう意味？',
       choices: ['They know things before me', 'They follow me everywhere', 'They walk faster than me'], a: 0,
@@ -50,7 +50,7 @@ export const antiHack: Clip = {
       trap: 'step（歩み）から歩く話に思いやすい。続く例はどれも「先に知っていた」話。',
       use: 'They’re always one step ahead of us.（あの人たち、いつも一枚上手だ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hacked', seg: [21.9, 33.2],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hacked', seg: [23.4, 33.7],
       stem: 'What did Kim’s questions always come right after?',
       ja: 'キムの質問は、いつも何の直後に来た？',
       choices: ['Emails to Leslie', 'Talks with Ron', 'Her city meetings'], a: 0,
@@ -62,7 +62,7 @@ export const antiHack: Clip = {
       trap: 'Ron の名前から、ロンとの話に思いやすい。Ron emailed me（メールした）まで聞く。',
       use: 'He called right after I left.（私が出た直後に彼が電話してきた）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'smash', seg: [37.2, 40.25],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'smash', seg: [36.2, 41.3],
       stem: 'Fill the gap: “Okay, smashing your phone ___ stop hacking.”',
       ja: '空所に入る語は？「電話を壊しても、ハッキングは ___」',
       choices: ['won’t', 'will', 'can’t'], a: 0,
@@ -74,7 +74,7 @@ export const antiHack: Clip = {
       trap: 'will なら「ウィル」、can’t なら「キャン」。丸い「ウォウ」が聞こえたら won’t。',
       use: 'Yelling won’t fix it.（どなっても直らないよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'police', seg: [43.6, 47.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'police', seg: [43.5, 49.6],
       stem: 'Type what Leslie says: “to see ___ I was hacked” (3 words)', answer: 'whether or not',
       ja: 'レスリーの言葉を書こう：「ハッキングされた ___ 調べる」（3語）',
       cue: '「to see」のあと。',
@@ -84,19 +84,7 @@ export const antiHack: Clip = {
       trap: 'weather（天気）と同じ音で、天気と混ざりやすい。or は弱く、ほぼ「ア」。',
       use: 'I can’t tell whether or not he’s joking.（冗談かどうか分からない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['hacked'], seg: [56.2, 98.2],
-      stem: 'What is Leslie looking for in her emails?',
-      ja: 'レスリーは自分のメールの中に何を探している？',
-      choices: ['Things that could hurt her', 'Her missing speech', 'The person who hacked her'], a: 0,
-      choicesJa: ['自分に不利になりそうなこと', 'なくなった原稿', 'ハッキングした人'],
-      cue: '「every email」のあと、最初の説明。',
-      line: 'I need to go through every email that I’ve ever sent… I need to know *what they might use against me*.',
-      said: '「送ったメールを全部見直す。不利に使われそうなものを知りたい」と言う。',
-      mean: 'go through ＝ 全部目を通す。use 〜 against me ＝ 〜を私への攻撃に使う。',
-      trap: '犯人探しに思いやすいが、記者会見の前に自分の弱みを知りたい。原稿はもう見つかっている。',
-      use: 'Let me go through my emails first.（先にメールに全部目を通させて）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [56.2, 61.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [53.5, 64.1], keep: true,
       stem: 'When is Leslie’s press conference?',
       ja: 'レスリーの記者会見はいつ？',
       choices: ['In an hour', 'In two hours', 'In two days'], a: 1,
@@ -108,7 +96,19 @@ export const antiHack: Clip = {
       trap: 'an hour なら two がない。two のあと、hours（時間）か days（日）かまで聞く。',
       use: 'The bus leaves in two hours.（バスは2時間後に出る）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'typewriter', seg: [63.5, 66.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['hacked'], seg: [56.1, 98.9],
+      stem: 'What is Leslie looking for in her emails?',
+      ja: 'レスリーは自分のメールの中に何を探している？',
+      choices: ['Things that could hurt her', 'Her missing speech', 'The person who hacked her'], a: 0,
+      choicesJa: ['自分に不利になりそうなこと', 'なくなった原稿', 'ハッキングした人'],
+      cue: '「every email」のあと、最初の説明。',
+      line: 'I need to go through every email that I’ve ever sent… I need to know *what they might use against me*.',
+      said: '「送ったメールを全部見直す。不利に使われそうなものを知りたい」と言う。',
+      mean: 'go through ＝ 全部目を通す。use 〜 against me ＝ 〜を私への攻撃に使う。',
+      trap: '犯人探しに思いやすいが、記者会見の前に自分の弱みを知りたい。原稿はもう見つかっている。',
+      use: 'Let me go through my emails first.（先にメールに全部目を通させて）' },
+
+    { id: 's2', skill: 'sound', level: 'B2', point: 'typewriter', seg: [61.6, 67.1],
       stem: 'Fill the gap: “You ___ hack into a typewriter.”',
       ja: '空所に入る語は？「タイプライターにはハッキング ___」',
       choices: ['can', 'can’t', 'couldn’t'], a: 1,
@@ -142,7 +142,7 @@ export const antiHack: Clip = {
       trap: 'can を「できる」、it を手元の物と取りやすい。命令の形で文頭に来たら、決まり文句を疑う。',
       use: 'Can it, I’m trying to sleep.（静かにして、寝たいの）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'embarrassed', seg: [89.3, 93.75],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'embarrassed', seg: [89.2, 97.2],
       stem: 'How does Leslie feel about the pen-pal letters being found?',
       ja: '文通の手紙が見つかって、レスリーはどう感じる？',
       choices: ['A little embarrassed by them', 'Not at all embarrassed by them', 'Quite amused by them'], a: 0,
@@ -154,7 +154,7 @@ export const antiHack: Clip = {
       trap: 'embarrassed が2回出るので、前の not と混ざりやすい。2回目に not はない。',
       use: 'I’m a little embarrassed to say this.（ちょっと言いにくいんだけど）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'great', seg: [98.1, 104.9],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'great', seg: [96.7, 106.1],
       stem: 'How does Leslie feel when another email comes?',
       ja: 'またメールが来て、レスリーはどう感じる？',
       choices: ['Stressed and busy', 'Happy and excited', 'Bored and sleepy'], a: 0,
@@ -166,7 +166,7 @@ export const antiHack: Clip = {
       trap: 'great から、喜んでいるように聞こえやすい。keep getting と have to で焦りと分かる。',
       use: 'I keep getting emails all day.（一日じゅうメールが来る）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'boyfriends', seg: [104.95, 113.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'boyfriends', seg: [105, 113.9],
       stem: 'Why does Donna know about email hacking?',
       ja: 'ドナはなぜメールのハッキングにくわしい？',
       choices: ['Her boyfriends all tried it', 'She hacked a boyfriend herself', 'Her boyfriend works with computers'], a: 0,
@@ -178,7 +178,7 @@ export const antiHack: Clip = {
       trap: '主語を聞き落とすと、ドナがした側に聞こえやすい。has tried の主語は boyfriends。',
       use: 'Every single one of them said no.（一人残らず断った）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'out', seg: [110.5, 114.6],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'out', seg: [107.2, 117.3],
       stem: 'What does Donna mean by “Everybody out”?',
       ja: 'ドナの「Everybody out」はどういう意味？',
       choices: ['Please leave the room', 'Everyone is out of ideas', 'Let’s all go outside'], a: 0,
@@ -190,7 +190,7 @@ export const antiHack: Clip = {
       trap: 'out から「なくなった」を思いやすい。動詞がなくても、人に向けた out は「出て」。',
       use: 'Okay, everybody out. We’re closing.（はい、みんな出て。閉店です）' },
 
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'standards', seg: [122.55, 130.9],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'standards', seg: [122.6, 131.7],
       stem: 'What did the EPA say about the soil?',
       ja: '土について、EPA（環境保護庁）は何と言った？',
       choices: ['It was barely okay', 'It was very, very good', 'It was not safe at all'], a: 0,
@@ -202,7 +202,7 @@ export const antiHack: Clip = {
       trap: '誇らしげな声なので、とてもよかったと思いやすい。minimal（最低限）を聞く。',
       use: 'It’s not perfect, but it’s acceptable.（完璧じゃないけど、許容範囲）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'months', seg: [133.2, 139.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'months', seg: [133.1, 140.9], keep: true,
       stem: 'How long has Leslie said construction will take?',
       ja: '工事にどれくらいかかると、レスリーは言ってきた？',
       choices: ['18 weeks', '8 months', '18 months', '80 months'], a: 2,
@@ -237,7 +237,7 @@ export const antiHack: Clip = {
       trap: '前に警察の話が出たので、警察に思いやすい。警察は「1か月かかる」で終わっている。',
       use: 'It was a trap!（わなだったんだ！）' },
 
-    { id: 'h5', skill: 'detail', level: 'B2', point: 'gasp', seg: [150.4, 161.5],
+    { id: 'h5', skill: 'detail', level: 'B2', point: 'gasp', seg: [158, 164],
       stem: 'What did Leslie expect people to do?',
       ja: 'レスリーは、みんなにどうしてほしかった？',
       choices: ['Gasp in surprise', 'Laugh out loud', 'Clap and cheer for her'], a: 0,
@@ -260,7 +260,7 @@ export const antiHack: Clip = {
       trap: 'baseless と言い返すのでレスリーが、夫の話が出るので夫が笑われていると取りやすい。誰の欠点が見えるかで判断する。',
       use: 'Side note: the coffee here is great.（余談だけど、ここのコーヒーおいしい）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'sidenote', seg: [171.2, 176.95],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'sidenote', seg: [170.8, 177],
       stem: 'Why does Leslie say “side note” here?',
       ja: 'レスリーは、なぜここで「side note」と言う？',
       choices: ['To add something off topic', 'To show she knows the film', 'To start her main point'], a: 0,

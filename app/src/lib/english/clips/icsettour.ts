@@ -43,7 +43,7 @@ export const icSetTour: Clip = {
       trap: 'あとでパンを焼く冗談が出るので、料理と思いやすい。何度も出るのは「昔は〜、今は〜」。',
       use: 'Let me show you around the apartment.（部屋を案内するね）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'rich', seg: [15.0, 27.4], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'rich', seg: [16.6, 28.6], keep: true,
       stem: 'How did Spencer get rich, they joke?',
       ja: 'スペンサーはどうやってお金持ちになったと、冗談で言う？',
       choices: ['By making and selling art', 'By winning a lottery', 'From Carly’s web show'], a: 0,
@@ -55,7 +55,7 @@ export const icSetTour: Clip = {
       trap: 'rich から、宝くじを思いやすい。続く Get into art が答え。',
       use: 'I want to get into cooking.（料理を始めてみたい）' },
 
-    { id: 'c2', skill: 'dict', level: 'B2', point: 'wall', seg: [59.0, 61.85],
+    { id: 'c2', skill: 'dict', level: 'B2', point: 'wall', seg: [56.6, 64.6],
       stem: 'Type the words: “there ___ like a wall here.” (3 words)', answer: 'used to be',
       ja: '言葉を入力：「there ___ like a wall here.」（3語）',
       cue: '2回目の「there」のあと',
@@ -76,7 +76,7 @@ export const icSetTour: Clip = {
       trap: 'calm down を文字どおり取りやすい。最後の一文が答え。',
       use: 'Whoa, whoa. I’m not that old!（ちょっと、そこまで年じゃないって！）', retired: true },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'kitchen', seg: [76.2, 87.45],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'kitchen', seg: [76.4, 88.4],
       stem: 'What did Spencer do to the kitchen?',
       ja: 'スペンサーは台所をどうした？',
       choices: ['Made it new and modern', 'Kept it just the same', 'Made it much smaller'], a: 0,
@@ -99,7 +99,7 @@ export const icSetTour: Clip = {
       trap: 'sorry ＋会社名で「壊した」と取りやすい。直前の一言が謝る理由。',
       use: 'No offense, Mom, but this is better.（ママ、悪いけどこっちの方がいい）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 108.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 109.6], keep: true,
       stem: 'Type the words: “Spencer’s like, let’s ___ all the cheesy, lame stuff.” (3 words)', answer: 'get rid of',
       ja: '言葉を入力：「let’s ___ all the cheesy, lame stuff.」（3語）',
       cue: '「let’s」のあと',
@@ -121,7 +121,7 @@ export const icSetTour: Clip = {
       trap: 'bachelor は「学士（大学卒業）」の意味もあり、学生を思いやすい。ここは独身の男。',
       use: 'His apartment is a real bachelor pad.（彼の部屋はいかにも独身男の部屋だ）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'couch', seg: [114.1, 127.3],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'couch', seg: [114.7, 127.9],
       stem: 'What does she say about the new couch?',
       ja: '新しいソファについて、彼女は何と言う？',
       choices: ['It’s a bit like the old one', 'It’s just like the old one', 'It’s nothing like the old one'], a: 0,
@@ -133,7 +133,7 @@ export const icSetTour: Clip = {
       trap: 'not the same だけ聞くと、全然ちがうと思いやすい。but のあとの similar まで聞く。',
       use: 'It’s not the same, but it’s similar.（同じじゃないけど、似てる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'glue', seg: [134.2, 140.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'glue', seg: [133.2, 143.8],
       stem: 'Why does Spencer glue his things down, they joke?',
       ja: 'スペンサーはなぜ物を接着していると、冗談で言う？',
       choices: ['There were many break-ins', 'Things keep falling off', 'He keeps breaking his art'], a: 0,
@@ -178,7 +178,7 @@ export const icSetTour: Clip = {
       trap: 'uh-oh を本気の驚きと取りやすい。直前の It goes nowhere が答え合わせ。',
       use: 'Oh no, who could have seen that coming?（まさか、そんなの予想できた？）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [187.0, 191.7], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [187.5, 195.5], keep: true,
       stem: 'Type the words: “So let’s ___, shall we?” (4 words)', answer: 'run on up there',
       ja: '言葉を入力：「So let’s ___, shall we?」（4語）',
       cue: '「let’s」のあと',
@@ -188,7 +188,7 @@ export const icSetTour: Clip = {
       trap: 'on と up がつながり、「ラノナップ」と1語に聞こえる。there まで入れて4語。',
       use: 'Let’s go up there, shall we?（上に行ってみようか）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'covid', seg: [216.25, 222.2],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'covid', seg: [215.6, 221.8],
       stem: 'Why won’t they stick gum on the walls again?',
       ja: 'なぜもうガムをかべにつけない？',
       choices: ['It feels dirty now', 'It feels too childish', 'The walls cost too much'], a: 0,
@@ -200,7 +200,7 @@ export const icSetTour: Clip = {
       trap: 'grown-ups（大人）の話のあとなので、子どもっぽいと思いやすい。理由は post-COVID。',
       use: 'Please don’t touch the food.（食べ物にさわらないでください）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [220.35, 227.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [220.2, 230.1], keep: true,
       stem: 'How many pieces of gum were on the old gum wall?',
       ja: '昔のガムのかべには、ガムが何個あった？',
       choices: ['500', '5,000', '50,000'], a: 1,
@@ -212,7 +212,7 @@ export const icSetTour: Clip = {
       trap: '500 なら「ハンドレッド」、5万なら「フィフティ・サウザンド」。「ファイブ・サウザンド」なら5000。',
       use: 'There were like five thousand people.（5000人くらいいた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'look', seg: [255.0, 274.95],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'look', seg: [251.6, 275],
       stem: 'How do they describe the apartment’s new look?',
       ja: '部屋の新しい見た目を、2人はどう言う？',
       choices: ['A little old, a little new', 'Completely new and different', 'Just the same as before'], a: 0,
@@ -224,7 +224,7 @@ export const icSetTour: Clip = {
       trap: 'upgraded から、全部新しいと思いやすい。But のあとと a little old を聞く。',
       use: 'It’s a little old, a little new.（ちょっと古くて、ちょっと新しい）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'bike', seg: [275.0, 282.85], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'bike', seg: [275, 282.9], keep: true,
       stem: 'Where is the bike now?',
       ja: '自転車は今どこにある？',
       choices: ['Above the elevator', 'Above the fridge', 'Beside the stairs'], a: 0,
@@ -236,7 +236,7 @@ export const icSetTour: Clip = {
       trap: 'refrigerator と elevator は終わりが似ている。used to be（前）と now（今）を分けて聞く。',
       use: 'Now it’s by the window instead.（今はかわりに窓のそばにある）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fridge', reveals: ['bike'], seg: [282.3, 288.05],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fridge', reveals: ['bike'], seg: [281.4, 288.1],
       stem: 'What does “Who puts a bicycle above the fridge?” mean?',
       ja: '「Who puts a bicycle above the fridge?」はどういう意味？',
       choices: ['Nobody should put it there', 'She wants to know the name', 'She likes it there a lot'], a: 0,
@@ -248,7 +248,7 @@ export const icSetTour: Clip = {
       trap: 'who から、だれが置いたか聞いていると思いやすい。続く makes way more sense で、変だと言いたいと分かる。',
       use: 'Who goes to work on a Sunday?（日曜に仕事に行く人なんている？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['abnormal', 'bike'], seg: [287.6, 291.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['abnormal', 'bike'], seg: [285.9, 294.1],
       stem: 'Why is “I mean” said here?',
       ja: 'ここでなぜ「I mean」と言う？',
       choices: ['To add to her own idea', 'To take back what she said', 'To change to a new topic'], a: 0,
@@ -260,7 +260,7 @@ export const icSetTour: Clip = {
       trap: 'I mean を「私は〜という意味」と思いやすい。会話では「というか」と話を足す合図。',
       use: 'I mean, it’s just too expensive.（というか、高すぎるんだよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'abnormal', seg: [287.6, 295.4],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'abnormal', seg: [287.5, 296],
       stem: 'What does “You’re still doing it” point out?',
       ja: '「You’re still doing it」は何を指している？',
       choices: ['The bike is still on a wall', 'They still argue about bikes', 'The bike is still above the fridge'], a: 0,
@@ -272,7 +272,7 @@ export const icSetTour: Clip = {
       trap: 'still から、冷蔵庫の上のままと思いやすい。場所は変わったが、かべにあるのは同じ。',
       use: 'You’re still doing it!（まだやってるじゃん！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'abnormal', seg: [291.7, 295.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'abnormal', seg: [287.9, 296],
       stem: 'Fill the gap: “You’re still ___, ten years later.”',
       ja: 'すき間をうめよう：「You’re still ___, ten years later.」',
       choices: ['doing it', 'into it', 'doing that'], a: 0,

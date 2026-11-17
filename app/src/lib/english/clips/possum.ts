@@ -23,7 +23,7 @@ export const possum: Clip = {
       trap: 'well を「えーと」や「そうですね」と取りやすい。well のあとで相手の言葉を言い換えたら訂正。',
       use: 'Well, it’s more of a suggestion.（まあ、どちらかというと提案かな）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'believe', seg: [14.1, 20.75],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'believe', seg: [14.1, 23.8],
       stem: 'Do they know the possum is Fairway Frank?',
       ja: 'そのポッサムがフェアウェイ・フランクだと分かっている？',
       choices: ['No, they only think so', 'Yes, they are quite sure', 'No, it is a different one'], a: 0,
@@ -46,18 +46,7 @@ export const possum: Clip = {
       trap: '名前が2回出るので耳に残りやすい。as のあとが、どう呼ぶかの答え。',
       use: 'Let’s just call it a draft for now.（今のところは下書きと呼ぼう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'story', reveals: ['act'], seg: [23, 62.3],
-      stem: 'What does Andy say about catching the possum?',
-      ja: 'ポッサムを捕まえたことについて、アンディは何と言う？',
-      choices: ['He acted without thinking', 'He planned it step by step', 'He stayed calm and careful'], a: 0,
-      choicesJa: ['考えずに、とにかく動いた', '一歩ずつ計画した', '落ち着いて慎重にやった'],
-      cue: 'アンディが何度も言う言葉',
-      said: '「考える時間はない。考えるな、動け」と自慢げに話す。',
-      mean: 'とっさに動いたことを手柄にしている。think（考える）と act（動く）が何度も出る。',
-      trap: '穴で暮らした話が長いので、訓練の話と思いやすい。それは怖くなかった理由。',
-      use: 'I didn’t plan it. It just happened.（計画したわけじゃない。そうなっただけ）' },
-
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'explain', seg: [23, 29.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'explain', seg: [20.6, 27.3],
       stem: 'Why does Andy say “Let me explain something”?',
       ja: 'アンディは、なぜ「Let me explain something」と言う？',
       choices: ['To offer to teach her', 'To ask her to explain', 'To say sorry to her'], a: 0,
@@ -69,7 +58,18 @@ export const possum: Clip = {
       trap: 'explain と you から「説明して」と頼むと思いやすい。Let me は自分がする合図。',
       use: 'Let me explain how it works.（仕組みを説明させてください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'notime', seg: [26.8, 30],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'story', reveals: ['act'], seg: [23, 62.8],
+      stem: 'What does Andy say about catching the possum?',
+      ja: 'ポッサムを捕まえたことについて、アンディは何と言う？',
+      choices: ['He acted without thinking', 'He planned it step by step', 'He stayed calm and careful'], a: 0,
+      choicesJa: ['考えずに、とにかく動いた', '一歩ずつ計画した', '落ち着いて慎重にやった'],
+      cue: 'アンディが何度も言う言葉',
+      said: '「考える時間はない。考えるな、動け」と自慢げに話す。',
+      mean: 'とっさに動いたことを手柄にしている。think（考える）と act（動く）が何度も出る。',
+      trap: '穴で暮らした話が長いので、訓練の話と思いやすい。それは怖くなかった理由。',
+      use: 'I didn’t plan it. It just happened.（計画したわけじゃない。そうなっただけ）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'notime', seg: [26.5, 32.4],
       stem: 'Type what Andy says: “You ___.” (5 words)', answer: "don't have time to think",
       ja: '「You ___.」の空所を書こう（5語）',
       cue: '「situation」のあと', line: 'you *don’t have time to think*.',
@@ -78,7 +78,7 @@ export const possum: Clip = {
       trap: 'don’t の t が消えて「ドン」と聞こえ、have とつながる。to も小さく「タ」。',
       use: 'I don’t have time to eat lunch.（お昼を食べる時間がない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'act', seg: [27.4, 35.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'act', seg: [27.4, 38.3],
       stem: 'What did Andy tell himself to do?',
       ja: 'アンディは自分に何と言い聞かせた？',
       choices: ['Don’t think, just act', 'Stop and think first', 'Don’t panic, just act'], a: 0,
@@ -89,6 +89,18 @@ export const possum: Clip = {
       mean: 'I thought to myself ＝「心の中で思った」。Act ＝「動け」。',
       trap: 'think が先に聞こえて「まず考えろ」と思いやすい。前の Don’t を聞き落とさない。',
       use: 'Don’t think about it. Just go.（考えないで、行っちゃえ）' },
+
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'notatall', reveals: ['little'], seg: [34.1, 43.1],
+      stem: 'Andy answers, “Not at all.” What does he mean?',
+      ja: 'アンディの「Not at all」はどういう意味？',
+      choices: ['I wasn’t thinking at all', 'I was thinking a little', 'I was thinking a lot'], a: 0,
+      choicesJa: ['まったく考えていなかった', '少しは考えていた', 'たくさん考えていた'],
+      cue: '記者の質問への短い返事',
+      line: '— So, you weren’t thinking? — *Not at all.*',
+      said: '「考えてなかったの？」に「全然」と答える。',
+      mean: 'not at all ＝「全然〜ない」。「考えていなかった？」への答えなので「全然考えてない」。',
+      trap: 'not が聞こえて迷いやすい。続く how little I was thinking で確か。',
+      use: 'Do you mind if I sit here? — Not at all.（ここに座ってもいい？—どうぞ）' },
 
     // retired (A2): a “why is it funny” item
     { id: 'h1', skill: 'humor', level: 'C1', point: 'little', reveals: ['act'], seg: [35.1, 42.75], retired: true,
@@ -102,19 +114,7 @@ export const possum: Clip = {
       trap: '考えていなかったと認めるので反省に聞こえやすい。cannot emphasize enough は胸を張る言い方。',
       use: 'I can’t thank you enough.（感謝してもしきれません）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'notatall', reveals: ['little'], seg: [35.1, 42.75],
-      stem: 'Andy answers, “Not at all.” What does he mean?',
-      ja: 'アンディの「Not at all」はどういう意味？',
-      choices: ['I wasn’t thinking at all', 'I was thinking a little', 'I was thinking a lot'], a: 0,
-      choicesJa: ['まったく考えていなかった', '少しは考えていた', 'たくさん考えていた'],
-      cue: '記者の質問への短い返事',
-      line: '— So, you weren’t thinking? — *Not at all.*',
-      said: '「考えてなかったの？」に「全然」と答える。',
-      mean: 'not at all ＝「全然〜ない」。「考えていなかった？」への答えなので「全然考えてない」。',
-      trap: 'not が聞こえて迷いやすい。続く how little I was thinking で確か。',
-      use: 'Do you mind if I sit here? — Not at all.（ここに座ってもいい？—どうぞ）' },
-
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'pit', seg: [42.3, 53.2],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'pit', seg: [42.3, 54.2],
       stem: 'Why does Andy say he wasn’t scared?',
       ja: 'アンディはなぜ怖くなかったと言う？',
       choices: ['He knows animals like that', 'He had no time to think', 'Someone else caught it'], a: 0,
@@ -126,7 +126,7 @@ export const possum: Clip = {
       trap: '前の「考える時間はない」と結びつけやすいが、ここは怖くなかった理由の話。',
       use: 'I grew up with dogs, so I’m fine.（犬と育ったから平気）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'betterpart', reveals: ['pit'], seg: [43.8, 50.3],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'betterpart', reveals: ['pit'], seg: [43.8, 54.6],
       stem: 'How long did Andy live in the pit?',
       ja: 'アンディは穴の中でどのくらい暮らした？',
       choices: ['Most of last year', 'The best months of last year', 'A few weeks last year'], a: 0,
@@ -138,7 +138,7 @@ export const possum: Clip = {
       trap: 'better を「良い」と思うと「良い時期」に聞こえる。ここは「大半」。',
       use: 'I waited the better part of an hour.（1時間近く待った）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['colleagues'], seg: [50.5, 56.8],
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['colleagues'], seg: [50.5, 57.1],
       stem: 'Andy says “You know what?” What does it mean here?',
       ja: 'アンディの「You know what?」は、ここではどういう意味？',
       choices: ['I have a new thought', 'Do you know the answer?', 'I don’t know what to say'], a: 0,
@@ -151,7 +151,7 @@ export const possum: Clip = {
       use: 'You know what? Let’s just stay home.（そうだ、もう家にいよう）' },
 
     // A2: was “why does the audience laugh at the correction”; now the word itself (colleague, a work word)
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'colleagues', reveals: ['pit'], seg: [50.5, 56.8],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'colleagues', reveals: ['pit'], seg: [50.5, 57.1],
       stem: 'Instead of “friends”, what does Andy call the animals?',
       ja: 'アンディは動物たちを「friends」の代わりに何と呼ぶ？',
       choices: ['Colleagues', 'Classmates', 'Neighbors'], a: 0,
@@ -163,7 +163,7 @@ export const possum: Clip = {
       trap: '最後の一語は少し長くて聞き取りにくい。「カリーグズ」と聞こえる。',
       use: 'She’s a colleague from work.（職場の同僚です）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'tag', seg: [57, 62.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'tag', seg: [56.2, 65],
       stem: 'What does Andy say the animals are good at?',
       ja: 'アンディは、動物たちが何が得意だと言う？',
       choices: ['Playing tag', 'Sharing things', 'Finding food'], a: 0,
@@ -198,7 +198,7 @@ export const possum: Clip = {
       trap: '最初の Were you scared? を思い出しやすい。最後の Wow のあとを聞く。',
       use: 'Maybe this will change her mind.（これで彼女の気が変わるかも）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'brokeup', reveals: ['kickedout'], seg: [64.2, 74],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'brokeup', reveals: ['kickedout'], seg: [65.1, 77.1],
       stem: 'From Andy’s whole answer, who ended the relationship?',
       ja: 'アンディの答え全体から、別れを決めたのはだれ？',
       choices: ['Ann did', 'Andy did', 'They both did'], a: 0,
@@ -210,7 +210,7 @@ export const possum: Clip = {
       trap: '最初の一文だけで決めやすい。Yeah のあとに本当のことが出る。',
       use: 'Actually, she broke up with me.（実はふられたんだ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'kickedout', reveals: ['brokeup'], seg: [68, 74],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'kickedout', reveals: ['brokeup'], seg: [68, 77.1],
       stem: 'What did Ann do, shortly before the break-up?',
       ja: 'アンは、別れの少し前に何をした？',
       choices: ['She made him move out', 'She hit him and walked off', 'She moved out on him'], a: 0,
@@ -222,7 +222,7 @@ export const possum: Clip = {
       trap: 'kick を「蹴る」と文字どおりに思いやすい。kick … out の形なら「追い出す」。',
       use: 'They kicked us out at closing time.（閉店時間に追い出された）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['list'], seg: [78.9, 82.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['list'], seg: [78.9, 83.9],
       stem: 'Fill the gap: “___ thought of that.”',
       ja: '「___ thought of that.」の空所は？',
       choices: ['I hadn’t even', 'I haven’t even', 'I’d never even'], a: 0,
@@ -234,7 +234,7 @@ export const possum: Clip = {
       trap: 'n’t の t が消え、never とも聞き違えやすい。I のあとの「ハ」と、d か v かを聞く。',
       use: 'I hadn’t even noticed.（気づいてもいなかった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hope', seg: [78.9, 90.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hope', seg: [78.9, 90.9],
       stem: 'How does Andy feel about the article idea?',
       ja: '記事のアイデアに、アンディはどんな気持ち？',
       choices: ['Happy and hopeful', 'Angry and annoyed', 'Bored and tired'], a: 0,
@@ -246,7 +246,7 @@ export const possum: Clip = {
       trap: 'What now? はいらだちに聞こえやすいが、ここは驚き。続く Wow で決める。',
       use: 'This could bring us back together.（これでよりが戻るかも）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'list', reveals: ['hope'], seg: [82.7, 90.6],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'list', reveals: ['hope'], seg: [82.7, 91.6],
       stem: 'What does “never on that list” mean here?',
       ja: '「never on that list」は、ここではどういう意味？',
       choices: ['He never thought of it', 'He wrote it down', 'He tried it before'], a: 0,

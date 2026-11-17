@@ -26,7 +26,7 @@ export const lewbJuice: Clip = {
       trap: '悪口だけ聞くと、失礼にする飲み物だと思いやすい。後半はほめ言葉も出てくる。',
       use: 'Honestly? I think it’s too expensive.（正直に言うと、高すぎると思う）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'name', seg: [3.3, 12.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'name', seg: [0.1, 12.1],
       stem: 'Why did the first taster expect the juice to taste bad?', ja: '最初に飲んだ人は、なぜひどい味だと思っていた？',
       choices: ['Because of its name', 'Because it’s a foot scrub', 'Because of its color'], a: 0,
       choicesJa: ['名前のせい', '足の角質取りだから', '色のせい'],
@@ -67,7 +67,7 @@ export const lewbJuice: Clip = {
       trap: '名前そのものや、言った人の思い込みを笑う話に取りやすい。皮肉の的は、次の返事の主語で確かめる。',
       use: 'It’s not the name, it’s the person.（名前じゃなくて、人の問題）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'mean', seg: [9.7, 18.15],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'mean', seg: [9.7, 18.4],
       stem: 'Why does someone ask if the juice makes you mean?', ja: 'なぜ「このジュースで意地悪になる？」と聞く？',
       choices: ['Someone just said something rude', 'The juice’s name sounds really bad', 'It tastes very bitter'], a: 0,
       choicesJa: ['今ひどいことを言われた', '名前がすごくひどい', 'すごく苦い'],
@@ -78,7 +78,7 @@ export const lewbJuice: Clip = {
       trap: 'mean を「意味する」と思いやすい。make you mean は「あなたを意地悪にする」。',
       use: 'Does coffee make you sleepy?（コーヒー飲むと眠くなる？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'honest', seg: [14.1, 18.15],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'honest', seg: [14.1, 22],
       stem: 'What does the answer say the juice does?', ja: '答えによると、ジュースは何をする？',
       choices: ['It just makes you honest', 'It just makes you happy', 'It just makes you hyper'], a: 0,
       choicesJa: ['正直になるだけ', '楽しくなるだけ', 'はしゃぐだけ'],
@@ -89,7 +89,7 @@ export const lewbJuice: Clip = {
       trap: '「オネスト」なら honest、「ハッピー」なら happy、「ハイパー」なら hyper。h の音がなければ honest。',
       use: 'It doesn’t hurt. It just feels cold.（痛くないよ。冷たいだけ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'feet', seg: [17.75, 21.45],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'feet', seg: [16, 24.3],
       stem: 'What else does the juice do?', ja: 'ジュースは、ほかに何をする？',
       choices: ['Take the skin off your feet', 'Soften the skin on your face', 'Take the hair off your legs'], a: 0,
       choicesJa: ['足の皮を取る', '顔の肌をやわらかくする', '足の毛を取る'],
@@ -100,7 +100,7 @@ export const lewbJuice: Clip = {
       trap: 'skin（肌）から、顔のスキンケアを思いやすい。off your のあとの feet を拾う。',
       use: 'This cream takes the dry skin off.（このクリームで乾燥した皮がとれる）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'goahead', seg: [17.75, 23.9],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'goahead', seg: [17.8, 26.6],
       stem: 'What does “Go ahead. Try to lie.” mean?', ja: '“Go ahead. Try to lie.” はどういう意味？',
       choices: ['I dare you to lie', 'Please have a drink', 'You can leave now'], a: 0,
       choicesJa: ['うそをついてみな', 'どうぞ飲んで', 'もう帰っていいよ'],
@@ -111,7 +111,7 @@ export const lewbJuice: Clip = {
       trap: 'Go ahead だけだと「どうぞ飲んで」に聞こえやすい。あとの Try to lie で何をするか決まる。',
       use: 'Go ahead, try it. It’s good.（どうぞ食べてみて。おいしいよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'mother', seg: [29.9, 34.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'mother', seg: [28.6, 37.8],
       stem: 'What does the second speaker wish?', ja: '二人目の人は、何を願う？',
       choices: ['That he weren’t her son', 'That he weren’t so young', 'That he weren’t here'], a: 0,
       choicesJa: ['彼が彼女の息子でなければ', '彼がそんなに若くなければ', '彼がここにいなければ'],
@@ -136,7 +136,7 @@ export const lewbJuice: Clip = {
       trap: 'I wish は遠回しにも、同じ形の言い返しはじゃれ合いにも見えるが、ここは本音しか言えない場面。',
       use: 'Honestly, I wish you’d asked first.（正直、先に聞いてほしかった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takethis', seg: [34.4, 42.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takethis', seg: [32, 43.3],
       stem: 'What does “how far I can take this” mean?', ja: '“how far I can take this” はどういう意味？',
       choices: ['How long I can keep it up', 'How far I can travel', 'How many people really like it'], a: 0,
       choicesJa: ['どこまで続けられるか', 'どこまで遠くへ行けるか', '何人が好きか'],
@@ -178,7 +178,7 @@ export const lewbJuice: Clip = {
       trap: 'あだ名で皮肉に聞こえやすい。ここは本音しか言えない場面なので、ほめ言葉も本気。',
       use: 'Please, you’re the real star here.（いやいや、主役は君だよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'growup', seg: [36.75, 40.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'growup', seg: [34.7, 41.3],
       stem: 'Type what Spencer asks: “Will I ever ___?” (4 words)', ja: 'スペンサーの言葉を書こう：“Will I ever ___?”（4語）',
       answer: 'have to grow up',
       cue: '「ever」のあと',
@@ -188,7 +188,7 @@ export const lewbJuice: Clip = {
       trap: 'have to が一語に聞こえ、grow up だけ書きやすい。ever のあとの「ハフタ」を拾う。',
       use: 'Do I have to dress up?（ちゃんとした服じゃないとだめ？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'idwant', seg: [36.75, 42.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'idwant', seg: [36.8, 43.3],
       stem: 'Fill the gap: “If I did, ___ to be like you.”', ja: '空所に入るのは？ “If I did, ___ to be like you.”',
       choices: ['I’d want', 'I want', 'I’d have'], a: 0,
       choicesJa: ['〜したいだろう', '〜したい', '〜しなければならないだろう'],
@@ -199,7 +199,7 @@ export const lewbJuice: Clip = {
       trap: 'I want なら「アイワント」で「ド」がない。I’d have なら「ハヴ」。短い「ド」のあと「ワント」なら I’d want。',
       use: 'If I could, I’d want to stay.（できるなら、残りたいな）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', seg: [40.6, 56.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', seg: [40.6, 58.9],
       stem: 'Why is it suddenly an “emergency” at the end?', ja: '最後に、なぜ急に「緊急事態」になる？',
       choices: ['Someone they must avoid arrives', 'Someone gets sick from it', 'The juice turns out unsafe'], a: 0,
       choicesJa: ['会いたくない人が来た', '誰かが飲んで具合が悪くなった', 'ジュースが危ないと分かった'],
@@ -210,7 +210,18 @@ export const lewbJuice: Clip = {
       trap: 'Poison Control（中毒の相談所）から、誰かが具合を悪くしたと思いやすい。そういう話は出ない。',
       use: 'Sorry, something came up. I have to go.（ごめん、急用ができた。行かなきゃ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'aslongas', seg: [46, 52.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'alarm', seg: [44.8, 56.6],
+      stem: 'How does Lewbert react to who is coming?', ja: '誰が来たか分かって、ルーバートはどうする？',
+      choices: ['Alarmed, wants to leave fast', 'Guilty, ready to say sorry', 'Happy to see her again'], a: 0,
+      choicesJa: ['あわてて、すぐ逃げたい', '悪いと思って、謝るつもり', 'また会えてうれしい'],
+      cue: '最初の叫びと、最後の一言',
+      line: '*Oh, my God. No.* … this is an *emergency*. We gotta go.',
+      said: '「うそ、やめて」と言い、「緊急事態。行かなきゃ」と続ける。',
+      mean: 'We gotta go ＝ 行かなきゃ。会いたくない人が来た驚きとあせり。',
+      trap: 'Oh my God は喜びにも使う。続く No と We gotta go で、逃げたいと分かる。',
+      use: 'Oh no. We need to go, now.（やばい。今すぐ行かないと）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'aslongas', seg: [46, 54.6],
       stem: 'What does “as long as I didn’t sell it” mean?', ja: '“as long as I didn’t sell it” はどういう意味？',
       choices: ['Only if I didn’t sell it', 'While I was selling it', 'Even if I sold it'], a: 0,
       choicesJa: ['売らないならいい', '売っている間は', '売ってもいい'],
@@ -221,7 +232,7 @@ export const lewbJuice: Clip = {
       trap: 'long から「〜の間ずっと」と時間の話だと思いやすい。うしろに文が来たら条件。',
       use: 'You can stay as long as you’re quiet.（静かにしてるなら、いていいよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [46, 56],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [46.9, 58.9],
       stem: 'What has Lewbert probably been doing?', ja: 'ルーバートは、たぶん何をしていた？',
       choices: ['Selling the juice', 'Drinking too much', 'Giving it away'], a: 0,
       choicesJa: ['ジュースを売っていた', '飲みすぎていた', 'タダで配っていた'],
@@ -231,16 +242,5 @@ export const lewbJuice: Clip = {
       mean: '条件は「売らないこと」。その人が来てあわてるので、売っていたと分かる。',
       trap: 'drink が先に聞こえるので、飲みすぎだと思いやすい。あわてる理由は条件の sell。',
       use: 'We weren’t supposed to do this.（これ、やっちゃいけなかったんだ）' },
-
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'alarm', seg: [46, 56],
-      stem: 'How does Lewbert react to who is coming?', ja: '誰が来たか分かって、ルーバートはどうする？',
-      choices: ['Alarmed, wants to leave fast', 'Guilty, ready to say sorry', 'Happy to see her again'], a: 0,
-      choicesJa: ['あわてて、すぐ逃げたい', '悪いと思って、謝るつもり', 'また会えてうれしい'],
-      cue: '最初の叫びと、最後の一言',
-      line: '*Oh, my God. No.* … this is an *emergency*. We gotta go.',
-      said: '「うそ、やめて」と言い、「緊急事態。行かなきゃ」と続ける。',
-      mean: 'We gotta go ＝ 行かなきゃ。会いたくない人が来た驚きとあせり。',
-      trap: 'Oh my God は喜びにも使う。続く No と We gotta go で、逃げたいと分かる。',
-      use: 'Oh no. We need to go, now.（やばい。今すぐ行かないと）' },
   ]
 };

@@ -15,7 +15,7 @@ export const ronFixes: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'present', seg: [6.3, 50.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'present', seg: [6.3, 50.5],
       stem: 'What does Ron do instead of a wedding present?',
       ja: '結婚祝いの代わりに、ロンは何をする？',
       choices: ['Fixes things in their house', 'Buys them some furniture', 'Pays for their brand new house'], a: 0,
@@ -38,7 +38,7 @@ export const ronFixes: Clip = {
       trap: '「物は要らない」とだけ取ると素朴な結婚観に聞こえる。たとえの中心は divorce。最後の名詞を聞く。',
       use: 'In my experience, cheap shoes never last.（経験上、安い靴は長持ちしない）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'eggplant', seg: [21.1, 27],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'eggplant', seg: [20.1, 29.3],
       stem: 'How does Ron react when she corrects her costume name?',
       ja: '仮装の名前を直されて、ロンはどう反応する？',
       choices: ['He doesn’t care at all', 'He says sorry to her for it', 'He laughs at it'], a: 0,
@@ -50,7 +50,7 @@ export const ronFixes: Clip = {
       trap: '命令をくり返すので、怒っていると思いやすい。I don’t care で流しているだけ。',
       use: 'I don’t care. Just come with me.（どうでもいい。とにかく来て）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'hands', seg: [25.9, 29.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'hands', seg: [25, 30],
       stem: 'Why does Ron want her to come with him?',
       ja: 'ロンはなぜ彼女に来てほしい？',
       choices: ['He needs small hands', 'He needs a light', 'He needs a house expert'], a: 0,
@@ -62,7 +62,7 @@ export const ronFixes: Clip = {
       trap: '手伝いといえば明かり持ち、と思いやすい。理由は Why? の直後の一言。',
       use: 'I need an extra pair of hands.（人手がもう一人ほしい）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'atleast', reveals: ['learn'], seg: [36.5, 44],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'atleast', reveals: ['learn'], seg: [36.5, 44.3],
       stem: 'What does “Can you at least tell me what you’re doing?” show?',
       ja: '「Can you at least tell me what you’re doing?」から何が分かる？',
       choices: ['He has told her nothing', 'He is working too fast', 'He gave her the hard jobs'], a: 0,
@@ -74,7 +74,7 @@ export const ronFixes: Clip = {
       trap: 'Ugh と合わせて、速さへの文句と思いやすい。求めているのは説明。',
       use: 'Can you at least text me?（せめてメッセージくらいちょうだい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'atleast', seg: [37.8, 40.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'atleast', seg: [37.1, 42.1],
       stem: 'Type her request: “___ tell me what you’re doing?” (4 words)', answer: 'can you at least',
       ja: '彼女の頼みを書き取る：「___ tell me what you’re doing?」（4語）',
       cue: '「Ugh」のあと、質問の頭の4語。',
@@ -84,7 +84,7 @@ export const ronFixes: Clip = {
       trap: 'at が小さく、you と least の間で消えたように聞こえる。語の数を数える。',
       use: 'Can you at least call first?（せめて先に電話してくれる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'learn', seg: [40.5, 44],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'learn', seg: [38.6, 44.5],
       stem: 'Why does she want to know?',
       ja: '彼女はなぜ知りたい？',
       choices: ['For her own house', 'To tell the couple', 'She has a leak at home'], a: 0,
@@ -96,7 +96,7 @@ export const ronFixes: Clip = {
       trap: '家の話から、同じ故障が家にあると思いやすい。言っているのは learn something。',
       use: 'I’d like to actually learn this.（ちゃんと覚えたいんです）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'screw', seg: [49.9, 55],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'screw', seg: [49.9, 56.1],
       stem: 'What does Ron say the set screw will do?',
       ja: '止めねじは何をすると、ロンは言う？',
       choices: ['Hold the handle in place', 'Stop the water from dripping', 'Make the water hotter'], a: 0,
@@ -120,7 +120,7 @@ export const ronFixes: Clip = {
       trap: '長い仕事のあとなので、疲れたと思いやすい。It’s a good feeling と言っている。',
       use: 'What a sense of accomplishment!（すごい達成感！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'help', seg: [70.0, 78.7],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'help', seg: [68.9, 78.7],
       stem: 'How does she answer “You want to help?”',
       ja: '「You want to help?」に、彼女はどう答える？',
       choices: ['She really wants to', 'She says no, thank you', 'She is not sure'], a: 0,
@@ -144,7 +144,7 @@ export const ronFixes: Clip = {
       trap: '直前の nonsense から、あきれていると思いやすい。最後の一言で評価が分かる。',
       use: 'Take the day off. You earned it.（今日は休みな、よく頑張った）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'power', seg: [88.5, 91.95],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'power', seg: [87.1, 93.7],
       stem: 'Fill the gap: “I ___ turn off the power for one minute.”',
       ja: '空所を埋める：「I ___ turn off the power for one minute.」',
       choices: ['have to', 'had to', 'want to'], a: 0,
@@ -156,7 +156,7 @@ export const ronFixes: Clip = {
       trap: '「ハッタ」に近く had to と迷いやすいが、これからの話。want to なら「ワナ」。',
       use: 'I have to leave by six.（6時までに出ないと）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'power', seg: [88.5, 91.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'power', seg: [88.2, 93.7], keep: true,
       stem: 'How long will the power be off?',
       ja: '電気はどのくらい切れる？',
       choices: ['1 minute', '4 minutes', '10 minutes', 'an hour'], a: 0,
@@ -180,7 +180,7 @@ export const ronFixes: Clip = {
       trap: 'bear を「運ぶ」や「クマ」と思いやすい。bear with は「待って」の決まり文句。',
       use: 'Bear with me, the page is loading.（少々お待ちを、読み込み中です）' },
 
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'fuse', seg: [94, 101],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'fuse', seg: [94, 102.1],
       stem: 'Why does she say “It’s just a fuse, people”?',
       ja: '彼女はなぜ「It’s just a fuse, people」と言う？',
       choices: ['To hide her mistake', 'To make fun of Ron', 'So guests far away hear'], a: 0,
@@ -203,7 +203,7 @@ export const ronFixes: Clip = {
       trap: 'くり返しを、直されて傷ついたしるしと聞きやすい。くり返す前に何を言ったかで、隠したい点が分かる。',
       use: 'As I was saying, it’s Tuesday.（さっき言ったように、火曜日です）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'nonsense', seg: [105.2, 113.5],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'nonsense', seg: [105.2, 115.5],
       stem: 'Why does Ron call her repair report “nonsense”?',
       ja: 'ロンはなぜ彼女の修理の報告を「nonsense」と言う？',
       choices: ['It sounds smart, means nothing', 'It uses all the wrong part names', 'It is too hard for him'], a: 0,
@@ -215,7 +215,7 @@ export const ronFixes: Clip = {
       trap: '部品の名前が続くので、言いまちがいと思いやすい。I know のあとの理由を聞く。',
       use: 'I know, but it’s so fun!（分かってる、でも楽しいんだもん）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'nonsense', seg: [105.2, 113.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'nonsense', seg: [105.2, 115.5],
       stem: 'How does she feel when it is called nonsense?',
       ja: '「でたらめ」と言われて、彼女はどう感じる？',
       choices: ['Happy, she enjoys it', 'Ashamed of herself', 'Angry at Ron for saying it'], a: 0,
@@ -238,18 +238,7 @@ export const ronFixes: Clip = {
       trap: 'もっともらしい用語を本気の報告と取りやすい。相手の指摘をすぐ認めたら、最初から遊びだったと考える。',
       use: 'Just kidding, I have no idea.（冗談、全然分からない）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'youknow', reveals: ['earned'], seg: [111.5, 115.8], retired: true, then: [115.8, 121.0],
-      stem: 'Right after Ron’s question, what kind of move comes next?',
-      choices: ['An offer to give her something', 'A complaint about her silly talk',
-                'An order to start the next job'], a: 0,
-      cue: 'この前置きのあとは、どんな話が来やすい？',
-      line: 'You know what? *Keep this. You earned it.*',
-      said: '「そうだ。これ持ってけ。それだけのことをした」と言って渡す。',
-      mean: 'You know what? のあとは、急に思いついた提案や決定が来ることが多い。',
-      trap: '直前の nonsense から、さらに文句が続くと考えやすい。この前置きは「思いつき」の合図。',
-      use: 'You know what? You deserve this.（そうだ、これは君が受け取るべきだ）' },
-
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['earned'], seg: [113.6, 117],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['earned'], seg: [111.4, 118.2],
       stem: 'Why does Ron say “You know what?” here?',
       ja: 'ロンは、なぜここで「You know what?」と言う？',
       choices: ['To start a sudden new idea', 'To ask if she knows the tool', 'To warn her of a complaint'], a: 0,
@@ -260,5 +249,16 @@ export const ronFixes: Clip = {
       mean: 'You know what? ＝ そうだ、よし。思いついたことを言う前の合図で、答えは待たない。',
       trap: '質問の形なので「知ってる？」と思いやすい。答えを待たずに続けば、ただの前置き。',
       use: 'You know what? Keep the change.（そうだ、おつりはとっておいて）' },
+
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'youknow', reveals: ['earned'], seg: [111.5, 115.8], retired: true, then: [115.8, 121.0],
+      stem: 'Right after Ron’s question, what kind of move comes next?',
+      choices: ['An offer to give her something', 'A complaint about her silly talk',
+                'An order to start the next job'], a: 0,
+      cue: 'この前置きのあとは、どんな話が来やすい？',
+      line: 'You know what? *Keep this. You earned it.*',
+      said: '「そうだ。これ持ってけ。それだけのことをした」と言って渡す。',
+      mean: 'You know what? のあとは、急に思いついた提案や決定が来ることが多い。',
+      trap: '直前の nonsense から、さらに文句が続くと考えやすい。この前置きは「思いつき」の合図。',
+      use: 'You know what? You deserve this.（そうだ、これは君が受け取るべきだ）' },
   ]
 };

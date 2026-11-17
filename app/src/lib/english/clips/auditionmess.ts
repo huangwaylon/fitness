@@ -17,7 +17,7 @@ export const auditionDisaster: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [33, 77.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [33, 78],
       stem: 'What goes wrong for Harper’s friends?',
       ja: 'ハーパーの友だちに何が起きる？',
       choices: ['Their event was canceled', 'Their outfits aren’t ready', 'They get there too late'], a: 0,
@@ -29,7 +29,7 @@ export const auditionDisaster: Clip = {
       trap: 'miss（逃す）が聞こえるが、遅刻の話ではない。衣装もできあがっている。',
       use: 'The concert was canceled.（コンサートは中止になった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [47.3, 52],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [46.3, 52.8],
       stem: 'What does “pull this off” mean here?',
       ja: 'ここでの「pull this off」はどういう意味？',
       choices: ['Do something hard well', 'Wear bold clothes well', 'Back out of a plan'], a: 0,
@@ -41,7 +41,7 @@ export const auditionDisaster: Clip = {
       trap: '服の場面なので「着こなす」と思いやすい。主語は服を作ったハーパー。',
       use: 'I can’t believe we pulled it off!（やりとげたなんて信じられない！）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sold', reveals: ['canceled'], seg: [68, 74.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sold', reveals: ['canceled'], seg: [67.1, 74.8],
       stem: 'Why is the night canceled?',
       ja: 'イベントが中止になったのはなぜ？',
       choices: ['The club was sold', 'The host got sick', 'It moved to another day'], a: 0,
@@ -75,7 +75,7 @@ export const auditionDisaster: Clip = {
       trap: '運転手に指示しやすい、と現実的な理由を補いやすい。直前の理屈と同じ考え方で読む。',
       use: 'I’m standing closer, so I’m first in line.（近くに立ってるから、私が先頭ね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'keepup', seg: [113.7, 118.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'keepup', seg: [113.7, 120.9],
       stem: 'What does “Keep up!” mean here?',
       ja: 'ここでの「Keep up!」はどういう意味？',
       choices: ['Follow what I’m saying', 'Keep doing that, please', 'Hold on tight now'], a: 0,
@@ -87,7 +87,7 @@ export const auditionDisaster: Clip = {
       trap: 'Keep it up（その調子）と思いやすい。it がないので「遅れないで」。',
       use: 'Keep up, the tour is moving!（遅れないで、ツアー進んでるよ！）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'urgent', seg: [132, 141.9],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'urgent', seg: [130.6, 142.6],
       stem: 'How does Spencer want Raul to drive?',
       ja: 'スペンサーはラウルにどう運転してほしい？',
       choices: ['As fast as he can', 'Slowly and with care', 'Back home to get food'], a: 0,
@@ -99,7 +99,7 @@ export const auditionDisaster: Clip = {
       trap: 'sandwiches と at home から、取りに帰ると思いやすい。like のあとはたとえ。',
       use: 'Run like you’re late for a flight.（飛行機に遅れそうな時みたいに走って）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'seventeen', seg: [147.2, 150.95], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'seventeen', seg: [146.2, 153.3], keep: true,
       stem: 'At first, how long does the GPS say the trip will take?',
       ja: '最初、カーナビは何分かかると言う？',
       choices: ['7 minutes', '17 minutes', '70 minutes'], a: 1,
@@ -110,6 +110,18 @@ export const auditionDisaster: Clip = {
       mean: 'seventeen ＝ 17。後ろの -teen を強く長く言う。',
       trap: '7なら「セブン」だけ。seventy は前が強く、最後が短い。「セブンティーン」と後ろがのびれば17。',
       use: 'We’ll arrive in about fifteen minutes.（あと15分くらいで着きます）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hangleft', seg: [150.8, 156.3],
+      stem: 'Fill the gap: “You know what, Raul? ___ up here.”',
+      ja: '「You know what, Raul? ___ up here.」の空所は？',
+      choices: ['Hang a left', 'Hang a right', 'Take a left'], a: 0,
+      choicesJa: ['左に曲がって', '右に曲がって', '左に行って'],
+      cue: '「You know what, Raul?」のあと',
+      line: 'You know what, Raul? *Hang a left* up here.',
+      said: 'ナビは右なのに「この先を左に」と言う。',
+      mean: 'hang a left ＝ 左に曲がる。hang a がつながり「ハンガ」に聞こえる。',
+      trap: 'right なら「ライト」、take a なら「テイカ」。「ハンガ・レフト」なら hang a left。',
+      use: 'Hang a right at the next light.（次の信号を右に）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'route', reveals: ['bridge', 'hangleft', 'thirtyone', 'makeup', 'foronce'], seg: [152.5, 197.0],
       stem: 'Why does the trip take so long?',
@@ -123,19 +135,7 @@ export const auditionDisaster: Clip = {
       trap: '運転手が初日なので、道を知らないと思いやすい。ラウルは言われたとおり曲がっているだけ。',
       use: 'Let’s just follow the GPS.（ナビどおりに行こうよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hangleft', seg: [152.5, 155.5],
-      stem: 'Fill the gap: “You know what, Raul? ___ up here.”',
-      ja: '「You know what, Raul? ___ up here.」の空所は？',
-      choices: ['Hang a left', 'Hang a right', 'Take a left'], a: 0,
-      choicesJa: ['左に曲がって', '右に曲がって', '左に行って'],
-      cue: '「You know what, Raul?」のあと',
-      line: 'You know what, Raul? *Hang a left* up here.',
-      said: 'ナビは右なのに「この先を左に」と言う。',
-      mean: 'hang a left ＝ 左に曲がる。hang a がつながり「ハンガ」に聞こえる。',
-      trap: 'right なら「ライト」、take a なら「テイカ」。「ハンガ・レフト」なら hang a left。',
-      use: 'Hang a right at the next light.（次の信号を右に）' },
-
-    { id: 'i2', skill: 'attitude', level: 'B1', point: 'moretime', seg: [158.2, 165.2],
+    { id: 'i2', skill: 'attitude', level: 'B1', point: 'moretime', seg: [158.2, 166.9],
       stem: 'How does Spencer feel about the longer trip?',
       ja: '移動が長くなって、スペンサーはどう思う？',
       choices: ['Happy, more limo time', 'Angry about the delay', 'Sorry for his mistake'], a: 0,
@@ -147,7 +147,7 @@ export const auditionDisaster: Clip = {
       trap: 'Ooh を驚きや反省と思いやすい。続く more time in the limo で、喜んでいると分かる。',
       use: 'Ooh, more time at the beach!（やった、ビーチにいられる時間が増えた！）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirtyone', seg: [166.9, 171.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirtyone', seg: [166.3, 173.6], keep: true,
       stem: 'After the right turn, what arrival time does the GPS give?',
       ja: '右に曲がったあと、カーナビは何分と言う？',
       choices: ['13 minutes', '23 minutes', '31 minutes'], a: 2,
@@ -159,7 +159,7 @@ export const auditionDisaster: Clip = {
       trap: '13は「サーティーン」と後ろがのびる。23は前の案内の数。「サーティ・ワン」なら31。',
       use: 'Our flight leaves in thirty-one minutes.（飛行機はあと31分で出る）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'abit', seg: [175.7, 178.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'abit', seg: [174.2, 180.9], keep: true,
       stem: 'Type how Raul begins: “___.” (5 words)', answer: 'a little bit about me',
       ja: 'ラウルの最初の一言を書こう（5語）',
       cue: '「always wrong」のあと',
@@ -179,7 +179,7 @@ export const auditionDisaster: Clip = {
       trap: 'about me で始まるので世間話に聞こえやすい。最初の形より、何を言いたいのかを聞く。',
       use: 'Just so you know, I get carsick.（一応言っておくと、車に酔いやすいんだ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'makeup', seg: [187.9, 191.05],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'makeup', seg: [186.9, 193.9],
       stem: 'What does “make up the time” mean?',
       ja: '「make up the time」はどういう意味？',
       choices: ['Win back the lost time', 'Make up a good excuse for it', 'Stop the argument'], a: 0,
@@ -191,7 +191,7 @@ export const auditionDisaster: Clip = {
       trap: 'make up には「でっち上げる」「仲直りする」もある。あとが the time なら「取り戻す」。',
       use: 'Let’s take a taxi to make up time.（タクシーで遅れを取り戻そう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'foronce', seg: [190.6, 194.4],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'foronce', seg: [189.2, 195.1],
       stem: 'What does “for once” show in “listen to me for once”?',
       ja: '「listen to me for once」の「for once」から何が分かる？',
       choices: ['You never listen to me', 'Only this one time, please', 'Listen again later'], a: 0,
@@ -203,7 +203,7 @@ export const auditionDisaster: Clip = {
       trap: 'once（一回）から、今回だけと思いやすい。for once は不満を言う決まり文句。',
       use: 'Can you be on time for once?（たまには時間どおりに来てくれない？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'bridge', seg: [200.2, 206.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'bridge', seg: [200.2, 207],
       stem: 'Why has the car stopped?',
       ja: '車が止まったのはなぜ？',
       choices: ['The bridge is up for a ferry', 'The bridge is closed for repairs', 'There’s heavy traffic ahead'], a: 0,
@@ -215,7 +215,7 @@ export const auditionDisaster: Clip = {
       trap: '止まると、工事や渋滞と思いやすい。raised for ferry ＝ 船のために上がっている。',
       use: 'The bridge is up, so we’ll be late.（橋が上がってるから遅れそう）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'twentyago', seg: [223.0, 230.5],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'twentyago', seg: [222.8, 233.9],
       stem: 'How long ago did the audition challenge start?',
       ja: 'オーディションの課題は何分前に始まった？',
       choices: ['12 minutes', '20 minutes', '30 minutes'], a: 1,
@@ -259,7 +259,7 @@ export const auditionDisaster: Clip = {
       trap: 'I know ～ painful を慰めと取ると、休ませる話に聞こえる。共感のあとの do に本題が来る。',
       use: 'I know it’s hard, but I need this.（大変なのは分かるけど、必要なの）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'followers', seg: [296, 308.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'followers', seg: [297.9, 308.7],
       stem: 'Why does the person from the show bring up followers?',
       ja: '番組の人がフォロワーの話をするのはなぜ？',
       choices: ['To get them back in the game', 'To warn them about viewers', 'To ask how many they have'], a: 0,
@@ -271,7 +271,7 @@ export const auditionDisaster: Clip = {
       trap: 'right? を質問と思うと「数を聞く」に見える。すぐあとの Let’s do a challenge が効き目。',
       use: 'Think of all the followers you’d get!（フォロワーがどれだけ増えるか考えてみて！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'melon', seg: [308.2, 315.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'melon', seg: [308.2, 318.5],
       stem: 'What do they have to do to get into the race?',
       ja: 'レースに出るには何をしなければならない？',
       choices: ['Hit a target with a melon', 'Catch a flying melon', 'Carry a dummy out of it'], a: 0,

@@ -10,7 +10,7 @@ export const kathybook: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 's2', skill: 'sound', level: 'B1', point: 'doyouguys', seg: [0, 3.2],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'doyouguys', seg: [0, 6],
       stem: 'Fill the gap: “Hey, ___ have any wrapping paper?”', ja: '空所に入るのは？ “Hey, ___ have any wrapping paper?”',
       choices: ['do you guys', 'did you guys', 'do you get'], a: 0,
       choicesJa: ['（今）みんな〜ある？', '（前に）みんな〜あった？', '〜を手に入れる？'],
@@ -31,7 +31,7 @@ export const kathybook: Clip = {
       trap: '包装紙を探しているのはチャンドラー。フィービーは自分へのプレゼントを待っている。',
       use: 'Remember you said you’d call me?（電話するって言ってたよね）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'phoebe', seg: [2.6, 8.6],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'phoebe', seg: [0.2, 8.7],
       stem: 'Who asks, “Is it for my birthday present?”', ja: '“Is it for my birthday present?” と聞くのは誰？',
       choices: ['Rachel', 'Phoebe', 'Monica'], a: 1,
       choicesJa: ['レイチェル', 'フィービー', 'モニカ'],
@@ -42,7 +42,7 @@ export const kathybook: Clip = {
       trap: '女性の声どうしは聞き分けにくい。返事の最初の呼びかけで決める。',
       use: 'Is this for me?（これ、わたしに？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', reveals: ['phoebe'], seg: [5.3, 8.6],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', reveals: ['phoebe'], seg: [3, 8.7],
       stem: 'When was Phoebe’s birthday, says Chandler?', ja: 'チャンドラーによると、フィービーの誕生日はいつだった？',
       choices: ['Last week', 'A month ago', 'Months ago'], a: 2, keep: true,
       choicesJa: ['先週', '1か月前', '何か月も前'],
@@ -74,7 +74,7 @@ export const kathybook: Clip = {
       trap: 'call から「今から電話」「電話が来た」と取りやすい。Well で始まる返事はかわしの合図になりやすい。',
       use: 'I have a call in to the hotel.（ホテルに問い合わせ中です）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [18.9, 23.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [18.4, 24.1],
       stem: 'Why does Chandler say “Actually” here?', ja: 'チャンドラーはなぜここで “Actually” と言う？',
       choices: ['To correct her guess', 'To say it is true', 'To change the topic'], a: 0,
       choicesJa: ['フィービーの思い込みを直すため', '本当だと強調するため', '話題を変えるため'],
@@ -85,7 +85,7 @@ export const kathybook: Clip = {
       trap: '「実際に」と訳すと、ただの強調に聞こえやすい。思い込みを直すときの合図。',
       use: 'Actually, this is for my mom.（実は、これは母へのものなんです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'book', seg: [18.9, 23.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'book', seg: [18.9, 26.5],
       stem: 'What is the gift for Kathy?', ja: 'キャシーへの贈り物は何？',
       choices: ['An old edition of a book', 'A book signed by the author', 'A toy rabbit from a story'], a: 0,
       choicesJa: ['本の古い版', '作者のサイン入りの本', '物語に出てくるうさぎのおもちゃ'],
@@ -96,7 +96,7 @@ export const kathybook: Clip = {
       trap: 'あとで author（作者）や rabbit が出るので、サインやおもちゃだと思いやすい。',
       use: 'Do you have an older edition?（古い版はありますか）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'rabbit', reveals: ['book'], seg: [23.3, 29.4],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'rabbit', reveals: ['book'], seg: [23.3, 32.3],
       stem: 'In Kathy’s favorite book, what makes the rabbit real?', ja: 'キャシーの好きな本で、うさぎを本物にするのは何？',
       choices: ['A boy’s love', 'A magic word', 'A birthday wish'], a: 0,
       choicesJa: ['男の子の愛', '魔法の言葉', '誕生日の願いごと'],
@@ -107,7 +107,7 @@ export const kathybook: Clip = {
       trap: '誕生日の話の流れなので、birthday wish と思いやすい。makes の前の言葉が答え。',
       use: 'Oh my God, I love that song!（うわ、その曲大好き！）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'oils', seg: [29.1, 33.6],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'oils', seg: [26, 36.1],
       stem: 'Why does Chandler say “Don’t touch it”?', ja: 'チャンドラーはなぜ “Don’t touch it” と言う？',
       choices: ['The book is very precious', 'The book is already broken', 'Her hands are dirty'], a: 0,
       choicesJa: ['本がとても大切だから', '本がもう壊れているから', '彼女の手が汚れているから'],
@@ -129,7 +129,7 @@ export const kathybook: Clip = {
       trap: '髪の冗談は「薄い」が定番なので選びやすい。直前の oils の話を受けた冗談か考える。',
       use: 'Then you’d better hide it from my dog.（それならうちの犬から隠さないと）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'better', seg: [32.6, 38.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'better', seg: [32.4, 40.3],
       stem: 'What does “you better keep it away” mean?', ja: '“you better keep it away” はどういう意味？',
       choices: ['You really should do it', 'Do it only if you want', 'You do it better than him'], a: 0,
       choicesJa: ['絶対にそうしたほうがいい', 'したいときだけすればいい', '彼よりうまくできる'],
@@ -142,7 +142,7 @@ export const kathybook: Clip = {
 
       use: 'You better hurry, the train’s leaving.（急がないと電車が出るよ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'rare', seg: [35.5, 40],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'rare', seg: [35.5, 42.1],
       stem: 'What does “pretty rare” mean here?', ja: 'ここでの “pretty rare” はどういう意味？',
       choices: ['Quite hard to find', 'Very pretty to look at', 'A bit old and dirty'], a: 0,
       choicesJa: ['かなり見つけにくい', '見た目がとてもきれい', '少し古くて汚い'],
@@ -164,7 +164,7 @@ export const kathybook: Clip = {
       trap: 'great はほめ言葉に聞こえやすい。to say のあとの中身が、からかいの理由。',
       use: 'This is just a small thank-you gift.（ほんのお礼の品です）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'how', reveals: ['couple'], seg: [38.4, 49.4],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'how', reveals: ['couple'], seg: [39.2, 51.2],
       stem: 'Who did Chandler call to find the book?', ja: '本を探すために、チャンドラーは誰に電話した？',
       choices: ['The author’s grandchildren', 'The author’s children', 'The bookstore owners'], a: 0,
       choicesJa: ['作者の孫たち', '作者の子どもたち', '本屋の店主たち'],
@@ -175,7 +175,7 @@ export const kathybook: Clip = {
       trap: 'children の部分だけ耳に残り、子どもたちだと思いやすい。前の grand を聞く。',
       use: 'I called a couple of shops.（いくつかの店に電話しました）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'deal', seg: [38.4, 49.4],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'deal', seg: [39.2, 51.2],
       stem: 'Why does Chandler say “It wasn’t a big deal”?', ja: 'チャンドラーはなぜ “It wasn’t a big deal” と言う？',
       choices: ['He doesn’t want to sound proud', 'Finding the book was very easy', 'The book was very cheap'], a: 0,
       choicesJa: ['自慢に聞こえたくないから', '本を見つけるのがとても簡単だったから', '本がとても安かったから'],
@@ -186,7 +186,7 @@ export const kathybook: Clip = {
       trap: '言葉どおり「簡単だった」と思いやすい。あとに続く手間の話で本音が分かる。',
       use: 'Oh, it was no big deal.（いや、大したことないよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [41.0, 45.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [39.8, 47.3],
       stem: 'Type what Chandler says: “talked to ___ dealers.” (3 words)', ja: 'チャンドラーの言葉を書こう：“talked to ___ dealers.”（3語）',
       answer: 'a couple of',
       cue: '「bookstores」のあと',
@@ -218,7 +218,7 @@ export const kathybook: Clip = {
       trap: 'great はほめ言葉や応援に聞こえる。to say のあとが困った中身なら皮肉。',
       use: 'Great, just what I needed.（あーあ、それは困ったな）' },
 
-    { id: 'i4', skill: 'attitude', level: 'B2', point: 'doubt', seg: [50.4, 60.2],
+    { id: 'i4', skill: 'attitude', level: 'B2', point: 'doubt', seg: [55.2, 60.4],
       stem: 'How does Chandler feel when he asks “Does it?”', ja: '“Does it?” と聞くとき、チャンドラーはどんな気持ち？',
       choices: ['Worried and unsure', 'Proud of his gift', 'Happy for Joey'], a: 0,
       choicesJa: ['心配で、自信がない', '贈り物が自慢', 'ジョーイのために喜んでいる'],
@@ -229,7 +229,7 @@ export const kathybook: Clip = {
       trap: '最初は強く否定するので、平気だと思いやすい。あとの Does it? が本音。',
       use: 'It’s not too late, is it?（まだ間に合うよね？）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'orange', seg: [60.0, 68.4],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'orange', seg: [60, 68.9],
       stem: 'In the joke, what does Joey give Kathy?', ja: 'そのたとえ話では、ジョーイはキャシーに何をあげる？',
       choices: ['An orange', 'A book', 'Some flowers'], a: 0,
       choicesJa: ['オレンジ', '本', '花'],

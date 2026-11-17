@@ -22,7 +22,7 @@ export const captainjack: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [18.3, 26.1],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [15.6, 26.5],
       stem: 'What does “Actually” mean in “Actually, I’m the Skipper”?',
       ja: '「Actually, I’m the Skipper」の Actually はどういう意味？',
       choices: ['Wait, that’s not right', 'Yes, and there’s more', 'Now, a new topic'], a: 0,
@@ -34,7 +34,7 @@ export const captainjack: Clip = {
       trap: 'actually から「実際に」の付け足しを思いやすい。直後に逆のことを言えば、直している。',
       use: 'Actually, I ordered the fish.（あの、私が頼んだのは魚です）' },
 
-    { id: 't1', skill: 'phrase', level: 'B2', point: 'rather', seg: [24.3, 27.8],
+    { id: 't1', skill: 'phrase', level: 'B2', point: 'rather', seg: [23.2, 29.3],
       stem: 'What does “I’d rather die” mean here?',
       ja: 'ここでの「I’d rather die」はどういう意味？',
       choices: ['No way, not ever', 'Okay, if I must', 'I’m scared to die'], a: 0,
@@ -46,7 +46,7 @@ export const captainjack: Clip = {
       trap: 'die（死ぬ）を文字どおりに取ると、こわがっているように聞こえやすい。きっぱりした no。',
       use: 'Karaoke? I’d rather die.（カラオケ？絶対いや）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'rather', seg: [24.6, 27.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'rather', seg: [24.3, 29.3],
       stem: 'Type the reply: “___ die.” (2 words)', answer: "i'd rather",
       ja: '返事を書こう：「___ die.」（2語）',
       cue: '「Gilligan」のあと、短い返事の最初の2語。',
@@ -56,7 +56,7 @@ export const captainjack: Clip = {
       trap: 'd が消えて I rather と書きやすい。英語では必ず I’d rather の形になる。',
       use: 'I’d rather stay in tonight.（今夜は家にいたいな）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'partycap', seg: [25.9, 30.9],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'partycap', seg: [25.7, 31.8],
       stem: 'What does Michael first say he is captain of?',
       ja: 'マイケルは最初、自分を何の船長だと言う？',
       choices: ['This party', 'This ship', 'Dunder Mifflin'], a: 0,
@@ -68,7 +68,7 @@ export const captainjack: Clip = {
       trap: 'ship はこのあと船長が言う語。マイケルが言うのは party。',
       use: 'I’m in charge of tonight’s party.（今夜のパーティーの仕切り役です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['partycap', 'shipcap', 'regional'], seg: [26.9, 70.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['partycap', 'shipcap', 'regional'], seg: [26.9, 71.4],
       stem: 'What does Michael want on the boat?',
       ja: 'マイケルは船の上で何をしたい？',
       choices: ['To be a boss there too', 'To steer the boat himself', 'To leave the party early'], a: 0,
@@ -103,7 +103,7 @@ export const captainjack: Clip = {
       trap: 'ship だけだと船に限って聞こえる。anyone には Michael も入る。',
       use: 'In my kitchen, I’m the boss.（うちの台所では私がボス）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'shipcap', seg: [30.4, 35.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'shipcap', seg: [30.4, 36.8],
       stem: 'What does Captain Jack say he is captain of?',
       ja: 'ジャック船長は、自分を何の船長だと言う？',
       choices: ['The ship and everyone on it', 'The ship and the party', 'The ship and the whole sea'], a: 0,
@@ -115,7 +115,7 @@ export const captainjack: Clip = {
       trap: 'party は直前のマイケルの語。anyone（誰でも）のあとは「船に乗った人」。海の話ではない。',
       use: 'Don’t set foot in my room!（私の部屋に入らないで！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'office', reveals: ['nebulous'], seg: [37.0, 43.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'office', reveals: ['nebulous'], seg: [36.7, 45.7],
       stem: 'Where does Michael say a manager ranks higher than a captain?',
       ja: 'マネージャーが船長より上なのはどこだ、とマイケルは言う？',
       choices: ['In an office', 'On a boat', 'On dry land'], a: 0,
@@ -149,7 +149,7 @@ export const captainjack: Clip = {
       trap: 'who knows を「どうでもいい」と取ると unimportant に引かれる。ここは「分からない」。',
       use: 'The plan is still a bit nebulous.（計画はまだぼんやりしてる）' },
 
-    { id: 't2', skill: 'infer', level: 'B2', point: 'regional', seg: [61.9, 70.1],
+    { id: 't2', skill: 'infer', level: 'B2', point: 'regional', seg: [61.9, 71.1],
       stem: 'Why does Michael say his job title right after the captain?',
       ja: 'マイケルはなぜ船長のすぐあとに自分の肩書きを言う？',
       choices: ['To look important as well', 'To introduce the captain', 'To make fun of the captain'], a: 0,
@@ -161,7 +161,7 @@ export const captainjack: Clip = {
       trap: '同じ形なのでからかいに聞こえやすいが、本人は本気。船長はもう自分で名乗っている。',
       use: 'I’m the manager here.（ここの責任者です）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', seg: [77.5, 85.2],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', seg: [77.5, 85.6],
       stem: 'What does the captain ask for after being cut off?',
       ja: '話をさえぎられたあと、船長は何を頼む？',
       choices: ['To finish his safety talk', 'To take a short break', 'To start the party now'], a: 0,
@@ -173,7 +173,7 @@ export const captainjack: Clip = {
       trap: 'そのあとの Okay, thank you はお礼に聞こえやすいが、話を戻すためのつなぎ。',
       use: 'Sorry, can I just finish?（すみません、最後まで言ってもいい？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'finish', seg: [81.4, 85.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'finish', seg: [80.5, 85.6],
       stem: 'Fill the gap: “Please ___ finish.”',
       ja: '空所に入る語は？「Please ___ finish.」',
       choices: ['let me', 'let him', 'let us'], a: 0,
@@ -185,7 +185,7 @@ export const captainjack: Clip = {
       trap: 'let him なら「レティム」、let us なら「レタス」と聞こえる。最後が「ミ」なら let me。',
       use: 'Let me check and get back to you.（確認して折り返します）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'coastguard', seg: [85.1, 88.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'coastguard', seg: [83.1, 90.4],
       stem: 'What does the captain say the rules require him to tell them?',
       ja: '決まりで伝えないといけない、と船長が言うのは何？',
       choices: ['Where the safety exits are', 'Where the life jackets are', 'How to call for help'], a: 0,
@@ -197,7 +197,7 @@ export const captainjack: Clip = {
       trap: '救命具は少し前の話。tell you のあとの where … are を聞く。',
       use: 'Where is the emergency exit?（非常口はどこですか）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'overside', reveals: ['coastguard'], seg: [87.0, 92.4],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'overside', reveals: ['coastguard'], seg: [85.4, 92.8],
       stem: 'Where does the captain say this ship’s exits are?',
       ja: 'この船の出口はどこだ、と船長は言う？',
       choices: ['Anywhere over the side', 'Under all the seats', 'At the back of the boat'], a: 0,
@@ -209,7 +209,7 @@ export const captainjack: Clip = {
       trap: 'under the seats は救命具の場所。over the side（船べりの外）まで聞く。',
       use: 'Don’t lean over the side.（船べりから身を乗り出さないで）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'dancing', seg: [100.1, 103.8],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'dancing', seg: [98.4, 107.6],
       stem: 'What are the guests told to get ready for later on?',
       ja: '客はあとで何の準備をするように言われる？',
       choices: ['Dancing at the party', 'Dressing up for the party', 'Taking a walk on deck'], a: 0,
@@ -221,7 +221,7 @@ export const captainjack: Clip = {
       trap: 'shoes（靴）を文字どおりに取ると、着がえや散歩に聞こえやすい。ひとまとまりで覚える。',
       use: 'Put on your dancing shoes tonight!（今夜は踊るよ！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', seg: [108.0, 125.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', seg: [108, 126.1],
       stem: 'What does the captain ask Michael to do at the end?',
       ja: '最後に船長はマイケルに何を頼む？',
       choices: ['Sit back and have fun', 'Run the party for him', 'Keep his staff quiet'], a: 0,
@@ -233,7 +233,7 @@ export const captainjack: Clip = {
       trap: 'your company employees（君の社員）の話は前置き。頼みは最後の sit back。',
       use: 'Just sit back and enjoy the ride.（ゆっくり乗っててね）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'others', seg: [111.9, 118.4],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'others', seg: [111.9, 120],
       stem: 'Why does the captain say other people are on the boat?',
       ja: '船長はなぜ、ほかの人も乗っていると言う？',
       choices: ['To ask Michael to calm down', 'To ask Michael to invite them', 'To ask Michael to count people'], a: 0,

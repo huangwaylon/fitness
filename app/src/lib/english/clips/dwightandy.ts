@@ -14,7 +14,7 @@ export const dwightVsAndy: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'appreciate', seg: [0, 4.4],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'appreciate', seg: [0, 5.1],
       stem: 'What does “I appreciate it” mean?', ja: '“I appreciate it” はどういう意味？',
       choices: ['I’m grateful', 'I don’t need it', 'I’ll pay for it'], a: 0,
       choicesJa: ['感謝している', 'それはいらない', 'それは私が払う'],
@@ -25,7 +25,7 @@ export const dwightVsAndy: Clip = {
       trap: 'appreciate を「評価する」と思いやすい。人の親切に言うときは「ありがとう」。',
       use: 'Thanks for waiting. I appreciate it.（待ってくれてありがとう。助かります）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduced', seg: [5.2, 10.9],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduced', seg: [5.2, 14.1],
       stem: 'Why does Dwight start with “I don’t believe…”?', ja: 'ドワイトはなぜ「I don’t believe…」と話し始める？',
       choices: ['To introduce himself', 'To say goodbye', 'To ask for help'], a: 0,
       choicesJa: ['自分から名乗るため', 'さよならを言うため', '助けを頼むため'],
@@ -47,7 +47,7 @@ export const dwightVsAndy: Clip = {
       trap: '後半は映画の話が続くので、そちらだと思いやすい。最初の質問 reporting to me を聞く。',
       use: 'Who do you report to?（あなたの上司は誰ですか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'title', seg: [10.2, 16.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'title', seg: [8.3, 16.3],
       stem: 'What is Andy’s job title?', ja: 'アンディの役職は？',
       choices: ['Regional director', 'Regional manager', 'Assistant regional manager'], a: 0,
       choicesJa: ['地域ディレクター', '地域マネージャー', '地域マネージャー補佐'],
@@ -58,7 +58,7 @@ export const dwightVsAndy: Clip = {
       trap: '二人とも regional で始まるので混ざりやすい。後ろが director か manager かを聞く。',
       use: 'Who’s in charge of the booking?（予約の担当はどなたですか）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'rank', seg: [13.3, 23],
+    { id: 'i3', skill: 'phrase', level: 'B2', point: 'rank', seg: [10.6, 19.7],
       stem: 'What does Andy mean by “On the contrary”?', ja: 'アンディの “On the contrary” はどういう意味？',
       choices: ['It’s the opposite', 'Yes, that’s right', 'I don’t understand'], a: 0,
       choicesJa: ['その逆だ', 'うん、そのとおり', '意味が分からない'],
@@ -116,7 +116,7 @@ export const dwightVsAndy: Clip = {
       trap: 'お祝いにはお礼、という型で選びやすい。返事は言葉の形でなく、相手が言いたいことに返す。',
       use: 'Hey, that’s still a lot!（いや、それでも多いでしょ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'films', seg: [24.4, 29.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'films', seg: [24.4, 30.6], keep: true,
       stem: 'How many films does Dwight say he has seen?', ja: 'ドワイトは映画を何本見たと言う？',
       choices: ['24', '214', '240', '2,400'], a: 2,
       choicesJa: ['24本', '214本', '240本', '2,400本'],
@@ -127,7 +127,7 @@ export const dwightVsAndy: Clip = {
       trap: '「ハンドレッド・フォーティ」なら240、「フォーティーン」なら214、hundred なしは24、「サウザンド」は2,400。',
       use: 'I’ve been there over twenty times.（20回以上行ったよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 64],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 66.2],
       stem: 'What is Michael’s big news?', ja: 'マイケルの大事な発表は？',
       choices: ['He picks a new number two', 'Everyone gets a pay raise', 'He picks a new number three'], a: 0,
       choicesJa: ['新しいナンバー2を選んだ', '全員の給料が上がる', '新しいナンバー3を選んだ'],
@@ -138,7 +138,7 @@ export const dwightVsAndy: Clip = {
       trap: 'number three も pay raise も聞こえるが、決まったのは2番だけ。3番は not decided yet。',
       use: 'I have decided to move to Osaka.（大阪に引っ越すことに決めた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'two', seg: [39.8, 44.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'two', seg: [36.4, 45.2],
       stem: 'Who does Michael choose as his new number two?', ja: 'マイケルが新しいナンバー2に選ぶのは誰？',
       choices: ['Jim', 'Andy', 'Dwight'], a: 0,
       choicesJa: ['ジム', 'アンディ', 'ドワイト'],
@@ -149,7 +149,7 @@ export const dwightVsAndy: Clip = {
       trap: 'Jim は一音で短く、make にくっついて聞き逃しやすい。make のすぐあとを待つ。',
       use: 'They made her team leader.（彼女がチームリーダーになった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'raise', seg: [44.9, 50.4],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'raise', seg: [44.9, 51.1],
       stem: 'What is true about pay for the new job?', ja: '新しい役目の給料について、正しいのは？',
       choices: ['It comes with a raise', 'It has no raise', 'No one knows yet'], a: 0,
       choicesJa: ['給料が上がる', '給料は上がらない', 'まだ誰も知らない'],
@@ -174,7 +174,7 @@ export const dwightVsAndy: Clip = {
       trap: 'Jim へのからかいに聞こえるが、けなす相手は仕事のほう。even に注目。',
       use: 'If you even want it, that is.（まあ、欲しければだけど）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'flatter', seg: [50.7, 64],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'flatter', seg: [49.7, 61.7],
       stem: 'Why does Andy praise Michael right then?', ja: 'アンディはなぜその時マイケルをほめる？',
       choices: ['He wants to be number three', 'He thinks Jim is a good pick', 'He wants a pay raise'], a: 0,
       choicesJa: ['ナンバー3になりたい', 'ジムはいい人選だと思う', '給料を上げてほしい'],
@@ -197,7 +197,7 @@ export const dwightVsAndy: Clip = {
       trap: '直前の「よく考えた」に引かれて「慎重・公平」と取りやすいが、aplomb は態度の落ち着き。',
       use: 'She handled the angry guest with aplomb.（怒った客にも動じずに対応した）' },
 
-    { id: 'n2', skill: 'number', level: 'B2', point: 'mpg', seg: [77.1, 82.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B2', point: 'mpg', seg: [77.1, 84.9], keep: true,
       stem: 'How many miles per gallon does Dwight’s car get?', ja: 'ドワイトの車は、1ガロンで何マイル走る？',
       choices: ['2', '4', '8', '40'], a: 2,
       choicesJa: ['2マイル', '4マイル', '8マイル', '40マイル'],
@@ -222,7 +222,7 @@ export const dwightVsAndy: Clip = {
       trap: '自信たっぷりに直すので「言い負かした」に聞こえるが、倍でも弱点は残る。',
       use: 'That’s not the comeback you think it is.（それ、言い返せてないよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'latin', seg: [88.6, 96.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'latin', seg: [88.6, 96.5],
       stem: 'What does Andy say the name of his car means?', ja: 'アンディは、自分の車の名前は何の意味だと言う？',
       choices: ['Earth, in Latin', 'Rugged, in Latin', 'Earth, in Japanese'], a: 0,
       choicesJa: ['ラテン語で「大地」', 'ラテン語で「たくましい」', '日本語で「大地」'],
@@ -233,7 +233,7 @@ export const dwightVsAndy: Clip = {
       trap: '直前に Japanese と rugged が聞こえるので混ざりやすい。for の前が言語、後ろが意味。',
       use: '“Gracias” is Spanish for “thank you.”（グラシアスはスペイン語で「ありがとう」）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'bet', seg: [101.2, 103.85],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'bet', seg: [101, 107.3],
       stem: 'Type the reply: “Yeah, ___.” (4 words)', ja: '書こう：“Yeah, ___.”（4語）',
       answer: 'i bet you would',
       cue: '「than an ex-earth」への返事',
@@ -257,7 +257,7 @@ export const dwightVsAndy: Clip = {
       trap: '1985 を年式と、「返して」を盗んだ車と取りやすい。返事の ’87 がヒント。',
       use: 'The ’80s called. They want that hat back.（その帽子、古くさいね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'speaking', seg: [106.9, 120.75],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'speaking', seg: [106.9, 120.8],
       stem: 'Why do both men say “speaking of…”?', ja: '二人はなぜ “speaking of…” と言う？',
       choices: ['To start a new insult', 'To change to a calm topic', 'To say sorry'], a: 0,
       choicesJa: ['次の悪口を始めるため', '落ち着いた話に変えるため', '謝るため'],
@@ -283,6 +283,17 @@ export const dwightVsAndy: Clip = {
       trap: 'ほめ言葉の形なので本気に取りやすい。ほめる中身が明らかに弱いときは皮肉。',
       use: 'Wow, great plan. Really well thought out.（へえ、すごい計画。よく考えたね）' },
 
+    { id: 's1', skill: 'sound', level: 'B2', point: 'ifidiot', seg: [129.1, 134.1],
+      stem: 'Fill the gap: “If I were an idiot, ___ driving a Trans Am.”', ja: '空所に入るのは？ “If I were an idiot, ___ driving a Trans Am.”',
+      choices: ['I’d be', 'I’ll be', 'I’m'], a: 0,
+      choicesJa: ['〜しているだろう', '〜しているつもりだ', '〜している'],
+      cue: '「idiot」のあと',
+      line: 'If I were an idiot, *I’d be* driving a Trans Am.',
+      said: '「僕がバカなら、トランザムに乗ってるさ」と言い返す。',
+      mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
+      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
+      use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
+
     // R fix: V2 (60 % blind): "the speaker admits it" was a filler. "A draw both men accepted" (the fizzle read as a
     //   truce) replaces it. Still near 50 % blind (open).
     // why: the speaker won ← "totally got the best of" taken at face value; draw ← the fizzle read as a truce
@@ -298,16 +309,5 @@ export const dwightVsAndy: Clip = {
       mean: 'カメラへの一言が場面を書きかえる形。ここでは逆に、勝ったと思い込む本人のずれが笑いになる。',
       trap: 'カメラへの本音をそのまま答えと取りやすい。本人の評価と、実際のやりとりを比べて聞く。',
       use: 'I think that went well. Right?（うまくいったと思う。だよね？）' },
-
-    { id: 's1', skill: 'sound', level: 'B2', point: 'ifidiot', seg: [131, 134.05],
-      stem: 'Fill the gap: “If I were an idiot, ___ driving a Trans Am.”', ja: '空所に入るのは？ “If I were an idiot, ___ driving a Trans Am.”',
-      choices: ['I’d be', 'I’ll be', 'I’m'], a: 0,
-      choicesJa: ['〜しているだろう', '〜しているつもりだ', '〜している'],
-      cue: '「idiot」のあと',
-      line: 'If I were an idiot, *I’d be* driving a Trans Am.',
-      said: '「僕がバカなら、トランザムに乗ってるさ」と言い返す。',
-      mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
-      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
-      use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
   ]
 };

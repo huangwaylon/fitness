@@ -15,7 +15,7 @@ export const sebastian: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'proud', seg: [0, 7],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'proud', seg: [0, 8.3],
       stem: 'How does Leslie feel about her team?',
       ja: 'レスリーはチームのことをどう思っている？',
       choices: ['Very proud of them', 'Worried about them', 'Angry with them'], a: 0,
@@ -64,7 +64,7 @@ export const sebastian: Clip = {
       trap: 'never thought だけ拾うと「まだ生きていたとは」と取りやすい。get to meet は初めて会えた喜び。',
       use: 'I never thought I’d get to see Paris.（パリに行けるなんて思わなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'meet', seg: [23.6, 27],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'meet', seg: [23.6, 30.8],
       stem: 'Type what he says: “I never thought I’d ___.” (4 words)', answer: 'get to meet him',
       ja: '「I never thought I’d ___.」の空所を書こう（4語）',
       cue: '「I never thought」のあと',
@@ -74,7 +74,7 @@ export const sebastian: Clip = {
       trap: 'meet him が「ミーティム」と一語に聞こえ、語を落としやすい。',
       use: 'Did you get to meet the chef?（シェフに会えた？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', reveals: ['last'], seg: [30.6, 37],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', reveals: ['last'], seg: [27.8, 37.1],
       stem: 'What year did Lil’ Sebastian first come to the festival?',
       ja: 'リル・セバスチャンが初めてお祭りに出たのは何年？',
       choices: ['1978', '1987', '1997'], a: 1, keep: true,
@@ -87,7 +87,7 @@ export const sebastian: Clip = {
       use: 'I first came here in 1998.（初めてここに来たのは1998年）' },
 
     // A2: was an infer on what “the last festival” says about the festival; now the word's meaning
-    { id: 'i1', skill: 'phrase', level: 'C1', point: 'last', reveals: ['year'], seg: [30.6, 37],
+    { id: 'i1', skill: 'phrase', level: 'C1', point: 'last', reveals: ['year'], seg: [30.3, 37.1],
       stem: 'What does “the last Harvest Festival” mean here?',
       ja: '「the last Harvest Festival」は、ここではどういう意味？',
       choices: ['The one before this', 'The final one ever', 'The first one ever'], a: 0,
@@ -99,7 +99,7 @@ export const sebastian: Clip = {
       trap: 'last ＝「最後」と思いやすい。行事の前の last はたいてい「前回の」。',
       use: 'When was the last time you went camping?（最後にキャンプしたのはいつ？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'phenom', seg: [30.6, 37],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'phenom', seg: [30.6, 37.1],
       stem: 'What does “an instant phenomenon” mean here?',
       ja: '「an instant phenomenon」は、ここではどういう意味？',
       choices: ['A big hit from the start', 'A strange event from the start', 'Popular only for a short time'], a: 0,
@@ -123,7 +123,7 @@ export const sebastian: Clip = {
       trap: 'girl を聞いて「実はメス」と取りやすい。ここは人気の大きさを付け足す一言。',
       use: 'It was the number one song that year.（その年の1位の曲だった）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'names', seg: [36.8, 43.4],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'names', seg: [36.8, 46.1],
       stem: 'For girls, what number was the name Sebastian?',
       ja: '女の子の名前で、セバスチャンは何位だった？',
       choices: ['No. 1', 'No. 2', 'No. 3'], a: 2, keep: true,
@@ -135,7 +135,7 @@ export const sebastian: Clip = {
       trap: '先に number one が聞こえるので1位と思いやすい。girl’s の前の数を聞く。',
       use: 'It was the number one song that year.（その年の1位の曲だった）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [42.6, 45.7],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [41.2, 49.6],
       stem: 'What does Ben mean by “What’s the deal”?',
       ja: 'ベンの「What’s the deal」はどういう意味？',
       choices: ['Why is it so special?', 'How much does it cost?', 'Is it sick or hurt?'], a: 0,
@@ -171,7 +171,7 @@ export const sebastian: Clip = {
       trap: '説明の形なので親切に教えていると取りやすい。何に言い返しているか、big difference の言い張りを聞く。',
       use: 'It’s not a cold. There’s a big difference.（ただの風邪じゃない。全然違う）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pony', seg: [44.3, 49.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pony', seg: [44.3, 51.2],
       stem: 'If not a pony, what is Lil’ Sebastian?',
       ja: 'ポニーでないなら、リル・セバスチャンは何？',
       choices: ['A mini horse', 'A baby horse', 'A big horse'], a: 0,
@@ -183,7 +183,7 @@ export const sebastian: Clip = {
       trap: 'pony も horse も聞こえて迷いやすい。not のあとを聞く。',
       use: 'It’s not a cold. There’s a big difference.（風邪じゃない。全然違うよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'doeshe', seg: [49.2, 52.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'doeshe', seg: [47.3, 52.3],
       stem: 'Fill the gap: “Why is he so famous? ___ do something?”',
       ja: '「Why is he so famous? ___ do something?」の空所は？',
       choices: ['Does he', 'Did he', 'Doesn’t he'], a: 0,
@@ -207,6 +207,18 @@ export const sebastian: Clip = {
       trap: 'honorary を聞き逃すと「大学で学んだ」に聞こえる。名誉学位は学ばずにもらえる。',
       use: 'He has a degree in economics.（彼は経済学の学位を持っている）' },
 
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'careful', seg: [52.1, 58],
+      stem: 'What does everyone need to be with the horse?',
+      ja: 'みんなは馬に対してどうしないといけない？',
+      choices: ['Very careful', 'Very quiet', 'Very quick'], a: 0,
+      choicesJa: ['とても注意深く', 'とても静かに', 'とてもすばやく'],
+      cue: '「We all need to be」のあと',
+      line: 'We all need to be *very careful*, okay?',
+      said: '「みんな、すごく気をつけないとね」と注意する。',
+      mean: 'need to 〜 ＝「〜しないといけない」。be careful ＝「気をつけて」。年を取った馬だから。',
+      trap: 'very のあとの語は短く速い。「ケアフォー」と聞こえる。',
+      use: 'Be careful, the floor is wet.（気をつけて、床がぬれてる）' },
+
     // retired (A2): cataracts and arthritis are words above this learner, the choices two-part
     { id: 'd2', skill: 'detail', level: 'B1', point: 'health', seg: [55.8, 63.9], retired: true,
       stem: 'What health problems does the horse have?',
@@ -219,19 +231,7 @@ export const sebastian: Clip = {
       trap: 'cataracts が分からないと both だけ残り、耳とも取れる。直後の in both eyes で絞る。',
       use: 'Be careful, he has a bad back.（気をつけて、彼は腰が悪いの）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'careful', seg: [55.8, 60],
-      stem: 'What does everyone need to be with the horse?',
-      ja: 'みんなは馬に対してどうしないといけない？',
-      choices: ['Very careful', 'Very quiet', 'Very quick'], a: 0,
-      choicesJa: ['とても注意深く', 'とても静かに', 'とてもすばやく'],
-      cue: '「We all need to be」のあと',
-      line: 'We all need to be *very careful*, okay?',
-      said: '「みんな、すごく気をつけないとね」と注意する。',
-      mean: 'need to 〜 ＝「〜しないといけない」。be careful ＝「気をつけて」。年を取った馬だから。',
-      trap: 'very のあとの語は短く速い。「ケアフォー」と聞こえる。',
-      use: 'Be careful, the floor is wet.（気をつけて、床がぬれてる）' },
-
-    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [57.5, 61],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [56.1, 65.3],
       stem: 'How old is the horse now?',
       ja: 'その馬はいま何歳？',
       choices: ['20', '25', '35'], a: 1, keep: true,
@@ -243,7 +243,7 @@ export const sebastian: Clip = {
       trap: 'twenty で止めると20。twenty-five は最後に「ファイヴ」、thirty-five は「サー」で始まる。',
       use: 'My cat is fifteen now.（うちの猫ももう15歳）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['jerry'], seg: [62.4, 65.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', reveals: ['jerry'], seg: [62.4, 68.2],
       stem: 'Fill the gap: “___ look after him.”',
       ja: '「___ look after him.」の空所は？',
       choices: ['Jerry’s going to', 'Jerry’s got to', 'Jerry was going to'], a: 0,
@@ -255,7 +255,7 @@ export const sebastian: Clip = {
       trap: 'gonna は「ナ」、gotta は「ラ」に近い。was なら名前のあとに「ワズ」が入る。',
       use: 'I’m going to look after the kids.（子どもたちの面倒は私が見るよ）' },
 
-    { id: 'w1', skill: 'detail', level: 'B1', point: 'jerry', seg: [63.6, 67.6],
+    { id: 'w1', skill: 'detail', level: 'B1', point: 'jerry', seg: [62.6, 68.2],
       stem: 'Who will take care of the horse?',
       ja: '馬の世話をするのはだれ？',
       choices: ['Jerry', 'Leslie', 'Ben'], a: 0,
@@ -280,7 +280,7 @@ export const sebastian: Clip = {
       trap: 'diabetes（糖尿病）は難しい語だが、答えは最後の medication（薬）。',
       use: 'I’m on medication for a cold.（風邪の薬を飲んでいます）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'honest', reveals: ['reaction'], seg: [70.7, 76.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'honest', reveals: ['reaction'], seg: [70.7, 77.2],
       stem: 'Why does Ben say “I just gotta be honest”?',
       ja: 'ベンはなぜ「I just gotta be honest」と言う？',
       choices: ['He is about to disagree', 'He is about to say yes', 'He is about to say sorry'], a: 0,

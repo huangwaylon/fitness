@@ -26,7 +26,7 @@ export const loveOverMeat: Clip = {
       trap: 'tonight と tomorrow が近く、今夜プロポーズすると思いやすい。finally ＝ やっと。',
       use: 'I think she’s the one.（彼女が運命の人だと思う）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B1', point: 'guess', seg: [16.55, 22.5],
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'guess', seg: [14.7, 24.1],
       stem: 'What does Tom mean by “Guess what I have planned”?',
       ja: 'トムの「Guess what I have planned」はどういう意味？',
       choices: ['I have news for you', 'Please guess a number', 'I don’t know yet'], a: 0,
@@ -38,7 +38,7 @@ export const loveOverMeat: Clip = {
       trap: 'guess（当てる）だけ聞くと、本当にクイズに聞こえる。トムは答えを待たずに話す。',
       use: 'Guess what? We’re having a party.（聞いて！パーティーするんだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'dress', seg: [19.1, 26.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'dress', seg: [19.1, 29.8],
       stem: 'What surprise has Tom gotten for Lucy?',
       ja: 'トムはルーシーにどんなサプライズを用意した？',
       choices: ['A dress that matches his outfit', 'A big part in Donna’s wedding day', 'A blue suit of her own'], a: 0,
@@ -50,7 +50,7 @@ export const loveOverMeat: Clip = {
       trap: 'butler of honor も blue brocade もトム自身の話。surprise のあとを聞く。',
       use: 'We got matching shirts for the trip.（旅行用におそろいのシャツを買った）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [26.55, 33.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'sure', seg: [26.4, 35.8], keep: true,
       stem: 'How sure is Tom that Lucy will love the gift?',
       ja: 'ルーシーが喜ぶと、トムはどのくらい自信がある？',
       choices: ['90%', '100%', '110%'], a: 1,
@@ -62,7 +62,7 @@ export const loveOverMeat: Clip = {
       trap: '大げさなトムなら110%も言いそう。「ハンドレッド」で終われば100、「アンド・テン」が続けば110、「ナインティ」なら90。',
       use: 'I’m one hundred percent sure it’s here.（ここにあるって100パーセント確か）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bully', seg: [33, 43.4],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bully', seg: [33, 43.7],
       stem: 'How interested is Ron in Tom’s news?',
       ja: 'トムの話に、ロンはどのくらい興味がある？',
       choices: ['Not very, he wants food', 'Very, he is so happy', 'Worried, it is too fast'], a: 0,
@@ -98,7 +98,7 @@ export const loveOverMeat: Clip = {
       trap: 'don’t get involved だけ聞くと、断りに聞こえる。normally と but が例外の合図。',
       use: 'I don’t usually say this, but…（普段は言わないけど…）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sayit', seg: [68.85, 72.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sayit', seg: [67.4, 72.9],
       stem: 'Type the end: “but something about a wedding, ___.” (4 words)', answer: "i'll just say it",
       ja: '最後を書き取る：「but something about a wedding, ___.」（4語）',
       cue: '「wedding」のあとの4語。',
@@ -108,7 +108,7 @@ export const loveOverMeat: Clip = {
       trap: 'just の t が say の前で消え、「ジャスセイ」に聞こえる。それでも4語ある。',
       use: 'I’ll just say it: I’m nervous.（はっきり言うと、緊張してる）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'taken', seg: [70.5, 80],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'taken', seg: [70.5, 80.3],
       stem: 'What does “Tom is quite taken with you” mean?',
       ja: '「Tom is quite taken with you」はどういう意味？',
       choices: ['Tom likes her very much', 'Tom likes her just a little', 'Tom has been fooled'], a: 0,
@@ -132,7 +132,7 @@ export const loveOverMeat: Clip = {
       trap: '文字どおり「歩いて戻る」と思いやすい。返事の lying で、言葉の話だと分かる。',
       use: 'He had to walk back his words.（彼は発言を取り消すはめになった）' },
 
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'man', seg: [101.4, 109.5],
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'man', seg: [101.4, 110.7],
       stem: 'What does Ron answer to Tom’s big plans?',
       ja: 'トムの大きな計画に、ロンは何と答える？',
       choices: ['Don’t call me “man.”', 'That sounds great, son.', 'That’s too far away.'], a: 0,
@@ -144,7 +144,7 @@ export const loveOverMeat: Clip = {
       trap: 'way in the future（ずっと先）はトムの言葉。ロンは一言だけ。',
       use: 'That’s what you got from all that?（あれ全部聞いて、そこ？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'food', seg: [110.5, 115.8],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'food', seg: [109.6, 116.9],
       stem: 'What does “No more food until he fixes” it mean for Ron?',
       ja: '「No more food until he fixes」は、ロンにとってどういうこと？',
       choices: ['He can eat once it’s fixed', 'He can never eat again', 'He must leave right now'], a: 0,
@@ -156,7 +156,7 @@ export const loveOverMeat: Clip = {
       trap: 'No more food だけ聞くと、二度と食べられないと思いやすい。until 以下が条件。',
       use: 'No dessert until you finish your vegetables.（野菜を食べるまでデザートなし）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'liar', seg: [116.4, 127.55],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'liar', seg: [116.4, 127.6],
       stem: 'Fill the gap: “Lucy, … I am ___.”',
       ja: '空所を埋める：「Lucy, … I am ___.」',
       choices: ['a liar', 'not a liar', 'a lawyer'], a: 0,
@@ -168,7 +168,7 @@ export const loveOverMeat: Clip = {
       trap: '「ライアー」なら a liar、「ローヤー」なら a lawyer。not a liar は What? のあとの言い直し。',
       use: 'I’m a terrible liar.（うそをつくのがすごく下手なんだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['liar'], seg: [116.4, 151.3],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'fix', reveals: ['liar'], seg: [116.4, 151.6],
       stem: 'How does Ron’s try to fix things with Lucy go?',
       ja: 'ルーシーとのことを直そうとするロンは、どうなる？',
       choices: ['He makes it even bigger', 'Lucy calms down at last', 'Lucy gets angry and leaves'], a: 0,
@@ -212,7 +212,7 @@ export const loveOverMeat: Clip = {
       trap: '正しい文に直したくなるが、書き取りは聞こえた音を書く。having not の順番もそのまま。',
       use: 'I don’t know what you mean, honestly.（何のことだか、本当に分からない）' },
 
-    { id: 'i6', skill: 'infer', level: 'B2', point: 'cherish', seg: [166.65, 177.2],
+    { id: 'i6', skill: 'infer', level: 'B2', point: 'cherish', seg: [166.4, 177.2],
       stem: 'What does Ron really want Tom to do?',
       ja: 'ロンは本当はトムに何をしてほしい？',
       choices: ['Tell Lucy how he feels', 'Say sorry to Lucy', 'Forgive Ron'], a: 0,
@@ -224,7 +224,7 @@ export const loveOverMeat: Clip = {
       trap: 'sorry はロン自身の謝り。トムにさせたいのは no shame in のあと。',
       use: 'There’s no shame in asking for help.（助けを求めるのは恥じゃない）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'cost', seg: [177.2, 189],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'cost', seg: [177.2, 189.2],
       stem: 'What did Ron miss out on?',
       ja: 'ロンは何を逃した？',
       choices: ['The food', 'The dancing', 'The wedding'], a: 0,

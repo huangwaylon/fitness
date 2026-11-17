@@ -47,7 +47,7 @@ export const youngjim: Clip = {
       trap: 'dream team や pick first から「代表選び」と思いやすい。最初の一文が目的。',
       use: 'Let’s team up on this project.（この企画、組んでやろう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'idea', seg: [14.0, 20.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'idea', seg: [14, 20.9],
       stem: 'Why does Andy get to pick first?',
       ja: 'アンディはなぜ最初に選べる？',
       choices: ['It was all his idea', 'He sells the most', 'He came in first'], a: 0,
@@ -58,7 +58,7 @@ export const youngjim: Clip = {
       trap: 'pick first から「一番の成績」と思いやすい。since のあとに理由がそのまま来る。',
       use: 'Since you cooked, I’ll do the dishes.（作ってくれたから、皿は洗うよ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'think', seg: [19.5, 24],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'think', seg: [16.6, 26.2],
       stem: 'What does Andy mean by “for a minute” here?',
       ja: 'アンディの「for a minute」はここでどういう意味？',
       choices: ['For a short time', 'For one minute exactly', 'For the first time'], a: 0,
@@ -80,7 +80,7 @@ export const youngjim: Clip = {
       trap: '大げさな呼び方はからかいにも聞こえやすい。そのあとのていねいなやり取りで判断。',
       use: 'You’re the expert here.（ここはあなたが専門家だから）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'senior', seg: [38.1, 44.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'senior', seg: [37.8, 45.1],
       stem: 'What does “going by seniority” mean?',
       ja: '「going by seniority」はどういう意味？',
       choices: ['Longest-working person first', 'Best seller goes first', 'Andy chooses who is next'], a: 0,
@@ -99,7 +99,7 @@ export const youngjim: Clip = {
       mean: '年寄り扱いした本人も同じ年。からかいが Michael に返ってくるのがおかしい。',
       trap: 'same age を「みんなと同じ」と広く取りやすい。we が誰と誰かを考える。',
       use: 'Look who’s talking.（人のこと言えないでしょ）' },
-    { id: 'nt3', skill: 'dict', level: 'B2', point: 'gotta', reveals: ['second'], seg: [55.1, 58.5],
+    { id: 'nt3', skill: 'dict', level: 'B2', point: 'gotta', reveals: ['second'], seg: [52.1, 59.3],
       stem: 'Type: “You can’t pass. ___ pick somebody.” (3 words)', answer: 'you got to',
       ja: '「You can’t pass. ___ pick somebody.」の空所を書こう（3語）',
       cue: 'You can’t pass のすぐあと。', line: 'Pass. — You can’t pass. *You got to* pick somebody.',
@@ -108,7 +108,7 @@ export const youngjim: Clip = {
       trap: '習った形どおり you’ve と書きたくなる。聞こえた3語を書く。',
       use: 'You got to try this place.（ここ、絶対に行ってみて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'second', seg: [55.2, 69.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'second', seg: [55.4, 70.4],
       stem: 'What did Stanley want most?',
       ja: 'スタンリーが一番したかったことは？',
       choices: ['To pick no one', 'To pick Phyllis', 'To go first'], a: 0,
@@ -137,7 +137,7 @@ export const youngjim: Clip = {
       mean: '交換したいほどの相手と、昔もよく組んでいた。カメラへの一言が、続く年月への嘆きに変える。',
       trap: '「よく一緒に」は懐かしさに聞こえる。warn と tragically は後悔の語。',
       use: 'I should have seen it coming.（こうなるって気づくべきだった）' },
-    { id: 's1', skill: 'sound', level: 'B1', point: 'usedto', seg: [76.6, 82.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'usedto', seg: [75.6, 82.7],
       stem: 'Fill the gap: “Dwight and I ___ go on sales calls.”',
       ja: '「Dwight and I ___ go on sales calls.」の空所は？',
       choices: ['used to', 'had to', 'have to'], a: 0,
@@ -157,7 +157,7 @@ export const youngjim: Clip = {
       mean: '過去の自分に伝えられないのは当然。それを悲劇のように言う大げささが笑い。',
       trap: 'cannot を「立場上言えない」と取りやすいが、相手は過去の自分。',
       use: 'If only I could tell my younger self.（昔の自分に教えてあげたい）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'heck', seg: [92.9, 98.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'heck', seg: [91.9, 100.1],
       stem: 'What does Dwight say about the car?',
       ja: 'ドワイトは車について何と言う？',
       choices: ['It is a really great car', 'It is an old-style car', 'It has a very strong motor'], a: 0,
@@ -168,7 +168,7 @@ export const youngjim: Clip = {
       trap: 'carriage（馬車）や motor（エンジン）から、古い車やエンジンの話に思いやすい。',
       use: 'That was a heck of a game.（すごい試合だったね）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'laundry', seg: [104.2, 107.9],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'laundry', seg: [102.5, 110.7],
       stem: 'What does “Long story” mean here?',
       ja: 'ここでの「Long story」はどういう意味？',
       choices: ['I don’t want to explain', 'I will tell you later', 'Laundry takes a long time'], a: 0,
@@ -179,7 +179,7 @@ export const youngjim: Clip = {
       trap: 'long から「時間がかかる」と思いやすい。2語で止めたら、話す気がない合図。',
       use: 'It’s a long story.（話せば長くなるんだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'race', reveals: ['phyllisq', 'prize'], seg: [108.0, 147.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'race', reveals: ['phyllisq', 'prize'], seg: [108, 148],
       stem: 'What happens before the teams leave?',
       ja: 'チームが出発する前に何が起きる？',
       choices: ['Phyllis asks about the game', 'The teams start to fight', 'Michael gives out some prizes'], a: 0,
@@ -190,7 +190,7 @@ export const youngjim: Clip = {
       trap: 'チームごとに呼び名をつけるので、もめていると思いやすい。後半は質問。',
       use: 'All right, everybody, circle up.（よし、みんな集まって）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'rush', seg: [125.4, 132.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'rush', seg: [125.4, 134.6],
       stem: 'What is the plan, says Michael?',
       ja: 'マイケルによると、計画はどんなもの？',
       choices: ['Go out, sell, come back', 'See who makes the biggest sale', 'Call clients, then visit'], a: 0,
@@ -212,7 +212,7 @@ export const youngjim: Clip = {
       trap: 'how is 〜? から「どうやるの」と思いやすい。Then で始まれば言い返し。',
       use: 'Then how is that a vacation?（それのどこが休みなの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'prize', seg: [131.0, 134.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'prize', seg: [129.6, 134.6],
       stem: 'Type the question after “…and come back.” (4 words)', answer: 'is there a prize',
       ja: '「…and come back.」のあとの質問を書こう（4語）',
       cue: 'come back の直後。', line: '*Is there a prize*?',
@@ -221,7 +221,7 @@ export const youngjim: Clip = {
       trap: '短く速いので price（値段）に聞こえやすい。prize は「ズ」の音で終わる。',
       use: 'Is there a fee for this?（これって料金かかりますか）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'prize', seg: [131.0, 134.2],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'prize', seg: [129.7, 136.1],
       stem: 'What does the winning team get?',
       ja: '勝ったチームは何がもらえる？',
       choices: ['The right to brag about it', 'The right to leave early', 'The right to pick first'], a: 0,
@@ -232,7 +232,7 @@ export const youngjim: Clip = {
       trap: 'rights（権利）から、何かの特典を思いやすい。bragging（自慢）と組むと「自慢だけ」。',
       use: 'Winner gets bragging rights.（勝った人は自慢できる）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B2', point: 'howrace', seg: [134.0, 143.4],
+    { id: 'a4', skill: 'attitude', level: 'B2', point: 'howrace', seg: [134, 144.2],
       stem: 'How does Michael answer Phyllis?',
       ja: 'マイケルはフィリスにどう答える？',
       choices: ['He can’t explain, so he insists', 'He explains the rules again', 'He gives clear reasons'], a: 0,
@@ -243,7 +243,7 @@ export const youngjim: Clip = {
       trap: '説明し直しに聞こえやすいが、中身は増えていない。詰まったあとの okay? は押し切り。',
       use: 'It’s just how it is, okay?（とにかく、そういうものなの）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'two', seg: [137.4, 143.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'two', seg: [137.4, 143.9], keep: true,
       stem: 'How many people are in each team?',
       ja: '1チームは何人？',
       choices: ['Two', 'Three', 'Four'], a: 0,
@@ -254,7 +254,7 @@ export const youngjim: Clip = {
       trap: 'two は短く、to と同じ音で聞き落としやすい。three は「スリー」、four は「フォー」。',
       use: 'We’ll work in teams of two.（二人一組で動きます）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'seriously', seg: [162.5, 166.7],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'seriously', seg: [161.6, 166.7],
       stem: 'How does Jim feel when Dwight sits in the back?',
       ja: 'ドワイトが後ろに座ると、ジムはどう感じる？',
       choices: ['He can’t believe it', 'He doesn’t mind at all', 'He thinks it’s smart'], a: 0,
@@ -265,7 +265,7 @@ export const youngjim: Clip = {
       trap: 'ふつうの質問の形なので、軽い確認に聞こえやすい。最初の Seriously? はあきれの合図。',
       use: 'Seriously? You ate the whole cake?（本気？ケーキ全部食べたの？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'backseat', seg: [162.5, 171.8],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'backseat', seg: [162.5, 172.6],
       stem: 'Why is the back the safest place, says Dwight?',
       ja: 'ドワイトによると、なぜ後ろが一番安全？',
       choices: ['Drivers protect their own side', 'The back never gets hit', 'Most crashes hit the front'], a: 0,

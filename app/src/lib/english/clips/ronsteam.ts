@@ -20,7 +20,7 @@ export const ronsTeam: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'mission', reveals: ['three'], seg: [0, 15.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'mission', reveals: ['three'], seg: [0, 20.5],
       stem: 'What does Leslie want from her old team tonight?',
       ja: 'レスリーは今夜、昔のチームに何を頼む？',
       choices: ['Help to beat Ron again', 'A last party together', 'Help to make friends with Ron'], a: 0,
@@ -32,7 +32,7 @@ export const ronsTeam: Clip = {
       trap: '「あまり会わなくなった」と話すので、集まりの話と思いやすい。but のあとが用件。',
       use: 'I need your help one last time.（最後にもう一度だけ手を貸して）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'restaurant', seg: [12.4, 23.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'restaurant', seg: [12.4, 23.7],
       stem: 'What did Ron promise Tom?',
       ja: 'ロンはトムに何を約束した？',
       choices: ['A restaurant on the new campus', 'A job in the campus kitchen', 'Money for his restaurant'], a: 0,
@@ -56,7 +56,7 @@ export const ronsTeam: Clip = {
       trap: 'kind of だけ拾うと「迷っている」に聞こえる。あとに来る強い語の方が本音。',
       use: 'I’m kind of totally lost right now.（正直、完全に迷子です）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dead', seg: [17.0, 23.2],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dead', seg: [17, 23.3],
       stem: 'What does Leslie mean by “Tom’s dead to me”?',
       ja: 'レスリーの「Tom’s dead to me」はどういう意味？',
       choices: ['She jokingly cuts him off', 'She thinks his plan will fail', 'She thinks Ron will drop him'], a: 0,
@@ -68,7 +68,7 @@ export const ronsTeam: Clip = {
       trap: 'dead（死んだ）から計画の失敗と思いやすい。人との関係の話。',
       use: 'You ate my cake? You’re dead to me.（私のケーキ食べた？もう絶交）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'donna', seg: [23.0, 32.8],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'donna', seg: [21.2, 33.2],
       stem: 'Why does Donna side with Ron too?',
       ja: 'ドナもなぜロンの味方なの？',
       choices: ['Ron’s deal will pay her firm', 'Ron promised her a shop too', 'Ron will plan her wedding'], a: 0,
@@ -80,7 +80,7 @@ export const ronsTeam: Clip = {
       trap: 'wedding が聞こえて、ロンが式を手伝うと思いやすい。お金が要るのは本人。',
       use: 'I need the money for my trip.（旅行にお金が要るの）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'furious', seg: [32.7, 46.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'furious', seg: [29.8, 39.5],
       stem: 'How does Leslie feel about Donna’s news?',
       ja: 'ドナの知らせに、レスリーはどんな気持ち？',
       choices: ['Happy, but upset she wasn’t told', 'Happy, and not upset at all', 'Upset that Donna will marry'], a: 0,
@@ -92,7 +92,7 @@ export const ronsTeam: Clip = {
       trap: 'furious（激怒）だけ聞くと、結婚に反対と思いやすい。怒っているのは知らせの遅さ。',
       use: 'You’re getting married? That’s amazing!（結婚するの？すごい！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'person', seg: [37.6, 42.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'person', seg: [37.6, 44.1],
       stem: 'Why didn’t Donna share her news online?',
       ja: 'ドナはなぜネットに知らせを載せなかった？',
       choices: ['To tell Leslie in person', 'Joe asked her to wait', 'Her family didn’t know yet'], a: 0,
@@ -104,7 +104,7 @@ export const ronsTeam: Clip = {
       trap: 'Joe（婚約者）の名前が出るので、彼の頼みと思いやすい。’cause のあとが理由。',
       use: 'I wanted to tell you in person.（直接言いたかったの）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'three', reveals: ['em'], seg: [46.0, 51.45], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'three', reveals: ['em'], seg: [45.9, 51.8], keep: true,
       stem: 'How many kids does Leslie say she has?',
       ja: 'レスリーの子どもは何人？',
       choices: ['2', '3', '4'], a: 1,
@@ -116,7 +116,7 @@ export const ronsTeam: Clip = {
       trap: 'two は「トゥー」、four は「フォー」。「スリー」と r の音があれば three。',
       use: 'There are three of us.（私たちは3人です）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kids', seg: [46.0, 51.45],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kids', seg: [45.9, 51.5],
       stem: 'How does Leslie really feel about her kids?',
       ja: 'レスリーは子どもたちのことを本当はどう思っている？',
       choices: ['Tired, but happy', 'Sorry she has so many', 'Full of energy'], a: 0,
@@ -152,7 +152,7 @@ export const ronsTeam: Clip = {
       trap: 'crush（つぶす）から「壊す」と思いやすい。ここは「大成功」。',
       use: 'You’re crushing it today!（今日は絶好調だね！）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'cares', seg: [60.9, 74.6],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'cares', seg: [64.3, 74.8],
       stem: 'What does Terry’s name story show about his coworkers?',
       ja: 'テリーの名前の話から、同僚について何が分かる？',
       choices: ['They don’t care about his name', 'They gave him a nice nickname', 'They always get names right'], a: 0,
@@ -164,7 +164,7 @@ export const ronsTeam: Clip = {
       trap: '「楽しいグループ」と言うので仲良しと思いやすいが、名前はどうでもいい扱い。',
       use: 'Who cares? It’s just a name.（どうでもいいよ。ただの名前だし）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'me', seg: [94.5, 105.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'me', seg: [91.3, 106.5],
       stem: 'Who is the “one great man” in Tom’s speech?',
       ja: 'トムのスピーチの「ある偉大な男」とはだれ？',
       choices: ['Tom Haverford himself', 'Ben, the man of the year', 'The man who started the town'], a: 0,
@@ -188,7 +188,7 @@ export const ronsTeam: Clip = {
       trap: 'how を「どうやって」と取ると答えが合って見えるが、問いの本題はチームの件。',
       use: 'How could you eat my sandwich?（なんで私のサンド食べたの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'team', seg: [113.4, 138.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'team', seg: [113.4, 144.8],
       stem: 'What is Leslie’s main complaint against Ron?',
       ja: 'レスリーのロンへのいちばんの不満は？',
       choices: ['He took her old team', 'He took her park', 'He left their old team'], a: 0,
@@ -200,7 +200,7 @@ export const ronsTeam: Clip = {
       trap: 'park（公園）が先に聞こえるので選びやすいが、それは前の話。now のあとを聞く。',
       use: 'First you’re late, and now you’re rude.（最初は遅刻、今度は失礼）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'movedon', seg: [119.6, 128.5],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'movedon', seg: [119.6, 130.4],
       stem: 'What does Ron mean by “just like you did”?',
       ja: 'ロンの「just like you did」はどういう意味？',
       choices: ['She moved on too', 'She took people too', 'She should join him'], a: 0,
@@ -212,7 +212,7 @@ export const ronsTeam: Clip = {
       trap: 'steal の話の続きなので「君も取った」と思いやすい。did は moved on を指す。',
       use: 'I moved on, just like you did.（君と同じく、僕も次に進んだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'can', seg: [128.3, 133.2],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'can', seg: [127.2, 133.3],
       stem: 'Fill the gap: “They ___ wrap shrimp.”',
       ja: '「They ___ wrap shrimp.」の空所は？',
       choices: ['can', 'can’t', 'could'], a: 0,
@@ -224,7 +224,7 @@ export const ronsTeam: Clip = {
       trap: 'can’t なら「キャーン」と長い。could なら「クッ」。ここは短く弱い「クン」。',
       use: 'I can help you tomorrow.（明日なら手伝えるよ）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'stab', reveals: ['can'], seg: [133.1, 137.4],
+    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'stab', reveals: ['can'], seg: [132.4, 137.4],
       stem: 'What does “stab me in the back” mean?',
       ja: '「stab me in the back」はどういう意味？',
       choices: ['Betray her', 'Talk about her', 'Eat all the food'], a: 0,
@@ -295,7 +295,7 @@ export const ronsTeam: Clip = {
       trap: 'Leslie の名前から「怒られるのが怖い」と取りやすい。処分した理由は子どもの安全。',
       use: 'Being an adult is hard sometimes.（大人って時々つらい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [198.2, 201.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [197.5, 202.7],
       stem: 'Type the missing words: “I ___ all the stink bombs.” (3 words)', answer: 'got rid of',
       ja: '「I ___ all the stink bombs.」の空所を書こう（3語）',
       cue: '「I forgot」のあと',
@@ -316,7 +316,7 @@ export const ronsTeam: Clip = {
       trap: '疑問形の文句は、責められる誰かに向くと聞きやすい。直後の反応が笑いの的を名指しする。',
       use: 'Who doesn’t pack a spare charger?（予備の充電器を持たない人いる？）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'cake', seg: [252.0, 259.5],
+    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'cake', seg: [252, 262.3],
       stem: 'What does “that seals it” mean?',
       ja: '「that seals it」はどういう意味？',
       choices: ['That proves it', 'I need more proof', 'I’ll keep it secret'], a: 0,

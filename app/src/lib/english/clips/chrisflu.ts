@@ -14,7 +14,7 @@ export const chrisFlu: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'mile', seg: [2.9, 9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'mile', seg: [2.9, 11.4], keep: true,
       stem: 'How long did Chris’s last mile take?', ja: 'クリスの最後の1マイルは何分だった？',
       choices: ['4½ minutes', '5½ minutes', '6½ minutes', '9½ minutes'], a: 1,
       choicesJa: ['4分半', '5分半', '6分半', '9分半'],
@@ -37,7 +37,7 @@ export const chrisFlu: Clip = {
       trap: 'low を「悪い」「落ちこむ」と取りやすい。何の数字が low なのかを考える。',
       use: 'Gas prices hit a new low.（ガソリン代が最安値を更新）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'whatswith', seg: [8.4, 12.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'whatswith', seg: [8.4, 13.8],
       stem: 'What does “What’s with the mask?” mean?', ja: '“What’s with the mask?” はどういう意味？',
       choices: ['Why are you wearing it?', 'Where did you get that?', 'Can I have one too?'], a: 0,
       choicesJa: ['なんでそれを着けてるの？', 'それ、どこで買ったの？', '私にも1枚くれる？'],
@@ -48,7 +48,7 @@ export const chrisFlu: Clip = {
       trap: 'with から「マスクと一緒に何？」と思いやすい。わけを聞くひとまとまり。',
       use: 'What’s with the long line?（この長い列、どうしたの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], seg: [10.4, 19.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], seg: [8.5, 13.5],
       stem: 'Why is Chris wearing a mask?', ja: 'クリスはなぜマスクをしている？',
       choices: ['So he won’t catch the flu', 'So he won’t give anyone flu', 'To keep dust out on runs'], a: 0,
       choicesJa: ['インフルにかからないため', '人にインフルをうつさないため', '走るときにほこりを防ぐため'],
@@ -59,7 +59,7 @@ export const chrisFlu: Clip = {
       trap: 'マスクは「うつさないため」とも思いやすい。あとで、インフルで体が止まると心配している。',
       use: 'I wear a mask on the train.（電車ではマスクをしている）' },
 
-    { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 19.9],
+    { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 22.2],
       stem: 'What could the flu do to Chris, he says?', ja: 'インフルはクリスに何をすると、彼は言う？',
       choices: ['Shut down his whole body', 'Slow down his running', 'Do nothing at all'], a: 0,
       choicesJa: ['体を全部止めてしまう', '走るのを遅くする', '何もしない'],
@@ -85,7 +85,7 @@ export const chrisFlu: Clip = {
       trap: '自慢のあとの冗談は相手へのからかいに聞こえやすい。主語が my なら、笑われているのは本人。',
       use: 'My cooking? It’s… creative.（私の料理？…独創的よ）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'chip', seg: [17.0, 24.9],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'chip', seg: [17, 25.5],
       stem: 'What chip comes after “My body’s like a chip, too”?', ja: '“My body’s like a chip, too” のあと、何のチップ？',
       choices: ['A potato chip', 'A computer chip', 'A chocolate chip'], a: 0,
       choicesJa: ['ポテトチップ', 'コンピューターのチップ', 'チョコチップ'],
@@ -96,7 +96,7 @@ export const chrisFlu: Clip = {
       trap: '前の microchip から、機械のチップだと思いやすい。間を置いて付け足す potato がオチ。',
       use: 'Can I have some potato chips?（ポテトチップ、少しもらえる？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'speaking', reveals: ['chip'], seg: [23.3, 29.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'speaking', reveals: ['chip'], seg: [23.3, 30],
       stem: 'What does “Speaking of potato chips” mean here?', ja: 'ここでの “Speaking of potato chips” はどういう意味？',
       choices: ['That reminds me of something', 'Let’s go buy some chips', 'Please stop joking'], a: 0,
       choicesJa: ['それで思い出したけど', 'チップスを買いに行こう', '冗談はやめて'],
@@ -107,7 +107,7 @@ export const chrisFlu: Clip = {
       trap: 'potato chips が出るので、食べ物の話の続きだと思いやすい。あとは夕食の約束の話。',
       use: 'Speaking of Paris, how was your trip?（パリと言えば、旅行どうだった？）' },
 
-    { id: 'f3', skill: 'pragma', level: 'B2', point: 'dinner', seg: [25, 29.6],
+    { id: 'f3', skill: 'pragma', level: 'B2', point: 'dinner', seg: [25, 32.9],
       stem: 'Why does Chris ask about dinner tomorrow?', ja: 'クリスはなぜ明日の夕食のことを聞く？',
       choices: ['To check their plan', 'To ask her out', 'To cancel the dinner'], a: 0,
       choicesJa: ['約束を確かめるため', 'デートに誘うため', '夕食を取りやめるため'],
@@ -118,7 +118,7 @@ export const chrisFlu: Clip = {
       trap: '新しく誘っていると思いやすい。are on for は、もう決まった約束のこと。',
       use: 'Are we still on for Friday?（金曜の約束、まだ大丈夫？）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'forward', seg: [28.0, 34.5],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'forward', seg: [28, 35.2],
       stem: 'What does Ann mean by “Looking forward to it”?', ja: 'アンの “Looking forward to it” はどういう意味？',
       choices: ['She can’t wait for it', 'She wants to do it later', 'She forgot about it'], a: 0,
       choicesJa: ['楽しみにしている', 'あとでやりたい', '忘れていた'],
@@ -129,7 +129,7 @@ export const chrisFlu: Clip = {
       trap: 'forward（前へ）から「先にのばす」と思いやすい。前を見て待つ、の意味。',
       use: 'Thanks! I’m looking forward to it.（ありがとう！楽しみにしてます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [39.3, 42.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [38.1, 43.4],
       stem: 'Type what Ann says: “We’ve been on ___ dates.” (3 words)', ja: '書こう：“We’ve been on ___ dates.”（3語）',
       answer: 'a couple of',
       cue: '「been on」のあと',
@@ -150,7 +150,7 @@ export const chrisFlu: Clip = {
       trap: 'can’t find から、悪いことを言うと思いやすい。The problem is のあとの perfect を聞く。',
       use: 'The problem is, it’s too far.（問題は、遠すぎること）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hours', seg: [57.4, 61.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hours', seg: [57.3, 65.3],
       stem: 'When did Ann last see Chris healthy?', ja: 'アンが元気なクリスを最後に見たのはいつ？',
       choices: ['A few hours ago', 'A few days ago', 'Earlier this week'], a: 0,
       choicesJa: ['数時間前', '数日前', '今週のはじめ'],
@@ -175,7 +175,7 @@ export const chrisFlu: Clip = {
       trap: '言い足した中身を本音と取りやすい。Not like A but B は B だと念を押す形。',
       use: 'Not “cheap” cheap, but affordable.（安っぽいじゃなくて、手頃ってこと）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'fat', seg: [64.7, 69.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'fat', seg: [61.5, 70.3],
       stem: 'Why did Chris get sick so fast, he says?', ja: 'クリスによると、なぜすぐ病気になった？',
       choices: ['He has no fat to protect him', 'He ran too hard in the cold', 'He took off his mask'], a: 0,
       choicesJa: ['体を守る脂肪がない', '寒い中で走りすぎた', 'マスクを外した'],
@@ -199,7 +199,7 @@ export const chrisFlu: Clip = {
       trap: '難しい語の誤用と取りやすいが、使い方は合っている。固すぎる言い方自体が冗談。',
       use: 'Could you grab me a sports drink?（スポーツドリンク取ってくれる？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'ohboy', seg: [70.2, 80.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'ohboy', seg: [70.2, 81.2],
       stem: 'What does Ann mean by “Oh, boy”?', ja: 'アンの “Oh, boy” はどういう意味？',
       choices: ['This will be hard work', 'This will be a lot of fun', 'This is good news'], a: 0,
       choicesJa: ['これは大変そう', 'これはすごく楽しそう', 'これはいい知らせ'],
@@ -210,7 +210,7 @@ export const chrisFlu: Clip = {
       trap: 'boy を「男の子」や「わーい」と思いやすい。頼みのあとのため息まじりの一言。',
       use: 'Oh, boy. Here we go again.（やれやれ、またか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'tends', seg: [76.8, 80.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'tends', seg: [75.6, 82.9],
       stem: 'Fill the gap: “My body ___ lose a lot of fluids…”', ja: '空所に入るのは？ “My body ___ lose a lot of fluids…”',
       choices: ['tends to', 'tended to', 'intends to'], a: 0,
       choicesJa: ['〜しがち', '〜しがちだった', '〜するつもり'],
@@ -221,7 +221,7 @@ export const chrisFlu: Clip = {
       trap: 'tended なら「テンディッド」、intends なら頭に「イン」がある。ここは「テンズタ」。',
       use: 'I tend to oversleep on Sundays.（日曜は寝坊しがち）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [80.0, 116],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [80, 117],
       stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
       choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
       choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],
@@ -260,7 +260,7 @@ export const chrisFlu: Clip = {
       trap: '機械の話と取りやすい。前に出たたとえが、あとで説明なしに戻ってくることは多い。',
       use: 'My Monday brain has been compromised.（月曜の頭はもうダメ）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [104.0, 107.2],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [104, 109.5],
       stem: 'Fill the gap: “You ___ get up off the floor now.”', ja: '空所に入るのは？ “You ___ get up off the floor now.”',
       choices: ['have to', 'had to', 'want to'], a: 0,
       choicesJa: ['〜しなきゃ', '〜しなきゃいけなかった', '〜したい'],

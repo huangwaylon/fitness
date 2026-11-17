@@ -27,7 +27,7 @@ export const itGuySecrets: Clip = {
       trap: '最初の printers から、修理の担当決めと思いやすい。could be you（お前かも）は犯人さがし。',
       use: 'It’s either this one or that one.（これかあれか、どっちかだ）' },
 
-    { id: 'interupt', skill: 'phrase', level: 'B1', point: 'interrupt', seg: [12.5, 16.3],
+    { id: 'interupt', skill: 'phrase', level: 'B1', point: 'interrupt', seg: [11.2, 16.3],
       stem: 'Why does Nick say “Sorry to interrupt”?',
       ja: 'ニックは、なぜ「Sorry to interrupt」と言う？',
       choices: ['To say sorry for cutting in', 'To say sorry for being late', 'To say goodbye to everyone'], a: 0,
@@ -39,7 +39,7 @@ export const itGuySecrets: Clip = {
       trap: 'すぐあとに goodbye が聞こえるので、さよならと思いやすい。interrupt を聞く。',
       use: 'Sorry to interrupt, but your taxi is here.（おじゃましてすみません、タクシーが来ました）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'detroit', seg: [15.7, 21.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'detroit', seg: [15.7, 21.7],
       stem: 'What is Nick leaving to do?',
       ja: 'ニックは何をするために辞める？',
       choices: ['Teach kids about computers', 'Fix computers in schools', 'Teach adults about computers'], a: 0,
@@ -51,7 +51,7 @@ export const itGuySecrets: Clip = {
       trap: 'IT 担当なので「直しに行く」と思いやすい。teach のあとの kids まで聞く。',
       use: 'I’m going down to Texas for work.（仕事でテキサスへ行くんだ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnow', seg: [20.7, 24.9],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnow', seg: [19.9, 27.7],
       stem: 'What does Nick do after “Not now”?',
       ja: '「Not now」と言われたあと、ニックはどうする？',
       choices: ['Explains why it must be now', 'Says he’ll come back later', 'Asks how long it will take'], a: 0,
@@ -63,18 +63,7 @@ export const itGuySecrets: Clip = {
       trap: '「あとで来る」と引き下がると思いやすい。it’s just のあとに、引かない理由が来る。',
       use: 'It’s just, my ride is waiting outside.（ただ、迎えが外で待ってて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'motive', seg: [24.5, 61],
-      stem: 'Why does Nick end up telling their secrets?',
-      ja: 'ニックは、なぜみんなの秘密をばらすことになる？',
-      choices: ['Nobody even knows his name', 'They blamed him for the leak', 'They asked him to stay'], a: 0,
-      choicesJa: ['だれも名前すら知らない', 'もらしたのは彼だと責められた', '残ってくれと頼まれた'],
-      cue: '名前のやりとり。',
-      said: '別れを言いに来たのに名前も覚えられておらず、最後はばかにされて、秘密をばらし始める。',
-      mean: '無視され、見下されてきたことへの仕返し。秘密をばらすのはその結果。',
-      trap: '会議が犯人さがしなので、ニックが責められたと思いやすい。名前のやりとりを追う。',
-      use: 'That’s it. I’ve had enough.（もういい、うんざりだ）' },
-
-    { id: 'again', skill: 'phrase', level: 'B1', point: 'again', seg: [24.5, 29.4],
+    { id: 'again', skill: 'phrase', level: 'B1', point: 'again', seg: [21.6, 29.7],
       stem: 'What does “What’s this guy’s name again?” ask?',
       ja: '「What’s this guy’s name again?」は何を聞いている？',
       choices: ['Tell me his name once more', 'Say his name a lot louder', 'Give him a new name'], a: 0,
@@ -86,7 +75,18 @@ export const itGuySecrets: Clip = {
       trap: 'again ＝「また」から、新しく聞いていると思いやすい。忘れたことを聞き直す形。',
       use: 'Sorry, what was the address again?（すみません、住所なんでしたっけ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hates', seg: [34.8, 39.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'motive', seg: [24.5, 63.7],
+      stem: 'Why does Nick end up telling their secrets?',
+      ja: 'ニックは、なぜみんなの秘密をばらすことになる？',
+      choices: ['Nobody even knows his name', 'They blamed him for the leak', 'They asked him to stay'], a: 0,
+      choicesJa: ['だれも名前すら知らない', 'もらしたのは彼だと責められた', '残ってくれと頼まれた'],
+      cue: '名前のやりとり。',
+      said: '別れを言いに来たのに名前も覚えられておらず、最後はばかにされて、秘密をばらし始める。',
+      mean: '無視され、見下されてきたことへの仕返し。秘密をばらすのはその結果。',
+      trap: '会議が犯人さがしなので、ニックが責められたと思いやすい。名前のやりとりを追う。',
+      use: 'That’s it. I’ve had enough.（もういい、うんざりだ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hates', seg: [34.4, 41.7],
       stem: 'How does Nick feel at “Okay, look, I get it, people”?',
       ja: '「Okay, look, I get it, people」のとき、ニックの気持ちは？',
       choices: ['Hurt and upset', 'Sorry he came in', 'Amused and joking'], a: 0,
@@ -98,7 +98,7 @@ export const itGuySecrets: Clip = {
       trap: 'I get it を「了解」と思うと穏やかに聞こえる。あとの hates me で分かる。',
       use: 'Okay, I get it. You’re busy.（はいはい、分かったよ。忙しいんだね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'personal', seg: [37, 41.35],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'personal', seg: [36.8, 42.4],
       stem: 'What does “you can’t take it personally” mean?',
       ja: '「you can’t take it personally」の意味は？',
       choices: ['Don’t think it’s about you', 'Don’t get angry at them', 'Don’t tell the boss about it'], a: 0,
@@ -110,7 +110,7 @@ export const itGuySecrets: Clip = {
       trap: 'take it（受け取る）から、物の話と思いやすい。personally は受け取り方。',
       use: 'Don’t take it personally.（気にしないで）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'man', seg: [39.1, 44.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'man', seg: [39.1, 46.4],
       stem: 'Why doesn’t Nick like being called “man”?',
       ja: 'ニックは、なぜ「man」と呼ばれるのがいや？',
       choices: ['They forgot his name already', '“Man” is a rude word', 'It sounds too friendly'], a: 0,
@@ -133,7 +133,7 @@ export const itGuySecrets: Clip = {
       trap: '名前を取り違えたように聞こえやすい。sport や champ は名前を知らなくても使える。',
       use: 'Nice try, sport.（いい線いってたよ、きみ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'didyou', seg: [42.3, 46],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'didyou', seg: [41.3, 46.3],
       stem: 'Fill the gap: “___ forget it already?”',
       ja: '空いている所に入る言葉は？',
       choices: ['Could you', 'Did you', 'Didn’t you'], a: 1,
@@ -145,7 +145,7 @@ export const itGuySecrets: Clip = {
       trap: 'Didn’t なら「ン」が残る。Could なら「ク」で始まる。最初の音を聞く。',
       use: 'Did you lock the door?（ドアのカギ、かけた？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [48.6, 52.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [47.9, 54.9], keep: true,
       stem: 'How many parties a week does Nick say they have?',
       ja: 'ニックは、みんなが週に何回パーティーをすると言う？',
       choices: ['Five', 'Fifteen', 'Fifty'], a: 1,
@@ -169,7 +169,7 @@ export const itGuySecrets: Clip = {
       trap: 'None of us … は反省に聞こえるが、okay? で押しつけている。相手の言い分を認めていないか聞く。',
       use: 'So, basically, you’re saying I’m right.（つまり、私が正しいってことね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'know', seg: [55, 58.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'know', seg: [53, 58],
       stem: 'Type it: “None of us have spent a lot of time ___.” (4 words)',
       answer: 'getting to know you',
       ja: '「a lot of time」のあとの4語を書こう。',
@@ -180,7 +180,7 @@ export const itGuySecrets: Clip = {
       trap: 'getting の t が軽い「ラ」の音になり、to は小さく「タ」。know you はひと続き。',
       use: 'I’m still getting to know the area.（まだこのあたりに慣れてないんだ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.4, 61.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.4, 64.2],
       stem: 'What does “he kept to himself” mean?',
       ja: '「he kept to himself」の意味は？',
       choices: ['He was quiet and private', 'He kept secrets', 'He kept things running'], a: 0,
@@ -215,7 +215,7 @@ export const itGuySecrets: Clip = {
       trap: 'IT 担当なのでウイルスの話と思いやすい。直前の怒りが中身を決める。',
       use: 'Guess what? I got the tickets.（ねえ聞いて、チケット取れた）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'facebook', seg: [78.95, 84.6],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'facebook', seg: [75.7, 84.6],
       stem: 'What does Nick say about Darryl and Facebook?',
       ja: 'ニックは、ダリルとフェイスブックについて何と言う？',
       choices: ['He uses it but says no', 'He doesn’t use it at all', 'He ignores friend requests'], a: 0,
@@ -228,7 +228,7 @@ export const itGuySecrets: Clip = {
       use: 'Why have you been telling people that?（なんでそんなこと言いふらしてたの？）' },
 
     // anchor: 80.7–81.4 s both sources: "why you been telling", no "have" (the captions' words at 80.7, 80.9, 81.0, 81.1)
-    { id: 'c1', skill: 'dict', level: 'C2', point: 'facebook', seg: [80.4, 83.4],
+    { id: 'c1', skill: 'dict', level: 'C2', point: 'facebook', seg: [79.2, 84.9],
       stem: 'Type the start: “___ people you’re not on Facebook?” (4 words)', answer: 'why you been telling',
       ja: '「people」の前の4語を書こう。',
       cue: '「on Facebook」のすぐあと。',
@@ -238,7 +238,7 @@ export const itGuySecrets: Clip = {
       trap: '文法どおり have を足したくなる。聞こえた4語だけを書く。',
       use: 'Where you been all day?（一日どこにいたの？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'email', reveals: ['proof', 'snitch'], seg: [84.6, 90.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'email', reveals: ['proof', 'snitch'], seg: [84.6, 89.6],
       stem: 'How did “this guy” reach the press, Nick says?',
       ja: 'ニックによると、「こいつ」はどうやってマスコミに伝えた？',
       choices: ['He wrote to the editor', 'He sent the editor a video', 'He called the editor'], a: 0,
@@ -250,7 +250,7 @@ export const itGuySecrets: Clip = {
       trap: 'すぐあとの movie（動画）を送ったと思いやすい。動画は見たもので、送ったのはメール。',
       use: 'I wrote an email to the manager.（店長にメールを書きました）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'proof', reveals: ['snitch'], seg: [89.5, 96],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'proof', reveals: ['snitch'], seg: [88.1, 97.3],
       stem: 'Why does Nick talk about the video?',
       ja: 'ニックは、なぜ動画の話をする？',
       choices: ['To prove who told the press', 'To show printers catch fire', 'To show he can leak things'], a: 0,

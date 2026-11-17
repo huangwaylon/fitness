@@ -19,6 +19,18 @@ export const dutchKiss: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'liar', reveals: ['dutch'], seg: [10.7, 18.7],
+      stem: 'Why does Carly call Harper a liar?',
+      ja: 'カーリーはなぜハーパーを「うそつき」とよぶ？',
+      choices: ['She knows the real reason', 'Harper broke a promise', 'Harper packed far too much'], a: 0,
+      choicesJa: ['本当の理由を分かっている', 'ハーパーが約束をやぶった', 'ハーパーが荷物をつめすぎた'],
+      cue: '「You liar」のあとの文',
+      line: 'Aw, that’s sweet. *You liar.* You packed all these cute clothes so you could look good for Dutch.',
+      said: '「やさしいね」と言ったすぐあと「うそつき」と言い、本当の理由を言い当てる。',
+      mean: 'You liar ＝ ここは親しい人への「もう、ばればれだよ」。責めているのではなく、からかっている。',
+      trap: 'liar から、本気で怒っていると思いやすい。次の文で、かくした本当の理由を言っている。',
+      use: 'Oh, you liar. You loved it.（もう、うそばっかり。楽しかったくせに）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'talk', reveals: ['dutch'], seg: [11.0, 55.0],
       stem: 'What do Carly and Harper talk about first?',
       ja: 'カーリーとハーパーは、最初に何の話をする？',
@@ -43,18 +55,6 @@ export const dutchKiss: Clip = {
       trap: '賞は表向きの理由。Dutch だけ聞くと「ダッチに着せる」に聞こえる。look good の主語は you。',
       use: 'You just want to look good for her.（あの子によく見られたいだけでしょ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'liar', reveals: ['dutch'], seg: [11.4, 18.7],
-      stem: 'Why does Carly call Harper a liar?',
-      ja: 'カーリーはなぜハーパーを「うそつき」とよぶ？',
-      choices: ['She knows the real reason', 'Harper broke a promise', 'Harper packed far too much'], a: 0,
-      choicesJa: ['本当の理由を分かっている', 'ハーパーが約束をやぶった', 'ハーパーが荷物をつめすぎた'],
-      cue: '「You liar」のあとの文',
-      line: 'Aw, that’s sweet. *You liar.* You packed all these cute clothes so you could look good for Dutch.',
-      said: '「やさしいね」と言ったすぐあと「うそつき」と言い、本当の理由を言い当てる。',
-      mean: 'You liar ＝ ここは親しい人への「もう、ばればれだよ」。責めているのではなく、からかっている。',
-      trap: 'liar から、本気で怒っていると思いやすい。次の文で、かくした本当の理由を言っている。',
-      use: 'Oh, you liar. You loved it.（もう、うそばっかり。楽しかったくせに）' },
-
     { id: 'h1', skill: 'humor', level: 'B2', point: 'dare', reveals: ['dutch'], seg: [11.4, 23.2],
       stem: 'Why is Harper’s answer to “You like her” funny?',
       ja: '「あの子が好きなんでしょ」へのハーパーの答えは、なぜおもしろい？',
@@ -78,7 +78,7 @@ export const dutchKiss: Clip = {
       trap: '同じ型なので、言い返しの否定に聞こえやすい。true events で、認めていると分かる。',
       use: 'How dare you remember my birthday.（よくも誕生日を覚えてたね）', retired: true },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'page', seg: [39.4, 45.6], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'page', seg: [39.4, 46], keep: true,
       stem: 'What does Carly say about Wes and her this weekend?',
       ja: 'この週末のウェスと自分について、カーリーは何と言う？',
       choices: ['They don’t agree on things', 'They don’t have time together', 'They aren’t talking at all'], a: 0,
@@ -90,7 +90,7 @@ export const dutchKiss: Clip = {
       trap: 'page から、連絡やメッセージを思いやすい。いっしょにいても気持ちがずれていること。',
       use: 'Let’s make sure we’re on the same page.（考えを合わせておこう）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'page', seg: [39.4, 45.6], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'page', seg: [39.4, 46], keep: true,
       stem: 'Fill the gap: “Wes and I ___ been on the same page…”',
       ja: 'すき間をうめよう：「Wes and I ___ been on the same page…」',
       choices: ['have', 'haven’t', 'hadn’t'], a: 1,
@@ -102,7 +102,7 @@ export const dutchKiss: Clip = {
       trap: 'have なら「ハヴ」で「ン」がない。hadn’t なら「ハドゥン」。「ハヴン」と「ン」が残れば haven’t。',
       use: 'I haven’t been sleeping well.（最近よくねむれてない）' },
 
-    { id: 'p2', skill: 'marker', level: 'B2', point: 'yeahbut', seg: [50.2, 58.5],
+    { id: 'p2', skill: 'marker', level: 'B2', point: 'yeahbut', seg: [50.2, 59.3],
       stem: 'How does Carly answer with “Yeah, but”?',
       ja: 'カーリーは「Yeah, but」で、どう答えている？',
       choices: ['She agrees but has another idea', 'She agrees with all of it', 'She changes to a new topic'], a: 0,
@@ -114,7 +114,7 @@ export const dutchKiss: Clip = {
       trap: 'Yeah だけなら賛成に聞こえる。but のあとの Beau の話が、本当に言いたいこと。',
       use: 'Yeah, but what about the cost?（そうだけど、費用はどうする？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'fewfights', reveals: ['third', 'yeahbut'], seg: [50.2, 62.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'fewfights', reveals: ['third', 'yeahbut'], seg: [53.6, 62.6],
       stem: 'What were Carly and Beau like as a couple?',
       ja: 'カーリーとボーは、どんなカップルだった？',
       choices: ['They hardly ever fought', 'They fought all the time', 'He made all the plans'], a: 0,
@@ -126,7 +126,7 @@ export const dutchKiss: Clip = {
       trap: 'broke up（別れた）と fight が続くので、けんかばかりと思いやすい。the third（3回目）を聞く。',
       use: 'We hardly ever fight.（ほとんどけんかしないの）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'third', reveals: ['fewfights'], seg: [58.2, 62.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'third', reveals: ['fewfights'], seg: [57.6, 62.6], keep: true,
       stem: 'Which fight was the breakup with Beau, Carly says?',
       ja: 'ボーと別れたのは何回目のけんかだったと、カーリーは言う？',
       choices: ['Their first', 'Their third', 'Their thirtieth'], a: 1,
@@ -138,7 +138,7 @@ export const dutchKiss: Clip = {
       trap: 'first なら「ファースト」。thirtieth なら「サーティエス」と長い。短く「サード」なら3回目。',
       use: 'That was like the third time this week.（今週これで3回目くらい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'complement', seg: [62.1, 68.1], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'complement', seg: [62.1, 68.3], keep: true,
       stem: 'What is the second kind of partner in Harper’s question?',
       ja: 'ハーパーの質問の、2つ目の相手はどんな人？',
       choices: ['Someone different who balances you', 'Someone who praises you a lot', 'Someone who does what you want'], a: 0,
@@ -161,7 +161,7 @@ export const dutchKiss: Clip = {
       trap: 'risk から「仕事を奪われる」「転職」を想像しやすいが、恋と仕事が同じ場所にあるから危ない。',
       use: 'Is it worth risking your job?（仕事を危険にさらす価値ある？）', retired: true },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dad', seg: [136.2, 149.4], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dad', seg: [135.2, 147.6], keep: true,
       stem: 'Why can’t the investor put money in?',
       ja: '投資家はなぜお金を出せない？',
       choices: ['His dad doesn’t believe in it', 'He doesn’t like dogs himself', 'He has already spent all his money'], a: 0,
@@ -185,7 +185,7 @@ export const dutchKiss: Clip = {
       trap: 'best pitch や Congratulations から、投資家が出すと思いやすい。投資家は I can’t invest と断る。',
       use: 'Thanks for believing in me.（信じてくれてありがとう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'setup', reveals: ['squeeze'], seg: [159.0, 164.7],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'setup', reveals: ['squeeze'], seg: [158, 168.4],
       stem: 'How does he sound when he says “So you set this up”?',
       ja: '「じゃあ、これを仕組んだんだ」と言うとき、彼はどんな気持ち？',
       choices: ['Hurt and let down', 'Thankful for the help', 'Happy it went well'], a: 0,
@@ -197,7 +197,7 @@ export const dutchKiss: Clip = {
       trap: 'set this up から、感謝と思いやすい。続く failure と give up が気持ちを表す。',
       use: 'Wait, did you set this up?（待って、これ仕組んだの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'squeeze', seg: [160.9, 164.7], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'squeeze', seg: [159.9, 166.1], keep: true,
       stem: 'Type the words: “…just so I could ___ before I give up entirely.” (5 words)',
       answer: 'squeeze in one last failure',
       ja: '言葉を入力：「just so I could ___ before I give up」（5語）',
@@ -208,7 +208,7 @@ export const dutchKiss: Clip = {
       trap: '最初の2語が1語に聞こえやすい。one last の t も消えやすい。5語あるか数える。',
       use: 'Can you squeeze in a quick meeting?（ちょっと打ち合わせ入れられる？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirteen', seg: [171.5, 179.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirteen', seg: [169.5, 179.1], keep: true,
       stem: 'When someone finally offers money, how much is it?',
       ja: 'やっとお金を出してくれる人は、いくら出す？',
       choices: ['$3', '$13', '$30'], a: 1,
@@ -265,7 +265,7 @@ export const dutchKiss: Clip = {
       trap: '出だしはふつうのあいさつ。Beau を責めると取りやすいが、次は自分が飛びつくと言う。',
       use: 'Funny, I thought you’d be with him.（へえ、彼と一緒だと思ってた）', retired: true },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'appreciate', seg: [281.0, 287.0],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'appreciate', seg: [280.2, 289.7],
       stem: 'What does Carly mean by “I really appreciate everything”?',
       ja: 'カーリーの「I really appreciate everything」はどういう意味？',
       choices: ['Thank you for all you did', 'I want everything you have', 'I’m sorry about everything'], a: 0,
@@ -277,7 +277,7 @@ export const dutchKiss: Clip = {
       trap: '前に I’m sorry があるので、あやまりと思いやすい。appreciate は「ありがたく思う」。',
       use: 'I really appreciate your help.（手伝ってくれて本当に感謝してる）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'flown', seg: [319.5, 329.0],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'flown', seg: [318.5, 329],
       stem: 'What does Carly realize from “I had it flown in”?',
       ja: '「飛行機で運ばせた」から、カーリーは何に気づく？',
       choices: ['Wes could have sent them home', 'Wes spent too much on it', 'Wes forgot to book flights'], a: 0,

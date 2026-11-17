@@ -15,6 +15,17 @@ export const ribbing: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'bbq', seg: [1.5, 13.1],
+      stem: 'What is happening at Jim’s tonight?', ja: '今夜、ジムの家で何がある？',
+      choices: ['A barbecue', 'A birthday', 'A ball game'], a: 0,
+      choicesJa: ['バーベキュー', '誕生日会', '球技の試合'],
+      cue: '「e-vite」のすぐあと',
+      line: 'Meredith has an e-vite. *Barbecue at Jim’s tonight.*',
+      said: '「メレディスに招待メールが来てる。今夜ジムの家でバーベキュー」と話している。',
+      mean: 'e-vite ＝ メールで送る招待状。at Jim’s ＝ ジムの家で。',
+      trap: 'birthday なら「バース」、ball game なら「ボール」。「バーベキュー」と聞こえれば barbecue。',
+      use: 'We’re having a barbecue on Sunday.（日曜にバーベキューするよ）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'snub', seg: [4, 48],
       stem: 'What does Michael want in the first part?', ja: '最初の場面で、マイケルは何を望んでいる？',
       choices: ['To be one of the guys', 'To get more respect', 'To plan a surprise party'], a: 0,
@@ -26,18 +37,7 @@ export const ribbing: Clip = {
       trap: 'boss や respect が出るので、尊敬されたいと思いやすい。本人が言うのは one of the guys。',
       use: 'I just want to fit in.（ただ仲間に入りたいだけ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'bbq', seg: [4, 9.6],
-      stem: 'What is happening at Jim’s tonight?', ja: '今夜、ジムの家で何がある？',
-      choices: ['A barbecue', 'A birthday', 'A ball game'], a: 0,
-      choicesJa: ['バーベキュー', '誕生日会', '球技の試合'],
-      cue: '「e-vite」のすぐあと',
-      line: 'Meredith has an e-vite. *Barbecue at Jim’s tonight.*',
-      said: '「メレディスに招待メールが来てる。今夜ジムの家でバーベキュー」と話している。',
-      mean: 'e-vite ＝ メールで送る招待状。at Jim’s ＝ ジムの家で。',
-      trap: 'birthday なら「バース」、ball game なら「ボール」。「バーベキュー」と聞こえれば barbecue。',
-      use: 'We’re having a barbecue on Sunday.（日曜にバーベキューするよ）' },
-
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'evite', seg: [6.2, 12.9],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'evite', seg: [4.4, 12.7],
       stem: 'What does Michael mean by “Wonder where my e-vitation is”?', ja: 'マイケルの “Wonder where my e-vitation is” はどういう意味？',
       choices: ['I wasn’t invited, and I mind', 'I don’t care about the party', 'I want to check everyone got one'], a: 0,
       choicesJa: ['呼ばれてなくて、気になる', 'パーティーなんてどうでもいい', 'みんなに届いたか確かめたい'],
@@ -48,7 +48,7 @@ export const ribbing: Clip = {
       trap: 'ひとり言なので、確かめているだけだと思いやすい。I wonder は気持ちをにじませる言い方。',
       use: 'I wonder where my invitation is.（私の招待状はどこかなあ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'distance', seg: [12.6, 26.3],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'distance', seg: [10.5, 22.5],
       stem: 'Why does Michael think he isn’t invited?', ja: 'マイケルは、なぜ自分が呼ばれないと思っている？',
       choices: ['Staff feel nervous with a boss', 'A boss is always too busy', 'He seems too strict'], a: 0,
       choicesJa: ['部下は上司の前で緊張する', '上司はいつも忙しすぎる', '自分が厳しすぎる'],
@@ -59,7 +59,7 @@ export const ribbing: Clip = {
       trap: 'distance を「厳しさ」と思いやすい。心の声は「ディップをこぼしたらどうしよう」という緊張。',
       use: 'There’s always some distance with a new boss.（新しい上司とは距離があるものだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whatll', seg: [21.5, 25.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whatll', seg: [19.7, 26.6],
       stem: 'Fill the gap: “___ do if I drop spinach dip on him?”', ja: '空所に入るのは？ “___ do if I drop spinach dip on him?”',
       choices: ['What’ll I', 'What do I', 'What would I'], a: 0,
       choicesJa: ['何を〜するだろう', '何を〜する', '何を〜するかな'],
@@ -70,7 +70,7 @@ export const ribbing: Clip = {
       trap: 'What do I なら「ワドゥアイ」、would I なら「ウダイ」。「ワロー」と短い「ル」が入れば What’ll I。',
       use: 'What’ll I say if she calls?（彼女から電話が来たら何て言おう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'approach', seg: [28.2, 39.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'approach', seg: [27.4, 39],
       stem: 'How does Michael see himself as “one of the guys”?', ja: '「仲間の一人」として、マイケルは自分をどう見ている？',
       choices: ['Very friendly, could be more', 'Less friendly since he’s boss', 'Friendly to friends only'], a: 0,
       choicesJa: ['とても話しやすいが、もっとなれる', '上司になって話しにくくなった', '友だちにだけ話しやすい'],
@@ -81,7 +81,7 @@ export const ribbing: Clip = {
       trap: 'distance の話から「上司で距離ができた」と思いやすい。本人は very approachable と言う。',
       use: 'Maybe I need to be even friendlier.（もっと気さくにならないとね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hardly', seg: [84.4, 92.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hardly', seg: [84.4, 93.4],
       stem: 'What does “this is hardly the time” mean?', ja: '“this is hardly the time” はどういう意味？',
       choices: ['Now is not the time for that', 'There’s little time left', 'This is very hard'], a: 0,
       choicesJa: ['今はそんなことをする時じゃない', '時間がほとんど残っていない', 'これはとても難しい'],
@@ -107,7 +107,7 @@ export const ribbing: Clip = {
       trap: '上司と部下の話に取ると「冗談を受け流せ」に引かれるが、Jim は guys と言う。',
       use: 'That’s what friends are for.（友だちってそういうものでしょ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'ribbing', seg: [93, 100],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'ribbing', seg: [90, 100],
       stem: 'What does “gently ribbing each other” mean?', ja: '“gently ribbing each other” はどういう意味？',
       choices: ['Teasing in a friendly way', 'Poking each other’s ribs', 'Being very kind to each other'], a: 0,
       choicesJa: ['悪気なくからかい合う', 'あばら骨をつつき合う', 'お互いにとてもやさしくする'],
@@ -118,7 +118,7 @@ export const ribbing: Clip = {
       trap: 'rib は「あばら骨」でもあるので、体をつつくと思いやすい。ここは言葉でのいじり。',
       use: 'Don’t worry, I’m just ribbing you.（気にしないで、からかってるだけ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'eat', seg: [100.6, 104],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'eat', seg: [99.7, 106],
       stem: 'Fill the gap: “___ eat with us?”', ja: '空所に入るのは？ “___ eat with us?”',
       choices: ['Are you gonna', 'Aren’t you gonna', 'Do you wanna'], a: 0,
       choicesJa: ['〜するつもり？', '〜しないの？', '〜したい？'],
@@ -140,7 +140,7 @@ export const ribbing: Clip = {
       trap: 'my から「自分のもの」と思うと、上司らしさに聞こえやすい。言い足したのは逆の意味。',
       use: 'I’m one of you guys, right?（僕もみんなの仲間だよね？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'late', seg: [116.9, 121.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'late', seg: [115.1, 124],
       stem: 'Why is the food delivery late?', ja: '料理の配達はなぜ遅れた？',
       choices: ['A big order came in first', 'The driver got lost', 'The shop mixed up the order'], a: 0,
       choicesJa: ['先に大きな注文があった', '配達の人が道に迷った', '店が注文をまちがえた'],
@@ -151,7 +151,7 @@ export const ribbing: Clip = {
       trap: 'order が聞こえると、注文のまちがいを思いやすい。理由は right before の一文。',
       use: 'Sorry I’m late. Traffic was terrible.（遅れてごめん。道がひどく混んでて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'beer', seg: [132.4, 138.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'beer', seg: [132, 140.9], keep: true,
       stem: 'How many cases of beer has Jim got?', ja: 'ジムはビールを何ケース用意した？',
       choices: ['2', '3', '4'], a: 1,
       choicesJa: ['2ケース', '3ケース', '4ケース'],
@@ -162,7 +162,7 @@ export const ribbing: Clip = {
       trap: '2 なら「トゥー」、4 なら「フォー」。舌を軽くかむ th の「スリー」なら3。',
       use: 'We need three cases of water.（水が3ケース要る）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'personal', seg: [138.3, 146.1],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'personal', seg: [136.9, 145.7],
       stem: 'Why does Jim say “it’s nothing personal”?', ja: 'ジムはなぜ “it’s nothing personal” と言う？',
       choices: ['To soften the bad news', 'To say it’s for close friends', 'To say sorry to Michael'], a: 0,
       choicesJa: ['悪い知らせをやわらげるため', '親しい友だちだけだと言うため', 'マイケルに謝るため'],
@@ -173,7 +173,7 @@ export const ribbing: Clip = {
       trap: '謝っていると思いやすいが、sorry はない。このあと I just think で理由を言う。',
       use: 'It’s nothing personal. I’m just busy.（あなたのせいじゃない。忙しいだけ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'reason', seg: [138.3, 146.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'reason', seg: [138.3, 148.8],
       stem: 'Why didn’t Jim invite Michael?', ja: 'ジムはなぜマイケルを呼ばなかった？',
       choices: ['People couldn’t relax with him', 'He would talk about work', 'There isn’t enough room'], a: 0,
       choicesJa: ['みんながくつろげない', '仕事の話ばかりする', '場所が足りない'],
@@ -184,7 +184,7 @@ export const ribbing: Clip = {
       trap: '上司なので「仕事の話」を思いやすい。ジムの理由は relax。',
       use: 'I just want everyone to relax.（みんなにくつろいでほしいだけ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'madeup', seg: [145.4, 151.8],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'madeup', seg: [145.4, 152.8],
       stem: 'What does Jim’s roommate think about Dwight?', ja: 'ジムのルームメイトは、ドワイトのことをどう思っている？',
       choices: ['Jim made him up', 'He is very funny', 'He is Jim’s boss'], a: 0,
       choicesJa: ['ジムの作り話', 'とても面白い', 'ジムの上司'],
@@ -195,7 +195,7 @@ export const ribbing: Clip = {
       trap: 'make up を「化粧」と思いやすい。make 人 up ＝ その人を作り話にする。',
       use: 'You’re making that up!（それ、作り話でしょ！）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'down', seg: [153.8, 161.3],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'down', seg: [153.8, 162.9],
       stem: 'What does “Keep that down” mean?', ja: '“Keep that down” はどういう意味？',
       choices: ['Talk more quietly', 'Write it all down', 'Slow down a little'], a: 0,
       choicesJa: ['もっと小さい声で話して', '全部書きとめて', '少しゆっくりして'],
@@ -206,7 +206,7 @@ export const ribbing: Clip = {
       trap: 'down から「書きとめる」「ゆっくり」と思いやすい。keep 〜 down は音の大きさ。',
       use: 'Could you keep it down, please?（少し静かにしてもらえますか）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'surprise', seg: [159.9, 174.9],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'surprise', seg: [165, 176.2],
       stem: 'What does Dwight come to believe?', ja: 'ドワイトは何を信じこむ？',
       choices: ['It’s a surprise for Michael', 'It’s a secret from everyone', 'It’s a surprise for Dwight'], a: 0,
       choicesJa: ['マイケルへのサプライズ', '全員に秘密', 'ドワイトへのサプライズ'],
@@ -245,7 +245,7 @@ export const ribbing: Clip = {
       trap: '気前のよさは Dwight への思いやりに見えるが、断られ続けたのは Michael。誘う側の事情を聞く。',
       use: 'Whatever you want to do, I’m in.（何をするにしても、私も乗るよ）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'plans', seg: [245.9, 249.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'plans', seg: [243, 250],
       stem: 'Type what Dwight says: “Unfortunately, ___.” (3 words)', ja: '書こう：“Unfortunately, ___.”（3語）',
       answer: "i've got plans",
       cue: '「Unfortunately」のすぐあと',

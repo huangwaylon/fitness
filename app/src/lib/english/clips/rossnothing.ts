@@ -17,7 +17,7 @@ export const rossNothing: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'wife', seg: [0, 7.9],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'wife', seg: [0, 8.6],
       stem: 'What does Ross mean by “just my wife”?',
       ja: 'ロスの「just my wife」はどういう意味？',
       choices: ['Only his wife, nothing more', 'His wife since a short time', 'His good and fair wife'], a: 0,
@@ -28,7 +28,7 @@ export const rossNothing: Clip = {
       trap: 'just には「ちょうど今」の意味もあるが、ここは名詞の前。「ただの〜」。',
       use: 'He’s just my coworker.（彼はただの同僚だよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['past'], seg: [0, 40],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['past'], seg: [0, 40.9],
       stem: 'What does Ross want his friends to believe?',
       ja: 'ロスは友だちに何を信じさせたい？',
       choices: ['He doesn’t love Rachel now', 'He never loved Rachel', 'Rachel doesn’t love him'], a: 0,
@@ -39,7 +39,7 @@ export const rossNothing: Clip = {
       trap: '「一度も好きでない」と思いやすいが、in the past（昔は）好きだったと言っている。',
       use: 'I’m telling you, we’re just friends.（だから、ただの友だちだって）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'past', seg: [1.9, 5.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'past', seg: [0, 7.9],
       stem: 'Fill the gap: “And I ___ her in the past.”',
       ja: '「And I ___ her in the past.」の空所は？',
       choices: ['loved', 'have loved', 'haven’t loved'], a: 1,
@@ -50,7 +50,7 @@ export const rossNothing: Clip = {
       trap: 'have が小さく loved だけに聞こえやすい。haven’t なら「ン」が入る。小さな「ァヴ」を探す。',
       use: 'I’ve been there before.（前に行ったことがある）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'helpout', seg: [8.5, 12.3],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'helpout', seg: [8.5, 15.5],
       stem: 'What does Ross want from Phoebe?',
       ja: 'ロスはフィービーに何をしてほしい？',
       choices: ['To agree with him', 'To change the topic', 'To give her own idea'], a: 0,
@@ -61,7 +61,7 @@ export const rossNothing: Clip = {
       trap: '助けて＝話題を変えて、と思いやすい。ここは言い合いの途中で、仲間がほしい。',
       use: 'Can you help me out here?（ちょっと手を貸してくれない？）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'phoebe', seg: [11.4, 15.2],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'phoebe', seg: [9.9, 17],
       stem: 'Does Phoebe agree with Ross?',
       ja: 'フィービーはロスに賛成する？',
       choices: ['No, she doubts him', 'Yes, she helps him', 'She doesn’t say'], a: 0,
@@ -72,7 +72,7 @@ export const rossNothing: Clip = {
       trap: '助けを頼まれたので味方すると思いやすい。I thought you loved her は反対の中身。',
       use: 'I thought you liked it.（気に入ってると思ってた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'drunk', seg: [12, 17],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'drunk', seg: [11.8, 20],
       stem: 'Why did Ross and Rachel get married?',
       ja: 'ロスとレイチェルはなぜ結婚した？',
       choices: ['They were drunk', 'They were in love', 'They lost a bet'], a: 0,
@@ -83,7 +83,7 @@ export const rossNothing: Clip = {
       trap: 'loved her はフィービーの言葉。ロスの答えはそのあとの短い一言。',
       use: 'Sorry, I was a little drunk.（ごめん、ちょっと酔ってた）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'joey', reveals: ['drunk'], seg: [15.4, 19.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'joey', reveals: ['drunk'], seg: [15.1, 20.1],
       stem: 'What does Ross mean about Joey?',
       ja: 'ジョーイについて、ロスは何を言いたい？',
       choices: ['He’d marry anyone that drunk', 'Joey made him drink a lot', 'He really wanted to marry Joey'], a: 0,
@@ -94,7 +94,7 @@ export const rossNothing: Clip = {
       trap: 'married Joey だけだと願いに聞こえやすい。would have は実際にはない話。',
       use: 'I would have called you.（電話したのに）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'joey', seg: [15.6, 19.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'joey', seg: [15.1, 20.1],
       stem: 'Type what Ross says: “I ___ Joey…” (3 words)', answer: 'would have married',
       ja: '「I ___ Joey…」の空所を書こう（3語）',
       cue: '「drunk」のすぐあと。', line: 'I *would have married* Joey with that amount of alcohol.',
@@ -103,7 +103,7 @@ export const rossNothing: Clip = {
       trap: 'have が聞こえず would married に聞こえやすい。would のあとに小さな「ァヴ」。',
       use: 'I would have come.（行ったのに）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'worse', seg: [19.6, 24.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'worse', seg: [16.6, 24.6],
       stem: 'Who says “Hey, you could do a lot worse…”?',
       ja: '「Hey, you could do a lot worse…」と言うのは誰？',
       choices: ['Phoebe', 'Joey', 'Ross'], a: 1,
@@ -123,7 +123,7 @@ export const rossNothing: Clip = {
       mean: 'たとえに使われただけなのに本気で気を悪くし、自分を売りこむずれが笑い。',
       trap: 'worse だけ聞くと自分を下げているようだが、「〜より悪い人はいる」＝自分はいい。',
       use: 'Hey, I’m a great catch!（おい、俺はいい男だぞ）' },
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'worse', seg: [19.6, 24.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'worse', seg: [19.6, 24.6],
       stem: 'What does Joey say about himself?',
       ja: 'ジョーイは自分のことを何と言っている？',
       choices: ['He is a good choice', 'He is the worst choice', 'He is worse than Rachel'], a: 0,
@@ -134,7 +134,7 @@ export const rossNothing: Clip = {
       trap: 'worse から「最悪」を思いやすい。than と組むと「〜はまし」という意味。',
       use: 'You could do worse than this hotel.（このホテルなら悪くないよ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wrong', seg: [25, 29],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wrong', seg: [24.7, 30.3],
       stem: 'Why does Ross say “I’m sorry, but” here?',
       ja: 'ロスは、なぜここで「I’m sorry, but」と言う？',
       choices: ['To say they are wrong', 'To say sorry to Rachel', 'To ask them for help'], a: 0,
@@ -145,7 +145,7 @@ export const rossNothing: Clip = {
       trap: 'sorry から謝っていると思いやすい。but のあとが本当に言いたいこと。',
       use: 'I’m sorry, but I can’t come.（悪いけど、行けない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'three', seg: [25.6, 31.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'three', seg: [25.6, 31.5],
       stem: 'Why doesn’t Ross want to end the marriage?',
       ja: 'ロスはなぜ結婚を終わらせたくない？',
       choices: ['He doesn’t want a third divorce', 'He doesn’t want to hurt Rachel', 'He doesn’t want to pay lawyers'], a: 0,
@@ -156,7 +156,7 @@ export const rossNothing: Clip = {
       trap: 'レイチェルを思いやる理由を思いやすいが、ロスが言うのは自分の離婚の回数。',
       use: 'I just don’t want to be late again.（また遅れたくないだけ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [25.6, 31.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [25.6, 31.5], keep: true,
       stem: 'How many divorces would this be for Ross?',
       ja: 'これでロスは何回目の離婚になる？',
       choices: ['2', '3', '4'], a: 1,
@@ -167,7 +167,7 @@ export const rossNothing: Clip = {
       trap: 'two（2）と思いやすいが、times の前は「スリー」。今回で3回目の離婚になる。',
       use: 'I’ve moved three times.（3回引っ越したことがある）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'excuse', reveals: ['three', 'nothing'], seg: [31, 37.9],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'excuse', reveals: ['three', 'nothing'], seg: [29.9, 39.7],
       stem: 'What is Ross’s real reason, someone says?',
       ja: 'ロスの本当の理由は何だと言われる？',
       choices: ['He still loves Rachel', 'He wants a nice wife', 'He is scared of lawyers'], a: 0,
@@ -178,7 +178,7 @@ export const rossNothing: Clip = {
       trap: 'reason が聞こえるので、もっともな理由だと思いやすい。最後の because のあとが答え。',
       use: 'He’s just using that as an excuse.（それを言い訳にしてるだけ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'welldone', seg: [36.5, 41],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'welldone', seg: [36, 41],
       stem: 'What does “well done” mean here?',
       ja: 'ここでの「well done」はどういう意味？',
       choices: ['You did a good job', 'It is cooked a lot', 'It finished late'], a: 0,
@@ -209,7 +209,7 @@ export const rossNothing: Clip = {
       mean: 'この fine は納得ではなく「なら見てろ」という開き直り。行動で証明しようとする。',
       trap: 'fine を同意や「もういい」と取りやすい。強く繰り返す fine はいらだちのサイン。',
       use: 'Fine. I’ll do it myself.（いいよ、じゃあ自分でやる）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'forget', reveals: ['three'], seg: [43.5, 47.1],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'forget', reveals: ['three'], seg: [41.7, 46.7],
       stem: 'What does “forget about the whole… thing” mean?',
       ja: '「forget about the whole… thing」はどういう意味？',
       choices: ['Don’t count that reason', 'Try hard to remember it', 'I really can’t remember it'], a: 0,

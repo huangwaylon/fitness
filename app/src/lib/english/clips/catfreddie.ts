@@ -17,7 +17,7 @@ export const catFreddie: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['roommate'], seg: [0, 44.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['roommate'], seg: [0, 44.5],
       stem: 'Why has Freddie come to Sam’s place?',
       ja: 'フレディはなぜサムの家に来た？',
       choices: ['He heard Sam was hurt', 'To take Sam home', 'Sam asked him to come'], a: 0,
@@ -29,7 +29,7 @@ export const catFreddie: Clip = {
       trap: 'あとの called me（電話してきた）をサムからと思いやすいが、かけたのはルームメイト。',
       use: 'Is everything okay? I came right over.（大丈夫？すぐ来たよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'here', seg: [3.6, 11.8],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'here', seg: [3.6, 14.9],
       stem: 'How does Freddie react when Cat says Sam is “in here”?',
       ja: 'サムは「中にいる」と聞いて、フレディはどう反応する？',
       choices: ['Relieved, and calls for Sam', 'Doubtful, and asks Cat again', 'Worried about Sam’s injuries'], a: 0,
@@ -65,7 +65,7 @@ export const catFreddie: Clip = {
       trap: 'full of questions を「聞きすぎ」という注意に思いやすいが、handsome と並ぶほめ言葉。',
       use: 'Nice try changing the subject.（話をそらそうとしてもダメだよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'cats', seg: [31.3, 41.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'cats', seg: [30.3, 41.5],
       stem: 'Why does Cat ask “You like cats?”',
       ja: 'キャットはなぜ「猫が好きなの？」と聞く？',
       choices: ['She thinks he means the animal', 'She thinks he hates her name', 'She has a pet for him'], a: 0,
@@ -77,7 +77,7 @@ export const catFreddie: Clip = {
       trap: 'Why?（なんで？）から名前への不満に思いやすいが、続く You like cats? は明るい質問。',
       use: 'Why? Do you like dogs?（なんで？犬が好きなの？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [40.8, 44.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [40.5, 46.4],
       stem: 'Who does Cat turn out to be?',
       ja: 'フレディが確かめると、キャットはサムの何だと分かる？',
       choices: ['Sam’s roommate', 'Sam’s neighbor', 'Sam’s sister'], a: 0,
@@ -89,7 +89,7 @@ export const catFreddie: Clip = {
       trap: '家にいるので姉妹や隣の人も考えやすいが、聞こえた一語 roommate で決める。',
       use: 'My roommate is out right now.（ルームメイトは今出かけてる）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'time', seg: [44.0, 53.3],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'time', seg: [44, 53.9],
       stem: 'What does “there’s time for that” mean here?',
       ja: 'ここでの「there’s time for that」はどういう意味？',
       choices: ['You can do it later', 'You had lots of time', 'Do it right now'], a: 0,
@@ -112,7 +112,7 @@ export const catFreddie: Clip = {
       trap: '直後の Why? を先に言われたと取りやすい。Why? は返事のあと。くり返しは話を戻すサインが多い。',
       use: 'Can we get back to the point?（本題に戻ってもいい？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'runover', seg: [56.1, 60.8],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'runover', seg: [55.7, 61.6],
       stem: 'What does Freddie say happened to Sam?',
       ja: 'サムに何があった、とフレディは言う？',
       choices: ['A big car hit her', 'She got hurt in sports', 'She fell while running'], a: 0,
@@ -124,7 +124,7 @@ export const catFreddie: Clip = {
       trap: 'run と over を別々に取ると「走って転んだ」に思いやすい。sport も車の名前の一部。',
       use: 'Watch out, you’ll get run over!（危ない、ひかれるよ！）' },
 
-    { id: 'w1', skill: 'detail', level: 'B2', point: 'source', seg: [61.1, 72.9],
+    { id: 'w1', skill: 'detail', level: 'B2', point: 'source', seg: [60.1, 68.4],
       stem: 'By Freddie’s account, who said Sam was badly hurt?',
       ja: 'フレディによると、サムが大けがしたと言ったのは誰？',
       choices: ['Cat, last night', 'Sam, last night', 'Cat, earlier today'], a: 0,
@@ -148,7 +148,7 @@ export const catFreddie: Clip = {
       trap: 'サムの話で来たので、居場所が分かると思いやすい。キャットは最後まで答えていない。',
       use: 'So, is she okay or not?（で、彼女は大丈夫なの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', reveals: ['front'], seg: [72.9, 82.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', reveals: ['front'], seg: [72.9, 84.9],
       stem: 'Why does Freddie say sorry after listing Sam’s injuries?',
       ja: 'サムのけがを並べたあと、フレディはなぜ謝る？',
       choices: ['He said a rude word', 'He gave too much detail', 'He shouted at her'], a: 0,
@@ -160,7 +160,7 @@ export const catFreddie: Clip = {
       trap: '直前のけがの話がひどいので、言いすぎて謝ったと思いやすい。理由は ’Cause のあと。',
       use: 'Sorry, I didn’t mean to say that.（ごめん、そんなこと言うつもりじゃなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'front', reveals: ['sorry'], seg: [78.6, 82.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'front', reveals: ['sorry'], seg: [77, 84.9],
       stem: 'Type: “I’ve never said buttocks ___ girl before.” (4 words)', answer: 'in front of a',
       ja: '彼の言葉を書こう：「___ 女の子（の前で）言ったことがない」（4語）',
       cue: 'buttocks のあと、短い4語。',
@@ -181,6 +181,18 @@ export const catFreddie: Clip = {
       trap: '変わった返事の Cat に目が行きやすいが、Cat は「平気」と言う。笑いは大げさに謝る側に向く。',
       use: 'Relax, it’s not a big deal.（落ち着いて、大したことじゃないよ）' },
 
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [89.6, 104.3],
+      stem: 'What does “hang out” mean here?',
+      ja: 'ここでの「hang out」はどういう意味？',
+      choices: ['Spend time together', 'Look for Sam outside', 'Meet her other friends'], a: 0,
+      choicesJa: ['一緒に過ごす', '外でサムを探す', 'ほかの友だちに会う'],
+      cue: 'today の前の動詞と、あとの言葉。',
+      line: 'You wanna *hang out* with me today? … Just me and you.',
+      said: '「今日、私と遊ばない？」と誘い、「あなたと私だけで」と付け足す。',
+      mean: 'hang out ＝ 予定なく一緒に過ごす、遊ぶ。友だち同士でよく使う。',
+      trap: 'out（外）から、サムを探しに行く話に思いやすい。me and you で二人だけと分かる。',
+      use: 'Want to hang out this weekend?（週末、遊ばない？）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', reveals: ['hangout'], seg: [90.6, 93.7],
       stem: 'Fill the gap: “You ___ hang out with me today?”',
       ja: '空所に入る語は？「今日、私と遊び ___？」',
@@ -193,7 +205,7 @@ export const catFreddie: Clip = {
       trap: 'wanted to なら「ワンティッ」と長い。won’t なら「ウォウン」。短い「ワナ」なら want to。',
       use: 'Do you wanna grab lunch?（お昼、一緒にどう？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'fluster', seg: [90.8, 99.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'fluster', seg: [90.8, 100.3],
       stem: 'How does Freddie feel when Cat asks him to hang out?',
       ja: '遊ぼうと誘われて、フレディはどう感じている？',
       choices: ['Nervous and unsure', 'Happy and excited', 'Angry about Sam'], a: 0,
@@ -204,18 +216,6 @@ export const catFreddie: Clip = {
       mean: 'I don’t know what you mean ＝ どういう意味か分からない。誘いに困り、言葉を探している。',
       trap: '言葉どおりなら「意味が分からない」だが、何度も言い直すのはあせっているしるし。',
       use: 'Um, I’m not sure what you mean.（えっと、どういう意味かな）' },
-
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [90.8, 102.5],
-      stem: 'What does “hang out” mean here?',
-      ja: 'ここでの「hang out」はどういう意味？',
-      choices: ['Spend time together', 'Look for Sam outside', 'Meet her other friends'], a: 0,
-      choicesJa: ['一緒に過ごす', '外でサムを探す', 'ほかの友だちに会う'],
-      cue: 'today の前の動詞と、あとの言葉。',
-      line: 'You wanna *hang out* with me today? … Just me and you.',
-      said: '「今日、私と遊ばない？」と誘い、「あなたと私だけで」と付け足す。',
-      mean: 'hang out ＝ 予定なく一緒に過ごす、遊ぶ。友だち同士でよく使う。',
-      trap: 'out（外）から、サムを探しに行く話に思いやすい。me and you で二人だけと分かる。',
-      use: 'Want to hang out this weekend?（週末、遊ばない？）' },
 
     { id: 'nt3', skill: 'pragma', level: 'C2', point: 'couple', reveals: ['hangout'], seg: [100.0, 106.6], retired: true,
       stem: 'When Cat adds “Couple of friends.”, what is she doing?',

@@ -53,7 +53,7 @@ export const killerTuna: Clip = {
       trap: 'ふりに見えても、How can you not? と即答している。more は意地悪さの張り合い。',
       use: 'Turns out we both hate mornings.（2人とも朝が苦手だと分かった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'aboutto', seg: [44.4, 47.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'aboutto', seg: [43.4, 48.4],
       stem: 'Type the reply: “No, we ___ text you.” (4 words)', answer: 'were just about to',
       ja: '返事を書こう：「ううん、___ メールしようと…」（4語）',
       cue: '「No, we」のあと、text の前。',
@@ -63,7 +63,7 @@ export const killerTuna: Clip = {
       trap: 'were が弱く、about to は「アバウタ」とつながる。あとの Just about もヒント。',
       use: 'I was just about to call you.（ちょうど電話しようとしてたの）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'horror', seg: [48.8, 57.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'horror', seg: [48.8, 58.2],
       stem: 'Why wasn’t she invited to the movie?',
       ja: '彼女はなぜ映画に誘われなかった？',
       choices: ['She hates horror movies', 'She was already asleep', 'There were only two tickets'], a: 0,
@@ -75,7 +75,7 @@ export const killerTuna: Clip = {
       trap: 'last night（昨夜）が聞こえると時間の話に思いやすい。理由は次の文の horror。',
       use: 'It was scary, and you hate scary stuff.（怖いやつだったし、苦手でしょ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'so', reveals: ['horror'], seg: [53.5, 57.9],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'so', reveals: ['horror'], seg: [53.5, 60.1],
       stem: 'What does she mean by “So?”',
       ja: '彼女の「So?」はどういう意味？',
       choices: ['That isn’t a good reason', 'You’re right, I’d stay home', 'Tell me what happened next'], a: 0,
@@ -87,7 +87,7 @@ export const killerTuna: Clip = {
       trap: '日本語の「それで？」と取ると、続きの催促に聞こえやすい。上がり調子の So? は反発。',
       use: 'So? I still want to come.（だから何？それでも行きたい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldsay', seg: [61.4, 65.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldsay', seg: [59.6, 66.3],
       stem: 'Fill the gap: “I ___ say she stole Jade.”',
       ja: '空所に入る語は？「盗んだとまでは ___」',
       choices: ['wouldn’t', 'would', 'couldn’t'], a: 0,
@@ -99,7 +99,7 @@ export const killerTuna: Clip = {
       trap: 'would なら「ン」がない。couldn’t なら「ク」で始まる。返事の I would もヒント。',
       use: 'I wouldn’t call it a disaster.（大失敗とまでは言わないよ）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'rule', reveals: ['bug'], seg: [74.9, 86.4],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'rule', reveals: ['bug'], seg: [75.2, 87.2],
       stem: 'What should you do if someone steals your friend?',
       ja: '友だちを取られたら、どうすればいいと言われる？',
       choices: ['Steal one of their friends', 'Go and find new friends', 'Talk it out with them'], a: 0,
@@ -134,7 +134,7 @@ export const killerTuna: Clip = {
       trap: 'handsome をそのまま好意と取りやすい。答えずにほめたら、そらしたい中身がある。',
       use: 'Aren’t you full of questions today!（今日は質問が多いね！）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'handsome', seg: [106.6, 113.5],
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'handsome', seg: [106.4, 116.7],
       stem: 'How does Cat answer Freddie’s question?',
       ja: 'フレディの質問に、キャットはどう答える？',
       choices: ['She changes the subject', 'She explains where Sam is', 'She admits it was a trick'], a: 0,
@@ -146,7 +146,7 @@ export const killerTuna: Clip = {
       trap: '突っこまれたら言い訳か白状が来ると思いやすい。答えずにほめるのは、はぐらかし。',
       use: 'Aren’t you curious today!（今日は知りたがりだね！）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'bug', reveals: ['lured'], seg: [132.1, 138.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'bug', reveals: ['lured'], seg: [129.2, 138.9],
       stem: 'Why does Sam say Freddie was brought to LA?',
       ja: 'フレディがロサンゼルスに呼ばれたのはなぜだ、とサムは言う？',
       choices: ['To make her angry', 'To cheer her up', 'To show him around'], a: 0,
@@ -158,7 +158,7 @@ export const killerTuna: Clip = {
       trap: 'tour（観光）の直後なので「案内」に思いやすい。理由は jealous と bug。',
       use: 'Stop bugging me. I’m working.（じゃましないで。仕事中なの）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'even', seg: [138.4, 147.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'even', seg: [138.4, 148.2],
       stem: 'What does “We get even” mean?',
       ja: '「We get even」はどういう意味？',
       choices: ['We pay them back for it', 'We stay calm and polite', 'We talk until it’s fair'], a: 0,
@@ -170,7 +170,7 @@ export const killerTuna: Clip = {
       trap: 'even を「公平、平ら」と取ると、話し合いに思いやすい。get mad（怒る）の代わりにすること。',
       use: 'Don’t get mad, get even.（怒るより、やり返せ）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'flirt', seg: [172.6, 180.0],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'flirt', seg: [172.6, 184.1],
       stem: 'What does Sam accuse Cat of?',
       ja: 'サムはキャットの何を責めている？',
       choices: ['Flirting with her ex-boyfriend', 'Breaking a promise to her', 'Telling her ex secrets'], a: 0,
@@ -182,7 +182,7 @@ export const killerTuna: Clip = {
       trap: 'promised（約束した）は直前のキャットの言葉。責めている中身は if のあと。',
       use: 'Right in front of me? Seriously?（私の目の前で？本気？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'flirtback', reveals: ['flirt'], seg: [174.9, 183.7],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'flirtback', reveals: ['flirt'], seg: [174.9, 185.9],
       stem: 'How does Cat answer Sam?',
       ja: 'キャットはサムにどう答える？',
       choices: ['She says Sam did it too', 'She says she didn’t flirt', 'She says she was just friendly'], a: 0,
@@ -194,7 +194,7 @@ export const killerTuna: Clip = {
       trap: 'Well, well と言いよどむので、言い訳に聞こえやすい。続くのは you で始まる言い返し。',
       use: 'Well, you did it first!（そっちが先にやったでしょ！）' },
 
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'care', seg: [206.6, 215.75],
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'care', seg: [205.9, 216.7],
       stem: 'How does Cat really feel about Sam getting hurt?',
       ja: 'サムがけがをすることを、キャットは本当はどう思っている？',
       choices: ['She doesn’t want that', 'She doesn’t care at all', 'She wants Sam to try'], a: 0,
@@ -217,7 +217,7 @@ export const killerTuna: Clip = {
       trap: 'sorry ＝ 謝る、と取りやすい。すぐ後に相手の言葉を引用したら、皮肉の合図。',
       use: 'Sorry, weren’t you the one who was late?（あれ、遅刻したのはそっちじゃ？）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'werent', seg: [215.72, 218.9],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'werent', seg: [213, 219.8],
       stem: 'Fill the gap: “Oh, I’m sorry. ___ the one who said…”',
       ja: '空所に入る語は？「あら、ごめん。言ったのは ___」',
       choices: ['Weren’t you', 'Aren’t you', 'Were you'], a: 0,
@@ -240,7 +240,7 @@ export const killerTuna: Clip = {
       trap: 'lied を「キス自体が嘘」と広く取りやすい。about the tasty で範囲が決まる。',
       use: 'I know, I’ve tried it.（知ってる、試したことあるもん）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'word', seg: [232.3, 239.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'word', seg: [231.5, 239.6],
       stem: 'What does “go back on her word” mean?',
       ja: '「go back on her word」はどういう意味？',
       choices: ['Break a promise', 'Run from a dare', 'Take back rude words'], a: 0,

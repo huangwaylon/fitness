@@ -12,7 +12,7 @@ export const willBeFine: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'five', seg: [37.3, 43.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'five', seg: [34.9, 43.1], keep: true,
       stem: 'How many gold tickets did Michael send out?',
       ja: 'マイケルは金色のチケットを何枚送った？',
       choices: ['3', '5', '10', '15'], a: 1,
@@ -24,7 +24,7 @@ export const willBeFine: Clip = {
       trap: '「スリー」は文の頭の three days ago。「テン」なら 10、「フィフティーン」と長ければ 15。slipped のあとは「ファイヴ」で 5。',
       use: 'I slipped a note into her bag.（彼女のかばんにメモをそっと入れた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'discount', seg: [37.3, 46.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'discount', seg: [37.3, 47],
       stem: 'What does each golden ticket give the customer?',
       ja: '金のチケット1枚で、客は何がもらえる？',
       choices: ['10% off the whole order', '10% off the next order', 'A free gift with the order'], a: 0,
@@ -60,7 +60,7 @@ export const willBeFine: Clip = {
       trap: 'hold から「持つ」と思いやすい。hold on で「待つ」。',
       use: 'Hold on one sec, please.（少々お待ちください）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hit', reveals: ['discount'], seg: [85.4, 97.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'hit', reveals: ['discount'], seg: [86.2, 98.2],
       stem: 'What does “how much of a *hit*” mean here?',
       ja: '「how much of a hit」はここではどういう意味？',
       choices: ['How much money they lose', 'How big a success it is', 'How many tickets were found'], a: 0,
@@ -72,7 +72,7 @@ export const willBeFine: Clip = {
       trap: 'カタカナのヒットから「大成功」と思いやすい。答えの hurt（痛い）が損の話だと示す。',
       use: 'Our sales took a big hit this year.（今年は売り上げが大きく落ちた）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'limit', reveals: ['five'], seg: [100.1, 108.7],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'limit', reveals: ['five'], seg: [98.1, 108.9],
       stem: 'Why is it bad that Blue Cross found five?',
       ja: 'ブルークロスが5枚見つけたのは、なぜまずい？',
       choices: ['They can use all five', 'They can use them forever', 'They can sell them'], a: 0,
@@ -84,7 +84,7 @@ export const willBeFine: Clip = {
       trap: 'limit から期限の話と思いやすい。one per customer は「1人1つ」。',
       use: 'Is it limit one per customer?（お一人様一点限りですか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'spread', seg: [110.1, 113.15],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'spread', seg: [109.1, 114.2],
       stem: 'Type the question: “How do you ___ the tickets into different shipments?” (3 words)',
       answer: 'not spread out',
       ja: '書こう：「How do you ___ the tickets into different…」（3語）',
@@ -95,7 +95,7 @@ export const willBeFine: Clip = {
       trap: 'not が小さく、ふつうの質問に聞こえやすい。you のあとの「ナッ」を聞く。',
       use: 'Let’s spread out and look for it.（手分けして探そう）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'thought', seg: [110.1, 114.15],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'thought', seg: [110.1, 115.2],
       stem: 'Fill the gap in the answer: “I thought ___.”',
       ja: '空いている所に入る語は？「I thought ___.」',
       choices: ['I did', 'he did', 'it did'], a: 0,
@@ -129,7 +129,7 @@ export const willBeFine: Clip = {
       trap: '病院の話は本当に聞こえやすい。電話に出るまでの数秒の短さに注目。',
       use: 'Sorry, I was in a meeting.（すみません、会議中でした）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'david', seg: [158.55, 173.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'david', seg: [157.1, 174.7],
       stem: 'How does David sound at first?',
       ja: '最初、デイヴィッドはどんな様子？',
       choices: ['Very angry', 'Calm and kind', 'Sad and quiet'], a: 0,
@@ -152,7 +152,7 @@ export const willBeFine: Clip = {
       trap: 'okay this idea から「よく見ずに許可した」と取りやすいが、本人の案。カメラへの一言と比べる。',
       use: 'It wasn’t exactly my idea.（正確には私の案じゃなくて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'blame', reveals: ['breakup', 'dwight'], seg: [170.0, 212.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'blame', reveals: ['breakup', 'dwight'], seg: [170, 213.3],
       stem: 'What does Michael do when David asks questions?',
       ja: 'デイヴィッドに聞かれて、マイケルはどうする？',
       choices: ['He avoids answering', 'He says sorry', 'He blames David'], a: 0,
@@ -164,7 +164,7 @@ export const willBeFine: Clip = {
       trap: 'explanation（説明）と言うので答えると思いやすい。中身のない返事が続く。',
       use: 'Don’t look at me. It wasn’t my idea.（こっち見ないで。私の案じゃない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'explain', seg: [173.6, 186.05],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'explain', seg: [175.2, 187.2],
       stem: 'How does Michael end his first answer?',
       ja: 'マイケルは最初の答えをどう終える？',
       choices: ['He says he doesn’t know', 'He names Dwight', 'He says he’ll call back'], a: 0,
@@ -176,7 +176,7 @@ export const willBeFine: Clip = {
       trap: 'explanation のあとに答えが続くと思いやすい。最後の I don’t know を聞く。',
       use: 'Well, it’s a long story.（まあ、話せば長いんだ）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B1', point: 'breakup', seg: [193.7, 204.4],
+    { id: 'i2', skill: 'phrase', level: 'B1', point: 'breakup', seg: [194.1, 204.6],
       stem: 'What does “*You’re breaking up*” mean on the phone?',
       ja: '電話の「You’re breaking up」はどういう意味？',
       choices: ['I can’t hear you well', 'We are ending this', 'You are getting upset'], a: 0,
@@ -188,7 +188,7 @@ export const willBeFine: Clip = {
       trap: 'break up から「別れる」と思いやすい。電話では「とぎれる」。',
       use: 'Sorry, you’re breaking up.（ごめん、声がとぎれてる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dwight', reveals: ['blame'], seg: [204.4, 218.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dwight', reveals: ['blame'], seg: [207.1, 219.1],
       stem: 'Which name does Michael say “Yes” to?',
       ja: 'マイケルが「Yes」と答えた名前は？',
       choices: ['Dwight', 'Jim', 'Oscar'], a: 0,
@@ -200,7 +200,7 @@ export const willBeFine: Clip = {
       trap: '最初の Jim が耳に残りやすい。名前と No／Yes を組にして聞く。',
       use: 'Was it you? — No, it wasn’t me.（あなた？いいえ、私じゃない）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'same', seg: [222.9, 230.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'same', seg: [222.9, 231.5],
       stem: 'What could Michael do for Dwight, says the coworker?',
       ja: '同僚によると、マイケルはドワイトのために何ができる？',
       choices: ['Get fired instead of him', 'Fire him right now', 'Say sorry to David'], a: 0,
@@ -211,6 +211,18 @@ export const willBeFine: Clip = {
       mean: 'instead of 〜 ＝ 〜の代わりに。約束が本物なら今守れるはず、という皮肉。',
       trap: 'fired が聞こえるので、ドワイトがクビと思いやすい。instead of you を聞く。',
       use: 'Can you go instead of me?（私の代わりに行ってくれる？）' },
+
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'unfortunate', seg: [262.3, 273.9],
+      stem: 'What does Michael want David to think?',
+      ja: 'マイケルはデイヴィッドに何と思わせたい？',
+      choices: ['He punished Dwight', 'He said sorry to Dwight', 'Dwight complained about him'], a: 0,
+      choicesJa: ['ドワイトを処分した', 'ドワイトに謝った', 'ドワイトが文句を言った'],
+      cue: '「unfortunate」のあと、「But」の文。',
+      line: 'Dwight and I were just having a *very unfortunate conversation*. … But it *had to be done*, didn’t it?',
+      said: '「気の重い話をしていた。でも必要だった、ですよね？」と言う。',
+      mean: 'had to be done ＝ やるしかなかった。叱ったように見せて、上司に同意を求めている。',
+      trap: 'unfortunate（気の重い）を反省と思いやすい。but のあとが本音。',
+      use: 'It wasn’t easy, but it had to be done.（楽じゃないけど、やるしかなかった）' },
 
     { id: 'r1', skill: 'predict', level: 'B2', point: 'undone', reveals: ['exclusive'], seg: [263.3, 273.3], retired: true,
       then: [273.3, 282.95],
@@ -224,19 +236,7 @@ export const willBeFine: Clip = {
       trap: '直前の too bad で悪い知らせを予想しやすい。because のあと誰の名前を呼ぶかに注目。',
       use: 'I hope it’s nothing that can’t be fixed.（直せないことじゃないといいけど）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'unfortunate', seg: [263.3, 270.95],
-      stem: 'What does Michael want David to think?',
-      ja: 'マイケルはデイヴィッドに何と思わせたい？',
-      choices: ['He punished Dwight', 'He said sorry to Dwight', 'Dwight complained about him'], a: 0,
-      choicesJa: ['ドワイトを処分した', 'ドワイトに謝った', 'ドワイトが文句を言った'],
-      cue: '「unfortunate」のあと、「But」の文。',
-      line: 'Dwight and I were just having a *very unfortunate conversation*. … But it *had to be done*, didn’t it?',
-      said: '「気の重い話をしていた。でも必要だった、ですよね？」と言う。',
-      mean: 'had to be done ＝ やるしかなかった。叱ったように見せて、上司に同意を求めている。',
-      trap: 'unfortunate（気の重い）を反省と思いやすい。but のあとが本音。',
-      use: 'It wasn’t easy, but it had to be done.（楽じゃないけど、やるしかなかった）' },
-
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'exclusive', reveals: ['outcome'], seg: [276.1, 287.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'exclusive', reveals: ['outcome'], seg: [276.1, 288],
       stem: 'What has Blue Cross decided to do?',
       ja: 'ブルークロスは何をすると決めた？',
       choices: ['Buy everything only from them', 'Stop buying from them', 'Buy a bit more from them'], a: 0,
@@ -248,7 +248,7 @@ export const willBeFine: Clip = {
       trap: 'よい知らせでも「少し増える」くらいと思いやすい。exclusive と all で「全部」。',
       use: 'This hotel is our exclusive partner.（このホテルはうちの独占提携先です）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'pop', seg: [336.6, 338.65],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'pop', seg: [334.8, 341.5],
       stem: 'Type the question: “How did it ___, Dwight?” (4 words)', answer: 'pop into your head',
       ja: '書こう：「How did it ___, Dwight?」（4語）',
       cue: '「How did it」のあと。',
@@ -269,7 +269,7 @@ export const willBeFine: Clip = {
       trap: '謝罪を本気、的を Dwight と取りやすい。言葉の宛先と、刺さる相手は別。',
       use: 'Oh, I’m sure it was all your idea.（きっと全部君の案なんだろうね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'horn', seg: [362.1, 369.95],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'horn', seg: [360.8, 370.4],
       stem: 'What does “get you *on the horn*” mean?',
       ja: '「get you on the horn」はどういう意味？',
       choices: ['Have you talk on the phone', 'Have you meet in person', 'Have you give a speech'], a: 0,
@@ -281,7 +281,7 @@ export const willBeFine: Clip = {
       trap: 'horn をラッパ、They should meet you から直接会うと思いやすい。直後の call で決まる。',
       use: 'Could you set up a call for 3 p.m.?（午後3時に電話会議を設定してくれる？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', seg: [366.5, 370.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', seg: [365.1, 371.1], keep: true,
       stem: 'When does David want the call to start?',
       ja: 'デイヴィッドは電話をいつ始めたい？',
       choices: ['In about 5 minutes', 'In about 15 minutes', 'In about 50 minutes', 'In about an hour'], a: 1,
@@ -293,7 +293,7 @@ export const willBeFine: Clip = {
       trap: 'fifty なら前が強く最後は短い「ティ」。five なら「ティ」がない。an hour なら数がなく「アワー」。',
       use: 'Can we meet in about fifteen minutes?（15分後くらいに会える？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'meeting', seg: [373.4, 383.0],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'meeting', seg: [373.4, 383.5],
       stem: 'What reason does David give Michael?',
       ja: 'デイヴィッドはマイケルにどんな理由を言う？',
       choices: ['He has too much to do', 'The room is too small', 'He is still sick'], a: 0,

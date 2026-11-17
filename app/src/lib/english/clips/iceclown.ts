@@ -16,7 +16,7 @@ export const iceClown: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'absent', seg: [0, 25.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'absent', seg: [0, 25.5],
       stem: 'What do they argue about at the start?',
       ja: '最初、何について言い合っている？',
       choices: ['If Ben is really sick', 'If the party can start', 'If Leslie can take the key'], a: 0,
@@ -39,7 +39,7 @@ export const iceClown: Clip = {
       trap: 'acute は本物の医学用語なので、深刻な病気に聞こえやすい。後ろの wimp が本題。',
       use: 'Don’t wimp out on me now.（今さら逃げないでよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'stones', seg: [3.0, 6.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'stones', seg: [1.7, 6.7],
       stem: 'What does Leslie say is wrong with Ben?',
       ja: 'ベンはどこが悪い、とレスリーは言う？',
       choices: ['He has bad nerves', 'He has kidney stones', 'He has a kidney infection'], a: 1,
@@ -51,7 +51,7 @@ export const iceClown: Clip = {
       trap: 'kidney（腎臓）は2つの選択肢にある。stones（石）まで聞く。',
       use: 'He’s home sick with the flu.（彼はインフルで家で寝てる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [6.3, 10.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [5.9, 14.5], keep: true,
       stem: 'When was the hospital video taken?',
       ja: '病院の動画はいつ撮られた？',
       choices: ['Half an hour ago', 'An hour ago', 'Two hours ago', 'A day ago'], a: 1,
@@ -63,7 +63,7 @@ export const iceClown: Clip = {
       trap: '「ハーフ」は聞こえない。two hours なら「トゥー」、a day なら「デイ」。ここは an hour。',
       use: 'I called an hour ago.（1時間前に電話しました）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hadto', seg: [19.6, 24.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hadto', seg: [18.8, 25.5],
       stem: 'Fill the gap: “It’s just a real shame it ___ happen today.”',
       ja: '空所に入る語は？「よりによって今日 ___ とは、惜しい」',
       choices: ['had to', 'has to', 'would'], a: 0,
@@ -86,7 +86,7 @@ export const iceClown: Clip = {
       trap: 'real shame と damn it は同情に聞こえる。後半の一言が本音を明かすこともある。',
       use: 'What a shame you can’t make it.（来られないなんて惜しいな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'ofall', reveals: ['hadto'], seg: [21.3, 25.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'ofall', reveals: ['hadto'], seg: [19.9, 26.2],
       stem: 'Type what he says: “…it had to happen today, ___.” (3 words)', answer: 'of all days',
       ja: '彼の言葉を書こう：「今日、___ 起きるとは」（3語）',
       cue: '「today」のすぐあと、短い3語。',
@@ -118,7 +118,7 @@ export const iceClown: Clip = {
       trap: '本人の喜び方だけ聞くと、本当に歓迎されていると取りやすい。皮肉と取るのは知っている側の見方。',
       use: 'Little did he know…（彼は知るよしもなかった…）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [51.0, 55.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [49, 59.6], keep: true,
       stem: 'How long ago was Ben the mayor here?',
       ja: 'ベンがここの市長だったのは何年前？',
       choices: ['10 years', '12 years', '20 years', '30 years'], a: 2,
@@ -141,7 +141,7 @@ export const iceClown: Clip = {
       trap: '紹介の決まり文句に聞こえやすい。that が指すのは痛い記憶。',
       use: 'Thanks for making this possible.（実現させてくれてありがとう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'typo', seg: [71.9, 78.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'typo', seg: [71, 80.1],
       stem: 'What does Leslie realize about the banner?',
       ja: '横断幕について、レスリーは何に気づく？',
       choices: ['It’s a joke, on purpose', 'It has a spelling mistake', 'It’s for another mayor'], a: 0,
@@ -153,7 +153,7 @@ export const iceClown: Clip = {
       trap: 'typo が3回聞こえるので、つづりの話に思いやすい。最後の not a typo で決まる。',
       use: 'Sorry, that’s a typo.（すみません、打ちまちがいです）' },
 
-    { id: 't2', skill: 'phrase', level: 'B2', point: 'conveniently', reveals: ['absent'], seg: [82.6, 91.5],
+    { id: 't2', skill: 'phrase', level: 'B2', point: 'conveniently', reveals: ['absent'], seg: [82.6, 92.1],
       stem: 'What does the host mean by “conveniently ill”?',
       ja: '司会の言う「conveniently ill」はどういう意味？',
       choices: ['Ben is faking it', 'Ben is very sick', 'Ben got sick suddenly'], a: 0,
@@ -165,7 +165,7 @@ export const iceClown: Clip = {
       trap: 'convenient は「便利」なので、よい意味に思いやすい。病気に付くと「都合のいい言いわけ」。',
       use: 'He conveniently forgot his wallet.（彼は都合よく財布を忘れた）' },
 
-    { id: 'h3', skill: 'humor', level: 'B1', point: 'icekey', seg: [94.5, 106.6],
+    { id: 'h3', skill: 'humor', level: 'B1', point: 'icekey', seg: [97.1, 106.8],
       stem: 'What happened to the key?',
       ja: '鍵はどうなった？',
       choices: ['It melted away', 'It broke in half', 'It got lost'], a: 0,
@@ -188,7 +188,7 @@ export const iceClown: Clip = {
       trap: 'by the way は話題を変える語だが、ここはついでのふりの皮肉。ほめる対象の裏を考える。',
       use: 'I made dinner, by the way. Again.（ちなみに夕飯作ったのは私。また）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sure', reveals: ['twenty'], seg: [118.2, 126.25],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sure', reveals: ['twenty'], seg: [117.2, 128.8],
       stem: 'Why does Leslie say “sure” before “but”?',
       ja: 'レスリーはなぜ「but」の前に「sure」と言う？',
       choices: ['To agree a bit, then argue', 'To say Ben is to blame', 'To calm the crowd down'], a: 0,
@@ -212,7 +212,7 @@ export const iceClown: Clip = {
       trap: '最初は sure と認めているので、謝る話に思いやすい。最後の言葉で怒りと分かる。',
       use: 'I tried to be nice. Enough is enough.（優しくしたけど、もう限界）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', seg: [122.4, 128.5],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', seg: [122.4, 130.3],
       stem: 'What does the official mean by “then where is he?”',
       ja: '「then where is he?」で、町の人は何を言いたい？',
       choices: ['Ben doesn’t really care', 'He wants the hospital name', 'Ben is hiding close by'], a: 0,
@@ -224,7 +224,7 @@ export const iceClown: Clip = {
       trap: 'where（どこ）から、居場所を聞く質問に思いやすい。相手の言葉を使った切り返し。',
       use: 'If you’re so hungry, then eat something.（そんなにお腹すいたなら何か食べなよ）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'garland', seg: [133.6, 139.35],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'garland', seg: [132.9, 141.2],
       stem: 'Why does the official say “What about Judy Garland?”',
       ja: '町の人はなぜ「What about Judy Garland?」と言う？',
       choices: ['To name someone even better', 'To talk about old famous movies', 'To agree with Leslie'], a: 0,
@@ -236,7 +236,7 @@ export const iceClown: Clip = {
       trap: 'What about は話題を変える時にも使うが、ここは「一番」への反論。Oh, yeah? も反論の合図。',
       use: 'Oh yeah? What about last time?（へえ、じゃあこの前は？）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'shed', seg: [139.0, 142.8],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'shed', seg: [137.4, 144.5],
       stem: 'Fill the gap: “___ here for a while.”',
       ja: '空所に入る語は？「___ しばらくここに」',
       choices: ['She’d lived', 'She’s lived', 'She lived'], a: 0,
@@ -248,7 +248,7 @@ export const iceClown: Clip = {
       trap: 'She’s なら「ズ」が聞こえる。She lived なら She のあとに音がない。「ド」なら She’d。',
       use: 'I’d never been there before.（それまで一度も行ったことがなかった）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B1', point: 'jansen', seg: [142.5, 147.25],
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'jansen', seg: [142.5, 149.5],
       stem: 'What does “He’s pretty good” mean here?',
       ja: 'ここでの「He’s pretty good」はどういう意味？',
       choices: ['He’s quite good', 'He’s very handsome', 'He’s the very best'], a: 0,
@@ -271,7 +271,7 @@ export const iceClown: Clip = {
       trap: '口論中なので相手への反論に聞こえやすい。but のあとの比べる相手の変化で決まる。',
       use: 'Okay, that’s crazy. Let me take that back.（いや、それは言いすぎ。取り消す）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 158.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 160.2],
       stem: 'Why does Leslie say Ben is better than them?',
       ja: 'ベンのほうが町の人より上だ、とレスリーはなぜ言う？',
       choices: ['He cared and tried to help', 'He came all this way today', 'He forgave the town'], a: 0,

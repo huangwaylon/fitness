@@ -25,7 +25,7 @@ export const benDestress: Clip = {
       trap: '最初に budget（予算）が聞こえるので、予算の手伝いと思いやすい。最後の頼みが用件。',
       use: 'I’m a little behind on my emails.（メールの返信が少し遅れてて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [3.5, 10.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [3.5, 10.9], keep: true,
       stem: 'How long has it been since Jerry filled out that form?',
       ja: 'ジェリーがその書類を出していないのはどのくらい？',
       choices: ['2 years', '2 and a half years', '10 years'], a: 1,
@@ -59,7 +59,7 @@ export const benDestress: Clip = {
       trap: 'kind of や Well を迷いや譲歩と取りやすい。中身が命令なら飾り。',
       use: 'I kind of need this by Friday.（金曜までにお願いしたいんだけど）', retired: true },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nothing', seg: [18.4, 24.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nothing', seg: [18.4, 24.8],
       stem: 'How does Ben answer “What is wrong with you today?”',
       ja: 'ベンは「今日はどうしたの？」にどう答える？',
       choices: ['Short and a bit angry', 'Joking back at them', 'Calm, just a bit tired'], a: 0,
@@ -93,7 +93,7 @@ export const benDestress: Clip = {
       trap: 'カメラの前は本音の場と思いやすいが、話すのは番組のことだけ。',
       use: 'For the record, I wasn’t upset.（言っておくけど、怒ってないから）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'crossover', seg: [25.6, 35.2],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'crossover', seg: [25.6, 35.4],
       stem: 'Who is the TV show for, according to Ben?',
       ja: 'ベンによると、そのドラマは誰向け？',
       choices: ['All kinds of people', 'Only fantasy fans', 'Mostly young kids'], a: 0,
@@ -105,7 +105,7 @@ export const benDestress: Clip = {
       trap: 'just が小さく消えると「ファン向け」に聞こえやすい。not just を聞く。',
       use: 'It’s not just for kids.（子ども向けだけじゃないよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'reason', seg: [39.2, 46.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'reason', seg: [37.7, 46.6],
       stem: 'What does Ben say about staying in Pawnee?',
       ja: 'ベンはポーニーに残ることについて何と言う？',
       choices: ['His reason to stay is gone', 'He found a new reason', 'He’ll leave town tomorrow morning'], a: 0,
@@ -128,7 +128,7 @@ export const benDestress: Clip = {
       trap: 'although は「でも」。去る理由でなく、残る理由を一つ足している。',
       use: 'Although, there is free pizza.（まあ、ピザはタダだけどね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twoaway', seg: [45.8, 51.9],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twoaway', seg: [45.1, 52.9],
       stem: 'How many more sandwiches until Ben gets a free sub?',
       ja: '無料のサンドイッチまで、あといくつ？',
       choices: ['2', '3', '10'], a: 0,
@@ -140,7 +140,7 @@ export const benDestress: Clip = {
       trap: 'three は「スリー」、ten は「テン」。just のあとの「トゥー」が答え。',
       use: 'I’m two stamps away from a free coffee.（あとスタンプ2個でコーヒー無料）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'treat', seg: [72.0, 78.8], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'treat', seg: [71.9, 79.3], keep: true,
       stem: 'Type the words: “Once a year, Donna and I ___ ourselves.” (4 words)', answer: 'spend a day treating',
       ja: '「Once a year, Donna and I ___ ourselves.」の空所を書こう（4語）',
       cue: '「Donna and I」のあと',
@@ -150,7 +150,7 @@ export const benDestress: Clip = {
       trap: 'spend a day がつながって「スペンダデイ」に聞こえ、a が消えやすい。4語なので a も書く。',
       use: 'We spent a day hiking.（ハイキングして1日過ごした）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dayoff', seg: [97.4, 104.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dayoff', seg: [97.2, 104.6],
       stem: 'Why does Donna want to bring Ben along?',
       ja: 'ドナはなぜベンを連れて行きたい？',
       choices: ['He really needs a day off', 'He’s upset about the forms', 'He asked if he could come'], a: 0,
@@ -186,7 +186,7 @@ export const benDestress: Clip = {
       trap: 'skinny（やせた）から、弱いと思いやすい。about to snap は「今にも切れる」。',
       use: 'I’m about to snap. I need a break.（もう限界。休まないと）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'relax', seg: [104.1, 108.5],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'relax', seg: [100.7, 108.9],
       stem: 'Fill the gap: “Exactly. He ___ know…”',
       ja: '「Exactly. He ___ know…」の空所は？',
       choices: ['does', 'doesn’t', 'didn’t'], a: 1,
@@ -233,7 +233,7 @@ export const benDestress: Clip = {
       trap: 'fine を「元気」と覚えていると迷いやすい。頼まれたあとの Fine. は「仕方ない」。',
       use: 'Fine. You win. Let’s go.（わかった、君の勝ち。行こう）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'just', seg: [143.9, 152.3],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'just', seg: [143, 152.7],
       stem: 'What does Ben think of Treat Yourself Day?',
       ja: 'ベンは「自分にごほうびの日」をどう思う？',
       choices: ['It’s nothing special', 'It’s a really big treat', 'It costs too much money'], a: 0,
@@ -245,7 +245,7 @@ export const benDestress: Clip = {
       trap: 'spa や mall から、お金の話と思いやすい。just（ただの）が気持ちを決める。',
       use: 'So it’s just a long walk?（つまり、ただの長い散歩？）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'pamper', seg: [155.7, 162.0],
+    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'pamper', seg: [155.7, 163.1],
       stem: 'What does “pamper yourself” mean?',
       ja: '「pamper yourself」はどういう意味？',
       choices: ['Be extra nice to yourself', 'Spoil your friends', 'Pay for it all yourself'], a: 0,
@@ -280,7 +280,7 @@ export const benDestress: Clip = {
       trap: 'like を話し手の好みと聞きやすい。things you like で、ベンの好きな物。',
       use: 'Let’s talk about something fun instead.（代わりに楽しい話をしよう）' },
 
-    { id: 'nt2', skill: 'phrase', level: 'B2', point: 'list', seg: [196.0, 203.0],
+    { id: 'nt2', skill: 'phrase', level: 'B2', point: 'list', seg: [195, 204.2],
       stem: 'What does “more of a rare coins guy” mean?',
       ja: '「more of a rare coins guy」はどういう意味？',
       choices: ['He likes rare coins more', 'He has a lot of coins', 'He sells rare coins'], a: 0,

@@ -13,7 +13,7 @@ export const weddingFund: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'withdraw', seg: [0, 6.1],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'withdraw', seg: [0, 7.4],
       stem: 'How does Monica bring up the money?',
       ja: 'モニカはお金の話をどう切り出す？',
       choices: ['She says they’ll need it soon', 'She asks how much it holds', 'She says it costs a lot'], a: 0,
@@ -24,6 +24,18 @@ export const weddingFund: Clip = {
       mean: 'make a withdrawal ＝ 預金を引き出す。銀行で使う言葉で、軽く話を切り出している。',
       trap: 'big（大きい）から、お金がかかる話と思いやすい。pretty soon（もうすぐ）が大事。',
       use: 'I’d like to make a withdrawal.（お金を引き出したいのですが）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'beach', seg: [10.9, 20.9],
+      stem: 'What has the wedding fund become?',
+      ja: '結婚資金は何になった？',
+      choices: ['The family’s beach house', 'The family’s new kitchen', 'Her father’s business idea'], a: 0,
+      choicesJa: ['家族のビーチハウス', '家族の新しいキッチン', '父の商売のアイデア'],
+      cue: '「only now we call it」のあと',
+      line: 'We have it, only now we call it *the beach house*.',
+      said: '「あるよ。ただ今は『ビーチハウス』と呼んでるけど」と答える。',
+      mean: 'only now we call it 〜 ＝ ただ今は〜と呼んでいる。お金は家に使ってしまった。',
+      trap: 'We have it（ある）から、お金が残っていると思いやすい。only のあとを聞く。',
+      use: 'We call it the blue house.（私たちは青い家と呼んでいます）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'excuses', seg: [13, 57],
       stem: 'How do her parents explain the money?',
@@ -36,18 +48,6 @@ export const weddingFund: Clip = {
       trap: 'We’re sorry と何度も言うので、返すと思いやすい。返すとは一度も言わない。',
       use: 'It was one problem after another.（問題が次々に起きた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'beach', seg: [13.1, 19.6],
-      stem: 'What has the wedding fund become?',
-      ja: '結婚資金は何になった？',
-      choices: ['The family’s beach house', 'The family’s new kitchen', 'Her father’s business idea'], a: 0,
-      choicesJa: ['家族のビーチハウス', '家族の新しいキッチン', '父の商売のアイデア'],
-      cue: '「only now we call it」のあと',
-      line: 'We have it, only now we call it *the beach house*.',
-      said: '「あるよ。ただ今は『ビーチハウス』と呼んでるけど」と答える。',
-      mean: 'only now we call it 〜 ＝ ただ今は〜と呼んでいる。お金は家に使ってしまった。',
-      trap: 'We have it（ある）から、お金が残っていると思いやすい。only のあとを聞く。',
-      use: 'We call it the blue house.（私たちは青い家と呼んでいます）' },
-
     { id: 'h1', skill: 'humor', level: 'C1', point: 'beach', seg: [13.1, 20.5], retired: true,
       stem: 'Why does the answer about the fund get a laugh?',
       choices: ['It claims money they spent is still there', 'It claims the house was her wedding gift',
@@ -59,7 +59,7 @@ export const weddingFund: Clip = {
       trap: 'We have it を「まだある」と取ると、家が贈り物に聞こえる。only のあとで中身が変わる。',
       use: 'It’s not gone. It’s a boat now.（なくなってない。今はボートなだけ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'believe', seg: [21, 24.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'believe', seg: [20.4, 28.4],
       stem: 'Type: “I ___ you spent my wedding fund…” (2 words)', answer: 'can\'t believe',
       ja: '「I ___ you spent my wedding fund…」の空所を書こう（2語）',
       cue: 'ビーチハウスの話のあと',
@@ -69,7 +69,7 @@ export const weddingFund: Clip = {
       trap: 'can’t の t が消えて can に聞こえやすい。「キャーン」と長ければ can’t。',
       use: 'I can’t believe it’s so cheap!（こんなに安いなんて信じられない！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'youd', seg: [24, 29],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'youd', seg: [21.7, 31.6],
       stem: 'Fill the gap: “…after you turned 30, ___ pay for it yourself.”',
       ja: '「…after you turned 30, ___ pay for it yourself.」の空所は？',
       choices: ['you', 'you’d', 'you’ll'], a: 1,
@@ -81,7 +81,7 @@ export const weddingFund: Clip = {
       trap: 'd が小さく、you と思いやすい。you’ll なら「ユール」。「ユード」の d を聞く。',
       use: 'I thought you’d like it.（気に入ると思ったんだ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'assumed', seg: [24, 29],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'assumed', seg: [23, 31],
       stem: 'Type what she says: “We’re sorry, honey, but ___…” (3 words)', answer: 'we just assumed',
       ja: '「We’re sorry, honey, but ___…」の空所を書こう（3語）',
       cue: '「sorry, honey, but」のあと',
@@ -114,7 +114,7 @@ export const weddingFund: Clip = {
       trap: '30 だけ拾うと「30までに結婚」と逆に取りやすい。after と使った年齢を並べる。',
       use: 'We figured you’d never move out.（どうせ家を出ないと思ってた）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'beachfun', reveals: ['age23', 'beach'], seg: [31.1, 36.4],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'beachfun', reveals: ['age23', 'beach'], seg: [30.1, 37.7],
       stem: 'How do her parents describe the beach house?',
       ja: '両親はビーチハウスのことをどう言う？',
       choices: ['As years of fun for her', 'As a big mistake', 'As a place for her wedding'], a: 0,
@@ -126,7 +126,7 @@ export const weddingFund: Clip = {
       trap: 'sorry と謝っていたので、失敗だったと言うと思いやすい。beach fun（ビーチの楽しみ）を聞く。',
       use: 'Which means we have more time.（つまり、時間がもっとあるってこと）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'price', reveals: ['beachfun'], seg: [31.1, 36.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'price', reveals: ['beachfun'], seg: [31.1, 37.7],
       stem: 'What does “*you can’t put a price on that*” mean?',
       ja: '「you can’t put a price on that」はどういう意味？',
       choices: ['It’s worth more than money', 'It cost far too much money', 'Don’t ask what it cost'], a: 0,
@@ -138,7 +138,7 @@ export const weddingFund: Clip = {
       trap: 'price（値段）から、高かったという話と思いやすい。can’t put で「つけられない」。',
       use: 'You can’t put a price on health.（健康はお金に代えられない）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelbad', seg: [37.5, 43],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelbad', seg: [37.5, 46.8],
       stem: 'How does her mother say she feels about it?',
       ja: '母はこのことをどう感じていると言う？',
       choices: ['She feels bad', 'She feels proud', 'She feels angry'], a: 0,
@@ -150,7 +150,7 @@ export const weddingFund: Clip = {
       trap: 'feel bad を「気分が悪い（体調）」と思いやすい。about this がつくと「悪いと思う」。',
       use: 'I really do feel bad about it.（本当に申し訳なく思ってる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'kitchen', seg: [38.7, 46.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'kitchen', seg: [38.7, 47.5],
       stem: 'What happened to the money they saved again?',
       ja: 'もう一度ためたお金はどうなった？',
       choices: ['It paid for a new kitchen', 'It went to Richard instead', 'It fixed the beach house'], a: 0,
@@ -173,7 +173,7 @@ export const weddingFund: Clip = {
       trap: 'hell を一時のけんか、went to を「行った」と取りやすい。so のあとの使い道が結末を示す。',
       use: 'The plan went to hell fast.（計画はすぐにだめになった）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'propose', seg: [48.3, 53],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'propose', seg: [48.3, 54.2],
       stem: 'Why didn’t they save for Chandler?',
       ja: 'チャンドラーのときにお金をためなかったのはなぜ？',
       choices: ['They thought he’d never propose', 'They thought he was rich', 'They didn’t like him at all'], a: 0,
@@ -208,7 +208,7 @@ export const weddingFund: Clip = {
       trap: 'still have（まだある）が聞こえて、残っていると思いやすい。if … hadn’t は「実際はした」。',
       use: 'If I hadn’t missed the bus…（バスに乗り遅れなければ…）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'enough', seg: [57, 73],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'enough', seg: [57, 75.6],
       stem: 'How does Monica end the talk about the money?',
       ja: 'モニカはお金の話をどう終わらせる？',
       choices: ['She doesn’t want to hear more', 'She asks them to sell it', 'She says they’ll pay themselves'], a: 0,
@@ -220,7 +220,7 @@ export const weddingFund: Clip = {
       trap: 'お金の話なので、家を売る話と思いやすい。Enough で話を止めている。',
       use: 'Enough! I don’t want to hear it.（もういい！聞きたくない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ice', reveals: ['hadnt'], seg: [60.5, 66.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ice', reveals: ['hadnt'], seg: [61.1, 73.1],
       stem: 'Which business idea of her father’s gets the blame?',
       ja: '父のどの商売のアイデアのせいにされる？',
       choices: ['Selling ice over the internet', 'Selling ice cream on the internet', 'Selling ice at the beach'], a: 0,
@@ -232,7 +232,7 @@ export const weddingFund: Clip = {
       trap: 'ice から、アイスクリームと思いやすい。ice のあとすぐ over が来る。',
       use: 'I bought it over the internet.（ネットで買った）' },
 
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'stupid', seg: [65.4, 70],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'stupid', seg: [61.3, 73.3],
       stem: 'What does “*The word is stupid*” mean?',
       ja: '「The word is stupid」はどういう意味？',
       choices: ['It was stupid, not simple', 'Jack himself is stupid', 'She was stupid to agree'], a: 0,

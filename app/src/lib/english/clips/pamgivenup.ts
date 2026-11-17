@@ -14,7 +14,7 @@ export const pamGivenUp: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'friend', seg: [5.6, 10.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'friend', seg: [4.8, 15.5],
       stem: 'Where does Pam say she spent the night?',
       ja: 'パムはどこで夜を過ごしたと言う？',
       choices: ['At a friend’s house', 'At her parents’ house', 'At a hotel near work'], a: 0,
@@ -26,7 +26,7 @@ export const pamGivenUp: Clip = {
       trap: 'slept over から旅行を思い、ホテルを選びやすい。at のあとの場所を聞く。',
       use: 'Can I sleep over at your place?（君の家に泊まってもいい？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'glasses', seg: [10.3, 15.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'glasses', seg: [4.8, 15.7],
       stem: 'Why is Pam wearing glasses today?',
       ja: 'パムはなぜ今日、眼鏡をかけている？',
       choices: ['She forgot contact solution', 'She lost a contact lens', 'She broke her other glasses'], a: 0,
@@ -38,7 +38,7 @@ export const pamGivenUp: Clip = {
       trap: 'contact や backup から、なくした・壊したと思いやすい。forgot のあとを聞く。',
       use: 'I forgot my charger at home.（充電器を家に忘れた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'glasses', seg: [10.3, 13.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'glasses', seg: [7.5, 15.5],
       stem: 'Type what she forgot: “I forgot my ___.” (2 words)', answer: 'contact solution',
       ja: '忘れた物を書き取る：「I forgot my ___.」（2語）',
       cue: '「forgot my」のあとの2語。',
@@ -59,7 +59,7 @@ export const pamGivenUp: Clip = {
       trap: 'Michael meeting を「マイケルとの面談」と取りやすい。人の名前が会議の種類になっている。',
       use: 'That’s such a Tom thing to say.（いかにもトムが言いそう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sayno', seg: [47.0, 54.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'sayno', seg: [46.9, 53.3],
       stem: 'What will Pam do if he proposes in the meeting?',
       ja: '会議中にプロポーズされたら、パムはどうする？',
       choices: ['Say no to him', 'Walk out of the room', 'Ask him to wait'], a: 0,
@@ -71,7 +71,7 @@ export const pamGivenUp: Clip = {
       trap: 'Don’t で始まるので「今はやめて」と思いやすい。最後の say no まで聞く。',
       use: 'If you ask me now, I’ll say no.（今聞かれたら、断るよ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'propose', seg: [53.0, 61.05],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'propose', seg: [52, 61.1],
       stem: 'What does he “propose” in the end?',
       ja: '彼は結局、何を「propose」する？',
       choices: ['That Pam gets him coffee', 'That Pam marries him', 'That they go for coffee'], a: 0,
@@ -95,7 +95,7 @@ export const pamGivenUp: Clip = {
       trap: 'あとで留守電の案が出るので、それが目的と思いやすい。会議の最初の問いを聞く。',
       use: 'How are we going to fix this?（これ、どうやって直そうか）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'percolate', reveals: ['energize'], seg: [70.5, 76.5],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'percolate', reveals: ['energize'], seg: [70.5, 78.6],
       stem: 'What does “get things going” mean?',
       ja: '「get things going」はどういう意味？',
       choices: ['Start doing things', 'Make everyone leave', 'Send things away'], a: 0,
@@ -107,7 +107,7 @@ export const pamGivenUp: Clip = {
       trap: 'going から「行かせる、追い出す」と思いやすい。get ～ going で「動かし始める」。',
       use: 'Let’s get things going.（さあ、始めよう）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'andy', seg: [78.2, 88.15],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'andy', seg: [78.1, 89.3],
       stem: 'Who first suggests changing the phone message?',
       ja: '最初に留守電を変えようと言うのは誰？',
       choices: ['Andy', 'Jim', 'Michael'], a: 0,
@@ -119,7 +119,7 @@ export const pamGivenUp: Clip = {
       trap: 'あとでジムも似た案を出すので混ざりやすい。指名の名前と次の発言を組で聞く。',
       use: 'Yes, the man in the blue shirt.（はい、青いシャツの方どうぞ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'zing', seg: [80.28, 88.15],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'zing', seg: [80.1, 91.2],
       stem: 'What would the new phone message have more of?',
       ja: '新しい留守電には、何がもっとほしい？',
       choices: ['Energy', 'Jokes', 'Sounds'], a: 0,
@@ -165,7 +165,7 @@ export const pamGivenUp: Clip = {
       trap: 'cooking から料理や食事を思いやすい。すぐあとの I like this で「いい」と分かる。',
       use: 'Now we’re cooking! Keep going.（いい感じ！その調子）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'refuse', seg: [101.15, 112.85],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'refuse', seg: [101.2, 112.9],
       stem: 'How does Stanley feel about joining the group?',
       ja: 'スタンリーは、グループに加わることをどう思っている？',
       choices: ['He doesn’t want to', 'He is excited to', 'He is nervous about it'], a: 0,
@@ -177,7 +177,7 @@ export const pamGivenUp: Clip = {
       trap: '上司が押せば折れると思いやすい。返事は2回とも断り。',
       use: 'Not me. Ask someone else.（僕はいい。ほかの人に頼んで）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'grab', seg: [124.5, 128.5],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'grab', seg: [123.6, 129.2],
       stem: 'What does “grab a glass of water” mean here?',
       ja: 'ここで「grab a glass of water」はどういう意味？',
       choices: ['Go and get some water', 'Throw some water', 'Hold a glass tightly'], a: 0,
@@ -189,7 +189,7 @@ export const pamGivenUp: Clip = {
       trap: 'grab は「つかむ」なので、強く握ると思いやすい。grab a coffee ＝ コーヒーを買う。',
       use: 'I’m going to grab some water.（ちょっと水を取ってくる）' },
 
-    { id: 'x3', skill: 'dict', level: 'B2', point: 'second', seg: [133.5, 137.0],
+    { id: 'x3', skill: 'dict', level: 'B2', point: 'second', seg: [133.1, 138.5],
       stem: 'Type Toby’s question: “Can I ___?” (5 words)', answer: 'talk to you a second',
       ja: 'トビーの質問を書き取る：「Can I ___?」（5語）',
       cue: '「Can I」のあとの5語。',
@@ -223,7 +223,7 @@ export const pamGivenUp: Clip = {
       trap: '上司が「あとで話す」と引き取ると思いやすい。最後まで何も認めていない。',
       use: 'Relax, I was only joking.（落ち着いて、冗談だよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'blabber', reveals: ['nothing'], seg: [143.7, 147.05],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'blabber', reveals: ['nothing'], seg: [143.1, 150.1],
       stem: 'Fill the gap: “___ blabbering about?”',
       ja: '空所を埋める：「___ blabbering about?」',
       choices: ['What are you', 'What were you', 'What have you been'], a: 0,
@@ -290,7 +290,7 @@ export const pamGivenUp: Clip = {
       trap: 'didn’t の t が消えると、賛成に聞こえやすい。「ン」があれば反対。',
       use: 'It didn’t seem that way to me.（私にはそう見えなかった）' },
 
-    { id: 'pr2', skill: 'infer', level: 'B2', point: 'friends', seg: [170.5, 175.5],
+    { id: 'pr2', skill: 'infer', level: 'B2', point: 'friends', seg: [170.5, 177.3],
       stem: 'What does Michael say about Toby with “If you had any friends”?',
       ja: '「If you had any friends」で、マイケルはトビーについて何を言っている？',
       choices: ['Toby has no friends', 'Toby has many friends', 'Toby should find friends'], a: 0,

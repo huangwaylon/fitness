@@ -12,7 +12,7 @@ export const savings: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B1', point: 'didyou', seg: [13.3, 18.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'didyou', seg: [13.3, 19.2],
       stem: 'Fill the gap: “___ all this?”',
       ja: '空所を埋める：「___ all this?」',
       choices: ['Did you do', 'Did you two do', 'Did they do'], a: 0,
@@ -36,7 +36,7 @@ export const savings: Clip = {
       trap: 'お金のことも聞くので怒っていると思いやすい。答えを聞いて、すぐほめに戻る。',
       use: 'You’re amazing, you know that?（ほんとにすごいね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'why', seg: [18.2, 23.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'why', seg: [17.9, 25.2],
       stem: 'Why did Chandler do all this?',
       ja: 'チャンドラーはなぜこれを全部やった？',
       choices: ['It would make him feel good', 'It would cheer Joey up', 'He owed Joey a favor'], a: 0,
@@ -48,7 +48,7 @@ export const savings: Clip = {
       trap: 'me は小さく短く、you と聞くと「ジョーイを励ます」になる。me か you か聞く。',
       use: 'It just makes me feel good.（なんだか気分がいいんだ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'afford', seg: [35.8, 38.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'afford', seg: [35, 40],
       stem: 'Type the question: “___ all this stuff?” (4 words)', answer: 'how did you afford',
       ja: '質問を書き取る：「___ all this stuff?」（4語）',
       cue: '「That’s the dream」のすぐあと。',
@@ -58,7 +58,7 @@ export const savings: Clip = {
       trap: 'afford の a は小さく短く、a fort と切れて聞こえやすい。お金の話なら afford。',
       use: 'I can’t afford a new phone.（新しいスマホを買う余裕はない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', reveals: ['savings'], seg: [36.5, 41.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', reveals: ['savings'], seg: [36.5, 42.1], keep: true,
       stem: 'How old does Chandler say he is?',
       ja: 'チャンドラーは自分を何歳と言う？',
       choices: ['19', '29', '39'], a: 1,
@@ -70,7 +70,7 @@ export const savings: Clip = {
       trap: 'twenty の t は弱く「トゥエニー」。nine だけ拾うと19に聞こえやすい。39なら「サーティ」で始まる。',
       use: 'I’m twenty-nine years old.（29歳です）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'savings', reveals: ['age'], seg: [36.5, 41.8],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'savings', reveals: ['age'], seg: [36.5, 45.7],
       stem: 'Chandler asks, “Who needs a savings account?” What does he mean?',
       ja: '「Who needs a savings account?」で、チャンドラーは何を言いたい？',
       choices: ['He doesn’t need one', 'He asks who has one', 'Joey should open one'], a: 0,
@@ -82,7 +82,7 @@ export const savings: Clip = {
       trap: '質問の形なので、本当に誰かを聞いていると思いやすい。返事を待たずに話が進む。',
       use: 'Who needs a car in Tokyo?（東京で車なんて要らないよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['savings', 'age'], seg: [36.5, 41.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['savings', 'age'], seg: [36.5, 45.7],
       stem: 'Why does Chandler say “I mean” here?',
       ja: 'チャンドラーは、なぜここで「I mean」と言う？',
       choices: ['To add a reason to his answer', 'To take back the age he gave', 'To start a new topic'], a: 0,
@@ -94,7 +94,7 @@ export const savings: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは29を取り消していない。前と話がつながっている。',
       use: 'It’s cheap. I mean, it’s only ten dollars.（安いよ。だって10ドルだし）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'best', seg: [41.5, 51.5],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'best', seg: [39.5, 51.5],
       stem: 'How does Joey feel about Chandler here?',
       ja: 'ここでジョーイはチャンドラーをどう思っている？',
       choices: ['Very thankful', 'Worried about him', 'A bit jealous'], a: 0,
@@ -106,7 +106,7 @@ export const savings: Clip = {
       trap: 'お金の話のあとなので、心配していると思いやすい。否定されても言い張るのは本気。',
       use: 'You’re the best. Thank you so much.（最高だよ。本当にありがとう）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'dontknow', reveals: ['best'], seg: [41.5, 49.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'dontknow', reveals: ['best'], seg: [41.5, 49.2],
       stem: 'Why does Chandler answer, “Oh, I don’t know”?',
       ja: 'チャンドラーはなぜ「Oh, I don’t know」と答える？',
       choices: ['He feels shy about the praise', 'He really has no answer', 'He thinks the gifts were bad'], a: 0,
@@ -118,7 +118,7 @@ export const savings: Clip = {
       trap: '文字どおり「分からない」と思いやすい。ほめられた直後なら、照れや遠慮。',
       use: 'Oh, I don’t know about that.（いやあ、それはどうかな）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'whatyou', reveals: ['advice'], seg: [51.0, 55.9],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'whatyou', reveals: ['advice'], seg: [49.8, 57.5],
       stem: 'Fill the gap: “I was thinking about ___ said yesterday.”',
       ja: '空所を埋める：「I was thinking about ___ said yesterday.」',
       choices: ['what you', 'what he', 'what she'], a: 0,
@@ -130,19 +130,7 @@ export const savings: Clip = {
       trap: '「チュ」を you と結びつけにくく、he や she に聞こえやすい。t＋y は「チュ」。',
       use: 'I liked what you said earlier.（さっき言ってたこと、良かったよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'advice', reveals: ['whatyou'], seg: [51.0, 57.3],
-      stem: 'What advice did Chandler give Joey yesterday?',
-      ja: 'チャンドラーは昨日ジョーイにどんな助言をした？',
-      choices: ['Focus on just one woman', 'Focus on his acting', 'Be honest with both women'], a: 0,
-      choicesJa: ['一人の女性に絞る', '演技に集中する', '二人の女性に正直になる'],
-      cue: '「yesterday」のすぐあと。',
-      line: 'what you said yesterday about *focusing on one woman*',
-      said: '昨日の助言は「一人の女性に絞れ」。ジョーイは「そうするよ」と言う。',
-      mean: 'focus on ～ ＝ 〜に集中する、〜に絞る。one woman ＝ 一人の女性。',
-      trap: 'このあと女性の名前が2つ出るので「二人とも」に引かれやすい。名前の前の言葉を聞く。',
-      use: 'Let’s focus on one thing at a time.（一つずつやろう）' },
-
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene2', reveals: ['whatyou', 'advice'], seg: [51.0, 81.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene2', reveals: ['whatyou', 'advice'], seg: [49.8, 81.5],
       stem: 'What is the second half mostly about?',
       ja: '後半は主に何の話？',
       choices: ['Which woman Joey will date', 'How Joey can pay Chandler back',
@@ -154,6 +142,18 @@ export const savings: Clip = {
       mean: 'hey, listen ＝ ねえ、聞いて。話題を変える合図。後半は女性の話。',
       trap: '直前のお金の話が印象に残りやすい。hey, listen で話題が切り替わる。',
       use: 'Hey, listen, about tomorrow…（ねえ、明日のことなんだけど）' },
+
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'advice', reveals: ['whatyou'], seg: [51, 57.5],
+      stem: 'What advice did Chandler give Joey yesterday?',
+      ja: 'チャンドラーは昨日ジョーイにどんな助言をした？',
+      choices: ['Focus on just one woman', 'Focus on his acting', 'Be honest with both women'], a: 0,
+      choicesJa: ['一人の女性に絞る', '演技に集中する', '二人の女性に正直になる'],
+      cue: '「yesterday」のすぐあと。',
+      line: 'what you said yesterday about *focusing on one woman*',
+      said: '昨日の助言は「一人の女性に絞れ」。ジョーイは「そうするよ」と言う。',
+      mean: 'focus on ～ ＝ 〜に集中する、〜に絞る。one woman ＝ 一人の女性。',
+      trap: 'このあと女性の名前が2つ出るので「二人とも」に引かれやすい。名前の前の言葉を聞く。',
+      use: 'Let’s focus on one thing at a time.（一つずつやろう）' },
 
     { id: 'i3', skill: 'detail', level: 'B1', point: 'plan', reveals: ['advice'], seg: [55.0, 63.0],
       stem: 'Which woman does Joey choose?',
@@ -179,7 +179,7 @@ export const savings: Clip = {
       trap: 'How’s it going?（調子どう？）と似ているので、あいさつと思いやすい。全体でひとまとまり。',
       use: 'Let’s just see how things go.（とりあえず様子を見よう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cool', seg: [57.0, 63.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cool', seg: [57, 64.9],
       stem: 'What does Joey say about Kathy?',
       ja: 'ジョーイはキャシーのことを何と言う？',
       choices: ['She is quite nice', 'She is very pretty', 'She is a bit cold'], a: 0,
@@ -191,7 +191,7 @@ export const savings: Clip = {
       trap: 'pretty を「かわいい」と思いやすい。cool と cold は最後の音で聞き分ける。',
       use: 'The new boss seems pretty cool.（新しい上司、けっこういい人みたい）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'casey', seg: [58.0, 69.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'casey', seg: [59.2, 71.2],
       stem: 'What does Chandler want Joey to do?',
       ja: 'チャンドラーはジョーイに何をしてほしい？',
       choices: ['Date Casey, not Kathy', 'Date both of them', 'Date only Kathy'], a: 0,
@@ -215,7 +215,7 @@ export const savings: Clip = {
       trap: 'crush は「つぶす」の意味もあり、ひどいことと思いやすい。crush on 人は「好き」。',
       use: 'I had a crush on her in school.（学生のころ彼女が好きだった）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'fixup', seg: [73.0, 75.6],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'fixup', seg: [70.7, 76.9],
       stem: 'Type Joey’s offer: “How about I ___?” (4 words)', answer: 'fix you two up',
       ja: 'ジョーイの提案を書き取る：「How about I ___?」（4語）',
       cue: '「How about I」のあと、つながる4語。',
@@ -225,7 +225,7 @@ export const savings: Clip = {
       trap: 'two を to と思うと語数が合わない。you two ＝「君たち二人」とまとめて聞く。',
       use: 'How about I call you later?（あとで電話しようか？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fixup', reveals: ['crush'], seg: [73.0, 76.75],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fixup', reveals: ['crush'], seg: [70.7, 76.9],
       stem: 'What does Joey offer to do?',
       ja: 'ジョーイは何をしようと申し出る？',
       choices: ['Set them up on a date', 'Help them make up', 'Repair something for them'], a: 0,

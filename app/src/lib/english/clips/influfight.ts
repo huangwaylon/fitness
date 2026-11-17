@@ -20,7 +20,7 @@ export const influencerFightClub: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'unmissable', seg: [5.6, 12.0],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'unmissable', seg: [5.6, 12.4],
       stem: 'Will people notice if they sneak out, she says?',
       ja: 'こっそり出たら気づかれる、と彼女は言う？',
       choices: ['Yes, she’s too easy to see', 'No, everyone is much too busy', 'Only if they run out'], a: 0,
@@ -32,7 +32,7 @@ export const influencerFightClub: Clip = {
       trap: '「こっそり」の話なので、気づかれないと思いやすい。最初の they will（気づく）を聞く。',
       use: 'Sorry, I’m hard to miss.（ごめん、目立っちゃうんだよね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'land', seg: [11.9, 15.6], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'land', seg: [10.9, 18.7], keep: true,
       stem: 'What does “get a lay of the land” mean?',
       ja: '「get a lay of the land」はどういう意味？',
       choices: ['Get to know the place', 'Hide until they can leave', 'Stay near the exit'], a: 0,
@@ -55,7 +55,7 @@ export const influencerFightClub: Clip = {
       trap: 'Don’t worry だけで安心の言葉と取りやすい。前置きのあとの中身で働きを決める。',
       use: 'Don’t worry, it only hurts a lot.（心配しないで、すごく痛いだけ）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vent', seg: [56.55, 68.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vent', seg: [56.6, 68.8],
       stem: 'What does the fight club do for her?',
       ja: 'ファイトクラブは、彼女に何をしてくれる？',
       choices: ['It helps her feel better', 'It lets her meet her critics', 'It stops her reading comments'], a: 0,
@@ -90,7 +90,7 @@ export const influencerFightClub: Clip = {
       trap: 'mad-dog を逃すと、ファンの視線と取りやすい。liver からお酒にも引かれる。動詞として聞く。',
       use: 'Why is that guy mad-dogging me?（なんであの人、こっちにらんでるの？）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'rule', seg: [92.9, 102.8], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'rule', seg: [92.9, 103.3], keep: true,
       stem: 'What is the rule for someone’s first night at the club?',
       ja: 'クラブの初日の人には、どんな決まりがある？',
       choices: ['They have to fight that night', 'They watch one night, then fight', 'They fight if picked'], a: 0,
@@ -102,7 +102,7 @@ export const influencerFightClub: Clip = {
       trap: '初日は見学、というよくある流れを思いやすい。first night と have to fight をつなげて聞く。',
       use: 'First time? You have to try the pie.（初めて？パイは絶対食べて）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'join', reveals: ['rule'], seg: [92.9, 109.4],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'join', reveals: ['rule'], seg: [92.9, 111.4],
       stem: 'Why must newcomers fight, they say?',
       ja: '新人はなぜ戦わなければならない？',
       choices: ['So they won’t tell anyone', 'To show they aren’t scared', 'Because the fans came to watch'], a: 0,
@@ -114,7 +114,7 @@ export const influencerFightClub: Clip = {
       trap: '度胸だめしに見えやすい。To make sure のあとが目的。',
       use: 'What happens here stays here.（ここでのことは、ここだけの話）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [124.9, 130.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [123.9, 131.4],
       stem: 'Fill the gap: “Okay, look, ___ be brutal and honest.”',
       ja: 'すき間をうめよう：「Okay, look, ___ be brutal and honest.」',
       choices: ['we get to', 'we’ve got to', 'we’re going to'], a: 1,
@@ -149,7 +149,7 @@ export const influencerFightClub: Clip = {
       trap: 'in years の直後なので年数の訂正と取りやすい。否定は直前の発言に向くことが多い。',
       use: 'Wait, I don’t think that’s right.（待って、それは違うと思う）', retired: true },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'fundate', seg: [155.8, 161.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'fundate', seg: [155.8, 164.8],
       stem: 'How does Millicent feel about the school project?',
       ja: 'ミリセントは宿題をどう思っている？',
       choices: ['She’s excited about it', 'She’s let down by it', 'She’s bored with it'], a: 0,
@@ -161,7 +161,7 @@ export const influencerFightClub: Clip = {
       trap: 'but schoolwork から、不満と思いやすい。最後の so のあとが本音。',
       use: 'Work, but with free pizza. So, fun work.（仕事だけどピザつき。楽しい仕事）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'help', seg: [166.6, 171.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'help', seg: [164.5, 172.5], keep: true,
       stem: 'Type what he says: “I ___, and I uploaded Derek’s picture.” (3 words)', answer: "couldn't help myself",
       ja: '彼の言葉を入力：「I ___, and I uploaded Derek’s picture.」（3語）',
       cue: '「when you get older」のあと',
@@ -171,7 +171,7 @@ export const influencerFightClub: Clip = {
       trap: 'couldn’t の t が消えて could に聞こえやすいが、could では意味が逆。3語あるか数える。',
       use: 'Sorry, I couldn’t help myself.（ごめん、つい）' },
 
-    { id: 'i8', skill: 'infer', level: 'B2', point: 'app', reveals: ['derek'], seg: [172.8, 179.9], keep: true,
+    { id: 'i8', skill: 'infer', level: 'B2', point: 'app', reveals: ['derek'], seg: [172.8, 180.8], keep: true,
       stem: 'How does Millicent take the picture of old Derek?',
       ja: '年を取ったデレクの写真を、ミリセントはどう受け取る？',
       choices: ['They’ll grow old together', 'Derek won’t stay cute', 'Derek is older than he looks'], a: 0,
@@ -183,7 +183,7 @@ export const influencerFightClub: Clip = {
       trap: 'Woof（うわ、ひどい）は見せた側の感想。ミリセントの答えは grow old together。',
       use: 'Does this mean we’re friends now?（これって、もう友だちってこと？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'overheard', seg: [195.8, 203.2], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'overheard', seg: [195.8, 204.9], keep: true,
       stem: 'What did Derek tell his mother, he says?',
       ja: 'デレクはお母さんに何と言っていた、と彼は言う？',
       choices: ['He’s only nice to get his way', 'His mother doesn’t like her', 'He wants to work alone'], a: 0,
@@ -206,7 +206,7 @@ export const influencerFightClub: Clip = {
       trap: '日本語の「もっと早く言えば」は謝罪になりやすい。I’m the hero で自慢と分かる。',
       use: 'For the record, I said this first.（言っとくけど、最初に言ったのは私）', retired: true },
 
-    { id: 'a6', skill: 'attitude', level: 'B1', point: 'ruined', seg: [207.1, 211.2], keep: true,
+    { id: 'a6', skill: 'attitude', level: 'B1', point: 'ruined', seg: [205.6, 211.4], keep: true,
       stem: 'How does Millicent react to what they tell her?',
       ja: '話を聞いて、ミリセントはどうする？',
       choices: ['Angry at them for telling her', 'Thankful, but sad about him', 'Angry at Derek, not at them'], a: 0,
@@ -229,7 +229,7 @@ export const influencerFightClub: Clip = {
       trap: 'scratch out を仕返しと取りやすいが、消すのは二人の印。a lot of の量が気持ちの強さ。',
       use: 'Now I have to delete all our photos.（二人の写真、全部消さなきゃ）', retired: true },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'root', seg: [233.6, 238.0],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'root', seg: [231.9, 238.3],
       stem: 'What does “I’m rooting for you” mean?',
       ja: '「I’m rooting for you」はどういう意味？',
       choices: ['I hope you win', 'I’m laughing at you', 'I’m waiting for you'], a: 0,
@@ -241,7 +241,7 @@ export const influencerFightClub: Clip = {
       trap: 'root から「根っこ」や route（道）を思いやすい。root for 人 は「応援する」。',
       use: 'Good luck! I’m rooting for you.（がんばって！応援してるよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', reveals: ['twohundred'], seg: [233.6, 238.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', reveals: ['twohundred'], seg: [231.9, 238.3], keep: true,
       stem: 'How much has the cheering friend bet?',
       ja: '応援している友だちは、いくら賭けている？',
       choices: ['100', '200', '1,000'], a: 0,
@@ -253,7 +253,7 @@ export const influencerFightClub: Clip = {
       trap: '200 なら「トゥー」で始まる。1000 なら「サウザンド」。「ア・ハンドレッド」なら100。',
       use: 'I’ve got twenty bucks on the Giants.（ジャイアンツに20ドル賭けてる）' },
 
-    { id: 'i7', skill: 'infer', level: 'B2', point: 'rooting', reveals: ['hundred'], seg: [233.6, 238.0],
+    { id: 'i7', skill: 'infer', level: 'B2', point: 'rooting', reveals: ['hundred'], seg: [233.6, 239],
       stem: 'What does the person betting really expect?',
       ja: '賭けている人は、本当はどうなると思っている？',
       choices: ['Carly will lose', 'Carly will win', 'It will be a tie'], a: 0,
@@ -276,7 +276,7 @@ export const influencerFightClub: Clip = {
       trap: '「上げた」だけだと Carly を見直したと取りやすい。make that の対象を聞く。',
       use: 'Go team! But my money’s on them.（がんばれ！でも本命はあっち）', retired: true },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'twohundred', reveals: ['hundred'], seg: [248.5, 253.6], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'twohundred', reveals: ['hundred'], seg: [248.5, 253.9], keep: true,
       stem: 'After “Am I doing it?”, what does the bet become?',
       ja: '「Am I doing it?」のあと、賭けはいくらになる？',
       choices: ['150', '200', '2,000'], a: 1,

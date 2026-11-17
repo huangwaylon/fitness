@@ -15,7 +15,7 @@ export const ronWhiners: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     // A2: was “How does the club change once Ann gets involved?” over 175 s; now what the club is, in 19 s
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['vent'], seg: [8, 27],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['vent'], seg: [8, 28.1],
       stem: 'What do people do at the club?',
       ja: 'このクラブでは何をする？',
       choices: ['Complain about work', 'Plan the office parties', 'Learn about wine'], a: 0,
@@ -27,7 +27,7 @@ export const ronWhiners: Clip = {
       trap: 'Wine and Cheese Club という名前から、ワインを学ぶ会と思いやすい。',
       use: 'We meet once a month.（月に一度集まります）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'leslie', seg: [11, 18.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'leslie', seg: [10.9, 20.3],
       stem: 'Why did Ann come into the room in the first place?',
       ja: 'アンはそもそも何をしに来た？',
       choices: ['She was looking for Leslie', 'She wanted to join the club', 'She came to report the drinking'], a: 0,
@@ -50,7 +50,7 @@ export const ronWhiners: Clip = {
       trap: 'curious を文字通り「知りたい」と取ると素直な質問に見える。中身の言葉が答え。',
       use: 'I’m curious why the line is so long.（なんでこんなに並んでるんだろう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'vent', seg: [19.4, 24.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'vent', seg: [19.4, 26.4],
       stem: 'What does “vent” mean here?',
       ja: '「vent」は、ここではどういう意味？',
       choices: ['Talk about what annoys you', 'Complain to get action', 'Take a short break'], a: 0,
@@ -73,7 +73,7 @@ export const ronWhiners: Clip = {
       trap: '「規則」と聞くと真面目に聞く話に思えるが、規則の抜け道の話。',
       use: 'Technically, that’s not against the rules.（厳密には規則違反じゃない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'kyle', seg: [42, 47.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'kyle', seg: [42, 48.2], keep: true,
       stem: 'How often has Kyle taken the parking spot?',
       ja: 'カイルはその駐車場所に何回とめた？',
       choices: ['3 times this month', '4 times this month', '4 times this week'], a: 1,
@@ -116,7 +116,7 @@ export const ronWhiners: Clip = {
       trap: 'never だけ聞くと「全く空かない」と逆になる。小さい not を聞き落とさない。',
       use: 'He’s never not on his phone.（彼はいつもスマホを見てる）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'cheese', seg: [75.8, 79],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'cheese', seg: [75.1, 80.2],
       stem: 'Who offers Ann some cheese?',
       ja: 'アンにチーズを勧めたのはだれ？',
       choices: ['Larry', 'Ron', 'Donna'], a: 0,
@@ -138,7 +138,7 @@ export const ronWhiners: Clip = {
       trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱い。could は「クッ」。次の either も否定の印。',
       use: 'I can’t have caffeine after six.（6時以降カフェインはだめなんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.3, 94.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.3, 96.7],
       stem: 'What does Ann want instead of the dots?',
       ja: 'アンは点の代わりに何がほしい？',
       choices: ['Cinnamon buns', 'Some jelly beans', 'Pork rinds'], a: 0,
@@ -149,7 +149,7 @@ export const ronWhiners: Clip = {
       trap: '少し前にほかの食べ物も並べている。instead of のあとが答え。',
       use: 'I’d like tea instead of coffee, please.（コーヒーの代わりに紅茶をお願いします）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120.9],
       stem: 'In the emergency meeting, what does Ann want from the others?',
       ja: '緊急の集まりで、アンはみんなに何をしてほしい？',
       choices: ['Just to listen to her', 'To give her advice', 'To leave the room'], a: 0,
@@ -160,7 +160,7 @@ export const ronWhiners: Clip = {
       trap: '悩みを話す＝相談と思いやすいが、I need to vent（吐き出したい）と言っている。',
       use: 'Please just hear me out.（とにかく最後まで聞いて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'lotof', seg: [111.5, 115],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'lotof', seg: [111.2, 116.2],
       stem: 'Type what Ann says: “I have ___.” (4 words)', answer: 'a lot of complaints',
       ja: '「I have ___.」の空所を書こう（4語）',
       cue: '「Ron」のすぐあと', line: 'I have *a lot of complaints*.',
@@ -193,7 +193,7 @@ export const ronWhiners: Clip = {
       use: 'The party got a little out of hand.（パーティーが少し度を越した）' },
 
     // A2: was an attitude on how Ann takes the news; now the set phrase's meaning
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'see', seg: [140.5, 147.2],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'see', seg: [140.5, 149.6],
       stem: 'What does Ann mean by “I see how it is”?',
       ja: 'アンの「I see how it is」はどういう意味？',
       choices: ['You don’t want me here', 'I understand the rules now', 'I can see it clearly'], a: 0,
@@ -204,7 +204,7 @@ export const ronWhiners: Clip = {
       trap: 'I see を「分かりました」と思うと納得に聞こえる。how it is まで付くと不満。',
       use: 'Oh, I see how it is.（ふーん、そういうことね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', seg: [147.8, 153],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', seg: [147.8, 154.6],
       stem: 'One says “I feel bad.” How does the other feel?',
       ja: '一人は「悪いことしたな」。もう一人はどんな気持ち？',
       choices: ['Not sorry at all', 'A little sorry for Ann', 'Very sorry too'], a: 0,
@@ -239,7 +239,7 @@ export const ronWhiners: Clip = {
       trap: '夫への不満なら「聞いてくれない」が定番だが、ここは逆。',
       use: 'He’s so sweet that I can’t complain.（優しすぎて文句も言えない）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'cool', seg: [166.1, 169.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'cool', seg: [165.1, 174.7],
       stem: 'Fill the gap: “I thought you guys ___ cool with me complaining”',
       ja: '「I thought you guys ___ cool with me complaining」の空所は？',
       choices: ['would be', 'wouldn’t be', 'could be'], a: 0,
@@ -250,7 +250,7 @@ export const ronWhiners: Clip = {
       trap: 'wouldn’t なら「ン」が残る。could は最初に「ク」の音がある。',
       use: 'I thought you’d be okay with it.（君なら平気だと思ってた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [171.6, 174.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [166.4, 174.3],
       stem: 'What does “you know what?” mean here?',
       ja: 'ここでの「you know what?」はどういう意味？',
       choices: ['Here’s what I really think', 'Do you know the answer?', 'Are you even listening to me?'], a: 0,

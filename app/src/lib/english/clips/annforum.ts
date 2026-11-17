@@ -49,7 +49,7 @@ export const leslieAnnForum: Clip = {
       trap: 'Thank you から「いい意見」と思いやすい。すぐの Anyone else? が終わりの合図。',
       use: 'Thanks so much. Anyone else?（ありがとう。ほかにどなたか？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'nurse', seg: [55.2, 63.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'nurse', seg: [53.1, 64.6],
       stem: 'What is Ann’s job?',
       ja: 'アンの仕事は？',
       choices: ['A nurse', 'A teacher', 'A musician'], a: 0,
@@ -73,7 +73,7 @@ export const leslieAnnForum: Clip = {
       trap: 'Excellent（すばらしい）から、いい話だと思いやすい。No は good idea への返事。',
       use: 'No, it’s more of a complaint.（いえ、どちらかというと苦情です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [89, 92.5],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [88.6, 93.8],
       stem: 'How long has the pit been there?',
       ja: '穴はどのくらいそこにある？',
       choices: ['2 months', '6 months', '12 months', '20 months'], a: 2, keep: true,
@@ -85,7 +85,7 @@ export const leslieAnnForum: Clip = {
       trap: 'six は「スィ」で始まり、two は「トゥー」だけ。twelve は「ルヴ」、twenty は「ティ」で終わる。',
       use: 'It’s been like this for almost a year.（もう1年近くこのままです）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'support', seg: [93.6, 99.3],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'support', seg: [92.6, 101.8],
       stem: 'Ann says of her boyfriend, “*I support him*.” Meaning?',
       ja: '「I support him」とアンは言う。どういう意味？',
       choices: ['She pays his bills', 'She goes to his shows', 'She looks after his legs'], a: 0,
@@ -97,7 +97,7 @@ export const leslieAnnForum: Clip = {
       trap: 'サポートを「応援」と思いやすい。人が相手の support は、お金の話のことが多い。',
       use: 'I’m supporting myself now.（今は自分で生活してるよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'anyway', reveals: ['support'], seg: [93.6, 101.8],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'anyway', reveals: ['support'], seg: [93.3, 103.4],
       stem: 'Why does Ann say “But anyway” here?',
       ja: 'アンは、なぜここで「But anyway」と言う？',
       choices: ['To go back to her story', 'To say sorry for that', 'To explain why he fell'], a: 0,
@@ -120,7 +120,7 @@ export const leslieAnnForum: Clip = {
       trap: 'けがの話のあとなので介護の確認に聞こえる。pretty serious は二人の仲を聞く言い方。',
       use: 'So, is it serious with him?（で、彼とは真剣なの？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'goingon', seg: [114.6, 121.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'goingon', seg: [112.8, 121.9],
       stem: 'What does the co-host say about the boyfriend’s life?',
       ja: '彼氏の生活について、もう一人の司会は何と言う？',
       choices: ['It wasn’t going well before', 'He had few plans before', 'He had little money before'], a: 0,
@@ -132,7 +132,7 @@ export const leslieAnnForum: Clip = {
       trap: 'going on を「予定」と思うと忙しさの話になる。for him が付くと、いい点の話。',
       use: 'She has a lot going for her.（彼女はいいところがたくさんある）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [128.3, 133],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [127.9, 133.4],
       stem: 'How does Ann react to the co-host?',
       ja: 'アンはもう一人の司会にどう反応する？',
       choices: ['Shocked he’s flirting here', 'Happy, but acting cool', 'Not sure what he means'], a: 0,
@@ -144,7 +144,7 @@ export const leslieAnnForum: Clip = {
       trap: '口説かれるのは喜びとも取れるが、actually と right now はあきれた驚き。',
       use: 'Are you serious right now?（今それ本気で言ってる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'married', seg: [131.2, 135.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'married', seg: [131.2, 136.5],
       stem: 'What does the co-host say about himself?',
       ja: 'もう一人の司会は、自分について何と言う？',
       choices: ['He is already married', 'He is getting married', 'He is seeing someone'], a: 0,
@@ -167,7 +167,7 @@ export const leslieAnnForum: Clip = {
       trap: '否定の言葉だけ追うと話が見えない。否定のあとに何を足すかで本音が分かる。',
       use: 'Not that I’m complaining, but…（文句じゃないけど…）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['owned'], seg: [148.4, 165],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['owned'], seg: [148.4, 166.1],
       stem: 'What does Ann want the city to do?',
       ja: 'アンは市に何をしてほしい？',
       choices: ['Fix a dangerous hole', 'Pay for his broken legs', 'Go after the builder'], a: 0,
@@ -190,7 +190,7 @@ export const leslieAnnForum: Clip = {
       trap: 'I’d love to は本当の承諾にも使う。すぐ本題に戻るなら、受け流しの合図。',
       use: 'I’d love to, but let’s focus.（ぜひ、でも今は本題を）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fixed', seg: [154.1, 158.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fixed', seg: [152.9, 160],
       stem: 'Type what Ann says: “I’ve been trying to ___ for months.” (4 words)', answer: 'get this thing fixed',
       ja: 'アンの言葉を書こう：「I’ve been trying to ___ for months.」（4語）',
       cue: '「bottom line is」のあと。',
@@ -200,7 +200,7 @@ export const leslieAnnForum: Clip = {
       trap: 'get の t と this がつながり「ゲディス」に近い。fixed の ed も弱く短い。',
       use: 'I need to get my phone fixed.（スマホを直してもらわないと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'owned', seg: [158.3, 164.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'owned', seg: [158.2, 165.4],
       stem: 'Why should the city fix the pit, says Ann?',
       ja: 'アンによると、なぜ市が穴を直すべき？',
       choices: ['The land is the government’s', 'The builder works for the city', 'The city allowed the condos'], a: 0,
@@ -212,7 +212,7 @@ export const leslieAnnForum: Clip = {
       trap: 'government だけ拾うと「市の業者」に聞こえる。owned まで聞くと土地の持ち主の話。',
       use: 'Is this place privately owned?（ここは私有地ですか）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', seg: [166.1, 201],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', seg: [166.1, 201.4],
       stem: 'What does Leslie promise to do?',
       ja: 'レスリーは何をすると約束する？',
       choices: ['Fill the pit, then add a park', 'Visit the pit, then report back', 'Put a fence around the pit'], a: 0,
@@ -236,7 +236,7 @@ export const leslieAnnForum: Clip = {
       trap: '子どもの言葉なので冗談に聞こえやすい。tomorrow と予定まで言えば本気。',
       use: 'I promise. Pinky promise.（約束する。指切りね）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', reveals: ['plan'], seg: [194.1, 200.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', reveals: ['plan'], seg: [192.2, 201.4],
       stem: 'Fill the gap: “when that’s done, ___ put a park on the land.”',
       ja: '空いている所に入る語は？「when that’s done, ___ put a park on the land.」',
       choices: ['we’re gonna', 'we wanna', 'we gotta'], a: 0,
@@ -283,7 +283,7 @@ export const leslieAnnForum: Clip = {
       trap: 'ダムを「大変さ」や「市の事業」と取りやすい。my と前の話の枠で読む。',
       use: 'This could be my big break.（これが私の大きなチャンスかも）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'scratch', reveals: ['plan'], seg: [219.5, 224.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'scratch', reveals: ['plan'], seg: [219.5, 225.7],
       stem: 'Leslie will build a park “*from scratch*.” Meaning?',
       ja: '公園を「from scratch」で作る。どういう意味？',
       choices: ['From nothing at all', 'With no help at all', 'With no money at all'], a: 0,

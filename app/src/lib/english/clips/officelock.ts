@@ -15,7 +15,7 @@ export const officeLock: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'deskno', seg: [0, 3.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'deskno', seg: [0, 5],
       stem: 'Why is the first phone number no use?', ja: '最初の電話番号は、なぜ役に立たない？',
       choices: ['It only rings here', 'It is an old number', 'Nobody ever answers it'], a: 0,
       choicesJa: ['ここで鳴るだけ', '古い番号', '誰も出たことがない'],
@@ -26,7 +26,7 @@ export const officeLock: Clip = {
       trap: '役に立たない番号は「古い番号」と思いやすい。最後の here（ここ）を聞く。',
       use: 'What’s your number here?（ここの電話番号は何番？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'worth', seg: [8.4, 15.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'worth', seg: [8.4, 18.2],
       stem: 'How does Toby feel about having the number?', ja: '番号を持っていたことを、トビーはどう思う？',
       choices: ['Glad it was worth it', 'Sorry it took so long', 'Shy about having it'], a: 0,
       choicesJa: ['入れておいてよかった', '時間がかかってすまない', '持っていて恥ずかしい'],
@@ -59,7 +59,7 @@ export const officeLock: Clip = {
       trap: '名前やチップの話が目立つが、それは途中の話。He’s going to let us all out を聞く。',
       use: 'Could you come let us out?（来て開けてもらえますか）' },
 
-    { id: 'c2', skill: 'dict', level: 'C2', point: 'noname', seg: [17.4, 19.5],
+    { id: 'c2', skill: 'dict', level: 'C2', point: 'noname', seg: [15.1, 20.1],
       stem: 'Type the question: “___ get his name?” (3 words)', ja: '書こう：“___ get his name?”（3語）',
       answer: 'did you not',
       cue: '「security guard home」のすぐあと',
@@ -114,7 +114,7 @@ export const officeLock: Clip = {
       trap: '部屋でも Hank という声は出ていたが、当たりとは決まらなかった。電話の直後に呼んでいる。',
       use: 'And you are…?（失礼ですが、お名前は…？）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lifesaver', seg: [47.5, 52.35],
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lifesaver', seg: [46.5, 52.8],
       stem: 'What does “You are a lifesaver” mean?', ja: '“You are a lifesaver” はどういう意味？',
       choices: ['You’re really helping us', 'You saved our lives', 'You always save us'], a: 0,
       choicesJa: ['本当に助かる', '命を救ってくれた', 'いつも助けてくれる'],
@@ -125,7 +125,7 @@ export const officeLock: Clip = {
       trap: 'life を「命」と取ると、大げさな話だと思いやすい。日常の「助かった！」。',
       use: 'Thanks for the ride. You’re a lifesaver.（送ってくれてありがとう、助かった）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [52, 58.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [52, 58.7], keep: true,
       stem: 'How long did the guard say it would take him?', ja: '警備員は、どのくらいかかると言った？',
       choices: ['About half an hour', 'Just under an hour', 'A little over an hour', 'Just under two hours'], a: 1,
       choicesJa: ['30分くらい', '1時間弱', '1時間ちょっと', '2時間弱'],
@@ -136,7 +136,7 @@ export const officeLock: Clip = {
       trap: 'over なら「オウヴァ」、half なら「ハーフ」。「アンダー」のあとが an hour で、two はない。',
       use: 'It’s just under an hour by train.（電車で1時間弱です）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'should', reveals: ['hour'], seg: [52, 58.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'should', reveals: ['hour'], seg: [52, 58.7],
       stem: 'Fill the gap: “He said it ___ just under an hour.”', ja: '空所に入るのは？ “He said it ___ just under an hour.”',
       choices: ['should be', 'would be', 'could be'], a: 0,
       choicesJa: ['〜のはず', '〜だろう', '〜かもしれない'],
@@ -147,7 +147,7 @@ export const officeLock: Clip = {
       trap: 'would は「ウ」、could は「ク」で始まる。「シュ」の音なら should。',
       use: 'It should be ready by noon.（お昼までにはできるはず）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'tip', seg: [59, 63.2], then: [63.2, 70.4],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'tip', seg: [58.2, 63.2], then: [63.2, 70.4],
       stem: 'After the idea of a big Christmas tip, what comes next?', ja: '「クリスマスにチップをはずもう」のあと、何が来る？',
       choices: ['A confession about last year', 'A promise for this year', 'A question about the amount'], a: 0,
       choicesJa: ['去年についての告白', '今年の約束', '金額についての質問'],
@@ -158,7 +158,7 @@ export const officeLock: Clip = {
       trap: '賛成や相談が続くと思いやすい。Sorry, but は言いにくい話の前置き。',
       use: 'Sorry, guys, but I forgot the tickets.（みんなごめん、チケット忘れた）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'never', seg: [63, 75.72],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'never', seg: [62.9, 76.8],
       stem: 'Why do they think Hank won’t come?', ja: 'みんなはなぜ、ハンクは来ないと思う？',
       choices: ['They never tipped him', 'He sounded angry', 'Jim was rude to him'], a: 0,
       choicesJa: ['チップを払っていない', '怒っているようだった', 'ジムが失礼だった'],
@@ -169,7 +169,7 @@ export const officeLock: Clip = {
       trap: '電話のぎこちなさも気になるが、話の流れはお金。直前のチップの話とつなげる。',
       use: 'We never thanked him properly.（ちゃんとお礼してなかった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'collect', seg: [63, 70.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'collect', seg: [63, 71.6],
       stem: 'Whose job was it to collect last year’s tip?', ja: '去年のチップを集める係は誰だった？',
       choices: ['Jim’s', 'Pam’s', 'Toby’s'], a: 0,
       choicesJa: ['ジム', 'パム', 'トビー'],
@@ -180,7 +180,7 @@ export const officeLock: Clip = {
       trap: 'トビーは番号の話で目立った人。名前のあとの was supposed to が、誰の役目かを示す。',
       use: 'I was supposed to call him back.（彼に折り返すはずだったのに）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'neither', seg: [66.2, 68.4],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'neither', seg: [63.3, 70.9],
       stem: 'Type the reply: “Yeah, ___.” (3 words)', ja: '書こう：“Yeah, ___.”（3語）',
       answer: 'neither did i',
       cue: '去年のチップの告白のすぐあと',
@@ -204,7 +204,7 @@ export const officeLock: Clip = {
       trap: '電話の成功をほめたと取りやすい。ほめ言葉は直前の話題と合わせて聞く。',
       use: 'Great job locking us out.（締め出してくれて、どうもね）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'football', seg: [80, 85.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'football', seg: [88.4, 94.5],
       stem: 'What does Pam mean by “I know how to throw a football”?', ja: 'パムの “I know how to throw a football” はどういう意味？',
       choices: ['She doesn’t need a lesson', 'She wants to learn', 'She won’t play at all'], a: 0,
       choicesJa: ['教えてもらわなくていい', '教えてほしい', '遊ぶ気はない'],
@@ -215,7 +215,7 @@ export const officeLock: Clip = {
       trap: 'I know と I don’t know は弱く聞こえやすい。don’t の「ン」がないので「知ってる」。',
       use: 'Thanks, but I know how to get there.（ありがとう、でも行き方は分かるよ）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'socks', seg: [101.0, 106.4],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'socks', seg: [111.5, 117.9],
       stem: 'Why hasn’t Hank left yet, he says?', ja: 'ハンクは、まだ出られない理由を何と言う？',
       choices: ['They keep calling him', 'He can’t find his keys', 'His car won’t start'], a: 0,
       choicesJa: ['何度も電話してくるから', '鍵が見つからないから', '車が動かないから'],
@@ -226,7 +226,7 @@ export const officeLock: Clip = {
       trap: '最後の socks が耳に残ると、靴下が見つからないと思いやすい。Stop calling me が理由。',
       use: 'Please be quiet so I can sleep.（眠れるように静かにして）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'willdo', seg: [104.0, 108.3],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'willdo', seg: [112.7, 120.8],
       stem: 'What does “Will do” mean here?', ja: 'ここでの “Will do” はどういう意味？',
       choices: ['Okay, I will', 'No, I won’t do it', 'Maybe later'], a: 0,
       choicesJa: ['はい、そうする', 'いや、しない', 'たぶんあとで'],
@@ -237,7 +237,7 @@ export const officeLock: Clip = {
       trap: 'do から「何かをする」と思いやすい。頼みへの返事で「了解」。',
       use: 'Call me when you arrive. — Will do.（着いたら電話して。—了解）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'leave', seg: [134, 165.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'leave', seg: [134, 166.1],
       stem: 'How does Toby leave the others?', ja: 'トビーは、どうやってみんなと別れる？',
       choices: ['Announces a move, hops the fence', 'Announces a move, waits for Hank', 'Quits and walks out the gate'], a: 0,
       choicesJa: ['引っ越しを発表し、柵を越える', '引っ越しを発表し、ハンクを待つ', '辞めて門から出る'],
@@ -248,7 +248,7 @@ export const officeLock: Clip = {
       trap: '発表のあと、みんなと一緒に待つと思いやすい。最後の hop the fence を聞く。',
       use: 'I have an announcement to make.（みんなに発表があります）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'longtime', seg: [148.9, 159.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'longtime', seg: [147.4, 159.4],
       stem: 'How long has Toby thought about moving?', ja: 'トビーは引っ越しのことを、どのくらい考えてきた？',
       choices: ['For a long time', 'Only since tonight', 'For about a week'], a: 0,
       choicesJa: ['長いあいだ', '今夜から', '1週間ほど'],
@@ -259,7 +259,7 @@ export const officeLock: Clip = {
       trap: '突然の発表なので、今決めたと思いやすい。for a long time を聞く。',
       use: 'I’ve thought about it for a long time.（ずっと考えてきたことなんだ）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'fence', seg: [159.9, 165.2],
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'fence', seg: [159.9, 166.1],
       stem: 'What does “hop the fence” mean?', ja: '“hop the fence” はどういう意味？',
       choices: ['Climb over the fence', 'Walk around the fence', 'Fix the fence'], a: 0,
       choicesJa: ['柵を乗りこえる', '柵のまわりを歩く', '柵を直す'],

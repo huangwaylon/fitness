@@ -14,7 +14,7 @@ export const firstPrank: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'text', seg: [0.0, 4.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'text', seg: [0, 6.5],
       stem: 'What is the thank-you text for?',
       ja: 'お礼のメッセージは何に対して？',
       choices: ['A prank video', 'A sweet dessert', 'A great idea'], a: 0,
@@ -49,7 +49,7 @@ export const firstPrank: Clip = {
       trap: 'wasn’t の t が消えると was に聞こえ、「見破られた」話になる。n の音を聞く。',
       use: 'I’ll tell you what, it was worth it.（言っとくけど、やってよかった）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'knock', seg: [45.0, 51.3],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'knock', seg: [45, 53.9],
       stem: 'What does Sam think of knock-knock jokes?',
       ja: 'サムはノックノック・ジョークをどう思っている？',
       choices: ['They aren’t real jokes', 'They are a little funny', 'She has never heard one'], a: 0,
@@ -73,7 +73,7 @@ export const firstPrank: Clip = {
       trap: '「もう大人なのに」と言われるので、年のせいと思いやすい。最後の peer pressure が決め手。',
       use: 'Fine, you win. I’ll do it.（分かった、負けた。やるよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'lewbert', seg: [56.95, 64.9],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'lewbert', seg: [57, 66.7],
       stem: 'Why don’t the Lewbert pranks count, says Sam?',
       ja: 'サムによると、ルーバートへのいたずらが入らないのはなぜ？',
       choices: ['Sam thinks them up', 'They’re just for the show', 'Lewbert never laughs'], a: 0,
@@ -85,7 +85,7 @@ export const firstPrank: Clip = {
       trap: 'Yeah で同意に聞こえるが、that 以下で打ち消している。',
       use: 'Who came up with this idea?（このアイデア、だれが考えたの？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'type', seg: [64.9, 68.35],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'type', seg: [63.4, 72.5],
       stem: 'What does “not the *pranky type*” mean?',
       ja: '「not the pranky type」はどういう意味？',
       choices: ['Pranks aren’t her thing', 'She has no time for pranks', 'She doesn’t know any pranks'], a: 0,
@@ -108,7 +108,7 @@ export const firstPrank: Clip = {
       trap: 'right person を「教える人」、間を「怖い」と取りやすい。決まり文句の形がヒント。',
       use: 'It’ll happen when the time is right.（時が来ればそうなるよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'side', seg: [84.55, 88.3],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'side', seg: [84.3, 91.3],
       stem: 'What does “I’m *with Sam* on this one” mean?',
       ja: '「I’m with Sam on this one」はどういう意味？',
       choices: ['I agree with Sam', 'I agree with you both', 'I won’t take sides'], a: 0,
@@ -131,7 +131,7 @@ export const firstPrank: Clip = {
       trap: 'peer pressure は注意の言葉だが、ここは自分たちの勝ちを喜んでいる。',
       use: 'Score one for the early birds.（早起き組の勝ち）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'textmsg', seg: [98.85, 107.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'textmsg', seg: [98.9, 109.7],
       stem: 'Where does Carly want to meet them?',
       ja: 'カーリーはどこで二人と会いたい？',
       choices: ['In their studio after school', 'At school after class', 'In the lobby right after the show'], a: 0,
@@ -143,7 +143,7 @@ export const firstPrank: Clip = {
       trap: 'school が聞こえるので学校と思いやすい。school は時間（放課後）のほう。',
       use: 'Meet me at the station right after work.（仕事のあとすぐ駅で会おう）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'funny', seg: [134.5, 140.7],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'funny', seg: [133.6, 142.8],
       stem: 'How does Carly feel about her prank?',
       ja: 'カーリーは自分のいたずらをどう思っている？',
       choices: ['Proud of it', 'Sorry about it', 'Unsure about it'], a: 0,
@@ -155,7 +155,7 @@ export const firstPrank: Clip = {
       trap: 'Uh で迷っているように聞こえるが、そのあと extremely と強める。',
       use: 'Uh, no. It was amazing.（いやいや、最高だったよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'gotcha', seg: [140.7, 148.2],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'gotcha', seg: [140.4, 152.2],
       stem: 'What does “You *got us*” mean here?',
       ja: 'ここでの「You got us」はどういう意味？',
       choices: ['You fooled us', 'You understand us', 'You found us'], a: 0,
@@ -167,7 +167,7 @@ export const firstPrank: Clip = {
       trap: 'get から「分かる」「見つける」と思いやすい。いたずらのあとの got は「やられた」。',
       use: 'Ha, you got me!（あはは、やられた！）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'without', seg: [147.5, 152.0],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'without', seg: [146.9, 155.4],
       stem: 'What does “I *couldn’t have done it without* help” mean?',
       ja: '「I couldn’t have done it without help」はどういう意味？',
       choices: ['Someone helped me a lot', 'I didn’t want any help', 'I did it all alone'], a: 0,
@@ -179,7 +179,7 @@ export const firstPrank: Clip = {
       trap: 'couldn’t と without で否定が2つあり、逆に取りやすい。「〜なしでは無理」＝助けてもらった。',
       use: 'I couldn’t have done it without you.（あなたなしではできなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', seg: [152.5, 155.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', seg: [151.3, 156.7],
       stem: 'Type what Spencer says: “Man, I forgot ___ pranking is.” (3 words)', answer: 'how much fun',
       ja: '書こう：「Man, I forgot ___ pranking is.」（3語）',
       cue: '「forgot」のすぐあと。',
@@ -189,7 +189,7 @@ export const firstPrank: Clip = {
       trap: 'fun が短く、次の pranking とつながって消えやすい。3語を数える。',
       use: 'I forgot how much fun this is!（これがこんなに楽しいの、忘れてた！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'easy', seg: [156.55, 165.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'easy', seg: [156.6, 165.2],
       stem: 'What does “*Easy there*” mean?',
       ja: '「Easy there」はどういう意味？',
       choices: ['Calm down a little', 'That was easy', 'Be careful, it’s dangerous'], a: 0,
@@ -201,7 +201,7 @@ export const firstPrank: Clip = {
       trap: 'easy から「簡単」と思いやすい。浮かれた人を落ち着かせる言葉。',
       use: 'Easy there, it’s just a game.（落ち着いて、ただのゲームだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cast', seg: [171.9, 177.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cast', seg: [170.8, 179.1], keep: true,
       stem: 'How long does the cast have to stay on?',
       ja: 'ギプスはどのくらいつけていないといけない？',
       choices: ['6 days', '6 weeks', '60 days', '16 weeks'], a: 1,
@@ -213,7 +213,7 @@ export const firstPrank: Clip = {
       trap: 'sixty・sixteen なら six のあとに「ティ」「ティーン」が続く。days なら「デイズ」、weeks は「ウィークス」。',
       use: 'I have to wear it for six weeks.（6週間つけないといけない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'cream', seg: [204.55, 213.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'cream', seg: [204.1, 213.7],
       stem: 'Why did he give the face cream to Lucas?',
       ja: 'なぜ顔のクリームをルーカスにあげた？',
       choices: ['His face is already smooth', 'Lucas asked to try it', 'It seemed too fancy'], a: 0,
@@ -237,7 +237,7 @@ export const firstPrank: Clip = {
       trap: 'その前に dry patches（乾燥した所）の話があるので、肌が乾く話と思いやすい。',
       use: 'Do you have glow-in-the-dark stickers?（暗い所で光るシールある？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'fault', seg: [256.2, 263.95],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'fault', seg: [256.2, 266.2],
       stem: 'Why does Carly say it’s her fault?',
       ja: 'カーリーはなぜ自分のせいだと言う？',
       choices: ['She got him pranking again', 'She pranked him first', 'She kept his secret'], a: 0,
@@ -249,7 +249,7 @@ export const firstPrank: Clip = {
       trap: 'He knew he had a problem から秘密の話と思いやすい。理由は but のあと。',
       use: 'It’s all my fault.（全部私のせいだ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'rock', seg: [263.95, 270.2],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'rock', seg: [263.9, 270.3],
       stem: 'What does “he *hits rock bottom*” mean?',
       ja: '「he hits rock bottom」はどういう意味？',
       choices: ['He reaches his worst point', 'He falls down and gets badly hurt', 'He runs out of ideas'], a: 0,

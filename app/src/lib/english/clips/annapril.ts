@@ -28,7 +28,7 @@ export const annApril: Clip = {
       trap: '「知ってる？」という質問ではない。返事を待たずに次の頼みが来る。',
       use: 'Actually, you know what? Make it two.（やっぱり、2つにして）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reco', reveals: ['secret'], seg: [12.8, 38.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reco', reveals: ['secret'], seg: [12.8, 39.1],
       stem: 'Why does April come to Ann?',
       ja: 'エイプリルはなぜアンのところに来た？',
       choices: ['She needs a letter from Ann', 'She needs a ride to town', 'She needs advice on school'], a: 0,
@@ -40,7 +40,7 @@ export const annApril: Clip = {
       trap: '学校の話が先に出るので相談と思いやすい。So のあとに本題が来る。',
       use: 'Could you write me a reference?（推薦状を書いてもらえますか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [12.8, 24.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [14.5, 26.5],
       stem: 'What secret does April tell Ann?',
       ja: 'エイプリルがアンに話す秘密は？',
       choices: ['She may apply to vet school', 'She has already applied to one', 'She got into vet school'], a: 0,
@@ -52,7 +52,7 @@ export const annApril: Clip = {
       trap: 'school だけ聞くと合格の話に聞こえる。thinking about で段階を確かめる。',
       use: 'I’m thinking about applying for that job.（あの仕事に応募しようか考え中）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B1', point: 'wonder', reveals: ['reco'], seg: [29.0, 38.5],
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'wonder', reveals: ['reco'], seg: [29, 39.8],
       stem: 'Why does April say “I was wondering if…” here?',
       ja: 'エイプリルは、なぜここで「I was wondering if…」と言う？',
       choices: ['To ask for help politely', 'To say no to Ann politely', 'To say thank you to Ann'], a: 0,
@@ -64,7 +64,7 @@ export const annApril: Clip = {
       trap: 'wondering（不思議に思う）から質問に聞こえやすい。if you would 〜 は頼みの形。',
       use: 'I was wondering if you could help me.（手伝ってもらえないかなと思って）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'honey', seg: [39.6, 48.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'honey', seg: [39.8, 48.1],
       stem: 'What does Ann say April often does to her?',
       ja: 'エイプリルはよくアンに何をする、とアンは言う？',
       choices: ['Pours honey in her purse', 'Takes money from her purse', 'Pours salt in her coffee'], a: 0,
@@ -76,7 +76,7 @@ export const annApril: Clip = {
       trap: 'honey と money は最初の音だけの差。お金なら pouring（注ぐ）とは言わない。',
       use: 'Someone spilled coffee in my bag.（だれかがバッグにコーヒーをこぼした）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [41.0, 52.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [40.3, 52.3],
       stem: 'Ann says, “Now *I have the upper hand*.” What does she mean?',
       ja: '「Now I have the upper hand」とはどういう意味？',
       choices: ['Now she is in control', 'Now she has a better job', 'Now she can help April'], a: 0,
@@ -99,7 +99,7 @@ export const annApril: Clip = {
       trap: 'crush には「好きになる」の意味もあるが、ここは後ろに into ～ が続く。',
       use: 'They pressured him into saying yes.（彼らは無理やり彼にイエスと言わせた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [64.9, 69.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [64.9, 72], keep: true,
       stem: 'How long must April spend with Ann?',
       ja: 'エイプリルはどのくらいアンと過ごさなければならない？',
       choices: ['The next weekend', 'The next week', 'The next two weeks'], a: 1,
@@ -111,7 +111,7 @@ export const annApril: Clip = {
       trap: '「ウィーク」で切れれば next week、「ウィーケンド」と「エンド」が付けば weekend、前に「トゥー」があれば two weeks。',
       use: 'I’ll be away for the next week.（これから1週間いません）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'worse', seg: [69.4, 75.9],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'worse', seg: [68.3, 77.7],
       stem: '“Be my friend.” — “That is *so much worse*.” Why is it funny?',
       ja: '「友だちになって」「それはもっとひどい」。なぜおかしい？',
       choices: ['Friends sounds worse than slave', 'Ann really wants a servant', 'Slave sounds worse than friends'], a: 0,
@@ -123,7 +123,7 @@ export const annApril: Clip = {
       trap: '最後の No を断りとだけ思いやすい。worse で何と比べているかを聞く。',
       use: 'That’s even worse!（それはもっとひどい！）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'deepdown', seg: [96.9, 104.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'deepdown', seg: [96, 108],
       stem: 'What does Ann believe about April, “*deep down*”?',
       ja: 'アンは、エイプリルが「deep down」ではどうだと思っている？',
       choices: ['She likes Ann but hides it', 'She will like Ann someday', 'She is grumpy with everyone'], a: 0,
@@ -146,7 +146,7 @@ export const annApril: Clip = {
       trap: 'fishing for（～を引き出す）に音が近い。layers と deep down が、掘る話だと教える。',
       use: 'I’m just digging for the truth.（本当のことを掘り出そうとしてるだけ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'private', seg: [130.15, 136.3],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'private', seg: [128.6, 138.3],
       stem: 'Chris asks Ann, “Do you want to talk *in private*?” Meaning?',
       ja: 'クリスの「Do you want to talk in private?」はどういう意味？',
       choices: ['Talk with just Ann', 'Talk with April too', 'Talk later at home'], a: 0,
@@ -158,7 +158,7 @@ export const annApril: Clip = {
       trap: 'private（プライベート）から「家で」と思いやすい。in private は「二人だけで」。',
       use: 'Can we talk in private?（二人で話せますか）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [149.4, 160.75],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [148.5, 154.8],
       stem: 'Why does Ann start to sing?',
       ja: 'アンはなぜ歌い出す？',
       choices: ['To avoid talking about Chris', 'To cheer April up a little', 'To pass some time together'], a: 0,
@@ -170,7 +170,7 @@ export const annApril: Clip = {
       trap: 'パジャマの話のあとなので「楽しむため」と思いやすい。何を聞かれ、何で返したかを聞く。',
       use: 'Nice try changing the subject.（話をそらそうとしてもだめだよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'letter', reveals: ['reco'], seg: [161.0, 170.4],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'letter', reveals: ['reco'], seg: [161, 170.6],
       stem: '“I don’t care about the letter.” What does it show?',
       ja: '「推薦状なんてどうでもいい」は何を表している？',
       choices: ['She cares more about Ann', 'She doesn’t want vet school', 'She’s tired of Ann'], a: 0,
@@ -182,7 +182,7 @@ export const annApril: Clip = {
       trap: '「どうでもいい」を学校をやめる話と思いやすい。比べているのは推薦状とアンの話。',
       use: 'Forget the money. Just tell me what happened.（お金はいいから、何があったか話して）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'mind', seg: [170.2, 176.62],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'mind', seg: [169.1, 181.1],
       stem: 'What is Ann worried about with Chris?',
       ja: 'アンはクリスの何が心配？',
       choices: ['He’s slow to decide', 'He already said no', 'He wants a baby sooner'], a: 0,
@@ -194,7 +194,7 @@ export const annApril: Clip = {
       trap: '返事が遅い＝断り、と思いやすい。ここはまだ決めていないだけ。',
       use: 'Take your time making up your mind.（ゆっくり決めていいよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'freaking', seg: [173.3, 176.62],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'freaking', seg: [173.9, 181.9],
       stem: 'Type what Ann says: “and it’s really ___.” (3 words)', answer: 'freaking me out',
       ja: 'アンの言葉を書こう：「and it’s really ___.」（3語）',
       cue: '「and it’s really」のあと。',
@@ -204,7 +204,7 @@ export const annApril: Clip = {
       trap: '「フリーキンミアウ」と3語がつながる。最後の out の t はほぼ消えるが、落とさない。',
       use: 'Stop it, you’re freaking me out.（やめて、怖くなってきた）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'song', seg: [191.8, 195.9],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'song', seg: [189.1, 198.9],
       stem: 'How does April feel about the song?',
       ja: 'エイプリルはその歌をどう思っている？',
       choices: ['She really loves it', 'She finds it too common', 'She isn’t interested'], a: 0,
@@ -227,7 +227,7 @@ export const annApril: Clip = {
       trap: 'いつもの皮肉と取りやすいが、さっき amazing と言っている。「なかったことに」は、恥ずかしい本音を隠す決まり文句。',
       use: 'That was fun. Tell no one.（楽しかった。誰にも言うなよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hook', reveals: ['reco'], seg: [224.0, 231.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hook', reveals: ['reco'], seg: [222.9, 230.2],
       stem: 'Ann gives the letter: “So *you’re off the hook*.” Meaning?',
       ja: '推薦状を渡すアンの「So you’re off the hook」はどういう意味？',
       choices: ['April is free from the deal', 'April owes Ann money now', 'April is stuck with Ann forever'], a: 0,
@@ -262,7 +262,7 @@ export const annApril: Clip = {
       trap: '「分からない」を傷ついた言葉と取りやすいが、but のあとで迷いごと受け入れている。前の「好きなはず」とも違う。',
       use: 'Say what you want. You’re stuck with me.（何と言っても、私からは離れられないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'canttell', seg: [231.3, 234.9],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'canttell', seg: [229.4, 234.4],
       stem: 'Fill the gap: “I ___ tell if you actually hate me.”',
       ja: '空いている所に入る語は？「I ___ tell if you actually hate me.」',
       choices: ['can’t', 'can', 'couldn’t'], a: 0,
@@ -274,7 +274,7 @@ export const annApril: Clip = {
       trap: '「キャーン」と長く強ければ can’t、弱く短い「クン」なら can、「クドゥン」と「ドゥ」が入れば couldn’t。',
       use: 'I can’t tell if he’s joking.（彼が冗談を言ってるのか分からない）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sothere', reveals: ['secret'], seg: [237.0, 245.1],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'sothere', reveals: ['secret'], seg: [237, 248],
       stem: 'Why does Ann say “*So there*” here?',
       ja: 'アンは、なぜここで「So there」と言う？',
       choices: ['To end her point firmly', 'To hand over the letter', 'To ask April for a reply'], a: 0,
@@ -286,7 +286,7 @@ export const annApril: Clip = {
       trap: 'there を「はい、どうぞ」と思いやすい。推薦状はもう渡している。',
       use: 'I’m right, so there.（私が正しい。以上）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'gift', seg: [245.0, 253.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gift', seg: [243.8, 255.2],
       stem: 'What gift does April give Ann?',
       ja: 'エイプリルはアンに何を贈る？',
       choices: ['A book of baby names', 'A song she wrote for Ann', 'A letter for school'], a: 0,

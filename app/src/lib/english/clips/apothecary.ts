@@ -14,7 +14,7 @@ export const apothecaryTable: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'anysec', seg: [10.5, 15.5],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'anysec', seg: [10.5, 17.7],
       stem: 'What does “any second” mean here?',
       ja: 'ここで「any second」はどういう意味？',
       choices: ['Very soon, at any moment', 'In exactly one second', 'Whenever she likes'], a: 0,
@@ -49,7 +49,7 @@ export const apothecaryTable: Clip = {
       trap: '値段や材料の話と取りやすいが、どちらも出てこない。同じ語の使い方を比べる。',
       use: 'Define “real”.（「本物」ってどういう意味で？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'lieabout', seg: [21.3, 29.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'lieabout', seg: [21.3, 29.9],
       stem: 'What did Rachel tell Phoebe about their table?',
       ja: 'レイチェルは自分たちのテーブルについてフィービーに何と言った？',
       choices: ['It was an original', 'It matched Ross’s', 'It copied an antique'], a: 0,
@@ -61,7 +61,7 @@ export const apothecaryTable: Clip = {
       trap: '直前の same one に引っぱられやすい。told her that のあとが話した中身。',
       use: 'Is this an original or a copy?（これは本物？複製？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'shock', reveals: ['believe'], seg: [29.3, 35.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'shock', reveals: ['believe'], seg: [28.1, 35.6],
       stem: 'How does Ross feel when he hears Phoebe hates the store?',
       ja: 'フィービーがその店を嫌いと聞いて、ロスはどう感じる？',
       choices: ['He is shocked', 'He is pleased', 'He finds it funny'], a: 0,
@@ -73,7 +73,7 @@ export const apothecaryTable: Clip = {
       trap: '質問の形を軽いからかいと思いやすい。あとで「まだ信じられない」とも言う。',
       use: 'You quit your job? You quit?（仕事を辞めた？本当に？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'reasons', seg: [35.8, 41.3],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'reasons', seg: [35.8, 42.5],
       stem: 'What is one thing Phoebe says about the store?',
       ja: 'フィービーがその店について言うことの一つは？',
       choices: ['Everyone has the same things', 'Everything costs too much', 'The furniture breaks fast'], a: 0,
@@ -85,7 +85,7 @@ export const apothecaryTable: Clip = {
       trap: 'mass-produced（量産）を「すぐこわれる」と思いやすい。不満は「みんな同じ」。',
       use: 'We wound up eating at the hotel.（結局ホテルで食べることになった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cover', seg: [43.5, 51.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cover', seg: [43.5, 52.1],
       stem: 'What does Rachel ask to do with the table?',
       ja: 'レイチェルはテーブルをどうしようと頼む？',
       choices: ['Cover it up', 'Take it back', 'Move it outside'], a: 0,
@@ -97,7 +97,7 @@ export const apothecaryTable: Clip = {
       trap: 'ロスの hide it が続くので混ざりやすい。頼んでいるのは cover this up。',
       use: 'Can you cover this with a towel?（これタオルでおおってくれる？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'believe', seg: [62.0, 65.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'believe', seg: [61, 67.9],
       stem: 'Type what Ross says: “I still ___ she hates Pottery Barn.” (2 words)', answer: 'can\'t believe',
       ja: 'ロスの言葉を書き取る：「I still ___ she hates Pottery Barn.」（2語）',
       cue: '「I still」のすぐあと。',
@@ -107,7 +107,7 @@ export const apothecaryTable: Clip = {
       trap: 'can と書きやすいが、still と合わない。強く長い「キャーン」は否定。',
       use: 'I can’t believe it’s already Friday.（もう金曜日だなんて）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'getover', reveals: ['believe', 'shock'], seg: [62.0, 67.5],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'getover', reveals: ['believe', 'shock'], seg: [61, 67.9],
       stem: 'Who still can’t accept Phoebe’s view of the store?',
       ja: 'フィービーの店ぎらいを、まだ受け入れられないのは誰？',
       choices: ['Ross', 'Rachel', 'Both'], a: 0,
@@ -119,7 +119,7 @@ export const apothecaryTable: Clip = {
       trap: 'うそをついたレイチェルの方が困っていそう。返事の中の名前で決まる。',
       use: 'Come on, get over it.（もう、気にするなって）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notlike', reveals: ['getover'], seg: [64.6, 70],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notlike', reveals: ['getover'], seg: [62.3, 70.1],
       stem: 'What does Rachel mean by “It’s not like she hates you”?',
       ja: 'レイチェルの「It’s not like she hates you」はどういう意味？',
       choices: ['It’s not about you', 'She may hate you next', 'She said she hates you'], a: 0,
@@ -142,7 +142,7 @@ export const apothecaryTable: Clip = {
       trap: '双子の話をかばう理由と取りやすい。weird をくり返すのは、すねている合図。',
       use: 'You’re just being petty now.（それ、ただのひがみだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'onekind', seg: [79.2, 83.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'onekind', seg: [79.2, 84.4],
       stem: 'What does “one of a kind” mean?',
       ja: '「one of a kind」はどういう意味？',
       choices: ['The only one like it', 'Kind to other people', 'Old and very famous'], a: 0,
@@ -176,6 +176,18 @@ export const apothecaryTable: Clip = {
       trap: 'だまされている Phoebe に目が行きやすいが、彼女は損をしていない。損をして黙るのは誰か。',
       use: 'Me? Cheap? I paid full price!（僕がけち？定価で買ったのに）' },
 
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'flea', reveals: ['wanna'], seg: [97.8, 105.2],
+      stem: 'Why does someone answer “a flea market” for Ross?',
+      ja: 'なぜロスの代わりに「a flea market」と答える？',
+      choices: ['To stop him naming the store', 'Ross forgot where he got it', 'To make fun of Ross'], a: 0,
+      choicesJa: ['店の名前を言わせないため', 'ロスが買った場所を忘れたから', 'ロスをからかうため'],
+      cue: '答えたのは誰か。',
+      line: 'You wanna know where I got it? — Sure. — *They got it at a flea market*.',
+      said: 'ロスが「どこで買ったと思う？」と聞くと、横から「フリマで」と答えが入る。',
+      mean: 'flea market ＝ フリーマーケット。ロスが店の名前を言う前に、口をふさいだ。',
+      trap: '代わりに答えるのは助けにも見えるが、ここは口止め。ロスは言いたがっていた。',
+      use: 'Oh, he got it on sale.（あ、それセールで買ったんだって）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', seg: [98, 101.5],
       stem: 'Fill the gap: “You ___ know where I got it?”',
       ja: '空所を埋める：「You ___ know where I got it?」',
@@ -188,19 +200,7 @@ export const apothecaryTable: Clip = {
       trap: 'wanted to なら「ワンティド」と長い。won’t なら「ウォウント」。ここは短い「ワナ」。',
       use: 'Wanna grab a coffee?（コーヒーでもどう？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'flea', reveals: ['wanna'], seg: [98, 104],
-      stem: 'Why does someone answer “a flea market” for Ross?',
-      ja: 'なぜロスの代わりに「a flea market」と答える？',
-      choices: ['To stop him naming the store', 'Ross forgot where he got it', 'To make fun of Ross'], a: 0,
-      choicesJa: ['店の名前を言わせないため', 'ロスが買った場所を忘れたから', 'ロスをからかうため'],
-      cue: '答えたのは誰か。',
-      line: 'You wanna know where I got it? — Sure. — *They got it at a flea market*.',
-      said: 'ロスが「どこで買ったと思う？」と聞くと、横から「フリマで」と答えが入る。',
-      mean: 'flea market ＝ フリーマーケット。ロスが店の名前を言う前に、口をふさいだ。',
-      trap: '代わりに答えるのは助けにも見えるが、ここは口止め。ロスは言いたがっていた。',
-      use: 'Oh, he got it on sale.（あ、それセールで買ったんだって）' },
-
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'purse', seg: [104.8, 111.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'purse', seg: [104.8, 112.6],
       stem: 'What does “loosen the purse strings” mean?',
       ja: '「loosen the purse strings」はどういう意味？',
       choices: ['Spend more money', 'Relax a little more', 'Shop at more places'], a: 0,
@@ -212,7 +212,7 @@ export const apothecaryTable: Clip = {
       trap: 'loosen（ゆるめる）から「気楽に」と思いやすい。purse（財布）が付いたらお金の話。',
       use: 'Loosen the purse strings — it’s your birthday!（誕生日なんだから奮発しよう）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'newold', reveals: ['flea'], seg: [120.4, 125.6],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'newold', reveals: ['flea'], seg: [119.6, 127.6],
       stem: 'Why does Ross change “new” to “old”?',
       ja: 'ロスはなぜ「new」を「old」に言い直す？',
       choices: ['To keep the flea market story', 'He has had it for years', 'He wants a new sheet'], a: 0,
@@ -224,7 +224,7 @@ export const apothecaryTable: Clip = {
       trap: 'ただの言いまちがいと思いやすい。直前の flea market の話とつなげる。',
       use: 'My new — I mean, my old phone.（新しい…じゃなくて古い携帯）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['ripped', 'cents'], seg: [124, 167.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['ripped', 'cents'], seg: [124, 168],
       stem: 'How does Rachel save her lie?',
       ja: 'レイチェルはどうやってうそを守る？',
       choices: ['She says the store copied theirs', 'She tells Phoebe the truth', 'She blames Ross for the lie'], a: 0,
@@ -236,7 +236,7 @@ export const apothecaryTable: Clip = {
       trap: 'ふつうはテーブルが見つかればうそがばれる。ここでは店のせいにして助かる。',
       use: 'Well, that worked out better than expected.（思ったよりうまくいったね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'ripped', seg: [141.6, 146.8],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'ripped', seg: [140.4, 147.9],
       stem: 'What does “ripped off the design” mean?',
       ja: '「ripped off the design」はどういう意味？',
       choices: ['Copied the design', 'Charged too much for it', 'Changed the design'], a: 0,
@@ -270,7 +270,7 @@ export const apothecaryTable: Clip = {
       trap: '皮肉にも聞こえるが、言う側はフリマ品だと信じている。誰が何を知っているかを追う。',
       use: 'Relax, I’ll buy you a new one.（大丈夫、新しいの買うから）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cents', seg: [164.4, 167.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cents', seg: [162.3, 168.7], keep: true,
       stem: 'How much is Ross offered for his sheet?',
       ja: 'ロスはシーツの代わりにいくらもらえる？',
       choices: ['18 cents', '80 cents', '$8', '$80'], a: 1,

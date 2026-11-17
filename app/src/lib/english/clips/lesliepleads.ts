@@ -13,7 +13,7 @@ export const lesliePleads: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'wouldyou', seg: [9.2, 12.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'wouldyou', seg: [8, 13],
       stem: 'Type the gap: “___ to make a statement…?” (3 words)', answer: 'would you like',
       ja: '質問「___ to make a statement…?」の空所を書こう（3語）',
       cue: '質問の最初',
@@ -35,7 +35,7 @@ export const lesliePleads: Clip = {
       trap: '最初の rules or laws（規則や法律）と混ざりやすい。認めたのは Chris’s rule だけ。',
       use: 'I won’t fight the parking ticket.（駐車違反には異議を言いません）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'notfight', seg: [15.5, 20.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'notfight', seg: [12.8, 23.3],
       stem: 'Fill the gap: “and I ___ fighting the charges…”',
       ja: '「and I ___ fighting the charges…」の空所は？',
       choices: ['will not be', 'will now be', 'will still be'], a: 0,
@@ -58,7 +58,7 @@ export const lesliePleads: Clip = {
       trap: '「罰を受け入れた」だけでは「自分が悪い」に聞こえる。本音は Although の節。',
       use: 'It’s silly, but rules are rules.（ばかげてるけど、規則は規則）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'trip', seg: [48.4, 55.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'trip', seg: [48.4, 55.2],
       stem: 'Why did Leslie and Ben drive to Indianapolis?',
       ja: 'レスリーとベンはなぜインディアナポリスへ車で行った？',
       choices: ['To try to host a tournament', 'To watch a Little League game', 'To coach a team'], a: 0,
@@ -70,7 +70,7 @@ export const lesliePleads: Clip = {
       trap: 'Little League だけ聞くと、試合を見に行った話に思いやすい。直前の bid for を聞く。',
       use: 'Our city is bidding for the Olympics.（うちの市が五輪の誘致に名乗りを上げている）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nervous', seg: [54.9, 65.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nervous', seg: [54.9, 66.6],
       stem: 'How does Leslie seem when she answers?',
       ja: '答えるとき、レスリーはどんな様子？',
       choices: ['Nervous and talking too much', 'Calm and answering briefly', 'Proud and showing off'], a: 0,
@@ -82,7 +82,7 @@ export const lesliePleads: Clip = {
       trap: '直前の「落ち着いてる（zen）」に引かれやすい。あとの I’m nervous で確かめる。',
       use: 'Sorry, I talk a lot when I’m nervous.（ごめん、緊張するとしゃべりすぎるの）' },
 
-    { id: 'h1', skill: 'pragma', level: 'B2', point: 'nicknames', seg: [65.0, 77.2],
+    { id: 'h1', skill: 'pragma', level: 'B2', point: 'nicknames', seg: [69.7, 77.1],
       stem: 'Why does Leslie say “Oh, you mean professionally?”',
       ja: 'レスリーはなぜ「Oh, you mean professionally?」と言う？',
       choices: ['To check the question', 'To ask for more time', 'To say sorry for her answer'], a: 0,
@@ -94,7 +94,7 @@ export const lesliePleads: Clip = {
       trap: 'Oh から、謝っていると思いやすい。you mean で、相手の言いたいことを確かめている。',
       use: 'Oh, you mean at work? Then no.（あ、仕事でってこと？ならないです）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'coverup', seg: [77.0, 84.9],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'coverup', seg: [75.3, 85.2],
       stem: 'What does the last question ask whether Leslie did?',
       ja: '最後の質問は、レスリーが何をしたかどうかを聞く？',
       choices: ['Broke a law to hide it', 'Broke a law to start it', 'Lied to the board about it'], a: 0,
@@ -106,7 +106,7 @@ export const lesliePleads: Clip = {
       trap: 'cover（おおう）だけだと意味がつながりにくい。up が付くと「すっかり隠す」。',
       use: 'They tried to cover up the mistake.（ミスをもみ消そうとした）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'conflict', reveals: ['notfight', 'accuse'], seg: [87.0, 121.0],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'conflict', reveals: ['notfight', 'accuse'], seg: [87, 123.2],
       stem: 'What does Chris think Leslie did?',
       ja: 'クリスは、レスリーが何をしたと思っている？',
       choices: ['Lied, and maybe took bribes', 'Only broke his one rule', 'Nothing wrong at all'], a: 0,
@@ -118,7 +118,7 @@ export const lesliePleads: Clip = {
       trap: '「規則を一つ破っただけ」はレスリーの言い分。クリスの考えは I think のあと。',
       use: 'I think you’re hiding something.（何か隠してると思う）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [87.2, 94.05], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [87.1, 94], keep: true,
       stem: 'How many witnesses is Chris going to call?',
       ja: 'クリスは証人を何人呼ぶ？',
       choices: ['4', '14', '40'], a: 1,
@@ -141,7 +141,7 @@ export const lesliePleads: Clip = {
       trap: 'not を強めると、ただの強い否定に聞こえる。強勢は、相手のどの語に答えるかで決まる。',
       use: 'It’s not my idea. It’s the boss’s.（私の案じゃない。上司のだよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'myrule', seg: [93.6, 107.2],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'myrule', seg: [94.7, 107.5],
       stem: 'Why does Chris say “It’s not my rule”?',
       ja: 'クリスはなぜ「It’s not my rule」と言う？',
       choices: ['All governments have it', 'He doesn’t like the rule much', 'Ben made the rule himself'], a: 0,
@@ -153,7 +153,7 @@ export const lesliePleads: Clip = {
       trap: 'your rule と言われたので、自分で作ったと思いやすい。every government を聞く。',
       use: 'It’s nothing personal. It’s the rule.（個人的な話じゃなくて、決まりなんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'accuse', seg: [107.15, 111.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'accuse', seg: [106.8, 111.8],
       stem: 'What does Chris think about when the relationship began?',
       ja: 'クリスは、交際がいつ始まったと思っている？',
       choices: ['It began earlier than she says', 'It began the night she says', 'It began on a work trip'], a: 0,
@@ -177,7 +177,7 @@ export const lesliePleads: Clip = {
       trap: 'counter を count と聞いたり、against me の向きを逆に取ったりしやすい。',
       use: 'He denied every charge against him.（彼は全ての容疑を否定した）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'prep', reveals: ['leveled', 'textme'], seg: [123.6, 167.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'prep', reveals: ['leveled', 'textme'], seg: [123.6, 168.3],
       stem: 'After the break, what does Leslie do with her team?',
       ja: '休憩のあと、レスリーは仲間に何をする？',
       choices: ['Gives each person a job', 'Asks them to talk to Chris', 'Has them all wait quietly'], a: 0,
@@ -189,7 +189,7 @@ export const lesliePleads: Clip = {
       trap: 'クリスの名前が出るので、クリスと話すと思いやすい。名前ごとに別の頼みが続く。',
       use: 'Okay, here’s what I need from everyone.（よし、みんなに頼みたいことがある）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'evidence', seg: [129.0, 134.25],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'evidence', seg: [129, 134.3],
       stem: 'Why does Leslie say “Wait” after “Got it”?',
       ja: 'レスリーはなぜ「Got it」のあとに「Wait」と言う？',
       choices: ['He doesn’t know what evidence is', 'He doesn’t know where it is', 'He should wait for more'], a: 0,
@@ -201,7 +201,7 @@ export const lesliePleads: Clip = {
       trap: 'Wait から、続きの指示を待てと思いやすい。ここは「ちょっと待って」と止める合図。',
       use: 'Wait, do you know where it is?（待って、場所わかってる？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'hitme', seg: [130.3, 141.3],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'hitme', seg: [130.8, 142.8],
       stem: 'What does “Yes, hit me” mean here?',
       ja: '「Yes, hit me」は、ここではどういう意味？',
       choices: ['Tell me what you need', 'Go ahead and scold me', 'I’ll start right now'], a: 0,
@@ -213,7 +213,7 @@ export const lesliePleads: Clip = {
       trap: 'hit（打つ）から、叱ってと言っていると思いやすい。すぐ指示が始まる。',
       use: 'Okay, hit me. What’s the plan?（よし、どうぞ。作戦は？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'key', seg: [134.0, 141.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'key', seg: [134, 141.6],
       stem: 'Where is the key to Leslie’s bottom desk drawer?',
       ja: 'レスリーの一番下の引き出しの鍵はどこ？',
       choices: ['Taped behind a picture', 'In the files in the drawer', 'On the desk by a picture'],
@@ -226,7 +226,7 @@ export const lesliePleads: Clip = {
       trap: '最初の next to my desk は写真の場所。鍵の場所は、そのあとの taped 以下。',
       use: 'The key is under the mat.（鍵はマットの下にあるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'men', seg: [149.8, 159.2],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'men', seg: [150.7, 162.7],
       stem: 'How does Leslie feel about the men in the office?',
       ja: 'レスリーは職場の男性たちをどう思っている？',
       choices: ['Fed up with them', 'Proud of all of them', 'Afraid of them'], a: 0,
@@ -238,7 +238,7 @@ export const lesliePleads: Clip = {
       trap: '一緒に行くという申し出は協力に聞こえやすい。Seriously? があきれの合図。',
       use: 'Seriously? Again?（うそでしょ、また？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', reveals: ['textme'], seg: [159.15, 163.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', reveals: ['textme'], seg: [157.4, 163.4], keep: true,
       stem: 'How often does Leslie want Ann to text her?',
       ja: 'レスリーはアンに、どれくらいの間隔でメールしてほしい？',
       choices: ['Every 13 seconds', 'Every 30 seconds', 'Every 30 minutes'], a: 1,
@@ -250,7 +250,7 @@ export const lesliePleads: Clip = {
       trap: '30秒は短すぎるので「分」と思いやすい。seconds（秒）を聞く。thirteen なら「ティーン」が長い。',
       use: 'The bus comes every fifteen minutes.（バスは15分おきに来ます）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'textme', reveals: ['thirty'], seg: [159.15, 167.9],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'textme', reveals: ['thirty'], seg: [158.9, 167.9],
       stem: 'What does Leslie really want from Ann?',
       ja: 'レスリーが本当にアンに求めているのは？',
       choices: ['To hear it’ll be okay', 'News on how things go', 'A ride home later'], a: 0,
@@ -262,7 +262,7 @@ export const lesliePleads: Clip = {
       trap: 'text（メール）から報告と思いやすいが、中身は毎回同じ「大丈夫」。',
       use: 'Just tell me it’s going to be okay.（大丈夫だって言って）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wrist', seg: [167.9, 174.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'wrist', seg: [166.3, 171.3],
       stem: 'What punishment does Leslie say she’ll accept?',
       ja: 'レスリーは、どんな罰なら受けると言う？',
       choices: ['A light punishment', 'A heavy punishment', 'A public scolding'], a: 0,

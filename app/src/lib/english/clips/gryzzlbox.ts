@@ -13,7 +13,7 @@ export const gryzzlBoxes: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'line', seg: [1.9, 6.95],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'line', seg: [0.8, 8.9],
       stem: 'What does “crossed a line” mean here?',
       ja: 'ここで「crossed a line」はどういう意味？',
       choices: ['Gone too far', 'Changed sides', 'Moved away'], a: 0,
@@ -25,7 +25,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'line から「線をまたぐ、移る」と思いやすい。but のあとは相手への非難。',
       use: 'Okay, now you’ve crossed a line.（ちょっと、それはやりすぎ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [5.7, 8.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [2.7, 10.8],
       stem: 'Fill the gap: “___ one of these Gryzzl boxes?”',
       ja: '空所を埋める：「___ one of these Gryzzl boxes?」',
       choices: ['Have you gotten', 'Have you got', 'Did you get'], a: 0,
@@ -37,7 +37,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'got と聞こえやすい。最後が「ン」なら gotten、「ガット」で切れたら got、「ディジュ」で始まれば Did you get。',
       use: 'Have you gotten my email?（私のメール届いた？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [8.4, 16.35],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [8.4, 18.8],
       stem: 'What was the box’s owner going to do with it?',
       ja: '箱を受け取った人は、それをどうするつもりだった？',
       choices: ['Send it back', 'Keep it', 'Give it away'], a: 0,
@@ -61,7 +61,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'cannot be bought（買収されない）から、わいろの話と思いやすい。本題は知りすぎ。',
       use: 'How do they even know that?（なんでそんなこと知ってるの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'phone', seg: [27.9, 34.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'phone', seg: [27.9, 37.1],
       stem: 'When do the couple use those special names?',
       ja: '夫婦は、その特別な呼び名をいつ使う？',
       choices: ['On the phone or in texts', 'At home, when alone', 'In letters and cards'], a: 0,
@@ -84,7 +84,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'exactly を「賛成」と取ると、喜びへの同意に聞こえる。続く must be が言いたいこと。',
       use: 'Exactly. That’s my point.（そう、それが言いたいの）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mining', seg: [55.5, 61.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mining', seg: [54.5, 61.1],
       stem: 'What do they think Gryzzl must be doing?',
       ja: 'グリズルは何をしているに違いないと思っている？',
       choices: ['Reading their texts and emails', 'Selling their texts and emails', 'Listening to their phone calls'], a: 0,
@@ -96,7 +96,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'データの話から「売る」と思いやすい。言っているのは searching（調べる）。',
       use: 'They’re reading our emails?（メール読まれてるの？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'mention', seg: [60.7, 64.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'mention', seg: [59.7, 64.9],
       stem: 'Why does Leslie say “not to mention” here?',
       ja: 'レスリーは、なぜここで「not to mention」と言う？',
       choices: ['To add one more point', 'To say it isn’t important', 'To take back her first point'], a: 0,
@@ -119,7 +119,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'language を「言語」と取ると意味が通らない。契約の話では「言い回し・条文」。',
       use: 'Is there language about refunds?（返金についての条項はある？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'agreed', seg: [69.55, 73.95],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'agreed', seg: [68.5, 76.3],
       stem: 'Type it: “I ___ agreed to work with them…” (3 words)', answer: 'never would have',
       ja: '書き取る：「I ___ agreed to work with them…」（3語）',
       cue: '「I」のあと、agreed の前の3語。',
@@ -140,7 +140,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'Front Street を地名と取ると抗議の場所に。going down のあとなら攻撃。',
       use: 'You’re going down!（覚悟しとけよ！）' },
 
-    { id: 'h1', skill: 'attitude', level: 'B1', point: 'context', seg: [75.5, 83.6],
+    { id: 'h1', skill: 'attitude', level: 'B1', point: 'context', seg: [75.5, 84],
       stem: 'How does the listener feel about the “Front Street” line?',
       ja: '「Front Street」のセリフを、聞いた人はどう思う？',
       choices: ['She loves it', 'She hates it', 'She is scared'], a: 0,
@@ -152,7 +152,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'I don’t understand で始まるので、嫌がると思いやすい。but のあとが本音。',
       use: 'I don’t get it, but I love it.（よく分からないけど、いいね）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'wondering', seg: [83.0, 88.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'wondering', seg: [83, 90.4],
       stem: 'What is “I was wondering if you would…”?',
       ja: '「I was wondering if you would…」は何をしている？',
       choices: ['A polite request', 'A story about the past', 'A way to say no'], a: 0,
@@ -164,7 +164,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'was（過去）があるので昔の話と思いやすい。過去の形で、頼みをやわらかくしている。',
       use: 'I was wondering if you’re free tonight.（今夜あいてるかなと思って）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'therapist', seg: [93.5, 103.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'therapist', seg: [93.5, 104.5],
       stem: 'Why does April’s coworker suddenly say three nice things?',
       ja: 'エイプリルの同僚は、なぜ急にいいことを三つ言う？',
       choices: ['His therapist told him to', 'He wants to flatter April', 'He is planning a party'], a: 0,
@@ -176,7 +176,7 @@ export const gryzzlBoxes: Clip = {
       trap: '頼みごとの直後なので、お世辞と思いやすい。答えはセラピストの助言。',
       use: 'Take a deep breath and count to ten.（深呼吸して10数えて）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'whatever', seg: [102.9, 108.25],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'whatever', seg: [102.9, 108.3],
       stem: 'How does April feel when she agrees to the speech?',
       ja: 'スピーチを引き受けるとき、エイプリルはどんな気持ち？',
       choices: ['She doesn’t want to', 'She is happy to do it', 'She feels calm now'], a: 0,
@@ -188,7 +188,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'fine を「いい」と取ると喜んでいるように聞こえる。Whatever がつけば投げやり。',
       use: 'Whatever. I’ll go.（どうでもいいけど、行くよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [107.8, 113.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [106.8, 113.3], keep: true,
       stem: 'How old was April when she started working here?',
       ja: 'ここで働き始めたとき、エイプリルは何歳だった？',
       choices: ['Ten', 'Twelve', 'Twenty', 'Thirty'], a: 2,
@@ -234,7 +234,7 @@ export const gryzzlBoxes: Clip = {
       trap: 'I like their phones で、会社の味方に聞こえる。but のあとが本音。',
       use: 'We’re all on the same side here.（ここではみんな味方だよ）' },
 
-    { id: 'h4', skill: 'humor', level: 'B1', point: 'pig', seg: [153.3, 164.7],
+    { id: 'h4', skill: 'humor', level: 'B1', point: 'pig', seg: [153.3, 165],
       stem: 'What will the pig collector do with the rare pig?',
       ja: 'ブタ集めが趣味の人は、珍しいブタのおもちゃをどうする？',
       choices: ['Keep it', 'Send it back', 'Sell it'], a: 0,
@@ -246,7 +246,7 @@ export const gryzzlBoxes: Clip = {
       trap: '文句を言う会なので、送り返すと思いやすい。and I am のあとを聞く。',
       use: 'Can I keep it?（これ、もらっていい？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'woolf', seg: [164.6, 174.1],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'woolf', seg: [164.6, 174.2],
       stem: 'How does the young book lover feel?',
       ja: '本好きの女の子は、どんな気持ち？',
       choices: ['Worried they will tell', 'Happy to get new books', 'Angry at her friends'], a: 0,
@@ -258,7 +258,7 @@ export const gryzzlBoxes: Clip = {
       trap: '本をもらったので、喜んでいると思いやすい。What if は心配の言い方。',
       use: 'What if they find out?（ばれたらどうしよう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'phones', seg: [173.7, 181.35],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'phones', seg: [172.7, 181.8],
       stem: 'Why does a resident say “I like their phones, but…”?',
       ja: '住民は、なぜ「I like their phones, but…」と言う？',
       choices: ['To praise first, then complain', 'To say the phones excuse it', 'To take Gryzzl’s side on it'], a: 0,
