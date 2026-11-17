@@ -223,7 +223,7 @@ export const twodates: Clip = {
       cue: '「go to the」のあとの一語。', line: 'I would much rather go to *the ball* all by myself',
       said: '「むしろパーティーにひとりで行くほうがいい」と言う。',
       mean: 'ball ＝ 正式なダンスパーティー（球のボールではない）。紹介はこのための相手探し。',
-      trap: 'l の音は日本語にないので、bar や mall に聞こえやすい。最後の「ル」を聞く。',
+      trap: 'bar（バー）や mall（モール）と似て聞こえやすい。最初が b の音で、最後に軽い「ル」が残れば ball。',
       use: 'Are you going to the party alone?（パーティーはひとりで行くの？）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'rather', reveals: ['ball', 'byself'], seg: [87.55, 95.2],

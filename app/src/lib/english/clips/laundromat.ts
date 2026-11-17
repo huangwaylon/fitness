@@ -169,7 +169,7 @@ export const laundromat: Clip = {
       line: 'Would they go with whites or with delicates? — That would be a *judgment call*.',
       said: '「白い物と下着、どっち？」「それは判断しだいだね」と答える。',
       mean: 'judgment call ＝ 決まりがなく、その人の判断で決めること。答えに困っている。',
-      trap: 'd はほぼ聞こえず、「ジャッジメンコール」と続く。',
+      trap: 'judgment の t はほぼ聞こえず、「ジャッジメンコール」とひと続きに聞こえる。',
       use: 'It’s your call.（君が決めていいよ）' },
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'jammies', seg: [232, 239], stem: 'How does Rachel feel about her clean clothes?',
       ja: 'きれいになった服を、レイチェルはどう思っている？',

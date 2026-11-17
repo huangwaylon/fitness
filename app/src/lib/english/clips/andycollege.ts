@@ -24,7 +24,7 @@ export const andyCollege: Clip = {
       line: 'Man, all these classes *look amazing*. I *can’t choose*.',
       said: '「どの授業もすごく良さそう。選べないよ」と言う。',
       mean: 'look amazing ＝ すごく良さそう。I can’t choose ＝ 選べない。迷ったときの言い方。',
-      trap: 'can’t は短く聞こえ、can と思いやすい。理由は前の amazing。',
+      trap: 'can’t の t はほぼ聞こえず、can と思いやすい。理由は前の amazing。',
       use: 'I can’t choose. They all look good.（選べない。どれも良さそう）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'shopping', seg: [2.9, 7.5],
@@ -225,8 +225,8 @@ export const andyCollege: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'lasers', seg: [148.9, 152.8],
       stem: 'Fill the gap: “We ___ be using actual lasers in this course.”',
       ja: '「We ___ be using actual lasers」の空所は？',
-      choices: ['won’t', 'want to', 'wouldn’t', 'shouldn’t'], a: 0,
-      choicesJa: ['〜しない（これから）', '〜したい', '〜しないだろう', '〜すべきでない'],
+      choices: ['won’t', 'want to', 'wouldn’t'], a: 0,
+      choicesJa: ['〜しない（これから）', '〜したい', '〜しないだろう'],
       cue: '「We」のすぐあと、短い一語。',
       line: 'We *won’t* be using actual lasers in this course.',
       said: '「この授業では本物のレーザーは使いません」と教授が言う。',
@@ -243,7 +243,7 @@ export const andyCollege: Clip = {
       line: 'It’s about *the theory* that makes them possible.',
       said: '「本物は使わない。レーザーを可能にする理論の授業だ」と教授が言う。',
       mean: 'theory ＝ 理論。実習ではなく、しくみを学ぶ授業。',
-      trap: 'theory と history は終わりの音が同じ。最初の th の音と、前の won’t の否定で決める。',
+      trap: 'theory と history は終わりの「リー」が同じ。最初が「スィ」か「ヒ」かを聞く。',
       use: 'It’s more theory than practice.（実習より理論が中心です）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'bummer', reveals: ['lasers', 'theory'], seg: [153.0, 159.5],
