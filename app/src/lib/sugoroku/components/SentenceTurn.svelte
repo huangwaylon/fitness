@@ -3,6 +3,7 @@
   // behind 意味を見る, +2 if never opened); tap them in order (tap a placed one to take it and the ones after it back).
   // All placed: in order → its stars; not → 「おしい！」, the order shown a moment, then the tiles back for one more go; a
   // second miss → 「答えはこれ」 (still a few stars). Never red, never ×.
+  import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { inOrder, tilesOf, type Sentence } from '../sentences.ts';
   import { sentenceStars, UNSEEN_BONUS } from '../game.ts';
@@ -13,15 +14,20 @@
     seed: string;
     /** むずかしい: the Japanese hidden till asked for. */
     hideJa: boolean;
+    /** The turn so far (a sheet reopened mid-turn). */
+    misses0?: number;
+    peeked0?: boolean;
+    /** A miss or 意味を見る, to keep. */
+    ontry: (t: { misses: number; peeked: boolean }) => void;
     ondone: (o: { misses: number; unseen: boolean }) => void;
   }
-  let { line, seed, hideJa, ondone }: Props = $props();
+  let { line, seed, hideJa, misses0 = 0, peeked0 = false, ontry, ondone }: Props = $props();
 
   const tiles = $derived(tilesOf(line, seed));
   let placed = $state<number[]>([]);
-  let misses = $state(0);
-  let stage = $state<'try' | 'miss' | 'right' | 'answer'>('try');
-  let peeked = $state(false);
+  let misses = $state(untrack(() => misses0));
+  let stage = $state<'try' | 'miss' | 'right' | 'answer'>(untrack(() => (misses0 >= 2 ? 'answer' : 'try')));
+  let peeked = $state(untrack(() => peeked0));
   const unseen = $derived(hideJa && !peeked);
   const words = $derived(placed.map((id) => tiles.find((t) => t.id === id)!.w));
 
@@ -30,9 +36,10 @@
     placed = [...placed, id];
     if (placed.length < tiles.length) return;
     if (inOrder(line, words)) stage = 'right';
-    else if (misses >= 1) (misses = 2), (stage = 'answer');
+    else if (misses >= 1) (misses = 2), (stage = 'answer'), ontry({ misses, peeked });
     else {
       misses = 1;
+      ontry({ misses, peeked });
       stage = 'miss';
       setTimeout(() => ((placed = []), (stage = 'try')), 900);
     }
@@ -42,10 +49,10 @@
 
 <section class="turn" data-sg-sentence>
   <h3 class="ttl">{s('sentenceTitle')}</h3>
-  {#if hideJa && !peeked && stage !== 'answer'}
-    <button type="button" class="btn small paper" data-sfx="tick" data-sg-peek onclick={() => (peeked = true)}>{s('peek')}</button>
+  {#if hideJa && !peeked && (stage === 'try' || stage === 'miss')}
+    <button type="button" class="btn small paper" data-sfx="tick" data-sg-peek onclick={() => ((peeked = true), ontry({ misses, peeked }))}>{s('peek')}</button>
     <p class="ask">{s('unseen', { n: UNSEEN_BONUS })}</p>
-  {:else}
+  {:else if !hideJa || peeked || stage === 'answer' || stage === 'right'}
     <p class="ja"><span class="lbl">{s('sentenceMeaning')}</span>{line.ja}</p>
   {/if}
   {#if stage === 'try' || stage === 'miss'}

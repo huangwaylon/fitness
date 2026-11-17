@@ -1,0 +1,4664 @@
+{
+"A challenge? I love a challenge.": {
+"level": 2
+},
+"A harder test? Bring it on.": {
+"level": 3
+},
+"A hike on Sunday? I’m in.": {
+"level": 3
+},
+"A table for four, please.": {
+"level": 1
+},
+"A table for six, please.": {
+"level": 1
+},
+"A table for three, please.": {
+"level": 1,
+"ja": "3人でお願いします"
+},
+"A table for two, please.": {
+"level": 1
+},
+"A window seat? That’d be great.": {
+"level": 2
+},
+"About what happened this morning…": {
+"level": 0
+},
+"Actually, I do have a minute.": {
+"level": 2
+},
+"Actually, I don’t drink.": {
+"level": 2
+},
+"Actually, I made it myself.": {
+"level": 2
+},
+"Actually, I ordered the soup.": {
+"level": 2
+},
+"Actually, I think it’s closed today.": {
+"level": 2
+},
+"Actually, I’ll have tea.": {
+"level": 2
+},
+"Actually, I’m from Osaka.": {
+"level": 2
+},
+"Actually, it’s better than it looks.": {
+"level": 2
+},
+"Actually, it’s not that bad.": {
+"level": 2
+},
+"Actually, it’s on Tuesday.": {
+"level": 2
+},
+"Actually, no, I’ll definitely pass.": {
+"level": 3
+},
+"All four of us are here.": {
+"level": 2
+},
+"All right, then. Show me.": {
+"level": 2
+},
+"All the food was donated.": {
+"level": 2,
+"ja": "食べ物は全部寄付してもらった"
+},
+"All we need is a map.": {
+"level": 2
+},
+"Also, can you grab some milk?": {
+"level": 2
+},
+"Am I allowed to park here?": {
+"level": 2
+},
+"And? What happened next?": {
+"level": 2
+},
+"Any ideas? I’d welcome them.": {
+"level": 3
+},
+"Any kind of tape will do.": {
+"level": 2
+},
+"Any left? Can I buy one?": {
+"level": 2
+},
+"Any questions at all, just ask.": {
+"level": 2
+},
+"Any questions? — Not really.": {
+"level": 0
+},
+"Any updates on my order?": {
+"level": 2
+},
+"Anything else? No? Okay, see you.": {
+"level": 2
+},
+"Anyway, let’s eat.": {
+"level": 2
+},
+"Anyway, let’s get back to work.": {
+"level": 2
+},
+"Anyway, where were we?": {
+"level": 2
+},
+"Apology accepted. Let’s move on.": {
+"level": 2
+},
+"Apparently, the train is late.": {
+"level": 2
+},
+"Are we done here?": {
+"level": 1
+},
+"Are you allergic to any food?": {
+"level": 2
+},
+"Are you free this weekend?": {
+"level": 1
+},
+"Are you free tomorrow night?": {
+"level": 1
+},
+"Are you kidding me? It’s closed?": {
+"level": 3
+},
+"Are you okay driving tonight?": {
+"level": 1
+},
+"Are you seeing anyone?": {
+"level": 3
+},
+"Are you serious? It’s sold out?": {
+"level": 2
+},
+"Are you serious? That’s amazing!": {
+"level": 2
+},
+"Are you wearing a watch?": {
+"level": 1
+},
+"As of today, I’m on vacation.": {
+"level": 2
+},
+"Ask her. It’s worth a shot.": {
+"level": 3
+},
+"At any rate, let’s order.": {
+"level": 3
+},
+"At last, the weekend!": {
+"level": 2
+},
+"Aw, that’s sweet of you.": {
+"level": 2
+},
+"Basically, it’s too expensive.": {
+"level": 2
+},
+"Be careful, the floor is wet.": {
+"level": 2
+},
+"Be cool, it’s just a test.": {
+"level": 3
+},
+"Be nice to your little brother.": {
+"level": 2
+},
+"Believe me, it’s happened before.": {
+"level": 2
+},
+"Besides, I need the exercise.": {
+"level": 2
+},
+"Besides, it’s on the way.": {
+"level": 2
+},
+"Big plans this weekend?": {
+"level": 2
+},
+"But anyway, where was I?": {
+"level": 2
+},
+"By the way, where’s the station?": {
+"level": 2
+},
+"Call 3-1-1 to report a pothole.": {
+"level": 3
+},
+"Call me anytime. I mean it.": {
+"level": 2
+},
+"Call me once you get there.": {
+"level": 2
+},
+"Can I ask you a favor?": {
+"level": 2
+},
+"Can I ask you something?": {
+"level": 1
+},
+"Can I borrow three bucks?": {
+"level": 3
+},
+"Can I call you back later?": {
+"level": 2
+},
+"Can I get my charger back?": {
+"level": 2
+},
+"Can I get my money back?": {
+"level": 2
+},
+"Can I get you a coffee?": {
+"level": 2
+},
+"Can I get your email address?": {
+"level": 2
+},
+"Can I give them some candy?": {
+"level": 2
+},
+"Can I have a receipt, please?": {
+"level": 2
+},
+"Can I have five minutes?": {
+"level": 1
+},
+"Can I have my own room?": {
+"level": 2
+},
+"Can I have my pen back?": {
+"level": 2
+},
+"Can I help out with anything?": {
+"level": 2
+},
+"Can I help you find something?": {
+"level": 2
+},
+"Can I help you?": {
+"level": 1
+},
+"Can I pay in cash?": {
+"level": 1
+},
+"Can I talk to the manager?": {
+"level": 2
+},
+"Can I use your bathroom?": {
+"level": 1
+},
+"Can everyone sign the card?": {
+"level": 2
+},
+"Can we please talk about this?": {
+"level": 2
+},
+"Can we talk in private?": {
+"level": 2
+},
+"Can you be more specific?": {
+"level": 2
+},
+"Can you chop the onions?": {
+"level": 1
+},
+"Can you fix it?": {
+"level": 1
+},
+"Can you give back my pen?": {
+"level": 2
+},
+"Can you give me a ride?": {
+"level": 2
+},
+"Can you give me a second?": {
+"level": 2
+},
+"Can you give me five minutes?": {
+"level": 2
+},
+"Can you give me some change?": {
+"level": 2
+},
+"Can you go over that again?": {
+"level": 2
+},
+"Can you help me out here?": {
+"level": 3
+},
+"Can you plug in my phone?": {
+"level": 2
+},
+"Can you reach that top shelf?": {
+"level": 2
+},
+"Can you scooch over a little?": {
+"level": 3
+},
+"Can you take away the onions?": {
+"level": 2
+},
+"Can you take me off speaker?": {
+"level": 2
+},
+"Can you turn up the heat?": {
+"level": 2
+},
+"Can’t anyone help me?": {
+"level": 2
+},
+"Careful, the floor is slippery.": {
+"level": 2
+},
+"Careful, you could fall.": {
+"level": 1
+},
+"Coffee makes me feel awake.": {
+"level": 2
+},
+"Coffee? — Yes, please.": {
+"level": 0
+},
+"Come on, just one more song!": {
+"level": 2
+},
+"Come on, move! We’re late!": {
+"level": 2
+},
+"Come on, really? That’s too much.": {
+"level": 3
+},
+"Come on, you can do it!": {
+"level": 2
+},
+"Could I have everyone’s attention, please?": {
+"level": 2
+},
+"Could you do me a favor?": {
+"level": 2
+},
+"Could you drive us up there?": {
+"level": 2
+},
+"Could you help me make dinner?": {
+"level": 2
+},
+"Could you hold on one second?": {
+"level": 2
+},
+"Could you keep it down, please?": {
+"level": 3
+},
+"Could you move aside a little?": {
+"level": 2
+},
+"Could you pin it up?": {
+"level": 3,
+"ja": "髪をアップにしてもらえますか"
+},
+"Could you sign right here?": {
+"level": 1
+},
+"Could you speak a little slower?": {
+"level": 2
+},
+"Could you take our picture, please?": {
+"level": 2
+},
+"Could you warm up my coffee?": {
+"level": 2
+},
+"Cut in line? Oh, heck no.": {
+"level": 3
+},
+"Dear Sir or Madam,": {
+"level": 2
+},
+"Definitely, no question.": {
+"level": 2
+},
+"Did she say what time?": {
+"level": 2
+},
+"Did you come across my keys?": {
+"level": 3
+},
+"Did you get my voicemail?": {
+"level": 2
+},
+"Did you know they’re closing early?": {
+"level": 2
+},
+"Did you lock the door?": {
+"level": 1
+},
+"Did you think about the price?": {
+"level": 2
+},
+"Did you two break up?": {
+"level": 2
+},
+"Dinner Friday? I would love to.": {
+"level": 2
+},
+"Dinner is at seven o’clock.": {
+"level": 1
+},
+"Dinner tonight? What do you say?": {
+"level": 3
+},
+"Do I cook? Sort of.": {
+"level": 2
+},
+"Do I make a left here?": {
+"level": 2
+},
+"Do I need to separate these?": {
+"level": 2
+},
+"Do you ever miss home?": {
+"level": 1
+},
+"Do you guys have any tape?": {
+"level": 2
+},
+"Do you have a 20-inch suitcase?": {
+"level": 2
+},
+"Do you have a blank form?": {
+"level": 2
+},
+"Do you have a card?": {
+"level": 1
+},
+"Do you have a moment?": {
+"level": 1
+},
+"Do you have an older edition?": {
+"level": 2
+},
+"Do you have any coupons?": {
+"level": 1
+},
+"Do you have any other sizes?": {
+"level": 2
+},
+"Do you have any proof?": {
+"level": 2
+},
+"Do you have his home number?": {
+"level": 2
+},
+"Do you offer same-day delivery?": {
+"level": 2
+},
+"Do you serve food here?": {
+"level": 1,
+"ja": "ここ、食事はできますか"
+},
+"Do you wanna get coffee?": {
+"level": 3
+},
+"Do you want to join us?": {
+"level": 2
+},
+"Does everyone know already?": {
+"level": 2
+},
+"Does that make you feel better?": {
+"level": 2
+},
+"Does the music bother you?": {
+"level": 1
+},
+"Does this come in blue?": {
+"level": 2
+},
+"Does this need to be signed?": {
+"level": 2
+},
+"Don’t apologize. It’s my fault.": {
+"level": 2
+},
+"Don’t be so uptight.": {
+"level": 3
+},
+"Don’t beat yourself up. It happens.": {
+"level": 3
+},
+"Don’t believe me? See for yourself.": {
+"level": 3
+},
+"Don’t blame it on me!": {
+"level": 2
+},
+"Don’t distract me. I’m working.": {
+"level": 2
+},
+"Don’t forget to text me.": {
+"level": 1
+},
+"Don’t make me come over there.": {
+"level": 3
+},
+"Don’t make me look bad.": {
+"level": 3
+},
+"Don’t mess with my coffee.": {
+"level": 3
+},
+"Don’t put it off any longer.": {
+"level": 3
+},
+"Don’t set foot in my room!": {
+"level": 3
+},
+"Don’t sit on my bag!": {
+"level": 1
+},
+"Don’t take it personally.": {
+"level": 3
+},
+"Don’t talk. Just react.": {
+"level": 0
+},
+"Don’t tell me how to drive.": {
+"level": 2
+},
+"Don’t tell me! You’ll ruin it.": {
+"level": 2
+},
+"Don’t think about it. Just go.": {
+"level": 2
+},
+"Don’t touch that. That’s Sam’s.": {
+"level": 2
+},
+"Don’t worry about it.": {
+"level": 1
+},
+"Don’t worry, I have plenty more.": {
+"level": 2
+},
+"Don’t worry, it happens to everyone.": {
+"level": 2
+},
+"Don’t worry, it’s not much.": {
+"level": 1
+},
+"Don’t worry, she’s lying again.": {
+"level": 2
+},
+"Don’t worry, we’ll figure it out.": {
+"level": 3
+},
+"Don’t worry, you’ll figure it out.": {
+"level": 3
+},
+"Don’t worry. It’s gonna be okay.": {
+"level": 3
+},
+"Enough about me. How are you?": {
+"level": 2
+},
+"Enough is enough. I’m calling them.": {
+"level": 3
+},
+"Everybody has to show their ticket.": {
+"level": 2
+},
+"Everybody in the class came.": {
+"level": 2
+},
+"Everybody knows this place.": {
+"level": 2
+},
+"Everyone here is pretty healthy.": {
+"level": 2
+},
+"Everyone in the meeting room, please.": {
+"level": 2
+},
+"Everyone, please choose one song.": {
+"level": 1
+},
+"Excuse me, I’m talking to you.": {
+"level": 2
+},
+"Excuse me, is this seat taken?": {
+"level": 2
+},
+"Excuse me, is this spicy?": {
+"level": 1
+},
+"Excuse me, over here, please!": {
+"level": 1
+},
+"Excuse me, where’s the bathroom?": {
+"level": 1
+},
+"Excuse me, you’re blocking the door.": {
+"level": 2
+},
+"Fair enough. I’ll pay next time.": {
+"level": 3
+},
+"Feel free to ask me anything.": {
+"level": 2
+},
+"Fill the glass with water, please.": {
+"level": 2
+},
+"Fine, but just one hour.": {
+"level": 2
+},
+"Fine, but just this once.": {
+"level": 2
+},
+"Fine, fine. You win.": {
+"level": 2
+},
+"Fine. Have it your way.": {
+"level": 3
+},
+"Fine. It was me.": {
+"level": 2
+},
+"First impressions can be wrong.": {
+"level": 2
+},
+"First of all, everyone’s okay, but…": {
+"level": 0
+},
+"For fairness, we’ll take turns.": {
+"level": 2
+},
+"Forget it. It’s not important.": {
+"level": 2
+},
+"Forget it. I’m not doing that.": {
+"level": 2
+},
+"Forgive me, but I disagree.": {
+"level": 2
+},
+"Frankly, I don’t like it.": {
+"level": 2
+},
+"Free dessert? Now you’re talking.": {
+"level": 3
+},
+"Free shipping? Even better.": {
+"level": 2
+},
+"Friday? Yeah, that could work.": {
+"level": 2
+},
+"Get me out of here.": {
+"level": 2
+},
+"Get this: the hotel upgraded us!": {
+"level": 3
+},
+"Give me a couple of minutes.": {
+"level": 2
+},
+"Give me exactly two minutes.": {
+"level": 2
+},
+"Go ahead, I’m listening.": {
+"level": 2
+},
+"Go ahead, try it. It’s good.": {
+"level": 2
+},
+"Go easy on him, he’s new.": {
+"level": 3
+},
+"Good luck! I’m rooting for you.": {
+"level": 3
+},
+"Good point. Let’s ask first.": {
+"level": 2
+},
+"Good point. Let’s try that.": {
+"level": 2,
+"ja": "いいね、それやってみよう"
+},
+"Got it, thanks.": {
+"level": 2
+},
+"Got questions? Fire away.": {
+"level": 3
+},
+"Great job, keep it up!": {
+"level": 2
+},
+"Guess what? I got the job!": {
+"level": 2
+},
+"Guess what? They’re exactly the same.": {
+"level": 2
+},
+"Guess what? We’re having a party.": {
+"level": 2
+},
+"Ha, you got me there.": {
+"level": 3
+},
+"Half the time, I’m just guessing.": {
+"level": 3
+},
+"Hang in there. It’s almost Friday.": {
+"level": 3
+},
+"Hang on, I’ll be right there.": {
+"level": 2
+},
+"Have you been to Kyoto?": {
+"level": 1
+},
+"He called me, of all people.": {
+"level": 3
+},
+"He didn’t seem happy.": {
+"level": 1
+},
+"He doesn’t eat meat.": {
+"level": 1
+},
+"He got fired for being late.": {
+"level": 2
+},
+"He hates spicy food.": {
+"level": 1
+},
+"He just wants to help.": {
+"level": 1
+},
+"He laughs at all my jokes.": {
+"level": 2
+},
+"He looks exactly like his dad.": {
+"level": 2
+},
+"He pretended to be asleep.": {
+"level": 2
+},
+"He promised me his old laptop.": {
+"level": 2
+},
+"He reads all the time.": {
+"level": 1
+},
+"He slipped and broke his arm.": {
+"level": 2
+},
+"He threw it in the river.": {
+"level": 2
+},
+"Heights totally freak me out.": {
+"level": 3
+},
+"Help! We’ve been robbed!": {
+"level": 0
+},
+"Here’s my office and cell number.": {
+"level": 2
+},
+"Here’s my top five list.": {
+"level": 2
+},
+"Here’s some fun trivia about me.": {
+"level": 2
+},
+"Here’s your key. You’re all set.": {
+"level": 2
+},
+"Hey! I was here first.": {
+"level": 1
+},
+"Hey, I do not!": {
+"level": 3
+},
+"Hey, how you doing?": {
+"level": 2
+},
+"Hey, what’s going on?": {
+"level": 2
+},
+"He’s always been the quiet one.": {
+"level": 2
+},
+"He’s good at small talk.": {
+"level": 3
+},
+"He’s not normally like this.": {
+"level": 2
+},
+"He’s really nice, and he cooks.": {
+"level": 2
+},
+"He’s the fun uncle at parties.": {
+"level": 2
+},
+"He’s the manager here. Ask him.": {
+"level": 2
+},
+"Hi! It’s been a while.": {
+"level": 2
+},
+"Hi, I’m your three o’clock.": {
+"level": 3
+},
+"Hold on a second, please.": {
+"level": 2
+},
+"Hold on one sec, please.": {
+"level": 2
+},
+"Hold on, I’ll be right back.": {
+"level": 2
+},
+"Hold on, let me check.": {
+"level": 2
+},
+"Hold up, I need my wallet.": {
+"level": 3
+},
+"Honestly, I don’t care either way.": {
+"level": 2
+},
+"Honestly, I don’t get it.": {
+"level": 2
+},
+"Honestly, I feel a little angry.": {
+"level": 2
+},
+"Honestly, I feel great about it.": {
+"level": 2
+},
+"Honestly, I really wanted to win.": {
+"level": 2
+},
+"Honestly, I’m glad it happened.": {
+"level": 2
+},
+"Honestly, I’m not sure anymore.": {
+"level": 2
+},
+"Honestly, don’t worry about it.": {
+"level": 2
+},
+"Honestly, it was a bit disappointing.": {
+"level": 2
+},
+"Honestly, it was kind of horrible.": {
+"level": 2
+},
+"Honestly, it’s no big deal.": {
+"level": 2
+},
+"Honestly? It was terrible.": {
+"level": 2
+},
+"Honestly? It’s quite bad.": {
+"level": 2
+},
+"Honestly? No idea where we stand.": {
+"level": 3
+},
+"Honestly? No, not really.": {
+"level": 2
+},
+"How about a week?": {
+"level": 0
+},
+"How about an extra blanket?": {
+"level": 2
+},
+"How about dinner tonight?": {
+"level": 1
+},
+"How about this weather, huh?": {
+"level": 3
+},
+"How are you gonna get home?": {
+"level": 3
+},
+"How come the store’s closed today?": {
+"level": 3
+},
+"How cool is that?": {
+"level": 2
+},
+"How cool is this view?": {
+"level": 2
+},
+"How did you two first meet?": {
+"level": 2
+},
+"How long is this gonna take?": {
+"level": 3
+},
+"How much is postage to Japan?": {
+"level": 2
+},
+"How much longer will this take?": {
+"level": 2
+},
+"How was your weekend?": {
+"level": 1
+},
+"How would you rate it?": {
+"level": 2,
+"ja": "何点くらい？"
+},
+"How? By working harder, I guess.": {
+"level": 2
+},
+"How’s work? — Better than ever!": {
+"level": 0
+},
+"How’s your mom doing?": {
+"level": 1
+},
+"I admire your work ethic.": {
+"level": 3
+},
+"I almost missed my flight.": {
+"level": 1
+},
+"I also lost my umbrella.": {
+"level": 2
+},
+"I always bring a backup charger.": {
+"level": 2
+},
+"I always put my family first.": {
+"level": 2
+},
+"I apologize for being late.": {
+"level": 2
+},
+"I barely slept.": {
+"level": 2
+},
+"I bought it over the internet.": {
+"level": 2
+},
+"I brought this back from Paris.": {
+"level": 2
+},
+"I called an hour ago.": {
+"level": 2
+},
+"I called you twice this morning.": {
+"level": 2
+},
+"I called, and she actually answered.": {
+"level": 3
+},
+"I came here forty years ago.": {
+"level": 2
+},
+"I can deal with it.": {
+"level": 2
+},
+"I can finally relax.": {
+"level": 2
+},
+"I can give you five minutes.": {
+"level": 2
+},
+"I can help you tomorrow.": {
+"level": 1
+},
+"I can take care of myself.": {
+"level": 2
+},
+"I can’t attend the meeting today.": {
+"level": 2
+},
+"I can’t believe it’s already Friday.": {
+"level": 2
+},
+"I can’t believe it’s so cheap!": {
+"level": 2
+},
+"I can’t believe you remembered.": {
+"level": 2
+},
+"I can’t believe you told her!": {
+"level": 2
+},
+"I can’t believe you’re not coming.": {
+"level": 2
+},
+"I can’t find my keys.": {
+"level": 1
+},
+"I can’t have milk.": {
+"level": 1
+},
+"I can’t let this chance go.": {
+"level": 3
+},
+"I can’t see you anymore.": {
+"level": 2
+},
+"I can’t sit there, it’s dirty.": {
+"level": 2
+},
+"I can’t take this heat anymore.": {
+"level": 2
+},
+"I can’t tell if he’s joking.": {
+"level": 2
+},
+"I can’t wait that long.": {
+"level": 1
+},
+"I can’t, I’m driving tonight.": {
+"level": 2
+},
+"I check my email every hour.": {
+"level": 2
+},
+"I cook once in a while.": {
+"level": 2
+},
+"I could give you a ride.": {
+"level": 2
+},
+"I could use a break.": {
+"level": 3
+},
+"I could use a coffee.": {
+"level": 3
+},
+"I did it without help.": {
+"level": 1
+},
+"I didn’t get a single word.": {
+"level": 2
+},
+"I didn’t have time for lunch.": {
+"level": 2
+},
+"I didn’t want you to worry.": {
+"level": 2
+},
+"I do appreciate it.": {
+"level": 2
+},
+"I don’t believe in luck.": {
+"level": 1
+},
+"I don’t care what they say.": {
+"level": 2
+},
+"I don’t care who wins.": {
+"level": 1
+},
+"I don’t feel like cooking tonight.": {
+"level": 2
+},
+"I don’t feel well today.": {
+"level": 1
+},
+"I don’t have time for that.": {
+"level": 2
+},
+"I don’t have time for this.": {
+"level": 2
+},
+"I don’t like it, either.": {
+"level": 2
+},
+"I don’t need a bag, thanks.": {
+"level": 2
+},
+"I don’t trust that website.": {
+"level": 1
+},
+"I don’t work well under pressure.": {
+"level": 3
+},
+"I drink coffee every morning.": {
+"level": 1
+},
+"I feel awful about being late.": {
+"level": 2
+},
+"I feel bad about being late.": {
+"level": 2
+},
+"I feel better than ever.": {
+"level": 2
+},
+"I feel good. I slept well.": {
+"level": 2
+},
+"I feel like a real chef!": {
+"level": 2
+},
+"I feel terrible today.": {
+"level": 1
+},
+"I forgot my phone charger.": {
+"level": 1
+},
+"I forgot to log out.": {
+"level": 2
+},
+"I forgot to thaw the chicken.": {
+"level": 3
+},
+"I get motion sickness on buses.": {
+"level": 2
+},
+"I give it two thumbs up.": {
+"level": 3
+},
+"I got a raise!": {
+"level": 3
+},
+"I got a verbal warning.": {
+"level": 3
+},
+"I got it for twenty bucks.": {
+"level": 3
+},
+"I got the gig!": {
+"level": 3
+},
+"I gotta go. See you later.": {
+"level": 3
+},
+"I guess. I’m not really sure.": {
+"level": 2
+},
+"I had to leave the room.": {
+"level": 2
+},
+"I had to separate the kids.": {
+"level": 2
+},
+"I hate talking on the phone.": {
+"level": 2
+},
+"I hate waiting in line.": {
+"level": 1
+},
+"I have a date tomorrow night.": {
+"level": 2
+},
+"I have a job interview tomorrow.": {
+"level": 2
+},
+"I have a lot of questions.": {
+"level": 2
+},
+"I have an early shift tomorrow.": {
+"level": 2
+},
+"I have my own room now.": {
+"level": 2
+},
+"I have ninety-three emails to answer.": {
+"level": 2
+},
+"I have the flu.": {
+"level": 2
+},
+"I have three older sisters.": {
+"level": 1
+},
+"I haven’t been there in years.": {
+"level": 2
+},
+"I haven’t decided yet.": {
+"level": 2
+},
+"I haven’t told anyone yet.": {
+"level": 2
+},
+"I hear you. I’m with you.": {
+"level": 3
+},
+"I hurt my shoulder.": {
+"level": 1
+},
+"I hurt my wrist playing tennis.": {
+"level": 2
+},
+"I just assumed you knew.": {
+"level": 3
+},
+"I just got off the phone.": {
+"level": 3
+},
+"I just have to try harder.": {
+"level": 2
+},
+"I just need your signature here.": {
+"level": 2
+},
+"I just sold my old bike.": {
+"level": 2
+},
+"I just thought it was nice.": {
+"level": 2
+},
+"I just want everyone to relax.": {
+"level": 2
+},
+"I just want to go home.": {
+"level": 2
+},
+"I knew it! You did it.": {
+"level": 2
+},
+"I know how you feel.": {
+"level": 1
+},
+"I like fruit, like apples.": {
+"level": 2
+},
+"I like not having a plan.": {
+"level": 2
+},
+"I live with two roommates.": {
+"level": 2
+},
+"I lived there for eight years.": {
+"level": 2
+},
+"I lived there for five years.": {
+"level": 2
+},
+"I lost all my photos!": {
+"level": 1
+},
+"I lost control of my bike.": {
+"level": 2
+},
+"I love being a teacher.": {
+"level": 1
+},
+"I love her. She’s so funny.": {
+"level": 2
+},
+"I love sushi! — We know!": {
+"level": 0
+},
+"I love this place.": {
+"level": 1
+},
+"I made it myself.": {
+"level": 2
+},
+"I mean it. Call me anytime.": {
+"level": 2
+},
+"I mean, who does that?": {
+"level": 3
+},
+"I miss home sometimes.": {
+"level": 1
+},
+"I moved here ten years ago.": {
+"level": 2
+},
+"I need a little pick-me-up.": {
+"level": 3
+},
+"I need an hour to prep.": {
+"level": 3
+},
+"I need another ten minutes.": {
+"level": 1
+},
+"I need it by next Wednesday.": {
+"level": 2
+},
+"I need it by tomorrow.": {
+"level": 1
+},
+"I need to get a haircut.": {
+"level": 2
+},
+"I need to get gas.": {
+"level": 2
+},
+"I need to make some money.": {
+"level": 2
+},
+"I need to relax after work.": {
+"level": 2
+},
+"I need to update my resume.": {
+"level": 2
+},
+"I never get to sleep in.": {
+"level": 3
+},
+"I only found out after.": {
+"level": 2
+},
+"I only slept for four hours.": {
+"level": 2
+},
+"I owe you one.": {
+"level": 3
+},
+"I paid fifty dollars for this.": {
+"level": 2
+},
+"I pinky promise I won’t tell.": {
+"level": 3
+},
+"I read every single page.": {
+"level": 2
+},
+"I really appreciate your help.": {
+"level": 2
+},
+"I really hope it works out.": {
+"level": 3
+},
+"I save 10% of every paycheck.": {
+"level": 2
+},
+"I saved you a seat.": {
+"level": 1
+},
+"I say what I mean.": {
+"level": 3
+},
+"I slept for eight hours.": {
+"level": 1
+},
+"I stayed up all night studying.": {
+"level": 2
+},
+"I stayed up all night.": {
+"level": 1
+},
+"I suspect there was no problem.": {
+"level": 3
+},
+"I taught you well.": {
+"level": 1
+},
+"I tell my sister everything.": {
+"level": 1
+},
+"I think I’m getting better.": {
+"level": 2
+},
+"I think he may be right.": {
+"level": 2
+},
+"I think we’ve talked enough.": {
+"level": 2
+},
+"I thought I locked the door.": {
+"level": 2
+},
+"I thought we were done.": {
+"level": 2
+},
+"I thought you liked it.": {
+"level": 1
+},
+"I took cooking lessons once.": {
+"level": 1
+},
+"I totally get it. No worries.": {
+"level": 2
+},
+"I traveled all by myself.": {
+"level": 2
+},
+"I traveled solo this time.": {
+"level": 2
+},
+"I trust you with my keys.": {
+"level": 2
+},
+"I used to live near here.": {
+"level": 2
+},
+"I walked all the way home.": {
+"level": 2
+},
+"I walked like ten miles today.": {
+"level": 3
+},
+"I want to get into cooking.": {
+"level": 3
+},
+"I want to get married someday.": {
+"level": 2
+},
+"I want to live to 100.": {
+"level": 2
+},
+"I wanted the chocolate one.": {
+"level": 1
+},
+"I wanted to see you instead.": {
+"level": 2
+},
+"I was gonna ask you something.": {
+"level": 3
+},
+"I was here three weeks ago.": {
+"level": 2
+},
+"I was secretly hoping for cake.": {
+"level": 2
+},
+"I went to Osaka for both.": {
+"level": 0
+},
+"I went to the dentist yesterday.": {
+"level": 2
+},
+"I work part-time at a café.": {
+"level": 2
+},
+"Imagine what my mom would say!": {
+"level": 2
+},
+"In conclusion, let’s order pizza.": {
+"level": 2
+},
+"In fifteen years, who knows?": {
+"level": 3
+},
+"In three words? Kind, funny, smart.": {
+"level": 2
+},
+"Incredible. How do you do it?": {
+"level": 2
+},
+"Insurance is for emergencies.": {
+"level": 2
+},
+"Is delivery free?": {
+"level": 1
+},
+"Is he allergic to anything?": {
+"level": 2
+},
+"Is it cheaper without the cheese?": {
+"level": 2
+},
+"Is it limit one per customer?": {
+"level": 3
+},
+"Is it plugged in?": {
+"level": 2
+},
+"Is that theft, or just borrowing?": {
+"level": 2
+},
+"Is the museum open today?": {
+"level": 2
+},
+"Is the store closing early today?": {
+"level": 2
+},
+"Is there a clinic near here?": {
+"level": 2
+},
+"Is there a fee for this?": {
+"level": 2
+},
+"Is there a wait list?": {
+"level": 2
+},
+"Is there an added charge?": {
+"level": 2
+},
+"Is there room for one more?": {
+"level": 2
+},
+"Is this 10% off the total?": {
+"level": 2
+},
+"Is this building for commercial use?": {
+"level": 3
+},
+"Is this covered by insurance?": {
+"level": 2
+},
+"Is this decaf or regular?": {
+"level": 2
+},
+"Is this going online?": {
+"level": 2
+},
+"Is this on sale?": {
+"level": 1
+},
+"Is this place privately owned?": {
+"level": 3
+},
+"It can get cold at night.": {
+"level": 2
+},
+"It cost me forty bucks.": {
+"level": 3
+},
+"It costs about two million yen.": {
+"level": 2
+},
+"It costs up to fifty dollars.": {
+"level": 2
+},
+"It doesn’t matter. Don’t worry.": {
+"level": 2
+},
+"It feels good to help.": {
+"level": 1
+},
+"It gets better every day.": {
+"level": 2
+},
+"It has to be in writing.": {
+"level": 2
+},
+"It isn’t a big deal.": {
+"level": 2
+},
+"It just makes me feel good.": {
+"level": 2
+},
+"It looks like rain.": {
+"level": 2
+},
+"It makes it less special.": {
+"level": 2
+},
+"It must be good news!": {
+"level": 2
+},
+"It only cost me twenty bucks.": {
+"level": 3
+},
+"It pays fifty thousand a year.": {
+"level": 2
+},
+"It pays five hundred a week.": {
+"level": 2
+},
+"It rains all the time here.": {
+"level": 2
+},
+"It saves us hundreds a year.": {
+"level": 2
+},
+"It sold over a million copies.": {
+"level": 2
+},
+"It takes about four weeks.": {
+"level": 1
+},
+"It takes about half an hour.": {
+"level": 2
+},
+"It takes about six minutes.": {
+"level": 1
+},
+"It takes double the time.": {
+"level": 2
+},
+"It takes four hours by train.": {
+"level": 2
+},
+"It takes two to three hours.": {
+"level": 2
+},
+"It took about three hours.": {
+"level": 1
+},
+"It took like an hour.": {
+"level": 3
+},
+"It took me 45 minutes.": {
+"level": 1
+},
+"It took me years to learn.": {
+"level": 2
+},
+"It turned into a media circus.": {
+"level": 3
+},
+"It was a four-hour meeting.": {
+"level": 2
+},
+"It was anonymous, I promise.": {
+"level": 2
+},
+"It was like two weeks ago.": {
+"level": 3
+},
+"It wasn’t him after all.": {
+"level": 3
+},
+"It will all make sense soon.": {
+"level": 3
+},
+"It would be my pleasure.": {
+"level": 2
+},
+"It’d be good for your career.": {
+"level": 2
+},
+"It’ll rain? I doubt it.": {
+"level": 2
+},
+"It’ll take ten minutes, max.": {
+"level": 3
+},
+"It’s 4:30 in the morning!": {
+"level": 2
+},
+"It’s a great conversation starter.": {
+"level": 3
+},
+"It’s a hundred dollars a night.": {
+"level": 2
+},
+"It’s a little embarrassing.": {
+"level": 2
+},
+"It’s a long story.": {
+"level": 1
+},
+"It’s a lot less crowded today.": {
+"level": 2
+},
+"It’s a small thing. Who cares?": {
+"level": 3
+},
+"It’s a three-way tie.": {
+"level": 3
+},
+"It’s a whole new world.": {
+"level": 2
+},
+"It’s about forty percent alcohol.": {
+"level": 2
+},
+"It’s about sixteen minutes long.": {
+"level": 1
+},
+"It’s actually three meetings in one.": {
+"level": 2
+},
+"It’s been ten years.": {
+"level": 1
+},
+"It’s cheap. Plus, it’s close.": {
+"level": 2,
+"ja": "安いし、しかも近いよ"
+},
+"It’s expensive, but we need it.": {
+"level": 2
+},
+"It’s far away from the station.": {
+"level": 2
+},
+"It’s fifty dollars for one day.": {
+"level": 2
+},
+"It’s good to be back.": {
+"level": 2
+},
+"It’s hard to clean.": {
+"level": 1
+},
+"It’s his first birthday next week.": {
+"level": 2
+},
+"It’s hundreds of times faster.": {
+"level": 2
+},
+"It’s just a mild cold.": {
+"level": 2
+},
+"It’s just a tiny scratch.": {
+"level": 2
+},
+"It’s just dumb work stuff.": {
+"level": 3
+},
+"It’s just for two weeks.": {
+"level": 1
+},
+"It’s late. I’m gonna head out.": {
+"level": 3
+},
+"It’s late. Let’s head back.": {
+"level": 2,
+"ja": "遅いね。そろそろ戻ろう"
+},
+"It’s made out of wood.": {
+"level": 2
+},
+"It’s more about fun than winning.": {
+"level": 2
+},
+"It’s more theory than practice.": {
+"level": 3
+},
+"It’s no big deal, really.": {
+"level": 2
+},
+"It’s no big deal. Don’t worry.": {
+"level": 2
+},
+"It’s no biggie. Don’t worry.": {
+"level": 3
+},
+"It’s not even on the map.": {
+"level": 2
+},
+"It’s not fair, but that’s life.": {
+"level": 2
+},
+"It’s not how I pictured it.": {
+"level": 2
+},
+"It’s not technically a holiday.": {
+"level": 3
+},
+"It’s not that big a deal.": {
+"level": 3
+},
+"It’s not that. I’m just tired.": {
+"level": 2
+},
+"It’s nothing personal. It’s the rule.": {
+"level": 3
+},
+"It’s nothing personal. I’m just busy.": {
+"level": 3
+},
+"It’s okay, it’s okay. Come here.": {
+"level": 2
+},
+"It’s okay, man. I forgive you.": {
+"level": 3
+},
+"It’s okay. Let it out.": {
+"level": 3
+},
+"It’s on Monday. I mean, Tuesday.": {
+"level": 2
+},
+"It’s only been ten minutes.": {
+"level": 1
+},
+"It’s only fifty cents.": {
+"level": 2
+},
+"It’s only five bucks.": {
+"level": 3
+},
+"It’s only five dollars more.": {
+"level": 2
+},
+"It’s perfectly safe for kids.": {
+"level": 2
+},
+"It’s popular in three cities.": {
+"level": 2
+},
+"It’s raining. So what? Let’s go.": {
+"level": 3
+},
+"It’s shaped like a heart.": {
+"level": 2
+},
+"It’s ten bucks each.": {
+"level": 3
+},
+"It’s ten dollars a box.": {
+"level": 1
+},
+"It’s twenty bucks.": {
+"level": 3
+},
+"It’s twenty dollars an hour.": {
+"level": 1
+},
+"It’s two ninety-nine.": {
+"level": 2
+},
+"It’s valued at about two million.": {
+"level": 2
+},
+"It’s worth a shot.": {
+"level": 3
+},
+"I’d like to actually learn this.": {
+"level": 2
+},
+"I’d like to check out, please.": {
+"level": 2
+},
+"I’d like to extend my stay.": {
+"level": 2
+},
+"I’d like to schedule a meeting.": {
+"level": 2
+},
+"I’d rather not say.": {
+"level": 2,
+"ja": "それは言いたくないな"
+},
+"I’d rather walk than wait.": {
+"level": 2
+},
+"I’ll ask my doctor about it.": {
+"level": 2
+},
+"I’ll be away for three months.": {
+"level": 2
+},
+"I’ll be back in an hour.": {
+"level": 2
+},
+"I’ll be done in twelve minutes.": {
+"level": 2
+},
+"I’ll be ready in twelve minutes.": {
+"level": 2
+},
+"I’ll be there in ten minutes.": {
+"level": 2
+},
+"I’ll be there in thirty minutes.": {
+"level": 2
+},
+"I’ll call you later today.": {
+"level": 1
+},
+"I’ll email it to everyone.": {
+"level": 1
+},
+"I’ll email you the link.": {
+"level": 2
+},
+"I’ll go there myself tomorrow.": {
+"level": 2
+},
+"I’ll go with the chicken, please.": {
+"level": 2
+},
+"I’ll have a coffee, please.": {
+"level": 1
+},
+"I’ll have my usual, please.": {
+"level": 2
+},
+"I’ll just say it: I’m nervous.": {
+"level": 3
+},
+"I’ll let you know tomorrow.": {
+"level": 1
+},
+"I’ll need about two dozen eggs.": {
+"level": 2
+},
+"I’ll never come back here.": {
+"level": 1
+},
+"I’ll never forget this. Thank you.": {
+"level": 2
+},
+"I’ll pass on dessert, thanks.": {
+"level": 3
+},
+"I’ll pretend to be the customer.": {
+"level": 2
+},
+"I’ll send you a thank-you note.": {
+"level": 2
+},
+"I’ll start with just one.": {
+"level": 2
+},
+"I’ll stay late tonight.": {
+"level": 1
+},
+"I’ll stop if it bothers you.": {
+"level": 2
+},
+"I’ll take anything with a window.": {
+"level": 2
+},
+"I’ll take both of them.": {
+"level": 1
+},
+"I’ll take care of it myself.": {
+"level": 2
+},
+"I’ll take the third one.": {
+"level": 1
+},
+"I’m a big believer in breakfast.": {
+"level": 3
+},
+"I’m a coffee addict.": {
+"level": 3
+},
+"I’m a finalist for the job!": {
+"level": 3
+},
+"I’m a terrible liar.": {
+"level": 1
+},
+"I’m actually married, so no.": {
+"level": 2
+},
+"I’m afraid we’re full tonight.": {
+"level": 2
+},
+"I’m already bored.": {
+"level": 2
+},
+"I’m an hour late.": {
+"level": 1
+},
+"I’m considering a job in Boston.": {
+"level": 2
+},
+"I’m doing better, thanks.": {
+"level": 1
+},
+"I’m done with this game.": {
+"level": 2
+},
+"I’m dying of boredom.": {
+"level": 3
+},
+"I’m famished. Let’s eat.": {
+"level": 3
+},
+"I’m fine, really. Don’t worry.": {
+"level": 2
+},
+"I’m fine, thanks.": {
+"level": 1
+},
+"I’m fine. No, actually, I’m not.": {
+"level": 2
+},
+"I’m fine. Please continue.": {
+"level": 1
+},
+"I’m getting good at cooking.": {
+"level": 2
+},
+"I’m getting nervous.": {
+"level": 2
+},
+"I’m getting rid of old clothes.": {
+"level": 2
+},
+"I’m giving this to you.": {
+"level": 1
+},
+"I’m going anyway.": {
+"level": 2
+},
+"I’m going home early today.": {
+"level": 1
+},
+"I’m going to grab some water.": {
+"level": 2
+},
+"I’m going to head home now.": {
+"level": 2
+},
+"I’m going, with or without you.": {
+"level": 2
+},
+"I’m gonna call you later.": {
+"level": 3
+},
+"I’m gonna call you tonight.": {
+"level": 3
+},
+"I’m gonna go buy some milk.": {
+"level": 3
+},
+"I’m gonna grab some coffee.": {
+"level": 3
+},
+"I’m gonna kiss you.": {
+"level": 0
+},
+"I’m gonna miss you.": {
+"level": 3
+},
+"I’m gonna take a nap.": {
+"level": 3
+},
+"I’m good, thanks.": {
+"level": 2
+},
+"I’m happy for you either way.": {
+"level": 2
+},
+"I’m headed out. See you tomorrow.": {
+"level": 2
+},
+"I’m here for you, okay?": {
+"level": 3
+},
+"I’m in a lot of pain.": {
+"level": 2
+},
+"I’m in charge of the music.": {
+"level": 2
+},
+"I’m in charge of tonight’s party.": {
+"level": 2
+},
+"I’m in my fourth month.": {
+"level": 0
+},
+"I’m in room 314.": {
+"level": 1
+},
+"I’m in room three, not thirteen.": {
+"level": 2
+},
+"I’m in the middle of dinner.": {
+"level": 2
+},
+"I’m just checking on my mom.": {
+"level": 2
+},
+"I’m just gonna grab a coffee.": {
+"level": 3
+},
+"I’m just here for the party.": {
+"level": 2
+},
+"I’m just not a pushy person.": {
+"level": 3
+},
+"I’m just trying to help.": {
+"level": 2
+},
+"I’m kidding! Thanks so much.": {
+"level": 2
+},
+"I’m kind of tired today.": {
+"level": 2
+},
+"I’m looking forward to it.": {
+"level": 2
+},
+"I’m meeting some friends for drinks.": {
+"level": 2
+},
+"I’m new here. I start today.": {
+"level": 2
+},
+"I’m not a part of this.": {
+"level": 2
+},
+"I’m not a salesperson.": {
+"level": 2
+},
+"I’m not angry, just tired.": {
+"level": 2
+},
+"I’m not doing that.": {
+"level": 1
+},
+"I’m not going to do that.": {
+"level": 2
+},
+"I’m not joking.": {
+"level": 2
+},
+"I’m not kidding. It’s really expensive.": {
+"level": 2
+},
+"I’m not leaving the house today.": {
+"level": 2
+},
+"I’m not mad. I’m just curious.": {
+"level": 2
+},
+"I’m not making excuses, okay?": {
+"level": 3
+},
+"I’m not really the camping type.": {
+"level": 3
+},
+"I’m not stopping for anyone.": {
+"level": 2
+},
+"I’m off the clock now.": {
+"level": 3
+},
+"I’m on medication for a cold.": {
+"level": 2
+},
+"I’m on my way.": {
+"level": 1
+},
+"I’m on the 12:15 flight.": {
+"level": 1
+},
+"I’m only here for the day.": {
+"level": 2
+},
+"I’m only here for tonight.": {
+"level": 1
+},
+"I’m pretty much done here.": {
+"level": 2
+},
+"I’m ready to start again.": {
+"level": 1
+},
+"I’m really going to miss you.": {
+"level": 2
+},
+"I’m scared of heights.": {
+"level": 2
+},
+"I’m sending it back.": {
+"level": 1
+},
+"I’m sick of this rain.": {
+"level": 2
+},
+"I’m sick of waiting.": {
+"level": 2
+},
+"I’m so glad to see you.": {
+"level": 2
+},
+"I’m so glad you liked it.": {
+"level": 2
+},
+"I’m so nervous about tomorrow.": {
+"level": 1
+},
+"I’m so proud of you.": {
+"level": 2
+},
+"I’m so stressed out about work.": {
+"level": 2
+},
+"I’m so tired I’m seeing double.": {
+"level": 3
+},
+"I’m sorry you lost your job.": {
+"level": 2
+},
+"I’m sorry, I don’t follow.": {
+"level": 3
+},
+"I’m sorry, I have to go.": {
+"level": 2
+},
+"I’m sorry, I’ve forgotten your name.": {
+"level": 2
+},
+"I’m sorry, but I can’t come.": {
+"level": 2
+},
+"I’m sorry, but I disagree.": {
+"level": 1
+},
+"I’m sorry. It won’t happen again.": {
+"level": 2
+},
+"I’m starving. Is dinner ready?": {
+"level": 2
+},
+"I’m staying for a month.": {
+"level": 1
+},
+"I’m still on hold.": {
+"level": 2
+},
+"I’m taking a cooking class.": {
+"level": 1
+},
+"I’m tired of hearing that.": {
+"level": 2
+},
+"I’m too busy to cook tonight.": {
+"level": 2
+},
+"I’m too tired for this.": {
+"level": 2,
+"ja": "疲れてて、こんなの無理"
+},
+"I’m trying not to laugh.": {
+"level": 2
+},
+"I’m trying, but it’s awkward.": {
+"level": 2
+},
+"I’m with you on this one.": {
+"level": 3
+},
+"I’ve asked you three times already.": {
+"level": 2
+},
+"I’ve been asked to help out.": {
+"level": 2
+},
+"I’ve been overeating lately.": {
+"level": 2
+},
+"I’ve been planning this for months.": {
+"level": 2
+},
+"I’ve been there four times.": {
+"level": 2
+},
+"I’ve been there over twenty times.": {
+"level": 2
+},
+"I’ve been to Paris three times.": {
+"level": 2
+},
+"I’ve been waiting for 50 minutes.": {
+"level": 2
+},
+"I’ve called at least three times.": {
+"level": 2
+},
+"I’ve called you several times.": {
+"level": 2
+},
+"I’ve forgotten my password.": {
+"level": 2
+},
+"I’ve got a gig on Friday.": {
+"level": 3
+},
+"I’ve had two glasses of wine.": {
+"level": 2
+},
+"I’ve just bought a new phone.": {
+"level": 2
+},
+"I’ve known her for ten years.": {
+"level": 2
+},
+"I’ve lived here for eight years.": {
+"level": 2
+},
+"I’ve lived here for fifteen years.": {
+"level": 2
+},
+"I’ve lived here for six years.": {
+"level": 2
+},
+"I’ve lived here for years.": {
+"level": 1
+},
+"I’ve lived here my whole life.": {
+"level": 2
+},
+"I’ve lived here since 2019.": {
+"level": 2
+},
+"I’ve lived here twenty-some years.": {
+"level": 3
+},
+"I’ve made an effort, you know.": {
+"level": 3
+},
+"I’ve moved three times.": {
+"level": 2
+},
+"I’ve never been to Paris.": {
+"level": 1
+},
+"I’ve never flown business class.": {
+"level": 2
+},
+"I’ve told you a hundred times!": {
+"level": 2
+},
+"I’ve told you fifteen times!": {
+"level": 2
+},
+"Just a sip, please.": {
+"level": 2
+},
+"Just breathe. You’re gonna be fine.": {
+"level": 3
+},
+"Just give me a shot.": {
+"level": 3
+},
+"Just listen to your heart.": {
+"level": 2
+},
+"Just one, and it’s already taken.": {
+"level": 0
+},
+"Just put your initials here.": {
+"level": 2
+},
+"Just take it easy today.": {
+"level": 2
+},
+"Just talk it out.": {
+"level": 3
+},
+"Just tell him straight.": {
+"level": 3
+},
+"Karaoke isn’t really my thing.": {
+"level": 3
+},
+"Karaoke tonight? I’ll pass.": {
+"level": 3
+},
+"Karaoke? Forget it.": {
+"level": 2
+},
+"Keep going, I’m listening.": {
+"level": 2
+},
+"Kids are expensive to raise.": {
+"level": 2
+},
+"Kids respond well to music.": {
+"level": 2
+},
+"Leave the lights on, please.": {
+"level": 1
+},
+"Leaving early was the right call.": {
+"level": 3
+},
+"Let me ask my wife first.": {
+"level": 2
+},
+"Let me ask you something.": {
+"level": 1
+},
+"Let me call you right back.": {
+"level": 2
+},
+"Let me explain how it works.": {
+"level": 2
+},
+"Let me get you a chair.": {
+"level": 2
+},
+"Let me get you some water.": {
+"level": 2
+},
+"Let me grab my jacket.": {
+"level": 2
+},
+"Let me help you with that.": {
+"level": 2
+},
+"Let me kick things off.": {
+"level": 3
+},
+"Let me make sure I understand.": {
+"level": 2
+},
+"Let’s break it down into steps.": {
+"level": 3
+},
+"Let’s celebrate on the real day.": {
+"level": 2
+},
+"Let’s compare the prices.": {
+"level": 2
+},
+"Let’s do a quick brainstorming session.": {
+"level": 3
+},
+"Let’s draw cards to decide.": {
+"level": 2
+},
+"Let’s finish one big task first.": {
+"level": 2
+},
+"Let’s focus on the good part.": {
+"level": 2
+},
+"Let’s get lunch sometime next week.": {
+"level": 2
+},
+"Let’s get things going.": {
+"level": 3
+},
+"Let’s get you a coffee.": {
+"level": 2
+},
+"Let’s go see what’s going on.": {
+"level": 2
+},
+"Let’s go together. It saves time.": {
+"level": 2
+},
+"Let’s go. I’m buying.": {
+"level": 2
+},
+"Let’s grab a coffee.": {
+"level": 2
+},
+"Let’s hop on the next bus.": {
+"level": 3
+},
+"Let’s just get this over with.": {
+"level": 3
+},
+"Let’s just see how things go.": {
+"level": 2
+},
+"Let’s just take a cab.": {
+"level": 2
+},
+"Let’s keep in touch!": {
+"level": 2
+},
+"Let’s keep it going!": {
+"level": 3
+},
+"Let’s keep this between us, okay?": {
+"level": 2
+},
+"Let’s keep this going.": {
+"level": 3
+},
+"Let’s keep work and home separate.": {
+"level": 2
+},
+"Let’s leave at eight, right?": {
+"level": 1
+},
+"Let’s make it an even hundred.": {
+"level": 3
+},
+"Let’s meet at four o’clock sharp.": {
+"level": 2
+},
+"Let’s meet tomorrow night.": {
+"level": 1
+},
+"Let’s meet under the bridge.": {
+"level": 1
+},
+"Let’s meet, say, around seven?": {
+"level": 3
+},
+"Let’s not go to bed angry.": {
+"level": 2
+},
+"Let’s not skip class today.": {
+"level": 2
+},
+"Let’s not talk about politics.": {
+"level": 2
+},
+"Let’s order some pizza tonight.": {
+"level": 1
+},
+"Let’s see what’s next. I’m excited.": {
+"level": 2
+},
+"Let’s see… how about Friday?": {
+"level": 2
+},
+"Let’s start off with something easy.": {
+"level": 2
+},
+"Let’s start with a quick icebreaker.": {
+"level": 3
+},
+"Let’s stick to the plan.": {
+"level": 3
+},
+"Let’s take turns.": {
+"level": 2
+},
+"Let’s talk in the conference room.": {
+"level": 2
+},
+"Let’s throw out the old milk.": {
+"level": 2
+},
+"Let’s wait outside and surprise her.": {
+"level": 2
+},
+"Let’s wear matching shirts tomorrow.": {
+"level": 2
+},
+"Lobby, ten minutes. Don’t be late.": {
+"level": 3
+},
+"Long trip, but so worth it.": {
+"level": 2
+},
+"Look at him go!": {
+"level": 3
+},
+"Look, I just need a minute.": {
+"level": 2
+},
+"Look, I’ll be honest with you.": {
+"level": 2
+},
+"Look, I’m really sorry.": {
+"level": 1
+},
+"Look, I’m sorry.": {
+"level": 1
+},
+"Looking forward to seeing you!": {
+"level": 2
+},
+"Loud music makes me uncomfortable.": {
+"level": 2
+},
+"Lunch is on me today.": {
+"level": 3
+},
+"Lunch together? What do you say?": {
+"level": 3
+},
+"Lunch tomorrow? My treat.": {
+"level": 2
+},
+"Man, that’d be fun!": {
+"level": 3
+},
+"May I have your attention, please?": {
+"level": 3
+},
+"Maybe it’s all for the best.": {
+"level": 3
+},
+"Maybe it’s just the jet lag.": {
+"level": 3
+},
+"Maybe we should take a taxi.": {
+"level": 2
+},
+"Meet me in parking lot B.": {
+"level": 2
+},
+"Meet me in the stairwell.": {
+"level": 3
+},
+"Meet my soon-to-be boss.": {
+"level": 3
+},
+"Millions of people visit every year.": {
+"level": 2
+},
+"More coffee? — I’m good, thanks.": {
+"level": 0
+},
+"More importantly, where is my passport?": {
+"level": 2
+},
+"More people walk than drive here.": {
+"level": 2
+},
+"Mostly pointless, but this one helps.": {
+"level": 0
+},
+"Moving is a lot of work.": {
+"level": 2
+},
+"Moving is exhausting.": {
+"level": 2
+},
+"Moving on to the next point.": {
+"level": 2
+},
+"My account got hacked.": {
+"level": 3
+},
+"My account is set to private.": {
+"level": 2
+},
+"My birthday is in December.": {
+"level": 1
+},
+"My birthday is two weeks away.": {
+"level": 2
+},
+"My car makes a weird sound.": {
+"level": 2
+},
+"My chest hurts when I run.": {
+"level": 2
+},
+"My dad is fifty years old.": {
+"level": 2
+},
+"My dad is nuts about baseball.": {
+"level": 3
+},
+"My degree was totally useless here.": {
+"level": 3
+},
+"My ears are still ringing.": {
+"level": 2
+},
+"My father retired last year.": {
+"level": 2
+},
+"My friend got fired today.": {
+"level": 2
+},
+"My legs really hurt.": {
+"level": 1
+},
+"My mechanic doesn’t speak English.": {
+"level": 2,
+"ja": "うちの整備士さんは英語が話せないよ"
+},
+"My mom’s going to kill me.": {
+"level": 0
+},
+"My phone buzzes every ten minutes.": {
+"level": 2
+},
+"My phone is a big distraction.": {
+"level": 2
+},
+"My room number is 533.": {
+"level": 1
+},
+"My roommate is out right now.": {
+"level": 2
+},
+"My roommate just moved out.": {
+"level": 2
+},
+"My sister got married last year.": {
+"level": 2
+},
+"My sister made this playlist.": {
+"level": 2
+},
+"My sister mentioned you like hiking.": {
+"level": 2
+},
+"My son is in third grade.": {
+"level": 2
+},
+"My son is twelve years old.": {
+"level": 2
+},
+"My stomach hurts a little.": {
+"level": 1
+},
+"Name three things you like.": {
+"level": 1
+},
+"Never badmouth your old boss.": {
+"level": 3
+},
+"Never mind, I found it.": {
+"level": 2
+},
+"Nice talking with you. See you!": {
+"level": 2
+},
+"No dessert until you finish dinner.": {
+"level": 2
+},
+"No more coffee for me.": {
+"level": 1
+},
+"No need to apologize. It’s fine.": {
+"level": 2
+},
+"No one will bother you here.": {
+"level": 2
+},
+"No phones at the table.": {
+"level": 1
+},
+"No rush, take your time.": {
+"level": 1
+},
+"No rush. Just think about it.": {
+"level": 2
+},
+"No rush. Pay me back whenever.": {
+"level": 2
+},
+"No thanks, I’m all set.": {
+"level": 3
+},
+"No way. I’m staying.": {
+"level": 2
+},
+"No way. Never again.": {
+"level": 2
+},
+"No, I insist. Let me pay.": {
+"level": 2
+},
+"No, I wouldn’t say that.": {
+"level": 3
+},
+"No, for two reasons.": {
+"level": 0
+},
+"No, he’s just like that.": {
+"level": 3
+},
+"No, no, I love it!": {
+"level": 2
+},
+"No, that’s really not necessary.": {
+"level": 2
+},
+"No, you shouldn’t. It’s a secret.": {
+"level": 2
+},
+"Nobody messes with my sister.": {
+"level": 3
+},
+"None of these shoes fit me.": {
+"level": 2
+},
+"Normally, no. But today is okay.": {
+"level": 2
+},
+"Not for real, just pretend.": {
+"level": 2
+},
+"Not if it rains.": {
+"level": 2
+},
+"Not me. Ask someone else.": {
+"level": 2
+},
+"Not really. But thanks for asking.": {
+"level": 2
+},
+"Not too hot, not too cold.": {
+"level": 2
+},
+"Nothing embarrasses her.": {
+"level": 2
+},
+"Now is not the time.": {
+"level": 2
+},
+"Now it’s by the window instead.": {
+"level": 0
+},
+"Now it’s twelve dollars? Since when?": {
+"level": 3
+},
+"Now listen, about tomorrow…": {
+"level": 0
+},
+"Odd choice, but I respect it.": {
+"level": 3
+},
+"Of course, no problem at all.": {
+"level": 2
+},
+"Oh no, I overslept!": {
+"level": 2
+},
+"Oh, boy. That’s not good.": {
+"level": 3
+},
+"Oh, come on! That’s not fair.": {
+"level": 2
+},
+"Oh, don’t apologize. It’s fine.": {
+"level": 2
+},
+"Oh, don’t do that.": {
+"level": 2
+},
+"Oh, fine. You win.": {
+"level": 2
+},
+"Oh, it’s fine. Nobody really minds.": {
+"level": 2
+},
+"Oh, man. Really? It’s closed?": {
+"level": 3
+},
+"Oh, my goodness, are you okay?": {
+"level": 2
+},
+"Oh, no, it’s just a nickname.": {
+"level": 2
+},
+"Oh, now I get it!": {
+"level": 2
+},
+"Oh, okay. Then I’ll have tea.": {
+"level": 2
+},
+"Oh, please. It was nothing.": {
+"level": 2
+},
+"Oh, right. I knew that.": {
+"level": 2
+},
+"Oh, thank goodness. Where is she?": {
+"level": 2
+},
+"Oh, that’s adorable.": {
+"level": 2
+},
+"Oh, that’s mine. Thanks.": {
+"level": 2
+},
+"Oh, wait, I forgot my key.": {
+"level": 2
+},
+"Oh, well, that’s fine then.": {
+"level": 2
+},
+"Oh, you liar. You loved it.": {
+"level": 2
+},
+"Okay, I got it. Thanks.": {
+"level": 2
+},
+"Okay, I’m with you.": {
+"level": 3,
+"ja": "うん、賛成だよ"
+},
+"Okay, back to the fun part!": {
+"level": 2
+},
+"Okay, back to work, everyone.": {
+"level": 2
+},
+"Okay, cut it out, you two.": {
+"level": 3
+},
+"Okay, everybody out. We’re closing.": {
+"level": 2
+},
+"Okay, everyone. Let’s do this!": {
+"level": 3
+},
+"Okay, fine. It was me.": {
+"level": 2
+},
+"Okay, if you say so.": {
+"level": 3
+},
+"Okay, let’s get down to business.": {
+"level": 3
+},
+"Okay, let’s move on.": {
+"level": 2
+},
+"Okay, moving right along…": {
+"level": 3
+},
+"Okay, okay, I get it.": {
+"level": 2
+},
+"Okay, so, who wants to start?": {
+"level": 2
+},
+"Okay, team, big day today!": {
+"level": 2
+},
+"Okay, that’s too much information.": {
+"level": 3,
+"ja": "そこまでは聞いてないよ"
+},
+"Okay, what’s next?": {
+"level": 2
+},
+"One train ticket to London, please.": {
+"level": 2
+},
+"Ooh, fun! Let me guess.": {
+"level": 2
+},
+"Ooh, gossip! Tell me everything.": {
+"level": 2
+},
+"Ooh, more time at the beach!": {
+"level": 2
+},
+"Oops, I swallowed my gum.": {
+"level": 2
+},
+"Oops, my bad. I’ll fix it.": {
+"level": 3
+},
+"Our building has a mouse problem.": {
+"level": 2
+},
+"Our flight leaves from Gate 48.": {
+"level": 2
+},
+"Our flight leaves in thirty-one minutes.": {
+"level": 2
+},
+"Out of the way, please!": {
+"level": 3
+},
+"Paris is on my bucket list.": {
+"level": 3
+},
+"Passport, check. Ticket, check.": {
+"level": 3
+},
+"Pizza night? I’m there.": {
+"level": 3
+},
+"Pizza tonight? — I’m in!": {
+"level": 0
+},
+"Please ask the receptionist.": {
+"level": 2
+},
+"Please back off a little.": {
+"level": 3
+},
+"Please don’t be mad at me.": {
+"level": 2
+},
+"Please don’t call this number again.": {
+"level": 2
+},
+"Please don’t hesitate to contact me.": {
+"level": 3
+},
+"Please don’t make a scene here.": {
+"level": 3
+},
+"Please don’t shove.": {
+"level": 3
+},
+"Please don’t take this too personally.": {
+"level": 3
+},
+"Please don’t talk during the movie.": {
+"level": 2
+},
+"Please don’t touch the paintings.": {
+"level": 1
+},
+"Please don’t wait for me.": {
+"level": 1
+},
+"Please feel at ease.": {
+"level": 2
+},
+"Please fill out this form first.": {
+"level": 2
+},
+"Please have a seat.": {
+"level": 1
+},
+"Please keep it down after ten.": {
+"level": 3
+},
+"Please keep it under 100 words.": {
+"level": 2
+},
+"Please keep still for a moment.": {
+"level": 2
+},
+"Please lock up when you leave.": {
+"level": 2
+},
+"Please organize these by date.": {
+"level": 2
+},
+"Please power down your phones now.": {
+"level": 3
+},
+"Please read it out loud.": {
+"level": 1
+},
+"Please refrain from smoking.": {
+"level": 3
+},
+"Please refrain from using your phone.": {
+"level": 3
+},
+"Please stop asking me that.": {
+"level": 1
+},
+"Please treat everyone with respect.": {
+"level": 2
+},
+"Please turn to page 85.": {
+"level": 1
+},
+"Please vote for me.": {
+"level": 1
+},
+"Please, I really need help.": {
+"level": 2
+},
+"Please, call me Ken.": {
+"level": 1
+},
+"Please, make yourself at home.": {
+"level": 2
+},
+"Plus, it’s always fun.": {
+"level": 2
+},
+"Plus, it’s cheaper on weekdays.": {
+"level": 2
+},
+"Prices are pretty low right now.": {
+"level": 2
+},
+"Put on your dancing shoes tonight!": {
+"level": 3
+},
+"Ready to rock and roll?": {
+"level": 3
+},
+"Really? Because you said no yesterday.": {
+"level": 2
+},
+"Really? Come on!": {
+"level": 0
+},
+"Relax, I haven’t started yet.": {
+"level": 2
+},
+"Relax, everything’s fine.": {
+"level": 1
+},
+"Relax, it’s not a contest.": {
+"level": 2
+},
+"Relax. What’s the big deal?": {
+"level": 3,
+"ja": "落ち着いて。そんなに大ごと？"
+},
+"Remember to keep your ticket.": {
+"level": 2
+},
+"Remember, no phones at dinner.": {
+"level": 2
+},
+"Right in front of me? Seriously?": {
+"level": 0
+},
+"Right. Because I was busy.": {
+"level": 0
+},
+"Safety first, speed second.": {
+"level": 2
+},
+"Same for me, please.": {
+"level": 1
+},
+"Screens are hard on my eyes.": {
+"level": 2
+},
+"See you Monday!": {
+"level": 1
+},
+"See you Saturday for the game.": {
+"level": 2
+},
+"See, that’s what worries me.": {
+"level": 3
+},
+"Seeing Paris is my lifelong dream.": {
+"level": 2
+},
+"Seriously? You ate the whole cake?": {
+"level": 2
+},
+"Seven o’clock? Fine with me.": {
+"level": 2
+},
+"Seven o’clock? Great, see you then.": {
+"level": 2
+},
+"She asked me out again!": {
+"level": 3
+},
+"She doesn’t eat spicy food.": {
+"level": 1
+},
+"She dumped him by text.": {
+"level": 3,
+"ja": "彼女はメッセージで彼をふった"
+},
+"She earned that promotion.": {
+"level": 2
+},
+"She goes to an after-school class.": {
+"level": 2
+},
+"She got called into a meeting.": {
+"level": 3
+},
+"She invited some of her coworkers.": {
+"level": 2
+},
+"She just might be the one.": {
+"level": 3
+},
+"She really knows her job.": {
+"level": 2
+},
+"She’ll be here in a minute.": {
+"level": 2
+},
+"She’s a machine at the gym.": {
+"level": 3
+},
+"She’s a musician friend of mine.": {
+"level": 2
+},
+"She’s actually the manager here.": {
+"level": 2
+},
+"She’s going to run for mayor.": {
+"level": 3
+},
+"She’s in charge because she’s brilliant.": {
+"level": 2
+},
+"She’s patient and great with kids.": {
+"level": 2
+},
+"She’s smart and really kind.": {
+"level": 1
+},
+"She’s tough; she can handle it.": {
+"level": 3
+},
+"Shh, the baby’s sleeping.": {
+"level": 2
+},
+"Since when do you drink coffee?": {
+"level": 3
+},
+"Sing at the party? No way!": {
+"level": 2
+},
+"Six is plenty, thanks.": {
+"level": 2
+},
+"So close! I almost got it.": {
+"level": 2
+},
+"So, anyway… how was your weekend?": {
+"level": 2
+},
+"Somebody left the door open.": {
+"level": 1
+},
+"Someone forged my signature.": {
+"level": 3
+},
+"Someone tried to steal my bag!": {
+"level": 2
+},
+"Something is wrong with my phone.": {
+"level": 2
+},
+"Sorry I didn’t tell you before.": {
+"level": 2
+},
+"Sorry about that. Where were we?": {
+"level": 2
+},
+"Sorry the trip didn’t work out.": {
+"level": 3
+},
+"Sorry, I already spent it.": {
+"level": 2
+},
+"Sorry, I can’t make it tonight.": {
+"level": 2
+},
+"Sorry, I can’t say.": {
+"level": 1
+},
+"Sorry, I can’t talk right now.": {
+"level": 2
+},
+"Sorry, I couldn’t hear you.": {
+"level": 1
+},
+"Sorry, I don’t have one.": {
+"level": 1
+},
+"Sorry, I don’t know.": {
+"level": 1
+},
+"Sorry, I don’t think I can.": {
+"level": 2
+},
+"Sorry, I gotta go.": {
+"level": 3
+},
+"Sorry, I had a family emergency.": {
+"level": 2
+},
+"Sorry, I haven’t decided yet.": {
+"level": 2
+},
+"Sorry, I just assumed you knew.": {
+"level": 3
+},
+"Sorry, I made that up.": {
+"level": 2
+},
+"Sorry, I screwed up the order.": {
+"level": 3
+},
+"Sorry, I thought you knew.": {
+"level": 1
+},
+"Sorry, I was a little drunk.": {
+"level": 0
+},
+"Sorry, I was just daydreaming.": {
+"level": 3
+},
+"Sorry, I wasn’t listening.": {
+"level": 1
+},
+"Sorry, I’m busy right now.": {
+"level": 1
+},
+"Sorry, I’m on the other line.": {
+"level": 3
+},
+"Sorry, I’m swamped this week.": {
+"level": 3
+},
+"Sorry, I’m twenty minutes late.": {
+"level": 1
+},
+"Sorry, I’ve got plans tonight.": {
+"level": 2
+},
+"Sorry, can I just finish?": {
+"level": 2
+},
+"Sorry, can we start over?": {
+"level": 2
+},
+"Sorry, could you speak up?": {
+"level": 2
+},
+"Sorry, did I wake you up?": {
+"level": 2
+},
+"Sorry, did that sound weird?": {
+"level": 2
+},
+"Sorry, do I know you?": {
+"level": 1
+},
+"Sorry, it’s members only.": {
+"level": 2
+},
+"Sorry, it’s mine now.": {
+"level": 2
+},
+"Sorry, my break’s almost over.": {
+"level": 2
+},
+"Sorry, my mind just went blank.": {
+"level": 3
+},
+"Sorry, my mind went blank.": {
+"level": 3
+},
+"Sorry, my son is sick today.": {
+"level": 2
+},
+"Sorry, not gonna happen.": {
+"level": 3
+},
+"Sorry, please carry on.": {
+"level": 3
+},
+"Sorry, staff only beyond this point.": {
+"level": 2
+},
+"Sorry, that size is currently unavailable.": {
+"level": 2
+},
+"Sorry, that was a personal call.": {
+"level": 2
+},
+"Sorry, that was a typo.": {
+"level": 2
+},
+"Sorry, that’s none of your business.": {
+"level": 3
+},
+"Sorry, that’s private.": {
+"level": 2
+},
+"Sorry, we don’t have one here.": {
+"level": 2
+},
+"Sorry, we haven’t decided yet.": {
+"level": 2
+},
+"Sorry, we’re not taking orders now.": {
+"level": 2
+},
+"Sorry, we’re on a tight schedule.": {
+"level": 3
+},
+"Sorry, we’re out of milk.": {
+"level": 1
+},
+"Sorry, what did you just say?": {
+"level": 2
+},
+"Sorry, what was the address again?": {
+"level": 2
+},
+"Sorry, what was your name again?": {
+"level": 2
+},
+"Sorry, you can’t vote twice.": {
+"level": 2
+},
+"Sorry, you lost your chance.": {
+"level": 2
+},
+"Sorry, you’re breaking up.": {
+"level": 3
+},
+"Speaking of food, are you hungry?": {
+"level": 2
+},
+"Stand up for your friends.": {
+"level": 2
+},
+"Stay or go, it’s your call.": {
+"level": 3
+},
+"Stop it, you’re freaking me out.": {
+"level": 3
+},
+"Students are our best customers.": {
+"level": 2
+},
+"Sure, but first, coffee.": {
+"level": 2
+},
+"Sure, happy to help.": {
+"level": 1
+},
+"Sure. Although I might be late.": {
+"level": 2
+},
+"Ta-da! I made dinner.": {
+"level": 3
+},
+"Take a break every hour.": {
+"level": 1
+},
+"Take a breath. You’ll be fine.": {
+"level": 2
+},
+"Take a deep breath and relax.": {
+"level": 2
+},
+"Take the wrapper off first.": {
+"level": 2
+},
+"Take your time. There’s no rush.": {
+"level": 2
+},
+"Tape will hold it in place.": {
+"level": 2
+},
+"Technically, I’m still an intern.": {
+"level": 3
+},
+"Tell me what you need.": {
+"level": 1
+},
+"Tell me. I’m listening.": {
+"level": 2
+},
+"Ten dollars? No deal.": {
+"level": 2
+},
+"Ten years from now, who knows?": {
+"level": 3
+},
+"Thank God you’re here!": {
+"level": 2
+},
+"Thank you for inviting me.": {
+"level": 2
+},
+"Thank you, that’s so sweet.": {
+"level": 2
+},
+"Thank you. I appreciate that.": {
+"level": 2
+},
+"Thank you. I love it.": {
+"level": 1
+},
+"Thanks for nothing, weather app.": {
+"level": 3
+},
+"Thanks for taking the message.": {
+"level": 2,
+"ja": "伝言を預かってくれてありがとう"
+},
+"Thanks for waiting. I appreciate it.": {
+"level": 2
+},
+"Thanks! I’m looking forward to it.": {
+"level": 2
+},
+"Thanks! See you around.": {
+"level": 3
+},
+"Thanks, but I’d rather not.": {
+"level": 2
+},
+"Thanks, but that won’t be necessary.": {
+"level": 2
+},
+"Thanks, but that’s not very helpful.": {
+"level": 2
+},
+"Thanks, but you’re not helping.": {
+"level": 2
+},
+"Thanks, you’re a lifesaver!": {
+"level": 3
+},
+"Thanks. I’ll see myself out.": {
+"level": 3
+},
+"That breaks every single rule.": {
+"level": 2
+},
+"That doesn’t belong to you.": {
+"level": 2
+},
+"That doesn’t even count as cooking.": {
+"level": 3
+},
+"That goal didn’t count.": {
+"level": 2
+},
+"That leaves me with no choice.": {
+"level": 3
+},
+"That meeting was pointless.": {
+"level": 2
+},
+"That movie gave me nightmares.": {
+"level": 2
+},
+"That plan’s dead.": {
+"level": 3
+},
+"That soup you made was great.": {
+"level": 2
+},
+"That takes the pressure off me.": {
+"level": 3
+},
+"That was amazing!": {
+"level": 1
+},
+"That was eight years ago!": {
+"level": 2
+},
+"That was so awkward.": {
+"level": 2
+},
+"That was, like, years ago.": {
+"level": 3
+},
+"That would literally kill me.": {
+"level": 0
+},
+"That’ll be twenty bucks.": {
+"level": 3
+},
+"That’s a terrible idea. Don’t.": {
+"level": 2
+},
+"That’s a total invasion of privacy.": {
+"level": 3
+},
+"That’s correct. I made it myself.": {
+"level": 3
+},
+"That’s different. I asked first.": {
+"level": 2
+},
+"That’s eighteen dollars and four cents.": {
+"level": 2
+},
+"That’s good, right?": {
+"level": 1
+},
+"That’s just how it is.": {
+"level": 2
+},
+"That’s just mean. Take it back.": {
+"level": 2
+},
+"That’s kind of a long walk.": {
+"level": 2
+},
+"That’s me! I’m in the paper!": {
+"level": 2
+},
+"That’s messed up. Don’t do that.": {
+"level": 3
+},
+"That’s not a toy, buddy.": {
+"level": 3
+},
+"That’s not such a bad idea.": {
+"level": 2
+},
+"That’s not what I said.": {
+"level": 2
+},
+"That’s really rude.": {
+"level": 2
+},
+"That’s ridiculous. Who believes that?": {
+"level": 3
+},
+"That’s so romantic.": {
+"level": 2
+},
+"That’s so sweet of you.": {
+"level": 2
+},
+"That’s so sweet, but I can’t.": {
+"level": 2
+},
+"That’s the best news all week!": {
+"level": 2
+},
+"That’s the only way it’s fun.": {
+"level": 3
+},
+"That’s the third time this week.": {
+"level": 2
+},
+"That’s too weird for me.": {
+"level": 2
+},
+"That’s way in the future.": {
+"level": 2
+},
+"That’s way too much food.": {
+"level": 2
+},
+"That’s weird. He never calls me.": {
+"level": 2
+},
+"That’s where I keep my keys.": {
+"level": 2
+},
+"That’s where we first met.": {
+"level": 1,
+"ja": "そこで私たちは初めて会ったの"
+},
+"The bus comes every fifteen minutes.": {
+"level": 2
+},
+"The bus comes every ten minutes.": {
+"level": 2
+},
+"The bus leaves in two hours.": {
+"level": 2
+},
+"The buses come ten minutes apart.": {
+"level": 2
+},
+"The candles are a nice touch.": {
+"level": 3
+},
+"The coffee here is lousy.": {
+"level": 3
+},
+"The email also mentioned the price.": {
+"level": 2
+},
+"The food here is pretty good.": {
+"level": 2
+},
+"The food was surprisingly good.": {
+"level": 2
+},
+"The hotel looks nice so far.": {
+"level": 2
+},
+"The hotel was pretty nice.": {
+"level": 2
+},
+"The job doesn’t pay much.": {
+"level": 2
+},
+"The job has good prospects.": {
+"level": 3
+},
+"The manager will be back shortly.": {
+"level": 2
+},
+"The meeting is tomorrow at ten.": {
+"level": 2
+},
+"The meeting’s at 7 p.m.": {
+"level": 2
+},
+"The new boss seems pretty cool.": {
+"level": 2
+},
+"The noise doesn’t bother me.": {
+"level": 1
+},
+"The park will bear his name.": {
+"level": 3
+},
+"The point is, I’m sorry.": {
+"level": 2
+},
+"The room is filled with antiques.": {
+"level": 2
+},
+"The shop closed after four months.": {
+"level": 2
+},
+"The shop was sold last month.": {
+"level": 2
+},
+"The station is five minutes away.": {
+"level": 2
+},
+"The station is this way, right?": {
+"level": 2
+},
+"The store will open at ten.": {
+"level": 2
+},
+"The table seats six to eight.": {
+"level": 2
+},
+"The tour was conducted in English.": {
+"level": 3
+},
+"The traffic was a nightmare.": {
+"level": 3
+},
+"The train comes every twenty minutes.": {
+"level": 2
+},
+"The train leaves every sixteen minutes.": {
+"level": 2
+},
+"The train left twenty minutes ago.": {
+"level": 2
+},
+"The trip was amazing!": {
+"level": 1
+},
+"The view is worth the trip.": {
+"level": 2
+},
+"The view was totally worth it.": {
+"level": 2
+},
+"The winner gets a free coffee.": {
+"level": 2
+},
+"Then I’ll take the next train.": {
+"level": 2
+},
+"Then how did they find out?": {
+"level": 2
+},
+"There are a million other options.": {
+"level": 2
+},
+"There are handprints on the window.": {
+"level": 2
+},
+"There are thirteen of us.": {
+"level": 1
+},
+"There are three of us.": {
+"level": 1
+},
+"There are three parts to this.": {
+"level": 2
+},
+"There are two kinds of people.": {
+"level": 3
+},
+"There were about a thousand people.": {
+"level": 2
+},
+"There’s a café across the street.": {
+"level": 2
+},
+"There’s a rally downtown on Saturday.": {
+"level": 3
+},
+"There’s a scratch on the door.": {
+"level": 2
+},
+"There’s coffee in the break room.": {
+"level": 2
+},
+"There’s no way I’m late again.": {
+"level": 3
+},
+"There’s nothing to tell, really.": {
+"level": 2
+},
+"There’s only twenty minutes left.": {
+"level": 1
+},
+"These numbers don’t match up.": {
+"level": 2
+},
+"These three are already approved.": {
+"level": 2
+},
+"They are completely different.": {
+"level": 2
+},
+"They give out free samples here.": {
+"level": 2
+},
+"They haven’t answered a single email.": {
+"level": 2
+},
+"They knocked down the old wall.": {
+"level": 2
+},
+"They let us right in.": {
+"level": 2
+},
+"They modernized the old station.": {
+"level": 3,
+"ja": "古い駅をモダンに改装した"
+},
+"They paid us fifty bucks each.": {
+"level": 3
+},
+"They revoked his license.": {
+"level": 3
+},
+"They scheduled the meeting for five.": {
+"level": 2
+},
+"They won’t let us back in.": {
+"level": 2
+},
+"They’re my brothers.": {
+"level": 1
+},
+"They’re reading our emails?": {
+"level": 2
+},
+"Things are finally back to normal.": {
+"level": 2
+},
+"Things got pretty ugly.": {
+"level": 2
+},
+"This cake looks scrumptious.": {
+"level": 3
+},
+"This coffee is too strong.": {
+"level": 1
+},
+"This could bring us back together.": {
+"level": 3
+},
+"This hotel is our exclusive partner.": {
+"level": 3
+},
+"This hotel is pretty nice.": {
+"level": 2
+},
+"This is embarrassing, but I’m lost.": {
+"level": 2
+},
+"This is exactly what I wanted.": {
+"level": 2
+},
+"This is my grandmother.": {
+"level": 1
+},
+"This is my third time here.": {
+"level": 2
+},
+"This is our friend Mark.": {
+"level": 1,
+"ja": "こちらは友だちのマークです"
+},
+"This is so sad.": {
+"level": 2
+},
+"This is weird.": {
+"level": 2
+},
+"This is where we first met.": {
+"level": 2
+},
+"This job is a dead end.": {
+"level": 3
+},
+"This just says “no parking.”": {
+"level": 2
+},
+"This number is for emergencies only.": {
+"level": 2
+},
+"This one is way cheaper.": {
+"level": 2
+},
+"This one’s way cheaper.": {
+"level": 2
+},
+"This phone case is almost indestructible.": {
+"level": 3
+},
+"This place is amazing.": {
+"level": 1
+},
+"This place is way too quiet.": {
+"level": 2
+},
+"This price is ridiculous.": {
+"level": 2
+},
+"This report is just busy work.": {
+"level": 3
+},
+"This song makes me feel nostalgic.": {
+"level": 3
+},
+"This temple is worth seeing.": {
+"level": 2
+},
+"This traffic is the worst.": {
+"level": 2
+},
+"This used to be a bookstore.": {
+"level": 2
+},
+"Three days of beaches. Sound good?": {
+"level": 2
+},
+"Three quarters of an hour.": {
+"level": 3
+},
+"Three strikes and you’re out.": {
+"level": 3
+},
+"Tickets are ten bucks each.": {
+"level": 3
+},
+"Time’s up. Pens down, please.": {
+"level": 2
+},
+"To be honest, I’m not sure.": {
+"level": 2
+},
+"Tomorrow is my last day here.": {
+"level": 2
+},
+"Tomorrow? Sure, that works for me.": {
+"level": 2
+},
+"Trends come and go.": {
+"level": 3
+},
+"Trust me, this place is good.": {
+"level": 2
+},
+"Trust me, you’ll love this place.": {
+"level": 2
+},
+"Tuesday? I’m fine with that.": {
+"level": 2
+},
+"Tuesday? No. Not then either.": {
+"level": 2,
+"ja": "火曜？だめ。その日もだめ"
+},
+"Twenty dollars’ worth of gas, please.": {
+"level": 3
+},
+"Twenty years later, we met again.": {
+"level": 2
+},
+"Two coffees to go, please.": {
+"level": 1
+},
+"Ugh, what have I become?": {
+"level": 3
+},
+"Uh, no. It was amazing.": {
+"level": 0
+},
+"Wait for a second, please.": {
+"level": 1
+},
+"Wait, I thought you paid.": {
+"level": 2
+},
+"Wait, I’m not done yet.": {
+"level": 2
+},
+"Wait, I’m not ready yet!": {
+"level": 2
+},
+"Wait, is that today?": {
+"level": 1
+},
+"Wait, is that true?": {
+"level": 1
+},
+"Wait, isn’t that my jacket?": {
+"level": 2
+},
+"Wait, that came out wrong.": {
+"level": 3
+},
+"Wait, what is happening?": {
+"level": 2
+},
+"Wait, what? Are you serious?": {
+"level": 2
+},
+"Wait, what? What wedding?": {
+"level": 2
+},
+"Wait, what’s happening right now?": {
+"level": 2
+},
+"Wait, who told you that?": {
+"level": 1
+},
+"Wait, why are you here?": {
+"level": 1
+},
+"Wake up, we’re here.": {
+"level": 2
+},
+"Want to hang out after work?": {
+"level": 2
+},
+"Want to hang out this weekend?": {
+"level": 2
+},
+"Want to try that again, politely?": {
+"level": 3
+},
+"We ate cheese with crackers.": {
+"level": 1
+},
+"We believe it’s the right address.": {
+"level": 2
+},
+"We better hurry.": {
+"level": 3
+},
+"We call it the blue house.": {
+"level": 2
+},
+"We came in second place.": {
+"level": 2
+},
+"We came in under budget.": {
+"level": 3
+},
+"We can watch a movie.": {
+"level": 1
+},
+"We care for each other.": {
+"level": 2
+},
+"We do this once a year.": {
+"level": 2
+},
+"We drove around in circles.": {
+"level": 2,
+"ja": "車でぐるぐる回ってしまった"
+},
+"We eat out every Friday night.": {
+"level": 2
+},
+"We finished three days early.": {
+"level": 2
+},
+"We got home safe and dry.": {
+"level": 3
+},
+"We gotta leave now.": {
+"level": 3
+},
+"We have a crisis.": {
+"level": 2
+},
+"We have a monthly team lunch.": {
+"level": 2
+},
+"We have not had dinner yet.": {
+"level": 2
+},
+"We have to leave now.": {
+"level": 1
+},
+"We haven’t discussed it yet.": {
+"level": 2
+},
+"We haven’t picked a venue yet.": {
+"level": 2
+},
+"We help one another at work.": {
+"level": 2
+},
+"We just gotta find the exit.": {
+"level": 3
+},
+"We met at a yoga class.": {
+"level": 2
+},
+"We met five years ago.": {
+"level": 2
+},
+"We moved here ten years ago.": {
+"level": 2
+},
+"We need better security.": {
+"level": 2
+},
+"We need passionate people like you.": {
+"level": 3
+},
+"We need ten cases of water.": {
+"level": 2
+},
+"We need three cases of water.": {
+"level": 2
+},
+"We need to hire more staff.": {
+"level": 2
+},
+"We offer four classes a week.": {
+"level": 2
+},
+"We only got three replies.": {
+"level": 2
+},
+"We only have two rooms left.": {
+"level": 2
+},
+"We only talk on the phone.": {
+"level": 2
+},
+"We redid the bathroom.": {
+"level": 2
+},
+"We should do this again.": {
+"level": 2
+},
+"We slept under the stars.": {
+"level": 2
+},
+"We split the rent three ways.": {
+"level": 3
+},
+"We talked it over. We’re good.": {
+"level": 2
+},
+"We were just talking about work.": {
+"level": 2
+},
+"We weren’t planning on that.": {
+"level": 2
+},
+"We work the same hours, right?": {
+"level": 2
+},
+"Wear something warm tonight.": {
+"level": 1
+},
+"Welcome to the real world.": {
+"level": 3
+},
+"Welcome! Great to have you back.": {
+"level": 2
+},
+"Well done! That was great.": {
+"level": 2
+},
+"Well done! You passed the test.": {
+"level": 2
+},
+"Well played. You got me.": {
+"level": 3
+},
+"Well, we should probably get going.": {
+"level": 2
+},
+"We’ll arrive in about fifteen minutes.": {
+"level": 2
+},
+"We’ll have to cancel our trip.": {
+"level": 2
+},
+"We’ll land in about six hours.": {
+"level": 2
+},
+"We’ll work in teams of two.": {
+"level": 2
+},
+"We’re actually friends, not just neighbors.": {
+"level": 2
+},
+"We’re both teachers, actually.": {
+"level": 2
+},
+"We’re cool. See you.": {
+"level": 3
+},
+"We’re gonna need a bigger table.": {
+"level": 3
+},
+"We’re having a barbecue on Sunday.": {
+"level": 2
+},
+"We’re having a meeting tomorrow night.": {
+"level": 2
+},
+"We’re having our annual office party.": {
+"level": 2
+},
+"We’re here to support our team.": {
+"level": 2
+},
+"We’re just staying for the night.": {
+"level": 2
+},
+"We’re only here for the day.": {
+"level": 2
+},
+"We’re out of toilet paper.": {
+"level": 2
+},
+"We’re ten points up.": {
+"level": 3
+},
+"We’re three days into the trip.": {
+"level": 2
+},
+"We’re visiting the museum today.": {
+"level": 2
+},
+"We’ve been friends for 12 years.": {
+"level": 2
+},
+"We’ve lived here for twenty-one years.": {
+"level": 2
+},
+"We’ve only got ten minutes left.": {
+"level": 2
+},
+"What a waste of time.": {
+"level": 2
+},
+"What about Friday instead?": {
+"level": 2
+},
+"What about dinner tomorrow?": {
+"level": 1,
+"ja": "明日の夕食はどうする？"
+},
+"What am I going to wear?": {
+"level": 2
+},
+"What are you doing here?": {
+"level": 1
+},
+"What are you having?": {
+"level": 2
+},
+"What are you laughing about?": {
+"level": 2
+},
+"What are you passionate about?": {
+"level": 3
+},
+"What are you up to tonight?": {
+"level": 3
+},
+"What day is it today?": {
+"level": 1
+},
+"What did you do this time?": {
+"level": 2
+},
+"What did you major in?": {
+"level": 2
+},
+"What do I write here?": {
+"level": 1
+},
+"What do you mean, exactly?": {
+"level": 2
+},
+"What if it rains tomorrow?": {
+"level": 1
+},
+"What if it rains? Then what?": {
+"level": 3
+},
+"What is that supposed to mean?": {
+"level": 3
+},
+"What time should I be arriving?": {
+"level": 2
+},
+"What would you have done?": {
+"level": 3
+},
+"What? Since when?": {
+"level": 3
+},
+"Whatever. I’ll go.": {
+"level": 2
+},
+"What’s going on here?": {
+"level": 1
+},
+"What’s going on? You look upset.": {
+"level": 2
+},
+"What’s good here?": {
+"level": 3
+},
+"What’s so funny?": {
+"level": 1
+},
+"What’s the minimum price?": {
+"level": 2
+},
+"What’s the starting salary?": {
+"level": 2
+},
+"What’s up? — Not much, you?": {
+"level": 0
+},
+"What’s with the long line?": {
+"level": 3
+},
+"When I’m rich, I’ll travel.": {
+"level": 1
+},
+"When you left, I was sad.": {
+"level": 2
+},
+"Where are we going? Doesn’t matter!": {
+"level": 2
+},
+"Where is the emergency exit?": {
+"level": 2
+},
+"Where’d you get that jacket?": {
+"level": 2
+},
+"Where’s the nearest emergency room?": {
+"level": 2
+},
+"Which one is the cheapest?": {
+"level": 1
+},
+"Who cares what they think?": {
+"level": 3
+},
+"Who cares? It’s just a name.": {
+"level": 3
+},
+"Who else is coming tonight?": {
+"level": 2
+},
+"Who knows what I’ll say next?": {
+"level": 3
+},
+"Who will look after your dog?": {
+"level": 2
+},
+"Whoa, slow down. Start again.": {
+"level": 2
+},
+"Who’s in charge of the booking?": {
+"level": 2
+},
+"Who’s in? One, two… everybody!": {
+"level": 0
+},
+"Why don’t we ask him?": {
+"level": 1
+},
+"Why don’t we grab lunch?": {
+"level": 2
+},
+"Why don’t we split the bill?": {
+"level": 2
+},
+"Why don’t we start right now?": {
+"level": 2
+},
+"Why don’t you ask her out?": {
+"level": 3
+},
+"Why don’t you go with her?": {
+"level": 2
+},
+"Why don’t you have some water?": {
+"level": 2
+},
+"Why don’t you sit down?": {
+"level": 2
+},
+"Why don’t you sit with us?": {
+"level": 2
+},
+"Why don’t you try the fish?": {
+"level": 2
+},
+"Why not try the local food?": {
+"level": 2
+},
+"Will you come? — Probably.": {
+"level": 0
+},
+"Will you pass me the salt?": {
+"level": 2
+},
+"Would you like some help?": {
+"level": 1
+},
+"Would you like some tea?": {
+"level": 1
+},
+"Would you like to sit down?": {
+"level": 2
+},
+"Would you mind checking again?": {
+"level": 2
+},
+"Wow, looking good!": {
+"level": 2
+},
+"Wow, thanks for telling me.": {
+"level": 2
+},
+"Wow, that seems a little harsh.": {
+"level": 3
+},
+"Wow, that was close!": {
+"level": 2
+},
+"Wow, this is so soft.": {
+"level": 2
+},
+"Write the card from the heart.": {
+"level": 3
+},
+"Yeah! We won!": {
+"level": 1
+},
+"Yeah, I know. She told me.": {
+"level": 2
+},
+"Yeah, I’m late. So what?": {
+"level": 3
+},
+"Yeah, but it’s my recipe.": {
+"level": 3
+},
+"Yeah, but this one is real.": {
+"level": 0
+},
+"Yeah, no, I’m busy.": {
+"level": 3
+},
+"Yeah, that’s not gonna happen.": {
+"level": 3
+},
+"Yeah, why? Is something wrong?": {
+"level": 2
+},
+"Yeah, yeah, I get it.": {
+"level": 2
+},
+"Yes, but only on weekends.": {
+"level": 2
+},
+"You all did great today.": {
+"level": 2,
+"ja": "みんな、今日はよくがんばったね"
+},
+"You always supported me. Thank you.": {
+"level": 2
+},
+"You can always turn to me.": {
+"level": 3
+},
+"You can come once a week.": {
+"level": 2
+},
+"You can’t be serious.": {
+"level": 2
+},
+"You can’t bring food in here.": {
+"level": 2
+},
+"You can’t buy happiness.": {
+"level": 2
+},
+"You can’t buy memories like this.": {
+"level": 2
+},
+"You can’t change plans halfway through.": {
+"level": 2
+},
+"You can’t come? Bummer.": {
+"level": 3
+},
+"You can’t drink with this medicine.": {
+"level": 2
+},
+"You can’t eat in the library.": {
+"level": 2
+},
+"You can’t go out like that!": {
+"level": 2
+},
+"You can’t park here.": {
+"level": 1
+},
+"You deserve a break.": {
+"level": 2
+},
+"You don’t wanna know.": {
+"level": 3
+},
+"You expect me to believe that?": {
+"level": 3
+},
+"You go ahead. I’ll catch up.": {
+"level": 3
+},
+"You got the job? How exciting!": {
+"level": 2
+},
+"You got the job? That’s awesome!": {
+"level": 2
+},
+"You got the wrong kind.": {
+"level": 2
+},
+"You gotta try this cake.": {
+"level": 3
+},
+"You gotta try this.": {
+"level": 3
+},
+"You have beautiful hair.": {
+"level": 1
+},
+"You have the deciding vote.": {
+"level": 3,
+"ja": "決め手はあなたの一票だよ"
+},
+"You have till noon to decide.": {
+"level": 2
+},
+"You keep score, I’ll deal.": {
+"level": 3
+},
+"You know what? Let’s do it.": {
+"level": 2
+},
+"You know what? Let’s go out.": {
+"level": 2
+},
+"You look exactly like the waiter.": {
+"level": 2
+},
+"You look tired. Is everything okay?": {
+"level": 2
+},
+"You lost your phone? Oh, no!": {
+"level": 2
+},
+"You mind closing the window?": {
+"level": 2
+},
+"You must be Mr. Tanaka.": {
+"level": 2
+},
+"You must keep your seatbelt on.": {
+"level": 2
+},
+"You must try the local food.": {
+"level": 2
+},
+"You never even mentioned the price.": {
+"level": 2
+},
+"You passed? Glad to hear it!": {
+"level": 2
+},
+"You play the guitar? That’s cool.": {
+"level": 2
+},
+"You say that about everything.": {
+"level": 2
+},
+"You should check out that cafe.": {
+"level": 2
+},
+"You should come to the party!": {
+"level": 2
+},
+"You should totally come with us.": {
+"level": 2
+},
+"You stick to driving. I’ll navigate.": {
+"level": 3
+},
+"You think of everything!": {
+"level": 3
+},
+"You two are a great match.": {
+"level": 2
+},
+"You two make a great team.": {
+"level": 2
+},
+"You wanna get some coffee?": {
+"level": 3
+},
+"You want a drink?": {
+"level": 1
+},
+"You want me to help?": {
+"level": 2
+},
+"Your idea, so you’re paying.": {
+"level": 2
+},
+"Your keys? They’re right there.": {
+"level": 1
+},
+"You’ll be the guest of honor.": {
+"level": 2
+},
+"You’re all winners to me.": {
+"level": 2
+},
+"You’re busy? Fair enough.": {
+"level": 3
+},
+"You’re gonna love this place.": {
+"level": 3
+},
+"You’re just tired, that’s all.": {
+"level": 2
+},
+"You’re my number two on this.": {
+"level": 3
+},
+"You’re nervous. I can tell.": {
+"level": 2
+},
+"You’re on fire today!": {
+"level": 3
+},
+"You’re really not helping.": {
+"level": 3
+},
+"You’re ruining the moment.": {
+"level": 3
+},
+"You’re sick? Sorry to hear that.": {
+"level": 2
+},
+"You’re tired? Fair enough. Let’s stop.": {
+"level": 2
+},
+"You’re wearing too much perfume.": {
+"level": 2
+},
+"You’re what I care about.": {
+"level": 2
+},
+"You’ve been acting weird lately.": {
+"level": 2
+}
+}

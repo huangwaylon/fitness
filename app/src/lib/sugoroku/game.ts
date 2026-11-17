@@ -2,15 +2,16 @@
 // step (localStorage: a game closed half-way resumes). Every random is seeded by the game's seed and its step counter
 // (every step moves it on), so a saved game replays the same. No ベル, no record: the stars are the game's own.
 import type { Who } from '#lib/types.ts';
-import { seeded } from '#lib/random.ts';
+import { fnv1a, seeded } from '#lib/random.ts';
 import { BOARD, GOAL, stepFrom, toGoal } from './board.ts';
 import { newBag, refill, scoreOf, spellable, without, type Score } from './tiles.ts';
-import { CARDS, type Card } from './cards.ts';
+import { CARDS, type Card, type Ticket } from './cards.ts';
+import { PICTURES, PICTURE_STARS, SET_BONUS, setsOf } from './pictures.ts';
 
 /** A seat's English: 1 やさしい, 2 ふつう, 3 むずかしい (what its spaces ask, not what they pay: the table stays even). */
 export type Level = 1 | 2 | 3;
 export const LEVEL: Readonly<Record<Level, { minLen: number; everyday: number; hintHalf: boolean }>> = {
-  1: { minLen: 2, everyday: 3, hintHalf: false },
+  1: { minLen: 3, everyday: 3, hintHalf: false },
   2: { minLen: 3, everyday: 2, hintHalf: true },
   3: { minLen: 4, everyday: 1, hintHalf: true }
 };
@@ -30,30 +31,45 @@ export interface Player extends Seat {
   home: number | null;
   /** The fork's way taken (0 近道, 1 遠回り), null before it. */
   branch: number | null;
+  /** Tickets held (a card's), at most MAX_TICKETS. */
+  tickets: Ticket[];
+  /** Souvenirs: the pictures spelt (PICTURES' indices). */
+  items: number[];
 }
 /** Something made in the game: a word or a sentence (the recap). */
 interface Made {
   p: number;
-  kind: 'word' | 'sentence';
+  kind: 'word' | 'sentence' | 'picture';
   text: string;
   /** Its Japanese, when we have it. */
   ja: string;
   stars: number;
 }
+/** A turn's English so far (kept in the save, so a sheet closed mid-turn resumes it as it was). */
+interface Tries {
+  misses?: number;
+  /** ヒント used (ことば). */
+  hinted?: boolean;
+  /** 意味を見る opened (むずかしい's ぶん). */
+  peeked?: boolean;
+}
 type Phase =
   | { k: 'spin' }
   /** At the fork with `left` spaces still to walk: 近道 or 遠回り? */
   | { k: 'fork'; spun: number; left: number }
-  | { k: 'word'; mult: number; spun: number }
+  | ({ k: 'word'; mult: number; spun: number } & Tries)
   /** `r`: the line's pick in [0, 1) among the seat's level's lines not used yet. */
-  | { k: 'sentence'; spun: number; r: number }
+  | ({ k: 'sentence'; spun: number; r: number } & Tries)
+  /** `item`: PICTURES' index (none collected yet in this game). */
+  | ({ k: 'picture'; item: number; spun: number; r: number } & Tries)
   | { k: 'event'; card: number; spun: number }
   | { k: 'home'; spun: number; place: number }
   | { k: 'end' };
 
-/** The save's shape; CONTENT: the cards' and lines' build (a save from another reads as none: save.ts). */
-const V = 2;
-const CONTENT = `${CARDS.length}`;
+/** The save's shape; CONTENT: the board's, cards' and pictures' build, hashed (a save from another reads as none:
+ *  save.ts; the lines are picked afresh by the phase's `r`). */
+const V = 3;
+const CONTENT = fnv1a(JSON.stringify([BOARD, CARDS, PICTURES])).toString(36);
 
 export interface Game {
   v: typeof V;
@@ -83,6 +99,7 @@ export const HOME_BONUS = [6, 3, 1, 0];
 /** A line in order: first try, after a nudge, after 答えはこれ; むずかしい's without its Japanese +2. */
 const SENTENCE_STARS = [6, 4, 2];
 export const UNSEEN_BONUS = 2;
+export const MAX_TICKETS = 2;
 const LUCKY_FROM = [...'bcdfghlmnprstwy'];
 
 const rnd = (g: Game) => seeded(`${g.seed}:${g.n}`);
@@ -94,7 +111,7 @@ export function newGame(seats: readonly Seat[], seed: string): Game {
   const players = seats.map((s) => {
     const f = refill([], bag, r);
     bag = f.bag;
-    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, branch: null };
+    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, branch: null, tickets: [], items: [] };
   });
   const a = LUCKY_FROM[Math.floor(r() * LUCKY_FROM.length)];
   const rest = LUCKY_FROM.filter((l) => l !== a);
@@ -108,13 +125,17 @@ export function twice(g: Game): boolean {
   return others.every((p) => p.stars >= me.stars + 2);
 }
 
-/** Spin (1–6) and walk; the fork stops the walk for a choice; the space decides what comes next. */
-export function spin(g: Game): Game {
+/** Roll (1–6) and walk; the fork stops the walk for a choice; the space decides what comes next. `dice`: a サイコロ2つ券
+ *  spent (two dice, the better kept, as the catch-up's). */
+export function spin(g: Game, dice = false): Game {
   if (g.phase.k !== 'spin') return g;
+  const players = copy(g), me = players[g.turn];
+  const spend = dice && me.tickets.includes('dice') && !twice(g);
+  if (spend) me.tickets.splice(me.tickets.indexOf('dice'), 1);
   const r = rnd(g);
   const a = 1 + Math.floor(r() * 6), b = 1 + Math.floor(r() * 6);
-  const spun = twice(g) ? Math.max(a, b) : a;
-  return walk({ ...g, n: g.n + 1, players: copy(g) }, spun, spun, r);
+  const spun = twice(g) || spend ? Math.max(a, b) : a;
+  return walk({ ...g, n: g.n + 1, players }, spun, spun, r);
 }
 
 /** At the fork: take 近道 (0) or 遠回り (1) and walk on. */
@@ -150,6 +171,11 @@ function land(g: Game, spun: number, r: () => number): Game {
     return { ...g, phase: { k: 'home', spun, place } };
   }
   if (kind === 'sentence') return { ...g, phase: { k: 'sentence', spun, r: r() } };
+  if (kind === 'picture') {
+    const taken = new Set(g.players.flatMap((p) => p.items));
+    const left = PICTURES.map((_, i) => i).filter((i) => !taken.has(i));
+    if (left.length) return { ...g, phase: { k: 'picture', item: left[Math.floor(r() * left.length)], spun, r: r() } };
+  }
   if (kind === 'event') {
     let cards = g.cards.length >= CARDS.length ? [] : g.cards;
     const left = CARDS.map((_, i) => i).filter((i) => !cards.includes(i));
@@ -160,6 +186,12 @@ function land(g: Game, spun: number, r: () => number): Game {
   return { ...g, phase: { k: 'word', mult: kind === 'double' ? 2 : 1, spun } };
 }
 
+/** A turn's English so far, kept (a miss, ヒント, 意味を見る). */
+export function tried(g: Game, t: Tries): Game {
+  const ph = g.phase;
+  return ph.k === 'word' || ph.k === 'sentence' || ph.k === 'picture' ? { ...g, phase: { ...ph, ...t } } : g;
+}
+
 /** A word's points here for this seat, or null if it can't be spelt from the rack or is under the seat's length. */
 export function wordScore(g: Game, word: string, everyday: boolean, hinted = false): Score | null {
   const me = g.players[g.turn], lv = LEVEL[me.level];
@@ -167,13 +199,16 @@ export function wordScore(g: Game, word: string, everyday: boolean, hinted = fal
   return scoreOf(word, { lucky: g.lucky, mult: g.phase.mult, everyday: everyday ? lv.everyday : 0, half: hinted && lv.hintHalf });
 }
 
-/** Play a word (the caller checked it's a word): its stars, the rack refilled, the turn on. */
-export function playWord(g: Game, word: string, info: { everyday: boolean; ja: string; hinted: boolean }): Game {
-  const sc = wordScore(g, word, info.everyday, info.hinted);
+/** Play a word (the caller checked it's a word): its stars, the rack refilled, the turn on. `ticket`: its ヒント a
+ *  ヒント券's (spent: the word in full). */
+export function playWord(g: Game, word: string, info: { everyday: boolean; ja: string; hinted: boolean; ticket?: boolean }): Game {
+  const ticket = !!info.ticket && info.hinted && g.players[g.turn].tickets.includes('hint');
+  const sc = wordScore(g, word, info.everyday, info.hinted && !ticket);
   if (!sc) return g;
   const r = rnd(g);
   const players = copy(g);
   const me = players[g.turn];
+  if (ticket) me.tickets = without1(me.tickets, 'hint');
   me.stars += sc.total;
   const f = refill(without(me.rack, word), g.bag, r);
   me.rack = f.rack;
@@ -206,6 +241,24 @@ export function sentenceDone(g: Game, o: { misses: number; unseen: boolean; text
 /** No line to give (none left for the level, or not loaded): the space plays as ことば. */
 export const sentenceAsWord = (g: Game): Game => (g.phase.k === 'sentence' ? { ...g, n: g.n + 1, phase: { k: 'word', mult: 1, spun: g.phase.spun } } : g);
 
+const without1 = <T,>(xs: readonly T[], x: T): T[] => { const i = xs.indexOf(x); return i < 0 ? [...xs] : [...xs.slice(0, i), ...xs.slice(i + 1)]; };
+
+/** The stars for a picture spelt after `misses` nudges (2: after 答えはこれ). */
+export const pictureStars = (misses: number): number => PICTURE_STARS[Math.min(misses, 2)];
+
+/** A picture spelt: its stars, and its souvenir (a third of a set: SET_BONUS more). */
+export function pictureDone(g: Game, misses: number): Game {
+  if (g.phase.k !== 'picture') return g;
+  const pic = PICTURES[g.phase.item];
+  const players = copy(g), me = players[g.turn];
+  const before = setsOf(me.items);
+  me.items = [...me.items, g.phase.item];
+  const bonus = (setsOf(me.items) - before) * SET_BONUS;
+  const stars = pictureStars(misses) + bonus;
+  me.stars += stars;
+  return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'picture', text: pic.w, ja: pic.ja, stars }] });
+}
+
 /** The card's effect, then the turn on (or another spin). A move stops at the fork and plays no space. */
 export function eventDone(g: Game): Game {
   if (g.phase.k !== 'event') return g;
@@ -213,6 +266,7 @@ export function eventDone(g: Game): Game {
   const players = copy(g);
   const me = players[g.turn];
   if (c.stars) me.stars += c.stars;
+  if (c.ticket && me.tickets.length < MAX_TICKETS) me.tickets = [...me.tickets, c.ticket];
   if (c.gift) for (const [i, p] of players.entries()) {
     if (i === g.turn) continue;
     const n = Math.min(c.gift, p.stars);
@@ -267,6 +321,7 @@ export function ranking(g: Game): number[] {
 export function isGame(x: unknown): x is Game {
   const g = x as Game;
   return !!g && g.v === V && g.content === CONTENT && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
-    && g.players.every((p) => Array.isArray(p.rack) && typeof p.pos === 'number' && p.pos >= 0 && p.pos <= GOAL && p.level >= 1 && p.level <= 3)
-    && (g.phase.k !== 'event' || !!CARDS[g.phase.card]);
+    && g.players.every((p) => Array.isArray(p.rack) && Array.isArray(p.items) && Array.isArray(p.tickets) && typeof p.pos === 'number' && p.pos >= 0
+      && p.pos <= GOAL && p.level >= 1 && p.level <= 3)
+    && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item]);
 }

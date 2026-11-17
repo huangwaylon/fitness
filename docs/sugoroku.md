@@ -14,14 +14,15 @@ guest's, or a villager friend's): the one sheet with characters in it, since the
 
   | | やさしい | ふつう | むずかしい |
   |---|---|---|---|
-  | shortest word | 2 | 3 | 4 |
+  | shortest word | 3 | 3 | 4 |
   | everyday word | +3 | +2 | +1 |
   | ヒント's word | full | half | half |
   | ぶん's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
+  | 絵 | one of three spellings | its letters, the first given | its letters and two more |
   | イベント's Japanese | shown | shown | on a tap |
 - **The board** (`board.ts`): 27 stones on a drawn island (grass, river, beach, sea; signs for 家 広場 川 博物館 お店 飛行場
-  海), ふりだし to あがり, one **fork** after 広場: 川の近道 (3 stones, two ダブル) or 博物館の遠回り (5, two イベント):
-  20 or 22 steps. The board draws small during a turn's English, so its controls stay on screen.
+  海), ふりだし to あがり, one **fork** after 広場: 川の近道 (3 stones, two ダブル) or 博物館の遠回り (5: two 絵, two イベント):
+  20 or 22 steps. 5 絵 stones in all. The board draws small during a turn's English, so its controls stay on screen.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
   and walk; the fork stops the walk for the choice. The last in stars (2+ behind everyone) rolls two dice and keeps the
   better (the catch-up). The stone:
@@ -32,11 +33,16 @@ guest's, or a villager friend's): the one sheet with characters in it, since the
     a soft note, the tiles kept.
   - **ぶん**: put a line's word tiles in order: 6 stars, 4 after 「おしい！」 (the wrong order shown a moment), 2 with
     「答えはこれ」. No line left for the level (or offline): the stone plays as ことば.
-  - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese): good or neutral only; a move
-    stops at the fork.
+  - **絵** (`pictures.ts`): an NH item's picture (the app's art: 41 bugs, sea things, farm finds, fruit, treats), its
+    Japanese, its English to spell by the level: 5 stars, 3 after 「おしい！」, 1 with 「答えはこれ」, and it's yours as a
+    **souvenir** (each once a game); three of a set (虫 海 畑 果物 おやつ) +5 once.
+  - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
+    it), its effect as a chip: good or neutral only; a move stops at the fork. Some give a **ticket** to keep (two at
+    most): サイコロ2つ券 (spent at a roll: two dice, the better) or ヒント券 (spent on a hinted word: its full stars).
   - **あがり**: +6, +3, +1 by order home. The game ends with the round someone got home in (equal turns), after
     `MAX_ROUNDS` (10, 9, 8 by seats), or 終了: about 5 rounds, 10–20 minutes.
-- **Results**: the ranking and 今日のことば, every word and line made with its Japanese.
+- **Results**: the ranking with each seat's souvenirs, **ふりかえり** (up to five of the game's things with Japanese, to
+  match English ↔ Japanese; a mismatch just lets go), and 今日のことば, everything made with its Japanese.
 
 ## Tiles
 
@@ -48,8 +54,9 @@ be (2–4 vowels, one of S T R N D, at most one of J K X Z, at most two of a let
 `words.txt`: the words heard in 3+ of English Study's transcripts, 2–8 letters, that macOS's dictionary knows (its
 base words and simple inflections), minus names and a short list of words not for the table; plus `everyday.json`,
 ~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker). `sentences.json`: the
-フレーズ deck's `use` lines of 3–6 words with their Japanese and a level (1: ≤ 4 words, all everyday, no slang; 2: ≤ 5,
-80 %+ everyday; 3: the rest). All three are written by `npm run sugoroku:words` (it
+フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a Japanese reader's
+fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4 everyday words 1, ≤ 5
+and 80 % 2, else 3). All three are written by `npm run sugoroku:words` (it
 needs /usr/share/dict, so on a Mac) and committed; each is its own chunk, loaded as the sheet opens (precached:
 a game night works offline).
 

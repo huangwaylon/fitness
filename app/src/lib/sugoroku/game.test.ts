@@ -5,7 +5,7 @@ import { seeded } from '#lib/random.ts';
 import { friendly, newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { choose, eventDone, finish, pictureDone, tried, MAX_TICKETS, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -13,6 +13,8 @@ import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import { s } from './i18n.ts';
+import { art } from '#lib/art.ts';
+import { PICTURES, SET_BONUS, choicesFor, lettersFor, setsOf } from './pictures.ts';
 
 const lines = linesJson as unknown as Line[];
 const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, villager: null, name: who, level });
@@ -80,6 +82,7 @@ function playOut(seed: string, levels: Level[] = [2, 2]): Game {
       const w = words.from(g.players[g.turn].rack, (x) => wordScore(g, x, false)?.total ?? 0).find((x) => wordScore(g, x, false));
       g = w ? playWord(g, w, { everyday: !!words.ja(w), ja: words.ja(w), hinted: false }) : swap(g);
     } else if (k === 'sentence') g = sentenceDone(g, { misses: 0, unseen: false, text: 'I like it.', ja: '好き' });
+    else if (k === 'picture') g = pictureDone(g, 0);
     else if (k === 'event') g = eventDone(g);
     else if (k === 'home') g = homeDone(g);
   }
@@ -106,10 +109,11 @@ describe('game', () => {
   it('levels: the shortest word and the everyday bonus; the table stays close', () => {
     const at = (level: Level) => ({ ...newGame([seat('A', level), seat('B')], 'w'), phase: { k: 'word' as const, mult: 1, spun: 1 } });
     const g1 = at(1), g3 = at(3);
-    const two = g1.players[0].rack.slice(0, 2).join('');
-    expect(wordScore(g3, two, false)).toBeNull();
+    const three = g1.players[0].rack.slice(0, 3).join('');
+    expect(wordScore(g3, three, false)).toBeNull();
+    expect(wordScore(g1, three.slice(0, 2), false)).toBeNull();
     expect(LEVEL[1].everyday).toBeGreaterThan(LEVEL[3].everyday);
-    expect(wordScore(g1, two, true, true)?.half).toBe(false); // やさしい's ヒント: in full
+    expect(wordScore(g1, three, true, true)?.half).toBe(false); // やさしい's ヒント: in full
     const sums = { 1: 0, 3: 0 };
     for (let i = 0; i < 30; i++) {
       const g = playOut(`lv${i}`, [1, 3]);
@@ -134,6 +138,43 @@ describe('game', () => {
     expect(isGame({ ...g, v: 1 })).toBe(false);
     expect(isGame({ ...g, content: 'x' })).toBe(false);
     expect(isGame({ ...g, phase: { k: 'event', card: 999, spun: 1 } })).toBe(false);
+  });
+  it('pictures: souvenirs, never one twice in a game, a set of three pays once', () => {
+    const g = playOut('pics', [1, 2, 3]);
+    const all = g.players.flatMap((p) => p.items);
+    expect(all.length).toBeGreaterThan(0);
+    expect(new Set(all).size).toBe(all.length);
+    expect(setsOf([0, 1, 2])).toBe(1); // three bugs
+    expect(setsOf([0, 1])).toBe(0);
+    let h = { ...newGame(seats, 'set'), phase: { k: 'picture' as const, item: 2, spun: 1, r: 0 } };
+    h = { ...h, players: h.players.map((p, i) => (i ? p : { ...p, items: [0, 1] })) };
+    const after = pictureDone(h, 0);
+    expect(after.players[0].stars).toBe(5 + SET_BONUS);
+    expect(after.players[0].items).toEqual([0, 1, 2]);
+  });
+  it('tickets: a card’s kept (two at most), the dice one spent at the roll, the hint one on a halved word', () => {
+    const hintCard = CARDS.findIndex((c) => c.ticket === 'hint'), diceCard = CARDS.findIndex((c) => c.ticket === 'dice');
+    let g = newGame(seats, 't');
+    const ev = (card: number) => (g = eventDone({ ...g, turn: 0, phase: { k: 'event', card, spun: 1 } }));
+    ev(hintCard); ev(diceCard); ev(hintCard);
+    expect(g.players[0].tickets).toEqual(['hint', 'dice']);
+    expect(g.players[0].tickets.length).toBeLessThanOrEqual(MAX_TICKETS);
+    g = spin({ ...g, turn: 0, phase: { k: 'spin' } }, true);
+    expect(g.players[0].tickets).toEqual(['hint']);
+    const w = { ...g, turn: 0, phase: { k: 'word' as const, mult: 1, spun: 1 } };
+    const word = w.players[0].rack.slice(0, 3).join('');
+    const full = playWord(w, word, { everyday: false, ja: '', hinted: true, ticket: true });
+    const half = playWord(w, word, { everyday: false, ja: '', hinted: true });
+    expect(full.players[0].stars).toBeGreaterThan(half.players[0].stars);
+    expect(full.players[0].tickets).toEqual([]);
+    expect(half.players[0].tickets).toEqual(['hint']);
+  });
+  it('a turn’s tries are kept in the save (a reopened sheet resumes them), only on an English turn', () => {
+    const g = { ...newGame(seats, 'tr'), phase: { k: 'sentence' as const, spun: 1, r: 0 } };
+    expect(tried(g, { misses: 1, peeked: true }).phase).toMatchObject({ misses: 1, peeked: true, r: 0 });
+    const spinning = newGame(seats, 'tr');
+    expect(tried(spinning, { misses: 1 })).toBe(spinning);
+    expect(isGame(JSON.parse(JSON.stringify(tried(g, { misses: 2 }))))).toBe(true);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });
@@ -165,6 +206,19 @@ describe('words and sentences', () => {
     }
     for (const lv of [1, 2, 3]) expect(lines.filter((l) => l[2] === lv).length).toBeGreaterThan(40);
     expect(notInTrimmedFont(lines.map((l) => l[1]).join(''))).toEqual([]);
+  });
+  it('the pictures: art on disk, Japanese in the font, three spellings, the letters to spell with', () => {
+    expect(PICTURES.length).toBeGreaterThanOrEqual(30);
+    for (const p of PICTURES) {
+      expect(art(p.key), p.key).not.toBeNull();
+      expect(p.w).toMatch(/^[a-z]{3,8}$/);
+      expect(notInTrimmedFont(p.ja)).toEqual([]);
+      const c = choicesFor(p, seeded(p.w));
+      expect(new Set(c).size).toBe(3);
+      expect(c).toContain(p.w);
+      expect(lettersFor(p, 2, seeded(p.w)).sort().join('')).toBe([...p.w].sort().join(''));
+      expect(lettersFor(p, 3, seeded(p.w))).toHaveLength(p.w.length + 2);
+    }
   });
   it('the copy is in the font', () => {
     const src = readFileSync(join(import.meta.dirname, 'i18n.ts'), 'utf8');
