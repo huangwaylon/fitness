@@ -1,55 +1,45 @@
+// A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 5, new 2
+// A2 LATE: the visitors talk in made-up slang (britty, brain tornado, Cool New Shiz) and the clip is satire throughout
 // “Ron Deals With A "Beef Milk" Influencer | Parks and Recreation” (the official Parks and Recreation channel, Season
 // 7): Gryzzl's slang-talking team asks the locals for a celebrity to back its bid, Ron wants none of it, and the pick,
 // lifestyle guru Annabelle Porter, wins the room by selling plain milk as "beef milk" for $60 a gallon.
-// Segments from the captions, words from whisper (2026-11-16). The sources differ on several slang words ("frack your
-// brainiums" / "frac uraniums" at 52.6 s, "chums"/"chumps" at 23 s, "Blush"/"blue" at 98.7 s, "I'd"/"it'd" be jazzed at
-// 181.8 s) and on the names Tom reads at 83.7–86 s; no key rests on them, and lines leave them out. Left out on purpose:
-// the Jay-Z / Chick-fil-A lines (35.7–43.8 s; world knowledge, and "can't help" reads against its own examples), the
-// "Pulitzer" joke (world knowledge), and the signing gag at 225–233 s (shown, not said).
-// REVIEW 2026-11-16: pass 4, fix 19, drop 1, new 1; ear checks 1
-// R drop: s1 ("I ___ but ask"): "can't help but" is a set phrase that fills itself, and "can help but" / "can't tell
-//   but" don't fit the gap (§9.5). Replaced by s2 ("Shall we").
-// EAR CHECK: 179.7 s nt1 — “This woman knows business” is sincere admiration (dry, but not a dig); the key also stands on
-//   the words (it follows the $3/$60 gap and the wait list)
+// Segments from the captions, words from whisper (2026-11-16). The sources differ on several slang words and on the
+// names Tom reads at 83.7–86 s; no key rests on them. Left out on purpose: the Jay-Z / Chick-fil-A lines (35.7–43.8 s),
+// the "Pulitzer" joke, the slang and the elk story.
+// EAR CHECK: 179.7 s a3 — “This woman knows business” is sincere admiration (dry, but not a dig)
 import type { Clip } from '../types.ts';
 
 export const beefMilk: Clip = {
-  id: 'beefmilk', video: 'N4B4ELSyDJg', title: 'Ron Deals With A “Beef Milk” Influencer', dur: 254, wpm: 153,
-  band: 'mid',
+  id: 'beefmilk', video: 'N4B4ELSyDJg', title: 'Ron Deals With A “Beef Milk” Influencer', dur: 254, wpm: 153, band: 'mid',
   tags: ['職場'],
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 75 %): the job-offer choice didn't fit the title; all three now "get ideas" for something, and one
-    //   is an ad campaign (the usual celebrity script)
-    // why: help Leslie ← "Leslie Knope… presentation" is the first name heard, in the wrong relation (she's the rival);
-    //   ad campaign ← celebrity = ads, the usual script; "As a minority owner" settles it
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'celeb', reveals: ['britty'], seg: [0, 57.9],
-      stem: 'Why has Gryzzl’s team called in the locals?',
-      choices: ['To get ideas for a local star to back their bid', 'To get ideas to help Leslie’s presentation',
-                'To get ideas for their first local ad campaign'], a: 0,
-      cue: '若者言葉のあと、言い直す人の一言。',
-      said: 'Leslie が発表を強化しているので、こちらも地元の有名人を味方につけたい、と話す。',
-      mean: '入札で勝つための作戦会議。地元の人に有名人の案を出してほしい。',
-      trap: '最初に Leslie の名前が出るが、彼女はライバル。有名人＝広告と決めず、役割の語を聞く。',
-      use: 'We need some local help on this.（この件は地元の協力が要る）' },
+    { id: 'a0', skill: 'phrase', level: 'B1', point: 'roscoe', seg: [1.26, 10.3],
+      stem: 'What does “*kick back*” mean here?',
+      ja: 'ここでの「kick back」はどういう意味？',
+      choices: ['Relax and take it easy', 'Kick the chair back', 'Go back home now'], a: 0,
+      choicesJa: ['くつろいでのんびりする', 'いすを後ろにける', 'もう家に帰る'],
+      cue: '「Feel free」のあと',
+      line: 'Feel free in this meeting to break out your vapes and just *kick back*.',
+      said: '「この会議では、電子タバコでも出して、くつろいでね」と言う。',
+      mean: 'kick back ＝ くつろぐ・のんびりする。Feel free to 〜 ＝ 遠慮なく〜して。',
+      trap: 'kick から「ける」と思いやすい。kick back でひとまとまりの「くつろぐ」。',
+      use: 'Feel free to kick back and relax.（遠慮なくくつろいでね）' },
 
-    // why: formal ← "vice president" heard as a stiff title; shy ← the "I am… I am…" restart heard as nerves; "kick back"
-    //   and "break out your vapes" settle it
-    // R fix: V2 (blind 75 %): reworded to three short, parallel stances
-    { id: 'a0', skill: 'attitude', level: 'B1', point: 'roscoe', seg: [1.26, 10.3],
-      stem: 'How does Roscoe come across as he opens the meeting?',
-      choices: ['Eager to seem cool and relaxed', 'Eager to show he’s in charge', 'Nervous about the big meeting'], a: 0,
-      cue: '肩書きの言い方と、最後の「kick」のあと。',
-      line: 'I am vice president of *Cool New Shiz*… *break out your vapes and just kick back*.',
-      said: '「イケてる新しいモノ担当の副社長。電子タバコでも吸ってくつろいで」と言う。',
-      mean: '肩書きも誘い方もくだけている。かっこよく、ゆるく見せたい人。',
-      trap: 'vice president だけ聞くと堅い人に思えるが、肩書きの中身はふざけている。',
-      use: 'Make yourself at home. Kick back.（楽にして、くつろいでね）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'celeb', seg: [10.3, 50.05],
+      stem: 'Why did Gryzzl call this meeting?',
+      ja: 'グリズルがこの会議を開いたのはなぜ？',
+      choices: ['To find a local star', 'To help Leslie’s plan', 'To plan a phone ad'], a: 0,
+      choicesJa: ['地元の有名人を探すため', 'レスリーの計画を助けるため', '電話の広告を考えるため'],
+      cue: '「We need a」のあと',
+      line: 'We need *a celebrity*. As a minority owner, it’ll strengthen Gryzzl’s bid.',
+      said: '「有名人が必要だ。地元の有名人がいれば、皆が安心する」と話す。',
+      mean: 'celebrity ＝ 有名人。入札を有利にするため、地元の有名人を仲間にしたい。',
+      trap: 'Leslie の名前が出るので、彼女を助けると思いやすい。レスリーは競争相手。',
+      use: 'There was a celebrity at the hotel.（ホテルに有名人がいた）' },
 
-    // R fix: V2 (blind 55 %): all three are now "Make it more …"
-    // why: romantic ← sexy taken literally (セクシー); to the point ← "sexy up" heard as "sum up"
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sexyup', seg: [10.3, 15.65],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sexyup', seg: [10.3, 15.65], retired: true,
       stem: 'What does Roscoe say Leslie is trying to do to her presentation?',
       choices: ['Make it more appealing', 'Make it more romantic', 'Make it more to the point'], a: 0,
       cue: '「try to」のあと、up で終わる部分。',
@@ -59,11 +49,7 @@ export const beefMilk: Clip = {
       trap: 'カタカナの「セクシー」で取ると恋愛の話に聞こえる。仕事の場では「魅力的に」。',
       use: 'Let’s sexy up this menu a little.（このメニュー、少し華やかにしよう）' },
 
-    // R fix: V2 (blind 75 %) and S1: the stem's "idea session" pointed at "brainstorm", and the real-storm choice was a
-    //   filler. It's now a slip of the tongue, against the team's deliberate slang
-    // why: a mess ← tornado = destruction, so "our ideas were chaos"; a slip ← a weather word swapped by mistake, but
-    //   the whole team talks like this on purpose ("Cool New Shiz", "peep this")
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'tornado', seg: [10.3, 18.05],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'tornado', seg: [10.3, 18.05], retired: true,
       stem: 'Why does Roscoe say they had a “brain tornado”?',
       choices: ['He hypes up “brainstorm” to sound cool', 'He admits the ideas came out a mess',
                 'He mixes up two weather words by mistake'], a: 0,
@@ -74,10 +60,7 @@ export const beefMilk: Clip = {
       trap: 'tornado を「めちゃくちゃ」や言いそこないと取りやすい。周りも同じ調子の造語だらけ。',
       use: 'Let’s brainstorm some ideas.（アイデアを出し合おう）' },
 
-    // why: British person ← "britty" heard as "Brit"; pretty girl ← "britty" ≈ "pretty" (b/p); the next speaker's
-    //   "We need a celebrity" settles it
-    // R fix: V2 (blind 75 %): added "a rich investor" ("minority owner" follows), a strong fourth
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'britty', reveals: ['celeb'], seg: [18.95, 28.38],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'britty', reveals: ['celeb'], seg: [18.95, 28.38], retired: true,
       stem: 'What is “a britty”, judging from the line right after it?',
       choices: ['A celebrity', 'A British person', 'A pretty girl', 'A rich investor'], a: 0,
       cue: '次の人が、同じことを普通の言葉で言い直す。',
@@ -87,22 +70,19 @@ export const beefMilk: Clip = {
       trap: 'Brit や pretty に聞こえやすい。知らない語は、すぐあとの言いかえを待つ。',
       use: 'In other words, we need a celebrity.（つまり、有名人が要るってこと）' },
 
-    // why: spokesperson ← the usual celebrity ad script; judge ← "bid" heard as a contest someone decides
     { id: 'd1', skill: 'detail', level: 'B2', point: 'minority', seg: [24.32, 28.38],
-      stem: 'How would the celebrity help, according to the plan?',
-      choices: ['By owning a small share, adding weight to the bid', 'By starring in ads, so Gryzzl sells more phones',
-                'By judging the bids, and picking Gryzzl as winner'], a: 0,
-      cue: '「As a」のあと、owner の前の語。',
+      stem: 'How would a celebrity help Gryzzl?',
+      ja: '有名人がいると、グリズルにどう役立つ？',
+      choices: ['By making their bid stronger', 'By selling more phones', 'By judging all the bids'], a: 0,
+      choicesJa: ['入札を強くしてくれる', '電話をもっと売ってくれる', '入札の審査をしてくれる'],
+      cue: '「As a minority owner」のあと',
       line: '*As a minority owner*, it’ll *strengthen* Gryzzl’s *bid*.',
-      said: '「少数株主として加われば、Gryzzl の入札が強くなる」と言う。',
-      mean: 'minority owner ＝ 一部だけ出資する持ち主。名前を出すことで入札に重みが出る。',
-      trap: '有名人と聞くと広告を思い浮かべやすい。as a のあとに役割がはっきり出ている。',
-      use: 'She owns a small share of the team.（彼女はチームの一部を持っている）' },
+      said: '「少しだけ持ち主になってもらえば、入札が強くなる」と言う。',
+      mean: 'strengthen ＝ 強くする。bid ＝ 入札。minority owner ＝ 少しだけ株を持つ人。',
+      trap: '有名人と聞くと、広告に出る話と思いやすい。strengthen … bid を聞く。',
+      use: 'This will strengthen our team.（これでチームが強くなる）' },
 
-    // why: can't write cursive ← "refuse" missed, heard as an admission; mocking Roscoe ← "flash" aimed at the
-    //   flashy visitor; the joke is the tiny "proof"
-    // R fix: V2 (blind 75 %): the key was the only abstract choice; shortened and evened out
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'cursive', seg: [28.38, 35.66],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'cursive', seg: [28.38, 35.66], retired: true,
       stem: 'Why is the reply about signing in cursive funny?',
       choices: ['A tiny habit is his proof of a big value', 'He admits he can’t write in cursive at all',
                 'He takes a dig at the visitors’ flashy style'], a: 0,
@@ -113,49 +93,41 @@ export const beefMilk: Clip = {
       trap: 'refuse を聞き落とすと「書けない」告白に聞こえる。That’s why の前後の大きさを比べる。',
       use: 'I prefer quality over quantity.（量より質が好きなんだ）' },
 
-    // why: too costly ← the usual reason to want a small, local name; Leslie signed one ← "Leslie" is the rival named
-    //   earlier, in the wrong relation
-    // R fix: V2 (blind 70 %): the key was the only kind reason; all three are now "A local face would…"
-    // why: cheaper ← the usual reason to want a small, local name; rules require ← "here in Pawnee" heard as a
-    //   condition of the bid
     { id: 'd2', skill: 'detail', level: 'B1', point: 'outsider', seg: [43.28, 50.05],
-      stem: 'Why does Gryzzl want a celebrity from Pawnee in particular?',
-      choices: ['A local face would put the town at ease', 'A local face would cost far less money', 'A local face is what the town’s rules require'], a: 0,
-      cue: '「Exactly」のあと、Gryzzl を何と呼ぶか。',
+      stem: 'Why do they want a celebrity from Pawnee?',
+      ja: 'なぜポーニー出身の有名人がほしい？',
+      choices: ['To make people feel at ease', 'To save a lot of money', 'Because the town’s rules say so'], a: 0,
+      choicesJa: ['みんなに安心してもらうため', 'お金を節約するため', '町の決まりだから'],
+      cue: '「outsider」のあと',
       line: 'Gryzzl is *an outsider* here in Pawnee, so a local celebrity is gonna make everyone *feel more at ease*',
-      said: '「Gryzzl はよそ者だから、地元の有名人がいれば皆が安心する」と言う。',
-      mean: 'outsider ＝ よそ者。地元の顔を立てて、警戒を解きたい。',
-      trap: 'お金や決まりの話はここでは出ない。so の前が理由、後ろが狙い。',
-      use: 'As a newcomer, I feel like an outsider.（新参者なので、よそ者の気分です）' },
+      said: '「グリズルはよそ者だから、地元の有名人がいれば皆が安心する」と言う。',
+      mean: 'outsider ＝ よそ者。feel at ease ＝ 安心する・気が楽になる。',
+      trap: 'so のあとが理由の結果。お金や決まりの話は出ていない。',
+      use: 'Please feel at ease.（どうぞ気楽にしてください）' },
 
-    // why: wants it explained ← "I got it" heard as a question or a request; praise ← "from context" heard as admiring
-    //   the clever slang; the cut-off "ideas—" settles it
-    // R fix: V2 (blind 70 %): "praises the slang" was weak; it's now "only half got it" ("from context" = a guess)
-    // why: slower ← "I got it" heard as a request; half got it ← "from context" read as "I only guessed"; the cut-off
-    //   "ideas—" settles it
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'context', reveals: ['celeb'], seg: [50.05, 58.7],
-      stem: 'When someone starts to explain the slang, what does the reply do?',
-      choices: ['It stops a recap that he didn’t need', 'It asks for the recap to go slower', 'It admits he only half got the slang'], a: 0,
-      cue: '説明が途中で切れたところの一言。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'context', seg: [50.05, 58.7],
+      stem: 'What does “*I got it from context*” mean?',
+      ja: '「I got it from context」はどういう意味？',
+      choices: ['I already understood', 'Please say it slower', 'I only got half of it'], a: 0,
+      choicesJa: ['もう分かったよ', 'もっとゆっくり言って', '半分しか分からない'],
+      cue: '「think of ideas」のあと',
       line: 'Since we’re locals, they want us to think of ideas— — *I got it from context.*',
-      said: '「地元だから案を出してほしいって…」と言いかけたところで、「文脈で分かった」とさえぎる。',
-      mean: '「説明は要らない」というそっけない合図。言い直しを止めている。',
-      trap: 'I got it を質問やお願いと取りやすい。相手の言葉が途中で切れたら、さえぎりの印。',
-      use: 'It’s okay, I got it.（大丈夫、分かったから）' },
+      said: '若者言葉を説明しかけた人を、「話の流れで分かった」とさえぎる。',
+      mean: 'context ＝ 話の流れ・前後。説明はいらない、と止めている。',
+      trap: 'got it（分かった）を聞き落とすと、もっと説明してほしいと思いやすい。',
+      use: 'It’s okay, I got it from context.（大丈夫、話の流れで分かったよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'context', seg: [55.76, 58.7],
-      stem: 'Type the reply: “I ___ context.” (3 words)', answer: `got it from`,
-      cue: '説明が切れたすぐあと。I から context まで。',
-      line: 'I *got it from* context.',
-      said: '「文脈で分かったよ」と言う。三語が一続きに聞こえる。',
-      mean: 'got it の t が弾み「ガリッ」、it from がつながって「ガリフロム」に近い。',
-      trap: 'got と it が一つになり、got from と書きやすい。間の小さな it を拾う。',
-      use: 'I got it from my mom.（母からもらったの）' },
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'context', seg: [55.5, 58.7],
+      stem: 'Type the reply: “I ___.” (4 words)', answer: 'got it from context',
+      ja: '「I ___.」の空所を書こう（4語）',
+      cue: '「think of ideas」のあと',
+      line: 'I *got it from context*.',
+      said: '「話の流れで分かったよ」と言う。',
+      mean: 'got it ＝ 分かった。got it from 〜 ＝ 〜から分かった。',
+      trap: 'got it が「ガリッ」とつながり、from まで一続きに聞こえる。',
+      use: 'Got it, thanks.（分かった、ありがとう）' },
 
-    // R fix: V2 (blind 75 %): the key was the only animal you'd never call a celebrity; now all three are animals
-    // why: hunting dog ← "took a shot" heard first, so an animal at his side; a prize bull ← "bull" heard without
-    //   "elk"; "the five-by-five bull elk I saw near my cabin" settles it
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'elk', seg: [61.8, 76.05],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'elk', seg: [61.8, 76.05], retired: true,
       stem: 'What makes Ron’s list of the celebrities he recognizes funny?',
       choices: ['They’re a furniture maker and an elk he once saw', 'They’re a furniture maker and his old hunting dog',
                 'They’re a furniture maker and a prize bull he owns'], a: 0,
@@ -166,105 +138,78 @@ export const beefMilk: Clip = {
       trap: 'bull だけ聞くと牛、shot だけだと猟犬に取りやすい。名前の直後の説明が正体。',
       use: 'I don’t really follow celebrities.（有名人にはあまり興味がない）' },
 
-    // why: admiration ← he just listed Magnus as a "celebrity" he respects; fear ← the antlers through his shed door
-    // R fix: V2 (blind 70 %): reworded so the key isn't the only vivid choice
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.6, 83.65],
-      stem: 'When Ron speaks directly to Magnus, what feeling comes through?',
-      choices: ['A grudge he swears he will settle', 'Fond respect for a fine animal', 'Worry the elk will come back'], a: 0,
-      cue: '「One day」で始まる一文の最後の語。',
+      stem: 'How does Ron feel about Magnus the elk?',
+      ja: 'ロンはヘラジカのマグナスをどう思っている？',
+      choices: ['He wants to catch it', 'He loves the elk', 'He is scared of it'], a: 0,
+      choicesJa: ['捕まえたい', '美しいヘラジカが大好き', 'こわがっている'],
+      cue: '「One day」のあと',
       line: '*One day*, Magnus, *I will wear you as a jacket*.',
-      said: '「いつか、マグナス、お前を上着にしてやる」と言う。',
-      mean: 'One day ＋ I will ～ は宣戦布告の型。小屋を壊された恨みを晴らすという誓い。',
-      trap: '直前に「有名人」と呼んだので尊敬に聞こえやすい。上着にする、は敬意ではない。',
-      use: 'One day, I’ll beat you.（いつか絶対に勝ってやる）' },
+      said: '「いつか、マグナス、お前を上着にして着てやる」と言う。',
+      mean: 'One day ＝ いつか。上着にする＝仕留める。取り逃がしたのが悔しい。',
+      trap: '名前で呼びかけるので、好きだと思いやすい。wear you as a jacket を聞く。',
+      use: 'One day, I’ll visit Paris.（いつかパリに行く）' },
 
-    // why: a friend's joke ← the polite "I don't know if you can consider me…" heard as real surprise; left himself off
-    //   ← "handwriting" heard as "he wrote the list", without his name on it
-    // R fix: V2 (blind 65 %): evened out; all three are now about who wrote what
     { id: 'i2', skill: 'infer', level: 'C1', point: 'handwriting', seg: [87.2, 92.78],
-      stem: 'What does the reply “Yeah, that’s your…” reveal about Tom?',
-      choices: ['He wrote his own name on the list', 'A friend wrote his name in as a joke', 'He wrote the list, but not his name'], a: 0,
-      cue: 'Tom の謙遜のあと、返事の最後の語。',
+      stem: 'What does “that’s your handwriting” tell us?',
+      ja: '「それ、お前の字だろ」から何が分かる？',
+      choices: ['Tom wrote his own name', 'Tom wrote the list neatly', 'Tom can’t read the list'], a: 0,
+      choicesJa: ['トムが自分の名前を書いた', 'トムがリストをきれいに書いた', 'トムはリストが読めない'],
+      cue: '「celebrity」のあと',
       line: 'I don’t know if you can really *consider me a celebrity*. — Yeah, *that’s your handwriting*.',
-      said: 'Tom が「僕が有名人だなんて」と謙遜すると、「それ、お前の字だろ」と返される。',
-      mean: '名簿に自分の名前を書いたのは本人。謙遜はうわべだけ、とばれた。',
-      trap: '謙遜を本気と取ると「誰かのいたずら」に聞こえる。字が誰のものかで決まる。',
-      use: 'Don’t be modest. You wrote it.（謙遜しないで。君が書いたんでしょ）' },
+      said: 'トムが「僕なんか有名人じゃない」と言うと、「それ、お前の字だろ」と返される。',
+      mean: 'handwriting ＝ 手書きの字。リストにトムの名前を書いたのはトム本人。',
+      trap: 'トムは遠慮しているように聞こえる。字がトムのものなら、名前を書いたのも本人。',
+      use: 'Is this your handwriting?（これ、あなたの字？）' },
 
-    // R fix: V2 (blind 85 %): "richest company" didn't fit "who"; it's now the "go after" reading (a rival to chase)
-    // why: seafood ← "fish" taken literally; toughest rival ← "go after" heard as "go up against"; the name that
-    //   follows, the person they want on their side, settles it
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigfish', seg: [92.78, 98.55],
-      stem: 'Who is “Pawnee’s biggest fish”?',
-      choices: ['The best-known person in town', 'The best seafood place in town', 'The toughest rival in town'], a: 0,
-      cue: 'fish のすぐあとに出る名前。',
+      stem: 'What does “*Pawnee’s biggest fish*” mean?',
+      ja: '「Pawnee’s biggest fish」はどういう意味？',
+      choices: ['The most famous person', 'The best seafood place', 'The biggest company'], a: 0,
+      choicesJa: ['いちばん有名な人', 'いちばんの魚料理の店', 'いちばん大きな会社'],
+      cue: '「go after」のあと',
       line: 'we need to go after *Pawnee’s biggest fish*, Annabelle Porter',
       said: '「狙うなら町いちばんの大物、アナベル・ポーターだ」と言う。',
-      mean: 'big fish ＝ 大物、影響力のある人。その場の文脈では一番有名な人。',
-      trap: 'fish を文字通り取ると魚の店、go after を「対決」と取るとライバルに聞こえる。直後の人名が答え。',
-      use: 'He’s a big fish in a small pond.（小さな世界の大物だね）' },
+      mean: 'big fish ＝ 大物。go after 〜 ＝ 〜を狙う。',
+      trap: 'fish から魚の話と思いやすい。すぐあとに人の名前が来る。',
+      use: 'He’s a big fish in this town.（彼はこの町の大物だ）' },
 
-    // why: scared to meet her ← "nightmare" taken literally, as fear; jealous ← her success ("biggest fish") read as
-    //   envy
-    // R fix: V2 (blind 70 %): "scared to meet her" is now "nervous she'll turn them down" ("she's a big deal" follows)
-    // why: nervous ← "nightmare" taken as worry, with "big deal" right after; envy ← her success ("biggest fish") read
-    //   as envy
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'nightmare', seg: [98.55, 106.5],
       stem: 'How does Ron feel about Annabelle Porter?',
-      choices: ['He can’t stand her or what she makes', 'He’s nervous she’ll turn them down', 'He envies how famous she has become'], a: 0,
-      cue: '「Forget it」のあと、その人を何と呼ぶか。',
+      ja: 'ロンはアナベル・ポーターをどう思っている？',
+      choices: ['He can’t stand her', 'He likes her work', 'He wants to meet her'], a: 0,
+      choicesJa: ['大きらい', '彼女の仕事が好き', '会いたい'],
+      cue: '「Forget it」のあと',
       line: 'That *horrifying* lifestyle newsletter… *Forget it.* That woman is *my nightmare*.',
       said: '「あのぞっとする生活情報誌か。お断りだ。あの女は悪夢だ」と言う。',
-      mean: 'nightmare ＝ 最悪の存在。怖いのではなく、心から嫌いだということ。',
-      trap: 'nightmare を「怖い」と取りやすい。Forget it と並ぶと強い拒否。',
-      use: 'Traffic here is a nightmare.（ここの渋滞は最悪だ）' },
+      mean: 'Forget it ＝ お断りだ・忘れて。my nightmare ＝ 悪夢のような人。',
+      trap: 'Forget it を「忘れて」とだけ取りやすい。ここは強い「お断り」。',
+      use: 'Karaoke? Forget it.（カラオケ？お断り）' },
 
-    // why: Ron walks out ← his "my nightmare" and the "Ron!" called at the end; she turns them down ← "Leslie" as the
-    //   rival who might have her; "extremely jazzed to be part of the Gryzzl bid" settles it
-    // R fix: V2 (blind 70 %) and K6: the key was the only three-part choice; shortened and evened out
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'visit', reveals: ['price'], seg: [114.4, 187.6],
-      stem: 'How does the visit to Annabelle turn out?',
-      choices: ['She wins them over and says she’s in', 'Ron walks out, and the deal falls apart', 'She says no, as she’s backing Leslie'], a: 0,
-      cue: '訪問の最後、彼女が自分から言う一文。',
-      said: '気取った流行話に引きつつも、高い牛乳の商売に感心し、彼女も「ぜひ参加したい」と言う。',
-      mean: '嫌っていた相手が、商売の腕で場を味方につけた流れ。',
-      trap: 'Ron の「悪夢」や最後の呼びかけで決裂に聞こえやすいが、彼女は乗り気。',
-      use: 'I’d love to be part of it.（ぜひ参加させてください）' },
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'apology', seg: [121, 133.15],
+      stem: 'Ron says, “*Apology accepted*.” What does he mean?',
+      ja: 'ロンの「Apology accepted」はどういう意味？',
+      choices: ['It’s okay that you’re late', 'Say sorry one more time', 'I like your oyster forks'], a: 0,
+      choicesJa: ['遅れたのはかまわない', 'もう一度謝って', 'カキ用フォークがいいね'],
+      cue: '遅刻のおわびのあと',
+      line: 'I’m sorry I’m late… — *Apology accepted*. And then I have no reaction to anything else you said.',
+      said: '遅刻のおわびに「謝罪は受け取る。ほかの話には反応なし」と返す。',
+      mean: 'Apology accepted ＝ 謝罪を受け入れます・気にしないで。かたい言い方。',
+      trap: 'accepted（受け入れた）を聞き落とすと、もっと謝れと思いやすい。',
+      use: 'Apology accepted. Let’s move on.（謝罪は受け取ったよ。先に進もう）' },
 
-    // why: warm forgiveness ← "Apology accepted" taken at face value (the お礼・許し frame); asks about the forks ← "anything
-    //   else you said" heard as a question about it
-    // R fix: V2 (blind 70 %): all three now accept the apology and differ in what follows
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'apology', seg: [120.95, 133.15],
-      stem: 'What does the reply beginning “Apology accepted” do?',
-      choices: ['Accepts the apology, but ignores all the rest', 'Accepts the apology, and forgives her warmly', 'Accepts the apology, and asks about the forks'], a: 0,
-      cue: '「accepted」のあとに続く部分。',
-      line: 'I’m sorry I’m late… — *Apology accepted*. And then *I have no reaction to anything else you said*.',
-      said: '遅刻のおわびと気取った話に「謝罪は受け取る。残りには反応なし」と返す。',
-      mean: '礼儀の部分だけ受け取り、自慢話は無視すると宣言する、冷たい返し。',
-      trap: 'Apology accepted だけなら優しい許し。and then のあとで、残りを切り捨てている。',
-      use: 'Apology accepted. Let’s move on.（謝罪は受け取った。先に進もう）' },
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'beefmilk', seg: [157, 172],
+      stem: 'What is “beef milk” really?',
+      ja: '「ビーフミルク」とは本当は何？',
+      choices: ['Just normal milk', 'A kind of almond milk', 'A drink made of meat'], a: 0,
+      choicesJa: ['ふつうの牛乳', 'アーモンドミルクの一種', '肉から作った飲み物'],
+      cue: 'ロンの一言「Milk.」',
+      line: 'It’s like almond milk that’s been *squeezed through tiny holes in living cows*. … — *Milk.*',
+      said: '「生きた牛の小さな穴からしぼり出したもの」と言い、ロンは一言「牛乳だ」と言う。',
+      mean: '生きた牛からしぼる＝ただの牛乳。新しい名前をつけて売っている。',
+      trap: 'almond milk や beef から、別の飲み物と思いやすい。ロンの Milk. が答え。',
+      use: 'It’s just milk.（ただの牛乳だよ）' },
 
-
-    // R fix: V2 (blind 75 %): "soaking beef in water" was a filler; it's now "cows fed on almonds", built from both
-    //   halves of the description
-    // why: beefy almond milk ← "almond milk" is the first thing in the description (the keyword trap); fed on almonds ←
-    //   "almond milk" + "living cows" joined the wrong way; "squeezed through tiny holes in living cows" is milking
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'beefmilk', seg: [150.0, 163.6],
-      stem: 'From the description, what is “beef milk” really?',
-      choices: ['Plain cow’s milk under a new name', 'Almond milk with a beefy flavor', 'Milk from cows fed on almonds'], a: 0,
-      cue: '「squeezed through」のあと、どこから出てくるか。',
-      line: 'It’s like almond milk that’s been *squeezed through tiny holes in living cows*.',
-      said: '「アーモンドミルクみたいなもので、生きた牛の小さな穴からしぼり出したもの」と説明する。',
-      mean: '牛からしぼるなら、ただの牛乳。新しい名前で売っているだけ。',
-      trap: '最初の almond milk に引かれやすい。説明の最後に正体が来る。',
-      use: 'So it’s basically just milk.（つまり、ただの牛乳だよね）' },
-
-    // why: orders some ← "Milk." heard as a request, the café script; stunned ← the long pause heard as speechless
-    //   shock, the one word as nothing more
-    // anchor: 163–166.8 s a long silence, then "Milk." and at once "No, no. Milk costs three dollars a gallon… beef milk…
-    //   sixty": the "No, no" answers a claim that it is only milk
-    // R fix: V2 (blind 65 %): "plain old" marked the key; the three are now plain, parallel acts
-    // retired: one C2 alone is under 2 (nt1 retired)
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'beefmilk', reveals: ['price'], seg: [159.8, 176.7], retired: true,
       stem: 'After the long pause, what does the one-word reply “Milk.” do?',
       choices: ['It sums up what the drink really is', 'It asks to try a glass of the drink',
@@ -276,24 +221,29 @@ export const beefMilk: Clip = {
       trap: '一語だけだと注文や絶句にも聞こえる。次の人が何に「違う」と言ったかで、一語の働きが決まる。',
       use: 'So, a sandwich. Got it.（つまりサンドイッチね。了解）' },
 
-    // why: $16 ← -teen/-ty: "sixty" with a flapped t and a weak "-ty" heard as "sixteen"; $6 ← the "-ty" lost after
-    //   "three dollars" just before
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', seg: [166.8, 187.6],
+      stem: 'How does the visit to Annabelle end?',
+      ja: 'アナベルを訪ねた結果は？',
+      choices: ['She agrees to join them', 'Ron walks out angry', 'She says she backs Leslie'], a: 0,
+      choicesJa: ['仲間に加わると言う', 'ロンが怒って出ていく', 'レスリーを応援すると言う'],
+      cue: '牛乳の値段の話のあと',
+      said: '高い牛乳の商売に皆が感心し、アナベルも「ぜひ加わりたい」と言う。',
+      mean: 'jazzed ＝ わくわくしている（くだけた言い方）。きらいだったロンも商売は認める。',
+      trap: 'ロンはアナベルがきらいだったので、怒って帰ると思いやすい。',
+      use: 'I’d love to be part of it.（ぜひ参加したいです）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [169.3, 176.7], keep: true,
       stem: 'How much does a gallon of the beef milk cost?',
+      ja: 'ビーフミルクは1ガロンいくら？',
       choices: ['$6', '$16', '$60'], a: 2,
-      cue: '二つ目の「costs」のあと、gallon の前。',
+      choicesJa: ['6ドル', '16ドル', '60ドル'],
+      cue: '「That costs」のあと',
       line: 'Milk costs three dollars a gallon… beef milk? That costs *sixty* a gallon.',
-      said: '「牛乳は1ガロン3ドル。アナベルの手しぼり牛肉ミルクは60ドル」と言う。',
-      mean: 'sixty は前が強く、ty は短い。普通の牛乳の20倍の値段。',
-      trap: 'sixty の t が弾み「シックスディ」となり sixteen と混ざる。強い所が前か後ろかで判断。',
-      use: 'That’s sixty dollars a night.（1泊60ドルです）' },
+      said: '「牛乳は1ガロン3ドル。アナベルのビーフミルクは60ドル」と言う。',
+      mean: 'sixty ＝ 60。最初の「シック」が強い。sixteen なら最後の「ティーン」がのびる。',
+      trap: '前の three dollars に引かれやすい。That costs のあとの数を聞く。',
+      use: 'How much does it cost?（いくらですか）' },
 
-    // why: worth every cent ← "knows business" read as praise of the product (the sincerity frame); fooling buyers ←
-    //   the speaker's earlier dislike of her carried over, the right target in the wrong direction
-    // anchor: 169.6–176.2 s "Milk costs three dollars… beef milk… sixty a gallon", 177–178.7 s "And there's a wait list",
-    //   then 179.7 s "This woman knows business": the praise follows the price gap and the queue, not the product
-    // R fix: V2 (blind 60 %): the key was the only specific, two-part choice; shortened to one point each
-    // retired: g2 and nt2 reveal its point, so play 3+ under g2 drew no C2 once nt2 was seen
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'price', reveals: ['waitlist'], seg: [169.3, 184.2], retired: true,
       stem: 'What exactly is being admired in “This woman knows business”?',
       choices: ['Her knack for selling plain milk at a huge markup', 'Her milk, so good it is worth sixty a gallon',
@@ -305,42 +255,62 @@ export const beefMilk: Clip = {
       trap: 'ほめ言葉を商品のことと取るか、皮肉と取るか。何の直後に言ったかで、ほめる対象が決まる。',
       use: 'That guy really knows how to sell.（あの人、売り方を分かってるね）' },
 
-    // R fix: V2 (blind 50 %, right): the key was the only choice with "list"; it's now in a distractor instead
-    // why: sells out daily ← "wait list" heard as "it's always gone"; her list ← "list" heard as a private, VIP list
     { id: 'd3', skill: 'detail', level: 'B1', point: 'waitlist', seg: [176.6, 179.65],
       stem: 'What does Annabelle add about the beef milk?',
-      choices: ['People wait their turn to buy it', 'It sells out the day it’s made', 'It’s only sold to people on her list'], a: 0,
-      cue: '「Yeah. And」のあと。',
+      ja: 'アナベルはビーフミルクについて何を付け足す？',
+      choices: ['There’s a wait list', 'It sells out daily', 'Only friends can buy it'], a: 0,
+      choicesJa: ['順番待ちのリストがある', '毎日売り切れる', '友だちしか買えない'],
+      cue: '「Yeah. And」のあと',
       line: 'Yeah. And *there’s a wait list*.',
       said: '「そう。しかも順番待ちのリストがあるの」と付け足す。',
-      mean: 'wait list ＝ 順番待ち。高くても欲しい人が待っている、という自慢。',
-      trap: 'list だけ聞くと「特別な人だけ」に聞こえやすい。wait と組で「待っている人の列」。',
+      mean: 'wait list ＝ 順番待ちのリスト。高くても、買いたい人が待っている。',
+      trap: '人気の話なので、売り切れと思いやすい。wait list ＝ 待っている人の名簿。',
       use: 'Is there a wait list?（順番待ちはありますか）' },
 
-    // R new (replaces s1): sound on a weak "shall"; both sources have "shall we discuss it in my yurt"
-    // why: should ← "shall" and "should" both shrink to "sh'"; can ← a weak, quick first word heard as the commonest
-    //   request opener
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'knows', reveals: ['price', 'waitlist'], seg: [176.6, 182.2],
+      stem: 'What does Ron think of Annabelle now?',
+      ja: '今、ロンはアナベルをどう思っている？',
+      choices: ['She is good at business', 'She is a bad person', 'She is very funny'], a: 0,
+      choicesJa: ['商売がうまい', '悪い人だ', 'とても面白い'],
+      cue: '「wait list」のあと',
+      line: 'And there’s a wait list. — *This woman knows business.*',
+      said: '順番待ちのリストがあると聞き、「この女は商売を分かっている」と言う。',
+      mean: 'know business ＝ 商売が分かっている。きらいだった人を、商売では認めている。',
+      trap: '前に「悪夢」と言っていたので、悪く言うと思いやすい。knows business はほめ言葉。',
+      use: 'She really knows her job.（彼女は本当に仕事ができる）' },
+
     { id: 's2', skill: 'sound', level: 'B2', point: 'yurt', seg: [183.1, 186.3],
       stem: 'Fill the gap: “___ discuss it in my yurt?”',
+      ja: '「___ discuss it in my yurt?」の空所は？',
       choices: ['Shall we', 'Should we', 'Can we'], a: 0,
-      cue: 'yurt の前の文の、最初の二語。',
+      choicesJa: ['〜しましょうか', '〜すべき？', '〜できる？'],
+      cue: '「jazzed」のあとの質問',
       line: '*Shall we* discuss it in my yurt?',
       said: '「続きは私のゲルで話しましょうか」と誘う。',
-      mean: 'Shall we ～? ＝「～しましょうか」と誘う形。shall は弱く「シャウィ」に近い。',
-      trap: 'should だと「～すべき？」と相談する形。語末の d の止まりがあるかを聞き分ける。',
-      use: 'Shall we get started?（始めましょうか）' },
+      mean: 'Shall we 〜? ＝ 〜しましょうか。ていねいな誘い方。「シャルウィ」とつながる。',
+      trap: 'Should we と似て聞こえる。「シャル」の l の音なら Shall。',
+      use: 'Shall we go?（行きましょうか）' },
 
-    // why: price cut ← "no need to discuss any further" heard as the money talk being settled; Ron won over ← "This
-    //   woman knows business" earlier, carried over as the reason
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'face', seg: [206.75, 221.6],
-      stem: 'Why is Annabelle suddenly made “the face of the Gryzzl bid”?',
-      choices: ['They think Leslie has found a big name of her own', 'Annabelle has agreed to lower her price for them',
-                'Ron has finally come around to liking her'], a: 0,
-      cue: '「press conference」と聞いたあとの、So で始まる一文。',
-      line: 'getting ready for a *big press conference*. … So *she’s found something to strengthen her bid*.',
-      said: '「Leslie は記者会見の準備中」と聞き、「強い手を見つけたな」と読んで、すぐアナベルに決める。',
-      mean: 'ライバルの動きを見て、先に手を打った。',
-      trap: 'no need to discuss を「値段が決まった」と取りやすい。直前の So の推測が理由。',
-      use: 'No need to discuss it further.（これ以上話し合う必要はない）' },
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'sign', seg: [192.3, 197.0],
+      stem: 'Type: “All pages accounted for. Just ___.” (3 words)', answer: 'sign right here',
+      ja: '「All pages accounted for. Just ___.」の空所を書こう（3語）',
+      cue: '「All pages」のあと',
+      line: 'All pages accounted for. Just *sign right here*.',
+      said: '「書類は全部そろってる。ここにサインして」と言う。',
+      mean: 'sign right here ＝ ちょうどここにサインして。ホテルや店でよく聞く。',
+      trap: 'sign の g は読まず「サイン」。right here がつながり「ライヒア」。',
+      use: 'Could you sign right here?（ここにサインをお願いします）' },
+
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'press', seg: [205.3, 214.3],
+      stem: 'What is Leslie getting ready for?',
+      ja: 'レスリーは何の準備をしている？',
+      choices: ['A big press conference', 'A big birthday party', 'A job interview'], a: 0,
+      choicesJa: ['大きな記者会見', '大きな誕生日パーティー', '仕事の面接'],
+      cue: '「up to?」の答え',
+      line: 'Terry, what is Leslie up to? — Oh, getting ready for a *big press conference*.',
+      said: '「レスリーは何してる？」と聞かれ、テリーが「大きな記者会見の準備」と答える。',
+      mean: 'What is 〜 up to? ＝ 〜は何をしてる？ press conference ＝ 記者会見。',
+      trap: 'up to から「〜まで」と思いやすい。What is she up to? は「何してる？」。',
+      use: 'What are you up to this weekend?（週末は何するの？）' },
   ]
 };
