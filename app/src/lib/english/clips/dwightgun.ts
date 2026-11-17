@@ -1,17 +1,16 @@
+// A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 5, new 2
 // “Dwight's Accidental Discharge - The Office US” (the official The Office channel, BEST OF SEASON 7): Dwight asks
 // Jordan to collect office gossip about him, turns up with a holster and a gun, is talked into giving the gun up, and
 // after it goes off near Andy's ear the office fusses, cashes in and plays it down while Andy goes to hospital.
 // Segments from the captions, words from whisper (2026-11-16). Untested: 3–15 s (Dwight's remarks on Jordan's looks),
-// 22–53 s (the holster montage, visual), 68–74 s (the "shirts" retort), 93.9 s (whose apology), 97–99 s, 117–119 s
+// 22–53 s (the holster montage, visual), 68–74 s (the "shirts" retort), 93.9 s (whose apology), 117–119 s
 // (unclear: "a perfect seat"/"perfect SE"), 149.9 s ("Firewall"), 151.4 s ("she"/"he must"), 154 s ("I think I"/"you
 // should go"), 163–185 s (hospital, visual). Names misspelled in the captions (Joe = Jo, "Annie" = Andy) aren't tested.
 // EAR CHECK: 162.7 s w1 — whisper puts "Thank you, Darryl" at ≈163 s; the captions put "darl" at 169.1 s; the key is
 //   Darryl either way: confirm the name answers the "I'll take them" offer
 // EAR CHECK: 82.2 s s1 d3 — "weren't": confirm the n of the negative is heard (both sources say "weren't")
-// EAR CHECK: 87.3 s x1 — "make us call" linked (≈"meikəs"); both sources agree on the words
-// REVIEW 2026-11-16: pass 7, fix 15, drop 0, new 0; ear checks 3
-// Open: with the harder toggle on, play 3 misses its C2 in 7 of 20 seeds: each C2 shares a point with a gist (nt2 with
-//   g1 via `end`, nt1 with g2 via `noise`), and the gist always comes first. A third C2 on another point would fix it.
+// EAR CHECK: 87.3 s x1 — "make us call" linked (≈ メイカス); both sources agree on the words
+// EAR CHECK: 59.8–66.6 s a3, 140–147.5 s f1 — whisper's lines are long here: confirm each seg holds its line
 import type { Clip } from '../types.ts';
 
 export const dwightGun: Clip = {
@@ -20,52 +19,56 @@ export const dwightGun: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: her gossip ← he has just told her what people say about her, so more of that seems to follow; stop
-    //   listening ← "things they don't want me to know" heard as a warning to stay out of it
     { id: 'd1', skill: 'detail', level: 'B1', point: 'spy', seg: [14.95, 22.1],
       stem: 'What does Dwight ask Jordan to do?',
-      choices: ['Find out what people say about him', 'Tell him more of what people say about her',
-                'Stop listening to what people say'], a: 0,
-      cue: 'I want you to のあと、about の次の語。',
-      line: 'I want you to *find out what people are saying about me*',
-      said: '「僕について皆が言っている事、知られたくない事を探ってほしい」と頼む。',
-      mean: '彼女の陰口を伝えたのは前置き。本当の頼みは、自分の噂を集めてくる事。',
-      trap: '彼女の噂の話が先に来るので、続きもそうだと思いやすい。I want you to のあとが頼み。',
+      ja: 'ドワイトはジョーダンに何を頼む？',
+      choices: ['Learn what people say about him', 'Tell him why she was hired', 'Stop people talking about her'], a: 0,
+      choicesJa: ['自分について皆が何を言っているか調べる', '彼女が採用された理由を話す', '彼女のうわさを止める'],
+      cue: '「I want you to」のあと',
+      line: 'I want you to *find out what people are saying about me*.',
+      said: '「僕について皆が何を言っているか、調べてほしい」と頼む。',
+      mean: 'I want you to 〜 ＝「あなたに〜してほしい」。find out ＝ 調べて知る。',
+      trap: '彼女のうわさの話が先に来るので、続きもそうだと思いやすい。about me を聞く。',
       use: 'I want you to find out the price.（値段を調べてほしい）' },
 
-    // why: keeps it hidden ← "put your cell phone in it instead" heard as a compromise; Jo settles it ← "call Jo"
-    //   heard as the plan rather than a threat
     { id: 'g1', skill: 'gist', level: 'B1', point: 'end', reveals: ['fine', 'jo', 'makeus'], seg: [53.0, 91.5],
-      stem: 'How does the argument over Dwight’s holster end?',
-      choices: ['Dwight agrees to give up the gun', 'Dwight keeps the gun but hides it',
-                'They decide to let Jo settle it'], a: 0,
-      cue: '最後の「Okay」のあと、ドワイトの返事。',
+      stem: 'How does the talk about Dwight’s gun end?',
+      ja: 'ドワイトの銃の話は、どう終わる？',
+      choices: ['He agrees to take it off', 'He keeps it but hides it', 'They call Jo to decide'], a: 0,
+      choicesJa: ['外すことに同意する', '持ったまま隠す', 'ジョーを呼んで決める'],
+      cue: '最後の「Okay」のあと',
       line: 'Dwight, *no gun*. Okay? … Okay, all right, *fine*.',
-      said: '「銃はなし。ジョーを呼ばせないで」と迫られ、ドワイトは「分かった」と折れる。',
-      mean: 'all right, fine はしぶしぶ受け入れる言い方。ここで銃を外すと同意した。',
-      trap: 'call Jo はジョーに任せる話に聞こえる。実際は「呼ばせるな」という警告。',
+      said: '「銃はダメ」と迫られ、ドワイトは「分かった、いいよ」と折れる。',
+      mean: 'all right, fine ＝「分かったよ」。しぶしぶ受け入れる言い方。',
+      trap: 'call Jo（ジョーを呼ぶ）が聞こえるが、「呼ばせないで」という警告。最後は fine。',
       use: 'All right, fine. You win.（分かったよ、君の勝ち）' },
 
-    // R fix: V2 (blind 55 %, right): "sidesteps" made the key the only nuanced choice. All three now report what the
-    //   answer says, in one plain form; "empty" is a keyword trap from 67 s.
-    // why: where he got the gun ← "gift" and "great-uncle" heard as where the gun came from; holster is empty ← "an
-    //   empty holster" comes up a few lines later
     { id: 'r1', skill: 'pragma', level: 'C1', point: 'dodge', seg: [53.0, 61.25],
-      stem: 'When Dwight is asked if he’s carrying a gun, what does his answer do?',
-      choices: ['It talks about the holster instead', 'It tells where he got the gun',
-                'It says the holster is empty'], a: 0,
-      cue: '質問は gun、返事の主語は何か。',
-      line: '*The holster* was a gift from my great-uncle Honk.',
+      stem: 'How does Dwight answer “Are you carrying a gun”?',
+      ja: 'ドワイトは「Are you carrying a gun」にどう答える？',
+      choices: ['He talks about the holster', 'He says he bought the gun', 'He says the holster is empty'], a: 0,
+      choicesJa: ['ホルスターの話をする', '銃を買ったと言う', 'ホルスターは空だと言う'],
+      cue: '質問のすぐあと',
+      line: 'Dwight, are you carrying a gun? — *The holster* was a gift from my great-uncle Honk.',
       said: '「銃を持ってる？」に「ホルスターは大おじの贈り物」と答える。',
-      mean: '銃を聞かれたのにホルスターの話にすりかえ、認めも否定もせずにかわしている。',
-      trap: 'gift が聞こえると銃のもらい先に聞こえる。返事の主語が質問とずれたら、はぐらかしを疑う。',
-      use: 'That’s not really what I asked.（それ、聞いたことと違うよね）' },
+      mean: '銃を聞かれたのに、ホルスター（銃を入れるケース）の話をして答えをかわしている。',
+      trap: 'gift（贈り物）から、銃のもらい先と思いやすい。話しているのは holster のこと。',
+      use: 'That’s not what I asked.（それ、聞いたことと違うよ）' },
 
-    // R fix: V2 (blind 65 %, right): the key was the longest and the only "turns it around". Three short choices of
-    //   one form now; the uncle distractor becomes blame (the gift, said just before).
-    // why: uncomfortable too ← "uncomfortable" is said, but by the coworker; blames his uncle ← the great-uncle's
-    //   gift, said just before
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'accessory', seg: [61.1, 68.6],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'uneasy', seg: [59.8, 66.6],
+      stem: 'How do guns make Dwight’s coworker feel?',
+      ja: '銃があると、ドワイトの同僚はどんな気持ち？',
+      choices: ['Very uneasy', 'Very excited', 'A little bored'], a: 0,
+      choicesJa: ['とても落ち着かない', 'とてもわくわくする', '少し退屈'],
+      cue: '「Dwight,」のあと',
+      line: 'Dwight, guns make me *really uncomfortable*.',
+      said: '「ドワイト、銃があると本当に落ち着かない」と言う。',
+      mean: 'make me uncomfortable ＝「私を落ち着かなくさせる」＝居心地が悪い。',
+      trap: 'comfortable（快適）が聞こえるので、平気と思いやすい。前の un- が「〜でない」。',
+      use: 'Loud music makes me uncomfortable.（大きな音楽は落ち着かない）' },
+
+    // retired (A2): a “why is it funny” item
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'accessory', seg: [61.1, 68.6], retired: true,
       stem: 'Why is Dwight’s reply about the gun and the holster funny?',
       choices: ['He reverses which one is the add-on', 'He agrees guns are uncomfortable too',
                 'He blames his uncle for the holster'], a: 0,
@@ -76,9 +79,8 @@ export const dwightGun: Clip = {
       trap: '「不快」は相手の言葉で、ドワイトの気持ちではない。A to B の向きが普通と逆なら笑いどころ。',
       use: 'It’s just an accessory.（ただのおまけだよ）' },
 
-    // why: greets someone ← hello as a greeting; answers his phone ← "cell phone" just before, and hello as the
-    //   first word on a call
-    { id: 'r2', skill: 'pragma', level: 'B2', point: 'hello', seg: [73.6, 78.1],
+    // retired (A2): “Uh, hello?” as “obviously” is sarcasm that needs a native ear
+    { id: 'r2', skill: 'pragma', level: 'B2', point: 'hello', seg: [73.6, 78.1], retired: true,
       stem: 'How does Dwight answer the cell phone idea?',
       choices: ['He brushes it off as plainly silly', 'He greets someone who just came in',
                 'He answers his phone to try it out'], a: 0,
@@ -89,27 +91,18 @@ export const dwightGun: Clip = {
       trap: 'hello を挨拶や電話の第一声と覚えていると取りにくい。上がり調子なら常識を疑う合図。',
       use: 'Hello? It’s raining. Take an umbrella.（ちょっと、雨だよ。傘持って）' },
 
-    // R fix: S3: the cue held "later", a word only the key's reason has; it now says "two times" in Japanese. Blind
-    //   55 %, but only through s1's stem, and s1 shares this point, so the choices stand.
-    // why: hungry now ← "weren't" heard as "were"; looks like a gun ← the obvious visual joke, which nobody says
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'banana', reveals: ['weren'], seg: [78.1, 85.3],
-      stem: 'Why does the coworker suggest a banana for the holster?',
-      choices: ['Dwight might want a snack later', 'Dwight is hungry at this moment', 'A banana looks a bit like a gun'],
-      a: 0,
-      cue: 'in case のあと、2つの時の対比。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'banana', reveals: ['weren'], seg: [78.1, 85.3],
+      stem: 'Why does a coworker suggest a banana?',
+      ja: '同僚はなぜバナナをすすめる？',
+      choices: ['In case he gets hungry later', 'Because he is hungry now', 'Because it looks like a gun'], a: 0,
+      choicesJa: ['あとでお腹がすいたときのため', '今お腹がすいているから', '銃に似ているから'],
+      cue: '「Why would I」のあとの返事',
       line: 'in case you *weren’t hungry now but you got hungry later*',
-      said: '「今は空いてなくても、あとで空いたときのために」と理由を言う。',
-      mean: 'in case ＝ 〜に備えて。あとで食べる用という提案。',
-      trap: 'weren’t の t が消えると were に聞こえる。now と later の対比で確かめる。',
+      said: '「今は空いてなくても、あとで空いたときのために」と言う。',
+      mean: 'in case ＝「〜のときのために」。now と later（あとで）を比べている。',
+      trap: 'hungry が聞こえるので、今お腹がすいていると思いやすい。now の前は weren’t。',
       use: 'Take a jacket in case it gets cold.（寒くなるといけないから上着を）' },
 
-    // R fix: V2 (blind 60 %, right): "Everyone" was a filler. Now a mirror pair (Dwight mocked vs the coworker
-    //   mocked) and the people who made him give up the gun. S4: the segment ran 15.5 s; it's 78.45–93.45 s.
-    //   C5: `fine` left `reveals`. Nothing here shows a1's reluctance, and it cut the play-3 C2 misses from 13 to 7.
-    // why: mocking the coworker ← "get me a banana" heard as a sarcastic jab; the others ← they just forced "no gun"
-    //   on him, so the last line sounds aimed at them
-    // anchor: 79.8 s "Why would I put a banana in my holster?" against 92.0 s "Someone get me a banana": he scoffs,
-    //   then takes the idea, having said at 66.4 s he can't wear an empty holster
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'getbanana', reveals: ['end'], seg: [78.45, 93.45], retired: true,
       stem: 'When Dwight finally asks for a banana, who is the joke on?',
       choices: ['Dwight, for taking up the idea he just mocked', 'The coworker, for an idea he is now mocking',
@@ -121,90 +114,79 @@ export const dwightGun: Clip = {
       trap: '最後の一言は同僚へのあてつけに聞こえやすい。前に否定した事を後で自分から頼むと、本人が笑いの的。',
       use: 'Okay, I take it back.（分かった、さっきのは取り消す）' },
 
-    // why: were ← the t of weren't drops and the n is weak; aren't ← the right negative, the wrong tense
     { id: 's1', skill: 'sound', level: 'B2', point: 'weren', reveals: ['banana'], seg: [81.2, 85.3],
       stem: 'Fill the gap: “in case you ___ hungry now…”',
+      ja: '「in case you ___ hungry now…」の空所は？',
       choices: ['weren’t', 'were', 'aren’t'], a: 0,
-      cue: 'you のあと、弱く短い一語。最後の音に注意。',
+      choicesJa: ['〜なかった（過去）', '〜だった', '〜ない（今）'],
+      cue: 'you のあとの短い一語',
       line: 'in case you *weren’t* hungry now but you got hungry later',
-      said: '「今は空いてなくても」。weren’t は t がほぼ消える。',
-      mean: 'were＋not で n の鼻音が残る。later との対比で「今は空いていない」。',
-      trap: '語尾の t が消えると were に聞こえやすい。n が残るかと、後の対比で判断する。',
-      use: 'In case you weren’t told, we moved.（聞いてないかもだけど、引っ越したよ）' },
+      said: '「今はお腹が空いてなくても」と言う。',
+      mean: 'weren’t ＝ were not。「ワーン（ト）」で、最後の t はほぼ消える。',
+      trap: 't が消えて were に聞こえやすい。「ン」が残れば否定。aren’t は「アーン」で w の音がない。',
+      use: 'In case you weren’t told, we moved.（聞いてないかもしれないけど、引っ越したよ）' },
 
-    // R fix: V2 (blind 65 %, right): "has to answer to" was the only choice about power. Each choice is now a role
-    //   Jo could play in a gun row; only the threat's form settles it.
-    // why: takes the gun ← a gun is the topic, so someone who handles guns fits; backs Dwight up ← "call Jo" heard as
-    //   calling in Dwight's side
     { id: 'i1', skill: 'infer', level: 'B2', point: 'jo', reveals: ['makeus'], seg: [85.1, 88.6],
-      stem: 'From the warning at the end, who is Jo most likely?',
-      choices: [`Someone Dwight must take orders from`, 'Someone who could take the gun off him',
-                'Someone likely to back Dwight up'], a: 0,
-      cue: 'no gun のあと、脅しの一言。',
+      stem: 'From the warning, who is Jo most likely?',
+      ja: '警告から考えて、ジョーはどんな人？',
+      choices: ['Someone Dwight must obey', 'Someone who sells guns', 'Someone on Dwight’s side'], a: 0,
+      choicesJa: ['ドワイトが従うべき人', '銃を売る人', 'ドワイトの味方'],
+      cue: '「no gun」のあと',
       line: 'Dwight, no gun. Okay? *Don’t make us call Jo*.',
-      said: '「ドワイト、銃はダメ。ジョーに連絡させないで」と迫る。',
-      mean: '名前を出すだけで脅しになるので、ジョーはドワイトより上の人物だと分かる。',
-      trap: '銃の話の最中なので、銃を扱える人に聞こえやすい。名前で脅すときは、その人に力がある。',
+      said: '「ドワイト、銃はダメ。ジョーを呼ばせないで」と迫る。',
+      mean: '名前を出すだけで脅しになるので、ジョーはドワイトより上の人だと分かる。',
+      trap: '銃の話なので、銃にくわしい人と思いやすい。「呼ぶぞ」は上の人を呼ぶときの言い方。',
       use: 'Don’t make me call your mom.（お母さんに電話させないでね）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'makeus', seg: [85.1, 88.6],
       stem: 'Type the warning: “Don’t ___ Jo.” (3 words)', answer: 'make us call',
-      cue: 'Don’t のあと、つながる3語。',
+      ja: '警告「Don’t ___ Jo.」の空所を書こう（3語）',
+      cue: '「Don’t」のあと',
       line: 'Don’t *make us call* Jo.',
-      said: '「ジョーに電話させないで」。make us が「メイカス」に近い。',
-      mean: 'make＋人＋動詞 ＝ 〜に…させる。電話させる事をするな、という意味。',
-      trap: 'us が弱く、make a や make it に聞こえやすい。make の後ろは人＋動詞を予想する。',
+      said: '「ジョーに電話させないで」と言う。',
+      mean: 'make 人 動詞 ＝「人に〜させる」。make us は「メイカス」とつながる。',
+      trap: 'us が弱く、make a や make it に聞こえやすい。make のあとは「人＋動詞」。',
       use: 'Don’t make me ask you twice.（2回言わせないで）' },
 
-    // R fix: V2 (blind 55 %, right): the key was the only two-part, hedged choice. Now three of one shape: giving in
-    //   unhappily, giving in gladly, not giving in.
-    // why: glad ← giving in can sound like relief; stalling ← "Okay… all right" heard as buying time, and "calm down"
-    //   as pushing back
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'fine', reveals: ['end'], seg: [85.1, 91.6],
-      stem: 'How does Dwight sound when he answers the “no gun” demand?',
-      choices: ['Giving in, and not happy about it', 'Giving in, and glad it’s over', 'Not giving in, just stalling'],
-      a: 0,
-      cue: 'Okay のあとに重なる短い返事。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fine', reveals: ['end'], seg: [85.1, 91.6],
+      stem: 'How does Dwight feel when he says “fine”?',
+      ja: '「fine」と言うとき、ドワイトはどんな気持ち？',
+      choices: ['Giving in, but unhappy', 'Giving in, and glad', 'Not giving in at all'], a: 0,
+      choicesJa: ['しぶしぶ折れる', '喜んで折れる', 'まったく折れない'],
+      cue: '「Okay」のあとの短い返事',
       line: 'Okay, all right, *fine*. Everyone calm down.',
-      said: '「分かった、分かったよ、いいよ。みんな落ち着け」。',
-      mean: 'okay, all right, fine と重ねるのは、しぶしぶ折れる言い方。',
-      trap: 'calm down は本人の落ち着きでも反撃でもなく、周りへの言葉。fine で終わる返事は不満つきの了承。',
+      said: '「分かった、分かったよ、いいよ。みんな落ち着け」と言う。',
+      mean: 'okay, all right, fine と重ねるのは、しぶしぶ折れる言い方。fine ＝「もういいよ」。',
+      trap: 'fine（いい）から、喜んでいると思いやすい。重ねて言うのは不満つきの「分かった」。',
       use: 'Fine. Have it your way.（いいよ、好きにして）' },
 
-    // R fix: V2 + K1 (blind 65 %, right): "the floor is badly built" was defensible from “Why would they do that?”,
-    //   and the key added footsteps nobody mentions. The choices are now about what the floor explains; the cue no
-    //   longer holds "loud", the key's word.
-    // why: a waste to hide ← "Why would they do that?" heard as regret over covering a nice floor; the bullet ← the
-    //   later "a hole was seen" pulled forward to the floor
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'loud', seg: [99.0, 110.1],
-      stem: 'Why does the speaker bring up the floor under the carpet?',
-      choices: ['It’s why everything sounds so loud', 'It’s a waste to hide a nice floor',
-                'It’s where the bullet ended up'], a: 0,
-      cue: '最初のひと言と、床の話のつながり。',
-      line: 'it’s *so loud*. … there is a hardwood floor underneath this carpeting',
-      said: '「すごくうるさい。カーペットの下は板の床だ」と言う。',
-      mean: '耳がおかしくなり、何もかも響いて聞こえるので、下が板の床のせいだと思っている。',
-      trap: 'Why would they do that? は「もったいない」に聞こえる。so loud が出発点。',
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'loud', seg: [99.0, 110.1],
+      stem: 'How does everything sound to Andy now?',
+      ja: '今のアンディには、まわりの音がどう聞こえる？',
+      choices: ['So loud', 'So quiet', 'Far away'], a: 0,
+      choicesJa: ['すごくうるさい', 'すごく静か', '遠くに聞こえる'],
+      cue: '最初のひと言',
+      line: 'Oh God, *it’s so loud*. … there is a hardwood floor underneath this carpeting',
+      said: '「うわ、すごくうるさい。カーペットの下は板の床だ」と言う。',
+      mean: 'so loud ＝「すごくうるさい」。耳の近くで銃が鳴ったので、音が響いている。',
+      trap: '耳がおかしいので、静かに聞こえると思いやすい。so loud とはっきり言う。',
       use: 'Why is it so loud in here?（ここ、なんでこんなにうるさいの）' },
 
-    // R fix: V2 (blind 60 %, right): after a shot, "ringing that won't stop" was the only fitting choice. All three
-    //   now end alike, and the phone distractor keeps the word "ringing".
-    // why: a phone ← "ringing" as a phone's ring; pounding ← a loud inner sound after a shock (heart or head)
     { id: 'd4', skill: 'detail', level: 'B1', point: 'ring', seg: [110.1, 115.0],
-      stem: 'In the talk to camera, what sound does the speaker describe?',
+      stem: 'What sound does Andy say he hears?',
+      ja: 'アンディは、どんな音が聞こえると言う？',
       choices: ['A ringing sound that won’t stop', 'A phone that won’t stop ringing', 'A pounding sound that won’t stop'],
       a: 0,
-      cue: 'crazy のあとの語と、そのあとの2語。',
+      choicesJa: ['止まらないキーンという音', '鳴りやまない電話', '止まらないドンドンという音'],
+      cue: '「crazy」のあと',
       line: 'there’s like this crazy *ringing going on*',
       said: '「なんか、すごいキーンという音が鳴りっぱなし」と言う。',
-      mean: 'ringing ＝ 耳鳴り。大きな音のあとで耳がキーンとなる状態。going on は続いている事。',
-      trap: 'ring から電話の着信を思い浮かべやすい。誰かの電話でなく、自分の耳の中の音の話。',
+      mean: 'ringing ＝ 耳鳴り（キーンという音）。going on ＝ 続いている。',
+      trap: 'ring から電話の着信を思い浮かべやすい。自分の耳の中の音の話。',
       use: 'My ears are still ringing.（まだ耳がキーンとしてる）' },
 
-    // R fix: V2 (blind 60 %, right): "no shot touched" spelled out the joke, and the Dwight distractor was weak. The
-    //   choices are now three readings of "I lost…", one form each.
-    // why: really lost ← "I lost" taken at face value; hope to buy ← a list of pricey things heard as a wish list
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'insurance', seg: [117.6, 124.5],
+    // retired (A2): a “what makes it funny” item
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'insurance', seg: [117.6, 124.5], retired: true,
       stem: 'What makes one coworker’s list for the insurance funny?',
       choices: ['They’re using the shot to cash in', 'They really lost them while running',
                 'They’re naming what they hope to buy'], a: 0,
@@ -215,23 +197,20 @@ export const dwightGun: Clip = {
       trap: '「なくした」を事実と取ると、騒ぎで落とした話に聞こえる。並ぶ物が状況に合うか考える。',
       use: 'Does insurance cover this?（これ、保険はききますか）' },
 
-    // R fix: V2 (blind 70 %, right): the key was the only detailed, three-part choice. Now three of one shape. "Calm:
-    //   people play down what happened" is the near miss from the "loud noise" account.
-    // why: pull together ← the hospital and WebMD talk sound like everyone helping; play it down ← the "all we know is
-    //   that a gun fired" account, taken as the whole office's mood
     { id: 'g2', skill: 'gist', level: 'B2', point: 'after', reveals: ['insurance', 'spree', 'noise', 'webmd'],
-      seg: [117.6, 163.4],
-      stem: 'What is the mood in the office after the shot?',
-      choices: ['Messy: most people look out for themselves', 'Tense: people pull together to help Andy',
-                'Calm: people play down what happened'], a: 0,
-      cue: '保険、何があったかの説明、病院の話。',
-      said: '物を並べる人、「乱射」と騒ぐ人、「音がしただけ」と言い張る人、症状を調べる人がいる。',
-      mean: '心配より、それぞれが自分の都合で動く混乱した場面。真剣に助ける空気は薄い。',
-      trap: '病院やWebMDの話から、皆で助けていると思いやすい。保険のリストや言い訳が中心。',
+      seg: [118.0, 163.0],
+      stem: 'What is the office like after the shot?',
+      ja: '銃が鳴ったあと、オフィスはどんな様子？',
+      choices: ['Messy and a bit selfish', 'Calm and very quiet', 'Kind and helpful to Andy'], a: 0,
+      choicesJa: ['ばたばたで、少し自分勝手', '落ち着いていて静か', 'アンディに親切で協力的'],
+      cue: '保険の話から最後まで',
+      said: '保険で得しようとする人、話を大げさにする人、ごまかす人がいる。',
+      mean: 'みんな自分のことばかり。心配して助ける空気は薄い。',
+      trap: '病院の話が出るので、みんなで助けていると思いやすい。中心は保険とごまかし。',
       use: 'It’s total chaos in here.（ここ、大混乱だよ）' },
 
-    // why: one shot ← what really happened; for fun ← "spree" from “shopping spree”, a fun splurge
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'spree', seg: [124.45, 128.55],
+    // retired (A2): “shooting spree”: a violent news word with little daily use
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'spree', seg: [124.45, 128.55], retired: true,
       stem: 'How does one worker describe what Dwight did?',
       choices: ['He shot at people again and again', 'He fired a single shot by accident', 'He went out shooting for fun'],
       a: 0,
@@ -242,28 +221,18 @@ export const dwightGun: Clip = {
       trap: 'shopping spree（買い物三昧）から「楽しむ」を連想しやすい。spree は「しまくる」。',
       use: 'I went on a shopping spree.（買い物しまくった）' },
 
-    // R fix: V2 + S2 (blind 50 %, right): "No, that's not true" in the stem made "a correction" the obvious pick. All
-    //   three choices now fit "not true"; they differ in what the correction does to "a gun fired".
-    // why: backs it up ← the Japanese 「実際」, a word that adds support; agrees after all ← "actually" read as taking
-    //   back the "No", a self-correction toward yes
     { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', reveals: ['noise'], seg: [128.5, 136.6],
-      stem: 'In the reply to “that’s all we know”, what does “actually” do?',
-      choices: ['It goes further: even “a gun fired” is too much', 'It backs up the claim that a gun fired',
-                'It takes back the “No” and agrees after all'], a: 0,
-      cue: 'not true のすぐあと、その次の文の中身。',
-      line: 'No, that’s not true, *actually*. We heard a loud noise.',
-      said: '「銃が発射された、それだけ」のあと「いや、それも違う」と言い直す。',
-      mean: 'actually は訂正の合図。「銃が発射された」さえ認めず、さらに弱めている。',
-      trap: '日本語の「実際」は裏付けに近いが、英語の actually は「実は違って」にも使う。',
+      stem: 'What does “actually” do in this reply?',
+      ja: 'この返事の「actually」は何をしている？',
+      choices: ['Corrects the last speaker', 'Agrees with the last speaker', 'Asks the last speaker'], a: 0,
+      choicesJa: ['前の人の言葉を直す', '前の人に賛成する', '前の人に質問する'],
+      cue: '「that’s all we know」のあと',
+      line: 'All we know is that a gun fired. — No, that’s not true, *actually*. We heard a loud noise.',
+      said: '「銃が発射された、それだけ」に「いや、それも違う」と言い直す。',
+      mean: 'actually ＝「実は」。前の話を直すときの合図。銃とさえ言わずにごまかしている。',
+      trap: '日本語の「実際」から、賛成に聞こえやすい。No と not true で直している。',
       use: 'Actually, I changed my mind.（実は、気が変わった）' },
 
-    // R fix: V2 + K1 (blind 60 %, right): "what is left unsaid" has many answers (that Andy was hurt, for one). The
-    //   stem now asks what the account avoids saying. "A witness" becomes a keyword trap: "no one saw…" is said
-    //   outright, so it isn't withheld.
-    // why: no one saw ← the last sentence, said aloud, heard as the hidden point; Andy fired ← the shot hit near Andy,
-    //   so he's in the frame (right mechanism, wrong person)
-    // anchor: 132.0–137.7 s "that's not true actually… a hole was seen… no one saw the bullet leave the gun": each step
-    //   cuts the link between Dwight's gun and the shot, which no one else in the clip doubts
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'noise', seg: [128.5, 140.5], retired: true,
       stem: 'In the account of “a loud noise” and “a hole”, what is it avoiding saying?',
       choices: ['That Dwight’s gun was what fired', 'That no one saw the bullet leave',
@@ -275,11 +244,20 @@ export const dwightGun: Clip = {
       trap: '「誰も見ていない」ははっきり言っているので、隠し事ではない。受け身が続いたら、消えた主語を探す。',
       use: 'Mistakes were made, okay?（ミスはあったってこと）' },
 
-    // R fix: V2 (blind 55 %, right): "too scared to think" was a filler. Three labelled readings now; the warning
-    //   reading ("WebMD will scare Andy") is a real one for this site.
-    // why: thanks ← Oscar has just offered to look it up; warning ← WebMD's name for scary results, and "Something's
-    //   definitely wrong" sets a worried mood
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'webmd', seg: [142.5, 149.5],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'symptoms', seg: [140.0, 147.5],
+      stem: 'What does Oscar ask Andy about?',
+      ja: 'オスカーはアンディに何を聞く？',
+      choices: ['How he feels and what hurts', 'What he lost in the office', 'Where the bullet went'], a: 0,
+      choicesJa: ['体の具合とどこが痛いか', 'オフィスでなくした物', '弾がどこへ行ったか'],
+      cue: '「WebMD」のあと',
+      line: 'Look on WebMD. *What are your symptoms?*',
+      said: '「医療サイトで調べよう。どんな症状？」と聞く。',
+      mean: 'symptom ＝ 症状（頭痛や熱など）。What are your symptoms? は病院でよく聞かれる。',
+      trap: 'WebMD（病気を調べるサイト）を知らないと迷いやすい。symptoms ＝ 体の具合。',
+      use: 'My symptoms are a cough and a fever.（症状は、せきと熱です）' },
+
+    // retired (A2): teasing read from tone
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'webmd', seg: [142.5, 149.5], retired: true,
       stem: 'How does the coworker mean the remark about Oscar finding a reason?',
       choices: ['Teasing: Oscar loves an excuse for WebMD', 'Thanking: Oscar is quick to help out',
                 'Warning: WebMD will only scare Andy more'], a: 0,
@@ -290,44 +268,40 @@ export const dwightGun: Clip = {
       trap: '調べ始めた直後なので感謝に聞こえる。found a reason は「やりたい事」の合図。',
       use: 'Any reason to eat cake, right?（ケーキを食べる口実なら何でもね）' },
 
-    // why: phone off ← the usual reason a call fails; a meeting ← a boss's usual reason to be out of reach
     { id: 'd5', skill: 'detail', level: 'B1', point: 'plane', seg: [149.45, 155.2],
       stem: 'Why can’t the caller get through to Jo?',
-      choices: ['Jo is probably on a flight already', 'Jo’s phone seems to be switched off',
-                'Jo is stuck in a long meeting'], a: 0,
-      cue: 'reach Jo のあと、must の文。',
+      ja: 'なぜジョーに電話がつながらない？',
+      choices: ['Jo is already on a plane', 'Jo’s phone is turned off', 'Jo is in a long meeting'], a: 0,
+      choicesJa: ['もう飛行機に乗っている', '電話の電源が切れている', '長い会議中'],
+      cue: '「reach Jo」のあと',
       line: 'I can’t reach Jo. … must *already be on the plane*.',
       said: '「ジョーに連絡がつかない。もう飛行機に乗ってるはず」と言う。',
-      mean: 'must be 〜 ＝ きっと〜だ、という推測。連絡がつかない理由を言っている。',
-      trap: '連絡がつかないと聞くと、電源オフや会議を思い浮かべやすい。must のあとに推測の理由が来る。',
+      mean: 'must be 〜 ＝「きっと〜だ」。reach ＝ ここでは「連絡がつく」。',
+      trap: '電源オフや会議を思い浮かべやすい。must のあとの on the plane を聞く。',
       use: 'She must already be at the airport.（もう空港に着いてるはず）' },
 
-    // R fix: V2 (blind 55 %, right): the key was the only refusal and the only one with a reason. Two refusals with
-    //   different reasons now, and a near-sound yes (shouldn't → should).
-    // why: says yes ← the -n't of "shouldn't" lost, so "should be without" flips; until Jo is reached ← "I can't
-    //   reach Jo" just before, heard as the reason to wait
     { id: 'r4', skill: 'pragma', level: 'B2', point: 'reception', seg: [154.0, 161.15],
-      stem: 'What does the reply to “I’ll go with you” do?',
-      choices: ['Says no: the receptionist must stay put', 'Says yes: the receptionist should go too',
-                'Says no: nobody leaves until Jo is reached'], a: 0,
-      cue: 'No のあと、理由の部分。',
-      line: 'No, we really *shouldn’t be without a receptionist*, now more than ever.',
+      stem: 'Can the receptionist go to the hospital too?',
+      ja: '受付の人も病院に行ける？',
+      choices: ['No, she has to stay', 'Yes, she can go too', 'No, not until Jo calls'], a: 0,
+      choicesJa: ['いいえ、残らないといけない', 'はい、一緒に行ける', 'いいえ、ジョーから電話が来るまで'],
+      cue: '「No,」のあと',
+      line: 'I’ll go with you. — No, we really *shouldn’t be without a receptionist*, now more than ever.',
       said: '「一緒に行く」に「だめ、受付がいないと困る。今こそ」と返す。',
-      mean: '仕事の理由で断っている。now more than ever は大げさ。',
-      trap: 'shouldn’t の t が消えると should に聞こえ、同意になる。最初の No を聞く。',
+      mean: 'shouldn’t be without 〜 ＝「〜なしではいけない」。仕事を理由に断っている。',
+      trap: 'shouldn’t の t が消えて should に聞こえやすい。最初の No を聞く。',
       use: 'Thanks, but I really shouldn’t leave now.（ありがとう、でも今は離れられない）' },
 
-    // R fix: S4: the segment ran 16.0 s; it now starts at 156.4 s, just before the "No" that turns the receptionist
-    //   down, and still runs to 170.0 s to cover both sources' "Darryl" (163 s and 169 s).
-    // why: the receptionist ← she offers first, but that offer is turned down; Oscar ← he is the one checking WebMD
     { id: 'w1', skill: 'who', level: 'B1', point: 'darryl', reveals: ['reception'], seg: [156.4, 170.0],
       stem: 'Who ends up taking the injured man to the hospital?',
+      ja: '結局、けがをした人を病院に連れて行くのは誰？',
       choices: ['Darryl', 'Oscar', 'The receptionist'], a: 0,
-      cue: '断られたあと、別の人の申し出とお礼。',
+      choicesJa: ['ダリル', 'オスカー', '受付の人'],
+      cue: '断られたあとの申し出',
       line: 'I’ll take them. — Thank you, *Darryl*.',
-      said: '受付の申し出が断られたあと、別の人が「僕が連れて行く」と言い、「ありがとう、ダリル」と返される。',
+      said: '「僕が連れて行く」と言った人に、「ありがとう、ダリル」と返す。',
       mean: 'お礼のあとの名前で、誰が申し出たか分かる。take ＝ 人を連れて行く。',
-      trap: '最初に申し出た人を選びやすいが、それは断られた。お礼の相手の名前を聞く。',
+      trap: '最初に申し出た受付の人を選びやすいが、断られた。お礼の相手の名前を聞く。',
       use: 'I’ll take you to the station.（駅まで送るよ）' },
   ]
 };
