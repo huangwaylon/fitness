@@ -119,7 +119,47 @@ export type Intent =
   /** A music stage (docs/sound-sync.md): what plays at `src` (`isl` the island, K.K. and the cut-ins; `t`/`u`/`v` a room's
    *  stereo, `pc` the piece) from `at` (the relay's clock: position 0 of the song) for `ms`; no `song`: stopped. Acked,
    *  never in the ring: the room keeps the last record per source (newerMusic), replayed at hello while musicLive. */
-  | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string };
+  | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string }
+  /** 英語すごろく on several phones (docs/sugoroku.md "Online"): one move of game `g`, its `i`th (0: the start), kept in
+   *  the day's ring so a phone that opens later (or reloads) replays the game from its moves; every phone folds them
+   *  through the same pure rules (lib/sugoroku/online.ts). */
+  | SgIntent;
+
+/** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
+ *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end. */
+const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end'] as const;
+/** @public (lib/sugoroku/online.ts) */
+export type SgAct = (typeof SG_ACTS)[number];
+/** @public (lib/sugoroku/online.ts) */
+export interface SgIntent {
+  kind: 'sg';
+  g: string;
+  i: number;
+  a: SgAct;
+  /** start: the seats in order, who + level ("A2B1G3"). */
+  s?: string;
+  /** start: the length (s short, n normal, l long). */
+  l?: 's' | 'n' | 'l';
+  /** roll: a サイコロ2つ券 spent. */
+  d?: 1;
+  /** fork: the way (0 近道, 1 遠回り). */
+  b?: 0 | 1;
+  /** word: the word. */
+  w?: string;
+  /** word / try: ヒント used; word: a ヒント券 spent (k). */
+  h?: 1;
+  k?: 1;
+  /** sent / pic / try: misses (0–2); sent: without the Japanese (u); try: 意味を見る opened (p). */
+  m?: number;
+  u?: 1;
+  p?: 1;
+}
+/** A すごろく game's id, and its seats' wire form. */
+const SG_GAME = /^[a-z0-9]{6,12}$/;
+const SG_SEATS = /^(?:[ABG][123]){2,3}$/;
+const SG_WORD = /^[a-z]{2,8}$/;
+/** The most moves a game sends (a long game is ~200). */
+const SG_MOVES_MAX = 999;
 
 /** The music stages (docs/sound-sync.md): the island's, and one per room's stereo. */
 const MUSIC_SRCS = ['isl', 't', 'u', 'v'] as const;
@@ -497,6 +537,23 @@ function intentOf(o: Obj): Intent | null {
         ...(o.pc !== undefined ? { pc: o.pc as string } : {})
       };
     }
+    case 'sg': {
+      if (typeof o.g !== 'string' || !SG_GAME.test(o.g) || !within(o.i, [0, SG_MOVES_MAX]) || !oneOf(SG_ACTS)(o.a)) return null;
+      const one = (k: string) => o[k] === undefined || o[k] === 1;
+      const out: SgIntent = { kind: 'sg', g: o.g, i: o.i as number, a: o.a };
+      if (o.a === 'start') {
+        if (o.i !== 0 || typeof o.s !== 'string' || !SG_SEATS.test(o.s) || new Set(o.s.match(/[ABG]/g)).size !== o.s.length / 2 || !(o.l === 's' || o.l === 'n' || o.l === 'l')) return null;
+        return { ...out, s: o.s, l: o.l };
+      }
+      if (o.i === 0 || !one('d') || !one('h') || !one('k') || !one('u') || !one('p') || !opt(o, 'm', (x): x is number => within(x, [0, 2]))) return null;
+      if (o.a === 'fork' && o.b !== 0 && o.b !== 1) return null;
+      if (o.a === 'word' && (typeof o.w !== 'string' || !SG_WORD.test(o.w))) return null;
+      return {
+        ...out, ...(o.a === 'fork' ? { b: o.b as 0 | 1 } : {}), ...(o.a === 'word' ? { w: o.w as string } : {}),
+        ...(o.d ? { d: 1 as const } : {}), ...(o.h ? { h: 1 as const } : {}), ...(o.k ? { k: 1 as const } : {}),
+        ...(o.m !== undefined ? { m: o.m as number } : {}), ...(o.u ? { u: 1 as const } : {}), ...(o.p ? { p: 1 as const } : {})
+      };
+    }
     case 'say': {
       const text = cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
@@ -631,7 +688,7 @@ export const isLayoutIntent = (i: Intent): boolean => i.kind === 'decor' && (i.s
 /** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
  *  changes (not the layout's) and each person's last walk (where their villager stands). */
 export const isStored = (i: Intent): boolean =>
-  i.kind === 'world' || (i.kind === 'decor' && !isLayoutIntent(i)) || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined);
+  i.kind === 'world' || (i.kind === 'decor' && !isLayoutIntent(i)) || i.kind === 'pick' || i.kind === 'put' || i.kind === 'shake' || i.kind === 'walk' || (i.kind === 'catch' && i.id !== undefined) || i.kind === 'sg';
 
 /** What an intent claims for the day, if anything: a critter (by its shared id), a thing on the ground, a thing put
  *  down. The first claim the relay hears wins; a later one of the same key is dropped (never relayed, never kept). */

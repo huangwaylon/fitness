@@ -147,6 +147,8 @@ export const DEVICE = {
   sugoroku: 'island.sugoroku',
   /** localStorage: 英語すごろく's ことばだな on this phone (lib/sugoroku/shelf.ts): every game's words, lines and souvenirs, kept. */
   sugorokuShelf: 'island.sugoroku.shelf',
+  /** localStorage: 英語すごろく's online game on this phone (lib/sugoroku/online.svelte.ts): `{g, log, held}`, its moves. */
+  sugorokuOnline: 'island.sugoroku.online',
   /** localStorage: `{[who]: {[clip]: day}}`: the clips 別の動画にする passed over on this phone, each kept 14 days
    *  (lib/english/prefs.ts): today's clip skips them. */
   englishSkip: 'island.english.skip',

@@ -50,6 +50,19 @@ guest's, or a villager friend's): the one sheet with characters in it, since the
 - **ことばだな** (`shelf.ts`, the menu's): every finished game's words, lines and pictures with Japanese (300 at most,
   newest first) and the souvenirs ever found, as an NH-style ずかん (the unfound dark).
 
+## Online
+
+新しいゲーム's **それぞれのスマホで**: each player on their own phone, the members and the guest only (no villager friends or
+ペア; me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
+`a` and its few fields, ≤ 256 bytes), sent to the relay and kept in the day's ring, so a phone that opens later or
+reloads gets them again (its own too); each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in
+order through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
+ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了 from
+anyone at the table); out of order, it waits for the gap. The phone whose turn it isn't watches (whose turn, the last
+move). A game started with me in it comes as a banner, 「Xが英語すごろくを始めました」 with 参加, straight into it; the
+menu's みんなのゲームに戻る while it lasts. Listening starts with the island (Hud). No relay code: the room relays and
+keeps any parsed kept intent; after a contract change the relay deploys first.
+
 ## Tiles
 
 `tiles.ts`: Scrabble's spread without Q (no Q for a beginner), the vowels richer. A rack is drawn friendly when it can

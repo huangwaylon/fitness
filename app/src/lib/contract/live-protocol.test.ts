@@ -430,3 +430,24 @@ describe('live protocol: a music stage (`music`, docs/sound-sync.md)', () => {
     expect(musicAt(1001 + MUSIC_SKEW_MS, 0)).toBe(0);
   });
 });
+
+describe('live protocol: 英語すごろく moves (sg)', () => {
+  const j = (o: object) => JSON.stringify({ v: 3, ...o });
+  it('takes a start (seats, length) and each move with its own fields only, and keeps them in the day', () => {
+    const start = parseClient(j({ kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1G3', l: 'n', w: 'zoo' }));
+    expect(start).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1G3', l: 'n' });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 });
+    expect(isStored({ kind: 'sg', g: 'abc123', i: 1, a: 'roll' })).toBe(true);
+    expect(JSON.stringify(start).length).toBeLessThan(MAX_BYTES);
+  });
+  it('refuses a bad game id, a start that isn’t first, seats twice or out of shape, a bad word or field', () => {
+    for (const o of [
+      { g: 'AB', i: 1, a: 'roll' }, { g: 'abc123', i: 3, a: 'start', s: 'A2B1', l: 'n' }, { g: 'abc123', i: 0, a: 'start', s: 'A2A1', l: 'n' },
+      { g: 'abc123', i: 0, a: 'start', s: 'A2', l: 'n' }, { g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 'x' }, { g: 'abc123', i: 0, a: 'roll' },
+      { g: 'abc123', i: 2, a: 'word', w: 'Zoo' }, { g: 'abc123', i: 2, a: 'word', w: 'toolongword' }, { g: 'abc123', i: 2, a: 'fork', b: 2 },
+      { g: 'abc123', i: 2, a: 'sent', m: 3 }, { g: 'abc123', i: 2, a: 'roll', d: 2 }, { g: 'abc123', i: 2, a: 'dance' }, { g: 'abc123', i: 1000, a: 'roll' }
+    ]) expect(parseClient(j({ kind: 'sg', ...o })), JSON.stringify(o)).toBeNull();
+  });
+});

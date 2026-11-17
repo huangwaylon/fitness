@@ -4,8 +4,9 @@
   // order picked, each its English level) → the game (the board over the turn's panel: whose turn and the dice, the
   // fork's choice, then the space's ことば, ぶん, 絵, イベント or あがり; the board drawn small during a turn's English;
   // tickets held spent at the roll or on a hinted word; souvenirs in each seat's tray) → 結果 (the ranking, ふりかえり:
-  // a no-fail matching of the game's words, and 今日のことば). One phone passed round: no relay, no ベル. The game
-  // is saved after every step (save.ts), so ‹ or ✕ mid-game leaves it to 続きから. The island is paused under it.
+  // a no-fail matching of the game's words, and 今日のことば). Played on one phone passed round (saved after every step:
+  // save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on each player's own phone (online.svelte.ts: every action a
+  // move to the relay, the game the moves folded; a phone whose turn it isn't watches). No ベル. The island is paused under it.
   import { untrack } from 'svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
@@ -20,7 +21,6 @@
   import { PICTURES, SET_BONUS } from '../pictures.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
-  import { GUEST, PEOPLE } from '#lib/config/rules.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import { CARDS } from '../cards.ts';
@@ -33,14 +33,33 @@
   import { loadShelf, shelve, type Shelf } from '../shelf.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
+  import { foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
+  import { listen, nameOf as personName, online, sendMove, startOnline } from '../online.svelte.ts';
+  import { sugoroku } from '../open.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
   type Level = 'menu' | 'how' | 'shelf' | 'setup' | 'play' | 'results';
   let level = $state<Level>('menu');
   let game = $state<Game | null>(null);
   let saved = $state<Game | null>(null);
+  /** Which game is shown: this phone's (passed round) or the online one (the moves folded). */
+  let mode = $state<'local' | 'online'>('local');
   $effect(() => {
-    if (open) (saved = loadGame()), (shelf = loadShelf()), (level = 'menu');
+    if (!open) return;
+    listen();
+    untrack(() => {
+      saved = loadGame();
+      shelf = loadShelf();
+      level = 'menu';
+      // an invitation's 参加: straight into the online game, once it's folded (the words and lines may still be on their way)
+      wantOnline = sugoroku.ask?.arg === 'online' && sugoroku.ask !== askSeen;
+      askSeen = sugoroku.ask;
+    });
+  });
+  let wantOnline = $state(false);
+  let askSeen: unknown = null;
+  $effect(() => {
+    if (wantOnline && onlineGame && onlineGame.phase.k !== 'end') untrack(() => ((wantOnline = false), (shown = []), (mode = 'online'), (level = 'play')));
   });
   const close = () => (open = false);
   /** To the menu: the save as it is now (a game played since the opening). */
@@ -69,7 +88,7 @@
 
   // ---- seats
   const me = $derived<Who>(week.model?.me ?? 'A');
-  const nameOf = (w: Who) => (w === 'G' ? (week.view?.guest?.villagerName ?? GUEST.villager) : (week.view?.people[w].villagerName ?? PEOPLE[w].villager));
+  const nameOf = personName;
   /** The guest's villager (its head): not offered again as a friend. */
   const guestVillager = $derived(resolveLook({ villager: week.view?.guest?.villager, person: 'G' }).id);
   const FRIENDS = [['isabelle', 'しずえ'], ['tom-nook', 'たぬきち'], ['kk-slider', 'とたけけ'], ['blathers', 'フータ'], ['raymond', 'ジャック'],
@@ -104,9 +123,23 @@
     const k = keyOf(x);
     picked = picked.includes(k) ? picked.filter((p) => p !== k) : picked.length < MAX_PLAYERS ? [...picked, k] : picked;
   }
+  /** 新しいゲーム's way: one phone passed round, or each on their own (members and the guest only, me among them). */
+  let playMode = $state<'local' | 'online'>('local');
+  const MODES = ['local', 'online'] as const;
+  const shownCands = $derived(playMode === 'online' ? candidates.filter((c) => c.who) : candidates);
+  const canStart = $derived(playMode === 'online' ? picked.length >= MIN_PLAYERS && picked.includes(me) : seatCount >= MIN_PLAYERS);
   function start() {
+    if (playMode === 'online') {
+      const seats = picked.map((k) => ({ who: k as Who, level: levels[k] ?? 2 }));
+      startOnline(seatsCode(seats), lengthCode(length));
+      shown = [];
+      mode = 'online';
+      level = 'play';
+      return;
+    }
     const g0 = newGame(seatsOf(picked), `${now()}:${picked.join(',')}`, length);
     shown = g0.players.map((p) => p.pos);
+    mode = 'local';
     set(g0);
     level = 'play';
   }
@@ -132,29 +165,56 @@
       level = 'results';
     } else saveGame(g);
   }
-  const walking = $derived(!!game && game.players.some((p, i) => shown[i] !== p.pos));
+  /** The online game: its moves folded (with the words and lines in: a word's bonus and a ぶん's line are the fold's). */
+  const onlineGame = $derived(words && lines && online.cur.g ? foldMoves(online.cur.log, { words, lines, name: nameOf }) : null);
+  const g = $derived(mode === 'online' ? onlineGame : game);
+  const walking = $derived(!!g && g.players.some((p, i) => shown[i] !== p.pos));
   $effect(() => {
-    if (!walking || !game) return;
-    const ps = game.players;
+    if (!walking || !g) return;
+    const ps = g.players;
     const id = setInterval(() => {
       shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(v, ps[i].pos, ps[i].branch)[0]));
       // (the dice's number kept while the walk waits at the fork)
-      if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), game?.phase.k !== 'fork' && (rolled = 0));
+      if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), g?.phase.k !== 'fork' && (rolled = 0));
     }, 170);
     return () => clearInterval(id);
   });
   function resume() {
     if (!saved) return;
     shown = saved.players.map((p) => p.pos);
+    mode = 'local';
     set(saved);
     level = 'play';
+  }
+  function resumeOnline() {
+    shown = [];
+    mode = 'online';
+    level = 'play';
+  }
+  // an online game's heads start where it is (a new one, a resume); its end: the results, on the shelf once
+  let shownFor = '';
+  $effect(() => {
+    const og = mode === 'online' ? onlineGame : null;
+    if (!og) return;
+    untrack(() => {
+      if (shownFor !== og.seed || shown.length !== og.players.length) (shownFor = og.seed), (shown = og.players.map((p) => p.pos));
+      if (og.phase.k === 'end' && level === 'play') (shelf = shelve(og)), (level = 'results');
+    });
+  });
+  /** It's this phone's to play: passed round always; online, whose turn it is. */
+  const myTurn = $derived(mode === 'local' || (!!g && g.players[g.turn].who === me));
+  /** One action: on this phone's game the rule itself, online its move (every phone, this one too, folds it). */
+  function act(rule: (x: Game) => Game, move: Omit<Move, 'g' | 'i' | 'who'>): void {
+    if (!g) return;
+    if (mode === 'online') sendMove(move);
+    else set(rule(g));
   }
   let rollTimer: ReturnType<typeof setInterval> | undefined;
   $effect(() => () => clearInterval(rollTimer));
   function doSpin(dice = false) {
-    if (!game || rolling !== null) return;
-    const from = game;
-    const next = spin(game, dice);
+    if (!g || rolling !== null || !myTurn) return;
+    const from = g;
+    const next = spin(g, dice);
     const ph = next.phase;
     const n = 'spun' in ph ? ph.spun : 1;
     let k = 0;
@@ -164,13 +224,13 @@
       if (k < 8) return;
       clearInterval(id);
       rolling = null;
-      if (game !== from) return; // (a new game or a resume since: this roll is void)
+      if (g !== from) return; // (a new game or a resume since: this roll is void)
       rolled = n;
-      set(next);
+      if (mode === 'online') sendMove({ a: 'roll', ...(dice ? { d: 1 as const } : {}) });
+      else set(next);
     }, 70));
   }
 
-  const g = $derived(game);
   const cur = $derived(g ? g.players[g.turn] : null);
   const ph = $derived(g?.phase ?? null);
   const lastRound = $derived(!!g && isLast(g));
@@ -220,6 +280,9 @@
       <div class="body sheet-scroll">
         <div class="hero card pad">
           <p class="lead">{s('how2')}</p>
+          {#if onlineGame && onlineGame.phase.k !== 'end'}
+            <button type="button" class="btn" data-sfx="open" data-sg-resume-online onclick={resumeOnline}>{s('onlineResume')}</button>
+          {/if}
           {#if saved}
             <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
           {/if}
@@ -260,9 +323,15 @@
     {:else if level === 'setup'}
       <div class="top"><NavBar pad title={s('setupTitle')} onback={toMenu} onclose={close} /></div>
       <div class="body sheet-scroll">
-        <p class="note">{s('setupNote')}</p>
+        <span class="seg wide2" role="radiogroup" aria-label={s('mode')}>
+          {#each MODES as md (md)}
+            <button type="button" role="radio" class="sg-chip" aria-checked={playMode === md} data-sfx="none" data-sg-mode={md}
+              onclick={() => ((playMode = md), md === 'online' && (picked = picked.filter((k) => k === 'A' || k === 'B' || k === 'G')))}>{s(`mode.${md}`)}</button>
+          {/each}
+        </span>
+        <p class="note">{playMode === 'online' ? s('onlineNote') : s('setupNote')}</p>
         <div class="seats" data-sg-seats>
-          {#each candidates as c, i (keyOf(c))}
+          {#each shownCands as c, i (keyOf(c))}
             {#if i === 3}<h3 class="sec-label wide">{s('friends')}</h3>{/if}
             {@const n = picked.indexOf(keyOf(c))}
             <button type="button" class="seat" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={keyOf(c)} onclick={() => toggle(c)}>
@@ -280,7 +349,7 @@
               {#if c}
                 <div class="row lrow" role="listitem" data-sg-level-row={k}>
                   <Avatar {...headOf(c)} size={32} /><span class="nm">{c.name}</span>
-                  {#if picked.indexOf(k) > 0 && picked.length >= 3}
+                  {#if playMode === 'local' && picked.indexOf(k) > 0 && picked.length >= 3}
                     <button type="button" class="sg-chip" role="switch" aria-checked={!!paired[k]} data-sfx="none" data-sg-pair={k}
                       onclick={() => (paired = { ...paired, [k]: !paired[k] })}>{s('pair')}</button>
                   {/if}
@@ -295,14 +364,15 @@
             {/each}
           </div>
         {/if}
-        {#if picked.length >= 3}<p class="note">{s('pairNote')}</p>{/if}
+        {#if playMode === 'local' && picked.length >= 3}<p class="note">{s('pairNote')}</p>{/if}
+        {#if playMode === 'online' && !picked.includes(me)}<p class="note">{s('meNeeded')}</p>{/if}
         <h3 class="sec-label">{s('length')}</h3>
         <span class="seg wide2" role="radiogroup" aria-label={s('length')}>
           {#each LENGTHS as L (L)}
             <button type="button" role="radio" class="sg-chip" aria-checked={length === L} data-sfx="none" data-sg-length={L} onclick={() => (length = L)}>{s(`length.${L}`)}</button>
           {/each}
         </span>
-        <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={seatCount < MIN_PLAYERS} onclick={start}>{s('start')}</button>
+        <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={start}>{s('start')}</button>
       </div>
     {:else if level === 'play' && g && cur && ph}
       <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
@@ -323,6 +393,15 @@
           {#if walking || rolling !== null}
             <div class="spinning">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><p>{rolling === null ? s('spun', { n: rolled }) : ''}</p>
               {:else}<p data-sg-moving>{s('walking')}</p>{/if}</div>
+          {:else if !myTurn && ph.k !== 'end'}
+            <div class="who" data-sg-waiting>
+              <Avatar {...headOf(cur)} size={64} />
+              <div>
+                <p class="turnof">{s('waiting', { name: cur.name })}</p>
+                <p class="note">{#if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
+                {#if !online.connected}<p class="note">{s('offlineNote')}</p>{/if}
+              </div>
+            </div>
           {:else if ph.k === 'spin'}
             <div class="who">
               <Avatar {...headOf(cur)} size={64} />{#if cur.pair}<span class="pairhead big"><Avatar {...headOf(cur.pair)} size={44} /></span>{/if}
@@ -340,7 +419,7 @@
               <p class="note">{s('forkAsk', { n: ph.left })}</p>
               <div class="ways">
                 {#each [0, 1] as const as b (b)}
-                  <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => set(choose(g, b))}>
+                  <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => act((x) => choose(x, b), { a: 'fork', b })}>
                     <b>{s(`branch.${b}`)}</b><small>{s(`branch.${b}.note`)}</small>
                   </button>
                 {/each}
@@ -350,23 +429,23 @@
             {#if words}
               {#key `${g.n}`}
                 <WordTurn rack={cur.rack} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
-                  ticket={cur.tickets.includes('hint')} hinted0={ph.hinted} onhint={() => set(tried(g, { hinted: true }))} {words}
+                  ticket={cur.tickets.includes('hint')} hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
                   score={(w, c, h) => wordScore(g, w, c, h)}
-                  onplay={(w, h, t) => set(playWord(g, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h, ticket: t }))}
-                  onswap={() => set(swap(g))} />
+                  onplay={(w, h, t) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h, ticket: t }), { a: 'word', w, ...(h ? { h: 1 } : {}), ...(t ? { k: 1 } : {}) })}
+                  onswap={() => act(swap, { a: 'swap' })} />
               {/key}
             {:else if failed}
               <p class="note">{s('offline')}</p><button type="button" class="btn small" data-sfx="tick" onclick={load}>{s('retry')}</button>
             {:else}<p class="note">{s('loading')}</p>{/if}
           {:else if ph.k === 'sentence'}
             {#if line}
-              {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(t) => set(tried(g, t))} ondone={(o) => set(sentenceDone(g, { ...o, text: line.en, ja: line.ja }))} />{/key}
+              {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses, ...(t.peeked ? { p: 1 } : {}) })} ondone={(o) => act((x) => sentenceDone(x, { ...o, text: line.en, ja: line.ja }), { a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })} />{/key}
             {:else if failed || lines}
               <p class="note">{lines ? s('noLine') : s('offline')}</p>
-              <button type="button" class="btn small" data-sfx="tick" onclick={() => set(sentenceAsWord(g))}>{s('next')}</button>
+              <button type="button" class="btn small" data-sfx="tick" onclick={() => act(sentenceAsWord, { a: 'noline' })}>{s('next')}</button>
             {:else}<p class="note">{s('loading')}</p>{/if}
           {:else if ph.k === 'picture'}
-            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} bonus={pictureBonus(g, ph.item)} misses0={ph.misses} ontry={(t) => set(tried(g, t))} ondone={(m) => set(pictureDone(g, m))} />{/key}
+            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} bonus={pictureBonus(g, ph.item)} misses0={ph.misses} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
           {:else if ph.k === 'event' && card}
             <div class="event" data-sg-event={ph.card}>
               {#if card.who}<Avatar person="G" villager={card.who} size={48} />{/if}
@@ -375,21 +454,21 @@
               {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
               {:else}<button type="button" class="btn small paper" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
               <span class="chip-eff" data-sg-effect>{effectOf(card, cur.tickets.length)}</span>
-              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => set(eventDone(g))}>{s('ok')}</button>
+              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(eventDone, { a: 'ev' })}>{s('ok')}</button>
             </div>
           {:else if ph.k === 'home'}
             <div class="event" data-sg-home>
               <Avatar {...headOf(cur)} size={64} />
               <h3 class="ttl">{s('homeTitle')}</h3>
               <p class="ja">{s('homePlace', { n: ph.place + 1, b: HOME_BONUS[ph.place] ?? 0 })}</p>
-              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => set(homeDone(g))}>{s('next')}</button>
+              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(homeDone, { a: 'home' })}>{s('next')}</button>
             </div>
           {/if}
         </div>
         <div class="end">
           {#if confirmEnd}
             <span class="note">{s('endAsk')}</span>
-            <button type="button" class="btn small" data-sfx="confirm" data-sg-end-yes onclick={() => ((confirmEnd = false), set(finish(g)))}>{s('end')}</button>
+            <button type="button" class="btn small" data-sfx="confirm" data-sg-end-yes onclick={() => ((confirmEnd = false), act(finish, { a: 'end' }))}>{s('end')}</button>
           {:else}
             <button type="button" class="link" data-sfx="tick" data-sg-end onclick={() => (confirmEnd = true)}>{s('end')}</button>
           {/if}
@@ -429,7 +508,7 @@
             {/each}
           </div>
         {/if}
-        <button type="button" class="btn" data-sfx="open" data-sg-again onclick={() => { picked = g.players.map(keyOf); levels = Object.fromEntries(g.players.map((p) => [keyOf(p), p.level])); level = 'setup'; }}>{s('again')}</button>
+        <button type="button" class="btn" data-sfx="open" data-sg-again onclick={() => { playMode = mode; picked = g.players.map(keyOf); levels = Object.fromEntries(g.players.map((p) => [keyOf(p), p.level])); level = 'setup'; }}>{s('again')}</button>
       </div>
     {/if}
   </div>

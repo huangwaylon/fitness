@@ -106,3 +106,38 @@ test('a game left half-way resumes after a reload (続きから), where it was',
   await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', turn!);
   await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
 });
+
+test('on two phones: A starts a game for A and B, B is invited and joins, each plays their own turn and watches the other’s', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await a.goto('?demo');
+  await b.goto('?demo&as=B');
+  await islandUp(a);
+  await islandUp(b);
+  await a.bringToFront();
+  await fromMenu(a, 'sugoroku');
+  await sheet(a).locator('[data-sg-new]').click();
+  await sheet(a).locator('[data-sg-mode="online"]').click();
+  // (members and the guest only: no villager friends)
+  await expect(sheet(a).locator('[data-sg-seat="isabelle"]')).toHaveCount(0);
+  await sheet(a).locator('[data-sg-start]').click();
+  await expect(sheet(a).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '0');
+  // B: the invitation, 参加 straight into the game, A's turn to watch
+  await b.bringToFront();
+  await b.getByRole('button', { name: '参加' }).click();
+  await expect(sheet(b)).toHaveAttribute('data-level', 'play');
+  await expect(sheet(b).locator('[data-sg-waiting]')).toBeVisible();
+  await expect(sheet(b).locator('[data-sg-spin]')).toHaveCount(0);
+  // A plays a turn; B's phone follows it to B's turn
+  await a.bringToFront();
+  await playTurn(a);
+  await expect(sheet(a).locator('[data-sg-waiting]')).toBeVisible();
+  await b.bringToFront();
+  await expect(sheet(b).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
+  await expect(sheet(b).locator('[data-sg-score] b')).toHaveText(await sheet(a).locator('[data-sg-score] b').allTextContents());
+  await playTurn(b);
+  await a.bringToFront();
+  await expect(sheet(a).locator('[data-sg-score] b')).toHaveText(await sheet(b).locator('[data-sg-score] b').allTextContents());
+  await expect(sheet(a).locator('[data-sg-spin], [data-sg-waiting]').first()).toBeVisible();
+  await ctx.close();
+});
