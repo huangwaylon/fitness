@@ -78,7 +78,7 @@ export const bigDay: Clip = {
     //   herself ← "run for office" and her strong opinions heard as her own wish (wrong target)
     // anchor: 21.4 s "you have never been neutral on anything"; 28.7–37.8 s "Okay, fine. I think you should run… if
     //   something is worth it, and I think this is" — "Okay, fine" gives up a view she already had, and it is "you"
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'neutral', reveals: ['decide'], seg: [18.4, 38.5], retired: true,
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'neutral', reveals: ['decide'], seg: [18.4, 38.5],
       stem: 'When Leslie says she’s neutral, what is she holding back?',
       choices: ['That she’d rather he stayed home with the kids', 'That she would like to run for office herself',
                 'That she has wanted him to run all along'], a: 2,
@@ -249,7 +249,7 @@ export const bigDay: Clip = {
     //   wedding setting heard as "not today" (i5's politics reading)
     // anchor: 127.0–129.9 s "Steal my thunder?" thrown back as a question, then "have you seen… this dress?": no news can
     //   upstage her; the clip's own next line (130.6 s, "in that case… yes, I am") confirms how Ben took it
-    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'dress', reveals: ['thunder', 'decide', 'pitch'], seg: [120.78, 130.1], retired: true,
+    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'dress', reveals: ['thunder', 'decide', 'pitch'], seg: [120.78, 130.1],
       stem: 'Which reply from Ben would match what Donna meant?',
       choices: ['Sorry! We should have told you first.', 'You’re right. We’ll talk after the party.',
                 'Okay, fair enough. Then yes, I’m running.'], a: 2,
@@ -292,7 +292,7 @@ export const bigDay: Clip = {
     //   reason); stings ← "Ha-ha" and the chant heard as cruel, with "I'm blessed" taken as sarcasm
     // anchor: 149.8 s "Ha-ha, that's your new name, Gary" against 158.0–164.0 s to camera "Gary is my real name… finally
     //   going to call me by my real name"
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'gary', seg: [145.4, 166.9], retired: true,
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'gary', seg: [145.4, 166.9],
       stem: 'After his comment to the camera, how should we hear “that’s your new name”?',
       choices: ['As teasing that stings: he hates the name', 'As a kind nickname they know he’ll love',
                 'As teasing that misfires: it’s his real name'], a: 2,

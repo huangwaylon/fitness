@@ -251,7 +251,7 @@ export const dwightPunch: Clip = {
     //   mechanism, wrong target; refuted: the explanation itself is what admits the tears); nobody ← snow at midnight
     //   on New Year's Eve taken as a fair, moving reason (sincerity flip)
     // R fix: V2 (blind 55 %, right: the key was the only specific choice). Both distractors now name a mechanism.
-    { id: 'c2', skill: 'humor', level: 'C2', point: 'armageddon', seg: [105.3, 115.6], retired: true,
+    { id: 'c2', skill: 'humor', level: 'C2', point: 'armageddon', seg: [105.3, 115.6],
       stem: 'When Dwight explains the movie night, who is the joke on, and why?',
       choices: ['Dwight: his excuse admits the tears, for a softer reason', 'Michael: his story falls apart once Dwight explains',
                 'Nobody: snow at midnight is a fair reason to tear up'], a: 0,
