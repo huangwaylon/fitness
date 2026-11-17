@@ -6,6 +6,7 @@
   // tickets held spent at the roll or on a hinted word; souvenirs in each seat's tray) → 結果 (the ranking, ふりかえり:
   // a no-fail matching of the game's words, and 今日のことば). One phone passed round: no relay, no ベル. The game
   // is saved after every step (save.ts), so ‹ or ✕ mid-game leaves it to 続きから. The island is paused under it.
+  import { untrack } from 'svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -48,16 +49,22 @@
   let shelf = $state<Shelf>({ words: [], items: [], games: 0 });
 
   // the words and lines (their own chunks), asked for as the sheet opens
-  let words = $state<Words | null>(null);
-  let lines = $state<readonly Line[] | null>(null);
+  // (raw: never proxied, so a second assignment is no change; each asked for only while missing and not on its way:
+  // an effect that set them again on every run looped in WebKit, the words arriving before the lines)
+  let words = $state.raw<Words | null>(null);
+  let lines = $state.raw<readonly Line[] | null>(null);
   let failed = $state(false);
+  let asking = false;
   function load() {
+    if (asking) return;
+    asking = true;
     failed = false;
-    loadWords().then((w) => (words = w), () => (failed = true));
-    loadSentences().then((l) => (lines = l), () => (failed = true));
+    Promise.all([words ?? loadWords().then((w) => (words = w)), lines ?? loadSentences().then((l) => (lines = l))])
+      .catch(() => (failed = true))
+      .finally(() => (asking = false));
   }
   $effect(() => {
-    if (open && (!words || !lines)) load();
+    if (open && untrack(() => !words || !lines)) load();
   });
 
   // ---- seats
