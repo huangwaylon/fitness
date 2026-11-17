@@ -1,18 +1,13 @@
+// A2 REVIEW 2026-11-17: keep 11, rewrite 4, retire 8, new 1
 // “Carly's First New iCarly Web Show 📱 Full Scene | iCarly” (NickRewind, Best of the New iCarly): Carly doubts she can
 // restart iCarly without Sam; her friends (one of them her new producer) and Spencer take her up to the old studio,
 // where the old props remind her what she made as a kid; then the first new webcast, a skincare routine on "baby
 // Spencer" that turns as silly as the old show.
-// Segments from the captions, words from whisper (2026-11-17). Spencer names himself by reply (Carly's "If Spencer
-// ever got around to building…" → "I was never going to use a home gym"; "baby Spencer" → "That's me!"); the friend
-// is addressed as "Freddy" at 101 s, but no item keys on which friend speaks except w1, which the address settles.
-// No item uses Nora, the "squirrel", the dachshunds, George the bra (sources split: "They"/"I never did grow into
-// you"), the 165–173 s search, the lip-mask stretch, or "hurting it"/"eating it" (270 s, sources split).
-// REVIEW 2026-11-17: pass 8, fix 16, drop 0, new 0; ear checks 2 (a1+c3 on one line, a2); c3 ships retired until heard
-//   Open: is the producer Freddie? (the "he"/"him" in a1 and c3 assume a male speaker; no item keys on the name)
-// EAR CHECK: 53.7–56.3 s a1 c3 — the "Aw" (captions "oh") is the same speaker as “You do mean me, right?”, and the
-//   stress there falls on “do”, not “me” (c3 ships only once confirmed)
-// EAR CHECK: 221.1–233.0 s a2 — “In no way am I worried”, then “No, that's enough already” are the "infant"'s
-//   (Spencer's) lines, said as a nervous joke, not calmly
+// Segments from the captions, words from whisper (2026-11-17). Spencer names himself by reply ("baby Spencer" → "That's
+// me!"); the friend is addressed as "Freddy" at 101 s, but no item keys on which friend speaks except w1, which the
+// address settles. No item uses Nora, the "squirrel", the dachshunds, George the bra, the 165–173 s search, the
+// lip-mask stretch, or 270 s (sources split).
+// EAR CHECK: 53.7–56.3 s a1 — the "Aw" (captions "oh") is the same speaker as “You do mean me, right?”
 import type { Clip } from '../types.ts';
 
 export const icFirstShow: Clip = {
@@ -21,51 +16,31 @@ export const icFirstShow: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    // R fix: V2 (75 % blind: the key was the only kind, supportive choice); new near misses from the scene
-    // why: found the prop ← she goes looking for something ("I thought it might still be here"), but "Damn it": it
-    //   isn't there; goofy style ← "Old, goofy stuff?" is her own question, and the answer leaves it to her
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', seg: [0, 175],
-      stem: 'What finally gets Carly ready to start the show again?',
-      choices: ['Being reminded what she made as a kid', 'Finding the old prop she went looking for',
-                'Her friends choosing the old, goofy style'], a: 0,
-      cue: '昔の道具を見たあと、友だちが何と言うか。',
-      said: '一人では無理かと迷うが、昔の小道具を前に「子どもの頃にこれを作った」と励まされる。',
-      mean: 'Sam は戻らないが、昔の自分と仲間の応援が背中を押す。',
-      trap: '探し物や old, goofy stuff が耳に残るが、探し物は見つからない。決め手は励ましの一言。',
-      use: 'You’ve got this. We’re right behind you.（できるよ。みんな応援してる）' },
-
-    // R fix: V2/K6 (the key was the only choice with the new name Luke); "juice for dinner" (a filler) became a
-    //   Luke near miss, and the trap note now names it
-    // why: leaving Luke ← Luke is said, but in the wrong relation: the regret is starting with him; Sam ← her name
-    //   comes soon after, and "do iCarly again" makes it sound like the show ending is the regret
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'luke', seg: [11.6, 15],
-      stem: 'What does Carly regret at the start of the scene?',
-      choices: ['Starting a channel with Luke', 'Leaving Luke to start her own channel', 'Ending the old show with Sam'],
-      a: 0,
-      cue: '「Why did I ever think」で始まる文の最後。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'luke', seg: [11.6, 15], keep: true,
+      stem: 'What does Carly regret at the start?',
+      ja: '最初、カーリーは何を後悔している？',
+      choices: ['Starting a channel with Luke', 'Breaking up with Luke last year', 'Ending the old show with Sam'], a: 0,
+      choicesJa: ['ルークとチャンネルを始めたこと', '去年ルークと別れたこと', 'サムと前の番組を終えたこと'],
+      cue: '「Why did I ever think」のあと。',
       line: 'Why did I ever think I should *start a channel with Luke*?',
-      said: '「なんで Luke とチャンネルを始めようなんて思ったんだろう」と言っている。',
-      mean: 'Why did I ever ～? は質問でなく後悔の言い方。',
-      trap: 'Luke の名前だけ拾うと「別れた」話にも取れる。Why did I ever のあとが後悔の中身。',
+      said: '「なんでルークとチャンネルを始めようなんて思ったんだろう」と言う。',
+      mean: 'Why did I ever 〜? ＝ なんで〜なんかしたんだろう。質問ではなく後悔の言い方。',
+      trap: 'ルークの名前だけ拾うと「別れた」話に思いやすい。Why did I ever のあとが後悔の中身。',
       use: 'Why did I ever buy these shoes?（なんでこの靴買っちゃったんだろう）' },
 
-    // why: think first ← "Don't answer that" read as "wait, think about it"; finished ← a question at the end of a turn
-    //   usually hands the floor over (the Japanese 「どう思う？」 flow)
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'desperate', seg: [14.6, 18.6],
-      stem: 'Why does Carly add two quick lines after her question about a partner?',
-      choices: ['She fears they’d honestly say “yes”', 'She wants them to think before answering',
-                'She is done and wants their advice'], a: 0,
-      cue: '質問のすぐあと、短い二つの言葉。',
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'desperate', seg: [14.6, 18.6], keep: true,
+      stem: 'Why does Carly say “Don’t answer that”?',
+      ja: 'カーリーはなぜ「Don’t answer that」と言う？',
+      choices: ['She fears the honest answer', 'She wants them to think first', 'She wants their advice'], a: 0,
+      choicesJa: ['正直な答えを聞くのがこわい', '先に考えてほしい', 'アドバイスがほしい'],
+      cue: '質問のすぐあと。',
       line: 'Am I that desperate for a partner? *Don’t answer that. Still talking.*',
-      said: '「そんなに相棒が欲しいの？答えないで、まだ話してる」と続ける。',
-      mean: 'Don’t answer that は、正直な答えが分かっていて聞きたくないときの決まり文句。',
-      trap: '質問のあとは相手の番、と思いやすい。Still talking で話を続けている。',
+      said: '「私、そんなに相棒がほしいの？答えないで。まだ話してるから」と続ける。',
+      mean: 'Don’t answer that ＝ 今のは答えないで。正直な答えが分かっていて、聞きたくないときの決まり文句。',
+      trap: '質問のあとは相手が答える番だと思いやすい。Still talking（まだ話してる）で話を続けている。',
       use: 'Do I look tired? Don’t answer that.（疲れて見える？やっぱり答えないで）' },
 
-    // R fix: V2 (60 % blind: the key was the only plain, generic choice); all three are now "chasing…"
-    // why: a guy ← "following" read literally (後を追う) and "bliss" as love; work ← "off … with that biker gang"
-    //   heard as a job on the road, with "bliss" lost
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'bliss', seg: [26.2, 31.8],
+    { id: 'f1', retired: true, skill: 'phrase', level: 'C1', point: 'bliss', seg: [26.2, 31.8],
       stem: 'What does Carly say Sam is doing with the biker gang?',
       choices: ['Chasing what makes her happiest', 'Chasing a guy she’s fallen for', 'Chasing work to pay her bills'],
       a: 0,
@@ -76,11 +51,7 @@ export const icFirstShow: Clip = {
       trap: 'follow を「人の後を追う」と取ると恋の話に聞こえる。bliss は「至福・喜び」。',
       use: 'She quit her job to follow her bliss.（好きなことをするため仕事を辞めた）' },
 
-    // R fix: V2 (75 % blind: "Sam is in danger" was Carly's worry, not a joke); it's now the "she's" → "they're"
-    //   mishearing, a reply that only echoes her
-    // why: echo ← "they're" heard as a repeat of "she's", so it sounds like the same worry; shrug ← "It's Sam" heard
-    //   as a shrug, as if Sam weren't worth worrying about
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'they', seg: [31.7, 36.2],
+    { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'they', seg: [31.7, 36.2],
       stem: 'What makes the reply to Carly’s worry about Sam funny?',
       choices: ['It worries about the gang instead of Sam', 'It repeats her worry about Sam word for word',
                 'It shrugs Sam off as not worth worrying about'], a: 0,
@@ -91,40 +62,31 @@ export const icFirstShow: Clip = {
       trap: '同じ「I hope ～ okay」が続くので、同じ心配に聞こえやすい。主語が変わる所を聞く。',
       use: 'It’s my brother. Worry about the other team.（兄だよ？心配なのは相手チーム）' },
 
-    // why: couldn't ← n't's t drops, so "could" and "couldn't" sound close; could've done ← "do it" heard as "done it";
-    //   would ← /k/ and /w/ both weak at the start of a quick word
-    { id: 's2', skill: 'sound', level: 'B2', point: 'own', seg: [42, 45.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'own', seg: [42, 45.4], keep: true,
       stem: 'Fill the gap: “Do you think I ___ on my own?”',
-      choices: ['could do it', 'couldn’t do it', 'could’ve done it', 'would do it'], a: 0,
-      cue: '「think I」のすぐあと、短くつながる3語。',
+      ja: '空いている所に入る語は？',
+      choices: ['could do it', 'couldn’t do it', 'would do it'], a: 0,
+      choicesJa: ['それができる', 'それができない', 'それをするだろう'],
+      cue: '「think I」のすぐあと。',
       line: 'Do you think I *could do it* on my own?',
       said: '「一人でもできると思う？」と聞いている。',
-      mean: 'could の d と do の d が重なり、「クドゥーイッ」のように一つに聞こえる。',
-      trap: 'couldn’t なら t が消えても「ン」の音が残る。ここに「ン」はない。',
+      mean: 'could の d と do の d が重なり、「クドゥーイッ」と1つに聞こえる。on my own ＝ 一人で。',
+      trap: 'couldn’t なら「ン」が残る。would なら「ウ」で始まり「ク」がない。',
       use: 'Do you think I could do it?（私にできると思う？）' },
 
-    // R fix: V2 (55 % blind: "needs a partner" was a filler); the near miss is now "gives a frank opinion", refuted
-    //   by "Doesn't matter what I think"; the stem no longer quotes s2's key ("could do it"); the said note no longer assumes the speaker is male (僕)
-    // why: result ← "doesn't matter" heard, in the wrong relation (about the result, not the opinion); opinion ← a
-    //   question like "Do you think I could…?" usually gets an honest view back
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'want', seg: [42, 48.6],
-      stem: 'When Carly asks if she can manage alone, what does the friend do?',
-      choices: ['Leaves the decision up to her', 'Says the result won’t matter much', 'Gives a frank opinion on the plan'],
-      a: 0,
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'want', seg: [42, 48.6], keep: true,
+      stem: 'How does the friend answer Carly’s question?',
+      ja: '友だちはカーリーの質問にどう答える？',
+      choices: ['Leaves it up to her', 'Says it doesn’t matter', 'Gives an honest view'], a: 0,
+      choicesJa: ['決めるのは彼女だと言う', 'どうでもいいと言う', '正直な意見を言う'],
       cue: '答えの後半、「what you」のあと。',
       line: '*Doesn’t matter what I think.* It matters *what you want*.',
-      said: '「自分がどう思うかは関係ない。大事なのは君がどうしたいか」と答える。',
-      mean: '意見を言わずに、決めるのは本人だと返している。突き放しではなく後押し。',
-      trap: 'doesn’t matter が聞こえると「どうでもいい」と取りやすい。何が関係ないのか、主語を聞く。',
+      said: '「僕がどう思うかは関係ない。大事なのは君がどうしたいか」と答える。',
+      mean: 'It matters what you want ＝ 大事なのは君の気持ち。決めるのは本人だ、という後押し。',
+      trap: 'doesn’t matter が聞こえると「どうでもいい」と思いやすい。関係ないのは「僕の考え」。',
       use: 'It’s your call. What do you want?（決めるのは君。どうしたい？）' },
 
-    // R fix: schema (the answer's curly ’ failed the dict pattern: now a straight '); S1 (the stem's "he" assumed
-    //   the speaker); N3 (the mean note leaned on "It matters", which the captions don't have: whisper "It matters",
-    //   captions "matters")
-    // dict, C2: the grammar-correcting instinct (learners add "It")
-    // anchor: 45.84–46.92 s both sources have "doesn't matter what I think" with no "it"; the next sentence, 47.44 s,
-    //   has "It matters", so the dropped "It" is heard against a kept one
-    { id: 'c1', skill: 'dict', level: 'C2', point: 'want', seg: [45.3, 47.4],
+    { id: 'c1', retired: true, skill: 'dict', level: 'C2', point: 'want', seg: [45.3, 47.4],
       stem: 'Type the reply: “___ what I think.” (2 words)', answer: "doesn't matter",
       cue: '答えの最初の部分。文法より、聞こえた音を。',
       line: '*Doesn’t matter* what I think.',
@@ -133,31 +95,18 @@ export const icFirstShow: Clip = {
       trap: '習った文法どおり It を足したくなる。書き取りは、正しい文ではなく言われた音を書く。',
       use: 'Doesn’t matter. Let’s just go.（どうでもいいよ。行こう）' },
 
-    // R fix: V2 (65 % blind: the key was the only pleased choice); the near miss is now "touched, and certain",
-    //   refuted by his checking "right?"; on the ear-check list (is the "Aw" his?)
-    // why: certain ← "Aw" heard as the whole reaction, with the check "right?" missed; hurt ← "my new producer" heard
-    //   as someone new replacing him
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'producer', seg: [51.4, 57.7],
-      stem: 'How does the friend take the news about her “new producer”?',
-      choices: ['Touched, if she really means him', 'Touched, and certain she means him',
-                'Hurt that she found someone new'], a: 0,
-      cue: '「producer」の直後の短い声と、次の質問。',
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'producer', seg: [51.4, 57.7], keep: true,
+      stem: 'How does the friend feel about “my new producer”?',
+      ja: '「my new producer」と聞いて、友だちはどう感じる？',
+      choices: ['Happy, but checking', 'Sure that it’s him', 'Hurt by the news'], a: 0,
+      choicesJa: ['うれしいけど、確かめている', '自分のことだと確信している', 'その知らせに傷ついた'],
+      cue: '「producer」の直後の声と質問。',
       line: 'I’d have my new producer. — *Aw.* — *You do mean me, right?*',
       said: '「新しいプロデューサーもいるし」に「わあ」と喜び、「僕のことだよね？」と確かめる。',
-      mean: 'Aw はうれしくて胸がいっぱいの声。名前が出ていないので確認している。',
-      trap: 'right? の確認を不安や嫌がりと取りやすい。直前の Aw が気持ちを表している。',
+      mean: 'Aw ＝ うれしくて胸がいっぱいの声。名前が出ていないので、right?（だよね？）と確かめている。',
+      trap: 'right? の確認を不安やいやがっていると思いやすい。直前の Aw が気持ちを表している。',
       use: 'You do mean me, right?（それ、私のことだよね？）' },
 
-    // C2 stress: the emphatic auxiliary
-    // EAR CHECK (header): stress on "do"
-    // R hold: a stress item ships retired until its EAR CHECK (clips.test HEARD); once the user confirms "do", drop
-    //   `retired` and add 'icfirstshow c3' to HEARD
-    // R fix: V2 (60 % blind, its one rewrite): "on right, teasing" was weak; the new near miss is stress on "me"
-    //   (him, not someone else), which only the ear settles
-    // why: on "me" ← the contrastive reading (me, not another person), natural after "my new producer"; on "mean" ←
-    //   the "are you serious?" reading (mean = 本気で言う)
-    // anchor: 55.12–56.26 s both sources have "You do mean me, right?": a "do" in a plain positive statement is there
-    //   only to carry stress, and the line follows "Aw" (51.9–54.1 s), so it asks her to confirm, not to joke
     { id: 'c3', skill: 'sound', level: 'C2', point: 'producer', seg: [51.4, 57.7],
       stem: 'Where is the stress in “You do mean me, right?”, and why?',
       choices: ['On “do”: he wants her to say yes, it’s him', 'On “me”: him, as opposed to someone else',
@@ -169,19 +118,18 @@ export const icFirstShow: Clip = {
       trap: 'me を強めると「ほかの人でなく僕」の対比になる。肯定文にわざわざ do があれば、強いのはそこ。',
       use: 'I do like it, honestly.（ほんとに気に入ってるんだって）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'gym', seg: [71.3, 74.8],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'gym', seg: [71.3, 74.8], keep: true,
       stem: 'Type the missing words: “If Spencer ever ___ building that home gym.” (3 words)',
       answer: 'got around to',
-      cue: '「ever」のあと、「building」の前。',
+      ja: '「ever」と「building」の間の3語を書こう。',
+      cue: '「ever」のあと。',
       line: 'If Spencer ever *got around to* building that home gym.',
-      said: '「そのうちジムを作っていたら」。got around to がつながる。',
-      mean: 'get around to ～ing ＝ 後回しにしていたことに、やっと手をつける。',
-      trap: 'got の t は弾んで「ラ」に近く around とつながる。to は弱い。',
+      said: '「スペンサーがそのうちホームジムを作っていたら（ここはもうない）」と言う。',
+      mean: 'get around to 〜ing ＝ あと回しにしていたことに、やっと手をつける。got の t は軽い「ラ」の音で「ガラ」。',
+      trap: 'got around がつながり、to は小さい。3語で書く。',
       use: 'I finally got around to cleaning my room.（やっと部屋を片づけた）' },
 
-    // why: built but unused ← "never going to use" taken literally, as if the gym exists; still plans ← "was never
-    //   going to" heard as "hasn't yet"
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'gym', seg: [71.3, 84],
+    { id: 'i2', retired: true, skill: 'infer', level: 'C1', point: 'gym', seg: [71.3, 84],
       stem: 'What does Spencer’s reply about the home gym tell us?',
       choices: ['He never built it; he wouldn’t have used it', 'He built it, but he has never once used it',
                 'He hasn’t built it yet, but still plans to'], a: 0,
@@ -192,35 +140,43 @@ export const icFirstShow: Clip = {
       trap: 'never use だけだと「作ったが使っていない」に聞こえる。was going to は「するつもりだった」。',
       use: 'I never got around to it.（結局やらずじまいだった）' },
 
-    // R fix: N1 (the line spelled the name "Freddy", the choice and notes "Freddie")
-    // why: Carly ← she's the one in the puppet, so she seems to be the one asking; Spencer ← it's his puppet, so his
-    //   voice is expected around it
-    { id: 'w1', skill: 'who', level: 'B2', point: 'puppet', seg: [98, 101.7],
-      stem: 'Who asks why one of the puppets looks like Carly?',
+    { id: 'w1', skill: 'who', level: 'B1', point: 'puppet', seg: [98, 101.7],
+      stem: 'Who asks why one puppet looks like Carly?',
+      ja: '「なんであの人形はカーリーに似てるの？」と聞くのはだれ？',
       choices: ['Freddie', 'Carly', 'Spencer'], a: 0,
-      cue: '質問への返事で、誰に呼びかけているか。',
-      line: 'Why does that one look like Carly? — I made one that looks like *you too, Freddie*.',
-      said: '「なんであれ Carly に似てるの？」に「君に似たのも作ったよ、Freddie」と返る。',
-      mean: '返事の呼びかけが、質問した人を示している。Carly なら「私に」と言うはず。',
-      trap: '人形の話なので本人や作り手を選びやすい。返事の最後の名前で決まる。',
+      choicesJa: ['フレディ', 'カーリー', 'スペンサー'],
+      cue: '返事の最後の呼びかけ。',
+      line: 'Why does that one look like Carly? — I made one that looks like *you too, Freddy*.',
+      said: '「なんであれはカーリーに似てるの？」に「君に似たのも作ったよ、フレディ」と返る。',
+      mean: 'look like 〜 ＝ 〜に似ている。返事の you too, Freddy で、聞いた人が分かる。',
+      trap: '人形の話なので、作った人やカーリー本人を選びやすい。返事の最後の名前で決まる。',
       use: 'I got one for you too, Mom.（お母さんの分も買ったよ）' },
 
-    // why: an hour ← a prank sounds short; two days ← "overnight" heard as a long time stuck
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'gofrom', seg: [106.0, 116.5],
+      stem: 'What does “Go from there” mean?',
+      ja: '「Go from there」の意味は？',
+      choices: ['Start there, then build on it', 'Leave this place right now', 'Go back to the very start'], a: 0,
+      choicesJa: ['そこから始めて、広げていく', '今すぐここを出る', 'いちばん最初にもどる'],
+      cue: '「makes you smile」のあと。',
+      line: 'Just find something that makes you smile. *Go from there*.',
+      said: '「何を番組でやれば？」に「笑顔になれるものを見つけて、そこから始めれば」と答える。',
+      mean: 'go from there ＝ そこから先に進める。まず一つ決めて、あとは広げていく、という助言。',
+      trap: 'go と there から「そこへ行く」「ここを出る」と思いやすい。from there は「そこを出発点に」。',
+      use: 'Let’s try this first and go from there.（まずこれをやって、そこから考えよう）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'sack', seg: [137.8, 143.9], keep: true,
-      stem: 'How long does he say he was stuck in the sack?',
+      stem: 'How long was he left in the sack?',
+      ja: '彼は袋の中にどのくらい置いていかれた？',
       choices: ['About an hour', 'All night', 'Two whole days'], a: 1,
-      cue: '「left me here」のすぐあと、文の最後の語。',
+      choicesJa: ['1時間くらい', 'ひと晩じゅう', 'まる2日'],
+      cue: '「left me here」のあと。',
       line: 'Until Sam superglued my drawstring closed and left me here *overnight*.',
-      said: '「Sam がひもを接着剤で閉じて、ひと晩ここに置いていった」と話している。',
+      said: '「サムがひもを接着剤で閉じて、ひと晩ここに置いていった」と話す。',
       mean: 'overnight ＝ ひと晩じゅう、朝まで。楽しい思い出が、ひどい思い出に変わる。',
-      trap: 'night だけ聞くと夜の短い時間にも聞こえる。over が付くと「朝まで」。',
+      trap: 'night だけ聞くと短い時間にも思える。over が付くと「朝まで」。',
       use: 'Can I leave my bag here overnight?（荷物をひと晩預けられますか）' },
 
-    // R fix: K1/V2 (55 % blind; "locked it in the studio all night" was close to co-true with "left me here
-    //   overnight"); it's now a second "glued" near miss
-    // why: glued to the floor ← "superglued" heard, but in the wrong relation; his hands ← "superglued my drawstring"
-    //   heard with the wrong object
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sack', seg: [137.8, 147],
+    { id: 'd2', retired: true, skill: 'detail', level: 'B1', point: 'sack', seg: [137.8, 147],
       stem: 'What did Sam do to him with the sack?',
       choices: ['Glued it shut with him inside', 'Glued it to the studio floor', 'Glued his hands to the string'],
       a: 0,
@@ -231,59 +187,66 @@ export const icFirstShow: Clip = {
       trap: 'superglue と studio の場面から「床に貼った」と想像しやすい。何を接着したかを聞く。',
       use: 'Pull the drawstring to close it.（ひもを引いて閉じてください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cameup', seg: [155.2, 158.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['cameup'], seg: [138.0, 162.0],
+      stem: 'What do Carly’s friends tell her?',
+      ja: '友だちはカーリーに何と言う？',
+      choices: ['She can do it, and they’ll help', 'She should go and find Sam', 'She should stop the show now'], a: 0,
+      choicesJa: ['君ならできる、手伝うよ', 'サムを探しに行くべき', '番組をやめるべき'],
+      cue: '「See,」のあと。',
+      line: '…when you were a kid. *Imagine what you can do now.* *And we’ll help however we can.*',
+      said: '昔の小道具を前に「子どもの頃にこれを作ったんだ。今ならもっとできる。手伝うよ」と励ます。',
+      mean: 'Imagine what you can do now ＝ 今ならどれだけできるか考えてみて。however we can ＝ できるかぎり。',
+      trap: 'サムの思い出話が続くので、サムの話だと思いやすい。最後の励ましが中心。',
+      use: 'We’ll help however we can.（できるかぎり手伝うよ）' },
+
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cameup', seg: [155.2, 158.1], keep: true,
       stem: 'Type: “You ___ all this stuff when you were a kid.” (3 words)',
       answer: 'came up with',
-      cue: '最初の「You」のすぐあと、3語がひと続き。',
+      ja: '「You」のあとの3語を書こう。',
+      cue: '最初の「You」のすぐあと。',
       line: 'You *came up with* all this stuff when you were a kid.',
-      said: '「子どもの頃に、これ全部考え出したんだよ」と励ましている。',
+      said: '「子どもの頃に、これ全部考え出したんだよ」と励ます。',
       mean: 'come up with ＝ 考え出す、思いつく。came と up、up と with がつながる。',
-      trap: 'up with が短くなり、came だけ聞こえやすい。3語で一つの意味。',
-      use: 'Who came up with this idea?（このアイデア、誰が考えたの？）' },
+      trap: 'up with が短くなり、came だけ聞こえやすい。3語でひとつの意味。',
+      use: 'Who came up with this idea?（このアイデア、だれが考えたの？）' },
 
-    // why: nobody watching ← "bots from Brazil" heard as the verdict on the whole show; calm and grown-up ← "it's grown
-    //   up now" heard as the plan that worked
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'show', reveals: ['bots', 'baby'], seg: [175, 298.5],
-      stem: 'How does the first new webcast turn out?',
-      choices: ['Silly like the old show, and viewers enjoy it', 'Silly like the old show, but nobody is watching',
-                'Calm and grown-up, just as Carly planned'], a: 0,
-      cue: '途中のコメントの話と、最後の一言。',
-      said: '大人向けの肌の手入れのはずが、赤ちゃん役の Spencer で大騒ぎ。見ている人には大受け。',
-      mean: '「大人になった iCarly」のつもりが、昔と同じノリに戻っていく流れ。',
-      trap: 'grown up や bots が耳に残るが、最後は「昔のまま」で終わる。',
-      use: 'It feels like old times.（昔に戻ったみたい）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'show', reveals: ['bots', 'baby'], seg: [183.7, 223.0],
+      stem: 'What does Carly share on the new show?',
+      ja: '新しい番組で、カーリーは何を紹介する？',
+      choices: ['Her skincare routine', 'Her old puppets from the studio', 'Her new home gym'], a: 0,
+      choicesJa: ['肌の手入れの方法', 'スタジオの昔の人形', '新しいホームジム'],
+      cue: '「Welcome to the new iCarly」のあと。',
+      line: 'So today, I thought I’d share *my skincare routine*.',
+      said: '「新しい iCarly へようこそ。今日は私の肌の手入れを紹介するね」と始める。',
+      mean: 'skincare routine ＝ 毎日の肌の手入れ。I thought I’d 〜 ＝ 〜しようと思って。',
+      trap: '人形やジムはその前の話。番組で見せるのは skincare。',
+      use: 'Today I thought I’d share a recipe.（今日はレシピを紹介しようと思って）' },
 
-    // why: fans in Brazil ← "Brazil" taken as the real point; friends ← a few early viewers are often friends asked to
-    //   watch
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'bots', seg: [186.2, 191.3],
-      stem: 'When someone notices the first viewers, what does the reply suggest?',
-      choices: ['They may not be real people at all', 'Most of her new fans live in Brazil',
-                'They are friends Carly asked to watch'], a: 0,
-      cue: '「viewers」への返事、最初の名詞。',
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'bots', seg: [186.2, 191.3], keep: true,
+      stem: 'What does “Probably bots from Brazil” mean?',
+      ja: '「Probably bots from Brazil」はどういう意味？',
+      choices: ['They may not be real people', 'Most of her fans live in Brazil', 'Friends she asked to watch'], a: 0,
+      choicesJa: ['本物の人ではないかも', 'ファンの多くはブラジルにいる', '見てと頼んだ友だち'],
+      cue: '「viewers」への返事。',
       line: 'It looks like she’s already got a few viewers. — Probably *bots* from Brazil.',
       said: '「もう何人か見てるね」に「たぶんブラジルのボットだよ」と返す。',
-      mean: 'bot ＝ 自動プログラム。人間の視聴者ではないかも、と期待をしぼませる冗談。',
-      trap: 'Brazil が耳に残ると国の話に聞こえる。大事なのは前の bots の一語。',
+      mean: 'bot ＝ 自動のプログラム。人間の視聴者ではないかも、と期待をしぼませる冗談。',
+      trap: 'Brazil が耳に残ると国の話に聞こえる。大事なのは前の bots。',
       use: 'Those likes are probably bots.（そのいいね、たぶんボットだよ）' },
 
-    // R fix: V2 (80 % blind: a real baby and a doll were fillers); the near misses are now Freddie and one of
-    //   Spencer's puppets (the marionettes are in this scene), both refuted by "baby Spencer" → "That's me!"
-    // why: Freddie ← the other man in the room, and "baby" heard without the name; a puppet ← Spencer made
-    //   look-alike marionettes, so "baby Spencer" could be one of them
-    { id: 'w2', skill: 'who', level: 'B1', point: 'baby', seg: [206.4, 213.4],
-      stem: 'Who is the “baby” in Carly’s skincare routine?',
-      choices: ['Spencer, acting like a baby', 'Freddie, acting like a baby', 'A puppet that looks like Spencer'], a: 0,
-      cue: '「Even for」のあとの名前と、そのあとの返事。',
+    { id: 'w2', skill: 'who', level: 'B1', point: 'baby', seg: [206.4, 213.4], keep: true,
+      stem: 'Who is the “baby” in Carly’s skincare show?',
+      ja: 'カーリーの番組の「赤ちゃん」はだれ？',
+      choices: ['Spencer, acting as a baby', 'Freddie, acting as a baby', 'A puppet of Spencer'], a: 0,
+      choicesJa: ['赤ちゃん役のスペンサー', '赤ちゃん役のフレディ', 'スペンサーの人形'],
+      cue: '「Even for」のあと。',
       line: 'Even for *baby Spencer*. — That’s me!',
       said: '「赤ちゃんスペンサーにもね」と紹介され、本人が「僕だよ！」と答える。',
-      mean: '大人の Spencer が赤ちゃん役を演じている、と言葉だけで分かる。',
-      trap: '人形の話のあとなので、作り物の赤ちゃんを思いやすい。直後の名前と「That’s me!」で決まる。',
+      mean: 'Even for 〜 ＝ 〜にも。大人のスペンサーが赤ちゃん役をしている。',
+      trap: '人形の話のあとなので、作り物だと思いやすい。直後の That’s me!（僕だよ）で決まる。',
       use: 'Even for beginners, it’s easy.（初心者にも簡単です）' },
 
-    // R fix: V2 (65 % blind: the key was the only one about the label); all three are now about the safety claim
-    // why: proved by a baby ← "lucky infant" read sincerely, as a happy tester; tested on animals ← "None… were
-    //   tested" heard without "None", as if it admits animal testing
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'tested', reveals: ['baby'], seg: [213.3, 223.5],
+    { id: 'h3', retired: true, skill: 'humor', level: 'C1', point: 'tested', reveals: ['baby'], seg: [213.3, 223.5],
       stem: 'What is funny about how Carly describes the product testing?',
       choices: ['The safety claim ends in testing on a baby', 'The safety claim is proved by a happy baby',
                 'The safety claim admits testing on animals'], a: 0,
@@ -294,10 +257,7 @@ export const icFirstShow: Clip = {
       trap: '前半だけ聞くと安全の宣伝に聞こえる。Just のあとで意味が逆転する。',
       use: 'No sugar added. Just a lot of honey.（砂糖不使用。はちみつはたっぷり）' },
 
-    // EAR CHECK (header): the speaker and delivery
-    // R fix: V2 (70 % blind: the key was the only "nervous"); the near miss is now "nervous, and admits it"
-    // why: admits it ← the worry heard, the "In no way" lost; calm ← the words taken at face value
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'worried', seg: [220.9, 235.3],
+    { id: 'a2', retired: true, skill: 'attitude', level: 'C1', point: 'worried', seg: [220.9, 235.3],
       stem: 'How does the “infant” feel as the testing begins?',
       choices: ['Nervous, though he claims he isn’t', 'Nervous, and he openly admits it', 'Calm, exactly as he claims he is'],
       a: 0,
@@ -308,29 +268,19 @@ export const icFirstShow: Clip = {
       trap: '言葉どおり「平気」と取りやすい。聞かれてもいないのに強く否定したら、逆を疑う。',
       use: 'I’m not nervous at all. Nope.（全然緊張してないよ。ほんとに）' },
 
-    // R fix: V2 (75 % blind: "rude clerk" and "selling out" were weak); all three now turn on "ma'am", and the stem
-    //   says "product", not "serum" (serum → anti-aging gave the key away)
-    // why: obliged ← the Japanese frame: polite service makes leaving empty-handed feel rude; special ← "ma'am"
-    //   heard as a flattering, VIP word
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'maam', seg: [238.6, 244],
-      stem: 'Why did Carly buy the product, from her story?',
-      choices: ['Being called “ma’am” made her feel old', 'Being called “ma’am” made her feel obliged',
-                'Being called “ma’am” made her feel special'], a: 0,
-      cue: '「7-Eleven」のあと、店員が彼女を何と呼んだか。',
-      line: 'I actually *panic bought* it… and the guy there *called me ma’am*.',
-      said: '「コンビニで店員に ma’am と呼ばれて、あわてて買った」と話す。',
-      mean: 'ma’am は年上の女性への呼び方。年を取ったと感じて、アンチエイジングに飛びついた。',
-      trap: 'ma’am は丁寧だが、若い人には「年上扱い」に聞こえる。丁寧＝うれしい、と取らない。',
+    { id: 'i4', skill: 'detail', level: 'B2', point: 'maam', seg: [238.6, 244],
+      stem: 'Why did Carly panic buy the serum?',
+      ja: 'カーリーはなぜあわてて美容液を買った？',
+      choices: ['A clerk called her “ma’am”', 'A clerk said it was cheap', 'A clerk said it was new'], a: 0,
+      choicesJa: ['店員に ma’am と呼ばれた', '店員に安いと言われた', '店員に新商品と言われた'],
+      cue: '「7-Eleven」のあと。',
+      line: 'I actually *panic bought* it when I was at a 7-Eleven and the guy there *called me ma’am*.',
+      said: '「コンビニで店員に ma’am と呼ばれて、あわてて買っちゃった」と話す。',
+      mean: 'ma’am ＝ 年上の女性へのていねいな呼び方。年を取ったと感じて、若返りの商品に飛びついた。',
+      trap: 'ma’am はていねいな言葉だが、若い人には「年上あつかい」に聞こえる。だからあわてた。',
       use: 'A kid called me sir. I felt old.（子どもに sir と呼ばれて年を感じた）' },
 
-    // C2 paraphrase: a deadpan mock of the skincare pitch
-    // R fix: V2 (50 % blind, its one rewrite: the key was the only cynical choice); "stopped buying" became
-    //   "don't waste money on it", the sincere reading that drops "but… still"
-    // why: start early ← the ads' "never too early" line from 200 s, heard as her own view; don't waste money ←
-    //   "already too late" taken as sincere advice, dropping the "But you should still spend all your money"
-    // anchor: 248.4–257.5 s "by the time you need skincare, it's already too late" + "But you should still spend all your
-    //   money on it" + "an expensive reminder we're all going to die": it can't work, and you buy it anyway
-    { id: 'c2', skill: 'infer', level: 'C2', point: 'emo', seg: [248, 258.2],
+    { id: 'c2', retired: true, skill: 'infer', level: 'C2', point: 'emo', seg: [248, 258.2],
       stem: 'Which plain-English version keeps what Carly says about skincare?',
       choices: ['“It can’t save you, but we keep paying for it.”', '“Start early, and it really will keep you young.”',
                 '“It can’t save you, so don’t waste money on it.”'], a: 0,
@@ -341,19 +291,16 @@ export const icFirstShow: Clip = {
       trap: '少し前の「早すぎることはない」を本人の意見と取りやすい。but still が来たら前を打ち消す合図。',
       use: 'It won’t help, but I’ll buy it anyway.（意味ないけど、どうせ買っちゃう）' },
 
-    // R fix: V2 (55 % blind: the key was the only "gently"); the choices are now gentle hint / gentle praise / blunt
-    //   order, so the softeners ("a little", "don't you think?") and "emo" decide it
-    // why: praise ← katakana エモい = moving, so "emo" heard as a compliment; blunt ← "for a comedy show" heard as a
-    //   flat rule, with the softeners lost
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'emo', seg: [253.5, 262.5],
-      stem: 'After Carly’s line about dying, what does the friend’s comment do?',
-      choices: ['Gently hints she should keep it lighter', 'Gently praises the line as moving',
-                'Bluntly tells her to drop the dark bit'], a: 0,
-      cue: '「comedy show」と、最後の付け足し。',
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'emo', seg: [253.5, 262.5], keep: true,
+      stem: 'What does the friend mean by “a little emo”?',
+      ja: '友だちの「a little emo」はどういう意味？',
+      choices: ['Keep it a bit lighter', 'That line was very moving', 'Stop the show now'], a: 0,
+      choicesJa: ['もう少し明るくして', '今のはとても感動的だった', '今すぐ番組をやめて'],
+      cue: '「comedy show」のあと。',
       line: 'That’s a *little emo for a comedy show*, don’t you think?',
-      said: '「コメディにしてはちょっと暗くない？」と言う。',
-      mean: 'a little と don’t you think? で和らげた、軽い注意。「明るくいこう」という意味。',
-      trap: 'emo は「エモい」（感動的）と違い「暗い・重い」。付け足しは命令でなく同意を求める形。',
+      said: '「コメディにしては、ちょっと暗くない？」と言う。',
+      mean: 'emo ＝ 暗くて重い感じ。a little と don’t you think? で、やわらかく注意している。',
+      trap: '日本語の「エモい」（感動的）とちがい、英語の emo は「暗い・重い」。命令ではなく同意を求める形。',
       use: 'That’s a little much, don’t you think?（ちょっとやりすぎじゃない？）' },
   ]
 };
