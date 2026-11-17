@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 3, new 0
 // “Does Cat want to be with Freddie?!” (NickRewind, Best of iCarly 📲): Freddie rushes to Sam's place after a call
 // saying Sam was badly hurt; Cat answers the door, contradicts herself about where Sam is, keeps sliding off the
 // subject, and ends by asking Freddie to hang out, "just me and you".
@@ -8,11 +9,6 @@
 // contacts?"), 106.8 s (captions "Hanging", whisper "Hang it").
 // EAR CHECK: 91.3 s s1 — captions "You want to hang out with me today?", whisper "You wanna hang out…": the reduction
 //   to "wanna" is really there
-// REVIEW 2026-11-17: pass 3, fix 15, drop 1, new 0; ear checks 1
-// OPEN: h1 still leans on the obvious contradiction; its stem quotes the line the laugh follows, so a cold read may
-//   still reach ~50 %.
-// OPEN: nt3's key assumes "Couple of friends" plays down a one-on-one invite; if it sounds plainly sincere on the
-//   phone, the key still holds (it says "framing", not "hiding"), but the mean note's 下心 would go.
 import type { Clip } from '../types.ts';
 
 export const catFreddie: Clip = {
@@ -21,125 +17,91 @@ export const catFreddie: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %): the old key was the only serious reason. Now near misses from words said: "hospital"
-    //   (he doesn't know where she is) and "called me last night" (it was the roommate). Segment to 46.8 s so it holds
-    //   "The girl who called me last night? – Yeah." (before the disputed contacts line).
-    // why: hospital ← "Is she in the hospital?" read as knowing she's there; Sam called ← "called me last night" heard
-    //   without "the girl who"
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['roommate'], seg: [0, 46.8],
-      stem: 'Why has Freddie come over to Sam’s place?',
-      choices: ['He was told Sam was hurt and came to check', 'He came to take Sam home from the hospital',
-                'Sam called him last night and asked him over'], a: 0,
-      cue: 'ドアが開いてすぐの、Freddie の2つの質問。',
-      line: 'Hi, is Sam okay? Is she in the *hospital*?',
-      said: '「Sam は大丈夫？病院にいるの？」と聞き、「Sam が心配」とくり返す。',
-      mean: 'ゆうべの電話で Sam がけがをしたと聞き、心配して来た。',
-      trap: 'called me を Sam からの電話と取りやすいが、かけたのはルームメイト。主語まで聞く。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['roommate'], seg: [0, 44.0],
+      stem: 'Why has Freddie come to Sam’s place?',
+      ja: 'フレディはなぜサムの家に来た？',
+      choices: ['He heard Sam was hurt', 'To take Sam home', 'Sam asked him to come'], a: 0,
+      choicesJa: ['サムがけがをしたと聞いたから', 'サムを家に連れて帰るため', 'サムに来てと頼まれたから'],
+      cue: 'ドアが開いてすぐの、フレディの2つの質問。',
+      line: 'Hi, is Sam okay? Is she in the *hospital*? … Look, I’m really *worried* about my friend Sam…',
+      said: '「サムは大丈夫？入院してるの？」と聞き、「サムが心配なんだ」とくり返す。',
+      mean: 'be worried about 〜 ＝ 〜が心配。ゆうべの電話でサムがけがをしたと聞き、心配して来た。',
+      trap: 'あとの called me（電話してきた）をサムからと思いやすいが、かけたのはルームメイト。',
       use: 'Is everything okay? I came right over.（大丈夫？すぐ来たよ）' },
 
-    // R fix: V2 (blind 55 %): the two others were weak. Now three parallel "That…" findings; "fine, just not at home"
-    //   is the near miss from "No" + "Sam's not here".
-    // why: fine and out ← "No [not in the hospital]" + "Sam's not here" added up; hospital ← the first question's
-    //   keyword
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['look', 'dodge', 'hangout'], seg: [0, 108.8],
-      stem: 'By the end of the scene, what has Freddie learned about Sam?',
-      choices: ['That he still doesn’t know how Sam is', 'That Sam is fine, just not at home',
-                'That Sam is in the hospital after all'], a: 0,
-      cue: 'Sam について聞かれたときの答えを、順に。',
-      said: 'Sam の様子を聞いても、Cat は質問で返したり話を変えたりする。',
-      mean: '無事かどうか分からないまま、話は Cat の誘いへ移る。',
-      trap: 'No と not here を足して「無事で外出中」と取りやすいが、無事とは一度も言っていない。',
-      use: 'So, is she okay or not?（で、彼女は大丈夫なの？）' },
-
-    // R fix: V2 (blind 50 %): "asks why she lied" and "hiding" didn't fit the moment. Now parallel near misses built
-    //   on "Sam, where are you?".
-    // why: doubtful ← the later contradiction pulled forward, and "where are you?" heard as asking Cat; worried ←
-    //   "where" heard as "where is she hurt"
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'here', seg: [3.6, 11.8],
-      stem: 'When Cat says Sam is “just in here”, how does Freddie react?',
-      choices: ['Relieved, and he goes in calling for Sam', 'Doubtful, and he asks Cat to fetch Sam',
-                'Worried, and he asks where Sam is hurt'], a: 0,
+      stem: 'How does Freddie react when Cat says Sam is “in here”?',
+      ja: 'サムは「中にいる」と聞いて、フレディはどう反応する？',
+      choices: ['Relieved, and calls for Sam', 'Doubtful, and asks Cat again', 'Worried about Sam’s injuries'], a: 0,
+      choicesJa: ['ほっとして、サムを呼ぶ', '疑って、キャットにもう一度聞く', 'サムのけがを心配する'],
       cue: '答えを聞いた直後の短い一言と、次にすること。',
       line: '– No, she’s *just in here*. – *Oh, thanks.* Sam? Sam, where are you?',
-      said: '「中にいるよ」と聞き、Freddie は「ありがとう」と言って Sam を呼ぶ。',
-      mean: '病院ではないと分かり、ひとまずほっとしている。',
-      trap: 'where are you を Cat への質問や「どこをけが」と取りやすい。呼ぶ相手と、その時の言葉で聞く。',
+      said: '「中にいるよ」と聞き、フレディは「ありがとう」と言ってサムを呼ぶ。',
+      mean: 'just in here ＝ すぐそこ（中）に。病院ではないと分かり、ひとまずほっとしている。',
+      trap: 'where are you（どこ？）から疑っているように思いやすい。Oh, thanks のあとサムを呼ぶ。',
       use: 'Oh, thank goodness. Where is she?（ああ、よかった。どこにいるの？）' },
 
-    // R fix: V2 (blind 70 %): the two others were far from the moment. Now literal readings of "not here" that a
-    //   partial listener could hold.
-    // why: just went out ← "not here" read as news; nearby ← "here" read as "this room" (she said "in here")
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'here', seg: [3.6, 15.7],
-      stem: 'Why does the audience laugh when Cat says “Oh, Sam’s not here”?',
-      choices: ['She said seconds ago that Sam was inside', 'She has only just noticed that Sam went out',
-                'She means Sam is nearby, just not in this room'], a: 0,
-      cue: '少し前の Cat の答えと、今の一言を並べて。',
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'here', seg: [3.6, 15.7],
+      stem: 'What does Cat say about Sam a few seconds later?',
+      ja: '数秒後、キャットはサムについて何と言う？',
+      choices: ['Sam isn’t here', 'Sam just went out', 'Sam is upstairs'], a: 0,
+      choicesJa: ['サムはいない', 'サムは今出かけた', 'サムは2階にいる'],
+      cue: 'フレディがサムを呼んだあとの一言。',
       line: '– No, she’s *just in here*. … – Oh, *Sam’s not here*.',
-      said: '「中にいる」と言ったのに、Cat が「Sam はいないよ」とさらっと言う。',
-      mean: '数秒前の自分の言葉と正反対のことを、平気で言うのが笑いどころ。',
-      trap: 'not here を「今出かけた」「この部屋にいない」と取りやすい。笑いの直前は前の発言と比べる。',
+      said: '「中にいる」と言ったのに、キャットが「サムはいないよ」とさらっと言う。',
+      mean: 'Sam’s not here ＝ サムはここにいない。数秒前と反対のことを平気で言うのが笑い。',
+      trap: 'not here から「今出かけた」と思いやすいが、そうは言っていない。ただ「いない」だけ。',
       use: 'Wait, didn’t you just say she was home?（待って、家にいるって言わなかった？）' },
 
-    // R fix: V2 (blind 65 %) and K1: "praises him for asking good questions" was half true (she does flatter). Now
-    //   the "full of questions" complaint reading.
-    // why: admits ← "Well…" heard as the start of an excuse (日本語の「ええと、実は」); stop asking ← "full of
-    //   questions" read as a complaint
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'dodge', reveals: ['handsome'], seg: [15.5, 22.5],
-      stem: 'When Freddie starts “But didn’t you just say she was…”, what does Cat’s reply do?',
-      choices: ['Avoids his question by flattering him', 'Admits she got mixed up about Sam',
-                'Tells him to stop asking so many questions'], a: 0,
-      cue: '質問に答えたかどうか。Well のあとの言葉の向き。',
+      stem: 'What does Cat’s reply to “But didn’t you just say…” do?',
+      ja: '「でもさっき言わなかった？」へのキャットの返事は、何をしている？',
+      choices: ['Avoids it by flattering him', 'Says she got mixed up', 'Tells him to stop asking'], a: 0,
+      choicesJa: ['ほめて、質問をかわす', '混乱していたと認める', '質問をやめてと言う'],
+      cue: '質問に答えたかどうか。Well のあと。',
       line: 'Well… *Aren’t you a handsome boy full of questions?*',
-      said: '矛盾を突かれた Cat は「質問だらけの、かっこいい男の子ね」と返す。',
-      mean: '答えずに相手をほめて、話をそらしている。',
-      trap: 'full of questions を「聞きすぎ」という注意に取りやすいが、handsome と並ぶ甘い言い方。答えたかで見る。',
+      said: '話の食い違いを突かれたキャットは「質問だらけの、かっこいい男の子ね」と返す。',
+      mean: 'full of 〜 ＝ 〜でいっぱい。答えずに相手をほめて、話をそらしている。',
+      trap: 'full of questions を「聞きすぎ」という注意に思いやすいが、handsome と並ぶほめ言葉。',
       use: 'Nice try changing the subject.（話をそらそうとしてもダメだよ）' },
 
-    // R fix: V2 (blind 50 %): the key was the only specific one. "Making fun of her name" is the near miss from the
-    //   defensive-sounding "Why?".
-    // why: making fun ← "Why?" heard as defensive; a pet ← "like cats" heard as an offer of a cat
     { id: 'i1', skill: 'infer', level: 'B2', point: 'cats', seg: [31.3, 41.2],
-      stem: 'Right after giving her full name, why does Cat ask Freddie a question back?',
-      choices: ['She takes his question as a liking for cats', 'She thinks he is making fun of her name',
-                'She wants to know if he would like a pet'], a: 0,
+      stem: 'Why does Cat ask “You like cats?”',
+      ja: 'キャットはなぜ「猫が好きなの？」と聞く？',
+      choices: ['She thinks he means the animal', 'She thinks he hates her name', 'She has a pet for him'], a: 0,
+      choicesJa: ['動物の猫のことだと思ったから', '名前を嫌っていると思ったから', '彼にあげるペットがいるから'],
       cue: '名前を言ったあとの Why? と、その次の質問。',
-      line: 'Cat Valentine. Why? *You like cats?*',
-      said: '名前を確かめられ、Cat は「なんで？猫が好きなの？」と聞き返す。',
-      mean: '名前の確認を、動物の猫への興味と受け取っている。そのずれが笑いになる。',
-      trap: 'Why? を名前への不満と取りやすいが、続く You like cats? は明るい問い。',
+      line: 'So, you’re Cat? – Yeah. Cat Valentine. Why? *You like cats?*',
+      said: '名前を確かめられ、キャットは「なんで？猫が好きなの？」と聞き返す。',
+      mean: '名前の Cat を、動物の cat（猫）の話だと受け取っている。そのずれが笑い。',
+      trap: 'Why?（なんで？）から名前への不満に思いやすいが、続く You like cats? は明るい質問。',
       use: 'Why do you ask?（なんでそんなこと聞くの？）' },
 
-    // why: neighbor / sister ← she answers the door at Sam's place, and both fit a girl who is there
     { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [40.8, 44.0],
-      stem: 'When Freddie checks who Cat is, what does she turn out to be?',
+      stem: 'Who does Cat turn out to be?',
+      ja: 'フレディが確かめると、キャットはサムの何だと分かる？',
       choices: ['Sam’s roommate', 'Sam’s neighbor', 'Sam’s sister'], a: 0,
+      choicesJa: ['サムのルームメイト', 'サムの隣の人', 'サムの姉妹'],
       cue: '「so you’re Sam’s」のあとの一語。',
       line: 'so you’re Sam’s *roommate*. – Uh-huh.',
-      said: '「じゃあ君が Sam のルームメイト？」に、Cat が「うん」と答える。',
-      mean: 'roommate ＝ 部屋を一緒に借りて住む人。',
-      trap: '家にいるので「姉妹」「隣の人」も考えられるが、聞こえた一語で決める。',
+      said: '「じゃあ君がサムのルームメイト？」に、キャットが「うん」と答える。',
+      mean: 'roommate ＝ 部屋を一緒に借りて住む人。Uh-huh ＝ うん（くだけた返事）。',
+      trap: '家にいるので姉妹や隣の人も考えやすいが、聞こえた一語 roommate で決める。',
       use: 'My roommate is out right now.（ルームメイトは今出かけてる）' },
 
-    // R fix: V2 (blind 55 %): the key was the only upbeat choice. Now three "He…" readings; "had plenty of time
-    //   already" is the reproach a "No" invites.
-    // why: right now ← "time" heard as "it's time"; had time already ← "there's time" read as a complaint about the
-    //   past after his "No"
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'time', seg: [44.0, 53.3],
-      stem: 'When Freddie answers “No,” what does Cat’s reply mean?',
-      choices: ['He can still do it some other time', 'He had plenty of time to do it already',
-                'He should do it now, while she’s here'], a: 0,
+      stem: 'What does “there’s time for that” mean here?',
+      ja: 'ここでの「there’s time for that」はどういう意味？',
+      choices: ['You can do it later', 'You had lots of time', 'Do it right now'], a: 0,
+      choicesJa: ['あとでやればいい', '時間はたっぷりあった', '今すぐやって'],
       cue: 'No のあと、Well で始まる短い一言。',
-      line: '– No. – Well, *there’s time for that*.',
-      said: 'Freddie の「いや」に、Cat は「それはこれからでいいよ」と返す。',
-      mean: 'まだ間に合う、そのうちでいい。あきらめず次を期待している。',
-      trap: 'time で「今すぐ」、No のあとで「時間はあったのに」と取りやすい。there’s time＝まだある。',
+      line: 'Did you add me to your contacts? – No. – Well, *there’s time for that*.',
+      said: '「連絡先に入れた？」「いや」に、キャットは「それはこれからでいいよ」と返す。',
+      mean: 'there’s time for 〜 ＝ 〜する時間はまだある。あきらめず、次を期待している。',
+      trap: 'time から「今すぐ」を思いやすい。there’s time ＝ 時間はまだある、なので「あとで」。',
       use: 'No rush, there’s time for that.（急がなくていいよ、まだ時間はあるし）' },
 
-    // R fix: V2 (blind 70 %): "did not hear him" was a filler (its evidence lies outside the segment). Now "Why?"
-    //   (said right after, in the wrong order) is the keyword trap.
-    // why: asked why he's upset ← Cat's "Why?" comes right after and is pulled before; told him she's fine ← "she's
-    //   just in here" from earlier
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'look', reveals: ['dodge'], seg: [44.0, 56.3],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'look', reveals: ['dodge'], seg: [44.0, 56.3], retired: true,
       stem: 'Why does Freddie say he’s “really worried about Sam” a second time?',
       choices: ['Cat keeps turning the talk toward the two of them', 'Cat has just asked him why he is so upset',
                 'Cat has just told him that Sam is fine'], a: 0,
@@ -150,63 +112,65 @@ export const catFreddie: Clip = {
       trap: '直後の Why? を先に言われたと取りやすい。Why? は返事のあと。くり返しは話を戻すサインが多い。',
       use: 'Can we get back to the point?（本題に戻ってもいい？）' },
 
-    // why: a sport ← "sport utility vehicle" heard only as "sport"; fell while running ← "run" + "over" taken
-    //   one by one
     { id: 'd2', skill: 'detail', level: 'B2', point: 'runover', seg: [56.1, 60.8],
       stem: 'What does Freddie say happened to Sam?',
-      choices: ['She was hit by a big vehicle', 'She got hurt playing a sport', 'She fell over while running'], a: 0,
-      cue: 'Cuz のあと、got に続く2語。',
-      line: 'Cuz she got *run over*, apparently by a sport utility vehicle.',
-      said: '「SUV（大きな車）にひかれたらしい」と Freddie が言う。',
-      mean: 'run over ＝ 車がひく。apparently は「〜らしい」、聞いた話。',
-      trap: 'run と over を別々に取ると「走って転んだ」になる。句動詞はまとめて聞く。',
+      ja: 'サムに何があった、とフレディは言う？',
+      choices: ['A big car hit her', 'She got hurt in sports', 'She fell while running'], a: 0,
+      choicesJa: ['大きな車にひかれた', 'スポーツでけがをした', '走っていて転んだ'],
+      cue: '’Cause のあと、got に続く2語。',
+      line: '’Cause she got *run over*, apparently by a sport utility vehicle.',
+      said: '「SUV（大きな車）にひかれたらしい」とフレディが言う。',
+      mean: 'run over ＝ 車がひく。apparently ＝ 〜らしい（聞いた話）。',
+      trap: 'run と over を別々に取ると「走って転んだ」に思いやすい。sport も車の名前の一部。',
       use: 'Watch out, you’ll get run over!（危ない、ひかれるよ！）' },
 
-    // R fix: V2 (blind 50 %): the doctor and text options were fillers, and "on the phone" lay outside the segment.
-    //   Now who × when near misses, each settled by "You. Says you." or "Last night." V4: the words, not voices,
-    //   settle it, so skill who → detail; its speaker ear check is gone.
-    // why: Sam ← "you" taken as the person being talked about; earlier today ← "When?" answer missed
     { id: 'w1', skill: 'detail', level: 'B2', point: 'source', seg: [61.1, 72.9],
       stem: 'By Freddie’s account, who said Sam was badly hurt?',
+      ja: 'フレディによると、サムが大けがしたと言ったのは誰？',
       choices: ['Cat, last night', 'Sam, last night', 'Cat, earlier today'], a: 0,
+      choicesJa: ['キャットが、ゆうべ', 'サムが、ゆうべ', 'キャットが、今日の朝'],
       cue: 'Says who? と When? への短い答え。',
       line: '– Says who? – *You. Says you.* – When? – *Last night.*',
-      said: '「誰が言ったの？」に、Freddie が「君だよ。ゆうべ」と答える。',
-      mean: '話の出どころは Cat 本人。言った本人が「誰が？」と聞いている。',
-      trap: 'you を話題の Sam と取ったり、When? の答えを聞き流したりしやすい。短い返事を2つとも聞く。',
+      said: '「誰が言ったの？」に、フレディが「君だよ。ゆうべ」と答える。',
+      mean: 'Says who? ＝ 誰がそう言ったの？ 話の出どころはキャット本人。',
+      trap: 'you を話題のサムと思ったり、When? の答えを聞き流したりしやすい。短い返事を2つとも聞く。',
       use: 'Says who? That’s not what I heard.（誰がそう言ったの？聞いた話と違うよ）' },
 
-    // R fix: V2 (blind 55 %): the accusation option didn't match anything said. Now the graphic list he just gave is
-    //   the near miss.
-    // why: too graphic ← the injury list right before "I'm sorry"; raised his voice ← his sharp "You! Says you!"
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hangout', 'wanna'], seg: [62.0, 106.6],
+      stem: 'What does Cat do at the end of the scene?',
+      ja: '場面の最後に、キャットは何をする？',
+      choices: ['She asks Freddie to hang out', 'She tells Freddie where Sam is', 'She asks Freddie to leave'], a: 0,
+      choicesJa: ['フレディを遊びに誘う', 'サムの居場所をフレディに教える', 'フレディに帰ってと言う'],
+      cue: '最後の質問と「me and you」。',
+      line: 'You wanna hang out with me today? … *Just me and you.* Couple of friends.',
+      said: 'サムの話ははっきりしないまま、キャットは「今日、私と遊ばない？二人だけで」と誘う。',
+      mean: 'サムが無事かどうかは分からないまま、話はキャットの誘いへ移る。',
+      trap: 'サムの話で来たので、居場所が分かると思いやすい。キャットは最後まで答えていない。',
+      use: 'So, is she okay or not?（で、彼女は大丈夫なの？）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', reveals: ['front'], seg: [72.9, 82.2],
-      stem: 'Why does Freddie apologize after listing Sam’s injuries?',
-      choices: ['He used a word he finds rude in front of her', 'He described Sam’s injuries too graphically',
-                'He raised his voice at her about the call'], a: 0,
-      cue: 'Why? と聞かれたあと、Cuz に続く理由。',
-      line: 'Cuz I… I’ve *never said buttocks in front of a girl* before.',
+      stem: 'Why does Freddie say sorry after listing Sam’s injuries?',
+      ja: 'サムのけがを並べたあと、フレディはなぜ謝る？',
+      choices: ['He said a rude word', 'He gave too much detail', 'He shouted at her'], a: 0,
+      choicesJa: ['失礼な言葉を言った', 'くわしく言いすぎた', '彼女にどなった'],
+      cue: 'Why? のあと、’Cause に続く理由。',
+      line: '’Cause I’ve *never said buttocks in front of a girl* before.',
       said: '「女の子の前で buttocks（おしり）と言ったことがないから」と謝る。',
-      mean: '少し上品な言葉でも、女の子の前では照れくさい。Freddie のまじめさ。',
-      trap: '直前のけがの話がひどいので「言いすぎた」と謝ったと取りやすい。理由は Cuz のあとに出る。',
+      mean: 'buttocks ＝ おしり（少し硬い言葉）。女の子の前で言うのが照れくさい。フレディのまじめさ。',
+      trap: '直前のけがの話がひどいので、言いすぎて謝ったと思いやすい。理由は ’Cause のあと。',
       use: 'Sorry, I didn’t mean to say that.（ごめん、そんなこと言うつもりじゃなかった）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'front', reveals: ['sorry'], seg: [78.6, 82.2],
-      stem: 'Type what he says: “I’ve never said buttocks ___ girl before.” (4 words)', answer: 'in front of a',
-      cue: 'buttocks のあと、girl の前の短い4語。',
+      stem: 'Type: “I’ve never said buttocks ___ girl before.” (4 words)', answer: 'in front of a',
+      ja: '彼の言葉を書こう：「___ 女の子（の前で）言ったことがない」（4語）',
+      cue: 'buttocks のあと、短い4語。',
       line: 'I’ve never said buttocks *in front of a* girl before.',
-      said: '「女の子の前で（言ったことがない）」と言っている。',
-      mean: 'in front of a が「インフランタヴァ」と一続き。of と a はとても弱い。',
+      said: '「女の子の前で言ったことがない」と言う。',
+      mean: 'in front of 〜 ＝ 〜の前で。in front of a が「インフランタヴァ」とひと続き。',
       trap: 'of a が一つに聞こえ、語数が足りなく感じやすい。in front of はかたまりで覚える。',
       use: 'Not in front of the kids, please.（子どもの前ではやめて）' },
 
-    // R fix: C2 one rewrite (blind 60 %): "Sam, for breaking such a silly body part" was absurd. Now two near misses
-    //   that "it's okay… don't offend me" refutes.
-    // why: Cat shocked ← she is the odd one, so the laugh seems aimed at her (right mechanism, wrong target);
-    //   upsetting Cat ← his apology taken at face value
-    // anchor: 79.2–81.1 s "I've never said buttocks in front of a girl before" makes a mild word a big deal; 85.3 s
-    //   "Buttocks don't offend me" shows Cat knows it could offend, and answers calmly; the laugh comes after
-    //   Freddie's "Oh." (89.4 s)
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'sorry', reveals: ['front'], seg: [78.6, 90.9],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'sorry', reveals: ['front'], seg: [78.6, 90.9], retired: true,
       stem: 'In the “buttocks” exchange, who is the joke mainly on?',
       choices: ['Freddie, for making a mild word a big deal', 'Cat, for being shocked by such a word',
                 'Freddie, for upsetting Cat with the word'], a: 0,
@@ -217,55 +181,43 @@ export const catFreddie: Clip = {
       trap: '変わった返事の Cat に目が行きやすいが、Cat は「平気」と言う。笑いは大げさに謝る側に向く。',
       use: 'Relax, it’s not a big deal.（落ち着いて、大したことじゃないよ）' },
 
-    // R fix: V2 (blind 55 %): "were going to" was the odd one out. Now "going to" ("You gonna…?"), which fits the
-    //   gap as said.
-    // why: won't ← the "-na" of "wanna" heard as n't; going to ← "wanna" heard as "gonna"; wanted to ← a past form
-    //   fills the weak syllable
     { id: 's1', skill: 'sound', level: 'B2', point: 'wanna', reveals: ['hangout'], seg: [90.6, 93.7],
       stem: 'Fill the gap: “You ___ hang out with me today?”',
-      choices: ['want to', 'wanted to', 'won’t', 'going to'], a: 0,
+      ja: '空所に入る語は？「今日、私と遊び ___？」',
+      choices: ['want to', 'wanted to', 'won’t'], a: 0,
+      choicesJa: ['たい', 'たかった', 'ない（つもり）'],
       cue: '文の2語目、短く縮んだ音。',
       line: 'You *wanna* hang out with me today?',
-      said: '「今日、私と遊ばない？」と聞いている。',
-      mean: 'want to が「ワナ」と一つに縮む。会話でとてもよく使う形。',
-      trap: '「ナ」を n’t と取ると won’t、「ゴナ」と取ると going to になる。上がり調子も手がかり。',
+      said: '「今日、私と遊ばない？」と聞く。',
+      mean: 'want to が「ワナ」と一つに縮む。You wanna 〜? ＝ 〜しない？ 会話でとてもよく使う。',
+      trap: 'wanted to なら「ワンティッ」と長い。won’t なら「ウォウン」。短い「ワナ」なら want to。',
       use: 'Do you wanna grab lunch?（お昼、一緒にどう？）' },
 
-    // R fix: V2 (blind 55 %): the key was the only specific two-part answer. Now three parallel "X, and …ing".
-    // why: confused ← "I don't know what you mean" taken at face value; annoyed ← he has asked about Sam twice
-    //   already
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'fluster', seg: [90.8, 99.8],
-      stem: 'Answering Cat’s question about today, how does Freddie sound?',
-      choices: ['Flustered, and playing for time', 'Confused, and asking her to explain',
-                'Annoyed, and trying to get back to Sam'], a: 0,
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'fluster', seg: [90.8, 99.8],
+      stem: 'How does Freddie feel when Cat asks him to hang out?',
+      ja: '遊ぼうと誘われて、フレディはどう感じている？',
+      choices: ['Nervous and unsure', 'Happy and excited', 'Angry about Sam'], a: 0,
+      choicesJa: ['あせって、迷っている', 'うれしくて、わくわく', 'サムのことで怒っている'],
       cue: '答えの中で、言いかけてやめる回数。',
       line: 'Well, I mean, it— See, I don’t— *I don’t know what you mean.*',
       said: '「えっと、つまり…いや、何のことか分からない」と言いかけては止まる。',
-      mean: '誘いに困り、断る言葉を探している。分からないふりは時間かせぎ。',
-      trap: '言葉どおりなら「意味不明」だが、何度も言い直すのは動揺のサイン。',
+      mean: 'I don’t know what you mean ＝ どういう意味か分からない。誘いに困り、言葉を探している。',
+      trap: '言葉どおりなら「意味が分からない」だが、何度も言い直すのはあせっているしるし。',
       use: 'Um, I’m not sure what you mean.（えっと、どういう意味かな）' },
 
-    // R fix: V2 (blind 75 %) and K3: "hang things up" was absurd. Now "out" + his worry, and a group plan.
-    // why: look for Sam ← "out" + his worry about Sam all scene; meet her friends ← "friends" right after, and
-    //   "hang out" read as a group plan
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [90.8, 103.3],
-      stem: 'When Cat asks Freddie about today, what does she want?',
-      choices: ['To spend some time with him today', 'To go out looking for Sam with him',
-                'To have him meet her friends today'], a: 0,
-      cue: 'today の前の動詞と、あとの「me and you」。',
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [90.8, 102.5],
+      stem: 'What does “hang out” mean here?',
+      ja: 'ここでの「hang out」はどういう意味？',
+      choices: ['Spend time together', 'Look for Sam outside', 'Meet her other friends'], a: 0,
+      choicesJa: ['一緒に過ごす', '外でサムを探す', 'ほかの友だちに会う'],
+      cue: 'today の前の動詞と、あとの言葉。',
       line: 'You wanna *hang out* with me today? … Just me and you.',
       said: '「今日、私と遊ばない？」と誘い、「あなたと私だけで」と付け足す。',
       mean: 'hang out ＝ 予定なく一緒に過ごす、遊ぶ。友だち同士でよく使う。',
-      trap: 'out を「探しに外へ」と取ると Sam の話になる。me and you で二人だけと分かる。',
+      trap: 'out（外）から、サムを探しに行く話に思いやすい。me and you で二人だけと分かる。',
       use: 'Want to hang out this weekend?（週末、遊ばない？）' },
 
-    // R fix: C2 one rewrite (blind 55 %): the key was the only non-literal choice; now three parallel moves on the
-    //   plan.
-    // why: add friends ← "a couple of" read as "a few" (scope shift); a couple ← katakana カップル (sincerity flip:
-    //   the cover taken as a confession)
-    // anchor: 101.8 s "Just me and you." rules out bringing others; "friends" (104.4 s) rules out "a couple"; the
-    //   laugh at 106.1 s shows the cover is seen through
-    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'couple', reveals: ['hangout'], seg: [100.0, 106.6],
+    { id: 'nt3', skill: 'pragma', level: 'C2', point: 'couple', reveals: ['hangout'], seg: [100.0, 106.6], retired: true,
       stem: 'When Cat adds “Couple of friends.”, what is she doing?',
       choices: ['Framing time alone as just two friends', 'Adding a couple of friends to the plan',
                 'Calling the two of them a couple'], a: 0,
