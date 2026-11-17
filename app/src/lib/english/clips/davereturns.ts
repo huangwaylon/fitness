@@ -1,15 +1,10 @@
+// A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 2
 // “Ben Meets Leslie's Ex-boyfriend | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Dave,
 // Leslie's ex and a cop, joins Leslie and Ben for dinner, competes with Ben, then tells Leslie he still loves her.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 236 s. Untested on purpose: 0–8 s (who
-// "could not keep it together", and why), 17–20 s (both sources "San Diego's son"), 74–77 s (captions lack "You should
-// come to"), 78–82 s ("You're welcome", speaker unclear), 104–106 s (captions "I'm gonna use the bathroom", whisper "do
-// you need to use the bathroom"), 117–120 s (captions "so i'm feeling in love", whisper "So how is Danny-- I'm still in
-// love"; items use only Leslie's later repeats, which both sources have) and 158–159 s ("Dick").
-// Speakers: Dave by "Dave" (127.7 s) and his own story; Ben as the one in "the Whiz Palace" (145.8 s) who comes back with
-// "Whizzingham Manor"; "I already said I'm gonna go" (208 s) ties "go outside" and the company line to Dave.
-// REVIEW 2026-11-16: pass 8, fix 16, drop 0, new 0; ear checks 0
-//   (removed: 100.4 s s1, both sources have "I'd"; 141.2 s x1, the stem no longer puts the disputed "well"/"we'll"
-//   inside the gap, and both sources have "get rid of him")
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 236 s. Untested on purpose: 17–20 s,
+// 74–82 s and 104–106 s (the sources differ), 117–120 s (items use only Leslie's later repeats), 158–159 s ("Dick"),
+// and the jokes on stiff words, nicknames and Dave's slip at 193 s.
+// Speakers: Dave by "Dave" (127.7 s) and his own story; Ben as the one back from the bathroom (147.5 s).
 import type { Clip } from '../types.ts';
 
 export const daveReturns: Clip = {
@@ -18,11 +13,7 @@ export const daveReturns: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 60 %): "all Leslie's fault" was weak; now a register near miss (poetic vs official), since
-    //   "romantical" can sound flowery. S4: the segment was 22.5 s; now 35.8–50.8 s ("We had…" to "…at that time")
-    // why: poetic ← "romantic, romantical" heard as gushing; not over ← an ex talking about the romance at length
-    //   sounds like he wants it back (later true, but nothing here says so)
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'intro', seg: [35.8, 50.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'intro', seg: [35.8, 50.8], retired: true,
       stem: 'Why does Dave’s account of his past with Leslie get laughs?',
       choices: ['He describes the romance in stiff, official words', 'He describes the romance in cheesy, poetic words',
                 'He describes the romance as if it isn’t over'], a: 0,
@@ -33,51 +24,54 @@ export const daveReturns: Clip = {
       trap: 'romantical は詩的に聞こえるが、involvement や terminated は書類の語。語の種類を見る。',
       use: 'We used to date, a long time ago.（ずっと前に付き合ってたんだ）' },
 
-    // R fix: V2 (blind 55 %): "lonely" was the only feeling word; all three now name what he follows their plan with
-    // why: dig ← "Cool." before it can sound like a dig at "really nice new French"; brag ← the plan heard as a stated
-    //   taste for plain food over fancy food
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'burrito', seg: [57, 71.4],
-      stem: 'Why does Dave’s own dinner plan get a laugh?',
-      choices: ['He follows their fancy plan with a sad, cheap one', 'He follows their fancy plan with a dig at French food',
-                'He follows their fancy plan with a brag about his own'], a: 0,
-      cue: '直前の二人の予定と、彼の予定の差。',
-      line: 'dinner at a *really nice new French restaurant*. — Cool. I’m gonna… get a *frozen burrito* and eat it right there…',
-      said: '二人は新しいフレンチで夕食。彼はスタンドの冷凍ブリトーをその場で食べると言う。',
-      mean: 'しゃれた予定の直後に寂しい予定を淡々と言う対比が笑い。',
-      trap: 'Cool のあとで皮肉に聞こえやすいが、店には何も言っていない。好みの話もしていない。',
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'stay', seg: [52.5, 57.2],
+      stem: 'How long is Dave staying in town?',
+      ja: 'デイブはどのくらい町にいる？',
+      choices: ['Just tonight', 'For a week', 'For a few days'], a: 0,
+      choicesJa: ['今夜だけ', '1週間', '数日'],
+      cue: '「for a while?」への答え',
+      line: 'Are you here for a while? — No, *just tonight* for the chief’s retirement thing.',
+      said: '「しばらくいるの？」「いや、今夜だけ。署長の退職のあれで」と答える。',
+      mean: 'for a while ＝ しばらく。just tonight ＝ 今夜だけ。',
+      trap: '質問の for a while が耳に残りやすい。答えの No のあとを聞く。',
+      use: 'I’m only here for tonight.（今夜だけここにいます）' },
+
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'burrito', seg: [61, 71.4],
+      stem: 'What will Dave eat for dinner?',
+      ja: 'デイブは夕食に何を食べるつもり？',
+      choices: ['A frozen burrito', 'French food with them', 'Dinner at the party'], a: 0,
+      choicesJa: ['冷凍のブリトー', '二人と一緒にフランス料理', 'パーティーの食事'],
+      cue: '「Cool」のあと',
+      line: 'dinner at a really nice new French restaurant. — Cool. I’m gonna… get a *frozen burrito* and eat it right there…',
+      said: '二人はフレンチで夕食。デイブはスタンドで冷凍ブリトーを食べると言う。',
+      mean: 'frozen ＝ 冷凍の。しゃれた店の話のあとの、さびしい夕食がおかしい。',
+      trap: 'French restaurant はレスリーとベンの予定。Cool のあとがデイブの予定。',
       use: 'I’ll just grab something on the way.（途中で何か買って食べるよ）' },
 
-    // R fix: V2 (blind 70 %): "asking about her campaign" was a filler; now a no-rivalry reading of the same praise
-    // why: work ← both men have jobs in the talk (campaign manager, the chief), so a work-talk contest fits; cheer her
-    //   up ← the praise heard as plain kindness (the polite frame), the "I said my thing first" contest missed
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', reveals: ['first', 'manor'], seg: [77.5, 114],
-      stem: 'At dinner, what keeps happening between Ben and Dave?',
-      choices: ['They compete over who can praise Leslie more', 'They take turns praising Leslie to cheer her up',
-                'They compete over whose job sounds more impressive'], a: 0,
-      cue: 'Leslie へのほめ言葉の重ね方と、あだ名の話。',
-      said: '二人で Leslie をほめ合い、彼は「先に言ったのは僕」と言う。あだ名でも張り合う。',
-      mean: '表面は感じよく、Leslie の前でどちらが上かを争っている。',
-      trap: 'campaign や仕事の語が多いが、話の中心は Leslie をほめる順番と中身。',
-      use: 'Okay, okay, you win this one.（はいはい、今回は君の勝ち）' },
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', reveals: ['first'], seg: [77.5, 114],
+      stem: 'What do Ben and Dave keep doing at dinner?',
+      ja: '夕食の間、ベンとデイブは何をくり返している？',
+      choices: ['Trying to praise Leslie more', 'Talking about their own jobs', 'Planning Leslie’s campaign'], a: 0,
+      choicesJa: ['レスリーをもっとほめようと張り合う', '自分の仕事の話をする', 'レスリーの選挙の計画を立てる'],
+      cue: 'レスリーへのほめ言葉の重ね方',
+      said: '二人でレスリーをほめ合い、デイブは「先に言ったのは僕」と言う。',
+      mean: '感じよく話しながら、レスリーの前でどちらが上かを競っている。',
+      trap: 'campaign（選挙）の話が多いが、中心はレスリーをほめる順番と中身。',
+      use: 'Okay, you win this one.（はいはい、今回は君の勝ち）' },
 
-    // R fix: V2 (blind 50 %): "feel free to tell her" was weak; now a polite-doubt reading
-    // why: repeat ← the literal reading: "say that again" = もう一度言って; only being nice ← a modest reply to praise
-    //   (the 謙遜 frame); refuted by "If anything, I'm holding her back"
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'sayagain', seg: [86.8, 92.3],
-      stem: 'When Ben answers Dave’s compliment about Leslie, what does he mean?',
-      choices: ['I couldn’t agree with you more', 'Could you say that one more time?',
-                'You’re only saying that to be nice'], a: 0,
-      cue: '「smart lady」への返事、最初のひと言。',
+      stem: 'Ben says, “*You can say that again*.” What does he mean?',
+      ja: 'ベンの「You can say that again」はどういう意味？',
+      choices: ['I agree with you', 'Please say it again', 'You are just being nice'], a: 0,
+      choicesJa: ['まったくそのとおり', 'もう一度言って', 'お世辞でしょ'],
+      cue: '「smart lady」への返事',
       line: 'you’re a real smart lady. — Oh, *you can say that again*. If anything, I’m holding her back.',
-      said: '「頭のいい人だ」に「まったくだ。むしろ僕が足を引っ張ってる」と返す。',
-      mean: 'You can say that again ＝ 大賛成という決まり文句。',
-      trap: 'say that again を「もう一度言って」と文字通り取りやすい。決まった形で覚える。',
-      use: 'Hot today! — You can say that again.（暑いね！—本当に）' },
+      said: '「頭のいい人だ」に「まったくだ。むしろ僕が足を引っぱってる」と返す。',
+      mean: 'You can say that again ＝ まったくそのとおり。強く賛成する決まり文句。',
+      trap: '文字どおりの「もう一度言って」と思いやすい。このあと話を続けている。',
+      use: 'Hot today! — You can say that again.（暑いね！—ほんとに）' },
 
-    // R fix: V2 (blind 80 %): "praise back" was weak; now a "Ben copied me" reading of "my thing first"
-    // why: cut in ← "my thing" heard as an unfinished compliment; copied ← "my thing… first" heard as "that was my
-    //   line" (Ben's words differ: "holding her back")
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'first', seg: [88, 95.2],
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'first', seg: [88, 95.2], retired: true,
       stem: 'Why is Dave’s “I said my thing first” funny?',
       choices: ['He treats praising Leslie as a contest with Ben', 'He claims Ben copied his compliment word for word',
                 'He complains that Ben cut in before he finished'], a: 0,
@@ -88,117 +82,103 @@ export const daveReturns: Clip = {
       trap: 'first を話の順番と取ると割り込みに聞こえる。彼の文は終わっていた。',
       use: 'Hey, that was my idea first!（それ、先に言ったの僕だよ！）' },
 
-    // R fix: V2 (blind 85 %, mostly s1's stem; s1 now reveals `endorse`): "report a problem" was weak; now a
-    //   campaign-event near miss
-    // why: party ← "the chief's retirement thing" was mentioned earlier; event ← "campaign" + the chief, the ask
-    //   heard as an invitation
     { id: 'd3', skill: 'detail', level: 'B1', point: 'endorse', seg: [94.5, 99.5],
-      stem: 'Why were Leslie and Ben at the police station today?',
-      choices: ['To ask the chief to back Leslie’s campaign', 'To invite the chief to a campaign event',
-                'To help plan the chief’s retirement party'], a: 0,
-      cue: '「police station」のあと、chief の名前に続く語。',
+      stem: 'Why were they at the police station today?',
+      ja: '今日、二人が警察署にいたのはなぜ？',
+      choices: ['To get the chief’s support', 'To invite the chief to dinner', 'To plan the chief’s party'], a: 0,
+      choicesJa: ['署長に応援してもらうため', '署長を夕食に誘うため', '署長のパーティーを計画するため'],
+      cue: '「police station」のあと',
       line: 'that’s why we were at the police station today. We’re trying to get *Chief Trumple’s endorsement*.',
-      said: '今日警察署にいたのは、署長に推薦してもらうためだったと話す。',
-      mean: 'endorsement ＝ 支持・推薦。選挙で有力な人に応援してもらうこと。',
-      trap: '退職の話が前に出ていて引かれやすい。警察署に行った目的は選挙の応援。',
-      use: 'Would you be willing to back me?（応援してもらえますか）' },
+      said: '「今日警察署にいたのはそのため。署長の推薦をもらおうとしてるの」と話す。',
+      mean: 'endorsement ＝ 推薦・応援。選挙で有名な人に応援してもらうこと。',
+      trap: '署長の退職パーティーの話が前に出るので、引かれやすい。',
+      use: 'Can you support my plan?（私の案を応援してもらえますか）' },
 
-    // why: I'll ← 'd and 'll both shrink to a light sound after I; I ← the 'd is barely there; I've ← a "v" read
-    //   into the same light sound before "probably"
-    // R fix: C5: the stem ("get him to endorse you") states d3's key, so s1 reveals `endorse`
     { id: 's1', skill: 'sound', level: 'B2', point: 'idprob', reveals: ['endorse'], seg: [99, 102.3],
       stem: 'Fill the gap: “___ get him to endorse you.”',
-      choices: ['I’ll probably', 'I’d probably', 'I probably', 'I’ve probably'], a: 1,
-      cue: '「buddy of mine」の直後、I のすぐあとの小さな音。',
+      ja: '「___ get him to endorse you.」の空所は？',
+      choices: ['I’ll probably', 'I’d probably', 'I probably'], a: 1,
+      choicesJa: ['たぶん〜する', '（頼めば）たぶん〜できる', 'たぶん〜した'],
+      cue: '「buddy of mine」のすぐあと',
       line: 'he was a buddy of mine. *I’d probably* get him to endorse you.',
-      said: '「署長は友だちだ。たぶん推薦させられる」と言う。I’d の d は軽い。',
-      mean: 'I’d ＝ I would。「頼めばたぶん」という仮の話。',
-      trap: 'd が小さく I’ll や I にも聞こえる。後ろが get なら would か will。',
+      said: '「署長は友だちだった。頼めばたぶん推薦してもらえる」と言う。',
+      mean: 'I’d ＝ I would。「頼めばたぶん」という仮の話。d は小さく短い。',
+      trap: 'd が小さいので I’ll や I と聞こえやすい。「アイド」の d を聞く。',
       use: 'I’d probably take the train.（たぶん電車にするかな）' },
 
-    // R fix: V2 (blind 55 %): rebuilt as a 2×2 (turns down / laughs off × tells Ben / keeps it from him)
-    // why: keeps it ← she says nothing to Ben until the very end, so hiding it fits; laughs off ← "What did you just
-    //   say?" heard as a light reply (refuted by "why would you…" and "cannot bring this up at all")
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'leslie', reveals: ['refuse', 'caughtup', 'unaware'], seg: [117, 236],
-      stem: 'Over the rest of the evening, how does Leslie handle Dave’s feelings?',
-      choices: ['She turns him down, then tells Ben about it', 'She turns him down, and keeps it from Ben',
-                'She laughs it off, then tells Ben about it'], a: 0,
-      cue: '彼への返事の強さと、最後に Ben に話すこと。',
-      said: '今は無理と断り、外への誘いも断る。最後に Ben に彼の気持ちを話す。',
-      mean: '元恋人の気持ちをはっきり断り、今の恋人に隠さず伝える流れ。',
-      trap: 'しばらく Ben に黙っているので隠すように見えるが、Ben がいない間だっただけ。',
-      use: 'I need to tell you something.（話しておきたいことがあるの）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['unaware', 'refuse'], seg: [117.6, 147.5],
+      stem: 'What happens while Ben is in the bathroom?',
+      ja: 'ベンがトイレに行っている間に何が起こる？',
+      choices: ['Dave says he still loves Leslie', 'Dave asks Leslie for a job', 'Dave says he is moving back'], a: 0,
+      choicesJa: ['デイブが「まだ好きだ」と言う', 'デイブがレスリーに仕事を頼む', 'デイブが「戻ってくる」と言う'],
+      cue: 'レスリーの「Did you just say」',
+      line: 'Did you just say you were *still in love with me*?',
+      said: 'デイブが「まだ好きだ」と言い、レスリーが「今なんて言った？」と聞き返す。',
+      mean: 'still in love with 〜 ＝ まだ〜を好き。元恋人の告白で、レスリーは困る。',
+      trap: '戻ってくる話はあとで出る。ここはベンがいない間の告白。',
+      use: 'Did you just say that?（今、そう言った？）' },
 
-    // R fix: V2 (blind 50 %): the key was the only "slip" choice; all three are now parallel "Trying to…"
-    // why: misheard ← "nothing was said" sounds like a claim she heard something else; reaction ← a quick denial
-    //   after a big line can sound like a test
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [120.2, 131],
-      stem: 'When Leslie asks what he just said, what is Dave doing?',
-      choices: ['Trying to take back what he said', 'Trying to say she misheard his words',
-                'Trying to see how she would react'], a: 0,
-      cue: 'Nothing のくり返しと、そのあとの理由。',
-      line: 'Nothing, I didn’t, *nothing was said*. … — *Because it’s accurate.*',
-      said: '「何も言ってない」とくり返し、なぜ今と聞かれると「本当だから」と答える。',
-      mean: '口に出た言葉をなかったことにしようとして、すぐ認めてしまう。',
-      trap: '別の語と言うなら言いかえるはず。主語のない言い方は責任を避けるとき。',
+      stem: 'Dave says, “*Nothing was said*.” What is he doing?',
+      ja: 'デイブの「Nothing was said」は何をしている？',
+      choices: ['Hiding what he just said', 'Saying it once more', 'Asking Ben to listen'], a: 0,
+      choicesJa: ['今言ったことをごまかしている', 'もう一度言っている', 'ベンに聞いてと頼んでいる'],
+      cue: '「just say?」のあと',
+      line: 'What did you just say? — Nothing, I didn’t, *nothing was said*.',
+      said: '「今なんて？」と聞かれ、「何も、言ってない、何も言われてない」と答える。',
+      mean: '口に出たことを、なかったことにしようとしている。あわてている。',
+      trap: 'said が聞こえて、もう一度言うと思いやすい。Nothing のくり返しを聞く。',
       use: 'Forget I said anything.（今のは聞かなかったことにして）' },
 
-    // R fix: V2 (blind 65 %): "amused" was weak; now a literal "What did you…" (didn't hear) reading. C5: the trap
-    //   names f2's "at all", so a1 reveals `bringup`
-    // why: flattered ← "cannot bring this up… when my boyfriend is here" can sound like "later, not now"; confused ←
-    //   "why would you…" heard as not following (refuted: "tell me *that*" shows she heard)
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'refuse', reveals: ['bringup'], seg: [127.4, 141.3],
-      stem: 'How does Leslie feel about Dave choosing this moment?',
-      choices: ['Upset that he chose a time with Ben so near', 'Flattered, though she wishes he had waited',
-                'Confused, since she didn’t catch what he said'], a: 0,
-      cue: '「why would you」のあと、時と場所を表す語。',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'refuse', reveals: ['bringup'], seg: [126.4, 132],
+      stem: 'How does Leslie feel about Dave’s words?',
+      ja: 'デイブの言葉に、レスリーはどんな気持ち？',
+      choices: ['Upset that he said it now', 'Happy that he said it', 'Glad Ben was not there'], a: 0,
+      choicesJa: ['今それを言われて困っている', '言ってくれてうれしい', 'ベンがいなくてよかった'],
+      cue: '「why would you」のあと',
       line: 'Dave, why would you tell me that *here and now*?',
-      said: '「なぜ今ここで言うの」と聞き、話をさせてという頼みも断る。',
-      mean: '恋人がいる場で言われたことに困り、怒っている。喜んではいない。',
-      trap: 'when my boyfriend is here を「あとでなら」と取りやすい。at all は全面的な No。',
-      use: 'Why would you bring that up now?（なんで今その話をするの）' },
+      said: '「デイブ、なんで今ここでそれを言うの？」と言う。',
+      mean: 'Why would you 〜? ＝ なんで〜するの？ 責める気持ちのある聞き方。',
+      trap: '告白なので、うれしいと思いやすい。here and now（今ここで）を責めている。',
+      use: 'Why would you say that?（なんでそんなこと言うの？）' },
 
-    // why: leaving ← he says later he leaves tomorrow, a natural "last chance" reason; asked ← Leslie spoke to him
-    //   just before, so it can sound like she asked for it
     { id: 'd4', skill: 'detail', level: 'B1', point: 'whynow', seg: [129.4, 136],
-      stem: 'What reason does Dave give for picking this moment?',
-      choices: ['Ben has stepped away from the table', 'He flies out of town tomorrow', 'Leslie asked him how he felt'], a: 0,
-      cue: '「accurate」の次の「and because」のあと。',
+      stem: 'Why does Dave pick this moment?',
+      ja: 'デイブがこのタイミングを選んだのはなぜ？',
+      choices: ['Ben is not at the table', 'He flies out tomorrow', 'Leslie asked him to'], a: 0,
+      choicesJa: ['ベンが席にいないから', '明日飛行機で発つから', 'レスリーに聞かれたから'],
+      cue: '「and because」のあと',
       line: 'And because *he’s not here right now*, so I thought this would be a good time.',
-      said: '「彼が今いないから、いいタイミングだと思った」と理由を足す。',
-      mean: 'he は Ben。恋人がいない間をねらった、と自分で言っている。',
-      trap: '明日発つ話はあとで出るので理由に入れやすい。and because のあとが理由。',
-      use: 'Since you’re here, can I ask something?（せっかくだから聞いていい？）' },
+      said: '「彼が今いないから、いいタイミングだと思った」と言う。',
+      mean: 'he はベン。a good time ＝ いいタイミング。恋人がいない間をねらった。',
+      trap: '明日発つ話はあとで出る。and because のあとが理由。',
+      use: 'Is this a good time?（今、大丈夫ですか）' },
 
-    // why: one ← "just" before it sounds like a tiny request; fifteen/fifty ← -teen/-ty and "five" share the f
     { id: 'n3', skill: 'number', level: 'B1', point: 'minutes', seg: [135.2, 138.2], keep: true,
       stem: 'How long does Dave ask to talk to her?',
+      ja: 'デイブは何分話したいと頼む？',
       choices: ['One minute', 'Five minutes', 'Fifteen minutes', 'Fifty minutes'], a: 1,
-      cue: '文の最後、minutes の直前。',
+      choicesJa: ['1分', '5分', '15分', '50分'],
+      cue: '文の最後',
       line: 'Can I just please talk to you about this for *five minutes*?',
       said: '「この話を5分だけさせてくれない？」と頼む。',
-      mean: 'for five minutes ＝ 5分間。短い時間を出して頼みを小さく見せている。',
-      trap: 'five の v は弱く、fif- の数に聞こえやすい。-teen なら後ろが長く強い。',
-      use: 'Can I have five minutes of your time?（5分だけいいですか）' },
+      mean: 'for five minutes ＝ 5分間。短い時間を出して、頼みを小さく見せている。',
+      trap: 'five の v は弱く、fif- に聞こえやすい。fifteen なら後ろが長くのびる。',
+      use: 'Can I have five minutes?（5分だけいいですか）' },
 
-    // why: loudly ← "up" read as volume (speak up); drag out ← "this" heard as the talk already going on
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [137.6, 141.3],
-      stem: 'What does Leslie tell Dave not to do while Ben is around?',
-      choices: ['Raise the subject at all', 'Talk about it so loudly', 'Drag the talk out so long'], a: 0,
-      cue: '「cannot」のすぐあとの動詞のかたまり。',
+      stem: 'What does “*bring this up*” mean?',
+      ja: '「bring this up」はどういう意味？',
+      choices: ['Talk about this', 'Say this loudly', 'Carry this upstairs'], a: 0,
+      choicesJa: ['この話をする', 'これを大声で言う', 'これを上の階に運ぶ'],
+      cue: '「cannot」のすぐあと',
       line: 'No, you cannot *bring this up at all* when my boyfriend is here.',
-      said: '「恋人がいるときに、この話を出すのは絶対だめ」と言う。',
-      mean: 'bring up ＝ 話題を持ち出す。at all で「少しでも」と強めている。',
-      trap: 'up を「声を上げる」と取りやすい。bring … up はまとめて「話に出す」。',
+      said: '「恋人がいるときに、この話は絶対しないで」と言う。',
+      mean: 'bring up ＝ 話題に出す。at all で「少しでも」と強めている。',
+      trap: 'up から「上へ運ぶ」と思いやすい。bring 〜 up でひとまとまり。',
       use: 'Please don’t bring it up at dinner.（夕食のときにその話はしないで）' },
 
-    // R fix: V2 (blind 65 %): "a firm no he will accept" made the key the only active reading; now a "later" near
-    //   miss (right: he works around it; wrong: he wants it now)
-    // why: another day ← "not… when my boyfriend is here" heard as "not now, later"; voice down ← "when my boyfriend
-    //   is here" heard as "be discreet", a request to lower the voice
-    // anchor: 141.0–146.1 s "we'll get rid of him, that's a good call", then "if we leave now while he's in the Whiz
-    //   Palace": he plans around Ben instead of dropping it or whispering
-    { id: 'nt1', skill: 'pragma', level: 'C2', point: 'getrid', seg: [137.6, 147.2],
+    { id: 'nt1', skill: 'pragma', level: 'C2', point: 'getrid', seg: [137.6, 147.2], retired: true,
       stem: 'How does Dave take Leslie’s “not… when my boyfriend is here”?',
       choices: ['As a timing issue he can get around', 'As a sign to bring it up another day',
                 'As a warning to keep his voice down'], a: 0,
@@ -209,21 +189,17 @@ export const daveReturns: Clip = {
       trap: '「今はだめ」を「また今度」と取りやすい。返事は言葉の形より、次に何をしようとするかで聞く。',
       use: 'Not now. — Okay, later then?（今はだめ。—じゃあ、あとで？）' },
 
-    // R fix: S1/N1: "Okay, ___" put the disputed "well"/"we'll" inside the gap; the stem now asks for the 4 words
-    //   before "that's a good call". S4: the segment began inside "here"; now 140.5 s
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [140.5, 142.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [140, 143.2],
       stem: 'Type the 4 words Dave says before “that’s a good call.”', answer: 'get rid of him',
-      cue: '「good call」の直前、つながる4語。',
+      ja: '「that’s a good call」の前の4語を書こう',
+      cue: '「good call」の直前',
       line: 'Okay… *get rid of him*, that’s a good call.',
-      said: '「じゃあ彼を追い払おう、いい考えだ」と言う。',
-      mean: 'get rid of ＝ 追い払う・処分する。rid of がつながる。',
-      trap: 'him は h が消えて「イム」に近く、of にくっつく。ひとかたまりで覚える。',
+      said: '「じゃあ、彼を追い払おう。いい考えだ」と言う。',
+      mean: 'get rid of 〜 ＝ 〜を追い払う・捨てる。ふつうは物に使う。',
+      trap: 'him の h が消えて「イム」になり、of にくっつく。「ゲリダヴィム」と聞こえる。',
       use: 'I need to get rid of old clothes.（古い服を処分しなきゃ）' },
 
-    // R fix: V2 (blind 55 %): the key was the only choice naming the other man; all three now name a target
-    // why: tease ← "funny name" sounds like making fun of Leslie's nickname; long time ← coming back from the
-    //   bathroom often comes with an excuse
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'manor', seg: [146.8, 157.2],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'manor', seg: [146.8, 157.2], retired: true,
       stem: 'Why does Ben come back with a new name for the bathroom?',
       choices: ['To top Dave, who knew Leslie’s name for it', 'To tease Leslie about her silly name for it',
                 'To joke to them about how long he was gone'], a: 0,
@@ -234,45 +210,43 @@ export const daveReturns: Clip = {
       trap: 'funny name をからかいと取りやすい。another と I thought of は手柄の話。',
       use: 'I came up with that one myself.（それは自分で考えたんだ）' },
 
-    // why: sixteen/sixty ← -teen/-ty on "six"; "a lot of bad guys" just before makes a bigger number feel right
     { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [159.8, 165.1], keep: true,
       stem: 'How many bad guys does Dave say he caught?',
+      ja: 'デイブは悪いやつを何人捕まえたと言う？',
       choices: ['About six', 'About sixteen', 'About sixty'], a: 0,
-      cue: '「a lot of」のあと、言い直した数。',
+      choicesJa: ['6人くらい', '16人くらい', '60人くらい'],
+      cue: '「a lot of」のあと',
       line: 'caught a lot of bad guys. *About six* bad guys.',
       said: '「悪いやつをたくさん捕まえた。6人くらい」と言う。',
-      mean: 'a lot と言ったあとの6人は少なく、言い直しが笑いになる。',
-      trap: 'a lot のあとで大きな数を期待しやすい。six のすぐあとに bad が来る。',
-      use: 'I read a lot. Well, about six books.（たくさん読んだ。まあ6冊）' },
+      mean: 'about ＝ 〜くらい。a lot と言ったあとの6人は少なく、そこがおかしい。',
+      trap: 'a lot のあとなので大きな数を待ちやすい。six のすぐあとに bad が来る。',
+      use: 'It takes about six minutes.（6分くらいかかります）' },
 
-    // why: 12:50 ← -teen/-ty; 12:05 ← "twelve-oh-five" with the oh lost; 2:15 ← "twelve" heard as "two"
     { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [165.2, 171], keep: true,
       stem: 'What time is Dave’s flight tomorrow?',
+      ja: 'デイブの明日の便は何時？',
       choices: ['12:05', '12:15', '12:50', '2:15'], a: 1,
-      cue: '「flight」の直前の数字。',
+      choicesJa: ['12時5分', '12時15分', '12時50分', '2時15分'],
+      cue: '「flight」の前',
       line: 'I’m scheduled to leave tomorrow on the *12:15* flight',
-      said: '「明日12時15分の便で、ソルトレイク経由で発つ予定」と言う。',
-      mean: '時刻は twelve fifteen のように数を二つ並べて言う。',
-      trap: 'fifteen と fifty は似ている。-teen は後ろが強く長い。時刻は語尾に注意。',
+      said: '「明日12時15分の便で発つ予定」と言う。',
+      mean: '時刻は twelve fifteen のように、数を二つ並べて言う。',
+      trap: 'fifteen と fifty は似ている。fifteen は最後の「ティーン」が長い。',
       use: 'My train leaves at six fifteen.（電車は6時15分発です）' },
 
-    // why: party ← he said "just tonight for the chief's retirement thing" earlier; Leslie ← an ex "coming back"
-    //   sounds like coming back for her, but his stated reason is the job
-    { id: 'd5', skill: 'detail', level: 'B2', point: 'interview', seg: [172.4, 179.4],
-      stem: 'What does Dave now say this trip is mainly for?',
-      choices: ['A job interview for police chief', 'The chief’s retirement party', 'A visit with Leslie and Ben'], a: 0,
-      cue: '「mainly here to」のあと。',
+    { id: 'd5', skill: 'infer', level: 'B2', point: 'interview', seg: [172.4, 179.4],
+      stem: 'Why is Dave really in town?',
+      ja: 'デイブが町に来た本当の理由は？',
+      choices: ['For a job interview', 'For the chief’s party', 'To see Leslie again'], a: 0,
+      choicesJa: ['仕事の面接のため', '署長のパーティーのため', 'レスリーにまた会うため'],
+      cue: '「mainly here to」のあと',
       line: 'But I may be coming back. … I’m *mainly here to interview* for Trumple’s job',
-      said: '「戻るかも。主に署長の面接で来た」と明かす。最初は退職パーティーと言っていた。',
-      mean: 'mainly で、本当の目的を初めて言ったと分かる。',
-      trap: '前に聞いたパーティーに引かれやすい。now と mainly で、後の話が本題。',
+      said: '「戻ってくるかも。主に署長の仕事の面接で来た」と言う。',
+      mean: 'mainly ＝ 主に。最初はパーティーと言っていたが、本当の目的は面接。',
+      trap: '前に聞いた退職パーティーに引かれやすい。mainly のあとが本当の目的。',
       use: 'I’m mainly here for work.（主に仕事で来ています）' },
 
-    // why: tired ← the "you look like you could use…" frame heard (she looks like she needs air); everyone ← "go
-    //   outside" just before heard as a call for a group break
-    // anchor: 189.0–198.0 s "I'm gonna… go outside. You look like *I* could use some company", two "What?"s, then
-    //   "Would you like to step outside with me": the frame "you look like you could use" has his own need in it
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'company', seg: [188.8, 198.2],
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'company', seg: [188.8, 198.2], retired: true,
       stem: 'Why does Dave’s offer of company get two puzzled “What?”s?',
       choices: ['His words say he needs her, not she him', 'He says Leslie looks tired and needs air',
                 'He seems to invite everyone outside'], a: 0,
@@ -283,26 +257,19 @@ export const daveReturns: Clip = {
       trap: '決まった形に合わせて you と聞きたくなる。言いそこないは、ずれた一語に本音が出る。',
       use: 'You look like you could use a coffee.（コーヒーが要りそうな顔だね）' },
 
-    // R fix: V2 (blind 70 %): rebalanced to no / not now / yes-but-short
-    // why: agreeing ← "we're good" read as OK/いいよ (the Japanese frame); later ← listing past topics can sound
-    //   like "let's continue another time"
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'caughtup', reveals: ['six'], seg: [197.2, 205.6],
-      stem: 'What is Leslie doing when she lists what they already talked about?',
-      choices: ['Turning down his offer to step outside', 'Putting off his offer until another day',
-                'Accepting his offer, but for a short talk'], a: 0,
-      cue: '最後のひと言と、そのあとの彼女の No。',
-      line: '*We have caught up.* We talked about San Diego and about the six bad guys. *I think we’re good.*',
-      said: '「近況はもう話した。サンディエゴと悪いやつ6人の話。もう十分」と言う。',
-      mean: 'we’re good ＝ もう要らない。誘いを角を立てずに断っている。',
-      trap: 'good を「いいよ」と取ると賛成に聞こえる。すぐ後の No で確かめる。',
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'caughtup', reveals: ['six'], seg: [197.2, 205.6],
+      stem: 'Leslie says, “*I think we’re good*.” What does she mean?',
+      ja: 'レスリーの「I think we’re good」はどういう意味？',
+      choices: ['No, thank you', 'Yes, let’s go', 'We are good friends'], a: 0,
+      choicesJa: ['いいえ、けっこうです', 'うん、行こう', '私たちは仲よし'],
+      cue: '「catch up?」への答えの最後',
+      line: 'Would you like to step outside with me and catch up? — *We have caught up.* … *I think we’re good.*',
+      said: '「外で話さない？」に「もう話した。もう十分」と答える。',
+      mean: 'I think we’re good ＝ もう大丈夫・けっこうです。やわらかく断る言い方。',
+      trap: 'good から「いいよ」と賛成に思いやすい。前の一言で断っている。',
       use: 'More water? — No, I think I’m good.（お水は？—大丈夫です）' },
 
-    // R fix: V2 (blind 70 %): "proudly showing" was easy to rule out; now the plain sincere reading (just explaining)
-    // why: just explaining ← sincerity flip: the words do give a reason, and "I already said I'm gonna go" is true;
-    //   pressure ← announcing he will go out can sound like a last push for her to follow
-    // anchor: 203.3–211.1 s "No, I don't want that.", then "I already said I'm gonna go, so I guess I'm a man of my
-    //   word, I'm gonna go": he goes alone and dresses it up as a promise kept
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'word', seg: [203, 212.2],
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'word', seg: [203, 212.2], retired: true,
       stem: 'After her “No”, what is Dave’s “man of my word” line really doing?',
       choices: ['Saving face after being turned down', 'Simply explaining why he’s still going out',
                 'Pushing her to come outside after all'], a: 0,
@@ -313,32 +280,40 @@ export const daveReturns: Clip = {
       trap: '行く理由の説明と取りやすい。断られた直後に大げさな言葉が出たら、照れかくしを疑う。',
       use: 'Well, I said I’d leave, so I’m leaving.（まあ、帰るって言ったし帰るよ）' },
 
-    // R fix: V2 (blind 75 %): the key was the only choice about a secret; all three are now things Dave told or asked
-    //   Leslie. C5: "may move back" hints d5's job, so i4 reveals `interview`
-    // why: move back ← Ben heard it himself ("Dude, that's amazing", 179 s); outside ← Ben was there for it (a second
-    //   "What?", 195 s); in the segment, his "What's that?" shows only the love line is news
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'unaware', reveals: ['interview'], seg: [214.9, 224.1],
-      stem: 'When Ben asks how he’s doing, what is he still unaware of?',
-      choices: ['That Dave told Leslie he still loves her', 'That Dave told Leslie he may move back',
-                'That Dave asked Leslie to step outside'], a: 0,
-      cue: 'Ben の質問のあと、Leslie が言う「While you were…」。',
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'time', seg: [208.5, 214.6],
+      stem: 'What does “*Take your time*” mean here?',
+      ja: 'ここでの「Take your time」はどういう意味？',
+      choices: ['There is no need to hurry', 'Please come back very soon', 'It is time to go now'], a: 0,
+      choicesJa: ['急がなくていいよ', 'すぐに戻ってきて', 'もう行く時間だよ'],
+      cue: '「I’m gonna go」のあと',
+      line: 'so I guess I’m a man of my word, I’m gonna go. — *Take your time.*',
+      said: '外に出るデイブに「ごゆっくり」と言う。',
+      mean: 'Take your time ＝ ごゆっくり・急がなくていい。お店や仕事でもよく使う。',
+      trap: 'time から「時間だ」と思いやすい。take your time は「自分のペースで」。',
+      use: 'Take your time. There’s no rush.（ごゆっくり。急がなくていいですよ）' },
+
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'unaware', reveals: ['interview', 'leslie'], seg: [214.9, 224.1],
+      stem: 'What doesn’t Ben know yet?',
+      ja: 'ベンがまだ知らないことは？',
+      choices: ['Dave still loves Leslie', 'Dave may move back', 'Dave asked Leslie outside'], a: 0,
+      choicesJa: ['デイブがまだレスリーを好きなこと', 'デイブが戻ってくるかもしれないこと', 'デイブがレスリーを外に誘ったこと'],
+      cue: 'レスリーの「While you were」',
       line: 'I feel like we’re getting along pretty well. — … *While you were in the bathroom, he said he was still in love with me.*',
-      said: 'Ben は「うまくやれてる」と言い、Leslie は「トイレの間にまだ好きと言われた」と話す。',
-      mean: 'Ben のいない間の告白で、Ben は知らずに仲良くしようとしていた。',
-      trap: '戻る話や外への誘いは Ben もその場で聞いた。いない間のことを考える。',
+      said: 'ベンは「うまくやれてる」と言い、レスリーは「トイレの間に、まだ好きと言われた」と話す。',
+      mean: 'get along ＝ 仲よくやる。ベンは告白を知らずに、仲よくしようとしていた。',
+      trap: '戻る話や外への誘いは、ベンもその場で聞いていた。いない間のことを考える。',
       use: 'While you were out, someone called.（留守の間に電話があったよ）' },
 
-    // why: jealous ← "He's in love with you" is the first thing he repeats; calm ← "Can you just not freak out?"
-    //   heard as Leslie misreading a calm Ben
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'freak', seg: [223.8, 236],
-      stem: 'How does Ben take Leslie’s news?',
-      choices: ['Alarmed, though he says he isn’t', 'Jealous, though he says he isn’t',
-                'Calm, though Leslie thinks he isn’t'], a: 0,
-      cue: '「he’s a cop」のあとの一言と、同じ言葉のくり返し。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'freak', seg: [224.5, 236],
+      stem: 'How does Ben feel about the news?',
+      ja: 'その話を聞いて、ベンはどんな気持ち？',
+      choices: ['Scared, but says he’s fine', 'Jealous, but says he’s fine', 'Calm, and really is fine'], a: 0,
+      choicesJa: ['こわいのに、平気だと言う', 'やきもちなのに、平気だと言う', '落ち着いていて、本当に平気'],
+      cue: '「he’s a cop」のあと',
       line: 'he’s a cop. He’s in love with you and *he has a gun*? — … *I’m not freaking out.*',
-      said: '「警官で、君が好きで、銃もある」と言い、「慌ててない」とくり返す。',
-      mean: '慌てていないと言いつつ銃の心配をしている。言葉と様子が反対。',
-      trap: 'in love と聞くとやきもちと取りやすいが、話の山は銃。否定のくり返しは逆の気持ち。',
+      said: '「警官で、君が好きで、銃も持ってる？」と言い、「あわててない」とくり返す。',
+      mean: 'freak out ＝ ひどくあわてる。あわてていないと言いながら、銃をこわがっている。',
+      trap: 'in love から、やきもちと思いやすい。話の中心は gun（銃）。',
       use: 'Don’t freak out, but I lost the keys.（落ち着いて聞いて、鍵なくした）' },
   ]
 };

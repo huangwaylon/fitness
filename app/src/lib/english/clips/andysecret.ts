@@ -1,16 +1,11 @@
+// A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 4, new 1
 // “Can Andy keep a secret? | Parks and Recreation” (the official Parks and Recreation channel, Season 6): April
 // spots a secret Andy is keeping and pushes him all day; he invents a sick Larry, then a run of silly fake secrets,
 // until he gives in, and the real news is announced to everyone before he can tell her.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈247 s. Untested: 2.9–12.5 s (an
-// unnamed speaker's auction plan), 28 s (“hours’ worth of work” vs “hours with the work”), 79–82 s (a cutaway),
-// 117–122 s (Larry “passing” the ring), 126–131 s (the grail reference), 143.4 s (“Why? Ben is dying” vs “lie van is
-// dying”), 152–157 s (“Chinatown in France”), 164 s (Tom's “butt”), 207–209 s (who says “Don't try to get it out of
-// me”), 242 s (“a little freaked out” vs “all freaked out”).
-// EAR CHECK: 40.9 s nt1 — the stress in “You're acting weird” falls on “You're” (contrast with “I'm not”), not on
-//   “weird” or “acting” (ship only once confirmed)
-// REVIEW 2026-11-16: pass 10, fix 14, drop 0, new 0; ear checks 1
-//   Open: i4 and g2 name Leslie, who isn't named in the audio near those lines (the voice is hers; kept, as in the
-//   other Parks banks).
+// Segments from the captions, words from whisper (2026-11-16; whisper runs ≈ 5 s early after 170 s). Talk ends at
+// ≈247 s. Untested: 2.9–12.5 s, 28 s, 79–82 s, 117–131 s, 143.4 s, 152–157 s, 164 s, 207–209 s, 242 s (the sources
+// differ, or show lore and toilet jokes).
+// EAR CHECK: 40.9 s nt1 (retired) — the stress in “You're acting weird” falls on “You're”
 import type { Clip } from '../types.ts';
 
 export const andySecret: Clip = {
@@ -19,23 +14,19 @@ export const andySecret: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 70 %) and §9.5: "if you have a secret, you had to tell me" isn't grammatical, so only two
-    //   choices were live; the gap now takes the subject, and all three fit
-    // why: you'd have to ← an extra weak d is easy to imagine before "have"; you've got to ← "-v gotta" and "have-ta"
-    //   share the weak "ta" ending
     { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [30.55, 34.2],
       stem: 'Fill the gap: “Andy, if you have a secret, ___ tell me.”',
+      ja: '「Andy, if you have a secret, ___ tell me.」の空所は？',
       choices: ['you have to', 'you’d have to', 'you’ve got to'], a: 0,
-      cue: 'secret のあと、tell の前の短い2語。',
+      choicesJa: ['〜しなければならない', '（もしそうなら）〜しないと', '〜しなきゃだめ'],
+      cue: '「secret」のあと',
       line: 'Andy, if you have a secret, *you have to* tell me.',
       said: '「秘密があるなら、私に言わなきゃだめ」と言う。',
-      mean: 'have to が「ハフタ」と縮まる。v が f に変わり、to は弱い「タ」になる。',
-      trap: 'you’d なら「ユードゥ」、you’ve got なら「ガ」が入る。you の直後が f の音か聞く。',
+      mean: 'have to ＝ 〜しなければならない。「ハフタ」と縮み、to は小さく「タ」になる。',
+      trap: 'you’d なら「ユード」、you’ve got なら「ガ」の音が入る。「ハフタ」なら have to。',
       use: 'You have to try this place.（この店、絶対行ってみて）' },
 
-    // why: twice as many as Andy ← “twice” caught alone, as a count of her own secrets; doubles every problem ← the
-    //   “twice the trouble” pattern heard as a gripe about marriage
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'twice', seg: [31.7, 36.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'twice', seg: [31.7, 36.8], retired: true,
       stem: 'Why does April’s point about marriage get a laugh?',
       choices: ['She sees marriage as a way to collect more secrets', 'She admits she has twice as many secrets as Andy',
                 'She jokes that marriage doubles every problem'], a: 0,
@@ -46,28 +37,18 @@ export const andySecret: Clip = {
       trap: 'twice だけ拾うと数の話に聞こえる。何が2倍になるのか、後ろの名詞まで聞く。',
       use: 'That’s the whole point of a vacation.（それが休暇ってものでしょ）' },
 
-    // R fix: V2 (blind 75 %): "too busy at work" was a filler; now a half-admission, which "I don't have anything" refutes
-    // why: no trust ← a secret-and-denial fight usually turns on trust; half-admits ← "it is nothing" heard as "it's
-    //   nothing you need to know"
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'weird', seg: [31.7, 44.3],
-      stem: 'What does Andy’s answer to April show?',
-      choices: ['He denies more than she asked about', 'He feels hurt that she doesn’t trust him',
-                'He admits a secret but won’t share it'], a: 0,
-      cue: '「nothing」のあと、彼が自分から打ち消すこと。',
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'weird', seg: [32.3, 44.3],
+      stem: 'What does Andy’s answer show?',
+      ja: 'アンディの答えから何が分かる？',
+      choices: ['He is hiding something', 'He is hurt by April', 'He really has no secret'], a: 0,
+      choicesJa: ['何かを隠している', 'エイプリルに傷ついている', '本当に秘密はない'],
+      cue: '「nothing」のあとに打ち消すこと',
       line: 'Dude, it is nothing. I don’t have anything. *I’m not acting weird.*',
-      said: '「何でもない。変な態度もとってない」と、聞かれていない点まで打ち消す。',
-      mean: '責められていない点を自分から否定すると、隠し事があると言うのと同じ。',
-      trap: 'it is nothing を「言えない」と取りやすい。打ち消した中身が相手の言葉にあったか確かめる。',
-      use: 'I’m not upset. Why would I be upset?（怒ってないよ。なんで怒るの？）' },
+      said: '「何でもない。何もない。変な態度なんかとってない」と言う。',
+      mean: 'act weird ＝ 様子が変。聞かれていないことまで打ち消すのは、隠し事があるしるし。',
+      trap: '言葉どおり「秘密はない」と思いやすい。打ち消しが多すぎるのがヒント。',
+      use: 'Why are you acting so weird?（なんでそんなに様子が変なの？）' },
 
-    // anchor: 39.8–41.9 s “I'm not acting weird.” then “You're acting weird.”: “acting weird” repeats, so the only new
-    //   word, and the contrast, is the subject (I'm → You're)
-    // R fix: V2 (blind 70 %): only the key turned the charge back on April; all three now do, so only the stressed
-    //   word differs
-    // why: on “weird” ← the habit of stressing the last content word; on “acting” ← “acting” heard as “pretending”
-    //   (演技する)
-    // retired: the ear-check policy: a C2 stress item (the stress in “You're acting weird” on “You're”, 40.9 s); back after
-    //   the ear check
     { id: 'nt1', skill: 'sound', level: 'C2', point: 'weird', seg: [38.4, 42.2], retired: true,
       stem: 'After “I’m not acting weird,” where is the stress in Andy’s next line, and why?',
       choices: ['On “you’re”: the weirdness is hers, not his', 'On “weird”: she is the strange one, not him',
@@ -79,74 +60,77 @@ export const andySecret: Clip = {
       trap: '文末の語を強く読む癖だと weird に置きがち。くり返された語は弱く、入れ替わった語が強い。',
       use: 'I’m not late. You’re early.（僕が遅いんじゃない。君が早いんだ）' },
 
-    // why: 30 ← “a half hour” is the total, said first; 50 ← fifteen/fifty, the -teen stress is easy to lose
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'backwork', seg: [41.6, 45.6],
+      stem: 'Type: “Excuse me, I have to ___ now.” (4 words)', answer: 'get back to work',
+      ja: '「Excuse me, I have to ___ now.」の空所を書こう（4語）',
+      cue: '「You’re acting weird」のあと',
+      line: 'Excuse me, I have to *get back to work* now.',
+      said: '「失礼、もう仕事に戻らなきゃ」と言って話を終える。',
+      mean: 'get back to work ＝ 仕事に戻る。話を切り上げるときの便利な言い方。',
+      trap: 'get back がつながり「ゲッバック」と聞こえる。to は小さく短い。',
+      use: 'Sorry, I have to get back to work.（すみません、仕事に戻らないと）' },
+
     { id: 'n2', skill: 'number', level: 'B1', point: 'shower', seg: [47.8, 55.4],
-      stem: 'How long does April give Andy for the wet-nap shower?',
+      stem: 'How long does April give Andy for the car shower?',
+      ja: 'エイプリルは車での「シャワー」に何分あげる？',
       choices: ['15 minutes', '30 minutes', '50 minutes'], a: 0, keep: true,
-      cue: 'travel time のあと、もう一度出てくる時間。',
+      choicesJa: ['15分', '30分', '50分'],
+      cue: '「travel time」のあと',
       line: 'That gives us 15 minutes of travel time and *15 minutes* for you to take a wet nap shower',
       said: '「移動に15分、車でウェットティッシュのシャワーに15分」と割り振る。',
-      mean: '30分を15分ずつに分けている。シャワーは本物ではない。',
-      trap: 'fifteen は teen を強く長く、fifty は前を強く読む。最初の half hour は合計。',
+      mean: 'half hour（30分）を15分ずつに分けている。That gives us 〜 ＝ それで〜できる。',
+      trap: 'fifteen は「ティーン」が長く、fifty は前が強い。最初の half hour は合計。',
       use: 'That gives us ten minutes to eat.（それで食べる時間が10分できる）' },
 
-    // R fix: V2 (blind 50 %): the key was the longest and most specific; trimmed, and the others made as concrete
-    // why: serious change ← the Japanese frame: ところで before a real topic; apology ← a soft opener heard as 遠慮
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'also', seg: [47.8, 58.1],
-      stem: 'When April turns from the schedule to the secret, what does her first word do?',
-      choices: ['It slips the demand in as one more list item', 'It marks a sharp, serious change of subject',
-                'It softens the demand like a polite apology'], a: 0,
-      cue: 'シャワーの話の直後、文頭の短い一語。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'also', seg: [47.8, 58.1],
+      stem: 'What does April’s “*Also*” mean here?',
+      ja: 'エイプリルの「Also」はどういう意味？',
+      choices: ['And one more thing', 'Sorry to bother you', 'This is most important'], a: 0,
+      choicesJa: ['あと、もう一つ', 'じゃましてごめん', 'これがいちばん大事'],
+      cue: 'シャワーの話のすぐあと',
       line: 'Good, I need one. — *Also*, tell me your secret.',
-      said: '段取りを伝えたあと、「あと、秘密を教えて」と続ける。',
-      mean: 'also は予定の項目を足す語。大事な要求を、ついでの一項目のように混ぜている。',
-      trap: '話題を変える語は「ところで」と重く訳しがち。also は軽い追加で、その軽さがわざとらしい。',
+      said: '予定を伝えたあと、「あと、秘密を教えて」と続ける。',
+      mean: 'also ＝ あと・それから。大事な頼みを、予定の一つのように軽く混ぜている。',
+      trap: 'also を「〜も」とだけ覚えていると迷いやすい。文の頭なら「あと、もう一つ」。',
       use: 'Also, can you grab some milk?（あと、牛乳買ってきて）' },
 
-    // R fix: V2 (blind 60 %): "a promise" was the only reason tied to secrecy; the others are now secret-keeping reasons
-    //   too (and the key is no longer the shortest, for C7)
-    // why: spoil a surprise ← the usual reason to keep good news quiet; friend in trouble ← the secret is someone
-    //   else's, and Larry is next
     { id: 'd2', skill: 'detail', level: 'B1', point: 'promise', seg: [57.7, 62.2],
-      stem: 'Why does Andy say he won’t tell April?',
-      choices: ['He doesn’t want to break his promise', 'He doesn’t want to spoil a surprise',
-                'He doesn’t want to get a friend in trouble'], a: 0,
-      cue: '「don’t make me tell」の次の文。',
+      stem: 'Why won’t Andy tell April?',
+      ja: 'アンディがエイプリルに言わないのはなぜ？',
+      choices: ['To keep his promise', 'To keep a surprise', 'To protect a friend'], a: 0,
+      choicesJa: ['約束を守るため', 'サプライズを守るため', '友だちを守るため'],
+      cue: '「don’t make me tell」のあと',
       line: 'Babe, don’t make me tell. I don’t want to *break my promise*.',
       said: '「言わせないで。約束を破りたくないんだ」と断る。',
-      mean: 'break a promise ＝ 約束を破る。誰かに口止めされている、という理由。',
-      trap: '秘密と聞くと「驚かせたい」などを思いやすい。理由は I don’t want to のあとに来る。',
+      mean: 'break a promise ＝ 約束を破る。だれかに口止めされている、という理由。',
+      trap: '秘密と聞くと、サプライズを思いやすい。I don’t want to のあとが理由。',
       use: 'I promised I wouldn’t tell.（言わないって約束したんだ）' },
 
-    // why: long to explain ← “heavy” as a lot of content; hard to believe ← the story that follows is untrue
     { id: 'ph1', skill: 'phrase', level: 'B2', point: 'heavy', seg: [62.2, 65.2],
-      stem: 'Before the Larry story, how does Andy describe what he’s about to say?',
-      choices: ['Serious and hard to talk about', 'Long and difficult to explain', 'Strange and hard to believe'], a: 0,
-      cue: '「Oh, geez」のあとの短い一文。',
+      stem: 'What does “*this is heavy*” mean?',
+      ja: '「this is heavy」はどういう意味？',
+      choices: ['This is serious', 'This is very long', 'This is strange'], a: 0,
+      choicesJa: ['これは深刻な話', 'これはとても長い話', 'これは変な話'],
+      cue: '「Oh, geez」のあと',
       line: 'Oh, geez, *this is heavy*. Pardon me.',
       said: '「うわ、これは重い話だ。ちょっと失礼」と前置きする。',
-      mean: 'heavy ＝ 深刻でつらい。悪い知らせの前によく使う前置き。',
-      trap: 'heavy を量の多さと取ると「長い話」になる。重いのは中身の深刻さ。',
+      mean: 'heavy ＝ 重い。話なら「深刻でつらい」。悪い知らせの前によく言う。',
+      trap: 'heavy を量の多さと取ると「長い話」になる。重いのは中身。',
       use: 'Okay, this is kind of heavy.（ちょっと重い話なんだけど）' },
 
-    // R fix: V2 (blind 55 %): "moving away" was weak; now "some kind of trouble", from “some kind of disease”
-    // why: sad ← sick/sad, both short words after “very”; trouble ← "some kind of…" heard, the noun lost
     { id: 'd3', skill: 'detail', level: 'B1', point: 'sick', seg: [64.4, 69.9],
       stem: 'According to Andy, what is wrong with Larry?',
-      choices: ['He is very sick', 'He is very sad', 'He is in some kind of trouble'], a: 0,
-      cue: '「It’s about Larry」のあとの2文。',
+      ja: 'アンディによると、ラリーはどうした？',
+      choices: ['He is very sick', 'He is very sad', 'He is in trouble'], a: 0,
+      choicesJa: ['重い病気', 'とても悲しんでいる', '困ったことになっている'],
+      cue: '「It’s about Larry」のあと',
       line: 'It’s about Larry. He is *very sick*. He has some kind of disease.',
       said: '「ラリーのことだ。重い病気で、何かの病にかかってる」と話す。',
-      mean: 'sick ＝ 病気。次の disease で同じことを言い直している。',
-      trap: 'sick と sad はどちらも短く、very のあとで聞き分けにくい。次の文の言い直しが手がかり。',
+      mean: 'sick ＝ 病気。次の disease（病気）で、同じことを言い直している。',
+      trap: 'sick と sad は短く、聞き分けにくい。次の disease が手がかり。',
       use: 'Sorry, my son is sick today.（すみません、息子が今日具合が悪くて）' },
 
-    // anchor: 71.7–77.8 s April supplies the reason and Andy only echoes it (“Yes. That is the reason. Good call,
-    //   babe.”); 110.5–114.2 s Larry is not dying; 139.9 s “Fine. I'll tell you the secret.”: the secret is still untold
-    // R fix: V2 (blind 60 %): "even sicker" was weak; now a promise made to Larry, from “I don't want to break my promise”
-    // why: guessed the secret ← “good call” read as “you guessed right”; Larry's promise ← the promise said just before
-    //   seems to be to Larry, about his illness
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'goodcall', reveals: ['sick', 'promise'], seg: [65.2, 78.6],
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'goodcall', reveals: ['sick', 'promise'], seg: [65.2, 78.6], retired: true,
       stem: 'When Andy says “Good call, babe,” what is he trying not to say?',
       choices: ['That the story about Larry is made up', 'That April has guessed the real secret',
                 'That Larry made him promise to keep quiet'], a: 0,
@@ -157,98 +141,89 @@ export const andySecret: Clip = {
       trap: 'good call を「当たり」と取ると、本当の秘密を当てた話になる。相手に乗るだけの返事は作り話の印。',
       use: 'Yes. Exactly. That’s totally what happened.（そう、まさにそれ。そういうこと）' },
 
-    // R fix: V2 (blind 50 %): the key was the only choice built on the quote; the choices are now evened out
-    // why: talk to others ← “talk to anyone” heard as sending him elsewhere; says it twice ← “I'm here” said twice,
-    //   taken as a check that he heard
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'near', seg: [93.2, 100.9],
-      stem: 'Why does April’s offer of support to Larry get a laugh?',
-      choices: ['She shrinks “here for you” to standing nearby', 'She offers to listen, then points him to others',
-                'She repeats “I’m here” as if he didn’t hear'], a: 0,
-      cue: '2回目の言い直しで、何が残るか。',
-      line: 'I’m here for you. Like, you know, I’m here, *standing near you*.',
-      said: '「いつでも話して。ほら、ここにいる、近くに立ってる」と言い直す。',
-      mean: 'I’m here for you（味方だよ）を「近くにいる」に縮め、気持ちのなさが出る。',
-      trap: '親切な補足に聞こえやすいが、Like, you know のあとは本音に寄せた言い直し。',
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'near', seg: [92.5, 100.9],
+      stem: 'What does “*I’m here for you*” mean?',
+      ja: '「I’m here for you」はどういう意味？',
+      choices: ['I will help you', 'I am waiting for you', 'I came to get you'], a: 0,
+      choicesJa: ['力になるよ', 'あなたを待っている', 'あなたを迎えに来た'],
+      cue: '「talk to anyone」のあと',
+      line: 'if you ever need to talk to anyone, *I’m here for you*. Like, you know, I’m here, standing near you.',
+      said: '「話したくなったら、いつでも力になる。ほら、近くに立ってる」と言う。',
+      mean: 'I’m here for you ＝ いつでも力になるよ。つらい人へのやさしい一言。',
+      trap: 'here から「ここにいる」とだけ思いやすい。for you がつくと「あなたの味方」。',
       use: 'I’m here for you, okay?（いつでも力になるからね）' },
 
-    // why: lost it in the icing ← “icing” and “ring” heard without the verb; cut his finger ← “finger” comes right
-    //   before
     { id: 'd4', skill: 'detail', level: 'B1', point: 'ring', seg: [100.9, 107.5],
       stem: 'What happened to Larry earlier that day?',
-      choices: ['He swallowed his wedding ring', 'He lost his ring in the icing', 'He cut his finger on his ring'], a: 0,
-      cue: '「and then, boom」のあとの動詞。',
+      ja: 'その日、ラリーに何があった？',
+      choices: ['He swallowed his wedding ring', 'He lost his ring in icing', 'He cut his finger on it'], a: 0,
+      choicesJa: ['結婚指輪を飲みこんだ', 'アイシングの中で指輪をなくした', '指輪で指を切った'],
+      cue: '「and then, boom」のあと',
       line: 'I was licking icing off of my finger and then, boom, I *swallowed my wedding ring*.',
       said: '「指のアイシングをなめてたら、結婚指輪を飲みこんだ」と打ち明ける。',
-      mean: 'swallow ＝ 飲みこむ。打ち明けにくい、ばつの悪い事故の話。',
-      trap: 'icing、finger、ring と名詞が続き、動詞を落とすと別の話になる。boom のあとを聞く。',
+      mean: 'swallow ＝ 飲みこむ。打ち明けにくい、恥ずかしい事故の話。',
+      trap: 'icing、finger、ring と名詞が続く。boom のあとの動詞を聞く。',
       use: 'Oops, I swallowed my gum.（あ、ガム飲みこんじゃった）' },
 
-    // R fix: V2 (blind 55 %): "feeling bad for how she treated Larry" was weak; now embarrassment
-    // why: worrying ← a friend's illness usually means worry; foolish ← being fooled in public usually stings as
-    //   embarrassment
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'horrible', seg: [131.4, 138.8],
-      stem: 'When April confronts Andy about Larry, what is she most upset about?',
-      choices: ['Being tricked into being nice to Larry', 'Worrying all day that Larry was dying',
-                'Looking foolish in front of Larry'], a: 0,
-      cue: '彼女が並べる3つの行動と、そのあとの一言。',
+      stem: 'Why is April angry at Andy?',
+      ja: 'エイプリルがアンディに怒っているのはなぜ？',
+      choices: ['She was nice to Larry', 'She worried about Larry all day', 'She looked silly to Larry'], a: 0,
+      choicesJa: ['だまされてラリーに優しくした', '一日中ラリーを心配した', 'ラリーの前で恥をかいた'],
+      cue: '「Andy, I was」のあと',
       line: 'I scratched his back. I had a conversation with him. *It was horrible.*',
-      said: '「優しくした。背中をかいて、会話までした。最悪だった。よくも」と怒る。',
-      mean: '嘘そのものより、だまされて優しくさせられたことに怒っている。',
-      trap: '病気の嘘なら「心配させた」と怒る型を予想しやすい。並べた行動のあとの一言が怒りの中身。',
+      said: '「ラリーに優しくした。背中をかいて、会話までした。最悪だった」と怒る。',
+      mean: 'How can you do that to me? ＝ よくもそんなことを。だまされて優しくしたのがいや。',
+      trap: '病気のうそなので「心配させた」と怒ると思いやすい。並べた行動のあとの horrible を聞く。',
       use: 'How could you do that to me?（よくもそんなことができたね）' },
 
-    // why: tells the truth ← the sitcom script where the truth comes out and nobody believes it; admits the Larry story
-    //   ← “Fine. I'll tell you the secret” heard as a confession
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'dodge', seg: [138.8, 170.6],
-      stem: 'When April presses Andy again, how does he handle it?',
-      choices: ['He names one silly fake secret after another', 'He tells the real secret, but she won’t believe it',
-                'He admits the Larry story, but won’t say more'], a: 0,
-      cue: '「Fine」のあと、出てくる話の数と中身。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'dodge', seg: [138.8, 170.6],
+      stem: 'What does Andy do when April asks again?',
+      ja: 'エイプリルがまた聞くと、アンディはどうする？',
+      choices: ['He tells silly fake secrets', 'He tells her the real secret', 'He gets angry at her'], a: 0,
+      choicesJa: ['ばかげた作り話の秘密を言う', '本当の秘密を話す', '彼女に怒る'],
+      cue: '「Fine」のあとに出てくる話',
       line: 'Fine. I’ll tell you the secret. Ben’s dog is dying… *Leslie is a spy*.',
-      said: '「分かった、話す」と言い、犬、引っ越し、スパイと次々に話を変える。',
-      mean: '話すふりをして、ありえない「秘密」を出し続け、本物を言わずに逃げている。',
-      trap: 'Fine は降参に聞こえるが、ここは時間かせぎ。話が毎回すぐ No で終わるかを聞く。',
-      use: 'Fine, I’ll tell you. Just kidding.（分かった、言うよ。なーんてね）' },
+      said: '「分かった、話す」と言い、犬、引っ越し、スパイと、次々に話を変える。',
+      mean: '話すふりをして、ありえない「秘密」を出し続け、本当のことは言わない。',
+      trap: 'Fine は「降参」に聞こえやすい。どの話もすぐ No と言われて終わる。',
+      use: 'Fine, I’ll tell you.（分かった、話すよ）' },
 
-    // R fix: V2 (blind 70 %): "starts another secret" was weak; now a check on the last fake secret, which "Did you hear
-    //   that?" right after "Tom has something wrong with his butt" invites
-    // why: overheard ← “Did you hear that?” right after a secret sounds like a warning; last secret ← it follows
-    //   straight on from his last fake secret, as if asking whether she caught it
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'encore', seg: [164.5, 168.7],
-      stem: 'What is Andy doing with “What? Did you hear that?”',
-      choices: ['He grabs an excuse to end the talk', 'He warns April someone overheard them',
-                'He checks that April caught his last secret'], a: 0,
-      cue: '「Did you hear that?」の直後に続く文。',
+      stem: 'Why does Andy say, “Did you hear that?”',
+      ja: 'アンディが「聞こえた？」と言うのはなぜ？',
+      choices: ['To get away from the talk', 'To warn her someone heard', 'To check she heard him'], a: 0,
+      choicesJa: ['話から逃げるため', 'だれかに聞かれたと知らせるため', '自分の話が聞こえたか確かめるため'],
+      cue: '「Did you hear that?」のあと',
       line: 'What? Did you hear that? *They need an encore.* Honey, the kids want an encore.',
       said: '「え？聞こえた？アンコールだって。子どもたちが呼んでる」と言う。',
-      mean: '話を切り上げる口実を作っている。Did you hear that? で注意をよそへ向ける。',
-      trap: '秘密のあとだと「聞かれた？」に聞こえやすい。次の一文が何の話かで決める。',
-      use: 'Oh, is that my phone? Sorry, gotta go.（あ、電話かな？ごめん、行かなきゃ）' },
+      mean: '話を終わらせる口実を作っている。Did you hear that? で注意をよそへ向ける。',
+      trap: '秘密の話のあとなので、聞かれたと思いやすい。次の一文がアンコールの話。',
+      use: 'Oh, is that my phone? Sorry.（あ、電話かな？ごめん）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hide', seg: [180.75, 182.78],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hide', seg: [180.2, 183.2],
       stem: 'Type what April says: “Babe, you ___ from me.” (4 words)', answer: 'don\'t have to hide',
-      cue: '「Babe」のあと、「from me」の前。',
+      ja: '「Babe, you ___ from me.」の空所を書こう（4語）',
+      cue: '「Babe」のあと',
       line: 'Babe, you *don’t have to hide* from me.',
       said: '隠れているアンディに「隠れなくていいよ」と声をかける。',
       mean: 'don’t have to ＝ 〜しなくていい。have to は「ハフタ」と縮む。',
-      trap: 'don’t の t が消えて「ドン」になり、have とつながる。not を落とすと逆の意味になる。',
+      trap: 'don’t の t が消えて「ドン」になる。not を落とすと逆の意味になる。',
       use: 'You don’t have to pay me back.（返さなくていいよ）' },
 
-    // why: never had a big secret ← “a really big secret” is said just before; April can't keep it ← a common reason
-    //   not to share, but not what he says
     { id: 'i3', skill: 'infer', level: 'B2', point: 'foronce', reveals: ['promise'], seg: [192.85, 198.0],
-      stem: 'What does Andy’s reason for keeping quiet suggest about him?',
-      choices: ['He doesn’t usually keep his word', 'He has never had a big secret before',
-                'He doesn’t think April can keep it'], a: 0,
-      cue: '「big secret」のあと、次の文の最初の方。',
+      stem: 'What does “*for once*” tell us about Andy?',
+      ja: '「for once」からアンディについて何が分かる？',
+      choices: ['He often breaks his word', 'He never has secrets', 'He thinks April talks too much'], a: 0,
+      choicesJa: ['いつもは約束を守れない', '秘密を持ったことがない', 'エイプリルはおしゃべりだと思っている'],
+      cue: '「big secret」のあと',
       line: 'It’s a really big secret. And *for once* I wanted to keep my word.',
-      said: '「大きい秘密なんだ。それに、一度くらいは約束を守りたかった」と言う。',
-      mean: 'for once ＝ 今回くらいは。いつもは守れていないと、自分で認めている。',
+      said: '「すごく大きい秘密なんだ。それに、今回くらいは約束を守りたかった」と言う。',
+      mean: 'for once ＝ 今回くらいは。いつもは守れていないと、自分で言っている。',
       trap: 'big secret が耳に残りやすい。for once は「いつもと違って」の合図。',
       use: 'For once, I’m on time!（今回は珍しく時間どおり！）' },
 
-    // why: angry at April ← “screw” heard as rude and aimed at her; lock it away ← “screw” read literally (ねじで留める)
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'screw', reveals: ['promise'], seg: [197.5, 201.6],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'screw', reveals: ['promise'], seg: [197.5, 201.6], retired: true,
       stem: 'Right after the reason he kept quiet, what does Andy decide?',
       choices: ['To give up on keeping his promise', 'To get angry at April for pushing',
                 'To lock the secret away for good'], a: 0,
@@ -259,65 +234,55 @@ export const andySecret: Clip = {
       trap: 'screw は乱暴な語なので怒りに聞こえやすい。ここは自分への「もういい」。次の文が向きを決める。',
       use: 'Screw it, let’s get dessert.（もういいや、デザート頼もう）' },
 
-    // R fix: V2 (blind 55 %): the key was the only "swaps a loving reason for…"; all three now have that shape
-    // why: warning ← “juicy” read as a scandal that hurts someone; stalling ← “You ready?” heard as more stalling
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'juicy', reveals: ['screw'], seg: [199.6, 204.5],
-      stem: 'Why does Andy’s last reason for telling April get a laugh?',
-      choices: ['It swaps a loving reason for a love of gossip', 'It swaps a loving reason for a scary warning',
-                'It swaps a loving reason for more stalling'], a: 0,
-      cue: '「more important than anything」のあとの理由。',
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'juicy', seg: [199.6, 204.5],
+      stem: 'What does “*super juicy*” mean here?',
+      ja: 'ここでの「super juicy」はどういう意味？',
+      choices: ['Very fun to tell', 'Full of fruit juice', 'Very sad to hear'], a: 0,
+      choicesJa: ['人に話したくなるほど面白い', '果汁たっぷり', '聞くととても悲しい'],
+      cue: '「more important」のあと',
       line: 'You’re more important than anything. I’m gonna tell you. ’Cause it’s *super juicy*.',
-      said: '「君が何より大事。だから話す。だって、すごくおいしい話だから」と続ける。',
-      mean: '愛情の理由のすぐあとに、うわさ話をしたいだけという本音が出る。',
-      trap: 'juicy を「やばい話」と取ると、誰かが困る話に聞こえる。ここは「人に話したくなる面白さ」。',
+      said: '「君が何より大事。だから話す。だって、すごくおいしい話だから」と言う。',
+      mean: 'juicy ＝ 文字どおりは「果汁が多い」、話なら「うわさしたくなる面白さ」。',
+      trap: 'ジューシーから、食べ物の話と思いやすい。ここは秘密の話の中身のこと。',
       use: 'Ooh, tell me. Is it juicy?（ねえ教えて。おもしろい話？）' },
 
-    // R fix: V2 (blind 60 %): "whispers it just in time" was weak; now Andy blurting it out to the group, a near miss
-    // why: Andy blurts it ← “I'm gonna tell you. You ready?” sets it up, and it does reach the whole group; Larry lets
-    //   it slip ← Larry speaks up, complaining, in the middle of the announcement
     { id: 'g2', skill: 'gist', level: 'B1', point: 'reveal', seg: [204.3, 228.0],
       stem: 'How does April finally learn the secret?',
-      choices: ['It’s announced to the whole group', 'Andy blurts it out to the whole group',
-                'Larry lets it slip while complaining'], a: 0,
-      cue: '「Okay」のあと、誰に向けて話が始まるか。',
+      ja: 'エイプリルは最後にどうやって秘密を知る？',
+      choices: ['Leslie tells everyone', 'Andy tells only April', 'Larry lets it slip'], a: 0,
+      choicesJa: ['レスリーがみんなに話す', 'アンディがエイプリルだけに話す', 'ラリーがうっかり話す'],
+      cue: '「Everybody」で始まる言葉',
       line: 'Everybody, if you could *gather around*. … The truth is, I’m pregnant.',
       said: 'アンディが話す直前に、レスリーが皆を集めて「実は妊娠したの」と発表する。',
-      mean: 'アンディは結局言わずに済み、秘密は全員の前で本人の口から明かされる。',
-      trap: '「話すよ、準備いい？」の流れで、彼が言うと思いやすい。直後の Everybody が全員への合図。',
+      mean: 'gather around ＝ 集まって。秘密は、全員の前で本人の口から明かされる。',
+      trap: '「話すよ、準備いい？」の流れで、アンディが言うと思いやすい。',
       use: 'Everybody, can I have your attention?（皆さん、ちょっと聞いてください）' },
 
-    // R fix: V2 (blind 60 %): "redo the samples" was weak; now "too late", from “It doesn't matter”
-    //   (I avoided "the test was a cover story": that's true too, so it would be a second key)
-    // why: bad results ← “the results of the soil samples” is the last full phrase about the work; too late ← "It
-    //   doesn't matter" heard as "it came too late"
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'ruse', seg: [209.8, 221.3],
-      stem: 'What does Leslie’s reply to Larry tell him about his long night?',
-      choices: ['All his work last night was for nothing', 'His work all night came too late to help',
-                'The soil test results came back bad'], a: 0,
-      cue: '「It doesn’t matter, Larry」のあとの一文。',
-      line: 'It doesn’t matter, Larry. It was a *pointless ruse* designed to waste time.',
-      said: 'ラリーに「関係ない。時間かせぎの作り話だった」と返す。',
-      mean: 'ruse ＝ だますための作り話。検査は口実で、ラリーの徹夜はむだだった。',
-      trap: 'doesn’t matter を「もう遅い」と取りやすい。pointless と waste time で判断。',
-      use: 'It was just an excuse to see you.（君に会うための口実だったんだ）' },
+    { id: 'i4', skill: 'phrase', level: 'B1', point: 'ruse', seg: [212.5, 221.3],
+      stem: 'Leslie says, “*It doesn’t matter*, Larry.” What does she mean?',
+      ja: 'レスリーの「It doesn’t matter」はどういう意味？',
+      choices: ['That is not important now', 'That was a big help', 'That was very bad'], a: 0,
+      choicesJa: ['それはもうどうでもいい', 'それはとても助かった', 'それはひどかった'],
+      cue: '「up all night」のあと',
+      line: 'I’ve been up all night trying to make sure you didn’t— — *It doesn’t matter*, Larry.',
+      said: '徹夜したと言うラリーに、「どうでもいいの、ラリー」と返す。',
+      mean: 'It doesn’t matter ＝ 大事じゃない・どうでもいい。検査の話は時間かせぎだった。',
+      trap: 'matter（問題）から「問題ない＝ありがとう」と思いやすい。ここは「関係ない」。',
+      use: 'It doesn’t matter. Don’t worry.（どうでもいいよ。気にしないで）' },
 
-    // why: sorry ← he had just said “I'm gonna tell you… it's super juicy”, so missing the telling could sting;
-    //   shocked ← a loud cry right after big news often means surprise
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'proud', seg: [223.2, 228.05],
-      stem: 'Right after the big news, how does Andy react?',
-      choices: ['Proud of himself for keeping it', 'Sorry he never got to tell it', 'Shocked, as if he never knew'], a: 0,
-      cue: '発表の直後、Yes で始まる声。',
+      stem: 'How does Andy feel after the big news?',
+      ja: '大きな発表のあと、アンディはどんな気持ち？',
+      choices: ['Proud he kept the secret', 'Sad he didn’t tell it', 'Shocked by the news'], a: 0,
+      choicesJa: ['秘密を守れて誇らしい', '話せなくて悲しい', '知らせにびっくり'],
+      cue: '発表のすぐあとの声',
       line: '*Yes, I did it!* Kept a secret.',
       said: '発表を聞いて、アンディが「やった！秘密を守れた」と叫ぶ。',
-      mean: 'I did it ＝ やりとげた。最後まで秘密を守りきれたことを、自分で喜んでいる。',
-      trap: '大きな声は驚きにも聞こえる。I did it のあとに、何をやりとげたかが続くので、そこまで聞く。',
+      mean: 'I did it ＝ やりとげた。最後まで秘密を守れたことを喜んでいる。',
+      trap: '大きな声なので、驚いていると思いやすい。I did it のあとの Kept a secret を聞く。',
       use: 'I did it! I passed!（やった！受かった！）' },
 
-    // anchor: 228.1–234.3 s “I'm sure you will both raise a wonderful child” (praise, with no “but”) + “with whom I
-    //   will profoundly disagree on nearly everything” (a forecast: the child will take after its parents, not him)
-    // why: doubts them as parents ← “profoundly disagree” heard as a dig at the couple; hopes it thinks like him ← the
-    //   right warmth, the wrong direction (“will disagree” is a forecast, not a wish to win the child over)
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'ron', seg: [227.6, 234.9],
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'ron', seg: [227.6, 234.9], retired: true,
       stem: 'Which plain-English version keeps what the congratulations really mean?',
       choices: ['“Your kid will be great, and will think like you, not me.”',
                 '“I doubt you two will make good parents, but congrats.”',
@@ -329,19 +294,16 @@ export const andySecret: Clip = {
       trap: 'disagree が親への皮肉に聞こえやすい。ほめ言葉のあとに but が来るか聞く。来なければ本気。',
       use: 'Congrats. Your kid will be smarter than me.（おめでとう。君の子は僕より賢くなるよ）' },
 
-    // R fix: V2 (blind 55 %): "changes the subject" was weak; now agreeing and moving on to her worries, which do come
-    //   right after
-    // why: turns down the wishes ← “Well, actually” often opens a polite no; agrees, then worries ← "this is crazy" and
-    //   "freaked out" heard as her real topic
     { id: 'm2', skill: 'marker', level: 'B2', point: 'plural', seg: [234.9, 239.6],
-      stem: 'When Leslie answers the congratulations, what does her opening do?',
-      choices: ['It gently corrects what was just said', 'It politely turns down the good wishes',
-                'It agrees, then moves on to her worries'], a: 0,
-      cue: '「a wonderful child」への返事の最初。',
+      stem: 'Why does Leslie say “*Well, actually*”?',
+      ja: 'レスリーが「Well, actually」と言うのはなぜ？',
+      choices: ['To fix what he said', 'To say no politely', 'To agree and go on'], a: 0,
+      choicesJa: ['今言われたことを直すため', 'ていねいに断るため', '賛成して話を進めるため'],
+      cue: '「wonderful child」への返事',
       line: '*Well, actually*, uh, and this is crazy, but it’s *children*. Plural.',
-      said: '「実はね、信じられないけど、子どもたち。複数なの」と言う。',
-      mean: 'Well, actually は相手の言葉をやんわり直す前置き。child を children に直している。',
-      trap: '断りの前にも使う形だが、ここは直すため。どの語が言い直されるか聞く。',
+      said: '「実はね、信じられないけど、子どもたちなの。複数」と言う。',
+      mean: 'Well, actually ＝ 実はね。相手の言葉をやんわり直す前置き。child を children に直す。',
+      trap: '断るときの前置きにも使うので迷いやすい。あとの children（子どもたち）を聞く。',
       use: 'Well, actually, it’s my second time here.（実は、ここは2回目なんです）' },
   ]
 };
