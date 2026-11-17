@@ -173,7 +173,7 @@ export const centralperk: Clip = {
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'pr1', seg: [109.5, 113.5], stem: '“Would anybody like more coffee?” What is Rachel doing?',
       ja: '「Would anybody like more coffee?」レイチェルは何をしている？',
       choices: ['Offering more coffee', 'Asking for more coffee', 'Saying the coffee is gone'], a: 0,
-      choicesJa: ['コーヒーのおかわりをすすめる', '自分にもコーヒーを頼む', 'コーヒーがなくなったと言う'],
+      choicesJa: ['コーヒーのおかわりをすすめる', 'コーヒーのおかわりを頼む', 'コーヒーがなくなったと言う'],
       cue: 'レイチェルの最初の一言',
       line: '*Would anybody like* more coffee?',
       said: '「コーヒーのおかわり、いる人いる？」とみんなに聞く。',

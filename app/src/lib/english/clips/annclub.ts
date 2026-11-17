@@ -240,7 +240,7 @@ export const annclub: Clip = {
       stem: 'Why doesn’t Ann complain at home?',
       ja: 'アンはなぜ家で愚痴を言わない？',
       choices: ['Chris wants to help', 'Chris never listens', 'Chris is too busy'], a: 0,
-      choicesJa: ['クリスがいつも助けようとするから', 'クリスが話を聞かないから', 'クリスが忙しすぎるから'],
+      choicesJa: ['クリスが助けたがるから', 'クリスが話を聞かないから', 'クリスが忙しすぎるから'],
       cue: '「because」のあと',
       line: 'Chris is the *most considerate person* in the world, and he just *wants to help me*',
       said: '「クリスは世界一思いやりがあって、私を助けたがる」と言う。',
