@@ -65,19 +65,29 @@ writeFileSync(join(root, 'src/lib/sugoroku/words.txt'), words.join('\n') + '\n')
 console.log(`${words.length} words (${Object.keys(everyday).length} everyday)`);
 
 // ぶん's lines: English Study's フレーズ deck (catalog.ts deckOf, in the plan's order), its `use` (our portable example
-// over the TV line) with its Japanese, 3–6 words: lib/sugoroku/sentences.json, [en, ja] pairs.
+// over the TV line) with its Japanese, 3–6 words, each a level (game.ts Level): 1 (やさしい) ≤ 4 words, every one an
+// everyday word, no slang; 2 (ふつう) ≤ 5 words, 80 %+ everyday; 3 (むずかしい) the rest: lib/sugoroku/sentences.json,
+// [en, ja, level] triples.
 const { CLIPS } = await import('../src/lib/english/clips/index.ts');
 const { deckOf } = await import('../src/lib/english/catalog.ts');
 const { planOf } = await import('../src/lib/english/plan.ts');
 const { splitUse } = await import('../src/lib/english/phrases.ts');
-const lines: [string, string][] = [];
+const SLANG = new Set(['gonna', 'gotta', 'wanna', 'kinda', 'ya', 'yeah', 'y', 'aw', 'um', 'uh', 'huh']);
+/** A contraction's first half that's everyday (I'm, don't, let's…). */
+const SHORT = new Set(['i', 'you', 'we', 'they', 'he', 'she', 'it', 'that', 'what', 'there', 'let', 'don', 'can', 'isn', 'aren', 'doesn',
+  'didn', 'won', 'wasn', 'here', 'who', 'where', 'how']);
+const plain = (t: string) => t in everyday || (t.includes("'") && (t.split("'")[0] in everyday || SHORT.has(t.split("'")[0])));
+const lines: [string, string, number][] = [];
 const seenEn = new Set<string>();
 for (const e of deckOf(planOf(CLIPS))) {
   const { en, ja } = splitUse(e[4]);
   const words = en.trim().split(/\s+/);
   if (!ja || words.length < 3 || words.length > 6 || seenEn.has(en) || /[*()（）]/.test(en)) continue;
   seenEn.add(en);
-  lines.push([words.join(' '), ja.trim()]);
+  const toks = words.map((w) => w.toLowerCase().replace(/’/g, "'").replace(/[^a-z']/g, ''));
+  const known = toks.filter(plain).length / toks.length, slang = toks.some((t) => SLANG.has(t));
+  const level = toks.length <= 4 && known === 1 && !slang ? 1 : toks.length <= 5 && known >= 0.8 && !slang ? 2 : 3;
+  lines.push([words.join(' '), ja.trim(), level]);
 }
 writeFileSync(join(root, 'src/lib/sugoroku/sentences.json'), JSON.stringify(lines) + '\n');
-console.log(`${lines.length} sentences`);
+console.log(`${lines.length} sentences (${[1, 2, 3].map((l) => lines.filter((x) => x[2] === l).length).join(' / ')} by level)`);

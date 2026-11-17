@@ -86,22 +86,21 @@ export interface Score {
   lucky: number;
   /** The space's multiplier (1, 2). */
   mult: number;
-  /** An everyday (A1–A2) word +2. */
-  common: number;
-  /** A ヒント's word: half. */
-  hinted: boolean;
+  /** An everyday (A1–A2) word's bonus (by the seat's level: game.ts LEVEL). */
+  everyday: number;
+  /** A ヒント's word, halved. */
+  half: boolean;
   total: number;
 }
 
 /** The fewest stars a word earns. */
 const MIN_WORD = 3;
 
-/** A word's points: (letters + lucky letters' +2) × the space's multiplier, + 2 for an everyday word, at least
- *  MIN_WORD; a ヒント's word half that (rounded up). */
-export function scoreOf(word: string, opts: { lucky: readonly string[]; mult: number; common: boolean; hinted?: boolean }): Score {
+/** A word's points: (letters + lucky letters' +2) × the space's multiplier, + the everyday bonus, at least MIN_WORD;
+ *  `half` (a ヒント's word, but at やさしい) half that, rounded up. */
+export function scoreOf(word: string, opts: { lucky: readonly string[]; mult: number; everyday: number; half?: boolean }): Score {
   const letters = [...word].reduce((s, l) => s + (VALUE[l] ?? 0), 0);
   const lucky = [...word].filter((l) => opts.lucky.includes(l)).length * 2;
-  const common = opts.common ? 2 : 0;
-  const full = Math.max(MIN_WORD, (letters + lucky) * opts.mult + common);
-  return { letters, lucky, mult: opts.mult, common, hinted: !!opts.hinted, total: opts.hinted ? Math.ceil(full / 2) : full };
+  const full = Math.max(MIN_WORD, (letters + lucky) * opts.mult + opts.everyday);
+  return { letters, lucky, mult: opts.mult, everyday: opts.everyday, half: !!opts.half, total: opts.half ? Math.ceil(full / 2) : full };
 }

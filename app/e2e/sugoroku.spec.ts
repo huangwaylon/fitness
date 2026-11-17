@@ -1,5 +1,5 @@
-// 英語すごろく (docs/sugoroku.md): the leaf menu's すごろく pill opens it; a new game for the two members; turns play
-// through (spin, then the space's ことば with ヒント and 決定, ぶん tapped in any order till 答えはこれ, イベント's OK); the game
+// 英語すごろく (docs/sugoroku.md): the leaf menu's すごろく pill opens it; a new game for the two members, one at むずかしい;
+// turns play through (the dice, the fork's 遠回り, then the space's ことば with ヒント and これにする, ぶん tapped in any order till 答えはこれ, イベント's OK); the game
 // resumes from 続きから after a reload; 終了 shows the results with the words made. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -16,10 +16,17 @@ async function playTurn(p: Page) {
   const play = s.locator('[data-sg-phase]');
   await expect(play).not.toHaveAttribute('data-sg-phase', 'spin', { timeout: 10_000 });
   await expect(s.locator('[data-sg-die]')).toHaveCount(0, { timeout: 10_000 });
-  const phase = await play.getAttribute('data-sg-phase');
+  let phase = await play.getAttribute('data-sg-phase');
+  if (phase === 'fork') {
+    await s.locator('[data-sg-branch="1"]').click();
+    await expect(play).not.toHaveAttribute('data-sg-phase', 'fork');
+    await expect(s.locator('[data-sg-die]')).toHaveCount(0, { timeout: 10_000 });
+    phase = await play.getAttribute('data-sg-phase');
+  }
   if (phase === 'word') {
     await s.locator('[data-sg-hint]').click();
-    await expect(s.locator('[data-sg-slots]')).not.toHaveAttribute('data-sg-slots', '');
+    // (むずかしい's 4+ letters: a rack with none is swapped)
+    if ((await s.locator('[data-sg-slots]').getAttribute('data-sg-slots')) === '') return void (await s.locator('[data-sg-swap]').click());
     await s.locator('[data-sg-play]').click();
     await expect(s.locator('[data-sg-made]')).toBeVisible();
     await s.locator('[data-sg-next]').click();
@@ -40,11 +47,14 @@ test('a game for two: turns, resume after a reload, the results', async ({ page 
   await expect(sheet(page)).toHaveAttribute('data-level', 'menu');
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
   await sheet(page).locator('[data-sg-new]').click();
-  // the members picked by default, in order
+  // the members picked by default, in order, each ふつう till changed
   await expect(sheet(page).locator('[data-sg-seat][aria-pressed="true"]')).toHaveCount(2);
+  await expect(sheet(page).locator('[data-sg-level-row]')).toHaveCount(2);
+  await sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]').click();
+  await expect(sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]')).toHaveAttribute('aria-checked', 'true');
   await sheet(page).locator('[data-sg-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
-  await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(24);
+  await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(27);
   await expect(sheet(page).locator('[data-sg-token]')).toHaveCount(2);
 
   await playTurn(page);
