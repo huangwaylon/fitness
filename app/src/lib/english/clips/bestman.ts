@@ -53,7 +53,7 @@ export const chrisBestMan: Clip = {
       line: 'Now, *you’ve never been* married, so you didn’t get your own bachelor party',
       said: '「さて、君は結婚したことがないから、独身最後のパーティーもなかった」と言う。',
       mean: 'you’ve never been 〜 ＝ 今まで一度も〜したことがない。’ve は小さな「ヴ」だけ。',
-      trap: '’ve も ’d も you にとけて短い。were なら「ワ」がはっきり残る。',
+      trap: '’d なら短く止まり、’ve は唇をかむ「ヴ」が小さく残る。were なら「ワ」がはっきり。',
       use: 'I’ve never been to Hawaii.（ハワイには行ったことがない）' },
     { id: 'i2', skill: 'infer', level: 'C1', point: 'own', seg: [9.6, 13.6], retired: true,
       stem: 'From how the friend explains the missing party, what can we tell about Chris?',

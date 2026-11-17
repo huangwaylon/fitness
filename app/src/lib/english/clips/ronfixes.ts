@@ -183,7 +183,7 @@ export const ronFixes: Clip = {
     { id: 'h1', skill: 'humor', level: 'C1', point: 'fuse', seg: [94, 101],
       stem: 'Why does she say “It’s just a fuse, people”?',
       ja: '彼女はなぜ「It’s just a fuse, people」と言う？',
-      choices: ['To hide her mistake', 'To make fun of Ron', 'So far guests can hear'], a: 0,
+      choices: ['To hide her mistake', 'To make fun of Ron', 'So guests far away hear'], a: 0,
       choicesJa: ['自分の言いまちがいをごまかすため', 'ロンをからかうため', '遠くの客に聞こえるように'],
       cue: '直される前の言い方と、そのあと。',
       line: 'the main *fuse hose*. — It’s just a fuse. — *It’s just a fuse, people.* Just a fuse.',
