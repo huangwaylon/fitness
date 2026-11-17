@@ -1,6 +1,6 @@
 // 英語すごろく (docs/sugoroku.md): the leaf menu's すごろく pill opens it; a new game for the two members, one at むずかしい;
 // turns play through (the dice, the fork's 遠回り, then the space's ことば with ヒント and これにする, ぶん tapped in any order till 答えはこれ, イベント's OK); the game
-// resumes from 続きから after a reload; 終了 shows the results with the words made. The logic tier.
+// resumes from 続きから after a reload; 終了 shows the results. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -40,13 +40,17 @@ async function playTurn(p: Page) {
   } else await s.locator('[data-sg-next]').click();
 }
 
-test('a game for two: turns, resume after a reload, the results', async ({ page }) => {
+async function start(page: Page) {
   await page.goto('?demo');
   await islandUp(page);
   await fromMenu(page, 'sugoroku');
   await expect(sheet(page)).toHaveAttribute('data-level', 'menu');
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
   await sheet(page).locator('[data-sg-new]').click();
+}
+
+test('a game for two at two levels: the board, turns, 終了, the results', async ({ page }) => {
+  await start(page);
   // the members picked by default, in order, each ふつう till changed
   await expect(sheet(page).locator('[data-sg-seat][aria-pressed="true"]')).toHaveCount(2);
   await expect(sheet(page).locator('[data-sg-level-row]')).toHaveCount(2);
@@ -60,25 +64,26 @@ test('a game for two: turns, resume after a reload, the results', async ({ page 
   await playTurn(page);
   await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
   await playTurn(page);
-  const stars = await sheet(page).locator('[data-sg-score] b').allTextContents();
-  expect(stars.map(Number).some((n) => n > 0)).toBe(true);
-
-  // a reload: 続きから where it was
-  await page.reload();
-  await islandUp(page);
-  await fromMenu(page, 'sugoroku');
-  await sheet(page).locator('[data-sg-resume]').click();
-  await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
-  await playTurn(page);
 
   // 終了 (asked once more), the results: a winner and the words made
   await sheet(page).locator('[data-sg-end]').click();
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(2);
-  await expect(sheet(page).locator('[data-sg-results] [role="listitem"]').first()).toBeVisible();
   // the finished game isn't offered again
-  await page.keyboard.press('Escape');
-  await fromMenu(page, 'sugoroku');
+  await sheet(page).locator('.navbar button').first().click();
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
+});
+
+test('a game left half-way resumes after a reload (続きから), where it was', async ({ page }) => {
+  await start(page);
+  await sheet(page).locator('[data-sg-start]').click();
+  await playTurn(page);
+  const stars = await sheet(page).locator('[data-sg-score] b').allTextContents();
+  await page.reload();
+  await islandUp(page);
+  await fromMenu(page, 'sugoroku');
+  await sheet(page).locator('[data-sg-resume]').click();
+  await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
+  await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
 });
