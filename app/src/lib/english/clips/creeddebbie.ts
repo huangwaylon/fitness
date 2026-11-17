@@ -110,7 +110,7 @@ export const creedDebbie: Clip = {
       line: 'every week *I’m supposed to* take four hours',
       said: 'クリードが「毎週4時間取ることになっている」と言う。',
       mean: 'be supposed to 〜 ＝ 〜することになっている。「サポウスタ」とつながる。',
-      trap: 'I’m は短く「アイム」の「ム」だけになりやすい。every week なので今の決まり。',
+      trap: 'was なら「ワズ」、used to なら「ユースタ」。ここは短い「アイム」の「ム」。',
       use: 'I’m supposed to be there at nine.（9時に行くことになってる）' },
     { id: 'i4', skill: 'phrase', level: 'B2', point: 'oneyear', seg: [42.3, 50.4],
       stem: 'What does “*blow it off*” mean here?', ja: '「blow it off」の意味は？',

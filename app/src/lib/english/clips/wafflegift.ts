@@ -250,7 +250,7 @@ export const waffleGift: Clip = {
       line: '*How would you* feel about going in on…',
       said: '「一緒にお金を出すのはどう？」と提案する。',
       mean: 'How would you feel about 〜? ＝ 〜するのはどう？ would you は「ウッジュ」。',
-      trap: 'would は小さく短く言うので do に聞こえやすい。could とも似ている。',
+      trap: 'do なら「ハウドゥユ」、could なら「ク」で始まる。ここは「ハウウッジュ」。',
       use: 'How would you feel about a break?（ちょっと休憩するのはどう？）' },
 
     { id: 'p6', skill: 'phrase', level: 'B1', point: 'imin', seg: [151.5, 155.5],

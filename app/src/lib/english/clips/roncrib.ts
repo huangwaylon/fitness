@@ -81,7 +81,7 @@ export const ronChrisCrib: Clip = {
       line: 'No conversation lasts longer than *100 total words*.',
       said: 'ロンが「会話は合計100語まで」と言い、使った語数を数える。',
       mean: 'a hundred ＝ 100。total ＝ 合計。last ＝ 続く。',
-      trap: 'あとで I have used 20（20語使った）と言うので、20だと思いやすい。',
+      trap: 'あとの I have used 20 で20と思いやすい。thousand（千）とは言っていない。',
       use: 'Please keep it under 100 words.（100語以内にしてください）' },
     { id: 'i1', skill: 'detail', level: 'B1', point: 'hands', seg: [95.4, 103.8],
       stem: 'Why does Chris want to build his own crib?', ja: 'クリスはなぜ自分でベッドを作りたい？',
@@ -260,7 +260,7 @@ export const ronChrisCrib: Clip = {
       line: 'that toxic crib you bought *won’t* be the last mistake you make.',
       said: 'ロンが「あの危ないベッドが、最後の失敗にはならない」と言う。',
       mean: 'won’t ＝ will not。「ウォウン」と口を丸め、t はほぼ聞こえない。',
-      trap: 'won’t と want、will は似て聞こえやすい。口を丸める「ウォウ」を聞く。',
+      trap: 'will なら「ウィル」で t がない。would は「ウッド」。ここは口を丸める「ウォウン」。',
       use: 'It won’t be easy.（簡単じゃないよ）' },
   ]
 };

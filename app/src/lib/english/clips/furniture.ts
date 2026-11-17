@@ -113,7 +113,7 @@ export const furniture: Clip = {
       line: 'Get the birds. — Not like that, *I won’t*.',
       said: '「鳥のにしろよ」「そんな言い方なら、買わない」と言う。',
       mean: 'won’t ＝ will not（〜しない）。「ウォウント」と口を丸める。want は「ワント」で口が広い。',
-      trap: 'won’t と want は似て聞こえやすい。すねている場面なので「しない」。',
+      trap: 'want は「ワント」と口が広い。will なら最後に t がない。すねている場面なので「しない」。',
       use: 'I won’t be late.（遅れないよ）' },
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'a1', seg: [106.5, 111.5], stem: 'How do they feel about their new table?',
       ja: '2人は新しいテーブルをどう思っている？',

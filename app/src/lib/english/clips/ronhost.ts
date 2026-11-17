@@ -169,7 +169,7 @@ export const ronShowHost: Clip = {
       line: '*Shouldn’t you* be taking her to lie down somewhere?',
       said: 'ロンが「どこかで横にならせた方がいいんじゃないか？」と聞く。',
       mean: 'Shouldn’t you 〜? ＝ 〜した方がいいんじゃない？ 「シュドゥンチュ」とつながる。',
-      trap: 'n’t が小さく、Should you に聞こえやすい。「ン」の音を聞く。',
+      trap: 'Should you なら「ン」がない。Couldn’t なら「ク」で始まる。ここは「シュドゥン」。',
       use: 'Shouldn’t you go home?（帰った方がいいんじゃない？）' },
     { id: 'd4', skill: 'detail', level: 'B1', point: 'offcam', seg: [117, 123.15],
       stem: 'Why won’t the crew take Joan off camera?', ja: 'スタッフはなぜジョーンを画面から外さない？',

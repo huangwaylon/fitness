@@ -167,7 +167,7 @@ export const treatTurnabout: Clip = {
       line: 'You *won’t know* until you ask.',
       said: 'ドナが「聞いてみなきゃわからないよ」と言う。',
       mean: 'won’t know until 〜 ＝ 〜するまでわからない。won’t は口を丸めて「ウォウン」。',
-      trap: 'won’t と don’t は似て聞こえやすい。最初が「ウォ」か「ド」かを聞く。',
+      trap: 'don’t なら「ドン」、wouldn’t なら「ウドゥン」。ここは口を丸める「ウォウン」。',
       use: 'You won’t know until you try.（やってみなきゃわからない）' },
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'treat', seg: [54.1, 60.9], retired: true,
       stem: 'Which plain-English version keeps what Donna means by her last line?',

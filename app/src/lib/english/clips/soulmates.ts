@@ -108,7 +108,7 @@ export const soulmates: Clip = {
       line: 'So look, *I won’t* stand in your way',
       said: '「だから、君の邪魔はしないよ」と言う。',
       mean: 'won’t ＝ will not（〜しない）。「ウォウン」と口を丸め、最後の t はほぼ消える。',
-      trap: 'want to は「ワナ」と短くなり、won’t と似て聞こえやすい。口の丸さを聞く。',
+      trap: 'want to は「ワナ」、wouldn’t は「ウドゥン」。won’t は口を丸めて「ウォウン」。',
       use: 'I won’t tell anyone.（誰にも言わないよ）' },
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'standway', reveals: ['wont', 'runoff'], seg: [20.9, 25.6],
       stem: 'What does “I won’t *stand in your way*” mean?', ja: '「I won’t stand in your way」の意味は？',

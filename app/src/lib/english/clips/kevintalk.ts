@@ -200,7 +200,7 @@ export const kevinTalk: Clip = {
       line: 'You can’t possibly save enough time to *see the world*.',
       said: '同僚が「世界を見て回るほどの時間なんて、節約できるわけない」と言う。',
       mean: 'see the world ＝ 世界を見て回る。the は小さく短く言う。',
-      trap: 'the が小さいので SeaWorld と似て聞こえやすい。「ザ」の音があるかを聞く。',
+      trap: 'SeaWorld なら「ザ」がない。whole なら「ホウル」が入る。ここは「スィーザワールド」。',
       use: 'I want to see the world.（世界を見て回りたい）' },
     { id: 'h3', skill: 'infer', level: 'B1', point: 'method', reveals: ['seeworld'], seg: [121.5, 131.4],
       stem: 'Why is “see world” a problem?', ja: '「see world」の何が問題？',

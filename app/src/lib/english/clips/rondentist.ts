@@ -195,7 +195,7 @@ export const ronDentist: Clip = {
       line: '*Do you know what* my social security number is?',
       said: 'アンディが「ぼくの社会保障番号、知ってる？」と聞く。',
       mean: 'Do you know 〜? ＝ 〜知ってる？ do you は「ジュ」と縮み、「ジュノウ」に聞こえる。',
-      trap: 'Do you が縮んで、You know what に聞こえやすい。最初の「ジュ」を聞く。',
+      trap: 'Don’t なら「ドン」、You know what なら「ジュ」がない。ここは「ジュノウ」。',
       use: 'Do you know what time it is?（今何時かわかる？）' },
     { id: 'd3', skill: 'detail', level: 'B1', point: 'form', reveals: ['doyou'], seg: [119.8, 125.8],
       stem: 'For the dentist’s form, what does Andy ask Ron?', ja: '歯医者の書類のために、アンディはロンに何を聞く？',

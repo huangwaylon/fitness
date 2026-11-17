@@ -179,7 +179,7 @@ export const dwightDate: Clip = {
       line: '*Aren’t they* magnificent?',
       said: 'ドワイトが双子を見せて「すばらしいだろ？」と言う。',
       mean: 'Aren’t they 〜? ＝ 〜じゃない？（同意を求める）。「アーンゼイ」と t はほぼ消える。',
-      trap: 'n’t が小さく、Are they と聞こえやすい。「アーン」の「ン」を聞く。',
+      trap: 'Are they なら「ン」がない。those なら「ゾウズ」。ここは「アーンゼイ」。',
       use: 'Aren’t they cute?（かわいくない？）' },
     { id: 'd4', skill: 'detail', level: 'B1', point: 'men', seg: [99.3, 107.95],
       stem: 'What is the problem with the twins?', ja: '双子の何が問題？',

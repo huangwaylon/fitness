@@ -219,7 +219,7 @@ export const benCool: Clip = {
       line: 'I mean, I— wow. I *would be* insane to say no.',
       said: 'ベンが「うわ。断るなんてどうかしてる」と答える。',
       mean: 'I would be insane to say no ＝ 断るなんてありえない。would は「ウド」と小さい。',
-      trap: 'would と wouldn’t は似て聞こえやすい。n’t の「ン」がない。',
+      trap: 'wouldn’t なら「ン」が入る。could なら「ク」で始まる。ここは「ウドビ」。',
       use: 'I’d be crazy to say no.（断るなんてありえないよ）' },
     { id: 'i2', skill: 'infer', level: 'B2', point: 'kidding', seg: [194.8, 200.2],
       stem: 'What does “You can do whatever you want” show?', ja: '「You can do whatever you want」からわかることは？',

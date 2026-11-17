@@ -71,7 +71,7 @@ export const ronPatience: Clip = {
       line: 'I really wish you *could click* those.',
       said: '紙のボードを見て、トムが「これ、クリックできたらな」と言う。',
       mean: 'I wish you could 〜 ＝ 〜できたらいいのに。could click は「クッドクリック」。',
-      trap: 'click と pick は似て聞こえやすい。最初の「ク」の音を聞く。',
+      trap: 'pick なら「ピ」の音。would なら「ウッド」で始まる。ここは「クッドクリック」。',
       use: 'I wish I could stay.（いられたらいいのに）' },
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'jerry', reveals: ['bookmarks'], seg: [38, 46],
       stem: 'What does Tom think of Jerry and the internet?', ja: 'トムはジェリーのネットの使い方をどう思っている？',
