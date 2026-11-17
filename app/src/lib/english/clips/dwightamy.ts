@@ -81,7 +81,7 @@ export const dwightAmyAdams: Clip = {
       line: 'There’s an HR meeting in there at *11:30*.',
       said: '「その会議室は11時半に人事の会議がある」と知らされる。',
       mean: 'eleven thirty ＝ 11時30分。HR ＝ 人事。',
-      trap: 'seven、ten は始まりの音がちがう。thirteen なら「サーティーン」と最後をのばす。「イレヴン・サーティ」なら11:30。',
+      trap: '「セヴン」で始まれば7:30、「テン」なら10:30。「サーティーン」と後ろをのばせば11:13。「イレヴン・サーティ」なら11:30。',
       use: 'Let’s meet at eleven thirty.（11時半に会おう）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'hallway', seg: [64.25, 73.6], keep: true,

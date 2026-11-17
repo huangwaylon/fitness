@@ -117,7 +117,7 @@ export const phoebeStock: Clip = {
       line: 'and I lost *$13 million*.',
       said: '「市場がちょっと下がって、1300万ドル失った」と言う。',
       mean: 'thirteen は「サーティーン」と後ろを強く言い、n で終わる。million ＝ 100万。',
-      trap: 'thirty は「サーティ」と前が強く n がない。three なら「スリー」。単位は million。',
+      trap: '「サーティ」と前が強く n がなければ30、「スリー」なら3。後ろが「サウザンド」なら1万3千ドル、「ミリオン」なら million。',
       use: 'That’s fifteen, not fifty, right?（50じゃなくて15だよね？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'dip', reveals: ['amount'], seg: [23.8, 29.6],

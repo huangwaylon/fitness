@@ -116,7 +116,7 @@ export const cakeRush: Clip = {
       line: 'we know how hard *you’ve worked* on this',
       said: '「どれだけ頑張ってきたか分かってる」と言う。',
       mean: 'you’ve ＝ you have。「ユv」と短く、すぐ worked につながる。',
-      trap: 'v は弱く you worked に聞こえやすい。you’re working なら最後に「ング」が付く。',
+      trap: 'you の後ろに小さな「ヴ」があれば you’ve worked、すぐ「ワークト」なら you worked、最後に「ング」なら you’re working。',
       use: 'You’ve worked so hard this year.（今年は本当によく頑張ったね）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'faceit', reveals: ['worked'], seg: [8.3, 18.8],
@@ -156,10 +156,10 @@ export const cakeRush: Clip = {
       use: 'The best part was the free coffee.（いちばん良かったのは無料のコーヒーだったね）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'well', seg: [16.7, 24.85],
-      stem: 'What does “Well” do at the start of the host’s reply?',
-      ja: '主催者の返事の最初の「Well」の役目は？',
-      choices: ['Starts a reply against them', 'Agrees and moves on', 'Shows the host gives up'], a: 0,
-      choicesJa: ['言い返しを始める', '賛成して先に進む', 'あきらめたと示す'],
+      stem: 'What does the host mean by “Well” here?',
+      ja: 'ここでの主催者の「Well」の意味は？',
+      choices: ['But listen', 'Yes, you’re right', 'Okay, I give up'], a: 0,
+      choicesJa: ['でもね', 'うん、その通り', '分かった、あきらめる'],
       cue: '返事の最初の一語と、そのあとに並ぶもの。',
       line: '*Well*, there’s also cake and a disco playlist and drinks that need to happen.',
       said: '「でもね、まだケーキもディスコの曲も、飲み物もあるし」と返す。',

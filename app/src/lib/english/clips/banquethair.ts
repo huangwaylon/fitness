@@ -272,7 +272,7 @@ export const banquetHair: Clip = {
       line: 'At that table are *all eight living* Talent and Award winners.',
       said: '「あのテーブルに、生きている受賞者8人が全員いる」と興奮する。',
       mean: 'all eight ＝ 8人全員。living ＝ 生きている。',
-      trap: 'eighteen は「ティーン」と長く、eighty は「エイティ」。ここは短い「エイト」。',
+      trap: '「フォー」なら4、「エイティーン」と伸ばせば18、「エイティ」なら80。ここは短い「エイト」。',
       use: 'All four of us are here.（4人全員そろったよ）' },
 
     { id: 'a4', skill: 'attitude', level: 'B2', point: 'strategy', reveals: ['overthink'], seg: [208.8, 217.4], retired: true,

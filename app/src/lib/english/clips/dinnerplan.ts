@@ -238,10 +238,10 @@ export const dinnerplan: Clip = {
       use: 'Sorry, it’s members only.（すみません、会員限定です）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'besides', reveals: ['couples', 'six'], seg: [88.4, 94.6],
-      stem: 'What does “and besides” do here?',
-      ja: 'ここでの「and besides」の役目は？',
-      choices: ['Adds a second reason', 'Softens the first reason', 'Gives the real reason'], a: 0,
-      choicesJa: ['二つ目の理由を足す', '一つ目の理由をやわらげる', '本当の理由を言う'],
+      stem: 'What does “and besides” mean here?',
+      ja: 'ここでの「and besides」の意味は？',
+      choices: ['And also', 'But actually', 'To be honest'], a: 0,
+      choicesJa: ['それに', 'でも実は', '正直に言うと'],
       cue: 'couples only のあとの一語。',
       line: 'it’s couples only, *and besides*, I only have six wine glasses',
       said: '「カップル限定だし、それにワイングラスが6個しかない」と言う。',
@@ -270,7 +270,7 @@ export const dinnerplan: Clip = {
       line: 'I only have *six* wine glasses, so it will be me and Jan… and Angela and Andy.',
       said: '「グラスは6個だけ。だから僕とジャン、…、アンジェラとアンディ」と数える。',
       mean: 'I only have 〜 ＝ 〜しかない。6個 ＝ 6人。3組のカップルでちょうど埋まる。',
-      trap: 'only から少なく思いやすいが、four なら「フォー」。sixteen なら「ティーン」が長い。',
+      trap: '「フォー」なら4、「シックスティーン」と後ろを伸ばせば16。短く「シックス」で止まれば6。',
       use: 'I only have two tickets.（チケットは2枚しかない）' },
   ]
 };
