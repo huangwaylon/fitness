@@ -146,7 +146,7 @@ export const daveReturns: Clip = {
       stem: 'Why does Dave pick this moment?',
       ja: 'デイブがこのタイミングを選んだのはなぜ？',
       choices: ['Ben is not at the table', 'He flies out tomorrow', 'Leslie asked him to'], a: 0,
-      choicesJa: ['ベンが席にいないから', '明日飛行機で発つから', 'レスリーに聞かれたから'],
+      choicesJa: ['ベンが席にいないから', '明日飛行機で発つから', 'レスリーに頼まれたから'],
       cue: '「and because」のあと',
       line: 'And because *he’s not here right now*, so I thought this would be a good time.',
       said: '「彼が今いないから、いいタイミングだと思った」と言う。',

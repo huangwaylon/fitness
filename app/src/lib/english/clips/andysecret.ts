@@ -169,7 +169,7 @@ export const andySecret: Clip = {
       stem: 'Why is April angry at Andy?',
       ja: 'エイプリルがアンディに怒っているのはなぜ？',
       choices: ['She was nice to Larry', 'She worried about Larry all day', 'She looked silly to Larry'], a: 0,
-      choicesJa: ['だまされてラリーに優しくした', '一日中ラリーを心配した', 'ラリーの前で恥をかいた'],
+      choicesJa: ['ラリーに優しくした', '一日中ラリーを心配した', 'ラリーの前で恥をかいた'],
       cue: '「Andy, I was」のあと',
       line: 'I scratched his back. I had a conversation with him. *It was horrible.*',
       said: '「ラリーに優しくした。背中をかいて、会話までした。最悪だった」と怒る。',
