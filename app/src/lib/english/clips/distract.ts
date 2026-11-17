@@ -78,7 +78,7 @@ export const distract: Clip = {
       stem: 'What does Leslie say she is trying to do?',
       ja: 'レスリーは、何をしようとしていると言っている？',
       choices: ['Remove parking meters', 'Build a parking lot', 'Hire a new city worker'], a: 0,
-      choicesJa: ['パーキングメーターをなくす', '駐車場を作る', '新しい人をやとう'],
+      choicesJa: ['パーキングメーターをなくす', '駐車場を作る', '市の職員を新しくやとう'],
       cue: '「I am trying to」のあと',
       line: 'Look, I am trying to *remove parking meters*.',
       said: '「あのね、パーキングメーターをなくそうとしてるの」と話す。',

@@ -199,7 +199,7 @@ export const conflictPranks: Clip = {
       stem: 'What does Dwight think about Jim now?',
       ja: 'ドワイトは今、ジムのことをどう思っている？',
       choices: ['Jim may be the real killer', 'Jim was only joking with him', 'Jim saw him kill someone'], a: 0,
-      choicesJa: ['ジムが本当の犯人かも', 'ジムはただのいたずら', 'ジムに殺人を見られた'],
+      choicesJa: ['ジムが本当の犯人かも', 'ジムはただふざけていただけ', 'ジムに殺人を見られた'],
       cue: '「I think he may be」のあと',
       line: 'Jim Halpert tried to convince me I committed murder. *I think he may be the real murderer.*',
       said: '「ジムは私が人を殺したと思わせようとした。本当の殺人犯はジムかもしれない」と言う。',

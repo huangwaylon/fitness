@@ -17,7 +17,7 @@ export const badReview: Clip = {
       stem: 'Why were all the newspapers bought?',
       ja: '新聞はなぜ全部買い集められた？',
       choices: ['So Monica won’t see it', 'To keep a great review', 'To give them to friends'], a: 0,
-      choicesJa: ['モニカに見せないため', 'いい記事を取っておくため', '友だちに配るため'],
+      choicesJa: ['モニカに見せないため', 'すごくいい批評を取っておくため', '友だちに配るため'],
       cue: '最初の「I didn’t want」',
       line: '*I didn’t want her to see it*, so I ran around the neighborhood and bought all the copies I could find.',
       said: '「彼女に見せたくなくて、近所を回って見つかる新聞を全部買った」と言う。',
