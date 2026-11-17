@@ -1,15 +1,12 @@
+// A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 0
 // “I am not to be ******** with - The Office US” (the official The Office channel, BEST OF SEASON 5 - The Office US):
 // Michael brings Pam and Ryan back as salespeople with the clients his paper company took; the old salespeople want
 // those clients back, threaten to quit, and get an apology that Michael withdraws once he hands the clients over.
 // Segments from the captions, words from whisper (2026-11-16). Dwight is named by address (35.7 s, 190.4 s); the other
 // salespeople aren't, so they are "the salespeople".
-// Untested on purpose: 6–9 s (captions "deserves to know", whisper "Yes, yes"), 59–65 s (the "love triangle" aside),
-// 65–83 s and 101–119 s (short overlapping lines, "youtube him" / "You too, Pam"), 124–134 s (the "truffled" talking
-// head: the title hides the word, so it stays out), 134–166 s (the phone scramble talks over itself; "ten years" vs
-// "tennis" at 144.8 s), 175–182 s ("your secretary", "in your attempt"), 203–208 s (the company's name list), 269–274 s
-// ("Hold that thought" / "all that thought"), 343–369 s (whisper loops one line).
-// No ear checks: every key rests on words both sources agree on, and no item depends on an unnamed speaker.
-// REVIEW 2026-11-16: pass 8, fix 16, drop 0, new 0; ear checks 0
+// Untested on purpose: 6–9 s, 59–65 s (the "love triangle" aside), 65–83 s and 101–119 s (short overlapping lines),
+// 124–134 s (the "truffled" talking head), 134–166 s (the phone scramble talks over itself), 175–182 s, 203–208 s,
+// 269–274 s, 343–369 s (whisper loops one line).
 import type { Clip } from '../types.ts';
 
 export const truffled: Clip = {
@@ -18,50 +15,44 @@ export const truffled: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 75 %: the only choice about clients in a clip about clients). All three are about the clients now.
-    // why: paid extra ← "bringing over a ton of clients" heard as a bonus question; follow them ← "How is that going
-    //   to work?" heard as doubt that the clients will come along
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'dispute', reveals: ['lost'], seg: [0, 50.3],
-      stem: 'What is the first argument in the office mainly about?',
-      choices: ['Whether the clients Pam and Ryan bring are really the old staff’s',
-                'Whether Pam and Ryan should be paid extra for their clients',
-                'Whether the clients will really follow Pam and Ryan back'], a: 0,
-      cue: '「How is that going to work?」のあとの言い合い。',
-      said: '二人が顧客を連れて加わると聞き、営業たちは「うちから盗んだ顧客だ」と言い返す。',
-      mean: 'もめているのは顧客の持ち主。お金の話は出ない。',
-      trap: '「どうなるの？」を心配と取りやすい。stole from us で持ち主の争いと分かる。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'dispute', reveals: ['lost'], seg: [5.5, 50.3],
+      stem: 'What is the first argument about?',
+      ja: '最初の言い合いは何についてか？',
+      choices: ['Who the clients belong to', 'How Pam and Ryan will sell', 'Whether anyone has a job'], a: 0,
+      choicesJa: ['顧客が誰のものか', 'パムとライアンがどう売るか', '誰かに仕事があるか'],
+      cue: '「How is that」のあと',
+      line: 'You mean the clients *you stole from us*?',
+      said: '二人が顧客を連れてくると聞き、「うちから盗んだ顧客でしょ」と言い返す。',
+      mean: 'steal from 〜 ＝「〜から盗む」。もめているのは顧客の持ち主。',
+      trap: '最初の「仕事はあるの？」に引かれやすい。stole from us で持ち主の争いと分かる。',
       use: 'So how is that going to work?（で、それってどうなるの？）' },
 
-    // why: are we ← n't is lost before "we"; giving ← "getting" and "giving" differ in one weak vowel and a flap
-    { id: 's1', skill: 'sound', level: 'B2', point: 'getback', seg: [23.5, 28.6],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'getback', seg: [23.5, 28.6],
       stem: 'Fill the gap: “Yeah, ___ those clients back?”',
+      ja: '「Yeah, ___ those clients back?」の空所は？',
       choices: ['aren’t we getting', 'are we getting', 'aren’t we giving'], a: 0,
-      cue: '「Yeah」のすぐあと、最初の語の終わり。',
+      choicesJa: ['（当然）戻ってくるよね', '戻ってくるの？', '（当然）返すよね'],
+      cue: '「Yeah」のすぐあと',
       line: 'Yeah, *aren’t we getting* those clients back?',
       said: '「その顧客、うちに戻ってくるんじゃないの？」と聞く。',
-      mean: 'aren’t we ～? は当然を確かめる形。t はほぼ消え「アーンウィ」。',
-      trap: 'n’t が聞こえないと、ただの質問 are we に聞こえる。「ン」の鼻音が残るかを聞く。',
+      mean: 'aren’t we 〜? ＝「〜するんじゃないの？」と当然を確かめる形。「アーンウィ」に近い。',
+      trap: '「ン」が残るかを聞く。残らなければ are we。giving なら「ギヴィン」と v の音。',
       use: 'Aren’t we supposed to check in first?（先にチェックインするんじゃないの？）' },
 
-    // R fix: V2 (blind 80 %: the only "no" with a reason from the scene). Two near "no"s and a "not yet" now; f1's
-    //   stem no longer quotes this answer.
-    // why: never theirs ← "the clients you stole" heard as Michael's side; not yet ← the buyout talk (just after)
-    //   heard as a decision still pending
     { id: 'd2', skill: 'detail', level: 'B1', point: 'lost', reveals: ['getback'], seg: [25.0, 28.6],
       stem: 'When the salespeople ask for the clients back, what is the answer?',
-      choices: ['No; they lost those clients', 'No; they were never theirs',
-                'Not yet; corporate must decide'], a: 0,
-      cue: '質問のすぐあと、最初の一語と動詞。',
+      ja: '営業たちが顧客を返してと言うと、答えは？',
+      choices: ['No, they lost those clients', 'No, they were never really theirs', 'Not yet, corporate decides'], a: 0,
+      choicesJa: ['だめ、彼らが失った', 'だめ、もともと本当は彼らのものではない', 'まだ、本社が決める'],
+      cue: '質問のすぐあと',
       line: 'No, you *lost* those clients.',
       said: '「いや、君たちはその顧客を失ったんだ」と答える。',
-      mean: '戻す気はまったくない。取られた側の負け、という言い方。',
-      trap: 'lost は「持っていたのに失った」。元は彼らの顧客と認めている。会社の話は次の人の言い分。',
-      use: 'Sorry, that ship has sailed.（ごめん、もう手遅れだよ）' },
+      mean: 'lose ＝ 失う（過去形 lost）。取られた側の負け、という言い方。',
+      trap: 'never theirs（もともと違う）と思いやすいが、lost は「持っていたのに失った」。',
+      use: 'Sorry, you lost your chance.（ごめん、チャンスを逃したね）' },
 
-    // R fix: V2 (blind 50 %: phone / disgusting were absurd here) + S1 (the stem quoted d2's answer). Near readings
-    //   of call and foul now; the cue no longer says "sports", which pointed at the key.
-    // why: a vote ← call read as "call for (a vote)"; a bad mistake ← foul read as foul-up / ひどい
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'foul', seg: [26.3, 30.55],
+    // retired (A2): “I call foul” is a rare sports idiom
+    { id: 'f1', skill: 'phrase', level: 'C1', point: 'foul', seg: [26.3, 30.55], retired: true,
       stem: 'Right after Michael says no, what does the short protest mean?',
       choices: ['That isn’t fair play', 'I want a vote on that', 'That was a bad mistake'], a: 0,
       cue: '「sir」の前の三語。決まった言い方。',
@@ -71,64 +62,54 @@ export const truffled: Clip = {
       trap: 'call を「求める」、foul を「ひどい失敗」と取りやすい。スポーツの決まり文句として聞く。',
       use: 'Wait, I call foul on that.（ちょっと、それは反則だよ）' },
 
-    // R fix: V2 (blind 60 %) + S3 (the cue named "bought out", a word only the key had). New distractors are
-    //   arguments Dwight could have made; the cue now points at the repeated verb without naming it.
-    // why: his first ← the salespeople's "the clients you stole from us"; Pam and Ryan work for it ← "the company"
-    //   heard with the wrong people as its object
     { id: 'i2', skill: 'infer', level: 'B2', point: 'boughtout', seg: [30.1, 37.6],
       stem: 'What is Dwight’s argument for getting the clients back?',
-      choices: ['The company bought Michael out, so it owns the clients too',
-                'The clients were his first, so they should go back to him',
-                'Pam and Ryan work for the company now, so their clients do too'], a: 0,
-      cue: '「so」の前と後に、同じ動詞が二回。',
+      ja: '顧客を取り戻すための、ドワイトの言い分は？',
+      choices: ['The company now owns the clients', 'The clients were his first', 'Pam and Ryan work there now'], a: 0,
+      choicesJa: ['今は会社が顧客を持っている', 'もともと彼の顧客だった', 'パムとライアンが今そこで働く'],
+      cue: '「so」の前と後',
       line: 'You were *bought out*, so the company then bought out all of the stolen clients.',
-      said: '「あなたの会社は買収された。だから盗まれた顧客ごと会社のものになった」と言う。',
+      said: '「あなたの会社は買収された。だから盗んだ顧客ごと会社のものだ」と言う。',
       mean: 'buy out ＝ 会社ごと買い取る。顧客も本社のものだから戻るはず、という理屈。',
-      trap: '「元は自分の顧客」と言いそうだが、理屈は買収。買われたのは you の会社。',
+      trap: '「元は自分の顧客」と言いそうだが、理屈は買収。so のあとを聞く。',
       use: 'The company was bought out last year.（その会社は去年買収された）' },
 
-    // R fix: V2 (blind 70 %). "Joking to ease the tension" (the Japanese softener frame) replaces "pointing them to
-    //   the proper place", which read as a filler.
-    // why: easing the tension ← the trash-can punchline heard as a friendly joke; upstairs ← an office "department"
-    //   heard as corporate
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'trash', seg: [35.5, 50.3],
-      stem: 'What is Michael doing with his line about the complaint department?',
-      choices: ['Making it clear their objections will be ignored',
-                'Joking to ease the tension before he hears them out',
-                'Promising to pass their objections upstairs'], a: 0,
-      cue: '「department」のあと、その正体を言う一文。',
+      stem: 'What does Michael mean by the “complaint department”?',
+      ja: 'マイケルの「complaint department」はどういう意味？',
+      choices: ['He won’t listen to complaints', 'He’ll pass complaints upstairs', 'He wants to hear them out'], a: 0,
+      choicesJa: ['苦情は聞かない', '苦情を上に伝える', '話を全部聞きたい'],
+      cue: '「department」のあと',
       line: 'you can talk to our *complaint department*. *It’s a trash can.*',
       said: '「文句があれば苦情係へどうぞ。ゴミ箱だけど」と言う。',
-      mean: '苦情はゴミ箱行き、つまり聞く気はない。直前の「ルールは私が決める」と同じ態度。',
-      trap: '冗談の形なので場を和ませる一言に取りやすい。直前の follow them blindly が本気を示す。',
-      use: 'Feel free to complain. I won’t listen.（文句はどうぞ。聞かないけど）' },
+      mean: 'complaint ＝ 苦情。苦情はゴミ箱行き、つまり聞く気はない、という冗談。',
+      trap: '冗談の形なので、聞いてくれると思いやすい。It’s a trash can（ゴミ箱）を聞く。',
+      use: 'Where can I make a complaint?（苦情はどこで言えますか）' },
 
-    // why: days ← "six" heard, the unit lost; sixteen ← six weeks ≈ "sixteen" when weeks is weak; months ← a long time
-    //   "through a lot" sounds like
     { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [50.5, 55.7], keep: true,
-      stem: 'How long have Pam, Ryan and the speaker been through a lot together?',
+      stem: 'How long have Michael, Pam and Ryan been through a lot together?',
+      ja: 'マイケルとパムとライアンは、どれくらいの間いっしょに苦労してきた？',
       choices: ['Six days', 'Six weeks', 'Sixteen weeks', 'Six months'], a: 1,
-      cue: '「in the last」のあと、数と単位。',
+      choicesJa: ['6日', '6週間', '16週間', '6か月'],
+      cue: '「in the last」のあと',
       line: 'Pam and Ryan and I have been through a lot in the last *six weeks*.',
       said: '「この6週間、三人でいろいろ乗り越えてきた」と言う。',
-      mean: 'go through a lot ＝ 苦労を共にする。短い間に強い仲間意識ができた、という話。',
-      trap: 'six と weeks がつながる。-teen の長い「ティーン」は聞こえない。',
+      mean: 'go through a lot ＝ いろいろ苦労する。in the last 〜 ＝ この〜の間。',
+      trap: 'six と weeks がつながる。sixteen なら「ティーン」が長い。months なら「マンス」。',
       use: 'We’ve been through a lot together.（いろいろ一緒に乗り越えてきた）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [86.5, 89.9],
       stem: 'Type the advice: “I think ___ cool it with that.” (4 words)', answer: "you're gonna want to",
-      cue: '「I think」のあと、一続きに聞こえる部分。',
+      ja: '忠告「I think ___ cool it with that.」の空所を書こう（4語）',
+      cue: '「I think」のあと',
       line: 'I think *you’re gonna want to* cool it with that',
-      said: '「それ、控えたほうがいいよ」と言う。4語が一続きで「ヨガナワナ」。',
-      mean: '「～したほうがいい」というやわらかい忠告。未来の予想ではない。',
-      trap: 'going to と want to を全部待つと聞き逃す。どちらも短く弱い。',
+      said: '「それ、控えたほうがいいと思う」と言う。',
+      mean: 'you’re gonna want to 〜 ＝「〜したほうがいい」。「ヨガナワナ」とつながる。',
+      trap: 'going to も want to も短く弱い。4語に分けて書く。',
       use: 'You’re gonna want to bring a jacket.（上着を持って行ったほうがいいよ）' },
 
-    // anchor: 95.3 s "This is awkward to talk about" before the hedge, and 98.1 s "but definitely is… right now":
-    //   the hedge is taken back in the same breath, so it can't be doubt
-    // why: real doubt ← "may or may not be" read as かもしれない; only teasing ← the self-cancelling sentence read as
-    //   a joke with nothing behind it
-    { id: 'c1', skill: 'infer', level: 'C2', point: 'mutiny', seg: [94.95, 101.2],
+    // retired (A2): a C2 paraphrase of a hedge
+    { id: 'c1', skill: 'infer', level: 'C2', point: 'mutiny', seg: [94.95, 101.2], retired: true,
       stem: 'Which plain-English version keeps what the warning about the warehouse means?',
       choices: ['“There is a revolt, and I hate being the one to say it.”',
                 '“There may be a revolt, but nobody knows for sure yet.”',
@@ -140,39 +121,32 @@ export const truffled: Clip = {
       trap: 'may or may not を本当の迷いと取りやすい。ぼかしのあとに but と強い語が来たら、そちらが本音。',
       use: 'I hate to say it, but we’re lost.（言いたくないけど、道に迷った）' },
 
-    // why: twelve ← "ten" plus the "y" of "years" heard as a longer number; twenty ← -teen/-ty confusion of the
-    //   same digit; two ← the weak "for" swallows part of "ten"
     { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [167.2, 171.3], keep: true,
       stem: 'How long does the angry salesman say the lost client was his?',
+      ja: '怒った営業は、失った客が何年自分の顧客だったと言う？',
       choices: ['Two years', 'Ten years', 'Twelve years', 'Twenty years'], a: 1,
-      cue: '「my client for」のあと。',
+      choicesJa: ['2年', '10年', '12年', '20年'],
+      cue: '「my client for」のあと',
       line: 'He was my client for *ten years*.',
       said: '「あの人は10年もおれの顧客だったんだ」と怒る。',
-      mean: '長年の大事な顧客を失った、という怒り。数字が重さを伝えている。',
-      trap: 'for が弱く ten とつながると、短い数に聞こえやすい。ten の n は次の years とつながる。',
+      mean: 'for ten years ＝ 10年間。長年の大事な顧客を失った、という怒り。',
+      trap: 'ten は短く、n が次の years とつながる。twenty なら「トゥエ」で始まる。',
       use: 'I’ve been coming here for ten years.（ここには10年通ってる）' },
 
-    // R fix: V2 (blind 70 %). Both distractors are now client-centred, so the theme no longer points at the key.
-    // why: apologizes ← the apology the scene turns to next; on their own ← "We'll start our own paper company"
-    //   right after, and "want our clients back" without "or we quit"
     { id: 'd5', skill: 'detail', level: 'B1', point: 'quit', seg: [190.8, 199.0],
       stem: 'What do the salespeople tell Michael they will do?',
-      choices: ['Quit unless they get their clients back', 'Quit unless Michael apologizes to them',
-                'Win their clients back on their own'], a: 0,
-      cue: '「or」のあとの短い動詞と、続く返事の数。',
+      ja: '営業たちはマイケルに、何をすると言う？',
+      choices: ['Quit unless they get the clients', 'Quit unless Michael says sorry', 'Win the clients back alone'], a: 0,
+      choicesJa: ['顧客を返さないなら辞める', 'マイケルが謝らないなら辞める', '自分たちで顧客を取り戻す'],
+      cue: '「or」のあと',
       line: 'We want our clients back *or we quit*, Michael.',
       said: '「顧客を返さないなら辞める」と言い、次々に「おれも」「私も」と続く。',
-      mean: 'A or B ＝「Aしないと Bする」という最後通告の形。',
-      trap: 'or のあとが弱く短いので、前半だけで「頼み」に聞こえやすい。or のあとに条件の重さが来る。',
+      mean: 'A or B ＝「Aしないと Bする」。quit ＝ 辞める。',
+      trap: '謝罪の話はあとで出る。ここで求めているのは clients back（顧客を返すこと）。',
       use: 'Fix it or I’m leaving.（直さないなら帰るよ）' },
 
-    // anchor: 224.4 s "But if you stay, I want an apology, and I want a big one": the praise and money only work as a
-    //   dare; he plans for them to stay
-    // R fix: V2 (blind 50 %). "Making peace, hoping they will stay" (right goal, wrong move) replaces "glad to be rid
-    //   of them", which the apology demand rules out at a glance.
-    // why: cheering ← "I love this idea, and I fully support you" taken at face value; making peace ← the money and
-    //   "no hard feelings" heard as a peace offering
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bluff', seg: [215.4, 228.15],
+    // retired (A2): “calling their bluff” is a C1 reading
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bluff', seg: [215.4, 228.15], retired: true,
       stem: 'When Michael backs their plan and hands out money, what is he doing?',
       choices: ['Calling their bluff, sure that they will stay',
                 'Cheering them on, sure that they will succeed',
@@ -184,10 +158,8 @@ export const truffled: Clip = {
       trap: 'no hard feelings を仲直りと取りやすい。but のあとで謝罪を求めるので挑発。',
       use: 'Go ahead, I dare you.（やれるものならやってみな）' },
 
-    // R fix: V2 (blind 55 %: "makes up an opposite word" named the joke). Three readings of the same short reply now.
-    // why: a dig at him ← backward = 遅れている, heard as an insult he pushes back on; his plan ← a confident one-word
-    //   reply heard as "that was the point"
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'frontwards', seg: [228.0, 233.35],
+    // retired (A2): a “why does it get a laugh” item (frontwards)
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'frontwards', seg: [228.0, 233.35], retired: true,
       stem: 'Why does Michael’s reply to “completely backwards” get a laugh?',
       choices: ['He just flips their word around, as if that were a reason',
                 'He hears “backwards” as calling him slow, and objects',
@@ -199,81 +171,56 @@ export const truffled: Clip = {
       trap: '「遅れた」の意味や認めた返事と取りやすい。back を front に変えただけ。',
       use: 'You’ve got it backwards.（それ、逆だよ）' },
 
-    // R fix: V2 (blind 50 %: "add to their complaint" ruled out any non-blaming reading). The stem is neutral now, and
-    //   "family forgives" (the Japanese frame) replaces "care like a parent".
-    // why: forgiven ← family = 身内は許し合う; protect them ← "attacking corporate" heard as the real problem
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'family', seg: [233.3, 244.5],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'family', seg: [233.3, 244.5],
       stem: 'What point does the line about being “a family” make?',
-      choices: ['He turned on the people he called his own', 'He should be forgiven, the way family forgives',
-                'He should have kept corporate from hurting them'], a: 0,
-      cue: '「family」のあと、「Then」で始まる一文。',
+      ja: '「a family」の話で、何を言いたい？',
+      choices: ['He turned on his own people', 'Family should always forgive him', 'He let corporate hurt them'], a: 0,
+      choicesJa: ['自分の仲間を攻撃した', '家族ならいつも許すべき', '本社に傷つけさせた'],
+      cue: '「family」のあと',
       line: 'you always said *we were a family*. *Then you went after us.*',
       said: '「いつも家族だと言ってたのに、その僕らを攻撃した」と言う。',
-      mean: '家族と言っておきながら裏切った、という指摘。だから謝るべきはそっち、と続く。',
-      trap: 'family から「身内なら許す」と取りやすい。言いたいのは Then のあとの「裏切り」。',
+      mean: 'go after 〜 ＝「〜を攻撃する」。家族と言いながら裏切った、という指摘。',
+      trap: 'family から「身内なら許す」と思いやすい。言いたいのは Then のあと。',
       use: 'I thought we were friends.（友だちだと思ってたのに）' },
 
-    // R fix: S4: the seg ended 0.3 s after "wrong" (and began 0.2 s before "No"); now 246.0–249.8 s.
-    // why: both to blame ← "from my point of view, from their point of view" heard as weighing both sides; they're
-    //   wrong ← "the wrong" heard without "I am in"
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'wrong', seg: [246.0, 249.8],
-      stem: 'In his comment to the camera, how does Michael see the fight now?',
-      choices: ['He is the one in the wrong', 'Both sides share the blame', 'The salespeople are in the wrong'], a: 0,
-      cue: '「No matter how」のあと、文の最後。',
+      stem: 'In his talk to camera, how does Michael see the fight now?',
+      ja: 'カメラに向かって、マイケルは今、けんかをどう見ている？',
+      choices: ['He is in the wrong', 'Both sides share blame', 'The salespeople are wrong'], a: 0,
+      choicesJa: ['悪いのは自分', '両方に責任がある', '悪いのは営業たち'],
+      cue: '「No matter how」のあと',
       line: 'No matter how I look at this, *I am in the wrong*.',
       said: '「どう考えても、悪いのは自分だ」とカメラに言う。',
-      mean: 'in the wrong ＝ 非がある側にいる。ここで初めて自分の非を認めている。',
-      trap: 'the wrong だけ聞くと相手の話にも聞こえる。主語の I を聞き取る。',
+      mean: 'in the wrong ＝ 悪い側にいる。no matter how 〜 ＝ どう〜しても。',
+      trap: 'the wrong だけ聞くと、相手の話にも聞こえる。主語の I を聞く。',
       use: 'I was in the wrong. I’m sorry.（悪いのは私でした。ごめんなさい）' },
 
-    // why: only two ← he names just two views out loud; loses count ← "like" heard as a guess
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'hundred', reveals: ['wrong'], seg: [250.2, 265.2],
-      stem: 'Why is his count of the ways he looked at it funny?',
-      choices: ['He treats “a hundred” as an exact number', 'He admits he really looked at it only two ways',
-                'He keeps losing count of the ways partway'], a: 0,
-      cue: '二つの見方のあと、残りをいくつと言うか。',
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'hundred', reveals: ['wrong'], seg: [250.2, 265.2],
+      stem: 'Why is his count of “a hundred” ways funny?',
+      ja: '「a hundred」通りの数え方は、なぜおかしい？',
+      choices: ['He counts exactly, 2 plus 98', 'He only saw it two ways', 'He loses count partway through'], a: 0,
+      choicesJa: ['2＋98と本当に数える', '2通りしか考えていない', '途中で数が分からなくなる'],
+      cue: '二つの見方のあと',
       line: 'like, *a hundred* different ways. From my point of view, from their point of view… *98 others*',
       said: '「100通りは考えた。自分の視点、相手の視点、ほか98通り」と言う。',
-      mean: 'like a hundred は大げさな「たくさん」。それを2＋98と本当に数えるのがおかしい。',
-      trap: '二つしか挙げていないと取りやすいが、残りを98と言って100にそろえている。',
+      mean: 'like a hundred ＝「100くらい」＝たくさん。それを2＋98と本当に数えるのがおかしい。',
+      trap: '二つしか挙げていないと思いやすいが、残りを 98 others と言って100にしている。',
       use: 'I’ve told you, like, a hundred times.（もう百回は言ったよ）' },
 
-    // R fix: V2 + S1 (blind 55 %: "before his last conclusion" in the stem said "summing-up"). The stem names the moment
-    //   by "98 others"; "an aside before he goes on counting" replaces the literal "limit".
-    // why: a new point ← a two-word phrase before a clause heard as "also"; an aside ← he is mid-count, so the phrase
-    //   sounds like a pause in the list
     { id: 'm1', skill: 'marker', level: 'B2', point: 'bottomline', reveals: ['wrong'], seg: [259.5, 265.4],
-      stem: 'What does the two-word phrase after “98 others” signal?',
-      choices: ['A summing-up after all the views', 'A new point he has not made yet',
-                'An aside before he goes on counting'], a: 0,
-      cue: '「98 others」のあと、言い切る直前の二語。',
+      stem: 'What does “bottom line” signal here?',
+      ja: 'ここでの「bottom line」は何の合図？',
+      choices: ['A summing-up after all that', 'A brand new point', 'An aside before more counting'], a: 0,
+      choicesJa: ['いろいろ考えたあとのまとめ', 'まだ言っていない新しい話', 'また数える前の脇道'],
+      cue: '「98 others」のあと',
       line: '98 others, and… *bottom line*, I’m in the wrong.',
       said: '「ほかに98通り。要するに、悪いのは自分」と言う。',
-      mean: 'bottom line ＝ 結局のところ。いろいろ言ったあと、結論を言う合図。',
-      trap: '数えている途中なので、ひと休みや追加の話と取りやすい。会計の最終行から来た「結論」の合図。',
+      mean: 'bottom line ＝「結局・要するに」。いろいろ言ったあと、結論を言う合図。',
+      trap: '数えている途中なので、話の続きと思いやすい。bottom line のあとが結論。',
       use: 'Bottom line, we need more time.（要するに、もっと時間が要る）' },
 
-    // R fix: V2 (blind 75 %: the title and c2's stem gave away "returns the clients", and only one choice had a
-    //   twist). "They turn down his apology" (right outcome, wrong side) is the near miss now. Also N6: the old trap
-    //   held a broken character (U+FFFD).
-    // why: they turn it down ← "That's fair. That's all right." heard as a refusal; keeps them ← he holds back at
-    //   first ("there won't be enough clients")
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', seg: [269.0, 336.0],
-      stem: 'How does the apology meeting end?',
-      choices: ['He returns the clients but takes back his apology',
-                'He returns the clients, and they turn down his apology',
-                'He keeps the clients, but they accept his apology'], a: 0,
-      cue: '「Fine」のあと、「However」で始まる一言。',
-      said: '謝罪を受け入れてほしい彼に、相手は顧客のことだけ聞く。結局顧客を返し、謝罪は取り消す。',
-      mean: 'rescind ＝ 取り消す。望んだ形の仲直りにはならなかった。',
-      trap: 'That’s fair を断りと取りやすいが、取り消したのは彼。相手は流している。',
-      use: 'I take that back.（今のは取り消す）' },
-
-    // R fix: V2 (blind 55 %). The choices are now one yes/no frame each way: the key agrees with the excuse, the
-    //   distractors turn it into praise or into doubt.
-    // why: looks fine anyway ← "Looks…" heard as the start of praise; someone helped ← "it" heard as "like you had
-    //   help", the opposite direction
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'looksit', seg: [277.4, 280.75],
+    // retired (A2): “Looks it” is a C1 put-down
+    { id: 'f3', skill: 'phrase', level: 'C1', point: 'looksit', seg: [277.4, 280.75], retired: true,
       stem: 'After the excuse about having no help, what does the two-word reply mean?',
       choices: ['Yes, and the fort shows it', 'Yes, but it looks fine anyway',
                 'No, it looks like someone helped'], a: 0,
@@ -284,69 +231,67 @@ export const truffled: Clip = {
       trap: 'looks をほめ言葉の出だしと取りやすい。it は直前の「手伝いなし」を指す。',
       use: 'You look tired. — I feel it.（疲れてるね。—実際疲れてる）' },
 
-    // why: playing with ← "playing" taken literally (遊ぶ); best clients ← the scene is about clients, so "favorites"
-    //   heard as favorite clients
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'favorites', seg: [288.4, 292.9],
       stem: 'What does Michael apologize for at the meeting?',
-      choices: ['Treating Pam and Ryan better than the rest', 'Spending work time playing around with Pam and Ryan',
-                'Letting Pam and Ryan pick the best clients'], a: 0,
-      cue: '「I’ve been」のあとの動詞と名詞。',
+      ja: 'マイケルは会議で何を謝る？',
+      choices: ['Treating Pam and Ryan better', 'Playing around with Pam and Ryan', 'Letting Pam and Ryan pick clients'], a: 0,
+      choicesJa: ['パムとライアンをひいきした', 'パムとライアンと遊んでいた', 'パムとライアンに顧客を選ばせた'],
+      cue: '「I’ve been」のあと',
       line: 'I am sorry that I’ve been *playing favorites* with Pam and Ryan.',
       said: '「パムとライアンをひいきしてきたことを謝る」と言う。',
       mean: 'play favorites ＝ 特定の人をひいきする。仕事でも家庭でもよく使う。',
-      trap: 'playing を「遊ぶ」と取りやすい。play favorites で一つの決まった言い方。',
+      trap: 'playing（遊ぶ）から、遊んでいたと思いやすい。play favorites で決まった言い方。',
       use: 'A good teacher doesn’t play favorites.（いい先生はひいきしない）' },
 
-    // why: aren't you ← a complaint reading, with n't lost in fast speech; giving up ← "us" links to "our" and its s
-    //   sounds like p is lost
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', seg: [291.0, 336.0],
+      stem: 'How does the apology meeting end?',
+      ja: '謝罪の会議はどう終わる？',
+      choices: ['Clients back, apology taken back', 'Clients back, apology turned down', 'No clients, apology accepted'], a: 0,
+      choicesJa: ['顧客は返し、謝罪は取り消す', '顧客は返し、謝罪は断られる', '顧客は返さず、謝罪は受け入れられる'],
+      cue: '「However」のあと',
+      said: '結局、顧客は返す。でも「ただし謝罪は取り消す」と言う。',
+      mean: 'rescind ＝ 取り消す。Have your clients ＝ 顧客は持っていけ。',
+      trap: 'That’s fair（いいよ）を断りと思いやすい。取り消したのはマイケル。',
+      use: 'I take that back.（今のは取り消す）' },
+
     { id: 's2', skill: 'sound', level: 'B2', point: 'givingus', seg: [296.3, 299.4],
       stem: 'Fill the gap: “___ clients back?”',
+      ja: '「___ clients back?」の空所は？',
       choices: ['Are you giving us our', 'Aren’t you giving us our', 'Are you giving up our'], a: 0,
-      cue: '謝罪のすぐあと、文の真ん中の短い二語。',
+      choicesJa: ['私たちの〜を返してくれるの？', '私たちの〜を返してくれないの？', '私たちの〜をあきらめるの？'],
+      cue: '謝罪のすぐあと',
       line: '*Are you giving us our* clients back?',
       said: '謝罪が終わるとすぐ「で、顧客は返してくれるの？」と聞く。',
-      mean: 'us our がつながり「アサウア」。気持ちより顧客、という一言でもある。',
-      trap: 'us の s が our につながり、別の語に聞こえやすい。動詞のあとの人称を聞く。',
+      mean: 'give 〜 back ＝ 返す。us our がつながり「アサウア」に近い。',
+      trap: 'Aren’t なら「ン」が入る。giving up なら p で止まる。us our は「アサウア」。',
       use: 'Are you giving us a discount?（割引してくれるの？）' },
 
-    // R fix: V2 (blind 55 %). "Says no, but softens it with a gift" (the bark offer right after) replaces "asks them to
-    //   accept that", which no reading of the line supports.
-    // why: a yes ← "if… everyone would say" heard as a condition for returning them; a no with a gift ← "my gift to
-    //   you" heard as a consolation prize. The seg now runs to 312.3 s, so the gift line is in it.
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'dodge', seg: [297.5, 312.3],
-      stem: 'When asked about the clients, what does Michael’s answer do?',
-      choices: ['Steers away from it, back to the apology', 'Says yes, once everyone accepts the apology',
-                'Says no, but softens it with a gift'], a: 0,
-      cue: '質問のあと、「If we could just」から先。',
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'dodge', seg: [297.5, 312.3],
+      stem: 'How does Michael answer the question about the clients?',
+      ja: '顧客についての質問に、マイケルはどう答える？',
+      choices: ['He avoids the question', 'He says yes, after apologies', 'He says no, with a gift'], a: 0,
+      choicesJa: ['質問をかわす', '謝罪のあとならいいと言う', '贈り物つきで断る'],
+      cue: '「If we could just」のあと',
       line: 'If we could just focus… and everyone would say, “*Apology accepted*,” I think we would all feel better.',
       said: '質問には答えず、「順に『謝罪を受け入れます』と言えば気分が良くなる」と話す。',
-      mean: '質問をかわして、自分の望む流れに戻している。yes も no も言っていない。',
-      trap: 'if の文を交換条件と取りやすい。聞かれたことに答えているか、まず確かめる。',
+      mean: 'If we could just 〜 ＝「〜できたら」。質問をかわして、自分の話に戻している。',
+      trap: 'if の文を交換条件と思いやすい。yes も no も言っていない。',
       use: 'Let’s not get off track here.（話をそらさないでいこう）' },
 
-    // R fix: V2 (blind 50 %). "Promised them the very best clients" (promise heard, wrong content) and "would quit"
-    //   (the salespeople's threat moved onto Pam and Ryan) replace two distractors that read as fillers.
-    // why: best clients ← "promised" and "clients" in one breath; would quit ← the quit threat earlier in the clip
     { id: 'd6', skill: 'detail', level: 'B1', point: 'notenough', seg: [319.0, 325.8],
       stem: 'Why doesn’t Michael want to give the clients back?',
-      choices: ['Pam and Ryan would not have enough clients left', 'He promised Pam and Ryan the very best clients',
-                'Pam and Ryan would quit if they lost those clients'], a: 0,
-      cue: '「there won’t be」のあとと、「promised」の中身。',
+      ja: 'マイケルはなぜ顧客を返したくない？',
+      choices: ['Pam and Ryan would lack clients', 'He promised them the best ones', 'Pam and Ryan would quit'], a: 0,
+      choicesJa: ['パムとライアンの分が足りなくなる', '二人に一番いい顧客を約束した', 'パムとライアンが辞める'],
+      cue: '「there won’t be」のあと',
       line: 'there *won’t be enough clients* for Pam and Ryan. And I *promised* both of them…',
       said: '「返したらパムとライアンの分が足りない。二人を営業にすると約束した」と言う。',
-      mean: '返すと二人の分が足りず、営業にするという約束が守れない。',
-      trap: 'promised と clients から「顧客を約束」と取りやすい。中身は「営業にする」こと。',
-      use: 'I promised her I’d be there.（行くって彼女に約束したんだ）' },
+      mean: 'not enough 〜 ＝「〜が足りない」。営業にするという約束が守れなくなる。',
+      trap: 'promised から「いい顧客を約束」と思いやすい。約束の中身は「営業にする」こと。',
+      use: 'There won’t be enough seats for everyone.（全員分の席は足りない）' },
 
-    // anchor: 330.3 s "However, I rescind my apology" (taking it back out of spite) and 333.1 s "You are not reacting
-    //   at all as I had hoped": he wanted his apology to matter to them, and it didn't
-    // R fix: V2 (blind 65 %: the only hurt-feelings choice). All three are feelings now; the near miss is "upset
-    //   for Pam and Ryan" (right feeling, wrong target). S1: the stem quoted "Have your clients", half of g2's key;
-    //   it quotes only "Fine…" now. (Listing `outcome` in reveals instead broke the play-3 C2 draw. The line's
-    //   "rescind" shows only after the answer, and a draw's gist always comes first.)
-    // why: relieved ← "Fine. Have your clients" heard as relief; upset for Pam and Ryan ← his reason just before
-    //   ("there won't be enough clients for Pam and Ryan")
-    { id: 'c2', skill: 'attitude', level: 'C2', point: 'allalong', reveals: ['notenough'], seg: [325.6, 335.8],
+    // retired (A2): a C2 reading of what Michael hides
+    { id: 'c2', skill: 'attitude', level: 'C2', point: 'allalong', reveals: ['notenough'], seg: [325.6, 335.8], retired: true,
       stem: 'When Michael answers “So?” with “Fine…”, what is he trying not to say?',
       choices: ['That he is hurt they only cared about the clients',
                 'That he is upset Pam and Ryan will be left short',
