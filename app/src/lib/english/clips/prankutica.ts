@@ -1,15 +1,9 @@
+// A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 8, new 2
 // “Pranking Utica - The Office US” (the official The Office channel, Best of Season 4): Michael and Dwight sneak into
 // the Utica branch's warehouse with Jim waiting in the car, trade the silly-string plan for the branch's copier, get
-// stuck, and Jim runs into Karen; she has the last word to camera.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 195 s; whisper's lines after that are
-// a loop.
-// Untested on purpose: the Afro-wig offer at 5 s, "Go, go… / Move, move…" and "This is the dumbest thing we've ever
-// done" at 37–44 s (speakers unclear), "great Scott / choking hazard poster" at 90–94 s (who is meant is unclear),
-// the stuck copier at 112–133 s (crosstalk; only "Leave us… help us, Jim" and Jim's reply, in both sources, are
-// used), and the Karen lines at 135–160 s (sexual, and they lean on backstory).
-// EAR CHECK: 0.6–4.1 s a1 — "I can't believe we're here… — Believe it." is excited, not dreading (assumed excited:
-//   the reply "Believe it" and the plan that follows; the words alone allow both)
-// REVIEW 2026-11-16: pass 5, fix 16, drop 0, new 0; ear checks 1
+// stuck, and Jim runs into Karen; she has the last word to camera. Talk ends at ≈ 195 s.
+// Untested on purpose: 5 s (the wig), 37–45 s (speakers unclear), 90–94 s, 112–124 s (crosstalk), 130–160 s (the Karen
+// lines: sexual, backstory).
 import type { Clip } from '../types.ts';
 
 export const prankUtica: Clip = {
@@ -18,9 +12,7 @@ export const prankUtica: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: nervous ← "can't" heard as a negative feeling (信じたくない); far drive ← "can't believe we're here" heard
-    //   as about the distance
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'arrive', seg: [0.2, 4.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'arrive', seg: [0.2, 4.6], retired: true,
       stem: 'In the opening lines, how does the speaker feel about being there?',
       choices: ['Thrilled that it’s finally happening', 'Nervous and wishing he hadn’t come',
                 'Shocked by how far they had to drive'], a: 0,
@@ -30,72 +22,37 @@ export const prankUtica: Clip = {
       mean: 'I can’t believe は驚きの決まり文句。ここは待ちに待った興奮。',
       trap: 'can’t から否定の気持ちと取りやすい。この決まり文句は、うれしいときにも使う。',
       use: 'I can’t believe we’re finally here!（ついに来たなんて信じられない！）' },
-
-    // R fix: V2 — "stairwell" was a filler (blind 70 %); it's now the near-sound "I'm leaving in the car" with
-    //   "not" lost
-    // why: lobby ← the usual lookout spot in a heist script; drive off ← "not" lost and "leaving the car" heard as
-    //   leaving in it
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'car', seg: [5.5, 8.6],
-      stem: 'Where will Jim be while the others go in?',
-      choices: ['Staying in the car outside', 'Watching from the front lobby', 'Driving off, then coming back'], a: 0,
-      cue: '「Michael」のあとの一文。',
-      line: 'No. Michael, *I’m not leaving the car*.',
-      said: 'かつらを勧められ、「いや。マイケル、僕は車から出ない」と答える。',
-      mean: 'leave the car ＝ 車を降りる。ジムは外で待つ役で、中には入らない。',
-      trap: 'leaving を「出発」と取ると逆になる。leave ＋ 場所は「そこを出る」。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'car', seg: [5.1, 8.6],
+      stem: 'Where will Jim be while the others go in?', ja: 'ほかの二人が中に入る間、ジムはどこにいる？',
+      choices: ['Staying in the car', 'Waiting in the lobby', 'Driving around town'], a: 0,
+      choicesJa: ['車の中にいる', 'ロビーで待つ', '町を車で回る'],
+      cue: '「Michael」のあと',
+      line: 'Do you want the Afro-wig? — No. Michael, *I’m not leaving the car*.',
+      said: 'かつらを勧められ、ジムが「いや。マイケル、ぼくは車から出ない」と言う。',
+      mean: 'leave the car ＝ 車を降りる、車から出る。ジムは外で待つ。',
+      trap: 'leaving（出発する）から、車で行ってしまうと思いやすい。leave ＋ 場所は「そこを出る」。',
       use: 'I’m not leaving the house today.（今日は家から出ない）' },
-
-    // R fix: V2 — the key was the only choice that kept the prank going (blind 75 %); all three now name what they
-    //   end up doing
-    // why: poster ← "that choking hazard poster" (92 s) is said just before "something far better"; spray and hide ←
-    //   the plan as told, plus the close call with the guard (72–82 s)
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'switch', reveals: ['copier', 'plan'], seg: [9.5, 112.6],
-      stem: 'How does the prank change once they’re inside?',
-      choices: ['They switch from the string to the copier', 'They switch from the string to a poster',
-                'They spray the string, then hide from a guard'], a: 0,
-      cue: '計画の説明と、中で見つけた物の話。',
-      line: 'We’ve got something *far better*.',
-      said: '最初はシリーストリングの計画。中に入ると「もっといい物」を見つけ、そちらに切りかえる。',
-      mean: 'いたずらの中身が途中で変わる流れ。far better が切りかえの合図。',
-      trap: 'poster は直前に出た語で、比べられる側。計画と、実際にしたことを比べる。',
-      use: 'Change of plans, everyone.（みんな、予定変更だよ）' },
-
-    // R fix: V2 + N7 — "wheel out the copier" gave away d2 (wheels) and d3 (copier), and made the key easy (blind
-    //   65 %); it's now "take on the guards", a keyword trap on "if we have to defend ourselves"
-    // why: take on the guards ← "defend ourselves… security guard" heard as part of the plan, not a fallback;
-    //   pose as guards ← "security guard" comes up in the next lines
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', reveals: ['bejesus'], seg: [10.0, 25.8],
-      stem: 'What is the plan Michael lays out?',
-      choices: ['Sneak in as workers and spray silly string',
-
-                'Sneak in as workers and take on the guards', 'Pose as guards and lock the staff out'], a: 0,
-      cue: '「sneak inside」のあと、then で続く部分。',
-      line: 'we pretend that we are *warehouse workers*, and we will *silly string* the bejesus out of the place.',
-      said: '「作業員のふりで忍び込み、シリーストリングで中をめちゃくちゃにする」と説明する。',
-      mean: '最初の計画はいたずらスプレー。コピー機は、あとで中で見つけたもの。',
-      trap: '警備員の話は「もし身を守るなら」の場合の話。計画は、最初の説明の then のあとを聞く。',
-      use: 'Here’s the plan: we wait, then we move.（作戦はこう。待って、それから動く）' },
-
-    // R fix: V2 — "get down there" was weak (blind 65 %); it's now a tense trap, "gonna" lost and "go down" heard as
-    //   a past story
-    // why: last time ← "gonna" lost, so "how it… go down" heard as a story about the past; go wrong ← "go down" as
-    //   sink or fail
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'godown', seg: [10.0, 13.3],
-      stem: 'When Michael starts explaining, what does his first line mean?',
-      choices: ['This is how things will happen', 'This is how it all went last time',
-                'This is how it could all go wrong'], a: 0,
-      cue: '「Dwight」「Yeah?」のあとの一文。',
-      line: '*Here’s how it’s gonna go down.*',
-      said: '「よし、段取りはこうだ」と計画の説明を始める。',
-      mean: 'go down ＝ 起こる・展開する。作戦や事件の話でよく使う、くだけた言い方。',
-      trap: 'down を「失敗」と取ったり、gonna を聞き落として過去の話と取りやすい。これは計画の前置き。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'godown', seg: [9.9, 13.6],
+      stem: 'What does “*how it’s gonna go down*” mean?', ja: '「how it’s gonna go down」の意味は？',
+      choices: ['This is what will happen', 'This is what went wrong', 'This is the way down'], a: 0,
+      choicesJa: ['これからこうなる', 'こうして失敗した', 'これが下りる道'],
+      cue: '「Dwight」「Yeah?」のあと',
+      line: 'Dwight. — Yeah? — *Here’s how it’s gonna go down.*',
+      said: 'マイケルが「よし、段取りはこうだ」と説明を始める。',
+      mean: 'go down ＝ （事が）起こる、進む。くだけた言い方。gonna ＝ going to。',
+      trap: 'down（下へ）から「下りる」と思いやすい。gonna があるので、これからの話。',
       use: 'Tell me how it all went down.（どうなったか全部教えて）' },
-
-    // R fix: V2 — "just a little" broke the parallel "Enough to…" (blind 55 %); it's now "scare", the verb this
-    //   phrase usually takes
-    // why: chase out ← “out of the place” heard as driving people out; scare ← “the bejesus out of” known from “scare
-    //   the bejesus out of”, with the verb supplied
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'bejesus', seg: [16.4, 21.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [10.0, 25.9],
+      stem: 'What is Michael’s plan at the start?', ja: '最初のマイケルの計画は？',
+      choices: ['Spray silly string inside', 'Fight off the security guard', 'Take the big copier'], a: 0,
+      choicesJa: ['中でシリーストリングをまく', '警備員と戦う', '大きなコピー機を持ち出す'],
+      cue: '「You and I」のあと',
+      line: 'we pretend that we are *warehouse workers*, and we will *silly string* the… out of the place.',
+      said: 'マイケルが「作業員のふりをして忍び込み、中をシリーストリングだらけにする」と言う。',
+      mean: 'sneak inside ＝ こっそり中に入る。pretend ＝ 〜のふりをする。silly string ＝ ひも状のスプレー。',
+      trap: '警備員の話は「身を守るなら」という場合の話。コピー機は、あとで中で見つける物。',
+      use: 'Here’s the plan: we wait, then we go.（作戦はこう。待って、それから行く）' },
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'bejesus', seg: [16.4, 21.0], retired: true,
       stem: 'How much silly string is Michael planning to use?',
       choices: ['Enough to cover the whole place', 'Enough to chase everybody out', 'Enough to scare the workers'],
       a: 0,
@@ -105,12 +62,7 @@ export const prankUtica: Clip = {
       mean: 'the bejesus out of ＝ 徹底的に。scare とよく組む、くだけた強調。',
       trap: 'out of を「追い出す」、scare と組む形から「おどす」と取りやすい。ここは強調だけ。',
       use: 'That movie scared the bejesus out of me.（あの映画、死ぬほど怖かった）' },
-
-    // R fix: V2 — the key was the only choice with the eyes, and "softer" in quotes flagged it (blind 70 %); all
-    //   three are now "He swaps…"
-    // why: more dangerous ← "grind up" heard as a worse weapon; draw ← "chalk" suggests drawing, with "Nope" and
-    //   "then" heard as backing down
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'chalk', seg: [21.0, 30.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'chalk', seg: [21.0, 30.8], retired: true,
       stem: 'Why is Dwight’s second idea for the guard funny?',
       choices: ['He swaps the method but still aims for the eyes', 'He swaps the chalk for something even worse',
                 'He swaps the attack for drawing on the guard'], a: 0,
@@ -120,41 +72,27 @@ export const prankUtica: Clip = {
       mean: '譲ったふりで、ねらいは同じ目のまま。代案がちっとも穏やかになっていない。',
       trap: 'grind up から別の武器を想像しやすいが、同じチョーク。代案は前と何が同じかを聞く。',
       use: 'Okay, then plan B.（わかった、じゃあ別の案で）' },
-
-    // R fix: V2 — "lookout" was a filler (blind 60 %); it's now a scope shift (only the stabbing)
-    // why: his own eyes ← "eyes" heard as about Dwight's safety; only the stabbing ← "No, you won't do that" (26 s)
-    //   heard as the whole ruling, "nothing with" lost
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'eyes', seg: [30.4, 35.5],
-      stem: 'What is Jim doing with his reply to Dwight’s chalk ideas?',
-      choices: ['Ruling out anything aimed at eyes', 'Telling Dwight to guard his own eyes',
-                'Ruling out only the stabbing idea'], a: 0,
-      cue: '名前を呼んだあと、Please? の前。',
-      line: 'Dwight, *nothing with the eyes*. Please?',
-      said: '「目に関わることは一切なし。頼むよ」と言う。',
-      mean: 'nothing with ～ ＝ ～がらみは全部だめ。まとめて線を引いている。',
-      trap: '刺す案だけの禁止と取りやすい。nothing with は、目がらみ全部を禁じる範囲の言い方。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'eyes', seg: [28.0, 35.0],
+      stem: 'What does Jim mean by “*nothing with the eyes*”?', ja: 'ジムの「nothing with the eyes」の意味は？',
+      choices: ['No eye ideas at all', 'Just don’t stab him', 'Keep your own eyes safe'], a: 0,
+      choicesJa: ['目に関わる案は全部だめ', '刺すのだけはやめて', '自分の目を守って'],
+      cue: '「Dwight」と呼んだあと',
+      line: 'Then I’ll grind up the jumbo chalk and blow it in his eyes. — Dwight, *nothing with the eyes*. Please?',
+      said: 'ジムが「ドワイト、目に関わることは一切なし。頼むよ」と言う。',
+      mean: 'nothing with 〜 ＝ 〜に関わることは全部なし。Please? で強くお願いしている。',
+      trap: 'その前に「刺す」案があるので、刺すのだけ禁止と思いやすい。nothing は「全部なし」。',
       use: 'Nothing with peanuts, please.（ピーナッツ入りは全部なしで）' },
-
-    // why: elevator ← the usual way up; hallway ← "down the hall" comes later (104 s)
     { id: 'd5', skill: 'detail', level: 'B1', point: 'stairs', seg: [58.3, 62.3],
-      stem: 'Where are they, according to the first update?',
-      choices: ['Climbing up a stairwell', 'Waiting inside an elevator', 'Walking down a hallway'], a: 0,
-      cue: '「We are in a」のあと。',
+      stem: 'Where are they, says the first radio update?', ja: '最初の無線の報告では、二人はどこにいる？',
+      choices: ['Climbing some stairs', 'In an elevator', 'Walking down a hallway'], a: 0,
+      choicesJa: ['階段をのぼっている', 'エレベーターの中', '廊下を歩いている'],
+      cue: '「We are in a」のあと',
       line: 'We are *in a stairwell*. We are *climbing some stairs*.',
-      said: '「今、階段にいる。階段をのぼっている」と無線で伝える。',
-      mean: 'stairwell ＝ 建物の中の階段部分。見れば分かることまで実況している。',
-      trap: 'well を「井戸」と取ると迷う。stair-well で階段の吹き抜け。最初の stair を聞く。',
+      said: '無線で「今、階段にいる。階段をのぼっている」と言う。',
+      mean: 'stairwell ＝ 建物の中の階段部分。climb ＝ のぼる。',
+      trap: 'あとで down the hall（廊下を）とも言う。ここは最初の stair（階段）を聞く。',
       use: 'Meet me in the stairwell.（階段のところで会おう）' },
-
-    // R fix: V2 + speaker — the key was the only sensible reply (blind 70 %); "speak up" is now "keep my voice
-    //   down" (loudness, not amount), parallel to the key. The stem no longer names Michael: the words don't settle
-    //   who is on the radio
-    // why: tell more ← "updating me" heard without "don't need", as a request for more; voice down ← the complaint
-    //   heard as about loudness, with "as much as" lost
-    // anchor: 58.8–68.7 s "You really don't need to be updating me as much as you're updating me" answers "We are in
-    //   a stairwell… climbing some stairs… I'm breathing heavily": the complaint is about how much, not how loud;
-    //   Michael's next words ("There's a guy. There's a guy…", 69–71.4 s) show he didn't take it
-    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'updating', reveals: ['dontneed'], seg: [58.3, 71.8],
+    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'updating', reveals: ['dontneed'], seg: [58.3, 71.8], retired: true,
       stem: 'Which reply to Jim would show his point was understood?',
       choices: ['Got it. I’ll update you less.', 'Got it. I’ll keep my voice down.', 'Sure! I’ll tell you more.'],
       a: 0,
@@ -164,24 +102,17 @@ export const prankUtica: Clip = {
       mean: '「必要ない」の形で「減らして」と頼んでいる。気づいたなら控えるはずが、すぐまた実況を始める。',
       trap: '無線なので声の大きさの話と取りやすい。as much as は量の話で、音量ではない。',
       use: 'No need to text me every minute.（毎分メールしなくていいよ）' },
-
-    // R fix: V2 — the key was the middle of three (blind 50 %); "won't need to" added as a fourth sound-alike
-    // why: need to ← the t of "don't" drops and "don'" blends into "need"; didn't / won't ← the n't is caught, the
-    //   vowel is guessed
     { id: 's1', skill: 'sound', level: 'B2', point: 'dontneed', seg: [65.3, 69.4],
-      stem: 'Fill the gap: “You really ___ be updating me…”',
-      choices: ['don’t need to', 'need to', 'didn’t need to', 'won’t need to'], a: 0,
-      cue: '「really」のすぐあと、need の前後。',
-      line: 'You really *don’t need to* be updating me…',
-      said: '「そんなに報告しなくていいよ」と言う。',
-      mean: 'don’t need to が「ドンニートゥ」とつながる。t が消え、n が続く。',
-      trap: 'don’t の t が落ちて need to だけに聞こえやすい。need の前の小さな「ン」を聞く。',
+      stem: 'Fill the gap: “You really ___ be updating me…”', ja: '空所に入るのは？',
+      choices: ['don’t need to', 'need to', 'didn’t need to'], a: 0,
+      choicesJa: ['〜しなくていい', '〜しなければならない', '〜しなくてよかった'],
+      cue: '「really」のすぐあと',
+      line: 'Okay, you know what? You really *don’t need to* be updating me…',
+      said: 'ジムが「ねえ、そんなに報告しなくていいよ」と言う。',
+      mean: 'don’t need to ＝ 〜しなくていい。「ドンニートゥ」とつながり、t が消える。',
+      trap: 'need to だけだと逆の意味。didn’t なら「ディ」で始まる。ここは need の前に小さく「ドン」。',
       use: 'You don’t need to wait for me.（待たなくていいよ）' },
-
-    // R fix: V2 — "real names" was a stock filler (blind 65 %); it's now the question heard the other way round
-    // why: forgot ← the greeting is short and rushed; ask him ← "Would you like more proof?" heard as asking the
-    //   guard for his proof
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'proof', reveals: ['wouldja'], seg: [72.3, 77.2],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'proof', reveals: ['wouldja'], seg: [72.3, 77.2], retired: true,
       stem: 'Why is the greeting to the security guard funny?',
       choices: ['Offering extra proof makes them seem suspicious', 'They forget to say what job they’re pretending to do',
                 'They ask the guard to prove who he is'], a: 0,
@@ -191,19 +122,25 @@ export const prankUtica: Clip = {
       mean: '誰も疑っていないのに証拠を申し出る。言いわけを重ねるほど怪しく聞こえる。',
       trap: 'Would you like は相手への申し出で、要求ではない。笑いは、頼まれていない一言にある。',
       use: 'Not that you asked, but…（聞かれてないけど…）' },
-
     { id: 'x1', skill: 'dict', level: 'B2', point: 'wouldja', seg: [74.8, 77.0],
-      stem: 'Type the question: “___ more proof?” (3 words)', answer: 'would you like',
-      cue: '「workers」のあと、問いの最初の3語。',
+      stem: 'Type the question: “___ more proof?” (3 words)', ja: '「___ more proof?」の3語を書こう', answer: 'would you like',
+      cue: '「workers」のあと',
       line: '*Would you like* more proof?',
-      said: '「もっと証拠いりますか？」と言う。would you がつながる。',
-      mean: 'would you が「ウッジュ」とつながり、like まで一息で言う。',
-      trap: 'd と you が合わさり「ジュ」になる。「ジュ」は d＋you を疑う。',
+      said: '警備員に「もっと証拠いりますか？」と言う。',
+      mean: 'Would you like 〜? ＝ 〜はいかがですか。would you が「ウッジュ」とつながる。',
+      trap: 'd と you が合わさって「ジュ」になる。「ジュ」が聞こえたら would you を考える。',
       use: 'Would you like some water?（お水いかがですか）' },
-
-    // why: private ← "groin" as a part you don't touch, so a reason to leave eyes alone; most important ← "the X of
-    //   the head" heard as "the heart of"
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'groin', seg: [80.2, 89.8],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'close', seg: [76.8, 82.3],
+      stem: 'What does “*That was very close*” mean?', ja: '「That was very close」の意味は？',
+      choices: ['We were almost caught', 'We are almost at the top', 'That was very easy'], a: 0,
+      choicesJa: ['もう少しで見つかるところだった', 'もうすぐ上に着く', 'とても簡単だった'],
+      cue: '警備員が行ったあと',
+      line: 'Oh, my God. *That was very close.*',
+      said: '「うわ、危なかった」と言う。',
+      mean: 'That was close ＝ 危なかった、ぎりぎりだった。close ＝ 文字どおりは「近い」。',
+      trap: 'close（近い）から「もうすぐ着く」と思いやすい。悪いことが起きかけた時の言い方。',
+      use: 'Wow, that was close!（わあ、危なかった！）' },
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'groin', seg: [80.2, 89.8], retired: true,
       stem: 'When Jim says to leave the guard’s eyes alone, what does Dwight argue?',
       choices: ['Eyes are the weak spot to hit in a fight', 'Eyes are too private a part to touch',
                 'Eyes are the most important part of the face'], a: 0,
@@ -213,50 +150,47 @@ export const prankUtica: Clip = {
       mean: 'groin は格闘での急所。目を「頭の急所」にたとえ、だからねらうと言う。',
       trap: 'groin から「触れてはいけない所」と取りやすい。前の文は攻める話。',
       use: 'Coffee is the fuel of the office.（コーヒーは職場の燃料）' },
-
-    // R fix: V2 — "crown jewels" was absurd (blind 75 %); it's now a near-miss office machine
-    // why: poster ← the thing named just before, which they're comparing against; shredder ← "industrial" kept,
-    //   the machine's name lost
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'copier', seg: [90.0, 98.5],
-      stem: 'What do Michael and Dwight find that’s “far better”?',
-      choices: ['Their big industrial copier', 'A choking-hazard poster', 'Their big industrial shredder'], a: 0,
-      cue: '「far better」のあと、2つの言いかえ。',
-      line: 'Their *crown jewel*, their *industrial copier*.',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'switch', reveals: ['copier'], seg: [90.3, 112.6],
+      stem: 'What do Michael and Dwight plan to do now?', ja: 'マイケルとドワイトは、今度は何をするつもり？',
+      choices: ['Take the copier away', 'Spray silly string', 'Hide from the guard'], a: 0,
+      choicesJa: ['コピー機を持ち出す', 'シリーストリングをまく', '警備員から隠れる'],
+      cue: '「far better」のあと',
+      line: 'We’ve got something *far better*. Their crown jewel, their industrial copier. … *We’re wheeling it down the hall*…',
+      said: '「もっといい物を見つけた。業務用コピー機だ。廊下を転がしていく。車を用意しろ」と言う。',
+      mean: 'far better ＝ ずっといい。wheel ＝ 車輪で転がして運ぶ。計画がコピー機に変わる。',
+      trap: 'silly string は最初の計画。far better（ずっといい物）で、計画が変わったと分かる。',
+      use: 'Change of plans, everyone.（みんな、予定変更だよ）' },
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'copier', seg: [90.3, 98.5],
+      stem: 'What do they find that is “far better”?', ja: '「far better」な物とは何？',
+      choices: ['Their big copier', 'A safety poster', 'Some jumbo chalk'], a: 0,
+      choicesJa: ['大きなコピー機', '安全のポスター', '大きなチョーク'],
+      cue: '「far better」のあと',
+      line: 'We’ve got something far better. Their *crown jewel*, their *industrial copier*.',
       said: '「もっといい物を見つけた。あそこの宝、業務用コピー機だ」と言う。',
-      mean: 'crown jewel ＝ 一番の自慢の品。ここでは大型コピー機のこと。',
-      trap: 'poster は直前に出た語で、比べられる側。industrial のあとの語まで聞く。',
+      mean: 'crown jewel ＝ 一番の自慢の品（文字どおりは王冠の宝石）。industrial ＝ 業務用の。',
+      trap: 'poster は直前にジムが言った物で、比べられる側。industrial のあとの語まで聞く。',
       use: 'This painting is the museum’s crown jewel.（この絵が美術館の目玉）' },
-
-    // R fix: V2 + speaker — "Dwight can carry it" was weak (blind 65 %); it's now "comes apart". The stem no longer
-    //   names Michael: the words don't settle who answers "Isn't that thing huge?"
-    // why: lighter ← "enormous, but…" heard as "but it isn't heavy"; comes apart ← "it's got…" heard as "it's got
-    //   parts", a way to move a big machine
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'wheels', seg: [98.9, 103.5],
-      stem: 'Why do they think they can take the copier?',
-      choices: ['It’s on wheels, so it can roll', 'It is a lot lighter than it looks', 'It comes apart into pieces'], a: 0,
-      cue: '「enormous」のあと、but に続く部分。',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'wheels', seg: [99.0, 103.9],
+      stem: 'Why do they think they can take the copier?', ja: 'なぜコピー機を持ち出せると思っている？',
+      choices: ['It has wheels', 'It is light', 'It comes apart'], a: 0,
+      choicesJa: ['車輪が付いている', '軽い', '分解できる'],
+      cue: '「It’s enormous」のあと',
       line: 'Isn’t that thing huge? — It’s enormous, *but it’s got wheels*.',
       said: '「でかくない？」に「巨大だ。でも車輪が付いてる」と答える。',
-      mean: 'but のあとが本音。大きさは認めつつ、車輪があるから運べると考えている。',
-      trap: 'enormous で「無理」と取りやすい。but のあとに、言いたいことが来る。',
+      mean: 'enormous ＝ ものすごく大きい。it’s got ＝ it has。but のあとが言いたいこと。',
+      trap: 'enormous（巨大）で「無理」と思いやすい。but のあとに理由が来る。',
       use: 'It’s pricey, but it’s worth it.（高いけど、その価値はある）' },
-
-    // why: brings the car ← the order just before; wait ← "Don't do this" heard as "not now"
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrible', seg: [106.1, 112.6],
-      stem: 'How does Jim react to being told to get the car ready?',
-      choices: ['He begs them not to go through with it', 'He agrees to bring the car around',
-                'He says to wait for a better time'], a: 0,
-      cue: '車の指示のあと、No で始まる返事。',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrible', seg: [106.8, 112.6],
+      stem: 'How does Jim feel about the copier plan?', ja: 'ジムはコピー機の計画をどう思っている？',
+      choices: ['He is against it', 'He thinks it’s great', 'He doesn’t care'], a: 0,
+      choicesJa: ['反対している', 'すごくいいと思う', 'どうでもいい'],
+      cue: '「Keep the engine running」のあと',
       line: 'Get the car ready. — *No, that is a terrible idea. Don’t do this.*',
-      said: '「車を用意しろ」に「だめ、最悪の考えだ。やめて」と返す。',
-      mean: 'terrible idea と Don’t do this で反対している。',
-      trap: '直前の指示が耳に残り、従ったと取りやすい。返事の最初の No を聞く。',
-      use: 'That’s a terrible idea. Don’t.（それ最悪の考え。やめて）' },
-
-    // R fix: V2 — “mocking” was a filler (blind 65 %); it's now “quiet them to explain”, from “second of all, just—”
-    // why: tired of begging ← the string of "help us" right before; explain a plan ← "and second of all, just—"
-    //   heard as the start of instructions he needs them quiet for
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'name', seg: [120.0, 128.4],
+      said: '「車を用意しろ」に、ジムが「だめ、最悪の考えだ。やめて」と言う。',
+      mean: 'terrible idea ＝ ひどい考え。Don’t do this ＝ やめて。はっきり反対している。',
+      trap: '直前の指示が耳に残り、従うと思いやすい。返事の最初の No を聞く。',
+      use: 'That’s a terrible idea. Don’t.（それはひどい考え。やめて）' },
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'name', seg: [120.0, 128.4], retired: true,
       stem: 'Why does Jim ask them to stop using his name?',
       choices: ['He doesn’t want to be linked to the prank', 'He’s tired of them begging him for help',
                 'He wants quiet so he can explain a plan'], a: 0,
@@ -266,45 +200,37 @@ export const prankUtica: Clip = {
       mean: '大声で名前を出されると、誰がかかわったか分かる。身元を隠したいということ。',
       trap: '何度も呼ばれるので「うるさい」と取りやすい。最優先にした理由を考える。',
       use: 'First of all, keep your voice down.（まず、声を落として）' },
-
-    // R fix: V2 — "show him the branch" was a filler (blind 65 %); it's now the personal reading of "what are you
-    //   doing here?"
-    // why: job duties ← the words taken at face value; came to see her ← her "what are you doing here?" twice, heard
-    //   as him owning up
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'branches', seg: [167.1, 180.0],
-      stem: 'What is Jim doing when Karen asks why he’s there?',
-      choices: ['Giving a made-up reason for the visit', 'Telling her about his new job duties',
-                'Hinting that he came to see her'], a: 0,
-      cue: '「what are you doing here」への答え。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'firstofall', seg: [124.1, 129.8],
+      stem: 'Jim says “*First of all*.” What does it tell us?', ja: 'ジムの「First of all」から何が分かる？',
+      choices: ['He has more to say', 'He is saying goodbye', 'He is saying sorry'], a: 0,
+      choicesJa: ['まだ言うことがある', 'さよならを言っている', 'あやまっている'],
+      cue: '「We need help, Jim」のあと',
+      line: 'We need help, Jim. — Okay, *first of all*, stop using my name. And *second of all*, just—',
+      said: 'ジムが「まず、ぼくの名前を出すな。それから…」と言う。',
+      mean: 'first of all ＝ まず第一に。話がいくつかある時の前置き。second of all ＝ 次に。',
+      trap: 'all（全部）から「全部」の意味を探しやすい。すぐあとに second of all が来る。',
+      use: 'First of all, thank you for coming.（まず、来てくれてありがとう）' },
+    { id: 'p3', skill: 'detail', level: 'B1', point: 'branches', seg: [171.6, 180.5],
+      stem: 'What does Jim tell Karen he is doing there?', ja: 'ジムはカレンに、何をしに来たと言う？',
+      choices: ['Checking on the branches', 'Coming to see Karen again', 'Picking up a copier'], a: 0,
+      choicesJa: ['支店の様子を見ている', 'またカレンに会いに来た', 'コピー機を取りに来た'],
+      cue: '「What are you doing here?」のあと',
       line: 'I’m just *checking on the other branches*. Michael wants me to do that from time to time, so…',
-      said: '「何しに来たの？」に「ほかの支店の様子見で」と答える。',
-      mean: '本当はいたずらの手伝い。just と so… に、その場しのぎらしさが出ている。',
-      trap: '言葉どおり仕事の話と取りやすい。前の場面とつなげ、言っていない本当の理由を考える。',
-      use: 'I was just in the neighborhood.（ちょっと近くまで来たから）' },
-
-    // R fix: V2/K5 — "loud and clear" made the key the only vivid, non-"He'll" choice (blind 55 %); all four are now
-    //   "He'll…", with a third literal "copy" (= repeat) added
-    // why: copy for Karen ← "copy" as making a copy, with "copier" just said; write down ← "copy" as copying words;
-    //   repeat it ← "copy" as imitating, so passing the words on
+      said: 'ジムが「ほかの支店の様子を見てるだけ。マイケルにときどき頼まれて」と言う。',
+      mean: 'check on 〜 ＝ 〜の様子を見る。branch ＝ 支店。from time to time ＝ ときどき。',
+      trap: '本当はコピー機の件で来ているが、ジムが口で言うのは branches（支店）の話。',
+      use: 'I’m just checking on my mom.（母の様子を見に来ただけ）' },
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'copy', seg: [179.8, 185.6],
-      stem: 'How is the order about Karen and the copier answered?',
-      choices: ['He’ll do as he’s told', 'He’ll make a copy for Karen', 'He’ll write the order down',
-                'He’ll repeat it to Karen'], a: 0,
-      cue: '指示への、2語の返事。',
+      stem: 'What does “*Copy that*” mean here?', ja: 'ここでの「Copy that」の意味は？',
+      choices: ['Okay, I understand', 'I will copy it', 'Say it again'], a: 0,
+      choicesJa: ['了解、分かった', 'コピーする', 'もう一度言って'],
+      cue: '指示への2語の返事',
       line: 'Do not tell Karen about the industrial copier. — *Copy that.*',
       said: '「カレンにコピー機のことは言うな」に「了解」と返す。',
-      mean: 'copy that ＝ 了解（無線の言葉）。直前の copier と音が重なるのも笑いどころ。',
-      trap: 'copy を「コピーする」と文字どおり取りやすい。無線の Copy は「受け取った」。',
+      mean: 'Copy that ＝ 了解（無線の言葉）。copier（コピー機）と音が重なるのも笑いどころ。',
+      trap: 'copy を「コピーする」と文字どおりに取りやすい。無線の copy は「受け取った」。',
       use: 'Copy that. On my way.（了解。今向かう）' },
-
-    // R fix: V2 — "moved on, seemed happy" was weak (blind 50 %); it's now "hurt her, now sorry", wrong only in
-    //   what she saw
-    // why: seemed sorry ← "felt pretty good" heard as satisfaction at an apology, the forgiving reading; come back to
-    //   her ← his surprise visit heard as a return to her
-    // anchor: 186.2–194.3 s "I cried for weeks over that guy" sets the hurt, and what "felt pretty good" is the
-    //   picture of him climbing "out of a PT Cruiser in a ladies' warehouse uniform": the pleasure is in how foolish
-    //   he looked, not in anything he did for her
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'goodfeel', seg: [185.7, 195.0],
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'goodfeel', seg: [185.7, 195.0], retired: true,
       stem: 'In the closing comment to the camera, why did seeing him feel good?',
       choices: ['He had hurt her, and now he looked silly', 'He had hurt her, and now he seemed sorry',
                 'He had left, and now he’d come back to her'], a: 0,
@@ -313,7 +239,6 @@ export const prankUtica: Clip = {
       said: '「あの人で何週間も泣いた。女性用の作業着で車から出てくるのを見て、いい気分」と話す。',
       mean: '傷つけた相手の、かっこ悪い姿を見てすっとした。pretty good は控えめに言った満足。',
       trap: 'felt good を謝罪や再会の満足と取りやすい。何を見てそう感じたかを、直前の描写で確かめる。',
-
       use: 'Not gonna lie, that felt pretty good.（正直、ちょっとすっとした）' },
   ]
 };
