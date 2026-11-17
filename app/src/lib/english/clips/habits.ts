@@ -1,14 +1,11 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 4, new 0
 // “Everyone's Annoying Habits | Friends” (the official Friends channel, Best of Season 1): told off for his own habit,
 // Chandler lists his friends' flaws (Joey's knuckle-cracking, Ross's over-pronouncing, Monica's snort) and asks to be
 // accepted; the friends turn on one another instead.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 0–10 s (whisper only: "don't do that",
-// "worse than the thumb", which needs the show's backstory), 58–60 s ("Oh, you do, do you?": speaker and tone unclear),
-// and 86–105 s (music; whisper loops invented lines).
-// REVIEW 2026-11-17: pass 5, fix 16, drop 0, new 0; ear checks 1
-// OPEN: d2, d3 and d1 stay blind-guessable from show knowledge (Ross's pedantry, Monica's snort, knuckle-cracking);
-//   the distractors are now near sounds, so only the audio settles them
-// EAR CHECK: 50.5 s nt1 — both sources have “Phoebe chews her head”; the line writes “hair” (the closing “the hair
-//   comes out” supports it); the key doesn't depend on the word
+// Segments from the captions, words from whisper (2026-11-16). Untested: 0–10 s (whisper only; needs the show's
+// backstory), 46–53 s (the Phoebe comparison), 58–60 s, and 86–105 s (music; whisper loops invented lines).
+// OPEN: d1–d3 stay blind-guessable from show knowledge; the distractors are near sounds, so only the audio settles them.
+// EAR CHECK: 82 s p2 — whisper "The hair comes up", captions "comes out"; the key needs only "the gloves come off"
 import type { Clip } from '../types.ts';
 
 export const habits: Clip = {
@@ -17,11 +14,33 @@ export const habits: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'bigdeal', seg: [9.6, 13.3],
+      stem: 'What does Chandler mean by “Big deal”?', ja: 'チャンドラーの “Big deal” はどういう意味？',
+      choices: ['It’s not important', 'It’s very serious', 'It’s a good price today'], a: 0,
+      choicesJa: ['大したことない', 'とても深刻だ', '今日はお買い得だ'],
+      cue: '「flaw」のすぐあとの2語',
+      line: 'So I have a flaw. *Big deal.*',
+      said: '「だから何、欠点くらいあるよ。大したことない」と開き直る。',
+      mean: 'Big deal. だけで言うと「だから何？大したことない」。flaw ＝ 欠点。',
+      trap: '字のまま「大ごと」と思いやすい。一言だけ言い放つ Big deal はその逆。',
+      use: 'It’s no big deal, really.（ほんとに大したことないよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'accept', seg: [9.6, 28.7],
+      stem: 'Why does Chandler talk about his friends’ habits?', ja: 'チャンドラーはなぜ友だちの癖の話をする？',
+      choices: ['They should accept each other', 'His habit is the smallest', 'They should all stop habits'], a: 0,
+      choicesJa: ['お互いを受け入れるべき', '自分の癖がいちばん小さい', 'みんな癖をやめるべき'],
+      cue: 'リストの最後の一文',
+      line: 'I *accept all those flaws*. Why… *accept me* for this?',
+      said: '3人の癖を挙げ、「全部受け入れてるのに、なぜ僕のは受け入れない？」と言う。',
+      mean: 'accept ＝ 受け入れる。癖を並べたのは責めるためでなく、「お互いさま」と言うため。',
+      trap: '比べているので「自分がいちばんまし」と思いやすい。最後に言うのは accept me。',
+      use: 'Can’t you just accept me as I am?（ありのままの僕を受け入れてよ）' },
+
     // R fix: V2 (blind 75 %): the key was the only natural trigger for a comeback. Now a second comeback reading
     //   ("so I have one too") competes, and the key no longer echoes "criticized … habits"
     // why: asked to name a flaw ← "flaw" heard as answering a question; owned up ← "So I have a flaw" heard as "so
     //   (like you) I have one too"
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'flaw', reveals: ['bigdeal'], seg: [9.6, 13.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'flaw', reveals: ['bigdeal'], seg: [9.6, 13.3], retired: true,
       stem: 'What does Chandler’s opening, “So I have a flaw”, tell us just happened?',
       choices: ['Someone objected to something he does', 'Someone asked him to name his worst flaw',
                 'Someone owned up to a flaw of their own'], a: 0,
@@ -32,44 +51,14 @@ export const habits: Clip = {
       trap: 'flaw だけ拾うと「欠点を聞かれた」と取りやすい。返事の勢いを聞く。',
       use: 'So I was late. Big deal.（遅れたからって、何？）' },
 
-    // R fix: V2 (blind 55 %): two distractors were far from a shrug. Now a second minimizing reading competes
-    // why: serious problem ← "big deal" read literally (大ごと); minor and fixable ← admitting a flaw heard as a
-    //   concession (the お詫び frame)
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'bigdeal', seg: [9.6, 13.3],
-      stem: 'When Chandler admits his flaw, how does he rate it?',
-      choices: ['As nothing worth making a fuss about', 'As serious, though he can’t help it',
-                'As minor, and something he will fix'], a: 0,
-      cue: 'flaw の直後、短く言い放つ2語。',
-      line: 'So I have a flaw. *Big deal.*',
-      said: '欠点を認めたすぐあとに、2語だけで言い放つ。',
-      mean: 'Big deal. だけで言うと「だから何？大したことない」という開き直り。',
-      trap: '文字通り「大ごと」と取りやすい。単独で言い放つ Big deal はその逆。',
-      use: 'It’s no big deal, really.（ほんとに大したことないよ）' },
-
-    // R fix: V2 (blind 75 %): the key was the only choice with the clip's "accept". All three are now plain
-    //   paraphrases; dropped the dead reveal 'fair' (no item has that point)
-    // why: mildest ← the list sounds like a comparison; break together ← "flaws" + "accept" heard as a bargain
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'accept', seg: [9.6, 28.7],
-      stem: 'Why does Chandler bring up his friends’ habits?',
-      choices: ['To say they should all put up with each other', 'To show his habit is the mildest of them all',
-                'To suggest they all break their habits together'], a: 0,
-      cue: 'リストの最後の一文。何をしてほしい？',
-      line: 'I *accept all those flaws*. Why… *accept me* for this?',
-      said: '3人の癖を挙げ、「全部受け入れてるのに、なぜ僕のは受け入れない？」と言う。',
-      mean: '癖を並べたのは責めるためでなく、「お互いさま」と言うための材料。',
-      trap: '比べているので「自分が一番まし」と取りやすいが、言うのは accept。',
-      use: 'Can’t you just accept me as I am?（ありのままの僕を受け入れてよ）' },
-
-    // R fix: V2 (blind 80 %): "nails" was off the sound; all three now share "cracking" or "knuckles", so only the
-    //   pairing settles it. (d4's stem no longer names the habit, see d4)
-    // why: neck ← "cracking" is caught, "knuckle" is short and fast; drumming ← "knuckle" is caught, "cracking" isn't
     { id: 'd1', skill: 'detail', level: 'B1', point: 'knuckle', seg: [12.5, 16.4],
-      stem: 'Which habit of Joey’s does Chandler mention?',
+      stem: 'Which habit of Joey’s does Chandler mention?', ja: 'チャンドラーが挙げるジョーイの癖は？',
       choices: ['Cracking his knuckles', 'Cracking his neck', 'Drumming his knuckles'], a: 0,
-      cue: 'Joey’s のすぐあと、続く2語。',
+      choicesJa: ['指の関節を鳴らす', '首を鳴らす', '指で机をたたく'],
+      cue: '「Joey’s」のすぐあと',
       line: 'Like Joey’s constant *knuckle-cracking* isn’t annoying…',
       said: 'ジョーイがしょっちゅう指の関節を鳴らす、と挙げる。',
-      mean: 'knuckle ＝ 指の関節。crack ＝ ポキッと鳴らす。constant で「いつも」。',
+      mean: 'knuckle ＝ 指の関節。crack ＝ ポキッと鳴らす。constant ＝ いつもの。',
       trap: 'knuckle は短く速い。crack だけ拾うと、首など別の場所と迷いやすい。',
       use: 'Please stop cracking your knuckles.（指をポキポキ鳴らすのやめて）' },
 
@@ -77,7 +66,7 @@ export const habits: Clip = {
     //   natural complaint ("nobody minds Joey's, so why mine?"), and "worse" became "the one to fix first"
     // why: nobody minds ← "like" read as "for example" and the words taken literally; fix first ← the list heard as a
     //   ranking against his own flaw
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'like', reveals: ['knuckle'], seg: [12.5, 16.4],
+    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'like', reveals: ['knuckle'], seg: [12.5, 16.4], retired: true,
       stem: 'What is Chandler really saying in his first example, about Joey?',
       choices: ['That Joey’s habit is just as annoying', 'That nobody seems to mind Joey’s habit',
                 'That Joey’s habit is the one to fix first'], a: 0,
@@ -88,113 +77,91 @@ export const habits: Clip = {
       trap: 'Like を「例えば」と取ると文字通りの意味になる。文頭の Like は反語を疑う。',
       use: 'Like you’ve never been late!（君だって遅刻したことあるくせに）' },
 
-    // R fix: V2 (blind 60 %): only the key held "pronounce". Now three sound-alike -ing habits, and the stem names
-    //   the habit to fit them
-    // why: mispronouncing ← mis-/over- both prefix "pronouncing", and the prefix is fast; over-explaining ← "over" is
-    //   caught, the rest of the long word isn't
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'pronounce', seg: [15.8, 19.0],
-      stem: 'Which habit of Ross’s does Chandler name?',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'pronounce', seg: [15.8, 19],
+      stem: 'Which habit of Ross’s does Chandler name?', ja: 'チャンドラーが挙げるロスの癖は？',
       choices: ['Over-pronouncing every word', 'Mispronouncing every word', 'Over-explaining every word'], a: 0,
-      cue: 'Ross with his のあとの長い一語。',
+      choicesJa: ['一語一語はっきり言いすぎる', '一語一語発音をまちがえる', '一語一語説明しすぎる'],
+      cue: '「Ross with his」のあと',
       line: 'and Ross with his *overpronouncing* every single word',
       said: 'ロスは一語一語を発音しすぎる、と挙げる。',
       mean: 'over ＋ pronounce ＝ 必要以上にはっきり発音すること。気取って聞こえる癖。',
-      trap: 'every single word だけ拾うと別の癖と迷う。長い一語の頭の over を聞く。',
+      trap: 'every single word だけ拾うと、別の癖と迷いやすい。長い一語の頭の over を聞く。',
       use: 'Could you say that word slowly?（その単語、ゆっくり言って）' },
 
-    // R fix: V2 (blind 70 %): "laughs too loudly" was a loose fit. The distractors are now near sounds of
-    //   "snort when she laughs"
-    // why: sniffs ← snort/sniff share the opening s-n; snores ← snort/snore differ only in the last sound
     { id: 'd3', skill: 'detail', level: 'B1', point: 'snort', seg: [18.2, 21.6],
-      stem: 'What does Chandler say about Monica?',
+      stem: 'What does Chandler say about Monica?', ja: 'チャンドラーはモニカについて何と言う？',
       choices: ['She snorts when she laughs', 'She sniffs when she laughs', 'She snores when she naps'], a: 0,
-      cue: 'Monica with that のあと。',
+      choicesJa: ['笑うと鼻を鳴らす', '笑うと鼻をすする', '昼寝でいびきをかく'],
+      cue: '「Monica with that」のあと',
       line: 'and Monica with that *snort when she laughs*',
       said: 'モニカは笑うと鼻を鳴らす、と挙げる。',
       mean: 'snort ＝ 鼻を「フゴッ」と鳴らすこと。when she laughs で、いつ鳴るかを言う。',
       trap: 'snort と sniff は出だしが同じ。when のあとの laughs まで聞く。',
       use: 'Sorry, I laugh really loudly.（ごめん、笑い声が大きくて）' },
 
-    // why: corrects ← "I mean" = 言い直し in textbooks; explains ← "that thing" heard as clarifying which habit
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [20.3, 23.3],
-      stem: 'After describing Monica’s habit, what does Chandler’s next short phrase do?',
-      choices: ['Pushes his point, more bluntly', 'Corrects what he just said', 'Explains which habit he means'], a: 0,
-      cue: 'snort の話のすぐあと、文頭の2語。',
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', seg: [20.3, 23.3],
+      stem: 'What does “I mean” do here?', ja: 'ここでの “I mean” は何をしている？',
+      choices: ['Says it more strongly', 'Fixes a mistake', 'Explains which habit he means'], a: 0,
+      choicesJa: ['もっと強く言う', 'まちがいを直す', 'どの癖のことか説明する'],
+      cue: 'snort の話のすぐあと',
       line: '*I mean*, what the hell is that thing?',
       said: '「つまりさ、あれ一体何なの？」と続ける。',
-      mean: 'この I mean は訂正ではなく、言ったことを本音で強く言い足す合図。',
-      trap: '「つまり」を言い直しと取りやすい。前と同じ向きに強まるなら追い打ち。',
+      mean: 'I mean ＝ つまり、だってさ。ここは言い直しではなく、本音をもっと強く言い足す合図。',
+      trap: '「つまり」から、言い直しだと思いやすい。前と同じ向きで強まっている。',
       use: 'I mean, who does that?（だってさ、普通そんなことする？）' },
 
-    // R fix: V2 (blind 50 %): "don't you" didn't fit "accept me for this". It's now "couldn't you", so three
-    //   complaints fit the gap equally well
-    // why: can ← the t of can't drops before "you"; won't ← the same complaint with another modal; couldn't ← the
-    //   -n't is caught but the vowel isn't
     { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [24.3, 28.7],
-      stem: 'Fill the gap: “Why ___ accept me for this?”',
-      choices: ['can’t you', 'can you', 'won’t you', 'couldn’t you'], a: 0,
-      cue: 'Why のすぐあと、つながる2語。',
+      stem: 'Fill the gap: “Why ___ accept me for this?”', ja: '空所に入るのは？ “Why ___ accept me for this?”',
+      choices: ['can’t you', 'can you', 'won’t you'], a: 0,
+      choicesJa: ['〜できないの', '〜できるの', '〜してくれないの'],
+      cue: 'Why のすぐあと',
       line: 'I accept all those flaws. Why *can’t you* accept me for this?',
-      said: '「全部受け入れてる。なのに、なぜ受け入れられない？」と問う。',
-      mean: 'can’t you が「キャンチュ」のようにつながる。t は飛んでも母音は長め。',
-      trap: 'can と can’t は t が消えると似る。can’t は強く長く、can は弱く短い。',
+      said: '「全部受け入れてる。なのに、なぜ受け入れられない？」と聞く。',
+      mean: 'can’t you が「キャンチュ」のようにつながる。t は消えても母音は長め。',
+      trap: 'can you なら「キャニュ」と短く弱い。won’t you は「ウォンチュ」。強く長い「キャンチュ」なら can’t you。',
       use: 'Why can’t you just say yes?（なんで素直にイエスと言えないの）' },
 
-    // R fix: V2 (blind 60 %): the key was the only nuanced, two-part feeling. All three now name a feeling and its
-    //   reason
-    // why: sorry ← listing friends' flaws looks like going too far, so the ending sounds like an apology; pleased ←
-    //   the list heard as a ranking he has won
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'accept', reveals: ['cant'], seg: [24.3, 28.7],
-      stem: 'How does Chandler sound as he ends his list?',
-      choices: ['Hurt that he’s held to a stricter rule', 'Pleased he has shown he isn’t the worst',
-                'Sorry that he picked on his friends'], a: 0,
-      cue: '最後の問いかけ。だれとだれを比べている？',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'accept', reveals: ['cant'], seg: [24.3, 28.7],
+      stem: 'How does Chandler feel at the end of his list?', ja: 'リストの最後で、チャンドラーはどんな気持ち？',
+      choices: ['Hurt that it’s unfair', 'Happy he isn’t worst', 'Sorry for his friends'], a: 0,
+      choicesJa: ['不公平で傷ついている', '自分が最悪じゃなくてうれしい', '友だちに申し訳ない'],
+      cue: '最後の質問',
       line: 'I accept all those flaws. Why *can’t you accept me* for this?',
-      said: '「僕はみんなの欠点を受け入れてる。なぜ僕だけダメ？」と問う。',
+      said: '「僕はみんなの欠点を受け入れてる。なぜ僕だけダメ？」と聞く。',
       mean: '自分は許しているのに許されない、という不公平への不満。謝ってはいない。',
-      trap: '癖を並べた後なので謝罪に聞こえやすい。最後の Why can’t you に本音。',
+      trap: '友だちの癖を並べたあとなので、謝っていると思いやすい。最後の Why can’t you に本音。',
       use: 'That’s not fair. Why just me?（ずるいよ。なんで僕だけ？）' },
 
-    // R fix: V2 (blind 55 %) + N7: the stem named "knuckle-cracking" (d1's key), and the line and cue show it, so
-    //   it now reveals 'knuckle'. A loudness distractor replaces "stop it now"
-    // why: everybody does it ← "everybody" heard as "does everybody do it"; that loud ← "cracking" + "bother" heard
-    //   as a question about the noise
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'everybody', reveals: ['knuckle'], seg: [34.8, 38.6],
-      stem: 'After the speech, what does Joey ask about his habit?',
-      choices: ['Whether it bothers everybody', 'Whether everybody does it too', 'Whether it is really that loud'], a: 0,
-      cue: 'knuckle-cracking のあとの動詞と、最後の一語。',
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'everybody', seg: [34.8, 38.6],
+      stem: 'What does Joey ask about his habit?', ja: 'ジョーイは自分の癖について何を聞く？',
+      choices: ['Whether it bothers everybody', 'Whether everybody does it too', 'Whether it is really loud'], a: 0,
+      choicesJa: ['みんな気になっているか', 'みんなもやっているか', '本当にうるさいか'],
+      cue: '「knuckle-cracking」のあと',
       line: '…knuckle-cracking *bother everybody*?',
       said: '「指鳴らしって、みんな気になってるの？」と聞く。',
-      mean: 'bother ＝ 気に障る。everybody で「全員が？」と驚いている。',
-      trap: '文頭は弱く速いので聞き落としやすい。動詞 bother と最後の everybody を拾う。',
+      mean: 'bother ＝ 気になる、いやな気持ちにさせる。everybody で「全員が？」と驚いている。',
+      trap: '文の頭は弱く速いので聞き落としやすい。動詞 bother と最後の everybody を拾う。',
       use: 'Does the music bother you?（音楽、気にならない？）' },
 
-    // R fix: V2 (blind 50 %): the key was the only hedged choice. Now a live-with/live-without mix-up and a second
-    //   hedged reading compete
-    // why: fine ← "live without it" confused with "live with it" (我慢できる = 平気); backs off ← the soft "Well…"
-    //   heard as taking it back
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'could', seg: [34.8, 44.7],
-      stem: 'What does the first answer to Joey’s question do?',
-      choices: ['Hints, gently, that it bothers him', 'Says he can live with it, so it’s fine',
-                'Jokes that it bothers him, then backs off'], a: 0,
-      cue: 'Well のあと、間をおいた控えめな返事。',
+      stem: 'What does “I could live without it” mean here?', ja: 'ここでの “I could live without it” はどういう意味？',
+      choices: ['It bothers him a bit', 'It doesn’t bother him', 'He really loves it'], a: 0,
+      choicesJa: ['少し気になる', '気にならない', 'すごく好き'],
+      cue: '「Well」のあとの返事',
       line: '*Well*… I, I *could live without it*.',
       said: '少しためらって「まあ、なくても生きていけるかな」と答える。',
-      mean: 'なくても困らない＝やめてくれたら嬉しい。遠回しに「気になる」と認めている。',
-      trap: 'live without を live with（平気）と混ぜやすい。Well とためらいは本音の合図。',
+      mean: 'could live without 〜 ＝ 〜がなくても困らない。やめてくれたらうれしい、と遠回しに言っている。',
+      trap: 'live without を live with（平気）と混ぜやすい。Well とためらいは、言いにくい本音の合図。',
       use: 'Honestly, I could live without the music.（正直、音楽はなくてもいいかな）' },
 
-    // why: owns up ← the title ("Everyone's Annoying Habits") suggests a confession round; worst ← his speech is the
-    //   last thing heard about flaws
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['everybody'], seg: [34.8, 86],
-      stem: 'How does Chandler’s speech change the conversation?',
-      choices: ['Nobody brings up his flaw again', 'Everyone agrees his is the worst',
-                'Everyone owns up to their habits'], a: 0,
-      cue: '後半の話題が、だれの癖になっているか。',
-      line: '…*bother everybody*? … nothing wrong with *speaking correctly*.',
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', seg: [41.0, 86.0],
+      stem: 'What happens after Chandler’s speech?', ja: 'チャンドラーの話のあと、どうなる？',
+      choices: ['They pick on each other’s habits', 'They agree his is the worst', 'They say sorry to each other'], a: 0,
+      choicesJa: ['お互いの癖を言い合う', '彼の癖が最悪だと認める', 'お互いに謝る'],
+      cue: '後半は、誰の癖の話か',
       said: '話はジョーイ、フィービー、ロスの癖へ移り、チャンドラーの欠点には戻らない。',
-      mean: '矛先をそらす作戦が当たり、みんなが互いの癖を気にし始める。',
-      trap: 'タイトルから「認め合う」と取りやすいが、誰も謝らず言い返している。',
+      mean: 'pick on 〜 ＝ 〜をとがめる。話をそらす作戦が当たり、みんなが互いの癖を言い始める。',
+      trap: 'タイトルから、みんなが謝ると思いやすい。誰も謝らず、言い返している。',
       use: 'Let’s not make this about me.（僕の話にしないでよ）' },
 
     // C2: who is the joke on?
@@ -204,7 +171,7 @@ export const habits: Clip = {
     //   comforts her ("don't listen to him, Pheebs… I think it's endearing")
     // R fix: V2 (blind 50 %): "comparing levels" in the stem pointed at whoever was the comparison. The stem is now
     //   neutral, and the Joey distractor is stronger (his habit is the topic)
-    { id: 'nt1', skill: 'humor', level: 'C2', point: 'phoebe', seg: [46.7, 58.2],
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'phoebe', seg: [46.7, 58.2], retired: true,
       stem: 'In the question about just how annoying it is, who is the joke on?',
       choices: ['Phoebe, whose habit is brought in as the worst', 'Joey, whose habit turns out to annoy everyone',
                 'Chandler, whose own habit started the fight'], a: 0,
@@ -215,66 +182,58 @@ export const habits: Clip = {
       trap: '話題がジョーイなので、的も彼と取りやすい。比べる物に出された人が本当の的。',
       use: 'Is it bad, or Mike’s-singing bad?（まずい？それともマイクの歌くらい？）' },
 
-    // why: odd but easy to ignore ← "endearing" unknown, so the comforting tone is taken as playing it down; annoying
-    //   but forgivable ← the scene is a list of annoying habits
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'endearing', seg: [53.9, 58.2],
-      stem: 'When Phoebe is told not to listen, how is her habit described?',
-      choices: ['As sweet, and part of her charm', 'As odd, but easy to ignore', 'As annoying, but forgivable'], a: 0,
-      cue: '文の最後の、長めの形容詞。',
+      stem: 'How does he describe Phoebe’s habit?', ja: 'フィービーの癖を、彼はどう言う？',
+      choices: ['Cute and sweet', 'Strange but okay', 'Annoying but fine'], a: 0,
+      choicesJa: ['かわいくて好き', '変だけど大丈夫', 'うるさいけどいい'],
+      cue: '文の最後の長めの形容詞',
       line: '…*I think it’s endearing*.',
       said: '「気にしないで、フィービー。かわいいと思う」とかばう。',
       mean: 'endearing ＝ 愛らしい、好感が持てる。欠点を魅力と言いかえてかばっている。',
-      trap: 'かばう流れなので「迷惑だけど許せる」と取りやすい。endearing ははっきりほめ言葉。',
+      trap: 'かばう流れなので、「うるさいけど許せる」と思いやすい。endearing ははっきりほめ言葉。',
       use: 'His accent is kind of endearing.（彼のなまり、ちょっとかわいい）' },
 
-    // R fix: V2 (blind 50 %): "to it" was weak; "to that" (dismissing the remark) fits the comfort as well as "him"
-    // why: them ← "him" loses its h and sounds like "them" with a weak th; me ← "to" + a weak vowel; that ← the
-    //   remark itself, dismissed
-    { id: 's2', skill: 'sound', level: 'B2', point: 'him', seg: [53.9, 57.0],
-      stem: 'Fill the gap: “Don’t listen ___, Pheebs.”',
-      choices: ['to him', 'to them', 'to me', 'to that'], a: 0,
-      cue: 'listen のあと、弱くつながる2語。',
+    { id: 's2', skill: 'sound', level: 'B2', point: 'him', seg: [53.9, 57],
+      stem: 'Fill the gap: “Don’t listen ___, Pheebs.”', ja: '空所に入るのは？ “Don’t listen ___, Pheebs.”',
+      choices: ['to him', 'to them', 'to me'], a: 0,
+      choicesJa: ['彼の言うこと', '彼らの言うこと', '私の言うこと'],
+      cue: '「listen」のあと',
       line: '…don’t *listen to him*, Pheebs, all right?',
       said: '「彼の言うことなんか聞かないで、フィービー」となだめる。',
-      mean: 'him の h が落ちて「リスントゥイム」のようにつながる。',
-      trap: 'h が消えると to them と似る。them なら th の音が残る。指すのは一人。',
+      mean: 'listen to 〜 ＝ 〜の言うことを聞く。him の h が落ちて「リスントゥイム」とつながる。',
+      trap: 'them なら th の「ゼ」、me なら「ミー」とはっきり。h が落ちた「トゥイム」なら to him。',
       use: 'Don’t listen to him. You look great.（彼の言うこと気にしないで。素敵だよ）' },
 
-    // R fix: K1 + V2 (blind 55 %): if someone else says "Indeed" to mock Ross, "agreement that means the opposite" is
-    //   defensible, so it's out. Replaced with a "correctly" keyword trap, and the stem's quote stops before "speaking
-    //   correctly". Header ear check removed: the key rests on the word "Indeed", not the voice
-    // why: corrects ← "correctly" heard as the reply fixing grammar; too fast ← a quick, short agreement heard as
-    //   giving in
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'indeed', seg: [65.6, 72.4],
-      stem: 'Why does the reply to “You know, there’s nothing wrong…” get a laugh?',
-      choices: ['Its stiff, formal wording is the habit itself', 'It corrects the grammar of the line before it',
-                'It agrees so fast it sounds like giving up'], a: 0,
-      cue: '返事の言葉づかいを、前の話と比べて。',
-      line: 'there’s nothing wrong with speaking correctly. — *Indeed*, there isn’t.',
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'indeed', seg: [65.6, 72.4],
+      stem: 'What does “Indeed, there isn’t” mean?', ja: '“Indeed, there isn’t” はどういう意味？',
+      choices: ['Yes, nothing is wrong', 'No, there is a problem', 'I’m not sure'], a: 0,
+      choicesJa: ['そう、何も悪くない', 'いや、問題がある', 'よく分からない'],
+      cue: '「speaking correctly」への返事',
+      line: 'there’s nothing wrong with speaking correctly. — *Indeed, there isn’t.*',
       said: '「正しく話して何が悪い」に「いかにも、悪くない」と返す。',
-      mean: 'Indeed は堅い言葉。話題の「きっちりした話し方」を返事で見せていて笑いになる。',
-      trap: 'correctly が聞こえると「文法を直した」と取りやすいが、直してはいない。笑いは言葉づかい。',
-      use: 'Indeed, it is a lovely day.（まことに、良い日ですな）' },
+      mean: 'Indeed ＝ まさに、そのとおり。堅い言葉で、話題の「きっちりした話し方」を見せているのが笑い。',
+      trap: 'isn’t が聞こえて、反対していると思いやすい。「悪くない」に isn’t で「そう、悪くない」と同意。',
+      use: 'Indeed, it’s a lovely day.（まことに、いい日ですね）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'backwork', seg: [74.6, 76.9],
-      stem: 'Type what she says: “I should really ___.” (4 words)', answer: 'get back to work',
-      cue: 'really のあと、つながる4語。',
+      stem: 'Type what she says: “I should really ___.” (4 words)', ja: '書こう：“I should really ___.”（4語）',
+      answer: 'get back to work',
+      cue: '「really」のあと',
       line: 'I should really *get back to work*.',
       said: '「そろそろ仕事に戻らなきゃ」と言う。',
-      mean: 'get back to ＝ 〜に戻る。get の t が飲まれ「ゲッバック」とつながる。',
+      mean: 'get back to 〜 ＝ 〜に戻る。get の t が消えて「ゲッバック」とつながる。',
       trap: 'get の t と back の k が消えやすい。4語でひとかたまりと覚える。',
       use: 'Sorry, I need to get back to work.（ごめん、仕事に戻らなきゃ）' },
 
-    // why: too slow ← work + "orders" heard as a speed complaint; busy ← "get back to work" heard as the café needing her
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'ordered', reveals: ['backwork'], seg: [74.6, 79.7],
-      stem: 'When she says she should get back to work, what does the reply suggest?',
-      choices: ['That her orders often come out wrong', 'That she’s too slow taking orders',
-                'That the café is busy without her'], a: 0,
-      cue: 'otherwise のあと、最後の2語。',
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'ordered', seg: [74.6, 79.7],
+      stem: 'What does the reply say about her work?', ja: 'この返事は、彼女の仕事について何を言っている？',
+      choices: ['Her orders often come out wrong', 'She takes orders too slowly', 'The café is busy without her'], a: 0,
+      choicesJa: ['注文をよくまちがえる', '注文を取るのが遅い', '彼女がいないと店が忙しい'],
+      cue: '「otherwise」のあと',
       line: 'Yeah, otherwise someone might get *what they actually ordered*.',
       said: '「そうだね、じゃないと誰かが注文どおりの物を受け取っちゃう」と返す。',
-      mean: '裏返すと「いつもは注文と違う物が出る」。仕事ぶりへの軽い皮肉。',
-      trap: '仕事の話なので「遅い」と取りやすい。actually ＝「本当に頼んだ物」に注目。',
+      mean: 'otherwise ＝ そうしないと。裏返すと「いつもは注文とちがう物が出る」。仕事ぶりへの軽いからかい。',
+      trap: '仕事の話なので「遅い」と思いやすい。actually ordered（本当に頼んだ物）に注目。',
       use: 'Did you get what you actually ordered?（ちゃんと頼んだ物が来た？）' },
 
     // C2: which reply would show she understood?
@@ -283,7 +242,7 @@ export const habits: Clip = {
     //   "hurry, people are waiting"
     // anchor: 77.5–79.2 s "otherwise… what they actually ordered": with her away, orders come out right; her answer
     //   (79.6 s) is a stung "Well…", not thanks
-    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'ordered', reveals: ['backwork'], seg: [74.6, 81.0],
+    { id: 'nt2', skill: 'pragma', level: 'C2', point: 'ordered', reveals: ['backwork'], seg: [74.6, 81.0], retired: true,
       stem: 'Which reply from her would show she got the point?',
       choices: ['Hey! I’m not that bad at it.', 'Thanks, I’ll make sure they do.', 'Right, I’d better be quick, then.'],
       a: 0,
@@ -294,19 +253,15 @@ export const habits: Clip = {
       trap: 'Yeah で始まるので賛成に聞こえやすい。返事は言葉の形でなく中身に返す。',
       use: 'Hey, I’m not that bad at this!（ちょっと、そこまで下手じゃないよ）' },
 
-    // R fix: V2 (blind 60 %): "back to work" was a weak echo. Now two other readings of "come off" compete
-    //   (calling it a night; stepping back)
-    // why: heading out ← "come off" + "gloves" read as taking things off to leave; keep out of it ← "hair comes
-    //   out" heard as backing off, hurt
-    { id: 'p2', skill: 'phrase', level: 'C1', point: 'gloves', seg: [81.0, 85.8],
-      stem: 'In the clip’s last line, what is Phoebe announcing?',
-      choices: ['She’ll stop being nice and hit back', 'She’s had enough and is heading out',
-                'She’s hurt and will keep out of it'], a: 0,
-      cue: '最後の一文の後半、come off の意味。',
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'gloves', seg: [81, 85.8],
+      stem: 'What does “the gloves come off” mean?', ja: '“the gloves come off” はどういう意味？',
+      choices: ['She will stop being nice', 'She is going home', 'She feels very hurt and sad'], a: 0,
+      choicesJa: ['もう遠慮しない', '家に帰る', 'とても傷ついて悲しい'],
+      cue: '最後の一文の後半',
       line: 'Oh, the hair comes out and *the gloves come off*.',
-      said: '「髪は口から出した、もう手加減しない」と宣言する。',
-      mean: 'the gloves come off ＝ 遠慮をやめて本気でやり合う。今度は自分が言い返す番。',
-      trap: 'come off を「やめて帰る」と取りやすい。手袋を外す＝素手の勝負、と覚える。',
+      said: '「髪は口から出した。もう手加減しない」と宣言する。',
+      mean: 'the gloves come off ＝ 遠慮をやめて本気でやり合う。手袋を外して素手で勝負、というたとえ。',
+      trap: 'come off を「帰る」と思いやすい。手袋を外す＝本気の勝負。',
       use: 'Okay, now the gloves are off.（よし、ここからは本気だ）' },
   ]
 };
