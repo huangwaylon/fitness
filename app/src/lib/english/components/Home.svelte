@@ -136,7 +136,7 @@
 <style>
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
   .top { flex: none; background-color: var(--surface); }
-  .body { display: flex; flex-direction: column; gap: 12px; padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
+  .body { display: flex; flex-direction: column; gap: 12px; padding: 4px calc(12px + var(--safe-right)) 24px calc(12px + var(--safe-left)); scrollbar-width: none; }
   .back { margin: 0; padding: 10px 14px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); font-weight: 700; }
   .today { display: grid; gap: 6px; flex: none; }
   .today p, .today h3 { margin: 0; }

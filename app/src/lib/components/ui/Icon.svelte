@@ -88,8 +88,9 @@
     search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
     // ごはん's search: バーコードで探す (a viewfinder's four corners round bars of two widths)
     barcode: '<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/>',
-    // English Study's ⚑ 報告 (a flag on its pole)
-    flag: '<path d="M5 22V4"/><path d="M5 4h11l-2 4 2 4H5"/>'
+    // English Study's ⚑ 報告 (a flag on its pole); its フレーズ tab (a speech bubble with quote marks)
+    flag: '<path d="M5 22V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+    quote: '<path d="M22 17a2 2 0 0 1-2 2H6.83a2 2 0 0 0-1.42.59l-2.2 2.2A.71.71 0 0 1 2 21.29V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="M8 12a2 2 0 0 0 2-2V8H8"/><path d="M14 12a2 2 0 0 0 2-2V8h-2"/>'
   } as const;
   export type IconName = keyof typeof P;
   /** Whether the set draws `name` (a packing category's own emoji, say, is not a name). */

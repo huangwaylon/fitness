@@ -56,7 +56,9 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
 
 ## The page
 
-One sheet: home, the library, a clip's lesson (‹ back to where it was opened) and ⚙ (むずかしめの質問を増やす, 報告した内容).
+One sheet: two tabs, **ホーム · フレーズ** (the kit's TabBar, on those two only; each opening on ホーム), and the levels
+pushed over them, with no tab bar: the library, a clip's lesson (‹ back to where it was opened) and ⚙
+(むずかしめの質問を増やす, 報告した内容).
 
 **Back (2026-11-17), as 設定's levels:** every pushed level has ‹ at the NavBar's top left and goes back exactly one
 level: ⚙, the library → home; a 場面 → the library; a lesson → where it was opened (home, the library with its chip, or
@@ -115,8 +117,9 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 ## Phrase review
 
 フレーズの復習 (approved 2026-11-17; `phrase-review.ts`, `PhraseReview.svelte`): a card above 今日の動画 on home, only
-when phrases are due. The phrases are the `use` of the questions in my finished plays (`listen` rows with `f`); each
-comes back 1, 3, 7, 14, then every 30 days after it was last met in a play or shown here. At most 3 a day: those shown
+when phrases are due. The phrases are the `use` of the questions in my finished plays (`listen` rows with `f`) and
+those フレーズ's ☆ saved (`k`, the day; never pruned, un-☆ leaves the rest as it was); each comes back 1, 3, 7, 14,
+then every 30 days after it was last met in a play, saved or shown here. At most 3 a day: those shown
 before first (the longest overdue first), then the never shown (the latest met first), one per English phrase.
 
 - One at a time: the English, 意味を見る → its Japanese, the clip's line (key words underlined) and the clip's player,
@@ -135,6 +138,19 @@ phrase (the first in the plan's order). Entry `[clip, qid, from, to, use, line]`
 It ships as 8 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 8` (each mixes the whole library; ~2,500
 cards, ~22 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them as the banks (an older
 version of a file goes), never precached; `load-budget.ts` holds them to 8, each ≤ 32 KB gzipped.
+
+**The page** (`deck.ts`, `Phrases.svelte`): one card at a time, 5 a set. The order is seeded per player (the shards
+in a seeded order, each shard's cards too; each round a new order), the place kept on this phone
+(`island.english.deck`), so the tab comes back to the same card, face down. Passed over (back next round): a card of
+a clip already in this set, of today's clip and of the next 2 open ones in the plan (their lessons stay fresh).
+
+- Front: 1/5 · show · title, the phrase (the key words it shares with the line underlined), **意味を見る**. Back: its
+  Japanese, 動画では + the line (key words underlined), the clip's player (mounted at 意味を見る, so ▶ meets a ready
+  frame within the tap; one frame at most, none on the front, gone on 次へ), **▶ この場面を聞く** (its segment, paused at
+  its end), 声に出して言ってみよう, then ☆ 復習に入れる (paper; ★ 復習に入れました, tapped again: out) and 次へ ›.
+- After the 5th: 「5枚見ました · これまで Nフレーズ」 (cards revealed), もう5枚 / ホームへ. Never a score, %, red or ×.
+- A shard that doesn't load: フレーズを読み込めませんでした (offline: its note) with もう一度. Counted:
+  `act:english.deck.<show | reveal | play | save | more>`.
 
 ## The player
 

@@ -3,10 +3,10 @@
 // prefetches it (the service worker keeps it: caches.ts ENGLISH_CACHE). A fetch that fails is forgotten, so もう一度
 // asks again (and the lesson reloads into the newer build when that fails online too: a page from an older build asks
 // for a file the deploy took away). A failure is logged (english.fail `bank`: its HTTP status, none for no answer).
-import INDEX from './clips/index.ts?english-index';
+import INDEX, { DECK } from './clips/index.ts?english-index';
 import { staticUrl } from '#lib/staticUrl.ts';
 import { log } from '#lib/sync/log.ts';
-import { bankPath, type ClipMeta } from './catalog.ts';
+import { bankPath, shardPath, type ClipMeta, type PhraseEntry } from './catalog.ts';
 import type { Bank } from './types.ts';
 
 /** Every clip with a lesson, in the order they're offered (the shared plan: plan.ts). */
@@ -47,4 +47,28 @@ export function loadBank(m: ClipMeta): Promise<Bank> {
 /** Fetch these banks ahead (home, while idle), quietly. */
 export function prefetch(ms: readonly (ClipMeta | undefined)[]): void {
   for (const m of ms) if (m) loadBank(m).catch(() => {});
+}
+
+const shards = new Map<number, Promise<PhraseEntry[]>>();
+/** フレーズ's deck file `n` (catalog.ts shardsOf). Rejects offline or on a failed fetch (asked again next time; logged:
+ *  english.fail `deck`). */
+export function loadShard(n: number): Promise<PhraseEntry[]> {
+  let p = shards.get(n);
+  if (!p) {
+    let http: number | undefined;
+    p = fetch(staticUrl(shardPath(n, DECK[n]))).then(async (res) => {
+      http = res.status;
+      if (!res.ok) throw new Error(`english deck ${n}: ${res.status}`);
+      const out = (await res.json()) as PhraseEntry[];
+      if (!Array.isArray(out)) throw new Error(`english deck ${n}: not a deck`);
+      return out;
+    });
+    p.catch(() => {
+      shards.delete(n);
+      const on = navigator.onLine;
+      log('english.fail', { what: 'deck', n, ...(http !== undefined && { http }), on }, on ? 2 : 1);
+    });
+    shards.set(n, p);
+  }
+  return p;
 }

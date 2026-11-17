@@ -51,13 +51,18 @@ const ARTICLES = new Set(['a', 'an', 'the']);
 
 /** `en` in parts, its words that are one of `keys` marked (a run of them one part, the spaces inside it too). */
 export function markedIn(en: string, keys: ReadonlySet<string>): Parts {
-  const parts = en.split(/(\s+)/).map((t) => ({ t, key: wordsOf(t).some((w) => keys.has(w)) }));
+  // a marked word's punctuation outside the mark ("history." → "history" + ".")
+  const parts = en.split(/(\s+)/).flatMap((t) => {
+    if (!wordsOf(t).some((w) => keys.has(w))) return [{ t, key: false }];
+    const m = /^([^\p{L}\p{N}]*)(.*?)([^\p{L}\p{N}]*)$/u.exec(t)!;
+    return [{ t: m[1], key: false }, { t: m[2], key: true }, { t: m[3], key: false }];
+  }).filter((p) => p.t);
   parts.forEach((p, i) => (p.key ||= /^\s+$/.test(p.t) && !!parts[i - 1]?.key && !!parts[i + 1]?.key));
   const out: Parts = [];
   for (const p of parts) {
     const last = out.at(-1);
     if (last && last.key === p.key) last.t += p.t;
-    else if (p.t) out.push({ ...p });
+    else out.push({ ...p });
   }
   return out;
 }

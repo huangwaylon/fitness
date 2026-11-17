@@ -1,7 +1,7 @@
 // フレーズの復習's schedule (phrase-review.ts): the questions of finished plays, 1-3-7-14-30 days on, 3 a day.
 import { describe, expect, it } from 'vitest';
 import { addDays } from '#lib/time/dates.ts';
-import { dueOf, leftToday, metOf, PER_DAY, rated, skipped, STEPS, type Key, type Mine } from './phrase-review.ts';
+import { dueOf, leftToday, metOf, PER_DAY, rated, saved, skipped, STEPS, unsaved, type Key, type Mine } from './phrase-review.ts';
 import { splitUse } from './phrases.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import type { LocalDate } from '#lib/types.ts';
@@ -46,6 +46,36 @@ describe('dueOf', () => {
     let mine = rated(none, 's/one', addDays(d0, 1), true); // due d0+4
     mine = rated(mine, 's/two', addDays(d0, 2), true); // due d0+5
     expect(dueOf(m, mine, addDays(d0, 8))).toEqual(['s/one', 's/two', 'n/new', 'o/old']);
+  });
+});
+
+describe('☆ (フレーズ’s saved)', () => {
+  it('a saved phrase never met: due the next day, then the steps as any', () => {
+    let mine = saved(none, 'x/q', d0);
+    expect(dueOf(new Map(), mine, d0)).toEqual([]);
+    expect(dueOf(new Map(), mine, addDays(d0, 1))).toEqual(['x/q']);
+    mine = rated(mine, 'x/q', addDays(d0, 1), true);
+    expect(mine.k).toEqual({ 'x/q': d0 });
+    expect(dueOf(new Map(), mine, addDays(d0, 3))).toEqual([]);
+    expect(dueOf(new Map(), mine, addDays(d0, 4))).toEqual(['x/q']);
+  });
+  it('☆ then un-☆ leaves a shown phrase’s step and day as they were; un-☆ takes a never-met one out', () => {
+    const shown = rated(none, 'w/a', d0, true);
+    const back = unsaved(saved(shown, 'w/a', addDays(d0, 2)), 'w/a');
+    expect(back.s).toEqual(shown.s);
+    expect(back.k).toEqual({});
+    expect(dueOf(new Map(), unsaved(saved(none, 'x/q', d0), 'x/q'), addDays(d0, 5))).toEqual([]);
+  });
+  it('a met phrase saved later: counted from the day saved', () => {
+    const met = new Map<Key, LocalDate>([['w/a', d0]]);
+    expect(dueOf(met, saved(none, 'w/a', addDays(d0, 3)), addDays(d0, 3))).toEqual([]);
+    expect(dueOf(met, saved(none, 'w/a', addDays(d0, 3)), addDays(d0, 4))).toEqual(['w/a']);
+  });
+  it('never pruned with the shown', () => {
+    let mine = saved(none, 'x/keep', d0);
+    for (let i = 0; i < 3005; i++) mine = rated(mine, `c/${i}` as Key, addDays(d0, i % 50), true);
+    expect(Object.keys(mine.s).length).toBe(3000);
+    expect(mine.k).toEqual({ 'x/keep': d0 });
   });
 });
 

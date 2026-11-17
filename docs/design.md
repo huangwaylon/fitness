@@ -27,10 +27,10 @@ and clamping `lib/math.ts`, a static file's URL `staticUrl()`, the synced last-w
 
 ## Simplicity rules
 
-- No app tab bar: 島, the health popup (the dumbbell: 健康 and ごはん) and the HUD menu's six sheets
-  ([Island](#island) "Menu").
+- No app tab bar: 島, the health popup and the menu's six sheets ([Island](#island) "Menu").
+  A sheet's own `TabBar` is fine (旅行, 英語): its pages only.
 - One focal point per screen (島: the island itself, the sky clean; ごほうび: the wallets, today's ベル under each).
-- A number is shown in full in one place; elsewhere it is only a doorway to it.
+- A number is shown in full in one place; elsewhere only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
   characters), only with news. (The trip guides are the one exception: [Trips](#trips).)
 
@@ -271,7 +271,7 @@ stay trip data).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
-  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` (every plain bar, a pill) · `ActionSheet`; theme.css's
+  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's
   small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu`, `.tag`). All of it:
   `/dev/kit`.
 - **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a

@@ -152,9 +152,13 @@ export const DEVICE = {
   /** localStorage: −1 | 0 | 1 | 2: English Study's 字幕の大きさ (YouTube's captions fontSize) on this phone
    *  (lib/english/prefs.ts; 1, 大, by default). */
   englishCcSize: 'island.english.ccSize',
-  /** localStorage: `{[who]: {s: {[clip/id]: [day, step]}, day?: [day, n]}}`: English Study's フレーズの復習 on this phone
-   *  (lib/english/phrase-review.ts): each phrase's last showing and step, and today's count. */
+  /** localStorage: `{[who]: {s: {[clip/id]: [day, step]}, k?: {[clip/id]: day}, day?: [day, n]}}`: English Study's
+   *  フレーズの復習 on this phone (lib/english/phrase-review.ts): each phrase's last showing and step, the ones フレーズ's ☆
+   *  saved (the day), and today's count. */
   englishPhrases: 'island.english.phrases',
+  /** localStorage: `{[who]: {r, k, i, set, n, rev?}}`: where English Study's フレーズ deck is on this phone
+   *  (lib/english/deck.ts): the round, the shard, the card, this set's clips, the cards revealed so far. */
+  englishDeck: 'island.english.deck',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

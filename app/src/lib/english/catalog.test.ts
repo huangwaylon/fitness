@@ -27,6 +27,7 @@ describe('the key words', () => {
   it('underlined in the phrase: the shared words, a run of them as one', () => {
     expect(markedIn('Can I use your phone?', keyWordsOf(q().line!))).toEqual([{ t: 'Can I ', key: false }, { t: 'use your', key: true }, { t: ' phone?', key: false }]);
     expect(markedIn('Nothing here.', new Set(['x']))).toEqual([{ t: 'Nothing here.', key: false }]);
+    expect(markedIn('The rest is history.', new Set(['rest', 'is', 'history']))).toEqual([{ t: 'The ', key: false }, { t: 'rest is history', key: true }, { t: '.', key: false }]);
   });
 });
 
