@@ -14,7 +14,7 @@ export const lewbJuice: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'juice', reveals: ['honest'], seg: [0, 45.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'juice', reveals: ['honest'], seg: [0, 44],
       stem: 'What does the juice do to people?', ja: 'このジュースは、人をどうする？',
       choices: ['Makes them say what they think', 'Makes them rude for no good reason', 'Makes them act very silly'], a: 0,
       choicesJa: ['思っていることを言わせる', 'わけもなく失礼にする', 'すごくふざけさせる'],

@@ -17,7 +17,7 @@ export const auditionDisaster: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [21, 77.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [33, 77.4],
       stem: 'What goes wrong for Harper’s friends?',
       ja: 'ハーパーの友だちに何が起きる？',
       choices: ['Their event was canceled', 'Their outfits aren’t ready', 'They get there too late'], a: 0,
@@ -26,7 +26,7 @@ export const auditionDisaster: Clip = {
       line: 'But if you don’t get going, you’ll miss drag night. — Oh, drag night! — *Was canceled.*',
       said: 'イベントに間に合うよう送り出そうとすると、「それ、中止になった」と返される。',
       mean: 'was canceled ＝ 中止になった。準備は完ぺきでも、行き先がない。',
-      trap: 'alterations（手直し）や miss（逃す）が聞こえるが、衣装はできていて、遅刻の話でもない。',
+      trap: 'miss（逃す）が聞こえるが、遅刻の話ではない。衣装もできあがっている。',
       use: 'The concert was canceled.（コンサートは中止になった）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'pulloff', seg: [47.3, 52],

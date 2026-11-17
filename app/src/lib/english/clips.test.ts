@@ -205,6 +205,12 @@ describe('the clips', () => {
         if (a2) {
           // the A2 rules (the 2026-11-17 panel): 12–24 live, form-heavy, little interpretation, C2 0–2, B1 the bulk
           expect(live.length >= 12 && live.length <= 24, `bank size ${live.length}`).toBe(true);
+          // a gist's segment ≤ 45 s; 3 choices (a number 3–4)
+          for (const q of live) {
+            if (q.skill === 'gist') expect(q.seg[1] - q.seg[0], `${q.id}: a gist's segment`).toBeLessThanOrEqual(45);
+            const n = q.choices?.length;
+            if (n !== undefined) expect(q.skill === 'number' ? n >= 3 && n <= 4 : n === 3, `${q.id}: ${n} choices`).toBe(true);
+          }
           expect(by((q) => q.skill === 'gist'), 'gist').toBeGreaterThanOrEqual(2);
           expect(by((q) => GROUP_OF[q.skill] === 'L'), 'L').toBeGreaterThanOrEqual(4);
           expect(by((q) => GROUP_OF[q.skill] === 'F'), 'F').toBeGreaterThanOrEqual(4);
