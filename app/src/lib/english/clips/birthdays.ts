@@ -1,22 +1,13 @@
-// REVIEW 2026-11-16: pass 7, fix 17, drop 0, new 0; ear checks 2
+// A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2
 // “Michael Scott's Guide to Birthdays - The Office US” (the official The Office channel, Best of Season 4): the office
 // throws Michael-style parties for all 13 birthdays, so Jim tries one combined party; one person wants her own cake,
-// another wants pie on his real birthday, Toby asks to be added, the planner refuses, and Jim calls the whole thing off
-// after a show of hands, then hears himself called Michael.
+// another hates it, Toby asks to be added, the planner refuses, and Jim calls the whole thing off after a show of
+// hands, then hears himself called Michael.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Michael (4.9, 171.2 s), Jim (110.9,
-// 121.8, 148.6, 201.8, 245.3 s), Toby (149.5, 185.4, 192.2 s), Meredith (126.3 s), Angela (137.5 s), Creed (142.4,
-// 267 s). Jim is not named before 110 s; the stems call the plan's author Jim, but no key depends on who speaks.
-// Who asks “Do you think it's a good idea?” (66.6 s), who says “I knew I could count on you” (106.7 s), and who
-// refuses at 198.5 s are never named; no key depends on them.
-// Left out on purpose: 16.7–19.3 s (the age toast's race joke), 36.5–44 s beyond nt1 (shouts only), 133–144 s (the
-// pie and cobbler requests overlap, and the sources disagree: “do a pie” / “do a butterfly”, “it'll be Angela” / “it'll
-// be amazing”), 167.5 s (“there was no party” / “there was some party”), 175.5 s (“people sang” / “I have people
-// saying”), 249 s (“Phyllis called me Michael” / “but let's call me Michael”: nt2 uses only “called me Michael” in the
-// line it shows, which both have as “Michael”), and the closing song (255–284 s).
-// EAR CHECK: 68.5 s r1 — the cut falls after “No.” (captions 67.84 s) and before “I think it's a great idea” (69.12 s);
-//   both sources have the same words, and the item holds whoever says them
-// EAR CHECK: 129.3 s pr1 — whisper “Everybody's birthday.”, captions only “everybody”: the key holds either way (the
-//   reply turns “my” into “everybody”), but the line shows whisper's two words; confirm or trim the line
+// 121.8, 148.6, 201.8, 245.3 s), Toby (149.5, 185.4, 192.2 s). Jim is not named before 110 s; the stems call the plan's
+// author Jim, but no key depends on who speaks. Left out on purpose: 16.7–19.3 s (a race joke), 133–144 s (the pie
+// requests overlap and the sources disagree), the closing song (255–284 s).
+// OPEN: 178.3 s pr2 — whisper "maybe it could include me"; an older line had "maybe you could include me"
 import type { Clip } from '../types.ts';
 
 export const birthdayGuide: Clip = {
@@ -25,35 +16,31 @@ export const birthdayGuide: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // why: 30 ← -teen/-ty: thirteen's stressed "teen" is easy to lose, so it's heard as thirty; 33 ← "13" is said
-    //   twice in a row, and the two blur into one longer number
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [0, 6.25],
-      stem: 'How many people work in the office, according to the opening comment?',
-      choices: ['13', '30', '33'], a: 0, keep: true,
-      cue: '冒頭の一文と、すぐあとの「times a year」。',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [0, 6.25], keep: true,
+      stem: 'How many people work in this office?',
+      ja: 'このオフィスで働いているのは何人？',
+      choices: ['13', '30', '33'], a: 0,
+      choicesJa: ['13人', '30人', '33人'],
+      cue: '最初の一文。',
       line: 'There are *13* people working in this office. So *13* times a year…',
       said: '「この職場には13人。だから年に13回、ケーキと風船」と話す。',
-      mean: '人数が、そのまま年のパーティーの回数になる。',
-      trap: 'thirteen は後ろの teen が強い。thirty は前が強く語尾が短い。強さの位置で聞き分ける。',
+      mean: 'thirteen ＝ 13。「サーティーン」と最後の「ティーン」を長く強く言う。人数が、そのままパーティーの回数。',
+      trap: 'thirty は「サーティ」と短く終わる。33 なら thirty-three と数が2つ続く。2回とも「ティーン」なら13。',
       use: 'There are five of us on the team.（うちのチームは5人です）' },
 
-    // R fix: V2, blind 60 %: "worried he'd be fired" was a filler, and the key was the only negative feeling
-    // why: amused ← the deadpan list heard as enjoying how wild the toasts get; tolerant ← "inappropriate" heard as
-    //   mild, a boss's harmless habit
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'toasts', seg: [19.35, 25.5],
-      stem: 'How does the speaker feel about the second kind of toast?',
-      choices: ['Amused; the worse they get, the funnier', 'Fed up; they’re painful to sit through',
-                'Tolerant; they’re rude but mean no harm'], a: 1,
-      cue: '最後に足された、二語だけの一言。',
-      line: 'And the other is *something inappropriate or horrible*. *Or both.*',
-      said: 'もう一つは「不適切か、ひどいもの」と言い、「あるいは両方」と付け足す。',
-      mean: '付け足しの一言に、うんざりした本音が出る。',
-      trap: '習慣を並べる話し方は、ほほえましい思い出話に聞こえやすい。最後に足された一言が評価を決める。',
-      use: 'It was long, or boring, or both.（長いか退屈か、その両方だった）' },
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'toasts', seg: [18.5, 25.7],
+      stem: 'What is the second kind of toast like?',
+      ja: '2つ目の種類の乾杯のあいさつは、どんなもの？',
+      choices: ['Rude or horrible', 'A joke about age', 'Short and sweet'], a: 0,
+      choicesJa: ['失礼か、ひどいもの', '年齢についての冗談', '短くて感じがいい'],
+      cue: '「And the other is」のあと。',
+      line: 'And the other is *something inappropriate or horrible*. Or both.',
+      said: 'もう1つの乾杯は「不適切か、ひどいもの。あるいは両方」と話す。',
+      mean: 'inappropriate ＝ その場にふさわしくない、失礼な。horrible ＝ ひどい。Or both ＝ その両方のことも。',
+      trap: '年齢の冗談は1つ目の種類。the other（もう1つ）のあとを聞く。',
+      use: 'It was long, or boring, or both.（長いか、退屈か、その両方だった）' },
 
-    // why: last line ← "only" plus the song read as the show-off script (he belts the ending); after everyone ←
-    //   "only" heard as "alone", as if he sings by himself once the others stop
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'harmony', seg: [25.1, 29.6],
+    { id: 'd1', retired: true, skill: 'detail', level: 'B1', point: 'harmony', seg: [25.1, 29.6],
       stem: 'What does the speaker say about how Michael sings “Happy Birthday”?',
       choices: ['He sings only the high harmony part', 'He sings only the last line, very loudly',
                 'He sings only after everyone else is done'], a: 0,
@@ -64,28 +51,19 @@ export const birthdayGuide: Clip = {
       trap: 'only を「一人で」と取ると、皆が歌い終えてから歌う話に聞こえる。only がどの語にかかるかを聞く。',
       use: 'I only sing in the shower.（シャワーのときしか歌わない）' },
 
-    // R fix: V2, blind 55 %: "likes them more than he should" was the only reading of a sitcom boss; the choices are
-    //   now three degrees of belief, each from a misreading of the words
-    // why: flaw ← "fault" = 欠点 read as "without fault", flawless; up to a point ← "maybe… arguably… possibly" heard as
-    //   limiting how much he believes
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', seg: [30.9, 37.3],
-      stem: 'How much does Michael believe in surprise parties, by the speaker’s last words?',
-      choices: ['More than is good for anyone', 'Only up to a point, these days',
-                'Without a single doubt or flaw'], a: 0,
-      cue: '文の最後、短い3語のまとまり。',
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', seg: [30.0, 36.5],
+      stem: 'What does “to a fault” mean here?',
+      ja: 'ここでの「to a fault」の意味は？',
+      choices: ['More than is good', 'With no faults', 'Only a little'], a: 0,
+      choicesJa: ['良すぎて困るほど', '欠点がまったくなく', 'ほんの少し'],
+      cue: '文の最後の3語。',
       line: 'a very big believer in surprise parties. Maybe even, arguably, possibly *to a fault*.',
-      said: 'サプライズ好きで、「もしかすると、度が過ぎるほど」と言う。',
-      mean: 'to a fault ＝ 行き過ぎなほど。良いことでもやり過ぎ、という意味。',
-      trap: 'fault を「欠点なく」、控えめな語を「ほどほど」と取りやすい。to a fault でひとまとまり。',
-      use: 'She’s generous to a fault.（彼女は人が良すぎるくらい）' },
+      said: 'サプライズパーティーが大好きで、「もしかすると、やりすぎなほど」と言う。',
+      mean: 'to a fault ＝ 良いことでも、やりすぎて困るほど。',
+      trap: 'fault（欠点）から「欠点がない」と思いやすい。to a fault でひとまとまり。',
+      use: 'She’s kind to a fault.（彼女は優しすぎるくらいだ）' },
 
-    // R fix: V2, blind 65 %: "once, all in the past" was a filler and "the hedges are for show" the only knowing
-    //   reading; now two near misses (the literal hedge, and a scope shift on how much)
-    // why: hard to say ← "maybe… arguably… possibly" read as real caution (かもしれない); only a little ← the hedges
-    //   heard as shrinking the degree, not the certainty
-    // anchor: 33.9–37 s three hedges stacked onto "to a fault", then 36.5–44 s "Happy birthday!" is shouted again and
-    //   again: the surprises themselves settle that he clearly overdoes it
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'fault', seg: [30.9, 44.4],
+    { id: 'nt1', retired: true, skill: 'infer', level: 'C2', point: 'fault', seg: [30.9, 44.4],
       stem: 'Which plain-English version keeps what the speaker means about the surprise parties?',
       choices: ['He overdoes them, and it’s plain to see', 'He might overdo them; it’s hard to say',
                 'He overdoes them, but only by a little'], a: 0,
@@ -96,25 +74,19 @@ export const birthdayGuide: Clip = {
       trap: '「かもしれない」を自信のなさや「少し」と取りやすい。控えめな語の重なりは本音を疑う。',
       use: 'It’s maybe, possibly, a little too loud.（もしかすると、ちょっとうるさいかも）' },
 
-    // R fix: V2, blind 60 %: the key echoed x1's "at once", and "let each person plan" was weak; now three changes to
-    //   the parties, two of them built on words in the clip
-    // why: one a month ← "birthday month" in the memo, and "getting these out of the way"; out of work hours ←
-    //   "nobody wastes their time" heard as work time
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [44, 60],
-      stem: 'What does Jim want to do about the office birthdays?',
-      choices: ['Fold all the parties into one big one', 'Cut the parties down to one a month',
-                'Move the parties out of work hours'], a: 0,
-      cue: '「productive」のあとの提案の中身。',
-      line: 'We can just have *one big, fun party*. And everybody’s happy…',
-      said: '「まとめて済ませれば生産的。大きな楽しい会を一回やれば、みんな満足」と話す。',
-      mean: '会を減らしたり移したりせず、一回にまとめる案。',
-      trap: '「時間の無駄」や後の「誕生日月」から、時間や回数の話に取りやすい。one big party が中心。',
-      use: 'Let’s do it all in one go.（一回でまとめてやろう）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [39.5, 56.5],
+      stem: 'What does Jim want to do about the birthdays?',
+      ja: 'ジムは誕生日会をどうしたい？',
+      choices: ['Have one big party for all', 'Have one party each month', 'Have the parties after work'], a: 0,
+      choicesJa: ['全員で大きな会を1回やる', '毎月1回ずつ会をやる', '会を仕事のあとにやる'],
+      cue: '「productive」のあとの提案。',
+      line: 'We can just have *one big, fun party*. And everybody’s happy, and nobody wastes their time.',
+      said: '「大きな楽しい会を1回やれば、みんな満足で、だれも時間をむだにしない」と話す。',
+      mean: 'one big party ＝ 大きな会を1回。13回の会を1回にまとめる案。',
+      trap: 'wastes their time（時間のむだ）から、時間や回数を変える話だと思いやすい。one big がポイント。',
+      use: 'Let’s just have one big dinner.（大きな夕食会を1回やろうよ）' },
 
-    // R fix: V2, blind 55 %: "a question back" was a filler; now a downward correction, the same "No" mechanism the
-    //   other way
-    // why: milder ← "No" heard as "not good, just okay"; reason ← "No" heard as a real no, so a reason against follows
-    { id: 'r1', skill: 'predict', level: 'C1', point: 'great', seg: [64.6, 68.5], then: [68.5, 71.6],
+    { id: 'r1', retired: true, skill: 'predict', level: 'C1', point: 'great', seg: [64.6, 68.5], then: [68.5, 71.6],
       stem: 'After the question about the idea, a short “No.” comes. What follows?',
       choices: ['A stronger word of praise for the idea', 'A milder word: the idea is just okay',
                 'A reason the idea might not work'], a: 0,
@@ -125,88 +97,65 @@ export const birthdayGuide: Clip = {
       trap: 'No を聞くと反対か格下げを待ちやすい。No は語を直して程度を上げることもある。',
       use: 'Good? No. It was amazing.（良かった？いや、最高だった）' },
 
-    // R fix: V2, blind 60 % with 3 choices ("do you see my memo" barely fits); a fourth, grammatical choice
-    // why: do you ← "did you" shrinks to "didja", and the d is easy to miss; didn't you ← a reminder heard as
-    //   "didn't you see it?", the t of n't dropped; did they ← the weak "you" (ja) lost, and "they" fits a question
-    //   about others
-    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [78.25, 81.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [77.5, 81.0], keep: true,
       stem: 'Fill the gap: “Oh, ___ see my memo, by the way?”',
-      choices: ['did you', 'do you', 'didn’t you', 'did they'], a: 0,
-      cue: 'Oh のあと、とても短くつながる2語。',
+      ja: '空いている所に入る語は？',
+      choices: ['did you', 'do you', 'didn’t you'], a: 0,
+      choicesJa: ['〜した？', '〜する？', '〜しなかった？'],
+      cue: 'Oh のすぐあと。',
       line: 'Oh, *did you* see my memo, by the way?',
-      said: '「そうだ、ところでメモは見た？」と聞く。did you がつながり「ディジュ」に近い。',
-      mean: 'メモを読んだかの確認。by the way で話題を変える。',
-      trap: 'didn’t なら責める響きになる。n’t の t が消えても「ン」が残る。',
+      said: '「そうだ、ところでメモは見た？」と聞く。',
+      mean: 'did you は d と you がつながり「ディジュ」と聞こえる。by the way ＝ ところで。話を変える前置き。',
+      trap: 'do you なら「ドゥユ」で「ディ」がない。didn’t you なら「ディドゥンチュ」と「ン」が入る。',
       use: 'Oh, did you get my email?（そうだ、メール届いた？）' },
 
-    // R fix: V2, blind 55 %; now three things from the opening's list of party habits
-    // why: songs ← "Happy Birthday" at every party (opening); gifts ← "some sort of joke gift" (opening), a word said
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', reveals: ['plan'], seg: [83.2, 90.6],
-      stem: 'According to the memo, what could everyone use a break from?',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', reveals: ['plan'], seg: [81.0, 87.1], keep: true,
+      stem: 'What does the memo want a break from?',
+      ja: 'メモには、何から一休みしたいと書いてある？',
       choices: ['All the cake', 'All the songs', 'All the gifts'], a: 0,
-      cue: '「a break from the」のあと、最後の語。',
+      choicesJa: ['ケーキばかり', '歌ばかり', 'プレゼントばかり'],
+      cue: '「a break from the」のあと。',
       line: 'we all could use *a break from the constant cake*',
-      said: 'メモに「正直、ケーキ続きから一休みしたい。今日は誕生日月を祝おう」とある。',
-      mean: 'constant ＝ ひっきりなしの。ケーキへの遠回しな不満。',
-      trap: '冒頭の歌やプレゼントの話が理由に聞こえやすい。名指しされるのはケーキ。',
-      use: 'I could use a break from coffee.（コーヒーを少し控えたい）' },
+      said: 'メモに「正直、ケーキ続きからみんな一休みしたい」とある。',
+      mean: 'could use a break from 〜 ＝ 〜から少し離れたい。constant ＝ ずっと続く。',
+      trap: '冒頭で歌やプレゼントの話も出るので、それだと思いやすい。名前が出るのはケーキだけ。',
+      use: 'I could use a break.（ちょっと休みたいな）' },
 
-    // R fix: schema, the answer was 7 words (the stem said 6; the test allows 1–6); now the reduced "get it all" only
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', reveals: ['plan'], seg: [96.2, 102.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', reveals: ['plan'], seg: [96.5, 102.1], keep: true,
       stem: 'Type the words: “This way we ___ out of the way at once.” (3 words)', answer: 'get it all',
-      cue: '「This way we」のすぐあと、弱い3語。',
+      ja: '「This way we」のあとの3語を書こう。',
+      cue: '「This way we」のすぐあと。',
       line: 'This way we *get it all* out of the way at once…',
-      said: '「これで一度に全部片づく」。get it all は t が弾み「ゲリロー」に近い。',
-      mean: 'out of the way ＝ 面倒を先に済ませる。',
-      trap: '弱い it と all が get にくっつき、1語に聞こえやすい。語数を数えてからほどく。',
-      use: 'Let’s get the boring part out of the way.（面倒なところを先に片づけよう）' },
+      said: '「これなら一度に全部片づく」と言う。',
+      mean: 'get it all は t が軽い「ラ」の音になり「ゲリロール」に近い。out of the way ＝ 先に済ませる。',
+      trap: 'it と all が get にくっつき、1語に聞こえやすい。3語あると思って書く。',
+      use: 'Let’s get the hard part out of the way.（大変なところを先に片づけよう）' },
 
-    // R fix: K5, "Peach cobbler" wasn't a cake, so it fell out of the set (blind 50 %)
-    // why: angel food ← the opposite cake, and "food cake" is the part heard clearly; peach ← "peach pie… cobbler",
-    //   another person's choice later in the clip, a word that is said
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'devils', seg: [109.6, 115.9],
-      stem: 'When someone asks Jim for her own cake, what kind does she want?',
-      choices: ['Devil’s food cake', 'Angel food cake', 'Peach cake'], a: 0,
-      cue: '「I really prefer」のあと。',
-      line: 'Hey, Jim, can I have *my own cake*? … I really prefer *devil’s food cake*.',
-      said: '「自分用のケーキもらえる？デビルズフードがいい」と頼む。',
-      mean: 'devil’s food cake ＝ 濃いチョコレートケーキ。',
-      trap: 'food cake だけ聞くとエンゼルフードと混ざり、peach は後の別の人の注文。最初の devil’s を拾う。',
-      use: 'I’d really prefer chocolate, if that’s okay.（できればチョコがいいな）' },
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'devils', seg: [109.5, 115.8],
+      stem: 'What does Jim get asked for first?',
+      ja: 'ジムが最初に頼まれるのは何？',
+      choices: ['Her own cake', 'Her own pie', 'Her own party'], a: 0,
+      choicesJa: ['自分用のケーキ', '自分用のパイ', '自分だけの会'],
+      cue: '「Hey, Jim」のあと。',
+      line: 'Hey, Jim, can I have *my own cake*? … I really prefer devil’s food cake.',
+      said: '「ジム、私だけのケーキもらえる？デビルズフード（チョコケーキ）がいいの」と頼む。',
+      mean: 'Can I have 〜? ＝ 〜をもらえる？ my own ＝ 自分だけの。I really prefer 〜 ＝ 〜のほうがいい。',
+      trap: 'パイはあとで別の人が頼むもの。最初に頼まれるのは cake。',
+      use: 'Can I have my own room?（自分の部屋をもらえますか）' },
 
-    // R fix: V2, blind 70 %: "drops it once nearly everyone objects" was the only ending a reader expects; now the
-    //   bending plan and the name slip are the near misses; reveals no longer lists `include` (no choice names Toby)
-    // why: each pick ← the cake and pie requests get "Oh, sure" and "we'll see what we can do", so the plan seems to
-    //   bend; Michael ← "Hey, Michael" near the end heard as the plan passing to the boss
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['hands'], seg: [110, 256],
-      stem: 'By the end of the clip, what happens to Jim’s plan?',
-      choices: ['He calls it off when the whole room objects', 'He keeps it, but lets each person pick a dessert',
-                'He hands it over to Michael when people object'], a: 0,
-      cue: '手を挙げさせたあとの、ジムの結論。',
-      line: 'So who has problems with the birthday thing? … *so then we just shouldn’t do it*.',
-      said: '不満が次々に出て、ジムは「文句のある人？」と聞き、手を見て「じゃあ、やめよう」。',
-      mean: 'まとめるはずの会が、全員の不満を集めた。',
-      trap: '注文に応じる場面や最後の「マイケル」が結末に見えやすい。挙手のあとの結論を聞く。',
-      use: 'Okay, let’s just not do it, then.（じゃあ、やめにしよう）' },
+    { id: 'i2', skill: 'attitude', level: 'B1', point: 'likeme', reveals: ['devils'], seg: [119.5, 124.4],
+      stem: 'How does the next man feel about devil’s food?',
+      ja: '次に来た男性は、デビルズフードをどう思っている？',
+      choices: ['He hates it', 'He loves it', 'He wants it too'], a: 0,
+      choicesJa: ['大嫌い', '大好き', '自分もほしい'],
+      cue: '「Jim!」と呼ぶ声のあと。',
+      line: 'Yeah, people like me, I guess. — Jim! *I hate devil’s food*.',
+      said: '「みんなに好かれてるな」の直後、「ジム！デビルズフードは大嫌いだ」と言われる。',
+      mean: 'hate ＝ 大嫌い。1人の希望を聞いたとたん、別の人から不満が出る。',
+      trap: 'devil’s food だけ拾うと「自分もほしい」に聞こえやすい。前の I hate が答え。',
+      use: 'I hate waiting in line.（並ぶのは大嫌い）' },
 
-    // R fix: V2, blind 65 %: both distractors were cheerful, the key the only problem; now two other reasons to call out
-    //   "Jim!"
-    // why: same cake ← "devil's food" heard again with "hate" lost; meeting ← "Jim!" called out, heard as a summons
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'likeme', reveals: ['devils'], seg: [118.1, 130.35],
-      stem: 'What do the lines right after Jim’s “people like me” show?',
-      choices: ['His quick yes has already upset someone', 'Someone wants the same cake for himself',
-                'Someone is calling him away to a meeting'], a: 0,
-      cue: '「Jim!」と呼ばれたあとの最初の文。',
-      line: 'Yeah, *people like me*, I guess. — Jim! *I hate devil’s food*.',
-      said: '「みんなに好かれてるな」と満足した直後、「ジム！デビルズフードは大嫌いだ」と来る。',
-      mean: '一人に選ばせた途端、別の人の不満が出る。案のほころび。',
-      trap: '呼ぶ声は呼び出しにも聞こえ、devil’s food だけ拾うと同じ注文に聞こえる。次の動詞を聞く。',
-      use: 'Hey, can we talk about the menu?（ねえ、メニューの件で話せる？）' },
-
-    // R fix: C10, "two-word reply" rested on whisper's "Everybody's birthday" (captions: "everybody"); the stem no
-    //   longer counts words, and the line is on the ear-check list (blind 45 %: kept otherwise)
-    // why: wishes ← "birthday" heard as the greeting; agrees ← a short reply read as a 相づち (yes, of course)
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'everybody', reveals: ['likeme', 'devils'], seg: [125.7, 133.8],
+    { id: 'pr1', retired: true, skill: 'pragma', level: 'B2', point: 'everybody', reveals: ['likeme', 'devils'], seg: [125.7, 133.8],
       stem: 'When the man who hates the cake complains, what does the short reply do?',
       choices: ['Reminds him the party is for all of them', 'Wishes all of them a happy birthday',
                 'Agrees that each person should choose'], a: 0,
@@ -217,76 +166,67 @@ export const birthdayGuide: Clip = {
       trap: 'birthday が聞こえると祝いの言葉に取りやすい。どの語を言いかえたかを聞く。',
       use: 'It’s not your trip. It’s our trip.（君の旅じゃない、僕らの旅だよ）' },
 
-    // why: weeks ← "two" caught and the unit guessed; years ← "months ago" links into one blur ("monthsago")
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twomonths', reveals: ['include'], seg: [162.4, 166.8],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twomonths', reveals: ['include'], seg: [163.1, 166.3], keep: true,
       stem: 'When was Toby’s birthday?',
-      choices: ['Two weeks ago', 'Two months ago', 'Two years ago'], a: 1, keep: true,
-      cue: '「my birthday was」のあと、単位の語。',
+      ja: 'トビーの誕生日はいつだった？',
+      choices: ['Two weeks ago', 'Two months ago', 'Two years ago'], a: 1,
+      choicesJa: ['2週間前', '2か月前', '2年前'],
+      cue: '「my birthday was」のあと。',
       line: 'My birthday was *two months ago*.',
-      said: '会話の途中で、トビーが「僕の誕生日は2か月前だった」と切り出す。',
-      mean: '日付だけでなく、祝ってもらえなかった話の入り口。',
-      trap: 'months の s が ago にくっつく。単位の語は、最後の s まで聞いて決める。',
+      said: 'トビーが「僕の誕生日は2か月前だった」と切り出す。',
+      mean: 'two months ago ＝ 2か月前。months の s が ago につながり「マンサゴウ」と聞こえる。',
+      trap: 'weeks なら「ウィー」、years なら「イヤー」と始まる。「マン」と聞こえたら months。',
       use: 'My birthday was last week, actually.（実は先週が誕生日だったんだ）' },
 
-    // R fix: K2 + reveals: "set two months after his birthday" wasn't refuted by the segment (the party could well have
-    //   been then) and gave away n2's key; now an a.m. reading of the time
-    // why: lunch ← the time is the point, but "four fifty-eight" is heard only as "a time" and its meaning missed;
-    //   dawn ← "four fifty-eight" with no a.m./p.m. heard as early morning
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'fourfiftyeight', seg: [168.5, 176.85],
-      stem: 'Why does Toby feel he didn’t really get a party?',
-      choices: ['It was set for the last minutes of the work week', 'It was set for lunch, when people were out',
-                'It was set for dawn, before anyone came in'], a: 0,
-      cue: '「scheduled it for」のあとの時刻と曜日。',
+    { id: 'i1', skill: 'number', level: 'B1', point: 'fourfiftyeight', seg: [169.6, 175.3],
+      stem: 'When was Toby’s party?',
+      ja: 'トビーの会はいつだった？',
+      choices: ['4:58 on a Friday', '4:48 on a Friday', '4:58 on a Monday'], a: 0,
+      choicesJa: ['金曜の4時58分', '金曜の4時48分', '月曜の4時58分'],
+      cue: '「scheduled it for」のあと。',
       line: 'Well, there was. But *Michael scheduled it for 4:58 on a Friday*.',
-      said: '「会はあったけど、マイケルが金曜の4時58分に入れた」と話す。',
-      mean: '終業直前、週末の帰りぎわ。形だけの会だった。',
-      trap: '時刻の数字だけ追うと、昼や早朝にも取れる。数字を聞いたら、どんな時間帯かまで考える。',
-      use: 'They scheduled it for Friday at five.（金曜の5時に入れられた）' },
+      said: '「会はあったよ。でもマイケルが金曜の4時58分に入れたんだ」と話す。',
+      mean: 'schedule A for 〜 ＝ A を〜に予定する。金曜の終業直前で、みんな帰りたい時間。',
+      trap: '48 は「フォーティ」、58 は「フィフティ」で始まる。Monday は「マン」、Friday は「フライ」。',
+      use: 'They scheduled the meeting for five.（会議は5時に入れられた）' },
 
-    // R fix: V2, blind 70 %: "include me" made the key the only request; now a second, wrong request
-    // why: own party ← "can I have my own cake?" earlier, carried over; complaining ← the 4:58 story just before heard
-    //   as the point of it
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'include', reveals: ['fourfiftyeight'], seg: [176.8, 181.9],
-      stem: 'When Toby says what he “just thought”, what is he doing?',
-      choices: ['Asking, indirectly, to be part of the party', 'Asking, indirectly, for a party of his own',
-                'Complaining, politely, about his last party'], a: 0,
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'include', reveals: ['fourfiftyeight'], seg: [177, 182.1],
+      stem: 'What is Toby asking for?',
+      ja: 'トビーは何を頼んでいる？',
+      choices: ['To be in the party', 'A party of his own', 'A better party time'], a: 0,
+      choicesJa: ['会に入れてほしい', '自分だけの会', 'もっといい時間の会'],
       cue: '「I just thought maybe」のあと。',
-      line: 'I just thought *maybe you could include me*. — Seriously?',
-      said: '「僕も入れてもらえるかなと思って」と言い、「本気？」と返される。',
-      mean: 'I just thought maybe ～ は控えめなお願いの型。',
-      trap: '直前の4時58分の話や「自分のケーキ」の頼みに引っぱられやすい。include me は「入れて」。',
-      use: 'I just thought maybe I could join you.（よかったら一緒に行けるかなと思って）' },
+      line: 'I just thought maybe it could *include me*. — Seriously?',
+      said: '「僕も入れてもらえたらな、と思って」と言い、「本気？」と返される。',
+      mean: 'I just thought maybe 〜 ＝ 〜かなと思って。直接「入れて」と言わない、ひかえめな頼み方。include ＝ 入れる。',
+      trap: '前の自分の会の話から、新しい会がほしいと思いやすい。include me（自分も入れて）が答え。',
+      use: 'I just thought maybe I could join you.（よかったら一緒にいいかなと思って）' },
 
-    // R fix: V2, blind 50 %: "likes him, as the praise says" was the weak one; now a near miss on what "much" means
-    // why: dull ← "a little bit much" heard as mild criticism of the wrong kind, "much" lost; pities ← the sad party
-    //   story just before
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'much', seg: [184.8, 189.6],
-      stem: 'In his comment to the camera, how does Jim feel about Toby?',
-      choices: ['He finds Toby tiring, despite the praise', 'He finds Toby a bit dull, despite the praise',
-                'He pities Toby, after the parking-lot story'], a: 0,
-      cue: '「great」が2回のあと、つなぎの一語から。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'much', seg: [185.5, 189.9],
+      stem: 'How does Jim feel about Toby?',
+      ja: 'ジムはトビーのことをどう思っている？',
+      choices: ['Nice, but a bit annoying', 'Great, with no problems', 'Sad about his party'], a: 0,
+      choicesJa: ['いい人だけど、ちょっとしつこい', 'すごくいい人で、問題なし', '彼の会のことで悲しい'],
+      cue: '「great」が2回のあと。',
       line: 'Toby’s great. He’s great. *But sometimes he can be a little bit much*.',
-      said: '「トビーはいいやつだ、本当に。でも時々ちょっと重い」と話す。',
-      mean: 'a little bit much ＝ ちょっと疲れる。ほめてから but で本音。',
-      trap: 'great の重ねは本気に聞こえる。but のあとの much は「多すぎ」で退屈の逆。',
-      use: 'Sweet guy, but a bit much.（いい人だけど、ちょっと疲れる）' },
+      said: '「トビーはいいやつだ、本当に。でも時々、ちょっとしつこい」とカメラに話す。',
+      mean: 'a bit much ＝ やりすぎで、ちょっとうっとうしい。ほめてから but で本音を言う形。',
+      trap: 'great を2回重ねるので、本気でほめていると思いやすい。本音は but のあと。',
+      use: 'He’s nice, but a bit much.（いい人だけど、ちょっとしつこい）' },
 
-    // why: won't change ← "just throw you in" heard as a small add-on, so the reason sounds like "no big deal";
-    //   fair ← Toby's complaint was about being left out, so the reason sounds like fairness
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [194.6, 199.4],
-      stem: 'What does Jim mean by his reason for adding Toby?',
-      choices: ['More people will make it more fun', 'One more person won’t change much',
-                'Everyone deserves a turn, so it’s fair'], a: 0,
-      cue: '「because」のあとの決まり文句。',
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [195, 199.8], keep: true,
+      stem: 'What does “the more the merrier” mean?',
+      ja: '「the more the merrier」の意味は？',
+      choices: ['More people, more fun', 'One more won’t matter', 'Everyone gets a turn'], a: 0,
+      choicesJa: ['人が多いほど楽しい', '1人増えても変わらない', 'みんなに順番が来る'],
+      cue: '「because」のあと。',
       line: 'We’re just going to *throw you in*, because *the more the merrier*, right? — No.',
-      said: '「君も入れよう。多いほど楽しいしね」に、すぐ「だめ」と返る。',
-      mean: 'the more the merrier ＝ 多いほど楽しい。',
-      trap: 'throw you in の軽さから「大差ない」と取りやすい。the 比較級, the 比較級 の型で覚える。',
+      said: '「君も入れよう。多いほど楽しいしね」と言うと、すぐ「だめ」と返る。',
+      mean: 'the more the merrier ＝ 人が多いほど楽しい。人を誘うときの決まり文句。merry ＝ 楽しい。',
+      trap: 'throw you in（ついでに入れる）が軽く聞こえ、「1人くらい変わらない」と思いやすい。merrier は「もっと楽しい」。',
       use: 'Bring your friends! The more the merrier.（友だちも連れてきて、多いほど楽しい）' },
 
-    // why: behind her back ← "you can't just change plans" heard as a complaint about not being asked (a fair
-    //   grievance, but not what the word says); again and again ← the rhyming "willy-nilly" heard as repetition
-    { id: 'f3', skill: 'phrase', level: 'C1', point: 'willynilly', seg: [200.25, 206.85],
+    { id: 'f3', retired: true, skill: 'phrase', level: 'C1', point: 'willynilly', seg: [200.25, 206.85],
       stem: 'How, according to the “I am not a machine” complaint, does Jim change plans?',
       choices: ['On a whim, without thinking it through', 'Behind her back, without asking her first',
                 'Again and again, all week long'], a: 0,
@@ -297,36 +237,55 @@ export const birthdayGuide: Clip = {
       trap: '似た音のくり返しは「何度も」に聞こえやすい。音遊びの語は、文全体の不満から意味を決める。',
       use: 'Don’t change the plan willy-nilly.（思いつきで予定を変えないで）' },
 
-    // R fix: K1, "moves on with the plan" rested on "Okay, then we need to…", which is cut off (whoever says it, it
-    //   could go on to fix the menu); the key now rests on "That's a bummer" alone (blind 55 %, so the choices changed too)
-    // why: apologizes ← "bummer" is unfamiliar, and the sorry script after an allergy is expected; teases ← a short,
-    //   flat reply read as mocking his fuss about food
-    { id: 'pr3', skill: 'pragma', level: 'C1', point: 'bummer', seg: [210.3, 215.1],
-      stem: 'What does the reply to the mushroom allergy do?',
-      choices: ['Brushes it off with a quick “too bad”', 'Apologizes for not asking about it first',
-                'Teases him for being a picky eater'], a: 0,
-      cue: 'アレルギーと聞いた直後の、短い返事。',
-      line: 'I’m allergic to mushrooms. — *That’s a bummer.* Okay…',
-      said: '「キノコのアレルギーなんだ」に「お気の毒」と軽く返すだけ。',
-      mean: 'bummer ＝ ついてないね。同情の形だけで、謝りも気づかいもしない。',
-      trap: '謝罪が続く型や、短い返事をからかいと取りやすい。bummer は同情の決まり文句。',
+    { id: 'pr3', skill: 'phrase', level: 'B2', point: 'bummer', seg: [210.5, 214.6],
+      stem: 'What does “That’s a bummer” mean?',
+      ja: '「That’s a bummer」の意味は？',
+      choices: ['That’s too bad', 'That’s great', 'That’s a lie'], a: 0,
+      choicesJa: ['それはついてないね', 'それはよかった', 'うそでしょ'],
+      cue: 'キノコの話のすぐあと。',
+      line: 'I’m allergic to mushrooms. — *That’s a bummer.*',
+      said: '「キノコのアレルギーなんだ」に「それはついてないね」と軽く返すだけ。',
+      mean: 'bummer ＝ がっかりなこと。That’s a bummer ＝ ついてないね。くだけた軽い言い方。',
+      trap: 'bummer は知らない語なので、意味を当てずっぽうにしやすい。I’m allergic（アレルギー）のあとの返事なので、悪い知らせへの返し。',
       use: 'Rain again? That’s a bummer.（また雨？ついてないね）' },
 
-    // why: three ← "one, two, three" counted aloud, the last number heard; half ← "so then we just shouldn't do it"
-    //   sounds like the end of a close vote
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'hands', reveals: ['outcome'], seg: [230.65, 238.4],
-      stem: 'When Jim asks who has problems with the plan, how many do?',
-      choices: ['Three people in the room', 'About half the room', 'Everyone in the room'], a: 2, keep: true,
-      cue: '数え始めて、途中でやめたところ。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hands'], seg: [218, 245],
+      stem: 'What happens to Jim’s plan in the end?',
+      ja: 'ジムの案は最後にどうなる？',
+      choices: ['Jim calls the party off', 'Jim lets everyone choose', 'Michael takes it over'], a: 0,
+      choicesJa: ['ジムが取りやめる', 'ジムが全員に選ばせる', 'マイケルが引き継ぐ'],
+      cue: '手を挙げさせたあと。',
+      line: 'So who has problems with the birthday thing? … *so then we just shouldn’t do it*.',
+      said: '「不満のある人？」と聞き、全員と分かって「じゃあ、やめよう」と言う。',
+      mean: 'we just shouldn’t do it ＝ やらないほうがいい。call off ＝ 取りやめる。',
+      trap: 'すぐあとに「Hey, Michael」と呼ぶ声があるが、ジムをまちがえて呼んだだけ。',
+      use: 'Okay, let’s not do it, then.（じゃあ、やめにしよう）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'righthere', seg: [219.5, 231.3],
+      stem: 'Where does Jim want to talk about it?',
+      ja: 'ジムはどこでその話をしたい？',
+      choices: ['Right here', 'The conference room', 'The parking lot'], a: 0,
+      choicesJa: ['ここで', '会議室で', '駐車場で'],
+      cue: '「No. No.」のあと。',
+      line: 'Conference room? — Yes, conference room, five minutes. No. No. We’re going to solve it *right here*.',
+      said: '「会議室で5分後」と言いかけて、「いや、ここで解決しよう」と言い直す。',
+      mean: 'right here ＝ まさにここで。No で前の言葉を打ち消して言い直す。',
+      trap: 'conference room（会議室）がはっきり聞こえるが、そのあと No と打ち消す。最後の right here が答え。',
+      use: 'Could I have your attention, please?（ちょっと聞いてください）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'hands', reveals: ['outcome'], seg: [231.3, 238.8], keep: true,
+      stem: 'How many people have problems with the plan?',
+      ja: 'この案に不満がある人は何人？',
+      choices: ['Three people', 'About half', 'All of them'], a: 2,
+      choicesJa: ['3人', '半分くらい', '全員'],
+      cue: '数え始めたあと。',
       line: 'One, two, three, *everybody*. Okay, so then we just shouldn’t do it.',
-      said: '「文句のある人？」と聞き、「1、2、3…全員だ。じゃあ、やめよう」と言う。',
-      mean: '数えるのをやめて everybody と言い切る。',
-      trap: '最後に聞こえた three を答えにしやすい。数え上げが途中で切れたら、次の語で全体が決まる。',
+      said: '「不満のある人？」と聞き、「1、2、3…全員だ。じゃあ、やめよう」と言う。',
+      mean: 'everybody ＝ 全員。数えるのをやめて、全員だと言い切る。',
+      trap: '最後に聞こえた数の three を選びやすい。three のあとに everybody と続く。',
       use: 'Who’s in? One, two… everybody!（参加する人？1、2…全員だ！）' },
 
-    // why: return ← "take them" read literally as taking the food back to the store; polite ← a Japanese-frame reading:
-    //   offering to help clean up is the expected kind move after a complaint
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'takethem', reveals: ['outcome'], seg: [238.1, 243.95],
+    { id: 'h2', retired: true, skill: 'humor', level: 'C1', point: 'takethem', reveals: ['outcome'], seg: [238.1, 243.95],
       stem: 'Why does “Oh, I’ll take them” get a laugh?',
       choices: ['He treats the complaint as a real question', 'He offers to return the food to the bakery',
                 'He is being polite, offering to help clean up'], a: 0,
@@ -337,13 +296,19 @@ export const birthdayGuide: Clip = {
       trap: 'take を「返品に持っていく」と取りやすい。嘆きの質問にまじめな答えが返ったら笑いどころ。',
       use: 'What am I supposed to do with all this?（これ全部どうしろっていうの）' },
 
-    // R fix: V2, blind 75 %: the key was the only choice tied to the plan, and "sting" in the stem gave the direction;
-    //   now a sincerity flip on the same cause
-    // why: praise ← sincerity flip: taken for the boss heard as a compliment (出世の兆し); forgot ← the slip taken
-    //   literally, as the coworker mixing up names
-    // anchor: 244–245.3 s "Hey, Michael. I mean, Jim." then 251.6–254.6 s "always and forever be haunted": mock horror
-    //   at being taken for the man whose birthday habits opened the clip, right after his own plan fell apart
-    { id: 'nt2', skill: 'infer', level: 'C2', point: 'michael', reveals: ['outcome'], seg: [243.75, 254.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'imean', reveals: ['outcome'], seg: [242.5, 247.7],
+      stem: 'What does “I mean” do in “Michael. I mean, Jim”?',
+      ja: '「Michael. I mean, Jim」の「I mean」の働きは？',
+      choices: ['Fixes a wrong name', 'Gives a reason', 'Starts a joke'], a: 0,
+      choicesJa: ['まちがえた名前を直す', '理由を言う', '冗談を始める'],
+      cue: '「Hey」のあと。',
+      line: 'Hey, Michael. *I mean*, Jim.',
+      said: '同僚が「やあ、マイケル。じゃなくて、ジム」と呼ぶ。',
+      mean: 'I mean ＝ じゃなくて、つまり。言いまちがいをすぐ直すときの前置き。',
+      trap: 'I mean は理由を足すときにも使うが、ここは前の名前を別の名前に言いかえている。',
+      use: 'It’s on Monday. I mean, Tuesday.（月曜。じゃなくて、火曜）' },
+
+    { id: 'nt2', retired: true, skill: 'infer', level: 'C2', point: 'michael', reveals: ['outcome'], seg: [243.75, 254.9],
       stem: 'After Jim’s comment to the camera, how does the name slip land?',
       choices: ['As a blow: his plan made him act like Michael', 'As praise: his plan made him look like the boss',
                 'As a worry: a coworker forgot his name'], a: 0,
