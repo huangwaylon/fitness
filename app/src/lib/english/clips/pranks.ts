@@ -117,7 +117,7 @@ export const conflictPranks: Clip = {
       line: 'I could put in a good word for you, *’cause I’ll* still be working here.',
       said: '「僕はここで働き続けるからね」と言う。',
       mean: '’cause ＝ because の頭が落ちた形で「カズ」。I’ll は still とつながり「アイル」が小さい。',
-      trap: '’cause が小さく、so（だから）とまぎれやすい。I’d なら「もし〜なら」の話になる。',
+      trap: '「カザイル」なら ’cause I’ll。so なら「ソウ」と口が丸く、I’d なら「アイド」で「ル」がない。',
       use: 'Go ahead, ’cause I’ll be late.（先に行って、遅れるから）' },
     { id: 'ph3', skill: 'phrase', level: 'B1', point: 'workout', seg: [125.95, 132.3],
       stem: 'What does “work this out” mean?',

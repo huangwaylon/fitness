@@ -30,7 +30,7 @@ export const distract: Clip = {
       line: 'Well, I’m sorry, but *Lot 48* is the only one that works.',
       said: '「悪いけど、使えるのは48番の土地だけ」と言い、議会で出すと話す。',
       mean: 'forty-eight ＝ 48。I’m sorry, but は謝りではなく、反対を押し切る前置き。',
-      trap: 'forty（40）だけなら eight がない。84 は「エイ」で始まる。',
+      trap: '「フォーティエイト」なら 48。forty だけなら 40、「フォーティーン」なら 14、84 は「エイ」で始まる。',
       use: 'Our flight leaves from Gate 48.（私たちの便は48番ゲートから）' },
     { id: 'i1', skill: 'infer', level: 'B2', point: 'monster', seg: [46.4, 51.2],
       stem: '“I have created a monster.” What does Leslie mean?',
