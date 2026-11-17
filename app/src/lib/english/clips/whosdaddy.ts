@@ -140,7 +140,7 @@ export const whosDaddy: Clip = {
       line: 'Contractions are coming *every ten minutes*.',
       said: '「陣痛が10分おきに来てる」と報告する。',
       mean: 'every ten minutes ＝ 10分ごと。出産が近づいている合図。',
-      trap: 'ten と twenty は出だしが同じ。twenty なら最後に「ティ」が付き、少し長い。',
+      trap: 'five は「ファイヴ」。twenty は「トゥエンティ」と長い。短く「テン」なら10。',
       use: 'The bus comes every fifteen minutes.（バスは15分おきに来る）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [47.0, 87.05],
