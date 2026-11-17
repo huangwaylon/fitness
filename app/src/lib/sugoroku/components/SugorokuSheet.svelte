@@ -1,9 +1,9 @@
 <script lang="ts">
   // 英語すごろく's sheet (docs/sugoroku.md "Rules"), its own chunk: a full sheet on the unified kit, its levels
-  // menu (続きから / 新しいゲーム / あそびかた) → だれが遊ぶ？ (2–4 seats: the members, the guest, villager friends, in the
+  // menu (続きから / 新しいゲーム / あそびかた) → だれが遊ぶ？ (2–3 of us, each as their own character, in the
   // order picked, each its English level) → the game (the board over the turn's panel: whose turn and the dice, the
   // fork's choice, then the space's ことば, ぶん, 絵, イベント or あがり; the board drawn small during a turn's English;
-  // tickets held spent at the roll or on a hinted word; souvenirs in each seat's tray) → 結果 (the ranking, ふりかえり:
+  // ) → 結果 (the ranking, ふりかえり:
   // a no-fail matching of the game's words, and 今日のことば). Played on one phone passed round (saved after every step:
   // save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on each player's own phone (online.svelte.ts: every action a
   // move to the relay, the game the moves folded; a phone whose turn it isn't watches). No ベル. The island is paused under it.
@@ -17,20 +17,16 @@
   import SentenceTurn from './SentenceTurn.svelte';
   import PictureTurn from './PictureTurn.svelte';
   import Review from './Review.svelte';
-  import { artUrl } from '#lib/art.ts';
-  import { PICTURES, SET_BONUS } from '../pictures.ts';
+  import { PICTURES } from '../pictures.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
-  import { i18n } from '#lib/i18n/index.ts';
-  import { resolveLook } from '#lib/villagers/look.ts';
   import { CARDS } from '../cards.ts';
-  import { choose, eventDone, pictureBonus, pictureDone, tried, MAX_TICKETS, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
+  import { choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
     sentenceDone, spin, swap, twice, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
   import { pathOf } from '../board.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, pickSentence, type Line, type Sentence } from '../sentences.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
-  import { loadShelf, shelve, type Shelf } from '../shelf.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
   import { foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
@@ -38,7 +34,7 @@
   import { sugoroku } from '../open.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  type Level = 'menu' | 'how' | 'shelf' | 'setup' | 'play' | 'results';
+  type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
   let level = $state<Level>('menu');
   let game = $state<Game | null>(null);
   let saved = $state<Game | null>(null);
@@ -49,7 +45,6 @@
     listen();
     untrack(() => {
       saved = loadGame();
-      shelf = loadShelf();
       level = 'menu';
       // an invitation's 参加: straight into the online game, once it's folded (the words and lines may still be on their way)
       wantOnline = sugoroku.ask?.arg === 'online' && sugoroku.ask !== askSeen;
@@ -63,9 +58,7 @@
   });
   const close = () => (open = false);
   /** To the menu: the save as it is now (a game played since the opening). */
-  const toMenu = () => ((saved = loadGame()), (shelf = loadShelf()), (level = 'menu'));
-  /** ことばだな (shelf.ts): this phone's games, kept. */
-  let shelf = $state<Shelf>({ words: [], items: [], games: 0 });
+  const toMenu = () => ((saved = loadGame()), (level = 'menu'));
 
   // the words and lines (their own chunks), asked for as the sheet opens
   // (raw: never proxied, so a second assignment is no change; each asked for only while missing and not on its way:
@@ -89,49 +82,23 @@
   // ---- seats
   const me = $derived<Who>(week.model?.me ?? 'A');
   const nameOf = personName;
-  /** The guest's villager (its head): not offered again as a friend. */
-  const guestVillager = $derived(resolveLook({ villager: week.view?.guest?.villager, person: 'G' }).id);
-  const FRIENDS = [['isabelle', 'しずえ'], ['tom-nook', 'たぬきち'], ['kk-slider', 'とたけけ'], ['blathers', 'フータ'], ['raymond', 'ジャック'],
-    ['judy', 'みすず'], ['marshal', 'ジュン'], ['dom', 'ちゃちゃまる']] as const;
-  type Cand = Omit<Seat, 'level'>;
-  const candidates = $derived<Cand[]>([
-    ...(me === 'B' ? (['B', 'A', 'G'] as const) : me === 'G' ? (['G', 'A', 'B'] as const) : (['A', 'B', 'G'] as const)).map((w) => ({ who: w, villager: null, name: nameOf(w) })),
-    ...FRIENDS.filter(([id]) => id !== guestVillager).map(([id, ja]) => ({ who: null, villager: id, name: i18n.locale === 'en' ? id.replace(/-/g, ' ') : ja }))
-  ]);
-  const keyOf = (x: Cand) => x.villager ?? x.who ?? '';
-  let picked = $state<string[]>([]);
+  /** Who can play: the three of us, each as their own character (the island's look), me first. */
+  const people = $derived<Who[]>(me === 'B' ? ['B', 'A', 'G'] : me === 'G' ? ['G', 'A', 'B'] : ['A', 'B', 'G']);
+  let picked = $state<Who[]>([]);
   /** Each seat's level (ふつう till changed). */
-  let levels = $state<Record<string, SeatLevel>>({});
+  let levels = $state<Partial<Record<Who, SeatLevel>>>({});
   const LEVELS = [1, 2, 3] as const;
-  /** ペア: a pick sharing the seat of the pick before it. */
-  let paired = $state<Record<string, boolean>>({});
   let length = $state<Length>('normal');
   const LENGTHS = ['short', 'normal', 'long'] as const;
-  /** The seats the picks make (a ペア folded into the seat before it). */
-  const seatsOf = (ks: readonly string[]): Seat[] => {
-    const out: Seat[] = [];
-    for (const k of ks) {
-      const c = candidates.find((x) => keyOf(x) === k);
-      if (!c) continue;
-      if (paired[k] && out.length && !out[out.length - 1].pair) out[out.length - 1].pair = c;
-      else out.push({ ...c, level: levels[k] ?? 2, pair: null });
-    }
-    return out;
-  };
-  const seatCount = $derived(seatsOf(picked).length);
-  function toggle(x: Cand) {
-    const k = keyOf(x);
-    picked = picked.includes(k) ? picked.filter((p) => p !== k) : picked.length < MAX_PLAYERS ? [...picked, k] : picked;
-  }
+  const seatsOf = (ws: readonly Who[]): Seat[] => ws.map((who) => ({ who, name: nameOf(who), level: levels[who] ?? 2 }));
+  const toggle = (w: Who) => (picked = picked.includes(w) ? picked.filter((p) => p !== w) : picked.length < MAX_PLAYERS ? [...picked, w] : picked);
   /** 新しいゲーム's way: one phone passed round, or each on their own (members and the guest only, me among them). */
   let playMode = $state<'local' | 'online'>('local');
   const MODES = ['local', 'online'] as const;
-  const shownCands = $derived(playMode === 'online' ? candidates.filter((c) => c.who) : candidates);
-  const canStart = $derived(playMode === 'online' ? picked.length >= MIN_PLAYERS && picked.includes(me) : seatCount >= MIN_PLAYERS);
+  const canStart = $derived(picked.length >= MIN_PLAYERS && (playMode === 'local' || picked.includes(me)));
   function start() {
     if (playMode === 'online') {
-      const seats = picked.map((k) => ({ who: k as Who, level: levels[k] ?? 2 }));
-      startOnline(seatsCode(seats), lengthCode(length));
+      startOnline(seatsCode(seatsOf(picked)), lengthCode(length));
       shown = [];
       mode = 'online';
       level = 'play';
@@ -144,7 +111,7 @@
     level = 'play';
   }
   function setup() {
-    picked = candidates.slice(0, 2).map(keyOf);
+    picked = people.slice(0, 2);
     level = 'setup';
   }
 
@@ -159,7 +126,6 @@
     confirmEnd = false;
     if (shown.length !== g.players.length) shown = g.players.map((p) => p.pos);
     if (g.phase.k === 'end') {
-      if (saved !== null || game?.phase.k !== 'end' || level === 'play') shelf = shelve(g);
       clearGame();
       saved = null;
       level = 'results';
@@ -191,14 +157,14 @@
     mode = 'online';
     level = 'play';
   }
-  // an online game's heads start where it is (a new one, a resume); its end: the results, on the shelf once
+  // an online game's heads start where it is (a new one, a resume); its end: the results
   let shownFor = '';
   $effect(() => {
     const og = mode === 'online' ? onlineGame : null;
     if (!og) return;
     untrack(() => {
       if (shownFor !== og.seed || shown.length !== og.players.length) (shownFor = og.seed), (shown = og.players.map((p) => p.pos));
-      if (og.phase.k === 'end' && level === 'play') (shelf = shelve(og)), (level = 'results');
+      if (og.phase.k === 'end' && level === 'play') level = 'results';
     });
   });
   /** It's this phone's to play: passed round always; online, whose turn it is. */
@@ -211,10 +177,10 @@
   }
   let rollTimer: ReturnType<typeof setInterval> | undefined;
   $effect(() => () => clearInterval(rollTimer));
-  function doSpin(dice = false) {
+  function doSpin() {
     if (!g || rolling !== null || !myTurn) return;
     const from = g;
-    const next = spin(g, dice);
+    const next = spin(g);
     const ph = next.phase;
     const n = 'spun' in ph ? ph.spun : 1;
     let k = 0;
@@ -226,7 +192,7 @@
       rolling = null;
       if (g !== from) return; // (a new game or a resume since: this roll is void)
       rolled = n;
-      if (mode === 'online') sendMove({ a: 'roll', ...(dice ? { d: 1 as const } : {}) });
+      if (mode === 'online') sendMove({ a: 'roll' });
       else set(next);
     }, 70));
   }
@@ -249,12 +215,11 @@
 
   const card = $derived(ph?.k === 'event' ? CARDS[ph.card] : null);
   /** A card's effect as its chip says it. */
-  function effectOf(c: (typeof CARDS)[number], held: number): string {
+  function effectOf(c: (typeof CARDS)[number]): string {
     if (c.stars) return s('effStars', { n: c.stars });
     if (c.gift) return s('effGift', { n: c.gift });
     if (c.move) return s('effMove', { n: c.move });
     if (c.again) return s('effAgain');
-    if (c.ticket) return s('effTicket', { t: s(`ticket.${c.ticket}`) }) + (held >= MAX_TICKETS ? s('effFull', { n: MAX_TICKETS }) : '');
     return '';
   }
   /** ふりかえり's pairs: the game's things with Japanese, newest first, one a text, up to five. */
@@ -262,15 +227,13 @@
     if (!g) return [];
     const seen = new Set<string>(), out: { en: string; ja: string }[] = [];
     const ok = (en: string, ja: string) => !seen.has(en) && !out.some((x) => x.ja === ja);
-    for (const m of [...g.made].reverse()) if (m.ja && ok(m.text, m.ja) && out.length < 4) (seen.add(m.text), out.push({ en: m.text, ja: m.ja }));
-    // and up to two from earlier games on this phone (ことばだな): what was met before comes back
-    for (const w of shelf.words) if (ok(w.en, w.ja) && out.length < 6 && !g.made.some((m) => m.text === w.en)) (seen.add(w.en), out.push({ en: w.en, ja: w.ja }));
+    for (const m of [...g.made].reverse()) if (m.ja && ok(m.text, m.ja) && out.length < 5) (seen.add(m.text), out.push({ en: m.text, ja: m.ja }));
     return out;
   });
   const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
 
   const rank = $derived(g ? ranking(g) : []);
-  const headOf = (x: { who: Who | null; villager: string | null }) => ({ person: x.who ?? ('G' as const), villager: x.villager, worn: !x.villager });
+  const headOf = (x: { who: Who }) => ({ person: x.who, worn: true });
 </script>
 
 <Sheet bind:open tunes label={s('title')} variant="full">
@@ -287,31 +250,8 @@
             <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
           {/if}
           <button type="button" class="btn" class:paper={!!saved} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
-          <div class="row2">
-            <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (level = 'how')}>{s('howTo')}</button>
-            <button type="button" class="btn small paper" data-sfx="page" data-sg-shelf onclick={() => (level = 'shelf')}>{s('shelf')}{#if shelf.words.length}（{shelf.words.length}）{/if}</button>
-          </div>
+          <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (level = 'how')}>{s('howTo')}</button>
         </div>
-      </div>
-    {:else if level === 'shelf'}
-      <div class="top"><NavBar pad title={s('shelf')} onback={toMenu} onclose={close} /></div>
-      <div class="body sheet-scroll" data-sg-shelf-page>
-        <p class="note">{s('shelfNote', { n: shelf.games })}</p>
-        <h3 class="sec-label">{s('souvenirs')} {shelf.items.length}/{PICTURES.length}</h3>
-        <div class="card pad zukan">
-          {#each PICTURES as p (p.key)}
-            {@const have = shelf.items.includes(p.w)}
-            <span class="zk" class:have title={have ? p.w : ''}><img src={artUrl(p.key) ?? ''} alt={have ? p.ja : ''} width="36" height="36" /></span>
-          {/each}
-        </div>
-        <h3 class="sec-label">{s('shelfWords')}</h3>
-        {#if shelf.words.length}
-          <div class="card dense" role="list">
-            {#each shelf.words.slice(0, 60) as w (w.en)}
-              <div class="row recap" role="listitem"><span class="txt"><span lang="en" class="en2">{w.en}</span><span class="ja2">{w.ja}</span></span></div>
-            {/each}
-          </div>
-        {:else}<p class="note">{s('shelfEmpty')}</p>{/if}
       </div>
     {:else if level === 'how'}
       <div class="top"><NavBar pad title={s('howTo')} onback={toMenu} onclose={close} /></div>
@@ -326,17 +266,16 @@
         <span class="seg wide2" role="radiogroup" aria-label={s('mode')}>
           {#each MODES as md (md)}
             <button type="button" role="radio" class="sg-chip" aria-checked={playMode === md} data-sfx="none" data-sg-mode={md}
-              onclick={() => ((playMode = md), md === 'online' && (picked = picked.filter((k) => k === 'A' || k === 'B' || k === 'G')))}>{s(`mode.${md}`)}</button>
+              onclick={() => (playMode = md)}>{s(`mode.${md}`)}</button>
           {/each}
         </span>
         <p class="note">{playMode === 'online' ? s('onlineNote') : s('setupNote')}</p>
         <div class="seats" data-sg-seats>
-          {#each shownCands as c, i (keyOf(c))}
-            {#if i === 3}<h3 class="sec-label wide">{s('friends')}</h3>{/if}
-            {@const n = picked.indexOf(keyOf(c))}
-            <button type="button" class="seat" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={keyOf(c)} onclick={() => toggle(c)}>
-              <Avatar {...headOf(c)} size={52} />
-              <span class="nm">{c.name}</span>
+          {#each people as w (w)}
+            {@const n = picked.indexOf(w)}
+            <button type="button" class="seat" class:on={n >= 0} aria-pressed={n >= 0} data-sfx="tick" data-sg-seat={w} onclick={() => toggle(w)}>
+              <Avatar person={w} worn size={52} />
+              <span class="nm">{nameOf(w)}</span>
               {#if n >= 0}<span class="ord">{n + 1}</span>{/if}
             </button>
           {/each}
@@ -345,26 +284,18 @@
           <h3 class="sec-label">{s('levelNote')}</h3>
           <div class="card dense levels" role="list">
             {#each picked as k (k)}
-              {@const c = candidates.find((x) => keyOf(x) === k)}
-              {#if c}
-                <div class="row lrow" role="listitem" data-sg-level-row={k}>
-                  <Avatar {...headOf(c)} size={32} /><span class="nm">{c.name}</span>
-                  {#if playMode === 'local' && picked.indexOf(k) > 0 && picked.length >= 3}
-                    <button type="button" class="sg-chip" role="switch" aria-checked={!!paired[k]} data-sfx="none" data-sg-pair={k}
-                      onclick={() => (paired = { ...paired, [k]: !paired[k] })}>{s('pair')}</button>
-                  {/if}
-                  {#if !paired[k] || picked.indexOf(k) === 0}<span class="seg" role="radiogroup" aria-label={s('levelOf', { name: c.name })}>
-                    {#each LEVELS as lv (lv)}
-                      <button type="button" role="radio" class="sg-chip" aria-checked={(levels[k] ?? 2) === lv} data-sfx="none" data-sg-level={lv}
-                        onclick={() => (levels = { ...levels, [k]: lv })}>{s(`level.${lv}`)}</button>
-                    {/each}
-                  </span>{/if}
-                </div>
-              {/if}
+              <div class="row lrow" role="listitem" data-sg-level-row={k}>
+                <Avatar person={k} worn size={32} /><span class="nm">{nameOf(k)}</span>
+                <span class="seg" role="radiogroup" aria-label={s('levelOf', { name: nameOf(k) })}>
+                  {#each LEVELS as lv (lv)}
+                    <button type="button" role="radio" class="sg-chip" aria-checked={(levels[k] ?? 2) === lv} data-sfx="none" data-sg-level={lv}
+                      onclick={() => (levels = { ...levels, [k]: lv })}>{s(`level.${lv}`)}</button>
+                  {/each}
+                </span>
+              </div>
             {/each}
           </div>
         {/if}
-        {#if playMode === 'local' && picked.length >= 3}<p class="note">{s('pairNote')}</p>{/if}
         {#if playMode === 'online' && !picked.includes(me)}<p class="note">{s('meNeeded')}</p>{/if}
         <h3 class="sec-label">{s('length')}</h3>
         <span class="seg wide2" role="radiogroup" aria-label={s('length')}>
@@ -380,10 +311,8 @@
         <div class="scores">
           {#each g.players as p, i (i)}
             <span class="score" class:now={i === g.turn} data-sg-score={i}>
-              <Avatar {...headOf(p)} size={28} />{#if p.pair}<span class="pairhead"><Avatar {...headOf(p.pair)} size={20} /></span>{/if}
+              <Avatar {...headOf(p)} size={28} />
               {#key p.stars}<b class="bump">{p.stars}</b>{/key}<small class="lv">{s(`level.${p.level}`)}</small>
-              {#if p.items.length}<small class="lv ic" data-sg-items={p.items.length}><Icon name="gift" size={12} />{p.items.length}</small>{/if}
-              {#if p.tickets.length}<small class="lv ic" data-sg-tickets={p.tickets.length}><Icon name="tag" size={12} />{p.tickets.length}</small>{/if}
             </span>
           {/each}
           <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
@@ -404,15 +333,14 @@
             </div>
           {:else if ph.k === 'spin'}
             <div class="who">
-              <Avatar {...headOf(cur)} size={64} />{#if cur.pair}<span class="pairhead big"><Avatar {...headOf(cur.pair)} size={44} /></span>{/if}
+              <Avatar {...headOf(cur)} size={64} />
               <div>
-                <p class="turnof">{s('turnOf', { name: cur.pair ? s('pairName', { a: cur.name, b: cur.pair.name }) : cur.name })}</p>
-                <p class="note">{cur.pair ? s('pairTurn') : s('passTo', { name: cur.name })}</p>
+                <p class="turnof">{s('turnOf', { name: cur.name })}</p>
+                <p class="note">{s('passTo', { name: cur.name })}</p>
               </div>
             </div>
             <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
-            {#if twice(g)}<p class="note">{s('twice')}</p>
-            {:else if cur.tickets.includes('dice')}<button type="button" class="btn small yuzu" data-sfx="confirm" data-sg-spin-dice onclick={() => doSpin(true)}>{s('useDice')}</button>{/if}
+            {#if twice(g)}<p class="note">{s('twice')}</p>{/if}
           {:else if ph.k === 'fork'}
             <div class="event" data-sg-fork>
               <h3 class="ttl">{s('forkTitle')}</h3>
@@ -429,9 +357,9 @@
             {#if words}
               {#key `${g.n}`}
                 <WordTurn rack={cur.rack} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
-                  ticket={cur.tickets.includes('hint')} hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
+                  hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
                   score={(w, c, h) => wordScore(g, w, c, h)}
-                  onplay={(w, h, t) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h, ticket: t }), { a: 'word', w, ...(h ? { h: 1 } : {}), ...(t ? { k: 1 } : {}) })}
+                  onplay={(w, h) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h }), { a: 'word', w, ...(h ? { h: 1 } : {}) })}
                   onswap={() => act(swap, { a: 'swap' })} />
               {/key}
             {:else if failed}
@@ -445,7 +373,7 @@
               <button type="button" class="btn small" data-sfx="tick" onclick={() => act(sentenceAsWord, { a: 'noline' })}>{s('next')}</button>
             {:else}<p class="note">{s('loading')}</p>{/if}
           {:else if ph.k === 'picture'}
-            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} bonus={pictureBonus(g, ph.item)} misses0={ph.misses} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
+            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
           {:else if ph.k === 'event' && card}
             <div class="event" data-sg-event={ph.card}>
               {#if card.who}<Avatar person="G" villager={card.who} size={48} />{/if}
@@ -453,7 +381,7 @@
               <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
               {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
               {:else}<button type="button" class="btn small paper" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
-              <span class="chip-eff" data-sg-effect>{effectOf(card, cur.tickets.length)}</span>
+              <span class="chip-eff" data-sg-effect>{effectOf(card)}</span>
               <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(eventDone, { a: 'ev' })}>{s('ok')}</button>
             </div>
           {:else if ph.k === 'home'}
@@ -487,13 +415,7 @@
               <span class="nm">{p.name}</span>
               <span class="st"><Icon name="star" size={18} soft /><b>{p.stars}</b></span>
             </div>
-            {#if p.items.length}
-              <div class="tray" aria-label={s('souvenirs')}>
-                {#each p.items as it (it)}<img src={artUrl(PICTURES[it].key) ?? ''} alt={PICTURES[it].ja} title={PICTURES[it].w} width="28" height="28" />{/each}
-              </div>
-            {/if}
           {/each}
-          <p class="note setnote">{s('setNote', { n: SET_BONUS })}</p>
         </div>
         {#if pairs.length >= 2}<Review {pairs} seed={g.seed} />{/if}
         {#if g.made.length}
@@ -508,7 +430,7 @@
             {/each}
           </div>
         {/if}
-        <button type="button" class="btn" data-sfx="open" data-sg-again onclick={() => { playMode = mode; picked = g.players.map(keyOf); levels = Object.fromEntries(g.players.map((p) => [keyOf(p), p.level])); level = 'setup'; }}>{s('again')}</button>
+        <button type="button" class="btn" data-sfx="open" data-sg-again onclick={() => { playMode = mode; picked = g.players.map((p) => p.who); levels = Object.fromEntries(g.players.map((p) => [p.who, p.level])); level = 'setup'; }}>{s('again')}</button>
       </div>
     {/if}
   </div>
@@ -526,7 +448,6 @@
   .how { margin: 0; padding-left: 28px !important; display: grid; gap: 8px; font-size: var(--fs-body); line-height: 1.5; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
   .seats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .wide { grid-column: 1 / -1; margin: 6px 0 0; }
   .seat {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; margin: 0;
     appearance: none; border: 0; border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge);
@@ -544,22 +465,11 @@
   /* a score that changed pops once (stars in) */
   .bump { display: inline-block; animation: bump 420ms var(--ease-bounce); }
   @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.45); color: var(--c-gold); } 100% { transform: scale(1); } }
-  .pairhead { margin-left: -10px; display: inline-flex; }
-  .pairhead.big { margin-left: -24px; align-self: flex-end; }
-  .row2 { display: flex; gap: 8px; justify-content: center; }
   .wide2 { align-self: center; }
-  .zukan { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
-  .zk { display: grid; place-items: center; }
-  .zk img { width: 36px; height: 36px; object-fit: contain; filter: grayscale(1) brightness(.2) opacity(.25); }
-  .zk.have img { filter: none; }
   /* the dice shake while rolling */
   .die.rolling { animation: shake 140ms linear infinite; }
   @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg) translateY(-2px); } 75% { transform: rotate(10deg) translateY(1px); } }
   .lv { font: 700 10px/1 var(--font-ui); color: var(--text-soft); }
-  .lv.ic { display: inline-flex; align-items: center; gap: 1px; }
-  .tray { display: flex; flex-wrap: wrap; gap: 2px; padding-left: 46px; }
-  .tray img { width: 28px; height: 28px; object-fit: contain; }
-  .setnote { text-align: center; }
   .chip-eff { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .lrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
   .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }

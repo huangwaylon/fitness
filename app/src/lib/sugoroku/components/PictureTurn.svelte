@@ -1,8 +1,8 @@
 <script lang="ts">
   // 英語すごろく's 絵 turn (docs/sugoroku.md "Rules"): an NH item's picture, its Japanese under it, its English name to
   // spell by the seat's level: やさしい taps one of three spellings; ふつう puts its letters in order, the first given;
-  // むずかしい its letters with two more mixed in, none given. Right → its stars and the souvenir; not → 「おしい！」 and one
-  // more go; a second miss → 「答えはこれ」 (the souvenir all the same). Never red, never ×.
+  // むずかしい its letters with two more mixed in, none given. Right → its stars; not → 「おしい！」 and one
+  // more go; a second miss → 「答えはこれ」. Never red, never ×.
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { artUrl } from '#lib/art.ts';
@@ -15,15 +15,13 @@
     pic: Picture;
     level: number;
     seed: string;
-    /** The set bonus a souvenir here pays (game.ts pictureBonus). */
-    bonus?: number;
     /** The turn so far (a sheet reopened mid-turn). */
     misses0?: number;
     /** A miss, to keep. */
     ontry: (t: { misses: number }) => void;
     ondone: (misses: number) => void;
   }
-  let { pic, level, seed, bonus = 0, misses0 = 0, ontry, ondone }: Props = $props();
+  let { pic, level, seed, misses0 = 0, ontry, ondone }: Props = $props();
   let timer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(timer));
 
@@ -82,10 +80,9 @@
       </div>
     {/if}
   {:else}
-    <p class="ask">{stage === 'answer' ? s('answer') : s('souvenir')}</p>
+    <p class="ask">{stage === 'answer' ? s('answer') : ''}</p>
     <p class="en" lang="en" data-sg-answer>{pic.w}</p>
-    <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses) + bonus}</b></p>
-    {#if bonus}<p class="set" data-sg-set-bonus>{s('setDone', { n: bonus })}</p>{/if}
+    <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
     <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
   {/if}
 </section>
@@ -115,6 +112,5 @@
   .tile.in { background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
   .en { margin: 0; font: 600 28px/1.2 var(--font-num); letter-spacing: .04em; }
   .pts { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--c-gold); }
-  .set { margin: 0; padding: 3px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .pts b { font: 600 28px/1 var(--font-num); color: var(--c-ink); }
 </style>

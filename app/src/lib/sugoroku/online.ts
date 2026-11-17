@@ -30,7 +30,7 @@ function lineFor(g: Game, lines: readonly Line[]) {
 export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; name: (w: Who) => string }): Game | null {
   if (m.a === 'start') {
     if (g || !m.s) return g;
-    const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, villager: null, name: ctx.name(x.who), level: x.level, pair: null }));
+    const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
     return newGame(seats, m.g, LENGTH[m.l ?? 'n']);
   }
   if (!g) return null;
@@ -38,13 +38,13 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
   // everything else: only from whose turn it is
   if (g.players[g.turn].who !== m.who) return g;
   switch (m.a) {
-    case 'roll': return spin(g, !!m.d);
+    case 'roll': return spin(g);
     case 'fork': return choose(g, m.b ?? 0);
     case 'word': {
       const w = m.w ?? '';
       if (!ctx.words.has(w)) return g;
       const ja = ctx.words.ja(w);
-      return playWord(g, w, { everyday: !!ja, ja, hinted: !!m.h, ticket: !!m.k });
+      return playWord(g, w, { everyday: !!ja, ja, hinted: !!m.h });
     }
     case 'swap': return swap(g);
     case 'sent': {

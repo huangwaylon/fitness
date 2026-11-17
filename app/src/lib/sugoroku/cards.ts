@@ -1,8 +1,7 @@
 // 英語すごろく's イベント cards (docs/sugoroku.md "Rules"): A1 English (≤ 8 words, present tense, one idea; the key word
 // starred), its Japanese, an effect (the card shows it as a chip): good or neutral only (no setbacks at a beginner's
-// table). `who`: the villager who says it (their head on the card). `ticket`: a card to keep (game.ts Ticket).
+// table). `who`: the villager who says it (their head on the card).
 
-export type Ticket = 'hint' | 'dice';
 export interface Card {
   en: string;
   ja: string;
@@ -15,8 +14,6 @@ export interface Card {
   move?: number;
   /** Roll again now. */
   again?: boolean;
-  /** A ticket to keep (at most MAX_TICKETS held; past that, FULL_TICKETS stars). */
-  ticket?: Ticket;
 }
 
 export const CARDS: readonly Card[] = [
@@ -40,10 +37,5 @@ export const CARDS: readonly Card[] = [
   { en: 'Blathers shows you a *fossil*.', ja: 'フータが化石を見せてくれた。すごい！', who: 'blathers', stars: 3 },
   { en: 'You make *tea* for friends.', ja: 'みんなにお茶をいれた。お礼に星を1つずつもらう。', gift: 1 },
   { en: 'You ride a *balloon*. Move 3.', ja: '風船に乗ってふわふわ。3マス進む。', move: 3 },
-  { en: 'You water a *flower*. So pretty!', ja: '花に水をあげた。きれい！', stars: 1 },
-  // tickets
-  { en: 'Isabelle gives you a hint *ticket*.', ja: 'しずえからヒント券をもらった。好きなときに使える！', who: 'isabelle', ticket: 'hint' },
-  { en: 'You find a two-dice *ticket*!', ja: 'サイコロ2つ券を見つけた！好きなときに使える。', ticket: 'dice' },
-  { en: 'Tom Nook gives you a hint *ticket*.', ja: 'たぬきちからヒント券をもらった。', who: 'tom-nook', ticket: 'hint' },
-  { en: 'Raymond gives you a two-dice *ticket*.', ja: 'ジャックからサイコロ2つ券をもらった。', who: 'raymond', ticket: 'dice' }
+  { en: 'You water a *flower*. So pretty!', ja: '花に水をあげた。きれい！', stars: 1 }
 ];

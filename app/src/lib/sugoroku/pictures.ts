@@ -1,6 +1,6 @@
 // 英語すごろく's 絵 stones (docs/sugoroku.md "Rules"): an NH item's picture (the app's own art), its English name to
-// spell (やさしい: one of three spellings; ふつう: its letters, the first given; むずかしい: its letters and two more), and,
-// spelt, a souvenir: three of a set (虫, 海, 畑, 果物, おやつ) pay SET_BONUS once. The names say what the art shows
+// spell (やさしい: one of three spellings; ふつう: its letters, the first given; むずかしい: its letters and two more). The
+// names say what the art shows
 // (ramen for the bowl, cherries for the pair: the 2026-11-17 panel's check).
 
 type PictureSet = 'bug' | 'sea' | 'farm' | 'fruit' | 'treat';
@@ -30,8 +30,6 @@ export const PICTURES: readonly Picture[] = [
   ...P('treat', 'items', 'bread:パン candy:あめ cookies:クッキー ramen:ラーメン:dinner')
 ];
 
-export const SET_BONUS = 5;
-const SET_SIZE = 3;
 /** A picture spelt: first try, after a nudge, after 答えはこれ. */
 export const PICTURE_STARS = [5, 3, 2];
 
@@ -65,10 +63,3 @@ export function choicesFor(p: Picture, r: () => number): string[] {
   }
   return out;
 }
-
-/** The set bonuses a collection holds (sets of SET_SIZE). */
-export const setsOf = (have: readonly number[]): number => {
-  const n: Partial<Record<PictureSet, number>> = {};
-  for (const i of have) n[PICTURES[i].set] = (n[PICTURES[i].set] ?? 0) + 1;
-  return Object.values(n).reduce((s, k) => s + Math.floor(k / SET_SIZE), 0);
-};

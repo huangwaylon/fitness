@@ -3,8 +3,7 @@
   // yuzu), tap one to put it in the next slot, tap a slot to take it back; これにする checks the word: one on the list
   // shows its points in words (and its Japanese, an everyday word's) then 次へ; one not on it a soft note, the tiles kept.
   // ヒント fills in the rack's best everyday word (halved but at やさしい, for the rest of the turn); 入れかえる swaps the
-  // whole rack (no points). The seat's level sets the shortest word (game.ts LEVEL). A halved word may spend a ヒント券
-  // for its full stars. Never red, never ×.
+  // whole rack (no points). The seat's level sets the shortest word (game.ts LEVEL). Never red, never ×.
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { VALUE, type Score } from '../tiles.ts';
@@ -19,18 +18,16 @@
     minLen: number;
     /** A ヒント's word halved (not at やさしい). */
     hintHalf: boolean;
-    /** A ヒント券 held (a halved word can spend it for full stars). */
-    ticket: boolean;
     /** ヒント used already this turn (a sheet reopened mid-turn). */
     hinted0?: boolean;
     /** ヒント used, to keep. */
     onhint: () => void;
     words: Words;
     score: (word: string, everyday: boolean, hinted: boolean) => Score | null;
-    onplay: (word: string, hinted: boolean, ticket: boolean) => void;
+    onplay: (word: string, hinted: boolean) => void;
     onswap: () => void;
   }
-  let { rack, lucky, mult, minLen, hintHalf, ticket, hinted0 = false, onhint, words, score, onplay, onswap }: Props = $props();
+  let { rack, lucky, mult, minLen, hintHalf, hinted0 = false, onhint, words, score, onplay, onswap }: Props = $props();
 
   /** The rack's tiles in the slots, in order. */
   let picked = $state<number[]>([]);
@@ -84,10 +81,7 @@
       {#if done.ja}<p class="ja">{done.ja}</p>{/if}
       <p class="pts"><Icon name="star" size={20} soft /><b>{done.sc.total}</b></p>
       <p class="why">{why(done.sc)}</p>
-      {#if done.sc.half && ticket}
-        <button type="button" class="btn yuzu" data-sfx="confirm" data-sg-use-hint onclick={() => onplay(done!.word, hinted, true)}>{s('useHint')}</button>
-      {/if}
-      <button type="button" class="btn" class:paper={done.sc.half && ticket} data-sfx="confirm" data-sg-next onclick={() => onplay(done!.word, hinted, false)}>{s('next')}</button>
+      <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => onplay(done!.word, hinted)}>{s('next')}</button>
     </div>
   {:else}
     <p class="ask">{s('wordAsk')}{#if minLen > 2}（{s('minLen', { n: minLen })}）{/if}</p>

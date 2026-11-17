@@ -83,12 +83,9 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(2);
-  // the finished game isn't offered again; its words are on the shelf (ことばだな)
+  // the finished game isn't offered again
   await sheet(page).locator('.navbar button').first().click();
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
-  await sheet(page).locator('[data-sg-shelf]').click();
-  await expect(sheet(page)).toHaveAttribute('data-level', 'shelf');
-  await expect(sheet(page).locator('[data-sg-shelf-page] .zk')).not.toHaveCount(0);
 });
 
 test('a game left half-way resumes after a reload (続きから), where it was', async ({ page }) => {
@@ -118,8 +115,6 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await fromMenu(a, 'sugoroku');
   await sheet(a).locator('[data-sg-new]').click();
   await sheet(a).locator('[data-sg-mode="online"]').click();
-  // (members and the guest only: no villager friends)
-  await expect(sheet(a).locator('[data-sg-seat="isabelle"]')).toHaveCount(0);
   await sheet(a).locator('[data-sg-start]').click();
   await expect(sheet(a).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '0');
   // B: the invitation, 参加 straight into the game, A's turn to watch

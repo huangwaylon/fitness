@@ -5,7 +5,7 @@ import { seeded } from '#lib/random.ts';
 import { friendly, newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, pictureBonus, pictureDone, tried, FULL_TICKETS, MAX_TICKETS, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { choose, eventDone, finish, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -14,11 +14,10 @@ import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import { s } from './i18n.ts';
 import { art } from '#lib/art.ts';
-import { PICTURES, SET_BONUS, choicesFor, lettersFor, setsOf } from './pictures.ts';
-import { shelved } from './shelf.ts';
+import { PICTURES, choicesFor, lettersFor } from './pictures.ts';
 
 const lines = linesJson as unknown as Line[];
-const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, villager: null, name: who, level });
+const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, name: who, level });
 const seats = [seat('A'), seat('B')];
 const words = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday);
 
@@ -140,39 +139,6 @@ describe('game', () => {
     expect(isGame({ ...g, content: 'x' })).toBe(false);
     expect(isGame({ ...g, phase: { k: 'event', card: 999, spun: 1 } })).toBe(false);
   });
-  it('pictures: souvenirs, never one twice in a game, a set of three pays once', () => {
-    const g = playOut('pics', [1, 2, 3]);
-    const all = g.players.flatMap((p) => p.items);
-    expect(all.length).toBeGreaterThan(0);
-    expect(new Set(all).size).toBe(all.length);
-    expect(setsOf([0, 1, 2])).toBe(1); // three bugs
-    expect(setsOf([0, 1])).toBe(0);
-    let h = { ...newGame(seats, 'set'), phase: { k: 'picture' as const, item: 2, spun: 1, r: 0 } };
-    h = { ...h, players: h.players.map((p, i) => (i ? p : { ...p, items: [0, 1] })) };
-    const after = pictureDone(h, 0);
-    expect(after.players[0].stars).toBe(5 + SET_BONUS);
-    expect(after.players[0].items).toEqual([0, 1, 2]);
-  });
-  it('tickets: a card’s kept (two at most), the dice one spent at the roll, the hint one on a halved word', () => {
-    const hintCard = CARDS.findIndex((c) => c.ticket === 'hint'), diceCard = CARDS.findIndex((c) => c.ticket === 'dice');
-    let g = newGame(seats, 't');
-    const ev = (card: number) => (g = eventDone({ ...g, turn: 0, phase: { k: 'event', card, spun: 1 } }));
-    ev(hintCard); ev(diceCard);
-    const before = g.players[0].stars;
-    ev(hintCard);
-    expect(g.players[0].tickets).toEqual(['hint', 'dice']);
-    expect(g.players[0].stars).toBe(before + FULL_TICKETS); // past two: stars instead
-    expect(g.players[0].tickets.length).toBeLessThanOrEqual(MAX_TICKETS);
-    g = spin({ ...g, turn: 0, phase: { k: 'spin' } }, true);
-    expect(g.players[0].tickets).toEqual(['hint']);
-    const w = { ...g, turn: 0, phase: { k: 'word' as const, mult: 1, spun: 1 } };
-    const word = w.players[0].rack.slice(0, 3).join('');
-    const full = playWord(w, word, { everyday: false, ja: '', hinted: true, ticket: true });
-    const half = playWord(w, word, { everyday: false, ja: '', hinted: true });
-    expect(full.players[0].stars).toBeGreaterThan(half.players[0].stars);
-    expect(full.players[0].tickets).toEqual([]);
-    expect(half.players[0].tickets).toEqual(['hint']);
-  });
   it('a turn’s tries are kept in the save (a reopened sheet resumes them), only on an English turn', () => {
     const g = { ...newGame(seats, 'tr'), phase: { k: 'sentence' as const, spun: 1, r: 0 } };
     expect(tried(g, { misses: 1, peeked: true }).phase).toMatchObject({ misses: 1, peeked: true, r: 0 });
@@ -188,31 +154,10 @@ describe('game', () => {
       expect(long.players.every((p) => p.home !== null) || long.round === 12).toBe(true);
     }
   });
-  it('a ペア seat: one token and score for two people', () => {
-    const g = newGame([{ ...seat('A', 1), pair: { who: 'B', villager: null, name: 'B' } }, seat('G', 3)], 'pair');
-    expect(g.players).toHaveLength(2);
-    expect(g.players[0].pair?.who).toBe('B');
-    expect(isGame(JSON.parse(JSON.stringify(g)))).toBe(true);
-  });
-  it('the set bonus shows before it’s paid, and a begun set is likelier', () => {
-    let h = { ...newGame(seats, 'pb'), phase: { k: 'picture' as const, item: 2, spun: 1, r: 0 } };
-    h = { ...h, players: h.players.map((p, i) => (i ? p : { ...p, items: [0, 1] })) };
-    expect(pictureBonus(h, 2)).toBe(SET_BONUS);
-    expect(pictureBonus(h, PICTURES.findIndex((p) => p.set === 'fruit'))).toBe(0);
-  });
-  it('the shelf keeps every game’s words (newest first, once each) and souvenirs by name', () => {
-    const g = playOut('shelf', [1, 2]);
-    const a = shelved({ words: [], items: [], games: 0 }, g);
-    const b = shelved(a, g);
-    expect(b.games).toBe(2);
-    expect(b.words.length).toBe(a.words.length);
-    expect(a.words.every((w) => w.ja)).toBe(true);
-    expect(a.items.every((w) => PICTURES.some((p) => p.w === w))).toBe(true);
-  });
   it('a corrupt save reads as none', () => {
     const g = playOut('bad');
     expect(isGame({ ...g, turn: 9 })).toBe(false);
-    expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, items: [999] })) })).toBe(false);
+    expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, level: 9 as Level })) })).toBe(false);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });

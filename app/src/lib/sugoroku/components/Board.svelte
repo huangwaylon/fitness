@@ -54,7 +54,7 @@
   </svg>
   {#each heads as h (h.k)}
     <span class="head" class:now={h.k === turn} style:left="{(h.x / W) * 100}%" style:top="{(h.y / H) * 100}%" style:margin-left="{h.dx}px" data-sg-token={h.k} data-at={shown[h.k]}>
-      <Avatar person={h.p.who ?? 'G'} villager={h.p.villager} worn={!h.p.villager} size={compact ? 18 : 26} />
+      <Avatar person={h.p.who} worn size={compact ? 18 : 26} />
     </span>
   {/each}
   {#each BOARD as _, i (i)}<span class="hit" data-sg-space={i} data-kind={BOARD[i].kind} style:left="{(BOARD[i].x / W) * 100}%" style:top="{(BOARD[i].y / H) * 100}%"></span>{/each}
