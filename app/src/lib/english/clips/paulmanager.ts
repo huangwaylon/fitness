@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 6, new 1
 // “Josh Peck is iCarly's New Manager?! | NickRewind” (NickRewind, Best of iCarly): Freddie is in a chicken suit to
 // catch a fox; Carly wants her old producer Paul back on the team, Freddie says no, and Paul turns up anyway. Paul wins
 // Freddie over with loaded either/or questions and pitches ideas; a psychic's card reading (the chicken, the fox) ends
@@ -6,12 +7,8 @@
 // so nothing there is used; at 270.6 s the captions' “partly” is whisper's “Carly”. Speakers come from the words:
 // Freddie is addressed by name and is the one in the chicken suit; Paul is named by “No, Paul” and “Paul's thing”, and
 // the man with “great ideas” is “the man” Freddie must answer; “This is exactly why I didn't want to bring him on”
-// (304 s) is Freddie, who refused at 41 s. Untested: who asks “Do you know how I die?” (224.6 s), so a1 doesn't name
-// her; the “Pearl bit her lip” words (26.7 s) run together in both sources, and no key rests on them.
-// EAR CHECK: 50.0 s c1 — the voice with “Hey, anybody looking for a fox?” is a new man's (Paul's, named only at 75 s)
-// REVIEW 2026-11-17: pass 6, fix 18, drop 0, new 0; ear checks 1
-// Open: on the cold re-read c2 was still at 60 % (only the key names the brag); the other ≥ 60 % picks came from
-//   paired items that never share a draw (c1 now reveals 'gonna', a2 'paid').
+// (304 s) is Freddie, who refused at 41 s. Untested: who asks “Do you know how I die?” (224.6 s); the “Pearl bit her
+// lip” words (26.7 s) run together in both sources, and no key rests on them.
 import type { Clip } from '../types.ts';
 
 export const paulManager: Clip = {
@@ -20,90 +17,65 @@ export const paulManager: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    // why: scare off ← fox + chicken suggests keeping a fox away from hens; a show bit ← the iCarly-sketch script
     { id: 'd1', skill: 'detail', level: 'B1', point: 'fox', seg: [18.4, 25.05],
       stem: 'Why is Freddie dressed as a chicken?',
-      choices: ['To catch a fox that has been loose for hours', 'To scare off a fox that keeps coming back',
-                'To film a fox-and-chicken bit for the show'], a: 0,
+      ja: 'フレディはなぜ鶏の格好をしている？',
+      choices: ['To catch a lost fox', 'To scare a fox away', 'To film a funny video'], a: 0,
+      choicesJa: ['逃げたキツネを捕まえるため', 'キツネを追い払うため', 'おもしろい動画を撮るため'],
       cue: '「The fox」で始まる説明。',
       line: 'The *fox has been loose for hours*, and Freddie *can’t catch him*, so I suggested he try and trick it',
-      said: 'キツネが何時間も逃げていて捕まえられないので、鶏のふりでだますよう勧めた、と説明。',
-      mean: '鶏の格好は、キツネをおびき寄せる作戦。',
-      trap: 'fox と chicken から「追い払う」を想像しやすいが、can’t catch him が目的。',
+      said: '「キツネが何時間も逃げてて捕まらない。鶏のふりでだませと言った」と話す。',
+      mean: 'be loose ＝ 逃げ出している。鶏の格好は、キツネをだまして捕まえる作戦。',
+      trap: 'fox と chicken から「追い払う」を思いやすい。can’t catch him が理由。',
       use: 'Our dog has been loose for an hour.（うちの犬が1時間も逃げてるの）' },
 
-    // R fix: V2 — blind 55 %: the key was the only choice about Pearl's look; all three are now things Pearl did
-    // why: upset ← bit her lip read as worry (唇をかむ = 悔しい・不安); kept asking ← the usual "nagged into it" script,
-    //   but he names one cute moment, not repeated asking
     { id: 'i1', skill: 'infer', level: 'B2', point: 'pearl', seg: [24.3, 33.6],
-      stem: 'Why did Freddie go along with the plan in the end?',
-      choices: ['Pearl made a cute face he couldn’t resist', 'Pearl looked upset, and he felt bad for her',
-                'Pearl kept asking until he finally gave in'], a: 0,
-      cue: '「Obviously, I said no」のあと。',
+      stem: 'Why did Freddie say yes in the end?',
+      ja: 'フレディは結局なぜ「いいよ」と言った？',
+      choices: ['Pearl asked in a cute way', 'Pearl looked very sad', 'Pearl asked him many times'], a: 0,
+      choicesJa: ['パールがかわいく頼んだ', 'パールがとても悲しそうだった', 'パールが何度も頼んだ'],
+      cue: '「I said no」のあと。',
       line: 'Obviously, I said no, *but then* Pearl bit her lip in this *really cute way*… It’s cute when she does it.',
-      said: '「もちろん断った。でも Pearl がかわいく唇をかんで…」と言い、「あれをやられるとね」。',
-      mean: '作戦に納得したのではなく、おねだりに負けた。',
-      trap: 'said no のあとの but then で話が変わる。理由は but のあと。',
+      said: '「もちろん断った。でもパールがかわいく唇をかんで…。あれをやられるとね」と話す。',
+      mean: 'I said no, but then 〜 ＝ 断ったけど、そのあと〜。作戦に納得したのでなく、かわいさに負けた。',
+      trap: 'bit her lip（唇をかむ）から、悲しそうに思いやすい。really cute way を聞く。',
       use: 'I said no, but then she smiled.（断ったけど、笑顔を見せられて）' },
 
-    // why: asked for help ← "helpful" is said, but as Carly's idea; new ideas ← Paul pitches ideas later, so the
-    //   reason seems to be the show's content
     { id: 'd2', skill: 'detail', level: 'B1', point: 'busy', seg: [33.6, 41.25],
-      stem: 'What reason does Carly give for bringing in Paul?',
-      choices: ['Freddie has been very busy lately', 'Freddie has asked for more help',
-                'The show needs new ideas from outside'], a: 0,
-      cue: '「talk more about Paul」のあと。',
+      stem: 'Why does Carly want Paul on the team?',
+      ja: 'カーリーはなぜポールをチームに入れたい？',
+      choices: ['Freddie has been very busy', 'Freddie asked for more help', 'The show needs new ideas'], a: 0,
+      choicesJa: ['フレディがとても忙しいから', 'フレディが手伝いを頼んだから', '番組に新しいアイデアが必要だから'],
+      cue: '「about Paul」のあと。',
       line: 'You’ve just been *so busy*, and I think it might really be helpful to have *someone else on the team*.',
-      said: '「最近すごく忙しそうだから、チームにもう一人いると助かると思う」と言っている。',
-      mean: '理由は Freddie の負担。番組の中身の話ではない。',
-      trap: '後で Paul がアイデアを次々出すので「新しい発想」に引かれやすい。ここで言う理由は busy。',
+      said: '「すごく忙しそうだから、チームにもう一人いると助かると思う」と言う。',
+      mean: 'You’ve been so busy ＝ ずっと忙しいよね。helpful ＝ 助けになる。',
+      trap: 'あとでポールがアイデアを次々出すので、新しいアイデアに引かれやすい。ここの理由は busy。',
       use: 'You’ve been so busy. Let me help.（すごく忙しそうだね。手伝うよ）' },
 
-    // R fix: V2 — blind 85 %: the Carly/Freddie roles had no mirror; the new distractor swaps them exactly
-    // why: Paul doesn't want Freddie ← Paul does the pitching, so he can seem the pushy, unwilling one; roles swapped ←
-    //   "I will agree to it" heard without "please don't do Paul's thing", and Carly's "helpful" missed
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'conflict', reveals: ['rather'], seg: [33.6, 191.6],
-      stem: 'Across the first half of the scene, what is the main tension?',
-      choices: ['Freddie doesn’t want Paul on the team, but Carly does',
-                'Paul doesn’t want Freddie on the team, but Carly does',
-                'Carly doesn’t want Paul on the team, but Freddie does'], a: 0,
-      cue: '最初に Paul の話を出すところと、その返事。',
-      said: 'Carly は Paul を仲間に入れたい。Freddie は乗り気でないが、Paul のペースで話が進む。',
-      mean: '仲間をめぐる引っぱり合いが、この場面の軸。',
-      trap: '誰が頼み、誰が断ったかが入れ替わりやすい。最初の頼みと返事で関係をつかむ。',
-      use: 'I think we could use another person.（もう一人いてもいいと思う）' },
-
-    // R fix: V2 — blind 70 %: "turns it down" against a yes and a maybe was the expected sitcom move; two of the three
-    //   are now kinds of no
-    // why: maybe ← the Japanese 「ちょっと…」 frame: a soft no heard as "not yet"; no for now ← Carly's "so busy" just
-    //   before, read as his reason and a door left open
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'rather', reveals: ['gonna'], seg: [34, 47.3],
-      stem: 'How does Freddie answer Carly’s suggestion?',
-      choices: ['A plain no, softened with an apology', 'A no for now, until he is less busy',
-                'A maybe: he wants to think it over first'], a: 0,
-      cue: '「Honestly」で始まる返事と、Carly の反応。',
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'rather', reveals: ['gonna'], seg: [34, 47.3],
+      stem: 'How does Freddie answer Carly’s idea?',
+      ja: 'カーリーの提案に、フレディはどう答える？',
+      choices: ['No, said politely', 'Not now, maybe later', 'Maybe, after some thought'], a: 0,
+      choicesJa: ['ていねいに断る', '今はだめ、またあとで', '少し考えてからなら'],
+      cue: '「Honestly」で始まる返事。',
       line: '*Honestly, I’d rather not.* I’m sorry. — Oh, shoot.',
-      said: '「正直、やめておきたい。ごめん」と答え、Carly は「イエスだと思ったのに」。',
-      mean: 'I’d rather not ＝「できれば遠慮したい」。はっきりした断り。',
-      trap: '「ちょっと…」のように保留や「今は」と取りやすい。Carly の反応で断りと分かる。',
+      said: '「正直、やめておきたい。ごめん」と答え、カーリーは「あーあ」と言う。',
+      mean: 'I’d rather not ＝ できれば遠慮したい。I’m sorry を付けた、ていねいだがはっきりした断り。',
+      trap: 'やわらかい言い方なので「あとで」や「考える」に聞こえやすい。Oh, shoot（しまった）で断りと分かる。',
       use: 'Thanks, but I’d rather not.（ありがとう、でも遠慮しておく）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'rather', seg: [40.75, 43.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'rather', seg: [40.4, 43.6],
       stem: 'Type Freddie’s reply: “Honestly, ___. I’m sorry.” (3 words)', answer: 'i\'d rather not',
+      ja: 'フレディの返事を書こう：「正直、___。ごめん」（3語）',
       cue: '「Honestly」のすぐあと。',
       line: 'Honestly, *I\'d rather not*. I’m sorry.',
-      said: '「正直、遠慮したいな。ごめん」と言っている。',
-      mean: 'I’d rather not ＝「できればしたくない」と、やわらかく断る定番。',
+      said: '「正直、遠慮したいな。ごめん」と言う。',
+      mean: 'I’d rather not ＝ できればしたくない。やわらかく断る決まり文句。',
       trap: 'I’d の d が消えて I rather に聞こえやすい。rather の前には ’d が入る。',
       use: 'I’d rather not say.（それは言わないでおきたい）' },
 
-    // R fix: V2 (C2) — blind 65 %: only the key named Paul, the surprise; the new near misses are two sincere sorrys
-    //   (for putting him on the spot, for being hurt). Notes trimmed to ≤ 120
-    // why: on the spot ← "sorry too" heard as a polite mirror of his "I'm sorry"; hurt ← the sincerity flip: a "sorry"
-    //   back after a refusal heard as a sulk
-    // anchor: 46.8–47.4 s "…say yes, so" (the apology follows from expecting a yes); 50.0 s, the next voice: "Hey,
-    //   anybody looking for a fox? This guy just loves me." Paul is already here
-    { id: 'c1', skill: 'attitude', level: 'C2', point: 'sorry', reveals: ['gonna'], seg: [43.6, 53.6],
+    { id: 'c1', skill: 'attitude', level: 'C2', point: 'sorry', reveals: ['gonna'], seg: [43.6, 53.6], retired: true,
       stem: 'When Carly adds “so I’m sorry too”, what isn’t she saying outright?',
       choices: ['That she acted on a yes before he said it', 'That she is sorry for putting him on the spot',
                 'That she is hurt he turned her down'], a: 0,
@@ -114,23 +86,19 @@ export const paulManager: Clip = {
       trap: '断られたあとの sorry は気づかいや不満にも聞こえる。so と次の声で決める。',
       use: 'I assumed yes, so I already booked it.（イエスだと思って、もう予約しちゃった）' },
 
-    // R fix: V2 — blind 60 %: "you wanted to" was the least natural fit; now "you'd wanna", as natural and a near sound
-    // why: weren't ← n't heard in a sentence about a "no"; you'd wanna ← "yuwanna" vs "yuwəgənə", both fit "say yes"
     { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [44.7, 49.5],
       stem: 'Fill the gap: “I really thought ___ say yes.”',
+      ja: '空所に入る語は？「絶対 yes って ___ と思った」',
       choices: ['you were gonna', 'you weren’t gonna', 'you’d wanna'], a: 0,
-      cue: '「really thought」のあと、「say yes」の前。',
+      choicesJa: ['あなたは言うつもりだった', 'あなたは言うつもりがなかった', 'あなたは言いたいだろう'],
+      cue: '「really thought」のあと。',
       line: 'I really thought *you were gonna* say yes',
-      said: '「絶対イエスって言うと思ったのに」と言っている。',
-      mean: 'you were gonna が「ユワガナ」のようにつながる。were は弱く、ほぼ「ワ」。',
-      trap: 'weren’t なら「ン」の音が残る。直前の Oh, shoot（しまった）も、期待が外れた合図。',
+      said: 'カーリーが「絶対イエスって言うと思ったのに」と言う。',
+      mean: 'gonna ＝ going to。you were gonna が「ユワガナ」とつながる。were は弱く、ほぼ「ワ」。',
+      trap: 'weren’t なら「ン」の音が残る。you’d wanna なら「ワナ」で「ガ」がない。',
       use: 'I thought you were gonna call.（電話くれると思ってた）' },
 
-    // R fix: V2/K5 — blind 50 %: the key alone began "Two people"; all three now say what the speaker means, and the
-    //   new near miss reads "either time" as "the first time"
-    // why: first time only ← "either time" heard as "the other time"; stealing ← right mechanism, wrong target: "I just
-    //   made that joke" is the complaint, but the last line hits both of them
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'cluck', seg: [74.9, 88.7],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'cluck', seg: [74.9, 88.7], retired: true,
       stem: 'Why does the line “Funny how I didn’t laugh…” get a laugh?',
       choices: ['The speaker says the pun fell flat both times it was told',
                 'The speaker says the pun only worked the first time',
@@ -142,37 +110,43 @@ export const paulManager: Clip = {
       trap: 'Funny how ～ は「～なのは妙だね」という皮肉の型。「面白い」ではない。',
       use: 'Funny how you vanish on cleaning day.（掃除の日に限って消えるのは妙だね）' },
 
-    // R fix: V2 — blind 80 %: "really do" plus two face-value readings left the key alone; the respect reading gives
-    //   way to a second hidden move (a veiled threat)
-    // why: lets him decide ← the question taken at face value; elsewhere ← "keep them to myself" heard as "take them
-    //   somewhere else"
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'trap', seg: [112.2, 126.1],
-      stem: 'What does Paul’s question about sharing his ideas really do?',
-      choices: ['Leaves Freddie only one answer he can give', 'Lets Freddie decide if he wants to hear them',
-                'Hints he’ll take his ideas elsewhere if refused'], a: 0,
-      cue: '二択の中身と、そのあとの短い返事。',
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'trap', seg: [116.9, 126.1],
+      stem: 'What does “keep them to myself” mean here?',
+      ja: 'ここでの「keep them to myself」はどういう意味？',
+      choices: ['Not tell anyone', 'Take them home', 'Write them down'], a: 0,
+      choicesJa: ['誰にも話さない', '家に持ち帰る', '書きとめる'],
+      cue: 'share のあと、or に続く部分。',
       line: 'do you want me to *share those great ideas or just keep them to myself*? — Well, answer the man. — Share.',
-      said: '「アイデアを話そうか、黙っておこうか」と聞かれ、Freddie は「話して」と言うしかない。',
-      mean: '片方しか選べない二択で「はい」を言わせる手口。',
-      trap: 'keep them to myself を「よそへ持っていく」と取りやすい。ありえない二択は誘導。',
-      use: 'Want dessert, or are you no fun?（デザート食べる？それともつまらない人？）' },
+      said: '「アイデアを話そうか、しまっておこうか」と聞かれ、フレディは「話して」。',
+      mean: 'keep 〜 to myself ＝ 〜を人に言わずにおく。share（話す、分ける）の反対。',
+      trap: 'keep から「持っておく、持ち帰る」を思いやすい。share の反対の意味で使っている。',
+      use: 'Please keep it to yourself.（それ、人には言わないでね）' },
 
-    // R fix: V2/S1 — blind 50 %: the quoted "already began" set up the perfect-tense comeback; the stem quotes the
-    //   reply only
-    // why: it's beginning ← 's taken as "is", so a -ing form is expected; it began ← the past form just heard
     { id: 's3', skill: 'sound', level: 'B2', point: 'begun', seg: [126, 130.5],
       stem: 'Fill the gap in the short reply: “Oh, ___.”',
+      ja: '短い返事の空所に入る語は？「Oh, ___.」',
       choices: ['it’s begun', 'it’s beginning', 'it began'], a: 0,
-      cue: '「already began」への返事、最後の短い語。',
+      choicesJa: ['もう始まっている', '始まりつつある', '始まった'],
+      cue: '「already began」への返事。',
       line: 'I thought it already began. — Oh, *it’s begun*.',
-      said: '「もう始まってると思ってた」「そう、始まったのさ」。',
-      mean: 'it’s begun ＝ it has begun。’s は has の短縮。',
-      trap: 'it’s を it is と取ると beginning を探しやすい。begun は短く n で終わる。',
+      said: '「もう始まってると思ってた」「そう、始まってるのさ」。',
+      mean: 'it’s begun ＝ it has begun（もう始まっている）。’s は has の短縮。',
+      trap: 'it began なら「イット」のあとに「ツ」がない。beginning なら最後が「ニング」と長い。',
       use: 'Relax, the movie’s already begun.（落ち着いて、映画はもう始まってるよ）' },
 
-    // R fix: V2 — blind 55 %: "save money" was the odd one against two kinds of success; now three payoffs of a tour
-    // why: crowds ← "on the road" plus a tour pitch, bank missed; make a name ← a near idiom with "make", the fame side
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'bank', seg: [142.9, 148.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'ideas', seg: [128, 172],
+      stem: 'What does Paul talk about here?',
+      ja: 'ここでポールは何について話している？',
+      choices: ['Ideas for the show', 'Ways to catch the fox', 'His brand-new phone'], a: 0,
+      choicesJa: ['番組のためのアイデア', 'キツネを捕まえる方法', '自分の新しい電話'],
+      cue: '「First」「Next」と続く所。',
+      line: '*First*, focus on merchandising… *Next great idea*, live tour… *my last idea*… Collaborate with other influencers.',
+      said: 'グッズ、ライブツアー、ほかのインフルエンサーとの共演と、アイデアを順に出す。',
+      mean: 'First, Next, last で順番に話す。番組を大きくするための案。',
+      trap: 'キツネや電話の話はこの前後に出るが、ここでは First, Next と案を並べている。',
+      use: 'First, coffee. Next, the museum.（まずコーヒー。次は美術館）' },
+
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'bank', seg: [142.9, 148.6], retired: true,
       stem: 'In Paul’s pitch for a live tour, what does he say podcasters do?',
       choices: ['Earn a lot of money on the road', 'Draw big crowds on the road',
                 'Make a name for themselves on the road'], a: 0,
@@ -183,52 +157,55 @@ export const paulManager: Clip = {
       trap: 'bank を聞き流すと、人気や知名度の話に聞こえる。make bank で「かせぐ」。make a name とは別。',
       use: 'She makes bank as a nurse.（彼女は看護師でかなりかせいでる）' },
 
-    // why: homesick ← the usual reason not to tour; a TV show ← "watched a Dateline" heard as the thing he'd miss
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'whynot', reveals: ['tour'], seg: [142.9, 148.6],
+      stem: 'What does Paul mean by “Why not you, Carly?”',
+      ja: 'ポールの「Why not you, Carly?」はどういう意味？',
+      choices: ['You should do it too', 'You can’t do that one', 'Why are you here?'], a: 0,
+      choicesJa: ['君もやるべきだ', '君には無理だ', 'なぜここにいるの？'],
+      cue: '「on the road」のあとの短い質問。',
+      line: 'Podcasters make bank on the road. *Why not you, Carly?*',
+      said: '「ポッドキャスターはツアーで大もうけしてる。君もやれば？」と勧める。',
+      mean: 'Why not 〜? ＝ 〜でもいいじゃない？ 理由を聞くのでなく、勧める言い方。',
+      trap: 'Why（なぜ）と not から、理由を聞くか「だめ」に思いやすい。前の話を受けた勧め。',
+      use: 'Why not try the local food?（地元の料理を食べてみたら？）' },
+
     { id: 'i3', skill: 'infer', level: 'C1', point: 'tour', seg: [144.3, 154.6],
-      stem: 'From the reason given, why won’t Freddie go on tour?',
-      choices: ['He is afraid hotel beds are dirty', 'He gets homesick when he travels',
-                'He doesn’t want to miss a TV show'], a: 0,
+      stem: 'Why won’t Freddie go on tour?',
+      ja: 'フレディはなぜツアーに行かない？',
+      choices: ['He thinks hotel beds are dirty', 'He gets homesick on long trips', 'He can’t miss a TV show'], a: 0,
+      choicesJa: ['ホテルのベッドが汚いと思っている', '旅に出ると家が恋しくなる', 'テレビ番組を見逃せない'],
       cue: '「won’t go on tour」の直後の理由。',
       line: 'Freddie won’t go on tour. He *watched a Dateline about hotel sheets*.',
-      said: '「Freddie はツアーに行かない。ホテルのシーツを扱った報道番組を見たから」。',
-      mean: 'シーツの汚れの特集を見て、ホテルが怖くなった。',
-      trap: 'watched と番組名から「番組を見逃したくない」と取りやすい。about のあとが中身。',
-      use: 'Saw a show on airplane food. Never again.（機内食の番組を見て、もう無理）' },
+      said: '「フレディはツアーに行かない。ホテルのシーツの報道番組を見たから」と言う。',
+      mean: 'sheets ＝ シーツ。シーツの汚れの特集を見て、ホテルが怖くなった。',
+      trap: 'watched と番組名から、番組の話に思いやすい。about hotel sheets が中身。',
+      use: 'Are the sheets clean?（シーツはきれいですか）' },
 
-    // R fix: V2 — blind 50 %: only the key had a turn; the new near miss is the same turn in the wrong order
-    // why: weaker ← "not great" taken at face value (謙遜); brag then modest ← "amazing" remembered, the order lost
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'amazing', seg: [156, 160.9],
-      stem: 'Why is Paul’s lead-in to his last idea funny?',
-      choices: ['It sounds modest, then turns into a brag', 'It admits the idea is weaker than the rest',
-                'It sounds like a brag, then turns modest'], a: 0,
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'amazing', seg: [156, 160.9],
+      stem: 'How does Paul describe his last idea?',
+      ja: 'ポールは最後のアイデアを何と言う？',
+      choices: ['Amazing', 'Not great', 'Just okay'], a: 0,
+      choicesJa: ['最高', 'いまいち', 'まあまあ'],
       cue: '「not great」のあと、もう一言。',
       line: 'Now my last idea, it’s actually *not great*. *It’s amazing*.',
-      said: '「最後のアイデアは、実はすごくない。最高なんだ」と言っている。',
-      mean: '「すごくない」で謙遜に見せて、さらに上の言葉で裏返す。自慢の前ふり。',
-      trap: '日本語の謙遜の感覚だと not great で止めて聞きやすい。次の一言で意味が反転する。',
-      use: 'This isn’t a good deal. It’s a steal.（お買い得どころか、タダ同然）' },
+      said: '「最後のアイデアは、実はすごくない。最高なんだ」と言う。',
+      mean: 'not great ＝ すごくない、と下げてから、amazing（最高）と上げる。自慢の前ふり。',
+      trap: 'not great で止めると、いまいちに聞こえやすい。次の It’s amazing で反対になる。',
+      use: 'It’s not good. It’s amazing!（いいどころじゃない、最高！）' },
 
-    // R fix: V2 — blind 50 %: "a fight" was a weak reading for a permission ask; now shake = 混ぜる, the order of his
-    //   ideas
-    // why: mix up the order ← shake = 振って混ぜる, and he is on his "last idea"; wake everyone ← shake someone = 起こす
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'shake', seg: [161.1, 168.5],
-      stem: 'Before his last idea, what does Paul ask permission to do?',
-      choices: ['Change how things are usually done', 'Mix up the order of his ideas',
-                'Wake everyone up and get them moving'], a: 0,
-      cue: '「would you guys mind if I just」のあと。',
+      stem: 'What does “shake things up” mean here?',
+      ja: 'ここでの「shake things up」はどういう意味？',
+      choices: ['Make a change', 'Mix up his ideas', 'Wake everyone up'], a: 0,
+      choicesJa: ['変化を起こす', 'アイデアの順番を混ぜる', 'みんなを起こす'],
+      cue: '「mind if I just」のあと。',
       line: 'Would you guys mind if I just *shake things up* a little bit',
-      said: '「ちょっと流れを変えて、すごいアイデアを出してもいい？」と聞いている。',
-      mean: 'shake things up ＝ やり方に変化を起こす。悪い意味ではない。',
-      trap: 'shake を「振る・揺さぶる」と取ると、順番を混ぜる話や目覚ましに聞こえる。',
+      said: '「ちょっと流れを変えて、すごいアイデアを出してもいい？」と聞く。',
+      mean: 'shake things up ＝ 変化を起こす。Would you mind if I 〜? ＝ 〜してもいい？',
+      trap: 'shake（振る、揺らす）を文字どおりに取ると、混ぜる話や起こす話に聞こえやすい。',
       use: 'Let’s shake things up and eat outside.（気分を変えて外で食べよう）' },
 
-    // R fix: V2 (C2) — blind 80 %: "another influencer" wasn't a move; now a guilt trip, another way to push a yes.
-    //   Notes trimmed to ≤ 120, and the use no longer names a distractor
-    // why: guilt trip ← "Do you want…" aimed at him sounds like pressure about letting Carly down; big promise ← right
-    //   speaker, wrong feature: "greatest episode… in history" sounds like Paul's "greatness"
-    // anchor: 117.8–121.2 s Paul's "do you want me to share… or just keep them to myself?" (and 92.2–98.6 s "most
-    //   successful… or… a massive failure?"); 182.7–187.3 s the same two-way shape, cut off at "some massive"
-    { id: 'c3', skill: 'pragma', level: 'C2', point: 'trap', seg: [180.5, 191.6],
+    { id: 'c3', skill: 'pragma', level: 'C2', point: 'trap', seg: [180.5, 191.6], retired: true,
       stem: 'When Freddie begs “Don’t do Paul’s thing”, what move does he mean?',
       choices: ['A question with only one answer he can give', 'A guilt trip about letting Carly down',
                 'A big promise that the episode will be great'], a: 0,
@@ -239,9 +216,7 @@ export const paulManager: Clip = {
       trap: 'greatest が大げさな約束に聞こえる。止めた位置と、二択の形を聞く。',
       use: 'Don’t do your sad-face thing. I’ll come.（その顔で頼むのはやめて。行くから）' },
 
-    // R fix: V2/K6 — blind 55 %: the key was the only two-step, nuanced choice; all three are now "X at first, then Y"
-    // why: eager then scared ← the two lines' order flipped; calm then scared ← "don't tell me" heard as the last word
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'poison', seg: [218.5, 231.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'poison', seg: [218.5, 231.6], retired: true,
       stem: 'After asking “Do you know how I die?”, how does the asker feel?',
       choices: ['Torn at first, then eager to hear it', 'Eager at first, then too scared to hear it',
                 'Calm at first, then suddenly scared of it'], a: 0,
@@ -252,80 +227,67 @@ export const paulManager: Clip = {
       trap: 'don’t tell me だけ聞くと「拒否」に見える。すぐあとの do tell me で向きが変わる。',
       use: 'No, don’t tell me. Okay, tell me.（いや、言わないで。やっぱり教えて）' },
 
-    // why: 7 ← the weak first syllable of "eleven" leaves "-leven ≈ seven"; 20 ← "2023" is the number heard just before
     { id: 'n1', skill: 'number', level: 'B1', point: 'cameras', seg: [235.9, 242.4], keep: true,
       stem: 'How many cameras does the prototype phone have?',
+      ja: '試作品の電話には、カメラがいくつある？',
       choices: ['7', '11', '20'], a: 1,
+      choicesJa: ['7個', '11個', '20個'],
       cue: '「It has, like」のすぐあと。',
       line: 'a prototype of the 2023 Pear phone. It has like *11 cameras*.',
-      said: '「2023年モデルの試作品で、カメラが11個くらいある」と自慢している。',
-      mean: '数字の前の like は「だいたい」。',
-      trap: 'eleven の最初の「イ」が弱いと seven に近づく。直前の 2023 も耳に残りやすい。',
+      said: '「2023年モデルの試作品で、カメラが11個くらいある」と自慢する。',
+      mean: '数の前の like ＝ だいたい、〜くらい。eleven は「イレヴン」。',
+      trap: 'eleven の最初の「イ」が弱いと seven に近い。seven なら「セ」で始まる。',
       use: 'It takes like ten minutes.（10分くらいかかるよ）' },
 
-    // why: shy and scared ← chicken = 弱虫 (the English idiom); careful and slow ← "being too busy to do your job"
-    //   half heard as slowness
     { id: 'd3', skill: 'detail', level: 'B1', point: 'chickcard', seg: [250.3, 260.9],
-      stem: 'What does the chicken card stand for, according to the psychic?',
-      choices: ['Being possessive and too busy to do your job', 'Being shy and too scared to try new things',
-                'Being careful and too slow to finish your work'], a: 0,
-      cue: '「The chicken represents」のあと。',
-      line: 'The chicken represents *possessiveness, extreme sensitivity, and being too busy to do your job*.',
-      said: '「鶏は、独占欲、ひどく傷つきやすいこと、忙しすぎて仕事ができないこと」と読む。',
-      mean: 'possessiveness ＝ 独り占めしたい気持ち。',
-      trap: 'chicken には「弱虫」の意味もあるので引かれやすいが、挙がる特徴は別。',
-      use: 'He’s too busy to call his mom.（忙しすぎて母親に電話もしない）' },
+      stem: 'What does the chicken card stand for?',
+      ja: '鶏のカードは何を表す？',
+      choices: ['Too busy to do your job', 'Too scared to try things', 'Too slow at work'], a: 0,
+      choicesJa: ['忙しすぎて仕事ができない', 'こわくて新しいことができない', '仕事が遅すぎる'],
+      cue: '「represents」のあと、最後の部分。',
+      line: 'The chicken represents possessiveness, extreme sensitivity, and *being too busy to do your job*.',
+      said: '「鶏は、独り占めしたい気持ち、傷つきやすさ、忙しすぎて仕事ができないこと」と読む。',
+      mean: 'represent ＝ 表す。too busy to 〜 ＝ 忙しすぎて〜できない。',
+      trap: 'chicken には「こわがり」の意味もあるので引かれやすい。最後の too busy を聞く。',
+      use: 'I’m too busy to cook tonight.（今夜は忙しくて料理できない）' },
 
-    // R fix: V2 — blind 85 %: "agree to start over" was the only calm outcome against the scene's rising anger; now a
-    //   second escalation (quitting) as the near miss
-    // why: set up ← Paul's "I told you it has begun" is read as a confession; quits ← "I cannot work with this guy"
-    //   heard without the "either… or" that follows
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'reading', reveals: ['paid'], seg: [250.3, 330.6],
-      stem: 'How does the psychic’s reading change things between Freddie and Paul?',
-      choices: ['It pushes Freddie to say it’s him or Paul', 'It makes Freddie quit the show on the spot',
-                'It makes Paul admit that he set it all up'], a: 0,
-      cue: '場面の最後に出てくる条件。',
-      line: 'I cannot work with this guy, okay? *It’s either him or me.*',
-      said: '読みのあと Freddie は「仕込みだ」と怒り、最後に「彼か僕か」と迫る。',
-      mean: '占いは仲を取り持つどころか、対立を決定的にした。',
-      trap: 'cannot work with this guy だけだと辞める話に聞こえる。either … or は二択。',
-      use: 'It’s either me or the cat.（私か猫か、どっちかにして）' },
-
-    // R fix: V2 — blind 70 %: "a fan of Paul's" was weak; now a second way she could "know" (she overheard them)
-    // why: paid too much ← "How much did you pay" taken as a price question; overheard ← a reading that hits home
-    //   that hard sounds like inside knowledge, and "pay her" is missed
     { id: 'i2', skill: 'infer', level: 'B2', point: 'paid', seg: [261.8, 270.4],
-      stem: 'What does Freddie suspect after the chicken card is read?',
-      choices: ['That Paul set up the reading to mock him', 'That Paul paid far too much for the reading',
-                'That the psychic overheard the two of them'], a: 0,
-      cue: '「How much」で始まる問いと、Paul の返事。',
+      stem: 'What does Freddie think Paul did?',
+      ja: 'ポールが何をしたとフレディは思っている？',
+      choices: ['Paid her to say it', 'Paid too much for it', 'Forgot to pay her'], a: 0,
+      choicesJa: ['お金を払って言わせた', 'お金を払いすぎた', '払うのを忘れた'],
+      cue: '「How much」で始まる質問。',
       line: '*How much did you pay her to say this*, Paul? — I don’t know what you’re talking about.',
-      said: '「いくら払って言わせたの？」と Paul に聞き、Paul は「何の話？」と答える。',
-      mean: '値段ではなく、「仕込んだだろう」という非難。',
-      trap: 'How much だけ聞くと料金の話に聞こえる。pay her to ～ は「お金で～させる」。',
+      said: '「いくら払って言わせたの？」とポールに聞き、ポールは「何の話？」と答える。',
+      mean: 'pay 人 to 〜 ＝ お金を払って〜させる。値段ではなく「仕込んだだろう」という意味。',
+      trap: 'How much（いくら）だけ聞くと料金の話に思いやすい。to say this まで聞く。',
       use: 'Did you pay him to say that?（お金で言わせたでしょ）' },
 
-    // R fix: V2/K6 — blind 55 %: the key alone had "but", and "admits and says sorry" was unlike Paul; now a 2 × 2 of
-    //   deny/admit and enjoy/worry, all with "and"
-    // why: admits and enjoys ← "I told you it has begun" heard as owning up; worried ← "okay?" heard as concern
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'denies', reveals: ['begun', 'paid'], seg: [283.7, 295.6],
-      stem: 'After the fox card is read, how does Paul respond to Freddie?',
-      choices: ['He denies setting it up, and enjoys the result', 'He admits setting it up, and enjoys the result',
-                'He denies setting it up, and worries Freddie’s upset'], a: 0,
+      stem: 'How does Paul answer Freddie after the fox card?',
+      ja: 'キツネのカードのあと、ポールはフレディにどう答える？',
+      choices: ['Says no, then brags a bit', 'Says sorry and stops', 'Says he planned it all'], a: 0,
+      choicesJa: ['否定して、少し自慢する', '謝ってやめる', '全部仕組んだと言う'],
       cue: '「okay?」のあとに続く一言。',
       line: 'I did not tell her to say that, okay? *But I told you it has begun.*',
-      said: '「言わせたわけじゃない。でも、始まったって言ったろ？」と返している。',
-      mean: '否定しながら、but のあとで勝ち誇っている。',
-      trap: 'okay? の否定は気づかいに、I told you は白状に聞こえやすい。but のあとに本音が来る。',
-      use: 'Didn’t plan it, but I called it.（仕組んでないよ。でも予言はしたよね）' },
+      said: '「言わせたわけじゃない。でも、始まったって言ったろ？」と返す。',
+      mean: 'I told you 〜 ＝ 〜って言ったでしょ。否定しながら、but のあとで得意になっている。',
+      trap: 'I told you から「白状した」と思いやすい。前半ではっきり否定している。',
+      use: 'I told you it would rain.（雨が降るって言ったでしょ）' },
 
-    // R fix: V2 (C2) — blind 50 %: "admits the cards meant nothing" overstated the words; the truce reading is now the
-    //   literal offer (share the phone). Notes trimmed to ≤ 120
-    // why: real truce ← sincerity flip: "start over and use my… phone" taken at face value; calls him the chicken ←
-    //   near sound: "you're not the chicken" with the weak "not" lost
-    // anchor: 298.6–302.3 s "let's just start over and use my sick Pear phone that only I and Tom Cruise have"; 304.0–
-    //   307.4 s Freddie: "He's just trying to make me look bad."
-    { id: 'c2', skill: 'attitude', level: 'C2', point: 'truce', seg: [295.6, 307.72],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'reading', seg: [291.4, 330.6],
+      stem: 'How does the scene end for Freddie and Paul?',
+      ja: 'フレディとポールの場面は、どう終わる？',
+      choices: ['Freddie makes Carly choose', 'Freddie quits the show', 'Paul says sorry to Freddie'], a: 0,
+      choicesJa: ['フレディがカーリーに選ばせる', 'フレディが番組をやめる', 'ポールがフレディに謝る'],
+      cue: '場面の最後、カーリーへの言葉。',
+      line: 'I cannot work with this guy, okay? *It’s either him or me.*',
+      said: 'ポールの仲直りの話も通じず、フレディは「彼とは無理。彼か僕か」と言う。',
+      mean: 'either A or B ＝ AかBのどちらか。どちらかを選べ、と迫っている。',
+      trap: 'cannot work with 〜 だけだと、やめる話に聞こえやすい。either … or は二択。',
+      use: 'It’s either tea or coffee.（紅茶かコーヒーのどちらかです）' },
+
+    { id: 'c2', skill: 'attitude', level: 'C2', point: 'truce', seg: [295.6, 307.72], retired: true,
       stem: 'How does Paul’s “let’s just start over” offer land with Freddie, and why?',
       choices: ['As a dig: Paul ends the peace offer with a brag', 'As a truce: Paul offers to share his new phone',
                 'As an insult: Paul calls Freddie the chicken again'], a: 0,
@@ -336,14 +298,14 @@ export const paulManager: Clip = {
       trap: '電話を貸す申し出だけなら和解に見える。not は弱いが、鶏とは呼んでいない。',
       use: 'Let’s start over. Lunch is on me.（仕切り直そう。昼はおごるよ）' },
 
-    // R fix: who — "Paul's reply" named a speaker the words don't settle (the psychic is also there)
     { id: 'x2', skill: 'dict', level: 'B2', point: 'chickensay', seg: [325.5, 328.6],
       stem: 'Type the reply: “That’s exactly ___.” (5 words)', answer: 'what a chicken would say',
+      ja: '返事を書こう：「それこそ ___ だ」（5語）',
       cue: '「either him or me」の直後。',
       line: 'That’s exactly *what a chicken would say*.',
-      said: '「彼か僕か」に「それこそ鶏が言いそうなことだ」と返している。',
-      mean: 'what a ～ would say ＝「～が言いそうなこと」。',
+      said: '「彼か僕か」に「それこそ鶏が言いそうなことだ」と返す。',
+      mean: 'what a 〜 would say ＝ 〜が言いそうなこと。chicken には「こわがり」の意味もある。',
       trap: 'what a がつながって「ワラ」と一語に聞こえ、a を落としやすい。would も短い。',
-      use: 'That’s exactly what a liar would say.（それこそ嘘つきの言いそうなこと）' },
+      use: 'That’s exactly what I would say.（それ、まさに私が言いそうなこと）' },
   ]
 };
