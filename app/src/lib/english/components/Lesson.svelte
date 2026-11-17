@@ -238,7 +238,8 @@
     return h.hit ? s('heardWords', h) : s('shown');
   };
   const again = $derived(end ? againOf(qs, st) : []);
-  const phrase = (x: Question) => x.use.split('（')[0];
+  /** An again row's words: the line heard there (the key words' stars dropped), else the phrase to use. */
+  const phrase = (x: Question) => x.line?.replaceAll('*', '') ?? x.use.split('（')[0];
   /** A segment as the sheet says it, in whole seconds (57.3–63.45 → 57–64). */
   const span = (x: Question) => ({ from: Math.floor(x.seg[0]), to: Math.ceil(x.seg[1]) });
   const flag = (i: number | null) => ((flagQ = i), (flagOpen = true));
@@ -284,6 +285,7 @@
         <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
           <p class="stem" lang="en"><b>{q.stem}</b></p>
+          {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
           <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
             <div class="choices">
@@ -322,7 +324,7 @@
       {/key}
     {:else}
       <article class="card pad" data-en-end>
-        <p class="lead"><b>{s('endHead')}</b></p>
+        <p class="lead"><b>{s('endHead')}</b><span class="meta">{s('endDone')}</span></p>
         {#if again.length}
           <p class="meta">{s('endAgain')}</p>
           <ul class="again">

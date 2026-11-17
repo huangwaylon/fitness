@@ -13,7 +13,7 @@ transcript is, since 2026-11-16: Transcripts).
 `clips/index.ts` lists them; one file a clip, each checked by the unit tests.
 
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
-  label: 大意 詳細 数字 誰が 含み 気持ち 言葉の働き 笑い 次の一言 つなぎ言葉 フレーズ 音 書き取り), a `level` (B1/B2/C1), a
+  label: 大意 詳細 数字 誰が 本当の意味 気持ち 一言のねらい 笑いどころ 次の一言 つなぎ言葉 フレーズ 音の聞き分け 書き取り), a `level` (B1/B2/C1), a
   `point` and the points it `reveals`. A bank is 16–24 items; `clips.test.ts` runs the review rubric's mechanical checks
   (a lesson under 16 only the schema, segments, wording, dictations and draws).
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
@@ -74,7 +74,7 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
   choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card's
-  meta is 「質問 1/6 · 大意」; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
+  meta is 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (the lesson bar's one labelled button, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕): 字幕
   オフ / 英語 / 日本語 and 字幕の大きさ (The player), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
   lines only) and この動画のフレーズ (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
@@ -89,7 +89,7 @@ One sheet: home, the library, a clip's lesson (‹ back to where it was opened) 
   「くわしく」 (a `<details>`), open by itself after a miss (anything not heard in full the first time), closed on ◎. It
   scrolls up with the answered choice on top, so the ○ and the notes' head are both in view.
 - **書き取り:** the words heard are counted (「k/n 語 聞き取れました」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
-- **まとめ:** the scenes worth hearing again (anything not ◎), the clip's phrases, 通して見る. It finishes the clip once
+- **まとめ:** 「この動画は完了です」, the scenes worth hearing again (anything not ◎; each row its segment and the line heard there, else the phrase), the clip's phrases, 通して見る. It finishes the clip once
   six questions (all, if fewer) are answered or shown; else it says how many are left and goes to the first.
 - Leaving keeps the place on this phone: the clip, the question, the answers. A play whose まとめ was reached is
   finished, even if gone back from it: its next opening draws the next.

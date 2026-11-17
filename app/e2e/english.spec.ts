@@ -115,8 +115,11 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   await lesson(page).locator('[data-en-to-q]').click();
   const card = lesson(page).locator('[data-en-q="0"]');
   // q1 (the answer is the 2nd): a miss
+  // question 1 says what to do (its question is English) till the first pick
+  await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから、合うものを選びましょう。何回聞いてもOK');
   const n0 = (await ytCommands(page)).length;
   await card.locator('[data-choice="0"]').click();
+  await expect(card.locator('[data-en-howto]')).toHaveCount(0);
   await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみましょう。');
   await expect(card.locator('[data-en-nudge]')).toContainText((await questionAt(page, 0)).cue);
   // brought up only as far as it takes: the question and its choices stay on screen for the retry
@@ -197,6 +200,10 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   expect(await at(page)).toBe(String(n));
   // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
   await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
+  await expect(lesson(page).locator('[data-en-end]')).toContainText('この動画は完了です');
+  // an again row says the line heard there (its stars dropped), not the phrase to use
+  const lines = waitress.questions.flatMap((x) => (x.line ? [x.line.replaceAll('*', '')] : []));
+  expect(lines).toContain((await lesson(page).locator('[data-en-again] .ph').first().textContent())!.trim());
   await lesson(page).locator('[data-en-done]').click();
   // the main card goes on to the plan's next clip (the finished one isn't offered again today, not even as a row)
   await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', PLAN[1].id);
