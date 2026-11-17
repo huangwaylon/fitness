@@ -239,7 +239,7 @@ export const imFine: Clip = {
       said: '「恐怖に動かされていいのか。決めることにまで入れていいのか」と問いかける。',
       mean: 'How dare 〜? ＝ よくも〜できるね。答えを求めず「〜すべきでない」と言っている。',
       trap: 'motivate（やる気にさせる）から、恐怖をほめていると思いやすい。',
-      use: 'How dare you!（よくもそんなことを！）' },
+      use: 'Don’t let fear stop you.（怖さに負けないで）' },
     { id: 'p3', skill: 'detail', level: 'B1', point: 'costume', seg: [165.5, 172.5],
       stem: 'What do we do one day a year?',
       ja: '年に1日、私たちは何をする？',
