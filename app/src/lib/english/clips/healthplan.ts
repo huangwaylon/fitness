@@ -126,7 +126,7 @@ export const healthPlan: Clip = {
       line: 'until that time, there will be *no health care coverage* for anyone.',
       said: '「名乗り出るまで、だれにも医療保険はなし」と言う。',
       mean: 'health care coverage ＝ 医療保険で受けられる分。until that time ＝ そのときまで。',
-      trap: '「名乗り出るまで」から帰れない話を想像しやすい。no のあとを聞く。',
+      trap: '取り上げるのは休みや給料だと思いやすい。no のあとの health care を聞く。',
       use: 'No dessert until you finish dinner.（夕ご飯を食べ終わるまでデザートなし）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [90.6, 98.3],
@@ -204,6 +204,7 @@ export const healthPlan: Clip = {
       choices: ['Their weekend plans', 'Firing Dwight', 'The health care plan'], a: 0,
       choicesJa: ['週末の予定', 'ドワイトをクビにすること', '医療保険のプラン'],
       cue: '「Hey, Jim, it’s Pam」から。',
+      line: 'Getting excited for the *weekend*, though. … this weekend, nothing. I’m not really doing anything.',
       said: 'パムから電話が来て、週末の予定や靴の話をのんびり続ける。',
       mean: 'What are you up to? ＝ 何する予定？ ドワイトを待たせたまま、どうでもいい話をしている。',
       trap: '電話の前に fire（クビ）の話があったので、その相談と思いやすい。weekend を聞く。',

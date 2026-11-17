@@ -243,6 +243,7 @@ export const mykonos: Clip = {
       choices: ['Some people buy', 'Nobody buys', 'Everyone buys'], a: 0,
       choicesJa: ['何人かが買う', 'だれも買わない', '全員が買う'],
       cue: '何度もくり返す問いかけと、最後の一言。',
+      line: 'So who’s going to buy one right now? — *I’ll take one.* … *The rest of you* are dead to me.',
       said: '「今すぐ買う人は？」と何度も聞き、何人かが買う。最後に「残りのみんなは…」と言う。',
       mean: 'I’ll take one ＝ 1つください。The rest of you ＝ 残りのみんな（買わなかった人）。',
       trap: 'Sold や Yes が何度も聞こえるので全員と思いやすい。The rest of you で残りがいると分かる。',

@@ -35,7 +35,7 @@ export const firstPrank: Clip = {
       line: '*You wanna* know the best prank I ever pulled?',
       said: '「私の最高のいたずら、聞きたい？」と切り出す。',
       mean: 'wanna ＝ want to。Do を省いて You wanna だけで質問にする、くだけた言い方。',
-      trap: 'Do you wanna なら最初に「ドゥ」が入る。wanted to なら「ウォンティッ」と長い。',
+      trap: 'Do you wanna なら最初に「ドゥ」が入る。wanted to なら「ウォンティッ」と長い。いきなり「ユワナ」なら You wanna。',
       use: 'You wanna grab lunch?（お昼行く？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'raisins', seg: [26.25, 38.0], retired: true,
@@ -289,6 +289,7 @@ export const firstPrank: Clip = {
       choices: ['His old classmates beat him up', 'He pranks all of them right back', 'He stops with no trouble'], a: 0,
       choicesJa: ['昔の同級生にやっつけられた', '彼がやり返した', '何事もなくやめた'],
       cue: '最後のスペンサーの言葉。',
+      line: 'What happened? — *My old classmates beat me up.*',
       said: '昔の被害者を呼んで思い出させる作戦。スペンサーは「同級生にやられた」と言う。',
       mean: 'beat 人 up ＝ 人をぼこぼこにする。supposed to ＝ 本当は〜のはずだった。予定より手荒だった。',
       trap: 'Message received!（分かった）で穏やかに終わったと思いやすい。beat me up を聞く。',
