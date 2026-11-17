@@ -98,7 +98,7 @@ export const annFlowers: Clip = {
       line: 'we dated for, like, *three months* a year ago.',
       said: '「付き合ってたのは3か月くらい、それも1年前」と言う。',
       mean: 'like ＝ ここでは「〜くらい」。短い交際だった、と強めている。',
-      trap: 'すぐあとの a year ago は「いつ」の話。for のあとが「どのくらいの間」。',
+      trap: '「スリーマンス」なら3か月、「スリーウィークス」なら3週間。a year ago は「いつ」の話で、長さではない。',
       use: 'We talked for, like, an hour.（1時間くらい話した）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'built', seg: [54.5, 58.4],
@@ -122,7 +122,7 @@ export const annFlowers: Clip = {
       line: 'according to *your rule*, we can’t date because *you’re my boss*.',
       said: '「あなたのルールだと、上司とは付き合えない」と言う。',
       mean: 'according to 〜 ＝ 〜によると。相手が自分で作ったルールを使って断っている。',
-      trap: 'your は弱く短く、my と区別しにくい。because のあとの you’re my boss を聞く。',
+      trap: '断る理由なので「忙しい」などを思いやすい。because のあとの you’re my boss を聞く。',
       use: 'According to the rules, that’s not allowed.（決まりでは、それはだめです）' },
 
     { id: 'i2', skill: 'detail', level: 'B1', point: 'notlong', seg: [61.9, 70.0],
@@ -157,7 +157,7 @@ export const annFlowers: Clip = {
       line: 'But it would open it up for us to be together. *Would you* like that?',
       said: '「一緒になれる道が開ける。そうなったらいい？」と聞く。',
       mean: 'Would you が「ウジュ」とつながる。Would you like 〜? はていねいな聞き方。',
-      trap: 'did you も「ジュ」で終わる。頭の「ウ」の音を聞く。',
+      trap: '「ウジュ」と「ウ」で始まれば Would you、「ディジュ」なら Did you、「ドゥユ」なら Do you。',
       use: 'Would you like some help?（手伝いましょうか？）' },
 
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thinkabout', reveals: ['likethat'], seg: [71, 75.5],
@@ -181,7 +181,7 @@ export const annFlowers: Clip = {
       line: '*78%* of Pawneans label our parks pristine.',
       said: '「市民の78％が、公園はとてもきれいと言っている」と返す。',
       mean: 'seventy-eight percent。pristine ＝ 新品のようにきれい。',
-      trap: 'seventy のあとの eight は短く弱い。最後の数まで聞く。',
+      trap: '「セヴンティ」で止まれば70、「セヴンティエイト」と続けば78、「エイティ」で始まれば87。',
       use: 'Ninety percent of people agree.（9割の人が賛成している）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'lives', seg: [107.7, 113.2],

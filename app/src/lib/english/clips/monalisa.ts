@@ -74,7 +74,7 @@ export const monaLisa: Clip = {
       line: 'There’s *$60* missing from the register.',
       said: 'トムが「レジから60ドルなくなってる」と言う。',
       mean: 'register ＝ レジ。missing ＝ なくなっている、足りない。',
-      trap: 'sixty は前を強く「シクスティ」、sixteen は後ろを強く「ティーン」。',
+      trap: '「シクスティ」と前が強ければ60、「シクスティーン」と後ろが長ければ16、「シックスハンドレッド」なら600。',
       use: 'There’s ten dollars missing.（10ドル足りない）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'party', seg: [41.7, 47.8],
@@ -98,7 +98,7 @@ export const monaLisa: Clip = {
       line: 'we had to *spend a week* carrying around a sack of flour pretending it was a kid.',
       said: '「高校で、小麦粉の袋を子どもに見立てて1週間持ち歩かされた」と話す。',
       mean: 'spend a week 〜ing ＝ 1週間〜して過ごす。子育ての練習の授業。',
-      trap: 'a が弱く week とつながる。spend のすぐあとの短い語を聞く。',
+      trap: 'a が弱く次の語とつながる。「アウィーク」なら1週間、「アデイ」なら1日、「アマンス」なら1か月。',
       use: 'I spent a week cooking for myself.（1週間自炊して過ごした）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'flour', seg: [54.5, 61.0],
@@ -137,8 +137,8 @@ export const monaLisa: Clip = {
       use: 'Are you guys going? I want in.（みんな行くの？ 私も行く）' },
 
     { id: 'p5', skill: 'pragma', level: 'B1', point: 'talkabout', seg: [73.5, 78],
-      stem: '“I have something I need to talk to you about.” Chris is…?',
-      ja: '「トム、話さなきゃいけないことがある」。クリスは何をしようとしている？',
+      stem: 'What is Chris doing when he sits Tom down?',
+      ja: 'トムを座らせて、クリスは何をしようとしている？',
       choices: ['Starting a serious talk', 'Inviting Tom to dinner', 'Telling Tom a joke'], a: 0,
       choicesJa: ['まじめな話を始めようとしている', 'トムを夕食に誘っている', 'トムに冗談を言おうとしている'],
       cue: '「Tom」のあとの一文。',
@@ -154,6 +154,7 @@ export const monaLisa: Clip = {
       choices: ['Like a dad to his son', 'Like a big brother', 'Like a business coach'], a: 0,
       choicesJa: ['父親が息子に話すように', '兄のように', '仕事のコーチのように'],
       cue: '最後の呼びかけ方。',
+      line: 'Thanks for the advice, man. — *You’re welcome, son.*',
       said: '向かい合って座り、トムの悩みを聞いて励まし、最後は「どういたしまして、息子よ」と言う。',
       mean: 'トムを子ども役にして、親になる練習をしている。son ＝ 息子。',
       trap: '店の話なので仕事の助言に見えやすい。最後の son の呼びかけで親役と分かる。',
@@ -225,7 +226,7 @@ export const monaLisa: Clip = {
       line: 'Yeah. *I’ll talk to her* before the party.',
       said: '「うん。パーティーの前に彼女と話すよ」と言う。',
       mean: 'I’ll の l は弱く、talk to her は「トークトゥアー」に近い。これから話すという約束。',
-      trap: 'l が弱いと talked に、h が落ちた her は him に聞こえやすい。最後の音を聞く。',
+      trap: '頭に「アル」があれば I’ll、なく「トークトゥ」と詰まれば talked。最後が「アー」なら her、「ム」で閉じれば him。',
       use: 'I’ll talk to him after lunch.（昼のあとで彼と話すよ）' },
 
     { id: 'h4', skill: 'humor', level: 'C1', point: 'son', seg: [107.5, 115.6], retired: true,
@@ -306,7 +307,7 @@ export const monaLisa: Clip = {
       line: 'Yeah, I’m *28 years old*.',
       said: '「自転車乗れるようになった？」に「うん、28歳だし」と答える。',
       mean: 'twenty-eight ＝ 28。自転車に乗れて当然の年だと言っている。',
-      trap: 'twenty の t が弱く「トゥエニー」に近い。eighteen と混ざりやすいので、前半を聞く。',
+      trap: '「トゥエニエイト」なら28、「エイティーン」と後ろが長ければ18、「サーティエイト」と「サ」で始まれば38。',
       use: 'I’m thirty-two, not twelve!（12歳じゃなくて32歳だよ！）' },
   ]
 };
