@@ -4,13 +4,12 @@
   // key words underlined), 言っていること, 意味 and the phrase to use. The lines are the questions' own short quotes,
   // never a transcript.
   import Icon from '#lib/components/ui/Icon.svelte';
-  import { momentsOf } from '../phrases.ts';
+  import { keyed, momentsOf } from '../phrases.ts';
   import { clock, s } from '../i18n.ts';
   import type { Clip } from '../types.ts';
 
   let { clip, onplay }: { clip: Clip; onplay: (from: number, to: number) => void } = $props();
   const moments = $derived(momentsOf(clip));
-  const keyed = (line: string) => line.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
   const at = (t: number) => clock(Math.floor(t));
 </script>
 

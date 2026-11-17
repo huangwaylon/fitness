@@ -125,6 +125,17 @@ before first (the longest overdue first), then the never shown (the latest met f
 - Kept per player on this phone (`island.english.phrases`). Banks it needs are fetched (at most 4); one that doesn't
   load is passed over, and the card never holds up today's clip. Counted: `act:english.phrase.<show | kept | again | skip>`.
 
+## フレーズ
+
+A deck of the library's phrases, one card at a time. **The deck** (`catalog.ts deckOf`, at build time): a question's
+`use` makes a card when the question is live, B1, not a gist / humor / who / predict; the `use` has its Japanese in
+（…）, ≤ 8 English words, no character's name, and shares a key word with its `line` (the starred words, lower case,
+punctuation dropped, a / an / the aside, found as whole words of the English); its segment ≤ 15 s. One card per English
+phrase (the first in the plan's order). Entry `[clip, qid, from, to, use, line]`; the video and title from the index.
+It ships as 8 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 8` (each mixes the whole library; ~2,500
+cards, ~22 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them as the banks (an older
+version of a file goes), never precached; `load-budget.ts` holds them to 8, each ≤ 32 KB gzipped.
+
 ## The player
 
 The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, `origin=`): the

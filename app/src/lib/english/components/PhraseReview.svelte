@@ -7,7 +7,8 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
   import { loadBank, metaById } from '../data.ts';
-  import { dueOf, leftToday, metOf, mineOf, rated, saveMine, skipped, splitUse, type Key } from '../phrase-review.ts';
+  import { dueOf, leftToday, metOf, mineOf, rated, saveMine, skipped, type Key } from '../phrase-review.ts';
+  import { keyed, splitUse } from '../phrases.ts';
   import { s } from '../i18n.ts';
   import { count } from '#lib/sync/log.ts';
   import type { YtPlayer } from '../player.svelte.ts';
@@ -64,7 +65,6 @@
     next(skipped(mine, today), 'skip');
     cards = [];
   }
-  const keyed = (line: string) => line.split(/\*([^*]+)\*/g).map((t, j) => ({ t, key: j % 2 === 1 }));
 </script>
 
 {#if c}

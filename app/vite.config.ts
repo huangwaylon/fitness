@@ -8,7 +8,8 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
-import { bankPath, metaOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
+import { bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
+import { fnv } from './src/lib/english/hash.ts';
 import { planOf } from './src/lib/english/plan.ts';
 import type { Bank, Clip, JaTranscriptFile, ScenesFile, TranscriptFile, TranscriptLine } from './src/lib/english/types.ts';
 
@@ -153,13 +154,15 @@ const globsUncached: Plugin = {
  *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
  *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. A clip with
  *  transcripts/<video>.en.json (セリフ) has its lines in its bank too, each with the ja file's translation when in,
- *  held to the clip's length, their version in the file's name as well. The clips are read fresh (Vite's module runner)
+ *  held to the clip's length, their version in the file's name as well. フレーズ's deck (catalog.ts deckOf) is SHARDS
+ *  files, `english/p/<n>.<v>.json` (shardPath), their versions the index module's `DECK`. The clips are read fresh (Vite's module runner)
  *  once a build, and in dev again after one of them changes. */
 const ENGLISH_INDEX = '/src/lib/english/clips/index.ts?english-index';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
+const ENGLISH_SHARD = /\/english\/p\/(\d+)\.[0-9a-z]+\.json$/;
 const englishData = (): Plugin => {
   let root = process.cwd();
-  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>>; lines: Map<string, TranscriptLine[]> };
+  type Data = { clips: Clip[]; deps: string[]; scenes: Map<string, Pick<ScenesFile, 'scenes' | 'beats'>>; lines: Map<string, TranscriptLine[]>; shards: string[]; deck: string[] };
   let clips: Promise<Data> | null = null;
   const scenesDir = () => join(root, 'src/lib/english/scenes');
   const transcriptsDir = () => join(root, 'src/lib/english/transcripts');
@@ -191,7 +194,10 @@ const englishData = (): Plugin => {
     }));
   };
   const read = () =>
-    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => ({ clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS) })));
+    (clips ??= runnerImport<{ CLIPS: Clip[] }>(join(root, 'src/lib/english/clips/index.ts')).then(({ module, dependencies }) => {
+      const shards = shardsOf(deckOf(planOf(module.CLIPS))).map((s) => JSON.stringify(s));
+      return { clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS), shards, deck: shards.map(fnv) };
+    }));
   const meta = (d: Data, c: Clip) => withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video));
   const bank = (d: Data, c: Clip): Bank => {
     const sf = d.scenes.get(c.video);
@@ -208,23 +214,26 @@ const englishData = (): Plugin => {
       for (const f of d.deps) this.addWatchFile(f);
       if (existsSync(scenesDir())) for (const f of readdirSync(scenesDir())) this.addWatchFile(join(scenesDir(), f));
       if (existsSync(transcriptsDir())) for (const f of readdirSync(transcriptsDir())) this.addWatchFile(join(transcriptsDir(), f));
-      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(d.clips).map((c) => meta(d, c))))});`, map: null };
+      return { code: `export default JSON.parse(${JSON.stringify(JSON.stringify(planOf(d.clips).map((c) => meta(d, c))))});\nexport const DECK = ${JSON.stringify(d.deck)};`, map: null };
     },
     watchChange: (id) => void (/\/src\/lib\/english\/(clips|scenes|transcripts)\//.test(id) && (clips = null)),
     async generateBundle() {
       if (this.environment.name !== 'client') return;
       const d = await read();
       for (const c of d.clips) this.emitFile({ type: 'asset', fileName: bankPath(meta(d, c)), source: JSON.stringify(bank(d, c)) });
+      d.shards.forEach((s, n) => this.emitFile({ type: 'asset', fileName: shardPath(n, d.deck[n]), source: s }));
     },
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const id = ENGLISH_BANK.exec(req.url?.split('?')[0] ?? '')?.[1];
-        if (!id) return next();
+        const path = req.url?.split('?')[0] ?? '';
+        const id = ENGLISH_BANK.exec(path)?.[1], n = ENGLISH_SHARD.exec(path)?.[1];
+        if (!id && !n) return next();
         read().then((d) => {
           const c = d.clips.find((x) => x.id === id);
-          if (!c) return next();
+          const body = c ? JSON.stringify(bank(d, c)) : n ? d.shards[+n] : undefined;
+          if (!body) return next();
           res.setHeader('content-type', 'application/json');
-          res.end(JSON.stringify(bank(d, c)));
+          res.end(body);
         }, next);
       });
     }

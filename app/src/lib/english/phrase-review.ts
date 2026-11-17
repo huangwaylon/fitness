@@ -75,12 +75,6 @@ export function rated(mine: Mine, k: Key, today: LocalDate, kept: boolean): Mine
 /** `mine` with today's phrases skipped (they wait for tomorrow, their steps as they were). */
 export const skipped = (mine: Mine, today: LocalDate): Mine => ({ ...mine, day: [today, PER_DAY] });
 
-/** A `use` apart: its English and its Japanese in （…） (none: the whole is the English). */
-export function splitUse(use: string): { en: string; ja: string } {
-  const m = /^(.*?)\s*（(.+)）\s*$/.exec(use);
-  return m ? { en: m[1], ja: m[2] } : { en: use.trim(), ja: '' };
-}
-
 const read = (): Record<string, Mine> => readJson<Record<string, Mine>>(localKV(), DEVICE.englishPhrases) ?? {};
 export function mineOf(who: Who): Mine {
   const m = read()[who];

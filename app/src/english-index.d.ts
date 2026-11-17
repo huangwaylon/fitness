@@ -2,4 +2,6 @@
 declare module '*?english-index' {
   const index: readonly import('$lib/english/catalog.ts').ClipMeta[];
   export default index;
+  /** フレーズ's deck files' versions, by shard (catalog.ts shardPath). */
+  export const DECK: readonly string[];
 }

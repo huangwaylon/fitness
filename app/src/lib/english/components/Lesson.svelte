@@ -42,6 +42,7 @@
   import { safeReload } from '#lib/ui-state/reload.ts';
   import { log } from '#lib/sync/log.ts';
   import { durText, s } from '../i18n.ts';
+  import { keyed } from '../phrases.ts';
   import type { ClipMeta } from '../catalog.ts';
   import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
@@ -229,7 +230,6 @@
     typed = untrack(() => cur?.typed ?? '');
     void at;
   });
-  const keyed = (line: string) => line.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
   const head = (x: QState) => {
     const r = x.r!;
     if (r.k !== 'dict') return r.k === 'first' ? s('first') : r.k === 'second' ? s('second') : s('shown');

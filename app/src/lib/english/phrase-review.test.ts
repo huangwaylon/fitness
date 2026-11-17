@@ -1,7 +1,8 @@
 // フレーズの復習's schedule (phrase-review.ts): the questions of finished plays, 1-3-7-14-30 days on, 3 a day.
 import { describe, expect, it } from 'vitest';
 import { addDays } from '#lib/time/dates.ts';
-import { dueOf, leftToday, metOf, PER_DAY, rated, skipped, splitUse, STEPS, type Key, type Mine } from './phrase-review.ts';
+import { dueOf, leftToday, metOf, PER_DAY, rated, skipped, STEPS, type Key, type Mine } from './phrase-review.ts';
+import { splitUse } from './phrases.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import type { LocalDate } from '#lib/types.ts';
 

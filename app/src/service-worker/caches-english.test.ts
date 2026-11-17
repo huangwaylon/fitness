@@ -19,6 +19,14 @@ describe('English Study’s banks', () => {
     expect(englishEvict([url('a', '1'), url('b', '1')], 2)).toEqual([]);
   });
 
+  it('フレーズ’s deck files: their own, never precached; a file’s older version goes (never a clip named like it), none counted in the bound', () => {
+    const shard = (n: number, v: string) => `https://x.test/fitness/english/p/${n}.${v}.json`;
+    expect(isEnglishData('/fitness/english/p/3.1x9k2b.json')).toBe(true);
+    expect(precachable('english/p/3.1x9k2b.json')).toBe(false);
+    expect(englishEvict([shard(3, 'a'), url('3', '1'), shard(4, 'a'), shard(3, 'b')])).toEqual([shard(3, 'a')]);
+    expect(englishEvict([shard(0, 'a'), shard(1, 'a'), url('a', '1'), url('b', '1')], 1)).toEqual([url('a', '1')]);
+  });
+
   it('answers from the cache; else the network’s, stored after (an error never stored)', async () => {
     const store = new Map<string, Response>();
     const cache = {

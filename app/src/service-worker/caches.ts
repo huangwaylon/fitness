@@ -121,19 +121,24 @@ export const FOOD_CACHE = 'island-food-v2';
 export const isFoodData = (path: string): boolean => /\/food\/(jan\/)?[\w-]+\.json$/.test(path);
 /** English Study's banks (`english/c/<id>.<v>.json`, written by the build: lib/english/data.ts, catalog.ts bankPath):
  *  ~6.5 KB each, fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
- *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). */
+ *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). フレーズ's deck files
+ *  (`english/p/<n>.<v>.json`, catalog.ts shardPath, ~22 KB gzipped each) the same way. */
 export const ENGLISH_CACHE = 'island-english-v1';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
-export const isEnglishData = (path: string): boolean => ENGLISH_BANK.test(path);
-/** The banks kept (~2.6 MB): past it, the first stored go. */
+const ENGLISH_SHARD = /\/english\/p\/(\d+)\.[0-9a-z]+\.json$/;
+export const isEnglishData = (path: string): boolean => ENGLISH_BANK.test(path) || ENGLISH_SHARD.test(path);
+/** The banks kept (~2.6 MB): past it, the first stored go (the deck's files aren't counted: one each). */
 const ENGLISH_KEEP = 400;
-/** Which banks go (`keys` in the order stored): a clip's older versions once a newer one is stored, then the first
- *  stored past `keep`. */
+/** Which files go (`keys` in the order stored): a clip's (or a deck file's) older versions once a newer one is stored,
+ *  then the first banks stored past `keep`. */
 export function englishEvict(keys: readonly string[], keep = ENGLISH_KEEP): string[] {
-  const idOf = (u: string) => ENGLISH_BANK.exec(new URL(u, 'https://x/').pathname)?.[1];
+  const idOf = (u: string) => {
+    const path = new URL(u, 'https://x/').pathname, c = ENGLISH_BANK.exec(path)?.[1];
+    return c ? `c/${c}` : `p/${ENGLISH_SHARD.exec(path)?.[1]}`;
+  };
   const last = new Map(keys.map((k, i) => [idOf(k), i]));
   const older = keys.filter((k, i) => last.get(idOf(k)) !== i);
-  const rest = keys.filter((k, i) => last.get(idOf(k)) === i);
+  const rest = keys.filter((k, i) => last.get(idOf(k)) === i && idOf(k).startsWith('c/'));
   return [...older, ...rest.slice(0, Math.max(0, rest.length - keep))];
 }
 /** A bank's answer (pure for tests): the cached copy, else the network's, stored after (`after`: waitUntil). */

@@ -9,6 +9,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { precachable } from '../src/service-worker/caches.ts';
+import { SHARDS } from '../src/lib/english/catalog.ts';
 
 const APP = join(import.meta.dirname, '..');
 const BUILD = join(APP, 'build-pages');
@@ -27,6 +28,8 @@ const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
 /** English Study's sheet chunk with the library's index (2026-11-16: 133.7 KB with the 25 banks inside, 18.5 KB without). */
 const ENGLISH_SHEET = 80 * 1024;
+/** フレーズ's deck files (lib/english/catalog.ts SHARDS), each gzipped at most (2026-11-17: 8, 21–24 KB, 2,539 cards). */
+const ENGLISH_SHARD = 32 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
@@ -87,6 +90,16 @@ for (const f of feats) if (first.has(f) || precachable(f)) fail.push(`${f} (a fe
 const banks = readdirSync(join(BUILD, 'english/c'));
 if (!banks.length) fail.push('no English Study banks in build-pages/english/c/');
 for (const b of banks) if (precachable(`english/c/${b}`)) fail.push(`english/c/${b} (an English Study bank) is precachable`);
+// フレーズ's deck: SHARDS files, never precached, each ≤ ENGLISH_SHARD (past it: raise SHARDS, a constant)
+const deck = readdirSync(join(BUILD, 'english/p'));
+if (deck.length !== SHARDS) fail.push(`build-pages/english/p/ has ${deck.length} deck files, not ${SHARDS}`);
+let deckGz = 0;
+for (const f of deck) {
+  const gz = gzipSync(readFileSync(join(BUILD, 'english/p', f))).length;
+  deckGz = Math.max(deckGz, gz);
+  if (precachable(`english/p/${f}`)) fail.push(`english/p/${f} (a フレーズ deck file) is precachable`);
+  if (gz > ENGLISH_SHARD) fail.push(`english/p/${f} is ${kb(gz)} gzipped (≤ ${kb(ENGLISH_SHARD)}: raise catalog.ts SHARDS)`);
+}
 const englishSheet = manifest['src/lib/english/components/EnglishSheet.svelte'];
 const englishGz = englishSheet ? gzipSync(readFileSync(join(BUILD, englishSheet.file))).length : 0;
 if (!englishSheet) fail.push('no English Study sheet chunk in the build');
@@ -110,7 +123,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files, index.html ${kb(gzipSync(html).length)} (its import map); precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; English Study's sheet ${kb(englishGz)}, ${banks.length} banks, ${deck.length} deck files ≤ ${kb(deckGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);
