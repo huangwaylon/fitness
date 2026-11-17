@@ -60,7 +60,7 @@ export const soulmates: Clip = {
       mean: 'Jeez を cheese に変えてしまうほど、チーズ（＝Don の話）が頭から離れない。',
       trap: '聞き返しを発音へのからかいと取るとずれる。似た音への言い換えは、気にしている事の表れ。',
       use: 'Sorry, did you say Tuesday?（すみません、火曜って言いました？）' },
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goingon', seg: [12.5, 16.5],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'goingon', seg: [12.5, 16.5],
       stem: 'What does Monica mean by “What’s *going on*?”', ja: 'モニカの「What’s going on?」はどういう意味？',
       choices: ['Tell me what’s wrong', 'Where are you going?', 'What are you doing now?'], a: 0,
       choicesJa: ['何があったか話して', 'どこへ行くの？', '今、何をしているの？'],
