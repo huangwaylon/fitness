@@ -24,7 +24,7 @@ export const thirdNipple: Clip = {
       line: 'What *have I not* told you?',
       said: '「話してないことなんてある？」と聞き返す。',
       mean: 'haven’t I を分けた形。not を立てて「何も隠してない」と強める。have は弱く「ァヴ」。',
-      trap: 'いつもの haven’t I に直して聞きやすい。not が一つだけ聞こえたら分けた形。',
+      trap: 'haven’t I なら「ン」が I の前。had I not は「ハッダイ」。ここは「ァヴァイ・ノット」。',
       use: 'What have I not tried?（試してないことなんてある？）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'revenge', reveals: ['notbig', 'example', 'admit'], seg: [0, 34.3],

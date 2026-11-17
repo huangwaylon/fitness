@@ -150,7 +150,7 @@ export const barbados: Clip = {
       line: 'the rest of the time *we’re going to want to* do, you know, island stuff',
       said: '「残りの時間は、島っぽいことがしたくなると思う」と言う。',
       mean: 'going to want to は「ゴナワナ」と縮む。先の気持ちを言う形。',
-      trap: 'want to（ワナ）と have to（ハフタ）は語尾が似ている。最初が「ワ」か「ハ」かを聞く。',
+      trap: 'have to は「ハフタ」。we want to なら「ゴナ」がない。「ゴナワナ」なら going to want to。',
       use: 'You’re going to want a jacket.（上着が要ると思うよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'david', seg: [45.35, 53.0],
@@ -209,7 +209,7 @@ export const barbados: Clip = {
       line: 'he’s been in Minsk *for eight years*',
       said: '「ミンスクに8年いたから」と言う。',
       mean: 'for ＋期間 ＝ 〜の間ずっと。has been と合わせて、今まで続いている。',
-      trap: 'eighteen なら「ティーン」と長い。years は弱くなるが、最後まで聞く。',
+      trap: 'eighteen なら「ティーン」と長い。最後が months（マンス）か years（イヤーズ）かも聞く。',
       use: 'I’ve lived here for eight years.（ここに住んで8年です）' },
 
     // C2: exact words in fast speech (the dropped "'d")
@@ -245,7 +245,7 @@ export const barbados: Clip = {
       line: '*Five-hour flight* with Charlie…',
       said: '「チャーリーと5時間のフライト」と言う。',
       mean: 'five-hour flight ＝ 5時間の飛行機。数＋hour が名詞の前に来ると s は付かない。',
-      trap: 'five と nine は母音が同じ。最初の「フ」と「ナ」で聞き分ける。',
+      trap: 'nine は「ナ」、fifteen は「ティーン」と長い。短い「ファイヴ」なら5。',
       use: 'It’s a three-hour drive from here.（ここから車で3時間です）' },
   ]
 };

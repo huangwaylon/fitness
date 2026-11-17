@@ -107,7 +107,7 @@ export const chickParent: Clip = {
       line: 'who was up from *2 o’clock* this morning until *5 o’clock* this morning',
       said: '「今朝の2時から5時まで、寝かしつけてたのはだれだ」と言い返す。',
       mean: 'from A until B ＝ A から B まで。this morning でも、ここは真夜中。',
-      trap: 'five と four は出だしが同じ「フ」。「ファイ」か「フォー」かを聞く。',
+      trap: 'four は「フォー」、nine は「ナイン」。「ファイヴ」と聞こえれば5。',
       use: 'I was up until three last night.（昨夜は3時まで起きてた）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', seg: [47.2, 57.4],
@@ -279,7 +279,7 @@ export const chickParent: Clip = {
       line: 'You think we’ll get our *three bucks* back?',
       said: '「3ドル戻ってくるかな」と言う。',
       mean: 'bucks ＝ dollars（ドル）のくだけた言い方。ひよこは3ドルで買った。',
-      trap: 'three のあと bucks が速く続き、thirteen にも聞こえやすい。',
+      trap: 'thirteen は「ティーン」と長く、thirty は「サーティ」。ここは短い「スリー」。',
       use: 'It’s only five bucks.（たった5ドルだよ）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'well', reveals: ['bucks', 'ending'], seg: [110.9, 116.5],
@@ -291,7 +291,7 @@ export const chickParent: Clip = {
       line: 'You think *we’ll* get our three bucks back?',
       said: '「3ドル戻ってくると思う？」と、明日返すときのことを聞く。',
       mean: 'we’ll は「ウィル」より短く「ウォ」に近い。l の音が次の get に流れる。',
-      trap: 'we’ll の l は小さく、消えたように聞こえる。明日のことなら will が入る。',
+      trap: 'we’ll の「ル」は小さい。we’d なら「ウィッ」と止まる。何もなければ we。',
       use: 'Do you think we’ll make it?（間に合うと思う？）' },
   ]
 };

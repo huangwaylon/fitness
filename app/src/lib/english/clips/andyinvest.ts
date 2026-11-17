@@ -81,7 +81,7 @@ export const andyInvestigates: Clip = {
       line: 'to sell it on the black market *for 150 bucks*.',
       said: '「闇市場で150ドルで売るためさ」と言う。',
       mean: 'bucks ＝ ドルのくだけた言い方。150 は one fifty と読むことが多い。',
-      trap: 'one fifty の「ワン」が短く、fifty だけ残りやすい。数字の前の小さな音も聞く。',
+      trap: 'fifteen は「ティーン」と長い。fifty の前に小さな「ワン」があれば150。',
       use: 'It’s about fifty bucks.（50ドルくらいだよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'realname', seg: [57.6, 66.9], retired: true,
@@ -125,7 +125,7 @@ export const andyInvestigates: Clip = {
       line: 'Hopefully that *doesn’t come* up in my police work.',
       said: '「警察の仕事でそれが出てこないといいな」と言う。',
       mean: 'come up ＝（問題が）出てくる。hopefully（〜だといいな）と合うのは否定の形。',
-      trap: 't が落ちると does に聞こえやすい。「ダズン」と「ン」が残っていれば否定。',
+      trap: 'won’t は「ウォン」で始まり、does には「ン」がない。「ダズン」なら doesn’t。',
       use: 'If it comes up, call me.（その話が出たら電話して）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'compliment', seg: [102.5, 111.95], retired: true,

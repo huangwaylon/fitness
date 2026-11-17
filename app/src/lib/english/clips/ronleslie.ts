@@ -194,7 +194,7 @@ export const ronLeslieLocked: Clip = {
       line: 'Come on, Ron. *Why don’t we* just…',
       said: '「ねえロン、いっしょに〜しない？」と言いかけて、さえぎられる。',
       mean: 'Why don’t we 〜? ＝「〜しようよ」。t はほぼ消え「ワイドンウィ」。',
-      trap: 'Ron と呼んだあとなので you と思いやすい。最後の「ウィ」を聞く。',
+      trap: 'Ron と呼んだあとなので you と思いやすい。won’t you は「ウォンチュ」。最後が「ウィ」なら we。',
       use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
 
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'sithere', reveals: ['choose', 'whydont'], seg: [107.2, 113.3], retired: true,

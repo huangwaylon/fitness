@@ -163,7 +163,7 @@ export const ronHumour: Clip = {
       line: 'first problem, she’s *not as* qualified as the other applicants.',
       said: '「まず問題は、ほかの応募者ほど資格がないこと」と言う。',
       mean: 'not as 〜 as ＝ 〜ほどではない。not の t が軽い「ラ」の音になり「ナラズ」。',
-      trap: '「ナラズ」が just as（ジャスタズ）と逆に聞こえやすい。最初が「ナ」か「ジャ」か。',
+      trap: 'just as は「ジャ」、nearly as は「ニア」で始まる。「ナラズ」なら not as。',
       use: 'It’s not as hard as it looks.（見た目ほど難しくないよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'degree', seg: [109.4, 114.6],

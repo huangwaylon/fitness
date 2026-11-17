@@ -48,7 +48,7 @@ export const tomNegotiate: Clip = {
       line: 'Andy’s show gets huge ratings in *three cities*.',
       said: '「アンディの番組は3つの都市で大人気だ」と、まず数字で押す。',
       mean: 'ratings ＝ 視聴率。交渉の最初に、人気という強みを出す。',
-      trap: 'three cities は続けると thirty に聞こえやすい。',
+      trap: 'thirteen は「ティーン」と長く、thirty は「サーティ」。ここは短い「スリー」。',
       use: 'It’s popular in three cities.（3つの街で人気だ）' },
 
     { id: 'i2', skill: 'phrase', level: 'B2', point: 'son', seg: [59.5, 66],
@@ -140,7 +140,7 @@ export const tomNegotiate: Clip = {
       line: 'Andy starts making *$500 a week*. Now.',
       said: '「アンディの給料は週500ドル。今すぐだ」と要求する。',
       mean: '$500 a week ＝ 1週間に500ドル。お願いでなく言い切って、強気に出ている。',
-      trap: 'hundred を聞き落とすと50に聞こえる。five のあとの hundred を聞く。',
+      trap: 'five のあとに hundred なら500、thousand なら5000。何もなく「フィフティ」なら50。',
       use: 'It pays five hundred a week.（週500ドルの仕事だ）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'sitdown', seg: [92.85, 96.6], retired: true,

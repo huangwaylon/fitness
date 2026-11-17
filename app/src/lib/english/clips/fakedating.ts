@@ -86,7 +86,7 @@ export const fakedating: Clip = {
       line: 'Everyone said it wouldn’t last. — And it *didn’t*.',
       said: '「みんな続かないって言ってた」「で、続かなかった」と言う。',
       mean: 'didn’t の t はほぼ消え、「ディドゥン」と短く終わる。最後の「ン」が否定の印。',
-      trap: 'did に聞こえると「でも続いた」の話になる。最後の「ン」が残るかを聞く。',
+      trap: 'did には「ン」がない。doesn’t は「ダズン」。「ディ」で始まり「ン」で終われば didn’t。',
       use: 'I hoped it would rain, but it didn’t.（雨を期待したけど、降らなかった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'shock', seg: [30.2, 34.2], retired: true,
@@ -169,7 +169,7 @@ export const fakedating: Clip = {
       line: '…that *we’d be* together for another month.',
       said: '「あと1か月は一緒にいる、とかけた」と言う。',
       mean: 'bet（かけた）が過去なので、will が would（’d）になる。we’d は「ウィッ」と短い。',
-      trap: '’d と ’ll はどちらも小さく、聞き分けにくい。前の動詞が過去なら ’d。',
+      trap: 'we’re には be がない。we’ll は「ウィル」と「ル」が残り、we’d は「ウィッ」と止まる。',
       use: 'I promised I’d be home by ten.（10時までに帰るって約束した）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'amount', reveals: ['wed'], seg: [56.3, 60.3],
@@ -181,7 +181,7 @@ export const fakedating: Clip = {
       line: 'I bet Donna *a thousand dollars* that we’d be together…',
       said: '「あと1か月は一緒にいる、とドナに1000ドルかけた」と言う。',
       mean: 'a thousand ＝ 1000。別れたことがばれたら、この大金を払うことになる。',
-      trap: 'hundred と thousand は出だしの音が違う。「サ」の音（th）を聞く。',
+      trap: 'hundred は「ハン」、thousand は「サウ」で始まる。前に ten がなければ1000。',
       use: 'I bet you ten dollars he’s late.（彼が遅れるのに10ドルかける）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'stress', reveals: ['bankrupt'], seg: [59.6, 65],

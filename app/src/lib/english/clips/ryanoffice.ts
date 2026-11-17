@@ -151,7 +151,7 @@ export const ryanOffice: Clip = {
       line: 'I *got to* make an example out of him.',
       said: '「あいつを見せしめにしなきゃ」と言う。',
       mean: 'got to ＝ have to のくだけた言い方。t が軽い「ラ」の音になり「ガラ」と聞こえる。',
-      trap: 'want to（ワナ）と似ている。最初が「ガ」なら got to、「ワ」なら want to。',
+      trap: 'want to は「ワ」、had to は「ハ」で始まる。「ガラ」と聞こえれば got to。',
       use: 'I gotta go.（もう行かなきゃ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B2', point: 'example', seg: [101.9, 105.6],
@@ -210,7 +210,7 @@ export const ryanOffice: Clip = {
       line: 'I’ve tried it like *five* different ways in my head',
       said: '「頭の中で5通りくらい試してみた」と言う。',
       mean: 'five different ways ＝ 5通り。like は「〜くらい」。',
-      trap: 'five のあとの d がつながり「ファイヴディ」が fifty に聞こえやすい。',
+      trap: 'fifty は「フィフティ」、fifteen は「ティーン」と長い。ここは短い「ファイヴ」。',
       use: 'I tried it like three times.（3回くらいやってみた）' },
 
     { id: 'dc2', skill: 'dict', level: 'C2', point: 'idrather', seg: [141.9, 147.2], retired: true,

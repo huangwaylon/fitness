@@ -23,7 +23,7 @@ export const ronAward: Clip = {
       line: 'I’ve been a dues-paying member *since I was nine*',
       said: '「9歳のときから会費を払っている会員なの」と言う。',
       mean: 'dues ＝ 会費。子どものころからの熱心な会員だという自慢。',
-      trap: 'nine と nineteen は最初が同じ。-teen なら「ティーン」と長い。ここは短く切れる。',
+      trap: 'nineteen は「ティーン」と長く、twenty-nine は「トゥエ」で始まる。ここは「ナイン」だけ。',
       use: 'I’ve been a member since I was ten.（10歳のときから会員なの）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'winner', seg: [18, 62.5],
@@ -188,7 +188,7 @@ export const ronAward: Clip = {
       line: 'Oh, I *almost got it*. I was pretty close.',
       said: '名前を直され、「惜しかった。かなり近かった」と開き直る。',
       mean: 'almost got it ＝ もう少しで当たった。got it は「ガリッ」と聞こえる。',
-      trap: 'almost の t と got がつながり、forgot に聞こえやすい。「フォ」の音があるかを聞く。',
+      trap: 'forgot it は「フォ」、had it は「ハ」で始まる。「ガリッ」と聞こえれば got it。',
       use: 'So close! I almost got it.（惜しい！もう少しだった）' },
 
     { id: 't3', skill: 'phrase', level: 'B2', point: 'lookgood', seg: [144.4, 155.5],
@@ -235,7 +235,7 @@ export const ronAward: Clip = {
       line: 'and you won the award, *I would have* congratulated you.',
       said: '「君が受賞していたら、私なら祝っていた」と言う。',
       mean: 'would have は「ウダヴ」と縮む。もしもの話で、祝う側の自分を見せている。',
-      trap: 'would have は短く、wouldn’t と聞き分けにくい。n’t なら「ン」が入る。',
+      trap: 'wouldn’t なら「ン」が入り、should は「シュ」で始まる。ここは「ウダヴ」。',
       use: 'I would have called, but I forgot.（電話するつもりだったけど忘れた）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'heard', reveals: ['shoe'], seg: [172.9, 176.4],

@@ -50,7 +50,7 @@ export const banquetHair: Clip = {
       line: '…has been cutting hair across from Pioneer Hall *since 1958*.',
       said: 'サルヴァトーレは、パイオニア・ホールの向かいで1958年から髪を切っている。',
       mean: '1958 ＝ nineteen fifty-eight。年は2けたずつ読む。',
-      trap: 'fifty と sixty は出だしの音で決まる。年は後半の2けたに集中する。',
+      trap: '後半が「フィフティエイト」なら58。「フォー」「シ」「エイ」で始まればほかの年。',
       use: 'This place has been here since 1958.（この店は1958年からある）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'movers', seg: [23.2, 28.2], retired: true,
@@ -120,7 +120,7 @@ export const banquetHair: Clip = {
       line: 'Now, *what do you want* me to do with this?',
       said: '髪を見ながら「で、これをどうしてほしい？」と聞く。',
       mean: 'what do you want が「ワダヤワン」と縮む。do はほぼ「ダ」。',
-      trap: 'did（ディ）なら過去の話。これからの注文なので do。「ダ」か「ディ」かを聞く。',
+      trap: 'did なら「ディ」、would なら「ウッ」が入る。ここは「ワダヤ」と「ダ」。',
       use: 'What do you want me to do?（どうしてほしい？）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'mixup', seg: [60.0, 71.6],
@@ -272,7 +272,7 @@ export const banquetHair: Clip = {
       line: 'At that table are *all eight living* Talent and Award winners.',
       said: '「あのテーブルに、生きている受賞者8人が全員いる」と興奮する。',
       mean: 'all eight ＝ 8人全員。living ＝ 生きている。',
-      trap: 'eight に living が続き、eighteen に聞こえやすい。-teen なら「ティーン」と長い。',
+      trap: 'eighteen は「ティーン」と長く、eighty は「エイティ」。ここは短い「エイト」。',
       use: 'All four of us are here.（4人全員そろったよ）' },
 
     { id: 'a4', skill: 'attitude', level: 'B2', point: 'strategy', reveals: ['overthink'], seg: [208.8, 217.4], retired: true,

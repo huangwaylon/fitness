@@ -38,7 +38,7 @@ export const whosDaddy: Clip = {
       line: 'I need you to make me *a hundred copies* of this on canary yellow.',
       said: '「これを黄色い紙で100部コピーして」とたのむ。',
       mean: 'a hundred ＝ 100。I need you to 〜 ＝「〜してほしい」。',
-      trap: 'a も hundred の終わりも弱く、短い数に聞こえやすい。',
+      trap: 'ten なら「テン」だけ、thousand なら「サウ」。「ハンドレッ」が聞こえれば100。',
       use: 'I need you to print ten copies.（10部印刷してほしい）' },
 
     { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', seg: [8.4, 15.5],
@@ -200,7 +200,7 @@ export const whosDaddy: Clip = {
       line: '*What do you* do? What do you do?',
       said: '「どうする？どうする？」とくり返し、出産の時の手順を確かめる。',
       mean: 'What do you が「ワダヤ」とひと続きになる。答えも今の形の I get。',
-      trap: 'did you も「ディジュ」と縮むので、過去に聞こえやすい。答えの動詞の形で確かめる。',
+      trap: 'did you は「ディジュ」、would you は「ウッジュ」。ここは「ワダヤ」と「ダ」が入る。',
       use: 'What do you do if it rains?（雨ならどうする？）' },
 
     { id: 'roads', skill: 'detail', level: 'B2', point: 'roads', seg: [76.5, 81],

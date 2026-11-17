@@ -94,7 +94,7 @@ export const ronsReviews: Clip = {
       line: 'too sad for you to have *six cats*.',
       said: '「猫6匹も飼うなんて悲しすぎると思って、断った」と言う。',
       mean: 'six cats ＝ 6匹の猫。six のすぐあとに cats が来る。',
-      trap: 'x と c がつながり、長く聞こえることがある。-teen なら「ティーン」と長い。',
+      trap: 'sixteen は「ティーン」と長く、sixty は「シクスティ」。ここは「シックス」だけ。',
       use: 'I have two cats and a dog.（猫2匹と犬1匹を飼ってる）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'turndown', seg: [42.3, 48.2],
@@ -106,7 +106,7 @@ export const ronsReviews: Clip = {
       line: 'You tried to adopt a cat last week, and I *turned you* down',
       said: '「先週、猫を引き取りたいと言われ、断った」と言う。',
       mean: 'turn 人 down ＝ 人の頼みを断る。turned you は「ターンジュ」とつながる。',
-      trap: 'd と y がとけて「ジュ」になるので told you と迷いやすい。最初の「ター」を聞く。',
+      trap: 'told you は「トウ」で始まり、turned it は「ターンディッ」。ここは「ターンジュ」。',
       use: 'They turned me down for the job.（その仕事、断られた）' },
 
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'spot', seg: [42.3, 50.85], retired: true,
@@ -186,7 +186,7 @@ export const ronsReviews: Clip = {
       line: 'why you *nailed* this letter to my door.',
       said: '「なぜこの手紙を、店のドアに打ちつけたのか聞きに来た」と言う。',
       mean: 'nail ＝ くぎで留める。郵送ではなく、ドアに直接打ちつけたのがおかしい。',
-      trap: 'n と m は鼻にかかる似た音。to my door と合わせると、届け方の話だと分かる。',
+      trap: 'mailed は「メ」、sent は「セ」で始まる。「ネイルド」なら nailed。to my door も手がかり。',
       use: 'Someone nailed a notice to the door.（だれかがドアに貼り紙を打ちつけた）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'goodday', seg: [83.9, 87.3],

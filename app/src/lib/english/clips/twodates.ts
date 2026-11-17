@@ -85,7 +85,7 @@ export const twodates: Clip = {
       cue: '「you」のすぐあとの短い一語。', line: 'Rachel, you *haven’t* touched Eldon’s hair.',
       said: '「レイチェル、まだエルドンの髪を触ってないでしょ」と言う。',
       mean: 'haven’t ＝ まだ〜していない。t はほぼ消えて「ハヴン」。最後の「ン」が否定の印。',
-      trap: 't が消えるので have に聞こえやすい。「ン」が残るかを聞く。',
+      trap: 'have には「ン」がない。hadn’t は「ハドゥン」と d が入る。ここは「ハヴン」。',
       use: 'You haven’t tried the soup yet.（まだスープ飲んでないでしょ）' },
 
     { id: 'r2', skill: 'pragma', level: 'B1', point: 'good', reveals: ['havent'], seg: [29.6, 36.1],
@@ -143,7 +143,7 @@ export const twodates: Clip = {
       cue: '文の最初の短い一語。', line: 'No, no, no. *Don’t* dance for me, please.',
       said: '「いい、いい、私のために踊らないで」と止める。',
       mean: 'don’t の t はほぼ消えて「ドン」。前の no, no, no も手がかり。',
-      trap: 't が消えると Do に聞こえ、意味が逆になる。最後の「ン」が残るかを聞く。',
+      trap: 'Do には「ン」がなく、Won’t you は「ウォン」で始まる。「ドン」なら Don’t。',
       use: 'Please don’t wait for me.（私のことは待たなくていいよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'embarrassed', seg: [58.5, 67.2], retired: true,

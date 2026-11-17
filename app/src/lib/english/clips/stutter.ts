@@ -114,7 +114,7 @@ export const didIStutter: Clip = {
       line: '*Anybody have* any ideas what we could do?',
       said: '「何かできそうなアイデアある人？」とみんなに聞く。',
       mean: '会話では does をはぶき、Anybody have…? だけで質問にすることが多い。',
-      trap: '学校では Does anybody… と習う。最初の音が「エニ」か「ダ」かを聞く。',
+      trap: 'Does なら最初に「ダ」、Nobody なら「ノウ」。ここは「エニ」で始まる。',
       use: 'Anybody want some tea?（お茶ほしい人いる？）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'message', seg: [79.3, 88.8],

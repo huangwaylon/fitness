@@ -25,7 +25,7 @@ export const pamLabor: Clip = {
       line: 'Is it midnight yet? — No, it’s *4:35*.',
       said: '「もう夜中の12時？」に「いや、4時35分」と答える。',
       mean: '4:35 ＝ four thirty-five。時と分を分けて読む。',
-      trap: 'thirty は forty や twenty と混ざりやすい。すぐあとのくり返しで確かめる。',
+      trap: '分が「サーティ」で始まれば35。twenty は「トゥエ」、forty は「フォー」で始まる。',
       use: 'It’s a quarter to five.（5時15分前です）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'midnight', reveals: ['time'], seg: [8.55, 14.95], retired: true,
@@ -213,7 +213,7 @@ export const pamLabor: Clip = {
       line: 'So let’s *have it at* the hospital.',
       said: '「だから病院で産もう」と言う。it は赤ちゃん。',
       mean: 'have it at が「ハヴィラッ」とひと続き。t は軽い「ラ」の音になる。',
-      trap: 'head out to（〜へ出発）でも意味は通るが、前の have a baby を受けて have it。',
+      trap: 'head out to は「ヘ」で始まる。have it in なら最後が「イン」。ここは「ハヴィラッ」。',
       use: 'Let’s have lunch at the station.（駅でお昼にしよう）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'apart', seg: [135.2, 141], keep: true,

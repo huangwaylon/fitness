@@ -23,7 +23,7 @@ export const senatorOscar: Clip = {
       line: 'more likely to pick up at night, say *after nine*.',
       said: '「これが携帯。夜のほうが出やすい。そうだな、9時以降」と言う。',
       mean: 'pick up ＝ 電話に出る。say はここで「たとえば・そうだな」。',
-      trap: 'say を「言う」と思うと、数字の前で流れを見失う。say のあとに例が来る。',
+      trap: 'say は「たとえば」。そのあとの数を聞く。「ナイン」なら9、five は「ファ」、seven は「セ」。',
       use: 'Call me in the evening, say after seven.（夕方、そうね7時以降に電話して）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'gotit', seg: [21, 27.45],
@@ -234,7 +234,7 @@ export const senatorOscar: Clip = {
       line: '*I’d have* to be a monster to root for that.',
       said: '「そんなことを応援するなら、怪物でなきゃ」と言う。',
       mean: 'I’d have to ＝（もしそうなら）〜でなければ。d はほとんど聞こえない。',
-      trap: 'd が消えて I have に聞こえやすい。I のあとに小さく止まる音があれば I’d。',
+      trap: 'I’ll なら「アイル」と「ル」が残る。I のあとで小さく止まれば I’d、止まらなければ I have。',
       use: 'I’d have to check my calendar.（予定を確認しないと）' },
 
     // anchor: 107 s “don't forget to call”, then 113.7–119.4 s “Why does this always happen to me? I just feel so
