@@ -1,7 +1,4 @@
-// REVIEW 2026-11-16: pass 6, fix 14, drop 1, new 0; ear checks 1
-// Q: nt1 (C2) rests on Jim's earlier moves (73.9 s "How did those get out?", 111.6 s "I do not want to sell you"),
-//   which are outside its 213–217 s segment. Inside it, only the re-correction "legumes" and the trailing "why would
-//   I…" point to bait. Kept as a C2 "what's withheld" item. Drop it if that's too much scene memory.
+// A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 2
 // “Leave the Telescope - The Office US” (the official The Office channel, BEST OF SEASON 7): at the office garage sale
 // Dwight sets out to trade a thumbtack up to the finest item there, while Jim tempts him with "Professor Copperfield's
 // Miracle Legumes" by refusing to sell them, until Dwight gives up his telescope for the beans.
@@ -10,6 +7,7 @@
 // names), 151–155 s (Ryan's "mom look"), 164–172 s (who praises Ryan, and how sincerely), 173–185 s (Stanley's album:
 // the line turns on race), 201–209 s, 219–251 s (a montage, mostly visual; who says "That's impossible").
 // EAR CHECK: 211.9 s s1 — "what were the" (both sources): confirm "were" is the weak "wer", not "are"
+// EAR CHECK: pr3 (33.9–39.4 s) and d5 (97.5–104.5 s) bounds are whisper's times, not the captions'
 import type { Clip } from '../types.ts';
 
 export const leaveTelescope: Clip = {
@@ -18,65 +16,67 @@ export const leaveTelescope: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 60 %, "trade" in the key matched the title's premise): three "It says…" readings, one helpful
-    // why: put it in himself ← the helpful-neighbor script, "not so fast" heard as "let me do it"; slowly ← "not so
-    //   fast" read literally as "slow down"
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notsofast', seg: [6.4, 13.0],
-      stem: 'When Dwight offers a thumbtack and hears “Sure”, what does his reply do?',
-      choices: ['It says the tack won’t come free', 'It says he’ll put the tack in for her',
-                'It says she should fix the sign slowly'], a: 0,
-      cue: 'Sure のすぐあとの一言と、カメラへの話。',
+      stem: 'What does Dwight mean by “Not so fast”?',
+      ja: 'ドワイトの「Not so fast」はどういう意味？',
+      choices: ['Wait, it isn’t free', 'Do it more slowly', 'I’ll put it up for you'], a: 0,
+      choicesJa: ['待って、ただじゃない', 'もっとゆっくりやって', '私が留めてあげる'],
+      cue: 'Sure のすぐあとの一言。',
       line: 'Need a thumbtack? — Sure. — *Not so fast*.',
       said: '「画びょういる？」と聞き、「うん」と言われると「そう簡単にはいかない」と返す。',
       mean: 'Not so fast ＝ ちょっと待った。ただではあげない、交換が条件という合図。',
-      trap: 'fast を速さと取ると「慎重に」に聞こえる。相手の同意を止める決まり文句。',
+      trap: 'fast（速い）から「ゆっくり」と思いやすい。相手の「うん」を止める決まり文句。',
       use: 'Not so fast. You owe me one.（ちょっと待った。貸しがあるでしょ）' },
 
-    // R fix: V2 (blind 65 %, the title's premise) + B1: two trading plans and a haggling one; the segment now starts
-    //   at the thumbtack offer (7.0 s), which refutes "farm goods"; reveals notsofast (pr1's key follows from the plan)
-    // why: farm goods ← "farmers by hobby" in the same breath as "the art of the swap"; haggle ← "walk out… with the
-    //   finest item" heard as getting it cheap
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', reveals: ['bytrade', 'notsofast'], seg: [6.4, 33.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['bytrade', 'notsofast'], seg: [6.4, 33.9],
       stem: 'What is Dwight’s plan for the garage sale?',
-      choices: ['Trade small things up to the best item', 'Trade his farm goods for the best item',
-                'Haggle the best item down to a low price'], a: 0,
-      cue: 'カメラへの話と、そのあと最初にする事。',
+      ja: 'ガレージセールでのドワイトの作戦は？',
+      choices: ['Trade up from a small thing', 'Trade his farm food', 'Buy the best thing cheaply'], a: 0,
+      choicesJa: ['小さな物から交換して上げていく', '農場の食べ物と交換する', '一番いい物を安く買う'],
+      cue: 'カメラへの話と、最初にすること。',
       line: 'Through *the art of the swap*, I will walk out of this garage sale with *the finest item here*.',
-      said: '「交換の技で一番の品を持って帰る」と言い、まず画びょうを出す。',
-      mean: '小さな物から交換を重ねて、だんだん良い物にしていく作戦。',
-      trap: 'walk out with the finest item だけだと「買う」に聞こえる。お金でなく swap が手段。',
+      said: '「交換の技で、ここで一番の品を持って帰る」と言い、まず画びょうを出す。',
+      mean: 'swap ＝ 交換。小さな物から交換を重ねて、だんだん良い物にしていく作戦。',
+      trap: 'walk out with 〜 だけだと「買う」に聞こえやすい。お金でなく swap（交換）。',
       use: 'Want to swap seats with me?（席、替わってくれる？）' },
 
-    // why: farm for a living ← "farmers" comes first and is what a listener expects; garage sales ← "hobby" + the
-    //   garage sale he's at
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'bytrade', seg: [9.4, 13.4],
-      stem: 'In his comment to the camera, what does Dwight say his family does?',
-      choices: ['They trade for a living and farm for fun', 'They farm for a living and trade for fun',
-                'They run garage sales as a family hobby'], a: 0,
+      stem: 'What does “traders by trade” mean?',
+      ja: '「traders by trade」はどういう意味？',
+      choices: ['Trading is their real job', 'Trading is their hobby', 'They trade with farmers'], a: 0,
+      choicesJa: ['商売が本業', '商売は趣味', '農家と取引する'],
       cue: 'by のあとの語が2回。どちらが仕事か。',
       line: 'Schrutes are *farmers by hobby and traders by trade*.',
       said: '「シュルート家は趣味で農家、本業は商人だ」とカメラに言う。',
-      mean: 'by trade ＝ 職業は。by hobby はそれをもじった言い方で、農業の方が趣味。',
-      trap: '農家と聞くとそちらが本業に思える。by trade の前にある語が本当の仕事。',
+      mean: 'by trade ＝ 職業は、本業は。by hobby はそれをまねた言い方で、農業のほうが趣味。',
+      trap: '農家と聞くとそちらが本業に思いやすい。by trade の前にある traders が本当の仕事。',
       use: 'She’s a nurse by trade.（彼女の本職は看護師）' },
 
-    // R fix: V2 (blind 60 %, "A box of tacks" was a filler; i1's stem names the candle, so i1 now reveals candle):
-    //   a "candles" near miss replaces it
-    // why: pack of candles ← "candle" caught but "the used" lost; crooked sign ← the sign is what they're talking about
     { id: 'd1', skill: 'detail', level: 'B1', point: 'candle', seg: [20.5, 26.0],
       stem: 'In his first swap, what does Dwight ask for?',
-      choices: ['Her used candle', 'A pack of candles', 'Her crooked sign'], a: 0,
+      ja: '最初の交換で、ドワイトは何をほしがる？',
+      choices: ['Her half-used candle', 'A new pack of candles', 'Her crooked sign'], a: 0,
+      choicesJa: ['使いかけのろうそく', '新しいろうそくのセット', '曲がった看板'],
       cue: 'trade you for のあと。',
       line: 'I will trade you *for the used candle*. … Come on, *it’s trash*.',
       said: '「使いかけのろうそくと交換だ。どうせゴミだろ」と迫る。',
-      mean: 'trade A for B は「A を出して B をもらう」。もらう側は for のあと。',
-      trap: 'candle だけだと新品にも聞こえる。used まで聞き、for の後ろが欲しい物。',
+      mean: 'trade A for B ＝ A を出して B をもらう。もらう物は for のあと。used ＝ 使いかけの。',
+      trap: 'candle だけだと新品にも聞こえる。used まで聞く。sign（看板）は画びょうで直す物。',
       use: 'I’ll trade you my apple for your banana.（りんごとバナナ、交換しよう）' },
 
-    // R fix: V2 (blind 55 %, the only negative choice): a second "nobody buys" reading with the wrong reason
-    // why: prices ← sarcasm caught but the reason missed ("who want your… tchotchkes" is about the things); waiting
-    //   behind him ← "line of people" taken literally as his queue
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', seg: [37.0, 45.8],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'getout', seg: [33.9, 39.4],
+      stem: 'What does “Get out of here, Dwight” mean here?',
+      ja: 'ここでの「Get out of here, Dwight」はどういう意味？',
+      choices: ['Move out of my way', 'I don’t believe you', 'Let’s leave together'], a: 0,
+      choicesJa: ['じゃまだからどいて', '信じられない', '一緒に出よう'],
+      cue: '「A half-used candle?」のあと。',
+      line: 'Get out of here, Dwight. *You’re blocking my table* with your giant body.',
+      said: '「使いかけのろうそく？ どいてよ、ドワイト。その大きな体で私の机がふさがってる」と言う。',
+      mean: 'Get out of here ＝ あっちへ行って。block ＝ ふさぐ。机の前がじゃまだと言っている。',
+      trap: '「うそでしょ！」の意味もあるが、すぐあとに blocking（ふさいでる）が続く。',
+      use: 'Excuse me, you’re blocking the door.（すみません、ドアをふさいでます）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', seg: [37.0, 45.8], retired: true,
       stem: 'When Dwight mentions “a huge line of people”, what does he mean?',
       choices: ['Nobody wants the things she’s selling', 'Nobody will pay prices that high',
                 'People are waiting behind him to trade'], a: 0,
@@ -87,9 +87,7 @@ export const leaveTelescope: Clip = {
       trap: '大行列を本当と取りやすい。相手が「欲しがる人はいる」と言い返すのが証拠。',
       use: 'Oh, ’cause you’re always on time?（へえ、自分はいつも時間通りだって？）' },
 
-    // R fix: K6 (the key was the only two-part choice) + B1 (the stem names the candle, d1's key): reveals candle
-    // why: thrifty ← "half-used" heard as thrift; pity ← a candle lit alone, the wrong implication
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'pitch', reveals: ['candle'], seg: [48.3, 60.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'pitch', reveals: ['candle'], seg: [48.3, 60.2], retired: true,
       stem: 'In Dwight’s story about Ryan, what would the half-used candle do?',
       choices: ['Make Ryan jealous, so he’d commit fast', 'Show Ryan she’s thrifty, so he’d trust her',
                 'Make Ryan pity her, so he’d stay longer'], a: 0,
@@ -100,20 +98,21 @@ export const leaveTelescope: Clip = {
       trap: 'half-used から節約と取りやすい。心の声の Who else が嫉妬の合図。',
       use: 'Lock it in before the price goes up.（値上がり前に決めちゃおう）' },
 
-    // why: professor ← "Professor Copperfield's" is the brand on the packet; shop ← "selling these" heard as a store
     { id: 'd2', skill: 'detail', level: 'B1', point: 'jamaica', seg: [77.8, 89.6],
       stem: 'Where does Jim say the beans came from?',
-      choices: ['A man with a cart in Jamaica', 'A shop he found in Jamaica', 'A professor he met in Jamaica'], a: 0,
-      cue: '道に迷ったあと、誰が何を持って来たか。',
+      ja: '豆はどこから来た、とジムは言う？',
+      choices: ['A man with a cart', 'A shop in Jamaica', 'A professor he met'], a: 0,
+      choicesJa: ['荷車を引いた男', 'ジャマイカの店', '出会った教授'],
+      cue: '道に迷ったあと、誰が来たか。',
       line: '…this guy comes *with a cart* and he’s selling these.',
-      said: '「ジャマイカで迷った夜、荷車の男が来て売っていた」と話す。',
-      mean: '怪しい売り手から買った、という話の入り口。Professor は商品名の一部。',
-      trap: 'Professor が先に聞こえるので、教授から買ったと思いやすい。誰が来たかは guy のあと。',
+      said: '「ジャマイカで迷った夜、荷車の男が来て、これを売っていた」と話す。',
+      mean: 'cart ＝ 荷車、屋台。怪しい売り手から買った、という話の始まり。',
+      trap: 'Professor（教授）は商品名の一部。来たのは this guy（この男）。',
       use: 'A guy with a cart sells coffee here.（ここは屋台の人がコーヒーを売ってる）' },
 
-    // R fix: S4 (the start fell inside "this one night"): now 85.35 s, before "this"
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'nowhere', seg: [85.35, 87.75],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'nowhere', seg: [84.6, 87.75],
       stem: 'Type what Jim says: “And then ___, this guy comes…” (3 words)', answer: 'out of nowhere',
+      ja: 'ジムの言葉を書こう：「そしたら ___ 男が来て…」（3語）',
       cue: 'And then のあと、3語がひと続き。',
       line: 'And then *out of nowhere*, this guy comes',
       said: '「そしたら、どこからともなく男が来て」と話す。',
@@ -121,23 +120,31 @@ export const leaveTelescope: Clip = {
       trap: 'of は弱く「ア」になるので2語に聞こえやすい。決まった3語のかたまりで覚える。',
       use: 'A taxi showed up out of nowhere.（どこからともなくタクシーが来た）' },
 
-    // R fix: S4 (the end cut Jim's "Probably"): now 96.5 s
-    // why: proof ← "Miracle Legumes" suggests a demonstration; professor ← the brand name heard as the seller's title
     { id: 'd3', skill: 'detail', level: 'B1', point: 'told', seg: [89.9, 96.5],
-      stem: 'Why did Jim believe the seller, at first?',
-      choices: ['He knew things about Jim he couldn’t know', 'He showed Jim proof that the beans worked',
-                'He said he was a professor of plants'], a: 0,
+      stem: 'Why did Jim believe the seller at first?',
+      ja: 'ジムはなぜ最初、売り手を信じた？',
+      choices: ['He knew things about Jim', 'He showed proof they worked', 'He said he was a professor'], a: 0,
+      choicesJa: ['ジムのことを知っていた', '効き目の証拠を見せた', '教授だと言った'],
       cue: 'Dwight, he told me のあと。',
       line: 'he *told me things about myself* that there’s *no way he could have known*.',
-      said: '「自分しか知らないはずの事を、あの男は言い当てた」と話す。',
-      mean: '占い師のような手口で信じた、という話。ドワイトはすぐ詐欺の手口だと言う。',
-      trap: 'Miracle から効き目を見せたと思いやすい。信じた理由は told me things のあと。',
+      said: '「自分しか知らないはずのことを、あの男は言い当てた」と話す。',
+      mean: 'there’s no way 〜 ＝ 〜のはずがない。ドワイトはすぐ「よくある詐欺の手口だ」と言う。',
+      trap: 'Miracle（奇跡の）から、効き目を見せたと思いやすい。信じた理由は told me things。',
       use: 'There’s no way she could have known.（彼女が知ってたはずがない）' },
 
-    // R fix: V2 (blind 70 %, the reverse-psychology key against two weak readings): three "Refusing…" reasons
-    // why: not his ← "I do not want to sell" heard as "I can't sell"; embarrassed ← the sincere reading, after his
-    //   "I feel like an idiot" story
-    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'refuse', seg: [105.6, 116.4],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gone', seg: [97.5, 104.5],
+      stem: 'What happened when Jim went back for his money?',
+      ja: 'お金を取り返しに戻ると、どうなっていた？',
+      choices: ['The man was already gone', 'He got all his money back', 'The man sold him more'], a: 0,
+      choicesJa: ['男はもういなかった', 'お金が全部戻ってきた', '男がもっと売ってきた'],
+      cue: '「get my money」のあとの短い一文。',
+      line: 'I feel like an idiot. So I go back to get my money. *He was gone.*',
+      said: '「ばかなことをしたと思って、お金を返してもらいに戻った。でも、いなかった」と話す。',
+      mean: 'He was gone ＝ もういなかった。I feel like an idiot ＝ 自分がばかみたいに思える。',
+      trap: 'go back to get my money から、取り返せたと思いやすい。was gone を聞く。',
+      use: 'I went back, but it was gone.（戻ったけど、もうなかった）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'refuse', seg: [105.6, 116.4], retired: true,
       stem: 'When Dwight asks if Jim wants to sell him the beans, what is Jim doing?',
       choices: ['Refusing so Dwight will want them more', 'Refusing because the beans aren’t his to sell',
                 'Refusing because he’s embarrassed he bought them'], a: 0,
@@ -148,47 +155,43 @@ export const leaveTelescope: Clip = {
       trap: '本気の断りや照れと取りやすい。大げさな正式名での言い直しは、気を引く合図。',
       use: 'I’m not selling it. It’s too special.（売らないよ。特別なものだから）' },
 
-    // why: almost fooled ← "nice try" heard as "you nearly got me"; admires ← "nice" taken at face value
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'nicetry', seg: [111.2, 119.6],
-      stem: 'Hearing Jim’s refusal, how does Dwight react?',
-      choices: ['He sees through it and mocks it', 'He thinks it almost fooled him', 'He admires how clever it is'],
-      a: 0,
+    { id: 'a2', skill: 'phrase', level: 'B2', point: 'nicetry', seg: [111.2, 119.6],
+      stem: 'What does Dwight mean by “Nice try”?',
+      ja: 'ドワイトの「Nice try」はどういう意味？',
+      choices: ['I won’t fall for it', 'You almost fooled me', 'That was very smart'], a: 0,
+      choicesJa: ['その手には乗らない', 'もう少しでだまされた', 'とても頭がいいね'],
       cue: 'try が2回。前につく語の変化。',
       line: '*Nice try*. No, correction. *Terrible try*.',
       said: '「いい線いってた。いや訂正、ひどい線だ」と返す。',
-      mean: 'Nice try ＝ その手には乗らない。さらに「ひどい」と言い直し、見え見えだと笑っている。',
-      trap: 'nice をほめ言葉と取りやすい。Nice try は企みを見抜いたときの決まり文句。',
+      mean: 'Nice try ＝ その手には乗らない。さらに Terrible try（ひどい手）と言い直し、見え見えだと笑う。',
+      trap: 'nice（いい）からほめ言葉に思いやすい。Nice try は、たくらみを見抜いたときの決まり文句。',
       use: 'Nice try. I’m not falling for it.（その手には乗らないよ）' },
 
-    // why: sell it ← "you should sell this… I'll sell it" is his real plan, not what he tells her; family ← "it's just
-    //   for family" is her line
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [133.4, 146.7],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [135.4, 147.0],
       stem: 'How does Ryan get his mom to make so much pesto?',
-      choices: ['He says it’s for a party with his friends', 'He says he’ll sell it and share the money',
-                'He says the whole family has asked for it'], a: 0,
+      ja: 'ライアンはどうやって母親にペストをたくさん作らせる？',
+      choices: ['It’s for a big party', 'He’ll share the money', 'The family wants it'], a: 0,
+      choicesJa: ['大きなパーティー用だと言う', 'もうけを分けると言う', '家族がほしがっていると言う'],
       cue: 'Mom, I need you to のあと。',
       line: 'Mom, I need you to make a ton of pesto *for a pesto party for all my friends*.',
-      said: '売る気なのを隠し、「友達とのパーティー用に大量に作って」と母に頼む。',
-      mean: '売るのを断られてきたので、うその理由で作らせた。母は「本当に？」と疑う。',
-      trap: 'sell が何度も出るので、売ると伝えたと思いやすい。母に言った理由は for のあと。',
+      said: '売る気なのを隠し、「友達とのパーティー用に、たくさん作って」と母に頼む。',
+      mean: 'I need you to 〜 ＝ 〜してほしい。売るのを断られてきたので、うその理由で作らせた。',
+      trap: 'sell（売る）が何度も出るので、売ると言ったと思いやすい。母への理由は for a pesto party。',
       use: 'Can you make extra for my friends?（友達の分も多めに作れる？）' },
 
-    // why: thousand ← "a ton of pesto" just before inflates it; fifty ← "like" before the number heard as a rough,
-    //   smaller guess
     { id: 'n1', skill: 'number', level: 'B1', point: 'bottles', seg: [146.5, 150.6],
       stem: 'How much pesto does Ryan say his mom made?',
-      choices: ['About fifty bottles', 'About a hundred bottles', 'About a thousand bottles'], a: 1, keep: true,
+      ja: '母親はペストをどれくらい作った、とライアンは言う？',
+      choices: ['About 50 bottles', 'About 100 bottles', 'About 1,000 bottles'], a: 1, keep: true,
+      choicesJa: ['約50本', '約100本', '約1,000本'],
       cue: 'Anyway のあと、bottles の前。',
       line: 'she makes *like a hundred bottles* worth.',
       said: '「結局、母はだいたい100本分作った」と話す。',
-      mean: '数の前の like は「だいたい」。正確でないという合図。',
-      trap: '直前の a ton に引っぱられて大きな数を選びやすい。hundred の d まで聞く。',
+      mean: '数の前の like ＝ だいたい。a hundred ＝ 100。',
+      trap: 'fifty なら「フィフ」、thousand なら「サウ」で始まる。「ハン」と聞こえたら100。',
       use: 'It took like an hour.（1時間くらいかかった）' },
 
-    // R fix: V2 (blind 70 %: "say he meant" ruled out the coworker's literal reading, the only other kind): three
-    //   loose, label-like readings of the word; the dictionary reading stays in the trap note
-    // why: homemade ← "it's just for family" from his story; healthy ← "kosher" heard as a clean or natural-food label
-    { id: 'p2', skill: 'phrase', level: 'C1', point: 'kosher', seg: [157.4, 163.0],
+    { id: 'p2', skill: 'phrase', level: 'C1', point: 'kosher', seg: [157.4, 163.0], retired: true,
       stem: 'After a coworker asks about a certificate, what does Ryan say he meant?',
       choices: ['That it’s fine and nothing to worry about', 'That it’s homemade, not from a factory',
                 'That it’s healthy, with nothing artificial'], a: 0,
@@ -199,11 +202,7 @@ export const leaveTelescope: Clip = {
       trap: '辞書の意味や「手作り」「健康」と取りやすい。cool、all good と同じ意味で聞く。',
       use: 'Is this deal kosher?（この話、まともなの？）' },
 
-    // R fix: K1 + V2 (blind 55 %; "every trade is junk for junk" was false for the last one, "a very cute squid"):
-    //   "nearly" in all three
-    // why: lost money ← "traded" heard as buying; cheated ← he got the candle by pressure earlier, so the list sounds
-    //   like a string of cons
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'junk', seg: [187.0, 201.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'junk', seg: [187.0, 201.8], retired: true,
       stem: 'Why is Dwight’s report that things are “going very well” funny?',
       choices: ['He calls nearly everything he got trash', 'He lost money on nearly every trade',
                 'He cheated nearly every coworker he met'], a: 0,
@@ -214,40 +213,31 @@ export const leaveTelescope: Clip = {
       trap: 'traded を「買った」と取ると損の話に聞こえる。物の呼び方がずっと junk、crap、garbage。',
       use: 'Things are going very well, thanks.（おかげさまで順調です）' },
 
-    // why: are ← "were" shrinks to a short "wer" and sounds present; their ← "the" linked to "claims" heard as a fuller
-    //   word
     { id: 's1', skill: 'sound', level: 'B2', point: 'werethe', seg: [210.1, 213.75],
       stem: 'Fill the gap: “Just out of curiosity, ___ claims for those beans?”',
+      ja: '空所に入る語は？「ちょっと気になるんだけど、あの豆の効き目は ___？」',
       choices: ['what were the', 'what are the', 'what were their'], a: 0,
+      choicesJa: ['何だった（were the）', '何（are the）', 'その人たちの〜は何だった'],
       cue: 'curiosity のあと、短く弱い3語。',
       line: 'just out of curiosity, *what were the* claims for those beans?',
       said: '「ちょっと気になるんだけど、あの豆の効き目は何て話だった？」と聞く。',
       mean: 'what were the が短くつながる。were は弱く、ほぼ「ワ」。',
-      trap: 'were が弱いと are に聞こえやすい。ジャマイカで言われた過去の話なので were。',
+      trap: 'are なら「ワ」が入らず短い。their なら「ゼア」と長い。弱い「ワ」と短い「ザ」なら were the。',
       use: 'Just out of curiosity, what time is it?（ちょっと気になるんだけど、今何時？）' },
 
-    // R fix: V2 + K6 (blind 70 %, the key was the only two-part, nuanced choice): three two-part stances; the
-    //   literal "just curious" reading is the near miss
-    // why: mildly curious ← "just out of curiosity" taken at face value; suspicious ← he called it a swindler's
-    //   trick earlier
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'curiosity', reveals: ['werethe'], seg: [210.1, 217.0],
-      stem: 'When Dwight raises the beans again, what does his way of asking show?',
-      choices: ['He’s hooked, but trying to sound casual', 'He’s mildly curious, and nothing more',
-                'He’s suspicious, and wants proof they’re fake'], a: 0,
-      cue: 'All right のあとの前置きと、ジムの返事。',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'curiosity', reveals: ['werethe'], seg: [210.1, 217.0],
+      stem: 'Why does Dwight bring up the beans again?',
+      ja: 'ドワイトはなぜまた豆の話をする？',
+      choices: ['He really wants the beans', 'He wants to laugh at Jim', 'He wants proof they’re fake'], a: 0,
+      choicesJa: ['本当はほしいから', 'ジムを笑いたいから', 'にせ物の証拠がほしいから'],
+      cue: 'All right のあとの前置き。',
       line: 'All right, *just out of curiosity*, what were the claims for those beans?',
       said: '「まあ、ちょっと気になっただけだけど」と前置きして、豆の効き目を聞く。',
-      mean: '自分から話を戻すのは、本当は気になっている証拠。',
-      trap: 'just out of curiosity を言葉どおり取りやすい。自分から話を戻して軽く見せるのは本気の裏返し。',
+      mean: 'just out of curiosity ＝ ちょっと気になっただけ。自分から話を戻すのは、本当はほしい証拠。',
+      trap: 'just out of curiosity を言葉どおり受け取りやすい。最後は望遠鏡と交換するほど。',
       use: 'I’m just curious, that’s all.（ちょっと気になっただけ）' },
 
-    // R fix: V2 (blind 50 %; "sold to Pam" was weak and rests on a line where whisper and the captions differ): the
-    //   surface reading ("drop it") is the new near miss
-    // why: drop the subject ← "so why would I…" taken at face value; ashamed ← the sincere reading of "you're just
-    //   gonna make fun of me" (the sincerity flip)
-    // anchor: 73.9–75.4 s "How did those get out? I'm sorry" (a staged slip); 111.6 s "I do not want to sell you…":
-    //   each time Jim pulls back, Dwight leans in, and at 252.3 s Dwight takes the beans
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'refuse', seg: [213.4, 217.4],
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'refuse', seg: [213.4, 217.4], retired: true,
       stem: 'When Jim says Dwight will only make fun of him, what is he hiding?',
       choices: ['That he wants Dwight to keep asking', 'That he wants Dwight to drop the subject',
                 'That he’s ashamed he was fooled himself'], a: 0,
@@ -258,29 +248,19 @@ export const leaveTelescope: Clip = {
       trap: '言葉どおりなら「もうやめて」か照れ。でも最初から隠すふり。引く態度が続いたら、わなを疑う。',
       use: 'Never mind. You’d just laugh.（やっぱりいい。どうせ笑うし）' },
 
-    // R fix: V2 (blind 75 %: the title "Leave the Telescope" answered "how does it end"): §9.4, asked from another
-    //   angle, how he sums the day up; "the journey was the prize" is the broken-script near miss
-    // why: the trading itself ← "in a way, the most valuable thing here wasn't the telescope at all" sets up the
-    //   "it was the journey" script; kept the telescope ← "traded my way to a telescope" is his high point
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'ending', seg: [233.0, 279.0],
-      stem: 'In his last talk to the camera, how does Dwight sum up his day?',
-      choices: ['The beans were the real prize of his day', 'The trading itself was the real prize',
-                'The telescope he kept was the real prize'], a: 0,
-      cue: '最後のカメラへの話、wasn’t のあと。',
-      line: 'the most valuable thing here wasn’t the telescope at all. … It was *this packet of beans*.',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', seg: [234.5, 279.0],
+      stem: 'What does Dwight finally do with the telescope?',
+      ja: 'ドワイトは最後に望遠鏡をどうする？',
+      choices: ['Trades it for the beans', 'Keeps it for himself', 'Sells it for money'], a: 0,
+      choicesJa: ['豆と交換する', '自分のものにする', 'お金で売る'],
+      cue: '最後のカメラへの話。',
+      line: 'It was *this packet of beans*. So *I traded the telescope for it*.',
       said: '望遠鏡までたどり着いたが、「一番の価値は豆」と言い、望遠鏡と交換したと話す。',
-      mean: '最後に、ジムの話に乗って一番の品を手放した結末。',
-      trap: 'wasn’t the telescope のあとは「経験こそ宝」が来そうに聞こえる。It was のあとの物を聞く。',
+      mean: 'the most valuable thing ＝ 一番価値のある物。最後に、ジムの話に乗って一番の品を手放した。',
+      trap: '「画びょうから望遠鏡まで来た」で終わりに思いやすい。続く It was のあとを聞く。',
       use: 'I traded my old phone for a bike.（古いスマホを自転車と交換した）' },
 
-    // R fix: V2 + K6 (blind 65 %, the key was the only hedged choice) + S4 (17.6 s; now 12.5 s from “But in a way”)
-    //   + B1 (the line and said gave away g2's key, now cut to the trade and the fallback): asked as "why", three
-    //   parallel motives
-    // why: never mattered ← "the most valuable thing… wasn't the telescope at all" taken at face value; rich ← "just
-    //   go buy another" heard as a boast
-    // anchor: 277.3–278.7 s "And I can… I can just go buy another telescope": a stall, then a fallback no one asked
-    //   for, right after calling the beans the most valuable thing
-    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'another', seg: [266.8, 279.3],
+    { id: 'nt2', skill: 'attitude', level: 'C2', point: 'another', seg: [266.8, 279.3], retired: true,
       stem: 'Why does Dwight add that he can just go buy another telescope?',
       choices: ['To cover a doubt about his trade', 'To show the telescope never mattered',
                 'To show he’s rich enough not to care'], a: 0,
