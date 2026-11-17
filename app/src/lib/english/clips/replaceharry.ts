@@ -1,19 +1,12 @@
+// A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 7, new 0
 // “One Direction Stars on ‘iCarly’ 🤩 (ft. "What Makes You Beautiful") | @NickRewind” (NickRewind, Best of iCarly):
 // Harry is still in bed at Carly's, so the friends suspect he's enjoying the care and scare him back on stage with a
 // "replacement"; then a makeover goes wrong, and the clip ends on One Direction's song.
-// Segments from the captions, words from whisper (2026-11-17). Harry and Carly are named in the audio; Sam is the one
-// with the butter sock and "Hotel Carly-fornia" (not named in the audio, so no key rests on who says it); Harry is the
-// one asking "What time's iCarly?" and pleading "please don't let him sing". The singers at 93–111 s (captions have
-// nothing there), the "Moron!" (whisper only, 199 s) and the songs (142–176 s, 232–346 s) aren't used. Lines where the
-// sources split are kept out of keys: "why it's / he's not getting better" (14 s), "I know it / what might motivate"
-// (60.7 s), "Boy mandible / Vangible" (228 s).
-// REVIEW 2026-11-17: pass 8, fix 15, drop 0, new 0; ear checks 3 (unchanged)
-// OPEN: the clip is about half song (142–176 s, 232–346 s); it still holds 23 honest items from the talk, so it's
-//   kept. i3 rests on "if you were treating me" being said to Carly; if the user hears it aimed at Sam, the key holds.
-// EAR CHECK: 127.2 s r1 — the cut falls in the pause after “sing”, before “or dance” (captions 126.08 / 127.60,
-//   whisper 126.7 / 127.8)
+// Segments from the captions, words from whisper (2026-11-17). Harry, Carly and Bethany are named in the audio; Sam
+// isn't, so no key rests on who says her lines. The songs (93–111 s, 142–176 s, 232–346 s) and 199 s aren't used;
+// lines where the sources split are kept out of keys (14 s, 60.7 s, 228 s).
 // EAR CHECK: 67.0 s s1 — “Did she say butter sock?” (both sources): the “sh” of “she” is clear, not “did ya”
-// EAR CHECK: 62.0 s x1 — “get out of bed” (both sources) runs together, with the flapped t
+// EAR CHECK: 62.0 s x1 — “get out of bed” (both sources) runs together
 import type { Clip } from '../types.ts';
 
 export const replaceHarry: Clip = {
@@ -22,55 +15,31 @@ export const replaceHarry: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    // R fix: blind 55 %: the key was the only choice that matched the whole stretch; the others were one-line side
-    //   topics. Both distractors now follow the key's two-part shape and come from what's said.
-    // why: who replaces him ← "replaced" is said four times, but "not for real"; Carly should stop ← Sam's list of
-    //   Carly's care heard as the problem they set out to fix
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', reveals: ['faking', 'replace'], seg: [0.5, 91.0],
-      stem: 'What is the first part of the scene mostly about?',
-      choices: ['Whether Harry is really still sick, and how to get him up',
-                'Whether Harry is really still sick, and who should replace him',
-                'Whether Carly is spoiling Harry, and how she can stop it'], a: 0,
-      cue: '前半の「faking」と、後半の「idea」に注目。',
-      said: 'Harry が治らないのは世話が楽しいからでは、という話から、起こす作戦へ進む。',
-      mean: 'ショーの中止は前提。中心は Harry の本当の様子と、その対策。',
-      trap: 'replace は何度も聞こえるが not for real。世話の話は作戦の理由。',
-      use: 'What are we gonna do about this?（これ、どうする？）' },
-
-    // why: move ← "San Francisco" + shows heard without "cancel"; without him ← the "the show must go on" script
     { id: 'd1', skill: 'detail', level: 'B1', point: 'friday', seg: [0.6, 8.5],
-      stem: 'What will happen if Harry isn’t better by Friday?',
-      choices: ['They’ll cancel their shows in San Francisco', 'They’ll move their shows to San Francisco',
-                'They’ll go on to San Francisco without him'], a: 0,
-      cue: '「Friday」のすぐあとの動詞。',
+      stem: 'What happens if Harry isn’t better by Friday?',
+      ja: '金曜までにハリーが治らないと、どうなる？',
+      choices: ['They cancel their shows', 'They move their shows later', 'They go on without him'], a: 0,
+      choicesJa: ['公演を中止する', '公演をあとに移す', '彼なしで続ける'],
+      cue: '「by Friday」のあと',
       line: 'if Harry’s not better by Friday, we’ll have to *cancel our shows* in San Francisco.',
-      said: '金曜までに Harry が治らなければ、サンフランシスコ公演は中止。',
-      mean: 'have to cancel ＝ 中止せざるをえない。困った状況から場面が始まる。',
-      trap: '地名が強く聞こえ、動詞を聞きのがしやすい。地名より先に、何をするかを聞く。',
+      said: '「金曜までにハリーが治らなければ、サンフランシスコ公演は中止だ」と言う。',
+      mean: 'have to cancel ＝ 中止しなければならない。by Friday ＝ 金曜までに。',
+      trap: 'San Francisco が強く聞こえ、動詞を聞きのがしやすい。have to のあとの cancel を聞く。',
       use: 'We’ll have to cancel our trip.（旅行を中止しないといけない）' },
 
-    // R fix: blind 55 %: the key was the only kind choice; the cue leaked "well" (in the key only). The tired carer
-    //   is now an annoyed one ("I don't know why he's not getting better" heard as a complaint), and the cue names
-    //   no word.
-    // why: sick ← "feel awful" = 体調が悪い (literal reading); annoyed ← "I don't know why he's not getting better"
-    //   heard as blaming him
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'feelawful', seg: [12.3, 15.3],
-      stem: 'How does Carly feel as she talks about Harry?',
-      choices: ['Sorry that he isn’t getting better', 'Sick, as if she’s caught it from him',
-                'Annoyed that he won’t try to get better'], a: 0,
-      cue: 'Carly の最初の短い文と、その次の文。',
-      line: 'Well, I *feel awful*.',
-      said: '「本当に気がとがめる」と言い、なぜ治らないのか分からない、と続ける。',
-      mean: 'feel awful は体調にも使うが、ここは「申し訳ない・心配」。看病する側の言葉。',
-      trap: '体の具合と取ると「うつった」、次の文を不満と取ると「いらいら」に。',
+      stem: 'How does Carly feel about Harry?',
+      ja: 'カーリーはハリーのことをどう思っている？',
+      choices: ['Sorry he isn’t getting better', 'Sick, like she caught it too', 'Angry that he won’t get better'], a: 0,
+      choicesJa: ['治らなくて申し訳ない', '自分もうつって具合が悪い', '治ろうとしないので怒っている'],
+      cue: '「San Francisco」の話のあと',
+      line: 'Well, I *feel awful*. I don’t know why he’s not getting better.',
+      said: '「本当に気がとがめる。なんで治らないのか分からない」と言う。',
+      mean: 'feel awful ＝ ここでは「申し訳ない、つらい」。看病している人の言葉。',
+      trap: 'feel awful は体調にも使うので、具合が悪いと思いやすい。看病している側の気持ち。',
       use: 'I feel awful about being late.（遅れて本当にごめんね）' },
 
-    // R fix: blind 70 %: the stem quoted the sweet words, and the key was the one middle reading between praise and
-    //   anger. The stem now names the moment only, and "comforting" (she follows Carly's "I feel awful") replaces the
-    //   angry extreme.
-    // why: praising ← "sweet, innocent" heard without what follows; comforting ← the reply comes right after "I feel
-    //   awful", where comfort is the script
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'stupid', seg: [15.3, 24.6],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'stupid', seg: [15.3, 24.6], retired: true,
       stem: 'When Sam answers Carly’s worry about Harry, how is she treating Carly?',
       choices: ['Teasing her for missing what’s going on', 'Comforting her so she won’t feel so bad',
                 'Praising her for caring so much for Harry'], a: 0,
@@ -81,51 +50,43 @@ export const replaceHarry: Clip = {
       trap: '直後なので慰めに聞こえやすい。最後の stupid と、Carly の返事で決まる。',
       use: 'Oh, honey, no.（あらら、違うってば）' },
 
-    // why: washes ← warm/wash share the opening sound and "socks" follows; cuts hair ← "his hair" is said, with "brush"
     { id: 'd2', skill: 'detail', level: 'B1', point: 'socks', seg: [26.2, 34.9],
-      stem: 'Which of these does Sam say Carly does for Harry?',
+      stem: 'What does Sam say Carly does for Harry?',
+      ja: 'サムによると、カーリーはハリーに何をしている？',
       choices: ['She warms his socks', 'She washes his socks', 'She cuts his hair'], a: 0,
-      cue: '「breakfast in bed」のあと、靴下の前の動詞。',
+      choicesJa: ['靴下を温める', '靴下を洗う', '髪を切る'],
+      cue: '「breakfast in bed」のあと',
       line: 'you make him breakfast in bed and you *warm his socks*… and brush his hair',
-      said: '朝ごはん、靴下を温める、本を読む、髪をとかす、と Carly の世話を並べる。',
-      mean: 'warm はここでは動詞「温める」。世話の多さが話の中心。',
-      trap: 'warm と wash は出だしが似ている。hair は聞こえても、するのは brush。',
+      said: '朝ごはん、靴下を温める、本を読む、髪をとかす、と世話を並べる。',
+      mean: 'warm ＝ ここでは「温める」という動詞。世話をたくさんしている。',
+      trap: 'warm と wash は出だしが似ている。hair も聞こえるが、するのは brush（とかす）。',
       use: 'Could you warm up my coffee?（コーヒー温め直してもらえる？）' },
 
-    // R fix (K1): "he wishes Carly would look after him like that" is defensible too: the boy's answer is half a
-    //   flirt. It's now the near-sound reading (would/wouldn't), which "sure wouldn't want to leave" refutes.
-    // why: be made to leave ← "wouldn't" heard as "would", with the n't lost before "want"; too soft ← "the way
-    //   you've been treating Harry" heard as a criticism of Carly
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'leave', seg: [36.5, 44.6],
-      stem: 'When Sam asks one of the boys for his view, what does his answer show?',
-      choices: ['He thinks Harry has good reason to stay in bed', 'He thinks Harry should be made to leave now',
-                'He thinks Carly is too soft on the whole band'], a: 0,
-      cue: '「if you were」で始まる、仮の話。',
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'leave', seg: [36.5, 44.6],
+      stem: 'What does the boy think about Harry staying in bed?',
+      ja: 'その男の子は、ハリーが寝ていることをどう思っている？',
+      choices: ['He understands why', 'Harry should leave now', 'Carly is too strict'], a: 0,
+      choicesJa: ['気持ちは分かる', 'ハリーはもう出ていくべき', 'カーリーは厳しすぎる'],
+      cue: '「What do you think」のあと',
       line: '*if you were treating me* like you’ve been treating Harry, I *sure wouldn’t want to leave*.',
-      said: '「もし僕がそんな扱いをされたら、絶対出て行きたくない」と答える。',
-      mean: '仮の話で Sam に同意している。Harry が出てこないのも当然、ということ。',
-      trap: 'wouldn’t の t は want の前で消え、would に聞こえやすい。',
+      said: '「僕がそんなふうに世話されたら、絶対出ていきたくない」と答える。',
+      mean: 'if you were 〜, I wouldn’t … ＝ もし〜なら、…しないだろう。ハリーの気持ちも分かる、という意味。',
+      trap: 'wouldn’t の t が消えて would に聞こえやすい。「出ていきたくない」が答え。',
       use: 'If I were you, I’d stay.（僕が君なら残るね）' },
 
-    // why: never sick ← "faking" is the word in the air; too proud ← "I'm not faking" heard as Harry hiding how ill he is
     { id: 'i1', skill: 'infer', level: 'B2', point: 'faking', seg: [40.4, 51.6],
       stem: 'What does Sam think is going on with Harry?',
-      choices: ['He was sick, but now he’s enjoying the care', 'He was never really sick in the first place',
-                'He’s still sick but too proud to say so'], a: 0,
-      cue: '「faking」という語のあと、Sam が言い直す部分。',
+      ja: 'サムはハリーのことをどう思っている？',
+      choices: ['He was sick but now likes it', 'He was never sick at all', 'He is still really very sick'], a: 0,
+      choicesJa: ['病気だったが、今は楽しんでいる', '最初から病気ではなかった', 'まだ本当にとても具合が悪い'],
+      cue: '「You think Harry’s faking?」のあと',
       line: 'I’m *sure he was sick*. I just think *now he’s having a good time*…',
-      said: '「病気だったのは本当。でも今は楽しんでるだけ」と Sam が言う。',
-      mean: '仮病だとは言っていない。もう治ったのに、居心地がよくて出てこない、という見方。',
-      trap: 'faking が何度も聞こえるので「最初から仮病」に引かれる。was sick に注目。',
+      said: '「病気だったのは本当。でも今は楽しんでるだけ」とサムが言う。',
+      mean: 'having a good time ＝ 楽しんでいる。治ったのに、居心地がよくて出てこない。',
+      trap: 'faking（仮病）が聞こえるので、最初から仮病と思いやすい。was sick を聞く。',
       use: 'I think he’s just enjoying the attention.（注目されて楽しんでるだけだと思う）' },
 
-    // R fix: blind 60 %: the holiday choice left the hotel frame, so two choices were hotel guests or prisoners and
-    //   one wasn't. It's now a guest who faked it, wrong in one way: "I'm sure he was sick".
-    // why: stuck ← a fluent listener who knows the song "Hotel California" hears "you can never leave", but nothing in
-    //   the clip keeps him there; faked ← "faking" is in the air, and Sam's "I'm sure he was sick" is quick
-    // anchor: 43.44 s "I sure wouldn't want to leave" (want, not can't); 48.40 s "having a good time at": a guest who
-    //   won't check out
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'hotel', reveals: ['faking', 'leave'], seg: [40.4, 51.6],
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'hotel', reveals: ['faking', 'leave'], seg: [40.4, 51.6], retired: true,
       stem: 'Which plain-English version keeps what Sam means by her hotel line?',
       choices: ['“He’s a guest who’s too comfortable to check out.”', '“He’s stuck there and can’t find a way to leave.”',
                 '“He’s a guest who faked being ill to get a room.”'], a: 0,
@@ -136,10 +97,7 @@ export const replaceHarry: Clip = {
       trap: '曲を知っていると「出られない」、faking から「仮病」と取りやすい。鍵は was sick と good time。',
       use: 'He’s in no hurry to check out.（チェックアウトする気がない）' },
 
-    // R fix: blind 60 %: "Sam’s name for Carly’s place" all but said "hotel", and "his home in California" isn't in
-    //   the clip. The stem now names the moment, and that distractor ties to the cancelled California shows (→ reveals 'friday').
-    // why: shows ← San Francisco (California) shows from the opening; charge ← hotel = paying for a room
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'hotel', reveals: ['faking', 'friday'], seg: [44.5, 51.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'hotel', reveals: ['faking', 'friday'], seg: [44.5, 51.8], retired: true,
       stem: 'Why does Sam’s last line about Harry get a laugh?',
       choices: ['It turns Carly’s place into a hotel he loves', 'It teases Harry for missing the California shows',
                 'It hints that Carly should charge him for the room'], a: 0,
@@ -150,27 +108,30 @@ export const replaceHarry: Clip = {
       trap: 'California から公演の話と取りやすいが、Carly と混ぜた造語。地名の中の名前を聞く。',
       use: 'It’s like a five-star hotel here.（ここ、五つ星ホテルみたい）' },
 
-    // R fix: blind 60 %: the stem quoted the phrase under test (§9.2), and "say it again louder" was a filler. The
-    //   stem names the moment; the third choice is now the "just say that" request misreading.
-    // why: never said ← the literal denial (did not); repeat ← "just say that" heard as a request (今のもう一回)
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'proud', seg: [51.6, 56.0],
-      stem: 'Right after Sam’s joke about Harry, what does the next line do?',
-      choices: ['Reacts to a pun too bad to believe', 'Denies that Sam ever said those words',
-                'Asks Sam to repeat what she just said'], a: 0,
-      cue: 'ダジャレの直後の反応と、Sam の返事。',
-      line: '*You did not just say that.*',
-      said: 'Sam のダジャレに、「今それ言った？」とあきれた声を上げる。',
-      mean: '事実の否定でなく「信じられない、言っちゃったよ」というツッコミ。',
-      trap: 'did not を文字通り「言っていない」と取ると話が合わない。言ったからこそ出る言葉。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['faking', 'replace', 'reallydont', 'look'], seg: [44.9, 89.7],
+      stem: 'What do the friends plan to do?',
+      ja: '友だちは何をするつもり？',
+      choices: ['Get Harry out of bed', 'Really find a new singer', 'Take more care of Harry'], a: 0,
+      choicesJa: ['ハリーをベッドから出す', '本当に新しい歌手を探す', 'ハリーをもっと世話する'],
+      cue: '「You think Harry’s faking?」から',
+      said: 'ハリーは世話を楽しんでいると考え、「入れ替えられると思わせて」起こす作戦を立てる。',
+      mean: 'get out of bed ＝ ベッドから出る。本当に入れ替えるのではなく、ふりの作戦。',
+      trap: 'replace（入れ替える）が何度も聞こえるが、not for real（本当じゃない）。',
+      use: 'What are we gonna do about this?（これ、どうする？）' },
+
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'proud', seg: [51.6, 56.0],
+      stem: 'What does “You did not just say that” mean?',
+      ja: '「You did not just say that」はどういう意味？',
+      choices: ['I can’t believe you said that', 'You didn’t say anything at all', 'Please say that again'], a: 0,
+      choicesJa: ['今それ言ったなんて信じられない', 'あなたは何も言っていない', 'もう一度言って'],
+      cue: '「Hotel Carly-fornia」のあと',
+      line: '*You did not just say that.* — I said it and I’m proud of it.',
+      said: 'サムのだじゃれに「今それ言った？」とあきれ、サムは「言ったよ、自信作」と返す。',
+      mean: 'You did not just 〜 ＝ まさか今〜した？ 信じられないときの言い方。',
+      trap: 'did not から、「言っていない」と思いやすい。言ったからこそ出るツッコミ。',
       use: 'You did not just eat my fries.（まさか私のポテト食べた？）' },
 
-    // R fix (S1): "that reaction" leaned on p2's stem; p2 and nt2 share a point and are never drawn together, so it
-    //   pointed at nothing. The stem now quotes the groan (p2's phrase, safe on a shared point).
-    // why: takes it back ← "I said it" heard as an admission before an apology (the 謝罪 frame); blames ← the reply
-    //   heard as turning on the person who groaned
-    // anchor: 52.08 s the groan is shaped as a denial of fact ("did not just say"); 53.60 s "I said it" answers that
-    //   literal claim, and "I'm proud of it" owns the pun
-    { id: 'nt2', skill: 'humor', level: 'C2', point: 'proud', seg: [51.6, 56.0],
+    { id: 'nt2', skill: 'humor', level: 'C2', point: 'proud', seg: [51.6, 56.0], retired: true,
       stem: 'Why is Sam’s answer to “You did not just say that” funny?',
       choices: ['It answers the groan as if it were a real charge', 'It takes the pun back as if she were ashamed',
                 'It blames the groaner for setting up the pun'], a: 0,
@@ -181,20 +142,17 @@ export const replaceHarry: Clip = {
       trap: '「言った」と認めたら次は謝る、と思いやすいが、proud で開き直っている。',
       use: 'Guilty as charged. I’d do it again.（その通り。また言うよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.9, 63.55],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.9, 63.55], keep: true,
       stem: 'Type the words: “…motivate Harry to ___ and back on stage.” (4 words)', answer: 'get out of bed',
-      cue: '「Harry to」のすぐあと、つながった短い語。',
+      ja: '「…motivate Harry to ___ and back on stage.」の空所を書こう（4語）',
+      cue: '「Harry to」のあと',
       line: 'might motivate Harry to *get out of bed* and back on stage.',
-      said: '「Harry をベッドから出して、ステージに戻らせる」方法の話。',
-      mean: 'get out of が「ゲラウロブ」と一続き。t が弾み、of は弱い。',
-      trap: '切れ目が聞こえにくく get up にも聞こえる。最後の bed から逆に組み立てる。',
+      said: '「ハリーをベッドから出して、ステージに戻らせる」方法の話をする。',
+      mean: 'get out of が「ゲラウロブ」とひと続き。t が軽い「ラ」の音、of は小さい。',
+      trap: '切れ目が聞こえにくく、get up にも聞こえる。最後の bed から逆に組み立てる。',
       use: 'I can’t get out of bed today.（今日は起きられない）' },
 
-    // R fix: blind 55 %: "with the butter sock" made the one physical choice the key, and "working on his singing"
-    //   was weak. It's now a home-remedy reading (Carly warms his socks), and the stem names the speaker neutrally.
-    // why: talking into ← "work on someone" = persuade, a near idiom; remedy ← socks were just part of Carly's care
-    //   ("you warm his socks"), so a butter sock sounds like a cure
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'workover', seg: [59.9, 66.7],
+    { id: 'f1', skill: 'phrase', level: 'C1', point: 'workover', seg: [59.9, 66.7], retired: true,
       stem: 'With the butter sock, what does the speaker offer to do to Harry?',
       choices: ['Beat him until he gets up', 'Talk him into getting up', 'Treat him with a home remedy'], a: 0,
       cue: '「should」のあと、him をはさむ動詞句。',
@@ -204,91 +162,79 @@ export const replaceHarry: Clip = {
       trap: 'work on（説得）と形が似て、靴下は看病にも出てきた。over が付くと手荒な意味。',
       use: 'They really worked him over in the interview.（面接でかなり絞られてたよ）' },
 
-    // why: not sure ← "I don't" heard as 「わからない」 (I don't know); agrees ← "you know" + "really" heard as a
-    //   reluctant yes
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'reallydont', reveals: ['workover'], seg: [59.9, 66.7],
-      stem: 'After the butter-sock question, what does the reply do?',
-      choices: ['Turns the idea down firmly', 'Says she isn’t sure what it means', 'Agrees to it, but not happily'], a: 0,
-      cue: '答えの最後の一語と、その前のくり返し。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'reallydont', seg: [59.9, 66.7],
+      stem: 'What does “I really, really don’t” mean here?',
+      ja: 'ここでの「I really, really don’t」はどういう意味？',
+      choices: ['No, I don’t think so', 'I really don’t know', 'Yes, but not right now'], a: 0,
+      choicesJa: ['いいえ、そうは思わない', '本当に分からない', 'うん、でも今じゃない'],
+      cue: '「butter sock?」のあと',
       line: 'You think I should work him over with a butter sock? — You know, I *really, really don’t*.',
-      said: '「バター靴下で痛めつけろって？」に「全然そうは思わない」と返す。',
-      mean: 'I don’t は I don’t think so の省略。really を重ねて、はっきり断る。',
-      trap: 'know を補うと「分からない」になる。You think…? への返事。',
+      said: '「バター靴下でやっつけろって？」に「全然そうは思わない」と返す。',
+      mean: 'I don’t ＝ I don’t think so の短い形。really を重ねて、はっきり反対している。',
+      trap: 'You know から「分からない」と思いやすい。You think…? への答えなので think を省いた形。',
       use: 'Do I want to? I really don’t.（したいかって？全然）' },
 
-    // why: Does ← did/does both shrink to a short "d" plus a vowel; Did you ← "did-ja" in fast speech; Didn't ← the n't
-    //   nasal is easy to imagine before "she"
-    { id: 's1', skill: 'sound', level: 'B2', point: 'didshe', seg: [66.5, 71.0],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'didshe', seg: [66.5, 71.0],
       stem: 'Fill the gap: “___ say butter sock?”',
-      choices: ['Did she', 'Does she', 'Did you', 'Didn’t she'], a: 0,
-      cue: '文頭の2語。2語目の子音に注目。',
+      ja: '「___ say butter sock?」の空所は？',
+      choices: ['Did she', 'Does she', 'Did you'], a: 0,
+      choicesJa: ['彼女は言った？', '彼女はいつも言う？', 'あなたは言った？'],
+      cue: '「I really, really don’t」のあと',
       line: '*Did she* say butter sock? Is that a sock full of butter?',
-      said: '男の子が「今バター靴下って言った？バターが詰まった靴下？」と驚く。',
-      mean: 'Did she が「ディシ」のように一続き。she の「シ」が、誰の話かを決める。',
-      trap: 'Did you なら「ジャ」に近い音になる。今の一回の発言なので Does でもない。',
+      said: '男の子が「今バター靴下って言った？バター入りの靴下？」と驚く。',
+      mean: 'Did she が「ディシ」のようにひと続き。she の「シ」で、誰の話か分かる。',
+      trap: 'Does she は「ダズ」、Did you は「ディジュ」。「ディシ」なら Did she。',
       use: 'Did she say what time?（何時って言ってた？）' },
 
-    // R fix: blind 65 %: "the new idea" in the stem matched the key's "suggestion". The stem names the turn only.
-    // why: watch ← look = 見る (literal); impatience ← "Look," also opens an irritated reply, right after the butter-sock
-    //   back-and-forth
     { id: 'm1', skill: 'marker', level: 'B2', point: 'look', reveals: ['replace'], seg: [78.3, 85.1],
-      stem: 'In the turn that opens with “Look”, what does that first word do?',
-      choices: ['It gets everyone’s attention before a suggestion', 'It asks everyone to watch something closely',
-                'It shows impatience with the earlier ideas'], a: 0,
-      cue: '「my idea」のやりとりのあと、文頭の一語。',
+      stem: 'What does “Look” do at the start of this idea?',
+      ja: 'このアイデアの最初の「Look」は何をしている？',
+      choices: ['Gets attention for an idea', 'Asks them to watch something', 'Shows she is angry'], a: 0,
+      choicesJa: ['アイデアの前に注意を向ける', '何かを見てと頼む', '怒っていると示す'],
+      cue: '「Does it involve the butter sock?」のあと',
       line: '*Look*, I was just thinking… if he thought he was gonna be replaced…',
-      said: '「あのさ、ちょっと思ったんだけど」と案を出し始める。',
-      mean: '文頭の Look は「ねえ、聞いて」。提案や説明の前に注意を向ける合図で、何も見せていない。',
-      trap: 'Look は怒った返事にも使うが、ここは「聞きたい？」「うん」のあとの穏やかな提案。',
+      said: '「あのね、ちょっと思ったんだけど」と案を出し始める。',
+      mean: '文の最初の Look ＝ ねえ、聞いて。何かを見せてはいない。',
+      trap: 'look（見る）から、何かを見せると思いやすい。文の最初の Look は「ねえ」。',
       use: 'Look, I’ve got an idea.（ねえ、いい考えがあるんだ）' },
 
-    // R fix: blind 60 %: only the key was a "make him think" trick; the others plainly wouldn't get him up. Both now
-    //   share the key's shape or its word. The cancel choice gives away d1's key → reveals 'friday'.
-    // why: for real ← "Replace Harry?" is said just before "not for real"; cancelled ← "cancel our shows" from the
-    //   opening, a guilt trick in the same "make him think" shape
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'replace', reveals: ['friday'], seg: [78.3, 91.0],
-      stem: 'What is the idea for getting Harry back on stage?',
-      choices: ['Make him think he’s about to be replaced', 'Make him think the shows will be cancelled',
-                'Replace him for real so the shows go on'], a: 0,
-      cue: '「Replace Harry?」への答えの、最初の3語。',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'replace', reveals: ['friday'], seg: [78.3, 91.0],
+      stem: 'What is the idea to get Harry back on stage?',
+      ja: 'ハリーをステージに戻すアイデアは？',
+      choices: ['Make him think he’ll be replaced', 'Cancel all of their shows now', 'Replace him for real'], a: 0,
+      choicesJa: ['入れ替えられると思わせる', '公演を全部中止する', '本当に入れ替える'],
+      cue: '「Replace Harry?」のあと',
       line: 'Well, *not for real*. We just *make him think* he’s being replaced.',
       said: '「本当に替えるんじゃない。替えられると思わせるだけ」と説明する。',
-      mean: '入れ替わりのふりで焦らせて、ベッドから出させる作戦。',
-      trap: 'replace が何度も聞こえるので本当の交代に、冒頭の cancel から中止の話にも見える。think の後を聞く。',
+      mean: 'make him think 〜 ＝ 彼に〜と思わせる。not for real ＝ 本当ではなく。',
+      trap: 'replace が何度も聞こえるので、本当の交代と思いやすい。not for real を聞く。',
       use: 'Not for real, just pretend.（本気じゃなくて、ふりだけ）' },
 
-    // R fix: blind 60 %: "asks to sing with the new singer" was a filler. It's now the stay-in-bed script, which
-    //   "Yes" and "I'll be ready" refute.
-    // why: admits faking ← "I'm feeling better" heard as a confession; one more day ← the lazy-patient script, with
-    //   "You really think you can perform?" heard as doubt he'd share
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sing'], seg: [111.8, 137.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sing', 'hour'], seg: [111.8, 137.1],
       stem: 'How does the plan turn out?',
-      choices: ['Harry says he’s well enough to perform', 'Harry admits he faked it and says sorry',
-                'Harry begs for one more day to rest'], a: 0,
-      cue: '「I’m feeling better」のあとの質問と、その答え。',
+      ja: '作戦はどうなる？',
+      choices: ['Harry says he can perform', 'Harry says sorry for faking', 'Harry asks for more rest'], a: 0,
+      choicesJa: ['ハリーが出られると言う', 'ハリーが仮病を謝る', 'ハリーがもっと休みたいと言う'],
+      cue: '「Get rid of him」のあと',
       line: '*I’m feeling better.* — You really think you can perform? — *Yes.*',
-      said: 'Harry は「もう良くなった」と言い、「出られる？」と聞かれて「うん」と答える。',
-      mean: '入れ替わりの作戦が効いて、Harry がショーに戻ると決める。',
-      trap: '「良くなった」を仮病の告白と取りやすいが、謝る言葉はない。Yes が答え。',
+      said: 'ハリーは「もう良くなった」と言い、「出られる？」に「うん」と答える。',
+      mean: 'I’m feeling better ＝ 良くなった。作戦がうまくいって、ハリーが戻ると決める。',
+      trap: '「良くなった」を仮病の白状と思いやすい。謝る言葉はない。Yes が答え。',
       use: 'I’m feeling much better now.（もうだいぶ良くなったよ）' },
 
-    // why: half an hour ← "about an" heard as "about a half"; two hours ← "hour" heard with a plural, and "I'll be
-    //   ready" suggests time to spare
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [118.0, 122.1], keep: true,
-      stem: 'When is iCarly, according to the answer Harry gets?',
+      stem: 'When does iCarly start?',
+      ja: 'iCarly はいつ始まる？',
       choices: ['In about half an hour', 'In about an hour', 'In about two hours'], a: 1,
-      cue: '「What time」の質問のすぐあと。',
+      choicesJa: ['あと30分くらい', 'あと1時間くらい', 'あと2時間くらい'],
+      cue: '「What time’s iCarly?」のあと',
       line: 'What time’s iCarly? — *About an hour.*',
       said: '「iCarly は何時？」に「あと1時間くらい」と答える。',
-      mean: 'About an hour は「1時間ほどで始まる」。時刻でなく、残り時間で答えている。',
-      trap: 'an と a half はどちらも弱く短い。hour に s がないので1時間。',
+      mean: 'About an hour ＝ あと1時間くらい。時刻ではなく、残り時間で答えている。',
+      trap: 'half なら「ハーフ」、two なら「トゥー」が聞こえる。About an hour だけなら1時間。',
       use: 'The bus comes in about an hour.（バスはあと1時間くらいで来る）' },
 
-    // R fix: blind 50 %: "a reason he suddenly feels better" didn't follow from the pause. It's now a reason the
-    //   singing was bad, the natural explaining move, and the kind word is reworded to the same length.
-    // why: reason ← a complaint often gets its "because" next; kinder ← the Japanese habit of softening a complaint
-    //   about someone with a follow-up
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'sing', seg: [122.8, 127.2], then: [127.2, 130.0],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'sing', seg: [122.8, 127.2], retired: true, then: [127.2, 130.0],
       stem: 'Harry pauses after “…don’t let him sing”. What kind of words come next?',
       choices: ['One more thing the singer must never do', 'A reason the singing was so hard to hear',
                 'A kinder way to say what he just said'], a: 0,
@@ -299,35 +245,30 @@ export const replaceHarry: Clip = {
       trap: '悪口のあとは理由かフォロー、と思いやすいが、間のあとに注文をもう一つ重ねる。',
       use: 'Please don’t call me… or text me.（電話しないで…メールもね）' },
 
-    // R fix: blind 50 %: the key alone echoed the request ("singing and dancing"). It's reworded with no clip word.
-    // why: too good ← the replacement "threat" read as a real rival; friend ← "please" heard as protecting him
     { id: 'i2', skill: 'infer', level: 'B2', point: 'sing', seg: [122.8, 129.6],
-      stem: 'What does Harry’s last request suggest about the new singer?',
-      choices: ['His act was painful to sit through', 'He was too good for Harry to compete with',
-                'He was Harry’s friend and mustn’t be hurt'], a: 0,
-      cue: '「please」のあと、何を「二度と」させたくないか。',
+      stem: 'What does Harry’s last request tell us about the new singer?',
+      ja: 'ハリーの最後のお願いから、新しい歌手について何が分かる？',
+      choices: ['His singing was awful', 'He was too good a singer', 'He is Harry’s good friend'], a: 0,
+      choicesJa: ['歌がひどかった', '歌がうますぎた', 'ハリーの親友だ'],
+      cue: '「I’ll be ready」のあと',
       line: 'Just please *don’t let him sing… or dance ever again*.',
-      said: '「もう二度と、あいつに歌わせたり踊らせたりしないで」と頼む。',
-      mean: '代わりの歌と踊りがひどかったので、自分が戻ることにした、と分かる。',
-      trap: '代わりに取られるのが怖い、と読みやすいが、ever again は「もうこりごり」の言い方。',
+      said: '「お願いだから、もう二度とあいつに歌わせたり踊らせたりしないで」と頼む。',
+      mean: 'ever again ＝ 二度と。もうこりごり、という言い方。歌も踊りもひどかった。',
+      trap: '代わりに取られるのが怖い、と思いやすい。ever again は「もうこりごり」。',
       use: 'Please never make me do karaoke again.（二度とカラオケさせないで）' },
 
-    // why: loves it ← "You look great" is the last praise heard; start over ← "Bethany, wait" heard as an offer to fix it
-    { id: 'g3', skill: 'gist', level: 'B2', point: 'makeover', seg: [177.6, 216.4],
-      stem: 'How does the makeover scene end?',
-      choices: ['She hates the result and walks out on him', 'She loves it and runs off to show people',
-                'He admits it’s bad and offers to start over'], a: 0,
-      cue: '鏡を見たあとの彼女の一言と、彼の呼びかけ。',
-      said: '「来たときよりひどい」と言って彼女は出ていき、彼が「戻って」と追う。',
-      mean: 'メイクは失敗し、彼女は怒って去る。彼はこのまま終わらせたくない。',
-      trap: 'You look great はメイクした側の言葉。本人の I look awful のほうが結末を決める。',
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'makeover', seg: [177.6, 216.4],
+      stem: 'How does the makeover end?',
+      ja: 'メイクはどう終わる？',
+      choices: ['Bethany hates it and leaves', 'Bethany loves the new look', 'He fixes it all right away'], a: 0,
+      choicesJa: ['ベサニーが嫌がって出ていく', 'ベサニーが新しい見た目を気に入る', '彼がすぐに直す'],
+      cue: '「Makeover complete!」から',
+      said: '「来たときよりひどい」と言ってベサニーは出ていき、彼が「戻って」と追う。',
+      mean: 'I look awful ＝ ひどい見た目。メイクは失敗で、ベサニーは怒って去る。',
+      trap: 'You look great（すてき）はメイクした人の言葉。本人の I look awful が答え。',
       use: 'Wait, come back! Let me explain.（待って、戻って！説明させて）' },
 
-    // R fix: blind 50 %: "a real fight" overstated a botched makeover, and the key was the only abstract choice.
-    //   The key now names the makeover; the other two are reworded to its length.
-    // why: writing ← "our story" read as a piece of writing (literal); finish telling ← "story can't just end" heard as
-    //   her story being cut off
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'resolution', reveals: ['makeover'], seg: [201.5, 216.4],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'resolution', reveals: ['makeover'], seg: [201.5, 216.4], retired: true,
       stem: 'Why is his last plea to Bethany funny?',
       choices: ['He talks about a bad makeover like a TV drama', 'He means the story he’s been writing about her',
                 'He wants her to stay and finish her story'], a: 0,
@@ -336,6 +277,6 @@ export const replaceHarry: Clip = {
       said: '去る彼女に「僕らの物語がこんな終わり方じゃだめだ！決着が要る！」と叫ぶ。',
       mean: 'resolution は物語の「結末」。メイクの失敗をドラマの筋のように語るのがおかしい。',
       trap: 'story を本当の物語と取りやすいが、失敗したメイクのこと。',
-      use: 'I just need some closure.（ちゃんと区切りをつけたいだけ）' }
+      use: 'I just need some closure.（ちゃんと区切りをつけたいだけ）' },
   ]
 };
