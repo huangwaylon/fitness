@@ -92,7 +92,7 @@ export const spencerFriends: Clip = {
       line: 'What is he, in fourth grade? — *Third*.',
       said: '「何、4年生？」と聞かれ、「3年生」と答える。',
       mean: 'third grade ＝ 小学3年生。スペンサーのテニス仲間は子どもだった。',
-      trap: '質問の fourth が先に耳に残る。答えは返事の一語 third。',
+      trap: '質問の fourth が耳に残りやすい。返事は「サード」。second なら「セカンド」、fifth なら「フィフス」。',
       use: 'What grade is she in?（あの子、何年生？）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', reveals: ['racket'], seg: [45.2, 49.5],

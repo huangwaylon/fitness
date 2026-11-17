@@ -169,7 +169,7 @@ export const medicalMess: Clip = {
       line: 'After this, we won’t have to go to the doctor for, like, *10 years*.',
       said: '「これで、10年くらい医者に行かなくてすむ」と言う。',
       mean: 'for, like, 10 years ＝ 10年くらい。like は「〜くらい」のぼかし。',
-      trap: '直前の 100 million に引っぱられやすい。like のすぐあとの ten を聞く。',
+      trap: '直前の 100 million に引っぱられやすい。like のあと「テン」なら 10、「ワン」なら 1、「ハンドレッド」なら 100。',
       use: 'I waited for, like, an hour.（1時間くらい待ったよ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [86.6, 90.2],

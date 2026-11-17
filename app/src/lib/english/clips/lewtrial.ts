@@ -148,7 +148,7 @@ export const lewTrial: Clip = {
       line: 'Gibby wanted to do those stunts *most of the time*.',
       said: 'ギビーはあのスタントを「たいてい」やりたがっていた、と答える。',
       mean: 'most of the time ＝ たいてい。カーリーたちをかばう答え。',
-      trap: 'このあと質問する人が some of the time と言いかえるので、そちらが残りやすい。',
+      trap: 'あとで some of the time と言いかえられる。「モウスト」なら most、「サム」なら some、「オール」なら all。',
       use: 'I cook at home most of the time.（たいてい家で料理する）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'twist', reveals: ['most'], seg: [118.3, 130.4],
@@ -267,7 +267,7 @@ export const lewTrial: Clip = {
       line: 'I no longer want to sue Miss Carly Shay for *$1 million*.',
       said: '「100万ドルでうったえるのは、もうやめる」と言う。',
       mean: 'a million ＝ 100万。sue A for ～ ＝ 〜を求めてAをうったえる。',
-      trap: 'one は弱く短いので、ten や hundred を足しやすい。million の前は one だけ。',
+      trap: '「ワンミリオン」なら 100万。「テンミリオン」なら 1000万、「ハンドレッド・サウザンド」なら 10万。',
       use: 'They sued the company for damages.（会社に損害賠償を求めてうったえた）' },
 
     { id: 'r1', skill: 'predict', level: 'B2', point: 'more', reveals: ['amount'], seg: [308.0, 316.4], retired: true,

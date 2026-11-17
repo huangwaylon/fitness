@@ -118,7 +118,7 @@ export const aprilWedding: Clip = {
       line: 'The last *four* … family Pictionary tournaments ended at the hospital.',
       said: '「最近4回の家族お絵かき大会は、全部病院で終わった」と言う。',
       mean: 'the last four ＝ 最近の4回。four は短い1音。',
-      trap: 'すぐあとに three が出るので混ざりやすい。fourteen なら「ティーン」が付く。',
+      trap: '「フォー」なら 4、「スリー」なら 3、fourteen なら後ろに「ティーン」。すぐあとの three と混ぜない。',
       use: 'The last four games ended in a tie.（最近4試合は引き分け）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'gifts', reveals: ['pictionary'], seg: [70.05, 81.8], retired: true,
