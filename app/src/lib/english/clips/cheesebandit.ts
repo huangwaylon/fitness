@@ -1,15 +1,9 @@
-// REVIEW 2026-11-16: pass 9, fix 15, drop 0, new 0; ear checks 3
-// OPEN: a cold reader (stems and choices only) still got 19/22 right, 11 at ≥ 50 %; nt3 65 %, i2 and s2 60 %.
-//   g3 leans on the title ("Bandits"); s2's "we'll" is what the grammar expects, but the item is about hearing it.
-// OPEN: the stems name Chandler and Rachel from the turn order (no address settles every line); no key turns on who.
+// A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 6, new 1
 // “The Cheesecake Bandits | Friends” (the official Friends channel, Best of Season 6): a cheesecake meant for Mrs.
 // Braverman downstairs reaches Chandler, he and Rachel eat it, try to forget a second one, take it anyway, fight over
 // it, split it, and lose both halves to the floor.
 // Segments from the captions, words from whisper (2026-11-16). Whisper's timings drift after ~250 s and it loops
-// from 277 s; nothing is keyed there. Untested: 23.6 s ("addressed"; whisper hears "a dress"), 58–64 s (whose "I feel
-// terrible"), 171.4 s ("Mm-mm" in whisper, "mm-hmm" in the captions), 219–237 s (who picks which half; "So, the
-// smaller piece"), 249–257 s and 273–280 s (the pieces fall: visual), 280.6 s ("floor"/"flour"), 298 s on (Joey,
-// visual).
+// from 277 s; nothing is keyed there. Stems avoid naming who says the split-up lines (no address settles them).
 // EAR CHECK: 31.8 s s1 — "didn't read": confirm the n of "didn't" is heard (both sources say "didn't")
 // EAR CHECK: 117.0 s s2 — "we'll drop it off": confirm the weak 'll after "we" (both sources say "we'll")
 // EAR CHECK: 187.4 s nt2 — "you're gonna have to" said as four weak words in about a second (both sources agree)
@@ -21,46 +15,40 @@ export const cheesecakeBandits: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    // R fix: V2 (blind 55 %): "already had dessert" was a weak filler; now a diet reading of the same refusal
-    // why: bad tooth ← "tooth" heard literally, as a body part; cut back ← "not that much of a sweet tooth" heard
-    //   as a diet, the usual polite-refusal script
     { id: 'ph1', skill: 'phrase', level: 'B2', point: 'sweet', seg: [5.5, 10.2],
-      stem: 'When she’s offered the cheesecake, what does Rachel first say about herself?',
-      choices: ['She doesn’t usually go for sweet things', 'She has a bad tooth and can’t eat sweets',
-                'She’s trying to cut back on sweets'], a: 0,
-      cue: 'you know のあと、tooth で終わる言い方。',
+      stem: 'What does “not that much of a sweet tooth” mean?',
+      ja: '「not that much of a sweet tooth」はどういう意味？',
+      choices: ['She doesn’t love sweets', 'Her tooth is hurting', 'She is on a diet now'], a: 0,
+      choicesJa: ['甘い物はあまり好きじゃない', '歯が痛い', '今ダイエット中'],
+      cue: '「you know」のあとの言い方',
       line: 'Oh, you know, I’m *not that much of a sweet tooth*.',
-      said: '「あんまり甘い物好きじゃないんだよね」と最初は断る。',
-      mean: 'a sweet tooth ＝ 甘い物好き。歯の話ではない。このあと一口食べて大絶賛する。',
-      trap: 'tooth を文字どおり歯と取ると「歯が痛い」に引っぱられる。体の一部の語は慣用句を疑う。',
-      use: 'I’m not much of a coffee person.（コーヒーはあまり飲まないんだ）' },
-
-    // R fix: V2 (blind 70 %): "as a gift" was out once the stem said "actually"; now Mrs./Mr. against up/down
-    // why: upstairs ← only "-stairs" caught; a man ← the short "Mrs." before the name heard as "Mr."
+      said: '「うーん、甘い物はそんなに好きじゃないの」と言う。',
+      mean: 'sweet tooth ＝ 文字どおりは「甘い歯」、ここでは「甘い物好き」。歯の話ではない。',
+      trap: 'tooth（歯）から「歯が痛い」と思いやすいが、決まり文句。食べる量の話もしていない。',
+      use: 'I have a sweet tooth.（甘い物が大好きなんです）' },
     { id: 'd1', skill: 'detail', level: 'B1', point: 'braverman', seg: [23.0, 29.2],
-      stem: 'Who is the cheesecake actually meant for?',
-      choices: ['A woman who lives downstairs', 'A man who lives downstairs', 'A woman who lives upstairs'], a: 0,
-      cue: '宛名を読み上げる部分、名前のあとの一語。',
+      stem: 'Who is the cheesecake for?',
+      ja: 'チーズケーキは誰宛て？',
+      choices: ['A woman downstairs', 'A man downstairs', 'A woman upstairs'], a: 0,
+      choicesJa: ['下の階の女性', '下の階の男性', '上の階の女性'],
+      cue: '宛名を読む所、名前の前後',
       line: 'This is addressed to *Mrs. Braverman downstairs*.',
-      said: '宛名を見て「あなた宛てじゃない。下の階のブレイバーマンさん宛てよ」。',
-      mean: 'addressed to ＝ 〜宛て。二人への贈り物ではなく、配達先を取りちがえただけ。',
-      trap: 'Mrs. と Mr.、up と down は一瞬の差。名前の前と最後の一語を聞く。',
+      said: '「これはあなた宛てじゃない。下の階のブレイバーマンさん宛てよ」と言う。',
+      mean: 'addressed to 〜 ＝ 〜宛て。Mrs. は女性につける。downstairs ＝ 下の階。',
+      trap: 'Mrs. を Mr. と聞きやすい。「ミスィズ」と最後に「ズ」があれば女性。down で下の階。',
       use: 'This letter is addressed to you.（この手紙、あなた宛てだよ）' },
-
-    // R fix: V2 (blind 60 %): "don't read" and "didn't need" didn't fit the sentence; now three grammatical pasts
-    // why: did read ← the t of "didn't" lost, so it sounds like "did"; hadn't read ← "I didn't" heard as "I'd…n't",
-    //   the past perfect a grammar-minded listener expects before "before I opened"
     { id: 's1', skill: 'sound', level: 'B2', point: 'read', seg: [31.2, 37.6],
-      stem: 'Fill the gap: “No, I ___ the box before I opened it.”',
+      stem: 'Which words do you hear: “No, I ___ the box”?',
+      ja: '「No, I ___ the box」の空所に聞こえるのは？',
       choices: ['didn’t read', 'did read', 'hadn’t read'], a: 0,
-      cue: 'No のすぐあと。最初の語の終わりの音に注意。',
+      choicesJa: ['読まなかった', '読んだ', '読んでいなかった'],
+      cue: '「No」のすぐあと',
       line: 'No, I *didn’t read* the box before I opened it',
-      said: '「いや、開ける前に箱を読まなかったんだ」と言い訳する。',
-      mean: 'didn’t の t はほぼ消え「ディドゥン」に近い。読んでいれば気づけた、という弁解。',
-      trap: 't が聞こえないと did に聞こえ、「読んだ」と逆になる。n の音が残っていれば否定。',
-      use: 'Sorry, I didn’t read the sign.（すみません、表示を読んでなくて）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'sendaway', seg: [46.0, 51.6],
+      said: '「いや、開ける前に箱（の宛名）を読まなかったんだ」と言い訳する。',
+      mean: 'didn’t は t がほぼ消えて「ディドゥン」。最後の「ン」が否定のしるし。',
+      trap: '「ン」が聞こえないと did と思いやすい。hadn’t なら「ハ」で始まる。「ディ…ン」なら didn’t。',
+      use: 'Sorry, I didn’t read the sign.（すみません、表示を読んでいませんでした）' },
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'sendaway', seg: [46.0, 51.6], retired: true,
       stem: 'Type what he says: “Mrs. Braverman is going to ___ a free one.” (3 words)', answer: 'send away for',
       cue: 'going to のあと、動詞と2つの短い語。',
       line: 'Mrs. Braverman is going to *send away for* a free one, and that way we all win.',
@@ -68,12 +56,7 @@ export const cheesecakeBandits: Clip = {
       mean: 'send away for ＝ 郵便などで注文して取り寄せる。',
       trap: 'away と for は弱く、send にくっついて一語のように聞こえる。小さな語も数える。',
       use: 'I sent away for a free sample.（無料サンプルを取り寄せた）' },
-
-    // R fix: V2 (blind 55 %): the key's "big company"/"tiny shop" pair spelled the joke out; reworded, and the
-    //   forgetting distractor now says he makes a name up
-    // why: makes one up ← the pause before the name heard as searching for it; Rachel's favorite ← "Mama's"
-    //   heard as a warm, familiar place
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'bakery', seg: [50.4, 58.6],
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'bakery', seg: [50.4, 58.6], retired: true,
       stem: 'Why does the name of the “only losers” get a laugh?',
       choices: ['The giant firm he names is a tiny family bakery', 'He blanks on the firm’s name and makes one up',
                 'The company he blames is Rachel’s favorite'], a: 0,
@@ -83,42 +66,29 @@ export const cheesecakeBandits: Clip = {
       mean: 'conglomerate ＝ 巨大企業。悪者扱いの「大企業」の名前が、小さな家族の店そのもの。',
       trap: '間は名前を探すためではなく、オチの前のため。大げさな前置きのあとは落差を待つ。',
       use: 'The only loser here is my wallet.（損するのは私の財布だけ）' },
-
-    // R fix: V2 (blind 55 %): "glad he saved some" was a filler; now a worry about the theft
-    // why: caught ← the stolen cake is back, so "Are you serious?" heard as alarm; ate without her ← "we ate an
-    //   entire cheesecake" heard as a complaint about sharing (refuted by "we")
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'serious', seg: [79.3, 87.0],
-      stem: 'How does Rachel react on learning he wants more cheesecake?',
-      choices: ['She can’t believe he wants more so soon', 'She’s worried they’ll get caught this time',
-                'She’s hurt he ate it without her'], a: 0,
-      cue: '名前を呼ぶ前の、短い問いかけ。',
+      stem: 'How does Rachel feel when Chandler wants more?',
+      ja: 'チャンドラーがもっと欲しがると、レイチェルはどう思う？',
+      choices: ['Surprised he wants more', 'Worried about getting caught', 'Sad he ate it alone'], a: 0,
+      choicesJa: ['まだ欲しいのかと驚く', '見つかるのが心配', '一人で食べられて悲しい'],
+      cue: '名前を呼ぶ前の短い問い',
       line: '*Are you serious?* Chandler, we ate an *entire cheesecake* two days ago',
-      said: '「本気？2日前に丸ごと1個食べたのに、まだ欲しいの？」とあきれる。',
-      mean: 'Are you serious? は質問ではなく、あきれた驚き。entire が「丸ごと」を強める。',
-      trap: 'we ate は「一緒に食べた」。一人で食べられた不満ではない。',
-      use: 'Are you serious? You’re hungry again?（うそでしょ、もうお腹すいたの？）' },
-
-    // R fix: V2 (blind 60 %): "thin excuse" was the only sensible reading; now a request that Rachel's next turn
-    //   seems to answer
-    // why: forgettable ← "forgotten" read as "not worth remembering" (literal reading); remind him ← Rachel goes on
-    //   to describe the taste, so the line sounds like a request
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'forgot', seg: [83.8, 87.5],
-      stem: 'What does Chandler’s answer to “you want more?” do?',
-      choices: ['It gives a flimsy reason for wanting more', 'It admits the first cake was forgettable',
-                'It asks Rachel to remind him how it tasted'], a: 0,
-      cue: 'forgotten のあと、文末の短い一語。',
+      said: '「本気？2日前に丸ごと1個食べたのに、まだ欲しいの？」と言う。',
+      mean: 'Are you serious? ＝ 本気？うそでしょ？驚いたりあきれたりしたときの決まり文句。',
+      trap: 'we ate（私たちが食べた）なので、一人で食べられた話ではない。two days ago にも注目。',
+      use: 'Are you serious? It’s sold out?（うそでしょ？売り切れ？）' },
+    { id: 'pr1', skill: 'detail', level: 'B1', point: 'forgot', seg: [83.8, 87.5],
+      stem: 'Why does Chandler say he wants more?',
+      ja: 'チャンドラーは、なぜもっと欲しいと言う？',
+      choices: ['He forgot the taste', 'Someone sent it to him', 'He can’t return it'], a: 0,
+      choicesJa: ['味を忘れた', '誰かが彼に送ってきた', '返品できない'],
+      cue: '「and you want more?」への返事',
       line: 'Well, *I’ve forgotten what it tastes like*, okay?',
       said: '「だって、どんな味か忘れちゃったんだよ、いいだろ」と返す。',
-      mean: '2日で味を忘れるはずはない。食べたい本音を苦しい理由で通している。okay? は開き直り。',
-      trap: 'forgotten を「印象が薄い」と取ると、まずかった話になる。苦しい理由は言い訳を疑う。',
-      use: 'I just need to taste it again, okay?（もう一回味見したいだけだよ）' },
-
-    // R fix: V2 (blind 65 %): "ate more" was a filler; now "fine" at face value (the literal hedge)
-    // why: too rich ← "very rich" is said, and heard as a near-complaint; letdown ← "It was fine" taken as the
-    //   polite word for "meh"
-    // anchor: 87.8–100.5 s "It was fine" is followed at once by a slow, loving list (buttery, crumbly, rich yet
-    //   light), and Chandler answers it with "my whole mouth just filled with saliva" (104.2 s)
-    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'fine', seg: [87.3, 101.5],
+      mean: 'I’ve forgotten ＝ 忘れてしまった。what it tastes like ＝ どんな味か。',
+      trap: '前の場面の「誰かが送ってきた」「返せない」も言い訳だが、今の返事は「味を忘れた」。',
+      use: 'I’ve forgotten my password.（パスワードを忘れてしまった）' },
+    { id: 'nt1', skill: 'attitude', level: 'C2', point: 'fine', seg: [87.3, 101.5], retired: true,
       stem: 'When Rachel says the first cheesecake “was fine”, what is she trying not to say?',
       choices: ['That she loved it just as much as he did', 'That she found the cake a bit too rich',
                 'That she found it a bit of a letdown'], a: 0,
@@ -128,36 +98,38 @@ export const cheesecakeBandits: Clip = {
       mean: '「普通」は彼を止めるための言葉。細かく語るほど、自分も忘れられないと分かる。',
       trap: 'fine を額面どおり「いまいち」と取りやすい。rich もほめ言葉。控えめな一言のあとの細かい描写が本音。',
       use: 'It was okay. Best pizza of my life.（まあまあだった。人生最高のピザ）' },
-
-    // why: knows the answer ← "you know what?" read as a real question (literal reading); agree ← the phrase heard
-    //   as "you know, you're right", a Japanese そうだね frame
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', seg: [107.2, 116.8],
-      stem: 'Right after Chandler’s mouth-watering remark, what does Rachel’s first phrase signal?',
-      choices: ['She’s about to change the plan', 'She’s asking if he knows the answer',
-                'She’s about to agree with his point'], a: 0,
-      cue: '文頭の短い3語のあと、何が来るか。',
+      stem: 'What does Rachel mean with “You know what?” here?',
+      ja: 'ここでの「You know what?」でレイチェルが言いたいことは？',
+      choices: ['I have a new idea', 'Do you know the answer?', 'You are right'], a: 0,
+      choicesJa: ['ちょっと考えがある', '答えを知ってる？', 'あなたの言うとおり'],
+      cue: '最初の3語と、そのあと',
       line: '*You know what? Forget it.* We are just hungry.',
-      said: '「もういい。お腹がすいてるだけ。お昼に出て忘れよう」と言う。',
-      mean: 'You know what? は答えを求めない前置きで、「こうしよう」と話を切りかえる合図。',
-      trap: '疑問文の形でも、知っているかは聞いていない。直後に命令や提案が来たら切りかえの合図。',
-      use: 'You know what? Let’s just order pizza.（もういいや、ピザ頼もう）' },
-
-    // why: dropped ← "drop it" runs together ("droppit") and sounds like a past -ed; drop ← the weak 'll after "we"
-    //   lost
+      said: '「ねえ、もういい。お腹がすいてるだけ。お昼に行って忘れよう」と言う。',
+      mean: 'You know what? ＝ ねえ、こうしよう。答えはいらない前置きで、新しい案を出す合図。',
+      trap: '質問の形なので「知ってる？」と思いやすい。すぐ後に Forget it と案が続く。',
+      use: 'You know what? Let’s order pizza.（ねえ、ピザを頼もうよ）' },
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'lunch', seg: [108.6, 112.6],
+      stem: 'Type: “We are just hungry. We ___ lunch.” (3 words)', answer: 'have not had',
+      ja: '空いている所を書こう：「We are just hungry. We ___ lunch.」（3語）',
+      cue: '「hungry」のあと',
+      line: 'We are just hungry. We *have not had* lunch.',
+      said: '「お腹がすいてるだけ。お昼を食べてないから」と言う。',
+      mean: 'have not had 〜 ＝ まだ〜を食べていない。ふだんは haven’t had と短く言う。',
+      trap: 'ふだんの haven’t ではなく、わざと have not と分けて言う。3語ともはっきり聞こえる。',
+      use: 'I haven’t had lunch yet.（まだお昼を食べていません）' },
     { id: 's2', skill: 'sound', level: 'B2', point: 'dropoff', reveals: ['braverman'], seg: [116.5, 120.0],
-      stem: 'Fill the gap: “Yeah, ___ downstairs so that we’re not tempted.”',
+      stem: 'Which words do you hear: “Yeah, ___ downstairs”?',
+      ja: '「Yeah, ___ downstairs」の空所に聞こえるのは？',
       choices: ['we’ll drop it off', 'we dropped it off', 'we drop it off'], a: 0,
-      cue: 'Yeah のあと、主語にくっついた短い音。',
+      choicesJa: ['届けておこう', '届けた', '（いつも）届ける'],
+      cue: '「Yeah」のすぐあと',
       line: 'Yeah, *we’ll drop it off* downstairs so that we’re not tempted.',
-      said: '「うん、食べたくならないよう下に届けておこう」。',
-      mean: 'we’ll の ’ll はごく弱い。drop it off はつながり「ドラピロフ」に近い。',
-      trap: 'droppit を過去の -ed と聞きやすい。so that we’re not は先の話。',
+      said: '「うん、食べたくならないように下の階に届けよう」と言う。',
+      mean: 'we’ll は「ウィル」と小さく短く言う。drop it off はつながって「ドラピロフ」。',
+      trap: 'we drop と思いやすいが、we のあとに軽い「ル」が残る。dropped なら「ドラップティ」と「ト」が入る。',
       use: 'I’ll drop it off on my way home.（帰りに届けておくね）' },
-
-    // R fix: V2 (blind 65 %): "the restaurant they always go to" was a filler; now "Mama's" heard literally
-    // why: mom's house ← "Mama's" heard literally, with a far-off city; steakhouse ← "Chicago, Illinois" caught
-    //   without the bakery's name
-    { id: 'h4', skill: 'humor', level: 'C1', point: 'chicago', reveals: ['bakery'], seg: [119.0, 124.0],
+    { id: 'h4', skill: 'humor', level: 'C1', point: 'chicago', reveals: ['bakery'], seg: [119.0, 124.0], retired: true,
       stem: 'Why does the audience laugh at where Chandler wants to have lunch?',
       choices: [`He picks the bakery the cake came from`, 'He picks his mom’s house for a home-cooked meal',
                 'He picks a famous Chicago steakhouse'], a: 0,
@@ -167,42 +139,29 @@ export const cheesecakeBandits: Clip = {
       mean: '忘れるための外食なのに、行き先はあのケーキの店。しかも遠いシカゴ。',
       trap: '地名だけ聞くとシカゴの有名店に聞こえる。前に出た名前が戻ってきたらオチの合図。',
       use: 'Where to? Anywhere but here.（どこ行く？ここ以外ならどこでも）' },
-
-    // R fix: K6: the key was the only two-part choice; the treat distractor is two-part too
-    // why: a treat ← "Thank you for lunch" taken at face value; free meal ← "we just don't pay for food anymore"
-    //   read literally, as being given food
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'pay', seg: [126.8, 134.8],
-      stem: 'What has happened with the bill at lunch?',
-      choices: ['Each thought the other paid, so no one did', 'One of them paid, so the other said thanks',
-                'The restaurant gave them their meal for free'], a: 0,
-      cue: 'お礼のあと、Wait a minute で何に気づいたか。',
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'pay', seg: [126.8, 134.8],
+      stem: 'Who paid for lunch?',
+      ja: 'お昼代を払ったのは誰？',
+      choices: ['Nobody', 'Rachel', 'Chandler'], a: 0,
+      choicesJa: ['誰も払っていない', 'レイチェル', 'チャンドラー'],
+      cue: '「Wait a minute」のあと',
       line: 'Wait a minute, *I didn’t pay*. *I thought you paid*.',
       said: '「お昼ありがとう」「待って、払ってない。そっちが払ったと思ってた」。',
-      mean: 'お互い相手が払ったと思い、誰も払わずに店を出た。',
-      trap: 'Thank you for lunch はおごられた前提のお礼。次の I didn’t pay で前提がくずれる。',
-      use: 'Wait, did anyone pay for this?（待って、これ誰か払った？）' },
-
-    // R fix: V2 (blind 50 %, the title "Bandits" points at the key): each distractor now carries a reason heard in
-    //   the scene. Still title-leaning: open
-    // why: leave it ← "Mrs. Braverman must be out" heard as "back soon"; knock ← "I just heard her moving around"
-    //   heard as a reason to give it back now
-    { id: 'g3', skill: 'gist', level: 'B2', point: 'hallway', reveals: ['protect', 'heard'], seg: [136.7, 163.0],
-      stem: 'In the hallway, what do they decide about the cake?',
-      choices: ['To take it, and quickly, before she sees', 'To leave it, since she’ll be back soon',
-                'To knock, since she seems to be home'], a: 0,
-      cue: '最後の should の文と、そのあとの短い掛け声。',
+      mean: 'I thought you paid ＝ あなたが払ったと思ってた。二人とも払わずに店を出た。',
+      trap: 'thank you for lunch で、どちらかがおごったと思いやすい。そのあとの I didn’t pay が答え。',
+      use: 'Wait, I thought you paid.（あれ、払ってくれたと思ってた）' },
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'hallway', reveals: ['heard'], seg: [136.7, 163.0],
+      stem: 'What do they decide about the second cake?',
+      ja: '2個目のケーキについて、二人は何を決める？',
+      choices: ['To take it with them', 'To leave it there', 'To knock on her door'], a: 0,
+      choicesJa: ['持っていく', 'そのまま置いておく', '彼女の家のドアをノックする'],
+      cue: '最後の「we should」の文',
       line: 'Well, we should *take it*. — Yeah, but we should *move quick*.',
-      said: '「留守かも」「腐ったら体に悪い」と理由を並べ、「持っていこう。急いで」と決める。',
-      mean: '言い訳を重ねて、結局また持ち去る。go, go, go は「早く早く」。',
-      trap: '「中で音がした」は返す理由ではなく急ぐ理由。結論は最後の we should の文。',
-      use: 'We should move quick before it rains.（雨が降る前に急ごう）' },
-
-    // R fix: V2 (blind 75 %): "only joking" was refuted by the title; now the irony aimed at the wrong target
-    // why: honestly worried ← the reasons taken at face value (sincerity flip); making fun of her ← the escalation
-    //   heard as mockery of Mrs. Braverman (right mechanism, wrong target), but every step serves "take it"
-    // anchor: 149–159 s the worry grows from “gone bad” to "could kill her" to "we're protecting her", and every
-    //   step ends in "we should take it" and "move quick"
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'protect', seg: [146.8, 159.0],
+      said: '「留守かも」「腐ったら大変」と理由を並べ、「持っていこう。急いで」と決める。',
+      mean: 'we should 〜 ＝ 〜したほうがいい、〜しよう。take it ＝ 持っていく。',
+      trap: '「中で音がした」から、返しに行くと思いやすい。音は急ぐ理由。結論は we should take it。',
+      use: 'We should move quick. It’s going to rain.（急ごう、雨が降りそう）' },
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'protect', seg: [146.8, 159.0], retired: true,
       stem: 'Which plain-English version keeps what they mean about protecting her?',
       choices: ['“We want the cake, and we’re calling it a favor.”',
                 '“We’re honestly worried it will spoil before she’s back.”',
@@ -213,22 +172,18 @@ export const cheesecakeBandits: Clip = {
       mean: '心配は口実。理由をわざと大きくして、取りたいケーキを「親切」に言いかえている。',
       trap: '理由を一つずつ聞くと本当の心配に聞こえる。理由が大げさになっていったら、結論から聞く。',
       use: 'I’m eating this for your own good.（君のために食べてあげるんだよ）' },
-
-    // why: someone on the stairs ← "heard" caught without "in there"; go bad ← the spoiling talk just before
     { id: 'd2', skill: 'detail', level: 'B1', point: 'heard', seg: [157.6, 163.5],
       stem: 'Why do they need to move quickly?',
-      choices: ['One thinks the owner is home after all', 'One hears someone coming up the stairs',
-                'The cake may go bad if they wait'], a: 0,
-      cue: 'Why? と聞かれたすぐあとの答え。',
+      ja: 'なぜ急がないといけない？',
+      choices: ['She may be home', 'Someone is on the stairs', 'The cake may go bad'], a: 0,
+      choicesJa: ['彼女が家にいるかもしれない', '階段に誰かいる', 'ケーキが傷むかもしれない'],
+      cue: '「Why?」のすぐあと',
       line: 'Because I think I *just heard her moving around in there*.',
       said: '「なんで？」「中で彼女が動いてる音がした気がする」。',
-      mean: '留守だと思っていた持ち主が、実は家にいるかもしれない。だから見つかる前に急ぐ。',
-      trap: 'heard だけで「誰かが来る」と取りやすい。in there（その中で）で、部屋の中だと分かる。',
-      use: 'I think I just heard the doorbell.（今、玄関のベルが鳴った気がする）' },
-
-    // why: call the others ← whistling as a way to call people over, and Monica and Joey come up next; a signal ←
-    //   the lookout script from the hallway grab just before
-    { id: 'h5', skill: 'humor', level: 'C1', point: 'whistle', reveals: ['hundred'], seg: [168.8, 178.2],
+      mean: 'I think I just heard 〜 ＝ 今〜が聞こえた気がする。in there ＝ その部屋の中で。',
+      trap: 'ケーキが傷む話は持っていく理由。急ぐ理由は in there（部屋の中）の音。',
+      use: 'I think I just heard the doorbell.（今、玄関のチャイムが鳴った気がする）' },
+    { id: 'h5', skill: 'humor', level: 'C1', point: 'whistle', reveals: ['hundred'], seg: [168.8, 178.2], retired: true,
       stem: 'Why does Chandler offer her money for a whistle?',
       choices: ['Her mouth is full, so she couldn’t do it', 'He wants her to call the others over',
                 'He wants a signal if someone is coming'], a: 0,
@@ -238,35 +193,28 @@ export const cheesecakeBandits: Clip = {
       mean: '口いっぱいにケーキがあれば口笛は吹けない。否定してもバレる、という意地悪な証明。',
       trap: '口笛を合図や呼び出しと取りやすい。right now は今の口の中を確かめる。',
       use: 'Prove it. Say something right now.（じゃあ証明して。今何か言って）' },
-
-    // why: $200 ← "give you a" runs together and the a can pass for "two"; $1,000 ← hundred/thousand
     { id: 'n2', skill: 'number', level: 'B1', point: 'hundred', seg: [174.0, 178.2],
       stem: 'How much does Chandler offer her to whistle?',
+      ja: 'チャンドラーは口笛を吹いたらいくら払うと言う？',
       choices: ['$100', '$200', '$1,000'], a: 0, keep: true,
-      cue: 'give you のあと、dollars の前。',
+      choicesJa: ['100ドル', '200ドル', '1,000ドル'],
+      cue: '「give you」のあと',
       line: 'I will give you *a hundred dollars* to whistle',
-      said: '「今口笛を吹けたら100ドルあげる」と持ちかける。',
-      mean: 'a hundred ＝ 100。give you a はつながり、a はごく短い。',
-      trap: 'a を two と聞くと 200 になる。thousand なら「サウザン」と長い音が続く。',
-      use: 'Ten bucks if you do the dishes.（皿洗いしたら10ドルあげる）' },
-
-    // R fix: V2 (blind 65 %): both distractors were off the line's words; now "have to tell them" read as advice,
-    //   and a near miss (petty, not self-incriminating) that "what we did" settles
-    // why: own up ← "you're gonna have to tell them" heard as "you should tell them"; petty ← the right direction
-    //   (he won't tell) for a reason "what we did" refutes
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'tell', seg: [183.5, 193.3],
-      stem: 'When Rachel asks if he’ll tell Monica and Joey, what is her point?',
-      choices: ['He can’t tell on her without telling on himself', 'She thinks he should own up to what they did',
-                'Telling on her would just make him look petty'], a: 0,
-      cue: '自分で出した質問に、自分で No と答えた理由。',
-      line: 'You’re gonna go run tell Monica? … *No, because then you’re gonna have to tell them what we did.*',
-      said: '「モニカに言いつける？」と聞き、自分で「無理よ、私たちのしたことも話すことになる」と答える。',
-      mean: '告げ口すれば二人で盗んだことも明かすことになる、と見抜いている。',
-      trap: 'have to を「〜すべき」と取りやすい。ここは「〜する羽目になる」。',
-      use: 'Go ahead, tell them. I dare you.（言えば？言えるもんならね）' },
-
-    // anchor: 187.4–188.4 s both sources: "you're gonna have to", four weak words in about a second, right after "No,
-    //   because then"
+      said: '「今口笛を吹けたら100ドルあげる」と言う。',
+      mean: 'a hundred ＝ 100。give you a はつながって「ギヴュア」、a はごく短い。',
+      trap: 'two hundred なら「トゥー」がはっきり聞こえる。thousand は「サウザン」で、「ハンドレッ」とちがう。',
+      use: 'I’ll give you ten dollars to help me.（手伝ってくれたら10ドルあげる）' },
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'tell', seg: [183.5, 193.3],
+      stem: 'Why can’t Chandler tell Monica and Joey?',
+      ja: 'チャンドラーは、なぜモニカとジョーイに言えない？',
+      choices: ['He stole the cake too', 'He promised Rachel', 'They are not home'], a: 0,
+      choicesJa: ['彼もケーキを盗んだ', 'レイチェルと約束した', '二人は留守'],
+      cue: '自分の質問に答える「No」のあと',
+      line: 'No, because then *you’re gonna have to tell them what we did*. We are dessert-stealers.',
+      said: '「言えないよね。言ったら、私たちのしたことも話すことになる」と言う。',
+      mean: 'what we did ＝ 私たちがしたこと。言いつけたら、自分も盗んだとばれる。',
+      trap: 'have to から「話すべき」と思いやすい。ここは「話すはめになる」。we で彼も同じだと分かる。',
+      use: 'Then I’ll have to tell everyone.（そしたら、みんなに話すことになる）' },
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'tell', seg: [186.9, 193.3],
       stem: 'Type the middle: “No, because then ___ tell them what we did.” (4 words)',
       answer: "you're gonna have to",
@@ -276,72 +224,60 @@ export const cheesecakeBandits: Clip = {
       mean: 'you’re gonna have to ＝ 〜する羽目になる。告げ口する側が、自分の罪も話すことになる。',
       trap: '文法に合わせて you’ll と書きたくなる。聞こえた形で書く。',
       use: 'If you’re late, you’re gonna have to wait.（遅れたら待つことになるよ）' },
-
-    // why: return it ← "taking it back" read as giving it back to Mrs. Braverman; her share ← "you've already had
-    //   some" comes a few lines later
     { id: 'd3', skill: 'detail', level: 'B1', point: 'trust', seg: [193.2, 199.0],
-      stem: 'What reason does Chandler give first for taking the cake back?',
-      choices: ['He doesn’t trust her with it anymore', 'He wants to return it to its owner',
-                'She has already had more than her share'], a: 0,
-      cue: 'You know what のあと、最初の理由。',
+      stem: 'Why does Chandler take the cake back?',
+      ja: 'チャンドラーは、なぜケーキを取り返す？',
+      choices: ['He doesn’t trust her', 'He wants to return it', 'She eats too fast'], a: 0,
+      choicesJa: ['彼女を信用していない', '持ち主に返したい', '彼女は食べるのが速すぎる'],
+      cue: '「You know what」のあと',
       line: 'I *don’t trust you with this cake* anymore. And I got it first',
-      said: '「もう君にこのケーキは任せられない。先に取ったのは僕だ」。',
-      mean: 'trust you with ＝ 〜を安心して預ける。take it back は「取り返す」。',
-      trap: 'take back を「返却」と取ると、持ち主に返す話になる。誰の手に戻るかを聞く。',
-      use: 'I trust you with my keys.（君になら鍵を預けられる）' },
-
-    // R fix: V2 (blind 50 %): the split was the only compromise; now each distractor is one side's claim
-    // why: he keeps it ← "I got it first, and I'm taking it back!" sounds final; she keeps it ← "you've already had
-    //   some" heard the wrong way round
+      said: '「もう君にこのケーキは任せられない。先に取ったのは僕だ」と言う。',
+      mean: 'trust you with 〜 ＝ 〜を安心して任せる。take it back ＝ 取り返す。',
+      trap: 'take back から「返す」と思いやすいが、自分の手に取り返す。持ち主の話は出ない。',
+      use: 'I trust you with my keys.（君になら鍵を任せられる）' },
     { id: 'g4', skill: 'gist', level: 'B1', point: 'split', reveals: ['cave'], seg: [193.2, 216.5],
-      stem: 'How do they settle the fight over the second cheesecake?',
-      choices: ['They agree to split it, half each', 'He keeps it, since he got it first', 'She keeps it, since he’s had some'],
-      a: 0,
-      cue: '取り返す宣言のあと、Rachel が出す別の案。',
+      stem: 'How does the fight over the cake end?',
+      ja: 'ケーキの取り合いは、どう終わる？',
+      choices: ['They split it in half', 'Chandler keeps it all', 'Rachel keeps it all'], a: 0,
+      choicesJa: ['半分ずつに分ける', 'チャンドラーが全部取る', 'レイチェルが全部取る'],
+      cue: '「we’re gonna」のあとの案',
       line: 'No, we’re gonna *split it*. You take half and I take half.',
-      said: '「半分ずつにしよう」に渋るが、モニカの名前を出されて折れる。',
-      mean: 'split it ＝ 分け合う。独り占めの争いが、山分けで決着する。',
-      trap: 'got it first も already had some も言い分にすぎない。決着は最後の同意で聞く。',
+      said: '「半分ずつにしよう」に一度は渋るが、最後は「何で切る？」と受け入れる。',
+      mean: 'split it ＝ 分ける。You take half and I take half ＝ 半分ずつ。',
+      trap: '「先に取った」「もう食べた」と言い合うので、一人が取ると思いやすい。最後は半分こ。',
       use: 'Let’s split the bill.（割り勘にしよう）' },
-
-    // why: nothing to cut with ← the question taken literally, as a real problem; buying time ← a question heard as
-    //   stalling in an argument (no comeback follows: they split it)
-    { id: 'pr2', skill: 'pragma', level: 'C1', point: 'cave', reveals: ['split'], seg: [206.3, 216.0],
-      stem: 'Right after Rachel’s remark about Monica, what does Chandler’s question do?',
-      choices: ['It accepts the split so she won’t tell', 'It points out they have nothing to cut with',
-                'It buys time while he thinks of a comeback'], a: 0,
-      cue: '脅しの直後、彼の質問の中身と、そのあとの流れ。',
-      line: 'Monica would be very interested to know that you called her cheesecake *dry and mealy*. — *What do we use to split it?*',
-      said: '「モニカのケーキをパサパサって言ってたこと、話そうかな」に、すぐ「何で切る？」。',
-      mean: '反論せず切り方の話に移り、「半分ずつでいい」と降参している。',
-      trap: '質問の形でも、本当に道具を聞いているのではない。脅しの直後の話題転換は、受け入れの合図。',
-      use: 'Fine. Where do I sign?（分かったよ。どこにサインすれば？）' },
-
-    // why: amused ← "Oh" and a sitcom laugh heard as fond teasing; worried ← cutting and measuring heard as a risk
-    //   to the cake
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'cave', reveals: ['split'], seg: [206.3, 216.0],
+      stem: 'What is Rachel doing when she mentions Monica?',
+      ja: 'モニカの名前を出すとき、レイチェルは何をしている？',
+      choices: ['Threatening Chandler', 'Asking for Monica’s help', 'Praising Monica’s cake'], a: 0,
+      choicesJa: ['チャンドラーを脅している', 'モニカに助けを求めている', 'モニカのケーキをほめている'],
+      cue: '「you know what?」のあと',
+      line: 'I think *Monica would be very interested to know* that you called her cheesecake *dry and mealy*.',
+      said: '「モニカのケーキをパサパサと言ったこと、モニカは知りたいだろうな」と言う。',
+      mean: 'would be very interested to know ＝ 知りたがるだろうね。ていねいな形で「言いつけるよ」と脅す。',
+      trap: 'interested がやわらかく聞こえるが、dry and mealy（パサパサ）は悪口。ほめていない。',
+      use: 'I think your boss would be interested to know.（上司が知ったら興味を持つだろうね）' },
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'sake', seg: [229.4, 234.9],
-      stem: 'When measuring the cake is suggested, how does the reply sound?',
-      choices: ['Fed up with the endless choosing', 'Amused by the careful measuring', 'Worried the cake will get ruined'],
-      a: 0,
-      cue: 'Oh のあとの短い決まり文句と、命令の形。',
+      stem: 'How does “Oh, for God’s sake” sound here?',
+      ja: 'ここでの「Oh, for God’s sake」はどんな気持ち？',
+      choices: ['Annoyed', 'Amused', 'Worried'], a: 0,
+      choicesJa: ['いらいらしている', '面白がっている', '心配している'],
+      cue: '「Maybe if I measure」への返事',
       line: 'Maybe if I measure… — *Oh, for God’s sake*, just pick a piece!',
       said: '「測ってみようか」に「もう、いいから早く選んで！」と返す。',
-      mean: 'for God’s sake ＝ いいかげんにして。いらだちの決まり文句。',
-      trap: 'God が入っても祈りや心配ではない。just ＋命令は「さっさと」。',
-      use: 'Oh, for heaven’s sake, just ask her!（もう、さっさと聞いてみなよ！）' },
-
-    // R fix: S3/cue leak: the cue said "to me", a word only the key has; it now points at "crying"
-    // why: get upset ← "crying" taken literally and tied to "too fast"; tell the others ← telling Monica and Joey
-    //   came up a minute ago
+      mean: 'for God’s sake ＝ もう、いいかげんにして。いらいらしたときの決まり文句。',
+      trap: 'God（神）が入るので祈りや心配と思いやすい。just pick（さっさと選んで）でいらだちと分かる。',
+      use: 'Oh, for heaven’s sake, just ask her!（もう、さっさと聞きなよ！）' },
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'crying', seg: [241.0, 250.2],
-      stem: 'What does the last of the three rules mean?',
-      choices: ['Don’t ask me for more later', 'Don’t eat so fast you get upset', 'Don’t tell the others about this'],
-      a: 0,
-      cue: 'crying のあと、if で始まる条件。',
+      stem: 'What does “don’t come crying to me” mean?',
+      ja: '「don’t come crying to me」はどういう意味？',
+      choices: ['Don’t ask me for help', 'Don’t cry in front of me', 'Don’t tell Monica'], a: 0,
+      choicesJa: ['あとで私に頼ってこないで', '私の前で泣かないで', 'モニカに言わないで'],
+      cue: '最後の「no switching」のあと',
       line: 'No sharing, no switching, and *don’t come crying to me* if you eat your piece too fast.',
-      said: '「分け合いなし、交換なし、早く食べても泣きついてくるなよ」と念を押す。',
-      mean: 'come crying to me ＝ 泣きついてくる。食べ終えても、こっちのを欲しがるな。',
-      trap: 'crying を本当に泣くと取ると、気持ちの話になる。',
-      use: 'Don’t come crying to me when it breaks.（壊れても泣きついてこないでね）' },
+      said: '「分けない、交換しない、早く食べても泣きついてこないで」と念を押す。',
+      mean: 'come crying to me ＝ 泣きついてくる。ここは「食べ終えても、こっちのを欲しがらないで」。',
+      trap: 'crying から本当に泣く話と思いやすいが、決まり文句。「助けを求めてくる」の意味。',
+      use: 'Don’t come crying to me if you’re late.（遅れても泣きついてこないでね）' },
   ]
 };
