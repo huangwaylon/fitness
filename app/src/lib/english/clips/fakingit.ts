@@ -1,3 +1,4 @@
+// A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
 // “Deep Down Everyone is Faking It | Parks and Recreation” (the official Parks and Recreation channel, Season 2
 // playlist): Andy, home from his London job, tells April work is going great; April tells the camera she's proud of
 // him, then finds him hiding in a dumpster. He admits he's in over his head; April tells him nobody knows what they're
@@ -11,8 +12,7 @@
 // awesome"), 26–33 s (a making-out line), 44.5–46 s ("See you on stupid Skype": speaker never named), 78.3 s (captions
 // "cause uh", whisper "because": not key words), 92–93 s ("That's not a toilet": bodily), 100.7 s (captions "the
 // beard", whisper "a beard"), 144.7 s (five sandwiches: memory of a detail), 170–174 s (noodles).
-// REVIEW 2026-11-16: pass 7, fix 15, drop 2, new 1; ear checks 0
-// REVIEW: s1 and x1 came off the ear-check list: both sources agree on the words (GUIDE §9.7).
+// The ids nt1 and nt3 were dropped before they shipped: never reuse them.
 import type { Clip } from '../types.ts';
 
 export const fakingIt: Clip = {
@@ -21,27 +21,32 @@ export const fakingIt: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // R fix: V2, blind 75 % (the only upbeat choice); now three upbeat claims, told apart by what he actually says
-    // why: team ← "kicking ass" heard as being liked at work; learning ← "Do you still love it?" heard as a newcomer's
-    //   question, so the usual "still learning but loving it" script
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'front', seg: [2.5, 25.0],
-      stem: 'When April asks about work, how does Andy say it’s going?',
-      choices: ['He loves it, and he’s doing really well', 'He loves it, and the team loves him',
-                'He loves it, and he’s learning a lot'], a: 0,
-      cue: '「love it?」への返事と、自分をたとえる人物。',
-      line: 'Do you still love it? — Yeah… *I’m kicking ass*.',
-      said: '仕事はまだ好きかと聞かれ、「絶好調。チャック・ノリスみたい」と答える。',
-      mean: 'kick ass ＝ すごくうまくやっている。この時点では、仕事は順調だと見せている。',
-      trap: 'kick ass は「うまくやっている」。評判や学びの話はしていない。',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'front', seg: [2.5, 25.0],
+      stem: 'How does Andy say his work is going?',
+      ja: 'アンディは仕事がどうだと言う？',
+      choices: ['It’s going really well', 'His team really loves him', 'He’s learning a lot'], a: 0,
+      choicesJa: ['とてもうまくいっている', 'チームにすごく好かれている', 'たくさん学んでいる'],
+      cue: '「still love it?」のあと',
+      line: 'Do you still love it? — Yeah, *that’s awesome*.',
+      said: '「まだ好き？」に「うん、最高。絶好調」と答える。',
+      mean: 'awesome ＝「最高」。本当はうまくいっていないが、うまくいっていると言っている。',
+      trap: '「学んでいる」「好かれている」とは言っていない。言葉どおり「最高・絶好調」。',
       use: 'Work’s going great, thanks.（仕事は順調だよ、ありがとう）' },
 
-    // R drop: nt3 (C2 attitude, never shipped): S4/V1, its key rests on the confession at 84–97 s, outside its
-    //   segment (11.5–24.6 s), so it tests memory of a later scene; and V2, blind 70 % (the title gives it). Replaced by nt4.
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9.0, 14.5],
+      stem: 'What does “Speaking of London” mean here?',
+      ja: '「Speaking of London」は、ここではどういう意味？',
+      choices: ['On the topic of London', 'I miss London so much', 'Let’s go to London now'], a: 0,
+      choicesJa: ['ロンドンと言えば', 'ロンドンがすごく恋しい', '今からロンドンに行こう'],
+      cue: '「brilliant」の話のあと',
+      line: '*Speaking of London*, you haven’t told me anything about work.',
+      said: '「ロンドンと言えば、仕事のこと何も聞いてないよ」と言う。',
+      mean: 'Speaking of 〜 ＝「〜と言えば」。前の話から、聞きたいことへつなぐ。',
+      trap: 'speaking（話す）から「ロンドンの話をしよう」と思いやすい。話題をつなぐ合図。',
+      use: 'Speaking of work, how’s your new job?（仕事と言えば、新しい仕事はどう？）' },
 
-    // R fix: V2, blind 70 % (the only mundane landing); all three now land on something at work
-    // why: rivals ← "crushing it" (= doing great) heard as crushing coworkers, with "kicking ass" just before; his fears ←
-    //   his later "scared and confused" (104 s) carried back
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'norris', seg: [17.0, 24.6],
+    // retired (A2): a “why is it funny” item
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'norris', seg: [17.0, 24.6], retired: true,
       stem: 'Why is Andy’s comparison to a tough action star funny?',
       choices: ['It builds up a fighter, then lands on desk work', 'It builds up a fighter, then lands on his rivals',
                 'It builds up a fighter, then lands on his fears'], a: 0,
@@ -52,10 +57,8 @@ export const fakingIt: Clip = {
       trap: 'crushing it（絶好調）から同僚の話に聞こえやすい。instead of のあとを聞く。',
       use: 'I’m basically a superhero, only with spreadsheets.（要はヒーロー、ただし表計算の）' },
 
-    // R fix: V2, blind 55 % ("wrong fact" stood out); the choices now all name what follows the promise
-    // why: distance ← "not the same moon" heard as "we'll be far apart", the London line just before; dig at London ←
-    //   "go back to London" (35 s) and the flat "obviously" heard as a jab
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'moon', seg: [36.2, 44.4],
+    // retired (A2): a “why does it get a laugh” item
+    { id: 'h2', skill: 'humor', level: 'C1', point: 'moon', seg: [36.2, 44.4], retired: true,
       stem: 'Why does the goodbye line about the moon get a laugh?',
       choices: ['A sweet promise gets a needless, false correction', 'A sweet promise gets a gloomy note about distance',
                 'A sweet promise gets turned into a dig at London'], a: 0,
@@ -66,27 +69,20 @@ export const fakingIt: Clip = {
       trap: '距離の寂しさに聞こえやすいが、距離の話はない。the と a の差を聞く。',
       use: 'Think of me when you see the moon.（月を見たら私を思い出して）' },
 
-    // R fix: V2, blind 50 %; distractors now built on "first time" and "out"
-    // why: standing up for himself ← "the first time he's really…" heard as a first act of nerve; out of his way ←
-    //   "gone out" heard as "gone out of his way" (無理して人のために)
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'limb', seg: [49.5, 59.5],
-      stem: 'In her talk to the camera, what does April praise Andy for?',
-      choices: ['Taking a real risk for once', 'Going out of his way for others',
-                'Standing up for himself for once'], a: 0,
-      cue: '「first time」のあとの決まった言い方。',
+      stem: 'What does “gone out on a limb” mean?',
+      ja: '「gone out on a limb」はどういう意味？',
+      choices: ['Taking a real risk', 'Helping other people', 'Standing up for himself'], a: 0,
+      choicesJa: ['思い切って挑戦する', '人を助ける', '自分を主張する'],
+      cue: '「the first time he’s」のあと',
       line: 'This is the first time he’s really *gone out on a limb*.',
-      said: '「本当に思い切ったのは初めて」とカメラに話す。',
-      mean: 'go out on a limb ＝ 枝の先に出る、つまり思い切って挑戦する。',
-      trap: 'gone out から go out of one’s way を思いやすい。on a limb までで一つ。',
+      said: 'カメラに「彼が思い切って挑戦したのは初めて」と話す。',
+      mean: 'go out on a limb ＝「思い切ったことをする」。limb は木の枝。細い枝の先に出るイメージ。',
+      trap: 'limb（枝）が分からず、人を助ける話と思いやすい。first time とセットで「初めての挑戦」。',
       use: 'I went out on a limb and applied.（思い切って応募してみた）' },
 
-    // R drop: nt1 (C2 infer, never shipped): S4/V1, nothing said in 49.5–69.6 s shows the step has stalled (that
-    //   comes at 84 s, or from the picture of the dumpster); and V2, blind 70 %. Replaced by nt4.
-
-    // R fix: V2, blind 55 % (the only "explains nothing" choice); now three ways the answer could misfire
-    // why: forgets the lie ← the stammered "I was just… just" heard as a story he loses halfway; pool ← "jumped in" is
-    //   what you say of a pool
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'jumped', seg: [74.8, 81.7],
+    // retired (A2): a “why is it funny” item
+    { id: 'h3', skill: 'humor', level: 'C1', point: 'jumped', seg: [74.8, 81.7], retired: true,
       stem: 'Why is Andy’s answer about being in the dumpster funny?',
       choices: ['He gives a reason that explains nothing', 'He starts a lie and forgets it halfway',
                 'He talks about the dumpster like a pool'], a: 0,
@@ -97,62 +93,56 @@ export const fakingIt: Clip = {
       trap: '言いよどみや jumped in に引かれやすい。because のあとに新しい情報があるか聞く。',
       use: 'Why am I here? Because I came.（なぜいるかって？来たからだよ）' },
 
-    // R fix: V2, blind 75 % ("finally opens up" cued a confession); the stem no longer says so, and "under control"
-    //   is the literal reading of "over"
-    // why: under control ← "over my head" read as "on top of it" (上に立つ); all he thinks about ← "over my head" heard
-    //   as "in my head"
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'overhead', seg: [83.8, 93.7],
-      stem: 'Out of the dumpster, how does Andy describe the project?',
-      choices: ['As far more than he can handle', 'As something he has fully under control',
-                'As all he can think about lately'], a: 0,
-      cue: '「totally」のあとの決まった言い方。',
+      stem: 'What does “in over my head” mean?',
+      ja: '「in over my head」はどういう意味？',
+      choices: ['Too much for him', 'Fully under control', 'All he thinks about'], a: 0,
+      choicesJa: ['手に負えない', '完全にうまくいっている', 'そればかり考えている'],
+      cue: '「Get out」のあと',
       line: 'I’m *totally in over my head* on this project.',
-      said: '「このプロジェクト、完全に手に負えない」と打ち明ける。',
-      mean: 'in over one’s head ＝ 背が立たない深さ、つまり力を超えている。',
-      trap: 'over を「上に立つ」、head を「頭がいっぱい」と取りやすい。正しくは頭の上まで水。',
+      said: 'ゴミ箱から出て、「この仕事、完全に手に負えない」と言う。',
+      mean: 'in over my head ＝「（水が頭の上まで来て）手に負えない」。',
+      trap: 'head（頭）から「頭の中がそれでいっぱい」と思いやすい。溺れるイメージ。',
       use: 'I’m in over my head with this.（これ、手に負えない）' },
 
-    // why: explain ← "I need your…" heard as a request for help; documents ← "crushing documents" from earlier
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sign', seg: [86.2, 93.7],
       stem: 'What do people come to Andy for every day?',
+      ja: '毎日、人がアンディに何を求めてくる？',
       choices: ['To approve and sign things', 'To explain how things work', 'To check and fix documents'], a: 0,
-      cue: '「I need your」のあとの語、2回分。',
+      choicesJa: ['承認してサインする', '仕組みを説明する', '書類を直す'],
+      cue: '「Every day」のあと',
       line: 'I need your *approval* on this… I need your *signature*, Mr. Dwyer.',
-      said: '毎日だれかが来て「承認をください」「署名をください」と言う、と話す。',
-      mean: '決める立場の責任者になっている。でも決める自信がない、というのが本音。',
-      trap: '前に書類の話が出たので「書類を直す」に引かれやすい。I need your のあとの名詞を拾う。',
+      said: '「毎日『承認ください』『サインください』と言われる」と話す。',
+      mean: 'approval ＝ 承認。signature ＝ 署名・サイン。偉い役なので決める仕事ばかり。',
+      trap: 'documents（書類）の話が前にあるので、書類を直すと思いやすい。approval を聞く。',
       use: 'I just need your signature here.（ここに署名だけお願いします）' },
 
-    // R fix: V2, blind 65 %; the stem leaked "admits he's struggling" (f2's key), and "lying on purpose" was absurd
-    // why: reminds him ← "awesome" and "Chuck Norris" are upbeat words, heard as encouragement (the Japanese 励まし frame);
-    //   guessed all along ← "But you said…" heard as "I knew it"
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'said', reveals: ['front'], seg: [93.7, 99.6],
-      stem: 'After Andy describes his days at work, what does April’s reply do first?',
-      choices: ['It notes this clashes with what he told her', 'It reminds him how well he was doing',
-                'It says she had guessed this all along'], a: 0,
-      cue: '「But you said」が2回。何と何を比べている？',
+      stem: 'Why does April say “But you said…”?',
+      ja: 'エイプリルはなぜ「But you said…」と言う？',
+      choices: ['His words before were different', 'She thinks he is doing well', 'She knew the truth already'], a: 0,
+      choicesJa: ['前に言っていたことと違う', 'うまくいっていると彼女は思う', '本当のことを前から知っていた'],
+      cue: '仕事の話のあと',
       line: '*But you said* everything was going awesome. *You said* you were like Chuck Norris.',
-      said: '「でも、全部最高だって言ってたじゃない。チャック・ノリスみたいだって」と返す。',
-      mean: '前の話と今の話の食い違いを指摘し、説明をうながす。責めるより確かめている。',
-      trap: '明るい語は励ましに聞こえやすい。But you said は「前と違う」の合図。',
+      said: '「でも、全部最高って言ってたよね。チャック・ノリスみたいって」と言う。',
+      mean: 'But you said 〜 ＝「でも〜って言ってたよね」。前の言葉と今の話の違いを指す。',
+      trap: '元気づけていると思いやすいが、前と話がちがうと指摘している。',
       use: 'But you said it was fine!（でも大丈夫って言ってたよね！）' },
 
-    // why: still learning ← "scared and confused about his big London job" heard as a newcomer's nerves; best but tired
-    //   ← "I am" heard as a yes, the "now" lost
     { id: 'i1', skill: 'infer', level: 'B2', point: 'now', reveals: ['said'], seg: [95.7, 107.85],
-      stem: 'When April brings up the tough-guy comparison, how does Andy update it?',
-      choices: ['He’s like the star now: past his best', 'He’s like the star at first: still learning',
-                'He’s like the star at his best, only tired'], a: 0,
-      cue: '「I am, but」のあとの短い一語。',
+      stem: 'How does Andy change his Chuck Norris comparison?',
+      ja: 'アンディはチャック・ノリスのたとえをどう変える？',
+      choices: ['Old and not good anymore', 'New and still learning', 'Strong but tired'], a: 0,
+      choicesJa: ['年を取って、もう強くない', '新人で、まだ学んでいる', '強いが、疲れている'],
+      cue: '「now」のあと',
       line: 'I am, but I’m like Chuck Norris *now*. Some old guy… who *used to be good* at karate…',
-      said: '「そうだよ、でも今のチャック・ノリス。昔は空手が強かった、ひげのおじさん」と言う。',
-      mean: 'now の一語で、全盛期でなく今の彼にたとえ直す。もう勢いはない、という自虐。',
-      trap: 'I am から「強いまま」と取りやすい。but のあとの now が逆にする。',
+      said: '「今のチャック・ノリスなんだ。昔は空手が得意だった、ひげのおじさん」と言う。',
+      mean: 'used to be 〜 ＝「前は〜だった（今はちがう）」。now ＝ 今の。',
+      trap: '強いスターにたとえるので、強いと思いやすい。used to be good（昔は）を聞く。',
       use: 'I used to be good at this.（昔はこれ、得意だったんだけど）' },
 
-    // C2 dict: a non-standard form that grammar would "fix" (him and me)
-    // anchor: 108.24–110.4 s both sources have "the parallels between he and I are very eerie"
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'eerie', seg: [107.7, 111.0],
+    // retired (A2): a C2 dictation of a non-standard form (he and I)
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'eerie', seg: [107.7, 111.0], retired: true,
       stem: 'Type what Andy says: “The parallels between ___ are very eerie.” (3 words)', answer: 'he and i',
       cue: '「between」のあと。文法より、聞こえた音を。',
       line: 'The parallels between *he and I* are very eerie.',
@@ -161,101 +151,90 @@ export const fakingIt: Clip = {
       trap: '文法から him and me と書きたくなる。正しい文でなく、聞こえた形を書く。',
       use: 'Between you and I, it’s a mess.（ここだけの話、ひどいよ）' },
 
-    // R fix: V2, blind 50 % ("not gonna" was out by sense); "I'll" replaces it, as natural a start as the key
-    // why: wanna ← "gonna" and "wanna" differ only in one blurred first sound; I'll ← the "I'm" shrinks to one short
-    //   vowel, and "I'll tell you a secret" is just as common; gotta ← the flapped middle sound, close to "gotta"
     { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [110.9, 114.4],
       stem: 'Fill the gap: “___ tell you a secret about everyone else’s job.”',
-      choices: ['I’m gonna', 'I wanna', 'I’ll', 'I gotta'], a: 0,
-      cue: '文頭、二語がつながって短く聞こえる部分。',
+      ja: '「___ tell you a secret about everyone else’s job.」の空所は？',
+      choices: ['I’m gonna', 'I wanna', 'I gotta'], a: 0,
+      choicesJa: ['〜するね（going to）', '〜したい（want to）', '〜しなきゃ（got to）'],
+      cue: 'アンディの話のすぐあと',
       line: '*I’m gonna* tell you a secret about everyone else’s job.',
-      said: '「みんなの仕事について、秘密を教えてあげる」と切り出す。',
-      mean: 'I’m going to が縮み、「アムガナ」のようにつながる。',
-      trap: 'wanna と gonna は頭の音だけの差。I’ll なら「アイル」で、ガの音がない。母音のあとの g を聞く。',
+      said: '「ほかの人の仕事について、秘密を教えてあげる」と言う。',
+      mean: 'I’m gonna 〜 ＝ I’m going to 〜（これから〜する）。gonna は「ゴナ」。',
+      trap: 'wanna は「ワナ」、gotta は「ガラ」。ここは「ゴナ」と聞こえる。',
       use: 'I’m gonna tell you something.（ちょっと言っておくね）' },
 
-    // R fix: V2, blind 75 % (the only hopeful choice); the distractors now come from things she said
-    // why: quit and stay ← "I don't want you to go back to London" (35 s) carried onto the pep talk; needs his help ←
-    //   "I don't know how to run…" heard as her own cry for help
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'advice', reveals: ['figure'], seg: [110.9, 135.6],
-      stem: 'Why does April tell Andy about her own job?',
-      choices: ['So he sees he’ll find his feet, like everyone', 'So he sees he could quit and stay home with her',
-                'So he sees she struggles too and needs his help'], a: 0,
-      cue: '「faking it」のあと、文がどこまで続くか。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', reveals: ['figure'], seg: [110.9, 135.6],
+      stem: 'What does April want Andy to see?',
+      ja: 'エイプリルはアンディに何を分かってほしい？',
+      choices: ['He’ll be fine, like everyone', 'He could quit and stay home', 'She needs his help, too'], a: 0,
+      choicesJa: ['みんなと同じで、大丈夫になる', '辞めて家にいればいい', '彼女も助けが必要'],
+      cue: '最後の「And you will too」',
       line: 'No one knows what they’re doing… faking it *until they figure it out*.',
-      said: '誰も分かっていない、私もそう、みんな分かるまでふりをしてる、と話す。',
-      mean: '迷うのは一時のことで、いずれ分かる。だから Andy も戻れる、と伝えている。',
-      trap: '前の「戻らないで」を持ちこみやすい。結論は until 以下と you will too。',
+      said: '「誰も分かってない。みんな、分かるまでふりをしてるだけ。あなたもそう」と言う。',
+      mean: 'fake it ＝「ふりをする」。figure it out ＝ 分かる・解決する。あなたもできる、という励まし。',
+      trap: '「私も分からない」から、助けを求めていると思いやすい。最後の you will too が結論。',
       use: 'Fake it till you make it.（できるまで、できるふりを）' },
 
-    // R fix: V2, blind 70 % (the only kind choice, and the only two-part one); three parallel purposes now
-    // why: joke ← shredding boring documents sounds like a gag; warning ← "everyone else's job" and "no one knows what
-    //   they're doing" heard as about his London coworkers
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'secret', reveals: ['run'], seg: [110.9, 122.95],
-      stem: 'How does April mean her “secret” about everyone’s job?',
-      choices: ['As comfort, using herself as an example', 'As a warning not to rely on his coworkers',
-                'As a joke, so he can laugh the job off'], a: 0,
-      cue: '「No one」のあと、主語が「私」に変わる。',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'secret', reveals: ['run', 'advice'], seg: [110.9, 122.95],
+      stem: 'Why does April share her “secret”?',
+      ja: 'エイプリルはなぜ「秘密」を話す？',
+      choices: ['To make him feel better', 'To warn him about coworkers', 'To make him laugh'], a: 0,
+      choicesJa: ['彼を元気づけるため', '同僚に気をつけろと言うため', '彼を笑わせるため'],
+      cue: '「No one knows」のあと',
       line: 'No one knows what they’re doing. *I don’t know how to run* an animal control department.',
-      said: '「誰も分かってない。私も動物管理課の運営の仕方なんて知らない」と打ち明ける。',
-      mean: '自分の弱みを例に、Andy の不安は普通だと伝える。本気のはげまし。',
-      trap: 'no one を彼の同僚の話と取りやすい。主語が I に変わり、自分を例にする。',
+      said: '「誰も分かってない。私も動物管理課のやり方が分からない」と言う。',
+      mean: 'No one knows what they’re doing ＝「誰も分かってやってない」。自分を例に励ましている。',
+      trap: 'secret（秘密）から、悪いうわさや注意と思いやすい。自分の話で彼を安心させている。',
       use: 'Honestly, nobody knows what they’re doing.（正直、誰も分かってないよ）' },
 
-    // why: animals ← "animal" is said, in the department's name; documents ← the next line about shredding documents
     { id: 'd2', skill: 'detail', level: 'B1', point: 'run', seg: [114.3, 119.3],
       stem: 'What does April say she doesn’t know how to do?',
-      choices: ['Run the department she is in charge of', 'Look after the animals she works with',
-                'Read the documents she gets each day'], a: 0,
-      cue: '「I don’t know how to」のあとの動詞。',
+      ja: 'エイプリルは何のやり方が分からないと言う？',
+      choices: ['Run her department', 'Look after the animals', 'Read her documents'], a: 0,
+      choicesJa: ['自分の課を運営する', '動物の世話をする', '書類を読む'],
+      cue: '「I don’t know how to」のあと',
       line: 'I don’t know how to *run* an animal control department.',
-      said: '「動物管理課の運営の仕方なんて分からない」と言う。',
-      mean: 'run ＝ 運営する・仕切る。走るではない。責任者なのに分からない、と認めている。',
-      trap: 'animal が耳に残り、動物の世話と取りやすい。run のあとは組織の名前。',
+      said: '「動物管理課の運営の仕方が分からない」と言う。',
+      mean: 'run ＝ ここでは「運営する」。how to 〜 ＝「〜のやり方」。',
+      trap: 'animal（動物）が聞こえるので、動物の世話と思いやすい。run のあとを聞く。',
       use: 'Who runs this place?（ここの責任者は誰？）' },
 
-    // why: a few ← the short "half" lost before "the"; most / all ← "because they're so boring" heard as a reason to
-    //   shred everything
     { id: 'n1', skill: 'number', level: 'B1', point: 'half', seg: [118.95, 122.95], keep: true,
       stem: 'How many of her documents does April put into the shredder?',
+      ja: 'エイプリルは書類のどれだけをシュレッダーに入れる？',
       choices: ['A few', 'Half', 'Most', 'All of them'], a: 1,
-      cue: '文の最初、documents の前の一語。',
+      choicesJa: ['少し', '半分', 'ほとんど', '全部'],
+      cue: '「documents」の前',
       line: '*Half the documents* I get, I put right into the shredder…',
-      said: '「届く書類の半分は、退屈すぎてそのままシュレッダー行き」と言う。',
-      mean: 'half the ＝ 〜の半分。of がなくても言える。責任者でもいいかげん、という告白。',
-      trap: 'half は「ハフ」と短く、the とつながって消えやすい。文頭の量の一語を聞く。',
+      said: '「届く書類の半分は、つまらないからすぐシュレッダー」と言う。',
+      mean: 'half ＝ 半分。half the documents ＝ 書類の半分。',
+      trap: 'all（全部）や most（ほとんど）と思いやすい。文の最初の一語 Half を聞く。',
       use: 'Half the time, I’m just guessing.（半分くらいは勘でやってる）' },
 
-    // R fix: V2, blind 60 % ("thanks him and agrees" was weak); now three nuanced replies
-    // why: turns it back ← she goes on to talk about everyone, heard as aimed at him; modesty ← the Japanese 謙遜 frame,
-    //   a compliment answered by playing it down, though "I seem like it" grants the look and denies the fact
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'seem', reveals: ['advice'], seg: [122.95, 130.4],
-      stem: 'When Andy says she seems to know what she’s doing, what does April’s reply do?',
-      choices: ['Admits it looks that way, not that it is', 'Plays down the praise to seem modest',
-                'Turns the praise back around onto him'], a: 0,
-      cue: '「Yeah」のあと、相手の動詞をくり返す。',
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], seg: [122.95, 130.4],
+      stem: 'What does April mean by “I seem like it”?',
+      ja: 'エイプリルの「I seem like it」はどういう意味？',
+      choices: ['She only looks like she knows', 'She really does know it all', 'She knows more than he does'], a: 0,
+      choicesJa: ['分かっているように見えるだけ', '本当に全部分かっている', '彼より分かっている'],
+      cue: 'アンディの「you seem like」のあと',
       line: 'But you seem like you do know… — Yeah, *I seem like it*.',
-      said: '「分かってるように見える」に「うん、そう見えるよね」と返し、みんなふりをしてると続ける。',
-      mean: 'seem を返して「見えるだけ」と認める。yeah は見た目への同意。',
-      trap: '謙遜の「いえいえ」に聞こえやすいが、yeah で見た目は認めている。',
-      use: 'I look calm, right? I’m not.（落ち着いて見える？全然だよ）' },
+      said: '「でも分かってるように見える」に、「そう見えるだけ」と返す。',
+      mean: 'seem ＝「〜のように見える」。見えるだけで、本当はちがう、という意味。',
+      trap: 'Yeah（うん）で認めたと思いやすい。認めているのは「そう見える」ことだけ。',
+      use: 'I seem calm, but I’m really nervous.（落ち着いて見えるけど、本当は緊張してる）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [126.6, 130.5],
-      stem: 'Type what April says: “everyone is just faking it until they ___.” (3 words)', answer: 'figure it out',
-      cue: '「until they」のあと、つながる三語。',
+      stem: 'Type the gap: “faking it until they ___.” (3 words)', answer: 'figure it out',
+      ja: '「faking it until they ___.」の空所を書こう（3語）',
+      cue: '「faking it until they」のあと',
       line: 'Deep down, everyone is just faking it until they *figure it out*.',
-      said: '「心の底では、みんな分かるまでふりをしているだけ」と言う。',
-      mean: 'figure it out ＝ やり方が分かる。三語がつながり「フィギュリラウ」に近い。',
-      trap: 'it の t が弾んで「リ」になる。figure out と書きやすいが、間に it がある。',
+      said: '「心の底では、みんな分かるまでふりをしてるだけ」と言う。',
+      mean: 'figure it out ＝「分かる・やり方を見つける」。「フィギャリラウ」とつながる。',
+      trap: 'figure it がつながって一語に聞こえやすい。out まで3語で書く。',
       use: 'Don’t worry, you’ll figure it out.（大丈夫、そのうち分かるよ）' },
 
-    // R fix: V2, blind 60 % ("but warmly meant" was the only nuanced choice); all three now pair a manner and a motive
-    // R new: nt4 replaces nt1 and nt3 (C2 minimum 2). Blind (fresh read of stem + choices): no pick above 40 %.
-    // anchor: 127.0–129.8 s "everyone is just faking it until they figure it out", then 132.0 s "And you will too":
-    //   "will" can only stand for "will figure it out" (the "is faking it" clause would give "and you are too")
-    // why: keep faking ← "faking it" is the louder, nearer-sounding chunk, and many hear "you will too" as "you'll fake
-    //   it too"; bored ← her shredder line about boring documents (121 s) carried on
-    { id: 'nt4', skill: 'infer', level: 'C2', point: 'figure', reveals: ['advice'], seg: [126.6, 135.6],
+    // retired (A2): a C2 item on the same point as x1
+    { id: 'nt4', skill: 'infer', level: 'C2', point: 'figure', reveals: ['advice'], seg: [126.6, 135.6], retired: true,
       stem: 'What exactly does April predict for Andy with “And you will too”?',
       choices: ['That he will work it out too', 'That he will keep faking it too', 'That he will get bored of it too'], a: 0,
       cue: '直前の文の、どの動詞を受けているか。',
@@ -265,8 +244,8 @@ export const fakingIt: Clip = {
       trap: 'faking it が耳に残りやすい。省略は助動詞の形で、受ける語が決まる。',
       use: 'I passed, and you will too.（私も受かったし、あなたも受かるよ）' },
 
-    // why: teasing ← an over-the-top compliment heard as irony; bored ← April's flat delivery heard as not caring
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'awesome', seg: [131.5, 135.6],
+    // retired (A2): the key rests on tone (over the top, but sincere)
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'awesome', seg: [131.5, 135.6], retired: true,
       stem: 'How does April’s last reason for him come across?',
       choices: ['Over the top, but sincere', 'Flat, as if bored by his worries', 'Teasing, poking fun at his ego'], a: 0,
       cue: '「And you will too」から続く流れ。',
@@ -276,55 +255,52 @@ export const fakingIt: Clip = {
       trap: '大げさなほめ言葉は皮肉に聞こえやすい。直前の you will too が本気の合図。',
       use: 'You’ve got this. You’re the best.（大丈夫、あなたが一番）' },
 
-    // R fix: V2, blind 55 %; "only joking about going" was weak
-    // why: stop joking ← "for real" heard as "are you for real?"; for good ← "for real" heard as "for good" (永遠に)
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'forreal', seg: [137.5, 141.0],
-      stem: 'What does the wording of the goodbye after April’s pep talk suggest?',
-      choices: ['They already tried to say goodbye', 'He is going away for good this time',
-                'He wants her to stop joking around'], a: 0,
-      cue: '「bye」のあとの二つの語句。',
+      stem: 'What does “for real this time” tell us?',
+      ja: '「for real this time」から何が分かる？',
+      choices: ['They said goodbye before', 'He’s leaving forever', 'He wants her to stop joking'], a: 0,
+      choicesJa: ['前にもさよならを言った', '永遠に去る', '冗談をやめてほしい'],
+      cue: 'さよならの言い方',
       line: 'Okay, bye *for real this time*.',
       said: '「じゃあ、今度こそ本当にバイバイ」と言う。',
-      mean: 'for real ＝ 本当に、this time ＝ 今度こそ。前にも別れを言いかけた、ということ。',
-      trap: 'for real を「永遠に」と取りやすい。this time が「前にもあった」の合図。',
+      mean: 'for real this time ＝「今度こそ本当に」。前にも一度さよならを言ったということ。',
+      trap: 'real（本当）から「永遠に」と思いやすい。this time（今度は）が手がかり。',
       use: 'Okay, I’m leaving for real this time.（じゃあ、今度こそ本当に帰るね）' },
 
-    // why: crackers ← the k- start and two syllables, close to "cookies"; bagels ← "bologna" heard just before, the same
-    //   b- start
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cookies', seg: [143.7, 150.45],
       stem: 'What did April make the sandwiches with instead of bread?',
+      ja: 'エイプリルはパンの代わりに何でサンドイッチを作った？',
       choices: ['Cookies', 'Crackers', 'Bagels'], a: 0,
-      cue: '「I used」のあとの語。',
+      choicesJa: ['クッキー', 'クラッカー', 'ベーグル'],
+      cue: '「instead of」の前',
       line: 'Yes, I used *cookies instead of bread*.',
-      said: '空港への道で食べるサンドイッチを作り、「パンの代わりにクッキー」と言う。',
-      mean: 'パンでなくクッキーで挟んだ、ちょっと変なサンドイッチ。彼女なりの愛情。',
-      trap: '直前の bologna の b の音が残りやすい。used のあとの名詞を聞く。',
+      said: '「うん、パンの代わりにクッキーを使った」と言う。',
+      mean: 'instead of 〜 ＝「〜の代わりに」。お店で注文を変えるときにも使う。',
+      trap: 'bologna（ハム）のサンドイッチなので、パンに近い物を選びやすい。cookies を聞く。',
       use: 'Can I get rice instead of fries?（ポテトの代わりにライスにできる？）' },
 
-    // R fix: V2, blind 55 %; the stem named the cookies (d3's key), and the choices are now parallel
-    // why: polite ← the Japanese 建前 frame: praise for an odd gift heard as courtesy; amused ← cookies instead of bread
-    //   heard as April's joke, so his praise as playing along
-    { id: 'a4', skill: 'attitude', level: 'C1', point: 'cookies', seg: [143.7, 153.9],
-      stem: 'How does Andy take the sandwiches April made him?',
-      choices: ['Touched, and he means every word', 'Amused, playing along with a joke', 'Polite, hiding that they’re odd'], a: 0,
-      cue: '「Did you?」の声と、そのあとのほめ言葉。',
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'cookies', seg: [143.7, 153.9],
+      stem: 'How does Andy feel about the sandwiches?',
+      ja: 'サンドイッチをもらって、アンディはどんな気持ち？',
+      choices: ['Touched and thankful', 'Amused by her joke', 'Polite but unhappy'], a: 0,
+      choicesJa: ['感動して、感謝している', '冗談を面白がっている', '礼儀正しいが、いやがっている'],
+      cue: '「instead of bread」のあと',
       line: 'I used cookies instead of bread. — *You think of everything.* — *I love you.*',
-      said: '「パンの代わりにクッキーを使った」に、「何でも考えてくれるね。愛してる」と返す。',
-      mean: '変なサンドイッチでも、Andy は本気で感動している。',
-      trap: '建前の感覚だと、ほめ言葉が気づかいに聞こえる。続く I love you で本気と分かる。',
+      said: '「君は何でも考えてくれるね。愛してる」と言う。',
+      mean: 'You think of everything ＝「何でも気が利くね」。本気で感謝している。',
+      trap: 'クッキーのハムサンドは変なので、冗談に思いやすい。言葉は素直な感謝。',
       use: 'You think of everything!（気が利くね！）' },
 
-    // R fix: V2, blind 70 % ("making up a reason" stood alone); all three are now readings of the wallet line
-    // why: just now ← "found it" heard as a fresh drop, "earlier" lost; April's ← "left… wallet" caught, "my" lost
     { id: 'i2', skill: 'infer', level: 'C1', point: 'wallet', seg: [159.9, 168.6],
-      stem: 'What does Andy’s explanation at the end of the clip suggest?',
-      choices: ['The wallet is an excuse he just thought up', 'He dropped his wallet in there just now',
-                'The wallet was April’s, left there earlier'], a: 0,
-      cue: '自分の財布の話なのに、文の最後に付く二語。',
+      stem: 'What is Andy’s wallet story, really?',
+      ja: 'アンディの財布の話は、本当は何？',
+      choices: ['An excuse he just made up', 'The true reason he came back', 'A story about April’s wallet'], a: 0,
+      choicesJa: ['今思いついた言いわけ', '戻ってきた本当の理由', 'エイプリルの財布の話'],
+      cue: '最後の「I guess」',
       line: 'Found it! … I left my wallet in here earlier, *I guess*.',
-      said: '「あった！さっきここに財布を忘れたみたい」と言う。',
-      mean: '自分のことに I guess と付けるのは、話を作っている合図。ごまかしている。',
-      trap: 'found it を信じやすい。自分の行動に I guess が付いたら言い訳を疑う。',
+      said: 'ゴミ箱から出て「あった！前にここに財布を置いたみたい」と言う。',
+      mean: 'I guess ＝「〜だと思う」。自分のことなのに推測の形なのは、言いわけだから。',
+      trap: 'Found it!（あった）で本当に探していたと思いやすい。最後の I guess が手がかり。',
       use: 'I must have left it here, I guess.（ここに置き忘れたのかな）' },
   ]
 };
