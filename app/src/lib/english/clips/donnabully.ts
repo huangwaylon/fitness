@@ -185,8 +185,8 @@ export const donnaBully: Clip = {
       use: 'You’re still mad about last week?（まだ先週のことで怒ってるの？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [123.8, 132.3],
-      stem: 'How many cats does Donna say he already has?',
-      ja: '男はもう猫を何匹飼っている？',
+      stem: 'How many cats does Donna say he’d have?',
+      ja: 'ドナは、彼の猫が何匹になると言う？',
       choices: ['6', '16', '60'], a: 0, keep: true,
       choicesJa: ['6匹', '16匹', '60匹'],
       cue: '「too sad for you」のあと',

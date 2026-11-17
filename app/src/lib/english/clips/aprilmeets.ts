@@ -25,7 +25,7 @@ export const aprilMeetings: Clip = {
       line: 'I always schedule it for *March 31st*. … — *Today is March 31st*.',
       said: 'エイプリルが会議の依頼をすべて同じ日に入れていた。その日が今日。',
       mean: '先送りにしていた会議が、一日にまとめてやって来た。',
-      trap: 'six people が最初に聞こえるので、日にちまちがいと思いやすい。なぜ今日集まったかを聞く。',
+      trap: 'six people が最初に聞こえるので、日にちまちがいと思いやすい。でも今日が本当に3月31日。',
       use: 'Everything is on the same day.（全部同じ日に重なった）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [16.3, 22.6], keep: true,

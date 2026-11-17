@@ -221,7 +221,7 @@ export const tobySafety: Clip = {
       said: '倉庫チームは席を立ち、「うちのは本物だった。これはおふざけだ」と言う。',
       mean: 'shenanigans ＝ ふざけたこと。事務の講習を笑っている。',
       trap: 'dangerous stuff（危ないこと）と聞こえるので、怖がっていると思いやすい。',
-      use: 'That didn’t go the way I planned.（思ってたようにはいかなかった）' },
+      use: 'We’re out of here.（じゃあ、もう行くね）' },
     { id: 'i4', skill: 'infer', level: 'B2', point: 'walkout', seg: [141.6, 149.9],
       stem: 'What is the warehouse crew doing now?',
       ja: '倉庫チームは今、何をしている？',

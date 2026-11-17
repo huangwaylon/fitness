@@ -26,8 +26,8 @@ export const dwightAmyAdams: Clip = {
       use: 'My phone is a big distraction.（スマホがすごく気を散らす）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', seg: [12.5, 18.5], keep: true,
-      stem: 'How does Michael sound when Pam asks again?',
-      ja: 'パムがもう一度聞くと、マイケルはどんな様子？',
+      stem: 'How does Michael sound in “Pam, Pam, come on”?',
+      ja: '「Pam, Pam, come on」と言うマイケルはどんな様子？',
       choices: ['Impatient and busy', 'Sorry he can’t help', 'Curious about her'], a: 0,
       choicesJa: ['いらいらして、いそがしい', '手伝えなくて申しわけない', '彼女に興味がある'],
       cue: '名前を2回呼んだあと。',

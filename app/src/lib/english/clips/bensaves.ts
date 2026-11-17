@@ -296,7 +296,7 @@ export const benSaves: Clip = {
       cue: '最後の「Eagleton」のやりとり。',
       line: 'I thought you were *playing in Eagleton*.',
       said: '代役のレナータが歌ったあと、イーグルトンにいるはずのフレディが現れる。',
-      mean: 'after all ＝ 結局。いなかった主役が最後にもどり、予定どおりの形になる。',
+      mean: 'I thought you were 〜 ＝ 〜だと思ってた。いないはずのフレディが最後に来て歌う。',
       trap: '代役が先に歌うので「代役で終わり」と思いやすい。最後の会話の相手を聞く。',
       use: 'I thought you were out of town!（町にいないと思ってた！）' },
 

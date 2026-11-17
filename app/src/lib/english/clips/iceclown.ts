@@ -119,10 +119,10 @@ export const iceClown: Clip = {
       use: 'Little did he know…（彼は知るよしもなかった…）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [49, 59.6], keep: true,
-      stem: 'How long ago was Ben the mayor here?',
-      ja: 'ベンがここの市長だったのは何年前？',
+      stem: 'How many years later is it now?',
+      ja: '今は、それから何年後？',
       choices: ['10 years', '12 years', '20 years', '30 years'], a: 2,
-      choicesJa: ['10年前', '12年前', '20年前', '30年前'],
+      choicesJa: ['10年後', '12年後', '20年後', '30年後'],
       cue: '「But now」のすぐあと。',
       line: 'But now, *20 years later*…',
       said: '「しかし今、20年がたち…」と式典が始まる。',

@@ -310,10 +310,10 @@ export const darwin: Clip = {
       choices: ['Quickly, to end it', 'Firmly, to obey', 'Warmly, to be kind'], a: 0,
       choicesJa: ['早く終わらせたくて、さっと', '従うつもりで、きっぱり', '親切に、優しく'],
       cue: '答えの数と、短い返事のくり返し。',
-      line: 'Fine. — *Yeah, yeah*… We get it. … Crystal clear.',
-      said: '「はいはい」「分かった」「とても明確」と、短い返事が次々に重なる。',
+      line: 'Fine. — *Yeah, yeah, yeah.* — *Whatever.* — We get it.',
+      said: '「はいはい」「どうでもいい」「分かったよ」と、短い返事が次々に重なる。',
       mean: 'yeah, yeah ＝「はいはい」。短い返事が重なるのは、早く終わらせたい合図。',
-      trap: 'crystal clear だけ拾うと、約束に聞こえる。返事の重なり方を聞く。',
+      trap: 'We get it だけ拾うと、素直に従ったように聞こえる。Whatever と重なり方を聞く。',
       use: 'Yeah, yeah, I get it.（はいはい、分かったよ）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'grave', seg: [191.6, 206.5],

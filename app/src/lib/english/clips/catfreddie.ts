@@ -42,8 +42,8 @@ export const catFreddie: Clip = {
       use: 'Oh, thank goodness. Where is she?（ああ、よかった。どこにいるの？）' },
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'here', seg: [3.6, 15.7],
-      stem: 'What does Cat say about Sam a few seconds later?',
-      ja: '数秒後、キャットはサムについて何と言う？',
+      stem: 'After Freddie calls for Sam, what does Cat say?',
+      ja: 'フレディがサムを呼んだあと、キャットは何と言う？',
       choices: ['Sam isn’t here', 'Sam just went out', 'Sam is upstairs'], a: 0,
       choicesJa: ['サムはいない', 'サムは今出かけた', 'サムは2階にいる'],
       cue: 'フレディがサムを呼んだあとの一言。',

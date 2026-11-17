@@ -111,7 +111,7 @@ export const doingAlcohol: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'cocaine', seg: [73.2, 81.5],
       stem: 'What does Michael compare cocaine use with?',
       ja: 'マイケルはコカインを使う人を、何をする人と比べる？',
-      choices: ['Read books to their kids', 'Drink wine at home', 'Smoke with their friends'], a: 0,
+      choices: ['Reading books to their kids', 'Drinking wine at home', 'Smoking with their friends'], a: 0,
       choicesJa: ['子どもに本を読む', '家でワインを飲む', '友だちとたばこを吸う'],
       cue: '「than」のあと。',
       line: 'more people will use cocaine *than will read a book to their children*.',
