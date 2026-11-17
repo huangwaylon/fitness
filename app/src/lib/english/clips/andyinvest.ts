@@ -22,6 +22,7 @@ export const andyInvestigates: Clip = {
       choices: ['It’s the practice case he wanted', 'His police exam has begun', 'A co-worker hid it for fun'], a: 0,
       choicesJa: ['頼んでおいた練習の事件だから', '警察の試験が始まったから', '同僚がふざけてかくしたから'],
       cue: '「a month ago」のあと。',
+      line: 'they should steal something from my desk *so I could practice*.',
       said: '警察学校の試験に事件の捜査があるので、何か盗んでくれと前にみんなに頼んでいた。',
       mean: 'practice ＝ 練習。本物の盗難ではなく、練習の事件が始まったと思って喜んでいる。',
       trap: 'exam（試験）が聞こえるので、試験が始まったと思いやすい。so I could practice が目的。',
@@ -36,7 +37,7 @@ export const andyInvestigates: Clip = {
       line: 'So *about a month ago*, I told everyone in the office…',
       said: '「1か月くらい前、オフィスのみんなに頼んでおいた」と言う。',
       mean: 'about a month ago ＝ 1か月くらい前。about ＝ だいたい。',
-      trap: 'about a のあとの短い一語は聞き落としやすい。ago の直前の語を聞く。',
+      trap: 'a のあとは短く流れる。「マンス」なら month、「ウィーク」なら week、「イヤ」なら year。',
       use: 'I moved here about a month ago.（1か月くらい前に引っ越してきた）' },
 
     { id: 'dothis', skill: 'phrase', level: 'B1', point: 'dothis', seg: [25.5, 30],
@@ -81,7 +82,7 @@ export const andyInvestigates: Clip = {
       line: 'to sell it on the black market *for 150 bucks*.',
       said: '「闇市場で150ドルで売るためさ」と言う。',
       mean: 'bucks ＝ ドルのくだけた言い方。150 は one fifty と読むことが多い。',
-      trap: 'fifteen は「ティーン」と長い。fifty の前に小さな「ワン」があれば150。',
+      trap: '「フィフティーン」と伸びれば15、「フィフティ」だけなら50、前に「ワン」や hundred があれば150。',
       use: 'It’s about fifty bucks.（50ドルくらいだよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'realname', seg: [57.6, 66.9], retired: true,
@@ -227,6 +228,7 @@ export const andyInvestigates: Clip = {
       choices: ['He takes a weekend guard job', 'He quits the police dream', 'He becomes a police trainee'], a: 0,
       choicesJa: ['週末の警備員の仕事を受ける', '警官の夢をあきらめる', '警察の見習いになる'],
       cue: '最後にすすめられる仕事。',
+      line: 'City Hall needs a new part-time *security guard for the weekends*. … Okay, *I’ll do it*.',
       said: '落ちこむアンディに、週末の警備員の仕事がすすめられ、アンディは引き受ける。',
       mean: 'security guard ＝ 警備員。警官になりたいか確かめるための、週末の仕事に落ち着く。',
       trap: 'police officer が聞こえるので、警察の仕事と思いやすい。security guard が答え。',

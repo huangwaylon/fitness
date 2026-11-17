@@ -28,10 +28,10 @@ export const chickParent: Clip = {
       use: 'How’s your mom doing?（お母さん、元気？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [30.5, 39.2],
-      stem: 'What does “anyway” do here?',
-      ja: 'ここでの「anyway」の働きは？',
-      choices: ['Moves on to a new topic', 'Answers the last question', 'Says sorry for something'], a: 0,
-      choicesJa: ['別の話に移る', 'さっきの質問に答える', '何かを謝る'],
+      stem: 'Why does Joey say “anyway” here?',
+      ja: 'ジョーイはなぜここで「anyway」と言う？',
+      choices: ['To move on to a new topic', 'To answer the last question', 'To say sorry for something'], a: 0,
+      choicesJa: ['別の話に移るため', 'さっきの質問に答えるため', '何かを謝るため'],
       cue: '「I can’t tell」のあと。',
       line: 'I can’t tell. … Well, *anyway*, I…',
       said: '「よく分からない」と言ったあと、「まあとにかく」と自分の予定の話に移る。',
@@ -69,6 +69,7 @@ export const chickParent: Clip = {
       choices: ['He does more of the work', 'Joey forgot the chick’s food', 'Joey didn’t invite him'], a: 0,
       choicesJa: ['自分ばかり世話をしている', 'ジョーイがえさを忘れた', 'ジョーイが誘ってくれない'],
       cue: '「Excuse me?」のあとの文句。',
+      line: 'I stayed home from work today… *I’m stuck here all day.*',
       said: '飲みに行くと聞いて、自分は仕事を休んで世話をし、一日中家にいたと不満をぶつける。',
       mean: '世話の負担が自分にばかり来ている、という不満。新米の親のけんかの形。',
       trap: 'your friends（友だち）が聞こえるので、誘われなかった話と思いやすい。文句の中身は世話。',
@@ -131,7 +132,7 @@ export const chickParent: Clip = {
       line: 'Oh, *here it comes*. — Yes, here it comes.',
       said: '「ほら来た」と言うと、相手も「そうだ、来たぞ」と受けて文句を始める。',
       mean: 'Here it comes ＝「お決まりのが始まるぞ」。また同じ文句か、とうんざりしている。',
-      trap: '身がまえる＝悪いと思っている、と思いやすい。直前に自分から言い返している。',
+      trap: '身がまえる＝悪いと思っている、と思いやすい。その前に自分も言い返している。',
       use: 'Here we go again.（また始まった）' },
 
     { id: 'r1', skill: 'predict', level: 'B2', point: 'list', reveals: ['herecomes'], seg: [54, 60.75], then: [60.75, 70.75], retired: true,
@@ -243,6 +244,7 @@ export const chickParent: Clip = {
       choices: ['To give the chick back', 'To take turns at home', 'To stop fighting so much'], a: 0,
       choicesJa: ['ひよこを返す', '交代で家にいる', 'けんかを減らす'],
       cue: '最後の短い二つの文。',
+      line: 'Maybe we weren’t ready to have a chick. *I’ll take her back tomorrow.*',
       said: '「けんかが増えた」「準備ができてなかったのかも」と話し、「明日返す」と決める。',
       mean: 'take her back ＝ 返しに行く。子育てに疲れた夫婦のような会話の末、ひよこを返す。',
       trap: 'fighting が聞こえるので「けんかをやめる」に引かれる。決めたことは I’ll の文に出る。',
@@ -291,7 +293,7 @@ export const chickParent: Clip = {
       line: 'You think *we’ll* get our three bucks back?',
       said: '「3ドル戻ってくると思う？」と、明日返すときのことを聞く。',
       mean: 'we’ll は「ウィル」より短く「ウォ」に近い。l の音が次の get に流れる。',
-      trap: 'we’ll の「ル」は小さい。we’d なら「ウィッ」と止まる。何もなければ we。',
+      trap: '「ウォ」と少し伸びれば we’ll、「ウィッ」と止まれば we’d、「ウィ」からすぐ get なら we。',
       use: 'Do you think we’ll make it?（間に合うと思う？）' },
   ]
 };

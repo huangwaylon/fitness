@@ -183,9 +183,9 @@ export const killerTuna: Clip = {
       use: 'Right in front of me? Seriously?（私の目の前で？本気？）' },
 
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'flirtback', reveals: ['flirt'], seg: [174.9, 183.7],
-      stem: 'What is Cat doing with her answer to Sam?',
-      ja: 'サムへの答えで、キャットは何をしている？',
-      choices: ['Saying Sam did it too', 'Saying she didn’t flirt', 'Saying she was just friendly'], a: 0,
+      stem: 'How does Cat answer Sam?',
+      ja: 'キャットはサムにどう答える？',
+      choices: ['She says Sam did it too', 'She says she didn’t flirt', 'She says she was just friendly'], a: 0,
       choicesJa: ['サムもやったと言い返す', 'いちゃついていないと言う', '仲良くしただけだと言う'],
       cue: '2人の文の終わり方を比べて。',
       line: '*Well, you flirted with Robbie right in front of my face!*',
