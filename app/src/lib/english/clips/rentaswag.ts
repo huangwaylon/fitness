@@ -199,7 +199,7 @@ export const rentASwag: Clip = {
       cue: '「let me also get」のあと',
       line: '*12 eggs, uncooked*… 20 slices, untoasted… in a bag. — You want *a carton of eggs and a loaf of bread*?',
       said: 'パンケーキに加え、生卵12個と焼く前のパン20枚を袋で頼む。店員が聞き返す。',
-      mean: 'uncooked ＝ 料理していない。a carton of eggs ＝ 卵1パック。a loaf of bread ＝ パン1斤。',
+      mean: 'uncooked ＝ 料理していない。a carton of eggs ＝ 卵1パック。a loaf of bread ＝ パン1本。',
       trap: 'toast が聞こえて、ふつうの朝食だと思いやすい。uncooked、untoasted は「生のまま」。',
       use: 'Can I get a carton of eggs?（卵を1パックください）' },
 

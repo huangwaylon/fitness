@@ -4,7 +4,7 @@
 // they never paid, and Toby ends the night with a sudden announcement and a hop over the fence.
 // Segments from the captions (whisper's timings are rounded). Left out on purpose: the name guesses (22–32 s), Jim's
 // stumbling call (33–48 s), the "better couple" show of hands (75–80 s), the football/knee stretch (86–100 s, 108–134 s:
-// visual, and whisper invents lines). p2 names Pam from "Yeah, Pam!" at 85 s.
+// visual, and whisper invents lines). p2 names Pam (the 85 s cheer "Yeah, Pam!").
 // EAR CHECK: 63.2 s r1 — the cut falls before "Sorry, guys…"; captions "I don't think I chipped in for last year's",
 //   whisper "…I tipped him for last year's" (the key, an admission about last year's tip, holds either way)
 import type { Clip } from '../types.ts';
