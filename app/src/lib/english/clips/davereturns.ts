@@ -54,6 +54,7 @@ export const daveReturns: Clip = {
       choices: ['Trying to praise Leslie more', 'Talking about their own jobs', 'Planning Leslie’s campaign'], a: 0,
       choicesJa: ['レスリーをもっとほめようと張り合う', '自分の仕事の話をする', 'レスリーの選挙の計画を立てる'],
       cue: 'レスリーへのほめ言葉の重ね方',
+      line: 'a campaign manager is only as good as the campaign person… — Oh, *you can say that again*. … — *I said my thing first.*',
       said: '二人でレスリーをほめ合い、デイブは「先に言ったのは僕」と言う。',
       mean: '感じよく話しながら、レスリーの前でどちらが上かを競っている。',
       trap: 'campaign（選挙）の話が多いが、中心はレスリーをほめる順番と中身。',
@@ -103,7 +104,7 @@ export const daveReturns: Clip = {
       line: 'he was a buddy of mine. *I’d probably* get him to endorse you.',
       said: '「署長は友だちだった。頼めばたぶん推薦してもらえる」と言う。',
       mean: 'I’d ＝ I would。「頼めばたぶん」という仮の話。d は小さく短い。',
-      trap: 'd が小さいので I’ll や I と聞こえやすい。「アイド」の d を聞く。',
+      trap: '小さな「ド」があれば I’d。I’ll なら「アイル」と「ル」、I だけなら「アイプロ」とすぐつながる。',
       use: 'I’d probably take the train.（たぶん電車にするかな）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['unaware', 'refuse'], seg: [117.6, 147.5],
@@ -219,7 +220,7 @@ export const daveReturns: Clip = {
       line: 'caught a lot of bad guys. *About six* bad guys.',
       said: '「悪いやつをたくさん捕まえた。6人くらい」と言う。',
       mean: 'about ＝ 〜くらい。a lot と言ったあとの6人は少なく、そこがおかしい。',
-      trap: 'a lot のあとなので大きな数を待ちやすい。six のすぐあとに bad が来る。',
+      trap: 'a lot のあとなので大きな数を待ちやすい。「シックス」で止まれば 6、sixteen は「ティーン」が長く、sixty は「ティ」で終わる。',
       use: 'It takes about six minutes.（6分くらいかかります）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [165.2, 171], keep: true,

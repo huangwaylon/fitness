@@ -124,6 +124,7 @@ export const pumpJamm: Clip = {
       choices: ['They don’t believe her', 'They thank her for them', 'They agree with her'], a: 0,
       choicesJa: ['信じていない', '答えにお礼を言う', '賛成している'],
       cue: '答えのたびに議員が言うこと',
+      line: '*Stop stonewalling*, and tell us what happened here. … Why do you keep *flip-flopping*?',
       said: '説明のたびに「はぐらかすな」「話がころころ変わる」と責める。',
       mean: '議員は説明を聞く気がなく、話を大きくしたい。最初に言った2つ目の目的どおり。',
       trap: 'レスリーの答えは丁寧なので、納得されたと思いやすい。議員の返事を聞く。',
@@ -185,7 +186,7 @@ export const pumpJamm: Clip = {
       line: 'Well, because *I learned* new information.',
       said: '「新しい情報を知ったからです」と言う。',
       mean: 'I learned ＝ 知った（過去形）。I のすぐあとに learned が来て、間に音はない。',
-      trap: '’ve や ’d は小さいので、あると思うと聞こえる気がする。I の直後を聞く。',
+      trap: 'I からすぐ「アイラーンド」なら I learned。I’ve なら「アイヴ」、I’d なら「アイド」と小さな音が入る。',
       use: 'I learned something new today.（今日、新しいことを知った）' },
 
     { id: 'h2', skill: 'detail', level: 'B1', point: 'milk', reveals: ['four'], seg: [52.4, 64.25],

@@ -31,6 +31,7 @@ export const bestBurger: Clip = {
       choices: ['Chris’s is fancy, Ron’s is plain', 'Chris’s is beef, Ron’s is turkey', 'Both are fancy and costly'], a: 0,
       choicesJa: ['クリスのは豪華、ロンのはシンプル', 'クリスのは牛肉、ロンのは七面鳥', 'どちらも豪華で高い'],
       cue: 'ロンの「Here’s mine」のあと',
+      line: 'my East Meets West… *turkey burger*, an Asian fusion burger… — *Here’s mine.* It’s a hamburger…',
       said: 'クリスは材料を長々と説明し、ロンは「肉をパンにはさんだだけ」で終わる。',
       mean: 'fancy ＝ 凝った・高級な。plain ＝ シンプルな。説明の長さもまったく違う。',
       trap: 'turkey（七面鳥）はクリスのバーガー。ロンのは meat（牛肉）だけ。',
@@ -173,7 +174,7 @@ export const bestBurger: Clip = {
       line: 'I’ve tinkered with this recipe *for years*.',
       said: '「このレシピは何年もいじってきたのに」と言う。',
       mean: 'for years ＝ 何年も。I’ve 〜ed ＝ ずっと〜してきた。',
-      trap: 'years は「イヤーズ」と最後の z が聞こえる。months なら「マンス」。',
+      trap: 'years は「イヤーズ」と最後の z が聞こえる。months なら「マンス」、weeks なら「ウィークス」。',
       use: 'I’ve lived here for years.（何年もここに住んでいる）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'tinker', reveals: ['years'], seg: [63, 67.75],
