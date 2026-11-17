@@ -50,7 +50,8 @@
   /* a long level title (あたらしい マイ食品 at 375) wraps at its space, balanced, rather than running into ✕ */
   .ttl { margin: 0; text-align: center; font: 700 var(--fs-talk)/1.2 var(--font-ui); overflow-wrap: anywhere; text-wrap: balance; }
   /* with a lead or trailing controls: two equal sides (the title still centred), each as wide as it needs */
-  .navbar.led { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); container: navbar / inline-size; }
+  /* (each side at least its buttons: a long title ellipsizes, a little off centre, rather than run under them) */
+  .navbar.led { grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); container: navbar / inline-size; }
   .led .side { width: auto; min-width: 0; align-items: center; gap: 0; }
   .led .ttl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .mid { display: flex; min-width: 0; }
