@@ -10,7 +10,8 @@
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { log } from '#lib/sync/log.ts';
-  import { MAX_S, record, transcribe, type Take } from '#lib/speech/stt.ts';
+  import { Recorder } from '#lib/speech/recorder.svelte.ts';
+  import { transcribe } from '#lib/speech/stt.ts';
   import { micFocus } from '#lib/sound/sound.svelte.ts';
   import { grade, type Grade, type Graded } from '#lib/speech/grade.ts';
   import { s } from '../i18n.ts';
@@ -37,7 +38,6 @@
 
   type Phase = 'ask' | 'rec' | 'stt' | 'confirm' | 'feedback';
   let phase = $state<Phase>('ask');
-  let secs = $state(0);
   /** The words as heard (or ''), and the field's (what これでOK sends). */
   let raw = $state('');
   let text = $state('');
@@ -64,55 +64,41 @@
   // the log's line for the step (sg.grade: never the text)
   let edited = false, err: string | undefined, layer: 'task' | 'wasei' | 'ai' | 'none' = 'none', ms = 0, tStop = 0;
 
-  let take: Take | null = null;
-  let timer: ReturnType<typeof setInterval> | undefined;
+  const rec = new Recorder(() => void stop());
   /** /grade asked for one text (at `t0`): its answer, once in. */
   let ask: { text: string; p: Promise<Graded>; r: Graded | null; t0: number } | null = null;
-  const abort = new AbortController();
-  $effect(() => () => (clearInterval(timer), take?.cancel(), micFocus(false), abort.abort()));
+  $effect(() => () => (rec.close(), micFocus(false)));
 
   function prefetch(t: string) {
     if (ask?.text === t) return ask;
-    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, abort.signal), r: null, t0: performance.now() };
+    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, rec.signal), r: null, t0: performance.now() };
     a.p.then((r) => (a.r = r));
     return (ask = a);
   }
 
-  /** The mic asked for and not yet answered (the permission's prompt): further taps wait. */
-  let asking = false;
   async function mic() {
     if (phase === 'rec') return stop();
-    if (phase === 'stt' || asking) return;
+    if (phase === 'stt' || rec.phase !== 'idle') return;
     onengage();
     note = null;
     // the island's sound paused and the audio session one that allows the mic, in this tap, before the mic is asked for
     micFocus(true);
-    asking = true;
-    const t = await record(abort.signal);
-    asking = false;
-    if (abort.signal.aborted) return;
-    if ('miss' in t) return void (micFocus(false), (note = 'denied'), (err = 'denied'), toType());
-    take = t;
+    const t = await rec.start();
+    if (!t) return;
+    if (t !== true) return void (micFocus(false), (note = 'denied'), (err = 'denied'), toType());
     phase = 'rec';
-    secs = 0;
     takes++;
-    const t0 = performance.now();
-    timer = setInterval(() => {
-      secs = (performance.now() - t0) / 1000;
-      if (secs >= MAX_S) void stop();
-    }, 100);
   }
   async function stop() {
-    if (!take || phase !== 'rec') return;
-    clearInterval(timer);
-    const t = take;
-    take = null;
+    if (phase !== 'rec') return;
     phase = 'stt';
-    tStop = performance.now();
-    const p = await t.stop();
+    const p = await rec.stop();
+    if (!p) return;
+    tStop = p.t0;
     micFocus(false);
-    const r = await transcribe(p.pcm, tStop, abort.signal);
-    if (abort.signal.aborted) return;
+    const r = await transcribe(p.pcm.pcm, tStop, rec.signal);
+    if (rec.signal.aborted) return;
+    rec.idle();
     typed = false;
     if (!r.ok) {
       err = r.miss;
@@ -165,7 +151,7 @@
     // answer after it is let go, never swapped in late)
     const a = prefetch(t);
     const r = await Promise.race([a.p, new Promise<null>((done) => setTimeout(done, Math.max(0, GRADE_WAIT_MS - (performance.now() - a.t0)), null))]);
-    if (abort.signal.aborted || said !== t) return;
+    if (rec.signal.aborted || said !== t) return;
     ms = Math.round(performance.now() - tStop);
     if (r?.ok) {
       graded = r.grade;
@@ -212,9 +198,7 @@
     void mic();
   }
   function next() {
-    take?.cancel();
-    take = null;
-    clearInterval(timer);
+    rec.cancel();
     if (phase !== 'ask' || err)
       log('sg.grade', {
         layer, verdict: graded?.verdict ?? 'none', ms, takes, edited, resaid,
@@ -237,7 +221,7 @@
     </div>
   {:else if phase === 'rec' || phase === 'stt'}
     <button type="button" class="btn rec" class:wait={phase === 'stt'} aria-disabled={phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
-      <Icon name="mic" size={20} />{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: secs.toFixed(1) })) : say('listening')}
+      <Icon name="mic" size={20} />{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: rec.secs.toFixed(1) })) : say('listening')}
     </button>
   {:else if phase === 'confirm'}
     <form class="confirm card" data-kb-scroll onsubmit={(e) => (e.preventDefault(), confirm())}>

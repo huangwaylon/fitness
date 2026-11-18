@@ -16,7 +16,7 @@ export const MAX_S = 10;
 
 /** A take's samples at 16 kHz (empty: it didn't decode), and what the log says about it: the recording's KB and type,
  *  the loudest sample, a muted track. */
-interface Pcm { pcm: Float32Array; recKB: number; type: string; peak: number; muted: boolean; decoded: boolean }
+export interface Pcm { pcm: Float32Array; recKB: number; type: string; peak: number; muted: boolean; decoded: boolean }
 /** A take in progress: `stop()` ends it and gives its samples. */
 export interface Take { stop(): Promise<Pcm>; cancel(): void }
 /** The mic refused: why, and getUserMedia's own error (its name and message, for the log). */

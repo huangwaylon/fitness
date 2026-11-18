@@ -8,18 +8,16 @@
   import { log } from '#lib/sync/log.ts';
   import { getKey } from '#lib/sync/storage.ts';
   import { matchOf, SENTENCES } from '#lib/speech/match.ts';
-  import { MAX_S, record, transcribe, type Heard, type Miss, type Take } from '#lib/speech/stt.ts';
+  import { Recorder } from '#lib/speech/recorder.svelte.ts';
+  import { transcribe, type Heard, type Miss } from '#lib/speech/stt.ts';
   import { audioState, micFocus } from '#lib/sound/sound.svelte.ts';
 
   type Done = { k: number; asked: string; heard: Extract<Heard, { ok: true }>; match: ReturnType<typeof matchOf> | null };
   let k = $state(0);
-  let phase = $state<'idle' | 'ask' | 'rec' | 'wait'>('idle');
-  let secs = $state(0);
+  const rec = new Recorder(() => void stop());
   let miss = $state<Miss | null>(null);
   let why = $state('');
   let takes = $state.raw<Done[]>([]);
-  let take: Take | null = null;
-  let timer: ReturnType<typeof setInterval> | undefined;
   const free = $derived(k === SENTENCES.length);
   const last = $derived(takes.at(-1) ?? null);
   const paired = !!getKey();
@@ -43,9 +41,8 @@
     const ctx = audioState();
     opened = { ctx, sess: micFocus(true) ?? 'none' };
   });
-  const abort = new AbortController();
   // (a swipe back as much as ‹: the mic, the timer and the upload all stop)
-  onDestroy(() => (clearInterval(timer), take?.cancel(), (take = null), micFocus(false), abort.abort()));
+  onDestroy(() => (rec.close(), micFocus(false)));
   const perm = async (): Promise<string> => {
     try {
       return (await navigator.permissions?.query({ name: 'microphone' as PermissionName }))?.state ?? 'none';
@@ -61,37 +58,25 @@
   });
 
   async function tap() {
-    if (!paired || phase === 'wait' || phase === 'ask') return;
-    if (phase === 'rec') return stop();
-    miss = null, why = '', phase = 'ask';
+    if (!paired || rec.phase === 'wait' || rec.phase === 'ask') return;
+    if (rec.phase === 'rec') return stop();
+    miss = null, why = '';
     micFocus(true); // (already, since the page opened: kept in the tap in case)
     const at = env();
-    const t = await record(abort.signal);
-    if (abort.signal.aborted) return;
-    if ('miss' in t) {
-      phase = 'idle';
+    const t = await rec.start();
+    if (t && t !== true) {
       miss = t.miss, why = t.gum;
-      return void log('speech.test', { ok: false, err: t.miss, gum: t.gum, msg: t.msg, lvl: free ? -1 : k, perm: await perm(), ...at });
+      log('speech.test', { ok: false, err: t.miss, gum: t.gum, msg: t.msg, lvl: free ? -1 : k, perm: await perm(), ...at });
     }
-    take = t, phase = 'rec', secs = 0;
-    const t0 = performance.now();
-    timer = setInterval(() => {
-      secs = (performance.now() - t0) / 1000;
-      if (secs >= MAX_S) void stop();
-    }, 100);
   }
 
   async function stop() {
-    if (!take || phase !== 'rec') return;
-    clearInterval(timer);
-    phase = 'wait';
-    const t = take;
-    take = null;
-    const t0 = performance.now();
-    const p = await t.stop();
-    const r = await transcribe(p.pcm, t0, abort.signal);
-    if (abort.signal.aborted) return;
-    phase = 'idle';
+    const s = await rec.stop();
+    if (!s) return;
+    const p = s.pcm;
+    const r = await transcribe(p.pcm, s.t0, rec.signal);
+    if (rec.signal.aborted) return;
+    rec.idle();
     const lvl = free ? -1 : k;
     const cap = { recKB: p.recKB, type: p.type, decoded: p.decoded, peak: Math.round(p.peak * 1000), muted: p.muted, pwa };
     if (!r.ok) return void ((miss = r.miss), log('speech.test', { ok: false, err: r.miss, lvl, audS: Math.round((p.pcm.length / 16_000) * 10) / 10, ...cap }));
@@ -107,7 +92,7 @@
     void goto(`${resolve('/')}${q.size ? `?${q}` : ''}`).then(() => english.show('game'));
   }
   const step = (d: number) => {
-    if (phase !== 'idle') return;
+    if (rec.phase !== 'idle') return;
     k = (k + d + SENTENCES.length + 1) % (SENTENCES.length + 1);
     miss = null;
   };
@@ -126,9 +111,9 @@
 
     <section class="card ask obj-cream">
       <div class="nav">
-        <button type="button" class="arrow" aria-label="前の文" data-sfx="tick" onclick={() => step(-1)} aria-disabled={phase !== 'idle'}>◀</button>
+        <button type="button" class="arrow" aria-label="前の文" data-sfx="tick" onclick={() => step(-1)} aria-disabled={rec.phase !== 'idle'}>◀</button>
         <span class="count" data-speech-at={free ? 'free' : k}>{free ? '自由に話す' : `${k + 1} / ${SENTENCES.length}`}</span>
-        <button type="button" class="arrow" aria-label="次の文" data-sfx="tick" onclick={() => step(1)} aria-disabled={phase !== 'idle'}>▶</button>
+        <button type="button" class="arrow" aria-label="次の文" data-sfx="tick" onclick={() => step(1)} aria-disabled={rec.phase !== 'idle'}>▶</button>
       </div>
       {#if free}
         <p class="en">好きな英語を話してください</p>
@@ -138,8 +123,8 @@
       {/if}
     </section>
 
-    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait' || phase === 'ask'} data-sfx="none" data-speech-mic onclick={tap}>
-      {phase === 'rec' ? `■ 止める（${secs.toFixed(1)} 秒）` : phase === 'wait' ? '認識中…' : '● 録音'}
+    <button type="button" class="mic" class:rec={rec.phase === 'rec'} aria-disabled={!paired || rec.phase === 'wait' || rec.phase === 'ask'} data-sfx="none" data-speech-mic onclick={tap}>
+      {rec.phase === 'rec' ? `■ 止める（${rec.secs.toFixed(1)} 秒）` : rec.phase === 'wait' ? '認識中…' : '● 録音'}
     </button>
 
     {#if miss}<p class="note miss" data-speech-miss={miss}>{MISS[miss]}{#if why}<span class="why">（{why}）</span>{/if}</p>{/if}
