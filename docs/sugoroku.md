@@ -36,11 +36,12 @@ with characters in it, since they are the pieces. A team game: one team total to
   - **ぶん**: put a line's word tiles in order: 6 stars, 4 after 「おしい！」 (the wrong order shown a moment), 2 with
     「答えはこれ」. No line left for the level (or offline): the stone plays as ことば.
   - **絵** (`pictures.ts`): an everyday thing's picture (Google's Noto Emoji, Apache 2.0, hotlinked from its CDN: the CSP
-    allows that path only; `pictures.json`, 415 words one emoji shows, our Japanese), a tier by the seat's level (TIERS: 1
-    everyday, 2 B1, 3 B2+, names up to 12 letters), its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with
+    allows that path only; `pictures.json`, 706 things one emoji shows, our Japanese, no signs), a tier by the seat's level (TIERS:
+    260 everyday, 242 B1, 204 B2+ such as hedgehog or stethoscope; names up to 12 letters), its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with
     「答えはこれ」 (each once a game).
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
-    it), its effect as a chip: good or neutral only; a move stops at the fork. The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
+    it), its effect as a chip: good or neutral only; a move walks on like a roll (letters picked up, the fork asks) and the stone it lands on is
+    played in the same turn (an イベント there plays as ことば: no chain). The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
   - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), after
     `MAX_ROUNDS` (16, 14 by seats), or 終了.
 - **Results** (a team game: never a ranking or a winner): おつかれさま, the team's stars against its goal (`teamGoal`:

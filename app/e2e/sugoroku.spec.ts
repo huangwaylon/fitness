@@ -16,12 +16,10 @@ async function openGame(p: Page) {
   await expect(sheet(p)).toBeVisible();
 }
 
-/** Play the current turn to its end, whatever the space. */
-async function playTurn(p: Page) {
+/** Play the phase the board shows now (after a roll or a card's move). */
+async function onePhase(p: Page) {
   const s = sheet(p);
-  await s.locator('[data-sg-spin]').click();
   const play = s.locator('[data-sg-phase]');
-  await expect(play).not.toHaveAttribute('data-sg-phase', 'spin', { timeout: 10_000 });
   await expect(s.locator('[data-sg-die]')).toHaveCount(0, { timeout: 10_000 });
   let phase = await play.getAttribute('data-sg-phase');
   if (phase === 'fork') {
@@ -58,6 +56,22 @@ async function playTurn(p: Page) {
     await expect(s.locator('[data-sg-answer]')).toBeVisible();
     await s.locator('[data-sg-next]').click();
   } else await s.locator('[data-sg-next]').click();
+}
+
+/** Play the current turn to its end, whatever the space (a card's move plays its landing too). */
+async function playTurn(p: Page) {
+  const s = sheet(p);
+  const turn = await s.locator('[data-sg-turn]').getAttribute('data-sg-turn');
+  await s.locator('[data-sg-spin]').click();
+  const play = s.locator('[data-sg-phase]');
+  await expect(play).not.toHaveAttribute('data-sg-phase', 'spin', { timeout: 10_000 });
+  for (let k = 0; k < 4; k++) {
+    await onePhase(p);
+    await expect(s.locator('[data-sg-die], [data-sg-moving]')).toHaveCount(0, { timeout: 10_000 });
+    if ((await s.getAttribute('data-level')) !== 'play') return;
+    const ph = await play.getAttribute('data-sg-phase'), now = await s.locator('[data-sg-turn]').getAttribute('data-sg-turn');
+    if (ph === 'spin' || now !== turn) return;
+  }
 }
 
 async function start(page: Page) {

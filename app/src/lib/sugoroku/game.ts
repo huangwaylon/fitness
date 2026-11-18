@@ -59,8 +59,10 @@ interface Tries {
 type Phase =
   | { k: 'spin' }
   /** At the fork with `left` spaces still to walk: 近道 or 遠回り? */
-  | { k: 'fork'; spun: number; left: number }
-  | ({ k: 'word'; mult: number; spun: number } & Tries)
+  /** `card`: a card's move (its landing plays, an イベント there as ことば). */
+  | { k: 'fork'; spun: number; left: number; card?: true }
+  /** `rested`: an イベント reached by a card's move, played as ことば (no card chain). */
+  | ({ k: 'word'; mult: number; spun: number; rested?: true } & Tries)
   /** `r`: the line's pick in [0, 1) among the seat's level's lines not used yet. */
   | ({ k: 'sentence'; spun: number; r: number } & Tries)
   /** `item`: PICTURES' index (none collected yet in this game). */
@@ -183,18 +185,18 @@ export function choose(g: Game, branch: 0 | 1): Game {
   if (g.phase.k !== 'fork') return g;
   const players = copy(g);
   players[g.turn].branch = branch;
-  return walk({ ...g, n: g.n + 1, players }, g.phase.spun, g.phase.left, rnd(g));
+  return walk({ ...g, n: g.n + 1, players }, g.phase.spun, g.phase.left, rnd(g), !!g.phase.card);
 }
 
-/** Walk `left` spaces (the players already copied), then land. */
-function walk(g: Game, spun: number, left: number, r: () => number): Game {
+/** Walk `left` spaces (the players already copied), then land. `card`: a card's move (an イベント landed on plays as ことば). */
+function walk(g: Game, spun: number, left: number, r: () => number, card = false): Game {
   const me = g.players[g.turn];
   g = { ...g };
   for (; left > 0; left--) {
     const n = stepFrom(me.pos, me.branch);
     if (n === null) {
       if (me.pos === GOAL) break;
-      return { ...g, phase: { k: 'fork', spun, left } };
+      return { ...g, phase: { k: 'fork', spun, left, ...(card ? { card: true as const } : {}) } };
     }
     me.pos = n;
     // a letter stone walked over (or landed on): its letter to my pocket, while there's room
@@ -206,12 +208,14 @@ function walk(g: Game, spun: number, left: number, r: () => number): Game {
     }
     if (n === GOAL) break;
   }
-  return land(g, spun, r);
+  return land(g, spun, r, card);
 }
 
-function land(g: Game, spun: number, r: () => number): Game {
+function land(g: Game, spun: number, r: () => number, card = false): Game {
   const me = g.players[g.turn];
   const kind = BOARD[me.pos].kind;
+  // a card's move ending on an イベント: no second card, a ことば instead
+  if (card && kind === 'event') return { ...g, phase: { k: 'word', mult: 1, spun, rested: true } };
   if (kind === 'goal') {
     const place = g.players.filter((p) => p.home !== null).length;
     me.home = place;
@@ -348,7 +352,7 @@ export function pictureDone(g: Game, misses: number): Game {
   return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'picture', text: pic.w, ja: pic.ja, stars }] });
 }
 
-/** The card's effect, then the turn on (or another spin). A move stops at the fork and plays no space. */
+/** The card's effect, then the turn on (or another spin); a move walks on and plays the stone it lands on. */
 export function eventDone(g: Game): Game {
   if (g.phase.k !== 'event') return g;
   const c: Card = CARDS[g.phase.card];
@@ -361,12 +365,9 @@ export function eventDone(g: Game): Game {
     p.stars -= n;
     me.stars += n;
   }
-  for (let k = 0; k < (c.move ?? 0); k++) {
-    const n = stepFrom(me.pos, me.branch);
-    if (n === null || n === GOAL) break;
-    me.pos = n;
-  }
   const out = { ...g, n: g.n + 1, players };
+  // a move: walked like a roll (letters picked up, the fork asks), and the stone it lands on is played: same turn
+  if (c.move) return walk(out, c.move, c.move, rnd(g), true);
   return c.again ? { ...out, phase: { k: 'spin' } } : next(out);
 }
 

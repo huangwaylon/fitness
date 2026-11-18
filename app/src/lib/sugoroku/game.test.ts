@@ -210,6 +210,18 @@ describe('game', () => {
     expect(rewardOf(rich)).toBe(REWARD + REWARD_GOAL);
     expect(rewardOf(playOut('rw-end'))).toBeGreaterThanOrEqual(REWARD);
   });
+  it('a card’s move walks on and plays the stone it lands on (an イベント there as ことば), letters picked up on the way', () => {
+    const moveCard = CARDS.findIndex((c) => c.move === 3);
+    let g = newGame(seats, 'mv');
+    const start = 1;
+    const target = pathOf(start, BOARD.length - 1, 0).slice(0, 3);
+    g = { ...g, letters: { [target[0]]: 'k' }, players: g.players.map((p, i) => (i ? p : { ...p, pos: start, branch: 0 })), phase: { k: 'event', card: moveCard, spun: 1 } };
+    const after = eventDone(g);
+    expect(after.turn).toBe(0); // still my turn: the landing plays
+    expect(after.players[0].pos).toBe(target[2]);
+    expect(after.players[0].pocket).toContain('k');
+    expect(['word', 'sentence', 'picture', 'home', 'fork']).toContain(after.phase.k);
+  });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });
 

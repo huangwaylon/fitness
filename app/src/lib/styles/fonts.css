@@ -12,6 +12,14 @@
   font-style: normal;
   font-display: swap;
   font-weight: 500;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-10-500-normal.woff2) format('woff2');
+  unicode-range: U+944a,U+944c,U+9452-9453,U+9455,U+9459-945c,U+945e-9463,U+9468,U+946a-946b,U+946d-9472,U+9475,U+9477,U+947c-947f,U+9481,U+9483-9485,U+9578-9579,U+957e-957f,U+9582,U+9584,U+9586-9588,U+958a,U+958c-958f,U+9592,U+9594,U+9596,U+9598-9599,U+959d-95a1,U+95a4,U+95a6-95a9,U+95ab-95ad,U+95b1,U+95b4,U+95b6,U+95b9-95bf,U+95c3,U+95c6,U+95c8-95cd,U+95d0-95d6,U+95d9-95da,U+95dc-95e2,U+95e4-95e6,U+95e8,U+961d-961e,U+9621-9622,U+9624-9626,U+9628,U+962c,U+962e-962f,U+9631,U+9633-9634,U+9637-963a,U+963c-963d,U+9641-9642,U+964b-964c,U+964f,U+9652,U+9654,U+9656-9658,U+965c-965f,U+9661,U+9666,U+966a,U+966c,U+966e,U+9672,U+9674,U+9677,U+967b-967c,U+967e-967f,U+9681-9684,U+9689,U+968b,U+968d,U+9691,U+9695-9698,U+969a,U+969d,U+969f,U+96a4-96aa,U+96ae-96b4,U+96b6,U+96b8-96bb,U+96bd,U+96c1,U+96c9-96cb,U+96cd-96ce,U+96d2,U+96d5-96d6,U+96d8-96da,U+96dc-96df,U+96e9,U+96ef,U+96f1,U+96f9-96fa,U+9702-9706,U+9708-9709,U+970d-970f,U+9711,U+9713-9714,U+9716,U+9719-971b;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-11-500-normal.woff2) format('woff2');
   unicode-range: U+92bc-92bd,U+92bf-92c3,U+92c5-92c8,U+92cb-92d0,U+92d2-92d3,U+92d5,U+92d7-92d9,U+92dc-92dd,U+92df-92e1,U+92e3-92e5,U+92e7-92ea,U+92ec,U+92ee,U+92f0,U+92f2,U+92f7-92fb,U+92ff-9300,U+9302,U+9304,U+9308,U+930d,U+930f-9311,U+9314-9315,U+9318-931a,U+931c-931f,U+9321-9325,U+9327-932b,U+932e,U+9333-9337,U+933a-933b,U+9344,U+9347-934a,U+934d,U+9350-9352,U+9354-9358,U+935a,U+935c,U+935e,U+9360,U+9364-9365,U+9367,U+9369-936d,U+936f-9371,U+9373-9374,U+9376,U+937a,U+937d-9382,U+9388,U+938a-938b,U+938d,U+938f,U+9392,U+9394-9395,U+9397-9398,U+939a-939b,U+939e,U+93a1,U+93a3-93a4,U+93a6,U+93a8-93a9,U+93ab-93ad,U+93b0,U+93b4-93b6,U+93b9-93bb,U+93c1,U+93c3-93cd,U+93d0-93d1,U+93d3,U+93d6-93d9,U+93dc-93df,U+93e2,U+93e4-93e8,U+93f1,U+93f5,U+93f7-93fb,U+93fd,U+9401-9404,U+9407-9409,U+940d-9410,U+9413-9417,U+9419-941a,U+941f,U+9421,U+942b,U+942e-942f,U+9431-9434,U+9436,U+9438,U+943a-943b,U+943d,U+943f,U+9441,U+9443-9445,U+9448;
 }
@@ -630,6 +638,14 @@
   font-weight: 700;
   src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-6-700-normal.woff2) format('woff2');
   unicode-range: U+9c3e,U+9c41,U+9c43-9c4a,U+9c4e-9c50,U+9c52-9c54,U+9c56,U+9c58,U+9c5a-9c61,U+9c63,U+9c65,U+9c67-9c6b,U+9c6d-9c6e,U+9c70,U+9c72,U+9c75-9c78,U+9c7a-9c7c,U+9ce6-9ce7,U+9ceb-9cec,U+9cf0,U+9cf2,U+9cf6-9cf7,U+9cf9,U+9d02-9d03,U+9d06-9d09,U+9d0b,U+9d0e,U+9d11-9d12,U+9d15,U+9d17-9d18,U+9d1b-9d1f,U+9d23,U+9d26,U+9d2a-9d2c,U+9d2f-9d30,U+9d32-9d34,U+9d3a,U+9d3c-9d3f,U+9d41-9d48,U+9d4a,U+9d50-9d54,U+9d59,U+9d5d-9d65,U+9d69-9d6c,U+9d6f-9d70,U+9d72-9d73,U+9d76-9d77,U+9d7a-9d7c,U+9d7e,U+9d83-9d84,U+9d86-9d87,U+9d89-9d8a,U+9d8d-9d8e,U+9d92-9d93,U+9d95-9d9a,U+9da1,U+9da4,U+9da9-9dac,U+9dae,U+9db1-9db2,U+9db5,U+9db8-9dbd,U+9dbf-9dc4,U+9dc6-9dc7,U+9dc9-9dca,U+9dcf,U+9dd3-9dd7,U+9dd9-9dda,U+9dde-9de0,U+9de3,U+9de5-9de7,U+9de9,U+9deb,U+9ded-9df0,U+9df3-9df4,U+9df8,U+9dfd-9dfe,U+9e02,U+9e07,U+9e0a,U+9e0d-9e0e,U+9e10-9e12,U+9e15-9e16,U+9e19-9e1f,U+9e75,U+9e79-9e7d,U+9e80-9e85,U+9e87-9e88;
+}
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url(../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-10-700-normal.woff2) format('woff2');
+  unicode-range: U+944a,U+944c,U+9452-9453,U+9455,U+9459-945c,U+945e-9463,U+9468,U+946a-946b,U+946d-9472,U+9475,U+9477,U+947c-947f,U+9481,U+9483-9485,U+9578-9579,U+957e-957f,U+9582,U+9584,U+9586-9588,U+958a,U+958c-958f,U+9592,U+9594,U+9596,U+9598-9599,U+959d-95a1,U+95a4,U+95a6-95a9,U+95ab-95ad,U+95b1,U+95b4,U+95b6,U+95b9-95bf,U+95c3,U+95c6,U+95c8-95cd,U+95d0-95d6,U+95d9-95da,U+95dc-95e2,U+95e4-95e6,U+95e8,U+961d-961e,U+9621-9622,U+9624-9626,U+9628,U+962c,U+962e-962f,U+9631,U+9633-9634,U+9637-963a,U+963c-963d,U+9641-9642,U+964b-964c,U+964f,U+9652,U+9654,U+9656-9658,U+965c-965f,U+9661,U+9666,U+966a,U+966c,U+966e,U+9672,U+9674,U+9677,U+967b-967c,U+967e-967f,U+9681-9684,U+9689,U+968b,U+968d,U+9691,U+9695-9698,U+969a,U+969d,U+969f,U+96a4-96aa,U+96ae-96b4,U+96b6,U+96b8-96bb,U+96bd,U+96c1,U+96c9-96cb,U+96cd-96ce,U+96d2,U+96d5-96d6,U+96d8-96da,U+96dc-96df,U+96e9,U+96ef,U+96f1,U+96f9-96fa,U+9702-9706,U+9708-9709,U+970d-970f,U+9711,U+9713-9714,U+9716,U+9719-971b;
 }
 @font-face {
   font-family: 'Zen Maru Gothic';

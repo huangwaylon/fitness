@@ -469,6 +469,7 @@
               </div>
             </div>
           {:else if ph.k === 'word'}
+            {#if ph.rested}<p class="note" data-sg-rested>{s('restedNote')}</p>{/if}
             {#if words}
               {#key `${g.n}`}
                 <WordTurn rack={cur.rack} pocket={cur.pocket} forced={cur.forced} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
