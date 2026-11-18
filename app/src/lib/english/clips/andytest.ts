@@ -1,11 +1,11 @@
+// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 2, ctx 4, tx 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 4, new 2
 // “Andy is too smart for this test | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy
 // is about to take the police exams; his wife quizzes him on codes, cheers him up and gives him a lucky charm, the
 // examiner runs the personality test, and the chief later explains how Andy did.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 155 s. Andy is named by the examiner
 // (66 s) and the chief by "Hello, Chief Fugleberg" (119.6 s); the wife is never named, so stems say "his wife".
-// Untested on purpose: who says "Okay, quiz me" and "Wait" / "Yes" (79–81 s), 57 s, 34 s, 141 s, the wrist-lock bit
-// (143–152 s), and the jokes on personality, salt shakers and the divorce plan.
+// Kept out of items: the divorce-and-cheat joke (37–42 s) and the wrist-lock bit (143–155 s).
 import type { Clip } from '../types.ts';
 
 export const andyTest: Clip = {
@@ -22,8 +22,8 @@ export const andyTest: Clip = {
       cue: '「personality evaluation」のあと',
       line: 'and then we do the personality evaluation, which I feel like I’m gonna *nail*',
       said: '筆記のあとの性格検査は「完ぺきにこなせる気がする」と言う。',
-      mean: 'nail ＝ 文字どおりは「くぎ（を打つ）」、ここでは「ばっちり決める」。',
-      trap: 'nail から、くぎやつめを思いやすい。I’m gonna nail it ＝ 完ぺきにやる。',
+      mean: 'nail ＝ 文字どおりは「くぎを打つ」。くぎがズバッと決まる → 「ばっちり決める」。くだけた言い方。',
+      trap: 'nail から、くぎやつめを連想しやすい。I’m gonna nail it ＝ 完ぺきにやる。',
       use: 'You nailed it!（完ぺきだったよ！）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'personality', seg: [0, 9.8], retired: true,
@@ -49,16 +49,16 @@ export const andyTest: Clip = {
       trap: 'divorce（離婚）が聞こえて、やめてと言っていると思いやすい。あれは冗談。',
       use: 'Can you quiz me?（問題を出してくれる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'code1', seg: [11.9, 18.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'code1', ctx: true, seg: [11.9, 18.1],
       stem: 'What does an officer mean by a 35-42?',
       ja: '警官の「35-42」はどういう意味？',
       choices: ['Breaking and entering', 'Assault and battery', 'Driving over the limit'], a: 1,
-      choicesJa: ['不法侵入', '暴行', 'スピード違反'],
+      choicesJa: ['不法侵入', '暴行傷害', 'スピード違反'],
       cue: '「calls in a 35-42?」のあと',
-      line: 'calls in a 35-42? — *Assault and battery*.',
+      line: 'Wife: What does it mean when an officer calls in a 35-42? / Andy: *Assault and battery*.',
       said: '「35-42と言ったら？」に「暴行」とすぐ答える。',
-      mean: 'assault and battery ＝ 暴行（法律の言葉）。答えをすぐに言えている。',
-      trap: 'battery から「電池」と思いやすい。法律では「なぐること」。',
+      mean: 'assault and battery ＝ 暴行傷害（法律の言葉）。calls in ＝ 無線で連絡する。答えをすぐに言えている。',
+      trap: 'battery から「電池」を連想しやすい。法律では「なぐること」。',
       use: 'What does this code mean?（この番号はどういう意味ですか）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'arson', seg: [17.9, 26.9],
@@ -87,14 +87,26 @@ export const andyTest: Clip = {
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'nervous', seg: [29.6, 37.4],
       stem: 'How does Andy feel before the test?',
       ja: '試験の前、アンディはどんな気持ち？',
-      choices: ['He is nervous', 'He is bored', 'He is angry'], a: 0,
-      choicesJa: ['緊張している', 'たいくつしている', '怒っている'],
+      choices: ['Worried about it', 'Bored with the quiz', 'Angry at his wife'], a: 0,
+      choicesJa: ['不安に思っている', 'クイズにあきている', '妻に怒っている'],
       cue: '「lighting a building on fire」のあと',
       line: '*Oh, I’m nervous.* — Babe, look at me.',
-      said: '「ああ、緊張する」と言い、妻が「ねえ、こっちを見て」と励ます。',
+      said: '「ああ、緊張する」と言い、妻が「ねえ、こっち見て」と励ます。',
       mean: 'nervous ＝ 緊張している・不安な。look at me ＝ こっちを見て（励ますとき）。',
-      trap: 'nervous を「神経質」とだけ覚えていると迷いやすい。ここは「緊張」。',
+      trap: 'nervous を「神経質」とだけ覚えていると迷いやすい。ここは試験前の「緊張・不安」。',
       use: 'I’m so nervous about tomorrow.（明日がすごく緊張する）' },
+
+    { id: 'ps', skill: 'pragma', level: 'B1', point: 'pass', reveals: ['nervous'], ctx: true, seg: [31.2, 37.3],
+      stem: 'What does his wife say when Andy is nervous?',
+      ja: 'アンディが緊張していると、妻は何と言う？',
+      choices: ['He will pass and be a cop', 'He can try again next year', 'He should skip the test today'], a: 0,
+      choicesJa: ['合格して警官になれる', '来年またやればいい', '今日の試験は休めばいい'],
+      cue: '「look at me」のあと',
+      line: 'Andy: Oh, I’m nervous. / Wife: Babe, look at me. *You are going to pass this test* and *you are going to become a cop*.',
+      said: '「ああ、緊張する」「ねえ、こっち見て。あなたは試験に受かって、警官になるの」。',
+      mean: 'You are going to 〜 ＝ あなたは〜するよ。「きっとそうなる」と言い切って、相手を励ます言い方。',
+      trap: '緊張している人への言葉なので、休んでいいと言うように聞こえるが、言うのは pass（受かる）。',
+      use: 'You’re going to do great.（きっとうまくいくよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'divorce', seg: [32.5, 44.5], retired: true,
       stem: 'How is the wife’s backup plan, if he fails, received?',
@@ -116,16 +128,16 @@ export const andyTest: Clip = {
       trap: 'cheat と you だけだと、アンディが裏切られる話に。on の後が相手、with の後が一緒の人。',
       use: 'I’d choose you every time.（何度でも君を選ぶよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creepy', seg: [44.3, 56.4], retired: true,
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creepy', ctx: true, seg: [47.6, 56.0],
       stem: 'How does Andy feel about the lucky charm?',
       ja: 'アンディはお守りをどう思う？',
       choices: ['He loves it', 'He hates it', 'He is scared of it'], a: 0,
       choicesJa: ['すごく気に入っている', 'すごくいやがっている', 'こわがっている'],
       cue: '「so creepy」のあと',
-      line: '*Baby*, you are so creepy. *Thank you, I love it*.',
-      said: '死んだウサギの足のお守りに「ベイビー、気味悪いね。ありがとう、気に入った」と言う。',
-      mean: 'creepy ＝ 気味が悪い。でもすぐ Thank you, I love it と喜んでいる。',
-      trap: 'creepy（気味が悪い）から、いやがっていると思いやすい。最後の I love it が答え。',
+      line: 'Wife: I cut its feet off and made it into a lucky charm. / Andy: Baby, you are so creepy. *Thank you, I love it*.',
+      said: '死んだウサギの足のお守りに「ベイビー、めちゃくちゃ気味悪いね。ありがとう、大好き」と言う。',
+      mean: 'creepy ＝ 気味が悪い。ウサギの足はアメリカで昔からある幸運のお守り。I love it で喜んでいる。',
+      trap: 'creepy（気味が悪い）だけ聞くと、いやがっていると考えがち。最後の I love it が答え。',
       use: 'Thank you, I love it!（ありがとう、気に入った！）' },
 
     { id: 'i1', skill: 'detail', level: 'B1', point: 'machine', seg: [58.6, 70.2],
@@ -140,16 +152,16 @@ export const andyTest: Clip = {
       trap: '名前を聞くので、本人確認と思いやすい。make sure のあとが理由。',
       use: 'Just to make sure, is this the right bus?（念のため、このバスで合ってますか）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'test', reveals: ['machine'], seg: [63.5, 108], retired: true,
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'test', reveals: ['machine', 'gave'], seg: [63.5, 94.2],
       stem: 'How does Andy do on the personality test?',
       ja: 'アンディの性格検査はどうなる？',
       choices: ['He gives very strange answers', 'He answers every question well', 'The machine stops working'], a: 0,
       choicesJa: ['とても変な答えをする', 'どの質問にもうまく答える', '機械が止まる'],
       cue: '「Is your name Andy?」のあと',
-      line: '*I don’t know how to answer that*. … Well, first, I would be like, “*Dad, you’re alive?*”',
-      said: '名前にも迷い、子どもに銃を渡すと答え、違反した父には「生きてたの？」と驚く。',
-      mean: '警官に向いた答えではない。どれも変な答えばかり。',
-      trap: '自信があると言っていたので、うまく答えると思いやすい。答えの中身を聞く。',
+      line: 'Is your name Andy? — *I don’t know how to answer that*. … asks to hold your service revolver. — *Yes, I gave it to him.*',
+      said: '自分の名前にも迷い、「子どもが拳銃を持ちたがったら？」には「渡した」と答える。',
+      mean: '警官に向いた答えではない。いちばん簡単な質問にも迷い、危ないことを平気で言う。',
+      trap: '最初に nail（ばっちり）と言っていたので、うまく答えると思いやすい。答えの中身を聞く。',
       use: 'That’s a strange answer.（それは変な答えだね）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'name', seg: [65.0, 79.2], retired: true,
@@ -163,6 +175,18 @@ export const andyTest: Clip = {
       trap: 'Andrew が別名に聞こえると、わざとの嘘と取りやすい。迷う声と言い直しを聞く。',
       use: 'I don’t know how to answer that.（なんて答えればいいか…）' },
 
+    { id: 'yn', skill: 'pragma', level: 'B1', point: 'yesno', ctx: true, seg: [65.4, 72.0],
+      stem: 'What does the examiner want Andy to say?',
+      ja: '検査官はアンディに何と言ってほしい？',
+      choices: ['Just yes or no', 'His full name', 'Why he wants the job'], a: 0,
+      choicesJa: ['はいか、いいえだけ', '正式な名前', 'この仕事をしたい理由'],
+      cue: '「how to answer that」への返事',
+      line: 'Examiner: Is your name Andy? / Andy: I don’t know how to answer that. / Examiner: *Simple yes or no.*',
+      said: '「名前はアンディ？」「どう答えたらいいか分からない」「はいか、いいえで」。',
+      mean: 'Simple yes or no ＝「はいか、いいえで（答えて）」。説明はいらない、という言い方。',
+      trap: 'このあと Andrew（正式な名前）の話が出るので、名前を聞いていると勘違いしやすい。',
+      use: 'Just a simple yes or no, please.（はいか、いいえだけでお願いします）' },
+
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'moveon', seg: [78, 83],
       stem: 'What does “*Let’s move on*” mean here?',
       ja: 'ここでの「Let’s move on」はどういう意味？',
@@ -172,7 +196,7 @@ export const andyTest: Clip = {
       line: 'Wait. — Yes. — *Let’s move on.*',
       said: '名前の答えが二転三転し、検査官が「次に進もう」と言う。',
       mean: 'move on ＝ 次に進む。話や作業を先に進めるときの言い方。',
-      trap: 'move から、場所を動くと思いやすい。ここは「次の質問へ」。',
+      trap: 'move から、場所を動くと考えがち。ここは「次の質問へ」。',
       use: 'Okay, let’s move on.（よし、次に進もう）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'revolver', seg: [82.6, 97.4], retired: true,
@@ -245,7 +269,7 @@ export const andyTest: Clip = {
       trap: 'failed（落ちた）だけ聞くと、両方落ちたと思いやすい。but の前後で分かれる。',
       use: 'What a shame!（それは惜しいね！）' },
 
-    { id: 'g4', skill: 'gist', level: 'B1', point: 'chiefview', reveals: ['genius', 'sweetkid', 'doesnt'], seg: [119.5, 143.5],
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'chiefview', reveals: ['genius', 'sweetkid', 'doesnt'], seg: [119.5, 143.5], retired: true,
       stem: 'What does the chief think of Andy?',
       ja: '署長は、アンディをどう思っている？',
       choices: ['Smart, but wrong for the job', 'Kind, but not smart enough for it', 'Ready to be a great cop'], a: 0,
@@ -278,7 +302,7 @@ export const andyTest: Clip = {
       line: 'He’s a *sweet kid*. *Just doesn’t*…',
       said: '「いい子なんだ。ただ、警官に必要なものがない」と、ほめてから結論を言う。',
       mean: 'ほめてから悪い知らせを言う、よくある言い方。kid ＝ 若いやつ（親しみをこめて）。',
-      trap: 'kid（子ども）から、若すぎると思いやすい。あとの Just doesn’t 〜 が本題。',
+      trap: 'kid（子ども）から、若すぎると勘違いしやすい。あとの Just doesn’t 〜 が本題。',
       use: 'He’s nice, but he’s always late.（いい人だけど、いつも遅れる）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'doesnt', seg: [133.1, 138.3],
@@ -300,7 +324,7 @@ export const andyTest: Clip = {
       choicesJa: ['かなりの天才', '一つのことだけ天才', 'まったく天才ではない'],
       cue: '「Too bad」のあと',
       line: 'Too bad, he’s *certainly something of a genius*.',
-      said: '「惜しいな、確かにちょっとした天才だ」と言う。',
+      said: '「惜しいな、たしかになかなかの天才だ」と言う。',
       mean: 'something of a 〜 ＝ ちょっとした〜・なかなかの〜。certainly ＝ たしかに。',
       trap: 'something（何か）から、一つのことだけと思いやすい。ひとまとまりで「なかなかの」。',
       use: 'She’s something of an expert.（彼女はなかなかの専門家だ）' },

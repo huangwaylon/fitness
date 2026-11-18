@@ -1,13 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 2, new 1, ctx 5, tx 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 4, new 1
 // “How to Prevent the Spread of Germs - The Office US” (the official The Office channel, BEST OF SEASON 7 - The Office
 // US): a presenter gives the office tips against colds (a keyboard study, the "vampire cough", hand washing, sanitizing
 // stations); a coworker objects that germs make you stronger, wants "desanitizing" stations instead, is taken at his
 // word with a sneeze, and defends the idea to the camera.
-// Segments from the captions, words from whisper (2026-11-16). Nobody is named in the audio: "the presenter", "the
-// coworker" (the germ fan), and "another coworker" (the one who brings up sneezing).
-// Untested on purpose: 13–18 s (the "your mama" joke: an insult), 18–21 s (whisper "Sorry. I'm done. All right.",
-// captions lack it), 30.5 s (whisper "cough", captions "coffee"), 38.4 s ("Because of the euro": the joke needs world
-// knowledge), 63–65 s (whisper "desanitizing", captions "handy sanitizing"), 93.3 s (captions "hurt you", whisper lacks it).
+// Segments from the captions, words from whisper (2026-11-16; whisper's times here are rounded to whole seconds).
+// Nobody is named in the audio: "the presenter", "the coworker" (the germ fan), and "another coworker" (the one who
+// brings up sneezing). 38.4 s "Because of the euro" needs world knowledge; 63–65 s whisper "desanitizing", captions
+// "handy sanitizing". s1 and d1 retired 11-18: five items started in the first 7 s.
+// EXCLUDE 13–18 (the "your mama" joke: an insult)
 // EAR CHECK: 81.7–84.5 s h1 — a sneeze is heard before "You're welcome" (captions have "but" at 81.7 s, then nothing
 //   until 84.5 s; whisper has neither)
 import type { Clip } from '../types.ts';
@@ -18,7 +19,7 @@ export const germsTalk: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B2', point: 'lotofus', seg: [0, 3.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'lotofus', seg: [0, 3.9], retired: true,
       stem: 'Fill the gap: “I know ___ been feeling…”',
       ja: 'すき間をうめよう：「I know ___ been feeling…」',
       choices: ['a lot of us have', 'a lot of us had', 'a lot of you have'], a: 0,
@@ -42,7 +43,7 @@ export const germsTalk: Clip = {
       trap: 'weather（天気）から、雨や天気の話と思いやすい。決まり文句で「ちょっと具合が悪い」。',
       use: 'I’m feeling a bit under the weather today.（今日はちょっと具合が悪くて）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'season', seg: [0, 5],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'season', seg: [1.2, 6.0],
       stem: 'What does “It’s that time of year” mean here?',
       ja: '「It’s that time of year」は、ここでどういう意味？',
       choices: ['It’s the season for colds', 'The year is almost over', 'This year is a special one'], a: 0,
@@ -51,10 +52,10 @@ export const germsTalk: Clip = {
       line: 'It’s *that time of year*.',
       said: '体調をくずす人が多いと言い、「そういう時期ですから」と足す。',
       mean: 'that time of year ＝「毎年それが起こる時期」。ここはかぜがはやる季節。',
-      trap: 'year から年末を思いやすい。毎年くり返すことを言う決まり文句。',
+      trap: 'year から年末を連想しやすい。毎年くり返すことを言う決まり文句。',
       use: 'It’s that time of year again.（またこの季節が来たね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [2.5, 13.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [2.5, 13.7], retired: true,
       stem: 'Who did the study the presenter talks about?',
       ja: '発表する人が話す調査は、だれがした？',
       choices: ['A university', 'A health office', 'Their own company'], a: 0,
@@ -66,7 +67,7 @@ export const germsTalk: Clip = {
       trap: '健康の話なので、国の機関と思いやすい。by のあとの University を聞く。',
       use: 'According to a recent study…（最近の調査によると）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [4.6, 16.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [6.0, 12.9], keep: true,
       stem: 'How many times more bacteria do keyboards have?',
       ja: 'キーボードには、便座の何倍の細菌がいる？',
       choices: ['Ten times', 'Dozens of times', 'Hundreds of times', 'Thousands of times'], a: 2,
@@ -78,7 +79,7 @@ export const germsTalk: Clip = {
       trap: '「ハンドレッズ」なら何百、「サウザンズ」なら何千、「テン」なら10、「ダズンズ」なら何十。',
       use: 'It’s hundreds of times faster.（何百倍も速い）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'tips', seg: [7.0, 52.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'tips', seg: [21.0, 52.0],
       stem: 'What is most of the presenter’s talk about?',
       ja: '発表する人の話は、ほとんど何について？',
       choices: ['Ways to stop germs spreading', 'Ways to get over a cold', 'How to clean your keyboard'], a: 0,
@@ -87,16 +88,16 @@ export const germsTalk: Clip = {
       line: 'One of the *simplest ways* to cut down on the spread of germs… *other things you can do*…',
       said: 'せきの仕方、手洗い、休むこと、予防接種と、かんたんな対策をならべる。',
       mean: 'cut down on the spread ＝ 広がるのをへらす。うつさないための方法のリスト。',
-      trap: '体調の話なので、治し方と思いやすい。spread（広がる）が何度も出るので、予防の話。',
+      trap: '体調の話なので、治し方と考えがち。spread（広がる）が何度も出るので、予防の話。',
       use: 'Here are some simple things to try.（かんたんにできることをいくつか）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'name', seg: [24.0, 32.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'name', ctx: true, seg: [24.0, 32.6],
       stem: 'Does the presenter mean real vampires?',
       ja: '発表する人は、本物の吸血鬼のことを言っている？',
       choices: ['No, it’s just a name', 'Yes, she believes in them', 'Yes, it’s from a movie'], a: 0,
       choicesJa: ['いいえ、ただの名前', 'はい、本当にいると思っている', 'はい、映画から来ている'],
       cue: '「Did you say vampire?」への返事',
-      line: 'Oh, *no*. *It’s just that if a vampire* had to cough…',
+      line: 'Did you say vampire? / Oh, *no*. *It’s just that if a vampire* had to cough, he would do it like this.',
       said: '「いえ、吸血鬼がせきをするならこうする、というだけです」と答える。',
       mean: 'It’s just that 〜 ＝「ただ〜というだけ」。軽く打ち消して、名前のわけを説明している。',
       trap: 'Oh, no を「しまった」と思いやすい。ここは「いえいえ、ちがいます」。',
@@ -124,6 +125,18 @@ export const germsTalk: Clip = {
       trap: '相づちは賛成に聞こえやすい。すぐあとに And や But で反論が来るかを聞く。',
       use: 'Uh-huh. Right. And who pays for that?（へえ。で、誰が払うの？）', retired: true },
 
+    { id: 'cl', skill: 'detail', level: 'B1', point: 'cloak', ctx: true, seg: [30.0, 37.0],
+      stem: 'What does the coworker say vampires would ruin?',
+      ja: '同僚は、吸血鬼が何をだめにすると言う？',
+      choices: ['Their long coats', 'Their shirt sleeves', 'Their sharp teeth'], a: 0,
+      choicesJa: ['長いマント', 'シャツのそで', 'とがった歯'],
+      cue: '「Uh-huh. Right. And」のあと',
+      line: 'Presenter: …if a vampire had to cough, he would do it like this. / Coworker: Uh-huh. Right. And *ruin their cloaks*?',
+      said: '「吸血鬼ならこうせきをする」に「なるほど。それでマントを台なしにするのか」と返す。',
+      mean: 'cloak ＝ 吸血鬼が着る長いマント。ruin ＝ 台なしにする。うでで口をおおう「吸血鬼のせき」に本気で文句を言っている。',
+      trap: 'うでで口をおおう形なので、そで（sleeves）と考えがち。聞こえるのは cloaks（マント）。',
+      use: 'The rain ruined my shoes.（雨で靴がだめになった）' },
+
     { id: 'x1', skill: 'dict', level: 'B1', point: 'flushot', seg: [40.2, 48.2],
       stem: 'Type the presenter’s last tip: “and ___.” (4 words)', answer: 'get your flu shot',
       ja: '最後のアドバイスを入力：「and ___.」（4語）',
@@ -146,19 +159,31 @@ export const germsTalk: Clip = {
       trap: 'すぐ前の flu shot が耳に残りやすい。Also のあとは新しい話。',
       use: 'Is there a place to wash my hands?（手を洗える所はありますか）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'cost', reveals: ['stations', 'coddle'], seg: [48.8, 60.8],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'cost', reveals: ['stations', 'coddle'], ctx: true, seg: [48.8, 60.8],
       stem: 'What does “They will cost you your life” mean?',
       ja: '「They will cost you your life」はどういう意味？',
       choices: ['They could kill you', 'They cost a lot of money', 'They take a lot of time'], a: 0,
       choicesJa: ['命取りになる', 'お金がすごくかかる', 'すごく時間がかかる'],
       cue: '「No, no, no」のあと',
-      line: 'No, no, no. They will *cost you your life*.',
+      line: 'Presenter: I’m going to set up hand sanitizing stations… / Coworker: No, no, no. They will *cost you your life*.',
       said: '消毒コーナーに「だめだめ。命取りになる」と反対する。',
       mean: 'cost you your life ＝ 文字どおりは「命という代金がかかる」、つまり「命取り」。',
-      trap: 'cost から、お金の話と思いやすい。cost のあとが your life なので「命を失う」。',
+      trap: 'cost から、お金の話に聞こえるが、cost のあとが your life なので「命を失う」。',
       use: 'One mistake could cost you your job.（ミス1つで仕事を失うかも）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['cost', 'coddle', 'bowl'], seg: [52.0, 97.0],
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'coddle', ctx: true, seg: [53.4, 61.2],
+      stem: 'What is the worst thing for your immune system, he says?',
+      ja: '彼によると、免疫にいちばん悪いことは何？',
+      choices: ['Protecting it too much', 'Pushing it too hard', 'Feeding it too little'], a: 0,
+      choicesJa: ['守りすぎること', '無理をさせすぎること', '栄養が足りないこと'],
+      cue: '「immune system is to」のあと',
+      line: 'Elaborate. / The worst thing you can do for your immune system is to *coddle* it. They need to fight their own battles.',
+      said: '「免疫にとって最悪なのは、あまやかすことだ」と言う。',
+      mean: 'coddle ＝ あまやかす、守りすぎる。だから「自分で戦わせろ」と続く。',
+      trap: 'あとの fight から、無理をさせると思いやすい。最悪なのは守りすぎのほう。',
+      use: 'Don’t coddle him. He’ll be fine.（あまやかさないで。大丈夫だから）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['cost', 'coddle', 'bowl'], seg: [57.0, 75.5],
       stem: 'What does one coworker say about germs?',
       ja: '同僚の1人は、ばい菌について何と言う？',
       choices: ['They make you stronger', 'They make you sick', 'They cost a lot of money'], a: 0,
@@ -167,31 +192,19 @@ export const germsTalk: Clip = {
       line: 'Exposing yourself to germs is *the best way to make yourself stronger*.',
       said: '「消毒は体を弱くする。ばい菌にふれるのが強くなるいちばんの方法だ」と言いはる。',
       mean: 'make yourself stronger ＝ 自分を強くする。予防の話と正反対の考え。',
-      trap: 'cost が聞こえて、お金の話と思いやすい。best way to のあとが彼の考え。',
+      trap: '消毒の話の流れなので、病気にする話と考えがち。best way to のあとが彼の考え。',
       use: 'Walking is the best way to stay healthy.（歩くのが健康でいるいちばんの方法）' },
-
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'coddle', seg: [53.4, 61.2],
-      stem: 'What is the worst thing for your immune system, he says?',
-      ja: '彼によると、免疫にいちばん悪いことは何？',
-      choices: ['Protecting it too much', 'Pushing it too hard', 'Feeding it too little'], a: 0,
-      choicesJa: ['守りすぎること', '無理をさせすぎること', '栄養が足りないこと'],
-      cue: '「immune system is to」のあと',
-      line: 'The worst thing you can do for your immune system is to *coddle* it.',
-      said: '「免疫にとって最悪なのは、あまやかすことだ」と言う。',
-      mean: 'coddle ＝ あまやかす、守りすぎる。だから「自分で戦わせろ」と続く。',
-      trap: 'あとの fight から、無理をさせると思いやすい。最悪なのは守りすぎのほう。',
-      use: 'Don’t coddle him. He’ll be fine.（あまやかさないで。大丈夫だから）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'bowl', seg: [64.4, 71],
       stem: 'What would fill the bowls the coworker wants?',
       ja: '同僚がほしいボウルには、何が入る？',
-      choices: ['Dirt and filth', 'Soap and water', 'Candy and snacks'], a: 0,
-      choicesJa: ['どろや汚い物', '石けんと水', 'おかしやスナック'],
+      choices: ['Dirt and dirty stuff', 'Soap and clean water', 'Candy and snacks'], a: 0,
+      choicesJa: ['どろや汚い物', '石けんときれいな水', 'おかしやスナック'],
       cue: '「filled with」のあと',
       line: 'A simple bowl at every juncture filled with *dirt, vomit, fecal matter*.',
       said: '「あらゆる所に、どろや汚い物を入れたボウルを置くべきだ」と言う。',
       mean: 'filled with 〜 ＝ 〜でいっぱいの。dirt ＝ どろ、よごれ。消毒の反対。',
-      trap: '消毒の話の流れで、石けんを思いやすい。filled with のあとを聞く。',
+      trap: '消毒の話の流れで、石けんを連想しやすい。filled with のあとを聞く。',
       use: 'The bowl was filled with candy.（ボウルはおかしでいっぱいだった）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'rationale', seg: [70.8, 80.3],
@@ -206,16 +219,16 @@ export const germsTalk: Clip = {
       trap: '例を足すので、賛成と思いやすい。by that で始まる極端な例は、たいてい反論。',
       use: 'By that logic, we should never sleep.（その理屈なら、寝ちゃいけないことになる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'welcome', seg: [74.7, 82.7],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'welcome', ctx: true, seg: [74.7, 82.7],
       stem: 'How does the coworker answer the sneezing idea?',
       ja: 'くしゃみの話に、同僚はどう答える？',
       choices: ['He is happy about it', 'He is angry about it', 'He says no politely'], a: 0,
       choicesJa: ['喜んでいる', '怒っている', 'ていねいに断る'],
       cue: '「Yes」のあと',
-      line: 'Yes. *I would welcome it*.',
+      line: 'So by that rationale… I should just sneeze on you. / Yes. *I would welcome it*.',
       said: '「ああ。大歓迎だ」と答える。',
       mean: 'I would welcome it ＝「喜んで受ける、大歓迎」。自分の考えどおり、本気。',
-      trap: '強がりで断っていると思いやすい。最初が Yes で、welcome は「歓迎する」。',
+      trap: '強がりで断っていると勘違いしやすい。最初が Yes で、welcome は「歓迎する」。',
       use: 'Any ideas? I’d welcome them.（アイデアがあれば、ぜひ）' },
 
     { id: 'c2', skill: 'infer', level: 'C2', point: 'welcome', reveals: ['principle', 'forever'], seg: [74.9, 99.9],
@@ -229,13 +242,13 @@ export const germsTalk: Clip = {
       trap: '挑発への Yes は強がりに見えやすい。この形式では、カメラへの本音で場面を読み直す。',
       use: 'I meant every word of it.（全部本気で言ったんだ）', retired: true },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'yourewelcome', reveals: ['welcome'], seg: [75.5, 87.5],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'yourewelcome', reveals: ['welcome'], ctx: true, seg: [77.0, 87.5],
       stem: 'Why does she say “You’re welcome” after the sneeze?',
       ja: 'くしゃみのあと、彼女はなぜ「You’re welcome」と言う？',
       choices: ['He said he would welcome it', 'He thanked her for it', 'She wants to say sorry'], a: 0,
       choicesJa: ['彼が「大歓迎」と言ったから', '彼がお礼を言ったから', 'あやまりたいから'],
       cue: 'くしゃみの前の彼の一言',
-      line: 'I would *welcome* it. … *You’re welcome*.',
+      line: 'Coworker: Yes. I would *welcome* it. / (a sneeze) *You’re welcome*.',
       said: '「大歓迎だ」と言った彼にくしゃみをかけて、「どういたしまして」と言う。',
       mean: 'You’re welcome ＝「どういたしまして」。彼の welcome をそのまま返して、贈り物のようにあつかう。',
       trap: 'お礼への返事と思いやすいが、彼はお礼を言っていない。前の I would welcome it が元。',
