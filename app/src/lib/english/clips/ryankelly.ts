@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 9, retire 1, new 4, ctx 7, tx 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 6, new 1
 // “You Are Toxic - The Office US” (the official The Office channel, BEST OF The Office - Season 8): Ryan confronts Pam
 // for warning Kelly about him, gets told to his face that she doesn't like him, then tries to win Kelly back from Ravi
@@ -5,9 +6,10 @@
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Pam (12.6 s), Ryan (30.8, 56.5,
 // 76.8 s), Kelly (3.8 s and on), Ravi; "Brian" (46.6 s, both sources) is a coworker misnaming Ryan. The coworkers who
 // side with Ravi are never named, so stems call them "a coworker" and never ask who. Untested: 0–1.5 s, 107–116 s
-// (boos), 138–153 s, 182–205 s (the sources disagree). c3 was deleted before it shipped: never reuse c3.
+// (boos), 138–153 s, 187–205 s (the sources disagree). c3 was deleted before it shipped: never reuse c3.
 // EAR CHECK: 71.4–72.6 s s1 — "it would cause me" (both sources); "cause" ends in a z sound, unlike "cost"
 // EAR CHECK: 119.7–120.6 s x1 — "wasn't going to" (both sources); the t of n't nearly drops
+// EAR CHECK: 182.5–184.1 s k4 — "No, you don't." / "I do." (whisper; the A2 round called 182–205 s disputed)
 // EAR CHECK: 13.4–14.4 s f1 — "say it to my face" (captions) vs "say it in my face" (whisper)
 import type { Clip } from '../types.ts';
 
@@ -17,15 +19,15 @@ export const ryankelly: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'badly', seg: [1.5, 11.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'badly', ctx: true, seg: [1.5, 11.5],
       stem: 'What does Pam say she told Kelly about Ryan?',
       ja: 'パムは、ライアンについてケリーに何と言ったと言う？',
       choices: ['He used to treat her badly', 'He still treats her badly', 'He talks badly about her'], a: 0,
       choicesJa: ['前は彼女にひどい扱いをしていた', '今も彼女にひどい扱いをしている', '彼女の悪口を言っている'],
       cue: '「All I did was」のあと。',
-      line: 'All I did was *remind her that you used to treat her badly*.',
-      said: '「あなたが前は彼女にひどい扱いをしていたって、思い出させただけ」と言う。',
-      mean: 'used to 〜 ＝ 前は〜していた。remind ＝ 思い出させる。',
+      line: 'Ryan: I hear you’ve been *bad-mouthing* me to Kelly. / Pam: All I did was *remind her that you used to treat her badly*.',
+      said: '「僕の悪口を言ってるらしいね」に、「前はひどい扱いをしてたって、思い出させただけ」と返す。',
+      mean: 'used to 〜 ＝ 前は〜していた。remind ＝ 思い出させる。bad-mouth ＝ 陰で悪口を言う。',
       trap: 'used to は小さく速いので聞き落としやすい。still（今も）は聞こえない。',
       use: 'I used to live near here.（前はこの近くに住んでいた）' },
 
@@ -50,31 +52,32 @@ export const ryankelly: Clip = {
       trap: 'face から「顔・表情」の言い方を思いやすい。to my face は場所でなく「本人に直接」。',
       use: 'He’d never say that to my face.（あの人、面と向かってはそう言わないよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'fair', reveals: ['dislike'], seg: [12.9, 24.9],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'fair', ctx: true, seg: [12.9, 24.9],
       stem: 'What does Pam mean by “Fair enough”?',
       ja: 'パムの「Fair enough」の意味は？',
       choices: ['That’s reasonable', 'That’s not fair', 'That’s enough talk'], a: 0,
       choicesJa: ['もっともだね', 'それはずるい', '話はもういい'],
       cue: '「say it to my face」のあと。',
-      line: '*Fair enough.* Um… I don’t think you’re a very good person.',
-      said: '「確かにね」と受けて、間をおき「あなたはいい人じゃないと思う」と面と向かって言う。',
+      line: 'Ryan: If you have something bad to say to me, Pam, say it to my face. / Pam: *Fair enough.* Um… I don’t think you’re a very good person.',
+      said: '「悪口があるなら面と向かって言って」に「確かにね」と受け、「いい人だと思わない」と言う。',
       mean: 'fair enough ＝「それはもっとも」。相手の言い分を受け入れる決まり文句。',
-      trap: 'fair（公平）と enough（十分）から「もういい」と思いやすい。ここは「なるほど」。',
+      trap: 'fair（公平）と enough（十分）から「もういい」と考えがち。ここは「なるほど」。',
       use: 'Fair enough. I’ll pay next time.（もっともだね。次はぼくが払うよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'dislike', seg: [18.2, 25.9],
-      stem: 'How does Pam feel about Ryan?',
-      ja: 'パムはライアンのことをどう思っている？',
-      choices: ['She doesn’t like him', 'She likes him a lot', 'She is afraid of him'], a: 0,
-      choicesJa: ['好きではない', 'とても好き', 'こわがっている'],
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'forgive', seg: [18.2, 25.9],
+      stem: 'Why does Pam say “forgive me, but”?',
+      ja: 'パムはなぜ「forgive me, but」と言う？',
+      choices: ['To soften a hard truth', 'To say sorry for the past', 'To ask Ryan to forgive Kelly'], a: 0,
+      choicesJa: ['言いにくい本音をやわらげるため', '昔のことを謝るため', 'ケリーを許すよう頼むため'],
       cue: '「forgive me」のあと。',
       line: 'I *don’t think you’re a very good person*. And *forgive me*, but… *I don’t like you very much*.',
       said: '「いい人じゃないと思う。前にも言った気がするけど、あまり好きじゃない」と言う。',
-      mean: 'not 〜 very much ＝ あまり〜ない。forgive me（失礼だけど）でていねいに、はっきり言う。',
-      trap: 'forgive me（ゆるして）から謝っていると思いやすい。最後の I don’t like you が本音。',
+      mean: '文字どおりは「許して」。言いにくいことの前に置くと「失礼だけど」。but のあとが本題。',
+      trap: 'forgive（許す）から謝っていると勘違いしやすい。but のあとの I don’t like you が本題。',
       use: 'Forgive me, but I disagree.（失礼ですが、反対です）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'match', seg: [24.6, 32.9],
+    // retired (R4): its line is now the first turn of the ctx item really
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'match', seg: [24.6, 32.9], retired: true,
       stem: 'What does Ryan say a lot of people would say?',
       ja: 'ライアンは、多くの人が何と言うだろうと言う？',
       choices: ['He’s a better match than Ravi', 'He’d treat her better than Ravi', 'He knows her better than Ravi'], a: 0,
@@ -95,19 +98,19 @@ export const ryankelly: Clip = {
       line: 'Ravi’s *way better*. … Ravi’s the whole package.',
       said: '「自分のほうがお似合い」と言うライアンに、同僚は「ラヴィのほうがずっといい」と返す。',
       mean: 'way better ＝ ずっといい。味方は一人もいない。',
-      trap: '「多くの人が言う」と聞くと、ライアンに味方がいると思いやすい。返事はすべてラヴィ。',
+      trap: '「多くの人が言う」から、ライアンに味方がいると考えがち。返事はすべてラヴィ。',
       use: 'This one is way better.（こっちのほうがずっといい）' },
 
-    { id: 'really', skill: 'pragma', level: 'B1', point: 'really', seg: [28.8, 36.2],
+    { id: 'really', skill: 'pragma', level: 'B1', point: 'really', ctx: true, seg: [26.1, 35.0],
       stem: 'What does “Come on, Ryan, really?” mean?',
       ja: '「Come on, Ryan, really?」の意味は？',
       choices: ['You can’t be serious', 'Please come with me', 'Hurry up a little, please'], a: 0,
       choicesJa: ['本気で言ってるの？', 'いっしょに来て', '早くして'],
       cue: '「than Ravi is」のあと。',
-      line: '*Come on, Ryan, really?* Ravi’s way better.',
-      said: '「ちょっと、ライアン、本気？ラヴィのほうがずっといいよ」と言う。',
+      line: 'Ryan: a lot of people would say that I’m a *better match* for Kelly than Ravi is. / *Come on, Ryan, really?* Ravi’s way better.',
+      said: '「僕のほうがケリーにお似合いだと言う人は多い」に、「ちょっと、ライアン、本気？」。',
       mean: 'Come on, really? ＝「えー、本気で言ってる？」。あきれたときの言い方。',
-      trap: 'come on（来て）から「いっしょに来て」と思いやすい。ここはあきれの声。',
+      trap: 'come on（来て）から「いっしょに来て」に聞こえるが、ここはあきれの声。',
       use: 'Come on, really? That’s too much.（えー、本気？それはないよ）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'package', seg: [35.7, 40.7],
@@ -155,7 +158,7 @@ export const ryankelly: Clip = {
       line: 'Ryan, just *stop making a scene* in front of all my friends.',
       said: '「ライアン、友だちの前で騒がないで」と止める。',
       mean: 'make a scene ＝ 人前で騒ぐ。みんなの前で恥ずかしい、という気持ち。',
-      trap: 'scene（場面）からドラマの感動を思いやすい。make a scene は人前の迷惑な騒ぎ。',
+      trap: 'scene（場面）からドラマの感動を連想しやすい。make a scene は人前の迷惑な騒ぎ。',
       use: 'Please don’t make a scene here.（ここで騒がないでね）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'poem', seg: [63.2, 76.5], retired: true,
@@ -181,6 +184,18 @@ export const ryankelly: Clip = {
       trap: 'cost は「コスト」とにごらず、could は「ク」で始まる。「ウッ…コーズ」なら would。',
       use: 'It would cause too much trouble.（面倒なことになりすぎる）' },
 
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'leavealone', ctx: true, seg: [76.5, 84.5],
+      stem: 'Why should Ryan leave Kelly alone, they say?',
+      ja: 'ライアンはなぜケリーにかまうなと言われる？',
+      choices: ['She has a great boyfriend now', 'She is busy with her work', 'She is still angry at him'], a: 0,
+      choicesJa: ['今はすてきな彼氏がいるから', '仕事で忙しいから', 'まだ彼に怒っているから'],
+      cue: '「go away」のあと',
+      line: 'My God, Ryan, *go away*. / She *found herself a beautiful boyfriend*. / Yeah, man, he’s absolutely gorgeous. *Please leave her alone.*',
+      said: '「もう、ライアン、あっち行って」「ケリーにはすてきな彼氏ができたんだから」「もうかまわないで」。',
+      mean: 'find oneself 〜 ＝ 自分で〜を見つける。leave 〜 alone ＝「〜をそっとしておく、かまわない」。',
+      trap: 'leave（去る）と alone（一人）から「一人にして」と考えがち。ここは「彼女にかまうな」。',
+      use: 'Please leave the cat alone.（猫にかまわないであげて）' },
+
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'cookie', seg: [83.5, 90.8],
       stem: 'What is a “cookie-cutter world”?',
       ja: '「cookie-cutter world」とは？',
@@ -193,6 +208,18 @@ export const ryankelly: Clip = {
       trap: 'cookie から「あまい」を思いやすい。型抜きで同じ形が並ぶイメージ。',
       use: 'I hate cookie-cutter hotels.（どこも同じようなホテルはきらい）' },
 
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'notpoint', ctx: true, seg: [95.0, 104.5],
+      stem: '“Do we live in a cookie-cutter world?” What is the answer?',
+      ja: '「僕たちって型にはまった世界に住んでる？」への答えは？',
+      choices: ['Yes, but it doesn’t matter', 'No, and he is wrong', 'Not sure, let’s think'], a: 0,
+      choicesJa: ['そうだけど、関係ない', 'ううん、彼がまちがってる', '分からない、考えよう'],
+      cue: '「Absolutely」のあと',
+      line: 'Do you guys think he’s right, though? Do we live in a cookie-cutter world? / *Absolutely, but it’s not the point.*',
+      said: '「僕たち、型にはまってる？」に「完全にね。でも、そういう話じゃないの」。',
+      mean: 'not the point ＝「そういう話じゃない」。話を本題に戻す決まり文句。',
+      trap: 'Absolutely（完全に）で終わると考えがち。決め手は but のあと。認めつつ、関係ないと切る。',
+      use: 'Sure, it’s cheap, but that’s not the point.（安いのはそうだけど、そういう話じゃない）' },
+
     // anchor: 95.5–103.6 s "Do you guys think he's right, though? Do we live in a cookie-cutter world?" — "Absolutely,
     { id: 'c2', skill: 'infer', level: 'C2', point: 'cookie', seg: [95, 104.2], retired: true,
       stem: 'Which plain-English version keeps the answer to “Do we live in a cookie-cutter world?”',
@@ -204,6 +231,18 @@ export const ryankelly: Clip = {
       mean: '悪口は認めても結論は変えない。absolutely で認め、but で「だから Ryan が正しいわけではない」と線を引く。',
       trap: 'absolutely を全面的な賛成と取りやすい。but が認めた範囲を決める。',
       use: 'True, but that’s not the point.（確かに。でもそこじゃないんだよ）' },
+
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'dont', reveals: ['interrupt'], ctx: true, seg: [116.8, 123.1],
+      stem: 'Kelly wasn’t going to interrupt. What does Ryan say?',
+      ja: '割りこむつもりはなかったと言うケリー。ライアンの返事は？',
+      choices: ['She does it a lot, so don’t', 'He is glad she won’t', 'She can talk after him'], a: 0,
+      choicesJa: ['よく割りこむから、しないで', '割りこまないならうれしい', '自分のあとで話していい'],
+      cue: '「Yeah, but」のあと',
+      line: 'Ryan: And please *don’t interrupt*. / Kelly: I wasn’t going to interrupt. / Ryan: Yeah, but *you do a lot*, so just don’t.',
+      said: '「割りこむつもりなかった」に「うん、でも君はよく割りこむから、とにかくしないで」。',
+      mean: 'you do a lot ＝ you interrupt a lot。just don’t ＝「とにかくしないで」。',
+      trap: 'Yeah（うん）で納得したと考えがち。決め手は but のあと。do は interrupt の代わり。',
+      use: 'I know you’re busy, but just don’t forget.（忙しいのは分かるけど、とにかく忘れないでね）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'interrupt', seg: [117.5, 122.5],
       stem: 'Type what Kelly says: “I ___ interrupt.” (3 words)', answer: 'wasn\'t going to',
@@ -238,14 +277,14 @@ export const ryankelly: Clip = {
       trap: 'someday（いつか）で力強く終わると思いやすい。最後の probably で自信が下がる。',
       use: 'I’ll call you tomorrow. Probably.（明日電話するよ。たぶん）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['choose'], seg: [153, 187.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['choose'], seg: [153.6, 183.0],
       stem: 'How does Ryan’s big speech to Kelly end?',
       ja: 'ケリーへのライアンの長い話は、どう終わる？',
       choices: ['She picks Ravi', 'She picks Ryan', 'She picks neither'], a: 0,
       choicesJa: ['ラヴィを選ぶ', 'ライアンを選ぶ', 'どちらも選ばない'],
       cue: '最後のケリーの返事。',
-      line: 'But I *love Ravi, and I choose him*. … I hope we can still be friends.',
-      said: 'ライアンの申しこみに、ケリーは「ラヴィを選ぶ。友だちでいたい」と答える。',
+      line: 'You mean so much to me. But I *love Ravi, and I choose him*.',
+      said: 'ライアンの申しこみに、ケリーは「ラヴィを愛してるし、彼を選ぶ」と答える。',
       mean: 'choose ＝ 選ぶ。結婚の申しこみは、はっきり断られて終わる。',
       trap: '最初の温かい一言で yes に聞こえやすい。答えは but のあと。',
       use: 'I hope we can still be friends.（これからも友だちでいたいな）' },
@@ -297,5 +336,17 @@ export const ryankelly: Clip = {
       mean: 'you mean so much to me ＝ あなたはとても大切。先にこう言って、断りをやわらげている。',
       trap: '温かい一言で yes を期待しやすい。好意の言葉のあとの but に本題が来る。',
       use: 'You mean a lot to me, but no.（大切だけど、ごめん）' },
+
+    { id: 'k4', skill: 'pragma', level: 'B1', point: 'ido', reveals: ['choose'], ctx: true, seg: [180.3, 187.0],
+      stem: 'Ryan says “No, you don’t.” What does Kelly’s “I do” mean?',
+      ja: '「No, you don’t」に対するケリーの「I do」の意味は？',
+      choices: ['She does choose Ravi', 'She agrees with Ryan', 'She will marry Ryan'], a: 0,
+      choicesJa: ['本当にラヴィを選ぶ', 'ライアンの言う通り', 'ライアンと結婚する'],
+      cue: '「No, you don’t」のあとの短い返事',
+      line: 'Kelly: But I love Ravi, and *I choose him*. / Ryan: *No, you don’t.* / Kelly: *I do.*',
+      said: '「ラヴィを選ぶ」に「いや、違う」。ケリーは「違わない（選ぶの）」と返す。',
+      mean: 'I do ＝ I do choose him。do が前の動詞の代わりで「本当にそうなの」と言い返す形。',
+      trap: 'I do から結婚式の「誓います」を連想しやすい。ここは I choose him をくり返している。',
+      use: 'You don’t like it. — I do!（気に入ってないでしょ。—気に入ってるってば！）' },
   ]
 };

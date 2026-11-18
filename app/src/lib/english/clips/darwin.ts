@@ -1,11 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 1, new 4, ctx 6, tx 15
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 6, new 3
 // “Darwin, baby! Darwin... - The Office US” (the official The Office channel, BEST OF SEASON 5): Andy, who has just
 // learned about Dwight and Angela, thanks the office for lying to him, then tells Dwight it's over; the argument turns
 // into a duel over Angela, the weapons go from swords to guns, and Toby reads out the policy on workplace violence.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈206 s (whisper loops the last talking
-// head after it). Untested: 49–54 s (the “love-making” brag), 106–111 s (Meredith's camcorder line), 151–156 s
-// (“Darwin, baby” rests on world knowledge), 169–171 s (“Yay, Toby's here!” needs the show's history), 196–206 s (the
-// grave talking head). Who says “Hang on, Pam” (139 s) isn't settled: m1 names only Pam.
+// head after it). Untested: 106–111 s (Meredith's camcorder line), 140–151 s (“the prize is Angela”, asker unnamed),
+// 151–156 s (“Darwin, baby” rests on world knowledge), 169–171 s (“Yay, Toby's here!” needs the show's history).
+// Who says “Hang on, Pam” (139 s) isn't settled: m1 names only Pam.
+// EXCLUDE 50–55: the “love-making” brag
+// EXCLUDE 165–169: “Do you think Angela could get beaten up?”
+// SKIP 201–227: the grave talking head (a dark joke about a death), then whisper loops it over the music
 import type { Clip } from '../types.ts';
 
 export const darwin: Clip = {
@@ -14,28 +18,28 @@ export const darwin: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd4', skill: 'phrase', level: 'B1', point: 'okay', seg: [4.8, 13.5],
+    { id: 'd4', skill: 'phrase', level: 'B1', point: 'okay', ctx: true, seg: [4.8, 13.5],
       stem: 'How does Andy answer “Are you okay, man?”',
       ja: '「Are you okay, man?」に、アンディはどう答える？',
       choices: ['Not at all, but thanks', 'Yes, I’m fine, thanks', 'I don’t want to talk'], a: 0,
       choicesJa: ['全然。でもありがとう', 'うん、平気。ありがとう', '話したくない'],
       cue: '「Are you okay」への返事。',
-      line: 'Are you okay, man? — No. *Not at all, actually.* But *thanks for asking*.',
+      line: 'Are you okay, man? / No. *Not at all, actually.* But *thanks for asking*.',
       said: '「大丈夫？」に「いや、全然。でも聞いてくれてありがとう」と答える。',
       mean: 'Not at all ＝ 全然（〜ない）。thanks for asking ＝ 気にかけてくれてありがとう。',
-      trap: 'thanks が聞こえると「平気」と思いやすい。最初の No と not at all で決まる。',
+      trap: 'thanks が聞こえると「平気」と考えがち。最初の No と not at all で決まる。',
       use: 'Not really. But thanks for asking.（あまり。でも聞いてくれてありがとう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'thanks', seg: [11.7, 22.1],
-      stem: 'How does Andy really feel about the office?',
-      ja: 'アンディは、職場のみんなを本当はどう思っている？',
-      choices: ['Angry they lied to him', 'Thankful they were kind', 'Happy to be back'], a: 0,
-      choicesJa: ['嘘をつかれて怒っている', '優しくしてくれて感謝', '戻れてうれしい'],
+      stem: 'Andy thanks everyone. How does he feel about them?',
+      ja: 'みんなにお礼を言うアンディ。みんなをどう思っている？',
+      choices: ['Upset they hid the truth', 'Thankful they were kind', 'Happy to be back at work'], a: 0,
+      choicesJa: ['本当のことを隠されて怒っている', '優しくしてくれて感謝', '職場に戻れてうれしい'],
       cue: '2回目の「thank」のあと。',
       line: 'I’d also like to… *thank all of you for lying to my face*…',
       said: '「顔を見て嘘をつき、何も言わずにいてくれてありがとう」と全員に言う。',
-      mean: 'お礼の形で、黙っていた全員を責めている。lie to my face ＝ 面と向かって嘘をつく。',
-      trap: '1回目のお礼は本物なので、2回目も感謝と思いやすい。何へのお礼かで決める。',
+      mean: 'お礼の形で、黙っていた全員を責めている（本当は逆の意味）。lie to my face ＝ 面と向かって嘘をつく。',
+      trap: '1回目の thanks for asking は本物なので、2回目も感謝に聞こえるが、何へのお礼かで決める。',
       use: 'Please don’t lie to me.（嘘はつかないで）' },
 
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'welcome', reveals: ['thanks'], seg: [12.3, 22],
@@ -60,7 +64,7 @@ export const darwin: Clip = {
       trap: 'ありがとうには「どういたしまして」という型で選びやすい。返事は言葉の形でなく、相手のしたことに返す。',
       use: 'You’re right. I should have said something.（そうだね、言うべきだった）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'over', seg: [27.5, 64.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'over', seg: [27.5, 49.5],
       stem: 'What does Andy want Dwight to do?',
       ja: 'アンディはドワイトに何をしてほしい？',
       choices: ['Stop seeing Angela', 'Say he loves Angela', 'Let Angela choose'], a: 0,
@@ -72,16 +76,16 @@ export const darwin: Clip = {
       trap: 'ドワイトが I am not giving up（あきらめない）と返すので、要求は「手を引け」。',
       use: 'It’s over between us.（私たち、もう終わりね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'brokeup', seg: [32.9, 41.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'brokeup', ctx: true, seg: [32.9, 41.7],
       stem: 'When Andy says “It’s over,” what does Dwight think?',
       ja: '「It’s over」を聞いて、ドワイトは最初どう思う？',
       choices: ['Angela left Andy', 'Andy quit his job', 'Their fight is over'], a: 0,
       choicesJa: ['アンジェラがアンディを振った', 'アンディが仕事を辞めた', 'けんかが終わった'],
       cue: 'ドワイトの最初の返事、Oh good のあと。',
-      line: 'Oh, good. *She broke up with you*.',
+      line: 'Andy: It’s over. / Dwight: Oh, good. *She broke up with you*.',
       said: '「終わりだ」に、ドワイトは「よし、振られたんだな」と喜ぶ。',
       mean: 'break up with ＝ 恋人と別れる。アンディとアンジェラの話だと受け取った。',
-      trap: 'over から「けんかが終わる」と思いやすい。答えは Oh good のあと。',
+      trap: 'over から「けんかが終わる」と考えがち。答えは Oh, good のあと。',
       use: 'Did you two break up?（二人、別れたの？）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [41.2, 48.1],
@@ -91,7 +95,7 @@ export const darwin: Clip = {
       choicesJa: ['〜しなきゃだめ', '〜しなきゃいけなかった', '〜しなきゃ（くだけた言い方）'],
       cue: '「giving up」への短い返事。',
       line: '*You have* to. — No, I don’t.',
-      said: '「あきらめない」に「あきらめなきゃだめだ」、「いや、だめじゃない」と続く。',
+      said: '「あきらめない」に「あきらめなきゃだめだ」、「いや、その必要はない」と続く。',
       mean: 'have to は「ハフタ」とつながる。次の I don’t が、今の話だという合図。',
       trap: 'had to なら返事は I didn’t のはず。You’ve got なら「ガッ」の音が入る。',
       use: 'You have to see a doctor.（医者にみてもらわないと）' },
@@ -114,9 +118,9 @@ export const darwin: Clip = {
       choicesJa: ['ちょっと落ち着こう', 'なんでそんなに怒ってるの？', '今すぐ外に出よう'],
       cue: '割って入る人の一言。',
       line: '*Why don’t we*, uh, just *cool off* a bit?',
-      said: '言い合う二人に「ねえ、ちょっと頭を冷やさない？」と割って入る。',
+      said: '言い合う二人に「ねえ、二人とも。ちょっと頭を冷やさない？」と割って入る。',
       mean: 'Why don’t we 〜? ＝「〜しよう」という提案。cool off ＝ 頭を冷やす。',
-      trap: 'Why から質問と思いやすい。cool off も「涼む」ではない。',
+      trap: 'Why から理由を聞く質問と勘違いしやすい。Why don’t we は提案。cool off も「涼む」ではない。',
       use: 'Why don’t we take five?（ちょっと休憩しない？）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'backdown', reveals: ['over'], seg: [64.4, 71.9],
@@ -131,7 +135,8 @@ export const darwin: Clip = {
       trap: '体の動きと取ると「後ろに下がる」に聞こえる。前後の話で決める。',
       use: 'I’m not going to back down on this.（これは譲らないよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'makeyou', reveals: ['backdown'], seg: [66.9, 72.9],
+    // retired (R4): four starts in 62–69 s; s1 is the bank's sound item
+    { id: 's2', skill: 'sound', level: 'B2', point: 'makeyou', reveals: ['backdown'], seg: [66.9, 72.9], retired: true,
       stem: 'Fill the gap in Andy’s answer: “Then ___ you.”',
       ja: 'アンディの返事「Then ___ you.」の空所は？',
       choices: ['I’ll take', 'I’ll make', 'I’d make'], a: 1,
@@ -173,7 +178,7 @@ export const darwin: Clip = {
       line: 'Okay, fine. Good. A duel. *The winner gets Angela*.',
       said: '「よし、決闘だ。勝ったほうがアンジェラだ」と決める。',
       mean: 'duel ＝ 決闘。the winner gets 〜 ＝ 勝った人が〜をもらう。人を賞品にするのがおかしい。',
-      trap: 'このあと武器の話が続くので、剣と思いやすい。gets のあとを聞く。',
+      trap: 'このあと武器の話が続くので、剣を連想しやすい。gets のあとを聞く。',
       use: 'The winner gets a free coffee.（勝った人はコーヒー無料）' },
 
     { id: 'pr2', skill: 'phrase', level: 'B2', point: 'business', seg: [86.2, 92.8],
@@ -187,6 +192,18 @@ export const darwin: Clip = {
       mean: 'none of your business ＝ あなたには関係ない（口を出すな）。強い言い方。',
       trap: 'business から「商売」を思いやすい。ここは「関わること」の意味。',
       use: 'Sorry, but that’s none of your business.（悪いけど、あなたには関係ない）' },
+
+    { id: 'k1', skill: 'infer', level: 'B2', point: 'outside', ctx: true, seg: [88.5, 97.5],
+      stem: 'Why is the fight “none of your business,” they say?',
+      ja: '決闘は「関係ない」と言う。その理由は？',
+      choices: ['The fight won’t be at work', 'She doesn’t work with them', 'Angela asked them to fight'], a: 0,
+      choicesJa: ['決闘は職場でやらないから', '彼女は同じ職場ではないから', 'アンジェラに頼まれたから'],
+      cue: '「Guess what?」のあと',
+      line: 'Hey, it is *my business when it happens at work*. / Guess what? *Not happening at work.* … We’re gonna do it *outside*.',
+      said: '「職場で起きるなら関係ある」に、「職場ではやらない。外でやる。なら関係ないな」と返す。',
+      mean: 'Guess what? ＝「いいか、聞いて」と意外なことを言う前置き。「職場の外なら関係ない」という屁理屈。',
+      trap: 'ただ追い払っていると考えがち。理由は Not happening at work（職場ではやらない）。',
+      use: 'Guess what? I got the job!（ねえ聞いて、仕事決まった！）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'length', seg: [109.2, 117.1],
       stem: 'How long is the samurai sword Dwight offers to use?',
@@ -224,14 +241,14 @@ export const darwin: Clip = {
       trap: 'closest を best と聞くと「一番いい物」。to that（それに）が要。',
       use: 'The closest thing we have is this one.（一番近いのはこれですね）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'elephant', seg: [131.2, 139.4],
-      stem: 'What does the coworker say about the two guns?',
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'elephant', ctx: true, seg: [129.5, 139.4],
+      stem: '“Are those guns?” What is said about the two guns?',
       ja: '同僚は、二人の銃について何と言う？',
       choices: ['Dwight’s is much stronger', 'Both are for birds', 'Andy’s is more dangerous'], a: 0,
       choicesJa: ['ドワイトのほうがずっと強い', 'どちらも鳥用', 'アンディのほうが危ない'],
       cue: '2つの獲物の大きさの差。',
-      line: 'Andy’s is for *hunting pheasant*, and Dwight is for *killing elephants*.',
-      said: '「アンディのはキジ撃ち用、ドワイトのはゾウを仕留める用」と説明する。',
+      line: 'Wait, are those guns? / Yes, they are. / Andy’s is for *hunting pheasant*, and Dwight’s is for *killing elephants*.',
+      said: '「それって銃？」「そう」。続けて「アンディのはキジ撃ち用、ドワイトのはゾウを仕留める用」。',
       mean: 'pheasant ＝ キジ（鳥）。鳥とゾウの差で、ドワイトの銃がけた違いに強いと伝える。',
       trap: 'pheasant だけ聞くと、両方とも鳥用に思える。比べる物の差を聞く。',
       use: 'That’s not a fair fight.（それじゃ勝負にならない）' },
@@ -259,7 +276,7 @@ export const darwin: Clip = {
       trap: 'help me を文字通りに取ると「助けて」。決まり文句は形で覚える。',
       use: 'I promise you, I’ll be there.（約束する、必ず行く）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 165.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 164.8],
       stem: 'What does Stanley want to see?',
       ja: 'スタンリーは何が見たい？',
       choices: ['One of them beaten up', 'Angela with the right man', 'Andy finally win'], a: 0,
@@ -304,17 +321,41 @@ export const darwin: Clip = {
       trap: '補って聞くと「けんか禁止」になる。文がどこで終わったかを聞く。',
       use: 'No exceptions whatsoever.（例外は一切なし）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'whatever', seg: [186.3, 192.9],
-      stem: 'When Toby asks if they understand, how do they answer?',
-      ja: '「分かった？」と聞かれ、みんなはどう答える？',
-      choices: ['Quickly, to end it', 'Firmly, to obey', 'Warmly, to be kind'], a: 0,
-      choicesJa: ['早く終わらせたくて、さっと', '従うつもりで、きっぱり', '親切に、優しく'],
-      cue: '答えの数と、短い返事のくり返し。',
-      line: 'Fine. — *Yeah, yeah, yeah.* — *Whatever.* — We get it.',
-      said: '「はいはい」「どうでもいい」「分かったよ」と、短い返事が次々に重なる。',
-      mean: 'yeah, yeah ＝「はいはい」。短い返事が重なるのは、早く終わらせたい合図。',
-      trap: 'We get it だけ拾うと、素直に従ったように聞こえる。Whatever と重なり方を聞く。',
-      use: 'Yeah, yeah, I get it.（はいはい、分かったよ）' },
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'zerotol', seg: [180.0, 187.0],
+      stem: 'What is a “zero-tolerance policy”?',
+      ja: '「zero-tolerance policy」とは？',
+      choices: ['A rule with no exceptions', 'A rule about being patient', 'A rule nobody follows'], a: 0,
+      choicesJa: ['例外を一切認めない規則', 'がまんについての規則', '誰も守らない規則'],
+      cue: '「We have a」のあと',
+      line: 'We have a *zero-tolerance policy* on anything that would endanger our employees.',
+      said: 'トビーが「社員を危険にさらすことは、一切許さない方針です」と読み上げる。',
+      mean: 'tolerance ＝ 大目に見ること。それがゼロ ＝ 一度でもだめ、例外なし。会社や学校の規則でよく聞く。',
+      trap: 'tolerance を「がまん強さ」と取ると、忍耐の話と考えがち。大目に見る量がゼロ、の意味。',
+      use: 'The school has a zero-tolerance policy on bullying.（その学校はいじめを一切許さない）' },
+
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'whatever', ctx: true, seg: [185.5, 192.9],
+      stem: 'Toby asks “Do you understand?” What does “Yeah, yeah, yeah” mean?',
+      ja: '「分かりましたか？」への「Yeah, yeah, yeah」はどういう意味？',
+      choices: ['Okay, we get it already', 'Yes, we really agree', 'Yes, please tell us more'], a: 0,
+      choicesJa: ['はいはい、もう分かったから', 'うん、心から賛成', 'うん、もっと教えて'],
+      cue: '「Do you understand?」のあと、短い返事の重なり',
+      line: 'Toby: *Do you understand?* / Fine. — *Yeah, yeah, yeah.* — *Whatever.* — We get it.',
+      said: '「分かりましたか？」に「分かった」「はいはい」「どうでもいい」「分かったよ」と短い返事が重なる。',
+      mean: 'Yeah のくり返し ＝「はいはい」。もう聞きたくない合図。Whatever ＝「どうでもいい」。目上には使わない。',
+      trap: 'yeah ＝「はい」なので素直な賛成と考えがち。3回くり返すと「はいはい」で、早く終わらせたい合図。',
+      use: 'Yeah, yeah, I’ll do it later.（はいはい、あとでやるよ）' },
+
+    { id: 'k3', skill: 'phrase', level: 'B1', point: 'crystal', reveals: ['whatever'], seg: [190.5, 196.0],
+      stem: 'What does “Crystal clear” mean?',
+      ja: '「Crystal clear」はどういう意味？',
+      choices: ['I understand it fully', 'It is very clean now', 'I can see through it'], a: 0,
+      choicesJa: ['完全に分かった', 'すっかりきれいになった', '向こうが透けて見える'],
+      cue: '「Very clear」のあと',
+      line: 'Totally. — Very clear. — *Crystal clear.*',
+      said: 'トビーの説明に「ばっちり」「よく分かった」「よーく分かった」と返事が続く。',
+      mean: '文字どおりは「水晶のように透き通っている」。説明が透き通る＝「完全に分かった」。',
+      trap: 'crystal（クリスタル）から、物がきれい・透明な話と考えがち。説明への返事なら「よく分かった」。',
+      use: 'The plan is crystal clear. Thanks.（計画はよく分かりました。ありがとう）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'grave', seg: [191.6, 206.5],
       stem: 'After Dwight’s comment to the camera, how should we hear his promise to Toby?',
@@ -326,5 +367,17 @@ export const darwin: Clip = {
       mean: '誓いの土台がないと明かし、約束が空っぽだったと伝えている。カメラへの一言が場面を書きかえる。',
       trap: '墓に誓う、は日本語でも重いので本気に聞こえる。この形式では、カメラへの一言が答え合わせ。',
       use: 'I swear on my life.（命にかけて誓うよ）', retired: true },
+
+    { id: 'k4', skill: 'pragma', level: 'B1', point: 'trustyou', ctx: true, seg: [194.8, 201.0],
+      stem: 'Toby checks on the weapons. What does Dwight say?',
+      ja: '武器のことを確かめるトビー。ドワイトの答えは？',
+      choices: ['He took them all out', 'He still has one gun', 'He gave them to Andy'], a: 0,
+      choicesJa: ['全部持ち出した', 'まだ銃を1丁持っている', 'アンディに渡した'],
+      cue: '「Of course」のあと',
+      line: 'Toby: Dwight? *I trust you removed all your weapons* from the office. / Dwight: *Of course I did.*',
+      said: '「武器は全部、職場から持ち出してくれたよね」に「もちろんです」と答える。',
+      mean: 'I trust you 〜 ＝「〜したと信じてるよ」＝やんわり確認する言い方。did ＝ removed（持ち出した）。',
+      trap: 'trust（信じる）から、気持ちの話と考えがち。did は前の removed をくり返さない言い方。',
+      use: 'I trust you got my email?（メール、届いてますよね？）' },
   ]
 };
