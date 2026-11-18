@@ -1,13 +1,12 @@
 <script lang="ts">
-  // 英語すごろく's 絵 turn (docs/sugoroku.md "Rules"): an NH item's picture, its Japanese under it, its English name to
+  // 英語すごろく's 絵 turn (docs/sugoroku.md "Rules"): an everyday thing's picture (Noto Emoji), its Japanese beside it, its English name to
   // spell by the seat's level: やさしい taps one of three spellings; ふつう puts its letters in order, the first given;
   // むずかしい its letters with two more mixed in, none given. Right → its stars; not → 「おしい！」 and one
   // more go; a second miss → 「答えはこれ」. Never red, never ×.
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
-  import { artUrl } from '#lib/art.ts';
   import { seeded } from '#lib/random.ts';
-  import { choicesFor, lettersFor, type Picture } from '../pictures.ts';
+  import { choicesFor, lettersFor, pictureSrc, type Picture } from '../pictures.ts';
   import { pictureStars } from '../game.ts';
   import { s } from '../i18n.ts';
 
@@ -60,7 +59,7 @@
 
 <section class="turn" data-sg-picture={pic.w}>
   <h3 class="ttl">{s('pictureTitle')}</h3>
-  <div class="pic"><img src={artUrl(pic.key) ?? ''} alt="" width="72" height="72" /><span class="ja">{pic.ja}</span></div>
+  <div class="pic"><img src={pictureSrc(pic)} alt="" width="72" height="72" referrerpolicy="no-referrer" /><span class="ja">{pic.ja}</span></div>
   {#if stage === 'try' || stage === 'miss'}
     <p class="ask" aria-live="polite">{misses ? s('nudge') : level === 1 ? s('pictureAskPick') : s('pictureAsk')}</p>
     {#if level === 1}

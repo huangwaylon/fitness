@@ -6,7 +6,7 @@ import { fnv1a, seeded, weighted } from '#lib/random.ts';
 import { BOARD, GOAL, stepFrom, toGoal } from './board.ts';
 import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
-import { PICTURES, PICTURE_STARS } from './pictures.ts';
+import { PICTURES, PICTURE_STARS, TIERS, tierOf } from './pictures.ts';
 
 /** A seat's English: 1 やさしい, 2 ふつう, 3 むずかしい (what its spaces ask, not what they pay: the table stays even). */
 export type Level = 1 | 2 | 3;
@@ -216,7 +216,11 @@ function land(g: Game, spun: number, r: () => number): Game {
     // (each picture once a game)
     const taken = new Set(g.made.filter((m) => m.kind === 'picture').map((m) => m.text));
     const left = PICTURES.map((_, i) => i).filter((i) => !taken.has(PICTURES[i].w));
-    if (left.length) return { ...g, phase: { k: 'picture', item: left[Math.floor(r() * left.length)], spun, r: r() } };
+    // its tier by the seat's level (pictures.ts TIERS), a tier with none left: any
+    const tier = weighted(TIERS[me.level], r);
+    const pool = left.filter((i) => tierOf(PICTURES[i]) === tier);
+    const from = pool.length ? pool : left;
+    if (from.length) return { ...g, phase: { k: 'picture', item: from[Math.floor(r() * from.length)], spun, r: r() } };
   }
   if (kind === 'event') {
     let cards = g.cards.length >= CARDS.length ? [] : g.cards;

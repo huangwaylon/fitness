@@ -14,8 +14,7 @@ import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import { s } from './i18n.ts';
-import { art } from '#lib/art.ts';
-import { PICTURES, choicesFor, lettersFor } from './pictures.ts';
+import { PICTURES, choicesFor, lettersFor, pictureSrc } from './pictures.ts';
 
 const lines = linesJson as unknown as Line[];
 const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, name: who, level });
@@ -244,10 +243,11 @@ describe('words and sentences', () => {
     expect(notInTrimmedFont(lines.map((l) => l[1]).join(''))).toEqual([]);
   });
   it('the pictures: art on disk, Japanese in the font, three spellings, the letters to spell with', () => {
-    expect(PICTURES.length).toBeGreaterThanOrEqual(30);
+    expect(PICTURES.length).toBeGreaterThanOrEqual(300);
+    expect(new Set(PICTURES.map((p) => p.w)).size).toBe(PICTURES.length);
     for (const p of PICTURES) {
-      expect(art(p.key), p.key).not.toBeNull();
-      expect(p.w).toMatch(/^[a-z]{3,8}$/);
+      expect(pictureSrc(p)).toMatch(/^https:\/\/fonts\.gstatic\.com\/s\/e\/notoemoji\/latest\/[0-9a-f_]+\/emoji\.svg$/);
+      expect(p.w).toMatch(/^[a-z]{3,12}$/);
       expect(notInTrimmedFont(p.ja)).toEqual([]);
       const c = choicesFor(p, seeded(p.w));
       expect(new Set(c).size).toBe(3);

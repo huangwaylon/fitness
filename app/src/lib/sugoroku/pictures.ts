@@ -1,34 +1,33 @@
-// 英語すごろく's 絵 stones (docs/sugoroku.md "Rules"): an NH item's picture (the app's own art), its English name to
-// spell (やさしい: one of three spellings; ふつう: its letters, the first given; むずかしい: its letters and two more). The
-// names say what the art shows
-// (ramen for the bowl, cherries for the pair: the 2026-11-17 panel's check).
+// 英語すごろく's 絵 stones (docs/sugoroku.md "Rules"): an everyday thing's picture (Google's Noto Emoji, Apache 2.0,
+// hotlinked from its CDN: pictures.json, 415 words a single emoji shows, chosen for A1–A2 with our Japanese), its
+// English name to spell (やさしい: one of three spellings; ふつう: its letters, the first given; むずかしい: its letters and
+// two more), its tier by the seat's level (TIERS).
+import data from './pictures.json';
 
-type PictureSet = 'bug' | 'sea' | 'farm' | 'fruit' | 'treat';
 export interface Picture {
   /** Its English name (what's spelt). */
   w: string;
   ja: string;
-  set: PictureSet;
-  /** Its art's key (lib/art.ts artUrl). */
-  key: string;
+  /** food, animal, home, town, nature, school, clothes, sport, body. */
+  set: string;
+  /** Its Noto Emoji codepoint(s), lower-case hex joined with _. */
+  cp: string;
+  /** How hard its name is: 1 everyday (A1–A2), 2 B1, 3 B2 and rarer (longer names too, up to 12 letters). */
+  tier?: 1 | 2 | 3;
 }
 
-const P = (set: PictureSet, dir: string, list: string): Picture[] =>
-  list.split(' ').map((x) => {
-    const [w, ja, file] = x.split(':');
-    return { w, ja, set, key: `${dir}/${file ?? w}` };
-  });
+export const PICTURES: readonly Picture[] = data as Picture[];
 
-export const PICTURES: readonly Picture[] = [
-  ...P('bug', 'critters', 'ant:アリ bee:ミツバチ:honeybee moth:ガ fly:ハエ snail:カタツムリ spider:クモ cricket:コオロギ firefly:ホタル ladybug:テントウムシ wasp:スズメバチ'),
-  ...P('sea', 'critters', 'octopus:タコ squid:イカ tuna:マグロ salmon:サケ oyster:カキ lobster:ロブスター goldfish:金魚 seaweed:海藻'),
-  ...P('sea', 'finds', 'pearl:真珠 coral:サンゴ'),
-  ...P('farm', 'finds', 'carrot:にんじん potato:じゃがいも tomato:トマト pumpkin:かぼちゃ wheat:小麦'),
-  ...P('farm', 'critters', 'frog:カエル'),
-  ...P('fruit', 'fruit', 'apple:りんご cherries:さくらんぼ:cherry peach:もも pear:洋なし'),
-  ...P('fruit', 'finds', 'coconut:ココナッツ'),
-  ...P('treat', 'items', 'bread:パン candy:あめ cookies:クッキー ramen:ラーメン:dinner')
-];
+/** The tiers a seat's level draws from, each its weight: やさしい the everyday ones, ふつう mostly B1, むずかしい mostly the hardest. */
+export const TIERS: Readonly<Record<1 | 2 | 3, readonly (readonly [1 | 2 | 3, number])[]>> = {
+  1: [[1, 1]],
+  2: [[1, 1], [2, 3]],
+  3: [[2, 1], [3, 3]]
+};
+export const tierOf = (p: Picture): 1 | 2 | 3 => p.tier ?? 1;
+
+/** A picture's image: Noto Emoji's SVG on Google's CDN (CSP: vite.config.ts img-src). */
+export const pictureSrc = (p: Picture): string => `https://fonts.gstatic.com/s/e/notoemoji/latest/${p.cp}/emoji.svg`;
 
 /** A picture spelt: first try, after a nudge, after 答えはこれ. */
 export const PICTURE_STARS = [5, 3, 2];
