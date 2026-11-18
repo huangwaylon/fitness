@@ -386,7 +386,7 @@
   .choices { display: grid; gap: 6px; }
   .choice[aria-disabled='true'] { cursor: default; }
   .choice.ans { box-shadow: inset 0 0 0 2.5px var(--c-leaf), var(--sh-ctl); }
-  .choice.ans .prl::before { content: '○ '; color: var(--c-leaf-text); font-weight: 700; }
+  .choice.ans .prl::before { content: '○ '; color: var(--leaf-text); font-weight: 700; }
   input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
   .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); }
   .nudge .meta { color: inherit; }

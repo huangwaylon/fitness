@@ -40,12 +40,12 @@
   .wk p { margin: 0; }
   .row { display: flex; align-items: center; gap: 10px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .dots { display: inline-flex; gap: 6px; }
-  .dots i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
-  .dots i.on { background: var(--c-leaf); }
+  .dots i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--edge); }
+  .dots i.on { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   .dots.s i { width: 10px; height: 10px; }
   .n { font: 600 var(--fs-body)/1 var(--font-num); }
   .line { font-size: var(--fs-body); }
-  .met { color: var(--c-leaf-text); font-weight: 700; }
+  .met { color: var(--leaf-text); font-weight: 700; }
   .soft { font-size: var(--fs-s); color: var(--text-soft); }
   .partner { display: flex; align-items: center; gap: 8px; font-size: var(--fs-s); color: var(--text-soft); margin-top: 4px !important; }
 </style>

@@ -6,6 +6,7 @@ import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { lowContrast } from './contrast.ts';
+import { fakeYoutube } from './youtube.ts';
 
 test.use({ viewport: { width: 393, height: 659 } });
 const NIGHT = '?demo&date=2026-11-04T22:00';
@@ -113,5 +114,47 @@ test('a trail’s credits read at night (their links the night’s green on the 
   await expect(view).toHaveAttribute('data-sheet', 'full');
   await view.locator('.body').evaluate((b) => (b.scrollTop = b.scrollHeight));
   await expect(view.locator('[data-photo-credit] a').first()).toBeInViewport();
+  expect(await low(page)).toEqual([]);
+});
+
+test('English Study at night: the week’s 達成 and an answered choice’s ○ (the night’s leaf text on navy)', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await fakeYoutube(page);
+  // three days studied this week (Mon–Wed; the night is Wednesday's): 今週の3日、達成
+  await page.addInitScript(() => {
+    if (localStorage.getItem('island-demo.events')) return;
+    const ev = (d: string, i: number) => {
+      const at = Date.parse(`${d}T20:00:00+09:00`);
+      return { id: `seed-listen-${i}`, type: 'listen', data: { d, g: `nightseed${i}`, gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60000, f: 1, r: [] }, queuedAt: at, tries: 0, nextAt: 0, ackedAt: at, person: 'A' };
+    };
+    localStorage.setItem('island-demo.events', JSON.stringify({ day: '2026-11-04', events: ['2026-11-02', '2026-11-03', '2026-11-04'].map(ev) }));
+  });
+  await island(page);
+  await fromMenu(page, 'english', how);
+  const sh = page.locator('dialog[open] [data-english]');
+  await expect(sh.locator('[data-en-met]')).toBeVisible();
+  expect(await low(page), 'home').toEqual([]);
+  // the day's clip: question 1, picked till it's answered (a second miss shows it): ○ on the answer
+  await sh.locator('[data-en-today] [data-en-start]')[how]();
+  await sh.locator('[data-en-lesson] [data-en-to-q]')[how]();
+  const card = sh.locator('[data-en-lesson] [data-en-q="0"]');
+  await card.locator('[data-choice="0"]')[how]();
+  await expect(card.locator('[data-en-nudge], [data-ans]').first()).toBeVisible();
+  if (!(await card.locator('[data-ans]').count())) await card.locator('[data-choice="1"]')[how]();
+  await expect(card.locator('[data-ans]')).toBeVisible();
+  expect(await low(page), 'answered').toEqual([]);
+  // the ○ is a ::before (not a text node, so the walk above can't see it): the night's leaf text, not the day's
+  const mark = await card.locator('[data-ans] .prl').evaluate((el) => getComputedStyle(el, '::before').color);
+  expect(mark).toBe('rgb(158, 230, 166)'); // --leaf-text at night (#9EE6A6, 5.8:1 on navy)
+});
+
+test('English Study’s unavailable note at night: an always-tan object (.obj-cream), the day’s ink', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await fakeYoutube(page, { error: 150 });
+  await island(page);
+  await fromMenu(page, 'english', how);
+  const sh = page.locator('dialog[open] [data-english]');
+  await sh.locator('[data-en-today] [data-en-start]')[how]();
+  await expect(sh.locator('[data-yt-unavailable]')).toBeVisible();
   expect(await low(page)).toEqual([]);
 });
