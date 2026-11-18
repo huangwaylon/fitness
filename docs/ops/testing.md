@@ -265,7 +265,8 @@ run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts: its header lists the
 - **A cache keyed by a value lives as long as it does**: keep history (the editor's undo) as plain data; bound a
   page-wide cache by its users (world3d/keepUsed.ts).
 - **MapLibre**: a map goes by travel/map/glmap.ts `removeMap`, not `map.remove()` alone.
-- **The probe's own handles** keep what they point at: wait on booleans.
+- **The probe's own handles** keep what they point at: wait on booleans. A locator's click does too in Chromium (a console
+  handle held a detached island page across a route change): a flow that leaves a page clicks by `page.evaluate`.
 
 ## Load budget
 `npm run build` ends with `scripts/load-budget.ts`: the first load (what `index.html` loads, transitively) ≤ 400 KB of

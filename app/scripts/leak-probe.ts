@@ -11,7 +11,8 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる, as うめ), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (a seeded field's plots tapped: water, a 3 × 3 planted, ほる), walls (もようがえ's
+// time; DWELL: ms in a room, default 1500), english (English Study's tabs, closed, hidden), sugoroku (a game's board
+// at /sugoroku from its tab, ‹ back to the island, closed, hidden), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (a seeded field's plots tapped: water, a 3 × 3 planted, ほる), walls (もようがえ's
 // catalogue tried in the room; TABS='[["wall",8],["floor",8],["rugs",4]]'), foodkeep (ごはん searched, closed: base, searched, closed, +65 s, hidden). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
@@ -252,6 +253,14 @@ const closeAll = async () => {
   await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(600);
 };
 const tapIn = async (q: string) => { await sel(q); await page.locator(q).first().click(); await page.waitForTimeout(500); };
+/** tapIn by the page's own click(): a locator's click leaves a console handle on the element in Chromium, which held
+ *  the detached island page (its GL context and all) across a route change (review 11-18). */
+const press = async (q: string) => { await sel(q); await page.evaluate((q) => (document.querySelector(q) as HTMLElement).click(), q); await page.waitForTimeout(500); };
+/** English Study's sheet on `tab`, every tap by press. */
+const english = async (tab: string) => {
+  if ((await page.evaluate(() => document.querySelector('[data-hud-menu]')?.getAttribute('aria-expanded'))) !== 'true') await press('[data-hud-menu]');
+  await press('[data-hud-english]'); await press(`dialog[open] [data-en-tab="${tab}"]`);
+};
 const mapUp = (h: '__travelMap' | '__trailMap') => until(`(window.${h}?.state().mode ?? '') === 'ready'`, 30_000).catch(() => console.log(`${h} not ready`));
 const INFO: Record<string, () => Promise<void>> = {
   // りょこう: the list, NZ, each tab (the map drawn), back, ✕
@@ -621,6 +630,19 @@ const cycle = async () => {
     wallTurn++;
     await page.waitForTimeout(800);
     console.log('blob URLs', await page.evaluate('__blobs()'));
+  } else if (flow === 'english') {
+    await english('phrases');
+    for (const t of ['game', 'home']) { await press(`dialog[open] [data-en-tab="${t}"]`); await page.waitForTimeout(700); }
+    await closeAll(); await vis('hidden'); await page.waitForTimeout(300); await vis('visible'); await page.waitForTimeout(800);
+  } else if (flow === 'sugoroku') {
+    await english('game');
+    if (await page.evaluate(() => !!document.querySelector('[data-sugoroku] [data-sg-resume]'))) await press('[data-sugoroku] [data-sg-resume]');
+    else (await press('[data-sugoroku] [data-sg-new]'), await press('[data-sugoroku] [data-sg-start]'));
+    await until(`location.pathname.endsWith('/sugoroku') && (window.__sugoroku3d?.frames?.() ?? 0) >= 1`, 30_000);
+    await page.waitForTimeout(2500);
+    await press('[data-sugoroku] .navbar button');
+    await islandUp(); await page.waitForTimeout(800);
+    await closeAll(); await vis('hidden'); await page.waitForTimeout(300); await vis('visible'); await page.waitForTimeout(1200);
   } else if (flow === 'all') {
     for (const k of ['shop', 'tent', 'home', 'museum']) {
       const [p, up] = ROOMS[k];

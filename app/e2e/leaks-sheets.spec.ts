@@ -32,6 +32,71 @@ function flat(a: Probe, b: Probe, abMb = 1) {
   expect(b.nodes - a.nodes, 'DOM nodes alive, attached or not').toBeLessThan(400);
 }
 
+/** A tap by the page's own click() (no locator: in Chromium a locator's click leaves a console handle on the element,
+ *  which held a detached island page, its GL context and all, in the probe: review 11-18), once `q` is in. */
+async function press(page: Page, q: string) {
+  await page.waitForFunction((q) => !!document.querySelector(q), q, { timeout: 10_000 });
+  await page.evaluate((q) => (document.querySelector(q) as HTMLElement).click(), q);
+}
+/** English Study's sheet from the HUD's menu, on `tab`. */
+async function english(page: Page, tab: 'home' | 'phrases' | 'game') {
+  if ((await page.locator('[data-hud-menu]').getAttribute('aria-expanded')) !== 'true') await press(page, '[data-hud-menu]');
+  await press(page, '[data-hud-english]');
+  await press(page, `dialog[open] [data-en-tab="${tab}"]`);
+}
+
+// English Study (lib/english): its tabs (ホーム, フレーズ: the decks, すごろく's menu) shown, closed, the page hidden (the
+// kept sheet let go), four times.
+test('English Study’s tabs opened, closed, the page hidden, four times: nothing left behind', { tag: '@chromium' }, async ({ page }) => {
+  await watch(page);
+  await page.goto(Q);
+  await loaded3d(page);
+  const round = async () => {
+    await english(page, 'phrases');
+    await expect(page.locator('dialog[open] [data-en-tab="phrases"]')).toHaveAttribute('aria-selected', 'true');
+    for (const t of ['game', 'home']) await press(page, `dialog[open] [data-en-tab="${t}"]`);
+    await expect(page.locator('dialog[open] [data-en-tab="home"]')).toHaveAttribute('aria-selected', 'true');
+    await closeAll(page);
+    await hideAndShow(page);
+  };
+  // (two rounds to warm: the second still compiles and caches ~4 MB on first use, flat from there)
+  for (let i = 0; i < 2; i++) await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  note('English Study', first, after);
+  flat(first, after);
+});
+
+// 英語すごろく (lib/sugoroku): a game from English Study's tab on its own screen (/sugoroku, the 3D board: the island's
+// WebGL context let go meanwhile), ‹ back to the island, the sheet closed, the page hidden, three times.
+test('すごろく’s board and back to the island, three times: one WebGL context, nothing left behind', { tag: '@chromium' }, async ({ page }) => {
+  await watch(page);
+  await page.goto(`${Q}&sgSeed=e2e-1`);
+  await loaded3d(page);
+  const round = async () => {
+    await english(page, 'game');
+    // (続きから from the second round: the game left half-way)
+    const resume = await page.locator('[data-sugoroku] [data-sg-resume]').count();
+    if (resume) await press(page, '[data-sugoroku] [data-sg-resume]');
+    else (await press(page, '[data-sugoroku] [data-sg-new]'), await press(page, '[data-sugoroku] [data-sg-start]'));
+    await page.waitForFunction(() => location.pathname.endsWith('/sugoroku') && ((window as { __sugoroku3d?: { frames?(): number } }).__sugoroku3d?.frames?.() ?? 0) >= 1, null, { timeout: 15_000 });
+    await press(page, '[data-sugoroku] .navbar button');
+    await loaded3d(page);
+    await closeAll(page);
+    await hideAndShow(page);
+    // (the board's page, its context and DOM, let go of within seconds of the island's return: the first time ~4 s on
+    // a Mac, then at once)
+    await expect.poll(async () => (await measure(page)).gl, { message: 'one WebGL context alive: the island’s', timeout: 12_000 }).toBe(1);
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  note('すごろく ⇄ the island', first, after);
+  flat(first, after);
+});
+
 // ごはん's catalog (components/food/foodUi.ts holdFoodDb): a search (the catalog and the lazy products, ~15 MB), the
 // sheet closed, the page hidden: the kept sheet let go, and the catalog and the pictures' index with it. Before
 // (review 11/10 r2): the sheet kept through an app switch and the catalog for the page's life (23.1 → 37.0 MB after
