@@ -186,8 +186,8 @@ Shown only, with an optional goal. Why: paying for kilograms rewards crash diets
 
 ### The shop's かいがら
 The shop ([design](design.md#the-shop)), a 3D room, has its own per-person currency, かいがら, never ベル: NH's prices
-÷ 20 both ways (a piece NH never sells: 4 × its sell price), every piece buyable; a fish sells for 10 × that (the
-user, 2026-11-18); the pocket is derived from the day
+÷ 20 both ways (a piece NH never sells: 4 × its sell price), every piece buyable; a fish or sea creature sells for 10 ×
+that (the user, 2026-11-18); the pocket is derived from the day
 tallies, the stock from the date. Why: NH's prices, nothing stored for the stock, and no request per catch.
 Except the goal trees' fruit (2026-11-16, the user's economy review): 60 a met goal's, 150 the gold one of a day
 with all four met, the tree's owner's alone (`contract/pocket.ts GOAL_GOODS`), so fitness is ~10–12 % of a typical

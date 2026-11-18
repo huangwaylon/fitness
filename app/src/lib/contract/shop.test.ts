@@ -12,12 +12,12 @@ import { FOSSILS, FRAGMENTS, SHELLS } from '#lib/world/beach.ts';
 import { GOODS } from './pocket.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {
-  it('sells a catch and prices a piece at NH’s Bells ÷ 20 (a fish × 10), nothing selling for under 3', () => {
+  it('sells a catch and prices a piece at NH’s Bells ÷ 20 (a fish or sea creature × 10), nothing selling for under 3', () => {
     expect(sellPrice('fish:sea-bass')).toBe(200); // 400 Bells, × 10
     expect(sellPrice('fish:koi')).toBe(2000); // 4,000
     expect(sellPrice('fish:whale-shark')).toBe(6500); // 13,000
     expect(sellPrice('bug:tarantula')).toBe(400); // 8,000
-    expect(sellPrice('sea:octopus')).toBe(60); // 1,200
+    expect(sellPrice('sea:octopus')).toBe(600); // 1,200, × 10
     expect(sellPrice('fish:bitterling')).toBe(450); // 900
     expect(Math.min(...Object.values(SELL))).toBe(3);
     expect(buyPrice('f3672')).toBe(6); // the cardboard box, 120 Bells
