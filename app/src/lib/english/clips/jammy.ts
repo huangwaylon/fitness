@@ -1,11 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 2, new 1, ctx 3, tx 1
 // A2 REVIEW 2026-11-17: keep 1, rewrite 14, retire 5, new 1
 // “Discovering Jammy | Parks and Recreation” (the official Parks and Recreation channel, Season 7): Leslie visits her old
 // council colleague Jeremy to win his deciding vote against rezoning the Newport land; he defers to his new girlfriend,
 // Tammy, which horrifies Leslie until she sees that their dislike of Ron gives her an opening; to camera, she admits
 // she is siding with terrible people for the sake of a national park.
 // Segments from the captions, words from whisper (2026-11-16). Talk runs ≈ 4–99.4 s; music after. Untested on purpose:
-// 0–7.4 s ("I just farted"), 27.2–31.5 s ("gas station sushi"), 42–52 s (who says "Hello, Leslie"), 80–84 s ("blonde
-// bimbo", "let me mull it over": speaker unclear).
+// 0–7.4 s ("I just farted"), 27.2–31.5 s ("gas station sushi"), 42–52 s (who says "Hello, Leslie"), 80–82 s ("blonde
+// bimbo"). EAR CHECK: 83 s — Tammy or Jeremy says “Oh, let me mull it over” (ml names neither).
 // EAR CHECK: 84.5 s m1 i2 — assumed Leslie's talking head to camera ("terrible people"); the words point to it
 import type { Clip } from '../types.ts';
 
@@ -26,17 +27,7 @@ export const discoveringJammy: Clip = {
       mean: 'never have to 〜 ＝ 〜しなくて済む。interact with 〜 ＝ 〜と関わる。会いたくなかった本音。',
       trap: 'すぐあとの I missed you, too（僕も会いたかった）はジェレミーの言葉。レスリーの気持ちではない。',
       use: 'I hoped I’d never have to do this again.（二度とやらずに済むと思ってた）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'vote', reveals: ['zone'], seg: [6.9, 42.2],
-      stem: 'Why has Leslie come to see Jeremy?',
-      ja: 'レスリーはなぜジェレミーに会いに来た？',
-      choices: ['To ask him to vote no', 'To ask him to vote yes', 'To ask him to skip the vote'], a: 0,
-      choicesJa: ['反対票を入れてと頼むため', '賛成票を入れてと頼むため', '投票を休んでと頼むため'],
-      cue: '「So, I am here」のあと',
-      line: 'I am here to talk to you about *why you should vote no*…',
-      said: '議会の採決の説明のあと、「反対票を入れるべき理由を話しに来た」と言う。',
-      mean: 'I am here to 〜 ＝ 〜しに来ました。vote no ＝ 反対に投票する。',
-      trap: 'no は文の途中で短く言うので、聞き逃すと賛成と思いやすい。should vote のあとを聞く。',
-      use: 'I’m here to talk about the rent.（家賃のことで話しに来ました）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'missed', reveals: ['never'], seg: [6.9, 12.15], retired: true,
       stem: 'After Leslie’s first words to Jeremy, why is his reply funny?',
       choices: ['He replies as if she’d said she missed him', 'He replies as if she’d said she was sorry',
@@ -47,6 +38,7 @@ export const discoveringJammy: Clip = {
       mean: 'きつい言葉を「会いたかった」と聞いたかのように、too で返している。',
       trap: '返事の頭だけでは何への返事か分からない。最後の too が何を受けるかを聞く。',
       use: 'I missed you too, you know.（私も会いたかったんだよ）' },
+
     { id: 'd1', skill: 'detail', level: 'B1', point: 'zone', seg: [10.8, 22.8],
       stem: 'What is the city council voting on?',
       ja: '市議会は何について投票する？',
@@ -58,6 +50,7 @@ export const discoveringJammy: Clip = {
       mean: 'commercial use ＝ 商業用（店や会社に使う）。re-zone ＝ 土地の使い方を変える。',
       trap: 're-zone だけでは家か店か分からない。最後の for commercial use で商業用と分かる。',
       use: 'Is this building for commercial use?（この建物は商業用ですか）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'build', reveals: ['vote'], seg: [15.2, 22.4],
       stem: 'What can’t Ron do if Leslie wins?',
       ja: 'レスリーが勝つと、ロンは何ができなくなる？',
@@ -69,7 +62,8 @@ export const discoveringJammy: Clip = {
       mean: 'If I win ＝ もし私が勝ったら。can’t build anything ＝ 何も建てられない。',
       trap: 'can’t の t は小さいが、「キャーン」と長く強い。そのあとの build（建てる）が答え。',
       use: 'If I win, dinner is on me.（勝ったら夕食をおごるよ）' },
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pretty', seg: [16.5, 22.5],
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'pretty', seg: [16.5, 22.5], retired: true,
       stem: 'What does “I’m sitting pretty” mean?',
       ja: '「I’m sitting pretty」はどういう意味？',
       choices: ['I’m in a good spot', 'I’m sitting down', 'I look very pretty'], a: 0,
@@ -80,6 +74,7 @@ export const discoveringJammy: Clip = {
       mean: 'sitting pretty ＝ 文字どおりは「きれいに座る」、ここでは「有利で安心な立場」。',
       trap: 'sitting（座る）や pretty（きれい）と一語ずつ訳しやすい。二語でひとつの決まり文句。',
       use: 'With this new job, I’m sitting pretty.（この新しい仕事で、私は安泰だ）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'decide', seg: [21, 28.2],
       stem: 'Why does Leslie need Jeremy?',
       ja: 'レスリーにはなぜジェレミーが必要？',
@@ -89,19 +84,33 @@ export const discoveringJammy: Clip = {
       line: 'Sadly, *the deciding vote* is from my old city councilmate…',
       said: '「あいにく、決め手の一票は昔の議会仲間のジェレミーにある」と言う。',
       mean: 'deciding vote ＝ 結果を決める一票。Sadly（あいにく）なので、会いたくない相手。',
-      trap: 'old city councilmate（昔の議会仲間）から仲よしと思いやすい。Sadly で好きではないと分かる。',
+      trap: 'old city councilmate（昔の議会仲間）から仲よしと考えがち。Sadly で好きではないと分かる。',
       use: 'You have the deciding vote.（決めるのはあなたの一票です）' },
-    { id: 'r1', skill: 'pragma', level: 'B1', point: 'holdup', reveals: ['vote'], seg: [32, 42.9],
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'vote', reveals: ['decide'], seg: [21.5, 42.2],
+      stem: 'Why has Leslie come to see Jeremy?',
+      ja: 'レスリーはなぜジェレミーに会いに来た？',
+      choices: ['To ask him to vote no', 'To ask him to vote yes', 'To ask him to skip the vote'], a: 0,
+      choicesJa: ['反対票を入れてと頼むため', '賛成票を入れてと頼むため', '投票を休んでと頼むため'],
+      cue: '「So, I am here」のあと',
+      line: 'I am here to talk to you about *why you should vote no*…',
+      said: '決め手の一票はジェレミーにある、と話し、「反対票を入れるべき理由を話しに来た」と言う。',
+      mean: 'I am here to 〜 ＝ 〜しに来ました。vote no ＝ 反対に投票する。',
+      trap: 'no は文の途中で短く言うので、聞き逃すと賛成に聞こえる。決め手は should vote のあと。',
+      use: 'I’m here to talk about the rent.（家賃のことで話しに来ました）' },
+
+    { id: 'r1', skill: 'pragma', level: 'B1', point: 'holdup', reveals: ['vote'], ctx: true, seg: [32, 42.9],
       stem: 'What does Jeremy mean by “Hold up”?',
       ja: 'ジェレミーの「Hold up」はどういう意味？',
       choices: ['Wait, stop there', 'Say it all again', 'Lift it up'], a: 0,
       choicesJa: ['待って、そこまで', 'もう一回全部言って', '持ち上げて'],
       cue: 'レスリーの話を止める所',
-      line: '…why you should vote no… — Whoa, whoa, whoa. *Hold up*… *Before we go any further*…',
+      line: 'Leslie: …why you should vote no in the zoning issue — / Jeremy: Whoa, whoa, whoa. *Hold up*… *Before we go any further*…',
       said: 'レスリーが理由を話し始めると、ジェレミーが「ちょっと待った。話を進める前に」と止める。',
       mean: 'Hold up ＝ ちょっと待って（くだけた言い方）。話をさえぎって、先に自分の用を言う。',
-      trap: 'up から「持ち上げる」と思いやすい。Whoa（おっと）と Before we go any further で「待って」と分かる。',
+      trap: 'up から「持ち上げる」を連想しやすい。Whoa（おっと）と Before we go any further で「待って」と分かる。',
       use: 'Hold up, I need my wallet.（ちょっと待って、財布取ってくる）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'girl', seg: [37.3, 44.1],
       stem: 'What must Jeremy do before he votes?',
       ja: '投票の前に、ジェレミーは何をしないといけない？',
@@ -113,6 +122,7 @@ export const discoveringJammy: Clip = {
       mean: 'I need to ask 〜 ＝ 〜に聞かないと。投票は彼女まかせ。',
       trap: 'girlfriend と vote だけ聞くと「伝える」と思いやすい。ask（聞く）と how she wants で決まる。',
       use: 'Let me ask my wife first.（まず妻に聞かせて）' },
+
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'jammy', seg: [51.6, 61.6],
       stem: 'How does Leslie feel about Jeremy and Tammy together?',
       ja: 'ジェレミーとタミーが付き合っていると知って、レスリーはどう思う？',
@@ -122,30 +132,21 @@ export const discoveringJammy: Clip = {
       line: 'You guys are *so cute*. When did you — *Why would either one of you*… *Dear God, why?*',
       said: '「かわいいね。いつから…」と言いかけ、「なんで？ああ、なんで？」と取り乱す。',
       mean: 'Dear God, why? ＝ ああ、なんで？信じられないときの言い方。so cute はただのお世辞。',
-      trap: 'so cute（かわいい）から、喜んでいると思いやすい。最後の Dear God, why? が本音。',
+      trap: 'so cute（かわいい）から、喜んでいるように聞こえる。最後の Dear God, why? が本音。',
       use: 'Wait, you two? Since when?（え、二人が？いつから？）' },
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', reveals: ['jammy', 'girl'], seg: [52.6, 84.8],
-      stem: 'How does Leslie try to win the couple’s vote?',
-      ja: 'レスリーは、二人の票をどうやって取ろうとする？',
-      choices: ['She uses their dislike of Ron', 'She offers them money', 'She praises their singing'], a: 0,
-      choicesJa: ['二人のロン嫌いを利用する', '二人にお金を出す', '二人の歌をほめる'],
-      cue: '「Wait a second」のあと',
-      line: '*Wait a second. This is great news* because *Ron is my opponent* in this.',
-      said: '二人にうろたえるが、「待って、いい知らせ。ロンは私の敵で、あなたはロンをいじめるのが生きがい」と言う。',
-      mean: 'opponent ＝ 対戦相手、敵。二人ともロンが嫌いなので、そこを使って票を頼む。',
-      trap: 'カラオケの話が長いので歌の話と思いやすい。Wait a second のあとの because が理由。',
-      use: 'Wait a second, this is great news.（待って、これはいい知らせだ）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hitoff', seg: [58.4, 64.7],
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hitoff', ctx: true, seg: [58.4, 64.7],
       stem: 'What does “hit it off” mean?',
       ja: '「hit it off」はどういう意味？',
       choices: ['Got along right away', 'Had a big fight', 'Sang a song together'], a: 0,
       choicesJa: ['すぐに気が合った', '大げんかした', '一緒に歌った'],
       cue: 'ジェレミーの答えの最初',
-      line: '*Hit it off* at karaoke.',
+      line: 'Leslie: Why would either one of you… Dear God, why? / Jeremy: *Hit it off* at karaoke.',
       said: '「カラオケで意気投合した」と、出会いを話す。',
       mean: 'hit it off ＝ 会ってすぐ気が合う。hit（たたく）とは関係ない決まり文句。',
       trap: 'hit から「けんか」と思いやすい。karaoke（カラオケ）は場所で、歌った話ではない。',
       use: 'We really hit it off at the party.（パーティーですっかり意気投合した）' },
+
     { id: 'h2', skill: 'humor', level: 'C1', point: 'story', seg: [61.6, 71.3], retired: true,
       stem: 'Why does Jeremy’s story of how they got together get a laugh?',
       choices: ['It’s told as a romance, but the highlights are awful', 'It’s told as a romance, but it ended long ago',
@@ -156,6 +157,7 @@ export const discoveringJammy: Clip = {
       mean: '恋の始まりの語り方で、中身はかみつきと貢ぎ物。本人はいい思い出のつもり。',
       trap: 'bite を悪口と取りやすいが、「見た」が並ぶ形はほめ合い。',
       use: 'Long story short, we got married.（かいつまんで言うと、結婚したんだ）' },
+
     { id: 'x1', skill: 'dict', level: 'B1', point: 'history', seg: [64.3, 72.3],
       stem: 'Type: “…a bunch of purses, and ___.” (4 words)', answer: 'the rest is history',
       ja: '空いている所を書こう：「…a bunch of purses, and ___.」（4語）',
@@ -165,6 +167,19 @@ export const discoveringJammy: Clip = {
       mean: 'the rest is history ＝ あとはご存じのとおり。恋や成功の話をしめる決まり文句。',
       trap: 'rest と is がつながり「レスティズ」に聞こえる。is が消えたように感じても4語。',
       use: 'We met in Paris. The rest is history.（パリで出会って、あとはご存じのとおり）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['live'], seg: [66.0, 84.5],
+      stem: 'How does Leslie try to win the couple’s vote?',
+      ja: 'レスリーは、二人の票をどうやって取ろうとする？',
+      choices: ['She uses their dislike of Ron', 'She offers them money', 'She praises their singing'], a: 0,
+      choicesJa: ['二人のロン嫌いを利用する', '二人にお金を出す', '二人の歌をほめる'],
+      cue: '「Wait a second」のあと',
+      line: '*Wait a second. This is great news* because *Ron is my opponent* in this.',
+      said: '「待って、いい知らせ。ロンは私の敵。あなたはロンをいじめるのが生きがいでしょ」と言う。',
+      mean: 'opponent ＝ 対戦相手、敵。二人ともロンが嫌いなので、そこを使って票を頼む。',
+      trap: 'カラオケの話が長いので歌の話と考えがち。決め手は Wait a second のあとの because。',
+      use: 'Wait a second, this is great news.（待って、これはいい知らせだ）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'align', reveals: ['sure', 'turn'], seg: [71.3, 92.75], retired: true,
       stem: 'After her comment to the camera, how should we hear Leslie’s “great news”?',
       choices: ['Sincere: she’ll truly side with people she finds awful', 'Insincere: she’s only pretending, to trick them',
@@ -175,6 +190,7 @@ export const discoveringJammy: Clip = {
       mean: 'カメラへの一言が場面を書きかえる。明るさは好意でなく、嫌な相手と承知で結ぶ取引。',
       trap: '場面の口調で決めない。カメラへの一言が答え合わせ。「組む」と「好き」は別。',
       use: 'We don’t like them, but we need them.（好きじゃないけど、必要な相手）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'live', seg: [72, 80.8],
       stem: 'Which words do you hear: “And you ___ torture Ron”?',
       ja: '「And you ___ torture Ron」の空所に聞こえるのは？',
@@ -186,7 +202,8 @@ export const discoveringJammy: Clip = {
       mean: 'live to 〜 ＝ 〜するために生きている、〜が生きがい。love to より強い。',
       trap: 'love は口を少し開けた「ラ」、like は「ライ」と伸びる。短い「リ」なら live。',
       use: 'He lives to talk about baseball.（彼は野球の話が生きがい）' },
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'votefor', seg: [74.6, 82.8],
+
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'votefor', seg: [74.6, 82.8], retired: true,
       stem: 'What does Leslie ask the couple to do?',
       ja: 'レスリーは二人に何を頼む？',
       choices: ['Vote for her', 'Leave Ron alone', 'Sing karaoke again'], a: 0,
@@ -197,6 +214,7 @@ export const discoveringJammy: Clip = {
       mean: 'Vote for me ＝ 私に投票して。命令の形で頼んでいる。so that 〜 ＝ 〜できるように。',
       trap: 'Ron が何度も出るので、ロンの話と思いやすい。頼みは文の頭の Vote for me。',
       use: 'Please vote for me.（私に投票してください）' },
+
     { id: 'i1', skill: 'infer', level: 'B2', point: 'bimbo', seg: [77.65, 83.0], retired: true,
       stem: 'What does the reply to Leslie’s pitch about Ron show?',
       choices: ['Her pitch is starting to land', 'Her pitch has annoyed them a little',
@@ -207,6 +225,19 @@ export const discoveringJammy: Clip = {
       mean: 'not … after all ＝ 思ったのと違った。失礼だが、認め始めた合図。',
       trap: 'bimbo だけ拾うと悪口に聞こえる。after all が「見直した」を示す。',
       use: 'Maybe you’re right after all.（やっぱり君が正しいのかも）' },
+
+    { id: 'ml', skill: 'phrase', level: 'B2', point: 'mull', reveals: ['votefor'], ctx: true, seg: [78.0, 84.5],
+      stem: 'What does “let me mull it over” mean?',
+      ja: '「let me mull it over」はどういう意味？',
+      choices: ['Let me think about it', 'Let me say no right now', 'Let me ask Ron first'], a: 0,
+      choicesJa: ['ちょっと考えさせて', '今すぐ断らせて', '先にロンに聞かせて'],
+      cue: '「Thank you」のあとの返事',
+      line: 'Leslie: *Vote for me* so that you can screw Ron over. / Couple: Oh, *let me mull it over*.',
+      said: '「私に投票して」と頼むと、「ああ、ちょっと考えさせて」と返ってくる。',
+      mean: 'mull over ＝ じっくり考える。let me 〜 ＝ 〜させて。すぐには決めない、やわらかい保留の返事。',
+      trap: '決め手は let me（〜させて）。No も Yes も言っていない、保留の返事。',
+      use: 'Let me mull it over and call you back.（少し考えて、折り返し電話するね）' },
+
     { id: 'i2', skill: 'infer', level: 'B2', point: 'align', reveals: ['sure'], seg: [82.8, 94.6],
       stem: 'What does Leslie say is worth it?',
       ja: 'レスリーは何が「価値がある」と言う？',
@@ -216,8 +247,9 @@ export const discoveringJammy: Clip = {
       line: 'I’m *aligning myself with terrible people*. But… *a national park*. It’s worth it.',
       said: '「ひどい人たちと手を組む。でも国立公園を思えば、その価値はある」と言う。',
       mean: 'align myself with 〜 ＝ 〜の側につく。It’s worth it ＝ その価値はある。',
-      trap: 'terrible（ひどい）から、あきらめる話と思いやすい。公園のために嫌な二人と組む。',
+      trap: 'terrible（ひどい）から、あきらめる話と勘違いしやすい。公園のために嫌な二人と組む。',
       use: 'It’s a long drive, but it’s worth it.（遠いけど、行く価値はある）' },
+
     { id: 'm1', skill: 'marker', level: 'B2', point: 'sure', reveals: ['align'], seg: [83, 93.1],
       stem: 'What does Leslie’s “Sure” mean here?',
       ja: 'ここでのレスリーの「Sure」はどういう意味？',
@@ -229,6 +261,7 @@ export const discoveringJammy: Clip = {
       mean: 'Sure, 〜. But … ＝ 確かに〜。でも…。先に認めて、本題は but のあと。',
       trap: 'sure を「きっと」「はい」と思いやすい。すぐあとに But が来たら「確かに」の意味。',
       use: 'Sure, it’s expensive. But it’s good.（確かに高い。でもいい物だよ）' },
+
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'trust', seg: [91.6, 99.5], retired: true,
       stem: 'What do Leslie’s two reasons to trust her say about her?',
       choices: ['That she’s too invested to judge fairly', 'That she will push hard and never give up',

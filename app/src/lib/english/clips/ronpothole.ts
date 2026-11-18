@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 0, new 4, ctx 6, tx 6
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 3, new 1
 // “The only time Ron was pro-government | Parks and Recreation” (the official Parks and Recreation channel, Season 5 |
 // Parks and Recreation): Ron and Andy fix Diane's pothole; her daughters pull Andy (and then Ron) into a princess game;
@@ -12,6 +13,9 @@
 // (whisper only "Can we turn you into a princess?"); 141.5–144 s (who says "two princesses" isn't clear); 172–184 s
 // (another room: a book read aloud, sexual, and a birth question); 217 s ("Is that a euphemism?": innuendo); 238 s
 // ("I don't screw around": left out of every line).
+// EXCLUDE 172–175 (the erotic book read aloud)
+// EXCLUDE 217–219 (“Is that a euphemism?”)
+// SKIP 13–39.5: Andy's mock old English, the tag game and an unsure aside (no usable everyday English)
 import type { Clip } from '../types.ts';
 
 export const ronpothole: Clip = {
@@ -20,6 +24,18 @@ export const ronpothole: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'k0', skill: 'detail', level: 'B1', point: 'permission', ctx: true, seg: [6.5, 14.5],
+      stem: 'What do the girls say Andy must do?',
+      ja: '女の子たちは、アンディが何をしなきゃいけないと言う？',
+      choices: ['Ask them for permission', 'Play a game with them', 'Put on a princess dress'], a: 0,
+      choicesJa: ['二人に許可をもらう', '一緒に遊ぶ', 'お姫様のドレスを着る'],
+      cue: '「This is our kingdom」のあと。',
+      line: 'Andy: I’m here to fix that hole. / Girl: This is our kingdom. *You have to ask permission.*',
+      said: '「穴を直しに来た」と言うと、「ここは私たちの王国。許可をもらわなきゃだめ」と言われる。',
+      mean: 'ask permission ＝ 許可をもらう、「いいですか」と聞く。have to 〜 ＝ 〜しなければならない。',
+      trap: 'kingdom（王国）やドレスの話から、お姫様ごっこと考えがち。決め手は have to のあと。',
+      use: 'Do I need to ask permission first?（先に許可が必要ですか）' },
+
     { id: 'p1', retired: true, skill: 'pragma', level: 'B2', point: 'kingdom', seg: [9.4, 22.6],
       stem: 'When the girls demand that he ask permission, what does the reply do?',
       choices: ['Plays along, asking in old royal English', 'Asks their mother, in very formal English',
@@ -30,6 +46,18 @@ export const ronpothole: Clip = {
       mean: 'thine や humbly request は古く大げさな言い方。王国ごっこに合わせている。',
       trap: '口論や大人への敬語と取りやすい。急に古めかしくなったら、ごっこ遊び。',
       use: 'Your Majesty, may I have the remote?（王さま、リモコンをお借りしても？）' },
+
+    { id: 'wk', skill: 'detail', level: 'B1', point: 'parksdept', seg: [39.5, 46.0],
+      stem: 'Where do Ron and Andy work?',
+      ja: 'ロンとアンディはどこで働いている？',
+      choices: ['The Parks Department', 'The Public Works Department', 'A road repair company'], a: 0,
+      choicesJa: ['公園課', '公共事業課', '道路の修理会社'],
+      cue: '「That large boy」のあと。',
+      line: 'That large boy is my colleague. *We work at the Parks Department.*',
+      said: '「あの大きな坊やは同僚だ。二人とも公園課で働いている」と言う。',
+      mean: 'colleague ＝ 同僚。We work at 〜 ＝ 〜で働いている。道路の担当ではない部署。',
+      trap: 'Public Works（公共事業課）はダイアンが次に言う言葉。ロンが言うのは Parks。',
+      use: 'I work at the city office.（市役所で働いています）' },
 
     { id: 'i1', skill: 'detail', level: 'B1', point: 'govt', seg: [45.9, 55.8],
       stem: 'Why did Ron decide to fix the hole himself?',
@@ -43,37 +71,25 @@ export const ronpothole: Clip = {
       trap: 'Diane の穴なので頼まれたと思いやすいが、理由は no one … was gonna fix。',
       use: 'Nobody else was going to, so I did it myself.（誰もやらないから、自分でやった）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'yesmaam', seg: [53, 60],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'yesmaam', ctx: true, seg: [53, 60],
       stem: 'How does Ron answer “Do you know what you’re doing?”',
       ja: '「何をしているか分かってるの？」に、ロンはどう答える？',
       choices: ['Calm and sure', 'Polite but unsure', 'Annoyed by the question'], a: 0,
       choicesJa: ['落ち着いて自信がある', 'ていねいだが自信がない', '質問にイラッとしている'],
       cue: '短い返事を2回言うところ。',
-      line: 'Yes, ma’am. *Yes, I do.*',
+      line: 'Diane: Do you know what you’re doing? / Ron: Yes, ma’am. *Yes, I do.*',
       said: '「はい。ええ、分かっています」と短く2回答える。',
       mean: 'Yes, I do をくり返すのは「心配いらない」という自信。言い訳はしない。',
       trap: 'ma’am を遠慮と取りやすいが、ていねいな呼びかけ。言い足しがないのは自信の印。',
       use: 'Do you know the way? — Yes, I do.（道分かる？うん、分かる）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstmeet', seg: [64, 108.7],
-      stem: 'How does Diane feel about Ron by the end?',
-      ja: '最後には、ダイアンはロンをどう思っている？',
-      choices: ['Thankful and friendly', 'Still doubtful of him', 'Angry with him'], a: 0,
-      choicesJa: ['感謝していて親しげ', 'まだ疑っている', '怒っている'],
-      cue: '最後の、Well, thank you のあたり。',
-      line: 'I’m sorry if I was curt earlier. … Well, *thank you*. Now I can fix the next one myself.',
-      said: 'さっきの態度を謝り、レモネードを出し、最後に「ありがとう」と言う。',
-      mean: 'はじめは疑っていたが、謝ってお礼を言うまでになる。二人の距離が縮まる流れ。',
-      trap: 'curt（そっけない）が耳に残りやすいが、それは前の自分を謝る言葉。最後は thank you。',
-      use: 'Sorry, I wasn’t sure about you at first.（ごめん、最初はちょっと疑ってた）' },
-
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'please', seg: [65.7, 72.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'please', ctx: true, seg: [65.7, 72.5],
       stem: 'Diane offers lemonade. What does Ron answer?',
       ja: 'ダイアンがレモネードをすすめる。ロンの答えは？',
       choices: ['Yes, please', 'No, thank you', 'Maybe later'], a: 0,
       choicesJa: ['はい、お願いします', 'いいえ、けっこうです', 'あとでいただきます'],
       cue: '短い答えの最初の一語。',
-      line: 'Lemonade? — *Please* and thank you.',
+      line: 'Diane: Lemonade? / Ron: *Please* and thank you.',
       said: '「レモネードは？」に「お願いします、ありがとう」と答える。',
       mean: 'Please and thank you ＝ お願いします、ありがとう。ていねいで、はっきりした yes。',
       trap: 'thank you だけだと断りにも聞こえるが、断るなら No, thank you。please が決め手。',
@@ -91,17 +107,29 @@ export const ronpothole: Clip = {
       trap: '次の「家がばたばた」とつなげて「忙しい」を選びやすい。謝っている中身は態度。',
       use: 'Sorry if I sounded curt on the phone.（電話でそっけなくてごめん）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'noneed', seg: [71, 81.3],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'noneed', ctx: true, seg: [71, 81.3],
       stem: 'Ron says, “No need to apologize.” What does he mean?',
       ja: 'ロンの「No need to apologize.」はどういう意味？',
       choices: ['It’s okay, don’t say sorry', 'You should say sorry to me', 'I want to say sorry'], a: 0,
       choicesJa: ['いいんです、謝らないで', '私に謝るべきだ', '私が謝りたい'],
       cue: 'Diane の話をさえぎる一言。',
-      line: '*No need to apologize.* I understand completely.',
+      line: 'Diane: I’m sorry if I was curt earlier… / Ron: *No need to apologize.* I understand completely.',
       said: '謝るダイアンに「謝る必要はありません。よく分かります」と言う。',
       mean: 'No need to 〜 ＝ 〜しなくていい。apologize ＝ 謝る。謝罪を受け止める言い方。',
       trap: 'need から「必要だ」と思いやすいが、No need は「必要ない」。',
       use: 'No need to apologize. It’s fine.（謝らなくていいよ。大丈夫）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstmeet', reveals: ['steps', 'nextone'], seg: [84.5, 108.7],
+      stem: 'What does Diane ask Ron to explain?',
+      ja: 'ダイアンはロンに何を説明してと頼む？',
+      choices: ['How he will fix the hole', 'Why the city was so slow', 'Where he got his gloves'], a: 0,
+      choicesJa: ['穴をどう直すか', '市の対応がなぜ遅いか', '手袋をどこで買ったか'],
+      cue: '「how exactly」のあと。',
+      line: 'So, *how exactly are you gonna fix this hole*? … Well, thank you. Now I can fix the next one myself.',
+      said: '「具体的にどうやって直すの？」と聞き、手順を聞いたあと「次は自分で直せる」と言う。',
+      mean: 'how exactly ＝ 具体的にどうやって。ロンが手順を説明し、ダイアンは自分でもできると喜ぶ。',
+      trap: 'gloves（手袋）の話もすぐ前にあるが、質問は how … fix this hole（穴の直し方）。',
+      use: 'How exactly does this work?（これ、具体的にどう動くの？）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 98.5],
       stem: 'Type what Ron says: “I dug the loose gravel ___ hole.” (3 words)', answer: 'out of the',
@@ -172,6 +200,18 @@ export const ronpothole: Clip = {
       trap: 'face が出てくるのでけがを想像しやすい。最初の rouge が手がかり。',
       use: 'Can you not laugh at my haircut?（髪型、笑わないでくれる？）' },
 
+    { id: 'mk', skill: 'pragma', level: 'B1', point: 'mocked', ctx: true, seg: [148.5, 161.5],
+      stem: 'What does Diane say is funny?',
+      ja: 'ダイアンは何がおかしいと言う？',
+      choices: ['His face looks so funny', 'He fell into the hole', 'He forgot the lemonade'], a: 0,
+      choicesJa: ['ロンの顔がおかしい', '穴に落ちた', 'レモネードを忘れた'],
+      cue: '「not be mocked」のあとの返事。',
+      line: 'Ron: I came here to fix a pothole, *not be mocked*. / Diane: I’m sorry. It’s just *your face is ridiculous*.',
+      said: '「穴を直しに来た。笑われるためじゃない」に、「ごめん。ただ、その顔がおかしくて」と返す。',
+      mean: 'mock ＝ ばかにする。ridiculous ＝ ばかげた、おかしい。子どもたちに化粧をされた顔のこと。',
+      trap: 'I’m sorry で謝ってはいるが、決め手は It’s just のあと。理由は your face（顔）。',
+      use: 'I’m sorry, I didn’t mean to laugh.（ごめん、笑うつもりじゃなかった）' },
+
     { id: 'h1', retired: true, skill: 'humor', level: 'C1', point: 'face', reveals: ['rouge'], seg: [154.6, 161.0],
       stem: 'Why is Diane’s apology to Ron funny?',
       choices: ['Her reason for “sorry” is a new insult', 'She says sorry for the girls, not herself',
@@ -218,7 +258,19 @@ export const ronpothole: Clip = {
       trap: 'recall を「思い出せない」と取ると「忘れた」に引かれる。招いていない、が言いたいこと。',
       use: 'I don’t recall saying that.（そう言った覚えはないよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'date', reveals: ['actually'], seg: [208.5, 250.6],
+    { id: 'es', skill: 'phrase', level: 'B1', point: 'endstory', seg: [202.5, 208.5],
+      stem: 'What does “End of story” mean?',
+      ja: '「End of story」はどういう意味？',
+      choices: ['Let’s stop talking about it', 'Let me finish my story', 'That’s the end of the book'], a: 0,
+      choicesJa: ['この話はもうやめよう', '最後まで話させて', '本の終わりだ'],
+      cue: '「I will not pursue Diane」のあと。',
+      line: 'Listen, *I will not pursue Diane*. *End of story.*',
+      said: '「いいか、ダイアンを追いかけるつもりはない。話は終わりだ」と言う。',
+      mean: '文字どおりは「話の終わり」。もう言うことはない→「この話はおしまい」。きっぱり言い切る言い方。',
+      trap: 'story（物語）から本の話を連想しやすい。決めたことのあとに言う、話を打ち切る一言。',
+      use: 'I’m not going. End of story.（行かない。この話は終わり）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'date', reveals: ['actually'], seg: [221.0, 246.0],
       stem: 'Why does Diane come to see Ron?',
       ja: 'ダイアンはなぜロンに会いに来る？',
       choices: ['To ask him to dinner', 'To complain about the hole', 'To bring more lemonade'], a: 0,
@@ -242,13 +294,13 @@ export const ronpothole: Clip = {
       trap: '「実は…」を照れの前置きと思いやすい。相手の予想のすぐあとなら「実は違う」。',
       use: 'Actually, I came to say thanks.（実は、お礼を言いに来たの）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrary', seg: [234.5, 245.1],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'contrary', ctx: true, seg: [234.5, 245.1],
       stem: 'Ron says, “No. On the contrary.” What does he mean?',
       ja: 'ロンの「No. On the contrary.」はどういう意味？',
       choices: ['He likes it', 'It scares him a bit', 'He doesn’t care'], a: 0,
       choicesJa: ['気に入っている', '少しこわい', 'どうでもいい'],
       cue: 'No のあとに付け足す2語。',
-      line: 'Does that freak you out? — No. *On the contrary*.',
+      line: 'Diane: Does that freak you out? / Ron: No. *On the contrary*.',
       said: '「引いた？」に「いや、むしろ逆だ」と答える。',
       mean: 'On the contrary ＝ その反対。引くどころか、むしろ気に入った。',
       trap: 'No だけなら「平気」くらいに聞こえる。on the contrary は「むしろ好き」まで言う。',
