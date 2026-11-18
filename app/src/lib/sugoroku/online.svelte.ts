@@ -125,15 +125,16 @@ function unsend(i: Intent, why: 'refused' | 'drop'): void {
   }
 }
 
-// the invitation's fold (is the game over?): the rules, words and lines, asked for only when one may ask
-type Fold = typeof import('./online.ts').foldMoves;
+// the invitation's fold (is the game over?): the rules, words and lines, asked for only when one may ask; kept up
+// move by move (online.ts folder: the effect runs on every model change and every move heard)
+type Fold = ReturnType<typeof import('./online.ts').folder>;
 let ctx = $state.raw<{ fold: Fold; words: Words; lines: readonly Line[] } | null>(null);
 let asking = false;
 function loadCtx(): void {
   if (asking) return;
   asking = true;
   Promise.all([import('./online.ts'), import('./words.ts').then((w) => w.loadWords()), import('./sentences.ts').then((x) => x.loadSentences())])
-    .then(([o, words, lines]) => (ctx = { fold: o.foldMoves, words, lines }), () => (asking = false));
+    .then(([o, words, lines]) => (ctx = { fold: o.folder(), words, lines }), () => (asking = false));
 }
 /** The invitation, kept up with the game held (a minute's tick while one shows: a game left goes stale). */
 function watchInvite(): void {

@@ -69,13 +69,21 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
   return g;
 }
 
+type Ctx = Parameters<typeof applyMove>[2];
 /** A game from its moves, in order (moves before the start, or a gap, end the fold there; an end is the last: wire.ts
  *  heard). */
-export function foldMoves(moves: readonly Move[], ctx: Parameters<typeof applyMove>[2]): Game | null {
-  let g: Game | null = null;
-  for (const [i, m] of moves.entries()) {
-    if (m.i !== i) break;
-    g = applyMove(g, m, ctx);
-  }
-  return g;
+export const foldMoves = (moves: readonly Move[], ctx: Ctx): Game | null => folder()(moves, ctx);
+
+/** foldMoves kept up: a log that only grew since the last call (its moves before the same objects, the same words,
+ *  lines and seats' names) folds just its new moves; anything else (a move taken back, another game) folds again from
+ *  the start. Games are immutable, so the one kept is safe to hand out. */
+export function folder(): (moves: readonly Move[], ctx: Ctx) => Game | null {
+  let done: Move[] = [], g: Game | null = null, key: unknown[] = [];
+  return (moves, ctx) => {
+    const k = [ctx.words, ctx.lines, moves[0], ...seatsOf(moves[0]?.s ?? '').map((x) => ctx.name(x.who))];
+    const grew = k.length === key.length && k.every((x, i) => x === key[i]) && done.length <= moves.length && done.every((m, i) => m === moves[i]);
+    if (!grew) (done = []), (g = null), (key = k);
+    for (let i = done.length; i < moves.length && moves[i].i === i; i++) (g = applyMove(g, moves[i], ctx)), done.push(moves[i]);
+    return g;
+  };
 }

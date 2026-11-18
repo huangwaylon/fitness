@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { applyMove, foldMoves } from './online.ts';
+import { applyMove, folder, foldMoves } from './online.ts';
 import { ID_LEN, INVITE_STALE_MS, RULES, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
 import { GEN, familyOf, layoutKey } from './family.ts';
 import { fnv1a, seeded } from '#lib/random.ts';
@@ -64,6 +64,21 @@ describe('online: the moves folded', () => {
     expect(a?.phase.k).toBe('end');
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     expect(a?.made.some((m) => m.kind === 'sentence' && m.text)).toBe(true);
+  });
+  it('kept up (folder): a log that grows folds only its new moves, to the same game; a move taken back or another game folds again', () => {
+    const moves = playMoves(), fold = folder();
+    const same = (got: Game | null, ms: readonly Move[]) => expect(JSON.stringify(got), `${ms.length}`).toBe(JSON.stringify(foldMoves(ms, ctx)));
+    for (let n = 1; n <= moves.length; n++) {
+      const g = fold(moves.slice(0, n), ctx);
+      if (n % 25 === 0 || n === moves.length) same(g, moves.slice(0, n));
+    }
+    // (the same log again: the game kept, nothing folded)
+    expect(fold([...moves], ctx)).toBe(fold(moves, ctx));
+    same(fold(moves.slice(0, 10), ctx), moves.slice(0, 10));
+    same(fold(playMoves(30, 'game02'), ctx), playMoves(30, 'game02'));
+    // a gap: folded up to it, then on once it fills
+    same(fold([...moves.slice(0, 5), ...moves.slice(6, 9)], ctx), moves.slice(0, 5));
+    same(fold(moves.slice(0, 9), ctx), moves.slice(0, 9));
   });
   it('each move fits the wire (the relay’s parser takes it as sent)', () => {
     for (const { who: _w, ...m } of playMoves()) {
