@@ -112,7 +112,7 @@
     <TurnResult answer={v.stage === 'answer'} text={pic.w} stars={pictureStars(v.misses)} kind="word" line={speaking}
       onnext={(Step && (mirror?.speak || (speak && !mirror))) ? undefined : () => ondone(v.misses)} />
     {#if Step && mirror?.speak}
-      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey="" mirror={mirror.speak} onengage={() => {}} onnext={() => {}} />
+      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey="" mirror={mirror.speak} />
     {:else if Step && speak && !mirror}
       <Step target={pic.w} level={level as 1 | 2 | 3} tipKey={speak.tipKey} onengage={() => (engaged = true)} onnext={(said) => ondone(v.misses, said)}
         onview={onview ? (sv) => (stepView = sv) : undefined} />

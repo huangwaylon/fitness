@@ -7,7 +7,6 @@
   // only). Its own chunk (PictureTurn imports it only with the switch on). Never red, ×, % or 間違い. Online, its state
   // and words go to the others at the table (`onview`: never kept), and a phone watching shows the player's (`mirror`:
   // read-only, 録音中… for the take).
-  import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { log } from '#lib/sync/log.ts';
   import { Recorder } from '#lib/speech/recorder.svelte.ts';
@@ -17,7 +16,7 @@
   import { s } from '../i18n.ts';
   import type { Level } from '../game.ts';
   import type { SpeakView } from '../view.ts';
-  import { check, cheerOf, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check } from '../speak.ts';
+  import { check, cheerOf, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf } from '../speak.ts';
 
   interface Props {
     /** The picture's English (the word the sentence should use). */
@@ -26,36 +25,31 @@
     /** The game and seat (the tip opens by itself at most once in three sentences, each player's own). */
     tipKey: string;
     /** The step started (the picture's result folds to a line). */
-    onengage: () => void;
+    onengage?: () => void;
     /** 次へ: the stars the sentence earned (0: skipped or not on task). */
-    onnext: (said: number) => void;
+    onnext?: (said: number) => void;
     /** Online, my turn: the step as it is now, for the others to watch. */
     onview?: (v: SpeakView) => void;
-    /** Online, another's turn: theirs as their sheet shows it. */
+    /** Online, another's turn: theirs as their sheet shows it (read-only). */
     mirror?: SpeakView | null;
   }
-  let { target, level, tipKey, onengage, onnext, onview, mirror = null }: Props = $props();
+  let { target, level, tipKey, onengage = () => {}, onnext = () => {}, onview, mirror = null }: Props = $props();
 
-  type Phase = 'ask' | 'rec' | 'stt' | 'confirm' | 'feedback';
-  let phase = $state<Phase>('ask');
-  /** The words as heard (or ''), and the field's (what これでOK sends). */
-  let raw = $state('');
-  let text = $state('');
-  let typed = $state(false);
-  /** The note on the 聞こえた文 screen: why not yet (no sentence heard, the word missing, no verb), or the mic's miss. */
-  let note = $state<Check | 'denied' | 'missed' | null>(null);
-  /** 🎤 takes this sentence; re-says on the confirm screen. */
-  let takes = 0, resays = $state(0);
-  /** The sentence confirmed, its grade (null: none yet or none coming), and whether the feedback has settled. */
-  let said = $state('');
-  let graded = $state.raw<Grade | null>(null);
-  let settled = $state(false);
-  /** A great sentence's cheer (the phone's: the relay's tip is empty then; speak.ts cheerOf, -1 none). */
-  let cheer = $state(-1);
-  let onTask = $state(false);
-  /** Saying the recast again after a tip (+1). */
-  let resaying = $state(false), resaid = $state(false);
-  let tipOpen = $state(false);
+  /** What the screen shows (and the others at the table watch): `text` the field's words on the 聞こえた文 screen, the
+   *  sentence said on the feedback's; `heard` whether the words came from the mic; the recast, tip and other way as
+   *  shown once settled. A watching phone's is the player's (`mirror`). */
+  let v = $state<SpeakView>({
+    phase: 'ask', typed: false, heard: false, note: '', resays: 0, settled: false, graded: false, tipOpen: false, resaid: false,
+    stars: 0, cheer: -1, text: '', recast: '', tip: '', also: ''
+  });
+  $effect.pre(() => void (mirror && (v = { ...mirror })));
+  $effect(() => void onview?.($state.snapshot(v)));
+
+  /** The words as heard (what an edit is told from), the sentence confirmed and its grade (null: none yet or coming). */
+  let raw = '', said = '';
+  let graded: Grade | null = null;
+  /** 🎤 takes this sentence; saying the recast again after a tip (+1). */
+  let takes = 0, resaying = false;
   let field = $state<HTMLInputElement | null>(null);
   /** The step's height never shrinks while it's on (the sheet's height is the board's inset: each change moves the
    *  camera; a shorter phase, the take or a folded tip, leaves the room as it was). */
@@ -77,21 +71,21 @@
   }
 
   async function mic() {
-    if (phase === 'rec') return stop();
-    if (phase === 'stt' || rec.phase !== 'idle') return;
+    if (v.phase === 'rec') return stop();
+    if (v.phase === 'stt' || rec.phase !== 'idle') return;
     onengage();
-    note = null;
+    v.note = '';
     // the island's sound paused and the audio session one that allows the mic, in this tap, before the mic is asked for
     micFocus(true);
     const t = await rec.start();
     if (!t) return;
-    if (t !== true) return void (micFocus(false), (note = 'denied'), (err = 'denied'), toType());
-    phase = 'rec';
+    if (t !== true) return void (micFocus(false), (v.note = 'denied'), (err = 'denied'), toType());
+    v.phase = 'rec';
     takes++;
   }
   async function stop() {
-    if (phase !== 'rec') return;
-    phase = 'stt';
+    if (v.phase !== 'rec') return;
+    v.phase = 'stt';
     const p = await rec.stop();
     if (!p) return;
     tStop = p.t0;
@@ -99,54 +93,60 @@
     const r = await transcribe(p.pcm.pcm, tStop, rec.signal);
     if (rec.signal.aborted) return;
     rec.idle();
-    typed = false;
+    v.typed = false;
     if (!r.ok) {
       err = r.miss;
-      note = 'missed';
+      v.note = 'missed';
       return toType();
     }
-    raw = text = r.text.trim();
-    note = check(raw, target) === 'again' ? 'again' : null;
+    raw = v.text = r.text.trim();
+    v.heard = !!raw;
+    v.note = check(raw, target) === 'again' ? 'again' : '';
     // (asked for while they read it: unchanged, the answer is often in by これでOK)
-    if (note !== 'again' && !resaying) prefetch(raw);
-    phase = 'confirm';
+    if (v.note !== 'again' && !resaying) prefetch(raw);
+    v.phase = 'confirm';
     // (the re-says used: the keyboard)
-    if (resays >= RESAYS) focusField();
+    if (v.resays >= RESAYS) focusField();
   }
   function toType() {
     onengage();
-    typed = true;
-    if (!resaying && phase !== 'confirm') text = '';
-    phase = 'confirm';
+    v.typed = true;
+    if (!resaying && v.phase !== 'confirm') v.text = '';
+    v.phase = 'confirm';
     focusField();
   }
   const focusField = () => queueMicrotask(() => field?.focus());
   function again() {
-    resays++;
+    v.resays++;
     void mic();
   }
+  /** The feedback shows the sentence said. */
+  const toFeedback = () => ((v.text = said), (v.phase = 'feedback'));
 
   async function confirm() {
-    const t = text.trim();
+    const t = v.text.trim();
     if (!t) return focusField();
     // the relay's `used` credits a misheard word too, if its answer is in
     const used = ask?.text === t && ask.r?.ok ? ask.r.grade.used : false;
     const c = check(t, target, used);
     if (c !== 'ok') {
-      note = c;
+      v.note = c;
       layer = 'task';
       return focusField();
     }
-    note = null;
-    if (resaying) return void ((resaid = true), (resaying = false), (phase = 'feedback'));
-    edited = !typed && t !== raw;
-    if (typed) tStop = performance.now();
+    v.note = '';
+    if (resaying) {
+      resaying = false;
+      v.resaid = true;
+      v.stars = saidStars(true, true);
+      return toFeedback();
+    }
+    edited = !v.typed && t !== raw;
+    if (v.typed) tStop = performance.now();
     said = t;
-    onTask = true;
     graded = null;
-    cheer = -1;
-    settled = false;
-    phase = 'feedback';
+    Object.assign(v, { stars: saidStars(true, false), graded: false, cheer: -1, settled: false, recast: '', tip: '', also: '' });
+    toFeedback();
     // (GRADE_WAIT_MS from when it was asked for, the words' arrival: the relay's slow tail never holds the sheet; an
     // answer after it is let go, never swapped in late)
     const a = prefetch(t);
@@ -154,64 +154,48 @@
     if (rec.signal.aborted || said !== t) return;
     ms = Math.round(performance.now() - tStop);
     if (r?.ok) {
-      graded = r.grade;
-      cheer = r.grade.verdict === 'great' ? nextCheer() : -1;
-      layer = r.grade.src;
+      const g = (graded = r.grade);
+      const recast = recastOf(t, g);
+      // the tip shown: one there is, and at やさしい not for an article or an -s alone (Whisper changes those itself)
+      const tip = g.tip && !(level === 1 && recast && onlySmall(t, recast)) ? g.tip : '';
+      const open = !!tip && tipOpens(tipsOf(tipKey));
+      if (tip) noteTip(tipKey, open);
+      Object.assign(v, { graded: true, recast, tip, also: g.also, tipOpen: open, cheer: g.verdict === 'great' ? nextCheer() : -1 });
+      layer = g.src;
       err = undefined;
-      const tip = shownTip;
-      tipOpen = !!tip && tipOpens(tipsOf(tipKey));
-      if (tip) noteTip(tipKey, tipOpen);
     } else {
       layer = 'none';
       err = r ? r.miss : 'timeout';
     }
-    settled = true;
+    v.settled = true;
   }
 
-  const recast = $derived(mirror ? mirror.recast : recastOf(said, graded));
-  const diff = $derived(recast ? diffWords(said, recast) : null);
-  /** The tip shown: one there is, and at やさしい not for an article or an -s alone (Whisper changes those itself). */
-  const shownTip = $derived(mirror ? mirror.tip : graded?.tip && !(level === 1 && recast && onlySmall(said, recast)) ? graded.tip : '');
-  const also = $derived(mirror ? mirror.also : (graded?.also ?? ''));
-  const stars = $derived(mirror ? mirror.stars : saidStars(onTask, resaid));
-  // online: the step as it is, sent (my turn: its words too, never kept), or the player's shown (another's)
-  $effect(() => void onview?.({
-    phase, typed, heard: !!raw, note: note ?? '', resays, settled, graded: !!graded, tipOpen, resaid, stars, cheer,
-    text: phase === 'confirm' ? text : said, recast, tip: shownTip, also
-  }));
-  $effect.pre(() => {
-    const m = mirror;
-    if (!m) return;
-    untrack(() => {
-      (phase = m.phase), (typed = m.typed), (raw = m.heard ? '-' : ''), (note = m.note || null), (resays = m.resays);
-      (settled = m.settled), (tipOpen = m.tipOpen), (resaid = m.resaid), (cheer = m.cheer);
-      if (m.phase === 'confirm') text = m.text;
-      else said = m.text;
-    });
-  });
+  const diff = $derived(v.phase === 'feedback' && v.recast ? diffWords(v.text, v.recast) : null);
+  /** The one leaf action: 次へ once the sentence is said (the feedback), else the step's own (話す, これでOK). */
+  const done = $derived(v.phase === 'feedback');
 
   function resay() {
     resaying = true;
-    resays = 0;
-    if (typed) return toType();
-    text = '';
+    v.resays = 0;
+    if (v.typed) return toType();
+    v.text = '';
     void mic();
   }
   function next() {
     rec.cancel();
-    if (phase !== 'ask' || err)
+    if (v.phase !== 'ask' || err)
       log('sg.grade', {
-        layer, verdict: graded?.verdict ?? 'none', ms, takes, edited, resaid,
+        layer, verdict: graded?.verdict ?? 'none', ms, takes, edited, resaid: v.resaid,
         ...(err ? { err: (['denied', 'off', 'capped', 'network', 'ai', 'timeout'].includes(err) ? err : 'other') as 'other' } : {})
       });
-    onnext(stars);
+    onnext(v.stars);
   }
 </script>
 
-<div class="speak" data-sg-speak={phase} bind:offsetHeight={h} style:min-height={floor ? `${floor}px` : undefined}>
-  {#if phase === 'ask'}
+<div class="speak" data-sg-speak={v.phase} bind:offsetHeight={h} style:min-height={floor ? `${floor}px` : undefined}>
+  {#if v.phase === 'ask'}
     <div class="ask card">
-      <p class="q"><Icon name="mic" size={18} />{say('ask')}<span class="plus">{say('stars', { n: 2 })}</span></p>
+      <p class="q"><Icon name="mic" size={18} />{say('ask')}<span class="tag plus">{say('stars', { n: 2 })}</span></p>
       {#if level === 1}<p class="hint" lang="en"><span class="lab">{say('frames')}</span>{FRAMES.join(' / ')}</p>
       {:else if level === 3}<p class="hint">{say('hard', { n: HARD_WORDS })}</p>{/if}
       <div class="row2">
@@ -219,55 +203,55 @@
         <button type="button" class="btn small paper" data-sfx="tick" data-sg-type onclick={toType}><Icon name="keyboard" size={20} />{say('type')}</button>
       </div>
     </div>
-  {:else if phase === 'rec' || phase === 'stt'}
-    <button type="button" class="btn" class:rec={phase === 'rec'} aria-disabled={phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
-      {#if phase === 'stt'}<Icon name="mic" size={20} />{/if}{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: rec.secs.toFixed(1) })) : say('listening')}
+  {:else if v.phase === 'rec' || v.phase === 'stt'}
+    <button type="button" class="btn" class:rec={v.phase === 'rec'} aria-disabled={v.phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
+      {#if v.phase === 'stt'}<Icon name="mic" size={20} />{/if}{v.phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: rec.secs.toFixed(1) })) : say('listening')}
     </button>
-  {:else if phase === 'confirm'}
+  {:else if v.phase === 'confirm'}
     <form class="confirm card" data-kb-scroll onsubmit={(e) => (e.preventDefault(), confirm())}>
-      <label class="lab" for="sg-said">{typed && !raw ? say('typeHere') : say('heard')}</label>
-      <input id="sg-said" class="said" readonly={!!mirror} lang="en" type="text" bind:this={field} bind:value={text} maxlength="200" autocomplete="off" autocapitalize="sentences"
+      <label class="lab" for="sg-said">{v.typed && !v.heard ? say('typeHere') : say('heard')}</label>
+      <input id="sg-said" class="said" readonly={!!mirror} lang="en" type="text" bind:this={field} bind:value={v.text} maxlength="200" autocomplete="off" autocapitalize="sentences"
         spellcheck="false" enterkeyhint="done" data-sg-said />
-      {#if note}<p class="note" aria-live="polite" data-sg-note={note}>{note === 'again' ? say('silence') : note === 'target' ? say('useWord', { w: target })
-        : note === 'verb' ? say('addVerb') : note === 'denied' ? say('denied') : note === 'missed' ? say('missed') : ''}</p>
-      {:else if !typed}<p class="soft">{say('editNote')}</p>{/if}
+      {#if v.note}<p class="note" aria-live="polite" data-sg-note={v.note}>{v.note === 'again' ? say('silence') : v.note === 'target' ? say('useWord', { w: target })
+        : v.note === 'verb' ? say('addVerb') : v.note === 'denied' ? say('denied') : v.note === 'missed' ? say('missed') : ''}</p>
+      {:else if !v.typed}<p class="soft">{say('editNote')}</p>{/if}
       <div class="row2">
         <button type="submit" class="btn small" data-sfx="confirm" data-sg-ok>{say('ok')}</button>
-        {#if !typed && resays < RESAYS && note !== 'denied'}
+        {#if !v.typed && v.resays < RESAYS && v.note !== 'denied'}
           <button type="button" class="btn small paper" data-sfx="none" data-sg-again onclick={again}><Icon name="mic" size={20} />{say('again')}</button>
         {/if}
       </div>
     </form>
   {:else}
-    <div class="fb card" data-sg-feedback={settled ? ((mirror ? mirror.graded : graded) ? 'graded' : 'praise') : 'wait'}>
-      <p class="mine" class:shimmer={!settled} lang="en" data-sg-mine>
-        {#if diff}{#each diff.mine as w, i (i)}<span class:chg={w.changed}>{w.w}</span>{' '}{/each}{:else}{said}{/if}
+    <div class="fb card" data-sg-feedback={v.settled ? (v.graded ? 'graded' : 'praise') : 'wait'}>
+      <p class="mine" class:shimmer={!v.settled} lang="en" data-sg-mine>
+        {#if diff}{#each diff.mine as w, i (i)}<span class:chg={w.changed}>{w.w}</span>{' '}{/each}{:else}{v.text}{/if}
       </p>
-      {#if settled}
-        {#if recast && diff}
+      {#if v.settled}
+        {#if v.recast && diff}
           <p class="lab">{say('better')}</p>
           <p class="better" lang="en" data-sg-recast>{#each diff.better as w, i (i)}{#if w.changed}<b>{w.w}</b>{:else}{w.w}{/if}{' '}{/each}</p>
         {:else}
-          <p class="praise" data-sg-praise>{cheerOf(cheer) || say('praise')}</p>
+          <p class="praise" data-sg-praise>{cheerOf(v.cheer) || say('praise')}</p>
         {/if}
-        {#if also}<p class="lab">{say('also')}</p><p class="better" lang="en" data-sg-also>{also}</p>{/if}
-        {#if shownTip}
-          <button type="button" class="tipbtn" aria-expanded={tipOpen} data-sfx="tick" data-sg-tip onclick={() => (tipOpen = !tipOpen)}>
-            <Icon name="bulb" size={18} />{say('tip')}<Icon name={tipOpen ? 'chevron-up' : 'chevron-down'} size={16} />
+        {#if v.also}<p class="lab">{say('also')}</p><p class="better" lang="en" data-sg-also>{v.also}</p>{/if}
+        {#if v.tip}
+          <button type="button" class="btn small paper tipbtn" aria-expanded={v.tipOpen} data-sfx="tick" data-sg-tip onclick={() => (v.tipOpen = !v.tipOpen)}>
+            <Icon name="bulb" size={18} />{say('tip')}<Icon name={v.tipOpen ? 'chevron-up' : 'chevron-down'} size={16} />
           </button>
-          {#if tipOpen}<p class="tip" data-sg-tip-text>{shownTip}</p>{/if}
+          {#if v.tipOpen}<p class="tip" data-sg-tip-text>{v.tip}</p>{/if}
         {/if}
-        {#if !longEnough(said, level)}<p class="soft">{say('longer', { n: HARD_WORDS })}</p>{/if}
+        {#if !longEnough(v.text, level)}<p class="soft">{say('longer', { n: HARD_WORDS })}</p>{/if}
       {/if}
       <div class="foot">
-        <span class="pts" data-sg-said-stars={stars}><Icon name="star" size={18} soft /><b>+{stars}</b>{#if resaid}<span class="resaid" data-sg-resaid>{say('resaid')}</span>{/if}</span>
-        {#if settled && recast && !resaid}
-          <button type="button" class="btn small paper" data-sfx="tick" data-sg-resay onclick={resay}><Icon name={typed ? 'keyboard' : 'mic'} size={20} />{say('resay')}</button>
+        <span class="pts" data-sg-said-stars={v.stars}><Icon name="star" size={18} soft /><b>+{v.stars}</b>{#if v.resaid}<span class="resaid" data-sg-resaid>{say('resaid')}</span>{/if}</span>
+        {#if v.settled && v.recast && !v.resaid}
+          <button type="button" class="btn small paper" data-sfx="tick" data-sg-resay onclick={resay}><Icon name={v.typed ? 'keyboard' : 'mic'} size={20} />{say('resay')}</button>
         {/if}
       </div>
     </div>
   {/if}
-  <button type="button" class="btn next" data-sfx="confirm" data-sg-next onclick={next}>{s('next')}</button>
+  <button type="button" class="btn next" class:paper={!done} data-sfx="confirm" data-sg-next onclick={next}>{s('next')}</button>
 </div>
 
 <style>
@@ -275,10 +259,10 @@
   .speak .next { margin-top: auto; }
   .card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: var(--r-row); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
   .q { display: flex; align-items: center; gap: 6px; margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .plus { margin-left: auto; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-cream)); font: 700 12px/1.3 var(--font-ui); white-space: nowrap; }
+  .plus { margin-left: auto; }
   .hint { margin: 0; font: 500 var(--fs-s)/1.4 var(--font-body); color: var(--text-soft); }
   .hint .lab { margin-right: 6px; }
-  .lab { margin: 0; font: 700 12px/1.3 var(--font-ui); color: var(--text-soft); }
+  .lab { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .row2 { display: flex; gap: 8px; }
   .row2 .btn { flex: 1; min-width: 0; gap: 6px; }
   .said { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r-chip); background: var(--c-cream);
@@ -293,8 +277,7 @@
   .better { margin: 0; font: 500 17px/1.4 var(--font-body); text-wrap: pretty; }
   .better b { font-weight: 800; }
   .praise { margin: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .tipbtn { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; min-height: 36px; padding: 0 10px; margin: 0; appearance: none; border: 0;
-    border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-cream)); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); cursor: pointer; }
+  .tipbtn { align-self: flex-start; gap: 4px; margin: 0; }
   .tip { margin: 0; font: 500 var(--fs-s)/1.5 var(--font-body); text-wrap: pretty; }
   .foot { display: flex; align-items: center; gap: 8px; min-height: 44px; }
   .foot .btn { margin-left: auto; gap: 6px; }

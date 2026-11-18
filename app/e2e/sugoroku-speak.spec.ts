@@ -57,6 +57,8 @@ test('speak → 聞こえた文 → the feedback: the recast, the tip, +2; sayin
     grade: () => ({ verdict: 'tip', fixed: 'I ate an apple.', tip: 'eat の「食べた」は ate だよ' })
   });
   await expect(team(page)).toHaveAttribute('data-sg-team', '0');
+  // one leaf action a view: 話す while the step is offered (次へ paper), 次へ once the sentence is said
+  await expect(s.locator('[data-sg-next]')).toHaveClass(/paper/);
   await s.locator('[data-sg-say]').tap();
   const t0 = Date.now();
   await heldFor(s.locator('[data-sg-stop]'));
@@ -68,6 +70,7 @@ test('speak → 聞こえた文 → the feedback: the recast, the tip, +2; sayin
   const t1 = Date.now();
   await s.locator('[data-sg-ok]').tap();
   await expect(s.locator('[data-sg-feedback="graded"]')).toBeVisible();
+  await expect(s.locator('[data-sg-next]')).not.toHaveClass(/paper/);
   test.info().annotations.push({ type: 'ui-ms', description: `stop→聞こえた文 ${heardMs} ms, これでOK→feedback ${Date.now() - t1} ms (mocks answer at once)` });
   expect(asked).toEqual([{ s: 'I eated an apple.', t: 'apple' }]);
   // their word that changed underlined, the recast's in bold, the tip open (the player's first)
