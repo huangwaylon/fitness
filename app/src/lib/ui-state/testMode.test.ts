@@ -50,8 +50,8 @@ const sources = (p: string): string[] =>
   );
 
 describe("the window hooks (window.__world3d, __tent, …) on a visitor's phone", () => {
-  // Known: the /editor route's own and すごろく's board preview page (their engines live only while they're open).
-  const KNOWN = ['lib/components/editor/Editor.svelte', 'lib/components/editor/Preview3D.svelte', 'lib/components/layoutEdit/IslandEdit.svelte', 'lib/sugoroku/board3d/Preview.svelte'];
+  // Known: すごろく's board preview page (its engine lives only while it's open).
+  const KNOWN = ['lib/sugoroku/board3d/Preview.svelte'];
   it('each file that sets one gates it (testHooks, hooksOn, DEV or demo)', () => {
     const src = join(import.meta.dirname, '..', '..');
     const ungated = sources(src)

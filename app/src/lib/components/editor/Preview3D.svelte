@@ -17,6 +17,7 @@
   import { diffLayouts } from '#lib/layout/diff.ts';
   import { lookOf, type Look } from '../world3d/groundLook.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import type { Object3D } from 'three';
   import { clamp } from '#lib/math.ts';
@@ -346,7 +347,7 @@
           groups: () => [...groups.keys()],
           kk: () => (kkOn ? { x: kkSpec.x, z: kkSpec.z, yaw: kkSpec.yaw ?? 0, shown: kkSpec.shown, model: !!vil } : null)
         };
-        window.__preview3d = hook;
+        if (testHooks()) window.__preview3d = hook;
         api = {
           set(l: Layout) {
             if (l === cur) return;

@@ -34,6 +34,7 @@
   import { objectAt } from '../editor/edits.ts';
   import { WHO_OF_HOME, type Who } from '#lib/layout/homes.ts';
   import { carryTops, isSmallKind, isSurfaceKind, kidsOf, surfaceAt, topSpot, topWhy } from '#lib/layout/tops.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
 
   export interface EditStage {
     /** The element over the island the mode's taps come through (its own taps pass on to the island). */
@@ -399,7 +400,7 @@
   /** The e2e's view of the mode. */
   export const snapshot = () => (sel ? { ...sel, why } : null);
   $effect(() => {
-    window.__islandEdit = {
+    if (testHooks()) window.__islandEdit = {
       sel: () => (sel ? { ...sel, orig: undefined, why } : null),
       ghost: () => ghost,
       screenOf: (x: number, z: number) => {

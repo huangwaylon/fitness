@@ -33,6 +33,7 @@
   import type { Who } from '#lib/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import '#lib/i18n/sheets.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
 
   let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 
@@ -616,7 +617,7 @@
     view = zoomAt(fit, W / 2, H - 20, 0.9 / fit.s);
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
-    window.__editor = {
+    if (testHooks()) window.__editor = {
       view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, auto: () => auto, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
         const [sx, sy] = toScreen(view, x, z), b = canvas!.getBoundingClientRect();
