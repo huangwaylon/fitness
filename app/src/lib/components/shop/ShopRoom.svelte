@@ -339,7 +339,9 @@
         e.night(nightOf(theme.tod));
         e.villager(viewer, lookOf(viewer));
         e.put(viewer, DOOR_IN, 1);
-        e.follow(viewer);
+        // (framed where the walk in ends: the door at the left, the counter and the twins at the right, on a short
+        // phone too; the camera still till then)
+        e.follow(viewer, WALK_IN);
         const twin = url3d('timmy', ROOM_DIRS.villagers);
         if (twin) for (const id of ['timmy', 'tommy'] as const) e.npc(id, { id: 'timmy', url: twin }, TWINS[id]);
         e.pieces(shown.shown);

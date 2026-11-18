@@ -147,8 +147,9 @@ export interface Tent {
   npc(id: string, m: { id: string; url: string } | null, at?: Pt): void;
   /** Where a piece's top is (model units: its middle, over its height), or null: not in the room. */
   pieceTop(id: string): [number, number, number] | null;
-  /** Whose villager the camera follows in a building's inside (Shell `follow`), from where it is now. */
-  follow(who: Actor | null): void;
+  /** Whose villager the camera follows in a building's inside (Shell `follow`), from where it is now (or from `at`:
+   *  where it's about to walk to, the camera still till it walks). */
+  follow(who: Actor | null, at?: readonly [number, number]): void;
   /** 0 day … 1 night: the light, and the lamps on. */
   night(n: number): void;
   villager(who: Who, look: Look | null): void;
@@ -1510,16 +1511,17 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     invalidate();
   }
   const isDefault = () => atAim(view, DEF) && pan.isHome();
-  /** The villager a building's camera follows (Shell `follow`), and where its middle goes for it. */
-  let followed: Actor | null = null;
-  const followAt = (w: Walker): [number, number] | null => {
+  /** The villager a building's camera follows (Shell `follow`), and where its middle goes for it: where it walks to
+   *  (the camera ahead of it, not trailing), set as each walk goes (null: still). */
+  let followed: Actor | null = null, chase: [number, number] | null = null;
+  const followAt = (p: readonly [number, number]): [number, number] | null => {
     const f = sh?.follow;
-    return f ? [Math.min(f.x[1], Math.max(f.x[0], w.pos[0])), Math.min(f.z[1], Math.max(f.z[0], w.pos[1]))] : null;
+    return f ? [Math.min(f.x[1], Math.max(f.x[0], p[0])), Math.min(f.z[1], Math.max(f.z[0], p[1]))] : null;
   };
   /** The camera still on its way after the villager it follows (or that villager walking). */
   function followBusy(): boolean {
-    const w = followed ? villagers.get(followed) : undefined, fa = w && !fp.on ? followAt(w) : null;
-    return !!fa && (!!w?.path || Math.abs(fa[0] - target.x) + Math.abs(fa[1] - target.z) > 0.05);
+    const w = followed ? villagers.get(followed) : undefined;
+    return !fp.on && (!!w?.path || (!!chase && Math.abs(chase[0] - target.x) + Math.abs(chase[1] - target.z) > 0.05));
   }
   /** A gesture under way: drawn at DPR_MOVING (rview.ratio, set in the frame before its draw: a resize clears the
    *  canvas), not a buffer resize, a fit and a draw of their own at each start and end. */
@@ -1889,7 +1891,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       else more = true;
     }
     // a building's camera after the villager it follows (eased; not at the eyes)
-    const fw = followed ? villagers.get(followed) : undefined, fa = fw && !fp.on ? followAt(fw) : null;
+    const fw = followed ? villagers.get(followed) : undefined;
+    if (fw?.path) chase = followAt(fw.path.pts[fw.path.pts.length - 1]);
+    const fa = fp.on ? null : chase;
     if (fa && Math.abs(fa[0] - target.x) + Math.abs(fa[1] - target.z) > 0.05) {
       const k = 1 - Math.exp(-(lastT3 ? Math.min(100, t - lastT3) : 16) / 280);
       target.x += (fa[0] - target.x) * k;
@@ -2106,9 +2110,10 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
         invalidate();
       }
     },
-    follow(who) {
+    follow(who, at) {
       followed = who;
-      const w = who ? villagers.get(who) : undefined, fa = w ? followAt(w) : null;
+      const w = who ? villagers.get(who) : undefined, fa = w ? followAt(at ?? w.pos) : null;
+      chase = fa;
       // (from where it is now: no glide in)
       if (fa) {
         target.set(fa[0], 0, fa[1]);

@@ -714,3 +714,17 @@ test('a link straight into the shop draws the players from their KTX2s: their ev
   expect(packs.some((p) => /\/everyday\.\w+\.pak$/.test(p))).toBe(true);
   expect(packs.filter((p) => /\/webp\.\w+\.pak$/.test(p))).toEqual([]);
 });
+
+test('a short phone (375×667): framed where the walk in ends from the first frame, the twins (the counter’s tap) whole on screen, the camera still', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto(`shop${Q}`);
+  await page.waitForFunction(() => ((window as unknown as { __shop?: ShopHooks }).__shop?.stats()?.frames ?? 0) > 0, undefined, { timeout: 30_000 });
+  const first = await hooks(page, (s) => [s.twin('timmy'), s.twin('tommy')]);
+  await roomIn(page);
+  const now = await hooks(page, (s) => [s.twin('timmy'), s.twin('tommy')]);
+  for (const at of now) {
+    expect(at![0]).toBeLessThan(375 - 20);
+    expect(at![0]).toBeGreaterThan(20);
+  }
+  expect(first[1]![0]).toBeCloseTo(now[1]![0], 0);
+});
