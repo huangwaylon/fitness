@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 3, retire 0, new 4, ctx 6, tx 7
+// R4 REVIEW 2026-11-18: keep 12, rewrite 3, retire 0, new 4, ctx 6, tx 7, qa 9
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 9, new 2
 // “Dwight vs. Andy - The Office US” (the official The Office channel, BEST OF SEASON 3): Dwight and Andy meet and argue
 // over who outranks whom; Michael names Jim his new number two and Andy flatters him; in the parking lot the two trade
@@ -28,9 +28,9 @@ export const dwightVsAndy: Clip = {
       use: 'Thanks for waiting. I appreciate it.（待ってくれてありがとう。助かります）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'introduced', seg: [5.2, 14.1],
-      stem: 'Why does Dwight start with “I don’t believe…”?', ja: 'ドワイトはなぜ「I don’t believe…」と話し始める？',
-      choices: ['To introduce himself', 'To say goodbye', 'To ask for help'], a: 0,
-      choicesJa: ['自分から名乗るため', 'さよならを言うため', '助けを頼むため'],
+      stem: 'What does “I don’t believe we’ve been introduced” mean?', ja: '「I don’t believe we’ve been introduced」はどういう意味？',
+      choices: ['We haven’t met yet', 'I don’t trust you', 'I forgot your name'], a: 0,
+      choicesJa: ['まだ会ったことがないですね', 'あなたを信用していない', '名前を忘れた'],
       cue: '「Hello」のあと',
       line: '*I don’t believe we’ve been introduced.* Dwight Schrute, assistant regional manager.',
       said: '「まだ紹介されていませんね。ドワイト・シュルート、地域マネージャー補佐です」と名乗る。',
@@ -49,7 +49,7 @@ export const dwightVsAndy: Clip = {
       trap: '二人とも regional で始まるので混ざりやすい。後ろが director か manager かを聞く。',
       use: 'Who’s in charge of the booking?（予約の担当はどなたですか）' },
 
-    { id: 'i3', ctx: true, skill: 'phrase', level: 'B2', point: 'rank', seg: [12.7, 20.2],
+    { id: 'i3', ctx: true, skill: 'phrase', level: 'B2', point: 'rank', reveals: ['title'], seg: [12.7, 20.2],
       stem: 'Dwight asks if Andy reports to him. What does Andy say?', ja: 'ドワイトに「私の部下ですね？」と聞かれ、アンディは何と言う？',
       choices: ['No, Dwight is under him', 'Yes, he is under Dwight', 'They are at the same level'], a: 0,
       choicesJa: ['いや、ドワイトが自分の下', 'うん、自分がドワイトの下', '二人は同じ立場'],
@@ -71,7 +71,7 @@ export const dwightVsAndy: Clip = {
       trap: 'film が何度も出るので映画好きの話に聞こえるが、肩書き争いの理屈に使っている。',
       use: 'That’s not how it works here.（ここではそうはいかないよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', reveals: ['rank'], seg: [15.3, 31],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', reveals: ['rank', 'title'], seg: [15.3, 31],
       stem: 'What are Dwight and Andy arguing about?', ja: 'ドワイトとアンディは、何で言い合っている？',
       choices: ['Who has the higher job', 'Who knows more about film', 'Who sells the most'], a: 0,
       choicesJa: ['どちらの役職が上か', 'どちらが映画にくわしいか', 'どちらがいちばん売るか'],
@@ -126,7 +126,7 @@ export const dwightVsAndy: Clip = {
       trap: 'number three も pay raise も聞こえるが、決まったのは2番だけ。3番は not decided yet。',
       use: 'I have decided to move to Osaka.（大阪に引っ越すことに決めた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'two', seg: [36.4, 45.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'two', reveals: ['announce'], seg: [36.4, 45.2],
       stem: 'Who does Michael choose as his new number two?', ja: 'マイケルが新しいナンバー2に選ぶのは誰？',
       choices: ['Jim', 'Andy', 'Dwight'], a: 0,
       choicesJa: ['ジム', 'アンディ', 'ドワイト'],
@@ -182,8 +182,8 @@ export const dwightVsAndy: Clip = {
 
     { id: 'p2', ctx: true, skill: 'pragma', level: 'B1', point: 'kind', seg: [56.5, 64.5],
       stem: 'How does Michael answer Andy’s praise?', ja: 'アンディにほめられて、マイケルはどう答える？',
-      choices: ['He thanks him for it', 'He tells him to stop', 'He says it isn’t true'], a: 0,
-      choicesJa: ['お礼を言う', 'やめろと言う', 'そんなことないと言う'],
+      choices: ['He accepts it politely', 'He praises Andy back', 'He says it isn’t true'], a: 0,
+      choicesJa: ['ていねいに受け取る', 'アンディをほめ返す', 'そんなことないと言う'],
       cue: '「aplomb」のあと',
       line: 'Andy: you have handled this entire situation with great aplomb. / Michael: *Thank you, Andy. That’s very kind.*',
       said: '「見事でしたね」とほめられ、「ありがとう、アンディ。ご親切にどうも」と返す。',
@@ -229,7 +229,7 @@ export const dwightVsAndy: Clip = {
       choices: ['Earth, in Latin', 'Rugged, in Latin', 'Earth, in Japanese'], a: 0,
       choicesJa: ['ラテン語で「大地」', 'ラテン語で「たくましい」', '日本語で「大地」'],
       cue: '「not even a real word」への返事',
-      line: 'Actually, it is / it’s *Latin for “earth.”*',
+      line: 'Dwight: X-Terra’s not even a real word. / Andy: Actually, it is — it’s *Latin for “earth.”*',
       said: '「本当の言葉だ。ラテン語で『大地』の意味だ」と言い返す。',
       mean: 'A is Latin for B ＝ A はラテン語で B の意味。言葉の意味を言うときの形。',
       trap: '直前に Japanese と rugged が聞こえるので混ざりやすい。for の前が言語、後ろが意味。',
@@ -257,9 +257,9 @@ export const dwightVsAndy: Clip = {
       use: 'The ’80s called. They want that hat back.（その帽子、古くさいね）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'speaking', seg: [109.2, 120.5],
-      stem: 'Why do both men say “speaking of…”?', ja: '二人はなぜ “speaking of…” と言う？',
-      choices: ['To start a new insult', 'To change to a calm topic', 'To say sorry'], a: 0,
-      choicesJa: ['次の悪口を始めるため', '落ち着いた話に変えるため', '謝るため'],
+      stem: 'What comes after each “speaking of…”?', ja: '「speaking of…」のあとには、何が続く？',
+      choices: ['A new insult', 'A calmer topic', 'An apology'], a: 0,
+      choicesJa: ['次の悪口', '落ち着いた話題', 'おわび'],
       cue: '「speaking of」のあとの語',
       line: 'Oh, *speaking of time machines*… — *Speaking of funerals*, why don’t you…',
       said: '相手が言った time machine や funeral を拾って、次の悪口につなげる。',
@@ -302,8 +302,8 @@ export const dwightVsAndy: Clip = {
 
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'comeback', seg: [142.5, 148.5],
       stem: 'What does “comeback” mean in “Nice comeback”?', ja: '“Nice comeback” の comeback はどういう意味？',
-      choices: ['A quick answer back', 'A return to work', 'A second try'], a: 0,
-      choicesJa: ['すばやい言い返し', '仕事への復帰', '2回目の挑戦'],
+      choices: ['A clever reply', 'A return to work', 'A second try'], a: 0,
+      choicesJa: ['うまい言い返し', '仕事への復帰', '2回目の挑戦'],
       cue: '「You’re the idiot!」のあと',
       line: 'You’re the idiot! — *Nice comeback!* — I was making fun of your *comeback*!',
       said: '「お前こそばかだ！」に「いい言い返しだな！」と返す。',
