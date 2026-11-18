@@ -301,7 +301,7 @@ export const healthPlan: Clip = {
       choicesJa: ['必要だ', '必要だった', '必要になる'],
       cue: '「Listen」のあと。',
       line: 'Listen, *I needed* your permission to fire Jim Halpert.',
-      said: '「ジム・ハルパートを解雇する許可をいただきたくて」と言う。',
+      said: '「ジム・ハルパートの解雇の許可をいただきたくて」と言う。',
       mean: 'needed の -ed は「ディッド」と1音ふえる。過去の形にして少しやわらかく頼んでいる。',
       trap: 'need なら「ニード」で終わる。I’ll need なら I のあとに小さい「ル」が入る。',
       use: 'I needed to ask you something.（ちょっと聞きたいことがあって）' },
