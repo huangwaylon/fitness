@@ -48,10 +48,18 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: app/package-lock.json
+      # (the flaky ledger's artifacts already read, kept from run to run: each run fetches only the new ones, as the
+      # whole window each run ran the token's hourly quota out, 2026-11-18; scripts/e2e-flakes.ts FLAKY_CACHE)
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/flaky-cache
+          key: flaky-ledgers-${{ github.run_id }}
+          restore-keys: flaky-ledgers-
       - env:
           GH_TOKEN: ${{ github.token }}
           BASE: ${{ github.event.pull_request.base.sha }}
           E2E_RENDER: none
+          FLAKY_CACHE: ${{ runner.temp }}/flaky-cache
         run: |
           node scripts/e2e-impact.ts ${BASE:+--base "$BASE"} --out sel >> "$GITHUB_STEP_SUMMARY"
           node scripts/e2e-flakes.ts --out sel/quarantine.txt >> "$GITHUB_STEP_SUMMARY"

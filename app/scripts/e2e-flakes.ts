@@ -16,9 +16,12 @@
 //   node scripts/e2e-flakes.ts --out <f>   (the gate's checks job) <f>: the auto-quarantined tests as a
 //                                          --test-list-invert file; Markdown for the job summary on stdout
 // Best effort: the API down, slow (10 s) or the token short of actions:read, it says so and quarantines nothing.
+// FLAKY_CACHE (the plan job's actions/cache): a folder keeping what never changes, each artifact's ledger and each
+// run's trust, so a run fetches only what's new (every run fetching the whole window, ~150 calls, ran the workflow
+// token's hourly quota out on a busy day, 2026-11-18).
 // In CI the window ends at the run's own start (GITHUB_RUN_ID).
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
 
@@ -132,6 +135,19 @@ async function read(): Promise<{ ledgers: Ledger[]; since: Date; until: Date; dr
     return r;
   };
   const json = async <T>(path: string) => (await (await api(path)).json()) as T;
+  // (the cache: a file a key, dropped after a week unread; never a reason to fail)
+  const dir = process.env.FLAKY_CACHE ?? '';
+  if (dir) {
+    mkdirSync(dir, { recursive: true });
+    for (const f of readdirSync(dir)) if (Date.now() - statSync(join(dir, f)).mtimeMs > 7 * 86_400_000) unlinkSync(join(dir, f));
+  }
+  const cached = async <T>(key: string, get: () => Promise<T>, keep: (v: T) => boolean = () => true): Promise<T> => {
+    const f = dir && join(dir, `${key}.json`);
+    if (f && existsSync(f)) return JSON.parse(readFileSync(f, 'utf8')) as T;
+    const v = await get();
+    if (f && keep(v)) writeFileSync(f, JSON.stringify(v));
+    return v;
+  };
   const repoId = Number(process.env.GITHUB_REPOSITORY_ID) || (await json<{ id: number }>('')).id;
   const until = process.env.GITHUB_RUN_ID ? new Date((await json<{ created_at: string }>(`actions/runs/${process.env.GITHUB_RUN_ID}`)).created_at) : new Date();
   const since = new Date(until.getTime() - HOURS * 3600_000);
@@ -155,12 +171,12 @@ async function read(): Promise<{ ledgers: Ledger[]; since: Date; until: Date; dr
         workflow_runs.some((r) => r.name === 'Deploy UI' && ['push', 'workflow_dispatch'].includes(r.event) && ours(r))));
     return pushed.get(sha)!;
   };
-  const trusted = async (id: number) => {
+  const trusted = (id: number) => cached(`run-${id}`, async () => {
     const r = await json<Run>(`actions/runs/${id}`);
     if (!ours(r)) return false;
     if (r.event === 'push' || r.event === 'workflow_dispatch') return true;
     return r.event === 'workflow_run' && wasPushed(r.head_sha);
-  };
+  });
   const inWindow = lists.flatMap((l) => l.artifacts).filter((a) => !a.expired && new Date(a.created_at) >= since && new Date(a.created_at) < until);
   const arts = inWindow.filter(({ workflow_run: w }) => w?.head_branch === 'main' && w.repository_id === repoId && w.head_repository_id === repoId);
   const runs = new Map<number, Promise<boolean>>();
@@ -181,7 +197,7 @@ async function read(): Promise<{ ledgers: Ledger[]; since: Date; until: Date; dr
     }
   };
   const ledgers = await Promise.all(keep.map(async (a) => {
-    const l = JSON.parse(unzipOne(await zip(a.id)).toString('utf8')) as Ledger;
+    const l = await cached(`ledger-${a.id}`, async () => JSON.parse(unzipOne(await zip(a.id)).toString('utf8')) as Ledger);
     const flaky = (Array.isArray(l.flaky) ? l.flaky : []).filter((e) => typeof e?.key === 'string' && typeof e.project === 'string');
     const n = (v: unknown) => (typeof v === 'number' && v >= 0 ? v : undefined);
     return { ...l, flaky, total: n(l.total), failed: n(l.failed), run: String(a.workflow_run!.id), sha: a.workflow_run!.head_sha, at: typeof l.at === 'string' ? l.at : a.created_at };
