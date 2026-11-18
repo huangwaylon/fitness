@@ -447,7 +447,7 @@ describe('IslandRoom', () => {
     expect(r.wxHealth()).toMatchObject({ src: 'fx' });
     vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(await r.wxAdmin({ refresh: true })).toMatchObject({ ok: false, fetched: true, fail: 'fetch offline', heard: 0 });
+    expect(await r.wxAdmin({ refresh: true })).toMatchObject({ ok: false, fetched: true, fail: 'fetch_Error', heard: 0 });
   });
 
   it('a restore due: the alarm tells the record (restored) and lets the entry go', async () => {

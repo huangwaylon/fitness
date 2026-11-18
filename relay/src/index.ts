@@ -151,7 +151,7 @@ export class IslandRoom extends DurableObject<Env> {
         onHello: () => {
           // the ghosts' watch (room.ts sweepSilent) while anyone is in
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
-          void this.weatherTick().catch((e) => console.warn('wx-fail', e));
+          void this.weatherTick().catch((e) => console.warn('wx-fail', errName(e)));
         }
       }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music);
     });

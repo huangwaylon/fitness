@@ -5,6 +5,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { tokyoDayNum, wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { cleanData } from '../../app/src/lib/contract/log.ts';
 import { BACKOFF_MS, WX_EMPTY, changed, due, fetchTick, fixture, fold, highOf, mapHour, mapHours, omUrl, parseOpenMeteo, served, timeline, wxHealth, type FetchLike, type Hour, type WxState } from '../src/weather.ts';
 
 const DIR = `${import.meta.dirname}/fixtures/open-meteo`;
@@ -213,12 +214,14 @@ describe('the real weather (relay)', () => {
       fetchTick(ok.st, t0 + 3 * 24 * H, fakeFetch({ body: load('live-2026-11-04') }))
     ]);
     expect(results.map((r) => [r.fail, r.send, r.st.wx, r.st.fails, r.st.failAt])).toEqual([
-      ['status 500', false, ok.st.wx, 1, t0 + H],
-      ['bad body', false, ok.st.wx, 1, t0 + H],
+      ['status_500', false, ok.st.wx, 1, t0 + H],
+      ['bad_body', false, ok.st.wx, 1, t0 + H],
       ['timeout', false, ok.st.wx, 1, t0 + H],
-      ['fetch network down', false, ok.st.wx, 1, t0 + H],
-      ['no current hour', false, ok.st.wx, 1, t0 + 3 * 24 * H]
+      ['fetch_TypeError', false, ok.st.wx, 1, t0 + H],
+      ['no_hour', false, ok.st.wx, 1, t0 + 3 * 24 * H]
     ]);
+    // each reason survives the log's token check (cron.wx's `fail`)
+    for (const r of results) expect(cleanData('cron.wx', { fail: r.fail })).toEqual({ fail: r.fail });
     // the next good one clears the failures
     const again = await fetchTick(results[0].st, t0 + H, fakeFetch({ body: load('live-2026-11-04') }));
     expect([again.st.fails, again.st.failAt]).toEqual([0, undefined]);

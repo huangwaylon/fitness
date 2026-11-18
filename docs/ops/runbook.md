@@ -37,7 +37,7 @@ workflows', Kalori's weekly run: `status=401`) and only GitHub's schedules start
 unless all pass; it warns when the weather is over 3 hours old or no phone logged in 24 h, and opens an `alert` issue on a log spike (§11). `/health`'s
 `wx` is the real weather ([backend](../backend.md#the-real-weather)): `age` (minutes) under ~35 and `hours` ahead over
 30 is normal; older, or `fails` > 0, is Open-Meteo failing (`npm run logs -- --event cron.wx --since 2d`: each failed
-fetch; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
+fetch, its `fail` `status_503`, `timeout`, `fetch_<error class>`, `bad_body` or `no_hour`; `wrangler tail`'s `wx-fail` for a hello's). A fetch now: the signed `/admin` op
 `{"op":"wx","refresh":true}` (`relay/scripts/admin.ts` `signed()`).
 
 The Free plan's tightest limit is likely 100k rows written a day: `npm run logs -- stats` (from `relay/`) gives today's

@@ -4,6 +4,7 @@
 // (live-protocol.ts Wx). An hour is locked once it starts (the next one from :45): every phone that has the timeline
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
 import { WX_MAX_HOURS, tokyoDayNum, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
+import { errName } from '../../app/src/lib/contract/log.ts';
 
 /** Hours the timeline holds from the current one, and before it. */
 const WX_HOURS = 36;
@@ -229,7 +230,8 @@ export function served(wx: Wx | null, now: number): Wx | null {
 
 export type FetchLike = (url: string, init: { signal: AbortSignal; headers: Record<string, string> }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;
 
-/** A fetch's outcome: the new state, whether the phones should hear of it (`send`), and why it failed. */
+/** A fetch's outcome: the new state, whether the phones should hear of it (`send`), and why it failed: a log token
+ *  (`cron.wx` keeps only tokens): `status_503`, `timeout`, `fetch_<error class>`, `bad_body`, `no_hour`. */
 export interface TickResult {
   st: WxState;
   send: boolean;
@@ -243,14 +245,15 @@ export async function fetchTick(st: WxState, now: number, fetch: FetchLike, url 
   let body: unknown;
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), headers: { Accept: 'application/json' } });
-    if (!r.ok) return failed(`status ${r.status}`);
+    if (!r.ok) return failed(`status_${r.status}`);
     body = await r.json();
   } catch (e) {
-    return failed((e as Error)?.name === 'TimeoutError' ? 'timeout' : `fetch ${String((e as Error)?.message ?? e).slice(0, 60)}`);
+    const name = errName(e);
+    return failed(name === 'TimeoutError' ? 'timeout' : `fetch_${name}`);
   }
   const hours = parseOpenMeteo(body);
-  if (!hours) return failed('bad body');
-  return fold(st, hours, now, 'om') ?? failed('no current hour');
+  if (!hours) return failed('bad_body');
+  return fold(st, hours, now, 'om') ?? failed('no_hour');
 }
 
 /** A forecast's hours into the kept state (a new revision when it changes), or null when they don't cover now. */
