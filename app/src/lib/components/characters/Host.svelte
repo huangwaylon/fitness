@@ -21,7 +21,7 @@
   import Fx from './Fx.svelte';
   import { artUrl, hostArt, type HostPose } from '#lib/art.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
-  import { actors, claimHost, hostOwner, removeFx } from '../motion/director.svelte.ts';
+  import { actors, claimHost, hostOwner } from '../motion/director.svelte.ts';
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { hostIsNook } from './hostWho.ts';
 
@@ -132,7 +132,7 @@
   {/if}
   {#if driven}
     {#each st.fx as f (f.n)}
-      <span class="fxa {f.kind}"><Fx kind={f.kind} spread="calc(var(--h) * .5)" ondone={() => removeFx('host', f.n)} /></span>
+      <span class="fxa {f.kind}"><Fx kind={f.kind} spread="calc(var(--h) * .5)" /></span>
     {/each}
   {/if}
 </span>

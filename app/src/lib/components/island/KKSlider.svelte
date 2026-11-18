@@ -21,7 +21,7 @@
   import Emote from '../characters/Emote.svelte';
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
-  import { actors, addFx, cancel, place as placeActor, removeFx, setEmote, setMotion } from '../motion/director.svelte.ts';
+  import { actors, addFx, cancel, place as placeActor, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import '#lib/i18n/visitors.ts'; // its strings, loaded with it
   import { jst, minuteNow } from '#lib/time/clock.ts';
@@ -248,7 +248,7 @@
       <span class="over">
         {#if emote}<span class="emote">{#key st.emoteN}<Emote id={emote} size="var(--emote-size, 40px)" bare />{/key}</span>{/if}
         {#each st.fx as f (f.n)}
-          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx('kk', f.n)} /></span>
+          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" /></span>
         {/each}
       </span>
       {#if playing}<span class="notes">{#each [0, 1, 2] as i (i)}<i style:--i={i}>♪</i>{/each}</span>{/if}

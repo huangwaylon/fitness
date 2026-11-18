@@ -18,7 +18,7 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { villagerArt } from '#lib/art.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { actors, removeFx } from '../motion/director.svelte.ts';
+  import { actors } from '../motion/director.svelte.ts';
   import type { ActorId, Motion } from '../motion/reactions.ts';
 
   interface Props {
@@ -148,7 +148,7 @@
   {/if}
   {#if st && actor}
     {#each st.fx as f (f.n)}
-      <span class="fxa {f.kind}"><Fx kind={f.kind} {dir} spread="calc(var(--h) * .55)" ondone={() => removeFx(actor, f.n)} /></span>
+      <span class="fxa {f.kind}"><Fx kind={f.kind} {dir} spread="calc(var(--h) * .55)" /></span>
     {/each}
   {/if}
 </span>

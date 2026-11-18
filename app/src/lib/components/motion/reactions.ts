@@ -22,6 +22,12 @@ export const MOTION_MS: Record<Motion, number> = {
 };
 
 export type FxKind = 'sparkles' | 'hearts' | 'notes' | 'sweat' | 'zzz' | 'confetti' | 'puff' | 'glint';
+/** How long each effect lives (ms; characters/Fx.svelte draws it that long, the director keeps an actor's that long);
+ *  zzz loops until removed. */
+export const FX_MS: Record<FxKind, number> = {
+  sparkles: 700 + 3 * 90, hearts: 1200 + 2 * 150, notes: 1100 + 2 * 220, sweat: 900, zzz: Infinity,
+  confetti: 1600, puff: 500, glint: 600
+};
 
 /** The villagers (mine, the partner's, and a third: the guest's on a member's phone, B's on the guest's: ui-state/cast.ts),
  *  しずえ, the visitor of the day on centre stage (island/Visitor.svelte) and K.K. on his stool (island/KKSlider.svelte). */

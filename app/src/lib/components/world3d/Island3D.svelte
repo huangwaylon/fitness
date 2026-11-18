@@ -470,14 +470,17 @@
 
   // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz) ----
   const FX3: Record<string, FxKind> = { sparkles: 'sparkle', hearts: 'hearts', notes: 'notes', confetti: 'confetti', puff: 'dust', glint: 'sparkle', zzz: 'zzz' };
-  const fxSeen = new Set<string>(), zzzAt: Record<string, number> = {};
+  /** The fx played (or passed off screen), by their number (the director's, page-wide): each plays once while it's in
+   *  its actor's list (the director drops it after its FX_MS), the gone ones forgotten. */
+  const fxSeen = new Set<number>(), zzzAt: Record<string, number> = {};
   /** A character's small in-place flourishes, drawn at the ambient rate (effects.ts calm); confetti and a walk's dust
    *  as before. */
   const CALM_FX: Partial<Record<FxKind, true>> = { sparkle: true, hearts: true, notes: true };
   /** How far toward the camera a character's sparkles start (u): clear of its head. */
   const SPARKLE_NEAR = 12;
+  const FX_ACTORS = ['mine', 'partner', 'third', 'visitor', 'kk'] as const;
   function actorFx(e: Island3, t: number) {
-    for (const id of ['mine', 'partner', 'third', 'visitor', 'kk'] as const) {
+    for (const id of FX_ACTORS) {
       const a = actors[id];
       if (!a.fx.length) continue;
       const [x, z] = livePos(id);
@@ -487,7 +490,7 @@
         const k = FX3[f.kind];
         if (!k) continue;
         if (!shown) {
-          if (f.kind !== 'zzz') fxSeen.add(`${id}:${f.n}`);
+          if (f.kind !== 'zzz') fxSeen.add(f.n);
           continue;
         }
         if (f.kind === 'zzz') {
@@ -497,9 +500,8 @@
           e.fx('zzz', x + 8, z, VILLAGER.h * 0.75, { tag: 'zzz' });
           continue;
         }
-        const key = `${id}:${f.n}`;
-        if (fxSeen.has(key)) continue;
-        fxSeen.add(key);
+        if (fxSeen.has(f.n)) continue;
+        fxSeen.add(f.n);
         const lift = VILLAGER.h * (f.kind === 'confetti' ? 0.6 : f.kind === 'puff' ? 0 : 0.7);
         if (k === 'sparkle') {
           // round the top of the head (as its marks: marks3), a step toward the camera, a little bigger: from the
@@ -510,7 +512,10 @@
         } else e.fx(k, x, z, lift, { calm: CALM_FX[k] });
       }
     }
-    if (fxSeen.size > 200) fxSeen.clear();
+    if (fxSeen.size > 40) {
+      const now = new Set(FX_ACTORS.flatMap((id) => actors[id].fx.map((f) => f.n)));
+      for (const n of fxSeen) if (!now.has(n)) fxSeen.delete(n);
+    }
   }
 
   // ---- what comes and goes (a find, a weed, a decoration, a fallen fruit): the DOM nodes with an `m3` key ----

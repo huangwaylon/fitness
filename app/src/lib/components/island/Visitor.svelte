@@ -32,7 +32,7 @@
   import Emote from '../characters/Emote.svelte';
   import Fx from '../characters/Fx.svelte';
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
-  import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, removeFx, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
+  import { actors, addFx, awayFromHome, cancel, faceToward, later, livePos, place as placeActor, setEmote, setMotion, walkTo } from '../motion/director.svelte.ts';
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import type { Pt } from '#lib/world/walkGraph.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -930,7 +930,7 @@
       <span class="over">
         {#if emote}<span class="emote">{#key st.emoteN}<Emote id={emote} size="var(--emote-size, 40px)" bare />{/key}</span>{/if}
         {#each st.fx as f (f.n)}
-          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" ondone={() => removeFx(A, f.n)} /></span>
+          <span class="fxa {f.kind}"><Fx kind={f.kind} dir={f.kind === 'zzz' ? -1 : 1} spread="calc(var(--h) * .55)" /></span>
         {/each}
         {#if mumble}{#key mumble.n}<span class="mumble if-caption" data-mumble data-veg-want={mumble.want} bind:this={mumbleEl} style:--shift="{mumbleShift}px">{mumble.text}</span>{/key}{/if}
       </span>

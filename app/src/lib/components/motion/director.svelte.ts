@@ -4,7 +4,7 @@
 // and a new step on an actor preempts whatever it was doing.
 import { pickOne } from '#lib/random.ts';
 import type { EmoteIcon } from '#lib/art.ts';
-import { HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
+import { FX_MS, HOST_TAP, MOTION_MS, REACTIONS, type ActorId, type FxKind, type Motion, type ReactionId, type Step } from './reactions.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { wakeMs } from '#lib/ui-state/cast.ts';
 
@@ -192,13 +192,17 @@ export function setEmote(id: ActorId, e: EmoteIcon | null, hold = false) {
   }
 }
 
+/** An effect on an actor (≤ 6: the oldest goes), gone after its FX_MS here (+60: as characters/Fx.svelte drew it),
+ *  whoever draws it (the 3D island's actorFx, the DOM's Fx); a zzz stays till its sleeper wakes. Not an actor timer:
+ *  cancel() leaves it to run out. */
 export function addFx(id: ActorId, kind: FxKind) {
-  const a = actors[id];
+  const a = actors[id], n = ++fxN;
   if (a.fx.length >= 6) a.fx.shift();
-  a.fx.push({ kind, n: ++fxN });
+  a.fx.push({ kind, n });
+  if (Number.isFinite(FX_MS[kind])) setTimeout(() => removeFx(id, n), FX_MS[kind] + 60);
 }
 
-export function removeFx(id: ActorId, n: number) {
+function removeFx(id: ActorId, n: number) {
   const a = actors[id];
   const i = a.fx.findIndex((f) => f.n === n);
   if (i >= 0) a.fx.splice(i, 1);
