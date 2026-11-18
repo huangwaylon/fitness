@@ -649,7 +649,7 @@ test('ツール’s rows are a level below it: ‹ back to ツール, ✕ to the
   await start(page);
   const tools = page.locator('dialog[open] [data-en-tools-sheet]');
   const top = (sel: string) => page.locator(`dialog[open]:has(${sel}) .navbar`).last();
-  // 場面のあらすじ一覧: ‹ ツール
+  // 場面のあらすじ's list: ‹ ツール
   await lesson(page).locator('[data-en-tools]').click();
   await tools.locator('[data-en-tools-scenes]').click();
   await expect(page.locator('dialog[open] [data-en-scenes]')).toBeVisible();
@@ -679,7 +679,7 @@ test('ツール’s rows are a level below it: ‹ back to ツール, ✕ to the
   await expect(sheet(page).locator('[data-en-home]')).toBeVisible();
 });
 
-test('この動画のフレーズ: from ツール (which says it holds the answers) and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
+test('この動画のセリフと解説: from ツール (which says it holds the answers) and from まとめ, the bank’s lines in time order, ▶ plays the moment, ‹ back to where it was', async ({ page }) => {
   await fakeYoutube(page, { rate: 8 });
   await open(page);
   await start(page);
@@ -690,7 +690,7 @@ test('この動画のフレーズ: from ツール (which says it holds the answe
   await expect(row).toContainText('質問の答えと解説を含みます');
   await row.click();
   await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toHaveCount(0);
-  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('この動画のフレーズ');
+  await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('この動画のセリフと解説');
   const cards = page2.locator('[data-en-moment]');
   await expect(cards).toHaveCount(moments.length);
   const froms = (await cards.evaluateAll((els) => els.map((e) => Number(e.getAttribute('data-en-moment')))));

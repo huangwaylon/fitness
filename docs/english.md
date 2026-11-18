@@ -68,9 +68,9 @@ pushed over them, with no tab bar: the library, a clip's lesson (‹ back to whe
 
 **Back (2026-11-17), as 設定's levels:** every pushed level has ‹ at the NavBar's top left and goes back exactly one
 level: ⚙, the library → home; a 場面 → the library; a lesson → where it was opened (home, the library with its chip, or
-the 場面); セリフ and この動画のフレーズ → what opened them (ツール, or まとめ). A paper sheet opened from ツール's row
-(場面のあらすじ一覧, ⚑ この動画を報告) closes and reopens ツール on its ‹ (as 図鑑's ‹ to 設定); opened from elsewhere (the
-あらすじ band, a question's ⚑) it has ✕ only. ✕ is always top right: on English Study's levels it closes the sheet, on a
+the 場面); セリフ and この動画のセリフと解説 → what opened them (ツール, or まとめ). A paper sheet opened from ツール's row
+(場面のあらすじ's list, ⚑ この動画を報告) closes and reopens ツール on its ‹ (as 図鑑's ‹ to 設定); opened from elsewhere (the
+場面のあらすじ band, a question's ⚑) it has ✕ only. ✕ is always top right: on English Study's levels it closes the sheet, on a
 paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
 
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
@@ -104,9 +104,9 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (the lesson bar's tool icon, labelled ツール, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕;
   the sheet's title ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
-  each), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
-  lines only) and この動画のフレーズ (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
-- **この動画のフレーズ** (ツール's row, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
+  each), the 場面のあらすじ switch, then its list (場面のあらすじ · 全部の場面を一覧で), セリフ（全文） (a bank with
+  lines only) and この動画のセリフと解説 (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
+- **この動画のセリフと解説** (ツール's row, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
   level under the same pinned player, ‹ back to where it was. The bank's quoted lines (every question's `line`, the
   retired too), once each, in time order; lines starting within a second are one moment, a card each: ▶ m:ss plays it,
   then each line (key words underlined), 言っていること, 意味 and the phrase. Only the questions' own short quotes,
@@ -213,7 +213,7 @@ One place, directly under the video, on its black, one fixed height (two lines' 
 playhead never move what's under it): the scene at the playhead (`scenes.ts atTime`; in a gap, the one before), following
 it as it plays; with beats, the beat at the playhead instead, its category in a small pill before it. It shows on the watch card, at まとめ and in the levels
 (フレーズ, セリフ), never while a question card is open (a gist line would answer gist, infer and attitude items).
-Tapped, or from ツール's 場面のあらすじ一覧 (at any point, a question's too): a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
+Tapped, or from ツール's 場面のあらすじ row (at any point, a question's too): a sheet of every scene (time, then the line; the one on now in yuzu), one tapped plays from
 there. With beats, the scenes are headers with their beats under them (time, category, line), and a chip row
 (すべて and the categories present) filters the beats; a header or a beat tapped plays from there. ツール's 場面のあらすじ switch shows or hides the line, shown by default, kept on this phone (`prefs.ts`). A clip
 without scenes shows none of them.

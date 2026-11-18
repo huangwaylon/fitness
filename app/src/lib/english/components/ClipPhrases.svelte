@@ -1,5 +1,5 @@
 <script lang="ts">
-  // この動画のフレーズ (docs/english.md "The page"): a level of the lesson, under its pinned player. The bank's quoted
+  // この動画のセリフと解説 (docs/english.md "The page"): a level of the lesson, under its pinned player. The bank's quoted
   // lines by moment, in time order (phrases.ts): a card a moment, its time on the ▶ that plays it, then each line (its
   // key words underlined), 言っていること, 意味 and the phrase to use. The lines are the questions' own short quotes,
   // never a transcript.

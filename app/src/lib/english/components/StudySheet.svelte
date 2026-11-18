@@ -18,7 +18,7 @@
     player: YtPlayer | undefined;
     /** The captions' mode chosen (counted as the chip's). */
     onmode: (m: CcMode) => void;
-    /** あらすじ, for a clip with scenes. */
+    /** 場面のあらすじ's switch, for a clip with scenes. */
     scenes?: { on: boolean; toggle: () => void };
     /** The bank has transcript lines (セリフ's row). */
     lines: boolean;
@@ -54,7 +54,7 @@
     {/if}
     <div class="prows">
       {#if scenes}
-        <button type="button" class="prow" data-sfx="open" data-en-tools-scenes onclick={() => go('scenes')}><span class="prl">{s('sceneList')}</span><Icon name="chevron-right" size={18} /></button>
+        <button type="button" class="prow" data-sfx="open" data-en-tools-scenes onclick={() => go('scenes')}><span class="prl">{s('scenesTitle')}<small>{s('scenesAll')}</small></span><Icon name="chevron-right" size={18} /></button>
       {/if}
       {#if lines}
         <button type="button" class="prow" data-sfx="open" data-en-transcript-open onclick={() => go('lines')}><span class="prl">{s('transcriptAll')}</span><Icon name="chevron-right" size={18} /></button>

@@ -1,21 +1,7 @@
 <script lang="ts">
-  // A clip's lesson (docs/english.md "The page"): the player pinned on top, then the watch card (a suggestion: 質問へ
-  // always works), the questions in order and まとめ; ‹ 前へ / 次へ › at the foot, never locked. A miss replays the
-  // segment with the cue and a quiet 答えを見る; a second shows 「答えはこれ」. No red, no ×, no sound, no score.
-  // The place is kept on this phone (session.ts). The study time (active.ts) goes into the `listen` rows: one when
-  // まとめ is reached (once a play: a finished play isn't resumed, its next opening draws the next), one for time not
-  // yet sent when the lesson is left (≥ 1 min). Its failures are logged (english.fail: the embed's, a play that doesn't
-  // start; the bank's in data.ts).
-  // It opens from the clip's index entry (the player and the watch card at once) and draws once its bank is in
-  // (data.ts): till then the questions say 読み込み中…; a fetch that failed, why, and もう一度.
-  // The bar has one labelled button, ツール (StudySheet): 字幕, its size, あらすじ, the scene list, セリフ, この動画のフレーズ,
-  // ⚑ この動画を報告 and the credit. Each opened from ツール has ‹ back to ツール. この動画のフレーズ (ツール's, and まとめ's) is
-  // a level of its own under the same player, ‹ back to where it was (ClipPhrases); セリフ (a bank with transcript lines only) another, the whole transcript
-  // following the playhead (Transcript).
-  // A bank with scenes shows 場面のあらすじ in one place, directly under the video (Scenes; ツール hides it on this phone):
-  // on the watch card, at まとめ and in the levels, never on a question (a gist line would answer it).
-  // One primary action a state: ▶ 全部見る (質問へ green once the clip has played), この部分を聞く, 次へ once answered,
-  // ▶ もう一度、通して見る at まとめ.
+  // A clip's lesson (docs/english.md "Lesson"): the player pinned on top, the watch card, the questions in order and
+  // まとめ, never locked; ツール (StudySheet) and the levels it opens (この動画のセリフと解説, セリフ) under the same player.
+  // The place is kept on this phone (session.ts); `listen` rows carry the study time; failures go to english.fail.
   import { onDestroy, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -59,7 +45,7 @@
   const play = past.plays + 1;
   const seed = untrack(() => seedOf(who, clip.id, play));
   let qs = $state.raw<Question[]>([]);
-  /** The whole bank, once in (この動画のフレーズ). */
+  /** The whole bank, once in (この動画のセリフと解説). */
   let full = $state.raw<Bank | null>(null);
   /** 場面のあらすじ, when the bank has them, and its strip shown (this phone's). */
   const scenes = $derived(full?.scenes?.length ? full.scenes : null);
@@ -112,7 +98,7 @@
     if (m !== 'off' && !ccTold) (ccTold = true), count('act:english.cc');
   }
   let body: HTMLElement | undefined = $state();
-  /** A level open over the lesson's place (kept): この動画のフレーズ, or セリフ when the bank has transcript lines. */
+  /** A level open over the lesson's place (kept): この動画のセリフと解説, or セリフ when the bank has transcript lines. */
   type Level = false | 'phrases' | 'lines';
   let study = $state<Level>(false);
   const toStudy = (on: Level) => ((study = on), body?.scrollTo({ top: 0 }));

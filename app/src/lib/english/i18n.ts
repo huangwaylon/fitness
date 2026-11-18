@@ -123,10 +123,10 @@ const S = {
   endAll: { ja: '全部、1回目で聞き取れました ◎', en: 'Every one on the first listen ◎' },
   endWatch: { ja: 'もう一度、通して見る', en: 'Watch it through again' },
   endHome: { ja: '完了', en: 'Done' },
-  // この動画のフレーズ (ClipPhrases)
-  phrases: { ja: 'この動画のフレーズ', en: 'Lines from this clip' },
+  // この動画のセリフと解説 (ClipPhrases)
+  phrases: { ja: 'この動画のセリフと解説', en: 'Lines and notes' },
   phrasesNote: { ja: '質問で取り上げたセリフを、時間の順に。▶ でその場面を聞けます。', en: 'The lines the questions quote, in time order. ▶ plays the moment.' },
-  phrasesNone: { ja: 'この動画には、まだフレーズがありません', en: 'No lines for this clip yet' },
+  phrasesNone: { ja: 'この動画には、まだセリフと解説がありません', en: 'No lines for this clip yet' },
   phrasePlay: { ja: '{t}から聞く', en: 'Hear from {t}' },
   // セリフ (Transcript)
   transcript: { ja: 'セリフ', en: 'Transcript' },
@@ -165,14 +165,13 @@ const S = {
   'ccSize.3': { ja: '特大', en: 'XL' },
   // ツール (StudySheet)
   tools: { ja: 'ツール', en: 'Tools' },
-  sceneList: { ja: '場面のあらすじ一覧', en: 'All the scenes' },
   transcriptAll: { ja: 'セリフ（全文）', en: 'Transcript (all of it)' },
   phrasesSpoil: { ja: '質問の答えと解説を含みます', en: 'Has the answers and notes' },
   flagClipRow: { ja: 'この動画を報告', en: 'Report this clip' },
   flagQRow: { ja: 'この質問を報告', en: 'Report this question' },
   // 場面のあらすじ (Scenes)
-  scenes: { ja: 'あらすじ', en: 'Summary' },
   scenesSub: { ja: '動画のすぐ下に表示（質問の間は隠れます）', en: 'Under the video (hidden during the questions)' },
+  scenesAll: { ja: '全部の場面を一覧で', en: 'Every scene, listed' },
   scenesTitle: { ja: '場面のあらすじ', en: 'Scene by scene' },
   scenesNote: { ja: '動画の流れを短くまとめたものです（セリフの訳ではありません）。タップするとその場面から再生します。', en: 'A short outline of the clip in our words (not the lines). Tap one to play from there.' },
   sceneOpen: { ja: '場面のあらすじを一覧で見る', en: 'All the scenes' },

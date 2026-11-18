@@ -1,7 +1,7 @@
 <script lang="ts">
   // 場面のあらすじ (docs/english.md "Scene summaries"): one calm line directly under the video, on its black (one height,
   // two lines' worth), following the playhead (scenes.ts atTime): the beat on now with its category in front (a clip
-  // with beats: finer steps), else the scene. `strip` false (a question open, or あらすじ off): no line, the list still
+  // with beats: finer steps), else the scene. `strip` false (a question open, or its switch off): no line, the list still
   // there for ツール. Tapped (or `open` from ツール): a sheet of every scene, its time then its line, and its beats under
   // it (time, category, line), the one on now marked; a chip row filters the beats by category; one tapped plays from
   // there; opened from ツール, its ‹ goes back there (`onback`). Our own outline (scenes/<video>.json), never the lines.
