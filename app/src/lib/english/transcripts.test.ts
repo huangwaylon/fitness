@@ -36,39 +36,50 @@ describe('transcript files', () => {
     expect(JA).toContain('lm2MpPpkGL8.ja.json');
   });
 
-  it.each(EN)('%s', (f) => {
-    const o = JSON.parse(readFileSync(join(DIR, f), 'utf8')) as TranscriptFile;
-    expect(Object.keys(o).filter((k) => !['video', 'lines'].includes(k)), 'keys: video and lines only').toEqual([]);
-    expect(o.video, 'video = the file name').toBe(f.replace(/\.en\.json$/, ''));
-    expect(Array.isArray(o.lines) && o.lines.length > 0, 'lines: a list').toBe(true);
-    const bad = checkTiming(o.lines, 'line');
-    o.lines.forEach((l, i) => {
-      const at = `line #${i}`;
-      if (Object.keys(l).sort().join() !== 'en,t') return void bad.push(`${at}: { en, t } only`);
-      if (typeof l.en !== 'string' || !l.en.trim() || l.en !== l.en.trim()) bad.push(`${at}: en, trimmed`);
-      else if ([...l.en].length > EN_MAX) bad.push(`${at}: over ${EN_MAX} characters`);
+  // (one test a check, every file's problems together: a row per file was 2,352 rows)
+  it('the en files: video and lines only, { en, t } lines, timed, trimmed, ≤ EN_MAX', () => {
+    const bad = EN.flatMap((f) => {
+      const o = JSON.parse(readFileSync(join(DIR, f), 'utf8')) as TranscriptFile;
+      const out: string[] = [];
+      if (Object.keys(o).some((k) => !['video', 'lines'].includes(k))) out.push('keys: video and lines only');
+      if (o.video !== f.replace(/\.en\.json$/, '')) out.push('video ≠ the file name');
+      if (!Array.isArray(o.lines) || !o.lines.length) return [`${f}: lines: a list`];
+      out.push(...checkTiming(o.lines, 'line'));
+      o.lines.forEach((l, i) => {
+        const at = `line #${i}`;
+        if (Object.keys(l).sort().join() !== 'en,t') return void out.push(`${at}: { en, t } only`);
+        if (typeof l.en !== 'string' || !l.en.trim() || l.en !== l.en.trim()) out.push(`${at}: en, trimmed`);
+        else if ([...l.en].length > EN_MAX) out.push(`${at}: over ${EN_MAX} characters`);
+      });
+      return out.map((x) => `${f}: ${x}`);
     });
     expect(bad).toEqual([]);
   });
 
-  it.each(JA)('%s', (f) => {
-    const video = f.replace(/\.ja\.json$/, '');
-    const o = JSON.parse(readFileSync(join(DIR, f), 'utf8')) as JaTranscriptFile;
-    expect(Object.keys(o).filter((k) => !['video', 'lines'].includes(k)), 'keys: video and lines only').toEqual([]);
-    expect(o.video, 'video = the file name').toBe(video);
-    const en = EN.includes(`${video}.en.json`) ? (JSON.parse(readFileSync(join(DIR, `${video}.en.json`), 'utf8')) as TranscriptFile) : undefined;
-    expect(en, `the en file ${video}.en.json`).toBeDefined();
-    expect(o.lines.length, 'one line for each of the en file’s').toBe(en!.lines.length);
-    const bad = checkTiming(o.lines, 'line');
-    o.lines.forEach((l, i) => {
-      const at = `line #${i}`;
-      if (Object.keys(l).sort().join() !== 'ja,t') return void bad.push(`${at}: { ja, t } only`);
-      if (JSON.stringify(l.t) !== JSON.stringify(en!.lines[i].t)) bad.push(`${at}: t the en line’s own`);
-      if (typeof l.ja !== 'string' || !l.ja.trim()) return void bad.push(`${at}: ja`);
-      if ([...l.ja].length > JA_MAX) bad.push(`${at}: over ${JA_MAX} characters`);
-      if (ENGLISH.test(l.ja)) bad.push(`${at}: English words (names in katakana)`);
-      const missing = notInTrimmedFont(l.ja);
-      if (missing.length) bad.push(`${at}: not in the trimmed font: ${missing.join('')} (choose another word)`);
+  it('the ja files: each en line’s own t, ≤ JA_MAX, no English, in the trimmed font', () => {
+    const files = JA.map((f) => [f, JSON.parse(readFileSync(join(DIR, f), 'utf8')) as JaTranscriptFile] as const);
+    // (the font asked once, for every character used: a line at a time took ~6 s)
+    const unfit = new Set(notInTrimmedFont([...new Set(files.flatMap(([, o]) => o.lines.flatMap((l) => (typeof l.ja === 'string' ? [...l.ja] : []))))].join('')));
+    const bad = files.flatMap(([f, o]) => {
+      const video = f.replace(/\.ja\.json$/, '');
+      const out: string[] = [];
+      if (Object.keys(o).some((k) => !['video', 'lines'].includes(k))) out.push('keys: video and lines only');
+      if (o.video !== video) out.push('video ≠ the file name');
+      if (!EN.includes(`${video}.en.json`)) return [`${f}: no en file ${video}.en.json`];
+      const en = JSON.parse(readFileSync(join(DIR, `${video}.en.json`), 'utf8')) as TranscriptFile;
+      if (o.lines.length !== en.lines.length) out.push(`${o.lines.length} lines, not one for each of the en file’s ${en.lines.length}`);
+      out.push(...checkTiming(o.lines, 'line'));
+      o.lines.forEach((l, i) => {
+        const at = `line #${i}`;
+        if (Object.keys(l).sort().join() !== 'ja,t') return void out.push(`${at}: { ja, t } only`);
+        if (JSON.stringify(l.t) !== JSON.stringify(en.lines[i]?.t)) out.push(`${at}: t the en line’s own`);
+        if (typeof l.ja !== 'string' || !l.ja.trim()) return void out.push(`${at}: ja`);
+        if ([...l.ja].length > JA_MAX) out.push(`${at}: over ${JA_MAX} characters`);
+        if (ENGLISH.test(l.ja)) out.push(`${at}: English words (names in katakana)`);
+        const missing = [...l.ja].filter((ch) => unfit.has(ch));
+        if (missing.length) out.push(`${at}: not in the trimmed font: ${missing.join('')} (choose another word)`);
+      });
+      return out.map((x) => `${f}: ${x}`);
     });
     expect(bad).toEqual([]);
   });
