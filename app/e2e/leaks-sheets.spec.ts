@@ -80,7 +80,8 @@ test('すごろく’s board and back to the island, three times: one WebGL cont
     const resume = await page.locator('[data-sugoroku] [data-sg-resume]').count();
     if (resume) await press(page, '[data-sugoroku] [data-sg-resume]');
     else (await press(page, '[data-sugoroku] [data-sg-new]'), await press(page, '[data-sugoroku] [data-sg-start]'));
-    await page.waitForFunction(() => location.pathname.endsWith('/sugoroku') && ((window as { __sugoroku3d?: { frames?(): number } }).__sugoroku3d?.frames?.() ?? 0) >= 1, null, { timeout: 15_000 });
+    // (its board up: drawn, its first frame; in the logic tier nothing is drawn, so the board's element is the sign)
+    await page.waitForFunction(() => location.pathname.endsWith('/sugoroku') && !!document.querySelector('[data-sugoroku][data-level="play"] [data-sg-board3d]') && ((window as { __sugoroku3d?: { frames?(): number } }).__sugoroku3d?.frames?.() ?? 0) >= (localStorage.getItem('e2e.render') === 'none' ? 0 : 1), null, { timeout: 15_000 });
     await press(page, '[data-sugoroku] .navbar button');
     await loaded3d(page);
     await closeAll(page);
