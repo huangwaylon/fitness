@@ -41,7 +41,7 @@
     { "w": "candle", "many": "candles", "ja": "ろうそく", "ctr": "本" },
     { "w": "sponge", "many": "sponges", "ja": "スポンジ", "ctr": "個" },
     { "w": "milk", "box": "carton", "ja": "牛乳", "ctr": "本" },
-    { "w": "bread", "box": "loaf", "ja": "食パン", "ctr": "斤" },
+    { "w": "bread", "box": "loaf", "ja": "食パン", "ctr": "袋" },
     { "w": "honey", "box": "jar", "ja": "はちみつ", "ctr": "びん" },
     { "w": "chocolate", "box": "bar", "ja": "板チョコ", "ctr": "枚" },
     { "w": "ice", "box": "bag", "ja": "氷", "ctr": "袋" },

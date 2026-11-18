@@ -545,7 +545,7 @@ describe('おつかい', () => {
       expect(!!i.many !== !!i.box, i.w).toBe(true);
       if (i.box) expect(BOXES as readonly string[]).toContain(i.box);
       expect(i.ja).toMatch(/^[^a-zA-Z]+$/);
-      expect(['つ', '個', '本', '枚', '冊', '斤', 'びん', '袋', 'パック', '房']).toContain(i.ctr);
+      expect(['つ', '個', '本', '枚', '冊', 'びん', '袋', 'パック', '房']).toContain(i.ctr);
     }
     let boxed = 0;
     for (const row of SHOP_LISTS) {
@@ -585,7 +585,7 @@ describe('おつかい', () => {
   });
   it('the list in Japanese and the request in English: counters, a / an, plurals, containers, and', () => {
     const round = { asker: 'A' as Who, title: 't', lines: [{ w: 'apple', n: 2 }, { w: 'egg', n: 1 }, { w: 'bread', n: 2 }], words: ['bread', 'apple', 'egg'], shelf: [] };
-    expect(listJa(round)).toBe('りんご2つ、卵1個、食パン2斤');
+    expect(listJa(round)).toBe('りんご2つ、卵1個、食パン2袋');
     expect(requestText(0, rightSlots(round), round.words)).toBe('Can I have two apples, an egg and two loaves of bread, please?');
     expect(requestText(3, rightSlots(round), round.words)).toBe('Two apples, an egg and two loaves of bread, please.');
     expect(requestText(1, rightSlots(round).slice(0, 1), round.words)).toBe('I’d like two apples, please.');

@@ -27,7 +27,7 @@ export interface ShopItem {
   /** Bought in a container: its word ("loaf"), and what's in it when not `w` ("strawberries"). */
   box?: string;
   of?: string;
-  /** The list's Japanese and its counter (「食パン」「斤」). */
+  /** The list's Japanese and its counter (「食パン」「袋」: the trimmed font has no 斤). */
   ja: string;
   ctr: string;
 }
