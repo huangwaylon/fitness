@@ -108,8 +108,8 @@
     // (asked for while they read it: unchanged, the answer is often in by これでOK)
     if (note !== 'again' && !resaying) prefetch(raw);
     phase = 'confirm';
-    // (the last re-say used: the keyboard)
-    if (note === 'again' && resays >= RESAYS) focusField();
+    // (the re-says used: the keyboard)
+    if (resays >= RESAYS) focusField();
   }
   function toType() {
     onengage();
