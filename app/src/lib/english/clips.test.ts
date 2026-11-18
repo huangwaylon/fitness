@@ -300,10 +300,11 @@ describe('the clips', () => {
       describe.runIf(r4)('R4 rules', () => {
         const skips = ranges(src, 'SKIP');
         const skip = skips.flatMap((r) => r.spans);
-        /** The speech span: the transcript's first line to its last. */
+        /** The speech span: the transcript's first spoken line to its last (music-only ♪ lines aside), within the clip. */
         const speech = (): Span => {
-          const { lines } = JSON.parse(readFileSync(join(import.meta.dirname, 'transcripts', `${c.video}.en.json`), 'utf8')) as TranscriptFile;
-          return [lines[0].t[0], lines.at(-1)!.t[1]];
+          const all = (JSON.parse(readFileSync(join(import.meta.dirname, 'transcripts', `${c.video}.en.json`), 'utf8')) as TranscriptFile).lines;
+          const lines = all.filter((l) => !/^[♪\s]*$/.test(l.en));
+          return [lines[0].t[0], Math.min(lines.at(-1)!.t[1], c.dur)];
         };
         it('coverage: the speech span’s quarters, and gaps ≥ 25 s under `// SKIP a–b: why`', () => {
           expect(skips.every((r) => r.why && r.spans.length), `${c.id}: a SKIP line is \`// SKIP a–b: why\``).toBe(true);

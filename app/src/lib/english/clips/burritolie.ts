@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 1, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 4
 // A2 REVIEW 2026-11-17: keep 14, rewrite 2, retire 5, new 1
 // “Leslie Discovers Jerry's Burrito Lie | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
 // Leslie uses a TV news spot about Jerry's “mugging” to shame City Hall into funding park security; her boss Paul is
@@ -49,6 +49,17 @@ export const jerryBurritoLie: Clip = {
       mean: 'Who’s next? ＝ 次は誰？ your を重ねて、見ている人の身近な人の話にしている。',
       trap: 'ジェリーの悪口が続くので、ジェリーの話と考えがち。your のくり返しが手がかり。',
       use: 'Who’s next?（次の方どうぞ）' },
+
+    { id: 'w5', skill: 'who', level: 'B1', point: 'karl', seg: [32.2, 40.8],
+      stem: 'Who is doing his best to keep the park safe?', ja: '公園の安全を守ろうと全力をつくしているのは誰？',
+      choices: ['The head of security', 'The head of the parks', 'The news reporter'], a: 0,
+      choicesJa: ['警備のトップ', '公園課のトップ', 'ニュースの記者'],
+      cue: '「doing his best」の前',
+      line: '*Head of security* Karl Lorthner *is doing his best* to keep the park safe, but he’s failing.',
+      said: '「警備主任のカールは全力をつくしているが、うまくいっていない」と言う。',
+      mean: 'do one’s best ＝ 全力をつくす。head of 〜 ＝ 〜のトップ。but のあとで「でも失敗している」。',
+      trap: 'Parks Department の話が続くので公園課の人と考えがち。名前の前の security を聞く。',
+      use: 'I’m doing my best.（精一杯やっています）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'blame', reveals: ['money', 'security'], seg: [33, 53.7],
       stem: 'What does Leslie ask for on TV?', ja: 'レスリーはテレビで何を求めている？',
