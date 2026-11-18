@@ -869,8 +869,8 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
 
 test('フレーズの復習: yesterday’s phrases above today’s clip, the Japanese and the clip’s line on a tap, its segment played; 覚えた / もう一回 only space them; 今日はスキップ for today', async ({ page }) => {
   await fakeYoutube(page);
-  // yesterday's finished play of waitress, two questions with phrases met (the pinned day is 2026-11-04)
-  const qs = waitress.questions.filter((q) => !q.retired && q.line && q.use).slice(0, 2);
+  // yesterday's finished play of waitress, two choice questions with phrases met (the pinned day is 2026-11-04)
+  const qs = waitress.questions.filter((q) => !q.retired && q.line && q.use && q.a !== undefined).slice(0, 2); // choice items: the seeded answers are [id, 1, a, 0]
   await page.addInitScript((r) => {
     if (localStorage.getItem('island-demo.events')) return;
     const at = Date.parse('2026-11-03T20:00:00+09:00');
