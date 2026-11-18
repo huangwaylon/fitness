@@ -14,7 +14,8 @@ const sheet = (p: Page) => p.locator('[data-sugoroku]');
 /** Two phones on the island, A's (the page) and B's; A starts an online game for the two of them. */
 async function started(page: Page, how: 'click' | 'tap'): Promise<Page> {
   const b = await page.context().newPage();
-  await page.goto('?demo');
+  // (the game's id pinned: test mode's ?sgId=)
+  await page.goto('?demo&sgId=e2einvite1');
   await b.goto('?demo&as=B');
   await islandUp(page);
   await islandUp(b);
