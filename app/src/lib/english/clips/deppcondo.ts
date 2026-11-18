@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 7, retire 2, new 2, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 5, rewrite 7, retire 2, new 2, ctx 4, tx 3, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 5, new 0
 // “It's Johnny Depp! - The Office US” (the official The Office channel, BEST OF SEASON 6): a coworker shows Jim a
 // photo of "Johnny Depp" taken at his condo complex; Jim plays along and teases him, and the coworker fights to keep
@@ -16,7 +16,7 @@ export const deppCondo: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', seg: [1.0, 16.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['look', 'where', 'whered'], seg: [1.0, 16.7],
       stem: 'Who does Jim’s coworker say is in his photo?',
       ja: 'ジムの同僚は、写真に写っているのはだれだと言う？',
       choices: ['Johnny Depp', 'He himself', 'Jim’s boss'], a: 0,
@@ -74,7 +74,7 @@ export const deppCondo: Clip = {
       trap: 'when’d は「ウェンジュ」、why’d は「ワイジュ」。「ウェアジュ」なら where’d。答えも場所。',
       use: 'Where’d you get that jacket?（そのジャケット、どこで買ったの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'source', seg: [18.3, 23.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'source', reveals: ['bedroom'], seg: [18.3, 22.85],
       stem: 'Where did Depp’s condo story come from?',
       ja: 'デップがマンションを探しているという話は、どこから？',
       choices: ['An article in a magazine', 'Gossip from people at work', 'A story on the local news'], a: 0,
@@ -86,24 +86,24 @@ export const deppCondo: Clip = {
       trap: 'people を「人々」と思うと「だれかが言っていた」になる。直後の magazine まで聞く。',
       use: 'I read in the paper that it’s closing.（閉店するって新聞で読んだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'bedroom', seg: [19.3, 23.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'bedroom', seg: [19.43, 21.3], keep: true,
       stem: 'What kind of condo was Depp looking for, says the story?',
       ja: '話によると、デップはどんなマンションを探していた？',
-      choices: ['A one-bedroom', 'A two-bedroom', 'A four-bedroom'], a: 1,
-      choicesJa: ['寝室1つ', '寝室2つ', '寝室4つ'],
+      choices: ['A one-bedroom', 'A two-bedroom', 'A three-bedroom', 'A four-bedroom'], a: 1,
+      choicesJa: ['寝室1つ', '寝室2つ', '寝室3つ', '寝室4つ'],
       cue: '「condo」の直前の数。',
       line: 'he was looking for *a two-bedroom* condo in Scranton',
       said: '話によると、デップはスクラントンで寝室2つのマンションを探していた。',
       mean: 'two-bedroom ＝ 寝室が2つの部屋。間取りを言うときの決まった言い方。',
-      trap: '直前の for a が「フォーア」と聞こえ、four と混ざりやすい。one なら「ワン」。ここは「トゥー」。',
+      trap: '直前の for a が「フォーア」と聞こえ、four と混ざりやすい。one なら「ワン」、three なら「スリー」。ここは「トゥー」。',
       use: 'We need a two-bedroom near the beach.（ビーチ近くの寝室2つの部屋が要る）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flipping', seg: [21.3, 25.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flipping', seg: [21.3, 22.85],
       stem: 'What does “I’m flipping out” mean here?',
       ja: 'ここでの「I’m flipping out」の意味は？',
       choices: ['I’m so excited', 'I’m giving up', 'I’ll turn it over'], a: 0,
       choicesJa: ['すごく興奮している', 'もうあきらめる', 'ひっくり返してみる'],
-      cue: '「two-bedroom」の話のすぐあと。',
+      cue: '「man」の前の短い一文。',
       line: '*I’m flipping out*, man.',
       said: '「もう、たまらないよ」と興奮を口にする。',
       mean: 'flip out ＝ 文字どおりは「ひっくり返って飛び出す」→気持ちがおさえられない。ここでは大喜び。怒ったときにも使う。',
@@ -180,7 +180,7 @@ export const deppCondo: Clip = {
       trap: '急に野球の話が出るので、話題を変えたと思いやすい。you felt はジムの気持ち。',
       use: 'Remember how nervous you were?（君だって緊張してたでしょ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'excited', seg: [44.8, 50.9],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'excited', seg: [44.8, 48.25],
       stem: 'What does Jim’s coworker mean by “not easy getting excited”?',
       ja: '「it’s not easy getting excited」で言いたいことは？',
       choices: ['Don’t spoil my fun', 'I’m bored with this', 'You get excited too easily'], a: 0,
@@ -204,7 +204,8 @@ export const deppCondo: Clip = {
       trap: '「見たと思った」を、本物かどうかの話と取りやすい。思い出させているのが気持ちか事実かを聞く。',
       use: 'Fair enough. I get why you’re excited.（なるほどね、興奮する気持ちは分かる）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'clemens', seg: [48.2, 52.2],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'clemens', seg: [48.2, 51.85],
+
       stem: 'Type the words: “…when you thought ___ Roger Clemens” (2 words)', answer: "you'd seen",
       ja: '「thought」のあとの2語を書こう。',
       cue: '「thought」の直後。',

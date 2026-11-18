@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 8, retire 4, new 5, ctx 4, tx 2
+// R4 REVIEW 2026-11-18: keep 2, rewrite 8, retire 4, new 5, ctx 4, tx 2, qa 11
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 2, new 0
 // “Monica Got a Date with a Millionaire | Friends” (the official Friends channel, Best of Season 3): her friends talk
 // up Pete, the customer who left Monica a huge tip she takes for a joke, until a magazine shows he's a software
@@ -16,12 +16,12 @@ export const monicaMillionaire: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'setup', reveals: ['fond'], seg: [0, 17.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'setup', reveals: ['fond', 'amount'], seg: [0, 15.45],
       stem: 'What do Monica’s friends want her to do?',
       ja: 'モニカの友だちは、モニカに何をしてほしい？',
-      choices: ['Give Pete a chance', 'Give the tip back', 'Quit her job at the restaurant'], a: 0,
-      choicesJa: ['ピートにチャンスをあげる', 'チップを返す', 'レストランの仕事を辞める'],
-      cue: '最初の一文。',
+      choices: ['Go on a date with Pete', 'Give the tip back', 'Quit her job at the restaurant'], a: 0,
+      choicesJa: ['ピートとデートする', 'チップを返す', 'レストランの仕事を辞める'],
+      cue: '最初の一文と、そのあとのほめ言葉。',
       line: 'Okay, Mon, *let’s give Pete a chance*.',
       said: '友だちが「ピートにチャンスをあげようよ」と勧め、モニカは「チップは冗談」と取り合わない。',
       mean: 'give 人 a chance ＝ 人にチャンスをあげる。ここでは「一度デートしてみたら」。',
@@ -64,7 +64,7 @@ export const monicaMillionaire: Clip = {
       trap: 'come（来る）から、こっちへ来てと考えがち。後ろに理由が並べば「考え直して」の意味。',
       use: 'Come on, it’ll be fun.（ねえ、楽しいって）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'call', ctx: true, reveals: ['fond'], seg: [5.1, 17.2],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'call', ctx: true, reveals: ['fond', 'amount', 'crush'], seg: [5.15, 17.2],
       stem: 'Why did the customer leave the big tip, says Monica?',
       ja: 'モニカによると、お客さんはなぜ大きなチップを置いた？',
       choices: ['To make her phone him', 'To thank her for the meal', 'To say sorry to her'], a: 0,
@@ -88,7 +88,7 @@ export const monicaMillionaire: Clip = {
       trap: '大きなチップを「店全体へ」と思いやすい。文の頭の As a joke が読み方を決める。',
       use: 'I only said it as a joke.（冗談で言っただけだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'crush', seg: [10.95, 14.1],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'crush', seg: [10.1, 11.88],
       stem: 'The customer “*has a crush on*” Monica. What does it mean?',
       ja: 'そのお客さんはモニカに「has a crush on」。どういう意味？',
       choices: ['He likes her romantically', 'He loves her cooking', 'He is angry with her'], a: 0,
@@ -100,16 +100,16 @@ export const monicaMillionaire: Clip = {
       trap: 'crush（つぶす）から悪い意味を連想しやすい。has a crush on me は人への好意。',
       use: 'I had a huge crush on him.（彼に片思いしてたんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [11.8, 14.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [11.88, 14.1], keep: true,
       stem: 'How big was the tip the customer left?',
       ja: 'お客さんが置いたチップはいくら？',
-      choices: ['$2,000', '$12,000', '$20,000'], a: 2,
-      choicesJa: ['2000ドル', '1万2000ドル', '2万ドル'],
+      choices: ['$2,000', '$12,000', '$20,000', '$22,000'], a: 2,
+      choicesJa: ['2000ドル', '1万2000ドル', '2万ドル', '2万2000ドル'],
       cue: '「gave me a」のすぐあと。',
       line: 'gave me a *$20,000* tip.',
       said: '「2万ドルのチップをくれた」と言う。',
       mean: 'twenty thousand ＝ 2万。冗談だと思うほどの額。',
-      trap: '「トゥーサウザンド」なら2000、「トゥエルヴサウザンド」なら12000、「トゥエニーサウザンド」なら20000。',
+      trap: '「トゥーサウザンド」なら2000、「トゥエルヴ」なら12000、「トゥエニートゥー」なら22000。ここは「トゥエニーサウザンド」。',
       use: 'Can you break a twenty?（20ドル札、くずせる？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'number', seg: [12.5, 17.5], retired: true,
@@ -170,18 +170,6 @@ export const monicaMillionaire: Clip = {
       trap: '大統領と写っているので、大統領の部下と勘違いしやすい。答えは that program（そのソフト）。',
       use: 'This guy made the app we all use.（この人、みんなが使ってるアプリを作ったんだよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'office', reveals: ['program'], seg: [38.95, 44.3],
-      stem: 'Who uses the computer program Pete made?',
-      ja: 'ピートが作ったソフトを使っているのはだれ？',
-      choices: ['Every office in the world', 'Every office in town', 'Just a few big offices here'], a: 0,
-      choicesJa: ['世界中のオフィス', '町中のオフィス', '町のいくつかの大きな会社だけ'],
-      cue: '「every」で始まる文。',
-      line: '*Every office in the world* uses that program.',
-      said: '「世界中のオフィスがそのソフトを使ってる。うちでも使ってる！」と言う。',
-      mean: 'every office in the world ＝ 世界中のどの会社も。だから大金持ち。',
-      trap: 'We use it（うちでも使ってる）から、近所の会社だけと思いやすい。in the world を聞く。',
-      use: 'Everyone at work uses it.（職場のみんなが使ってるよ）' },
-
     { id: 'i1', skill: 'infer', level: 'C1', point: 'useit', reveals: ['office'], seg: [38.95, 46.8], retired: true,
       stem: 'Why does the speaker add the short line about his own office?',
       choices: ['To give proof that the program is everywhere', 'To show his office is up to date on tech',
@@ -193,7 +181,19 @@ export const monicaMillionaire: Clip = {
       trap: '使っている＝本人を知っている、とは限らない。身近な例は「証拠」として出されることが多い。',
       use: 'Even my mom uses it!（うちの母でさえ使ってるよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'there', seg: [40.85, 46.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'office', reveals: ['program'], seg: [39.04, 44.3],
+      stem: 'Who uses the computer program Pete made?',
+      ja: 'ピートが作ったソフトを使っているのはだれ？',
+      choices: ['Every office in the world', 'Every office in town', 'Just a few big offices here'], a: 0,
+      choicesJa: ['世界中のオフィス', '町中のオフィス', '町のいくつかの大きな会社だけ'],
+      cue: '「every」で始まる文。',
+      line: '*Every office in the world* uses that program.',
+      said: '「世界中のオフィスがそのソフトを使ってる。うちでも使ってる！」と言う。',
+      mean: 'every office in the world ＝ 世界中のどの会社も。だから大金持ち。',
+      trap: 'We use it（うちでも使ってる）から、近所の会社だけと思いやすい。in the world を聞く。',
+      use: 'Everyone at work uses it.（職場のみんなが使ってるよ）' },
+
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'there', seg: [40.9, 46.8],
       stem: '“We use it!” — “*There you go*.” What does it mean here?',
       ja: '「We use it!」「There you go」。ここではどういう意味？',
       choices: ['See, that proves it', 'Here, take a look', 'Okay, let’s stop'], a: 0,
@@ -205,7 +205,7 @@ export const monicaMillionaire: Clip = {
       trap: '物を渡す「はい、どうぞ」に聞こえるが、前の言葉への返事なら「ほらね」。',
       use: 'There you go. Told you so.（ほらね、言ったでしょ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [46.5, 61.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['thisis', 'offend', 'too'], seg: [46.5, 61.5],
       stem: 'Will Monica go out with Pete now?',
       ja: 'モニカはこれでピートとデートする？',
       choices: ['No, she still won’t', 'Yes, now that he’s rich', 'Only to say thank you'], a: 0,
@@ -239,7 +239,7 @@ export const monicaMillionaire: Clip = {
       trap: '施しと取りやすいが、出したのは気がある客。大金の意味は、誰が何のために出したかで聞く。',
       use: 'Are you trying to buy my vote?（私の票をお金で買う気？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thisis', reveals: ['amount'], seg: [51.6, 56.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thisis', reveals: ['amount'], seg: [51.64, 56.6],
       stem: 'Fill the gap: “I can’t believe ___ real $20,000…”',
       ja: '空いている所に入る語は？「I can’t believe ___ real $20,000…」',
       choices: ['this is a', 'this was a', 'that’s a'], a: 0,
@@ -251,7 +251,7 @@ export const monicaMillionaire: Clip = {
       trap: '「ディスィザ」なら this is a、「ディスワザ」と「ワ」が入れば this was a、「ザッツァ」なら that’s a。',
       use: 'I can’t believe it’s Friday already.（もう金曜なんて信じられない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'offend', seg: [51.6, 59.25],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'offend', seg: [51.64, 59.25],
       stem: '“So exciting.” — “Or *incredibly offensive*.” How does the second speaker see the tip?',
       ja: '「わくわくする」「Or incredibly offensive」。二人目はチップをどう見ている？',
       choices: ['It’s rude', 'It’s exciting', 'It’s funny'], a: 0,
@@ -274,7 +274,8 @@ export const monicaMillionaire: Clip = {
       trap: 'yeah, sure を本気の同意と取りやすい。that too ＝「それもある」で、元の見方は変えていない。',
       use: 'Sure, that too.（うん、それもあるね）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'too', ctx: true, reveals: ['offend'], seg: [54.4, 61.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'too', ctx: true, reveals: ['offend'], seg: [54.5, 61.2],
+
       stem: 'How is “incredibly offensive” answered?',
       ja: '「incredibly offensive」に、どう返している？',
       choices: ['Agrees, but is still excited', 'Disagrees: it’s a nice gift', 'Agrees, and now feels bad'], a: 0,

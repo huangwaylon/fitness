@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 2, ctx 4, tx 26
+// R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 2, ctx 4, tx 26, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 1, new 1
 // “Phoebe Writes a Book About Chandler and Monica | Friends” (the official Friends channel, Best of Season 6): Phoebe
 // takes notes on the couple's bickering for her book on relationships, until she gets written about herself.
@@ -42,7 +42,7 @@ export const phoebebook: Clip = {
       trap: 'we were は we’re と聞こえやすい。「ワ」があれば were、最後に「ント」なら weren’t。',
       use: 'I thought we were going to share.（分けるって話だったよね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'book', reveals: ['about'], seg: [0, 23.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'book', reveals: ['about'], seg: [0, 17.25],
       stem: 'What is Phoebe doing during the fight?',
       ja: '二人のけんかの間、フィービーは何をしている？',
       choices: ['Writing notes for her book', 'Reading advice from her book', 'Telling them to stop fighting'], a: 0,
@@ -50,7 +50,7 @@ export const phoebebook: Clip = {
       cue: '「book」が出てくる所',
       said: 'モニカとチャンドラーの言い合いを、フィービーが書き留めている。',
       mean: '二人のけんかを、恋愛の本の「悪い例」として書き取っている場面。',
-      trap: 'relationships から助言の本と考えがち。決め手は your book? の問い。',
+      trap: '途中で I’m sorry と割り込むので、けんかを止めていると考えがち。決め手は your book? の問い。',
       use: 'Do you mind if I take notes?（メモを取ってもいいですか）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'creep', seg: [4.3, 8.1],
@@ -132,7 +132,7 @@ export const phoebebook: Clip = {
       trap: 'trap を「人にしかけるわな」と取りやすい。言いかえは what not to do で意味をつかむ。',
       use: 'What are the pitfalls of renting a car?（レンタカーの注意点は？）' },
 
-    { id: 't1', skill: 'pragma', level: 'B2', point: 'excuse', ctx: true, reveals: ['about'], seg: [17.2, 26.1],
+    { id: 't1', skill: 'pragma', level: 'B2', point: 'excuse', ctx: true, reveals: ['about'], seg: [17.3, 26.1],
       stem: 'Why do Monica and Chandler say “Excuse me?”',
       ja: 'モニカとチャンドラーは、なぜ「Excuse me?」と言う？',
       choices: ['Phoebe calls them a bad example', 'They can’t hear Phoebe well', 'Phoebe is standing in their way'], a: 0,
@@ -172,8 +172,8 @@ export const phoebebook: Clip = {
     { id: 'h1', skill: 'phrase', level: 'B2', point: 'compliment', reveals: ['matters'], seg: [30.9, 35.6],
       stem: 'What does “*as long as* it’s a compliment” mean?',
       ja: '「as long as it’s a compliment」はどういう意味？',
-      choices: ['Only if it is nice', 'Even if it is not nice', 'Because it is long'], a: 0,
-      choicesJa: ['ほめ言葉でさえあれば', 'ほめ言葉でなくても', '長い話だから'],
+      choices: ['Only if it is nice', 'Even if it is not nice', 'For a long time'], a: 0,
+      choicesJa: ['ほめ言葉でさえあれば', 'ほめ言葉でなくても', '長い間ずっと'],
       cue: '「believe anything」のあと',
       line: 'And how people will *believe anything you tell them* *as long as* it’s a *compliment*.',
       said: '「人は、ほめ言葉でさえあれば何でも信じる」とも書く。',
@@ -205,14 +205,16 @@ export const phoebebook: Clip = {
       trap: 'Stop と頼まれたので、やめると考えがち。決め手は I’m not writing のあと。',
       use: 'I’m not talking about you.（あなたのことを言ってるんじゃないよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['phyllis', 'medicine'], seg: [53.5, 81],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['phyllis', 'see', 'marsha', 'notyou'], seg: [53.5, 72.75],
+
       stem: 'How does the scene end for Phoebe?',
       ja: 'この場面は、フィービーにとってどう終わる？',
       choices: ['They write about her, too', 'She says it is about them', 'She stops writing her book'], a: 0,
       choicesJa: ['今度は二人が彼女のことを書く', '二人のことだと認める', '本を書くのをやめる'],
       cue: '「Okay, fine.」のあと',
       said: '書くのをやめないフィービーに、今度は相手が彼女のことを書き始める。',
-      mean: '自分がしたことが、そのまま自分に返ってくる終わり方。',
+      mean: '書いていた側のフィービーが、今度は書かれる側になる終わり方。',
+
       trap: 'OK, fine. を「分かった、もうやめる」と読みたくなる。このあと仕返しが来る。',
       use: 'Okay, fine. Your turn.（分かった、じゃあ次はきみの番）' },
 

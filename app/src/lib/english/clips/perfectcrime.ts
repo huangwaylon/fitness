@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 5, retire 3, new 2, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 8, rewrite 5, retire 3, new 2, ctx 3, tx 7, qa 12
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 3, new 2
 // “Dwight's perfect crime  - The Office US #shorts” (the official The Office channel, BEST OF SEASON 5): a talking
 // head in which Dwight tells his “perfect crime”: a midnight theft at Tiffany's, the owner's daughter, and the woman he
@@ -52,7 +52,7 @@ export const perfectCrime: Clip = {
       trap: 'vault（金庫）も聞こえるが、すぐ No と打ち消す。priceless は「無料」ではない。',
       use: 'I’ll go for the cheaper one.（安いほうにするよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'down', seg: [6.0, 10.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'down', seg: [5.55, 10.25],
       stem: 'Type what he says: “___, a woman catches me.” (5 words)', answer: "as i'm taking it down",
       ja: '「___, a woman catches me.」の空所を書こう（5語）',
       cue: '「priceless」のあと',
@@ -62,7 +62,7 @@ export const perfectCrime: Clip = {
       trap: 'taking it down が「テイキニッダウン」とつながり、it が消えたように聞こえる。',
       use: 'As I was leaving, it started to rain.（出ようとしたら雨が降ってきた）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'sayno', ctx: true, seg: [8.5, 14.7],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'sayno', ctx: true, seg: [8.0, 14.7],
       stem: 'Tiffany tells Dwight to stop. What does he do?',
       ja: 'ティファニーに「やめて」と言われ、ドワイトはどうする？',
       choices: ['He says he won’t', 'He stops at once', 'He says sorry'], a: 0,
@@ -74,7 +74,7 @@ export const perfectCrime: Clip = {
       trap: '店の娘に見つかったので、謝る流れと考えがち。決め手は最後の短い I say no。',
       use: 'If he asks again, just say no.（また頼まれたら、断ればいいよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'tiffany', seg: [10.1, 14.7],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'tiffany', seg: [10.25, 14.7],
       stem: 'In Dwight’s story, who catches him?',
       ja: 'ドワイトの話で、彼を見つけたのはだれ？',
       choices: ['The owner’s daughter', 'A night-shift guard', 'A police officer'], a: 0,
@@ -99,7 +99,7 @@ export const perfectCrime: Clip = {
       trap: 'Mexico が先に聞こえて選びやすい。but I go to のあとを聞く。',
       use: 'He said he’d come, but he never did.（来ると言ったのに、来なかった）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'pattern', reveals: ['mexico', 'interesting', 'ending'], seg: [16.05, 43.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'pattern', reveals: ['mexico', 'interesting', 'ending', 'showup'], seg: [16.05, 41.05],
       stem: 'What does Dwight keep doing to Tiffany?',
       ja: 'ドワイトはティファニーに何をくり返す？',
       choices: ['He leaves her waiting for him', 'He sends her lots of postcards', 'He tells the police about her'], a: 0,
@@ -135,6 +135,17 @@ export const perfectCrime: Clip = {
       trap: 'don’t の t は消えやすいが「ドン」は残る。trust her は「トラスター」。',
       use: 'I don’t trust that website.（あのサイトは信用できない）' },
 
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [19.15, 25.3],
+      stem: 'What does “Besides” mean here?',
+      ja: '「Besides」は、ここではどういう意味？',
+      choices: ['And also', 'But really', 'Before that'], a: 0,
+      choicesJa: ['それに', 'でも本当は', 'その前に'],
+      cue: '「trust her」のあと',
+      line: 'I don’t trust her. *Besides*, I like the cold.',
+      said: '「信用してない。それに、寒いのが好きだし」と付け足す。',
+      mean: 'Besides, ＝「それに・その上」。理由をもう一つ足す合図。beside（〜のそばに）とは別の語。',
+      trap: 'but のように反対の話に聞こえるが、信用できない、に理由を一つ足しているだけ。',
+      use: 'Besides, I need the exercise.（それに、運動にもなるし）' },
     // retired (A2): a “why is it funny” item
     { id: 'h1', skill: 'humor', level: 'C1', point: 'cold', reveals: ['canada'], seg: [20.75, 25.1], retired: true,
       stem: 'Why is the reason Dwight adds after “I don’t trust her” funny?',
@@ -147,19 +158,7 @@ export const perfectCrime: Clip = {
       trap: 'Besides は理由の追加で、本音の打ち明けではない。the cold は「寒さ」で、冷たい人のことでもない。',
       use: 'Besides, I need the exercise.（それに、運動にもなるし）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [21.2, 25.3],
-      stem: 'What does “Besides” mean here?',
-      ja: '「Besides」は、ここではどういう意味？',
-      choices: ['And also', 'But really', 'Before that'], a: 0,
-      choicesJa: ['それに', 'でも本当は', 'その前に'],
-      cue: '「trust her」のあと',
-      line: 'I don’t trust her. *Besides*, I like the cold.',
-      said: '「信用してない。それに、寒いのが好きだし」と付け足す。',
-      mean: 'Besides, ＝「それに・その上」。理由をもう一つ足す合図。beside（〜のそばに）とは別の語。',
-      trap: 'but のように反対の話に聞こえるが、信用できない、に理由を一つ足しているだけ。',
-      use: 'Besides, I need the exercise.（それに、運動にもなるし）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [24.4, 27.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [25.0, 27.0], keep: true,
       stem: 'How long after Canada does the postcard come?',
       ja: 'カナダのあと、はがきが来るのは何年後？',
       choices: ['3 years', '13 years', '30 years', '40 years'], a: 2,
@@ -184,7 +183,7 @@ export const perfectCrime: Clip = {
       trap: '店の話で father（父）が出たので、父親と思いやすい。son（息子）を聞く。',
       use: 'Who is the chief here?（ここの責任者はだれですか）' },
 
-    { id: 'c2', skill: 'detail', level: 'B1', point: 'paris', ctx: true, seg: [26.2, 34.6],
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'paris', ctx: true, seg: [27.0, 35.4],
       stem: 'After the postcard, what does Dwight tell Tiffany?',
       ja: 'はがきのあと、ドワイトはティファニーに何と伝える？',
       choices: ['To meet him in Paris', 'To meet him in Mexico', 'To meet him in Berlin'], a: 0,
@@ -243,7 +242,7 @@ export const perfectCrime: Clip = {
       trap: 'カメラへの告白は反省や照れに聞こえやすいが、自分で話を盛り上げている。言葉で判断する。',
       use: 'I’m pretty proud of that one.（あれはけっこう自信作）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'care', reveals: ['loyal'], ctx: true, seg: [33.2, 39.35],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'care', reveals: ['loyal'], ctx: true, seg: [31.55, 39.35],
       stem: 'Tiffany has waited for years. How does Dwight feel?',
       ja: 'ティファニーは何年も待っていた。ドワイトはどう思う？',
       choices: ['He feels nothing', 'He feels touched', 'He feels guilty'], a: 0,
@@ -255,7 +254,8 @@ export const perfectCrime: Clip = {
       trap: '一途な話のあとなので、心を打たれると考えがち。返事ははっきり I don’t care。',
       use: 'Honestly, I don’t care what they think.（正直、どう思われてもいい）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'loyal', seg: [34.5, 38.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'loyal', seg: [35.45, 38.6],
+
       stem: 'What has Tiffany done all these years?',
       ja: 'この何年もの間、ティファニーはどうしていた？',
       choices: ['She has loved only him', 'She has married another man', 'She has forgotten him'], a: 0,
@@ -267,7 +267,7 @@ export const perfectCrime: Clip = {
       trap: 'another lover（別の恋人）だけ聞くと、相手がいたと勘違いしやすい。決め手は never。',
       use: 'I’ve been waiting all week for this.（今週ずっとこれを楽しみにしてた）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'showup', reveals: ['care'], seg: [37.4, 41.0],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'showup', reveals: ['care'], seg: [38.6, 41.05],
       stem: 'Type the 4 words after “I don’t care.”', answer: "i don't show up",
       ja: '「I don’t care」のあとの4語を書こう',
       cue: '「I don’t care」のすぐあと',
@@ -277,7 +277,8 @@ export const perfectCrime: Clip = {
       trap: 'don’t と show がつながり「ドンショウ」。up は弱いが、show up で一つ。',
       use: 'He didn’t show up for work today.（彼、今日は仕事に来なかった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'stash', seg: [39.4, 44],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'stash', seg: [41.05, 44],
+
       stem: 'What does Dwight do with the chandelier at the end?',
       ja: '最後に、ドワイトはシャンデリアをどうする？',
       choices: ['Keeps it in a secret place', 'Sells it for quick money', 'Returns it to Tiffany'], a: 0,
