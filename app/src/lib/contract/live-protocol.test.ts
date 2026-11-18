@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDayNum, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, SGV_TEXT_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDayNum, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/world/world.ts';
 import { CHUNK, GRID, tileMid, tileX, tileZ } from '#lib/layout/grid.ts';
 import { WORLD_X, WORLD_Z, layoutOpOf } from './layout.ts';
@@ -460,5 +460,28 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
       { g: 'abc123', i: 2, a: 'word', w: 'Zoo' }, { g: 'abc123', i: 2, a: 'word', w: 'toolongword' }, { g: 'abc123', i: 2, a: 'fork', b: 2 },
       { g: 'abc123', i: 2, a: 'sent', m: 3 }, { g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 'n', r: 'X!' }, { g: 'abc123', i: 2, a: 'dance' }, { g: 'abc123', i: 1000, a: 'roll' }
     ]) expect(parseClient(j({ kind: 'sg', ...o })), JSON.stringify(o)).toBeNull();
+  });
+});
+
+describe('live protocol: 英語すごろく views (sgv)', () => {
+  const j = (o: object) => JSON.stringify({ v: 3, ...o });
+  it('takes a turn’s view with its own fields only, its texts cleaned; never kept or numbered', () => {
+    expect(parseClient(j({ kind: 'sgv', g: 'abcdefghij', i: 4, p: 'word', s: '0a3.1.2', w: 'x' }))).toEqual({ v: 3, kind: 'sgv', g: 'abcdefghij', i: 4, p: 'word', s: '0a3.1.2' });
+    expect(parseClient(j({ kind: 'sgv', g: 'abcdefghij', i: 9, p: 'picture', s: '', x: [' I  like\napples. ', '', 'ヒント\u200b'] })))
+      .toEqual({ v: 3, kind: 'sgv', g: 'abcdefghij', i: 9, p: 'picture', s: '', x: ['I like apples.', '', 'ヒント'] });
+    const long = parseClient(j({ kind: 'sgv', g: 'abcdefghij', i: 9, p: 'picture', s: '', x: ['a'.repeat(150)] }));
+    expect(long && long.kind === 'sgv' && long.x?.[0].length).toBe(SGV_TEXT_MAX);
+    const v = { kind: 'sgv', g: 'abcdefghij', i: 1, p: 'event', s: '1' } as const;
+    expect([isStored(v), isAcked(v)]).toEqual([false, false]);
+    // relayed: who and when stamped on
+    expect(parseServer(j({ ...v, who: 'B', t: 5 }))).toEqual({ ...v, v: 3, who: 'B', t: 5 });
+  });
+  it('refuses a bad game, index, panel, state or texts', () => {
+    for (const o of [
+      { g: 'AB', i: 1, p: 'word', s: '' }, { g: 'abcdefghij', i: -1, p: 'word', s: '' }, { g: 'abcdefghij', i: 1000, p: 'word', s: '' },
+      { g: 'abcdefghij', i: 1, p: 'spin', s: '' }, { g: 'abcdefghij', i: 1, p: 'word' }, { g: 'abcdefghij', i: 1, p: 'word', s: 'A!' },
+      { g: 'abcdefghij', i: 1, p: 'word', s: 'a'.repeat(65) }, { g: 'abcdefghij', i: 1, p: 'word', s: '', x: 'text' },
+      { g: 'abcdefghij', i: 1, p: 'word', s: '', x: ['a', 'b', 'c', 'd', 'e'] }, { g: 'abcdefghij', i: 1, p: 'word', s: '', x: [3] }
+    ]) expect(parseClient(j({ kind: 'sgv', ...o })), JSON.stringify(o)).toBeNull();
   });
 });

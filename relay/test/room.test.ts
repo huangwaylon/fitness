@@ -1280,6 +1280,32 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     expect(moves(join(KEY_B, 0))).toEqual([]);
   });
 
+  it('a turn’s view (sgv) goes live to the game’s other seats only, at its next move only, never kept or acked', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    const views = (s: FakeSock) => s.sent.filter((m) => m.kind === 'sgv').map((m) => (m as { s: string }).s);
+    say(a, { ...start, c: 1 });
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 });
+    say(a, { kind: 'sgv', g: G, i: 2, p: 'word', s: '012', x: ['I like it.'] });
+    say(a, { kind: 'sgv', g: G, i: 1, p: 'word', s: 'old' }); // a move behind
+    say(a, { kind: 'sgv', g: 'zzzzzzzzzz', i: 1, p: 'word', s: 'none' }); // no such game
+    say(g, { kind: 'sgv', g: G, i: 2, p: 'word', s: 'notseated' }); // the guest isn't at this table
+    expect(views(b)).toEqual(['012']);
+    expect(b.sent.find((m) => m.kind === 'sgv')).toMatchObject({ who: 'A', g: G, i: 2, p: 'word', x: ['I like it.'] });
+    expect([views(g), views(a)]).toEqual([[], []]);
+    expect(acks(a)).toEqual([true, true]);
+    expect([...rows.keys()]).toEqual([`sg:${G}:0`, `sg:${G}:1`]);
+    // the guest seated: theirs too; a phone opening later hears the moves, no view
+    const G3 = 'kkkkkkkkkk';
+    say(a, { kind: 'sg', g: G3, i: 0, a: 'start', s: 'A2G1', l: 's', c: 3 });
+    say(a, { kind: 'sgv', g: G3, i: 1, p: 'event', s: '1' });
+    expect([views(g), views(b).length]).toEqual([['1'], 1]);
+    expect(join(KEY_B, 0).sent.some((m) => m.kind === 'sgv')).toBe(false);
+    // after the end: nowhere
+    say(a, { kind: 'sg', g: G, i: 2, a: 'end', c: 4 });
+    say(a, { kind: 'sgv', g: G, i: 2, p: 'word', s: 'late' });
+    expect(views(b)).toEqual(['012']);
+  });
+
   it('moves the day’s ring kept from before go into their games (by the same rule: an end at a move’s i beats it), out of the ring', () => {
     const old = (i: number, a: string, who: string, t: number) => ({ kind: 'sg', g: G, i, a, ...(a === 'start' ? { s: 'A2B1', l: 's' } : {}), v: 3, who, t });
     const ring = [old(0, 'start', 'A', 10), { kind: 'world', op: 'watered', id: 'w', v: 3, who: 'A', t: 11 }, old(1, 'roll', 'A', 12), old(1, 'end', 'B', 13), old(2, 'roll', 'A', 14)];

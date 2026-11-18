@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgIntent, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgIntent, type SgView, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -308,6 +308,7 @@ export class RoomCore<S extends Sock> {
     // a goal tree's fruit its owner's alone (live-protocol.ts pickMaySend: credited to the tree's owner, 2026-11-16)
     if (intent.kind === 'pick' && !pickMaySend(who, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     if (intent.kind === 'sg') return this.sgMove(s, who, c, intent);
+    if (intent.kind === 'sgv') return this.sgView(who, intent);
     const stored = isStored(intent);
     if (stored && c !== undefined) {
       // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not
@@ -624,6 +625,16 @@ export class RoomCore<S extends Sock> {
     // past SG_GAMES, the game left longest goes
     if (this.games.size > SG_GAMES) this.dropGame([...this.games].reduce((a, b) => (b[1].last < a[1].last ? b : a))[0]);
     if (c !== undefined) this.ack(s, c, out.t, true);
+  }
+
+  /** A すごろく turn as its player sees it (`sgv`, presence only): to the game's other seats alone (the speaking step's
+   *  words are the table's), and only at the game's next move (a late one, or a game the room hasn't or that's over,
+   *  goes nowhere). Never kept, never acked. */
+  private sgView(who: Who, m: SgView): void {
+    const game = this.games.get(m.g), seats = game?.moves[0]?.s ?? '';
+    if (!game || game.end || m.i !== game.moves.length || !seats.includes(who)) return;
+    const out: Relayed = { ...m, v: LIVE_V, who, t: this.io.now() };
+    for (const p of this.others(who)) if (seats.includes(this.io.meta(p)!.who!)) this.send(p, out);
   }
 
   /** Take a move into its game (sgTakes); true when it did. */

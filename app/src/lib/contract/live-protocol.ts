@@ -125,7 +125,31 @@ export type Intent =
    *  reloads) replays the game from its moves; every phone folds them through the same pure rules
    *  (lib/sugoroku/online.ts). The room takes a game's moves in order, the first of each `i` only; an `end`'s `i` is
    *  the moves it follows (the earliest end stands, the moves from it on count for nothing). */
-  | SgIntent;
+  | SgIntent
+  /** 英語すごろく online: the turn as the player's sheet shows it now, for the others at the table to watch (docs/sugoroku.md
+   *  "Online"): game `g` at move `i` (the next move's index: a view of an older one is let go), the panel `p` (the
+   *  phase), its state `s` (lib/sugoroku/view.ts: tile indices and flags) and the speaking step's texts `x` (≤
+   *  SGV_TEXTS, each SGV_TEXT_MAX). A whole snapshot each time (a phone that comes late catches up on the next).
+   *  Presence only: relayed to the game's seats alone (relay/src/room.ts), never numbered, kept or replayed. */
+  | SgView;
+
+/** The panels a すごろく view shows (the turn's phases but the dice). @public (lib/sugoroku/view.ts) */
+export const SG_PANELS = ['fork', 'word', 'sentence', 'picture', 'event', 'home'] as const;
+/** @public (lib/sugoroku/view.ts) */
+export type SgPanel = (typeof SG_PANELS)[number];
+/** @public (lib/sugoroku/view.ts) */
+export interface SgView {
+  kind: 'sgv';
+  g: string;
+  i: number;
+  p: SgPanel;
+  s: string;
+  x?: string[];
+}
+/** A view's state (`s`) and texts (`x`): how many, how long each (code points). */
+const SGV_STATE = /^[0-9a-z.]{0,64}$/;
+const SGV_TEXTS = 4;
+export const SGV_TEXT_MAX = 120;
 
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
  *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent). */
@@ -384,6 +408,14 @@ export function cleanSay(s: unknown): string | null {
   return Array.from(t).slice(0, SAY_MAX).join('').trim() || null;
 }
 
+/** A view's text as both sides keep it: cleanSay's rules (NFC, no control or invisible characters, trimmed), at most
+ *  SGV_TEXT_MAX code points; '' kept (an empty place). Null when it isn't text. */
+function cleanViewText(s: unknown): string | null {
+  if (typeof s !== 'string' || s.length > 4 * MAX_BYTES) return null;
+  const t = s.normalize('NFC').replace(SAY_BREAK, ' ').replace(SAY_STRIP, '').replace(/\s{2,}/gu, ' ').trim();
+  return Array.from(t).slice(0, SGV_TEXT_MAX).join('').trim();
+}
+
 type Obj = Record<string, unknown>;
 const isTime = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x < 1e14;
 const isId = (x: unknown): x is string => typeof x === 'string' && ID.test(x);
@@ -565,6 +597,13 @@ function intentOf(o: Obj): Intent | null {
         // (a bad or misplaced `y` is dropped, not the move: an older phone's pic still counts)
         ...(o.a === 'pic' && (o.y === 1 || o.y === 2 || o.y === 3) ? { y: o.y } : {})
       };
+    }
+    case 'sgv': {
+      if (typeof o.g !== 'string' || !SG_GAME.test(o.g) || !within(o.i, [0, SG_MOVES_MAX]) || !oneOf(SG_PANELS)(o.p) || typeof o.s !== 'string' || !SGV_STATE.test(o.s)) return null;
+      if (o.x === undefined) return { kind: 'sgv', g: o.g, i: o.i as number, p: o.p, s: o.s };
+      if (!Array.isArray(o.x) || o.x.length > SGV_TEXTS) return null;
+      const x = o.x.map(cleanViewText);
+      return x.every((t): t is string => t !== null) ? { kind: 'sgv', g: o.g, i: o.i as number, p: o.p, s: o.s, x } : null;
     }
     case 'say': {
       const text = cleanSay(o.text);
