@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 15, retire 1, new 6, ctx 6, tx 6
+// R4 REVIEW 2026-11-18: keep 4, rewrite 15, retire 1, new 6, ctx 6, tx 6, qa 11
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 5, new 2
 // A2 LATE: the visitors talk in made-up slang (britty, brain tornado, Cool New Shiz) and the clip is satire throughout
 // “Ron Deals With A "Beef Milk" Influencer | Parks and Recreation” (the official Parks and Recreation channel, Season
@@ -17,7 +17,7 @@ export const beefMilk: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a0', skill: 'phrase', level: 'B1', point: 'roscoe', seg: [1.3, 12],
+    { id: 'a0', skill: 'phrase', level: 'B1', point: 'roscoe', seg: [1.6, 11.5],
       stem: 'What does “*kick back*” mean here?',
       ja: 'ここでの「kick back」はどういう意味？',
       choices: ['Relax and take it easy', 'Kick the chair back', 'Go back home now'], a: 0,
@@ -29,7 +29,7 @@ export const beefMilk: Clip = {
       trap: 'kick から「ける」と思いやすい。kick back でひとまとまりの「くつろぐ」。',
       use: 'Feel free to kick back and relax.（遠慮なくくつろいでね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'celeb', seg: [10.1, 28.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'celeb', seg: [10.1, 25.7],
       stem: 'What does the Gryzzl team want to find?',
       ja: 'グリズルのチームは何を見つけたい？',
       choices: ['A famous person', 'A new phone idea', 'A way to stop Leslie'], a: 0,
@@ -72,7 +72,7 @@ export const beefMilk: Clip = {
       trap: 'Brit や pretty に聞こえやすい。知らない語は、すぐあとの言いかえを待つ。',
       use: 'In other words, we need a celebrity.（つまり、有名人が要るってこと）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'minority', seg: [24.3, 32.6],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'minority', seg: [24.7, 30.35],
       stem: 'How would a celebrity help Gryzzl?',
       ja: '有名人がいると、グリズルにどう役立つ？',
       choices: ['By helping them win the bid', 'By selling a lot more phones', 'By paying for the whole bid'], a: 0,
@@ -105,7 +105,7 @@ export const beefMilk: Clip = {
       trap: 'refuse を聞き落とすと「書けない」告白に聞こえる。That’s why の前後の大きさを比べる。',
       use: 'I prefer quality over quantity.（量より質が好きなんだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'outsider', seg: [43.78, 50.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'outsider', seg: [43.65, 50.0],
       stem: 'Why do they want a celebrity from Pawnee?',
       ja: 'なぜポーニー出身の有名人がほしい？',
       choices: ['To make people feel at ease', 'To save a lot of money', 'Because the town’s rules say so'], a: 0,
@@ -161,7 +161,7 @@ export const beefMilk: Clip = {
       trap: 'bull だけ聞くと牛、shot だけだと猟犬に取りやすい。名前の直後の説明が正体。',
       use: 'I don’t really follow celebrities.（有名人にはあまり興味がない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.4, 83.6],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'magnus', seg: [79.7, 83.6],
       stem: 'How does Ron feel about Magnus the elk?',
       ja: 'ロンはヘラジカのマグナスをどう思っている？',
       choices: ['He wants to hunt it', 'He loves the elk', 'He is scared of it'], a: 0,
@@ -174,10 +174,10 @@ export const beefMilk: Clip = {
       use: 'One day, I’ll visit Paris.（いつかパリに行く）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'handwriting', seg: [88.7, 92.75],
-      stem: 'What does “that’s your handwriting” tell us?',
-      ja: '「それ、君の字だよね」から何が分かる？',
-      choices: ['Tom wrote his own name', 'Tom wrote the list neatly', 'Tom can’t read the list'], a: 0,
-      choicesJa: ['トムが自分の名前を書いた', 'トムがリストをきれいに書いた', 'トムはリストが読めない'],
+      stem: 'Who wrote Tom’s name on the list?',
+      ja: 'リストにトムの名前を書いたのはだれ？',
+      choices: ['Tom did, himself', 'Ron did, as a joke', 'Roscoe did, for fun'], a: 0,
+      choicesJa: ['トム本人', 'ロンが冗談で', 'ロスコーがふざけて'],
       cue: '「celebrity」のあと',
       line: 'Tom: I don’t know if you can really *consider me a celebrity*. / Yeah, *that’s your handwriting*.',
       said: 'トムが「僕を有名人と呼べるかな」と言うと、「それ、君の字だよね」と返される。',
@@ -197,7 +197,7 @@ export const beefMilk: Clip = {
       trap: 'fish から魚料理の店を連想しやすい。すぐあとに人の名前が来る。',
       use: 'He’s a big fish in this town.（彼はこの町の大物だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nightmare', seg: [97.6, 109.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'nightmare', seg: [97.6, 106.4],
       stem: 'How does Ron feel about Annabelle Porter?',
       ja: 'ロンはアナベル・ポーターをどう思っている？',
       choices: ['He hates her', 'He likes her work', 'He wants to meet her'], a: 0,
@@ -268,7 +268,7 @@ export const beefMilk: Clip = {
       trap: '一語だけだと注文や絶句にも聞こえる。次の人が何に「違う」と言ったかで、一語の働きが決まる。',
       use: 'So, a sandwich. Got it.（つまりサンドイッチね。了解）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', seg: [166.5, 186.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', reveals: ['price', 'waitlist', 'knows'], seg: [166.5, 184.2],
       stem: 'How does the visit to Annabelle end?',
       ja: 'アナベルを訪ねた結果は？',
       choices: ['She agrees to join them', 'Ron walks out angry', 'She backs Leslie instead'], a: 0,
@@ -277,7 +277,7 @@ export const beefMilk: Clip = {
       line: 'And I’d be *extremely jazzed to be part of the Gryzzl bid*.',
       said: 'アナベルが「グリズルの入札に加われたら、すごくわくわくする」と言い、話がまとまる。',
       mean: 'jazzed ＝ わくわくしている（くだけた言い方）。part of 〜 ＝ 〜の一員。',
-      trap: 'ロンはアナベルがきらいだったので、怒って帰ると考えがち。最後は場所を移して話そうと誘われる。',
+      trap: 'ロンはアナベルがきらいだったので、怒って帰ると考えがち。決め手は最後の jazzed（わくわく）。',
       use: 'I’d love to be part of it.（ぜひ参加したいです）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'price', reveals: ['waitlist'], seg: [169.3, 184.2], retired: true,
@@ -294,13 +294,13 @@ export const beefMilk: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [169.4, 176.6], keep: true,
       stem: 'How much does a gallon of the beef milk cost?',
       ja: 'ビーフミルクは1ガロンいくら？',
-      choices: ['$6', '$16', '$60'], a: 2,
-      choicesJa: ['6ドル', '16ドル', '60ドル'],
+      choices: ['$3', '$6', '$16', '$60'], a: 3,
+      choicesJa: ['3ドル', '6ドル', '16ドル', '60ドル'],
       cue: '「That costs」のあと',
       line: 'Milk costs three dollars a gallon… beef milk? That costs *sixty* a gallon.',
       said: '「牛乳は1ガロン3ドル。アナベルのビーフミルクは60ドル」と言う。',
       mean: 'sixty ＝ 60。最初の「シック」が強い。sixteen なら最後の「ティーン」がのびる。',
-      trap: '「シックスティ」と短い「ティ」で終われば60。「ティーン」なら16、何もなければ6。',
+      trap: '3ドルはふつうの牛乳の値段。「シックスティ」と短い「ティ」で終われば60、「ティーン」なら16、何もなければ6。',
       use: 'How much does it cost?（いくらですか）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'waitlist', seg: [174.9, 181.55],

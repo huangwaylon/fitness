@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 6, new 2, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 6, new 2, ctx 4, tx 4, qa 9
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 2, new 2
 // A2 LATE: crude fart humor all through, and an F-word at 59.5 s (no segment plays it; the full clip does)
 // “Jerry Has a Fart Attack | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at the
@@ -58,7 +58,7 @@ export const fartAttack: Clip = {
       trap: 'would が遠回しの断りに聞こえるが、すぐ計画が始まる。返事のあとも聞く。',
       use: 'Pizza tonight? — That would make my day.（今夜ピザ？ーそれ最高）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', seg: [27.3, 55.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', seg: [27.3, 53.9],
       stem: 'How does the plan to scare Tom end?',
       ja: 'トムを驚かせる計画は、どうなる？',
       choices: ['Jerry falls ill', 'Tom gets scared', 'Tom laughs at them'], a: 0,
@@ -129,7 +129,7 @@ export const fartAttack: Clip = {
       trap: 'あとで balloons と flowers の話が出るので、そちらと勘違いしやすい。I got you のあとを聞く。',
       use: 'I got you some coffee.（コーヒー買ってきたよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'straight', seg: [82.65, 88.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'straight', seg: [82.65, 85.5],
       stem: 'What does “Give it to me straight” mean?',
       ja: '「Give it to me straight」はどういう意味？',
       choices: ['Tell me honestly', 'Tell me quickly', 'Tell me very gently'], a: 0,
@@ -141,7 +141,7 @@ export const fartAttack: Clip = {
       trap: 'straight を「すぐに」と思いやすい。ここは「飾らずに」。',
       use: 'Doctor, just give it to me straight.（先生、はっきり言ってください）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'day', ctx: true, seg: [83.6, 91.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'day', ctx: true, seg: [83.6, 90.85], keep: true,
       stem: 'When does Ann say Jerry should leave the hospital?',
       ja: 'アンによると、ジェリーはいつ退院できる？',
       choices: ['Later today', 'Tomorrow morning', 'In a day or two', 'In a week or two'], a: 2,
@@ -189,7 +189,7 @@ export const fartAttack: Clip = {
       trap: 'too much を値段や「無理でした」と思いやすい。ここは「大した頼みじゃない」と押す。',
       use: 'I just want one quiet day. Too much?（静かな一日がほしいだけ。無理？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wakeup'], seg: [110.4, 136.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wakeup', 'cause'], seg: [110.4, 126.7],
       stem: 'What does Jerry decide at the hospital?',
       ja: '病院で、ジェリーは何を決める？',
       choices: ['To change his life', 'To get back at them', 'To make them pay bills'], a: 0,
@@ -235,7 +235,7 @@ export const fartAttack: Clip = {
       trap: 'I mean を言い直しと取ると、「よかった」を取り消したように聞こえる。but no のあとが着地点。',
       use: 'I mean, yeah, it’s far, but worth it.（まあ遠いけど、行く価値あり）', retired: true },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'without', seg: [121.7, 126.7],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'without', seg: [121.7, 123.8],
       stem: 'What does Jerry say about the hospital bills?',
       ja: 'ジェリーは入院費について何と言う？',
       choices: ['He’d rather not have them', 'He won’t pay them', 'He can pay them easily'], a: 0,
@@ -247,7 +247,7 @@ export const fartAttack: Clip = {
       trap: 'do without は「なしで済ます」とも読めるので、払わずに済むと思いやすい。',
       use: 'I could do without the rain.（雨はなくていいんだけどな）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'wakeup', seg: [121.7, 129.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'wakeup', seg: [121.7, 126.7],
       stem: 'After “but no”, what does Jerry call the whole thing?',
       ja: '「but no」のあと、ジェリーは今回のことを何だと言う？',
       choices: ['A warning to change', 'A lucky little break', 'A sign he’s better'], a: 0,
@@ -262,13 +262,13 @@ export const fartAttack: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', seg: [126.7, 129.5], keep: true,
       stem: 'How many more years does Jerry say he wants with his family?',
       ja: 'ジェリーは、家族とあと何年一緒にいたいと言う？',
-      choices: ['At least 13', 'At least 30', 'At least 40'], a: 1,
-      choicesJa: ['少なくとも13年', '少なくとも30年', '少なくとも40年'],
+      choices: ['At least 13', 'At least 20', 'At least 30', 'At least 40'], a: 2,
+      choicesJa: ['少なくとも13年', '少なくとも20年', '少なくとも30年', '少なくとも40年'],
       cue: '「another」のすぐあとの数。',
       line: 'I want at least *another 30 years* with Gail and my girls.',
       said: '「妻と娘たちと、少なくともあと30年は一緒にいたい」と言う。',
       mean: 'another ＋数 ＝ さらに〜。健康に気をつけて長生きしたい、ということ。',
-      trap: 'thirty と thirteen は似ている。-teen は後ろを強く長く、-ty は前を強く言う。40 は「フォーティ」。',
+      trap: 'thirty と thirteen は似ている。-teen は後ろを強く長く、-ty は前を強く言う。20 は「トゥエンティ」、40 は「フォーティ」。',
       use: 'I need another ten minutes.（あと10分ください）' },
 
     { id: 'i2', retired: true, skill: 'infer', level: 'B2', point: 'leave', reveals: ['planned'], seg: [129.2, 137.2],

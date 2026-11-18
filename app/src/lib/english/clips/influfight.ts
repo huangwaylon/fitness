@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 8, retire 4, new 12, ctx 8, tx 35
+// R4 REVIEW 2026-11-18: keep 4, rewrite 8, retire 4, new 12, ctx 8, tx 35, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 7, retire 8, new 1
 // “Carly Joins A FIGHT CLUB?! | iCarly Full Scene | NickRewind” (NickRewind, Best of iCarly): Carly and a friend walk
 // into an influencer fight club, meet two fans who fight to vent about online critics, and learn a newcomer must fight
@@ -13,7 +13,7 @@
 // Untested: 151.6–155 s (whisper "Derek said, lame. Lame means cool now" vs captions "flame"), 239–247 s (swings, shown
 // more than said), 277–290 s (the "prank prince" bit needs backstory).
 // EAR CHECK: 9 s and 87 s — the friend's "my presence…" and "my liver" lines; the ja gives 僕 (male), the A2 header said
-//   "she". Items don't name or gender the speaker.
+//   "she". Items don’t name or gender the speaker; qa 11-18 made those ja lines pronoun-free.
 // EAR CHECK: 236 s and 251 s — whisper "a hundred on Sonny" / "200 on Sonny" (captions "sunday", "don't say"); the
 //   opponent is likely Dianna (292 s). Items and the ja say 相手 (the opponent), not a name.
 import type { Clip } from '../types.ts';
@@ -71,7 +71,7 @@ export const influencerFightClub: Clip = {
       trap: 'Don’t worry だけで安心の言葉と取りやすい。前置きのあとの中身で働きを決める。',
       use: 'Don’t worry, it only hurts a lot.（心配しないで、すごく痛いだけ）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vent', seg: [56.6, 68.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vent', seg: [56.15, 68.8],
       stem: 'How does fighting here help the fan?',
       ja: 'ここで戦うと、そのファンにはどんないいことがある？',
       choices: ['It makes her less angry', 'It lets her meet her critics', 'It stops her reading comments'], a: 0,
@@ -154,7 +154,7 @@ export const influencerFightClub: Clip = {
       trap: '度胸だめしに見えて、こわくないと見せるためと考えがち。決め手は To make sure のあと。',
       use: 'I’ll text you to make sure you’re home.（家に着いたか確かめるため、メッセージするね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'derek', seg: [123.2, 138.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'derek', reveals: ['gotta'], seg: [123.2, 138.4],
       stem: 'What are the two men trying to do?',
       ja: '2人の男は何をしようとしている？',
       choices: ['Make Millicent stop liking Derek', 'Get Millicent a date with Derek', 'Help Millicent with a project'], a: 0,
@@ -340,7 +340,7 @@ export const influencerFightClub: Clip = {
       trap: '「上げた」だけだと Carly を見直したと取りやすい。make that の対象を聞く。',
       use: 'Go team! But my money’s on them.（がんばれ！でも本命はあっち）', retired: true },
 
-    { id: 'i7', skill: 'infer', level: 'B2', point: 'rooting', seg: [234.1, 238.0],
+    { id: 'i7', skill: 'infer', level: 'B2', point: 'rooting', seg: [234.25, 238.0],
       stem: 'What does the person betting really expect?',
       ja: '賭けている人は、本当はどうなると思っている？',
       choices: ['Carly will lose', 'Carly will win', 'It will be a tie'], a: 0,
@@ -355,13 +355,13 @@ export const influencerFightClub: Clip = {
     { id: 'n3', skill: 'number', level: 'B1', point: 'twohundred', reveals: ['rooting'], seg: [248.9, 253.5], keep: true,
       stem: 'After “Am I doing it?”, what does the bet become?',
       ja: '「Am I doing it?」のあと、賭けはいくらになる？',
-      choices: ['150', '200', '2,000'], a: 1,
-      choicesJa: ['150ドル', '200ドル', '2000ドル'],
+      choices: ['150', '200', '250', '2,000'], a: 1,
+      choicesJa: ['150ドル', '200ドル', '250ドル', '2000ドル'],
       cue: '「let’s make that」のすぐあと',
       line: 'Okay, let’s make that *200*…',
       said: '「よし、相手に200ドルにしよう」と賭けを上げる。',
       mean: 'make that 〜 ＝（数や注文を）〜に変える。カーリーの相手に、さらに多く賭けている。',
-      trap: '150 なら「フィフティ」が入る。2000 なら「サウザンド」。「トゥー・ハンドレッド」なら200。',
+      trap: '150 や 250 なら後ろに「フィフティ」が付く。2000 なら「サウザンド」。「トゥー・ハンドレッド」で終われば200。',
       use: 'Actually, make that two coffees.（やっぱりコーヒー2つで）' },
 
     { id: 'c4', skill: 'pragma', level: 'B1', point: 'laughing', ctx: true, seg: [256.8, 265.5],

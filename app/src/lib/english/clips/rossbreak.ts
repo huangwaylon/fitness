@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 1, new 5, ctx 7, tx 14
+// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 1, new 5, ctx 7, tx 14, qa 7
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 8, new 2
 // “Rachel Confronts Ross About His One Night Stand | Friends” (the official Friends channel, Best of Season 3): Rachel
 // learns Ross slept with someone the night of their fight; he argues they had broken up, she won't have it, and the
@@ -92,7 +92,7 @@ export const rossBreak: Clip = {
       trap: 'do something から、けんかを止めに行く話を連想しやすい。決め手は never。',
       use: 'Should we do something to help?（何か手伝ったほうがいいかな？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'message', seg: [89.0, 101.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'message', seg: [89.0, 94.15],
       stem: 'How did Ross feel when he got Rachel’s message?', ja: 'レイチェルのメッセージを受けたとき、ロスはどう感じた？',
       choices: ['Upset', 'Glad', 'Disgusted'], a: 1,
       choicesJa: ['落ちこんだ', 'うれしかった', '自分がいやになった'],
@@ -103,7 +103,7 @@ export const rossBreak: Clip = {
       trap: 'upset も disgusted も近くで言う気持ち。and then のあとが、メッセージを受けたあとの気持ち。',
       use: 'Your text made my day.（きみのメッセージで元気が出た）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'getout', seg: [92.7, 100.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'getout', seg: [93.2, 100.7],
       stem: 'Type it: “All I wanted was to ___ my apartment.” (4 words)', ja: '書こう：“All I wanted was to ___ my apartment.”（4語）',
       answer: 'get her out of',
       cue: '「wanted was to」のあと',
@@ -178,7 +178,7 @@ export const rossBreak: Clip = {
       trap: 'broken up の up が小さく、break（休み）とまぎれやすい。were のあとの形を聞く。',
       use: 'I thought we were done.（もう終わったと思ってた）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'fight', reveals: ['brokenup'], seg: [129.9, 146.3],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'fight', reveals: ['brokenup', 'dead'], seg: [130.0, 146.3],
       stem: 'What do Ross and Rachel disagree about?', ja: 'ロスとレイチェルは何について意見が合わない？',
       choices: ['Whether they were still a couple', 'Whether the woman meant anything', 'Whether he was too drunk'], a: 0,
       choicesJa: ['まだ付き合っていたかどうか', 'その女性が大事だったかどうか', '酔いすぎていたかどうか'],
@@ -200,7 +200,7 @@ export const rossBreak: Clip = {
       trap: 'technical から「技術的」と取りやすい。on のあとは盾にするもの。',
       use: 'He won on a technicality.（細かいルールのおかげで勝った）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dead', ctx: true, seg: [136.0, 142.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dead', ctx: true, seg: [136.05, 142.6],
       stem: 'How does Ross answer Rachel’s charge?', ja: 'レイチェルに責められて、ロスはどう答える？',
       choices: ['He denies it and repeats his point', 'He admits his excuse is weak', 'He says it was her fault'], a: 0,
       choicesJa: ['否定して、同じ言い分をくり返す', '言いわけが弱いと認める', '彼女のせいだと言う'],
@@ -234,7 +234,7 @@ export const rossBreak: Clip = {
       trap: 'I’m hungry は出たい理由で、出られない理由ではない。決め手は because のあと。',
       use: 'I can’t go out there. Everyone will see me.（出ていけないよ。みんなに見られる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gunther', seg: [158.3, 167.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gunther', seg: [156.0, 162.1],
       stem: 'Fill the gap: “___ have to hear about it from Gunther?”', ja: '空所に入るのは？ “___ have to hear about it from Gunther?”',
       choices: ['I', 'I’d', 'I’ll'], a: 1,
       choicesJa: ['私は', '私は〜することになる（I would）', '私は〜するだろう（I will）'],
@@ -276,7 +276,7 @@ export const rossBreak: Clip = {
       trap: '話したかった件はこのあとで、ここでは出ていない。皮肉は、ほめた中身を本気にしたら何になるかで読む。',
       use: 'Thanks for keeping me in the loop.（ずっと教えてくれてありがとう、ね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'sweet', reveals: ['tried'], ctx: true, seg: [163.8, 175.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'sweet', reveals: ['tried'], ctx: true, seg: [163.85, 175.6],
       stem: 'Does Rachel really think it’s sweet?', ja: 'レイチェルは本当に「優しい」と思っている？',
       choices: ['No, she is still very angry', 'Yes, she is touched by it', 'Yes, she forgives him now'], a: 0,
       choicesJa: ['いいえ、まだすごく怒っている', 'はい、心を動かされている', 'はい、もう許している'],
@@ -309,7 +309,7 @@ export const rossBreak: Clip = {
       trap: 'never leaving を Ross の話と取りやすい。we は隣の部屋の友だち。',
       use: 'That’s it. I’m never leaving this room.（もうだめ。この部屋から一生出ない）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'convinced', seg: [184.5, 190.6],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'convinced', seg: [183.6, 190.6],
       stem: 'Type it: “And then Chandler and Joey ___.” (4 words)', ja: '書こう：“And then Chandler and Joey ___.”（4語）',
       answer: 'convinced me not to',
       cue: '二人の名前のすぐあと',
