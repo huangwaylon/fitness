@@ -96,8 +96,8 @@
   .pass .dot { background: var(--card); border: 2.5px solid var(--c-yuzu-lip); }
   .junction .dot { width: 10px; height: 10px; margin-left: 1px; background: var(--card); border: 2px solid var(--edge); }
   .start .dot, .goal .dot { width: 14px; height: 14px; }
-  .start .dot { background: var(--c-leaf-edge); }
-  .goal .dot { background: var(--c-coral-text); }
+  .start .dot { background: var(--leaf-text); }
+  .goal .dot { background: var(--coral-text); }
   .time { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text); }
   .name { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; line-height: 1.3; color: var(--text); }
   .junction .name { color: var(--text-soft); }

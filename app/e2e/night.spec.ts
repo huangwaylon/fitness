@@ -119,6 +119,28 @@ test('a trail’s credits read at night (their links the night’s green on the 
   expect(await low(page)).toEqual([]);
 });
 
+test('a trail’s chart and plan read at night (the elevation line, the start/goal dots: the night’s coral/green on the navy card)', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await island(page);
+  await fromMenu(page, 'hiking', how);
+  await page.locator('dialog[open] [data-trail="kinpu-odarumi"] .hit')[how]();
+  const view = page.locator('dialog[open] [data-trail-view="kinpu-odarumi"]');
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  // (not text, so outside low(): each mark's colour on its card)
+  const ratio = (sel: string, prop: 'stroke' | 'backgroundColor') => view.locator(sel).first().evaluate((el, prop) => {
+    const lum = (s: string) => {
+      const [r, g, b] = s.match(/[\d.]+/g)!.slice(0, 3).map((x) => +x / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const [a, b] = [lum(getComputedStyle(el)[prop]), lum(getComputedStyle(el.closest('.card')!).backgroundColor)];
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  }, prop);
+  expect(await ratio('[data-elev] .line', 'stroke')).toBeGreaterThan(3);
+  for (const end of ['.start .dot', '.goal .dot']) expect(await ratio(end, 'backgroundColor'), end).toBeGreaterThan(3);
+  expect(await low(page)).toEqual([]);
+});
+
 test('English Study at night: the week’s 達成 and an answered choice’s ○ (the night’s leaf text on navy)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await fakeYoutube(page);

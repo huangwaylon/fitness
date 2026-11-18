@@ -95,7 +95,7 @@
   svg { display: block; width: 100%; height: 96px; touch-action: none; cursor: crosshair; }
   .wpt { stroke: var(--c-yuzu-lip); stroke-width: 1; stroke-dasharray: 3 3; }
   .area { fill: color-mix(in srgb, var(--c-leaf) 20%, transparent); }
-  .line { fill: none; stroke: var(--c-coral-text); stroke-width: 2; stroke-linejoin: round; }
+  .line { fill: none; stroke: var(--coral-text); stroke-width: 2; stroke-linejoin: round; }
   .at { stroke: var(--text); stroke-opacity: .5; stroke-width: 1.5; stroke-dasharray: 4 3; }
   .dot { stroke: var(--c-card); stroke-width: 2; }
   .tip {
