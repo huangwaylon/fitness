@@ -5,7 +5,7 @@
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { page } from '$app/state';
-  import SugorokuGame from '#lib/sugoroku/components/SugorokuGame.svelte';
+  import SugorokuPlay from '#lib/sugoroku/components/SugorokuPlay.svelte';
   import { english } from '#lib/english/open.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { s } from '#lib/sugoroku/i18n.ts';
@@ -20,7 +20,7 @@
 
 <!-- (.kit: the unified kit's scope, as English Study's sheet gives the tab) -->
 <div class="screen kit">
-  {#if week.view}<SugorokuGame active screen={m} onclose={leave} />{:else}<p class="wait" data-sg-wait>{s('loading')}</p>{/if}
+  {#if week.view}{#key m}<SugorokuPlay screen={m} onclose={leave} />{/key}{:else}<p class="wait" data-sg-wait>{s('loading')}</p>{/if}
 </div>
 
 <style>

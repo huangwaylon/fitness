@@ -65,7 +65,7 @@
         <Library bind:filter bind:col bind:count onopen={lessonFrom('library')} onback={home} onclose={close} />
       {:else if level.k === 'game'}
         <!-- 英語すごろく (lib/sugoroku): its own chunk -->
-        <Lazy load={() => import('#lib/sugoroku/components/SugorokuGame.svelte')}>
+        <Lazy load={() => import('#lib/sugoroku/components/SugorokuMenu.svelte')}>
           {#snippet children(Game)}<Game active={open} onclose={close} ontop={(t) => (gameTop = t)} onscreen={toBoard} />{/snippet}
         </Lazy>
       {:else if level.k === 'phrases'}

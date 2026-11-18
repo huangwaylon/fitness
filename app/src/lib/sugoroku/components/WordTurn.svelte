@@ -4,7 +4,7 @@
   // shows its points in words (and its Japanese, an everyday word's) then 次へ; one not on it a soft note, the tiles kept.
   // ヒント fills in the rack's best everyday word (halved but at やさしい, for the rest of the turn); ↻入れかえ swaps the
   // whole rack (no points: asked once more, in the header). The seat's level sets the shortest word (game.ts LEVEL).
-  // Laid out for the game's bottom sheet (SugorokuGame): the header (ことば, the lucky letters, ↻入れかえ), the slots
+  // Laid out for the game's bottom sheet (SugorokuPlay): the header (ことば, the lucky letters, ↻入れかえ), the slots
   // (⌫ takes the last one back), the rack's 8 tiles on one row, then the action row (the pocket's tiles, ヒント, これにする);
   // a check's note a toast pill over the sheet. Never red, never ×. Online, its state goes to the others at the table
   // (`onview`), and a phone watching shows it as the player's (`mirror`: view.ts, read-only).

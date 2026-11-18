@@ -1,15 +1,12 @@
 <script lang="ts">
-  // 英語すごろく, English Study's third tab (docs/sugoroku.md "Rules"), its own chunk (the tab's Lazy), its levels
-  // menu (続きから / 新しいゲーム / 遊び方) → Setup (who plays, each one's level, the length) → the game (the board
-  // full-bleed under a top overlay, ‹ ⋯ ✕ with the team's stars and the players' pills, and the turn's bottom sheet,
-  // TurnPanel; the sheet folds to a bar to see the board, and the camera frames the part the two leave) → Results.
-  // Played on one phone passed round (saved after every step: save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on
+  // 英語すごろく's own screen's game (docs/sugoroku.md "The 3D board", routes/sugoroku): the board full-bleed under a top
+  // overlay (‹ ⋯ ✕ with the team's stars and the players' pills) and the turn's bottom sheet (TurnPanel; it folds to a
+  // bar to see the board, and the camera frames the part the two leave) → Results (もう一度遊ぶ: Setup here, the same
+  // table). Played on one phone passed round (saved after every step: save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on
   // each player's own phone (online.svelte.ts: every action a move to the relay, the game the moves folded; a phone whose
   // turn it isn't watches, the player's panel live and read-only: view.ts). One rules path: an action is a move (online.ts applyMove), applied here when passed round,
-  // sent when online. No ベル. The island is paused under it.
+  // sent when online. No ベル. Started from the tab (SugorokuMenu).
   import { untrack } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { resolve } from '$app/paths';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
@@ -20,15 +17,13 @@
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
   import Board3D from './Board3D.svelte';
+  import HowTo from './HowTo.svelte';
   import Setup from './Setup.svelte';
   import TurnPanel from './TurnPanel.svelte';
   import Results from './Results.svelte';
   import { week } from '#lib/store/week.svelte.ts';
-  import { now } from '#lib/time/clock.ts';
-  import { hook } from '#lib/world/devHooks.ts';
-  import { REWARD, REWARD_GOAL, rewardOf, speakOn, teamGoal, teamStars, lastRound as isLast, newGame, boardFor, type Game, type Length, type Level, type Seat } from '../game.ts';
+  import { rewardOf, speakOn, teamGoal, teamStars, lastRound as isLast, boardFor, type Game, type Length, type Level } from '../game.ts';
   import { pathOf } from '../board.ts';
-  import { familyOfKey, layoutKey } from '../family.ts';
   import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { rewardGame } from '#lib/store/actions.ts';
   import { fnv1a } from '#lib/random.ts';
@@ -37,46 +32,26 @@
   import { clearGame, loadGame, saveGame } from '../save.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
-  import { applyMove, foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
-  import { listen, nameOf as personName, online, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { applyMove, folder, lengthCode, seatsCode, type Move } from '../online.ts';
+  import { listen, nameOf, online, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
   import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
   interface Props {
-    /** The tab is shown (English Study open on it). */
-    active: boolean;
+    /** This phone's game (from the save) or the online one. */
+    screen: 'local' | 'online';
+    /** ‹ or ✕ (or no game to resume): back to the island, the tab open. */
     onclose: () => void;
-    /** Whether its top level (the menu) is shown: English Study's tab bar only there. */
-    ontop?: (top: boolean) => void;
-    /** The tab's: a game started or resumed goes to its own screen (the 3D board, /sugoroku), this way. */
-    onscreen?: (mode: 'local' | 'online') => void;
-    /** On the board's own screen (/sugoroku): this game, straight into play, the 3D board over the turn's panel. */
-    screen?: 'local' | 'online';
   }
-  let { active, onclose, ontop, onscreen, screen }: Props = $props();
-  const open = $derived(active);
-  $effect(() => ontop?.(view === 'menu'));
-  type View = 'menu' | 'how' | 'setup' | 'play' | 'results';
-  let view = $state<View>('menu');
-  let game = $state<Game | null>(null);
-  let saved = $state<Game | null>(null);
+  let { screen, onclose }: Props = $props();
+  let view = $state<'play' | 'results' | 'setup'>('play');
+  // (raw: a Game is replaced whole on each step, never changed in place)
+  let game = $state.raw<Game | null>(null);
   /** Which game is shown: this phone's (passed round) or the online one (the moves folded). */
-  let mode = $state<'local' | 'online'>('local');
-  $effect(() => {
-    if (!open) return;
-    listen();
-    untrack(() => {
-      saved = loadGame();
-      view = 'menu';
-      // the board's own screen: its game at once (a passed-round one from the save, else back to the tab)
-      if (screen === 'local') saved ? resume() : onclose();
-      else if (screen === 'online') resumeOnline();
-    });
-  });
+  let mode = $state<'local' | 'online'>(untrack(() => screen));
   const close = () => onclose();
-  /** To the menu: the save as it is now (a game played since the opening). */
-  const toMenu = () => (screen ? onclose() : ((saved = loadGame()), (view = 'menu')));
 
-  // the words and lines (their own chunks), asked for as the sheet opens
+  // the words and lines (their own chunks), asked for as the screen opens
   // (raw: never proxied, so a second assignment is no change; each asked for only while missing and not on its way:
   // an effect that set them again on every run looped in WebKit, the words arriving before the lines)
   let words = $state.raw<Words | null>(null);
@@ -91,60 +66,38 @@
       .catch(() => (failed = true))
       .finally(() => (asking = false));
   }
-  $effect(() => {
-    if (open && untrack(() => !words || !lines)) load();
-  });
+  load();
 
-  // ---- seats
   const me = $derived<Who>(week.model?.me ?? 'A');
-  const nameOf = personName;
-  /** Who can play: the three of us, each as their own character (the island's look), me first. */
-  const people = $derived<Who[]>(me === 'B' ? ['B', 'A', 'G'] : me === 'G' ? ['G', 'A', 'B'] : ['A', 'B', 'G']);
-  let picked = $state<Who[]>([]);
-  /** Each seat's level (ふつう till changed). */
-  let levels = $state<Partial<Record<Who, Level>>>({});
-  let length = $state<Length>('normal');
-  const seatsOf = (ws: readonly Who[]): Seat[] => ws.map((who) => ({ who, name: nameOf(who), level: levels[who] ?? 2 }));
-  /** 新しいゲーム's way: one phone passed round, or each on their own (members and the guest only, me among them). */
-  let playMode = $state<'local' | 'online'>('local');
   /** The speaking step after a 絵 (game.ts speakOn): with the switch on and a person's key on this phone (the relay's
    *  /stt and /grade refuse the guest's: a guest's own phone gets none; passed round, this phone's key for everyone). */
   const speakable = $derived(speakOn(location.search) && !!getKey() && me !== 'G');
-  /** The speech test's page (docs/speech-test.md), the page's own query kept (?demo, the e2e's hooks). */
-  const toSpeech = () => {
-    onclose();
-    void goto(`${resolve('/speech')}${location.search}`);
-  };
-  function start() {
-    if (playMode === 'online') {
-      startOnline(seatsCode(seatsOf(picked)), lengthCode(length));
-      return resumeOnline();
-    }
-    // (its board's family not the last game's: two games in a row look different; `?sgSeed=` the e2e's, pinned)
-    const seed = hook('sgSeed') || `${now()}:${picked.join(',')}`, last = familyOfKey((game ?? saved)?.layout);
-    let lay = seed;
-    for (let k = 1; k < 20 && last && familyOfKey(layoutKey(lay)) === last; k++) lay = `${seed}~${k}`;
-    const g0 = newGame(seatsOf(picked), seed, length, layoutKey(lay));
-    shown = g0.players.map((p) => p.pos);
-    mode = 'local';
-    set(g0);
-    toPlay();
-  }
-  /** Into play: on the board's screen here, from the tab to that screen. */
-  function toPlay() {
-    if (onscreen && !screen) return onscreen(mode);
-    view = 'play';
-  }
-  function setup() {
-    picked = people.slice(0, 2);
-    view = 'setup';
-  }
-  /** もう一度遊ぶ: the setup again, the same table, levels and way. */
+
+  // ---- もう一度遊ぶ: だれが遊ぶ？ again, the same table, levels and way
+  let picked = $state<Who[]>([]);
+  let levels = $state<Partial<Record<Who, Level>>>({});
+  let length = $state<Length>('normal');
+  let playMode = $state<'local' | 'online'>('local');
   function again(x: Game) {
     playMode = mode;
     picked = x.players.map((p) => p.who);
     levels = Object.fromEntries(x.players.map((p) => [p.who, p.level]));
+    length = x.length;
     view = 'setup';
+  }
+  function start() {
+    const seats = seatsFor(picked, levels);
+    if (playMode === 'online') {
+      startOnline(seatsCode(seats), lengthCode(length));
+      shown = [];
+      mode = 'online';
+    } else {
+      const g0 = newLocal(seats, length, game);
+      shown = g0.players.map((p) => p.pos);
+      mode = 'local';
+      set(g0);
+    }
+    view = 'play';
   }
 
   // ---- the game: every step saved; the heads walk the route a stone at a time to where the game has them
@@ -158,12 +111,12 @@
     if (shown.length !== g.players.length) shown = g.players.map((p) => p.pos);
     if (g.phase.k === 'end') {
       clearGame();
-      saved = null;
       view = 'results';
     } else saveGame(g);
   }
   /** The online game: its moves folded (with the words and lines in: a word's bonus and a ぶん's line are the fold's). */
-  const onlineGame = $derived(words && lines && online.cur.g ? foldMoves(online.cur.log, { words, lines, name: nameOf }) : null);
+  const fold = folder();
+  const onlineGame = $derived(words && lines && online.cur.g ? fold(online.cur.log, { words, lines, name: nameOf }) : null);
   const g = $derived(mode === 'online' ? onlineGame : game);
   // the 3D board's die and joy (Board3D): a roll's face; stars made (6+: a jump of joy, else a hop), あがり a jump
   let roll3 = $state<{ n: number; key: number } | null>(null);
@@ -171,7 +124,7 @@
   let madeSeen = -1;
   $effect(() => {
     const x = g;
-    if (!x || !screen) return;
+    if (!x) return;
     untrack(() => {
       const key = (cheer3?.key ?? 0) + 1;
       if (madeSeen >= 0 && x.made.length > madeSeen) {
@@ -189,21 +142,9 @@
       shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(board!, v, ps[i].pos, ps[i].ways)[0]));
       // (the dice's number kept while the walk waits at the fork)
       if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), g?.phase.k !== 'fork' && (rolled = 0));
-    }, screen ? 260 : 170);
+    }, 260);
     return () => clearInterval(id);
   });
-  function resume() {
-    if (!saved) return;
-    shown = saved.players.map((p) => p.pos);
-    mode = 'local';
-    set(saved);
-    toPlay();
-  }
-  function resumeOnline() {
-    shown = [];
-    mode = 'online';
-    toPlay();
-  }
   // an online game's heads start where it is (a new one, a resume); its end: the results
   let shownFor = '';
   $effect(() => {
@@ -239,10 +180,10 @@
     let k = 0;
     rolling = 1;
     // (the 3D die tumbles ~0.9 s: the move after it lands)
-    if (screen) roll3 = { n, key: (roll3?.key ?? 0) + 1 };
+    roll3 = { n, key: (roll3?.key ?? 0) + 1 };
     const id = (rollTimer = setInterval(() => {
       rolling = (k++ % 6) + 1;
-      if (k < (screen ? 13 : 8)) return;
+      if (k < 13) return;
       clearInterval(id);
       rolling = null;
       if (g !== from) return; // (a new game or a resume since: this roll is void)
@@ -338,55 +279,25 @@
     });
   });
 
-  const headOf = (x: { who: Who }) => ({ person: x.who, worn: true });
+  // the game: passed round, the save's (none: back to the tab); online, the moves held, folded as they come
+  listen();
+  if (untrack(() => screen) === 'local') {
+    const saved = loadGame();
+    if (saved) set(saved);
+    else queueMicrotask(close);
+  }
 </script>
 
   <div class="sg" data-sugoroku data-level={view}>
-    {#if view === 'menu'}
-      <div class="top"><NavBar pad title={s('title')} onclose={close} /></div>
-      <div class="body sheet-scroll">
-        {#if onlineGame && onlineGame.phase.k !== 'end' && online.cur.log[0]}
-          <!-- the online game running with me in it: its card first, 参加 back into its screen -->
-          {@const by = online.cur.log[0].who}
-          <div class="card pad live" data-sg-online-card>
-            <Avatar person={by} worn size={40} />
-            <span class="nm">{s('startedBy', { name: nameOf(by) })}</span>
-            <button type="button" class="btn small" data-sfx="open" data-sg-resume-online onclick={resumeOnline}>{s('join')}</button>
-          </div>
-        {:else if updateNeeded()}
-          <!-- an online game started on another build's rules: it can't be played here (wire.ts otherRules) -->
-          <p class="card pad note" data-sg-update>{s('updateApp')}</p>
-        {/if}
-        <div class="hero card pad">
-          <p class="lead">{s('how2')}</p>
-          <p class="note">{s('teamLine')}</p>
-          {#if saved}
-            <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
-          {/if}
-          <button type="button" class="btn" class:paper={!!saved} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
-          <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (view = 'how')}>{s('howTo')}</button>
-        </div>
-      </div>
-    {:else if view === 'how'}
-      <div class="top"><NavBar pad title={s('howTo')} onback={toMenu} onclose={close} /></div>
-      <div class="body sheet-scroll">
-        <ol class="card pad how">
-          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li><li>{s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })}</li>
-        </ol>
-      </div>
-    {:else if view === 'setup'}
-      <Setup {people} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onspeech={toSpeech} onback={toMenu} onclose={close} />
+    {#if view === 'setup'}
+      <Setup people={peopleFor(me)} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onspeech={() => (close(), void toSpeech())} onback={() => (view = 'results')} onclose={close} />
     {:else if view === 'play' && g && cur && ph && board}
       <!-- the board full-bleed, never resized by a phase: the top overlay and the turn's sheet are its insets -->
       <div class="play" data-sg-turn={g.turn} data-sg-phase={ph.k} style:--hud="{hudH}px">
         <div class="stage">
-          {#if screen}
-            {#key board}<Board3D {board} players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
-              {#snippet fallback()}<Board {board} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
-            </Board3D>{/key}
-          {:else}
-            <Board {board} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />
-          {/if}
+          {#key board}<Board3D {board} players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
+            {#snippet fallback()}<Board {board} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
+          </Board3D>{/key}
         </div>
         <div class="hud" bind:offsetHeight={hudH}>
           {#snippet tools()}<NavButton kind="tool" icon="more" label={s('menu')} popup sfx="open" data-sg-menu onclick={() => (menuOpen = true)} />{/snippet}
@@ -398,11 +309,11 @@
               <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
             </span>
           {/snippet}
-          <NavBar pad title={s('title')} onback={toMenu} onclose={close} trailing={tools} middle={team} />
+          <NavBar pad title={s('title')} onback={close} onclose={close} trailing={tools} middle={team} />
           <div class="scores">
             {#each g.players as p, i (i)}
               <span class="score obj-cream" class:now={i === g.turn} aria-current={i === g.turn ? 'true' : undefined} data-sg-score={i}>
-                <Avatar {...headOf(p)} size={24} /><span class="pn">{p.name}</span><span class="tag" data-sg-level-tag>{s(`level.${p.level}`)}</span>
+                <Avatar person={p.who} worn size={24} /><span class="pn">{p.name}</span><span class="tag" data-sg-level-tag>{s(`level.${p.level}`)}</span>
                 {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
                 {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
               </span>
@@ -433,9 +344,7 @@
       <ActionSheet bind:open={menuOpen} title={s('title')} groups={[[{ id: 'how', label: s('howTo'), icon: 'info' }, { id: 'end', label: s('end'), icon: 'flag', hook: 'sg-end' }]]}
         onpick={(id) => (id === 'how' ? (howOpen = true) : (endOpen = true))} />
       <Sheet bind:open={howOpen} title={s('howTo')}>
-        <ol class="how">
-          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li><li>{s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })}</li>
-        </ol>
+        <HowTo />
       </Sheet>
       <Sheet bind:open={endOpen} title={s('endAsk')}>
         <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
@@ -448,10 +357,10 @@
         {/snippet}
       </Sheet>
     {:else if view === 'results' && g}
-      <Results {g} {lastTotal} {shells} onback={toMenu} onclose={close} onagain={() => again(g)} />
+      <Results {g} {lastTotal} {shells} onback={close} onclose={close} onagain={() => again(g)} />
     {:else if view === 'play'}
       <!-- (no game to show yet: the online one's moves and the words on their way, or a game of another build's rules) -->
-      <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
+      <div class="top"><NavBar pad title={s('title')} onback={close} onclose={close} /></div>
       <div class="body sheet-scroll">
         {#if mode === 'online' && updateNeeded()}<p class="card pad note" data-sg-update>{s('updateApp')}</p>
         {:else if failed}<p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
@@ -469,13 +378,7 @@
     padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
   /* (a scroller's column: its cards keep their height, never squeezed to fit) */
   .body > * { flex-shrink: 0; }
-  .hero { display: flex; flex-direction: column; gap: 10px; }
-  .live { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .live .nm { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
-  .lead { margin: 0 0 4px; font: 700 var(--fs-body)/1.5 var(--font-ui); text-wrap: pretty; }
-  .how { margin: 0; padding-left: 28px !important; display: grid; gap: 8px; font-size: var(--fs-body); line-height: 1.5; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
-  .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
   .pl { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 5px; background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); font: 600 12px/1 var(--font-num); color: var(--c-ink); }
   .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
   .centre { text-align: center; }
