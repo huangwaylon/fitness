@@ -43,6 +43,12 @@ test('けんこう and ごはん read at night', async ({ page }, info) => {
   await island(page);
   await openKenkou(page, 'health');
   expect(await low(page), 'health').toEqual([]);
+  // a met day's callout: cream at every hour, so its ✓ keeps the day's green (the night's light one reads 1.3:1 there;
+  // a lone symbol and a pointer-events: none callout are both outside low()'s walk)
+  const chart = page.locator('dialog[open] .mc[data-metric=steps] .chart');
+  const b = (await chart.boundingBox())!;
+  await chart[how]({ position: { x: 38 + (b.width - 44) * (1.5 / 7), y: b.height - 40 } }); // 10/30, 12.7k of 8,000
+  await expect(chart.locator('.tip .ok')).toHaveCSS('color', 'rgb(37, 110, 51)');
   const food = page.locator('dialog[open] [data-kenkou-tab=food]');
   await food[how]();
   await expect(food).toHaveAttribute('aria-current', 'page');
@@ -94,5 +100,18 @@ test('the board’s cream pager keeps the day’s sunk ‹ › at night (not nig
   const older = view.locator('[data-board-older]');
   await expect(older).toHaveAttribute('aria-disabled', 'true');
   expect(await older.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(234, 215, 172)');
+  expect(await low(page)).toEqual([]);
+});
+
+test('a trail’s credits read at night (their links the night’s green on the navy sheet)', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  await island(page);
+  await fromMenu(page, 'hiking', how);
+  await page.locator('dialog[open] [data-trail="akagi-kurobi"] .hit')[how]();
+  const view = page.locator('dialog[open] [data-trail-view="akagi-kurobi"]');
+  await view.locator('[data-sheet-grip]')[how]();
+  await expect(view).toHaveAttribute('data-sheet', 'full');
+  await view.locator('.body').evaluate((b) => (b.scrollTop = b.scrollHeight));
+  await expect(view.locator('[data-photo-credit] a').first()).toBeInViewport();
   expect(await low(page)).toEqual([]);
 });

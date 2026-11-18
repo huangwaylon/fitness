@@ -269,5 +269,5 @@
   .facts { margin: 0; }
   .facts dd { margin: 0; font-weight: 600; }
   .attrib { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
-  .attrib a { color: var(--c-leaf-text); }
+  .attrib a { color: var(--leaf-text); }
 </style>

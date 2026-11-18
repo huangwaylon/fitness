@@ -128,7 +128,7 @@
   .avg-u { stroke: var(--card); stroke-width: 4; opacity: .85; }
   .val { fill: var(--text); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
   .trow { display: flex; align-items: center; gap: 6px; }
-  .ok { color: var(--c-leaf-text); }
+  .ok { color: var(--leaf-text); }
   .dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
   .dot.pA { background: var(--person-a); }
   .dot.pB { background: var(--person-b); }

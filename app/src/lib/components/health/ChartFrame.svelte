@@ -130,7 +130,7 @@
       {/each}
     </svg>
     {#if sel !== null}
-      <div class="tip" style:left={tipLeftSide ? `${pad.l + 4}px` : null} style:right={tipLeftSide ? null : `${pad.r + 4}px`} aria-live="polite">
+      <div class="tip obj-cream" style:left={tipLeftSide ? `${pad.l + 4}px` : null} style:right={tipLeftSide ? null : `${pad.r + 4}px`} aria-live="polite">
         <b>{bucketTitle(range, sel, today)}{#if running?.(sel)}<small> · {t('health.todaySoFar')}</small>{/if}</b>
         {@render tip(sel)}
       </div>
