@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 0, new 3, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 0, new 3, ctx 4, tx 5, qa 5
 // A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 8, new 3
 // “What texts REALLY mean - The Office US” (the official The Office channel, BEST OF The Office - Season 8): at a dinner,
 // Val's boyfriend Brandon, serving the food, accuses Darryl of chasing Val; the guests make Darryl read his texts aloud
@@ -99,8 +99,8 @@ export const textsMean: Clip = {
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'topic', seg: [36.3, 45.2],
       stem: 'Why does a guest say “Let’s get back to the food”?',
       ja: '客の一人はなぜ「Let’s get back to the food」と言う？',
-      choices: ['To stop the fight', 'To start the meal', 'To praise the dishes'], a: 0,
-      choicesJa: ['けんかを止めるため', '食事を始めるため', '料理をほめるため'],
+      choices: ['To stop the fight', 'To order more food', 'To praise the dishes'], a: 0,
+      choicesJa: ['けんかを止めるため', '料理を追加で頼むため', '料理をほめるため'],
       cue: 'Hey! の直後、Let’s で始まる一言。',
       line: '*Let’s get back to the food.* Brandon, tell us about these delicious-looking goops.',
       said: '言い争いの最中に「料理の話に戻ろう」と言い、説明を頼む。',
@@ -218,7 +218,7 @@ export const textsMean: Clip = {
       ja: '最後を書き取る：「Something interesting is happening here ___.」（5語）',
       cue: 'happening here のあと、文の終わりまで。',
       line: 'Something interesting is happening here *for once in my life*.',
-      said: '「やっと人生に一度、ここで面白いことが起きてる」と言う。',
+      said: '「人生でやっと一度、ここで面白いことが起きてる」と言う。',
       mean: 'for once in my life ＝ 人生で一度くらい。ふだんは退屈、という気持ち。',
       trap: 'for と in が弱く、once と life だけ残りやすい。ひとまとまりで覚える。',
       use: 'For once in my life, I’m early!（生まれて初めて、時間より早い！）' },
@@ -284,13 +284,13 @@ export const textsMean: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'dotrule', seg: [106, 113.9], keep: true,
       stem: 'How many dots mean a typo?',
       ja: '点がいくつだと打ちまちがい？',
-      choices: ['3', '4', '5'], a: 1,
-      choicesJa: ['3つ', '4つ', '5つ'],
+      choices: ['2', '3', '4', '5'], a: 2,
+      choicesJa: ['2つ', '3つ', '4つ', '5つ'],
       cue: 'to be continued のあとの数。',
       line: 'three dots means to be continued. *Four dots is a typo*, but five dots means…',
       said: '「点3つは『つづく』、4つはただの打ちまちがい、でも5つは…」と説明する。',
       mean: 'typo ＝ 打ちまちがい。点の数で意味が変わる、という冗談半分のルール。',
-      trap: '三つの数が続くので混ざりやすい。「スリー」は「つづく」、typo の前は「フォー」、「ファイヴ」は but のあと。',
+      trap: '三つの数が続くので混ざりやすい。「スリー」は「つづく」、typo の前は「フォー」、「ファイヴ」は but のあと。to（トゥ）は two ではない。',
       use: 'Sorry, that was a typo.（ごめん、打ちまちがいだった）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'fivedots', reveals: ['dotrule'], seg: [109.8, 122.1],
@@ -319,8 +319,8 @@ export const textsMean: Clip = {
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'crazy', ctx: true, seg: [121.9, 128],
       stem: 'How does Darryl answer Val?',
       ja: 'ダリルはヴァルにどう答える？',
-      choices: ['He agrees it’s crazy', 'He says it is true', 'He doesn’t answer her'], a: 0,
-      choicesJa: ['ばかげてると同意する', '本当だと言う', '返事をしない'],
+      choices: ['He agrees with her', 'He says it is true', 'He gets angry at her'], a: 0,
+      choicesJa: ['ヴァルに同意する', '本当だと言う', 'ヴァルに怒る'],
       cue: '「Right?」への返事',
       line: 'Val: Brandon, Darryl and me, *it’s ridiculous*. Right? / Darryl: Yeah. *Totally crazy*.',
       said: 'ヴァルが「ダリルと私なんて、ありえないでしょ。ね？」と聞き、ダリルは「ああ。まったくばかげてる」。',

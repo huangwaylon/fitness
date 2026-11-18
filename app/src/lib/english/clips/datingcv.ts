@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 0, new 3, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 0, new 3, ctx 5, tx 3, qa 6
 // A2 REVIEW 2026-11-17: keep 1, rewrite 14, retire 4, new 2
 // “Leslie fills out a dating profile like it's a CV | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 3): Leslie asks Ben out to dinner and gets a flustered no; while Ann runs a cholesterol test, she talks Leslie
@@ -124,13 +124,13 @@ export const datingCv: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [62.6, 71.3], keep: true,
       stem: 'How many other guys does Ann say are out there?',
       ja: 'アンは、ほかに男性が何人いると言う？',
-      choices: ['A thousand', 'A million', 'A billion'], a: 1,
-      choicesJa: ['千人', '百万人', '十億人'],
+      choices: ['A thousand', 'A million', 'A billion', 'A trillion'], a: 1,
+      choicesJa: ['千人', '百万人', '十億人', '一兆人'],
       cue: '「there’s a」のあと',
       line: 'You’re awesome, and there’s *a million* other guys out there.',
-      said: '「あなたは最高。ほかに男なんていくらでもいる」と励ます。',
+      said: '「あなたは最高だし、ほかにも男の人は山ほどいる」と励ます。',
       mean: 'a million ＝ 百万。ここでは「数えきれないほど」という大げさな言い方。',
-      trap: 'thousand は「サウ」で始まる。billion は「ビ」で唇がはじける。「ミ」で始まれば million。',
+      trap: 'thousand は「サウ」で始まる。billion は「ビ」で唇がはじける。trillion は「トゥリ」で始まる。「ミ」で始まれば million。',
       use: 'There are a million other options.（ほかにも選択肢はいくらでもある）' },
     { id: 'h1', skill: 'detail', level: 'B1', point: 'prick', ctx: true, seg: [73.1, 80],
       stem: 'Has Ann used the needle yet?',
@@ -201,7 +201,7 @@ export const datingCv: Clip = {
       choicesJa: ['もっと素敵に聞こえるようにする', 'もっと短くする', 'おもしろくする'],
       cue: '言い直しのあとのアンの返事',
       line: 'Yellow-haired female. Likes waffles and news. — *Sexy, well-read blonde*. Loves the sweeter things in life. — *Much better*.',
-      said: '「黄色い髪の女性、ワッフルとニュースが好き」を、アンが「セクシーで知的な金髪」と言い直し、「ずっといい」と言う。',
+      said: '「黄色い髪の女性、ワッフルとニュースが好き」を、アンが「セクシーで知的な金髪。人生の甘いものが大好き」と言い直す。そして「ずっといい」。',
       mean: 'Much better ＝ ずっといい。well-read ＝ 本をよく読んでいる、物知り。',
       trap: '短くしたと考えがちだが、同じ中身を素敵な言葉に言いかえている。',
       use: 'Much better!（ずっといいね！）' },
@@ -269,8 +269,8 @@ export const datingCv: Clip = {
       trap: '花と Ew（うえっ）から花粉症を連想しやすい。理由は I’m scared of のあと。',
       use: 'I’m scared of heights.（高い所がこわいの）' },
     { id: 'nt1', skill: 'infer', level: 'B2', point: 'turtles', ctx: true, seg: [143.5, 150.6],
-      stem: 'What does Leslie really think of turtles?',
-      ja: 'レスリーは本当はカメをどう思っている？',
+      stem: 'What does Leslie think of turtles in the end?',
+      ja: 'レスリーは結局、カメをどう思っている？',
       choices: ['She doesn’t like them', 'She loves them too', 'She has never seen one'], a: 0,
       choicesJa: ['好きではない', 'カメも大好き', '見たことがない'],
       cue: '「No opinion」の少しあとの一言',

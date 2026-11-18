@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 9, retire 3, new 3, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 1, rewrite 9, retire 3, new 3, ctx 4, tx 3, qa 3
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 5, new 0 · sweep: mysteryparty twins retired (f2 i1)
 // “me when they're singing happy birthday at a restaurant 💀 | iCarly #Shorts” (NickRewind, Best of the New iCarly 🎉):
 // at Freddie's party, a guest with a date wants to leave; the host pleads, they strike a deal (cake, dancing, drinks,
@@ -147,8 +147,8 @@ export const cakeRush: Clip = {
     { id: 'm1', skill: 'marker', level: 'B2', point: 'well', seg: [19.0, 24.0],
       stem: 'What does the host mean by “Well” here?',
       ja: 'ここでの主催者の「Well」の意味は？',
-      choices: ['But listen', 'Yes, you’re right', 'Okay, I give up'], a: 0,
-      choicesJa: ['でもね', 'うん、その通り', '分かった、あきらめる'],
+      choices: ['But listen', 'Yes, you’re right', 'Okay, you can go'], a: 0,
+      choicesJa: ['でもね', 'うん、その通り', '分かった、帰っていいよ'],
       cue: '返事の最初の一語',
       line: '*Well*, there’s also cake and a disco playlist and drinks that need to happen.',
       said: '「でもね、ケーキもディスコの曲リストも、飲み物もまだあるし」と返す。',
@@ -167,8 +167,8 @@ export const cakeRush: Clip = {
       trap: 'cake and dancing で終わりと考えがち。okay のあとの drink まで聞く。',
       use: 'Okay, one more drink, then we go.（分かった、もう一杯飲んだら行こう）' },
     { id: 'a2', skill: 'infer', level: 'B2', point: 'afterthat', reveals: ['outofhere'], ctx: true, seg: [24.0, 30.4],
-      stem: 'What will the guests do after the cake?',
-      ja: 'ケーキのあと、ゲストはどうする？',
+      stem: 'What will the guests do after cake and drinks?',
+      ja: 'ケーキと飲み物のあと、ゲストはどうする？',
       choices: ['Go home right away', 'Stay for more dancing', 'Help clean the room'], a: 0,
       choicesJa: ['すぐ帰る', '残ってもっと踊る', '部屋の片づけを手伝う'],
       cue: 'but after that のあと',
