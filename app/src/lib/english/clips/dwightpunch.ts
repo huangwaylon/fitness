@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 2, ctx 4, tx 1
+// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 2, ctx 4, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 3, new 0
 // “Dwight Punches Michael  - The Office US” (the official The Office channel, BEST OF SEASON 2): asked whom he could
 // beat up, Dwight says Michael; Michael insists he'd win, brags about his tough past, dodges a question about the
@@ -56,7 +56,7 @@ export const dwightPunch: Clip = {
       use: 'I’d beat you at tennis any day.（テニスならいつでも勝てる）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'friends', seg: [5.8, 13.5],
-      stem: 'Fill the gap in Dwight’s reply: “___ friends.”', ja: 'ドワイトの返事の空所は？ “___ friends.”',
+      stem: 'Fill the gap: “___ friends.”', ja: '空所に入るのは？ “___ friends.”',
       choices: ['’Cause we’re', 'Of course we’re', '’Cause we were'], a: 0,
       choicesJa: ['だって〜だから', 'もちろん〜だ', 'だって〜だったから'],
       cue: '前の文に続く、短く弱いかたまり',
@@ -95,7 +95,7 @@ export const dwightPunch: Clip = {
       cue: '「used to」のあと',
       line: 'I used to *run with a very tough crowd*, street fighter types…',
       said: '「昔はすごく荒っぽい連中とつるんでいた。ストリートファイター系の」と言う。',
-      mean: 'run with 〜 ＝ 〜とつるむ。crowd ＝ 仲間、連中。tough ＝ 荒っぽい。',
+      mean: 'run with 〜 ＝ 文字どおりは「〜と一緒に走る」→ いつも一緒に動く＝つるむ。crowd ＝ 連中。tough ＝ 荒っぽい。',
       trap: 'run を「走る」「経営する」と思いやすい。run with ＋人は「つき合う」。',
       use: 'He runs with the wrong crowd.（彼は悪い仲間とつるんでる）' },
 
@@ -142,8 +142,8 @@ export const dwightPunch: Clip = {
       choicesJa: ['細かいところを仕上げる', 'つづりのまちがいを直す', 'アルファベットを習う'],
       cue: '「just need to」のあと',
       line: 'I just need to *cross some T’s and dot some I’s*.',
-      said: '「あとは t の横棒と i の点だけ」と言う。',
-      mean: 'ふつうは dot the i’s and cross the t’s ＝ 細かいところまで仕上げる。順番が逆なのも、いい加減さ。',
+      said: '「あとは細かいところ（t の横棒と i の点）だけ」と言う。',
+      mean: 'cross the t’s and dot the i’s ＝ t の横棒、i の点まで書く→細かいところまで仕上げる。the でなく some なのがいい加減。',
       trap: '文字の話なので、つづりを直すと思いやすい。文字の決まり文句は「細かい仕上げ」のたとえ。',
       use: 'Let’s dot the i’s and cross the t’s.（最後の細かい確認をしよう）' },
 
@@ -251,8 +251,8 @@ export const dwightPunch: Clip = {
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'taunt', seg: [104.0, 121.0],
       stem: 'Why does Dwight finally agree to punch Michael?', ja: 'ドワイトはなぜ、最後にマイケルを殴ることにする？',
-      choices: ['Michael keeps calling him weak', 'Michael orders him to', 'Michael says he can take it'], a: 0,
-      choicesJa: ['弱虫と言われ続けたから', '命令されたから', '平気だと言われたから'],
+      choices: ['Michael keeps calling him weak', 'Michael gives him an order', 'A coworker asks him to'], a: 0,
+      choicesJa: ['弱虫と言われ続けたから', '命令されたから', '同僚に頼まれたから'],
       cue: '「OK」の直前のマイケルの言葉',
       line: 'Look, *Dwight is a wuss*. … — Okay. I’ll punch you.',
       said: '「殴らせても意味がない」「あいつは弱虫」とからかい続け、最後にドワイトが応じる。',
@@ -284,7 +284,7 @@ export const dwightPunch: Clip = {
       cue: '「That was because」のあと',
       line: 'Michael: He cried at the end of it. / Dwight: Michael, I told you. That was because it was New Year’s Eve, and *it started to snow at exactly midnight*.',
       said: '「大みそかで、ちょうど0時に雪が降り始めたからだ」と言い返す。',
-      mean: 'exactly midnight ＝ ちょうど夜12時。映画のせいではないと言いたい。',
+      mean: 'Armageddon ＝ 最後に主人公が死ぬ、泣ける映画。exactly midnight ＝ ちょうど夜12時。映画のせいではないと言いたい。',
       trap: '映画の話なので、映画が終わったからだと思いやすい。and のあとの snow を聞く。',
       use: 'It started to rain right at noon.（ちょうど正午に雨が降り出した）' },
 

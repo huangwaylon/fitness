@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 14, rewrite 7, retire 0, new 2, ctx 6, tx 1
+// R4 REVIEW 2026-11-18: keep 14, rewrite 7, retire 0, new 2, ctx 6, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 15, retire 3, new 1
 // “Michael Becomes Jim - The Office US” (the official The Office channel, BEST OF SEASON 2): Jim tells the camera he
 // confided his old feelings for Pam to Michael, asks him to keep it quiet, and Michael, proud to be trusted, starts
@@ -10,6 +10,8 @@
 // SKIP 131–148: the spelling loop and soda talk (captions "silicate", "peach iced tea"; whisper loops)
 // SKIP 202.5–224: the wig (who asks is unclear, and it's visual)
 // SKIP 275.3–302.5: music; captions "pam" at 280.8 s, whisper "Oh, my God"
+// EAR CHECK: 225.5–232 s k2 — who asks "This is from Hooters?" / "Did Toby approve this?" (scenes say Toby, but he'd
+//   hardly ask about himself; Michael says "Toby" at 251 s), so k2's line names no asker
 import type { Clip } from '../types.ts';
 
 export const michaelJim: Clip = {
@@ -50,7 +52,7 @@ export const michaelJim: Clip = {
       choicesJa: ['マイケルは秘密を守れない', 'マイケルは自信がない', 'マイケルはお酒に弱い'],
       cue: '「world’s worst」のあとの一語。',
       line: '…and I confided in *the world’s worst confidant*.',
-      said: '失恋とお酒の勢いで、「世界一、秘密を話しちゃいけない相手」に話した、と言う。',
+      said: '別れた直後でお酒も入り、「世界一ひどい秘密の相談相手」に話した、と言う。',
       mean: 'confidant ＝ 秘密を打ち明ける相手。the world’s worst 〜 ＝ 世界一ひどい〜。',
       trap: 'confident（自信がある）と音がほぼ同じ。すぐ前の confided（打ち明けた）がヒント。',
       use: 'I’m the world’s worst cook.（私、料理は世界一下手なの）' },
@@ -58,11 +60,11 @@ export const michaelJim: Clip = {
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'between', seg: [55.3, 65.8],
       stem: 'What is Jim asking Michael to do?',
       ja: 'ジムはマイケルに何を頼んでいる？',
-      choices: ['Keep it just between them', 'Remember the boat trip', 'Ask Pam about it'], a: 0,
-      choicesJa: ['二人だけの話にしておく', '船の旅を思い出す', 'パムにそのことを聞く'],
+      choices: ['Keep it a secret', 'Remember the boat trip', 'Ask Pam about it'], a: 0,
+      choicesJa: ['秘密にしておく', '船の旅を思い出す', 'パムにそのことを聞く'],
       cue: '「personal, so」のあと。',
       line: 'That was personal, so if we could just *keep that between you and me*, that would be great.',
-      said: '「個人的な話だから、二人だけの話にしてくれると助かる」と頼む。',
+      said: '「個人的な話だから、二人だけの秘密にしてもらえたらうれしい」と頼む。',
       mean: 'between you and me ＝ ここだけの話。if we could just 〜 ＝ 〜してくれると助かる。',
       trap: '最初の You remember…? は質問に聞こえやすいが、前置き。頼みは so のあとに来る。',
       use: 'Let’s keep this between us, okay?（これはここだけの話ね）' },
@@ -119,7 +121,7 @@ export const michaelJim: Clip = {
       choicesJa: ['誰にも言わない', '怒りすぎて話せない', '口が痛い'],
       cue: '「possibly can」のあと。',
       line: 'for as long as I possibly can. *My lips are sealed.* My lips are sealed.',
-      said: '「できる限り長く秘密を守る。口は閉じた。口は閉じたぞ」と2回言う。',
+      said: '「できる限り長く秘密を守る。口にチャックだ」と2回言う。',
       mean: 'My lips are sealed ＝ 文字どおりは「くちびるに封がしてある」。「絶対に言わない」の決まり文句。',
       trap: '文字どおりだと口が開かない話に聞こえやすい。直前の keeping that secret が答え。',
       use: 'Don’t worry. My lips are sealed.（心配しないで。絶対言わないから）' },
@@ -156,7 +158,7 @@ export const michaelJim: Clip = {
       line: 'So, uh, what’s 411? *Any updates* on the… P situation?',
       said: '「で、最新情報は？ Pの件、何か進展ある？」と聞く。',
       mean: 'update ＝ 最新の情報。Any updates on 〜? ＝ 〜について何か新しいことある？ 仕事でもよく使う。',
-      trap: '前の 411 は古いくだけた言い方で、番号の話ではない。分からない語は直後の言いかえで確かめる。',
+      trap: '411（アメリカの電話番号案内）＝「情報」のくだけた言い方で、番号の話ではない。直後の言いかえで確かめる。',
       use: 'Any updates on my order?（注文の件、何か進展ありますか）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'stan', ctx: true, seg: [123.8, 132],
@@ -259,9 +261,9 @@ export const michaelJim: Clip = {
       choices: ['A business lunch', 'A birthday lunch', 'A team lunch'], a: 0,
       choicesJa: ['商談のランチ', '誕生日のランチ', 'チームのランチ'],
       cue: 'Hooters のあと、マイケルの返事',
-      line: 'Toby: This is from Hooters? / Michael: Yeah, it’s a *business lunch*.',
+      line: 'This is from Hooters? / Michael: Yeah, it’s a *business lunch*.',
       said: '「これ、フーターズのですよね？」に、「うん、商談のランチだ」と答える。',
-      mean: 'business lunch ＝ 仕事の話をしながらの昼食。会社のお金（経費）で払える、と言いたい。',
+      mean: 'Hooters ＝ アメリカのレストランチェーン。business lunch ＝ 仕事の話をしながらの昼食。経費で払える、と言いたい。',
       trap: '決め手は business（仕事）。誕生日やチームの話は出てこない。',
       use: 'I have a business lunch at noon.（昼に商談のランチがあります）' },
 
@@ -321,7 +323,7 @@ export const michaelJim: Clip = {
       cue: '最後の「so just」のあと。',
       line: '…who’s engaged. So just *cut me some slack*, please.',
       said: '「だから大目に見てくれよ、頼む」と言う。',
-      mean: 'cut me some slack ＝ 大目に見て。経費を通してほしい、という頼み。',
+      mean: 'slack ＝ ロープのたるみ。文字どおりは「少しゆるめて」→ ぴんと張った厳しさをゆるめて＝大目に見て。経費を通してほしい。',
       trap: 'slack から「時間の余裕」を連想しやすい。cut me some slack でひとまとまりの決まり文句。',
       use: 'I’m new here. Cut me some slack.（新人なんだから、大目に見てよ）' },
   ]
