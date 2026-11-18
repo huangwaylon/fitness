@@ -4,7 +4,9 @@
   // 聞こえた文, editable (これでOK; もう一回 twice, then the keyboard) → the feedback: their sentence, 「こう言うともっと
   // 自然」 with the recast, the tip folded, praise. /grade is asked as soon as the words arrive (again only if edited), and
   // never waited on with a label: the stars come at これでOK, the recast slides in, nothing after GRADE_WAIT_MS (praise
-  // only). Its own chunk (PictureTurn imports it only with the switch on). Never red, ×, % or 間違い.
+  // only). Its own chunk (PictureTurn imports it only with the switch on). Never red, ×, % or 間違い. Online, its state
+  // and words go to the others at the table (`onview`: never kept), and a phone watching shows the player's (`mirror`:
+  // read-only, 録音中… for the take).
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { log } from '#lib/sync/log.ts';
@@ -12,7 +14,8 @@
   import { grade, type Graded } from '../grade.ts';
   import { s } from '../i18n.ts';
   import type { Level } from '../game.ts';
-  import { check, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check, type Grade } from '../speak.ts';
+  import type { SpeakView } from '../view.ts';
+  import { check, cheerOf, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check, type Grade } from '../speak.ts';
 
   interface Props {
     /** The picture's English (the word the sentence should use). */
@@ -24,8 +27,12 @@
     onengage: () => void;
     /** 次へ: the stars the sentence earned (0: skipped or not on task). */
     onnext: (said: number) => void;
+    /** Online, my turn: the step as it is now, for the others to watch. */
+    onview?: (v: SpeakView) => void;
+    /** Online, another's turn: theirs as their sheet shows it. */
+    mirror?: SpeakView | null;
   }
-  let { target, level, tipKey, onengage, onnext }: Props = $props();
+  let { target, level, tipKey, onengage, onnext, onview, mirror = null }: Props = $props();
 
   type Phase = 'ask' | 'rec' | 'stt' | 'confirm' | 'feedback';
   let phase = $state<Phase>('ask');
@@ -42,8 +49,8 @@
   let said = $state('');
   let graded = $state.raw<Grade | null>(null);
   let settled = $state(false);
-  /** A great sentence's cheer (the phone's: the relay's tip is empty then). */
-  let cheer = $state('');
+  /** A great sentence's cheer (the phone's: the relay's tip is empty then; speak.ts cheerOf, -1 none). */
+  let cheer = $state(-1);
   let onTask = $state(false);
   /** Saying the recast again after a tip (+1). */
   let resaying = $state(false), resaid = $state(false);
@@ -142,7 +149,7 @@
     said = t;
     onTask = true;
     graded = null;
-    cheer = '';
+    cheer = -1;
     settled = false;
     phase = 'feedback';
     // (GRADE_WAIT_MS from when it was asked for, the words' arrival: the relay's slow tail never holds the sheet; an
@@ -153,7 +160,7 @@
     ms = Math.round(performance.now() - tStop);
     if (r?.ok) {
       graded = r.grade;
-      cheer = r.grade.verdict === 'great' ? nextCheer() : '';
+      cheer = r.grade.verdict === 'great' ? nextCheer() : -1;
       layer = r.grade.src;
       err = undefined;
       const tip = shownTip;
@@ -166,11 +173,27 @@
     settled = true;
   }
 
-  const recast = $derived(recastOf(said, graded));
+  const recast = $derived(mirror ? mirror.recast : recastOf(said, graded));
   const diff = $derived(recast ? diffWords(said, recast) : null);
   /** The tip shown: one there is, and at やさしい not for an article or an -s alone (Whisper changes those itself). */
-  const shownTip = $derived(graded?.tip && !(level === 1 && recast && onlySmall(said, recast)) ? graded.tip : '');
-  const stars = $derived(saidStars(onTask, resaid));
+  const shownTip = $derived(mirror ? mirror.tip : graded?.tip && !(level === 1 && recast && onlySmall(said, recast)) ? graded.tip : '');
+  const also = $derived(mirror ? mirror.also : (graded?.also ?? ''));
+  const stars = $derived(mirror ? mirror.stars : saidStars(onTask, resaid));
+  // online: the step as it is, sent (my turn: its words too, never kept), or the player's shown (another's)
+  $effect(() => void onview?.({
+    phase, typed, heard: !!raw, note: note ?? '', resays, settled, graded: !!graded, tipOpen, resaid, stars, cheer,
+    text: phase === 'confirm' ? text : said, recast, tip: shownTip, also
+  }));
+  $effect.pre(() => {
+    const m = mirror;
+    if (!m) return;
+    untrack(() => {
+      (phase = m.phase), (typed = m.typed), (raw = m.heard ? '-' : ''), (note = m.note || null), (resays = m.resays);
+      (settled = m.settled), (tipOpen = m.tipOpen), (resaid = m.resaid), (cheer = m.cheer);
+      if (m.phase === 'confirm') text = m.text;
+      else said = m.text;
+    });
+  });
 
   function resay() {
     resaying = true;
@@ -205,12 +228,12 @@
     </div>
   {:else if phase === 'rec' || phase === 'stt'}
     <button type="button" class="btn rec" class:wait={phase === 'stt'} aria-disabled={phase === 'stt'} data-sfx="confirm" data-sg-stop onclick={mic}>
-      <Icon name="mic" size={20} />{phase === 'rec' ? say('stop', { s: secs.toFixed(1) }) : say('listening')}
+      <Icon name="mic" size={20} />{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: secs.toFixed(1) })) : say('listening')}
     </button>
   {:else if phase === 'confirm'}
     <form class="confirm card" data-kb-scroll onsubmit={(e) => (e.preventDefault(), confirm())}>
       <label class="lab" for="sg-said">{typed && !raw ? say('typeHere') : say('heard')}</label>
-      <input id="sg-said" class="said" lang="en" type="text" bind:this={field} bind:value={text} maxlength="200" autocomplete="off" autocapitalize="sentences"
+      <input id="sg-said" class="said" readonly={!!mirror} lang="en" type="text" bind:this={field} bind:value={text} maxlength="200" autocomplete="off" autocapitalize="sentences"
         spellcheck="false" enterkeyhint="done" data-sg-said />
       {#if note}<p class="note" aria-live="polite" data-sg-note={note}>{note === 'again' ? say('silence') : note === 'target' ? say('useWord', { w: target })
         : note === 'verb' ? say('addVerb') : note === 'denied' ? say('denied') : note === 'missed' ? say('missed') : ''}</p>
@@ -223,7 +246,7 @@
       </div>
     </form>
   {:else}
-    <div class="fb card" data-sg-feedback={settled ? (graded ? 'graded' : 'praise') : 'wait'}>
+    <div class="fb card" data-sg-feedback={settled ? ((mirror ? mirror.graded : graded) ? 'graded' : 'praise') : 'wait'}>
       <p class="mine" class:shimmer={!settled} lang="en" data-sg-mine>
         {#if diff}{#each diff.mine as w, i (i)}<span class:chg={w.changed}>{w.w}</span>{' '}{/each}{:else}{said}{/if}
       </p>
@@ -232,9 +255,9 @@
           <p class="lab">{say('better')}</p>
           <p class="better" lang="en" data-sg-recast>{#each diff.better as w, i (i)}{#if w.changed}<b>{w.w}</b>{:else}{w.w}{/if}{' '}{/each}</p>
         {:else}
-          <p class="praise" data-sg-praise>{cheer || say('praise')}</p>
+          <p class="praise" data-sg-praise>{cheerOf(cheer) || say('praise')}</p>
         {/if}
-        {#if graded?.also}<p class="lab">{say('also')}</p><p class="better" lang="en" data-sg-also>{graded.also}</p>{/if}
+        {#if also}<p class="lab">{say('also')}</p><p class="better" lang="en" data-sg-also>{also}</p>{/if}
         {#if shownTip}
           <button type="button" class="tipbtn" aria-expanded={tipOpen} data-sfx="tick" data-sg-tip onclick={() => (tipOpen = !tipOpen)}>
             <Icon name="bulb" size={18} />{say('tip')}<Icon name={tipOpen ? 'chevron-up' : 'chevron-down'} size={16} />

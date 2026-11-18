@@ -4,13 +4,16 @@
   // むずかしい its letters with two more mixed in, none given. Right → its stars; not → 「おしい！」 and one
   // more go; a second miss → 「答えはこれ」. Never red, never ×. With the speaking step on (`speak`: game.ts speakOn, a
   // person's key), the answer is followed by 「この絵で一文言ってみよう」 (SpeakStep, its own chunk, asked for as the turn
-  // opens); its 次へ adds the sentence's stars.
+  // opens); its 次へ adds the sentence's stars. Online, its state (the step's too) goes to the others at the table
+  // (`onview`), and a phone watching shows it as the player's (`mirror`: view.ts, read-only; the step's chunk asked for
+  // once the player's step shows).
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { seeded } from '#lib/random.ts';
   import { choicesFor, lettersFor, pictureSrc, type Picture } from '../pictures.ts';
   import { pictureStars } from '../game.ts';
   import { s } from '../i18n.ts';
+  import type { PictureView, SpeakView } from '../view.ts';
 
   interface Props {
     pic: Picture;
@@ -24,11 +27,21 @@
     ondone: (misses: number, said?: number) => void;
     /** The speaking step: on (the switch, and a person's key here), and the tip's key (the game and seat). */
     speak?: { tipKey: string } | null;
+    /** Online, my turn: the turn as it is now, for the others to watch. */
+    onview?: (v: PictureView) => void;
+    /** Online, another's turn: theirs as their sheet shows it. */
+    mirror?: PictureView | null;
   }
-  let { pic, level, seed, misses0 = 0, ontry, ondone, speak = null }: Props = $props();
-  // (only with the switch on: the step's chunk, asked for now so it's in by the answer; till then, or failing, 次へ alone)
+  let { pic, level, seed, misses0 = 0, ontry, ondone, speak = null, onview, mirror = null }: Props = $props();
+  // (only with the switch on, or the player's step shown here: the step's chunk, asked for now so it's in by the answer;
+  // till then, or failing, 次へ alone)
   let Step = $state.raw<typeof import('./SpeakStep.svelte').default | null>(null);
-  if (untrack(() => speak)) import('./SpeakStep.svelte').then((m) => (Step = m.default), () => {});
+  let stepAsked = false;
+  const askStep = () => !stepAsked && ((stepAsked = true), import('./SpeakStep.svelte').then((m) => (Step = m.default), () => {}));
+  if (untrack(() => speak)) askStep();
+  $effect(() => void (mirror?.speak && askStep()));
+  /** The step's state as it is (my turn, online), for the view. */
+  let stepView = $state.raw<SpeakView | null>(null);
   /** The step started: the answer folds to one line. */
   let speaking = $state(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -67,6 +80,17 @@
     else miss();
   }
   const takeBack = (k: number) => stage === 'try' && k > (given >= 0 ? 0 : -1) && (placed = placed.slice(0, k));
+  // online: the turn as it is, sent (my turn), or the player's shown (another's)
+  $effect(() => void onview?.({ placed, tried: tried.map((c) => choices.indexOf(c)), stage, misses, speak: stepView }));
+  $effect.pre(() => {
+    const m = mirror;
+    if (!m) return;
+    untrack(() => {
+      placed = [...new Set(m.placed)].filter((id) => id < tiles.length);
+      tried = m.tried.map((k) => choices[k]).filter(Boolean);
+      (stage = m.stage), (misses = m.misses), (speaking = !!m.speak && m.speak.phase !== 'ask');
+    });
+  });
 </script>
 
 <section class="turn" data-sg-picture={pic.w} data-sg-stage={stage}>
@@ -99,8 +123,11 @@
       <p class="en" lang="en" data-sg-answer>{pic.w}</p>
       <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
     </div>
-    {#if Step && speak}
-      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey={speak.tipKey} onengage={() => (speaking = true)} onnext={(said) => ondone(misses, said)} />
+    {#if Step && mirror?.speak}
+      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey="" mirror={mirror.speak} onengage={() => {}} onnext={() => {}} />
+    {:else if Step && speak && !mirror}
+      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey={speak.tipKey} onengage={() => (speaking = true)} onnext={(said) => ondone(misses, said)}
+        onview={onview ? (v) => (stepView = v) : undefined} />
     {:else}
       <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
     {/if}

@@ -4,9 +4,10 @@
 // screen), so a game someone starts with me in it comes as an invitation (invite.svelte.ts: a banner with 参加,
 // straight into the game's screen) wherever the phone is. Light (wire.ts only): the rules, the words and the lines
 // (online.ts, the invitation's fold: is the game over?) load only when an invitation may ask or a game opens. The game
-// itself is the moves folded (online.ts foldMoves), by the sheet.
+// itself is the moves folded (online.ts foldMoves), by the sheet. The turn's live view (view.ts, `sgv`: presence only)
+// is sent from here while it's my turn, and the latest heard kept for the sheet to show while it isn't.
 import { untrack } from 'svelte';
-import type { Intent, Relayed, SgIntent } from '#lib/contract/live-protocol.ts';
+import type { Intent, Relayed, SgIntent, SgView } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -21,6 +22,7 @@ import { invite, readAnswered } from './invite.svelte.ts';
 import type { Words } from './words.ts';
 import type { Line } from './sentences.ts';
 import { s } from './i18n.ts';
+import { encode, fit, type View } from './view.ts';
 
 /** The game's id, its moves in order and those waiting for a gap, and its last move's time (`at`: the relay's clock). */
 interface Kept { g: string; log: Move[]; held: Move[]; at?: number }
@@ -30,10 +32,12 @@ const read = (): Kept => {
   return k && typeof k.g === 'string' && Array.isArray(k.log) && Array.isArray(k.held) ? k : EMPTY;
 };
 
-/** The online game (`cur`: its id and moves, replaced whole on each move) and whether the relay is in. */
+/** The online game (`cur`: its id and moves, replaced whole on each move), whether the relay is in, and the latest view
+ *  of a turn heard (`view`: another player's sheet as it is; the sheet shows it only at the game's next move, theirs). */
 class Online {
   cur = $state.raw<Kept>(EMPTY);
   connected = $state(false);
+  view = $state.raw<(SgView & { who: Who }) | null>(null);
 }
 export const online = new Online();
 /** Whether the game held was started on another build's rules: it can't be played here (アプリを更新). */
@@ -72,6 +76,8 @@ function take(cur: Kept, h: Heard | null, at: number): void {
 const START_RACE_MS = 15_000;
 
 function hear(m: Relayed): void {
+  // (a turn's view: never logged, its words the table's)
+  if (m.kind === 'sgv') return void (m.g === online.cur.g && (online.view = m));
   if (m.kind !== 'sg') return;
   const { kind: _k, v: _v, t, who, ...rest } = m as SgIntent & { v: number; t: number; who: Who };
   const move: Move = { ...rest, who };
@@ -174,4 +180,37 @@ export function sendMove(m: Omit<Move, 'g' | 'i' | 'who'>): void {
 
 function send({ who: _w, ...m }: Move): void {
   relay?.send({ kind: 'sg', ...m } as SgIntent);
+}
+
+/** My turn's view (view.ts) for the others at the table: sent as it changes, at most one each VIEW_GAP_MS (the latest
+ *  then), and again once VIEW_AGAIN_MS have gone by without one while the turn is open (a phone that comes late or
+ *  missed one catches up: each is whole); null, the turn's panel gone. Only with someone there (sync/live.ts send). */
+const VIEW_GAP_MS = 200, VIEW_AGAIN_MS = 2000;
+let viewNow: View | null = null, viewSent = '', viewAt = -Infinity;
+let viewTimer: ReturnType<typeof setTimeout> | undefined, viewBeat: ReturnType<typeof setInterval> | undefined;
+export function sendView(v: View | null): void {
+  viewNow = v;
+  if (!v) {
+    clearTimeout(viewTimer);
+    clearInterval(viewBeat);
+    viewTimer = viewBeat = undefined;
+    viewSent = '';
+    return;
+  }
+  viewBeat ??= setInterval(() => performance.now() - viewAt >= VIEW_AGAIN_MS && flushView(true), VIEW_AGAIN_MS / 4);
+  if (viewTimer) return;
+  const wait = viewAt + VIEW_GAP_MS - performance.now();
+  if (wait <= 0) flushView(false);
+  else viewTimer = setTimeout(() => ((viewTimer = undefined), flushView(false)), wait);
+}
+function flushView(again: boolean): void {
+  const cur = untrack(() => online.cur);
+  if (!viewNow || !relay || !cur.g) return;
+  // (its index the game's next move: a watcher lets go of a view of an older one)
+  const frame = fit({ kind: 'sgv', g: cur.g, i: cur.log.length, ...encode(viewNow) });
+  const key = JSON.stringify(frame);
+  if (!again && key === viewSent) return;
+  viewSent = key;
+  viewAt = performance.now();
+  relay.send(frame);
 }

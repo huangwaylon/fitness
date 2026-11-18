@@ -92,6 +92,7 @@ const S = {
   onlineNote: { ja: 'みんなのスマホがつながります（島にいる人だけ選べます）', en: 'Everyone’s phones play together' },
   startedBy: { ja: '{name}が始めたゲーム', en: 'The game {name} started' },
   thinking: { ja: '考え中…', en: 'Thinking…' },
+  thinkingOf: { ja: '{name}が考え中…', en: '{name} is thinking…' },
   lastMove: { ja: '{name}：{text} 星{n}', en: '{name}: {text} ({n} stars)' },
   offlineNote: { ja: 'つながっていません。つながると続きが届きます', en: 'Not connected: moves arrive once back' },
   meNeeded: { ja: '自分も入れてください', en: 'Include yourself' },

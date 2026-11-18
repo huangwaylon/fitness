@@ -1,8 +1,10 @@
 <script lang="ts">
   // 英語すごろく's turn, the play screen's bottom sheet's body (docs/sugoroku.md "Rules"): by the phase, whose turn it is
   // and the dice (with a pocket letter to send), the fork's two ways, the space's ことば, ぶん, 絵, イベント or あがり;
-  // another phone's turn online: whose it is and the last move. Every action one move (`onact`): the same move folds
-  // the game on this phone (passed round) and on every phone (online).
+  // another phone's turn online: whose it is and the last move, or, once its player's view comes (`watch`: view.ts),
+  // their panel as their sheet shows it, read-only (inert) under 「Xが考え中…」. Every action one move (`onact`): the
+  // same move folds the game on this phone (passed round) and on every phone (online). Online, my turn: the panel's
+  // state as it changes (`onview`), for the others to watch.
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import WordTurn from './WordTurn.svelte';
   import SentenceTurn from './SentenceTurn.svelte';
@@ -14,6 +16,7 @@
   import { pickSentence, type Line, type Sentence } from '../sentences.ts';
   import type { Words } from '../words.ts';
   import type { Move } from '../online.ts';
+  import type { View } from '../view.ts';
   import { s } from '../i18n.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -37,8 +40,14 @@
     onact: (m: Act) => void;
     onspin: () => void;
     onretry: () => void;
+    /** Online, my turn: the panel as it is now, for the others to watch. */
+    onview?: (v: View) => void;
+    /** Online, another's turn: their panel as their sheet shows it (shown read-only). */
+    watch?: View | null;
   }
-  let { g, board, myTurn, mode, connected, words, lines, failed, speakable, pickNote, onact, onspin, onretry }: Props = $props();
+  let { g, board, myTurn, mode, connected, words, lines, failed, speakable, pickNote, onact: act, onspin, onretry, onview, watch = null }: Props = $props();
+  /** (watching: nothing is this phone's to do) */
+  const onact = (m: Act) => void (!watch && act(m));
 
   const cur = $derived(g.players[g.turn]);
   const ph = $derived(g.phase);
@@ -60,6 +69,10 @@
   /** むずかしい's event cards: the Japanese on a tap. */
   let cardJa = $state(false);
   $effect(() => void (ph.k === 'event' && (cardJa = false)));
+  // the panels with no state of their own: the fork's, the card's (its Japanese opened), あがり
+  $effect(() => void (onview && (ph.k === 'fork' || ph.k === 'home' ? onview({ p: ph.k, v: null }) : ph.k === 'event' && onview({ p: 'event', v: { ja: cardJa } }))));
+  $effect.pre(() => void (watch?.p === 'event' && (cardJa = watch.v.ja)));
+  const mirrorOf = <P extends View['p']>(p: P) => (watch?.p === p ? (watch.v as Extract<View, { p: P }>['v']) : null);
 
   /** The line for this ぶん space: the seat's level's, none used twice (its pick kept in the phase; online.ts lineFor). */
   const line = $derived.by((): Sentence | null => {
@@ -84,7 +97,14 @@
   const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
 </script>
 
-{#if !myTurn && ph.k !== 'end'}
+{#if watch}
+  <!-- another's turn, as their sheet shows it: whose under 「Xが考え中…」, the panel below read-only -->
+  <div class="who watching" data-sg-waiting>
+    <Avatar {...headOf(cur)} size={28} />
+    <p class="note one">{connected ? s('thinkingOf', { name: cur.name }) : s('offlineNote')}</p>
+  </div>
+{/if}
+{#if !myTurn && ph.k !== 'end' && !watch}
   <div class="who" data-sg-waiting>
     <Avatar {...headOf(cur)} size={40} />
     <div class="txt">
@@ -92,7 +112,7 @@
       <p class="note one">{#if !connected}{s('offlineNote')}{:else if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
     </div>
   </div>
-{:else if ph.k === 'spin'}
+{:else}<div class="panel" inert={!!watch} data-sg-watch={watch?.p}>{#if ph.k === 'spin'}
   <div class="who">
     <Avatar {...headOf(cur)} size={48} />
     <div class="txt">
@@ -138,21 +158,23 @@
         hinted0={ph.hinted} onhint={() => onact({ a: 'try', h: 1 })} {words}
         score={(w, c, h) => wordScore(g, w, c, h)}
         onplay={(w, h) => onact({ a: 'word', w, ...(h ? { h: 1 } : {}) })}
-        onswap={() => onact({ a: 'swap' })} />
+        onswap={() => onact({ a: 'swap' })} mirror={mirrorOf('word')} onview={onview ? (v) => onview({ p: 'word', v }) : undefined} />
     {/key}
   {:else if failed}
     <p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={onretry}>{s('retry')}</button>
   {:else}<p class="note">{s('loading')}</p>{/if}
 {:else if ph.k === 'sentence'}
   {#if line}
-    {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(tr) => onact({ a: 'try', m: tr.misses, ...(tr.peeked ? { p: 1 } : {}) })} ondone={(o) => onact({ a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })} />{/key}
+    {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(tr) => onact({ a: 'try', m: tr.misses, ...(tr.peeked ? { p: 1 } : {}) })} ondone={(o) => onact({ a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })}
+      mirror={mirrorOf('sentence')} onview={onview ? (v) => onview({ p: 'sentence', v }) : undefined} />{/key}
   {:else if failed || lines}
     <p class="note">{lines ? s('noLine') : s('offline')}</p>
     <button type="button" class="btn" data-sfx="tick" onclick={() => onact({ a: 'noline' })}>{s('next')}</button>
   {:else}<p class="note">{s('loading')}</p>{/if}
 {:else if ph.k === 'picture'}
   {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => onact({ a: 'try', m: tr.misses })} speak={speakable ? { tipKey: `${g.seed}:${g.turn}` } : null}
-    ondone={(m, y = 0) => onact({ a: 'pic', m, ...(y ? { y: Math.min(y, 3) as 1 | 2 | 3 } : {}) })} />{/key}
+    ondone={(m, y = 0) => onact({ a: 'pic', m, ...(y ? { y: Math.min(y, 3) as 1 | 2 | 3 } : {}) })}
+    mirror={mirrorOf('picture')} onview={onview ? (v) => onview({ p: 'picture', v }) : undefined} />{/key}
 {:else if ph.k === 'event' && card}
   <div class="event" data-sg-event={ph.card}>
     <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>
@@ -170,12 +192,16 @@
     <p class="ja big">{s('homeTeam', { b: HOME_BONUS })}</p>
     <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => onact({ a: 'home' })}>{s('next')}</button>
   </div>
-{/if}
+{/if}</div>{/if}
 
 <style>
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
   .one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .who { display: flex; align-items: center; gap: 12px; }
+  .watching { gap: 8px; }
+  /* (the panel's rows stay the sheet's own: the wrapper lays out nothing) */
+  .panel { display: contents; }
+  .panel > :global(*) { flex-shrink: 0; }
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }

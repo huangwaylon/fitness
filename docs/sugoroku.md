@@ -133,7 +133,15 @@ trial); off, no step shows. The relay's `POST /grade`: relay/src/gradeRoute.ts (
 gets them again (its own too); the room keeps a game 2 days after its last move, 12 games at most. Each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
 through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
 ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
-from anyone at the table). The phone whose turn it isn't watches (whose turn, the last move).
+from anyone at the table). The phone whose turn it isn't watches (whose turn, the last move), then the player's turn live.
+
+- **Watching** (`view.ts`, `sgv`: presence only, never kept or logged): while it's my turn, my sheet's panel (the
+  ことば's tiles, ヒント, ↻入れかえ's ask, the check; the ぶん's tiles, 「おしい！」, 答えはこれ; the 絵's letters or choices; the
+  card's Japanese; the fork; the speaking step's phase and words) goes to the relay as a whole snapshot (indices and flags,
+  the speaking step's texts cut to fit 256 bytes: ~100 a frame, ~190 at most), on change at most every 200 ms and again
+  every 2 s while the turn is open. The relay sends it to the game's other seats only (the guest when seated), and only
+  at the game's next move. A watching phone shows it under 「Xが考え中…」 through the same turn components (`mirror`),
+  inert; one of an older move is let go, and the move's fold takes over when it lands. The 3D board isn't touched by it.
 
 - **Races** (`wire.ts` heard, the same result in any order): the room takes a game's moves in order, the first of
   each `i` (a later one hears `ack {ok: false}` and leaves the sender's log). An 終了's `i` is the moves it follows:

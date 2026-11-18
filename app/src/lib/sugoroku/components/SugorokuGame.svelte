@@ -5,7 +5,7 @@
   // TurnPanel; the sheet folds to a bar to see the board, and the camera frames the part the two leave) → Results.
   // Played on one phone passed round (saved after every step: save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on
   // each player's own phone (online.svelte.ts: every action a move to the relay, the game the moves folded; a phone whose
-  // turn it isn't watches). One rules path: an action is a move (online.ts applyMove), applied here when passed round,
+  // turn it isn't watches, the player's panel live and read-only: view.ts). One rules path: an action is a move (online.ts applyMove), applied here when passed round,
   // sent when online. No ベル. The island is paused under it.
   import { untrack } from 'svelte';
   import { goto } from '$app/navigation';
@@ -38,7 +38,8 @@
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
   import { applyMove, foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
-  import { listen, nameOf as personName, online, sendMove, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { listen, nameOf as personName, online, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
   interface Props {
     /** The tab is shown (English Study open on it). */
@@ -257,6 +258,26 @@
   const lastRound = $derived(!!g && isLast(g));
   /** The heads walking or the die rolling: the sheet a bar with the die. */
   const moving = $derived(walking || rolling !== null);
+
+  // ---- online, the turn's live view (view.ts): mine sent while my panel shows; another's shown while theirs does
+  /** This panel: the game, its step (a try doesn't move it on), whose turn and the phase. */
+  const panelKey = $derived(mode === 'online' && g && ph ? `${online.cur.g}:${g.n}:${g.turn}:${ph.k}` : '');
+  const viewing = $derived(mode === 'online' && myTurn && !moving && !!ph && ph.k !== 'spin' && ph.k !== 'end');
+  $effect(() => void (viewing || sendView(null)));
+  $effect(() => () => sendView(null));
+  /** The latest view of another's that read as this panel's: at the game's next move (a view of an older one let go),
+   *  from whose turn it is, of this phase. Kept for the panel (a try moves the index on before the next view comes). */
+  let seen = $state.raw<{ key: string; view: TurnView } | null>(null);
+  $effect(() => {
+    const v = online.view, x = g;
+    if (!v || !x || mode !== 'online' || myTurn) return;
+    untrack(() => {
+      if (!isCurrent(v, { g: online.cur.g, i: online.cur.log.length, who: x.players[x.turn].who, p: x.phase.k })) return;
+      const view = decode(v.p, v.s, v.x);
+      if (view) seen = { key: panelKey, view };
+    });
+  });
+  const watch = $derived(!myTurn && !moving && seen && seen.key === panelKey ? seen.view : null);
   // the play screen's overlays (the top bar and pills, the turn's sheet): their heights the board's insets
   let hudH = $state(88), sheetH = $state(140);
   /** The sheet folded to its bar (the board seen); every new phase opens it again. */
@@ -404,7 +425,7 @@
             {/if}
             <div class="sbody" hidden={folded}>
               <TurnPanel {g} {board} {myTurn} {mode} connected={online.connected} {words} {lines} {failed} {speakable} {pickNote}
-                onact={act} onspin={doSpin} onretry={load} />
+                onact={act} onspin={doSpin} onretry={load} {watch} onview={viewing ? sendView : undefined} />
             </div>
           {/if}
         </div>

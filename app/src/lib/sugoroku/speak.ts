@@ -187,6 +187,7 @@ const S = {
   type: { ja: '書く', en: 'Type' },
   stop: { ja: '止める（{s}秒）', en: 'Stop ({s} s)' },
   listening: { ja: '聞き取り中…', en: 'Listening…' },
+  recording: { ja: '録音中…', en: 'Recording…' },
   heard: { ja: '聞こえた文', en: 'What we heard' },
   typeHere: { ja: '英語で書いてみよう', en: 'Write it in English' },
   editNote: { ja: '違っていたら直してね', en: 'Fix it if it’s off' },
@@ -220,4 +221,7 @@ export function say(key: SayKey, params: Record<string, string | number> = {}): 
 /** A great sentence's cheer (the relay's tip is empty then): a few in turn, so a game's cheers don't repeat. */
 const CHEERS = ['great', 'great2', 'great3', 'great4'] as const;
 let cheers = 0;
-export const nextCheer = (): string => say(CHEERS[cheers++ % CHEERS.length]);
+/** The next cheer's index (cheerOf: its words). */
+export const nextCheer = (): number => cheers++ % CHEERS.length;
+/** A cheer's words by its index ('' for none, -1). */
+export const cheerOf = (k: number): string => (k >= 0 && k < CHEERS.length ? say(CHEERS[k]) : '');

@@ -6,11 +6,13 @@
   // whole rack (no points: asked once more, in the header). The seat's level sets the shortest word (game.ts LEVEL).
   // Laid out for the game's bottom sheet (SugorokuGame): the header (ことば, the lucky letters, ↻入れかえ), the slots
   // (⌫ takes the last one back), the rack's 8 tiles on one row, then the action row (the pocket's tiles, ヒント, これにする);
-  // a check's note a toast pill over the sheet. Never red, never ×.
+  // a check's note a toast pill over the sheet. Never red, never ×. Online, its state goes to the others at the table
+  // (`onview`), and a phone watching shows it as the player's (`mirror`: view.ts, read-only).
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { VALUE, type Score } from '../tiles.ts';
   import type { Words } from '../words.ts';
+  import type { WordNote, WordView } from '../view.ts';
   import { s } from '../i18n.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -33,15 +35,20 @@
     score: (word: string, everyday: boolean, hinted: boolean) => Score | null;
     onplay: (word: string, hinted: boolean) => void;
     onswap: () => void;
+    /** Online, my turn: the turn as it is now, for the others to watch. */
+    onview?: (v: WordView) => void;
+    /** Online, another's turn: theirs as their sheet shows it (the tiles, ヒント, the ask, the check). */
+    mirror?: WordView | null;
   }
-  let { rack, pocket = [], forced = null, lucky, mult, minLen, hintHalf, hinted0 = false, onhint, words, score, onplay, onswap }: Props = $props();
+  let { rack, pocket = [], forced = null, lucky, mult, minLen, hintHalf, hinted0 = false, onhint, words, score, onplay, onswap, onview, mirror = null }: Props = $props();
 
   /** The rack's tiles in the slots, in order. */
   let picked = $state<number[]>([]);
   /** ヒント used this turn (sticks: taking a tile back doesn't undo it). */
   let hinted = $state(untrack(() => hinted0));
   /** The check's note (a toast over the sheet); a sent letter's ask to begin with. */
-  let note = $state(untrack(() => (forced ? s('mustUse', { l: forced.toUpperCase() }) : '')));
+  let note = $state<WordNote>(untrack(() => (forced ? 'mustUse' : '')));
+  const noteText = $derived(note === 'mustUse' ? s('mustUse', { l: (forced ?? '').toUpperCase() }) : note === 'minLen' ? s('minLen', { n: minLen }) : note ? s(note) : '');
   /** ↻入れかえ asked once more (no stars this turn). */
   let asking = $state(false);
   /** The word checked and on the list: its points shown till 次へ. */
@@ -72,23 +79,37 @@
   }
   function hint() {
     const w = best[0];
-    if (!w) return void (note = s('noWord'));
+    if (!w) return void (note = 'noWord');
     // (the sent letter's tile first, then the rack's, then the pocket's)
     const order = { forced: 0, rack: 1, pocket: 2 };
     const left = tiles.map((t, i) => ({ l: t.l, i, o: order[t.kind] })).sort((a, b) => a.o - b.o);
     picked = [...w].map((l) => left.splice(left.findIndex((x) => x.l === l), 1)[0].i);
     if (!hinted) onhint();
     hinted = true;
-    note = hintHalf ? s('hintNote') : s('hintFree');
+    note = hintHalf ? 'hintNote' : 'hintFree';
   }
   function check() {
-    if (word.length < minLen) return void (note = s('minLen', { n: minLen }));
-    if (forced && !word.includes(forced)) return void (note = s('mustUse', { l: forced.toUpperCase() }));
-    if (!words.has(word)) return void (note = s('notWord'));
-    const ja = words.ja(word);
-    const sc = score(word, !!ja, hinted);
-    if (sc) (done = { word, sc, ja }), (note = '');
+    if (word.length < minLen) return void (note = 'minLen');
+    if (forced && !word.includes(forced)) return void (note = 'mustUse');
+    if (!words.has(word)) return void (note = 'notWord');
+    const d = doneOf(word);
+    if (d) (done = d), (note = '');
   }
+  function doneOf(w: string) {
+    const ja = words.ja(w), sc = score(w, !!ja, hinted);
+    return sc ? { word: w, sc, ja } : null;
+  }
+  // online: the turn as it is, sent (my turn), or the player's shown (another's)
+  $effect(() => void onview?.({ picked, hinted, asking, done: !!done, note }));
+  $effect.pre(() => {
+    const m = mirror;
+    if (!m) return;
+    untrack(() => {
+      picked = m.picked.filter((i) => i < tiles.length);
+      (hinted = m.hinted), (asking = m.asking), (note = m.note);
+      done = m.done ? doneOf(word) : null;
+    });
+  });
   const why = (sc: Score) => [s('why', { l: sc.letters }), sc.lucky && s('whyLucky', { n: sc.lucky }), sc.mult > 1 && s('whyDouble'),
     sc.everyday && `${s('everyday')} +${sc.everyday}`, sc.forced && s('whyForced', { n: sc.forced }), sc.half && s('whyHalf')].filter(Boolean).join(' · ');
 </script>
@@ -132,7 +153,7 @@
         {/if}
       {/each}
     </div>
-    {#if note}<p class="toast" aria-live="polite">{note}</p>{/if}
+    {#if noteText}<p class="toast" aria-live="polite">{noteText}</p>{/if}
     <div class="row">
       {#if pocket.length || forced}
         <span class="extra" lang="en" data-sg-extra>

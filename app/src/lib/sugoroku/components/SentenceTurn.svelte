@@ -2,12 +2,14 @@
   // 英語すごろく's ぶん turn (docs/sugoroku.md "Rules"): a line's words as tiles, its Japanese the clue (むずかしい: hidden
   // behind 意味を見る, +2 if never opened); tap them in order (tap a placed one to take it and the ones after it back).
   // All placed: in order → its stars; not → 「おしい！」, the order shown a moment, then the tiles back for one more go; a
-  // second miss → 「答えはこれ」 (still a few stars). Never red, never ×.
+  // second miss → 「答えはこれ」 (still a few stars). Never red, never ×. Online, its state goes to the others at the table
+  // (`onview`), and a phone watching shows it as the player's (`mirror`: view.ts, read-only).
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { inOrder, tilesOf, type Sentence } from '../sentences.ts';
   import { sentenceStars, UNSEEN_BONUS } from '../game.ts';
   import { s } from '../i18n.ts';
+  import type { SentenceView } from '../view.ts';
 
   interface Props {
     line: Sentence;
@@ -20,8 +22,12 @@
     /** A miss or 意味を見る, to keep. */
     ontry: (t: { misses: number; peeked: boolean }) => void;
     ondone: (o: { misses: number; unseen: boolean }) => void;
+    /** Online, my turn: the turn as it is now, for the others to watch. */
+    onview?: (v: SentenceView) => void;
+    /** Online, another's turn: theirs as their sheet shows it. */
+    mirror?: SentenceView | null;
   }
-  let { line, seed, hideJa, misses0 = 0, peeked0 = false, ontry, ondone }: Props = $props();
+  let { line, seed, hideJa, misses0 = 0, peeked0 = false, ontry, ondone, onview, mirror = null }: Props = $props();
 
   const tiles = $derived(tilesOf(line, seed));
   let placed = $state<number[]>([]);
@@ -47,6 +53,12 @@
     }
   }
   const takeBack = (k: number) => stage === 'try' && (placed = placed.slice(0, k));
+  // online: the turn as it is, sent (my turn), or the player's shown (another's)
+  $effect(() => void onview?.({ placed, stage, misses, peeked }));
+  $effect.pre(() => {
+    const m = mirror;
+    if (m) untrack(() => ((placed = [...new Set(m.placed)].filter((id) => tiles.some((t) => t.id === id))), (stage = m.stage), (misses = m.misses), (peeked = m.peeked)));
+  });
 </script>
 
 <section class="turn" data-sg-sentence data-sg-stage={stage}>
