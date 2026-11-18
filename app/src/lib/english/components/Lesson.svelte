@@ -264,11 +264,11 @@
     {:else}<NavBar pad title={clip.title} {onback} {onclose} {trailing} />{/if}
   </div>
   {#snippet trailing()}
-    <NavButton kind="tool" icon="list" text={s('tools')} sfx="open" popup data-en-tools onclick={() => (tools = true)} />
+    <NavButton kind="tool" icon="list" label={s('tools')} sfx="open" popup data-en-tools onclick={() => (tools = true)} />
   {/snippet}
   <Player video={clip.video} title={clip.title} bind:player />
   {#if scenes}<Scenes {scenes} {beats} {strip} bind:open={sceneList} onback={viaTools ? toTools : null} time={player?.time ?? 0} onplay={(t) => player?.play(t, null)} />{/if}
-  <Controls {player} oncc={captions} />
+  <Controls {player} oncc={captions} compact={!!q && !study} />
   <div class="body sheet-scroll" bind:this={body}>
     {#if study && full}
       {#if study === 'lines' && full.lines}
@@ -293,7 +293,7 @@
       </article>
     {:else if q && cur}
       {#key at}
-        <article class="card pad" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
+        <article class="card pad q" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
           <div class="qhead">
             <p class="meta">{s('qMeta', { i: at + 1, n: len, type: s(`skill.${q.skill}`) })}{#if q.level === 'C2'}{' '}<span class="tag hard" data-en-hard-tag>{s('hardTag')}</span>{/if}</p>
             {#if q.choicesJa && !cur.r && !FORM.has(q.skill)}
@@ -303,7 +303,7 @@
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
           {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
-          <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
+          <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
           {#if q.choices}
             <div class="choices">
               {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (tr && !FORM.has(q.skill)) ? q.choicesJa?.[i] : undefined}
@@ -387,12 +387,17 @@
   .tag.hard { padding: 0 7px; margin-left: 2px; }
   .lead b { display: block; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
+  /* a question card: as tight as it reads, so the choices and ⚑ are above the fold (393×852 all; 375×667 two at least) */
+  .q { gap: 6px; }
   .qhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  /* (訳 drawn over the card's padding: the row as tall as its meta, the chip's hit 44 all the same) */
+  .qhead .chip { margin: -7px 0; }
+  .hear:not(.paper) { width: 100%; justify-self: stretch; justify-content: center; }
   /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
   .quiet.flag { justify-self: end; display: inline-flex; align-items: center; gap: 3px; margin: -4px -4px -8px 0; padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .btn { margin: 0; }
   .btn.small { justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
-  .choices { display: grid; gap: 8px; }
+  .choices { display: grid; gap: 6px; }
   .choice[aria-disabled='true'] { cursor: default; }
   .choice.ans { box-shadow: inset 0 0 0 2.5px var(--c-leaf), var(--sh-ctl); }
   .choice.ans .prl::before { content: '○ '; color: var(--c-leaf-text); font-weight: 700; }
@@ -421,8 +426,12 @@
   .seg { width: 100%; justify-content: flex-start; text-align: left; flex-wrap: wrap; height: auto; padding: 8px 14px; }
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
   .prow :global(svg) { flex: none; color: var(--text-soft); }
-  .credit { margin: 4px 4px 0; font-size: 12px; color: var(--text-soft); }
+  .credit { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
   .foot { flex: none; display: flex; gap: 10px; padding: 10px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 10px) calc(12px + var(--safe-left)); background: var(--surface); }
   .foot .btn, .foot .btn-gap { flex: 1; }
   .foot.off { display: none; }
+  @media (max-height: 700px) {
+    .body { padding-top: 8px; }
+    .choice { min-height: 46px; }
+  }
 </style>

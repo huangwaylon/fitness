@@ -102,8 +102,9 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
-- **ツール** (the lesson bar's one labelled button, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕): 字幕
-  オフ / 英語 / 日本語 and 字幕の大きさ (The player), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
+- **ツール** (the lesson bar's tool icon, labelled ツール, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕;
+  the sheet's title ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
+  each), the 場面のあらすじ switch, then 場面のあらすじ一覧, セリフ（全文） (a bank with
   lines only) and この動画のフレーズ (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
 - **この動画のフレーズ** (ツール's row, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
   level under the same pinned player, ‹ back to where it was. The bank's quoted lines (every question's `line`, the
