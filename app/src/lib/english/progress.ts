@@ -153,9 +153,9 @@ export interface WeekView {
   both: boolean;
 }
 
-/** The week's block for `me` (A, B or the guest G), today; `partnerName` the other member's name (members only). */
-export function weekView(rows: readonly EventRow[], me: Who, today: LocalDate, partnerName: string): WeekView {
-  const mine = studyOf(rows, me, me);
+/** The week's block for `me` (A, B or the guest G), today; `partnerName` the other member's name (members only);
+ *  `mine`: my studyOf when the caller has it already. */
+export function weekView(rows: readonly EventRow[], me: Who, today: LocalDate, partnerName: string, mine: Study = studyOf(rows, me, me)): WeekView {
   const days = daysThisWeek(mine.days, today);
   const { run, ever } = runOf(mine.days, today);
   const other: Who | null = me === 'A' ? 'B' : me === 'B' ? 'A' : null;
