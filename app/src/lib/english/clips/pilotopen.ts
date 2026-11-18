@@ -1,9 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 2, new 3, ctx 5, tx 6
 // A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 4, new 1
 // “The Opening Scene of 'Friends' | Friends” (the official Friends channel, Best of Season 1): at the coffee house the
 // friends quiz Monica about her date, Ross arrives crushed after his wife moves out, and Rachel runs in from her own
 // wedding looking for Monica.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 257 s. Untested on purpose: 10–12.5 s,
-// 22.7–28 s, 39–50 s, 71–73 s, 93–102 s, 111–152 s, 162–164 s, 214–233 s (innuendo, world knowledge, visual jokes).
+// 22.7–28 s, 39–50 s, 71–73 s, 93–102 s, 111–116 s, 127–152 s, 162–164 s, 214–233 s (innuendo, world knowledge, visual jokes).
+// EXCLUDE 23.6–27.8 (“not having sex”)
+// EXCLUDE 38.5–48 (the dream's phone joke)
+// EXCLUDE 141–150.4 (strip joints)
+// SKIP 122–150.4: the rest of the “lesbian” aside, then the strip-joint advice (excluded)
+// EAR CHECK: 176 s — who answers “Decaf” to the coffee offer (the pilot's script: the waitress offers, Monica answers for Rachel).
 // EAR CHECK: 86.5 s — “Carol moved her stuff out today” (whisper) vs “your stuff” (captions); d4 is retired.
 import type { Clip } from '../types.ts';
 
@@ -25,19 +31,7 @@ export const pilotOpening: Clip = {
       trap: 'nothing（何もない）から、秘密にしていると思いやすい。すぐあとの just で「大したことない」。',
       use: 'There’s nothing to tell, really.（話すほどのことはないってば）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'opening', seg: [2, 29.2],
-      stem: 'What are the friends asking Monica about?',
-      ja: 'みんなはモニカに何について聞いている？',
-      choices: ['The guy she’s going out with', 'Her big plans for the weekend', 'A new problem at her work'], a: 0,
-      choicesJa: ['彼女がデートする男性', '週末の大きな予定', '職場での新しい問題'],
-      cue: '最初の「There’s nothing to tell」から',
-      line: 'It’s just some guy I work with. — Come on, you’re *going out with the guy*.',
-      said: 'モニカのデート相手について、みんなが「どこか変な所があるはず」と質問する。',
-      mean: 'going out with the guy ＝ その人とデートする。みんなで相手のことを聞いている。',
-      trap: 'I work with（一緒に働く）が聞こえるので、仕事の話と思いやすい。相手は男性のこと。',
-      use: 'Okay, tell me. Who is he?（さあ教えて。誰なの？）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'work', seg: [2, 10.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'work', seg: [2, 10.4], retired: true,
       stem: 'Who is Monica’s date, according to her?',
       ja: 'モニカによると、デートの相手は誰？',
       choices: ['Someone she works with', 'An old friend from school', 'A friend of her brother'], a: 0,
@@ -49,7 +43,7 @@ export const pilotOpening: Clip = {
       trap: 'あとで high school や brother も出てくるが、この人の話ではない。work with が答え。',
       use: 'He’s just a guy I work with.（ただの職場の人だよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'goingout', seg: [2.3, 10.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'goingout', seg: [2.3, 10.4], retired: true,
       stem: 'What does “going out with” mean here?',
       ja: 'ここでの「going out with」はどういう意味？',
       choices: ['Going on dates with him', 'Working with him', 'Walking outside with him'], a: 0,
@@ -61,7 +55,19 @@ export const pilotOpening: Clip = {
       trap: 'go out（外に出る）から、外を歩くと思いやすい。with のあとが人なら恋愛の話が多い。',
       use: 'Are you two going out?（二人、付き合ってるの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [2.3, 13.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'opening', seg: [3.0, 23.5],
+      stem: 'What are the friends asking Monica about?',
+      ja: 'みんなはモニカに何について聞いている？',
+      choices: ['The guy she’s going out with', 'Her big plans for the weekend', 'A new problem at her work'], a: 0,
+      choicesJa: ['彼女がデートする男性', '週末の大きな予定', '職場での新しい問題'],
+      cue: '最初の「There’s nothing to tell」から',
+      line: 'It’s just some guy I work with. — Come on, you’re *going out with the guy*.',
+      said: 'モニカのデート相手について、みんなが「どこか変な所があるはず」と質問する。',
+      mean: 'going out with the guy ＝ その人とデートする。みんなで相手のことを聞いている。',
+      trap: 'I work with（一緒に働く）が聞こえるので、仕事の話と考えがち。聞いているのは相手の男性のこと。',
+      use: 'Okay, tell me. Who is he?（さあ教えて。誰なの？）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [6.0, 13.2],
       stem: 'Fill the gap: “___ be something wrong with him.”',
       ja: '「___ be something wrong with him.」の空所は？',
       choices: ['There’s got to', 'There has to', 'There’s bound to'], a: 0,
@@ -73,16 +79,16 @@ export const pilotOpening: Clip = {
       trap: 'has to は「ハストゥ」、bound to は「バウン」。「ガラ」と聞こえれば got to。',
       use: 'There’s got to be a better way.（もっといい方法があるはず）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'carl', seg: [16.4, 28.4],
-      stem: 'What does “what I went through with Carl” tell us?',
-      ja: '「what I went through with Carl」から何が分かる？',
-      choices: ['She had a bad time with Carl', 'Monica went out with Carl', 'Carl is the man Monica dates'], a: 0,
-      choicesJa: ['彼女はカールとつらい目にあった', 'モニカはカールと付き合っていた', 'カールがモニカのデート相手'],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'carl', seg: [14.0, 23.5],
+      stem: 'What happened with Carl?',
+      ja: 'カールとは何があった？',
+      choices: ['She had a bad time with him', 'Monica went out with him', 'He is Monica’s new date'], a: 0,
+      choicesJa: ['話している人がつらい目にあった', 'モニカが彼と付き合っていた', '彼がモニカの新しいデート相手'],
       cue: '「I don’t want her to」のあと',
       line: 'I don’t want her to *go through what I went through* with Carl',
       said: '「私がカールで味わった思いを、彼女にさせたくない」と言う。',
       mean: 'go through ＝ つらいことを経験する。話している本人がカールとひどい目にあった。',
-      trap: '名前が出る男性はカールだけなので、デート相手と思いやすい。I went through ＝ 私が経験した。',
+      trap: '名前が出る男性はカールだけなので、デート相手と勘違いしやすい。I went through ＝ 私が経験した。',
       use: 'I know what you’re going through.（大変なのは分かるよ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'dream', seg: [30.6, 38.5],
@@ -94,7 +100,7 @@ export const pilotOpening: Clip = {
       line: 'I’m *back in high school*. I’m standing in the middle of the *cafeteria*',
       said: '「高校に戻っていて、食堂の真ん中に立っている」という夢の話。',
       mean: 'back in high school ＝ 高校時代に戻って。cafeteria ＝ 食堂。',
-      trap: 'cafeteria は会社にもあるので、職場と思いやすい。前の high school とつなげる。',
+      trap: 'cafeteria は会社にもあるので、職場と考えがち。前の high school とつなげる。',
       use: 'I dreamed I was back in school.（学生に戻った夢を見た）' },
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'mother', seg: [52.8, 64.8],
@@ -106,13 +112,13 @@ export const pilotOpening: Clip = {
       line: 'it’s my mother, which is very, very weird, *because she never calls me*.',
       said: '夢で電話が鳴ると母からで、「すごく変だ、母は電話してこないから」と言う。',
       mean: 'never ＝ 一度も〜ない。because のあとが理由。',
-      trap: 'never を聞き落とすと、よく電話してくると思いやすい。because のあとを最後まで聞く。',
+      trap: 'never を聞き落とすと、電話しすぎる話に聞こえる。決め手は because のあと。',
       use: 'That’s weird. He never calls me.（変だな、彼は電話してこないのに）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'intestine', seg: [74.4, 83.7],
-      stem: 'How does Ross really feel?',
-      ja: 'ロスは本当はどんな気持ち？',
-      choices: ['Very sad and so hurt', 'A little sick today', 'Angry at his friends'], a: 0,
+      stem: 'How does Ross feel?',
+      ja: 'ロスはどんな気持ち？',
+      choices: ['Very sad and hurt', 'A little sick today', 'Angry at his friends'], a: 0,
       choicesJa: ['とても悲しくて傷ついている', '今日は少し体調が悪い', '友だちに怒っている'],
       cue: '「Are you okay」のあと',
       line: 'I just feel like someone *reached down my throat*… and *tied it around my neck*.',
@@ -155,17 +161,29 @@ export const pilotOpening: Clip = {
       trap: 'get を「もらう」と思うと、頼んでいるように聞こえる。get you ＝ あなたに持ってくる。',
       use: 'Let me get you a chair.（いすを持ってきますね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'happy', seg: [103.4, 111.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'happy', ctx: true, seg: [103.4, 111.6],
       stem: 'Does Ross really hope Carol will be happy?',
       ja: 'ロスは本当にキャロルの幸せを願っている？',
       choices: ['No, he is angry at her', 'Yes, he wants the best', 'He isn’t sure yet'], a: 0,
       choicesJa: ['いいえ、彼女に怒っている', 'はい、幸せを願っている', 'まだ分からない'],
       cue: '「No, you don’t」のあと',
-      line: 'I hope she’ll be very happy. — No, you don’t. — *No, I don’t*. To hell with her, *she left me*!',
+      line: 'Ross: I hope she’ll be very happy. / Friend: No, you don’t. / Ross: *No, I don’t*. To hell with her, *she left me*!',
       said: '「彼女の幸せを願う」と言うが、「うそ」と言われ、「ああ、願ってない」と認める。',
-      mean: 'No, I don’t ＝ いや、願ってない。she left me ＝ 彼女は僕を捨てた。本当は怒っている。',
-      trap: '最初の I hope she’ll be very happy を本心と思いやすい。すぐあとの No, I don’t が本音。',
+      mean: 'No, I don’t ＝ いや、願ってない。To hell with her ＝「あんなやつ知るか」（乱暴）。本当は怒っている。',
+      trap: '最初の I hope… を本心と思いやすいが、友だちに否定されて No, I don’t と認める。',
       use: 'I’m fine. No, actually, I’m not.（平気。いや、本当は平気じゃない）' },
+
+    { id: 'k1', skill: 'detail', level: 'B2', point: 'knew', ctx: true, seg: [116.0, 127.0],
+      stem: 'Why didn’t Ross know about Carol?',
+      ja: 'ロスはなぜ、キャロルのことを知らなかった？',
+      choices: ['Carol didn’t know either', 'He was always at work', 'Nobody told him at all'], a: 0,
+      choicesJa: ['キャロル自身も知らなかった', 'いつも仕事でいなかった', '誰も教えてくれなかった'],
+      cue: '「fixating on that」のあと。',
+      line: 'Friend: And you never knew she was a lesbian? / Ross: No! Okay? … *She didn’t know, how should I know?*',
+      said: '「気づかなかったの？」に、「彼女自身も知らなかった。僕に分かるわけない」と返す。',
+      mean: 'How should I know? ＝ 文字どおりは「どうやって知るべき？」→「知るわけないだろ」。少し強い言い方。',
+      trap: '決め手は She didn’t know（彼女も知らなかった）。誰かが黙っていた話ではない。',
+      use: 'How should I know? I just got here.（知らないよ、今来たところだもん）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'married', seg: [150.5, 158.5],
       stem: 'Type what Ross wants: “I just ___ again.” (4 words)', answer: 'want to be married',
@@ -186,7 +204,7 @@ export const pilotOpening: Clip = {
       line: 'Oh God, Monica, hi! *Thank God!*',
       said: '「モニカ！よかった！」と言い、ここに来るまでのことを一気に話す。',
       mean: 'Thank God ＝ よかった、助かった。やっと会えて、ほっとしている。',
-      trap: 'you weren’t there（いなかった）を文句と思いやすい。最初の Thank God が気持ち。',
+      trap: 'you weren’t there（いなかった）が文句に聞こえるが、最初の Thank God が気持ち。',
       use: 'Thank God you’re here!（来てくれてよかった！）' },
 
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'youare', seg: [171.4, 179.4],
@@ -199,6 +217,18 @@ export const pilotOpening: Clip = {
       trap: '習った and here you are に直したくなる。聞こえた音のとおりに3語を書く。',
       use: 'They said it’d rain, and it did.（雨だって言ってたけど、本当に降った）' },
 
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'decaf', reveals: ['coffee'], ctx: true, seg: [175.0, 182.0],
+      stem: 'What coffee is chosen for Rachel?',
+      ja: 'レイチェルにはどんなコーヒーが選ばれる？',
+      choices: ['Decaf coffee', 'Iced coffee', 'Black coffee'], a: 0,
+      choicesJa: ['カフェインなしのコーヒー', 'アイスコーヒー', 'ブラックコーヒー'],
+      cue: 'コーヒーをすすめられたあとの一語。',
+      line: 'Waitress: Can I get you some coffee? / Monica: *Decaf.*',
+      said: '「コーヒーはいかがですか？」と聞かれ、モニカが「ディカフェで」と答える。',
+      mean: 'decaf ＝ カフェインを抜いたコーヒー（ディカフェ）。カフェで「Decaf, please.」と頼める。',
+      trap: 'Can I get you 〜? は「〜をお持ちしましょうか」という申し出。返事は短い一語 decaf だけ。',
+      use: 'A decaf latte, please.（カフェインなしのラテをください）' },
+
     { id: 'i4', skill: 'infer', level: 'C1', point: 'survivor', seg: [180.2, 184.93], retired: true,
       stem: 'What does the way Rachel is introduced suggest about their school?',
       choices: ['High school was something to get through', 'Rachel once survived a serious accident',
@@ -209,6 +239,18 @@ export const pilotOpening: Clip = {
       mean: 'survivor は冗談。高校時代は「乗り切る」ものだった、という軽い言い方。',
       trap: 'survivor を「事故の生存者」と取りやすい。学校名と並ぶと、大変だった時期を笑う言い方。',
       use: 'Welcome, fellow Monday survivors.（月曜を乗り切った仲間たち、ようこそ）' },
+
+    { id: 'k4', skill: 'pragma', level: 'B1', point: 'remember', ctx: true, seg: [184.0, 191.0],
+      stem: 'Does Rachel remember Ross?',
+      ja: 'レイチェルはロスを覚えている？',
+      choices: ['Yes, she does', 'No, not at all', 'She isn’t sure'], a: 0,
+      choicesJa: ['うん、覚えている', 'いや、全然', 'よく分からない'],
+      cue: '「my brother Ross」のあと。',
+      line: 'Monica: …and you remember my brother Ross? / Rachel: *Sure!*',
+      said: '「兄のロスは覚えてるでしょ？」に、レイチェルは「もちろん！」と答える。',
+      mean: 'you remember 〜? ＝「〜は覚えてるよね？」。Sure ＝「もちろん」。軽く、気持ちよく答える一言。',
+      trap: 'Sure は「確かな」という意味もあるので、迷っている返事と勘違いしやすい。ここは Yes と同じ。',
+      use: 'You remember my sister? — Sure!（妹、覚えてる？ーもちろん！）' },
 
     { id: 'p2', skill: 'pragma', level: 'C1', point: 'tellus', reveals: ['bridesmaids'], seg: [200.7, 206.4], retired: true,
       stem: 'What is Monica doing with her “So you want to tell us now…” question?',
@@ -228,7 +270,7 @@ export const pilotOpening: Clip = {
       choicesJa: ['2人', '4人', '5人'],
       cue: '「are we waiting」のあと',
       line: 'are we waiting *for four* wet bridesmaids?',
-      said: '「ずぶぬれの付添人4人を待ってるの？」と冗談を言う。',
+      said: '「それとも、ずぶぬれの花嫁付添人4人を待つ？」と冗談を言う。',
       mean: 'for four ＝「フォフォー」と続く。前の for は小さく、あとの four が数。',
       trap: '同じ音が続き、1つに聞こえやすい。「フォー」なら4、「トゥー」なら2、「ファイブ」なら5。',
       use: 'A table for four, please.（4人で、お願いします）' },
@@ -242,19 +284,19 @@ export const pilotOpening: Clip = {
       line: 'it started *about a half hour* before the wedding',
       said: '「式の30分くらい前に始まったの」と話す。',
       mean: 'a half hour ＝ half an hour ＝ 30分。アメリカ英語に多い言い方。',
-      trap: '「1時間半」と思いやすい。a half hour は30分、an hour だけなら1時間、1時間半は an hour and a half。',
+      trap: 'half から「1時間半」と考えがち。1時間半なら an hour and a half と言う。',
       use: 'I’ll be there in a half hour.（30分で着くよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'rachel', seg: [210.0, 255.0],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'rachel', seg: [228.0, 255.0],
       stem: 'Why has Rachel come to find Monica?',
       ja: 'レイチェルはなぜモニカを探しに来た？',
       choices: ['She ran away from her wedding', 'Barry left her at the wedding', 'She wants to invite Monica'], a: 0,
       choicesJa: ['自分の結婚式から逃げてきた', 'バリーに式で置いていかれた', 'モニカを招待したい'],
-      cue: '「it started」から',
+      cue: '「freaked out」から',
       line: '*I just had to get out of there*… I just *didn’t know where to go*…',
       said: '式の直前に「ここから逃げなきゃ」と思い、行く所がなくてモニカを頼ってきた。',
       mean: 'get out of there ＝ そこから逃げ出す。didn’t know where to go ＝ 行く所がなかった。',
-      trap: 'Barry の話が続くので、置いていかれたのは彼女と思いやすい。逃げたのは本人。',
+      trap: 'Barry の話が続くので、置いていかれた話に聞こえる。逃げたのはレイチェル本人。',
       use: 'I didn’t know where to go.（どこに行けばいいか分からなかった）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [234.4, 247.5],
@@ -266,7 +308,7 @@ export const pilotOpening: Clip = {
       line: '…he looked familiar, but… *Anyway*, I just had to get out of there',
       said: '脱線した冗談のあと、「とにかく、そこから逃げなきゃと思った」と話を戻す。',
       mean: 'anyway ＝ とにかく、それはさておき。話を本筋に戻す合図。',
-      trap: 'anyway を「どうでもいい」と思いやすい。脱線のあとの anyway は話を戻す働き。',
+      trap: 'anyway を「どうでもいい」と勘違いしやすい。脱線のあとの anyway は話を戻す合図。',
       use: 'Anyway, I had to get out of there.（とにかく、そこを出るしかなかった）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'invited', reveals: ['drifted'], seg: [247.35, 260.1], retired: true,
@@ -289,19 +331,19 @@ export const pilotOpening: Clip = {
       line: 'you and I have kind of *drifted apart*',
       said: '「あなたとは少し疎遠になっていたけど」と前置きする。',
       mean: 'drift apart ＝ けんかでなく、自然に離れていく。kind of でやわらげている。',
-      trap: 'apart（離れて）から、引っ越しやけんかと思いやすい。気持ちの距離の話。',
+      trap: 'apart（離れて）から、引っ越しやけんかを連想しやすい。気持ちの距離の話。',
       use: 'We drifted apart after college.（大学のあと疎遠になった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'issue', seg: [248.9, 260.9],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'issue', ctx: true, seg: [248.9, 260.9],
       stem: 'How does Rachel feel about not inviting Monica?',
       ja: 'モニカを招待しなかったことを、レイチェルはどう思う？',
       choices: ['A little embarrassed', 'Happy it went that way', 'Angry at Monica'], a: 0,
       choicesJa: ['少し気まずい', 'そうなってよかった', 'モニカに怒っている'],
       cue: '「invited to the wedding」のあと',
-      line: '…who wasn’t invited to the wedding. — Oh, I was *kind of hoping that wouldn’t be an issue*.',
+      line: 'Monica: …who wasn’t invited to the wedding. / Rachel: Oh, I was *kind of hoping that wouldn’t be an issue*.',
       said: '式に呼ばなかった話になり、「そこは問題にならないといいなと…」と言う。',
       mean: 'I was hoping 〜 ＝ 〜だといいなと思っていた。気まずさをやわらかく言っている。',
-      trap: 'wouldn’t be an issue（問題ない）から、平気と思いやすい。I was hoping で気まずさが分かる。',
+      trap: 'wouldn’t be an issue（問題ない）から平気に聞こえるが、I was hoping に気まずさが出ている。',
       use: 'I was hoping you wouldn’t notice.（気づかれないといいなと思ってた）' },
   ]
 };
