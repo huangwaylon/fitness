@@ -51,7 +51,7 @@
   .review { display: flex; flex-direction: column; gap: 8px; }
   .ttl { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); text-align: center; }
   .ask, .done { margin: 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
-  .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
+  .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .col { display: flex; flex-direction: column; gap: 6px; }
   .pair { min-height: 44px; padding: 6px 8px; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;

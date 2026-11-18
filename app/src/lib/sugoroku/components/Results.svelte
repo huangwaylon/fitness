@@ -64,9 +64,9 @@
   .podium { display: flex; flex-direction: column; gap: 8px; }
   .win { margin: 0 0 4px; text-align: center; font: 700 22px/1.3 var(--font-ui); }
   .total { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; color: var(--c-gold); }
-  .total b { font: 600 34px/1 var(--font-num); color: var(--c-ink); }
+  .total b { font: 600 34px/1 var(--font-num); color: var(--text); }
   .total .goal { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
-  .shells { margin: 2px 0 6px; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink); }
+  .shells { margin: 2px 0 6px; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
   .rrow { display: flex; align-items: center; gap: 10px; }
   .nm { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .hl { display: block; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
