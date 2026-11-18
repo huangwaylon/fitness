@@ -20,7 +20,15 @@ import type { Clip, Question, TranscriptFile } from './types.ts';
 const SKILLS = Object.keys(GROUP_OF);
 const BANNED = /不正解|誤り|間違い|ざんねん|残念|×/;
 /** The swears no item may play (the user, 2026-11-18; damn, hell, crap and sucks may): its `line` mustn't quote one either. */
-const SWEAR = /\b(bitch\w*|ass|asses|asshole\w*|jackass|shit\w*|bullshit|bastard\w*|dick\w*|fuck\w*|f\*+\w*|goddamn\w*|piss\w*|screw you|son of a b\w*)\b/i;
+const SWEAR = /\b((?:hard|bad|dumb|smart|kick|kiss|lard|jack|fat|wise|half|tight|candy)-?ass(?:es|ed)?|\w*shit\w*|bitch\w*|ass|asses|asshole\w*|asshat\w*|bastard\w*|dick\w*|fuck\w*|f\*+\w*|goddamn\w*|piss\w*|screw you|son of a b\w*)\b/i;
+describe('SWEAR regex', () => {
+  it('catches the compounds, not ordinary words', () => {
+    for (const w of ['hardass', 'badass', 'dumbass', 'smartass', 'kickass', 'kiss-ass', 'lardass', 'jackass', 'half-assed', 'asshat', 'bullshit', 'dipshit', 'horseshit', 'apeshit', 'fat-ass', 'asses', 'piss off'])
+      expect(SWEAR.test(`What ${w} now`), w).toBe(true);
+    for (const w of ['class', 'pass', 'glass', 'grass', 'mass', 'assistant', 'assume', 'bass', 'embarrass', 'harass', 'Picasso', 'cassette', 'Massachusetts', 'shiitake', 'Mississippi', 'classes', 'passed', 'compass', 'brass'])
+      expect(SWEAR.test(`the ${w} here`), w).toBe(false);
+  });
+});
 const JA = /[぀-ヿ㐀-鿿]/;
 /** A bank, not a lesson from before them. */
 const isBank = (c: Clip) => c.questions.length >= 16;
