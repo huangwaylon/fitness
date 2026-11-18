@@ -18,7 +18,7 @@ import { createStage, watchContext } from '#lib/components/world3d/stage.ts';
 import { person3, type Dirs, type Person3 } from '#lib/components/person3d/person3d.ts';
 import type { Villager3D } from '#lib/components/villager3d/villager3d.ts';
 import { ACTION_MS } from '#lib/components/villager3d/poses.ts';
-import { buildIsland } from './scenery.ts';
+import { buildIsland, markPlayed } from './scenery.ts';
 import type { Board } from '#lib/sugoroku/board.ts';
 import { buildDie } from './die.ts';
 import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, forkAim, hopAt, hopsOf, restOf, slotOf, stoneAt, topOf, tumbleAt, visibleOf } from './plan.ts';
@@ -58,6 +58,8 @@ export interface Board3D {
   setInsets(top: number, bottom: number): void;
   /** A fork's choice on: the camera between the two ways, wider. */
   setFork(on: boolean): void;
+  /** The みんなで！ stones played: their tops a ことば's from then (scenery.ts markPlayed). */
+  setPlayed(stones: readonly number[]): void;
   /** No frames (under a sheet, the turn's English full screen): a walk or roll under way finishes at once. */
   pause(): void;
   resume(): void;
@@ -99,7 +101,8 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
   const sun = new DirectionalLight(0xfff0d6, 1.7);
   sun.position.set(-120, 260, 160);
   scene.add(sun, new AmbientLight(0xffe8cc, 0.25));
-  scene.add(buildIsland(board));
+  const island = buildIsland(board);
+  scene.add(island);
   const die = buildDie();
   scene.add(die.group);
   const camera = new PerspectiveCamera(FOV, 1, 10, 2400);
@@ -365,6 +368,10 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
       // (the first: at once, not eased in from nothing)
       if (!insetSet) Object.assign(insetNow, inset), (insetSet = true), (camSet = false), frameView();
       stage.kick();
+    },
+    setPlayed(stones) {
+      markPlayed(island, board, stones);
+      redraw();
     },
     setFork(on) {
       if (fork === on) return;

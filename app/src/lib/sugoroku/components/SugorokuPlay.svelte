@@ -34,7 +34,11 @@
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
   import { applyMove, folder, lengthCode, seatsCode, type Move } from '../online.ts';
-  import { listen, nameOf, online, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { dropMiniPlays, listen, nameOf, online, relayNow, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
+  import { miniOn } from '../mini/turn.ts';
+  import { miniOpenedAt } from '../wire.ts';
+  import { log } from '#lib/sync/log.ts';
+  import type { MiniOn } from '../game.ts';
   import { newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
   import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
@@ -159,16 +163,18 @@
   /** It's this phone's to play: passed round always; online, whose turn it is. */
   const myTurn = $derived(mode === 'local' || (!!g && g.players[g.turn].who === me));
   type Act = Omit<Move, 'g' | 'i' | 'who'>;
-  /** A move as this phone's game folds it (passed round: whose turn it is plays it). */
-  const applied = (x: Game, m: Act): Game =>
-    applyMove(x, { ...m, g: '', i: 0, who: x.players[x.turn].who } as Move, { words: words ?? NO_WORDS, lines: lines ?? [], name: nameOf }) ?? x;
+  /** A move as this phone's game folds it (passed round: whose turn it is plays it, or a mini-game's seat playing). */
+  const applied = (x: Game, m: Act, who = x.players[x.turn].who): Game =>
+    applyMove(x, { ...m, g: '', i: 0, who } as Move, { words: words ?? NO_WORDS, lines: lines ?? [], name: nameOf }) ?? x;
   /** (only a word asks the words, and a ことば waits for them) */
   const NO_WORDS: Words = { has: () => false, ja: () => '', from: () => [] };
-  /** One action, one move: online sent (every phone, this one too, folds it), passed round applied here. */
-  function act(m: Act): void {
+  /** One action, one move: online sent (every phone, this one too, folds it), passed round applied here (`who`: a
+   *  mini-game's seat playing; its pick stamped with this phone's clock, mini/clock.ts). */
+  function act(m: Act, who?: Who): void {
     if (!g) return;
-    if (mode === 'online') sendMove(m);
-    else set(applied(g, m));
+    if (mode === 'online') return sendMove(m);
+    const x = applied(g, m, who);
+    set(m.a === 'mg' && x.phase.k === 'mini' && x.phase.on ? { ...x, phase: { ...x.phase, on: { ...x.phase.on, at: Date.now() } } } : x);
   }
   let rollTimer: ReturnType<typeof setInterval> | undefined;
   $effect(() => () => clearInterval(rollTimer));
@@ -204,7 +210,7 @@
   // ---- online, the turn's live view (view.ts): mine sent while my panel shows; another's shown while theirs does
   /** This panel: the game, its step (a try doesn't move it on), whose turn and the phase. */
   const panelKey = $derived(mode === 'online' && g && ph ? `${online.cur.g}:${g.n}:${g.turn}:${ph.k}` : '');
-  const viewing = $derived(mode === 'online' && myTurn && !moving && !!ph && ph.k !== 'spin' && ph.k !== 'end');
+  const viewing = $derived(mode === 'online' && (myTurn || ph?.k === 'mini') && !moving && !!ph && ph.k !== 'spin' && ph.k !== 'end');
   $effect(() => void (viewing || sendView(null)));
   $effect(() => () => sendView(null));
   /** The latest view of another's that read as this panel's: at the game's next move (a view of an older one let go),
@@ -220,11 +226,71 @@
     });
   });
   const watch = $derived(!myTurn && !moving && seen && seen.key === panelKey ? seen.view : null);
+  // ---- みんなで！ (components/mini/, their own chunk, asked for once one's on the board's way): the game's screen while
+  // its phase is on, then its result till 次へ (this phone's: the game goes on); each seat's live frame (a `mini` view);
+  // its open and close logged (sg.mini: never a play)
+  let Mini = $state.raw<{ Turn: typeof import('./mini/MiniTurn.svelte').default; Results: typeof import('./mini/MiniResults.svelte').default } | null>(null);
+  let miniAsked = false;
+  const askMini = () => !miniAsked && ((miniAsked = true), Promise.all([import('./mini/MiniTurn.svelte'), import('./mini/MiniResults.svelte')])
+    .then(([t, r]) => (Mini = { Turn: t.default, Results: r.default }), () => (miniAsked = false)));
+  const on = $derived(g ? miniOn(g) : null);
+  /** The mini-games closed so far (seen here), the last one's state as it closed, its result shown till 次へ. */
+  let minisSeen = -1;
+  let lastOn = $state.raw<MiniOn | null>(null);
+  let miniResult = $state(false);
+  let miniLog: { key: string; at: number; on: MiniOn } | null = null;
+  $effect(() => {
+    const x = g, o = on;
+    if (!x) return;
+    untrack(() => {
+      if (x.phase.k === 'mini' || miniResult) askMini();
+      if (o) lastOn = o;
+      const n = x.minis?.length ?? 0;
+      if (o && miniLog?.key !== `${x.seed}:${n}`) {
+        miniLog = { key: `${x.seed}:${n}`, at: Date.now(), on: o };
+        miniSeenAt = clockNow();
+        log('sg.mini', { act: 'open', game: o.id, seats: o.here.length, mode }, 1);
+      }
+      if (minisSeen >= 0 && n > minisSeen) {
+        miniResult = true;
+        askMini();
+        if (mode === 'online') dropMiniPlays();
+        const was = miniLog?.on;
+        if (was) log('sg.mini', { act: 'close', game: was.id, seats: was.here.length, mode, ms: Date.now() - miniLog!.at }, 1);
+        miniLog = null;
+      }
+      minisSeen = n;
+    });
+  });
+  /** Each seat's latest live frame in the mini-game on (online). */
+  let miniViews = $state.raw<Partial<Record<Who, string>>>({});
+  let viewsFor = '';
+  $effect(() => {
+    const v = online.view, x = g, o = on;
+    if (!x || !o || mode !== 'online') return;
+    untrack(() => {
+      const key = `${online.cur.g}:${x.minis?.length ?? 0}`;
+      if (viewsFor !== key) (viewsFor = key), (miniViews = {});
+      const from = miniOpenedAt(online.cur.log) === undefined ? 0 : online.cur.log.findLastIndex((m) => m.a === 'mg');
+      if (v && v.p === 'mini' && v.g === online.cur.g && v.i > from && miniViews[v.who] !== v.s) miniViews = { ...miniViews, [v.who]: v.s };
+    });
+  });
+  /** When this phone first saw the mini-game on (its clock): a pick stamped ahead of it (a clock behind) counts from
+   *  then, never later. */
+  let miniSeenAt = $state(Infinity);
+  const miniOpened = $derived.by(() => {
+    const t = mode === 'online' && on ? miniOpenedAt(online.cur.log) : undefined;
+    return t === undefined ? undefined : Math.min(t, miniSeenAt);
+  });
+  const clockNow = () => (mode === 'online' ? relayNow() : Date.now());
+  /** The board's みんなで！ stones played (a ことば's mark from then). */
+  const played = $derived(g?.minis?.map((m) => m.stone) ?? []);
+
   // the play screen's overlays (the top bar and pills, the turn's sheet): their heights the board's insets
   let hudH = $state(88), sheetH = $state(140);
   /** The sheet folded to its bar (the board seen); every new phase opens it again. */
   let folded = $state(false);
-  const phaseKey = $derived(g && ph ? `${g.n}:${g.turn}:${ph.k}:${moving}:${myTurn}` : '');
+  const phaseKey = $derived(g && ph ? `${g.n}:${g.turn}:${ph.k}:${moving}:${myTurn}:${miniResult}` : '');
   $effect(() => {
     void phaseKey;
     folded = false;
@@ -233,6 +299,7 @@
   /** The folded bar's name: the phase's, or whose turn it is. */
   const phaseName = $derived.by(() => {
     if (!ph || !cur) return '';
+    if (ph.k === 'mini' || miniResult) return s('miniTitle');
     if (!myTurn || ph.k === 'spin') return s('turnOf', { name: cur.name });
     const k = ({ word: 'wordTitle', sentence: 'sentenceTitle', picture: 'pictureTitle', event: 'eventTitle', home: 'homeTitle', fork: 'forkTitle' } as const)[ph.k as 'word'];
     return k ? s(k) : '';
@@ -296,8 +363,8 @@
       <!-- the board full-bleed, never resized by a phase: the top overlay and the turn's sheet are its insets -->
       <div class="play" data-sg-turn={g.turn} data-sg-phase={ph.k} style:--hud="{hudH}px">
         <div class="stage">
-          {#key board}<Board3D {board} players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
-            {#snippet fallback()}<Board {board} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
+          {#key board}<Board3D {board} players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving} {played}>
+            {#snippet fallback()}<Board {board} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} {played} />{/snippet}
           </Board3D>{/key}
         </div>
         <div class="hud" bind:offsetHeight={hudH}>
@@ -321,7 +388,7 @@
             {/each}
           </div>
         </div>
-        <div class="sheet obj-cream" class:folded={folded && !moving} bind:offsetHeight={sheetH}>
+        <div class="sheet obj-cream" class:folded={folded && !moving} class:tall={!moving && (ph.k === 'mini' || miniResult)} bind:offsetHeight={sheetH}>
           {#if moving}
             <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun', { n: rolled }) : ''}</b>
               {:else}<b data-sg-moving>{s('walking')}</b>{/if}</div>
@@ -336,8 +403,17 @@
                 onpointerdown={down} onpointerup={(e) => up(e, true)} onclick={(e) => e.detail === 0 && (folded = true)}><i></i></button>
             {/if}
             <div class="sbody" hidden={folded}>
-              <TurnPanel {g} {board} {myTurn} {mode} connected={online.connected} {words} {lines} {failed} {speakable} {pickNote}
-                onact={act} onspin={doSpin} onretry={load} {watch} onview={viewing ? sendView : undefined} />
+              {#if miniResult && Mini}
+                <Mini.Results {g} last={lastOn} onnext={() => (miniResult = false)} />
+              {:else if ph.k === 'mini' && Mini}
+                <Mini.Turn {g} {mode} {me} {words} {lines} opened={miniOpened} now={clockNow} here={online.here} views={miniViews} onact={act}
+                  onview={viewing ? (v) => sendView({ p: 'mini', v }) : undefined} />
+              {:else if ph.k === 'mini' || miniResult}
+                <p class="note centre">{s('loading')}</p>
+              {:else}
+                <TurnPanel {g} {board} {myTurn} {mode} connected={online.connected} {words} {lines} {failed} {speakable} {pickNote}
+                  onact={act} onspin={doSpin} onretry={load} {watch} onview={viewing ? sendView : undefined} />
+              {/if}
             </div>
           {/if}
         </div>
@@ -413,6 +489,8 @@
     max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
     box-sizing: border-box; border-radius: var(--r-card) var(--r-card) 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
   .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
+  /* a みんなで！ needs the room more than the board does (nothing on it moves meanwhile) */
+  .sheet.tall { max-height: max(220px, calc(100% - var(--hud, 88px) - 48px)); }
   /* (a scroller clips at its padding box: the 6 px under and 4 px beside hold the last row's 3–4 px lips and a sent tile's
      2 px ring, which spill out of the tiles' and buttons' boxes) */
   .sbody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px;

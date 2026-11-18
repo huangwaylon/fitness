@@ -6,7 +6,8 @@ import { fnv1a } from '#lib/random.ts';
 
 /** Pinned seeds: the generator's rules over many boards. */
 const SEEDS = Array.from({ length: 240 }, (_, i) => `t${i}`);
-const boards = SEEDS.map((s) => boardOf(layoutKey(s))!);
+/** GEN 1's boards (the みんなで！ stones: GEN 2's, below). */
+const boards = SEEDS.map((s) => boardOf(layoutKey(s, 1))!);
 
 describe('layouts', () => {
   it('every seed builds a board that keeps every rule (none falls back to the classic)', () => {
@@ -28,14 +29,14 @@ describe('layouts', () => {
   });
   it('a change to the generator bumps GEN: a few pinned seeds’ boards, hashed, pinned to it', () => {
     // (another phone on the same GEN builds the board from the same seed: a change without the bump splits a game)
-    // (each version this build builds: 1 as it was, 2 with みんなで！ stones; new boards GEN's, 1 till mini-games are on)
+    // (each version this build builds: 1 as it was, 2 with みんなで！ stones; new boards GEN's, 2 with mini-games on)
     const GOLDEN: Record<number, string> = { 1: '1qmjkf8', 2: '1ghnty3' };
     for (const gen of GENS) {
       const hash = fnv1a(JSON.stringify(['a1', 'b2', 'c3', 'd4', 'e5', 'f6'].map((s) => generate(s, layoutKey(s, gen))))).toString(36);
       expect(hash, `bump GEN in family.ts (and wire.ts RULES) and pin '${hash}' to it`).toBe(GOLDEN[gen]);
     }
-    expect(GEN).toBe(1);
-    expect(layoutKey('a1')).toBe('1:a1');
+    expect(GEN).toBe(2);
+    expect(layoutKey('a1')).toBe('2:a1');
   });
   it('every route from ふりだし reaches あがり in the band of steps, about as long as the others', () => {
     for (const b of boards) {

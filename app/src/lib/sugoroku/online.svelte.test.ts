@@ -29,7 +29,7 @@ vi.mock('#lib/components/rooms/roomRelay.ts', () => ({
   })
 }));
 vi.mock('#lib/store/week.svelte.ts', () => ({ week: { model: { me: 'A' }, view: null, demo: false } }));
-vi.mock('#lib/world/devHooks.ts', () => ({ hook: () => undefined }));
+vi.mock('#lib/world/devHooks.ts', () => ({ hook: () => undefined, hookOneOf: () => null }));
 vi.mock('./invite.svelte.ts', () => ({ invite: { cur: null, answered: [] }, readAnswered: () => [] }));
 vi.mock('#lib/sync/log.ts', () => ({ log: (...a: unknown[]) => void h.logs.push(a) }));
 

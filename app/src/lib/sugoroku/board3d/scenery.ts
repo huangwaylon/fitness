@@ -16,6 +16,8 @@ type Kind = SpaceKind;
 const KIND_COLOUR: Record<Kind, number> = { word: 0xfff9e3, double: 0x84b9e9, sentence: 0x9ce1d0, picture: 0xf7c9a8, event: 0xd7c3f5, start: 0xffd84d, goal: 0xffd84d };
 const MARK: Record<Kind, string> = { start: s('kind.start'), word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: s('kind.goal') };
 const KINDS = Object.keys(KIND_COLOUR) as Kind[];
+/** A みんなで！ stone's top (its body a ことば's, what it plays as once played): rose, two heads; the atlas's cell 7. */
+const MINI_CELL = 7, MINI_COLOUR = 0xf2bccf;
 const INK = '#4a3a2c', WOOD = 0xa8835a, GRASS = 0x9fd38a, SAND = 0xf3dfa8, PATH = 0xefe0b8;
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", system-ui, sans-serif';
 
@@ -43,6 +45,20 @@ function atlas(areas: readonly AreaId[], notes: ReadonlyMap<AreaId, string>): Ca
   };
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
   KINDS.forEach((k, i) => cell(i, hex(KIND_COLOUR[k]), MARK[k], INK, k === 'start' || k === 'goal' ? 26 : k === 'double' ? 54 : 64));
+  // みんなで！: two heads and shoulders
+  {
+    const x = (MINI_CELL % CELLS) * PX, y = Math.floor(MINI_CELL / CELLS) * PX;
+    cell(MINI_CELL, hex(MINI_COLOUR), '', INK, 64);
+    g.fillStyle = INK;
+    for (const dx of [-20, 20]) {
+      g.beginPath();
+      g.arc(x + PX / 2 + dx, y + 46, 14, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.ellipse(x + PX / 2 + dx, y + 92, 22, 20, 0, Math.PI, 0);
+      g.fill();
+    }
+  }
   // a sign's label: heavy, outlined in dark wood (it reads at the camera's distance on a phone: B-U3)
   const label = (text: string, cx: number, cy: number, size: number, fg: string, max: number) => {
     g.font = `800 ${size}px ${FONT}`;
@@ -94,6 +110,21 @@ const at = (geo: BufferGeometry, x: number, y: number, h: number) => {
   const [wx, wz] = toWorld(x, y);
   return geo.translate(wx, h, wz);
 };
+
+/** A stone top's vertices (a circle of TOP_SEGS, non-indexed: the stones' in order at the merged mesh's start). */
+const TOP_SEGS = 28, TOP_VERTS = TOP_SEGS * 3;
+/** The みんなで！ stones played: their tops moved to the ことば's cell (the island's group, buildIsland's). */
+export function markPlayed(root: Group, b: Board, stones: readonly number[]): void {
+  const mesh = root.userData.tops as Mesh | undefined, uv = mesh?.geometry.getAttribute('uv');
+  if (!uv) return;
+  const du = ((cellOfKind('word') % CELLS) - (MINI_CELL % CELLS)) / CELLS, dv = (Math.floor(MINI_CELL / CELLS) - Math.floor(cellOfKind('word') / CELLS)) / CELLS;
+  for (const i of stones) {
+    if (!b.spaces[i]?.mini || (mesh!.userData.played as Set<number> | undefined)?.has(i)) continue;
+    (mesh!.userData.played ??= new Set<number>()).add(i);
+    for (let k = i * TOP_VERTS; k < (i + 1) * TOP_VERTS; k++) uv.setXY(k, uv.getX(k) + du, uv.getY(k) + dv);
+  }
+  uv.needsUpdate = true;
+}
 
 /** The island's group (its geometries, materials and atlas released with the scene: engine.ts). */
 export function buildIsland(b: Board): Group {
@@ -186,7 +217,7 @@ export function buildIsland(b: Board): Group {
   const tops: BufferGeometry[] = [];
   BOARD.forEach((sp) => {
     const end = sp.kind === 'start' || sp.kind === 'goal', r = (end ? END_R : STONE_R) * 0.86;
-    tops.push(at(intoCell(new CircleGeometry(r, 28), cellOfKind(sp.kind), 0.04).rotateX(-Math.PI / 2), sp.x, sp.y, STONE_T + 0.06).toNonIndexed());
+    tops.push(at(intoCell(new CircleGeometry(r, TOP_SEGS), sp.mini ? MINI_CELL : cellOfKind(sp.kind), 0.04).rotateX(-Math.PI / 2), sp.x, sp.y, STONE_T + 0.06).toNonIndexed());
   });
   for (const sg of b.signs) {
     const board = new PlaneGeometry(SIGN_W, SIGN_H), uv = board.getAttribute('uv');
@@ -194,7 +225,9 @@ export function buildIsland(b: Board): Group {
     for (let k = 0; k < uv.count; k++) uv.setY(k, 0.25 + uv.getY(k) * 0.5);
     tops.push(at(intoCell(board, cellOfArea(BOARD[sg.i].area)).rotateX(-0.35), sg.x, sg.y, SIGN_Y).toNonIndexed());
   }
-  root.add(new Mesh(mergeGeometries(tops), marks));
+  const topMesh = new Mesh(mergeGeometries(tops), marks);
+  root.add(topMesh);
+  root.userData.tops = topMesh;
   for (const g of tops) g.dispose();
   return root;
 }

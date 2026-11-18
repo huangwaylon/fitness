@@ -27,9 +27,11 @@
     top: number;
     bottom: number;
     fork: boolean;
+    /** The みんなで！ stones played (their tops a ことば's from then). */
+    played: readonly number[];
     fallback: Snippet;
   }
-  let { board: plan, players, shown, turn, roll, cheer, top, bottom, fork, fallback }: Props = $props();
+  let { board: plan, players, shown, turn, roll, cheer, top, bottom, fork, played, fallback }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let board: Board3D | null = $state.raw(null);
@@ -97,6 +99,11 @@
   $effect(() => void board?.focus(turn));
   $effect(() => void board?.setInsets(top, bottom));
   $effect(() => void board?.setFork(fork));
+  const playedKey = $derived(played.join());
+  $effect(() => {
+    void playedKey;
+    if (board) untrack(() => board!.setPlayed(played));
+  });
   let rollKey = 0;
   $effect(() => {
     const r = roll, b = board;

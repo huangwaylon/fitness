@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+// (mini-games off in this file, mini/flag.ts mocked: the RULES '1' fold, as an older game's on this build; '2': mini/online.test)
+vi.mock('./mini/flag.ts', () => ({ MINIS: false }));
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { applyMove, folder, foldMoves } from './online.ts';

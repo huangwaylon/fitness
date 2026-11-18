@@ -4,7 +4,9 @@
 // carried into the next day; the music stages' last records, newerMusic's rule, replayed to a tab as it opens).
 // The same `Live` as the real socket (sync/live.ts), so the island can't tell them apart; the e2e's two-player tests
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
-// outside the demo.
+// outside the demo. すごろく's moves (`sg`) are the room's too: the first at each game's index is kept, a later one refused,
+// and each answered (onAck) once the other tabs have heard it (a ping each answers after what came before it), so a
+// race lost is known: as the relay's room and acks, which a mini-game's moves from every seat need (wire.ts Outbox).
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
 import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicAt, musicBeats, musicLive, scopeMaySend, tokyoDayNum, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
@@ -15,7 +17,12 @@ const HELLO_MS = 4000;
 const GONE_MS = 10_000;
 const MAX = 400;
 
-type Wire = { k: 'hi'; who: Who } | { k: 'bye'; who: Who } | { k: 'm'; m: Relayed };
+type Wire = { k: 'hi'; who: Who } | { k: 'bye'; who: Who } | { k: 'm'; m: Relayed } | { k: 'ping' | 'pong'; who: Who; c: string };
+
+/** What an intent claims in the demo's room: the world's (claimOf), a すごろく move its game's index. */
+const claim = (m: Intent): string | null => claimOf(m) ?? (m.kind === 'sg' ? `sg:${m.g}:${m.i}` : null);
+/** A move's answer comes once every other tab has answered its ping, or after this. */
+const ACK_MS = 1000;
 
 interface Log {
   day: number;
@@ -31,6 +38,16 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   let st: LiveStatus = { connected: false, me: null, peer: false, here: [] };
   const subs = new Set<(m: Relayed) => void>();
   const statusSubs = new Set<(s: LiveStatus) => void>();
+  const ackSubs = new Set<(i: Intent, ok: boolean, t: number) => void>();
+  /** My すごろく moves waiting for their answer, by claim: the tabs still to answer, whether another's beat it. */
+  const asked = new Map<string, { i: Intent; t: number; need: Set<Who>; lost: boolean; timer: ReturnType<typeof setTimeout> }>();
+  const answer = (c: string) => {
+    const a = asked.get(c);
+    if (!a) return;
+    asked.delete(c);
+    clearTimeout(a.timer);
+    for (const f of ackSubs) f(a.i, !a.lost, a.t);
+  };
   let lastT = 0;
 
   const setStatus = (s: Partial<LiveStatus>) => {
@@ -62,8 +79,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   /** The room's rules on the day's log: false when it refuses (claimed already, a nest within the hour). */
   const keep = (m: Relayed): boolean => {
     const l = read();
-    const c = claimOf(m);
-    if (c && l.log.some((x) => claimOf(x) === c)) return false;
+    const c = claim(m);
+    if (c && l.log.some((x) => claim(x) === c)) return false;
     if (m.kind === 'shake' && m.drop === 'nest' && l.log.some((x) => x.kind === 'shake' && x.drop === 'nest' && x.tree === m.tree && m.t - x.t < NEST_GAP_MS)) return false;
     const log = m.kind === 'walk' ? l.log.filter((x) => !(x.kind === 'walk' && x.who === m.who)) : l.log;
     writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].slice(-MAX) });
@@ -106,7 +123,14 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     }
     else if (w.k === 'm' && w.m.who !== me) {
       if (isStored(w.m)) relog(w.m);
-      if (!lostRace(w.m)) deliver(w.m);
+      if (lostRace(w.m)) return;
+      const c = claim(w.m), a = c ? asked.get(c) : undefined;
+      if (a) a.lost = true;
+      deliver(w.m);
+    } else if (w.k === 'ping' && w.who !== me) post({ k: 'pong', who: me, c: w.c });
+    else if (w.k === 'pong' && w.who !== me) {
+      const a = asked.get(w.c);
+      if (a && a.need.delete(w.who) && !a.need.size) answer(w.c);
     }
   };
   /** The day's log is one localStorage value both tabs read and write: two writing at once keep one of the two. Each
@@ -140,7 +164,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
    *  that sent the later one hears the earlier and gives it up (world-day apply's `beat`). */
   const mine = new Map<string, { t: number }>();
   const lostRace = (m: Relayed): boolean => {
-    const c = claimOf(m), my = c ? mine.get(c) : undefined;
+    const c = claim(m), my = c ? mine.get(c) : undefined;
     return !!my && (my.t < m.t || (my.t === m.t && me < m.who));
   };
 
@@ -169,11 +193,11 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
         const log = read().log;
         const first = new Map<string, Relayed>();
         for (const m of log) {
-          const c = claimOf(m), f = c ? first.get(c) : undefined;
+          const c = claim(m), f = c ? first.get(c) : undefined;
           if (c && (!f || m.t < f.t || (m.t === f.t && m.who < f.who))) first.set(c, m);
         }
         for (const m of log) {
-          const c = claimOf(m);
+          const c = claim(m);
           if (c && m.who === me) mine.set(c, { t: m.t });
           if (m.who !== me && (!c || first.get(c) === m)) deliver(m);
         }
@@ -190,6 +214,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       bc = null;
       heard.clear();
       left.clear();
+      for (const c of [...asked.keys()]) answer(c);
       setStatus({ connected: false, peer: false, here: [], gone: undefined });
     },
     send(i: Intent) {
@@ -197,11 +222,21 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       if (i.kind === 'decor' && !scopeMaySend(me, i.sc, i.id)) return false;
       lastT = Math.max(now().getTime(), lastT + 1);
       const m = { ...i, v: LIVE_V, who: me, t: lastT } as Relayed;
-      if (isStored(m) && !keep(m)) return true; // refused by the room: it went, and nobody hears it
+      const sg = m.kind === 'sg' ? claim(m)! : null;
+      if (isStored(m) && !keep(m)) {
+        // refused by the room: it went, and nobody hears it (a すごろく move answered so)
+        if (sg) queueMicrotask(() => { for (const f of ackSubs) f(i, false, m.t); });
+        return true;
+      }
       if (m.kind === 'music' && !stageKeep(m)) return true;
-      const c = claimOf(m);
+      const c = claim(m);
       if (c) mine.set(c, { t: m.t });
       post({ k: 'm', m });
+      if (sg) {
+        asked.set(sg, { i, t: m.t, need: new Set(heard.keys()), lost: false, timer: setTimeout(() => answer(sg), ACK_MS) });
+        if (heard.size) post({ k: 'ping', who: me, c: sg });
+        else queueMicrotask(() => answer(sg));
+      }
       return true;
     },
     on(fn) {
@@ -209,6 +244,10 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       return () => void subs.delete(fn);
     },
     onChange: () => () => {},
+    onAck(fn) {
+      ackSubs.add(fn);
+      return () => void ackSubs.delete(fn);
+    },
     onStatus(fn) {
       statusSubs.add(fn);
       fn(st);

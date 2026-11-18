@@ -113,7 +113,8 @@ describe('game', () => {
   it('a generated board plays the same: about 11 rounds, every fork asked and taken, the same game from the same seeds', () => {
     const rounds: number[] = [];
     for (let i = 0; i < 30; i++) {
-      const layout = layoutKey(`lay${i}`), g = playOut(`r${i}`, [2, 2], 'normal', layout), b = boardFor(g);
+      // (GEN 1's: a GEN 2 board's みんなで！ plays its mini-game, mini/turn.test's whole games)
+      const layout = layoutKey(`lay${i}`, 1), g = playOut(`r${i}`, [2, 2], 'normal', layout), b = boardFor(g);
       expect(g.layout).toBe(layout);
       expect(g.phase.k).toBe('end');
       rounds.push(g.round);

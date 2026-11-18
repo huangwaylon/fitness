@@ -96,14 +96,16 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
 
 ## みんなで！ (mini-games)
 
-**Off** (`mini/flag.ts MINIS = false`) until their screens land: nothing changes for a game till then. The logic is
-`lib/sugoroku/mini/` (pure, tested); design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
-なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next).
+**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '2'. The logic is `lib/sugoroku/mini/` (pure,
+tested), the screens `components/mini/`; design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
+なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered
+(`mini/offer.ts OFFERED`: adding one changes what a landing deals, so it goes with a RULES bump).
 
 - **The stone** (GEN 2 boards): a ことば stone with the みんなで！ mark (`Space.mini`), 2–3 a route, 6 apart, none in a
   route's first 5 steps or last 3, never a fork or a join, play 1.5 in the routes' balance (a fork's short way may carry
-  one). Landed on (a card's move too): the lander picks one of two options (`registry.ts miniOptions`, seeded: none
-  again in a game till the pool runs out). Everyone present plays; the close gives each seat that played its stars (a
+  one). Its mark: a rose top with two heads (3D atlas cell 7, the 2D board's SVG), a ことば's once played. Landed on (a
+  card's move too): the lander picks one of two options (`offer.ts`, seeded: none again in a game till the pool runs
+  out), each card its name, one line and its time. Everyone present plays; the close gives each seat that played its stars (a
   team's: never ranked, never negative, ≤ 12 a seat present), keeps what it made (the results' words, lines, pictures),
   marks the stone played (`g.minis`: a ことば from then on) and ends the lander's turn.
 - **The games** (each `deal → play → done? → close`, `types.ts`): ことばの市場 (9 tiles, 60 s, every word anyone finds
@@ -121,10 +123,21 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
   tick: the `mg`'s room stamp (`Move.t`, `miniOpenedAt`) + 3 s countdown + the game's length; any phone sends `mc` 1 s
   after the end; the first closes, later ones and plays after it are nothing. A game's own end (every count in, the
   rounds or lines done) closes it in the fold. A dropped phone's plays already in stand; back, it folds the same.
-- **Rules:** RULES '2' (GEN 2 boards, the mini-games) once on; '1' still folded, so an older game plays on as it was.
-- **To turn them on:** `MINIS = true` in `lib/sugoroku/mini/flag.ts` with the UI (the `mini` phase; the sheet's API: `lib/sugoroku/mini/turn.ts`
-  openMini / playMini / closeMini / miniOn, each game's helpers, `clock.ts`, `wire.ts` miniOpenedAt, `sendMove` for
-  `mg` / `mp` / `mc`, the `mini` view panel); the tests already run both (`mini/online.test` mocks the flag).
+- **Rules:** RULES '2' (GEN 2 boards, the mini-games); '1' still folded, so an older game plays on as it was.
+- **The screen** (`MiniTurn`, in the turn's sheet opened tall; the 3D board idle): the pick, a 3-2-1, one bar drained by
+  a CSS animation (yuzu with 「あと5秒！」), the game, then `MiniResults` on every phone till 次へ (what it made in
+  TurnResult with the team's stars, each seat's part in seat order, a seat with none お休み). Online every seat dealt
+  in plays at once; a seat back after the open watches. The lander's phone sends `mc`, the others a moment later if
+  none came; a closed game's queued plays are let go (`dropMiniPlays`). Live frames (the `mini` view, ≤ 1 a second
+  for counts): 伝えて当てて's speller's letters (`sp<round>.<letters>`: the finders' `h _ _ _`), なかま分け's counts
+  (`so<n>`: the team's total live). Passed round, private info behind a cover (「スマホをBに渡してね」 [見る]): the
+  market and the sort a 20 s turn each, 伝えて当てて a step each (the speller's, each finder's; a seat going on, no
+  cover); みんなで一文 on the one phone, every hand in its seat's colour (A sky, B rose, G lilac, its head beside it).
+  Online, みんなで一文 frees a quiet seat's cards after 15 s once its word is next (2 s if it left).
+- **Log:** `sg.mini` (open, close with its ms here; the game, the seats, the mode), never a play.
+- **Tests:** `?sgMini=<id>` forces the game's first landing (that game first), `?sgMiniMs=<ms>` every length (a 1 s
+  countdown), dev/test only; e2e/sugoroku-mini.spec (each game passed round, two online with a phone gone and back).
+  The demo's tab relay keeps the first move at each index and answers each (`onAck`, after the other tabs' ping).
 
 ## Speaking
 

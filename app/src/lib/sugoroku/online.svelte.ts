@@ -13,7 +13,9 @@ import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { log } from '#lib/sync/log.ts';
 import { roomRelay } from '#lib/components/rooms/roomRelay.ts';
-import { hook } from '#lib/world/devHooks.ts';
+import { hook, hookOneOf } from '#lib/world/devHooks.ts';
+import { forceMini } from './mini/offer.ts';
+import { MINI_IDS } from './mini/registry.ts';
 import { now } from '#lib/time/clock.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
@@ -37,6 +39,8 @@ const read = (): Kept => {
 class Online {
   cur = $state.raw<Kept>(EMPTY);
   connected = $state(false);
+  /** Who else is here now (the relay's presence: a みんなで！'s seats present, its `mg`'s `s`). */
+  here = $state.raw<Who[]>([]);
   view = $state.raw<(SgView & { who: Who }) | null>(null);
 }
 export const online = new Online();
@@ -45,6 +49,8 @@ export const updateNeeded = (): boolean => otherRules(online.cur.log);
 let relay: Live | null = null;
 /** The relay's clock, a move's `t`'s (the tabs' local relay: the island's, clock.ts now(), a `?date=` moving it). */
 let clock = (): number => Date.now();
+/** The relay's clock now (a mini-game's countdown and bar: mini/clock.ts, from its `mg`'s stamp). */
+export const relayNow = (): number => clock();
 
 /** A person's name as everyone sees it. */
 export const nameOf = (w: Who): string =>
@@ -160,6 +166,8 @@ let started = false;
  *  with an e2e's test relay, where a socket of its own would be a second one of the same key (the sheet's opening still
  *  listens). */
 export function listen(eager = false): void {
+  // (the e2e's forced みんなで！, dev/test only: mini/offer.ts)
+  forceMini(hookOneOf('sgMini', MINI_IDS));
   if (started || typeof window === 'undefined' || (eager && week.demo && hook('relay'))) return;
   started = true;
   online.cur = read();
@@ -181,6 +189,7 @@ export function listen(eager = false): void {
     const now = new Set(st.connected ? st.here : []);
     if ([...now].some((w) => !here.has(w))) flushView(true);
     here = now;
+    if (online.here.join() !== [...now].join()) online.here = [...now];
   });
   $effect.root(watchInvite);
 }
@@ -220,6 +229,11 @@ function put(cur: Kept, move: Move): void {
   if (!h) return;
   keep({ ...cur, log: h.log, at: clock() });
   send(move);
+}
+/** A closed mini-game's plays not yet sent let go (the in-flight one's answer still comes): never a stray move at the
+ *  next turn's place. */
+export function dropMiniPlays(): void {
+  outbox = { ...outbox, q: outbox.q.filter((x) => x.at !== null) };
 }
 /** The outbox's next, if it may go now. */
 function pump(): void {

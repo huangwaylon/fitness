@@ -8,7 +8,8 @@ import { boardOf } from './layout.ts';
 import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
 import { PICTURES, PICTURE_STARS, TIERS, tierOf } from './pictures.ts';
-import { isMiniId, miniOptions, type MiniId } from './mini/registry.ts';
+import { isMiniId, type MiniId } from './mini/registry.ts';
+import { forcedHere, offer } from './mini/offer.ts';
 import type { MiniState } from './mini/games.ts';
 
 /** A seat's English: 1 やさしい, 2 ふつう, 3 むずかしい (what its spaces ask, not what they pay: the table stays even). */
@@ -235,8 +236,8 @@ function land(g: Game, spun: number, r: () => number, card = false): Game {
   const sp = boardFor(g).spaces[me.pos], kind = sp.kind;
   // a card's move ending on an イベント: no second card, a ことば instead
   if (card && kind === 'event') return { ...g, phase: { k: 'word', mult: 1, spun, rested: true } };
-  // a みんなで！ not played yet: the lander picks a mini-game (played: its ことば)
-  if (sp.mini && !g.minis?.some((m) => m.stone === me.pos)) return { ...g, phase: { k: 'mini', spun, opts: miniOptions((g.minis ?? []).map((m) => m.id), r) } };
+  // a みんなで！ not played yet: the lander picks a mini-game (played: its ことば); a test's forced one anywhere
+  if ((sp.mini && !g.minis?.some((m) => m.stone === me.pos)) || forcedHere(g.minis)) return { ...g, phase: { k: 'mini', spun, opts: offer((g.minis ?? []).map((m) => m.id), r) } };
   if (kind === 'goal') {
     const place = g.players.filter((p) => p.home !== null).length;
     me.home = place;

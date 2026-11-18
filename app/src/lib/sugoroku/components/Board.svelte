@@ -11,7 +11,7 @@
   import type { Player } from '../game.ts';
   import { s } from '../i18n.ts';
 
-  let { board, players, shown, turn, top = 0, bottom = 0, letters = {} }: { board: Board; players: readonly Player[]; shown: readonly number[]; turn: number; top?: number; bottom?: number; letters?: Readonly<Record<number, string>> } = $props();
+  let { board, players, shown, turn, top = 0, bottom = 0, letters = {}, played = [] }: { board: Board; players: readonly Player[]; shown: readonly number[]; turn: number; top?: number; bottom?: number; letters?: Readonly<Record<number, string>>; played?: readonly number[] } = $props();
   const MARK = { start: '', word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: '' } as const;
   const BOARD = $derived(board.spaces);
   const H = $derived(board.h);
@@ -58,6 +58,10 @@
       {#if sp.kind === 'start' || sp.kind === 'goal'}
         <circle class="stone k-{sp.kind}" cx={sp.x} cy={sp.y} r="22" />
         <text class="end" x={sp.x} y={sp.y + 4}>{s(`kind.${sp.kind}`)}</text>
+      {:else if sp.mini && !played.includes(i)}
+        <!-- みんなで！: two heads (a ことば once played) -->
+        <circle class="stone k-mini" cx={sp.x} cy={sp.y} r="16" />
+        <g class="heads" transform="translate({sp.x} {sp.y})"><circle cx="-5" cy="-4" r="3.6" /><circle cx="5" cy="-4" r="3.6" /><path d="M-11 9 a6 5.5 0 0 1 12 0 Z M-1 9 a6 5.5 0 0 1 12 0 Z" /></g>
       {:else}
         <circle class="stone k-{sp.kind}" cx={sp.x} cy={sp.y} r="16" />
         <text class="mark" x={sp.x} y={sp.y + 5}>{MARK[sp.kind]}</text>
@@ -73,7 +77,7 @@
       <Avatar person={h.p.who} worn size={26} />
     </span>
   {/each}
-  {#each BOARD as _, i (i)}<span class="hit" data-sg-space={i} data-kind={BOARD[i].kind} style:left="{(BOARD[i].x / W) * 100}%" style:top="{(BOARD[i].y / H) * 100}%"></span>{/each}
+  {#each BOARD as _, i (i)}<span class="hit" data-sg-space={i} data-kind={BOARD[i].mini && !played.includes(i) ? 'mini' : BOARD[i].kind} style:left="{(BOARD[i].x / W) * 100}%" style:top="{(BOARD[i].y / H) * 100}%"></span>{/each}
 </div>
 </div>
 
@@ -95,6 +99,8 @@
   .k-sentence { fill: color-mix(in srgb, var(--c-mint) 75%, white); }
   .k-event { fill: color-mix(in srgb, var(--c-lilac) 80%, white); }
   .k-picture { fill: #f7c9a8; }
+  .k-mini { fill: color-mix(in srgb, var(--c-rose) 55%, white); }
+  .heads { fill: var(--c-ink); }
   .k-start, .k-goal { fill: var(--c-yuzu); stroke: var(--c-yuzu-lip); }
   text { text-anchor: middle; fill: var(--c-ink); font-family: var(--font-ui); font-weight: 700; }
   .mark { font: 600 14px var(--font-num); }

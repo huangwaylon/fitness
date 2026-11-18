@@ -135,7 +135,7 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
   const a = await ctx.newPage(), b = await ctx.newPage();
   // (the game's id pinned: its board, dice and stones the same every run)
-  await a.goto('?demo&sgId=e2eonline2');
+  await a.goto('?demo&sgId=e2eon00003');
   await b.goto('?demo&as=B');
   await islandUp(a);
   await islandUp(b);
@@ -194,7 +194,7 @@ const clipped = (p: Page) => sheet(p).locator('.sbody').evaluate((sb) => {
 });
 
 test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips too), above the home indicator; scrolls when short', async ({ page }) => {
-  await start(page, 'e2e-12');
+  await start(page, 'e2e-23');
   await sheet(page).locator('[data-sg-start]').tap();
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
   // an iPhone 15/16 home-screen app's 34 px home indicator (Playwright has no safe area)
