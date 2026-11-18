@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 4, new 2, ctx 5, tx 11
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 4, new 2, ctx 5, tx 11, qa 18
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 1, new 1
 // “April Breaks up Ann and Tom | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Ann
 // and Tom trade lists of each other's annoying habits until April, fed up, breaks them up; drunk later, she tells
@@ -30,20 +30,20 @@ export const aprilBreakup: Clip = {
       trap: 'rims（ホイール）や iPad で、お金の話と思いやすい。項目の種類でまとめて聞く。',
       use: 'We just have different tastes.（好みが違うだけだよ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'books', seg: [2, 13.2],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'books', seg: [2, 9.9],
       stem: 'What does Ann do all the time?',
       ja: 'アンがいつもしていることは？',
       choices: ['She reads lots of books', 'She watches lots of TV', 'She plays lots of games'], a: 0,
       choicesJa: ['本をたくさん読む', 'テレビをたくさん見る', 'ゲームをたくさんする'],
       cue: '最初のリストの最後の項目。',
-      line: 'You still use an iPad 1. You *read books all the time*.',
+      line: 'You *read books all the time*.',
       said: '「まだ初代 iPad を使ってる。いつも本を読んでる」と欠点を挙げる。',
       mean: 'all the time ＝ いつも。本好きはいいことなのに、欠点に入れるのが笑いどころ。',
       trap: '直前が iPad の話なので、画面で何かする話と考えがち。read books をそのまま聞く。',
       use: 'He reads all the time.（彼はいつも本を読んでる）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'own', ctx: true, seg: [5.9, 16.1],
-      stem: 'What does Ann do after hearing her list of no-no’s?',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'own', ctx: true, seg: [5.45, 14.85],
+      stem: 'What does Ann do after hearing about her bad habits?',
       ja: '自分のダメな所を並べられたあと、アンはどうする？',
       choices: ['She lists his bad habits', 'She agrees with his list', 'She asks him to stop'], a: 0,
       choicesJa: ['彼の悪い癖を並べる', '彼のリストに賛成する', 'やめてと頼む'],
@@ -54,7 +54,7 @@ export const aprilBreakup: Clip = {
       trap: 'Okay は「分かった」に聞こえるが、受け入れてはいない。決め手は my own（私の分）。',
       use: 'How about my idea?（私の案はどう？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'movies', seg: [10.2, 19.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'movies', seg: [10.2, 15.95],
       stem: 'What does Ann say Tom does at the movies?',
       ja: 'アンによると、トムは映画のとき何をする？',
       choices: ['He talks during them', 'He sleeps during them', 'He uses his phone'], a: 0,
@@ -66,7 +66,7 @@ export const aprilBreakup: Clip = {
       trap: 'sleep through（寝て過ごす）も同じ形。through の前の動詞を聞く。',
       use: 'Please don’t talk during the movie.（映画の間はしゃべらないで）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'rims', seg: [12.7, 23],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'rims', seg: [15.9, 19.5],
       stem: 'How big are the rims Ann says Tom put on his car?',
       ja: 'アンによると、トムが車に付けたホイールは何インチ？',
       choices: ['12-inch', '20-inch', '22-inch', '30-inch'], a: 1, keep: true,
@@ -78,7 +78,7 @@ export const aprilBreakup: Clip = {
       trap: 'twenty は「トゥウェニー」、twelve は「トゥウェルヴ」。22 なら最後に two が付く。',
       use: 'Do you have a 20-inch suitcase?（20インチのスーツケースある？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'likeme', seg: [19, 28.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'likeme', seg: [19, 26.3],
       stem: 'Fill the gap: “Everything you just said makes ___ more.”',
       ja: '「Everything you just said makes ___ more.」の空所は？',
       choices: ['me like me', 'me like you', 'you like me'], a: 0,
@@ -100,7 +100,7 @@ export const aprilBreakup: Clip = {
       trap: 'like you と聞くと仲直りに聞こえる。最後の目的語が me か you かで意味が逆になる。',
       use: 'I’ll take that as a compliment.（ほめ言葉として受け取っとく）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fedup', seg: [22.5, 30.4],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'fedup', seg: [26, 30.05],
       stem: 'How does April feel about Ann and Tom?',
       ja: 'エイプリルはアンとトムのことをどう感じている？',
       choices: ['Tired of them', 'Worried for them', 'Happy for them'], a: 0,
@@ -112,7 +112,7 @@ export const aprilBreakup: Clip = {
       trap: 'take から「取る」を思いやすい。この take は「我慢する」。',
       use: 'I can’t take this heat anymore.（この暑さ、もう無理）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'breakup', reveals: ['fedup'], retired: true, seg: [25.8, 31.5],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'breakup', reveals: ['fedup'], retired: true, seg: [26.05, 31.5],
       stem: 'What does “I’m breaking you up” mean?',
       ja: '「I’m breaking you up.」はどういう意味？',
       choices: ['Your relationship is over', 'You two need a rest', 'You two must stop fighting'], a: 0,
@@ -124,7 +124,7 @@ export const aprilBreakup: Clip = {
       trap: 'break から「休憩（a break）」を連想しやすい。続く are done で「終わり」と分かる。',
       use: 'Okay, we’re done here.（よし、ここまで）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'fine', ctx: true, seg: [26.1, 33.7],
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'fine', ctx: true, seg: [26.1, 32.5],
       stem: 'How do they answer “You guys are done”?',
       ja: '「You guys are done.」に、二人はどう答える？',
       choices: ['They both agree', 'They both refuse', 'They both say sorry'], a: 0,
@@ -136,7 +136,7 @@ export const aprilBreakup: Clip = {
       trap: 'fine は「元気」と勘違いしやすい。ここは「それでいい」＝賛成の返事。',
       use: 'Seven o’clock? Fine with me.（7時？私はそれでいいよ）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'tobed', ctx: true, seg: [34.3, 44.3],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'tobed', ctx: true, seg: [33.4, 44.3],
       stem: 'What do they do with drunk April?',
       ja: '酔ったエイプリルを、二人はどうする？',
       choices: ['Take her to bed', 'Take her home', 'Give her water'], a: 0,
@@ -148,7 +148,7 @@ export const aprilBreakup: Clip = {
       trap: '酔った人は家まで送る、と考えがち。ここはもう家の中で、to bed と言う。',
       use: 'Let’s get you a taxi.（タクシーを呼んであげるね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [42.6, 47.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [44.35, 46.55],
       stem: 'What does “anyway” mean in April’s question?',
       ja: 'エイプリルの質問の anyway は、どんな意味？',
       choices: ['To begin with', 'By the way', 'Once again'], a: 0,
@@ -160,7 +160,7 @@ export const aprilBreakup: Clip = {
       trap: 'anyway から「ところで」を思いやすい。質問の最後なら「そもそも」。',
       use: 'What are we doing here anyway?（そもそも何でここにいるんだっけ）' },
 
-    { id: 'i1', skill: 'attitude', level: 'B1', point: 'stupid', seg: [44.2, 54.7],
+    { id: 'i1', skill: 'attitude', level: 'B1', point: 'stupid', seg: [46.55, 52.1],
       stem: 'What does April think of their fight?',
       ja: 'エイプリルは二人のけんかをどう思っている？',
       choices: ['It is silly', 'It is sad', 'It is serious'], a: 0,
@@ -172,7 +172,7 @@ export const aprilBreakup: Clip = {
       trap: 'I hate が彼女の気持ちに聞こえるが、二人のまね。本音は so stupid と Who cares?。',
       use: 'It’s a small thing. Who cares?（小さなことだよ。どうでもいい）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['surprise'], seg: [52.3, 83.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['surprise'], seg: [52.1, 79.85],
       stem: 'How do things end for Ann and Tom?',
       ja: 'アンとトムは最後にどうなる？',
       choices: ['They get back together', 'They stay broken up', 'They get angry at April'], a: 0,
@@ -184,19 +184,19 @@ export const aprilBreakup: Clip = {
       trap: '前半で「別れさせる」と言われたので、別れたままと考えがち。Well, のあとを聞く。',
       use: 'They got back together.（あの二人、よりを戻したよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'surprise', reveals: ['outcome'], seg: [58.6, 66],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'surprise', reveals: ['outcome'], seg: [58.6, 63.1],
       stem: 'Why is April surprised to see Ann and Tom?',
       ja: 'エイプリルはなぜアンとトムを見て驚く？',
       choices: ['She thought they were over', 'She thought they went home', 'She thought they hated her'], a: 0,
       choicesJa: ['二人は終わったと思っていた', '帰ったと思っていた', '嫌われたと思っていた'],
-      cue: '「Why is」のあとの短い一言。',
+      cue: '「Why is your arm on her?」の次の一言。',
       line: 'Why is your arm on her? *I broke you up.*',
       said: '寄り添う二人を見て「別れさせたでしょ」と言う。',
       mean: 'I broke you up ＝ 二人を別れさせた。まだ別れていると思っていた。',
       trap: 'armor（よろい）に聞こえる所は arm on her（腕を回す）。決め手は I broke you up。',
       use: 'Wait, I thought you quit!（あれ、辞めたんじゃなかったの？）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'whatmean', reveals: ['outcome'], ctx: true, seg: [62.4, 70],
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'whatmean', reveals: ['outcome'], ctx: true, seg: [62.62, 71.35],
       stem: 'What does April want when she asks “What do you mean?”',
       ja: '「What do you mean?」と聞くとき、エイプリルは何を求めている？',
       choices: ['For them to explain', 'For them to repeat it', 'For them to leave'], a: 0,
@@ -252,7 +252,7 @@ export const aprilBreakup: Clip = {
       trap: '前半のけんかの印象で、二人が笑われていると聞きやすい。オチで嘆く人が、たいてい笑いの的。',
       use: 'Great. I did the exact opposite.（最悪、真逆のことしちゃった）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'talkout', seg: [69.9, 77],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'talkout', seg: [71.36, 76.7],
       stem: 'Type it: “And so we ___ and I apologized.” (3 words)', answer: 'talked it out',
       ja: '「And so we ___ and I apologized.」の3語を書こう。',
       cue: '「And so we」のすぐあと。三語がつながる。',
@@ -262,7 +262,7 @@ export const aprilBreakup: Clip = {
       trap: 'ed の t と it がくっつき、it が聞こえにくい。out の t もほぼ消える。',
       use: 'Let’s sit down and talk it out.（座って、ちゃんと話そう）' },
 
-    { id: 'w1', skill: 'who', level: 'C1', point: 'teller', retired: true, seg: [70.9, 77],
+    { id: 'w1', skill: 'who', level: 'C1', point: 'teller', retired: true, seg: [71.4, 77],
       stem: 'Who tells April about the two apologies?',
       ja: '二人とも謝ったことを、エイプリルに話すのは誰？',
       choices: ['Ann', 'Tom', 'Ann and Tom, in turns'], a: 0,
@@ -274,7 +274,7 @@ export const aprilBreakup: Clip = {
       trap: 'we が続くので、二人で話しているように聞こえる。he が出たら話し手はもう一人。',
       use: 'I said sorry, and so did she.（私が謝って、彼女も謝った）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'undo', ctx: true, seg: [71.6, 81.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'undo', ctx: true, seg: [72.95, 81.6],
       stem: 'How does April feel when they thank her?',
       ja: 'お礼を言われて、エイプリルはどんな気持ち？',
       choices: ['She is upset', 'She is proud', 'She is pleased'], a: 0,
