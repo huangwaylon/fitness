@@ -95,8 +95,8 @@ button and 「全員のゲームが終わります」). The fork and stretch sig
 
 ## Speaking
 
-**Off** (`game.ts SPEAK = false`) until the real-phone checks pass; `?speak=1` turns it on for a page (the tests, a
-trial); off, no step shows. The relay's `POST /grade`: relay/src/gradeRoute.ts ([backend](backend.md)).
+**Off** (`game.ts SPEAK = false`) until the real-phone checks pass ([speech test](speech-test.md)); `?speak=1` turns it
+on for a page (the tests, a trial); off, no step shows.
 
 - **Where:** after a 絵 turn's answer, before 次へ: 「この絵で一文言ってみよう」 (+2), optional, 次へ skips it at no
   cost. やさしい sees two frames (I like ___. / There is a ___.), むずかしい a nudge for 6+ words (shorter: the stars and
@@ -124,6 +124,18 @@ trial); off, no step shows. The relay's `POST /grade`: relay/src/gradeRoute.ts (
   changes them. Online, the `pic` move carries only them (`y`); the words stay on the speaker's phone.
 - **Logged:** `sg.grade` once a step used (the deciding layer, the verdict, stop → feedback ms, takes, edited, said
   again, why not), never the text.
+- **The relay's `POST /grade`** (relay/src/gradeRoute.ts): body `{ s, t }` (the sentence 1–200 chars, the target word,
+  lowercase), a person's key, CORS like `/stt`. Answers `{ ok, verdict: great|ok|tip, fixed, natural, also, tip, used,
+  src: ai|wasei, aiMs }`, or 400, 401, 413, 429 (`GRADE_DAY_MAX` a role a UTC day, 250), 502 (the model failed or gave
+  no JSON), 503 (`GRADE_OFF`). The Japanese-English list first (relay/src/wasei.ts: mansion, テンション, open the TV…): a
+  hit answers at once, nothing spent. Else Workers AI `@cf/google/gemma-4-26b-a4b-it` (json schema, thinking off,
+  temperature 0; a cheerful friend's Japanese, no grammar terms; the sentence sent as `<s>` data); no answer in 2.5 s: one
+  identical second call, the first answer wins (one call against the cap; the log says `hedged`, `won`). Both ends clean
+  the answer with one sanitiser (`contract/grade.ts gradeOf`): a tip with a scolding word or a grammar term, no kana or
+  over 40 characters is dropped; a recast that isn't plain English, has a placeholder or is over twice the sentence
+  falls back to their sentence (`natural`: to none); `also` only on great. About 6–8 neurons a call: two roles' caps
+  (250 + 100 STT each) stay under the free 10k a day. Nothing kept: the `grade` log line has the length, ms, verdict
+  and source only.
 
 ## Online
 

@@ -1,8 +1,8 @@
 # Speech test
 
-A test, not a feature yet: whether the relay's Whisper (Workers AI `@cf/openai/whisper-large-v3-turbo`) understands us
-well enough and fast enough on our iPhones to build speaking into English Study. Safari's own recogniser is out: it
-needs Siri turned on.
+Whether the relay's Whisper (Workers AI `@cf/openai/whisper-large-v3-turbo`) understands us well enough and fast
+enough on our iPhones; 英語すごろく's speaking step ([sugoroku](sugoroku.md#speaking), off by `game.ts SPEAK`) is built on
+it and waits for this page's results. Safari's own recogniser is out: it needs Siri turned on.
 
 ## The page
 
@@ -51,25 +51,4 @@ and as the mic was asked (`sessNow`); a take adds its recording's KB and type, w
 ## Deciding
 
 It is good enough if, on both phones, a 5 s sentence comes back in about 2 s or less (median total), and read
-sentences match at 0.9 or better. Then speaking can go into the deeper-English plan. If not, drop it or try something
-else.
-
-## Grade
-
-`POST /grade` (relay/src/gradeRoute.ts): one 英語すごろく sentence (spoken, then confirmed) graded gently.
-
-- Body `{ s, t, lv }`: the sentence (1–200 chars), the target word (lowercase), the seat's level (1–3). A person's key,
-  CORS like `/stt`.
-- Answers `{ ok, verdict: great|ok|tip, fixed, natural, also, tip, used, src: ai|wasei, aiMs }`, or 400, 401, 413,
-  429 (`GRADE_DAY_MAX` calls a role a UTC day, 250), 502 (the model failed or gave no JSON), 503 (`GRADE_OFF`).
-- First the Japanese-English list (relay/src/wasei.ts: mansion, テンション, challenge, open the TV…): a hit answers at
-  once, no model, nothing spent.
-- Else Workers AI `@cf/google/gemma-4-26b-a4b-it` (json schema, thinking off, temperature 0). The prompt is a cheerful
-  friend's Japanese (〜だよ, 〜してみてね), no grammar terms, no scolding. The sentence is sent as `<s>` data.
-- The relay cleans the answer: a tip with a scolding word or a grammar term, or over 50 chars, is dropped; `also` only
-  on great; a placeholder `fixed` falls back to the sentence.
-- No answer in 2.5 s: one identical second call, the first answer wins (the slow calls come alone); one call against
-  the cap, the log says `hedged` and which `won`.
-- About 6–8 neurons a call; two roles' caps (250 + 100 STT each) stay under the free 10k a day.
-- **Nothing is kept:** the `grade` log line has the length, ms, verdict and source only; the phone's `sg.grade` the
-  layer, verdict, ms and takes.
+sentences match at 0.9 or better: then すごろく's speaking step is turned on. If not, it stays off.

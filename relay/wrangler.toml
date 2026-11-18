@@ -22,7 +22,7 @@ WX_LON = "139.75"
 # `/stt` (src/sttRoute.ts, docs/speech-test.md): "1" turns it off (503); a role's calls a UTC day (then 429)
 STT_OFF = "0"
 STT_DAY_MAX = "100"
-# `/grade` (src/gradeRoute.ts, docs/speech-test.md#grade): "1" turns it off (503); a role's calls a UTC day (then 429)
+# `/grade` (src/gradeRoute.ts, docs/sugoroku.md#speaking): "1" turns it off (503); a role's calls a UTC day (then 429)
 GRADE_OFF = "0"
 GRADE_DAY_MAX = "250"
 # The record's daily backup (src/archive.ts, docs/ops/runbook.md#6-backups): the private archive repo, its release, and
