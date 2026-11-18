@@ -7,6 +7,7 @@
   import { CLASSIC, stepFrom } from '#lib/sugoroku/board.ts';
   import { boardOf, layoutKey } from '#lib/sugoroku/layout.ts';
   import type { Who } from '#lib/types.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import { createBoard3D, type Board3D, type Celebration } from './engine.ts';
 
   const WHO: Who[] = ['A', 'B', 'G'];
@@ -22,7 +23,7 @@
     if (!canvas) return;
     board = createBoard3D(canvas, plan);
     board.setPlayers(WHO.map((who) => ({ who, look: defaultLook(who) })));
-    (window as { __sg3dPreview?: Board3D }).__sg3dPreview = board;
+    if (testHooks()) (window as { __sg3dPreview?: Board3D }).__sg3dPreview = board;
     return () => {
       board?.dispose();
       board = null;

@@ -50,14 +50,12 @@ const sources = (p: string): string[] =>
   );
 
 describe("the window hooks (window.__world3d, __tent, …) on a visitor's phone", () => {
-  // Known: すごろく's board preview page (its engine lives only while it's open).
-  const KNOWN = ['lib/sugoroku/board3d/Preview.svelte'];
   it('each file that sets one gates it (testHooks, hooksOn, DEV or demo)', () => {
     const src = join(import.meta.dirname, '..', '..');
     const ungated = sources(src)
       .map((f) => [relative(src, f), readFileSync(f, 'utf8')] as const)
       .filter(([, t]) => /(window|\))\.__\w+ = /.test(t) && !/testHooks\(\)|hooksOn\(|import\.meta\.env\.DEV|\.demo\b/.test(t))
       .map(([f]) => f);
-    expect(ungated).toEqual(KNOWN);
+    expect(ungated).toEqual([]);
   });
 });
