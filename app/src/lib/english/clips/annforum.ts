@@ -1,11 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 0, new 3, ctx 3, tx 7
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 2
 // “The day Leslie fell in love with Ann | Parks and Recreation” (the official Parks and Recreation channel, Season 1):
-// at a public forum Ann asks the parks department to deal with a dangerous pit; Leslie's co-host flirts with her,
-// Leslie pinky-promises to fill the pit and build a park, and tells the camera it could be her Hoover Dam.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 10–36 s (citizens' rants; whisper has an
-// obscene quote at 34–37 s), 63–71 s (applause; “But I'm here to talk…” is whisper only), 77–89 s (whisper loops one
-// garbled line; only the captions have the developer and the condos), 125–128 s (innuendo). Ann is named in both
-// sources (“I'm Ann Perkins”); the co-host is never named after the intro, so stems call him “the co-host”.
+// at a public forum Ann asks the parks department to deal with a dangerous pit; Tom flirts with her, Leslie
+// pinky-promises to fill the pit and build a park, and tells the camera it could be her Hoover Dam.
+// Segments from the captions, words from whisper (2026-11-16). Untested: 26–31 s (the bad-words complaint), 63–69 s
+// (applause), 77–89 s (whisper loops one garbled line; only the captions have the developer and the condos), 124–128 s
+// (innuendo). Named in the audio: Leslie Knope and Tom Haverford (3–7 s), Ann Perkins (57 s).
+// EXCLUDE 31.2–37.2: obscene heckling (f-words), and its set-up line.
+// Same scene as tomhitsonann (KHark3X5jHI): this bank keeps off its points (fire away, Barry / Anyone else, I have
+// kids, dug out, went bankrupt, both legs, pretty serious, move on, open person, exchange numbers, I'd love to, bottom
+// line, I'll do something about it, pinky promise, going there tomorrow, six years).
 import type { Clip } from '../types.ts';
 
 export const leslieAnnForum: Clip = {
@@ -14,6 +18,17 @@ export const leslieAnnForum: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'tk', skill: 'phrase', level: 'B1', point: 'taketwo', seg: [0.5, 7.0],
+      stem: 'What does Leslie mean by “So, take two”?',
+      ja: 'レスリーの「So, take two」はどういう意味？',
+      choices: ['Let’s start again', 'Let’s take a break', 'We have two questions'], a: 0,
+      choicesJa: ['もう一度やり直そう', '休憩しよう', '質問は2つ'],
+      cue: '最初のひと言。', line: '*So, take two.* I’m Leslie Knope…',
+      said: '「じゃあ、やり直し」と言って、もう一度あいさつから始める。',
+      mean: 'take ＝ 撮影の1回分。take two ＝「2回目の撮り」→ もう一度最初から。',
+      trap: 'take（取る）と two から「2つ取る」と考えがち。撮影の言葉で「2回目」。',
+      use: 'Okay, take two. Let me try that again.（よし、もう一回。やり直させて）' },
+
     { id: 'fa', skill: 'phrase', level: 'B2', point: 'fireaway', seg: [6.5, 10.1], retired: true,
       stem: 'Leslie says, “So *fire away*.” What does she mean?',
       ja: 'レスリーの「So fire away」はどういう意味？',
@@ -26,16 +41,28 @@ export const leslieAnnForum: Clip = {
       trap: 'fire（火・撃つ）から怖い意味に思いやすい。質問の話のあとなら「どうぞ」。',
       use: 'Any questions? Fire away.（質問ある？ どうぞ）' },
 
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'loudly', seg: [36.4, 47], retired: true,
-      stem: 'Which plain-English version keeps what Leslie means about being yelled at?',
-      choices: ['“When people shout at me, I hear that they care.”', '“People care, so I put up with being shouted at.”',
-                '“When people shout, I tune out and stop listening.”'], a: 0,
-      cue: '「so」の前の理由と、最後の造語っぽい言い方。',
-      line: 'so *what I hear* when I’m being yelled at is *people caring loudly* at me.',
-      said: '町を思う人たちだから、怒鳴られても「大声で気にかけてくれている」と聞こえる、と言う。',
-      mean: 'what I hear は受け取り方。怒鳴り声を関心の証拠と言いかえる、前向きな解釈。',
-      trap: '「怒鳴られる」が耳に残ると我慢や不満の話に聞こえる。what I hear is… は耳でなく解釈の話。',
-      use: 'What I hear is that you care.（つまり、気にかけてるってことだよね）' },
+    { id: 'gr', skill: 'detail', level: 'B1', point: 'graffiti', seg: [16.5, 26.0],
+      stem: 'What is the city asked to stop?',
+      ja: '市は何をやめさせてほしいと頼まれる？',
+      choices: ['Writing on walls', 'Loud music', 'Trash on the street'], a: 0,
+      choicesJa: ['壁の落書き', 'うるさい音楽', '道のごみ'],
+      cue: '「please」が2回続く頼み。', line: '…the music is so loud. *Stop the graffiti, please.* Please.',
+      said: '「音楽がうるさすぎる」という声のあと、「落書きをやめさせてください、お願いします」と頼む。',
+      mean: 'graffiti ＝ 壁などへの落書き（グラフィティ）。Stop 〜, please ＝「〜をやめさせて」というかんたんな頼み方。',
+      trap: 'music is so loud も聞こえるが、それは文句。頼みは Stop のあと。',
+      use: 'Stop the music, please.（音楽を止めてください）' },
+
+    { id: 'nt1', skill: 'infer', level: 'B2', point: 'loudly', seg: [37.3, 47.5],
+      stem: 'What does Leslie hear when people yell at her?',
+      ja: 'どなられるとき、レスリーには何が聞こえる？',
+      choices: ['That they love their town', 'That they are angry at her', 'That she should go home'], a: 0,
+      choicesJa: ['町を大事に思っている', '自分に怒っている', '帰れと言われている'],
+      cue: '「what I hear」のあと。',
+      line: 'members of a community that *care about where they live*, so *what I hear*… is *people caring loudly* at me.',
+      said: '「町を大事に思う人たちだから、どなり声は大声で気にかけてくれてる声に聞こえる」と言う。',
+      mean: 'what I hear ＝ ここは「私の受け取り方」。caring loudly ＝ 大声で気にかける。前向きな言いかえ。',
+      trap: 'yelled at（どなられる）が残ると、怒られている話と考えがち。',
+      use: 'What I hear is that you need more time.（つまり、もっと時間がほしいってことだね）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'barry', seg: [47, 56], retired: true,
       stem: '“*Thank you so much*, Barry… Anyone else?” What is Leslie doing?',
@@ -61,15 +88,15 @@ export const leslieAnnForum: Clip = {
       trap: 'あとで musician も出てくるが、それは彼氏の仕事。自己紹介の I’m a を聞く。',
       use: 'I’m a nurse. I work at a hospital.（看護師です。病院で働いています）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'idea', seg: [69, 78.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'idea', ctx: true, seg: [69, 78.6],
       stem: 'Ann says, “*No, it’s a problem*.” What is she telling them?',
       ja: 'アンの「No, it’s a problem」は何を伝えている？',
       choices: ['It’s a complaint, not an idea', 'It’s a question, not an idea', 'She likes the empty lot'], a: 0,
       choicesJa: ['アイデアではなく苦情', 'アイデアではなく質問', '空き地が気に入っている'],
       cue: '「good idea」への返事。',
-      line: 'Excellent. That sounds like a *good idea*. Tell us about that. — *No, it’s a problem*.',
-      said: '空き地の話と言うと「いいアイデアですね」と返され、「いえ、問題なんです」と直す。',
-      mean: '提案だと思われたので、苦情だと言い直している。',
+      line: 'Excellent. That sounds like a *good idea*. Tell us about that. / Ann: *No, it’s a problem*.',
+      said: '空き地の話と言うと「すばらしい、いいアイデアですね」と返され、「いえ、問題なんです」と直す。',
+      mean: '提案だと思われたので、苦情だと言い直している。No は「違います」の訂正。',
       trap: 'Excellent（すばらしい）から、いい話だと思いやすい。No は good idea への返事。',
       use: 'No, it’s more of a complaint.（いえ、どちらかというと苦情です）' },
 
@@ -98,15 +125,15 @@ export const leslieAnnForum: Clip = {
       use: 'I’m supporting myself now.（今は自分で生活してるよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'anyway', reveals: ['support'], seg: [93.3, 103.4],
-      stem: 'Why does Ann say “But anyway” here?',
-      ja: 'アンは、なぜここで「But anyway」と言う？',
-      choices: ['To go back to her story', 'To say sorry for that', 'To explain why he fell'], a: 0,
-      choicesJa: ['本題の話に戻るため', '言ったことを謝るため', '彼が落ちた理由を言うため'],
+      stem: 'What does Ann talk about after “But anyway”?',
+      ja: '「But anyway」のあと、アンは何の話をする？',
+      choices: ['What happened at the pit', 'Her boyfriend’s music', 'Why she pays for him'], a: 0,
+      choicesJa: ['穴で起きたこと', '彼氏の音楽', '彼の生活費を出すわけ'],
       cue: '彼の仕事の話と、落ちた話のつなぎ目。',
       line: 'actually, I support him. *But anyway*, he fell in and broke both his legs.',
-      said: '彼の仕事の話を少しして「まあそれはいいとして」と、落ちた話に戻る。',
+      said: '彼の仕事の話を少しして「まあそれはいいとして」と、穴に落ちた話に戻る。',
       mean: 'but anyway ＝ まあそれはいいとして。わき道の話を切り上げて本題に戻る合図。',
-      trap: 'but を「でも、ごめん」と思いやすい。わき道のあとの but anyway は「本題に戻る」。',
+      trap: 'but から「でも」と前の話が続くと考えがち。わき道のあとの but anyway は「本題に戻る」。',
       use: 'But anyway, where was I?（まあそれはいいとして、何の話だっけ）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'hitting', seg: [101.6, 112.2], retired: true,
@@ -121,38 +148,38 @@ export const leslieAnnForum: Clip = {
       use: 'So, is it serious with him?（で、彼とは真剣なの？）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'goingon', seg: [112.8, 121.9],
-      stem: 'What does the co-host say about the boyfriend’s life?',
-      ja: '彼氏の生活について、もう一人の司会は何と言う？',
+      stem: 'What does Tom say about the boyfriend’s life?',
+      ja: '彼氏の生活について、トムは何と言う？',
       choices: ['It wasn’t going well before', 'He had few plans before', 'He had little money before'], a: 0,
       choicesJa: ['もともとうまくいっていなかった', 'もともと予定が少なかった', 'もともとお金がなかった'],
       cue: '「to start with」の前。',
       line: 'this guy sounds like he *didn’t have a lot going on for him* to start with.',
-      said: '「もともと冴えない人みたい。そこへ両足骨折」と言う。',
-      mean: 'have a lot going for 〜 ＝ 〜にはいい点が多い。否定なので「冴えない」。',
+      said: '「その彼、もともとパッとしない感じみたいだし。そのうえ両脚骨折」と言う。',
+      mean: 'have a lot going for 〜 ＝ 〜にはいい点が多い。否定なので「パッとしない」。',
       trap: 'going on を「予定」と思うと忙しさの話になる。for him が付くと、いい点の話。',
       use: 'She has a lot going for her.（彼女はいいところがたくさんある）' },
 
     { id: 't1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [127.9, 133.4],
-      stem: 'How does Ann react to the co-host?',
-      ja: 'アンはもう一人の司会にどう反応する？',
-      choices: ['Shocked he’s flirting here', 'Happy, but acting cool', 'Not sure what he means'], a: 0,
-      choicesJa: ['ここで口説くなんてとあきれる', 'うれしいが平気なふり', '何のことか分からない'],
+      stem: 'How does Ann react to Tom?',
+      ja: 'アンはトムにどう反応する？',
+      choices: ['Shocked he’s flirting here', 'Glad that he likes her', 'Not sure what he means'], a: 0,
+      choicesJa: ['ここで口説くなんてとあきれる', '好かれてうれしい', '何のことか分からない'],
       cue: '「actually」と「right now」。',
       line: 'Are you *actually* hitting on me *right now*?',
-      said: '「今ここで、本気で私を口説いてるの？」と聞き返す。',
+      said: '「本気で、今ここで私を口説いてるの？」と聞き返す。',
       mean: 'hit on 人 ＝ 人を口説く（くだけた言い方）。right now で「よりによって今？」。',
       trap: '口説かれるのは喜びとも取れるが、actually と right now はあきれた驚き。',
       use: 'Are you serious right now?（今それ本気で言ってる？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'married', seg: [131.2, 136.5],
-      stem: 'What does the co-host say about himself?',
-      ja: 'もう一人の司会は、自分について何と言う？',
+    { id: 'd1', skill: 'infer', level: 'B1', point: 'married', ctx: true, seg: [128.4, 136.5],
+      stem: 'Why does Tom say he isn’t flirting?',
+      ja: 'トムは、口説いていない理由を何と言う？',
       choices: ['He is already married', 'He is getting married', 'He is seeing someone'], a: 0,
       choicesJa: ['もう結婚している', 'これから結婚する', 'つき合っている人がいる'],
-      cue: '「hitting on you」のあと。',
-      line: 'No, I’m not hitting on you. *I’m actually married*.',
-      said: '「口説いてない。実は結婚してるんだ」と答える。',
-      mean: 'I’m married ＝ 結婚している。口説いていない理由として出している。',
+      cue: '「hitting on me」への返事。',
+      line: 'Ann: Are you actually *hitting on me* right now? / Tom: No, I’m not hitting on you. *I’m actually married*.',
+      said: '「今ここで口説いてるの？」と聞かれ、「口説いてない。実は結婚してるんだ」と答える。',
+      mean: 'I’m married ＝ 結婚している（今の状態）。actually ＝「実は」。口説いていない理由として出している。',
       trap: 'married だけ拾うと「これから結婚」とも迷う。I’m married は今の状態。',
       use: 'I’m actually married, so no.（実は結婚してるので、ごめんね）' },
 
@@ -224,6 +251,18 @@ export const leslieAnnForum: Clip = {
       trap: '「明日行く」で止めると、見に行くだけに聞こえる。and then のあとに次の計画。',
       use: 'And when that’s done, we’ll celebrate.（それが済んだら、お祝いしよう）' },
 
+    { id: 'hp', skill: 'detail', level: 'B1', point: 'selfhelp', ctx: true, seg: [173.6, 181.0],
+      stem: 'Who does Leslie say will help Ann?',
+      ja: 'だれがアンの力になると、レスリーは言う？',
+      choices: ['Leslie herself', 'The whole department', 'Tom and Leslie'], a: 0,
+      choicesJa: ['レスリー自身', '課のみんな', 'トムとレスリー'],
+      cue: '「Really?」への返事。we のあとの言い直し。',
+      line: 'Ann: Really? / Leslie: Yes, *we*… *I will help you*.',
+      said: '「本当に？」と聞くアンに、「ええ、私たち…私が力になります」と言い直す。',
+      mean: 'we と言いかけて I に直す。課ではなく自分が引き受ける、という強い約束。',
+      trap: '最初の we から、課のみんなと考えがち。言い直したあとの I が答え。',
+      use: 'Don’t worry. I will help you.（心配しないで。私が力になる）' },
+
     { id: 't2', skill: 'attitude', level: 'B2', point: 'pinky', seg: [176.8, 191.8], retired: true,
       stem: 'When Ann asks “Is that a promise?”, how does Leslie answer?',
       ja: '「約束？」と聞かれて、レスリーはどう答える？',
@@ -260,17 +299,6 @@ export const leslieAnnForum: Clip = {
       trap: 'four は「フォー」。six と sixteen は出だしが同じで、-teen なら「ティーン」と長い。',
       use: 'I’ve lived here for six years.（ここに住んで6年です）' },
 
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'sandbox', seg: [207.9, 218.6], retired: true,
-      stem: 'Why does Leslie’s sandbox example get a laugh?',
-      choices: ['It’s a small chore she sells as a big win', 'It’s a gross chore she describes in detail',
-                'It’s a real danger she shrugs off as minor'], a: 0,
-      cue: '「proud of」のあとに出す具体例。',
-      line: 'things that I’m *proud of*. Recently I led a city-wide drive to *disinfect the sandbox sand*…',
-      said: '「誇れる仕事もした。最近は、猫の件のあと砂場の砂を消毒する運動を率いた」。',
-      mean: '「市全体の運動を率いた」と大きく言うが、中身は砂場の消毒。その差が笑い。',
-      trap: 'cats を危険な問題と取ると真面目な話に聞こえる。大げさな語と小さな中身の差を聞く。',
-      use: 'It’s small, but I’m proud of it.（小さいけど、自慢なんだ）' },
-
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'dam', reveals: ['sandbox', 'scratch', 'plan'], seg: [210, 229], retired: true,
       stem: 'Which plain-English version keeps what Leslie means by her last line?',
       choices: ['“This park could be what I’m remembered for.”',
@@ -282,6 +310,18 @@ export const leslieAnnForum: Clip = {
       mean: '「誇れる仕事」の流れで But と比べるので、ダムは後に残る代表作のたとえ。ダムを知らなくても解ける。',
       trap: 'ダムを「大変さ」や「市の事業」と取りやすい。my と前の話の枠で読む。',
       use: 'This could be my big break.（これが私の大きなチャンスかも）' },
+
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'sandbox', seg: [211.0, 217.6],
+      stem: 'What did Leslie recently clean all over the city?',
+      ja: 'レスリーが最近、町じゅうできれいにしたものは？',
+      choices: ['The sand kids play in', 'The walls with writing', 'The city’s streets'], a: 0,
+      choicesJa: ['子どもが遊ぶ砂', '落書きされた壁', '町の通り'],
+      cue: '「Recently, I led」のあと。',
+      line: 'Recently, I led a city-wide drive to *disinfect the sandbox sand*…',
+      said: 'カメラに「最近は、猫の問題のあと、町じゅうの砂場の砂を消毒する運動を率いた」と話す。',
+      mean: 'disinfect ＝ 消毒する。sandbox ＝ 砂場。大きな言い方で、中身は砂場の消毒という小さな仕事。',
+      trap: 'cats も聞こえるが、消毒したのは砂。猫はその理由のほう。',
+      use: 'We need to disinfect the table.（テーブルを消毒しないと）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'scratch', reveals: ['plan'], seg: [219.5, 225.7],
       stem: 'Leslie will build a park “*from scratch*.” Meaning?',
