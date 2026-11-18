@@ -30,8 +30,17 @@ async function hideIntoDeploy(page: Page) {
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));
     return false;
-  }).catch(() => false), { timeout: 60_000, message: 'reloaded into the deploy as the app hid' }).toBe(true);
+  }).catch(() => false), { timeout: 60_000, message: 'reloaded into the deploy as the app hid' }).toBe(true).catch(async (e: Error) => {
+    throw new Error(`${e.message}\n${JSON.stringify(await swState(page))}`);
+  });
 }
+/** The page's workers and the app's reload marks: what a deploy not taken was waiting on (a CI flake's message). */
+const swState = (page: Page) => page.evaluate(async () => {
+  const reg = await navigator.serviceWorker.getRegistration();
+  const w = (x?: ServiceWorker | null) => x && `${x.state}${x.scriptURL === navigator.serviceWorker.controller?.scriptURL ? ' (in control)' : ''}`;
+  const kept = Object.fromEntries(['island.reloadAt', 'island.updateFor', 'island.staleFor', 'e2e.swChanged'].map((k) => [k, sessionStorage.getItem(k)]));
+  return { installing: w(reg?.installing), waiting: w(reg?.waiting), active: w(reg?.active), ...kept, open: document.querySelectorAll('dialog[open]').length };
+}).catch((x: Error) => x.message);
 
 /**
  * Chromium's ask to swap the old worker out again, once it can act on it. A deploy's worker installed (it called
@@ -121,12 +130,7 @@ test('a navigation is the cached shell at once; a deploy is taken as the app hid
   await hideIntoDeploy(page);
   // reloaded: a new page (not the one marked), by the app (its reloadAt), the HUD up
   await expect.poll(() => page.evaluate(() => !(window as unknown as { __before?: boolean }).__before && !!sessionStorage.getItem('island.reloadAt')).catch(() => false), { timeout: 60_000, message: 'the app reloaded into the new worker' }).toBe(true).catch(async (e: Error) => {
-    const why = await page.evaluate(async () => {
-      const reg = await navigator.serviceWorker.getRegistration();
-      const w = (x?: ServiceWorker | null) => x && `${x.state} ${x.scriptURL === navigator.serviceWorker.controller?.scriptURL ? '(in control)' : ''}`;
-      return { installing: w(reg?.installing), waiting: w(reg?.waiting), active: w(reg?.active), reloadAt: sessionStorage.getItem('island.reloadAt'), swChanged: sessionStorage.getItem('e2e.swChanged'), open: document.querySelectorAll('dialog[open]').length };
-    }).catch((x: Error) => x.message);
-    throw new Error(`${e.message}\n(version.json asked ${asked}×; ${JSON.stringify(why)})`);
+    throw new Error(`${e.message}\n(version.json asked ${asked}×; ${JSON.stringify(await swState(page))})`);
   });
   await context.unroute('**/_app/version.json');
   await expect(hudMenu(page)).toBeVisible();
@@ -203,6 +207,12 @@ async function deployAway(page: Page, context: import('@playwright/test').Browse
   await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next","compat":1}' }));
   await page.evaluate(() => fetch('_app/version.json', { cache: 'no-store' }).then((r) => r.json()));
 }
+/** The page's own version checks kept from the worker until a test's deploy (deployAway's route then answers them),
+ *  from before its first load. Each names this build the deployed one (caches.ts FRESH_KEY), and the worker drops that
+ *  record for deployAway's `next` only in its waitUntil, after the page has its answer: under CI load the deploy's
+ *  launch read the record first (or the claim's own check wrote it again late) and was a `skip`, the old build's
+ *  cached shell (gate runs 44294831000, 44336128728: 「skip」 for 「net」/「cache」). Before the first goto. */
+const noOwnChecks = (context: import('@playwright/test').BrowserContext) => context.route('**/_app/version.json', (route) => route.abort());
 /** The worker's record that the network named this build the deployed one (caches.ts FRESH_KEY) dropped: the next
  *  launch races. */
 const unfresh = (page: Page) => page.evaluate(async () => {
@@ -218,11 +228,9 @@ const fresh = (page: Page) => page.evaluate(async () => {
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
 // player; now the launch's page is the deploy's when it's in time, no reload into it)
 test('a launch after a deploy is the deploy\'s page, its lazy sheets loading under the older worker; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
-  // (the page's own version checks kept from the worker from the start: each one names this build the deployed one,
-  // which makes the next launch a `skip` before its time; the one as the worker claims the page, let through, wrote
-  // its record after unfresh() had deleted it: CI's `skip` for `same`)
-  const noChecks = (route: import('@playwright/test').Route) => route.abort();
-  await context.route('**/_app/version.json', noChecks);
+  // (the page's own version checks kept from the worker from the start: noOwnChecks; here unfresh() too would lose
+  // to the claim's: CI's `skip` for `same`)
+  await noOwnChecks(context);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
@@ -247,7 +255,7 @@ test('a launch after a deploy is the deploy\'s page, its lazy sheets loading und
   await islandUp(page);
   expect(await shellOf(page)).toBe('cache');
   await context.setOffline(false);
-  await context.unroute('**/_app/version.json', noChecks);
+  await context.unroute('**/_app/version.json');
   // a deploy: its page from the network, run under the older worker (its new entry chunks through it), a lazy sheet too
   await deployAway(page, context);
   const open = await page.goto('?demo&e2eVersion=next');
@@ -263,6 +271,7 @@ test('a launch after a deploy is the deploy\'s page, its lazy sheets loading und
 // (the review 11-14 #2: a deploy's page booted from the network, then its new entry chunks never came: a blank app)
 test('a deploy\'s page whose new entry chunks don\'t load (the network cut mid-launch): the boot watchdog reloads once onto the cached shell, which starts (ui-state/bootWatch.ts)', { tag: '@chromium' }, async ({ page, context }) => {
   await page.addInitScript(() => sessionStorage.setItem('e2e.docs', String(Number(sessionStorage.getItem('e2e.docs') ?? 0) + 1)));
+  await noOwnChecks(context);
   await page.goto('?demo');
   await islandUp(page);
   await controlled(page);
@@ -297,6 +306,7 @@ test('a cold open at ?open=its into a waiting deploy opens ボット on 保養�
   await context.route(`${ITS}/**`, (route) => route.request().method() === 'OPTIONS'
     ? route.fulfill({ status: 204, headers: cors() })
     : route.fulfill({ status: 200, contentType: 'application/json', headers: cors(), body: JSON.stringify(payload(rec.now())) }));
+  await noOwnChecks(context);
   await page.goto('');
   await islandUp(page);
   await controlled(page);
