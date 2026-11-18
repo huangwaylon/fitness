@@ -62,7 +62,8 @@ export async function sttRoute(req: Request, env: SttEnv): Promise<Response> {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
   if (env.off || !env.ai) return json({ ok: false, error: 'off' }, 503);
   const role = env.roleOf(bearerOf(req));
-  if (!role) return json({ ok: false, error: 'unauthorized' }, 401);
+  // a person's key only: the guest's (G) isn't one
+  if (!role || role === 'G') return json({ ok: false, error: 'unauthorized' }, 401);
   const t0 = env.now();
   // only a person's calls are logged (a stranger's flood never spends the log's requests)
   const done = (st: number, inB: number, err?: Err, body: object = { ok: false, error: err }) => {

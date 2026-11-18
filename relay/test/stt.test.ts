@@ -7,7 +7,7 @@ import { keyOwner } from '../src/auth.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = '3f9a'.repeat(16), KEY_B = 'b2'.repeat(32);
-const keys = { KEY_A, KEY_B };
+const keys = { KEY_A, KEY_B, KEY_C: 'c3'.repeat(32) };
 const T0 = Date.parse('2026-11-07T03:00:00.000Z');
 const ORIGIN = 'https://island-fund.pages.dev';
 const SAID = 'I would like a large coffee';
@@ -60,7 +60,9 @@ describe('POST /stt', () => {
     expect([pre.status, pre.headers.get('Access-Control-Allow-Headers')]).toEqual([204, 'Authorization, Content-Type']);
     expect((await sttRoute(post(wav(), { Origin: 'https://evil.test' }), env())).status).toBe(403);
     expect((await sttRoute(post(wav(), { Authorization: '' }), env())).status).toBe(401);
+    // (the guest's key: not a person's)
     expect((await sttRoute(post(wav(), { Authorization: `Bearer ${'c3'.repeat(32)}` }), env())).status).toBe(401);
+    expect((await sttRoute(post(wav(), { Authorization: `Bearer ${'d4'.repeat(32)}` }), env())).status).toBe(401);
     expect((await sttRoute(new Request('https://relay/stt', { headers: { Origin: ORIGIN } }), env())).status).toBe(405);
     expect(ai.run).not.toHaveBeenCalled();
     expect(logged).toEqual([]);

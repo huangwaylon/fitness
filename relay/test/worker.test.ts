@@ -173,6 +173,15 @@ describe('the other routes', () => {
     expect(calls['LOG.spend']).toEqual([['stt:A', 5]]);
   });
 
+  it('/grade is off with GRADE_OFF=1, and spends from the log’s cap (its own bucket) when on', async () => {
+    const init = () => ({ method: 'POST', body: JSON.stringify({ s: 'I like apples.', t: 'apple', lv: 2 }), headers: { Authorization: `Bearer ${KEY_A}` } });
+    const ai = { run: () => Promise.resolve({ response: { verdict: 'great', fixed: 'I like apples.', natural: '', also: 'I love apples.', tip: '', target_used: true } }) };
+    expect((await call('/grade', init(), envOf({ AI: ai, GRADE_OFF: '1' }))).status).toBe(503);
+    const res = await call('/grade', init(), envOf({ AI: ai, GRADE_DAY_MAX: '7' }));
+    expect([res.status, await res.json()]).toEqual([200, { ok: true, verdict: 'great', fixed: 'I like apples.', natural: '', also: 'I love apples.', tip: '', used: true, src: 'ai', aiMs: expect.any(Number) }]);
+    expect(calls['LOG.spend']).toEqual([['grade:A', 7]]);
+  });
+
   it('/health/log is 404 without HEALTH_TOKEN; an unknown path is 404', async () => {
     expect((await call('/health/log', { headers: { Authorization: `Bearer ${'t'.repeat(40)}` } })).status).toBe(404);
     expect((await call('/nope')).status).toBe(404);
