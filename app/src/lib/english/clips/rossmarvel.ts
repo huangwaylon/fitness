@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 2, new 1, ctx 5, tx 2
+// R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 2, new 1, ctx 5, tx 2, qa 11
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 4, new 1
 // “Ross Was a Medical Marvel | Friends” (the official Friends channel, Best of Season 7): with their parents' house
 // being sold, Monica says the parents always favored Ross; in the garage Ross shows Dad that his boxes are dry and
@@ -16,7 +16,7 @@ export const rossMarvel: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['gym'], seg: [0, 22.5],
-      stem: 'How did Mom and Dad treat their old rooms?',
+      stem: 'How did Mom and Dad treat Ross’s and Monica’s rooms?',
       ja: 'ママとパパは、2人の昔の部屋をどうした？',
       choices: ['Kept his, changed hers', 'Kept both rooms as they were', 'Changed both rooms quickly'], a: 0,
       choicesJa: ['ロスの部屋は残し、モニカの部屋は変えた', '2つとも残した', '2つともすぐ変えた'],
@@ -39,7 +39,7 @@ export const rossMarvel: Clip = {
       trap: 'was なら「ワズ」とはっきり、has been なら「ビン」が聞こえる。小さな「ズ」なら is。',
       use: 'Someone is going to be using this desk.（この机、だれかが使うことになる）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['turn'], seg: [0.2, 12.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['turn'], seg: [0.2, 11.8], keep: true,
       stem: 'How long did Mom and Dad keep Ross’s room for him?',
       ja: '親はロスの部屋を何年残していた？',
       choices: ['5 years', '15 years', '20 years', '50 years'], a: 1,
@@ -86,7 +86,7 @@ export const rossMarvel: Clip = {
       trap: 'あとで箱の話が出るので、箱と思いやすい。into のあとの a gym を聞く。',
       use: 'They turned the old bank into a café.（古い銀行をカフェに変えた）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['gym'], seg: [11.4, 16.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['gym'], seg: [11.7, 16.7], keep: true,
       stem: 'How soon after Monica moved out did Dad change her room?',
       ja: 'モニカが出てどのくらいで、パパは部屋を変えた？',
       choices: ['12 minutes', '20 minutes', '2 weeks', '20 days'], a: 1,
@@ -98,7 +98,7 @@ export const rossMarvel: Clip = {
       trap: '「トゥエルブ」なら12、「トゥエニ」なら20。後ろが「ミニッツ」なら分、「デイズ」なら日、「ウィークス」なら週。',
       use: 'He was asleep five minutes after dinner.（夕食後5分で寝てた）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'asmuch', ctx: true, seg: [22.6, 29.7],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'asmuch', ctx: true, seg: [22.6, 29.4],
       stem: 'What does Monica mean by “As much as they love you?”',
       ja: 'モニカの「As much as they love you?」はどういう意味？',
       choices: ['They love you more', 'They love us the same', 'They love me more'], a: 0,
@@ -122,7 +122,7 @@ export const rossMarvel: Clip = {
       use: 'Not me. You’re the busy one.（僕じゃない、忙しいのは君）' },
 
     { id: 'k1', skill: 'detail', level: 'B1', point: 'firstborn', ctx: true, seg: [25.0, 31.0],
-      stem: 'What reason does Ross give?', ja: 'ロスはどんな理由を言う？',
+      stem: 'How does Ross explain the difference?', ja: 'ロスは、その差をどう説明する？',
       choices: ['He was their first child', 'He was a better student', 'He was often sick as a baby'], a: 0,
       choicesJa: ['最初の子だった', 'もっといい生徒だった', '赤ちゃんのころよく病気をした'],
       cue: '「As much as」の質問への答え',
@@ -188,7 +188,7 @@ export const rossMarvel: Clip = {
       trap: 'new stuff を「買い足した物」と取りやすい。直前の dry と並べて聞く。',
       use: 'The bread is growing new stuff.（パン、カビ生えてる）', retired: true },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'garage', reveals: ['asmuch'], seg: [33.5, 58.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'garage', reveals: ['asmuch'], seg: [34.4, 58.4],
       stem: 'What does Ross tell Dad in the garage?',
       ja: 'ガレージで、ロスはパパに何と言う？',
       choices: ['Monica feels like the less-loved child', 'Monica should pack her boxes better', 'Ross wants a better spot'],
@@ -201,7 +201,7 @@ export const rossMarvel: Clip = {
       trap: '箱の話が続くので、箱のつめ方や置き場所の話に聞こえるが、See のあとが言いたいこと。',
       use: 'See, this is what I’m talking about.（ほら、こういうことだよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'blame', ctx: true, seg: [42.0, 48.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'blame', ctx: true, seg: [42.0, 48.15],
       stem: 'What does Ross mean by “Can you blame her?”',
       ja: 'ロスの「Can you blame her?」はどういう意味？',
       choices: ['She’s right to think so', 'It’s her own fault', 'Don’t ask me about her feelings'], a: 0,
@@ -224,10 +224,10 @@ export const rossMarvel: Clip = {
       trap: '言葉の形に「責めない」と答えると中身を外す。「同じだけ愛してる」は、彼女の思いを打ち消す返事。',
       use: 'Fair point. I’ll call her tonight.（もっともだ。今夜電話するよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'favor', ctx: true, reveals: ['mayhave'], seg: [46.0, 53.4],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'favor', ctx: true, reveals: ['mayhave'], seg: [46.0, 53.1],
       stem: 'Does Dad think they loved Ross more?',
       ja: 'パパは、ロスの方をかわいがったと思っている？',
-      choices: ['Maybe, by accident', 'Yes, on purpose', 'No, they loved both equally'], a: 0,
+      choices: ['Maybe, without noticing', 'Yes, on purpose', 'No, they loved both equally'], a: 0,
       choicesJa: ['たぶん、知らないうちに', 'うん、わざと', 'いや、2人を同じに愛した'],
       cue: '「I don’t know」のあと',
       line: 'Ross: Well, can you blame her? / Dad: I don’t know. I *suppose* we *may have* favored you *unconsciously*.',
@@ -236,7 +236,7 @@ export const rossMarvel: Clip = {
       trap: 'I don’t know から、ちがうと思いやすい。最後の unconsciously（気づかずに）まで聞く。',
       use: 'I suppose I was a little rude.（ちょっと失礼だったかもね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'mayhave', reveals: ['favor'], seg: [47.7, 53.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'mayhave', reveals: ['favor'], seg: [47.7, 53.1],
       stem: 'Fill the gap: “I suppose we ___ you unconsciously.”',
       ja: 'すき間をうめよう：「I suppose we ___ you unconsciously.」',
       choices: ['may have favored', 'have favored', 'may favor'], a: 0,

@@ -1,13 +1,14 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 1, new 6, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 1, new 6, ctx 5, tx 10, qa 19
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 5, new 0
 // “April and Andy Are a Medical Mess - Parks and Recreation” (the official Parks and Recreation channel, Season 4):
 // Andy and April cram a week of doctor's visits into their new insurance: Andy lists every odd symptom he has, fails an
 // eye test, and when the desk asks for a $500 deductible the two run off, crash, and swear off doctors.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈198 s. Andy is named at 8.6 s and Dr. Harris
 // at 67 s; April is named (by Andy) at 118 s. Same doctor visit as eyetest (its 71–178 s ≈ 0–110 s here): eyetest tests
-// the sneeze, rash, tongue, fuzzy, Twix, glasses refusal and No offense lines, so this bank leaves them alone.
+// the sneeze, rash, tongue, fuzzy, Twix, glasses refusal and No offense lines, so this bank leaves them alone
+// (a2's reason, I like his face, is in both).
 // Untested: 103–111 s (needles), 185–190 s (crosstalk), the eye-chart words (visual).
-// EXCLUDE 121.6–125.9
+// EXCLUDE 121.2–125.9
 // EAR CHECK: 130.1 s x1 — “get you home” runs together as “getcha home” (both sources have the words)
 import type { Clip } from '../types.ts';
 
@@ -52,11 +53,11 @@ export const medicalMess: Clip = {
       trap: 'about right を all right と聞くと「大丈夫」になる。直前の話への返事。',
       use: 'Two hours? That sounds about right.（2時間？まあそんなもんだね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'worry', seg: [22.7, 28.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'worry', seg: [23.25, 28.9],
       stem: 'What does the doctor tell Andy about his head?',
       ja: '医者はアンディの頭について何と言う？',
-      choices: ['Don’t worry about it', 'Come back next week', 'Go and see a specialist'], a: 0,
-      choicesJa: ['心配いらない', '来週また来て', '専門医に行って'],
+      choices: ['It’s probably fine', 'Come back next week', 'Go and see a specialist'], a: 0,
+      choicesJa: ['たぶん大丈夫', '来週また来て', '専門医に行って'],
       cue: '「mild」のあと、so で始まる部分',
       line: 'if it’s a concussion, it’s extremely mild, so *I wouldn’t worry about it*.',
       said: '「脳しんとうだとしても、ごく軽い。心配はいらないでしょう」と言う。',
@@ -64,7 +65,7 @@ export const medicalMess: Clip = {
       trap: 'specialist はあとで別の症状について出る言葉。頭については so のあと。',
       use: 'I wouldn’t worry about it. It happens.（気にしなくていいよ。よくあること）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', ctx: true, seg: [23.1, 34.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', ctx: true, seg: [26.75, 34.2],
       stem: 'What does Andy do right after “Nope”?',
       ja: '「Nope」のすぐあと、アンディはどうする？',
       choices: ['Changes his no to yes', 'Says no more politely', 'Says no again, more strongly'], a: 0,
@@ -79,8 +80,8 @@ export const medicalMess: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'ankles', seg: [34.1, 42.7],
       stem: 'What does Andy say his ankles do?',
       ja: 'アンディは、足首がどうなると言う？',
-      choices: ['Make a weird sound', 'Shake a little', 'Hurt a little bit'], a: 0,
-      choicesJa: ['変な音がする', '少しふるえる', '少し痛む'],
+      choices: ['They’re noisy', 'They shake a little', 'They hurt a little'], a: 0,
+      choicesJa: ['音が鳴る', '少しふるえる', '少し痛む'],
       cue: '「when I walk」のあと',
       line: 'Sometimes when I walk, my ankles *make like a weird rattlesnake sound*.',
       said: '「歩くとたまに、足首がガラガラヘビみたいな変な音を立てる」と言う。',
@@ -88,8 +89,8 @@ export const medicalMess: Clip = {
       trap: 'rattle だけ聞くと「ゆれる」と勘違いしやすい。最後の sound を聞く。',
       use: 'My car makes a weird sound.（車から変な音がする）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [49.9, 55.3], keep: true,
-      stem: 'For how long has Andy swallowed his gum?',
+    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [50.48, 55.3], keep: true,
+      stem: 'How long has Andy been swallowing his gum?',
       ja: 'アンディは何年間ガムを飲みこんできた？',
       choices: ['20 years', '25 years', '30 years', '35 years'], a: 1,
       choicesJa: ['20年', '25年', '30年', '35年'],
@@ -100,7 +101,7 @@ export const medicalMess: Clip = {
       trap: 'twenty-five の five は弱く、twenty だけに聞こえやすい。thirty なら「サー」で始まる。',
       use: 'I’ve lived here for the past ten years.（この10年ここに住んでいます）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'thumb', seg: [50.3, 58.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'thumb', seg: [54.97, 58.9],
       stem: 'When did Andy break his thumb?',
       ja: 'アンディはいつ親指を折った？',
       choices: ['On the way to the doctor', 'When he fell while reading', 'When he hit the wall'], a: 0,
@@ -112,14 +113,14 @@ export const medicalMess: Clip = {
       trap: '最初の転んだ話と結びつけがちだが、親指は別の話。on the way を聞く。',
       use: 'I lost my umbrella on the way over here.（来る途中で傘をなくした）' },
 
-    { id: 'g4', skill: 'gist', level: 'B1', point: 'list', seg: [54.8, 69.8],
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'list', seg: [54.97, 70.0],
       stem: 'What does Dr. Harris do about Andy’s long list?',
       ja: 'ハリス先生は、アンディの長いリストにどうする？',
       choices: ['Only helps with the thumb', 'Helps with every problem', 'Says he is not sick at all'], a: 0,
       choicesJa: ['親指だけ手当てする', '全部の問題を手当てする', 'どこも悪くないと言う'],
       cue: '「Just fix me」のあと、先生の返事',
       line: 'Just fix me. — Well, *I can help you with a thumb*, and I’ll have to give you referrals for specialists for the other 1,000 things.',
-      said: '先生は「親指なら診てあげられる。ほかの1000個は専門医を紹介する」と言う。',
+      said: '先生は「親指なら診られる。ほかの1000個は専門医を紹介する」と言う。',
       mean: 'I can help you with 〜 ＝ 〜なら手伝える。referral ＝ 紹介状。親指以外は専門医へ。',
       trap: 'リストが長いので、全部みてくれると考えがち。the other 1,000 things は専門医行き。',
       use: 'I can help you with your bags.（荷物、お手伝いしますよ）' },
@@ -147,7 +148,7 @@ export const medicalMess: Clip = {
       trap: '言い返しや謝罪を期待すると外れる。決まり文句をそのまま返す、ずれが笑い。',
       use: 'Thanks a lot. — Anytime!（どうもね。—いつでもどうぞ！）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'drove', seg: [75.4, 87.4],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'drove', seg: [74.85, 83.38],
       stem: 'Why is “you drove us here” scary?',
       ja: '「you drove us here」はなぜこわい？',
       choices: ['Andy can’t see but drove', 'Andy will drive them home', 'Andy is faking the test'], a: 0,
@@ -159,7 +160,7 @@ export const medicalMess: Clip = {
       trap: 'drive の話なので、帰りのことと考えがち。drove と here で、来るときの話。',
       use: 'Wait, you walked here? In this rain?（待って、歩いてきたの？この雨で？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [83.0, 112.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [83.38, 112.0],
       stem: 'What is Andy and April’s plan this week?',
       ja: 'アンディとエイプリルの今週の計画は？',
       choices: ['Do all their doctor visits', 'Get Andy new glasses', 'Find April’s food allergy'], a: 0,
@@ -171,7 +172,7 @@ export const medicalMess: Clip = {
       trap: 'メガネやアレルギーの話も出るが、それは計画の一部。予約の文が中心。',
       use: 'I have a doctor’s appointment at three.（3時に病院の予約がある）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'tenyears', reveals: ['wont'], seg: [83.2, 92.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'tenyears', reveals: ['wont'], seg: [83.38, 92.7], keep: true,
       stem: 'After this week, how long can they skip doctors?',
       ja: '今週のあと、どのくらい医者に行かなくていい？',
       choices: ['1 year', '10 years', '20 years', '100 years'], a: 1,
@@ -183,7 +184,7 @@ export const medicalMess: Clip = {
       trap: '直前の 100 million に引っぱられやすい。like のあと「テン」なら 10、「トゥエンティ」なら 20。',
       use: 'I waited for, like, an hour.（1時間くらい待ったよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [83.2, 92.7], retired: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [83.38, 92.7], retired: true,
       stem: 'Fill the gap: “After this, we ___ go to the doctor…”',
       ja: '空所を埋める：「After this, we ___ go to the doctor…」',
       choices: ['won’t have to', 'want to', 'don’t have to'], a: 0,
@@ -206,7 +207,7 @@ export const medicalMess: Clip = {
       trap: '妻の命令に夫が従う型で聞きやすい。返事がほめ言葉を言い直していたら、おどしは愛情表現。',
       use: 'You heard her. I’m too cute to cook.（聞いたでしょ。私、料理するには可愛すぎるって）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [94.5, 99.9],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [94.0, 99.9],
       stem: 'Why doesn’t April want Andy to get glasses?',
       ja: 'エイプリルはなぜアンディに眼鏡をかけてほしくない？',
       choices: ['She loves how he looks now', 'Glasses cost too much', 'The doctor got it wrong'], a: 0,
@@ -229,7 +230,7 @@ export const medicalMess: Clip = {
       trap: '直前の food に引かれやすい。何へのアレルギーかは、最後の needles で決まる。',
       use: 'Based on the smell, I think dinner’s ready.（においからして、夕飯できたかな）' },
 
-    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [111.1, 121.5],
+    { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [110.45, 121.2],
       stem: 'Why does someone say “X-rayed” after Andy?',
       ja: 'アンディのあと、なぜ「X-rayed」と言う？',
       choices: ['To fix Andy’s word', 'To add another test', 'To make fun of the test'], a: 0,
@@ -251,7 +252,7 @@ export const medicalMess: Clip = {
       trap: 'get you が一語に聞こえ、your と書きやすい。後ろの home まで、3語で数える。',
       use: 'Let’s get you a coffee.（コーヒーでも買ってあげるよ）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B2', point: 'bill', ctx: true, seg: [132.0, 138.0],
+    { id: 'k1', skill: 'pragma', level: 'B2', point: 'bill', ctx: true, seg: [131.66, 137.7],
       stem: 'Why don’t they want the bill?', ja: 'ふたりはなぜ請求書はいらないと言う？',
       choices: ['They think a card pays it', 'They already paid for it', 'They will pay it later'], a: 0,
       choicesJa: ['カードで払わずにすむと思っている', 'もう払った', 'あとで払う'],
@@ -262,7 +263,7 @@ export const medicalMess: Clip = {
       trap: 'won’t be needing を「あとで要る」と取りがち。決め手は card。',
       use: 'Thanks, but I won’t be needing a bag.（ありがとう、でも袋はいりません）' },
 
-    { id: 'n4', skill: 'number', level: 'B1', point: 'cost', seg: [137.2, 141.0],
+    { id: 'n4', skill: 'number', level: 'B1', point: 'cost', seg: [137.68, 141.0],
       stem: 'How much is the deductible for dental work?',
       ja: '歯の治療の自己負担はいくら？',
       choices: ['$50', '$500', '$1,500', '$5,000'], a: 1,
@@ -274,7 +275,7 @@ export const medicalMess: Clip = {
       trap: 'fifty なら「フィフティ」で hundred がない。thousand なら「サウ」が聞こえる。',
       use: 'Is there a deductible?（自己負担額はありますか）' },
 
-    { id: 'nt3', skill: 'infer', level: 'C2', point: 'thing', reveals: ['cost'], seg: [140.3, 147.2], retired: true,
+    { id: 'nt3', skill: 'infer', level: 'C2', point: 'thing', reveals: ['cost'], seg: [139.35, 147.2], retired: true,
       stem: 'When Andy says they have “the insurance thing”, what does the wording give away?',
       choices: ['That he doesn’t really know what insurance is', 'That he is sure the desk has made a mistake',
                 'That he thinks the desk is trying to cheat them'], a: 0,
@@ -285,12 +286,12 @@ export const medicalMess: Clip = {
       trap: 'you’re wrong で自信があるように聞こえる。ぼかし語が重なったら、知らないサイン。',
       use: 'I did the tax thing online, I think.（税金のあれ、ネットでやった…はず）' },
 
-    { id: 'k2', skill: 'pragma', level: 'B2', point: 'covered', ctx: true, reveals: ['cost'], seg: [140.5, 148.0],
+    { id: 'k2', skill: 'pragma', level: 'B2', point: 'covered', ctx: true, reveals: ['cost'], seg: [139.35, 148.0],
       stem: 'Why does Andy say “you’re wrong”?', ja: 'アンディはなぜ「you’re wrong」と言う？',
       choices: ['Insurance should pay it', 'The price should be $50', 'They have no money'], a: 0,
       choicesJa: ['保険で払えるはず', '値段は50ドルのはず', 'お金がない'],
       cue: '「you’re wrong」のあと',
-      line: 'Desk: …a $500 deductible… / Andy: I think you’re wrong. We have *the insurance thing*. *I believe we’re covered.*',
+      line: 'Desk: …deductible for dental procedures. / Andy: I think you’re wrong. We have *the insurance thing*. *I believe we’re covered.*',
       said: '自己負担500ドルと言われ、「違うよ。保険ってやつに入ってる。きくはず」と返す。',
       mean: 'be covered ＝ 保険がきく。the insurance thing ＝「保険ってやつ」。よく知らない言い方。',
       trap: 'you’re wrong から、値段の聞きまちがいと考えがち。決め手は insurance と covered。',

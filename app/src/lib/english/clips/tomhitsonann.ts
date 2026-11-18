@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 5, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 5, ctx 4, tx 4, qa 8
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 5, new 1
 // “Tom Hits on Ann | Parks and Recreation” (the official Parks and Recreation channel, Season 1): at a public forum
 // Leslie and Tom face off-topic complaints until Ann, a nurse, asks the city to deal with a pit that broke her
@@ -39,7 +39,7 @@ export const tomHitsOnAnn: Clip = {
       choicesJa: ['どうぞ聞いて', '私たちに怒って', 'すごく早く聞いて'],
       cue: '「questions」のあと',
       line: 'We are here to answer any and all of your questions, so *fire away*.',
-      said: '「質問には全部答えます。さあ、どうぞ」と締めくくる。',
+      said: '「どんな質問にもお答えします。どんどんどうぞ」と締めくくる。',
       mean: 'fire away ＝「どうぞ遠慮なく（聞いて）」。質問を受ける場でよく使う。',
       trap: 'fire（撃つ・火）から怒りを思いやすい。質問の直後なら「どうぞ」。',
       use: 'Got questions? Fire away.（質問ある？どうぞ）' },
@@ -54,16 +54,16 @@ export const tomHitsOnAnn: Clip = {
       trap: 'yelled at（怒鳴られる）が聞こえると、批判の集中砲火に見える。中身は脱線した苦情ばかり。',
       use: 'Let’s stay on topic, please.（話を本題に戻しましょう）' },
 
-    { id: 'c1', skill: 'infer', level: 'B1', point: 'kids', ctx: true, seg: [22.7, 30.5],
+    { id: 'c1', skill: 'infer', level: 'B1', point: 'kids', ctx: true, seg: [22.7, 30.45],
       stem: 'Why does the man hate the bad words?',
       ja: '男性はなぜ汚い言葉がいやなの？',
-      choices: ['He has kids', 'He works there', 'He paints walls'], a: 0,
-      choicesJa: ['子どもがいるから', 'そこで働いているから', '壁を塗る仕事だから'],
+      choices: ['He’s a father', 'He works for the city', 'He cleans the walls'], a: 0,
+      choicesJa: ['父親だから', '市で働いているから', '壁の掃除をしているから'],
       cue: '「drives me crazy」のあと。',
       line: 'I don’t like obscenities just as much as you don’t like them. / Man: No, it *drives me crazy*. *I have kids*.',
       said: '落書きの汚い言葉に「頭にくる。子どもがいるんで」と言う。',
       mean: 'drive me crazy ＝ 文字どおりは「私を狂わせる」→「頭にくる、イライラする」。obscenities ＝ 下品な言葉。',
-      trap: 'graffiti（落書き）から、壁の仕事の人と考えがち。決め手は I have kids。',
+      trap: 'graffiti（落書き）から、落書きを消す人と考えがち。決め手は I have kids（子どもがいる）。',
       use: 'This noise drives me crazy.（この音、イライラする）' },
 
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'loudly', seg: [36.6, 46.6], retired: true,
@@ -150,8 +150,8 @@ export const tomHitsOnAnn: Clip = {
     { id: 'i2', skill: 'infer', level: 'B2', point: 'serious', seg: [106.4, 112.7],
       stem: 'What is Tom asking with “pretty serious”?',
       ja: '「pretty serious」で、トムは何を聞いている？',
-      choices: ['If Ann is free to date', 'If the man is badly hurt', 'If they plan to marry'], a: 0,
-      choicesJa: ['アンがフリーかどうか', '彼のけがが重いか', '二人が結婚するか'],
+      choices: ['If Ann is free to date', 'If the man is badly hurt', 'If the pit is very deep'], a: 0,
+      choicesJa: ['アンがフリーかどうか', '彼のけがが重いか', '穴がとても深いか'],
       cue: '「serious」のあとの質問',
       line: 'this guy, is it pretty *serious*? You guys *living together*?',
       said: '「その彼とは結構本気なの？一緒に住んでる？」と聞く。',
@@ -242,7 +242,7 @@ export const tomHitsOnAnn: Clip = {
       trap: '「アイッラヴ」なら I’d love、「アイラヴ」なら I love、「ハフタ」なら have to。',
       use: 'I’d love to, but I’m busy tonight.（ぜひ、でも今夜は忙しくて）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bottom', seg: [151.1, 163.1],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bottom', seg: [151.35, 163.1],
       stem: 'What does “The bottom line is” mean here?',
       ja: '「The bottom line is」は、ここではどういう意味？',
       choices: ['What matters most is', 'The last line says', 'The lowest price is'], a: 0,
@@ -266,7 +266,7 @@ export const tomHitsOnAnn: Clip = {
       trap: '業者の倒産の話があるので、業者が理由と思いやすい。最後の and it’s を聞く。',
       use: 'It’s city property, so call the city.（市の土地だから、市に電話して）' },
 
-    { id: 'c3', skill: 'pragma', level: 'B1', point: 'dosomething', ctx: true, seg: [161.0, 176.5],
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'dosomething', ctx: true, seg: [161.35, 176.5],
       stem: 'What does Leslie say to Ann’s request?',
       ja: 'アンの頼みに、レスリーは何と答える？',
       choices: ['She will handle it', 'It is not her job', 'Ann should ask later'], a: 0,
@@ -302,7 +302,7 @@ export const tomHitsOnAnn: Clip = {
       trap: 'pinky（小指）から「小さい約束」と思いやすい。more than（〜以上）が決め手。',
       use: 'I pinky promise I won’t tell.（指切りする、誰にも言わない）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'tomorrow', seg: [186.4, 198.4],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'tomorrow', seg: [186.0, 198.4],
       stem: 'What does Leslie promise to do tomorrow?',
       ja: '明日、レスリーは何をすると約束する？',
       choices: ['Go to the site in person', 'Call a meeting about the site', 'Call the builder’s company'], a: 0,

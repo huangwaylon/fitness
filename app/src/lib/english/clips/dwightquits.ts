@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 4, new 3, ctx 3, tx 3
+// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 4, new 3, ctx 3, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 1, new 0
 // “Dwight Quits Dunder Mifflin - The Office US” (the official The Office channel, BEST OF SEASON 3): Dwight makes a
 // grand resignation speech to the office, then coworkers and Dwight himself comment to the camera.
@@ -36,8 +36,8 @@ export const dwightquits: Clip = {
       choicesJa: ['仕事を辞める', '結婚する', '新しい上司になる'],
       cue: '「I have decided to」のあと。',
       line: '…I have decided to *step down from my post*…',
-      said: '会社への愛、家族、新しい挑戦と大げさに語り、最後に「つまり、辞めます」と言う。',
-      mean: 'quit ＝ 辞める。長く芝居がかった前置きのあと、ふつうの言葉で用件を言う。',
+      said: '「この会社を何より愛しているが、職を辞して、家族と過ごすことに決めた」と大げさに語る。',
+      mean: 'step down from my post ＝ 文字どおりは「持ち場から降りる」→ 職を辞める。かしこまった言い方で「辞めます」。',
       trap: 'family（家族）が出てくるので、結婚の話と考えがち。決め手は step down（職を退く）。',
       use: 'Long story short, I’m moving.（要するに、引っ越すんだ）' },
 
@@ -89,7 +89,7 @@ export const dwightquits: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'headon', seg: [20.1, 29],
       stem: 'Dwight will meet his challenges “*head-on*.” Meaning?',
       ja: '挑戦に「head-on」で立ち向かう。どういう意味？',
-      choices: ['Facing them straight on', 'Thinking them through first', 'Leading the way for others'], a: 0,
+      choices: ['Facing them directly', 'Thinking them through first', 'Leading the way for others'], a: 0,
       choicesJa: ['真正面から向き合う', 'まずよく考える', 'みんなの先頭に立つ'],
       cue: 'challenges のすぐあと。',
       line: 'I will meet my new challenges *head-on*',
@@ -201,7 +201,7 @@ export const dwightquits: Clip = {
       choicesJa: ['でも、これはだめ', '特にこれを', 'これもいっしょに'],
       cue: '「Just take it.」のあと。',
       line: 'Just take it. *Except this*.',
-      said: '「持っていってくれ。これ以外はな」と言う。',
+      said: '「もらってくれ。これ以外はな」と言う。',
       mean: 'except ＝ 〜以外は、〜を除いて。全部あげるが、一つだけは渡さない。',
       trap: 'except は expect（期待する）や accept（受け取る）と音が近く、勘違いしやすい。「イクセプト」。',
       use: 'Everyone came except Tom.（トム以外はみんな来た）' },
@@ -213,7 +213,7 @@ export const dwightquits: Clip = {
       choicesJa: ['ほかの人のほうが惜しむ', '話し手が一番惜しむ', 'だれも惜しまない'],
       cue: 'Not のあとと、but のあと。',
       line: 'Dwight will be missed. *Not by me so much*, *but he will be missed*.',
-      said: '「ドワイトは惜しまれるだろう。私はそれほどでもないが、惜しまれる」と言う。',
+      said: '「ドワイトがいなくなると、みんな寂しがるだろう。僕はそれほどでもないけど」と言う。',
       mean: 'be missed ＝ いなくて寂しく思われる。自分は別だが、ほかのだれかは惜しむ。',
       trap: 'Not だけ拾うと「だれも惜しまない」に広げやすい。but のあとで他の人は惜しむと言う。',
       use: 'Not my favorite, but it’s okay.（好みではないけど、悪くない）' },
@@ -229,7 +229,7 @@ export const dwightquits: Clip = {
       trap: 'much を強めると「少しは惜しむ」の話になる。but の後で他の人と比べているので、対比の me。',
       use: 'You might like it. I don’t.（君は好きかもね。私は違う）' },
 
-    { id: 'c1', skill: 'detail', level: 'B2', point: 'fromsales', ctx: true, seg: [84.5, 94.0],
+    { id: 'c1', skill: 'detail', level: 'B2', point: 'fromsales', ctx: true, seg: [84.5, 94.85],
       stem: 'What does the next coworker seem not to know?',
       ja: '次の同僚は、何を知らないようす？',
       choices: ['Who Dwight is', 'Why Dwight left', 'Where Dwight went'], a: 0,
@@ -241,7 +241,7 @@ export const dwightquits: Clip = {
       trap: 'Dwight? の聞き返しは辞めた理由を聞くようにも聞こえるが、聞いているのは「誰？」。',
       use: 'Ken? From accounting?（ケン？経理の？）' },
 
-    { id: 'd3', skill: 'sound', level: 'B2', point: 'honor', seg: [94.4, 100.8],
+    { id: 'd3', skill: 'sound', level: 'B2', point: 'honor', seg: [94.85, 100.8],
       stem: 'Fill the gap: “one of the most ___ and efficient employees”',
       ja: '空所に入る語は？「one of the most ___ and efficient employees」',
       choices: ['honorable', 'honest', 'helpful'], a: 0,
@@ -252,7 +252,7 @@ export const dwightquits: Clip = {
       mean: 'honorable ＝ 立派な、信頼できる。h は読まず「オナラブル」。efficient ＝ 手際がよい。',
       trap: 'honest（正直な）も h を読まず「オネスト」。最後が「ラブル」なら honorable。helpful は「ヘ」で始まる。',
       use: 'She’s one of the most efficient people I know.（彼女は一番手際のいい人の一人）' },
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'chair', ctx: true, seg: [94.9, 108.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'chair', ctx: true, seg: [94.9, 109.2],
       stem: 'What did Dwight hope for at this job?',
       ja: 'ドワイトはこの仕事で何を望んでいた？',
       choices: ['To stay here forever', 'To retire with honor', 'To become the boss'], a: 0,
