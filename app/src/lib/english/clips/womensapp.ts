@@ -1,12 +1,19 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 4, new 7 (1 restored), ctx 4, tx 10
 // A2 REVIEW 2026-11-17: keep 6, rewrite 7, retire 12, new 5
-// A2 LATE: sex and sexism jokes all through (flashing, periods, "misogynistic"); the items keep to the memo, the meeting
-//   call and plain lines, but the clip as a whole needs a native ear for its satire.
 // “Women's Appreciation - The Office US” (the official The Office channel, Best of Season 3): Dwight's memo of rules
 // for the women angers them, and Michael calls a "women's appreciation" meeting that keeps going wrong.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 251 s; whisper's repeated "in tune with
-// the moon" after 263 s is a loop. Untested on purpose: the cleavage line (53 s), "slept with a woman" (85 s), the
-// Oscar line (90 s), the 113–144 s stretch, the haircut and period lines (223–251 s).
+// Word times from the captions' json3. Talk ends at ≈ 251 s; whisper's repeated "in tune with the moon" after 263 s
+// is a loop. Speakers are named only where the audio names them (Dwight, Michael, James); the women go unnamed.
+// The 199 s reply is "Yes, Andy" in whisper but "yes indeed" in the captions, so n5 names no one.
 //   Open: this id is also in banks/SKIPPED.txt (sexual punchlines, flashing backstory): the SKIPPED line or this file.
+// EXCLUDE 52.85–57.15: the cleavage line
+// EXCLUDE 84.55–89.5: "Have I slept with a woman? More than one? Less than three"
+// EXCLUDE 90.0–92.6: "Why didn't Oscar run the meeting? He's a homosexual"
+// EXCLUDE 112.95–120.2: the flashing lines
+// EXCLUDE 125.9–141.2: the penis lines
+// EXCLUDE 223.45–251.1: the lesbian-haircut and period lines
+// SKIP 112.95–141.9: the flashing and penis lines (EXCLUDEd), with "What a surprise" and "no catfights" between them
+// SKIP 222.5–251.1: "That's (not) the same thing" (captions and whisper disagree), then the EXCLUDEd lines
 import type { Clip } from '../types.ts';
 
 export const womensAppreciation: Clip = {
@@ -15,19 +22,7 @@ export const womensAppreciation: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'memo', seg: [0, 42.3],
-      stem: 'What is in Dwight’s memo?',
-      ja: 'ドワイトのメモには何が書いてある？',
-      choices: ['Rules about what women wear', 'Rules about answering the phones', 'Rules about going home early'], a: 0,
-      choicesJa: ['女性の服装についての決まり', '電話に出ることについての決まり', '早く帰ることについての決まり'],
-      cue: '読み上げられる文書の中身。',
-      line: '…this *memo* that Dwight sent out? “Women will be sent home if they wear *makeup*…”',
-      said: 'メモには化粧、ヒール、服、話し相手まで、女性だけの決まりが並ぶ。',
-      mean: 'memo ＝ 社内のお知らせ。女性たちは「ばかげている」「失礼だ」と怒る。',
-      trap: 'sent home（帰らせる）や phones も聞こえるが、決まりの中身は服装。',
-      use: 'Did you see the new memo?（新しいお知らせ見た？）' },
-
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'feellike', seg: [2.2, 10.9],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'feellike', seg: [4.3, 7.7],
       stem: 'She says, “I don’t *feel like* answering phones.” Meaning?',
       ja: '「I don’t feel like answering phones」とはどういう意味？',
       choices: ['She doesn’t want to', 'She isn’t able to', 'She is too busy to'], a: 0,
@@ -39,7 +34,7 @@ export const womensAppreciation: Clip = {
       trap: 'like を「好き」と思いやすい。feel like 〜ing は「〜したい気分」。',
       use: 'I don’t feel like cooking tonight.（今夜は料理する気がしない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'guyssee', seg: [5.3, 10.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'guyssee', seg: [5.3, 10.5], retired: true,
       stem: 'Type the start: “___ this memo that Dwight sent out?” (4 words)',
       ja: '最初の部分を書こう：「___ this memo that Dwight sent out?」（4語）',
       answer: 'did you guys see',
@@ -50,7 +45,19 @@ export const womensAppreciation: Clip = {
       trap: 'did と you がつながり、you が消えたように聞こえやすい。4語あることを意識して聞く。',
       use: 'Did you guys see the game last night?（みんな昨日の試合見た？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'heels', seg: [10.1, 18.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'memo', seg: [7.7, 24.8],
+      stem: 'What is in Dwight’s memo?',
+      ja: 'ドワイトのメモには何が書いてある？',
+      choices: ['Rules about what women wear', 'Rules about answering the phones', 'Rules about going home early'], a: 0,
+      choicesJa: ['女性の服装についての決まり', '電話に出ることについての決まり', '早く帰ることについての決まり'],
+      cue: '読み上げられる文書の中身。',
+      line: '…this *memo* that Dwight sent out? “Women will be sent home if they wear *makeup*…”',
+      said: 'メモには化粧、ヒール、服、話し相手まで、女性だけの決まりが並ぶ。',
+      mean: 'memo ＝ 社内のお知らせ。女性たちは「ばかげている」「失礼だ」と怒る。',
+      trap: 'sent home（帰らせる）や phones も聞こえるが、決まりの中身は服装。',
+      use: 'Did you see the new memo?（新しいお知らせ見た？）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'heels', seg: [10.35, 18.1],
       stem: 'By the memo, how high can heels be?',
       ja: 'メモでは、ヒールはどこまでの高さならいい？',
       choices: ['One-quarter inch', 'One-half inch', 'Three-quarters of an inch', 'One inch'], a: 0, keep: true,
@@ -62,7 +69,7 @@ export const womensAppreciation: Clip = {
       trap: 'quarter だけ聞くと3/4と迷いやすい。最初の one か three を聞く。',
       use: 'It’s about a quarter mile from here.（ここから400メートルくらい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'strangers', seg: [14.2, 22.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'strangers', seg: [14.2, 22.6], retired: true,
       stem: 'By the memo, what do women need to talk to strangers?',
       ja: 'メモでは、女性が知らない人と話すには何が必要？',
       choices: ['Written permission from Dwight', 'Spoken permission from Dwight', 'A male coworker with them'], a: 0,
@@ -74,11 +81,11 @@ export const womensAppreciation: Clip = {
       trap: '許可と聞くと口頭でもいいと思いやすい。前の written（書面の）を聞く。',
       use: 'No entry unless you have a ticket.（チケットがない方は入れません）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [15.5, 25.9],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [18.1, 22.4],
       stem: 'How does she feel about the memo?',
       ja: '彼女はメモをどう思っている？',
-      choices: ['It’s silly and annoying', 'It’s fair and useful', 'It’s a little funny'], a: 0,
-      choicesJa: ['ばかげていて腹が立つ', '公平で役に立つ', 'ちょっと面白い'],
+      choices: ['It’s silly and annoying', 'It’s fair and useful', 'It’s funny and clever'], a: 0,
+      choicesJa: ['ばかげていて腹が立つ', '公平で役に立つ', '面白くて気がきいている'],
       cue: '読み終えた直後の一言。',
       line: '…by Dwight Schrute. *This is ridiculous.*',
       said: 'メモを読み終えて「ばかげてる」と言う。',
@@ -86,7 +93,7 @@ export const womensAppreciation: Clip = {
       trap: '声が笑っているように聞こえても、ridiculous は「ありえない」というあきれ。',
       use: 'This price is ridiculous.（この値段はありえない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'bananas', seg: [20.4, 26.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'bananas', seg: [20.4, 26.4], retired: true,
       stem: 'What is Dwight taking out of the kitchen?',
       ja: 'ドワイトはキッチンから何を取り除く？',
       choices: ['All the bananas', 'All the coffee', 'All the apples'], a: 0,
@@ -98,19 +105,19 @@ export const womensAppreciation: Clip = {
       trap: 'kitchen からコーヒーを思いやすい。removing のあとを聞く。',
       use: 'Attention, please. The store closes in ten minutes.（お知らせします。10分後に閉店です）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'measures', seg: [25.9, 33],
-      stem: '“*Desperate times call for desperate measures.*” What does Dwight mean?',
-      ja: '「Desperate times call for desperate measures」とはどういう意味？',
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'measures', ctx: true, seg: [26.4, 32.95],
+      stem: 'What does Dwight mean by his answer?',
+      ja: 'ドワイトの返事はどういう意味？',
       choices: ['Hard times need strict rules', 'The rules are only for now', 'The rules will make women sad'], a: 0,
       choicesJa: ['大変なときは厳しい決まりが必要', '決まりは今だけ', '決まりで女性が悲しくなる'],
-      cue: '「insulting」と言われた直後。',
-      line: '*Desperate times call for desperate measures.*',
-      said: '「失礼だ」と言われ、「非常時には非常手段が必要だ」と言い返す。',
-      mean: '決まり文句。状況がひどいから、厳しい対策も仕方ない、という言い訳。',
-      trap: 'times を「一時的」と思いやすい。ここは「時代・状況」。決まり文句はひとまとまりで覚える。',
+      cue: '「insulting」と言われた直後の返事',
+      line: 'A: Dwight, this memo that you distributed is *insulting*. / Dwight: *Desperate times call for desperate measures.*',
+      said: '「このメモは失礼だ」と言われ、「非常時には非常手段が必要なんだ」と言い返す。',
+      mean: '決まり文句。文字どおりは「必死の時は必死の手段を求める」→状況がひどいから、厳しい対策も仕方ない。',
+      trap: 'times を「一時的」と取ると「今だけ」に聞こえる。ここは「時期・状況」。ひとまとまりで覚える。',
       use: 'Desperate times call for desperate measures.（非常時には非常手段だ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'nobody', seg: [31, 38.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'nobody', seg: [32.95, 38.2],
       stem: 'What does she say about the clothing rules?',
       ja: '服の決まりについて、彼女は何と言っている？',
       choices: ['No one dresses that way', 'Men dress that way', 'It’s clothing for winter'], a: 0,
@@ -122,7 +129,7 @@ export const womensAppreciation: Clip = {
       trap: '袖や襟から冬の服を想像しやすい。最後の Nobody の一言が言いたいこと。',
       use: 'Nobody talks like that anymore.（今どきそんな話し方しないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', seg: [38, 48.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', seg: [38, 48.2], retired: true,
       stem: 'Fill the gap: “___ just take these women…”',
       ja: '空いている所に入る語は？「___ just take these women…」',
       choices: ['Why don’t you', 'Why didn’t you', 'Why won’t you'], a: 0,
@@ -145,17 +152,17 @@ export const womensAppreciation: Clip = {
       trap: '前半を提案と取りやすい。最後の that’s what you’re doing が本音。',
       use: 'You might as well just lock us in.（いっそ閉じ込めればいいのに）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'respect', seg: [55.6, 63.7],
-      stem: 'What do the women want, she says?',
-      ja: '彼女によると、女性たちは何を望んでいる？',
-      choices: ['To be treated with respect', 'To dress as they please', 'To get paid more'], a: 0,
-      choicesJa: ['敬意をもって扱われること', '好きな服を着ること', 'もっと給料をもらうこと'],
-      cue: '「It’s really simple」のあと。',
-      line: 'It’s really simple. We just want you guys to *treat us with respect*.',
-      said: '「簡単なこと。私たちを敬意をもって扱ってほしいだけ」と言う。',
-      mean: 'treat 人 with respect ＝ 人をきちんと尊重して扱う。',
-      trap: '少し前にマイケルが dress as they please と言ったので迷いやすい。女性自身の言葉を聞く。',
-      use: 'Please treat everyone with respect.（みんなを尊重してください）' },
+    { id: 'n3', skill: 'detail', level: 'B1', point: 'please', seg: [47.85, 52.85],
+      stem: 'What does Michael say women have the right to do?',
+      ja: '女性には何をする権利があると、マイケルは言う？',
+      choices: ['Wear the clothes they like', 'Leave work when they like', 'Speak to anyone they like'], a: 0,
+      choicesJa: ['好きな服を着る', '好きなときに帰る', '誰とでも話す'],
+      cue: '「deserve the right to」のあと',
+      line: 'I celebrate these women. They deserve the right to *dress as they please*.',
+      said: '「私は女性たちをたたえる。女性には好きな服を着る権利がある」と言う。',
+      mean: 'as they please ＝ 好きなように（please ＝ 〜の気に入る）。deserve the right ＝ 権利がある。',
+      trap: 'please を「お願い」と考えがち。as のあとの please は「好きなように」。',
+      use: 'You can sit wherever you please.（お好きな席にどうぞ）' },
 
     { id: 'pr1', skill: 'pragma', level: 'C1', point: 'hear', seg: [57, 67.45], retired: true,
       stem: 'When Dwight asks Michael the same question back, what is he doing?',
@@ -168,7 +175,19 @@ export const womensAppreciation: Clip = {
       trap: 'hear を「聞こえる」と文字通り取りやすい。同じ形の返しは、相手に向け返す合図。',
       use: 'Right back at you.（そっくりそのまま返すよ）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B2', point: 'thatsit', seg: [72, 78.9],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'respect', seg: [57.2, 63.4],
+      stem: 'What do the women want, she says?',
+      ja: '彼女によると、女性たちは何を望んでいる？',
+      choices: ['To be treated with respect', 'To get new rules in writing', 'To get paid more'], a: 0,
+      choicesJa: ['敬意をもって接してもらうこと', '新しい決まりを書面でもらうこと', 'もっと給料をもらうこと'],
+      cue: '「It’s really simple」のあと。',
+      line: 'It’s really simple. We just want you guys to *treat us with respect*.',
+      said: '「すごく簡単なこと。私たちはただ、敬意をもって接してほしいだけ」と言う。',
+      mean: 'treat 人 with respect ＝ 人をきちんと尊重して扱う。you guys ＝ あなたたち（男性たち）。',
+      trap: 'メモの話が続いたので、決まりの話と考えがち。just want のあとが望み。',
+      use: 'Please treat everyone with respect.（みんなを尊重してください）' },
+
+    { id: 'p6', skill: 'phrase', level: 'B2', point: 'thatsit', seg: [72.3, 78.5],
       stem: 'Michael says, “You know what? *That’s it.*” What does he mean?',
       ja: 'マイケルの「You know what? That’s it.」はどういう意味？',
       choices: ['Enough, I’ve decided', 'That’s the right answer', 'That’s all I know'], a: 0,
@@ -180,7 +199,7 @@ export const womensAppreciation: Clip = {
       trap: 'That’s it は「それだ（正解）」にも使うので迷いやすい。すぐあとの指示で「決めた」と分かる。',
       use: 'That’s it. I’m going home.（もういい。帰る）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', seg: [72.9, 80.7],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', seg: [74.3, 78.5],
       stem: 'When does Michael want everyone in the conference room?',
       ja: 'マイケルは、いつ会議室に集まってほしい？',
       choices: ['In 2 minutes', 'In 5 minutes', 'In 10 minutes', 'In 15 minutes'], a: 1, keep: true,
@@ -192,16 +211,17 @@ export const womensAppreciation: Clip = {
       trap: 'five は「ファイヴ」で短い。fifteen は後ろの「ティーン」が長い。two・ten は最初の音が違う。',
       use: 'Lobby, ten minutes. Don’t be late.（ロビーに10分後。遅れないで）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'challenge', seg: [78.55, 83.25], retired: true,
-      stem: 'When someone asks how Michael is qualified, what is the question doing?',
-      choices: ['Suggesting he is the wrong one to lead it', 'Asking what training Michael has had for it',
-                'Asking Michael to explain what it is for'], a: 0,
-      cue: '質問の中身と、マイケルの返し方。',
-      line: 'How are you *qualified* for that? — *Oh, I don’t know, James.*',
-      said: '「それをやる資格があるの？」に、マイケルは「さあね、ジェームズ」と皮肉で返す。',
-      mean: '答えを求める質問ではなく、「あなたがやるのは変だ」という疑い。',
-      trap: '疑問文はつい情報を聞いていると取る。資格を問う質問は異議のことが多く、返事も皮肉になる。',
-      use: 'Hold on. Who decided that?（ちょっと待って、誰が決めたの？）' },
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'challenge', ctx: true, seg: [78.5, 84.55],
+      stem: 'How does Michael answer “How are you qualified?”',
+      ja: '「資格があるの？」と聞かれ、マイケルはどう答える？',
+      choices: ['With a silly reason', 'With his work history', 'By saying he isn’t'], a: 0,
+      choicesJa: ['ばかげた理由で', '仕事の経歴で', '資格はないと認めて'],
+      cue: '「I don’t know, James」のあとの質問',
+      line: 'James: Wait a second. How are you *qualified* for that? / Michael: Oh, I don’t know, James. *Did I come from a woman?*',
+      said: '「あなたにやる資格があるの？」に、「さあね、ジェームズ。僕は女性から生まれたかな？」と返す。',
+      mean: 'qualified ＝ 資格がある。女性から生まれたのは誰でも同じなので、理由にならない。それが笑いどころ。',
+      trap: 'I don’t know を「分からない」と取ると、資格がないと認めたように聞こえる。実は皮肉。',
+      use: 'Wait a second. Who decided that?（ちょっと待って、誰が決めたの？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'woman', seg: [78.55, 84.55], retired: true,
       stem: 'Why does Michael’s first proof that he’s qualified get a laugh?',
@@ -214,9 +234,21 @@ export const womensAppreciation: Clip = {
       trap: 'I don’t know を「知らない」と取りやすいが、ここは「言うまでもない」という皮肉。',
       use: 'Oh, I don’t know, maybe because it’s Monday?（さあね、月曜だからじゃない？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bigdeal', seg: [107.3, 116],
-      stem: 'How does the next speaker feel about the topic?',
-      ja: '次に話す人は、この話題をどう思っている？',
+    { id: 'n4', skill: 'detail', level: 'B1', point: 'dolls', reveals: ['whydont'], ctx: true, seg: [92.6, 99.1],
+      stem: 'What does he say his “dolls” really are?',
+      ja: '「人形」は本当は何だと、彼は言う？',
+      choices: ['Toys that people collect', 'Gifts from his family', 'Cheap toys for kids'], a: 0,
+      choicesJa: ['コレクション用のおもちゃ', '家族からのプレゼント', '子ども用の安いおもちゃ'],
+      cue: '返事の「Those are」のあと',
+      line: 'A: Why don’t you run the meeting? You play with *dolls*. / B: Those are *collectible action figures*, and they’re worth more than your car.',
+      said: '「人形で遊んでるし」に、「あれはコレクション用のフィギュアだ。君の車より高い」と返す。',
+      mean: 'collectible ＝ 集める価値のある。worth more than 〜 ＝ 〜より価値がある。人形と言われてむっとする。',
+      trap: 'dolls（人形）から子どものおもちゃと考えがち。返事の collectible が決め手。',
+      use: 'This old watch is worth more than my car.（この古い時計、僕の車より高いんだ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bigdeal', seg: [108.8, 112.9],
+      stem: 'How does this woman feel about the topic?',
+      ja: 'この女性は、この話題をどう思っている？',
       choices: ['Tired of the topic', 'Very upset about it', 'Lost in the talk'], a: 0,
       choicesJa: ['聞きあきている', 'とても怒っている', '話についていけない'],
       cue: '「I say again」のあと。',
@@ -237,6 +269,30 @@ export const womensAppreciation: Clip = {
       trap: 'surprise を文字通り「驚き」と取りやすい。当然のことに What a surprise は皮肉。',
       use: 'He’s late again? What a surprise.（また遅刻？意外だね（皮肉））' },
 
+    { id: 'n5', skill: 'detail', level: 'B1', point: 'discussion', seg: [143.6, 154.5],
+      stem: 'What does Michael want to have today?',
+      ja: 'マイケルは今日、何をしたい？',
+      choices: ['A serious talk about women’s problems', 'A party to thank all the women', 'A short talk about Dwight’s memo'], a: 0,
+      choicesJa: ['女性の問題についての本気の話し合い', '女性みんなに感謝するパーティー', 'ドワイトのメモについての短い話'],
+      cue: '「engage us in today」のあと',
+      line: 'What I want to engage us in today is a *hardcore discussion about women’s problems*…',
+      said: '「今日みんなでやりたいのは、女性の問題についての本気の話し合いだ」と言う。',
+      mean: 'discussion ＝ 話し合い。hardcore ＝ 本気の、とことんの（くだけた言い方）。',
+      trap: 'appreciation（感謝の会）という名前から、パーティーと考えがち。discussion を聞く。',
+      use: 'Let’s have a quick discussion about the plan.（計画について少し話し合おう）' },
+
+    { id: 'n6', skill: 'infer', level: 'B2', point: 'magazines', seg: [154.55, 171.1],
+      stem: 'What is Michael’s point about magazines and movies?',
+      ja: '雑誌や映画について、マイケルは何が言いたい？',
+      choices: ['Real women don’t look like that', 'Women should look like that', 'Magazines show real women'], a: 0,
+      choicesJa: ['本物の女性はあんなふうではない', '女性はあんなふうになるべき', '雑誌は本物の女性を見せている'],
+      cue: '「Are women like that?」への自分の答え',
+      line: 'Magazines and TV shows and movies portray women as skinny, tall goddesses. Well, look around. Are women like that? *No, they are not.*',
+      said: '「雑誌も映画も女性をやせた女神に描く。周りを見て。女性はあんなふう？違う」と言う。',
+      mean: 'portray ＝ 描く。look around ＝ 周りを見て。目の前の女性を指して言うので、ほめているつもりが失礼に。',
+      trap: '女神の話から、ほめていると考えがち。自分で答える No が言いたいこと。',
+      use: 'Look around. Nobody here is perfect.（周りを見て。完ぺきな人なんていない）' },
+
     { id: 'h2', skill: 'humor', level: 'C1', point: 'lookaround', seg: [156.5, 170.5], retired: true,
       stem: 'Why is Michael’s point about the magazines funny?',
       choices: ['Defending the women, he says they aren’t goddesses', 'Defending the women, he calls them all goddesses',
@@ -247,18 +303,6 @@ export const womensAppreciation: Clip = {
       mean: '雑誌を責めるつもりで、目の前の女性たちを「女神ではない」と言ってしまっている。',
       trap: 'look around を「雑誌を見て」と取りやすい。自分で答える No が誰を指すかを聞く。',
       use: 'Look around. Does anyone here care?（周りを見て。誰か気にしてる？）' },
-
-    { id: 'p3', skill: 'phrase', level: 'C1', point: 'against', seg: [175.1, 185.2],
-      stem: 'Michael says the women are “*up against it*.” Meaning?',
-      ja: '女性たちは「up against it」だとマイケルは言う。どういう意味？',
-      choices: ['They have a hard time', 'They should fight back', 'They are doing well'], a: 0,
-      choicesJa: ['大変な立場にいる', 'やり返すべきだ', 'うまくいっている'],
-      cue: '「what does that say?」のあと。',
-      line: 'That says that you women are *up against it*. And it is criminal.',
-      said: '「つまり君たち女性は苦しい立場にいる。ひどいことだ」と言う。',
-      mean: 'be up against it ＝ 不利な状況で苦しんでいる。',
-      trap: 'against を「反対する」と思うと「戦え」に聞こえる。苦しい状態を言う決まり文句。',
-      use: 'We’re really up against it this week.（今週は本当に厳しい）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'society', reveals: ['lookaround'], seg: [175.1, 189.05], retired: true,
       stem: 'In Michael’s rant about society, who is the joke on?',
@@ -271,7 +315,19 @@ export const womensAppreciation: Clip = {
       trap: '怒りが本気に聞こえるので社会が標的に思える。責める人が同じことをしていないかを聞く。',
       use: 'I hate gossip. Did you hear about Tom?（うわさ話は嫌い。トムの話聞いた？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'society', seg: [181.4, 189.1],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'against', seg: [175.4, 183.0],
+      stem: 'Michael says the women are “*up against it*.” Meaning?',
+      ja: '女性たちは「up against it」だとマイケルは言う。どういう意味？',
+      choices: ['They have a hard time', 'They should fight back', 'They are doing well'], a: 0,
+      choicesJa: ['苦しい立場にいる', 'やり返すべきだ', 'うまくいっている'],
+      cue: '「what does that say?」のあと。',
+      line: 'That says that you women are *up against it*. And it is criminal.',
+      said: '「つまり君たち女性は苦しい立場にいる。許せないことだ」と言う。',
+      mean: 'be up against it ＝ 文字どおりは「壁に押しつけられている」→不利な状況で苦しんでいる。',
+      trap: 'against を「反対する」と取ると「戦え」に聞こえる。苦しい状態を言う決まり文句。',
+      use: 'We’re really up against it this week.（今週は本当に厳しい）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'society', seg: [183.0, 189.05],
       stem: 'What does Michael say about himself and society?',
       ja: 'マイケルは自分と社会について何と言う？',
       choices: ['He’s not part of it', 'He wants to change it', 'He is part of the problem'], a: 0,
@@ -283,7 +339,19 @@ export const womensAppreciation: Clip = {
       trap: 'part of society だけ聞くと「自分も一員」と逆になる。前の don’t even を聞く。',
       use: 'I don’t consider myself a morning person.（朝型だとは思ってない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'sexist', seg: [196, 223.8],
+    { id: 'n7', skill: 'phrase', level: 'B1', point: 'upto', seg: [193.0, 198.9],
+      stem: 'What does “If it were up to me” mean?',
+      ja: '「If it were up to me」はどういう意味？',
+      choices: ['If I could decide', 'If I were much taller', 'If I had more time'], a: 0,
+      choicesJa: ['もし自分が決められるなら', 'もし自分がもっと背が高ければ', 'もしもっと時間があれば'],
+      cue: '「you ladies would be」の前',
+      line: '*If it were up to me*, you ladies would be the fashion models.',
+      said: '「僕が決められるなら、君たち女性がファッションモデルなのに」と言う。',
+      mean: 'up to 人 ＝ 人しだい、人が決めること。If it were up to me ＝ もし私が決めていいなら。',
+      trap: 'up（上）から背の高さを連想しやすい。up to me でひとまとまり。',
+      use: 'If it were up to me, we’d leave now.（私が決めていいなら、もう出るのに）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'sexist', seg: [196, 222.5],
       stem: 'How do the women react to Michael’s talk?',
       ja: '女性たちはマイケルの話にどう反応する？',
       choices: ['They say he is being sexist', 'They thank him for his help', 'They agree with his ideas'], a: 0,
@@ -305,7 +373,7 @@ export const womensAppreciation: Clip = {
       trap: '礼を皮肉や「ご指摘どうも」と取りやすいが、続く言葉は上機嫌。難しい語は話し手も誤解する。',
       use: 'Thanks… wait, was that a compliment?（ありがとう…待って、今のほめ言葉？）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'appreciate', seg: [207, 214.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'appreciate', seg: [207, 214.25],
       stem: 'Fill the gap: “That was not necessary, but ___.”',
       ja: '空いている所に入る語は？「That was not necessary, but ___.」',
       choices: ['I appreciated it', 'I appreciate it', 'I’d appreciate it'], a: 0,
@@ -327,6 +395,18 @@ export const womensAppreciation: Clip = {
       mean: 'sexist を否定し、misogynistic を誇らしげに認める。彼の中では良い意味の語。',
       trap: '本当の意味を知っていると、彼も同じと考えがち。話し手の語の扱い方を聞く。',
       use: 'I’m not cheap, I’m careful with money.（ケチじゃなくて、節約家なの）' },
+
+    { id: 'n8', skill: 'infer', level: 'B2', point: 'notsexist', reveals: ['sexist'], ctx: true, seg: [215.4, 222.5],
+      stem: 'What does Michael think the two words mean?',
+      ja: 'マイケルは、二つの言葉の意味をどう思っている？',
+      choices: ['Two different things', 'The very same thing', 'Two nice things'], a: 0,
+      choicesJa: ['別々のこと', 'まったく同じこと', '二つともいいこと'],
+      cue: 'マイケルの返事の「No」と「not」',
+      line: 'A: I’m saying that you’re being *sexist*. / Michael: No, I’m being *misogynistic*. That is insane. I am not being sexist.',
+      said: '「性差別的だって言ってるの」に、「違う、僕は女性蔑視なんだ。性差別なんかしてない」と返す。',
+      mean: 'sexist（性差別的）と misogynistic（女性蔑視の）はほぼ同じ悪い意味。マイケルは別物、しかも良い意味だと思っている。',
+      trap: 'No と言うので、女性の言葉を理解したと考えがち。同じ意味の語を認めて、片方だけ否定している。',
+      use: 'Wait, aren’t those the same thing?（待って、それって同じことじゃない？）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'periods', seg: [233.05, 238.85], retired: true,
       stem: 'When told what he asks them when they get mad, what reason does Michael give?',
