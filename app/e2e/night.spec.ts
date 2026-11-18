@@ -69,7 +69,7 @@ test('the look’s cream stage keeps the day’s text at night (its 回せます
   expect(await low(page)).toEqual([]);
 });
 
-test('/speech: the page follows the hour, its cards stay cream with ink', async ({ page }) => {
+test('/speech: the page and its kit cards follow the hour', async ({ page }) => {
   await page.goto(`speech${NIGHT}`);
   await expect(page.locator('[data-speech] .card').first()).toBeVisible();
   expect(await low(page)).toEqual([]);
