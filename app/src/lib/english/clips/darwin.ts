@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 1, new 4, ctx 6, tx 15
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 1, new 4, ctx 6, tx 15, qa 7
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 6, new 3
 // “Darwin, baby! Darwin... - The Office US” (the official The Office channel, BEST OF SEASON 5): Andy, who has just
 // learned about Dwight and Angela, thanks the office for lying to him, then tells Dwight it's over; the argument turns
@@ -113,7 +113,7 @@ export const darwin: Clip = {
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'cooloff', seg: [62.5, 68.7],
       stem: 'What does “Why don’t we just cool off?” mean?',
-      ja: '「Why don’t we just cool off a bit?」はどういう意味？',
+      ja: '「Why don’t we just cool off?」はどういう意味？',
       choices: ['Let’s calm down a bit', 'Why are you so angry?', 'Let’s go outside now'], a: 0,
       choicesJa: ['ちょっと落ち着こう', 'なんでそんなに怒ってるの？', '今すぐ外に出よう'],
       cue: '割って入る人の一言。',
@@ -194,8 +194,8 @@ export const darwin: Clip = {
       use: 'Sorry, but that’s none of your business.（悪いけど、あなたには関係ない）' },
 
     { id: 'k1', skill: 'infer', level: 'B2', point: 'outside', ctx: true, seg: [88.5, 97.5],
-      stem: 'Why is the fight “none of your business,” they say?',
-      ja: '決闘は「関係ない」と言う。その理由は？',
+      stem: 'Why do Andy and Dwight say it’s not her business?',
+      ja: 'アンディとドワイトは、なぜ「関係ない」と言う？',
       choices: ['The fight won’t be at work', 'She doesn’t work with them', 'Angela asked them to fight'], a: 0,
       choicesJa: ['決闘は職場でやらないから', '彼女は同じ職場ではないから', 'アンジェラに頼まれたから'],
       cue: '「Guess what?」のあと',
@@ -242,8 +242,8 @@ export const darwin: Clip = {
       use: 'The closest thing we have is this one.（一番近いのはこれですね）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'elephant', ctx: true, seg: [129.5, 139.4],
-      stem: '“Are those guns?” What is said about the two guns?',
-      ja: '同僚は、二人の銃について何と言う？',
+      stem: 'How are the two guns different?',
+      ja: '二人の銃は、どうちがう？',
       choices: ['Dwight’s is much stronger', 'Both are for birds', 'Andy’s is more dangerous'], a: 0,
       choicesJa: ['ドワイトのほうがずっと強い', 'どちらも鳥用', 'アンディのほうが危ない'],
       cue: '2つの獲物の大きさの差。',
@@ -279,8 +279,8 @@ export const darwin: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'stanley', seg: [154.4, 164.8],
       stem: 'What does Stanley want to see?',
       ja: 'スタンリーは何が見たい？',
-      choices: ['One of them beaten up', 'Angela with the right man', 'Andy finally win'], a: 0,
-      choicesJa: ['どちらかがやられる', 'アンジェラがいい人と結ばれる', 'アンディが勝つ'],
+      choices: ['One of them beaten up', 'Angela with the right man', 'Toby stop the fight'], a: 0,
+      choicesJa: ['どちらかがやられる', 'アンジェラがいい人と結ばれる', 'トビーがけんかを止める'],
       cue: '「I don’t care」のあとの一文。',
       line: 'I *don’t care* who Angela ends up with. I *just want to see* one of them beat… the other one.',
       said: '「どっちと結ばれても構わない。どっちかがやられるのが見たい」と言う。',
@@ -336,8 +336,8 @@ export const darwin: Clip = {
     { id: 'a2', skill: 'pragma', level: 'B1', point: 'whatever', ctx: true, seg: [185.5, 192.9],
       stem: 'Toby asks “Do you understand?” What does “Yeah, yeah, yeah” mean?',
       ja: '「分かりましたか？」への「Yeah, yeah, yeah」はどういう意味？',
-      choices: ['Okay, we get it already', 'Yes, we really agree', 'Yes, please tell us more'], a: 0,
-      choicesJa: ['はいはい、もう分かったから', 'うん、心から賛成', 'うん、もっと教えて'],
+      choices: ['We know. You can stop.', 'Yes, we really agree.', 'Yes, please tell us more.'], a: 0,
+      choicesJa: ['もう分かったから、やめて', 'うん、心から賛成', 'うん、もっと教えて'],
       cue: '「Do you understand?」のあと、短い返事の重なり',
       line: 'Toby: *Do you understand?* / Fine. — *Yeah, yeah, yeah.* — *Whatever.* — We get it.',
       said: '「分かりましたか？」に「分かった」「はいはい」「どうでもいい」「分かったよ」と短い返事が重なる。',
@@ -371,8 +371,8 @@ export const darwin: Clip = {
     { id: 'k4', skill: 'pragma', level: 'B1', point: 'trustyou', ctx: true, seg: [194.8, 201.0],
       stem: 'Toby checks on the weapons. What does Dwight say?',
       ja: '武器のことを確かめるトビー。ドワイトの答えは？',
-      choices: ['He took them all out', 'He still has one gun', 'He gave them to Andy'], a: 0,
-      choicesJa: ['全部持ち出した', 'まだ銃を1丁持っている', 'アンディに渡した'],
+      choices: ['They are all gone now', 'He still has one gun', 'He gave them to Andy'], a: 0,
+      choicesJa: ['もう全部ない', 'まだ銃を1丁持っている', 'アンディに渡した'],
       cue: '「Of course」のあと',
       line: 'Toby: Dwight? *I trust you removed all your weapons* from the office. / Dwight: *Of course I did.*',
       said: '「武器は全部、職場から持ち出してくれたよね」に「もちろんです」と答える。',
