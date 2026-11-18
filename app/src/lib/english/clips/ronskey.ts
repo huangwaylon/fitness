@@ -4,8 +4,7 @@
 // can't find the key to Ron's house she hid years ago, only her own teasing note, so Ron, April and Andy follow her old
 // clues; at the end Ron tells her the key never mattered, and a pun leads her to it.
 // Segments from the captions, words from whisper (2026-11-16). Champion is Andy and April's dog.
-// EXCLUDE 143–147 (the basement pair's choking game)
-// EXCLUDE 161–171 (the choking game explained; Ron's “I've been there”)
+// Untested: 143–147 s and 161–171 s (the basement pair's choking game).
 // EXCLUDE 184–193 (the “ghost” fears Brett will mug him: a racist joke)
 // EXCLUDE 200–209 (the councilman's racist line)
 // SKIP 177–209: the ghost joke turns racist, then the councilman's racist line

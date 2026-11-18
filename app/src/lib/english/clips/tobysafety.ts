@@ -3,8 +3,7 @@
 // “Toby's Health And Safety Meeting - The Office US” (the official The Office channel, Best of Season 3): Michael hands
 // the office safety talk to Toby, keeps cutting in to make desk work sound dangerous, and the warehouse crew mocks it;
 // Michael answers them to the camera with his own "warehouse" past. Segments from the captions, words from whisper
-// (2026-11-16). Talk ends at ≈ 203 s. Untested: 0–2 s, 165–172 s.
-// EXCLUDE 122.3–139.9 (insults: "fat butt", "sea monster", "tell your girl to shut up")
+// (2026-11-16). Talk ends at ≈ 203 s. Untested: 122–139 s (insults: "fat butt", "sea monster"), 165–172 s.
 // SKIP 199.5–225.4: "This is one example", then 20 s with no talk before a lone "Thank you"
 // EAR CHECK: 62 s w1 — "What about a long sleeve tee?" taken as Michael's, "Well, that'll work" as Toby's
 // EAR CHECK: 96.4 s w3 — merged whisper line: check the seg starts after "that dim light is a b…" and holds "Actually, you did"

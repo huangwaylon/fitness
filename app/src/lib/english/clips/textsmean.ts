@@ -1,10 +1,11 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 0, new 3, ctx 4, tx 5
 // A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 8, new 3
 // “What texts REALLY mean - The Office US” (the official The Office channel, BEST OF The Office - Season 8): at a dinner,
 // Val's boyfriend Brandon, serving the food, accuses Darryl of chasing Val; the guests make Darryl read his texts aloud
 // and argue over what five dots mean.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 7.9–11.7 s (no captions), 23.5–30.5 s (a
-// bleeped f-word, left out on purpose), 43.5 s, 47.7–50.4 s, 58.3 s, 76 s (the guest's name: "Ellie" / "holly"),
-// 136–155 s (whisper loops one line over the outro).
+// Segments from the captions, words from whisper (2026-11-16). Untested: 7.9–11.7 s (no captions), 43.5 s, 47.7–50.4
+// s, 128–132 s ("insane asylum", Shutter Island), 136–155 s (music). The guest's name at 76 s is unclear ("Ellie").
+// EXCLUDE 23.5–30.5 (bleeped "f***ing my girlfriend" lines)
 // EAR CHECK: 16.3–16.9 s s1, 22.0–22.3 s nt1, 81.9–82.6 s x1 — both sources agree on the words; confirm the "not" in
 //   "I'm not actually" is weak but there, that "You doing good?" has no "are", and that "for once in my life" runs together
 import type { Clip } from '../types.ts';
@@ -61,19 +62,7 @@ export const textsMean: Clip = {
       trap: 'terrific を文字どおり「よかった」と取りやすい。英語は明るい一語で流すこともある。',
       use: 'Great. Well, moving on…（そっか。じゃあ次へ…）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['readtext'], seg: [18.8, 54],
-      stem: 'Why is Brandon angry with Darryl?',
-      ja: 'ブランドンはなぜダリルに怒っている？',
-      choices: ['He thinks Darryl dates Val', 'The guests don’t like goat', 'Someone called him Jamaican'], a: 0,
-      choicesJa: ['ダリルがヴァルと付き合っていると思う', '客がヤギ料理を嫌がる', 'ジャマイカ人と呼ばれた'],
-      cue: 'ダリルが名乗ったあとのやりとり。',
-      line: 'I’m not sleeping with your girlfriend. — Don’t play dumb with me… *I read the text you sent to Val*',
-      said: 'ブランドンは、恋人ヴァルとダリルの仲を疑い、メッセージを読んだと責める。',
-      mean: 'your girlfriend ＝ ヴァル。ダリルは否定するが、ブランドンは信じない。',
-      trap: 'Jamaican の話が最初にあるので、それに怒ったと思いやすい。怒りの中心は girlfriend と text。',
-      use: 'I think there’s a misunderstanding.（誤解があると思います）' },
-
-    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [19.5, 26.2],
+    { id: 'nt1', skill: 'dict', level: 'C2', point: 'greet', seg: [20.2, 23.4],
       stem: 'Type what Brandon asks Darryl: “I heard about you. ___?” (3 words)', answer: 'you doing good',
       ja: 'ブランドンの質問を書き取る：「I heard about you. ___?」（3語）',
       cue: 'I heard about you のすぐあと。',
@@ -82,6 +71,18 @@ export const textsMean: Clip = {
       mean: 'You doing good? ＝ 元気？ 会話では Are が落ちる。well でなく good も会話ではふつう。',
       trap: '教科書の形に直して Are を足したくなる。書き取りは、聞こえた3語だけを書く。',
       use: 'Hey, you doing okay?（ねえ、大丈夫？）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['readtext'], seg: [30.9, 54],
+      stem: 'Why is Brandon angry with Darryl?',
+      ja: 'ブランドンはなぜダリルに怒っている？',
+      choices: ['He thinks Darryl dates Val', 'The guests don’t like goat', 'Someone called him Jamaican'], a: 0,
+      choicesJa: ['ダリルがヴァルと付き合っていると思う', '客がヤギ料理を嫌がる', 'ジャマイカ人と呼ばれた'],
+      cue: 'ダリルが名乗ったあとのやりとり。',
+      line: 'I’m *not sleeping with your girlfriend*. — Don’t play dumb with me. I know what’s up.',
+      said: 'ブランドンは、恋人ヴァルとダリルの仲を疑い、メッセージを読んだと責める。',
+      mean: 'your girlfriend ＝ ヴァル。ダリルは否定するが、ブランドンは信じない。',
+      trap: 'Jamaican の話が最初にあるので、それに怒ったと思いやすい。怒りの中心は girlfriend と text。',
+      use: 'I think there’s a misunderstanding.（誤解があると思います）' },
 
     { id: 'p4', skill: 'phrase', level: 'B2', point: 'dumb', seg: [30.9, 37],
       stem: 'What does “Don’t play dumb with me” mean?',
@@ -95,7 +96,7 @@ export const textsMean: Clip = {
       trap: 'play を「遊ぶ」と思いやすい。ここは「ふりをする」。I know what’s up が続く。',
       use: 'Don’t play dumb. I saw you.（とぼけないで。見たんだから）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'topic', seg: [33.5, 45.2],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'topic', seg: [36.3, 45.2],
       stem: 'Why does a guest say “Let’s get back to the food”?',
       ja: '客の一人はなぜ「Let’s get back to the food」と言う？',
       choices: ['To stop the fight', 'To start the meal', 'To praise the dishes'], a: 0,
@@ -165,6 +166,18 @@ export const textsMean: Clip = {
       trap: '病院の急用は本当にあるので、もっともらしく聞こえる。手術にナプキン、で例が崩れる。',
       use: 'Bad example, but you get the idea.（例は悪いけど、言いたいことは分かるよね）' },
 
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'midnight', ctx: true, seg: [59.2, 66],
+      stem: 'Why does someone ask “At midnight?”',
+      ja: '「At midnight?」と聞くのはなぜ？',
+      choices: ['Work texts at night are odd', 'He doesn’t know the time now', 'He was asleep at midnight'], a: 0,
+      choicesJa: ['夜中に仕事の連絡は変だから', '今の時間を知らないから', '夜中は寝ていたから'],
+      cue: '「paper emergency」への返事',
+      line: 'If Darryl sent Val a text, it was about some *paper emergency* or something. / *At midnight?*',
+      said: '「ダリルのメッセージは、紙の緊急事態か何かだよ」とかばうと、「真夜中に？」と返される。',
+      mean: '短い聞き返しで「そんな時間に仕事の連絡はおかしい」と疑っている。直後の苦しい言い訳も笑いどころ。',
+      trap: '疑問文なので、時間をたずねていると考えがち。直前の paper emergency への疑いの返事。',
+      use: 'A work call? At midnight?（仕事の電話？真夜中に？）' },
+
     { id: 'r1', skill: 'predict', level: 'B2', point: 'texts', seg: [69.8, 73.25], retired: true, then: [73.25, 75.55],
       stem: 'After “we just need to be grown-ups here”, what kind of suggestion follows?',
       choices: ['One that keeps the argument going', 'One that ends the argument for tonight',
@@ -176,16 +189,28 @@ export const textsMean: Clip = {
       trap: '落ち着かせる言葉のあとは収める話、という型。この場面では型が裏切られるのが笑いになる。',
       use: 'Let’s all be grown-ups about this.（みんな大人になろうよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'stay', seg: [75.3, 85.9],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'hear', ctx: true, seg: [69.8, 75.8],
+      stem: 'What does he say they need to do?',
+      ja: '彼は、みんなで何をする必要があると言う？',
+      choices: ['Hear the texts', 'Go home early', 'Stop the talking'], a: 0,
+      choicesJa: ['メッセージを聞く', '早めに帰る', '話をやめる'],
+      cue: '「Thank you」のあとの一言',
+      line: 'We just need to be *grown-ups* here. / Thank you. / I think we’re going to need to *hear those texts*.',
+      said: '「ここは大人にならないと」に「ありがとう」とほっとされるが、続けて「メッセージを聞かせてもらおう」。',
+      mean: 'be grown-ups ＝ 大人らしくする。止めてくれると思わせて、読み上げを求めるのが笑いどころ。',
+      trap: 'grown-ups（大人に）から、話をやめる流れと考えがち。決め手は Thank you のあとの一言。',
+      use: 'Let’s be grown-ups about this.（これは大人らしく話そう）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'stay', ctx: true, seg: [75.7, 83.9],
       stem: 'How does the guest feel about going home now?',
       ja: 'その客は、今帰ることをどう思っている？',
       choices: ['She wants to stay', 'She wants to go home', 'She feels sorry'], a: 0,
       choicesJa: ['残りたい', '帰りたい', '申し訳ない'],
       cue: 'No のあと、文の最後まで。',
-      line: 'There’s no way… I’m leaving. … *I’m staying here.*',
+      line: 'Remember how you wanted to go home before? / No. There’s *no way*… I’m leaving. … *I’m staying here.*',
       said: '「さっき帰りたがってたよね」と言われ、「絶対帰らない。ここにいる」と言い切る。',
       mean: 'There’s no way ～ ＝ 絶対〜しない。もめごとが面白くて、帰りたくない。',
-      trap: 'I’m leaving が聞こえるので、帰ると思いやすい。前の no way で「絶対帰らない」。',
+      trap: 'I’m leaving が聞こえるので、帰ると考えがち。前の no way で「絶対帰らない」。',
       use: 'No way. I’m staying.（絶対いや。ここにいる）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'foronce', reveals: ['stay'], seg: [78.7, 83.9],
@@ -193,24 +218,12 @@ export const textsMean: Clip = {
       ja: '最後を書き取る：「Something interesting is happening here ___.」（5語）',
       cue: 'happening here のあと、文の終わりまで。',
       line: 'Something interesting is happening here *for once in my life*.',
-      said: '「人生で一度くらい、ここで面白いことが起きてる」と言う。',
+      said: '「やっと人生に一度、ここで面白いことが起きてる」と言う。',
       mean: 'for once in my life ＝ 人生で一度くらい。ふだんは退屈、という気持ち。',
       trap: 'for と in が弱く、once と life だけ残りやすい。ひとまとまりで覚える。',
       use: 'For once in my life, I’m early!（生まれて初めて、時間より早い！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['kidding', 'icecream'], seg: [84, 121.7],
-      stem: 'What do the guests think of Darryl’s texts?',
-      ja: '客たちはダリルのメッセージをどう思う？',
-      choices: ['They sound more than friendly', 'They are just about work', 'They are too boring to read'], a: 0,
-      choicesJa: ['友だち以上に聞こえる', '仕事のことだけ', '退屈すぎて読めない'],
-      cue: '一通読むたびの、まわりの反応。',
-      line: 'The moon one’s damning. … *Five dots, Darryl? Are you kidding me?*',
-      said: '一通読むたびに周りが騒ぎ、月の話や点の数まで「怪しい」と言われる。',
-      mean: 'ダリルは「ふつうのメッセージ」と言うが、みんなは恋の証拠と見ている。',
-      trap: 'ダリルの regular text talk（ふつうの文）を聞くと、疑いが晴れたと思いやすい。まわりの反応を聞く。',
-      use: 'That only made it worse.（かえって悪くなったね）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'icecream', seg: [85, 92.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'icecream', seg: [86.2, 92.4],
       stem: 'In the first text, what does Darryl offer Val?',
       ja: '一通目で、ダリルはヴァルに何をすすめている？',
       choices: ['Some of his ice cream', 'Some of his fries', 'A ride back home tonight'], a: 0,
@@ -233,6 +246,18 @@ export const textsMean: Clip = {
       trap: 'damn を「くそっ」という口ぐせと取りやすい。-ing の形は「不利にする」という評価。',
       use: 'The evidence is pretty damning.（証拠はかなり不利だね）' },
 
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['kidding', 'icecream'], seg: [92.9, 121.7],
+      stem: 'What do the guests think of Darryl’s texts?',
+      ja: '客たちはダリルのメッセージをどう思う？',
+      choices: ['They sound more than friendly', 'They are just about work', 'They are too boring to read'], a: 0,
+      choicesJa: ['友だち以上に聞こえる', '仕事のことだけ', '退屈すぎて読めない'],
+      cue: '一通読むたびの、まわりの反応。',
+      line: 'The moon one’s damning. … *Five dots, Darryl? Are you kidding me?*',
+      said: '一通読むたびに周りが騒ぎ、月の話や点の数まで「怪しい」と言われる。',
+      mean: 'ダリルは「ふつうのメッセージ」と言うが、みんなは恋の証拠と見ている。',
+      trap: 'ダリルの regular text talk（ふつうの文）を聞くと、疑いが晴れたと思いやすい。まわりの反応を聞く。',
+      use: 'That only made it worse.（かえって悪くなったね）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'fivedots', seg: [97.4, 109.45], retired: true,
       stem: 'As Darryl reads his texts, what is he trying not to show?',
       choices: ['The text that sounds more than friendly', 'How late at night the texts were sent',
@@ -245,10 +270,10 @@ export const textsMean: Clip = {
       use: 'You skipped the best part.（一番いいところを飛ばしたね）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'kidding', seg: [102.2, 111.6],
-      stem: 'What does “Are you kidding me?” show here?',
-      ja: 'ここで「Are you kidding me?」は何を表す？',
-      choices: ['Shock and anger', 'Fun and laughter', 'Calm agreement'], a: 0,
-      choicesJa: ['驚きと怒り', '楽しさと笑い', '落ち着いた賛成'],
+      stem: 'How does Brandon feel about the five dots?',
+      ja: 'ブランドンは点5つをどう思う？',
+      choices: ['Shocked and angry', 'Happy and amused', 'Calm and not upset'], a: 0,
+      choicesJa: ['驚いて怒っている', '楽しくて笑っている', '落ち着いていて平気'],
       cue: '点の数を言ったあとの決まり文句。',
       line: 'Five dots, Darryl? *Are you kidding me?*',
       said: '点が5つ付いた文に、「点5つだぞ、ダリル。ふざけてるのか？」と言う。',
@@ -290,5 +315,17 @@ export const textsMean: Clip = {
       mean: '「ばかげてる」の一語に、たとえを次々に重ねる。間のあとの言いすぎは、本心を隠す響き。',
       trap: '強く同意しているから本心、と取りやすい。間があって、たとえが大げさになるほど、無理を疑う。',
       use: 'Yeah, totally. Never crossed my mind.（うん、全然。考えたこともない）' },
+
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'crazy', ctx: true, seg: [121.9, 128],
+      stem: 'How does Darryl answer Val?',
+      ja: 'ダリルはヴァルにどう答える？',
+      choices: ['He agrees it’s crazy', 'He says it is true', 'He doesn’t answer her'], a: 0,
+      choicesJa: ['ばかげてると同意する', '本当だと言う', '返事をしない'],
+      cue: '「Right?」への返事',
+      line: 'Val: Brandon, Darryl and me, *it’s ridiculous*. Right? / Darryl: Yeah. *Totally crazy*.',
+      said: 'ヴァルが「ダリルと私なんて、ありえないでしょ。ね？」と聞き、ダリルは「ああ。まったくばかげてる」。',
+      mean: 'Right? ＝ 「でしょ？」と同意を求める。Totally ＝ まったく（くだけた強め）。',
+      trap: 'crazy（狂った）から、怒っていると勘違いしやすい。ここは ridiculous と同じ「ありえない」。',
+      use: 'Yeah, totally.（うん、ほんとそう）' },
   ]
 };
