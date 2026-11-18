@@ -1,12 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 1, new 1, ctx 3, tx 8
 // A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 8, new 0
 // A2 LATE: a secret about sex underwear and a body-part joke (a third nipple); short, fast, few everyday chunks.
 // “Chandler Has a Third Nipple | Friends” (the official Friends channel, Best of Season 2): a friend's secret comes out
 // ("Who told you?"); she threatens the one who let it slip and pays him back by naming his own secret, a third
 // nipple; everyone wants a look, and Joey finds out what the "nubbin" he'd been told about really was.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 63.7 s. Untested: the underwear story
-// (3–10.9 s), "You bitch" (36.7 s) and the "Whip it out" chant (41.4–43.0 s). Speakers are named only where the audio
-// or the title names them ("Joey", Chandler as the one with the nipple). s2 was deleted before it shipped.
-// EAR CHECK: 0.3 s s1, 21.0 s x1, 48.0 s x2 — the weak forms "have I not", "didn't know it was", "as opposed to"
+// Segments from the captions, words from json3. Talk ends at ≈ 63.7 s (70.3 s "you" is a whisper ghost). No scenes
+// file. Speakers are named only where the audio or the title names them ("Joey", Chandler as the one with the nipple).
+// EXCLUDE 8.3–10.9 (the "having sex" line)
+// EXCLUDE 36.6–38.1 (swear)
 import type { Clip } from '../types.ts';
 
 export const thirdNipple: Clip = {
@@ -17,27 +18,15 @@ export const thirdNipple: Clip = {
   questions: [
     { id: 's1', skill: 'sound', level: 'B2', point: 'havei', seg: [0, 3.9],
       stem: 'Fill the gap: “What ___ told you?”',
-      ja: '空いている所に入る3語は？',
+      ja: '「What ___ told you?」の空所は？',
       choices: ['have I not', 'haven’t I', 'had I not'], a: 0,
       choicesJa: ['（私が）話していない', '（私は）話していないよね？', '（その時）話していなかった'],
       cue: '「What」のすぐあと。',
       line: 'What *have I not* told you?',
       said: '「話してないことなんてある？」と聞き返す。',
       mean: 'haven’t I を分けた形。not を立てて「何も隠してない」と強める。have は弱く「ァヴ」。',
-      trap: 'haven’t I なら「ン」が I の前。had I not は「ハッダイ」。ここは「ァヴァイ・ノット」。',
+      trap: 'haven’t I に聞こえるが、「ン」がなく not が最後に強く来る。had I not なら「ハッダイ」。',
       use: 'What have I not tried?（試してないことなんてある？）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'revenge', reveals: ['notbig', 'example', 'admit'], seg: [0, 34.3],
-      stem: 'Why does she bring up the third nipple?',
-      ja: '彼女はなぜ「3つ目の乳首」の話を出す？',
-      choices: ['To get back at him', 'To show it’s no big deal', 'To make him say sorry'], a: 0,
-      choicesJa: ['仕返しするため', '大したことないと示すため', '謝らせるため'],
-      cue: '秘密をばらされたあとの流れ。',
-      line: 'No, it’s not big. Not at all… the same lines as, say… *having a third nipple*.',
-      said: '自分の秘密を広めた相手に言い返し、そのあと相手の秘密をみんなの前で明かす。',
-      mean: 'get back at 人 ＝ 人に仕返しする。秘密をばらされたので、ばらし返している。',
-      trap: '「全然大きくない」を言葉どおりに思いやすい。だれの秘密を出したかで目的が分かる。',
-      use: 'I’ll get back at him for this.（このお返しはするからね）' },
 
     // anchor: 1.88–3.07 s "Oh, I don't know." is followed at once (3.66–10.73 s) by a long, exact charge, "How about the
     // retired: one C2 alone is under 2 (nt2 retired)
@@ -62,16 +51,28 @@ export const thirdNipple: Clip = {
       trap: 'あとに terrace も出るので場所を取り違えやすい。on のあとの名詞をそのまま拾う。',
       use: 'The keys are out there on the table.（鍵は向こうのテーブルの上だよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'source', seg: [10.9, 15.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'secret', reveals: ['source', 'deadmeat'], seg: [11.0, 34.3],
+      stem: 'Why is she angry with him?',
+      ja: '彼女はなぜ彼に怒っている？',
+      choices: ['He told her secret', 'He laughed at her', 'He lost her things'], a: 0,
+      choicesJa: ['彼が秘密をしゃべった', '彼が彼女を笑った', '彼が彼女の物をなくした'],
+      cue: '秘密がばれたあとの流れ。',
+      line: 'Who told you? … You are dead meat. — I *didn’t know it was a big secret*.',
+      said: '秘密がばれて「誰から聞いたの？」と怒り、しゃべった彼をおどす。',
+      mean: '怒りの理由は、彼が秘密をほかの人に話したこと。だから最後に彼の秘密を言い返す。',
+      trap: 'みんなが笑う場面なので、笑われて怒ったと考えがち。決め手は big secret。',
+      use: 'Please keep it a secret.（内緒にしてね）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'source', seg: [11.0, 15.9],
       stem: 'What does she want to know right away?',
       ja: '彼女はすぐに何を知りたがる？',
       choices: ['Who spread the story', 'Who else knows the story', 'Who saw it on the pole'], a: 0,
       choicesJa: ['だれが話を広めたか', 'ほかにだれが知っているか', 'だれが電柱で見たか'],
-      cue: '話を出された直後の質問。',
+      cue: '「What?」のあと。',
       line: '*Who told you?*',
-      said: '秘密の話を持ち出され、すぐ「だれから聞いたの？」と返す。',
-      mean: 'Who told you? ＝ だれがしゃべったの？知りたいのは話の出どころ。',
-      trap: 'who と told だけ拾うと「ほかにだれが知ってる？」に聞こえる。told you（あなたに言った）。',
+      said: '秘密の話を持ち出され、すぐ「誰から聞いたの？」と返す。',
+      mean: 'Who told you? ＝ 誰があなたに話したの？知りたいのは話の出どころ。否定せず聞くので、話は本当。',
+      trap: 'who だけ拾うと「ほかに誰が知ってる？」と勘違いしやすい。told you ＝ あなたに話した。',
       use: 'Wait, who told you that?（待って、それだれから聞いたの？）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'admit', reveals: ['source', 'deadmeat'], seg: [11.8, 23.1], retired: true,
@@ -88,26 +89,14 @@ export const thirdNipple: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'deadmeat', seg: [17.4, 23.2],
       stem: 'What does “You are dead meat” mean?',
       ja: '「You are dead meat」の意味は？',
-      choices: ['You’re in big trouble', 'You’re not my friend', 'You really let me down'], a: 0,
-      choicesJa: ['ただじゃすまないよ', 'もう友だちじゃない', '本当にがっかりした'],
+      choices: ['You’re in big trouble', 'You’re not my friend', 'You really hurt me'], a: 0,
+      choicesJa: ['ただじゃすまないよ', 'もう友だちじゃない', '本当に傷ついた'],
       cue: '「Who told you?」のあと。',
       line: 'You are *dead meat*.',
       said: '秘密を話した相手に「あんた、ただじゃおかないから」と言う。',
-      mean: 'dead meat ＝ ひどい目にあうぞ。友だち同士の冗談まじりのおどし。',
-      trap: 'dead から「縁を切る」を思いやすい。dead meat は「しかられるぞ・罰が来るぞ」。',
-      use: 'If Mom finds out, you’re dead meat.（ママにばれたら、ただじゃすまないよ）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'excuse', seg: [18.2, 25.3],
-      stem: 'What excuse does he give?',
-      ja: '彼はどんな言い訳をする？',
-      choices: ['He didn’t know it was secret', 'He told only one friend', 'He heard it from someone else'], a: 0,
-      choicesJa: ['秘密だと知らなかった', '一人の友だちにだけ話した', 'ほかのだれかから聞いた'],
-      cue: '責められた直後の返事。',
-      line: 'I *didn’t know it was a big secret*.',
-      said: '責められて「そんなに大きな秘密だとは知らなかった」と言い訳する。',
-      mean: '話したことは認めつつ、秘密だと知らなかったと言って責任を軽くしている。',
-      trap: '言い訳はいろいろあるので、聞く前に決めつけやすい。I didn’t know のあとを聞く。',
-      use: 'Sorry, I didn’t know it was private.（ごめん、内緒だと知らなかった）' },
+      mean: 'dead meat ＝ 文字どおりは「死んだ肉」。もう助からない→「ただじゃおかない」。友だち同士のくだけた、冗談まじりのおどし。',
+      trap: 'dead から「縁を切る」を連想しやすい。dead meat は「ひどい目にあうぞ」。',
+      use: 'If I’m late again, I’m dead meat.（また遅刻したら、ただじゃすまない）' },
 
     { id: 't1', skill: 'attitude', level: 'C1', point: 'notbig', reveals: ['revenge'], seg: [18.2, 31.8], retired: true,
       stem: 'When she answers “No, it’s not big…”, how is she speaking?',
@@ -120,7 +109,7 @@ export const thirdNipple: Clip = {
       trap: '日本語の「大したことないよ」は許しの言葉なので、そのまま取りやすい。言葉のあとの行動で本音を測る。',
       use: 'Oh sure, no big deal at all.（ああ、全然たいしたことないよね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'excuse', seg: [18.7, 25.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'excuse', seg: [18.7, 25.3], retired: true,
       stem: 'Type his reply: “I ___ a big secret.” (4 words)', answer: "didn't know it was",
       ja: '「I」のあとの4語を書こう。',
       cue: '「I」のあと。',
@@ -129,6 +118,18 @@ export const thirdNipple: Clip = {
       mean: 'didn’t の t はほぼ消え、know it was が「ノウイッワズ」とつながる。',
       trap: 'didn’t を do と聞くと「知っている」になる。「ン」が残れば否定。',
       use: 'I didn’t know it was your seat.（あなたの席だと知らなかった）' },
+
+    { id: 'd1', skill: 'pragma', level: 'B2', point: 'payback', ctx: true, seg: [20.6, 30.0],
+      stem: 'What does she do after his excuse?',
+      ja: '彼の言い訳のあと、彼女はどうする？',
+      choices: ['She tells his secret', 'She forgives him', 'She asks him to leave'], a: 0,
+      choicesJa: ['彼の秘密を言う', '彼を許す', '出て行ってと言う'],
+      cue: '彼の言い訳への返事。',
+      line: 'I didn’t know it was a big secret. / No, it’s not big… the same lines as, say… *having a third nipple*.',
+      said: '「大きな秘密とは知らなかった」に、「大したことじゃない。乳首が3つあるとかね」と返す。',
+      mean: 'not big ＝ 本当は逆の意味の皮肉。仕返しに、彼の秘密をみんなの前で言う。',
+      trap: '「大したことじゃない」で許したと考えがち。決め手は、そのあと出す彼の秘密。',
+      use: 'It’s not a big deal.（大したことじゃないよ）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'say', seg: [24.8, 31.8],
       stem: 'What does “say” mean in “the same lines as, say, …”?',
@@ -154,7 +155,7 @@ export const thirdNipple: Clip = {
       trap: 'I don’t know を本当に迷っていると取りやすい。迷った直後に的確な例が出たら、演技の合図。',
       use: 'Someone, I don’t know, like you?（誰かさん、そうね、たとえばあなたとか？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['word', 'nubbin'], seg: [31.8, 64.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['word', 'nubbin'], seg: [38.3, 64.3],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Joey is confused about a word', 'They fight about the big secret', 'They tease her again'], a: 0,
@@ -163,20 +164,20 @@ export const thirdNipple: Clip = {
       line: 'You told me it was a *nubbin*.',
       said: 'みんなが見たがったあと、ジョーイが「nubbin だと聞いていた」と言い出す。',
       mean: 'nubbin ＝ 小さなでっぱり。秘密の仕返しから始まり、言葉の勘違いで終わる。',
-      trap: '前半の「だれがしゃべった」の流れが続くと思いやすい。最後の数行を聞く。',
+      trap: '前半の「誰がしゃべった」の言い合いが続くと考えがち。最後のジョーイの数行で決まる。',
       use: 'Wait, what does that word mean?（待って、その言葉どういう意味？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'nothing', seg: [41.3, 50.8],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'nothing', ctx: true, seg: [41.3, 47.8],
       stem: 'What does “There’s nothing to see” mean here?',
       ja: 'ここでの「There’s nothing to see」の意味は？',
       choices: ['Please don’t look at it', 'It isn’t there anymore', 'Come and look at it closely'], a: 0,
       choicesJa: ['見ないで', 'もうなくなった', '近くでよく見て'],
-      cue: '「Come on」のあと。',
-      line: 'Come on. *There’s nothing to see.*',
-      said: '見せろとはやされ、「やめてよ。見るものなんてないって」と返す。',
-      mean: '見る価値はない、と言って見せずにすませようとしている。Come on ＝ よしてよ。',
-      trap: '「もうない」と思いやすいが、続く説明ではまだある。',
-      use: 'Come on, there’s nothing to see here.（ほら、見るものなんてないよ）' },
+      cue: '「見せろ」の声への返事。',
+      line: 'Whip it out, whip it out. / Come on. *There’s nothing to see.*',
+      said: '見せろとはやされ、「やめろよ。見るものなんて何もないって」と返す。',
+      mean: '見る価値はない、と言って見せずにすませる。Come on ＝ ここでは「よしてよ」。',
+      trap: '「もうない」に聞こえるが、すぐあとで It’s just a tiny bump とまだあることを言う。',
+      use: 'Come on, there’s nothing to see here.（ほら、見るものなんて何もないよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'useless', reveals: ['bump', 'opposed'], seg: [43.05, 50.8], retired: true,
       stem: 'Why does the reply about his “other” nipples get a laugh?',
@@ -189,7 +190,7 @@ export const thirdNipple: Clip = {
       trap: 'multi-functional を本気のほめ言葉と取りやすい。大げさな語が来たら皮肉を疑う。',
       use: 'Oh, and yours is so much better?（へえ、あなたのはそんなにいいの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'bump', seg: [43.1, 51],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'bump', seg: [43.3, 47.85],
       stem: 'How does he describe it?',
       ja: '彼はそれをどう説明する？',
       choices: ['A tiny bump that does nothing', 'A tiny lump that hurts', 'A tiny bump that looks odd'], a: 0,
@@ -198,42 +199,30 @@ export const thirdNipple: Clip = {
       line: 'It’s just a *tiny bump*. It’s *totally useless*.',
       said: '「ただの小さなでっぱりだよ。全く役に立たない」と言う。',
       mean: 'bump ＝ 小さなふくらみ。useless ＝ 役に立たない。大したことないと言っている。',
-      trap: 'bump と lump は似た音。続く useless まで聞けば「痛む」ではないと分かる。',
+      trap: 'bump と lump は似た音で、しこりと勘違いしやすい。続く useless で「何もしない」と分かる。',
       use: 'It’s just a tiny scratch.（ただのかすり傷だよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'opposed', seg: [46.4, 51.7],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'opposed', seg: [46.58, 51.7],
       stem: 'Type the reply: “Oh, ___ your other…” (3 words)', answer: 'as opposed to',
       ja: '「Oh,」のあとの3語を書こう。',
       cue: '「Oh」のすぐあと。',
       line: 'Oh, *as opposed to* your other multi-functional nipples.',
       said: '「ほかの多機能な乳首とはちがってね」と返す。',
       mean: 'as opposed to ＝ 〜とはちがって。as は小さく、opposed to の d と t がつながる。',
-      trap: 'as が小さく短く消えやすい。3語のひとまとまりで覚える。',
+      trap: 'as が小さく消え、opposed to だけに聞こえがち。3語のひとまとまり。',
       use: 'I prefer tea, as opposed to coffee.（コーヒーよりお茶派です）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'believe', reveals: ['nubbin'], seg: [51.2, 57],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', reveals: ['nubbin'], seg: [51.2, 56.2],
       stem: 'How does Joey feel when he says “I can’t believe you”?',
       ja: '「I can’t believe you」と言うとき、ジョーイの気持ちは？',
-      choices: ['Upset with his friend', 'Amazed by the nipple', 'Happy for his friend'], a: 0,
-      choicesJa: ['友だちに腹を立てている', '乳首にびっくりしている', '友だちのために喜んでいる'],
+      choices: ['Upset with his friend', 'Amazed by the nipple', 'Sorry for his friend'], a: 0,
+      choicesJa: ['友だちに腹を立てている', '乳首にびっくりしている', '友だちをかわいそうに思う'],
       cue: '「You told me」の前。',
       line: '*I can’t believe you.* You told me it was a nubbin.',
-      said: '「信じられない。nubbin だって言ったじゃないか」と責める。',
-      mean: 'I can’t believe you ＝ ひどいよ。驚きではなく、相手への不満。',
+      said: '「信じられない、ひどいよ。でっぱりだって言ってたじゃないか」と責める。',
+      mean: 'I can’t believe you ＝ 文字どおりは「君が信じられない」→「ひどいよ」。驚きより、相手への不満。',
       trap: 'can’t believe から「すごい」と思いやすい。最後が you なら相手を責めている。',
       use: 'I can’t believe you ate my cake!（私のケーキ食べたなんてひどい！）' },
-
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'nubbin', seg: [51.9, 61.6],
-      stem: 'What had Joey been told it was?',
-      ja: 'ジョーイは、それが何だと聞かされていた？',
-      choices: ['A nubbin', 'A nipple', 'Nothing at all'], a: 0,
-      choicesJa: ['小さなでっぱり（nubbin）', '乳首', '何も聞いていない'],
-      cue: '「You told me」のあと。',
-      line: 'You told me it was a *nubbin*. — Joey, what do you think *a nubbin* was?',
-      said: '「nubbin だって言ってた」に、「nubbin を何だと思ってたの？」と返される。',
-      mean: 'You told me it was 〜 ＝ 〜だって言ったじゃない。何かあるとは聞いていた。',
-      trap: '「3つ目の乳首？」の驚きから、何も知らなかったと思いやすい。told me なら聞いていた。',
-      use: 'You told me it was nothing!（何でもないって言ったじゃん！）' },
 
     // anchor: 61.51–62.78 s "You see something, you hear a word", then 62.84–63.63 s "I thought that's what it was";
     // retired: for the draws (play 3+ under g2 drew no C2): g2 reveals its point
@@ -247,5 +236,30 @@ export const thirdNipple: Clip = {
       mean: 'you は一般論の形だが、中身は自分の体験。実物を見せられ、nubbin と言われ、それを名前だと信じた。',
       trap: '一般の you と取ると、実物を見ていないように聞こえる。体験を語る you は「自分は」と読む。',
       use: 'You see the price, you walk away.（値段を見たら、帰るよね）' },
+
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'nubbin', seg: [54.35, 59.6],
+      stem: 'What had Joey been told it was?',
+      ja: 'ジョーイは、それが何だと聞かされていた？',
+      choices: ['A nubbin', 'A nipple', 'Nothing at all'], a: 0,
+      choicesJa: ['小さなでっぱり（nubbin）', '乳首', '何も聞いていない'],
+      cue: '「You told me」のあと。',
+      line: 'You told me it was a *nubbin*. — Joey, what do you think *a nubbin* was?',
+      said: '「でっぱりだって言ってた」に、「それ、何だと思ってたの？」と返される。',
+      mean: 'You told me it was 〜 ＝ 〜だって言ってたじゃない。nubbin ＝ 小さなでっぱり。何かあるとは聞いていた。',
+      trap: '「3つ目の乳首？」の驚きから、何も知らなかったと思いやすい。told me なら聞いていた。',
+      use: 'You told me it was nothing!（何でもないって言ったじゃん！）' },
+
+    { id: 'c1', skill: 'detail', level: 'B2', point: 'believed', ctx: true, reveals: ['nubbin'], seg: [57.7, 63.8],
+      stem: 'What does Joey answer about the nubbin?',
+      ja: '「nubbin」について、ジョーイは何と答える？',
+      choices: ['He just believed the name', 'He thought it was a nipple', 'He never saw the thing'], a: 0,
+      choicesJa: ['言われた名前をそのまま信じた', '乳首だと思っていた', 'それを見たことがない'],
+      cue: '「what do you think」への返事。',
+      line: 'Joey, what do you think a nubbin was? / I don’t know. *You see something, you hear a word.*',
+      said: '何だと思ってたのか聞かれ、「さあ。何か見て、言葉を聞いたら、そういうものかなって」と答える。',
+      mean: 'この you は「人はだれでも」。見せられた物に nubbin という名前を聞き、それを信じただけ。',
+      trap: '乳首だと分かっていたと考えがちだが、今まで知らなかったので怒っている。you see で見たことは分かる。',
+      use: 'I don’t know. I just guessed.（さあ。なんとなくそう思っただけ）' },
+
   ]
 };
