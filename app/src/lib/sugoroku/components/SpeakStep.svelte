@@ -79,14 +79,19 @@
     return (ask = a);
   }
 
+  /** The mic asked for and not yet answered (the permission's prompt): further taps wait. */
+  let asking = false;
   async function mic() {
     if (phase === 'rec') return stop();
-    if (phase === 'stt') return;
+    if (phase === 'stt' || asking) return;
     onengage();
     note = null;
     // the island's sound paused and the audio session one that allows the mic, in this tap, before the mic is asked for
     micFocus(true);
-    const t = await record();
+    asking = true;
+    const t = await record(abort.signal);
+    asking = false;
+    if (abort.signal.aborted) return;
     if ('miss' in t) return void (micFocus(false), (note = 'denied'), (err = 'denied'), toType());
     take = t;
     phase = 'rec';

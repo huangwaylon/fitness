@@ -24,8 +24,9 @@ export interface Refused { miss: MicMiss; gum: string; msg: string }
 
 /** The mic opened and recording, or why not. getUserMedia is asked for at once, inside the tap, with plain
  *  `{ audio: true }` (WebKit's default already cancels echo; nothing to over-constrain). The audio session must allow
- *  capture first (sound.svelte.ts micFocus). */
-export async function record(): Promise<Take | Refused> {
+ *  capture first (sound.svelte.ts micFocus). `signal`: the screen left while the permission was pending: the mic is
+ *  closed as it arrives (`gum: 'left'`). Every failure stops the stream's tracks. */
+export async function record(signal?: AbortSignal): Promise<Take | Refused> {
   const md = navigator.mediaDevices;
   if (!md?.getUserMedia) return { miss: 'insecure', gum: 'none', msg: '' };
   let stream: MediaStream;
@@ -35,13 +36,20 @@ export async function record(): Promise<Take | Refused> {
     const err = e instanceof Error ? e : null;
     return { miss: micMiss(err?.name), gum: err?.name ?? 'other', msg: err?.message ?? '' };
   }
-  const type = ['audio/mp4', 'audio/webm'].find((t) => MediaRecorder.isTypeSupported(t));
-  const rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+  const close = () => stream.getTracks().forEach((t) => t.stop());
+  if (signal?.aborted) return (close(), { miss: 'other', gum: 'left', msg: '' });
+  let rec: MediaRecorder;
+  try {
+    const type = ['audio/mp4', 'audio/webm'].find((t) => MediaRecorder.isTypeSupported(t));
+    rec = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+    rec.start();
+  } catch (e) {
+    close();
+    return { miss: 'other', gum: e instanceof Error ? e.name : 'other', msg: e instanceof Error ? e.message : '' };
+  }
   const parts: Blob[] = [];
   rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
   const track = stream.getAudioTracks()[0];
-  const close = () => stream.getTracks().forEach((t) => t.stop());
-  rec.start();
   return {
     // (the last dataavailable comes before stop)
     stop: () => new Promise<Blob>((done) => {

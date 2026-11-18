@@ -170,7 +170,13 @@ export const tipOpens = (seen: readonly boolean[]): boolean => !seen.slice(-2).s
 /** Each player's sentences this game (the game's seed and their seat): whether each tip opened by itself. */
 const opened = new Map<string, boolean[]>();
 export const tipsOf = (key: string): boolean[] => opened.get(key) ?? [];
-export const noteTip = (key: string, open: boolean): void => void opened.set(key, [...tipsOf(key), open].slice(-3));
+export function noteTip(key: string, open: boolean): void {
+  const was = tipsOf(key);
+  opened.delete(key);
+  opened.set(key, [...was, open].slice(-3));
+  // (the latest few games' only: a Map keeps its order, so the first key is the oldest touched)
+  if (opened.size > 8) opened.delete(opened.keys().next().value!);
+}
 
 /** The speaking step's stars: on-task +2, said again after a tip +1. */
 export const saidStars = (onTask: boolean, resaid: boolean): number => (onTask ? ON_TASK_STARS + (resaid ? RESAID_STARS : 0) : 0);

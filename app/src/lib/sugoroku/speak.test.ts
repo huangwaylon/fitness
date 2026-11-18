@@ -108,6 +108,10 @@ describe('the speaking step', () => {
     expect(tipOpens(tipsOf('g:1'))).toBe(true);
     noteTip('g:0', false);
     expect(tipOpens(tipsOf('g:0'))).toBe(true);
+    // only the latest 8 games' seats are kept: the oldest touched goes first
+    for (let i = 1; i <= 8; i++) noteTip(`h:${i}`, true);
+    expect(tipsOf('g:0')).toEqual([]);
+    expect(tipsOf('h:1')).toEqual([true]);
   });
   it('the stars: on task +2, said again after a tip +1; むずかしい’s length', () => {
     expect(saidStars(false, true)).toBe(0);

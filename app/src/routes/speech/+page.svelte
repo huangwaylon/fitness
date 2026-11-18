@@ -13,7 +13,7 @@
 
   type Done = { k: number; asked: string; heard: Extract<Heard, { ok: true }>; match: ReturnType<typeof matchOf> | null };
   let k = $state(0);
-  let phase = $state<'idle' | 'rec' | 'wait'>('idle');
+  let phase = $state<'idle' | 'ask' | 'rec' | 'wait'>('idle');
   let secs = $state(0);
   let miss = $state<Miss | null>(null);
   let why = $state('');
@@ -44,7 +44,8 @@
     opened = { ctx, sess: micFocus(true) ?? 'none' };
   });
   const abort = new AbortController();
-  onDestroy(() => (take?.cancel(), micFocus(false), abort.abort()));
+  // (a swipe back as much as ‹: the mic, the timer and the upload all stop)
+  onDestroy(() => (clearInterval(timer), take?.cancel(), (take = null), micFocus(false), abort.abort()));
   const perm = async (): Promise<string> => {
     try {
       return (await navigator.permissions?.query({ name: 'microphone' as PermissionName }))?.state ?? 'none';
@@ -60,13 +61,15 @@
   });
 
   async function tap() {
-    if (!paired || phase === 'wait') return;
+    if (!paired || phase === 'wait' || phase === 'ask') return;
     if (phase === 'rec') return stop();
-    miss = null, why = '';
+    miss = null, why = '', phase = 'ask';
     micFocus(true); // (already, since the page opened: kept in the tap in case)
     const at = env();
-    const t = await record();
+    const t = await record(abort.signal);
+    if (abort.signal.aborted) return;
     if ('miss' in t) {
+      phase = 'idle';
       miss = t.miss, why = t.gum;
       return void log('speech.test', { ok: false, err: t.miss, gum: t.gum, msg: t.msg, lvl: free ? -1 : k, perm: await perm(), ...at });
     }
@@ -100,8 +103,6 @@
   }
 
   function leave() {
-    clearInterval(timer);
-    take?.cancel();
     const q = new URLSearchParams(location.search);
     void goto(`${resolve('/')}${q.size ? `?${q}` : ''}`).then(() => english.show('game'));
   }
@@ -137,7 +138,7 @@
       {/if}
     </section>
 
-    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait'} data-sfx="none" data-speech-mic onclick={tap}>
+    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait' || phase === 'ask'} data-sfx="none" data-speech-mic onclick={tap}>
       {phase === 'rec' ? `■ 止める（${secs.toFixed(1)} 秒）` : phase === 'wait' ? '認識中…' : '● 録音'}
     </button>
 
