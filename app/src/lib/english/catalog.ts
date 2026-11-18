@@ -57,7 +57,7 @@ export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string =>
  *  `[clip, qid, from, to, use, line, mean]`; the video and title come from the index. */
 export type PhraseEntry = readonly [clip: string, qid: string, from: number, to: number, use: string, line: string, mean: string];
 /** The deck's files (`english/p/<n>.<v>.json`), each a stable share of the whole library (`fnv32(clip/qid) % SHARDS`). */
-export const SHARDS = 10;
+export const SHARDS = 12;
 /** A card's `use` at most, English words. */
 const DECK_WORDS = 8;
 /** A card's segment at most, s. */

@@ -142,9 +142,9 @@ A deck of the library's phrases, one card at a time. **The deck** (`catalog.ts d
 punctuation dropped, a / an / the aside, found as whole words of the English; a common one — pronoun, preposition, be /
 do / have, so, just — counts only when it is all the line's key words, as in "*So* what…"); its segment ≤ 15 s. One
 card per English phrase (the first in the plan's order). Entry `[clip, qid, from, to, use, line, mean]`; the video and
-title from the index. It ships as 10 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 10` (each mixes the
-whole library; ~2,400 cards, ~28 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them
-as the banks (an older version of a file goes), never precached; `load-budget.ts` holds them to 10, each ≤ 32 KB
+title from the index. It ships as 12 files, `english/p/<n>.<v>.json`, a card in `fnv(clip/qid) % 12` (each mixes the
+whole library; ~2,800 cards, ~28 KB gzipped a file), their versions the index's `DECK`; the service worker keeps them
+as the banks (an older version of a file goes), never precached; `load-budget.ts` holds them to 12, each ≤ 32 KB
 gzipped.
 
 **The page** (`deck.ts`, `Phrases.svelte`): one card at a time, 5 a set. The order is seeded per player (the shards

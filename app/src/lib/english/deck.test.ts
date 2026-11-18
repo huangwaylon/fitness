@@ -42,7 +42,7 @@ describe('the order', () => {
   });
   it('a round goes through every shard once, in a seeded order', () => {
     const order = (who: Who, r: number) => Array.from({ length: SHARDS }, (_, k) => shardAt(who, { ...START, r, k }));
-    expect(order('A', 0).toSorted()).toEqual([...Array(SHARDS).keys()]);
+    expect(order('A', 0).toSorted((a, b) => a - b)).toEqual([...Array(SHARDS).keys()]);
     expect(order('A', 0)).not.toEqual(order('B', 0));
     expect(order('A', 0)).not.toEqual(order('A', 1));
   });
