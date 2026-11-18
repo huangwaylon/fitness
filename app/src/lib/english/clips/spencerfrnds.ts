@@ -145,7 +145,7 @@ export const spencerFriends: Clip = {
       trap: 'hit を「たたく、ぶつかる」と思いやすい。hit up は人に話しかけるときのくだけた言い方。',
       use: 'Hit me up when you’re in town.（こっちに来たら連絡して）' },
 
-    { id: 'n2', skill: 'pragma', level: 'B1', point: 'gotname', ctx: true, seg: [81.0, 89.0],
+    { id: 'n2', skill: 'pragma', level: 'B1', point: 'gotname', ctx: true, seg: [79.5, 89.0],
       stem: 'What do the girls ask the man?',
       ja: '女の子たちは男性に何を聞く？',
       choices: ['His name', 'His age', 'His phone number'], a: 0,

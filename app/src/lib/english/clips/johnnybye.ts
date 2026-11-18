@@ -306,7 +306,7 @@ export const johnnyGoodbye: Clip = {
       trap: 'karate や dreams も聞こえるので、練習や夢の話と考えがち。remember のあとが答え。',
       use: 'Always remember, you can call me anytime.（いつでも電話していいって、忘れないで）' },
 
-    { id: 'ms', skill: 'pragma', level: 'B1', point: 'miss', seg: [180.4, 184.4],
+    { id: 'ms', skill: 'pragma', level: 'B1', point: 'miss', seg: [180.4, 187.0],
       stem: 'What does Andy tell Pawnee?', ja: 'アンディはポーニーに何と伝える？',
       choices: ['He’ll feel sad without it', 'He’ll be back next week', 'He’s glad to go at last'], a: 0,
       choicesJa: ['いなくなると寂しい', '来週また戻ってくる', 'やっと出ていけてうれしい'],

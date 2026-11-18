@@ -221,7 +221,7 @@ export const michaelJim: Clip = {
       trap: '中身だけ聞くと不満に聞こえやすい。「秘密は何だ」と聞かれた直後、という時がヒント。',
       use: 'Oh, that? It was nothing, really.（ああ、あれ？何でもないよ）' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'saystrue', reveals: ['cover'], ctx: true, seg: [183.5, 194.0],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'saystrue', reveals: ['cover'], ctx: true, seg: [183.5, 195.3],
       stem: 'What does Michael answer about Jim’s story?', ja: 'ジムの話について、マイケルは何と答える？',
       choices: ['He says it’s true', 'He says Jim made it up', 'He says nothing at all'], a: 0,
       choicesJa: ['本当だと言う', 'ジムの作り話だと言う', '何も言わない'],

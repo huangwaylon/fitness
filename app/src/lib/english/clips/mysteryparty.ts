@@ -18,7 +18,7 @@ export const mysteryParty: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [3.1, 8.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [0.2, 8.1], keep: true,
       stem: 'What year is the game’s story set in?',
       ja: 'ゲームの物語は何年の設定？',
       choices: ['1967', '1977', '1987'], a: 1,

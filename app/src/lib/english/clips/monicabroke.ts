@@ -197,7 +197,7 @@ export const monicabroke: Clip = {
       trap: 'No（いいえ）から「連れてきた」と考えがち。英語の No は「連れてこなかった」＝日本語の「うん」。',
       use: 'I’m staying at my sister’s tonight.（今夜は姉の家に泊まる）' },
 
-    { id: 'k2', skill: 'phrase', level: 'B2', point: 'whereabouts', ctx: true, seg: [93.0, 99.5],
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'whereabouts', ctx: true, seg: [95.5, 102.3],
       stem: 'What does Monica answer to “Where have you been?”',
       ja: '「Where have you been?」に、モニカは何と答える？',
       choices: ['A really bad time', 'Out at the new gym', 'Busy at her job'], a: 0,

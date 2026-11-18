@@ -75,7 +75,7 @@ export const dateMike: Clip = {
       trap: '「何も終わらない」を本人の忙しさと取りやすい。we＝部下の側が、楽しすぎて働かない話。',
       use: 'With you around, nothing gets done.（君がいると何も進まないよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'date', seg: [26.5, 56.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'date', seg: [30.9, 59.4],
       stem: 'What changes Michael’s behavior?',
       ja: 'マイケルの態度が変わったきっかけは？',
       choices: ['Learning it’s a date', 'Learning she’s a teacher', 'Learning Pam is watching'], a: 0,

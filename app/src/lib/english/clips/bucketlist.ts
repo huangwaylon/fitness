@@ -209,7 +209,7 @@ export const bucketList: Clip = {
       trap: '手に持つのが夢だったので満足と考えがち。持っただけではがっかり。数え終わって Yes!。',
       use: 'Now this is what I imagined!（これこそ想像してたやつ！）' },
 
-    { id: 'c1', skill: 'infer', level: 'B2', point: 'handed', ctx: true, seg: [69.5, 77],
+    { id: 'c1', skill: 'infer', level: 'B2', point: 'handed', ctx: true, seg: [71.1, 81.5],
       stem: 'Has April seen this much cash before?',
       ja: 'エイプリルは、こんな大金を前に見たことがある？',
       choices: ['Yes, a minute ago', 'No, never in her life', 'Yes, at her old job'], a: 0,
@@ -232,7 +232,7 @@ export const bucketList: Clip = {
       trap: '「渡したのは私」を恩着せや不満と取りやすい。声が平らなら、ただの冷静なつっこみ。',
       use: 'Um, I was literally just there.（いや、私もその場にいたけど）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'awesome', ctx: true, seg: [86.0, 95.7],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'awesome', ctx: true, seg: [91.9, 98.7],
       stem: 'April says the sandwich is “pretty awesome”. What does she mean?',
       ja: 'エイプリルの「pretty awesome」はどういう意味？',
       choices: ['It is quite good', 'It looks pretty', 'It is the best'], a: 0,

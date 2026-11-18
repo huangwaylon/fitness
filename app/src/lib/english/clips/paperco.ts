@@ -255,7 +255,7 @@ export const paperco: Clip = {
       trap: 'マイケルは前に母親と電話していたので、母親と勘違いしやすい。from the pancake luncheon で分かる。',
       use: 'Thanks for calling back.（折り返しありがとう）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'happen', seg: [193.5, 201.5],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'happen', seg: [203.7, 210.0],
       stem: 'What does Pam mean by “How can I make that happen?”',
       ja: 'パムの「How can I make that happen?」はどういう意味？',
       choices: ['What do you need from us?', 'Why did you call so late?', 'Can you come here today?'], a: 0,

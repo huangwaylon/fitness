@@ -9,7 +9,7 @@
 // Who says “Hang on, Pam” (139 s) isn't settled: m1 names only Pam.
 // EXCLUDE 50–55: the “love-making” brag
 // EXCLUDE 165–169: “Do you think Angela could get beaten up?”
-// SKIP 201–227: the grave talking head (a dark joke about a death), then whisper loops it over the music
+// SKIP 196.9–227: the grave talking head (a dark joke about a death), then whisper loops it over the music
 import type { Clip } from '../types.ts';
 
 export const darwin: Clip = {
@@ -357,6 +357,17 @@ export const darwin: Clip = {
       trap: 'crystal（クリスタル）から、物がきれい・透明な話と考えがち。説明への返事なら「よく分かった」。',
       use: 'The plan is crystal clear. Thanks.（計画はよく分かりました。ありがとう）' },
 
+    { id: 'k4', skill: 'pragma', level: 'B1', point: 'trustyou', ctx: true, seg: [190.85, 196.86],
+      stem: 'Toby checks on the weapons. What does Dwight say?',
+      ja: '武器のことを確かめるトビー。ドワイトの答えは？',
+      choices: ['They are all gone now', 'He still has one gun', 'He gave them to Andy'], a: 0,
+      choicesJa: ['もう全部ない', 'まだ銃を1丁持っている', 'アンディに渡した'],
+      cue: '「Of course」のあと',
+      line: 'Toby: Dwight? *I trust you removed all your weapons* from the office. / Dwight: *Of course I did.*',
+      said: '「武器は全部、職場から持ち出してくれたよね」に「もちろんです」と答える。',
+      mean: 'I trust you 〜 ＝「〜したと信じてるよ」＝やんわり確認する言い方。did ＝ removed（持ち出した）。',
+      trap: 'trust（信じる）から、気持ちの話と考えがち。did は前の removed をくり返さない言い方。',
+      use: 'I trust you got my email?（メール、届いてますよね？）' },
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'grave', seg: [191.6, 206.5],
       stem: 'After Dwight’s comment to the camera, how should we hear his promise to Toby?',
       choices: ['As empty: the grave he swore by isn’t real', 'As sincere: his aunt’s grave means a lot to him',
@@ -368,16 +379,5 @@ export const darwin: Clip = {
       trap: '墓に誓う、は日本語でも重いので本気に聞こえる。この形式では、カメラへの一言が答え合わせ。',
       use: 'I swear on my life.（命にかけて誓うよ）', retired: true },
 
-    { id: 'k4', skill: 'pragma', level: 'B1', point: 'trustyou', ctx: true, seg: [194.8, 201.0],
-      stem: 'Toby checks on the weapons. What does Dwight say?',
-      ja: '武器のことを確かめるトビー。ドワイトの答えは？',
-      choices: ['They are all gone now', 'He still has one gun', 'He gave them to Andy'], a: 0,
-      choicesJa: ['もう全部ない', 'まだ銃を1丁持っている', 'アンディに渡した'],
-      cue: '「Of course」のあと',
-      line: 'Toby: Dwight? *I trust you removed all your weapons* from the office. / Dwight: *Of course I did.*',
-      said: '「武器は全部、職場から持ち出してくれたよね」に「もちろんです」と答える。',
-      mean: 'I trust you 〜 ＝「〜したと信じてるよ」＝やんわり確認する言い方。did ＝ removed（持ち出した）。',
-      trap: 'trust（信じる）から、気持ちの話と考えがち。did は前の removed をくり返さない言い方。',
-      use: 'I trust you got my email?（メール、届いてますよね？）' },
   ]
 };

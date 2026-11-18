@@ -194,7 +194,7 @@ export const girlyApt: Clip = {
       trap: '文句が続くので、けんかに思いやすい。ジョーイの返事の終わり方を聞く。',
       use: 'Fair enough. You win.（なるほど、君の勝ち）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'curling', ctx: true, seg: [132.3, 143.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'curling', ctx: true, seg: [129.26, 143.9],
       stem: 'What does Joey mean by “Well, that’s okay then”?',
       ja: 'ジョーイの「Well, that’s okay then」はどういう意味？',
       choices: ['Then it’s fine', 'It’s still not okay', 'Show it to me'], a: 0,

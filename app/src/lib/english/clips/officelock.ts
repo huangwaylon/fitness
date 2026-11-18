@@ -62,7 +62,7 @@ export const officeLock: Clip = {
       trap: '最後の home は短く弱い。登録名の最後の語が、どの番号かを決める。',
       use: 'Do you have his home number?（彼の自宅の番号ある？）' },
 
-    { id: 'c2', skill: 'dict', level: 'C2', point: 'noname', seg: [18.4, 22.2],
+    { id: 'c2', skill: 'dict', level: 'C2', point: 'noname', seg: [17.88, 22.38],
       stem: 'Type the question: “___ get his name?” (3 words)', ja: '書こう：“___ get his name?”（3語）',
       answer: 'did you not',
       cue: '「security guard home」のすぐあと',
@@ -184,7 +184,7 @@ export const officeLock: Clip = {
       trap: '電話のぎこちなさも気になるが、話の流れはお金。直前のチップの話とつなげる。',
       use: 'We never thanked him properly.（ちゃんとお礼してなかった）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'neither', reveals: ['tip'], seg: [67.2, 70.2],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'neither', reveals: ['tip'], seg: [66.5, 70.2],
       stem: 'Type the reply: “Yeah, ___.” (3 words)', ja: '書こう：“Yeah, ___.”（3語）',
       answer: 'neither did i',
       cue: '去年のチップの告白のすぐあと',
