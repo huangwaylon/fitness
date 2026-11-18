@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 4, ctx 4, tx 17
+// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 4, ctx 4, tx 17, qa 27
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 6, new 3
 // “Is She Hot? - The Office US” (the official The Office channel, BEST OF SEASON 5): the office argues over whether an
 // actress is hot, takes a vote that ties, tries a thought experiment on Kevin, and then hears a run of odd reasons for
@@ -9,8 +9,8 @@
 // invented); items there use the captions: "is she hot" ≈ 101, "Respect the game" ≈ 119, "a boy" ≈ 137, the
 // "dignify this discussion… Kevin deserves to lose" speech 138.8–152. Retired: the make-out
 // thought experiment (g2, i2), the celebrity theory's abstract words (d2), "the Kevins of the world" (f3), the C2 tier.
-// EXCLUDE 100.7–137.8 (sexual jokes: "would you do her", the fake penis, "was a boy"; caption and whisper times)
-// SKIP 88.1–137.8: the make-out line, then the excluded jokes (whisper garbles the rest)
+// EXCLUDE 100.7–136.0 (sexual jokes: "would you do her", the fake penis, "was a boy"; json3: "boy" ends ≈ 134.8, "I wasn't going to dignify" starts 136.8)
+// SKIP 88.1–136.0: the make-out line, then the excluded jokes (whisper garbles the rest)
 // EAR CHECK: 139–152 s i3 — the "dignify this discussion" speaker is not named (the scenes file: someone who didn't care)
 // EAR CHECK: 32.0 s x1 — "put this to a" said linked, with the t of "put" flapped (both sources have "put this to a vote")
 // EAR CHECK: 188.0 s h1 — "Wait, what?" taken as Kevin's (the line before is about "him"; no name is said)
@@ -22,7 +22,7 @@ export const isSheHot: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'taste', ctx: true, seg: [0, 6.2],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'taste', ctx: true, seg: [0, 6.05],
       stem: 'How does Stanley answer “You’ve got no taste”?',
       ja: '「趣味が悪い」と言われて、スタンリーはどう答える？',
       choices: ['He says he does have taste', 'He agrees that he has none', 'He laughs and says nothing'], a: 0,
@@ -34,19 +34,7 @@ export const isSheHot: Clip = {
       trap: '短い返事なので「まあね」と認めたように聞こえやすい。I do は「ある」の意味。',
       use: 'You don’t care. — I do!（気にしてないでしょ — 気にしてるよ！）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'inquestion', seg: [4, 12.5],
-      stem: 'What does “the gal in question” mean?',
-      ja: '「the gal in question」はどういう意味？',
-      choices: ['The woman they are talking about', 'The woman who asked the question', 'The woman with a problem'], a: 0,
-      choicesJa: ['話題になっている女性', '質問した女性', '問題のある女性'],
-      cue: '「Who’s the gal」のあと。',
-      line: 'Who’s *the gal in question*? — Hilary Swank.',
-      said: '話に加わった人が「話題の女性は誰？」と聞く。',
-      mean: 'in question ＝ 今話題の、その。gal ＝ girl のくだけた言い方。',
-      trap: 'question を「質問」と取ると、質問した人に聞こえる。in question ＝「その〜」。',
-      use: 'The hotel in question is downtown.（そのホテルは中心街にあるよ）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'topic', reveals: ['notq'], seg: [4.1, 30.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'topic', reveals: ['notq', 'gotowork'], seg: [3.85, 30.0],
       stem: 'What are they arguing about?',
       ja: 'みんなは何について言い合っている？',
       choices: ['If an actress is hot', 'If an actress is good', 'Which movie to watch'], a: 0,
@@ -58,7 +46,19 @@ export const isSheHot: Clip = {
       trap: 'amazing actress と演技をほめる声もあるが、すぐ That’s not the question と返る。',
       use: 'We’re talking about whether to go.（行くかどうか話してるの）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'gotowork', seg: [19.8, 25.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'inquestion', seg: [7.4, 14.3],
+      stem: 'What does “the gal in question” mean?',
+      ja: '「the gal in question」はどういう意味？',
+      choices: ['The woman they are talking about', 'The woman who asked the question', 'The woman with a problem'], a: 0,
+      choicesJa: ['話題になっている女性', '質問した女性', '問題のある女性'],
+      cue: '「Who’s the gal」のあと。',
+      line: 'Who’s *the gal in question*? — Hilary Swank.',
+      said: '話に加わった人が「話題の女性は誰？」と聞く。',
+      mean: 'in question ＝ 今話題の、その。gal ＝ girl のくだけた言い方。',
+      trap: 'question を「質問」と取ると、質問した人に聞こえる。in question ＝「その〜」。',
+      use: 'The hotel in question is downtown.（そのホテルは中心街にあるよ）' },
+
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'gotowork', seg: [20.1, 25.0],
       stem: 'What does he suggest they do?',
       ja: '彼は何をしようと言う？',
       choices: ['Stop talking and get to work', 'Watch one of her movies together', 'Go out for lunch together'], a: 0,
@@ -70,7 +70,7 @@ export const isSheHot: Clip = {
       trap: 'movie star が聞こえるので、映画の話と考えがち。決め手は so のあと。',
       use: 'So maybe we should just order pizza.（じゃあ、もうピザ頼もうか）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'notq', ctx: true, seg: [24.6, 31.1],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'notq', ctx: true, seg: [24.9, 31.15],
       stem: 'What does “That’s not the question” mean here?',
       ja: 'ここで「That’s not the question」はどういう意味？',
       choices: ['That’s not the point', 'Ask me that later', 'I don’t understand you'], a: 0,
@@ -95,7 +95,7 @@ export const isSheHot: Clip = {
       trap: 'why を「なぜ」と取ると、理由を聞いているように聞こえる。we があれば誘い。',
       use: 'Why don’t we split the bill?（割り勘にしない？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'putvote', seg: [29, 36.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'putvote', seg: [29, 35.8],
       stem: 'Type it: “Why don’t we just ___, and then…” (5 words)', answer: 'put this to a vote',
       ja: '書き取る：「Why don’t we just ___, and then…」（5語）',
       cue: '「just」のあと、and の前まで。',
@@ -105,16 +105,16 @@ export const isSheHot: Clip = {
       trap: 'to a が「タ」と一つに聞こえ、語の数が足りなくなりやすい。',
       use: 'Let’s put it to a vote.（多数決で決めよう）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tie', seg: [40.9, 51.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tie', seg: [40.9, 51.2], keep: true,
       stem: 'What is the result of the vote?',
       ja: '投票の結果は？',
-      choices: ['4 to 5', '5 to 5', '9 to 5'], a: 1,
-      choicesJa: ['4対5', '5対5', '9対5'],
+      choices: ['4 to 5', '5 to 5', '6 to 5', '9 to 5'], a: 1,
+      choicesJa: ['4対5', '5対5', '6対5', '9対5'],
       cue: '2回目の挙手のあと、数を言う声。',
       line: 'Five. *Five to five*.',
       said: '二回の挙手を数え、「5対5」と言う。',
       mean: 'five to five ＝ 5対5。同じ数で、決着がつかなかった。',
-      trap: 'nine to five（9時5時）につられやすい。最初が「ファイヴ」なら5、「フォー」なら4、「ナイン」なら9。',
+      trap: 'nine to five（9時5時）につられやすい。最初が「ファイヴ」なら5、「フォー」なら4、「シックス」なら6、「ナイン」なら9。',
       use: 'It’s three to two.（3対2だ）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'mythical', seg: [52.4, 62.4], retired: true,
@@ -128,7 +128,7 @@ export const isSheHot: Clip = {
       trap: 'mythical を「作り話」と取ると、うわさの話に聞こえる。',
       use: 'We don’t see them as real people.（私たちは彼らを普通の人として見ていない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'serious', ctx: true, seg: [58.2, 66.0],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'serious', ctx: true, seg: [58.35, 66.28],
       stem: 'How does Kevin feel about the theory?',
       ja: 'ケビンは、その理屈をどう思っている？',
       choices: ['He just wants a picture', 'He wants to hear more', 'He thinks it is funny'], a: 0,
@@ -140,7 +140,7 @@ export const isSheHot: Clip = {
       trap: 'Are you serious? は笑うときにも使うが、ここは just が続く。決め手は「いいから」の just。',
       use: 'Just tell me the price.（とにかく値段を教えて）' },
 
-    { id: 's1', skill: 'pragma', level: 'B1', point: 'fair', reveals: ['gut'], ctx: true, seg: [65.8, 73.0],
+    { id: 's1', skill: 'pragma', level: 'B1', point: 'fair', reveals: ['gut'], ctx: true, seg: [66.25, 72.75],
       stem: 'How does the other man answer Kevin’s “gut thing”?',
       ja: 'ケビンの「gut thing」に、相手はどう答える？',
       choices: ['He agrees with Kevin', 'He tells Kevin to stop', 'He laughs at Kevin'], a: 0,
@@ -152,7 +152,7 @@ export const isSheHot: Clip = {
       trap: '直前に shut up, Kevin（黙れ）があるので、止めたと考えがち。返事は That’s fair。',
       use: 'That’s fair. Let’s do it your way.（もっともだね。君のやり方でやろう）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'gut', seg: [66.1, 73.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'gut', seg: [66.3, 72.1],
       stem: 'What does Kevin mean by “It’s a gut thing”?',
       ja: 'ケビンの「It’s a gut thing」はどういう意味？',
       choices: ['You just feel it', 'You think it through', 'It makes you nervous'], a: 0,
@@ -164,16 +164,16 @@ export const isSheHot: Clip = {
       trap: 'gut を「お腹」と取ると、体の感覚や緊張の話に聞こえる。理屈の反対。',
       use: 'I can’t explain it. It’s a gut thing.（説明できない、直感なんだ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'favor', seg: [70.3, 80.6],
-      stem: 'Why does a coworker say “Do me a favor” to Kevin?',
-      ja: '同僚の一人は、なぜケビンに「Do me a favor」と言う？',
-      choices: ['To start a request', 'To thank him for it', 'To say sorry to him'], a: 0,
-      choicesJa: ['お願いを始めるため', '彼にお礼を言うため', '彼に謝るため'],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'favor', seg: [72.7, 80.4],
+      stem: 'What does he ask Kevin to do?',
+      ja: '彼はケビンに何を頼む？',
+      choices: ['Close his eyes', 'Show him a picture', 'Raise his hand'], a: 0,
+      choicesJa: ['目を閉じる', '写真を見せる', '手を挙げる'],
       cue: '「You know what, Kev?」のあと。',
       line: 'You know what, Kev? *Do me a favor*. Why don’t you close your eyes?',
       said: '「なあケビン、頼みがある。目を閉じてくれ」と言う。',
-      mean: 'Do me a favor ＝ ちょっと頼みがある。このあとに頼みごとが来る合図。',
-      trap: 'favor を「好意」と取ると、お礼に聞こえる。すぐあとの頼みを聞く。',
+      mean: 'Do me a favor ＝ 「ちょっと頼みがある」。頼みごとの前置き。Why don’t you 〜? ＝「〜してみたら？」',
+      trap: '写真（picture）や挙手（raise your hand）も前に出てくるが、頼みは close your eyes。',
       use: 'Do me a favor and close the door.（悪いけど、ドアを閉めて）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'imagine', seg: [72.7, 100.4], retired: true,
@@ -186,7 +186,7 @@ export const isSheHot: Clip = {
       trap: '直前に「写真を見せて」と言われているので写真に思えるが、ここで使うのは想像。',
       use: 'Close your eyes and picture this.（目を閉じて、想像してみて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'visit', seg: [78.0, 88.1],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'visit', seg: [78.0, 87.9],
       stem: 'What does he ask Kevin to imagine?',
       ja: '彼はケビンに何を想像させる？',
       choices: ['Hilary Swank coming to the office', 'Meeting Hilary Swank at the movies', 'Seeing Hilary Swank on TV'], a: 0,
@@ -209,7 +209,7 @@ export const isSheHot: Clip = {
       trap: '想像の中身が「君に会いたい」なので、好かれたいかの話に思えるが、狙いは見方を変えること。',
       use: 'Imagine you met her for real.（実際に会ったと想像してみて）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'lose', seg: [138.4, 152.4],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'lose', seg: [136.6, 150.2],
       stem: 'Why does this coworker say, “Yes, she’s hot”?',
       ja: 'この同僚は、なぜ「Yes, she’s hot」と言う？',
       choices: ['To make Kevin lose', 'Because she is beautiful', 'Because she acts well'], a: 0,
@@ -221,7 +221,7 @@ export const isSheHot: Clip = {
       trap: '決め手は but のあと。彼女の顔や演技の話はしていない。',
       use: 'You deserve a break.（休んで当然だよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'notas', seg: [161.5, 176.9],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'notas', seg: [161.55, 176.9],
       stem: 'What does she say about herself?',
       ja: '彼女は自分のことを何と言う？',
       choices: ['She’s not as hot as Hilary', 'She’s much hotter than Hilary', 'She’s as hot as Hilary'], a: 0,
@@ -254,7 +254,7 @@ export const isSheHot: Clip = {
       trap: '名前に s が付くと「同じ名前の人たち」と取りやすいが、性質の代表として使っている。',
       use: 'Ignore the critics of the world.（世の批評家たちなんて気にしないで）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'internet', seg: [179, 190.1],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'internet', seg: [177.0, 190.1],
       stem: 'What don’t they give Kevin?',
       ja: 'ケビンに与えられていないものは何？',
       choices: ['Full internet access', 'His own office desk', 'A vote of his own'], a: 0,
@@ -266,9 +266,9 @@ export const isSheHot: Clip = {
       trap: '投票の話が続いたので、vote を選びやすい。give him のあとを聞く。',
       use: 'Wait, what? Since when?（え、何？いつから？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'verdict', seg: [201.4, 209.7],
-      stem: 'What does one coworker finally say about her?',
-      ja: '同僚の一人は最後に、彼女のことを何と言う？',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'verdict', seg: [201.45, 209.7],
+      stem: 'What does he decide about her looks?',
+      ja: '彼は彼女の見た目について、どう結論を出す？',
       choices: ['Attractive, but not hot', 'Hot, but not attractive', 'Both attractive and hot'], a: 0,
       choicesJa: ['魅力的だけどセクシーじゃない', 'セクシーだけど魅力的じゃない', '魅力的でセクシー'],
       cue: '最後の「Yes」から始まる文。',
@@ -281,13 +281,13 @@ export const isSheHot: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [209.7, 218.8], keep: true,
       stem: 'How many more years does Stanley think he has?',
       ja: 'スタンリーは、あと何年あると思っている？',
-      choices: ['2 or 3', '12 or 13', '20 or 30'], a: 2,
-      choicesJa: ['2、3年', '12、13年', '20、30年'],
+      choices: ['2 or 3', '12 or 13', '20 or 30', '30 or 40'], a: 2,
+      choicesJa: ['2、3年', '12、13年', '20、30年', '30、40年'],
       cue: '「I’ve got, what」のあと。',
       line: 'I’ve got, what, *20, 30 more years* left.',
       said: '「あと、そうだな、20年か30年はある」と言う。',
       mean: 'twenty, thirty ＝ 20か30。what は数を考えるときの間。',
-      trap: '「トゥエニ、サーティ」なら20・30、「トゥエルヴ、サーティーン」なら12・13、「トゥー、スリー」だけなら2・3。',
+      trap: '「トゥエニ、サーティ」なら20・30、「トゥエルヴ、サーティーン」なら12・13、「トゥー、スリー」だけなら2・3。「サーティ、フォーティ」なら30・40。',
       use: 'It’s, what, ten minutes from here?（ここから、えーと、10分くらい？）' },
 
     { id: 'h2', skill: 'detail', level: 'B2', point: 'less', reveals: ['years'], seg: [211.7, 222.8],
@@ -313,7 +313,7 @@ export const isSheHot: Clip = {
       trap: '冒頭の「趣味が悪い」や、人の目の話に結びつけやすい。本人が挙げる理由は、年数と生き方。',
       use: 'Life’s too short to complain.（文句を言うには人生は短すぎる）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'stanley', reveals: ['less', 'nowaylive'], seg: [221.6, 247.9],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'stanley', reveals: ['less', 'nowaylive'], seg: [222.5, 247.9],
       stem: 'What does Stanley decide about the actress?',
       ja: 'スタンリーは女優について、どう決める？',
       choices: ['She is hot', 'She is not hot', 'He does not care'], a: 0,
@@ -325,7 +325,7 @@ export const isSheHot: Clip = {
       trap: 'old Stanley（昔の自分）の文句の話から、否定と考えがち。最後の一言を聞く。',
       use: 'Come on, people. Let’s go!（ほら、みんな、行こう！）' },
 
-    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nowaylive', seg: [221.6, 233.1],
+    { id: 'f4', skill: 'phrase', level: 'C1', point: 'nowaylive', seg: [222.55, 233.1],
       stem: 'What does “that’s no way to live life” mean?',
       ja: '「that’s no way to live life」はどういう意味？',
       choices: ['Living like that is bad', 'He has no life now', 'There is no road there'], a: 0,
@@ -337,7 +337,7 @@ export const isSheHot: Clip = {
       trap: 'way を「道」と取ると意味が通らない。no way to live ＝ よくない生き方。',
       use: 'That’s no way to treat a friend.（それは友だちへの態度じゃない）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'words', reveals: ['stanley'], seg: [232.5, 241.0],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'words', reveals: ['stanley'], seg: [232.7, 241.4],
       stem: 'Which words does Stanley use for her?',
       ja: 'スタンリーは彼女をどんな言葉でほめる？',
       choices: ['Healthy, pretty and strong', 'Smart, funny and kind', 'Tall, rich and famous'], a: 0,

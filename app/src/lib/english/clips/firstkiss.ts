@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 3, ctx 6, tx 12
+// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 3, ctx 6, tx 12, qa 30
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 4, new 0 (f5 stays retired)
 // “Ben and Leslie's First Kiss | Parks and Recreation” (the official Parks and Recreation channel, Season 3): after
 // her presentation Leslie praises "the town" in words that only fit Ben, Ben says they have to talk about it, Leslie
@@ -7,8 +7,8 @@
 // Whisper loops from ≈160 s (its times run 1 s a line, then the talking head repeats from 192 s), so timings after
 // that are the captions' / the scenes file's. The sources differ at 28.6 s, 124.2 s, 136–138 s, 199.9 s and 208.7 s;
 // no key rests on those words.
-// SKIP 162–192: "Well… well" pauses, then Chris's bladder talk (bodily); whisper's times unreliable here
-// SKIP 229–252.5: no talk (a silent kiss, then music)
+// SKIP 162–206.3: "Well… well" pauses, Chris's bladder and urethra talk (bodily), good-nights; whisper's times unreliable here
+// SKIP 228.6–252.5: no talk after "Okay" (a silent kiss, then music)
 // EAR CHECK: k3 (≈224 s) — who brings the receipts and who says "He took off"; the item names neither.
 // R4: d3 retired (Ben likes her = g1/p1); p1, d2, f4, p3 now follow the exchange; k1–k3 cover Chris's condo and the
 // ending.
@@ -20,7 +20,7 @@ export const benLeslieKiss: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'admit', seg: [24, 49.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'admit', seg: [22.6, 49.5],
       stem: 'What does Ben want to do?', ja: 'ベンは何をしたい？',
       choices: ['Talk about their feelings', 'Talk more about her speech', 'Talk about the budget'], a: 0,
       choicesJa: ['2人の気持ちについて話す', '彼女のスピーチの話をもっとする', '予算の話をする'],
@@ -31,7 +31,7 @@ export const benLeslieKiss: Clip = {
       trap: '最初は発表の話なので、スピーチの話と考えがち。決め手は but のあと。',
       use: 'I can’t take this anymore.（もう我慢できない）' },
 
-    { id: 'h1', skill: 'infer', level: 'B2', point: 'town', seg: [24, 35.7],
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'town', seg: [22.6, 35.5],
       stem: 'Who is Leslie really talking about?', ja: 'レスリーは本当は誰の話をしている？',
       choices: ['Ben', 'The town', 'Chris'], a: 0,
       choicesJa: ['ベン', '町', 'クリス'],
@@ -44,16 +44,16 @@ export const benLeslieKiss: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'atleast', reveals: ['admit'], seg: [39.1, 45.3],
       stem: '“I feel like we ___ talk about it.”', ja: '空所に入るのは？',
-      choices: ['have to at least', 'had to at least', 'have to at last'], a: 0,
-      choicesJa: ['せめて〜しないと', 'せめて〜しなければならなかった', 'ついに〜しないと'],
+      choices: ['have to at least', 'got to at least', 'have to at last'], a: 0,
+      choicesJa: ['せめて〜しないと', 'せめて〜しなきゃ（くだけた形）', 'ついに〜しないと'],
       cue: '「I feel like we」のあと',
       line: 'I feel like we *have to at least* talk about it.',
       said: 'ベンが「せめて話し合うくらいはしないと」と言う。',
-      mean: 'at least ＝ せめて。at last ＝ ついに。have to は「ハフタ」。',
-      trap: 'had to は「ハットゥ」、at last は「ラースト」。ここは「ハフタ」と「リースト」。',
+      mean: 'at least ＝ せめて。at last ＝ ついに。have to は「ハフタ」と聞こえる。',
+      trap: 'got to は「ガッタ」、at last は「ラースト」に聞こえるが、ここは「ハフタ」と「リースト」。',
       use: 'Let’s at least try.（せめてやってみよう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justme', ctx: true, seg: [39.9, 50.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justme', ctx: true, seg: [42.25, 50.2],
       stem: 'Ben asks, “It’s not just me, right?” What is he checking?', ja: 'ベンの「It’s not just me, right?」は何を確かめている？',
       choices: ['She feels the same way', 'Other people noticed too', 'She isn’t angry at him'], a: 0,
       choicesJa: ['彼女も同じ気持ちか', 'ほかの人も気づいたか', '彼女が怒っていないか'],
@@ -64,7 +64,7 @@ export const benLeslieKiss: Clip = {
       trap: 'me（僕）から、ほかの人のことを連想しやすい。2人の気持ちの話。',
       use: 'It’s not just me, right? It’s cold.（寒いの、私だけじゃないよね？）' },
 
-    { id: 'f2', skill: 'detail', level: 'B1', point: 'porcelain', seg: [55.3, 63.6],
+    { id: 'f2', skill: 'detail', level: 'B1', point: 'porcelain', seg: [55.3, 63.3],
       stem: 'Where does Leslie say she is going?', ja: 'レスリーはどこへ行くと言う？',
       choices: ['To the bathroom', 'To the gift shop', 'To the hotel bar'], a: 0,
       choicesJa: ['トイレ', 'おみやげ屋', 'ホテルのバー'],
@@ -75,7 +75,7 @@ export const benLeslieKiss: Clip = {
       trap: 'porcelain（陶器）から、お店に行くと考えがち。言い直しの bathroom が決め手。',
       use: 'Excuse me, where’s the bathroom?（すみません、トイレはどこですか）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'notcalling', reveals: ['code'], seg: [61, 69.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'notcalling', reveals: ['code', 'porcelain'], seg: [61.12, 69.6],
       stem: 'What does Leslie do right after “I’m not calling Ann”?', ja: '「I’m not calling Ann」の直後、レスリーは何をする？',
       choices: ['She calls Ann', 'She goes back to Ben', 'She goes home'], a: 0,
       choicesJa: ['アンに電話する', 'ベンの所に戻る', '家に帰る'],
@@ -108,7 +108,7 @@ export const benLeslieKiss: Clip = {
       trap: 'liked（好き）と like to（〜したい）は似ている。最後の me を聞く。',
       use: 'He told me that he liked it.（彼はそれが気に入ったと言った）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'awesome', seg: [69.3, 80.4],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'awesome', seg: [69.6, 80.4],
       stem: 'How does Ann first react to Leslie’s news?', ja: 'アンはレスリーの話に最初どう反応する？',
       choices: ['She is very happy for her', 'She worries about her job', 'She is too shocked to talk'], a: 0,
       choicesJa: ['とても喜んでいる', '仕事を心配している', '驚いて言葉が出ない'],
@@ -130,7 +130,7 @@ export const benLeslieKiss: Clip = {
       trap: '名前を呼ぶので Ann が的に見える。呼びかけの相手と、言葉を書いた人を分ける。',
       use: 'Remind me why I agreed to this.（なんでこれ引き受けたんだっけ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'line', seg: [86, 94.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'line', seg: [86, 92.95],
       stem: 'What does “Your job is *on the line*” mean?', ja: '「Your job is on the line!」の意味は？',
       choices: ['You could lose your job', 'Your boss is on the phone', 'Your job is on the internet'], a: 0,
       choicesJa: ['仕事を失うかもしれない', '上司から電話だ', '仕事がネットにのっている'],
@@ -141,7 +141,7 @@ export const benLeslieKiss: Clip = {
       trap: 'line（電話の線）から、電話の話に聞こえるが、ここは仕事が危ないという意味。',
       use: 'My job is on the line.（クビがかかってるんだ）' },
 
-    { id: 'd2', skill: 'who', level: 'B1', point: 'script', ctx: true, seg: [92.8, 99.2],
+    { id: 'd2', skill: 'who', level: 'B1', point: 'script', ctx: true, seg: [92.9, 99.0],
       stem: 'Who wrote the warning that Ann reads?', ja: 'アンが読む警告文を書いたのは誰？',
       choices: ['Leslie', 'Ann', 'Ben'], a: 0,
       choicesJa: ['レスリー', 'アン', 'ベン'],
@@ -152,7 +152,7 @@ export const benLeslieKiss: Clip = {
       trap: '読んでいるのはアンなので、アンが書いたと勘違いしやすい。決め手は返事の You。',
       use: 'You said that!（そう言ったのはあなたでしょ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'wine', seg: [98.8, 106],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'wine', seg: [99.0, 105.95],
       stem: 'How much wine has Leslie had?', ja: 'レスリーはワインをどのくらい飲んだ？',
       choices: ['1.5 glasses', '2 glasses', '2.5 glasses', '3 glasses'], a: 2, keep: true,
       choicesJa: ['1杯半', '2杯', '2杯半', '3杯'],
@@ -163,7 +163,7 @@ export const benLeslieKiss: Clip = {
       trap: 'one でも three でもなく two。そこで止めず and a half まで聞く。',
       use: 'I’ve had two glasses of wine.（ワインを2杯飲んだ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'talkout', ctx: true, seg: [104.5, 111],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'talkout', ctx: true, seg: [103.05, 111.2],
       stem: 'Ann says “Yay!” What does Leslie want from her?', ja: 'アンは「Yay!」と言う。レスリーはアンに何をしてほしい？',
       choices: ['To stop her from going', 'To cheer for her', 'To call Ben for her'], a: 0,
       choicesJa: ['行くのを止めてほしい', '応援してほしい', 'ベンに電話してほしい'],
@@ -194,7 +194,7 @@ export const benLeslieKiss: Clip = {
       trap: 'you’re を聞き落として supposed to だけ書きやすい。弱い主語も一語に数える。',
       use: 'We’re supposed to be there by six.（6時までに行くことになってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'anyway', seg: [108.9, 113.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'anyway', seg: [109.3, 113.9],
       stem: 'Type what Leslie says: “Shut up, Ann. ___.” (4 words)', ja: 'レスリーの言葉の空所4語を書こう', answer: "i'm doing it anyway",
       cue: '「Shut up, Ann.」のあと',
       line: 'Shut up, Ann. *I’m doing it anyway*.',
@@ -203,18 +203,18 @@ export const benLeslieKiss: Clip = {
       trap: 'doing it がつながり「ドゥーイニッ」。anyway は「エニウェイ」。',
       use: 'I’m going anyway.（どっちにしても行くよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'celebrate', seg: [120.7, 130.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'celebrate', seg: [120.7, 130.4],
       stem: 'Why has Chris come to the city?', ja: 'クリスはなぜ街に来た？',
-      choices: ['To celebrate with Leslie', 'To check on how Ben is', 'To drive them both home'], a: 0,
-      choicesJa: ['レスリーと祝うため', 'ベンの様子を見るため', '2人を家まで送るため'],
+      choices: ['He is so happy she won', 'Ben asked him to help', 'He wants to drive them home'], a: 0,
+      choicesJa: ['彼女が勝ってすごくうれしいから', 'ベンに手伝いを頼まれたから', '2人を家まで送りたいから'],
       cue: '「come up here」のあと',
-      line: 'I had to come up here and *celebrate with you*.',
+      line: 'When Ben told me that *you had won the bid*, I was wildly ecstatic. And I had to come up here and *celebrate with you*.',
       said: 'クリスが「入札に勝ったと聞いて、一緒に祝いに来た」と言う。',
-      mean: 'celebrate ＝ お祝いする。won the bid ＝ 入札に勝った。',
-      trap: 'あとで泊まる話になるので、送りに来たと思いやすい。',
+      mean: 'celebrate ＝ お祝いする。won the bid ＝ 入札に勝った。wildly ecstatic ＝ ものすごく大喜び。',
+      trap: 'When Ben told me から、ベンに頼まれたと考えがち。ベンは知らせただけ。決め手は celebrate。',
       use: 'Let’s celebrate!（お祝いしよう！）' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'pawnee', ctx: true, seg: [130.5, 139.19],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'pawnee', ctx: true, seg: [130.4, 139.15],
       stem: 'What does Ben say he will do now?', ja: 'ベンはこれからどうすると言う？',
       choices: ['Go back to Pawnee', 'Take a long walk', 'Play some mini-golf'], a: 0,
       choicesJa: ['ポーニーに帰る', '長い散歩をする', 'ミニゴルフをする'],
@@ -225,15 +225,15 @@ export const benLeslieKiss: Clip = {
       trap: '散歩とミニゴルフはクリスの案。ベンの答えは go back（帰る）。',
       use: 'So what’s the plan now?（で、これからどうする？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nonsense', reveals: ['putout', 'pawnee'], ctx: true, seg: [139.9, 149],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nonsense', reveals: ['putout', 'pawnee'], ctx: true, seg: [139.15, 148.3],
       stem: 'What does Chris mean by “Double nonsense”?', ja: 'クリスの「Double nonsense」の意味は？',
-      choices: ['Please stay with me', 'That idea makes no sense', 'You two are so funny'], a: 0,
-      choicesJa: ['ぜひうちに泊まって', 'その考えは意味不明', '2人はおもしろい'],
+      choices: ['It’s no trouble for me', 'You should drive home', 'You two are so funny'], a: 0,
+      choicesJa: ['ぜんぜん迷惑じゃない', '車で帰ったほうがいい', '2人はおもしろい'],
       cue: 'レスリーが遠慮したあと',
       line: 'Leslie: Oh, we couldn’t put you out like that. / Chris: *Double nonsense.* I would love to have you stay with me.',
       said: '「ご迷惑はかけられません」と遠慮するレスリーに、クリスが「さらにとんでもない。ぜひ泊まって」と言う。',
       mean: 'Nonsense ＝ 文字どおりは「ばかげたこと」。遠慮なんてばかげてる→「とんでもない、気にしないで」。',
-      trap: 'nonsense（ばかげたこと）から、怒っていると考えがち。すぐあとの I would love が決め手。',
+      trap: 'nonsense（ばかげたこと）から、反対していると考えがち。すぐあとの I would love が決め手。',
       use: 'Nonsense! Stay for dinner.（遠慮しないで、夕食も食べていって）' },
 
     { id: 'f5', skill: 'phrase', level: 'C1', point: 'putout', seg: [140.0, 146.9], retired: true,
@@ -247,14 +247,14 @@ export const benLeslieKiss: Clip = {
       trap: 'put out を「外に出す」と取ると追い出す話に聞こえる。申し出への返事なら遠慮の決まり文句。',
       use: 'I don’t want to put you out.（ご迷惑をおかけしたくないので）' },
 
-    { id: 'k2', skill: 'detail', level: 'B1', point: 'couch', seg: [148.5, 156.5],
+    { id: 'k2', skill: 'detail', level: 'B1', point: 'couch', seg: [148.3, 156.5],
       stem: 'Where does Chris want Ben to sleep?', ja: 'クリスはベンにどこで寝てほしい？',
       choices: ['On the couch', 'In the guest room', 'In a hotel'], a: 0,
       choicesJa: ['ソファ', '客間', 'ホテル'],
       cue: '「and Ben」のあと',
       line: 'Leslie, you can take the guest room, and Ben, you have to *sleep on my couch*.',
       said: 'クリスが「レスリーは客間を使って。ベンはソファで寝てもらう」と言う。',
-      mean: 'take the guest room ＝ 客間を使う。comfiest ＝ comfortable（快適な）のくだけた形の「いちばん」。',
+      mean: 'take the guest room ＝ 客間を使う。comfiest ＝ comfy（快適な。comfortable のくだけた形）の「いちばん〜」。',
       trap: 'guest room（客間）はレスリーの部屋。ベンは couch（ソファ）で寝る。',
       use: 'You can sleep on the couch.（ソファで寝ていいよ）' },
 
@@ -269,14 +269,14 @@ export const benLeslieKiss: Clip = {
       trap: '2人きりなので、幸せと考えがち。weird と「彼の服」が手がかり。',
       use: 'This is weird.（なんか変な感じ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'decision', reveals: ['clearly'], seg: [192, 224],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'decision', reveals: ['clearly'], seg: [206.4, 221.55],
       stem: 'What has Leslie decided about Ben?', ja: 'レスリーはベンのことをどう決めた？',
       choices: ['Not to risk their jobs', 'To date him in secret', 'To quit her job for him'], a: 0,
       choicesJa: ['仕事を危険にさらさない', 'こっそり付き合う', '彼のために仕事を辞める'],
       cue: '「I love my job」のあと',
       line: 'I love my job. Ben loves his job. And it’s just *not worth the risk*.',
-      said: 'レスリーが「私も彼も仕事が大好き。危険を冒す価値はない」と話す。',
-      mean: 'not worth the risk ＝ 危険を冒す価値はない。thinking clearly ＝ 冷静に考える。',
+      said: 'レスリーが「私も彼も仕事が大好き。危険をおかす価値はない」と話す。',
+      mean: 'not worth the risk ＝ 危険をおかす価値はない。thinking clearly ＝ 冷静に考える。',
       trap: 'I love が何度も聞こえるので、付き合うと思いやすい。love の相手は job。',
       use: 'It’s not worth the risk.（そこまでする価値はない）' },
 
@@ -291,7 +291,7 @@ export const benLeslieKiss: Clip = {
       trap: 'Chris showed up（クリスが来た）だけ聞くと、会いたかったと考えがち。理由は because のあと。',
       use: 'Sorry, I wasn’t thinking clearly.（ごめん、冷静じゃなかった）' },
 
-    { id: 'k3', skill: 'phrase', level: 'B2', point: 'tookoff', ctx: true, seg: [223.5, 230],
+    { id: 'k3', skill: 'phrase', level: 'B2', point: 'tookoff', ctx: true, seg: [222.75, 230],
       stem: 'What does “He took off” mean here?', ja: 'ここでの「He took off」の意味は？',
       choices: ['He has gone out', 'He is in the shower', 'He is still asleep'], a: 0,
       choicesJa: ['出かけた', 'シャワー中', 'まだ寝ている'],
