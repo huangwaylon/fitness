@@ -35,8 +35,8 @@
   {#if change}<ChangeBar segs={change.parts} attr="kalori" label={change.summary} />{/if}
 {/snippet}
 
-<BotPage attr="kalori" busy={bot.poll.loading} failed={bot.failed} onretry={() => void bot.poll.refresh()} {verdict} {vid}
-  stale={bot.stale} readAt={bot.readAt} {now} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
+<BotPage attr="kalori" busy={bot.poll.loading} {bot} onretry={() => void bot.poll.refresh()} {verdict} {vid}
+  {now} menu={data ? { label: t('kalori.menu.label'), onopen: () => (menuOpen = true) } : null}
   attention={{ lines, links: links.filter((l) => l.id === 'pr').map((l) => ({ id: 'pr', href: l.href, label: t('bots.attn.pr') })) }}
   {strip}
   facts={data ? factRows(data, now) : []} more={change ? [{ id: 'latest', label: t('kalori.sec.latest'), n: change.parts.reduce((a, p) => a + p.n, 0), body: latestRow }] : []} />

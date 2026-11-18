@@ -9,6 +9,7 @@
   // lives here (.sec, .hint, .lbl). `attr`: the page's data-* prefix (data-gym-page, …).
   import type { Snippet } from 'svelte';
   import type { BotVerdict } from '#lib/bots/types.ts';
+  import type { BotState } from './useBot.svelte.ts';
   import NavButton from '../ui/NavButton.svelte';
   import StatusCard from './StatusCard.svelte';
   import type { CardStrip } from '#lib/strip.ts';
@@ -20,13 +21,12 @@
   interface Props {
     attr: string;
     busy: boolean;
-    failed: string | null;
+    /** The bot's state (useBot): its failure, staleness and read time. */
+    bot: Pick<BotState<unknown>, 'failed' | 'stale' | 'readAt'>;
     onretry: () => void;
     verdict: BotVerdict | null;
     /** The verdict card's data-* value (data-<attr>-verdict). */
     vid?: string;
-    stale: boolean;
-    readAt?: number | null;
     now?: number;
     menu?: { label: string; onopen: () => void } | null;
     note?: Snippet;
@@ -41,16 +41,16 @@
     /** More data-* on the page (ジム's data-config). */
     rootAttr?: Record<string, string>;
   }
-  let { rootAttr = {}, attr, busy, failed, onretry, verdict, vid, stale, readAt = null, now = Date.now(), menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
+  let { rootAttr = {}, attr, busy, bot, onretry, verdict, vid, now = Date.now(), menu = null, note, attention, attn, children, strip, facts, more, tail }: Props = $props();
   /** 確認が必要's lines: the sentence when the card shows the act in its place, then the page's. */
   const lines = $derived([...(verdict?.needsLook && verdict.act && verdict.sentence ? [verdict.sentence] : []), ...(attention?.lines ?? [])]);
   const showAttn = $derived(!!attn || !!lines.length || !!attention?.links?.length);
 </script>
 
 <div class="bpage" {...{ [`data-${attr}-page`]: '' }} {...rootAttr} aria-busy={busy}>
-  {#if failed}<LoadError code={failed} {busy} {onretry} {attr} />{/if}
+  {#if bot.failed}<LoadError code={bot.failed} {busy} {onretry} {attr} />{/if}
   {#if verdict}
-    <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} {stale} {readAt} {now} page={attr} {menu} {note} {strip} />
+    <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} stale={bot.stale} readAt={bot.readAt} {now} page={attr} {menu} {note} {strip} />
     {#if showAttn}
       <AttentionCard tone={verdict.tone === 'bad' ? 'bad' : 'warn'} {lines} links={attention?.links} {attr} children={attn} />
     {/if}
@@ -61,7 +61,7 @@
         {#if menu}<NavButton kind="tool" icon="more" label={menu.label} popup sfx="open" onclick={menu.onopen} {...{ [`data-${attr}-menu`]: '' }} />{/if}
       </div>
     {/if}
-    {#if !failed}<Skeleton {attr} />{/if}
+    {#if !bot.failed}<Skeleton {attr} />{/if}
   {/if}
   {@render children?.()}
   {#if verdict}

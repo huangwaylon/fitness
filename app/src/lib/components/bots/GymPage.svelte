@@ -335,8 +335,8 @@
   </ul>
 {/snippet}
 
-<BotPage attr="gym" busy={poll.loading} failed={bot.failed} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict} stale={bot.stale}
-  readAt={bot.readAt} now={nowMs}
+<BotPage attr="gym" busy={poll.loading} {bot} onretry={() => void poll.refresh()} {verdict} vid={data?.verdict}
+  now={nowMs}
   rootAttr={{ 'data-config': cfgLoading ? 'loading' : cfgState }} menu={cfg ? { label: t('gym.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={result || checking || cfg?.checking || (note && !editOpen) ? answer : undefined}
   attention={reasons.length ? { lines: reasons } : null}

@@ -339,8 +339,8 @@
   </ol>
 {/snippet}
 
-<BotPage attr="its" busy={poll.loading} failed={bot.failed} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict} stale={bot.stale}
-  readAt={bot.readAt} now={nowMs}
+<BotPage attr="its" busy={poll.loading} {bot} onretry={() => void load()} verdict={shown ? verdict : null} vid={status?.verdict}
+  now={nowMs}
   rootAttr={status ? { 'data-its-run': paused ? 'stopped' : 'running' } : {}} menu={status ? { label: t('its.menu.label'), onopen: () => (menuOpen = true) } : null}
   note={runWhy || (paused && noDates) ? runNote : undefined}
   attention={status && { lines: attentionLines(status) }} attn={holds.length ? holdRows : undefined}
