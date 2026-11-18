@@ -118,6 +118,7 @@ const S = {
   end: { ja: '終了する', en: 'End the game' },
   endAsk: { ja: 'ゲームを終了しますか？', en: 'End the game?' },
   endNote: { ja: 'ここまでの星で結果を見ます', en: 'The stars so far make the result' },
+  endNoteOnline: { ja: '全員のゲームが終わります', en: 'This ends the game for everyone' },
   results: { ja: '結果', en: 'Results' },
   recap: { ja: '今日のことば', en: 'Today’s English' },
   again: { ja: 'もう一回遊ぶ', en: 'Play again' },

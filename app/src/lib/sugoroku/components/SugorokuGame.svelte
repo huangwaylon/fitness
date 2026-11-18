@@ -412,11 +412,12 @@
         </ol>
       </Sheet>
       <Sheet bind:open={endOpen} title={s('endAsk')}>
-        <p class="note centre">{s('endNote')}</p>
+        <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
+        <p class="note centre" data-sg-end-note>{mode === 'online' ? s('endNoteOnline') : s('endNote')}</p>
         {#snippet footer()}
           <div class="two-cta">
             <button type="button" class="btn paper" data-sfx="back" onclick={() => (endOpen = false)}>{t('common.cancel')}</button>
-            <button type="button" class="btn" data-sfx="confirm" data-sg-end-yes onclick={() => ((endOpen = false), act({ a: 'end' }))}>{s('end')}</button>
+            <button type="button" class="btn" class:danger={mode === 'online'} data-sfx="confirm" data-sg-end-yes onclick={() => ((endOpen = false), act({ a: 'end' }))}>{s('end')}</button>
           </div>
         {/snippet}
       </Sheet>

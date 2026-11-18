@@ -95,6 +95,8 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   // ⋯ → 終了する (asked once more), the results: a winner and the words made
   await sheet(page).locator('[data-sg-menu]').tap();
   await sheet(page).locator('dialog[open] [data-sg-end]').tap();
+  // (passed round: the stars so far, the leaf verb)
+  await expect(page.locator('[data-sg-end-yes]')).not.toHaveClass(/danger/);
   await sheet(page).locator('[data-sg-end-yes]').tap();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   // a team game: no ranking, each one's good thing
@@ -155,6 +157,15 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await a.bringToFront();
   await expect(sheet(a).locator('[data-sg-team]')).toHaveAttribute('data-sg-team', (await sheet(b).locator('[data-sg-team]').getAttribute('data-sg-team'))!);
   await expect(sheet(a).locator('[data-sg-spin]')).toBeVisible();
+  // ⋯ → 終了する online: everyone's game ends, so the verb is the danger one and the note says so
+  await sheet(a).locator('[data-sg-menu]').tap();
+  await sheet(a).locator('dialog[open] [data-sg-end]').tap();
+  await expect(a.locator('[data-sg-end-note]')).toHaveText('全員のゲームが終わります');
+  await expect(a.locator('[data-sg-end-yes]')).toHaveClass(/danger/);
+  await a.locator('[data-sg-end-yes]').tap();
+  await expect(sheet(a)).toHaveAttribute('data-level', 'results');
+  await b.bringToFront();
+  await expect(sheet(b)).toHaveAttribute('data-level', 'results');
   await ctx.close();
 });
 
