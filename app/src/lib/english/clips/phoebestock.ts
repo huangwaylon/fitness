@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 4, tx 8, qa 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 4, new 1
 // “Phoebe the Stockbroker | Friends” (the official Friends channel, Best of Season 6): a friend reads out a list of
 // errands and gets teased, then Phoebe learns she has lost millions on the market and talks herself into a heart attack.
@@ -16,15 +16,15 @@ export const phoebeStock: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'g3', skill: 'gist', level: 'B1', point: 'list', seg: [0, 15],
-      stem: 'What is he reading out loud?',
-      ja: '彼が読み上げているのは何？',
+      stem: 'What is being read out loud?',
+      ja: '読み上げられているのは何？',
       choices: ['A list of things to do', 'A list of food to buy', 'A note from his mom'], a: 0,
       choicesJa: ['やることのリスト', '買う食べ物のリスト', 'お母さんからのメモ'],
       cue: 'drop off など、文の頭の動詞。',
       line: '*Drop off my dry cleaning*, … *teach me how to spell* …',
       said: '「クリーニングを出して、つづりを教えて…」と用事を読み上げる。',
       mean: 'errand ＝ ちょっとした用事。drop off（出す）など、動詞で始まる短い文が続くのは、やることリストの形。',
-      trap: 'pick up から買い物を連想しやすいが、出す・教える・はきならすなど、買う以外の用事が並ぶ。',
+      trap: 'pick up から買い物を連想しやすいが、出す・教えるなど、買う以外の用事も並ぶ。',
       use: 'I have a few errands to run today.（今日はいくつか用事がある）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'errands', seg: [0, 10.9],
@@ -42,8 +42,8 @@ export const phoebeStock: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'jeans', seg: [6, 11.5],
       stem: 'What does “wear in my new jeans” mean?',
       ja: '「wear in my new jeans」はどういう意味？',
-      choices: ['Wear them until they’re soft', 'Wear them only at home', 'Try them on for size'], a: 0,
-      choicesJa: ['やわらかくなるまではく', '家の中でだけはく', 'サイズを見るために試着する'],
+      choices: ['Wear them until they’re soft', 'Wear them only at home', 'Check that they fit'], a: 0,
+      choicesJa: ['やわらかくなるまではく', '家の中でだけはく', 'サイズが合うか確かめる'],
       cue: 'リストの最後の用事。',
       line: '*wear in* my new jeans.',
       said: '最後の用事は「新しいジーンズをはきならす」。',
@@ -170,8 +170,8 @@ export const phoebeStock: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'office', seg: [32.5, 36.0],
       stem: 'Phoebe says, “They’ll *kill* me.” What does she mean?',
       ja: 'フィービーの「They’ll kill me.」はどういう意味？',
-      choices: ['They’ll be very angry', 'They’ll be very sad', 'They’ll call her in'], a: 0,
-      choicesJa: ['すごく怒られる', 'すごく悲しむ', '会社に呼び出される'],
+      choices: ['They’ll be very angry', 'They’ll be very sad', 'They’ll laugh at her'], a: 0,
+      choicesJa: ['すごく怒られる', 'すごく悲しむ', '笑われる'],
       cue: 'office のあと、短い3語。',
       line: 'I can’t call my office, *they’ll kill me*.',
       said: '「会社には電話できない、殺される」と言う。',
@@ -201,7 +201,7 @@ export const phoebeStock: Clip = {
       trap: '直前の kill me に引っぱられて「顧客も私に怒る」と聞きやすい。同じ形が続いたら、変わった一語に意味がある。',
       use: 'It wasn’t my money to lose.（失っていいお金じゃなかった）', retired: true },
 
-    { id: 'f3', skill: 'attitude', level: 'B2', point: 'greatnow', reveals: ['chest'], seg: [38.5, 42.0],
+    { id: 'f3', skill: 'attitude', level: 'B2', point: 'greatnow', reveals: ['chest'], seg: [39.0, 42.5],
       stem: 'When Phoebe says “Great,” how does she feel?',
       ja: 'フィービーが「Great」と言うとき、どんな気持ち？',
       choices: ['Upset that it got worse', 'Glad that it got better', 'Calm, nothing has changed'], a: 0,
@@ -238,15 +238,15 @@ export const phoebeStock: Clip = {
       use: 'I think I need to see a doctor.（医者に診てもらわないと）' },
 
     { id: 'i1', ctx: true, skill: 'detail', level: 'B2', point: 'symptoms', seg: [47.0, 56.5],
-      stem: 'Does Phoebe think she is having a heart attack?',
-      ja: 'フィービーは、自分が心臓発作だと思っている？',
-      choices: ['Yes, her left arm hurts too', 'No, she’s just really scared', 'No, only her chest hurts'], a: 0,
-      choicesJa: ['うん、左腕も痛い', 'ううん、すごくこわいだけ', 'ううん、痛いのは胸だけ'],
-      cue: '彼の Yes のあと、彼女の答え。',
+      stem: 'Why does Phoebe end up saying “Then yes”?',
+      ja: 'フィービーが最後に「Then yes」と言うのはなぜ？',
+      choices: ['Her left arm hurts', 'Her right arm hurts', 'Her back hurts'], a: 0,
+      choicesJa: ['左腕が痛い', '右腕が痛い', '背中が痛い'],
+      cue: '「would I have」のあと、どこの痛みか。',
       line: 'He: Phoebe, are you having a heart attack? / Phoebe: Well, if I were, would I have *shooting pains up and down my left arm?* / He: Yes. / Phoebe: *Then yes*, that is what I’m having.',
       said: '「発作なら左腕に痛みが走る？」と聞き、「うん」に「じゃあ、それなの」と答える。',
       mean: 'if I were ＝「もしそうなら」。仮定の形で聞いて、今の左腕の痛みを伝えている。だから Then yes。',
-      trap: 'if I were を「そうじゃないけど」と考えがち。決め手は最後の Then yes。',
+      trap: 'if I were を「そうじゃないけど」と考えがち。中身は今の痛みの話。left（左）と right（右）を聞き分ける。',
       use: 'My arm hurts. Should I see a doctor?（腕が痛い。医者に行くべき？）' },
 
     { id: 'h3', retired: true, skill: 'humor', level: 'C1', point: 'symptoms', reveals: ['heart', 'then'], seg: [47.2, 56.0],

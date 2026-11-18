@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 11, ctx 8, tx 18
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 11, ctx 8, tx 18, qa 7
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 8, new 0
 // “The First Episode of the New “iCARLY” 📸 | Full Episode in 5 Minutes | @NickRewind” (NickRewind, the official iCarly
 // channel, Best of the New iCarly 🎉): the reboot's first episode cut down to five minutes. Carly goes live expecting
@@ -38,7 +38,7 @@ export const newIcarly: Clip = {
       line: 'where should I put my phone so I can *secretly record*…',
       said: '「こっそり撮るには、スマホをどこに置こう」と考えている。',
       mean: 'secretly ＝ こっそり。record ＝ 録画する。so I can 〜 ＝ 〜できるように。',
-      trap: '前に Sam の名前が出るので、電話と思いやすい。so I can のあとが目的。',
+      trap: 'record（録画する）を聞きのがすと、写真や電話の話と考えがち。so I can のあとが目的。',
       use: 'Can I record this for my mom?（母に見せたいので撮ってもいいですか）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'infor', seg: [33.5, 39.2],
@@ -84,7 +84,7 @@ export const newIcarly: Clip = {
       line: 'Now, I have *a broken heart and a broken phone*.',
       said: '「これで、失恋して、スマホも壊れちゃった」と言う。',
       mean: 'broken heart ＝ 文字どおりは「割れた心」で、失恋のこと。同じ broken で phone とならべた冗談。',
-      trap: 'heart を体の心臓と考えがち。a broken heart は失恋の決まり文句。',
+      trap: 'broken が2回続く。1つ目は heart（失恋）、2つ目は phone。カメラやパソコンの話は出ない。',
       use: 'My phone is broken. Can you fix it?（スマホが壊れました。直せますか）' },
 
     { id: 'a1', ctx: true, skill: 'attitude', level: 'B1', point: 'mood', seg: [85.0, 99.7],
@@ -143,7 +143,7 @@ export const newIcarly: Clip = {
       line: '*Can I have everyone’s attention, please?* Thank you.',
       said: '「皆さん、ちょっと注目してください」と呼びかける。',
       mean: 'Can I have everyone’s attention? ＝ 皆さん、ご注目ください。人前で話し始めるときの決まり文句。',
-      trap: 'attention を「危ない、気をつけて」と考えがちだが、ここは「こっちを見て聞いて」。',
+      trap: 'すぐあとに Carly の名前が出るので、カーリーを見る話と考えがち。attention ＝ 注目、話を聞くこと。',
       use: 'Can I have your attention, please?（ちょっと聞いてください）' },
 
     { id: 'n2', retired: true, skill: 'number', level: 'B1', point: 'left', reveals: ['out'], seg: [115, 120], keep: true,
@@ -161,8 +161,8 @@ export const newIcarly: Clip = {
     { id: 'i1', skill: 'infer', level: 'B2', point: 'out', reveals: ['left', 'terms'], seg: [121.0, 130.0],
       stem: 'Why does Carly stop and leave?',
       ja: 'カーリーはなぜ話をやめて帰る？',
-      choices: ['Her timer has run out', 'The sculpture upset her', 'Spencer told her to go'], a: 0,
-      choicesJa: ['タイマーの時間が終わった', '作品に気分を悪くした', 'スペンサーに帰れと言われた'],
+      choices: ['Her five minutes ended', 'The sculpture upset her', 'Spencer told her to go'], a: 0,
+      choicesJa: ['5分が終わった', '作品に気分を悪くした', 'スペンサーに帰れと言われた'],
       cue: '話の途中、最後のひと言',
       line: 'The reason this is genius is because… *and I’m out*. Night, guys.',
       said: '作品のよさを話す途中で「…で、私はここまで。おやすみ」と帰る。',
@@ -195,15 +195,15 @@ export const newIcarly: Clip = {
       use: 'Just a heads-up, the store closes at six.（先に言っておくと、店は6時に閉まるよ）' },
 
     { id: 'd2', ctx: true, skill: 'detail', level: 'B1', point: 'whey', seg: [151.0, 161.0],
-      stem: 'Is the café’s whey like whey protein?',
-      ja: 'この店のホエイは、ホエイプロテインのようなもの？',
-      choices: ['No, the watery part of milk', 'Yes, the kind for smoothies', 'Yes, but it’s made from goats'], a: 0,
-      choicesJa: ['いいえ、牛乳の水っぽい部分', 'はい、スムージー用のもの', 'はい、でもヤギからとったもの'],
+      stem: 'What kind of whey does the café serve?',
+      ja: 'この店で出すホエイは、どんなもの？',
+      choices: ['The watery part of milk', 'Protein for smoothies', 'Just plain water'], a: 0,
+      choicesJa: ['牛乳の水っぽい部分', 'スムージー用のプロテイン', 'ただの水'],
       cue: 'protein の質問への答え',
       line: '*Like whey protein? That you put in a smoothie?* / *No, like the watery part of it.*',
       said: '「プロテインみたいな？」と聞かれ、「いや、その水っぽい部分」と答える。',
       mean: 'No, like 〜 ＝「いや、〜のほう」。思い違いを直す言い方。whey ＝ チーズを作ったあとに残る水分。',
-      trap: '先に聞こえる whey protein に引かれやすい。決め手は No のあと。',
+      trap: '先に聞こえる whey protein に引かれやすい。watery（水っぽい）は水そのものではない。決め手は No のあと。',
       use: 'No, like the other one, the blue one.（いや、もう一つの、青いほう）' },
 
     { id: 'd6', ctx: true, skill: 'detail', level: 'B1', point: 'news', seg: [168.5, 178.2],
@@ -232,13 +232,13 @@ export const newIcarly: Clip = {
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'bottoms', seg: [181.5, 186.5],
       stem: 'What does “Bottoms up” mean?',
       ja: '「Bottoms up」はどういう意味？',
-      choices: ['Let’s drink it all', 'Stand up, please', 'Turn the cup over'], a: 0,
-      choicesJa: ['さあ、飲みほそう', '立ってください', 'カップを逆さにして'],
+      choices: ['Let’s drink it all', 'Stand up, please', 'Look at the bottom'], a: 0,
+      choicesJa: ['さあ、飲みほそう', '立ってください', 'カップの底を見て'],
       cue: '「good luck」のあと',
       line: 'If you get a chunk, that’s considered good luck. — *Bottoms up.*',
       said: '「かたまりが入っていたら幸運です」と聞いて、「乾杯」と言う。',
       mean: 'Bottoms up ＝ 文字どおりは「底を上に」。グラスの底が上を向くまで飲む→「乾杯、飲もう」。くだけた言い方。',
-      trap: 'up から「立って」を連想しやすいが、上を向くのはカップの底。飲む前のかけ声。',
+      trap: 'up から「立って」、bottom から「底を見る」を連想しやすいが、上を向くのはカップの底。飲む前のかけ声。',
       use: 'Okay, everyone, bottoms up!（さあみんな、乾杯！）' },
 
     { id: 'p4', ctx: true, skill: 'pragma', level: 'B1', point: 'done', seg: [192.0, 201.5],
