@@ -28,11 +28,11 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
   import { CARDS } from '../cards.ts';
-  import { rewardOf, teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
+  import { rewardOf, speakOn, teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
     sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, boardFor, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
   import { pathOf, toGoal, waysAt } from '../board.ts';
   import { familyOfKey, layoutKey } from '../layout.ts';
-  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { rewardGame } from '#lib/store/actions.ts';
   import { fnv1a } from '#lib/random.ts';
   import { loadWords, type Words } from '../words.ts';
@@ -121,6 +121,9 @@
   /** 新しいゲーム's way: one phone passed round, or each on their own (members and the guest only, me among them). */
   let playMode = $state<'local' | 'online'>('local');
   const MODES = ['local', 'online'] as const;
+  /** The speaking step after a 絵 (game.ts speakOn): with the switch on and a person's key on this phone (the relay's
+   *  /stt and /grade refuse the guest's: a guest's own phone gets none; passed round, this phone's key for everyone). */
+  const speakable = $derived(speakOn(location.search) && !!getKey() && me !== 'G');
   const canStart = $derived(picked.length >= MIN_PLAYERS && (playMode === 'local' || picked.includes(me)));
   /** The speech test's page (docs/speech-test.md), the page's own query kept (?demo, the e2e's hooks). */
   const toSpeech = () => {
@@ -563,7 +566,8 @@
                   <button type="button" class="btn" data-sfx="tick" onclick={() => act(sentenceAsWord, { a: 'noline' })}>{s('next')}</button>
                 {:else}<p class="note">{s('loading')}</p>{/if}
               {:else if ph.k === 'picture'}
-                {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => act((x) => tried(x, tr), { a: 'try', m: tr.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
+                {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => act((x) => tried(x, tr), { a: 'try', m: tr.misses })} speak={speakable ? { tipKey: `${g.seed}:${g.turn}` } : null}
+                  ondone={(m, y = 0) => act((x) => pictureDone(x, m, y), { a: 'pic', m, ...(y ? { y } : {}) })} />{/key}
               {:else if ph.k === 'event' && card}
                 <div class="event" data-sg-event={ph.card}>
                   <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>

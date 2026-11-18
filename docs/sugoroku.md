@@ -90,6 +90,37 @@ sheet's handle (a tap or a drag down) folding it to a 56 px bar (the phase ▲) 
 opens it again; a walk shows the die and 「3マス」 in that bar. A check's note is a toast pill over the sheet. ⋯ holds 遊び方
 and 終了する (「ゲームを終了しますか？」 [キャンセル][終了する]); ↻入れかえ asks inline (「星なしで入れかえる？」).
 
+## Speaking
+
+**Off** (`game.ts SPEAK = false`) until the real-phone checks pass; `?speak=1` turns it on for a page (the tests, a
+trial). Off, the game is exactly as before. The design and its evidence: /tmp/grade/plan.md; the relay's `POST /grade`:
+relay/src/gradeRoute.ts.
+
+- **Where:** after a 絵 turn's answer, before 次へ: 「この絵で一文言ってみよう」 (+2), optional, 次へ skips it at no
+  cost. やさしい sees two frames (I like ___. / There is a ___.), むずかしい a nudge for 6+ words (shorter: the stars and
+  「次は6語以上にも…」).
+- **Who:** /stt and /grade take a person's key only, so the step shows on a phone with one (not the guest's: on the
+  guest's own phone there's no step). Passed round, everyone speaks on this phone's key (its daily caps). The mic is asked
+  for only on 話す.
+- **Flow** (`app/src/lib/sugoroku/components/SpeakStep.svelte`, its own chunk: PictureTurn imports it only with the switch on): 話す (tap to
+  record, tap to stop, 10 s at most: lib/speech/stt.ts) or 書く → **聞こえた文**, editable, これでOK; もう一回 twice,
+  then the keyboard → the feedback. Whisper's words on silence (empty, "Thanks for watching!", "Thank you.", mostly not
+  Latin) → 「もう一回どうぞ」, not graded.
+- **Task check** (`speak.ts`, on the phone): the picture's word in any form, a word a small edit away credited
+  (boring → bowling), or the relay's `used`; missing → 「「apple」を入れて言ってみてね」, no stars yet. A bare noun phrase
+  ("a red apple") → 「動詞を入れて文にしてみよう」; casual sentences ("So tired today.") pass.
+- **No visible wait:** /grade is asked as soon as the words arrive (again only if edited). これでOK gives the stars at once
+  and the sentence shimmers; the recast slides in, or after 4 s (or offline, capped, off) praise only. Never 判定 or 採点.
+- **Feedback:** their sentence (changed words a soft yuzu underline); 「こう言うともっと自然」 and the recast (changed words
+  bold) when it differs; the tip folded under ヒント, opening by itself at most once in three sentences a player a game
+  (やさしい: no tip when only an article or an -s changed); a great sentence's `also` as 「こんな言い方も」. The phone
+  checks the answer again (`cleanGrade`: failure words and grammar terms drop the tip, a placeholder fix keeps theirs).
+  まねして言ってみる after a recast: +1 「言い直せた！」.
+- **Stars:** +2 an on-task sentence, +1 said again (3 at most: `game.ts pictureDone(g, misses, said)`); the verdict never
+  changes them. Online, the `pic` move carries only them (`y`); the words stay on the speaker's phone.
+- **Logged:** `sg.grade` once a step used (the deciding layer, the verdict, stop → feedback ms, takes, edited, said
+  again, why not), never the text.
+
 ## Online
 
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move

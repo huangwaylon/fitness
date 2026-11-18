@@ -2,7 +2,9 @@
   // 英語すごろく's 絵 turn (docs/sugoroku.md "Rules"): an everyday thing's picture (Noto Emoji), its Japanese beside it, its English name to
   // spell by the seat's level: やさしい taps one of three spellings; ふつう puts its letters in order, the first given;
   // むずかしい its letters with two more mixed in, none given. Right → its stars; not → 「おしい！」 and one
-  // more go; a second miss → 「答えはこれ」. Never red, never ×.
+  // more go; a second miss → 「答えはこれ」. Never red, never ×. With the speaking step on (`speak`: game.ts speakOn, a
+  // person's key), the answer is followed by 「この絵で一文言ってみよう」 (SpeakStep, its own chunk, asked for as the turn
+  // opens); its 次へ adds the sentence's stars.
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { seeded } from '#lib/random.ts';
@@ -18,9 +20,17 @@
     misses0?: number;
     /** A miss, to keep. */
     ontry: (t: { misses: number }) => void;
-    ondone: (misses: number) => void;
+    /** `said`: the spoken sentence's stars (the speaking step). */
+    ondone: (misses: number, said?: number) => void;
+    /** The speaking step: on (the switch, and a person's key here), and the tip's key (the game and seat). */
+    speak?: { tipKey: string } | null;
   }
-  let { pic, level, seed, misses0 = 0, ontry, ondone }: Props = $props();
+  let { pic, level, seed, misses0 = 0, ontry, ondone, speak = null }: Props = $props();
+  // (only with the switch on: the step's chunk, asked for now so it's in by the answer; till then, or failing, 次へ alone)
+  let Step = $state.raw<typeof import('./SpeakStep.svelte').default | null>(null);
+  if (untrack(() => speak)) import('./SpeakStep.svelte').then((m) => (Step = m.default), () => {});
+  /** The step started: the answer folds to one line. */
+  let speaking = $state(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(timer));
   /** The picture didn't load (offline, blocked): its Japanese alone, no broken frame. */
@@ -84,12 +94,16 @@
       </div>
     {/if}
   {:else}
-    <div class="res">
-      {#if stage === 'answer'}<p class="soft">{s('answer')}</p>{/if}
+    <div class="res" class:line={speaking}>
+      {#if stage === 'answer' && !speaking}<p class="soft">{s('answer')}</p>{/if}
       <p class="en" lang="en" data-sg-answer>{pic.w}</p>
       <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
     </div>
-    <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
+    {#if Step && speak}
+      <Step target={pic.w} level={level as 1 | 2 | 3} tipKey={speak.tipKey} onengage={() => (speaking = true)} onnext={(said) => ondone(misses, said)} />
+    {:else}
+      <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
+    {/if}
   {/if}
 </section>
 
@@ -125,6 +139,8 @@
     font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink); pointer-events: none; }
   .res { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   .res .soft { margin: 0; }
+  .res.line { flex-direction: row; justify-content: center; gap: 12px; }
+  .res.line .en { font-size: 22px; }
   .en { margin: 0; font: 600 28px/1.2 var(--font-num); letter-spacing: .04em; }
   .pts { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--c-gold); }
   .pts b { font: 600 28px/1 var(--font-num); color: var(--c-ink); }
