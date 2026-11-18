@@ -7,7 +7,7 @@ import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
 import { choose, eventDone, finish, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
-import { wordsOf } from './words.ts';
+import { decodeAccept, wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import everyday from './everyday.json';
@@ -163,6 +163,14 @@ describe('game', () => {
 });
 
 describe('words and sentences', () => {
+  it('any real word is accepted (mingle, cats…), the hints only from the familiar list; nothing blocked', () => {
+    const accept = decodeAccept(readFileSync(join(import.meta.dirname, 'accept.txt'), 'utf8'));
+    const all = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday, accept);
+    for (const w of ['mingle', 'mingled', 'cats', 'zoo', 'box', 'jam', 'quiz']) expect(all.has(w), w).toBe(true);
+    for (const w of ['sex', 'xqzt', 'mingl']) expect(all.has(w), w).toBe(false);
+    expect(accept.size).toBeGreaterThan(70_000);
+    expect(all.from(['m', 'i', 'n', 'g', 'l', 'e', 'x'], () => 0).every((w) => !accept.has(w) || words.has(w))).toBe(true);
+  });
   it('the everyday list is in shape and in the font', () => {
     for (const [w, ja] of Object.entries(everyday)) {
       expect(w).toMatch(/^[a-z]{2,8}$/);

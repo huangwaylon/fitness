@@ -61,13 +61,15 @@ be (2–4 vowels, one of S T R N D, at most one of J K X Z, at most two of a let
 
 ## Words
 
-`words.txt`: the words heard in 3+ of English Study's transcripts, 2–8 letters, that macOS's dictionary knows (its
+`accept.txt`: what a word may be: any real English word of 2–8 letters (the ENABLE list, public domain, with the lists
+below, minus a short block list; ~80,000, prefix-delta coded), so a right word is never refused. `words.txt` (the hints'
+and glosses' familiar list): the words heard in 3+ of English Study's transcripts, 2–8 letters, that macOS's dictionary knows (its
 base words and simple inflections), minus names and a short list of words not for the table; plus `everyday.json`,
 ~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker). `sentences.json`: the
 フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a Japanese reader's
 fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4 everyday words 1, ≤ 5
-and 80 % 2, else 3). All three are written by `npm run sugoroku:words` (it
-needs /usr/share/dict, so on a Mac) and committed; each is its own chunk, loaded as the sheet opens (precached:
+and 80 % 2, else 3). All are written by `npm run sugoroku:words` (it needs
+/usr/share/dict, so on a Mac; accept.txt with `SUGOROKU_ENABLE=<enable1.txt>`) and committed; each is its own chunk, loaded as the sheet opens (precached:
 a game night works offline).
 
 ## Saving

@@ -2,8 +2,9 @@
 // inflections and all: went, cats) that a dictionary knows (macOS's /usr/share/dict/web2, its lower-case base words,
 // with simple inflections), heard in 3+ clips, 2–8 letters, minus names and a short list of words not for the table;
 // plus every everyday word (lib/sugoroku/everyday.json: the A1–A2 list with its Japanese). Written to
-// lib/sugoroku/words.txt, committed (CI has no dictionary): one word a line, a–z. And ぶん's lines (below).
-//   npm run sugoroku:words
+// lib/sugoroku/words.txt, committed (CI has no dictionary): one word a line, a–z (the hints' and the glosses' list).
+// And what a word may be (accept.txt, below), and ぶん's lines.
+//   SUGOROKU_ENABLE=<enable1.txt> npm run sugoroku:words
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -63,6 +64,25 @@ for (const w of BLOCK) out.delete(w);
 const words = [...out].sort();
 writeFileSync(join(root, 'src/lib/sugoroku/words.txt'), words.join('\n') + '\n');
 console.log(`${words.length} words (${Object.keys(everyday).length} everyday)`);
+
+// What a word may be (accept.txt): any real English word of 2–8 letters, so a learner's right word is never refused —
+// the ENABLE list (public domain; its path: SUGOROKU_ENABLE, e.g. dolph/dictionary's enable1.txt) with the lists above,
+// minus BLOCK; prefix-delta coded (each line: the letters shared with the line before, then the rest), sorted. Without
+// the list at hand it's left as committed.
+const enable = process.env.SUGOROKU_ENABLE;
+if (enable) {
+  const accept = new Set([...readFileSync(enable, 'utf8').split('\n').map((w) => w.trim()).filter((w) => /^[a-z]{2,8}$/.test(w)), ...words]);
+  for (const w of BLOCK) accept.delete(w);
+  let prev = '';
+  const coded = [...accept].sort().map((w) => {
+    let k = 0;
+    while (k < prev.length && k < w.length && prev[k] === w[k]) k++;
+    prev = w;
+    return `${k}${w.slice(k)}`;
+  });
+  writeFileSync(join(root, 'src/lib/sugoroku/accept.txt'), coded.join('\n') + '\n');
+  console.log(`${accept.size} accepted`);
+}
 
 // ぶん's lines: English Study's フレーズ deck (catalog.ts deckOf, in the plan's order), its `use` (our portable example
 // over the TV line) with its Japanese, 3–6 words, each a level (game.ts Level): 1 (やさしい) ≤ 4 words, every one an

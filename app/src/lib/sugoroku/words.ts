@@ -1,5 +1,6 @@
-// 英語すごろく's words (docs/sugoroku.md "Words"): the list (scripts/sugoroku-words.ts: words.txt) and the everyday ones
-// with their Japanese (everyday.json), loaded once with the game (their own chunk), and what a rack can make (ヒント).
+// 英語すごろく's words (docs/sugoroku.md "Words"): the familiar list (scripts/sugoroku-words.ts: words.txt) and the everyday
+// ones with their Japanese (everyday.json), what a word may be (accept.txt: any real word), loaded once with the game
+// (their own chunks), and what a rack can make (ヒント: the familiar only).
 import { spellable } from './tiles.ts';
 
 export interface Words {
@@ -10,12 +11,26 @@ export interface Words {
   from(rack: readonly string[], score: (w: string) => number): string[];
 }
 
-export function wordsOf(list: string, everyday: Readonly<Record<string, string>>): Words {
+/** accept.txt's lines read back (each: the letters shared with the word before, then the rest). */
+export function decodeAccept(coded: string): Set<string> {
+  const out = new Set<string>();
+  let prev = '';
+  for (const line of coded.split('\n')) {
+    const m = /^(\d+)([a-z]*)$/.exec(line);
+    if (!m) continue;
+    prev = prev.slice(0, Number(m[1])) + m[2];
+    out.add(prev);
+  }
+  return out;
+}
+
+export function wordsOf(list: string, everyday: Readonly<Record<string, string>>, accept?: ReadonlySet<string>): Words {
   const all = new Set(list.split('\n').filter(Boolean));
   for (const w of Object.keys(everyday)) all.add(w);
   const sorted = [...all];
   return {
-    has: (w) => all.has(w),
+    // any real word (accept.txt), the familiar ones too; the hints only from the familiar
+    has: (w) => all.has(w) || !!accept?.has(w),
     ja: (w) => everyday[w] ?? '',
     from(rack, score) {
       const out = sorted.filter((w) => w.length <= rack.length && spellable(w, rack));
@@ -28,7 +43,8 @@ export function wordsOf(list: string, everyday: Readonly<Record<string, string>>
 let loading: Promise<Words> | null = null;
 /** The words, fetched once. */
 export function loadWords(): Promise<Words> {
-  return (loading ??= Promise.all([import('./words.txt?raw'), import('./everyday.json')]).then(([l, e]) => wordsOf(l.default, e.default)))
+  return (loading ??= Promise.all([import('./words.txt?raw'), import('./everyday.json'), import('./accept.txt?raw')]).then(([l, e, a]) =>
+    wordsOf(l.default, e.default, decodeAccept(a.default))))
     .catch((err: unknown) => {
       loading = null;
       throw err;
