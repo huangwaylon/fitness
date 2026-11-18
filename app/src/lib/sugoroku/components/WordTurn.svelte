@@ -12,6 +12,7 @@
   import { VALUE, type Score } from '../tiles.ts';
   import type { Words } from '../words.ts';
   import { s } from '../i18n.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     rack: readonly string[];
@@ -104,7 +105,7 @@
       <h3 class="ttl">{s('wordTitle')}</h3>
       {#if asking}
         <span class="ask">{s('swapAsk')}</span>
-        <button type="button" class="chip" data-sfx="back" onclick={() => (asking = false)}>{s('cancel')}</button>
+        <button type="button" class="chip" data-sfx="back" onclick={() => (asking = false)}>{t('common.cancel')}</button>
         <button type="button" class="chip yuzu" data-sfx="confirm" data-sg-swap-yes onclick={onswap}>{s('swapYes')}</button>
       {:else}
         {#if mult > 1}<span class="tag2">{s('doubleTag')}</span>{/if}

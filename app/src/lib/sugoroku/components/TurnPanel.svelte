@@ -15,6 +15,7 @@
   import type { Words } from '../words.ts';
   import type { Move } from '../online.ts';
   import { s } from '../i18n.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   type Act = Omit<Move, 'g' | 'i' | 'who'>;
   interface Props {
@@ -110,7 +111,7 @@
             onclick={() => { const l = giving!; giving = null; onact({ a: 'gift', ch: l, to: tk.who }); }}>
             <Avatar person={tk.who} worn size={20} /> {tk.name}</button>
         {/each}
-        <button type="button" class="chip big" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
+        <button type="button" class="chip big" data-sfx="back" onclick={() => (giving = null)}>{t('common.cancel')}</button>
       {:else}
         <span class="note">{s('sendLetter')}</span>
         {#each cur.pocket as l, j (j)}<button type="button" class="chip big" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}

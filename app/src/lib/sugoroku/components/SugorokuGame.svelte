@@ -25,7 +25,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
   import { hook } from '#lib/world/devHooks.ts';
-  import { rewardOf, speakOn, teamGoal, teamStars, lastRound as isLast, newGame, boardFor, type Game, type Length, type Level, type Seat } from '../game.ts';
+  import { REWARD, REWARD_GOAL, rewardOf, speakOn, teamGoal, teamStars, lastRound as isLast, newGame, boardFor, type Game, type Length, type Level, type Seat } from '../game.ts';
   import { pathOf } from '../board.ts';
   import { familyOfKey, layoutKey } from '../family.ts';
   import { DEVICE, getKey, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -37,7 +37,7 @@
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
   import { applyMove, foldMoves, lengthCode, seatsCode, type Move } from '../online.ts';
-  import { listen, nameOf as personName, online, sendMove, startOnline } from '../online.svelte.ts';
+  import { listen, nameOf as personName, online, sendMove, startOnline, updateNeeded } from '../online.svelte.ts';
 
   interface Props {
     /** The tab is shown (English Study open on it). */
@@ -331,9 +331,13 @@
             <span class="nm">{s('startedBy', { name: nameOf(by) })}</span>
             <button type="button" class="btn small" data-sfx="open" data-sg-resume-online onclick={resumeOnline}>{s('join')}</button>
           </div>
+        {:else if updateNeeded()}
+          <!-- an online game started on another build's rules: it can't be played here (wire.ts otherRules) -->
+          <p class="card pad note" data-sg-update>{s('updateApp')}</p>
         {/if}
         <div class="hero card pad">
           <p class="lead">{s('how2')}</p>
+          <p class="note">{s('teamLine')}</p>
           {#if saved}
             <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
           {/if}
@@ -345,7 +349,7 @@
       <div class="top"><NavBar pad title={s('howTo')} onback={toMenu} onclose={close} /></div>
       <div class="body sheet-scroll">
         <ol class="card pad how">
-          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li>
+          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li><li>{s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })}</li>
         </ol>
       </div>
     {:else if view === 'setup'}
@@ -408,7 +412,7 @@
         onpick={(id) => (id === 'how' ? (howOpen = true) : (endOpen = true))} />
       <Sheet bind:open={howOpen} title={s('howTo')}>
         <ol class="how">
-          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li>
+          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li><li>{s('how6', { n: REWARD, g: REWARD + REWARD_GOAL })}</li>
         </ol>
       </Sheet>
       <Sheet bind:open={endOpen} title={s('endAsk')}>
@@ -423,6 +427,14 @@
       </Sheet>
     {:else if view === 'results' && g}
       <Results {g} {lastTotal} {shells} onback={toMenu} onclose={close} onagain={() => again(g)} />
+    {:else if view === 'play'}
+      <!-- (no game to show yet: the online one's moves and the words on their way, or a game of another build's rules) -->
+      <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
+      <div class="body sheet-scroll">
+        {#if mode === 'online' && updateNeeded()}<p class="card pad note" data-sg-update>{s('updateApp')}</p>
+        {:else if failed}<p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
+        {:else}<p class="note centre">{s('loading')}</p>{/if}
+      </div>
     {/if}
   </div>
 
