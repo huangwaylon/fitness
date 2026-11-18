@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 11, rewrite 2, retire 3, new 2, ctx 4, tx 3
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 3
 // “Chris Gets the Flu | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Chris, who calls
 // his body a finely tuned microchip, wears a flu mask and confirms a dinner date with Ann; Ann tells the camera he's
@@ -37,6 +38,17 @@ export const chrisFlu: Clip = {
       trap: 'low を「悪い」「落ちこむ」と取りやすい。何の数字が low なのかを考える。',
       use: 'Gas prices hit a new low.（ガソリン代が最安値を更新）' },
 
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], ctx: true, seg: [7.5, 13.5],
+      stem: 'Why is Chris wearing a mask?', ja: 'クリスはなぜマスクをしている？',
+      choices: ['So he won’t catch the flu', 'Because he already has flu', 'To keep dust out on runs'], a: 0,
+      choicesJa: ['インフルにかからないため', 'もうインフルにかかっているから', '走るときにほこりを防ぐため'],
+      cue: '質問への最初の答え',
+      line: 'What’s with the mask? / *Flu prevention*.',
+      said: '「そのマスクは？」と聞かれ、「インフルエンザ予防」と答える。',
+      mean: 'prevention ＝ 予防。病気になる前に防ぐこと。まだかかっていない自分を守るマスク。',
+      trap: 'マスクを見ると「もうかかっている」と考えがち。prevention（予防）なので、まだかかっていない。',
+      use: 'I wear a mask on the train.（電車ではマスクをしている）' },
+
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'whatswith', seg: [8.4, 13.8],
       stem: 'What does “What’s with the mask?” mean?', ja: '“What’s with the mask?” はどういう意味？',
       choices: ['Why are you wearing it?', 'Where did you get that?', 'Can I have one too?'], a: 0,
@@ -45,21 +57,10 @@ export const chrisFlu: Clip = {
       line: '*What’s with the mask?*',
       said: '「そのマスク、どうしたの？」と聞く。',
       mean: 'What’s with 〜? ＝ その〜はどうしたの？ いつもと違う物や様子のわけを聞く、くだけた言い方。',
-      trap: 'with から「マスクと一緒に何？」と思いやすい。わけを聞くひとまとまり。',
+      trap: 'with から「マスクと一緒に何？」と考えがち。わけを聞くひとまとまり。',
       use: 'What’s with the long line?（この長い列、どうしたの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'mask', reveals: ['whatswith'], seg: [8.5, 13.5],
-      stem: 'Why is Chris wearing a mask?', ja: 'クリスはなぜマスクをしている？',
-      choices: ['So he won’t catch the flu', 'Because he already has flu', 'To keep dust out on runs'], a: 0,
-      choicesJa: ['インフルにかからないため', 'もうインフルにかかっているから', '走るときにほこりを防ぐため'],
-      cue: '質問への最初の答え',
-      line: 'What’s with the mask? — *Flu prevention*.',
-      said: '「そのマスクは？」と聞かれ、「インフルエンザ予防」と答える。',
-      mean: 'prevention ＝ 予防。病気になる前に防ぐこと。まだかかっていない自分を守るマスク。',
-      trap: 'マスクを見ると「もうかかっている」と思いやすい。prevention（予防）なので、まだかかっていない。',
-      use: 'I wear a mask on the train.（電車ではマスクをしている）' },
-
-    { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 22.2],
+    { id: 'i1', skill: 'detail', level: 'B2', point: 'microchip', seg: [12.9, 22.2], retired: true,
       stem: 'What could the flu do to Chris, he says?', ja: 'インフルはクリスに何をすると、彼は言う？',
       choices: ['Shut down his whole body', 'Slow down his running', 'Do nothing at all'], a: 0,
       choicesJa: ['体を全部止めてしまう', '走るのを遅くする', '何もしない'],
@@ -85,7 +86,7 @@ export const chrisFlu: Clip = {
       trap: '自慢のあとの冗談は相手へのからかいに聞こえやすい。主語が my なら、笑われているのは本人。',
       use: 'My cooking? It’s… creative.（私の料理？…独創的よ）' },
 
-    { id: 'h2', skill: 'humor', level: 'B1', point: 'chip', seg: [17, 25.5],
+    { id: 'h2', skill: 'humor', level: 'B1', point: 'chip', seg: [17, 25.5], retired: true,
       stem: 'What chip comes after “My body’s like a chip, too”?', ja: '“My body’s like a chip, too” のあと、何のチップ？',
       choices: ['A potato chip', 'A computer chip', 'A chocolate chip'], a: 0,
       choicesJa: ['ポテトチップ', 'コンピューターのチップ', 'チョコチップ'],
@@ -104,10 +105,10 @@ export const chrisFlu: Clip = {
       line: '*Speaking of potato chips*, you and I are on for dinner tomorrow, yes?',
       said: '「ポテトチップと言えば、明日の夕食、予定どおりだよね？」と聞く。',
       mean: 'Speaking of 〜 ＝ 〜と言えば。相手の言葉をきっかけに、別の話を始める。',
-      trap: 'potato chips が出るので、食べ物の話の続きだと思いやすい。あとは夕食の約束の話。',
+      trap: 'potato chips が出るので、食べ物の話の続きに聞こえるが、あとは夕食の約束の話。',
       use: 'Speaking of Paris, how was your trip?（パリと言えば、旅行どうだった？）' },
 
-    { id: 'f3', skill: 'pragma', level: 'B2', point: 'dinner', seg: [25, 32.9],
+    { id: 'f3', skill: 'pragma', level: 'B2', point: 'dinner', seg: [25, 32.9], retired: true,
       stem: 'Why does Chris ask about dinner tomorrow?', ja: 'クリスはなぜ明日の夕食のことを聞く？',
       choices: ['To check their plan', 'To ask her out', 'To cancel the dinner'], a: 0,
       choicesJa: ['約束を確かめるため', 'デートに誘うため', '夕食を取りやめるため'],
@@ -115,7 +116,7 @@ export const chrisFlu: Clip = {
       line: 'you and I *are on for dinner* tomorrow, yes? — Yes, definitely.',
       said: '「明日の夕食、予定どおりだよね？」と確かめ、アンは「もちろん」と答える。',
       mean: 'be on for 〜 ＝ 〜の予定が決まっている。最後の yes? で「だよね？」と確認している。',
-      trap: '新しく誘っていると思いやすい。are on for は、もう決まった約束のこと。',
+      trap: '新しく誘っていると勘違いしやすい。are on for は、もう決まった約束のこと。',
       use: 'Are we still on for Friday?（金曜の約束、まだ大丈夫？）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'forward', seg: [28, 35.2],
@@ -147,7 +148,7 @@ export const chrisFlu: Clip = {
       line: 'The problem is, he’s like a *perfect human man*. I can’t find one flaw.',
       said: '「何度かデートして、好き。問題は、完璧すぎて欠点が一つもないこと」と話す。',
       mean: 'flaw ＝ 欠点。欠点がないことが「問題」。自分と比べて気おくれしている。',
-      trap: 'can’t find から、悪いことを言うと思いやすい。The problem is のあとの perfect を聞く。',
+      trap: 'can’t find から、悪いことを言うと考えがち。The problem is のあとの perfect を聞く。',
       use: 'The problem is, it’s too far.（問題は、遠すぎること）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'hours', seg: [57.3, 65.3],
@@ -158,7 +159,7 @@ export const chrisFlu: Clip = {
       line: 'I just saw you *a few hours ago*, and you were fine.',
       said: '「ほんの数時間前に会ったときは元気だったのに」と驚く。',
       mean: 'just と a few hours ago で「ついさっき」。急に悪くなったことへの驚き。',
-      trap: 'a few のあとの語は短く、days と思いやすい。「アワーズ」と母音で始まる音を聞く。',
+      trap: 'a few のあとの語は短く、days と聞き違えやすい。「アワーズ」と母音で始まる音を聞く。',
       use: 'I just talked to her an hour ago.（1時間前に話したばかり）' },
 
     // R fix: V2 — "healthy, not hot" spelled the key out; choices now same length and register
@@ -199,12 +200,12 @@ export const chrisFlu: Clip = {
       trap: '難しい語の誤用と取りやすいが、使い方は合っている。固すぎる言い方自体が冗談。',
       use: 'Could you grab me a sports drink?（スポーツドリンク取ってくれる？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'ohboy', seg: [70.2, 81.2],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'ohboy', ctx: true, seg: [70.2, 81.2],
       stem: 'What does Ann mean by “Oh, boy”?', ja: 'アンの “Oh, boy” はどういう意味？',
       choices: ['This will be hard work', 'This will be a lot of fun', 'This is good news'], a: 0,
       choicesJa: ['これは大変そう', 'これはすごく楽しそう', 'これはいい知らせ'],
       cue: '頼みのあとの短い二語',
-      line: 'after every involuntary loss of bodily fluids. — *Oh, boy*.',
+      line: 'after every involuntary loss of bodily fluids. / *Oh, boy*.',
       said: '吐いたら水分を補給して、と頼まれ、「あーあ」と小さく言う。',
       mean: 'Oh, boy ＝ やれやれ、参ったな。これから大変になりそう、という気持ち。',
       trap: 'boy を「男の子」や「わーい」と思いやすい。頼みのあとのため息まじりの一言。',
@@ -221,16 +222,17 @@ export const chrisFlu: Clip = {
       trap: 'tended なら「テンディッド」、intends なら頭に「イン」がある。ここは「テンズタ」。',
       use: 'I tend to oversleep on Sundays.（日曜は寝坊しがち）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [80, 117],
-      stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
-      choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
-      choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],
-      cue: '最後のカメラへの一言',
-      line: 'Nothing like a complete physical breakdown to make a guy seem *less intimidating*. I love the flu.',
-      said: '「すっかり弱った姿ほど、男の人を気楽に見せるものはない。インフル最高」と話す。',
-      mean: 'intimidating ＝ 気おくれさせる、近寄りがたい。完璧な人が弱って、気が楽になった。',
-      trap: '明日の夕食がなくなるので、それを喜んでいると思いやすい。less intimidating が理由。',
-      use: 'He’s human after all.（彼もやっぱり人間だね）' },
+    { id: 'k1', skill: 'detail', level: 'B2', point: 'hasflu', ctx: true, seg: [79.5, 88.0],
+      stem: 'What does Ann tell Chris?',
+      ja: 'アンはクリスに何と言う？',
+      choices: ['He has the flu', 'He is dying', 'He needs a doctor'], a: 0,
+      choicesJa: ['インフルエンザにかかっている', '死にかけている', '医者が必要だ'],
+      cue: '「I’m dying」への返事。',
+      line: 'My brain is on fire. I’m dying. / Ann: Hmm. Well, you *definitely have the flu*.',
+      said: '「脳が燃えてる、死にそうだ」に、アンは「確実にインフルね」と言う。',
+      mean: 'definitely ＝ 確実に、絶対に。have the flu ＝ インフルエンザにかかっている。dying は大げさな言い方。',
+      trap: 'I’m dying（死にそう）が強く聞こえるが、それはクリスの大げさな言葉。答えは Well のあと。',
+      use: 'I think I have the flu.（インフルエンザにかかったみたい）' },
 
     // EAR CHECK: a2 (header)
     // R fix: V2 — "faking" was refuted by her own diagnosis; now "gently cheering him up" (the soft "Mhm")
@@ -260,6 +262,17 @@ export const chrisFlu: Clip = {
       trap: '機械の話と取りやすい。前に出たたとえが、あとで説明なしに戻ってくることは多い。',
       use: 'My Monday brain has been compromised.（月曜の頭はもうダメ）' },
 
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [102.0, 117.0],
+      stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
+      choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
+      choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],
+      cue: '最後のカメラへの一言',
+      line: 'Nothing like a complete physical breakdown to make a guy seem *less intimidating*. I love the flu.',
+      said: '「すっかり弱った姿ほど、男の人を気楽に見せるものはない。インフル最高」と話す。',
+      mean: 'intimidating ＝ 気おくれさせる、近寄りがたい。完璧な人が弱って、気が楽になった。',
+      trap: '明日の夕食がなくなるので、それを喜んでいると思いやすい。less intimidating が理由。',
+      use: 'He’s human after all.（彼もやっぱり人間だね）' },
+
     { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [104, 109.5],
       stem: 'Fill the gap: “You ___ get up off the floor now.”', ja: '空所に入るのは？ “You ___ get up off the floor now.”',
       choices: ['have to', 'had to', 'want to'], a: 0,
@@ -270,6 +283,18 @@ export const chrisFlu: Clip = {
       mean: 'have to ＝ 〜しなければならない。「ハフタ」と、v が f のような音になる。',
       trap: 'had to なら「ハットゥ」、want to なら「ワナ」。「ハフ」と f の音が聞こえれば have to。',
       use: 'I have to go now.（もう行かなきゃ）' },
+
+    { id: 'k2', skill: 'infer', level: 'B2', point: 'floor', reveals: ['hafta'], ctx: true, seg: [105.0, 111.5],
+      stem: 'What does Chris answer to “get up off the floor”?',
+      ja: '「床から起きなきゃ」に、クリスは何と答える？',
+      choices: ['He wants to stay there', 'He asks for some help', 'He gets up slowly'], a: 0,
+      choicesJa: ['そこにいたい', '助けを頼む', 'ゆっくり起き上がる'],
+      cue: '「get up off the floor」のあと。',
+      line: 'You have to get up off the floor now. / Chris: *This floor is my friend.*',
+      said: '「もう床から起きなきゃ」に「この床は僕の友だちなんだ」と返す。',
+      mean: '文字どおりは「床は友だち」。→ 友だちとは離れたくない → 起きたくない、という冗談まじりの弱音。',
+      trap: '答えに yes も no もないので迷いやすい。床を friend と呼ぶ＝離れたくない。',
+      use: 'I don’t want to get up yet.（まだ起きたくない）' },
 
     // R fix: V2 — "so tough" was weak; now "feel sorry for him", a fluent near miss ("breakdown" read as pity)
     // why: sorry ← "complete physical breakdown" heard as pity, "less intimidating" half-caught; scare off ← "nothing like" read literally (= not at all like, so a breakdown would be off-putting); tough ←
