@@ -115,6 +115,10 @@ tested), the screens `components/mini/`; design: the 11-18 proposal (user-approv
   6 / 4 / 2 + 2 clean, +1 むずかしい; a quiet seat's tiles freed by anyone), なかま分け (two bins by level band,
   `categories.ts`, 30 s, one count a seat, stars by the level's pace 8/10/12). Passed round: hot-seat turns (20 s
   each) or one shared phone (`registry.ts`).
+- **The next wave** (not a game's first pick): しりとり (`chain.ts`: an everyday picture to start, each seat in turn a
+  word from the last letter (x z q: the one before), the level's minLen to 8 letters, 10 s a turn (the timer's `next`
+  skips), パス free, ヒント two letters (free at やさしい, else no everyday +1); a round all passed: a new start; 1 a link
+  +1 everyday, ≤ 10 a seat).
 - **Online:** the lander's `mg` (the option `b`, the seats present `s`: only they are dealt in), then `mp` plays (`w`,
   `k`, `n`, `y`, `op`) and the `mc` close from any seat at the table (the relay refuses moves from anyone not seated).
   They race for the next `i`: the room keeps the first, the log's order decides (the first finder, a tile's place) the

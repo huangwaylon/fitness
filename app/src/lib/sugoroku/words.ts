@@ -10,6 +10,9 @@ export interface Words {
   ja(w: string): string;
   /** The words this rack can make, best first (everyday ones, then the most letters' points; long words last among equals). */
   from(rack: readonly string[], score: (w: string) => number): string[];
+  /** The familiar words starting with `prefix` (しりとり's ヒント), everyday ones first, then shortest, then a–z (none
+   *  loaded: none). */
+  starting?(prefix: string): string[];
 }
 
 /** accept.txt's lines read back (each: the letters shared with the word before, then the rest). */
@@ -37,6 +40,10 @@ export function wordsOf(list: string, everyday: Readonly<Record<string, string>>
       const out = sorted.filter((w) => w.length <= rack.length && spellable(w, rack));
       const ev = (w: string) => (w in everyday ? 1 : 0);
       return out.sort((a, b) => ev(b) - ev(a) || score(b) - score(a) || a.length - b.length || (a < b ? -1 : 1));
+    },
+    starting(prefix) {
+      const ev = (w: string) => (w in everyday ? 1 : 0);
+      return sorted.filter((w) => w.startsWith(prefix)).sort((a, b) => ev(b) - ev(a) || a.length - b.length || (a < b ? -1 : 1));
     }
   };
 }

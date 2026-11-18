@@ -21,6 +21,7 @@ import { LONG_BONUS, MARKET_FINDS, MARKET_TILES, market, marketCheck, marketHint
 import { SORT_STREAM, binOf, sort, sortStream } from './sort.ts';
 import { SPELL_ROUNDS, spell, spellWord, type SpellState } from './spell.ts';
 import { mayPlace, nextWord, together, type TogetherState } from './together.ts';
+import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
@@ -36,11 +37,15 @@ describe('mini-games: the building blocks', () => {
       expect(a).not.toBe(b);
       expect(MINIS[a].star && MINIS[b].star).toBe(true);
     }
-    const played: MiniId[] = ['market', 'sort'];
-    for (let k = 0; k < 30; k++) expect(miniOptions(played, seeded(`p${k}`)).sort()).toEqual(['spell', 'together']);
+    // the rest by then: none played again while two are fresh, then the one left and the longest ago
+    const stars = MINI_IDS.filter((id) => MINIS[id].star), rest = MINI_IDS.filter((id) => !MINIS[id].star);
+    expect(stars.sort()).toEqual(['market', 'sort', 'spell', 'together']);
+    for (let k = 0; k < 30; k++) for (const id of miniOptions(['market'], seeded(`p${k}`))) expect(id).not.toBe('market');
+    const allBut = (...ids: MiniId[]) => MINI_IDS.filter((id) => !ids.includes(id));
+    for (let k = 0; k < 30; k++) expect(miniOptions(allBut('spell', 'together'), seeded(`p${k}`)).sort()).toEqual(['spell', 'together']);
     // one left: it and the one played longest ago
-    for (let k = 0; k < 10; k++) expect(miniOptions(['market', 'sort', 'spell'], seeded(`q${k}`)).sort()).toEqual(['market', 'together']);
-    for (let k = 0; k < 10; k++) expect(miniOptions(['market', 'sort', 'spell', 'together', 'market'], seeded(`q${k}`)).sort()).toEqual(['sort', 'spell']);
+    for (let k = 0; k < 10; k++) expect(miniOptions(allBut(rest[0]), seeded(`q${k}`)).sort()).toEqual([MINI_IDS.find((id) => id !== rest[0])!, rest[0]].sort());
+    for (let k = 0; k < 10; k++) expect(miniOptions([...MINI_IDS, 'market'], seeded(`q${k}`)).sort()).toEqual([MINI_IDS[1], MINI_IDS[2]].sort());
     expect(miniOptions([], seeded('same'))).toEqual(miniOptions([], seeded('same')));
   });
   it('the clock: a start-at from the open (the countdown first), the close a grace after the end; passed round a hot-seat’s turns', () => {
@@ -361,6 +366,79 @@ describe('なかま分け', () => {
   });
 });
 
+describe('しりとり', () => {
+  const seats = [H('A', 1), H('B', 3), H('G', 2)];
+  const s0 = chain.deal(deal(seats, 'ch', 'B'), ctx);
+  /** A word the seat whose turn it is may play now. */
+  const ok = (s: ChainState, skip = 0) => ctx.words.starting!(letterOf(s)).filter((w) => !chainCheck(s, chainTurn(s), w, ctx))[skip];
+  it('deals an everyday picture to start, the lander first then round the seats; the same for the same seed', () => {
+    expect(s0.chain).toHaveLength(1);
+    expect(PICTURES.some((p) => p.w === s0.chain[0].w && tierOf(p) === 1)).toBe(true);
+    expect(s0.seats.map((x) => x.who)).toEqual(['B', 'G', 'A']);
+    expect(chainTurn(s0)).toBe('B');
+    // (60 s: six turns at the most)
+    expect(MINIS.chain.ms / CHAIN_TURN_MS).toBe(6);
+    expect(chain.deal(deal(seats, 'ch', 'B'), ctx)).toEqual(s0);
+    expect([chainLetter('apple'), chainLetter('box'), chainLetter('quiz'), chainLetter('xx')]).toEqual(['e', 'o', 'i', 'x']);
+  });
+  it('a word: whose turn only, the last letter, the level’s length to 8, a real word, not used; then the next seat', () => {
+    const w = ok(s0);
+    expect(chain.play(s0, 'A', { w }, ctx)).toBe(s0);
+    const s1 = chain.play(s0, 'B', { w }, ctx);
+    expect([s1.chain.at(-1)?.w, chainTurn(s1), s1.stage]).toEqual([w, 'G', 1]);
+    expect(chainCheck(s1, 'G', w, ctx)).toBe(w.startsWith(letterOf(s1)) ? 'used' : 'letter');
+    const l = letterOf(s1);
+    expect(chainCheck(s1, 'G', `${l === 'a' ? 'b' : 'a'}pple`, ctx)).toBe('letter');
+    expect(chainCheck(s1, 'G', `${l}qqqq`, ctx)).toBe('word');
+    expect(chainCheck(s1, 'G', `${l}${'a'.repeat(CHAIN_MAX_LEN)}`, ctx)).toBe('long');
+    // むずかしい: 4 letters at least; やさしい 3
+    const three = ctx.words.starting!(letterOf(s0)).find((x) => x.length === 3 && ctx.words.has(x))!;
+    expect(chainCheck(s0, 'B', three, ctx)).toBe('short');
+    const easy = chain.deal(deal([H('A', 1)], 'ch'), ctx);
+    const e3 = ctx.words.starting!(letterOf(easy)).find((x) => x.length === 3)!;
+    expect(chainCheck(easy, 'A', e3, ctx)).toBeNull();
+  });
+  it('パス and the timer’s skip: the next seat, the same letter; a late second skip nothing; a whole round passed: a new start word', () => {
+    const p = chain.play(s0, 'B', { op: 'pass' }, ctx);
+    expect([chainTurn(p), letterOf(p), p.chain.length]).toEqual(['G', letterOf(s0), 1]);
+    expect(chain.play(s0, 'G', { op: 'pass' }, ctx)).toBe(s0);
+    const skip = { op: 'next', k: p.stage };
+    const q = chain.play(p, 'A', skip, ctx);
+    expect(chainTurn(q)).toBe('A');
+    expect(chain.play(q, 'B', skip, ctx)).toBe(q);
+    const r = chain.play(q, 'A', { op: 'pass' }, ctx);
+    expect([chainTurn(r), r.chain.length, r.chain[1].who, r.passes]).toEqual(['B', 2, null, 0]);
+    expect(r.chain[1].w).not.toBe(r.chain[0].w);
+  });
+  it('ヒント: two letters of a familiar word long enough for the seat, on every phone; free at やさしい, else no everyday +1', () => {
+    const h = chainHint(s0, ctx)!;
+    expect(h.startsWith(letterOf(s0)) && h.length >= 4).toBe(true);
+    const hinted = chain.play(s0, 'B', { op: 'hint' }, ctx);
+    expect(hinted.hinted).toBe(true);
+    expect(chain.play(hinted, 'B', { op: 'hint' }, ctx)).toBe(hinted);
+    const ev = ctx.words.starting!(letterOf(s0)).find((w) => ctx.words.ja(w) && !chainCheck(s0, 'B', w, ctx))!;
+    expect(chain.play(s0, 'B', { w: ev }, ctx).chain.at(-1)!.pts).toBe(2);
+    expect(chain.play(hinted, 'B', { w: ev }, ctx).chain.at(-1)!.pts).toBe(1);
+    const easy = chain.deal(deal([H('A', 1), H('B', 2)], 'ez'), ctx);
+    const ew = ctx.words.starting!(letterOf(easy)).find((w) => ctx.words.ja(w) && !chainCheck(easy, 'A', w, ctx))!;
+    expect(chain.play(chain.play(easy, 'A', { op: 'hint' }, ctx), 'A', { w: ew }, ctx).chain.at(-1)!.pts).toBe(2);
+    // the turn over: the hint gone
+    expect(chain.play(hinted, 'B', { op: 'pass' }, ctx).hinted).toBe(false);
+  });
+  it('stars: each maker’s links (+1 everyday), CHAIN_SEAT_MAX a seat; the longest word kept; none made: none', () => {
+    let s = s0;
+    for (let k = 0; k < 30; k++) s = chain.play(s, chainTurn(s), { w: ok(s) }, ctx);
+    expect(s.chain.length).toBe(31);
+    const res = chain.close(s);
+    for (const n of Object.values(res.stars)) expect(n).toBeLessThanOrEqual(CHAIN_SEAT_MAX);
+    expect(Object.keys(res.stars).sort()).toEqual(['A', 'B', 'G']);
+    expect(res.made[0].text.length).toBe(Math.max(...s.chain.slice(1).map((l) => l.w.length)));
+    expect(chain.close(s0)).toEqual({ stars: {}, made: [] });
+    const one = chain.play(s0, 'B', { w: ok(s0) }, ctx);
+    expect(chain.close(one).stars).toEqual({ B: one.chain[1].pts });
+  });
+});
+
 describe('every game: whatever the plays, never a negative star, and the same plays give the same game', () => {
   const seats = [H('A', 1), H('B', 2), H('G', 3)];
   const rackWords = new Map<string, string[]>();
@@ -392,6 +470,14 @@ describe('every game: whatever the plays, never a negative star, and the same pl
       }
       case 'sort':
         return [[who, { n: Math.floor(r() * 100) }]];
+      case 'chain': {
+        const c = s as ChainState, x = r(), turn = chainTurn(c);
+        if (x < 0.55) return [[turn, { w: ctx.words.starting!(letterOf(c)).find((w) => !chainCheck(c, turn, w, ctx)) ?? 'cat' }]];
+        if (x < 0.65) return [[turn, { op: 'hint' }]];
+        if (x < 0.75) return [[turn, { op: 'pass' }]];
+        if (x < 0.85) return [[who, { op: 'next', k: c.stage % 64 }]];
+        return [[who, { w: ['apple', 'egg', 'tree', 'rain', 'zz'][Math.floor(r() * 5)] }]];
+      }
     }
   }
   it('300 random games each', () => {

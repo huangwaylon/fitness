@@ -18,6 +18,8 @@ import { newGame, wordScore, type Game } from '../game.ts';
 import { applyMove, foldMoves } from '../online.ts';
 import { OUTBOX, RULES, answered, beaten, heard, miniOpenedAt, otherRules, playsRules, queued, sameMove, toSend, type Move, type Outbox } from '../wire.ts';
 import { miniOn } from './turn.ts';
+import { MINI_IDS, type MiniId } from './registry.ts';
+import { chainCheck, chainTurn, letterOf } from './chain.ts';
 
 vi.mock('./flag.ts', () => ({ MINIS: true }));
 
@@ -49,6 +51,12 @@ function playsOf(g: Game, who: Who, r: () => number): Body[] {
     case 'together': {
       const line = on.s.lines[on.s.l];
       return line ? line.owner.map((o, k) => (o === who ? k : -1)).filter((k) => k >= 0).map((k) => ({ a: 'mp', k })) : [];
+    }
+    case 'chain': {
+      // (whose turn: a word; anyone: the timers' skips for the next stages, a pass)
+      const s = on.s, w = chainTurn(s) === who ? words.starting!(letterOf(s)).find((x) => !chainCheck(s, who, x, ctx)) : undefined;
+      const out: Body[] = w ? [{ a: 'mp', w }] : [];
+      return [...out, { a: 'mp', op: 'next', k: s.stage % 64 }, { a: 'mp', op: 'pass' }, { a: 'mp', op: 'next', k: (s.stage + 1) % 64 }];
     }
   }
 }
@@ -238,21 +246,26 @@ class Phone {
 }
 
 /** A table at a mini-game's open (its log so far the same on every phone and in the room), the room: the first game
- *  from `seed` on whose first pick `id` is played (any: the first pick). */
-const opens = new Map<string, { gid: string; base: Move[] }>();
-function table(seed: string, id?: string): { phones: Phone[]; room: Room; at: number } {
+ *  from `seed` with a pick of `id` (a game's first pick is a ★ one: the others at a later stone; none given: the first). */
+const opens = new Map<string, { id: MiniId; base: Move[] }[]>();
+function table(seed: string, id?: MiniId): { phones: Phone[]; room: Room; at: number } {
   for (let k = 0; ; k++) {
     const gid = `${seed}x${k}`.padEnd(10, '0').slice(0, 12);
-    const { base } = opens.get(gid) ?? opens.set(gid, { gid, base: ((all) => all.slice(0, all.findIndex((m) => m.a === 'mg') + 1))(playMoves(gid)) }).get(gid)!;
-    const at = base.length - 1;
-    if (at < 0 || (id && miniOn(foldMoves(base, ctx)!)?.id !== id)) continue;
+    const picks = opens.get(gid) ?? opens.set(gid, ((all) => all.flatMap((m, i) => {
+      if (m.a !== 'mg') return [];
+      const base = all.slice(0, i + 1);
+      return [{ id: miniOn(foldMoves(base, ctx)!)!.id, base }];
+    }))(playMoves(gid))).get(gid)!;
+    const hit = picks.find((p) => !id || p.id === id);
+    if (!hit) continue;
+    const base = hit.base, at = base.length - 1;
     const phones = (['A', 'B', 'G'] as const).map((w) => Object.assign(new Phone(w, gid), { log: [...base] }));
     const room = new Room(phones);
     room.moves = [...base];
     return { phones, room, at };
   }
 }
-const MINI_GAMES = ['market', 'spell', 'together', 'sort'] as const;
+const MINI_GAMES = MINI_IDS;
 
 /** The network: each step one link (a phone's up or down, in order) delivers its next; `r` picks which. */
 function settle(phones: Phone[], room: Room, r: () => number, steps = 20_000, between?: (k: number) => void): void {
@@ -268,7 +281,7 @@ function settle(phones: Phone[], room: Room, r: () => number, steps = 20_000, be
 describe('online mini-games: phones racing through the room', () => {
   it('any order of delivery: every phone ends with the room’s log and the same game; every play in it once, in its order', () => {
     for (let k = 0; k < 60; k++) {
-      const { phones, room, at } = table(`r${k % 5}`, MINI_GAMES[k % 4]);
+      const { phones, room, at } = table(`r${k % 5}`, MINI_GAMES[k % MINI_GAMES.length]);
       const g0 = foldMoves(room.moves, ctx)!;
       const r = seeded(`race${k}`);
       const plays = new Map(phones.map((p) => [p.me, playsOf(g0, p.me, r)]));
@@ -327,14 +340,14 @@ describe('online mini-games: phones racing through the room', () => {
   });
   it('the close racing the plays: the first close stands everywhere, plays after it count for nothing, a second close nothing', () => {
     for (let k = 0; k < 30; k++) {
-      const { phones, room } = table(`c${k % 5}`, MINI_GAMES[k % 4]);
+      const { phones, room, at } = table(`c${k % 5}`, MINI_GAMES[k % MINI_GAMES.length]);
       const r = seeded(`close${k}`);
       const g0 = foldMoves(room.moves, ctx)!;
       for (const p of phones) for (const m of playsOf(g0, p.me, r)) p.play(m);
       phones[k % 3].play({ a: 'mc' });
       phones[(k + 1) % 3].play({ a: 'mc' });
       settle(phones, room, r);
-      const log = room.log(), close = log.findIndex((m, i) => i > 0 && m.a === 'mc');
+      const log = room.log(), close = log.findIndex((m, i) => i > at && m.a === 'mc');
       const g = foldMoves(log, ctx)!, closedAt = foldMoves(log.slice(0, close + 1), ctx)!;
       // (it closed by the first mc, or before it by the game's own end: either way the same from there)
       expect(g.minis, `${k}`).toEqual(closedAt.minis);
