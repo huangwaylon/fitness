@@ -1160,7 +1160,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     // (a mount's first frame only compiles, and a held-back ground isn't drawn: the canvas still blank)
     if (!island && !compileOnly) island = noDraw || ready(ground.group, warming);
     const t1 = now();
-    drawnHook?.(t, t1, held ? 'link' : things.pending() ? 'models' : cards.pending() ? 'cards' : null, island);
+    drawnHook?.(t, t1, held ? 'link' : things.holding() ? 'models' : cards.pending() ? 'cards' : null, island);
     if (swapAt && !noDraw && !compileOnly) {
       swapHook?.(swapOn, swapSet, t1 - t);
       swapAt = 0;

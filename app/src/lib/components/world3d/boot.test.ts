@@ -97,6 +97,8 @@ describe('the launch clock (perf.boot)', () => {
     expect(lateModels(ins, 500, 700, end), 'a room piece: no file timing').toEqual({ late: 2, lastM: 'room:outdoor-a-very-long-catalogue-piece', lateA: 611 });
     expect(lateModels(ins, 500, 600, end)).toEqual({ late: 1, lastM: 'finds/clam', lateA: 520, lateF: 480 });
     expect(lateModels(ins, 950, 1000)).toEqual({ late: 0 });
+    // (an effect's model, the stream's maple leaf: `shown` never waits for it, so it's never the one waited for)
+    expect(lateModels([...ins, ['fx/maple-leaf', 650, 'u/leaf']], 500, 700, end).lastM).toBe('room:outdoor-a-very-long-catalogue-piece');
   });
 
   it('the log keeps every field of the report, numbers and closed sets only', () => {

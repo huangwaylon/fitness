@@ -1,8 +1,8 @@
 // The island's launch, timed (the log's `perf.boot`, once a page load): when its first frame
 // was drawn, when the models were in (place() resolved), when the island first stood whole on screen (`shown`: a frame
-// with nothing held back: no model loading, no program linking, no texture still to upload), the longest display frame
-// meanwhile and the engine's longest frame, and how the launch was served (the service worker, the network). Real
-// iPhones' numbers, not the Simulator's. No three.js here (Island3D and the engine feed it).
+// with nothing held back: no model loading but an effect's (fx/, the stream's floats: ambience), no program linking, no
+// texture still to upload), the longest display frame meanwhile and the engine's longest frame, and how the launch was
+// served (the service worker, the network). Real iPhones' numbers, not the Simulator's. No three.js here (Island3D and the engine feed it).
 import { log } from '#lib/sync/log.ts';
 
 /** After `shown`, the frames are watched this much longer (the follow-up frames: the shadows, the flourishes' warm-up). */
@@ -47,7 +47,7 @@ export interface BootReport {
   warm: boolean;
   net: number;
   /** The models that came in after `loaded` up to `shown`, and the last of them (its name: what the island waited
-   *  for). */
+   *  for); an effect's (fx/) never counted, as `shown` doesn't wait for one (things.ts holding). */
   late?: number;
   lastM?: string;
   /** That last one's fetch end (its file's resource timing: none for a room piece's) and its arrival in the scene (ms
@@ -91,11 +91,12 @@ export interface BootReport {
 /** A file's fetch end (ms since the navigation's start: its first resource timing), or undefined. */
 const fetchEnd = (url: string): number | undefined => (globalThis.performance?.getEntriesByName?.(url, 'resource')[0] as PerformanceResourceTiming | undefined)?.responseEnd || undefined;
 
-/** Of the models in (things.ts arrivals: name, time, file), those after `loaded` up to `shown`, and the last's name (at
- *  most 40 characters, the log's token), its arrival and its file's fetch end. */
+/** Of the models in (things.ts arrivals: name, time, file) but the effects' (fx/: `shown` waits for none), those after
+ *  `loaded` up to `shown`, and the last's name (at most 40 characters, the log's token), its arrival and its file's
+ *  fetch end. */
 export function lateModels(ins: readonly (readonly [string, number, string?])[], loaded: number, shown: number, end = fetchEnd): Pick<BootReport, 'late' | 'lastM' | 'lateF' | 'lateA'> {
   let late = 0, last: (typeof ins)[number] | undefined;
-  for (const m of ins) if (m[1] > loaded && m[1] <= shown) (late++, (last = m));
+  for (const m of ins) if (m[1] > loaded && m[1] <= shown && !m[0].startsWith('fx/')) (late++, (last = m));
   if (!last) return { late };
   const f = last[2] ? end(last[2]) : undefined;
   return { late, lastM: last[0].slice(0, 40), lateA: Math.round(last[1]), ...(f ? { lateF: Math.round(f) } : {}) };

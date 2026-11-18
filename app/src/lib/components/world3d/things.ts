@@ -173,6 +173,10 @@ export interface Things {
    *  with no such model built. */
   outlineEach(id: string, fn: (p: Vector3) => void): boolean;
   pending(): number;
+  /** pending() less the effects' models (fx/: the flourishes, the season's floats on the stream): what the launch's
+   *  `shown` waits for (engine.ts drawnHook, boot.ts). The maple leaf, ambience, was the last model in 73 of 111
+   *  phone launches and held `shown` for it (perf.boot lastM, review 2026-11-18 P3). */
+  holding(): number;
   /** Models asked for ahead of their instances (fetched and decoded with the first wave: Island3D's node models, a
    *  find's or a weed's, which mirror() asks for only from the first frame; the phones' launches waited ~0.6 s past
    *  `loaded` for them, perf.boot lastM, review 2026-11-13 perf #3). Kept as any asked-for model is. */
@@ -295,7 +299,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
    *  the whole island: all drawn). */
   const culling = o.cull ?? false;
   const base = new URL(`room/world3d/`, new URL(document.baseURI)).href;
-  let pending = 0, disposed = false;
+  let pending = 0, holding = 0, disposed = false;
   /** The models in, in order, and when (performance.now: the launch's perf.boot, its last before the island stood
    *  whole); the first ARRIVALS a mount. */
   const ins: [ModelName, number, string][] = [];
@@ -313,10 +317,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       gltfs.set(name, p);
     }
     if (!p) {
+      const holds = !name.startsWith('fx/');
       pending++;
+      if (holds) holding++;
       const url = urlOf(name);
       use(url);
-      p = load(url, name).then((g) => (pending--, arrived(name, url), (g = g && member(g, name)), g && got.add(g), g));
+      p = load(url, name).then((g) => (pending--, holds && holding--, arrived(name, url), (g = g && member(g, name)), g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;
@@ -1013,6 +1019,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       return true;
     },
     pending: () => pending,
+    holding: () => holding,
     prefetch(names) {
       for (const n of names) if (!disposed && (MODELS[n] || isRoomModel(n))) void model(n);
     },
