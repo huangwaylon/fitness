@@ -6,7 +6,7 @@ import { newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import seedsJson from './seeds.json';
 import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, rollMode, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { choose, eventDone, finish, rollMode, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { decodeAccept, wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -97,7 +97,8 @@ describe('game', () => {
       expect(g.phase.k).toBe('end');
       expect(g.round).toBeLessThanOrEqual(MAX_ROUNDS[lv.length]);
       expect(JSON.stringify(playOut(`g${lv.length}`, lv))).toBe(JSON.stringify(g));
-      expect(ranking(g)).toHaveLength(lv.length);
+      expect(teamStars(g)).toBe(g.players.reduce((n, p) => n + p.stars, 0));
+      expect(teamGoal(g)).toBeGreaterThan(0);
     }
   });
   it('a long route: about 11 rounds, the fork taken', () => {
@@ -174,6 +175,33 @@ describe('game', () => {
     }
     expect(sum / 60).toBeLessThan(7);
     expect(worst).toBeLessThan(18);
+  });
+  it('letters: a letter stone walked over goes to the pocket (POCKET at most); pocket tiles add to a word', () => {
+    let g = newGame(seats, 'pocket');
+    g = { ...g, letters: { 1: 'z' }, players: g.players.map((p) => ({ ...p, pos: 0 })) };
+    const after = spin(g);
+    expect(after.players[0].pocket).toEqual(['z']);
+    expect(after.letters[1]).toBeUndefined();
+    const full = { ...g, players: g.players.map((p, i) => (i ? p : { ...p, pocket: ['a', 'b', 'c'] })) };
+    expect(spin(full).players[0].pocket).toHaveLength(POCKET);
+    const p = { rack: ['o', 'o'], pocket: ['z'], forced: null };
+    expect(tilesFor(p, 'zoo')).toEqual({ rack: ['o', 'o'], pocket: ['z'], forced: false });
+    expect(tilesFor(p, 'zzz')).toBeNull();
+  });
+  it('a sent letter: from my pocket at my turn’s start, theirs must be in their next word (+3), a swap clears it', () => {
+    let g = newGame(seats, 'gift');
+    g = { ...g, players: g.players.map((p, i) => (i ? { ...p, rack: ['o', 'o', 't', 'a', 'e', 'r', 's', 'n'] } : { ...p, pocket: ['z'] })) };
+    g = giveLetter(g, 'z', 'B');
+    expect(g.players[0].pocket).toEqual([]);
+    expect(g.players[1].forced).toBe('z');
+    expect(giveLetter(g, 'z', 'B')).toBe(g); // (nothing left to send)
+    const turn = { ...g, turn: 1, phase: { k: 'word' as const, mult: 1, spun: 1 } };
+    expect(wordScore(turn, 'toast', false)).toBeNull(); // leaves the z out
+    const sc = wordScore(turn, 'zoo', false)!;
+    expect(sc.forced).toBe(FORCED_BONUS);
+    const played = playWord(turn, 'zoo', { everyday: false, ja: '', hinted: false });
+    expect(played.players[1].forced).toBeNull();
+    expect(swap(turn).players[1].forced).toBeNull();
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });

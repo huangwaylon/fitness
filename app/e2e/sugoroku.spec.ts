@@ -90,7 +90,9 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('[data-sg-end]').click();
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
-  await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(2);
+  // a team game: no ranking, each one's good thing
+  await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-sg-hl]')).toHaveCount(2);
   // ‹: back to the island, English Study on the tab; the finished game isn't offered again
   await sheet(page).locator('.navbar button').first().click();
   await expect(page.locator('dialog[open] [data-sugoroku]')).toHaveAttribute('data-level', 'menu');
@@ -101,7 +103,7 @@ test('a game left half-way resumes after a reload (続きから), where it was',
   await start(page);
   await sheet(page).locator('[data-sg-start]').click();
   await playTurn(page);
-  const stars = await sheet(page).locator('[data-sg-score] b').allTextContents();
+  const stars = await sheet(page).locator('[data-sg-team]').getAttribute('data-sg-team');
   const turn = await sheet(page).locator('[data-sg-turn]').getAttribute('data-sg-turn');
   // the save is down before the reload (it's written on every step)
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('island.sugoroku') ?? 'null')?.turn)).toBe(Number(turn));
@@ -109,7 +111,7 @@ test('a game left half-way resumes after a reload (続きから), where it was',
   await page.reload();
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
   await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', turn!);
-  await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
+  await expect(sheet(page).locator('[data-sg-team]')).toHaveAttribute('data-sg-team', stars!);
 });
 
 test('on two phones: A starts a game for A and B, B is invited and joins, each plays their own turn and watches the other’s', async ({ browser }) => {
@@ -138,10 +140,10 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await expect(sheet(a).locator('[data-sg-waiting]')).toBeVisible();
   await b.bringToFront();
   await expect(sheet(b).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
-  await expect(sheet(b).locator('[data-sg-score] b')).toHaveText(await sheet(a).locator('[data-sg-score] b').allTextContents());
+  await expect(sheet(b).locator('[data-sg-team]')).toHaveAttribute('data-sg-team', (await sheet(a).locator('[data-sg-team]').getAttribute('data-sg-team'))!);
   for (let k = 0; k < 4 && (await sheet(b).locator('[data-sg-turn]').getAttribute('data-sg-turn')) === '1'; k++) await playTurn(b);
   await a.bringToFront();
-  await expect(sheet(a).locator('[data-sg-score] b')).toHaveText(await sheet(b).locator('[data-sg-score] b').allTextContents());
+  await expect(sheet(a).locator('[data-sg-team]')).toHaveAttribute('data-sg-team', (await sheet(b).locator('[data-sg-team]').getAttribute('data-sg-team'))!);
   await expect(sheet(a).locator('[data-sg-spin], [data-sg-waiting]').first()).toBeVisible();
   await ctx.close();
 });

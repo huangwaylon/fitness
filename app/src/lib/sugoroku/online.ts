@@ -4,7 +4,7 @@
 // The words and lines must be in (an everyday word's bonus, a ぶん's line are the fold's too).
 import type { SgIntent } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
-import { choose, eventDone, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Level, type Seat } from './game.ts';
+import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Level, type Seat } from './game.ts';
 import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
 
@@ -47,6 +47,7 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
       return playWord(g, w, { everyday: !!ja, ja, hinted: !!m.h });
     }
     case 'swap': return swap(g);
+    case 'gift': return m.ch && m.to ? giveLetter(g, m.ch, m.to) : g;
     case 'sent': {
       const line = lineFor(g, ctx.lines);
       return line ? sentenceDone(g, { misses: m.m ?? 0, unseen: !!m.u, text: line.en, ja: line.ja }) : sentenceAsWord(g);

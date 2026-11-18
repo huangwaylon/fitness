@@ -12,6 +12,9 @@
 
   interface Props {
     rack: readonly string[];
+    /** Letters picked up on the way (any word may add them), and a letter another player sent (this word must use it). */
+    pocket?: readonly string[];
+    forced?: string | null;
     lucky: readonly string[];
     mult: number;
     /** The seat's shortest word. */
@@ -27,7 +30,7 @@
     onplay: (word: string, hinted: boolean) => void;
     onswap: () => void;
   }
-  let { rack, lucky, mult, minLen, hintHalf, hinted0 = false, onhint, words, score, onplay, onswap }: Props = $props();
+  let { rack, pocket = [], forced = null, lucky, mult, minLen, hintHalf, hinted0 = false, onhint, words, score, onplay, onswap }: Props = $props();
 
   /** The rack's tiles in the slots, in order. */
   let picked = $state<number[]>([]);
@@ -36,8 +39,12 @@
   let note = $state('');
   /** The word checked and on the list: its points shown till 次へ. */
   let done = $state<{ word: string; sc: Score; ja: string } | null>(null);
-  const word = $derived(picked.map((i) => rack[i]).join(''));
-  const best = $derived(words.from(rack, (w) => score(w, !!words.ja(w), false)?.total ?? 0).filter((w) => w.length >= minLen));
+  /** Every tile this turn: the rack, the pocket, a sent letter. */
+  const tiles = $derived([...rack.map((l) => ({ l, kind: 'rack' as const })), ...pocket.map((l) => ({ l, kind: 'pocket' as const })),
+    ...(forced ? [{ l: forced, kind: 'forced' as const }] : [])]);
+  const word = $derived(picked.map((i) => tiles[i].l).join(''));
+  const best = $derived(words.from(tiles.map((t) => t.l), (w) => score(w, !!words.ja(w), false)?.total ?? 0)
+    .filter((w) => w.length >= minLen && (!forced || w.includes(forced))));
 
   function put(i: number) {
     if (done || picked.includes(i)) return;
@@ -56,7 +63,9 @@
   function hint() {
     const w = best[0];
     if (!w) return void (note = s('noWord'));
-    const left = rack.map((l, i) => ({ l, i }));
+    // (the sent letter's tile first, then the rack's, then the pocket's)
+    const order = { forced: 0, rack: 1, pocket: 2 };
+    const left = tiles.map((t, i) => ({ l: t.l, i, o: order[t.kind] })).sort((a, b) => a.o - b.o);
     picked = [...w].map((l) => left.splice(left.findIndex((x) => x.l === l), 1)[0].i);
     if (!hinted) onhint();
     hinted = true;
@@ -64,13 +73,14 @@
   }
   function check() {
     if (word.length < minLen) return void (note = s('minLen', { n: minLen }));
+    if (forced && !word.includes(forced)) return void (note = s('mustUse', { l: forced.toUpperCase() }));
     if (!words.has(word)) return void (note = s('notWord'));
     const ja = words.ja(word);
     const sc = score(word, !!ja, hinted);
     if (sc) done = { word, sc, ja };
   }
   const why = (sc: Score) => [s('why', { l: sc.letters }), sc.lucky && s('whyLucky', { n: sc.lucky }), sc.mult > 1 && s('whyDouble'),
-    sc.everyday && `${s('everyday')} +${sc.everyday}`, sc.half && s('whyHalf')].filter(Boolean).join(' · ');
+    sc.everyday && `${s('everyday')} +${sc.everyday}`, sc.forced && s('whyForced', { n: sc.forced }), sc.half && s('whyHalf')].filter(Boolean).join(' · ');
 </script>
 
 <section class="turn" data-sg-word>
@@ -88,16 +98,29 @@
     <p class="lucky">{s('lucky')} {#each lucky as l (l)}<b class="lt" lang="en">{l.toUpperCase()}</b>{/each}<span class="soft">{s('luckyNote')}</span></p>
     <div class="slots" lang="en" data-sg-slots={word}>
       {#each picked as i, k (k)}
-        <button type="button" class="tile in" class:lucky={lucky.includes(rack[i])} data-sfx="tick" onclick={() => takeBack(k)}>{rack[i].toUpperCase()}<small>{VALUE[rack[i]]}</small></button>
+        <button type="button" class="tile in" class:lucky={lucky.includes(tiles[i].l)} class:pk={tiles[i].kind !== 'rack'} data-sfx="tick" onclick={() => takeBack(k)}>{tiles[i].l.toUpperCase()}<small>{VALUE[tiles[i].l]}</small></button>
       {/each}
       {#if !picked.length}<span class="empty"></span>{/if}
     </div>
     <div class="rack" lang="en">
-      {#each rack as l, i (i)}
-        <button type="button" class="tile" class:lucky={lucky.includes(l)} class:used={picked.includes(i)} disabled={picked.includes(i)}
-          data-sfx="tick" data-sg-tile={l} onclick={() => put(i)}>{l.toUpperCase()}<small>{VALUE[l]}</small></button>
+      {#each tiles as t, i (i)}
+        {#if t.kind === 'rack'}
+          <button type="button" class="tile" class:lucky={lucky.includes(t.l)} class:used={picked.includes(i)} disabled={picked.includes(i)}
+            data-sfx="tick" data-sg-tile={t.l} onclick={() => put(i)}>{t.l.toUpperCase()}<small>{VALUE[t.l]}</small></button>
+        {/if}
       {/each}
     </div>
+    {#if pocket.length || forced}
+      <div class="extra" lang="en" data-sg-extra>
+        {#each tiles as t, i (i)}
+          {#if t.kind !== 'rack'}
+            <button type="button" class="tile pk" class:must={t.kind === 'forced'} class:used={picked.includes(i)} disabled={picked.includes(i)}
+              data-sfx="tick" data-sg-tile={t.l} data-sg-kind={t.kind} onclick={() => put(i)}>{t.l.toUpperCase()}<small>{VALUE[t.l]}</small></button>
+          {/if}
+        {/each}
+        <span class="xnote">{forced ? s('mustUse', { l: forced.toUpperCase() }) : s('pocketNote')}</span>
+      </div>
+    {/if}
     <p class="note" aria-live="polite">{note}</p>
     <div class="row">
       <button type="button" class="btn small" data-sfx="confirm" disabled={!picked.length} data-sg-play onclick={check}>{s('play')}</button>
@@ -128,6 +151,11 @@
   .tile small { position: absolute; right: 4px; bottom: 2px; font: 600 11px/1 var(--font-num); opacity: .75; }
   .tile.lucky { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
   .tile.used { opacity: .25; }
+  /* a pocket letter (picked up on the way) and a sent one (must be used) */
+  .tile.pk { background: color-mix(in srgb, var(--c-mint) 45%, #f6e7c6); box-shadow: 0 3px 0 color-mix(in srgb, var(--c-mint) 60%, #8a6d48); }
+  .tile.must { background: color-mix(in srgb, var(--c-lilac) 60%, #f6e7c6); box-shadow: 0 0 0 2px var(--c-ink), 0 3px 0 #8a6d48; }
+  .extra { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .xnote { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .tile:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #b99364; }
   .row { display: flex; gap: 8px; justify-content: center; }
   .row .btn:disabled { opacity: .55; }

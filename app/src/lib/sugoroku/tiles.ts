@@ -139,6 +139,8 @@ export interface Score {
   everyday: number;
   /** A ヒント's word, halved. */
   half: boolean;
+  /** A sent letter used (game.ts FORCED_BONUS). */
+  forced?: number;
   total: number;
 }
 

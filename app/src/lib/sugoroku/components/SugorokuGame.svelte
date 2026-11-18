@@ -21,9 +21,10 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
   import { CARDS } from '../cards.ts';
-  import { choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
+  import { teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
     sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
-  import { pathOf } from '../board.ts';
+  import { pathOf, toGoal } from '../board.ts';
+  import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, pickSentence, type Line, type Sentence } from '../sentences.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
@@ -249,6 +250,49 @@
   });
 
   const card = $derived(ph?.k === 'event' ? CARDS[ph.card] : null);
+  /** おくりもの: the pocket letter being sent, and who may get one (on the way, none waiting; whoever's furthest back first). */
+  let giving = $state<string | null>(null);
+  const takers = $derived(g ? g.players.filter((p, i) => i !== g.turn && p.home === null && !p.forced)
+    .sort((a, b) => toGoal(b.pos, b.branch) - toGoal(a.pos, a.branch)) : []);
+  $effect(() => void (g?.turn, (giving = null)));
+  /** A letter just picked up on the way (this turn's walk): 「Zを拾った！」 till the next turn. */
+  let pickNote = $state('');
+  let pocketsSeen: string[] = [];
+  $effect(() => {
+    const x = g;
+    if (!x) return;
+    untrack(() => {
+      const now = x.players.map((p) => p.pocket.join(''));
+      const k = now.findIndex((p, i) => pocketsSeen[i] !== undefined && p.length > pocketsSeen[i].length);
+      if (k >= 0) pickNote = s('picked', { l: now[k].slice(-1).toUpperCase() });
+      else if (x.phase.k === 'spin') pickNote = '';
+      pocketsSeen = now;
+    });
+  });
+  /** The end: each player's one good thing (their longest word, the pictures they spelt, the lines they put right), and
+   *  the team's last total on this phone (beaten: said; not: nothing). */
+  function highlightOf(x: Game, k: number): string {
+    const mine = x.made.filter((m) => m.p === k);
+    const longest = mine.filter((m) => m.kind === 'word').sort((a, b) => b.text.length - a.text.length)[0];
+    const pics = mine.filter((m) => m.kind === 'picture').length, lines = mine.filter((m) => m.kind === 'sentence').length;
+    if (longest && longest.text.length >= 5) return s('hlLongest', { w: longest.text });
+    if (pics) return s('hlPics', { n: pics });
+    if (lines) return s('hlLines', { n: lines });
+    if (longest) return s('hlWord', { w: longest.text });
+    return s('hlCheer');
+  }
+  let lastTotal = $state<number | null>(null);
+  let savedFor = '';
+  $effect(() => {
+    const x = g;
+    if (!x || level !== 'results') return;
+    untrack(() => {
+      if (savedFor === x.seed) return;
+      savedFor = x.seed;
+      lastTotal = readJson<number>(localKV(), DEVICE.sugorokuLast);
+      writeJson(localKV(), DEVICE.sugorokuLast, teamStars(x));
+    });
+  });
   /** A card's effect as its chip says it. */
   function effectOf(c: (typeof CARDS)[number]): string {
     if (c.stars) return s('effStars', { n: c.stars });
@@ -267,7 +311,6 @@
   });
   const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
 
-  const rank = $derived(g ? ranking(g) : []);
   const headOf = (x: { who: Who }) => ({ person: x.who, worn: true });
 </script>
 
@@ -342,21 +385,27 @@
     {:else if level === 'play' && g && cur && ph}
       <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
       <div class="body sheet-scroll play" class:screen={!!screen} data-sg-turn={g.turn} data-sg-phase={ph.k}>
+        <!-- the team's stars toward its goal (one number: a team game), then who's at the table -->
+        <div class="team" data-sg-team={teamStars(g)}>
+          <Icon name="star" size={18} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/ {teamGoal(g)}</span>
+          <span class="bar"><i style:width="{Math.min(100, (teamStars(g) / teamGoal(g)) * 100)}%"></i></span>
+          <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
+        </div>
         <div class="scores">
           {#each g.players as p, i (i)}
             <span class="score" class:now={i === g.turn} data-sg-score={i}>
-              <Avatar {...headOf(p)} size={28} />
-              {#key p.stars}<b class="bump">{p.stars}</b>{/key}<small class="lv">{s(`level.${p.level}`)}</small>
+              <Avatar {...headOf(p)} size={28} /><small class="lv">{s(`level.${p.level}`)}</small>
+              {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
+              {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
             </span>
           {/each}
-          <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
         </div>
         {#if screen}
           <Board3D players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3}>
-            {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} {compact} />{/snippet}
+            {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} {compact} letters={g.letters} />{/snippet}
           </Board3D>
         {:else}
-          <Board players={g.players} {shown} turn={g.turn} {compact} />
+          <Board players={g.players} {shown} turn={g.turn} {compact} letters={g.letters} />
         {/if}
         <div class="panel card pad">
           {#if walking || rolling !== null}
@@ -379,7 +428,26 @@
                 <p class="note">{s('passTo', { name: cur.name })}</p>
               </div>
             </div>
+            {#if pickNote}<p class="note" data-sg-picked>{pickNote}</p>{/if}
+            {#if cur.forced}<p class="note">{s('hasForced', { l: cur.forced.toUpperCase() })}</p>{/if}
             <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
+            {#if cur.pocket.length && takers.length}
+              <!-- おくりもの: a pocket letter to someone (their next word uses it: +3 for the team) -->
+              <div class="gift" data-sg-gift>
+                {#if giving}
+                  <span class="note">{s('sendTo', { l: giving.toUpperCase() })}</span>
+                  {#each takers as t (t.who)}
+                    <button type="button" class="sg-chip" data-sfx="confirm" data-sg-give={t.who}
+                      onclick={() => { const l = giving!; giving = null; act((x) => giveLetter(x, l, t.who), { a: 'gift', ch: l, to: t.who }); }}>
+                      <Avatar person={t.who} worn size={20} /> {t.name}</button>
+                  {/each}
+                  <button type="button" class="link" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
+                {:else}
+                  <span class="note">{s('sendLetter')}</span>
+                  {#each cur.pocket as l, j (j)}<button type="button" class="sg-chip" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}
+                {/if}
+              </div>
+            {/if}
             {#if rollMode(g) === 'fast'}<p class="note">{s('twice')}</p>{:else if rollMode(g) === 'slow'}<p class="note">{s('slowRoll')}</p>{/if}
           {:else if ph.k === 'fork'}
             <div class="event" data-sg-fork>
@@ -396,7 +464,7 @@
           {:else if ph.k === 'word'}
             {#if words}
               {#key `${g.n}`}
-                <WordTurn rack={cur.rack} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
+                <WordTurn rack={cur.rack} pocket={cur.pocket} forced={cur.forced} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
                   hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
                   score={(w, c, h) => wordScore(g, w, c, h)}
                   onplay={(w, h) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h }), { a: 'word', w, ...(h ? { h: 1 } : {}) })}
@@ -428,7 +496,7 @@
             <div class="event" data-sg-home>
               <Avatar {...headOf(cur)} size={64} />
               <h3 class="ttl">{s('homeTitle')}</h3>
-              <p class="ja">{s('homePlace', { n: ph.place + 1, b: HOME_BONUS[ph.place] ?? 0 })}</p>
+              <p class="ja">{s('homeTeam', { b: HOME_BONUS })}</p>
               <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(homeDone, { a: 'home' })}>{s('next')}</button>
             </div>
           {/if}
@@ -445,15 +513,16 @@
     {:else if level === 'results' && g}
       <div class="top"><NavBar pad title={s('results')} onback={toMenu} onclose={close} /></div>
       <div class="body sheet-scroll" data-sg-results>
-        <div class="card pad podium">
-          <p class="win">{s('winner', { name: g.players[rank[0]].name })}</p>
-          {#each rank as i, k (i)}
-            {@const p = g.players[i]}
-            <div class="rrow" data-sg-rank={k}>
-              <span class="place">{s('place', { n: k + 1 })}</span>
+        <!-- a team game: no ranking; the team's stars and goal, each one's good thing, what we learned together -->
+        <div class="card pad podium" data-sg-team-end>
+          <p class="win">{s('endTitle')}</p>
+          <p class="total"><Icon name="star" size={22} soft /><b>{teamStars(g)}</b><span class="goal">/ {teamGoal(g)}</span></p>
+          <p class="note centre">{teamStars(g) >= teamGoal(g) ? s('goalMet', { n: teamStars(g) }) : s('goalNear', { k: teamGoal(g) - teamStars(g) })}</p>
+          {#if lastTotal !== null && teamStars(g) > lastTotal}<p class="note centre">{s('beatLast', { d: teamStars(g) - lastTotal })}</p>{/if}
+          {#each g.players as p, k (k)}
+            <div class="rrow" data-sg-hl={k}>
               <Avatar {...headOf(p)} size={40} />
-              <span class="nm">{p.name}</span>
-              <span class="st"><Icon name="star" size={18} soft /><b>{p.stars}</b></span>
+              <span class="nm">{p.name}<small class="hl">{highlightOf(g, k)}</small></span>
             </div>
           {/each}
         </div>
@@ -465,7 +534,6 @@
               <div class="row recap" role="listitem">
                 <Avatar {...headOf(g.players[m.p])} size={24} />
                 <span class="txt"><span lang="en" class="en2">{m.text}</span>{#if m.ja}<span class="ja2">{m.ja}</span>{/if}</span>
-                <span class="st"><Icon name="star" size={14} soft />{m.stars}</span>
               </div>
             {/each}
           </div>
@@ -500,6 +568,18 @@
   /* the board's own screen: the 3D board takes what the panel leaves, nothing scrolls */
   .play.screen { overflow: hidden; }
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .team { display: flex; align-items: center; gap: 6px; color: var(--c-gold); }
+  .team b { font: 600 20px/1 var(--font-num); color: var(--c-ink); }
+  .team .goal, .total .goal { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
+  .team .bar { flex: 1; height: 10px; border-radius: 6px; background: color-mix(in srgb, var(--c-edge) 45%, transparent); overflow: hidden; }
+  .team .bar i { display: block; height: 100%; background: var(--c-yuzu); border-radius: 6px; transition: width 400ms var(--ease-soft); }
+  .pl { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 5px; background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); font: 600 12px/1 var(--font-num); color: var(--c-ink); }
+  .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
+  .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
+  .total { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; color: var(--c-gold); }
+  .total b { font: 600 34px/1 var(--font-num); color: var(--c-ink); }
+  .centre { text-align: center; }
+  .hl { display: block; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .score b { font: 600 16px/1 var(--font-num); }
@@ -543,13 +623,9 @@
   .podium { display: flex; flex-direction: column; gap: 8px; }
   .win { margin: 0 0 4px; text-align: center; font: 700 22px/1.3 var(--font-ui); }
   .rrow { display: flex; align-items: center; gap: 10px; }
-  .place { width: 36px; font: 700 var(--fs-body)/1 var(--font-ui); }
   .rrow .nm { flex: 1; font: 700 var(--fs-body)/1.2 var(--font-ui); }
-  .st { display: inline-flex; align-items: center; gap: 3px; color: var(--c-gold); }
-  .st b { font: 600 18px/1 var(--font-num); color: var(--c-ink); }
   .recap { display: flex !important; align-items: center; gap: 8px; }
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .en2 { font: 600 var(--fs-body)/1.3 var(--font-body); }
   .ja2 { font-size: var(--fs-s); color: var(--text-soft); }
-  .recap .st { font: 600 14px/1 var(--font-num); color: var(--c-ink); }
 </style>

@@ -4,7 +4,7 @@ A board game for 2–4 people at one table, passed round one phone: spin, move a
 do the English the space asks for. For A1–A2 learners; never "incorrect". English Study's third tab, すごろく (its own
 chunk, loaded on the tab; the tab bar shows on its menu only). Code: `app/src/lib/sugoroku/` (pure rules beside their tests, the sheet in `components/`, strings in
 `i18n.ts`). No ベル: the stars are the game's own. Players are their own characters (the island's look): the one sheet
-with characters in it, since they are the pieces.
+with characters in it, since they are the pieces. A team game: one team total toward a goal, never a ranking.
 
 ## Rules
 
@@ -26,7 +26,7 @@ with characters in it, since they are the pieces.
   smaller during a turn's English so its controls stay on screen.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
   and walk; the fork stops the walk for the choice. The table kept together (`rollMode`): the one 6+ steps behind
-  whoever's furthest on, or last in stars by 2+, rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
+  whoever's furthest on rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
   furthest back rolls two and keeps the lower. The stone:
   - **ことば**: make a word from your 8 tiles (tap to place, tap to take back). Points (`tiles.ts scoreOf`) = letters
     (1 for E A I O N R T L S U, 2 D G B C M P, 3 F H V W Y, 4 K, 5 J X Z: a short word with a rare letter ties a long one)
@@ -39,9 +39,11 @@ with characters in it, since they are the pieces.
     Japanese, its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with 「答えはこれ」 (each once a game).
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
     it), its effect as a chip: good or neutral only; a move stops at the fork. The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
-  - **あがり**: +6, +3, +1 by order home. The game ends with the round someone got home in (equal turns), after
+  - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), after
     `MAX_ROUNDS` (16, 14 by seats), or 終了.
-- **Results**: the ranking, **ふりかえり** (up to five of the game's things with Japanese, each Japanese once, to match
+- **Results** (a team game: never a ranking or a winner): おつかれさま, the team's stars against its goal (`teamGoal`:
+  45/60/65 a seat by the length; 「前回より…」 only when beaten), each one's good thing (their longest word, pictures, lines),
+  **みんなで覚えたことば** (up to five of the game's things with Japanese, each Japanese once, to match
   English ↔ Japanese; a mismatch just lets go), and 今日のことば.
 
 ## The 3D board
@@ -69,6 +71,14 @@ anyone at the table); out of order, it waits for the gap. The phone whose turn i
 move). A game started with me in it comes as a banner, 「Xが英語すごろくを始めました」 with 参加, straight into it; the
 menu's みんなのゲームに戻る while it lasts. Listening starts with the island (Hud). No relay code: the room relays and
 keeps any parsed kept intent; after a contract change the relay deploys first.
+
+## Letters
+
+About 10 ことば stones hold a letter (`game.ts` letters: scoring letters, a rare one now and then); whoever walks over
+one (or lands on it) picks it up into their **pocket** (3 at most): extra tiles any word may use (`tilesFor`: the rack's
+first, then the pocket's). At the start of my turn I may send a pocket letter as an **おくりもの** (`giveLetter`) to
+someone on the way who has none waiting (whoever's furthest back offered first): their next word must use it, +3 for
+the team; a swap clears it (never a penalty), and their ヒント finds a word with it. Online: the `gift` move.
 
 ## Tiles
 

@@ -10,7 +10,7 @@
   import type { Player } from '../game.ts';
   import { s } from '../i18n.ts';
 
-  let { players, shown, turn, compact = false }: { players: readonly Player[]; shown: readonly number[]; turn: number; compact?: boolean } = $props();
+  let { players, shown, turn, compact = false, letters = {} }: { players: readonly Player[]; shown: readonly number[]; turn: number; compact?: boolean; letters?: Readonly<Record<number, string>> } = $props();
   const MARK = { start: '', word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: '' } as const;
   const edges = BOARD.flatMap((sp, i) => sp.next.map((j) => [i, j] as const));
   const signs = BOARD.map((sp, i) => ({ sp, i })).filter(({ sp, i }) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
@@ -57,6 +57,7 @@
       {:else}
         <circle class="stone k-{sp.kind}" cx={sp.x} cy={sp.y} r="16" />
         <text class="mark" x={sp.x} y={sp.y + 5}>{MARK[sp.kind]}</text>
+        {#if letters[i]}<g class="lstone" transform="translate({sp.x + 13} {sp.y - 13})"><circle r="9" /><text y="4">{letters[i].toUpperCase()}</text></g>{/if}
       {/if}
     {/each}
     {#each signs as { sp } (sp.area)}
@@ -96,6 +97,9 @@
   text { text-anchor: middle; fill: var(--c-ink); font-family: var(--font-ui); font-weight: 700; }
   .mark { font: 600 14px var(--font-num); }
   .end { font-size: 11px; }
+  /* a letter stone's letter (picked up by whoever walks over it) */
+  .lstone circle { fill: color-mix(in srgb, var(--c-mint) 60%, white); stroke: var(--c-ink); stroke-width: 1.5; }
+  .lstone text { font: 600 11px var(--font-num); }
   .sign rect { fill: #a8835a; }
   .sign text { fill: #fff8e8; font-size: 10px; }
   .head { position: absolute; translate: -50% -50%; display: inline-flex; border-radius: 50%; pointer-events: none;

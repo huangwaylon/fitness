@@ -2,9 +2,9 @@
 // step (localStorage: a game closed half-way resumes). Every random is seeded by the game's seed and its step counter
 // (every step moves it on), so a saved game replays the same. No ベル, no record: the stars are the game's own.
 import type { Who } from '#lib/types.ts';
-import { fnv1a, seeded } from '#lib/random.ts';
+import { fnv1a, seeded, weighted } from '#lib/random.ts';
 import { BOARD, GOAL, stepFrom, toGoal } from './board.ts';
-import { newBag, refill, scoreOf, spellable, without, type Score } from './tiles.ts';
+import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
 import { PICTURES, PICTURE_STARS } from './pictures.ts';
 
@@ -34,6 +34,10 @@ export interface Player extends Seat {
   home: number | null;
   /** The fork's way taken (0 近道, 1 遠回り), null before it. */
   branch: number | null;
+  /** Letters picked up on the way (a letter stone walked over), at most POCKET: tiles to add to any word. */
+  pocket: string[];
+  /** A letter another player sent: their next word must use it (FORCED_BONUS more if it does). */
+  forced: string | null;
 }
 /** Something made in the game: a word or a sentence (the recap). */
 interface Made {
@@ -67,7 +71,7 @@ type Phase =
 
 /** The save's shape; CONTENT: the board's, cards' and pictures' build, hashed (a save from another reads as none:
  *  save.ts; the lines are picked afresh by the phase's `r`). */
-const V = 5;
+const V = 6;
 // (the structure only: a copy fix or a stone moved on the drawing never drops a game in play)
 const CONTENT = fnv1a(JSON.stringify([BOARD.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
 
@@ -89,17 +93,31 @@ export interface Game {
   made: Made[];
   /** Cards already drawn (drawn without repeats till they run out). */
   cards: number[];
+  /** The letter stones still holding a letter: stone → its letter (picked up by whoever walks over it first). */
+  letters: Record<number, string>;
 }
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 3;
 /** The last round, by seats (the round someone gets home in ends it earlier: about 11). */
 export const MAX_ROUNDS: Readonly<Record<number, number>> = { 2: 16, 3: 14, 4: 12 };
-/** Home first, second, third… */
-export const HOME_BONUS = [6, 3, 1, 0];
+/** The team's goal: stars a seat by the length (about two-thirds of what a game of best words makes: reachable,
+ *  not given). */
+const GOAL_PER_SEAT: Record<Length, number> = { short: 45, normal: 60, long: 65 };
+export const teamGoal = (g: Game): number => g.players.length * GOAL_PER_SEAT[g.length];
+export const teamStars = (g: Game): number => g.players.reduce((n, p) => n + p.stars, 0);
+
+/** あがり: everyone the same (a team game: the order home never matters). */
+export const HOME_BONUS = 4;
 /** A line in order: first try, after a nudge, after 答えはこれ; むずかしい's without its Japanese +2. */
 const SENTENCE_STARS = [6, 4, 2];
 export const UNSEEN_BONUS = 2;
+/** Letters a pocket holds; letter stones a game has; a sent letter used: its bonus. */
+export const POCKET = 3;
+const LETTER_STONES = 10;
+export const FORCED_BONUS = 3;
+/** The letters the stones hold: the ones that score (2–5 points), a rare one now and then. */
+const STONE_LETTERS: readonly (readonly [string, number])[] = [['b', 3], ['c', 3], ['d', 3], ['g', 3], ['h', 3], ['m', 3], ['p', 3], ['f', 2], ['w', 2], ['y', 2], ['v', 1], ['k', 2], ['j', 1], ['x', 1], ['z', 1]];
 /** The lucky letters come from the common consonants (a rare one was often in no rack: a dead bonus). */
 const LUCKY_FROM = [...'dghlmnprst'];
 
@@ -112,25 +130,32 @@ export function newGame(seats: readonly Seat[], seed: string, length: Length = '
   const players = seats.map((s) => {
     const f = refill([], bag, r);
     bag = f.bag;
-    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, branch: null };
+    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, branch: null, pocket: [], forced: null };
   });
+  // the letter stones: LETTER_STONES of the ことば stones, each a letter
+  const words = BOARD.map((b, i) => ({ b, i })).filter(({ b }) => b.kind === 'word' || b.kind === 'double').map(({ i }) => i);
+  const letters: Record<number, string> = {};
+  for (let k = 0; k < LETTER_STONES && words.length; k++) {
+    const i = words.splice(Math.floor(r() * words.length), 1)[0];
+    letters[i] = weighted(STONE_LETTERS, r);
+  }
   const a = LUCKY_FROM[Math.floor(r() * LUCKY_FROM.length)];
   const rest = LUCKY_FROM.filter((l) => l !== a);
   const lucky = [a, rest[Math.floor(r() * rest.length)]];
-  return { v: V, content: CONTENT, seed, length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [] };
+  return { v: V, content: CONTENT, seed, length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [], letters };
 }
 
 /** How far ahead on the route a lead counts as too far (steps to あがり). */
 const GAP = 6;
-/** This turn's dice, keeping the table together: `fast` (two dice, the higher) for the one well behind on the route
- *  (GAP+ steps behind whoever's furthest on) or last in stars (2+ behind everyone), `slow` (two dice, the lower) for the
- *  one well ahead (GAP+ steps ahead of whoever's furthest back), else one die. */
+/** This turn's dice, keeping the table together on the route: `fast` (two dice, the higher) for the one well behind
+ *  (GAP+ steps behind whoever's furthest on), `slow` (two dice, the lower) for the one well ahead (GAP+ steps ahead of
+ *  whoever's furthest back), else one die. */
 export function rollMode(g: Game): 'fast' | 'slow' | 'even' {
   const me = g.players[g.turn], others = g.players.filter((_, i) => i !== g.turn && g.players[i].home === null);
   if (!others.length) return 'even';
   const left = (p: Player) => toGoal(p.pos, p.branch);
   const mine = left(me);
-  if (mine - Math.min(...others.map(left)) >= GAP || others.every((p) => p.stars >= me.stars + 2)) return 'fast';
+  if (mine - Math.min(...others.map(left)) >= GAP) return 'fast';
   if (Math.max(...others.map(left)) - mine >= GAP) return 'slow';
   return 'even';
 }
@@ -157,6 +182,7 @@ export function choose(g: Game, branch: 0 | 1): Game {
 /** Walk `left` spaces (the players already copied), then land. */
 function walk(g: Game, spun: number, left: number, r: () => number): Game {
   const me = g.players[g.turn];
+  g = { ...g };
   for (; left > 0; left--) {
     const n = stepFrom(me.pos, me.branch);
     if (n === null) {
@@ -164,6 +190,13 @@ function walk(g: Game, spun: number, left: number, r: () => number): Game {
       return { ...g, phase: { k: 'fork', spun, left } };
     }
     me.pos = n;
+    // a letter stone walked over (or landed on): its letter to my pocket, while there's room
+    const l = g.letters[n];
+    if (l && me.pocket.length < POCKET) {
+      me.pocket = [...me.pocket, l];
+      const { [n]: _gone, ...rest } = g.letters;
+      g = { ...g, letters: rest };
+    }
     if (n === GOAL) break;
   }
   return land(g, spun, r);
@@ -175,7 +208,7 @@ function land(g: Game, spun: number, r: () => number): Game {
   if (kind === 'goal') {
     const place = g.players.filter((p) => p.home !== null).length;
     me.home = place;
-    me.stars += HOME_BONUS[place] ?? 0;
+    me.stars += HOME_BONUS;
     return { ...g, phase: { k: 'home', spun, place } };
   }
   if (kind === 'sentence') return { ...g, phase: { k: 'sentence', spun, r: r() } };
@@ -204,8 +237,45 @@ export function tried(g: Game, t: Tries): Game {
 /** A word's points here for this seat, or null if it can't be spelt from the rack or is under the seat's length. */
 export function wordScore(g: Game, word: string, everyday: boolean, hinted = false): Score | null {
   const me = g.players[g.turn], lv = LEVEL[me.level];
-  if (g.phase.k !== 'word' || word.length < lv.minLen || !spellable(word, me.rack)) return null;
-  return scoreOf(word, { lucky: g.lucky, mult: g.phase.mult, everyday: everyday ? lv.everyday : 0, half: hinted && lv.hintHalf });
+  if (g.phase.k !== 'word' || word.length < lv.minLen) return null;
+  const use = tilesFor(me, word);
+  if (!use) return null;
+  const sc = scoreOf(word, { lucky: g.lucky, mult: g.phase.mult, everyday: everyday ? lv.everyday : 0, half: hinted && lv.hintHalf });
+  return use.forced ? { ...sc, forced: FORCED_BONUS, total: sc.total + FORCED_BONUS } : sc;
+}
+
+/** The tiles a word takes from a player: the sent letter first (it must be in the word), then the rack, then the
+ *  pocket; null if the word can't be made so (or leaves the sent letter out). */
+export function tilesFor(p: Pick<Player, 'rack' | 'pocket' | 'forced'>, word: string): { rack: string[]; pocket: string[]; forced: boolean } | null {
+  let rest = word;
+  if (p.forced) {
+    if (!rest.includes(p.forced)) return null;
+    rest = rest.replace(p.forced, '');
+  }
+  const rack = [...p.rack], pocket = [...p.pocket], fromRack: string[] = [], fromPocket: string[] = [];
+  for (const l of rest) {
+    const i = rack.indexOf(l);
+    if (i >= 0) (rack.splice(i, 1), fromRack.push(l));
+    else {
+      const j = pocket.indexOf(l);
+      if (j < 0) return null;
+      pocket.splice(j, 1);
+      fromPocket.push(l);
+    }
+  }
+  return { rack: fromRack, pocket: fromPocket, forced: !!p.forced };
+}
+
+/** Send a pocket letter to another player (at the start of my turn): their next word must use it. One at a time a
+ *  player: none to someone who already has one. */
+export function giveLetter(g: Game, letter: string, to: Who): Game {
+  if (g.phase.k !== 'spin') return g;
+  const players = copy(g), me = players[g.turn], k = players.findIndex((p) => p.who === to);
+  if (k < 0 || k === g.turn || players[k].forced || players[k].home !== null || !me.pocket.includes(letter)) return g;
+  const i = me.pocket.indexOf(letter);
+  me.pocket = [...me.pocket.slice(0, i), ...me.pocket.slice(i + 1)];
+  players[k] = { ...players[k], forced: letter };
+  return { ...g, n: g.n + 1, players };
 }
 
 /** Play a word (the caller checked it's a word): its stars, the rack refilled, the turn on. */
@@ -216,7 +286,12 @@ export function playWord(g: Game, word: string, info: { everyday: boolean; ja: s
   const players = copy(g);
   const me = players[g.turn];
   me.stars += sc.total;
-  const f = refill(without(me.rack, word), g.bag, r);
+  const use = tilesFor(me, word)!;
+  let pocket = [...me.pocket];
+  for (const l of use.pocket) pocket.splice(pocket.indexOf(l), 1);
+  me.pocket = pocket;
+  me.forced = null;
+  const f = refill(without(me.rack, use.rack.join('')), g.bag, r);
   me.rack = f.rack;
   const made = [...g.made, { p: g.turn, kind: 'word' as const, text: word, ja: info.ja, stars: sc.total }];
   return next({ ...g, n: g.n + 1, players, bag: f.bag, made });
@@ -230,6 +305,8 @@ export function swap(g: Game): Game {
   const me = players[g.turn];
   const f = refill([], [...g.bag, ...me.rack], r);
   me.rack = f.rack;
+  // (a sent letter goes with the swap: never a penalty)
+  me.forced = null;
   return next({ ...g, n: g.n + 1, players, bag: f.bag });
 }
 
@@ -310,20 +387,12 @@ export const lastRound = (g: Game): boolean =>
 /** End now (終了): whoever's on the way stays where they are. */
 export const finish = (g: Game): Game => ({ ...g, phase: { k: 'end' } });
 
-/** The ranking: most stars first (ties: nearer home, then home earlier). */
-export function ranking(g: Game): number[] {
-  return g.players.map((_, i) => i).sort((a, b) => {
-    const A = g.players[a], B = g.players[b];
-    return B.stars - A.stars || toGoal(A.pos, A.branch) - toGoal(B.pos, B.branch) || (A.home ?? 9) - (B.home ?? 9);
-  });
-}
-
 /** Whether a saved value is a game this build can play (its shape, version and content). */
 export function isGame(x: unknown): x is Game {
   const g = x as Game;
   return !!g && g.v === V && g.content === CONTENT && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
-    && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards)
-    && g.players.every((p) => (p.who === 'A' || p.who === 'B' || p.who === 'G') && Array.isArray(p.rack) && typeof p.pos === 'number' && p.pos >= 0
+    && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards) && typeof g.letters === 'object' && !!g.letters
+    && g.players.every((p) => (p.who === 'A' || p.who === 'B' || p.who === 'G') && Array.isArray(p.rack) && Array.isArray(p.pocket) && typeof p.pos === 'number' && p.pos >= 0
       && p.pos <= GOAL && p.level >= 1 && p.level <= 3)
     && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item]);
 }

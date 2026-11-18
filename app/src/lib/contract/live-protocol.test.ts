@@ -439,6 +439,8 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'zz', to: 'B' }))).toBeNull();
     expect(isStored({ kind: 'sg', g: 'abc123', i: 1, a: 'roll' })).toBe(true);
     expect(JSON.stringify(start).length).toBeLessThan(MAX_BYTES);
   });

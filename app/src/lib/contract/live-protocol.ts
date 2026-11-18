@@ -126,8 +126,8 @@ export type Intent =
   | SgIntent;
 
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
- *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end. */
-const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end'] as const;
+ *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent). */
+const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end', 'gift'] as const;
 /** @public (lib/sugoroku/online.ts) */
 export type SgAct = (typeof SG_ACTS)[number];
 /** @public (lib/sugoroku/online.ts) */
@@ -153,6 +153,9 @@ export interface SgIntent {
   m?: number;
   u?: 1;
   p?: 1;
+  /** gift: the letter (`ch`), and whom to (`to`). */
+  ch?: string;
+  to?: Who;
 }
 /** A すごろく game's id, and its seats' wire form. */
 const SG_GAME = /^[a-z0-9]{6,12}$/;
@@ -548,8 +551,10 @@ function intentOf(o: Obj): Intent | null {
       if (o.i === 0 || !one('d') || !one('h') || !one('k') || !one('u') || !one('p') || !opt(o, 'm', (x): x is number => within(x, [0, 2]))) return null;
       if (o.a === 'fork' && o.b !== 0 && o.b !== 1) return null;
       if (o.a === 'word' && (typeof o.w !== 'string' || !SG_WORD.test(o.w))) return null;
+      if (o.a === 'gift' && (typeof o.ch !== 'string' || !/^[a-z]$/.test(o.ch) || !isWho(o.to))) return null;
       return {
         ...out, ...(o.a === 'fork' ? { b: o.b as 0 | 1 } : {}), ...(o.a === 'word' ? { w: o.w as string } : {}),
+        ...(o.a === 'gift' ? { ch: o.ch as string, to: o.to as Who } : {}),
         ...(o.d ? { d: 1 as const } : {}), ...(o.h ? { h: 1 as const } : {}), ...(o.k ? { k: 1 as const } : {}),
         ...(o.m !== undefined ? { m: o.m as number } : {}), ...(o.u ? { u: 1 as const } : {}), ...(o.p ? { p: 1 as const } : {})
       };
