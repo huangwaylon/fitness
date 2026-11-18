@@ -1,11 +1,17 @@
+// R4 REVIEW 2026-11-18: keep 13, rewrite 6, retire 1, new 3, ctx 5, tx 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 6, retire 1, new 0
 // “Michael's Cheer Up Video - The Office US” (the official The Office channel, BEST OF SEASON 7): on the day Holly's
 // ultimatum to AJ runs out, Michael watches the video he made to calm himself, sorts happy and sad supplies with
 // Erin, and tries to find out whether Holly is wearing a ring under her mittens.
 // Segments from the captions, words from whisper (2026-11-16); whisper's timings slip from 60 s to 94 s, so the
-// captions set every segment there. Untested on purpose: 46.9–52.3 s and 59.3–64.5 s (the video's joke turns on
-// suicide), 0.2–4.8 s, 74.8–78.5 s, 103–106.5 s, 145.3 s, 165–172 s, 192–205 s (the sources differ or speakers are
-// unclear), 180–183 s (an insult), 208 s on (dancing). Retired: the Anderson-account role play (p1), the C2 tier.
+// captions set every segment there. Untested on purpose: 0.2–4.8 s, 74.8–78.5 s, 103–106.5 s, 145.3 s, 165–172 s
+// (the sources differ or speakers are unclear). Retired: the Anderson-account role play (p1), the C2 tier.
+// EAR CHECK: 192–211 s (c1, c2) words are whisper's; the captions differ in places ("Breathe… I'm trying", "Just go
+// crazy for a little while").
+// EXCLUDE 46.9–52.3 (the video's suicide joke)
+// EXCLUDE 59.3–64.5 (the suicide joke, again)
+// EXCLUDE 180.9–182.9 (an insult)
+// SKIP 206–238.8: the dance (cheers, "Go", "Oh, yeah")
 import type { Clip } from '../types.ts';
 
 export const michaelCheerUp: Clip = {
@@ -50,7 +56,7 @@ export const michaelCheerUp: Clip = {
       trap: 'push を「ボタンを押す」と取りやすい。through がつくと「やり通す」。',
       use: 'I’m tired, but let’s push through.（疲れたけど、がんばろう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', seg: [22.9, 53.8],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'eitherway', seg: [22.9, 46.8],
       stem: 'Why will Michael need help, whatever the news is?',
       ja: 'どんな知らせでも、マイケルにはなぜ助けが必要？',
       choices: ['He may go wild either way', 'He will cry either way', 'He has to see Holly'], a: 0,
@@ -74,7 +80,7 @@ export const michaelCheerUp: Clip = {
       trap: '年末の話なのでクリスマスと思いやすい。by のあとは New Year’s、or のあとは break up。',
       use: 'Either you call her, or I will.（君が電話するか、僕がするか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'attack', seg: [27.9, 35.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'attack', seg: [27.9, 35.9], retired: true,
       stem: 'Type the words: “and I’m ___ attacking people.” (2 words)', answer: 'gonna start',
       ja: '書き取る：「and I’m ___ attacking people.」（2語）',
       cue: '「and I’m」のすぐあと。',
@@ -96,15 +102,15 @@ export const michaelCheerUp: Clip = {
       trap: 'burn（燃やす）だけ聞くと、怒りと思いやすい。理由は out of のあとに来る。',
       use: 'I almost cried out of joy.（うれしくて泣きそうだった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.1, 51.1],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'talkdown', seg: [39.1, 46.8],
       stem: 'What does “I am going to need some talking down” mean?',
       ja: '「I am going to need some talking down」はどういう意味？',
       choices: ['Someone must calm me down', 'Someone must talk to me less', 'Someone must keep me company'], a: 0,
       choicesJa: ['誰かに落ち着かせてもらう', '誰かに話を減らしてもらう', '誰かにそばにいてもらう'],
       cue: '「either way」のあと。',
       line: 'I am going to need some *talking down*, and nobody *talks me down* like myself in a video…',
-      said: '「どちらでも、なだめてもらう必要がある」と言う。',
-      mean: 'talk someone down ＝ 興奮している人を言葉で落ち着かせる。',
+      said: '「どちらでも、なだめてもらう必要がある。ビデオの自分ほどうまい人はいない」と言う。',
+      mean: 'talk someone down ＝ 文字どおりは「話して下ろす」。高ぶった気持ちを言葉で下げる＝なだめる。',
       trap: 'talk down to なら「見下して話す」。to の有無で意味が変わる。',
       use: 'She talked me down when I was angry.（怒っていた私を彼女がなだめた）' },
 
@@ -119,16 +125,16 @@ export const michaelCheerUp: Clip = {
       trap: 'nobody… like は他人への不満に聞こえやすい。比べた結果、選ばれたのが誰かを聞くと、本人の話。',
       use: 'Nobody makes pancakes like my dad.（パンケーキは父のが一番）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.4, 61.3],
-      stem: 'Why does Michael say “Sorry” after “It’s not”?',
-      ja: '「It’s not」のあと、マイケルはなぜ「Sorry」と言う？',
-      choices: ['The two words ran together', 'The word “not” was lost', 'It was too loud'], a: 0,
-      choicesJa: ['2語がくっついて聞こえた', 'not が聞こえなかった', '大きすぎた'],
-      cue: 'It’s の最後と not の最初の音。',
-      line: '*It’s not*. — Sorry, it sounded like you said *it’s snot*.',
+    { id: 's1', skill: 'sound', level: 'B2', point: 'snot', seg: [52.4, 59.2],
+      stem: 'What did “It’s not” sound like?',
+      ja: '「It’s not」は何に聞こえた？',
+      choices: ['It’s snot', 'It’s hot', 'It’s nice'], a: 0,
+      choicesJa: ['鼻水だ', '暑い', 'すてきだ'],
+      cue: '「it sounded like you said」のあと。',
+      line: 'but *it’s not*. Not. — Sorry, it sounded like you said *it’s snot*. I’m so sorry.',
       said: '「It’s not」が「it’s snot（鼻水だ）」に聞こえた、と謝る。',
-      mean: 'it’s の s が not にくっつき、「イッツ・スナット」と一語に聞こえる。',
-      trap: 'Sorry を態度へのおわびと思いやすい。sounded like ＝ 〜に聞こえた、で音の話。',
+      mean: 'it’s の s が次の not にくっつき、「イッ・スナット」と聞こえる。snot ＝ 鼻水（くだけた語）。',
+      trap: 'Sorry を態度へのおわびと考えがち。sounded like ＝「〜に聞こえた」で、音の話。',
       use: 'Sorry, it sounded like you said “nine”.（ごめん、「9」って聞こえた）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'sort', seg: [65.9, 92.5],
@@ -167,6 +173,18 @@ export const michaelCheerUp: Clip = {
       trap: 'それまでの流れで、happy か sad を待ちやすい。流れが変わった所を聞く。',
       use: 'These are for you. Thanks for everything.（これ、どうぞ。いろいろありがとう）' },
 
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'tickets', ctx: true, seg: [90.2, 99.9],
+      stem: 'What has Erin got for Michael?',
+      ja: 'エリンはマイケルのために何を用意した？',
+      choices: ['Front-row show tickets', 'Two bottles of scotch', 'A ring for Holly'], a: 0,
+      choicesJa: ['ショーの最前列のチケット', 'スコッチ2本', 'ホリーへの指輪'],
+      cue: '「did you get the」の質問への返事。',
+      line: 'Michael: And *did you get the tickets*? / Erin: I did. I did indeed. *Two front row center* to Paula Poundstone, live in Poughkeepsie.',
+      said: '「チケットは取った？」に「取った。ちゃんとね。ポーラ・パウンドストーンのライブ、最前列の真ん中を2枚」と答える。',
+      mean: 'front row center ＝ 最前列のまん中。Paula Poundstone ＝ アメリカのお笑い芸人。ホリーの好きな人。',
+      trap: 'スコッチは仕分けの品の一つ。決め手は did you get のあとの返事。',
+      use: 'Did you get the tickets?（チケット、取れた？）' },
+
     { id: 's2', skill: 'sound', level: 'B2', point: 'stage', seg: [98.8, 105.3],
       stem: 'Fill the gap: “I hope she ___ call us up on stage.”',
       ja: '空所を埋める：「I hope she ___ call us up on stage.」',
@@ -179,18 +197,6 @@ export const michaelCheerUp: Clip = {
       trap: 't が聞こえず does を選びやすい。最後の「ン」を聞く。won’t なら「ウォウン」で始まる。',
       use: 'I hope it doesn’t rain tomorrow.（明日、雨が降りませんように）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'erin', seg: [106.3, 111.3],
-      stem: 'How does Erin feel about Michael’s day?',
-      ja: 'マイケルの今日のことを、エリンはどう思っている？',
-      choices: ['Happy either way', 'Happy only if Holly says yes', 'Worried either way'], a: 0,
-      choicesJa: ['どちらでも楽しみ', 'ホリーがイエスならうれしい', 'どちらでも心配'],
-      cue: '最初の文の最後の2語。',
-      line: 'I’m really excited for Michael *either way*.',
-      said: 'エリンがカメラに「どちらになっても、マイケルのことが楽しみ」と話す。',
-      mean: 'either way ＝ どちらでも。excited for ～ ＝ 〜のことが楽しみ。',
-      trap: 'あとの mistake という語に引かれて、心配と思いやすい。最初の文で気持ちを言っている。',
-      use: 'I’m happy for you either way.（どっちでも、よかったね）' },
-
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'mistake', reveals: ['erin'], seg: [108.7, 119.3], retired: true,
       stem: 'What does Erin’s “and if not…” part actually say about Holly?',
       choices: ['That being with her would be a mistake', 'That she would regret turning him down',
@@ -201,6 +207,18 @@ export const michaelCheerUp: Clip = {
       mean: '励ますつもりで、「ホリーと一緒になるのは失敗」と言ってしまっている。本人は気づいていない。',
       trap: 'よくある励まし「彼女が後悔する」に聞こえやすい。主語 he と avoiding を聞くと、失敗は彼の側。',
       use: 'You dodged a bullet there.（危ないところだったね）' },
+
+    { id: 'a2', skill: 'infer', level: 'B2', point: 'mistake', seg: [108.9, 118.9],
+      stem: 'If Holly says no, what does Erin say?',
+      ja: 'ホリーがノーと言ったら、エリンは何と言う？',
+      choices: ['He avoids a big mistake', 'He will be sad for years', 'He will find someone new'], a: 0,
+      choicesJa: ['大きな失敗を避けられる', '何年も悲しむ', '新しい人を見つける'],
+      cue: '「And if not」のあと。',
+      line: 'I’m really excited for Michael either way… *And if not, he’ll be avoiding the biggest mistake of his life*.',
+      said: 'エリンがカメラに「選ばれなくても、人生最大の失敗を避けられる」と話す。',
+      mean: 'if not ＝ そうでなければ。avoid ＝ 避ける。どちらの結果でもマイケルに良い、という考え。',
+      trap: 'mistake（失敗）から悲しい話を連想しやすい。避けられるのでむしろ良いこと。',
+      use: 'If not, that’s okay too.（そうじゃなくても、それはそれでいいよ）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'board', seg: [120.5, 128.4],
       stem: 'How does Holly sound when she comes in?',
@@ -261,28 +279,52 @@ export const michaelCheerUp: Clip = {
       trap: 'smoke out を「追い出す」と取りやすい。最後の文が目的。',
       use: 'You can’t hide in there forever.（ずっとそこに隠れてはいられないよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'yesno', seg: [156.2, 164.7],
-      stem: 'What is Michael’s real answer to the heat idea?',
-      ja: '暖房の案に、マイケルの本当の答えは？',
-      choices: ['Yes', 'No', 'He doesn’t know'], a: 0,
-      choicesJa: ['イエス', 'ノー', '分からない'],
-      cue: '返事の最初と最後の語。',
-      line: '*Yes*. No, what? Stop. *Yes*.',
-      said: '「うん。いや、何言ってる、やめろ。…うん」と答える。',
-      mean: '本音が先に出て、いったん止めるが、結局 yes に戻る。',
-      trap: 'No や Stop だけ聞くと反対に聞こえる。最後に何と言ったかで決まる。',
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'yesno', ctx: true, seg: [156.9, 164.7],
+      stem: 'What does Michael finally say to the heat idea?',
+      ja: '暖房の案に、マイケルは最後に何と答える？',
+      choices: ['Yes, do it', 'No, don’t', 'He isn’t sure'], a: 0,
+      choicesJa: ['うん、やって', 'いや、やめて', '分からない'],
+      cue: '返事の最後の一語。',
+      line: 'Want me to crank the thermostat to 90? Smoke her out? / Michael: *Yes*. No, what? Stop. *Yes*.',
+      said: '「暖房を上げて、いぶり出す？」に「うん。いや、何言ってる、やめろ。…うん」と答える。',
+      mean: '本音が先に出て、いったん止めるが、結局 yes に戻る。最後に言った語が答え。',
+      trap: 'No や Stop が聞こえると反対に思えるが、決め手は最後の Yes。',
       use: 'No. Well… okay, yes.（だめ。いや…まあ、いいよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'told', seg: [172.6, 179.4],
-      stem: 'What does Holly finally figure out?',
-      ja: 'ホリーは最後に何に気づく？',
-      choices: ['Everyone knows about the ultimatum', 'Everyone knows she is engaged', 'Everyone likes her new board'], a: 0,
-      choicesJa: ['みんなが最後通告を知っている', 'みんなが婚約を知っている', 'みんなが新しいボードを気に入っている'],
-      cue: '「Oh, I get it」のあと。',
-      line: 'Oh, I get it. *Everybody knows about the ultimatum*. — Yes, I told everyone.',
-      said: '「みんな最後通告のことを知ってるのね」と言い、「みんなに話した」と返る。',
-      mean: 'I get it ＝ やっと分かった。まわりの変な態度の理由に気づいた。',
-      trap: '直前の Congrat…（おめで…）から、婚約の話と思いやすい。about のあとが答え。',
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'told', ctx: true, seg: [171.9, 179.4],
+      stem: 'Why does everyone know about the ultimatum?',
+      ja: 'なぜみんなが最後通告のことを知っている？',
+      choices: ['Michael told them all', 'Holly told them all', 'Erin told them all'], a: 0,
+      choicesJa: ['マイケルが全員に話した', 'ホリーが全員に話した', 'エリンが全員に話した'],
+      cue: '「Oh, I get it」への返事。',
+      line: 'Holly: Oh, I get it. *Everybody knows about the ultimatum*. / Michael: Yes, *I told everyone*.',
+      said: 'ホリーの「みんな最後通告のこと知ってるのね」に、マイケルが「うん、ぼくが全員に話した」と返す。',
+      mean: 'I get it ＝ やっと分かった。I told everyone ＝ 全員に話した。悪びれずに認めている。',
+      trap: 'Yes だけで終わったと考えがち。そのあと I told と、話した人を言っている。',
       use: 'Oh, I get it now. Thanks!（ああ、やっと分かった。ありがとう）' },
+
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'trying', ctx: true, seg: [186.9, 199],
+      stem: 'What does Michael say when told to breathe?',
+      ja: '「息をして」と言われて、マイケルは何と言う？',
+      choices: ['He’s trying to', 'He doesn’t want to', 'He can’t hear them'], a: 0,
+      choicesJa: ['やろうとしている', 'したくない', '聞こえない'],
+      cue: '「Breathe」のすぐあとの返事。',
+      line: 'Whoa, whoa, whoa. Okay, *calm down*. *Breathe*. / Michael: *I’m trying*. / I said breathe. / Michael: I’m trying.',
+      said: '浮かれるマイケルに「落ち着いて、息をして」。マイケルは「やってるよ」と2回返す。',
+      mean: 'I’m trying ＝「やってるよ、がんばってる」。うまくいっていないときの言いわけにも使う。',
+      trap: 'try を「試しに」と考えがち。I’m trying は「努力中」。',
+      use: 'I’m trying, okay? Give me a minute.（やってるってば。ちょっと待って）' },
+
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'crazy', ctx: true, seg: [198.9, 210.9],
+      stem: 'What is Michael told to do in the end?',
+      ja: '最後に、マイケルは何をしていいと言われる？',
+      choices: ['Go wild for a while', 'Leave the room for now', 'Sit down and rest'], a: 0,
+      choicesJa: ['少しの間はしゃぐ', 'いったん部屋を出る', '座って休む'],
+      cue: '「Fine」のあと。',
+      line: 'Wait a second. Are you listening to music? … Shut that off. / … Fine. *Just go crazy for a little while.*',
+      said: '音楽を聞いていたと分かり「止めて」。それでもだめで「もういい。少しの間、思いっきりはしゃいで」と言われる。',
+      mean: 'go crazy ＝ ここでは「思いきりはしゃぐ」。Fine は「もういいよ」とあきらめる言い方。',
+      trap: '前の calm down（落ち着いて）から、休む話と考えがち。決め手は Fine のあと。',
+      use: 'It’s your birthday. Go crazy!（誕生日だもん、はじけちゃえ）' },
   ]
 };
