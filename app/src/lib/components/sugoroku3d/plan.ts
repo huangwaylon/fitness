@@ -1,9 +1,9 @@
-// 英語すごろく's board in 3D, the pure part (engine.ts draws it): the plan's points (board.ts: a W × H drawing, y down
-// the route) as world X/Z, the route ahead of the camera (ふりだし nearest, the sea's あがり farthest), a hop from stone to
+// 英語すごろく's board in 3D, the pure part (engine.ts draws it): the plan's points (board.ts: W wide, y down the
+// route) as world X/Z, the route ahead of the camera (ふりだし nearest, the sea's あがり farthest), a hop from stone to
 // stone, the places of people sharing a stone, the river's line and its bridges, the die's faces and the camera's
 // framing. No three.js objects but its maths.
 import { Quaternion, Vector3 } from 'three';
-import { BOARD, FORK, GOAL, H, W } from '#lib/sugoroku/board.ts';
+import { RIVER_HALF as RH, W, riverY, type Board } from '#lib/sugoroku/board.ts';
 import { clamp } from '#lib/math.ts';
 
 /** World units a plan unit. */
@@ -15,26 +15,28 @@ export const STONE_R = 15, STONE_T = 4, END_R = 21;
 /** How high a hop goes (world units), and how long a stone takes (ms). */
 export const HOP_H = 7, HOP_MS = 250;
 
+/** The plan's y at world Z 0. */
+const Y0 = 350;
 /** A plan point (x right, y down the route) as world [X, Z]: the route runs away from the camera (−Z). */
-export const toWorld = (x: number, y: number): [number, number] => [(x - W / 2) * S, (H / 2 - y) * S];
+export const toWorld = (x: number, y: number): [number, number] => [(x - W / 2) * S, (Y0 - y) * S];
 
 /** Stone `i`'s middle, world [X, Z]. */
-export function stoneAt(i: number): [number, number] {
-  const sp = BOARD[i];
+export function stoneAt(b: Board, i: number): [number, number] {
+  const sp = b.spaces[i];
   return toWorld(sp.x, sp.y);
 }
 
 /** Stone `i`'s top (where a person stands), world units. */
-export const topOf = (i: number): number => STONE_T + (BOARD[i].kind === 'start' || BOARD[i].kind === 'goal' ? 0.5 : 0);
+export const topOf = (b: Board, i: number): number => STONE_T + (b.spaces[i].kind === 'start' || b.spaces[i].kind === 'goal' ? 0.5 : 0);
 
 /** The hops of a walk from `from` along `path` (the board's spaces in order, as board.ts pathOf gives them): each
  *  [a, b] and whether b is one of a's next stones (false: a jump, an event card's move back, still drawn as a hop). */
-export function hopsOf(from: number, path: readonly number[]): { a: number; b: number; linked: boolean }[] {
+export function hopsOf(bd: Board, from: number, path: readonly number[]): { a: number; b: number; linked: boolean }[] {
   const out: { a: number; b: number; linked: boolean }[] = [];
   let a = from;
   for (const b of path) {
-    if (b === a || b < 0 || b >= BOARD.length) continue;
-    out.push({ a, b, linked: BOARD[a].next.includes(b) });
+    if (b === a || b < 0 || b >= bd.spaces.length) continue;
+    out.push({ a, b, linked: bd.spaces[a].next.includes(b) });
     a = b;
   }
   return out;
@@ -42,10 +44,10 @@ export function hopsOf(from: number, path: readonly number[]): { a: number; b: n
 
 /** Where a hop from stone `a` to `b` is at `u` (0–1): along the line, up an arc, facing the way it goes (yaw: 0
  *  faces +Z, toward the camera, as NH's models do). */
-export function hopAt(a: number, b: number, u: number): { x: number; y: number; z: number; yaw: number } {
-  const [ax, az] = stoneAt(a), [bx, bz] = stoneAt(b), k = clamp(u, 0, 1);
+export function hopAt(bd: Board, a: number, b: number, u: number): { x: number; y: number; z: number; yaw: number } {
+  const [ax, az] = stoneAt(bd, a), [bx, bz] = stoneAt(bd, b), k = clamp(u, 0, 1);
   const e = k * k * (3 - 2 * k);
-  const ya = topOf(a), yb = topOf(b);
+  const ya = topOf(bd, a), yb = topOf(bd, b);
   return { x: ax + (bx - ax) * e, z: az + (bz - az) * e, y: ya + (yb - ya) * k + 4 * HOP_H * k * (1 - k), yaw: Math.atan2(bx - ax, bz - az) };
 }
 
@@ -56,16 +58,15 @@ export function slotOf(n: number, m: number): [number, number] {
   return [t * 13, m > 2 && n % 2 ? -6 : 2];
 }
 
-/** The river's middle (plan y) at plan x: across the island near y 235 (Board.svelte's river), RIVER_HALF wide. */
-export const riverY = (x: number): number => 236 + 6 * Math.sin(x / 45) - 4 * Math.cos(x / 23);
-export const RIVER_HALF = 11;
+/** The river's half width (board.ts: its middle riverY). */
+export const RIVER_HALF = RH;
 
 /** The route's crossings of the river (plan x, y, and the path's yaw across it): a bridge at each. */
-export function bridges(): { x: number; y: number; yaw: number }[] {
+export function bridges(b: Board): { x: number; y: number; yaw: number }[] {
   const out: { x: number; y: number; yaw: number }[] = [];
-  BOARD.forEach((sp) => {
+  b.spaces.forEach((sp) => {
     for (const j of sp.next) {
-      const to = BOARD[j], d = (y: number, x: number) => y - riverY(x);
+      const to = b.spaces[j], d = (y: number, x: number) => y - riverY(b, x);
       if (Math.sign(d(sp.y, sp.x)) === Math.sign(d(to.y, to.x))) continue;
       // (bisect the segment for the crossing)
       let lo = 0, hi = 1;
@@ -168,7 +169,7 @@ export const topRayOf = (top: number, hv: number): number => ((PITCH - Math.atan
  *  `wide` at a fork's choice) and at least ~3 stones ahead; x follows part way but never past the land (the beach at
  *  the sides, never open sea); the focus in the view's lower third with the stones ahead above it; the look ahead
  *  stops short of the sea past あがり. */
-export function cameraFor(fx: number, fz: number, aspect: number, wide = 0): { pos: [number, number, number]; at: [number, number, number] } {
+export function cameraFor(b: Board, fx: number, fz: number, aspect: number, wide = 0): { pos: [number, number, number]; at: [number, number, number] } {
   const a = Math.max(aspect, 0.2);
   const spanX = Math.max(wide, clamp(190 * Math.sqrt(Math.max(1, a / 0.8)), 190, 280));
   const dist = Math.max(spanX / 2 / (HALF * a), 120 / 2 / HALF);
@@ -177,13 +178,13 @@ export function cameraFor(fx: number, fz: number, aspect: number, wide = 0): { p
   // aim is taken as it is, the beach's strip allowed, so the fork and both ways show)
   const keep = spanX / 2 - 40;
   const x = wide ? clamp(fx, -(LAND_HALF + 20 - spanX / 2), LAND_HALF + 20 - spanX / 2) : clamp(clamp(fx * 0.6, -edge, edge), fx - keep, fx + keep);
-  const z = Math.max(fz - 0.2 * 2 * dist * HALF, stoneAt(GOAL)[1] + 25);
+  const z = Math.max(fz - 0.2 * 2 * dist * HALF, stoneAt(b, b.goal)[1] + 25);
   return { pos: [x, Math.sin(PITCH) * dist, z + Math.cos(PITCH) * dist], at: [x, 0, z] };
 }
 
-/** A fork's choice: the camera's aim (between the fork and its two ways' first stones: cameraFor's look ahead puts the
- *  ways above whoever stands there) and its width across. */
-export function forkAim(): { x: number; z: number; wide: number } {
-  const [a, b] = BOARD[FORK].next.map(stoneAt), [fx, fz] = stoneAt(FORK);
+/** Fork `fork`'s choice: the camera's aim (between the fork and its two ways' first stones: cameraFor's look ahead
+ *  puts the ways above whoever stands there) and its width across. */
+export function forkAim(bd: Board, fork: number): { x: number; z: number; wide: number } {
+  const [a, b] = bd.spaces[fork].next.map((j) => stoneAt(bd, j)), [fx, fz] = stoneAt(bd, fork);
   return { x: (fx + (a[0] + b[0]) / 2) / 2, z: (fz + (a[1] + b[1]) / 2) / 2, wide: 260 };
 }

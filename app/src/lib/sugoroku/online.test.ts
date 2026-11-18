@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { applyMove, foldMoves, heard, seatsCode, seatsOf, type Move } from './online.ts';
+import { ID_LEN, applyMove, foldMoves, heard, layoutOfId, newGameId, seatsCode, seatsOf, type Move } from './online.ts';
+import { familyOf, layoutKey } from './layout.ts';
+import { seeded } from '#lib/random.ts';
 import { wordScore, type Game } from './game.ts';
 import { wordsOf } from './words.ts';
 import { parseClient } from '#lib/contract/live-protocol.ts';
@@ -15,12 +17,12 @@ const lines = linesJson as unknown as Line[];
 const ctx = { words, lines, name: (w: Who) => w };
 
 /** Play a game as its phones would: each turn's player makes the move its screen offers. */
-function playMoves(n = 400): Move[] {
-  const moves: Move[] = [{ g: 'game01', i: 0, a: 'start', s: 'A1B3', l: 'n', who: 'A' }];
+function playMoves(n = 400, id = 'game01'): Move[] {
+  const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B3', l: 'n', who: 'A' }];
   let g: Game | null = foldMoves(moves, ctx);
   const push = (m: Omit<Move, 'g' | 'i' | 'who'>) => {
     const who = g!.players[g!.turn].who!;
-    const mv = { ...m, g: 'game01', i: moves.length, who } as Move;
+    const mv = { ...m, g: id, i: moves.length, who } as Move;
     moves.push(mv);
     g = applyMove(g, mv, ctx);
   };
@@ -69,6 +71,23 @@ describe('online: the moves folded', () => {
     st = heard(st.log, st.held, m(1));
     expect(st.log.map((x) => x.i)).toEqual([0, 1, 2]);
     expect(heard(st.log, st.held, m(1)).log).toHaveLength(3);
+  });
+  it('the board: a new game’s id is its layout seed (nothing more on the wire); an older 6–8 letter id plays the classic', () => {
+    const id = newGameId('', seeded('id'));
+    expect(id).toMatch(/^[a-z0-9]{10}$/);
+    expect(id.length).toBe(ID_LEN);
+    expect(layoutOfId(id)).toBe(layoutKey(id));
+    expect(layoutOfId('game01')).toBeUndefined();
+    expect(layoutOfId('ab12cd34')).toBeUndefined();
+    const moves = playMoves(400, id), a = foldMoves(moves, ctx);
+    expect(a?.layout).toBe(layoutKey(id));
+    expect(a?.phase.k).toBe('end');
+    expect(JSON.stringify(foldMoves(JSON.parse(JSON.stringify(moves)), ctx))).toBe(JSON.stringify(a));
+    expect(foldMoves(playMoves(5), ctx)?.layout).toBeUndefined();
+    const { who: _w, ...start } = moves[0];
+    expect(parseClient(JSON.stringify({ v: 3, kind: 'sg', ...start }))).toEqual({ v: 3, kind: 'sg', ...start });
+    // the next game's board another family
+    for (let k = 0; k < 10; k++) expect(familyOf(newGameId(id, seeded(`n${k}`)))).not.toBe(familyOf(id));
   });
   it('seats: who and level, both ways', () => {
     expect(seatsOf('A1G3')).toEqual([{ who: 'A', level: 1 }, { who: 'G', level: 3 }]);

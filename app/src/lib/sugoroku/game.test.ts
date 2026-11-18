@@ -4,9 +4,10 @@ import { join } from 'node:path';
 import { seeded } from '#lib/random.ts';
 import { newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import seedsJson from './seeds.json';
-import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
+import { CLASSIC, pathOf, stepFrom, toGoal } from './board.ts';
+import { layoutKey } from './layout.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, rollMode, rewardOf, REWARD, REWARD_GOAL, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { boardFor, revive, choose, eventDone, finish, rollMode, rewardOf, REWARD, REWARD_GOAL, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { decodeAccept, wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -17,6 +18,7 @@ import { s } from './i18n.ts';
 import { PICTURES, choicesFor, lettersFor, pictureSrc } from './pictures.ts';
 
 const lines = linesJson as unknown as Line[];
+const BOARD = CLASSIC.spaces, FORK = CLASSIC.forks[0], GOAL = CLASSIC.goal;
 const seat = (who: 'A' | 'B' | 'G', level: Level = 2) => ({ who, name: who, level });
 const seats = [seat('A'), seat('B')];
 const words = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday);
@@ -50,16 +52,17 @@ describe('tiles', () => {
 });
 
 describe('board', () => {
-  it('one route with one fork, both ways reaching the goal', () => {
+  it('the classic: one route with one fork, both ways reaching the goal', () => {
     expect(BOARD[0].kind).toBe('start');
     expect(BOARD[GOAL].kind).toBe('goal');
     expect(BOARD.filter((b) => b.next.length > 1)).toHaveLength(1);
-    expect(stepFrom(FORK, null)).toBeNull();
-    const short = toGoal(0, 0), long = toGoal(0, 1);
+    expect(stepFrom(CLASSIC, FORK, {})).toBeNull();
+    const short = toGoal(CLASSIC, 0, { [FORK]: 0 }), long = toGoal(CLASSIC, 0, { [FORK]: 1 });
     expect(short).toBeLessThan(long);
+    expect(toGoal(CLASSIC, 0, {})).toBe(short);
     expect(short).toBeGreaterThanOrEqual(36);
     expect(long).toBeLessThanOrEqual(45);
-    expect(pathOf(FORK, BOARD[FORK].next[1], 1)).toEqual([BOARD[FORK].next[1]]);
+    expect(pathOf(CLASSIC, FORK, BOARD[FORK].next[1], { [FORK]: 1 })).toEqual([BOARD[FORK].next[1]]);
     for (const sp of BOARD) expect(sp.x >= 20 && sp.x <= 340 && sp.y >= 20 && sp.y <= 680).toBe(true);
   });
   it('cards: short A1 English, Japanese in the font, good only', () => {
@@ -72,8 +75,8 @@ describe('board', () => {
 });
 
 /** Play a whole game: each word space plays the rack's best word, the fork alternates. */
-function playOut(seed: string, levels: Level[] = [2, 2], length: 'short' | 'normal' | 'long' = 'normal'): Game {
-  let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G', 'A'] as const)[i], l)), seed, length);
+function playOut(seed: string, levels: Level[] = [2, 2], length: 'short' | 'normal' | 'long' = 'normal', layout?: string): Game {
+  let g = newGame(levels.map((l, i) => seat((['A', 'B', 'G', 'A'] as const)[i], l)), seed, length, layout);
   for (let i = 0; i < 600 && g.phase.k !== 'end'; i++) {
     const k = g.phase.k;
     if (k === 'spin') g = spin(g);
@@ -105,7 +108,26 @@ describe('game', () => {
     const mean = rounds.reduce((a, b) => a + b, 0) / rounds.length;
     expect(mean).toBeGreaterThan(9);
     expect(mean).toBeLessThanOrEqual(14);
-    expect(playOut('fork').players.every((p) => p.branch !== null || p.pos <= FORK)).toBe(true);
+    expect(playOut('fork').players.every((p) => p.ways[FORK] !== undefined || p.pos <= FORK)).toBe(true);
+  });
+  it('a generated board plays the same: about 11 rounds, every fork asked and taken, the same game from the same seeds', () => {
+    const rounds: number[] = [];
+    for (let i = 0; i < 30; i++) {
+      const layout = layoutKey(`lay${i}`), g = playOut(`r${i}`, [2, 2], 'normal', layout), b = boardFor(g);
+      expect(g.layout).toBe(layout);
+      expect(g.phase.k).toBe('end');
+      rounds.push(g.round);
+      // (each fork passed has its way; none on a fork not passed)
+      for (const p of g.players) for (const f of Object.keys(p.ways).map(Number)) expect(b.forks).toContain(f);
+      if (i < 3) expect(JSON.stringify(playOut(`r${i}`, [2, 2], 'normal', layout))).toBe(JSON.stringify(g));
+    }
+    const mean = rounds.reduce((a, b) => a + b, 0) / rounds.length;
+    expect(mean).toBeGreaterThan(9);
+    expect(mean).toBeLessThanOrEqual(14);
+  });
+  it('the letter stones are on the game\'s own board\'s ことば stones', () => {
+    const g = newGame(seats, 'lt', 'normal', layoutKey('lt')), b = boardFor(g);
+    for (const i of Object.keys(g.letters).map(Number)) expect(['word', 'double']).toContain(b.spaces[i].kind);
   });
   it('levels: the shortest word and the everyday bonus; the table stays close', () => {
     const at = (level: Level) => ({ ...newGame([seat('A', level), seat('B')], 'w'), phase: { k: 'word' as const, mult: 1, spun: 1 } });
@@ -133,9 +155,14 @@ describe('game', () => {
     const g = { ...newGame(seats, 's'), phase: { k: 'sentence' as const, spun: 2, r: 0.5 } };
     expect(sentenceAsWord(g).phase.k).toBe('word');
   });
-  it('saves: this build’s only', () => {
+  it('saves: this build’s only; a generated board’s key kept, one from another generator reads as none', () => {
     const g = playOut('save');
     expect(isGame(JSON.parse(JSON.stringify(g)))).toBe(true);
+    const lg = playOut('save', [2, 2], 'normal', layoutKey('save'));
+    expect(isGame(JSON.parse(JSON.stringify(lg)))).toBe(true);
+    expect(isGame({ ...lg, layout: '0:save' })).toBe(false);
+    expect(isGame({ ...lg, layout: 7 })).toBe(false);
+    expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, ways: { 3: 1 } })) })).toBe(false);
     expect(isGame({ ...g, v: 1 })).toBe(false);
     expect(isGame({ ...g, content: 'x' })).toBe(false);
     expect(isGame({ ...g, phase: { k: 'event', card: 999, spun: 1 } })).toBe(false);
@@ -155,20 +182,31 @@ describe('game', () => {
       expect(long.players.every((p) => p.home !== null) || long.round === 20).toBe(true);
     }
   });
+  it('a save from before layouts (the classic board, a player’s `branch`) still loads, its fork’s way kept', () => {
+    const g = playOut('old');
+    const old = { ...JSON.parse(JSON.stringify(g)), players: g.players.map(({ ways, ...p }, i) => ({ ...p, branch: i ? null : (ways[FORK] ?? 1) })) };
+    delete old.layout;
+    const back = revive(old)!;
+    expect(back).not.toBeNull();
+    expect(boardFor(back)).toBe(CLASSIC);
+    expect(back.players[0].ways).toEqual({ [FORK]: g.players[0].ways[FORK] ?? 1 });
+    expect(back.players[1].ways).toEqual({});
+    expect(revive({ ...old, v: 1 })).toBeNull();
+  });
   it('a corrupt save reads as none', () => {
     const g = playOut('bad');
     expect(isGame({ ...g, turn: 9 })).toBe(false);
     expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, level: 9 as Level })) })).toBe(false);
   });
   it('the table stays together: the one well ahead rolls low, the one well behind high; the gap at the end stays small', () => {
-    const at = (posA: number, posB: number) => ({ ...newGame(seats, 'gap'), players: newGame(seats, 'gap').players.map((p, i) => ({ ...p, pos: i ? posB : posA, branch: 0 })) });
+    const at = (posA: number, posB: number) => ({ ...newGame(seats, 'gap'), players: newGame(seats, 'gap').players.map((p, i) => ({ ...p, pos: i ? posB : posA, ways: { [FORK]: 0 } })) });
     expect(rollMode({ ...at(20, 2), turn: 0 })).toBe('slow');
     expect(rollMode({ ...at(20, 2), turn: 1 })).toBe('fast');
     expect(rollMode({ ...at(5, 3), turn: 0 })).toBe('even');
     let worst = 0, sum = 0;
     for (let i = 0; i < 60; i++) {
       const g = playOut(`spread${i}`, [2, 2]);
-      const gap = Math.abs(toGoal(g.players[0].pos, g.players[0].branch ?? 0) - toGoal(g.players[1].pos, g.players[1].branch ?? 0));
+      const gap = Math.abs(toGoal(CLASSIC, g.players[0].pos, g.players[0].ways) - toGoal(CLASSIC, g.players[1].pos, g.players[1].ways));
       worst = Math.max(worst, gap);
       sum += gap;
     }
@@ -214,8 +252,8 @@ describe('game', () => {
     const moveCard = CARDS.findIndex((c) => c.move === 3);
     let g = newGame(seats, 'mv');
     const start = 1;
-    const target = pathOf(start, BOARD.length - 1, 0).slice(0, 3);
-    g = { ...g, letters: { [target[0]]: 'k' }, players: g.players.map((p, i) => (i ? p : { ...p, pos: start, branch: 0 })), phase: { k: 'event', card: moveCard, spun: 1 } };
+    const target = pathOf(CLASSIC, start, BOARD.length - 1, { [FORK]: 0 }).slice(0, 3);
+    g = { ...g, letters: { [target[0]]: 'k' }, players: g.players.map((p, i) => (i ? p : { ...p, pos: start, ways: { [FORK]: 0 } })), phase: { k: 'event', card: moveCard, spun: 1 } };
     const after = eventDone(g);
     expect(after.turn).toBe(0); // still my turn: the landing plays
     expect(after.players[0].pos).toBe(target[2]);

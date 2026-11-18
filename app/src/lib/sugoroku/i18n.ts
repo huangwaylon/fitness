@@ -133,17 +133,21 @@ const S = {
   'kind.goal': { ja: 'あがり', en: 'Goal' },
   forkTitle: { ja: '分かれ道', en: 'A fork' },
   forkAsk: { ja: 'どっちへ？ あと{n}マス', en: 'Which way? {n} to go' },
-  'branch.0': { ja: '川の近道', en: 'River shortcut' },
-  'branch.0.note': { ja: '短い道・ダブルが多い', en: 'Short, more doubles' },
-  'branch.1': { ja: '博物館の遠回り', en: 'Museum loop' },
-  'branch.1.note': { ja: '長い道・絵のマスが2つ', en: 'Long, two picture stones' },
+  'way.short': { ja: '{a}の近道', en: '{a} shortcut' },
+  'way.long': { ja: '{a}の遠回り', en: '{a} long way' },
+  'way.even': { ja: '{a}の道', en: '{a} way' },
+  'way.steps': { ja: '{n}マス', en: '{n} spaces' },
   'area.home': { ja: '家', en: 'Home' },
   'area.plaza': { ja: '広場', en: 'Plaza' },
   'area.river': { ja: '川', en: 'River' },
   'area.museum': { ja: '博物館', en: 'Museum' },
   'area.shop': { ja: 'お店', en: 'Shop' },
   'area.airport': { ja: '飛行場', en: 'Airport' },
-  'area.beach': { ja: '浜辺', en: 'Beach' }
+  'area.beach': { ja: '浜辺', en: 'Beach' },
+  'area.forest': { ja: '森', en: 'Forest' },
+  'area.hill': { ja: '丘', en: 'Hill' },
+  'area.station': { ja: '駅', en: 'Station' },
+  'area.park': { ja: '公園', en: 'Park' }
 } as const satisfies Record<string, { ja: string; en: string }>;
 
 export type StringKey = keyof typeof S;

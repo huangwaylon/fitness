@@ -13,7 +13,7 @@ import { hook } from '#lib/world/devHooks.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
-import { heard, seatsOf, type Move } from './online.ts';
+import { heard, newGameId, seatsOf, type Move } from './online.ts';
 import { english } from '#lib/english/open.svelte.ts';
 import { s } from './i18n.ts';
 
@@ -74,7 +74,7 @@ export function listen(eager = false): void {
 /** Start an online game: its id and first move, sent. */
 export function startOnline(seats: string, l: 's' | 'n' | 'l'): void {
   listen();
-  const g = Math.random().toString(36).slice(2, 10).padEnd(6, '0');
+  const g = newGameId(untrack(() => online.cur.g));
   send({ g, i: 0, a: 'start', s: seats, l }, true);
 }
 

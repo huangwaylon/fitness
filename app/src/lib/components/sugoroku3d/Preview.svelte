@@ -1,10 +1,11 @@
 <script lang="ts">
   // Dev-only preview of 英語すごろく's 3D board (engine.ts; /dev/sugoroku3d under `vite dev`): the three of us in their
-  // いつもの looks on the board, and buttons for each of the engine's moves.
+  // いつもの looks on the board (?layout=<seed>: that game's board; none: the classic), and buttons for each of the engine's moves.
   import { onMount } from 'svelte';
   import { resolve } from '$app/paths';
   import { defaultLook } from '#lib/contract/look.ts';
-  import { BOARD, FORK, stepFrom } from '#lib/sugoroku/board.ts';
+  import { CLASSIC, stepFrom } from '#lib/sugoroku/board.ts';
+  import { boardOf, layoutKey } from '#lib/sugoroku/layout.ts';
   import type { Who } from '#lib/types.ts';
   import { createBoard3D, type Board3D, type Celebration } from './engine.ts';
 
@@ -14,9 +15,12 @@
   let k = $state(0), n = $state(3), branch = $state(0), face = $state(0), busy = $state(false);
   let at = $state([0, 0, 0]);
 
+  const seed = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('layout');
+  const plan = (seed && boardOf(layoutKey(seed))) || CLASSIC;
+  const BOARD = plan.spaces;
   onMount(() => {
     if (!canvas) return;
-    board = createBoard3D(canvas);
+    board = createBoard3D(canvas, plan);
     board.setPlayers(WHO.map((who) => ({ who, look: defaultLook(who) })));
     (window as { __sg3dPreview?: Board3D }).__sg3dPreview = board;
     return () => {
@@ -26,11 +30,11 @@
   });
 
   const read = () => (at = WHO.map((_, i) => board?.at(i) ?? 0));
-  /** The `steps` spaces ahead of player k (the fork as `branch`). */
+  /** The `steps` spaces ahead of player k (every fork as `branch`). */
   function ahead(from: number, steps: number): number[] {
     const out: number[] = [];
     for (let i = from, s = 0; s < steps; s++) {
-      const next = stepFrom(i, branch);
+      const next = stepFrom(plan, i, new Proxy({}, { get: () => branch }));
       if (next === null) break;
       out.push((i = next));
     }
@@ -83,7 +87,7 @@
       <button data-sfx="tick" onclick={walk} aria-disabled={busy} data-act="walk">あるく</button>
     </div>
     <div class="row">
-      <button data-sfx="tick" onclick={() => (branch = 1 - branch)}>分かれ道 (#{FORK}): {branch ? '博物館' : '川'}</button>
+      <button data-sfx="tick" onclick={() => (branch = 1 - branch)}>分かれ道: {branch ? '1' : '0'}</button>
       <button data-sfx="tick" onclick={() => celebrate('joy')} data-act="joy">joy</button>
       <button data-sfx="tick" onclick={() => celebrate('small')}>small</button>
       <button data-sfx="tick" onclick={() => celebrate('sad-free')}>sad-free</button>

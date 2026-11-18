@@ -20,12 +20,25 @@ with characters in it, since they are the pieces. A team game: one team total to
   | ぶん's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
   | 絵 | one of three spellings | its letters, the first given | its letters and two more |
   | イベント's Japanese | shown | shown | on a tap |
-- **The board** (`board.ts`): 47 stones on a drawn island (grass, river, beach, sea; signs for 家 広場 川 博物館 お店 飛行場
-  浜辺), ふりだし to あがり, one **fork** after 広場: 川の近道 (4 stones) or 博物館の遠回り (7: two 絵, two イベント): 39 or 42
-  steps, about 11 rounds. A tall map: the board is a window onto it that follows whose turn it is (and scrolls by hand),
-  full-bleed under the play screen's overlays like the 3D board (its fallback).
+- **The board** (`board.ts`, `layout.ts`): a new one every game, generated from the game's layout seed (kept in the
+  game, `layout`: a reload and every phone build the same one). A **family** (くねくね rows, ジグザグ legs, なみ waves,
+  わっか a loop round a pond, 十字路 lanes with a crossing where you may swap, みつまた three small forks), 1–3 **forks**
+  (split lanes either side, a corner cut short or gone round, a crossroads; joining early or late; the short way's
+  stones richer: ×2, 絵 or イベント, the long way's steadier), 4–7 stretches (家 first, 浜辺's あがり last; 広場 川 博物館
+  お店 飛行場 森 丘 駅 公園 in a new order), mirrored half the time. Rules (`problems`, tested over 240 seeds): every route
+  37–45 steps (about 11 rounds), at most 6 apart, its play (ことば 1, ダブル 1.7, 絵 1.3, ぶん 1.2, イベント 1.1) within
+  12 % of the richest route's, each kind's count per route in a band, no 4 ことば in a row, ×2 / 絵 / イベント 3 apart
+  and ぶん 2; stones apart, links 40–100 (a crossing's 150), nothing on another's link, links crossing only at a
+  crossroads, the river under one bridge link (two bridges at most), signs, the house and trees off the route, no
+  more scenery than the classic (6 signs, 22 trees, one house). A layout breaking one is tried again with the next
+  sub-seed. A fork's buttons read its ways: 「森の近道」 / 「広場の遠回り」, steps and what's on it (「4マス・ダブル2」);
+  each way's sign in 3D says 近道 / 遠回り and its steps. Two games in a row are of different families (local: the
+  last game's; online: the last id's). A game without a layout (a save or online game from before) plays the
+  **classic** board: 47 stones, one fork after 広場 (川の近道 4 / 博物館の遠回り 7). A tall map: the board is a window
+  onto it that follows whose turn it is (and scrolls by hand), full-bleed under the play screen's overlays like the 3D
+  board (its fallback).
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
-  and walk; the fork stops the walk for the choice. The table kept together (`rollMode`): the one 6+ steps behind
+  and walk; each fork stops the walk for its choice (`ways`: the way taken at each). The table kept together (`rollMode`): the one 6+ steps behind
   whoever's furthest on rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
   furthest back rolls two and keeps the lower. The stone:
   - **ことば**: make a word from your 8 tiles (tap to place, tap to take back). Points (`tiles.ts scoreOf`) = letters
@@ -53,11 +66,12 @@ with characters in it, since they are the pieces. A team game: one team total to
 
 ## The 3D board
 
-`components/sugoroku3d/` (engine.ts `createBoard3D`, the pure part in plan.ts): a minimal island (a few flat low-poly
-shapes: grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
+`components/sugoroku3d/` (engine.ts `createBoard3D(canvas, board)`, the pure part in plan.ts): the game's board as a minimal island (one
+mesh of vertex colours, one of water, one atlas of marks and signs: three draws whatever the layout; built once a game): a few flat low-poly
+shapes (grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
 colours with their marks, signs, at 1.5× pixels (an iPhone's memory: the island-model version, 2026-11-18, was too heavy), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
 camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
-moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only).
+moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only; `?layout=<seed>` a generated board).
 
 A game plays on its **own screen**, `/sugoroku` (`?m=local` this phone's, `?m=online` the shared one; the page's query
 kept), like the museum: the island isn't drawn meanwhile (one WebGL context on the phone). Starting or resuming in the
@@ -79,7 +93,7 @@ and 終了する (「ゲームを終了しますか？」 [キャンセル][終�
 ## Online
 
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
-`a` and its few fields, ≤ 256 bytes), sent to the relay and kept in the day's ring, so a phone that opens later or
+`a` and its few fields, ≤ 256 bytes; a game id of 10 letters is its board's layout seed, an older 6–8 the classic board), sent to the relay and kept in the day's ring, so a phone that opens later or
 reloads gets them again (its own too); each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in
 order through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
 ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了 from
@@ -131,5 +145,6 @@ must be.
 
 The game is saved on the phone after every step (`save.ts`, `DEVICE.sugoroku`): ‹ or ✕ mid-game leaves it to
 続きから; a finished one is cleared. One game a phone. A turn's tries
-(misses, ヒント, 意味を見る) are in the save. A save of another shape (`v`) or structure (`CONTENT`: the stones' kinds and
-links, the cards' effects, the pictures' sets; never the copy) reads as none, as does a corrupt one.
+(misses, ヒント, 意味を見る) are in the save. A save of another shape (`v`) or structure (`CONTENT`: the classic stones' kinds and
+links, the cards' effects, the pictures' sets; never the copy) or a layout key of another generator (`GEN`) reads as
+none, as does a corrupt one; one from before layouts (a player's one `branch`) loads as the classic board.

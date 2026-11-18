@@ -2,18 +2,23 @@
   // 英語すごろく's board (docs/sugoroku.md "The board"): the island drawn (grass, the river, the beach and the sea), the
   // route a sandy path through it with the fork, each space a stepping stone in its kind's colour with its mark (A ことば,
   // ×2 ダブル, 文 ぶん, 絵 絵, ! イベント), each stretch's wooden sign, ふりだし and あがり; the players' heads over their stones
-  // (the one whose turn it is ringed in yuzu), gliding a stone at a time as `shown` moves. The route is long: the board is
+  // (the one whose turn it is ringed in yuzu), gliding a stone at a time as `shown` moves; the game's board (board.ts:
+  // its route, river, house and trees). The route is long: the board is
   // a window onto it, under the whole screen (the 3D board's slot, its fallback), that follows whose turn it is (and
   // scrolls by hand), centred in the part the overlays leave (`top` and `bottom`: what they cover, CSS px).
   import Avatar from '#lib/components/characters/Avatar.svelte';
-  import { BOARD, GOAL, H, W } from '../board.ts';
+  import { W, riverY, type Board } from '../board.ts';
   import type { Player } from '../game.ts';
   import { s } from '../i18n.ts';
 
-  let { players, shown, turn, top = 0, bottom = 0, letters = {} }: { players: readonly Player[]; shown: readonly number[]; turn: number; top?: number; bottom?: number; letters?: Readonly<Record<number, string>> } = $props();
+  let { board, players, shown, turn, top = 0, bottom = 0, letters = {} }: { board: Board; players: readonly Player[]; shown: readonly number[]; turn: number; top?: number; bottom?: number; letters?: Readonly<Record<number, string>> } = $props();
   const MARK = { start: '', word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: '' } as const;
-  const edges = BOARD.flatMap((sp, i) => sp.next.map((j) => [i, j] as const));
-  const signs = BOARD.map((sp, i) => ({ sp, i })).filter(({ sp, i }) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
+  const BOARD = $derived(board.spaces);
+  const H = $derived(board.h);
+  const edges = $derived(BOARD.flatMap((sp, i) => sp.next.map((j) => [i, j] as const)));
+  const goalY = $derived(BOARD[board.goal].y);
+  const river = $derived(Array.from({ length: 31 }, (_, k) => `${k * 12},${riverY(board, k * 12).toFixed(1)}`).join(' '));
+  const trees = $derived(board.trees.filter(([x]) => x > -6 && x < W + 6));
   /** Each player's head: its stone, nudged apart when stones are shared. */
   const heads = $derived(players.map((p, k) => {
     const at = shown[k] ?? 0, sp = BOARD[at];
@@ -37,16 +42,15 @@
 </script>
 
 <div class="win" bind:this={win} style:padding-top="{top}px" style:padding-bottom="{bottom}px">
-<div class="board" role="img" aria-label={s('board')} data-sg-board bind:this={boardEl}>
+<div class="board" role="img" aria-label={s('board')} data-sg-board bind:this={boardEl} style:aspect-ratio="{W} / {H}">
   <svg viewBox="0 0 {W} {H}" aria-hidden="true">
     <!-- the island -->
     <rect width={W} height={H} rx="22" class="grass" />
-    <path class="river" d="M0 222 C 60 214, 110 246, 170 236 S 260 214, 300 240 L 300 250 C 250 228, 210 252, 168 250 S 70 230, 0 238 Z" />
-    <path class="sand" d="M80 {H} C 120 650, 260 628, 360 618 L 360 {H} Z" />
-    <path class="sea" d="M170 {H} C 220 684, 300 676, 360 670 L 360 {H} Z" />
-    <circle class="tree" cx="20" cy="80" r="11" /><circle class="tree" cx="342" cy="150" r="10" /><circle class="tree" cx="200" cy="330" r="9" />
-    <circle class="tree" cx="18" cy="420" r="12" /><circle class="tree" cx="340" cy="500" r="10" /><circle class="tree" cx="24" cy="580" r="11" />
-    <rect class="house" x="186" y="314" width="40" height="22" rx="4" /><path class="roof" d="M182 316 L206 300 L230 316 Z" />
+    <polyline class="river" points={river} />
+    <path class="sand" d="M0 {H} L0 {goalY + 30} C 120 {goalY + 18}, 240 {goalY + 30}, 360 {goalY + 20} L 360 {H} Z" />
+    <path class="sea" d="M0 {H} L0 {goalY + 62} C 120 {goalY + 52}, 240 {goalY + 64}, 360 {goalY + 54} L 360 {H} Z" />
+    {#each trees as [x, y, r], k (k)}<circle class="tree" cx={x} cy={y} {r} />{/each}
+    <rect class="house" x={board.house.x - 20} y={board.house.y - 4} width="40" height="22" rx="4" /><path class="roof" d="M{board.house.x - 24} {board.house.y - 2} L{board.house.x} {board.house.y - 18} L{board.house.x + 24} {board.house.y - 2} Z" />
     <!-- the path -->
     {#each edges as [a, b] (`${a}-${b}`)}<line class="path" x1={BOARD[a].x} y1={BOARD[a].y} x2={BOARD[b].x} y2={BOARD[b].y} />{/each}
     <!-- the stones -->
@@ -60,8 +64,8 @@
         {#if letters[i]}<g class="lstone" transform="translate({sp.x + 13} {sp.y - 13})"><circle r="9" /><text y="4">{letters[i].toUpperCase()}</text></g>{/if}
       {/if}
     {/each}
-    {#each signs as { sp } (sp.area)}
-      <g class="sign" transform="translate({sp.x} {sp.y + 22})"><rect x="-21" y="0" width="42" height="15" rx="3" /><text x="0" y="11">{s(`area.${sp.area}`)}</text></g>
+    {#each board.signs as sg (sg.i)}
+      <g class="sign" transform="translate({sg.x} {sg.y})"><rect x="-21" y="-7.5" width="42" height="15" rx="3" /><text x="0" y="3.5">{s(`area.${BOARD[sg.i].area}`)}</text></g>
     {/each}
   </svg>
   {#each heads as h (h.k)}
@@ -76,10 +80,10 @@
 <style>
   /* a window onto the long route under the whole screen; the overlays' insets its padding, so both ends scroll clear */
   .win { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; box-sizing: border-box; }
-  .board { position: relative; width: 100%; aspect-ratio: 360 / 700; }
+  .board { position: relative; width: 100%; }
   svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 0 var(--c-edge)); }
   .grass { fill: color-mix(in srgb, var(--c-mint) 70%, #9fd38a); }
-  .river { fill: color-mix(in srgb, var(--c-sky) 85%, white); }
+  .river { fill: none; stroke: color-mix(in srgb, var(--c-sky) 85%, white); stroke-width: 22; }
   .sand { fill: #f3dfa8; }
   .sea { fill: color-mix(in srgb, var(--c-sky) 90%, #5aa9d6); }
   .tree { fill: #5f9e54; }

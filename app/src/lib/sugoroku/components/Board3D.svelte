@@ -7,12 +7,15 @@
   // (refused twice): `fallback` (the 2D board) in its place.
   import { onMount, untrack, type Snippet } from 'svelte';
   import type { Player } from '../game.ts';
+  import type { Board } from '../board.ts';
   import type { Board3D, Celebration } from '#lib/components/sugoroku3d/engine.ts';
   import { madeGL } from '#lib/components/rooms/madeGL.ts';
   import { lookOf } from '#lib/store/look.ts';
   import { week } from '#lib/store/week.svelte.ts';
 
   interface Props {
+    /** The game's board (a new one: the engine made again, its {#key}). */
+    board: Board;
     players: readonly Player[];
     shown: readonly number[];
     turn: number;
@@ -24,7 +27,7 @@
     fork: boolean;
     fallback: Snippet;
   }
-  let { players, shown, turn, roll, cheer, top, bottom, fork, fallback }: Props = $props();
+  let { board: plan, players, shown, turn, roll, cheer, top, bottom, fork, fallback }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let board: Board3D | null = $state.raw(null);
@@ -36,7 +39,7 @@
     const el = canvas;
     if (!el) return;
     import('#lib/components/sugoroku3d/engine.ts')
-      .then((m) => madeGL(() => m.createBoard3D(el), () => alive))
+      .then((m) => madeGL(() => m.createBoard3D(el, untrack(() => plan)), () => alive))
       .then((b) => {
         if (!alive) return b.dispose();
         board = b;

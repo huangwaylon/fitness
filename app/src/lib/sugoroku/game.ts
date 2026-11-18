@@ -3,7 +3,8 @@
 // (every step moves it on), so a saved game replays the same. No ベル, no record: the stars are the game's own.
 import type { Who } from '#lib/types.ts';
 import { fnv1a, seeded, weighted } from '#lib/random.ts';
-import { BOARD, GOAL, stepFrom, toGoal } from './board.ts';
+import { CLASSIC, stepFrom, toGoal, type Board, type Ways } from './board.ts';
+import { boardOf } from './layout.ts';
 import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
 import { PICTURES, PICTURE_STARS, TIERS, tierOf } from './pictures.ts';
@@ -32,8 +33,8 @@ export interface Player extends Seat {
   rack: string[];
   /** Their place home (0 first), null on the way. */
   home: number | null;
-  /** The fork's way taken (0 近道, 1 遠回り), null before it. */
-  branch: number | null;
+  /** The way taken at each fork passed (fork → its `next` index). */
+  ways: Ways;
   /** Letters picked up on the way (a letter stone walked over), at most POCKET: tiles to add to any word. */
   pocket: string[];
   /** A letter another player sent: their next word must use it (FORCED_BONUS more if it does). */
@@ -58,7 +59,7 @@ interface Tries {
 }
 type Phase =
   | { k: 'spin' }
-  /** At the fork with `left` spaces still to walk: 近道 or 遠回り? */
+  /** At a fork with `left` spaces still to walk: which way? */
   /** `card`: a card's move (its landing plays, an イベント there as ことば). */
   | { k: 'fork'; spun: number; left: number; card?: true }
   /** `rested`: an イベント reached by a card's move, played as ことば (no card chain). */
@@ -74,13 +75,16 @@ type Phase =
 /** The save's shape; CONTENT: the board's, cards' and pictures' build, hashed (a save from another reads as none:
  *  save.ts; the lines are picked afresh by the phase's `r`). */
 const V = 6;
-// (the structure only: a copy fix or a stone moved on the drawing never drops a game in play)
-const CONTENT = fnv1a(JSON.stringify([BOARD.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
+// (the structure only: a copy fix or a stone moved on the drawing never drops a game in play; a game's own board is its
+// `layout`, versioned by layout.ts's key)
+const CONTENT = fnv1a(JSON.stringify([CLASSIC.spaces.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
 
 export interface Game {
   v: typeof V;
   content: string;
   seed: string;
+  /** The board's layout key (layout.ts boardOf); none: the classic board (a game from before layouts). */
+  layout?: string;
   length: Length;
   /** The steps taken (the next random's salt). */
   n: number;
@@ -131,18 +135,21 @@ const STONE_LETTERS: readonly (readonly [string, number])[] = [['b', 3], ['c', 3
 const LUCKY_FROM = [...'dghlmnprst'];
 
 const rnd = (g: Game) => seeded(`${g.seed}:${g.n}`);
+/** The game's board. */
+export const boardFor = (g: Pick<Game, 'layout'>): Board => boardOf(g.layout) ?? CLASSIC;
 const copy = (g: Game) => g.players.map((p) => ({ ...p }));
 
-export function newGame(seats: readonly Seat[], seed: string, length: Length = 'normal'): Game {
-  const r = seeded(seed);
+/** A new game; `layout` its board's key (layout.ts layoutKey; none: the classic board). */
+export function newGame(seats: readonly Seat[], seed: string, length: Length = 'normal', layout?: string): Game {
+  const r = seeded(seed), board = boardOf(layout) ?? CLASSIC;
   let bag = newBag(r);
   const players = seats.map((s) => {
     const f = refill([], bag, r);
     bag = f.bag;
-    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, branch: null, pocket: [], forced: null };
+    return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, ways: {}, pocket: [], forced: null };
   });
   // the letter stones: LETTER_STONES of the ことば stones, each a letter
-  const words = BOARD.map((b, i) => ({ b, i })).filter(({ b }) => b.kind === 'word' || b.kind === 'double').map(({ i }) => i);
+  const words = board.spaces.map((b, i) => ({ b, i })).filter(({ b }) => b.kind === 'word' || b.kind === 'double').map(({ i }) => i);
   const letters: Record<number, string> = {};
   for (let k = 0; k < LETTER_STONES && words.length; k++) {
     const i = words.splice(Math.floor(r() * words.length), 1)[0];
@@ -151,7 +158,7 @@ export function newGame(seats: readonly Seat[], seed: string, length: Length = '
   const a = LUCKY_FROM[Math.floor(r() * LUCKY_FROM.length)];
   const rest = LUCKY_FROM.filter((l) => l !== a);
   const lucky = [a, rest[Math.floor(r() * rest.length)]];
-  return { v: V, content: CONTENT, seed, length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [], letters };
+  return { v: V, content: CONTENT, seed, ...(layout ? { layout } : {}), length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [], letters };
 }
 
 /** How far ahead on the route a lead counts as too far (steps to あがり). */
@@ -162,7 +169,7 @@ const GAP = 6;
 export function rollMode(g: Game): 'fast' | 'slow' | 'even' {
   const me = g.players[g.turn], others = g.players.filter((_, i) => i !== g.turn && g.players[i].home === null);
   if (!others.length) return 'even';
-  const left = (p: Player) => toGoal(p.pos, p.branch);
+  const b = boardFor(g), left = (p: Player) => toGoal(b, p.pos, p.ways);
   const mine = left(me);
   if (mine - Math.min(...others.map(left)) >= GAP) return 'fast';
   if (Math.max(...others.map(left)) - mine >= GAP) return 'slow';
@@ -180,22 +187,22 @@ export function spin(g: Game): Game {
   return walk({ ...g, n: g.n + 1, players }, spun, spun, r);
 }
 
-/** At the fork: take 近道 (0) or 遠回り (1) and walk on. */
-export function choose(g: Game, branch: 0 | 1): Game {
+/** At a fork: take its way 0 or 1 and walk on. */
+export function choose(g: Game, way: 0 | 1): Game {
   if (g.phase.k !== 'fork') return g;
-  const players = copy(g);
-  players[g.turn].branch = branch;
+  const players = copy(g), me = players[g.turn];
+  me.ways = { ...me.ways, [me.pos]: way };
   return walk({ ...g, n: g.n + 1, players }, g.phase.spun, g.phase.left, rnd(g), !!g.phase.card);
 }
 
 /** Walk `left` spaces (the players already copied), then land. `card`: a card's move (an イベント landed on plays as ことば). */
 function walk(g: Game, spun: number, left: number, r: () => number, card = false): Game {
-  const me = g.players[g.turn];
+  const me = g.players[g.turn], b = boardFor(g);
   g = { ...g };
   for (; left > 0; left--) {
-    const n = stepFrom(me.pos, me.branch);
+    const n = stepFrom(b, me.pos, me.ways);
     if (n === null) {
-      if (me.pos === GOAL) break;
+      if (me.pos === b.goal) break;
       return { ...g, phase: { k: 'fork', spun, left, ...(card ? { card: true as const } : {}) } };
     }
     me.pos = n;
@@ -206,14 +213,14 @@ function walk(g: Game, spun: number, left: number, r: () => number, card = false
       const { [n]: _gone, ...rest } = g.letters;
       g = { ...g, letters: rest };
     }
-    if (n === GOAL) break;
+    if (n === b.goal) break;
   }
   return land(g, spun, r, card);
 }
 
 function land(g: Game, spun: number, r: () => number, card = false): Game {
   const me = g.players[g.turn];
-  const kind = BOARD[me.pos].kind;
+  const kind = boardFor(g).spaces[me.pos].kind;
   // a card's move ending on an イベント: no second card, a ことば instead
   if (card && kind === 'event') return { ...g, phase: { k: 'word', mult: 1, spun, rested: true } };
   if (kind === 'goal') {
@@ -402,9 +409,20 @@ export const finish = (g: Game): Game => ({ ...g, phase: { k: 'end' } });
 /** Whether a saved value is a game this build can play (its shape, version and content). */
 export function isGame(x: unknown): x is Game {
   const g = x as Game;
-  return !!g && g.v === V && g.content === CONTENT && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
+  const b = !!g && (g.layout === undefined || typeof g.layout === 'string') ? boardOf(g.layout) : null;
+  return !!b && g.v === V && g.content === CONTENT && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
     && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards) && typeof g.letters === 'object' && !!g.letters
     && g.players.every((p) => (p.who === 'A' || p.who === 'B' || p.who === 'G') && Array.isArray(p.rack) && Array.isArray(p.pocket) && typeof p.pos === 'number' && p.pos >= 0
-      && p.pos <= GOAL && p.level >= 1 && p.level <= 3)
+      && p.pos <= b.goal && p.level >= 1 && p.level <= 3 && !!p.ways && typeof p.ways === 'object' && Object.keys(p.ways).every((f) => b.forks.includes(Number(f))))
     && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item]);
+}
+
+/** A saved game this build can play, or null; a save from before layouts (the classic board, one fork's `branch`)
+ *  read as the ways it took. */
+export function revive(x: unknown): Game | null {
+  type Old = Omit<Player, 'ways'> & { ways?: Ways; branch?: number | null };
+  const g = x as Omit<Game, 'players'> & { players?: Old[] };
+  if (g && typeof g === 'object' && !g.layout && Array.isArray(g.players))
+    g.players = g.players.map(({ branch, ...p }) => (p.ways ? p : { ...p, ways: branch === 0 || branch === 1 ? { [CLASSIC.forks[0]]: branch } : {} }));
+  return isGame(g) ? g : null;
 }

@@ -19,6 +19,7 @@ import { person3, type Dirs, type Person3 } from '../person3d/person3d.ts';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import { ACTION_MS } from '../villager3d/poses.ts';
 import { buildIsland } from './scenery.ts';
+import type { Board } from '#lib/sugoroku/board.ts';
 import { buildDie } from './die.ts';
 import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, forkAim, hopAt, hopsOf, restOf, slotOf, stoneAt, topOf, tumbleAt, visibleOf } from './plan.ts';
 
@@ -87,7 +88,7 @@ const CAM_TAU = 220;
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
-export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {}): Board3D {
+export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Board3DOpts = {}): Board3D {
   const dirs: Dirs = opts.dirs ?? { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
   const scene = new Scene();
   const sky = new Color(0xbfe6f4);
@@ -98,7 +99,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
   const sun = new DirectionalLight(0xfff0d6, 1.7);
   sun.position.set(-120, 260, 160);
   scene.add(sun, new AmbientLight(0xffe8cc, 0.25));
-  scene.add(buildIsland());
+  scene.add(buildIsland(board));
   const die = buildDie();
   scene.add(die.group);
   const camera = new PerspectiveCamera(FOV, 1, 10, 2400);
@@ -171,10 +172,10 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
     const by = new Map<number, Seat[]>();
     for (const s of seats) if (!s.walk) by.set(s.space, [...(by.get(s.space) ?? []), s]);
     for (const [space, list] of by) list.forEach((s, n) => {
-      const [x, z] = stoneAt(space), [dx, dz] = slotOf(n, list.length);
+      const [x, z] = stoneAt(board, space), [dx, dz] = slotOf(n, list.length);
       s.x = x + dx;
       s.z = z + dz;
-      s.y = topOf(space);
+      s.y = topOf(board, space);
     });
   }
   function finishWalk(s: Seat) {
@@ -209,7 +210,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
         const w = s.walk, i = Math.max(0, Math.floor((t - w.t0) / HOP_MS));
         if (i >= w.hops.length) finishWalk(s);
         else {
-          const h = w.hops[i], p = hopAt(h.a, h.b, (t - w.t0 - i * HOP_MS) / HOP_MS);
+          const h = w.hops[i], p = hopAt(board, h.a, h.b, (t - w.t0 - i * HOP_MS) / HOP_MS);
           moved = Math.hypot(p.x - s.x, p.z - s.z);
           s.x = p.x;
           s.y = p.y;
@@ -247,8 +248,8 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       else insetNow[e] = inset[e];
     }
     frameView();
-    const f = seats[focusK], aim = fork ? forkAim() : null;
-    const want = aim ? cameraFor(aim.x, aim.z, camera.aspect, aim.wide) : cameraFor(f ? f.x : 0, f ? f.z : stoneAt(0)[1], camera.aspect);
+    const f = seats[focusK], aim = fork && f && board.forks.includes(f.space) ? forkAim(board, f.space) : null;
+    const want = aim ? cameraFor(board, aim.x, aim.z, camera.aspect, aim.wide) : cameraFor(board, f ? f.x : 0, f ? f.z : stoneAt(board, 0)[1], camera.aspect);
     tmp.set(...want.pos);
     camSet = true;
     if (camPos.distanceToSquared(tmp) > 0.01) moving = true;
@@ -305,7 +306,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       const s = seats[k];
       if (!s) return Promise.resolve();
       if (s.walk) finishWalk(s);
-      const hops = hopsOf(s.space, path);
+      const hops = hopsOf(board, s.space, path);
       if (!hops.length) return Promise.resolve();
       die.group.visible = false;
       return new Promise<void>((done) => {
@@ -333,7 +334,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
     roll(n) {
       finishRoll();
       const f = seats[focusK];
-      const [x, z] = f ? [f.x, f.z] : stoneAt(0);
+      const [x, z] = f ? [f.x, f.z] : stoneAt(board, 0);
       // (beside the player on the screen's middle side, toward the camera; tossed in from the camera's side)
       const side = x < 0 ? 1 : -1;
       const to = new Vector3(x + side * 24, 0, z + 16), from = new Vector3(x + side * 60, 0, z + 70);

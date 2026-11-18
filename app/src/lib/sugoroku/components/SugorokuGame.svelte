@@ -29,8 +29,9 @@
   import { now } from '#lib/time/clock.ts';
   import { CARDS } from '../cards.ts';
   import { rewardOf, teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
-    sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
-  import { pathOf, toGoal } from '../board.ts';
+    sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, boardFor, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
+  import { pathOf, toGoal, waysAt } from '../board.ts';
+  import { familyOfKey, layoutKey } from '../layout.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { rewardGame } from '#lib/store/actions.ts';
   import { fnv1a } from '#lib/random.ts';
@@ -131,7 +132,11 @@
       startOnline(seatsCode(seatsOf(picked)), lengthCode(length));
       return resumeOnline();
     }
-    const g0 = newGame(seatsOf(picked), `${now()}:${picked.join(',')}`, length);
+    // (its board's family not the last game's: two games in a row look different)
+    const seed = `${now()}:${picked.join(',')}`, last = familyOfKey((game ?? saved)?.layout);
+    let lay = seed;
+    for (let k = 1; k < 20 && last && familyOfKey(layoutKey(lay)) === last; k++) lay = `${seed}~${k}`;
+    const g0 = newGame(seatsOf(picked), seed, length, layoutKey(lay));
     shown = g0.players.map((p) => p.pos);
     mode = 'local';
     set(g0);
@@ -186,7 +191,7 @@
     if (!walking || !g) return;
     const ps = g.players;
     const id = setInterval(() => {
-      shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(v, ps[i].pos, ps[i].branch)[0]));
+      shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(board!, v, ps[i].pos, ps[i].ways)[0]));
       // (the dice's number kept while the walk waits at the fork)
       if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), g?.phase.k !== 'fork' && (rolled = 0));
     }, screen ? 260 : 170);
@@ -247,6 +252,13 @@
   }
 
   const cur = $derived(g ? g.players[g.turn] : null);
+  const board = $derived(g ? boardFor(g) : null);
+  /** A fork's two ways as its sign reads: the area's 近道 / 遠回り, its steps and what's on it (the rare kinds). */
+  const ways = $derived(board && cur && board.forks.includes(cur.pos) ? waysAt(board, cur.pos).map((w, i, all) => {
+    const other = all[1 - i].steps, kind = w.steps < other ? 'short' : w.steps > other ? 'long' : 'even';
+    const extra = (['double', 'picture', 'event', 'sentence'] as const).filter((k) => w.kinds[k]).sort((a, b) => (w.kinds[b] ?? 0) - (w.kinds[a] ?? 0)).slice(0, 2);
+    return { title: s(`way.${kind}`, { a: s(`area.${w.area}`) }), note: [s('way.steps', { n: w.steps }), ...extra.map((k) => `${s(`kind.${k}`)}${w.kinds[k]}`)].join('・') };
+  }) : null);
   const ph = $derived(g?.phase ?? null);
   const lastRound = $derived(!!g && isLast(g));
   /** The heads walking or the die rolling: the sheet a bar with the die. */
@@ -300,7 +312,7 @@
   /** おくりもの: the pocket letter being sent, and who may get one (on the way, none waiting; whoever's furthest back first). */
   let giving = $state<string | null>(null);
   const takers = $derived(g ? g.players.filter((p, i) => i !== g.turn && p.home === null && !p.forced)
-    .sort((a, b) => toGoal(b.pos, b.branch) - toGoal(a.pos, a.branch)) : []);
+    .sort((a, b) => toGoal(board!, b.pos, b.ways) - toGoal(board!, a.pos, a.ways)) : []);
   $effect(() => void (g?.turn, (giving = null)));
   /** A letter just picked up on the way (this turn's walk): 「Zを拾った！」 till the next turn. */
   let pickNote = $state('');
@@ -441,11 +453,11 @@
       <div class="play" data-sg-turn={g.turn} data-sg-phase={ph.k} style:--hud="{hudH}px">
         <div class="stage">
           {#if screen}
-            <Board3D players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
-              {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
-            </Board3D>
+            {#key board}<Board3D board={board!} players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
+              {#snippet fallback()}<Board board={board!} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
+            </Board3D>{/key}
           {:else}
-            <Board players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />
+            <Board board={board!} players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />
           {/if}
         </div>
         <div class="hud" bind:offsetHeight={hudH}>
@@ -525,7 +537,7 @@
                   <div class="ways">
                     {#each [0, 1] as const as b (b)}
                       <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => act((x) => choose(x, b), { a: 'fork', b })}>
-                        <b>{s(`branch.${b}`)}</b><small>{s(`branch.${b}.note`)}</small>
+                        <b>{ways?.[b].title}</b><small>{ways?.[b].note}</small>
                       </button>
                     {/each}
                   </div>

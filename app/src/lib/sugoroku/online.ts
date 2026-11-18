@@ -7,12 +7,25 @@ import type { Who } from '#lib/types.ts';
 import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Level, type Seat } from './game.ts';
 import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
+import { familyOf, layoutKey } from './layout.ts';
 
 /** A move as kept: the wire's fields and who sent it. */
 export type Move = Omit<SgIntent, 'kind'> & { who: Who };
 
 const LENGTH: Record<'s' | 'n' | 'l', Length> = { s: 'short', n: 'normal', l: 'long' };
 export const lengthCode = (l: Length): 's' | 'n' | 'l' => (l === 'short' ? 's' : l === 'long' ? 'l' : 'n');
+
+/** An online game's board: its id is the layout's seed (the start move carries nothing more: the relay's ring stays
+ *  as it was); an id from before layouts (6–8 letters) plays the classic board. */
+export const ID_LEN = 10;
+export const layoutOfId = (g: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g) : undefined);
+/** A new game's id: random, its board's family not the last game's (two games in a row look different). */
+export function newGameId(last: string, rnd: () => number = Math.random): string {
+  const make = () => Array.from({ length: ID_LEN }, () => '0123456789abcdefghijklmnopqrstuvwxyz'[Math.floor(rnd() * 36)]).join('');
+  let id = make();
+  for (let k = 0; k < 20 && last.length >= ID_LEN && familyOf(id) === familyOf(last); k++) id = make();
+  return id;
+}
 
 /** A start's seats ("A2B1G3": who + level, in order). */
 export const seatsOf = (s: string): { who: Who; level: Level }[] =>
@@ -31,7 +44,7 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
   if (m.a === 'start') {
     if (g || !m.s) return g;
     const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
-    return newGame(seats, m.g, LENGTH[m.l ?? 'n']);
+    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g));
   }
   if (!g) return null;
   if (m.a === 'end') return g.players.some((p) => p.who === m.who) ? finish(g) : g;
