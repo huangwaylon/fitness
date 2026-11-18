@@ -1,5 +1,5 @@
 <script lang="ts">
-  // 英語すごろく's 3D board on its own screen (docs/sugoroku.md "The 3D board"): the engine (components/sugoroku3d, its
+  // 英語すごろく's 3D board on its own screen (docs/sugoroku.md "The 3D board"): the engine (board3d/, its
   // own chunk with three) on a canvas under the whole screen (full-bleed, never resized by a phase: `top` and `bottom`
   // are what the overlays cover, the camera framing the part between; `fork` a fork's choice), the players as their own characters (store/look.ts
   // lookOf, their villager pref). It follows the game: a stone of `shown` reached → a hop to it; whose `turn` → the
@@ -9,7 +9,7 @@
   import { onMount, untrack, type Snippet } from 'svelte';
   import type { Player } from '../game.ts';
   import type { Board } from '../board.ts';
-  import type { Board3D, Celebration } from '#lib/components/sugoroku3d/engine.ts';
+  import type { Board3D, Celebration } from '#lib/sugoroku/board3d/engine.ts';
   import { madeGL } from '#lib/components/rooms/madeGL.ts';
   import { lookOf } from '#lib/store/look.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -51,7 +51,7 @@
   onMount(() => {
     const el = canvas;
     if (!el) return;
-    import('#lib/components/sugoroku3d/engine.ts')
+    import('#lib/sugoroku/board3d/engine.ts')
       .then((m) => madeGL(() => m.createBoard3D(el, untrack(() => plan)), () => alive))
       .then((b) => {
         if (!alive) return b.dispose();

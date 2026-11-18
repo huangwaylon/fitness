@@ -67,7 +67,7 @@ with characters in it, since they are the pieces. A team game: one team total to
 
 ## The 3D board
 
-`components/sugoroku3d/` (engine.ts `createBoard3D(canvas, board)`, the pure part in plan.ts): the game's board as a minimal island (one
+`board3d/` (engine.ts `createBoard3D(canvas, board)`, the pure part in plan.ts): the game's board as a minimal island (one
 mesh of vertex colours, one of water, one atlas of marks and signs: three draws whatever the layout; built once a game): a few flat low-poly
 shapes (grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
 colours with their marks, signs, at 1.5× pixels (kept this light for an iPhone's memory), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4

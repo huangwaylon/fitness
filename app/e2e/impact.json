@@ -3,7 +3,6 @@
   "rules": [
     ["src/lib/english/**", ["english*"]],
     ["src/lib/sugoroku/**", ["sugoroku*", "night"]],
-    ["src/lib/components/sugoroku3d/**", ["sugoroku*"]],
     ["src/routes/sugoroku/**", ["sugoroku*"]],
     ["src/lib/speech/**", ["speech", "sugoroku-speak"]],
     ["src/routes/speech/**", ["speech", "night"]],

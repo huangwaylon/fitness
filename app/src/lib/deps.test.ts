@@ -86,7 +86,7 @@ const ALLOW: Record<string, string[]> = {
   // the speech test (docs/speech-test.md): the mic, the relay's /stt, the log
   speech: ['sync'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
-  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english', 'sugoroku']
+  components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
 };
 
 function files(dir: string): string[] {
@@ -184,13 +184,10 @@ describe('src/lib folder boundaries', () => {
 });
 
 /** Folder edges that close a loop, each on its way out. English Study and すごろく sit on components/' kit (ui/,
- *  characters/); back the other way: components/sugoroku3d → sugoroku (the 3D board: it moves into lib/sugoroku,
- *  fitness-c5), and the HUD opening English Study (island/Hud, HudMenu, sheetChunks → english/open.svelte.ts: the kit
- *  as a folder of its own ends that one, once ui/ and characters/ stop reaching into motion/ and look/). */
-const LOOPS: [string, string][] = [
-  ['components', 'english'],
-  ['components', 'sugoroku']
-];
+ *  characters/); back the other way: the HUD opening English Study (island/Hud, HudMenu, sheetChunks →
+ *  english/open.svelte.ts: the kit as a folder of its own ends that one, once ui/ and characters/ stop reaching into
+ *  motion/ and look/). */
+const LOOPS: [string, string][] = [['components', 'english']];
 
 // Inside components/: the 3D renderers and rooms draw, the sheets are the UI over them. A renderer never imports a
 // sheet (what both need is world/'s, or a kit's), and a sheet another sheet only by an edge named here.
