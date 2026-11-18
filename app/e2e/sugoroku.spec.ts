@@ -131,12 +131,13 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await expect(sheet(b).locator('[data-sg-spin]')).toHaveCount(0);
   // A plays a turn; B's phone follows it to B's turn
   await a.bringToFront();
-  await playTurn(a);
+  // (a もう1回ふろう card keeps the turn: played till it passes)
+  for (let k = 0; k < 4 && (await sheet(a).locator('[data-sg-turn]').getAttribute('data-sg-turn')) === '0'; k++) await playTurn(a);
   await expect(sheet(a).locator('[data-sg-waiting]')).toBeVisible();
   await b.bringToFront();
   await expect(sheet(b).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
   await expect(sheet(b).locator('[data-sg-score] b')).toHaveText(await sheet(a).locator('[data-sg-score] b').allTextContents());
-  await playTurn(b);
+  for (let k = 0; k < 4 && (await sheet(b).locator('[data-sg-turn]').getAttribute('data-sg-turn')) === '1'; k++) await playTurn(b);
   await a.bringToFront();
   await expect(sheet(a).locator('[data-sg-score] b')).toHaveText(await sheet(b).locator('[data-sg-score] b').allTextContents());
   await expect(sheet(a).locator('[data-sg-spin], [data-sg-waiting]').first()).toBeVisible();
