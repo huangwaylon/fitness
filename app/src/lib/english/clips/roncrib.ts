@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 16, retire 0, new 6, ctx 10, tx 6
+// R4 REVIEW 2026-11-18: keep 3, rewrite 16, retire 0, new 6, ctx 10, tx 6, qa 27
 // A2 REVIEW 2026-11-17: keep 13, rewrite 4, retire 5, new 1 (nt1, nt2 stay retired)
 // “Ron vs Chris's Parenting | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Chris
 // condemns Ron's handmade crib and takes him to the store that sold his own "safest" crib, which turns out to be
@@ -6,6 +6,8 @@
 // giving him the crib and telling him that worrying this much means he'll be a great father.
 // The captions garble 2, 23, 49, 65, 68, 74, 104.6, 133.7 and 165–169 s; no key rests on those words. Whisper ends on
 // a profanity (267 s); nothing quotes it. h2 restored as an exchange; the potty-training line (181–186 s) isn't quoted.
+// EXCLUDE 182.4–185.95 (potty-training joke)
+// EXCLUDE 266.9–269.5 (“s***ty”)
 // SWEAR-OK 199–201: “Moby Dick”, the novel's title
 import type { Clip } from '../types.ts';
 
@@ -15,8 +17,8 @@ export const ronChrisCrib: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'standard', seg: [14.9, 22.7],
-      stem: 'Why can’t Ron use his crib, says Chris?', ja: 'クリスによると、ロンのベビーベッドはなぜ使えない？',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'standard', seg: [15.25, 22.42],
+      stem: 'Why does Chris say Ron can’t use his crib?', ja: 'クリスによると、ロンのベビーベッドはなぜ使えない？',
       choices: ['It could hurt the baby', 'The wood isn’t ready yet', 'It is far too small'], a: 0,
       choicesJa: ['赤ちゃんがけがをするかも', '木材がまだ準備できていない', '小さすぎる'],
       cue: '「cannot use this crib」のあと',
@@ -26,7 +28,7 @@ export const ronChrisCrib: Clip = {
       trap: '前に木を乾かす話があるので、木材の話と考えがち。決め手は safety standard。',
       use: 'Is this car seat safe for babies?（このチャイルドシートは赤ちゃんに安全ですか）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'counter', ctx: true, seg: [34.5, 41.0],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'counter', ctx: true, seg: [35.1, 42.55],
       stem: 'What does Ron say to Chris’s plan?', ja: 'クリスの提案に、ロンは何と言う？',
       choices: ['He won’t go anywhere', 'He’ll go if Chris talks', 'He might go there later'], a: 0,
       choicesJa: ['どこにも行かない', 'クリスが話すなら行く', 'あとで行くかもしれない'],
@@ -37,7 +39,7 @@ export const ronChrisCrib: Clip = {
       trap: 'offer（提案）と聞くと、条件つきで行くと思いやすい。nowhere（どこにも〜ない）が答え。',
       use: 'I have a counteroffer.（こちらから別の案があります）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'meeting', seg: [40.5, 47.9],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'meeting', seg: [40.65, 47.9],
       stem: 'How long is the meeting Chris threatens Ron with?', ja: 'クリスがロンに出させると言う会議の長さは？',
       choices: ['40 minutes', '1 hour', '4 hours', '40 hours'], a: 2, keep: true,
       choicesJa: ['40分', '1時間', '4時間', '40時間'],
@@ -48,7 +50,7 @@ export const ronChrisCrib: Clip = {
       trap: 'four と forty は似て聞こえる。「フォー」のあとすぐ hour なら4時間。',
       use: 'It was a four-hour meeting.（4時間の会議だった）' },
 
-    { id: 'h2', skill: 'pragma', level: 'B2', point: 'window', ctx: true, seg: [49.0, 56.0],
+    { id: 'h2', skill: 'pragma', level: 'B2', point: 'window', ctx: true, seg: [48.9, 56.0],
       stem: 'What does Ron think of the nature machine?', ja: 'ロンは自然の音のマシンをどう思っている？',
       choices: ['It is a waste of money', 'It is a clever idea', 'He wants one for himself'], a: 0,
       choicesJa: ['お金のむだ', 'かしこいアイデア', '自分もほしい'],
@@ -70,7 +72,7 @@ export const ronChrisCrib: Clip = {
       trap: '最初はロンのベッドが危ないと言っていたので、話が逆。回収はクリスのベッド。',
       use: 'This product is being recalled.（この商品は回収中です）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deathtrap', seg: [64.6, 71.0],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deathtrap', seg: [64.6, 71.05],
       stem: 'What does “that thing is a *death trap*” mean?', ja: '「that thing is a death trap」の意味は？',
       choices: ['It is very dangerous', 'It sells out very fast', 'It is hard to build'], a: 0,
       choicesJa: ['とても危険だ', 'すぐ売り切れる', '組み立てが難しい'],
@@ -81,7 +83,7 @@ export const ronChrisCrib: Clip = {
       trap: 'amazing と紹介された直後なので、人気商品と考えがち。trap（わな）は悪い言葉。',
       use: 'That old bridge is a death trap.（あの古い橋は危なすぎる）' },
 
-    { id: 's2', skill: 'phrase', level: 'B1', point: 'sorry', reveals: ['deathtrap'], seg: [69.0, 75.0],
+    { id: 's2', skill: 'phrase', level: 'B1', point: 'sorry', reveals: ['deathtrap'], seg: [69.35, 73.85],
       stem: 'What does Chris mean by “*I’m sorry?*”', ja: 'クリスの「I’m sorry?」はどういう意味？',
       choices: ['What did you just say?', 'I feel sorry for you.', 'I made a big mistake.'], a: 0,
       choicesJa: ['今なんて言ったの？', 'お気の毒に', '私のミスだ'],
@@ -114,7 +116,7 @@ export const ronChrisCrib: Clip = {
       trap: '難しい語なので恥や不安と想像しやすい。あとの exciting で気持ちの向きが決まる。',
       use: 'It’s scary, but exciting.（こわいけど、わくわくする）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'hands', ctx: true, seg: [96.5, 103.0],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'hands', ctx: true, seg: [95.9, 103.0],
       stem: 'Why does Chris want to build his own crib?', ja: 'クリスはなぜ自分でベッドを作りたい？',
       choices: ['He trusts nothing else now', 'He wants to save some money', 'He wants to beat Ron'], a: 0,
       choicesJa: ['もうほかの物は信じられない', 'お金を節約したい', 'ロンに勝ちたい'],
@@ -136,7 +138,7 @@ export const ronChrisCrib: Clip = {
       trap: 'cusp を知らないと fatherhood だけが残り、もう父親だと聞こえる。',
       use: 'We’re on the cusp of something big.（大きなことの一歩手前にいる）' },
 
-    { id: 'h3', skill: 'infer', level: 'B2', point: 'hundred', reveals: ['limit'], ctx: true, seg: [109.0, 115.5],
+    { id: 'h3', skill: 'infer', level: 'B2', point: 'hundred', reveals: ['limit'], ctx: true, seg: [108.38, 115.5],
       stem: 'What does Ron mean when he says “100”?', ja: 'ロンの「100」はどういう意味？',
       choices: ['The talk must stop now', 'It is a perfect score', 'He agrees 100 percent'], a: 0,
       choicesJa: ['話はもう終わり', '満点だ', '100%賛成'],
@@ -147,7 +149,7 @@ export const ronChrisCrib: Clip = {
       trap: '100 は点数や「100%」にも使うので、ほめていると考えがち。直前で話が切れている。',
       use: 'That’s enough talking for now.（今はもう話は十分）' },
 
-    { id: 'h4', skill: 'humor', level: 'B1', point: 'sleep', ctx: true, seg: [122.5, 131.0],
+    { id: 'h4', skill: 'humor', level: 'B1', point: 'sleep', ctx: true, seg: [123.28, 130.85],
       stem: 'What is the “Swanson method” for sleep?', ja: '「スワンソン式」の眠り方とは？',
       choices: ['The parent just goes to sleep', 'The baby cries all night', 'You sing the baby to sleep'], a: 0,
       choicesJa: ['親がさっさと寝る', '赤ちゃんを一晩中泣かせる', '歌って赤ちゃんを寝かせる'],
@@ -158,9 +160,9 @@ export const ronChrisCrib: Clip = {
       trap: '専門家の名前が並ぶので、赤ちゃんの方法と思いやすい。眠るのは you（自分）。',
       use: 'I just close my eyes and fall asleep.（目を閉じたらすぐ眠れる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'presence', seg: [130.7, 139.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'presence', seg: [130.85, 139.0],
       stem: 'How does Chris say he learns from Ron?', ja: 'クリスはロンからどうやって学ぶと言う？',
-      choices: ['Just by being with him', 'By making him talk more', 'By listening to his stories'], a: 0,
+      choices: ['Just by spending time near him', 'By making him talk more', 'By listening to his stories'], a: 0,
       choicesJa: ['一緒にいるだけで', 'もっと話してもらって', '彼の話を聞いて'],
       cue: '「simply by」のあと',
       line: 'I really wish Ron would engage, but… I can learn parenting tips *simply by being in his presence*.',
@@ -169,7 +171,7 @@ export const ronChrisCrib: Clip = {
       trap: 'learn（学ぶ）から、話を聞いて学ぶと考えがち。ロンはほとんど話さない。',
       use: 'I learn a lot just by watching you.（見ているだけで勉強になる）' },
 
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'presence', reveals: ['hours'], seg: [130.8, 147.3], retired: true,
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'presence', reveals: ['hours'], seg: [130.9, 147.3], retired: true,
       stem: 'After Chris’s last remark to the camera, how should we take his claim about Ron?',
       choices: ['As a sleep-starved man’s shaky reasoning', 'As a sincere tribute to how Ron teaches',
                 'As a gentle tease about how little Ron talks'], a: 0,
@@ -180,7 +182,7 @@ export const ronChrisCrib: Clip = {
       trap: '温かい口調なので、素直に受け取りやすい。カメラへの最後の一言で、前の話を聞き直す。',
       use: 'Does that make sense? I haven’t slept.（分かる？寝てないんだ）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'hours', seg: [138.9, 147.6],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'hours', seg: [139.05, 147.6],
       stem: 'How long has Chris been awake?', ja: 'クリスはどのくらい寝ていない？',
       choices: ['Over 5 hours', 'Over 15 hours', 'Over 25 hours', 'Over 50 hours'], a: 3, keep: true,
       choicesJa: ['5時間以上', '15時間以上', '25時間以上', '50時間以上'],
@@ -191,7 +193,7 @@ export const ronChrisCrib: Clip = {
       trap: 'fifty と fifteen は似ている。fifteen は後ろの「ティーン」を伸ばし、fifty は前を強く短く言う。',
       use: 'The noise kept me up all night.（音で一晩中眠れなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'guide', seg: [151.0, 156.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'guide', seg: [149.72, 156.0],
       stem: 'Type the end: “all you need to do is ___.” (4 words)', ja: 'ロンのコツの最後の4語を書こう',
       answer: 'guide it into place',
       cue: '「need to do is」のあと',
@@ -201,7 +203,7 @@ export const ronChrisCrib: Clip = {
       trap: 'guide it into がつながり「ガイディッティントゥ」と聞こえやすい。4語に分けて書く。',
       use: 'All you need to do is press this button.（このボタンを押すだけです）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'joint', seg: [154.0, 162.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'joint', seg: [152.45, 162.0],
       stem: 'How does Chris take Ron’s woodwork tip?', ja: 'クリスはロンの木工のコツをどう受け取る？',
       choices: ['As advice for raising a child', 'As advice about his grip', 'As advice for his job'], a: 0,
       choicesJa: ['子育てのアドバイスとして', '握り方のアドバイスとして', '仕事のアドバイスとして'],
@@ -212,7 +214,7 @@ export const ronChrisCrib: Clip = {
       trap: 'hand（手）が出るので、握り方の話と勘違いしやすい。決め手は when parenting。',
       use: 'What I get from that is: be patient.（そこから学ぶのは、あせらないことだね）' },
 
-    { id: 'w1', skill: 'detail', level: 'B1', point: 'wood', ctx: true, seg: [171.5, 178.0],
+    { id: 'w1', skill: 'detail', level: 'B1', point: 'wood', ctx: true, seg: [170.6, 176.85],
       stem: 'Why does Ron throw the wood away?', ja: 'ロンはなぜその木を捨てた？',
       choices: ['It isn’t solid enough', 'It is the wrong color', 'He has too much wood'], a: 0,
       choicesJa: ['しっかりしていない', '色がちがう', '木が多すぎる'],
@@ -234,7 +236,7 @@ export const ronChrisCrib: Clip = {
       trap: '相手の文をくり返す返事は同意に聞こえやすい。くり返しの中で強い語が、話し手の言い分のありか。',
       use: 'I wasn’t trying to be rude.（わざと失礼にしたわけじゃない）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'conscious', ctx: true, seg: [186.0, 197.0],
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'conscious', ctx: true, seg: [186.0, 196.7],
       stem: 'What does Chris say when Ron says he isn’t teaching?', ja: '「教えていない」と言われ、クリスは何と言う？',
       choices: ['Ron helps without meaning to', 'Ron should teach him more', 'They are only building'], a: 0,
       choicesJa: ['ロンは意識せずに助けてくれる', 'もっと教えてほしい', 'ただ作っているだけだ'],
@@ -245,18 +247,18 @@ export const ronChrisCrib: Clip = {
       trap: 'No, I know から、ロンに賛成したと考えがち。決め手は足した consciously の一語。',
       use: 'I know you didn’t mean to. It’s fine.（わざとじゃないのはわかってる。大丈夫）' },
 
-    { id: 'pr2', skill: 'phrase', level: 'B1', point: 'enough', seg: [195.2, 210.4],
+    { id: 'pr2', skill: 'phrase', level: 'B1', point: 'enough', seg: [196.7, 210.4],
       stem: 'What does Ron mean by “That’s enough for today”?', ja: 'ロンの「That’s enough for today」はどういう意味？',
-      choices: ['Let’s stop for today', 'Let’s start a new lesson', 'He needs more time'], a: 0,
-      choicesJa: ['今日はここまで', '新しいレッスンを始めよう', 'もっと時間がいる'],
+      choices: ['Let’s stop here for now', 'Let’s start a new lesson', 'Let’s work a bit longer'], a: 0,
+      choicesJa: ['今はここでやめよう', '新しいレッスンを始めよう', 'もう少し続けよう'],
       cue: 'ロンの最後の一言',
       line: 'Metaphors? I *hate metaphors*. … *That’s enough for today*, I think.',
       said: 'ロンが「たとえ話は大嫌いだ」と言い、「今日はここまでにしよう」と切り上げる。',
       mean: 'That’s enough for today ＝ 文字どおりは「今日の分は十分」→今日はここまで。練習や仕事を終える決まり文句。',
-      trap: 'enough を「もっと」と取ると、時間がほしい話に聞こえる。for today で今日は終わり。',
+      trap: 'enough を「もっと」と取ると、まだ続ける話に聞こえる。for today で今日は終わり。',
       use: 'That’s enough for today. Good work.（今日はここまで。おつかれさま）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'gift', seg: [215.5, 224.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'gift', seg: [215.5, 224.0],
       stem: 'What does Ron do with the crib he built?', ja: 'ロンは作ったベビーベッドをどうする？',
       choices: ['Lets Chris and Ann have it', 'Sells it to the store', 'Keeps it for his baby'], a: 0,
       choicesJa: ['クリスとアンにあげる', '店に売る', '自分の赤ちゃんのために取っておく'],
@@ -267,7 +269,7 @@ export const ronChrisCrib: Clip = {
       trap: 'もともと自分の子のために作ったので、取っておくと考えがち。決め手は giving it to you。',
       use: 'I’m giving this to you.（これ、あなたにあげる）' },
 
-    { id: 'm1', skill: 'pragma', level: 'B1', point: 'accept', ctx: true, reveals: ['gift'], seg: [217.0, 226.0],
+    { id: 'm1', skill: 'pragma', level: 'B1', point: 'accept', ctx: true, reveals: ['gift'], seg: [217.0, 226.72],
       stem: 'What does Chris say to Ron’s gift?', ja: 'ロンの贈り物に、クリスは何と言う？',
       choices: ['He says no to it', 'He says a happy yes', 'He asks for some time'], a: 0,
       choicesJa: ['受け取れないと言う', '喜んで受け取る', '少し考えさせてと言う'],
@@ -289,7 +291,7 @@ export const ronChrisCrib: Clip = {
       trap: 'not が弱く消えると「教訓だ」に聞こえる。森の一文は気まずさを消すが、足した一言は教訓探しを止める。',
       use: 'No hidden meaning, just a fact.（深い意味はない、ただの事実）' },
 
-    { id: 'f1', skill: 'infer', level: 'B2', point: 'forest', ctx: true, seg: [224.5, 233.0],
+    { id: 'f1', skill: 'infer', level: 'B2', point: 'forest', ctx: true, seg: [225.45, 234.0],
       stem: 'What does Ron mean about the forest?', ja: '森の話で、ロンは何を言いたい？',
       choices: ['He can build another crib', 'He wants to cut more trees', 'The forest is his home'], a: 0,
       choicesJa: ['ベッドはまた作れる', 'もっと木を切りたい', '森は自分の家だ'],
@@ -300,7 +302,7 @@ export const ronChrisCrib: Clip = {
       trap: '木や森の話なので、木を切る話と考えがち。決め手は直前の「赤ちゃんのため」への返事であること。',
       use: 'Don’t worry, there’s more than one.（気にしないで、ほかにもあるから）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', seg: [233.6, 257.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', seg: [234.0, 257.5],
       stem: 'What does Ron tell Chris at the end?', ja: '最後に、ロンはクリスに何と言う？',
       choices: ['Chris will be a good dad', 'Chris should read more books', 'Chris made too many mistakes'], a: 0,
       choicesJa: ['クリスはいい父親になる', 'もっと本を読むべき', '失敗しすぎた'],
@@ -333,7 +335,7 @@ export const ronChrisCrib: Clip = {
       trap: '日本語で「また失敗するよ」は嫌味に聞こえやすい。but のあとが本音で、前半は安心させる前置き。',
       use: 'Everyone makes mistakes. That’s okay.（誰でも失敗する。大丈夫）' },
 
-    { id: 't1', skill: 'detail', level: 'B1', point: 'thanks', ctx: true, reveals: ['advice'], seg: [249.0, 258.0],
+    { id: 't1', skill: 'detail', level: 'B1', point: 'thanks', ctx: true, reveals: ['advice'], seg: [249.62, 258.0],
       stem: 'What does Chris thank Ron for?', ja: 'クリスはロンに何のお礼を言う？',
       choices: ['The bed and his kind words', 'The lunch and the wood lesson', 'The book and all the tools'], a: 0,
       choicesJa: ['ベッドとやさしい言葉', 'お昼とレッスン', '本と道具'],
