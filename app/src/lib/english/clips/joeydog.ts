@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 0, new 0, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 0, new 0, ctx 4, tx 8, qa 2
 // A2 REVIEW 2026-11-17: keep 8, rewrite 6, retire 6, new 0
 // “Joey’s Parting Gift for Chandler | Friends” (the official Friends channel, Best of Season 6): on their last night as
 // roommates Joey gives Chandler the big white dog; Chandler's offer to buy it reads to Joey as charity, and Joey says he
@@ -16,8 +16,8 @@ export const joeyDog: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'dime', ctx: true, seg: [0, 7.0],
       stem: 'Chandler wants one more hand. Why does Joey say no?',
       ja: 'チャンドラーはもう一勝負したい。ジョーイはなぜ断る？',
-      choices: ['He can’t lose more money', 'He feels his luck turning', 'He wants to keep his winnings'], a: 0,
-      choicesJa: ['もうお金を負けられない', '運が悪くなりそう', '勝った分を守りたい'],
+      choices: ['He can’t lose more money', 'He is too tired to play', 'He wants to keep his winnings'], a: 0,
+      choicesJa: ['もうお金を負けられない', 'つかれて、もうできない', '勝った分を守りたい'],
       cue: '「No, no」のあとの一文。',
       line: 'Chandler: Let’s just play *one more hand*. / Joey: No, no, no more. I *cannot lose another dime*.',
       said: '「あと一回だけやろう」に、ジョーイは「これ以上1セントも負けられない。今度は本気」と断る。',
@@ -76,8 +76,8 @@ export const joeyDog: Clip = {
     { id: 'i1', skill: 'infer', level: 'B2', point: 'him', ctx: true, reveals: ['gift'], seg: [24.4, 31.2],
       stem: 'Chandler says “You love it.” How does Joey answer?',
       ja: 'チャンドラーの「You love it」に、ジョーイはどう返す？',
-      choices: ['Call the dog “him”', 'He doesn’t love it', 'Keep the dog, please'], a: 0,
-      choicesJa: ['犬を「彼」と呼んで', '好きじゃない', 'どうか犬をもらって'],
+      choices: ['The dog is a “him”', 'He doesn’t love it', 'Chandler should keep it'], a: 0,
+      choicesJa: ['犬は「彼」だ', 'あれは好きじゃない', 'チャンドラーがもらうべきだ'],
       cue: 'ジョーイの短い返事。it と him。',
       line: 'Chandler: I can’t take the big white dog. You love *it*. / Joey: *It’s him, not it*.',
       said: '「犬はもらえないよ。君、あれが大好きだろ」に、ジョーイは「あれじゃない、彼だよ」と直す。',

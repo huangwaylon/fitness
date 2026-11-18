@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 7, retire 0, new 5, ctx 4, tx 25 (restored n1, h2, pr1, r1)
+// R4 REVIEW 2026-11-18: keep 6, rewrite 7, retire 0, new 5, ctx 4, tx 25 (restored n1, h2, pr1, r1), qa 3
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 3, new 0 · sweep: cross-bank twins retired or rewritten
 // “Andy's Stress Sweating | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy, who asked
 // his coworkers to steal from his desk so he could practise for the police exam, treats his missing computer as a case;
@@ -209,7 +209,7 @@ export const stressSweat: Clip = {
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', seg: [107.5, 113.8],
       stem: 'Why does the officer say “I love your enthusiasm”?',
       ja: '警官はなぜ「I love your enthusiasm」と言う？',
-      choices: ['To praise him, then say no', 'To praise him, then say yes', 'To praise him, then ask help'], a: 0,
+      choices: ['To praise him, then say no', 'To praise him, then say yes', 'To praise him, then ask for help'], a: 0,
       choicesJa: ['ほめてから断るため', 'ほめてから引き受けるため', 'ほめてから手伝いを頼むため'],
       cue: '「but」のあと。',
       line: 'Andy, *I love your enthusiasm, but* we don’t really have the kind of money…',
@@ -221,12 +221,12 @@ export const stressSweat: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'paperwork', reveals: ['superhero'], seg: [107.7, 131.6],
       stem: 'What does the officer say most police work is?',
       ja: '警官は、警察の仕事のほとんどは何だと言う？',
-      choices: ['Writing things down', 'Catching bad guys', 'Helping people in trouble'], a: 0,
+      choices: ['Filling in forms', 'Catching bad guys', 'Helping people in trouble'], a: 0,
       choicesJa: ['書類を書くこと', '悪い人をつかまえること', '困っている人を助けること'],
       cue: '「this is what most police work is」のあと。',
       line: 'this is what *most police work is*. Just *writing stuff down*.',
       said: '報告書だけで済ませる警官に、アンディは不満。警官は「仕事はほとんど書き留めるだけ」と言う。',
-      mean: 'writing stuff down ＝ 書き留めること。アンディの思う警官とはちがう、地味な仕事。',
+      mean: 'writing stuff down ＝ 書き留めること。つまり書類仕事。アンディの思う警官とはちがう、地味な仕事。',
       trap: 'アンディが犯人を逃がせないと言うので、つかまえる話と考えがち。警官の答えは writing。',
       use: 'Most of the job is paperwork.（仕事のほとんどは書類仕事）' },
 
@@ -269,8 +269,8 @@ export const stressSweat: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'whycop', seg: [149.6, 165.4],
       stem: 'Why does Andy lose hope after the officer’s talk?',
       ja: 'アンディは、警官の話のあと、なぜやる気をなくす？',
-      choices: ['He can’t investigate bad guys', 'He failed the police exam', 'He likes the guard job more'], a: 0,
-      choicesJa: ['悪いやつを捜査できないから', '警察の試験に落ちたから', '警備の仕事のほうがいいから'],
+      choices: ['He can’t work on real cases', 'He failed the police exam', 'He likes the guard job more'], a: 0,
+      choicesJa: ['本物の事件を調べられないから', '警察の試験に落ちたから', '警備の仕事のほうがいいから'],
       cue: '「I mean, gosh」のあと',
       line: 'what the policeman said. — I mean, gosh, *if I can’t even investigate bad guys, why become a cop at all?*',
       said: '「悪いやつを捜査すらできないなら、何のために警官になるんだ」と落ちこむ。',

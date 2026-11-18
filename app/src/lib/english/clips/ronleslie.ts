@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 0, new 2, ctx 8, tx 9, qa 15
+// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 0, new 2, ctx 8, tx 9, qa 15, qa 1 (q30: EXCLUDE poopy verse, g2 moved off it)
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 2
 // “Ron and Leslie get down to business | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // locked in a room until they talk, Leslie and Ron first plot a fake make-up for Ben, then she tries everything to
@@ -7,6 +7,7 @@
 // smashed), 124–132 s ("Talk to me" on a loop), the sung verses at 180–209 s (garbled in both), 173 s "Oh, that's
 // right" (speaker unclear), and 49–54 s (whose lines is unclear).
 // EAR CHECK: 143.5 s wanna — “You wanna talk?” is Leslie, and wanna (not want to) as whisper has it
+// EXCLUDE 206.1–209.3: the “pee-pee poopy daddy” verse (crude bodily, lead ruling)
 // SKIP 216.5–237.5: the end card; whisper's lone "Thank you" at 237 s
 import type { Clip } from '../types.ts';
 
@@ -295,18 +296,6 @@ export const ronLeslieLocked: Clip = {
       trap: 'words を「言葉・単語」と取ると意味が通らない。歌の words は「歌詞」。',
       use: 'Guess what? I got the job!（聞いて！仕事決まったの！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['minutes'], seg: [196.0, 217.0],
-      stem: 'How does it end for Ron and Leslie?',
-      ja: 'ロンとレスリーはどうなる？',
-      choices: ['Ron agrees to talk a little', 'They talk about everything', 'Leslie gives up and stops'], a: 0,
-      choicesJa: ['ロンが少し話すことにする', '何もかも話し合う', 'レスリーがあきらめてやめる'],
-      cue: '最後のロンの一言。',
-      line: 'Stop it! … *I will speak with you* for three minutes. — Great!',
-      said: 'レスリーが変な歌をくり返すと、ロンが「やめろ！」と言い、少し話すことに同意する。',
-      mean: '完全に折れたのではなく、時間を決めて少しだけ話す、という譲歩。',
-      trap: '長く黙っていたので、レスリーがあきらめると考えがち。最後のロンの一言で決まる。',
-      use: 'Okay, okay, I’ll talk.（分かった、分かった、話すよ）' },
-
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'nextverse', ctx: true, seg: [196.0, 204.0],
       stem: 'What does Leslie do when Ron doesn’t answer?',
       ja: 'ロンが答えないと、レスリーはどうする？',
@@ -318,6 +307,18 @@ export const ronLeslieLocked: Clip = {
       mean: 'A or B? ＝ どちらか選ばせる質問。verse ＝ 歌の「〜番」。答えないなら歌を続ける、というおどし。',
       trap: '答えがないので、あきらめると考えがち。決め手は Okay のあとの next verse。',
       use: 'Do you want tea or coffee?（紅茶とコーヒー、どっちがいい？）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['minutes'], seg: [209.3, 224.5],
+      stem: 'How does it end for Ron and Leslie?',
+      ja: 'ロンとレスリーはどうなる？',
+      choices: ['Ron agrees to talk a little', 'They talk about everything', 'Leslie gives up and stops'], a: 0,
+      choicesJa: ['ロンが少し話すことにする', '何もかも話し合う', 'レスリーがあきらめてやめる'],
+      cue: '最後のロンの一言。',
+      line: '*I will speak with you* for three minutes. — Great!',
+      said: 'レスリーの変な歌に負けて、ロンが「3分だけ話してやる」と同意する。レスリーは「やった！」。',
+      mean: '完全に折れたのではなく、時間を決めて少しだけ話す、という譲歩。',
+      trap: '長く黙っていたので、レスリーがあきらめると考えがち。最後のロンの一言で決まる。',
+      use: 'Okay, okay, I’ll talk.（分かった、分かった、話すよ）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['end'], seg: [212, 217.5], keep: true,
       stem: 'How long does Ron agree to talk with Leslie?',

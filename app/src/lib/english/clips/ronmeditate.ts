@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 2, new 0, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 2, new 0, ctx 4, tx 4, qa 3
 // A2 REVIEW 2026-11-17: keep 8, rewrite 12, retire 2, new 1
 // “Ron Swanson Tries Meditation | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Chris
 // takes Ron to a strip-mall meditation center for six hours; Ron stands there thinking of nothing, Chris takes it for
@@ -31,13 +31,13 @@ export const ronMeditate: Clip = {
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'look', seg: [0.4, 5.5],
       stem: 'What does “It doesn’t look like much” mean?',
       ja: '「It doesn’t look like much」はどういう意味？',
-      choices: ['It looks plain', 'It is very small', 'It is not a center'], a: 0,
-      choicesJa: ['見た目が地味', 'とても狭い', 'センターではない'],
+      choices: ['It looks plain', 'It is very small', 'It costs very little'], a: 0,
+      choicesJa: ['見た目が地味', 'とても狭い', '値段がとても安い'],
       cue: '「この辺で一番」のすぐあと。',
       line: 'It *doesn’t look like much*.',
       said: '建物を見て「見た目は大したことないな」と言う。',
       mean: 'doesn’t look like much ＝ 文字どおりは「大した物に見えない」→見た目はぱっとしない。建物を見た感想。',
-      trap: 'much から「広さ」や「量」を連想しやすい。look like much でひとまとまり。',
+      trap: 'much から「広さ」や How much（値段）を連想しやすい。look like much でひとまとまり。',
       use: 'It doesn’t look like much, but it’s great.（見た目は地味だけど最高）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'smells', seg: [5.3, 16],
@@ -148,16 +148,7 @@ export const ronMeditate: Clip = {
       trap: 'ロンは何もしていないので、怒ると思いやすい。クリスは「すごい」と受け取っている。',
       use: 'Incredible! How did you do that?（すごい！どうやったの？）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'kindofa', seg: [72.4, 75.35], retired: true,
-      stem: 'Type what he says: “to get to ___ clear headspace” (4 words)', answer: 'that kind of a',
-      cue: 'get to のあと、clear の前まで。弱い語も全部。',
-      line: 'It takes a ton of work for me to get to *that kind of a* clear headspace',
-      said: '「あれほど澄んだ頭になるには努力がいる」。that kind of a は「ザッカインダ」と一続き。',
-      mean: 'kind of のあとの a は話し言葉でよくある形。',
-      trap: '習った形に合わせて a を消したくなる。正しい文でなく、聞こえた音を書く。',
-      use: 'I need that kind of a break.（ああいう休みが必要だ）' },
-
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'nottry', reveals: ['nomatter'], ctx: true, seg: [72.4, 82.5],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'nottry', reveals: ['nomatter'], ctx: true, seg: [71.8, 82.5],
       stem: 'What does “Don’t try so hard” mean?',
       ja: '「Don’t try so hard」はどういう意味？',
       choices: ['Relax and try less', 'Stop and give up', 'Work much harder'], a: 0,
@@ -168,6 +159,15 @@ export const ronMeditate: Clip = {
       mean: 'Don’t try so hard ＝ そんなに頑張らないで。力を抜けば楽になる、という助言。',
       trap: 'Don’t try が「やめろ」に聞こえるが、so hard がつくと「頑張りすぎるな」。',
       use: 'Take it easy. Don’t try so hard.（気楽にね。頑張りすぎないで）' },
+
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'kindofa', seg: [72.4, 75.35], retired: true,
+      stem: 'Type what he says: “to get to ___ clear headspace” (4 words)', answer: 'that kind of a',
+      cue: 'get to のあと、clear の前まで。弱い語も全部。',
+      line: 'It takes a ton of work for me to get to *that kind of a* clear headspace',
+      said: '「あれほど澄んだ頭になるには努力がいる」。that kind of a は「ザッカインダ」と一続き。',
+      mean: 'kind of のあとの a は話し言葉でよくある形。',
+      trap: '習った形に合わせて a を消したくなる。正しい文でなく、聞こえた音を書く。',
+      use: 'I need that kind of a break.（ああいう休みが必要だ）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'nomatter', seg: [74.3, 76.8],
       stem: 'Type the end of his sentence: “___.” (6 words)', answer: 'no matter how hard i try',

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 2, new 2, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 2, new 2, ctx 5, tx 7, qa 5
 // A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 5, new 2
 // “Ron Swanson vs. meditation | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Chris makes
 // Ron a finalist for assistant city manager, but first takes him to a strip-mall meditation center for a day; Ron
@@ -9,7 +9,7 @@
 // EAR CHECK: 14.6 s x1 — "you'd" reduced almost to "you" before "be a fool"; both sources have "you'd"
 // Same scene as ronmeditate (ActknnwERUs) from 66.9 s: its points (the center's looks and smells, I'll stand, six
 // hours, not meditating, crackpots, Don't try so hard, come clean, getting the job) stay retired or untested here.
-// EAR CHECK: 70.1 s — ronmeditate gives Chris “It doesn't look like much”; m2 (which made it Ron's) is retired
+// EAR CHECK: 70.1 s — who says “It doesn't look like much” (ronmeditate's ja gives it to Ron); m2 names no one for it
 import type { Clip } from '../types.ts';
 
 export const ronMeditation: Clip = {
@@ -62,7 +62,7 @@ export const ronMeditation: Clip = {
       trap: 'belly（腹）や beast（獣）を文字通りに取ると、食事や戦いの話になる。',
       use: 'Time to enter the belly of the beast.（さあ、敵地に乗り込むか）', retired: true },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'inside', seg: [17.6, 25],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'inside', seg: [16.3, 25],
       stem: 'What does Ron hope to do with the job?',
       ja: 'ロンは、この仕事で何をしたい？',
       choices: ['Make the government smaller', 'Make the government work better', 'Catch people who waste money'], a: 0,
@@ -71,7 +71,7 @@ export const ronMeditation: Clip = {
       line: 'if it means I’m able to *further limit* reckless government spending.',
       said: '「むだな政府の支出をもっと減らせるなら、中に入っていく」と言う。',
       mean: 'further limit ＝ さらに減らす。中から政府を小さくするのが目的。',
-      trap: 'reckless（むちゃな）だけ聞くと、政府をよくしたい人に聞こえるが、うしろの例は「なくす」話。',
+      trap: 'reckless や government だけ聞くと、政府をよくしたい話に聞こえやすい。決め手は further limit（もっと減らす）。',
       use: 'We need to limit spending this month.（今月は出費をおさえないと）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'simple', reveals: ['inside'], seg: [22.2, 35.1],
@@ -157,16 +157,16 @@ export const ronMeditation: Clip = {
       trap: 'best と biggest は、始めと終わりの音が似ている。短ければ best。',
       use: 'This is the best pizza place in town.（ここが町一番のピザ屋）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'actually', seg: [66.8, 78], retired: true,
-      stem: 'Why does Chris say “Oh, actually” here?',
-      ja: 'クリスは、なぜここで「Oh, actually」と言う？',
-      choices: ['To disagree kindly', 'To agree and add more', 'To change the subject'], a: 0,
-      choicesJa: ['やんわり反対するため', '賛成して付け足すため', '話題を変えるため'],
-      cue: '「look like much」のあと',
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'actually', seg: [69.9, 78.0],
+      stem: 'What does Chris’s “Oh, actually” mean here?',
+      ja: 'クリスの「Oh, actually」はどういう意味？',
+      choices: ['No, not really', 'Yes, that’s true', 'By the way'], a: 0,
+      choicesJa: ['いや、そうでもない', 'うん、そうだね', 'ところで'],
+      cue: '「look like much」のすぐあと',
       line: 'It doesn’t look like much. — *Oh, actually*, this strip mall has *surprisingly decent* chi.',
-      said: '「大したことなさそう」に「いや、実は、意外と気の流れがいい」と返す。',
-      mean: 'actually ＝「実は」。相手の思いこみを、やんわり打ち消す合図。',
-      trap: 'Oh から、「ああ、そうだね」と賛成したと思いやすい。actually のあとは反対の話。',
+      said: '「見た目は大したことない」に、クリスが「いや、実は意外と気の流れがいい」と言い直す。',
+      mean: 'actually ＝「実は」。直前の言葉を打ち消す合図。chi ＝ 気（場所のエネルギー）。',
+      trap: 'Oh から賛成と考えがち。うしろは surprisingly decent（意外といい）と逆向き。',
       use: 'Actually, it’s better than it looks.（実は、見た目よりいいんだよ）' },
 
     { id: 'p2', skill: 'phrase', level: 'B1', point: 'onright', seg: [84.8, 89.8],
@@ -310,6 +310,18 @@ export const ronMeditation: Clip = {
       mean: 'come clean ＝「白状する、正直に言う」。言いにくい本音の前置き。',
       trap: 'clean から「そうじ」を思いやすい。come clean で「白状する」の決まり文句。',
       use: 'Okay, I have to come clean.（よし、正直に言うね）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'nothing', seg: [152.0, 160.5],
+      stem: 'What does Ron tell Chris about the day?',
+      ja: 'ロンは、この日のことをクリスに何と言う？',
+      choices: ['It did nothing for him', 'It helped him relax', 'It was very hard for him'], a: 0,
+      choicesJa: ['何の役にも立たなかった', 'リラックスできた', 'とても大変だった'],
+      cue: '「come clean」のあとの一文',
+      line: 'I *got nothing out of* that experience *at all*.',
+      said: 'クリスを止めて「あの体験からは何も得られなかった」と正直に言う。',
+      mean: 'get nothing out of 〜 ＝ 文字どおりは「〜から何も取り出せない」→「何の役にも立たなかった」。at all ＝ まったく。',
+      trap: 'ほめられた直後なので、リラックスできたと勘違いしやすい。決め手は nothing。',
+      use: 'I got a lot out of the class.（その授業はすごくためになった）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'trail', seg: [153.8, 168.8],
       stem: 'When Ron breaks off after “someone who enjoys meditation”, what goes unsaid?',

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 5, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 5, ctx 5, tx 6, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 6, new 3
 // “Andy Goes to College | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Andy shops for
 // a first college class while Ron (try something new) and April (take something easy) pull him opposite ways; guitar
@@ -19,8 +19,8 @@ export const andyCollege: Clip = {
     { id: 'd4', skill: 'detail', level: 'B1', point: 'choose', seg: [0, 7.7],
       stem: 'Why can’t Andy choose a class?',
       ja: 'アンディはなぜ授業を選べない？',
-      choices: ['They all look amazing', 'They all look boring', 'They are all full'], a: 0,
-      choicesJa: ['どれもすごく良さそう', 'どれも退屈そう', 'どれも満員'],
+      choices: ['He likes them all', 'They all look boring', 'They are all full'], a: 0,
+      choicesJa: ['どれも気に入った', 'どれも退屈そう', 'どれも満員'],
       cue: '最初のアンディの一言。',
       line: 'Man, all these classes *look amazing*. I *can’t choose*.',
       said: '「どの授業もすごく良さそう。選べないよ」と言う。',
@@ -100,8 +100,8 @@ export const andyCollege: Clip = {
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'horizons', seg: [23.5, 32.1],
       stem: 'What does Ron tell Andy to do?',
       ja: 'ロンはアンディに何をすすめる？',
-      choices: ['Try a new subject', 'Travel to new places', 'Take an easy class'], a: 0,
-      choicesJa: ['新しい分野を学ぶ', 'いろいろな所へ旅する', '楽な授業を取る'],
+      choices: ['Study something new', 'Travel to new places', 'Take an easy class'], a: 0,
+      choicesJa: ['新しいことを学ぶ', 'いろいろな所へ旅する', '楽な授業を取る'],
       cue: '「Andrew」と呼んだあとの助言。',
       line: 'you should *explore a new subject*, *broaden your horizons*.',
       said: '「新しい分野を学んで、視野を広げろ」とロンが言う。',
@@ -331,7 +331,7 @@ export const andyCollege: Clip = {
       trap: '直前に「自分で選ぶ」と力強く言うので、よく考えると思いやすい。最後の at random を聞く。',
       use: 'Just pick one at random.（適当に1つ選んで）' },
 
-    { id: 'k5', skill: 'detail', level: 'B1', point: 'joan', seg: [184.5, 193],
+    { id: 'k5', skill: 'detail', level: 'B1', point: 'joan', seg: [184.8, 192.6],
       stem: 'In the teacher’s story, what did Joan of Arc say?',
       ja: '先生の話で、ジャンヌ・ダルクは何と言った？',
       choices: ['I am not afraid', 'Please let me go', 'I am very sorry'], a: 0,
