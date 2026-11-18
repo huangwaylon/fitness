@@ -1,13 +1,17 @@
+// R4 REVIEW 2026-11-18: keep 11, rewrite 6, retire 1, new 7, ctx 4, tx 1
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 7, new 0
 // “Burning Printers - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): Andy reports a
 // client's printer fire to Gabe; Darryl, still sore that Andy blamed the warehouse two years ago, feeds him a fake
 // cover-up story, and when Andy films a printer test that seems to prove him right, Darryl is the one who gets scared.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Gabe (0.4 s), Darryl (63.5 s, his
 // own talking head; 269.7 s "my partner Darryl Philbin"), Andy (53.4 s and on), "Darnell" (137 s). The talking head at
-// 134–147 s is never named, so stems call him "the coworker". Untested: 2.9–5.5 s and 15–18 s, 76–88 s, 147–157 s,
-// 196–197 s, 245–256 s (the sources split or one is blank), 290 s on (music).
-// NOTE: whisper repeats 101–127 s (a second copy of "How about Andy has a problem…" and "Creed's head…"); the captions'
-// timings are used.
+// 134–147 s is never named, so stems call him "the coworker". Untested: 2.9–5.5 s and 15–18 s, 147–157 s, 196–198 s
+// ("fine print"), 245–256 s (the sources split or one is blank).
+// SKIP 288–311: "I don't want to prank" repeated over the closing music
+// NOTE: whisper repeats 101–127 s (a second copy of "Creed's head…" at 111 s); f2 uses the captions' 130.6 s.
+// EAR CHECK: 76–88.5 s k3 — whisper's "I don't have a plan, exactly… It's like jazz… I'll figure something out" (the
+// captions split here); the key needs only "don't have a plan".
+// Restored: h1 (Andy's own reading of the three words, as an exchange). d3 retired (h1/f1 cover the three words).
 import type { Clip } from '../types.ts';
 
 export const printfire: Clip = {
@@ -23,11 +27,10 @@ export const printfire: Clip = {
       choicesJa: ['ねえ聞いて、大事な話', 'プリンターを見て', 'それには反対'],
       cue: 'clients called の直前の一語。',
       line: '*Look*, one of my clients called.',
-      said: '「ちょっと聞いて、客から電話があって」と本題に入る。',
+      said: '「あのさ、客の一人から電話があって」と本題に入る。',
       mean: '文の最初の Look ＝ ねえ、いいかい。大事な話の前に注意を引く。何かを見せるのではない。',
       trap: 'look を「見る」と思いやすい。続くのが話なら、注意を引く合図。',
       use: 'Look, I’ll be honest with you.（あのね、正直に言うよ）' },
-
     { id: 'd1', skill: 'detail', level: 'B1', point: 'job', seg: [5.2, 13.6],
       stem: 'What was the client doing when the trouble started?',
       ja: 'トラブルが起きたとき、客は何をしていた？',
@@ -39,8 +42,29 @@ export const printfire: Clip = {
       mean: 'in the middle of ～ ＝ 〜の最中。何をしているときに起きたかを言う。',
       trap: 'paper tray（用紙トレイ）が聞こえると、紙の話と思いやすい。in the middle of のあとを聞く。',
       use: 'Sorry, I’m in the middle of something.（ごめん、今ちょっと手が離せない）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'revenge', reveals: ['blame', 'when'], seg: [29.5, 70.3],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'hq', ctx: true, seg: [18, 25.2],
+      stem: 'What does Gabe say he will do?',
+      ja: 'ゲイブは何をすると言う？',
+      choices: ['Call the main office', 'Fix the printer himself', 'Go and see the client'], a: 0,
+      choicesJa: ['本社に電話する', '自分でプリンターを直す', '客に会いに行く'],
+      cue: '「What are we gonna do」への返事',
+      line: 'Andy: What are we gonna do about this? / Gabe: I don’t know. *Call HQ*, see if they know anything.',
+      said: '「どうする？」に、ゲイブは「さあ。本社に電話して、何か知ってるか聞いてみる」と答える。',
+      mean: 'HQ ＝ headquarters（本社）の略。see if 〜 ＝ 〜かどうか確かめる。I don’t know で始まり、あまり本気でない。',
+      trap: 'プリンターの話なので、自分で直すと考えがち。HQ（エイチキュー）は本社のこと。',
+      use: 'I’ll call the front desk and see if they know.（フロントに電話して聞いてみます）' },
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'hiding', ctx: true, seg: [29.8, 41.6],
+      stem: 'What does Darryl say about Gabe?',
+      ja: 'ダリルはゲイブについて何と言う？',
+      choices: ['He is hiding something', 'He is good at his job', 'He is very kind'], a: 0,
+      choicesJa: ['何か隠している', '仕事ができる', 'とても親切だ'],
+      cue: '「What do you mean?」のあと',
+      line: 'Darryl: Wow, that dude is good. / Andy: What do you mean? / Darryl: You didn’t feel like he was *hiding something*?',
+      said: '「あいつ、うまいな」「どういう意味？」「何か隠してる感じ、しなかった？」',
+      mean: 'dude ＝ やつ。good ＝（ごまかしが）うまい。What do you mean? ＝ どういう意味？ 聞き返しの決まり文句。',
+      trap: 'good から仕事ぶりをほめたと考えがち。決め手は聞き返しのあとの hiding something。',
+      use: 'What do you mean? I don’t get it.（どういう意味？分からないよ）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'revenge', reveals: ['blame', 'when'], seg: [51.5, 70.3],
       stem: 'Why does Darryl want to trick Andy?',
       ja: 'ダリルはなぜアンディをだましたい？',
       choices: ['Andy got him in trouble before', 'Andy took his job', 'Andy played a joke on him'], a: 0,
@@ -48,10 +72,9 @@ export const printfire: Clip = {
       cue: 'カメラに向かって話す、2年前の話。',
       line: 'Two years ago, Andy blamed the warehouse… *I almost lost my job.*',
       said: 'ダリルはカメラに「2年前、アンディのせいでクビになりかけた」と話す。',
-      mean: '仕返しのために、アンディに怪しい話を吹きこむ。opportunity ＝ チャンス。',
+      mean: '仕返しのために、アンディに怪しい話を吹きこむ。almost lost my job ＝ もう少しでクビだった。',
       trap: 'lost my job を「仕事を取られた」と思いやすい。almost（もう少しで）が付いている。',
-      use: 'I’ll get you back for this.（この仕返しはするからね）' },
-
+      use: 'I almost missed my train.（もう少しで電車に乗りおくれるところだった）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'when', reveals: ['getreal'], seg: [51.5, 60.4],
       stem: 'How long ago did the warehouse get blamed?',
       choices: ['Two weeks ago', 'Two months ago', 'Two years ago'], a: 2, keep: true,
@@ -61,7 +84,6 @@ export const printfire: Clip = {
       mean: 'ずっと前の恨み。長く根に持っていたことが、この仕返しの重さを表す。',
       trap: 'two だけ聞いて単位を落としやすい。数字のすぐあとの語を最後まで聞く。',
       use: 'We met two years ago.（2年前に会ったんだ）', retired: true },
-
     { id: 'd2', skill: 'detail', level: 'B1', point: 'blame', seg: [51.5, 60.4],
       stem: 'Whose fault was the late shipment?',
       ja: '出荷が遅れたのは誰のせい？',
@@ -73,19 +95,28 @@ export const printfire: Clip = {
       mean: 'blame A for B ＝ BをAのせいにする。本当はアンディの失敗。',
       trap: '先に聞こえる warehouse を原因と思いやすい。that のあとの he forgot まで聞く。',
       use: 'Don’t blame me for your mistake.（自分のミスを人のせいにしないで）' },
-
     { id: 'i1', skill: 'infer', level: 'B2', point: 'wait', seg: [62.4, 70.6],
       stem: 'What was Darryl waiting for?',
       ja: 'ダリルは何を待っていた？',
-      choices: ['A chance to get back at Andy', 'Andy to say sorry to him', 'His anger to go away'], a: 0,
-      choicesJa: ['アンディに仕返しするチャンス', 'アンディが謝ること', '怒りがおさまること'],
+      choices: ['A chance for revenge', 'Andy to say sorry', 'His anger to go away'], a: 0,
+      choicesJa: ['仕返しのチャンス', 'アンディが謝ること', '怒りがおさまること'],
       cue: 'he’s a fool のあと。',
       line: 'Just wait. *He’s a fool*. *There’s gonna be an opportunity*.',
-      said: '当時「待て。あいつは間抜けだ。チャンスは来る」と自分に言い聞かせた。',
-      mean: 'opportunity ＝ チャンス。間抜けならいつかすきを見せる、そのときに仕返しする。',
-      trap: '「待つ」を怒りがおさまるのを待つと思いやすい。fool と opportunity が並ぶので、ねらう話。',
+      said: '当時「待て。あいつはバカだ。チャンスは来る」と自分に言い聞かせた。',
+      mean: 'opportunity ＝ チャンス。バカならいつかすきを見せる、そのときに仕返しする。',
+      trap: '「待つ」を、怒りがおさまるのを待つと考えがち。fool と opportunity が並ぶので、ねらう話。',
       use: 'Just be patient. Your chance will come.（あせらないで。チャンスは来るよ）' },
-
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'jazz', seg: [76, 88.5],
+      stem: 'What does Darryl say about his plan?',
+      ja: 'ダリルは自分の計画について何と言う？',
+      choices: ['He has no clear plan', 'He has a careful plan', 'Gabe gave him the plan'], a: 0,
+      choicesJa: ['はっきりした計画はない', '念入りな計画がある', 'ゲイブに計画をもらった'],
+      cue: '「Okay」のあと、ダリルの話',
+      line: 'I *don’t have a plan, exactly*. More of a loose structure… It’s like jazz. … I’ll figure something out.',
+      said: 'ダリルが「はっきりした計画はない。ジャズみたいなもの。何か考えるさ」と話す。',
+      mean: 'not 〜, exactly ＝ はっきり〜というわけではない。I’ll figure something out ＝ 何とかするよ。',
+      trap: 'loose structure（ゆるい骨組み）で案があるように聞こえるが、最初に no plan と言う。',
+      use: 'Don’t worry, I’ll figure something out.（心配しないで、何とかするよ）' },
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'makeout', seg: [96.3, 106.9],
       stem: 'What does “make out” mean here?',
       ja: 'ここで「make out」はどういう意味？',
@@ -93,12 +124,11 @@ export const printfire: Clip = {
       choicesJa: ['はっきり聞き取る', '意味を分かる', '全部書きとめる'],
       cue: 'mumbled のあと、can に続く語。',
       line: 'It was kind of mumbled… Only thing I can *make out* clearly was…',
-      said: '「もごもごしてた。はっきり聞き取れたのは…」と言う。',
+      said: '「ボソボソしてた。はっきり聞き取れたのは…」と言う。',
       mean: 'make out ＝ 聞きにくい音や見えにくい物を、なんとか聞き取る、見分ける。',
       trap: '「意味が分かる」と思いやすいが、すぐあとで「意味は分からない」と言っている。',
       use: 'I can’t make out the sign from here.（ここからだと看板が読めない）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'words', reveals: ['makeout'], seg: [97.2, 107.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'words', reveals: ['makeout'], seg: [97.2, 107.2], retired: true,
       stem: 'Which words did he hear clearly?',
       ja: 'はっきり聞こえた言葉はどれ？',
       choices: ['Andy, problem, eliminate', 'Andy, printer, eliminate', 'Gabe, problem, investigate'], a: 0,
@@ -109,18 +139,17 @@ export const printfire: Clip = {
       mean: 'eliminate ＝ 消す、なくす。3語だけ渡して、意味は相手に考えさせる。',
       trap: '仕事の話なので printer と思いやすい。2語目は problem。音で拾う。',
       use: 'I only caught a few words.（少ししか聞き取れなかった）' },
-
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'eliminate', reveals: ['words', 'getreal'], seg: [99.8, 111.4], retired: true,
-      stem: 'Why does the reply to “I don’t know what it meant” get a laugh?',
-      choices: ['He turns the scraps into a threat against himself', 'He turns the scraps into a threat against Gabe',
-                'He laughs the scraps off as harmless office talk'], a: 0,
-      cue: 'How about のあと、三語をどうつなぐか。',
-      line: 'You don’t know what it meant? How about… *we must eliminate him*?',
-      said: '「分からない？『Andy が問題だ、消さなきゃ』だろ」と自分で文を作る。',
-      mean: '伝えた側は何も言っていない。怖い筋書きを完成させたのは、狙われた本人。',
-      trap: '疑っている Gabe が的に聞こえやすい。最後の him は Andy 自身。代名詞を追う。',
-      use: 'Don’t jump to conclusions.（早まって決めつけないで）' },
-
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'eliminate', ctx: true, reveals: ['thought'], seg: [98, 105.5],
+      stem: 'What does Andy think the words mean?',
+      ja: 'アンディは、その言葉をどういう意味だと考える？',
+      choices: ['Someone wants to remove him', 'Gabe has a printer problem', 'Andy must fix the problem'], a: 0,
+      choicesJa: ['誰かが自分を消したい', 'ゲイブにプリンターの問題がある', 'アンディが問題を解決すべき'],
+      cue: '「How about」のあと',
+      line: 'Darryl: I don’t know what it meant. / Andy: You don’t know what it meant? *How about* Andy has a problem, and *we must eliminate him*?',
+      said: '「意味は分からない」に、アンディが「アンディが問題だから消さなきゃ、ってことだろ？」と言う。',
+      mean: 'How about 〜? ＝ 〜ってのはどう？ eliminate ＝ 消す、取り除く。怖い意味を作ったのはアンディ自身。',
+      trap: 'problem から、プリンターの問題と考えがち。最後の him はアンディ本人。',
+      use: 'How about we meet at six?（6時に会うのはどう？）' },
     { id: 'c1', skill: 'pragma', level: 'C2', point: 'eliminate', reveals: ['words'], seg: [99.8, 114.6], retired: true,
       stem: 'When the speaker says he doesn’t know what the words meant, what is he doing?',
       choices: ['Leaving the scary meaning for Andy to build', 'Admitting he may have misheard the words',
@@ -131,7 +160,17 @@ export const printfire: Clip = {
       mean: '知らないふりは、相手に結論を言わせる仕掛け。自分で出した答えほど、人は強く信じる。',
       trap: 'mumbled を本当の言いわけ、「分からない」を気遣いと取りやすい。直後に相手が何をしたかを聞く。',
       use: 'I’m not saying anything. You decide.（僕は何も言ってないよ。君が決めて）' },
-
+    { id: 'k4', skill: 'phrase', level: 'B2', point: 'thought', ctx: true, reveals: ['eliminate'], seg: [104.5, 110.5],
+      stem: 'What does “I hadn’t even *thought of* that” mean?',
+      ja: '「I hadn’t even thought of that」の意味は？',
+      choices: ['That idea is new to me', 'I already said that', 'That idea is silly'], a: 0,
+      choicesJa: ['その考えは思いつかなかった', 'それはもう言った', 'その考えはばかげている'],
+      cue: 'アンディの言葉への返事',
+      line: 'Andy: …we must eliminate him? / Darryl: Whoa, *I hadn’t even thought of that*.',
+      said: 'ダリルが「うわ、そんなこと考えもしなかった」と返す。',
+      mean: 'think of 〜 ＝ 〜を思いつく。hadn’t even ＝ 〜さえしていなかった。実はダリルのしかけで、知らないふり。',
+      trap: 'Whoa（うわ）の驚きから、ばかげた考えと言っていると考えがち。even は「まったく」と強める語。',
+      use: 'Good idea. I hadn’t thought of that.（いい考え。思いつかなかった）' },
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrapped', seg: [129.1, 134.2],
       stem: 'What does “wrapped up in this” mean?',
       ja: '「wrapped up in this」はどういう意味？',
@@ -139,11 +178,10 @@ export const printfire: Clip = {
       choicesJa: ['これにからんでいる', 'これを終えた', 'これの担当だ'],
       cue: 'quality assurance のあと、so に続く部分。',
       line: '…quality assurance. So he’d definitely be *wrapped up in this*.',
-      said: '「品質管理の責任者だから、絶対にからんでいる」と疑う。',
-      mean: 'be wrapped up in ～ ＝ 〜に深く関わっている。悪いことによく使う。',
+      said: '「品質保証の責任者だから、絶対にこれに関わってる」と疑う。',
+      mean: '文字どおりは「これに包みこまれている」→ 〜に深く関わっている。悪いことによく使う。',
       trap: 'wrap up ＝「終える」と思いやすい。in ＋事件なら「からんでいる」。',
       use: 'Don’t get wrapped up in this.（この件に関わらないで）' },
-
     { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', seg: [131.7, 142.3], keep: true,
       stem: 'How much is the coworker offered?',
       ja: 'その同僚はいくらもらえる？',
@@ -155,7 +193,6 @@ export const printfire: Clip = {
       mean: 'bucks ＝ ドル（くだけた言い方）。ほんの小銭で引き受けた。',
       trap: 'thirty なら最後に「ティ」が付き、前を強く言う。five は「ファイヴ」。ここは「スリー」。',
       use: 'Can I borrow three bucks?（3ドル貸してくれる？）' },
-
     { id: 'c3', skill: 'humor', level: 'C2', point: 'chump', seg: [134.6, 147.1], retired: true,
       stem: 'In this comment about Darnell, who is the joke really on?',
       choices: ['The speaker, though he means it as a dig', 'Darnell, for paying far too much for a small job',
@@ -166,7 +203,6 @@ export const printfire: Clip = {
       mean: 'けなすつもりで、自分は小銭で何でもする人間だと明かしている。笑われているのは話し手。',
       trap: 'chump の相手だけ聞くと Darnell が的に見える。自慢の文の主語 I を追うと、恥はずっと本人のもの。',
       use: 'I’d do it for a sandwich.（サンドイッチ1個でやるよ）' },
-
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'chump', seg: [136.4, 147.1], retired: true,
       stem: 'How does the coworker feel about the deal he got?',
       choices: ['Pleased: he’d have done it for less', 'Annoyed: he could have asked for more',
@@ -177,7 +213,6 @@ export const printfire: Clip = {
       mean: 'chump ＝ 損をする間抜け。払いすぎた相手を笑い、自分は得をしたと満足している。',
       trap: 'chump を怒りと取ると「もっと取れた」不満に聞こえる。誰が損をしたかを聞く。',
       use: 'I’d have done it for free.（タダでもやったのに）' },
-
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'excuse', seg: [154.3, 160],
       stem: 'What does “Could you excuse us?” mean?',
       ja: '「Could you excuse us?」はどういう意味？',
@@ -189,7 +224,6 @@ export const printfire: Clip = {
       mean: 'Could you excuse us? ＝ 少し席を外してもらえますか。内緒の話の前に言う。',
       trap: 'excuse を「すみません」と思うと謝りに聞こえる。us が付いたら「二人にして」。',
       use: 'Could you excuse us for a minute?（少し外してもらえますか）' },
-
     { id: 'h2', skill: 'humor', level: 'C1', point: 'noplan', reveals: ['getreal'], seg: [163.8, 170.45], retired: true,
       stem: 'Why does “Still no plan” get a laugh at this point?',
       choices: ['Darryl still hasn’t planned the prank he’s running', 'Andy still has no idea how to keep himself safe',
@@ -200,7 +234,6 @@ export const printfire: Clip = {
       mean: '計画なしの思いつきなのに、相手は勝手に怖がって話を大きくしていく。そのずれが笑い。',
       trap: '慌てた声の続きと聞きやすい。still は前の「計画はない」を受ける。声の変化を聞く。',
       use: 'I’m making it up as I go.（その場で考えながらやってる）' },
-
     { id: 'd4', skill: 'detail', level: 'B1', point: 'proof', seg: [169.3, 178.7],
       stem: 'Why does Andy want a printer to catch fire?',
       ja: 'アンディはなぜプリンターに火がついてほしい？',
@@ -212,7 +245,6 @@ export const printfire: Clip = {
       mean: 'proof ＝ 証拠。信じてもらうために、燃えるところを見せたい。',
       trap: 'go public（公表する）から、うったえる話と思いやすい。need proof を聞く。',
       use: 'Do you have any proof?（何か証拠はある？）' },
-
     { id: 'n3', skill: 'number', level: 'B2', point: 'reports', seg: [185, 194.5], keep: true,
       stem: 'Out of how many printers were there 12 reports?',
       ja: '12件の報告は、何台のうちの数？',
@@ -224,7 +256,6 @@ export const printfire: Clip = {
       mean: 'four hundred thousand ＝ 40万。英語は3けたで区切る。',
       trap: 'hundred と thousand の両方が聞こえる。four hundred thousand なら40万。million なら400万。',
       use: 'It’s one in a million.（めったにないことだよ）' },
-
     { id: 'i3', skill: 'infer', level: 'B2', point: 'rare', reveals: ['reports'], seg: [185, 196.3],
       stem: 'What does Gabe mean by those numbers?',
       ja: 'ゲイブはその数で何を言いたい？',
@@ -236,7 +267,17 @@ export const printfire: Clip = {
       mean: 'user error ＝ 使う人のミス。数の差で「ごくまれ」と示し、会社は悪くないと言う。',
       trap: '12件だけ聞くと多く感じやすい。40万と比べる。investigated（調べた）は「直した」ではない。',
       use: 'It turns out it was my fault.（結局、私のせいだった）' },
-
+    { id: 'k5', skill: 'phrase', level: 'B2', point: 'attention', seg: [196.5, 202.5],
+      stem: 'What does “bringing this to our attention” mean?',
+      ja: '「bringing this to our attention」の意味は？',
+      choices: ['Telling us about it', 'Bringing the printer here', 'Making us look bad'], a: 0,
+      choicesJa: ['知らせてくれる', 'プリンターを持ってくる', '私たちを悪く見せる'],
+      cue: '「Thank you for」のあと',
+      line: '*Thank you for bringing this to our attention.* So, I’d like to reward you for that.',
+      said: 'ゲイブが「知らせてくれてありがとう。それで、お礼をしたい」と言う。',
+      mean: '文字どおりは「これを私たちの注意へ持ってくる」→「知らせてくれる」。仕事でよく使うていねいなお礼。',
+      trap: 'bring（持ってくる）から、物を運ぶ話と考えがち。this はプリンターの件、つまり話のこと。',
+      use: 'Thank you for bringing this to my attention.（お知らせいただきありがとうございます）' },
     { id: 'h3', skill: 'humor', level: 'C1', point: 'reward', seg: [196.9, 209], retired: true,
       stem: 'What makes Gabe’s thank-you funny?',
       choices: ['He offers a tiny reward as if it were big', 'He offers a fake reward to make fun of Andy',
@@ -247,7 +288,17 @@ export const printfire: Clip = {
       mean: '本人は太っ腹のつもり。「どの店でも」と得意げに足すほど、小ささが目立つ。',
       trap: 'からかいや口止めと取りやすい。thank you と any の念押しは本気の口ぶり。',
       use: 'It’s a small thing, but thank you.（ささやかだけど、ありがとう）' },
-
+    { id: 'n4', skill: 'number', level: 'B1', point: 'coupon', seg: [204.5, 210],
+      stem: 'How much is Gabe’s donut gift worth?',
+      ja: 'ゲイブがくれるドーナツ店の券は何ドル分？',
+      choices: ['$5', '$9', '$15', '$50'], a: 0,
+      choicesJa: ['5ドル', '9ドル', '15ドル', '50ドル'],
+      cue: '「good for」のあと',
+      line: 'That’s *good for five bucks* at Dunkin’ Donuts. Any Dunkin’ Donuts.',
+      said: '「ダンキンドーナツで5ドル分使えるよ。どの店でも」と言う。',
+      mean: 'be good for 〜 ＝（券が）〜分使える。five bucks ＝ 5ドル。Dunkin’ Donuts はドーナツの店。小さなお礼。',
+      trap: '「ファイブ」のあとすぐ bucks なら5。「フィフティーン」「フィフティ」なら後ろが長い。',
+      use: 'This ticket is good for one free drink.（この券でドリンク1杯無料です）' },
     { id: 'x1', skill: 'dict', level: 'B2', point: 'watching', seg: [228.1, 236.1],
       stem: 'Type what Andy says after his name: “and ___, it’s because…” (4 words)',
       answer: "if you're watching this",
@@ -258,7 +309,6 @@ export const printfire: Clip = {
       mean: 'If you’re watching this ＝ これを見ているなら。you’re は「ヨー」と短い。',
       trap: 'you’re は弱く、you や your と区別しにくい。短い音も一語として書く。',
       use: 'If you’re reading this, call me.（これを読んだら電話して）' },
-
     { id: 'i4', skill: 'infer', level: 'C1', point: 'voice', seg: [235.4, 244.4], retired: true,
       stem: 'What is the real reason Andy is pushed to go higher and higher?',
       choices: ['To make him sound silly on his own tape', 'To make his voice sound clearer on camera',
@@ -269,7 +319,6 @@ export const printfire: Clip = {
       mean: '理由はでたらめ。真剣な告発ビデオを、間抜けな声で撮らせる仕返しの続き。',
       trap: 'カメラの理由をそのまま信じやすい。名前を名乗っているので、声を隠す意味もない。',
       use: 'Can you speak up a little?（もう少し大きな声で話してくれる？）' },
-
     { id: 'g2', skill: 'gist', level: 'B1', point: 'test', seg: [252.4, 273.7],
       stem: 'What does Andy think at the end of the test?',
       ja: 'テストの終わりに、アンディはどう思う？',
@@ -281,7 +330,6 @@ export const printfire: Clip = {
       mean: 'I knew it! ＝ やっぱり！ blow the roof off ＝ 大さわぎを起こす。',
       trap: '前に「異常なし」と言っているので、安全と思いやすい。最後の I knew it! が答え。',
       use: 'I knew it! I told you so.（やっぱり！言ったでしょ）' },
-
     { id: 'c2', skill: 'infer', level: 'C2', point: 'outcome', reveals: ['getreal', 'quit'], seg: [254.6, 278.6],
       stem: 'Given his comment to the camera, why does Darryl want to stop pranking?',
       choices: ['The threat he made up may be turning real', 'Andy is getting close to finding him out',
@@ -292,7 +340,6 @@ export const printfire: Clip = {
       mean: 'カメラへの一言が場面を書きかえる。作り話が本当らしくなり、仕掛けた側がいちばん怖がっている。',
       trap: '「笑えない」を相手への反省と取りやすい。Andy は喜んでいるので、怖いのは話が本物になった事。',
       use: 'This just got real.（これはもう冗談じゃない）', retired: true },
-
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'quit', seg: [271.9, 283.5],
       stem: 'How does Darryl feel at the end?',
       ja: '最後に、ダリルはどんな気持ち？',
@@ -304,7 +351,6 @@ export const printfire: Clip = {
       mean: 'not ～ anymore ＝ もう〜しない。作り話が本当らしくなり、こわくなった。',
       trap: 'It’s not funny を「つまらない」と思うと、あきた話に聞こえる。ここは「笑えない」。',
       use: 'I’m done with this. I mean it.（もうやめる。本気だよ）' },
-
     { id: 's1', skill: 'sound', level: 'B2', point: 'getreal', seg: [273.2, 280.7],
       stem: 'Fill the gap: “Things ___ real. It’s not funny.”',
       ja: '空所を埋める：「Things ___ real. It’s not funny.」',
@@ -316,5 +362,16 @@ export const printfire: Clip = {
       mean: 'get real ＝ 冗談ですまなくなる。get は短く「ゲッ」。',
       trap: 'got なら口を大きく開けた「ガッ」。are getting なら「ゲティン」と長い。ここは短い「ゲッ」。',
       use: 'When kids get sick, things get real.（子どもが病気になると一気に大変になる）' },
+    { id: 'n5', skill: 'number', level: 'B1', point: 'nice', seg: [283.5, 289],
+      stem: 'How many nice things a day will Darryl try to do?',
+      ja: 'ダリルは一日にいくつ、いいことをするつもり？',
+      choices: ['1', '2', '3', '10'], a: 0,
+      choicesJa: ['1つ', '2つ', '3つ', '10個'],
+      cue: '「Go to church」のあと',
+      line: 'Go to church. Try to do *one nice thing per day*.',
+      said: 'ダリルが「教会に行って、一日一つ、いいことをする」と言う。',
+      mean: 'one 〜 per day ＝ 一日に一つ。per ＝ 〜につき。いたずらをやめて、いい人になるつもり。',
+      trap: 'one は「ワン」と短く、聞き落としやすい。nice thing の前の数を聞く。two なら「トゥー」。',
+      use: 'Take one pill per day.（1日1錠飲んでください）' },
   ]
 };
