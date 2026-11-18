@@ -1,12 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 2, new 1, ctx 3, tx 3
 // A2 REVIEW 2026-11-17: keep 3, rewrite 11, retire 5, new 0
 // “would YOU drink LewbJuice? 🍹 | iCarly #Shorts” (NickRewind, Best of the New iCarly 🎉): Lewbert's juice is a drink
 // and a foot scrub that makes people honest; insults, a wedding grudge and gushing praise come out, until the woman
 // from Poison Control turns up.
 // Segments from the captions, words from whisper (2026-11-16). The product word at 2.8 s, the word before "off your
 // brain" at 19.9 s and the nickname at 42–45 s differ between the sources: no key or shown line uses them. Speakers
-// aren't named in the audio: stems name Spencer (the "lovable goofball") and Lewbert (the seller) as the show does,
-// else "the first taster"; the keys rest on words and turn order only. Left out on
-// purpose: the Ben Affleck lines (24–30 s), the "cool one" praise (40–45 s) and the insult before "Trina" at 48 s.
+// aren't named in the audio: stems name Spencer and Lewbert (the seller) as the show does; the keys rest on words and
+// turn order only. Never asked about: the Ben Affleck lines (24–30 s) and the swear before "Trina" at 48 s (it plays
+// inside the ending segments; not an EXCLUDE under the 11-18 scope). Restored: h2 (the "Please, you're the cool one"
+// reply). Retired: d3 (the same fact as g1), a1 (the same beat as g2).
 import type { Clip } from '../types.ts';
 
 export const lewbJuice: Clip = {
@@ -15,32 +17,26 @@ export const lewbJuice: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'juice', reveals: ['honest'], seg: [0, 44],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'juice', reveals: ['honest'], seg: [0, 23.3],
       stem: 'What does the juice do to people?', ja: 'このジュースは、人をどうする？',
       choices: ['Makes them say what they think', 'Makes them rude for no good reason', 'Makes them act very silly'], a: 0,
       choicesJa: ['思っていることを言わせる', 'わけもなく失礼にする', 'すごくふざけさせる'],
       cue: '「make you mean?」への答え',
       line: 'Does Lewb juice make you mean? — No, it *just makes you honest*.',
-      said: '思ったことを隠せなくなる。悪口も、相手へのあこがれも口に出る。',
-      mean: 'it just makes you honest ＝ 意地悪にするのではなく、本音を言わせるだけ。',
-      trap: '悪口だけ聞くと、失礼にする飲み物だと思いやすい。後半はほめ言葉も出てくる。',
+      said: '「飲むと意地悪になるの？」に、「ううん、正直になるだけ」と答える。',
+      mean: 'it just makes you honest ＝ 意地悪にするのではなく、本音を言わせるだけ。だから悪口が止まらない。',
+      trap: '悪口が続くので、失礼にする飲み物と考えがち。決め手は No のあとの honest（正直な）。',
       use: 'Honestly? I think it’s too expensive.（正直に言うと、高すぎると思う）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'name', seg: [0.1, 12.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'name', reveals: ['gross'], seg: [0.1, 12.1],
       stem: 'Why did the first taster expect the juice to taste bad?', ja: '最初に飲んだ人は、なぜひどい味だと思っていた？',
       choices: ['Because of its name', 'Because it’s a foot scrub', 'Because of its color'], a: 0,
       choicesJa: ['名前のせい', '足の角質取りだから', '色のせい'],
       cue: '「because」のあと',
       line: 'would taste terrible *because the name*, like Lewbert, is disgusting.',
-      said: '「名前が、ほらルーバートみたいで気持ち悪いから、ひどい味だと思ってた」と言う。',
+      said: '「名前が、ほらルーバートみたいで気持ち悪いから、まずいと思ってた」と言う。',
       mean: 'disgusting ＝ 気持ち悪い。味を予想した理由は名前だけ。飲む前の思いこみ。',
       trap: '前の「足の角質取り」と結びつけやすい。because のすぐあとの the name を拾う。',
       use: 'I never tried it because of the name.（名前のせいで食べたことなかった）' },
-
-    // R fix: V2 (blind 80 %), S1: “After saying what they expected… now” cued a reversal; the stem is neutral and the
-    //   hedge filler is now “even worse”
-    // why: as bad ← “terrible” is the loudest word, and the past “thought” is lost; even worse ← “disgusting” comes
-    //   right after and sounds stronger than “terrible”
     { id: 'i1', skill: 'infer', level: 'B2', point: 'taste', seg: [3.3, 12.1], retired: true,
       stem: 'What does the speaker think of the juice’s taste?',
       choices: ['Better than they had expected', 'Just as bad as they had expected',
@@ -51,11 +47,6 @@ export const lewbJuice: Clip = {
       mean: 'I thought ～ は「そう思っていたが違った」の含み。飲むと悪くなかった。',
       trap: 'terrible が耳に残り「やっぱりまずい」と取りやすい。I thought の過去形は、予想が外れた合図。',
       use: 'I thought I’d hate it. I didn’t!（嫌いだと思ってたけど、違った！）' },
-
-    // R fix: V2 (blind 60 %): “tasting so awful” was a far miss; it becomes the near miss “the name itself”
-    // why: the name ← what the line literally calls disgusting, but the replies keep the man; the speaker ← the joke
-    //   read as self-mockery for judging by a name
-    // anchor: 10.2–13.6 s the replies “Lewbert is disgusting” and “You are disgusting” drop the name and keep the man
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'name', seg: [3.3, 14.1], retired: true,
       stem: 'In the line about the juice’s name, who is the joke really on?',
       choices: ['Lewbert himself, the man it’s named after', 'The juice’s name, which really is awful',
@@ -66,19 +57,27 @@ export const lewbJuice: Clip = {
       mean: '名前の話の形で、名前のもとの本人をけなしている。次の返事が人そのものを指すので的が決まる。',
       trap: '名前そのものや、言った人の思い込みを笑う話に取りやすい。皮肉の的は、次の返事の主語で確かめる。',
       use: 'It’s not the name, it’s the person.（名前じゃなくて、人の問題）' },
-
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'mean', seg: [9.7, 18.4],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'gross', ctx: true, reveals: ['name'], seg: [5.2, 14],
+      stem: 'What do the others say about Lewbert?', ja: 'ほかの人たちは、ルーバートのことを何と言う？',
+      choices: ['That he is gross', 'That his juice is great', 'That his name is cute'], a: 0,
+      choicesJa: ['気持ち悪い', 'ジュースが最高', '名前がかわいい'],
+      cue: '「like Lewbert」のあとの返事',
+      line: 'because the name, like Lewbert, is disgusting. / *Lewbert is disgusting.* — Yeah. — *You are disgusting.*',
+      said: '「名前がルーバートみたいで気持ち悪い」に、「ルーバートは気持ち悪い」「あんたもね」と続く。',
+      mean: 'disgusting ＝ 気持ち悪い、むかつく。強い言葉。ジュースのせいで、本人の前で悪口が止まらない。',
+      trap: '名前や味の話が続くので、ジュースの話と勘違いしやすい。返事の主語は Lewbert と You。',
+      use: 'This smell is disgusting.（このにおい、ひどい）' },
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'mean', reveals: ['gross'], seg: [9.7, 18.4],
       stem: 'Why does someone ask if the juice makes you mean?', ja: 'なぜ「このジュースで意地悪になる？」と聞く？',
       choices: ['Someone just said something rude', 'The juice’s name sounds really bad', 'It tastes very bitter'], a: 0,
       choicesJa: ['今ひどいことを言われた', '名前がすごくひどい', 'すごく苦い'],
       cue: '質問の直前',
       line: '*You are disgusting.* — Does Lewb juice make you *mean*?',
-      said: '「あなたは気持ち悪い」と言われた直後に、「これで意地悪になるの？」と聞く。',
+      said: '「あんたは気持ち悪い」と言われた直後に、「これで意地悪になるの？」と聞く。',
       mean: 'mean ＝ 意地悪な。make you ＋形容詞 ＝ あなたを〜にする。直前の悪口に驚いている。',
       trap: 'mean を「意味する」と思いやすい。make you mean は「あなたを意地悪にする」。',
       use: 'Does coffee make you sleepy?（コーヒー飲むと眠くなる？）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'honest', seg: [14.1, 22],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'honest', seg: [14.1, 22], retired: true,
       stem: 'What does the answer say the juice does?', ja: '答えによると、ジュースは何をする？',
       choices: ['It just makes you honest', 'It just makes you happy', 'It just makes you hyper'], a: 0,
       choicesJa: ['正直になるだけ', '楽しくなるだけ', 'はしゃぐだけ'],
@@ -88,43 +87,36 @@ export const lewbJuice: Clip = {
       mean: 'just ＝ 〜だけ。honest ＝ 正直な。悪口は意地悪ではなく、本音が出ているだけ。',
       trap: '「オネスト」なら honest、「ハッピー」なら happy、「ハイパー」なら hyper。h の音がなければ honest。',
       use: 'It doesn’t hurt. It just feels cold.（痛くないよ。冷たいだけ）' },
-
     { id: 'd1', skill: 'detail', level: 'B1', point: 'feet', seg: [16, 24.3],
       stem: 'What else does the juice do?', ja: 'ジュースは、ほかに何をする？',
-      choices: ['Take the skin off your feet', 'Soften the skin on your face', 'Take the hair off your legs'], a: 0,
+      choices: ['Remove skin from your feet', 'Soften the skin on your face', 'Remove hair from your legs'], a: 0,
       choicesJa: ['足の皮を取る', '顔の肌をやわらかくする', '足の毛を取る'],
       cue: '「off your」のあとの体の部分',
       line: '*Dissolves the skin off your feet* and the … off your brain.',
-      said: '「足の皮を溶かして取る。そして頭の…も取る」と続ける。',
+      said: '「足の皮も、頭の…も溶かしちゃう」と続ける。',
       mean: 'dissolve ＝ 溶かす。飲み物なのに、足の角質取りにも使える変な商品。',
-      trap: 'skin（肌）から、顔のスキンケアを思いやすい。off your のあとの feet を拾う。',
+      trap: 'skin（肌）から、顔のスキンケアを連想しやすい。off your のあとの feet を拾う。',
       use: 'This cream takes the dry skin off.（このクリームで乾燥した皮がとれる）' },
-
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'goahead', seg: [17.8, 26.6],
       stem: 'What does “Go ahead. Try to lie.” mean?', ja: '“Go ahead. Try to lie.” はどういう意味？',
       choices: ['I dare you to lie', 'Please have a drink', 'You can leave now'], a: 0,
       choicesJa: ['うそをついてみな', 'どうぞ飲んで', 'もう帰っていいよ'],
       cue: '効き目の説明のあと',
       line: '*Go ahead. Try to lie.*',
-      said: '「さあ、うそをついてみな」と言う。',
-      mean: 'Go ahead ＝ どうぞ、やってみて。効き目を試させる挑戦。',
-      trap: 'Go ahead だけだと「どうぞ飲んで」に聞こえやすい。あとの Try to lie で何をするか決まる。',
+      said: '「ほら、うそをついてみて」と言う。',
+      mean: 'Go ahead ＝ 文字どおりは「先へ進んで」。→ 止めないから →「さあ、やってみな」。効き目を試させる挑戦。',
+      trap: 'Go ahead だけだと「どうぞ飲んで」に聞こえる。あとの Try to lie で何をするか決まる。',
       use: 'Go ahead, try it. It’s good.（どうぞ食べてみて。おいしいよ）' },
-
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'mother', seg: [28.6, 37.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'mother', ctx: true, seg: [28.6, 35],
       stem: 'What does the second speaker wish?', ja: '二人目の人は、何を願う？',
       choices: ['That he weren’t her son', 'That he weren’t so young', 'That he weren’t here'], a: 0,
       choicesJa: ['彼が彼女の息子でなければ', '彼がそんなに若くなければ', '彼がここにいなければ'],
       cue: '返事の最後の語',
-      line: 'I wish you weren’t marrying my mother. — I wish you weren’t *her son*.',
-      said: '「母と結婚しないでほしい」に、「君が彼女の息子でなければ」と返す。',
-      mean: 'I wish you weren’t 〜 ＝ 君が〜でなければいいのに。同じ形で言い返している。',
+      line: 'I wish you weren’t marrying my mother. / I wish you weren’t *her son*.',
+      said: '「ママと結婚しないでほしい」に、「あなたが彼女の息子じゃなければ」と返す。',
+      mean: 'I wish you weren’t 〜 ＝ 君が〜でなければいいのに。同じ形をそのまま使って言い返している。',
       trap: '「ハーサン」なら her son、「ソウヤング」なら so young、「ヒア」で終われば here。',
       use: 'I wish you weren’t leaving.（行かないでほしいな）' },
-
-    // R fix: V2 (blind 65 %): the key was the only one fitting an honesty juice; now a near miss (resentful but
-    //   hiding it), refuted by saying it
-    // why: hiding it ← “I wish” read as a soft, indirect wish; teasing ← a matched comeback looks like friendly banter
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'mother', seg: [29.9, 34.4], retired: true,
       stem: 'In that exchange about the marriage, how do the two feel about each other?',
       choices: ['Resentful, and finally saying so', 'Resentful, but trying to hide it',
@@ -135,24 +127,16 @@ export const lewbJuice: Clip = {
       mean: '正直になる飲み物のせいで、ふだん隠している嫌な気持ちが両方から出る。冗談の軽さはない。',
       trap: 'I wish は遠回しにも、同じ形の言い返しはじゃれ合いにも見えるが、ここは本音しか言えない場面。',
       use: 'Honestly, I wish you’d asked first.（正直、先に聞いてほしかった）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takethis', seg: [32, 43.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'takethis', seg: [33.7, 40],
       stem: 'What does “how far I can take this” mean?', ja: '“how far I can take this” はどういう意味？',
-      choices: ['How long I can keep it up', 'How far I can travel', 'How many people really like it'], a: 0,
+      choices: ['How long I can keep doing it', 'How far I can travel', 'How many people really like it'], a: 0,
       choicesJa: ['どこまで続けられるか', 'どこまで遠くへ行けるか', '何人が好きか'],
       cue: '「Sometimes I wonder」のあと',
       line: 'Sometimes I wonder *how far I can take* this lovable goofball thing.',
       said: '「この愛されおバカキャラ、どこまで続けられるかな」と言う。',
-      mean: 'take 〜 far ＝ 〜を押し通す、続ける。goofball ＝ おバカな人。',
-      trap: 'far から、距離の話だと思いやすい。take this のあとの thing（キャラ）をどこまで続けるか。',
+      mean: '文字どおりは「これをどこまで持っていけるか」。→ キャラをどこまで押し通せるか。goofball ＝ おバカな人。',
+      trap: 'far から距離の話と考えがち。take this のあとの thing（キャラ）をどこまで続けるか。',
       use: 'How far can we take this joke?（この冗談、どこまで続ける？）' },
-
-    // R fix: V2 (blind 60 %), S3: “fading with age” was a far miss; now the near miss “simply who they are”; the cue's
-    //   “up” was a key-only word
-    // why: unfair label ← “goofball” heard as a name others call him (a hurt reading); who they are ← “lovable” heard
-    //   as sincere self-description, “take” and “thing” missed
-    // anchor: 35.5–37.3 s “how far I can take this … thing”: you “take” an act you keep up, and “thing” names it as a
-    //   routine; 37.5 s “Will I ever have to grow up?” asks whether it can go on
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'takethis', reveals: ['growup'], seg: [34.4, 42.1], retired: true,
       stem: 'By “this lovable goofball thing”, what is the speaker admitting about the goofball side?',
       choices: ['It’s partly a role they choose to play', 'It’s simply who they are, for good',
@@ -163,21 +147,6 @@ export const lewbJuice: Clip = {
       mean: 'take this thing は自分で選んで続ける「やり方」の言い方。キャラが半分は演技だと認めている。',
       trap: 'lovable を素直な自己紹介、goofball を悪口と取りやすい。take と thing を聞く。',
       use: 'I’m not really this calm. It’s an act.（本当はこんなに落ち着いてない。演技だよ）' },
-
-    // R fix: V2 (blind 70 %): the distractors broke the parallel (“It's a…”); all three are now about the praise
-    // why: a dig ← a nickname after “Please” heard as sarcasm; a lie ← “Try to lie” carried over from 22 s, the test
-    //   read into the praise
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'charisma', reveals: ['idwant'], seg: [34.4, 47.5], retired: true,
-      stem: 'What makes the reply “Please, you’re the cool one…” funny?',
-      choices: ['The honest truth comes out as gushing praise', 'The praise is really a dig in disguise',
-                'The praise is a lie told to test the juice'], a: 0,
-      cue: 'If I did の文と、Please で始まる返事を合わせて。',
-      line: 'If I did, I’d want to be like you. — *Please, you’re the cool one*…',
-      said: '「君みたいになりたい」に、「いやいや、かっこいいのは君の方」と返す。',
-      mean: '本音の飲み物で、悪口だけでなく、照れて言えないほめ言葉まで出てしまう。そのギャップが笑い。',
-      trap: 'あだ名で皮肉に聞こえやすい。ここは本音しか言えない場面なので、ほめ言葉も本気。',
-      use: 'Please, you’re the real star here.（いやいや、主役は君だよ）' },
-
     { id: 'x1', skill: 'dict', level: 'B2', point: 'growup', seg: [34.7, 41.3],
       stem: 'Type what Spencer asks: “Will I ever ___?” (4 words)', ja: 'スペンサーの言葉を書こう：“Will I ever ___?”（4語）',
       answer: 'have to grow up',
@@ -187,7 +156,6 @@ export const lewbJuice: Clip = {
       mean: 'have to は「ハフタ」と縮まる。grow up ＝ 大人になる。',
       trap: 'have to が一語に聞こえ、grow up だけ書きやすい。ever のあとの「ハフタ」を拾う。',
       use: 'Do I have to dress up?（ちゃんとした服じゃないとだめ？）' },
-
     { id: 's1', skill: 'sound', level: 'B2', point: 'idwant', seg: [36.8, 43.3],
       stem: 'Fill the gap: “If I did, ___ to be like you.”', ja: '空所に入るのは？ “If I did, ___ to be like you.”',
       choices: ['I’d want', 'I want', 'I’d have'], a: 0,
@@ -198,19 +166,27 @@ export const lewbJuice: Clip = {
       mean: 'If のあとの仮の話なので I’d want。’d はごく短く、want とつながる。',
       trap: 'I want なら「アイワント」で「ド」がない。I’d have なら「ハヴ」。短い「ド」のあと「ワント」なら I’d want。',
       use: 'If I could, I’d want to stay.（できるなら、残りたいな）' },
-
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', seg: [40.6, 58.9],
+    { id: 'h2', skill: 'pragma', level: 'B2', point: 'charisma', ctx: true, reveals: ['idwant'], seg: [38.6, 44.6],
+      stem: 'How is “I’d want to be like you” answered?', ja: '「君みたいになりたい」に、どう返す？',
+      choices: ['You’re the cool one', 'Thank you, I know', 'Please say that again'], a: 0,
+      choicesJa: ['かっこいいのはあなた', 'ありがとう、知ってる', 'もう一回言って'],
+      cue: '「Please」で始まる返事',
+      line: 'If I did, I’d want to be like you. / *Please*, you’re *the cool one*…',
+      said: '「君みたいになりたい」に、「いやいや、かっこいいのはあなたでしょ」と返す。',
+      mean: 'Please ＝ ここは「お願い」ではなく「いやいや、何言ってるの」。ほめられて照れつつ、ほめ返す言い方。',
+      trap: 'Please から何かを頼んでいると考えがち。うしろの you’re the cool one がほめ返し。',
+      use: 'Oh, please. You’re the expert here.（いやいや、専門家はあなたでしょ）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [44, 59.8],
       stem: 'Why is it suddenly an “emergency” at the end?', ja: '最後に、なぜ急に「緊急事態」になる？',
       choices: ['Someone they must avoid arrives', 'Someone gets sick from it', 'The juice turns out unsafe'], a: 0,
       choicesJa: ['会いたくない人が来た', '誰かが飲んで具合が悪くなった', 'ジュースが危ないと分かった'],
       cue: '最後に出てくる名前と、その人の条件',
-      line: 'She said I could still drink Lewb juice *as long as I didn’t sell it*! — Guys, this is an *emergency*. We gotta go.',
-      said: '「売らなければいい」と言った人が来たらしく、あわてて「緊急事態、行かなきゃ」と言う。',
-      mean: 'emergency ＝ 緊急事態。売ってはいけない物を売っていたので、その人から逃げる。',
-      trap: 'Poison Control（中毒の相談所）から、誰かが具合を悪くしたと思いやすい。そういう話は出ない。',
+      line: '*Oh, my God. No.* … Guys, this is an *emergency*. We gotta go.',
+      said: 'トリーナが来たと分かると、「うそ、やだ」「緊急事態よ、行かなきゃ」とあわてる。',
+      mean: 'emergency ＝ 緊急事態。会いたくない人が来たので、急いで逃げる。We gotta go ＝ 行かなきゃ（くだけた言い方）。',
+      trap: '中毒相談センター（Poison Control）から、誰かが具合を悪くしたと思いやすい。そういう話は出ない。',
       use: 'Sorry, something came up. I have to go.（ごめん、急用ができた。行かなきゃ）' },
-
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'alarm', seg: [44.8, 56.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'alarm', seg: [44.8, 56.6], retired: true,
       stem: 'How does Lewbert react to who is coming?', ja: '誰が来たか分かって、ルーバートはどうする？',
       choices: ['Alarmed, wants to leave fast', 'Guilty, ready to say sorry', 'Happy to see her again'], a: 0,
       choicesJa: ['あわてて、すぐ逃げたい', '悪いと思って、謝るつもり', 'また会えてうれしい'],
@@ -220,7 +196,6 @@ export const lewbJuice: Clip = {
       mean: 'We gotta go ＝ 行かなきゃ。会いたくない人が来た驚きとあせり。',
       trap: 'Oh my God は喜びにも使う。続く No と We gotta go で、逃げたいと分かる。',
       use: 'Oh no. We need to go, now.（やばい。今すぐ行かないと）' },
-
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'aslongas', seg: [46, 54.6],
       stem: 'What does “as long as I didn’t sell it” mean?', ja: '“as long as I didn’t sell it” はどういう意味？',
       choices: ['Only if I didn’t sell it', 'While I was selling it', 'Even if I sold it'], a: 0,
@@ -228,10 +203,9 @@ export const lewbJuice: Clip = {
       cue: '「could still drink」のあと',
       line: 'She said I could still drink Lewb juice *as long as I didn’t sell it*!',
       said: '「売らなければ、まだ飲んでもいいって言ったのに！」と叫ぶ。',
-      mean: 'as long as 〜 ＝ 〜さえすれば、〜するなら。条件つきの許可。',
-      trap: 'long から「〜の間ずっと」と時間の話だと思いやすい。うしろに文が来たら条件。',
+      mean: 'as long as 〜 ＝ 文字どおりは「〜と同じだけ長く」。→ 〜である限り →「〜さえすれば」。条件つきの許可。',
+      trap: 'long から「〜の間ずっと」と時間の話に聞こえるが、うしろに文が来たら条件。',
       use: 'You can stay as long as you’re quiet.（静かにしてるなら、いていいよ）' },
-
     { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [46.9, 58.9],
       stem: 'What has Lewbert probably been doing?', ja: 'ルーバートは、たぶん何をしていた？',
       choices: ['Selling the juice', 'Drinking too much', 'Giving it away'], a: 0,
@@ -240,7 +214,7 @@ export const lewbJuice: Clip = {
       line: 'as long as I didn’t sell it! — Guys, this is an *emergency*. We gotta go.',
       said: '「売らなければいいと言われた」と叫んで、すぐ「緊急事態、行かなきゃ」と言う。',
       mean: '条件は「売らないこと」。その人が来てあわてるので、売っていたと分かる。',
-      trap: 'drink が先に聞こえるので、飲みすぎだと思いやすい。あわてる理由は条件の sell。',
+      trap: 'drink が先に聞こえるので、飲みすぎだと勘違いしやすい。あわてる理由は条件の sell。',
       use: 'We weren’t supposed to do this.（これ、やっちゃいけなかったんだ）' },
   ]
 };
