@@ -220,8 +220,8 @@
       </div>
     </div>
   {:else if phase === 'rec' || phase === 'stt'}
-    <button type="button" class="btn rec" class:wait={phase === 'stt'} aria-disabled={phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
-      <Icon name="mic" size={20} />{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: rec.secs.toFixed(1) })) : say('listening')}
+    <button type="button" class="btn" class:rec={phase === 'rec'} aria-disabled={phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
+      {#if phase === 'stt'}<Icon name="mic" size={20} />{/if}{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: rec.secs.toFixed(1) })) : say('listening')}
     </button>
   {:else if phase === 'confirm'}
     <form class="confirm card" data-kb-scroll onsubmit={(e) => (e.preventDefault(), confirm())}>
@@ -281,8 +281,6 @@
   .lab { margin: 0; font: 700 12px/1.3 var(--font-ui); color: var(--text-soft); }
   .row2 { display: flex; gap: 8px; }
   .row2 .btn { flex: 1; min-width: 0; gap: 6px; }
-  .rec { gap: 8px; --fill: var(--sg-rec); --lip-c: var(--sg-rec-lip); }
-  .rec.wait { --fill: var(--c-card); --lip-c: var(--c-edge); }
   .said { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r-chip); background: var(--c-cream);
     box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink); font: 600 17px/1.3 var(--font-body); }
   .note { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink); text-wrap: pretty; }

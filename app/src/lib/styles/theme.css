@@ -130,6 +130,11 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
 /* .yuzu: taking in what's ready (畑's 収穫: a gift to collect, not the leaf's "do"); sunk like any while it can't */
 .btn.yuzu:not(:disabled, [aria-disabled='true'], .off) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
+/* .rec: the mic on (/speech's 録音, すごろく's 止める): yuzu with a pulsing dot before the label, one look for both; never
+   coral (coral is errors only) */
+.btn.rec:not(:disabled, [aria-disabled='true'], .off) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); color: var(--c-ink); }
+.btn.rec::before { content: ''; flex: none; width: 10px; height: 10px; border-radius: 50%; background: currentColor; animation: rec-dot 1s ease-in-out infinite alternate; }
+@keyframes rec-dot { from { opacity: 1; } to { opacity: .25; } }
 /* .sky: a listening act (English Study's この部分を聞く, 意味を見る): the sky's tint, the paper's edge */
 .btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }
 /* .quiet: a text button out of the way (今日はスキップ, 答えを見る, ⚑ 報告), 44 tall */
