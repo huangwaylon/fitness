@@ -146,7 +146,7 @@ the guest:
 | Record reads: snapshots (~5 rows each; a full one the whole record) | ~300 | 300 | 300 | ~30 | ~3,000 (+ the record per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
-| The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change) | 48 ticks, ~48 fetches | 0 | 48 | ~10 | | ~48 (one storage key) |
+| The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change; each tick's wet days to the record) | 48 ticks, ~48 fetches | 0 | ~96 | ~10 | | ~48 (one storage key) |
 | The log (`/log` batches, a `req` RPC each `/api`, room closes) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | 英語すごろく online (an hour's game: ~250 moves, the turn's view on change and every 30 s unchanged) | 1 game | 0 | ~30 | ~250 (awake while turns are played) | ~50 (a hello's or a move's wake) | ~260 (a row a move, a fold each 32) |
 | **Total** | | **~630 (0.6 %)** | **~1,680 (1.7 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |

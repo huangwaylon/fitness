@@ -79,7 +79,8 @@ beforeEach(() => {
       return Promise.resolve({ body: '{"ok":true,"me":"A"}', meta });
     },
     adminSigned: (...a: never[]) => (rec('STORE.adminSigned', ...a), Promise.resolve({ status: 200, body: '{"ok":true}' })),
-    compactTick: () => (rec('STORE.compactTick'), Promise.resolve({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 }))
+    compactTick: () => (rec('STORE.compactTick'), Promise.resolve({ ok: true, dates: 0, deleted: 0, more: false, metrics: 0 })),
+    wetTick: () => (rec('STORE.wetTick'), Promise.resolve([]))
   };
   log = {
     add: (evs: never) => (rec('LOG.add', evs), Promise.resolve({ ok: true, kept: 1 })),
@@ -237,6 +238,17 @@ describe('the cron', () => {
     await run(TICK - 900_000);
     await settle();
     expect(added()).toEqual([{ e: 'cron.wx', l: 3, d: { ok: false, fetched: false, fail: 'TypeError', ms: 0 } }]);
+  });
+
+  it('hands each tick’s wet days to the record; a failure logged as `do.error` (the fields’ rain)', async () => {
+    await run(TICK);
+    await settle();
+    expect(calls['STORE.wetTick']).toHaveLength(1);
+    expect(calls['LOG.add']).toBeUndefined();
+    store.wetTick = () => Promise.reject(new RangeError('cpu'));
+    await run(TICK);
+    await settle();
+    expect(added()).toEqual([{ e: 'do.error', l: 3, d: { where: 'wet', name: 'RangeError' } }]);
   });
 
   it('compacts the record only with COMPACT_CRON=1 at 04:15 Tokyo, a failure logged as `do.error`', async () => {

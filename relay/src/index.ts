@@ -357,7 +357,10 @@ export default {
           // the wet days into the record (the fields' rain: store.ts wetTick), every tick (the game mode's too)
           return env.STORE.get(env.STORE.idFromName('record')).wetTick(r.wet).then(
             (kept) => kept.length && console.log('wet', kept.join(',')),
-            (e) => console.warn('wet-fail', errName(e))
+            (e) => {
+              console.warn('wet-fail', errName(e));
+              log([{ e: 'do.error', l: 3, d: { where: 'wet', name: errName(e) } }]);
+            }
           );
         },
         (e) => {
