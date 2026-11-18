@@ -240,7 +240,7 @@ Curated by cross-reference (`scripts/sugoroku-wordlist.py`, then `SUGOROKU_LISTS
 - `everyday.json`: ~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker): the
   everyday bonus and the meaning card.
 - `sentences.json`: the フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a
-  Japanese reader's fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4
+  Japanese reader's fixes from `scripts/data/sugoroku-line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4
   everyday words 1, ≤ 5 and 80 % 2, else 3).
 
 They load with a game, as the carried feature chunk `sg` (vite.config.ts FEATURE_CHUNK: not in the install
