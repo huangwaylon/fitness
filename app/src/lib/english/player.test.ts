@@ -1,5 +1,5 @@
 // The embed's protocol, read (player.svelte.ts): its URL, its messages, its state codes, its captions' info.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { YT_ORIGIN, captionsOf, embedUrl, readMessage, stateOf } from './player.svelte.ts';
 
 describe('the embed', () => {
@@ -25,5 +25,33 @@ describe('字幕 日本語: what the frame reports of its captions', () => {
       .toEqual({ tracks: ['en', 'ja'], track: { lang: 'en' } });
     expect(captionsOf({ tracklist: [{ languageCode: 'ja' }, 7, null], track: {} })).toEqual({ tracks: ['ja'] });
     for (const bad of [null, 3, 'x', [], { track: 'ja' }]) expect(captionsOf(bad)).toBeNull();
+  });
+});
+
+describe('the 100 ms check', () => {
+  it('runs only while playing or buffering; a delivery while paused still moves the time', async () => {
+    const { YtPlayer } = await import('./player.svelte.ts');
+    vi.useFakeTimers();
+    let onMsg: ((e: unknown) => void) | undefined;
+    vi.stubGlobal('addEventListener', (_: string, f: (e: unknown) => void) => void (onMsg = f));
+    vi.stubGlobal('removeEventListener', () => {});
+    const win = { postMessage: () => {} };
+    const frame = { contentWindow: win, addEventListener: () => {}, removeEventListener: () => {} } as unknown as HTMLIFrameElement;
+    const p = new YtPlayer(frame);
+    const say = (event: string, info: unknown) => onMsg!({ origin: YT_ORIGIN, source: win, data: JSON.stringify({ event, info }) });
+    say('onReady', null);
+    const greeted = vi.getTimerCount();
+    say('onStateChange', 1);
+    expect(vi.getTimerCount()).toBe(greeted + 1);
+    say('onStateChange', 2);
+    expect(vi.getTimerCount()).toBe(greeted);
+    say('infoDelivery', { currentTime: 42.34 });
+    expect(p.time).toBe(42.3);
+    say('onStateChange', 3);
+    expect(vi.getTimerCount()).toBe(greeted + 1);
+    p.destroy();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 });

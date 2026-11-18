@@ -1,7 +1,7 @@
 // YouTube's embed driven over postMessage (docs/english.md "The player"): no iframe_api script (a third-party
 // script-src). The frame is told `listening` until it answers; it reports `onReady`, `infoDelivery` (the time, the
 // state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses SEG_TAIL past its end:
-// the time between deliveries is extrapolated (≤ LEAP_S for the stop), checked every 100 ms. A play that doesn't start
+// the time between deliveries is extrapolated (≤ LEAP_S for the stop), checked every 100 ms while it plays. A play that doesn't start
 // (iOS wants a tap on the video itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality
 // has been a no-op since YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player
 // is full width. Captions off, unless the lesson's 字幕 choice turns YouTube's own on (`setCaptions`; this player's, so a
@@ -111,7 +111,8 @@ export class YtPlayer {
   /** The last play asked has started (playing or buffering since). */
   #started = true;
   #hello: ReturnType<typeof setInterval> | undefined;
-  #tick: ReturnType<typeof setInterval>;
+  /** The 100 ms check, only while playing or buffering (the time moves, a segment's stop is due). */
+  #tick: ReturnType<typeof setInterval> | undefined;
   #stuckTimer: ReturnType<typeof setTimeout> | undefined;
   /** The captions' info the frame reported (null: none yet). */
   #cc: CcInfo | null = null;
@@ -123,7 +124,6 @@ export class YtPlayer {
     addEventListener('message', this.#onMessage);
     frame.addEventListener('load', this.#greet);
     this.#greet();
-    this.#tick = setInterval(this.#check, 100);
   }
 
   /** Play from `from` s, pausing SEG_TAIL past `to` (null: to the end). */
@@ -199,8 +199,13 @@ export class YtPlayer {
     removeEventListener('message', this.#onMessage);
     this.#frame.removeEventListener('load', this.#greet);
     clearInterval(this.#hello);
-    clearInterval(this.#tick);
+    this.#ticking(false);
     clearTimeout(this.#stuckTimer);
+  }
+
+  #ticking(on: boolean): void {
+    if (on && this.#tick === undefined) this.#tick = setInterval(this.#check, 100);
+    else if (!on && this.#tick !== undefined) (clearInterval(this.#tick), (this.#tick = undefined));
   }
 
   /** The time now, s: the last delivery's, plus the time since while playing. */
@@ -245,6 +250,8 @@ export class YtPlayer {
     const was = this.state;
     this.state = st;
     if (st === 'playing' || st === 'buffering') (this.stuck = false), (this.#started = true);
+    this.#ticking(st === 'playing' || st === 'buffering');
+    this.#check();
     // (each play, not each delivery: the module loaded again and again would flicker)
     if (st === 'playing' && was !== 'playing') this.#captionsNow();
   }
@@ -307,6 +314,7 @@ export class YtPlayer {
           if (this.#seek !== null && Math.abs(t - this.#seek) > 2 && performance.now() - this.#seekAt < SEEK_MS) break; // (the time from before the seek)
           this.#seek = null;
           this.#last = { t, at: performance.now() };
+          if (this.#tick === undefined) this.#check(); // (paused: the time a seek landed on)
         }
         break;
       }
@@ -320,6 +328,7 @@ export class YtPlayer {
         this.state = 'error';
         this.error = typeof info === 'number' ? info : null;
         this.#stopAt = null;
+        this.#ticking(false);
         break;
     }
   };
