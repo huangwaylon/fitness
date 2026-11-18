@@ -278,11 +278,14 @@ function table(seed: string, id?: MiniId): { phones: Phone[]; room: Room; at: nu
   hook.all = !!id && !OFFERED.includes(id);
   for (let k = 0; k < 200; k++) {
     const gid = `${seed}x${k}`.padEnd(10, '0').slice(0, 12);
-    const picks = opens.get(`${gid}${hook.all}`) ?? opens.set(`${gid}${hook.all}`, ((all) => all.flatMap((m, i) => {
-      if (m.a !== 'mg') return [];
-      const base = all.slice(0, i + 1);
-      return [{ id: miniOn(foldMoves(base, ctx)!)!.id, base }];
-    }))(playMoves(gid))).get(`${gid}${hook.all}`)!;
+    const picks = opens.get(`${gid}${hook.all}`) ?? opens.set(`${gid}${hook.all}`, ((all) => {
+      // (folded once along the log: each pick's game as it opens)
+      let g: Game | null = null;
+      return all.flatMap((m, i) => {
+        g = i === 0 ? foldMoves([m], ctx) : applyMove(g, m, ctx);
+        return m.a === 'mg' ? [{ id: miniOn(g!)!.id, base: all.slice(0, i + 1) }] : [];
+      });
+    })(playMoves(gid))).get(`${gid}${hook.all}`)!;
     const hit = picks.find((p) => !id || p.id === id);
     if (!hit) continue;
     const base = hit.base, at = base.length - 1;
