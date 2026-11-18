@@ -44,7 +44,7 @@
 </li>
 
 <style>
-  .tile { position: relative; }
+  .tile { position: relative; display: grid; } /* (its button the row's height: one row, one height) */
   .pickable {
     appearance: none; border: 0; cursor: pointer; width: 100%; min-height: 118px; padding: 10px 6px 8px; border-radius: var(--r-btn);
     display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--ctl); color: var(--text);
