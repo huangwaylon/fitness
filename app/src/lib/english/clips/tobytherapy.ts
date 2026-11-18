@@ -1,14 +1,21 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 11, retire 0, new 1, ctx 7, tx 3
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 8, new 3
-// A2 LATE: the clip plays sexual jokes (51–61 s, 110–148 s) and bleeped insults (263–268 s) the learner can't skip
 // “Therapy with Toby - The Office US” (the official The Office channel, BEST OF SEASON 7 - The Office US): after a
 // "corporate punishment", Michael owes six hours of counseling with Toby and stalls; Toby pretends to give up and
 // offers games, Michael opens up (Jeff, the pitcher, the dog), Toby names his need to be liked, and Michael, seeing the
 // trick, attacks Toby's marriage until Toby lets him fill in the forms himself.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Michael (37 s, 91.7 s, 149 s, 267 s),
-// Toby (108.2 s, 110.1 s). Untested on purpose: 0–21 s, 41–50 s (the sources differ around "a chance"), 51–61 s and
-// 110–148 s (sexual), 263–268 s (bleeped), 293–296 s.
-// EAR CHECK: 228.5 s i2 (retired until then) — whisper “to find a kid he liked better”, captions “a kitty like better”
-// EAR CHECK: 290.6–300.4 s g1 — "Just fill them out any way you want" is Toby (assumed from the content)
+// Toby (108.2 s, 110.1 s).
+// EXCLUDE 54.2–61.4
+// EXCLUDE 113.7–119.8
+// EXCLUDE 129.6–147.8
+// EXCLUDE 262.8–268.5
+// (the naked/molest jokes, "eating my penis", the alien-probe and "lower half" jokes, the bleeped "son of a b…")
+// SKIP 109.5–148.3: the excluded sexual jokes, with only "Can I really tell you anything?" and "That was weird" between
+// Untested: 0–21 s (one long whisper line, the shouting), 41–50 s (the sources differ around "a chance").
+// EAR CHECK: 228.5 s i2 (retired) — whisper “to find a kid he liked better”, captions “a kitty like better”
+// EAR CHECK: 290.6–300.4 s g1 wd — "Just fill them out any way you want" is Toby (assumed from the content); who says
+//   "Will do" isn't settled, so wd names no one ("fax them back to court" is probably "to corporate")
 import type { Clip } from '../types.ts';
 
 export const tobyTherapy: Clip = {
@@ -28,7 +35,7 @@ export const tobyTherapy: Clip = {
       trap: 'corporate を「会社全体」と取ると話が大きすぎる。妙な語は似た音の語を疑う。',
       use: 'Sorry, wrong word. I meant “borrow.”（ごめん、言いたかったのは borrow）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'mybad', seg: [21.2, 29.3],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'mybad', seg: [21.6, 29.3],
       stem: 'What does “My bad” mean?',
       ja: '「My bad」はどういう意味？',
       choices: ['It’s my fault', 'I feel sick', 'That’s too bad'], a: 0,
@@ -36,11 +43,11 @@ export const tobyTherapy: Clip = {
       cue: '「I made a mistake」のあと、最後の2語。',
       line: 'I made a mistake. I committed corporate punishment. *My bad.*',
       said: '「ミスをした。悪かったね」と軽く言う。',
-      mean: 'My bad ＝ ごめん、私のせい。友だちどうしの軽い謝り方。',
-      trap: 'bad から「気分が悪い」と思いやすい。前の I made a mistake とつなげて聞く。',
+      mean: 'My bad ＝ 文字どおりは「私の悪い」→「私のせい、ごめん」。友だちどうしの軽い謝り方で、目上には I’m sorry。',
+      trap: 'bad から「気分が悪い」と考えがち。前の I made a mistake とつなげて聞く。',
       use: 'Oops, my bad. I’ll fix it.（あ、ごめん。直すね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [35.9, 43.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [35.9, 43.0], keep: true,
       stem: 'How many hours of counseling must Michael do?',
       ja: 'マイケルは何時間カウンセリングを受けなければならない？',
       choices: ['1 hour', '6 hours', '16 hours'], a: 1,
@@ -52,7 +59,7 @@ export const tobyTherapy: Clip = {
       trap: '「スィックス」と短く切れれば6、「スィックスティーン」と後ろが強く長ければ16、「ワン」なら1。',
       use: 'It’s a six-hour flight.（6時間のフライトです）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodhere', seg: [41.7, 53.7],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'goodhere', seg: [40.8, 50.6],
       stem: 'How does Toby feel about these sessions?',
       ja: 'トビーはこのカウンセリングをどう思っている？',
       choices: ['He wants to do some good', 'He thinks they are boring', 'He wants to show off his degree'], a: 0,
@@ -64,7 +71,7 @@ export const tobyTherapy: Clip = {
       trap: '最初に degree（資格）と言うので、自慢と思いやすい。but のあとが言いたいこと。',
       use: 'I want to do something good here.（ここで何かいいことをしたい）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'blinds', seg: [60.4, 66.3],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'blinds', seg: [62.0, 66.3],
       stem: 'Fill the gap: “___ leave the blinds open.”',
       ja: '空所を埋める：「___ leave the blinds open.」',
       choices: ['We’re gonna', 'We were gonna', 'We weren’t gonna'], a: 0,
@@ -88,7 +95,7 @@ export const tobyTherapy: Clip = {
       trap: '最後の six hours に引かれやすい。We’ve done のあと「ワン」なら1時間、「トゥー」なら2時間、「サーティ」なら30分。',
       use: 'We’ve done one hour. Five to go.（1時間終わった。あと5時間）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'speedup', seg: [75.8, 82.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'speedup', seg: [75.95, 82.9],
       stem: 'Type what Michael says: “Let’s just ___, okay?” (3 words)', answer: 'speed this up',
       ja: 'マイケルの言葉を書き取る：「Let’s just ___, okay?」（3語）',
       cue: 'just のあとの短い3語。',
@@ -98,14 +105,14 @@ export const tobyTherapy: Clip = {
       trap: 'this と up がつながり一語に聞こえやすい。speed と up の間に this が入る。',
       use: 'Can we speed this up a little?（もう少し急げますか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cant', reveals: ['onehour'], seg: [81.1, 86.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cant', ctx: true, reveals: ['onehour'], seg: [79.9, 86.2],
       stem: 'What does Toby say about the hour?',
       ja: 'トビーは、その1時間について何と言う？',
       choices: ['It won’t count without talking', 'It counts if Michael sits there', 'It counts after he signs'], a: 0,
       choicesJa: ['話さないと数えない', '座っていれば数える', 'サインすれば数える'],
       cue: 'Look のあとの一文。',
-      line: 'Look, I *can’t count the hour* if you don’t talk.',
-      said: '「話してくれないと、その1時間は数えられない」とトビー。',
+      line: 'Michael: Keep it moving. I want to do all six hours. / Toby: Look, I *can’t count the hour* if you don’t talk.',
+      said: '「どんどんいこう。6時間全部やりたい」に、「話してくれないと、その1時間は数えられない」と返す。',
       mean: 'count ＝ 数に入れる。黙って座るだけでは、義務の時間に入らない。',
       trap: 'can’t の t が消えて can に聞こえやすい。if you don’t talk の条件で確かめる。',
       use: 'I can’t help you if you don’t call.（電話をくれないと助けられないよ）' },
@@ -120,15 +127,15 @@ export const tobyTherapy: Clip = {
       trap: 'time を「勤務時間」と取りやすい。my rights と並ぶと刑務所の言葉と分かる。',
       use: 'Just doing my time until Friday.（金曜までの辛抱だ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'tellme', seg: [93.5, 105.5],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'tellme', ctx: true, seg: [95.3, 103.6],
       stem: 'What does Toby want when he says “Tell me!”?',
       ja: '「Tell me!」と言うとき、トビーは何をしてほしい？',
       choices: ['Michael to talk more', 'Michael to calm down', 'Michael to leave now'], a: 0,
       choicesJa: ['マイケルにもっと話してほしい', 'マイケルに落ち着いてほしい', 'マイケルに今すぐ出ていってほしい'],
       cue: '怒りを伝えられたあとの返事と、その次の一言。',
-      line: 'You have any idea how angry that is making me? — *Tell me!* … I think we might… really *get somewhere*.',
-      said: '「どれだけ腹が立ってるか分かる？」に「話して！」、そして「進みそうだ」と喜ぶ。',
-      mean: 'Tell me! ＝ 話して！ 怒りを言葉にしてほしい。get somewhere ＝ 前に進む。',
+      line: 'Michael: You have any idea how angry that is making me? / Toby: *Tell me!* … I think we might… really *get somewhere*.',
+      said: '「どれだけ腹が立ってるか分かるか？」に「話してください！」、そして「進めそうだ」と喜ぶ。',
+      mean: 'Tell me! ＝ 話して！ 怒りを言葉にしてほしい。get somewhere ＝ 文字どおりは「どこかに着く」→ 前に進む。',
       trap: '強い声なので、けんかを買っているように聞こえやすい。次の get somewhere で喜びと分かる。',
       use: 'Tell me. I’m listening.（話して。聞いてるから）' },
 
@@ -141,30 +148,32 @@ export const tobyTherapy: Clip = {
       trap: '文法で maybe を消したくなるが、聞こえた音を書く。about to は「アバウタ」。',
       use: 'We might maybe make it on time.（ひょっとしたら間に合うかも）' },
 
-    { id: 'c2', skill: 'infer', level: 'C2', point: 'wish', seg: [99.6, 109.2], retired: true,
-      stem: 'After his comment to the camera, how should we hear Michael’s promise to talk?',
-      choices: ['As a threat: his talk will only cause Toby trouble', 'As a real promise: he is ready to open up at last',
-                'As sarcasm: he means he will go on saying nothing'], a: 0,
-      cue: '約束のあと、カメラに向けた一言。',
-      line: 'Yes, I will. I will *talk, all right*. … *Be careful what you wish for*, Toby.',
-      said: '「ああ、話すとも」と言い、カメラに「望みには気をつけろ、トビー」。',
-      mean: 'all right は「たっぷり話してやる」の強調。カメラへの一言が、協力の約束を脅しに変える。',
-      trap: 'Yes, I will だけなら前向きな約束。皮肉の「話さない」なら、カメラに警告する意味がない。',
-      use: 'Careful what you wish for.（願いごとには気をつけて）' },
+    // restored in R4 as a phrase item (the warning itself)
+    { id: 'c2', skill: 'phrase', level: 'B2', point: 'wish', seg: [103.6, 109.4],
+      stem: 'What does “Be careful what you wish for” mean here?',
+      ja: 'ここでの「Be careful what you wish for」の意味は？',
+      choices: ['You may not like it', 'Your wish will come true', 'Think before you speak'], a: 0,
+      choicesJa: ['きっと気に入らないぞ', '願いはかなうよ', '話す前に考えて'],
+      cue: '「I will talk all right」のあと',
+      line: 'Yes, I will. I will talk, all right. *Be careful what you wish for*, Toby.',
+      said: '「ああ、話すよ。話してやるさ。望みには気をつけたほうがいいぞ、トビー」と言う。',
+      mean: '文字どおりは「何を願うか気をつけろ」。願いがかなうと困ることもある→「話せと言うなら話す。後悔するなよ」という警告。',
+      trap: 'wish（願い）から、願いがかなういい話と考えがち。careful（気をつけろ）があるので警告。',
+      use: 'Be careful what you wish for.（願いごとには気をつけて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'tactic', reveals: ['clock', 'anywhere'], seg: [147.8, 188.1],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'tactic', reveals: ['clock', 'anywhere'], seg: [148.4, 176.0],
       stem: 'How does Toby get Michael to talk?',
       ja: 'トビーはどうやってマイケルに話させる？',
       choices: ['He stops pushing and plays games', 'He promises to end early', 'He talks about his daughter'], a: 0,
       choicesJa: ['押すのをやめて、ゲームをする', '早く終わると約束する', '自分の娘の話をする'],
       cue: '「You win」のあとの提案。',
       line: 'You’re right. You win. This is pointless… Why don’t we just run out the clock by *playing games*…',
-      said: '「君の勝ち。意味がない」と引き、ゲームをしようと言う。するとマイケルがジェフの話を始める。',
-      mean: 'あきらめたふりで、気を楽にさせる作戦。ゲーム中に昔の話が出てくる。',
-      trap: 'daughter が出るので、娘の話をしたと思いやすい。娘はおもちゃがある理由だけ。',
+      said: '「あなたの勝ちです。意味がない」と引き、ゲームをしようと言う。遊びながらマイケルが話しだす。',
+      mean: 'あきらめたふりで、気を楽にさせる作戦。ゲームをしながら昔の話が出てくる。',
+      trap: 'daughter が出るので、娘の話をしたと考えがち。娘はおもちゃがある理由だけ。',
       use: 'Okay, you win. Let’s just relax.（分かった、君の勝ち。気楽にいこう）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'anywhere', seg: [149.0, 154.5],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'anywhere', seg: [148.5, 154.5],
       stem: 'What does “We’re not getting anywhere” mean?',
       ja: '「We’re not getting anywhere」はどういう意味？',
       choices: ['This isn’t working', 'We can’t leave the room', 'We are lost'], a: 0,
@@ -188,16 +197,16 @@ export const tobyTherapy: Clip = {
       trap: 'run を「走る、急ぐ」と思いやすい。by playing games が続くので、のんびり過ごす話。',
       use: 'Let’s just run out the clock.（あとは時間が過ぎるのを待とう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'jeff', seg: [176.1, 188.1],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'jeff', ctx: true, seg: [176.1, 188.1],
       stem: 'What does “I never thought of it that way” show?',
       ja: '「I never thought of it that way」から何が分かる？',
       choices: ['He never saw Jeff as a stepdad', 'He forgot all about Jeff', 'He didn’t know Jeff married'], a: 0,
       choicesJa: ['ジェフを継父と思ったことがない', 'ジェフのことを忘れていた', 'ジェフの結婚を知らなかった'],
       cue: 'トビーの言いかえへの返事。',
-      line: 'Jeff was my mother’s boyfriend, who she married. — So… *your stepdad*. — Yeah, I guess I *never thought of it that way*.',
-      said: '「ジェフは母の彼氏で、母が結婚した人」。「つまり継父」に「そう考えたことはない」。',
+      line: 'Michael: Jeff was my mother’s boyfriend, who she married. / Toby: So… *your stepdad*. / Michael: Yeah, I guess I *never thought of it that way*.',
+      said: '「ジェフは母の彼氏で、母が結婚した人」。「つまり継父ですね」に「そう考えたことはない」。',
       mean: 'think of A that way ＝ Aをそういうふうに考える。stepdad ＝ 継父。父と思っていなかった。',
-      trap: '結婚を知らなかったと思いやすいが、who she married と自分で言っている。',
+      trap: '結婚を知らなかったと考えがちだが、who she married と自分で言っている。',
       use: 'I never thought of it that way.（そんなふうに考えたことなかった）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'pitcher', seg: [195.2, 203.4],
@@ -212,62 +221,56 @@ export const tobyTherapy: Clip = {
       trap: 'manager の話も出るので混ざりやすい。それはジェフの話。because のあとが理由。',
       use: 'I felt bad because I was late.（遅れて申し訳なく思った）' },
 
-    { id: 'i2', skill: 'detail', level: 'B2', point: 'dog', seg: [216.4, 229.9], retired: true,
-      stem: 'Why did Michael stay away from the park after his dog ran away?',
-      choices: ['He was afraid the dog liked another kid better', 'He was afraid of finding the dog hurt or sick',
-                'He was afraid the kids there would tease him'], a: 0,
-      cue: 'ran away の理由として、彼が考えていたこと。',
-      line: 'he ran away… *to find a kid he liked better*.',
-      said: '「犬は自分より好きな子を探しに逃げたと思った」。だから公園が怖かった。',
-      mean: '犬の話の形で、もっと好かれる誰かに置いていかれる怖さを語っている。',
-      trap: 'afraid と park から犬の身を案じたと取りやすい。怖いのは犬が他の子と幸せそうなこと。',
-      use: 'I was afraid you’d find someone better.（もっといい人を見つけるかと不安だった）' },
+    // restored in R4 as a context item on the clear line (the "kid he liked better" line stays out: EAR CHECK)
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'dog', ctx: true, seg: [216.7, 225.3],
+      stem: 'What was Michael afraid of seeing at the park?',
+      ja: 'マイケルは公園で何を見るのが怖かった？',
+      choices: ['His dog with another kid', 'His dog hurt or sick', 'Other kids laughing at him'], a: 0,
+      choicesJa: ['自分の犬がほかの子といるところ', 'けがや病気の犬', '自分を笑う子どもたち'],
+      cue: '「I was afraid」のあと',
+      line: 'Toby: …why did it keep you from going to the park? / Michael: I was afraid I would find him in the park *playing with another kid*.',
+      said: '「なぜ公園に行けなくなったんですか？」に、「別の子と遊ぶあいつを見るのが怖かった」と答える。',
+      mean: 'keep you from 〜ing ＝「〜できなくする」。I was afraid 〜 ＝「〜が怖かった」。',
+      trap: 'afraid（怖い）から、犬の身を心配したと考えがち。決め手は playing with another kid。',
+      use: 'I was afraid I would be late.（遅れるんじゃないかと心配だった）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ridic', seg: [228.2, 240.2],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'ridic', ctx: true, seg: [228.2, 240.2],
       stem: 'How does Michael feel about his dog story now?',
       ja: '今、マイケルは犬の話をどう感じている？',
       choices: ['It sounds silly to him', 'It still makes him angry', 'It makes him want a dog'], a: 0,
       choicesJa: ['ばかばかしく聞こえる', 'まだ腹が立つ', '犬がほしくなる'],
       cue: 'When I hear myself say it のあと。',
-      line: 'Dogs don’t do that. — Right? … When I hear myself say it, *it just sounds ridiculous*.',
-      said: '「犬はそんなことしない」に「だよね。口に出すと、ばかみたいに聞こえる」と言う。',
+      line: 'Toby: Dogs don’t do that. / Michael: Right? … When I hear myself say it, *it just sounds ridiculous*.',
+      said: '「犬はそんなことしませんよ」に「だよな。口に出すと、ばかげて聞こえる」と言う。',
       mean: 'ridiculous ＝ ばかげた。声に出して初めて、おかしな考えだと気づいた。',
       trap: 'Why would a dog do that? を怒りと思いやすい。最後の ridiculous が気持ち。',
       use: 'When I say it out loud, it sounds silly.（声に出すと、ばかみたい）' },
 
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'session', reveals: ['dog'], seg: [242.0, 253.6], retired: true,
-      stem: 'Why does Michael’s answer to Toby’s question get a laugh?',
-      choices: ['It is a counseling session, and he is dodging', 'He means they are only playing games by now',
-                'He hints that Toby is not a real counselor'], a: 0,
-      cue: '質問をかわす一言と、今いる場の名前。',
-      line: 'It’s very important for you to be liked, isn’t it? — Well, let’s not get too… *This isn’t a counseling session.*',
-      said: '「好かれるのが大事なんだね」に「まあ…これはカウンセリングじゃないし」。',
-      mean: 'まさに面談の最中なのに、図星を突かれて逃げている。本人だけ気づいていない。',
-      trap: 'ゲームの時間だから本当に面談ではない、と取りやすい。この面談は罰として決められたもの。',
-      use: 'Let’s not get too deep here.（あまり深い話はやめよう）' },
+    // restored in R4 as a context item (Toby names it, Michael dodges)
+    { id: 'h2', skill: 'pragma', level: 'B2', point: 'session', ctx: true, seg: [242.4, 253.5],
+      stem: 'How does Michael answer Toby’s question about being liked?',
+      ja: '好かれることについてのトビーの質問に、マイケルはどう答える？',
+      choices: ['He changes the subject', 'He says yes, very much', 'He says it isn’t true'], a: 0,
+      choicesJa: ['話をそらす', 'そう、とても大事だと言う', 'そんなことはないと言う'],
+      cue: '「isn’t it?」のあとの返事',
+      line: 'Toby: It’s very important for you to be liked, isn’t it? / Michael: Well, let’s not get too… *This isn’t a counseling session.*',
+      said: '「好かれることがとても大事なんですね？」に、「まあ、そこまで深く…これはカウンセリングじゃない」とかわす。',
+      mean: 'let’s not get too 〜 ＝「あまり〜になるのはよそう」。図星をつかれて逃げている。',
+      trap: 'This isn’t… を、そんなことはないという否定と考えがち。質問には答えず、話をそらしている。',
+      use: 'Let’s not get too serious.（あまり深刻にならないでおこう）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'trick', reveals: ['tactic'], seg: [254.8, 268.5], retired: true,
-      stem: 'What has Michael realized when he finally speaks after the long pause?',
-      choices: ['Toby’s plan to get him talking had worked', 'Toby is someone who truly understands him',
-                'Toby was right that dogs don’t do that'], a: 0,
-      cue: '長い沈黙のあとの呼びかけと、トビーの返事。',
-      line: 'You *son of a gun*. … — I’m just *trying to help you*, Michael.',
-      said: '沈黙のあと「この野郎」。トビーは「助けたいだけだよ」。',
-      mean: 'son of a gun は「やるな、こいつ」という驚き混じりの一言。うまく話させられたと気づいた。',
-      trap: '親しみの言葉にも聞こえるが、すぐ強い悪態に変わる。トビーの返事が気づきの中身を示す。',
-      use: 'You son of a gun, you did it!（やるじゃないか、やったな！）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'ending', reveals: ['marriage'], seg: [259.0, 301.5],
-      stem: 'How do the sessions end?',
-      ja: 'カウンセリングはどう終わる？',
-      choices: ['Michael gets angry at Toby', 'Michael cries and says sorry', 'Michael asks for more time'], a: 0,
-      choicesJa: ['マイケルがトビーに怒る', 'マイケルが泣いて謝る', 'マイケルがもっと時間を頼む'],
-      cue: '長い沈黙のあとの流れ。',
-      line: 'You can’t help people. You couldn’t help your marriage. … *Just fill them out any way you want.*',
-      said: '話させられたと気づいたマイケルが怒って責め、トビーは書類を好きに書かせる。',
-      mean: 'any way you want ＝ 好きなように。トビーは言い返さず、あきらめる。',
-      trap: '最後に Thank you があるので、仲よく終わったと思いやすい。その前の強い言葉を聞く。',
-      use: 'Do it any way you want.（好きなようにやって）' },
+    // restored in R4 as a phrase item, cut before the bleeped swear
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'trick', seg: [255.7, 262.6],
+      stem: 'What does Michael mean by “You son of a gun”?',
+      ja: 'マイケルの「You son of a gun」はどういう意味？',
+      choices: ['You really tricked me', 'You are a true friend', 'Please leave me alone'], a: 0,
+      choicesJa: ['うまくだましたな', '君は本当の友だちだ', 'ほっといてくれ'],
+      cue: '長い沈黙のあとの一言',
+      line: 'Okay. … *You son of a gun.*',
+      said: '長く黙ったあと、「こいつめ」とつぶやく。話させられたと気づいた。',
+      mean: 'son of a gun ＝ 文字どおりは「銃の息子」。下品な悪口を軽くした古い言い方→「こいつめ、やるな」。',
+      trap: 'friend のような親しい呼びかけと勘違いしやすい。うまく話させられたと気づいた驚きと悔しさ。',
+      use: 'Well, I didn’t see that coming.（いやあ、それは読めなかった）' },
 
     { id: 'c3', skill: 'pragma', level: 'C2', point: 'trick', reveals: ['tactic'], seg: [262.4, 272.5], retired: true,
       stem: 'Which reply from Toby would match what Michael meant by “very helpful”?',
@@ -279,6 +282,18 @@ export const tobyTherapy: Clip = {
       mean: 'ほめ言葉の形の非難。トビーの help をそのまま投げ返し、「親切のふりで操った」と責めている。認める返事が合う。',
       trap: 'ほめ言葉にはお礼、という型で選びやすい。返事は言葉の形でなく、直前に相手がしたことに返す。',
       use: 'Wow, you’re very helpful today.（今日はずいぶん親切だね）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'ending', reveals: ['marriage'], seg: [268.6, 301.6],
+      stem: 'How do the sessions end?',
+      ja: 'カウンセリングはどう終わる？',
+      choices: ['Michael gets angry at Toby', 'Michael cries and says sorry', 'Michael asks for more time'], a: 0,
+      choicesJa: ['マイケルがトビーに怒る', 'マイケルが泣いて謝る', 'マイケルがもっと時間を頼む'],
+      cue: '長い沈黙のあとの流れ。',
+      line: 'You can’t help people. You couldn’t help your marriage. … *Just fill them out any way you want.*',
+      said: '話させられたと気づいたマイケルが怒って責め、トビーは書類を好きに書かせる。',
+      mean: 'any way you want ＝ 好きなように。トビーは言い返さず、あきらめる。',
+      trap: '最後に Thank you があるので、仲よく終わったと思いやすい。その前の強い言葉を聞く。',
+      use: 'Do it any way you want.（好きなようにやって）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'good', seg: [269.0, 278.8], retired: true,
       stem: 'What does Michael concede with “You are good” before his “But…”?',
@@ -303,15 +318,29 @@ export const tobyTherapy: Clip = {
       trap: 'can’t なら「キャン」で始まる。could なら最後に「ン」がない。ここは「クドゥン」。',
       use: 'I couldn’t help it.（どうしようもなかった）' },
 
-    { id: 'h3', skill: 'humor', level: 'C1', point: 'doctor', seg: [290.1, 301.5], retired: true,
-      stem: 'Why is Michael’s parting line to Toby funny?',
-      choices: ['He plays doctor, as if Toby were his patient', 'He calls Toby “doctor” to show respect at last',
-                'He asks Toby for pills to help him calm down'], a: 0,
-      cue: '最後の一文は、ふつう誰が誰に言う言葉か。',
-      line: 'Just fill them out any way you want. … Thank you, doctor. *Take two of these and call me in the morning.*',
-      said: 'トビーが「好きに書いて」と渡し、マイケルは「先生どうも。2錠飲んで朝電話して」。',
-      mean: '医者が患者に言う決まり文句。自分が治療した側のように振る舞っている。',
-      trap: 'Thank you をお礼と取りやすいが、直前にトビーを泣かせかけた。言う人のずれが笑い。',
-      use: 'Get some rest and call me tomorrow.（よく休んで、明日電話して）' }
+    { id: 'wd', skill: 'pragma', level: 'B1', point: 'willdo', ctx: true, seg: [290.5, 296.9],
+      stem: 'What does “Will do” mean here?',
+      ja: 'ここでの「Will do」の意味は？',
+      choices: ['Okay, I’ll do that', 'I already did that', 'I won’t do that'], a: 0,
+      choicesJa: ['了解、やっておく', 'もうやった', 'それはしない'],
+      cue: '「fax them back」のあとの返事',
+      line: '— Okay. Have Erin fax them back… / — *Will do.*',
+      said: '「エリンに本社へファックスで送り返してもらって」と頼まれ、「了解」と返す。',
+      mean: 'Will do ＝ I will do that を短くした形→「了解、やっておく」。頼まれたときの軽い返事。',
+      trap: 'do（する）だけ聞くと、もうやったと考えがち。will は「これからやる」。',
+      use: 'Can you send me the file? — Will do.（ファイル送ってくれる？—了解）' },
+
+    // restored in R4 as a plain culture item (the doctor's stock line)
+    { id: 'h3', skill: 'humor', level: 'B1', point: 'doctor', seg: [299.3, 301.8],
+      stem: 'Who usually says “Take two of these and call me in the morning”?',
+      ja: '「Take two of these and call me in the morning」はふつう誰が言う？',
+      choices: ['A doctor to a patient', 'A waiter to a guest', 'A teacher to a class'], a: 0,
+      choicesJa: ['医者が患者に', '店員が客に', '先生が生徒に'],
+      cue: '最後の一文',
+      line: '*Take two of these and call me in the morning.*',
+      said: '書類を書き終え、「これを2錠飲んで、朝になったら電話して」とトビーに言う。',
+      mean: 'Take two of these ＝「これを2錠飲んで」。医者が薬を出すときの決まり文句。トビーを患者あつかいしている。',
+      trap: 'call me（電話して）から、仕事の話を連想しやすい。two of these（これを2つ）は薬のこと。',
+      use: 'Take this medicine twice a day.（この薬を1日2回飲んでください）' },
   ]
 };
