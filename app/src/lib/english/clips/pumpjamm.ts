@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 0, rewrite 13, retire 4, new 2, ctx 4, tx 9
+// R4 REVIEW 2026-11-18: keep 0, rewrite 13, retire 4, new 2, ctx 4, tx 9, qa 19
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 1, new 1
 // “Pump Up the Jamm | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at a council hearing
 // on an offensive tweet from the Parks account, Leslie says an employee forgot to log out; the councilmen call it
@@ -13,7 +13,7 @@ export const pumpJamm: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'circus', seg: [1.9, 12.1],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'circus', seg: [1.9, 11.95],
       stem: 'What is the hearing’s second goal?',
       ja: 'この公聴会の2つ目の目的は？',
       choices: ['To make it big news', 'To find out what happened', 'To fire the employee'], a: 0,
@@ -25,7 +25,7 @@ export const pumpJamm: Clip = {
       trap: '1つ目の「何があったか調べる」と混ざりやすい。決め手は two のあと。',
       use: 'It turned into a media circus.（マスコミの大騒ぎになった）' },
 
-    { id: 'm1', skill: 'pragma', level: 'B1', point: 'actually', ctx: true, seg: [12.1, 18.6],
+    { id: 'm1', skill: 'pragma', level: 'B1', point: 'actually', ctx: true, seg: [11.95, 18.45],
       stem: 'What does Leslie say about the problem?',
       ja: 'レスリーはこの問題について何と言う？',
       choices: ['It is easy to explain', 'It is a big secret', 'It is a long story'], a: 0,
@@ -61,7 +61,7 @@ export const pumpJamm: Clip = {
       trap: 'あとで hacked（乗っ取り）の話が出るので混ざりやすい。forgot のあとを聞く。',
       use: 'I forgot to log out.（ログアウトし忘れた）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'mistake', reveals: ['logout'], seg: [15.0, 34.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'mistake', reveals: ['logout'], seg: [15.0, 34.05],
       stem: 'What does Leslie say happened?',
       ja: 'レスリーは何があったと言う？',
       choices: ['A worker made an error', 'Leslie posted it herself', 'Someone posted it as a joke'], a: 0,
@@ -73,7 +73,7 @@ export const pumpJamm: Clip = {
       trap: 'personal private message（私的なメッセージ）から、本人がわざと出したと勘違いしやすい。by accident ＝ うっかり。',
       use: 'It was an honest mistake.（悪気のないミスでした）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'logout', seg: [15.0, 21.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'logout', seg: [15.0, 20.7],
       stem: 'Type: “forgot to ___ the Parks and Rec Twitter account.” (3 words)', answer: 'log out of',
       ja: '「forgot to ___ the Parks and Rec Twitter account.」の空所（3語）',
       cue: '「forgot to」のあと',
@@ -93,7 +93,7 @@ export const pumpJamm: Clip = {
       trap: 'won’t（ウォウント）は want（ワント）と似ている。「ウォウ」の音なら won’t。',
       use: 'I’m sorry. It won’t happen again.（すみません、二度としません）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'stonewall', seg: [27.1, 32.2],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'stonewall', seg: [27.1, 32.05],
       stem: 'What does “*stop stonewalling*” mean?',
       ja: '「stop stonewalling」はどういう意味？',
       choices: ['Stop hiding the answer', 'Stop building big walls', 'Stop talking so fast'], a: 0,
@@ -105,7 +105,7 @@ export const pumpJamm: Clip = {
       trap: 'stone（石）と wall（壁）から、工事の話を連想しやすい。直後の tell us what happened が決め手。',
       use: 'Please don’t stonewall me. Just tell me.（はぐらかさないで、教えて）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'told', ctx: true, reveals: ['stonewall', 'mistake'], seg: [27.1, 34.2],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'told', ctx: true, reveals: ['stonewall', 'mistake'], seg: [27.1, 34.05],
       stem: 'What does Leslie say when he asks what happened?',
       ja: '何があったか聞かれて、レスリーは何と言う？',
       choices: ['She already answered that', 'She will explain it later', 'She does not know yet'], a: 0,
@@ -128,7 +128,7 @@ export const pumpJamm: Clip = {
       trap: 'never find out だけだと、誰にも分からない話に聞こえる。due to が責める相手。',
       use: 'Due to the rain, we stayed in.（雨のせいで家にいた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'flip', reveals: ['hacked', 'mistake'], seg: [37.5, 52.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'flip', reveals: ['hacked', 'mistake'], seg: [37.15, 52.45],
       stem: 'What does the councilman say Leslie keeps doing?',
       ja: '議員は、レスリーが何をくり返していると言う？',
       choices: ['Changing her story', 'Hiding the worker’s name', 'Laughing at the council'], a: 0,
@@ -140,7 +140,7 @@ export const pumpJamm: Clip = {
       trap: 'flip-flops はビーチサンダルのことでもあり、それを連想しやすい。前と今の説明を比べている。',
       use: 'Let’s not keep changing the plan.（計画をコロコロ変えるのはやめよう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hacked', reveals: ['mistake'], seg: [39.5, 48.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hacked', reveals: ['mistake'], seg: [39.3, 48.0],
       stem: 'What did Leslie say at first?',
       ja: 'レスリーは最初、何と言っていた？',
       choices: ['A bored kid used the account', 'An employee made a joke', 'Her staff made a small mistake'], a: 0,
@@ -164,7 +164,7 @@ export const pumpJamm: Clip = {
       trap: 'flip-flops はビーチサンダルのことでもあり、思いやすい。前と今の説明を比べている。',
       use: 'Stop flip-flopping and pick one.（ころころ変えないで、どっちか決めて）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'newinfo', ctx: true, reveals: ['flip', 'learned'], seg: [48.0, 55.1],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'newinfo', ctx: true, reveals: ['flip', 'learned'], seg: [48.0, 54.92],
       stem: 'Why does Leslie say her story changed?',
       ja: 'レスリーは、話が変わったのはなぜだと言う？',
       choices: ['She found out more', 'She lied at first', 'Her boss told her to'], a: 0,
@@ -200,7 +200,7 @@ export const pumpJamm: Clip = {
       trap: 'brown cows が最後に残り、牛の色の話と思いやすい。何が牛から出るかを聞く。',
       use: 'Where does this coffee come from?（このコーヒーはどこ産ですか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [55.1, 59.0],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [54.93, 59.0],
       stem: 'How old was Leslie when she had her chocolate milk idea?',
       ja: 'チョコレートミルクの思い違いをしていたのは、レスリーが何歳のとき？',
       choices: ['Four', 'Five', 'Fourteen', 'Forty'], a: 0, keep: true,
@@ -212,15 +212,15 @@ export const pumpJamm: Clip = {
       trap: 'four と forty は出だしが同じ。後ろに「ティ」がなく、短い「フォー」で終われば four。',
       use: 'When I was four, I lived in Osaka.（4歳のとき大阪に住んでいた）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'syrup', seg: [59.0, 64.3],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'syrup', seg: [59.0, 64.2],
       stem: 'What did Leslie find out that changed her mind?',
       ja: 'レスリーの考えを変えたのは、何を知ったこと？',
-      choices: ['Chocolate syrup exists', 'Cows come in many colors', 'Milk can go bad'], a: 0,
-      choicesJa: ['チョコレートシロップがある', '牛にはいろいろな色がいる', '牛乳はくさることがある'],
+      choices: ['You can add chocolate to milk', 'Cows come in many colors', 'Milk can go bad quickly'], a: 0,
+      choicesJa: ['牛乳にチョコを混ぜられる', '牛にはいろいろな色がいる', '牛乳はすぐくさる'],
       cue: '「when I found out」のあと',
       line: 'And then I flip-flopped when I found out that there was *something called chocolate syrup*.',
       said: '「チョコレートシロップというものがあると知って、考えを変えました」と言う。',
-      mean: 'find out ＝ （調べたり聞いたりして）知る。something called 〜 ＝ 〜というもの。考えが変わる例にしている。',
+      mean: 'find out ＝ 知る。something called 〜 ＝ 〜というもの。シロップを混ぜればチョコ牛乳になると知った。',
       trap: '直前の brown cows から、牛の色の話と考えがち。決め手は found out that のあと。',
       use: 'There’s something called “natto.” Have you tried it?（「納豆」っていうものがあるんだ。食べたことある？）' },
 
@@ -236,7 +236,7 @@ export const pumpJamm: Clip = {
       trap: 'utterly を「少し」と弱く取りやすい。強い言い方で、まったく意味がない。',
       use: 'That’s utterly ridiculous.（まったくばかげてる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'employee', reveals: ['hacked'], seg: [71.2, 76.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'employee', reveals: ['hacked'], seg: [71.2, 76.55],
       stem: 'Who do they need to hear from next?',
       ja: '次に話を聞くべきなのはだれ？',
       choices: ['The worker who posted it', 'The teenager behind it', 'The head of the Parks office'], a: 0,
@@ -248,7 +248,7 @@ export const pumpJamm: Clip = {
       trap: 'teenager は最初の説明に出た人。behind the tweet はうしろではなく「投稿した本人」。',
       use: 'We need to hear from the manager.（担当者の話を聞かないと）' },
 
-    { id: 'c3', skill: 'detail', level: 'B2', point: 'group', ctx: true, reveals: ['hacked'], seg: [75.1, 82.3],
+    { id: 'c3', skill: 'detail', level: 'B2', point: 'group', ctx: true, reveals: ['hacked'], seg: [75.0, 83.6],
       stem: 'What does the other councilman add about the employee?',
       ja: 'もう1人の議員は、その職員について何を付け足す？',
       choices: ['It could be a group', 'It could be Leslie', 'It could be a teenager'], a: 0,

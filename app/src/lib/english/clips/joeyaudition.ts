@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 5, new 0, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 5, new 0, ctx 5, tx 3, qa 18
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 3, new 1
 // “Joey Lands a Huge Broadway Audition | Friends” (the official Friends channel, Best of Season 9): the friends tell
 // Joey his agent got him an audition with Leonard Hayes and praise the star on flimsy grounds; later Joey explains why
@@ -14,7 +14,7 @@ export const joeyBroadwayAudition: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'believe', seg: [0, 4.3],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'believe', seg: [0, 4.0],
       stem: 'What does “You’re never gonna believe it!” show?', ja: '“You’re never gonna believe it!” から何が分かる？',
       choices: ['There is big news', 'Someone is lying', 'Someone is very angry'], a: 0,
       choicesJa: ['すごい知らせがある', '誰かがうそをついている', '誰かがすごく怒っている'],
@@ -36,7 +36,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: '最初の You got it!（決まった！）から、役が決まったと考えがち。決まったのは audition。',
       use: 'I got an interview!（面接が決まった！）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'theater', seg: [13.6, 21.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'theater', seg: [13.6, 21.35],
       stem: 'What is said about the theater this time?', ja: '今回の劇場について、何と言っている？',
       choices: ['A real theater this time', 'A little one under a deli', 'The same one as last time'], a: 0,
       choicesJa: ['今回は本物の劇場', 'デリの地下の小さい所', '前回と同じ所'],
@@ -57,10 +57,10 @@ export const joeyBroadwayAudition: Clip = {
       trap: 'that が小さく「ダ」ぐらいになり、落としやすい。3語と分かれば、最初の短い音を探す。',
       use: 'Not that little café, the big one.（あの小さいカフェじゃなくて、大きいほう）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'goodplay', ctx: true, seg: [19.5, 25.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'goodplay', ctx: true, seg: [17.0, 25.8],
       stem: 'Why does Joey think the play is good?', ja: 'ジョーイはなぜ、いい芝居だと思う？',
-      choices: ['He didn’t understand it', 'It is on Broadway', 'His agent said so'], a: 0,
-      choicesJa: ['自分には分からなかったから', 'ブロードウェイだから', 'エージェントがそう言ったから'],
+      choices: ['It was too hard for him', 'The show is on Broadway', 'His agent told him so'], a: 0,
+      choicesJa: ['難しくて分からなかったから', 'ブロードウェイの劇だから', 'エージェントがそう言ったから'],
       cue: '「because」のあと',
       line: 'Is it a good play? / Joey: Well, it must be, because I read it and I *didn’t understand a single word*.',
       said: '「いい劇なの？」に「きっとね。読んでも一言も分からなかったから」と答える。',
@@ -79,18 +79,18 @@ export const joeyBroadwayAudition: Clip = {
       trap: '「分からない」を台本への不満と聞きやすい。must be はほめる側の言葉。主語の I を追えば、ずっと自分の話。',
       use: 'So fancy I can’t even say it.（高級すぎて名前も言えない）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'goodplay', seg: [21.0, 25.6],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'goodplay', seg: [21.35, 25.6],
       stem: 'Fill the gap: “I ___ understand a single word.”', ja: '空所に入るのは？ “I ___ understand a single word.”',
-      choices: ['did', 'didn’t', 'don’t'], a: 1,
-      choicesJa: ['〜した', '〜しなかった', '（いつも）〜しない'],
+      choices: ['couldn’t', 'didn’t', 'don’t'], a: 1,
+      choicesJa: ['〜できなかった', '〜しなかった', '（いつも）〜しない'],
       cue: '「and I」のすぐあと',
       line: 'I read it and I *didn’t* understand a single word.',
       said: '「読んだけど、一言も分からなかった」と言う。',
-      mean: 'didn’t の t はほぼ消え、「ディドゥン」と短い。a single word（一語も）は not とセット。',
-      trap: 'did なら「ディッ」で止まる。don’t なら「ドウン」。「ディドゥン」と「ン」が残れば didn’t。',
+      mean: 'didn’t の t はほぼ消え、「ディドゥン」と短い。not 〜 a single word ＝ 一語も〜ない。',
+      trap: 'couldn’t なら最初が「ク」。don’t なら「ドウン」と伸びる。「ディドゥン」と聞こえれば didn’t。',
       use: 'I didn’t get a single word.（一言も分からなかった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'directing', seg: [25.0, 31.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'directing', seg: [25.0, 28.75],
       stem: 'Besides starring in the play, what else is Leonard Hayes doing?', ja: '主演のほかに、レナード・ヘイズは何をする？',
       choices: ['Directing it', 'Writing it', 'Producing it'], a: 0,
       choicesJa: ['演出する', '脚本を書く', 'プロデュースする'],
@@ -101,14 +101,14 @@ export const joeyBroadwayAudition: Clip = {
       trap: '劇の話なので、脚本（writing）と考えがち。and のあとの directing を聞く。',
       use: 'She wrote it, and she’s directing it.（脚本も演出も彼女）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [29.5, 35],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [28.7, 35],
       stem: 'What did the person praising Macbeth see?', ja: 'マクベスをほめた人は、何を見た？',
-      choices: ['Just the previews', 'The whole movie', 'The play on Broadway'], a: 0,
+      choices: ['Only the short trailer', 'The whole movie', 'The play on Broadway'], a: 0,
       choicesJa: ['予告編だけ', '映画を全部', 'ブロードウェイの劇'],
       cue: '「No, but」のあと',
       line: 'He was so good in that movie of Macbeth. / You saw that? / No, but I saw the *previews*.',
       said: '「見たの？」「ううん、でも予告編は見た」と答える。',
-      mean: 'previews ＝ 予告編。ほめた理由が予告編だけで、本編は見ていない。',
+      mean: 'previews ＝ 予告編（trailer とも言う）。ほめた理由が予告編だけで、本編は見ていない。',
       trap: 'saw（見た）から本編を見たと考えがち。最初の No が答えで、見たのは予告編だけ。',
       use: 'Haven’t seen it, but I saw the trailer.（見てないけど、予告は見た）' },
 
@@ -123,21 +123,21 @@ export const joeyBroadwayAudition: Clip = {
       trap: '直前の「予告編しか見ていない」話の続きに聞こえやすい。笑いは直前の例に付く。',
       use: 'Her best work? Probably that cereal ad.（代表作？たぶんあのシリアルのCM）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ads', seg: [40.6, 47.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ads', seg: [40.8, 47.8],
       stem: 'What did one friend love Leonard Hayes in?', ja: '友だちの一人は、レナード・ヘイズの何が大好きだった？',
-      choices: ['His cell phone commercials', 'His film of Macbeth', 'His early TV comedies'], a: 0,
+      choices: ['Some phone ads on TV', 'His film of Macbeth', 'His early TV comedies'], a: 0,
       choicesJa: ['携帯電話のCM', 'マクベスの映画', '昔のテレビのコメディ'],
       cue: '「I loved him in」のあと',
       line: 'I loved him in those *cell phone commercials*.',
       said: '「あの携帯電話のCMの彼、大好きだった」と言う。',
-      mean: 'commercial ＝ テレビのCM。I loved him in 〜 ＝ 〜に出ていた彼がよかった。',
+      mean: 'commercial ＝ テレビのCM（ad とも言う）。I loved him in 〜 ＝ 〜に出ていた彼がよかった。',
       trap: '猿のドタバタからコメディ番組を連想しやすい。猿はCMの中の話。',
       use: 'I loved her in that coffee ad.（あのコーヒーのCMの彼女、好きだった）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', ctx: true, seg: [46.5, 53.6],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', ctx: true, seg: [47.5, 53.6],
       stem: 'How does Joey take the joke about the monkey?', ja: '猿の冗談を、ジョーイはどう受け取る？',
-      choices: ['It makes him more nervous', 'It helps him relax', 'It makes him want it more'], a: 0,
-      choicesJa: ['もっと緊張する', '気が楽になる', 'もっとやりたくなる'],
+      choices: ['It worries him even more', 'It helps him relax', 'It makes him want it more'], a: 0,
+      choicesJa: ['もっと不安になる', '気が楽になる', 'もっとやりたくなる'],
       cue: '冗談への返事',
       line: 'Hey, maybe the monkey will be at the audition. / Joey: Don’t make me *more nervous than I already am*.',
       said: '「オーディションにその猿もいるかもよ」に、「これ以上緊張させないで」と返す。',
@@ -167,7 +167,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: '聞かないのを遠慮と取ると、気づかいの話に見える。No は「知っている」ではなく「驚かない」。理由の言い方が決め手。',
       use: 'Late again? That’s so you.（また遅刻？あなたらしいね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pee', reveals: ['callback'], seg: [66.0, 81.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pee', reveals: ['callback'], seg: [64.4, 80.55],
       stem: 'What is Joey’s reason for drinking so much?', ja: 'ジョーイがたくさん飲んでいる理由は？',
       choices: ['It helps him act better', 'His mouth was too dry', 'He is celebrating his news'], a: 0,
       choicesJa: ['演技がうまくなるから', '口がかわいていたから', 'いい知らせのお祝いだから'],
@@ -199,7 +199,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: 'callback と drinking が並ぶと、お祝いの乾杯に聞こえやすい。理由は so の前。',
       use: 'I got the job, so I’m buying dinner.（仕事が決まったから、夕食おごるよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'callback', seg: [72, 80.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'callback', seg: [72, 80.55],
       stem: 'What news does Joey give about his audition?', ja: 'オーディションについて、ジョーイはどんな知らせを言う？',
       choices: ['He has a second audition', 'His agent phoned again', 'He got the part'], a: 0,
       choicesJa: ['二次審査がある', 'エージェントからまた電話', '役をもらった'],
@@ -233,7 +233,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: '人の物を飲んだら謝るものなので、おわびだと思いやすい。最後の great を聞く。',
       use: 'That soup you made was great.（あのスープ、おいしかった）' },
 
-    { id: 'h2', skill: 'detail', level: 'B2', point: 'formula', ctx: true, reveals: ['eggnog'], seg: [76.3, 83],
+    { id: 'h2', skill: 'detail', level: 'B2', point: 'formula', ctx: true, reveals: ['eggnog'], seg: [76.7, 83],
       stem: 'What was the “eggnog” really?', ja: '「エッグノッグ」は本当は何だった？',
       choices: ['Baby milk', 'Spoiled milk', 'Medicine'], a: 0,
       choicesJa: ['赤ちゃんのミルク', '腐った牛乳', '薬'],
@@ -244,7 +244,7 @@ export const joeyBroadwayAudition: Clip = {
       trap: 'formula を「公式、調合」と取ると、薬と勘違いしやすい。台所の formula は粉ミルク。',
       use: 'We’re out of baby formula.（粉ミルクが切れてる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', seg: [80.8, 85.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', seg: [82.3, 85.8],
       stem: 'Fill the gap: “___ get more of that.”', ja: '空所に入るのは？ “___ get more of that.”',
       choices: ['We got to', 'We ought to', 'We want to'], a: 0,
       choicesJa: ['〜しなきゃ', '〜すべきだ', '〜したい'],

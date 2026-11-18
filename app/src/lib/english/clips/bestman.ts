@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 2, new 1, ctx 4, tx 9, qa 15
+// R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 2, new 1, ctx 4, tx 9, qa 16
 // A2 REVIEW 2026-11-17: keep 6, rewrite 14, retire 3, new 0
 // “I Thought You Were My Friend! | Parks and Recreation” (the official Parks and Recreation channel, Season 5): the
 // friends give Chris a "best man" award and act out a pretend bachelor party set in 2018; Andy's turn drifts into a
@@ -48,7 +48,7 @@ export const chrisBestMan: Clip = {
       mean: 'come in second ＝ 2位になる。close second ＝ 1位に近い2位。',
       trap: '賞をもらったので1位と思いやすい。これは話している人1人の票。but のあとを聞く。',
       use: 'We came in second place.（2位だったよ）' },
-    { id: 's1', skill: 'sound', level: 'B2', point: 'never', seg: [9.6, 17.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'never', seg: [9.6, 17.1], retired: true,
       stem: 'Which words do you hear: “Now, ___ married”?',
       ja: '「Now, ___ married」どれが聞こえる？',
       choices: ['you’ve never been', 'you’d never been', 'you were never'], a: 0,
@@ -271,7 +271,18 @@ export const chrisBestMan: Clip = {
       mean: 'would’ve loved ＝ 昔なら好きだった。value ＝ 大切にする。old と now をくらべている。',
       trap: 'health goddess（健康の女神）や、友だちの言う「趣味が同じ人」と考えがち。決め手は now のあと。',
       use: 'The old me would’ve said yes.（昔のぼくならイエスと言ってた）' },
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'forgive', seg: [98, 103],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'wouldve', reveals: ['oldchris'], seg: [81.55, 88.45],
+      stem: 'Which words do you hear: “The old Chris ___ this…”?',
+      ja: '「The old Chris ___ this…」どれが聞こえる？',
+      choices: ['would’ve loved', 'would love', 'could’ve loved'], a: 0,
+      choicesJa: ['（昔なら）大好きになっただろう', '（今なら）大好きになるだろう', '大好きになれたかもしれない'],
+      cue: '「the old Chris」のすぐあと',
+      line: 'You know, the old Chris *would’ve loved* this super-fit health goddess you guys are talking about',
+      said: '「昔のぼくなら、その健康の女神みたいな人に夢中だっただろうね」と言う。',
+      mean: 'would’ve loved ＝ 昔なら大好きだっただろう。have が「ヴ」だけになり「ウダヴ」と聞こえる。',
+      trap: 'would love なら「ヴ」も最後の d もない。could’ve なら最初が「ク」。決め手は「ウダヴ・ラヴドゥ」。',
+      use: 'I would’ve called, but my phone died.（電話したかったけど、スマホの電池が切れちゃって）' },
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'forgive', seg: [99.3, 103],
       stem: 'How does Andy respond to what Chris says?',
       ja: 'クリスの言葉に、アンディはどう反応する？',
       choices: ['Touched, and no longer angry', 'Touched, but still hurt', 'Hurt, and saying goodbye coldly'], a: 0,
