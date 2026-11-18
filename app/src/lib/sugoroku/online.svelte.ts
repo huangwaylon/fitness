@@ -17,7 +17,7 @@ import { hook } from '#lib/world/devHooks.ts';
 import { now } from '#lib/time/clock.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
-import { RULES, heard, invited, newGameId, otherRules, sameMove, seatsOf, type Heard, type Move } from './wire.ts';
+import { OUTBOX, RULES, answered, beaten, heard, invited, isMiniMove, newGameId, otherRules, queued, sameMove, seatsOf, toSend, type Heard, type Move, type Outbox } from './wire.ts';
 import { invite, readAnswered } from './invite.svelte.ts';
 import type { Words } from './words.ts';
 import type { Line } from './sentences.ts';
@@ -80,7 +80,7 @@ function hear(m: Relayed): void {
   if (m.kind === 'sgv') return void (m.g === online.cur.g && viewKey(m) !== viewKey(online.view) && (online.view = m));
   if (m.kind !== 'sg') return;
   const { kind: _k, v: _v, t, who, ...rest } = m as SgIntent & { v: number; t: number; who: Who };
-  const move: Move = { ...rest, who };
+  const move: Move = { ...rest, who, t };
   const cur = online.cur, at = Math.max(cur.at ?? 0, t);
   if (move.a === 'start' && move.g !== cur.g) {
     // a new game with me in it: mine now (the invitation, if it asks: the effect in listen); one started at once with
@@ -89,17 +89,26 @@ function hear(m: Relayed): void {
     const mineJust = cur.log.length === 1 && cur.log[0].who === me() && Math.abs(t - (cur.at ?? 0)) < START_RACE_MS;
     if (mineJust && move.g > cur.g) return;
     keep({ g: move.g, log: [move], held: [], at: t });
+    outbox = OUTBOX;
     if (otherRules([move])) warn('version', 0);
     return;
   }
   // (another game's move: the room replays a game in order, its start first)
   if (move.g !== cur.g) return;
+  // (another's at the place of my mini-game move in flight: mine lost the race, it goes again at the new end)
+  if (who !== me() && outbox.q[0]?.at === move.i) outbox = beaten(outbox, move.i);
   take(cur, heard(cur.log, cur.held, move, me()), at);
+  pump();
 }
 
-/** My move the room refused (a race lost: what won, it sends me; else it goes from my log, those after it too). */
+/** My move the room refused (a race lost: what won, it sends me; else it goes from my log, those after it too); a
+ *  mini-game's in flight answered either way (the next one goes, or it again). */
 function refused(i: Intent, ok: boolean): void {
   if (!ok) unsend(i, 'refused');
+  if (i.kind === 'sg' && i.g === untrack(() => online.cur.g) && isMiniMove(i)) {
+    outbox = answered(outbox, i.i, ok);
+    pump();
+  }
 }
 /** My move the outbox gave up on (no ack: sync/live.ts onDrop): out of my log as a refused one, so the turn can be
  *  played again (had the room taken it, the next hello's replay brings it back: the hello's `sg`). */
@@ -109,6 +118,11 @@ function unsend(i: Intent, why: 'refused' | 'drop'): void {
   if (i.g !== cur.g) return;
   warn(why, i.i, cur.held.length);
   if (cur.log[i.i] && sameMove(cur.log[i.i], mine)) keep({ ...cur, log: cur.log.slice(0, i.i) });
+  // (a mini-game's given up on by the outbox: never sent again, the room may have it; the next goes)
+  if (why === 'drop' && isMiniMove(i) && outbox.q[0]?.at === i.i) {
+    outbox = { ...outbox, q: outbox.q.slice(1) };
+    pump();
+  }
 }
 
 // the invitation's fold (is the game over?): the rules, words and lines, asked for only when one may ask
@@ -177,23 +191,46 @@ export function startOnline(seats: string, l: 's' | 'n' | 'l'): void {
   const g = hook('sgId') || newGameId(untrack(() => online.cur.g));
   const move: Move = { g, i: 0, a: 'start', s: seats, l, r: RULES, who: me() };
   keep({ g, log: [move], held: [], at: clock() });
+  outbox = OUTBOX;
   send(move);
 }
 
+/** My mini-game moves not yet taken (wire.ts Outbox: one in flight, a race lost sent again at the new end); with a
+ *  relay that answers (acks), else each goes at once as any move (the demo's tabs). */
+let outbox: Outbox = OUTBOX;
+
 /** One move of mine in the online game (its index the next one): none while a move is missing here (the game moved on
- *  without this phone: it waits for it), after the end, or in a game of other rules. */
+ *  without this phone: it waits for it), after the end, or in a game of other rules. A mini-game's (`mp`, `mc`) waits
+ *  its turn in the outbox, sent at the log's end then. */
 export function sendMove(m: Omit<Move, 'g' | 'i' | 'who'>): void {
   const cur = untrack(() => online.cur);
   if (!cur.g || otherRules(cur.log)) return;
-  const move = { ...m, g: cur.g, i: cur.log.length, who: me() } as Move;
+  if (isMiniMove(m) && relay?.onAck) {
+    outbox = queued(outbox, m);
+    return pump();
+  }
+  const move = { ...m, g: cur.g, i: cur.log.length, who: me(), t: clock() } as Move;
   if (cur.held.length) return warn('wait', move.i, cur.held.length);
+  put(cur, move);
+}
+/** A move of mine at the log's end: kept (in my log at once) and sent. */
+function put(cur: Kept, move: Move): void {
   const h = heard(cur.log, [], move, me());
   if (!h) return;
   keep({ ...cur, log: h.log, at: clock() });
   send(move);
 }
+/** The outbox's next, if it may go now. */
+function pump(): void {
+  const cur = untrack(() => online.cur);
+  const next = cur.g ? toSend(outbox, cur.log, cur.held) : null;
+  if (!next) return;
+  const m = next.o.q[0].m;
+  outbox = next.o;
+  put(cur, { ...m, g: cur.g, i: next.i, who: me(), t: clock() } as Move);
+}
 
-function send({ who: _w, ...m }: Move): void {
+function send({ who: _w, t: _t, ...m }: Move): void {
   relay?.send({ kind: 'sg', ...m } as SgIntent);
 }
 

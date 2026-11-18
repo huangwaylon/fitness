@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CLASSIC, routesFrom, waysAt } from './board.ts';
 import { FAMILIES, STEPS, boardOf, familyOf, familyOfKey, generate, layoutKey, problems } from './layout.ts';
-import { GEN } from './family.ts';
+import { GEN, GENS, genOfKey } from './family.ts';
 import { fnv1a } from '#lib/random.ts';
 
 /** Pinned seeds: the generator's rules over many boards. */
@@ -20,15 +20,22 @@ describe('layouts', () => {
     expect(boardOf(layoutKey('t1'))).toBe(boardOf(layoutKey('t1')));
     expect(boardOf()).toBe(CLASSIC);
     expect(boardOf('9:t1')).toBeNull();
+    expect(boardOf('0:t1')).toBeNull();
+    expect([genOfKey('1:t1'), genOfKey('2:t1'), genOfKey('3:t1'), genOfKey('t1')]).toEqual([1, 2, null, null]);
     expect(boardOf('t1')).toBeNull();
     expect(familyOfKey(layoutKey('t1'))).toBe(familyOf('t1'));
     expect(familyOfKey(undefined)).toBeNull();
   });
   it('a change to the generator bumps GEN: a few pinned seeds’ boards, hashed, pinned to it', () => {
     // (another phone on the same GEN builds the board from the same seed: a change without the bump splits a game)
-    const GOLDEN: Record<number, string> = { 1: '1qmjkf8' };
-    const hash = fnv1a(JSON.stringify(['a1', 'b2', 'c3', 'd4', 'e5', 'f6'].map((s) => generate(s)))).toString(36);
-    expect(hash, `bump GEN in family.ts (and wire.ts RULES) and pin '${hash}' to it`).toBe(GOLDEN[GEN]);
+    // (each version this build builds: 1 as it was, 2 with みんなで！ stones; new boards GEN's, 1 till mini-games are on)
+    const GOLDEN: Record<number, string> = { 1: '1qmjkf8', 2: '1ghnty3' };
+    for (const gen of GENS) {
+      const hash = fnv1a(JSON.stringify(['a1', 'b2', 'c3', 'd4', 'e5', 'f6'].map((s) => generate(s, layoutKey(s, gen))))).toString(36);
+      expect(hash, `bump GEN in family.ts (and wire.ts RULES) and pin '${hash}' to it`).toBe(GOLDEN[gen]);
+    }
+    expect(GEN).toBe(1);
+    expect(layoutKey('a1')).toBe('1:a1');
   });
   it('every route from ふりだし reaches あがり in the band of steps, about as long as the others', () => {
     for (const b of boards) {
@@ -73,5 +80,47 @@ describe('layouts', () => {
     const [short, long] = waysAt(CLASSIC, CLASSIC.forks[0]);
     expect([short.area, short.steps, long.area, long.steps]).toEqual(['river', 5, 'museum', 8]);
     expect(long.kinds.picture).toBe(2);
+  });
+});
+
+describe('layouts with みんなで！ stones (GEN 2)', () => {
+  const minis = SEEDS.map((s) => boardOf(layoutKey(s, 2))!);
+  it('every seed builds a board that keeps every rule; the same stones as GEN 1’s rules but for the みんなで！', () => {
+    for (const b of minis) {
+      expect(b.family, b.key).not.toBe('classic');
+      expect(problems(b), b.key).toEqual([]);
+    }
+    // GEN 1's boards never hold one (and one there is a broken rule)
+    for (const b of boards) expect(b.spaces.some((s) => s.mini), b.key).toBe(false);
+    const b0 = minis[0], i = b0.spaces.findIndex((s) => s.mini);
+    expect(problems({ ...b0, key: layoutKey('t0', 1) })).toContain('a みんなで！ on a GEN 1 board');
+    expect(i).toBeGreaterThan(0);
+  });
+  it('every route 2–3 of them, 6 apart, none in its first 5 steps or last 3; a ことば underneath, never a fork or a join', () => {
+    const per = new Set<number>();
+    for (const b of minis) {
+      for (const r of routesFrom(b)) {
+        const at = r.map((j, n) => (b.spaces[j].mini ? n : -1)).filter((n) => n >= 0);
+        per.add(at.length);
+        expect(at.length, b.key).toBeGreaterThanOrEqual(2);
+        expect(at.length, b.key).toBeLessThanOrEqual(3);
+        for (let k = 1; k < at.length; k++) expect(at[k] - at[k - 1], b.key).toBeGreaterThanOrEqual(6);
+        expect(at[0], b.key).toBeGreaterThan(5);
+        expect(r.length - 1 - at.at(-1)!, b.key).toBeGreaterThan(3);
+      }
+      const into = b.spaces.map(() => 0);
+      b.spaces.forEach((s) => s.next.forEach((j) => into[j]++));
+      for (const [j, s] of b.spaces.entries()) if (s.mini) {
+        expect(s.kind).toBe('word');
+        expect(s.next.length === 1 && into[j] === 1, `${b.key} ${j}`).toBe(true);
+      }
+    }
+    expect([...per].sort()).toEqual([2, 3]);
+  });
+  it('the rest as GEN 1’s: families, forks, steps, a fork’s ways counting them', () => {
+    expect(new Set(minis.map((b) => b.family)).size).toBe(FAMILIES.length);
+    for (const b of minis) for (const r of routesFrom(b)) expect(r.length - 1).toBeGreaterThanOrEqual(STEPS[0]);
+    const counted = minis.flatMap((b) => b.forks.flatMap((f) => waysAt(b, f))).filter((w) => w.kinds.mini);
+    expect(counted.length).toBeGreaterThan(0);
   });
 });

@@ -8,6 +8,8 @@ import { boardOf } from './layout.ts';
 import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
 import { PICTURES, PICTURE_STARS, TIERS, tierOf } from './pictures.ts';
+import { isMiniId, miniOptions, type MiniId } from './mini/registry.ts';
+import type { MiniState } from './mini/games.ts';
 
 /** A seat's English: 1 やさしい, 2 ふつう, 3 むずかしい (what its spaces ask, not what they pay: the table stays even). */
 export type Level = 1 | 2 | 3;
@@ -48,7 +50,12 @@ interface Made {
   /** Its Japanese, when we have it. */
   ja: string;
   stars: number;
+  /** Made in a mini-game (mini/). */
+  mini?: MiniId;
 }
+/** A みんなで！ stone's mini-game picked (mini/turn.ts): its id and state, the seats present at the open (only they are
+ *  dealt in), and, passed round, when it opened (this phone's clock: online it's the `mg`'s stamp, never the fold's). */
+export type MiniOn = MiniState & { here: Who[]; at?: number };
 /** A turn's English so far (kept in the save, so a sheet closed mid-turn resumes it as it was). */
 interface Tries {
   misses?: number;
@@ -69,12 +76,14 @@ type Phase =
   /** `item`: PICTURES' index (none collected yet in this game). */
   | ({ k: 'picture'; item: number; spun: number; r: number } & Tries)
   | { k: 'event'; card: number; spun: number }
+  /** A みんなで！ stone: the two mini-games the lander picks between, then the one picked (`on`). */
+  | { k: 'mini'; spun: number; opts: readonly [MiniId, MiniId]; on?: MiniOn }
   | { k: 'home'; spun: number; place: number }
   | { k: 'end' };
 
 /** The save's shape; CONTENT: the board's, cards' and pictures' build, hashed (a save from another reads as none:
  *  save.ts; the lines are picked afresh by the phase's `r`). */
-const V = 6;
+const V = 7;
 // (the structure only: a copy fix or a stone moved on the drawing never drops a game in play; a game's own board is its
 // `layout`, versioned by layout.ts's key)
 const CONTENT = fnv1a(JSON.stringify([CLASSIC.spaces.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
@@ -101,6 +110,9 @@ export interface Game {
   cards: number[];
   /** The letter stones still holding a letter: stone → its letter (picked up by whoever walks over it first). */
   letters: Record<number, string>;
+  /** The みんなで！ stones played (each then a ことば for the rest of the game), their mini-games and stars; none yet:
+   *  absent (a board without them, a game from before them). */
+  minis?: { stone: number; id: MiniId; stars: Partial<Record<Who, number>> }[];
 }
 
 export const MIN_PLAYERS = 2;
@@ -149,7 +161,7 @@ export function newGame(seats: readonly Seat[], seed: string, length: Length = '
     return { ...s, pos: 0, stars: 0, rack: f.rack, home: null, ways: {}, pocket: [], forced: null };
   });
   // the letter stones: LETTER_STONES of the ことば stones, each a letter
-  const words = board.spaces.map((b, i) => ({ b, i })).filter(({ b }) => b.kind === 'word' || b.kind === 'double').map(({ i }) => i);
+  const words = board.spaces.map((b, i) => ({ b, i })).filter(({ b }) => (b.kind === 'word' || b.kind === 'double') && !b.mini).map(({ i }) => i);
   const letters: Record<number, string> = {};
   for (let k = 0; k < LETTER_STONES && words.length; k++) {
     const i = words.splice(Math.floor(r() * words.length), 1)[0];
@@ -220,9 +232,11 @@ function walk(g: Game, spun: number, left: number, r: () => number, card = false
 
 function land(g: Game, spun: number, r: () => number, card = false): Game {
   const me = g.players[g.turn];
-  const kind = boardFor(g).spaces[me.pos].kind;
+  const sp = boardFor(g).spaces[me.pos], kind = sp.kind;
   // a card's move ending on an イベント: no second card, a ことば instead
   if (card && kind === 'event') return { ...g, phase: { k: 'word', mult: 1, spun, rested: true } };
+  // a みんなで！ not played yet: the lander picks a mini-game (played: its ことば)
+  if (sp.mini && !g.minis?.some((m) => m.stone === me.pos)) return { ...g, phase: { k: 'mini', spun, opts: miniOptions((g.minis ?? []).map((m) => m.id), r) } };
   if (kind === 'goal') {
     const place = g.players.filter((p) => p.home !== null).length;
     me.home = place;
@@ -391,7 +405,7 @@ export const homeDone = (g: Game): Game => (g.phase.k === 'home' ? next({ ...g, 
 
 /** The next seat on the way. The game ends with the round someone got home in (every seat the same number of turns;
  *  ながい: once everyone's home), after the length's last round, or once everyone's home. */
-function next(g: Game): Game {
+export function next(g: Game): Game {
   const players = g.players.map((p) => ({ ...p }));
   const end = { ...g, players, phase: { k: 'end' } as const };
   if (players.every((p) => p.home !== null)) return end;
@@ -422,14 +436,17 @@ export function isGame(x: unknown): x is Game {
     && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards) && typeof g.letters === 'object' && !!g.letters
     && g.players.every((p) => (p.who === 'A' || p.who === 'B' || p.who === 'G') && Array.isArray(p.rack) && Array.isArray(p.pocket) && typeof p.pos === 'number' && p.pos >= 0
       && p.pos <= b.goal && p.level >= 1 && p.level <= 3 && !!p.ways && typeof p.ways === 'object' && Object.keys(p.ways).every((f) => b.forks.includes(Number(f))))
-    && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item]);
+    && (g.phase.k !== 'event' || !!CARDS[g.phase.card]) && (g.phase.k !== 'picture' || !!PICTURES[g.phase.item])
+    && (g.minis === undefined || (Array.isArray(g.minis) && g.minis.every((m) => isMiniId(m?.id))))
+    && (g.phase.k !== 'mini' || (Array.isArray(g.phase.opts) && g.phase.opts.length === 2 && g.phase.opts.every(isMiniId)
+      && (!g.phase.on || (g.phase.opts.includes(g.phase.on.id) && Array.isArray(g.phase.on.here) && !!g.phase.on.s && typeof g.phase.on.s === 'object'))));
 }
 
 /** A saved game this build can play, or null; a save from before layouts (the classic board, one fork's `branch`)
- *  read as the ways it took. */
+ *  read as the ways it took; one from before mini-games (v6: no `minis`, no `mini` phase) as this shape's. */
 export function revive(x: unknown): Game | null {
   type Old = Omit<Player, 'ways'> & { ways?: Ways; branch?: number | null };
-  const g = x as Omit<Game, 'players'> & { players?: Old[] };
+  const g = (x && typeof x === 'object' && (x as { v?: unknown }).v === 6 ? { ...x, v: V } : x) as Omit<Game, 'players'> & { players?: Old[] };
   if (g && typeof g === 'object' && !g.layout && Array.isArray(g.players))
     g.players = g.players.map(({ branch, ...p }) => (p.ways ? p : { ...p, ways: branch === 0 || branch === 1 ? { [CLASSIC.forks[0]]: branch } : {} }));
   return isGame(g) ? g : null;

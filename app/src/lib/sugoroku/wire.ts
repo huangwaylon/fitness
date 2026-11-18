@@ -3,18 +3,26 @@
 // game, or an invitation's check.
 import type { SgIntent } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
-import { familyOf } from './family.ts';
+import { familyOf, type Gen } from './family.ts';
 import type { Level } from './game.ts';
+import { MINIS } from './mini/flag.ts';
 
-/** A move as kept: the wire's fields and who sent it. */
-export type Move = Omit<SgIntent, 'kind'> & { who: Who };
+/** A move as kept: the wire's fields, who sent it, and the room's stamp (`t`: a mini-game's clock, mini/clock.ts; my
+ *  own, the relay's clock as this phone has it), never the fold's, nor in what makes two moves the same. */
+export type Move = Omit<SgIntent, 'kind'> & { who: Who; t?: number };
 
-/** The rules' version, on every start (`r`): a phone on another folds nothing and asks for the app's update
- *  (otherRules). Bump it with any change to what a fold makes of the moves: game.ts's rules or save shape, the cards,
- *  the pictures, the board generator (family.ts GEN), the word or line lists (online.test's pin fails until it is). */
-export const RULES = '1';
-/** Whether the game held was started on another build's rules (or before they were sent): it can't be played here. */
-export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && log[0].r !== RULES;
+/** The rules' version, on every start (`r`): a phone on one it doesn't play folds nothing and asks for the app's
+ *  update (otherRules). Bump it with any change to what a fold makes of the moves: game.ts's rules, the cards, the
+ *  pictures, the board generator (family.ts GEN), the word or line lists (online.test's pins fail until it is). '1' the
+ *  games before mini-games (GEN 1 boards), '2' with them (GEN 2: みんなで！ stones), started once they're on
+ *  (mini/flag.ts); a game keeps the rules it started on, so an older one plays on as it was. */
+export const RULES = MINIS ? '2' : '1';
+/** The rules this build folds, and each one's board generator. */
+const PLAYS: readonly string[] = MINIS ? ['1', '2'] : ['1'];
+export const genOfRules = (r: string | undefined): Gen => (r === '2' ? 2 : 1);
+export const playsRules = (r: string | undefined): boolean => r !== undefined && PLAYS.includes(r);
+/** Whether the game held was started on rules this build doesn't play (or before they were sent): it can't be played here. */
+export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && !playsRules(log[0].r);
 
 /** An online game's id is its board's layout seed (an older 6–8 letter id: the classic board). */
 export const ID_LEN = 10;
@@ -31,8 +39,8 @@ export const seatsOf = (s: string): { who: Who; level: Level }[] =>
   (s.match(/[ABG][123]/g) ?? []).map((x) => ({ who: x[0] as Who, level: Number(x[1]) as Level }));
 export const seatsCode = (seats: readonly { who: Who; level: Level }[]): string => seats.map((x) => `${x.who}${x.level}`).join('');
 
-/** Two moves the same (their fields in any order). */
-const key = (m: Move) => JSON.stringify(Object.entries(m).sort(([a], [b]) => (a < b ? -1 : 1)));
+/** Two moves the same (their fields in any order, the stamp aside). */
+const key = ({ t: _t, ...m }: Move) => JSON.stringify(Object.entries(m).sort(([a], [b]) => (a < b ? -1 : 1)));
 export const sameMove = (a: Move, b: Move): boolean => key(a) === key(b);
 
 /** What hearing a move did: `clash` a move of mine gave way (the room's at its place, an end before it), `gap` it came
@@ -89,3 +97,36 @@ export function invited(o: { log: readonly Move[]; me: Who | null; at: number; n
   if (o.over || o.log.some((m) => m.a === 'end')) return false;
   return o.now - o.at <= INVITE_STALE_MS;
 }
+
+/** A mini-game's moves: plays and the close, from any seat (online.ts), racing for the next `i`. */
+export const isMiniMove = (m: Pick<Move, 'a'>): boolean => m.a === 'mp' || m.a === 'mc';
+/** When the mini-game on opened: the last pick's (`mg`) stamp (the sheet's clock: mini/clock.ts miniTimes). */
+export const miniOpenedAt = (log: readonly Move[]): number | undefined => log.findLast((m) => m.a === 'mg')?.t;
+
+/**
+ * My mini-game moves not yet taken by the room (online.svelte.ts), one in flight at a time: the room takes the first of
+ * each `i`, so two of mine sent at once could have the later taken and the earlier refused (my log no longer the
+ * room's). The first sent at the log's end (`at`); the rest wait. One that lost its race (another phone's heard at its
+ * `i`, or the room's refusal) goes again at the new end, once the log is past where it lost (`after`: the winner in),
+ * MINI_TRIES times at most; none while a gap is held. Taken (its ack), the next goes.
+ */
+export interface Outbox { q: { m: Omit<Move, 'g' | 'i' | 'who' | 't'>; at: number | null; tries: number }[]; after: number }
+export const OUTBOX: Outbox = { q: [], after: -1 };
+const MINI_TRIES = 32;
+export const queued = (o: Outbox, m: Outbox['q'][number]['m']): Outbox => ({ ...o, q: [...o.q, { m, at: null, tries: 0 }] });
+/** The next to send now, its `i` (the log's end), or null (one in flight, a gap held, the winner not in yet). */
+export function toSend(o: Outbox, log: readonly Move[], held: readonly Move[]): { o: Outbox; i: number } | null {
+  const head = o.q[0];
+  if (!head || head.at !== null || held.length || log.length <= o.after || log.at(-1)?.a === 'end') return null;
+  return { o: { ...o, q: [{ ...head, at: log.length }, ...o.q.slice(1)] }, i: log.length };
+}
+/** The room's answer for the one in flight at `i` (another's: nothing): taken, the next may go; refused, again after
+ *  the winner (or given up after MINI_TRIES). */
+export function answered(o: Outbox, i: number, ok: boolean): Outbox {
+  const head = o.q[0];
+  if (!head || head.at !== i) return o;
+  if (ok || head.tries + 1 >= MINI_TRIES) return { ...o, q: o.q.slice(1) };
+  return { q: [{ ...head, at: null, tries: head.tries + 1 }, ...o.q.slice(1)], after: Math.max(o.after, i) };
+}
+/** Another phone's move heard at `i`: the one in flight there lost (the room took theirs), it goes again. */
+export const beaten = (o: Outbox, i: number): Outbox => answered(o, i, false);

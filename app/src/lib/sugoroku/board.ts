@@ -8,6 +8,8 @@ export type SpaceKind = 'start' | 'word' | 'double' | 'sentence' | 'picture' | '
 export type AreaId = 'home' | 'plaza' | 'river' | 'museum' | 'shop' | 'airport' | 'beach' | 'forest' | 'hill' | 'station' | 'park';
 export interface Space {
   kind: SpaceKind;
+  /** A みんなで！ stone (a mini-game: mini/): its `kind` the ことば it plays as once played (game.ts minis). */
+  mini?: true;
   /** The stretch of the route it's on (its sign on the board). */
   area: AreaId;
   x: number;
@@ -15,6 +17,9 @@ export interface Space {
   /** The spaces after it: one, or two at a fork. */
   next: number[];
 }
+/** A stone's kind as the board's rules count it: a みんなで！ stone its own. */
+export type StoneKind = SpaceKind | 'mini';
+export const stoneKind = (s: Pick<Space, 'kind' | 'mini'>): StoneKind => (s.mini ? 'mini' : s.kind);
 /** The way taken at each fork passed (fork space → 0 or 1: its `next` index). */
 export type Ways = Readonly<Record<number, number>>;
 export interface Board {
@@ -188,7 +193,7 @@ export function routesFrom(b: Board, i = 0): number[][] {
 
 /** A fork's two ways as its sign reads: the area each goes into, its steps to where they meet again (the first space
  *  both reach; the way's later forks taken as 0), and the kinds on the way (the meeting space left out). */
-export function waysAt(b: Board, fork: number): { area: AreaId; steps: number; kinds: Partial<Record<SpaceKind, number>> }[] {
+export function waysAt(b: Board, fork: number): { area: AreaId; steps: number; kinds: Partial<Record<StoneKind, number>> }[] {
   const next = b.spaces[fork].next;
   const walk = (j: number) => {
     const out = [j];
@@ -199,8 +204,8 @@ export function waysAt(b: Board, fork: number): { area: AreaId; steps: number; k
   const meet = a.find((x) => c.includes(x)) ?? b.goal;
   return [a, c].map((path) => {
     const on = path.slice(0, path.indexOf(meet));
-    const kinds: Partial<Record<SpaceKind, number>> = {};
-    for (const k of on) kinds[b.spaces[k].kind] = (kinds[b.spaces[k].kind] ?? 0) + 1;
+    const kinds: Partial<Record<StoneKind, number>> = {};
+    for (const k of on) kinds[stoneKind(b.spaces[k])] = (kinds[stoneKind(b.spaces[k])] ?? 0) + 1;
     return { area: b.spaces[path[0]].area, steps: on.length + 1, kinds };
   });
 }

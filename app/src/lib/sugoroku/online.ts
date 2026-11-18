@@ -8,15 +8,17 @@ import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, 
 import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
 import { layoutKey } from './family.ts';
-import { ID_LEN, RULES, seatsOf, type Move } from './wire.ts';
+import { ID_LEN, genOfRules, playsRules, seatsOf, type Move } from './wire.ts';
+import { closeMini, openMini, playMini } from './mini/turn.ts';
 
 export { seatsCode, type Move } from './wire.ts';
 
 const LENGTH: Record<'s' | 'n' | 'l', Length> = { s: 'short', n: 'normal', l: 'long' };
 export const lengthCode = (l: Length): 's' | 'n' | 'l' => (l === 'short' ? 's' : l === 'long' ? 'l' : 'n');
 
-/** An online game's board: its id is the layout seed; an id from before layouts (6–8 letters) plays the classic. */
-const layoutOfId = (g: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g) : undefined);
+/** An online game's board: its id is the layout seed, built by its rules' generator (wire.ts genOfRules); an id from
+ *  before layouts (6–8 letters) plays the classic. */
+const layoutOfId = (g: string, r?: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g, genOfRules(r)) : undefined);
 
 /** The line a ぶん stone gives this seat (the same pick on every phone: its phase's `r`). */
 function lineFor(g: Game, lines: readonly Line[]) {
@@ -29,12 +31,17 @@ function lineFor(g: Game, lines: readonly Line[]) {
 export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; name: (w: Who) => string }): Game | null {
   if (m.a === 'start') {
     // (a start on another build's rules: nothing here, wire.ts otherRules)
-    if (g || !m.s || m.r !== RULES) return g;
+    if (g || !m.s || !playsRules(m.r)) return g;
     const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
-    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g));
+    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g, m.r));
   }
   if (!g) return null;
   if (m.a === 'end') return g.players.some((p) => p.who === m.who) ? finish(g) : g;
+  // a mini-game's plays and close: from anyone at the table (mini/turn.ts: a seat not dealt in, nothing)
+  if (m.a === 'mp' || m.a === 'mc') {
+    if (!g.players.some((p) => p.who === m.who)) return g;
+    return m.a === 'mc' ? closeMini(g) : playMini(g, m.who, { ...(m.w !== undefined ? { w: m.w } : {}), ...(m.k !== undefined ? { k: m.k } : {}), ...(m.n !== undefined ? { n: m.n } : {}), ...(m.y ? { y: 1 as const } : {}), ...(m.op !== undefined ? { op: m.op } : {}) }, ctx);
+  }
   // everything else: only from whose turn it is
   if (g.players[g.turn].who !== m.who) return g;
   switch (m.a) {
@@ -56,6 +63,7 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
     case 'pic': return pictureDone(g, m.m ?? 0, m.y ?? 0);
     case 'ev': return eventDone(g);
     case 'home': return homeDone(g);
+    case 'mg': return openMini(g, m.b ?? 0, m.s ? (m.s.match(/[ABG]/g) as Who[]) : null, ctx);
     case 'try': return tried(g, { ...(m.m !== undefined ? { misses: m.m } : {}), ...(m.h ? { hinted: true } : {}), ...(m.p ? { peeked: true } : {}) });
   }
   return g;
