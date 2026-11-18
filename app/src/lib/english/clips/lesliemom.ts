@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 4, new 7, ctx 7, tx 25
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 4, new 7, ctx 7, tx 25, qa 22
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 6, new 0
 // “Leslie Wants Her Mom's Approval So Bad | Parks and Recreation” (the official Parks and Recreation channel, Season 1):
 // Leslie fishes for her mother's interest in her first town hall meeting and is turned down; Tom works the contractors,
@@ -16,7 +16,7 @@ export const leslieMom: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'inout', ctx: true, seg: [14.7, 21.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'inout', ctx: true, seg: [14.7, 21.45],
       stem: 'What does Leslie choose to do?',
       ja: 'レスリーはどうすることにする？',
       choices: ['Come into the room', 'Leave the room', 'Wait at the door'], a: 0,
@@ -63,7 +63,7 @@ export const leslieMom: Clip = {
       trap: 'v が聞こえないと you heard と思いやすい。you’ll なら「ユール」と伸び、hear に d がない。',
       use: 'You’ve heard about the delay, right?（遅れの件、聞いてるよね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [39.5, 47.2],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'anyway', seg: [39.5, 46.9],
       stem: 'What does Leslie do after “Anyway”?',
       ja: '「Anyway」のあと、レスリーはどうする？',
       choices: ['Says what she came to say', 'Says goodbye and leaves now', 'Thanks her mother'], a: 0,
@@ -75,7 +75,7 @@ export const leslieMom: Clip = {
       trap: '「とにかく」と訳すと話を終える感じがする。anyway のあとに本題が来ることが多い。',
       use: 'Anyway, the meeting is tomorrow.（それはそうと、会議は明日です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [41.1, 47.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [41.1, 46.9], keep: true,
       stem: 'What time is the town hall meeting?',
       ja: '集会は何時から？',
       choices: ['11 a.m.', '7 a.m.', '6 p.m.', '7 p.m.'], a: 3,
@@ -110,7 +110,7 @@ export const leslieMom: Clip = {
       trap: 'すぐあとの big deal（大事なこと）に引っぱられやすい。言い直す前の no biggie は「大したことない」。',
       use: 'It’s no biggie. Don’t worry.（大したことないよ、気にしないで）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B1', point: 'busy', reveals: ['invite'], ctx: true, seg: [54.3, 60.6],
+    { id: 'r2', skill: 'pragma', level: 'B1', point: 'busy', reveals: ['invite'], ctx: true, seg: [54.2, 60.3],
       stem: 'What does Leslie’s mom answer?',
       ja: 'レスリーのお母さんは何と答える？',
       choices: ['She has no time', 'It’s too late to ask', 'Of course she’ll come'], a: 0,
@@ -122,7 +122,7 @@ export const leslieMom: Clip = {
       trap: 'honey はやさしい呼び方なので、いい返事に聞こえるが、そのあとの busy が答え。',
       use: 'Sorry, you know how busy I am.（ごめん、忙しいの知ってるでしょ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'tom', seg: [67.7, 82],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'tom', seg: [66.7, 82],
       stem: 'Why does Tom praise the fences?',
       ja: 'トムはなぜその人のフェンスをほめる？',
       choices: ['To please the fence builder', 'To thank him for past work', 'To laugh at his fences'], a: 0,
@@ -134,7 +134,7 @@ export const leslieMom: Clip = {
       trap: 'awesome を皮肉と考えがち。前の top priority で、本気で持ち上げていると分かる。',
       use: 'I’ve heard great things about your work.（お仕事の評判、聞いてます）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B2', point: 'gun', seg: [81.9, 90.3],
+    { id: 'h1', skill: 'phrase', level: 'B2', point: 'gun', seg: [81.9, 89.85],
       stem: 'What does “jumping the gun” mean here?',
       ja: '「jumping the gun」はここでどういう意味？',
       choices: ['Moving too soon', 'Spending too much', 'Talking too loudly'], a: 0,
@@ -146,7 +146,7 @@ export const leslieMom: Clip = {
       trap: 'gun（銃）と Boom で、けんかの話を連想しやすい。このあと「銃と自分」をおどけて演じるだけ。',
       use: 'Let’s not jump the gun.（先走るのはやめよう）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nail', seg: [103.8, 109.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'nail', seg: [103.8, 108.4],
       stem: 'What does “nail this” mean?',
       ja: '「nail this」はどういう意味？',
       choices: ['Do this very well', 'Finish this quickly', 'Fix this with tools'], a: 0,
@@ -158,7 +158,7 @@ export const leslieMom: Clip = {
       trap: 'nail（くぎ）から、道具で直す話と勘違いしやすい。集会の直前の励ましの言葉。',
       use: 'You’re going to nail it!（きっとうまくいくよ！）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'stage', ctx: true, seg: [118.4, 125.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'stage', ctx: true, seg: [118.4, 125.15],
       stem: 'Why is Leslie worried about tonight?',
       ja: 'レスリーはなぜ今夜のことが心配？',
       choices: ['She hasn’t done this often', 'Andy couldn’t come tonight', 'She doesn’t know the park'], a: 0,
@@ -194,7 +194,7 @@ export const leslieMom: Clip = {
       trap: 'call on you を「最初に当てる」と思いやすい。頼みは if のあと。',
       use: 'If things get bad, help me out.（まずくなったら助けて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'callon', seg: [129.3, 137.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'callon', seg: [129.3, 137.0],
       stem: 'Type what Leslie says: “I’m ___ you.” (3 words)', answer: 'gonna call on',
       ja: 'レスリーの言葉を書き取る：「I’m ___ you.」（3語）',
       cue: 'negative のあと、つながった3語。',
@@ -215,7 +215,7 @@ export const leslieMom: Clip = {
       trap: 'sell を「売る」、crap を「悪いところ」と取りやすい。ひとまとまりで「思いきり」。',
       use: 'You need to sell yourself in interviews.（面接では自分を売り込まないと）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'probably', ctx: true, seg: [136.0, 145.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'probably', ctx: true, seg: [136.0, 144.9],
       stem: 'How does April answer Leslie?',
       ja: 'エイプリルはレスリーにどう答える？',
       choices: ['A weak maybe', 'A clear no', 'A very happy yes'], a: 0,
@@ -239,7 +239,7 @@ export const leslieMom: Clip = {
       trap: 'forty（40）と fourteen（14）は似ている。forty のあとに eight が続くので48。',
       use: 'We’re going to turn this room into an office.（この部屋を事務所にします）' },
 
-    { id: 'nt2', skill: 'attitude', level: 'B2', point: 'wreck', seg: [172.0, 178.6],
+    { id: 'nt2', skill: 'attitude', level: 'B2', point: 'wreck', seg: [172.0, 178.1],
       stem: 'What does Leslie’s mom think of the meeting?',
       ja: 'レスリーのお母さんは集会をどう思っている？',
       choices: ['It will go very badly', 'It will go very well', 'It will be very long'], a: 0,
@@ -251,7 +251,7 @@ export const leslieMom: Clip = {
       trap: 'すぐあとの successful（成功）に引っぱられやすいが、それは願い。予想は train wreck。',
       use: 'That meeting was a train wreck.（あの会議はひどかった）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'makeit', seg: [185.5, 194.5],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'makeit', seg: [185.4, 194.5],
       stem: 'What does Leslie say about her supporters tonight?',
       ja: '今夜の支持者について、レスリーは何と言う？',
       choices: ['Nobody could come', 'They are coming later', 'They are in the back'], a: 0,
@@ -276,10 +276,11 @@ export const leslieMom: Clip = {
       trap: '「支持者が大勢いる」と言うので、応援されると思いやすい。その人たちは来ていない。',
       use: 'I’m against this plan.（この計画には反対です）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'study', reveals: ['against'], seg: [206.4, 218.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'study', reveals: ['against'], seg: [205.3, 218.4],
       stem: 'Why is Kate against the park?',
       ja: 'ケイトはなぜ公園に反対？',
-      choices: ['Nature effects weren’t checked', 'The neighbors play loud music', 'The park lot is too small'],
+      choices: ['Nobody checked the effect on nature',
+ 'The neighbors play loud music', 'The park lot is too small'],
       a: 0,
       choicesJa: ['自然への影響を調べていない', '近所の人の音楽がうるさい', '公園の土地がせまい'],
       cue: 'I cannot believe のあとの部分。',
@@ -289,7 +290,7 @@ export const leslieMom: Clip = {
       trap: 'あとで音楽の苦情も出るので混ざりやすい。それは別の人の、別の話。',
       use: 'I can’t believe they did it without asking.（聞かずにやるなんて信じられない）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'ahead', seg: [220.8, 232.2],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'ahead', seg: [220.8, 231.85],
       stem: 'What does “ahead of schedule” mean?',
       ja: '「ahead of schedule」はどういう意味？',
       choices: ['Earlier than planned', 'Later than planned', 'Exactly on time'], a: 0,
@@ -301,7 +302,7 @@ export const leslieMom: Clip = {
       trap: 'behind schedule（予定より遅れて）とまぎれやすい。ahead は前、behind はうしろ。',
       use: 'We’re a little ahead of schedule.（予定より少し早く進んでいます）' },
 
-    { id: 'r4', skill: 'pragma', level: 'B1', point: 'absolutely', ctx: true, seg: [243.9, 252.0],
+    { id: 'r4', skill: 'pragma', level: 'B1', point: 'absolutely', ctx: true, seg: [243.9, 251.7],
       stem: 'How does Leslie answer Mark’s offer?',
       ja: 'マークの申し出に、レスリーはどう答える？',
       choices: ['Yes, please do', 'No, not now', 'Only if it’s short'], a: 0,
@@ -313,7 +314,7 @@ export const leslieMom: Clip = {
       trap: '長い単語なので、条件つきの返事と勘違いしやすい。Absolutely 一語で、はっきりした yes。',
       use: 'Can I sit here? — Absolutely.（ここ座っていい？—もちろん）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'oversold', seg: [257.3, 262.9],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'oversold', seg: [257.3, 262.5],
       stem: 'What does Mark mean by “oversold me”?',
       ja: 'マークの「oversold me」はどういう意味？',
       choices: ['She praised me too much', 'She said too little about me', 'She talked about me too long'], a: 0,
@@ -325,7 +326,7 @@ export const leslieMom: Clip = {
       trap: 'sell を「売る」と思いやすい。ここは「良さを言う」で、over が付いて言いすぎ。',
       use: 'I think I oversold the hotel.（ホテルをほめすぎたかも）' },
 
-    { id: 'r5', skill: 'pragma', level: 'B2', point: 'goforit', ctx: true, seg: [272.0, 278.4],
+    { id: 'r5', skill: 'pragma', level: 'B2', point: 'goforit', ctx: true, seg: [271.7, 277.75],
       stem: 'What does “Go for it” tell the woman?',
       ja: '「Go for it」は女性に何を伝えている？',
       choices: ['She can speak now', 'She should go home', 'She must wait a bit'], a: 0,
@@ -337,7 +338,7 @@ export const leslieMom: Clip = {
       trap: 'go から「帰れ」を連想しやすいが、出ていけではない。「どうぞ（話して）」の意味。',
       use: 'Can I ask something? — Go for it.（聞いてもいい？—どうぞ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'garage', seg: [285.9, 293.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'garage', seg: [286.3, 292.95],
       stem: 'What does the neighbor say Andy does?',
       ja: '近所の人は、アンディが何をしていると言う？',
       choices: ['Is noisy all night', 'Fixes cars all night', 'Leaves lights on all night'], a: 0,
@@ -349,7 +350,7 @@ export const leslieMom: Clip = {
       trap: 'garage（ガレージ）から車を直す話を連想しやすい。決め手は最初の plays music（音楽を鳴らす）。',
       use: 'That noise is driving me nuts.（あの音、ほんとイライラする）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'birds', ctx: true, seg: [302.9, 312.9],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'birds', ctx: true, seg: [303.3, 312.85],
       stem: 'What does Andy think when he asks “You have birds now?”',
       ja: '「You have birds now?」と聞くアンディは、どう思っている？',
       choices: ['The birds are something new', 'He wants to see the birds', 'He likes birds too'], a: 0,
@@ -373,7 +374,7 @@ export const leslieMom: Clip = {
       trap: 'guilty から謝っていると思いやすい。冗談まじりに認めるだけで、反省はしていない。',
       use: 'Who ate the cake? — Guilty as charged.（ケーキ食べたの誰？—はい、私です）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'break', seg: [323.5, 328.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'break', seg: [324.35, 328.5], keep: true,
       stem: 'How long a break does Leslie call?',
       ja: 'レスリーは何分の休憩にする？',
       choices: ['5 minutes', '10 minutes', '15 minutes', '50 minutes'], a: 0,

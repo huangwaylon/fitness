@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 2, ctx 3, tx 6
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 2, ctx 3, tx 6, qa 26
 // A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 2, new 2
 // “The IT Guy Exposes Everyone's Secrets - The Office US” (the official The Office channel, BEST OF SEASON 6): a meeting
 // is hunting for whoever leaked the printer story when Nick, the IT guy, stops in to say goodbye; nobody knows his name,
@@ -32,8 +32,8 @@ export const itGuySecrets: Clip = {
     { id: 'interupt', skill: 'phrase', level: 'B1', point: 'interrupt', seg: [11.2, 16.3],
       stem: 'What does Nick mean by “Sorry to interrupt”?',
       ja: 'ニックの「Sorry to interrupt」はどういう意味？',
-      choices: ['Sorry for cutting in', 'Sorry for being late', 'Sorry, I have to go'], a: 0,
-      choicesJa: ['話に割りこんでごめん', '遅れてごめん', 'ごめん、もう行かなきゃ'],
+      choices: ['Sorry to stop your meeting', 'Sorry for being late', 'Sorry, I have to go'], a: 0,
+      choicesJa: ['会議をじゃましてごめん', '遅れてごめん', 'ごめん、もう行かなきゃ'],
       cue: 'ニックの最初の一言',
       line: 'Hey, guys. Uh, *sorry to interrupt*. I just wanted to say goodbye.',
       said: '「やあ、みんな。えっと、じゃましてごめん。お別れを言いたくて」と入ってくる。',
@@ -41,10 +41,10 @@ export const itGuySecrets: Clip = {
       trap: 'すぐあとに goodbye が聞こえるので、別れのあいさつと考えがち。interrupt を聞く。',
       use: 'Sorry to interrupt, but your taxi is here.（おじゃましてすみません、タクシーが来ました）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'detroit', seg: [15.7, 21.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'detroit', seg: [16.25, 21.7],
       stem: 'What is Nick leaving to do?',
       ja: 'ニックは何をするために辞める？',
-      choices: ['Teach kids about computers', 'Fix computers in schools', 'Teach adults about computers'], a: 0,
+      choices: ['Give computer classes to kids', 'Fix computers in schools', 'Give computer classes to adults'], a: 0,
       choicesJa: ['子どもにコンピューターを教える', '学校のコンピューターを直す', '大人にコンピューターを教える'],
       cue: '「Detroit」のあと。',
       line: 'I’m gonna go down to Detroit and *teach inner-city kids about computers*.',
@@ -53,7 +53,7 @@ export const itGuySecrets: Clip = {
       trap: 'IT 担当なので「直しに行く」と思いやすい。teach のあとの kids まで聞く。',
       use: 'I’m going down to Texas for work.（仕事でテキサスへ行くんだ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnow', ctx: true, seg: [19.9, 27.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnow', ctx: true, seg: [19.9, 27.82],
       stem: 'What does Nick do after “Not now”?',
       ja: '「Not now」と言われたあと、ニックはどうする？',
       choices: ['Explains why it must be now', 'Says he’ll come back later', 'Asks how long it will take'], a: 0,
@@ -65,7 +65,7 @@ export const itGuySecrets: Clip = {
       trap: '「あとで来る」と引き下がると考えがち。it’s just のあとに、引かない理由が来る。',
       use: 'Sorry, not now. I’m busy.（ごめん、今はちょっと。忙しくて）' },
 
-    { id: 'again', skill: 'phrase', level: 'B1', point: 'again', seg: [24.6, 29.7],
+    { id: 'again', skill: 'phrase', level: 'B1', point: 'again', seg: [24.6, 29.42],
       stem: 'What does “What’s this guy’s name again?” ask?',
       ja: '「What’s this guy’s name again?」は何を聞いている？',
       choices: ['Tell me his name once more', 'Say his name a lot louder', 'Give him a new name'], a: 0,
@@ -77,7 +77,7 @@ export const itGuySecrets: Clip = {
       trap: 'again（また）から、もう一回大きく言ってと頼むと考えがち。忘れたことを聞き直す形。',
       use: 'Sorry, what was the address again?（すみません、住所なんでしたっけ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'inmeeting', ctx: true, seg: [29.4, 37.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'inmeeting', ctx: true, seg: [29.42, 36.9],
       stem: 'What does “we’re in a meeting” mean here?',
       ja: 'ここでの「we’re in a meeting」はどういう意味？',
       choices: ['Please leave us now', 'Please join us now', 'The meeting just ended'], a: 0,
@@ -89,7 +89,7 @@ export const itGuySecrets: Clip = {
       trap: '名前を呼んだので、迎え入れると考えがち。Okay, well（そうか、でも）は話を切る前置き。',
       use: 'Sorry, I’m on a call right now.（すみません、今電話中で）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hates', seg: [35.0, 41.7],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hates', seg: [35.0, 41.35],
       stem: 'How does Nick feel at “Okay, look, I get it, people”?',
       ja: '「Okay, look, I get it, people」のとき、ニックの気持ちは？',
       choices: ['Hurt and upset', 'Sorry he came in', 'Amused and joking'], a: 0,
@@ -100,18 +100,6 @@ export const itGuySecrets: Clip = {
       mean: 'I get it ＝ 文字どおりは「分かった」。ここでは「もう分かってるよ」という不満。lame ＝ さえない。',
       trap: 'I get it を「了解」と取ると穏やかに聞こえる。あとの everybody hates me で気持ちが分かる。',
       use: 'Okay, I get it. You’re busy.（はいはい、分かったよ。忙しいんだね）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'personal', seg: [38.6, 41.8],
-      stem: 'What does “you can’t take it personally” mean?',
-      ja: '「you can’t take it personally」の意味は？',
-      choices: ['Don’t think it’s about you', 'Don’t get angry at them', 'Don’t tell the boss about it'], a: 0,
-      choicesJa: ['自分のせいだと思わないで', 'みんなに怒らないで', '上司に言わないで'],
-      cue: '「listen, man」のあと',
-      line: 'Hey, listen, man, you can’t *take it personally*.',
-      said: '「おい、なあ、気にするなって」と声をかけられる。',
-      mean: '文字どおりは「個人的に受け取る」。→ 自分への攻撃だと思う。can’t をつけて「気にするなよ」。',
-      trap: 'take it（受け取る）から、物を受け取る話と考えがち。personally は受け取り方。',
-      use: 'Don’t take it personally.（気にしないで）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'man', seg: [39.1, 46.4], retired: true,
       stem: 'Why doesn’t Nick like being called “man”?',
@@ -125,7 +113,19 @@ export const itGuySecrets: Clip = {
       trap: 'man を失礼な言葉と思いやすいが、男どうしではふつうの呼び方。問題は名前の代わり。',
       use: 'My name is Ken. Nice to meet you.（ケンです。はじめまして）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'motive', ctx: true, seg: [39.5, 54.6],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'personal', seg: [39.45, 41.35],
+      stem: 'What does “you can’t take it personally” mean?',
+      ja: '「you can’t take it personally」の意味は？',
+      choices: ['Don’t think it’s about you', 'Don’t get angry at them', 'Don’t tell the boss about it'], a: 0,
+      choicesJa: ['自分のせいだと思わないで', 'みんなに怒らないで', '上司に言わないで'],
+      cue: '「listen, man」のあと',
+      line: 'Hey, listen, man, you can’t *take it personally*.',
+      said: '「おい、なあ、気にするなって」と声をかけられる。',
+      mean: '文字どおりは「個人的に受け取る」。→ 自分への攻撃だと思う。can’t をつけて「気にするなよ」。',
+      trap: 'take it（受け取る）から、物を受け取る話と考えがち。personally は受け取り方。',
+      use: 'Don’t take it personally.（気にしないで）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'motive', ctx: true, seg: [39.45, 54.5],
       stem: 'Why is Nick upset with them?',
       ja: 'ニックは、なぜみんなに腹を立てている？',
       choices: ['Nobody learns his name', 'They blame him for the leak', 'They want him to stay'], a: 0,
@@ -160,16 +160,16 @@ export const itGuySecrets: Clip = {
       trap: 'Didn’t なら「ン」が残る。Could なら「ク」で始まる。最初の音を聞く。',
       use: 'Did you lock the door?（ドアのカギ、かけた？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [47.9, 54.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [48.95, 54.5], keep: true,
       stem: 'How many parties a week does Nick say they have?',
       ja: 'ニックは、みんなが週に何回パーティーをすると言う？',
-      choices: ['Five', 'Fifteen', 'Fifty'], a: 1,
-      choicesJa: ['5回', '15回', '50回'],
+      choices: ['Five', 'Fifteen', 'Fifty', 'Fifty-five'], a: 1,
+      choicesJa: ['5回', '15回', '50回', '55回'],
       cue: '「parties」の直前。',
       line: 'You guys have *15 parties a week*. You can’t learn my name?',
       said: '「週に15回もパーティーをしてるのに、名前は覚えられないの？」と言う。',
       mean: '15 parties a week ＝ 週に15回のパーティー。大げさに言って責めている。',
-      trap: 'fifteen は最後の「ティーン」を強く長く言う。fifty は最初が強く、「ティ」が短い。',
+      trap: 'fifteen は最後の「ティーン」を強く長く言う。fifty は最初が強く、「ティ」が短い。fifty-five ならさらに「ファイヴ」が続く。',
       use: 'We have, like, three meetings a week.（週に3回も会議があるんだよ）' },
 
     // anchor: 52.3–58 s he calls Nick "IT guy" and "champ" (no name again), then says none of them has got to know him:
@@ -184,7 +184,7 @@ export const itGuySecrets: Clip = {
       trap: 'None of us … は反省に聞こえるが、okay? で押しつけている。相手の言い分を認めていないか聞く。',
       use: 'So, basically, you’re saying I’m right.（つまり、私が正しいってことね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'know', seg: [54.5, 58.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'know', seg: [54.5, 57.98],
       stem: 'Type it: “None of us have spent a lot of time ___.” (4 words)',
       answer: 'getting to know you',
       ja: '「a lot of time」のあとの4語を書こう。',
@@ -195,7 +195,7 @@ export const itGuySecrets: Clip = {
       trap: 'getting の t が軽い「ラ」の音になり、to は小さく「タ」。know you はひと続き。',
       use: 'I’m still getting to know the area.（まだこのあたりに慣れてないんだ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.4, 61.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'kept', seg: [55.7, 61.3],
       stem: 'What does “he kept to himself” mean?',
       ja: '「he kept to himself」の意味は？',
       choices: ['He was quiet and private', 'He kept secrets', 'He kept things running'], a: 0,
@@ -230,7 +230,7 @@ export const itGuySecrets: Clip = {
       trap: 'IT 担当なのでウイルスの話と思いやすい。直前の怒りが中身を決める。',
       use: 'Guess what? I got the tickets.（ねえ聞いて、チケット取れた）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'guesswhat', seg: [72.0, 79.0],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'guesswhat', seg: [71.9, 79.0],
       stem: 'What does Nick mean by “guess what?”',
       ja: 'ニックの「guess what?」はどういう意味？',
       choices: ['Here’s a surprise', 'Guess my name now', 'Answer my question'], a: 0,
@@ -245,7 +245,7 @@ export const itGuySecrets: Clip = {
     { id: 'd4', skill: 'detail', level: 'B2', point: 'facebook', seg: [75.7, 84.6],
       stem: 'What does Nick say about Darryl and Facebook?',
       ja: 'ニックは、ダリルとフェイスブックについて何と言う？',
-      choices: ['He uses it but says no', 'He doesn’t use it at all', 'He ignores friend requests'], a: 0,
+      choices: ['He uses it but says he doesn’t', 'He doesn’t use it at all', 'He ignores friend requests'], a: 0,
       choicesJa: ['やっているのに、やっていないと言う', '全然やっていない', '友だち申請を無視している'],
       cue: '2回出てくる Facebook。',
       line: 'Darryl, man, *you’re on Facebook*. Why you been *telling people you’re not*…?',
@@ -255,7 +255,7 @@ export const itGuySecrets: Clip = {
       use: 'Why have you been telling people that?（なんでそんなこと言いふらしてたの？）' },
 
     // anchor: 80.7–81.4 s both sources: "why you been telling", no "have" (the captions' words at 80.7, 80.9, 81.0, 81.1)
-    { id: 'c1', skill: 'dict', level: 'C2', point: 'facebook', seg: [79.2, 84.9],
+    { id: 'c1', skill: 'dict', level: 'C2', point: 'facebook', seg: [79.0, 84.65],
       stem: 'Type the start: “___ people you’re not on Facebook?” (4 words)', answer: 'why you been telling',
       ja: '「people」の前の4語を書こう。',
       cue: '「on Facebook」のすぐあと。',
@@ -266,10 +266,11 @@ export const itGuySecrets: Clip = {
       use: 'Where you been all day?（一日どこにいたの？）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'email', reveals: ['proof', 'snitch'], seg: [84.6, 89.6],
-      stem: 'How did “this guy” reach the press, Nick says?',
-      ja: 'ニックによると、「こいつ」はどうやってマスコミに伝えた？',
-      choices: ['He wrote to the editor', 'He sent the editor a video', 'He called the editor'], a: 0,
-      choicesJa: ['編集者にメールを書いた', '編集者に動画を送った', '編集者に電話した'],
+      stem: 'How does Nick say “this guy” told the press?',
+      ja: 'ニックによると、「この人」はどうやってマスコミに伝えた？',
+      choices: ['He sent an email', 'He sent a video', 'He made a phone call'], a: 0,
+      choicesJa: ['メールを送った', '動画を送った', '電話をかけた'],
+
       cue: '「told the press」の次の文。',
       line: 'you’re the one who told the press. You *wrote an e-mail to the editor*.',
       said: '「マスコミに話したのはお前だ。編集者にメールを書いた」と言う。',
@@ -277,7 +278,7 @@ export const itGuySecrets: Clip = {
       trap: 'すぐあとの movie（動画）を送ったと思いやすい。動画は見たもので、送ったのはメール。',
       use: 'I wrote an email to the manager.（店長にメールを書きました）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'proof', reveals: ['snitch'], seg: [88.1, 97.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'proof', reveals: ['snitch'], seg: [88.3, 97.3],
       stem: 'Why does Nick talk about the video?',
       ja: 'ニックは、なぜ動画の話をする？',
       choices: ['To prove who told the press', 'To show printers catch fire', 'To show he can leak things'], a: 0,

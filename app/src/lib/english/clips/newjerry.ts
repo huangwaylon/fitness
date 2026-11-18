@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 2, new 11, ctx 7, tx 6
+// R4 REVIEW 2026-11-18: keep 5, rewrite 8, retire 2, new 11, ctx 7, tx 6, qa 33
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 6, new 3
 // “Ron Swanson Saves Tom's Swagger | Parks and Recreation” (the official Parks and Recreation channel, Season 5): with
 // Jerry gone, the office hunts for a new person to tease, a stumble over words makes it Tom, his intern plan fails, and
@@ -8,6 +8,7 @@
 // picked, by year, Way ahead of you, Andy, real creative, Yeah no, compelling 'one', Taylor's football, He gets it,
 // ask me if I'm sad, Stand up for yourself, lean into it, take care of himself, That's what they all say, once a week).
 // EAR CHECK: 142.9 s i1 (retired) — both sources write “It's like a jury you don't have to pay”; the key read “a Jerry”
+// EXCLUDE 275.6–278.6
 // EAR CHECK: 200.2 s p1 h2 (retired) — whisper “Ask me if I'm sad”, captions “asked me if I'm sad”
 import type { Clip } from '../types.ts';
 
@@ -29,7 +30,7 @@ export const tomSwagger: Clip = {
       trap: 'sad day だけで、送別のさびしさと考えがち。すぐあとの質問が理由。',
       use: 'Don’t make fun of me.（からかわないでよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'noneed', seg: [12.4, 17],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'noneed', seg: [10.95, 16],
       stem: 'Type the reply: “___ to worry.” (2 words)', ja: '返事を書こう：“___ to worry.”（2語）',
       answer: 'no need',
       cue: '「make fun of now?」のすぐあと',
@@ -39,7 +40,7 @@ export const tomSwagger: Clip = {
       trap: 'no と know は同じ音。to worry と合うのは「必要ない」の no need。',
       use: 'No need to worry. I’m fine.（心配いらないよ。大丈夫）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'spill', seg: [36.4, 43.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'spill', seg: [35.5, 42.05],
       stem: 'Type the reply: “Just ___ spill anything.” (3 words)', ja: '返事を書こう：“Just ___ spill anything.”（3語）',
       answer: 'trying not to',
       cue: '「weirdo」と言われたあとの返事',
@@ -60,7 +61,7 @@ export const tomSwagger: Clip = {
       trap: 'ahead（前に）から、歩く場所の話だと思いやすい。頼まれた仕事への返事。',
       use: 'Book a table? Way ahead of you.（予約？もうしてあるよ）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B2', point: 'broken', seg: [52.4, 58.6], ctx: true,
+    { id: 'c1', skill: 'pragma', level: 'B2', point: 'broken', seg: [52.4, 60], ctx: true,
       stem: 'What does Tom say when asked if he’s broken?', ja: '「壊れちゃったの？」と聞かれて、トムは何と言う？',
       choices: ['Nothing is wrong', 'He is very tired', 'He needs some help'], a: 0,
       choicesJa: ['何も問題ない', 'すごく疲れている', '助けがいる'],
@@ -82,19 +83,18 @@ export const tomSwagger: Clip = {
       trap: 'I’m wearing を今の話と取りやすいが、This is how it begins から先は未来の想像。',
       use: 'This is how it starts.（こうやって始まるんだよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [66.1, 78.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirty', seg: [65.8, 78.1], keep: true,
       stem: 'In Tom’s picture of his future, how many years later is it?', ja: 'トムが想像する未来は、何年後？',
-      choices: ['3 years', '13 years', '30 years'], a: 2,
-      choicesJa: ['3年', '13年', '30年'],
+      choices: ['3 years', '13 years', '20 years', '30 years'], a: 3,
+      choicesJa: ['3年', '13年', '20年', '30年'],
       cue: '「later」の前の数',
       line: 'One screwed-up sentence. And *30 years later*…',
       said: '「言いまちがい一つで、30年後には…」と未来を思い描く。',
       mean: 'thirty は前を強く、ty は短い。thirteen は teen を強く長く言う。',
-      trap: 'three なら ty も teen もない。teen が長いと thirteen。前が強いと thirty。',
-
+      trap: 'three なら ty も teen もない。teen が長いと thirteen。twenty は「トゥ」で始まる。前が強い「サーティ」が thirty。',
       use: 'Ten years from now, who knows?（10年後なんて、誰にも分からない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ink', seg: [88.4, 94.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ink', seg: [88.3, 94.05],
       stem: 'What is all over Andy?', ja: 'アンディの体じゅうについているのは？',
       choices: ['Ink', 'Coffee', 'Paint'], a: 0,
       choicesJa: ['インク', 'コーヒー', 'ペンキ'],
@@ -105,7 +105,7 @@ export const tomSwagger: Clip = {
       trap: '色がついているのでペンキとも考えがち。直前の the pen（ペン）がヒント。',
       use: 'There’s sauce all over your shirt.（シャツにソースがいっぱいついてるよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrongtree', seg: [103.5, 108.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'wrongtree', seg: [103.5, 111.05],
       stem: 'What does “barking up the wrong tree” mean?', ja: '“barking up the wrong tree” はどういう意味？',
       choices: ['Choosing the wrong person', 'Making too much noise', 'Talking too soon'], a: 0,
       choicesJa: ['相手を選びまちがえている', 'うるさく騒ぎすぎ', '言うのが早すぎる'],
@@ -137,7 +137,7 @@ export const tomSwagger: Clip = {
       trap: '文法から You need… と書きたくなる。小さく短い what と is も、聞こえたとおり書く。',
       use: 'What you need is a good night’s sleep.（必要なのはぐっすり眠ること）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'couldjust', seg: [111, 119.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'couldjust', seg: [111.05, 119.6],
       stem: 'Fill the gap: “Or you guys ___ stop making fun of me.”', ja: '空所に入るのは？ “Or you guys ___ stop making fun of me.”',
       choices: ['could just', 'can just', 'should just'], a: 0,
       choicesJa: ['〜すればいいだけ（could）', '〜していい（can）', '〜すべき（should）'],
@@ -148,7 +148,7 @@ export const tomSwagger: Clip = {
       trap: 'can なら「キャン」の「ン」が残る。should とは最初の音（ク／シュ）で聞き分ける。',
       use: 'You could just ask me.（普通に聞いてくれればいいのに）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'kidding', seg: [121.5, 125.8],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'kidding', seg: [120, 125.8],
       stem: 'How does Tom feel when he says “Are you kidding me?”', ja: '“Are you kidding me?” と言うとき、トムはどんな気持ち？',
       choices: ['Annoyed', 'Amused', 'Worried'], a: 0,
       choicesJa: ['うんざりしている', 'おもしろがっている', '心配している'],
@@ -158,17 +158,6 @@ export const tomSwagger: Clip = {
       mean: 'Are you kidding me? ＝ 文字どおりは「からかってるの？」。ここでは「いいかげんにしてよ」といういら立ち。',
       trap: 'kidding（冗談）から、楽しんでいると勘違いしやすい。からかわれた直後の一言。',
       use: 'Are you kidding me? It’s closed?（うそでしょ？閉まってるの？）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slack', seg: [123, 133.3],
-      stem: 'What does Tom say a new hire would need to do?', ja: '新しく雇う人は何をする必要があると、トムは言う？',
-      choices: ['Take on the work Jerry left', 'Make the office fun again', 'Collect the files Jerry dropped'], a: 0,
-      choicesJa: ['ジェリーが残した仕事を引き受ける', '職場をまた楽しくする', 'ジェリーが落とした書類を集める'],
-      cue: '「hire someone」のあと',
-      line: 'now that Jerry’s gone, we need to hire someone to *pick up the slack*',
-      said: '「ジェリーがいなくなったので、穴を埋める人を雇わないと」と言う。',
-      mean: 'slack ＝ ロープのたるみ。たるみを引いて張り直す→抜けた人の分の仕事を引き受ける、つまり穴を埋める。',
-      trap: 'pick up（拾う）から、落とし物を拾う話と考えがち。pick up the slack でひとつの言い方。',
-      use: 'Can you pick up the slack this week?（今週、穴を埋めてくれる？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'notperson', seg: [125.4, 133.3], retired: true,
       stem: 'Why is Tom’s correction after “A new person in the office?” funny?',
@@ -180,6 +169,17 @@ export const tomSwagger: Clip = {
       mean: 'インターンを人数に入れない言い方。インターンは人以下、という失礼な見方が笑い。',
       trap: '「人じゃない」を「大人じゃない」と取りやすいが、ここは「人」か「インターン」かの区別そのもの。',
       use: 'Not a vacation. A work trip.（休暇じゃない。出張だよ）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slack', seg: [125.75, 133.3],
+      stem: 'What does Tom say a new hire would need to do?', ja: '新しく雇う人は何をする必要があると、トムは言う？',
+      choices: ['Do the work Jerry left', 'Make the office fun again', 'Collect the files Jerry dropped'], a: 0,
+      choicesJa: ['ジェリーが残した仕事を引き受ける', '職場をまた楽しくする', 'ジェリーが落とした書類を集める'],
+      cue: '「hire someone」のあと',
+      line: 'now that Jerry’s gone, we need to hire someone to *pick up the slack*',
+      said: '「ジェリーがいなくなったので、穴を埋める人を雇わないと」と言う。',
+      mean: 'slack ＝ ロープのたるみ。たるみを引いて張り直す→抜けた人の分の仕事を引き受ける、つまり穴を埋める。',
+      trap: 'pick up（拾う）から、落とし物を拾う話と考えがち。pick up the slack でひとつの言い方。',
+      use: 'Can you pick up the slack this week?（今週、穴を埋めてくれる？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'whyintern', seg: [133.1, 144],
       stem: 'What two reasons does Tom give Ron for an intern?', ja: 'インターンを入れる理由として、トムがロンに言う二つは？',
@@ -213,10 +213,10 @@ export const tomSwagger: Clip = {
       trap: 'Damn を悪口だと思いやすい。ここは感心の声で、すぐ argument をほめている。',
       use: 'That’s a pretty good argument.（なかなか説得力があるね）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'workstarted', seg: [152.4, 159.6], ctx: true,
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'workstarted', seg: [152.4, 159.2], ctx: true,
       stem: 'Why does Taylor say no to Donna?', ja: 'テイラーはなぜドナの誘いを断る？',
-      choices: ['Work has just started', 'He has a girlfriend', 'He has a meeting to go to'], a: 0,
-      choicesJa: ['仕事が始まったばかり', '彼女がいる', '今から会議がある'],
+      choices: ['He only just got to work', 'He has a girlfriend', 'He has a meeting to go to'], a: 0,
+      choicesJa: ['仕事に来たばかり', '彼女がいる', '今から会議がある'],
       cue: 'ドナの質問のすぐあとの返事',
       line: 'Donna: So, you want to get out of here? / Taylor: *Work just started*, Miss Meagle.',
       said: '「ねえ、ここから抜け出さない？」「仕事は始まったばかりですよ、ミーグルさん」。',
@@ -224,7 +224,7 @@ export const tomSwagger: Clip = {
       trap: 'get out of here は「出ていけ」に聞こえるが、ここは「一緒に抜け出さない？」という誘い。',
       use: 'Sorry, I just started work.（ごめん、仕事が始まったばかりなんだ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'sister', seg: [163, 171], ctx: true,
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'sister', seg: [163.45, 171], ctx: true,
       stem: 'How does Donna know Taylor?', ja: 'ドナはどうしてテイラーを知っている？',
       choices: ['He was at school with her sister', 'He is married to her older sister', 'He lives next door to her'], a: 0,
       choicesJa: ['妹と同じ高校だった', 'お姉さんと結婚している', '隣に住んでいる'],
@@ -245,7 +245,7 @@ export const tomSwagger: Clip = {
       trap: 'トムがからかっているので、インターンが笑われると考えがち。みんなの反応を聞く。',
       use: 'Everyone loves the new guy.（みんな新人のことが大好きだね）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wishicould', seg: [181.9, 188.4], ctx: true,
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wishicould', seg: [182.1, 188.4], ctx: true,
       stem: 'How does Taylor answer the marriage question?', ja: '結婚の質問に、テイラーはどう答える？',
       choices: ['He says no nicely', 'He says yes happily', 'He says maybe later'], a: 0,
       choicesJa: ['やさしく断る', '喜んで受ける', 'またあとでと言う'],
@@ -256,7 +256,7 @@ export const tomSwagger: Clip = {
       trap: 'wish（願う）から、乗り気だと考えがち。決め手は but のあと。',
       use: 'Wish I could, but I have work.（行きたいけど、仕事があって）' },
 
-    { id: 'c3', skill: 'infer', level: 'B2', point: 'lovetogive', reveals: ['wishicould'], seg: [184.5, 192.5], ctx: true,
+    { id: 'c3', skill: 'infer', level: 'B2', point: 'lovetogive', reveals: ['wishicould'], seg: [184.5, 191.75], ctx: true,
       stem: 'Why isn’t Taylor a “marriage dude”?', ja: 'テイラーはなぜ「結婚するタイプ」じゃない？',
       choices: ['He won’t limit his love', 'He is too young to get married', 'He loves his job more'], a: 0,
       choicesJa: ['愛に線を引きたくない', '結婚にはまだ若すぎる', '仕事のほうが好き'],
@@ -287,7 +287,7 @@ export const tomSwagger: Clip = {
       trap: 'No を「君は悲しくない」という答えと取りやすい。頼まれたのは聞くこと。何への No かを考える。',
       use: 'Can I vent for a minute? — No.（ちょっと愚痴っていい？—だめ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'whinehelp', seg: [200.5, 208.5], ctx: true,
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'whinehelp', seg: [200, 207.85], ctx: true,
       stem: 'What does Ron mean by his question about whining?', ja: '泣き言についてのロンの質問は、どういう意味？',
       choices: ['Complaining won’t help', 'Please tell me more about it', 'I feel sorry for you'], a: 0,
       choicesJa: ['ぐちを言っても何も変わらない', 'もっと詳しく話して', 'かわいそうに'],
@@ -309,18 +309,18 @@ export const tomSwagger: Clip = {
       trap: '最初の質問で「どうにもならない」と言われたと思いやすい。最後の命令が答え。',
       use: 'Stand up for yourself.（自分のために言い返しなよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twelve', seg: [213.2, 221.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twelve', seg: [213.2, 220], keep: true,
       stem: 'How long did it take Tom to change himself?', ja: 'トムが自分を変えるのに、どれくらいかかった？',
-      choices: ['2 years', '12 years', '20 years'], a: 1,
-      choicesJa: ['2年', '12年', '20年'],
+      choices: ['2 years', '12 years', '20 years', '22 years'], a: 1,
+      choicesJa: ['2年', '12年', '20年', '22年'],
       cue: '「took me」のあと',
       line: 'It took me *12 years*, but I reinvented myself.',
       said: '「12年かかったけど、自分を変えた」と話す。',
       mean: 'It took me 〜 ＝ 〜かかった。',
-      trap: 'two なら「トゥー」で終わる。twenty は最後に「ティ」。「ルヴ」なら twelve。',
+      trap: 'two なら「トゥー」で終わる。twenty は最後に「ティ」、twenty-two はさらに長い。「ルヴ」なら twelve。',
       use: 'It took me two years to save up.（貯めるのに2年かかった）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'fornothing', seg: [219.5, 227.6],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'fornothing', seg: [219.95, 227.6],
       stem: 'What does Tom mean by “It was all for nothing”?', ja: '“It was all for nothing” で、トムは何を言いたい？',
       choices: ['His hard work was wasted', 'He did it all for free', 'He has nothing left in the end'], a: 0,
       choicesJa: ['努力が全部むだになった', '全部タダでやった', 'もう何も残っていない'],
@@ -354,15 +354,14 @@ export const tomSwagger: Clip = {
       trap: '軽い言い方なので味方の冗談と取りやすい。Well, half は直前のほめ言葉を下げる合図。',
       use: 'She’s an expert. Well, sort of.（彼女は専門家。まあ、一応ね）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'fired', seg: [243.8, 252.7],
-      stem: 'How did Jerry leave his job, he says?', ja: 'ジェリーは、自分はどうやって仕事を辞めたと言う？',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'fired', seg: [243.8, 252.4],
+      stem: 'How does Jerry say he left his job?', ja: 'ジェリーは、自分はどうやって仕事を辞めたと言う？',
       choices: ['He retired', 'He was fired', 'He moved away'], a: 0,
       choicesJa: ['退職した', 'クビになった', '引っ越した'],
       cue: '否定の文のあとの短い文',
       line: 'I *wasn’t fired*. I *retired*.',
       said: '「クビじゃない。退職したんだ」と言うが、「みんなそう言う」と返される。',
       mean: 'retire ＝ 引退する、退職する。fire ＝ クビにする。',
-
       trap: 'fired と retired は終わりが同じ音。最初の wasn’t の否定と、re の音で聞き分ける。',
       use: 'My father retired last year.（父は去年退職した）' },
 
@@ -376,7 +375,7 @@ export const tomSwagger: Clip = {
       trap: 'ジェリーが戻るので、元の仕事に戻ったと思いやすい。週に数時間だけ。',
       use: 'Welcome back! We missed you.（おかえり！寂しかったよ）' },
 
-    { id: 'c4', skill: 'detail', level: 'B1', point: 'internout', seg: [248.5, 256],
+    { id: 'c4', skill: 'detail', level: 'B1', point: 'internout', seg: [249.2, 255.6],
       stem: 'What happened to the new intern?', ja: '新しいインターンはどうなった？',
       choices: ['Ron fired him', 'He quit after a day', 'He moved to another office'], a: 0,
       choicesJa: ['ロンが辞めさせた', '1日で自分から辞めた', '別の部署に移った'],
@@ -387,10 +386,10 @@ export const tomSwagger: Clip = {
       trap: 'him が誰か迷いやすい。主語は Ron の I。インターンが自分で辞めたのではない。',
       use: 'The new plan wasn’t working out.（新しいやり方はうまくいかなかった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'noted', seg: [253.9, 265.9],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'noted', seg: [255.55, 265.9],
       stem: 'What does Ron mean by “Once again, noted”?', ja: '“Once again, noted” で、ロンは何を言いたい？',
-      choices: ['I heard you, but no change', 'I will think about it again', 'You are right, I’ll stop'], a: 0,
-      choicesJa: ['聞いたけど、何も変えない', 'もう一度考えてみる', 'きみが正しい、やめるよ'],
+      choices: ['I hear you, but nothing changes', 'I will think about it once more', 'You are right, I’ll stop'], a: 0,
+      choicesJa: ['聞いたけど、何も変わらない', 'もう一度考えてみる', 'きみが正しい、やめるよ'],
       cue: '反対の言葉への返事',
       line: 'Once again, I object in the strongest possible terms. — *Once again, noted.*',
       said: '「改めて強く反対します」に、「改めて、聞いておく」と返す。',
@@ -398,11 +397,11 @@ export const tomSwagger: Clip = {
       trap: '「承りました」のように前向きに思いやすい。すぐあとにジェリーの話を続けている。',
       use: 'Thanks, noted.（了解、覚えておきます）' },
 
-    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'idontknow', seg: [263.4, 269.5],
+    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'idontknow', seg: [264, 269.05],
       stem: 'What does “Yeah, I don’t know, Ron” mean here?', ja: '“Yeah, I don’t know, Ron” はここでどういう意味？',
       choices: ['I don’t think that’s good', 'I didn’t know about that plan', 'Yes, that sounds good'], a: 0,
       choicesJa: ['それはよくないと思う', 'それは知らなかった', 'うん、いいね'],
-      cue: 'ジェリーが週に来ると聞いたあとの返事',
+      cue: '「just when we were rid of him?」のあと',
       line: 'Oh, just when we were rid of him? — Yeah, *I don’t know*, Ron.',
       said: '「やっと縁が切れたと思ったのに？」「うーん、どうですかね、ロン」。',
       mean: '文字どおりは「うん、わからない」。ここは「それはどうかな」とやんわり反対する言い方。Yeah はつなぎの言葉。',
