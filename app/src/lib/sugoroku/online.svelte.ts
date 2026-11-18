@@ -152,7 +152,8 @@ export function listen(eager = false): void {
 /** Start an online game: its id and first move (the rules' version on it), sent. */
 export function startOnline(seats: string, l: 's' | 'n' | 'l'): void {
   listen();
-  const g = newGameId(untrack(() => online.cur.g));
+  // (an e2e's pinned id: `?demo&sgId=<10 letters>`, test mode only)
+  const g = hook('sgId') || newGameId(untrack(() => online.cur.g));
   const move: Move = { g, i: 0, a: 'start', s: seats, l, r: RULES, who: me() };
   keep({ g, log: [move], held: [], at: clock() });
   send(move);
