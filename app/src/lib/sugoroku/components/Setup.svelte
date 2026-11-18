@@ -3,6 +3,7 @@
   // own), who plays (2–3 of us, turns in the order picked), each one's English level, the game's length; スタート.
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
+  import Segmented from '#lib/components/ui/Segmented.svelte';
   import { MAX_PLAYERS, MIN_PLAYERS, type Length, type Level } from '../game.ts';
   import type { Who } from '#lib/types.ts';
   import { s } from '../i18n.ts';
@@ -22,21 +23,17 @@
     onclose: () => void;
   }
   let { people, me, nameOf, picked = $bindable(), levels = $bindable(), length = $bindable(), playMode = $bindable(), onstart, onspeech, onback, onclose }: Props = $props();
-  const LEVELS = [1, 2, 3] as const;
-  const LENGTHS = ['short', 'normal', 'long'] as const;
-  const MODES = ['local', 'online'] as const;
+  // (the kit's Segmented: 36 drawn in a 44 hit, docs/design.md "Sizes")
+  const LEVELS = ([1, 2, 3] as const).map((lv) => ({ id: String(lv) as '1' | '2' | '3', label: s(`level.${lv}`) }));
+  const LENGTHS = (['short', 'normal', 'long'] as const).map((id) => ({ id, label: s(`length.${id}`) }));
+  const MODES = (['local', 'online'] as const).map((id) => ({ id, label: s(`mode.${id}`) }));
   const toggle = (w: Who) => (picked = picked.includes(w) ? picked.filter((p) => p !== w) : picked.length < MAX_PLAYERS ? [...picked, w] : picked);
   const canStart = $derived(picked.length >= MIN_PLAYERS && (playMode === 'local' || picked.includes(me)));
 </script>
 
 <div class="top"><NavBar pad title={s('setupTitle')} {onback} {onclose} /></div>
 <div class="body sheet-scroll">
-  <span class="seg wide2" role="radiogroup" aria-label={s('mode')}>
-    {#each MODES as md (md)}
-      <button type="button" role="radio" class="sg-chip" aria-checked={playMode === md} data-sfx="none" data-sg-mode={md}
-        onclick={() => (playMode = md)}>{s(`mode.${md}`)}</button>
-    {/each}
-  </span>
+  <Segmented items={MODES} value={playMode} label={s('mode')} attr="sg-mode" onpick={(id) => (playMode = id)} />
   <p class="note">{playMode === 'online' ? s('onlineNote') : s('setupNote')}</p>
   <div class="seats" data-sg-seats>
     {#each people as w (w)}
@@ -54,23 +51,15 @@
       {#each picked as k (k)}
         <div class="row lrow" role="listitem" data-sg-level-row={k}>
           <Avatar person={k} worn size={32} /><span class="nm">{nameOf(k)}</span>
-          <span class="seg" role="radiogroup" aria-label={s('levelOf', { name: nameOf(k) })}>
-            {#each LEVELS as lv (lv)}
-              <button type="button" role="radio" class="sg-chip" aria-checked={(levels[k] ?? 2) === lv} data-sfx="none" data-sg-level={lv}
-                onclick={() => (levels = { ...levels, [k]: lv })}>{s(`level.${lv}`)}</button>
-            {/each}
-          </span>
+          <span class="lseg"><Segmented items={LEVELS} value={String(levels[k] ?? 2) as '1' | '2' | '3'} label={s('levelOf', { name: nameOf(k) })} attr="sg-level"
+            onpick={(id) => (levels = { ...levels, [k]: Number(id) as Level })} /></span>
         </div>
       {/each}
     </div>
   {/if}
   {#if playMode === 'online' && !picked.includes(me)}<p class="note">{s('meNeeded')}</p>{/if}
   <h3 class="sec-label">{s('length')}</h3>
-  <span class="seg wide2" role="radiogroup" aria-label={s('length')}>
-    {#each LENGTHS as L (L)}
-      <button type="button" role="radio" class="sg-chip" aria-checked={length === L} data-sfx="none" data-sg-length={L} onclick={() => (length = L)}>{s(`length.${L}`)}</button>
-    {/each}
-  </span>
+  <Segmented items={LENGTHS} value={length} label={s('length')} attr="sg-length" onpick={(id) => (length = id)} />
   <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={onstart}>{s('start')}</button>
   <!-- the relay's Whisper on trial (docs/speech-test.md) -->
   <button type="button" class="speech" data-sfx="tick" data-sg-speech onclick={onspeech}>{s('speechTest')}</button>
@@ -92,13 +81,9 @@
   .ord { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
     background: var(--c-ink); color: var(--c-cream); font: 600 13px/1 var(--font-num); }
   .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .wide2 { align-self: center; }
   .lrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
   .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }
-  .lrow .seg { margin-left: auto; }
-  .seg { display: inline-flex; gap: 4px; }
-  .sg-chip { min-height: 36px; padding: 0 10px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer;
-    background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); }
-  .sg-chip[aria-checked='true'] { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
+  /* (a row's level switch: its own line on a narrow phone) */
+  .lseg { flex: 1 1 13.5em; min-width: 0; margin-left: auto; padding: 4px 0; }
   .speech { align-self: center; margin-top: 4px; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-soft); font: 600 var(--fs-s)/1 var(--font-ui); }
 </style>

@@ -106,14 +106,14 @@
       {#if giving}
         <span class="note">{s('sendTo', { l: giving.toUpperCase() })}</span>
         {#each takers as tk (tk.who)}
-          <button type="button" class="sg-chip" data-sfx="confirm" data-sg-give={tk.who}
+          <button type="button" class="chip big" data-sfx="confirm" data-sg-give={tk.who}
             onclick={() => { const l = giving!; giving = null; onact({ a: 'gift', ch: l, to: tk.who }); }}>
             <Avatar person={tk.who} worn size={20} /> {tk.name}</button>
         {/each}
-        <button type="button" class="sg-chip" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
+        <button type="button" class="chip big" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
       {:else}
         <span class="note">{s('sendLetter')}</span>
-        {#each cur.pocket as l, j (j)}<button type="button" class="sg-chip" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}
+        {#each cur.pocket as l, j (j)}<button type="button" class="chip big" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}
       {/if}
     </div>
   {/if}
@@ -157,7 +157,7 @@
     <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>
     <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
     {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
-    {:else}<button type="button" class="sg-chip peek" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
+    {:else}<button type="button" class="chip big" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
     <div class="actrow">
       <span class="chip-eff" data-sg-effect>{effectOf(card)}</span>
       <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => onact({ a: 'ev' })}>{s('ok')}</button>
@@ -177,10 +177,8 @@
   .who { display: flex; align-items: center; gap: 12px; }
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .sg-chip { min-height: 36px; padding: 0 10px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer;
-    background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); }
   .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
-  .gift .sg-chip { min-height: 44px; }
+  .gift .chip { gap: 6px; }
   .fork { display: flex; flex-direction: column; gap: 8px; }
   .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -196,7 +194,6 @@
   .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
   .event .ja { margin: 0; font-size: var(--fs-s); line-height: 18px; color: var(--text-soft); }
   .event .ja.big { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
-  .peek { min-height: 44px; }
   .actrow { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; }
   .chip-eff { flex: none; padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .actrow .btn { flex: 1; min-width: 0; }

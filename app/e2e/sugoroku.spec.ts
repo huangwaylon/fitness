@@ -73,7 +73,7 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   // (A やさしい, B むずかしい)
   await sheet(page).locator('[data-sg-level-row]').nth(0).locator('[data-sg-level="1"]').tap();
   await sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]').tap();
-  await expect(sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-sg-length="short"]').tap();
   await sheet(page).locator('[data-sg-start]').tap();
   // its own screen: the 3D board over the turn's panel
