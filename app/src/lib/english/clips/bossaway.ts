@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 0, new 6, ctx 7, tx 11
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 0, new 6, ctx 7, tx 11, qa 25
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 7, new 0
 // “when the boss isn't in the office | Parks and Recreation” (the official Parks and Recreation channel, Season 4):
 // with Leslie away, the parks department suddenly makes Ann's water-fountain hygiene project its top priority; the
@@ -6,9 +6,8 @@
 // "major project", and a simple fix wins them time.
 // Segments from the captions, words from whisper (2026-11-16). Names said: Ann, Leslie, Andy, Jerry, Tom, April, Donna,
 // Ben. The man who greets Ann and the man hiring for Leslie's job are never named, so stems describe them.
-// EXCLUDE 224.5–227.5
 // Untested on purpose: 40–45 s, 61–72 s (visual), 115–121 s (the reply to April differs in the sources), 129–146 s and
-// 160–173 s (sprays and a water fight), 224.5–227.5 s (innuendo; whisper loops from 230 s). Restored: d1 (R4).
+// 160–173 s (sprays and a water fight), 225–228 s (Ben line: mild innuendo, playable; whisper loops from 230 s). Restored: d1 (R4).
 // EAR CHECK: 122.2–123.2 s t2 — whisper "Do I look like I drank water?", captions "…I drink water?" (the key holds either way)
 import type { Clip } from '../types.ts';
 
@@ -18,7 +17,7 @@ export const bossAway: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'name', ctx: true, seg: [0, 6.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'name', ctx: true, seg: [0, 6.45],
       stem: 'Why is Ann surprised by the greeting?', ja: 'アンはなぜ、あいさつにおどろく？',
       choices: ['He got her name right', 'He has never met her', 'He used her first name'], a: 0,
       choicesJa: ['名前を正しく言えた', '彼とは初対面', '下の名前で呼んだ'],
@@ -29,7 +28,7 @@ export const bossAway: Clip = {
       trap: 'first time から初対面と考えがち。初めてなのは「正しく言えたこと」。',
       use: 'That’s the first time you’ve gotten it right.（ちゃんとできたの初めてだね）' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'priority', ctx: true, seg: [6.8, 13.6],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'priority', ctx: true, seg: [6.45, 13.5],
       stem: 'What good news does Ann get?', ja: 'アンが聞くいい知らせは？',
       choices: ['Her project will come first', 'Her project will get money', 'Her project is finished'], a: 0,
       choicesJa: ['彼女の計画が最優先になる', '彼女の計画にお金が出る', '彼女の計画が終わった'],
@@ -40,7 +39,7 @@ export const bossAway: Clip = {
       trap: 'good news から、お金がつく話を連想しやすい。聞こえるのは number one（1番）。',
       use: 'Safety is our number one priority.（安全が最優先です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'spouts', seg: [13.6, 21],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'spouts', seg: [13.45, 20.05],
       stem: 'What is the local habit with water fountains?', ja: '水飲み場での、この町の人のクセは？',
       choices: ['They put their mouths over it', 'They put their hands over it', 'They drink from underneath it'], a: 0,
       choicesJa: ['飲み口に口をかぶせる', '飲み口に手をかぶせる', '下から飲む'],
@@ -64,18 +63,18 @@ export const bossAway: Clip = {
       trap: 'kiss を文字どおりのあいさつと取りやすい。後半の everyone がたとえの要。',
       use: 'Share a cup, share a cold.（コップを回せば、風邪も回る）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [29.1, 37.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [29.1, 36.85], keep: true,
       stem: 'When should the project be done?', ja: 'この計画は、いつまでに終わらせる？',
-      choices: ['By tonight', 'By tomorrow', 'By next week'], a: 1,
-      choicesJa: ['今夜までに', '明日までに', '来週までに'],
+      choices: ['By tonight', 'By tomorrow', 'By Friday', 'By next week'], a: 1,
+      choicesJa: ['今夜までに', '明日までに', '金曜までに', '来週までに'],
       cue: '「complete this project」のあと。',
       line: 'I’d like to complete this project *by tomorrow*.',
       said: '「この計画は明日までに終わらせたい」と言う。',
       mean: 'by 〜 ＝ 〜までに。期限を言う言い方。I’d like to ＝ 〜したい（ていねい）。',
-      trap: 'tonight なら最後が「ナイト」、next week なら「ネクスト」で始まる。「トゥモロウ」なら明日。',
+      trap: 'tonight なら最後が「ナイト」、Friday なら「フライ」、next week なら「ネクスト」で始まる。「トゥモロウ」なら明日。',
       use: 'Can you finish it by Friday?（金曜までに終わる？）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shop', seg: [34.1, 39.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'shop', seg: [34.85, 38.7],
       stem: 'What does “Set up shop in our office” mean?', ja: '“Set up shop in our office” はどういう意味？',
       choices: ['Work in our office for now', 'Open a store in our office', 'Run our office for us'], a: 0,
       choicesJa: ['しばらくうちのオフィスで仕事して', 'うちのオフィスに店を開いて', 'うちのオフィスを仕切って'],
@@ -86,7 +85,7 @@ export const bossAway: Clip = {
       trap: 'shop を「店」と思いやすい。続く take Leslie’s desk（机を使って）も、仕事場のこと。',
       use: 'You can set up shop in the kitchen.（台所を作業場にしていいよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', seg: [46, 72.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', seg: [46, 72.3],
       stem: 'What is the meeting trying to make?', ja: 'この会議では、何を作ろうとしている？',
       choices: ['A fountain mouths can’t touch', 'A fountain that cleans itself', 'Posters about disease'], a: 0,
       choicesJa: ['口をつけられない水飲み場', '自分できれいになる水飲み場', '病気のポスター'],
@@ -108,7 +107,7 @@ export const bossAway: Clip = {
       trap: 'このあとジェリーやトムも案を出すので名前がまざりやすい。tester の前の名前を聞く。',
       use: 'Can I give it a test drive?（試しに使ってみてもいい？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cage', seg: [72, 80],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cage', seg: [72.3, 79.95],
       stem: 'What does Jerry suggest?', ja: 'ジェリーの提案は？',
       choices: ['Putting a cage around the fountain', 'Putting a sign above the fountain', 'Putting cups next to the fountain'], a: 0,
       choicesJa: ['水飲み場のまわりにかごをつける', '水飲み場の上に注意書きをつける', '水飲み場の横にコップを置く'],
@@ -168,18 +167,18 @@ export const bossAway: Clip = {
       trap: 'no water fountain だけ聞くと投げやりな答えに聞こえる。そのあとの商品紹介まで聞く。',
       use: 'How about we just order pizza?（いっそピザを頼むのはどう？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'price', seg: [104, 113.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'price', seg: [104, 113.45], keep: true,
       stem: 'What price does Tom give for the Water Butler?', ja: 'トムが言うウォーターバトラーの値段は？',
-      choices: ['$60 a bag', '$600 a bag', '$6,000 a bag'], a: 1,
-      choicesJa: ['1袋60ドル', '1袋600ドル', '1袋6,000ドル'],
+      choices: ['$6 a bag', '$60 a bag', '$600 a bag', '$6,000 a bag'], a: 2,
+      choicesJa: ['1袋6ドル', '1袋60ドル', '1袋600ドル', '1袋6,000ドル'],
       cue: '「at only」のあと',
       line: 'This is the Voss Water Butler… at only *$600* a bag.',
       said: '「1袋たった600ドル」と売りこむ。',
       mean: 'six hundred ＝ 600。only を付けて安く聞かせるのは、宣伝の言い方。',
-      trap: '60 なら「シックスティ」で終わる。6,000 なら「サウザンド」。「シックス・ハンドレッド」なら600。',
+      trap: '6 なら「シックス」だけ、60 なら「シックスティ」、6,000 なら「サウザンド」。「シックス・ハンドレッド」なら600。',
       use: 'Only twenty dollars a month!（月たったの20ドル！）' },
 
-    { id: 't1', skill: 'infer', level: 'B1', point: 'book', ctx: true, seg: [111.3, 117.5],
+    { id: 't1', skill: 'infer', level: 'B1', point: 'book', ctx: true, seg: [111.78, 119.0],
       stem: 'What is April’s idea?', ja: 'エイプリルの案は？',
       choices: ['To read alone in a room', 'To get ideas from a book', 'To work in a quiet room'], a: 0,
       choicesJa: ['部屋でひとりで本を読む', '本からアイデアを得る', '静かな部屋で作業する'],
@@ -205,7 +204,7 @@ export const bossAway: Clip = {
       trap: 'Is it good? を本当の興味と取りやすい。最後の you’re gonna help が結論。',
       use: 'Sounds fun, but you’re helping me.（楽しそうだけど、手伝ってね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'drink', seg: [120.8, 125.8],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'drink', seg: [120.8, 125.45],
       stem: 'What does Donna mean by “Do I look like I drink water?”', ja: 'ドナの “Do I look like I drink water?” はどういう意味？',
       choices: ['No, I never drink it', 'Yes, I’m very thirsty', 'I’m not really sure'], a: 0,
       choicesJa: ['いや、水なんて飲まない', 'うん、のどがかわいた', 'よく分からない'],
@@ -216,7 +215,7 @@ export const bossAway: Clip = {
       trap: '字のまま「のどがかわいて見える？」と思いやすい。Do I look like 〜? は「そんなわけない」。',
       use: 'Do I look like a chef?（私が料理人に見える？）' },
 
-    { id: 's1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [122.5, 128.5],
+    { id: 's1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [122.05, 128.5],
       stem: 'What kind of line is “Why don’t we just…?”', ja: '“Why don’t we just…?” は、どんな種類の発言？',
       choices: ['Making a suggestion', 'Asking for a reason', 'Making a complaint'], a: 0,
       choicesJa: ['提案している', '理由をたずねている', '文句を言っている'],
@@ -227,7 +226,7 @@ export const bossAway: Clip = {
       trap: 'why（なぜ）から、理由を聞く質問と考えがち。答えは because ではなく、Okay や Good idea。',
       use: 'Why don’t we take a break?（ちょっと休憩しない？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pressure', seg: [123, 130.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pressure', seg: [123.42, 130.9],
       stem: 'Why change the water pressure?', ja: 'なぜ水の勢いを変える？',
       choices: ['So mouths can stay away', 'So the spout stays clean', 'So people don’t bend down'], a: 0,
       choicesJa: ['口を離していられるように', '口がきれいなままになるように', 'かがまなくていいように'],
@@ -253,15 +252,15 @@ export const bossAway: Clip = {
       trap: 'major project を本気と取りやすい。大げさな言葉が断る理由になったら口実を疑う。',
       use: 'Sorry, I’m swamped with a big project.（ごめん、大きな仕事で手いっぱいで）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'candidates', seg: [147.7, 155.3], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'candidates', seg: [147.7, 154.75], keep: true,
       stem: 'How many candidates would he like to hire?', ja: '彼は何人の候補者を雇いたい？',
-      choices: ['2', '5', '7'], a: 1,
-      choicesJa: ['2人', '5人', '7人'],
+      choices: ['2', '5', '7', '9'], a: 1,
+      choicesJa: ['2人', '5人', '7人', '9人'],
       cue: '「I have found」のあと。',
       line: 'I have found *five candidates* I’d like to hire, and two…',
       said: '「雇いたい候補者が5人見つかった」と言い、別に2人の話を足す。',
       mean: 'candidate ＝ 候補者。あとの two は、雇う人数ではない。',
-      trap: '2 なら「トゥー」、7 は「セヴン」と2拍。「ファイヴ」なら5。最後の two は別の話。',
+      trap: '2 なら「トゥー」、7 は「セヴン」と2拍、9 は「ナイン」。「ファイヴ」なら5。最後の two は別の話。',
       use: 'We have three people for the job.（その仕事の候補は3人です）' },
 
     // R fix: V2 (55 % blind): the key was the only abstract, clever-sounding choice. All three are now "He wants two
@@ -308,7 +307,7 @@ export const bossAway: Clip = {
 
       use: 'This room could use a little cleaning.（この部屋、ちょっと掃除が要るね）' },
 
-    { id: 'k8', skill: 'phrase', level: 'B2', point: 'leadership', seg: [173.5, 183.4],
+    { id: 'k8', skill: 'phrase', level: 'B2', point: 'leadership', seg: [173.2, 184.0],
       stem: 'What does “this department could use a little leadership” mean?', ja: '“this department could use a little leadership” はどういう意味？',
       choices: ['It needs someone to lead it', 'It can use any leader it likes', 'It has a good leader now'], a: 0,
       choicesJa: ['まとめる人が必要だ', '好きなリーダーを使える', '今いいリーダーがいる'],
@@ -319,7 +318,7 @@ export const bossAway: Clip = {
       trap: 'use から「使える」と取りやすいが、could use ＋物 は「〜がほしい」。',
       use: 'I could use some help.（ちょっと手伝ってもらえると助かる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'important', seg: [188.9, 196],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'important', seg: [188.9, 195.65],
       stem: 'Type what he asks: “Hey, guys. ___?” (3 words)', ja: '書こう：“Hey, guys. ___?”（3語）',
       answer: "what's so important",
       cue: '「Hey, guys」のすぐあと。',
@@ -329,7 +328,7 @@ export const bossAway: Clip = {
       trap: 's が一つに聞こえるので、what so と書きやすい。what’s ＝ what is。',
       use: 'What’s so funny?（何がそんなにおかしいの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', seg: [190, 224.4],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', seg: [190, 225.2],
       stem: 'How does the fountain project turn out?', ja: '水飲み場の計画は、どうなる？',
       choices: ['A simple fix works well', 'A simple fix costs too much', 'A simple fix fails'], a: 0,
       choicesJa: ['簡単な工夫がうまくいく', '簡単な工夫だが高すぎる', '簡単な工夫が失敗する'],
@@ -340,7 +339,7 @@ export const bossAway: Clip = {
       trap: 'cost が聞こえて「高すぎる」に聞こえるが、cost-effective は「安上がり」。',
       use: 'Simple and cheap. I love it.（シンプルで安い。最高）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B1', point: 'balloon', ctx: true, seg: [190.8, 202.3],
+    { id: 'h3', skill: 'phrase', level: 'B1', point: 'balloon', ctx: true, seg: [190.3, 202.3],
       stem: 'What does “Fair enough” mean here?', ja: 'ここでの “Fair enough” はどういう意味？',
       choices: ['Okay, that’s true', 'That’s not fair', 'That’s way too much'], a: 0,
       choicesJa: ['まあ、そうだな', 'それはずるい', 'それはやりすぎ'],
@@ -362,7 +361,7 @@ export const bossAway: Clip = {
       trap: 'spoutless（口なし）という名前から、口ごと外したと思いやすい。removed のあとを聞く。',
       use: 'Just remove the lid.（ふたを外すだけでいい）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'holdoff', seg: [217.4, 224.4],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'holdoff', seg: [217.4, 225.2],
       stem: 'What does “hold off on filling” Leslie’s spot mean?', ja: 'レスリーの席について “hold off on filling” はどういう意味？',
       choices: ['Wait for now', 'Never do it', 'Do it today'], a: 0,
       choicesJa: ['今は待つ', '絶対にしない', '今日する'],

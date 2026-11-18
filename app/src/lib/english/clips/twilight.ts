@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 12, retire 1, new 4, ctx 6, tx 17
+// R4 REVIEW 2026-11-18: keep 6, rewrite 12, retire 1, new 4, ctx 6, tx 17, qa 15
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 3, new 1
 // “Is Twilight Worth Saving? | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Kelly has
 // chained himself to a pipe in Leslie's office until Twilight goes into the town's time capsule; Leslie didn't like
@@ -28,7 +28,7 @@ export const twilightCapsule: Clip = {
       trap: 'down から「座って」や「下に置いて」を連想しやすい。前の be quiet（静かにして）が決め手。',
       use: 'Please keep it down after ten.（10時以降はお静かに願います）' },
 
-    { id: 'a0', skill: 'attitude', level: 'B1', point: 'worst', seg: [22.4, 30.7],
+    { id: 'a0', skill: 'attitude', level: 'B1', point: 'worst', seg: [22.4, 30.35],
       stem: 'How does Leslie feel about her coworkers here?',
       ja: 'ここでレスリーは同僚たちをどう思っている？',
       choices: ['Annoyed with them', 'Hurt by them', 'Worried about them'], a: 0,
@@ -64,7 +64,7 @@ export const twilightCapsule: Clip = {
       trap: 'No が聞こえて「だめ」と勘違いしやすい。No problem ＝ 問題ない＝かまわない、の決まり文句。',
       use: 'I hope you don’t mind, I sat here.（ここに座ったけど、いいかな）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'considering', seg: [48.5, 54.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'considering', seg: [48.5, 54.4],
       stem: 'What does “All right, considering” mean?',
       ja: '「All right, considering」の意味は？',
       choices: ['OK, given where he slept', 'OK, after he thought a bit', 'OK, but he isn’t sure'], a: 0,
@@ -76,7 +76,7 @@ export const twilightCapsule: Clip = {
       trap: 'considering を「考え中」と思いやすい。最後に一語だけ置くと「〜のわりには」。',
       use: 'The hotel was nice, considering the price.（値段のわりにいいホテルだった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'pickup', seg: [50.6, 56.6],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'pickup', seg: [50.6, 54.4],
       stem: 'What does “I picked you up some coffee” mean?',
       ja: '「I picked you up some coffee」の意味は？',
       choices: ['She bought him a coffee', 'She’ll drive him to a café', 'She wants him to buy one'], a: 0,
@@ -98,7 +98,7 @@ export const twilightCapsule: Clip = {
       trap: '徹夜明けの場面なので「疲れ」を予想しやすい。pretty は「かなり」で、弱める語ではない。',
       use: 'You’re chipper today!（今日は元気だね！）' },
 
-    { id: 'c3', skill: 'detail', level: 'B1', point: 'knowwhy', ctx: true, seg: [54.6, 61.2],
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'knowwhy', ctx: true, seg: [54.4, 60.9],
       stem: 'Kelly says Leslie seems happy. Why is she?',
       ja: 'ケリーはレスリーが元気そうだと言う。なぜ？',
       choices: ['She knows why he’s here', 'She read the whole book', 'She slept really well'], a: 0,
@@ -122,19 +122,19 @@ export const twilightCapsule: Clip = {
       trap: 'Well を「よし」「元気」と思いやすい。そのあと「10ページだけ」と、期待より少ない話が続く。',
       use: 'Well, it wasn’t really my thing.（うーん、あまり好みじゃなかった）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'pages', seg: [62.5, 69.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'pages', seg: [62.5, 69.3], keep: true,
       stem: 'How many pages of the book did Leslie read?',
       ja: 'レスリーは本を何ページ読んだ？',
-      choices: ['2', '10', '20'], a: 1,
-      choicesJa: ['2ページ', '10ページ', '20ページ'],
+      choices: ['2', '10', '20', '100'], a: 1,
+      choicesJa: ['2ページ', '10ページ', '20ページ', '100ページ'],
       cue: '「the first」のすぐあと。',
       line: 'I read *the first ten pages*.',
       said: '「最初の10ページは読んだ」と言う。',
       mean: 'the first ten pages ＝ 最初の10ページ。それ以上は読んでいない。',
-      trap: 'two は「トゥー」で n がない。twenty は「トゥエニ」と2音。「テン」と1音なら10。',
+      trap: 'two は「トゥー」で n がない。twenty は「トゥエニ」と2音、hundred は「ハンドレッド」。「テン」と1音なら10。',
       use: 'I only saw the first ten minutes.（最初の10分しか見てない）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'getinto', seg: [65, 72.2],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'getinto', seg: [66.2, 72.2],
       stem: 'What does “I couldn’t get into it” mean?',
       ja: '「I couldn’t get into it」の意味は？',
       choices: ['She didn’t enjoy it', 'She didn’t understand it', 'She didn’t have the time'], a: 0,
@@ -146,7 +146,7 @@ export const twilightCapsule: Clip = {
       trap: 'get は「分かる」の意味もあるので、理解できなかったと考えがち。get into ＋ 作品は「はまる」。',
       use: 'I just couldn’t get into that show.（あの番組にはまれなかった）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'finding', reveals: ['why'], seg: [72.0, 93.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'finding', reveals: ['why'], seg: [72.0, 93.2],
       stem: 'What does Leslie find out about Kelly?',
       ja: 'レスリーはケリーについて何を知った？',
       choices: ['His daughter is a fan', 'His wife wrote the book', 'He works at a school'], a: 0,
@@ -161,16 +161,16 @@ export const twilightCapsule: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'age', seg: [75, 82.3], keep: true,
       stem: 'How old is Kelly’s daughter Liz?',
       ja: 'ケリーの娘のリズは何歳？',
-      choices: ['12', '20', '22'], a: 0,
-      choicesJa: ['12歳', '20歳', '22歳'],
+      choices: ['11', '12', '20', '22'], a: 1,
+      choicesJa: ['11歳', '12歳', '20歳', '22歳'],
       cue: '「years old」の直前。',
       line: 'Liz Waverly is *12 years old*.',
       said: '少し調べたら、リズ・ウェイバリーは12歳だった、と言う。',
       mean: 'twelve ＝ 12。「トゥエルヴ」と1つの音のかたまり。すぐあとで中学生と分かる。',
-      trap: 'twenty は「トゥエニ」で最後に「ル」がない。twenty-two はさらに長い。「ル」が聞こえたら12。',
+      trap: 'eleven は「イレヴン」と「イ」で始まる。twenty は「トゥエニ」で「ル」がなく、twenty-two はさらに長い。「トゥエルヴ」なら12。',
       use: 'My son is twelve years old.（息子は12歳です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'why', ctx: true, seg: [89.0, 101.0],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'why', ctx: true, seg: [89.0, 101.6],
       stem: 'Why did Kelly start his protest?',
       ja: 'ケリーはなぜ抗議を始めた？',
       choices: ['To make his daughter happy', 'To be in the newspaper', 'To see his ex-wife again'], a: 0,
@@ -182,7 +182,7 @@ export const twilightCapsule: Clip = {
       trap: 'divorced（離婚した）から、元妻の話と勘違いしやすい。her は娘のリズのこと。',
       use: 'It’s been really hard on all of us.（みんなにとって本当につらかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldve', seg: [104.8, 113.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldve', seg: [105.75, 113.4],
       stem: 'Fill the gap: “You ___ told me you were doing this…”',
       ja: '空いている所に入る語は？',
       choices: ['should have', 'shouldn’t have', 'could have'], a: 0,
@@ -205,7 +205,7 @@ export const twilightCapsule: Clip = {
       trap: '「べきだった」と訳すと叱責、shouldn’t と聞くと逆の意味。直前の sweet と聞く。',
       use: 'You should have told me! I’d have helped.（言ってくれれば手伝ったのに）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'drag', seg: [107.9, 115],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'drag', seg: [107.9, 114.6],
       stem: 'What does “drag her into it” mean?',
       ja: '「drag her into it」の意味は？',
       choices: ['Make her part of it', 'Pull her into the office', 'Make her bored with it'], a: 0,
@@ -332,7 +332,7 @@ export const twilightCapsule: Clip = {
       trap: 'government（市・政府）が聞こえるので、政治の物と考えがち。so（だから）のあとが本題。',
       use: 'Please refrain from using your phone.（携帯のご使用はお控えください）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'bible', reveals: ['rules'], seg: [170.7, 178.1],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'bible', reveals: ['rules'], seg: [168.7, 178.1],
       stem: 'What does the first person want to put in?',
       ja: '最初の人は何を入れたいと言う？',
       choices: ['The Bible', 'Twilight', 'Harry Potter'], a: 0,

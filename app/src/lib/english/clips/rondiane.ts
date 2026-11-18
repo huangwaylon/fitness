@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 15, retire 1, new 0, ctx 5, tx 9, qa 18
+// R4 REVIEW 2026-11-18: keep 5, rewrite 15, retire 1, new 0, ctx 5, tx 9, qa 18, qa2 1
 // A2 REVIEW 2026-11-17: keep 11, rewrite 8, retire 4, new 0
 // “Ron Swanson Tells Diane He Loves Her | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Ann and Ron babysit Diane's girls, who lock themselves in to "do surgery" with Ann's medical bag and cut hair; Ron
@@ -117,17 +117,17 @@ export const ronDiane: Clip = {
       mean: 'be capable of 〜ing ＝ 〜する力がある。without 〜 ＝ 〜なしで。',
       trap: 'children で止めると「楽しませる」とも考えがち。without のあとは事故の話。',
       use: 'I’m capable of handling this.（これくらい自分でできます）' },
-    { id: 's2', skill: 'sound', level: 'B2', point: 'didyou', seg: [91.4, 97.2],
-      stem: 'Fill the gap: “___ just say you love Diane?”',
-      ja: '「___ just say you love Diane?」の空所は？',
-      choices: ['Did you', 'Didn’t you', 'Could you'], a: 0,
-      choicesJa: ['〜した？', '〜しなかった？', '〜できる？'],
-      cue: '文の最初のつながった音', line: '*Did you* just say you love Diane?',
+    { id: 's2', skill: 'sound', level: 'B2', point: 'justsay', seg: [91.4, 95.45],
+      stem: 'Fill the gap: “Did you ___ you love Diane?”',
+      ja: '「Did you ___ you love Diane?」の空所は？',
+      choices: ['just say', 'really say', 'actually say'], a: 0,
+      choicesJa: ['今言った', '本当に言った', '実際に言った'],
+      cue: 'did you と say の間の短い音', line: 'Did you *just say* you love Diane?',
       said: '「今、ダイアンを愛してるって言った？」と聞き返す。',
-      mean: 'did you が「ディジュ」とつながる。just say ＝ たった今言った。',
-      trap: 'Didn’t なら「ン」が入り、Could なら「ク」で始まる。「ディジュ」なら Did you。',
-      use: 'Did you just call me “sir”?（今「サー」って呼んだ？）' },
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'deny', ctx: true, reveals: ['didyou'], seg: [92.4, 99.5],
+      mean: 'Did you just say 〜? ＝「今〜って言った？」。just の t はほぼ消えて「ジャス」と短く聞こえる。',
+      trap: 'どれを入れても文になる。really なら「リー」と2音、actually なら「アクチュ」と長い。you と say の間が1音だけなら just。',
+      use: 'Did you just say “free”?（今「無料」って言った？）' },
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'deny', ctx: true, reveals: ['justsay'], seg: [92.4, 99.5],
       stem: 'How does Ron answer Ann’s question?',
       ja: 'アンの質問に、ロンはどう答える？',
       choices: ['He says it isn’t true', 'He says he loves the girls', 'He asks Ann to leave'], a: 0,

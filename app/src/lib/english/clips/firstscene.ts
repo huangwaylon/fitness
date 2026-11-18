@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 5, retire 3, new 3, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 8, rewrite 5, retire 3, new 3, ctx 3, tx 7, qa 16
 // A2 REVIEW 2026-11-17: keep 1, rewrite 15, retire 3, new 0
 // “The First Scene Ever | Parks and Recreation” (the official Parks and Recreation channel, Season 1): Leslie runs a
 // park survey, coaxes a drunk out of a children's slide, and tells the camera how much her government job matters and
@@ -14,7 +14,7 @@ export const firstScene: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'mission', reveals: ['put'], seg: [0, 27.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'mission', reveals: ['put'], seg: [0, 26.1],
       stem: 'What does Leslie’s survey ask people about?',
       ja: 'レスリーのアンケートは何について聞いている？',
       choices: ['How much fun they are having', 'How often they come to the park', 'What they want in the park'], a: 0,
@@ -59,7 +59,7 @@ export const firstScene: Clip = {
       trap: '言い回しがおかしいので冗談に聞こえやすいが、本人は真剣。すぐに答えを書いている。',
       use: 'On a scale of one to five?（5段階で言うと？）' },
 
-    { id: 'c1', skill: 'phrase', level: 'B1', point: 'moderate', seg: [15.5, 22.6],
+    { id: 'c1', skill: 'phrase', level: 'B1', point: 'moderate', seg: [12.7, 22.6],
       stem: 'What does “a moderate amount of fun” mean?',
       ja: '「a moderate amount of fun」はどういう意味？',
       choices: ['Some fun, not a lot', 'More fun than usual', 'No fun at all'], a: 0,
@@ -71,7 +71,7 @@ export const firstScene: Clip = {
       trap: 'amount（量）と fun が聞こえるので、たくさん楽しいと考えがち。moderate と somewhat は「ほどほど」。',
       use: 'I do a moderate amount of exercise.（適度に運動しています）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'put', seg: [21.1, 26.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'put', seg: [20.8, 26.1],
       stem: 'What does “I’m gonna put a lot of fun” mean?',
       ja: '「I’m gonna put a lot of fun」はどういう意味？',
       choices: ['I’ll write that answer', 'I’ll add a new choice', 'I’ll ask it again later'], a: 0,
@@ -95,7 +95,7 @@ export const firstScene: Clip = {
       trap: 'need you to は「誰かを呼ぶ」ではなく「あなたに〜してもらう」。誰も呼んでいない。',
       use: 'Could you come this way, please?（こちらへどうぞ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'slide', seg: [26, 32.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'slide', seg: [26, 32.3],
       stem: 'What is the problem at the slide?',
       ja: '滑り台で何が問題になっている？',
       choices: ['A drunk man is stuck', 'A young child is stuck', 'A truck is stuck'], a: 0,
@@ -107,7 +107,7 @@ export const firstScene: Clip = {
       trap: 'drunk（ドランク）を truck（トラック）と聞きやすい。「ド」で始まり、最後に「ンク」。',
       use: 'My card is stuck in the machine.（カードが機械に詰まりました）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'allowed', ctx: true, reveals: ['slide', 'asleep'], seg: [27.0, 34.0],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'allowed', ctx: true, reveals: ['slide', 'asleep'], seg: [26.1, 33.85],
       stem: 'What does Leslie tell the man in the slide?',
       ja: 'レスリーは、滑り台の中の男に何と言う？',
       choices: ['He can’t sleep in there', 'He can’t play in there', 'He can’t drink in there'], a: 0,
@@ -130,11 +130,11 @@ export const firstScene: Clip = {
       trap: '「でも今は変わった」と続くので、昔の自分の考えと取りやすい。変わったのは人々の必要のほう。',
       use: 'And they’re like, “Why are you so late?”（で、みんな「なんで遅いの？」って感じ）', retired: true },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'needed', ctx: true, seg: [34.0, 46.0],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'needed', ctx: true, seg: [33.85, 45.85],
       stem: 'How does Leslie feel about her job now?',
       ja: 'レスリーは今、自分の仕事をどう感じている？',
-      choices: ['Happy to be needed', 'Tired of long lines', 'Sad that people complain'], a: 0,
-      choicesJa: ['必要とされてうれしい', '長い行列にうんざり', '文句を言われて悲しい'],
+      choices: ['Glad to be useful', 'Tired of long lines', 'Sad that people complain'], a: 0,
+      choicesJa: ['役に立ててうれしい', '長い行列にうんざり', '文句を言われて悲しい'],
       cue: '「But now」のあと',
       line: 'People: Oh, the government. The government *stinks*. / Leslie: But now things have changed… And it *feels good to be needed*.',
       said: '「役所なんて最悪」と言われてきたが、「今は変わった。必要とされるのはいい気分」と話す。',
@@ -142,7 +142,7 @@ export const firstScene: Clip = {
       trap: '前半の stinks や lines are too long は他の人の言葉。決め手は But now のあと。',
       use: 'It feels good to help.（人の役に立てるのはうれしい）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'needhelp', seg: [38.3, 46.2],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'needhelp', seg: [38.3, 45.85],
       stem: 'Type: “But now things have changed. People ___.” (3 words)', answer: 'need our help',
       ja: '空いている所を書こう：「But now things have changed. People ___.」（3語）',
       cue: '「things have changed」のあと',
@@ -188,7 +188,7 @@ export const firstScene: Clip = {
       trap: 'このあと get out と強くなるので、最初から命令と思いやすい。最初は質問の形だけ。',
       use: 'Do you want to sit over here?（こちらに座りますか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [50.1, 55.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [50.1, 55.2],
       stem: 'Which words do you hear: “Okay, ___ get out”?',
       ja: '「Okay, ___ get out」の空所に聞こえるのは？',
       choices: ['we’re gonna need you to', 'we’ll need you to', 'we just need you to'], a: 0,
@@ -200,7 +200,7 @@ export const firstScene: Clip = {
       trap: 'we’ll なら「ウィル」で「ガナ」がない。just なら「ジャス」が入る。「ガナ」が聞こえたら gonna。',
       use: 'We’re gonna need you to wait here.（こちらでお待ちいただくことになります）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'asleep', seg: [53.3, 64],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'asleep', seg: [54.35, 63.7],
       stem: 'Why doesn’t the park visitor move?',
       ja: '公園に来た男は、なぜ動かない？',
       choices: ['He is still sleeping', 'He is just ignoring her', 'He has hurt his leg'], a: 0,
@@ -212,7 +212,7 @@ export const firstScene: Clip = {
       trap: '返事がないので、無視していると考えがち。wake up（起きて）で、寝ていると分かる。',
       use: 'Wake up, we’re here.（起きて、着いたよ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'boysclub', seg: [57.8, 66.9],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'boysclub', seg: [57.8, 66.5],
       stem: 'What does “a boys’ club” mean here?',
       ja: 'ここでの「a boys’ club」はどういう意味？',
       choices: ['A group only for men', 'A club for young boys', 'A group for rich people'], a: 0,
@@ -224,11 +224,11 @@ export const firstScene: Clip = {
       trap: 'boys から「男の子」を連想しやすい。次の文の Women are everywhere が答え合わせ。',
       use: 'This office isn’t a boys’ club.（この職場は男だけの世界じゃない）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'future', seg: [63.0, 85.0],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'future', seg: [63.4, 85.0],
       stem: 'What does Leslie say about her own future?',
       ja: 'レスリーは自分の将来について何と言う？',
-      choices: ['She will go far in politics', 'She will leave the job soon', 'She will stay in the park'], a: 0,
-      choicesJa: ['政治の世界で大きく進む', 'もうすぐ仕事をやめる', 'ずっと公園にいる'],
+      choices: ['She will be a top leader', 'She will leave the job soon', 'She will stay in the park'], a: 0,
+      choicesJa: ['トップのリーダーになる', 'もうすぐ仕事をやめる', 'ずっと公園にいる'],
       cue: '「It’s a great time」から',
       line: 'Hillary Clinton, Sarah Palin, *me*, Nancy Pelosi. *We did it!* … my ride’s gonna be *a big one*.',
       said: '有名な女性政治家と自分を並べ、「私の旅は大きなものになる」と言う。',
@@ -271,11 +271,11 @@ export const firstScene: Clip = {
       trap: '公園の職員なので公園の話と思いやすい。get on board（乗り込んで）からの続きのたとえ。',
       use: 'It’s been a wild ride.（いろいろあったよ）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'motion', reveals: ['ride'], seg: [77.5, 85.7],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'motion', reveals: ['ride'], seg: [78.6, 85.7],
       stem: 'What does Leslie say to do for motion sickness?',
       ja: '乗り物酔いには、どうするようレスリーは言う？',
-      choices: ['Put your head down', 'Close your eyes', 'Hold on to something'], a: 0,
-      choicesJa: ['頭を下げる', '目を閉じる', '何かにつかまる'],
+      choices: ['Put your head down', 'Close your eyes', 'Hold something tight'], a: 0,
+      choicesJa: ['頭を下げる', '目を閉じる', '何かにしっかりつかまる'],
       cue: '「motion sickness」のあと',
       line: 'if you get *motion sickness*, *put your head between your knees*',
       said: '「乗り物酔いするなら、頭をひざの間に入れて」と言う。',
@@ -283,7 +283,7 @@ export const firstScene: Clip = {
       trap: 'ride（乗り物）の話なので「つかまる」と考えがち。言っているのは head（頭）の位置。',
       use: 'I get motion sickness on buses.（バスで酔いやすいんです）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'stop', seg: [78.5, 86.4],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'stop', seg: [78.65, 86.4],
       stem: 'What won’t Leslie do for anyone?',
       ja: 'レスリーが誰のためにもしないことは？',
       choices: ['Stop', 'Slow down', 'Wait'], a: 0,
