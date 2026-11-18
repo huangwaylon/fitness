@@ -1,9 +1,11 @@
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 3, new 0, ctx 5, tx 6
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 2
 // “The Most Loved Woman in Denmark | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at an
 // awards event Leslie meets a fellow honoree, Ollie, whose Danish hometown adores her (a goat-cheese statue to be eaten
 // with crackers), and finds her own Pawnee story is the opposite.
 // Segments from the captions, words from whisper (2026-11-16). The sources differ at 6.2 s, 49.2 s ("good cheese eye" /
 // "Good cheese, aye") and in Ollie's surname; no key rests on those words.
+// SKIP 82–112: the end card and music (whisper's last line runs to 112 s).
 import type { Clip } from '../types.ts';
 
 export const mostLovedDenmark: Clip = {
@@ -21,7 +23,7 @@ export const mostLovedDenmark: Clip = {
       line: 'she grew up in a hut… made of ice and mud. Then she *became their mayor, then their police chief*',
       said: '「氷と泥の小屋で育ち、町長になり、それから警察署長に」と紹介する。',
       mean: 'became ＝ 〜になった（become の過去形）。then で順番に並べている。',
-      trap: 'police chief の前の then を聞き落とすと、だれかの妻と思いやすい。',
+      trap: 'police chief の前の then を聞き落とすと、だれかの妻と勘違いしやすい。then が順番の合図。',
       use: 'First I was a student, then a teacher.（最初は学生、それから先生になった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'admire', seg: [10.4, 21.9],
@@ -33,7 +35,7 @@ export const mostLovedDenmark: Clip = {
       line: '…and their best wolverine wrangler. *I love her.*',
       said: '変わった経歴を並べたあと、「あの人、大好き」と一言添える。',
       mean: 'I love her ＝ あの人大好き。人をほめるときにも気軽に使う。',
-      trap: '変わった話が続くので、やりすぎと思っていると取りやすい。最後の I love her を聞く。',
+      trap: '変わった話が続くので、あきれていると考えがち。決め手は最後の I love her。',
       use: 'I love her. She’s so funny.（彼女大好き。すごく面白い）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'mustbe', seg: [19, 28.3],
@@ -45,46 +47,35 @@ export const mostLovedDenmark: Clip = {
       line: 'Oh, hi. *You must be* Leslie Knope. I’m one of the honorees.',
       said: '「こんにちは、レスリー・ノープさんね。私も受賞者の一人」とあいさつする。',
       mean: 'You must be 〜 ＝ きっと〜さんですね。初めて会う人へのあいさつでよく使う。',
-      trap: 'must を「〜しなければならない」と思いやすい。ここは「きっと〜だ」。',
+      trap: 'must は「〜しなければならない」と習うが、be の前では「きっと〜だ」。初対面のあいさつの決まり文句。',
       use: 'You must be Mr. Tanaka.（田中さんですね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'loves', seg: [20, 59.3],
-      stem: 'How does Ollie’s town feel about her?',
-      ja: 'オリーの町は彼女をどう思っている？',
-      choices: ['It loves her very much', 'It wants her to go away', 'It doesn’t know her'], a: 0,
-      choicesJa: ['とても愛している', '出ていってほしい', '彼女を知らない'],
-      cue: '「I love it」のあと',
-      line: 'I love it, and *it loves me*.',
-      said: '「町が大好きで、町も私が大好き」と言い、町が作った自分の像を見せる。',
-      mean: '町と人がおたがいに好き。像まで作ってもらっている。',
-      trap: '最後に「食べられる」と聞いて、きらわれていると思いやすい。They just love me を聞く。',
-      use: 'I love this city.（この街が大好き）' },
-
-    { id: 'a2', skill: 'detail', level: 'B2', point: 'face', seg: [23.2, 31.9],
+    { id: 'a2', skill: 'detail', level: 'B2', point: 'face', ctx: true, seg: [23.2, 31.9],
       stem: 'What does Leslie like about Ollie’s face?',
       ja: 'レスリーはオリーの顔のどこがいいと言う？',
       choices: ['Both sides look the same', 'It looks very young', 'It looks very familiar'], a: 0,
       choicesJa: ['左右がそっくり', 'とても若く見える', '見たことがある顔'],
       cue: '「What?」のあと',
-      line: 'Oh, *look at your face*. — What? — It’s just so *symmetrical*.',
+      line: 'Leslie: Oh, *look at your face*. / Ollie: What? / Leslie: It’s just so *symmetrical*.',
       said: '「その顔！」と言い、「何？」と聞かれて「すごく左右対称」と答える。',
       mean: 'symmetrical ＝ 左右対称。look at your face ＝ その顔を見て（ほめる前の言い方）。',
-      trap: 'look at your face で、何か付いていると思いやすい。symmetrical がほめ言葉。',
+      trap: 'look at your face で、顔に何か付いていると考えがち。決め手は What? の答えの symmetrical（ほめ言葉）。',
       use: 'Look at your new hair!（その新しい髪型、いいね！）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'denmark', seg: [29.4, 35.4],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'denmark', ctx: true, seg: [28.0, 35.0],
       stem: 'What does Ollie say after “thanks”?',
       ja: 'オリーは「ありがとう」のあと何と言う？',
       choices: ['Everyone in Denmark has it', 'People tell her that a lot', 'It runs in her family'], a: 0,
       choicesJa: ['デンマークではみんなそう', 'よく人に言われる', '家族みんなそう'],
       cue: '「Oh, thanks」のあと',
-      line: 'Oh, thanks. You know, *we all have that in Denmark*.',
+      line: 'Leslie: It’s just so symmetrical. / Ollie: Oh, thanks. You know, *we all have that in Denmark*.',
       said: 'お礼を言ってから、「デンマークではみんなそうなの」と付け足す。',
       mean: 'ほめられたら Thanks と受けて、ひと言足す。we all ＝ 私たちみんな。',
       trap: 'family（家族）は言っていない。we all … in Denmark で国の話。',
       use: 'Thanks. It’s from my mom.（ありがとう。母にもらったの）' },
 
-    { id: 'i2', skill: 'marker', level: 'B2', point: 'ofcourse', reveals: ['denmark'], seg: [31.4, 36.7],
+    // retired (R4): four starts in 23–33 s; p1 and x2 cover the lines
+    { id: 'i2', skill: 'marker', level: 'B2', point: 'ofcourse', reveals: ['denmark'], seg: [31.4, 36.7], retired: true,
       stem: 'What does Leslie mean by “*of course*” here?',
       ja: 'ここでのレスリーの「of course」はどういう意味？',
       choices: ['That makes sense', 'I knew it from your voice', 'I don’t believe you'], a: 0,
@@ -106,6 +97,18 @@ export const mostLovedDenmark: Clip = {
       trap: 'part of がつながり「パーロヴ」と聞こえる。of は小さく短い。',
       use: 'What part of Japan are you from?（日本のどこの出身ですか）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'loves', reveals: ['statue', 'crackers'], seg: [34.0, 58.0],
+      stem: 'How does Ollie’s town feel about her?',
+      ja: 'オリーの町は彼女をどう思っている？',
+      choices: ['It loves her very much', 'It wants her to go away', 'It doesn’t know her'], a: 0,
+      choicesJa: ['とても愛している', '出ていってほしい', '彼女を知らない'],
+      cue: '「I love it」のあと',
+      line: 'I love it, and *it loves me*.',
+      said: '「町が大好きで、町も私が大好き」と言い、町が作った自分の像を見せる。',
+      mean: '町と人がおたがいに好き。像まで作ってもらっている。',
+      trap: '像を「食べる」と聞くと、きらわれているように聞こえるが、最後に They just love me（みんな大好き）。',
+      use: 'I love this city.（この街が大好き）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'done', seg: [40.9, 47],
       stem: 'Fill the gap: “And look what ___ for me.”',
       ja: '「And look what ___ for me.」の空所は？',
@@ -118,19 +121,19 @@ export const mostLovedDenmark: Clip = {
       trap: 'they’d なら「ド」、they did なら「ディド」。「ゼイヴ」の v なら they’ve。',
       use: 'Look what I’ve done!（見て、できたよ！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'statue', seg: [46.3, 52.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'statue', ctx: true, seg: [46.3, 52.5],
       stem: 'What is Ollie’s statue made of?',
       ja: 'オリーの像は何でできている？',
       choices: ['Goat cheese', 'Ice and mud', 'Sweet butter'], a: 0,
       choicesJa: ['ヤギのチーズ', '氷と泥', '甘いバター'],
       cue: '「made out of」のあと',
-      line: 'It is made out of *goat cheese*. We have a lot of it.',
+      line: 'Leslie: Is that goat cheese? / Ollie: It is made out of *goat cheese*. We have a lot of it.',
       said: '「ヤギのチーズ？」と聞かれ、「ヤギのチーズ製。たくさんあるの」と答える。',
       mean: 'made out of 〜 ＝ 〜でできている。goat ＝ ヤギ。',
       trap: 'ice and mud（氷と泥）はモンゴルの女性の小屋の話。',
       use: 'What is this made of?（これは何でできていますか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'crackers', reveals: ['statue'], seg: [51.3, 58.3],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'crackers', reveals: ['statue'], seg: [51.3, 58.3],
       stem: 'What will people do with the statue?',
       ja: '人々は像をどうする？',
       choices: ['Eat it with crackers', 'Sell it for lots of money', 'Keep it forever'], a: 0,
@@ -139,7 +142,7 @@ export const mostLovedDenmark: Clip = {
       line: 'after tonight’s event, they’re gonna *consume* me *with crackers*.',
       said: '「今夜のあと、みんなクラッカーと一緒に私を食べるの」と言う。',
       mean: 'consume ＝ 食べる（かたい言い方）。me は「私の像」のこと。',
-      trap: 'consume を知らないと、売ると思いやすい。with crackers で食べると分かる。',
+      trap: 'consume は聞きなれない語だが、決め手は with crackers（クラッカーと一緒に）。食べる話。',
       use: 'We ate cheese with crackers.（チーズをクラッカーと食べた）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'crackers', seg: [52.1, 59.2], retired: true,
@@ -153,13 +156,13 @@ export const mostLovedDenmark: Clip = {
       trap: '自分を笑う冗談にも聞こえるが、They just love me は本気の自慢。it loves me と同じ。',
       use: 'The kids just love her.（子どもたちは彼女が大好き）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'contrast', seg: [58, 85.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'contrast', ctx: true, reveals: ['kickout'], seg: [57.5, 73.0],
       stem: 'How does Leslie’s town feel about her?',
       ja: 'レスリーの町は彼女をどう思っている？',
       choices: ['It doesn’t like her', 'It loves her a lot', 'It made her a statue'], a: 0,
       choicesJa: ['彼女をきらっている', 'とても愛している', '彼女の像を作った'],
       cue: '「your town?」のあと',
-      line: 'Pawnee, Indiana is a wonderful town, and I love it, *but they hate me*',
+      line: 'Ollie: What about your town? / Leslie: Pawnee, Indiana is a wonderful town, and I love it, *but they hate me*…',
       said: '「すばらしい町で大好き。でも町は私がきらい」と言い、ピニャータの話をする。',
       mean: 'レスリーは町が好きなのに、町は彼女がきらい。オリーとは反対。',
       trap: 'wonderful や love が先に聞こえるので、愛されていると思いやすい。but のあとが本当のこと。',
@@ -209,7 +212,8 @@ export const mostLovedDenmark: Clip = {
       trap: '悲しい話には同情、という型で選びやすい。相手が自分の話をどう締めたかに合わせて返す。',
       use: 'Kids, right? You know how it is.（子どもってさ、ね？分かるでしょ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'pinata', reveals: ['turns'], seg: [68.9, 80.9],
+    // retired (R4): five starts in 69–78 s; x1 tests the same line
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'pinata', reveals: ['turns'], seg: [68.9, 80.9], retired: true,
       stem: 'Who hit the piñata of Leslie’s face?',
       ja: 'レスリーの顔のピニャータをたたいたのはだれ？',
       choices: ['Everybody in the town', 'A few kids from town', 'People from her office'], a: 0,
@@ -221,19 +225,7 @@ export const mostLovedDenmark: Clip = {
       trap: 'ピニャータは子どもの遊びなので、子どもと思いやすい。everybody を聞く。',
       use: 'Everybody in the class came.（クラス全員が来た）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'insult', seg: [68.9, 80.9],
-      stem: 'What does “*add insult to injury*” mean?',
-      ja: '「add insult to injury」はどういう意味？',
-      choices: ['Make a bad thing worse', 'Make a bad thing better', 'Make it healthier'], a: 0,
-      choicesJa: ['悪いことをもっと悪くする', '悪いことをよくする', 'もっと体によくする'],
-      cue: '「broccoli」のあと',
-      line: 'they filled it with broccoli, just to *add insult to injury*.',
-      said: '「中にはブロッコリー。さらに追い打ちをかけるためにね」と言う。',
-      mean: 'add insult to injury ＝ けがに侮辱を足す＝ひどいことに、さらに追い打ちをかける。',
-      trap: 'ブロッコリーは体にいいので、健康の話と思いやすい。お菓子の代わりで、いやがらせ。',
-      use: 'And to add insult to injury, it rained.（さらに追い打ちで、雨が降った）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'turns', reveals: ['pinata'], seg: [69.5, 77.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'turns', reveals: ['pinata'], seg: [69.0, 74.5],
       stem: 'Type: “everybody… came and ___ hitting it.” (2 words)', answer: 'took turns',
       ja: '「everybody… came and ___ hitting it.」の空所を書こう（2語）',
       cue: '「came and」のあと',
@@ -243,7 +235,8 @@ export const mostLovedDenmark: Clip = {
       trap: 'took turns がつながり「トゥクターンズ」。最後の z の音も聞く。',
       use: 'Let’s take turns.（順番にやろう）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'politics', seg: [72, 82],
+    // retired (R4): a subtle feeling item in a crowded stretch; i1 tests the same exchange
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'politics', seg: [72, 82], retired: true,
       stem: 'How does Leslie feel about the story at the end?',
       ja: '話の最後、レスリーはどんな気持ち？',
       choices: ['It’s just part of the job', 'It makes her very angry', 'It makes her proud'], a: 0,
@@ -254,6 +247,18 @@ export const mostLovedDenmark: Clip = {
       mean: 'But politics ＝ まあ、政治だから。ひどいことも、仕事の一部と受け流している。',
       trap: 'ひどい話なので、怒っていると思いやすい。最後は明るく「分かるでしょ？」。',
       use: 'You know what I mean, right?（言ってること、分かるでしょ？）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'insult', seg: [73.5, 79.0],
+      stem: 'What does “*add insult to injury*” mean?',
+      ja: '「add insult to injury」はどういう意味？',
+      choices: ['Make a bad thing worse', 'Make a bad thing better', 'Make it healthier'], a: 0,
+      choicesJa: ['悪いことをもっと悪くする', '悪いことをよくする', 'もっと体によくする'],
+      cue: '「broccoli」のあと',
+      line: 'they filled it with broccoli, just to *add insult to injury*.',
+      said: '「中にはブロッコリー。さらに追い打ちをかけるためにね」と言う。',
+      mean: '文字どおりは「けがに侮辱を足す」。痛いうえに笑われる→「さらに追い打ちをかける」。',
+      trap: 'ブロッコリーは体にいいので、健康の話を連想しやすい。ピニャータの中はふつうお菓子なので、いやがらせ。',
+      use: 'And to add insult to injury, it rained.（さらに追い打ちで、雨が降った）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'idontknow', reveals: ['politics'], seg: [73.9, 85.4], retired: true,
       stem: 'What makes Ollie’s answer at the very end funny?',
@@ -266,16 +271,16 @@ export const mostLovedDenmark: Clip = {
       trap: '聞き違いにも聞こえるが、ちゃんと「分かるでしょ？」に答えている。愛されている話とつなげる。',
       use: 'Can’t relate, sorry!（ごめん、その感覚はないわ）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'idontknow', seg: [77.4, 86.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'idontknow', ctx: true, seg: [77.0, 83.0],
       stem: 'Why does Ollie say, “I don’t know”?',
       ja: 'オリーが「分からない」と言うのはなぜ？',
       choices: ['Her town never does that', 'She didn’t hear Leslie', 'She never saw a piñata'], a: 0,
       choicesJa: ['自分の町はそんなことをしない', 'レスリーの話が聞こえなかった', 'ピニャータを見たことがない'],
       cue: '「what I mean」のあと',
-      line: 'you know what I mean, right? — *I don’t know.*',
+      line: 'Leslie: But politics, you know what I mean, right? / Ollie: *I don’t know.*',
       said: '「分かるでしょ？」と聞かれ、オリーは「分からない」とだけ答える。',
       mean: 'オリーの町は彼女を愛しているので、レスリーのようなひどい目にあったことがない。',
-      trap: '聞こえなかったと思いやすい。前の像の話と比べると、町の違いが分かる。',
+      trap: '聞こえなかったと考えがちだが、町に愛されているオリーには、きらわれる話がぴんとこない。',
       use: 'Sorry, I don’t know what you mean.（ごめん、何のことか分からない）' },
   ]
 };

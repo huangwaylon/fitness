@@ -1,11 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 0, new 10, ctx 6, tx 3
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1 · sweep: cakerush twins retired (p1 s1 x1), new f4 x2
 // “Carly Throws A Murder Mystery Party! | iCarly | NickRewind” (NickRewind, Best of iCarly): a party game flops.
 // The guests draw character cards, the murderer is revealed at once, Freddie tries to keep everyone from leaving, the
 // cake is lost, nobody dances, and in the kitchen Millicent's grandma tries to get her off her phone.
 // Segments from the captions, words from whisper (2026-11-17). Freddie is named ("I'm sorry, Freddie"; "Pearl and I" =
 // the speaker is Pearl's partner). Other speakers aren't named, so stems say "a guest" or "someone" and no key rests
-// on who it is. Left out: the secretary card (50–59 s), the character-switch talk (105–113 s), "drink heavily", an
-// ethnic idiom (160 s), the wordless stretches (219–229 s, 260–273 s), and the kitchen slang ("dope", "flipping").
+// on who it is. Left out: "drink heavily", the wordless stretch (219–229 s), and the kitchen slang ("dope", "flipping").
+// EXCLUDE 49–59.2 (the "sexy secretary" card)
+// EXCLUDE 159.5–166 (an ethnic idiom)
+// SKIP 34–59.3: the other character cards (wordplay names), then the secretary card (excluded).
 // EAR CHECK: 196.5–201.5 s f3 — whisper's line is long here: confirm the seg holds "I'm famished"
 import type { Clip } from '../types.ts';
 
@@ -39,6 +42,30 @@ export const mysteryParty: Clip = {
       trap: 'draw から名前のくじも思い浮かぶが、引くのは cards。名詞まで聞く。',
       use: 'Let’s draw cards to decide.（カードを引いて決めよう）' },
 
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'flight', seg: [28.8, 36.0],
+      stem: 'What job is on the first character card?',
+      ja: '最初の役のカードの仕事は？',
+      choices: ['A flight attendant', 'A police officer', 'A secretary'], a: 0,
+      choicesJa: ['客室乗務員', '警察官', '秘書'],
+      cue: '「I’m Claudia Skies」のあと',
+      line: 'I’m Claudia Skies, a persnickety *flight attendant* who’s unlucky in love.',
+      said: '「私はクローディア・スカイズ。恋に恵まれない、細かい客室乗務員」と読む。',
+      mean: 'flight attendant ＝ 客室乗務員（男女どちらにも使う）。旅行で役立つ言葉。',
+      trap: 'あとで刑事（detective）や秘書の役も出るので、それと考えがち。決め手は flight（飛行機の便）。',
+      use: 'Excuse me, I’ll ask the flight attendant.（すみません、客室乗務員に聞いてみます）' },
+
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'howplay', seg: [59.3, 67.5],
+      stem: 'What does “I don’t know how to play this” mean?',
+      ja: '「I don’t know how to play this」はどういう意味？',
+      choices: ['I can’t act this role', 'I can’t play this game', 'I can’t find the card'], a: 0,
+      choicesJa: ['この役の演じ方が分からない', 'このゲームの遊び方が分からない', 'カードが見つからない'],
+      cue: '「Pablo Picasso」の役のあと',
+      line: 'I’m Pablo Picasso, a wealthy artist turned restaurateur. I don’t understand this character. *I don’t know how to play this.*',
+      said: '「パブロ・ピカソ…この役、分からない。どう演じればいいの」と言う。',
+      mean: 'play ＝「遊ぶ」のほかに「（役を）演じる」。play a role ＝ 役を演じる。',
+      trap: 'game の場面なので「遊び方」と考えがち。直前の this character（この役）が決め手。',
+      use: 'I don’t know how to play this song.（この曲の弾き方が分からない）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'brother', seg: [69.8, 81.8],
       stem: 'What is the detective’s link to the case?',
       ja: '刑事は事件とどんな関係？',
@@ -51,16 +78,28 @@ export const mysteryParty: Clip = {
       trap: 'このあと「刑事の妻」の役が出るので wife に引かれやすい。',
       use: 'my friend whose sister lives in Osaka（姉が大阪に住んでいる友だち）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'game', seg: [78.0, 122.8],
-      stem: 'What goes wrong with the murder mystery game?',
-      ja: '殺人ミステリーのゲームは、何がうまくいかない？',
-      choices: ['It ends right after it starts', 'Nobody ever finds the killer', 'Two players want one role'], a: 0,
-      choicesJa: ['始まってすぐ終わる', '誰も最後まで犯人が分からない', '二人が同じ役を取り合う'],
-      cue: 'カードを引き終わった直後',
-      line: '…*I’m the murderer*. … the murder mystery’s *over*',
-      said: '最後の人が「私が犯人」と読んだところで、ゲームが終わってしまう。',
-      mean: 'murderer ＝ 犯人。犯人さがしのゲームなのに、最初から犯人が分かった。',
-      trap: '役を替えようという話は出るが、取り合いではない。問題は「I’m the murderer」で犯人がすぐ分かったこと。',
+    { id: 'k3', skill: 'who', level: 'B1', point: 'wife', reveals: ['brother'], seg: [86.0, 92.5],
+      stem: 'Who does the next guest play?',
+      ja: '次の客は、だれの役？',
+      choices: ['The detective’s wife', 'The detective’s sister', 'The murderer'], a: 0,
+      choicesJa: ['刑事の妻', '刑事の姉妹', '犯人'],
+      cue: '刑事の役のすぐあと',
+      line: 'And *I’m the detective’s wife*.',
+      said: '「それで私は刑事の妻」と読む。',
+      mean: 'the detective’s wife ＝ 刑事の妻。’s ＝「〜の」。',
+      trap: '刑事の役は「弟が被害者」なので家族の話が続き、sister と考えがち。決め手は最後の wife。',
+      use: 'This is my brother’s wife.（こちらは兄の妻です）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'game', ctx: true, reveals: ['party'], seg: [104.5, 122.5],
+      stem: 'Why is the game over so fast?',
+      ja: 'ゲームはなぜすぐ終わる？',
+      choices: ['The killer says who it is', 'Nobody wants to play it', 'The cards get mixed up'], a: 0,
+      choicesJa: ['犯人が自分から名乗る', 'だれも遊びたがらない', 'カードがまざる'],
+      cue: '「why don’t we just switch?」から',
+      line: 'Pearl, why don’t we just switch? / No, I can’t do it because *I’m the murderer*. / What do we do now? The murder mystery’s *over*.',
+      said: '役の交換を断る理由が「私が犯人だから」。犯人が分かり、ゲームは終わってしまう。',
+      mean: 'murderer ＝ 犯人。犯人さがしのゲームなのに、最初に犯人が名乗ってしまった。',
+      trap: '交換（switch）の話が出るので、カードが入れかわると考えがち。決め手は because のあとの I’m the murderer。',
       use: 'Well, that was over fast.（あっという間に終わったね）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'three', seg: [120.4, 131.2], keep: true,
@@ -75,7 +114,7 @@ export const mysteryParty: Clip = {
       trap: '「スリー」で終われば3分、「サーティーン」なら13分、「サーティ」なら30分。',
       use: 'Dinner’s ready in five.（あと5分でごはんだよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'stay', seg: [126.0, 171.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'stay', reveals: ['telltm'], seg: [128.0, 146.0],
       stem: 'After the game ends, what does Freddie try to do?',
       ja: 'ゲームが終わったあと、フレディは何をしようとする？',
       choices: ['Keep his guests at the party', 'Get them to share a ride', 'Make up with Pearl tonight'], a: 0,
@@ -111,6 +150,30 @@ export const mysteryParty: Clip = {
       trap: 'planned と言い切るが、「You do?」の驚きが何もない合図。',
       use: 'Um, why don’t you explain?（えっと、説明してあげて）' },
 
+    { id: 'k5', skill: 'pragma', level: 'B2', point: 'telltm', ctx: true, seg: [143.0, 149.5],
+      stem: 'What does Freddie ask Pearl to do?',
+      ja: 'フレディはパールに何を頼む？',
+      choices: ['Tell them the plans', 'Bring out the cake', 'Call them a car'], a: 0,
+      choicesJa: ['予定をみんなに説明する', 'ケーキを持ってくる', '車を呼ぶ'],
+      cue: '「You do?」の返事',
+      line: 'Freddie: Pearl and I have so many more things planned. / You do? / Freddie: Yeah, *you tell them*.',
+      said: '「まだいろいろ計画してる」「そうなの？」「うん、説明してあげて」とパールに振る。',
+      mean: 'You tell them ＝「君から話して」。you を強く言い、説明役を相手に回す言い方。',
+      trap: 'You do?（そうなの？）は疑う声。フレディは自分で答えず、決め手の you tell them で話を振っている。',
+      use: 'You tell them. You know it better.（君から話して。そっちが詳しいし）' },
+
+    { id: 'k6', skill: 'detail', level: 'B1', point: 'crow', seg: [150.5, 157.0],
+      stem: 'What animal does Pearl use instead of a donkey?',
+      ja: 'パールはロバの代わりに何の動物を使う？',
+      choices: ['A crow', 'A cow', 'A cat'], a: 0,
+      choicesJa: ['カラス', 'ウシ', 'ネコ'],
+      cue: '「instead of a donkey」のあと',
+      line: 'my riff on pin the tail on the donkey, only *instead of a donkey, it’s a crow*.',
+      said: '「ロバのしっぽつけゲームのアレンジ。ロバじゃなくてカラス」と言う。',
+      mean: 'instead of 〜 ＝「〜の代わりに」。pin the tail on the donkey ＝ 目かくしでロバの絵にしっぽをつける遊び。',
+      trap: 'crow（クロウ）と cow（カウ）は似た音。r が入って「クロウ」と伸びたら crow。',
+      use: 'Can I have tea instead of coffee?（コーヒーの代わりに紅茶をもらえますか）' },
+
     // retired (A2): “Irish goodbye” is an ethnic idiom the clip itself questions
     { id: 'f1', skill: 'phrase', level: 'C1', point: 'irish', seg: [157.4, 164.3], retired: true,
       stem: 'What does someone say the two guests are trying to do?',
@@ -135,13 +198,13 @@ export const mysteryParty: Clip = {
       trap: 'Freddie への皮肉に聞こえるが、オチは最後の never met。矛先は本人に向いている。',
       use: 'It matters to my future wife.（未来の奥さんのためなの）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'date', seg: [168.4, 177.3],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'date', ctx: true, seg: [168.4, 177.3],
       stem: 'What kind of date is the guest leaving for?',
       ja: 'その客は、どんなデートに行こうとしている？',
       choices: ['A first date with someone new', 'A date with an old girlfriend', 'A dinner with a longtime partner'], a: 0,
       choicesJa: ['初めて会う人とのデート', '元カノとのデート', '長年の恋人との夕食'],
       cue: '「a woman」のあと',
-      line: 'my relationship with *a woman I’ve never met*',
+      line: 'You know how important this party is to Freddie’s relationship with Pearl. / Then he… should know how important this date is to my relationship with *a woman I’ve never met*.',
       said: '「このデートは、まだ会ったことのない女性との恋に大事なんだ」と言う。',
       mean: 'never met ＝ 会ったことがない。初めて会う人とのデート。',
       trap: 'relationship から長い付き合いを想像しやすい。弱い never を聞き落とさない。',
@@ -205,6 +268,18 @@ export const mysteryParty: Clip = {
       trap: 'famous（有名な）と音が似ていて迷いやすい。すぐあとの cake が手がかり。',
       use: 'I’m famished. Let’s eat.（お腹ぺこぺこ。食べよう）' },
 
+    { id: 'k7', skill: 'pragma', level: 'B2', point: 'notime', ctx: true, seg: [199.5, 206.0],
+      stem: 'What is the answer to “I’ll get the candles”?',
+      ja: '「I’ll get the candles」への返事は？',
+      choices: ['There’s no time', 'They’re in the car', 'Someone ate them'], a: 0,
+      choicesJa: ['時間がない', '車の中にある', 'だれかが食べた'],
+      cue: '「candles」のすぐあと',
+      line: 'Who wants cake? / I’ll get the candles. / *Ah, no time.* Everybody sing!',
+      said: '「ろうそく持ってくる」に「あ、時間ない。みんな歌って」と返す。',
+      mean: 'No time ＝ There’s no time の短い形「時間がない」。早く終わらせたい気持ち。',
+      trap: 'ろうそくを探す話が続くと考えがち。決め手は Ah, no time と、すぐ歌わせること。',
+      use: 'No time! Let’s go.（時間ない！行こう）' },
+
     // retired (A2): a C1 reading of an excuse (too slow)
     { id: 'i2', skill: 'infer', level: 'C1', point: 'slow', seg: [202.4, 214.6], retired: true,
       stem: 'Why does someone say the birthday song was always “too slow”?',
@@ -216,6 +291,19 @@ export const mysteryParty: Clip = {
       mean: 'ケーキが済めば帰れるので、早く終わらせたい。「前から」は口実。',
       trap: 'always thought を本当の好みと取りやすい。直前の no time と合わせて聞く。',
       use: 'No time—let’s skip to the good part.（時間ないから、いいとこまで飛ばそう）' },
+
+    { id: 'k8', skill: 'attitude', level: 'B1', point: 'slowsong', seg: [210.5, 216.0],
+      stem: 'What does someone think of the birthday song?',
+      ja: '誕生日の歌について、だれかはどう思っている？',
+      choices: ['It is too slow', 'It is too long', 'It is too sad'], a: 0,
+      choicesJa: ['遅すぎる', '長すぎる', '悲しすぎる'],
+      cue: '「You know what」のあと',
+      line: 'You know what, I have always thought that song was *too slow*.',
+      said: '「ねえ、あの歌、前からずっと遅すぎると思ってた」と言い、早口で歌う。',
+      mean: 'You know what ＝「ねえ、あのさ」（話を切り出す）。too slow ＝ 遅すぎる。だから早口にした。',
+      trap: 'long（長い）と考えがちだが、言ったのは slow（遅い）。歌が急に速くなるのが手がかり。',
+      use: 'You know what? This line is too slow.（ねえ、この列遅すぎない？）' },
+
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'atleast', seg: [232.5, 238.5],
       stem: 'What does “at least” mean here?',
       ja: 'ここで「at least」はどういう意味？',
@@ -228,18 +316,17 @@ export const mysteryParty: Clip = {
       trap: 'pudding から「たくさん食べたい」と思いやすい。at least ＝ せめて。少しでいいという気持ち。',
       use: 'Is there at least some coffee?（せめてコーヒーくらいある？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'labor', seg: [239.3, 252.4],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'labor', ctx: true, reveals: ['wholenew'], seg: [239.3, 252.4],
       stem: 'How does someone react to the women baking a new cake?',
       ja: '女性たちが新しいケーキを焼くという話に、どう反応する？',
       choices: ['Annoyed the women get it again', 'Pleased to be trusted with it', 'Worried there isn’t enough time'], a: 0,
       choicesJa: ['また女性の仕事かとうんざり', '任されてうれしい', '時間が足りないか心配'],
       cue: '「Once」で始まる一言',
-      line: '*Once again* the women take on the emotional labor.',
+      line: 'Millicent and your mom can just go bake you a… cake. / *Once again* the women take on the emotional labor.',
       said: '「女性たちで焼けばいい」と言われ、「またしても女の仕事」と言う。',
       mean: 'once again ＝「またしても」。不満を込めて、仕事を別の人に回している。',
       trap: 'take on（引き受ける）から、喜んでいると思いやすい。once again は「またか」。',
       use: 'Once again, I’m doing the dishes.（またしても私が皿洗い）' },
-
 
     { id: 'x2', skill: 'dict', level: 'B1', point: 'wholenew', seg: [240, 248],
       stem: 'Type the end: “go bake you a ___ cake.” (2 words)', answer: 'whole new',
@@ -251,9 +338,21 @@ export const mysteryParty: Clip = {
       trap: 'whole と hole（穴）は同じ音。ここは「まるごと」の whole。',
       use: 'It’s a whole new world.（まったく新しい世界だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'alone', seg: [265.6, 276.3],
-      stem: 'How does the host feel when nobody dances?',
-      ja: '誰も踊らないとき、主催者はどんな気持ち？',
+    { id: 'k10', skill: 'pragma', level: 'B1', point: 'dance', seg: [254.5, 263.0],
+      stem: 'What does Freddie ask everyone to do?',
+      ja: 'フレディはみんなに何をしてと言う？',
+      choices: ['Dance to the music', 'Bake a new cake', 'Sing the song again'], a: 0,
+      choicesJa: ['音楽に合わせて踊る', '新しいケーキを焼く', 'もう一度歌う'],
+      cue: '「Uh, now」のあと',
+      line: 'Uh, now, uh, *everybody dance* to this awesome playlist that Pearl obviously made.',
+      said: '「えっと、じゃあ、みんな、パールが作ったこの最高のプレイリストで踊ろう」と言う。',
+      mean: 'everybody ＋ 動詞 ＝「みんな〜して」。playlist ＝ 曲のリスト。obviously ＝ 明らかに。',
+      trap: '直前にケーキの話が続いたので、ケーキと考えがち。決め手は everybody dance。',
+      use: 'Okay, everybody, sit down, please.（はい、みなさん座ってください）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'alone', reveals: ['dance'], seg: [265.6, 276.3],
+      stem: 'How does Freddie feel when nobody dances?',
+      ja: '誰も踊らないとき、フレディはどんな気持ち？',
       choices: ['Gloomy about it', 'Proud of his playlist', 'Glad it’s quiet'], a: 0,
       choicesJa: ['落ちこんでいる', 'プレイリストが自慢', '静かでうれしい'],
       cue: '「I said everybody」のあと',
@@ -262,6 +361,18 @@ export const mysteryParty: Clip = {
       mean: 'die alone ＝「一生ひとりぼっち」という大げさな嘆き。',
       trap: 'playlist の直後なので選曲の話と思いやすい。誰も踊らない沈黙のあとの嘆き。',
       use: 'Nobody came. I’m going to die alone.（誰も来ない。一生ひとりだ）' },
+
+    { id: 'k11', skill: 'detail', level: 'B1', point: 'eggs', seg: [280.5, 290.5],
+      stem: 'What does Grandma say about the cake?',
+      ja: 'おばあちゃんはケーキについて何と言う？',
+      choices: ['Too many eggs', 'Too much sugar', 'Not enough milk'], a: 0,
+      choicesJa: ['卵が多すぎる', '砂糖が多すぎる', '牛乳が足りない'],
+      cue: '台所の最初の一言',
+      line: '*That’s too many eggs.* … You know, I flushed your fish Donut down the toilet.',
+      said: '「卵、多すぎるよ」と言い、聞いているか試すように「魚をトイレに流した」とも言う。',
+      mean: 'too many ＋ 数えられる物（eggs）＝「多すぎる」。数えられない物（sugar）は too much。',
+      trap: '料理の失敗なので砂糖を考えがち。決め手は eggs。many と much の使い分けにも注目。',
+      use: 'That’s too many people. Let’s wait.（人が多すぎる。待とう）' },
 
     // retired (A2): a C1 reading of a test (the fish)
     { id: 'i4', skill: 'infer', level: 'C1', point: 'fish', seg: [281.6, 290.2], retired: true,
@@ -286,6 +397,18 @@ export const mysteryParty: Clip = {
       trap: 'dope は古くは「まぬけ」の意味もある。並んだ kind と同じ向きのほめ言葉。',
       use: 'That concert was dope!（あのライブ最高だった！）' },
 
+    { id: 'k9', skill: 'pragma', level: 'B2', point: 'phone', ctx: true, seg: [300.0, 309.5],
+      stem: 'What does Grandma tell Millicent to do?',
+      ja: 'おばあちゃんはミリセントに何をしなさいと言う？',
+      choices: ['Put her phone down', 'Call Derek back now', 'Go to her room'], a: 0,
+      choicesJa: ['携帯を置く', '今すぐデレクに電話する', '自分の部屋に行く'],
+      cue: '「you just don’t understand」の返事',
+      line: 'Millicent: …you just don’t understand. / Grandma: Oh, I understand that you’re gonna *put that phone down* and help me bake.',
+      said: '「分からないのよ」に「携帯を置いて手伝うってことは分かってる」と返す。',
+      mean: '文字どおりは「あなたが〜するのは分かってる」→ 実は「〜しなさい」という命令。',
+      trap: 'understand（分かる）から、孫の気持ちを分かってあげると考えがち。中身は put that phone down の命令。',
+      use: 'Please put your phone down and eat.（携帯を置いて食べなさい）' },
+
     // retired (A2): a C1 turn of a word into an order
     { id: 'p2', skill: 'pragma', level: 'C1', point: 'understand', seg: [302.2, 309.8], retired: true,
       stem: 'What does Grandma do with her reply “Oh, I understand…”?',
@@ -297,7 +420,7 @@ export const mysteryParty: Clip = {
       trap: 'I understand を同意と取りやすいが、that のあとが本題。',
       use: 'Oh, I understand—you’re doing the dishes.（分かってるよ、あんたが皿洗いね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'look', seg: [317.6, 329.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [317.6, 329.6],
       stem: 'Why does Millicent say “Look” here?',
       ja: 'ミリセントはここでなぜ「Look」と言う？',
       choices: ['To start pushing back', 'To start giving in', 'To ask Grandma to see her phone'], a: 0,
