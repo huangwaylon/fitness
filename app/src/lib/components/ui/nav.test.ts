@@ -22,9 +22,12 @@ describe('navigation', () => {
     const bad = files.filter((x) => /<dialog\b/.test(x.src) && !/Toast/.test(x.f) && !closes(x.src)).map((x) => x.f);
     expect(bad).toEqual([]);
   });
-  it('a paper sheet always renders the title bar with ✕', () => {
+  it('a paper sheet always renders the title bar with ✕, but a confirm (キャンセル + the verb in its footer)', () => {
     const sheet = files.find((x) => x.f.endsWith('ui/Sheet.svelte'))!.src;
-    expect(sheet).toMatch(/<NavBar\b[^>]*onclose=/);
+    expect(sheet).toMatch(/<NavBar\b[^>]*onclose=\{confirm \? null : /);
+    const confirms = files.filter((x) => /<Sheet\b[^>]*\bconfirm\b/.test(x.src));
+    expect(confirms.length).toBeGreaterThan(0);
+    for (const x of confirms) expect(x.src, x.f).toMatch(/common\.cancel/);
   });
   it('every top panel renders its own title bar with ✕ and ‹ back', () => {
     const phones = files.filter((x) => /<Sheet\b[^>]*variant="top"/.test(x.src));

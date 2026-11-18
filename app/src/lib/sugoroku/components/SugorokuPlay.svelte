@@ -347,7 +347,7 @@
       <Sheet bind:open={howOpen} title={s('howTo')}>
         <HowTo />
       </Sheet>
-      <Sheet bind:open={endOpen} title={s('endAsk')}>
+      <Sheet bind:open={endOpen} title={s('endAsk')} confirm>
         <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
         <p class="note centre" data-sg-end-note>{mode === 'online' ? s('endNoteOnline') : s('endNote')}</p>
         {#snippet footer()}

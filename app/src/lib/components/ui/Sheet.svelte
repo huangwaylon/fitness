@@ -18,7 +18,8 @@
   // (settle). variant="full": the pop's column for the info sheets (docs/design.md "Unified kit": 旅行, 結婚式, 登山): the paper edge to
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
-  // `focusField` puts the keyboard up on its first field.
+  // `focusField` puts the keyboard up on its first field. `confirm`: a paper sheet that asks (docs/design.md "Forms and
+  // confirms"): no ✕, its footer キャンセル + the verb (a backdrop tap or Esc still cancels).
   // `keep`: the content stays mounted after a close (in the closed dialog: not drawn, no focus, no taps), so the next
   // opening shows it at once instead of building it again; a few at most (ui-state/keptSheets.ts: the least recently
   // opened let go, all of them when the page is hidden or on a lost WebGL context; `keep` false while closed lets it go
@@ -62,6 +63,8 @@
     ondismiss?: () => boolean;
     children: Snippet;
     footer?: Snippet;
+    /** A confirm: no ✕ (its footer's キャンセル is the way out). */
+    confirm?: boolean;
     /** On open, focus the first input / textarea / select (a form sheet: the keyboard comes up with it). */
     focusField?: boolean;
     /** Keep the content mounted after a close (the next opening at once). */
@@ -75,7 +78,7 @@
     /** A form with input not saved (a form that is the sheet itself; forms inside it register: guardForm). */
     dirty?: () => boolean;
   }
-  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
+  let { open = $bindable(), title, label = title ?? '', variant = 'paper', onclose, onback = null, ondismiss, children, footer, confirm = false, focusField = false, keep = false, tunes = false, timed, name, dirty }: Props = $props();
 
   /** The forms inside it (guardForm), and the close waiting on 破棄する while the question is up. */
   const forms = new Set<() => boolean>();
@@ -218,7 +221,7 @@
   {#if open || kept}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
-      {#if variant === 'paper'}<div class="bar"><NavBar {title} onback={onback ? backUp : null} onclose={() => guard(() => (open = false))} /></div>{/if}
+      {#if variant === 'paper'}<div class="bar"><NavBar {title} onback={onback ? backUp : null} onclose={confirm ? null : () => guard(() => (open = false))} /></div>{/if}
       {@render children()}
     </div>
     {#if footer}<div class="foot">{@render footer()}</div>{/if}

@@ -101,6 +101,8 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('dialog[open] [data-sg-end]').tap();
   // (passed round: the stars so far, the leaf verb)
   await expect(page.locator('[data-sg-end-yes]')).not.toHaveClass(/danger/);
+  // (a confirm: no ✕, キャンセル + the verb)
+  await expect(page.locator('dialog[open]', { has: page.locator('[data-sg-end-yes]') }).locator('.navbar button')).toHaveCount(0);
   await sheet(page).locator('[data-sg-end-yes]').tap();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   // a team game: no ranking, each one's good thing

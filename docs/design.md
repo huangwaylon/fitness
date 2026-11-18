@@ -247,9 +247,9 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存), no キャンセル.
   An edit mode inside a sheet or the world (a memo, a board note, a goal's tray) has キャンセル then its action. A confirm
   asks 「…を削除しますか？」 and answers with the verb, never はい / いいえ: a list's is an `ActionSheet` (the coral 削除
-  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a sheet
-  with キャンセル + the verb (`.two-cta`, `.btn.danger` when it loses something). A delete that can be undone acts at
-  once with 取り消す on its banner.
+  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a `Sheet confirm`:
+  no ✕, キャンセル + the verb (`.two-cta`, `.btn.danger` if it loses something). An undoable delete acts at once,
+  取り消す on its banner.
 - The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, English Study, ボット, 設定) open and close at once:
   no zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
