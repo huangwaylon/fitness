@@ -158,7 +158,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused. A ledger that differs says
   which fields (`h` かいがら; `c` caught, `b` given back, `s` sold, `v` fetched, `o` owed per key `[stored, fold]`;
   `w` pieces, `g` games).
-- **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only on the user's word: a `shop_adjust` row
+- **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only when asked: a `shop_adjust` row
   of `v` (either sign; [backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup
   first. **`unadjust <id>`** deletes it and takes `v` back from the wallet (a new epoch; a row a `load` brought
   never reached the wallet, so its unadjust takes `v` it never had).
@@ -167,7 +167,7 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   what the floor took (the 03:00 cron logs `wallet.drift`; nothing fixes itself); `explained`, the floor's part (no
   action). **`walletset <A|B|G> <h> <note>`** makes a
   wallet `h` with one correction row of what the rows lack for it, so the rows say `h` after it: `h` the stored value
-  keeps it, the fold's takes the rows'. Only on the user's word; backup first. `shopcheck fix` mends a pocket, never a
+  keeps it, the fold's takes the rows'. Only when asked; backup first. `shopcheck fix` mends a pocket, never a
   wallet.
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row

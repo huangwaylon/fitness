@@ -187,18 +187,16 @@ Shown only, with an optional goal. Why: paying for kilograms rewards crash diets
 ### The shop's かいがら
 The shop ([design](design.md#the-shop)), a 3D room, has its own per-person currency, かいがら, never ベル: NH's prices
 ÷ 20 both ways (a piece NH never sells: 4 × its sell price), every piece buyable; every catch and beach find (shell,
-fossil, fragment) sells for 10 × that, the goods as is (the user, 2026-11-18); the pocket is derived from the day
-tallies, the stock from the date. Why: NH's prices, nothing stored for the stock, and no request per catch.
-Except the goal trees' fruit (2026-11-16, the user's economy review): 60 a met goal's, 150 the gold one of a day
-with all four met, the tree's owner's alone (`contract/pocket.ts GOAL_GOODS`), so fitness is ~10–12 % of a typical
-day's かいがら; goods of their own. The plain fruit picked up before counts as its goal's (`pocketKey`, the user's of
-2026-11-16: one row, 60): the rows stay as kept, past sales keep their かいがら, and an old build's sale of it at 5 is
-still taken.
-A correction is a row, never an edit (2026-11-18, the user's "each player's last sale at 20,000"): history stays as
-kept and one `shop_adjust` per person adds the difference (`20,000 − v` of their last `sell`), so the balance is as if
-that sale had paid it, the change shows in the record as a correction, and deleting the row undoes it. Only the admin
-adds one (`record.ts adjust`); no phone can.
-The stored balance is the truth (2026-11-18): the relay's running ledger keeps each person's かいがら ([backend](backend.md#the-wallet)),
+fossil, fragment) sells for 10 × that, the goods as is; the pocket is derived from the day tallies, the stock from the
+date. Why: NH's prices, nothing stored for the stock, and no request per catch.
+Except the goal trees' fruit: 60 a met goal's, 150 the gold one of a day with all four met, the tree's owner's alone
+(`contract/pocket.ts GOAL_GOODS`), so fitness is ~10–12 % of a typical day's かいがら; goods of their own. The plain
+fruit picked up before counts as its goal's (`pocketKey`: one row, 60): the rows stay as kept, past sales keep their
+かいがら, and an old build's sale of it at 5 is still taken.
+A correction is a row, never an edit: history stays as kept and one `shop_adjust` adds the difference, so the change
+shows in the record as a correction and deleting the row undoes it. Only the admin adds one (`record.ts adjust`); no
+phone can.
+The stored balance is the truth: the relay's running ledger keeps each person's かいがら ([backend](backend.md#the-wallet)),
 moved only by each new row's own step and never folded again, and the phones show it (plus their own unsent ops). A
 rule or price change never reprices the past; a give-back after a sale floors at 0, never a negative balance. If the
 stored number and the rows disagree, the daily check says so and the admin settles it with one correction row, so the
