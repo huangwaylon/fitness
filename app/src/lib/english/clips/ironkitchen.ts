@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 12, retire 2, new 1, ctx 4, tx 7
+// R4 REVIEW 2026-11-18: keep 2, rewrite 12, retire 2, new 1, ctx 4, tx 7, qa 3
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 4, new 1
 // “Monica's Iron Kitchen | Friends” (the official Friends channel, Best of Season 2): Monica drives her friends
 // through a huge cooking job against the clock, snaps when asked how it happened, and threatens Ross into helping.
@@ -49,18 +49,6 @@ export const ironkitchen: Clip = {
       trap: 'move（動く・引っ越す）から「どいて」や「席の移動」と思いやすい。せかしている。',
       use: 'Come on, move! We’re late!（ほら急いで！遅れてる！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'snap', reveals: ['planned'], seg: [10.6, 30.6],
-      stem: 'What happens when a friend asks Monica about her plan?',
-      ja: '友だちに計画のことを聞かれて、モニカはどうする？',
-      choices: ['She gets upset and won’t answer', 'She calmly explains what went wrong', 'She asks Joey to explain it'], a: 0,
-      choicesJa: ['いらいらして答えない', '何がまずかったか落ち着いて話す', 'ジョーイに説明させる'],
-      cue: '「how did this happen?」への返事',
-      line: 'Monica, how did this happen? … — *Do you want me to cry?* Is that what you want?',
-      said: '「どうしてこうなったの？」と聞かれ、モニカは理由を言わずに「泣いてほしいの？それが望み？」とくり返す。',
-      mean: 'Do you want me to 〜? ＝「私に〜してほしいの？」。答えの代わりに問い返すのは、追いつめられていらいらしている合図。',
-      trap: 'cry（泣く）から悲しんでいると考えがち。同じ問いを重ねて言い返している。',
-      use: 'Do you want me to help?（手伝ってほしい？）' },
-
     { id: 'x1', skill: 'dict', level: 'B1', point: 'speed', seg: [10.6, 12.8],
       stem: 'Type the order to Joey: “Joey, ___.” (3 words)', answer: 'speed it up',
       ja: '「Joey, ___.」の空所を書こう（3語）',
@@ -95,6 +83,18 @@ export const ironkitchen: Clip = {
       mean: 'reluctant ＝ 気が進まない。人に使う語を食べ物に使い、自分の遅さを相手のせいにしている。',
       trap: 'they を周りの人と取ると人のせいに聞こえる。they は直前の the pigs。',
       use: 'I’m a little reluctant to say yes.（ちょっと引き受けにくいな）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'snap', reveals: ['planned'], seg: [14.05, 30.6],
+      stem: 'What happens when a friend asks Monica about her plan?',
+      ja: '友だちに計画のことを聞かれて、モニカはどうする？',
+      choices: ['She gets upset and won’t answer', 'She calmly explains what went wrong', 'She asks Joey to explain it'], a: 0,
+      choicesJa: ['いらいらして答えない', '何がまずかったか落ち着いて話す', 'ジョーイに説明させる'],
+      cue: '「how did this happen?」への返事',
+      line: 'Monica, how did this happen? … — *Do you want me to cry?* Is that what you want?',
+      said: '「どうしてこうなったの？」と聞かれ、モニカは理由を言わずに「泣いてほしいの？それが望み？」とくり返す。',
+      mean: 'Do you want me to 〜? ＝「私に〜してほしいの？」。答えの代わりに問い返すのは、追いつめられていらいらしている合図。',
+      trap: 'cry（泣く）から悲しんでいると考えがち。同じ問いを重ねて言い返している。',
+      use: 'Do you want me to help?（手伝ってほしい？）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'planned', seg: [17.7, 21.4],
       stem: 'What did Monica’s friend think before this?',
@@ -195,7 +195,7 @@ export const ironkitchen: Clip = {
       trap: '同情の言葉で、許してくれると読みやすい。I do と念を押したら、次は but が多い。',
       use: 'I get it. That said, we need you.（分かるよ。とはいえ、君が必要なんだ）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'feelfor', seg: [38.7, 49],
+    { id: 'pr1', skill: 'phrase', level: 'B2', point: 'feelfor', seg: [38.7, 44.72],
       stem: 'What does “I feel for you” mean?',
       ja: '「I feel for you」はどういう意味？',
       choices: ['I understand your pain', 'I have feelings for you', 'I’m angry with you'], a: 0,
@@ -231,7 +231,7 @@ export const ironkitchen: Clip = {
       trap: 'pigs と Ross が並ぶと悪口に聞こえるが、Ross は blankets の代わり。',
       use: 'If you’re late again, you’re buying.（また遅れたら、おごりね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hotdogs', reveals: ['threat', 'ball', 'stuck'], seg: [43.5, 49.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hotdogs', reveals: ['threat', 'ball', 'stuck'], seg: [43.5, 50.6],
       stem: 'What will Monica use for her new dish?',
       ja: 'モニカは新しい料理に何を使うと言う？',
       choices: ['Little hot dogs', 'Balls of melon', 'Diced onions'], a: 0,

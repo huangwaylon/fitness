@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 12, retire 1, new 3, ctx 5, tx 14
+// R4 REVIEW 2026-11-18: keep 9, rewrite 12, retire 1, new 3, ctx 5, tx 14, qa 29
 // A2 REVIEW 2026-11-17: keep 10, rewrite 12, retire 2, new 0
 // “April and Andy go on a side quest for a marriage license | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 5): Leslie's friends split up the jobs for a same-day wedding; the dress isn't done, the rings are
@@ -26,7 +26,7 @@ export const sideQuest: Clip = {
       trap: 'drill（訓練）が聞こえて練習と考えがち。でも today is the real thing（今日が本番）。',
       use: 'Let’s go over the plan.（予定を確認しよう）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B1', point: 'cake', seg: [7.8, 17],
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'cake', seg: [5.85, 16.7],
       stem: 'What does “*Piece of cake*” mean here?',
       ja: 'ここでの「Piece of cake」はどういう意味？',
       choices: ['That job is easy', 'I would like some cake', 'That will take a long time'], a: 0,
@@ -38,7 +38,7 @@ export const sideQuest: Clip = {
       trap: 'すぐあとに wedding cake の話が出るので、ケーキの話と勘違いしやすい。頼まれた仕事への返事。',
       use: 'That’s a piece of cake.（そんなの楽勝だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'drill', reveals: ['duties'], seg: [18.5, 29.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'drill', reveals: ['duties'], seg: [18.65, 29.6],
       stem: 'What does “today is *the real thing*” mean?',
       ja: '「today is the real thing」はどういう意味？',
       choices: ['Today is not practice', 'Today is a true story', 'Today is too hard'], a: 0,
@@ -72,7 +72,7 @@ export const sideQuest: Clip = {
       trap: 'system をパソコンの記録と取りやすいが、自分の中の話。捕まる話でもない。',
       use: 'Go on, get it out of your system.（気が済むまでやりなよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'crimes', seg: [41.2, 48.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'crimes', seg: [41.1, 48.5],
       stem: 'Type what Andy says: “I guess I better ___ tonight.” (6 words)', answer: 'commit as many crimes as possible',
       ja: '「I guess I better ___ tonight.」の空所を書こう（6語）',
       cue: '「better」のあと',
@@ -82,7 +82,7 @@ export const sideQuest: Clip = {
       trap: 'as many が「アズメニ」、crimes as も「クライムザズ」とつながる。as は小さく短い。',
       use: 'See as many places as possible.（できるだけ多くの場所を見て）' },
 
-    { id: 'd3', skill: 'infer', level: 'B1', point: 'takeall', seg: [45.5, 55.4],
+    { id: 'd3', skill: 'infer', level: 'B1', point: 'takeall', seg: [45.95, 53.1],
       stem: 'Why does April take all the licenses?',
       ja: 'エイプリルが許可証を全部取るのはなぜ？',
       choices: ['So no other couple can marry', 'So nobody takes their date', 'To have spares just in case'], a: 0,
@@ -94,7 +94,7 @@ export const sideQuest: Clip = {
       trap: '予備がほしい、というふつうの理由を考えがち。I don’t want のあとをそのまま聞く。',
       use: 'It makes it less special.（ありがたみが減っちゃう）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'goodcall', seg: [49.4, 56.1],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'goodcall', seg: [49.4, 56.6],
       stem: 'Andy says, “*Good call*, babe.” What does he mean?',
       ja: 'アンディの「Good call」はどういう意味？',
       choices: ['That is a smart idea', 'Please call me later', 'That was a good phone call'], a: 0,
@@ -106,19 +106,19 @@ export const sideQuest: Clip = {
       trap: 'call から電話と思いやすい。相手の考えをほめる決まり文句。',
       use: 'Good call on the restaurant.（あの店にしたのは正解だね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'early', seg: [59.8, 67.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'early', seg: [59.8, 65.65], keep: true,
       stem: 'How early should the dress have been finished?',
       ja: 'ドレスはどのくらい早く仕上がっているべきだった？',
-      choices: ['Three days early', 'Three weeks early', 'Three months early'], a: 2,
-      choicesJa: ['3日前', '3週間前', '3か月前'],
+      choices: ['Three days early', 'Three weeks early', 'Three months early', 'Three years early'], a: 2,
+      choicesJa: ['3日前', '3週間前', '3か月前', '3年前'],
       cue: '「finish something」のあと',
       line: 'If you’re not going to finish something *three months early*, then don’t accept the job.',
       said: '「3か月前に仕上げる気がないなら、仕事を受けるな」と怒る。',
       mean: 'three months early ＝ 3か月早く。ふつうは期限までで十分なので、無茶な話。',
-      trap: 'three のあとの単位が速い。デイズ・ウィークスでなく「マンス」なら months。',
+      trap: 'three のあとの単位が速い。デイズ・ウィークス・イヤーズでなく「マンス」なら months。',
       use: 'We finished three days early.（3日早く終わった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [62.7, 68.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotta', seg: [62.7, 68.26],
       stem: 'Fill the gap: “___ something we can do.”',
       ja: '「___ something we can do.」の空所は？',
       choices: ['There’s got to be', 'There’s going to be', 'There has to be'], a: 0,
@@ -130,7 +130,7 @@ export const sideQuest: Clip = {
       trap: 'going to なら「ゴナ」、has to なら「ハズ」。「ガッタ」の音なら got to。',
       use: 'There’s got to be a way.（何か方法があるはず）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'cinder', ctx: true, seg: [68.3, 74.8],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'cinder', ctx: true, seg: [68.26, 74.65],
       stem: 'Leslie says, “That’s *not very helpful*.” What does she mean?',
       ja: 'レスリーの「That’s not very helpful」はどういう意味？',
       choices: ['That answer is no use', 'That answer is very kind', 'That answer is very funny'], a: 0,
@@ -142,7 +142,7 @@ export const sideQuest: Clip = {
       trap: 'very が聞こえて、ほめていると思いやすい。前の not を聞く。',
       use: 'Thanks, but that’s not very helpful.（ありがとう、でもあまり役に立たないかな）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'sign', seg: [74.4, 83.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'sign', seg: [74.65, 83.8],
       stem: 'What does the license still need?',
       ja: '許可証にまだ足りないものは？',
       choices: ['A clerk’s signature', 'A police stamp', 'The couple’s signatures'], a: 0,
@@ -166,7 +166,7 @@ export const sideQuest: Clip = {
       trap: 'a few や kind of で軽い話に聞こえやすい。最後まで聞くと深刻。',
       use: 'My plan is falling apart.（計画がめちゃくちゃになってる）' },
 
-    { id: 'd7', skill: 'detail', level: 'B2', point: 'box', ctx: true, seg: [88.2, 97.6],
+    { id: 'd7', skill: 'detail', level: 'B2', point: 'box', ctx: true, seg: [88.2, 97.22],
       stem: 'Where might they find some rings?',
       ja: '指輪はどこにありそう？',
       choices: ['In an old box from her mom', 'In a ring shop downtown', 'In Leslie’s desk at work'], a: 0,
@@ -190,7 +190,7 @@ export const sideQuest: Clip = {
       trap: '係を順に言うので、リストを読んでいるように聞こえるが、返事の in a rush が決め手。',
       use: 'Sorry, I’m in a rush.（すみません、急いでいるんです）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'wake', seg: [113, 118.1],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'wake', seg: [113, 117.75],
       stem: 'Type what’s said: “I hope we ___.” (4 words)', answer: "didn't wake you up",
       ja: '「I hope we ___.」の空所を書こう（4語）',
       cue: '「police business」のあと',
@@ -212,11 +212,11 @@ export const sideQuest: Clip = {
       trap: 'robbers（泥棒）は家の中の人の言葉。本人は寝ていたのを起こされて不機嫌。',
       use: 'Sorry to bother you so late.（夜遅くにすみません）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.6, 122.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [116.05, 122.55], keep: true,
       stem: 'How long has Ms. Beavers been asleep?',
       ja: 'ビーバーズさんはどのくらい寝ていた？',
-      choices: ['One hour', 'Four hours', 'Ten hours'], a: 1,
-      choicesJa: ['1時間', '4時間', '10時間'],
+      choices: ['One hour', 'Two hours', 'Four hours', 'Ten hours'], a: 2,
+      choicesJa: ['1時間', '2時間', '4時間', '10時間'],
       cue: '「I’ve been asleep」のあと',
       line: 'I’ve been asleep for *four hours*.',
       said: '「もう4時間も寝てたのよ」と言う。',
@@ -224,7 +224,7 @@ export const sideQuest: Clip = {
       trap: 'for と four が同じ音で続く。直前の「10時」にも引かれやすい。',
       use: 'I slept for eight hours.（8時間寝ました）' },
 
-    { id: 'd9', skill: 'detail', level: 'B2', point: 'date', ctx: true, seg: [124.1, 132.7],
+    { id: 'd9', skill: 'detail', level: 'B2', point: 'date', ctx: true, seg: [124.14, 132.7],
       stem: 'Who is the man in Ms. Beavers’ house?',
       ja: 'ビーバーズさんの家にいる男の人はだれ？',
       choices: ['Her new boyfriend', 'Her husband of many years', 'Her son from next door'], a: 0,
@@ -236,7 +236,7 @@ export const sideQuest: Clip = {
       trap: 'is that your husband? と聞かれるので夫と考えがち。決め手は I’m not married のあと。',
       use: 'I was on a date last night.（昨日の夜はデートだったんだ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'meanalot', seg: [135.4, 140.4],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'meanalot', seg: [134.5, 140.12],
       stem: 'What does “It’d *really mean a lot*” mean here?',
       ja: '「It’d really mean a lot」はどういう意味？',
       choices: ['It would make us very happy', 'It would cost a lot of money', 'It is a very serious rule'], a: 0,
@@ -248,7 +248,7 @@ export const sideQuest: Clip = {
       trap: 'a lot から、お金がたくさん、を連想しやすい。玄関の「警察の用」とちがい、ここはお願い。',
       use: 'It would mean a lot to me.（そうしてもらえると本当にうれしい）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'cold', seg: [139.4, 146.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'cold', seg: [139.22, 145.95],
       stem: 'Where did Leslie and Ben once take her?',
       ja: 'レスリーとベンは以前、彼女をどこへ連れ出した？',
       choices: ['Outside in very cold weather', 'Out to a fancy dinner', 'To a big wedding party'], a: 0,
@@ -260,7 +260,7 @@ export const sideQuest: Clip = {
       trap: 'love や結婚の話から、パーティーと思いやすい。out in the のあとを聞く。',
       use: 'My friends dragged me out last night.（昨日は友だちに連れ出された）' },
 
-    { id: 'a3', skill: 'pragma', level: 'B1', point: 'fine', ctx: true, seg: [148.2, 155.6],
+    { id: 'a3', skill: 'pragma', level: 'B1', point: 'fine', ctx: true, seg: [147.8, 155.6],
       stem: 'How does Ms. Beavers answer the grandma question?',
       ja: '「おばあちゃんに」と聞かれて、ビーバーズさんはどう答える？',
       choices: ['She agrees to it', 'She says no to it', 'She says she feels well'], a: 0,
@@ -272,7 +272,7 @@ export const sideQuest: Clip = {
       trap: 'I’m fine（元気です）を連想しやすいが、ここは頼みへの返事。素っ気なくても OK の意味。',
       use: 'Fine. You can borrow my car.（いいよ。車を貸してあげる）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'memos', seg: [155.7, 163.9],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'memos', seg: [157.0, 163.15],
       stem: 'What was gathered up for Leslie?',
       ja: 'レスリーのために集められたものは？',
       choices: ['Papers and photos from her work', 'Letters and photos from friends', 'Old clothes from her work'], a: 0,
@@ -296,19 +296,7 @@ export const sideQuest: Clip = {
       trap: 'Is it OK? という質問に引かれて、まあまあと思いやすい。most を聞く。',
       use: 'That’s the most beautiful view I’ve ever seen.（今まで見た中でいちばんきれいな景色）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'together', seg: [172, 197.6],
-      stem: 'How does the clip end?',
-      ja: 'このクリップはどう終わる？',
-      choices: ['Everything is ready, and they go', 'They are still looking for rings', 'They move the wedding to later'], a: 0,
-      choicesJa: ['全部そろって出発する', 'まだ指輪を探している', '結婚式を先に延ばす'],
-      cue: '最後のやりとり',
-      line: 'The license, the rings, the officiant, everything? — Yes, it all *came together*.',
-      said: '許可証、指輪、司式者、全部そろったかと聞かれ、そろったと答えて出発する。',
-      mean: 'come together ＝ ばらばらだったものが、うまくまとまる。',
-      trap: '途中の I ruined it（だめにした）で失敗と思いやすい。最後の Yes を聞く。',
-      use: 'Everything came together in the end.（最後は全部うまくいった）' },
-
-    { id: 's2', skill: 'sound', level: 'B2', point: 'supposed', seg: [176.65, 182.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'supposed', seg: [176.65, 182.2],
       stem: 'Fill the gap: “I’m not ___ see you…”',
       ja: '「I’m not ___ see you…」の空所は？',
       choices: ['supposed to', 'going to', 'about to'], a: 0,
@@ -320,7 +308,7 @@ export const sideQuest: Clip = {
       trap: 'going to も縮むと似る。最初の「ス」の音を聞く。',
       use: 'You’re not supposed to park here.（ここは駐車しちゃいけないよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'groom', reveals: ['supposed'], seg: [176.65, 186.6],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'groom', reveals: ['supposed'], seg: [176.65, 186.55],
       stem: 'What does Andy get wrong here?',
       ja: 'ここでアンディは何を勘違いしている？',
       choices: ['Only Ben must not see her', 'The wedding is on another day', 'He can’t be in the room'], a: 0,
@@ -331,5 +319,17 @@ export const sideQuest: Clip = {
       mean: 'groom ＝ 花婿（ここではベン）。式の前に花嫁を見てはいけないのは花婿だけ。just to be safe ＝ 念のため。',
       trap: 'before the wedding から、日にちの話に聞こえるが、決め手は that’s the groom。',
       use: 'Just to be safe, let’s book now.（念のため、今予約しよう）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'together', seg: [183.1, 198.2],
+      stem: 'How does the clip end?',
+      ja: 'このクリップはどう終わる？',
+      choices: ['Everything is ready, and they go', 'They are still looking for rings', 'They move the wedding to later'], a: 0,
+      choicesJa: ['全部そろって出発する', 'まだ指輪を探している', '結婚式を先に延ばす'],
+      cue: '最後のやりとり',
+      line: 'The license, the rings, the officiant, everything? — Yes, it all *came together*.',
+      said: '許可証、指輪、司式者、全部そろったかと聞かれ、そろったと答えて出発する。',
+      mean: 'come together ＝ ばらばらだったものが、うまくまとまる。',
+      trap: 'Oh my god（わあ）から、何か問題が起きたと考えがち。最後の Yes, it all came together を聞く。',
+      use: 'Everything came together in the end.（最後は全部うまくいった）' },
   ]
 };

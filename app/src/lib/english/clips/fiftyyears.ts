@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 1, new 0, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 1, new 0, ctx 3, tx 7, qa 16
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 3, new 1
 // “50 Years of Marriage | Parks and Recreation” (the official Parks and Recreation channel, Season 6): a TV host
 // interviews a couple married 50 years, Leslie cuts in to sell the two towns' unity, and the couple drops the act.
@@ -15,7 +15,7 @@ export const fiftyYears: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', seg: [0, 22.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', reveals: ['firstmet', 'year'], seg: [0, 15.2],
       stem: 'Who is the TV host talking to?',
       ja: 'テレビの司会者が話している相手は？',
       choices: ['A couple married 50 years', 'Two town leaders', 'A couple getting married'], a: 0,
@@ -27,7 +27,7 @@ export const fiftyYears: Clip = {
       trap: 'あとで町の名前が二つ出るので、町の代表と考えがち。最初の 50 years が決め手。',
       use: 'Happy anniversary! Ten years!（記念日おめでとう！10年だね！）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'firstmet', seg: [0.4, 8.4],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'firstmet', seg: [0.4, 6.1],
       stem: 'Type the host’s request: “Tell us ___.” (4 words)', answer: 'how you first met',
       ja: '「Tell us ___.」の空所を書こう（4語）',
       cue: '「50 years!」のあと', line: 'Tell us *how you first met*.',
@@ -35,18 +35,6 @@ export const fiftyYears: Clip = {
       mean: 'how you first met ＝ 最初にどう出会ったか。カップルによく聞く質問。',
       trap: 'first met がつながり「ファーストメッ」と聞こえる。最後の t はほとんど聞こえない。',
       use: 'How did you two first meet?（お二人はどうやって出会ったの？）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [3.7, 8.9],
-      stem: 'When did the couple first meet?',
-      ja: '夫婦が出会ったのはいつ？',
-      choices: ['1953', '1963', '1973', '1979'], a: 1, keep: true,
-      choicesJa: ['1953年', '1963年', '1973年', '1979年'],
-      cue: '「Well, it was」のあと',
-      line: 'Well, it was *1963*…',
-      said: '出会いを聞かれて「1963年だった」と答える。',
-      mean: '年は2けたずつ読む。1963 ＝ nineteen sixty-three。',
-      trap: 'fifty は「フィフ」、seventy は「セヴン」で始まる。「シックスティスリー」なら 1963。',
-      use: 'We met back in 2015.（出会ったのは2015年）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'met', reveals: ['year'], seg: [3.7, 14.8], retired: true,
       stem: 'What does the answer about how they met suggest?',
@@ -59,7 +47,19 @@ export const fiftyYears: Clip = {
       trap: 'great があるので楽しい話に聞こえるが、何が良かったのかは言っていない。中身の量を聞く。',
       use: 'It was fine, I guess.（まあ、良かったかな）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'bridge', seg: [13.1, 23.2],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [6.1, 8.9],
+      stem: 'When did the couple first meet?',
+      ja: '夫婦が出会ったのはいつ？',
+      choices: ['1953', '1963', '1973', '1979'], a: 1, keep: true,
+      choicesJa: ['1953年', '1963年', '1973年', '1979年'],
+      cue: '「Well, it was」のあと',
+      line: 'Well, it was *1963*…',
+      said: '出会いを聞かれて「1963年だった」と答える。',
+      mean: '年は2けたずつ読む。1963 ＝ nineteen sixty-three。',
+      trap: 'fifty は「フィフ」、seventy は「セヴン」で始まる。「シックスティスリー」なら 1963。',
+      use: 'We met back in 2015.（出会ったのは2015年）' },
+
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'bridge', seg: [13.1, 21.0],
       stem: 'What does Leslie say the marriage helps do?',
       ja: 'レスリーは、この結婚が何の役に立っていると言う？',
       choices: ['Bring two towns closer', 'Pay for a new bridge', 'End a family fight'], a: 0,
@@ -71,7 +71,7 @@ export const fiftyYears: Clip = {
       trap: 'bridge を名詞の「橋」と取ると、工事の話に聞こえる。ここは「つなぐ」。',
       use: 'Let’s try to bridge the gap.（歩み寄ってみよう）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'myshow', seg: [17.8, 22.8],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'myshow', seg: [17.9, 22.8],
       stem: 'What does the host mean by “*my show, my questions*”?',
       ja: '司会者の「my show, my questions」はどういう意味？',
       choices: ['I ask the questions here', 'Please ask me more questions', 'This is my favorite show'], a: 0,
@@ -83,7 +83,7 @@ export const fiftyYears: Clip = {
       trap: 'Yeah で始まるので賛成に聞こえやすい。ここの Yeah は話を切る合図。',
       use: 'My car, my rules.（私の車だから、私が決める）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [22.85, 30.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [22.85, 28.2],
       stem: 'What does “*secret sauce*” mean here?',
       ja: 'ここでの「secret sauce」はどういう意味？',
       choices: ['Why it works so well', 'A secret they keep', 'A food they both love'], a: 0,
@@ -118,14 +118,14 @@ export const fiftyYears: Clip = {
       trap: '言葉だけ取ると感心に聞こえる。答えが平凡なのに強くほめたら、皮肉を疑うくせを。',
       use: 'Wow, never would’ve guessed.（へえ、意外だなあ〔皮肉〕）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['bribe'], seg: [32.0, 56.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['bribe', 'amount', 'bringit'], seg: [32.0, 48.7],
       stem: 'How does the interview change?',
       ja: 'インタビューはどう変わる？',
       choices: ['The couple tells the truth', 'Leslie asks the questions', 'The host gives the money back'], a: 0,
       choicesJa: ['夫婦が本当のことを話す', 'レスリーが質問をする', '司会者がお金を返す'],
       cue: '「Okay」のあとの短い一言',
       line: 'Okay. *I can’t do this.*',
-      said: '幸せな夫婦の話のはずが、「もう無理」と、結婚した本当の理由を話しだす。',
+      said: '幸せな夫婦の話のはずが、ロージーが「もう無理。お金はいらない」と、頼まれて出ていたことを明かす。',
       mean: 'I can’t do this ＝ もう無理。お祝いのインタビューが、本音の話に変わる。',
       trap: 'keep your money（お金はいらない）は夫婦の言葉。お金を返すのは司会者ではない。',
       use: 'Sorry, I can’t do this anymore.（ごめん、もう無理）' },
@@ -142,7 +142,7 @@ export const fiftyYears: Clip = {
       trap: 'keep を「もらっておく」と取りやすい。your money なので、相手に返している。',
       use: 'Keep the change.（おつりは取っておいて）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [38.9, 48.5],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [38.9, 46.35],
       stem: 'How much did Leslie offer them?',
       ja: 'レスリーは二人にいくら出すと言った？',
       choices: ['$20 each', '$100 each', '$200 each', '$2,000 each'], a: 2, keep: true,
@@ -155,6 +155,7 @@ export const fiftyYears: Clip = {
       use: 'They paid us fifty bucks each.（一人50ドルずつもらった）' },
 
     // retired (R4): the same line as n2, in a 10 s stretch with five item starts
+
     { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [40.7, 48.5], retired: true,
       stem: 'Type the end: “…to ___, but it’s impossible.” (3 words)', answer: 'keep this going',
       ja: '「…to ___, but it’s impossible.」の空所を書こう（3語）',
@@ -165,7 +166,7 @@ export const fiftyYears: Clip = {
       trap: 'this の th は小さく、keep の p とつながってひと続きに聞こえる。',
       use: 'Let’s keep this going.（この調子で続けよう）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', ctx: true, seg: [44.9, 52.5],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', ctx: true, reveals: ['prospects', 'alcohol'], seg: [45.2, 52.2],
       stem: 'The host says, “*Bring it*.” What does she mean?',
       ja: '司会者の「Bring it」はどういう意味？',
       choices: ['Yes, tell me now', 'Give back the money', 'Please stop talking'], a: 0,
@@ -202,7 +203,8 @@ export const fiftyYears: Clip = {
       use: 'I had an early flight.（朝早い便だったんだ）' },
 
     // rewritten in R4: was a C1 "why did they really marry" summary; now the Cold War line
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'die', reveals: ['prospects'], seg: [52.1, 56.9],
+
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'die', reveals: ['prospects'], seg: [52.2, 56.9],
       stem: 'What did everyone think back then, Rosie says?',
       ja: '当時みんなはどう思っていたと、ロージーは言う？',
       choices: ['The world would end soon', 'They would all get rich', 'The two towns would join'], a: 0,
@@ -214,7 +216,7 @@ export const fiftyYears: Clip = {
       trap: '直前の no prospects（あてがない）から、お金の話を連想しやすい。決め手は gonna die。',
       use: 'Frankly, I was scared.（正直、こわかった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tickoff', reveals: ['turn'], seg: [55.5, 62.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'tickoff', reveals: ['turn'], seg: [56.9, 62.9],
       stem: 'What does “*tick off* my parents” mean?',
       ja: '「tick off my parents」はどういう意味？',
       choices: ['Make them very angry', 'Make them notice him', 'Make them worry'], a: 0,
