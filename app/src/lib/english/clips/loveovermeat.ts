@@ -9,6 +9,7 @@
 // Same scene as rontomlucy (LEVt2ZydByI, R4 done): this bank avoids its points (better than well, 100 %, I'd marry,
 // tri-tip, most of all churches, I'll just say it, walk back, until, never lied, island, good team, all in, jumping
 // the gun, I'm fine with that); n1, d3, x1, pr2 and s1 retired in R4 for that.
+// EXCLUDE 53.2–57.3 ("those bastards")
 // SKIP 44–70: Ron's wedding/church talk (tested in rontomlucy) and unnamed speakers (57–65 s, 'Well done', 'Tommy's the man')
 // EAR CHECK: 103.4 s h3 — “That’s way in the future, man” is taken as Tom's, so “Don't call me man” is Ron's reply
 import type { Clip } from '../types.ts';

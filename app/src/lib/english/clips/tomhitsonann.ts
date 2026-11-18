@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 2, new 5, ctx 4, tx 4
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 5, new 1
 // “Tom Hits on Ann | Parks and Recreation” (the official Parks and Recreation channel, Season 1): at a public forum
 // Leslie and Tom face off-topic complaints until Ann, a nurse, asks the city to deal with a pit that broke her
@@ -7,7 +8,10 @@
 // obscene heckling and the captions garble it), 56–68 s (Ann's “I don't care for politics” and the applause),
 // 124.5–128.5 s (innuendo), 200 s on after the talking head (music). Named in the audio: Leslie Knope and Tom (3–5.5 s),
 // Barry (51.5 s), Ann Perkins (57 s). Tom is the man questioning Ann (101–152 s); Leslie is the woman on the panel.
-// A2: the forum gist (g1) ran over the 31–37 s heckling; the gists are now Ann's errand (69–101 s) and the end.
+// Same scene as annforum (-IFoOpnyDN0): this bank avoids its points (nurse, 'No, it's a problem', almost a year, I support
+// him, but anyway, going on for him, hitting on me, married, government owned, get this thing fixed, fill in the pit /
+// put a park, gonna, from scratch); g3 (the promise) retired in R4 for that.
+// EXCLUDE 31–37 (obscene heckling)
 import type { Clip } from '../types.ts';
 
 export const tomHitsOnAnn: Clip = {
@@ -16,7 +20,7 @@ export const tomHitsOnAnn: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'fire', seg: [2.5, 14.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'fire', retired: true, seg: [2.5, 14.5],
       stem: 'How does Leslie feel about the questions?',
       ja: 'レスリーは質問に対してどんな気持ち？',
       choices: ['Happy to answer any of them', 'Nervous about them', 'Ready only for park questions'], a: 0,
@@ -40,7 +44,6 @@ export const tomHitsOnAnn: Clip = {
       trap: 'fire（撃つ・火）から怒りを思いやすい。質問の直後なら「どうぞ」。',
       use: 'Got questions? Fire away.（質問ある？どうぞ）' },
 
-    // retired (A2): its 49 s ran over the obscene heckling (31–37 s)
     { id: 'g1', skill: 'gist', level: 'B2', point: 'forum', seg: [6.3, 55.7], retired: true,
       stem: 'What are the first few comments from the public like?',
       choices: ['Rambling complaints on unrelated things', 'Cheerful thanks for the parks staff',
@@ -51,7 +54,18 @@ export const tomHitsOnAnn: Clip = {
       trap: 'yelled at（怒鳴られる）が聞こえると、批判の集中砲火に見える。中身は脱線した苦情ばかり。',
       use: 'Let’s stay on topic, please.（話を本題に戻しましょう）' },
 
-    // retired (A2): a “plain-English version” item
+    { id: 'c1', skill: 'infer', level: 'B1', point: 'kids', ctx: true, seg: [22.7, 30.5],
+      stem: 'Why does the man hate the bad words?',
+      ja: '男性はなぜ汚い言葉がいやなの？',
+      choices: ['He has kids', 'He works there', 'He paints walls'], a: 0,
+      choicesJa: ['子どもがいるから', 'そこで働いているから', '壁を塗る仕事だから'],
+      cue: '「drives me crazy」のあと。',
+      line: 'I don’t like obscenities just as much as you don’t like them. / Man: No, it *drives me crazy*. *I have kids*.',
+      said: '落書きの汚い言葉に「頭にくる。子どもがいるんで」と言う。',
+      mean: 'drive me crazy ＝ 文字どおりは「私を狂わせる」→「頭にくる、イライラする」。obscenities ＝ 下品な言葉。',
+      trap: 'graffiti（落書き）から、壁の仕事の人と考えがち。決め手は I have kids。',
+      use: 'This noise drives me crazy.（この音、イライラする）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'loudly', seg: [36.6, 46.6], retired: true,
       stem: 'Which plain-English version keeps what Leslie means about being yelled at?',
       choices: ['“The shouting shows they care, and I take it well.”',
@@ -64,18 +78,17 @@ export const tomHitsOnAnn: Clip = {
       trap: 'つらいけど我慢、と本音を探しやすい。So の前の一文が言いかえの理由で、不満の but は出てこない。',
       use: 'Complaints mean they care.（苦情は関心のあらわれ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'barry', seg: [47, 56.5],
-      stem: 'Why does the panel say “Thank you so much, Barry”?',
-      ja: 'なぜ「Thank you so much, Barry」と言う？',
-      choices: ['To end his turn politely', 'To thank him for his idea', 'To ask him to go on'], a: 0,
-      choicesJa: ['ていねいに話を終わらせるため', '意見にお礼を言うため', '続けてと頼むため'],
-      cue: 'すぐあとの「Anyone else」',
-      line: '…about Laura Linney. — *Thank you so much, Barry*. Always great to have you here. *Anyone else*…?',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'barry', ctx: true, seg: [47, 56],
+      stem: 'What happens after Barry starts talking?',
+      ja: 'バリーが話し始めると、どうなる？',
+      choices: ['They ask for the next person', 'They let him keep talking', 'They ask about Laura Linney'], a: 0,
+      choicesJa: ['次の人を呼ぶ', 'そのまま話させる', 'ローラ・リニーについて聞く'],
+      cue: '「Thank you so much」のあと。',
+      line: 'Barry: Now, I have a few things I want to say about Laura Linney. / *Thank you so much, Barry*. … *Anyone else*…?',
       said: '話し始めた男性に、すぐ「ありがとう、バリー。ほかの方は？」と返す。',
-      mean: 'Thank you ＋ Anyone else? ＝ お礼の形で話を終わらせ、次の人へ回す言い方。',
-      trap: 'Thank you を文字どおりのお礼と思いやすい。すぐ Anyone else と次に回している。',
-      use: 'Thanks, that’s all the time we have.（ありがとうございます、時間です）' },
-
+      mean: 'Thank you ＋ Anyone else? ＝ お礼の形で話を終わらせ、次の人へ回す言い方。Laura Linney は女優の名前。',
+      trap: 'Thank you を文字どおりのお礼と取りがち。すぐ Anyone else と次に回している。',
+      use: 'Thank you. Anyone else?（ありがとうございます。ほかの方は？）' },
     { id: 'g2', skill: 'gist', level: 'B1', point: 'pit', reveals: ['legs'], seg: [68.4, 101.4],
       stem: 'What does Ann come to the forum about?',
       ja: 'アンは何のことで集会に来た？',
@@ -98,16 +111,16 @@ export const tomHitsOnAnn: Clip = {
       trap: 'out の t が次の a とつながり、一語に聞こえやすい。過去の話なので dug。',
       use: 'They dug out the old tree.（古い木を掘り出した）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'pitwhy', seg: [79.5, 91.5],
-      stem: 'How did the pit in the lot come to be there?',
-      ja: '空き地の穴はどうしてできた？',
-      choices: ['A builder dug, then went broke', 'The city stopped the builder', 'An old basement fell in'], a: 0,
-      choicesJa: ['業者が掘って倒産した', '市が業者を止めた', '古い地下室が崩れた'],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'bankrupt', reveals: ['pitwhy'], seg: [79.5, 91.5],
+      stem: 'What happened to the builder of the condos?',
+      ja: 'マンションを建てる業者はどうなった？',
+      choices: ['It lost all its money', 'It moved to another city', 'It finished the condos'], a: 0,
+      choicesJa: ['お金がなくなった（倒産した）', 'ほかの町へ移った', 'マンションを建て終えた'],
       cue: '「developer」のあと',
-      line: 'a *developer dug out a basement* for some condos and then they *went bankrupt*',
+      line: 'a developer dug out a basement for some condos and then they *went bankrupt*',
       said: '「業者がマンション用に地下を掘って、倒産した」と言う。',
       mean: 'went bankrupt ＝「倒産した」。工事が止まり、穴だけ残った。',
-      trap: 'basement（地下室）が聞こえるので、古い家が崩れたと思いやすい。dug（掘った）を聞く。',
+      trap: 'condos が聞こえるので、建て終えたと考えがち。決め手は and then のあとの went bankrupt。',
       use: 'The company went bankrupt last year.（その会社は去年倒産した）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'year', seg: [85.8, 92.9], retired: true, keep: true,
@@ -135,22 +148,22 @@ export const tomHitsOnAnn: Clip = {
       use: 'He slipped and broke his arm.（すべって腕を折ったの）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'serious', seg: [106.4, 112.7],
-      stem: 'What does Tom really want to know with “pretty serious”?',
-      ja: '「pretty serious」で、トムが本当に知りたいことは？',
+      stem: 'What is Tom asking with “pretty serious”?',
+      ja: '「pretty serious」で、トムは何を聞いている？',
       choices: ['If Ann is free to date', 'If the man is badly hurt', 'If they plan to marry'], a: 0,
       choicesJa: ['アンがフリーかどうか', '彼のけがが重いか', '二人が結婚するか'],
       cue: '「serious」のあとの質問',
       line: 'this guy, is it pretty *serious*? You guys *living together*?',
-      said: '「その彼とは真剣なの？一緒に住んでる？」と聞く。',
+      said: '「その彼とは結構本気なの？一緒に住んでる？」と聞く。',
       mean: 'serious ＝ ここでは「真剣な交際」。同居も聞くので、関係を探っている。',
       trap: 'けがの話の直後なので「重いけが」と思いやすい。次の living together が決め手。',
       use: 'So, is it serious with her?（で、彼女とは本気なの？）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'moveon', seg: [111.8, 126.2],
-      stem: 'What is Tom hinting with “you need to move on”?',
-      ja: '「you need to move on」で、トムは何をほのめかしている？',
-      choices: ['She should leave her boyfriend', 'She should forget the accident', 'The forum should move on'], a: 0,
-      choicesJa: ['恋人と別れたほうがいい', '事故は忘れたほうがいい', '集会は先に進むべき'],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'moveon', seg: [111.8, 125.0],
+      stem: 'What does Tom mean by “move on” here?',
+      ja: 'ここでのトムの「move on」はどういう意味？',
+      choices: ['She should leave her boyfriend', 'She should forget the accident', 'They should change the topic'], a: 0,
+      choicesJa: ['恋人と別れたほうがいい', '事故は忘れたほうがいい', '話題を変えるべき'],
       cue: '「he’s just weak」のあと',
       line: 'I’m sure this must be really tough for you… *he’s just weak*… you probably feel like you need to *move on*.',
       said: '恋人を「弱い」と下げ、「次に進みたくなるよね」と言う。',
@@ -170,7 +183,30 @@ export const tomHitsOnAnn: Clip = {
       trap: '口説かれる＝ほめられたと思うと、照れに見える。actually は信じられない気持ち。',
       use: 'Are you actually serious right now?（今、本気で言ってる？）' },
 
-    // retired (A2): a “why is it funny” item
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'open', ctx: true, seg: [128.5, 141.5],
+      stem: 'How does Tom describe himself?',
+      ja: 'トムは自分をどんな人だと言う？',
+      choices: ['Friendly with everyone', 'Shy around people', 'Too busy for people'], a: 0,
+      choicesJa: ['誰とでも仲良くなる', '人見知り', '忙しくて人と会えない'],
+      cue: '「I’m actually married」のあと。',
+      line: 'Ann: Are you actually hitting on me right now? / Tom: No… *I’m just an open person*, and I like *connecting with people*.',
+      said: '「口説いてるの？」に「違う。ただオープンな人間で、人とつながるのが好き」と言う。',
+      mean: 'open person ＝ 人なつっこい人。connect with people ＝ 人と仲良くなる。口説いていないという言い訳。',
+      trap: '口説いたと言われて照れる、と考えがち。決め手は I’m just an open person。',
+      use: 'I like meeting new people.（新しい人と知り合うのが好き）' },
+
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'backtopit', reveals: ['bottom'], seg: [128.5, 158.4],
+      stem: 'What does Ann do when Tom flirts with her?',
+      ja: 'トムに口説かれて、アンはどうする？',
+      choices: ['She talks about the pit again', 'She agrees to date him', 'She leaves the forum, angry'], a: 0,
+      choicesJa: ['穴の話に戻す', '彼とデートすることにする', '怒って集会から帰る'],
+      cue: 'アンの「Look.」のあと。',
+      line: 'Maybe we can just exchange numbers… — Look. I’d love to do it. The bottom line is, I’ve been trying to get this thing fixed…',
+      said: '口説くトムに「ぜひ…でも要するに」と返し、穴の話に戻す。',
+      mean: 'I’d love to ＋ The bottom line is ＝ 軽く受け流して、本題に戻す流れ。',
+      trap: 'I’d love to do it だけ聞くと、誘いを受けたように聞こえる。続く bottom line が本題。',
+      use: 'Anyway, back to the main point.（とにかく、本題に戻ると）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'deny', seg: [131.5, 143.5], retired: true,
       stem: 'Why is Tom’s answer to “Are you hitting on me?” funny?',
       choices: ['He denies it, then flirts even more', 'He denies it, then acts hurt by it',
@@ -181,6 +217,18 @@ export const tomHitsOnAnn: Clip = {
       mean: '否定の言い訳が、そのまま口説き文句になっている。',
       trap: 'hitting on you だけ聞くと「認めた」と取りやすい。I’m not とその後の中身をセットで。',
       use: 'I’m not complaining, I’m just saying.（文句じゃないよ、言ってるだけ）' },
+
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'numbers', seg: [141.5, 152.5],
+      stem: 'What does Tom suggest to Ann?',
+      ja: 'トムはアンに何を提案する？',
+      choices: ['Trading phone numbers', 'Meeting after the forum', 'Visiting the pit together'], a: 0,
+      choicesJa: ['電話番号を交換する', '集会のあとに会う', '一緒に穴を見に行く'],
+      cue: '「Maybe we can」のあと。',
+      line: '…we might be taking up too much of the forum’s time. Maybe we can just *exchange numbers*… go away one weekend',
+      said: '「番号を交換して、週末どこか行って話そう」と誘う。',
+      mean: 'exchange numbers ＝ 電話番号を交換する。go away one weekend ＝ 週末に泊まりで出かける。大胆な誘い。',
+      trap: 'forum’s time（集会の時間）から、集会のあとに会う話と考えがち。決め手は exchange numbers。',
+      use: 'Can we exchange numbers?（連絡先を交換しませんか）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'bottom', seg: [149, 154.1],
       stem: 'Fill the gap: “Look, ___ do it.”',
@@ -218,7 +266,19 @@ export const tomHitsOnAnn: Clip = {
       trap: '業者の倒産の話があるので、業者が理由と思いやすい。最後の and it’s を聞く。',
       use: 'It’s city property, so call the city.（市の土地だから、市に電話して）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['tomorrow', 'pinky'], seg: [170.2, 201],
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'dosomething', ctx: true, seg: [161.0, 176.5],
+      stem: 'What does Leslie say to Ann’s request?',
+      ja: 'アンの頼みに、レスリーは何と答える？',
+      choices: ['She will handle it', 'It is not her job', 'Ann should ask later'], a: 0,
+      choicesJa: ['自分が対応する', '自分の仕事ではない', 'あとで聞いてほしい'],
+      cue: '「Okay.」のあと。',
+      line: 'Ann: …you need to do something about it. / Leslie: Okay. *I’ll do something about it*. / Ann: Really?',
+      said: '「何とかして」と言われ、「分かりました。何とかします」と答える。',
+      mean: 'do something about it ＝ 何とかする、対処する。相手の言葉をそのまま返して、引き受ける返事。',
+      trap: '市の土地の話なので、別の課に回すと考えがち。Okay のあとで引き受けている。',
+      use: 'Don’t worry. I’ll do something about it.（心配しないで。何とかします）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['tomorrow', 'pinky'], retired: true, seg: [170.2, 201],
       stem: 'How does Leslie answer Ann in the end?',
       ja: '最後に、レスリーはアンにどう答える？',
       choices: ['A promise to fill the pit', 'A plan to call the builder', 'A warning about the land'], a: 0,
@@ -257,8 +317,8 @@ export const tomHitsOnAnn: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'sixyears', seg: [207, 212.4], keep: true,
       stem: 'How long has Leslie worked at the parks department?',
       ja: 'レスリーは公園課で何年働いている？',
-      choices: ['Six months', 'Sixteen months', 'Six years'], a: 2,
-      choicesJa: ['6か月', '16か月', '6年'],
+      choices: ['Six months', 'Sixteen months', 'Six years', 'Sixteen years'], a: 2,
+      choicesJa: ['6か月', '16か月', '6年', '16年'],
       cue: '「parks department for」のあと',
       line: 'I’ve worked at the parks department for *six years*',
       said: '「公園課で6年働いてきた」と話す。',
@@ -266,7 +326,6 @@ export const tomHitsOnAnn: Clip = {
       trap: '最後が「イヤーズ」なら years、「マンス」なら months、「シックスティーン」と伸びれば 16。',
       use: 'I’ve lived here for six years.（ここに6年住んでる）' },
 
-    // retired (A2): a “who is the joke on” item
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'sandbox', seg: [207.8, 220.7], retired: true,
       stem: 'In Leslie’s list of things she’s proud of, who is the joke on?',
       choices: ['Leslie, whose proudest example is so small', 'Leslie, who undersells a big job out of modesty',
@@ -290,7 +349,6 @@ export const tomHitsOnAnn: Clip = {
       trap: 'scratch（ひっかき傷）から「傷んだ所の修理」と思いやすい。whole new と並べば「一から」。',
       use: 'I made this cake from scratch.（このケーキ、一から作ったの）' },
 
-    // retired (A2): “my Hoover Dam” needs world knowledge
     { id: 'i6', skill: 'infer', level: 'C1', point: 'dam', reveals: ['scratch'], seg: [219.3, 228.3], retired: true,
       stem: 'What does Leslie mean when she calls the pit her “Hoover Dam”?',
       choices: ['The big project she’d be remembered for', 'A huge job that may be too much for her',
@@ -300,6 +358,6 @@ export const tomHitsOnAnn: Clip = {
       said: '「一から公園を作れる。これは私のフーバーダムになるかも」と話す。',
       mean: '有名な大工事にたとえて、一生の代表作になる仕事だと言っている。',
       trap: 'dam を「せき止める」と取ると、穴をふさぐ話に見える。my が付けば「私の代表作」。',
-      use: 'This project could be my big break.（この企画が出世作になるかも）' },
+      use: 'This project could be my big break.（この企画が出世作になるかも）' }
   ]
 };
