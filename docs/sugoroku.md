@@ -53,10 +53,9 @@ with characters in it, since they are the pieces. A team game: one team total to
 
 ## The 3D board
 
-`components/sugoroku3d/` (engine.ts `createBoard3D`, the pure parts in plan.ts and islandPlan.ts): the board on our own
-island, drawn by the island's own loaders (world3d: its grass and sand textures, the dirt path, the river and sea
-water, NH's trees, flowers, benches and lamps, the museum, the shop, our homes before ふりだし, NH's bridges at the fork;
-nothing that hides a stone), the stones rounded NH-style in their kind's colours with their marks, signs, the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
+`components/sugoroku3d/` (engine.ts `createBoard3D`, the pure part in plan.ts): a minimal island (a few flat low-poly
+shapes: grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
+colours with their marks, signs, at 1.5× pixels (an iPhone's memory: the island-model version, 2026-11-18, was too heavy), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
 camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
 moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only).
 
