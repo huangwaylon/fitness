@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 1, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 1, ctx 4, tx 3, qa 8
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 1, new 0
 // “Janice Breaks Up with Ross | Friends” (the official Friends channel, Best of Season 5): Ross moans about a wrong
 // coffee order and his bad luck; Janice finishes his list for him, then breaks up with him because he
@@ -18,16 +18,16 @@ export const janicedump: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'order', ctx: true, seg: [0, 6.5],
       stem: 'What is wrong with Ross’s coffee?',
       ja: 'ロスのコーヒーの何がいけない？',
-      choices: ['It isn’t what he ordered', 'It isn’t hot enough', 'It costs too much'], a: 0,
-      choicesJa: ['頼んだものと違う', '熱さが足りない', '値段が高すぎる'],
+      choices: ['It’s a different drink', 'It’s not hot enough', 'It costs too much'], a: 0,
+      choicesJa: ['注文したのと違う飲み物', '熱さが足りない', '値段が高すぎる'],
       cue: '「What is wrong now?」への答え。',
       line: 'Janice: *What is wrong now?* / Ross: This *isn’t what I ordered*.',
-      said: '「今度は何？」と聞かれ、「頼んだものと違う」と答える。',
-      mean: 'This isn’t what I ordered ＝ これは頼んだものと違う。店で使える決まり文句。',
+      said: '「今度は何？」と聞かれ、「注文したのと違う」と答える。',
+      mean: 'This isn’t what I ordered ＝ これ、注文したのと違う。店で使える決まり文句。',
       trap: 'coffee の話なので、温度や値段を連想しやすい。isn’t のあとの what I ordered を聞く。',
       use: 'Excuse me, this isn’t what I ordered.（すみません、これ頼んだものと違います）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'luck', seg: [0, 22.6],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'luck', reveals: ['list'], seg: [0, 22.6],
       stem: 'What is Ross upset about?',
       ja: 'ロスは何に落ちこんでいる？',
       choices: ['All his bad luck', 'A fight with Janice', 'A rude waiter'], a: 0,
@@ -58,7 +58,7 @@ export const janicedump: Clip = {
       choicesJa: ['何も〜しないの？', '何か〜する？', '何も〜しなかったの？'],
       cue: '「Man」のあと。',
       line: 'Man, *can’t anything* go right in my life?',
-      said: '「何かひとつでもうまくいかないのか」と言う。',
+      said: '「僕の人生、何ひとつうまくいかないのか？」と言う。',
       mean: 'can’t の t は消え、anything とつながって「キャーネニシング」に近い。',
       trap: 'can なら弱く短い「クン」。couldn’t なら「クッドゥン」。長く強い「キャー」なら can’t。',
       use: 'Can’t anyone help me?（だれか手伝ってくれないの？）' },
@@ -99,7 +99,7 @@ export const janicedump: Clip = {
       trap: '同情して言っているように聞こえやすい。先回りして全部言えるのが手がかり。',
       use: 'I know, I know. I’m late again.（分かってる、また遅刻だよね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'exwife', seg: [13.6, 23.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'exwife', reveals: ['lose'], seg: [13.6, 23.3],
       stem: 'In the list, what did Ross’s ex-wife do?',
       ja: '不運のリストで、ロスの元奥さんは何をした？',
       choices: ['She married again fast', 'She moved away fast', 'She lost her job fast'], a: 0,
@@ -151,7 +151,7 @@ export const janicedump: Clip = {
       choicesJa: ['二人のいい時は終わった', '二人の最高の日はこれから', '二人の時間は短すぎた'],
       cue: '「I believe that」のあと。',
       line: 'I believe that *the sun has set on our day in the sun*.',
-      said: '「私たちの輝く日々に、日が沈んだと思うの」と詩のように言う。',
+      said: '「私たちの輝いてた日々に、もう日が沈んだと思うの」と詩のように言う。',
       mean: 'day in the sun ＝ 文字どおりは「日の当たる日」→輝いていた時期。そこに日が沈んだ＝いい時は終わった。',
       trap: 'sun（太陽）が2回出るので明るい話に聞こえやすい。has set（沈んだ）は終わりの合図。',
       use: 'Everyone has their day in the sun.（だれにでも輝く時がある）' },
@@ -223,10 +223,9 @@ export const janicedump: Clip = {
       choicesJa: ['正しく分かったか確かめたい', 'よく聞こえない', 'この点は賛成だ'],
       cue: 'ジャニスの理由のあと。',
       line: '*Let me make sure I’m hearing this right.*',
-      said: '「ちょっと確認させて。聞きまちがいじゃないよね」と前置きする。',
+      said: '「ちゃんと分かってるか確かめさせて」と前置きする。',
       mean: 'Let me make sure 〜 ＝ 〜か確かめさせて。信じられない話を聞き返す前置き。',
-      trap: 'hearing から、耳が聞こえない話を連想しやすい。ここは「意味を正しく受け取ったか」。'
-,
+      trap: 'hearing から、耳が聞こえない話を連想しやすい。ここは「意味を正しく受け取ったか」。',
       use: 'Let me make sure I understand.（ちゃんと分かってるか確認させて）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'whiny', reveals: ['reason'], seg: [59.2, 71.1],

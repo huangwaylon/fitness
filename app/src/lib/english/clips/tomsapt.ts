@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 5, new 0, ctx 3, tx 4
+// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 5, new 0, ctx 3, tx 4, qa 8
 // A2 REVIEW 2026-11-17: keep 9, rewrite 7, retire 3, new 1
 // “Parks and Recreation | Tom's Apartment (Episode Highlight)” (the official Parks and Recreation channel, Season 4):
 // with Tom out, Ann sneaks Leslie into his apartment and shows off its comforts, telling the camera it's the apartment
@@ -30,16 +30,16 @@ export const tomsApartment: Clip = {
       trap: 'coast（海岸）や clear（晴れ）から、海や天気を連想しやすい。アンの he’s gone が答え。',
       use: 'Is the coast clear? Can I come out?（もう大丈夫？出ていい？）' },
 
-    { id: 'i1', skill: 'gist', level: 'B2', point: 'sneak', seg: [0, 15.0],
-      stem: 'Why does Leslie sneak into Tom’s place?',
-      ja: 'レスリーはなぜ、こっそりトムの部屋に入る？',
-      choices: ['So Tom won’t know', 'To surprise Tom', 'To catch Tom'], a: 0,
-      choicesJa: ['トムに知られないため', 'トムをおどろかせるため', 'トムの現場をおさえるため'],
-      cue: '服の呼び方と、彼についての質問',
-      line: 'My *sneak around clothes*. *Is he gone?*',
-      said: '服は「こっそり用」と言い、「彼、出かけた？」と確かめてから入る。',
-      mean: 'sneak around ＝ こっそり動く。トムがいない間に、彼の部屋を見に来ている。',
-      trap: 'こっそり＝サプライズ、と考えがち。Is he gone? で確かめるのは、トムがるすかどうか。',
+    { id: 'i1', skill: 'gist', level: 'B2', point: 'sneak', reveals: ['gotta'], seg: [0, 15.0],
+      stem: 'Why does Leslie come to Tom’s place?',
+      ja: 'レスリーはなぜ、トムの部屋に来た？',
+      choices: ['Ann wants to show her something', 'Tom asked her to come', 'She wants to surprise Tom'], a: 0,
+      choicesJa: ['アンが見せたい物がある', 'トムに呼ばれた', 'トムをおどろかせたい'],
+      cue: '「Is he gone?」と、アンの返事',
+      line: 'My *sneak around clothes*. *Is he gone?* — … Come in. *You gotta see this.*',
+      said: 'こっそり用の服で来て「彼、出かけた？」と確かめ、アンが「入って。これ見てよ」と招く。',
+      mean: 'sneak around ＝ こっそり動く。トムの留守に、アンが自慢の部屋を見せようと呼んだ。',
+      trap: 'Is he gone? と聞くので、トムに呼ばれたのではない。決め手は You gotta see this。',
       use: 'Is he gone? Okay, come on in.（彼、行った？じゃあ入って）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'gone', seg: [2.7, 7.7], retired: true,
@@ -90,7 +90,7 @@ export const tomsApartment: Clip = {
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'apartment', seg: [10.0, 15.5],
       stem: 'Who is Ann ready to say “I love you” to?',
-      ja: 'カメラへのアンの話は、なぜおかしい？',
+      ja: 'アンが「愛してる」と言えそうな相手は？',
       choices: ['Tom’s apartment', 'Tom himself', 'Tom’s money'], a: 0,
       choicesJa: ['トムの部屋', 'トム本人', 'トムのお金'],
       cue: '「I love you」のあとの3語',
@@ -100,7 +100,7 @@ export const tomsApartment: Clip = {
       trap: '告白の話なので、トム本人と考えがち。最後の3語 to his apartment で、相手は部屋。',
       use: 'I think I’m in love… with this sandwich.（恋したかも…このサンドイッチに）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', seg: [18.0, 45.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', reveals: ['shelf'], seg: [18.0, 45.0],
       stem: 'What does Ann show Leslie in Tom’s place?',
       ja: 'アンは、トムの部屋でレスリーに何を見せる？',
       choices: ['Blankets, drinks and food', 'Photos, books and clothes', 'Plants, art and music'], a: 0,
@@ -175,14 +175,13 @@ export const tomsApartment: Clip = {
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'debt', seg: [35, 40.1],
       stem: 'What does Ann mean by “Who cares?”',
       ja: 'アンの「Who cares?」はどういう意味？',
-      choices: ['She waves the worry away', 'She asks Leslie’s opinion', 'She says it bothers her'], a: 0,
-      choicesJa: ['心配をふりはらっている', 'レスリーの意見を聞いている', '気になると言っている'],
+      choices: ['She isn’t worried about it', 'She asks Leslie’s opinion', 'She says it bothers her'], a: 0,
+      choicesJa: ['気にしていない', 'レスリーの意見を聞いている', '気になると言っている'],
       cue: '「debt」のあと',
       line: 'He’s deeply in debt, but *you know what? Who cares?*',
-      said: '「借金まみれなんだけど、まあいいじゃない？」と言う。',
+      said: '「借金はすごくあるけど、でもね、そんなのどうでもいいでしょ？」と言う。',
       mean: 'Who cares? ＝ 文字どおりは「だれが気にする？」→答えは「だれも」＝「気にしない」。くだけた言い方。in debt ＝ 借金がある。',
       trap: '質問の形なので、意見を聞いていると考えがち。答えを待たずに次の話に行く。',
-
       use: 'It’s a bit pricey, but who cares?（ちょっと高いけど、気にしない）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'debt', seg: [36, 45.1], retired: true,
@@ -228,9 +227,8 @@ export const tomsApartment: Clip = {
       cue: '「everywhere」の前の一語',
       line: 'chocolate-covered almonds, and a Sudoku book. Just *amenities* everywhere.',
       said: 'チョコがけアーモンドや数独の本と並べ、「どこもアメニティばっかり」と言う。',
-      mean: 'amenities ＝ ホテルのような、暮らしを快適にする小物や設備。',
+      mean: 'amenities ＝ 暮らしを快適にする小物や設備。日本語のアメニティ（ホテルのシャンプーなど）より広い。',
       trap: '直前にアイクリームなどが出るので、女性用の化粧品と考えがち。お菓子や数独の本もある。',
-
       use: 'The hotel has great amenities.（そのホテルは設備や備品がいい）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'best', reveals: ['degrees'], seg: [56, 61],
