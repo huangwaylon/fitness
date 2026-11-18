@@ -1,10 +1,12 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 10, retire 1, new 1, ctx 4, tx 14
+// R4 REVIEW 2026-11-18: keep 4, rewrite 10, retire 1, new 1, ctx 4, tx 14, qa 6
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 4, new 0
 // “Animal Control Suck | Parks and Recreation” (the official Parks and Recreation channel, Season 5): a stoner guide
 // shows two visitors round the town's Animal Control office; one visitor rips into the department, the other asks to
 // wait and see, a coyote trap ends the visit, and the whole department is fired. Segments from the captions, words
 // from whisper (2026-11-16). Talk ends at ≈ 75.6 s. No speaker is named in the audio, so stems say "the guide" and "the visitor".
 // EXCLUDE 34.6–36.1 (“a miserable suck hole”)
+// EAR CHECK: 53 s d4 — json3 “Coyote trap. Dude, this hurts.” vs whisper “Coyote trap, dude. — Ow, this hurts.”: whose “dude”;
+// d4 no longer quotes it
 // EAR CHECK: 56.3 s p2 — whisper “wouldn't have been meaning to call”, captions “would we been meaning to call”; the key
 // is “been meaning to call” in both
 import type { Clip } from '../types.ts';
@@ -29,9 +31,9 @@ export const animalControl: Clip = {
       choices: ['Silly things, not real work', 'The animals they have caught', 'How they answer the phone'], a: 0,
       choicesJa: ['仕事と関係ないおかしな物', '捕まえた動物', '電話の受け方'],
       cue: 'いす、ナプキン、鳥の話',
-      line: 'Those are some chairs… a napkin where I wrote down *a cool name for a dog*… We tried to turn it into a *work whistle*…',
-      said: 'いす、名前を書いたナプキン、笛にしようとした鳥など、仕事と関係ない物ばかり見せる。',
-      mean: 'Let me show you around ＝ 中を案内するね。案内のはずが、動物の仕事は何一つ見せていない。',
+      line: 'Those are some *chairs*… this is a *napkin*… we found this *bird* outside.',
+      said: 'いす、紙ナプキン、外で見つけた鳥など、仕事と関係ない物ばかり見せる。',
+      mean: 'show ＝ 見せる。動物管理課の案内のはずが、動物を捕まえる仕事は何一つ見せていない。',
       trap: 'Animal Control（動物管理課）なので、捕まえた動物を見せると考えがち。出てくる物を一つずつ聞く。',
       use: 'Let me show you the kitchen.（キッチンを見せるね）' },
     { id: 'i1', skill: 'infer', level: 'B1', point: 'possum', seg: [2.2, 6.15],
@@ -105,16 +107,16 @@ export const animalControl: Clip = {
       mean: 'It does seem 〜, but … ＝ 確かに〜に見えるけど…。いったん認めて、結論を待とうと言う。',
       trap: 'poorly run（運営がひどい）に賛成しているので、クビにすると考えがち。決め手は but のあと。',
       use: 'Fair point, but let’s wait a week.（もっともだけど、1週間様子を見よう）' },
-    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [40.5, 46.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', seg: [40.5, 46.4], keep: true,
       stem: 'How long have they been at the department so far?',
       ja: '彼らはここに来て、まだどのくらい？',
-      choices: ['2 minutes', '20 minutes', '40 minutes'], a: 0,
-      choicesJa: ['2分', '20分', '40分'],
+      choices: ['2 minutes', '12 minutes', '20 minutes', '40 minutes'], a: 0,
+      choicesJa: ['2分', '12分', '20分', '40分'],
       cue: '「only been here」のあと',
       line: 'but we’ve only been here *for two minutes*.',
       said: '「でも、来てまだ2分だ」と言う。',
       mean: 'only ＋ 短い時間 ＝ 決めるにはまだ早い。for two minutes ＝ 2分間。',
-      trap: 'twenty（20）は「トゥエニ」、forty（40）は「フォーティ」。のばした「トゥー」なら2。',
+      trap: 'twelve（12）は「トゥエルヴ」、twenty（20）は「トゥエニ」、forty（40）は「フォーティ」。短い「トゥー」なら2。',
       use: 'We’ve only been here for ten minutes.（まだ来て10分なんだ）' },
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'method', seg: [44.6, 46.4],
       stem: 'What does “a method to their madness” mean?', ja: '“a method to their madness” はどういう意味？',
@@ -141,9 +143,9 @@ export const animalControl: Clip = {
       choices: ['A coyote trap', 'A bird bite', 'A cat scratch'], a: 0,
       choicesJa: ['コヨーテ用のわな', '鳥にかまれた', '猫にひっかかれた'],
       cue: '「what is this?」への答え',
-      line: 'Ow, ow, ow, what is this? / *Coyote trap*, dude.',
+      line: 'Ow, ow, ow, what is this? / *Coyote trap*.',
       said: '「痛い、何これ？」に、案内係が「コヨーテのわなだよ」と軽く答える。',
-      mean: 'trap ＝ わな。部屋にわなを置いたまま。dude ＝ おい、きみ（友だち同士のくだけた語）。客には使わない。',
+      mean: 'trap ＝ わな。coyote ＝ コヨーテ（北米の野生の犬の仲間）。客が通る部屋に、わなを置いたままだった。',
       trap: 'coyote は「カヨーティ」に近く、聞きなれない。あとの trap を先につかむ。鳥も猫も前に出た動物。',
       use: 'Watch out, there’s a step here.（気をつけて、段差があるよ）' },
     { id: 'h2', skill: 'detail', level: 'B2', point: 'calling', reveals: ['wouldbe'], ctx: true, seg: [54.8, 62.3],

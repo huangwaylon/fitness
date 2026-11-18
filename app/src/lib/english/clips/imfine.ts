@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 4, new 6, ctx 3, tx 13
+// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 4, new 6, ctx 3, tx 13, qa 8
 // A2 REVIEW 2026-11-17: keep 2, rewrite 13, retire 7, new 1
 // A2 LATE: the story is literary horror narration (sarcophagi, embalmed, citing) and the punchline and title swear;
 // only the opening and a few plain lines serve an A2 learner.
@@ -18,7 +18,7 @@ export const imFine: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'road', seg: [0, 6.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'road', seg: [0, 6.1],
       stem: 'When does Jim imagine CeCe saying this?',
       ja: 'ジムは、セシがこう言うのをいつのことと考えている？',
       choices: ['In a few years', 'A few years ago', 'On a road trip'], a: 0,
@@ -87,7 +87,7 @@ export const imFine: Clip = {
       trap: 'カタカナの「フリーク（マニア）」を思いやすい。out と組むと「怖がらせる」。',
       use: 'Don’t freak out. It’s just a spider.（落ち着いて。ただのクモだよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'comeon', reveals: ['lie'], seg: [10.3, 15.2],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'comeon', reveals: ['lie'], seg: [10.3, 15.1],
       stem: 'How does Jim feel when he says “Oh, come on!”?',
       ja: '「Oh, come on!」と言うとき、ジムはどんな気持ち？',
       choices: ['Annoyed with Pam', 'Happy with Pam', 'Scared of ghosts'], a: 0,
@@ -111,7 +111,7 @@ export const imFine: Clip = {
       trap: 'あとで夫の話が出るので、夫婦と思いやすい。来たのは女性と赤ちゃんだけ。',
       use: 'We just moved into a new place.（新しい家に引っ越したばかり）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'night1', reveals: ['lydia'], seg: [28.7, 53.0],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'night1', reveals: ['lydia'], seg: [34.75, 53.0],
       stem: 'What happens on Lydia’s first night there?',
       ja: 'リディアがその家に来た最初の夜、何が起きる？',
       choices: ['A snake attacks her baby', 'A man knocks on her door', 'Her baby gets very sick'], a: 0,
@@ -180,7 +180,7 @@ export const imFine: Clip = {
       line: 'Amongst them was a man. *Tall. Slim.* — Jim.',
       said: '「その中に男が一人。背が高く、やせていて」と話すと、だれかが「ジム」と口をはさむ。',
       mean: 'tall ＝ 背が高い。slim ＝ ほっそりした（ほめる感じの「やせた」）。一語ずつ区切って怖さを出している。',
-      trap: 'slim は「スリム」でも、日本語のスリムよりふつうに使う語。tall と slim の2語を聞く。',
+      trap: '一語ずつ区切って話すので、聞き落としやすい。Tall（背が高い）と Slim（ほっそり）の2語を聞く。',
       use: 'He’s tall and slim, with short hair.（背が高くてやせてて、短い髪です）' },
 
     { id: 'd8', skill: 'marker', level: 'B1', point: 'ohwait', reveals: ['lydia', 'apart'], seg: [79.95, 89.85],
@@ -203,17 +203,6 @@ export const imFine: Clip = {
       mean: '過去のある時点よりさらに前の出来事を表す過去完了。had had は文法どおりで、語り口の一部。',
       trap: '同じ語の重なりを言いよどみと取って、had を一つにしがち。聞こえた数をそのまま書く。',
       use: 'I had had enough by then.（その時にはもううんざりしていた）' },
-
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'drift', seg: [89.85, 115.0],
-      stem: 'What is the story about after the mummies?',
-      ja: 'ミイラのあと、話は何についてになる？',
-      choices: ['Lydia’s lonely life', 'The tall, slim man', 'A new job for Lydia'], a: 0,
-      choicesJa: ['リディアの孤独な暮らし', '背が高くやせた男', 'リディアの新しい仕事'],
-      cue: '「husband」の話から',
-      said: 'リディアがだんだん人と関わらなくなり、一人で閉じこもっていく日々を話す。',
-      mean: '怖い話のはずが、さびしい女性の暮らしの話にそれていく。lose herself in 〜 ＝ 〜にのめりこむ。',
-      trap: '直前に「背が高くやせた男」が出るので、その男の話と考えがち。',
-      use: 'Anyway, where was I?（で、どこまで話したっけ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'pastit', seg: [89.85, 94.9],
       stem: 'Which word do you hear: “one they ___ get past”?',
@@ -249,11 +238,23 @@ export const imFine: Clip = {
       trap: '直前の argument（口論）から、けんかして夫が出ていったと考えがち。最後の Lydia left を聞く。',
       use: 'We just grew apart.（なんとなく疎遠になった）' },
 
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'drift', seg: [99.9, 120.7],
+      stem: 'What is the story about after the mummies?',
+      ja: 'ミイラのあと、話は何についてになる？',
+      choices: ['Lydia’s lonely life', 'The tall, slim man', 'A new job for Lydia'], a: 0,
+      choicesJa: ['リディアの孤独な暮らし', '背が高くやせた男', 'リディアの新しい仕事'],
+      cue: '「It was about this time」から',
+      line: 'It was about this time *she lost herself in imaginary worlds*. … Her lips slowly grew together from disuse.',
+      said: 'リディアがだんだん人と関わらなくなり、一人で閉じこもっていく日々を話す。',
+      mean: '怖い話のはずが、さびしい女性の暮らしの話にそれていく。lose herself in 〜 ＝ 〜にのめりこむ。',
+      trap: '直前に「背が高くやせた男」が出るので、その男の話と考えがち。',
+      use: 'Anyway, where was I?（で、どこまで話したっけ）' },
+
     { id: 'f3', skill: 'detail', level: 'B1', point: 'quit', seg: [104.9, 111.45],
       stem: 'What did Lydia quit?',
       ja: 'リディアは何をやめた？',
-      choices: ['The book club and choir', 'Her job and the gym', 'Her cooking class'], a: 0,
-      choicesJa: ['読書会と合唱団', '仕事とジム', '料理教室'],
+      choices: ['The book club and choir', 'Her job and the gym', 'Cooking class and yoga'], a: 0,
+      choicesJa: ['読書会と合唱団', '仕事とジム', '料理教室とヨガ'],
       cue: '「She had quit」のあと',
       line: 'She had *quit the book club, the choir*, citing something about their high expectations.',
       said: '「読書会も合唱団もやめた。期待が高すぎるとか何とか言って」と話す。',
@@ -318,7 +319,7 @@ export const imFine: Clip = {
       trap: '怖い話の流れで、泣き出すと考えがち。sat up slowly を聞く。',
       use: 'Please sit up straight.（背すじを伸ばして座ってください）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'dare', seg: [152.1, 166.2],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'dare', seg: [152.1, 166.1],
       stem: 'What does “How dare we let it motivate us?” mean?',
       ja: '「How dare we let it motivate us?」はどういう意味？',
       choices: ['Fear shouldn’t control us', 'Fear helps us decide well', 'We should be more afraid'], a: 0,

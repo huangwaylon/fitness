@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 1, ctx 5, tx 4
+// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 1, ctx 5, tx 4, qa 8
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 5, new 1
 // “Dwight Interrupts Michael's Date - The Office US” (the official The Office channel, Best of Season 6): a night out
 // in quick cuts; Dwight's farm talk wins a woman over, he pitches an invention, then pulls Michael away for "twins".
@@ -60,7 +60,7 @@ export const dwightDate: Clip = {
       trap: 'hairpiece（かつら）が先に聞こえるので、オスカーがかつらだと思いやすい。',
       use: 'You have beautiful hair.（きれいな髪だね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'night', seg: [38.3, 64.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'night', seg: [38.3, 56.9],
       stem: 'What does Dwight talk about with Michael’s date?', ja: 'ドワイトは、マイケルのデート相手と何の話をする？',
       choices: ['His farm and his invention', 'His job and his boss', 'His car and his house'], a: 0,
       choicesJa: ['農場と自分の発明', '仕事と上司', '車と家'],
@@ -71,7 +71,7 @@ export const dwightDate: Clip = {
       trap: 'マイケルの仕事仲間も出てくるので、仕事の話だと思いやすい。',
       use: 'I invented a new game.（新しいゲームを考えたんだ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'farm', seg: [40.1, 48.8],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'farm', seg: [40.1, 46.3],
       stem: 'What does Michael think of Dwight’s farm talk?', ja: 'マイケルはドワイトの農場の話をどう思っている？',
       choices: ['It means nothing to others', 'It is very, very funny', 'It is a really good story'], a: 0,
       choicesJa: ['ほかの人にはピンとこない', 'とてもおもしろい', 'とてもいい話だ'],
@@ -138,7 +138,7 @@ export const dwightDate: Clip = {
       use: 'I did it without help.（手伝いなしでやったよ）' },
 
     { id: 'i2', skill: 'phrase', level: 'B2', point: 'considering', seg: [64.4, 72.5],
-      stem: 'What does “still *considering* it” mean?', ja: '「still considering it」の意味は？',
+      stem: 'What does “still considering it” mean?', ja: '「still considering it」の意味は？',
       choices: ['No one has decided yet', 'They have all said yes', 'They have all said no'], a: 0,
       choicesJa: ['まだ誰も決めていない', '全社が OK した', '全社が断った'],
       cue: '何度もくり返す言葉',
@@ -158,13 +158,13 @@ export const dwightDate: Clip = {
       trap: '有名な名前が並ぶと「すごいね」と返しやすい。返事は言葉の調子でなく、話の中身の実態に合わせる。',
       use: 'So that’s a no, then?（つまりダメってこと？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'twins', reveals: ['men'], seg: [88.4, 112.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'twins', seg: [85.5, 100.9],
       stem: 'Why does Michael leave his date?', ja: 'マイケルはなぜ、デート相手のもとを去る？',
       choices: ['Dwight wants him to see twins', 'The woman is getting bored with him', 'It is time to go home now'], a: 0,
       choicesJa: ['ドワイトが双子を見せたい', '女性が彼に退屈している', 'もう帰る時間だ'],
       cue: 'マイケルの「Why?」への答え',
       line: 'Why? — I *found twins*. — Oh, my God. Twins.',
-      said: '「なぜ？」に「双子を見つけた」と返され、マイケルは喜んで女性に別れを告げる。',
+      said: '「なぜ？」に「双子を見つけた」と返され、マイケルは「まじか。双子！」と喜ぶ。',
       mean: 'found ＝ find（見つける）の過去形。双子の女性だと思って、すぐ移動する。',
       trap: 'ドワイトの I’m bored（退屈だ）が聞こえるので、女性が退屈だと思いやすい。',
       use: 'I found it!（見つけた！）' },

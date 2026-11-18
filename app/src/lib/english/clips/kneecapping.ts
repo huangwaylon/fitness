@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 1, new 6, ctx 7, tx 8
+// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 1, new 6, ctx 7, tx 8, qa 10
 // A2 REVIEW 2026-11-17: keep 10, rewrite 5, retire 8, new 3
 // “The Kneecapping - The Office US” (the official The Office channel, BEST OF SEASON 9 - The Office US): Angela,
 // with Dwight beside her, hires Trevor to hurt the person sleeping with her husband; Dwight objects, then gives in;
@@ -12,6 +12,8 @@
 // EXCLUDE 88.6–91.2: "He and the senator are gaying each other"
 // EXCLUDE 100.5–100.95: the bleeped swear in "Fine, [__], it's Oscar"
 // Retired: the affair backstory (i2, i5, r1), the C2 tier, and a3 (Trevor's nerves: s1 and n6 cover his lines).
+// EAR CHECK: 31–36 s f4 — whether “Yes, crazy, thank you” (Dwight?) and “But I think I’m up for it” (Trevor?) are one
+// speaker; f4 names no one.
 // EAR CHECK: 223 s s1 — whisper writes "going to", captions "gonna"; s1 keys on the spoken "gonna"
 import type { Clip } from '../types.ts';
 
@@ -24,8 +26,8 @@ export const kneecapping: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'half', seg: [0, 5.8],
       stem: 'How much of the money is paid now?',
       ja: 'お金は、今どのくらい払われる？',
-      choices: ['Half of it', 'All of it', 'None of it'], a: 0,
-      choicesJa: ['半分', '全部', 'まったくなし'],
+      choices: ['Half of it', 'All of it', 'None of it', 'A quarter of it'], a: 0,
+      choicesJa: ['半分', '全部', 'まったくなし', '4分の1'],
       cue: '最初の文の「now」の前。',
       line: 'You get *half now*, you get half upon completion of said job.',
       said: '「今半分、仕事が終わったら残りの半分」と言う。',
@@ -63,8 +65,8 @@ export const kneecapping: Clip = {
       choices: ['I am willing to do it', 'I am not sure about it', 'I am against it'], a: 0,
       choicesJa: ['やってもいいと思う', 'まだ迷っている', '反対だ'],
       cue: '「crazy」のあと、But で始まる文。',
-      line: 'Yes, crazy, thank you. *But I think I’m up for it.*',
-      said: '「そう、むちゃだよ、ありがとう。でも、やってもいいかな」と言う。',
+      line: 'This seems a little crazy. — Yes, crazy, thank you. — *But I think I’m up for it.*',
+      said: '「ちょっとむちゃだ」「そう、むちゃだ、ありがとう」と続いたあと、「でも、やってもいいかな」と言う。',
       mean: 'be up for 〜 ＝ 〜する気がある、乗り気だ。文字どおりは「〜に向けて起きている」→やる気がある。誘いにのるときの言い方。',
       trap: 'crazy（むちゃ）に賛成したあとなので、反対と考えがち。But のあとで気持ちが変わる。',
       use: 'Pizza tonight? I’m up for it.（今夜ピザ？いいね、乗った）' },
@@ -141,8 +143,8 @@ export const kneecapping: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [76.4, 83.6], keep: true,
       stem: 'What time will the attack happen?',
       ja: '襲うのは何時？',
-      choices: ['At one o’clock', 'At two o’clock', 'At four o’clock'], a: 2,
-      choicesJa: ['1時', '2時', '4時'],
+      choices: ['At one o’clock', 'At two o’clock', 'At four o’clock', 'At ten o’clock'], a: 2,
+      choicesJa: ['1時', '2時', '4時', '10時'],
       cue: '「goes down at」のあとの数。',
       line: 'Now the hit *goes down at four o’clock*.',
       said: '「決行は4時だ」と言う。',
@@ -150,7 +152,7 @@ export const kneecapping: Clip = {
       trap: '直前の One kneecapping の one が残りやすい。two なら「トゥー」。at の直後は「フォー」。',
       use: 'Let’s meet at four o’clock sharp.（4時ちょうどに会おう）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'noturn', reveals: ['four'], seg: [77.7, 85.7],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'noturn', reveals: ['four'], seg: [77.7, 83.2],
       stem: 'What does “there’s no turning back” mean?',
       ja: '「there’s no turning back」はどういう意味？',
       choices: ['It can’t be stopped then', 'Don’t look behind you', 'You can return again later'], a: 0,
@@ -165,13 +167,13 @@ export const kneecapping: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'callout', seg: [83.2, 88.5],
       stem: 'Why did Dwight ask Angela to meet here?',
       ja: 'ドワイトはなぜアンジェラを呼び出した？',
-      choices: ['To talk about who will be hurt', 'To ask what Oscar did', 'To warn her about Trevor'], a: 0,
-      choicesJa: ['だれがねらわれるかを話すため', 'オスカーが何をしたか聞くため', 'トレバーのことを注意するため'],
+      choices: ['To talk about who will be hurt', 'To say sorry to her', 'To warn her about Trevor'], a: 0,
+      choicesJa: ['だれがねらわれるかを話すため', '彼女に謝るため', 'トレバーのことを注意するため'],
       cue: '「call me out here」への短い答え。',
       line: 'Why did you call me out here? — *The target.* It’s Oscar, isn’t it?',
       said: '「なぜ呼び出したの？」に「標的のことだ。オスカーだろう？」と答える。',
       mean: 'call ～ out ＝ 呼び出す。isn’t it? ＝ 〜だよね？と確かめる言い方。',
-      trap: 'オスカーの名前が出るので、彼のことを聞くと思いやすい。最初の短い答えが用件。',
+      trap: 'オスカーの名前に気を取られやすいが、用件は最初の短い答え The target（標的）。',
       use: 'Why did you call me here?（なんで呼び出したの？）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'nostrils', reveals: ['again'], seg: [91.3, 99.9],
@@ -303,7 +305,7 @@ export const kneecapping: Clip = {
       trap: '同じ文のくり返しに聞こえるが、no の一語の差。actually のあとで反対のことを言う。',
       use: 'Actually, I do have a minute.（あ、やっぱり少し時間あるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'save', seg: [193.6, 214.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'save', seg: [195.7, 214.6],
       stem: 'What does Dwight try to do for Oscar?',
       ja: 'ドワイトはオスカーのために何をしようとする？',
       choices: ['Keep him safe from harm', 'Learn the truth from him', 'Make him say sorry'], a: 0,
