@@ -14,6 +14,7 @@
   import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
+  import LoadError from '#lib/components/ui/LoadError.svelte';
   import PhraseCard from '#lib/english/components/PhraseCard.svelte';
   import KeyedText from '#lib/english/components/KeyedText.svelte';
   import { keyed } from '#lib/english/phrases.ts';
@@ -55,6 +56,7 @@
       <div class="card dense"><StatStrip items={[{ icon: 'distance', value: '8.4', unit: 'km', label: '距離' }, { icon: 'mountain', value: 620, unit: 'm', label: '標高差' }, { icon: 'clock', value: '4:30', label: '時間' }]} /></div>
       <div class="row-x"><ProgressBar value={12} max={35} label="12 / 35" /><span class="sticker">今日</span><span class="sticker coral">行ってきた</span><NavButton kind="close" onclick={() => {}} /></div>
       <div class="icons">{#each ICONS as n (n)}<Icon name={n} size={22} /><Icon name={n} size={22} soft />{/each}</div>
+      <LoadError text="読み込めませんでした（オフライン）" onretry={() => {}} />
       <div class="card pad prows">
         <button type="button" class="prow" role="switch" aria-checked={sw} data-sfx="self" onclick={() => (sw = !sw)}><span class="prl">.prow + .sw<small>.card.pad · .prows</small></span><span class="sw" aria-hidden="true"><i></i></span></button>
         <div class="row-x"><span class="tag">.tag</span><span class="tag new">NEW</span></div>

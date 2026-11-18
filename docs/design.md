@@ -271,8 +271,8 @@ stay trip data).
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
-  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet`; theme.css's
-  small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu` / `.sky`, `.quiet`, `.tag`): `/dev/kit`.
+  `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet` · `LoadError` (any failed load);
+  theme.css's small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu` / `.sky`, `.quiet`, `.tag`): `/dev/kit`.
 - **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a
   status; a card's acts behind one ⋯.
 - **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome.

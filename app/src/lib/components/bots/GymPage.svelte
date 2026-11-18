@@ -29,7 +29,7 @@
   import { at, type ActInput, type Clock, type Day, type DayAct } from '#lib/gym/contract.ts';
   import { shortDay, timeOf } from '#lib/i18n/when.ts';
   import Sheet from '../ui/Sheet.svelte';
-  import Phrases from '../ui/Phrases.svelte';
+  import LoadError from '../ui/LoadError.svelte';
   import Segmented from '../ui/Segmented.svelte';
   import ActionSheet from '../ui/ActionSheet.svelte';
   import BotPage from './BotPage.svelte';
@@ -351,10 +351,7 @@
         {:else if cfg}<button type="button" class="chip s sel" data-gym-select data-sfx="self" onclick={() => startSelect()}>{t('gym.cal.select')}</button>{/if}
       </MonthSwitch>
       {#if cfgState === 'failed'}
-        <div class="prow static" data-gym-config-error>
-          <span class="prl"><Phrases text={t('gym.configFailed')} /></span>
-          <button type="button" class="btn small paper" data-sfx="tick" aria-disabled={cfgLoading} onclick={() => cfgLoading || void loadConfig()}>{t('state.retry')}</button>
-        </div>
+        <LoadError text={t('gym.configFailed')} busy={cfgLoading} onretry={() => void loadConfig()} data-gym-config-error />
       {/if}
       {#if cfg}
         <GymCalendar {cells} label={t('gym.cal.label', { month: monthLabel(cal.value) })} {selecting} {selected} {flash} onpick={openDay} onweekday={weekday} onlongpress={startSelect} />

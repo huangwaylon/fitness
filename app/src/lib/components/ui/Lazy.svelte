@@ -10,6 +10,7 @@
   import { lazy, safeReload } from '#lib/ui-state/reload.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import LoadError from './LoadError.svelte';
 
   let { load, children, floating = false }: { load: () => Promise<{ default: C }>; children: Snippet<[C]>; floating?: boolean } = $props();
   const get = lazy(() => load());
@@ -28,22 +29,11 @@
     {@render children(m.default)}
   {:catch}
     {#if !floating}
-      <p class="failed" role="alert" data-lazy-failed>
-        {t('common.loadFailed')}
-        <button type="button" class="btn small paper" data-sfx="tick" onclick={() => tries++}>{t('state.retry')}</button>
-      </p>
+      <div class="failed"><LoadError text={t('common.loadFailed')} onretry={() => tries++} data-lazy-failed /></div>
     {/if}
   {/await}
 {/key}
 
 <style>
-  .failed {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 16px auto;
-    color: var(--text-soft);
-    font-size: 15px;
-  }
+  .failed { margin: 16px 0; }
 </style>

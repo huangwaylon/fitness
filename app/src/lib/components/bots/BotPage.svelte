@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A bot's page (docs/bots.md), one order for the three: LoadError (a failed read), the status (StatusCard:
+  // A bot's page (docs/bots.md), one order for the three: ui/LoadError (a failed read, 「読み込めませんでした（オフライン）」), the status (StatusCard:
   // the word, the as-of, the act or the sentence, an answer `note`, the bot's ⋯ `menu`, the history `strip`), 要対応
   // (AttentionCard, only for what the card doesn't say: steps and links, the sentence an act took the place of, `attn`
   // more of the bot's own), the bot's own sections and 設定
@@ -16,7 +16,8 @@
   import AttentionCard from './AttentionCard.svelte';
   import FactList, { type MoreRow } from './FactList.svelte';
   import Skeleton from './Skeleton.svelte';
-  import LoadError from './LoadError.svelte';
+  import LoadError from '../ui/LoadError.svelte';
+  import { t } from '#lib/i18n/index.ts';
 
   interface Props {
     attr: string;
@@ -48,7 +49,7 @@
 </script>
 
 <div class="bpage" {...{ [`data-${attr}-page`]: '' }} {...rootAttr} aria-busy={busy}>
-  {#if bot.failed}<LoadError code={bot.failed} {busy} {onretry} {attr} />{/if}
+  {#if bot.failed}<LoadError text={t('bots.loadFailed', { code: bot.failed === 'offline' ? t('bots.offline') : bot.failed })} {busy} {onretry} {...{ [`data-${attr}-error`]: '' }} />{/if}
   {#if verdict}
     <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} stale={bot.stale} readAt={bot.readAt} {now} page={attr} {menu} {note} {strip} />
     {#if showAttn}

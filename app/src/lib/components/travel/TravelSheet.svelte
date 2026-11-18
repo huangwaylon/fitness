@@ -14,6 +14,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import TabBar from '../ui/TabBar.svelte';
+  import LoadError from '../ui/LoadError.svelte';
   import TripList from './TripList.svelte';
   import TravelSettings from './TravelSettings.svelte';
   import TripView, { type Tab } from './TripView.svelte';
@@ -119,10 +120,7 @@
           <div class="top"><NavBar pad title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll sheet-scroll" data-trip-view={sel}>
             {#if failed === sel}
-              <div class="center" data-travel-failed>
-                <p>{t('travel.loadFailed')}</p>
-                <button type="button" class="btn small paper" data-sfx="tick" onclick={() => load(sel!)}>{t('travel.retry')}</button>
-              </div>
+              <LoadError text={t('travel.loadFailed')} retry={t('travel.retry')} onretry={() => load(sel!)} data-travel-failed />
             {:else}
               <p class="center" aria-busy="true">{t('travel.loading')}</p>
             {/if}
@@ -140,7 +138,6 @@
   .top { flex: none; background-color: var(--surface); }
   .panel { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
-  .center p { margin: 0; }
   /* guide text: Japanese breaks only between its words (Txt's <wbr>s), a word too long for the line anywhere */
   .tv :global(.guide) { word-break: keep-all; line-break: strict; overflow-wrap: anywhere; text-wrap: pretty; }
 </style>
