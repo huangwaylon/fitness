@@ -126,20 +126,33 @@ relay/src/gradeRoute.ts.
 ## Online
 
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
-`a` and its few fields, ≤ 256 bytes; a game id of 10 letters is its board's layout seed, an older 6–8 the classic board), sent to the relay and kept in the day's ring, so a phone that opens later or
-reloads gets them again (its own too); each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in
-order through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
-ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了 from
-anyone at the table); out of order, it waits for the gap. The phone whose turn it isn't watches (whose turn, the last
-move). A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
+`a` and its few fields, ≤ 256 bytes; a game id of 10 letters is its board's layout seed, an older 6–8 the classic board), sent to the relay and kept by the room per game
+([backend](backend.md#shared-world): a row a move, apart from the day's ring), so a phone that opens later or reloads
+gets them again (its own too); each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
+through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
+ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
+from anyone at the table). The phone whose turn it isn't watches (whose turn, the last move).
+
+- **Races** (`wire.ts` heard, the same result in any order): the room takes a game's moves in order, the first of
+  each `i` (a later one hears `ack {ok: false}` and leaves the sender's log). An 終了's `i` is the moves it follows:
+  the earliest end stands and the moves from it on count for nothing, so an end racing the turn's move ends the game
+  at the same place on every phone. A move heard past a missing one waits for the gap, and this phone sends nothing
+  till it fills. Two starts within 15 s: the table plays the lower id.
+- **Version:** the start carries the rules' version (`wire.ts` RULES, `r`). A phone on another folds nothing and
+  says so (`updateNeeded()`, copy `updateApp`). Bump RULES with any change to what a fold makes of the moves (rules,
+  cards, pictures, the board generator, the word and line lists): `online.test`'s pin fails until it is.
+- **Logged:** `sg.sync` once per game and reason (gap, wait, clash, refused, version), never a move each.
+- **Loading:** the app listens from the start (`online.svelte.ts`, light: `wire.ts` only); the rules, words and
+  lines load when an invitation may ask or a game opens.
+
+A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
 screens, the museum; listening starts with the app, `routes/+layout.svelte`): a banner with the starter's head,
 「Xが英語すごろくを始めました」 [参加] ✕ (`sugoroku/components/InviteBanner.svelte`, placed with the toasts by
 ToastHost: in the open sheet's dialog when there is one). It stays till 参加 (straight into `/sugoroku?m=online`) or ✕,
 each remembered by game id on the phone (`DEVICE.sugorokuAnswered`); never on that game's own screen. One at a time, the
 latest game's. Not for my own start, a phone not seated, a game over (an 終了 or the fold's end) or one whose last move
-is over 30 min old (a start replayed from the day's ring): `online.ts` invited. すごろく's tab menu puts the running game
-first, 「Xが始めたゲーム」 [参加]. In-app only: no Web Push. No relay code: the room relays and
-keeps any parsed kept intent; after a contract change the relay deploys first.
+is over 30 min old (a start replayed from the room): `wire.ts` invited. すごろく's tab menu puts the running game
+first, 「Xが始めたゲーム」 [参加]. In-app only: no Web Push. After a contract change the relay deploys first.
 
 ## Letters
 

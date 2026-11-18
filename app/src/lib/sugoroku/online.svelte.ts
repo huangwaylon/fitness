@@ -1,23 +1,25 @@
 // 英語すごろく on several phones (docs/sugoroku.md "Online"): this phone's online game (its id and moves, kept on the
-// phone: DEVICE.sugorokuOnline), heard from and sent to the relay (`sg` intents, kept in the day's ring: a phone that
-// opens later or reloads gets the day's moves again, its own included). Listening starts with the app (the layout,
-// on every screen), so a game someone starts with me in it comes as an invitation (invite.svelte.ts: a banner with
-// 参加, straight into the game's screen) wherever the phone is. The game itself is the moves folded (online.ts
-// foldMoves), by the sheet.
+// phone: DEVICE.sugorokuOnline), heard from and sent to the relay (`sg` intents, kept by the room per game: a phone that
+// opens later or reloads gets the moves again, its own included). Listening starts with the app (the layout, on every
+// screen), so a game someone starts with me in it comes as an invitation (invite.svelte.ts: a banner with 参加,
+// straight into the game's screen) wherever the phone is. Light (wire.ts only): the rules, the words and the lines
+// (online.ts, the invitation's fold: is the game over?) load only when an invitation may ask or a game opens. The game
+// itself is the moves folded (online.ts foldMoves), by the sheet.
 import { untrack } from 'svelte';
-import type { Relayed, SgIntent } from '#lib/contract/live-protocol.ts';
+import type { Intent, Relayed, SgIntent } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { log } from '#lib/sync/log.ts';
 import { roomRelay } from '#lib/components/rooms/roomRelay.ts';
 import { hook } from '#lib/world/devHooks.ts';
 import { now } from '#lib/time/clock.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
-import { foldMoves, heard, invited, newGameId, seatsOf, type Move } from './online.ts';
+import { RULES, heard, invited, newGameId, otherRules, sameMove, seatsOf, type Heard, type Move } from './wire.ts';
 import { invite, readAnswered } from './invite.svelte.ts';
-import { loadWords, type Words } from './words.ts';
-import { loadSentences, type Line } from './sentences.ts';
+import type { Words } from './words.ts';
+import type { Line } from './sentences.ts';
 import { s } from './i18n.ts';
 
 /** The game's id, its moves in order and those waiting for a gap, and its last move's time (`at`: the relay's clock). */
@@ -28,8 +30,14 @@ const read = (): Kept => {
   return k && typeof k.g === 'string' && Array.isArray(k.log) && Array.isArray(k.held) ? k : EMPTY;
 };
 
-/** The online game: its id and moves (raw: replaced whole on each move). */
-export const online = $state<{ cur: Kept; connected: boolean }>({ cur: EMPTY, connected: false });
+/** The online game (`cur`: its id and moves, replaced whole on each move) and whether the relay is in. */
+class Online {
+  cur = $state.raw<Kept>(EMPTY);
+  connected = $state(false);
+}
+export const online = new Online();
+/** Whether the game held was started on another build's rules: it can't be played here (アプリを更新). */
+export const updateNeeded = (): boolean => otherRules(online.cur.log);
 let relay: Live | null = null;
 /** The relay's clock, a move's `t`'s (the tabs' local relay: the island's, clock.ts now(), a `?date=` moving it). */
 let clock = (): number => Date.now();
@@ -44,29 +52,63 @@ function keep(k: Kept): void {
   writeJson(localKV(), DEVICE.sugorokuOnline, k);
 }
 
+/** What went wrong in a game's sync, logged once per game and reason (`sg.sync`: never a move each). */
+const said = new Set<string>();
+function warn(why: 'gap' | 'wait' | 'clash' | 'refused' | 'version', i: number, held = 0): void {
+  const k = `${online.cur.g}:${why}`;
+  if (said.has(k)) return;
+  said.add(k);
+  log('sg.sync', { why, i, held }, 2);
+}
+
+/** A heard move kept (nothing when it changed nothing), what it did logged. */
+function take(cur: Kept, h: Heard | null, at: number): void {
+  if (!h) return;
+  keep({ ...cur, log: h.log, held: h.held, at });
+  if (h.why) warn(h.why, h.log.length, h.held.length);
+}
+
+/** Two starts this close (a phone each, at once): the table plays the lower id, every phone the same. */
+const START_RACE_MS = 15_000;
+
 function hear(m: Relayed): void {
   if (m.kind !== 'sg') return;
   const { kind: _k, v: _v, t, who, ...rest } = m as SgIntent & { v: number; t: number; who: Who };
   const move: Move = { ...rest, who };
   const cur = online.cur, at = Math.max(cur.at ?? 0, t);
-  if (move.a === 'start') {
-    if (move.g === cur.g) return keep({ ...cur, ...heard(cur.log, cur.held, move), at });
-    // a new game with me in it: mine now (the invitation, if it asks: the effect in listen)
+  if (move.a === 'start' && move.g !== cur.g) {
+    // a new game with me in it: mine now (the invitation, if it asks: the effect in listen); one started at once with
+    // mine: the lower id
     if (!seatsOf(move.s ?? '').some((x) => x.who === me())) return;
-    return keep({ g: move.g, log: [move], held: cur.g === move.g ? cur.held : [], at: t });
+    const mineJust = cur.log.length === 1 && cur.log[0].who === me() && Math.abs(t - (cur.at ?? 0)) < START_RACE_MS;
+    if (mineJust && move.g > cur.g) return;
+    keep({ g: move.g, log: [move], held: [], at: t });
+    if (otherRules([move])) warn('version', 0);
+    return;
   }
-  // a move of a game not (yet) here: held, in case its start comes after it (a replay's order)
-  if (move.g !== cur.g) return void (cur.g === '' && keep({ g: move.g, log: [], held: [move], at: t }));
-  keep({ ...cur, ...heard(cur.log, cur.held, move), at });
+  // (another game's move: the room replays a game in order, its start first)
+  if (move.g !== cur.g) return;
+  take(cur, heard(cur.log, cur.held, move, me()), at);
 }
 
-// the invitation's fold (is the game over?): the words and lines, asked for only when one may ask
-let ctx = $state.raw<{ words: Words; lines: readonly Line[] } | null>(null);
+/** My move the room refused (a race lost: what won, it sends me; else it goes from my log, those after it too). */
+function refused(i: Intent, ok: boolean): void {
+  if (ok || i.kind !== 'sg') return;
+  const cur = online.cur, { kind: _k, ...rest } = i, mine: Move = { ...rest, who: me() };
+  if (i.g !== cur.g) return;
+  warn('refused', i.i, cur.held.length);
+  if (cur.log[i.i] && sameMove(cur.log[i.i], mine)) keep({ ...cur, log: cur.log.slice(0, i.i) });
+}
+
+// the invitation's fold (is the game over?): the rules, words and lines, asked for only when one may ask
+type Fold = typeof import('./online.ts').foldMoves;
+let ctx = $state.raw<{ fold: Fold; words: Words; lines: readonly Line[] } | null>(null);
 let asking = false;
 function loadCtx(): void {
   if (asking) return;
   asking = true;
-  Promise.all([loadWords(), loadSentences()]).then(([words, lines]) => (ctx = { words, lines }), () => (asking = false));
+  Promise.all([import('./online.ts'), import('./words.ts').then((w) => w.loadWords()), import('./sentences.ts').then((x) => x.loadSentences())])
+    .then(([o, words, lines]) => (ctx = { fold: o.foldMoves, words, lines }), () => (asking = false));
 }
 /** The invitation, kept up with the game held (a minute's tick while one shows: a game left goes stale). */
 function watchInvite(): void {
@@ -76,7 +118,7 @@ function watchInvite(): void {
     const cur = online.cur, model = week.model;
     const ask = invited({ log: cur.log, me: model?.me ?? null, at: cur.at ?? 0, now: clock(), answered: invite.answered, over: false });
     if (ask && !ctx) loadCtx();
-    const g = ask && ctx ? foldMoves(cur.log, { ...ctx, name: nameOf }) : null;
+    const g = ask && ctx ? ctx.fold(cur.log, { words: ctx.words, lines: ctx.lines, name: nameOf }) : null;
     const who = cur.log[0]?.who;
     invite.cur = g && g.phase.k !== 'end' && who ? { g: cur.g, who, text: s('invite', { name: nameOf(who) }), join: s('join') } : null;
   });
@@ -102,27 +144,33 @@ export function listen(eager = false): void {
   clock = () => (local ? now().getTime() : r.now());
   r.own?.start();
   relay?.on(hear);
+  relay?.onAck?.(refused);
   relay?.onStatus((st) => (online.connected = st.connected));
   $effect.root(watchInvite);
 }
 
-/** Start an online game: its id and first move, sent. */
+/** Start an online game: its id and first move (the rules' version on it), sent. */
 export function startOnline(seats: string, l: 's' | 'n' | 'l'): void {
   listen();
   const g = newGameId(untrack(() => online.cur.g));
-  send({ g, i: 0, a: 'start', s: seats, l }, true);
+  const move: Move = { g, i: 0, a: 'start', s: seats, l, r: RULES, who: me() };
+  keep({ g, log: [move], held: [], at: clock() });
+  send(move);
 }
 
-/** One move of mine in the online game (its index the next one). */
+/** One move of mine in the online game (its index the next one): none while a move is missing here (the game moved on
+ *  without this phone: it waits for it), after the end, or in a game of other rules. */
 export function sendMove(m: Omit<Move, 'g' | 'i' | 'who'>): void {
   const cur = untrack(() => online.cur);
-  if (!cur.g) return;
-  send({ ...m, g: cur.g, i: cur.log.length } as Omit<Move, 'who'>);
+  if (!cur.g || otherRules(cur.log)) return;
+  const move = { ...m, g: cur.g, i: cur.log.length, who: me() } as Move;
+  if (cur.held.length) return warn('wait', move.i, cur.held.length);
+  const h = heard(cur.log, [], move, me());
+  if (!h) return;
+  keep({ ...cur, log: h.log, at: clock() });
+  send(move);
 }
 
-function send(m: Omit<Move, 'who'>, fresh = false): void {
-  const move: Move = { ...m, who: me() };
-  const cur = untrack(() => online.cur), at = clock();
-  keep(fresh ? { g: m.g, log: [move], held: [], at } : { ...cur, ...heard(cur.log, cur.held, move), at });
+function send({ who: _w, ...m }: Move): void {
   relay?.send({ kind: 'sg', ...m } as SgIntent);
 }

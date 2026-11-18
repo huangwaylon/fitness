@@ -1,36 +1,22 @@
 // 英語すごろく on several phones (docs/sugoroku.md "Online"): a game is its moves (contract/live-protocol.ts SgIntent),
 // each phone folding them in order through the same pure rules (game.ts), so every phone shows the same game. A move
 // counts only from whose turn it is (the start and 終了 from anyone at the table); one that changes nothing is a no-op.
-// The words and lines must be in (an everyday word's bonus, a ぶん's line are the fold's too).
-import type { SgIntent } from '#lib/contract/live-protocol.ts';
+// The words and lines must be in (an everyday word's bonus, a ぶん's line are the fold's too). How the moves are kept
+// and heard (the races) is wire.ts's.
 import type { Who } from '#lib/types.ts';
-import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Level, type Seat } from './game.ts';
+import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Seat } from './game.ts';
 import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
-import { familyOf, layoutKey } from './layout.ts';
+import { layoutKey } from './family.ts';
+import { ID_LEN, RULES, seatsOf, type Move } from './wire.ts';
 
-/** A move as kept: the wire's fields and who sent it. */
-export type Move = Omit<SgIntent, 'kind'> & { who: Who };
+export { seatsCode, type Move } from './wire.ts';
 
 const LENGTH: Record<'s' | 'n' | 'l', Length> = { s: 'short', n: 'normal', l: 'long' };
 export const lengthCode = (l: Length): 's' | 'n' | 'l' => (l === 'short' ? 's' : l === 'long' ? 'l' : 'n');
 
-/** An online game's board: its id is the layout's seed (the start move carries nothing more: the relay's ring stays
- *  as it was); an id from before layouts (6–8 letters) plays the classic board. */
-export const ID_LEN = 10;
-export const layoutOfId = (g: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g) : undefined);
-/** A new game's id: random, its board's family not the last game's (two games in a row look different). */
-export function newGameId(last: string, rnd: () => number = Math.random): string {
-  const make = () => Array.from({ length: ID_LEN }, () => '0123456789abcdefghijklmnopqrstuvwxyz'[Math.floor(rnd() * 36)]).join('');
-  let id = make();
-  for (let k = 0; k < 20 && last.length >= ID_LEN && familyOf(id) === familyOf(last); k++) id = make();
-  return id;
-}
-
-/** A start's seats ("A2B1G3": who + level, in order). */
-export const seatsOf = (s: string): { who: Who; level: Level }[] =>
-  (s.match(/[ABG][123]/g) ?? []).map((x) => ({ who: x[0] as Who, level: Number(x[1]) as Level }));
-export const seatsCode = (seats: readonly { who: Who; level: Level }[]): string => seats.map((x) => `${x.who}${x.level}`).join('');
+/** An online game's board: its id is the layout seed; an id from before layouts (6–8 letters) plays the classic. */
+const layoutOfId = (g: string): string | undefined => (g.length >= ID_LEN ? layoutKey(g) : undefined);
 
 /** The line a ぶん stone gives this seat (the same pick on every phone: its phase's `r`). */
 function lineFor(g: Game, lines: readonly Line[]) {
@@ -42,7 +28,8 @@ function lineFor(g: Game, lines: readonly Line[]) {
 /** One move on a game (null: the start's, to make one). */
 export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; name: (w: Who) => string }): Game | null {
   if (m.a === 'start') {
-    if (g || !m.s) return g;
+    // (a start on another build's rules: nothing here, wire.ts otherRules)
+    if (g || !m.s || m.r !== RULES) return g;
     const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
     return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g));
   }
@@ -74,7 +61,8 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
   return g;
 }
 
-/** A game from its moves, in order (moves before the start, or a gap, end the fold there). */
+/** A game from its moves, in order (moves before the start, or a gap, end the fold there; an end is the last: wire.ts
+ *  heard). */
 export function foldMoves(moves: readonly Move[], ctx: Parameters<typeof applyMove>[2]): Game | null {
   let g: Game | null = null;
   for (const [i, m] of moves.entries()) {
@@ -82,26 +70,4 @@ export function foldMoves(moves: readonly Move[], ctx: Parameters<typeof applyMo
     g = applyMove(g, m, ctx);
   }
   return g;
-}
-
-/** The moves with one more heard: in its place by `i` (a repeat dropped); the log only grows by the next one in order,
- *  later ones wait in `held` till the gap fills. */
-export function heard(log: readonly Move[], held: readonly Move[], m: Move): { log: Move[]; held: Move[] } {
-  if (m.i < log.length || held.some((x) => x.i === m.i)) return { log: [...log], held: [...held] };
-  let next = [...log], wait = [...held, m].sort((a, b) => a.i - b.i);
-  while (wait.length && wait[0].i === next.length) next = [...next, wait.shift()!];
-  return { log: next, held: wait };
-}
-
-/** An invitation's game goes stale this long after its last move (a start replayed from the day's ring, a game left). */
-export const INVITE_STALE_MS = 30 * 60_000;
-/** Whether this phone is invited to the online game it holds (`log`, its moves; `at`, its last move's time): one
- *  someone else started with me seated, not answered here (参加 or ✕: `answered`), not over (an 終了, or `over`: the
- *  fold's end), its last move within INVITE_STALE_MS of `now`. No `me` (no person on this phone): never. */
-export function invited(o: { log: readonly Move[]; me: Who | null; at: number; now: number; answered: readonly string[]; over: boolean }): boolean {
-  const start = o.log[0];
-  if (!start || start.a !== 'start' || !o.me || start.who === o.me) return false;
-  if (!seatsOf(start.s ?? '').some((x) => x.who === o.me) || o.answered.includes(start.g)) return false;
-  if (o.over || o.log.some((m) => m.a === 'end')) return false;
-  return o.now - o.at <= INVITE_STALE_MS;
 }

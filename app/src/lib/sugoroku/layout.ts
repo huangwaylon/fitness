@@ -5,18 +5,11 @@
 // every stone's kind mixed under rules (no runs, the rare kinds spread out), and every route through it about as long
 // and as rich as the others. A layout that breaks a rule (a stone too close, one in the river, a route out of the band)
 // is tried again with the next sub-seed; `problems` is the rules (the tests run it over many seeds).
-import { fnv1a, seeded } from '#lib/random.ts';
+import { seeded } from '#lib/random.ts';
 import { CLASSIC, RIVER_HALF, W, predecessors, riverY, routeDist, routesFrom, segDist, signsOf, type AreaId, type Board, type Space, type SpaceKind } from './board.ts';
 
-/** The generator's version: a layout key is `${GEN}:${seed}`; a change to the generator bumps it (an older key then
- *  reads as no board: its save as none). */
-const GEN = 1;
-export const FAMILIES = ['snake', 'zigzag', 'wave', 'loop', 'cross', 'forks'] as const;
-export type Family = (typeof FAMILIES)[number];
-export const familyOf = (seed: string): Family => FAMILIES[fnv1a(`${seed}:family`) % FAMILIES.length];
-export const layoutKey = (seed: string): string => `${GEN}:${seed}`;
-/** A layout key's family (none for the classic board). */
-export const familyOfKey = (key?: string): Family | null => (key ? familyOf(key.slice(key.indexOf(':') + 1)) : null);
+import { GEN, familyOf, layoutKey, type Family } from './family.ts';
+export { FAMILIES, familyOf, familyOfKey, layoutKey } from './family.ts';
 
 /** Every route's steps (ふりだし to あがり), and the most two routes may differ. */
 export const STEPS: readonly [number, number] = [37, 45];

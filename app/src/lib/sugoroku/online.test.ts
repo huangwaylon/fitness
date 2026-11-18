@@ -1,24 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ID_LEN, INVITE_STALE_MS, applyMove, foldMoves, heard, invited, layoutOfId, newGameId, seatsCode, seatsOf, type Move } from './online.ts';
-import { familyOf, layoutKey } from './layout.ts';
-import { seeded } from '#lib/random.ts';
-import { wordScore, type Game } from './game.ts';
-import { wordsOf } from './words.ts';
+import { applyMove, foldMoves } from './online.ts';
+import { ID_LEN, INVITE_STALE_MS, RULES, heard, invited, newGameId, otherRules, seatsCode, seatsOf, type Heard, type Move } from './wire.ts';
+import { GEN, familyOf, layoutKey } from './family.ts';
+import { fnv1a, seeded } from '#lib/random.ts';
+import { newGame, wordScore, type Game } from './game.ts';
+import { decodeAccept, wordsOf } from './words.ts';
 import { parseClient } from '#lib/contract/live-protocol.ts';
 import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import type { Line } from './sentences.ts';
 import type { Who } from '#lib/types.ts';
 
-const words = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday);
+const file = (f: string) => readFileSync(join(import.meta.dirname, f), 'utf8');
+const words = wordsOf(file('words.txt'), everyday);
 const lines = linesJson as unknown as Line[];
 const ctx = { words, lines, name: (w: Who) => w };
 
 /** Play a game as its phones would: each turn's player makes the move its screen offers. */
 function playMoves(n = 400, id = 'game01'): Move[] {
-  const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B3', l: 'n', who: 'A' }];
+  const moves: Move[] = [{ g: id, i: 0, a: 'start', s: 'A1B3', l: 'n', r: RULES, who: 'A' }];
   let g: Game | null = foldMoves(moves, ctx);
   const push = (m: Omit<Move, 'g' | 'i' | 'who'>) => {
     const who = g!.players[g!.turn].who!;
@@ -41,6 +43,12 @@ function playMoves(n = 400, id = 'game01'): Move[] {
   return moves;
 }
 
+/** A's moves of game01: the start, then rolls. */
+const m = (i: number, o: Partial<Move> = {}): Move => ({ g: 'game01', i, a: i ? 'roll' : 'start', ...(i ? {} : { s: 'A2B2', l: 'n' as const, r: RULES }), who: 'A', ...o });
+/** Hear each in turn (`me` the phone's person), as a phone would. */
+const hearAll = (ms: readonly Move[], me: Who, from: Heard = { log: [], held: [] }): Heard =>
+  ms.reduce((st, x) => heard(st.log, st.held, x, me) ?? st, from);
+
 describe('online: the moves folded', () => {
   it('every phone folds the same moves to the same game, to its end', () => {
     const moves = playMoves();
@@ -56,29 +64,26 @@ describe('online: the moves folded', () => {
     }
   });
   it('a move from someone whose turn it isn’t changes nothing (終了 from anyone at the table does)', () => {
-    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2B2', l: 'n', who: 'A' };
+    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2B2', l: 'n', r: RULES, who: 'A' };
     const g = foldMoves([start], ctx)!;
     expect(applyMove(g, { g: 'game01', i: 1, a: 'roll', who: 'B' }, ctx)).toBe(g);
     expect(applyMove(g, { g: 'game01', i: 1, a: 'end', who: 'G' }, ctx)).toBe(g);
     expect(applyMove(g, { g: 'game01', i: 1, a: 'end', who: 'B' }, ctx)?.phase.k).toBe('end');
     expect(applyMove(g, { g: 'game01', i: 1, a: 'roll', who: 'A' }, ctx)?.n).toBe(1);
   });
-  it('moves heard out of order wait for the gap; repeats are dropped', () => {
-    const m = (i: number): Move => ({ g: 'game01', i, a: i ? 'roll' : 'start', ...(i ? {} : { s: 'A2B2', l: 'n' as const }), who: 'A' });
-    let st = heard([], [], m(0));
-    st = heard(st.log, st.held, m(2));
-    expect(st.log.map((x) => x.i)).toEqual([0]);
-    st = heard(st.log, st.held, m(1));
+  it('moves heard out of order wait for the gap; repeats change nothing', () => {
+    let st = heard([], [], m(0), 'B')!;
+    st = heard(st.log, st.held, m(2), 'B')!;
+    expect([st.log.map((x) => x.i), st.why]).toEqual([[0], 'gap']);
+    st = heard(st.log, st.held, m(1), 'B')!;
     expect(st.log.map((x) => x.i)).toEqual([0, 1, 2]);
-    expect(heard(st.log, st.held, m(1)).log).toHaveLength(3);
+    expect(heard(st.log, st.held, m(1), 'B')).toBeNull();
+    expect(heard(st.log, st.held, { ...m(1), who: 'B' }, 'B')).toBeNull(); // (someone else's in its place: the first stands)
   });
   it('the board: a new game’s id is its layout seed (nothing more on the wire); an older 6–8 letter id plays the classic', () => {
     const id = newGameId('', seeded('id'));
     expect(id).toMatch(/^[a-z0-9]{10}$/);
     expect(id.length).toBe(ID_LEN);
-    expect(layoutOfId(id)).toBe(layoutKey(id));
-    expect(layoutOfId('game01')).toBeUndefined();
-    expect(layoutOfId('ab12cd34')).toBeUndefined();
     const moves = playMoves(400, id), a = foldMoves(moves, ctx);
     expect(a?.layout).toBe(layoutKey(id));
     expect(a?.phase.k).toBe('end');
@@ -90,7 +95,7 @@ describe('online: the moves folded', () => {
     for (let k = 0; k < 10; k++) expect(familyOf(newGameId(id, seeded(`n${k}`)))).not.toBe(familyOf(id));
   });
   it('a 絵 with a spoken sentence: its stars (`y`) on every phone, the words never on the wire', () => {
-    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A1B2', l: 'n', who: 'A' };
+    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A1B2', l: 'n', r: RULES, who: 'A' };
     const g0 = foldMoves([start], ctx)!;
     const g = { ...g0, phase: { k: 'picture' as const, item: 0, spun: 1, r: 0 } };
     const pic = (y?: 1 | 2 | 3) => applyMove(g, { g: 'game01', i: 1, a: 'pic', m: 1, ...(y ? { y } : {}), who: 'A' }, ctx)!;
@@ -104,8 +109,65 @@ describe('online: the moves folded', () => {
   });
 });
 
+describe('online: two phones racing (S1), the same game on both', () => {
+  // A plays its turn: moves 0–3 heard by both; then A's roll at 4 and B's 終了 at 4 go at once
+  const base = [m(0), m(1), m(2), m(3)];
+  const roll4 = m(4), end4 = m(4, { a: 'end', who: 'B' });
+  it('an end racing the turn’s move at the same i: the end stands on every phone, whichever came first', () => {
+    const onA = hearAll([roll4, end4], 'A', hearAll(base, 'A'));
+    const onB = hearAll([end4, roll4], 'B', hearAll(base, 'B'));
+    expect(onA.log).toEqual(onB.log);
+    expect(onA.log.at(-1)).toEqual(end4);
+    expect(heard(hearAll(base, 'A').log.concat(roll4), [], end4, 'A')?.why).toBe('clash');
+    expect(foldMoves(onA.log, ctx)?.phase.k).toBe('end');
+    // a later end (A's own after B's) or a move after it: nothing
+    expect(heard(onA.log, onA.held, m(5, { a: 'end' }), 'A')).toBeNull();
+    expect(heard(onA.log, onA.held, m(5), 'A')).toBeNull();
+  });
+  it('an end from a phone behind (it heard two moves) beats the moves after its i, in any order; the earliest end wins', () => {
+    const late = m(2, { a: 'end', who: 'B' });
+    const x = hearAll([...base, roll4, late], 'A'), y = hearAll([late, ...base, roll4], 'B');
+    expect(x.log).toEqual([m(0), m(1), late]);
+    expect(y.log).toEqual(x.log);
+    // held past a gap too
+    const z = hearAll([m(0), m(3), m(2, { a: 'end', who: 'B' }), m(1)], 'G');
+    expect([z.log, z.held]).toEqual([[m(0), m(1), late], []]);
+    // two ends: the earlier stands
+    expect(hearAll([m(0), m(1), m(2), m(2, { a: 'end', who: 'B' }), m(1, { a: 'end', who: 'G' })], 'A').log).toEqual([m(0), m(1, { a: 'end', who: 'G' })]);
+  });
+  it('a move of mine sent where the room had another (it refused mine): the room’s takes its place, mine after it go', () => {
+    const theirs = m(4, { a: 'fork', b: 1, who: 'A' });
+    const mine = [m(4, { who: 'G' }), m(5, { who: 'G' })];
+    const st = heard([...base, ...mine], [], theirs, 'G')!;
+    expect([st.log, st.why]).toEqual([[...base, theirs], 'clash']);
+    // someone else's in place: never replaced by a third
+    expect(heard(st.log, [], m(4, { who: 'B' }), 'G')).toBeNull();
+  });
+  it('the fold: a start on another build’s rules (or before them) folds nothing, and asks for the update', () => {
+    expect(foldMoves([m(0, { r: 'zz' }), m(1)], ctx)).toBeNull();
+    const { r: _r, ...old } = m(0);
+    expect(foldMoves([old], ctx)).toBeNull();
+    expect([otherRules([m(0, { r: 'zz' })]), otherRules([old]), otherRules([m(0)]), otherRules([])]).toEqual([true, true, false, false]);
+  });
+});
+
+describe('online: the rules’ version', () => {
+  // What a fold makes of the moves on this build: the save's shape and content (game.ts V, CONTENT), the board
+  // generator's version, the word and line lists, and a whole game played. A change to any fails here until RULES
+  // (wire.ts) is bumped and this pin set to the new hash: a phone on the old build then asks for the update rather
+  // than folding another game.
+  const PIN: Record<string, string> = { '1': 'kbdj53' };
+  it('RULES moves with what a fold makes of the moves', () => {
+    const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
+    const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
+    const played = fnv1a(JSON.stringify(foldMoves(playMoves(400, 'abcdefghij'), { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })));
+    const hash = fnv1a(JSON.stringify([g0.v, g0.content, GEN, lists, played])).toString(36);
+    expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]);
+  });
+});
+
 describe('online: the invitation', () => {
-  const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2G2', l: 'n', who: 'A' };
+  const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2G2', l: 'n', r: RULES, who: 'A' };
   const base = { log: [start], me: 'G' as Who | null, at: 1_000_000, now: 1_000_000 + 60_000, answered: [] as string[], over: false };
   it('a game someone else started with me seated, fresh: invited (the guest too)', () => {
     expect(invited(base)).toBe(true);
