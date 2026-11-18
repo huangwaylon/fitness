@@ -300,6 +300,19 @@ describe('words and sentences', () => {
     for (const lv of [1, 2, 3]) expect(lines.filter((l) => l[2] === lv).length).toBeGreaterThan(40);
     expect(notInTrimmedFont(lines.map((l) => l[1]).join(''))).toEqual([]);
   });
+  it('a picture spelt, and a sentence said about it: its stars plus the sentence’s (at most 3)', () => {
+    let g = newGame(seats, 'pic-said');
+    g = { ...g, phase: { k: 'picture', item: 0, spun: 1, r: 0 } };
+    const done = (misses: number, said?: number) => {
+      const x = said === undefined ? pictureDone(g, misses) : pictureDone(g, misses, said);
+      return { stars: x.players[0].stars, made: x.made.at(-1)!.stars };
+    };
+    expect(done(0)).toEqual({ stars: 5, made: 5 });
+    expect(done(0, 2)).toEqual({ stars: 7, made: 7 });
+    expect(done(1, 3)).toEqual({ stars: 6, made: 6 });
+    expect(done(2, 9)).toEqual({ stars: 5, made: 5 });
+    expect(done(0, -1)).toEqual({ stars: 5, made: 5 });
+  });
   it('the pictures: art on disk, Japanese in the font, three spellings, the letters to spell with', () => {
     expect(PICTURES.length).toBeGreaterThanOrEqual(300);
     expect(new Set(PICTURES.map((p) => p.w)).size).toBe(PICTURES.length);

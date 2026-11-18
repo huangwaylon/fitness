@@ -349,12 +349,20 @@ export const sentenceAsWord = (g: Game): Game => (g.phase.k === 'sentence' ? { .
 /** The stars for a picture spelt after `misses` nudges (2: after 答えはこれ). */
 export const pictureStars = (misses: number): number => PICTURE_STARS[Math.min(misses, 2)];
 
-/** A picture spelt: its stars. */
-export function pictureDone(g: Game, misses: number): Game {
+/** The speaking step after a 絵 (docs/sugoroku.md "Speaking"): off until the real-phone checks pass; `?speak=1` turns it
+ *  on for a page (the tests, a trial). Off, the game is as it was. */
+const SPEAK = false;
+export const speakOn = (search: string): boolean => SPEAK || new URLSearchParams(search).get('speak') === '1';
+
+/** The most a spoken sentence about the picture adds (on-task +2, said again after a tip +1: speak.ts). */
+const SAID_MAX = 3;
+
+/** A picture spelt: its stars, and `said` more for a sentence spoken about it (the speaking step, at most SAID_MAX). */
+export function pictureDone(g: Game, misses: number, said = 0): Game {
   if (g.phase.k !== 'picture') return g;
   const pic = PICTURES[g.phase.item];
   const players = copy(g), me = players[g.turn];
-  const stars = pictureStars(misses);
+  const stars = pictureStars(misses) + Math.max(0, Math.min(Math.floor(said) || 0, SAID_MAX));
   me.stars += stars;
   return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'picture', text: pic.w, ja: pic.ja, stars }] });
 }
