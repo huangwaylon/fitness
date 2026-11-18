@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 3, new 4, ctx 5, tx 17
+// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 3, new 4, ctx 5, tx 17, qa 21
 // A2 REVIEW 2026-11-17: keep 4, rewrite 14, retire 6, new 2
 // “April Sees Through Leslie and Ron's Distraction | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 5): April insists on a dirty lot for her dog park; Leslie asks Ron, with a made-up employee called
@@ -26,7 +26,7 @@ export const distract: Clip = {
       trap: 'industrial だけ拾うと「近くに工場」と取りやすい。it’s zoned の主語はこの土地。',
       use: 'This area is zoned for homes.（この地域は住宅用に指定されている）' },
 
-    { id: 'd9', skill: 'detail', level: 'B1', point: 'already', seg: [21.6, 28.3],
+    { id: 'd9', skill: 'detail', level: 'B1', point: 'already', seg: [21.42, 26.05],
       stem: 'Why does April say this is a great place for a dog park?',
       ja: 'エイプリルは、なぜここがドッグパークにぴったりだと言う？',
       choices: ['A dog is already here', 'It is big and open', 'It is close to her home'], a: 0,
@@ -38,7 +38,7 @@ export const distract: Clip = {
       trap: 'great place と聞くと、広さや場所の話と考えがち。I mean のあとが理由。',
       use: 'I mean, it’s cheap and close.（だって、安いし近いし）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'lot', seg: [21.6, 43],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'lot', seg: [21.42, 43],
       stem: 'What does April plan to do with this lot?',
       ja: 'エイプリルは、この土地をどうするつもり？',
       choices: ['Make it her dog park', 'Sell it to the city', 'Use it for parking'], a: 0,
@@ -49,7 +49,7 @@ export const distract: Clip = {
       trap: '汚くてうるさい土地なので、ほかの使い道を考えがち。the only one that works（ここしかない）を聞く。',
       use: 'I’ll bring it up at the next meeting.（次の会議で話に出すね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'lot48', seg: [29.4, 36.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'lot48', seg: [29.4, 36.3], keep: true,
       stem: 'Which lot does April say is the only one that works?',
       ja: 'エイプリルが「使えるのはここだけ」と言う土地は何番？',
       choices: ['Lot 14', 'Lot 40', 'Lot 48', 'Lot 84'], a: 2,
@@ -61,7 +61,7 @@ export const distract: Clip = {
       trap: '「フォーティエイト」なら 48。forty だけなら 40、「フォーティーン」なら 14、84 は「エイ」で始まる。',
       use: 'Our flight leaves from Gate 48.（私たちの便は48番ゲートから）' },
 
-    { id: 'c5', skill: 'pragma', level: 'B2', point: 'anything', ctx: true, seg: [36.8, 43],
+    { id: 'c5', skill: 'pragma', level: 'B2', point: 'anything', ctx: true, seg: [36.3, 43],
       stem: 'How does April answer Leslie’s “I will do anything”?',
       ja: 'レスリーの「何でもする」に、エイプリルはどう答える？',
       choices: ['She asks for crazy things', 'She agrees to stop now', 'She asks for some money'], a: 0,
@@ -73,7 +73,7 @@ export const distract: Clip = {
       trap: 'Okay（いいよ）で始まるので、やめると勘違いしやすい。あとに続くのはむちゃな要求。',
       use: 'Please, I’ll do anything to help.（お願い、手伝えることなら何でもする）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'monster', seg: [45.6, 53.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'monster', seg: [46.7, 53.15],
       stem: '“I have created a monster.” What does Leslie mean?',
       ja: '「I have created a monster」レスリーが言いたいことは？',
       choices: ['I made April like this', 'April scares me a lot', 'Ron made April this way'], a: 0,
@@ -85,7 +85,7 @@ export const distract: Clip = {
       trap: 'monster（怪物）から、怖がっていると思いやすい。created の主語は I（レスリー）。',
       use: 'I’ve created a monster.（とんでもないものを育てちゃった）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'didnt', ctx: true, seg: [62.6, 68.6],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'didnt', ctx: true, seg: [61.5, 67.58],
       stem: 'What does Ron say about agreeing to see Leslie?',
       ja: 'レスリーに会うことについて、ロンは何と言う？',
       choices: ['He never agreed to it', 'He agreed to a short talk', 'He was glad to agree'], a: 0,
@@ -107,7 +107,7 @@ export const distract: Clip = {
       trap: 'Ron の返事は短いので、長話の人という読みは合わない。言われた量と呼び方の差を聞く。',
       use: 'Spare me the speech.（演説はけっこう）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'history', reveals: ['didnt'], seg: [66.5, 72],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'history', reveals: ['didnt'], seg: [66.05, 72.05],
       stem: 'Why does Leslie say, “I don’t have time”?',
       ja: 'レスリーは、なぜ「I don’t have time」と言う？',
       choices: ['To skip to her point', 'To argue with Ron about it', 'To say sorry to Ron'], a: 0,
@@ -131,7 +131,7 @@ export const distract: Clip = {
       trap: 'parking から駐車場を作る話と思いやすい。trying to のすぐあとの動詞を聞く。',
       use: 'I’m trying to cut down on sugar.（砂糖を減らそうとしてるの）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'thorn', seg: [74, 80.5],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'thorn', seg: [73.1, 80.2],
       stem: 'What does “a real thorn” mean here?',
       ja: 'ここでの「a real thorn」はどういう意味？',
       choices: ['Very annoying', 'Really smart', 'Very quiet'], a: 0,
@@ -177,18 +177,6 @@ export const distract: Clip = {
       trap: 'smart and beautiful を素直に取ると恋の話に聞こえる。言い直しが手がかり。',
       use: 'I mean — he. He’s a guy.（じゃなくて、彼。男の人）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', seg: [92, 121.3],
-      stem: 'What does Leslie really want from Ron?',
-      ja: 'レスリーが本当にロンから聞きたいことは？',
-      choices: ['A way to make someone slower', 'A way to make someone like her', 'A way to make someone work harder'], a: 0,
-      choicesJa: ['誰かの勢いを落とす方法', '誰かに好かれる方法', '誰かをもっと働かせる方法'],
-      cue: '「Here’s my question」のあと',
-      line: 'Here’s my question. How did you used to *slow me down*…?',
-      said: '「聞きたいのはこれ。昔、私の勢いをどうやって落としてたの？」と聞く。',
-      mean: 'slow 〜 down ＝ 〜のペースを落とす。張り切りすぎる人の止め方が本題。Ricky の話は作り話。',
-      trap: '前に slacker（怠け者）の話が出たので、もっと働かせる話と考えがち。',
-      use: 'Here’s my question.（聞きたいのはこれなんだけど）' },
-
     { id: 'p3', skill: 'phrase', level: 'C1', point: 'meish', seg: [92.6, 98.6], retired: true,
       stem: 'What does Leslie mean by the word she makes up in her question?',
       choices: ['Too much like her own eager, driven self', 'Too much like her old, careless younger self', 'Too focused on herself and what she wants'], a: 0,
@@ -199,17 +187,17 @@ export const distract: Clip = {
       trap: 'me から「自己中」と取りやすい。slow me down と並ぶので、勢いの話だと分かる。',
       use: 'Sorry, I got a little too me-ish.（ごめん、ちょっと私らしすぎた）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'busywork', reveals: ['plan'], seg: [97.8, 102.8],
-      stem: 'What did Ron sometimes give Leslie to slow her down?',
-      ja: 'ロンはレスリーの勢いを落とすため、時々何を渡した？',
-      choices: ['Pointless busy work', 'Days off to rest', 'Long, boring meetings'], a: 0,
-      choicesJa: ['意味のない雑用', '休むための休暇', '長くて退屈な会議'],
-      cue: '「Sometimes」で始まる文',
-      line: 'Sometimes I’d just give you *busy work*.',
-      said: '「時々、ただの暇つぶしの仕事を渡していた」と言う。',
-      mean: 'busy work ＝ 忙しくさせるだけで、大事ではない仕事。I’d ＝ よく〜したものだ。',
-      trap: 'slow down（ペースを落とす）から、休みと思いやすい。give you のあとを聞く。',
-      use: 'This report is just busy work.（この報告書は形だけの仕事だよ）' },
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'plan', seg: [92.9, 120.3],
+      stem: 'What does Leslie really want from Ron?',
+      ja: 'レスリーが本当にロンから聞きたいことは？',
+      choices: ['A way to make someone slower', 'A way to make someone like her', 'A way to make someone work harder'], a: 0,
+      choicesJa: ['誰かの勢いを落とす方法', '誰かに好かれる方法', '誰かをもっと働かせる方法'],
+      cue: '「Here’s my question」のあと',
+      line: 'Here’s my question. How did you used to *slow me down*…?',
+      said: '「聞きたいのはこれ。昔、私の勢いをどうやって落としてたの？」と聞く。',
+      mean: 'slow 〜 down ＝ 〜のペースを落とす。張り切りすぎる人の止め方が本題。Ricky の話は作り話。',
+      trap: '前に slacker（怠け者）の話が出たので、もっと働かせる話と考えがち。',
+      use: 'Here’s my question.（聞きたいのはこれなんだけど）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'brochure', reveals: ['busywork'], seg: [98.6, 110.4], retired: true,
       stem: 'How does Leslie feel about the soil brochure?',
@@ -223,7 +211,19 @@ export const distract: Clip = {
       trap: 'ロンが busy work と言ったので、むだと認めると思いやすい。was not で打ち消す。',
       use: 'That was not a waste of time.（あれは時間のむだじゃなかった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'friendship', reveals: ['purposes'], seg: [116.5, 122.58],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'busywork', reveals: ['plan'], seg: [98.7, 102.8],
+      stem: 'What did Ron sometimes give Leslie to slow her down?',
+      ja: 'ロンはレスリーの勢いを落とすため、時々何を渡した？',
+      choices: ['Pointless busy work', 'Days off to rest', 'Long, boring meetings'], a: 0,
+      choicesJa: ['意味のない雑用', '休むための休暇', '長くて退屈な会議'],
+      cue: '「Sometimes」で始まる文',
+      line: 'Sometimes I’d just give you *busy work*.',
+      said: '「時々、ただの暇つぶしの仕事を渡していた」と言う。',
+      mean: 'busy work ＝ 忙しくさせるだけで、大事ではない仕事。I’d ＝ よく〜したものだ。',
+      trap: 'slow down（ペースを落とす）から、休みと思いやすい。give you のあとを聞く。',
+      use: 'This report is just busy work.（この報告書は形だけの仕事だよ）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'friendship', reveals: ['purposes'], seg: [117.0, 122.58],
       stem: 'How does Leslie feel about the “distraction waffles”?',
       ja: '「気をそらすワッフル」と知って、レスリーはどんな気持ち？',
       choices: ['Sad and surprised', 'Happy and amused', 'Touched and thankful'], a: 0,
@@ -245,7 +245,7 @@ export const distract: Clip = {
       trap: '念を押す一言は本当らしく聞こえる。聞かれていない事を強く言う時は、逆を疑う。',
       use: 'And I’m not nervous, by the way.（ちなみに、緊張なんかしてないから）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'purposes', reveals: ['friendship'], seg: [120.5, 125.8],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'purposes', reveals: ['friendship'], seg: [120.3, 125.8],
       stem: '“Breakfast food can serve many purposes.” What does Ron mean?',
       ja: '「Breakfast food can serve many purposes」ロンが言いたいことは？',
       choices: ['Both a treat and a trick', 'Only a trick, never a treat', 'Only a treat, not a trick'], a: 0,
@@ -257,7 +257,7 @@ export const distract: Clip = {
       trap: 'distraction だけ聞くと、作戦だけと考えがち。many purposes は「両方」。',
       use: 'A good coat serves many purposes.（いいコートはいろいろ使える）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'passionate', seg: [128.3, 133.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'passionate', seg: [128.3, 131.25],
       stem: 'Type Ron’s line: “Everybody has something ___.” (3 words)', answer: 'they\'re passionate about',
       ja: 'ロンの言葉を書こう：「Everybody has something ___.」（3語）',
       cue: '「something」のあと',
@@ -267,7 +267,7 @@ export const distract: Clip = {
       trap: 'they’re は小さく「ゼア」と短い。最後の about も小さいが落とさない。',
       use: 'What are you passionate about?（何に夢中なの？）' },
 
-    { id: 'd6', skill: 'pragma', level: 'B2', point: 'advice', reveals: ['plan', 'passionate'], seg: [130.5, 138.2],
+    { id: 'd6', skill: 'pragma', level: 'B2', point: 'advice', reveals: ['plan', 'passionate'], seg: [131.2, 138.2],
       stem: 'What does Ron tell Leslie to do?',
       ja: 'ロンはレスリーに何をしろと言う？',
       choices: ['Ask about what he loves', 'Give him a big reward', 'Give him more busy work'], a: 0,
@@ -279,7 +279,7 @@ export const distract: Clip = {
       trap: '前に busy work の話があるので、また雑用と考えがち。今回は好きなものを使う。',
       use: 'Try to show an interest in her work.（彼女の仕事に興味を見せてみて）' },
 
-    { id: 'd10', skill: 'detail', level: 'B1', point: 'death', ctx: true, seg: [155, 166.4],
+    { id: 'd10', skill: 'detail', level: 'B1', point: 'death', ctx: true, seg: [155, 166.2],
       stem: 'What does April say the show is about?',
       ja: 'エイプリルは、このショーが何についての作品だと言う？',
       choices: ['Death and the city', 'Life in a cage', 'Life on a farm'], a: 0,
@@ -291,7 +291,7 @@ export const distract: Clip = {
       trap: 'Yeah（うん）で始まるので賛成と考えがち。決め手は actually（実は）のあと。',
       use: 'Actually, it’s on Friday, not Thursday.（実は、木曜じゃなくて金曜だよ）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'supposed', seg: [175.6, 180.6],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'supposed', seg: [176.05, 178.55],
       stem: '“What is that supposed to mean?” What is Leslie asking?',
       ja: '「What is that supposed to mean?」レスリーは何を聞いている？',
       choices: ['Why would you say that?', 'What should I do now?', 'What does that word mean?'], a: 0,
@@ -303,7 +303,7 @@ export const distract: Clip = {
       trap: 'mean（意味）から、言葉の意味を聞いていると思いやすい。相手の本音を聞いている。',
       use: 'What is that supposed to mean?（それ、どういう意味？）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'seethrough', reveals: ['supposed'], seg: [178.3, 185.5],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'seethrough', reveals: ['supposed'], seg: [178.5, 185.58],
       stem: 'Why does April think Leslie brought her here?',
       ja: 'エイプリルは、レスリーが自分をここに連れてきた理由を何だと思っている？',
       choices: ['To distract her from the park', 'To show her a wonderful show', 'To start an arts program'], a: 0,
@@ -325,7 +325,7 @@ export const distract: Clip = {
       trap: 'heavy を「重厚」と取るとほめ言葉に聞こえる。-handed が付くと「くどい」。',
       use: 'The ending was a bit heavy-handed.（結末がちょっとくどかった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'jam', ctx: true, seg: [187.8, 203],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'jam', ctx: true, seg: [186.95, 202.1],
       stem: 'Why is April going to see Councilman Jamm?',
       ja: 'エイプリルは、なぜジャム議員に会いに行く？',
       choices: ['He will vote for her plan', 'He wants to see this show', 'He has a better lot for her'], a: 0,
@@ -337,7 +337,7 @@ export const distract: Clip = {
       trap: '直前の芸術のショーの話から、ショーの話と考えがち。決め手は because のあと。',
       use: 'She’s going to support my plan.（彼女は私の案を支持してくれる）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'snake', seg: [202.2, 207.6],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'snake', seg: [202.1, 205.33],
       stem: '“He’s a snake.” What does Leslie mean?',
       ja: '「He’s a snake」レスリーが言いたいことは？',
       choices: ['He can’t be trusted', 'He bites when angry', 'He’s cold to people'], a: 0,
@@ -349,7 +349,7 @@ export const distract: Clip = {
       trap: 'ヘビの特徴から「かみつく」や「冷たい」を連想しやすい。人の snake は裏切り。',
       use: 'Watch out for him. He’s a snake.（あいつに気をつけて。ずるいやつだ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B2', point: 'trust', ctx: true, seg: [203, 210],
+    { id: 'a4', skill: 'attitude', level: 'B2', point: 'trust', ctx: true, seg: [203.2, 210],
       stem: 'Does April believe Leslie’s warning?',
       ja: 'エイプリルはレスリーの注意を信じる？',
       choices: ['No, she doesn’t believe it', 'Yes, she will be careful', 'Yes, and she thanks her'], a: 0,

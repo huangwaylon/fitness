@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 1, new 0, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 1, new 0, ctx 4, tx 3, qa 24
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 3, new 1
 // “April Ludgate's Getting Fired | Parks and Recreation” (the official Parks and Recreation channel, Season 4): April
 // deletes every department file and hides under a table; Andy tries to help, and Donna turns out to have a backup.
@@ -18,7 +18,7 @@ export const aprilFired: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'gone', seg: [5.5, 22.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'gone', seg: [5.5, 21.8],
       stem: 'What trouble is April in?',
       ja: 'エイプリルはどんな困ったことになっている？',
       choices: ['She deleted all the files', 'She emailed the wrong people', 'She broke every computer'], a: 0,
@@ -30,7 +30,7 @@ export const aprilFired: Clip = {
       trap: 'every computer から「パソコンが壊れた」と思いやすい。消えたのは files。',
       use: 'I don’t know what happened, but it’s gone.（何が起きたか分からないけど、消えちゃった）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'task', seg: [9.3, 20],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'task', seg: [9.6, 14.2],
       stem: 'What was April supposed to do?',
       ja: 'エイプリルは本当は何をするはずだった？',
       choices: ['Copy the files to a drive', 'Delete old files on every computer', 'Fix the frozen computers'], a: 0,
@@ -54,7 +54,7 @@ export const aprilFired: Clip = {
       trap: 'calm down（落ち着いて）のあとなので、直し方の話と考えがち。First of all の直後が答え。',
       use: 'First of all, you did nothing wrong.（まず、あなたは何も悪くない）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'man', seg: [21.6, 32],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'man', seg: [25.1, 29.6],
       stem: 'Andy says, “*Your man is here*.” What does he mean?',
       ja: '「Your man is here」とはどういう意味？',
       choices: ['He’s here to fix it', 'A computer man is coming', 'Her boss is here'], a: 0,
@@ -89,7 +89,7 @@ export const aprilFired: Clip = {
       trap: 'Try it now は前向きに聞こえるが、そのあとの話は他人頼み。誰に頼っているかで判断。',
       use: 'Let’s ask someone who’s been here longer.（もっと長くいる人に聞こう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'urgent', seg: [43.3, 48.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'urgent', seg: [43.3, 47.05],
       stem: 'What does “a matter of life and death” mean here?',
       ja: 'ここでの「a matter of life and death」の意味は？',
       choices: ['It’s very, very urgent', 'Someone’s life is in danger', 'It’s a private thing'], a: 0,
@@ -100,18 +100,6 @@ export const aprilFired: Clip = {
       mean: 'a matter of life and death ＝ 文字どおりは「生死の問題」。大げさに「一刻を争う」と急ぎを伝える言い方。',
       trap: '文字どおり命の危険と考えがち。だれもけがをしていないので、急ぎの強調。',
       use: 'It’s not a matter of life and death.（そんなに急ぐことじゃないよ）' },
-
-    { id: 'w1', skill: 'who', level: 'B1', point: 'donna', seg: [44.5, 49.5],
-      stem: 'Who does Andy say will know what to do?',
-      ja: 'どうすればいいか分かるのはだれ、とアンディは言う？',
-      choices: ['Donna', 'Leslie', 'Jerry'], a: 0,
-      choicesJa: ['ドナ', 'レスリー', 'ジェリー'],
-      cue: '「Honey」のすぐあとの名前。',
-      line: 'Honey, *Donna’s* been here forever.',
-      said: '「ドナはずっとここにいるから、きっと分かる」と言う。',
-      mean: '’s been here forever ＝ ずっと前からここにいる。長くいる人なら分かる、という理由。',
-      trap: 'すぐあとでエイプリルがレスリーの名前を出すので迷いやすい。Honey のあとを聞く。',
-      use: 'Ask Mr. Kato. He’s been here forever.（加藤さんに聞いて。ずっといる人だから）' },
 
     { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', reveals: ['donna'], seg: [46.0, 49.5], retired: true,
       stem: 'Fill the gap: “___ know what to do.”',
@@ -125,7 +113,19 @@ export const aprilFired: Clip = {
       trap: 'gotta（〜しなきゃ）と似ている。gonna は「ナ」、gotta は「ラ」に近い。',
       use: 'You’re gonna love this place.（ここ、絶対気に入るよ）' },
 
-    { id: 'h1', skill: 'attitude', level: 'B2', point: 'lecture', seg: [49.1, 58.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'donna', seg: [47.05, 49.5],
+      stem: 'Who does Andy say will know what to do?',
+      ja: 'どうすればいいか分かるのはだれ、とアンディは言う？',
+      choices: ['Donna', 'Leslie', 'Jerry'], a: 0,
+      choicesJa: ['ドナ', 'レスリー', 'ジェリー'],
+      cue: '「Honey」のすぐあとの名前。',
+      line: 'Honey, *Donna’s* been here forever.',
+      said: '「ドナはずっとここにいるから、きっと分かる」と言う。',
+      mean: '’s been here forever ＝ ずっと前からここにいる。長くいる人なら分かる、という理由。',
+      trap: 'すぐあとでエイプリルがレスリーの名前を出すので迷いやすい。Honey のあとを聞く。',
+      use: 'Ask Mr. Kato. He’s been here forever.（加藤さんに聞いて。ずっといる人だから）' },
+
+    { id: 'h1', skill: 'attitude', level: 'B2', point: 'lecture', seg: [49.5, 56.7],
       stem: 'What does April fear even more than getting fired?',
       ja: 'エイプリルがクビよりもっと嫌なことは？',
       choices: ['A lecture from Leslie', 'Losing her friends', 'Moving to a new city'], a: 0,
@@ -137,7 +137,7 @@ export const aprilFired: Clip = {
       trap: 'クビが一番悪いと思いやすい。even worse のあとに何が来るかを聞く。',
       use: 'Or even worse, it might rain.（もっと悪いと、雨かも）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'deal', ctx: true, seg: [54.5, 62],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'deal', ctx: true, seg: [54.62, 61.75],
       stem: 'April fears getting fired. What does Andy offer?',
       ja: 'クビをこわがるエイプリルに、アンディは何を申し出る？',
       choices: ['To quit his job, too', 'To talk to Leslie for her', 'To fix the files himself'], a: 0,
@@ -158,7 +158,7 @@ export const aprilFired: Clip = {
       trap: '文法の感覚で if を足して書きたくなる。聞こえた語だけを書き、if がない形も条件と受け取る。',
       use: 'You cook, I’ll do the dishes.（君が作るなら、皿は僕が洗う）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'serious', ctx: true, seg: [60.3, 70.5],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'serious', ctx: true, seg: [61.65, 70.1],
       stem: 'How serious is Andy about leaving with April?',
       ja: 'エイプリルと一緒に出ていく話、アンディはどのくらい本気？',
       choices: ['He really means it', 'He’s only joking', 'He’s testing her'], a: 0,
@@ -170,7 +170,7 @@ export const aprilFired: Clip = {
       trap: '話が大げさなので冗談に聞こえるが、聞き返されても引かない。決め手は If we have to。',
       use: 'I’m serious. I’ll come with you.（本気だよ。一緒に行く）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'goback', seg: [68.7, 77],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'goback', seg: [70.1, 76.6],
       stem: 'Andy says, “*Let’s go back to* dream jobs.” Meaning?',
       ja: '「Let’s go back to dream jobs」とはどういう意味？',
       choices: ['Let’s talk about jobs again', 'Let’s go back to work', 'Let’s get our old jobs back'], a: 0,
@@ -182,7 +182,7 @@ export const aprilFired: Clip = {
       trap: 'go back と jobs をつなぐと「仕事に戻る」に聞こえる。to のあとは話題。',
       use: 'Let’s go back to what you said earlier.（さっきの話に戻ろう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'jobs', seg: [71.5, 83.3],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'jobs', seg: [74.8, 82.9],
       stem: 'Whose dream jobs are on Andy’s list so far?',
       ja: 'アンディのリストにある夢の仕事は、だれのもの？',
       choices: ['Jobs Andy wants for himself', 'Jobs they could share', 'Jobs Andy picks for April'], a: 0,
@@ -215,7 +215,7 @@ export const aprilFired: Clip = {
       trap: '責める言葉が並ぶので意地悪に聞こえる。「助けたい」をくり返す人が、ずれている側。',
       use: 'Sorry, that didn’t help, did it?（ごめん、励ましになってないね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', ctx: true, seg: [93, 100.0],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', ctx: true, seg: [94.05, 101.35],
       stem: 'How does April answer “Dream big, kid”?',
       ja: '「Dream big, kid」に、エイプリルはどう答える？',
       choices: ['She agrees, but not happily', 'She agrees, and feels better', 'She says no to him'], a: 0,
@@ -227,7 +227,7 @@ export const aprilFired: Clip = {
       trap: 'fine を「元気・良い」と思うと明るい返事に聞こえる。せかされたあとの Fine. はしぶしぶ。',
       use: 'Fine, I’ll do it.（分かったよ、やるよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dream', seg: [98.2, 105.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dream', seg: [98.2, 105.45],
       stem: 'Besides cleaning teeth, what would April do?',
       ja: '歯の掃除のほかに、エイプリルは何をしたい？',
       choices: ['Tell people when they’ll die', 'Talk to people who have died', 'Tell people how they’ll die'], a: 0,
@@ -235,11 +235,11 @@ export const aprilFired: Clip = {
       cue: '「tell them」のあと。',
       line: 'so I can *clean people’s teeth and tell them when they’re gonna die*.',
       said: '「歯を掃除しながら、いつ死ぬかを教えられる」と、暗い夢を言う。',
-      mean: 'medium ＝ 霊能者。so I can 〜 ＝ そうすれば〜できる。',
+      mean: 'dental hygienist ＝ 歯科衛生士。medium ＝ 霊能者。so I can 〜 ＝ そうすれば〜できる。',
       trap: 'medium から「死者と話す」を思いやすい。tell them のあとの when まで聞く。',
       use: 'So I can sleep in on Sundays.（そうすれば日曜に寝坊できる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'fix', seg: [105, 123.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'fix', seg: [105.46, 123.8],
       stem: 'How is the problem solved?',
       ja: '問題はどうやって解決する？',
       choices: ['Donna had a secret backup', 'Andy fixed the frozen computer', 'April found the drive'], a: 0,
@@ -251,7 +251,7 @@ export const aprilFired: Clip = {
       trap: 'アンディの自信の話が先に出るので迷いやすい。直したのはドナ。',
       use: 'Good thing I made a backup.（バックアップ取っといてよかった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', reveals: ['fix'], seg: [115.9, 122.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', reveals: ['fix'], seg: [115.9, 119.62],
       stem: 'Why did Donna make a backup?',
       ja: 'ドナはなぜバックアップを作った？',
       choices: ['Jerry often deletes things', 'Jerry once deleted everything', 'April did this before'], a: 0,
@@ -263,16 +263,16 @@ export const aprilFired: Clip = {
       trap: '一度の大事故ではなく all the time（しょっちゅう）。回数の言葉まで聞く。',
       use: 'He loses his keys all the time.（彼はしょっちゅう鍵をなくす）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['fix'], seg: [116.9, 123.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['fix'], seg: [119.62, 123.45], keep: true,
       stem: 'How long ago did Donna set up the backup?',
       ja: 'ドナは何年前にバックアップを用意した？',
-      choices: ['2 years ago', '10 years ago', '20 years ago'], a: 1,
-      choicesJa: ['2年前', '10年前', '20年前'],
+      choices: ['2 years ago', '10 years ago', '20 years ago', '12 years ago'], a: 1,
+      choicesJa: ['2年前', '10年前', '20年前', '12年前'],
       cue: '「years ago」の直前の数。',
       line: '*10 years ago*, I installed my own secret backup.',
       said: '「10年前に、自分だけのバックアップを入れた」と言う。',
       mean: 'ずっと前から、こういう事故に備えていた、ということ。',
-      trap: 'ten は最後が「ン」で止まる。two は「トゥー」だけ、twenty は「トゥエニ」と長い。',
+      trap: 'ten は最後が「ン」で止まる。two は「トゥー」だけ、twenty は「トゥエニ」、twelve は「トゥエルヴ」。',
       use: 'I moved here ten years ago.（10年前にここに越してきました）' },
   ]
 };

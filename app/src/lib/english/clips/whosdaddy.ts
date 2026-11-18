@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 0, new 2, ctx 4, tx 10
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 0, new 2, ctx 4, tx 10, qa 28
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 10, new 3
 // “Who's Your Daddy?  - The Office US” (the official The Office channel, BEST OF SEASON 5): Jan, expecting a baby by a
 // donor, drops in to show off her candle business; Michael rehearses the birth with Dwight and a buttered watermelon,
@@ -10,9 +10,9 @@
 // EAR CHECK: 0.5 s help — “Hi. Can I help you?” is the person at the front desk, to Jan
 // EAR CHECK: 74.1 s s2 — “what do you do” as one run (≈ “whaddaya”), not “what did you” (both sources have “do you”)
 // EAR CHECK: 83.6 s x1 — “checked the route”: the -ed runs into “the” (both sources have the words)
-// EXCLUDE 11–15 (“kicking ass and taking names”)
-// EXCLUDE 52–54 (“My cervix is ripening”)
-// EXCLUDE 103–105 (the circumcision line)
+// EXCLUDE 12–16.1 (“kicking ass and taking names”; json3 hears it at 12.2–16 s, “Oh, great” at 11.1 s)
+// EXCLUDE 52.5–54.1 (“My cervix is ripening”, json3 52.6–54 s)
+// EXCLUDE 103.3–105.5 (the circumcision line, json3 103.4–105.4 s)
 // SKIP 183–203.5: music and credits (whisper's “Thank you” at 201 s)
 // No scenes file for this video.
 import type { Clip } from '../types.ts';
@@ -38,16 +38,16 @@ export const whosDaddy: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [4.6, 9.9], keep: true,
       stem: 'How many copies does Jan ask for?',
       ja: 'ジャンは何部のコピーをたのむ？',
-      choices: ['10', '100', '1,000'], a: 1,
-      choicesJa: ['10部', '100部', '1000部'],
+      choices: ['10', '100', '1,000', '200'], a: 1,
+      choicesJa: ['10部', '100部', '1000部', '200部'],
       cue: '「make me」のあと。',
       line: 'I need you to make me *a hundred copies* of this on canary yellow.',
       said: '「これを黄色い紙で100部コピーして」とたのむ。',
       mean: 'a hundred ＝ 100。I need you to 〜 ＝「〜してほしい」。',
-      trap: 'ten なら「テン」だけ、thousand なら「サウ」。「ハンドレッ」が聞こえれば100。',
+      trap: 'ten なら「テン」だけ、thousand なら「サウ」、two hundred なら前に「トゥー」。a hundred なら100。',
       use: 'I need you to print ten copies.（10部印刷してほしい）' },
 
-    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', ctx: true, seg: [4.8, 10.9],
+    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', ctx: true, seg: [4.8, 11.95],
       stem: 'How does Jan feel about her candle business?',
       ja: 'ジャンは、自分のキャンドルの仕事をどう思っている？',
       choices: ['Very happy with it', 'Worried about it', 'Bored with the work'], a: 0,
@@ -92,7 +92,7 @@ export const whosDaddy: Clip = {
       trap: 'キャンドルと found が近いので手柄の話に聞こえやすい。too が何を後回しにしたかを聞く。',
       use: 'Oh, and happy birthday, too.（あ、それと誕生日おめでとう）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'daddy', seg: [23.7, 34.1],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'daddy', seg: [23.7, 34.35],
       stem: 'Michael says “Hello, baby.” Who is he talking to?',
       ja: 'マイケルの「Hello, baby」はだれに話しかけている？',
       choices: ['Jan’s baby, not yet born', 'Jan, with a pet name', 'The worker at the front desk'], a: 0,
@@ -137,19 +137,19 @@ export const whosDaddy: Clip = {
       trap: 'led を「ほのめかした」と取ると、by のあとを聞き落とす。思わせた、には事実でない含みがある。',
       use: 'Turns out he made the whole thing up.（全部作り話だったんだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'contract', seg: [47, 51.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'contract', seg: [47, 50.6], keep: true,
       stem: 'How often are the contractions coming?',
       ja: '陣痛は何分おきに来ている？',
-      choices: ['Every five minutes', 'Every ten minutes', 'Every twenty minutes'], a: 1,
-      choicesJa: ['5分おき', '10分おき', '20分おき'],
+      choices: ['Every five minutes', 'Every ten minutes', 'Every twenty minutes', 'Every fifteen minutes'], a: 1,
+      choicesJa: ['5分おき', '10分おき', '20分おき', '15分おき'],
       cue: '「coming every」のすぐあと。',
       line: 'Contractions are coming *every ten minutes*.',
       said: '「陣痛が10分おきに来てる」と報告する。',
       mean: 'every ten minutes ＝ 10分ごと。contraction ＝ 陣痛。出産が近づいている合図。',
-      trap: 'five は「ファイヴ」。twenty は「トゥエンティ」と長い。短く「テン」なら10。',
+      trap: 'five は「ファイヴ」、twenty は「トゥエンティ」、fifteen は「ティーン」が長い。短く「テン」なら10。',
       use: 'My phone buzzes every ten minutes.（スマホが10分おきに鳴る）' },
 
-    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', seg: [47.5, 52.0],
+    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', reveals: ['contract'], seg: [47.5, 52.45],
       stem: 'What does Michael tell Dwight to keep doing?',
       ja: 'マイケルはドワイトに、何を続けるように言う？',
       choices: ['Breathing', 'Sleeping', 'Pushing hard'], a: 0,
@@ -161,7 +161,7 @@ export const whosDaddy: Clip = {
       trap: 'あとで keep pushing（いきんで）も聞こえるが、それはもっと後の場面。',
       use: 'Remember to keep your ticket.（切符をなくさないでね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [54.0, 79.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [54.15, 77.48],
       stem: 'What are Michael and Dwight doing in this part?',
       ja: 'この部分で、マイケルとドワイトは何をしている？',
       choices: ['Practicing for the baby’s birth', 'Learning first aid at their work', 'Taking a class at a hospital'], a: 0,
@@ -185,19 +185,7 @@ export const whosDaddy: Clip = {
       trap: '間を迷いや同情と取りやすいが、父親はもう言われている。説明の途中の長い間は、落ちの前ぶれと疑う。',
       use: 'We’re related by… pizza, mostly.（僕らをつなぐのは…主にピザ）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'whatdo', seg: [72.3, 77.8],
-      stem: 'Fill the gap in the question, said twice: “___ do?”',
-      ja: '2回くり返す質問。空いている所に入る言葉は？',
-      choices: ['What do you', 'What did you', 'What would you'], a: 0,
-      choicesJa: ['（今）どうする？', '（その時）どうした？', 'どうするだろう？'],
-      cue: '「Okay, okay」のあと。',
-      line: '*What do you* do? What do you do?',
-      said: '「どうする？どうする？」とくり返し、出産の時の手順を確かめる。',
-      mean: 'What do you が「ワダヤ」とひと続きになる。答えも今の形の I get。',
-      trap: 'did you は「ディジュ」、would you は「ウッジュ」。ここは「ワダヤ」と「ダ」が入る。',
-      use: 'What do you do if it rains?（雨ならどうする？）' },
-
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', reveals: ['whatdo'], ctx: true, seg: [73.0, 79.7],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', reveals: ['whatdo'], ctx: true, seg: [70.9, 77.48],
       stem: 'What is Michael’s plan for when the time comes?',
       ja: 'その時が来たら、マイケルはどうする計画？',
       choices: ['Jan calls, he meets her there', 'He drives to get Jan', 'He calls the doctor first'], a: 0,
@@ -209,17 +197,17 @@ export const whosDaddy: Clip = {
       trap: 'call が聞こえるので、自分が電話する側と考えがち。from Jan なら、かけるのはジャン。',
       use: 'Call me, and I’ll meet you there.（電話くれたら現地で会おう）' },
 
-    { id: 'roads', skill: 'detail', level: 'B2', point: 'roads', seg: [75.2, 81.2],
-      stem: 'What does Dwight ask Michael about the drive?',
-      ja: 'ドワイトは、車の道についてマイケルに何を聞く？',
-      choices: ['Which roads he will take', 'How long the drive takes', 'Where he will park the car'], a: 0,
-      choicesJa: ['どの道を通るか', '車で何分かかるか', 'どこに車を止めるか'],
-      cue: '「Right.」のあとの質問。',
-      line: 'Right. *Highways or surface roads?*',
-      said: '「よし。高速道路で行く？下の道で行く？」と聞く。',
-      mean: 'highway ＝ 高速道路。surface road ＝ 下の道（ふつうの道）。A or B? で選ばせる質問。',
-      trap: 'drive の話なので時間や駐車を思いやすい。or で二つの道を比べている。',
-      use: 'Should we take the highway or local roads?（高速で行く？下道で行く？）' },
+    { id: 's2', skill: 'sound', level: 'B1', point: 'whatdo', seg: [72.3, 75.3],
+      stem: 'Fill the gap in the question, said twice: “___ do?”',
+      ja: '2回くり返す質問。空いている所に入る言葉は？',
+      choices: ['What do you', 'What did you', 'What would you'], a: 0,
+      choicesJa: ['（今）どうする？', '（その時）どうした？', 'どうするだろう？'],
+      cue: '「Okay, okay」のあと。',
+      line: '*What do you* do? What do you do?',
+      said: '「どうする？どうする？」とくり返し、出産の時の手順を確かめる。',
+      mean: 'What do you が「ワダヤ」とひと続きになる。いつもの手順を今の形で聞いている。',
+      trap: 'did you は「ディジュ」、would you は「ウッジュ」。ここは「ワダヤ」と「ダ」が入る。',
+      use: 'What do you do if it rains?（雨ならどうする？）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'potholes', seg: [77.4, 87.05], retired: true,
       stem: 'When Gibson is said to be full of potholes, what does Michael’s answer miss?',
@@ -232,7 +220,19 @@ export const whosDaddy: Clip = {
       trap: '穴の話を本当の情報と取ると、道や車の忠告に聞こえる。Adapt が試しの合図。',
       use: 'Plans change. You have to adapt.（予定は変わるもの。合わせなきゃ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'route', seg: [82.4, 87.4],
+    { id: 'roads', skill: 'detail', level: 'B2', point: 'roads', seg: [77.5, 80.85],
+      stem: 'What does Dwight ask Michael about the drive?',
+      ja: 'ドワイトは、車の道についてマイケルに何を聞く？',
+      choices: ['Which roads he will take', 'How long the drive takes', 'Where he will park the car'], a: 0,
+      choicesJa: ['どの道を通るか', '車で何分かかるか', 'どこに車を止めるか'],
+      cue: '「Right.」のあとの質問。',
+      line: 'Right. *Highways or surface roads?*',
+      said: '「よし。高速道路で行く？下の道で行く？」と聞く。',
+      mean: 'highway ＝ 高速道路。surface road ＝ 下の道（ふつうの道）。A or B? で選ばせる質問。',
+      trap: 'drive の話なので時間や駐車を思いやすい。or で二つの道を比べている。',
+      use: 'Should we take the highway or local roads?（高速で行く？下道で行く？）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'route', seg: [82.2, 87.1],
       stem: 'Type the reply: “I ___. There are no potholes.” (3 words)', answer: 'checked the route',
       ja: '「I」のあとの3語を書こう。',
       cue: '「Adapt.」のすぐあと。',
@@ -242,7 +242,7 @@ export const whosDaddy: Clip = {
       trap: 'ed が the に飲まれて check に聞こえやすい。',
       use: 'I checked the time. We’re fine.（時間は確認した。大丈夫）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'expertise', seg: [99.5, 103.0],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'expertise', seg: [99.5, 103.3],
       stem: 'What does “areas of expertise” mean?',
       ja: '「areas of expertise」はどういう意味？',
       choices: ['Things he knows well', 'Places he has worked', 'Jobs he wants to do'], a: 0,
@@ -255,8 +255,8 @@ export const whosDaddy: Clip = {
       use: 'Cooking is not my area of expertise.（料理は得意分野じゃないんです）' },
 
     { id: 'd7', skill: 'detail', level: 'B1', point: 'mark', ctx: true, seg: [121.45, 132.35],
-      stem: 'What should he do with the pen?',
-      ja: 'そのペンで何をするように言われる？',
+      stem: 'What should Michael do with the pen?',
+      ja: 'マイケルはそのペンで何をするように言われる？',
       choices: ['Mark the baby secretly', 'Write the baby’s name', 'Sign the hospital papers'], a: 0,
       choicesJa: ['赤ちゃんにこっそり印を付ける', '赤ちゃんの名前を書く', '病院の書類にサインする'],
       cue: '「Yes, I do!」のあと、When the baby のあと。',
@@ -266,7 +266,7 @@ export const whosDaddy: Clip = {
       trap: 'ペンと病院から、名前やサインを書く話と考えがち。決め手は mark it secretly。',
       use: 'Mark your bag so no one takes it.（取られないよう、かばんに目印を）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'butter', ctx: true, seg: [135.5, 142],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'butter', ctx: true, seg: [135.3, 141.4],
       stem: 'Why is the watermelon covered in butter?',
       ja: 'スイカにはなぜバターがぬってある？',
       choices: ['New babies are slippery', 'To test how he holds it', 'To keep the mark on it'], a: 0,
@@ -278,7 +278,7 @@ export const whosDaddy: Clip = {
       trap: 'すべって落とした直後なので、持ち方のテストと勘違いしやすい。理由は newborns の話。',
       use: 'Careful, the floor is slippery.（気をつけて、床がすべるよ）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'touch', seg: [138.5, 145],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'touch', reveals: ['butter'], seg: [138.4, 145],
       stem: 'What does “Nice touch” mean here?',
       ja: 'ここでの「Nice touch」の意味は？',
       choices: ['That was a good idea', 'Your hands are soft', 'Please touch it gently'], a: 0,
@@ -309,12 +309,12 @@ export const whosDaddy: Clip = {
       choicesJa: ['赤ちゃんを見せて', '来た理由を教えて', '赤ちゃんの名前を教えて'],
       cue: 'ジャンが来たあと。',
       line: '*What do we have here?* — This is my baby.',
-      said: 'ジムが「おや、これは？」と声をかけ、ジャンが「私の赤ちゃん」と見せる。',
+      said: 'ジムが「おや、その子は？」と声をかけ、ジャンが「私の赤ちゃん」と見せる。',
       mean: 'What do we have here? ＝「おや、それは何？」。見せたい物を紹介させる声かけ。',
       trap: '質問の形なので、来た理由を聞いていると思いやすい。答えは赤ちゃんの紹介。',
       use: 'What do we have here? A cake?（おや、これは？ケーキ？）' },
 
-    { id: 'h3', skill: 'infer', level: 'B2', point: 'anybody', reveals: ['outcome'], seg: [178.8, 184.2],
+    { id: 'h3', skill: 'infer', level: 'B2', point: 'anybody', reveals: ['outcome'], seg: [179.6, 184.2],
       stem: 'What does “except Michael’s” tell us?',
       ja: '「except Michael’s」から何が分かる？',
       choices: ['Michael isn’t the father', 'Michael lost the new baby', 'Michael is the father'], a: 0,

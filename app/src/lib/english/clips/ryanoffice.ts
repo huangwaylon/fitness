@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 13, retire 1, new 2, ctx 7, tx 6
+// R4 REVIEW 2026-11-18: keep 5, rewrite 13, retire 1, new 2, ctx 7, tx 6, qa 18
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 7, new 1
 // “Ryan Gets His Own Office - The Office US” (the official The Office channel, BEST OF SEASON 6): Ryan stalls on a
 // data-entry job, the staff laugh off Jim's claim to be as much of a boss as Michael (the rumor came from Ryan), and
@@ -27,7 +27,7 @@ export const ryanOffice: Clip = {
       trap: '最後に「今やろう」という声も出るが、それはライアンではない。ライアンは理由をつけて後回しにしたがる。',
       use: 'Let’s wait and see.（様子を見よう）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'under', seg: [4.9, 13.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'under', seg: [4.9, 13.25],
       stem: 'What does “the company’s going under” mean?',
       ja: '「the company’s going under」の意味は？',
       choices: ['It will close for good', 'It will get new owners', 'It will move downstairs'], a: 0,
@@ -39,7 +39,7 @@ export const ryanOffice: Clip = {
       trap: 'under ＝「下に」から、下の階を思いやすい。go under はひとまとまりで覚える。',
       use: 'The shop went under last year.（その店は去年つぶれた）' },
 
-    { id: 'dc1', skill: 'dict', level: 'B2', point: 'mightas', seg: [16.7, 23.2],
+    { id: 'dc1', skill: 'dict', level: 'B2', point: 'mightas', seg: [16.87, 23.2],
       stem: 'Type what you hear: “Nah. ___ do it now.” (3 words)', answer: 'might as well',
       ja: '「Nah.」のあとの3語を書こう。',
       cue: '「Nah.」のすぐあと。',
@@ -60,7 +60,7 @@ export const ryanOffice: Clip = {
       trap: 'Bob の話なので私生活の話と取りやすい。also のあとの注意が理由の手がかり。',
       use: 'I didn’t hear that.（聞かなかったことにするね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'lunch', seg: [31.1, 40], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'lunch', seg: [31.1, 36.7], keep: true,
       stem: 'How long are Phyllis’s lunches?',
       ja: 'フィリスの昼休みはどのくらい？',
       choices: ['Half an hour', 'One hour', 'Two hours', 'Three hours'], a: 2,
@@ -72,7 +72,7 @@ export const ryanOffice: Clip = {
       trap: 'one は「ワン」、three は「スリー」。「トゥーアワ」とつながれば two-hour。',
       use: 'We have a two-hour layover.（乗り継ぎが2時間ある）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'brushoff', reveals: ['lunch'], seg: [33.2, 43.2], ctx: true,
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'brushoff', reveals: ['lunch'], seg: [33.3, 43.2], ctx: true,
       stem: 'How does Phyllis feel about Jim’s warning?',
       ja: 'ジムの注意を、フィリスはどう受け止めている？',
       choices: ['She isn’t worried', 'She is very sorry', 'She is angry at Jim'], a: 0,
@@ -95,7 +95,7 @@ export const ryanOffice: Clip = {
       trap: '昼休みの注意を笑ったと取りやすい。笑いの理由は直後の返事で確かめる。',
       use: 'What’s so funny?（何がおかしいの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'fire', seg: [46.7, 54.9], ctx: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'fire', seg: [45.55, 54.5], ctx: true,
       stem: 'Why isn’t Jim a real boss, they say?',
       ja: 'みんなは、なぜジムは本当の上司じゃないと言う？',
       choices: ['He can’t fire people', 'He has no office', 'He started after Michael'], a: 0,
@@ -107,7 +107,7 @@ export const ryanOffice: Clip = {
       trap: 'fire を「火」と思うと話が分からなくなる。仕事の話では「クビにする」。',
       use: 'It’s not like I’m in a hurry.（別に急いでるわけじゃない）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'cantsay', seg: [50.8, 58.2],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'cantsay', seg: [51.1, 57.95],
       stem: 'What does “We can’t say” mean?',
       ja: '「We can’t say」の意味は？',
       choices: ['We know but won’t tell', 'We don’t know who it was', 'Nobody told us'], a: 0,
@@ -119,7 +119,7 @@ export const ryanOffice: Clip = {
       trap: 'can’t から「分からない」と勘違いしやすい。say とセットで「言えない」。',
       use: 'Sorry, I can’t say.（ごめん、それは言えない）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'email', seg: [70.3, 79.7], ctx: true,
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'email', seg: [70.3, 79.33], ctx: true,
       stem: 'What does “Does an email count?” ask?',
       ja: '「Does an email count?」は何を聞いている？',
       choices: ['Is an email OK too?', 'How many emails came?', 'Who sent the email?'], a: 0,
@@ -131,7 +131,7 @@ export const ryanOffice: Clip = {
       trap: 'count から「数える」を連想しやすい。ここは「それも入るか」を聞いている。',
       use: 'Does a text count?（メッセージでもいい？）' },
 
-    { id: 'pc', skill: 'phrase', level: 'B2', point: 'closeone', seg: [90.3, 97.7],
+    { id: 'pc', skill: 'phrase', level: 'B2', point: 'closeone', seg: [90.3, 96.1],
       stem: 'What does “Close one” mean here?',
       ja: 'ここでの「Close one」の意味は？',
       choices: ['That was almost a mistake', 'The vote was very close', 'We are very close friends'], a: 0,
@@ -155,7 +155,7 @@ export const ryanOffice: Clip = {
       trap: 'want to は「ワ」、had to は「ハ」で始まる。「ガラ」と聞こえれば got to。',
       use: 'I gotta go.（もう行かなきゃ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'example', seg: [100.3, 105.3],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'example', seg: [102.3, 105.35],
       stem: 'What does Jim want to do to Ryan?',
       ja: 'ジムはライアンをどうしたい？',
       choices: ['Punish him so others learn', 'Make him a model worker', 'Teach him how to work'], a: 0,
@@ -167,7 +167,7 @@ export const ryanOffice: Clip = {
       trap: 'example（例・手本）から「お手本にする」と思いやすい。続く fire（クビ）で罰の話と分かる。',
       use: 'They made an example of him.（彼は見せしめにされた）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'power', reveals: ['fire'], seg: [104.5, 111.2], ctx: true,
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'power', reveals: ['fire'], seg: [104.4, 111.1], ctx: true,
       stem: 'Can Jim really fire people?',
       ja: 'ジムは本当に人をクビにできる？',
       choices: ['He doesn’t know', 'Yes, he really can', 'No, he can’t'], a: 0,
@@ -179,7 +179,7 @@ export const ryanOffice: Clip = {
       trap: '上司だと言い張っていたので、「できる」と考えがち。答えは I don’t know。',
       use: 'To be honest, I’m not sure.（正直、よく分からない）' },
 
-    { id: 'y1', skill: 'infer', level: 'B2', point: 'yell', seg: [107.8, 115], ctx: true,
+    { id: 'y1', skill: 'infer', level: 'B2', point: 'yell', seg: [108.3, 115.38], ctx: true,
       stem: 'What does she say about Jim yelling?',
       ja: 'ジムが怒鳴ることについて、彼女は何と言う？',
       choices: ['She can’t picture it', 'He yells far too much', 'It’s a good idea'], a: 0,
@@ -202,7 +202,7 @@ export const ryanOffice: Clip = {
       trap: 'Okay を同意と取りやすいが、言葉を言い換えて否定している。言い換えに注目。',
       use: 'Okay, “raised your voice,” maybe.（まあ「声を上げた」くらいかな）' },
 
-    { id: 'thing', skill: 'marker', level: 'B1', point: 'thing', seg: [131.6, 139.6], ctx: true,
+    { id: 'thing', skill: 'marker', level: 'B1', point: 'thing', seg: [131.6, 139.3], ctx: true,
       stem: 'What does “Here’s the thing” mean?',
       ja: '「Here’s the thing」はどういう意味？',
       choices: ['Let me explain', 'Take this thing', 'That’s all for now'], a: 0,
@@ -236,7 +236,7 @@ export const ryanOffice: Clip = {
       trap: '文法の知識で I kind of rather と書きやすい。聞こえた順に、d も残して書く。',
       use: 'I’d kind of rather stay in.（どちらかというと家にいたいかな）' },
 
-    { id: 'pr2', skill: 'marker', level: 'B2', point: 'oneway', seg: [142, 152.3],
+    { id: 'pr2', skill: 'marker', level: 'B2', point: 'oneway', seg: [142, 151.9],
       stem: 'What does Jim mean by “Simple data entry, though”?',
       ja: 'ジムの「Simple data entry, though」はどういう意味？',
       choices: ['But the job is easy', 'So take your time', 'And it must be perfect'], a: 0,
@@ -259,7 +259,7 @@ export const ryanOffice: Clip = {
       trap: '「指示がほしい」「見本を見せて」と取りやすい。ほめた直後に何を頼むかで本音を聞く。',
       use: 'Why don’t you take a crack at it?（ちょっとやってみたら？）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'distracted', seg: [153, 161], ctx: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'distracted', seg: [153.45, 161.3], ctx: true,
       stem: 'What problem do Jim and Ryan agree on?',
       ja: 'ジムとライアンは、どんな問題で意見が合う？',
       choices: ['Ryan can’t focus', 'Ryan’s computer is old', 'Ryan has too much work'], a: 0,
@@ -271,7 +271,7 @@ export const ryanOffice: Clip = {
       trap: '仕事が進まない話なので、仕事が多すぎると考えがち。ただのデータ入力で、量の話は出ない。',
       use: 'Sorry, I’m a little distracted today.（ごめん、今日はちょっと気が散ってて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'office', reveals: ['example', 'sorry', 'bother'], seg: [170.5, 199.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'office', reveals: ['example', 'sorry', 'bother'], seg: [171.5, 199.6],
       stem: 'What does Jim give Ryan at the end?',
       ja: '最後に、ジムはライアンに何をあげる？',
       choices: ['A tiny new office', 'A new computer', 'A free day off work'], a: 0,
@@ -295,7 +295,7 @@ export const ryanOffice: Clip = {
       trap: '周りがライアンをじゃましていると思いやすい。by のあとまで聞く。',
       use: 'Sorry to bother you.（おじゃましてすみません）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'sorry', seg: [185.9, 196.5],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'sorry', seg: [185.9, 196.25],
       stem: 'How does Ryan act when he sees the office?',
       ja: '部屋を見たライアンはどうする？',
       choices: ['He says he’ll work tonight', 'He thanks Jim for the gift', 'He says the job is done'], a: 0,
