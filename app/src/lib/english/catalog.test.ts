@@ -85,8 +85,10 @@ describe('a bank file (bankOf)', () => {
       live, { id: 'b', retired: true, seg: [10, 14], line: old.line, said: 's', mean: 'm', use: old.use }
     ]);
   });
-  it('every clip: the same draws and the same この動画のセリフと解説 as its whole bank', () => {
-    for (const c of CLIPS) {
+  // Chunks of 25 clips, so each `it` stays far under the per-test timeout on a loaded machine.
+  const chunks = Array.from({ length: Math.ceil(CLIPS.length / 25) }, (_, i) => CLIPS.slice(i * 25, i * 25 + 25));
+  it.each(chunks.map((cs, i) => [i, cs] as const))('every clip (chunk %i): the same draws and the same この動画のセリフと解説 as its whole bank', (_i, cs) => {
+    for (const c of cs) {
       const b = bankOf(c, undefined, undefined);
       const shown = (x: Clip) => momentsOf(x).map((m) => [m.from, m.to, m.qs.map(({ id, line, said, mean, use }) => [id, line, said, mean, use])]);
       expect(shown(b)).toEqual(shown(c));
