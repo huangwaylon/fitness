@@ -116,7 +116,7 @@ export const LOG_EVENTS = {
   "ws.close": { src: 'c', f: { code: 'n', secs: 'n', welcomed: 'b', why: ['hidden', 'offline', 'stale', 'late', 'stuck', 'rekey', 'stop', 'closed'], quiet: 'n', rtt: 'n', v: 'n', openMs: 'n', retries: 'n' } },
   "ws.park": { src: 'c', f: { code: 'n' } },
   "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
-  "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'shop', 'museum', 'map', 'other'], restored: 'b', ...AT } },
+  "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'shop', 'museum', 'sugoroku', 'map', 'other'], restored: 'b', ...AT } },
   // file: the chunk's base name (vite:preloadError's); n: its failures folded while unsent
   "chunk.fail": { src: 'c', f: { file: 't', n: 'n', ...AT } },
   // English Study (lib/english): a clip's bank that didn't load (data.ts: its HTTP status, none for no answer; `bad` a

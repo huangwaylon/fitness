@@ -14,7 +14,7 @@ import type { Look } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 import { testHooks } from '#lib/ui-state/testMode.ts';
-import { createStage } from '../world3d/stage.ts';
+import { createStage, watchContext } from '../world3d/stage.ts';
 import { person3, type Dirs, type Person3 } from '../person3d/person3d.ts';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import { ACTION_MS } from '../villager3d/poses.ts';
@@ -134,6 +134,9 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
     frameView();
   });
   const { renderer, noDraw } = stage;
+  // a lost context (iOS taking the GPU's memory back under pressure): logged both ways (gl.lost), three restores what it
+  // can and the board is drawn again once it's back (Board3D falls back to the 2D map if it never comes)
+  const unwatchGL = watchContext(canvas, 'sugoroku', redraw);
 
   // ---- the people ----
   const pawnBody = new CapsuleGeometry(5, 9, 4, 10).translate(0, 9.5, 0), pawnHead = new SphereGeometry(5.5, 14, 10).translate(0, 22, 0);
@@ -389,6 +392,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
       roll?.done();
       roll = null;
       gone = true;
+      unwatchGL();
       if (hooked) delete (window as { __sugoroku3d?: unknown }).__sugoroku3d;
       // (the models' shared resources released off this renderer too, then each model let go of: villager3d's cache)
       stage.dispose([scene], [pawnBody, pawnHead, skin, ...pawnMats.values()]);

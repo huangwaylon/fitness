@@ -4,7 +4,8 @@
   // are what the overlays cover, the camera framing the part between; `fork` a fork's choice), the players as their own characters (store/look.ts
   // lookOf, their villager pref). It follows the game: a stone of `shown` reached → a hop to it; whose `turn` → the
   // camera to them; `roll` (a new key) → the die tumbling onto its face; `cheer` (a new key) → their joy. No WebGL
-  // (refused twice): `fallback` (the 2D board) in its place.
+  // (refused twice), or a context lost and not back in LOST_MS: `fallback` (the 2D board) in its place, logged once
+  // (gl.lost, where sugoroku: the engine logs a loss and its restore itself).
   import { onMount, untrack, type Snippet } from 'svelte';
   import type { Player } from '../game.ts';
   import type { Board } from '../board.ts';
@@ -12,6 +13,7 @@
   import { madeGL } from '#lib/components/rooms/madeGL.ts';
   import { lookOf } from '#lib/store/look.ts';
   import { week } from '#lib/store/week.svelte.ts';
+  import { log } from '#lib/sync/log.ts';
 
   interface Props {
     /** The game's board (a new one: the engine made again, its {#key}). */
@@ -33,6 +35,17 @@
   let board: Board3D | null = $state.raw(null);
   let failed = $state(false);
   let alive = true;
+  /** A lost context's wait for its restore before the 2D board (ms). */
+  const LOST_MS = 3000;
+  let lostT: ReturnType<typeof setTimeout> | undefined;
+  /** To the 2D board, the 3D one let go of (its GPU memory back). */
+  function fallBack(why: 'refused' | 'lost') {
+    if (failed) return;
+    failed = true;
+    if (why === 'refused') log('gl.lost', { where: 'sugoroku', restored: false }, 2);
+    board?.dispose();
+    board = null;
+  }
   const villagerOf = (w: Player['who']) => (w === 'G' ? week.view?.guest?.villager : week.view?.people[w].villager) ?? null;
 
   onMount(() => {
@@ -49,12 +62,19 @@
         untrack(() => shown.forEach((s, k) => b.place(k, s)));
         b.focus(untrack(() => turn));
       })
-      .catch(() => (failed = true));
+      .catch(() => fallBack('refused'));
+    const onLost = () => (clearTimeout(lostT), (lostT = setTimeout(() => fallBack('lost'), LOST_MS)));
+    const onBack = () => clearTimeout(lostT);
+    el.addEventListener('webglcontextlost', onLost);
+    el.addEventListener('webglcontextrestored', onBack);
     // (the window's size: a phase never resizes the canvas, only its insets)
     const ro = new ResizeObserver(() => board?.resize());
     ro.observe(el);
     return () => {
       alive = false;
+      clearTimeout(lostT);
+      el.removeEventListener('webglcontextlost', onLost);
+      el.removeEventListener('webglcontextrestored', onBack);
       ro.disconnect();
       board?.dispose();
       board = null;
