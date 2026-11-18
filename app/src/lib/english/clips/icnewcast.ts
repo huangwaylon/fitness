@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 7, new 11, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 7, new 11, ctx 4, tx 8, qa 5
 // A2 REVIEW 2026-11-17: keep 3, rewrite 17, retire 3, new 0
 // OPEN: the title field (and this header) keep YouTube's "⭐️"; its U+FE0F variation selector isn't in the trimmed font
 //   subset (font.py flags it). Keep it as on YouTube, or drop the "️"?
@@ -91,8 +91,8 @@ export const icNewCast: Clip = {
       use: 'Not everyone has to agree.（全員が賛成しなくてもいい）' },
 
     { id: 'd2', skill: 'attitude', level: 'B2', point: 'strange', ctx: true, seg: [81.2, 90],
-      stem: 'How does it feel to be back on set?',
-      ja: '撮影現場に戻って、どんな気分？',
+      stem: 'How does the first cast member say it feels?',
+      ja: '最初に答える出演者は、現場に戻ってどんな気分だと言う？',
       choices: ['Odd and surprising', 'Tiring and hard', 'Boring and slow'], a: 0,
       choicesJa: ['不思議で、意外', '疲れて大変', '退屈でのろい'],
       cue: '質問へのすぐの答え',
@@ -200,23 +200,23 @@ export const icNewCast: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'twenties', seg: [168.5, 173.4],
       stem: 'How old are the characters now?',
       ja: '登場人物たちは今、何歳くらい？',
-      choices: ['In their teens', 'In their twenties', 'In their thirties'], a: 1,
-      choicesJa: ['10代', '20代', '30代'],
+      choices: ['In their teens', 'In their twenties', 'In their thirties', 'Just turned twenty'], a: 1,
+      choicesJa: ['10代', '20代', '30代', '20歳になったばかり'],
       cue: '「now that they’re in their」のあと',
       line: 'see what these characters are doing now that *they’re in their twenties*.',
       said: '「20代になった登場人物たちが今どうしているか見られる」と言う。',
       mean: 'in their twenties ＝ 20代。twenty の複数形で「20〜29歳」。thirties なら30代。',
-      trap: 'twenties と thirties は似て聞こえる。「トゥエン」なら20代、「サー」なら30代。',
+      trap: '「トゥエン」なら20代、「サー」なら30代。最後に「ズ」がなければ twenty（20歳）。',
       use: 'My parents are in their sixties.（両親は60代です）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'blanket', seg: [184.2, 196.2],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'blanket', seg: [183.5, 196.2],
       stem: 'What will the new show feel like?',
       ja: '新しい番組はどんな感じになる？',
       choices: ['Cozy, with some changes', 'Exactly the same as before', 'Dark and very different'], a: 0,
       choicesJa: ['居心地がよくて、少し変化もある', '前とまったく同じ', '暗くて、まったく違う'],
       cue: '「blanket」のあとの「but」',
       line: 'very *comfortable* and like putting on a *fuzzy blanket*, but in a way that *shakes things up a little bit*',
-      said: '「ふわふわの毛布をかけたように心地いい。でも少し変化もある」と言う。',
+      said: '「ふわふわの毛布をかぶるように心地いい。でも少し新しい風も吹きこむ」と言う。',
       mean: 'fuzzy blanket ＝ ふわふわの毛布。なじみの心地よさのたとえ。shake things up ＝ 変化を起こす。',
       trap: 'comfortable だけ聞くと「前と同じ」と思いやすい。but のあとの a little bit（少し）が程度。',
       use: 'This room is so comfortable.（この部屋はすごく居心地がいい）' },
@@ -238,7 +238,7 @@ export const icNewCast: Clip = {
       choicesJa: ['うん、恥ずかしがって当然', '恥ずかしがらなくていい', '彼と話しに行きなよ'],
       cue: '「embarrassed」への返事',
       line: 'I’m just too *embarrassed* about my life. / *You should be*. Your legs look like Eugene Levy’s eyebrows.',
-      said: '「自分の人生が恥ずかしすぎる」に「そうだろうね」と返し、脚の毛をからかう。',
+      said: '「人生が恥ずかしすぎる」に「そうだろうね」と返し、脚の毛をからかう。',
       mean: 'You should be ＝ You should be embarrassed の略。くり返さずに「当然だよ」と返す、きついからかい。',
       trap: 'should（〜すべき）から励ましと考えがち。前の embarrassed を足すと「恥ずかしがって当然」。',
       use: 'I’m tired. — You should be! You worked all day.（疲れた。—当然だよ！一日働いたもん）' },
@@ -254,7 +254,7 @@ export const icNewCast: Clip = {
       trap: '聞き手を茶化したと取りやすいが、冗談の向かう先は family（共演者）。',
       use: 'Do I like pizza? It’s a nuanced position.（ピザ好きかって？複雑な立場でね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nuanced', seg: [211.3, 223.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'nuanced', seg: [211.3, 226.2],
       stem: 'Does Miranda really want space from the cast?',
       ja: 'ミランダは本当に出演者と距離を置きたい？',
       choices: ['No, she is joking', 'Yes, she is tired of them', 'Yes, for a short time'], a: 0,

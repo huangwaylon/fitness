@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 7, retire 2, new 5, ctx 7, tx 6
+// R4 REVIEW 2026-11-18: keep 12, rewrite 7, retire 2, new 5, ctx 7, tx 6, qa 32
 // A2 REVIEW 2026-11-17: keep 1, rewrite 18, retire 2, new 2
 // “Practice Date | Parks and Recreation” (the official Parks and Recreation channel, Season 2): before a first date with
 // Dave, Leslie spirals through “what ifs” that turn out to be real stories; Ann stages a practice date as Dave, then
@@ -6,7 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16; its times are rounded, so EXCLUDEs are caption times).
 // Not tested (may play): 25–30 s (“Darfur”/“therefore”), 94–102 s (mumbled), 112–118 s and 138–148 s (shown, not said),
 // 150–156 s (the Danish word), 223–228 s (“Whiz Palace”).
-// EXCLUDE 175.8–181
+// EXCLUDE 175.65–181
 // EXCLUDE 183.5–186.5
 // EXCLUDE 255.5–260.5
 // EXCLUDE 282.5–287
@@ -32,7 +32,7 @@ export const practiceDate: Clip = {
       trap: 'out から「出かけるときに着る」と思いやすい。of the store まで聞く。',
       use: 'Can I wear it out of the store?（着たまま帰っていいですか）' },
 
-    { id: 'f1', skill: 'pragma', level: 'B2', point: 'shoot', ctx: true, seg: [8.1, 15.1],
+    { id: 'f1', skill: 'pragma', level: 'B2', point: 'shoot', ctx: true, seg: [8.7, 15.75],
       stem: 'Ann answers, “Shoot.” What does she mean?',
       ja: 'アンの返事「Shoot.」はどういう意味？',
       choices: ['Sure, go ahead and ask', 'Oh no, not right now', 'Hold on, let me think'], a: 0,
@@ -67,7 +67,7 @@ export const practiceDate: Clip = {
       trap: '「ハヴン・ビン」だけなら haven’t been、「ハヴ・ネヴァ」なら have never、「ハッド・ネヴァ」なら had never。',
       use: 'I haven’t been to Hawaii yet.（ハワイにはまだ行ったことがない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'whoa', ctx: true, seg: [19.9, 28.4],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'whoa', ctx: true, seg: [21.05, 28.05],
       stem: 'Ann says, “Whoa.” What does she mean?',
       ja: 'アンの「Whoa.」はどういう意味？',
       choices: ['Stop, that’s too much', 'Wow, what a great idea', 'Really? You have kids?'], a: 0,
@@ -79,7 +79,7 @@ export const practiceDate: Clip = {
       trap: 'Whoa は「すごい」にも使うが、とんでもない案のすぐあとなら「ストップ」。',
       use: 'Whoa, slow down. Start again.（ちょっと待って、最初から）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'relax', seg: [29.9, 42.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'relax', seg: [30.25, 41.6],
       stem: 'After Ann says “relax,” how does Leslie feel?',
       ja: 'アンに「relax」と言われたあと、レスリーはどんな気持ち？',
       choices: ['Still very worried', 'Calm and happy', 'Angry at Ann'], a: 0,
@@ -114,7 +114,7 @@ export const practiceDate: Clip = {
       trap: 'ふつうは最後の内容語が強い。相手の言葉の一部だけ変えて言い返すときは、変えた語が強くなる。',
       use: 'I did call you! Twice!（電話したってば！2回も）', retired: true },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'happened', ctx: true, seg: [46.8, 58.8],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'happened', ctx: true, seg: [47.0, 58.45],
       stem: 'What does Leslie say about her “what ifs”?',
       ja: '自分の「もし〜なら」の心配について、レスリーは何と言う？',
       choices: ['They have happened to her', 'They will never happen', 'They might happen tonight'], a: 0,
@@ -126,7 +126,7 @@ export const practiceDate: Clip = {
       trap: 'won’t happen はアンの言葉。レスリーの答えは have happened to me。',
       use: 'Believe me, it’s happened before.（信じて、前にもあったんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', seg: [56, 95.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['vinegar'], seg: [56.3, 94.85],
       stem: 'What does Leslie finally admit to Ann?',
       ja: 'レスリーが最後にアンに打ち明けることは？',
       choices: ['She’s bad at first dates', 'She drinks too much wine', 'She hates boring movies'], a: 0,
@@ -138,7 +138,7 @@ export const practiceDate: Clip = {
       trap: 'wine や movie は失敗話に出てくる語。打ち明けるのは最後の but のあと。',
       use: 'I’m just not good at small talk.（雑談がどうも苦手で）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'vinegar', reveals: ['happened'], seg: [56.8, 66.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'vinegar', reveals: ['happened'], seg: [56.8, 66.6],
       stem: 'Why did Leslie once drink a bottle of vinegar?',
       ja: 'レスリーはなぜ酢を一本飲んだことがある？',
       choices: ['She thought it was bad wine', 'She thought it was apple juice', 'She thought it was water'], a: 0,
@@ -150,19 +150,19 @@ export const practiceDate: Clip = {
       trap: 'accidentally から、水だと思って飲んだと考えやすい。I thought のあとが答え。',
       use: 'I thought it was sugar. It was salt.（砂糖だと思ったら塩だった）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'literally', seg: [74.9, 84.8],
-      stem: 'Why does Leslie say “literally” here?',
-      ja: 'レスリーはなぜここで「literally」と言う？',
-      choices: ['To say it really happened', 'To make the story bigger', 'To say it was a dream'], a: 0,
-      choicesJa: ['本当に起きたと言うため', '話を大きくするため', '夢だったと言うため'],
-      cue: 'woke up の直前の語。',
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'literally', seg: [72.35, 84.45],
+      stem: 'After “literally”, what does Leslie say happened?',
+      ja: '「literally」のあと、レスリーは何が起きたと言う？',
+      choices: ['His hand was in her mouth', 'He was holding her hand', 'She bit his hand'], a: 0,
+      choicesJa: ['彼の手が口の中にあった', '彼が手を握っていた', '彼女が彼の手をかんだ'],
+      cue: 'literally のあと、woke up with に続く部分。',
       line: 'I *literally* woke up with his hand in my mouth.',
       said: '「目が覚めたら、本当に彼の手が口の中にあった」と話す。',
-      mean: 'literally ＝ 文字どおり、本当に。ここは大げさでなく、本当にそうだったと強める。',
-      trap: 'literally は大げさな話にも使う。ここは直前に本当の失敗話をしている。',
+      mean: 'literally ＝ 文字どおり、本当に。うそみたいな話が「本当にそうだった」と強める合図。',
+      trap: 'hand（手）から、手を握る話と考えがち。in my mouth（口の中）まで聞く。',
       use: 'It literally took five minutes.（本当に5分しかかからなかった）' },
 
-    { id: 'c4', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['scene'], seg: [84.3, 93.8],
+    { id: 'c4', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['scene'], seg: [84.45, 93.75],
       stem: 'Why does Leslie say, “I know it sounds crazy”?',
       ja: 'レスリーはなぜ「I know it sounds crazy」と言う？',
       choices: ['To admit it’s strange', 'To say Ann is crazy', 'To ask for a doctor'], a: 0,
@@ -186,7 +186,7 @@ export const practiceDate: Clip = {
       trap: '近くの席はレスリーの案で、アンは No と言う。pretend to be のあとが役。',
       use: 'I’ll pretend to be the customer.（私がお客さん役をやるね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'way', seg: [105.6, 111.5],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'way', seg: [105.75, 111.5],
       stem: 'What does “way” mean in “a way better idea”?',
       ja: '「a way better idea」の way はどういう意味？',
       choices: ['Much', 'A little', 'In some ways'], a: 0,
@@ -198,7 +198,7 @@ export const practiceDate: Clip = {
       trap: 'way を「方法・道」と取りやすい。better の前の way は「ずっと」。',
       use: 'This one’s way cheaper.（こっちのほうがずっと安い）' },
 
-    { id: 'c5', skill: 'detail', level: 'B1', point: 'cards', reveals: ['blank'], ctx: true, seg: [122.5, 130.5],
+    { id: 'c5', skill: 'detail', level: 'B1', point: 'cards', reveals: ['blank'], ctx: true, seg: [122.5, 131.6],
       stem: 'What does Leslie say is on her note cards?',
       ja: 'レスリーは、メモカードに何が書いてあると言う？',
       choices: ['Topics to talk about', 'Questions from Ann', 'Dave’s phone number'], a: 0,
@@ -222,11 +222,11 @@ export const practiceDate: Clip = {
       trap: 'shape からカタカナの「シェイプ（体型）」を思いやすい。ここはデートの準備のこと。',
       use: 'My old car is in bad shape.（古い車はかなりガタがきてる）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'thorough', seg: [154.9, 166.5],
+    { id: 'a1', skill: 'attitude', level: 'C1', point: 'thorough', seg: [154.97, 166.2],
       stem: 'How does Ann feel about the teeter-totter history?',
       ja: 'シーソーの歴史の話を、アンはどう思っている？',
-      choices: ['Bored, wants a change', 'Happy to hear more', 'Impressed by it'], a: 0,
-      choicesJa: ['退屈で、話を変えたい', 'もっと聞きたい', '感心している'],
+      choices: ['Bored by it', 'Interested in it', 'Impressed by it'], a: 0,
+      choicesJa: ['退屈している', '興味がある', '感心している'],
       cue: 'Wow のあとの感想と、次の一言。',
       line: '*Wow. That’s a thorough history* of the teeter-totter. … *Just ask me a question.*',
       said: '「シーソーの詳しい歴史ね」と言い、「とにかく質問して」と促す。',
@@ -234,7 +234,7 @@ export const practiceDate: Clip = {
       trap: 'Wow や thorough はほめ言葉に聞こえやすい。決め手は Just ask me a question。',
       use: 'Wow, that’s very detailed. Anyway…（へえ、詳しいね。それはそうと…）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'blank', seg: [166, 175.5],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'blank', seg: [166.2, 175.6],
       stem: 'Leslie says, “My mind is blank.” What does she mean?',
       ja: 'レスリーの「My mind is blank.」はどういう意味？',
       choices: ['She can’t think of anything', 'She is very tired', 'She forgot Dave’s name'], a: 0,
@@ -257,7 +257,7 @@ export const practiceDate: Clip = {
       trap: 'せりふの口調だけで本気と取りやすい。この形式では、カメラへの一言が答え合わせになる。',
       use: 'Let’s role-play the worst case.（最悪のケースを演じてみよう）', retired: true },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'tank', seg: [190, 197.2],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'tank', seg: [188.2, 197.2],
       stem: 'Why does Ann talk about snakes?',
       ja: 'アンはなぜヘビの話をする？',
       choices: ['To explain facing a fear', 'To explain where fears start', 'To explain avoiding a fear'], a: 0,
@@ -269,7 +269,7 @@ export const practiceDate: Clip = {
       trap: 'phobias（恐怖症）から原因の話と思いやすいが、ヘビの中に入れる＝向き合う。',
       use: 'I’m afraid of snakes.（ヘビが怖いんです）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [199.9, 204.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [201.6, 204.85], keep: true,
       stem: 'How late does “Dave” say Leslie is?',
       ja: '「デイブ」はレスリーが何分遅れたと言う？',
       choices: ['12 minutes', '20 minutes', '30 minutes', '40 minutes'], a: 1,
@@ -281,7 +281,7 @@ export const practiceDate: Clip = {
       trap: 'twelve なら「トゥエルヴ」と l が入る。thirty は「サー」、forty は「フォー」で始まる。',
       use: 'Sorry, I’m twenty minutes late.（ごめん、20分遅れた）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'niece', ctx: true, seg: [208.4, 218.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'niece', ctx: true, seg: [208.55, 218.75],
       stem: 'What is true about Leslie’s niece?',
       ja: 'レスリーの姪について、本当のことは？',
       choices: ['Leslie made her up', 'Leslie forgot her name', 'Her name is Stephanie'], a: 0,
@@ -293,7 +293,7 @@ export const practiceDate: Clip = {
       trap: 'I don’t know だけだと「名前を忘れた」に聞こえる。決め手は I don’t have a niece。',
       use: 'Okay, I made that up.（はい、それは作り話です）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'soup', seg: [218.8, 225.0],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'soup', seg: [218.8, 224.9],
       stem: 'After the flowers fall in the soup, what does Leslie say?',
       ja: 'スープに花が入ったあと、レスリーは何と言う？',
       choices: ['I’m so sorry', 'You want some?', 'Look, there’s bread'], a: 0,
@@ -305,7 +305,7 @@ export const practiceDate: Clip = {
       trap: '残りの2つも同じ場面で聞こえるが、花が入る前の言葉。Oh, no のあとが謝り。',
       use: 'Oh no, I got coffee on your shirt. I’m so sorry.（あっ、シャツにコーヒーが。本当にごめん）' },
 
-    { id: 'c2', skill: 'phrase', level: 'B1', point: 'bathroom', ctx: true, seg: [228.1, 238.5],
+    { id: 'c2', skill: 'phrase', level: 'B1', point: 'bathroom', ctx: true, seg: [228.5, 239.6],
       stem: 'What word does “Dave” tell Leslie to use?',
       ja: '「デイブ」は、どの言葉を使えと言う？',
       choices: ['Bathroom', 'The toilet', 'Whiz Palace'], a: 0,
@@ -317,7 +317,7 @@ export const practiceDate: Clip = {
       trap: '日本語の「トイレ」から toilet を選びがち。英語で場所を言うなら bathroom。',
       use: 'Excuse me, where’s the bathroom?（すみません、トイレはどこですか）' },
 
-    { id: 'c3', skill: 'pragma', level: 'B1', point: 'cantalk', seg: [246.0, 254.8],
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'cantalk', seg: [245.72, 254.55],
       stem: 'What does “Dave” tell Tiffany on the phone?',
       ja: '「デイブ」は電話でティファニーに何と言う？',
       choices: ['He can’t talk now', 'He is coming home', 'He will call Leslie'], a: 0,
@@ -339,7 +339,7 @@ export const practiceDate: Clip = {
       trap: 'drip を「しずく」から涙と結びつけやすい。人に使う drip は「つまらない人」。',
       use: 'Don’t be such a drip.（そんなにノリ悪くしないで）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'survive', reveals: ['welldone'], seg: [263.1, 281.7],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'survive', reveals: ['welldone'], seg: [263.1, 281.35],
       stem: 'What does the bad practice date teach Leslie?',
       ja: 'ひどい練習デートで、レスリーは何を学ぶ？',
       choices: ['She can survive a bad date', 'Dave is not right for her', 'How to stop a bad date'], a: 0,
@@ -351,7 +351,7 @@ export const practiceDate: Clip = {
       trap: 'goes wrong だけだと失敗を防ぐ練習に聞こえる。even if のあとがまとめ。',
       use: 'Even if it goes wrong, you’ll be fine.（うまくいかなくても大丈夫）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'welldone', ctx: true, seg: [266.0, 274.0],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'welldone', ctx: true, seg: [265.25, 273.6],
       stem: 'Ann says, “Well done.” What does she mean?',
       ja: 'アンの「Well done.」はどういう意味？',
       choices: ['You did well', 'Try it again', 'You are late'], a: 0,
@@ -363,7 +363,7 @@ export const practiceDate: Clip = {
       trap: 'さっきまで意地悪だったので、まだ役の続きと考えがち。Well done はほめ言葉。',
       use: 'Well done! You passed the test.（よくできました！合格です）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', seg: [266.8, 272.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fun', seg: [267.0, 271.95],
       stem: 'Type what she says: “It’s ___. It’s just a date.” (4 words)', answer: 'supposed to be fun',
       ja: '「It’s ___. It’s just a date.」の4語を書こう。',
       cue: 'two people の文のあと、It’s に続く4語。',

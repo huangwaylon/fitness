@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 1, new 6, ctx 8, tx 12
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 1, new 6, ctx 8, tx 12, qa 30
 // A2 REVIEW 2026-11-17: keep 8, rewrite 7, retire 6, new 3
 // “Leslie on the Prairie | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at the old
 // prairie village, Leslie takes on the reenactor Garth in a contest to live like it's 1817, with Andy and Tom as
@@ -17,7 +17,7 @@ export const prairie: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'early', reveals: ['sleep'], seg: [11.4, 17.3],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'early', reveals: ['sleep'], seg: [11.4, 16.95],
       stem: 'Garth says “Just getting here, I see.” What does he mean?',
       ja: 'ガースの「Just getting here, I see」はどういう意味？',
       choices: ['You are late', 'You are early', 'Welcome, come in'], a: 0,
@@ -40,7 +40,7 @@ export const prairie: Clip = {
       trap: 'cable installer（ケーブル業者）も聞こえるが、それはもう済んだこと。理由は want to のあと。',
       use: 'I want to get the chores done early.（家事を早めに済ませたい）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [24.6, 33.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [24.8, 33.45], keep: true,
       stem: 'Things invented after which year are not allowed?',
       ja: '何年より後に発明された物が禁止？',
       choices: ['1807', '1817', '1870', '1917'], a: 1,
@@ -51,7 +51,7 @@ export const prairie: Clip = {
       trap: '「オー・セヴン」なら 1807、「セヴンティ」なら 1870、「ナインティーン」始まりなら 1917。',
       use: 'Nothing past nine, okay?（9時以降はなしね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'contest', seg: [24.85, 46.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'contest', seg: [24.85, 46.6],
       stem: 'How does Leslie and Garth’s contest work?',
       ja: 'レスリーとガースの勝負はどんなもの？',
       choices: ['Who can live without new things', 'Who does more old chores', 'Who the referees like best'], a: 0,
@@ -74,7 +74,7 @@ export const prairie: Clip = {
       trap: 'And でつなぐので、二人とも同じと勘違いしやすい。for free は「お金なし」。',
       use: 'I’ll help. I’ve got nothing better to do.（手伝うよ、どうせ暇だし）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'noway', seg: [37.9, 43.4],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'noway', seg: [38.05, 43.75],
       stem: 'How does Leslie feel about the contest?',
       ja: 'レスリーは勝負についてどう感じている？',
       choices: ['Sure she will win', 'Afraid she will lose', 'Bored by the whole thing'], a: 0,
@@ -96,7 +96,7 @@ export const prairie: Clip = {
       trap: 'rough は体調にも服にも使える。直前の Not allowed の対象とつなげて決める。',
       use: 'It might get a little rough.（ちょっと大変なことになるかも）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'fridge', seg: [62.4, 70.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'fridge', seg: [62.6, 68.1],
       stem: 'What did the referee do when his fridge broke?',
       ja: '冷蔵庫がこわれたとき、審判はどうした？',
       choices: ['He moved to a new home', 'He moved the fridge', 'He fixed it himself'], a: 0,
@@ -107,7 +107,7 @@ export const prairie: Clip = {
       trap: 'moved から「冷蔵庫を動かした」と思いやすい。何を動かすか言わなければ、引っ越し。',
       use: 'We just moved here last month.（先月ここに引っ越してきた）' },
 
-    { id: 'q1', skill: 'infer', level: 'B1', point: 'quit', seg: [66.8, 72.3],
+    { id: 'q1', skill: 'infer', level: 'B1', point: 'quit', seg: [68.1, 73.0],
       stem: 'What does Leslie think Garth will do?',
       ja: 'レスリーは、ガースがどうすると思っている？',
       choices: ['Never stop', 'Stop before dark', 'Ask the referees for help'], a: 0,
@@ -129,7 +129,7 @@ export const prairie: Clip = {
       trap: '最後の語を聞き逃すと、次の「バターが好物」が落ちに思える。4つ目を前の3つと比べる。',
       use: 'I put hot sauce on everything.（何にでもホットソースをかける）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'butter', ctx: true, seg: [85.0, 93.2],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'butter', ctx: true, seg: [85.0, 93.9],
       stem: 'What reply does Garth’s butter get?',
       ja: 'ガースのバターに、どんな返事が来る？',
       choices: ['It looks awful', 'It looks delicious', 'Andy can have it all'], a: 0,
@@ -141,7 +141,7 @@ export const prairie: Clip = {
       trap: 'love（気に入る）が聞こえるので「おいしそう」に聞こえるが、それはガースの言葉。返事は horrifying。',
       use: 'Nobody touch that, it’s hot.（誰も触らないで、熱いから）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'overhead', seg: [92.93, 100.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'overhead', seg: [93.9, 102.3],
       stem: 'What does “I’m in over my head” mean?',
       ja: '「I’m in over my head」はどういう意味？',
       choices: ['It’s too much for me', 'I think too much', 'I can’t stop now'], a: 0,
@@ -152,14 +152,14 @@ export const prairie: Clip = {
       trap: 'head から「考えすぎ」を思いやすい。あとの「ガースは詳しい」が手がかり。',
       use: 'I’m in over my head at this job.（この仕事は手に負えない）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'notchance', ctx: true, seg: [101.8, 109.0],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'notchance', ctx: true, seg: [102.5, 109.0],
       stem: 'What is the answer to the husband-and-wife idea?',
       ja: '「夫婦だよね」という話への返事は？',
       choices: ['A strong no', 'A quick yes', 'Maybe later'], a: 0,
       choicesJa: ['きっぱり断る', 'すぐ「いいよ」', 'またあとで'],
       cue: '「shouldn’t you」のあとの短い返事。',
       line: 'Aren’t we *husband and wife* in this scenario?… / *Not a chance.*',
-      said: '「この設定だと僕たち夫婦だよね？だから君は…」と言いかけると「ありえない」と即答。相手は「分かった」と引き下がる。',
+      said: '「この設定だと僕たち夫婦だよね？だから君は…」と言いかけると、「ありえない」と即答される。',
       mean: 'Not a chance ＝ 文字どおりは「チャンスはない」。可能性ゼロ→「ありえない、絶対いや」。強い断り。',
       trap: 'chance（チャンス）から「またの機会に」と考えがち。可能性がない、という意味。',
       use: 'Rain today? Not a chance.（今日雨？それはないよ）' },
@@ -175,18 +175,18 @@ export const prairie: Clip = {
       trap: '日本語の「機械的」は冷たい感じだが、英語のこの言い方はタフさをほめている。',
       use: 'She’s a machine at the gym.（彼女はジムで疲れ知らずだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'hour', seg: [121.3, 130.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'hour', seg: [121.3, 130.2], keep: true,
       stem: 'How long did the referee think Garth would last?',
       ja: 'ガースはどのくらいもつと審判は思っていた？',
-      choices: ['Half an hour', 'An hour', 'Four hours'], a: 1,
-      choicesJa: ['30分', '1時間', '4時間'],
+      choices: ['Half an hour', 'An hour', 'Two hours', 'Four hours'], a: 1,
+      choicesJa: ['30分', '1時間', '2時間', '4時間'],
       cue: '「gonna last」のあと。', line: 'I thought he was gonna last *an hour, max*.',
       said: '「せいぜい1時間でやめると思ってた」と言う。',
       mean: 'max ＝ せいぜい、最大でも。それより長くはもたないという予想。',
-      trap: 'an hour は「アナウア」とつながる。half（ハーフ）も four（フォー）も聞こえない。',
+      trap: 'an hour は「アナウア」とつながる。half（ハーフ）も two（トゥー）も four（フォー）も聞こえない。',
       use: 'It’ll take ten minutes, max.（せいぜい10分で終わる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'livelike', seg: [136.6, 148.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'livelike', seg: [136.6, 146.4],
       stem: 'What does Leslie think of life on the prairie?',
       ja: 'レスリーは草原の暮らしをどう思っている？',
       choices: ['Fun to visit, not to live', 'More fun the longer you stay', 'Only fun for kids'], a: 0,
@@ -197,7 +197,7 @@ export const prairie: Clip = {
       trap: 'school や so fun が残ると「子どもなら楽しい」と思いやすい。But のあとを聞く。',
       use: 'Fun to visit, but I couldn’t live there.（行くのは楽しいけど住めない）' },
 
-    { id: 'c3', skill: 'infer', level: 'B1', point: 'cheat', seg: [146.0, 153.6],
+    { id: 'c3', skill: 'infer', level: 'B1', point: 'cheat', seg: [146.0, 153.55],
       stem: 'Why do they want to check Garth’s phone?',
       ja: 'なぜガースの携帯を調べたい？',
       choices: ['They think he broke the rules', 'They want to check the time', 'They need to call Ben'], a: 0,
@@ -219,18 +219,18 @@ export const prairie: Clip = {
       trap: '最後の Facebook だけ残ると、控えめな案に聞こえる。just のあとは数を数える。',
       use: 'Let’s just have one drink.（1杯だけにしよう）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'days', seg: [168, 176.5], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'days', seg: [168, 176.1], keep: true,
       stem: 'How long has it been since Garth got an email?',
       ja: 'ガースに最後にメールが来てから、どのくらい？',
-      choices: ['2 days', '12 days', '20 days'], a: 1,
-      choicesJa: ['2日', '12日', '20日'],
+      choices: ['2 days', '12 days', '20 days', '12 weeks'], a: 1,
+      choicesJa: ['2日', '12日', '20日', '12週間'],
       cue: 'email in のあと。', line: 'He hasn’t gotten an email in… *12 days*?',
       said: '「12日もメールが来てないの？」と驚く。',
       mean: '今の人には信じられない長さ。だから次に「幽霊？」と言う。',
-      trap: 'two は「トゥー」だけ。twelve は「トゥエルヴ」、twenty は「トゥエンティ」。最後の音を聞く。',
+      trap: 'two は「トゥー」だけ。twelve は「トゥエルヴ」、twenty は「トゥエンティ」。そのあと days まで聞く。',
       use: 'I haven’t had coffee in three days.（3日コーヒーを飲んでない）' },
 
-    { id: 'nt3', skill: 'detail', level: 'B1', point: 'mule', ctx: true, seg: [179.0, 186.0],
+    { id: 'nt3', skill: 'detail', level: 'B1', point: 'mule', ctx: true, seg: [179.6, 186.0],
       stem: 'Who does the reply say is Garth’s friend?',
       ja: '返事では、ガースの友だちはだれ？',
       choices: ['A farm animal', 'Leslie Knope', 'Tom Haverford'], a: 0,
@@ -242,7 +242,7 @@ export const prairie: Clip = {
       trap: '「知らない」と訳すと話がつながらない。反対の中身は that mule。',
       use: 'I don’t know. It seems pretty good to me.（どうかな。私はけっこういいと思うけど）' },
 
-    { id: 'c4', skill: 'phrase', level: 'B1', point: 'wantknow', seg: [188.4, 194.4],
+    { id: 'c4', skill: 'phrase', level: 'B1', point: 'wantknow', seg: [188.4, 194.6],
       stem: 'What does Garth mean by “You do not want to know”?',
       ja: 'ガースの「You do not want to know」はどういう意味？',
       choices: ['Better not to ask', 'He doesn’t know either', 'It is a secret gift'], a: 0,
@@ -264,7 +264,7 @@ export const prairie: Clip = {
       trap: 'Violation! で順番が逆に思え、I mean は照れにも聞こえる。言い直す先を聞く。',
       use: 'You look great. I mean, you look ready.（すてき。いや、準備万端だね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'cant', seg: [198.8, 206.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'cant', seg: [198.25, 206.2],
       stem: 'Type what Leslie says: “I admit. ___. You win.” (5 words)', answer: "i can't take it anymore",
       ja: '「I admit. ___. You win.」の空所を書こう（5語）',
       cue: '「I admit」と「You win」のあいだ。', line: 'I admit. *I can’t take it anymore*. You win.',
@@ -273,7 +273,7 @@ export const prairie: Clip = {
       trap: 'can’t の t は消え、take と it がつながる。小さな it を落とさずに書く。',
       use: 'I can’t take it anymore. I quit.（もう我慢できない。やめる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'huzzah', seg: [206.4, 213.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'huzzah', seg: [206.4, 212.95],
       stem: 'Fill the gap: “I’m ___ saying huzzah.”',
       ja: '「I’m ___ saying huzzah.」の空所は？',
       choices: ['gonna miss', 'not gonna miss', 'gonna keep'], a: 0,
@@ -284,7 +284,7 @@ export const prairie: Clip = {
       trap: '「ナッ」がなければ not はない。miss（ミス）と keep（キープ）は母音で分かる。',
       use: 'I’m gonna miss this place.（ここがなくなるとさびしいな）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'date', ctx: true, seg: [210.2, 218.9],
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'date', ctx: true, seg: [210.35, 218.9],
       stem: 'What does Garth think Leslie is asking him?',
       ja: 'ガースは、レスリーに何を頼まれていると思う？',
       choices: ['To go on a date', 'To marry her', 'To play again'], a: 0,
@@ -296,7 +296,7 @@ export const prairie: Clip = {
       trap: 'proposition（提案）が「プロポーズ」に聞こえやすい。Yes のあとの date を聞く。',
       use: 'Do you want to go on a date?（デートに行かない？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'clowns', ctx: true, seg: [218.3, 230.9],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'clowns', ctx: true, seg: [218.3, 230.55],
       stem: 'Why does Garth say no at first?',
       ja: 'ガースはなぜ最初は断る？',
       choices: ['They never answered him', 'They have too many parties', 'They don’t know history'], a: 0,
@@ -308,7 +308,7 @@ export const prairie: Clip = {
       trap: 'clowns から「歴史を知らない人たち」と考えがち。理由は haven’t answered のあと。',
       use: 'They haven’t answered a single email.（メール一通にも返事がない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'trial', seg: [218.7, 260.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'trial', reveals: ['soap'], seg: [218.7, 261.0],
       stem: 'What does Garth say to Leslie’s offer in the end?',
       ja: '最後に、ガースはレスリーの誘いに何と答える？',
       choices: ['Yes, to try it for now', 'Yes, but after May', 'No, he is too busy'], a: 0,
@@ -319,7 +319,7 @@ export const prairie: Clip = {
       trap: '石けん作りや May（5月）の話で断りに聞こえやすいが、それは前置き。最後の Yes が答え。',
       use: 'Let’s try it on a trial basis.（お試しでやってみよう）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'useyou', seg: [225.66, 233.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'useyou', seg: [230.45, 233.45],
       stem: 'What does “we could really use you” mean?',
       ja: '「we could really use you」はどういう意味？',
       choices: ['We really need your help', 'We want to use your things', 'We want to pay you'], a: 0,
@@ -341,7 +341,7 @@ export const prairie: Clip = {
       trap: 'problem を本当の注意と取りやすい。欠点の中身が、前の場面の彼にとって何かを考える。',
       use: 'The downside is free pizza every Friday.（難点は毎週金曜のピザ）' },
 
-    { id: 'c5', skill: 'detail', level: 'B2', point: 'soap', ctx: true, seg: [244.0, 250.6],
+    { id: 'c5', skill: 'detail', level: 'B2', point: 'soap', ctx: true, seg: [244.6, 250.6],
       stem: 'What worries Garth about joining?',
       ja: '入ることについて、ガースは何を心配している？',
       choices: ['It would take too much time', 'He doesn’t like parties', 'He wants to be paid'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 0, new 4, ctx 4, tx 18
+// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 0, new 4, ctx 4, tx 18, qa 24
 // A2 REVIEW 2026-11-17: keep 10, rewrite 7, retire 6, new 1
 // “Greg Pikitis | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Leslie is sure a teen,
 // Greg Pikitis, vandalized her office on Halloween; the officer doubts it, Andy's questioning flops, and Greg picks her
@@ -27,15 +27,15 @@ export const pikitis: Clip = {
       use: 'I’ll be back in a couple of hours.（2、3時間で戻ります）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['sure'], seg: [19.2, 25.2],
-      stem: 'Why does the officer say “I mean” here?',
-      ja: '警官は、なぜここで「I mean」と言う？',
-      choices: ['To give his conclusion', 'To show he is unsure', 'To ask Leslie a question'], a: 0,
-      choicesJa: ['結論を言うため', '自信がないと示すため', 'レスリーに質問するため'],
-      cue: '時間を言った直後の2語。',
+      stem: 'After “I mean”, what does the officer say?',
+      ja: '「I mean」のあと、警官は何と言う？',
+      choices: ['Someone else did it', 'They lost the kid', 'He needs more time'], a: 0,
+      choicesJa: ['犯人は別の誰か', 'その子を見失った', 'もっと時間がほしい'],
+      cue: '時間を言った直後、I mean に続く文。',
       line: '*I mean*, it must have been somebody else.',
       said: '「つまり、ほかの誰かのはずだ」と言う。',
-      mean: 'I mean ＝ つまり。つけていた事実から、「犯人は別」と結論を続ける合図。',
-      trap: 'I mean は「えっと」にも使うが、ここは前の事実を結論につなぐ。次の文を聞く。',
+      mean: 'I mean ＝ つまり。つけていた事実から「犯人は別」と結論を続ける合図。must have been ＝ 〜だったに違いない。',
+      trap: 'tailing（つける）を聞き逃すと、見失った話と勘違いしやすい。somebody else ＝ ほかの誰か。',
       use: 'I mean, it’s only ten minutes away.（つまり、ほんの10分の距離だよ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'sure', seg: [19.2, 61.9],
@@ -50,7 +50,7 @@ export const pikitis: Clip = {
       trap: '警官の Okay は賛成ではなく、ただの相づち。誰が否定するかを聞く。',
       use: 'I don’t think he did it.（彼がやったとは思わない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pit', seg: [29, 38.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pit', reveals: ['plum'], seg: [29, 38.3],
       stem: 'What does Leslie say her evidence is?',
       ja: 'レスリーは、証拠は何だと言う？',
       choices: ['A peach pit', 'A plum pit', 'A playing card'], a: 0,
@@ -73,7 +73,7 @@ export const pikitis: Clip = {
       trap: 'card から名刺を思い浮かべやすいが比喩。his が続くので、ほかの人に罪を着せる話でもない。',
       use: 'Being late is kind of his calling card.（遅刻は彼のトレードマークみたいなもの）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'lab', reveals: ['pit'], ctx: true, seg: [40, 48.1],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'lab', reveals: ['pit'], ctx: true, seg: [40.6, 48.1],
       stem: 'What does the officer say about a lab?',
       ja: '警官は、鑑識の部屋について何と言う？',
       choices: ['They don’t have one', 'It is closed today', 'It is too far away'], a: 0,
@@ -120,7 +120,7 @@ export const pikitis: Clip = {
       trap: '短い否定は日本語の感覚だと「引き下がった」に聞こえやすい。謝る言葉がない点に注目。',
       use: 'Nobody said it would be easy.（簡単だなんて誰も言ってない）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', reveals: ['run'], seg: [69.5, 79.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', reveals: ['run'], seg: [69.6, 79.5],
       stem: 'Fill the gap: “___ take a run at him, boss?”',
       ja: '空所を埋める：「___ take a run at him, boss?」',
       choices: ['Why don’t you let me', 'Why don’t you and me', 'Why won’t you let me'], a: 0,
@@ -128,7 +128,7 @@ export const pikitis: Clip = {
       cue: '文の最初、Why のあと。',
       line: '*Why don’t you let me* take a run at him, boss?',
       said: '「僕にやらせてよ、ボス」と申し出る。',
-      mean: 'Why don’t you let me ～? ＝ 私に〜させて。don’t you は「ドンチュ」。',
+      mean: 'Why don’t you let me 〜? ＝ 私に〜させて。don’t you は「ドンチュ」。',
       trap: 'won’t は口が丸い「ウォウン」。let me の l が弱く、and me と迷いやすい。',
       use: 'Why don’t you let me carry that?（それ、持ちましょうか）' },
 
@@ -142,7 +142,7 @@ export const pikitis: Clip = {
       trap: 'run を「走る」と取ると追う話、take a walk と混ぜると散歩に。at＋人は「挑む」。',
       use: 'Let me take a run at this problem.（この問題、私がやってみる）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'neverseen', reveals: ['whydont'], ctx: true, seg: [72.0, 84.1],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'neverseen', reveals: ['whydont'], ctx: true, seg: [71.6, 83.9],
       stem: 'Why does Leslie say yes to Andy?',
       ja: 'レスリーは、なぜアンディに「いいよ」と言う？',
       choices: ['Greg has never seen him', 'Andy is a real cop', 'Andy knows Greg well'], a: 0,
@@ -189,7 +189,7 @@ export const pikitis: Clip = {
       trap: 'with（一緒に）から、誰かと一緒に来たと勘違いしやすい。I’m with＋組織 ＝ そこの人。',
       use: 'Hi, I’m with the hotel.（こんにちは、ホテルの者です）' },
 
-    { id: 'c4', skill: 'phrase', level: 'B1', point: 'dumbest', seg: [110.6, 116.6],
+    { id: 'c4', skill: 'phrase', level: 'B1', point: 'dumbest', seg: [111.0, 116.6],
       stem: '“The dumbest thing I’ve ever heard.” What does Greg mean?',
       ja: '「The dumbest thing I’ve ever heard」で、グレッグは何を言いたい？',
       choices: ['Andy’s words are very stupid', 'He can’t hear Andy well', 'Andy’s story is very sad'], a: 0,
@@ -209,20 +209,20 @@ export const pikitis: Clip = {
       cue: '「not crying」のあとの一文。',
       line: 'Are you crying? — I’m not crying, okay? *I’m allergic to jerks.*',
       said: '「泣いてない。嫌なやつアレルギーなんだ」と言う。',
-      mean: 'allergic to ～ ＝ 〜のアレルギー。jerk ＝ 嫌なやつ。泣いたのをごまかす。',
+      mean: 'allergic to 〜 ＝ 〜のアレルギー。jerk ＝ 嫌なやつ。泣いたのをごまかす。',
       trap: '少し前にコーヒーの話が出るので選びやすい。allergic to のすぐあとを聞く。',
       use: 'I’m allergic to eggs.（卵アレルギーなんです）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'sulk', reveals: ['allergic'], ctx: true, seg: [123.1, 131.1],
-      stem: 'How does Andy feel when Leslie sends him out?',
-      ja: 'レスリーに外されて、アンディはどう感じる？',
-      choices: ['Upset, but hiding it', 'Glad to go out', 'Really fine with it'], a: 0,
-      choicesJa: ['傷ついたのを隠している', '出られてうれしい', '本当に平気'],
+      stem: 'How does Andy really feel when Leslie sends him out?',
+      ja: 'レスリーに外されて、アンディは本当はどう感じている？',
+      choices: ['Hurt', 'Relieved', 'Calm'], a: 0,
+      choicesJa: ['傷ついている', 'ほっとしている', '落ち着いている'],
       cue: '「Andy out」への返事。',
       line: 'Leslie: Okay, Andy out. / Andy: *Fine, I don’t even care.* It’s stupid.',
       said: '「アンディは退場」と言われ、「いいよ、別にどうでもいいし。ばかばかしい」と言う。',
-      mean: 'I don’t even care ＝ 全然気にしてない。強がりで、本当はすねている。',
-      trap: 'Fine や don’t care を文字どおり取りやすい。直前に泣いていたことを思い出す。',
+      mean: 'I don’t even care ＝ 全然気にしてない。言葉は平気そうだが強がりで、本当は傷ついてすねている。',
+      trap: 'Fine や don’t care を文字どおり取ると「落ち着いている」に。直前に泣いていたことを思い出す。',
       use: 'Fine, whatever.（はいはい、もういいよ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'gloves', seg: [129.9, 135.6],
@@ -237,7 +237,7 @@ export const pikitis: Clip = {
       trap: '手袋の話に聞こえるが、レスリーは手袋をしていない。対決の前の決まり文句。',
       use: 'Okay, no more Mr. Nice Guy.（よし、もう優しくしないぞ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'school', reveals: ['were', 'pit'], seg: [138.2, 143.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'school', reveals: ['were', 'pit'], seg: [138.6, 143.1],
       stem: 'Where does Leslie say she saw Greg eating?',
       ja: 'レスリーはどこでグレッグが食べているのを見た？',
       choices: ['At his school', 'At her office', 'In the parking lot'], a: 0,
@@ -249,7 +249,7 @@ export const pikitis: Clip = {
       trap: 'あとで office や parking lot も出る。visit you のすぐあとを聞く。',
       use: 'I came to visit you at work.（職場に会いに来たよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'were', reveals: ['pit', 'school'], seg: [138.2, 143.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'were', reveals: ['pit', 'school'], seg: [138.6, 143.1],
       stem: 'Fill the gap: “… ___ a peach.”',
       ja: '空所を埋める：「… ___ a peach.」',
       choices: ['you were eating', 'you’re eating', 'you weren’t eating'], a: 0,
@@ -261,7 +261,7 @@ export const pikitis: Clip = {
       trap: '小さい were は you’re に聞こえやすい。came が過去なら続きも過去。weren’t なら「ン」が入る。',
       use: 'You were sleeping when I called.（電話したとき寝てたでしょ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'holes', reveals: ['nailed', 'alibi', 'plum'], seg: [146.0, 186.9],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'holes', reveals: ['nailed', 'alibi', 'plum', 'followed'], seg: [146.6, 186.7],
       stem: 'How does Leslie’s questioning of Greg go?',
       ja: 'レスリーのグレッグへの取り調べはどうなる？',
       choices: ['Greg shows her case is weak', 'Greg says that he did it', 'Greg blames his friend'], a: 0,
@@ -284,19 +284,19 @@ export const pikitis: Clip = {
       trap: 'nailed me を文字通り「捕まった」と取りやすい。ほめ言葉のあとに反対の事実が来たら皮肉。',
       use: 'Wow, great plan. Really.（へえ、すごい計画だね。ほんとに）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'plum', reveals: ['pit'], seg: [158.3, 165.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'plum', reveals: ['pit'], seg: [159.6, 165.8],
       stem: 'What does Greg say he was really eating?',
       ja: 'グレッグは本当は何を食べていたと言う？',
       choices: ['A plum', 'A peach', 'A pear'], a: 0,
       choicesJa: ['プラム', '桃', '洋なし'],
       cue: '「actually eating」のあと。',
       line: 'Never mind that I was actually eating *a plum* when you saw me earlier.',
-      said: '「そもそも、あのとき食べていたのはプラムだった」と言う。',
-      mean: 'actually ＝ 実は。plum ＝ プラム（すもも）。決定的な事実をさらりと出す。',
+      said: '「さっき会ったとき、僕が実はプラムを食べてたことは置いとくとしてもね」と言う。',
+      mean: 'actually ＝ 実は。plum ＝ プラム（すもも）。Never mind that 〜 ＝「〜はさておき」。決定的な事実をわざと軽く出す皮肉。',
       trap: '桃の話が続いたので peach と思いこみやすい。actually のあとに本当の話が来る。',
       use: 'Actually, I was here first.（実は、私が先に来てたんです）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'care', seg: [167.5, 174],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'care', seg: [167.5, 173.6],
       stem: 'Leslie says, “I don’t care what you say.” What does she mean?',
       ja: 'レスリーの「I don’t care what you say」はどういう意味？',
       choices: ['Nothing will change her mind', 'She can’t hear him well', 'She wants him to talk more'], a: 0,
@@ -308,7 +308,7 @@ export const pikitis: Clip = {
       trap: 'care を「世話」と思いやすい。don’t care ＝ 気にしない、どうでもいい。',
       use: 'I don’t care what they say.（人が何と言おうと気にしない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'followed', seg: [175.8, 180.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'followed', seg: [176.2, 180.8],
       stem: 'Type Leslie’s answer: “___, genius.” (4 words)', answer: 'because i followed you',
       ja: 'レスリーの答えを書き取る：「___, genius.」（4語）',
       cue: '「all night?」と聞かれた直後。',
@@ -318,7 +318,7 @@ export const pikitis: Clip = {
       trap: 'Because は小さく「ビコズ」くらい。followed の ed も you とつながる。',
       use: 'Just follow me, please.（ついてきてください）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'alibi', reveals: ['followed'], ctx: true, seg: [177.9, 187.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'alibi', reveals: ['followed'], ctx: true, seg: [178.05, 186.7],
       stem: 'What does Greg say Leslie’s answer shows?',
       ja: 'グレッグは、レスリーの答えから何が分かると言う？',
       choices: ['He didn’t do it', 'She broke the law', 'She saw who it was'], a: 0,
@@ -330,7 +330,7 @@ export const pikitis: Clip = {
       trap: 'つけたこと自体を責めていると考えがち。it wasn’t me ＝ 僕じゃない。',
       use: 'If you were there, then you know.（その場にいたなら分かるでしょ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'scary', seg: [191, 199.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'scary', seg: [191.4, 199.4],
       stem: 'How does the officer feel about Leslie as a cop?',
       ja: '警官は、警官としてのレスリーをどう思う？',
       choices: ['Scared of the idea', 'Sure she’d be good', 'Happy for her'], a: 0,
