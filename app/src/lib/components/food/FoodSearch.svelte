@@ -202,6 +202,31 @@
     if (!db) return [];
     return q.trim() ? shopChips(found.shops) : recentShops(mine, db, since);
   });
+  /** A dataset coming in (the chain menus: their shop chips over the rows) never moves the rows on the screen: what
+   *  follows the field (the row open, if one is) is kept where it was, the sheet scrolled by what came in over it. A tap under way would otherwise
+   *  lift over another row, or nothing, its click lost (the chips' 44 px land a second or so into a search, rows held at
+   *  the sheet's top too, where the browsers' own scroll anchoring never holds them: food.spec). */
+  let root: HTMLDivElement | undefined = $state();
+  let anchor: { el: Element; y: number; q: string } | null = null;
+  const below = () => root?.querySelector('[data-food-open]')?.closest('li') ?? [...(root?.children ?? [])].find((e) => e !== box && !e.classList.contains('shops'));
+  $effect.pre(() => {
+    void more;
+    untrack(() => {
+      const el = below();
+      anchor = el ? { el, y: el.getBoundingClientRect().top, q } : null;
+    });
+  });
+  $effect(() => {
+    void more;
+    untrack(() => {
+      const a = anchor;
+      anchor = null;
+      const sc = root?.closest<HTMLElement>('[data-food-sheet]');
+      if (!a || !sc || a.q !== q || !a.el.isConnected) return;
+      const dy = a.el.getBoundingClientRect().top - a.y;
+      if (Math.abs(dy) >= 1) sc.scrollTop += dy;
+    });
+  });
   /** A shop chip's tap: its name written into the query, before what's typed (no filter kept anywhere else: ✕ clears
    *  it), the field kept focused (the keyboard stays up). */
   function toShop(name: string) {
@@ -357,7 +382,7 @@
 
 <svelte:window onkeydown={onEsc} />
 
-<div class="search">
+<div class="search" bind:this={root}>
   <form class="box" bind:this={box} role="search" onsubmit={(e) => { e.preventDefault(); input?.blur(); }}>
     <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15 L20 20" /></svg>
     <input bind:this={input} bind:value={text} type="search" data-sfx="none" data-food-q enterkeyhint="search" autocomplete="off"

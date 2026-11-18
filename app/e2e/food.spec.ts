@@ -30,8 +30,11 @@ const settled = (page: Page) => dlg(page).evaluate(async (d) => {
   for (let last = -1; sc && sc.scrollTop !== last; await frame(), await frame()) last = sc.scrollTop;
 });
 
-/** A meal search's row → its amount level: the row opened in place, then its くわしく ›. */
+/** A meal search's row → its amount level: the row opened in place, then its くわしく ›. (Settled first: a row open
+ *  from the query before still closing (150 ms) moved the rows under the tap, lost in WebKit under load.) */
 async function amountOf(page: Page, row: Locator) {
+  await row.waitFor();
+  await settled(page);
   await row.click({ timeout: 15_000 });
   await settled(page);
   await sheet(page).locator('[data-food-open-more]').click();
@@ -2099,4 +2102,30 @@ test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a kon
     await expect.poll(() => count('d')).toBe(2);
   });
   expect([same, fresh, konbini, out]).toEqual([{ taps: 1, chars: 0 }, { taps: 5, chars: 7 }, { taps: 7, chars: 10 }, { taps: 3, chars: 3 }]);
+});
+
+// The lazy datasets (the products, the chain menus) land a second or so into a search, the shop chips (44 px) over the
+// rows: a press on 追加 then lifted over another row or nothing and its tap was lost (WebKit under load: the row-opened
+// test red now and then). What follows the field stays where it was (FoodSearch's anchor), so the tap lands.
+test('a press on an open row’s 追加 while the chain menus come in still lands: the row stays where it was', async ({ page }) => {
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  await page.route(/\/food\/(products|kalori)\.json(\?|$)/, async (r) => { await held; await r.continue(); });
+  await page.setViewportSize({ width: 393, height: 852 });
+  await openFood(page);
+  const s = sheet(page);
+  await s.locator('[data-add=d]').click();
+  await s.locator('[data-food-q]').fill('豚ロース');
+  await s.locator('[data-food-results] [data-item="mext:11123"]').click();
+  await settled(page);
+  const add = s.locator('[data-food-open-add]');
+  const b = (await add.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  release();
+  await expect(s.locator('[data-food-pending]')).toHaveCount(0, { timeout: 15_000 });
+  await expect(s.locator('[data-food-shops]')).toBeAttached(); // (the chips came in over the rows)
+  expect(Math.abs((await add.boundingBox())!.y - b.y)).toBeLessThan(b.height / 4);
+  await page.mouse.up();
+  await expect(s.locator('[data-food-added] [data-added]')).toHaveCount(1);
 });

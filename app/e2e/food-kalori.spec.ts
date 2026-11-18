@@ -3,7 +3,7 @@
 // fetched at the search's open, with no key; its rows show their shop, and one logs by the serving (`sv`, kept by the
 // record, e2e/record.ts). The guest's phone and the demo have them too.
 import { readFileSync } from 'node:fs';
-import { expect, test, type Browser, type BrowserContext } from './fixtures.ts';
+import { expect, test, type Browser, type BrowserContext, type Locator } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { openKenkou } from './hud.ts';
 import { newRecord } from './record.ts';
@@ -47,6 +47,13 @@ async function search(browser: Browser, rec: Rec, who: 'A' | 'G', held?: Promise
   return { page, sheet, auth, imgs };
 }
 
+/** A row opened in place, its opening (FoodOpen's 150 ms) done: a tap inside it before then (WebKit under load, ~70 ms
+ *  after) lifted where the growing box had moved on, and was lost (this spec's 販売終了かも / 推定 tests, 1 in ~15). */
+async function openRow(row: Locator) {
+  await row.click();
+  await row.locator('xpath=ancestor::li[1]').locator('[data-food-open]').evaluate((e) => Promise.all(e.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
+}
+
 test('a member’s search has the chain menus (fetched with no key): the shop on the row, logged by the serving', async ({ browser }) => {
   const rec = newRecord();
   const a = await search(browser, rec, 'A');
@@ -64,7 +71,7 @@ test('a member’s search has the chain menus (fetched with no key): the shop on
   await expect(a.sheet.locator('[data-food-results] [data-item]')).toHaveCount(1);
   await expect(a.sheet.locator('[data-food-results] [data-item="kal:900003"]')).toBeVisible();
   await q.fill('ためし丼');
-  await row.click();
+  await openRow(row);
   await a.sheet.locator('[data-food-open-add]').click();
   await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.ok, e.data.g, e.data.f])).toEqual([
     [true, 100, { id: 'kal:900001', n: 'ためし丼 並盛', k: 1180, p: 31.5, fa: 28, c: 190.2, s: 3.4, u: '1食', sv: true }]
@@ -105,7 +112,7 @@ test('a chain menu’s row: the shop’s mark and Kalori’s picture hotlinked (
   await expect(a.sheet.locator('[data-food-results] [data-item^="mext:"]').first()).toBeVisible();
   await expect(a.sheet.locator('[data-food-results] [data-item^="mext:"] [data-shop]')).toHaveCount(0);
   await a.sheet.locator('[data-food-q]').fill('ためし丼');
-  await row.click();
+  await openRow(row);
   await a.sheet.locator('[data-food-open-more]').click();
   const pic = a.sheet.locator('[data-food-pic]');
   await expect.poll(() => a.imgs.some((i) => i.url.endsWith('/900001_400.webp'))).toBe(true);
@@ -126,7 +133,7 @@ test('a chain menu Kalori says may be gone: 販売終了かも on its row and be
   await a.sheet.locator('[data-food-q]').fill('おわり亭');
   const row = a.sheet.locator('[data-food-results] [data-item="kal:900020"]');
   await expect(row.locator('[data-food-ended]')).toHaveText('販売終了かも', { timeout: 15_000 });
-  await row.click();
+  await openRow(row);
   await a.sheet.locator('[data-food-open-more]').click();
   await expect(a.sheet.locator('[data-food-trust="p"][data-food-ended]')).toHaveText('公式の値（PFCは推定） · 販売終了かも');
 });
@@ -137,7 +144,7 @@ test('a chain menu with only its fibre or salt estimated: its values’ trust sa
   const row = a.sheet.locator('[data-food-results] [data-item="kal:900021"]');
   await expect(row.locator('[data-brand]')).toHaveText('おわり亭', { timeout: 15_000 });
   await expect(row.locator('[data-food-ended]')).toHaveCount(0);
-  await row.click();
+  await openRow(row);
   await a.sheet.locator('[data-food-open-more]').click();
   await expect(a.sheet.locator('[data-food-trust="s"]')).toHaveText('公式の値（食物繊維・塩分は推定）');
 });
@@ -183,7 +190,7 @@ test('a chain menu’s sizes and milks: two chip groups, a pick keeps the ×n; a
   await a.sheet.locator('[data-food-q]').fill('みほんラテ');
   const row = a.sheet.locator('[data-food-results] [data-item="kal:900010"]');
   await expect(row).toContainText('Tall・ミルク');
-  await row.click();
+  await openRow(row);
   const open = a.sheet.locator('[data-food-open]');
   const kcal = open.locator('[data-food-open-kcal]');
   await expect(open.locator('[data-states="size"] [data-state]')).toHaveText([/^Short/, /^Tall/, /^Grande/]);
