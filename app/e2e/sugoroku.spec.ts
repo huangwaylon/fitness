@@ -50,6 +50,9 @@ async function playTurn(p: Page, phases: Phase[]) {
   await expect(s.locator('[data-sg-die], [data-sg-moving]')).toHaveCount(0, { timeout: 15_000 });
   await expect(s.locator('[data-sg-turn]')).not.toHaveAttribute('data-sg-turn', String(turn));
   await expect(s.locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', 'spin');
+  // whose turn it is: their pill (aria-current), the only one
+  const now = await s.locator('[data-sg-turn]').getAttribute('data-sg-turn');
+  await expect(s.locator('[data-sg-score][aria-current="true"]')).toHaveAttribute('data-sg-score', now!);
 }
 
 /** A new game's setup, the game's seed pinned. */
@@ -77,6 +80,12 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await expect(page).toHaveURL(/\/sugoroku\?.*m=local/);
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
   await expect(sheet(page).locator('[data-sg-board3d]')).toBeVisible();
+  // the players' pills: each one's name and level (a .tag), whose turn it is aria-current
+  const pills = sheet(page).locator('[data-sg-score]');
+  await expect(pills).toHaveCount(2);
+  await expect(pills.nth(0).locator('.pn')).not.toBeEmpty();
+  await expect(pills.nth(0)).toHaveAttribute('aria-current', 'true');
+  expect(await pills.nth(1).locator('[data-sg-level-tag]').evaluate((el) => getComputedStyle(el).fontSize)).toBe('13px');
 
   // (the seed's: A a ことば, B a ぶん, A the fork's 遠回り to a 絵: one of three spellings)
   await playTurn(page, ['word']);

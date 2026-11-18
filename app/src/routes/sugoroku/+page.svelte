@@ -17,7 +17,8 @@
   };
 </script>
 
-<div class="screen">
+<!-- (.kit: the unified kit's scope, as English Study's sheet gives the tab) -->
+<div class="screen kit">
   {#if week.view}<SugorokuGame active screen={m} onclose={leave} />{/if}
 </div>
 

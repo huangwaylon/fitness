@@ -375,8 +375,8 @@
           <NavBar pad title={s('title')} onback={toMenu} onclose={close} trailing={tools} middle={team} />
           <div class="scores">
             {#each g.players as p, i (i)}
-              <span class="score obj-cream" class:now={i === g.turn} data-sg-score={i}>
-                <Avatar {...headOf(p)} size={24} /><small class="lv">{s(`level.${p.level}`)}</small>
+              <span class="score obj-cream" class:now={i === g.turn} aria-current={i === g.turn ? 'true' : undefined} data-sg-score={i}>
+                <Avatar {...headOf(p)} size={24} /><span class="pn">{p.name}</span><span class="tag" data-sg-level-tag>{s(`level.${p.level}`)}</span>
                 {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
                 {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
               </span>
@@ -448,7 +448,6 @@
   /* the dice shake while rolling */
   .die.rolling { animation: shake 140ms linear infinite; }
   @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg) translateY(-2px); } 75% { transform: rotate(10deg) translateY(1px); } }
-  .lv { font: 700 10px/1 var(--font-ui); color: var(--text-soft); }
   /* ---- the play screen: the board under everything, the top overlay and the turn's sheet over it */
   .play { position: absolute; inset: 0; overflow: hidden; }
   .stage { position: absolute; inset: 0; }
@@ -462,11 +461,14 @@
   .team .bar { flex: 1; min-width: 24px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 45%, transparent); overflow: hidden; }
   .team .bar i { display: block; height: 100%; background: var(--c-yuzu); border-radius: 3px; transition: width 400ms var(--ease-soft); }
   .round { flex: none; font: 700 12px/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
-  /* the players' chips: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
+  /* the players' pills: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: fit-content; margin-top: 4px; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); }
   .score { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px 0 4px; box-sizing: border-box; border-radius: var(--r-pill);
     background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); color: var(--text); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
+  /* the player's name (ellipsized: three pills fit a 375 phone) and their level, the kit's 13 px .tag */
+  .pn { min-width: 0; max-width: 5.5em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font: 700 var(--fs-s)/1 var(--font-ui); }
+  .score .tag { padding: 2px 7px; }
   /* the turn's sheet: cream at every time of day (.obj-cream: the day's text inside, as the team pill and the chips), its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
     max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
