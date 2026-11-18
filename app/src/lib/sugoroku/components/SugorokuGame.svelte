@@ -465,7 +465,7 @@
           {#snippet tools()}<NavButton kind="tool" icon="more" label={s('menu')} popup sfx="open" data-sg-menu onclick={() => (menuOpen = true)} />{/snippet}
           {#snippet team()}
             <!-- the team's stars toward its goal (one number: a team game), and the round -->
-            <span class="team" data-sg-team={teamStars(g)}>
+            <span class="team obj-cream" data-sg-team={teamStars(g)}>
               <Icon name="star" size={16} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/{teamGoal(g)}</span>
               <span class="bar"><i style:width="{Math.min(100, (teamStars(g) / teamGoal(g)) * 100)}%"></i></span>
               <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
@@ -474,7 +474,7 @@
           <NavBar pad title={s('title')} onback={toMenu} onclose={close} trailing={tools} middle={team} />
           <div class="scores">
             {#each g.players as p, i (i)}
-              <span class="score" class:now={i === g.turn} data-sg-score={i}>
+              <span class="score obj-cream" class:now={i === g.turn} data-sg-score={i}>
                 <Avatar {...headOf(p)} size={24} /><small class="lv">{s(`level.${p.level}`)}</small>
                 {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
                 {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
@@ -482,7 +482,7 @@
             {/each}
           </div>
         </div>
-        <div class="sheet" class:folded={folded && !moving} bind:offsetHeight={sheetH}>
+        <div class="sheet obj-cream" class:folded={folded && !moving} bind:offsetHeight={sheetH}>
           {#if moving}
             <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun', { n: rolled }) : ''}</b>
               {:else}<b data-sg-moving>{s('walking')}</b>{/if}</div>
@@ -712,12 +712,12 @@
   /* the players' chips: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: fit-content; margin-top: 4px; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); }
   .score { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px 0 4px; box-sizing: border-box; border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); }
+    background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); color: var(--text); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
-  /* the turn's sheet: cream, its content's height (at most what leaves the board 160 px), folded a 56 px bar */
+  /* the turn's sheet: cream at every time of day (.obj-cream: the day's text inside, as the team pill and the chips), its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
     max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
-    box-sizing: border-box; border-radius: 22px 22px 0 0; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
+    box-sizing: border-box; border-radius: 22px 22px 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
   .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
   /* (a scroller clips at its padding box: the 6 px under and 4 px beside hold the last row's 3–4 px lips and a sent tile's
      2 px ring, which spill out of the tiles' and buttons' boxes) */
