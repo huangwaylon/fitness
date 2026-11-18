@@ -1,4 +1,6 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 4, new 1, ctx 3, tx 5
+// R4 HELD 2026-11-18: keep 6, rewrite 5, retire 4, new 1, ctx 3, tx 5 — reviewed; the `R4 REVIEW` marker waits on the
+// test: its speech span runs to 90 s over the 60–90 s ♪ line, so speech (0–43 s) fills only 2 quarters and ≤ 40 % a
+// quarter can't hold (lead notified in /tmp/eng-r4/notes/s02.md).
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 3, new 0
 // “Rachel Makes a List About Ross | Friends” (the official Friends channel, Best of Season 2): Ross offers to let
 // Rachel make a list of his faults to cheer her up; she refuses, then reels one off at once, and ends up really

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 11
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 3, ctx 4, tx 11
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 5, new 1
 // “Ron's Reviews | Parks and Recreation” (the official Parks and Recreation channel, Season 6): inspired by Yelp, Ron
 // mails strongly worded letters to places he dislikes; Donna fires a “troll” who isn't hers to fire; a vegan restaurant
@@ -7,6 +7,7 @@
 // (the Canada letter), 114 s on (music). Named in the audio: Donna (38.6 s); Ron is named only by the title; the other
 // speakers are “her visitor”, “Ron's visitor”/“the owner” and “a coworker”. i1 and nt3 were deleted before they
 // shipped: never reuse those ids.
+// SKIP 113–134: music, no speech
 // EAR CHECK: 58.5 s postage — “How much postage does it take…?” is Ron (assumed: the letter to Canada is his)
 import type { Clip } from '../types.ts';
 
@@ -215,7 +216,7 @@ export const ronsReviews: Clip = {
       trap: 'そのまま「よい一日を」と思いやすい。理由を言い切った直後なら、話を打ち切る一言。',
       use: 'That’s all I have to say. Good day.（以上です。では失礼）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'carnivores', seg: [85.9, 91],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'carnivores', retired: true, seg: [85.9, 91],
       stem: 'How does the owner feel about Ron at the end?',
       ja: '最後に、店主はロンのことをどう思っている？',
       choices: ['Annoyed with him', 'Amused by him', 'Scared of him'], a: 0,
@@ -294,5 +295,17 @@ export const ronsReviews: Clip = {
       mean: '立派な信念の行き先は、炭酸水への抗議の手紙。本人は真剣で、その大げささが笑われている。',
       trap: '直前に驚いた同僚が笑われ役に見えやすい。最後の me を追えば、見つかるのは Ron で、笑いも Ron に向く。',
       use: 'I stand by my words. Even about pizza.（言ったことは曲げない。ピザのことでも）' },
+
+    { id: 'w1', skill: 'who', level: 'B1', point: 'soda', reveals: ['outcome'], seg: [108, 114.5],
+      stem: 'Who will hear from Ron next?',
+      ja: '次にロンの手紙を受け取るのはだれ？',
+      choices: ['The makers of fizzy water', 'The vegan restaurant owner', 'The frozen yogurt bar'], a: 0,
+      choicesJa: ['炭酸水のメーカー', 'ビーガンレストランの店主', 'フローズンヨーグルトの店'],
+      cue: '「Which is why」のあと。',
+      line: 'Which is why *the makers of carbonated water* will soon know exactly where to find me.',
+      said: '「だから炭酸水のメーカーも、もうすぐ俺の居場所を知ることになる」と言う。',
+      mean: 'carbonated water ＝ 炭酸水。maker ＝ 作る会社。次の手紙の相手を予告している。',
+      trap: 'vegan の話が続いたので、また店主と考えがち。決め手は makers of のあと。',
+      use: 'Which is why I came early.（だから早く来たんです）' },
   ]
 };

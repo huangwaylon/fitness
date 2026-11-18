@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 4, new 1, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 2, ctx 6, tx 6
 // A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 6, new 1
 // “Andy Runs Into an Ambulance | Parks and Recreation” (the official Parks and Recreation channel, Season 5): after a
 // day of doctors, Andy is handed a $500 bill, insists his “free medicine card” and “the insurance thing” cover it, runs
@@ -6,6 +6,7 @@
 // Talk ends at ≈ 94 s. Only April is named in the audio. Untested on purpose: 31.8 s, ≈ 49 s, 55–60 s (who says the
 // ambulance lines is unclear), 93.3 s. The bill talk (28–44 s) holds 4 items at most: ≤ 3 starts in any 10 s.
 // EXCLUDE 17.6–22.5 (sexual)
+// SKIP 94.6–124.6: music, no speech
 // EAR CHECK: 81.7 s a1 — “Mm-hmm, so romantic” is sincere, not sarcastic (captions “mm-hmm so romantic”)
 import type { Clip } from '../types.ts';
 
@@ -48,6 +49,18 @@ export const ambulance: Clip = {
       mean: '針を刺せば誰でも赤くなる。当たり前の反応を「アレルギー」と呼ぶのが笑い。',
       trap: 'stabbed は乱暴に聞こえるが、ただの注射。allergic を文字どおり取らず、何に対してかを聞く。',
       use: 'I think I’m allergic to Mondays.（月曜アレルギーかも）' },
+
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'xray', ctx: true, seg: [8.3, 14.5],
+      stem: 'What word does April use for “microwaved”?',
+      ja: 'エイプリルは「microwaved」を何と言い直す？',
+      choices: ['X-rayed', 'Cooked', 'Washed'], a: 0,
+      choicesJa: ['レントゲンをとった', '料理した', '洗った'],
+      cue: 'アンディの「microwaved」への返事。',
+      line: 'Andy: I got my ankles *microwaved*. / April: *X-rayed*.',
+      said: 'アンディの「足首を電子レンジにかけられた」に、エイプリルが「レントゲンね」と直す。',
+      mean: 'microwave ＝ 電子レンジで温める。X-ray ＝ レントゲンをとる。アンディの大げさな言い方を短く直している。',
+      trap: 'microwave から料理の話と勘違いしやすい。決め手はエイプリルの短い一語。',
+      use: 'I need to get my foot X-rayed.（足のレントゲンをとってもらわないと）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'fixes', reveals: ['science'], seg: [9, 14.3], retired: true,
       stem: 'As Andy lists what the doctors did, what follows each odd claim?',
@@ -264,7 +277,7 @@ export const ambulance: Clip = {
       trap: '計画が変なので、皮肉に聞こえるが、本当は本気。この2人は変な計画ほど喜ぶ。',
       use: 'That’s so romantic.（すごくロマンチック）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'bridge', seg: [77, 83.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'bridge', retired: true, seg: [77, 83.6],
       stem: 'Where could April sew up Andy’s lip?', ja: 'エイプリルはどこでアンディの唇を縫えばいい？',
       choices: ['Under a bridge somewhere', 'At home on the couch', 'In the ambulance'], a: 0,
       choicesJa: ['どこかの橋の下', '家のソファ', '救急車の中'],
@@ -275,7 +288,7 @@ export const ambulance: Clip = {
       trap: 'go home の直後なので、家でだと勘違いしやすい。underneath the bridge を聞く。',
       use: 'Let’s meet under the bridge.（橋の下で会おう）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'what', ctx: true, seg: [87, 94.9],
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'what', ctx: true, seg: [87.5, 95],
       stem: 'What do they say about insurance at the end?', ja: '最後に、2人は保険について何と言う？',
       choices: ['They don’t know what it is', 'It pays for sewing kits', 'It pays for games too'], a: 0,
       choicesJa: ['保険が何か知らない', '裁縫セットも払ってくれる', 'ゲームも払ってくれる'],
