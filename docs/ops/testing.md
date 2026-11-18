@@ -267,6 +267,8 @@ run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts: its header lists the
 - **MapLibre**: a map goes by travel/map/glmap.ts `removeMap`, not `map.remove()` alone.
 - **The probe's own handles** keep what they point at: wait on booleans. A locator's click does too in Chromium (a console
   handle held a detached island page across a route change): a flow that leaves a page clicks by `page.evaluate`.
+- **Warm-up isn't a leak**: the JS heap climbs ~0.5 MB a room round trip for ~10 of them (V8's code and feedback),
+  then drops and stays flat (review 11-18 r3: tent, shop, museum, すごろく x24-28). Judge a heap trend over 20+ cycles.
 
 ## Load budget
 `npm run build` ends with `scripts/load-budget.ts`: the first load (what `index.html` loads, transitively) ≤ 400 KB of

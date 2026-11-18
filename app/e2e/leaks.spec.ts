@@ -64,6 +64,12 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   expect(first.gl, 'WebGL contexts alive after one round').toBe(1);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+  // a room's page held would be ~2,000 nodes and its buffers; the JS heap only warms up (code compiled on first use,
+  // ~0.5 MB a round trip for ~10, then flat: review 11-18 r3, `npm run leak -- tent 24`)
+  test.info().annotations.push({ type: 'memory', description: `rooms: JS heap ${first.heap} → ${after.heap} MB, ArrayBuffers ${first.ab} → ${after.ab} MB, nodes ${first.nodes} → ${after.nodes}` });
+  expect(after.ab - first.ab, 'ArrayBuffers (MB)').toBeLessThan(1.5);
+  expect(after.nodes - first.nodes, 'DOM nodes alive, attached or not').toBeLessThan(400);
+  expect(after.heap - first.heap, 'JS heap (MB)').toBeLessThan(6);
 });
 
 // すがた (docs/design.md "すがた"): せってい → すがた, its 3D stage up, two tops worn and いつもの, back
