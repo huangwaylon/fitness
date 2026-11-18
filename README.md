@@ -77,7 +77,8 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 
 Raw sources the repo doesn't hold (`~/food-images-raw`, `app/.cache/tts/{clean,refs}`, `food-data/raw/`) live in the
 `assets-*` releases (`app/scripts/assets-release.sh`); the coordinator's notes in the encrypted `notes` release
-(`app/scripts/notes-backup.sh`, by hand). Restore steps: each script's header.
+(`app/scripts/notes-backup.sh`, by hand). Restore steps: each script's header. The NH models, the full music and the
+avatar's sign-off sheets and renders (once `app/design/avatar`) are in `sources-2026-11-10` (its notes say how).
 
 ## Layout
 | Path | Contents |
