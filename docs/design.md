@@ -815,8 +815,8 @@ person has a pocket and かいがら, the guest too.
   partner's buy never takes a piece from mine); past my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
 - A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
-- **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷
-  20); at most 10,000. The goal trees' fruit are their own: 60, the gold one 150 ([Trees](#trees)).
+- **Prices:** NH's Bells ÷ 20 (a sell at least 3), a catch or beach find sold for 10 ×; one NH never sells, 4 × its
+  sell price ÷ 20; at most 10,000. The goal trees' fruit: 60, the gold one 150 ([Trees](#trees)).
 
 ### Dialogue
 
