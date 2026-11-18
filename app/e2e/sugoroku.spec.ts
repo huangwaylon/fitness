@@ -217,6 +217,20 @@ test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips 
   await expect(play).toHaveAttribute('data-sg-phase', 'word');
   await check();
   await expect(s.locator('[data-sg-hint]')).toBeInViewport({ ratio: 1 });
+  // ⌫ takes back one letter at a time (the last placed), never the whole word
+  const rack = s.locator('.rack [data-sg-tile]:not([disabled])');
+  const letters: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    const t = rack.first();
+    letters.push((await t.getAttribute('data-sg-tile'))!);
+    await t.tap();
+  }
+  const slots = s.locator('[data-sg-slots]');
+  await expect(slots).toHaveAttribute('data-sg-slots', letters.join(''));
+  await s.locator('[data-sg-del]').tap();
+  await expect(slots).toHaveAttribute('data-sg-slots', letters.slice(0, 2).join(''));
+  await s.locator('[data-sg-del]').tap();
+  await expect(slots).toHaveAttribute('data-sg-slots', letters[0]);
 });
 
 test('by night the cream turn sheet and the players’ chips keep the day’s ink text (night’s cream text was unreadable on them)', async ({ page }) => {

@@ -39,7 +39,7 @@ const S = {
   doubleTag: { ja: '星2倍', en: 'Stars ×2' },
   play: { ja: 'これにする', en: 'Play' },
   minLen: { ja: '{n}文字以上', en: '{n}+ letters' },
-  clear: { ja: '全部戻す', en: 'Take all back' },
+  back1: { ja: '1文字戻す', en: 'Back one letter' },
   hint: { ja: 'ヒント', en: 'Hint' },
   hintNote: { ja: 'ヒントを使ったので星は半分', en: 'A hint’s word scores half' },
   hintFree: { ja: 'ヒントの単語でも星はそのまま', en: 'A hint’s word scores in full' },

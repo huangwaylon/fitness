@@ -5,7 +5,7 @@
   // ヒント fills in the rack's best everyday word (halved but at やさしい, for the rest of the turn); ↻入れかえ swaps the
   // whole rack (no points: asked once more, in the header). The seat's level sets the shortest word (game.ts LEVEL).
   // Laid out for the game's bottom sheet (SugorokuGame): the header (ことば, the lucky letters, ↻入れかえ), the slots
-  // (⌫ takes them all back), the rack's 8 tiles on one row, then the action row (the pocket's tiles, ヒント, これにする);
+  // (⌫ takes the last one back), the rack's 8 tiles on one row, then the action row (the pocket's tiles, ヒント, これにする);
   // a check's note a toast pill over the sheet. Never red, never ×.
   import { untrack } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -64,8 +64,10 @@
     picked = picked.filter((_, j) => j !== k);
     note = '';
   }
-  function clear() {
-    picked = [];
+  /** ⌫: the last tile placed back on the rack (one at a time, like a keyboard's delete). */
+  function back() {
+    if (done) return;
+    picked = picked.slice(0, -1);
     note = '';
   }
   function hint() {
@@ -120,7 +122,7 @@
         {/each}
         {#if !picked.length}<span class="empty" lang="ja">{s('minLen', { n: minLen })}</span>{/if}
       </span>
-      <button type="button" class="del" aria-label={s('clear')} data-sfx="tick" disabled={!picked.length} onclick={clear}>⌫</button>
+      <button type="button" class="del" aria-label={s('back1')} data-sfx="tick" data-sg-del disabled={!picked.length} onclick={back}>⌫</button>
     </div>
     <div class="rack" lang="en">
       {#each tiles as t, i (i)}
