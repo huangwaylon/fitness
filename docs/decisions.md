@@ -415,7 +415,7 @@ The third tap within 1.2 s shakes; a single tap opens a goal tree's popup and ru
 ### Farming: NH 2.0's vegetables on a field each
 Starts at the shop, a field each placed in the editor, NH's ÷ 20 prices, 40 plants each, ripe the next Tokyo day and
 again the day after a harvest, 3 if watered the day before, else 1 ([farming.md](farming.md)). Why: NH's farming with
-a daily harvest (the user, 2026-11-14: NH's 3 days felt slow; ~3× the income accepted); the cadence is the lever,
+a daily harvest (NH's 3 days felt slow; ~3× the income accepted); the cadence is the lever,
 never a price.
 
 ### Mushrooms are cosmetic

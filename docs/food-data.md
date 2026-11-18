@@ -84,7 +84,7 @@ JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13
 
 | File | Source | Items | License | Attribution | How values were derived | Caveats |
 |---|---|---|---|---|---|---|
-| `foods.json` | MEXT 日本食品標準成分表（八訂）増補2023年 (Excel, 2026-03-27 errata) | 2,538 | 公共データ利用規約1.0 (CC BY 4.0 compatible) | 「日本食品標準成分表（八訂）増補2023年から引用」 + modification notice | Official values. Display names, categories, aliases and portions are rule-based plus curated overrides | Per 100 g of edible portion; energy is composition-based (八訂) |
+| `foods.json` | MEXT 日本食品標準成分表（八訂）増補2023年 (Excel, the `2026-03-27` errata) | 2,538 | 公共データ利用規約1.0 (CC BY 4.0 compatible) | 「日本食品標準成分表（八訂）増補2023年から引用」 + modification notice | Official values. Display names, categories, aliases and portions are rule-based plus curated overrides | Per 100 g of edible portion; energy is composition-based (八訂) |
 | `dishes.json` | Own recipes × MEXT | 341 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 | Home-style estimates |
 | `eatout.json` | Own recipes × MEXT | 439 | as above | as above | `data_src/eatout/` (shared components), size multipliers; a few foods MEXT lacks use typical values (`_typical.json`), said in their note | Generic chain/konbini-style estimates |
 | `extra_maff_kyodo.json` | MAFF「うちの郷土料理」 | 1,123 | PDL1.0 (+ MEXT) | 「…のレシピを加工して作成」 | Free-text ingredient lines mapped to MEXT (`maff_ingredients.py`), converted to grams, summed | Kept only if ≤ 5 % of the mass is unmapped and the servings are plausible (the filters: `maff_ingredients.py`) |
@@ -197,7 +197,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
   keeps one line a product. The diff against the
   accepted release gates publishing: over 15 % of products with changed values or 5 % missing refuses it (exit 6)
   unless `allow_big_diff`.
-- **Cost:** ~3k listing requests a week (2026-11-14: 2,954 over 20 shards, ≤ 214 a shard) plus the changed products,
+- **Cost:** ~3k listing requests a week (measured: 2,954 over 20 shards, ≤ 214 a shard) plus the changed products,
   ~13k a month. kalori.jp blocked at ~1,000 requests an IP a day (the first crawl): rounds of 20 shards, each on a
   fresh runner (a new IP), at most 8 at a time (`max-parallel`: Actions' 20 jobs at once are account-wide, shared
   with the ITS runner's 1 and suumo's 8, and the ITS runner's successor and the deploys need room), the rest queued

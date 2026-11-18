@@ -164,6 +164,6 @@ triggers, 4 used (relay 2, gym-bot 1, its-bot 1). A day:
 | gym-bot (a check every 15 min: [gym/README](../../gym/README.md#quotas)) | ~110 | ~120 | ~100 |
 | its-bot, a runner all day ([its/README](../../its/README.md#quotas)) | ~3,500 | ~6,000 | ~6,500 (+ ~2,900 alarm writes) |
 
-The busiest day measured (Cloudflare GraphQL, every script, 2026-11-10, before its-bot ran all day with its watchdog
+The busiest day measured (Cloudflare GraphQL, every script, before its-bot ran all day with its watchdog
 and alarm): 3,618 Worker requests, 15,487 DO requests, 28,900 rows written; with a full day of today's its-bot added,
 ~7k, ~21k and ~38k of 100k.

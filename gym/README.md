@@ -155,7 +155,7 @@ app (the page reads an older Worker's answers, not the other way round). `NAME_A
   to set the first alarm.
 - **Back up or edit the state**: `curl -fsS -H "Authorization: Bearer $GYM_TOKEN" $URL/gym/state > state.json`;
   back with `curl -fsS -X PUT -H "Authorization: Bearer $GYM_TOKEN" --data-binary @state.json $URL/gym/state`.
-  By hand only (the user's decision, 2026-11-13): a lost state means setting the days and the interval again.
+  By hand only, by choice: a lost state means setting the days and the interval again.
 - **Point LINE here** (the webhook must be `$URL/line/webhook`): LINE Developers Console, or
   `curl -fsS -X PUT -H "Authorization: Bearer $LINE_CHANNEL_TOKEN" -H 'Content-Type: application/json'
   -d "{\"endpoint\":\"$URL/line/webhook\"}" https://api.line.me/v2/bot/channel/webhook/endpoint` (one line).

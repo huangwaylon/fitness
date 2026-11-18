@@ -17,13 +17,13 @@ The produce sells for かいがら, never ベル. Code: `contract/farm.ts` (the 
 3. **At most 40 plants each** (`FARM.cap`), whatever the field's size.
 4. **Prices: NH ÷ 20,** as every shop price: a start costs 14 (280 Bells) and sells back for 4, a vegetable sells for
    18 (350). Balance comes from cadence, never the price.
-5. **Cadence: a day** (2026-11-14; NH's was 3): planted today (stage 0), ripe from 00:00 Tokyo tomorrow; harvested, the
+5. **Cadence: a day** (NH's was 3): planted today (stage 0), ripe from 00:00 Tokyo tomorrow; harvested, the
    plant grows back from stage 2 and is ripe again the next day (`FARM.growDays`, `FARM.regrowDays`). It yields 3 if
    watered (or rained on) the day before it ripens, the plant day or the harvest day, else 1 (NH's Lv3 and Lv1 models).
 6. **Rain waters everything:** any wet hour of the Tokyo day (our winter snow is real rain) waters every plant.
 7. **The can waters 3 × 3** the plants whose watering counts today (NH's golden can); planting and harvesting reach
    3 × 3 too: about 8 taps a full field. Effort, not balance (the same cadence and cap; you come daily).
-   No button or menu: every farm action is a plot's tap (2026-11-14).
+   No button or menu: every farm action is a plot's tap.
 8. **Starts are sold at the shop's かう,** always in stock, all six crops at one price, any season. A vegetable can be
    planted too (buying a start, 14, beats replanting a vegetable worth 18, as in NH).
 9. **Pumpkins ripen orange, yellow, white or green** (8:5:4:3, seeded by plot and ripe day, the same on both phones;
@@ -38,8 +38,8 @@ taps each of the can and the harvest. Unwatered it's 720 a day, watered twice a 
 year, which water for you. Setup: 40 starts cost 560, paid back by the first harvest.
 
 For scale: a sea catch is worth ~60–100 (~150–250 a minute, uncapped), a 15-minute session ~2,000–3,000, the median
-piece of furniture 190. A full field daily is worth about one fishing session (the user accepted ~3× NH's cadence's
-income, 2026-11-14). The levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays` and
+piece of furniture 190. A full field daily is worth about one fishing session (~3× NH's cadence's income, by
+choice). The levers, if the live numbers drift (`npm run logs`, the sells): `FARM.regrowDays` and
 `FARM.cap`, never a price.
 
 ## Rules (the record's)

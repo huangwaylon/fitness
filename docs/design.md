@@ -427,7 +427,7 @@ still scene draws nothing. One pacer runs every surface's frames (`world3d/pace.
 **12** a second (engine.ts REST_MS, REST_FPS), the museum its tanks and bugs at 15, the tent only a blink; any move or
 touch is back at the full rate. A villager's small moves (villagers.ts
 SMALL: a turn, a nod) are ambience too; a walk or a hop is the full rate. A critter's dart or move on screen is the full rate,
-and 12 a second once no finger has touched for 15 s, till a touch (pace.ts CRIT_CALM_MS; the user, 2026-11-14). The endless CSS loops over the island (clouds,
+and 12 a second once no finger has touched for 15 s, till a touch (pace.ts CRIT_CALM_MS). The endless CSS loops over the island (clouds,
 twinkles, glints, foam, the ♪) are held and stepped in its frames
 (`island/clouds.ts`), never at the display's 60 Hz.
 
@@ -489,7 +489,7 @@ with **fog** as an hour's extra.
   a reload finds it lying there.
 - **Picking up:** the tree's owner's tap on a fallen fruit picks it up, gone on every phone until the next Tokyo day
   (`fr:<person>:<fruit>`), into their pocket for the shop: 60 かいがら (`contract/pocket.ts GOAL_GOODS`; no ベル; the
-  plain fruit picked up before 2026-11-16 in the same row, `pocketKey`). Only the owner (the room refuses another's
+  old plain fruit in the same row, `pocketKey`). Only the owner (the room refuses another's
   pick, `pickMaySend`); anyone else's tap opens the popup. A tap within 22u of a fallen fruit picks up the nearest,
   else it opens the popup.
 - **All four met:** four warm glints on the canopy over a soft gold pulse (NH's money tree), and a gold fruit (NH's
@@ -811,8 +811,8 @@ person has a pocket and かいがら, the guest too.
 - **うる**: my pocket (caught, found or picked up, less sold) by section; a row its stack, − / + one, 全部選ぶ a section,
   全部売る all but 苗 and an おねがい's one. Selling leaves the ずかん and the museum; presents and bottles never sell.
 - **かう**: my stock of today, 24 pieces a day, seeded by pack, less what I could place by midnight: the island's
-  furniture finds (a present is everyone's in もようがえ) and my own buys (each person's stock, the guest's its own, since
-  2026-11-16: a partner's buy no longer takes a piece from mine); past my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
+  furniture finds (a present is everyone's in もようがえ) and my own buys (each person's stock, the guest's its own: a
+  partner's buy never takes a piece from mine); past my かいがら dimmed; 全部買う, or short 「3点を買う」, cheapest first. The starts ([farming.md](farming.md)) in rows.
 - A sell or a buy (a 全部: a confirm, one group) shows at once, a toast, 取り消す for 5 s, then the record checks it
   ([backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways (a sell at least 3); a piece NH never sells is made up (4 × its NH sell price ÷

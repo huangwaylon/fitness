@@ -71,8 +71,8 @@ The wedding types and `trip_note` are the members' only (the guest's are `forbid
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
-- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`, the user
-  2026-11-16): every person's reaches every phone; a row naming anyone else (the guest's sent by a member) reaches none.
+- The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`):
+  every person's reaches every phone; a row naming anyone else (the guest's sent by a member) reaches none.
   **Locked:** the record refuses any profile pref from anyone (`forbidden`, `profile locked`); a change takes a code change.
   A `load` too: it skips a `pref` of a key not in `PREF_KEYS` (an old dump's `bmiStd`) and a profile row whose slot
   holds one (`refused` in its reply, logged `load refused`); an empty slot it restores.

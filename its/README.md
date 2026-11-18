@@ -321,7 +321,7 @@ runner token.
   bookings, events, seen). Restore or seed: the settings with `PUT /its/settings` (`baseUpdatedAt` = the
   current status's `settings.updatedAt`), then the bookings in chunks of ≤ 50 with `curl -fsS -X POST -H
   "Authorization: Bearer $RT" --data-binary @chunk.json $URL/runner/bookings` (ids kept, so a re-run adds nothing;
-  `at` becomes the restore time). Nothing backs it up on a schedule (the user's decision, 2026-11-13): a lost
+  `at` becomes the restore time). Nothing backs it up on a schedule, by choice: a lost
   record is rebuilt from Gmail's holds and 予約確定 (seeded as above); a stay missed there could be applied for again.
 
 ## Investigating
