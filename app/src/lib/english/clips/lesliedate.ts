@@ -121,7 +121,7 @@ export const leslieDate: Clip = {
       line: 'No, I was gonna wear something a little more *formal* and buttoned down.',
       said: '「それを着ていくの？」に、「もう少しきちんとした服にする」と答える。',
       mean: 'formal ＝ きちんとした、改まった。仕事の会合のつもりの服選び。',
-      trap: 'すぐあとに母が stylish と言うので、それをレスリーの案と思いやすい。順番を聞く。',
+      trap: 'すぐあとに母が stylish と言うので、それをレスリーの案と勘違いしやすい。順番を聞く。',
       use: 'Is it formal, or can I wear jeans?（正装？ジーンズでもいい？）' },
 
     { id: 'nt3', skill: 'attitude', level: 'C2', point: 'stylish', seg: [59.4, 67.4], retired: true,
@@ -144,7 +144,7 @@ export const leslieDate: Clip = {
       line: 'Leslie: I don’t wanna blow it. / Mom: *Why don’t you try* something more stylish?',
       said: '「台無しにしたくないから」に、母が「もう少しおしゃれなのにしてみたら？」とすすめる。',
       mean: 'Why don’t you 〜? ＝ 文字どおりは「なぜ〜しないの？」→「〜してみたら？」。軽くすすめる言い方。',
-      trap: 'why（なぜ）から、理由を聞いていると思いやすい。答えは理由でなく、服の話。',
+      trap: 'why（なぜ）から、理由を聞く質問に聞こえるが、答えは理由でなく服の話。',
       use: 'Why don’t you try the fish?（魚料理にしてみたら？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'blowit', seg: [62.5, 66.0],
@@ -168,7 +168,7 @@ export const leslieDate: Clip = {
       line: '*Now*, you know that we’re gonna be building a park…',
       said: '食事の席で「さて、ご存じのとおり、公園を作ることになっています」と切り出す。',
       mean: '文の最初の Now ＝ さて。話を本題に移す合図。',
-      trap: 'now を「今」と思いやすい。文の最初で区切る Now は「さて」。',
+      trap: 'now を「今」と考えがち。文の最初で区切る Now は「さて」。',
       use: 'Now, about the bill…（さて、お会計ですが…）' },
 
     { id: 'g1', skill: 'gist', level: 'B2', point: 'zoning', seg: [71.5, 101.5],
@@ -180,7 +180,7 @@ export const leslieDate: Clip = {
       line: 'How difficult is *rezoning* in your town? Could you go into detail…',
       said: '公園の予定地の写真を見せ、彼の町での用途変更の難しさを詳しく聞く。',
       mean: 'go into detail ＝ 詳しく話す。レスリーには仕事の相談。手続きを聞き出したい。',
-      trap: 'park や council から、賛成を頼む話と思いやすい。聞いているのは手続きのこと。',
+      trap: 'park や council から、賛成を頼む話を連想しやすい。聞いているのは手続きのこと。',
       use: 'Could you go into a little more detail?（もう少し詳しく教えてもらえますか）' },
 
     { id: 'mv', skill: 'detail', level: 'B1', point: 'movies', ctx: true, seg: [78.5, 91.5],
@@ -260,7 +260,7 @@ export const leslieDate: Clip = {
       line: 'Oh, because I haven’t been dating much either *since my divorce*.',
       said: '「ああ、僕も離婚してから、あまりデートしてないからさ」と話す。',
       mean: 'either ＝ 〜も（否定の文で）。since 〜 ＝ 〜から。',
-      trap: 'あとで grown up（大人になった）が出るので、子どもの話と思いやすい。since のすぐあとを聞く。',
+      trap: 'あとで grown up（大人になった）が出るので、子どもの話と考えがち。since のすぐあとを聞く。',
       use: 'I haven’t been out much since the move.（引っ越してから、あまり出かけてない）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['nodate', 'firstdate'], seg: [128.0, 155.5],
