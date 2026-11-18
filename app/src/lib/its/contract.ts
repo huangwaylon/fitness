@@ -207,7 +207,7 @@ export interface RunnerReport {
   events: EventInput[];        // new since the last acknowledged report
   seen: string[];              // facility names the site offered this run
 }
-/** @public (its/worker) */
+/** The runner's heartbeat while running (s). @public (its/runner/test_remote.py: the limits' parity reads it) */
 export const REPORT_EVERY_SEC = 30;
 /** Saved settings a running run still hasn't applied after this long (four reports: two flickered): `settings_stale`. @public (its/worker) */
 export const SETTINGS_STALE_SEC = 4 * REPORT_EVERY_SEC;

@@ -29,7 +29,7 @@ const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
  *  Critters.svelte, `crit` the three as builds before 2026-11-13 sent them): perf.rest's top three. @public (world3d/engine.ts) */
 /** What a node moving says it is (camera.svelte.ts moveStart's tag, perf.rest's `nd1`; `float` as builds before
  *  2026-11-15 sent it: fishing3d.ts floatWants since). */
-export const LOG_MOVE_TAGS = ['wash', 'shake', 'zap', 'crit', 'popper', 'present', 'float', 'other'] as const;
+const LOG_MOVE_TAGS = ['wash', 'shake', 'zap', 'crit', 'popper', 'present', 'float', 'other'] as const;
 export type LogMoveTag = (typeof LOG_MOVE_TAGS)[number];
 export const LOG_FULL_WHY = ['focus', 'fling', 'settle', 'things', 'scene', 'vil', 'world', 'walk', 'nodes', 'mirror', 'cards', 'fx', 'crit', 'crit-fish', 'crit-bug', 'crit-rear', 'bite', 'ground', 'lights', 'touch', 'active', 'other'] as const;
 

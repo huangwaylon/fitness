@@ -34,7 +34,7 @@ const ALLOW: Record<string, string[]> = {
   contract: ['types', 'random'],
   time: ['types', 'contract'],
   config: ['types'],
-  scoring: ['types', 'contract', 'time', 'config'],
+  scoring: ['types', 'time', 'config'],
   model: DOMAIN,
   // the island's layout (docs/island-layout.md): pure, over the contract's ops
   layout: ['types', 'contract', 'random'],
@@ -45,8 +45,8 @@ const ALLOW: Record<string, string[]> = {
   scan: ['food', 'contract'],
   // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress, its settings' defaults, the note's
   // markdown and its links; the board's zone and the days between two days: time/zone.ts, time/dates.ts)
-  wedding: ['types', 'contract', 'time'],
-  i18n: ['types', 'time', 'config'],
+  wedding: ['contract', 'time'],
+  i18n: ['time'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
   // store → ui-state (toasts), never back: ui-state importing store would close a cycle (the island's look, the
@@ -55,37 +55,37 @@ const ALLOW: Record<string, string[]> = {
   art: ['types', 'ui-state'],
   // artPack/: the ずかん's packed icons (scripts/art-packs.ts), read on the phone over art.ts's keys
   artPack: ['art'],
-  villagers: ['types', 'art', 'i18n'],
+  villagers: ['art'],
   // (contract: the music stages' records and their rule, sound/stage.svelte.ts)
-  sound: ['types', 'contract', 'time', 'sync', 'i18n', 'random'],
+  sound: ['contract', 'time', 'sync', 'i18n', 'random'],
   // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
   // (contract/pack.ts PackSeed)
   travel: ['contract'],
   // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's
   hiking: ['travel', 'i18n'],
-  offline: ['travel', 'hiking', 'sync'],
+  offline: ['travel', 'sync'],
   // ボット's ジム (docs/bots.md): the gym bot's /status, read and worded for its page, and its
   // /gym/config with the member key (the guards: contract/guards.ts)
   gym: ['i18n', 'sync', 'contract', 'bots'],
   // ボット's 保養所 (docs/bots.md): the its-bot Worker's client (the member key, the log) and the page's view
   its: ['i18n', 'sync', 'contract', 'bots'],
   // ボット's メニュー (docs/bots.md): the Kalori scraper's status.json, read and worded for its page
-  kalori: ['i18n', 'sync', 'contract', 'bots'],
+  kalori: ['i18n', 'contract', 'bots'],
   // ボット's one shape (docs/bots.md): the driver's types, the tones' order, the public status read (the log)
   bots: ['sync'],
   // the island's game model (world.ts, the walk, the critters, the sea, the day's weather and seeds, the farm's batch
   // writes…): pure, never a component nor the DOM (below), so the DOM island, the 3D renderer and the sheets (ずかん, the museum, the shop)
   // all read it, never each other's folders for it. The day's own records (storage: sceneDay, birthday, say, …)
-  world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
+  world: [...DOMAIN, 'layout', 'random', 'art', 'ui-state', 'sync'],
   // English Study (docs/english.md): its content, pure rules and the sheet's own components (the kit's ui/, the
   // store's model and send, the storage's keys), and sound's videoFocus (a lesson pauses the island's audio and sets
   // iOS's session to 'playback', so a clip plays on the silent switch), and random's seeded draws and hash
   english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'sound', 'sugoroku', 'random'],
-  // 英語すごろく (docs/sugoroku.md): the game's pure rules and its sheet; English Study's deck only at build time; the
+  // 英語すごろく (docs/sugoroku.md): the game's pure rules and its sheet; the
   // speaking step's mic and words (speech)
   // the speech test (docs/speech-test.md): the mic, the relay's /stt, the log
   speech: ['sync'],
-  sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'villagers', 'art', 'world', 'english', 'speech'],
+  sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
   components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english', 'sugoroku']
 };
 
@@ -161,6 +161,13 @@ describe('src/lib folder boundaries', () => {
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !FREE.includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);
     expect(bad).toEqual([]);
+  });
+
+  it('each folder an allow-list names is still imported (a DOMAIN spread aside): a gone edge leaves the list', () => {
+    const spread = (list: string[]) => DOMAIN.every((d) => list.includes(d));
+    const stale = Object.entries(ALLOW).flatMap(([a, list]) =>
+      list.filter((b) => !(spread(list) && DOMAIN.includes(b)) && !edges.some((e) => e.from === a && e.to === b)).map((b) => `${a} → ${b}`));
+    expect(stale).toEqual([]);
   });
 
   it('no folder loop: no folder reaches back to itself through others (but the loops listed, on their way out)', () => {

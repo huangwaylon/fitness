@@ -133,8 +133,8 @@ export type Intent =
    *  Presence only: relayed to the game's seats alone (relay/src/room.ts), never numbered, kept or replayed. */
   | SgView;
 
-/** The panels a すごろく view shows (the turn's phases but the dice). @public (lib/sugoroku/view.ts) */
-export const SG_PANELS = ['fork', 'word', 'sentence', 'picture', 'event', 'home'] as const;
+/** The panels a すごろく view shows (the turn's phases but the dice). */
+const SG_PANELS = ['fork', 'word', 'sentence', 'picture', 'event', 'home'] as const;
 /** @public (lib/sugoroku/view.ts) */
 export type SgPanel = (typeof SG_PANELS)[number];
 /** @public (lib/sugoroku/view.ts) */
@@ -154,8 +154,7 @@ export const SGV_TEXT_MAX = 120;
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
  *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent). */
 const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end', 'gift'] as const;
-/** @public (lib/sugoroku/online.ts) */
-export type SgAct = (typeof SG_ACTS)[number];
+type SgAct = (typeof SG_ACTS)[number];
 /** @public (lib/sugoroku/online.ts) */
 export interface SgIntent {
   kind: 'sg';
