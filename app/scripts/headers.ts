@@ -2,8 +2,8 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
-// - The Permissions-Policy turns every powerful feature off (the microphone too) but geolocation and the camera, which
-//   only our origin may ask for (the trip map's locate button, ごはん's barcode scanner).
+// - The Permissions-Policy turns every powerful feature off but geolocation, the camera and the mic, which only our
+//   origin may ask for (the trip map's locate button, ごはん's barcode scanner, the speech test).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts: sound.test fails on a file whose bytes
 //   changed alone), and so are ごはん's picture sheets (`food-img/*.webp`:
@@ -100,8 +100,8 @@ const permissions = ['payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'ac
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
-  // no mic: nothing on the site records (ききみみ's speaking games went 2026-11-16)
-  .concat('microphone=()')
+  // the speech test (docs/speech-test.md): our own origin only, asked when its 録音 is tapped
+  .concat('microphone=(self)')
   // ごはん's barcode scanner (docs/food-data.md "Barcodes"): our own origin only, opened only from its button's tap
   .concat('camera=(self)')
   .join(', ');

@@ -9,6 +9,7 @@ const S = {
   resume: { ja: '続きから', en: 'Resume' },
   newGame: { ja: '新しいゲーム', en: 'New game' },
   howTo: { ja: '遊び方', en: 'How to play' },
+  speechTest: { ja: '音声認識テスト', en: 'Speech test' },
   how1: { ja: '1台のスマホを回すか、それぞれのスマホで遊びます（2〜3人）。それぞれ自分の英語レベルを選べます。', en: 'Pass one phone, or each on their own (2–3 players), each at their own English level.' },
   how2: { ja: 'サイコロをふって進み、止まったマスで英語に挑戦。', en: 'Roll, move, and do the space’s English.' },
   how3: { ja: 'ことば：手持ちの文字で英単語を作る。Z・J・Xなどのめずらしい文字は高得点。', en: 'Word: make a word from your letters. Rare letters (Z, J, X) score more.' },

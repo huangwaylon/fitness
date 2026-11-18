@@ -11,6 +11,7 @@ import { ARCHIVE_CRON } from './archive.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
+import { sttRoute, type SttAi } from './sttRoute.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
@@ -41,6 +42,10 @@ export interface Env {
   /** `1`: the cron compacts the record once a day (04:15 Tokyo). Unset: it doesn't (the user's hold, 2026-11-05: the
    *  locked days' history is kept); the admin `compact` still runs it by hand. */
   COMPACT_CRON?: string;
+  /** Workers AI (`/stt`, sttRoute.ts); `STT_OFF` `1`: refused; `STT_DAY_MAX`: a role's calls a UTC day. */
+  AI?: SttAi;
+  STT_OFF?: string;
+  STT_DAY_MAX?: string;
   /** The daily backup (archive.ts): the private repo (`owner/name`), its release's tag, the age recipient (public), and
    *  the GitHub token (a secret: a fine-grained token, that repo's Contents read/write). No token: no backup. */
   ARCHIVE_REPO?: string;
@@ -348,6 +353,7 @@ export default {
     if (url.pathname === '/log') {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
+    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });

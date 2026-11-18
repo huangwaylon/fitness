@@ -128,6 +128,8 @@ export const LOG_EVENTS = {
   "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
   // whether it's kept from eviction, and (r3 L7) each service worker cache's MB (sync/cacheSizes.ts)
+  // the speech test (routes/speech, docs/speech-test.md): times and the match only, never the audio or what was heard
+  "speech.test": { src: 'c', f: { audS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'off', 'capped', 'network', 'ai', 'other'] } },
   "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
@@ -163,7 +165,9 @@ export const LOG_EVENTS = {
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
-  "log.cap": { src: 'r', f: { bucket: 't' } }
+  "log.cap": { src: 'r', f: { bucket: 't' } },
+  // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
+  stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;

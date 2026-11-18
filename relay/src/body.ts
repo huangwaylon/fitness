@@ -1,8 +1,8 @@
-// A request's body read no further than a bound (the bots' Workers' JSON: gym/, its/worker): refused by its
+// A request's body read no further than a bound (the relay's STT upload, the bots' Workers' JSON): refused by its
 // Content-Length, or (without one, or a lying one) as soon as the stream passes it, never read whole first.
 
 /** The body's bytes, at most `max` (more: null). */
-async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
+export async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
   if (Number(req.headers.get('Content-Length') ?? 0) > max) return null;
   if (!req.body) return new Uint8Array(0);
   const reader = req.body.getReader(), parts: Uint8Array[] = [];

@@ -1,0 +1,167 @@
+<script lang="ts">
+  // The speech test (docs/speech-test.md): read a sentence (or say anything), the relay's Whisper writes it down, and
+  // the page shows what was heard, each word matched, and each step's time. ‹ goes back to English Study's すごろく tab.
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
+  import { english } from '#lib/english/open.svelte.ts';
+  import { log } from '#lib/sync/log.ts';
+  import { getKey } from '#lib/sync/storage.ts';
+  import { matchOf, SENTENCES } from '#lib/speech/match.ts';
+  import { MAX_S, record, transcribe, type Heard, type Miss, type Take } from '#lib/speech/stt.ts';
+
+  type Done = { k: number; asked: string; heard: Extract<Heard, { ok: true }>; match: ReturnType<typeof matchOf> | null };
+  let k = $state(0);
+  let phase = $state<'idle' | 'rec' | 'wait'>('idle');
+  let secs = $state(0);
+  let miss = $state<Miss | null>(null);
+  let takes = $state.raw<Done[]>([]);
+  let take: Take | null = null;
+  let timer: ReturnType<typeof setInterval> | undefined;
+  const free = $derived(k === SENTENCES.length);
+  const last = $derived(takes.at(-1) ?? null);
+  const paired = !!getKey();
+
+  const MISS: Record<Miss, string> = {
+    denied: 'マイクが使えません（設定で許可してください）', off: 'サーバーの音声認識が止まっています', capped: '今日の回数を使い切りました',
+    network: 'つながりませんでした', ai: '認識に失敗しました', other: 'うまくいきませんでした'
+  };
+  const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : 0);
+  const summary = $derived.by(() => {
+    const read = takes.filter((t) => t.match);
+    return { n: takes.length, tot: median(takes.map((t) => t.heard.totMs)), match: median(read.map((t) => t.match!.score)) };
+  });
+
+  async function tap() {
+    if (!paired || phase === 'wait') return;
+    if (phase === 'rec') return stop();
+    miss = null;
+    const t = await record();
+    if (!t) return void ((miss = 'denied'), log('speech.test', { ok: false, err: 'denied', lvl: free ? -1 : k }));
+    take = t, phase = 'rec', secs = 0;
+    const t0 = performance.now();
+    timer = setInterval(() => {
+      secs = (performance.now() - t0) / 1000;
+      if (secs >= MAX_S) void stop();
+    }, 100);
+  }
+
+  async function stop() {
+    if (!take || phase !== 'rec') return;
+    clearInterval(timer);
+    phase = 'wait';
+    const t = take;
+    take = null;
+    const t0 = performance.now();
+    const r = await transcribe(await t.stop(), t0);
+    phase = 'idle';
+    const lvl = free ? -1 : k;
+    if (!r.ok) return void ((miss = r.miss), log('speech.test', { ok: false, err: r.miss, lvl }));
+    const asked = free ? '' : SENTENCES[k].en;
+    const match = free ? null : matchOf(asked, r.text);
+    takes = [...takes, { k: lvl, asked, heard: r, match }];
+    const { ok: _ok, text: _text, ...times } = r;
+    log('speech.test', { ...times, ok: true, lvl, ...(match ? { match: Math.round(match.score * 100) } : {}) });
+  }
+
+  function leave() {
+    clearInterval(timer);
+    take?.cancel();
+    const q = new URLSearchParams(location.search);
+    void goto(`${resolve('/')}${q.size ? `?${q}` : ''}`).then(() => english.show('game'));
+  }
+  const step = (d: number) => {
+    if (phase !== 'idle') return;
+    k = (k + d + SENTENCES.length + 1) % (SENTENCES.length + 1);
+    miss = null;
+  };
+</script>
+
+<div class="screen" data-speech>
+  <header class="top">
+    <button type="button" class="back" aria-label="戻る" data-sfx="back" onclick={leave}>‹</button>
+    <h1>音声認識テスト</h1>
+  </header>
+
+  <main class="body">
+    {#if !paired}
+      <p class="note">このiPhoneはペアリングされていないので、テストできません。</p>
+    {/if}
+
+    <section class="card ask">
+      <div class="nav">
+        <button type="button" class="arrow" aria-label="前の文" data-sfx="tick" onclick={() => step(-1)} aria-disabled={phase !== 'idle'}>◀</button>
+        <span class="count" data-speech-at={free ? 'free' : k}>{free ? '自由に話す' : `${k + 1} / ${SENTENCES.length}`}</span>
+        <button type="button" class="arrow" aria-label="次の文" data-sfx="tick" onclick={() => step(1)} aria-disabled={phase !== 'idle'}>▶</button>
+      </div>
+      {#if free}
+        <p class="en">好きな英語を話してください</p>
+      {:else}
+        <p class="en" lang="en">{SENTENCES[k].en}</p>
+        <p class="ja">{SENTENCES[k].ja}</p>
+      {/if}
+    </section>
+
+    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait'} data-sfx="confirm" data-speech-mic onclick={tap}>
+      {phase === 'rec' ? `■ 止める（${secs.toFixed(1)} 秒）` : phase === 'wait' ? '認識中…' : '● 録音'}
+    </button>
+
+    {#if miss}<p class="note miss">{MISS[miss]}</p>{/if}
+
+    {#if last}
+      <section class="card result" data-speech-result>
+        <p class="heard" lang="en">“{last.heard.text || '（何も聞こえませんでした）'}”</p>
+        {#if last.match}
+          <p class="words" lang="en">
+            {#each last.match.words as w, i (i)}<span class:ok={w.ok}>{w.w}</span>{' '}{/each}
+          </p>
+          <p class="score">一致 {Math.round(last.match.score * 100)}%</p>
+        {/if}
+        <dl class="times">
+          <div><dt>録音</dt><dd>{last.heard.audS} 秒</dd></div>
+          <div><dt>変換</dt><dd>{last.heard.encMs} ms</dd></div>
+          <div><dt>通信</dt><dd>{last.heard.netMs} ms</dd></div>
+          <div><dt>認識</dt><dd>{last.heard.aiMs} ms</dd></div>
+          <div class="tot"><dt>合計</dt><dd>{(last.heard.totMs / 1000).toFixed(1)} 秒</dd></div>
+        </dl>
+      </section>
+    {/if}
+
+    {#if summary.n > 1}
+      <p class="sum">{summary.n} 回：合計の中央値 {(summary.tot / 1000).toFixed(1)} 秒{#if takes.some((t) => t.match)}、一致の中央値 {Math.round(summary.match * 100)}%{/if}</p>
+    {/if}
+
+    <p class="fine">録音はサーバーで文字にするだけで、音声も文字も保存しません。記録されるのは時間と一致率だけです。</p>
+  </main>
+</div>
+
+<style>
+  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--surface); color: var(--c-ink); }
+  .top { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) 12px 8px; }
+  .top h1 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .back { width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); font-size: 26px; color: var(--c-ink); }
+  .body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 16px calc(env(safe-area-inset-bottom) + 16px); }
+  .card { background: var(--c-card); border-radius: 16px; box-shadow: 0 2px 0 var(--c-edge); padding: 12px 14px; }
+  .nav { display: flex; align-items: center; justify-content: space-between; }
+  .arrow { width: 44px; height: 44px; border: 0; background: none; color: var(--c-ink); font-size: 18px; }
+  .arrow[aria-disabled='true'] { opacity: .3; }
+  .count { font: 600 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
+  .en { margin: 6px 0 2px; font: 700 20px/1.35 var(--font-body); text-align: center; text-wrap: pretty; }
+  .ja { margin: 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
+  .mic { min-height: 64px; border: 0; border-radius: 32px; background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); color: var(--c-ink);
+    font: 700 20px/1 var(--font-ui); }
+  .mic.rec { background: #f08c7a; box-shadow: 0 3px 0 #c8604f; }
+  .mic[aria-disabled='true'] { opacity: .5; }
+  .note { margin: 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
+  .heard { margin: 0 0 6px; font: 600 18px/1.35 var(--font-body); }
+  .words { margin: 0 0 4px; font-size: var(--fs-s); }
+  .words span { color: #c8604f; text-decoration: line-through; }
+  .words span.ok { color: var(--c-ink); text-decoration: none; }
+  .score { margin: 0 0 8px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .times { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 0; }
+  .times div { text-align: center; }
+  .times dt { font-size: 11px; color: var(--text-soft); }
+  .times dd { margin: 2px 0 0; font: 600 var(--fs-s)/1.2 var(--font-ui); }
+  .times .tot dd { font-weight: 800; }
+  .sum { margin: 0; text-align: center; font: 600 var(--fs-s)/1.4 var(--font-ui); }
+  .fine { margin: auto 0 0; font-size: 11px; line-height: 1.5; color: var(--text-soft); text-align: center; }
+</style>

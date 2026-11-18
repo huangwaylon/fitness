@@ -71,6 +71,6 @@ describe('trimmed Zen Maru Gothic', () => {
     expect(String.fromCodePoint(...missing)).toBe('');
   });
   it('stays far below the full font CSS (250 rules)', () => {
-    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(160); // (158 with 保養所ボット's facility names, 2026-11-13; 150 with the sheets' kanji, 2026-11-07: 148 before; 146 with the trip guides' kanji, 2026-11-06; each rule's file loads only when a glyph in it shows)
+    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(165); // (160 with the speech test's page, 2026-11-18; 158 with 保養所ボット's facility names, 2026-11-13; 150 with the sheets' kanji, 2026-11-07: 148 before; 146 with the trip guides' kanji, 2026-11-06; each rule's file loads only when a glyph in it shows)
   });
 });

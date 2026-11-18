@@ -256,6 +256,7 @@ describe('IslandLog', () => {
     expect(l.add([{ e: 'cron.wx', l: 1, d: { ok: true } }])).toMatchObject({ ok: true, kept: 1 });
     expect(l.query({}).rows).toHaveLength(1);
     expect(l.ingest(JSON.stringify({ v: 1, key: KEY_A, b: 'bt000001', s: 'sess0001', build: '2026-11-05.abc1234', os: 'ios27.1', es: [] }))).toMatchObject({ ok: true });
+    expect([l.spend('stt:A', 1), l.spend('stt:A', 1)]).toEqual([true, false]);
     expect(l.stats()).toMatchObject({ ok: true });
     expect(l.purge({})).toMatchObject({ ok: true });
   });

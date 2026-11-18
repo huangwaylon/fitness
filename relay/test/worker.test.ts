@@ -160,6 +160,19 @@ describe('the other routes', () => {
     expect(calls['LOG.ingest']).toHaveLength(1);
   });
 
+  it('/stt is off without Workers AI or with STT_OFF=1, and spends from the log’s cap when on', async () => {
+    const wav = new Uint8Array(64);
+    wav.set(new TextEncoder().encode('RIFF'), 0);
+    wav.set(new TextEncoder().encode('WAVE'), 8);
+    const init = () => ({ method: 'POST', body: wav, headers: { Authorization: `Bearer ${KEY_A}` } });
+    expect((await call('/stt', init())).status).toBe(503);
+    const ai = { run: () => Promise.resolve({ text: ' hello ' }) };
+    expect((await call('/stt', init(), envOf({ AI: ai, STT_OFF: '1' }))).status).toBe(503);
+    const res = await call('/stt', init(), envOf({ AI: ai, STT_DAY_MAX: '5' }));
+    expect([res.status, await res.json()]).toEqual([200, { ok: true, text: 'hello', aiMs: expect.any(Number) }]);
+    expect(calls['LOG.spend']).toEqual([['stt:A', 5]]);
+  });
+
   it('/health/log is 404 without HEALTH_TOKEN; an unknown path is 404', async () => {
     expect((await call('/health/log', { headers: { Authorization: `Bearer ${'t'.repeat(40)}` } })).status).toBe(404);
     expect((await call('/nope')).status).toBe(404);

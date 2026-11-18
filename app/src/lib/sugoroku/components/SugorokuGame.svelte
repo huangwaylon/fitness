@@ -9,6 +9,8 @@
   // save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on each player's own phone (online.svelte.ts: every action a
   // move to the relay, the game the moves folded; a phone whose turn it isn't watches). No ベル. The island is paused under it.
   import { untrack } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import Sheet from '#lib/components/ui/Sheet.svelte';
@@ -119,6 +121,11 @@
   let playMode = $state<'local' | 'online'>('local');
   const MODES = ['local', 'online'] as const;
   const canStart = $derived(picked.length >= MIN_PLAYERS && (playMode === 'local' || picked.includes(me)));
+  /** The speech test's page (docs/speech-test.md), the page's own query kept (?demo, the e2e's hooks). */
+  const toSpeech = () => {
+    onclose();
+    void goto(`${resolve('/speech')}${location.search}`);
+  };
   function start() {
     if (playMode === 'online') {
       startOnline(seatsCode(seatsOf(picked)), lengthCode(length));
@@ -426,6 +433,8 @@
           {/each}
         </span>
         <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={start}>{s('start')}</button>
+        <!-- the relay's Whisper on trial (docs/speech-test.md) -->
+        <button type="button" class="speech" data-sfx="tick" data-sg-speech onclick={toSpeech}>{s('speechTest')}</button>
       </div>
     {:else if level === 'play' && g && cur && ph}
       <!-- the board full-bleed, never resized by a phase: the top overlay and the turn's sheet are its insets -->
@@ -732,4 +741,5 @@
   .actrow { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; }
   .chip-eff { flex: none; padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .actrow .btn { flex: 1; min-width: 0; }
+  .speech { align-self: center; margin-top: 4px; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-soft); font: 600 var(--fs-s)/1 var(--font-ui); }
 </style>
