@@ -283,7 +283,7 @@ export const ryanOffice: Clip = {
       trap: 'computer や day off も仕事でもらえそうなので迷いやすい。office が聞こえる。',
       use: 'Can I have everyone’s attention?（みなさん、ちょっといいですか）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'bother', seg: [174.3, 182.3],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'bother', seg: [174.78, 182.3],
       stem: 'Who is the one bothering people?',
       ja: '人のじゃまをしているのはだれ？',
       choices: ['Ryan himself', 'Jim himself', 'The other workers'], a: 0,

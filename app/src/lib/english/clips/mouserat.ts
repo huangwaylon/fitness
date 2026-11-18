@@ -162,7 +162,7 @@ export const aprilMouserat: Clip = {
       trap: '舞台の上なので謝る場面に思いやすいが、謝る言葉は出てこない。外れても点が入る。',
       use: 'Let me make it up to you.（埋め合わせさせて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mac', ctx: true, seg: [78, 92.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mac', ctx: true, seg: [78.37, 92.8],
       stem: 'Whose mac and cheese did April name as the best?',
       ja: '一番おいしいマカロニチーズは誰のだとエイプリルは答えた？',
       choices: ['Andy’s', 'The boxed kind', 'Andy’s mom’s'], a: 0,

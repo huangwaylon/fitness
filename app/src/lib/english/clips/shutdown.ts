@@ -32,7 +32,7 @@ export const shutdown: Clip = {
       trap: '新聞の話を「読んでみて」という案内と取りやすい。当たり前のことを付け足すのは、あきれのしるし。',
       use: 'It’s been all over the news.（ニュースでずっとやってるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'lucky', seg: [15.5, 21.5],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'lucky', seg: [15.96, 21.5],
       stem: 'How long does Ron hope the building stays empty?',
       ja: '建物が空っぽのままなのは、どれくらいだといいとロンは思っている？',
       choices: ['For months', 'Forever', 'A few weeks'], a: 0,
@@ -172,7 +172,7 @@ export const shutdown: Clip = {
       trap: '「トゥエ」で始まれば 22、thirty で止まれば 30、「フォーティ」なら 40（すぐあとの別の数）。',
       use: 'We need to cut costs by ten percent.（経費を10%削らないと）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], ctx: true, seg: [65.6, 72.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], ctx: true, seg: [64.46, 72.6],
       stem: 'How does Ron feel about the cuts?',
       ja: '支出を減らすことについて、ロンはどう感じている？',
       choices: ['He wants to cut much more', 'He thinks they’re too big', 'He doesn’t care at all'], a: 0,

@@ -318,7 +318,7 @@ export const tomScreenBan: Clip = {
       trap: 'million と billion は音が近い。最初が「ミ」なら million、「ビ」なら billion。',
       use: 'I have a million things to do.（やることが山ほどある）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.4, 185.4],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.7, 185.4],
       stem: 'What do Tom and Jean-Ralphio do on their podcast?', ja: 'トムとジャン・ラルフィオは、ポッドキャストで何をする？',
       choices: ['Rate different kinds of nachos', 'Review places that sell nachos', 'Teach how to make nachos'], a: 0,
       choicesJa: ['いろんなナチョスを採点する', 'ナチョスの店を紹介する', 'ナチョスの作り方を教える'],

@@ -353,7 +353,7 @@ export const tobySafety: Clip = {
       trap: 'big（大きい）から、大事なことと思いやすい。Well, big deal は見下す言い方。',
       use: 'It’s no big deal.（大したことじゃないよ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'warehouse', seg: [178.4, 187.6],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'warehouse', seg: [178.4, 187.96],
       stem: 'What was Michael’s job at Men’s Warehouse?',
       ja: 'メンズ・ウェアハウスでのマイケルの仕事は？',
       choices: ['A greeter', 'A cashier', 'A warehouse worker'], a: 0,

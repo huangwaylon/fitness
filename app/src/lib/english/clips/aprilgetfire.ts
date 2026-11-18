@@ -80,7 +80,7 @@ export const aprilGetFired: Clip = {
       trap: 'stood up（立ち上がった）と勘違いしやすい。人が目的語なら「すっぽかす」。',
       use: 'I got stood up last night.（昨日、すっぽかされた）' },
 
-    { id: 'i1', skill: 'pragma', level: 'B1', point: 'guess', ctx: true, seg: [36, 43.5],
+    { id: 'i1', skill: 'pragma', level: 'B1', point: 'guess', ctx: true, seg: [36, 44.02],
       stem: 'What does Ann say to April’s guess?',
       ja: 'エイプリルの言った理由に、アンは何と言う？',
       choices: ['That’s not the reason', 'That must be the reason', 'She isn’t sure'], a: 0,
@@ -180,7 +180,7 @@ export const aprilGetFired: Clip = {
       trap: 'didn’t have to do this は叱る言葉に聞こえるが、「しなくてよかったのに」。',
       use: 'You didn’t have to do that.（そこまでしなくてよかったのに）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['offer', 'force'], seg: [108.5, 134],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['offer', 'force'], seg: [108.5, 134.43],
       stem: 'What does Chris do about April?',
       ja: 'クリスはエイプリルをどうする？',
       choices: ['He offers her a new job', 'He fires her at once', 'He sends her back to Parks'], a: 0,
@@ -225,7 +225,7 @@ export const aprilGetFired: Clip = {
       trap: 'going back をエイプリルのことと思うと「公園課に戻る」に引かれる。戻るのはクリス。',
       use: 'I think you should come with us.（一緒に来たらいいと思う）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'vitamins', reveals: ['offer'], ctx: true, seg: [125.5, 134],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'vitamins', reveals: ['offer'], ctx: true, seg: [125.5, 134.43],
       stem: 'What does April think of Chris’s offer?',
       ja: 'エイプリルはクリスの誘いをどう思っている？',
       choices: ['Not interested', 'Very excited', 'Scared to move'], a: 0,

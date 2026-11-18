@@ -397,7 +397,7 @@ export const threeBachelors: Clip = {
       trap: '「世話をする」の意味で考えると話が通らない。お店で聞いたら「支払い済み」。',
       use: 'Don’t worry, the bill’s taken care of.（心配しないで、会計は済んでるから）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'owes', seg: [275.3, 281.7],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'owes', seg: [275.65, 281.7],
       stem: 'Fill the gap: “I am not paying for that guy. He ___ money.”', ja: '空所に入るのは？ “He ___ money.”',
       choices: ['owes me a lot of', 'owed me a lot of', 'owes me a load of'], a: 0,
       choicesJa: ['私にたくさん借りがある', '私にたくさん借りがあった', '私に山ほど借りがある'],

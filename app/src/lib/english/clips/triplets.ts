@@ -252,7 +252,7 @@ export const triplets: Clip = {
       mean: 'have ＋人＋〜ing ＝ 人に〜させる。kids は授業の生徒たち。',
       trap: 'I can have から、自分で作れると思いやすい。have のあとの人が作る人。',
       use: 'I’ll have someone pick you up.（だれかにむかえに行かせるね）' },
-    { id: 'n1', skill: 'number', level: 'B1', point: 'kids30', reveals: ['clothes'], seg: [42.5, 51.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'kids30', reveals: ['clothes'], seg: [42.1, 51.2], keep: true,
       stem: 'How many kids does Alice mention?',
       ja: 'アリスは何人の子どもと言う？',
       choices: ['3', '13', '30', '33'], a: 2,

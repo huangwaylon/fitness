@@ -7,7 +7,7 @@
 // the captions only. Untested: 0–5 s (who has the crooked sign), 26–30 s ("like/black your sign"), 60–66 s (the authors'
 // names), 151–155 s (Ryan's "mom look"), 173–179 s (the set-up of the excluded line), 201–209 s. The montage (219–251 s)
 // and the praise of Ryan (164 s) are tested without naming speakers; n4 tests only what is praised, not how sincerely.
-// EXCLUDE 43.5–44.5 (swear: “Screw you, man”)
+// EXCLUDE 43.85–44.5 (swear: “Screw you, man”)
 // EXCLUDE 135.5–137.5 (bleeped swear: “… it. I'll sell it”)
 // EXCLUDE 179.6–187.1 (Stanley's album: the line turns on race)
 // EAR CHECK: 211.9 s s1 — "what were the" (both sources): confirm "were" is the weak "wer", not "are"
@@ -70,7 +70,7 @@ export const leaveTelescope: Clip = {
       use: 'I’ll trade you my apple for your banana.（りんごとバナナ、交換しよう）' },
 
 
-    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 43.4],
+    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 43.83],
       stem: 'What does “Get out of here, Dwight” mean here?',
       ja: 'ここでの「Get out of here, Dwight」はどういう意味？',
       choices: ['Move out of my way', 'I don’t believe you', 'Let’s leave together'], a: 0,
@@ -82,7 +82,7 @@ export const leaveTelescope: Clip = {
       trap: '「うそでしょ！」の意味もあるが、すぐあとに blocking（ふさいでる）が続く。',
       use: 'Excuse me, you’re blocking the door.（すみません、ドアをふさいでます）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [37.4, 43.4],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [37.4, 43.83],
       stem: 'Does Dwight think people want her things?',
       ja: 'ドワイトは、みんなが彼女の物をほしがっていると思っている？',
       choices: ['No, he thinks nobody does', 'Yes, lots of people do', 'Only Ryan wants them'], a: 0,

@@ -242,7 +242,7 @@ export const tomsApartment: Clip = {
       trap: 'night and day を「いつも満タン」、degrees をお湯の温度と取りやすい。部屋の暖かさの話。',
       use: 'The best part? Free parking.（一番いいところ？駐車場がタダ）', retired: true },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'degrees', seg: [56.2, 62.7], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'degrees', seg: [56.2, 62.45], keep: true,
       stem: 'What temperature is the apartment kept at?',
       ja: '部屋は何度にしてある？',
       choices: ['18 degrees', '80 degrees', '88 degrees'], a: 1,

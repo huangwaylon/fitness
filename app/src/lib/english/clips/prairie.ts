@@ -40,17 +40,6 @@ export const prairie: Clip = {
       trap: 'cable installer（ケーブル業者）も聞こえるが、それはもう済んだこと。理由は want to のあと。',
       use: 'I want to get the chores done early.（家事を早めに済ませたい）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'contest', seg: [24.5, 46.0],
-      stem: 'How does Leslie and Garth’s contest work?',
-      ja: 'レスリーとガースの勝負はどんなもの？',
-      choices: ['Who can live without new things', 'Who does more old chores', 'Who the referees like best'], a: 0,
-      choicesJa: ['新しい物なしで暮らせるか', '昔の家事をどれだけするか', '審判がどちらを気に入るか'],
-      cue: 'レスリーが最初に決めるルール。', line: 'let’s put all *modern devices* in this pail. Nothing can be used that was *invented* past…',
-      said: '今の道具をバケツに入れさせ、ある年より後に発明された物は使えない、とルールを決める。',
-      mean: 'modern devices ＝ 今の道具。それを使わずに昔のように暮らす我慢比べ。',
-      trap: 'referees（審判）も出てくるので、点数を競うと考えがち。点数の話は出てこない。',
-      use: 'Let’s put our phones in this box.（携帯はこの箱に入れよう）' },
-
     { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [24.6, 33.8], keep: true,
       stem: 'Things invented after which year are not allowed?',
       ja: '何年より後に発明された物が禁止？',
@@ -61,6 +50,17 @@ export const prairie: Clip = {
       mean: 'past ＝ 〜より後。年は18と17に分けて「エイティーン・セブンティーン」と読む。',
       trap: '「オー・セヴン」なら 1807、「セヴンティ」なら 1870、「ナインティーン」始まりなら 1917。',
       use: 'Nothing past nine, okay?（9時以降はなしね）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'contest', seg: [24.85, 46.0],
+      stem: 'How does Leslie and Garth’s contest work?',
+      ja: 'レスリーとガースの勝負はどんなもの？',
+      choices: ['Who can live without new things', 'Who does more old chores', 'Who the referees like best'], a: 0,
+      choicesJa: ['新しい物なしで暮らせるか', '昔の家事をどれだけするか', '審判がどちらを気に入るか'],
+      cue: 'レスリーが最初に決めるルール。', line: 'let’s put all *modern devices* in this pail. Nothing can be used that was *invented* past…',
+      said: '今の道具をバケツに入れさせ、ある年より後に発明された物は使えない、とルールを決める。',
+      mean: 'modern devices ＝ 今の道具。それを使わずに昔のように暮らす我慢比べ。',
+      trap: 'referees（審判）も出てくるので、点数を競うと考えがち。点数の話は出てこない。',
+      use: 'Let’s put our phones in this box.（携帯はこの箱に入れよう）' },
 
     { id: 'd1', skill: 'infer', level: 'B2', point: 'referee', ctx: true, seg: [31.0, 40.4],
       stem: 'Who gets paid to be a referee?',
@@ -141,7 +141,7 @@ export const prairie: Clip = {
       trap: 'love（気に入る）が聞こえるので「おいしそう」に聞こえるが、それはガースの言葉。返事は horrifying。',
       use: 'Nobody touch that, it’s hot.（誰も触らないで、熱いから）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'overhead', seg: [92.5, 100.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'overhead', seg: [92.93, 100.5],
       stem: 'What does “I’m in over my head” mean?',
       ja: '「I’m in over my head」はどういう意味？',
       choices: ['It’s too much for me', 'I think too much', 'I can’t stop now'], a: 0,
@@ -319,7 +319,7 @@ export const prairie: Clip = {
       trap: '石けん作りや May（5月）の話で断りに聞こえやすいが、それは前置き。最後の Yes が答え。',
       use: 'Let’s try it on a trial basis.（お試しでやってみよう）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'useyou', seg: [228.5, 233.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'useyou', seg: [225.66, 233.5],
       stem: 'What does “we could really use you” mean?',
       ja: '「we could really use you」はどういう意味？',
       choices: ['We really need your help', 'We want to use your things', 'We want to pay you'], a: 0,

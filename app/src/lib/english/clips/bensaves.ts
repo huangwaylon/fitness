@@ -255,7 +255,7 @@ export const benSaves: Clip = {
       trap: 'tried once を聞き落とすと「やったことがない」に取りやすい。最後の awful が評価。',
       use: 'We tried once. It was a mess.（一度やったけど、ひどかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'somebody', seg: [158, 166],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'somebody', seg: [158, 165.76],
       stem: 'Type the line: “But you’ve ___.” (4 words)', answer: 'got to find somebody',
       ja: '「But you’ve」のあとの4語を書こう。',
       cue: '「they’re awful」のあと。',

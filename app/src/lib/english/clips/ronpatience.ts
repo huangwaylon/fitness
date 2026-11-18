@@ -205,7 +205,7 @@ export const ronPatience: Clip = {
       trap: 'worth a はつながり「ワーサ」と聞こえやすい。shot の t は小さい。',
       use: 'It’s worth a shot.（やってみる価値はある）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'easy', seg: [118.4, 124.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'easy', seg: [118.4, 124.28],
       stem: 'What does “*See*, that was easy” mean?', ja: '「See, that was easy」の意味は？',
       choices: ['I told you so', 'Look at this', 'Do you understand?'], a: 0,
       choicesJa: ['ほら、言った通りだろ', 'これを見て', 'わかった？'],

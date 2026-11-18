@@ -41,7 +41,7 @@ export const callMe911: Clip = {
       trap: 'デビッドが「けが人は？」と聞くので、事故と考えがち。だれもけがはしていない。',
       use: 'Hello, I need your help.（もしもし、助けてほしいんです）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'afraid', ctx: true, seg: [27.5, 35.5],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'afraid', ctx: true, seg: [27.5, 36.04],
       stem: 'David asks if everyone is okay. What does Michael say?',
       ja: 'デビッドは「みんな無事か？」と聞く。マイケルの答えは？',
       choices: ['Sadly, no', 'Yes, everyone is', 'He is not sure'], a: 0,
@@ -53,7 +53,7 @@ export const callMe911: Clip = {
       trap: 'afraid（怖い）から、怖がっていると考えがち。not で終わるので答えは「いいえ」。',
       use: 'Do you have a table? — I’m afraid not.（席はありますか？—あいにく満席です）' },
 
-    { id: 'f1', skill: 'detail', level: 'B1', point: 'surface', ctx: true, seg: [35.5, 43.5],
+    { id: 'f1', skill: 'detail', level: 'B1', point: 'surface', ctx: true, seg: [35.99, 43.5],
       stem: 'David asks if anyone is hurt. What does Michael say?',
       ja: 'デビッドは「けが人は？」と聞く。マイケルの答えは？',
       choices: ['No, but people are upset', 'Yes, a few people are hurt', 'He doesn’t know yet'], a: 0,

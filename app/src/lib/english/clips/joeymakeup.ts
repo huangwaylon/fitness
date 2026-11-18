@@ -135,7 +135,7 @@ export const joeymakeup: Clip = {
       trap: 'just like Mom’s（ママの味）から、母親の家に行く話と勘違いしやすい。場所は at my place。',
       use: 'Why don’t you come over for dinner?（うちに夕食を食べに来ない？）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'tellyou', reveals: ['offer'], seg: [51.8, 57.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'tellyou', reveals: ['offer'], seg: [52.26, 57.2],
       stem: 'Monica says, “I’ll tell you what.” What comes next?',
       ja: 'モニカが「I’ll tell you what」と言う。次に来るのは？',
       choices: ['A new idea', 'A secret about Mom', 'Some bad news'], a: 0,
@@ -181,7 +181,7 @@ export const joeymakeup: Clip = {
       trap: 'not supposed to（〜はずじゃない）から、ダマなしで作ると考えがち。途中でやめて引き受けている。',
       use: 'Okay, I’ll work on it.（分かった、やってみる）' },
 
-    { id: 'm2', skill: 'detail', level: 'B1', point: 'right', reveals: ['offer'], ctx: true, seg: [65.6, 71.8],
+    { id: 'm2', skill: 'detail', level: 'B1', point: 'right', reveals: ['offer'], ctx: true, seg: [65.6, 72.2],
       stem: 'What are Joey’s plans for Thanksgiving?',
       ja: 'ジョーイの感謝祭の予定は？',
       choices: ['He is going home', 'He is eating at Monica’s', 'He is working that day'], a: 0,

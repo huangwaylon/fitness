@@ -138,7 +138,7 @@ export const thiefOfJoy: Clip = {
       trap: '直前の「時間泥棒」への当てこすりに聞こえやすい。主語と病名の中身を聞けば、ずっと自分の話。',
       use: 'I never call in sick. Not even once.（病欠は一度もない）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'comein', seg: [67.6, 73.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'comein', seg: [67.6, 73.06],
       stem: 'Fill the gap: “I ___ in.”',
       ja: '「I ___ in.」の空所は？',
       choices: ['still come', 'still came', 'will still come'], a: 0,

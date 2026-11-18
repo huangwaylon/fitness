@@ -114,7 +114,7 @@ export const ronWill: Clip = {
       trap: 'pass から「渡す」や「合格」を連想しやすい。直前で弁護士を「役に立たない」と言っている。',
       use: 'Karaoke tonight? I’ll pass.（今夜カラオケ？私はパス）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'govt', reveals: ['speakof'], ctx: true, seg: [57.5, 66.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'govt', reveals: ['speakof'], ctx: true, seg: [57.87, 66.2],
       stem: 'Why does Ron suddenly want to see the lawyer?',
       ja: 'ロンはなぜ急に弁護士に会いたくなる？',
       choices: ['The government may take it', 'He has a family now', 'His will isn’t signed right'], a: 0,
@@ -156,7 +156,7 @@ export const ronWill: Clip = {
       trap: '質問の形なので、本当に時間を聞いていると考えがち。長い自慢話のあとなら退屈のしるし。',
       use: 'How much longer will this take?（あとどれくらいかかるの？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'puns', seg: [89.1, 96.4],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'puns', seg: [89.1, 96.75],
       stem: 'What has Trevor told Ben before?',
       ja: 'トレバーは前にベンに何と言った？',
       choices: ['That he hates word jokes', 'That Ron is hard to work with', 'That accountants talk too much'], a: 0,

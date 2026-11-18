@@ -81,7 +81,7 @@ export const ronShot: Clip = {
       trap: '最初の Yeah で同意に聞こえる。Yeah のあとの中身で、返事の向きを決める。',
       use: 'Oddly, coffee relaxes me.（不思議とコーヒーで落ち着く）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'rangers', ctx: true, seg: [55, 62.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'rangers', ctx: true, seg: [55.31, 62.5],
       stem: 'Why is Ron upset to hear a ranger is coming?',
       ja: 'レンジャーが来ると聞いて、ロンはなぜ困る？',
       choices: ['They won’t let them return', 'They’ll send everyone home', 'They’ll give them a big fine'], a: 0,
@@ -390,7 +390,7 @@ export const ronShot: Clip = {
       trap: 'out of（〜から出た）から、危険を脱したと思いやすい。it は何も指さない。',
       use: 'Sorry, I’m a bit out of it today.（ごめん、今日はちょっとぼーっとしてて）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'sleep', ctx: true, seg: [259.8, 267.1],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'sleep', ctx: true, seg: [259.8, 266.83],
       stem: 'What does Ron say about Leslie in his sleep?',
       ja: 'ロンは寝言でレスリーのことをどう言っている？',
       choices: ['Bad things', 'Nice things', 'Nothing clear'], a: 0,
@@ -427,7 +427,7 @@ export const ronShot: Clip = {
       trap: 'accident が先に聞こえるので、事故の様子を聞いているように聞こえるが、本題は need to know のあと。',
       use: 'I need to know who’s in charge here.（ここの責任者が誰か知りたいんです）' },
 
-    { id: 'c9', skill: 'pragma', level: 'B1', point: 'confess', ctx: true, reveals: ['blame', 'craig'], seg: [279, 288],
+    { id: 'c9', skill: 'pragma', level: 'B1', point: 'confess', ctx: true, reveals: ['blame', 'craig'], seg: [279.55, 288],
       stem: 'What does Leslie say she did?',
       ja: 'レスリーは自分が何をしたと言う？',
       choices: ['She shot Ron', 'She saw who did it', 'She called the rangers'], a: 0,

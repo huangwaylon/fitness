@@ -89,7 +89,7 @@ export const pamprank: Clip = {
       trap: 'size から事務所の大きさの話と考えがち。会社の話なら人の数。',
       use: 'They’re downsizing, so I’m job hunting.（人員削減で、仕事を探してる）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'letgo', seg: [50.7, 61.8],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'letgo', seg: [51.04, 61.8],
       stem: 'What does “let you go” mean here?',
       ja: 'ここで「let you go」はどういう意味？',
       choices: ['Fire you from this job', 'Let you leave early today', 'Give you a day off'], a: 0,

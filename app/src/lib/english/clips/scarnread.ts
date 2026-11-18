@@ -179,7 +179,7 @@ export const scarnRead: Clip = {
       trap: '残りの2つもこのクリップで聞こえる言葉。日本語の感覚だと謙遜を選びがち。返事は Thank you から。',
       use: 'New haircut? — Thank you for noticing!（髪切った？—気づいてくれてありがとう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'company', seg: [74.3, 79.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'company', seg: [74.67, 79.8],
       stem: 'Type the missing words: “Now, ___ for one more mission.” (3 words)', answer: 'keep me company',
       ja: '空いている所の英語3語を書こう：「Now, ___ for one more mission.」',
       cue: '「Now」のあと、for の前',

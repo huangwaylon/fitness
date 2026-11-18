@@ -28,7 +28,7 @@ export const dwightAmyAdams: Clip = {
       trap: '会議室はあとで貸す部屋の話で、理由ではない。理由は No のあとの一文。',
       use: 'My phone is a big distraction.（スマホがすごく気を散らす）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', ctx: true, seg: [12.5, 18.5],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', ctx: true, seg: [11.82, 18.5],
       stem: 'How does Michael feel about meeting the seller?',
       ja: '物売りに会うことを、マイケルはどう思っている？',
       choices: ['Annoyed', 'Sorry', 'Curious'], a: 0,

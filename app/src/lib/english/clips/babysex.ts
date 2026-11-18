@@ -41,7 +41,7 @@ export const babySex: Clip = {
       trap: '最初に2回 distributions と言うので、それと思いやすい。読み直しを聞く。',
       use: 'What does that sign say?（あの看板、何て書いてある？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'suspense', seg: [38.3, 43],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'suspense', seg: [38.3, 43.51],
       stem: 'What does “The suspense is killing me” mean?',
       ja: '「The suspense is killing me」はどういう意味？',
       choices: ['I can’t wait to know', 'I feel very sick', 'I am bored of this'], a: 0,
@@ -222,7 +222,7 @@ export const babySex: Clip = {
       use: 'Either way, it’s going to be great.（どっちにしても最高になるよ）' },
 
     // A2: was “How does the big moment go?” with three two-part choices; now the plain result
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reveal', reveals: ['preference'], seg: [130.0, 150.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reveal', reveals: ['preference'], seg: [129.61, 150.6],
       stem: 'What do Ann and Chris finally learn?',
       ja: 'アンとクリスが最後に知ることは？',
       choices: ['It’s a boy', 'It’s a girl', 'It’s twins'], a: 0,

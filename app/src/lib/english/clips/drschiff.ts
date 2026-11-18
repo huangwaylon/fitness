@@ -191,7 +191,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'enough（十分）から、話し疲れたと勘違いしやすい。実は相手に話をふる言い方。',
       use: 'But enough about me. How are you?（私の話はこれくらいで。あなたは？）' },
 
-    { id: 'h4', skill: 'phrase', level: 'B1', point: 'whatdoyoudo', seg: [95.5, 101.5],
+    { id: 'h4', skill: 'phrase', level: 'B1', point: 'whatdoyoudo', seg: [95.99, 101.5],
       stem: 'What is Rachel asking with “What do you do?”',
       ja: '「What do you do?」で、レイチェルは何を聞いている？',
       choices: ['What his job is', 'What he is doing now', 'Where his home is'], a: 0,
@@ -227,7 +227,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'don’t の t が消えると have a wife に聞こえる。料理はレイチェルの質問の中だけ。',
       use: 'I don’t cook, but I do eat.（料理はしないけど、食べるのは好き）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', reveals: ['ski'], seg: [112.6, 117.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', reveals: ['ski'], seg: [112.6, 118.3],
       stem: 'How does Rachel feel about the skiing?',
       ja: 'スキーの話で、レイチェルはどう感じる？',
       choices: ['Very excited about it', 'Teasing him about skiing', 'Trying to act cool'], a: 0,
@@ -263,7 +263,7 @@ export const rachelFlirtsDoctor: Clip = {
       trap: 'Shoot は「撃つ」ではなく「もう！」という声。No のあと、質問にあきれている。',
       use: 'Shoot, I forgot my keys.（しまった、鍵を忘れた）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'liedown', seg: [132.5, 138.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'liedown', seg: [132.5, 139.27],
       stem: 'What does the doctor ask Rachel to do?',
       ja: '先生はレイチェルに何をするよう頼む？',
       choices: ['Lie down on the table', 'Sit down on the chair', 'Stand up and walk'], a: 0,

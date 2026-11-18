@@ -200,7 +200,7 @@ export const ent720: Clip = {
       mean: 'books ＝ 会社の話では「帳簿（お金の記録）」。I need to see 〜 ＝ 〜を見せてほしい。',
       trap: 'books を本と思いやすい。会社のお金の話なら帳簿のこと。',
       use: 'Let’s go over the books tonight.（今夜、帳簿を見直そう）' },
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'gotit', ctx: true, seg: [143.6, 149.6],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'gotit', ctx: true, seg: [143.22, 149.6],
       stem: 'How does the owner answer Ben’s request?',
       ja: 'ベンの頼みに、経営者はどう答える？',
       choices: ['Sure, right away', 'You have it already', 'Sorry, we can’t'], a: 0,

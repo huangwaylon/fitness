@@ -234,7 +234,7 @@ export const housetour: Clip = {
       trap: 'narrow と short が続けて聞こえるので、小さいと認めたと勘違いしやすい。決め手は actually のあと。',
       use: 'It’s a lot bigger than it seems.（見た目よりずっと広いんです）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151, 181],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151.4, 181],
       stem: 'What is Michael showing off here?',
       ja: 'ここでマイケルが自慢しているのは何？',
       choices: ['His new TV', 'His new bed', 'His candles'], a: 0,

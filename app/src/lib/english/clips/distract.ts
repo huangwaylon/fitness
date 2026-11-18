@@ -223,7 +223,7 @@ export const distract: Clip = {
       trap: 'ロンが busy work と言ったので、むだと認めると思いやすい。was not で打ち消す。',
       use: 'That was not a waste of time.（あれは時間のむだじゃなかった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'friendship', reveals: ['purposes'], seg: [116.5, 122.2],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'friendship', reveals: ['purposes'], seg: [116.5, 122.58],
       stem: 'How does Leslie feel about the “distraction waffles”?',
       ja: '「気をそらすワッフル」と知って、レスリーはどんな気持ち？',
       choices: ['Sad and surprised', 'Happy and amused', 'Touched and thankful'], a: 0,

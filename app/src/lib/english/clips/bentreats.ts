@@ -17,7 +17,7 @@ export const benTreats: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'yearly', seg: [14.5, 21.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'yearly', seg: [14.5, 21.21], keep: true,
       stem: 'How often do Tom and Donna do this?',
       ja: 'トムとドナはどのくらいの間隔でこれをする？',
       choices: ['Once a year', 'Twice a year', 'Once a month', 'Once a week'], a: 0,
@@ -98,7 +98,7 @@ export const benTreats: Clip = {
       trap: 'keep up を速さの話と取りやすい。反対の言葉が並んだら、何を競っているかを先に聞く。',
       use: 'I can’t slow down enough to sleep.（気が張って眠れない）' },
 
-    { id: 'sf', skill: 'detail', level: 'B1', point: 'selfish', seg: [53.5, 59.0],
+    { id: 'sf', skill: 'detail', level: 'B1', point: 'selfish', seg: [53.5, 58.66],
       stem: 'What does Tom let himself be on this day?',
       ja: 'この日、トムは自分に何を許す？',
       choices: ['Selfish', 'Sleepy', 'Generous'], a: 0,
@@ -144,7 +144,7 @@ export const benTreats: Clip = {
       trap: 'wouldn’t の t が消えて would に聞こえやすい。「ン」が残れば否定。',
       use: 'I don’t get it. Can you explain?（よく分からない。説明して？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'harps', reveals: ['spa'], seg: [101.5, 110.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'harps', reveals: ['spa'], seg: [101.91, 110.9],
       stem: 'What makes Ben nervous at the spa?',
       ja: 'スパで、ベンは何に落ち着かない？',
       choices: ['The sound of the harps', 'The price of the treatments', 'The quiet of the room'], a: 0,

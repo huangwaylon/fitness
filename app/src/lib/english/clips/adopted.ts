@@ -207,7 +207,7 @@ export const chandlerAdopted: Clip = {
       trap: 'No を相手への「いいえ」と考えがち。自分の考えを打ち消す No。',
       use: 'No, you know what? Let’s just go.（いや、やっぱりもう行こう）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.2, 145],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.73, 145],
       stem: 'What does the host mean about the sour worms?',
       ja: 'すっぱいグミについて、夫婦は何を言いたい？',
       choices: ['Please don’t eat them', 'Eat them if you like', 'Take some home'], a: 0,
@@ -252,7 +252,7 @@ export const chandlerAdopted: Clip = {
       trap: '両親への反論に聞こえるが、直後の一言で笑われているのは本人だと分かる。',
       use: 'See? I told you so.（ほらね、言ったでしょ）' },
 
-    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 166.7], keep: true,
+    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 167.1], keep: true,
       stem: 'How much did Chandler pay Owen to keep quiet?',
       ja: 'チャンドラーは口止めにオーウェンにいくら払った？',
       choices: ['$5', '$15', '$50', '$500'], a: 2,

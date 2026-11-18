@@ -71,7 +71,7 @@ export const godfather: Clip = {
       trap: 't が消えると were に聞こえやすい。n が残れば否定。aren’t なら最初の w の音がない。',
       use: 'We weren’t expecting you so soon.（こんなに早く来るとは思わなかった）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'usall', reveals: ['invite'], seg: [29, 39],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'usall', reveals: ['invite'], seg: [27.82, 39],
       stem: 'Who does Michael say the day is for?',
       ja: 'マイケルは、この日はだれのための日だと言う？',
       choices: ['Everyone there', 'Only Jim and Pam', 'Only the baby'], a: 0,

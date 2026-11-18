@@ -59,7 +59,7 @@ export const neverLower: Clip = {
       trap: '1語だけ聞くと、似た悪口の組を選びやすい。without のあとの3語とも聞く。',
       use: 'Try to say no without being rude.（失礼にならずに断ってみて）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'thisis', seg: [24.4, 32.4],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'thisis', seg: [24.4, 32.05],
       stem: 'Type how Dwight starts: “Hello, ___ Dwight Schrute.” (2 words)', ja: 'ドワイトの最初の言葉を書こう：“Hello, ___ Dwight Schrute.”（2語）',
       answer: 'this is',
       cue: '「Hello」のすぐあと',

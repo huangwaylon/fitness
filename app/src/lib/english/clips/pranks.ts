@@ -181,7 +181,7 @@ export const conflictPranks: Clip = {
       trap: 'How could they not work? は「うまくいかないはずがない」。否定の意見ではない。',
       use: 'How could it not work?（うまくいかないわけがない）' },
 
-    { id: 'mk1', skill: 'phrase', level: 'B1', point: 'ownwords', seg: [139.5, 146.0],
+    { id: 'mk1', skill: 'phrase', level: 'B1', point: 'ownwords', seg: [139.5, 146.36],
       stem: 'What does Michael mean by “in your own words”?',
       ja: 'マイケルの「in your own words」はどういう意味？',
       choices: ['Say it your way', 'Read it out loud', 'Say it very short'], a: 0,

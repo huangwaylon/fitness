@@ -168,7 +168,7 @@ export const ronShare: Clip = {
       trap: 'No という語がないので、OK と考えがち。others to do the same ＝ 君も守れ。',
       use: 'I’d like to keep our plan.（予定どおりにしたいです）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'backdown', reveals: ['appoint', 'eight'], ctx: true, seg: [39.6, 46.0],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'backdown', reveals: ['appoint', 'eight'], ctx: true, seg: [39.97, 46.0],
       stem: 'What does Tom do after Ron says no?',
       ja: 'ロンに断られて、トムはどうする？',
       choices: ['Agrees right away', 'Asks for another day', 'Gets angry at Ron'], a: 0,

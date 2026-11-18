@@ -217,7 +217,7 @@ export const dwightHobbit: Clip = {
       trap: 'house の話なので、家の大きさで答えると考えがち。決め手は he’s a normal guy。',
       use: 'He’s a normal guy. He’s cool.（普通のいいやつだよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'ownsown', seg: [77.1, 85.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'ownsown', seg: [77.1, 85.14],
       stem: 'Fill the gap: “This guy ___ beet farm.”', ja: '空所に入るのは？ “This guy ___ beet farm.”',
       choices: ['owns his own', 'owns a whole', 'owned his own'], a: 0,
       choicesJa: ['自分の〜を持っている', '〜をまるごと持っている', '自分の〜を持っていた'],

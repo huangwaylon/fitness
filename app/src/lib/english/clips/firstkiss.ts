@@ -214,7 +214,7 @@ export const benLeslieKiss: Clip = {
       trap: 'あとで泊まる話になるので、送りに来たと思いやすい。',
       use: 'Let’s celebrate!（お祝いしよう！）' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'pawnee', ctx: true, seg: [130.5, 139.5],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'pawnee', ctx: true, seg: [130.5, 139.19],
       stem: 'What does Ben say he will do now?', ja: 'ベンはこれからどうすると言う？',
       choices: ['Go back to Pawnee', 'Take a long walk', 'Play some mini-golf'], a: 0,
       choicesJa: ['ポーニーに帰る', '長い散歩をする', 'ミニゴルフをする'],
@@ -225,7 +225,7 @@ export const benLeslieKiss: Clip = {
       trap: '散歩とミニゴルフはクリスの案。ベンの答えは go back（帰る）。',
       use: 'So what’s the plan now?（で、これからどうする？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nonsense', reveals: ['putout', 'pawnee'], ctx: true, seg: [139.5, 149],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'nonsense', reveals: ['putout', 'pawnee'], ctx: true, seg: [139.9, 149],
       stem: 'What does Chris mean by “Double nonsense”?', ja: 'クリスの「Double nonsense」の意味は？',
       choices: ['Please stay with me', 'That idea makes no sense', 'You two are so funny'], a: 0,
       choicesJa: ['ぜひうちに泊まって', 'その考えは意味不明', '2人はおもしろい'],

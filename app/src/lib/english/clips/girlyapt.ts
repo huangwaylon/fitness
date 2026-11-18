@@ -103,7 +103,7 @@ export const girlyApt: Clip = {
       trap: '話の中心が Joey なので、笑いも Joey に向くと思いやすい。最後に言いわけしたのが誰かで的が決まる。',
       use: 'Do as I say, not as I do.（言う通りにして、まねはしないで）' },
 
-    { id: 'c2', skill: 'phrase', level: 'B1', point: 'beright', seg: [49.5, 57.5],
+    { id: 'c2', skill: 'phrase', level: 'B1', point: 'beright', seg: [49.5, 58.07],
       stem: 'What does Chandler mean by “Be right there”?',
       ja: 'チャンドラーの「Be right there」はどういう意味？',
       choices: ['I’m coming soon', 'Wait right there', 'You’re right'], a: 0,
@@ -227,7 +227,7 @@ export const girlyApt: Clip = {
       trap: 'smells different から「誰かが使った」と勘違いしやすい。ジャニーンの短い答えが理由。',
       use: 'It’s not different. It’s just clean.（違うんじゃなくて、きれいなだけ）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'peace', reveals: ['clean'], seg: [162.3, 169.6],
+    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'peace', reveals: ['clean'], seg: [162.8, 169.6],
       stem: 'What does “I can make my peace with” the towels mean?',
       ja: 'タオルについての「I can make my peace with」はどういう意味？',
       choices: ['I can accept them now', 'I can thank her for them', 'I can make up with her'], a: 0,

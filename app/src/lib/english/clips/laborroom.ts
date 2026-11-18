@@ -132,7 +132,7 @@ export const laborroom: Clip = {
       trap: 'semi は短く弱いので、private だけが耳に残りやすい。前の「セミ」を聞く。',
       use: 'Is this a private room or shared?（個室ですか、相部屋ですか）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'asked', reveals: ['semi'], seg: [45.5, 56.9],
+    { id: 'r1', skill: 'pragma', level: 'B2', point: 'asked', reveals: ['semi'], seg: [45.5, 56.64],
       stem: 'What does Ross mean by “I’m sorry” here?',
       ja: 'ここでのロスの「I’m sorry」はどういう意味？',
       choices: ['Wait, what did you say?', 'I apologize to you', 'I feel bad for you'], a: 0,

@@ -40,7 +40,7 @@ export const mykonos: Clip = {
       trap: 'plant を植物やスパイと思いやすい。My job is のあとを聞く。',
       use: 'This jacket makes you look good.（このジャケット似合ってるね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'technique', reveals: ['plant'], seg: [19.4, 31.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'technique', reveals: ['plant'], seg: [19.4, 31.79],
       stem: 'How does Michael make Andy look good?',
       ja: 'マイケルはどうやってアンディをよく見せる？',
       choices: ['Helpful questions and laughing', 'Tough questions and laughing', 'Helpful questions and clapping'], a: 0,

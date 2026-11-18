@@ -34,7 +34,7 @@ export const fakingIt: Clip = {
       trap: '「学んでいる」「好かれている」とは言っていない。言葉どおり「最高・絶好調」。',
       use: 'Work’s going great, thanks.（仕事は順調だよ、ありがとう）' },
 
-    { id: 'br', skill: 'phrase', level: 'B1', point: 'brilliant', seg: [4.0, 11.5],
+    { id: 'br', skill: 'phrase', level: 'B1', point: 'brilliant', seg: [4.0, 11.86],
       stem: 'What does “That’s brilliant” mean, says Andy?',
       ja: 'アンディによると「That’s brilliant」はどういう意味？',
       choices: ['The same as “cool”', 'It shines very brightly', 'It costs a lot'], a: 0,

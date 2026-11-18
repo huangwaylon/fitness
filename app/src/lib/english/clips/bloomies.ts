@@ -210,7 +210,7 @@ export const bloomingdales: Clip = {
       mean: '浮気の告白の決まり文句を並べ、最後の一語が「買い物」。期待とのずれが笑い。',
       trap: '浮気の言葉を文字どおり取りやすいが、ここは告白の型。最後の語で型が崩れる。',
       use: 'Before I knew it, it was 3 a.m.（気づいたら夜中の3時だった）', retired: true },
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'onething', seg: [168.3, 178.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'onething', seg: [168.66, 178.5],
       stem: 'What does “one thing led to another” mean?',
       ja: '「one thing led to another」はどういう意味？',
       choices: ['Little by little, no plan', 'All at once, and very fast', 'By mistake, after a mix-up'], a: 0,

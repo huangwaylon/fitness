@@ -392,7 +392,7 @@ export const cantAfford: Clip = {
       trap: '言葉どおりだと「興味がない」、直前の gift から「プレゼント希望」に聞こえる。相手が謝ったら強がり。',
       use: 'It’s fine. I’ll just watch it online.（いいよ、ネットで見るから）' },
 
-    { id: 'nt3', skill: 'pragma', level: 'B1', point: 'together', reveals: ['concert'], ctx: true, seg: [272.6, 284.5],
+    { id: 'nt3', skill: 'pragma', level: 'B1', point: 'together', reveals: ['concert'], ctx: true, seg: [272.6, 284.9],
       stem: 'Ross is asked if he wants the concert. What does he say?',
       ja: 'ロスはコンサートに行きたいか聞かれる。答えは？',
       choices: ['No, being together matters', 'Yes, he really wants to go', 'Only if everyone pays'], a: 0,

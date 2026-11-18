@@ -19,7 +19,7 @@ export const ronDesk: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'equality', seg: [6.4, 17.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'equality', seg: [6.4, 16.91],
       stem: 'What idea does Chris say the desk stands for?',
       ja: 'クリスによると、この机はどんな考えを表している？',
       choices: ['Equality', 'Simplicity', 'Teamwork'], a: 0,
@@ -67,7 +67,7 @@ export const ronDesk: Clip = {
       trap: 'many walls が耳に残ると、壁が増える話に聞こえるが、決め手は That becomes のあと。',
       use: 'What about my parking space?（私の駐車場はどうなるの？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'access', seg: [36.6, 58.7],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'access', seg: [36.6, 58.05],
       stem: 'What does Chris want to change about Ron?',
       ja: 'クリスはロンの何を変えたい？',
       choices: ['Make him easy to reach', 'Make him look more modern', 'Make him work much faster'], a: 0,
@@ -205,7 +205,7 @@ export const ronDesk: Clip = {
       trap: '口を丸めた「ポー」なら pork、大きく開けた「パー」なら park、口を小さくこもった「ア〜」なら perk。',
       use: 'I’ll have the pork, please.（ポークをお願いします）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'startover', seg: [121.6, 133.6],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'startover', seg: [121.6, 134.02],
       stem: 'What does “Can we *start over*?” mean here?',
       ja: '「Can we start over?」はここでどういう意味？',
       choices: ['To begin again', 'To stop for today', 'To go home now'], a: 0,

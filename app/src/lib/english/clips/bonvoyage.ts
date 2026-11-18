@@ -188,7 +188,7 @@ export const bonVoyage: Clip = {
       trap: '映画で泣く話と考えがち。決め手は because のあとの too hyper。',
       use: 'Coffee makes me too hyper at night.（夜のコーヒーは目がさえすぎる）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'intense', seg: [136.3, 143.3],
+    { id: 'i3', skill: 'phrase', level: 'B2', point: 'intense', seg: [136.3, 143.05],
       stem: 'What does “cranky” mean here?',
       ja: '「cranky」は、ここでどういう意味？',
       choices: ['In a bad mood', 'Feeling sick', 'Very sleepy'], a: 0,
@@ -341,7 +341,7 @@ export const bonVoyage: Clip = {
       trap: 'アンの仕事は看護師なので、仕事の話と考えがち。going to be のあとの mother を聞く。',
       use: 'I’m sure you’re going to be great.（きっとうまくいくよ）' },
 
-    { id: 'i5', skill: 'attitude', level: 'B2', point: 'parts', seg: [258, 266.5],
+    { id: 'i5', skill: 'attitude', level: 'B2', point: 'parts', seg: [257.6, 266.5],
       stem: 'How does Ron feel about his time with Ann?',
       ja: 'ロンは、アンと過ごした時間をどう思っている？',
       choices: ['He liked some of it', 'He liked every minute', 'He didn’t like any of it'], a: 0,

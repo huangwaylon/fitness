@@ -195,7 +195,7 @@ export const evilLaugh: Clip = {
       trap: '紹介されたいとこが頭に残りやすい。答えは質問のすぐあとの2語。',
       use: 'Who’s picking up the kids today?（今日は誰が子どもを迎えに行く？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'whirl', seg: [94.1, 102.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'whirl', seg: [94.42, 102.5],
       stem: 'Jim says, “Give it a whirl.” What does he want?',
       ja: 'ジムの「Give it a whirl」は、何をしたいということ？',
       choices: ['To try the lock for real', 'To walk around outside', 'To see the place from outside'], a: 0,

@@ -13,7 +13,7 @@ export const ronDentist: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reason', seg: [10, 32.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reason', seg: [10, 32.08],
       stem: 'Why does Ron offer to do the survey himself?', ja: 'ロンはなぜ自分で調査をすると言う？',
       choices: ['To be outside all alone', 'He now loves government work', 'To meet all of the surveyors'], a: 0,
       choicesJa: ['外で一人きりになるため', '行政の仕事が好きになったから', '測量士全員に会うため'],

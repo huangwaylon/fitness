@@ -42,7 +42,7 @@ export const aprilFired: Clip = {
       trap: 'files から「消す仕事」と思いやすい。supposed to の直後が本来の仕事。',
       use: 'I was supposed to call you yesterday.（昨日電話するはずだったんだけど）' },
 
-    { id: 'a1', skill: 'marker', level: 'B1', point: 'hiding', ctx: true, seg: [18.9, 25.5],
+    { id: 'a1', skill: 'marker', level: 'B1', point: 'hiding', ctx: true, seg: [18.9, 26.0],
       stem: 'April says the files are gone. What does Andy say first?',
       ja: 'ファイルが消えたと言うエイプリルに、アンディはまず何と言う？',
       choices: ['She was right to hide', 'She should call Leslie', 'She can fix it herself'], a: 0,
@@ -215,7 +215,7 @@ export const aprilFired: Clip = {
       trap: '責める言葉が並ぶので意地悪に聞こえる。「助けたい」をくり返す人が、ずれている側。',
       use: 'Sorry, that didn’t help, did it?（ごめん、励ましになってないね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', ctx: true, seg: [93, 99.5],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', ctx: true, seg: [93, 100.0],
       stem: 'How does April answer “Dream big, kid”?',
       ja: '「Dream big, kid」に、エイプリルはどう答える？',
       choices: ['She agrees, but not happily', 'She agrees, and feels better', 'She says no to him'], a: 0,

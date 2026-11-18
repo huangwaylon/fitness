@@ -67,7 +67,7 @@ export const officeFumble: Clip = {
       trap: 'office から人や仕事の多さを連想しやすい。知らない言葉は、直後の言いかえ box がヒント。',
       use: 'I’ve been cooped up inside all week.（一週間ずっと家にこもってた）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'righthere', seg: [44, 51.4],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'righthere', seg: [44.55, 51.4],
       stem: 'What does “Right here, give it to me” mean in the game?',
       ja: '試合中の「Right here, give it to me」はどういう意味？',
       choices: ['Pass the ball to me here', 'Put the ball down here', 'This is the right ball'], a: 0,

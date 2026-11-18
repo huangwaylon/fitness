@@ -324,7 +324,7 @@ export const heroes: Clip = {
       trap: '同じ言葉のくり返しは賛成に聞こえやすい。皮肉かどうかは、すぐあとの一言で決まる。',
       use: 'Oh, by the way, how’s the diet going?（ところで、ダイエットはどう？）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'fairness', seg: [254.8, 263.6],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'fairness', seg: [254.8, 264.19],
       stem: 'What does Michael mean by “In fairness to me”?', ja: 'マイケルの「In fairness to me」の意味は？',
       choices: ['Let me give my side', 'I’m sorry about that', 'Ron is telling a lie'], a: 0,
       choicesJa: ['私の言い分も言わせて', 'それは悪かった', 'ロンはうそをついている'],

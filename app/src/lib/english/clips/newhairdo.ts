@@ -112,7 +112,7 @@ export const newHairdo: Clip = {
       trap: '「着替えたら」と考えがち。What are you talking about? は「そんなことない」。',
       use: 'You look great. Don’t worry.（すてきだよ。心配しないで）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'drink', seg: [67, 73],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'drink', seg: [66.62, 73],
       stem: 'Type the question: “You ___?” (3 words)', answer: 'want a drink',
       ja: '「You ___?」の空所を書こう（3語）',
       cue: '「Yeah, I know」のあと',
@@ -157,7 +157,7 @@ export const newHairdo: Clip = {
       trap: 'レスリーは政治の話をしたいので、選挙の話と思いやすい。you two と who you are を聞く。',
       use: 'Just be who you are.（ありのままでいて）' },
 
-    { id: 'look', skill: 'pragma', level: 'B1', point: 'lookatyou', seg: [109, 116.5],
+    { id: 'look', skill: 'pragma', level: 'B1', point: 'lookatyou', seg: [109, 116.91],
       stem: 'What does “Look at you” mean here?',
       ja: 'ここでの「Look at you」の意味は？',
       choices: ['What a nice change!', 'Please look this way.', 'Is that really you?'], a: 0,

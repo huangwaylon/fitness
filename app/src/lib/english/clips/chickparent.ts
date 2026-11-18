@@ -28,7 +28,7 @@ export const chickParent: Clip = {
       trap: 'last から「もうやらない」と考えがち。Okay で引き受けていて、このあと歌が始まる。',
       use: 'Okay, but this is the last time.（いいよ、でもこれが最後ね）' },
 
-    { id: 'doing', skill: 'phrase', level: 'B1', point: 'doing', seg: [11.9, 20.6],
+    { id: 'doing', skill: 'phrase', level: 'B1', point: 'doing', seg: [12.26, 20.6],
       stem: 'What does “How’s she doing?” ask?',
       ja: '「How’s she doing?」は何を聞いている？',
       choices: ['Is the chick OK?', 'What is she doing now?', 'Where did she go?'], a: 0,

@@ -134,7 +134,7 @@ export const kevinTalk: Clip = {
       trap: 'not speak English から、二人は話さないと考えがち。決め手は最後の best friends。',
       use: 'My mechanic doesn’t speak English.（私の整備士は英語を話さない）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'trick', seg: [59.6, 69.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'trick', seg: [59.95, 69.3],
       stem: 'What does Kevin’s “few word *do trick*” mean?', ja: 'ケビンの「few word do trick」はどういう意味？',
       choices: ['Work well enough', 'Make people laugh', 'Do some magic'], a: 0,
       choicesJa: ['十分うまくいく', '人を笑わせる', '手品をする'],
@@ -189,7 +189,7 @@ export const kevinTalk: Clip = {
       trap: 'though は小さく言うので、聞き落としやすい。疑いの合図。',
       use: 'Is it really cheaper, though?（でも、本当に安いの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [93.4, 99],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [93.74, 99],
       stem: 'How long have they been there, says the coworker?', ja: '同僚によると、もうどのくらいここにいる？',
       choices: ['About 10 minutes', 'About half an hour', 'About an hour', 'About 2 hours'], a: 2, keep: true,
       choicesJa: ['10分くらい', '30分くらい', '1時間くらい', '2時間くらい'],

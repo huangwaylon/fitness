@@ -228,7 +228,7 @@ export const andyJamie: Clip = {
       trap: '少し前の in the white（白い服の）は先生の話。決め手は green hoodie。',
       use: 'My friend is the one in the red coat.（友だちは赤いコートの人です）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [102.7, 107.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [102.7, 108.12],
       stem: 'Type the words: “We ___ time…” (5 words)', answer: "don't have a lot of",
       ja: '「We ___ time…」の空所を書こう（5語）',
       cue: '「you know what」のあと',

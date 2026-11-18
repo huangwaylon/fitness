@@ -131,7 +131,7 @@ export const ronpothole: Clip = {
       trap: 'gloves（手袋）の話もすぐ前にあるが、質問は how … fix this hole（穴の直し方）。',
       use: 'How exactly does this work?（これ、具体的にどう動くの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 98.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [91.07, 98.5],
       stem: 'Type what Ron says: “I dug the loose gravel ___ hole.” (3 words)', answer: 'out of the',
       ja: '「I dug the loose gravel ___ hole.」の3語を書こう。',
       cue: 'gravel のすぐあとの短い3語。',

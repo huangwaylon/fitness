@@ -167,7 +167,7 @@ export const fakeWedding: Clip = {
       trap: 'ears（耳）から「聞こえ」の話と考えがち。had to（〜しなければならなかった）と You can do this をつなげる。',
       use: 'If I can do it, you can too.（私にできるなら、君にもできる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', seg: [66.0, 77.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', seg: [66.0, 77.38],
       stem: 'How does Ross feel about the parents’ plan?',
       ja: 'ロスは両親の計画をどう思っている？',
       choices: ['Upset about lying', 'Amused by the ears', 'Glad it’s one night'], a: 0,

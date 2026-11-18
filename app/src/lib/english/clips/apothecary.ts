@@ -14,7 +14,7 @@ export const apothecaryTable: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'anysec', seg: [10.5, 17.7],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'anysec', seg: [11.06, 17.7],
       stem: 'What does “any second” mean here?',
       ja: 'ここで「any second」はどういう意味？',
       choices: ['In just a moment', 'In exactly one second', 'Whenever she likes'], a: 0,

@@ -53,7 +53,7 @@ export const snowCones: Clip = {
       trap: '最初の useless だけ聞くと、ふつうの節約に聞こえる。also のあとが本音。',
       use: 'I also believe in second chances.（やり直しのチャンスも大事だと思う）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [34.7, 39.7],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', seg: [35.09, 39.7],
       stem: 'What does “Why don’t you go…?” mean here?',
       ja: '「Why don’t you go…?」は、ここではどういう意味？',
       choices: ['Go and do that', 'Tell me the reason', 'You did it well'], a: 0,
@@ -113,7 +113,7 @@ export const snowCones: Clip = {
       trap: '風車を本気の策と取りやすいが、I’ll figure it out は「これから考える」。',
       use: 'I’ll figure it out as I go.（やりながら考えるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'figure', seg: [61.7, 69.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'figure', seg: [62.05, 69.7],
       stem: 'Type what Leslie says after “How?”: “___.” (4 words)', answer: 'i\'ll figure it out',
       ja: '「How?」のあとの言葉を書こう（4語）',
       cue: '「How?」のすぐあと',
@@ -123,7 +123,7 @@ export const snowCones: Clip = {
       trap: 'figure it out が「フィギャリラウ」とつながる。I’ll の ll も小さい。',
       use: 'We’ll figure something out.（何とかなるよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'carpet', seg: [69.2, 78.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'carpet', seg: [69.2, 77.94],
       stem: 'What is Leslie planning to do for Jamm?',
       ja: 'レスリーはジャムに何をするつもり？',
       choices: ['Treat him as a special guest', 'Throw a big party for him', 'Ask him straight for his vote'], a: 0,
@@ -184,7 +184,7 @@ export const snowCones: Clip = {
       trap: '大げさなほめ言葉は皮肉にも聞こえるが、続けて食べ物を勧めている。怒らせる気はない。',
       use: 'Wow, what a great story!（へえ、いい話ですね！）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'hotdog', seg: [115, 120],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'hotdog', seg: [115.34, 120],
       stem: 'What does Leslie ask if anybody wants?',
       ja: '始める前に、レスリーは何がほしいか聞く？',
       choices: ['A hot dog', 'A soda', 'A sandwich'], a: 0,
@@ -327,7 +327,7 @@ export const snowCones: Clip = {
       trap: 'fire から「怒り」を思いやすい。直前の「プロになれる」と合わせる。',
       use: 'You’re on fire today!（今日は絶好調だね！）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'subsidy', seg: [208.6, 215], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'subsidy', seg: [209.01, 215], keep: true,
       stem: 'How much a year does Ron say the course costs taxpayers?',
       ja: 'コースの費用は年にいくらとロンは言う？',
       choices: ['$900', '$9,000', '$19,000', '$90,000'], a: 1,

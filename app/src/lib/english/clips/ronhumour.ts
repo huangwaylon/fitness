@@ -109,7 +109,7 @@ export const ronHumour: Clip = {
       trap: '前の「きらわれがち」から、ショックを受けたと考えがち。決め手は続く This is the job。',
       use: 'This is the one. I can feel it.（これだ、そんな気がする）' },
 
-    { id: 'd2', ctx: true, skill: 'detail', level: 'B1', point: 'major', seg: [66.8, 76.6],
+    { id: 'd2', ctx: true, skill: 'detail', level: 'B1', point: 'major', seg: [67.1, 76.6],
       stem: 'What did April study in college?',
       ja: 'エイプリルは大学で何を勉強した？',
       choices: ['A major she created', 'Economics and business', 'Accounting and math'], a: 0,

@@ -87,7 +87,7 @@ export const nanaclub: Clip = {
       trap: 'お金を頼みに来たので、お金のお礼と考えがち。まだ誰も出していない。',
       use: 'I appreciate you coming today.（今日は来てくださってありがとうございます）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stars', seg: [46.5, 57.0],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stars', seg: [44.22, 57.0],
       stem: 'What does “reaching for the stars” mean here?',
       ja: 'ここでの「reaching for the stars」はどういう意味？',
       choices: ['Trying for big dreams', 'Working late at night', 'Looking up at the sky'], a: 0,

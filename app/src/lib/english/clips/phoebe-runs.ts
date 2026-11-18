@@ -271,7 +271,7 @@ export const phoebeRuns: Clip = {
       trap: 'up と tight で「背筋が伸びた」と文字通りに取りやすい。人の性格を表す語として覚える。',
       use: 'Relax, don’t be so uptight.（そんなに堅くならないで）' },
 
-    { id: 'c2', skill: 'phrase', level: 'B1', point: 'seewhy', reveals: ['can'], seg: [171.7, 177.4],
+    { id: 'c2', skill: 'phrase', level: 'B1', point: 'seewhy', reveals: ['can'], seg: [171.7, 177.75],
       stem: 'What does Phoebe mean by “I can see why”?',
       ja: 'フィービーの「I can see why」はどういう意味？',
       choices: ['I understand the reason', 'I can see you there', 'I want to know why'], a: 0,

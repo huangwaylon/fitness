@@ -278,7 +278,7 @@ export const dwightHimself: Clip = {
       trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',
       use: 'Come on, keep going!（ほら、続けて！）' },
 
-    { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', ctx: true, seg: [94.7, 104.2],
+    { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', ctx: true, seg: [94.7, 104.59],
       stem: 'What does Dwight mean by “But not for long”?', ja: 'ドワイトの “But not for long” はどういう意味？',
       choices: ['He’ll start winning soon', 'He’ll stop the fight soon', 'He’ll take a break soon'], a: 0,
       choicesJa: ['すぐに勝ち始める', 'すぐに試合をやめる', 'すぐにひと休みする'],

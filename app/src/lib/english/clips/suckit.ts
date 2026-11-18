@@ -355,7 +355,7 @@ export const suckit: Clip = {
 
       use: 'That’s not what we were talking about.（そういう話じゃなかったでしょ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'closed', seg: [204.3, 210.8],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'closed', seg: [204.74, 210.8],
       stem: 'What does “Case closed” mean?',
       ja: '「Case closed」はどういう意味？',
       choices: ['That’s the end of it', 'Let’s drink up now', 'Nobody wins this'], a: 0,

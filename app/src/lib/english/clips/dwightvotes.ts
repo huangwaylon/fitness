@@ -45,7 +45,7 @@ export const dwightVotes: Clip = {
       trap: 'nip（つまむ）から「小さくする」と思いやすい。つぼみ＝始まったばかり、なので「早く止める」。',
       use: 'Let’s nip this problem in the bud.（この問題は早めに手を打とう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'work', seg: [24.5, 30.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'work', seg: [23.42, 30.7],
       stem: 'Type what Dwight says: “___.” (5 words)', answer: 'make it about the work',
       ja: 'ドワイトの言葉を書こう（5語）',
       cue: '「in the bud」のすぐあと、短い一文。',
@@ -67,7 +67,7 @@ export const dwightVotes: Clip = {
       trap: '営業の会社なので売上を想像しやすいが、出てくるのは hours と sick days。',
       use: 'I need to take a sick day.（今日は病欠します）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'random', seg: [38.1, 47.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'random', seg: [38.45, 47.3],
       stem: 'Why has everyone been given a number?',
       ja: 'なぜ全員に番号がつけられた？',
       choices: ['To keep scores fair and open', 'To pick the winner by chance', 'To let people vote by number'], a: 0,
@@ -79,7 +79,7 @@ export const dwightVotes: Clip = {
       trap: 'random から「くじ引き」を連想しやすいが、ランダムなのは番号のほう。理由は for のあと。',
       use: 'For fairness, we’ll take turns.（公平にするため、順番にやろう）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'ideal', ctx: true, seg: [43.5, 50.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'ideal', ctx: true, seg: [43.99, 50.0],
       stem: 'What is Jim starting to do with “in an ideal world”?',
       ja: 'ジムは「in an ideal world」で何を言いかけている？',
       choices: ['Saying no in a kind way', 'Saying yes, with a condition', 'Saying what prize he wants'], a: 0,

@@ -234,7 +234,7 @@ export const crunchNumbers: Clip = {
       trap: 'Most do（たいていある）を本当の証拠と考えがち。in the magazines が「現実ではない」と示す。',
       use: 'It looks great in the photos.（写真ではすてきに見える）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [153.2, 160.6],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [153.56, 160.6],
       stem: 'What does “We should look into that” mean?',
       ja: '「We should look into that」はどういう意味？',
       choices: ['We should check that', 'We should look inside', 'We should forget that'], a: 0,

@@ -88,7 +88,7 @@ export const tomFailure: Clip = {
       trap: 'whining を自慢と取りやすい。理由は before のあと。',
       use: 'You’re still just Mike to me.（私にとっては今もただのマイクだよ）' },
 
-    { id: 'c8', skill: 'pragma', level: 'B1', point: 'nocando', ctx: true, seg: [46.8, 53.0],
+    { id: 'c8', skill: 'pragma', level: 'B1', point: 'nocando', ctx: true, seg: [46.4, 53.0],
       stem: 'Ben asks to be called Ben. What does Tom say?',
       ja: 'ベンは「ベンと呼んで」と頼む。トムの返事は？',
       choices: ['No, he won’t', 'Yes, he will', 'Maybe next time'], a: 0,
@@ -136,7 +136,7 @@ export const tomFailure: Clip = {
       trap: 'right now は三つの選択肢すべてに合う。前の real estate を聞く。',
       use: 'Prices are pretty low right now.（今はかなり安いよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'twenty', reveals: ['expand'], seg: [80.6, 88.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'twenty', reveals: ['expand'], seg: [80.6, 88.34], keep: true,
       stem: 'How many Tom’s Bistros does Tom say there will be?',
       ja: 'トムズ・ビストロは何店になるとトムは言う？',
       choices: ['Five', 'Ten', 'Twenty', 'Fifty'], a: 2,
@@ -173,7 +173,7 @@ export const tomFailure: Clip = {
       trap: '声だけだと他人がからかっていると取りやすい。That you made が、だれの言葉かを変える。',
       use: 'You wrote this about yourself?（これ自分で自分のこと書いたの？）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', ctx: true, seg: [102.0, 108.5],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', ctx: true, seg: [102.3, 108.5],
       stem: 'What does Tom mean by “I can’t tear myself away”?',
       ja: 'トムの「I can’t tear myself away」はどういう意味？',
       choices: ['I can’t stop watching it', 'I can’t watch without crying', 'I can’t bear to watch it'], a: 0,

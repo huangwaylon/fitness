@@ -169,7 +169,7 @@ export const mriBlindDate: Clip = {
       trap: 'minute なら「ミニット」、over なら「オウバー」。less と hour が聞こえれば1時間未満。',
       use: 'It takes less than an hour by train.（電車で1時間かからない）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'bread', ctx: true, seg: [116.6, 124.6],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'bread', ctx: true, seg: [116.22, 124.6],
       stem: 'What does Chris answer about the bread?',
       ja: 'パンについて、クリスはどう答える？',
       choices: ['He’d need an MRI to know', 'There’s butter inside it', 'It’s only more bread'], a: 0,

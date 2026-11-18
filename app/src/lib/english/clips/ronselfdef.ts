@@ -50,7 +50,7 @@ export const ronSelfDefense: Clip = {
       trap: 'pervert が Mark のすぐあとに来るので、Mark が的に聞こえる。ねらいと当たりは別。you を追う。',
       use: 'So in your plan, you’re the bad guy.（君の案だと、悪者は君だね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'laidout', reveals: ['pervert'], seg: [13.4, 23.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'laidout', reveals: ['pervert'], seg: [13.4, 24.25],
       stem: 'What does “the scenario you just laid out” mean?',
       ja: '「the scenario you just laid out」はどういう意味？',
       choices: ['The plan you just told us', 'The plan you just tried', 'The plan you just stopped'], a: 0,

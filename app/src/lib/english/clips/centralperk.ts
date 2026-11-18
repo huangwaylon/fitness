@@ -224,7 +224,7 @@ export const centralperk: Clip = {
       mean: 'I’ll have 〜 ＝ 〜をください。店で注文するときの決まった言い方。',
       trap: 'have ＝「持っている」から、もう持っていると思いやすい。I’ll have は注文。',
       use: 'I’ll have a coffee, please.（コーヒーをください）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'd2', seg: [121.0, 125.6], stem: 'Where does the new dream take place?',
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'd2', seg: [121.0, 126.0], stem: 'Where does the new dream take place?',
       ja: '新しい夢の舞台はどこ？',
       choices: ['In Las Vegas', 'In Los Angeles', 'In New York'], a: 0,
       choicesJa: ['ラスベガス', 'ロサンゼルス', 'ニューヨーク'],

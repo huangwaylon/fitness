@@ -293,7 +293,7 @@ export const textsMean: Clip = {
       trap: '三つの数が続くので混ざりやすい。「スリー」は「つづく」、typo の前は「フォー」、「ファイヴ」は but のあと。to（トゥ）は two ではない。',
       use: 'Sorry, that was a typo.（ごめん、打ちまちがいだった）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'fivedots', reveals: ['dotrule'], seg: [109.8, 122.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'fivedots', reveals: ['dotrule'], seg: [109.8, 121.81],
       stem: 'What do five dots mean to the guest?',
       ja: 'その客によると、点5つはどういう意味？',
       choices: ['Strong romantic feelings', 'More news is coming', 'A typing mistake'], a: 0,

@@ -15,7 +15,7 @@ export const retreat: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'goodtime', reveals: ['goingto'], seg: [0, 5.5],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'goodtime', reveals: ['goingto'], seg: [0, 5.02],
       stem: 'How does Toby feel about the weekend?',
       ja: 'トビーは週末をどう思っている？',
       choices: ['Happy, better than expected', 'Unhappy, worse than he hoped', 'Okay, just as expected'], a: 0,

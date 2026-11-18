@@ -87,7 +87,7 @@ export const mostLovedDenmark: Clip = {
       trap: 'of course を「もちろん（知ってた）」と思いやすい。ここは今、納得した。',
       use: 'Oh, you’re a chef. Of course!（ああ、シェフなのね。なるほど！）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'part', seg: [33.1, 38.1],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'part', seg: [32.7, 38.1],
       stem: 'Type: “Well, what ___ are you from?” (3 words)', answer: 'part of denmark',
       ja: '「Well, what ___ are you from?」の空所を書こう（3語）',
       cue: '「of course」のあと',

@@ -251,7 +251,7 @@ export const senatorOscar: Clip = {
       trap: 'I’ll なら「アイル」と「ル」が残る。I のあとで小さく止まれば I’d、止まらなければ I have。',
       use: 'I’d have to check my calendar.（予定を確認しないと）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'lovely', reveals: ['call'], ctx: true, seg: [100.5, 108.0],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'lovely', reveals: ['call'], ctx: true, seg: [100.85, 108.0],
       stem: 'After “Nice to see you again”, what is the reply?',
       ja: '「Nice to see you again」のあと、返事は？',
       choices: ['It was lovely', 'Nice to meet you', 'See you later'], a: 0,

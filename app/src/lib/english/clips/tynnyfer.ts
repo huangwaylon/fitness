@@ -74,7 +74,7 @@ export const aprilTynnyfer: Clip = {
       trap: '「どこで買うの？」と言うので店を思いやすいが、見たのは人が着ていたとき。',
       use: 'I saw my friend wearing it.（友だちが着てるのを見て）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'heard', seg: [52.4, 59],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'heard', seg: [52.4, 58.75],
       stem: 'Fill the gap: “___ heard of them before.”',
       ja: '「___ heard of them before.」の空所は？',
       choices: ['I’ve never', 'I’d never', 'I never'], a: 0,
@@ -212,7 +212,7 @@ export const aprilTynnyfer: Clip = {
       trap: 'pit（穴）から、古い建物の話と勘違いしやすい。決まった言い方。',
       use: 'This weather is the pits.（この天気、最悪）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [133.9, 142.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', seg: [133.9, 143.29],
       stem: 'What does “be like” mean in April’s story?',
       ja: 'エイプリルの話の「be like」はどういう意味？',
       choices: ['What you would say', 'Similar to someone else', 'Just a pause word'], a: 0,

@@ -37,7 +37,7 @@ export const gellerBowl: Clip = {
       trap: 'played が聞こえて経験者に聞こえるが、前に never がある。',
       use: 'I’ve never been to Paris.（パリに行ったことがない）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'cover', ctx: true, seg: [14.5, 21.8],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'cover', ctx: true, seg: [14.5, 22.26],
       stem: 'She is told, “You can *cover* Chandler.” What does that mean?', ja: '「You can cover Chandler」の意味は？',
       choices: ['Guard Chandler in the game', 'Play for Chandler’s team', 'Keep score for Chandler'], a: 0,
       choicesJa: ['試合でチャンドラーをマークする', 'チャンドラーのチームに入る', 'チャンドラーの点数をつける'],
