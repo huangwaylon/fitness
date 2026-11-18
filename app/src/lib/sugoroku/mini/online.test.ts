@@ -39,6 +39,7 @@ function playsOf(g: Game, who: Who, r: () => number): Body[] {
       return Array.from({ length: 4 }, () => ({ a: 'mp', w: ws[Math.floor(r() * Math.min(12, ws.length))] }));
     }
     case 'sort':
+    case 'numbers':
       return [{ a: 'mp', n: Math.floor(r() * 12) }];
     case 'spell': {
       const out: Body[] = [];

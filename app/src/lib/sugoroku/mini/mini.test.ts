@@ -21,6 +21,7 @@ import { LONG_BONUS, MARKET_FINDS, MARKET_TILES, market, marketCheck, marketHint
 import { SORT_STREAM, binOf, sort, sortStream } from './sort.ts';
 import { SPELL_ROUNDS, spell, spellWord, type SpellState } from './spell.ts';
 import { mayPlace, nextWord, together, type TogetherState } from './together.ts';
+import { NUMBER_STREAM, inWords, numberStream, numbers, yearWords, type NumberPrompt } from './numbers.ts';
 import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
 
@@ -439,6 +440,99 @@ describe('しりとり', () => {
   });
 });
 
+describe('数字キャッチ', () => {
+  // (the words read back by a reader of their own: the prompts' answers checked against it, not against the writer)
+  const N: Record<string, number> = Object.fromEntries('zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ').map((w, i) => [w, i]));
+  for (const [i, w] of 'twenty thirty forty fifty sixty seventy eighty ninety'.split(' ').entries()) N[w] = 20 + 10 * i;
+  const read = (s: string): number => {
+    let total = 0, cur = 0;
+    for (const t of s.split(/[ -]/)) {
+      if (t === 'hundred') cur *= 100;
+      else if (t === 'thousand') (total += cur * 1000), (cur = 0);
+      else if (t in N) cur += N[t];
+      else throw new Error(`not a number word: ${t} in ${s}`);
+    }
+    return total + cur;
+  };
+  const answer = (p: NumberPrompt): string => {
+    const t = p.text;
+    let m: RegExpExecArray | null;
+    const hm = (h: number, mm: number) => `${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')}`;
+    if (p.kind === 'number') return String(read(t));
+    if (p.kind === 'big') return read(t).toLocaleString('en-US');
+    if (p.kind === 'year') {
+      const [a, ...b] = t.split(' ');
+      return t.startsWith('two thousand') ? String(read(t)) : String(read(a) * 100 + (b[0] === 'oh' ? read(b[1]) : read(b.join(' '))));
+    }
+    if (p.kind === 'time') {
+      if ((m = /^(.+) o’clock$/.exec(t))) return hm(read(m[1]), 0);
+      if ((m = /^half past (.+)$/.exec(t))) return hm(read(m[1]), 30);
+      if ((m = /^a quarter past (.+)$/.exec(t))) return hm(read(m[1]), 15);
+      if ((m = /^a quarter to (.+)$/.exec(t))) return hm(read(m[1]) - 1, 45);
+      if ((m = /^(ten|five|twenty) to (.+)$/.exec(t))) return hm(read(m[2]) - 1, 60 - read(m[1]));
+      if ((m = /^(ten|five|twenty) past (.+)$/.exec(t))) return hm(read(m[2]), read(m[1]));
+      const [h, ...mm] = t.split(' ');
+      return hm(read(h), read(mm.join(' ')));
+    }
+    m = /^(.+?) dollars?(?: (.+))?$/.exec(t) ?? /^(\S+) (\S+)$/.exec(t);
+    const [d, c] = [read(m![1]), m![2] ? read(m![2]) : 0];
+    return `$${d}.${String(c).padStart(2, '0')}`;
+  };
+  it('numbers in words, American style, and years as they’re said', () => {
+    expect([inWords(45), inWords(13), inWords(30), inWords(100), inWords(320), inWords(3500), inWords(7)]).toEqual(['forty-five', 'thirteen', 'thirty', 'one hundred', 'three hundred twenty', 'three thousand five hundred', 'seven']);
+    for (let n = 0; n < 10_000; n += 7) expect(read(inWords(n))).toBe(n);
+    expect([yearWords(1985), yearWords(2008), yearWords(2026), yearWords(1905), yearWords(2000)]).toEqual(['nineteen eighty-five', 'two thousand eight', 'twenty twenty-six', 'nineteen oh five', 'two thousand']);
+  });
+  const seats = [H('A', 1), H('B', 2), H('G', 3)];
+  const s0 = numbers.deal(deal(seats, 'nu'), ctx);
+  it('each seat its own stream (the same on every phone): four different choices, the answer the words’, the level’s kinds', () => {
+    const kinds = new Map<Who, Set<string>>();
+    for (let k = 0; k < 40; k++) {
+      const s = numbers.deal(deal(seats, `nu${k}`), ctx);
+      for (const { who, level } of seats) {
+        const st = numberStream(s, who);
+        expect(st).toHaveLength(NUMBER_STREAM);
+        for (const p of st) {
+          expect(new Set(p.choices).size, p.text).toBe(4);
+          expect(p.choices[p.a], p.text).toBe(answer(p));
+          if (p.kind === 'number') expect(Number(p.choices[p.a])).toBeGreaterThanOrEqual(level === 3 ? 13 : 1);
+          if (p.kind === 'time') for (const c of p.choices) expect(c).toMatch(/^(?:[1-9]|1[0-2]):[0-5]\d$/);
+          if (p.kind === 'price') for (const c of p.choices) expect(c).toMatch(/^\$[1-9]\d*\.\d\d$/);
+          if (p.kind === 'number') for (const c of p.choices) expect(Number(c) >= 1 && Number(c) <= 100).toBe(true);
+          const set = kinds.get(who) ?? kinds.set(who, new Set()).get(who)!;
+          set.add(p.kind);
+        }
+      }
+      expect(numberStream(s, 'A')).toEqual(numberStream(numbers.deal(deal(seats, `nu${k}`), ctx), 'A'));
+    }
+    expect([...kinds.get('A')!]).toEqual(['number']);
+    expect([...kinds.get('B')!].sort()).toEqual(['number', 'price', 'time']);
+    expect([...kinds.get('G')!].sort()).toEqual(['big', 'number', 'price', 'time', 'year']);
+    expect(numberStream(s0, 'A')).not.toEqual(numberStream(s0, 'B'));
+    expect(numberStream(s0, 'X' as Who)).toEqual([]);
+  });
+  it('the classic confusions among the choices: a -teen with its -ty, a quarter to with the next hour’s', () => {
+    const all = seats.flatMap(({ who }) => Array.from({ length: 30 }, (_, k) => numberStream(numbers.deal(deal(seats, `cf${k}`), ctx), who)).flat());
+    const teen = all.filter((p) => p.kind === 'number' && /^1[3-9]$/.test(p.choices[p.a]));
+    expect(teen.length).toBeGreaterThan(20);
+    for (const p of teen) expect(p.choices).toContain(String((Number(p.choices[p.a]) - 10) * 10));
+    const to = all.filter((p) => p.text.startsWith('a quarter to'));
+    expect(to.length).toBeGreaterThan(5);
+    for (const p of to) {
+      const [h] = p.choices[p.a].split(':').map(Number);
+      expect(p.choices.some((c) => c === `${(h % 12) + 1}:45` || c === `${(h % 12) + 1}:15`)).toBe(true);
+    }
+  });
+  it('one count a seat, the first; done when every seat’s is in; stars by the level’s pace; none sent: お休み', () => {
+    let s = run(numbers, s0, [['A', { n: 8 }], ['A', { n: 30 }], ['G', { n: 99 }]]);
+    expect(s.counts).toEqual({ A: 8, G: NUMBER_STREAM });
+    expect([numbers.done(s), numbers.close(s).stars]).toEqual([false, { A: 4, G: 6 }]);
+    s = numbers.play(s, 'B', { n: 0 }, ctx);
+    expect([numbers.done(s), numbers.close(s)]).toEqual([true, { stars: { A: 4, G: 6 }, made: [] }]);
+    expect(numbers.play(s0, 'B', { w: 'ten' }, ctx)).toBe(s0);
+  });
+});
+
 describe('every game: whatever the plays, never a negative star, and the same plays give the same game', () => {
   const seats = [H('A', 1), H('B', 2), H('G', 3)];
   const rackWords = new Map<string, string[]>();
@@ -469,6 +563,8 @@ describe('every game: whatever the plays, never a negative star, and the same pl
         return [[line.owner[k], { k }]];
       }
       case 'sort':
+        return [[who, { n: Math.floor(r() * 100) }]];
+      case 'numbers':
         return [[who, { n: Math.floor(r() * 100) }]];
       case 'chain': {
         const c = s as ChainState, x = r(), turn = chainTurn(c);
