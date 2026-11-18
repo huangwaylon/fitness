@@ -105,6 +105,15 @@
     count(`route:${route.split('/')[1] || 'island'}`);
   });
 
+  // 英語すごろく's online games heard on every screen once the week's in (an invitation comes wherever the phone is: the
+  // banner in ToastHost), its small part fetched then
+  let sgListening = false;
+  $effect(() => {
+    if (!week.view || onPair || sgListening) return;
+    sgListening = true;
+    void import('#lib/sugoroku/online.svelte.ts').then((m) => m.listen(true)).catch(() => {});
+  });
+
   // 島 ⇄ テント: NH's door, a black iris on the door we go through.
   doorTransition();
 

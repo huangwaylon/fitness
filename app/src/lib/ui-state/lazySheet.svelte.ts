@@ -26,6 +26,12 @@ interface LazySheet<A = never> {
 /** Offline, and no service worker to serve the chunk from its cache. */
 const unreachable = () => navigator.onLine === false && !navigator.serviceWorker?.controller;
 
+const all: { open: boolean }[] = [];
+/** Every lazySheet closed (a way off the island: 英語すごろく's invitation's 参加), so none reopens on the way back. */
+export function closeSheets(): void {
+  for (const x of all) x.open = false;
+}
+
 export function lazySheet<A = never>(load: () => Promise<{ default: SheetComponent }>): LazySheet<A> {
   const get = lazy(load);
   const up = (again: boolean): void => void (s.Sheet || !unreachable() ? get() : Promise.reject(new Error('offline'))).then(
@@ -38,5 +44,6 @@ export function lazySheet<A = never>(load: () => Promise<{ default: SheetCompone
     if (a.length) s.ask = { arg: a[0] as A };
     up(false);
   }, prefetch: () => get(true) });
+  all.push(s);
   return s;
 }

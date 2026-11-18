@@ -147,6 +147,9 @@ export const DEVICE = {
   sugoroku: 'island.sugoroku',
   /** localStorage: 英語すごろく's online game on this phone (lib/sugoroku/online.svelte.ts): `{g, log, held}`, its moves. */
   sugorokuOnline: 'island.sugoroku.online',
+  /** localStorage: the online games whose invitation this phone answered (参加 or ✕: lib/sugoroku/invite.svelte.ts),
+   *  their ids, the last 20: never invited to them again. */
+  sugorokuAnswered: 'island.sugoroku.answered',
   /** localStorage: 英語すごろく's last game's team stars on this phone (the end's 「前回より…」). */
   sugorokuLast: 'island.sugoroku.last',
   /** localStorage: `{[who]: {[clip]: day}}`: the clips 別の動画にする passed over on this phone, each kept 14 days

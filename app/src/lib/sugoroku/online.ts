@@ -92,3 +92,16 @@ export function heard(log: readonly Move[], held: readonly Move[], m: Move): { l
   while (wait.length && wait[0].i === next.length) next = [...next, wait.shift()!];
   return { log: next, held: wait };
 }
+
+/** An invitation's game goes stale this long after its last move (a start replayed from the day's ring, a game left). */
+export const INVITE_STALE_MS = 30 * 60_000;
+/** Whether this phone is invited to the online game it holds (`log`, its moves; `at`, its last move's time): one
+ *  someone else started with me seated, not answered here (参加 or ✕: `answered`), not over (an 終了, or `over`: the
+ *  fold's end), its last move within INVITE_STALE_MS of `now`. No `me` (no person on this phone): never. */
+export function invited(o: { log: readonly Move[]; me: Who | null; at: number; now: number; answered: readonly string[]; over: boolean }): boolean {
+  const start = o.log[0];
+  if (!start || start.a !== 'start' || !o.me || start.who === o.me) return false;
+  if (!seatsOf(start.s ?? '').some((x) => x.who === o.me) || o.answered.includes(start.g)) return false;
+  if (o.over || o.log.some((m) => m.a === 'end')) return false;
+  return o.now - o.at <= INVITE_STALE_MS;
+}

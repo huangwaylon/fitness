@@ -89,7 +89,7 @@ const S = {
   'mode.local': { ja: '1台を回して', en: 'Pass one phone' },
   'mode.online': { ja: 'それぞれのスマホで', en: 'Each on their phone' },
   onlineNote: { ja: 'みんなのスマホがつながります（島にいる人だけ選べます）', en: 'Everyone’s phones play together' },
-  onlineResume: { ja: 'みんなのゲームに戻る', en: 'Back to the shared game' },
+  startedBy: { ja: '{name}が始めたゲーム', en: 'The game {name} started' },
   thinking: { ja: '考え中…', en: 'Thinking…' },
   lastMove: { ja: '{name}：{text} 星{n}', en: '{name}: {text} ({n} stars)' },
   offlineNote: { ja: 'つながっていません。つながると続きが届きます', en: 'Not connected: moves arrive once back' },

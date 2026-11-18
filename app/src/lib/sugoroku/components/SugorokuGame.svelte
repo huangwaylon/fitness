@@ -385,11 +385,17 @@
     {#if level === 'menu'}
       <div class="top"><NavBar pad title={s('title')} onclose={close} /></div>
       <div class="body sheet-scroll">
+        {#if onlineGame && onlineGame.phase.k !== 'end' && online.cur.log[0]}
+          <!-- the online game running with me in it: its card first, 参加 back into its screen -->
+          {@const by = online.cur.log[0].who}
+          <div class="card pad live" data-sg-online-card>
+            <Avatar person={by} worn size={40} />
+            <span class="nm">{s('startedBy', { name: nameOf(by) })}</span>
+            <button type="button" class="btn small" data-sfx="open" data-sg-resume-online onclick={resumeOnline}>{s('join')}</button>
+          </div>
+        {/if}
         <div class="hero card pad">
           <p class="lead">{s('how2')}</p>
-          {#if onlineGame && onlineGame.phase.k !== 'end'}
-            <button type="button" class="btn" data-sfx="open" data-sg-resume-online onclick={resumeOnline}>{s('onlineResume')}</button>
-          {/if}
           {#if saved}
             <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={resume}>{s('resume')}</button>
           {/if}
@@ -648,6 +654,8 @@
   /* (a scroller's column: its cards keep their height, never squeezed to fit) */
   .body > * { flex-shrink: 0; }
   .hero { display: flex; flex-direction: column; gap: 10px; }
+  .live { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .live .nm { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .lead { margin: 0 0 4px; font: 700 var(--fs-body)/1.5 var(--font-ui); text-wrap: pretty; }
   .how { margin: 0; padding-left: 28px !important; display: grid; gap: 8px; font-size: var(--fs-body); line-height: 1.5; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }

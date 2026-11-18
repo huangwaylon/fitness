@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ID_LEN, applyMove, foldMoves, heard, layoutOfId, newGameId, seatsCode, seatsOf, type Move } from './online.ts';
+import { ID_LEN, INVITE_STALE_MS, applyMove, foldMoves, heard, invited, layoutOfId, newGameId, seatsCode, seatsOf, type Move } from './online.ts';
 import { familyOf, layoutKey } from './layout.ts';
 import { seeded } from '#lib/random.ts';
 import { wordScore, type Game } from './game.ts';
@@ -101,5 +101,29 @@ describe('online: the moves folded', () => {
   it('seats: who and level, both ways', () => {
     expect(seatsOf('A1G3')).toEqual([{ who: 'A', level: 1 }, { who: 'G', level: 3 }]);
     expect(seatsCode(seatsOf('B2A1G3'))).toBe('B2A1G3');
+  });
+});
+
+describe('online: the invitation', () => {
+  const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A2G2', l: 'n', who: 'A' };
+  const base = { log: [start], me: 'G' as Who | null, at: 1_000_000, now: 1_000_000 + 60_000, answered: [] as string[], over: false };
+  it('a game someone else started with me seated, fresh: invited (the guest too)', () => {
+    expect(invited(base)).toBe(true);
+    expect(invited({ ...base, now: base.at + INVITE_STALE_MS })).toBe(true);
+  });
+  it('not my own start, not a phone not seated or with no one on it', () => {
+    expect(invited({ ...base, me: 'A' })).toBe(false);
+    expect(invited({ ...base, me: 'B' })).toBe(false);
+    expect(invited({ ...base, me: null })).toBe(false);
+  });
+  it('not a game answered here (参加 or ✕), not one over, not one gone stale', () => {
+    expect(invited({ ...base, answered: ['x', 'game01'] })).toBe(false);
+    expect(invited({ ...base, over: true })).toBe(false);
+    expect(invited({ ...base, log: [start, { g: 'game01', i: 1, a: 'end', who: 'G' }] })).toBe(false);
+    expect(invited({ ...base, now: base.at + INVITE_STALE_MS + 1 })).toBe(false);
+  });
+  it('nothing held, or moves without their start: none', () => {
+    expect(invited({ ...base, log: [] })).toBe(false);
+    expect(invited({ ...base, log: [{ g: 'game01', i: 0, a: 'roll', who: 'A' }] })).toBe(false);
   });
 });

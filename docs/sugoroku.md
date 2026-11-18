@@ -131,8 +131,14 @@ reloads gets them again (its own too); each phone also keeps them (`DEVICE.sugor
 order through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
 ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了 from
 anyone at the table); out of order, it waits for the gap. The phone whose turn it isn't watches (whose turn, the last
-move). A game started with me in it comes as a banner, 「Xが英語すごろくを始めました」 with 参加, straight into it; the
-menu's みんなのゲームに戻る while it lasts. Listening starts with the island (Hud). No relay code: the room relays and
+move). A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
+screens, the museum; listening starts with the app, `routes/+layout.svelte`): a banner with the starter's head,
+「Xが英語すごろくを始めました」 [参加] ✕ (`sugoroku/components/InviteBanner.svelte`, placed with the toasts by
+ToastHost: in the open sheet's dialog when there is one). It stays till 参加 (straight into `/sugoroku?m=online`) or ✕,
+each remembered by game id on the phone (`DEVICE.sugorokuAnswered`); never on that game's own screen. One at a time, the
+latest game's. Not for my own start, a phone not seated, a game over (an 終了 or the fold's end) or one whose last move
+is over 30 min old (a start replayed from the day's ring): `online.ts` invited. すごろく's tab menu puts the running game
+first, 「Xが始めたゲーム」 [参加]. In-app only: no Web Push. No relay code: the room relays and
 keeps any parsed kept intent; after a contract change the relay deploys first.
 
 ## Letters
