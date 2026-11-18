@@ -245,11 +245,12 @@ one tile").
 - <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
   show (`h`; `n` its changes, `seq` on the wire; `t` the last one's time). Only a new row's own step moves it, in that
   row's transaction (`h` after less before: `shopStep`, `reowe`, the field, a reward per recipient, `adjust`,
-  `unadjust`), **never below 0** (a give-back after the かいがら were spent takes what is left). Nothing folds it again:
+  `unadjust`, `walletset`), **never below 0** (a give-back after the かいがら were spent takes what is left). Nothing folds it again:
   not a rule change, `shopcheck` or a `load` (which lets the pockets go, `{h, n, t}` kept). Seeded from the fold
   (`wallet.seed`) only when there is none: a first op, a load into an empty record, or an older relay's ledger today's
   rules can't read (those relays folded it again too). A restore brings it back with the rows; a dump has rows only.
-  **Drift** (`h` against the floored fold): `walletcheck` at the 03:00 cron logs `wallet.drift` (warn), never fixes;
+  **Drift** (`h` against the floored fold): `walletcheck` at the 03:00 cron logs `wallet.drift` (warn), never fixes
+  (a credit after a floored step, a debt's repay or an `unadjust`, leaves `h` above the fold: drift too);
   `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `relay/test/wallet.test.ts` (property:
   the served `h` after every random step equals the fold's change applied in order with the floor).
 - **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, hence the paging.
