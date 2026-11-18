@@ -1,10 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 9, ctx 6, tx 16
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 9, new 2 (c2 stays retired)
 // “Is Leslie's Mother Flirting With Ben? | Parks and Recreation” (the official Parks and Recreation channel, Season 3):
 // after a bad first meeting, Leslie's mother Marlene raises the school-bus request; Leslie coaches Ben by playing her
 // mother, sets up a café "chance" meeting where Ben is tough and the two bond, then Ben says Marlene made a pass at
 // him, tells her he's dating Leslie, and the buses are settled. Whisper loops one line over 308–330 s; nothing after
-// 300 s is used. The role-play (58–92 s) is Leslie as her mother. Untested: 128.8 s, 134 s, 142.9–148.5 s (who says the
-// compromise lines), 184.5 s, 186 s, 245–259 s (the harassment stretch).
+// 300 s is used. Ben proposes the rematch (30–36 s) and Leslie offers Belize (the scenes file has them reversed).
+// The role-play (58–92 s) is Leslie as her mother. Untested: 128.8 s, 134 s, 142.9–148.5 s (who says the compromise
+// lines), 237–239 s ("screwed up").
+// EXCLUDE 7.5–14.5
+// EXCLUDE 246.7–257.5
 import type { Clip } from '../types.ts';
 
 export const momFlirt: Clip = {
@@ -13,6 +17,17 @@ export const momFlirt: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'c4', skill: 'infer', level: 'B1', point: 'whatif', reveals: ['nowthat'], ctx: true, seg: [0, 7.4],
+      stem: 'What is Ben afraid Marlene will do?', ja: 'ベンは、マーリーンが何をするのを心配している？',
+      choices: ['Tell people he is weak', 'Tell people they are dating', 'Call his boss about him'], a: 0,
+      choicesJa: ['押しに弱いと言いふらす', '二人の交際を言いふらす', '彼の上司に電話する'],
+      cue: '「No, it’s not fine」のあと',
+      line: 'Leslie: Don’t worry about it. It’s totally fine. / Ben: No, it’s not fine. What if she starts going around *telling people I’m a pushover*?',
+      said: '「気にしないで、全然大丈夫」に、「大丈夫じゃない。押しに弱いって言いふらされたら？」と返す。',
+      mean: 'pushover ＝ 押せばすぐ倒れる人→「押しに弱い人」。What if 〜? ＝ もし〜したらどうする？ 心配を言う形。',
+      trap: '決め手は No のあと。Don’t worry（気にしないで）はレスリーのなぐさめ。',
+      use: 'Don’t worry about it. It’s totally fine.（気にしないで。全然大丈夫）' },
+
     { id: 'd1', skill: 'detail', level: 'B2', point: 'firstmet', seg: [6.0, 14.8], retired: true,
       stem: 'How did Leslie see Ben when they first met?',
       choices: ['As a tough, rigid man', 'As a soft man, easy to push', 'As cute, but a little dull'], a: 0,
@@ -22,16 +37,18 @@ export const momFlirt: Clip = {
       mean: 'fascist hardass は「堅物」の乱暴な言い方。押しに弱いとは誰も思わない、という励まし。',
       trap: 'pushover は直前の Ben の言葉。cute はあとの付け足し。',
       use: 'He seems strict, but he’s really kind.（厳しそうだけど本当は優しい）' },
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [14.3, 24], keep: true,
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [15.5, 24], keep: true,
       stem: 'How many buses did they want before?', ja: '前は、バスを何台ほしがっていた？',
       choices: ['4', '10', '40'], a: 0,
       choicesJa: ['4台', '10台', '40台'],
       cue: '「I thought they only wanted」のあと',
-      line: 'Education department now officially requesting 10 school buses. — I thought they only wanted *four*.',
+      line: 'Ben: Education department now officially requesting 10 school buses. / Leslie: I thought they only wanted *four*.',
       said: '「教育局がバス10台を正式に要求」「4台だけのはずじゃ？」と言う。',
       mean: 'four ＝ 4。only wanted four ＝ 4台だけほしかった。要求が4台から10台に増えた。',
       trap: '先に聞こえる10は新しい数。forty なら最後に「ティ」がつく。ここは「フォー」だけ。',
       use: 'I thought you only wanted one.（1個だけほしいんだと思ってた）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'nowthat', seg: [19.2, 26.5],
       stem: 'Fill the gap: “Well, ___ I’m a pushover…”', ja: '空所に入るのは？',
       choices: ['now that', 'not that', 'now, as'], a: 0,
@@ -42,6 +59,7 @@ export const momFlirt: Clip = {
       mean: 'now that 〜 ＝ 〜になった今は。that は小さく短く「ザッ」。pushover ＝ 押しに弱い人。',
       trap: 'not that なら「ナッ」と短く切れる。now, as なら「アズ」が聞こえる。ここは「ナウ」のあと that。',
       use: 'Now that you’re here, let’s start.（来てくれたし、始めよう）' },
+
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'yachts', reveals: ['topics'], seg: [21.0, 28.4], retired: true,
       stem: 'When Ben answers the news of the bigger request, how does he sound?',
       choices: ['Sarcastic, stung at being seen as weak', 'Playful, laughing the whole thing off',
@@ -52,16 +70,18 @@ export const momFlirt: Clip = {
       mean: 'ありえない要求まで並べる自虐の皮肉。押しに弱いと思われたことへの苛立ち。',
       trap: '声が弾むので冗談や感心に聞こえるが、pushover と自分で言う。大げさな列挙は皮肉の合図。',
       use: 'Sure, and why not a pony, too?（ついでにポニーもどう？）' },
+
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'haveitout', seg: [28.6, 36.4],
       stem: 'Ben says, “We’re gonna *have it out*.” Meaning?', ja: '「We’re gonna have it out」の意味は？',
-      choices: ['Argue until it’s settled', 'Let her say everything', 'Take her out to eat'], a: 0,
-      choicesJa: ['決着がつくまで言い合う', '彼女に全部言わせる', '食事に連れ出す'],
+      choices: ['Argue until it’s settled', 'Say sorry to her', 'Take her out to eat'], a: 0,
+      choicesJa: ['決着がつくまで言い合う', '彼女に謝る', '食事に連れ出す'],
       cue: '「another meeting with her」のあと',
       line: 'I’m gonna have another meeting with her, and *we’re gonna have it out*.',
-      said: 'ベンが「もう一度お母さんと会って、とことん話をつける」と言う。',
-      mean: 'have it out ＝ 正面から言い合って決着をつける。it は「もめごと」。',
-      trap: 'out から「外に連れ出す」を思いやすい。another meeting（もう一度会う）の話。',
+      said: 'ベンが「もう一度お母さんと会って、決着をつけるよ」と言う。',
+      mean: '文字どおりは「それを外に出す」。it は胸の中のもめごと。全部出し切る→正面から言い合って決着をつける。',
+      trap: 'out から「外に連れ出す」と考えがち。another meeting（もう一度会う）の話。',
       use: 'Let’s sit down and have it out.（座って、ちゃんと話をつけよう）' },
+
     { id: 'i2', skill: 'infer', level: 'C1', point: 'belize', seg: [36.2, 43.4], retired: true,
       stem: 'What does Leslie’s idea of a Belize trip show?',
       choices: ['She’d rather dodge her mom than fight', 'She’s changing the subject to cheer Ben up',
@@ -72,6 +92,7 @@ export const momFlirt: Clip = {
       mean: 'Or で対決の代わりに逃げる案を出している。母と戦うのが怖い本音がのぞく。',
       trap: '旅行の話は休息やご褒美に聞こえるが、Or は「その代わりに」。前の案を避ける合図。',
       use: 'Or we could just order pizza.（それか、ピザ頼んじゃう？）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'harsh', seg: [48.6, 57.6],
       stem: 'Why will Leslie be harsh with Ben, she says?', ja: 'レスリーは、なぜベンに厳しくすると言う？',
       choices: ['She likes him a lot', 'He asked her to', 'Her mom is worse'], a: 0,
@@ -82,6 +103,7 @@ export const momFlirt: Clip = {
       mean: 'harsh ＝ 厳しい。it’s only because 〜 ＝ それは〜だからなの。',
       trap: 'I’ll be my mom（母の役をやる）が前にあるので、母のせいだと思いやすい。because のあとを聞く。',
       use: 'It’s only because I care about you.（あなたが大事だからだよ）' },
+
     { id: 'd3', skill: 'detail', level: 'B1', point: 'hello', seg: [58, 67.7],
       stem: 'Why does Leslie say “Wrong” to Ben?', ja: 'レスリーはなぜベンに「Wrong」と言う？',
       choices: ['He said hello first', 'He sat down too soon', 'He talked too fast'], a: 0,
@@ -92,6 +114,7 @@ export const momFlirt: Clip = {
       mean: 'no introductions ＝ あいさつなし。walk in and start talking ＝ 入ってすぐ本題を話す。',
       trap: 'あとで「もう座ってて」とも言うので、座り方の話と思いやすい。Wrong は Hello のすぐあと。',
       use: 'Let’s skip the small talk.（世間話は抜きにしよう）' },
+
     { id: 'h1', skill: 'humor', level: 'B2', point: 'seuss', seg: [65.0, 72.3], retired: true,
       stem: 'Why does Leslie’s reply to Ben’s first real line get a laugh?',
       choices: ['She mocks the rhyme in his line', 'She mocks how stiff and formal he is',
@@ -102,6 +125,7 @@ export const momFlirt: Clip = {
       mean: 'discuss と bus の韻を、絵本作家の名前でからかう。中身でなく言い方を突く手。',
       trap: 'あとの「もう座ってて」や堅い言い方に気を取られやすい。直後の rhyming が答え。',
       use: 'Okay, that rhymed. Not on purpose.（あ、韻踏んじゃった。わざとじゃない）' },
+
     { id: 'i3', skill: 'infer', level: 'C1', point: 'umdumb', seg: [74.2, 80.3], retired: true,
       stem: 'When Leslie adds “That’s what she says to people”, what does Ben learn?',
       choices: ['Her mom jumps on any filler to rattle people', 'Her mom corrects people’s grammar all the time',
@@ -112,7 +136,8 @@ export const momFlirt: Clip = {
       mean: '言いよどみ一つでも突いて、相手をひるませる人だと分かる。本番の厳しさの予告。',
       trap: '韻や言葉直しに聞こえるが、突いたのは Um という迷いの音。狙いは動揺させること。',
       use: 'Don’t let her rattle you.（あの人に動揺させられないでね）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pin', seg: [78.4, 83.8],
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pin', seg: [78.4, 83.8], retired: true,
       stem: 'What does “*put a pin in this*” mean?', ja: '「put a pin in this」の意味は？',
       choices: ['Stop and come back later', 'Start again from the top', 'Mark the important part'], a: 0,
       choicesJa: ['いったん止めて、あとで戻る', '最初からやり直す', '大事な所に印をつける'],
@@ -122,15 +147,17 @@ export const momFlirt: Clip = {
       mean: 'put a pin in 〜 ＝ 〜をいったん保留にする。文字どおりは「ピンを刺す」。会議でよく使う。',
       trap: 'pin から「印をつける」を思いやすい。No のあとなので、やり直しも断っている。',
       use: 'Let’s put a pin in that for now.（その件はいったん保留で）' },
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [78.8, 83.8],
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'pin', seg: [80.4, 83.9],
       stem: 'Type what she says: “No, we need to ___.” (5 words)', ja: '「No, we need to ___」の5語を書こう', answer: 'put a pin in this',
       cue: '2回目の「No」のあと',
-      line: 'No. No, we need to *put a pin in this*.',
-      said: 'レスリーが「いったん保留にしよう」と言う。',
-      mean: 'put a と pin in がつながり「プラピニン」に近い。put の t は軽い「ラ」の音。',
+      line: 'Should we just start over? — No. No, we need to *put a pin in this*.',
+      said: '「最初からやり直す？」に、レスリーが「ううん、いったん保留にしよう」と言う。',
+      mean: 'put a pin in 〜 ＝ ピンで留めておく→いったん保留にする。put a と pin in がつながり「プラピニン」に近い。',
       trap: 'pin in が一語に聞こえやすい。put a pin in this で5語。a を落とさない。',
       use: 'Let’s put a pin in this.（これはいったん保留にしよう）' },
-    { id: 'n2', skill: 'number', level: 'B1', point: 'topics', seg: [82.3, 92.6], keep: true,
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'topics', seg: [82.3, 92.6], retired: true, keep: true,
       stem: 'How many topics are on her mother’s list?', ja: 'お母さんのリストには話題がいくつある？',
       choices: ['10', '100', '1,000'], a: 1,
       choicesJa: ['10個', '100個', '1000個'],
@@ -140,6 +167,7 @@ export const momFlirt: Clip = {
       mean: 'top 100 ＝ ベスト100。favorite topics ＝ 好きな話題。',
       trap: 'あとの ten minutes に引かれやすい。「ハンドレッド」なら100、「サウザンド」なら1000、ten だけなら10。',
       use: 'Here’s my top five list.（これが私のベスト5）' },
+
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'thoughtful', seg: [94.7, 104.2],
       stem: 'Marlene says, “That is *so thoughtful of you*.” Meaning?', ja: 'マーリーンの「That is so thoughtful of you」の意味は？',
       choices: ['How kind of you', 'You think too much', 'Let me think'], a: 0,
@@ -150,6 +178,7 @@ export const momFlirt: Clip = {
       mean: 'thoughtful ＝ 思いやりがある、気が利く。It’s so thoughtful of you ＝ ご親切に。お礼の決まり文句。',
       trap: 'thought（考え）から「考えすぎ」と思いやすい。thoughtful は「気づかいのある」。',
       use: 'Thank you. That’s so thoughtful of you.（ありがとう。ご親切に）' },
+
     { id: 'i4', skill: 'detail', level: 'B1', point: 'setup', seg: [102.7, 108.8],
       stem: 'Why did Leslie bring her mom to the café?', ja: 'レスリーはなぜお母さんをカフェに連れてきた？',
       choices: ['To put her in a good mood', 'To say sorry for Ben', 'To tell her about Ben'], a: 0,
@@ -160,6 +189,18 @@ export const momFlirt: Clip = {
       mean: 'put 〜 in a good mood ＝ 〜の機嫌をよくする。I figured ＝ 〜と思って。',
       trap: 'このあとベンが来るので、ベンの話をするためだと思いやすい。good mood を聞く。',
       use: 'Coffee puts me in a good mood.（コーヒーを飲むと機嫌がよくなる）' },
+
+    { id: 'k1', skill: 'pragma', level: 'B2', point: 'another', ctx: true, seg: [116.0, 125.5],
+      stem: 'What does Marlene want to do about the buses?', ja: 'バスの話を、マーリーンはどうしたい？',
+      choices: ['Talk about it another time', 'Talk about it right now', 'Let Leslie decide it'], a: 0,
+      choicesJa: ['また別の機会に話す', '今すぐ話す', 'レスリーに決めさせる'],
+      cue: '「Excuse me, but」のあと',
+      line: 'Marlene: Excuse me, but I’m having coffee with my daughter. *Maybe we could do this another time.* / Ben: No, we’re gonna talk about this now.',
+      said: '「娘とコーヒー中なの。また別の機会に」に、ベンは「いいえ、今話します」と返す。',
+      mean: 'Maybe we could do this another time ＝「また別の機会にしませんか」。Maybe で包んだ、ていねいな断り。',
+      trap: 'now が強く聞こえて勘違いしやすい。now はベンの返事。マーリーンは another time。',
+      use: 'Maybe we could do this another time?（また今度にしませんか）' },
+
     { id: 'pr2', skill: 'pragma', level: 'B1', point: 'yourcall', seg: [120.4, 130.5],
       stem: 'Ben says, “*It’s your call*.” What does he mean?', ja: 'ベンの「It’s your call」の意味は？',
       choices: ['You decide', 'Call me later', 'It’s your turn'], a: 0,
@@ -170,6 +211,7 @@ export const momFlirt: Clip = {
       mean: 'It’s your call ＝ 決めるのはあなた。call は「判断」の意味。',
       trap: 'call（電話）から「電話して」と思いやすい。前に or（それとも）で選ばせている。',
       use: 'Stay or go, it’s your call.（残るか帰るか、君が決めて）' },
+
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'neutral', reveals: ['setup'], seg: [128.4, 133.0], retired: true,
       stem: 'When Leslie tells her mom to talk to Ben, how does she come across?',
       choices: ['Neutral, as if she had no part in this', 'Worried that Ben is being far too proud',
@@ -180,6 +222,7 @@ export const momFlirt: Clip = {
       mean: 'seems は初対面の人を評する言い方。仕組んだ本人が、知らないふりで援護している。',
       trap: 'self-assured を「うぬぼれ」と取ると心配に聞こえる。ここは Ben の後押し。',
       use: 'She seems pretty confident.（彼女、かなり自信ありそうだね）' },
+
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'sudden', seg: [135.6, 143.2],
       stem: 'What does “*all of a sudden*” mean?', ja: '「all of a sudden」の意味は？',
       choices: ['Suddenly', 'Little by little', 'Once again'], a: 0,
@@ -190,6 +233,7 @@ export const momFlirt: Clip = {
       mean: 'all of a sudden ＝ 急に、突然。suddenly と同じ。confidence ＝ 自信。',
       trap: 'all（全部）から「全部」の意味を探しやすい。4語でひとまとまりの決まり文句。',
       use: 'All of a sudden, it started to rain.（急に雨が降りだした）' },
+
     { id: 'h2', skill: 'humor', level: 'C1', point: 'quote', seg: [148.3, 161.3], retired: true,
       stem: 'What makes Ben’s second quote funny in a hard bargaining talk?',
       choices: ['It’s an insult, borrowed from a comic strip', 'It’s a tough line, borrowed from a business giant',
@@ -200,6 +244,18 @@ export const momFlirt: Clip = {
       mean: '漫画のせりふを借りて「その要求は正気じゃない」と言う。失礼を引用で包んだ返し。',
       trap: '最初の引用は実業家の言葉で、二つを混ぜやすい。中身と出どころで判断する。',
       use: 'To quote my dad, “Nice try.”（父の言葉を借りれば「惜しい」）' },
+
+    { id: 'k3', skill: 'detail', level: 'B2', point: 'calvin', ctx: true, seg: [150.7, 161.5],
+      stem: 'What do Ben and Marlene find they both love?', ja: 'ベンとマーリーンは、二人とも何が好きだと分かる？',
+      choices: ['The same comic strip', 'The same old movie', 'The same famous book'], a: 0,
+      choicesJa: ['同じ新聞マンガ', '同じ古い映画', '同じ有名な本'],
+      cue: '「Bill Watterson」のあと',
+      line: 'Ben: …a different quote from the great Bill Watterson… / Marlene: *I love Calvin and Hobbes.* / Ben: *Me too.*',
+      said: 'ベンがマンガ家の言葉を引くと、マーリーンが「カルビンとホッブス大好き」、ベンも「僕も」。',
+      mean: 'Calvin and Hobbes ＝ 男の子とトラが主人公の新聞マンガ。Me too ＝ 私も。好きな物が同じで打ちとける。',
+      trap: 'the great（偉大な）から有名な本を連想しやすい。Calvin and Hobbes はマンガ。',
+      use: 'I love this song. — Me too!（この曲大好き。—私も！）' },
+
     { id: 'c1', skill: 'infer', level: 'C2', point: 'setup', seg: [163.3, 172.3], retired: true,
       stem: 'After Leslie’s words to the camera, how should we see the café meeting?',
       choices: ['As the setup she planned paying off', 'As Ben’s toughness winning, to her surprise',
@@ -210,6 +266,7 @@ export const momFlirt: Clip = {
       mean: '場面では Ben の強気が効いて見えたが、この一言で自分の仕組んだ作戦だと分かる。',
       trap: 'Thank God は「運良く」に聞こえやすい。誰の手柄かを語る一文を探す。',
       use: 'Not to brag, but I planned it.（自慢じゃないけど、計画どおり）' },
+
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'hitoff', seg: [163.4, 172.9],
       stem: 'Leslie says they are “*hitting it off*.” Meaning?', ja: '「hitting it off」の意味は？',
       choices: ['Getting along well', 'Fighting hard', 'Finishing the meeting'], a: 0,
@@ -220,6 +277,7 @@ export const momFlirt: Clip = {
       mean: 'hit it off ＝ 会ってすぐ気が合う。Thank God ＝ よかった（ほっとした）。',
       trap: 'hit（打つ）から、けんかと思いやすい。Thank God（よかった）が続くので良い知らせ。',
       use: 'We hit it off right away.（すぐに意気投合したよ）' },
+
     { id: 'g2', skill: 'gist', level: 'B2', point: 'cafe', seg: [173.5, 195.1],
       stem: 'How does the coffee meeting end?', ja: 'カフェでの話し合いはどう終わる？',
       choices: ['She will think and meet again', 'She says yes to the deal', 'She says no to the deal'], a: 0,
@@ -230,16 +288,62 @@ export const momFlirt: Clip = {
       mean: 'mull 〜 over ＝ 〜をじっくり考える。reconnect ＝ また連絡を取る。その場では決めない。',
       trap: 'deal（取引）が聞こえるので、成立したと思いやすい。deal? は質問。',
       use: 'Let me mull it over.（ちょっと考えさせて）' },
+
+    { id: 'k4', skill: 'pragma', level: 'B1', point: 'handle', ctx: true, seg: [186.1, 192.5],
+      stem: 'What does Leslie say about Ben?', ja: 'レスリーはベンについて何と言う？',
+      choices: ['He can do it', 'He needs a break', 'He is too busy'], a: 0,
+      choicesJa: ['ベンなら大丈夫', 'ベンには休みが必要', 'ベンは忙しすぎる'],
+      cue: '「that can be fun」のあと',
+      line: 'Marlene: It might get rough, but that can be fun. / Leslie: *Ben can handle it.* / Ben: Yep, I can.',
+      said: '「厳しくなるかもしれないけど、それも楽しいわ」に、「ベンなら大丈夫」。ベンも「ええ」。',
+      mean: 'handle ＝ 文字どおりは「手で扱う」。問題をうまく扱える→「こなせる・対処できる」。',
+      trap: 'rough（荒い・厳しい）から、ベンには無理と考えがち。レスリーは can で「できる」と言っている。',
+      use: 'Don’t worry, I can handle it.（心配しないで、自分でなんとかできるから）' },
+
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'goodidea', ctx: true, seg: [205.6, 219.0],
+      stem: 'What does Ben think of Leslie’s gift plan?', ja: 'レスリーのプレゼント作戦を、ベンはどう思う？',
+      choices: ['It may be a bad idea', 'It’s a really great idea', 'Her mom will love it'], a: 0,
+      choicesJa: ['よくない考えかも', 'すごくいい考え', 'お母さんはきっと喜ぶ'],
+      cue: '「She would love you for it」のあと',
+      line: 'Leslie: …maybe you could give it to her. She would love you for it. / Ben: *Maybe that’s not such a good idea.* / Leslie: Why?',
+      said: '「渡してあげて。ママ、大好きになるよ」に、ベンが「いい考えじゃないかも」と言う。',
+      mean: 'not such a good idea ＝「あまりいい考えじゃない」。Maybe を付けて、やんわり反対する言い方。',
+      trap: '直前の would love（大好きになる）に引かれやすい。それはレスリーの言葉。',
+      use: 'Maybe that’s not such a good idea.（それはやめたほうがいいかも）' },
+
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'pass', seg: [221.0, 235.1],
+      stem: 'What does “made a pass at me” mean?', ja: '「made a pass at me」の意味は？',
+      choices: ['Showed she liked me', 'Walked right past me', 'Said no to me'], a: 0,
+      choicesJa: ['気があるそぶりをした', 'すぐ横を通り過ぎた', '私を断った'],
+      cue: '「Your mom kind of…」のあと',
+      line: 'Your mom kind of… um, *made a pass at me*. … She was just flirting a little.',
+      said: 'ベンが「君のお母さんが…言い寄ってきた。軽いそぶりだけだけど」と言う。',
+      mean: 'make a pass at 〜 ＝ 〜に言い寄る。pass はスポーツのパスのように「相手に投げかける」。flirt ＝ 気のあるそぶり。',
+      trap: 'pass から「通り過ぎる（walk past）」と考えがち。直後の flirting が手がかり。',
+      use: 'I think he was flirting with you.（彼、君に気があるそぶりだったよ）' },
+
+    { id: 'd5', skill: 'infer', level: 'B1', point: 'bubble', seg: [239.1, 244.7],
+      stem: 'What is the worst thing for Leslie, she says?', ja: 'レスリーにとって最悪なのは何だと言う？',
+      choices: ['Her mom liking Ben', 'Ben keeping secrets', 'Losing the bus deal'], a: 0,
+      choicesJa: ['母がベンに気があること', 'ベンが隠し事をすること', 'バスの取引がだめになること'],
+      cue: '「number one on the list」の前',
+      line: 'There’s so many ways to *destroy a bubble*, but *my mom flirting with you* is number one on the list.',
+      said: '「いい気分を壊す方法はいろいろあるけど、ママがあなたに言い寄るのが一番」と言う。',
+      mean: 'bubble ＝ 文字どおりは「泡」。二人だけの幸せな空気を泡にたとえた。ここの number one は「最悪の第1位」。',
+      trap: 'number one（1位）を「一番いいこと」と勘違いしやすい。壊す方法のリストの1位＝最悪。',
+      use: 'Cleaning is number one on my list today.（今日は掃除が最優先）' },
+
     { id: 'g3', skill: 'gist', level: 'B1', point: 'reveal', seg: [259.5, 282.4],
       stem: 'What does Ben tell Leslie’s mom?', ja: 'ベンはレスリーのお母さんに何を言う？',
       choices: ['He is dating Leslie', 'He is going to Mexico', 'He will tell his boss'], a: 0,
       choicesJa: ['レスリーと付き合っている', 'メキシコに行く', '上司に言う'],
       cue: '「Hi again」のあと',
-      line: '*Leslie and I are dating.* We haven’t told anyone because there’s a rule against office relationships…',
-      said: 'ベンが「レスリーと付き合っています。社内恋愛は禁止なので、誰にも言っていません」と言う。',
+      line: '*Leslie and I are dating.*',
+      said: 'ベンがお母さんのところへ戻り、「レスリーと僕は付き合ってるんです」と打ち明ける。',
       mean: 'date ＝ 付き合う。Leslie and I are dating ＝ レスリーとぼくは付き合っている。',
-      trap: 'その前にレスリーが「メキシコに行って」と言うので、行くと思いやすい。ベンは母に話しに行く。',
+      trap: 'その前にレスリーが「メキシコに行って」と言うので、行くと考えがち。ベンは母に話しに行く。',
       use: 'We’ve been dating for a year.（付き合って1年です）' },
+
     { id: 'c2', skill: 'attitude', level: 'C2', point: 'knee', reveals: ['reveal'], seg: [266.4, 279.8], retired: true,
       stem: 'When Ben brings up her touching his knee, what is he really telling her?',
       choices: ['That her move was out of line, and it ends now', 'That he truly regrets not warning her sooner',
@@ -250,6 +354,18 @@ export const momFlirt: Clip = {
       mean: '謝る形で相手のしたことを口にし、娘の恋人だと気づかせてやめさせる。',
       trap: 'I’m sorry を本当の謝罪と取ると後悔や断りに聞こえる。謝る対象が相手の行動なら遠回しの指摘。',
       use: 'Sorry, I should’ve said I’m married.（すみません、既婚だと言うべきでした）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'rule', reveals: ['reveal'], seg: [269.0, 282.4],
+      stem: 'Why haven’t they told anyone they’re dating?', ja: '二人が付き合っていることを誰にも言っていないのはなぜ？',
+      choices: ['Work has a rule against it', 'Marlene doesn’t like Ben', 'They just started dating'], a: 0,
+      choicesJa: ['職場に禁止の規則があるから', 'マーリーンがベンを嫌いだから', '付き合い始めたばかりだから'],
+      cue: '「because」のあと',
+      line: 'We haven’t told anyone *because there’s a rule against office relationships*… it could get your daughter fired.',
+      said: '「誰にも言っていないのは、職場恋愛を禁じる規則があるから。娘さんがクビになりかねない」と話す。',
+      mean: 'a rule against 〜 ＝ 〜を禁じる規則。against ＝ 〜に反対して。get 人 fired ＝ 人をクビにさせる。',
+      trap: '決め手は because のあと。マーリーンに話しているので、母のせいと考えがち。',
+      use: 'There’s a rule against eating here.（ここは飲食禁止です）' },
+
     { id: 'c3', skill: 'humor', level: 'C2', point: 'hilarious', seg: [278.0, 292.5], retired: true,
       stem: 'Why is “That’s what we thought, too” a joke?',
       choices: ['They say the opposite of what they felt', 'They honestly found it funny themselves',
@@ -260,6 +376,18 @@ export const momFlirt: Clip = {
       mean: '実際は「最悪」と頭を抱えていた。正反対のことを真顔で言う、乾いた皮肉。',
       trap: 'too を素直な同意や予想と取りやすい。それまでの二人の反応と比べ、本心と逆なら皮肉。',
       use: 'Oh yeah, we loved that part too.（ああ、私たちもあそこ最高だと思った）' },
+
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'hilarious', seg: [286.0, 293.5],
+      stem: 'Marlene says, “That is *hilarious*.” What does she mean?', ja: 'マーリーンの「That is hilarious」はどういう意味？',
+      choices: ['It is very funny', 'It is very sad', 'It is very scary'], a: 0,
+      choicesJa: ['すごくおかしい', 'すごく悲しい', 'すごくこわい'],
+      cue: '大笑いのあと',
+      line: '*That is hilarious.* — That’s what we thought, too.',
+      said: 'お母さんが大笑いして「最高におかしいわね」と言い、二人は「僕たちもそう思いました」と返す。',
+      mean: 'hilarious ＝ 大笑いするほどおかしい。funny より強い。二人の返事は本当は逆で、さっきまで大あわてだった。',
+      trap: '娘の恋人に言い寄った話なので、怒りや困った言葉を予想しやすい。直前の大笑いが手がかり。',
+      use: 'That video was hilarious!（あの動画、めちゃくちゃおかしかった！）' },
+
     { id: 'n3', skill: 'number', level: 'B2', point: 'final', reveals: ['four'], seg: [295, 300.2], keep: true,
       stem: 'How many buses do they agree on?', ja: '最後に、バスは何台で決まる？',
       choices: ['2', '4', '10'], a: 0,
