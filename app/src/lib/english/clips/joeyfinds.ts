@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 2, new 4, ctx 6, tx 3
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 4, new 1
 // “Joey Finds Out About Chandler & Monica | Friends” (the official Friends channel, Best of Season 5): Chandler and
 // Monica plan a secret weekend away with cover stories; back home, small details (an eyelash curler, a Donald Trump
@@ -5,7 +6,13 @@
 // Segments from the captions, words from whisper (2026-11-16). Whisper's timings drift (and it loops a line) from 70 s
 // to 128 s and runs 178–229 s together, so all times come from the captions. The sources differ at 23 s ("dark out" /
 // "darker"), 61.4 s, 84.4 s, 90.8 s, 159.7 s and 209.7 s; no key rests on those words. Left out on purpose: the
-// "naked" lines at 48–53 s, the silent discovery at 178–190 s (visual), and "You? And you?" (pointing).
+// "naked" lines at 48–53 s (mild innuendo: segments may play them), the silent discovery at 178–190 s (visual), and
+// "You? And you?" (pointing).
+// R4: d2 retired (its conference = g2's cover stories and k1's line), d1 (= i1's lines; detail cap);
+// h2 now asks why Chandler claims the curler; new k2 (What about Joey?), k1 (the conference "terrible"), k3
+// (Monica's Trump line) and k4 (London) fill 62–97 s, 137–163 s and 174–204 s.
+// EAR CHECK: k1 86.5–97 s and k4 190–204 s take the scenes file's times (whisper drifts there); k4 names no speaker
+// for "It happened in London".
 import type { Clip } from '../types.ts';
 
 export const joeyfinds: Clip = {
@@ -27,7 +34,7 @@ export const joeyfinds: Clip = {
       trap: 'noon は「ヌーン」と「ウー」をのばす。ten は「テン」。「ナイン」なら9。',
       use: 'What time is it? — Ten-thirty.（今何時？—10時半）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'dark', reveals: ['nine'], seg: [22.5, 32],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'dark', reveals: ['nine'], seg: [22.5, 32], retired: true,
       stem: 'Why is it dark, Monica says?',
       ja: 'モニカによると、なぜ外が暗い？',
       choices: ['He sleeps till noon', 'It is nine at night', 'It is still winter'], a: 0,
@@ -63,16 +70,16 @@ export const joeyfinds: Clip = {
       trap: 'all the time（いつも）から「いそがしい」と思いやすい。sneak は「こっそり動く」。',
       use: 'I’m tired of sneaking around.（こそこそするのはもういや）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['whatif'], seg: [39.6, 68.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['whatif', 'joey'], seg: [39.6, 68.2],
       stem: 'What do Chandler and Monica decide to do?',
       ja: 'チャンドラーとモニカは何をすることにする？',
       choices: ['Go away, with cover stories', 'Go away and tell Joey', 'Stay home all weekend'], a: 0,
       choicesJa: ['言い訳を用意して、出かける', '出かけて、ジョーイに話す', '週末ずっと家にいる'],
-      cue: '前半の提案と、後半の相談。',
+      cue: '前半の提案と、後半の相談',
       line: 'What if we went away for the whole weekend? … I could say that I have a conference',
       said: '隠れるのに疲れた二人が、週末の旅行を決め、それぞれの言い訳を考える。',
       mean: 'go away ＝ 出かける、旅行する。秘密をやめるのではなく、上手に隠して出かける計画。',
-      trap: '最後の What about Joey?（ジョーイは？）で、話すことにしたと思いやすい。二人は言い訳を作る。',
+      trap: '最後の What about Joey?（ジョーイは？）で、話すことにしたと考えがち。二人は言い訳を作る。',
       use: 'Let’s go away for the weekend.（週末どこかへ行こう）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'whatif', seg: [39.9, 50.3],
@@ -87,7 +94,7 @@ export const joeyfinds: Clip = {
       trap: 'went（過去形）から「ありえない話」、what if から心配だと思いやすい。これは提案の形。',
       use: 'What if we got takeout tonight?（今夜はテイクアウトにしない？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [52.7, 61.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [52.7, 61.7], retired: true,
       stem: 'What cover story does Chandler plan for himself?',
       ja: 'チャンドラーは自分のために、どんな言い訳を考える？',
       choices: ['A work conference', 'A cooking festival', 'A trip to Jersey'], a: 0,
@@ -110,16 +117,40 @@ export const joeyfinds: Clip = {
       trap: 'you’re not を「そんなものはない」と取りやすいが、「行かない」の意味。',
       use: 'You know that’s just an excuse, right?（それ、ただの口実だよね）' },
 
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'joey', ctx: true, seg: [62, 70],
+      stem: 'Monica asks, “What about Joey?” What does she mean?',
+      ja: 'モニカの「What about Joey?」はどういう意味？',
+      choices: ['What will we tell Joey?', 'Is Joey coming with us?', 'Where is Joey right now?'], a: 0,
+      choicesJa: ['ジョーイには何て言う？', 'ジョーイも一緒に来る？', 'ジョーイは今どこ？'],
+      cue: '「Wait」のあと',
+      line: 'Chandler: Great. Let’s go. / Monica: Okay. Wait. *What about Joey?*',
+      said: '「よし、行こう」と言うチャンドラーに、モニカは「待って、ジョーイはどうするの？」と聞く。',
+      mean: 'What about 〜? ＝「〜はどうする？」。ジョーイはチャンドラーの同居人なので、留守の言い訳を気にしている。',
+      trap: 'about（〜について）から、居場所を聞いていると考えがち。二人は秘密を守る相談中。',
+      use: 'What about dinner? Should we book?（夕食はどうする？予約する？）' },
+
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'fought', reveals: ['bust'], ctx: true, seg: [86.5, 96.5],
+      stem: 'Why was the conference bad, Chandler says?',
+      ja: 'チャンドラーによると、学会はなぜひどかった？',
+      choices: ['He fought with his coworkers', 'His hotel room was awful', 'He got sick on the trip'], a: 0,
+      choicesJa: ['同僚とけんかしたから', 'ホテルの部屋がひどかったから', '旅行中に体調をくずしたから'],
+      cue: '「terrible」のあと',
+      line: 'Joey: How was your conference? / Chandler: Oh, it was terrible. I *fought with my colleagues*, you know, the entire time.',
+      said: '「学会どうだった？」と聞かれ、チャンドラーは「最悪。ずっと同僚とけんかしてた」と答える。',
+      mean: 'colleague ＝ 同僚。fought は fight（けんかする）の過去形。本当はモニカと旅行していたので、作り話。',
+      trap: 'ホテルの話はこのあと出るので、部屋の話と考えがち。答えは fought のあと。',
+      use: 'How was your trip? — It was great, thanks.（旅行どうだった？—よかったよ）' },
+
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'bust', seg: [96.9, 103.3],
       stem: 'What does “a total bust” mean?',
       ja: '「a total bust」の意味は？',
       choices: ['It went really badly', 'It was a big surprise', 'It was found out'], a: 0,
       choicesJa: ['すごくひどかった', '大きなおどろきだった', 'ばれてしまった'],
-      cue: '「your weekend was」のあと。',
+      cue: '「your weekend was」のあと',
       line: 'Uh, so your weekend was *a total bust*?',
-      said: '会議がひどかったと聞き、「じゃあ週末は散々？」と聞く。',
-      mean: 'a bust ＝ 大失敗、期待はずれ。total が「完全に」と強める。',
-      trap: 'busted（ばれた）と似ていて、秘密がばれた話に聞こえやすい。a bust は「失敗」。',
+      said: '学会がひどかったと聞き、「じゃあ週末は大失敗だったんだ？」と聞く。',
+      mean: 'a bust ＝ 大失敗、期待はずれ。total が「完全に」と強める。くだけた言い方。',
+      trap: 'busted（ばれた）と似ていて、秘密がばれた話に聞こえるが、a bust は「失敗」。',
       use: 'The party was a total bust.（パーティーは大失敗だった）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'curler', seg: [111.3, 120.6],
@@ -134,16 +165,16 @@ export const joeyfinds: Clip = {
       trap: 'eyelash も curler も聞きなれない語。left のうしろのかたまりをそのまま聞く。',
       use: 'I left my charger in the room.（部屋に充電器を忘れました）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'mine', reveals: ['curler'], seg: [115.2, 124.5],
-      stem: 'What does Chandler say about the curler?',
-      ja: 'チャンドラーはビューラーについて何と言う？',
-      choices: ['It was his', 'A girl left it', 'The last guest left it'], a: 0,
-      choicesJa: ['自分の物だった', '女の子が忘れた', '前の客が忘れた'],
-      cue: '忘れ物の話のすぐあと。',
-      line: 'Said someone left an eyelash curler in your room. — *Yes, that was mine.*',
-      said: 'ビューラーの忘れ物を伝えられ、すぐに「ああ、それ僕の」と答える。',
-      mean: 'mine ＝ 僕の物。女性がいたと知られるくらいなら、自分の物だと言いはる。',
-      trap: '女の子の物、というのはこのあとジョーイが言う考え。チャンドラーの返事は mine。',
+    { id: 'h2', skill: 'infer', level: 'B2', point: 'mine', reveals: ['curler'], ctx: true, seg: [115.2, 124.5],
+      stem: 'Why does Chandler say the curler was his?',
+      ja: 'チャンドラーはなぜ、ビューラーを自分の物だと言う？',
+      choices: ['To keep Monica a secret', 'It really belongs to him', 'To make Joey laugh'], a: 0,
+      choicesJa: ['モニカのことを隠すため', '本当に彼の物だから', 'ジョーイを笑わせるため'],
+      cue: '忘れ物の話のすぐあと',
+      line: 'Joey: Said someone left an eyelash curler in your room. / Chandler: *Yes, that was mine.*',
+      said: 'ビューラーの忘れ物を伝えられ、チャンドラーはすぐ「ああ、それ僕の」と答える。',
+      mean: 'that was mine ＝ それは僕の物。女性と泊まったと知られないよう、自分の物だと言いはる。',
+      trap: 'すぐ答えるので本当に彼の物と考えがち。ビューラーはまつげ用で、ふつう男性は使わない。',
       use: 'Oh, that’s mine. Thanks.（あ、それ私のです。どうも）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'sense', seg: [125.1, 132],
@@ -192,7 +223,7 @@ export const joeyfinds: Clip = {
       trap: '真剣な前置きのあとは謝罪や対決が来そうに思える。質問の中身を聞く。',
       use: 'I’ll only ask this once.（一度しか聞かないよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'believe', seg: [136.6, 143.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'believe', seg: [136.6, 143.2],
       stem: 'Type what Joey says: “…and ___, I’ll believe you.” (3 words)', answer: 'whatever you say',
       ja: '「and」のあとの3語を書こう。',
       cue: '「this one time」のあと。',
@@ -201,6 +232,18 @@ export const joeyfinds: Clip = {
       mean: 'whatever you say ＝ 君が何を言っても。whatever の t が軽い「ラ」の音になり「ワレヴァ」。',
       trap: 'whatever you が「ワレヴァユ」とつながる。3語のかたまりで書く。',
       use: 'Whatever you decide, I’ll support you.（どう決めても応援する）' },
+
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'trump', ctx: true, seg: [154.5, 162],
+      stem: 'What was Trump doing when Monica saw him?',
+      ja: 'モニカが見たとき、トランプは何をしていた？',
+      choices: ['Waiting for an elevator', 'Giving a long speech', 'Eating in the hotel'], a: 0,
+      choicesJa: ['エレベーターを待っていた', '長いスピーチをしていた', 'ホテルで食事していた'],
+      cue: 'Yeah のあと',
+      line: 'I heard you saw Donald Trump at your convention. / Monica: Yeah, saw him *waiting for an elevator*.',
+      said: '「学会でトランプを見たんだって？」と聞かれ、モニカは「うん、エレベーターを待ってた」と答える。',
+      mean: 'saw him waiting ＝ 彼が待っているのを見た。チャンドラーとまったく同じ話で、同じ場所にいたと分かる。',
+      trap: 'convention（大会）から、スピーチを連想しやすい。答えは saw him のあと。',
+      use: 'I saw him waiting for the bus.（彼がバスを待ってるのを見たよ）' },
 
     { id: 'nt1', retired: true, skill: 'infer', level: 'C2', point: 'trump', seg: [155.0, 161.0],
       stem: 'When Monica tells her Donald Trump story, what does it give away?',
@@ -237,6 +280,18 @@ export const joeyfinds: Clip = {
       trap: 'for a second（少しの間）から「待って」と思いやすい。前の talk to you（話す）が答え。',
       use: 'Excuse me, can I talk to you for a minute?（すみません、少しお話ししてもいいですか）' },
 
+    { id: 'k4', skill: 'detail', level: 'B1', point: 'london', ctx: true, seg: [190, 204],
+      stem: 'Joey asks “How? When?” What is the answer?',
+      ja: 'ジョーイの「How? When?」への答えは？',
+      choices: ['It started in London', 'It started last weekend', 'It started at the hotel'], a: 0,
+      choicesJa: ['ロンドンで始まった', '先週末に始まった', 'ホテルで始まった'],
+      cue: '質問のすぐあと',
+      line: 'Joey: How? When? / *It happened in London.* / Joey: In London?',
+      said: '「どうやって？いつ？」と聞くジョーイに「ロンドンで」と答えると、「ロンドン？」と驚く。',
+      mean: 'It happened in 〜 ＝ 〜で起きた。二人の関係は、ロンドン（ロスの結婚式）から始まっていた。',
+      trap: '週末の旅行の話のあとなので、先週末と考えがち。答えは in London（場所）。',
+      use: 'It happened in Tokyo last year.（それは去年、東京であったんだ）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'promise', seg: [203.6, 230.7],
       stem: 'What do Chandler and Monica want from Joey?',
       ja: 'チャンドラーとモニカはジョーイに何をしてほしい？',
@@ -261,16 +316,16 @@ export const joeyfinds: Clip = {
       trap: '隠す理由は「続くか分からない」もよくあるが、ここではさわぎを避けたいこと。',
       use: 'Please don’t make a big deal about my birthday.（誕生日のこと、大げさにしないでね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', reveals: ['reason'], seg: [209.2, 218.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', reveals: ['reason'], ctx: true, seg: [209.2, 218.5],
       stem: 'What does Joey mean by “it is a big deal”?',
       ja: 'ジョーイの「it is a big deal」はどういう意味？',
       choices: ['It’s really big news', 'It’s only a small thing', 'It’s a real problem'], a: 0,
       choicesJa: ['すごく大きなニュース', 'ほんの小さなこと', '本当にこまったこと'],
-      cue: 'But で始まる返事。',
-      line: 'we didn’t want to make a big deal out of it. — *But it is a big deal!* I have to tell someone.',
+      cue: 'But で始まる返事',
+      line: 'We didn’t want to make a big deal out of it. / Joey: *But it is a big deal!* I have to tell someone.',
       said: '「大ごとにしたくなかった」に「でも大ごとだよ！だれかに言わなきゃ」と返す。',
-      mean: 'a big deal ＝ 大きなこと、重大なこと。ここでは「すごいニュース」という興奮。',
-      trap: 'no big deal（たいしたことない）を知っていると逆に思いやすい。I have to tell someone が手がかり。',
+      mean: 'a big deal ＝ 文字どおりは「大きな取引」→大きなこと。ここでは「すごいニュース」という興奮。',
+      trap: 'no big deal（たいしたことない）を知っていると逆に考えがち。I have to tell someone が手がかり。',
       use: 'Getting this job is a big deal.（この仕事が取れたのは大きいよ）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'great', seg: [228.9, 241.5],
