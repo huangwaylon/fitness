@@ -8,7 +8,7 @@ import { log, logError, logId } from './log.ts';
 import { isLogId } from '../contract/log.ts';
 import { takeWx } from './wx.ts';
 import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
-import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDayNum, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, isAcked, isLayoutIntent, isStored, parseClient, parseServer, scopeMaySend, tokyoDayNum, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type SgAt, type Who } from '../contract/live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -168,6 +168,9 @@ export interface Live {
    *  already made, a nest too soon, one it couldn't read, a music stage stale or over) and its stamp `t` (optional: the
    *  demo's relay has none). */
   onAck?(fn: (i: Intent, ok: boolean, t: number) => void): () => void;
+  /** The すごろく game this phone holds (`g`, `n` of its moves), said in each hello: the room replays it from there
+   *  whatever `since` (a game crosses Tokyo midnight). Optional: the demo's relay has none. */
+  sgAt?(fn: () => SgAt | null): void;
 }
 
 /** Reconnect delays: 1 s doubling to 15 s, ±25 % jitter. Only while the app is on screen and online (a hidden one has
@@ -385,6 +388,7 @@ export function createLive(o: LiveOptions): Live {
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
   const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, held: 0, unacked: 0, closed: 0, busy: 0 };
   const ackSubs = new Set<(i: Intent, ok: boolean, t: number) => void>();
+  let sgAt: (() => SgAt | null) | null = null;
   let resend: ReturnType<typeof setTimeout>[] = [];
   /** When the socket last heard anything (liveness), the pong's wait after a probe, the acks' look. */
   let heardAt = 0;
@@ -676,7 +680,9 @@ export function createLive(o: LiveOptions): Live {
       // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
       // nothing from for a minute for a ghost
       const dev = o.dev?.();
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, beat: true, ...(dev ? { dev } : {}) });
+      let sg = null as SgAt | null;
+      safe(() => (sg = sgAt?.() ?? null));
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, beat: true, ...(dev ? { dev } : {}), ...(sg ? { sg } : {}) });
     };
     s.onmessage = (e: MessageEvent) => {
       heardAt = Date.now();
@@ -716,9 +722,9 @@ export function createLive(o: LiveOptions): Live {
           if (pingEvery) clearTimeout(pingEvery);
           pingEvery = setTimeout(quiet, PING_EVERY_MS);
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
-          // that day's, gone
+          // that day's, gone (but a すごろく move: its game's, which the room keeps 2 days)
           const today = tokyoDayNum(m.t);
-          for (const [k, o] of outbox) if (o.d !== today) (forget(k), save());
+          for (const [k, o] of outbox) if (o.d !== today && (o.m as Intent).kind !== 'sg') (forget(k), save());
           for (const o of outbox.values()) o.off = false;
           [...outbox].forEach(([c, o], i) => {
             const go = () => {
@@ -911,6 +917,9 @@ export function createLive(o: LiveOptions): Live {
     onAck(fn) {
       ackSubs.add(fn);
       return () => void ackSubs.delete(fn);
+    },
+    sgAt(fn) {
+      sgAt = fn;
     }
   };
 

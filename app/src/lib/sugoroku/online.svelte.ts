@@ -151,6 +151,8 @@ export function listen(eager = false): void {
   r.own?.start();
   relay?.on(hear);
   relay?.onAck?.(refused);
+  // (each hello says the game held and how many of its moves: the room replays it from there, across midnight too)
+  relay?.sgAt?.(() => (online.cur.g ? { g: online.cur.g, n: online.cur.log.length } : null));
   relay?.onStatus((st) => (online.connected = st.connected));
   $effect.root(watchInvite);
 }

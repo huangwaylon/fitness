@@ -127,6 +127,19 @@ describe('live: connecting', () => {
     expect(live.status().gone).toEqual({});
   });
 
+  it('each hello says the すごろく game held (`sg`: the room replays it from move n, whatever `since`), when there is one', () => {
+    let at: { g: string; n: number } | null = null;
+    live.sgAt!(() => at);
+    live.start();
+    last().open();
+    expect(last().sent[0]).not.toHaveProperty('sg');
+    at = { g: 'abcdefghij', n: 4 };
+    last().drop();
+    vi.advanceTimersByTime(2000);
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', sg: { g: 'abcdefghij', n: 4 } });
+  });
+
   it('the welcome’s `gone`: when those not here left, and my own last socket', () => {
     live.start();
     last().open();
@@ -803,6 +816,20 @@ describe('live: the outbox kept across a kill', () => {
     for (let i = 0; i < 130; i++) a.send({ kind: 'world', op: 'watered', id: `fl:${i}:0` });
     await Promise.resolve();
     expect(disk[KEY]).toHaveLength(120);
+  });
+
+  it('a すごろく move made before Tokyo midnight goes again after a welcome past it (its game the room keeps 2 days); a world one goes', async () => {
+    const d = tokyoDayNum(Date.now()) - 1;
+    const sg = { v: 3, c: 7, kind: 'sg', g: 'abcdefghij', i: 3, a: 'roll' };
+    disk = { [KEY]: [{ c: 5, d, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }, { c: 7, d, m: sg }] };
+    const a = boot();
+    a.start();
+    last().welcome();
+    expect(last().sent.filter((m) => m.kind === 'sg' || m.kind === 'world')).toEqual([sg]);
+    last().recv({ kind: 'ack', c: 7, t: Date.now(), ok: true });
+    await Promise.resolve();
+    expect(disk[KEY]).toEqual([]);
+    a.stop();
   });
 
   it('in localStorage: under the key’s hash (never the key), read back only for that key', async () => {
