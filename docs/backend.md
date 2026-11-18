@@ -181,8 +181,8 @@ answered by id; a request refused whole is halved, one event alone so refused is
   `replaceHeld` swaps its data (its id kept, never once tried: a farm tap joining its batch, a catch's held tally or
   island day, one recompute of the view); a later event on the same spend never overtakes it. A group goes once none of it is held, in one request.
 - **Replies:** acked → `island.acked` (in the view until a snapshot holds it); `bad_request` / `too_large` → dropped
-  with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on `online`, a
-  sync tap, becoming visible and the socket's welcome, at most once per 30 s.
+  with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on a sync tap,
+  becoming visible and the socket's welcome, at most once per 30 s, and on every `online`.
 - **Hidden:** on hide the held day rows go at once in `keepalive` requests, so a phone locked right after a catch
   doesn't leave the partner behind.
 
@@ -200,10 +200,11 @@ row on the server's clock, so read-time rules judge it as the server will. Recom
 ### When it syncs
 On launch (after painting from the cache), on becoming visible (≤ every 30 s), a sync tap, `online`, and on the
 relay's `changed` ([Push](#push)); each refresh flushes the queue, then fetches (waits: `store/live.ts`'s constants).
-A launch or becoming visible waits briefly for the `welcome`: when the cache already has its `rec {at, rev}` and is
-recent, it only flushes. Every welcome whose `rec` is past the cache fetches (`e2e/live-sync.spec.ts`). An ack carries
-its stored row's `at` and the row goes into the cache at once; only a duplicate's ack is followed by a re-read. A failed
-fetch while the socket is up is tried again after 10 s, 30 s, then every 60 s (`FAIL_RETRY_MS`).
+A launch, becoming visible or `online` (iOS fires it on any network change) waits briefly for the `welcome`: when the
+cache already has its `rec {at, rev}` and is recent, it only flushes; `online` after a failed fetch always fetches.
+Every welcome whose `rec` is past the cache fetches (`e2e/live-sync.spec.ts`). An ack carries its stored row's `at`
+and the row goes into the cache at once; only a duplicate's ack is followed by a re-read. A failed fetch while the
+socket is up is tried again after 10 s, 30 s, then every 60 s (`FAIL_RETRY_MS`).
 
 **One device, one socket:** each hello names the device and tab (`dev`) and replaces only that tab's earlier socket
 (4002); the person's other devices hear their decor ops live, and only the writing page skips its own `changed`

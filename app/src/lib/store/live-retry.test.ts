@@ -43,8 +43,12 @@ class Mem implements KV {
 }
 const host = (): Host => ({ status: 'loading', syncing: false, offline: false, lastSync: null, current: false, changed() {} });
 
+/** The record's newest row (what a snapshot brings). */
+const NEWEST = '2026-11-05T03:00:00.000Z';
 let kv: Mem;
 let sends = 0;
+/** Snapshots asked for, and the next ones that fail (the record `unavailable`). */
+let snaps = 0, failing = 0;
 let keepalive: boolean[] = [];
 /** The page's and the document's listeners. */
 let on: Record<string, () => void> = {};
@@ -62,6 +66,7 @@ beforeEach(() => {
   configureStorage({ local: kv });
   setKey('ab'.repeat(32), 'A');
   sends = 0;
+  snaps = failing = 0;
   relay.clear();
   relay.set({ connected: false });
   configureTransport({
@@ -74,7 +79,9 @@ beforeEach(() => {
         // (each with its row's `at`: no re-read after the ack, whose own retryNow would hide the test's)
         return new Response(JSON.stringify({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true, at: '2026-11-05T03:00:01.000Z' })) }));
       }
-      return new Response(JSON.stringify({ ok: true, me: 'A', now: '2026-11-05T03:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } }));
+      snaps++;
+      if (failing > 0 && failing--) return new Response('{"ok":false,"error":"unavailable"}');
+      return new Response(JSON.stringify({ ok: true, me: 'A', now: NEWEST, rev: 'r1', rows: { metrics: [], events: [[NEWEST, 'B', 'e1', 'pref', '{"key":"villagerName","value":"x"}']] } }));
     }) as typeof fetch
   });
 });
@@ -132,6 +139,34 @@ describe('the write queue when the app comes back', () => {
     relay.set({ connected: true });
     await settle();
     expect(sends).toBe(1);
+  });
+
+  it('`online` sends a backed-off write at once, even right after a show; it fetches only after a failed fetch, not while the welcome says the cache is current', async () => {
+    const h = host();
+    const b = new LiveBackend(h);
+    relay.set({ connected: true, rec: { at: NEWEST, rev: 'r1' } } as never);
+    await b.refresh({});
+    expect(snaps).toBe(1);
+    backedOff();
+    await visible(b);
+    await settle();
+    expect(sends).toBe(1);
+    backedOff();
+    on.online();
+    await settle();
+    expect(sends).toBe(2); // (no 30 s floor for `online`)
+    expect(snaps).toBe(1); // (inside the refresh floor)
+    await vi.advanceTimersByTimeAsync(31_000);
+    on.online();
+    await settle();
+    expect(snaps).toBe(1); // (past it: the welcome says the cache has the record's last change)
+    // a fetch fails (the train's tunnel): the next `online` fetches
+    failing = 1;
+    await b.refresh({});
+    expect([snaps, h.offline]).toEqual([2, true]);
+    on.online();
+    await settle();
+    expect([snaps, h.offline]).toEqual([3, false]);
   });
 
   it('hidden (or pagehide): the tally and island rows still held go now, keepalive; a buy’s undo window keeps its time', async () => {

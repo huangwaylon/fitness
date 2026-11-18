@@ -113,8 +113,13 @@ export class LiveBackend implements Backend {
   #start(): void {
     if (this.#started) return;
     this.#started = true;
-    // back online: also what backed off while offline goes now (refresh → retryNow)
-    addEventListener('online', () => void this.refresh({}));
+    // back online: what backed off while offline goes now. A fetch only when needed: after a failed one (offline), else
+    // as on a show (the floor, the welcome's record mark): iOS fires `online` on any network change, and the socket's
+    // reconnect catches up by itself (#welcomed)
+    addEventListener('online', () => {
+      this.#kick(true);
+      void this.refresh({ background: !this.#host.offline });
+    });
     // hidden (the phone locked, another app) or left: the day rows still held go now, in a request that outlives the page
     addEventListener('pagehide', () => this.#hidden());
     if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && this.#hidden());
@@ -465,10 +470,10 @@ export class LiveBackend implements Backend {
 
   #kickedAt = -Infinity;
   /** Back on screen or reconnected (iOS often skips `online` after a suspend): what backed off goes now, not after up
-   *  to 5 minutes with the network up. At most once per KICK_FLOOR_MS. */
-  #kick(): void {
+   *  to 5 minutes with the network up. At most once per KICK_FLOOR_MS, unless `force` (back online). */
+  #kick(force = false): void {
     const now = Date.now();
-    if (now - this.#kickedAt < KICK_FLOOR_MS || !queued().some((x) => x.tries > 0 && !x.parked && x.nextAt > now)) return;
+    if ((!force && now - this.#kickedAt < KICK_FLOOR_MS) || !queued().some((x) => x.tries > 0 && !x.parked && x.nextAt > now)) return;
     this.#kickedAt = now;
     retryNow(now);
     void this.#flush(true);
