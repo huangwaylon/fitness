@@ -1,14 +1,20 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 0, new 2, ctx 4, tx 10
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 10, new 3
 // “Who's Your Daddy?  - The Office US” (the official The Office channel, BEST OF SEASON 5): Jan, expecting a baby by a
 // donor, drops in to show off her candle business; Michael rehearses the birth with Dwight and a buttered watermelon,
 // and when the baby comes he isn't there.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 183 s. Untested on purpose: 52–54 s
-// (“cervix”), 87–100 s (shouted overlap), 101–105 s (Dwight's talking head), 113–121 s, 145.7 s (“happiest day”,
+// (“cervix”), 87–99 s (shouted overlap), 113–121 s, 145.7 s (“happiest day”,
 // speaker not named), 170 s (“oh no”). Speakers are settled by “Hey, Jan” (8.9 s), “Michael!” (69.8 s) and “Hi, Jim”
 // (162 s); the talking heads are not named.
 // EAR CHECK: 0.5 s help — “Hi. Can I help you?” is the person at the front desk, to Jan
 // EAR CHECK: 74.1 s s2 — “what do you do” as one run (≈ “whaddaya”), not “what did you” (both sources have “do you”)
 // EAR CHECK: 83.6 s x1 — “checked the route”: the -ed runs into “the” (both sources have the words)
+// EXCLUDE 11–15 (“kicking ass and taking names”)
+// EXCLUDE 52–54 (“My cervix is ripening”)
+// EXCLUDE 103–105 (the circumcision line)
+// SKIP 183–203.5: music and credits (whisper's “Thank you” at 201 s)
+// No scenes file for this video.
 import type { Clip } from '../types.ts';
 
 export const whosDaddy: Clip = {
@@ -41,16 +47,16 @@ export const whosDaddy: Clip = {
       trap: 'ten なら「テン」だけ、thousand なら「サウ」。「ハンドレッ」が聞こえれば100。',
       use: 'I need you to print ten copies.（10部印刷してほしい）' },
 
-    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', seg: [8.4, 16.8],
+    { id: 'f1', skill: 'attitude', level: 'B1', point: 'kicking', ctx: true, seg: [4.8, 10.9],
       stem: 'How does Jan feel about her candle business?',
       ja: 'ジャンは、自分のキャンドルの仕事をどう思っている？',
       choices: ['Very happy with it', 'Worried about it', 'Bored with the work'], a: 0,
       choicesJa: ['とても満足している', '心配している', 'その仕事にあきている'],
       cue: '「candle game」の答え。',
-      line: 'How’s the candle game? — *Oh, great.*',
-      said: '「キャンドルの仕事はどう？」に「最高よ。絶好調」と答える。',
-      mean: 'How’s 〜? ＝「〜はどう？」。Oh, great ＝ すごくいい。そのあとも強い言葉で自慢する。',
-      trap: 'あとの言葉はくだけていて難しいが、最初の great で答えは分かる。',
+      line: 'How’s the candle game? / Jan: *Oh, great.*',
+      said: '「キャンドルの仕事はどう？」に「ああ、最高よ」と答える。',
+      mean: 'How’s 〜? ＝「〜はどう？」。game ＝ 文字どおりは「ゲーム」。くだけて「〜の仕事・商売」。Oh, great ＝ すごくいい。',
+      trap: 'game から遊びの話に聞こえるが、ここは商売の調子を聞いている。答えは great。',
       use: 'How’s the new job? — Oh, great!（新しい仕事どう？―最高！）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'vigil', seg: [9.4, 24.2], retired: true,
@@ -131,7 +137,7 @@ export const whosDaddy: Clip = {
       trap: 'led を「ほのめかした」と取ると、by のあとを聞き落とす。思わせた、には事実でない含みがある。',
       use: 'Turns out he made the whole thing up.（全部作り話だったんだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'contract', seg: [47, 52.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'contract', seg: [47, 51.9], keep: true,
       stem: 'How often are the contractions coming?',
       ja: '陣痛は何分おきに来ている？',
       choices: ['Every five minutes', 'Every ten minutes', 'Every twenty minutes'], a: 1,
@@ -139,33 +145,33 @@ export const whosDaddy: Clip = {
       cue: '「coming every」のすぐあと。',
       line: 'Contractions are coming *every ten minutes*.',
       said: '「陣痛が10分おきに来てる」と報告する。',
-      mean: 'every ten minutes ＝ 10分ごと。出産が近づいている合図。',
+      mean: 'every ten minutes ＝ 10分ごと。contraction ＝ 陣痛。出産が近づいている合図。',
       trap: 'five は「ファイヴ」。twenty は「トゥエンティ」と長い。短く「テン」なら10。',
       use: 'My phone buzzes every ten minutes.（スマホが10分おきに鳴る）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [47, 87.1],
-      stem: 'What are Michael and Dwight doing in this part?',
-      ja: 'この部分で、マイケルとドワイトは何をしている？',
-      choices: ['Practicing for the baby’s birth', 'Learning first aid at their work', 'Taking a class at a hospital'], a: 0,
-      choicesJa: ['赤ちゃんの出産の練習', '職場で応急手当を習う', '病院で講習を受ける'],
-      cue: '陣痛の話を、だれがだれにしているか。',
-      line: 'Michael is *preparing for the birth* of a watermelon with Dwight.',
-      said: 'ドワイトが妊婦役、マイケルが付き添い役で、陣痛から病院までを練習する。',
-      mean: 'prepare for 〜 ＝ 〜の準備をする。スイカを赤ちゃんに見立てた予行演習。',
-      trap: '病院や呼吸の話から講習会を思いやすいが、先生はいない。二人で役を演じている。',
-      use: 'Let’s practice once before the real thing.（本番の前に一度練習しよう）' },
-
-    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', seg: [47.5, 54.4],
+    { id: 'breathe', skill: 'detail', level: 'B1', point: 'breathe', seg: [47.5, 52.0],
       stem: 'What does Michael tell Dwight to keep doing?',
       ja: 'マイケルはドワイトに、何を続けるように言う？',
       choices: ['Breathing', 'Sleeping', 'Pushing hard'], a: 0,
       choicesJa: ['息をすること', '寝ること', '強くいきむこと'],
       cue: '「ten minutes」のあとの返事。',
       line: 'Okay, just remember to *keep breathing*.',
-      said: '「よし、息をするのを忘れないで」と言う。',
+      said: '「よし、呼吸を続けるのを忘れるなよ」と言う。',
       mean: 'remember to 〜 ＝ 忘れずに〜する。keep 〜ing ＝ 〜し続ける。',
-      trap: 'あとで keep pushing（いきんで）も聞こえるが、それはもっと後。',
+      trap: 'あとで keep pushing（いきんで）も聞こえるが、それはもっと後の場面。',
       use: 'Remember to keep your ticket.（切符をなくさないでね）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'rehearse', seg: [54.0, 79.0],
+      stem: 'What are Michael and Dwight doing in this part?',
+      ja: 'この部分で、マイケルとドワイトは何をしている？',
+      choices: ['Practicing for the baby’s birth', 'Learning first aid at their work', 'Taking a class at a hospital'], a: 0,
+      choicesJa: ['赤ちゃんの出産の練習', '職場で応急手当を習う', '病院で講習を受ける'],
+      cue: 'だれがだれに、陣痛や破水の話をしているか。',
+      line: 'Michael is *preparing for the birth* of a watermelon with Dwight.',
+      said: 'ドワイトが妊婦役、マイケルが付き添い役で、破水から病院までを練習する。',
+      mean: 'prepare for 〜 ＝ 〜の準備をする。スイカを赤ちゃんに見立てた予行演習。',
+      trap: '病院や呼吸の話から講習会を連想しやすいが、先生はいない。二人で役を演じている。',
+      use: 'Let’s practice once before the real thing.（本番の前に一度練習しよう）' },
 
     // anchor: captions “through” 65.9 s, “delusion” 68.5 s (whisper 66.0 → 68.0): a 2.5 s gap; “with a sperm donor”
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'delusion', reveals: ['father'], seg: [55.1, 69.6], retired: true,
@@ -191,16 +197,16 @@ export const whosDaddy: Clip = {
       trap: 'did you は「ディジュ」、would you は「ウッジュ」。ここは「ワダヤ」と「ダ」が入る。',
       use: 'What do you do if it rains?（雨ならどうする？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', seg: [73.6, 79.7],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'plan', reveals: ['whatdo'], ctx: true, seg: [73.0, 79.7],
       stem: 'What is Michael’s plan for when the time comes?',
       ja: 'その時が来たら、マイケルはどうする計画？',
-      choices: ['Jan calls, he meets her there', 'He drives to pick Jan up', 'He calls the doctor first'], a: 0,
+      choices: ['Jan calls, he meets her there', 'He drives to get Jan', 'He calls the doctor first'], a: 0,
       choicesJa: ['ジャンから電話が来て、そこで会う', '車でジャンを迎えに行く', 'まず医者に電話する'],
       cue: '「What do you do?」の答え。',
-      line: 'I get *a call from Jan*, and I *meet her at the hospital*.',
-      said: '「ジャンから電話が来て、病院で会う」と答える。',
+      line: 'Dwight: What do you do? What do you do? / Michael: I get *a call from Jan*, and I *meet her at the hospital*.',
+      said: '「どうする？どうする？」に「ジャンから電話が来て、病院で会う」と答える。',
       mean: 'get a call from 〜 ＝ 〜から電話が来る。出産のときの手順を確かめている。',
-      trap: 'call が聞こえるので、自分が電話する側と思いやすい。from Jan なら、かけるのはジャン。',
+      trap: 'call が聞こえるので、自分が電話する側と考えがち。from Jan なら、かけるのはジャン。',
       use: 'Call me, and I’ll meet you there.（電話くれたら現地で会おう）' },
 
     { id: 'roads', skill: 'detail', level: 'B2', point: 'roads', seg: [75.2, 81.2],
@@ -226,7 +232,7 @@ export const whosDaddy: Clip = {
       trap: '穴の話を本当の情報と取ると、道や車の忠告に聞こえる。Adapt が試しの合図。',
       use: 'Plans change. You have to adapt.（予定は変わるもの。合わせなきゃ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'route', seg: [82, 87.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'route', seg: [82.4, 87.4],
       stem: 'Type the reply: “I ___. There are no potholes.” (3 words)', answer: 'checked the route',
       ja: '「I」のあとの3語を書こう。',
       cue: '「Adapt.」のすぐあと。',
@@ -236,27 +242,40 @@ export const whosDaddy: Clip = {
       trap: 'ed が the に飲まれて check に聞こえやすい。',
       use: 'I checked the time. We’re fine.（時間は確認した。大丈夫）' },
 
-    { id: 'd7', skill: 'detail', level: 'B2', point: 'mark', seg: [121.45, 132.35], retired: true,
-      stem: 'Why should the person with the Sharpie mark the baby secretly?',
-      choices: ['So that a baby thief couldn’t copy it', 'So that the hospital staff wouldn’t wash it off',
-                'So that Jan wouldn’t find out and get angry'], a: 0,
-      cue: '「only you could recognize」に続く後半。',
-      line: 'a mark that only you could recognize and *no baby snatcher could ever copy*.',
-      said: '「自分にしか分からず、赤ちゃん泥棒にもまねできない印をこっそり付けろ」。',
-      mean: 'snatcher ＝ ひったくる人。取り替えや連れ去りに備えた目印。',
-      trap: 'secretly を「ジャンに内緒で」と取りやすい。理由は文の後半で、誰にまねさせないかを言う。',
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'expertise', seg: [99.5, 103.0],
+      stem: 'What does “areas of expertise” mean?',
+      ja: '「areas of expertise」はどういう意味？',
+      choices: ['Things he knows well', 'Places he has worked', 'Jobs he wants to do'], a: 0,
+      choicesJa: ['よく知っている分野', '働いたことのある場所', 'やりたい仕事'],
+      cue: '「one of my many」のあと。',
+      line: 'Babies are one of my many *areas of expertise*.',
+      said: 'カメラに「赤ちゃんは、私のたくさんある得意分野の一つです」と話す。',
+      mean: 'expertise ＝ 専門の知識（expert の名詞）。area ＝ 文字どおりは「地域」→ ここでは「分野」。',
+      trap: 'area から「場所」を連想しやすい。ここは知識の分野で、one of my many ＝ たくさんある中の一つ。',
+      use: 'Cooking is not my area of expertise.（料理は得意分野じゃないんです）' },
+
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'mark', ctx: true, seg: [121.45, 132.35],
+      stem: 'What should he do with the pen?',
+      ja: 'そのペンで何をするように言われる？',
+      choices: ['Mark the baby secretly', 'Write the baby’s name', 'Sign the hospital papers'], a: 0,
+      choicesJa: ['赤ちゃんにこっそり印を付ける', '赤ちゃんの名前を書く', '病院の書類にサインする'],
+      cue: '「Yes, I do!」のあと、When the baby のあと。',
+      line: 'Do you have the Sharpie? / Yes, I do! / When the baby emerges, *mark it secretly*… no baby snatcher could ever copy.',
+      said: '「油性ペンは？」「ある！」。「出てきたら、泥棒にまねできない印をこっそり付けろ」。',
+      mean: 'Sharpie ＝ 油性ペンの商品名。mark ＝ 印を付ける。baby snatcher ＝ 赤ちゃん泥棒。取り違えへの備え。',
+      trap: 'ペンと病院から、名前やサインを書く話と考えがち。決め手は mark it secretly。',
       use: 'Mark your bag so no one takes it.（取られないよう、かばんに目印を）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'butter', seg: [135.5, 142],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'butter', ctx: true, seg: [135.5, 142],
       stem: 'Why is the watermelon covered in butter?',
       ja: 'スイカにはなぜバターがぬってある？',
       choices: ['New babies are slippery', 'To test how he holds it', 'To keep the mark on it'], a: 0,
       choicesJa: ['生まれたての赤ちゃんはつるつるだから', '持ち方を試すため', '印が消えないように'],
       cue: '「What was on that?」の答え。',
-      line: 'Butter. *Newborns are slippery*.',
-      said: '「何が付いてたんだ？」「バター。新生児はつるつるだから」と答える。',
-      mean: 'slippery ＝ すべりやすい。本物らしく見せるための工夫。',
-      trap: 'すべって落とした直後なので、持ち方のテストに思いやすい。理由は newborns の話。',
+      line: 'What was on that? / Butter. *Newborns are slippery*.',
+      said: '「何が塗ってあったんだ？」「バターです。新生児はつるつるしてるので」と答える。',
+      mean: 'slippery ＝ すべりやすい。newborn ＝ 生まれたての赤ちゃん。本物らしく見せるための工夫。',
+      trap: 'すべって落とした直後なので、持ち方のテストと勘違いしやすい。理由は newborns の話。',
       use: 'Careful, the floor is slippery.（気をつけて、床がすべるよ）' },
 
     { id: 'a1', skill: 'phrase', level: 'B2', point: 'touch', seg: [138.5, 145],
@@ -271,14 +290,14 @@ export const whosDaddy: Clip = {
       trap: 'touch から「さわる」を思いやすい。ここは「ちょっとした工夫」。',
       use: 'Fresh flowers? Nice touch.（生花？気がきいてるね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [160.4, 183.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['mark'], seg: [160.4, 183.6],
       stem: 'How does Michael’s big plan end?',
       ja: 'マイケルの大計画は、最後どうなる？',
       choices: ['He misses the birth', 'He drops the baby', 'He marks the wrong baby'], a: 0,
       choicesJa: ['生まれるときにいない', '赤ちゃんを落とす', 'ちがう赤ちゃんに印を付ける'],
       cue: '最後のカメラへの一言。',
       line: 'Jan had the baby, and *Michael wasn’t there* to mark it.',
-      said: 'ジャンが赤ちゃんを連れて来る。「マイケルはいなかった」と語られる。',
+      said: 'ジャンが赤ちゃんを連れて来る。「マイケルはその場にいなかった」と語られる。',
       mean: 'wasn’t there ＝ いなかった。あれほど練習したのに、本番にいなかった。',
       trap: '練習でスイカが落ちた場面と混ざりやすい。最後の wasn’t there を聞く。',
       use: 'All that practice, and I missed it.（あれだけ練習したのに、見逃した）' },
@@ -295,14 +314,14 @@ export const whosDaddy: Clip = {
       trap: '質問の形なので、来た理由を聞いていると思いやすい。答えは赤ちゃんの紹介。',
       use: 'What do we have here? A cake?（おや、これは？ケーキ？）' },
 
-    { id: 'h3', skill: 'infer', level: 'B2', point: 'anybody', reveals: ['outcome'], seg: [176.1, 184.2],
+    { id: 'h3', skill: 'infer', level: 'B2', point: 'anybody', reveals: ['outcome'], seg: [178.8, 184.2],
       stem: 'What does “except Michael’s” tell us?',
       ja: '「except Michael’s」から何が分かる？',
       choices: ['Michael isn’t the father', 'Michael lost the new baby', 'Michael is the father'], a: 0,
       choicesJa: ['マイケルは父親ではない', 'マイケルは赤ちゃんを見失った', 'マイケルが父親だ'],
       cue: '最後の一言。',
       line: 'So the baby could be *anybody’s… except Michael’s*.',
-      said: '「だから赤ちゃんはだれの子でもありうる。マイケルの子以外はね」と言う。',
+      said: '「だから赤ちゃんはだれの子でもありうる。マイケルの子以外はね」と語られる。',
       mean: 'except ＝ 〜以外。もともとマイケルの子ではないので、印の作戦は意味がなかった。',
       trap: '前半だけだと、取り違えの心配に聞こえる。except（〜以外）のあとが大事。',
       use: 'Pick any seat, except that one.（どこでもどうぞ、そこ以外なら）' },
