@@ -42,5 +42,5 @@
   facts={data ? factRows(data, now) : []} more={change ? [{ id: 'latest', label: t('kalori.sec.latest'), n: change.parts.reduce((a, p) => a + p.n, 0), body: latestRow }] : []} />
 
 <!-- ⋯: links only, each opening GitHub in a new tab -->
-<ActionSheet bind:open={menuOpen} title={t('kalori.menu.label')} groups={[links.map((l) => ({ id: l.id, label: t(LABEL[l.id]) }))]}
+<ActionSheet name="kalori.menu" bind:open={menuOpen} title={t('kalori.menu.label')} groups={[links.map((l) => ({ id: l.id, label: t(LABEL[l.id]) }))]}
   onpick={(id) => { const l = links.find((x) => x.id === id); if (l) window.open(l.href, '_blank', 'noopener,noreferrer'); }} />

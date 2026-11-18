@@ -30,7 +30,7 @@
   const ICONS = ['calendar', 'map', 'backpack', 'list', 'checks', 'edit', 'heart', 'gear', 'plus', 'clock', 'pin', 'distance', 'mountain', 'users', 'sunrise', 'trash'] as const;
 </script>
 
-<Sheet bind:open label="Kit" variant="full">
+<Sheet name="kit" bind:open label="Kit" variant="full">
   <div class="col">
     <PhotoBand src="/travel/okinawa/hero.webp" height={120} edge>
       {#snippet nav()}<NavBar over title="Kit" onback={() => {}} onclose={() => (open = false)} />{/snippet}
@@ -75,9 +75,9 @@
   </div>
 </Sheet>
 
-<ActionSheet bind:open={acts} title="現金" groups={[[{ id: 'edit', label: '編集', icon: 'edit' }, { id: 'up', label: '上へ', icon: 'up', off: true }], [{ id: 'rm', label: '削除', icon: 'trash', danger: true }]]} onpick={() => {}} />
+<ActionSheet name="kit.acts" bind:open={acts} title="現金" groups={[[{ id: 'edit', label: '編集', icon: 'edit' }, { id: 'up', label: '上へ', icon: 'up', off: true }], [{ id: 'rm', label: '削除', icon: 'trash', danger: true }]]} onpick={() => {}} />
 
-<Sheet bind:open={form} label="タスク" title="タスク" focusField>
+<Sheet name="kit.form" bind:open={form} label="タスク" title="タスク" focusField>
   <label class="fld">タイトル<input type="text" /></label>
   {#snippet footer()}<button type="button" class="btn" data-sfx="confirm" onclick={() => (form = false)}>保存</button>{/snippet}
 </Sheet>

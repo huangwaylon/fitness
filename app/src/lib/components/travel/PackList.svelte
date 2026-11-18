@@ -208,8 +208,8 @@
   {/if}
 {/snippet}
 
-<ActionSheet bind:open={acting} title={targetName} groups={actions} onpick={picked} />
-<ActionSheet bind:open={asking} title={askTitle} note={askNote} label={ask?.kind === 'cat' ? t('travel.pack.catAsk', { name: ask.cat.name }) : t('travel.pack.reset')}
+<ActionSheet name="pack.acts" bind:open={acting} title={targetName} groups={actions} onpick={picked} />
+<ActionSheet name="pack.ask" bind:open={asking} title={askTitle} note={askNote} label={ask?.kind === 'cat' ? t('travel.pack.catAsk', { name: ask.cat.name }) : t('travel.pack.reset')}
   groups={[[{ id: 'yes', label: ask?.kind === 'reset' ? t('travel.pack.resetAct') : t('travel.pack.delAct'), icon: ask?.kind === 'reset' ? 'refresh' : 'trash', danger: true }]]} onpick={yes} />
 <Sheet bind:open={formOpen} title={formTitle} focusField name="pack.form">
   {#if form}

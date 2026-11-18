@@ -377,7 +377,7 @@
 
 <GymDayEditor bind:open={editOpen} row={editRow} {usualDay} now={pickNow} note={editOpen ? note : null} onact={(a) => void send(a)} />
 
-<ActionSheet bind:open={menuOpen} title={t('gym.menu.label')} groups={menu} onpick={pickMenu} />
+<ActionSheet name="gym.menu" bind:open={menuOpen} title={t('gym.menu.label')} groups={menu} onpick={pickMenu} />
 
 <Sheet bind:open={intervalOpen} title={t('gym.ctl.interval')} name="gym.interval">
   <div class="isheet" data-gym-interval>
@@ -389,11 +389,11 @@
   </div>
 </Sheet>
 
-<ActionSheet bind:open={askStop} title={t('gym.ctl.stopAsk')} note={t('gym.ctl.stopNote')}
+<ActionSheet name="gym.stop" bind:open={askStop} title={t('gym.ctl.stopAsk')} note={t('gym.ctl.stopNote')}
   groups={[[{ id: 'stop', label: t('gym.ctl.stop'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
   onpick={(id) => id === 'stop' && (cue('toggle-off'), void send({ a: 'pause' }))} />
 
-<ActionSheet bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: picked.length })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
+<ActionSheet name="gym.reset" bind:open={askBulkReset} title={t('gym.bulk.resetAsk', { n: picked.length })} note={t('gym.bulk.resetNote', { n: selAnnounced })}
   groups={[[{ id: 'reset', label: t('gym.bulk.resetYes'), danger: true }], [{ id: 'cancel', label: t('gym.ctl.cancel') }]]}
   onpick={(id) => id === 'reset' && void bulk('reset')} />
 

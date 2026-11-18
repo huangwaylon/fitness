@@ -16,7 +16,7 @@
   // An action sheet (docs/design.md "Unified kit"): the app's sheet (ui/Sheet: its title bar with ✕, the scrim and Esc
   // close it) with the actions in dense cards, one a group; 削除 coral. A pick closes it, then calls `onpick`. `note`: a
   // line under the title (what a confirmation's 削除 takes with it), wrapped by phrase (Phrases).
-  //   <ActionSheet bind:open title="現金" groups={[[rename, up, down], [remove]]} onpick={(id) => …} />
+  //   <ActionSheet bind:open name="cash" title="現金" groups={[[rename, up, down], [remove]]} onpick={(id) => …} />
   import Sheet from './Sheet.svelte';
   import Icon from './Icon.svelte';
   import Phrases from './Phrases.svelte';
@@ -27,12 +27,14 @@
     title: string;
     groups: readonly (readonly Action[])[];
     onpick: (id: string) => void;
+    /** Its usage counter's id (Sheet `name`: `sheet:<name>`, a stable token; unnamed: sheet:other, which says nothing). */
+    name?: string;
     /** The sheet's accessible name (defaults to the title). */
     label?: string;
     /** A line under the title. */
     note?: string;
   }
-  let { open = $bindable(), title, groups, onpick, label, note }: Props = $props();
+  let { open = $bindable(), title, groups, onpick, name, label, note }: Props = $props();
 
   function pick(a: Action) {
     if (a.off) return;
@@ -41,7 +43,7 @@
   }
 </script>
 
-<Sheet bind:open label={label ?? title} {title}>
+<Sheet bind:open label={label ?? title} {title} {name}>
   <div class="acts">
     {#if note}<p class="note"><Phrases text={note} /></p>{/if}
     {#each groups as g, gi (gi)}

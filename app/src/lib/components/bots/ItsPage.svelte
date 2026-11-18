@@ -503,19 +503,19 @@
   {/if}
 {/snippet}
 
-<ActionSheet bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
+<ActionSheet name="its.auto" bind:open={askAuto} title={t('its.auto.title')} note={t('its.auto.note')}
   groups={[[{ id: 'on', label: t('its.auto.on') }], [{ id: 'cancel', label: t('its.auto.cancel') }]]}
   onpick={(id) => id === 'on' && setAuto(true)} />
 
 <!-- ⋯: 開始 (at once; off without a stay) or 停止 (asks first) -->
-<ActionSheet bind:open={menuOpen} title={t('its.menu.label')} groups={[[paused ? { id: 'start', label: t('its.ctl.start'), off: running || noDates } : { id: 'stop', label: t('its.ctl.stop'), off: running }]]}
+<ActionSheet name="its.menu" bind:open={menuOpen} title={t('its.menu.label')} groups={[[paused ? { id: 'start', label: t('its.ctl.start'), off: running || noDates } : { id: 'stop', label: t('its.ctl.stop'), off: running }]]}
   onpick={(id) => (id === 'start' ? void run('start') : void tick().then(() => (askStop = true)))} />
 
-<ActionSheet bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}
+<ActionSheet name="its.stop" bind:open={askStop} title={t('its.stop.ask')} note={t('its.stop.note')}
   groups={[[{ id: 'stop', label: t('its.stop.yes'), danger: true }], [{ id: 'cancel', label: t('its.stop.cancel') }]]}
   onpick={(id) => id === 'stop' && void run('stop')} />
 
-<ActionSheet bind:open={askOverwrite} title={t('its.overwrite.title')} note={t('its.overwrite.note')}
+<ActionSheet name="its.overwrite" bind:open={askOverwrite} title={t('its.overwrite.title')} note={t('its.overwrite.note')}
   groups={[[{ id: 'yes', label: t('its.overwrite.yes'), danger: true }], [{ id: 'cancel', label: t('its.overwrite.cancel') }]]}
   onpick={(id) => id === 'yes' && overwrite()} />
 

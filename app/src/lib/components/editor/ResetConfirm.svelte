@@ -30,7 +30,7 @@
   }
 </script>
 
-<Sheet bind:open label="島のリセット" title="島のリセット">
+<Sheet name="editor.reset" bind:open label="島のリセット" title="島のリセット">
   <form class="ask" data-reset-ask onsubmit={submit}>
     <div class="resetti" data-resetti>
       <img src={staticUrl('room/npc/resetti.webp')} alt={t('cast.name.resetti')} width="56" height="56" />
