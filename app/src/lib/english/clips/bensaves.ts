@@ -1,14 +1,15 @@
-// R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 1, new 2, ctx 5, tx 13
+// R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 1, new 2, ctx 5, tx 13, qa 18
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 2
 // “Ben saves the day | Parks and Recreation” (the official Parks and Recreation channel, Season 2): the state auditors
 // arrive at Leslie's kids' concert; Chris praises it and Ben shuts it down, Leslie goes ahead anyway, Freddy Spaghetti
 // drops out, Andy steps in and breaks his arm, a stand-in performs, and Freddy turns up after all for a better offer.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 233 s; song and music after. Names said:
 // Ben (42–55 s), Leslie (67, 103.9 s), Andy (102, 104.7 s), Renata (179 s, she names herself). Chris is never named; his
-// lines are taken from the scene. Untested on purpose: 10–20 s speakers (unnamed; "the Russians" joke), 26–28 s,
+// lines are taken from the scene. Untested on purpose: 26–28 s,
 // 66.7–71 s, 80–89 s (crowd mumble), 108–121 s (the "Sex Hair" song bit), 140.6–147 s, 189–195 s, 209–214 s, 223–233 s.
 // EAR CHECK: 0.5 s lookgood — “Wow, looking good” (speaker unnamed, about the stage)
 // EAR CHECK: 48.6 s s1 — "has to" said "hasta" (both sources have "has to")
+// EAR CHECK: 162.9 s i1 — who says "There's an old saying in show business" (scenes: Andy; old transcript ja had Leslie's voice)
 // EAR CHECK: 160.6 s x1 — "got to find somebody" (both sources); it may be said "gotta", which the app scores the same
 import type { Clip } from '../types.ts';
 
@@ -26,7 +27,7 @@ export const benSaves: Clip = {
       cue: '最初の一言。',
       line: '*Wow, looking good.*',
       said: '舞台を見て「わあ、いい感じ」と言う。',
-      mean: 'looking good ＝ (It’s) looking good。「いい感じだね」とほめる短い言い方。',
+      mean: 'looking good ＝ It’s looking good の短い形。見た目を「いい感じだね」とほめる言い方。',
       trap: 'looking から「見ている・探している」と考えがち。look good ＝ よく見える。',
       use: 'Wow, looking good!（わあ、いい感じ！）' },
 
@@ -45,12 +46,12 @@ export const benSaves: Clip = {
     { id: 'c2', skill: 'detail', level: 'B1', point: 'support', seg: [29.5, 39.5],
       stem: 'What does Chris tell everyone?',
       ja: 'クリスはみんなに何と言う？',
-      choices: ['He fully supports their work', 'He wants to stop the show', 'He wants to sing a song'], a: 0,
-      choicesJa: ['取り組みを全面的に応援する', 'ショーを止めたい', '歌を歌いたい'],
+      choices: ['He likes what they are doing', 'He wants to stop the show', 'He wants to check their money'], a: 0,
+      choicesJa: ['みんなの取り組みを気に入っている', 'ショーを止めたい', 'お金の使い方を調べたい'],
       cue: '「I just want to tell you」のあと',
       line: 'You are what makes Pawnee great, and I just want to tell you that *I am totally supportive* of your inspiring efforts here today!',
       said: '「みなさんがポーニーをすばらしくしている。取り組みを全面的に応援します！」と言う。',
-      mean: 'be supportive of 〜 ＝ 〜を応援している。totally ＝ 完全に。このすぐあと、相棒のベンが中止を告げる。',
+      mean: 'be supportive of 〜 ＝ 〜を応援している。totally ＝ 完全に。inspiring ＝ 感動させる。',
       trap: 'あとで中止の話になるので、止めに来たと考えがち。クリス本人は supportive（応援）と言う。',
       use: 'I’m totally supportive of your plan.（あなたの計画を全面的に応援するよ）' },
 
@@ -61,7 +62,7 @@ export const benSaves: Clip = {
       choicesJa: ['コンサートはやると言う', 'みんなに決めてもらう', '別の日を決める'],
       cue: '「Ben」と呼びかけたあと。',
       line: 'It’s *not canceled*. *We’re putting it on*, okay?',
-      said: '中止と言われても、「中止じゃない。やるわよ」と言い返す。',
+      said: '中止と言われても、「中止じゃないの。ちゃんとやるの」と言い返す。',
       mean: 'put on ＝（ショーを）行う。決定に従わず、続けると宣言している。',
       trap: 'canceled が聞こえても、前に not がある。「中止じゃない」と言っている。',
       use: 'We’re putting on a show this weekend.（今週末、ショーをやる）' },
@@ -70,7 +71,7 @@ export const benSaves: Clip = {
       stem: 'Fill the gap: “Surely there ___ be a solution, Ben?”',
       ja: '空いている所に入る言葉は？',
       choices: ['has to', 'had to', 'used to'], a: 0,
-      choicesJa: ['〜にちがいない', '〜しなければならなかった', '昔は〜だった'],
+      choicesJa: ['〜はず', '〜しなければならなかった', '昔は〜だった'],
       cue: '「there」のすぐあと。',
       line: 'Surely there *has to* be a solution, Ben?',
       said: '「きっと何か方法があるはずだよね、ベン？」と聞く。',
@@ -86,7 +87,7 @@ export const benSaves: Clip = {
       cue: '「solution」の質問のあと。',
       line: 'Chris: Surely there… be a solution, Ben? / Ben: *No.* / Chris: *Ben says no.* I’m sorry, everyone.',
       said: 'クリスが「方法はあるよね、ベン？」と聞き、ベンが「ない」。クリスがそれを伝える。',
-      mean: 'Ben says no ＝ ベンがだめと言っている。クリスは答えをくり返しているだけ。',
+      mean: 'Ben says no ＝ ベンは「ない」と言っている＝だめ。クリスはベンの答えをみんなに伝えているだけ。',
       trap: 'クリスがみんなに伝えるので、クリスが決めたように聞こえやすい。Ben says が答え。',
       use: 'My boss says no. Sorry.（上司がだめだって。ごめんね）' },
 
@@ -144,7 +145,7 @@ export const benSaves: Clip = {
       choicesJa: ['イーグルトンの図書館', 'イーグルトンの学校', 'イーグルトンの大きなショッピングモール'],
       cue: '「another gig」のあと。',
       line: 'he took another *gig in Eagleton*. — Oh. — *At a library*.',
-      said: '「こっちが中止したら、イーグルトンで別の仕事を取った。図書館で」と言う。',
+      said: '「こっちがキャンセルしたら、イーグルトンで別の仕事を受けた。図書館で」と言う。',
       mean: 'gig ＝ ミュージシャンの1回の仕事。場所を2回に分けて伝えている。',
       trap: '子ども向けの歌手なので学校を思いやすい。最後に足された一語を聞く。',
       use: 'I’ve got a gig on Friday.（金曜にライブの仕事がある）' },
@@ -152,25 +153,25 @@ export const benSaves: Clip = {
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'literally', reveals: ['gig'], seg: [93.2, 102.3],
       stem: 'What does Leslie think of the library?',
       ja: 'レスリーは、図書館のことをどう思っている？',
-      choices: ['She hates it, but goes on', 'She wants to stop the show', 'She is happy for Freddy'], a: 0,
-      choicesJa: ['大きらいだけど、続ける', 'コンサートをやめたい', 'フレディのために喜んでいる'],
+      choices: ['She really hates it', 'She quite likes it', 'She doesn’t care'], a: 0,
+      choicesJa: ['すごくきらい', 'けっこう好き', 'どうでもいい'],
       cue: '「worst」の前後。',
       line: 'That’s *literally the worst place I can imagine*. Okay, guys, we’re not giving up on this.',
-      said: '「想像できる最悪の場所よ」と言ってから、「でも、あきらめない」とすぐ切り替える。',
-      mean: 'the worst place ＝ 最悪の場所。literally は強めの一語。give up ＝ あきらめる。',
-      trap: 'literally を「文字どおり」と取ると本気の絶望に聞こえる。すぐ not giving up が続く。',
+      said: '「本当に想像できる中で最悪の場所よ」と言ってから、「あきらめないよ」と切り替える。',
+      mean: 'literally ＝ 文字どおりは「文字どおり」。話し言葉では「本当に」と強める一語。worst ＝ 最悪。',
+      trap: '「えっ」「えーっ」の声だけでは気持ちが決めにくい。決め手は worst place（最悪の場所）。',
       use: 'I literally waited two hours.（本当に2時間も待ったよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'mood', ctx: true, seg: [101.2, 108.0],
       stem: 'How does Andy feel when Leslie first asks him to play?',
       ja: 'レスリーに演奏をたのまれて、アンディは最初どう感じる？',
-      choices: ['Not really in the mood', 'Excited but nervous', 'Angry that she asked so late'], a: 0,
-      choicesJa: ['あまり乗り気じゃない', 'わくわくするけど緊張', 'おそくたのまれて怒っている'],
+      choices: ['He doesn’t want to', 'He is very excited', 'He is angry at her'], a: 0,
+      choicesJa: ['あまりやりたくない', 'すごくわくわくしている', 'レスリーに怒っている'],
       cue: 'たのまれた直後の返事。',
       line: 'Leslie: *Andy.* / Andy: I don’t know, Leslie. I *don’t really feel like playing* right now.',
       said: '「うーん、今はあまり弾く気分じゃない」と答える。',
       mean: 'feel like 〜ing ＝ 〜したい気分。怒ってはいないが、乗り気でない。',
-      trap: 'I don’t know は不満にも聞こえるが、ここは迷い。feel like の否定が気持ち。',
+      trap: 'I don’t know は怒っているようにも聞こえるが、ここは迷い。決め手は don’t feel like。',
       use: 'I don’t really feel like going out.（あまり出かける気分じゃない）' },
 
     { id: 'shortly', skill: 'phrase', level: 'B1', point: 'shortly', seg: [119.6, 124.6],
@@ -197,8 +198,8 @@ export const benSaves: Clip = {
       use: 'What could go wrong?（何が問題になるっていうの？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'bones', seg: [136.1, 143.1], keep: true,
-      stem: 'How many bones are broken in his hand?',
-      ja: '手の骨は何本折れている？',
+      stem: 'How many bones does Andy break in his hand?',
+      ja: 'アンディの手の骨は何本折れている？',
       choices: ['Two', 'Four', 'Six'], a: 1,
       choicesJa: ['2本', '4本', '6本'],
       cue: '「in your hand」の直前。',
@@ -227,9 +228,9 @@ export const benSaves: Clip = {
       choicesJa: ['いいえ、無理', 'はい、30年後に', 'はい、新しい薬で'],
       cue: '「Sure」のあと。',
       line: 'Andy: Is there any chance you can fix me…? / Doctor: *Sure. I’ll just advance medical science 30 years.*',
-      said: '「いいよ。医学を30年進めればいいだけだ」と答える。',
-      mean: 'Sure（いいよ）のあとに、ありえない条件。つまり「無理」という冗談の断り。',
-      trap: 'Sure から「はい」と思いやすい。あとの条件がありえなければ「無理」の意味。',
+      said: '「いいですよ。医学を30年進歩させればいいだけです」と答える。',
+      mean: 'Sure（いいですよ）は皮肉で、本当は逆の意味。ありえない条件を付けて「無理」と断っている。',
+      trap: 'Sure から「はい」に聞こえるが、30年の進歩は無理な話。決め手は Sure のあと。',
       use: 'Sorry, that’s not possible.（すみません、それは無理です）' },
 
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'sure', reveals: ['tenmin'], seg: [147.3, 153.8], retired: true,
@@ -318,7 +319,7 @@ export const benSaves: Clip = {
       line: 'I thought you were *playing in Eagleton*.',
       said: '代役のレナータが歌ったあと、イーグルトンにいるはずのフレディが現れる。',
       mean: 'I thought you were 〜 ＝ 〜だと思ってた。いないはずのフレディが最後に来て歌う。',
-      trap: '代役が先に歌うので「代役で終わり」と思いやすい。最後の会話の相手を聞く。',
+      trap: '代役が先に歌うので、そのまま終わると勘違いしやすい。最後の会話の相手を聞く。',
       use: 'I thought you were out of town!（町にいないと思ってた！）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'offer', reveals: ['ending', 'gig'], ctx: true, seg: [215.0, 223.7],
@@ -328,9 +329,9 @@ export const benSaves: Clip = {
       choicesJa: ['もっとお金を出す人がいた', 'イーグルトンの公演が中止になった', '子どもたちに悪いと思った'],
       cue: '「this guy showed up」のあと。',
       line: 'A: I thought you were playing in Eagleton. / Freddy: All I know is this guy showed up, made me a *much better offer*. I’m *all about the money*, baby.',
-      said: '「ある男が来て、もっといい条件を出した。俺は金しだいさ」と言う。',
+      said: '「この人が来て、ずっといい条件を出してくれた。俺は金がすべてなのさ」と言う。',
       mean: 'better offer ＝ もっといい条件。all about the money ＝ お金がすべて。',
-      trap: '子ども思いの理由を思いやすいが、本人は money と言い切っている。',
+      trap: '子ども思いの理由を考えがちだが、本人は money と言い切っている。',
       use: 'They made me a better offer.（もっといい条件を出された）' },
   ]
 };
