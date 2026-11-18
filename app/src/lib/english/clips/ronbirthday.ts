@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 20, retire 0, new 1, ctx 8, tx 17
+// R4 REVIEW 2026-11-18: keep 2, rewrite 20, retire 0, new 1, ctx 8, tx 17, qa 30
 // A2 REVIEW 2026-11-17: keep 8, rewrite 11, retire 4, new 2
 // “Ron Swanson's Birthday Surprise | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Ron
 // dreads a big party, so he grills his coworkers (party-bus and circus-tent questions, a story of last year's
@@ -18,8 +18,8 @@ export const ronBirthday: Clip = {
   questions: [
     { id: 'p3', skill: 'phrase', level: 'B1', point: 'sizes', seg: [0, 7.0],
       stem: 'What does “Do those come in different sizes?” ask?', ja: '“Do those come in different sizes?” は何を聞いている？',
-      choices: ['If there are other sizes', 'If they are very big', 'When they will arrive'], a: 0,
-      choicesJa: ['ほかのサイズがあるか', 'とても大きいか', 'いつ届くか'],
+      choices: ['If they have big and small ones', 'If they come in a gift box', 'When they will arrive'], a: 0,
+      choicesJa: ['大きいのや小さいのがあるか', 'ギフト用の箱に入って届くか', 'いつ届くか'],
       cue: '「saxophones」のあと',
       line: 'I have a question about your inflatable saxophones. *Do those come in different sizes?*',
       said: '電話で「膨らませるサックスについて質問です。サイズはいろいろありますか？」と聞く。',
@@ -27,29 +27,29 @@ export const ronBirthday: Clip = {
       trap: 'come から「届く」と考えがち。come in sizes は「サイズがそろっている」。',
       use: 'Does this come in blue?（これ、青もありますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'dozen', seg: [5.0, 9.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'dozen', seg: [6.4, 9.0], keep: true,
       stem: 'How many inflatable saxophones does the caller say she needs?', ja: '電話の人は、膨らませるサックスがいくつ要ると言う？',
-      choices: ['About 4 dozen', 'About 14 dozen', 'About 40 dozen'], a: 2,
-      choicesJa: ['約4ダース', '約14ダース', '約40ダース'],
+      choices: ['About 4 dozen', 'About 14 dozen', 'About 30 dozen', 'About 40 dozen'], a: 3,
+      choicesJa: ['約4ダース', '約14ダース', '約30ダース', '約40ダース'],
       cue: '「I’m gonna need about」のあと',
       line: 'I’m gonna need *about 40 dozen* of those.',
       said: '「40ダースくらい必要なんです」と言う。',
       mean: 'dozen ＝ 12個。40 dozen ＝ 480個。ありえない量で、パーティーの準備らしい。',
-      trap: 'four なら ty も teen もない。fourteen はうしろが長い。前が強ければ forty。',
+      trap: 'four なら ty も teen もない。fourteen はうしろが長い。前が強ければ forty。thirty は「サー」で始まる。',
       use: 'I’ll need about two dozen eggs.（卵が2ダースくらい要る）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'workcall', ctx: true, seg: [14.0, 22.0],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'workcall', ctx: true, seg: [14.0, 22.4],
       stem: 'What kind of call does April say it was?', ja: 'エイプリルは、何の電話だったと言う？',
-      choices: ['A personal call', 'A work call', 'Just a wrong number'], a: 0,
+      choices: ['A private call', 'A work call', 'Just a wrong number'], a: 0,
       choicesJa: ['私用の電話', '仕事の電話', 'ただのまちがい電話'],
       cue: '「To whom?」への返事',
       line: 'Ron: To whom? / April: *It was personal.* I would never make a work-related call, you know that.',
       said: '「誰と？」と聞かれ、「私用の電話です。仕事の電話なんて絶対しません」と答える。',
-      mean: 'personal ＝ 個人的な、私用の。ふつうは逆で、仕事中の私用電話を胸を張って言うのがおかしい。',
+      mean: 'personal ＝ 個人的な、私用の（private と同じ）。ふつうは逆で、仕事中の私用電話を胸を張って言うのがおかしい。',
       trap: 'work-related call も聞こえるので、仕事の電話だと考えがち。前に never がある。',
       use: 'Sorry, that was a personal call.（すみません、私用の電話でした）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'street', ctx: true, seg: [29.0, 36.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'street', ctx: true, seg: [28.93, 36.5],
       stem: 'What does Ron say about his house?', ja: 'ロンは自分の家について何と言う？',
       choices: ['No road goes past it', 'Its road is too narrow', 'It has room for few cars'], a: 0,
       choicesJa: ['道路にすら面していない', '前の道がせますぎる', '車は少ししか止められない'],
@@ -71,7 +71,7 @@ export const ronBirthday: Clip = {
       trap: '「誰が話した」を探していると勘違いしやすい。聞きたいのは計画の中身。',
       use: 'Just tell me what’s going on.（何が起きてるのか教えて）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'once', seg: [53.0, 61.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'once', seg: [53.0, 61.12],
       stem: 'What does Ron mean by “I’m only gonna ask you this once”?', ja: '“I’m only gonna ask you this once” で、ロンは何を言いたい？',
       choices: ['He wants a true answer now', 'This is his very last question', 'He is in a hurry'], a: 0,
       choicesJa: ['今すぐ本当のことを答えろ', 'これが本当に最後の質問だ', '急いでいる'],
@@ -82,10 +82,10 @@ export const ronBirthday: Clip = {
       trap: 'only once から、これで質問は終わりと思いやすい。Don’t care のあとなので、おどし。',
       use: 'I’m only going to say this once.（一度しか言わないよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whydont', ctx: true, seg: [69.0, 75.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'whydont', ctx: true, seg: [67.9, 75.2],
       stem: 'Ann says she knows nothing. What does Ron ask next?', ja: 'アンは何も知らないと言う。ロンは次に何を頼む？',
-      choices: ['To hear about her last birthday', 'To know why she won’t talk', 'To know when his party is'], a: 0,
-      choicesJa: ['彼女の前の誕生日の話を聞きたい', 'なぜ話さないのか知りたい', 'パーティーがいつか知りたい'],
+      choices: ['To hear about Ann’s last party', 'To know why she won’t talk', 'To know when his party is'], a: 0,
+      choicesJa: ['アンの前のパーティーの話を聞きたい', 'なぜ話さないのか知りたい', 'パーティーがいつか知りたい'],
       cue: '「heard anything」のあと',
       line: 'Ann: Honestly, I don’t know. I haven’t heard anything. / Ron: *Why don’t you tell me* what she did for *your last birthday*?',
       said: '「何も聞いてません」に、「じゃあ前の誕生日に彼女が何をしたか話してくれ」と言う。',
@@ -93,7 +93,7 @@ export const ronBirthday: Clip = {
       trap: 'Why から「なぜ話さない？」と聞いていると勘違いしやすい。うしろに動詞が来たら頼みや提案。',
       use: 'Why don’t you tell me what happened?（何があったか話してよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kidnap', seg: [76.5, 82.5],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kidnap', seg: [77.0, 82.2],
       stem: 'What does Ann mean by “She *kidnapped* me from work”?', ja: '“She kidnapped me from work” で、アンは何を言いたい？',
       choices: ['Took her out of work for fun', 'Had the police take her', 'Told her boss she was sick'], a: 0,
       choicesJa: ['サプライズで職場から連れ出した', '警察に連れて行かせた', '病気だと上司に言った'],
@@ -104,7 +104,7 @@ export const ronBirthday: Clip = {
       trap: 'kidnap をそのまま「誘拐」と取ると、事件に聞こえやすい。surprised のあとなら遊び。',
       use: 'We kidnapped her for a birthday lunch.（誕生日ランチに彼女を連れ出した）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'early', seg: [97.5, 103.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'early', seg: [97.6, 102.77],
       stem: 'Why does Ann call the timing “genius”?', ja: 'アンはなぜ、その時期を「genius」と言う？',
       choices: ['She didn’t expect it then', 'It was on her real birthday', 'Everyone was free that day'], a: 0,
       choicesJa: ['その時期には予想していなかった', '本当の誕生日当日だった', 'その日はみんな空いていた'],
@@ -115,7 +115,7 @@ export const ronBirthday: Clip = {
       trap: 'birthday が耳に残り、当日のことと勘違いしやすい。a week before ＝ 1週間前。',
       use: 'I had no idea it was coming.（来るなんて全然思ってなかった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'birdie', seg: [117.0, 122.0],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'birdie', seg: [116.2, 121.72],
       stem: 'How does Andy say he heard about Ron’s birthday?', ja: 'ロンの誕生日のことを、アンディはどうやって聞いたと言う？',
       choices: ['From someone he won’t name', 'From the office calendar', 'From a card on Ron’s desk'], a: 0,
       choicesJa: ['名前を言えない人から', '職場のカレンダーから', 'ロンの机のカードから'],
@@ -126,7 +126,7 @@ export const ronBirthday: Clip = {
       trap: 'birdie（小鳥）から、本物の鳥や物を連想しやすい。話した人をぼかす言い方。',
       use: 'A little birdie told me you got engaged.（うわさで婚約したって聞いたよ）' },
 
-    { id: 'f3', skill: 'pragma', level: 'B1', point: 'nicetry', ctx: true, reveals: ['outof'], seg: [122.0, 128.5],
+    { id: 'f3', skill: 'pragma', level: 'B1', point: 'nicetry', ctx: true, reveals: ['outof'], seg: [121.72, 128.9],
       stem: 'Ron asks about his birthday plan. What does Andy say?', ja: 'ロンは誕生日の計画を聞く。アンディの答えは？',
       choices: ['He won’t tell Ron anything', 'He will tell Ron later', 'He wants Ron to guess'], a: 0,
       choicesJa: ['ロンには何も言わない', 'あとで話す', 'ロンに当ててほしい'],
@@ -137,7 +137,7 @@ export const ronBirthday: Clip = {
       trap: 'nice（いい）から、ほめて教えてくれると考えがち。続く not getting anything で断りと分かる。',
       use: 'Nice try, but I’m not telling.（その手には乗らないよ、言わない）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'outof', seg: [125.0, 128.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'outof', seg: [125.55, 128.9],
       stem: 'Fill the gap: “You’re not getting anything ___ me.”', ja: '空所に入るのは？ “You’re not getting anything ___ me.”',
       choices: ['out of', 'off', 'off of'], a: 0,
       choicesJa: ['〜から（聞き出す）', '〜から（離れて）', '〜の上から'],
@@ -159,7 +159,7 @@ export const ronBirthday: Clip = {
       trap: 'father を養子の願い、職業名を本人の夢と取りやすい。you’re my なら Ron の話。',
       use: 'You’re like a big brother to me.（お兄さんみたいな存在だよ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'getit', seg: [142.0, 147.0],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'getit', seg: [142.12, 146.68],
       stem: 'How does Ron react to Andy’s speech?', ja: 'アンディの話に、ロンはどう反応する？',
       choices: ['He wants Andy to finish', 'He is quietly touched', 'He is very confused by it'], a: 0,
       choicesJa: ['早く終わってほしい', '静かに感動している', 'とても混乱している'],
@@ -170,10 +170,10 @@ export const ronBirthday: Clip = {
       trap: 'I get it は「分かった」なので、混乱とは逆。二回くり返すと、いらいらのサイン。',
       use: 'Okay, I get it. What’s the point?（分かったよ。で、要点は？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'owe', ctx: true, seg: [144.0, 153.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'owe', ctx: true, seg: [144.42, 153.12],
       stem: 'Why won’t Andy tell Ron the plan?', ja: 'アンディはなぜロンに計画を話さない？',
-      choices: ['He owes Leslie too much', 'He doesn’t know the plan', 'He’s afraid Ron will be angry'], a: 0,
-      choicesJa: ['レスリーに大きな借りがあるから', '計画を知らないから', 'ロンが怒るのがこわいから'],
+      choices: ['Leslie has done a lot for him', 'He doesn’t know the plan', 'He’s afraid Ron will be angry'], a: 0,
+      choicesJa: ['レスリーにすごく世話になっているから', '計画を知らないから', 'ロンが怒るのがこわいから'],
       cue: '「What’s the point?」への答え',
       line: 'Ron: What’s the point? / Andy: Well, coach, Leslie *swore me to secrecy*, so I can’t say anything. *I owe her so much* I can’t ruin it for her.',
       said: '「何が言いたい？」に、「レスリーに口止めされてる。すごく借りがあるから台無しにできない」と言う。',
@@ -192,7 +192,7 @@ export const ronBirthday: Clip = {
       trap: '連れ去られる Ron が的に見えやすい。誰が何を口にしたかを追うと、ばらしたのは話し手。',
       use: 'Don’t worry, my lips are sealed.（大丈夫、口は堅いから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'seeyou', seg: [157.0, 161.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'seeyou', seg: [156.6, 160.74],
       stem: 'Type Andy’s answer: “Okay, ___, Uncle Ron.” (6 words)', ja: 'アンディの返事を書こう：“Okay, ___, Uncle Ron.”（6語）',
       answer: 'not if i see you first',
       cue: '「See you later」のあと',
@@ -202,7 +202,7 @@ export const ronBirthday: Clip = {
       trap: '短い語が続くので、if や I が消えて聞こえやすい。語の数を数えて確かめる。',
       use: 'Not if I see you first!（先に見つけてやる！）' },
 
-    { id: 'p4', skill: 'attitude', level: 'B1', point: 'overwith', ctx: true, seg: [171.0, 177.5],
+    { id: 'p4', skill: 'attitude', level: 'B1', point: 'overwith', ctx: true, seg: [170.3, 178.6],
       stem: 'How does Ron feel about the meeting?', ja: '会議について、ロンはどう思っている？',
       choices: ['He doesn’t want to go', 'He is excited about it', 'He is nervous about it'], a: 0,
       choicesJa: ['行きたくない', '楽しみにしている', '緊張している'],
@@ -213,7 +213,7 @@ export const ronBirthday: Clip = {
       trap: 'Let’s（〜しよう）から、乗り気だと考えがち。over with は「早く終わらせたい」。',
       use: 'Let’s just get this over with.（さっさと済ませよう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'annparty', ctx: true, seg: [190.0, 197.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'annparty', ctx: true, seg: [189.7, 198.05],
       stem: 'Why didn’t Leslie throw Ron a big party?', ja: 'レスリーはなぜロンに大きなパーティーをしなかった？',
       choices: ['Ron and Ann like different things', 'She spent all her money on Ann', 'Big parties are not allowed at work'], a: 0,
       choicesJa: ['ロンとアンは好みがちがう', 'アンにお金を使いきった', '職場で大きなパーティーは禁止'],
@@ -224,7 +224,7 @@ export const ronBirthday: Clip = {
       trap: 'Why would I を本当の質問と考えがち。決め手は for Ann。その人向けの祝い方の話。',
       use: 'Why would I wear that to work?（それを仕事に着てくわけないでしょ）' },
 
-    { id: 'i4', skill: 'phrase', level: 'B2', point: 'messwith', seg: [199.5, 206.0],
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'messwith', seg: [199.05, 206.5],
       stem: 'What does “ways to mess with you” mean?', ja: '“ways to mess with you” はどういう意味？',
       choices: ['Ways to tease you', 'Ways to clean up', 'Ways to help you'], a: 0,
       choicesJa: ['からかう方法', '片付ける方法', '助ける方法'],
@@ -235,7 +235,7 @@ export const ronBirthday: Clip = {
       trap: 'mess（散らかり）から、片付けの話を連想しやすい。with 人なら「からかう」。',
       use: 'Don’t mess with me. I’m serious.（からかわないで。本気なの）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['alone', 'messwith'], seg: [208.0, 230.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['alone', 'messwith'], seg: [208.0, 224.9],
       stem: 'How does Leslie handle Ron’s birthday in the end?', ja: '最後に、レスリーはロンの誕生日をどうする？',
       choices: ['Some quiet time on his own', 'A small party with friends', 'A big party at a restaurant'], a: 0,
       choicesJa: ['一人で静かに過ごす時間', '友だちとの小さなパーティー', 'レストランでの大きなパーティー'],
@@ -246,7 +246,7 @@ export const ronBirthday: Clip = {
       trap: 'それまでのパーティーの話から、大さわぎだと考えがち。最後の場面の中身で決める。',
       use: 'I planned something low-key.（控えめなのを用意したよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'alone', seg: [208.0, 220.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'alone', seg: [208.0, 222.0],
       stem: 'What has Leslie set up for Ron?', ja: 'レスリーはロンに何を用意した？',
       choices: ['Films, a guard and a cab', 'Films and a cake for all', 'A guard to drive him home'], a: 0,
       choicesJa: ['映画と警備の人とタクシー', '映画とみんなのケーキ', '家まで送る警備の人'],
@@ -257,15 +257,15 @@ export const ronBirthday: Clip = {
       trap: 'security（警備）の人が家まで送ると勘違いしやすい。送るのは cab。',
       use: 'No one will bother you here.（ここなら誰にもじゃまされないよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'fiveyears', seg: [225.0, 230.0], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'fiveyears', seg: [225.0, 230.9], keep: true,
       stem: 'When did Eagleton offer Leslie a job?', ja: 'イーグルトンがレスリーに仕事の話をしたのはいつ？',
-      choices: ['Five years ago', 'Nine years ago', 'Fifteen years ago'], a: 0,
-      choicesJa: ['5年前', '9年前', '15年前'],
+      choices: ['Four years ago', 'Five years ago', 'Nine years ago', 'Fifteen years ago'], a: 1,
+      choicesJa: ['4年前', '5年前', '9年前', '15年前'],
       cue: '「what you said to me」のあと',
       line: 'what you said to me *five years ago* when Eagleton offered me that job',
       said: '「5年前、イーグルトンに誘われて相談したとき、何て言ったか覚えてる？」と聞く。',
       mean: 'offer 人 a job ＝ 人に仕事を持ちかける。Eagleton ＝ となり町。昔の相談を思い出させている。',
-      trap: 'five と nine は「アイ」が同じ。fifteen なら teen がつく。f の音なら five。',
+      trap: 'nine も「アイ」、four は「フォー」。fifteen なら teen がつく。f＋アイなら five。',
       use: 'We met five years ago.（5年前に会ったよね）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'hometown', seg: [229.3, 254.2], retired: true,
@@ -279,12 +279,12 @@ export const ronBirthday: Clip = {
       trap: 'hometown だけで町のため、好きにしろを遠慮と取りやすい。we と respected you は二人の話。',
       use: 'Do what you want. But I’d miss you.（好きにしなよ。でも寂しくなるな）' },
 
-    { id: 'c1', skill: 'infer', level: 'B2', point: 'onehome', ctx: true, seg: [236.0, 254.0],
+    { id: 'c1', skill: 'infer', level: 'B2', point: 'onehome', ctx: true, seg: [236.52, 254.0],
       stem: 'When Leslie pressed him, what did Ron advise?', ja: 'レスリーに押されて、ロンはどう助言した？',
       choices: ['Stay, because Pawnee is home', 'Go, because the job is better', 'Do whatever she wants'], a: 0,
       choicesJa: ['ポーニーが故郷だから残れ', 'いい仕事だから行け', '好きにすればいい'],
       cue: '「what did you say?」への答え',
-      line: 'Leslie: when I pressed you, what did you say? / Ron: …I respected you. … you’ll get a lot of job offers in your life, but *you only have one hometown*.',
+      line: 'Leslie: …what did you say? / Ron: …I respected you. … you’ll get a lot of job offers in your life, but *you only have one hometown*.',
       said: '「しつこく聞いたら？」に「仕事の誘いは多く来るが、故郷は一つ」と答える。',
       mean: 'press ＝ 文字どおりは「押す」→「しつこく聞く」。最初の「好きにしろ」は照れ隠しで、本音は「残れ」。',
       trap: '最初の do whatever you want（好きにしろ）を答えと考えがち。決め手は but のあとの one hometown。',
