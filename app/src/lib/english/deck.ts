@@ -5,7 +5,7 @@
 // the store.
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { SHARDS, type PhraseEntry } from './catalog.ts';
-import { fnv32 } from './hash.ts';
+import { fnv1a } from '#lib/random.ts';
 import type { Key } from './phrase-review.ts';
 import type { Who } from '#lib/types.ts';
 
@@ -31,7 +31,7 @@ export interface Cursor {
 }
 export const START: Cursor = { r: 0, k: 0, i: 0, set: [], n: 0 };
 
-const rank = (who: Who, r: number, s: string) => fnv32(`${who}:${r}:${s}`);
+const rank = (who: Who, r: number, s: string) => fnv1a(`${who}:${r}:${s}`);
 export const keyOf = (e: PhraseEntry): Key => `${e[0]}/${e[1]}`;
 
 /** The shard at the cursor (the round's order of them, seeded by player). */

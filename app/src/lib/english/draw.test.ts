@@ -144,3 +144,13 @@ describe('choiceOrder', () => {
     expect(choiceOrder({ ...many, keep: true }, 'x')).toEqual([0, 1, 2, 3]);
   });
 });
+
+describe('golden', () => {
+  // a seed's draw and choices pinned: a change to the hash or the PRNG would give each phone another play
+  it('the same ids and choice orders as ever for these seeds', () => {
+    const d = [1, 2, 3].map((p) => draw(clip, {}, p, seedOf('A', 'test', p)).map((x) => x.id).join());
+    const c = ['s1', 's2', 's3', 's4'].map((s) => choiceOrder(q('z2', 'detail', 'B1', { choices: ['a', 'b', 'c', 'd'] }), s).join(''));
+    expect(d).toEqual(['g2,d2,n1,t1,p1,s1', 'g2,d1,w1,h1,k1,s1', 'g2,d2,n1,t1,h2,s1']);
+    expect(c).toEqual(['3012', '3102', '1032', '3012']);
+  });
+});

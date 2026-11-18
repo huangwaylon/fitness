@@ -77,8 +77,8 @@ const ALLOW: Record<string, string[]> = {
   world: [...DOMAIN, 'layout', 'random', 'villagers', 'art', 'ui-state', 'sync', 'i18n'],
   // English Study (docs/english.md): its content, pure rules and the sheet's own components (the kit's ui/, the
   // store's model and send, the storage's keys), and sound's videoFocus (a lesson pauses the island's audio and sets
-  // iOS's session to 'playback', so a clip plays on the silent switch)
-  english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'sound', 'sugoroku'],
+  // iOS's session to 'playback', so a clip plays on the silent switch), and random's seeded draws and hash
+  english: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'sound', 'sugoroku', 'random'],
   // 英語すごろく (docs/sugoroku.md): the game's pure rules and its sheet; English Study's deck only at build time; the
   // speaking step's mic and words (speech)
   // the speech test (docs/speech-test.md): the mic, the relay's /stt, the log

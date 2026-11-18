@@ -3,7 +3,8 @@
 // `clips/index.ts?english-index`, in the sheet's chunk) and writes each bank as a file of its own, fetched when a
 // lesson opens (data.ts). Pure.
 import { drawSize } from './draw.ts';
-import { clipHash, fnv32, scenesHash, transcriptHash } from './hash.ts';
+import { fnv1a } from '#lib/random.ts';
+import { clipHash, scenesHash, transcriptHash } from './hash.ts';
 import { keyWordsOf, splitUse, wordsOf } from './phrases.ts';
 import type { Band, Bank, Clip, Question, ScenesFile, TranscriptLine } from './types.ts';
 
@@ -69,7 +70,7 @@ export function bankOf(c: Clip, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undef
 /** A card of フレーズ's deck (docs/english.md "フレーズ"): a question's phrase, where it's heard and its 意味,
  *  `[clip, qid, from, to, use, line, mean]`; the video and title come from the index. */
 export type PhraseEntry = readonly [clip: string, qid: string, from: number, to: number, use: string, line: string, mean: string];
-/** The deck's files (`english/p/<n>.<v>.json`), each a stable share of the whole library (`fnv32(clip/qid) % SHARDS`). */
+/** The deck's files (`english/p/<n>.<v>.json`), each a stable share of the whole library (`fnv1a(clip/qid) % SHARDS`). */
 export const SHARDS = 12;
 /** A card's `use` at most, English words. */
 const DECK_WORDS = 8;
@@ -109,8 +110,8 @@ export function deckOf(clips: readonly Clip[]): PhraseEntry[] {
   return out;
 }
 
-/** A card's file: `fnv32(clip/qid) % SHARDS`. */
-export const shardOf = (clip: string, qid: string): number => fnv32(`${clip}/${qid}`) % SHARDS;
+/** A card's file: `fnv1a(clip/qid) % SHARDS`. */
+export const shardOf = (clip: string, qid: string): number => fnv1a(`${clip}/${qid}`) % SHARDS;
 
 /** The deck split into its SHARDS files, each in the deck's order. */
 export function shardsOf(deck: readonly PhraseEntry[]): PhraseEntry[][] {

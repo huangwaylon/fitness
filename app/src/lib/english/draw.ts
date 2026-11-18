@@ -8,6 +8,7 @@
 // is unseen. Never two items on one point, nor one that gives another away (`reveals`); ≤ 1 dictation, humor, predict.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
+import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import type { Clip, Question, Skill } from './types.ts';
 
@@ -45,24 +46,6 @@ export const drawSize = (dur: number): number => (dur < 90 ? 6 : dur < 180 ? 7 :
 /** L / I / F a play takes (after the gist). */
 const QUOTAS: Record<number, [number, number, number][]> = { 6: [[2, 1, 2], [2, 2, 1]], 7: [[2, 1, 3], [2, 2, 2]], 8: [[3, 1, 3], [2, 2, 3]] };
 
-/** A string's 32-bit hash (FNV-1a). */
-function hash(s: string): number {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193) >>> 0;
-  return h;
-}
-/** mulberry32 over a seed string: a number in [0, 1) each call. */
-function rng(seed: string): () => number {
-  let a = hash(seed);
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** The seed of `who`'s play of `clip`. */
 export const seedOf = (who: Who, clip: string, play: number): string => `${who}:${clip}:${play}`;
 
@@ -81,7 +64,7 @@ function clash(a: Question, b: Question): boolean {
 export function draw(clip: Clip, seen: History, play: number, seed: string, opts: { harder?: boolean } = {}): Question[] {
   const all = clip.questions.filter((q) => !q.retired);
   const n = Math.min(drawSize(clip.dur), all.length);
-  const rand = rng(seed);
+  const rand = seeded(seed);
   const r = new Map(all.map((q) => [q.id, rand()]));
   const lastPoints = new Set(all.filter((q) => seen[q.id]?.play === play - 1).map((q) => q.point));
   // the spread: the speech span (live items' segments) cut in n − 1 bins (the non-gist slots), an item in the one
@@ -217,11 +200,5 @@ export function draw(clip: Clip, seen: History, play: number, seed: string, opts
  *  authored index. */
 export function choiceOrder(q: Question, seed: string): number[] {
   const idx = (q.choices ?? []).map((_, i) => i);
-  if (q.keep) return idx;
-  const rand = rng(`${seed}:${q.id}`);
-  for (let i = idx.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [idx[i], idx[j]] = [idx[j], idx[i]];
-  }
-  return idx;
+  return q.keep ? idx : shuffle(idx, seeded(`${seed}:${q.id}`));
 }
