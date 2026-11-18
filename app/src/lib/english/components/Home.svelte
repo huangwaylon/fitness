@@ -37,7 +37,7 @@
     const v = week.view;
     return v && me !== 'G' ? v.people[me === 'A' ? 'B' : 'A'].villagerName : '';
   });
-  const view = $derived(weekView(rows, me, today, partnerName));
+  const view = $derived(weekView(rows, me, today, partnerName, mine));
 
   /** 別の動画にする: the clip shown instead of the day's (null: the day's). */
   let other = $state<string | null>(null);
