@@ -1,14 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 14, rewrite 7, retire 0, new 2, ctx 6, tx 1
 // A2 REVIEW 2026-11-17: keep 5, rewrite 15, retire 3, new 1
 // “Michael Becomes Jim - The Office US” (the official The Office channel, BEST OF SEASON 2): Jim tells the camera he
 // confided his old feelings for Pam to Michael, asks him to keep it quiet, and Michael, proud to be trusted, starts
 // acting like Jim's buddy (grape soda, sports talk, "the P situation"). Dwight smells a secret and Jim covers with a
 // made-up story; later, defending a lunch expense, Michael gives the secret away himself.
-// Segments from the captions, words from whisper (2026-11-16).
+// Segments from the captions, words from whisper (2026-11-16; whisper lines are long, so lines quote by words).
 // Untested on purpose: 19.5–22.5 s (whisper "Wowie, Mikey likey", captions "wow, we might get lucky"), 52–54 s
-// (whisper "Hey Jim Beck", captions "gym bag"), 118–123 s (the spelled "P-A-M…": who spells what is unclear), 131–152 s
-// (captions "silicate", "peach iced tea"; whisper loops the spelling), 203–226 s (the wig: who asks is unclear, and it's
-// visual), 275–303 s (music; captions "pam" at 280.8 s, whisper "Oh, my God").
-// No ear checks: every key rests on words both sources agree on, and no key depends on which voice speaks.
+// (whisper "Hey Jim Beck", captions "gym bag"), 118–123 s (the spelled "P-A-M…": who spells what is unclear).
+// SKIP 131–148: the spelling loop and soda talk (captions "silicate", "peach iced tea"; whisper loops)
+// SKIP 202.5–224: the wig (who asks is unclear, and it's visual)
+// SKIP 275.3–302.5: music; captions "pam" at 280.8 s, whisper "Oh, my God"
 import type { Clip } from '../types.ts';
 
 export const michaelJim: Clip = {
@@ -76,13 +77,13 @@ export const michaelJim: Clip = {
       trap: 'else と knows がつながって、ひと続きに聞こえやすい。「エルス・ノウズ」と区切って書く。',
       use: 'Who else is coming tonight?（今夜はほかに誰が来るの？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'onlyme', seg: [65.6, 77.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'onlyme', reveals: ['whoknows'], ctx: true, seg: [65.6, 77.6],
       stem: 'How does Michael feel when he hears nobody else knows?',
       ja: 'ほかに誰も知らないと聞いて、マイケルはどう感じる？',
       choices: ['Proud and happy', 'Worried and nervous', 'Sorry for Jim'], a: 0,
       choicesJa: ['誇らしくて、うれしい', '心配で、落ち着かない', 'ジムがかわいそう'],
       cue: '短い反応と、すぐあとのカメラへの第一声。',
-      line: '— Nobody. — *Wow.* … Jim and I are *great friends*.',
+      line: 'Michael: Who else knows? / Jim: Nobody. / Michael: *Wow.* … Jim and I are *great friends*.',
       said: '誰も知らないと聞いて「わあ」と言い、カメラに「ジムとは大の親友」と話す。',
       mean: '自分だけに話してくれたのを、親友の証としてうれしがっている。',
       trap: 'Wow は驚きにも困った時にも使う。直後の great friends で、うれしい Wow だと分かる。',
@@ -158,25 +159,25 @@ export const michaelJim: Clip = {
       trap: '前の 411 は古いくだけた言い方で、番号の話ではない。分からない語は直後の言いかえで確かめる。',
       use: 'Any updates on my order?（注文の件、何か進展ありますか）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'stan', seg: [123.8, 132],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'stan', ctx: true, seg: [123.8, 132],
       stem: 'Why does Michael ask Stan “how long”?',
       ja: 'マイケルはなぜスタンに「how long」と聞く？',
       choices: ['He wants Stan to leave', 'He wants soda advice', 'He wants Stan to join in'], a: 0,
       choicesJa: ['スタンに行ってほしい', 'ジュース選びの助言がほしい', 'スタンにも話に入ってほしい'],
       cue: '「Listen, Stan」のあとの質問。',
-      line: 'Listen, Stan, you know, *how long does it take you* to pick out a soda?',
+      line: 'Michael: Listen, Stan, *how long does it take you* to pick out a soda? / Stan: I’m gonna take off, actually.',
       said: '「なあスタン、ジュース選ぶのにどれだけかかるんだ？」と言う。',
       mean: 'How long does it take you to 〜? ＝ 〜にどれだけかかる？ ここは「早くして」の意味。',
       trap: 'Listen, you know の前置きで、雑談に聞こえやすい。スタンは「もう行くよ」と答える。',
       use: 'How long does it take to get there?（そこまでどれくらいかかりますか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'suspect', seg: [148.8, 160.1],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'suspect', ctx: true, seg: [147.5, 160.1],
       stem: 'How does Dwight feel about Michael’s answer “Nothing”?',
       ja: 'マイケルの「Nothing」という答えを、ドワイトはどう思う？',
       choices: ['He doesn’t believe it', 'He is happy with it', 'He thinks it’s funny'], a: 0,
       choicesJa: ['信じていない', 'それで満足している', 'おもしろいと思っている'],
       cue: '答えをくり返したあと、ドワイトが並べる話。',
-      line: 'Okay, *what is going on here*? — Nothing. — *Oh, really? Nothing.* Fact: …',
+      line: 'Dwight: Okay, *what is going on here*? / Michael: Nothing. / Dwight: *Oh, really? Nothing.* Fact: …',
       said: '「何が起きてる？」「何も」「へえ、何もね」と返し、「事実：…」と証拠を並べ出す。',
       mean: 'Oh, really? ＝ へえ、そう？ 相手の言葉をそのまま返し、すぐ証拠を並べるのは、信じていない合図。',
       trap: 'Oh, really? を素直な「本当？」と思いやすい。続けて fact（事実）を並べるので、疑っている。',
@@ -194,13 +195,13 @@ export const michaelJim: Clip = {
       trap: 'iced tea は自販機での話、secrets はマイケルの返事。fact のたびに区切って聞く。',
       use: 'You never drink coffee. What’s up?（コーヒー飲まないのに、どうしたの？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'slip', seg: [165.1, 173.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'slip', ctx: true, seg: [165.1, 173.9],
       stem: 'Which “fact” from Michael makes Dwight ask more?',
       ja: 'マイケルのどの「事実」で、ドワイトはさらに聞いてくる？',
       choices: ['They tell each other secrets', 'He always loved grape soda', 'They talk all the time'], a: 0,
       choicesJa: ['二人は秘密を話し合う', 'ずっとグレープソーダが好き', '二人はいつも話している'],
       cue: '最後の「fact」と、ドワイトの次の質問。',
-      line: 'Fact: Jim and I talk all the time. *We tell each other secrets.* — Okay, so *what is the secret*, Michael?',
+      line: 'Michael: Fact: Jim and I talk all the time. *We tell each other secrets.* / Dwight: Okay, so *what is the secret*, Michael?',
       said: '「ジムとはいつも話す。秘密も話し合う」と言うと、すぐ「じゃあ秘密は何だ」と聞かれる。',
       mean: '仲のいい証拠のつもりで、秘密があると自分から教えてしまった。',
       trap: 'grape soda や talk all the time も出るが、聞き返されるのは secret。',
@@ -217,6 +218,17 @@ export const michaelJim: Clip = {
       mean: '秘密を聞かれた瞬間の作り話。ドワイトをほめる内容なので、ドワイトは喜んで信じる。',
       trap: '中身だけ聞くと不満に聞こえやすい。「秘密は何だ」と聞かれた直後、という時がヒント。',
       use: 'Oh, that? It was nothing, really.（ああ、あれ？何でもないよ）' },
+
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'saystrue', reveals: ['cover'], ctx: true, seg: [183.5, 194.0],
+      stem: 'What does Michael answer about Jim’s story?', ja: 'ジムの話について、マイケルは何と答える？',
+      choices: ['He says it’s true', 'He says Jim made it up', 'He says nothing at all'], a: 0,
+      choicesJa: ['本当だと言う', 'ジムの作り話だと言う', '何も言わない'],
+      cue: 'ドワイトの質問のあと',
+      line: 'Dwight: Is that true? / Michael: Um, I, I don’t know… *yeah, yeah, yeah, it is.*',
+      said: '「本当ですか？」に、口ごもってから「うん、うん、そうだ」と話を合わせる。',
+      mean: 'I don’t know… で迷ってから yeah を重ねる。ジムのうそに合わせて、秘密を守った。',
+      trap: '最初の I don’t know（分からない）で答えないように聞こえるが、最後は yeah, it is。',
+      use: 'Yeah, yeah, that’s right.（うん、うん、そのとおり）' },
 
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'cantell', reveals: ['cover', 'letdown'], seg: [184.9, 202.75],
       retired: true,
@@ -242,17 +254,16 @@ export const michaelJim: Clip = {
       trap: 'want to は「ワナ」、wouldn’t は「ウドゥン」と d が入る。「オウ」が聞こえたら won’t。',
       use: 'Don’t worry, I won’t let you down.（心配しないで、がっかりさせないから）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'blurt', seg: [229.5, 274.5],
-      stem: 'Why does Michael say Jim needed the lunch?',
-      ja: 'ジムには昼食が必要だった、とマイケルはなぜ言う？',
-      choices: ['Jim was sad and working badly', 'Jim was meeting possible clients', 'Jim had Toby’s OK for it'], a: 0,
-      choicesJa: ['ジムが落ち込んで、仕事に響いていた', 'ジムが見込み客と会っていた', 'ジムがトビーの許可を取っていた'],
-      cue: '最後の場面、「look, Jim」のあと。',
-      line: 'Jim needed a relaxing lunch. He has been *depressed* and it has been *affecting his productivity*.',
-      said: '「ジムには息抜きの昼食が必要だった。落ち込んでいて、仕事に響いていた」と言う。',
-      mean: 'depressed ＝ 落ち込んでいる。そのあと「同僚の婚約中の子に恋してる」と、秘密まで話してしまう。',
-      trap: 'clients（見込み客）は手品の店の話。トビーの許可は「No, he did not」でなかったと分かる。',
-      use: 'I’ve been a little depressed lately.（最近ちょっと落ち込んでるんだ）' },
+    { id: 'k2', skill: 'phrase', level: 'B1', point: 'bizlunch', ctx: true, seg: [224.0, 232.0],
+      stem: 'What does Michael call the Hooters lunch?', ja: 'フーターズでの昼食を、マイケルは何と呼ぶ？',
+      choices: ['A business lunch', 'A birthday lunch', 'A team lunch'], a: 0,
+      choicesJa: ['商談のランチ', '誕生日のランチ', 'チームのランチ'],
+      cue: 'Hooters のあと、マイケルの返事',
+      line: 'Toby: This is from Hooters? / Michael: Yeah, it’s a *business lunch*.',
+      said: '「これ、フーターズのですよね？」に、「うん、商談のランチだ」と答える。',
+      mean: 'business lunch ＝ 仕事の話をしながらの昼食。会社のお金（経費）で払える、と言いたい。',
+      trap: '決め手は business（仕事）。誕生日やチームの話は出てこない。',
+      use: 'I have a business lunch at noon.（昼に商談のランチがあります）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [233.8, 244.4], keep: true,
       stem: 'How much did Michael spend at the magic shop?',
@@ -278,7 +289,7 @@ export const michaelJim: Clip = {
       trap: 'bought と clients だけだと贈り物に聞こえやすい。to のあとの impress が目的。',
       use: 'I want to impress my new boss.（新しい上司にいいところを見せたい）' },
 
-    { id: 'h3', skill: 'detail', level: 'B2', point: 'almost', seg: [249.4, 258],
+    { id: 'h3', skill: 'infer', level: 'B2', point: 'almost', seg: [249.4, 258],
       stem: 'What did the clients do after the trick?',
       ja: '手品のあと、お客さんはどうした？',
       choices: ['They didn’t quite buy', 'They bought from Michael', 'They bought magic tricks'], a: 0,
@@ -290,7 +301,19 @@ export const michaelJim: Clip = {
       trap: 'bought from us だけ拾うと「買った」と思いやすい。前の almost を聞く。',
       use: 'I almost missed the train.（もう少しで電車に乗り遅れるところだった）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'slack', seg: [265.9, 275.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'blurt', seg: [250.0, 276.0],
+      stem: 'Why does Michael say Jim needed the lunch?',
+      ja: 'ジムには昼食が必要だった、とマイケルはなぜ言う？',
+      choices: ['Jim was sad and working badly', 'Jim was meeting possible clients', 'Jim had Toby’s OK for it'], a: 0,
+      choicesJa: ['ジムが落ち込んで、仕事に響いていた', 'ジムが見込み客と会っていた', 'ジムがトビーの許可を取っていた'],
+      cue: '最後の場面、「look, Jim」のあと。',
+      line: 'Jim needed a relaxing lunch. He has been *depressed* and it has been *affecting his productivity*.',
+      said: '「ジムには息抜きの昼食が必要だった。落ち込んでいて、仕事に響いていた」と言う。',
+      mean: 'depressed ＝ 落ち込んでいる。そのあと「同僚の婚約中の子に恋してる」と、秘密まで話してしまう。',
+      trap: 'clients（見込み客）は手品の店の話。トビーの許可は「No, he did not」でなかったと分かる。',
+      use: 'I’ve been a little depressed lately.（最近ちょっと落ち込んでるんだ）' },
+
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'slack', seg: [269.0, 276.0],
       stem: 'What does “cut me some slack” mean?',
       ja: '「cut me some slack」はどういう意味？',
       choices: ['Please don’t be strict', 'Please give me time', 'Please pay me back'], a: 0,
@@ -299,7 +322,7 @@ export const michaelJim: Clip = {
       line: '…who’s engaged. So just *cut me some slack*, please.',
       said: '「だから大目に見てくれよ、頼む」と言う。',
       mean: 'cut me some slack ＝ 大目に見て。経費を通してほしい、という頼み。',
-      trap: 'slack から「時間の余裕」を思いやすい。cut me some slack でひとまとまりの決まり文句。',
+      trap: 'slack から「時間の余裕」を連想しやすい。cut me some slack でひとまとまりの決まり文句。',
       use: 'I’m new here. Cut me some slack.（新人なんだから、大目に見てよ）' },
   ]
 };
