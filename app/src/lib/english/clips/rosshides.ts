@@ -1,16 +1,16 @@
+// R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 0, new 3, ctx 8, tx 20
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 6, new 0
 // “Ross Tries (and Fails) to Hide His One-Night Stand from Rachel | Friends” (the official Friends channel, Best of
 // Season 3): Rachel's message says she wants Ross back; he hurries Chloe out, his friends talk him out of telling
 // Rachel, and he follows the chain of people the news could travel along, one step too late.
-// Segments from the captions, words from whisper (2026-11-16). Whisper's timings run on a 2 s grid and drift by up to
-// 8 s; every segment is from the captions. Untested: 2.8 s ("Morning"), 31.3 s and 38.9 s (Ross answering the
-// recorded message: told only by voice), 79–100 s (Rachel arrives; the sources disagree: "Break a leg"/"Rachel!",
-// "You got to be kidding me"/"you got my message, Mom?"), 189.6 s ("I did it"), 202.6 s ("You said of course you
-// do"/"Did you say of course you do?"), 210 s ("You dog": innuendo), 224–229 s ("Monogamy is too cruel a rule"),
-// 286 s ("copy place" in whisper, "coffee place" in the captions).
+// Segments from the captions (english-captions/g0wb4jPpl3s.en.json3), words from whisper (2026-11-16). Whisper's
+// timings run on a 2 s grid and drift by up to 8 s, and its lines after 221 s are long run-ons. 85–90 s: the sources
+// disagree ("Break a leg"/"Rachel!", "You got to be kidding me"/"you got my message, Mom?"). 202.6 s: "You said of
+// course you do"/"Did you say of course you do?". 286 s: "copy place" in whisper, "coffee place" in the captions.
 // EAR CHECK: 159.5 s s1 — "Did you" run together (≈"didja"); both sources say "Did you think about the trail?"
-// EAR CHECK: 217.6 s x1 — "happen to have", with a weak "to"; both sources agree. The segment starts at 217.3 s, just
+// EAR CHECK: 217.6 s x1 — "happen to have", with a weak "to"; both sources agree. The segment starts at 216.1 s, just
 //   after "But, Isaac": confirm it doesn't clip "see"
+// EAR CHECK: 79.9 s gl — Ross's "Oh, thank you" (captions keep only "you")
 import type { Clip } from '../types.ts';
 
 export const rossHidesIt: Clip = {
@@ -41,7 +41,7 @@ export const rossHidesIt: Clip = {
       line: 'I don’t want to get back together *over a machine*.',
       said: '「留守電で仲直りなんてしたくない」と言う。',
       mean: 'over ＝ ここでは「〜を通して」。over the phone（電話で）と同じ。会ってから仲直りしたい。',
-      trap: 'over から「〜の上」を思いやすい。over the phone のように、連絡の手段を言う。',
+      trap: 'over から「〜の上」を連想しやすい。over the phone のように、連絡の手段を言う。',
       use: 'Let’s not talk about it over the phone.（電話でその話はやめよう）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [32, 40.7],
@@ -65,7 +65,7 @@ export const rossHidesIt: Clip = {
       line: 'Well, then a small one. *Listen, we kind of have to get going.*',
       said: '子犬の話を適当に答え、「あのさ、そろそろ出ないと」と言う。',
       mean: 'get going ＝ 出発する。kind of をつけて、「帰って」をやわらかく言っている。',
-      trap: 'we があるので、いっしょに出かけると思いやすい。子犬の話は早く終わらせたいだけ。',
+      trap: 'we があるので、いっしょに出かけると考えがち。子犬の話は早く終わらせたいだけ。',
       use: 'Sorry, I kind of have to get going.（ごめん、そろそろ行かないと）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'shoes', seg: [53.9, 59.5],
@@ -103,6 +103,30 @@ export const rossHidesIt: Clip = {
       trap: '相手がクロエなので彼女への気持ちと取りやすい。言わなかった中身は、あとの場面で答え合わせ。',
       use: 'Excited? That’s one word for it.（ワクワク？まあ、そうとも言えるね）', retired: true },
 
+    { id: 'gl', skill: 'pragma', level: 'B1', point: 'goodluck', ctx: true, seg: [76.0, 82.6],
+      stem: 'How does Ross answer “Good luck with your girlfriend”?',
+      ja: '「Good luck with your girlfriend」に、ロスは何と答える？',
+      choices: ['Oh, thank you', 'Same to you', 'No, I’m fine'], a: 0,
+      choicesJa: ['ああ、ありがとう', 'そっちもね', 'いや、大丈夫'],
+      cue: 'クロエが帰りぎわに言う一言のあと',
+      line: 'Chloe: *Good luck* with your girlfriend. / Ross: Oh, *thank you*.',
+      said: '帰りぎわに「彼女とうまくいくといいね」と言われ、「ああ、ありがとう」と返す。',
+      mean: 'Good luck with 〜 ＝ 〜がうまくいくといいね。言われたら Thank you と受け取るのがふつう。',
+      trap: 'Same to you（そっちもね）と考えがち。うまくいってほしいのはロスの彼女の話なので、お礼だけ。',
+      use: 'Good luck with your exam! — Thank you!（試験がんばって！—ありがとう！）' },
+
+    { id: 'rt', skill: 'pragma', level: 'B1', point: 'backtogether', ctx: true, seg: [89.8, 99.6],
+      stem: 'How does Ross answer “Can I be your girlfriend again?”',
+      ja: '「Can I be your girlfriend again?」に、ロスはどう答える？',
+      choices: ['Yes, very much', 'Let me think about it', 'Not right now'], a: 0,
+      choicesJa: ['うん、もちろん', '少し考えさせて', '今はちょっと'],
+      cue: '「So, what do you say?」のあと',
+      line: 'Rachel: So, what do you say? Can I be your girlfriend again? / Ross: *Yes, you can, very much.*',
+      said: '「で、どう？また彼女になってもいい？」「うん、もちろんだよ」。',
+      mean: 'What do you say? ＝ どう？（返事を聞く言い方）。very much を足して「ぜひ」と強く答えている。',
+      trap: 'すぐあとで I’m in hell（地獄だ）と言うので、断ったと勘違いしやすい。返事は Yes。',
+      use: 'Can I sit here? — Yes, of course.（ここ座っていい？—うん、どうぞ）' },
+
     { id: 'i3', skill: 'infer', level: 'B2', point: 'tellher', seg: [107.8, 116.6],
       stem: 'At first, what is Ross planning to do?',
       ja: '最初、ロスは何をするつもり？',
@@ -115,18 +139,6 @@ export const rossHidesIt: Clip = {
       trap: 'なやんでいるので、かくすと思いやすい。when は「話すとき」で、話すことは決めている。',
       use: 'When I tell my boss, he’ll be angry.（上司に話したら、きっと怒る）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'advice', reveals: ['deathbed', 'onboard', 'tellher'], seg: [112.0, 151.7],
-      stem: 'Why do Ross’s friends tell him to keep quiet?',
-      ja: 'ロスの友だちは、なぜだまっていろと言う？',
-      choices: ['It would just hurt her', 'She will never find out', 'She would tell everyone'], a: 0,
-      choicesJa: ['彼女を傷つけるだけだから', '彼女は絶対に気づかないから', '彼女がみんなに言いふらすから'],
-      cue: '「He’s right」のあと',
-      line: 'Nobody’s going to benefit, and *you’re just going to hurt her*. — Yeah, and *there won’t be a relationship left*…',
-      said: '友だちは「彼女を傷つけるだけ」「関係が残らない」と言い、ロスも折れる。',
-      mean: 'hurt her ＝ 彼女を傷つける。話しても、だれのためにもならないという理由。',
-      trap: 'あとで「ばれないように」と話すので、気づかないからと思いやすい。理由は He’s right のあと。',
-      use: 'It will just hurt her.（彼女を傷つけるだけだよ）' },
-
     { id: 'h3', skill: 'humor', level: 'C1', point: 'dumb', seg: [112.4, 119.5],
       stem: 'Why does the reply about “the more important question” get a laugh?',
       choices: ['Its formal lead-in ends in a plain insult', 'It copies the way Ross talks, to mock him',
@@ -138,17 +150,41 @@ export const rossHidesIt: Clip = {
       trap: '答えを求める質問ではない。打ち明ける気のロスへのあきれ。',
       use: 'Before we start, one important question: coffee?（始める前に大事な質問。コーヒー飲む？）', retired: true },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'onboard', seg: [123.7, 134.5],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'advice', reveals: ['onboard', 'tellher', 'decide'], seg: [120.4, 141.8],
+      stem: 'Why do Ross’s friends tell him to keep quiet?',
+      ja: 'ロスの友だちは、なぜだまっていろと言う？',
+      choices: ['It would just hurt her', 'She will never find out', 'She would tell everyone'], a: 0,
+      choicesJa: ['彼女を傷つけるだけだから', '彼女は絶対に気づかないから', '彼女がみんなに言いふらすから'],
+      cue: '「He’s right」のあと',
+      line: 'Nobody’s going to benefit, and *you’re just going to hurt her*. — Yeah, and *there won’t be a relationship left*…',
+      said: '正直でいたいと言うロスに、友だちは「彼女を傷つけるだけ」「関係が残らない」と言う。',
+      mean: 'hurt her ＝ 彼女を傷つける。話しても、だれのためにもならないという理由。',
+      trap: 'あとで「ばれないように」と話すので、気づかないからと思いやすい。理由は He’s right のあと。',
+      use: 'It will just hurt her.（彼女を傷つけるだけだよ）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'onboard', ctx: true, seg: [123.7, 134.5],
       stem: 'What does Ross’s friend think about telling Rachel?',
       ja: 'レイチェルに話すことを、ロスの友だちはどう思う？',
       choices: ['Don’t tell her this', 'Tell her everything', 'Tell her right away'], a: 0,
       choicesJa: ['このことは言うな', '全部話せ', 'すぐに話せ'],
       cue: '「I am」のあと',
-      line: 'I’m on board about the total honesty thing. I am. *Just not about stuff that’s going to get you in trouble.*',
+      line: 'Ross: How am I supposed to do that without being totally honest…? / Friend: I’m on board about the total honesty thing. I am. *Just not about stuff that’s going to get you in trouble.*',
       said: '「正直に、には賛成。本当に。ただ、困ることは別」と言う。',
       mean: 'on board ＝ 賛成。でも Just not 〜 ＝「ただし〜は別」で、今回は言うなと言っている。',
-      trap: 'on board と I am で、賛成と思いやすい。本音は Just not のあと。',
+      trap: 'on board と I am で、賛成に聞こえるが、決め手は Just not のあと。',
       use: 'I’m on board. Just not this week.（賛成だよ。ただ今週は無理）' },
+
+    { id: 'dc', skill: 'detail', level: 'B1', point: 'decide', ctx: true, seg: [141.0, 152.8],
+      stem: 'What does Ross decide after his friends’ advice?',
+      ja: '友だちの助言のあと、ロスはどうすると決める？',
+      choices: ['Not to tell Rachel', 'To tell Rachel today', 'To ask Chloe first'], a: 0,
+      choicesJa: ['レイチェルに言わない', '今日レイチェルに言う', '先にクロエに聞く'],
+      cue: '「deathbeds」のあとの返事',
+      line: 'Friend: …at least wait till the timing’s right. And that’s what *deathbeds* are for. / Ross: *Yeah, okay.*',
+      said: '「せめてタイミングを待て。死ぬ間際はそのためにある」に「うん、分かった」。',
+      mean: 'deathbed ＝ 死の床。いいタイミング ＝ 死ぬ間際、つまり「一生言うな」。Yeah, okay で受け入れた。',
+      trap: 'timing’s right（いいタイミング）から、すぐ話すと考えがち。そのあとの deathbeds が冗談の答え。',
+      use: 'Yeah, okay. You’re right.（うん、分かった。そのとおりだね）' },
 
     { id: 'h4', skill: 'humor', level: 'C1', point: 'deathbed', seg: [141.5, 150.8],
       stem: 'Why does the advice about waiting for the right time get a laugh?',
@@ -168,21 +204,21 @@ export const rossHidesIt: Clip = {
       choicesJa: ['〜した？（Did you）', '〜する？（Do you）', '〜してくれる？（Would you）'],
       cue: '文の最初の2語',
       line: '*Did you* think about the trail?',
-      said: '「つながりのことは考えた？」と聞く。',
+      said: '「（話が伝わる）道すじのことは考えた？」と聞く。',
       mean: 'Did you は「ディジュ」とつながる。「もう考えた？」と過去のことを聞く。',
       trap: 'Do you なら「ドゥユ」、Would you なら「ウッジュ」。「ディ」で始まれば Did you。',
       use: 'Did you think about the price?（値段のこと考えた？）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'trail', seg: [163.4, 175.4],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'trail', ctx: true, seg: [163.4, 175.4],
       stem: 'What “trail” does Ross’s friend mean?',
       ja: 'ロスの友だちの言う「trail」とは何？',
       choices: ['How news gets to Rachel', 'A path through a park', 'Notes he left behind'], a: 0,
       choicesJa: ['話がレイチェルに伝わる道すじ', '公園の中の小道', '彼が残したメモ'],
       cue: '「The trail from」のあと',
-      line: 'The trail *from the woman you did it with to the woman you hope never finds out*',
+      line: 'Ross: What trail? / Friend: The trail *from the woman you did it with to the woman you hope never finds out*…',
       said: '「相手の女性から、絶対知られたくない女性までの道すじだ」と説明する。',
       mean: 'trail ＝ ふつうは「小道」。ここは、人から人へ話が伝わる道すじ。',
-      trap: 'trail から山道や公園の小道を思いやすい。from 人 to 人 なので、人のつながり。',
+      trap: 'trail から山道や公園の小道を連想しやすい。from 人 to 人 なので、人のつながり。',
       use: 'News travels fast here.（ここではうわさがすぐ広まる）' },
 
     { id: 'd3', skill: 'who', level: 'B1', point: 'jasmine', seg: [179.5, 191.5],
@@ -208,13 +244,13 @@ export const rossHidesIt: Clip = {
       trap: '矛盾はうそに見えるが、隠す人は自分から言わない。平気で言うなら「誰にも」の範囲がずれている。',
       use: 'I told no one. Well, except my mom.（誰にも言ってない。まあ、母は別）', retired: true },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'isaac', seg: [195.1, 204.7],
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'isaac', ctx: true, seg: [195.1, 204.7],
       stem: 'Who does Chloe tell everything to?',
       ja: 'クロエは何でもだれに話す？',
       choices: ['Isaac', 'Jasmine', 'Rachel'], a: 0,
       choicesJa: ['アイザック', 'ジャスミン', 'レイチェル'],
       cue: '「right?」への返事',
-      line: 'you didn’t mention anything to Isaac, right? — Oh, *I tell Isaac everything*.',
+      line: 'Ross: So you didn’t mention anything to Isaac, right? / Chloe: Oh, *I tell Isaac everything*.',
       said: '「アイザックには何も言ってないよね？」に「アイザックには何でも話すの」と答える。',
       mean: 'I tell 〜 everything ＝「〜には何でも話す」。だから今回のことも話している。',
       trap: 'その前に「だれにも言ってない」と言うので、だれにも話さないと思いやすい。',
@@ -230,13 +266,13 @@ export const rossHidesIt: Clip = {
       trap: 'to は「タ」と小さく短く、happen とつながる。3語あるか数える。',
       use: 'I happen to know the owner.（実はオーナーと知り合いなんだ）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'again', seg: [231.5, 238.9],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'again', ctx: true, seg: [231.5, 238.9],
       stem: 'What does “not to tell her again” show?',
       ja: '「not to tell her again」から何が分かる？',
       choices: ['Isaac already told her', 'Isaac never told her', 'Isaac will tell her soon'], a: 0,
       choicesJa: ['アイザックはもう話した', 'アイザックは話していない', 'アイザックはもうすぐ話す'],
       cue: '約束の文の最後の一語',
-      line: 'I can promise *not to tell her again*.',
+      line: 'Ross: I just need to know that you’re not going to tell your sister. / Isaac: I can promise *not to tell her again*.',
       said: '「妹に言わないで」に「もう二度と言わないって約束できるよ」と答える。',
       mean: 'again ＝「また、もう一度」。もう一度言わない、なら一度はもう言ったということ。',
       trap: 'promise だけ聞くと、まだ話していないと思いやすい。最後の again がポイント。',
@@ -253,29 +289,17 @@ export const rossHidesIt: Clip = {
       trap: '頼みに約束が返るとお礼を言いたくなる。返事は形でなく、相手が実際に言った中身に返す。',
       use: 'Wait, you already sent it?（待って、もう送っちゃったの？）', retired: true },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'agreeing', seg: [245.3, 257.3],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'agreeing', ctx: true, seg: [245.3, 257.3],
       stem: 'Why does Ross say “I’m agreeing with you”?',
       ja: 'ロスはなぜ「同意してるって」と言う？',
       choices: ['He wants her to stop', 'He wants her to agree', 'He didn’t hear her'], a: 0,
       choicesJa: ['もうやめてほしい', '彼女に同意してほしい', '彼女の言葉が聞こえなかった'],
       cue: '「Very, very bad」のあと',
-      line: 'You did a bad thing. — Yes, I did. — *Very bad.* — Very bad. — *Very, very bad.* — *I’m agreeing with you.*',
+      line: 'Jasmine: You did a bad thing. / Ross: Yes, I did. / Jasmine: *Very, very bad.* / Ross: *I’m agreeing with you.*',
       said: '「悪いことしたね」「すごく悪い」と続き、「だから同意してるって」と言う。',
       mean: 'I’m agreeing with you ＝「同意してるよ」。もう認めたから、責めるのはやめて。',
       trap: 'agree から、同意を求めていると思いやすい。ロスはもう Yes, I did と認めている。',
       use: 'Okay, I get it. I agree.（分かったって。そう思うよ）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['roommate'], seg: [246.5, 291.5],
-      stem: 'How does the story end?',
-      ja: 'この話はどう終わる？',
-      choices: ['Rachel has already heard', 'Nobody tells Rachel', 'Ross tells Rachel himself'], a: 0,
-      choicesJa: ['レイチェルはもう聞いている', 'だれもレイチェルに話さない', 'ロスが自分でレイチェルに話す'],
-      cue: '最後の「Was I not…」',
-      line: 'Please tell me you didn’t say anything to Rachel… — I’m sorry. *Was I not supposed to?*',
-      said: 'ガンサーに「レイチェルに言ってないよね」と聞くと、「言っちゃだめだった？」と返る。',
-      mean: 'Was I not supposed to? ＝「だめだった？」。もうレイチェルに話していた。',
-      trap: 'I’m sorry から、言っていないと思いやすい。だめだった？は、もう言ったあとの言葉。',
-      use: 'Was I not supposed to say that?（それ、言っちゃだめだった？）' },
 
     { id: 'ph2', skill: 'phrase', level: 'B1', point: 'workout', seg: [259.8, 268.9],
       stem: 'What does Ross want most with his girlfriend?',
@@ -286,7 +310,7 @@ export const rossHidesIt: Clip = {
       line: 'I want more than anything to just *work it out* with her',
       said: '「彼女を愛してるし、何よりうまくやり直したい」とたのむ。',
       mean: 'work it out ＝ 問題を解決してうまくやる。ここは2人の仲を直すこと。',
-      trap: 'カタカナのワークアウト（運動）と思いやすい。work it out with 人 は「話し合って解決する」。',
+      trap: 'カタカナのワークアウト（運動）と勘違いしやすい。work it out with 人 は「話し合って解決する」。',
       use: 'I’m sure we can work it out.（きっと解決できるよ）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [272, 281.2],
@@ -298,7 +322,19 @@ export const rossHidesIt: Clip = {
       line: 'you should probably talk to my roommate *because I told him and he knows Phoebe, too*.',
       said: '「ルームメイトと話したほうがいいかも。彼に話しちゃったし、彼もフィービーを知ってる」と言う。',
       mean: 'you should probably 〜 ＝「〜したほうがいいかも」。話がまだ広がるおそれがある。',
-      trap: 'knows Phoebe から、助けてくれると思いやすい。because I told him が理由。',
+      trap: 'knows Phoebe から、助けてくれると考えがち。because I told him が理由。',
       use: 'You should probably talk to Ken first.（まずケンと話したほうがいいかも）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['roommate'], seg: [276.0, 293.5],
+      stem: 'How does the story end?',
+      ja: 'この話はどう終わる？',
+      choices: ['Rachel has already heard', 'Nobody tells Rachel', 'Ross tells Rachel himself'], a: 0,
+      choicesJa: ['レイチェルはもう聞いている', 'だれもレイチェルに話さない', 'ロスが自分でレイチェルに話す'],
+      cue: '最後の「Was I not…」',
+      line: 'Please tell me you didn’t say anything to Rachel… — I’m sorry. *Was I not supposed to?*',
+      said: 'ガンターに「レイチェルに言ってないよね」と聞くと、「言っちゃだめだった？」と返る。',
+      mean: 'Was I not supposed to? ＝「だめだった？」。もうレイチェルに話していた。',
+      trap: 'I’m sorry から、言っていないと思いやすい。だめだった？は、もう言ったあとの言葉。',
+      use: 'Was I not supposed to say that?（それ、言っちゃだめだった？）' },
   ]
 };
