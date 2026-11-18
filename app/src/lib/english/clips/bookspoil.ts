@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 10, retire 4, new 2, ctx 4, tx 7
+// R4 REVIEW 2026-11-18: keep 3, rewrite 10, retire 4, new 2, ctx 4, tx 7, qa 20
 // A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 1, new 0
 // “Rachel and Joey Share Book Spoilers | Friends” (the official Friends channel, Best of Season 3): Joey, who has
 // already read The Shining, lets its ending slip while Rachel is reading it; she pays him back with the ending of
@@ -8,6 +8,7 @@
 // scene in the banks. R4 retired i1/d3/m1/r1 (same facts as d1/x1/p2/d4, and 4 starts within 2 s).
 // EAR CHECK: 36.3 s a1 — whisper "Joey, I can't believe *you* just did that", captions "…*he* just did that": a1
 //   takes it as Rachel's line to Joey
+// EAR CHECK: 27.5 s "Oh, no, no. No, the end." — taken as Joey's (the best part is the end), so he goes on to tell it
 // EAR CHECK: 59.8 s r1 — the cut falls after "All right" (whisper has it twice, 58–60 s), before "The boiler…" at 60.3 s
 import type { Clip } from '../types.ts';
 
@@ -17,11 +18,11 @@ export const bookSpoilers: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'room', seg: [0, 8.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'room', seg: [0, 5.6], keep: true,
       stem: 'Which room has Danny just gone into?',
       ja: 'ダニーが今入った部屋は何号室？',
-      choices: ['207', '217', '270'], a: 1,
-      choicesJa: ['207号室', '217号室', '270号室'],
+      choices: ['207', '217', '270', '227'], a: 1,
+      choicesJa: ['207号室', '217号室', '270号室', '227号室'],
       cue: '「went into」のすぐあと',
       line: 'Hey, Rach. How you doing with The Shining? — Oh, Danny just went into *room 217*.',
       said: '「『シャイニング』どう？」に「ダニーが217号室に入ったところ」と答える。',
@@ -44,8 +45,8 @@ export const bookSpoilers: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'ruin', ctx: true, seg: [5.0, 12.0],
       stem: 'Why does Rachel stop Joey?',
       ja: 'レイチェルはなぜジョーイを止める？',
-      choices: ['He’ll give away the story', 'He is retelling her part', 'She is too scared to listen'], a: 0,
-      choicesJa: ['先の話をばらしそうだから', '読んだ所をくり返しているから', '怖すぎて聞けないから'],
+      choices: ['He’ll tell her what happens', 'He keeps repeating her page', 'She is too scared to listen'], a: 0,
+      choicesJa: ['先の話をばらしそうだから', '読んだページをくり返しているから', '怖すぎて聞けないから'],
       cue: '「no」が続いたあとの一文',
       line: 'Joey: Ooh, the next part’s the best. When that dead lady… / Rachel: Oh, no, no, no… Come on, *you’re gonna ruin it*.',
       said: '「次のところが一番いいんだよ」と話し出すジョーイを、「やめて、台なしにする気？」と止める。',
@@ -53,29 +54,17 @@ export const bookSpoilers: Clip = {
       trap: '怖い場面の話なので、怖いからと考えがち。決め手は ruin it。',
       use: 'Don’t tell me! You’ll ruin it.（言わないで！台なしになる）' },
 
-    { id: 'c3', skill: 'phrase', level: 'B1', point: 'incode', ctx: true, seg: [9.0, 15.0],
+    { id: 'c3', skill: 'phrase', level: 'B1', point: 'incode', ctx: true, seg: [7.75, 14.5],
       stem: 'What does Joey mean by “I’ll talk in code”?',
       ja: 'ジョーイの「I’ll talk in code」はどういう意味？',
-      choices: ['Talk in a secret way', 'Stop talking about it', 'Speak more slowly'], a: 0,
-      choicesJa: ['秘密の言い方で話す', 'その話をやめる', 'もっとゆっくり話す'],
+      choices: ['He’ll hide the key words', 'He’ll say nothing more', 'He’ll speak more slowly'], a: 0,
+      choicesJa: ['大事な言葉を隠して話す', 'もう何も言わない', 'もっとゆっくり話す'],
       cue: 'レイチェルに止められたあと',
       line: 'Rachel: Come on, you’re gonna ruin it. / Joey: All right. *I’ll talk in code.*',
       said: '「台なしにする気？」と言われ、「分かった。暗号で話すよ」と答える。',
       mean: 'talk in code ＝「暗号で話す」。大事な言葉を隠して話すこと。All right ＝「分かった」。',
       trap: 'All right（分かった）で、話をやめると考えがち。決め手はそのあとの talk in code。',
       use: 'Okay, I’ll talk quietly.（分かった、小さい声で話すね）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ending', seg: [26.3, 37.9],
-      stem: 'In the ending Joey gives away, what happens?',
-      ja: 'ジョーイがばらした結末では、何が起こる？',
-      choices: ['The family gets away', 'Jack kills the whole family', 'Jack gets away'], a: 0,
-      choicesJa: ['家族が逃げる', 'ジャックが家族全員を殺す', 'ジャックが逃げる'],
-      cue: '「the end」のあと、but の後',
-      line: 'When Jack *almost* kills them all… but then in the last second, *they get away*.',
-      said: '「ジャックが家族を殺しかけるけど、最後の瞬間に逃げるんだ」と言ってしまう。',
-      mean: 'almost ＝ もう少しで〜するところ。get away ＝ 逃げる。実際は殺していない。',
-      trap: 'almost は小さく短いので落としやすい。kills them all だけ聞くと逆の意味。',
-      use: 'I almost missed my flight.（あやうく飛行機に乗り遅れるところだった）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'code', reveals: ['crack'], seg: [26.8, 41.0], retired: true,
       stem: 'Why does the last line about the code get a laugh?',
@@ -88,11 +77,23 @@ export const bookSpoilers: Clip = {
       trap: 'cracked を本気のほめ言葉と取ると「Rachel が賢い」話になる。からかう相手は暗号の作り手。',
       use: 'Wow, real top-secret stuff.（へえ、すごい極秘情報だね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'didthat', ctx: true, seg: [31.0, 37.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ending', seg: [27.2, 35.0],
+      stem: 'What happens at the end of Joey’s book?',
+      ja: 'ジョーイの本の結末では、何が起こる？',
+      choices: ['The family escapes', 'The whole family dies', 'Only Jack escapes'], a: 0,
+      choicesJa: ['家族は逃げきる', '家族が全員死ぬ', 'ジャックだけが逃げる'],
+      cue: '「the end」のあと、but の後',
+      line: 'When Jack *almost* kills them all… but then in the last second, *they get away*.',
+      said: '「ジャックが家族を殺しかけるけど、最後の瞬間に逃げるんだ」と言ってしまう。',
+      mean: 'almost ＝ もう少しで〜するところ。get away ＝ 逃げる。実際は殺していない。',
+      trap: 'almost は小さく短いので落としやすい。kills them all だけ聞くと逆の意味。',
+      use: 'I almost missed my flight.（あやうく飛行機に乗り遅れるところだった）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'didthat', ctx: true, reveals: ['ending'], seg: [31.15, 37.45],
       stem: 'How does Rachel feel right after hearing the ending?',
       ja: '結末を聞いた直後、レイチェルはどんな気持ち？',
-      choices: ['Upset that he spoiled it', 'Annoyed by his code', 'Impressed by his clever code'], a: 0,
-      choicesJa: ['ネタばれされて怒っている', '彼の暗号にいらいらしている', '彼のうまい暗号に感心している'],
+      choices: ['Upset that he spoiled it', 'Glad the family lives', 'Impressed by his clever code'], a: 0,
+      choicesJa: ['ネタばれされて怒っている', '家族が助かってほっとしている', '彼のうまい暗号に感心している'],
       cue: '名前を呼んでからの一文',
       line: 'Joey: …but then in the last second, they get away. / Rachel: Joey, *I can’t believe you just did that*.',
       said: '結末を言われてしまい、「ジョーイ、今のは信じられない」と言う。',
@@ -100,7 +101,7 @@ export const bookSpoilers: Clip = {
       trap: 'I can’t believe は「すごい」の驚きにも使い、感心と勘違いしやすい。直前に結末を言われている。',
       use: 'I can’t believe you told her!（彼女に言うなんて信じられない！）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'crack', reveals: ['incode'], seg: [35.1, 40.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'crack', reveals: ['incode'], seg: [37.45, 40.5],
       stem: 'What does “cracked your code” mean here?',
       ja: '「cracked your code」はどういう意味？',
       choices: ['Understood his secret', 'Broke his secret box', 'Laughed at his secret'], a: 0,
@@ -136,7 +137,7 @@ export const bookSpoilers: Clip = {
       trap: '名前の響きで男女を逆に思いやすい。she says no の she を聞く。',
       use: 'She said no, even though she liked him.（好きだったのに断った）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'stilllove', seg: [48.0, 53.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'stilllove', seg: [47.95, 50.75],
       stem: 'Type what Rachel says: “___ in love with him.” (4 words)', answer: 'even though she\'s still',
       ja: 'レイチェルの言葉を書こう：「___ in love with him.」（4語）',
       cue: '「says no」のすぐあと',
@@ -146,7 +147,7 @@ export const bookSpoilers: Clip = {
       trap: 'she’s の s と still の s が1つに聞こえやすい。s が2つある。',
       use: 'Even though it rained, we had fun.（雨だったけど楽しかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'endsup', seg: [50.5, 55.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'endsup', seg: [50.72, 55.0],
       stem: 'Which words do you hear: “and then ___ marrying Amy”?',
       ja: '「and then ___ marrying Amy」どれが聞こえる？',
       choices: ['he ends up', 'he ended up', 'she ends up'], a: 0,
@@ -158,7 +159,7 @@ export const bookSpoilers: Clip = {
       trap: 'ended なら最後に「ディド」。she なら「シ」で始まる。あらすじは今の形で話すことが多い。',
       use: 'We ended up staying an extra night.（結局もう1泊することになった）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'accident', ctx: true, seg: [51.0, 58.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'accident', ctx: true, seg: [51.38, 58.9],
       stem: 'What does Joey mean by “Mine was by accident”?',
       ja: 'ジョーイの「Mine was by accident」はどういう意味？',
       choices: ['Hers was on purpose', 'Both were accidents', 'He is sorry for his'], a: 0,
@@ -204,21 +205,21 @@ export const bookSpoilers: Clip = {
       said: '「よし」と言ってから、「ボイラーが爆発して、ホテルが壊れて、父親が死ぬんだ」と結末を言う。',
       mean: '主語はずっと the boiler。爆発がホテルを壊し、父親を死なせる。All right ＝ ここでは「よし、それなら」。',
       trap: '最後の短い kills を落とすと、けがと考えがち。文の最後まで聞く。',
-      use: 'All right, you asked for it.（よし、そっちがその気なら）' },
+      use: 'All right, then I’ll go first.（よし、それなら私が先に行く）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['shock'], seg: [64.5, 93.0],
-      stem: 'How does the scene end for Joey?',
-      ja: 'この場面の最後、ジョーイはどうなっている？',
-      choices: ['Upset about his book', 'Happy he got even', 'Sorry he spoiled hers'], a: 0,
-      choicesJa: ['自分の本のことで動揺している', '仕返しできてうれしい', 'ネタばれして悪かったと思っている'],
-      cue: '「Beth dies」のあと',
+      stem: 'At the end, what is Joey worried about?',
+      ja: '最後に、ジョーイは何を心配している？',
+      choices: ['Beth dying in his book', 'Rachel being angry at him', 'Having spoiled Rachel’s book'], a: 0,
+      choicesJa: ['自分の本でベスが死ぬこと', 'レイチェルに怒られること', 'レイチェルの本をばらしたこと'],
+      cue: 'レイチェルの最後のネタばれのあと',
       line: 'Joey’s asking if you’ve just *ruined the first book he’s ever loved*…',
       said: '「ベスが死ぬの？」とうろたえ、友だちが「初めて好きになった本を台なしにしたのかって」と言う。',
-      mean: 'ruin ＝ 台なしにする。仕返しはしたが、最後に一番困っているのはジョーイ。',
-      trap: '直前にやり返しているので、勝ったと考えがち。最後は動揺している。',
+      mean: 'ruin ＝ 台なしにする。Beth dies と聞いてから、ジョーイは「本当？」と何度も聞き、そうでないと言ってほしがる。',
+      trap: '直前にやり返しているので、レイチェルとのけんかの話と考えがち。最後はベスのことで頭がいっぱい。',
       use: 'Please tell me that’s not true.（うそだと言って）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'shock', seg: [75.2, 84.5],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'shock', seg: [75.2, 80.95],
       stem: 'How does Joey react to “Beth dies”?',
       ja: '「Beth dies」に、ジョーイはどう反応する？',
       choices: ['Shocked, hoping it isn’t true', 'Sad, but glad to know', 'Angry, ready to hit back'], a: 0,
@@ -230,7 +231,7 @@ export const bookSpoilers: Clip = {
       trap: 'ここまでやり返しが続いたので、また反撃すると思いやすい。質問が続くのは動揺。',
       use: 'Wait, is that true?（待って、それ本当？）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'reading', seg: [79.5, 85.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'reading', seg: [79.5, 84.2],
       stem: 'How far has Joey read in his book?',
       ja: 'ジョーイは自分の本をどこまで読んでいる？',
       choices: ['Not that far yet', 'Past that part', 'To the very end'], a: 0,
@@ -242,18 +243,6 @@ export const bookSpoilers: Clip = {
       trap: 'keep を kept（過去）と聞くと、もう読んだと勘違いしやすい。if のあとはこれからの話。',
       use: 'If I keep going, will I find it?（このまま行けば見つかる？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'tag', reveals: ['shock'], seg: [83.0, 89.0],
-      stem: 'What does Joey hope Rachel will say?',
-      ja: 'ジョーイは、レイチェルに何と言ってほしい？',
-      choices: ['That Beth lives', 'That Beth dies', 'That Jo dies'], a: 0,
-      choicesJa: ['ベスは死なない', 'ベスは死ぬ', 'ジョーが死ぬ'],
-      cue: 'レイチェルの名前の前の短い質問',
-      line: 'No. Beth doesn’t die. She doesn’t die. *Does she, Rachel?*',
-      said: '「ううん。ベスは死なないよ。死なない。だよね、レイチェル？」と自分に言い聞かせる。',
-      mean: 'Does she? は前の文につける確認の質問（付加疑問）。「〜だよね？」と、そうだと言ってほしい気持ち。',
-      trap: 'Does she で「死ぬの？」と聞き直したと考えがち。前の She doesn’t die に「だよね？」を付けている。',
-      use: 'It’s not raining, is it?（雨、降ってないよね？）' },
-
     { id: 'c1', skill: 'humor', level: 'C2', point: 'star', reveals: ['ruined'], seg: [84.0, 94.0], retired: true,
       stem: 'In the line about “the first book he’s ever loved”, who is the joke on?',
       choices: ['Joey, who has hardly ever loved a book', 'Rachel, for ruining a book he loves',
@@ -264,6 +253,19 @@ export const bookSpoilers: Clip = {
       mean: '好きになった本はニコルソン主演で映画になった1冊だけ。つまり Joey はほとんど本を読まない、と笑う。',
       trap: 'Rachel への言葉なので彼女への皮肉に聞こえやすい。笑いの中身は that 以下の読書歴。',
       use: 'It’s the first salad I’ve ever liked.（初めておいしいと思ったサラダ）' },
+
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'tag', reveals: ['shock'], seg: [84.2, 88.1],
+      stem: 'What does Joey hope Rachel will say?',
+      ja: 'ジョーイは、レイチェルに何と言ってほしい？',
+      choices: ['That Beth lives', 'That Beth dies', 'That she is sorry'], a: 0,
+      choicesJa: ['ベスは死なない', 'ベスは死ぬ', 'ごめんね、と言う'],
+
+      cue: 'レイチェルの名前の前の短い質問',
+      line: 'No. Beth doesn’t die. She doesn’t die. *Does she, Rachel?*',
+      said: '「ううん。ベスは死なないよ。死なない。だよね、レイチェル？」と自分に言い聞かせる。',
+      mean: 'Does she? は前の文につける確認の質問（付加疑問）。「〜だよね？」と、そうだと言ってほしい気持ち。',
+      trap: 'Does she で「死ぬの？」と聞き直したと考えがち。前の She doesn’t die に「だよね？」を付けている。',
+      use: 'It’s not raining, is it?（雨、降ってないよね？）' },
 
     { id: 'c2', skill: 'dict', level: 'C2', point: 'ruined', seg: [87.4, 90.1], retired: true,
       stem: 'Type the words: “Joey’s asking ___ ruined the first book…” (3 words)', answer: 'if you\'ve just',

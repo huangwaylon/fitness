@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 7, retire 4, new 3, ctx 3, tx 3
+// R4 REVIEW 2026-11-18: keep 4, rewrite 7, retire 4, new 3, ctx 3, tx 3, qa 14
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 2, new 0
 // “spencer goes on a blind date (literally) 🫣 | iCarly #shorts” (NickRewind, the official iCarly channel, Best of the
 // New iCarly 🎉): Spencer has blinded himself again and asks his friend to be his eyes on a date; the friend suspects a
@@ -19,7 +19,7 @@ export const blindDate: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'eyes', seg: [0, 23.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'eyes', seg: [0, 16.0],
       stem: 'What does Spencer ask his friend to do?',
       ja: 'スペンサーは友だちに何を頼む？',
       choices: ['Help him on a date', 'Drive him to the hospital', 'Find a new date'], a: 0,
@@ -54,9 +54,9 @@ export const blindDate: Clip = {
       trap: 'hard to tell を慎重さと取りやすい。打ち消しの but のあとが本音。控えめな語は次の一言と合わせて聞く。',
       use: 'It’s early, but I have a good feeling.（まだ早いけど、いい予感がする）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'again', ctx: true, seg: [3.0, 16.0],
-      stem: 'How is Spencer’s request first taken?',
-      ja: 'スペンサーの頼みは、最初どう受け取られる？',
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'again', ctx: true, reveals: ['yeahno'], seg: [5.2, 16.0],
+      stem: 'What does the friend think of Spencer’s story?',
+      ja: 'スペンサーの話を、友だちはどう思っている？',
       choices: ['He doesn’t believe Spencer', 'He is worried about him', 'He is angry about the date'], a: 0,
       choicesJa: ['信じていない', '彼を心配している', 'デートのことで怒っている'],
       cue: '頼みのあとの最初の質問',
@@ -66,11 +66,11 @@ export const blindDate: Clip = {
       trap: 'again から、けがの心配と考えがち。expect me to 〜? は「信じない」。',
       use: 'You expect me to believe that?（それを信じろって？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'talk', seg: [4.0, 10.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'talk', seg: [5.2, 10.6], keep: true,
       stem: 'How long had Spencer talked with her?',
       ja: 'スペンサーは彼女とどれくらい話した？',
-      choices: ['5 minutes', '15 minutes', '50 minutes'], a: 0,
-      choicesJa: ['5分', '15分', '50分'],
+      choices: ['5 minutes', '15 minutes', '50 minutes', '25 minutes'], a: 0,
+      choicesJa: ['5分', '15分', '50分', '25分'],
       cue: '「only talked for」のあとの数字',
       line: 'we *only* talked for *five minutes*',
       said: '「5分話しただけだから」と言う。only が「たった」の気持ち。',
@@ -78,11 +78,11 @@ export const blindDate: Clip = {
       trap: '「フィフティーン」と後ろを伸ばせば 15、「フィフティ」と前が強ければ 50。「ファイヴ」なら 5。',
       use: 'I only slept for four hours.（4時間しか寝てない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'met', seg: [4.2, 10.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'met', seg: [5.2, 10.6],
       stem: 'Where did Spencer meet his date?',
       ja: 'スペンサーはデートの相手とどこで出会った？',
-      choices: ['At the emergency room', 'At an eye doctor’s office', 'Online, through a chat app'], a: 0,
-      choicesJa: ['救急外来で', '眼科で', 'ネットのチャットで'],
+      choices: ['In a hospital', 'At an eye doctor’s', 'On a dating app'], a: 0,
+      choicesJa: ['病院で', '眼科で', '出会い系アプリで'],
       cue: '「five minutes」のあと、場所の言葉',
       line: 'we only talked for five minutes at the *emergency room*',
       said: '「救急外来で5分話しただけ」と言う。',
@@ -129,8 +129,8 @@ export const blindDate: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'soon', seg: [16, 19.6],
       stem: 'When is the date going to arrive?',
       ja: 'デートの相手はいつ来る？',
-      choices: ['Any minute now', 'In an hour', 'Later on tonight'], a: 0,
-      choicesJa: ['今にも', '1時間後', '今夜もっとあとで'],
+      choices: ['Very soon', 'In an hour', 'Later tonight'], a: 0,
+      choicesJa: ['もうすぐ', '1時間後', '今夜もっとあとで'],
       cue: '「think fast」の直前の一文',
       line: 'She’s gonna be here *any minute*.',
       said: '「もうすぐ彼女が来る」と言う。',
@@ -141,8 +141,8 @@ export const blindDate: Clip = {
     { id: 'i1', skill: 'infer', level: 'B2', point: 'truth', ctx: true, seg: [16.2, 24.4],
       stem: 'After the throw, what does the friend think?',
       ja: '物を投げたあと、友だちはどう思う？',
-      choices: ['Spencer might be honest', 'Spencer is still lying', 'Spencer is badly hurt'], a: 0,
-      choicesJa: ['スペンサーは本当のことを言っているかも', 'スペンサーはまだうそをついている', 'スペンサーはひどいけがをした'],
+      choices: ['Maybe Spencer isn’t lying', 'Spencer is still lying', 'Spencer is badly hurt'], a: 0,
+      choicesJa: ['スペンサーはうそをついていないかも', 'スペンサーはまだうそをついている', 'スペンサーはひどいけがをした'],
       cue: '「Oh」のあとのひと言',
       line: '*Think fast.* / Spencer: Oh. / *Might be telling the truth.*',
       said: '「ほら、受け取って」と投げ、スペンサーが「あ」と取りそこねると「本当のことを言ってるのかも」。',
@@ -150,7 +150,7 @@ export const blindDate: Clip = {
       trap: '最初は疑っていたので、まだうそだと考えがち。決め手は Might be telling the truth。',
       use: 'Think fast! Catch!（ほら、受け取って！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'up', seg: [26.5, 31.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'up', seg: [25.0, 31.5],
       stem: 'Fill the gap: “Can you help me ___?”',
       ja: '空所に入る語は？「___ のを手伝ってくれる？」',
       choices: ['up', 'out', 'off'], a: 0,
@@ -162,7 +162,7 @@ export const blindDate: Clip = {
       trap: 'out なら「アウ（ト）」、off なら f の「フ」が残る。口を閉じて終われば up。',
       use: 'Could you help me up?（起こしてもらえますか）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['butler'], seg: [28.5, 47.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plan', reveals: ['butler', 'up'], seg: [28.7, 44.0],
       stem: 'What does Spencer want done on the date?',
       ja: 'デートで、スペンサーは何をしてもらいたい？',
       choices: ['Find out her name', 'Find out her age', 'Drive them to dinner'], a: 0,
@@ -174,7 +174,7 @@ export const blindDate: Clip = {
       trap: 'driver’s license（運転免許証）から運転を連想しやすいが、見たいのは免許証の名前。',
       use: 'Can I see your driver’s license?（運転免許証を見せてもらえますか）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'confess', seg: [31, 42.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'confess', seg: [31.0, 36.6],
       stem: 'What is Spencer about to do with “This is embarrassing, but…”?',
       ja: '「This is embarrassing, but…」で、スペンサーは何をしようとしている？',
       choices: ['Admit a mistake', 'Get angry', 'Say goodbye'], a: 0,
@@ -221,16 +221,6 @@ export const blindDate: Clip = {
       trap: 'あだ名は相手をからかうように聞こえるが、hot はほめ言葉で、恥じているのは本人。笑いの的は、しくじった人。',
       use: 'I’m terrible with names, sorry.（名前を覚えるのが苦手で、ごめん）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'allineed', seg: [34.6, 42.6],
-      stem: 'Type: “___ is pretend to be my butler.” (6 words)', answer: 'all i need you to do',
-      ja: '書こう：「___ のは、執事のふりだけ」（6語）',
-      cue: '「name」のあと、文の頭',
-      line: '*All I need you to do* is pretend to be my butler',
-      said: '「君にしてほしいのは、執事のふりをすることだけ」と言う。',
-      mean: 'All I need you to do is 〜 ＝ 〜してくれるだけでいい。need you to は「ニージュタ」。',
-      trap: 'you と to が弱く、I need do のように聞こえやすい。頼みの言い方として覚えておく。',
-      use: 'All I need you to do is sign.（サインしてくれるだけでいいです）' },
-
     { id: 'ph3', skill: 'phrase', level: 'B1', point: 'butler', reveals: ['allineed'], seg: [36.6, 43.4],
       stem: 'What does “pretend to be my butler” mean?',
       ja: '「pretend to be my butler」はどういう意味？',
@@ -242,6 +232,16 @@ export const blindDate: Clip = {
       mean: 'pretend to be 〜 ＝ 〜のふりをする。butler ＝ 執事（お金持ちの家の世話係）。本物ではなく、ふり。',
       trap: 'be my butler だけ聞くと、本当に執事になる話と考えがち。決め手は前の pretend（ふりをする）。',
       use: 'Can you pretend to be my brother?（兄のふりをしてくれる？）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'allineed', seg: [36.7, 42.6],
+      stem: 'Type: “___ is pretend to be my butler.” (6 words)', answer: 'all i need you to do',
+      ja: '書こう：「___ のは、執事のふりだけ」（6語）',
+      cue: '「name」のあと、文の頭',
+      line: '*All I need you to do* is pretend to be my butler',
+      said: '「君にしてほしいのは、執事のふりをすることだけ」と言う。',
+      mean: 'All I need you to do is 〜 ＝ 〜してくれるだけでいい。need you to は「ニージュタ」。',
+      trap: 'you と to が弱く、I need do のように聞こえやすい。頼みの言い方として覚えておく。',
+      use: 'All I need you to do is sign.（サインしてくれるだけでいいです）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'hands', seg: [38.2, 52.7],
       stem: 'What makes the end of Spencer’s request funny?',
@@ -275,7 +275,7 @@ export const blindDate: Clip = {
       line: 'I *remember now*. It’s *Sarah*. Sarah.',
       said: '「思い出した。サラだ、サラ」とあわてて言う。',
       mean: 'I remember now ＝ 今思い出した。忘れていた彼女の名前を、本人の前で思い出す。',
-      trap: '直前に Freddie が聞こえるので考えがち。I remember now のあとの名前を聞く。',
+      trap: '直前に Freddie と言っているので、その名前と考えがち。I remember now のあとの名前を聞く。',
       use: 'Oh, I remember now!（あ、今思い出した！）' },
   ]
 };
