@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 1, new 1, ctx 3, tx 8
+// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 1, new 1, ctx 3, tx 8, qa 3
 // A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 8, new 0
 // A2 LATE: a secret about sex underwear and a body-part joke (a third nipple); short, fast, few everyday chunks.
 // “Chandler Has a Third Nipple | Friends” (the official Friends channel, Best of Season 2): a friend's secret comes out
@@ -51,7 +51,7 @@ export const thirdNipple: Clip = {
       trap: 'あとに terrace も出るので場所を取り違えやすい。on のあとの名詞をそのまま拾う。',
       use: 'The keys are out there on the table.（鍵は向こうのテーブルの上だよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'secret', reveals: ['source', 'deadmeat'], seg: [11.0, 34.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'secret', reveals: ['source', 'deadmeat'], seg: [11.0, 26.0],
       stem: 'Why is she angry with him?',
       ja: '彼女はなぜ彼に怒っている？',
       choices: ['He told her secret', 'He laughed at her', 'He lost her things'], a: 0,
@@ -59,7 +59,7 @@ export const thirdNipple: Clip = {
       cue: '秘密がばれたあとの流れ。',
       line: 'Who told you? … You are dead meat. — I *didn’t know it was a big secret*.',
       said: '秘密がばれて「誰から聞いたの？」と怒り、しゃべった彼をおどす。',
-      mean: '怒りの理由は、彼が秘密をほかの人に話したこと。だから最後に彼の秘密を言い返す。',
+      mean: '怒りの理由は、彼が彼女の秘密を人に話したこと。big secret ＝ 大きな秘密。彼の言い訳に出てくる。',
       trap: 'みんなが笑う場面なので、笑われて怒ったと考えがち。決め手は big secret。',
       use: 'Please keep it a secret.（内緒にしてね）' },
 
@@ -155,19 +155,7 @@ export const thirdNipple: Clip = {
       trap: 'I don’t know を本当に迷っていると取りやすい。迷った直後に的確な例が出たら、演技の合図。',
       use: 'Someone, I don’t know, like you?（誰かさん、そうね、たとえばあなたとか？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['word', 'nubbin'], seg: [38.3, 64.3],
-      stem: 'How does the scene end?',
-      ja: 'この場面はどう終わる？',
-      choices: ['Joey is confused about a word', 'They fight about the big secret', 'They tease her again'], a: 0,
-      choicesJa: ['ジョーイがある言葉に混乱している', '大きな秘密のことでけんかする', 'また彼女をからかう'],
-      cue: '最後のジョーイの話。',
-      line: 'You told me it was a *nubbin*.',
-      said: 'みんなが見たがったあと、ジョーイが「nubbin だと聞いていた」と言い出す。',
-      mean: 'nubbin ＝ 小さなでっぱり。秘密の仕返しから始まり、言葉の勘違いで終わる。',
-      trap: '前半の「誰がしゃべった」の言い合いが続くと考えがち。最後のジョーイの数行で決まる。',
-      use: 'Wait, what does that word mean?（待って、その言葉どういう意味？）' },
-
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'nothing', ctx: true, seg: [41.3, 47.8],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'nothing', ctx: true, seg: [39.3, 45.3],
       stem: 'What does “There’s nothing to see” mean here?',
       ja: 'ここでの「There’s nothing to see」の意味は？',
       choices: ['Please don’t look at it', 'It isn’t there anymore', 'Come and look at it closely'], a: 0,
@@ -176,7 +164,7 @@ export const thirdNipple: Clip = {
       line: 'Whip it out, whip it out. / Come on. *There’s nothing to see.*',
       said: '見せろとはやされ、「やめろよ。見るものなんて何もないって」と返す。',
       mean: '見る価値はない、と言って見せずにすませる。Come on ＝ ここでは「よしてよ」。',
-      trap: '「もうない」に聞こえるが、すぐあとで It’s just a tiny bump とまだあることを言う。',
+      trap: 'nothing から「もうない」と考えがちだが、Come on（よしてよ）と言って、見せるのをいやがっている。',
       use: 'Come on, there’s nothing to see here.（ほら、見るものなんて何もないよ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'useless', reveals: ['bump', 'opposed'], seg: [43.05, 50.8], retired: true,
@@ -211,6 +199,18 @@ export const thirdNipple: Clip = {
       mean: 'as opposed to ＝ 〜とはちがって。as は小さく、opposed to の d と t がつながる。',
       trap: 'as が小さく消え、opposed to だけに聞こえがち。3語のひとまとまり。',
       use: 'I prefer tea, as opposed to coffee.（コーヒーよりお茶派です）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', reveals: ['word', 'nubbin', 'believed'], seg: [50.4, 65.4],
+      stem: 'How does the scene end?',
+      ja: 'この場面はどう終わる？',
+      choices: ['Joey is confused about a word', 'They fight about the big secret', 'They tease her again'], a: 0,
+      choicesJa: ['ジョーイがある言葉に混乱している', '大きな秘密のことでけんかする', 'また彼女をからかう'],
+      cue: '最後のジョーイの話。',
+      line: 'You told me it was a *nubbin*.',
+      said: 'ジョーイが「ひどいよ。nubbin だって言ってたじゃないか」と言い出す。',
+      mean: 'nubbin ＝ 小さなでっぱり。そう聞いていたものが、実は乳首だった。最後は言葉の勘違いの話で終わる。',
+      trap: '秘密をばらされた話が続くと考えがち。最後のジョーイの数行で決まる。',
+      use: 'Wait, what does that word mean?（待って、その言葉どういう意味？）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'believe', reveals: ['nubbin'], seg: [51.2, 56.2],
       stem: 'How does Joey feel when he says “I can’t believe you”?',

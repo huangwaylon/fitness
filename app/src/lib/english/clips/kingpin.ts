@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 0, new 6 (1 restored), ctx 8, tx 11
+// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 0, new 6 (1 restored), ctx 8, tx 11, qa 17
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 7, new 1
 // A2 LATE: a stakeout over weed in the community garden, a nightcap joke and a racial gag; few everyday chunks per minute.
 // “The Drug Kingpin of Pawnee | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Leslie
@@ -53,19 +53,19 @@ export const kingpin: Clip = {
       trap: 'お金やブランドとの縁の自慢と取りやすいが、喜んでいるのはブランドと思われること。',
       use: 'People think it’s designer. It’s not.（ブランド物だと思われるけど、違うんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [35.2, 40.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [35.2, 40.1], keep: true,
       stem: 'How much did Tom pay to put his name on the shirt?',
       ja: 'トムはシャツに名前を入れるのにいくら払った？',
-      choices: ['$20', '$120', '$200'], a: 1,
-      choicesJa: ['20ドル', '120ドル', '200ドル'],
+      choices: ['$20', '$100', '$120', '$200'], a: 2,
+      choicesJa: ['20ドル', '100ドル', '120ドル', '200ドル'],
       cue: '「I spent」のすぐあと。',
       line: 'I spent *120 bucks* to get… monogrammed.',
       said: '「名前を入れるのに120ドルかけた」と言う。',
       mean: 'bucks ＝ dollars のくだけた言い方。120 は one twenty と読むことが多い。',
-      trap: '20 なら「トゥエンティ」だけ、200 は「トゥーハンドレッ」。前に「ワン」があれば120。',
+      trap: '20 なら「トゥエンティ」だけ、100 は「ハンドレッ」で終わり、200 は「トゥーハンドレッ」。「ワン・トゥエンティ」なら120。',
       use: 'I paid twenty bucks for this shirt.（このシャツに20ドル払った）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'black', seg: [39, 48.1],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'black', seg: [40.1, 47.9],
       stem: 'What does Leslie tell Tom to wear instead?',
       ja: 'レスリーはトムに、代わりに何を着るように言う？',
       choices: ['Something all in black', 'Something all in navy', 'Something in camouflage'], a: 0,
@@ -77,7 +77,7 @@ export const kingpin: Clip = {
       trap: '張り込みと聞いて迷彩や紺を連想しやすいが、言っているのは Wear black。',
       use: 'Wear something warm tonight.（今夜は暖かい服を着てね）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bummed', seg: [45.4, 54.3],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bummed', seg: [45.6, 54.62],
       stem: 'What does “Pretty bummed this fits” mean?',
       ja: '「Pretty bummed this fits」の意味は？',
       choices: ['Sad that it fits', 'Happy that it fits', 'Surprised it fits'], a: 0,
@@ -101,7 +101,7 @@ export const kingpin: Clip = {
       trap: 'brown だけ聞くと濃い茶色を選びがち。決め手は前の light（うすい）。',
       use: 'He has light brown hair.（彼は明るい茶色の髪です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'andy', seg: [72.5, 100.35],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'andy', seg: [72.5, 90.3],
       stem: 'Who do they find in the garden?',
       ja: '二人は畑でだれを見つける？',
       choices: ['Their friend Andy', 'A man they don’t know', 'A police officer'], a: 0,
@@ -113,7 +113,7 @@ export const kingpin: Clip = {
       trap: '「kingpin（大ボス）だ」と言うので、知らない犯人と考えがち。名前がはっきり聞こえる。',
       use: 'Hey, is that you?（あれ、もしかしてあなた？）' },
 
-    { id: 'k4', skill: 'detail', level: 'B1', point: 'pit', ctx: true, seg: [90.3, 97.6],
+    { id: 'k4', skill: 'detail', level: 'B1', point: 'pit', ctx: true, seg: [90.3, 98.0],
       stem: 'What does Andy say about living in the pit?',
       ja: '穴での暮らしについて、アンディは何と言う？',
       choices: ['He likes it there', 'He hates it there', 'He is moving out soon'], a: 0,
@@ -125,7 +125,7 @@ export const kingpin: Clip = {
       trap: '穴に住むのはつらそう、と考えがち。決め手は It’s awesome。',
       use: 'I’m staying with a friend for now.（今のところ友だちの家にいます）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', ctx: true, seg: [100.2, 110.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'carrots', ctx: true, seg: [100.2, 109.85],
       stem: 'What does Andy’s reaction to the weed show?',
       ja: 'weed（マリファナ）と聞いたアンディの反応から、何が分かる？',
       choices: ['He didn’t know it was weed', 'He knew who grew it', 'He thinks they’re all lying'], a: 0,
@@ -137,7 +137,7 @@ export const kingpin: Clip = {
       trap: '問い返しは疑いに聞こえるが、何とまちがえたかまで言うのは本気の驚き。',
       use: 'Wait, that’s not parsley?（え、それパセリじゃないの？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'whydont', ctx: true, seg: [111.5, 122.4],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'whydont', ctx: true, seg: [111.5, 122.65],
       stem: 'What does Andy decide to do?',
       ja: 'アンディはどうすることにする？',
       choices: ['Go with them to the van', 'Wait for his friend', 'Go back to the pit'], a: 0,
@@ -149,7 +149,7 @@ export const kingpin: Clip = {
       trap: '石投げの予定を話すので、友だちを待つと考えがち。決め手は最後の let’s do it。',
       use: 'Why don’t you sit with us?（いっしょに座ったら？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'rock', seg: [113.1, 119.4],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'rock', seg: [115.5, 119.4],
       stem: 'Type Andy’s reply: “___ have a rock fight with this crazy guy.” (3 words)', answer: "i'm supposed to",
       ja: '「have a rock fight」の前の3語を書こう。',
       cue: 'さそいへの返事の最初。',
@@ -159,16 +159,16 @@ export const kingpin: Clip = {
       trap: 'supposed to は「サポースタ」とつながり、d と t がひとつになる。to を落とさずに書く。',
       use: 'I’m supposed to meet her at six.（6時に彼女と会うことになってる）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.2, 123.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'late', seg: [115.5, 122.7], keep: true,
       stem: 'How late is the person Andy is waiting for?',
       ja: 'アンディが待っている相手は、どのくらい遅れている？',
-      choices: ['2 minutes', '12 minutes', '20 minutes'], a: 2,
-      choicesJa: ['2分', '12分', '20分'],
+      choices: ['2 minutes', '12 minutes', '20 minutes', '30 minutes'], a: 2,
+      choicesJa: ['2分', '12分', '20分', '30分'],
       cue: '「He’s like」のあと。',
       line: 'He’s like *20 minutes* late.',
       said: '「もう20分くらい遅れてる」と言って、二人について行く。',
       mean: 'like はここで「だいたい」。約束の相手が来ないので、さそいに乗る。',
-      trap: 'twelve は「トゥエルヴ」、two は「トゥー」だけ。「トゥエンティ」なら20。',
+      trap: 'twelve は「トゥエルヴ」、two は「トゥー」だけ、thirty は「サーティ」。「トゥエンティ」なら20。',
       use: 'The bus is like ten minutes late.（バスが10分くらい遅れてる）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'lonely', seg: [122.75, 131.7],
@@ -231,7 +231,7 @@ export const kingpin: Clip = {
       trap: '食べ物を頼むので、いっしょに行くと考えがち。bring me back は「ここで待つ」の合図。',
       use: 'Can you bring me back a coffee?（帰りにコーヒー買ってきてくれる？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'infact', seg: [196.2, 205.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'infact', seg: [196.6, 205.1],
       stem: 'What does “In fact” mean after “a perfect gentleman”?',
       ja: '「a perfect gentleman」のあとの「In fact」はどういう意味？',
       choices: ['Here’s proof of what I said', 'No, I said that wrong', 'Okay, I wasn’t polite'], a: 0,
@@ -255,7 +255,7 @@ export const kingpin: Clip = {
       trap: '断るつもりだったので No を選びたくなるが、最初の返事は Yes。No, no はあとの打ち消し。',
       use: 'Will you come in for coffee?（コーヒーでも飲んでいく？）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'report', reveals: ['cop'], seg: [218.3, 248],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'report', reveals: ['cop', 'does', 'howyou'], seg: [218.3, 248],
       stem: 'Who most likely called the police about Tom?',
       ja: 'トムのことを警察に通報したのは、たぶんだれ？',
       choices: ['The couple near the van', 'The officer himself', 'Tom, after getting locked out'], a: 0,
@@ -286,12 +286,12 @@ export const kingpin: Clip = {
       choicesJa: ['元気だと言う', '道に迷ったと言う', '疲れたと言う'],
       cue: '「tonight, sir?」への返事。',
       line: 'How you doing tonight, sir? / *I’m all right*, officer. *How are you?*',
-      said: '「今夜はどうされました？」に「大丈夫ですよ。そちらは？」と返す。',
+      said: '「今夜の調子はどうですか？」に「大丈夫ですよ。そちらは？」と返す。',
       mean: 'How (are) you doing? ＝ 調子はどう？のあいさつ。I’m all right ＋ How are you? と聞き返すのが定番。',
       trap: '警官に聞かれたので、困っていると答えると考えがち。ここはあいさつで、I’m all right。',
       use: 'I’m all right, thanks. How are you?（元気です。そちらは？）' },
 
-    { id: 'k3', skill: 'pragma', level: 'B2', point: 'noid', ctx: true, seg: [246.75, 253.05],
+    { id: 'k3', skill: 'pragma', level: 'B2', point: 'noid', ctx: true, seg: [246.6, 252.65],
       stem: 'How does Tom answer the officer?',
       ja: 'トムは警官にどう答える？',
       choices: ['He just gives his name', 'He shows his ID at once', 'He steps out of the van'], a: 0,
@@ -363,7 +363,7 @@ export const kingpin: Clip = {
       trap: 'Nice job をほめ言葉と取ると逆。名前を知らなくても back to the mall が手がかり。',
       use: 'Nice job, Sherlock.（お見事、名探偵さん。皮肉で）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'arrest', seg: [277.1, 283.1],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'arrest', seg: [277.25, 282.7],
       stem: 'What does the officer mean by “I’m very close right now”?',
       ja: '警官の「I’m very close right now」の意味は？',
       choices: ['Stop, or I’ll arrest you', 'You are under arrest now', 'I’m almost done with you'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 0, new 3, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 0, new 3, ctx 4, tx 5, qa 16
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 0
 // A2 LATE: sexual and crude talk at its core (a topless centaur, “animal porn”, “who had sex with what”, nude art)
 // “Tom reacts to Jerry's lewd painting | Parks and Recreation” (the official Parks and Recreation channel, Season 3):
@@ -21,7 +21,7 @@ export const jerryPainting: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'myth', seg: [0.8, 12.4],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'myth', seg: [0.8, 9.9],
       stem: 'What does Jerry say his painting shows?', ja: 'ジェリーは、自分の絵に何が描かれていると言う？',
       choices: ['A goddess saving a great deer', 'A goddess killing a great deer', 'A goddess riding a great horse'], a: 1,
       choicesJa: ['女神が大きな鹿を助ける', '女神が大きな鹿を倒す', '女神が大きな馬に乗る'],
@@ -54,7 +54,7 @@ export const jerryPainting: Clip = {
       trap: 'painting から、レスリーも描くと考えがち。決め手は look at（見る）。',
       use: 'You should really come and see this.（ぜひ見に来て）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'face', seg: [20.8, 35.95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'face', seg: [20.6, 35.95],
       stem: 'What do they find in Jerry’s painting?', ja: 'ジェリーの絵に、何が見つかる？',
       choices: ['Leslie’s face on the goddess', 'Tom’s face on the goddess', 'The face of Jerry on the deer'], a: 0,
       choicesJa: ['女神の顔がレスリー', '女神の顔がトム', '鹿の顔がジェリー'],
@@ -76,7 +76,7 @@ export const jerryPainting: Clip = {
       trap: 'powerful women から、尊敬して選んだと考えがち。決め手は painted の前の subconsciously。',
       use: 'I didn’t mean to. It just happened.（わざとじゃないの、つい）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'leave', ctx: true, seg: [47.9, 55.9],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'leave', ctx: true, seg: [48.6, 55.9],
       stem: 'What does Leslie mean by “Leave it up”?', ja: '“Leave it up” で、レスリーは何を言いたい？',
       choices: ['Keep it on the wall', 'Stop saying sorry', 'Let her decide'], a: 0,
       choicesJa: ['壁に掛けたままにして', '謝るのはやめて', '自分に決めさせて'],
@@ -89,7 +89,7 @@ export const jerryPainting: Clip = {
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'power', seg: [53.9, 65.6],
       stem: 'Why does Leslie love the painting?', ja: 'レスリーはなぜその絵が大好き？',
-      choices: ['She looks young and pretty', 'She feels she can do anything', 'Others look up to her'], a: 1,
+      choices: ['She looks young and pretty', 'She feels she can do anything', 'Others respect her'], a: 1,
       choicesJa: ['若くてきれいに見える', '何でもできる気がする', 'みんなに尊敬される'],
       cue: '「think to myself」のあと。',
       line: 'Every time I look at it, I just think to myself, *what can’t that centaur woman do?*',
@@ -109,7 +109,7 @@ export const jerryPainting: Clip = {
       trap: '車の運転を「できること」と取りやすい。Besides は「〜以外は」の例外。',
       use: 'Besides that, it’s perfect.（それ以外は完璧）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'favorite', seg: [70.3, 78.7],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'favorite', seg: [70.3, 78.35],
       stem: 'How does Leslie feel when the baby is Tom?', ja: '赤ちゃんがトムだと分かって、レスリーはどう感じる？',
       choices: ['Even happier with it', 'Sorry for Tom', 'Less happy with it'], a: 0,
       choicesJa: ['もっと気に入った', 'トムがかわいそう', '前ほど気に入らない'],
@@ -120,7 +120,7 @@ export const jerryPainting: Clip = {
       trap: 'easily を「簡単に」と取ると、気持ちが弱く聞こえる。ここは一番だと強めている。',
       use: 'This is easily the best pizza in town.（町で文句なしに一番のピザ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'belly', seg: [76.9, 84.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'belly', seg: [77.0, 82.4],
       stem: 'How does Tom say he looks in the painting?', ja: 'トムは、絵の中の自分がどう見えると言う？',
       choices: ['Chubby and angry', 'Chubby and frightened', 'Skinny and frightened'], a: 1,
       choicesJa: ['太っていて怒っている', '太っていておびえている', 'やせていておびえている'],
@@ -153,7 +153,7 @@ export const jerryPainting: Clip = {
       trap: 'get nowhere（話が進まない）と勘違いしやすい。主語が絵なので「ここから動かない」。',
       use: 'Don’t worry, I’m not going anywhere.（心配しないで、ずっとここにいるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'guy', seg: [95, 100],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'guy', seg: [95.3, 100],
       stem: 'Type the words before “too”. (4 words)', ja: '“too” の前の言葉を書こう。（4語）', answer: 'this guy\'s in it',
       cue: '「little fat baby」の前の文。',
       line: '… *this guy’s in it*, too.',
@@ -195,17 +195,6 @@ export const jerryPainting: Clip = {
       trap: '前の pot belly の文句から、絵が下手だからと思いやすい。理由は killed the Jay-Z vibe。',
       use: 'That totally killed the mood.（それで雰囲気が台なし）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['vibe'], seg: [121.4, 131.3], keep: true,
-      stem: 'How long does Tom say his old image took to build?', ja: '前のイメージを作るのに、どれくらいかかったとトムは言う？',
-      choices: ['A few weeks', 'Months', 'Years', 'His whole life'], a: 2,
-      choicesJa: ['数週間', '何か月も', '何年も', '一生'],
-      cue: '「taken me」の直後。',
-      line: '…the Jay-Z vibe that’s *taken me years* to cultivate',
-      said: '「何年もかけて育ててきたジェイ・Z風の雰囲気」と言う。',
-      mean: 'take 人 years to 〜 ＝ 〜するのに何年もかかる。taken me のあと「イヤーズ」と聞こえる。',
-      trap: '前の for months にまぎれやすい。「マンス」なら months、「ウィークス」なら weeks、「ライフ」なら life。',
-      use: 'It took me years to learn.（覚えるのに何年もかかった）' },
-
     { id: 'h2', skill: 'humor', level: 'C1', point: 'cool', reveals: ['vibe', 'coolof'], seg: [121.4, 131.4], retired: true,
       stem: 'Why does Tom’s final comparison of the two vibes get a laugh?',
       choices: ['He ends by half admitting the baby vibe is fine', 'He ends a huge complaint with a very mild verdict',
@@ -228,6 +217,17 @@ export const jerryPainting: Clip = {
       trap: '名前を出して責めているのはジェリーなので、ジェリーが的に見える。誰の言葉が大げさかで考える。',
       use: 'I’m trying to build my brand here.（自分のキャラ作り中なんだけど）' },
 
+    { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['vibe'], seg: [121.65, 131.3], keep: true,
+      stem: 'How long does Tom say his old image took to build?', ja: '前のイメージを作るのに、どれくらいかかったとトムは言う？',
+      choices: ['A few weeks', 'Months', 'Years', 'His whole life'], a: 2,
+      choicesJa: ['数週間', '何か月も', '何年も', '一生'],
+      cue: '「taken me」の直後。',
+      line: '…the Jay-Z vibe that’s *taken me years* to cultivate',
+      said: '「何年もかけて育ててきたジェイ・Z風の雰囲気」と言う。',
+      mean: 'take 人 years to 〜 ＝ 〜するのに何年もかかる。taken me のあと「イヤーズ」と聞こえる。',
+      trap: '前の for months にまぎれやすい。「マンス」なら months、「ウィークス」なら weeks、「ライフ」なら life。',
+      use: 'It took me years to learn.（覚えるのに何年もかかった）' },
+
     { id: 'x2', skill: 'dict', level: 'C2', point: 'coolof', seg: [127.3, 131.4], retired: true,
       stem: 'Type the end of Tom’s comment: “which is ___.” (6 words)', answer: 'not as cool of a vibe',
       cue: '「which is」のあと、文末まで。',
@@ -237,7 +237,7 @@ export const jerryPainting: Clip = {
       trap: '文法で直して of を落としやすい。cool と a の間に弱い音がもう一つあるか聞く。',
       use: 'It’s not that big of a deal.（そんなに大したことじゃない）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'demand', seg: [139.75, 146.65],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'demand', seg: [139.75, 145.55],
       stem: 'Besides destroying it, what does Marsha want?', ja: '絵をこわすことのほかに、マーシャは何を求める？',
       choices: ['An apology from the office', 'A new painting in its place', 'An apology from Jerry himself'], a: 0,
       choicesJa: ['役所からの謝罪', 'かわりの新しい絵', 'ジェリー本人からの謝罪'],
@@ -259,7 +259,7 @@ export const jerryPainting: Clip = {
       trap: 'hear you を賛成と考えがちだが、決め手は whatever we can（できることは）。何をするかは言っていない。',
       use: 'We hear you, and we’ll look into it.（承知しました、確認します）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'end', reveals: ['hear', 'offensive'], seg: [165.5, 197.05],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'end', reveals: ['offensive'], seg: [170.0, 197.05],
       stem: 'How does the fight over the painting end?', ja: '絵をめぐる言い合いはどう終わる？',
       choices: ['Leslie vows to keep it', 'Marsha gives up', 'Leslie lets it be destroyed'], a: 0,
       choicesJa: ['レスリーが絵を守ると誓う', 'マーシャがあきらめる', 'レスリーが絵をこわさせる'],
@@ -292,7 +292,7 @@ export const jerryPainting: Clip = {
       trap: 'inappropriate で同意、経験談で反対、と片方だけ取りやすい。「自分は平気」と「場所」を両方聞く。',
       use: 'I don’t mind it, just not at work.（いいけど、職場ではね）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'care', seg: [190.15, 197.05],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'care', seg: [190.15, 194.55],
       stem: 'What does “take care of the situation” mean here?', ja: 'ここでの “take care of the situation” はどういう意味？',
       choices: ['Deal with the problem', 'Look after the painting', 'Be careful from now on'], a: 0,
       choicesJa: ['問題を片づける', '絵を大切に守る', 'これから気をつける'],

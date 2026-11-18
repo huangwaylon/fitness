@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 10, retire 4, new 12, ctx 11, tx 11
+// R4 REVIEW 2026-11-18: keep 1, rewrite 10, retire 4, new 12, ctx 11, tx 11, qa 5
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 0 · sweep: pitchwomen twins retired (f5 pr3)
 // A2 LATE: fast (175 wpm); the crude lines (the Gina mishearing, killing women, the stool and the torso) are EXCLUDEd
 // “Selling to Women - The Office US” (the official The Office channel, BEST OF SEASON 7 - The Office US): David Wallace
@@ -57,7 +57,7 @@ export const whiteWhale: Clip = {
       trap: '速くて数字を聞きのがしやすい。短い「テン」なら10、「ファイヴ」なら5、「トゥエンティ」なら20。',
       use: 'I’ve lived here for the last five years.（この5年ここに住んでいます）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['tenyears'], seg: [26.7, 60],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['tenyears', 'threetimes'], seg: [26.7, 59.5],
       stem: 'What is David’s big news?',
       ja: 'デイビッドの大ニュースは何？',
       choices: ['A big client wants a new seller', 'Dwight is the new manager', 'Jim is leaving the company'], a: 0,
@@ -197,14 +197,14 @@ export const whiteWhale: Clip = {
       trap: 'wrong を罪悪感と取りやすい。that が何を指すかを、すぐ前の文で確かめる。',
       use: 'I’m early for once. That feels weird.（めずらしく早く着いた。変な感じ）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'roleplay', seg: [147.6, 168.5],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'roleplay', seg: [141.4, 157.05],
       stem: 'What do the coworkers have Dwight do?',
       ja: '同僚たちはドワイトに何をさせる？',
       choices: ['Practice selling to a woman', 'Call the new buyer now', 'Teach them how to sell'], a: 0,
       choicesJa: ['女性への売りこみを練習する', '新しい客に今すぐ電話する', 'みんなに売り方を教える'],
       cue: '「So show us」で始まる頼み。',
       line: 'So *show us how you’d normally sell to a female client*. — Okay. With pleasure.',
-      said: '「いつも女性のお客さんにどう売るか見せて」と言われ、同僚を客にして練習が始まる。',
+      said: '「いつも女性のお客さんにどう売るか見せて」と言われ、ドワイトが「喜んで」と引き受ける。',
       mean: 'show us how 〜 ＝ どう〜するか見せて。female client ＝ 女性のお客さん。本番の前の練習（ロールプレイ）。',
       trap: 'show us（見せて）から、みんなに教える役と考えがち。同僚が客になって、ドワイトが練習する。',
       use: 'Can you show me how you do it?（どうやるか見せてくれる？）' },
@@ -341,8 +341,8 @@ export const whiteWhale: Clip = {
     { id: 'pr3', skill: 'phrase', level: 'B1', point: 'kindof', ctx: true, seg: [250.3, 256.35],
       stem: 'Asked “Got it?”, what does Dwight answer?',
       ja: '「Got it?」と聞かれて、ドワイトはどう答える？',
-      choices: ['A little, not fully', 'Yes, completely', 'No, not at all'], a: 0,
-      choicesJa: ['少しは。全部じゃない', 'うん、完全に', 'いや、全然'],
+      choices: ['Only a little', 'Yes, all of it', 'No, nothing at all'], a: 0,
+      choicesJa: ['少しだけ', 'うん、全部', 'いや、まったく'],
       cue: '「Got it?」への短い返事。',
       line: 'A: …shows that I hear you. *Got it?* / Dwight: *Kind of.*',
       said: '「分かった？」と聞かれて、「まあ、なんとなく」と答える。',
@@ -409,7 +409,7 @@ export const whiteWhale: Clip = {
       trap: 'ほめられて「いえいえ」と打ち消すと考えがち。英語では Thank you と受け取る。',
       use: 'Thank you. I’m so proud of her.（ありがとう。自慢の娘です）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'lostcause', seg: [334.05, 337.8],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'lostcause', seg: [334.05, 337.7],
       stem: 'What does “a lost cause” mean here?',
       ja: 'ここで「a lost cause」はどういう意味？',
       choices: ['It can’t be fixed', 'They lost the reason', 'It will get better'], a: 0,
