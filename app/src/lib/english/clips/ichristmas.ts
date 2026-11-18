@@ -1,11 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 2, new 6, ctx 6, tx 20
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 8, new 1
 // “Top 5 Weirdest Moments from iChristmas | iCarly” (NickRewind, official YouTube channel): a narrator walks through
-// the episode where Carly wishes Spencer were normal: an angel grants it, the world changes (no iCarly, Sam in juvie,
-// Spencer engaged), and Carly wishes everything back.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 0–9 s (the ostrich gag), 61–73 s (mostly
-// visual), 151–157 s and 263–269 s (Nevel, Rona and the ibuprofen need backstory or are insults), 189–195 s ("no
-// surprise" Sam ended up in juvie needs backstory), 221 s ("What cat?" in both sources, unclear), 231–236 s
-// (slapstick), 256–260 s (captions "just a sister", whisper "just his sister").
+// the episode where Carly wishes Spencer were normal: an angel (Mitch, 29 s) grants it, the world changes (no iCarly,
+// Sam in juvie, Spencer engaged), and Carly wishes everything back.
+// Segments from the captions, words from whisper (2026-11-16). Untested: 0–9 s (the ostrich gag), 61–67 s (mostly
+// visual), 147–157 s and 263–269 s (Nevel, Rona and the ibuprofen need backstory or are insults), 189–195 s ("no
+// surprise" Sam ended up in juvie needs backstory), 231–236 s (slapstick), 256–260 s (captions "just a sister",
+// whisper "just his sister"). Who tells Carly to "forget about Sam" isn't named, so i6 names no one.
 import type { Clip } from '../types.ts';
 
 export const iChristmas: Clip = {
@@ -23,7 +24,7 @@ export const iChristmas: Clip = {
       line: 'Carly *wishes Spencer was normal*, and everything changes.',
       said: 'ナレーターが「カーリーがスペンサーが普通だったらと願い、すべてが変わる」と言う。',
       mean: 'wish 〜 was … ＝ 〜が…だったらいいのに。今はそうではない、という願い。',
-      trap: 'everything changes から、自分の生活の話と思いやすい。wishes のあとを聞く。',
+      trap: 'everything changes から、自分の生活の話と考えがち。wishes のあとを聞く。',
       use: 'I wish it was Friday.（金曜だったらいいのに）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'fire', seg: [18.7, 30.7],
@@ -47,7 +48,7 @@ export const iChristmas: Clip = {
       line: 'You *better get out of here or I’ll call the cops*.',
       said: '知らない男に「出て行ったほうが身のため。でないと警察を呼ぶ」と言う。',
       mean: 'You better 〜 ＝ 〜したほうがいい（しないと困るよ）。A or B ＝ A しないと B。',
-      trap: 'better（よりよい）から親切な助言と思いやすい。or 以下で警告と分かる。',
+      trap: 'better（よりよい）から親切な助言に聞こえるが、or 以下で警告と分かる。',
       use: 'You better hurry, or you’ll miss the bus.（急いだほうがいい、バスに乗り遅れるよ）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'rough', seg: [42.8, 50.6],
@@ -58,8 +59,8 @@ export const iChristmas: Clip = {
       cue: '「he looks pretty」のあと。',
       line: 'he looks pretty *rough around the edges*.',
       said: '「天使とは信じにくい。見た目がかなり雑だから」と言う。',
-      mean: 'rough around the edges ＝ 洗練されていない、ちょっと雑。天使らしくない見た目。',
-      trap: 'rough（荒い）から、乱暴で怖いと思いやすい。ここは見た目がきちんとしていないこと。',
+      mean: '文字どおりは「ふちのあたりが粗い」。→ 仕上げが雑＝洗練されていない。天使らしくない見た目。',
+      trap: 'rough（荒い）から、乱暴で怖いと考えがち。ここは見た目がきちんとしていないこと。',
       use: 'He’s a bit rough around the edges, but kind.（ちょっと雑だけど、優しい人だよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'trick', seg: [52.3, 60.1],
@@ -71,8 +72,20 @@ export const iChristmas: Clip = {
       line: 'King of clubs. — *So, anyone can do card tricks?*',
       said: 'カードを当てられても「で？ カードの手品なんてだれでもできるでしょ」と返す。',
       mean: 'So? ＝ だから何？ anyone can 〜 ＝ だれでも〜できる。天使の証拠にならない、と言っている。',
-      trap: 'カードを当てたので驚いたと思いやすい。So で始まる返事は「それがどうしたの」。',
+      trap: 'カードを当てたので、驚いたと勘違いしやすい。So で始まる返事は「それがどうしたの」。',
       use: 'So? Anyone can do that.（で？ そんなのだれでもできるよ）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'born', reveals: ['wish'], ctx: true, seg: [73.2, 80.5],
+      stem: 'What does Mitch say about Spencer?',
+      ja: 'ミッチはスペンサーについて何と言う？',
+      choices: ['He was born normal', 'He is an angel too', 'He is gone for good'], a: 0,
+      choicesJa: ['普通に生まれた', '彼も天使だ', 'もう戻らない'],
+      cue: '「What just happened?」への答え',
+      line: 'Carly: What just happened? / Mitch: He was *born normal*.',
+      said: '「今、何が起きたの？」に「彼は普通に生まれたんだ」と答える。',
+      mean: 'be born 〜 ＝ 〜に生まれる。願いで、スペンサーは最初から普通の人だったことになった。',
+      trap: '直前に He’s really an angel と聞こえるので、天使の話と勘違いしやすい。決め手は born のあと。',
+      use: 'I was born in Osaka.（大阪生まれです）' },
 
     { id: 's1', skill: 'sound', level: 'C1', point: 'screwy', seg: [74.4, 81.25], retired: true,
       stem: 'Fill the gap: “You’re ___, that’s what you are.”',
@@ -93,8 +106,20 @@ export const iChristmas: Clip = {
       line: 'The *stress down at the office* has really been upsetting my stomach.',
       said: '胃薬をもらって、「会社のストレスで胃の調子が悪くて」と言う。',
       mean: 'stress at the office ＝ 会社のストレス。普通のスペンサーは会社勤めになっている。',
-      trap: 'Christmas の話なので、ごちそうのせいと思いやすい。stress のあとを聞く。',
+      trap: 'Christmas の話なので、ごちそうのせいと考えがち。stress のあとを聞く。',
       use: 'Work has been really stressful lately.（最近、仕事がすごくストレス）' },
+
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'scary', ctx: true, seg: [98.2, 110.8],
+      stem: 'What do the adults think made Carly scream?',
+      ja: '大人たちは、カーリーが叫んだのは何のせいだと思っている？',
+      choices: ['A scary book she read', 'A weird guy in the house', 'A bad dream last night'], a: 0,
+      choicesJa: ['読んだ怖い本', '家にいる変な男', 'ゆうべの悪い夢'],
+      cue: '「What weird guy?」のあとの質問',
+      line: 'Why did you scream? / Carly: This weird guy is— / What weird guy? *Have you been reading a scary novel?*',
+      said: '「なんで叫んだの？」「変な男が…」「変な男って？ 怖い小説でも読んでたの？」と、話が通じない。',
+      mean: 'Have you been 〜ing? ＝ （さっきまで）〜してたの？ 変な男の話は信じず、本のせいだと思っている。',
+      trap: 'weird guy と言うのはカーリー本人。大人の考えは scary novel。',
+      use: 'Have you been crying?（泣いてたの？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'novel', reveals: ['baker'], seg: [108.7, 121.3], retired: true,
       stem: 'Why is the talk about the novel funny?',
@@ -120,18 +145,19 @@ export const iChristmas: Clip = {
       trap: '「セヴンティーン」なら 1700s、「シックスティーン」なら 1600s、「エイティーン」なら 1800s、「ナインティーン」なら 1900s。',
       use: 'This house is from the 1900s.（この家は1900年代のもの）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'couple', reveals: ['married'], seg: [127.95, 136.6], retired: true,
-      stem: 'When the narrator first names Spencer and Mrs. Benson, what does he imply?',
-      choices: ['He and Mrs. Benson are dating each other', 'He and Mrs. Benson can’t stand each other',
-                'He and Mrs. Benson are the only odd ones'], a: 0,
-      cue: '「aren’t the only」のあとと、続く Freddie の話。',
-      line: 'Spencer and Mrs. Benson *aren’t the only odd couple*… Freddie also has a *new girl in his life*.',
-      said: '「妙なカップルは二人だけじゃない。フレディにも新しい彼女が」と言う。',
-      mean: 'aren’t the only 〜 ＝ ほかにもいる。二人もカップルという前提。',
-      trap: 'aren’t の n’t が弱いと「唯一の」に聞こえる。also が続けば「ほかにも」。',
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'couple', reveals: ['married'], seg: [128.1, 136.4],
+      stem: 'What does the narrator say about Spencer and Mrs. Benson?',
+      ja: 'ナレーターは、スペンサーとベンソンさんについて何と言う？',
+      choices: ['They are a couple now', 'They don’t like each other', 'They are the only odd ones'], a: 0,
+      choicesJa: ['今はカップルだ', 'おたがいに嫌い合っている', '変なのは二人だけ'],
+      cue: '「Spencer and Mrs. Benson」のあと',
+      line: 'Spencer and Mrs. Benson *aren’t the only odd couple*… Freddie *also* has a new girl in his life.',
+      said: '「妙なカップルは、スペンサーとベンソンさんだけじゃない。フレディにも新しい彼女が」と言う。',
+      mean: 'not the only 〜 ＝ 〜は…だけじゃない。odd couple ＝ 妙な組み合わせのカップル。二人もカップルという前提。',
+      trap: 'aren’t の n’t は弱く、「唯一の」に聞こえやすい。also が続けば「ほかにも」。',
       use: 'You’re not the only one who’s tired.（疲れてるのは君だけじゃない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'rona', seg: [140.2, 152.2],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'rona', seg: [141.5, 152.2],
       stem: 'What reason does Carly give that Rona can’t be Freddie’s girlfriend?',
       ja: 'ロナがフレディの彼女のはずがない理由を、カーリーは何と言う？',
       choices: ['Freddie hates her', 'Freddie never met her', 'Freddie has a girlfriend'], a: 0,
@@ -154,7 +180,19 @@ export const iChristmas: Clip = {
       trap: 'not so special を「大事でない友だち」と取りやすい。someone は恋人。',
       use: 'Are you bringing a special someone?（誰か大切な人を連れてくる？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'sam', seg: [173.1, 184.6],
+    { id: 'i6', skill: 'infer', level: 'B2', point: 'lie', ctx: true, seg: [163, 175.8],
+      stem: 'Does Carly believe that Sam barely knows her?',
+      ja: 'サムが自分をほとんど知らない、という話をカーリーは信じる？',
+      choices: ['No, she calls it a lie', 'Yes, she agrees sadly', 'She isn’t sure at first'], a: 0,
+      choicesJa: ['いいえ、うそだと言う', 'はい、悲しそうに認める', '最初は分からない'],
+      cue: '「She barely knows you」への返事',
+      line: 'I think you better *forget about Sam*. / Carly: Why? / She *barely knows you*. / Carly: *That’s a lie.*',
+      said: '「サムのことは忘れたほうがいい」「なんで？」「彼女は君をほとんど知らない」に、「うそ！」と返す。',
+      mean: 'barely ＝ ほとんど〜ない。That’s a lie ＝ うそだ。強く打ち消す言い方で、目上には強すぎる。',
+      trap: 'barely knows を「よく知っている」と勘違いしやすい。barely は「ほとんど〜ない」。',
+      use: 'No way. That can’t be true.（まさか。そんなはずない）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'sam', seg: [173.1, 184.6], retired: true,
       stem: 'Why did Carly and Sam never become friends?',
       ja: 'カーリーとサムはなぜ友だちにならなかった？',
       choices: ['Spencer kept them apart', 'Sam moved far away from her', 'Carly didn’t like Sam'], a: 0,
@@ -166,7 +204,7 @@ export const iChristmas: Clip = {
       trap: 'a bad kid から、カーリーが嫌ったと思いやすい。そう思ったのは Spencer。',
       use: 'So we never met.（だから会うことはなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'hangout', reveals: ['sam'], seg: [175.4, 182.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hangout', seg: [175.4, 182.1],
       stem: 'Type: “He never let you ___ her when you were little.” (3 words)', answer: 'hang out with',
       ja: '書こう：「He never let you ___ her when you were little.」（3語）',
       cue: '「never let you」のあと。',
@@ -176,19 +214,19 @@ export const iChristmas: Clip = {
       trap: 'hang と out がつながり、out の t も弱い。with まで入れて3語。',
       use: 'Do you want to hang out this weekend?（今週末遊ばない？）' },
 
-    { id: 'i5', skill: 'infer', level: 'C1', point: 'fault', reveals: ['wish'], seg: [191.5, 199.5],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'fault', reveals: ['wish'], ctx: true, seg: [191.5, 199.5],
       stem: 'What does Sam think “It’s my fault” means?',
       ja: 'サムは「It’s my fault」をどういう意味だと思う？',
       choices: ['Carly called the cops on her', 'Carly is sorry she didn’t visit', 'Carly got her into crime'], a: 0,
       choicesJa: ['カーリーが警察に通報した', '面会に来なかったことを謝っている', 'カーリーが悪いことに誘った'],
-      cue: 'サムの返事の質問。',
-      line: 'It’s my fault you’re in here. — *You’re the one who called the cops?*',
-      said: '「ここにいるのは私のせい」に、サムは「通報したのはあんた？」と返す。',
+      cue: 'サムの返事の質問',
+      line: 'Carly: It’s my fault you’re in here. / Sam: *You’re the one who called the cops?*',
+      said: '「ここにいるのは私のせい」に、サムは「通報したの、あんた？」と返す。',
       mean: 'It’s my fault ＝ 私のせい。本当は願いのことだが、サムは通報と受け取った。',
-      trap: 'fault（せい）から、悪いことに誘ったと思いやすい。サムの質問が受け取り方を示す。',
+      trap: 'fault（せい）から、悪いことに誘ったと考えがち。サムの質問が受け取り方を示す。',
       use: 'Sorry, it’s my fault.（ごめん、私のせいだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'swear', reveals: ['fault'], seg: [195.2, 204.4],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'swear', reveals: ['fault'], seg: [195.2, 204.4], retired: true,
       stem: 'How does Sam feel when she says “I swear when I get out of here”?',
       ja: '「I swear when I get out of here」と言うとき、サムはどんな気持ち？',
       choices: ['Angry, about to threaten', 'Happy, she’s about to escape', 'Sad, about to cry'], a: 0,
@@ -200,6 +238,18 @@ export const iChristmas: Clip = {
       trap: 'get out of here（ここを出る）から、逃げる話と思いやすい。I swear は怒りの前置き。',
       use: 'I swear, I didn’t do it.（誓って、私はやってない）' },
 
+    { id: 'p2', skill: 'detail', level: 'B1', point: 'bestfr', ctx: true, seg: [207.1, 213.5],
+      stem: 'How does Carly answer “I barely know you”?',
+      ja: '「I barely know you」に、カーリーはどう答える？',
+      choices: ['They were best friends', 'They met just today', 'They go to the same school'], a: 0,
+      choicesJa: ['親友だった', '今日会ったばかり', '同じ学校に通っている'],
+      cue: '「barely know you」への返事',
+      line: 'Sam: Dude, I *barely know you*. / Carly: … We were *best friends* till I made that stupid wish.',
+      said: '「ほとんど知らないんだけど」に「ばかな願いをするまで、親友だったの」と返す。',
+      mean: 'till ＝ until（〜まで）。best friends ＝ 親友。願いで世界が変わり、この世界のサムはカーリーを知らない。',
+      trap: 'barely（ほとんど〜ない）から、今日会ったばかりと考えがち。決め手は best friends till。',
+      use: 'We were best friends in high school.（高校のとき親友だった）' },
+
     { id: 'c1', skill: 'dict', level: 'C2', point: 'barely', seg: [208.35, 213.5], retired: true,
       stem: 'Type Carly’s reply to “I barely know you”: “___.” (5 words)', answer: 'you know me a lot',
       cue: '「barely know you」のすぐあと。文法より、聞こえた音を。',
@@ -209,7 +259,7 @@ export const iChristmas: Clip = {
       trap: '習った well に直したくなる。正しい文でなく、言われた音を書く。',
       use: 'You know me better than that.（私がそんなことしないって知ってるでしょ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'married', seg: [221.3, 228.1],
+    { id: 'd5', skill: 'gist', level: 'B1', point: 'married', seg: [213.6, 229],
       stem: 'What surprising news comes out at the party?',
       ja: 'パーティーでどんな驚きの知らせがある？',
       choices: ['Spencer is getting married', 'Spencer is moving away', 'Spencer is having a baby'], a: 0,
@@ -229,9 +279,21 @@ export const iChristmas: Clip = {
       cue: '「that was the final」のあと。',
       line: 'that was *the final straw* for Carly, and she wished that everything would go back…',
       said: '「それがカーリーにとって最後の一押しで、元に戻ってと願った」と言う。',
-      mean: 'the final straw ＝ もう我慢できなくなる最後の一つ。もとは「最後のわら一本」。',
+      mean: '文字どおりは「最後のわら一本」。重い荷にわら1本でつぶれる、の話から→ 我慢の限界を超える最後の一つ。',
       trap: 'straw（わら、ストロー）から意味を想像しにくい。決まり文句でひとまとまり。',
       use: 'That was the final straw. I quit.（もう我慢の限界。辞める）' },
+
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'halibut', ctx: true, seg: [238.2, 246.7],
+      stem: 'What is Spencer making for dinner?',
+      ja: 'スペンサーは夕食に何を作る？',
+      choices: ['Steamed fish', 'Spaghetti tacos', 'Fish tacos'], a: 0,
+      choicesJa: ['蒸した魚', 'スパゲッティ・タコス', '魚のタコス'],
+      cue: '「Make some spaghetti tacos!」への返事',
+      line: 'Carly: Make some *spaghetti tacos*! / Spencer: What? We’re having *steamed halibut* for dinner.',
+      said: '「スパゲッティ・タコスを作って！」に、普通のスペンサーは「え？ 夕食は白身魚の蒸し物だよ」と答える。',
+      mean: 'We’re having 〜 for dinner ＝ 夕食は〜だよ。halibut ＝ オヒョウ（大きな白身魚）。',
+      trap: 'spaghetti tacos を言うのはカーリー。スペンサーの答えは What? のあと。',
+      use: 'We’re having curry for dinner.（夕食はカレーだよ）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'church', seg: [243.9, 254.4], retired: true,
       stem: 'Why is the reply about singing funny?',
@@ -256,24 +318,12 @@ export const iChristmas: Clip = {
       trap: 'gonna は「ガナ」、gotta は「ガラ」。最初が「ワ」なら wanna。',
       use: 'I don’t wanna go to bed yet.（まだ寝たくない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'back', reveals: ['abnormal'], seg: [270.3, 304.4],
-      stem: 'Back in the old world, how does Carly feel about the burned tree?',
-      ja: '元の世界に戻って、カーリーは焼けたツリーをどう思っている？',
-      choices: ['She loves it now', 'She still hates it', 'She wants it gone'], a: 0,
-      choicesJa: ['今は大好き', 'まだ大嫌い', '捨ててほしい'],
-      cue: 'ツリーを捨てようと言われたあと。',
-      line: 'No one touches this tree! — I thought you hated it. — I do not! *It’s my favorite tree ever!*',
-      said: '元の世界に戻り、ツリーを捨てようとする声に、カーリーが「だれも触らないで！最高のツリー！」と止める。',
-      mean: 'favorite tree ever ＝ 一番好きなツリー。変わり者の兄の象徴が、今は大事。',
-      trap: 'I thought you hated it（嫌いだと思ってた）と言われるが、すぐ I do not! と打ち消す。',
-      use: 'This is my favorite mug ever.（今までで一番好きなマグなの）' },
-
     { id: 'h3', skill: 'humor', level: 'B2', point: 'abnormal', seg: [273.9, 283.4],
-      stem: 'Why is “Or… abnormal?” funny?',
-      ja: '「Or… abnormal?」はなぜおかしい？',
+      stem: 'What does the narrator mean by “Or… abnormal?”',
+      ja: '「Or… abnormal?」でナレーターが言いたいことは？',
       choices: ['Their “normal” was always odd', 'The wish isn’t over yet, sadly', 'Now Carly is the odd one'], a: 0,
       choicesJa: ['もともとの「普通」が変だった', 'あいにく願いはまだ終わっていない', '今度はカーリーが変になった'],
-      cue: '「Or」のあと。',
+      cue: '「Or」のあと',
       line: 'everything returned to normal. *Or… abnormal?*',
       said: '「すべて普通に戻った。いや、普通じゃない状態に、かな？」と言い直す。',
       mean: 'abnormal ＝ 普通じゃない。ab は「〜から外れた」。変なスペンサーに戻ったこと。',
@@ -291,6 +341,18 @@ export const iChristmas: Clip = {
       trap: '手伝いの申し出にはお礼、という流れを予想しやすい。ここは話が元に戻った直後。',
       use: 'Don’t touch that! It stays.（触らないで！それは残すの）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'back', reveals: ['abnormal'], seg: [286.8, 302],
+      stem: 'Back in the old world, how does Carly feel about the burned tree?',
+      ja: '元の世界に戻って、カーリーは焼けたツリーをどう思っている？',
+      choices: ['She loves it now', 'She still hates it', 'She wants it gone'], a: 0,
+      choicesJa: ['今は大好き', 'まだ大嫌い', '捨ててほしい'],
+      cue: 'ツリーを捨てようと言われたあと。',
+      line: 'No one touches this tree! — I thought you hated it. — I do not! *It’s my favorite tree ever!*',
+      said: '元の世界に戻り、ツリーを捨てようとする声に、カーリーが「だれも触らないで！最高のツリー！」と止める。',
+      mean: 'favorite tree ever ＝ 一番好きなツリー。変わり者の兄の象徴が、今は大事。',
+      trap: 'I thought you hated it（嫌いだと思ってた）と言われるが、すぐ I do not! と打ち消す。',
+      use: 'This is my favorite mug ever.（今までで一番好きなマグなの）' },
+
     { id: 'c2', skill: 'infer', level: 'C2', point: 'tree', reveals: ['fire'], seg: [288.45, 301.4], retired: true,
       stem: 'Given how the episode began, what does “my favorite tree ever” show?',
       choices: ['She now loves the oddness she wished away', 'She now forgives the tree for starting the fire',
@@ -301,5 +363,6 @@ export const iChristmas: Clip = {
       mean: '願い事のきっかけの変わったツリーが、今は一番。兄の変なところごと好きになった。',
       trap: '火事の原因なので「許した」と取りやすい。hated から favorite は、許すより強い。兄への気持ち。',
       use: 'I hated it once. Now I love it.（前は嫌いだったけど、今は大好き）' },
+
   ]
 };
