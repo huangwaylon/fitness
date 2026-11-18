@@ -16,8 +16,12 @@ import jaGym from './gym.ja.json';
 import jaIts from './its.ja.json';
 import jaKalori from './kalori.ja.json';
 import jaBots from './bots.ja.json';
+import { jaStrings as jaEnglishTable } from '#lib/english/i18n.ts';
 
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+// English Study's own table (lib/english/i18n.ts): a sheet's copy, keyed english.* here.
+const jaEnglish = Object.fromEntries(Object.entries(jaEnglishTable()).map(([k, v]) => [`english.${k}`, v]));
+
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaEnglish };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */

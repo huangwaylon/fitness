@@ -39,7 +39,7 @@
       aria-label={s('seek')} aria-valuetext={`${clock(player?.time ?? 0)} / ${clock(dur)}`} data-yt-scrub oninput={(e) => seek(+e.currentTarget.value)} />
     <span class="time" data-yt-clock>{clock(player?.time ?? 0)}{#if dur}{` / ${clock(dur)}`}{/if}</span>
     <button type="button" class="chip big" data-sfx="tick" disabled={!ready} aria-pressed={cc !== 'off'} aria-label={s('ccNext', { now: s(`cc.${cc}`), next: s(`cc.${NEXT[cc]}`) })} data-yt-cc={cc}
-      onclick={() => oncc(NEXT[cc])}>{s('captions')} {s(`cc.${cc}`)}</button>
+      onclick={() => oncc(NEXT[cc])}>{s('ccNow', { now: s(`cc.${cc}`) })}</button>
   </div>
   {#if !compact}
     <div class="row">

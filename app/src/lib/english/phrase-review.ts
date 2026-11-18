@@ -1,6 +1,6 @@
 // フレーズの復習 (docs/english.md "Phrase review"): home's short look back at 使えるフレーズ met before, never scored.
 // The phrases are the `use` of the questions in my finished plays (the `listen` rows with `f`, mine whole) and the ones
-// フレーズ's ☆ saved; each comes back 1, 3, 7, 14, then every 30 days after it was last met, saved or shown. 覚えた moves it a step on, もう一回 back to the
+// フレーズ's ☆ saved; each comes back 1, 3, 7, 14, then every 30 days after it was last met, saved or shown. 覚えた moves it a step on, もう一度 back to the
 // first (tomorrow); at most PER_DAY a day, 今日はスキップ ends today's. Per player, on this phone; pure but for the store.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
@@ -60,7 +60,7 @@ export function dueOf(met: ReadonlyMap<Key, LocalDate>, mine: Mine, today: Local
 /** How many more phrases today. */
 export const leftToday = (mine: Mine, today: LocalDate): number => PER_DAY - (mine.day?.[0] === today ? mine.day[1] : 0);
 
-/** `mine` with `k` shown today: 覚えた a step on (`kept`), もう一回 back to the first. */
+/** `mine` with `k` shown today: 覚えた a step on (`kept`), もう一度 back to the first. */
 export function rated(mine: Mine, k: Key, today: LocalDate, kept: boolean): Mine {
   const step = kept ? Math.min((mine.s[k]?.[1] ?? 0) + 1, STEPS.length - 1) : 0;
   const s: Mine['s'] = { ...mine.s, [k]: [today, step] };

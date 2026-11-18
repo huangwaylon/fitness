@@ -70,7 +70,7 @@ const S = {
   'colNote.travel': { ja: '移動、ホテル、道', en: 'Getting around, hotels, directions' },
   done: { ja: '完了', en: 'Done' },
   'band.slow': { ja: 'ゆっくり', en: 'Slow' },
-  'band.mid': { ja: 'ふつう', en: 'Normal' },
+  'band.mid': { ja: '普通', en: 'Normal' },
   'band.fast': { ja: '速い', en: 'Fast' },
   dur: { ja: '{m}分{s}秒', en: '{m}:{ss}' },
   durMin: { ja: '{m}分', en: '{m} min' },
@@ -81,12 +81,12 @@ const S = {
   weekMet: { ja: '今週の3日、達成', en: '3 days this week' },
   weekNew: { ja: '新しい週です', en: 'A new week' },
   run: { ja: '3日の週が {n}週つづいています', en: '{n} weeks of 3 days in a row' },
-  runEver: { ja: '3日の週 これまで {n}回', en: '3-day weeks so far: {n}' },
+  runEver: { ja: '3日の週は、これまで{n}回', en: '3-day weeks so far: {n}' },
   clips: { ja: 'これまで {n}本', en: '{n} clips so far' },
-  minutes: { ja: '今週 約{n}分', en: 'About {n} min this week' },
+  minutes: { ja: '今週は約{n}分', en: 'About {n} min this week' },
   back: { ja: 'おかえりなさい。今日の1本からどうぞ', en: "Welcome back. Start with today's clip" },
   both: { ja: '今週はふたりとも達成', en: 'You both made 3 days this week' },
-  partnerDone: { ja: '{name}：今日の動画 完了', en: "{name}: today's clip done" },
+  partnerDone: { ja: '{name}：今日の動画は完了', en: "{name}: today's clip done" },
   partnerWeek: { ja: '{name}の今週', en: "{name}'s week" },
   // the lesson
   watchHead: { ja: 'まず最後まで見てみましょう', en: 'Watch it all the way through first' },
@@ -111,7 +111,7 @@ const S = {
   first: { ja: '◎ 聞き取れました', en: '◎ You heard it' },
   second: { ja: '○ 聞き取れました', en: '○ You heard it' },
   shown: { ja: '答えはこれ', en: "Here's the answer" },
-  heardWords: { ja: '{hit}/{of} 語 聞き取れました', en: '{hit}/{of} words heard' },
+  heardWords: { ja: '{hit}/{of}語を聞き取れました', en: '{hit}/{of} words heard' },
   said: { ja: '言っていること', en: 'What is said' },
   mean: { ja: '意味', en: 'Meaning' },
   trap: { ja: '迷いやすい点', en: 'Easy to mix up' },
@@ -131,7 +131,7 @@ const S = {
   // セリフ (Transcript)
   transcript: { ja: 'セリフ', en: 'Transcript' },
   transcriptNote: { ja: 'この動画のセリフを全部、時間の順に。タップするとその行から再生します。', en: 'Every line of the clip, in time order. Tap one to play from there.' },
-  seg: { ja: '{from}–{to}秒', en: '{from}–{to} s' },
+  seg: { ja: '{from}〜{to}秒', en: '{from}–{to} s' },
   credit: { ja: '動画：{credit}（YouTubeの埋め込みで再生）。質問と解説は私たちが作ったものです。', en: 'Video: {credit}, played by YouTube’s embed. The questions and notes are ours.' },
   // a question's card label, by its skill (types.ts Skill)
   'skill.gist': { ja: '大意', en: 'Gist' },
@@ -153,7 +153,8 @@ const S = {
   back5: { ja: '−5秒', en: '−5 s' },
   seek: { ja: '再生位置', en: 'Position' },
   captions: { ja: '字幕', en: 'Captions' },
-  ccNext: { ja: '字幕 {now}（タップで{next}）', en: 'Captions {now} (tap for {next})' },
+  ccNow: { ja: '字幕：{now}', en: 'Captions {now}' },
+  ccNext: { ja: '字幕：{now}（タップで{next}）', en: 'Captions {now} (tap for {next})' },
   'cc.off': { ja: 'オフ', en: 'off' },
   'cc.en': { ja: '英語', en: 'English' },
   'cc.ja': { ja: '日本語', en: 'Japanese' },
@@ -218,7 +219,7 @@ const S = {
   'kind.other': { ja: 'その他', en: 'Other' },
   flags: { ja: '報告した内容', en: 'Your reports' },
   flagsNone: { ja: 'まだありません', en: 'None yet' },
-  flagsOpen: { ja: '{n}件 確認待ち', en: '{n} waiting' },
+  flagsOpen: { ja: '{n}件が確認待ち', en: '{n} waiting' },
   flagOpen: { ja: '確認待ち', en: 'Waiting' },
   flagFixed: { ja: '確認済み：直しました', en: 'Checked: fixed' },
   flagKept: { ja: '確認済み：このままです', en: 'Checked: kept as is' },
@@ -227,6 +228,9 @@ const S = {
 } satisfies Record<string, { ja: string; en: string }>;
 
 export type StringKey = keyof typeof S;
+
+/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
+export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
 
 /** The string in the reader's locale, `{name}` filled in. */
 export function s(key: StringKey, params: Record<string, string | number> = {}): string {

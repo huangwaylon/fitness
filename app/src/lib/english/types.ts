@@ -2,7 +2,7 @@
 // with our questions over its segments and our Japanese notes. Its audio is never ours to ship; its transcript is
 // (the user, 2026-11-16: docs/english.md "Transcripts"). Pure types.
 
-/** How fast the clip's speech runs against the rest of the library: ゆっくり, ふつう, 速い = the slowest, middle and
+/** How fast the clip's speech runs against the rest of the library: ゆっくり, 普通, 速い = the slowest, middle and
  *  fastest third of all clips by `wpm` (clips/index.ts bandsOf; scripts/english-wpm.ts writes them). */
 export type Band = 'slow' | 'mid' | 'fast';
 

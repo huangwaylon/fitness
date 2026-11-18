@@ -32,7 +32,7 @@ describe('dueOf', () => {
       expect(dueOf(met, mine, day)).toEqual(['w/a']);
     }
   });
-  it('もう一回: back to tomorrow', () => {
+  it('もう一度: back to tomorrow', () => {
     const mine = rated(rated(none, 'w/a', addDays(d0, 1), true), 'w/a', addDays(d0, 4), false);
     expect(mine.s['w/a']).toEqual([addDays(d0, 4), 0]);
     expect(dueOf(met, mine, addDays(d0, 5))).toEqual(['w/a']);

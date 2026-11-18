@@ -2,7 +2,7 @@
 // nothing leaves the preview), never locked: 質問へ and ‹ 前へ / 次へ › always work; a miss replays the segment with the
 // cue and a quiet 答えを見る, a second miss 「答えはこれ」, never a mark on the pick; まとめ writes the clip's row (✓ in
 // the library, 今週 1/3日, これまで 1本); ⚑ 報告 on the clip and a question, listed in ⚙'s 報告した内容; the player's
-// offline and unavailable states, 字幕 オフ / 英語 / 日本語 and 場面のあらすじ; セリフ (the transcript) follows the playhead, a line
+// offline and unavailable states, 字幕：オフ / 英語 / 日本語 and 場面のあらすじ; セリフ (the transcript) follows the playhead, a line
 // tapped plays from there; a lesson left resumes where it was. The logic tier.
 import { expect, PINNED_DATE, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -205,12 +205,12 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
     await expect(c.locator('[data-en-reveal] .rhead')).toHaveText('答えはこれ');
     await c.locator('[data-en-dict]').fill(x.answer.split(' ').slice(1).join(' '));
     await c.locator('[data-en-dict-go]').click();
-    await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all} 語 聞き取れました`);
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all}語を聞き取れました`);
     // the words apart, as typed
     expect((await c.locator('[data-en-reveal] .words').textContent())!.trim().split(/\s+/)).toHaveLength(all);
     await c.locator('[data-en-dict]').fill(x.answer.toUpperCase() + '.');
     await c.locator('[data-en-dict-go]').click();
-    await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all} 語 聞き取れました`);
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all}語を聞き取れました`);
   }
   expect(await at(page)).toBe(String(n));
   // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
@@ -322,7 +322,7 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   const order = () => c.locator('button, input').evaluateAll((els) => els.map((e) => Object.keys((e as HTMLElement).dataset).find((k) => k.startsWith('yt'))));
   // ▶ | the scrubber | 字幕, then −5秒 0.75× under them, each a full 44 pt; no ⋯
   await expect.poll(order).toEqual(['ytToggle', 'ytScrub', 'ytCc', 'ytBack5', 'ytRate']);
-  await expect(c.locator('[data-yt-cc]')).toHaveAttribute('aria-label', '字幕 オフ（タップで英語）');
+  await expect(c.locator('[data-yt-cc]')).toHaveAttribute('aria-label', '字幕：オフ（タップで英語）');
   for (const b of await c.locator('button').all()) {
     const box = (await b.boundingBox())!;
     expect(Math.min(box.width, box.height), await b.textContent() ?? '').toBeGreaterThanOrEqual(44);
@@ -443,7 +443,7 @@ test('字幕: オフ → 英語 → 日本語 at any point, each kept through ea
   await start(page);
   const funcs = async (n = 0) => (await ytCommands(page)).slice(n).map((c) => `${c[0]} ${JSON.stringify(c[1])}`);
   const cc = lesson(page).locator('[data-yt-cc]');
-  await expect(cc).toHaveText('字幕 オフ');
+  await expect(cc).toHaveText('字幕：オフ');
   await expect(cc).toHaveAttribute('aria-pressed', 'false');
   // off: unloaded at ready and at a play, never loaded
   await expect.poll(() => funcs()).toEqual(expect.arrayContaining(['unloadModule ["captions"]', 'unloadModule ["cc"]']));
@@ -453,7 +453,7 @@ test('字幕: オフ → 英語 → 日本語 at any point, each kept through ea
   // 英語, mid-play: loaded with the English track at once, again at the next play, never unloaded
   const n0 = (await ytCommands(page)).length;
   await cc.click();
-  await expect(cc).toHaveText('字幕 英語');
+  await expect(cc).toHaveText('字幕：英語');
   await expect(cc).toHaveAttribute('aria-pressed', 'true');
   // (大, the default size, each time they load)
   await expect.poll(() => funcs(n0)).toEqual(['loadModule ["captions"]', 'setOption ["captions","track",{"languageCode":"en"}]', 'setOption ["captions","fontSize",1]']);
@@ -464,7 +464,7 @@ test('字幕: オフ → 英語 → 日本語 at any point, each kept through ea
   // 日本語: YouTube's translation of the English (the frame reports no tracks), again at the next play
   const n1 = (await ytCommands(page)).length;
   await cc.click();
-  await expect(cc).toHaveText('字幕 日本語');
+  await expect(cc).toHaveText('字幕：日本語');
   await expect(cc).toHaveAttribute('aria-pressed', 'true');
   const tr = 'setOption ["captions","track",{"languageCode":"en","translationLanguage":{"languageCode":"ja"}}]';
   await expect.poll(() => funcs(n1)).toEqual(['loadModule ["captions"]', tr, 'setOption ["captions","fontSize",1]']);
@@ -476,7 +476,7 @@ test('字幕: オフ → 英語 → 日本語 at any point, each kept through ea
   // オフ again: unloaded
   const n2 = (await ytCommands(page)).length;
   await cc.click();
-  await expect(cc).toHaveText('字幕 オフ');
+  await expect(cc).toHaveText('字幕：オフ');
   await expect(cc).toHaveAttribute('aria-pressed', 'false');
   await expect.poll(() => funcs(n2)).toEqual(['unloadModule ["captions"]', 'unloadModule ["cc"]']);
   // on, then the lesson left: the next opening starts off
