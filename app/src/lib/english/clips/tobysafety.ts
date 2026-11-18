@@ -1,8 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 5, new 6, ctx 4, tx 4
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 8, new 4
 // “Toby's Health And Safety Meeting - The Office US” (the official The Office channel, Best of Season 3): Michael hands
 // the office safety talk to Toby, keeps cutting in to make desk work sound dangerous, and the warehouse crew mocks it;
 // Michael answers them to the camera with his own "warehouse" past. Segments from the captions, words from whisper
-// (2026-11-16). Talk ends at ≈ 203 s. Left out: 64–74 s (the sweater tip, garbled), 122–139 s (insults).
+// (2026-11-16). Talk ends at ≈ 203 s. Untested: 0–2 s, 165–172 s.
+// EXCLUDE 122.3–139.9 (insults: "fat butt", "sea monster", "tell your girl to shut up")
+// SKIP 199.5–225.4: "This is one example", then 20 s with no talk before a lone "Thank you"
+// EAR CHECK: 62 s w1 — "What about a long sleeve tee?" taken as Michael's, "Well, that'll work" as Toby's
+// EAR CHECK: 96.4 s w3 — merged whisper line: check the seg starts after "that dim light is a b…" and holds "Actually, you did"
 // EAR CHECK: 52.5 s a1 — "…skip ahead to the really dangerous stuff" taken as Michael's (no name in the line)
 import type { Clip } from '../types.ts';
 
@@ -23,6 +28,7 @@ export const tobySafety: Clip = {
       mean: 'have the floor ＝ 会議で話す番にある。場所や地位の話ではない。',
       trap: 'floor ＝「床」から、立つ場所の話と思いやすい。会議の floor は「話す番」。',
       use: 'You have the floor. Go ahead.（どうぞ、話してください）' },
+
     { id: 'g2', skill: 'gist', level: 'B2', point: 'aim', reveals: ['lame', 'rephrase'], seg: [0, 57.1], retired: true,
       stem: 'What does Michael want this training to do?',
       choices: ['Make safety sound as serious as Darryl’s', 'Show that Toby can train better than Darryl',
@@ -33,6 +39,7 @@ export const tobySafety: Clip = {
       mean: '倉庫の講習に負けない重みがほしい。中身より見え方が大事。',
       trap: '安全を本気で広めたいと取りやすいが、注文は sound（聞こえ方）の話ばかり。',
       use: 'Make it sound more exciting.（もっと面白そうに聞こえるようにして）' },
+
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'rephrase', seg: [2.3, 16.5],
       stem: '“Let me rephrase that.” What does Michael do next?',
       ja: '「Let me rephrase that」マイケルは次に何をする？',
@@ -42,9 +49,10 @@ export const tobySafety: Clip = {
       line: '…like everything else in his life. *Let me rephrase that.* I believe that you…',
       said: '「人生のほかのことみたいに失敗しないように。言い直そう。君ならできる」と言う。',
       mean: 'rephrase ＝ 別の言い方で言い直す。口がすべったので、ほめ言葉にかえる。',
-      trap: '失礼なことを言ったので、謝ると思いやすい。言い直したあとの中身を聞く。',
+      trap: '失礼なことを言ったので、謝ると考えがち。言い直したあとの中身を聞く。',
       use: 'Let me put that another way.（別の言い方をさせて）' },
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'breaks', reveals: ['typing', 'eyes'], seg: [17.4, 51],
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'breaks', reveals: ['typing', 'eyes'], seg: [17.4, 46.7],
       stem: 'What is Toby’s safety talk mostly about?',
       ja: 'トビーの安全講習は主に何の話？',
       choices: ['Breaks from desk work', 'Machines in the warehouse', 'Staying safe in winter'], a: 0,
@@ -55,6 +63,7 @@ export const tobySafety: Clip = {
       mean: 'every hour ＝ 1時間ごとに。どれも、座りっぱなしの仕事への注意。',
       trap: 'warehouse（倉庫）の話も出るが、それは別のチームの講習。',
       use: 'Let’s take a short break.（少し休憩しよう）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'typing', seg: [17.4, 25.9], keep: true,
       stem: 'How long a typing break per hour is recommended?',
       ja: '1時間に何分、タイピングを休むよう勧められている？',
@@ -66,6 +75,7 @@ export const tobySafety: Clip = {
       mean: 'recommend ＝ 勧める。10-minute break ＝ 10分の休憩。',
       trap: 'fifteen は最後の「ティーン」が長い。five は「ファイヴ」、twenty は「トゥエニ」。',
       use: 'Take a break every hour.（1時間ごとに休憩してね）' },
+
     { id: 'x1', skill: 'dict', level: 'B1', point: 'getup', seg: [25, 31.8],
       stem: 'Type the missing words: “want to ___ your chairs” (4 words)', answer: 'get up out of',
       ja: '空いている所を書こう：「want to ___ your chairs」（4語）',
@@ -75,7 +85,8 @@ export const tobySafety: Clip = {
       mean: 'get up out of 〜 ＝ 〜から立ち上がる。4語がつながり「ゲラパウラヴ」に近い。',
       trap: 't が軽い「ラ」の音になり、of もほぼ消える。4語のかたまりで聞く。',
       use: 'I need to get up out of bed.（そろそろ起きなきゃ）' },
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'eyes', seg: [34.5, 44.7],
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'eyes', seg: [34.5, 44.7], retired: true,
       stem: 'Why should you step away from the computer screen?',
       ja: 'なぜコンピューターの画面から離れるべき？',
       choices: ['To rest your eyes', 'To rest your wrists', 'To move your blood'], a: 0,
@@ -86,7 +97,8 @@ export const tobySafety: Clip = {
       mean: 'strain ＝ 負担、疲れ。step away ＝ 少し離れる。3つ目の休憩は目のため。',
       trap: '前の2つ（手首、血のめぐり）とまざりやすい。screen のあとを聞く。',
       use: 'Screens are hard on my eyes.（画面で目が疲れる）' },
-    { id: 'n2', skill: 'number', level: 'B1', point: 'halfhour', seg: [43.5, 51.4], keep: true,
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'halfhour', seg: [43.5, 51.4], retired: true, keep: true,
       stem: 'How much break time per hour does it add up to?',
       ja: '休憩は合わせて1時間に何分になる？',
       choices: ['10 minutes', '20 minutes', 'Half an hour', 'An hour'], a: 2,
@@ -97,17 +109,19 @@ export const tobySafety: Clip = {
       mean: 'add up ＝ 合わせて大きくなる。10分の休憩が3つで、30分。',
       trap: 'every hour が何度も聞こえるので、hour だけ拾いやすい。half を聞く。',
       use: 'It takes about half an hour.（30分くらいかかるよ）' },
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'same', reveals: ['halfhour'], seg: [43.6, 51.0],
+
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'same', ctx: true, reveals: ['halfhour'], seg: [43.6, 51.0],
       stem: '“Take them at the same time.” What does it mean?',
       ja: '「Take them at the same time」はどういう意味？',
       choices: ['Take the 3 breaks as one', 'Take breaks with everyone', 'Take breaks after lunch'], a: 0,
       choicesJa: ['3つの休憩をまとめて取る', 'みんなと一緒に休む', '昼食のあとに休む'],
       cue: '30分という計算への返事',
-      line: 'That’s like a half an hour every hour. — *Take them at the same time.*',
+      line: 'Michael: That’s like a half an hour every hour. / Toby: *Take them at the same time.*',
       said: '「1時間に30分も」に、「同時に取ればいい」と返す。',
       mean: 'them ＝ 3つの休憩。まとめて取れば、本当は1時間に10分だけ。',
       trap: 'same time ＝「みんな同じ時間に」と思いやすい。them が何かを考える。',
       use: 'Do both at the same time.（両方いっぺんにやっちゃえば）' },
+
     { id: 'nt3', skill: 'dict', level: 'C2', point: 'halfhour', seg: [45.2, 49.2], retired: true,
       stem: 'Type the gap: “That’s like ___ every hour.” (4 words)', answer: 'a half an hour',
       cue: '「adds up」のあと、like から hour まで。',
@@ -116,6 +130,7 @@ export const tobySafety: Clip = {
       mean: 'a half an hour は米語の会話でよく出る形。教科書の形に a が一つ足されている。',
       trap: '習った形に合わせて a を消したくなる。弱くても、聞こえた語は書く。',
       use: 'I’ll be there in a half an hour.（30分で着くよ）' },
+
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'lame', seg: [48.6, 57.2],
       stem: 'What does Michael think of the talk so far?',
       ja: 'マイケルは、ここまでの講習をどう思っている？',
@@ -127,7 +142,8 @@ export const tobySafety: Clip = {
       mean: 'lame ＝ ださい、さえない（くだけた語）。skip ahead ＝ 先に飛ばす。',
       trap: '直前に「30分も」と驚いたので、時間の不満と思いやすい。so の前が理由。',
       use: 'This party is kind of lame.（このパーティー、ちょっとイマイチ）' },
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['lame'], seg: [48.6, 57.2],
+
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['lame'], seg: [48.6, 57.2], retired: true,
       stem: 'Why does Michael say “Okay, you know what” here?',
       ja: 'マイケルは、なぜここで「Okay, you know what」と言う？',
       choices: ['To start a complaint', 'To ask a real question', 'To give him time to think'], a: 0,
@@ -138,7 +154,8 @@ export const tobySafety: Clip = {
       mean: 'you know what ＝ あのさ。話を切りかえる合図で、このあと不満が来やすい。',
       trap: '「知ってる？」と訳すと、質問に聞こえやすい。答えを待たずに続く。',
       use: 'You know what? Let’s go home.（あのさ、もう帰ろう）' },
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'explode', seg: [51.1, 63.1],
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'explode', seg: [51.1, 63.1], retired: true,
       stem: 'What dangerous example does Michael give?',
       ja: 'マイケルが出す「危ない例」は何？',
       choices: ['Computers can explode', 'Screens hurt your eyes', 'Sitting hurts your heart'], a: 0,
@@ -149,6 +166,7 @@ export const tobySafety: Clip = {
       mean: 'Like, 〜 ＝ たとえば〜。大げさな例で、事務の仕事も危ないと言わせたい。',
       trap: '目の話はその前、心臓の話はもっとあと。Like のあとがマイケルの例。',
       use: 'Like, what’s the worst that could happen?（たとえば、最悪どうなるの？）' },
+
     { id: 's2', skill: 'sound', level: 'B1', point: 'explode', seg: [55.5, 63.6],
       stem: 'Which word do you hear: “computers ___ explode”?',
       ja: '「computers ___ explode」どれが聞こえる？',
@@ -160,6 +178,7 @@ export const tobySafety: Clip = {
       mean: 'can は「クン」と短く小さい。can’t なら「キャーン(ト)」と長く強い。',
       trap: 'can’t なら長く強く、could は「クッド」。短い「クン」なら can。',
       use: 'It can get cold at night.（夜は寒くなることがある）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'explode', seg: [56.9, 61.6], retired: true,
       stem: 'Fill the gap: “Sometimes computers can explode, ___?”',
       choices: ['can they not', 'can’t they', 'can they now', 'could they not'], a: 0,
@@ -169,6 +188,19 @@ export const tobySafety: Clip = {
       mean: 'can’t they の改まった形。重々しく言って危険な話を引き出そうとしている。',
       trap: '習った can’t they を予想しやすい。not が最後に離れて残るのを聞く。',
       use: 'You can swim, can you not?（泳げるよね？）' },
+
+    { id: 'w1', skill: 'pragma', level: 'B2', point: 'work', ctx: true, seg: [62, 72.3],
+      stem: 'What does Toby say about a long-sleeve T-shirt?',
+      ja: '長袖のTシャツについて、トビーは何と言う？',
+      choices: ['It’s fine, too', 'It’s not warm enough', 'It isn’t allowed at work'], a: 0,
+      choicesJa: ['それでもいい', '暖かさが足りない', '職場では禁止'],
+      cue: '「What about a long sleeve tee?」への返事',
+      line: 'What about a long sleeve tee? / Toby: Well, *that’ll work*.',
+      said: '「セーターかカーディガンを」に「長袖Tシャツは？」と聞かれ、トビーは「まあ、それでもいいです」。',
+      mean: 'That’ll work ＝ 「それでいいよ」「それで大丈夫」。代わりの案を受け入れる決まり文句。',
+      trap: 'work（働く）から、仕事の話と勘違いしやすい。ここの work は「うまくいく、役に立つ」。',
+      use: 'Tuesday? Yeah, that’ll work.（火曜？うん、それで大丈夫）' },
+
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'boredom', seg: [72.3, 81.2],
       stem: 'Why will everyone “vomit”, says Michael?',
       ja: 'マイケルによると、みんなが「吐く」のはなぜ？',
@@ -180,6 +212,19 @@ export const tobySafety: Clip = {
       mean: 'vomit ＝ 吐く。due to 〜 ＝ 〜のせいで。大げさに「つまらない」と言っている。',
       trap: 'vomit だけ聞くと体調の話と思いやすい。due to のあとが理由。',
       use: 'I’m dying of boredom.（退屈で死にそう）' },
+
+    { id: 'w2', skill: 'detail', level: 'B1', point: 'winter', seg: [81, 92],
+      stem: 'What brings on this sadness, says Toby?',
+      ja: 'トビーによると、この気分の落ちこみの原因は？',
+      choices: ['The low light of winter', 'Too much time at a desk', 'Cold rooms at the office'], a: 0,
+      choicesJa: ['冬の弱い光', '机に向かう時間が長すぎる', '職場の寒い部屋'],
+      cue: '「brought on by」のあと',
+      line: 'A depression that includes weight gain, fatigue, irritability *brought on by the low light of winter*.',
+      said: '「季節性情動障害。冬の弱い光のせいで、体重増加や疲れ、イライラが起こるうつです」と読む。',
+      mean: 'brought on by 〜 ＝ 〜が原因で起こる。low light ＝ 弱い光、日が短いこと。',
+      trap: '直前に desk（机）の話が続いたので、座りすぎと考えがち。by のあとの winter を聞く。',
+      use: 'My headache was brought on by stress.（頭痛はストレスのせいだった）' },
+
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'baler', seg: [91.7, 101.6], retired: true,
       stem: 'After the winter-depression item, how is the remark about a baler meant?',
       choices: ['As a dig: office dangers are tiny next to theirs', 'As a dig: Michael’s talk is dragging on too long',
@@ -190,6 +235,19 @@ export const tobySafety: Clip = {
       mean: '大きな機械と冬の気分を比べ、事務の危険を笑っている。',
       trap: 'Thank God を文字どおり取ると同情に聞こえる。何と何を比べたかで皮肉の的を見る。',
       use: 'Oh no, a paper cut. Call an ambulance.（紙で指を切った？救急車呼ぶ？）' },
+
+    { id: 'w3', skill: 'pragma', level: 'B2', point: 'actually', ctx: true, seg: [96.4, 104.2],
+      stem: 'How do the warehouse guys answer Michael?',
+      ja: '倉庫の人たちはマイケルにどう答える？',
+      choices: ['He did cut in on them', 'He wasn’t at their talk', 'Their talk was boring'], a: 0,
+      choicesJa: ['実際、邪魔をした', '彼は講習に来ていなかった', '自分たちの講習は退屈だった'],
+      cue: 'マイケルの言い分への返事',
+      line: 'Michael: I *didn’t interrupt* when you were having your presentation. / *Actually, you did.*',
+      said: 'マイケルが「君たちの発表の時、私は邪魔しなかった」と言うと、「いや、邪魔したよ」と返される。',
+      mean: 'Actually, 〜 ＝ 「いや、実は〜」。相手の言ったことをやんわり打ち消す前置き。you did ＝ （邪魔）したよ。',
+      trap: 'Actually を「実際に」とだけ取ると、同意に聞こえるが、打ち消しの合図。did（した）を聞く。',
+      use: 'Actually, I think it’s on Friday.（いや、実は金曜だと思うよ）' },
+
     { id: 'p2', skill: 'pragma', level: 'C1', point: 'sedentary', reveals: ['explode'], seg: [106.0, 118.8], retired: true,
       stem: 'When the reader’s word is corrected, what does the one-word reply do?',
       choices: ['Accepts it as if he had known it all along', 'Agrees that sitting all day is a real health worry',
@@ -200,7 +258,20 @@ export const tobySafety: Clip = {
       mean: '読み違いを認めず、元から分かっていたように流す。面子を守る返事。',
       trap: 'yes を話の中身への同意と取りやすい。返事のあと止まらず同じ文へ戻るのが、流す合図。',
       use: 'Right, that’s what I meant.（そう、それが言いたかった）' },
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'apologize', seg: [137.9, 149.9],
+
+    { id: 'w4', skill: 'detail', level: 'B1', point: 'heart', seg: [116, 122.3],
+      stem: 'What kills more people than balers, says Michael?',
+      ja: 'マイケルによると、梱包機より多くの人の命を奪うのは？',
+      choices: ['Heart disease', 'Eye strain', 'Exploding computers'], a: 0,
+      choicesJa: ['心臓病', '目の疲れ', '爆発するコンピューター'],
+      cue: '「Sedentary」と直されたあと',
+      line: '…contribute to *heart disease*. *Heart disease kills more people than balers.*',
+      said: '「座りがちな生活は心臓病の原因になる。心臓病で死ぬ人は、梱包機より多い」と言う。',
+      mean: 'baler ＝ 梱包機（倉庫で段ボールを固める機械）。倉庫の危険より、机仕事の危険が上だと言いたい。',
+      trap: '前に出た目の疲れやコンピューターの爆発とまざりやすい。kills の前の語を聞く。',
+      use: 'Too much sitting can lead to heart disease.（座りすぎは心臓病につながる）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'apologize', seg: [139.9, 145.5],
       stem: 'What does Michael ask Kelly to do?',
       ja: 'マイケルはケリーに何をするよう頼む？',
       choices: ['Say sorry', 'Sit down', 'Leave the room'], a: 0,
@@ -211,18 +282,8 @@ export const tobySafety: Clip = {
       mean: 'apologize ＝ 謝る。insult ＝ 失礼なことを言う。ていねいな命令。',
       trap: 'Are you kidding me?（冗談でしょ）が続くので、頼みの中身を聞き逃しやすい。',
       use: 'I apologize for being late.（遅れて申し訳ありません）' },
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['walkout', 'real'], seg: [139.95, 165.3],
-      stem: 'How does the warehouse crew react to the talk?',
-      ja: '倉庫チームは、この講習にどう反応する？',
-      choices: ['They make fun of it', 'They find it useful', 'They get scared'], a: 0,
-      choicesJa: ['ばかにする', '役に立つと思う', '怖がる'],
-      cue: '「we out of here」から',
-      line: 'All right, we out of here. … *ours was real*, Michael. … This is *shenanigans*. Foolishness.',
-      said: '倉庫チームは席を立ち、「うちのは本物だった。これはおふざけだ」と言う。',
-      mean: 'shenanigans ＝ ふざけたこと。事務の講習を笑っている。',
-      trap: 'dangerous stuff（危ないこと）と聞こえるので、怖がっていると思いやすい。',
-      use: 'We’re out of here.（じゃあ、もう行くね）' },
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'walkout', seg: [141.6, 149.9],
+
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'walkout', seg: [141.6, 149.9], retired: true,
       stem: 'What is the warehouse crew doing now?',
       ja: '倉庫チームは今、何をしている？',
       choices: ['Leaving in the middle', 'Asking a question', 'Giving their own talk'], a: 0,
@@ -233,17 +294,31 @@ export const tobySafety: Clip = {
       mean: 'walk out ＝ 途中で出ていく。「僕はしなかった」のは、相手が今しているから。',
       trap: 'walk out で、昔の話と思いやすい。直前の we out of here（帰るぞ）が手がかり。',
       use: 'I didn’t leave in the middle.（途中で帰らなかったよ）' },
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'real', reveals: ['walkout'], seg: [144.3, 154.4],
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'real', ctx: true, seg: [143.5, 152],
       stem: 'What does Darryl say about the warehouse talk?',
       ja: 'ダリルは倉庫チームの講習について何と言う？',
       choices: ['Theirs was real', 'Theirs was shorter', 'Theirs was funnier'], a: 0,
       choicesJa: ['自分たちのは本物だった', '自分たちのは短かった', '自分たちのはおもしろかった'],
       cue: '「Yeah, but」のあと',
-      line: 'Yeah, but *ours was real*, Michael. … It’s serious down there. We do *dangerous stuff*, man.',
-      said: '「でも、うちのは本物だったんだ。下は危ない仕事をしてる」と返す。',
+      line: 'Michael: Darryl, I did not walk out in the middle of yours, so I… / Darryl: Yeah, but *ours was real*, Michael.',
+      said: '「君らの講習の途中で出ていかなかった」と言われ、ダリルは「でも、うちのは本物だった」と返す。',
       mean: 'ours ＝ 自分たちの（講習）。real ＝ 本当に危ない話だった、という意味。',
-      trap: 'Yeah（うん）で始まるので、同意と思いやすい。but のあとが本音。',
+      trap: 'Yeah（うん）で始まるので同意に聞こえるが、決め手は but のあと。',
       use: 'Yeah, but this one is real.（でも、こっちは本物だよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['real'], seg: [149.7, 165.3],
+      stem: 'How does the warehouse crew react to the talk?',
+      ja: '倉庫チームは、この講習にどう反応する？',
+      choices: ['They make fun of it', 'They find it useful', 'They get scared'], a: 0,
+      choicesJa: ['ばかにする', '役に立つと思う', '怖がる'],
+      cue: '「It’s serious down there」から',
+      line: 'It’s serious down there. We do *dangerous stuff*, man. This is *shenanigans*. Foolishness.',
+      said: '倉庫チームは席を立ち、「下は本気なんだ。これはただのお遊びだ」と言う。',
+      mean: 'shenanigans ＝ ふざけたこと。事務の講習を笑っている。',
+      trap: 'dangerous stuff（危ないこと）と聞こえるので、怖がっていると考えがち。',
+      use: 'We’re out of here.（じゃあ、もう行くね）' },
+
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'biscuit', seg: [150.9, 165.8], retired: true,
       stem: 'What is the crew’s picture of how Michael spends his days?',
       choices: ['Sitting on his backside, never facing any risk', 'Snacking at his desk on cookies and treats',
@@ -254,6 +329,7 @@ export const tobySafety: Clip = {
       mean: 'biscuit はここではお尻のくだけた言い方。楽な仕事だとからかっている。',
       trap: 'biscuit を「お菓子」と取りやすい。sitting on と risk とあわせて聞く。',
       use: 'Get off your butt and help me.（座ってないで手伝って）' },
+
     { id: 'nt2', skill: 'attitude', level: 'C2', point: 'nerfy', reveals: ['biscuit', 'walkout'], seg: [159.0, 183.3], retired: true,
       stem: 'In Michael’s comment to the camera, what is he trying not to show?',
       choices: ['That the crew’s jab about his soft life stung', 'That the crew walking out hurt his feelings',
@@ -264,6 +340,7 @@ export const tobySafety: Clip = {
       mean: '相手の言葉を拾い直し、big deal で平気なふり。気にしない人はここまで言い返さない。',
       trap: '出ていかれた不満にも聞こえるが、拾うのは nerfy と man。何に言い返すかを追う。',
       use: 'Whatever. I didn’t want to go anyway.（別にいいし。どうせ行きたくなかった）' },
+
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'bigdeal', seg: [172.5, 182],
       stem: '“Well, big deal.” What does Michael mean?',
       ja: '「Well, big deal」マイケルが言いたいことは？',
@@ -275,6 +352,7 @@ export const tobySafety: Clip = {
       mean: 'Big deal ＝ 大したことないよ、だから何？文字どおりは「大ごと」だが、逆の意味。',
       trap: 'big（大きい）から、大事なことと思いやすい。Well, big deal は見下す言い方。',
       use: 'It’s no big deal.（大したことじゃないよ）' },
+
     { id: 'h1', skill: 'detail', level: 'B1', point: 'warehouse', seg: [178.4, 187.6],
       stem: 'What was Michael’s job at Men’s Warehouse?',
       ja: 'メンズ・ウェアハウスでのマイケルの仕事は？',
@@ -284,8 +362,9 @@ export const tobySafety: Clip = {
       line: 'I worked in a warehouse. Men’s Warehouse. *I was a greeter*.',
       said: '「メンズ・ウェアハウスで働いた。あいさつ係だった」と話す。',
       mean: 'greeter ＝ 店の入口で客を迎える係。Men’s Warehouse は紳士服の店の名前。',
-      trap: 'warehouse ＝ 倉庫と聞くと、力仕事と思いやすい。店の名前の一部なだけ。',
+      trap: 'warehouse ＝ 倉庫と聞くと、力仕事を連想しやすい。店の名前の一部なだけ。',
       use: 'I worked at a clothing store.（服の店で働いていた）' },
+
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'warehouse', seg: [185.0, 203.2], retired: true,
       stem: 'In Michael’s talk to the camera, who is the joke on?',
       choices: ['Michael, who thinks a greeter’s job makes him tough', 'Darryl, who would scare off shoppers as a greeter',
@@ -296,5 +375,29 @@ export const tobySafety: Clip = {
       mean: '男らしさの証拠に、いちばんやわらかい接客を誇らしげに見せる。笑われているのは彼自身。',
       trap: '矛先は Darryl なので彼が的に聞こえる。証拠に何を出したかを聞けば、的は話し手。',
       use: 'Watch and learn. This is how it’s done.（見てて。こうやるんだよ）' },
+
+    { id: 'w6', skill: 'infer', level: 'B2', point: 'wimps', seg: [185.5, 191.5],
+      stem: 'What would Darryl do as a greeter, says Michael?',
+      ja: 'マイケルによると、ダリルが出迎え係をしたらどうなる？',
+      choices: ['Make people feel weak', 'Make people feel welcome', 'Make people laugh a lot'], a: 0,
+      choicesJa: ['客を弱虫な気分にさせる', '客を歓迎された気分にさせる', '客をたくさん笑わせる'],
+      cue: '「I’d like to see Darryl」のあと',
+      line: 'I’d like to see Darryl greet people. Probably *make them feel like wimps*. Not me.',
+      said: '「ダリルに客を迎えさせてみたいね。たぶん相手を弱虫みたいな気分にさせる。私は違う」と言う。',
+      mean: 'wimp ＝ 弱虫（くだけた言い方）。I’d like to see 〜 ＝ 「〜できるものならやってみろ」という挑発。',
+      trap: 'greet（迎える）から、歓迎の話と考えがち。feel like のあとの wimps を聞く。',
+      use: 'I’d like to see you try!（やれるものならやってみて）' },
+
+    { id: 'w5', skill: 'phrase', level: 'B1', point: 'special', seg: [194.5, 203.7],
+      stem: 'What does “a special on khaki pants” mean?',
+      ja: '「a special on khaki pants」はどういう意味？',
+      choices: ['Khaki pants are on sale', 'Khaki pants just came in', 'Khaki pants are sold out'], a: 0,
+      choicesJa: ['チノパンが特売', 'チノパンが入荷したばかり', 'チノパンが売り切れ'],
+      cue: '「Welcome to Men’s Warehouse」のあと',
+      line: 'Welcome to Men’s Warehouse. *We have a special on khaki pants today.*',
+      said: '紳士服店の出迎えを実演し、「いらっしゃいませ。本日はチノパンが特売です」。',
+      mean: 'special ＝ ここでは名詞で「特売・お買い得品」。We have a special on 〜 ＝ 〜がお買い得です。',
+      trap: 'special ＝「特別な」から、新しい特別な商品と考えがち。on のあとの物が安い、の意味。',
+      use: 'Do you have any specials today?（今日のおすすめはありますか）' },
   ]
 };
