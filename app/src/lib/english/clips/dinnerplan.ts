@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 4, new 0
 // “Michael's Cunning Dinner Party Plan - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office
 // US): the staff are kept late on a Friday; Michael stages an angry call to corporate, sends everyone home, then holds
@@ -6,7 +7,8 @@
 // (61 s, 70.5 s), Jim (94.3 s; "Pam and me" at 70.5 s), Dwight (88.6 s), Jan, Angela, Andy (93–97 s).
 // Untested: 27–28.5 s (captions "I'm— it's— God", whisper "I'm Scott"); 61.5 s ("mi casa": captions "me castle");
 // 93.9 s (captions "him and Jim", whisper "ham and Jim"); 97.8 s ("Hello"/"Hey": speaker not named); the pause at
-// 64.8–68 s (the captions have a gap, whisper's timings don't, so no pause item); 102.4–130 s is music.
+// 64.8–68 s (the captions have a gap, whisper's timings don't, so no pause item).
+// SKIP 102–130: music (Dwight's silence, then the end card).
 import type { Clip } from '../types.ts';
 
 export const dinnerplan: Clip = {
@@ -39,17 +41,17 @@ export const dinnerplan: Clip = {
       trap: 'least（いちばん少ない）から「気にしない」と思いやすい。否定のあとなら「特に〜は」。',
       use: 'Nobody wants to wait. Least of all me.（誰も待ちたくない。私は特に）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', seg: [12.0, 18.5], retired: true,
-      stem: 'Why doesn’t Jim have plans tonight?',
-      ja: 'ジムはなぜ今夜、予定がない？',
-      choices: ['Michael told him not to', 'He wanted to work late', 'Pam had other plans'], a: 0,
-      choicesJa: ['マイケルに入れるなと言われた', '残業したかった', 'パムにほかの予定があった'],
-      cue: 'Remember when で始まる文。',
-      line: '*Remember when you told us not to make plans* because we were working? — Yes, I remember.',
-      said: '「仕事だから予定を入れるなって言ったの、覚えてる？」に「覚えてる」と返る。',
-      mean: 'Remember when 〜? ＝ 〜したの覚えてる？ 前に言われたことを持ち出す言い方。',
-      trap: '残業したかったと思いやすいが、誰も残業は好きじゃない。told us not to を聞く。',
-      use: 'Remember when you said you’d help?（手伝うって言ったの、覚えてる？）' },
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', ctx: true, seg: [8.8, 16.5],
+      stem: 'Michael asks if Jim has plans tonight. What does Jim say?',
+      ja: 'マイケルはジムに今夜の予定を聞く。ジムの答えは？',
+      choices: ['No, he has none', 'Yes, dinner with Pam', 'He isn’t sure yet'], a: 0,
+      choicesJa: ['ない', 'ある、パムと夕食', 'まだ分からない'],
+      cue: '「plans tonight?」への返事。',
+      line: 'Michael: You have *plans tonight*? / Jim: *No.* Remember when you told us not to make plans because we’re working?',
+      said: '「今夜予定ある？」に「ない。仕事だから予定を入れるなって言ったよね」と答える。',
+      mean: 'have plans ＝ 予定がある。make plans ＝ 予定を入れる。この「予定なし」が、あとでジムの逃げ道をふさぐ。',
+      trap: 'あとでパムと夕食に誘われるので、パムとの予定と考えがち。最初の返事は短い No。',
+      use: 'Do you have plans tonight? — No, I’m free.（今夜予定ある？—ないよ、空いてる）' },
 
     { id: 't1', skill: 'attitude', level: 'B1', point: 'mad', seg: [21.2, 33.2],
       stem: 'How does Michael sound before the phone call?',
@@ -60,8 +62,20 @@ export const dinnerplan: Clip = {
       line: 'why are we here? I am gonna call corporate. *Enough is enough.* … *I’m so mad.*',
       said: '「本社に電話する。もうたくさんだ。頭にくる」と言う。',
       mean: 'Enough is enough ＝ もう我慢できない。部下の前で怒ってみせている。',
-      trap: 'why are we here から「帰りたい」と思いやすい。最後の so mad（すごく怒っている）を聞く。',
+      trap: 'why are we here から「帰りたい」と考えがち。最後の so mad（すごく怒っている）を聞く。',
       use: 'Enough is enough. I’m calling them.（もう我慢できない。電話する）' },
+
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'friends', seg: [32.6, 41.3],
+      stem: 'What does Michael tell corporate about his staff?',
+      ja: 'マイケルは本社に、部下のことを何と言う？',
+      choices: ['They are his friends', 'They are very tired', 'They work too slowly'], a: 0,
+      choicesJa: ['自分の友だちだ', 'とても疲れている', '仕事が遅すぎる'],
+      cue: '「It’s not fair」のあと。',
+      line: 'It’s not fair to these people. *These people are my friends*, and I care about them.',
+      said: '「この人たちに不公平だ。みんな私の友だちで、大切なんだ」と電話で言う。',
+      mean: 'It’s not fair to 〜 ＝ 〜に不公平だ。care about 〜 ＝ 〜を大切に思う。部下の前で、かばう芝居をしている。',
+      trap: '残業の話なので、疲れの話と考えがち。決め手は These people are のあと。',
+      use: 'It’s not fair to the others.（ほかの人に不公平だよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'gohome', reveals: ['horn'], seg: [40.6, 56.4],
       stem: 'What news does Michael give everybody?',
@@ -72,7 +86,7 @@ export const dinnerplan: Clip = {
       line: 'go *enjoy your Friday*. — Thank you, Michael.',
       said: '本社と話したと言い、「金曜を楽しんで」と全員を帰す。お礼の声が返る。',
       mean: 'go enjoy your Friday ＝ 金曜の夜を楽しんで。残業はなし、もう帰っていい、という知らせ。',
-      trap: 'overtime（残業）が聞こえるので、残業が続く話に思いやすい。最後の go enjoy が答え。',
+      trap: 'overtime（残業）と聞こえて残業が続く話に聞こえるが、答えは最後の go enjoy。',
       use: 'Go enjoy the rest of your day.（残りの一日を楽しんでね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [42.5, 47.5],
@@ -84,7 +98,7 @@ export const dinnerplan: Clip = {
       line: 'Everybody, I just *got off the horn* with corporate.',
       said: '「みんな、いま本社との電話を切ったところだ」と言う。',
       mean: 'the horn ＝ 電話（古いくだけた言い方）。get off the phone（電話を切る）と同じ。',
-      trap: 'horn から車のクラクションを思いやすい。off は終わり、電話を始めるなら get on。',
+      trap: 'horn から車のクラクションを連想しやすい。off は終わり、電話を始めるなら get on。',
       use: 'I just got off the phone.（いま電話を切ったところ）' },
 
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'stick', reveals: ['gohome'], seg: [47.0, 53.4], retired: true,
@@ -97,17 +111,17 @@ export const dinnerplan: Clip = {
       trap: 'where を文字どおり取ると「送り先」に、文句の調子だけだと渋々の承知に聞こえる。',
       use: 'He told them where to stick it.（あいつ、きっぱり突っぱねたよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', seg: [53.8, 88.4],
-      stem: 'Who does Michael invite to dinner tonight?',
-      ja: 'マイケルは今夜、誰を夕食に誘う？',
-      choices: ['Jim and Pam', 'Everybody in the office', 'Only Dwight'], a: 0,
-      choicesJa: ['ジムとパム', 'オフィスのみんな', 'ドワイトだけ'],
-      cue: '「celebrate」のあと、名前を呼ぶ所。',
-      line: 'How about *you, Pam*… a little dinner, dancing, drinks? … Michael has asked *Pam and me* to dinner at least nine times',
-      said: 'みんなを帰したあと、ジムとパムに「お祝いしよう。うちで夕食でも」と誘う。',
-      mean: 'How about 〜? ＝ 〜はどう？ 誘いの決まった言い方。ジムもカメラに「パムと僕を誘った」と話す。',
-      trap: 'Happy Friday とみんなに言ったあとなので、全員を誘うように思いやすい。呼ぶ名前を聞く。',
-      use: 'How about dinner at my place?（うちで夕食はどう？）' },
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'celebrate', ctx: true, seg: [54.5, 64.7],
+      stem: 'Jim is glad. What does Michael suggest next?',
+      ja: 'ジムはほっとする。マイケルが次に言い出すのは？',
+      choices: ['Dinner at his house', 'Going home to rest', 'More work on Monday'], a: 0,
+      choicesJa: ['自分の家で夕食', '家に帰って休む', '月曜にもっと働く'],
+      cue: '「I think you did」のあと。',
+      line: 'Jim: I think we *dodged a bullet* there. / Michael: I think you did. *I think we should celebrate.* … *mi casa*, a little *dinner*, dancing, drinks?',
+      said: '「危ないところを逃れた」に、「逃れたね。お祝いしよう。うちでディナーでも」と誘う。',
+      mean: 'dodge a bullet ＝ 文字どおりは「弾をよける」→危ないところを逃れる。mi casa はスペイン語で「わが家」。',
+      trap: 'みんなを帰したあとなので、帰る話と考えがち。celebrate のあとを聞く。',
+      use: 'We should celebrate! Dinner’s on me.（お祝いしよう！夕食はおごるよ）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'bullet', seg: [55.4, 58.9], retired: true,
       stem: 'What does “We dodged a bullet” mean?',
@@ -120,6 +134,18 @@ export const dinnerplan: Clip = {
       mean: 'dodge a bullet ＝ 文字どおりは「弾をよける」。悪いことをぎりぎりで避ける、の決まり文句。',
       trap: '直前の Happy Friday から一週間の話に思いやすい。弾をよける＝危ないことを避けた。',
       use: 'The flight was canceled. We dodged a bullet.（あの便は欠航。助かった）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', seg: [58.5, 82.6],
+      stem: 'Who does Michael invite to dinner tonight?',
+      ja: 'マイケルは今夜、誰を夕食に誘う？',
+      choices: ['Jim and Pam', 'Everybody in the office', 'Only Dwight'], a: 0,
+      choicesJa: ['ジムとパム', 'オフィスのみんな', 'ドワイトだけ'],
+      cue: '「celebrate」のあと、名前を呼ぶ所。',
+      line: 'How about *you, Pam*… a little dinner, dancing, drinks? … Michael has asked *Pam and me* to dinner at least nine times',
+      said: 'みんなを帰したあと、ジムとパムに「お祝いしよう。うちで夕食でも」と誘う。',
+      mean: 'How about 〜? ＝ 〜はどう？ 誘いの決まった言い方。ジムもカメラに「パムと僕を誘った」と話す。',
+      trap: 'Happy Friday とみんなに言ったあとなので、全員を誘うように思いやすい。呼ぶ名前を聞く。',
+      use: 'How about dinner at my place?（うちで夕食はどう？）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'trap', seg: [58.5, 69.6], retired: true,
       stem: 'Why does Michael say “You said you didn’t have plans”?',
@@ -156,7 +182,7 @@ export const dinnerplan: Clip = {
       trap: 'nineteen なら後ろの「ティーン」が強く長い。ninety なら最初が強く「ナインティ」。',
       use: 'I’ve called at least nine times.（少なくとも9回は電話した）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'getout', seg: [69.5, 77.7],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'getout', seg: [69.5, 77.7], retired: true,
       stem: 'What has happened each time Michael invited them before?',
       ja: 'これまでマイケルに誘われたとき、毎回どうなった？',
       choices: ['They managed not to go', 'They went but left early', 'Michael ended up canceling'], a: 0,
@@ -202,7 +228,19 @@ export const dinnerplan: Clip = {
       trap: 'no assignment を「取り消された」と思いやすい。there was no 〜 は最初からない。',
       use: 'I suspect there was no meeting at all.（会議なんてなかったんじゃないかな）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'arriving', seg: [84.3, 96.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'couples', ctx: true, seg: [82.6, 92.5],
+      stem: 'Dwight asks what time to come. What does Michael say?',
+      ja: 'ドワイトは何時に行けばいいか聞く。マイケルの答えは？',
+      choices: ['It’s only for couples', 'Come at seven o’clock', 'Bring a bottle of wine'], a: 0,
+      choicesJa: ['カップル限定だ', '7時に来て', 'ワインを1本持ってきて'],
+      cue: '「what time should I be arriving?」の返事。',
+      line: 'Dwight: Michael, *what time should I be arriving*? / Michael: Dwight, *it’s couples only*.',
+      said: '「何時に行けばいいですか？」に、「ドワイト、カップル限定だ」と断る。',
+      mean: 'couples only ＝ カップルだけ。〜 only ＝ 〜限定。時間を聞いたのに、来ること自体を断られる。',
+      trap: 'あとで wine glasses（ワイングラス）の話が出るので、ワインと考えがち。名前の直後の2語を聞く。',
+      use: 'Sorry, it’s members only.（すみません、会員限定です）' },
+
+    { id: 'w1', skill: 'who', level: 'B1', point: 'arriving', seg: [84.3, 96.3], retired: true,
       stem: 'Who asks Michael what time to arrive?',
       ja: '何時に行けばいいかマイケルに聞くのは誰？',
       choices: ['Dwight', 'Andy', 'Angela'], a: 0,
@@ -224,18 +262,6 @@ export const dinnerplan: Clip = {
       mean: '招待されたと思いこんでいるずれが笑い。すぐに断られる。',
       trap: 'arriving を出勤と取ると仕事の話になる。直前の会話は夕食の誘い。',
       use: 'Wait, am I even invited?（待って、私って招待されてる？）' },
-
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'couples', reveals: ['arriving'], seg: [87.1, 98.9],
-      stem: 'What is the first reason Michael gives Dwight?',
-      ja: 'マイケルがドワイトに言う最初の理由は？',
-      choices: ['The dinner is for couples only', 'There isn’t room at his table', 'Dwight must work late tonight'], a: 0,
-      choicesJa: ['夕食はカップル限定', 'テーブルに席がない', 'ドワイトは今夜残業がある'],
-      cue: '名前を呼んだ直後の2語。',
-      line: 'Dwight, it’s *couples only*',
-      said: '「ドワイト、カップル限定なんだ」と断る。',
-      mean: 'couples only ＝ カップルだけ。〜 only ＝ 〜限定。一人のドワイトは呼べない、という理由。',
-      trap: 'あとのワイングラスの話から「席がない」と思いやすい。最初の理由は名前の直後。',
-      use: 'Sorry, it’s members only.（すみません、会員限定です）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'besides', reveals: ['couples', 'six'], seg: [87.2, 98.9],
       stem: 'What does “and besides” mean here?',
@@ -261,7 +287,7 @@ export const dinnerplan: Clip = {
       trap: 'couples only を本当の条件と取ると「相手がいれば」に、丁寧な断りと取ると「あいにく」に聞こえる。重ねた理由は拒否。',
       use: 'Let’s just say it’s a no.（まあ、答えはノーってこと）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [88.4, 98.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [88.4, 98.9], retired: true, keep: true,
       stem: 'How many wine glasses does Michael say he has?',
       ja: 'マイケルはワイングラスが何個あると言う？',
       choices: ['4', '6', '16'], a: 1,
@@ -272,5 +298,17 @@ export const dinnerplan: Clip = {
       mean: 'I only have 〜 ＝ 〜しかない。6個 ＝ 6人。3組のカップルでちょうど埋まる。',
       trap: '「フォー」なら4、「シックスティーン」と後ろを伸ばせば16。短く「シックス」で止まれば6。',
       use: 'I only have two tickets.（チケットは2枚しかない）' },
+
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'bother', seg: [97.1, 104.0],
+      stem: 'What is Dwight asked about?',
+      ja: 'ドワイトは何について聞かれている？',
+      choices: ['Not being invited to dinner', 'Working late on a Friday', 'Breaking a wine glass'], a: 0,
+      choicesJa: ['夕食に呼ばれなかったこと', '金曜に残業すること', 'ワイングラスを割ったこと'],
+      cue: '「Hey」のあとの質問。',
+      line: 'Does it bother me that *I wasn’t invited* to Michael’s dinner party?',
+      said: '「マイケルの夕食会に呼ばれなかったのが気になるか、だって？」と聞き返す。',
+      mean: 'Does it bother you that 〜? ＝ 〜が気になる？ invite ＝ 招待する。質問をくり返したあと、答えずに黙る。',
+      trap: 'wine glasses の話のすぐあとなので、グラスの話を連想しやすい。決め手は invited。',
+      use: 'Does it bother you if I open the window?（窓を開けたら気になりますか）' },
   ]
 };
