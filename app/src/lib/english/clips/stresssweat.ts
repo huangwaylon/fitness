@@ -88,7 +88,7 @@ export const stressSweat: Clip = {
       trap: 'Yes で始まるので白状に聞こえるが、手がかりは話のありえなさ。アンディだけ本気にする。',
       use: 'Yes, I ate all twelve donuts. Happy?（はいはい、12個全部食べましたよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [43, 52.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [43.47, 52.7], keep: true,
       stem: 'What price is named for the computer?',
       ja: 'パソコンの値段はいくらと言われる？',
       choices: ['$50', '$115', '$150', '$1,500'], a: 2,

@@ -112,7 +112,7 @@ export const ronMeditate: Clip = {
       trap: 'あとでクリスがほめるので、深く瞑想したと思いやすい。カメラへの本音を聞く。',
       use: 'Sorry, my mind went blank.（ごめん、頭が真っ白になった）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'crackpots', seg: [59.9, 68.1],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'crackpots', seg: [59.51, 68.1],
       stem: 'How does Ron feel about the other people there?',
       ja: 'ロンは、そこにいるほかの人たちをどう思っている？',
       choices: ['He thinks they are strange', 'He wants to be like them', 'He wants to learn from them'], a: 0,
