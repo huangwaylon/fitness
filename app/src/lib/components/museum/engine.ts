@@ -691,7 +691,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       const reads = side === 'room' ? o.room : o.next, names = side === 'room' ? o.next : o.room;
       const p = plaqueOf(o, side), up = [p.x, p.y, p.z, p.yaw];
       const down = o.axis === 'z' ? [mid, PLAQUE_FOOT_Y, p.z, p.yaw] : up;
-      const board = plaqueBoard(names === 'hall' ? HALL_NAME : PLAQUE[names]);
+      // (read from the hall, a wing's arch names the wing: 「か せ き」 at both fossil arches, never 「か せ き 3」 by the
+      // NEW dot, which read as a count beside the chip's 「あたらしい 3」; the wing's own arches number its rooms)
+      const board = plaqueBoard(names === 'hall' ? HALL_NAME : reads === 'hall' ? PLAQUE[names].replace(/ \d$/, '') : PLAQUE[names]);
       board.position.set(up[0], up[1], up[2]);
       board.rotation.y = up[3];
       scene.add(inRooms(board, [reads]));
