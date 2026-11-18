@@ -1,10 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 0, new 3, ctx 5, tx 6
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 4, new 1
 // “Jerry Gets Mugged | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Leslie uses Jerry's
 // mugging on the local news to shame City Hall, her boss scolds her but the parks get money, and at the press event it
 // comes out that Jerry was never mugged at all.
 // Segments from the captions, words from whisper (2026-11-16). The captions garble 109–116 s and names; no key rests
-// on that stretch. Left out on purpose: “the farting” (147 s), the Klondike-bar line (167–169 s) and who says which
-// backstage line (stems leave the speakers out).
+// on that stretch. Left out on purpose: “the farting” (147 s) and who says which backstage line (stems leave the
+// speakers out).
+// EXCLUDE 167.3–169.3: the Klondike-bar line (“kill your wife”)
+// SKIP 166–202: Tom's teasing and the Klondike-bar line, then the outro (whisper's “Thank you” at 172–202 runs past the clip)
 import type { Clip } from '../types.ts';
 
 export const jerryMugged: Clip = {
@@ -13,6 +16,17 @@ export const jerryMugged: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'supposed', seg: [0, 7.6],
+      stem: 'What does “Parks are supposed to be fun” mean?', ja: '“Parks are supposed to be fun” はどういう意味？',
+      choices: ['Parks should be fun', 'Parks used to be fun', 'Parks might be fun'], a: 0,
+      choicesJa: ['公園は楽しいはず', '公園は昔は楽しかった', '公園は楽しいかもしれない'],
+      cue: '「the old saying」のあと',
+      line: 'We’ve all heard the old saying, “Parks *are supposed to be* fun.” But sometimes muggers have their own ideas.',
+      said: '「『公園は楽しい場所のはず』。でも、強盗には別の考えがあることも」と始まる。',
+      mean: 'be supposed to 〜 ＝ 〜のはず、〜することになっている。本来そうあるべきなのに、という気持ちを含む。',
+      trap: 'supposed を「想像する」と考えがち。be supposed to はひとまとまりで「〜のはず」。',
+      use: 'The train is supposed to come at 9.（電車は9時に来るはずです）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'intro', seg: [11.5, 23.15], retired: true,
       stem: 'Why is Leslie’s description of Jerry on TV funny?',
       choices: ['She means to support him but lists his flaws', 'She means to tease him, but it comes out cruel',
@@ -23,6 +37,17 @@ export const jerryMugged: Clip = {
       mean: '味方として紹介しているのに、欠点ばかり並べてしまう。悪気がないのが笑い。',
       trap: '悪口に聞こえるのでわざとからかったと取りやすいが、最後を friend で締めている。',
       use: 'Let me introduce my coworker, Ken.（同僚の Ken を紹介します）' },
+
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'mugged', seg: [11.5, 25.5],
+      stem: 'What happened to Jerry this morning, says Leslie?', ja: 'レスリーによると、ジェリーは今朝どうした？',
+      choices: ['He was robbed in a park', 'He hurt his arm at work', 'He got lost in a park'], a: 0,
+      choicesJa: ['公園で強盗にあった', '職場で腕をけがした', '公園で迷子になった'],
+      cue: '「He was」のあと',
+      line: 'This is my coworker, Jerry Gergich. … *He was mugged this morning* in Ramsett Park.',
+      said: '「こちらは同僚のジェリー。今朝、ラムセット公園で強盗にあいました」とテレビで紹介する。',
+      mean: 'be mugged ＝ 道で襲われてお金を取られる。This is my coworker 〜 ＝ 同僚の〜です（人を紹介する言い方）。',
+      trap: 'park が聞こえるので、公園で迷った話と考えがち。He was のあとの mugged を聞く。',
+      use: 'This is my coworker, Ken.（同僚のケンです）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'intro', seg: [21.6, 33.2], retired: true,
       stem: 'In Leslie’s list of who could be next, who is the joke on?',
@@ -35,15 +60,26 @@ export const jerryMugged: Clip = {
       trap: 'your が続くので視聴者への悪口に聞こえる。リストの最後は、前に出た語と比べる。',
       use: 'Present company excluded, of course.（ここにいる人は別だけどね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'cityhall', seg: [40.9, 49.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'security', seg: [32.5, 39.0],
+      stem: 'What does Leslie say about the head of security?', ja: '警備主任について、レスリーは何と言う？',
+      choices: ['He tries, but he’s failing', 'He doesn’t try at all', 'He keeps the park safe'], a: 0,
+      choicesJa: ['がんばっているが、うまくいっていない', 'まったく努力していない', '公園を安全に守っている'],
+      cue: '「doing his best」のあと',
+      line: 'Head of security Karl Lorthner is *doing his best* to keep the park safe, *but he’s failing*.',
+      said: '「警備主任は公園の安全のために全力を尽くしています。でも、うまくいっていません」と言う。',
+      mean: 'do one’s best ＝ 全力を尽くす。fail ＝ うまくいかない。ほめてから but で本音を言う形。',
+      trap: 'keep the park safe まで聞いて、守れていると考えがち。決め手は but のあと。',
+      use: 'I’m doing my best, but it’s hard.（全力でやってるけど、難しい）' },
+
+    { id: 'd1', ctx: true, skill: 'detail', level: 'B2', point: 'cityhall', seg: [38.0, 49.3],
       stem: 'What does Leslie say is stopping the parks from being safe?', ja: '公園を安全にできない理由を、レスリーは何だと言う？',
       choices: ['City Hall won’t give money', 'The money is on its way', 'City Hall cut their money'], a: 0,
       choicesJa: ['市役所がお金を出さない', 'お金は届く途中', '市役所がお金を減らした'],
       cue: '「We need」のあと',
-      line: 'We need *money* from City Hall, and it’s *not coming through*.',
-      said: '「市役所からのお金が必要なのに、出てこない」と言う。',
+      line: 'Host: So what is the solution to fix this? / Leslie: We need *money* from City Hall, and it’s *not coming through*.',
+      said: '「解決策は？」に「市役所からのお金が必要なのに、出てこない」と答える。',
       mean: 'come through ＝ （お金や助けが）ちゃんと届く。not なので「出てこない」。',
-      trap: 'coming から「届く途中」と思いやすい。not があるので、来ていない。',
+      trap: 'coming から「届く途中」と勘違いしやすい。not があるので、来ていない。',
       use: 'My refund finally came through.（やっと返金が届いた）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B1', point: 'sorrysay', seg: [48.5, 54], retired: true,
@@ -57,16 +93,6 @@ export const jerryMugged: Clip = {
       trap: 'sorry から謝っていると思いやすい。but のあとが言いたいこと。',
       use: 'I’m sorry to say this, but the shop is closed.（言いにくいですが、店は閉まっています）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [53.6, 91.2],
-      stem: 'What does Leslie’s TV appearance get her?', ja: 'テレビに出た結果、レスリーは何を得る？',
-      choices: ['Money, but an angry boss', 'Praise, but no money', 'A new head of security'], a: 0,
-      choicesJa: ['お金。でも上司は怒っている', 'ほめられるが、お金はない', '新しい警備の責任者'],
-      cue: 'テレビのあとの上司の話',
-      said: 'テレビで市を批判して上司に叱られるが、公園には予算が回る。',
-      mean: 'stunt ＝ 人目を引くための行動。叱られたけれど、目的は果たした。',
-      trap: 'happy や worked から、ほめられたと思いやすい。その前に叱る言葉が続く。',
-      use: 'It worked, but I got in trouble.（うまくいったけど、怒られた）' },
-
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'possessed', seg: [59.1, 70.8], retired: true,
       stem: 'What is Paul asking with “What possessed you to do that?”', ja: '“What possessed you to do that?” で、ポールは何を聞いている？',
       choices: ['Why she did it', 'Who made her do it', 'How she got on TV'], a: 0,
@@ -78,13 +104,24 @@ export const jerryMugged: Clip = {
       trap: 'possess（取りつく）から、誰かにやらされた話だと思いやすい。叱るときの決まった言い方。',
       use: 'What possessed you to buy that?（なんでそんなの買ったの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'sorrybut', seg: [59.4, 67.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [59.2, 88.9],
+      stem: 'What does Leslie’s TV appearance get her?', ja: 'テレビに出た結果、レスリーは何を得る？',
+      choices: ['Money, but an angry boss', 'Praise, but no money', 'A new head of security'], a: 0,
+      choicesJa: ['お金。でも上司は怒っている', 'ほめられるが、お金はない', '新しい警備の責任者'],
+      cue: 'テレビのあとの上司の話',
+      line: 'You do not badmouth your own government on TV. … The mayor is going to divert … to the parks',
+      said: 'テレビで市を批判して上司に叱られるが、公園には予算が回る。',
+      mean: 'badmouth ＝ 悪口を言う。divert ＝ お金を回す。叱られたけれど、目的は果たした。',
+      trap: 'happy や worked から、ほめられたと考えがち。その前に叱る言葉が続く。',
+      use: 'It worked, but I got in trouble.（うまくいったけど、怒られた）' },
+
+    { id: 'p1', ctx: true, skill: 'pragma', level: 'B2', point: 'sorrybut', seg: [59.4, 67.2],
       stem: 'Why does Leslie say “I’m sorry, Paul, but” here?', ja: 'レスリーは、なぜここで「I’m sorry, Paul, but」と言う？',
       choices: ['To explain why she did it', 'To say sorry and stop', 'To blame the security head'], a: 0,
       choicesJa: ['なぜやったかを説明するため', '謝って、もうやめるため', '警備の責任者のせいにするため'],
       cue: '「sorry」のあと',
-      line: 'I’m sorry, Paul, *but* one of my guys *got mugged* in the park.',
-      said: '「すみません、でも部下が公園で襲われたんです」と返す。',
+      line: 'Paul: What possessed you to do that? / Leslie: I’m sorry, Paul, *but* one of my guys *got mugged* in the park.',
+      said: '「一体どういうつもりで？」に「すみません、でも部下が公園で襲われたんです」と返す。',
       mean: 'I’m sorry, but 〜 ＝ すみませんが〜。謝るより、言い分の前置き。got mugged ＝ 襲われた。',
       trap: '日本語の「すみません」と同じだと、反省していると思いやすい。but のあとが本音。',
       use: 'Sorry, but I have to say something.（悪いけど、言わせて）' },
@@ -97,7 +134,7 @@ export const jerryMugged: Clip = {
       line: 'I don’t care how upset you are. You do not *badmouth your own government* on TV.',
       said: '「どれだけ腹が立っても、テレビで自分の役所の悪口を言うな」と言う。',
       mean: 'badmouth ＝ 人や会社の悪口を言う。I don’t care how 〜 ＝ どんなに〜でも関係ない。',
-      trap: 'upset が先に聞こえ、「怒りを見せるな」と思いやすい。禁止の中身は do not のあと。',
+      trap: 'upset が先に聞こえ、「怒りを見せるな」と考えがち。禁止の中身は do not のあと。',
       use: 'Never badmouth your old boss.（前の上司の悪口は言わないこと）' },
 
     { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80.5],
@@ -106,9 +143,9 @@ export const jerryMugged: Clip = {
       choicesJa: ['彼女の作戦がうまくいって不満', 'やっとお金が来てうれしい', '市長が賛成してうれしい'],
       cue: '彼女の行動を呼ぶ言い方',
       line: 'I’m sure you’ll be happy to know your *little stunt* worked.',
-      said: '「喜ぶだろうね、君の小芝居はうまくいったよ」と言う。',
-      mean: 'little stunt ＝ ちょっとした芝居。見下す言い方で、本人はおもしろくない。',
-      trap: 'happy や worked をそのまま取ると、喜んでいると思いやすい。見下す言葉が本音。',
+      said: '「うれしいだろうが、君のちょっとした作戦はうまくいったよ」と言う。',
+      mean: 'little stunt ＝ 人目を引くちょっとした作戦。見下す言い方で、本人はおもしろくない。',
+      trap: 'happy や worked から、喜んでいるように聞こえるが、little stunt（小細工）という見下す言葉が本音。',
       use: 'Happy now? You got your way.（満足？思いどおりだね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80.5], keep: true,
@@ -123,15 +160,15 @@ export const jerryMugged: Clip = {
 
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 92.2],
+    { id: 'p2', ctx: true, skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 92.2],
       stem: 'Why does Leslie say “We treat everyone with respect”?', ja: 'レスリーは、なぜ「We treat everyone with respect」と言う？',
       choices: ['To stand up for Jerry', 'To ask who he means', 'To go along with his joke'], a: 0,
       choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に乗るため'],
       cue: '「分からない」のあとの一文',
-      line: 'I don’t know *who you’re referring to*. We treat everyone with *respect* around here.',
-      said: '「誰のことか分かりません。ここでは全員を大切にしています」と返す。',
-      mean: 'refer to 〜 ＝ 〜のことを言う。分からないふりで、悪口の呼び方に反対している。',
-      trap: '「分からない」をそのまま取ると、本当に聞いていると思いやすい。次の respect が本音。',
+      line: 'Paul: …make sure you bring the doofus… / Leslie: I don’t know *who you’re referring to*. We treat everyone with *respect* around here.',
+      said: '「あのまぬけも連れてこい」に「誰のことか分かりません。ここでは皆を大切にしています」と返す。',
+      mean: 'refer to 〜 ＝ 〜のことを言う。分からないふりで、ジェリーの悪口に反対している。',
+      trap: '「分からない」をそのまま取ると、本当に聞いていると考えがち。決め手は次の respect。',
       use: 'Sorry, who are you referring to?（失礼、誰のことでしょう）' },
 
     { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 111.3],
@@ -156,26 +193,27 @@ export const jerryMugged: Clip = {
       trap: 'heart を「心臓」と思うと健康の話、by heart（暗記）とまぎれると暗記の話になる。',
       use: 'Write the card from the heart.（カードは心をこめて書いて）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'notmugged', reveals: ['mute', 'doubt', 'fall'], seg: [122.5, 167.1],
-      stem: 'What do we learn about what happened to Jerry?', ja: 'ジェリーに何があったと分かる？',
-      choices: ['Nobody attacked him at all', 'He was too shocked to speak', 'The attack was not so bad'], a: 0,
-      choicesJa: ['誰にも襲われていなかった', 'ショックで話せなかった', '襲われたが、ひどくはなかった'],
-      cue: '裏での会話',
-      said: '会見でレスリーはジェリーを被害者として話すが、裏では本人が転んだだけだと話す。',
-      mean: '予算は取れたが、きっかけの事件はなかった、という皮肉な流れ。',
-      trap: '「ショックで話せない」をそのまま信じやすい。あとの裏の会話で本当のことが分かる。',
-      use: 'Wait, so it never happened?（待って、じゃあ実際はなかったの？）' },
-
     { id: 'h2', skill: 'detail', level: 'B2', point: 'mute', reveals: ['notmugged'], seg: [122.9, 134.4],
       stem: 'Why can’t Jerry talk, according to Leslie?', ja: 'レスリーによると、ジェリーはなぜ話せない？',
       choices: ['He is in shock from it', 'He has a very sore throat', 'He is too nervous'], a: 0,
       choicesJa: ['事件のショックで', 'のどがとても痛いから', '緊張しすぎているから'],
       cue: '「because」のあと',
       line: 'He *can’t talk* right now because he has *hysterical muteness from trauma*.',
-      said: '「ジェリーは今話せません。トラウマで声が出なくなっているので」と言う。',
-      mean: 'trauma ＝ ひどいショックの体験。muteness ＝ 声が出ないこと。',
-      trap: '直前に nervous と聞いていたので、緊張だと思いやすい。理由は because のあと。',
+      said: '「彼は今は話せません。ショックで声が出なくなっているんです」と言う。',
+      mean: 'hysterical muteness ＝ ショックで声が出なくなること。trauma ＝ ひどいショックの体験。',
+      trap: 'ヒステリーは日本語だと「怒って騒ぐ」だが、ここはショックで声が出ないこと。理由は because のあと。',
       use: 'I can’t talk right now, sorry.（今ちょっと話せないの、ごめん）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'notmugged', reveals: ['mute', 'reach'], seg: [137.0, 165.8],
+      stem: 'Was Jerry really mugged in the park?', ja: 'ジェリーは本当に公園で強盗にあった？',
+      choices: ['No, he fell by himself', 'Yes, but not badly', 'Yes, and he can’t talk'], a: 0,
+      choicesJa: ['いいえ、自分で転んだ', 'はい、でも軽く', 'はい、それで話せない'],
+      cue: '裏での会話',
+      line: 'I dropped the burrito… and *I lose my balance, and I fall on my shoulder*.',
+      said: '裏では、落としたブリトーを取ろうとして転んだだけだと本人が話す。',
+      mean: 'lose one’s balance ＝ バランスを崩す。予算は取れたが、きっかけの事件はなかった、という皮肉な流れ。',
+      trap: '「ショックで話せない」をそのまま信じやすい。あとの裏の会話で本当のことが分かる。',
+      use: 'Wait, so it never happened?（待って、じゃあ実際はなかったの？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'doubt', seg: [137.3, 146.7], retired: true,
       stem: 'Why does someone ask “Were you even in the park?”', ja: '“Were you even in the park?” と聞くのはなぜ？',
@@ -188,16 +226,15 @@ export const jerryMugged: Clip = {
       trap: '直前の Is this fake? から、けがを疑っていると思いやすい。けがは本物だと答えたあと。',
       use: 'Were you even listening?（そもそも聞いてた？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'way', seg: [140, 148.2],
+    { id: 'd3', ctx: true, skill: 'detail', level: 'B1', point: 'way', seg: [139.5, 147.0],
       stem: 'Where was Jerry going when it all started?', ja: 'ことの始まりのとき、ジェリーはどこへ行くところだった？',
       choices: ['To feed the hummingbirds', 'To buy a breakfast burrito', 'To walk his dog'], a: 0,
       choicesJa: ['ハチドリにえさをやりに', '朝食のブリトーを買いに', '犬の散歩に'],
-
       cue: '「on my way to」のあと',
-      line: 'I was *on my way to feed the hummingbirds*, and I stopped for a breakfast burrito.',
-      said: '「ハチドリにえさをやりに行く途中、ブリトーを買いに寄った」と話す。',
-      mean: 'on my way to 〜 ＝ 〜へ行く途中。stop for 〜 ＝ 〜を買いに寄る。',
-      trap: 'burrito がはっきり聞こえ、行き先だと思いやすい。行き先は on my way to のあと。',
+      line: 'Were you even in the park yesterday? / Jerry: Look, I was *on my way to feed the hummingbirds*, and I stopped for a breakfast burrito.',
+      said: '「そもそも公園にいたの？」に「ハチドリにえさをやりに行く途中、ブリトーを買いに寄った」と話す。',
+      mean: 'on my way to 〜 ＝ 〜へ行く途中。stop for 〜 ＝ 〜を買いに寄る。Look ＝ いいかい（説明の前置き）。',
+      trap: 'burrito がはっきり聞こえ、行き先と考えがち。行き先は on my way to のあと。',
       use: 'I stopped for coffee on my way here.（来る途中でコーヒーを買った）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'fall', reveals: ['notmugged', 'reach'], seg: [146.6, 157.6], retired: true,
@@ -241,16 +278,15 @@ export const jerryMugged: Clip = {
       trap: 'went to なら「ウェン」、got to なら「ガラ」。「ゴウタ」と聞こえれば go to。過去の話でも今の形。',
       use: 'So I go up and say hi.（で、近づいてあいさつするわけ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 167.5],
+    { id: 'i3', ctx: true, skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 165.8],
       stem: 'Why didn’t Jerry tell everyone the truth?', ja: 'ジェリーはなぜ本当のことを言わなかった？',
       choices: ['Everyone would laugh at him', 'Tom would never believe him', 'Tom would tell the boss'], a: 0,
       choicesJa: ['みんなに笑われるから', 'トムが絶対に信じないから', 'トムが上司に言いつけるから'],
       cue: '「Imagine」のあと',
-      line: 'Are you kidding me? *Imagine what Tom would have said.* — Damn, Jerry!…',
-      said: '「本当のことを言えば？」に「冗談だろ。トムに何を言われるか」と答える。',
+      line: 'Why didn’t you just tell everybody the truth? / Jerry: Are you kidding me? *Imagine what Tom would have said.*',
+      said: '「なぜ本当のことを言わなかったの？」に「冗談だろ。トムに何を言われるか」と答える。',
       mean: 'Imagine what 〜 would have said ＝ 〜に何て言われたか。からかわれると分かっていた。',
-
-      trap: 'Tom の名前から、告げ口だと思いやすい。すぐあとに Tom がからかう。',
+      trap: 'Tom の名前から、告げ口だと勘違いしやすい。すぐあとに Tom がからかう。',
       use: 'Imagine what my mom would say!（母に何て言われるか！）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'tom', reveals: ['truth', 'fall'], seg: [159.4, 167.1], retired: true,
