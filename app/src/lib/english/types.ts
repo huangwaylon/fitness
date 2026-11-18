@@ -61,7 +61,7 @@ export interface Question {
   trap: string;
   /** 使えるフレーズ: a reusable chunk, its Japanese in （…）. */
   use: string;
-  /** Kept for old rows and flags, never drawn. */
+  /** Kept for old rows and flags, never drawn; its bank file keeps only its phrase (catalog.ts bankOf). */
   retired?: true;
 }
 
@@ -136,6 +136,6 @@ export interface JaTranscriptFile {
   lines: readonly Required<Pick<TranscriptLine, 't' | 'ja'>>[];
 }
 
-/** A clip's bank as the build writes it (vite.config.ts english-data): the clip, and its scenes (and beats) and
- *  transcript lines when it has the files. */
+/** A clip's bank as the build writes it (vite.config.ts english-data, catalog.ts bankOf): the clip (a retired
+ *  question cut to its phrase), and its scenes (and beats) and transcript lines when it has the files. */
 export type Bank = Clip & { scenes?: readonly Scene[]; beats?: readonly Beat[]; lines?: readonly TranscriptLine[] };

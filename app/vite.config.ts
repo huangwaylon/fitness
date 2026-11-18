@@ -8,7 +8,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 import { basisModuleCode } from './src/lib/components/world3d/basisModule.ts';
-import { bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
+import { bankOf, bankPath, deckOf, metaOf, shardPath, shardsOf, withScenes, withTranscript } from './src/lib/english/catalog.ts';
 import { fnv } from './src/lib/english/hash.ts';
 import { planOf } from './src/lib/english/plan.ts';
 import type { Bank, Clip, JaTranscriptFile, ScenesFile, TranscriptFile, TranscriptLine } from './src/lib/english/types.ts';
@@ -150,7 +150,7 @@ const globsUncached: Plugin = {
  *  client build; this wraps them. */
 /** English Study's data (docs/english.md "Data"): clips/'s files stay the source; `clips/index.ts?english-index` is
  *  the library's index (lib/english/catalog.ts ClipMeta, in the sheet's chunk, in the shared plan's order: plan.ts),
- *  and each bank a file of its own, `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
+ *  and each bank a file of its own (catalog.ts bankOf: its retired questions cut to what この動画のフレーズ shows), `english/c/<id>.<v>.json` (catalog.ts bankPath), written into the build (served by
  *  the dev server), never bundled nor precached (caches.ts isEnglishData). A clip with scenes/<video>.json (場面のあらすじ)
  *  has them in its bank (`scenes`, and `beats` when the file has them), their version in the file's name. A clip with
  *  transcripts/<video>.en.json (セリフ) has its lines in its bank too, each with the ja file's translation when in,
@@ -199,11 +199,7 @@ const englishData = (): Plugin => {
       return { clips: module.CLIPS, deps: dependencies, scenes: readScenes(), lines: readTranscripts(module.CLIPS), shards, deck: shards.map(fnv) };
     }));
   const meta = (d: Data, c: Clip) => withTranscript(withScenes(metaOf(c), d.scenes.get(c.video)), d.lines.get(c.video));
-  const bank = (d: Data, c: Clip): Bank => {
-    const sf = d.scenes.get(c.video);
-    const lines = d.lines.get(c.video);
-    return { ...c, ...(sf && { ...sf }), ...(lines && { lines }) };
-  };
+  const bank = (d: Data, c: Clip): Bank => bankOf(c, d.scenes.get(c.video), d.lines.get(c.video));
   return {
     name: 'english-data',
     enforce: 'pre',

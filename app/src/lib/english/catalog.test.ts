@@ -1,8 +1,9 @@
 // フレーズ's deck (catalog.ts deckOf, shardsOf; docs/english.md "フレーズ"): which questions make a card, one per
 // English phrase, split into SHARDS stable files that each mix the whole library.
 import { describe, expect, it } from 'vitest';
-import { deckOf, inDeck, shardOf, shardsOf, SHARDS, type PhraseEntry } from './catalog.ts';
-import { keyWordsOf, markedIn, wordsOf } from './phrases.ts';
+import { bankOf, deckOf, inDeck, shardOf, shardsOf, SHARDS, type PhraseEntry } from './catalog.ts';
+import { draw } from './draw.ts';
+import { keyWordsOf, markedIn, momentsOf, wordsOf } from './phrases.ts';
 import { CLIPS } from './clips/index.ts';
 import { planOf } from './plan.ts';
 import type { Clip, Question } from './types.ts';
@@ -73,6 +74,23 @@ describe('the files', () => {
     for (const s of shards) {
       expect(Math.abs(s.length - mean)).toBeLessThan(mean * 0.2);
       expect(new Set(s.map((e) => e[0])).size).toBeGreaterThan(CLIPS.length / 3);
+    }
+  });
+});
+
+describe('a bank file (bankOf)', () => {
+  it('a retired question keeps its phrase only (one without a line dropped); the live ones whole', () => {
+    const live = q({ id: 'a' }), old = q({ id: 'b', retired: true, cue: 'x', reveals: ['p2'] }), bare = q({ id: 'c', retired: true, line: undefined });
+    expect(bankOf(clip('k', [live, old, bare]), undefined, undefined).questions).toEqual([
+      live, { id: 'b', retired: true, seg: [10, 14], line: old.line, said: 's', mean: 'm', use: old.use }
+    ]);
+  });
+  it('every clip: the same draws and the same この動画のフレーズ as its whole bank', () => {
+    for (const c of CLIPS) {
+      const b = bankOf(c, undefined, undefined);
+      const shown = (x: Clip) => momentsOf(x).map((m) => [m.from, m.to, m.qs.map(({ id, line, said, mean, use }) => [id, line, said, mean, use])]);
+      expect(shown(b)).toEqual(shown(c));
+      for (const play of [1, 2]) expect(draw(b, {}, play, `x:${c.id}:${play}`).map((x) => x.id)).toEqual(draw(c, {}, play, `x:${c.id}:${play}`).map((x) => x.id));
     }
   });
 });

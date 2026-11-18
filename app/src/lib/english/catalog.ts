@@ -5,7 +5,7 @@
 import { drawSize } from './draw.ts';
 import { clipHash, fnv32, scenesHash, transcriptHash } from './hash.ts';
 import { keyWordsOf, splitUse, wordsOf } from './phrases.ts';
-import type { Band, Clip, Question, ScenesFile, TranscriptLine } from './types.ts';
+import type { Band, Bank, Clip, Question, ScenesFile, TranscriptLine } from './types.ts';
 
 /** The show, short (a row's sub line, a chip). */
 export type Show = 'Friends' | 'The Office' | 'Parks' | 'iCarly';
@@ -52,6 +52,19 @@ export const withTranscript = (m: ClipMeta, lines: readonly TranscriptLine[] | u
 /** A bank's file, under the base path: its name carries its version (and its scenes', its transcript's), so a cached copy is never stale and a page left
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
 export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}.json`;
+
+/** What a retired question keeps in its bank file: この動画のフレーズ's line and notes (phrases.ts momentsOf), its id and
+ *  `retired` (a saved ☆ on it let go: PhraseReview). Nothing else reads one: a draw, the plan and the deck skip them, a
+ *  flag is only on a drawn one and a saved place is dropped with its clip's version. */
+const RETIRED_KEEPS = ['id', 'retired', 'seg', 'line', 'said', 'mean', 'use'] as const;
+
+/** A clip's bank as its file holds it (vite.config.ts english-data): the clip with its scenes (and beats) and transcript
+ *  lines when it has them, its retired questions cut to RETIRED_KEEPS (one without a line dropped: no phrase shows it). */
+export function bankOf(c: Clip, sf: Pick<ScenesFile, 'scenes' | 'beats'> | undefined, lines: readonly TranscriptLine[] | undefined): Bank {
+  const questions = c.questions.flatMap((q) =>
+    !q.retired ? [q] : q.line ? [Object.fromEntries(RETIRED_KEEPS.filter((k) => q[k] !== undefined).map((k) => [k, q[k]])) as unknown as Question] : []);
+  return { ...c, questions, ...(sf && { ...sf }), ...(lines && { lines }) };
+}
 
 /** A card of フレーズ's deck (docs/english.md "フレーズ"): a question's phrase, where it's heard and its 意味,
  *  `[clip, qid, from, to, use, line, mean]`; the video and title come from the index. */
