@@ -818,14 +818,16 @@ describe('live: the outbox kept across a kill', () => {
     expect(disk[KEY]).toHaveLength(120);
   });
 
-  it('a すごろく move made before Tokyo midnight goes again after a welcome past it (its game the room keeps 2 days); a world one goes', async () => {
+  it('a すごろく move made before Tokyo midnight goes again after a welcome past it (its game the room keeps 2 days); a world one is told dropped', async () => {
     const d = tokyoDayNum(Date.now()) - 1;
     const sg = { v: 3, c: 7, kind: 'sg', g: 'abcdefghij', i: 3, a: 'roll' };
     disk = { [KEY]: [{ c: 5, d, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }, { c: 7, d, m: sg }] };
-    const a = boot();
+    const a = boot(), dropped: unknown[] = [];
+    a.onDrop!((i) => dropped.push(i));
     a.start();
     last().welcome();
     expect(last().sent.filter((m) => m.kind === 'sg' || m.kind === 'world')).toEqual([sg]);
+    expect(dropped).toEqual([expect.objectContaining({ kind: 'world', c: 5 })]);
     last().recv({ kind: 'ack', c: 7, t: Date.now(), ok: true });
     await Promise.resolve();
     expect(disk[KEY]).toEqual([]);
@@ -948,6 +950,21 @@ describe('live: an intent never acked (a relay that drops it without a word)', (
     expect(a.metrics!()).toMatchObject({ pending: 0, unacked: 1 });
     expect(disk).toEqual([]);
     a.stop();
+  });
+
+  it('one given up on (4 tries) is told dropped, with the intent as sent; one acked is not', () => {
+    const dropped: unknown[] = [];
+    live.onDrop!((i) => dropped.push(i));
+    live.start();
+    const ws = last();
+    ws.welcome();
+    ws.pongs = true;
+    vi.advanceTimersByTime(2100);
+    live.send({ kind: 'sg', g: 'abcdefghij', i: 2, a: 'roll' });
+    live.send({ kind: 'sg', g: 'abcdefghij', i: 3, a: 'roll' });
+    ws.recv({ kind: 'ack', c: (ws.sent.at(-1) as { c: number }).c, t: Date.now(), ok: true });
+    vi.advanceTimersByTime(5 * 60_000);
+    expect(dropped).toEqual([expect.objectContaining({ kind: 'sg', i: 2 })]);
   });
 
   it('a refused one (`ack ok:false`: a claim already made) is told with the intent as sent', () => {

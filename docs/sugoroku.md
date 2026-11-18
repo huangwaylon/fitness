@@ -151,7 +151,7 @@ from anyone at the table). The phone whose turn it isn't watches (whose turn, th
 - **Version:** the start carries the rules' version (`wire.ts` RULES, `r`). A phone on another folds nothing and
   says so (`updateNeeded()`, copy `updateApp`). Bump RULES with any change to what a fold makes of the moves (rules,
   cards, pictures, the board generator, the word and line lists): `online.test`'s pin fails until it is.
-- **Logged:** `sg.sync` once per game and reason (gap, wait, clash, refused, version), never a move each.
+- **Logged:** `sg.sync` once per game and reason (gap, wait, clash, refused, drop: a move the outbox gave up on, rolled back like a refused one; version), never a move each.
 - **Loading:** the app listens from the start (`online.svelte.ts`, light: `wire.ts` only); the rules, words and
   lines load when an invitation is checked or a game opens.
 

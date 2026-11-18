@@ -168,6 +168,9 @@ export interface Live {
    *  already made, a nest too soon, one it couldn't read, a music stage stale or over) and its stamp `t` (optional: the
    *  demo's relay has none). */
   onAck?(fn: (i: Intent, ok: boolean, t: number) => void): () => void;
+  /** A kept intent given up on without its ack (TRIES_MAX tries, pushed out of a full outbox, another day's): called
+   *  with it as sent (optional: the demo's relay has none). The room may or may not have it. */
+  onDrop?(fn: (i: Intent) => void): () => void;
   /** The すごろく game this phone holds (`g`, `n` of its moves), said in each hello: the room replays it from there
    *  whatever `since` (a game crosses Tokyo midnight). Optional: the demo's relay has none. */
   sgAt?(fn: () => SgAt | null): void;
@@ -388,7 +391,14 @@ export function createLive(o: LiveOptions): Live {
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
   const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, held: 0, unacked: 0, closed: 0, busy: 0 };
   const ackSubs = new Set<(i: Intent, ok: boolean, t: number) => void>();
+  const dropSubs = new Set<(i: Intent) => void>();
   let sgAt: (() => SgAt | null) | null = null;
+  /** A kept intent given up on (no ack): out, and told. */
+  const giveUp = (c: number) => {
+    const o = outbox.get(c);
+    forget(c);
+    if (o) for (const f of dropSubs) safe(() => f(o.m as Intent));
+  };
   let resend: ReturnType<typeof setTimeout>[] = [];
   /** When the socket last heard anything (liveness), the pong's wait after a probe, the acks' look. */
   let heardAt = 0;
@@ -522,7 +532,7 @@ export function createLive(o: LiveOptions): Live {
       if (n >= RESEND_BURST) break;
       if (o.busy) o.busy = false;
       else if (++o.tries >= TRIES_MAX) {
-        forget(c);
+        giveUp(c);
         mx.unacked++;
         log('ws.unacked', { kind: (o.m as Intent).kind, tries: o.tries }, 2);
         save();
@@ -724,7 +734,7 @@ export function createLive(o: LiveOptions): Live {
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
           // that day's, gone (but a すごろく move: its game's, which the room keeps 2 days)
           const today = tokyoDayNum(m.t);
-          for (const [k, o] of outbox) if (o.d !== today && (o.m as Intent).kind !== 'sg') (forget(k), save());
+          for (const [k, o] of outbox) if (o.d !== today && (o.m as Intent).kind !== 'sg') (giveUp(k), save());
           for (const o of outbox.values()) o.off = false;
           [...outbox].forEach(([c, o], i) => {
             const go = () => {
@@ -892,7 +902,7 @@ export function createLive(o: LiveOptions): Live {
       const e: Out = { m, d: tokyoDayNum(now + offset), at: 0, due: Infinity, n: 0, tries: 0, off: false, busy: false };
       outbox.set(c, e);
       const went = st.connected && put(e, now, ACK_MS);
-      while (outbox.size > OUTBOX_MAX) forget(oldest());
+      while (outbox.size > OUTBOX_MAX) giveUp(oldest());
       save();
       if (went && !ackTimer) armAcks();
       // (one the buffer turned away goes as it drains: on its way all the same)
@@ -917,6 +927,10 @@ export function createLive(o: LiveOptions): Live {
     onAck(fn) {
       ackSubs.add(fn);
       return () => void ackSubs.delete(fn);
+    },
+    onDrop(fn) {
+      dropSubs.add(fn);
+      return () => void dropSubs.delete(fn);
     },
     sgAt(fn) {
       sgAt = fn;

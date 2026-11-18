@@ -58,4 +58,18 @@ describe('online: this phone and the room', () => {
   it('each hello says the game held and how many of its moves (the room replays it from there, across midnight)', () => {
     expect(h.sgAt!()).toEqual({ g: o.online.cur.g, n: 2 });
   });
+
+  it('a move the outbox gave up on leaves my log (those after it too), logged once', () => {
+    o.sendMove({ a: 'fork', b: 1 });
+    expect(o.online.cur.log).toHaveLength(3);
+    const [, roll, fork] = h.sent as Intent[];
+    h.drop!(fork);
+    expect(o.online.cur.log.map((m) => m.a)).toEqual(['start', 'roll']);
+    h.drop!(roll);
+    expect(o.online.cur.log.map((m) => m.a)).toEqual(['start']);
+    expect(h.logs.filter((l) => l[0] === 'sg.sync')).toEqual([['sg.sync', { why: 'drop', i: 2, held: 0 }, 2]]);
+    // another game's, or not a move: nothing
+    h.drop!({ kind: 'world', op: 'watered', id: 'fl:1:2' } as Intent);
+    expect(o.online.cur.log).toHaveLength(1);
+  });
 });

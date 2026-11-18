@@ -58,7 +58,7 @@ function keep(k: Kept): void {
 
 /** What went wrong in a game's sync, logged once per game and reason (`sg.sync`: never a move each). */
 const said = new Set<string>();
-function warn(why: 'gap' | 'wait' | 'clash' | 'refused' | 'version', i: number, held = 0): void {
+function warn(why: 'gap' | 'wait' | 'clash' | 'refused' | 'drop' | 'version', i: number, held = 0): void {
   const k = `${online.cur.g}:${why}`;
   if (said.has(k)) return;
   said.add(k);
@@ -99,10 +99,15 @@ function hear(m: Relayed): void {
 
 /** My move the room refused (a race lost: what won, it sends me; else it goes from my log, those after it too). */
 function refused(i: Intent, ok: boolean): void {
-  if (ok || i.kind !== 'sg') return;
+  if (!ok) unsend(i, 'refused');
+}
+/** My move the outbox gave up on (no ack: sync/live.ts onDrop): out of my log as a refused one, so the turn can be
+ *  played again (had the room taken it, the next hello's replay brings it back: the hello's `sg`). */
+function unsend(i: Intent, why: 'refused' | 'drop'): void {
+  if (i.kind !== 'sg') return;
   const cur = online.cur, { kind: _k, ...rest } = i, mine: Move = { ...rest, who: me() };
   if (i.g !== cur.g) return;
-  warn('refused', i.i, cur.held.length);
+  warn(why, i.i, cur.held.length);
   if (cur.log[i.i] && sameMove(cur.log[i.i], mine)) keep({ ...cur, log: cur.log.slice(0, i.i) });
 }
 
@@ -151,6 +156,7 @@ export function listen(eager = false): void {
   r.own?.start();
   relay?.on(hear);
   relay?.onAck?.(refused);
+  relay?.onDrop?.((i) => unsend(i, 'drop'));
   // (each hello says the game held and how many of its moves: the room replays it from there, across midnight too)
   relay?.sgAt?.(() => (online.cur.g ? { g: online.cur.g, n: online.cur.log.length } : null));
   relay?.onStatus((st) => (online.connected = st.connected));
