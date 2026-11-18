@@ -236,7 +236,8 @@ const OFFSET_MAX_MS = 86_400_000;
 const OFFSET_TTL_MS = 6 * 3_600_000;
 /** The relay's clock offset as last measured on this phone (localStorage `island.liveOffset` = `{off, at}`: `at` the
  *  device's clock when measured) while it's fresh, else 0. */
-function keptOffset(now = Date.now()): { off: number; at: number } {
+function keptOffset(): { off: number; at: number } {
+  const now = Date.now();
   const o = readJson<{ off?: unknown; at?: unknown }>(localKV(), LIVE.offset);
   const ok = o && typeof o.off === 'number' && Number.isFinite(o.off) && Math.abs(o.off) < OFFSET_MAX_MS && typeof o.at === 'number' && o.at <= now && now - o.at < OFFSET_TTL_MS;
   return ok ? { off: o.off as number, at: o.at as number } : { off: 0, at: 0 };
