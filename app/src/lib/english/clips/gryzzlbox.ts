@@ -317,9 +317,9 @@ export const gryzzlBoxes: Clip = {
       cue: '「we have found its」のあと',
       line: 'Finally, after months of searching for a way to defeat Gryzzl, we have found its *Achilles heel*.',
       said: 'レスリーが「何か月も探して、ついにグリズルの弱点を見つけた」と言う。',
-      mean: 'ギリシャ神話の英雄アキレスは、かかと（heel）だけが弱かった。日本語の「アキレス腱」と同じ意味。',
-      trap: 'heel（かかと）から体の話を連想しやすいが、日本語の「アキレス腱（弱点）」と同じたとえ。',
-      use: 'Math is my Achilles heel.（数学が私のアキレス腱なんだ）' },
+      mean: 'ギリシャ神話の英雄アキレスは、かかと（heel）だけが弱かった。日本語の「アキレスけん」と同じ意味。',
+      trap: 'heel（かかと）から体の話を連想しやすいが、日本語の「アキレスけん（弱点）」と同じたとえ。',
+      use: 'Math is my Achilles heel.（数学が私のアキレスけんなんだ）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'needback', seg: [203.4, 210.6],
       stem: 'What does “I’m gonna need that back” mean?',
