@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 13, retire 0, new 2, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 7, rewrite 13, retire 0, new 2, ctx 5, tx 10, qa 16
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 5, new 1
 // “Chandler Tells a Kid That He Was Adopted | Friends” (the official Friends channel, Best of Season 10): Monica and
 // Chandler visit Bill and Colleen, a couple who adopted, for advice; on his way to wash his hands Chandler tells their
@@ -6,8 +6,8 @@
 // Segments from the captions, words from whisper (2026-11-16; whole-second times). The hosts are never told apart by
 // name in a line, so items say "the host". pr1 restored (the joke itself is excluded; the silence before the line is
 // the cue). Whisper's "Who are Bill and Colleen?" (112 s) is likely "Where are…": no item uses it.
-// EXCLUDE 9–13 (the "wee-wees and hoo-hoos" joke)
-// EXCLUDE 39.9–42.5 ("I think I just had a tiny orgasm")
+// EXCLUDE 9.7–13.1 (the "wee-wees and hoo-hoos" joke; json3 words)
+// EXCLUDE 39.9–41.9 ("I think I just had a tiny orgasm")
 import type { Clip } from '../types.ts';
 
 export const chandlerAdopted: Clip = {
@@ -28,7 +28,7 @@ export const chandlerAdopted: Clip = {
       trap: 'see を「見る」と考えがち。see a doctor（医者に診てもらう）と同じ「会う」の see。',
       use: 'Thank you for seeing me today.（今日はお時間をいただきありがとうございます）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'ohplease', ctx: true, seg: [2.6, 8.9],
+    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'ohplease', ctx: true, seg: [3.0, 9.65],
       stem: 'What does the host mean by “Oh, please”?',
       ja: '夫婦の「Oh, please」はどういう意味？',
       choices: ['That’s too kind of you', 'Please help us, too', 'Please say more about it'], a: 0,
@@ -64,7 +64,7 @@ export const chandlerAdopted: Clip = {
       trap: '最後に forms（書類）が聞こえ、書類で分けたと思いやすい。into のすぐあとを聞く。',
       use: 'Let’s break it down into steps.（段階に分けて考えよう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', seg: [42.6, 57.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['worth'], seg: [41.9, 56.9],
       stem: 'Why are Monica and Chandler visiting this couple?',
       ja: 'モニカとチャンドラーはなぜこの夫婦を訪ねた？',
       choices: ['To learn about adopting', 'To meet a boy to adopt', 'To buy a book from them'], a: 0,
@@ -76,7 +76,7 @@ export const chandlerAdopted: Clip = {
       trap: 'Owen（息子）の名前が出るので、その子に会いに来たと考えがち。夫婦は自分たちの経験を話している。',
       use: 'We’d love to hear about your trip.（旅行の話、ぜひ聞きたいです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'worth', seg: [45.2, 53.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'worth', seg: [45.2, 52.85],
       stem: 'What does the host say about the adoption process?',
       ja: '養子の手続きについて、夫婦は何と言う？',
       choices: ['Hard, but you’ll be glad', 'Simple, if you’re organized', 'Hard, and it never ends'], a: 0,
@@ -112,7 +112,7 @@ export const chandlerAdopted: Clip = {
       trap: '「ワンミトゥ」なら want me to、「ウォンティッミ」と1音多ければ wanted me to、「ウォウンレッミ」なら won’t let me。',
       use: 'Do you want me to come with you?（一緒に行こうか？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'hall', reveals: ['hands'], seg: [61.8, 66.8],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'hall', reveals: ['hands'], seg: [62.2, 66.8],
       stem: 'Where is the bathroom?',
       ja: 'トイレはどこ？',
       choices: ['Down the hall, on the left', 'Down the hall, on the right', 'Upstairs, on the left'], a: 0,
@@ -136,7 +136,7 @@ export const chandlerAdopted: Clip = {
       trap: 'adopt を文字どおりに取ると意味が通らない。直前の「私もそうする」で気が合うと分かる。',
       use: 'You’re my kind of person.（あなたとは気が合うね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'compass', seg: [82.7, 92.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'compass', seg: [82.7, 88.35],
       stem: 'What does Owen have a Scout badge for?',
       ja: 'オーウェンは何のバッジを持っている？',
       choices: ['Using a compass', 'Reading a city map', 'Tying knots'], a: 0,
@@ -148,7 +148,7 @@ export const chandlerAdopted: Clip = {
       trap: '方位磁石と地図はセットで思い浮かびやすい。聞こえた語で選ぶ。',
       use: 'Do you know how to use this?（これの使い方、分かる？）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lovetobut', ctx: true, seg: [88.9, 95.2],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'lovetobut', ctx: true, seg: [88.4, 95.2],
       stem: 'What does Chandler say to Owen’s offer?',
       ja: 'オーウェンの申し出に、チャンドラーは何と答える？',
       choices: ['No, he has to go back', 'Yes, but a bit later', 'Maybe, if his parents agree'], a: 0,
@@ -172,7 +172,7 @@ export const chandlerAdopted: Clip = {
       trap: 'nothing から「関係ない」「お金がない」と考えがち。返す言葉に詰まったときの決まり文句。',
       use: 'Any ideas? — Sorry, I got nothing.（何か案ある？—ごめん、全然）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'bathroom', ctx: true, seg: [115.6, 124.9],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'bathroom', ctx: true, seg: [115.6, 124.55],
       stem: 'What does Monica first think happened?',
       ja: 'モニカは最初、何があったと思う？',
       choices: ['He caused trouble in the bathroom', 'He saw something in the bathroom', 'He broke the nice book'], a: 0,
@@ -207,7 +207,7 @@ export const chandlerAdopted: Clip = {
       trap: 'No を相手への「いいえ」と考えがち。自分の考えを打ち消す No。',
       use: 'No, you know what? Let’s just go.（いや、やっぱりもう行こう）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.73, 145],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'worms', seg: [137.6, 144.6],
       stem: 'What does the host mean about the sour worms?',
       ja: 'すっぱいグミについて、夫婦は何を言いたい？',
       choices: ['Please don’t eat them', 'Eat them if you like', 'Take some home'], a: 0,
@@ -231,7 +231,7 @@ export const chandlerAdopted: Clip = {
       trap: '正直に謝る流れを予想しやすいが、この場面の彼は先に言い訳を用意している。',
       use: 'Kids pick up on everything.（子どもは何でも気づくよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'haventtold', seg: [143.5, 150.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'haventtold', seg: [143.5, 150.55],
       stem: 'Type what the host says: “we ___ he’s adopted yet.” (3 words)', answer: "haven't told him",
       ja: '書こう：「we ___ he’s adopted yet.」（3語）',
       cue: '「you should know」のあと。',
@@ -252,7 +252,7 @@ export const chandlerAdopted: Clip = {
       trap: '両親への反論に聞こえるが、直後の一言で笑われているのは本人だと分かる。',
       use: 'See? I told you so.（ほらね、言ったでしょ）' },
 
-    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 167.1], keep: true,
+    { id: 'c1', skill: 'number', level: 'B1', point: 'paid', seg: [158.4, 166.9], keep: true,
       stem: 'How much did Chandler pay Owen to keep quiet?',
       ja: 'チャンドラーは口止めにオーウェンにいくら払った？',
       choices: ['$5', '$15', '$50', '$500'], a: 2,
@@ -276,19 +276,7 @@ export const chandlerAdopted: Clip = {
       trap: 'technically は長くて耳に残るが、答えは文の最後の give back。',
       use: 'Can you give back my pen?（ペン返してくれる？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sign', 'headsup'], seg: [172, 198.6],
-      stem: 'How does the visit end?',
-      ja: '訪問はどう終わる？',
-      choices: ['The couple is angry at them', 'The couple forgives them both', 'The couple thanks them'], a: 0,
-      choicesJa: ['夫婦は二人に腹を立てている', '夫婦は二人を許す', '夫婦は二人に感謝する'],
-      cue: '最後の友だちへの報告。',
-      line: 'We just want to give you a heads-up. Bill and Colleen *hate us*.',
-      said: '謝っても許されず、友だちに「ビルとコリーンに嫌われちゃった」と報告する。',
-      mean: 'hate us ＝ 私たちを大嫌い。謝罪が言い訳になり、訪問は大失敗。',
-      trap: 'I’m so sorry が聞こえるので仲直りと考えがち。最後の報告まで聞く。',
-      use: 'Long story short, it didn’t go well.（手短に言うと、うまくいかなかった）' },
-
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'sign', ctx: true, seg: [172.3, 181.1],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'sign', ctx: true, seg: [172.3, 180.85],
       stem: 'What does Chandler do after “I’m so sorry”?',
       ja: '「I’m so sorry」のあと、チャンドラーは何をする？',
       choices: ['He blames the parents', 'He blames Owen', 'He offers to fix it'], a: 0,
@@ -323,7 +311,19 @@ export const chandlerAdopted: Clip = {
       trap: '養子の話はもう知っている。new（新しい）秘密は also のあと。',
       use: 'Oops. Forget I said that.（おっと、今のは忘れて）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'headsup', reveals: ['outcome'], seg: [189.5, 196.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['headsup'], seg: [185.8, 201.1],
+      stem: 'How does the visit end?',
+      ja: '訪問はどう終わる？',
+      choices: ['The couple is angry at them', 'The couple forgives them both', 'The couple thanks them'], a: 0,
+      choicesJa: ['夫婦は二人に腹を立てている', '夫婦は二人を許す', '夫婦は二人に感謝する'],
+      cue: '最後の友だちへの報告。',
+      line: 'We just want to give you a heads-up. Bill and Colleen *hate us*.',
+      said: '夫婦は「ここから逃げなきゃ」と言い出し、二人は友だちに「ビルとコリーンに嫌われちゃった」と報告する。',
+      mean: 'hate us ＝ 私たちを大嫌い。謝罪が言い訳になり、訪問は大失敗。',
+      trap: '報告の口調が軽いので、うまくいったと考えがち。決め手は hate us。',
+      use: 'Long story short, it didn’t go well.（手短に言うと、うまくいかなかった）' },
+
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'headsup', reveals: ['outcome'], seg: [189.5, 197.6],
       stem: 'What does “give you *a heads-up*” mean?',
       ja: '「give you a heads-up」はどういう意味？',
       choices: ['Tell you ahead of time', 'Ask you what to do', 'Ask you to keep quiet'], a: 0,

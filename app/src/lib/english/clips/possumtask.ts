@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 16, retire 3, new 1, ctx 4, tx 11
+// R4 REVIEW 2026-11-18: keep 3, rewrite 16, retire 3, new 1, ctx 4, tx 11, qa 13
 // A2 REVIEW 2026-11-17: keep 10, rewrite 6, retire 5, new 2
 // “Andy Takes Down Pawnee's Notorious Opossum | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 2): Leslie briefs her possum task force; after the catch, an official from the mayor's office praises her,
@@ -6,6 +6,7 @@
 // questions herself about whether they caught the right possum.
 // Segments from the captions, words from whisper (2026-11-16). Names said: Leslie, Andy Dwyer. The man from the
 // mayor's office is never named: "the official". Who says "No, we don't" (48 s) is not named: items say "someone".
+// EXCLUDE 31.4–33.0: "You're next, poopy" (childish potty talk)
 // SKIP 5.6–33.3: flank orders, then the chase (overlapping shouts) and "You're next, poopy" (speaker unclear)
 // Never tested: 49–52 s ("shoe shinest" / "shoe shyness"), 80–83 s (whose "No." answers each favor), 89.8 s.
 // R4: m1 and i1 (crowded 67–78 s), d3 (folded into the p1 exchange) retired; c3, p2, c1, h3
@@ -18,7 +19,7 @@ export const possumTaskForce: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'chance', reveals: ['smart'], seg: [0, 5.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'chance', seg: [0, 3.98],
       stem: 'What does Leslie say about catching the possum?',
       ja: 'ポッサムを捕まえることについて、レスリーは何と言う？',
       choices: ['They may get only one try', 'They have only one day', 'They have only one trap'], a: 0,
@@ -39,7 +40,7 @@ export const possumTaskForce: Clip = {
       line: 'so we have to *play it smart*',
       said: '「だから、かしこくやらないと」と言う。',
       mean: '文字どおりは「それをかしこくプレーする」。試合のように、考えて動くこと。play it safe（安全にいく）と同じ形。',
-      trap: 'smart をカタカナの「スマート（かっこいい）」と勘違いしやすい。ここは「かしこく」。',
+      trap: 'smart をカタカナの「スマート（細い・スタイルがいい）」と勘違いしやすい。ここは「かしこく」。',
       use: 'Let’s play it safe and leave early.（念のため早めに出よう）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'playit', reveals: ['smart'], seg: [0, 5.6],
@@ -66,7 +67,7 @@ export const possumTaskForce: Clip = {
       trap: 'このあと自分の手柄を言うので、それと考えがち。最初の一言はチームへの感謝。',
       use: 'Thank you. I had a great team.（ありがとう。いいチームのおかげです）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', reveals: ['mastermind', 'byday'], seg: [33.3, 59.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', reveals: ['thanks', 'mastermind', 'radical', 'nodont'], seg: [33.1, 48.4],
       stem: 'What happens when the official meets the team?',
       ja: '市長室の人がチームに会うと、何が起きる？',
       choices: ['He praises Leslie and meets Andy', 'He says it is the wrong possum', 'He gives Andy a city job'], a: 0,
@@ -75,7 +76,7 @@ export const possumTaskForce: Clip = {
       line: 'Very impressive, Leslie. … *This is Andy Dwyer*, he actually caught the thing.',
       said: 'レスリーがほめられ、「実際に捕まえたのは彼です」とアンディを紹介する。',
       mean: 'This is 〜 ＝ 人を紹介するときの言い方。actually ＝ 実際には。',
-      trap: 'no job（仕事なし）と聞こえるので、仕事の話と考えがち。仕事をあげる話は出ない。',
+      trap: 'アンディが紹介されるので、市が彼をやとう話と考えがち。仕事をあげる話は出ない。',
       use: 'This is my friend Ken.（こちらは友だちのケンです）' },
 
     { id: 'c3', skill: 'detail', level: 'B1', point: 'mastermind', seg: [37.0, 43.4],
@@ -126,7 +127,7 @@ export const possumTaskForce: Clip = {
       trap: 'possum tackler は夜の前の「別の時間」の話。by night のあとを聞く。no job なので夜の仕事もない。',
       use: 'By day, a student; by night, a DJ.（昼は学生、夜はDJ）' },
 
-    { id: 'd4', skill: 'phrase', level: 'B2', point: 'pr', reveals: ['reporter'], seg: [57.4, 64.0],
+    { id: 'd4', skill: 'phrase', level: 'B2', point: 'pr', reveals: ['reporter'], seg: [59.5, 62.65],
       stem: 'What does “a great PR opportunity” mean here?',
       ja: 'ここでの「a great PR opportunity」はどういう意味？',
       choices: ['A good chance to look good', 'A good chance to make money', 'A good reason to hire Andy'], a: 0,
@@ -135,10 +136,10 @@ export const possumTaskForce: Clip = {
       line: 'We think that this is a *great PR opportunity*',
       said: '「これは、とてもいい宣伝のチャンスだと思うんです」と言う。',
       mean: 'PR ＝ 宣伝・広報。opportunity ＝ 機会。ポッサム退治をニュースにして、市の評判を上げられる。',
-      trap: 'opportunity から「もうけ話」を連想しやすい。PR は人に知ってもらうこと。直後の記者の話がヒント。',
+      trap: 'opportunity から「もうけ話」を連想しやすい。PR は人に知ってもらうこと。市の仕事ぶりを新聞にのせる話。',
       use: 'This is a great opportunity for us.（これは絶好の機会だ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'reporter', reveals: ['pr'], seg: [59, 68.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'reporter', seg: [62.65, 68.45],
       stem: 'What has the official arranged for the team?',
       ja: '市長室の人は、チームのために何を手配した？',
       choices: ['A reporter to visit them', 'A dinner with the mayor', 'A prize from the city'], a: 0,
@@ -162,7 +163,7 @@ export const possumTaskForce: Clip = {
       trap: 'favor から、レスリーが借りを作ったと思いやすい。you need なので、たのむのはレスリー。',
       use: 'If you ever need anything, give me a call.（何かあったら電話して）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'eager', ctx: true, seg: [68.7, 77.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'eager', ctx: true, seg: [68.45, 77.1],
       stem: 'How does Leslie take the official’s offer?',
       ja: '市長室の人の申し出を、レスリーはどう受け取る？',
       choices: ['She wants to use it now', 'She saves it for another day', 'She says no, thank you'], a: 0,
@@ -186,7 +187,7 @@ export const possumTaskForce: Clip = {
       trap: 'Well から、賛成していると思いやすい。うしろに否定が来れば、やんわり直す合図。',
       use: 'Well, you don’t have to decide now.（いや、今決めなくていいよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'donthave', seg: [75.6, 80.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'donthave', seg: [75.5, 79.55],
       stem: 'Type the reply: “Well, ___ choose, right?” (4 words)', answer: 'you don\'t have to',
       ja: '返事を入力：「Well, ___ choose, right?」（4語）',
       cue: '「Well」のすぐあと',
@@ -196,7 +197,7 @@ export const possumTaskForce: Clip = {
       trap: 'you don’t が「ユドン」、have to が「ハフタ」とつながる。4語あるか数える。',
       use: 'You don’t have to come if you’re busy.（忙しいなら来なくていいよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'recycle', seg: [77.5, 81.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'recycle', seg: [78.55, 81.5],
       stem: 'What is the first favor Leslie asks for?',
       ja: 'レスリーが最初にたのむことは？',
       choices: ['An extra recycling can', 'An extra parking space', 'A new trash truck'], a: 0,
@@ -255,7 +256,7 @@ export const possumTaskForce: Clip = {
       trap: '最初の Yes や No だけで決めやすい。3つまとめて聞く。',
       use: 'Am I sure? Not quite.（確か？いや、完全には）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'doubts', seg: [96.8, 115.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'doubts', reveals: ['sure', 'depends', 'questions'], seg: [94.5, 112.2],
       stem: 'What does Leslie ask herself?',
       ja: 'レスリーは、自分に何を問いかける？',
       choices: ['If they caught the right possum', 'If Andy should get the credit', 'If she should call the mayor now'], a: 0,
@@ -267,7 +268,7 @@ export const possumTaskForce: Clip = {
       trap: 'favor や mayor の話のあとなので、市長室の話を連想しやすい。話題はポッサムが本物か。',
       use: 'Are you sure this is the right bus?（これ、本当に合ってるバス？）' },
 
-    { id: 'c1', skill: 'phrase', level: 'B1', point: 'depends', seg: [103.6, 108.1],
+    { id: 'c1', skill: 'phrase', level: 'B1', point: 'depends', seg: [103.5, 108.35],
       stem: 'What does Leslie’s “That depends” mean here?',
       ja: 'レスリーの「That depends」は、ここではどういう意味？',
       choices: ['Maybe yes, maybe no', 'Yes, of course I could', 'No, I never could'], a: 0,
@@ -279,7 +280,7 @@ export const possumTaskForce: Clip = {
       trap: '直前の Of course（もちろん）につられやすいが、2つ目の答えは depends（場合による）。',
       use: 'Can I come? That depends on the time.（行けるか？時間によるね）' },
 
-    { id: 'd6', skill: 'infer', level: 'B1', point: 'questions', seg: [107.1, 112.8],
+    { id: 'd6', skill: 'infer', level: 'B1', point: 'questions', seg: [108.3, 112.2],
       stem: 'Why does Leslie ask herself so many questions?',
       ja: 'レスリーはなぜ、自分にたくさん質問する？',
       choices: ['She thinks her job needs it', 'She can’t sleep at night', 'Andy told her to do it'], a: 0,
@@ -291,7 +292,7 @@ export const possumTaskForce: Clip = {
       trap: '前の夜の話（my best ideas…at night）とまざりやすいが、理由は as のあとの立場。',
       use: 'As a teacher, I check every answer.（教師として、答えは全部見ます）' },
 
-    { id: 'h3', skill: 'infer', level: 'B1', point: 'uh', seg: [108.1, 115.8],
+    { id: 'h3', skill: 'infer', level: 'B1', point: 'uh', seg: [112.2, 116.2],
       stem: 'How does Leslie answer her last question?',
       ja: 'レスリーは、最後の質問にどう答える？',
       choices: ['She can’t answer it', 'It helps her a lot', 'It never helps at all'], a: 0,

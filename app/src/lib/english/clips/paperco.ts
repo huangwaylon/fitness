@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 14, retire 1, new 2, ctx 5, tx 16
+// R4 REVIEW 2026-11-18: keep 7, rewrite 14, retire 1, new 2, ctx 5, tx 16, qa 15
 // A2 REVIEW 2026-11-17: keep 4, rewrite 14, retire 5, new 1
 // “Michael Scott's 'Sad Keanu' Moment | The Office” (the official The Office channel, BEST OF SEASON 5 - The Office
 // US): the Michael Scott Paper Company's first days: an e-vite almost nobody answers, Michael griping about Pam and
@@ -7,7 +7,7 @@
 // (121 s), Russell. Whisper's timings drift at 200–260 s (it repeats 216–235 s); segments there follow the captions.
 // Untested: 85–95 s (voices over each other), 254–256 s, 285 s on.
 // EXCLUDE 47.2–53.7 (naked pictures on the desktop)
-// EXCLUDE 74.6–75.6 (“P is being a giant B”)
+// EXCLUDE 74.1–76.3 (“P is being a giant B”; json3 words)
 // EAR CHECK: 135.2–136.2 s h4 (retired) — whisper "I'll do you one better", captions "I'll do you want better".
 // EAR CHECK: 69 s h1 — “Michael, we can hear you” is Pam's (assumed); 210–216 s d2 — “We already offer free delivery”
 // is Pam's and “They don't know that” Michael's (assumed).
@@ -19,9 +19,9 @@ export const paperco: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'luncheon', seg: [13.1, 21.5], ctx: true,
-      stem: 'What is the plan for the day?',
-      ja: 'その日の予定は何？',
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'luncheon', seg: [13.1, 20.7], ctx: true,
+      stem: 'What will they do now?',
+      ja: 'これから、みんなは何をする？',
       choices: ['Wait for people to come', 'Call all their customers', 'Close the office early'], a: 0,
       choicesJa: ['人が来るのを待つ', '客みんなに電話する', '早めに事務所を閉める'],
       cue: '「What should we do now?」の答え',
@@ -102,7 +102,7 @@ export const paperco: Clip = {
       trap: 'Jim の名前が出るので、ジムの話だと勘違いしやすい。謝らずに「電話中」と言い返す。',
       use: 'Sorry, I’m on the phone.（ごめん、今電話中なんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', seg: [75.7, 107.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', seg: [76.4, 101.5],
       stem: 'What does Michael say about hiring his friends?',
       ja: 'マイケルは友だちを雇ったことについて何と言う？',
       choices: ['It was a bad idea', 'It was the best idea', 'It was his mom’s idea'], a: 0,
@@ -125,7 +125,7 @@ export const paperco: Clip = {
       trap: 'leave を「元の職場に戻る」と取りやすい。leave のあとに何を始めると言ったかを聞く。',
       use: 'Fine. I’ll just do it myself.（いいよ。自分でやるから）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'showthem', seg: [100.2, 110.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'showthem', seg: [100.2, 108.6],
       stem: 'What does “That’ll show them” mean?',
       ja: '「That’ll show them」はどういう意味？',
       choices: ['They’ll learn a lesson', 'They’ll be proud of me', 'It will prove it works'], a: 0,
@@ -149,7 +149,7 @@ export const paperco: Clip = {
       trap: 'compliment（ほめ言葉）と似ているので迷いやすい。最初の Get your free pancakes で分かる。',
       use: 'Is breakfast complimentary?（朝食は無料ですか）' },
 
-    { id: 'a1', skill: 'infer', level: 'B2', point: 'texting', seg: [115.7, 124.1], ctx: true,
+    { id: 'a1', skill: 'infer', level: 'B2', point: 'texting', seg: [116.9, 124.05], ctx: true,
       stem: 'Why doesn’t Ryan want a pancake?',
       ja: 'ライアンがパンケーキをいらないのはなぜ？',
       choices: ['His fingers would get dirty', 'He already had lunch', 'He thinks they taste bad'], a: 0,
@@ -161,7 +161,7 @@ export const paperco: Clip = {
       trap: 'あとで客が terrible（ひどい）と言うので、味の話と勘違いしやすい。ライアンは味の話をしていない。',
       use: 'Careful, it’s sticky.（気をつけて、ベタベタするよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'face', seg: [119.9, 130.3],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'face', seg: [120.92, 126.3],
       stem: 'Why does Michael say “You’re the face of this company”?',
       ja: 'マイケルが「You’re the face of this company」と言うのはなぜ？',
       choices: ['To make Ryan act better', 'To say Ryan looks good', 'To thank Ryan for his work'], a: 0,
@@ -173,7 +173,7 @@ export const paperco: Clip = {
       trap: 'face（顔）から、見た目をほめていると思いやすい。前の Tuck in your shirt とつなげる。',
       use: 'You’re the face of the team now.（今は君がチームの顔だよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [123.9, 131],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [126.3, 131],
       stem: 'Type what Michael says: “We’re small, but we’re eager to ___.” (5 words)',
       answer: 'make a name for ourselves',
       ja: '「We’re small, but we’re eager to ___.」の空所を書こう（5語）',
@@ -184,7 +184,7 @@ export const paperco: Clip = {
       trap: 'a と for は小さく短く、ほとんど聞こえない。5語なので a と for も書く。',
       use: 'She made a name for herself in Tokyo.（彼女は東京で名を上げた）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'card', seg: [129.4, 140.2], ctx: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'card', seg: [130.0, 140.2], ctx: true,
       stem: 'What does Michael give instead of a card?',
       ja: 'マイケルは名刺の代わりに何を渡す？',
       choices: ['A small piece of paper', 'A free pancake', 'His phone number'], a: 0,
@@ -231,7 +231,7 @@ export const paperco: Clip = {
       trap: 'don’t even want（欲しくもない）だけ聞くと、返すと考えがち。最後の一言で持ち帰ると分かる。',
       use: 'I’ll take one for my kid.（子どもの分を1つもらいます）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'dream', seg: [168.4, 184],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'dream', seg: [168.4, 188.6],
       stem: 'What was the dream sandwich like in real life?',
       ja: '夢のサンドイッチは、現実ではどうだった？',
       choices: ['It tasted awful', 'It was delicious', 'He never made it'], a: 0,
@@ -267,7 +267,7 @@ export const paperco: Clip = {
       trap: 'happen（起こる）から、何か事件の話に聞こえるが、ここでは取引をまとめたいという意味。',
       use: 'How can we make that happen?（どうすれば実現できるでしょう？）' },
 
-    { id: 'd2', skill: 'infer', level: 'B2', point: 'delivery', seg: [209.5, 223.2], ctx: true,
+    { id: 'd2', skill: 'infer', level: 'B2', point: 'delivery', seg: [209.9, 223.2], ctx: true,
       stem: 'Why does Michael still want Pam to say it?',
       ja: 'マイケルが、それでもパムに言わせたいのはなぜ？',
       choices: ['The caller hasn’t heard about it', 'It is a new deal for today', 'Ryan asked him to say it'], a: 0,
@@ -279,7 +279,7 @@ export const paperco: Clip = {
       trap: 'for today（今日）が聞こえるので、今日だけと考えがち。already（もう）でいつものサービスと分かる。',
       use: 'Do you offer free delivery?（配送は無料ですか）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'boxes', seg: [226.6, 233.1], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'boxes', seg: [228.3, 233.1], keep: true,
       stem: 'What price per box does Pam offer?',
       ja: 'パムが出す1箱の値段は？',
       choices: ['$20', '$34', '$40', '$43'], a: 3,
@@ -315,7 +315,7 @@ export const paperco: Clip = {
       trap: 'should は「シュ」、could は「ク」で始まる。「ウダ」と聞こえれば would have。',
       use: 'Who would’ve thought it’d rain today?（今日雨なんて誰が思った？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hearts', seg: [268.7, 285.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'hearts', reveals: ['office'], seg: [268.7, 284.9],
       stem: 'How does Michael feel about his team at the end?',
       ja: '最後、マイケルはチームをどう思っている？',
       choices: ['Proud of his people', 'Sad about the office', 'Ready to give up'], a: 0,

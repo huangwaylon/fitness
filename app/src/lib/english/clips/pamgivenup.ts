@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 6, new 5, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 6, new 5, ctx 4, tx 8, qa 13
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 4, new 2
 // “Pam Has Just Given Up Trying - The Office US” (the official The Office channel, BEST OF SEASON 4): Pam explains her
 // glasses to the camera, a co-worker teases her looks, Michael calls a meeting to "energize" the office (a co-worker
@@ -10,7 +10,9 @@
 // Same scene as stutter (iahcJPo9Dwg, 0–128 s): its points (contact solution, the meeting's purpose, the coffee
 // proposal, Andy's and Jim's ideas, Now we're cooking, Stanley's refusal) are retired here; this bank tests other
 // lines there and the Toby part.
-// EXCLUDE 165.3–172.8 (Michael's “sassy, powerful black man” line)
+// EXCLUDE 165.3–170.5 (Michael's “sassy, powerful black man” line; “and you're you” after it may play)
+// EAR CHECK: 134.8 s Toby's “Can I talk to you (in/for?) a second” — json3 hears a word before “a second”, whisper
+// doesn't; x3 types only the 5 words before it.
 import type { Clip } from '../types.ts';
 
 export const pamGivenUp: Clip = {
@@ -100,7 +102,7 @@ export const pamGivenUp: Clip = {
       trap: 'Michael meeting を「マイケルとの面談」と取りやすい。人の名前が会議の種類になっている。',
       use: 'That’s such a Tom thing to say.（いかにもトムが言いそう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'sayno', seg: [46.9, 54.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'sayno', seg: [46.9, 53.3],
       stem: 'What will Pam do if he proposes in the meeting?',
       ja: '会議中にプロポーズされたら、パムはどうする？',
       choices: ['Say no to him', 'Leave the room', 'Ask him to wait'], a: 0,
@@ -136,7 +138,7 @@ export const pamGivenUp: Clip = {
       trap: 'パムの名前も出るので、パムに頑張らせる会と勘違いしやすい。最初の問いを聞く。',
       use: 'How are we going to fix this?（これ、どうやって直そうか）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'percolate', reveals: ['energize'], seg: [70.5, 78.6],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'percolate', reveals: ['energize'], seg: [71.3, 78.3],
       stem: 'What does “get things going” mean?',
       ja: '「get things going」はどういう意味？',
       choices: ['Start to do something', 'Make everyone leave', 'Send things to others'], a: 0,
@@ -242,17 +244,17 @@ export const pamGivenUp: Clip = {
       trap: 'grab ＝「つかむ」から、強く握ると思いやすい。grab a coffee ＝ コーヒーを買ってくる。',
       use: 'I’m going to grab some water.（ちょっと水を取ってくる）' },
 
-    { id: 'x3', skill: 'dict', level: 'B2', point: 'second', seg: [133.1, 138.5],
-      stem: 'Type Toby’s question: “Can I ___?” (5 words)', answer: 'talk to you a second',
-      ja: 'トビーの質問を書き取る：「Can I ___?」（5語）',
-      cue: '「Can I」のあとの5語。',
-      line: 'Can I *talk to you a second*?',
+    { id: 'x3', skill: 'dict', level: 'B1', point: 'second', seg: [133.1, 138.5],
+      stem: 'Type Toby’s question: “___ … a second?” (5 words)', answer: 'can i talk to you',
+      ja: 'トビーの質問を書き取る：「___ … a second?」（5語）',
+      cue: '最初の5語。a second の前。',
+      line: '*Can I talk to you* a second?',
       said: 'トビーがマイケルに「ちょっと話せますか？」と聞く。',
-      mean: 'a second ＝ ちょっとの間。Can I talk to you a second? は職場の決まり文句。',
-      trap: 'to と you がつながり、「トゥユ」と短い。a も小さく短いので落としやすい。',
-      use: 'Can I talk to you a second?（ちょっと話せますか？）' },
+      mean: 'Can I talk to you (for) a second? ＝「ちょっとお話しできますか」。a second ＝ ちょっとの間。職場の決まり文句。',
+      trap: 'Can I が「キャナイ」、to you が「トゥユ」とつながって短い。5語あるか数える。',
+      use: 'Can I talk to you for a second?（ちょっとお話しできますか？）' },
 
-    { id: 'g3', skill: 'gist', level: 'B2', point: 'complaint', seg: [134.1, 152.4],
+    { id: 'g3', skill: 'gist', level: 'B2', point: 'complaint', reveals: ['nothing', 'blabber'], seg: [136.3, 152.4],
       stem: 'What does Toby want Michael to do?',
       ja: 'トビーはマイケルに何をしてほしい？',
       choices: ['Deal with Stanley’s problem', 'Say sorry to Stanley', 'Ask Stanley to join them'], a: 0,
@@ -264,7 +266,7 @@ export const pamGivenUp: Clip = {
       trap: 'address を「話しかける」と取ると、謝る話に聞こえる。次の一言を聞く。',
       use: 'Can you address this issue, please?（この問題に対応してもらえますか）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B1', point: 'nothing', reveals: ['blabber', 'complaint'], ctx: true, seg: [139.5, 147.4],
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'nothing', reveals: ['blabber', 'complaint'], ctx: true, seg: [139.0, 147.1],
       stem: 'How does Michael answer Toby?',
       ja: 'マイケルはトビーにどう答える？',
       choices: ['Nothing happened', 'He will talk to Stanley', 'Stanley said sorry'], a: 0,
@@ -299,11 +301,11 @@ export const pamGivenUp: Clip = {
       trap: '思い出しただけと取りやすい。否定のすぐあとに細かい記憶が出たら、知らないふりを疑う。',
       use: 'Oh, that? That was nothing.（ああ、あれ？何でもないよ）' },
 
-    { id: 'd7', skill: 'detail', level: 'B2', point: 'joshing', ctx: true, seg: [147.2, 157.4],
+    { id: 'd7', skill: 'detail', level: 'B2', point: 'joshing', ctx: true, seg: [147.05, 157.3],
       stem: 'What does Michael say they were doing?',
       ja: 'マイケルは、二人が何をしていたと言う？',
-      choices: ['Playing around together', 'Having a short meeting', 'Fighting about work'], a: 0,
-      choicesJa: ['二人でふざけていた', '短い会議をしていた', '仕事のことでけんかしていた'],
+      choices: ['Joking with each other', 'Having a short meeting', 'Fighting about work'], a: 0,
+      choicesJa: ['二人でふざけ合っていた', '短い会議をしていた', '仕事のことでけんかしていた'],
       cue: 'Yeah のあと、We were のあと。',
       line: 'Toby: Stanley was openly insubordinate. / Michael: That, in the conference room? / Toby: Yeah. / Michael: We were *joshing around*, the two of us.',
       said: '「スタンリーは堂々と逆らった」「会議室のあれ？」「ええ」「あれは二人でふざけ合ってたんだ」。',
@@ -343,7 +345,7 @@ export const pamGivenUp: Clip = {
       trap: 'stutter（どもる）から話し方や言い直しの話と取りやすい。Whoa の反応で強さが分かる。',
       use: 'You heard me. I said no.（聞こえたでしょ。だめって言ったの）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', reveals: ['denial'], ctx: true, seg: [157.4, 165.2],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notjoking', reveals: ['denial'], ctx: true, seg: [157.2, 165.2],
       stem: 'What does Toby think of Michael’s answer?',
       ja: 'トビーはマイケルの答えをどう思っている？',
       choices: ['He doesn’t believe it', 'He agrees with Michael', 'He thinks it’s funny'], a: 0,
@@ -355,9 +357,9 @@ export const pamGivenUp: Clip = {
       trap: 'didn’t の t が消えると賛成に聞こえるが、「ディドゥン」の「ン」があれば否定。',
       use: 'It didn’t seem that way to me.（私にはそう見えませんでした）' },
 
-    { id: 'pr2', skill: 'infer', level: 'B2', point: 'friends', seg: [172.9, 177.3],
-      stem: 'What does Michael say about Toby with “If you had any friends”?',
-      ja: '「If you had any friends」で、マイケルはトビーについて何を言っている？',
+    { id: 'pr2', skill: 'infer', level: 'B2', point: 'friends', seg: [172.65, 177.0],
+      stem: 'What does “If you had any friends” say about Toby?',
+      ja: '「If you had any friends」から、トビーについて何が分かる？',
       choices: ['Toby has no friends', 'Toby has many friends', 'Toby should find friends'], a: 0,
       choicesJa: ['トビーには友だちがいない', 'トビーには友だちが多い', 'トビーは友だちを作るべき'],
       cue: '「If you had」のあとと文の終わり。',
