@@ -700,10 +700,13 @@
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   /* the turn's sheet: cream, its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
-    max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+    max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
     box-sizing: border-box; border-radius: 22px 22px 0 0; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
   .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
-  .sbody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px; }
+  /* (a scroller clips at its padding box: the 6 px under and 4 px beside hold the last row's 3–4 px lips and a sent tile's
+     2 px ring, which spill out of the tiles' and buttons' boxes) */
+  .sbody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px;
+    margin: 0 -4px; padding: 2px 4px 6px; }
   .sbody[hidden] { display: none; }
   .sbody > * { flex-shrink: 0; }
   .sbody :global(.btn) { margin: 0; min-height: 48px; }

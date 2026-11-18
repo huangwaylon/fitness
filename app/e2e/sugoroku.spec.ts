@@ -168,3 +168,49 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   await expect(sheet(a).locator('[data-sg-spin], [data-sg-waiting]').first()).toBeVisible();
   await ctx.close();
 });
+
+/** Each control in the turn's sheet whose box, lip (its outer box-shadow) included, spills past the sheet's scroller or
+ *  the viewport: [] when the whole of each one is seen. The scroller first scrolled to its end (its last row). */
+const clipped = (p: Page) => sheet(p).locator('.sbody').evaluate((sb) => {
+  sb.scrollTop = sb.scrollHeight;
+  const box = sb.getBoundingClientRect(), out: string[] = [];
+  for (const el of sb.querySelectorAll<HTMLElement>('button, .tile')) {
+    const r = el.getBoundingClientRect();
+    if (!r.height || r.bottom < box.top) continue; // (hidden, or scrolled above)
+    // the deepest outer shadow under it: `<color> 0 4px 0` (offset-y the 2nd length, spread the 4th)
+    const lip = Math.max(0, ...getComputedStyle(el).boxShadow.split(/,(?![^(]*\))/).filter((s) => !s.includes('inset'))
+      .map((s) => { const n = s.match(/-?[\d.]+px/g)?.map(parseFloat) ?? []; return (n[1] ?? 0) + Math.max(0, n[3] ?? 0); }));
+    const bottom = r.bottom + lip;
+    if (bottom > box.bottom + 0.5 || bottom > innerHeight + 0.5 || r.left < box.left - 0.5 || r.right > box.right + 0.5)
+      out.push(`${el.textContent?.trim()} ${Math.round(bottom)}>${Math.round(Math.min(box.bottom, innerHeight))}`);
+  }
+  return out;
+});
+
+test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips too), above the home indicator; scrolls when short', async ({ page }) => {
+  await start(page);
+  await sheet(page).locator('[data-sg-start]').click();
+  await expect(sheet(page)).toHaveAttribute('data-level', 'play');
+  // an iPhone 15/16 home-screen app's 34 px home indicator (Playwright has no safe area)
+  await page.addStyleTag({ content: ':root { --safe-bottom: 34px !important; }' });
+  const s = sheet(page), play = s.locator('[data-sg-phase]');
+  const check = async () => {
+    await expect.poll(() => clipped(page)).toEqual([]);
+    await page.setViewportSize({ width: 393, height: 660 }); // (Safari in a tab: its toolbars)
+    await expect.poll(() => clipped(page)).toEqual([]);
+    await page.setViewportSize({ width: 393, height: 852 });
+  };
+  await check(); // (the dice)
+  // turns till a ことば (its two rows of tiles, then ヒント and これにする), each phase on the way checked too
+  for (let k = 0; k < 12 && (await play.getAttribute('data-sg-phase')) !== 'word'; k++) {
+    if ((await play.getAttribute('data-sg-phase')) === 'spin') await s.locator('[data-sg-spin]').tap();
+    await expect(s.locator('[data-sg-die], [data-sg-moving]')).toHaveCount(0, { timeout: 10_000 });
+    const ph = await play.getAttribute('data-sg-phase');
+    if (ph === 'word') break;
+    await check();
+    await onePhase(page);
+  }
+  await expect(play).toHaveAttribute('data-sg-phase', 'word');
+  await check();
+  await expect(s.locator('[data-sg-hint]')).toBeInViewport({ ratio: 1 });
+});
