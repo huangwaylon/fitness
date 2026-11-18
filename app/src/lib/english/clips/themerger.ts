@@ -1,14 +1,16 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 1, new 5, ctx 9, tx 7
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 5, new 0
-// OPEN: s1 (60 %) and m1 (50 %) kept: the key is the default grammar / the textbook use, and no stronger distractor
-//   avoids a second key. Fine to ship?
+// OPEN: s1 (60 %) kept: the key is the default grammar and no stronger distractor avoids a second key. Fine to ship?
 // “The Merger - The Office US” (the official The Office channel, BEST OF SEASON 3): staff from the Stamford branch
 // arrive in Scranton; Michael hands out gift bags, Andy explains his plan to rise and tries it on Michael, Jim comes
 // back, Dwight warns him, and Jim's old desk ends up with someone else.
 // Segments from the captions, words from whisper (2026-11-16). The sources differ at 5–9 s (the newcomer's name),
-// 84 s, 161 s ("want any of" / "want to hear"), 170 s ("the slaves" / "this names"), 176–179 s (captions empty),
-// 181 s, 216–218 s ("smile under" / "spider on my forehead") and 247–250 s ("want to pack" / "want to Peck"); no key
-// rests on those words. Whisper loops "That's why I got the desk" from 276 s; nothing after 276.3 s is used. No item
-// uses the "exotic-looking… GI" remark (84–87 s), the 155–172 s stretch or the "ball and chain" line.
+// 84 s, 161 s, 170 s, 176–179 s (captions empty), 181 s, 216–218 s and 247–250 s; no key rests on those words.
+// Whisper loops "That's why I got the desk" from 276 s; nothing after 276.3 s is used. The "ball and chain" line
+// (14.5–18.6 s) is never tested. Speakers of the welcome lines (176 s, 230 s, 253 s) are not named in stems.
+// EXCLUDE 83.5–87.0
+// EXCLUDE 155.4–172.2
+// SKIP 155.4–172.2: the "this kind" joke on Martin and the "slaves" line
 // EAR CHECK: 252.6 s p3 g3 — "it's really your call" assumed Jim's and "Cool. Thank you." the man at the desk's
 import type { Clip } from '../types.ts';
 
@@ -30,29 +32,53 @@ export const theMerger: Clip = {
       trap: 'Dad（パパ）から本人の子どもを思いやすい。理由は so の前にある。',
       use: 'As far as I’m concerned, you’re family.（僕に言わせれば、君は家族だよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'knew', seg: [27.3, 36.7],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'knew', ctx: true, seg: [27.3, 36.7],
       stem: 'Did Michael really know Tony’s last name?',
       ja: 'マイケルはトニーの名字を本当に知っていた？',
       choices: ['No, he had to ask', 'Yes, he knew it well', 'Yes, but said it wrong'], a: 0,
       choicesJa: ['いいえ、聞くしかなかった', 'はい、よく知っていた', 'はい、でも言いまちがえた'],
       cue: '名字を聞いたあと',
-      line: 'Tony — *What’s your last name?* — Gardner. — Gardner. *I knew that.*',
+      line: 'Michael: Tony — *What’s your last name?* / Tony: Gardner. / Michael: Gardner. *I knew that.*',
       said: '「名字は？」「ガードナー」「ガードナー。知ってたよ」と言う。',
       mean: 'I knew that ＝「知ってたよ」。自分で聞いた直後なので、忘れていたのをごまかしている。',
       trap: 'I knew that を文字どおり取りやすい。直前に自分で聞いているのが答え。',
       use: 'Oh, right. I knew that.（あ、そうそう。知ってた）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'giftbag', seg: [37.4, 45.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'giftbag', ctx: true, seg: [37.4, 45.1],
       stem: 'What does Michael say to the worker with no gift bag?',
       ja: 'ギフトバッグがもらえなかった人に、マイケルは何と言う？',
       choices: ['Leftovers can be bought later', 'Leftovers will be free later', 'More will be ordered for staff'], a: 0,
       choicesJa: ['余りはあとで買える', '余りはあとでただでもらえる', '社員用に追加で注文する'],
       cue: '「just for guests」のあと',
-      line: 'they’re just for guests. If there are any left over, *you can buy one later*.',
+      line: 'I didn’t get a gift bag. / Michael: Well, they’re just for guests. If there are any left over, *you can buy one later*.',
       said: '「お客さん用なんだ。余ったら、あとで買えるよ」と答える。',
       mean: 'left over ＝ 余る。部下にはおまけを売る、というずれた気配り。',
       trap: 'left over と later で「あとでもらえる」と思いやすい。動詞の buy（買う）を聞く。',
       use: 'Any left? Can I buy one?（余ってたら一つ買えますか）' },
+
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'sweater', ctx: true, seg: [56.2, 64.8],
+      stem: 'How does she answer “I love your sweater”?',
+      ja: '「そのセーター、すてき」に、どう答える？',
+      choices: ['Thanks, my mom made it', 'Oh no, it’s really old', 'Where did you get yours?'], a: 0,
+      choicesJa: ['ありがとう、母が編んだの', 'いえいえ、すごく古いの', 'あなたのはどこで買ったの？'],
+      cue: '「I love your sweater」のすぐあと',
+      line: 'I love your sweater. / *Oh, thanks.* My mom made it for me. / Really? That’s so cool.',
+      said: '「そのセーター、すてきね」に「あ、ありがとう。母が編んでくれたの」。相手は「すごいね」と返す。',
+      mean: 'ほめられたら Oh, thanks. ＋ ひとこと情報（だれが作った、どこで買った）。会話が自然に続く。',
+      trap: '日本語の「いえいえ、古いものです」とけんそんしがちだが、英語ではまず thanks と受け取る。',
+      use: 'I love your bag! — Oh, thanks. It was a gift.（そのバッグすてき！—ありがとう、もらい物なの）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'boss', ctx: true, seg: [75.4, 83.3],
+      stem: 'What does Michael say he really is?',
+      ja: 'マイケルは、自分は本当は何だと言う？',
+      choices: ['Their boss, Michael Scott', 'A robot from the future', 'A man from Mars'], a: 0,
+      choicesJa: ['ボスのマイケル・スコット', '未来から来たロボット', '火星から来た人'],
+      cue: '「actually」のあと',
+      line: 'Wait, are you a robot or a Martian? / Mm, nah. I am *actually your boss*, Michael Scott.',
+      said: '宇宙人ごっこのあと、「ロボット？火星人？」に「うーん、違うな。実は君のボス、マイケル・スコットだ」。',
+      mean: 'actually ＝「実は」。宇宙人のふりをやめて、本当のことを言うときの合図。',
+      trap: 'robot と Martian（火星人）が耳に残ると、そのどちらかと勘違いしやすい。答えは nah（ちがう）。',
+      use: 'Actually, I’m the manager here.（実は、私がここの責任者です）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'weeks', seg: [96.4, 101.4],
       stem: 'How soon does Andy say he’ll reach his goal in Scranton?',
@@ -102,6 +128,18 @@ export const theMerger: Clip = {
       trap: '出世の話なので「一段ずつ」と取りやすい。たとえが言葉遊びだけかを聞く。',
       use: 'She’s always one step ahead of us.（彼女はいつも一枚上手だ）' },
 
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'mustbe', seg: [116.7, 127.6],
+      stem: 'What does “You must be Andy Bernard” mean?',
+      ja: '「You must be Andy Bernard」はどういう意味？',
+      choices: ['I guess you are Andy', 'You have to be Andy', 'You should become Andy'], a: 0,
+      choicesJa: ['きみがアンディだね', 'アンディでなければだめ', 'アンディになるべきだ'],
+      cue: '「Ah,」のあと',
+      line: 'Ah, *you must be Andy Bernard*. Aloha and welcome. — And you must be Michael Scott.',
+      said: '「ああ、君がアンディ・バーナードだね。アロハ、ようこそ」に「そしてあなたがマイケル・スコットですね」。',
+      mean: 'must ＝ ここは「〜しなければ」ではなく「きっと〜だ」。初めて会う人に「〜さんですね」と言う形。',
+      trap: 'must は「〜しなければならない」と習うので、命令に聞こえるが、ここは「きっと〜だ」の推量。',
+      use: 'You must be Lisa. Nice to meet you.（リサさんですね。はじめまして）' },
+
     { id: 'i2', skill: 'infer', level: 'C1', point: 'mirror', seg: [127.4, 142.2],
       stem: 'Why does Andy say “your little kingdom, Mike”?',
       ja: 'アンディはなぜ「your little kingdom, Mike」と言う？',
@@ -126,7 +164,7 @@ export const theMerger: Clip = {
       trap: 'まねが下手なのでアンディが笑われていると取りやすい。カメラへの一言で、作戦が効いたかを確かめる。',
       use: 'Weird, but I kind of like him already.（変だけど、もう何となく好き）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hasgot', reveals: ['mirror'], seg: [147.3, 154],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hasgot', reveals: ['mirror'], seg: [148.6, 154],
       stem: 'Type it: “___ this very likable way about him.” (3 words)', answer: 'he has got',
       ja: '「___ this very likable way about him.」の空所を書こう（3語）',
       cue: '「Andy Bernard」のあと',
@@ -136,13 +174,13 @@ export const theMerger: Clip = {
       trap: 'he’s got と思うと has を書きのがす。3語なので縮めずに書く。',
       use: 'She’s got a really nice way about her.（彼女には感じのいい雰囲気がある）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'back', seg: [172.8, 186.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'back', ctx: true, seg: [172.8, 186.5],
       stem: 'Why does Jim say “I’m new here”?',
       ja: 'ジムはなぜ「I’m new here」と言う？',
-      choices: ['As a joke, he’s back', 'He was just hired here', 'To test if anyone remembers'], a: 0,
-      choicesJa: ['冗談で。戻ってきただけ', 'ここに雇われたばかり', '覚えているか試すため'],
+      choices: ['To make a joke', 'Because he is new', 'To test their memory'], a: 0,
+      choicesJa: ['冗談を言うため', '本当に新人だから', '記憶を試すため'],
       cue: '「I’m new here」のあと',
-      line: 'Hi, I’m Jim. I’m new here. … a little *joke* there about how we never met. … It’s *good to be back*.',
+      line: 'Jim: Hi, I’m Jim. I’m new here. / Oh, my God. It’s really you. / Jim: Just a little *joke* there about how we never met. … It’s *good to be back*.',
       said: '「ジム、新人です」と言い、「初対面のふりの冗談」と説明し、「戻れてうれしい」と言う。',
       mean: 'It’s good to be back ＝「戻ってこられてうれしい」。前にここで働いていた。',
       trap: 'I’m new here を文字どおり取りやすい。あとの joke（冗談）と back まで聞く。',
@@ -172,7 +210,7 @@ export const theMerger: Clip = {
       trap: '「ドゥ」なら do、「ディ」なら did。would なら「ウッ」で始まる。',
       use: 'Where do I stand with the team?（チームでの私の立場は？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['pam'], seg: [189.8, 201.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['pam'], seg: [189.8, 201.8], retired: true,
       stem: 'What does Jim’s “I mean” lead into?',
       ja: 'ジムの「I mean」のあとには何が来る？',
       choices: ['A clearer answer', 'A disagreement', 'A whole new topic'], a: 0,
@@ -184,7 +222,7 @@ export const theMerger: Clip = {
       trap: '「意味する」と直訳すると反論に聞こえる。I mean のあとには言い直しが来る。',
       use: 'No idea. I mean, I just got here.（さあ。だって、今来たばかりだし）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', reveals: ['imean'], seg: [190.4, 201.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', seg: [190.4, 201.8],
       stem: 'How sure is Jim about him and Pam?',
       ja: 'ジムはパムとの関係にどのくらい自信がある？',
       choices: ['Not sure at all', 'Very sure', 'He doesn’t care'], a: 0,
@@ -208,27 +246,27 @@ export const theMerger: Clip = {
       trap: '文字どおり「何を持ってきた」と思いやすい。人が現れたときの決まり文句。',
       use: 'Well, look what the cat dragged in.（おや、誰かと思えば）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'soundsgood', seg: [206.1, 214.9],
-      stem: 'Dwight warns Jim. What does Jim’s “Sounds good” show?',
-      ja: 'ドワイトの警告に、ジムの「Sounds good」は何を表す？',
-      choices: ['He isn’t worried at all', 'He is scared of Dwight', 'He will fight back hard'], a: 0,
-      choicesJa: ['まったく気にしていない', 'ドワイトが怖い', '強くやり返すつもり'],
-      cue: '「Do not mess with me」のあと',
-      line: 'I am older. I am wiser. … — Okay. *Sounds good*.',
-      said: '「なめるな」と言われ、「オーケー、いいね」と返す。',
-      mean: 'Sounds good ＝「いいね」。誘いへの返事を脅しに返すのは、相手にしていない合図。',
-      trap: 'Okay を「従います」と思いやすい。何に返した言葉かを考える。',
-      use: 'Pizza at seven? Sounds good.（7時にピザ？いいね）' },
-
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'donot', seg: [208.2, 214.7],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'donot', seg: [209.3, 214.0],
       stem: 'Type Dwight’s warning: “___ with me.” (3 words)', answer: 'do not mess',
       ja: '「___ with me.」の空所を書こう（3語）',
       cue: '「I am wiser」のあと',
       line: '*Do not mess* with me.',
-      said: '「俺をなめるな」と、一語ずつ区切って言う。',
+      said: '「私をなめるな」と、一語ずつ区切って言う。',
       mean: 'mess with 〜 ＝「〜にちょっかいを出す」。縮めずに do not と言うのが強い。',
       trap: 'ふだんは don’t が多いので縮めて書きやすい。3語なので not を分けて書く。',
       use: 'Don’t mess with my coffee.（私のコーヒーに手を出さないで）' },
+
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'soundsgood', reveals: ['donot'], ctx: true, seg: [209.3, 216.2],
+      stem: 'How does Jim feel about Dwight’s warning?',
+      ja: 'ドワイトの警告を、ジムはどう受け止めている？',
+      choices: ['He isn’t worried at all', 'He is scared of Dwight', 'He gets angry at Dwight'], a: 0,
+      choicesJa: ['まったく気にしていない', 'ドワイトが怖い', 'ドワイトに腹を立てる'],
+      cue: '「Okay」のあとの2語',
+      line: 'Dwight: I am older. I am wiser. Do not mess with me. / Jim: Okay. *Sounds good*.',
+      said: '「私は年上で賢い。私をなめるな」と言われ、ジムは「オーケー。いいね」と返す。',
+      mean: 'Sounds good ＝「いいね」。ふつうは誘いや提案への返事。おどしに使うと、相手にしていない合図。',
+      trap: 'Okay を「従います」と勘違いしやすい。Sounds good は予定を聞いたときの軽い返事。',
+      use: 'Pizza at seven? Sounds good.（7時にピザ？いいね）' },
 
     // retired (A2): a prank read from behavior, not from the words
     { id: 'i3', skill: 'infer', level: 'C1', point: 'forehead', seg: [214.5, 229.2], retired: true,
@@ -254,25 +292,37 @@ export const theMerger: Clip = {
       trap: 'meet（会う）がよく聞こえず「見るな」と思いやすい。I am（合わせてる）の返事が手がかり。',
       use: 'Look me in the eye and say it.（目を見て言って）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'deskend', reveals: ['call', 'desk'], seg: [237.6, 277.1],
-      stem: 'Who gets the desk in the end?',
-      ja: '最後に、机はだれのものになる？',
+    { id: 'p5', skill: 'pragma', level: 'B1', point: 'goodtosee', ctx: true, seg: [230.0, 236.3],
+      stem: 'What does Jim say to “Welcome back”?',
+      ja: '「おかえり」に、ジムは何と言う？',
+      choices: ['Good to see you', 'Nice to meet you', 'See you later'], a: 0,
+      choicesJa: ['会えてうれしいよ', 'はじめまして', 'またあとで'],
+      cue: '「How are you, man?」のあと',
+      line: 'Hey, buddy. Welcome back. / Jim: Hey. How are you, man? *Good to see you.* / Good to see you.',
+      said: '「やあ、相棒。おかえり」に、ジムは「やあ、元気？会えてうれしいよ」と返す。',
+      mean: 'Good to see you ＝ 前から知っている人に「会えてうれしい」。初対面なら Nice to meet you。',
+      trap: '「はじめまして」と同じ場面に思えるが、Nice to meet you は初めて会う人だけ。ジムは戻ってきた人。',
+      use: 'Hey, good to see you again!（やあ、また会えてうれしいよ）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'deskend', reveals: ['call'], seg: [238.6, 256.4],
+      stem: 'Who keeps Jim’s old desk?',
+      ja: 'ジムの昔の机は、だれが使うことになる？',
       choices: ['The new man keeps it', 'Jim gets it back again', 'The two of them share it'], a: 0,
       choicesJa: ['新しい人がそのまま使う', 'ジムがまた取り戻す', '二人で使う'],
-      cue: '最後のカメラへの一言',
-      line: 'This one taken? — No. — Good. … *That’s why I got the desk.*',
-      said: '机の主が返そうかと言いかけるが、ジムはゆずって別の席に座る。',
-      mean: 'That’s why I got the desk ＝「だから机が取れた」。机は今座っている人のもの。',
-      trap: 'unless の申し出で「返してもらえる」と思いやすい。最後の一言で決まる。',
-      use: 'Is this seat taken?（この席、空いてますか）' },
+      cue: '「Cool. Thank you.」まで聞く',
+      line: 'Are you sitting here now? — Yeah. … unless you really want… — it’s really your call. — *Cool. Thank you.*',
+      said: '「今はここに座ってるの？」「うん」。返そうかと言いかけるが、ジムがゆずり、相手は「よし、ありがとう」。',
+      mean: 'Cool. Thank you. ＝「よし、ありがとう」。ゆずってもらったお礼で、机はこの人のものに決まる。',
+      trap: 'unless（〜なら別だけど）の申し出から、ジムが返してもらうと考えがち。最後のお礼で決まる。',
+      use: 'Are you sitting here? — Oh, sorry.（ここ座ってます？—あ、すみません）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'call', reveals: ['deskend'], seg: [246.7, 256.4],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'call', reveals: ['deskend'], ctx: true, seg: [246.7, 256.4],
       stem: 'When offered his old desk back, how does Jim answer?',
       ja: '昔の机を返そうかと言われ、ジムはどう答える？',
       choices: ['He lets the other man decide', 'He wants it back right away', 'He says they can share it'], a: 0,
       choicesJa: ['相手に決めてもらう', '今すぐ返してと頼む', '一緒に使おうと言う'],
       cue: '「unless」の申し出のあと',
-      line: 'unless you really, really want… — You know, man, *it’s really your call*. — Cool. Thank you.',
+      line: 'Unless you really, really want… / Jim: You know, man, *it’s really your call*. / Cool. Thank you.',
       said: '「どうしてもと言うなら…」に「君が決めていいよ」と返し、「よし、ありがとう」で決まる。',
       mean: 'It’s your call ＝「君が決めて」。call は「決めること」。ゆずる言い方。',
       trap: 'call から「電話」を思いやすい。決める役を相手に渡す決まり文句。',
@@ -289,5 +339,17 @@ export const theMerger: Clip = {
       mean: '「いい人だから取れた」は、ゆずると読んでいた証拠。申し出は形だけで、すばやいお礼は計算どおり。',
       trap: 'お礼を本当の驚きと取りやすい。カメラへの一言は場面の答え合わせ。',
       use: 'I offered, knowing she’d say no.（断ると分かってて申し出た）' },
+
+    { id: 'p6', skill: 'pragma', level: 'B1', point: 'taken', ctx: true, seg: [261.7, 269.3],
+      stem: 'What does “No” mean after “This one taken?”',
+      ja: '「ここ、誰か使ってる？」への「No」はどういう意味？',
+      choices: ['The seat is free', 'Jim can’t sit there', 'He doesn’t know'], a: 0,
+      choicesJa: ['席は空いている', 'ジムは座れない', '分からない'],
+      cue: '「No」のあとの「Good」',
+      line: 'Jim: This one taken? / *No.* / Jim: Good.',
+      said: '「ここ、誰か使ってる？」に「ううん」。ジムは「よかった」と言って座る。',
+      mean: '(Is) this one taken? ＝「この席、ふさがってる？」。No ＝ ふさがっていない＝空いている。',
+      trap: 'No を「だめ」と考えがち。聞かれたのは taken（使用中）かどうかなので、No は「どうぞ」の意味。',
+      use: 'Excuse me, is this seat taken?（すみません、この席空いてますか）' },
   ]
 };
