@@ -3,7 +3,7 @@
 A board game for 2–4 people at one table, passed round one phone: spin, move along a route through the island, and
 do the English the space asks for. For A1–A2 learners; never "incorrect". English Study's third tab, すごろく (its own
 chunk, loaded on the tab; the tab bar shows on its menu only). Code: `app/src/lib/sugoroku/` (pure rules beside their tests, the sheet in `components/`, strings in
-`i18n.ts`). No ベル: the stars are the game's own. Players are their own characters (the island's look): the one sheet
+`i18n.ts`). No ベル; かいがら for playing (below). Players are their own characters (the island's look): the one sheet
 with characters in it, since they are the pieces. A team game: one team total toward a goal, never a ranking.
 
 ## Rules
@@ -45,7 +45,9 @@ with characters in it, since they are the pieces. A team game: one team total to
     `MAX_ROUNDS` (16, 14 by seats), or 終了.
 - **Results** (a team game: never a ranking or a winner): おつかれさま, the team's stars against its goal (`teamGoal`:
   45/60/65 a seat by the length; 「前回より…」 only when beaten), each one's good thing (their longest word, pictures, lines),
-  **みんなで覚えたことば** (up to five of the game's things with Japanese, each Japanese once, to match
+  **みんなで覚えたことば**, and the かいがら: a game played (someone home, or 3 rounds) pays everyone at the table 500 (750
+  with the goal) once (`rewardOf`; the record's `sg_reward`: one game pays each of us once, whichever phone sends it; no
+  daily cap) (up to five of the game's things with Japanese, each Japanese once, to match
   English ↔ Japanese; a mismatch just lets go), and 今日のことば.
 
 ## The 3D board

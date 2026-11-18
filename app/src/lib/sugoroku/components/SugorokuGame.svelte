@@ -21,10 +21,12 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { now } from '#lib/time/clock.ts';
   import { CARDS } from '../cards.ts';
-  import { teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
+  import { rewardOf, teamGoal, teamStars, giveLetter, choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, sentenceAsWord,
     sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
   import { pathOf, toGoal } from '../board.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+  import { rewardGame } from '#lib/store/actions.ts';
+  import { fnv1a } from '#lib/random.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, pickSentence, type Line, type Sentence } from '../sentences.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
@@ -282,6 +284,8 @@
     return s('hlCheer');
   }
   let lastTotal = $state<number | null>(null);
+  /** The game's かいがら for each of us (0: not played enough: someone home or 3 rounds). */
+  let shells = $state(0);
   let savedFor = '';
   $effect(() => {
     const x = g;
@@ -291,6 +295,9 @@
       savedFor = x.seed;
       lastTotal = readJson<number>(localKV(), DEVICE.sugorokuLast);
       writeJson(localKV(), DEVICE.sugorokuLast, teamStars(x));
+      // かいがら for everyone at the table (a game once: the record pays each of us once, whichever phone sends it)
+      shells = rewardOf(x);
+      if (shells) rewardGame(`sg-${fnv1a(x.seed).toString(36)}`, shells, x.players.map((p) => p.who));
     });
   });
   /** A card's effect as its chip says it. */
@@ -519,6 +526,7 @@
           <p class="total"><Icon name="star" size={22} soft /><b>{teamStars(g)}</b><span class="goal">/ {teamGoal(g)}</span></p>
           <p class="note centre">{teamStars(g) >= teamGoal(g) ? s('goalMet', { n: teamStars(g) }) : s('goalNear', { k: teamGoal(g) - teamStars(g) })}</p>
           {#if lastTotal !== null && teamStars(g) > lastTotal}<p class="note centre">{s('beatLast', { d: teamStars(g) - lastTotal })}</p>{/if}
+          <p class="shells" data-sg-shells={shells}>{shells ? s('shells', { n: shells }) : s('shellsLater')}</p>
           {#each g.players as p, k (k)}
             <div class="rrow" data-sg-hl={k}>
               <Avatar {...headOf(p)} size={40} />
@@ -579,6 +587,7 @@
   .total { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; color: var(--c-gold); }
   .total b { font: 600 34px/1 var(--font-num); color: var(--c-ink); }
   .centre { text-align: center; }
+  .shells { margin: 2px 0 6px; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink); }
   .hl { display: block; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }

@@ -6,7 +6,7 @@ import { newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
 import seedsJson from './seeds.json';
 import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, rollMode, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { choose, eventDone, finish, rollMode, rewardOf, REWARD, REWARD_GOAL, giveLetter, tilesFor, FORCED_BONUS, POCKET, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, teamGoal, teamStars, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { decodeAccept, wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -201,6 +201,14 @@ describe('game', () => {
     const played = playWord(turn, 'zoo', { everyday: false, ja: '', hinted: false });
     expect(played.players[1].forced).toBeNull();
     expect(swap(turn).players[1].forced).toBeNull();
+  });
+  it('かいがら: a game played (someone home, or 3 rounds) pays everyone REWARD, the team goal REWARD_GOAL more', () => {
+    const g = newGame(seats, 'rw');
+    expect(rewardOf(g)).toBe(0);
+    expect(rewardOf({ ...g, round: 3 })).toBe(REWARD);
+    const rich = { ...g, round: 3, players: g.players.map((p) => ({ ...p, stars: 999 })) };
+    expect(rewardOf(rich)).toBe(REWARD + REWARD_GOAL);
+    expect(rewardOf(playOut('rw-end'))).toBeGreaterThanOrEqual(REWARD);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });

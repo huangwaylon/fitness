@@ -59,6 +59,8 @@ const S = {
   effAgain: { ja: 'もう1回ふる', en: 'Roll again' },
   review: { ja: 'みんなで覚えたことば', en: 'Words we learned together' },
   endTitle: { ja: 'おつかれさま！', en: 'Well played, everyone!' },
+  shells: { ja: 'みんなに かいがら +{n}', en: '+{n} shells for everyone' },
+  shellsLater: { ja: '3周目まで遊ぶと かいがらがもらえるよ', en: 'Play to round 3 for shells' },
   goalMet: { ja: 'ゴール達成！みんなで星{n}こためました', en: 'Goal reached! {n} stars together' },
   goalNear: { ja: 'ゴールまであと星{k}こ。また挑戦しよう', en: '{k} stars to the goal: next time!' },
   beatLast: { ja: '前回より星{d}こふえました', en: '{d} more stars than last time' },

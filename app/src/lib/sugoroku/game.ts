@@ -107,6 +107,13 @@ const GOAL_PER_SEAT: Record<Length, number> = { short: 45, normal: 60, long: 65 
 export const teamGoal = (g: Game): number => g.players.length * GOAL_PER_SEAT[g.length];
 export const teamStars = (g: Game): number => g.players.reduce((n, p) => n + p.stars, 0);
 
+/** かいがら for playing (store/actions.ts rewardGame: everyone at the table the same, a game once): a game played (someone
+ *  home, or 3 rounds) pays REWARD, the team's goal reached REWARD_GOAL more. */
+export const REWARD = 500;
+export const REWARD_GOAL = 250;
+export const rewardOf = (g: Game): number =>
+  g.players.some((p) => p.home !== null) || g.round >= 3 ? REWARD + (teamStars(g) >= teamGoal(g) ? REWARD_GOAL : 0) : 0;
+
 /** あがり: everyone the same (a team game: the order home never matters). */
 export const HOME_BONUS = 4;
 /** A line in order: first try, after a nudge, after 答えはこれ; むずかしい's without its Japanese +2. */

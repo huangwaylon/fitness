@@ -93,6 +93,8 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   // a team game: no ranking, each one's good thing
   await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-sg-hl]')).toHaveCount(2);
+  // (ended in round 1: no かいがら yet, said so)
+  await expect(sheet(page).locator('[data-sg-shells]')).toHaveAttribute('data-sg-shells', '0');
   // ‹: back to the island, English Study on the tab; the finished game isn't offered again
   await sheet(page).locator('.navbar button').first().click();
   await expect(page.locator('dialog[open] [data-sugoroku]')).toHaveAttribute('data-level', 'menu');
