@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 2, new 3, ctx 6, tx 16
+// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 2, new 3, ctx 6, tx 16, qa 3
 // A2 REVIEW 2026-11-17: keep 1, rewrite 13, retire 6, new 1
 // “Leslie's Black Eye | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Leslie visits
 // Eagletonians who got stung to apologize, an Eagleton TV reporter ambushes her, Jamm turns her peace plea into a call
@@ -30,7 +30,7 @@ export const lesliesBlackEye: Clip = {
       mean: '早く治ってね、という優しい気持ちを、見た目が「気持ち悪い」と言う形で伝えてしまう。',
       trap: 'less を more と聞くと逆の意味になる。お礼の言葉はこの一文より前。順番を追って聞く。',
       use: 'Hope you feel better soon.（早く良くなるといいね）' },
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'kind', ctx: true, seg: [0, 7.3],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'kind', ctx: true, reveals: ['gross'], seg: [0, 7.3],
       stem: 'How does the man answer Leslie’s apology?', ja: 'レスリーの謝罪に、男性はどう答える？',
       choices: ['He thanks her politely', 'He gets angry at her', 'He says it was his fault'], a: 0,
       choicesJa: ['ていねいにお礼を言う', '彼女に怒る', '自分のせいだと言う'],
@@ -163,7 +163,7 @@ export const lesliesBlackEye: Clip = {
       use: 'I say we order pizza.（ピザを頼もうよ）' },
     { id: 'a1', skill: 'infer', level: 'B2', point: 'secede', reveals: ['matter'], ctx: true, seg: [59.3, 68.0],
       stem: 'What does Jamm suggest after Leslie’s peace idea?', ja: 'レスリーの仲直りの案のあと、ジャムは何を言い出す？',
-      choices: ['Split away from Eagleton', 'Make peace with Eagleton', 'Ask Eagleton for money'], a: 0,
+      choices: ['Split from Eagleton', 'Make peace with Eagleton', 'Ask Eagleton for money'], a: 0,
       choicesJa: ['イーグルトンから分かれる', 'イーグルトンと仲直りする', 'イーグルトンにお金を頼む'],
       cue: 'ほめ言葉のあとの I say',
       line: 'Leslie: …it doesn’t matter who bailed out who or who seceded from who. / Jamm: Awesome idea, Leslie. Matter of fact, *I say we should secede from Eagleton*.',
@@ -232,8 +232,8 @@ export const lesliesBlackEye: Clip = {
       use: 'You know what? Let’s just order pizza.（ねえ、もうピザ頼もうよ）' },
     { id: 'd2', skill: 'detail', level: 'B1', point: 'outfit', ctx: true, seg: [105, 111.6],
       stem: 'Why is Leslie wearing that outfit?', ja: 'レスリーはなぜその服を着ている？',
-      choices: ['To take eyes off her black eye', 'To look good on the TV news', 'To keep warm while outside'], a: 0,
-      choicesJa: ['目のあざから目をそらすため', 'テレビ映りをよくするため', '外で暖かくするため'],
+      choices: ['To hide her black eye', 'To look good on the TV news', 'To keep warm while outside'], a: 0,
+      choicesJa: ['目のあざを目立たなくするため', 'テレビ映りをよくするため', '外で暖かくするため'],
       cue: '「What are you wearing?」への答え',
       line: 'What are you wearing? / Leslie: It’s to *distract people from* my black eye.',
       said: '友だちに「何着てるの？」と聞かれ、「目のあざから気をそらすためよ」と答える。',

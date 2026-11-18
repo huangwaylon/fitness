@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 3, new 0, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 3, new 0, ctx 4, tx 5, qa 13
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 1, new 2
 // “Monica Isn't Making a Turkey | Friends” (the official Friends channel, Best of Season 8): Monica says she won't
 // cook a turkey for so few eaters, and Joey talks her round by promising to eat it all himself.
@@ -13,7 +13,7 @@ export const noturkey: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justso', seg: [0, 5.6],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'justso', seg: [0, 3.6],
       stem: 'Why does Monica say “Just so you know”?',
       ja: 'モニカは、なぜ「Just so you know」と言う？',
       choices: ['To tell them her decision', 'To ask what they think', 'To ask them for help'], a: 0,
@@ -24,18 +24,6 @@ export const noturkey: Clip = {
       mean: 'Just so you know ＝ 一応言っておくと。決めたことを知らせる前置き。',
       trap: '相談しているように思いやすい。I’m not going to と、もう決めた言い方。',
       use: 'Just so you know, I’ll be late.（一応言っておくと、遅れるよ）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'why', reveals: ['worth', 'phoebe', 'poultry'], seg: [0, 26.2],
-      stem: 'Why is Monica not making a turkey?',
-      ja: 'モニカはなぜ七面鳥を作らない？',
-      choices: ['Few people will eat it', 'It costs too much money', 'Phoebe asked her not to'], a: 0,
-      choicesJa: ['食べる人が少ない', 'お金がかかりすぎる', 'フィービーに頼まれた'],
-      cue: '食べない人を一人ずつ挙げる所',
-      line: 'Phoebe doesn’t eat turkey… Will’s still on a diet, Chandler doesn’t eat Thanksgiving food…',
-      said: 'フィービー、ウィル、チャンドラー、レイチェルと、食べない人を挙げていく。',
-      mean: '理由は食べる人の少なさ。一人ずつ「食べない事情」を数えている。お金の話はしていない。',
-      trap: 'フィービーの名前が最初に出るので、頼まれたと勘違いしやすい。彼女は食べないだけ。',
-      use: 'It’s not worth the trouble.（そこまでする価値はないよ）' },
 
     { id: 's1', skill: 'sound', level: 'B1', point: 'phoebe', seg: [1.6, 6.6],
       stem: 'Fill the gap: “Well, Phoebe ___ eat turkey.”',
@@ -49,7 +37,7 @@ export const noturkey: Clip = {
       trap: '速いと didn’t と聞こえやすい。「ダ」か「ディ」かを聞く。won’t なら「ウォウン」で始まる。',
       use: 'He doesn’t eat meat.（彼はお肉を食べないの）' },
 
-    { id: 'h1', skill: 'humor', level: 'B1', point: 'delicious', ctx: true, seg: [6.2, 12.9],
+    { id: 'h1', skill: 'humor', level: 'B1', point: 'delicious', ctx: true, seg: [6.2, 14.8],
       stem: 'How does the reply about turkeys end?',
       ja: '七面鳥についての返事は、どんな言葉で終わる？',
       choices: ['They are delicious', 'They are beautiful', 'They are intelligent'], a: 0,
@@ -61,7 +49,19 @@ export const noturkey: Clip = {
       trap: 'beautiful と intelligent はフィービーの言葉。No のあとの返事を聞く。',
       use: 'It’s cheap, fast, and delicious.（安くて早くておいしい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'chandler', reveals: ['poultry', 'phoebe'], seg: [14.8, 23.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'why', reveals: ['worth', 'chandler', 'poultry'], seg: [14.7, 37.1],
+      stem: 'Why is Monica not making a turkey?',
+      ja: 'モニカはなぜ七面鳥を作らない？',
+      choices: ['Few people will eat it', 'It costs too much money', 'Phoebe asked her not to'], a: 0,
+      choicesJa: ['食べる人が少ない', 'お金がかかりすぎる', 'フィービーに頼まれた'],
+      cue: '食べない人を一人ずつ挙げる所',
+      line: 'it’s not just Phoebe. Will’s still on a diet… Rachel’s having her aversion to poultry.',
+      said: 'フィービーだけじゃないと、ウィル、チャンドラー、レイチェルの事情を挙げ、「たった3人のために丸ごとは割に合わない」と言う。',
+      mean: '理由は食べる人の少なさ。一人ずつ「食べない事情」を数えている。お金の話はしていない。',
+      trap: 'not just Phoebe と聞いて、フィービーに頼まれたと勘違いしやすい。彼女は食べないだけ。',
+      use: 'It’s not worth the trouble.（そこまでする価値はないよ）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'chandler', reveals: ['poultry', 'phoebe'], seg: [14.8, 22.85],
       stem: 'What reason does Monica give for Chandler?',
       ja: 'チャンドラーについて、モニカはどんな理由を言う？',
       choices: ['He doesn’t eat holiday food', 'He is still on a diet', 'He can’t stand chicken'], a: 0,
@@ -96,7 +96,7 @@ export const noturkey: Clip = {
       trap: '話題が七面鳥なので turkey を選びやすい。when you had のあとの料理名を聞く。',
       use: 'I had to leave the room.（部屋を出るしかなかった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'otherday', seg: [21.9, 27.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'otherday', seg: [21.9, 26.15],
       stem: 'What does “the other day” mean?',
       ja: '「the other day」はどういう意味？',
       choices: ['A few days ago', 'On a different day', 'Earlier today'], a: 0,
@@ -131,7 +131,7 @@ export const noturkey: Clip = {
       trap: '名前がいくつも出るので数えたくなる。数はモニカが言っている。people の前を聞く。',
       use: 'A table for three, please.（三人です、お願いします）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'work', reveals: ['three'], seg: [34.3, 40.1],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'work', reveals: ['three'], seg: [34.3, 39.9],
       stem: 'Monica says, “It’s a lot of work.” What does she mean?',
       ja: '「It’s a lot of work」で、モニカは何を言いたい？',
       choices: ['Cooking it is hard', 'She has a busy job', 'She works every day'], a: 0,
@@ -143,7 +143,7 @@ export const noturkey: Clip = {
       trap: 'work から「仕事・職場」を連想しやすい。料理や準備の話なら「手間」。',
       use: 'Moving is a lot of work.（引っ越しは大変だよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['promise', 'fine', 'leftover'], seg: [37.1, 65],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['promise', 'fine', 'leftover', 'wont'], seg: [37.1, 55.9],
       stem: 'How does the turkey problem end?',
       ja: '七面鳥の話はどう決着する？',
       choices: ['Monica agrees to make one', 'Joey will cook one himself', 'They will order pizza'], a: 0,
@@ -154,7 +154,7 @@ export const noturkey: Clip = {
       trap: 'ジョーイが「食べきる」と約束するので、彼が作ると考えがち。作るのはモニカ（fine と折れる）。',
       use: 'Okay, you talked me into it.（分かった、君に説得されたよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [39.95, 47.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [39.95, 48.9],
       stem: 'What comes after Joey’s “I mean”?',
       ja: 'ジョーイの「I mean」のあとに来るのは？',
       choices: ['An example', 'A correction', 'A new topic'], a: 0,
@@ -166,7 +166,7 @@ export const noturkey: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは取り消していない。後ろは「〜みたいなもの」のたとえ。',
       use: 'I mean, who doesn’t love pizza?（だって、ピザ嫌いな人いる？）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'fine', ctx: true, reveals: ['outcome'], seg: [44.9, 51],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'fine', ctx: true, reveals: ['outcome'], seg: [44.8, 50.85],
       stem: 'What does “*if it means that much to you*” mean?',
       ja: '「if it means that much to you」はどういう意味？',
       choices: ['Since you want it so much', 'If you will pay for it', 'If you help me cook it'], a: 0,
@@ -190,7 +190,7 @@ export const noturkey: Clip = {
       trap: 'a ton を人数や時間と思うと別の心配になる。後ろの left over まで聞く。',
       use: 'We have a ton of food left over.（料理がめっちゃ余ってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'leftover', seg: [49.9, 53.05],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'leftover', seg: [49.9, 52.7],
       stem: 'Type what she says: “But there’s going to be ___.” (4 words)', answer: 'a ton left over',
       ja: '書き取る：「But there’s going to be ___.」（4語）',
       cue: '「going to be」のあとの4語。',
@@ -200,7 +200,7 @@ export const noturkey: Clip = {
       trap: 'a は小さく短く、ton は「トン」ではなく「タン」に近い。left over もつながる。',
       use: 'There’s a ton left over.（まだたくさん残ってる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', reveals: ['leftover'], seg: [51, 55.1],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', reveals: ['leftover'], seg: [51.05, 55.9],
       stem: 'Fill the gap: “No, no, they ___.”',
       ja: '空所を埋める：「No, no, they ___.」',
       choices: ['will', 'won’t', 'don’t'], a: 1,
@@ -224,7 +224,7 @@ export const noturkey: Clip = {
       trap: '「すごいね」と感心していると思いやすい。上がり調子の聞き返しは疑い。',
       use: 'You’re telling me it’s free?（それがタダだって言うの？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sitting', ctx: true, reveals: ['promise'], seg: [53.4, 60.75],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'sitting', ctx: true, reveals: ['promise'], seg: [53.45, 60.75],
       stem: 'What does “in one sitting” mean?',
       ja: '「in one sitting」はどういう意味？',
       choices: ['All in one meal', 'Before others sit', 'By the end of today'], a: 0,
@@ -255,7 +255,7 @@ export const noturkey: Clip = {
       choicesJa: ['家族はみんな大食い', '家族はいつも七面鳥を食べる', '家族は食べ物を残さない'],
       cue: '名字のあとの一文。',
       line: 'Because I’m a *Tribbiani*. *This is what we do*.',
-      said: '「僕はトリビアーニだから。これがうちのやり方」と言う。',
+      said: '「僕はトリビアーニだから。これがうちの得意なことなんだ」と言う。',
       mean: 'This is what we do ＝ うちはこういうもの。大食いは家族の特技、ということ。',
       trap: '七面鳥を食べる習慣と考えがち。直前の「丸ごと食べられる」につなげて聞く。',
       use: 'I’m a nurse. This is what I do.（看護師だからね、これが私の仕事）' },

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 1, new 4, ctx 5, tx 20
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 1, new 4, ctx 5, tx 20, qa 8
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 1
 // “Leslie's Road Trip Playlist for the Unsexiest of Rides | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 3): before a road trip with Ben, Leslie and Ann plan ways to keep it unromantic (a sweatsuit, boring
@@ -38,7 +38,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '直前の服の話に反応したと思いやすい。すぐあとの It’s so obvious が理由。',
       use: 'Come on, it’s so obvious.（ねえ、見え見えだよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dying', seg: [11.5, 17.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'dying', seg: [11.5, 17.7],
       stem: 'What does “dying to be together” mean?', ja: '“dying to be together” はどういう意味？',
       choices: ['They really want to be together', 'They are afraid to be together', 'They hate being together'], a: 0,
       choicesJa: ['一緒になりたくてたまらない', '一緒になるのがこわい', '一緒にいるのがいや'],
@@ -69,7 +69,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '文法どおり get fired と書きたくなる。書き取りは正しい文より、聞こえた音を。',
       use: 'Sure, and I could literally get lost.（そうね、で私は本当に迷うけど）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['change'], seg: [21.5, 42.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['change'], seg: [21.6, 40.0],
       stem: 'What are Leslie and Ann planning before the trip?', ja: '旅行の前に、レスリーとアンは何を考えている？',
       choices: ['How to keep the trip boring', 'How to tell Ben how she feels', 'Where to stay on the trip'], a: 0,
       choicesJa: ['旅を退屈にする方法', 'ベンに気持ちを伝える方法', '旅でどこに泊まるか'],
@@ -82,13 +82,13 @@ export const unsexyRoadTrip: Clip = {
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'booklet', seg: [36.3, 42.3],
       stem: 'What does Leslie say she could read from?', ja: 'レスリーは、何を読み上げられると言う？',
-      choices: ['Her toothbrush booklet', 'A magazine about history', 'A college guide'], a: 0,
-      choicesJa: ['歯ブラシの説明書', '歴史の雑誌', '大学の案内'],
+      choices: ['A small booklet', 'A magazine article', 'A college guide'], a: 0,
+      choicesJa: ['小さな冊子（説明書）', '雑誌の記事', '大学の案内'],
       cue: '「I could read from my」のあと',
       line: 'And I could *read from my Sonicare booklet*.',
       said: '寮の話もできるし、「電動歯ブラシの説明書を読み上げることもできる」と言う。',
       mean: 'Sonicare ＝ 電動歯ブラシの商品名。booklet ＝ 小さな冊子、説明書。いちばん退屈な読み物を選んでいる。',
-      trap: '前に雑誌の記事や大学の寮が出るので、そちらと勘違いしやすい。read from のあとを聞く。',
+      trap: '前に雑誌の記事（話すだけ）や大学の寮が出るので、そちらと勘違いしやすい。read from のあとの booklet を聞く。',
       use: 'Can you read from the booklet?（説明書を読み上げてくれる？）' },
 
     { id: 'h2', skill: 'detail', level: 'B1', point: 'hopkins', ctx: true, seg: [47.6, 58],
@@ -113,7 +113,7 @@ export const unsexyRoadTrip: Clip = {
       trap: '静かにしたい作戦なので、断ると考えがち。最初の Sure で受けて、自分のCDを出す。',
       use: 'Want some coffee? — Sure.（コーヒー飲む？ーうん、いただく）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [60.7, 72.0],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cd', seg: [61.1, 68.6],
       stem: 'What is on the CD Leslie and Ann made?', ja: 'レスリーとアンが作ったCDには何が入っている？',
       choices: ['A speech and a language lesson', 'Pop songs and love songs', 'A comedy show and jokes'], a: 0,
       choicesJa: ['演説と語学レッスン', 'ポップスとラブソング', 'お笑い番組と冗談'],
@@ -124,21 +124,21 @@ export const unsexyRoadTrip: Clip = {
       trap: 'CDと聞くと曲を連想しやすい。並ぶ中身を一つずつ聞くと、歌は一つもない。',
       use: 'I’m learning to speak Chinese.（中国語を勉強している）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'horn', seg: [64.3, 75.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'horn', seg: [64.3, 71.35], keep: true,
       stem: 'How long is the car horn track on the CD?', ja: 'CDの車のクラクションは何分？',
-      choices: ['Six minutes', 'Sixteen minutes', 'Sixty minutes'], a: 1,
-      choicesJa: ['6分', '16分', '60分'],
+      choices: ['Six minutes', 'Fifteen minutes', 'Sixteen minutes', 'Sixty minutes'], a: 2,
+      choicesJa: ['6分', '15分', '16分', '60分'],
       cue: '「Mandarin」のすぐあと',
       line: 'learning to speak Mandarin, *16 minutes* of old-timey car horn',
       said: '中国語講座のあとに「昔の車のクラクション16分」が入っている。',
       mean: 'old-timey ＝ 昔ふうの。わざと退屈でうるさいものを長く入れている。',
-      trap: 'six なら teen も ty もない。sixty は前が強い。うしろが長ければ sixteen。',
+      trap: 'six なら teen も ty もない。fifteen は「フィフ」で始まる。sixty は前が強い。「シックス」＋長い「ティーン」なら sixteen。',
       use: 'It’s about sixteen minutes long.（だいたい16分くらい）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'loud', ctx: true, seg: [79.5, 86.5],
       stem: 'What does Ben mean by “this loud”?', ja: '“this loud” で、ベンは何を言いたい？',
-      choices: ['The music is too loud', 'The banjo is wonderful', 'He likes loud music'], a: 0,
-      choicesJa: ['音楽がうるさすぎる', 'バンジョーはすばらしい', '大きい音楽が好き'],
+      choices: ['The music is too noisy', 'The banjo sounds wonderful', 'He wants it even louder'], a: 0,
+      choicesJa: ['音楽がうるさすぎる', 'バンジョーはすばらしい', 'もっと大きくしてほしい'],
       cue: '「Yeah」のあと',
       line: 'Leslie: It’s an amazing instrument, the banjo. / Ben: Yeah, *I didn’t realize it could be this loud*.',
       said: '「バンジョーってすごい楽器だよね」「うん、こんなにうるさいとは知らなかった」。',

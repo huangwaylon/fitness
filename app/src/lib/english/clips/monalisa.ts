@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 14, retire 0, new 3, ctx 7, tx 13
+// R4 REVIEW 2026-11-18: keep 6, rewrite 14, retire 0, new 3, ctx 7, tx 13, qa 6
 // A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 5, new 1
 // “Mona Lisa needs money to wax her bees | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Chris can't decide whether to help Ann have a baby, so Ben suggests he practise parenting on Tom, who is afraid to
@@ -36,7 +36,7 @@ export const monaLisa: Clip = {
       trap: 'works を「働く」と考えがちだが、ここは「仕組みがそうなっている」。',
       use: 'You pay first. That’s how it works here.（先に払うの。ここはそういう決まり）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'decision', seg: [9.7, 30.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'decision', reveals: ['unsure'], seg: [9.7, 25.6],
       stem: 'What is Chris trying to decide?',
       ja: 'クリスは何を決めようとしている？',
       choices: ['To help Ann have a baby', 'To adopt one of the kids', 'To ask Ann to marry him'], a: 0,
@@ -75,13 +75,13 @@ export const monaLisa: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'register', seg: [30.0, 33.65], keep: true,
       stem: 'How much is missing from the register?',
       ja: 'レジからいくらなくなっている？',
-      choices: ['$16', '$60', '$600'], a: 1,
-      choicesJa: ['16ドル', '60ドル', '600ドル'],
+      choices: ['$6', '$16', '$60', '$600'], a: 2,
+      choicesJa: ['6ドル', '16ドル', '60ドル', '600ドル'],
       cue: '「There’s」のあとの数。',
       line: 'There’s *$60* missing from the register.',
       said: 'トムが「レジから60ドルなくなってる」と言う。',
       mean: 'register ＝ レジ。missing ＝ なくなっている、足りない。',
-      trap: '「シクスティ」と前が強ければ60、「シクスティーン」と後ろが長ければ16、「シックスハンドレッド」なら600。',
+      trap: '「シクスティ」と前が強ければ60、「シクスティーン」と後ろが長ければ16、「シックスハンドレッド」なら600。「シックス」だけで切れれば6。',
       use: 'There’s ten dollars missing.（10ドル足りない）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'party', ctx: true, seg: [39.15, 47.8],
@@ -99,13 +99,13 @@ export const monaLisa: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'week', reveals: ['flour'], seg: [47.8, 54.7], keep: true,
       stem: 'How long did Ben’s class carry a sack of flour?',
       ja: 'ベンのクラスは小麦粉の袋をどのくらい持ち歩いた？',
-      choices: ['A day', 'A week', 'A month'], a: 1,
-      choicesJa: ['1日', '1週間', '1か月'],
+      choices: ['A day', 'A week', 'Two weeks', 'A month'], a: 1,
+      choicesJa: ['1日', '1週間', '2週間', '1か月'],
       cue: '「we had to spend」のあと。',
       line: 'we had to *spend a week* carrying around a sack of flour pretending it was a kid.',
       said: '「高校で、小麦粉の袋を子どもに見立てて1週間持ち歩かされた」と話す。',
       mean: 'spend a week 〜ing ＝ 1週間〜して過ごす。子育ての練習の授業。',
-      trap: 'a が弱く次の語とつながる。「アウィーク」なら1週間、「アデイ」なら1日、「アマンス」なら1か月。',
+      trap: 'a が弱く次の語とつながる。「アウィーク」なら1週間、「アデイ」なら1日、「アマンス」なら1か月。two なら「トゥー」と weeks の s が聞こえる。',
       use: 'I spent a week cooking for myself.（1週間自炊して過ごした）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'flour', seg: [54.8, 61.1],
@@ -179,18 +179,6 @@ export const monaLisa: Clip = {
       trap: '決め手は it’s not that のあと。「親友の妹」は否定される推測。',
       use: 'It’s not that. I’m just tired.（そうじゃなくて、ただ疲れてるの）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'practice', reveals: ['flour', 'son'], seg: [89.3, 115.6],
-      stem: 'What does Chris do for Tom?',
-      ja: 'クリスはトムに何をしてあげる？',
-      choices: ['Helps him like a dad would', 'Fires Mona Lisa for him', 'Helps him plan the party'], a: 0,
-      choicesJa: ['父親のように手助けする', '代わりにモナリザをクビにする', 'パーティーの準備を手伝う'],
-      cue: '最後の「ありがとう」と、その返事。',
-      line: 'Thanks for the advice, man. — *You’re welcome, son.*',
-      said: '向かい合ってトムを励まし、礼を言うトムに「どういたしまして、息子よ」と返す。',
-      mean: 'トムを子ども役にして、親になる練習をしている。advice ＝ 助言。son ＝ 息子。',
-      trap: '店の話なので仕事の手伝いと考えがち。最後の son の呼びかけで親役と分かる。',
-      use: 'Thanks for the advice.（アドバイスありがとう）' },
-
     { id: 'x1', skill: 'dict', level: 'B2', point: 'directly', seg: [89.3, 94.5],
       stem: 'Type Chris’s advice: “___ and tell her…” (4 words)', answer: 'speak directly to her',
       ja: 'クリスの助言を書こう：「___ and tell her…」（4語）',
@@ -223,6 +211,18 @@ export const monaLisa: Clip = {
       mean: '文字どおりは「自分のために立ち上がれ」。→ 自分を守るために立つ → 言いなりにならず、言い返せ。',
       trap: '座って話しているので「立ちなさい」と考えがち。for yourself と組むと「立ち向かう」。',
       use: 'You have to stand up for yourself.（自分の意見は言わないと）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'practice', reveals: ['flour', 'son', 'talktoher'], seg: [94.6, 115.6],
+      stem: 'What does Chris do for Tom?',
+      ja: 'クリスはトムに何をしてあげる？',
+      choices: ['Helps him like a dad would', 'Fires Mona Lisa for him', 'Helps him plan the party'], a: 0,
+      choicesJa: ['父親のように手助けする', '代わりにモナリザをクビにする', 'パーティーの準備を手伝う'],
+      cue: '最後の「ありがとう」と、その返事。',
+      line: 'Thanks for the advice, man. — *You’re welcome, son.*',
+      said: '向かい合ってトムを励まし、礼を言うトムに「どういたしまして、息子よ」と返す。',
+      mean: 'トムを子ども役にして、親になる練習をしている。advice ＝ 助言。son ＝ 息子。',
+      trap: '店の話なので仕事の手伝いと考えがち。最後の son の呼びかけで親役と分かる。',
+      use: 'Thanks for the advice.（アドバイスありがとう）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'talktoher', seg: [102.2, 105.38],
       stem: 'Fill the gap: “Yeah. ___ before the party.”',
@@ -306,7 +306,7 @@ export const monaLisa: Clip = {
       trap: 'transforming（変えている）から、いい人になったと考えがち。to のあとも terrible。',
       use: 'It’s the small victories, you know?（小さな勝利が大事なんだよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'coaster', seg: [201.8, 205.3],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'coaster', seg: [201.8, 204.4],
       stem: '“I’m just gonna *see where this roller coaster goes*.” Meaning?',
       ja: '「see where this roller coaster goes」とはどういう意味？',
       choices: ['He’ll see what happens', 'He’ll take her to a park', 'He’ll end it very soon'], a: 0,
@@ -344,13 +344,13 @@ export const monaLisa: Clip = {
     { id: 'n3', skill: 'number', level: 'B1', point: 'age', seg: [207.8, 213.9], keep: true,
       stem: 'How old does Tom say he is?',
       ja: 'トムは自分が何歳だと言う？',
-      choices: ['18', '28', '38'], a: 1,
-      choicesJa: ['18歳', '28歳', '38歳'],
+      choices: ['18', '20', '28', '38'], a: 2,
+      choicesJa: ['18歳', '20歳', '28歳', '38歳'],
       cue: '「Yeah, I’m」のあと。',
       line: 'Yeah, I’m *28 years old*.',
       said: '「自転車乗れるようになった？」に「うん、28歳だし」と答える。',
       mean: 'twenty-eight ＝ 28。自転車に乗れて当然の年だと言っている。',
-      trap: '「トゥエニエイト」なら28、「エイティーン」と後ろが長ければ18、「サーティエイト」と「サ」で始まれば38。',
+      trap: '「トゥエニエイト」なら28、「トゥエニ」で切れれば20、「エイティーン」と後ろが長ければ18、「サーティエイト」と「サ」で始まれば38。',
       use: 'I’m thirty-two, not twelve!（12歳じゃなくて32歳だよ！）' },
   ]
 };

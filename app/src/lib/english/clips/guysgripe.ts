@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 1, new 1, ctx 4, tx 6
+// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 1, new 1, ctx 4, tx 6, qa 7
 // A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 3, new 0
 // “Guys Gripe Session - The Office US” (the official The Office channel, Best of Season 2): Michael holds a "guys'
 // gripe session" in the warehouse; complaints about girlfriends turn into complaints about pay, then talk of a union.
@@ -14,7 +14,7 @@ export const guysGripe: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'aim', seg: [0, 30.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'aim', reveals: ['clean', 'gotto'], seg: [0, 26.5],
       stem: 'Why are the men having this meeting?',
       ja: '男たちはなぜこの集まりをしている？',
       choices: ['Michael wants them to be friends', 'The workers want to talk safety', 'The workers asked for a break'], a: 0,
@@ -145,7 +145,7 @@ export const guysGripe: Clip = {
       trap: 'beef を「牛肉」や筋肉と思うとずれる。our beef なら「不満」。',
       use: 'What’s your beef with him?（彼の何が不満なの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'often', seg: [98.1, 108.2],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'often', seg: [98.1, 107.9],
       stem: 'How often do the girls want to be taken out, he says?',
       ja: '彼によると、女の子たちはどのくらい外食に連れて行ってほしがる？',
       choices: ['Every other weekend', 'Once a week', 'Every weekend night', 'Every night'], a: 2, keep: true,
@@ -239,7 +239,7 @@ export const guysGripe: Clip = {
       trap: 'had a が「ハダ」とひと続きになり、a を落としやすい。union は「ユーニャン」に近い。',
       use: 'If we had a car, we’d drive.（車があれば運転するのに）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'necessary', reveals: ['turn'], seg: [151.9, 159.4],
+    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'necessary', reveals: ['turn'], seg: [151.9, 157.3],
       stem: 'What does Michael want with “Is that necessary?”',
       ja: 'マイケルは「Is that necessary?」で何がしたい？',
       choices: ['To stop the idea', 'To ask if they joined one', 'To ask what it costs'], a: 0,
@@ -251,11 +251,11 @@ export const guysGripe: Clip = {
       trap: '質問の形なので、本当にたずねていると考えがち。上司の立場で考える。',
       use: 'Is that really necessary?（それ、本当に必要？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'firm', ctx: true, reveals: ['necessary'], seg: [152.9, 160.1],
-      stem: 'How does the worker answer Michael?',
-      ja: '倉庫の人はマイケルにどう答える？',
-      choices: ['Firmly, he won’t give up', 'Politely, he agrees', 'Angrily, he wants to quit'], a: 0,
-      choicesJa: ['きっぱりと、あきらめない', 'ていねいに、賛成する', '怒って、やめたがる'],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'firm', ctx: true, reveals: ['necessary', 'turn'], seg: [152.9, 160.1],
+      stem: 'Does the worker agree with Michael?',
+      ja: '倉庫の人はマイケルに賛成する？',
+      choices: ['No, he still wants a union', 'Yes, a union isn’t needed', 'He wants to think more'], a: 0,
+      choicesJa: ['いいえ、まだ組合がほしい', 'はい、組合はいらない', 'もう少し考えたい'],
       cue: 'Michael の言葉をくり返す返事。',
       line: 'Michael: Is that necessary? / It’s *more than necessary*, Mike. *We need this*.',
       said: '「必要どころじゃないよ、マイク。これが要るんだ」と言い返す。',
@@ -277,8 +277,8 @@ export const guysGripe: Clip = {
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'withus', seg: [173.75, 180.5],
       stem: 'What does “Are you with us, Mike?” ask?',
       ja: '「Are you with us, Mike?」は何を聞いている？',
-      choices: ['Is he on their side?', 'Is he angry with them?', 'Will he come along?'], a: 0,
-      choicesJa: ['自分たちの味方か', '自分たちに怒っているか', 'いっしょに来るか'],
+      choices: ['Is he on their side?', 'Is he angry with them?', 'Will he go with them?'], a: 0,
+      choicesJa: ['自分たちの味方か', '自分たちに怒っているか', 'いっしょに行くか'],
       cue: '最後、Mike と呼ぶ前。',
       line: '*Are you with us*, Mike? — Yeah.',
       said: '最後に「マイク、俺たちの側か？」と聞き、マイケルは「ああ」と答える。',
