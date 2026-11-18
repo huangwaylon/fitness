@@ -160,10 +160,12 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   `w` pieces, `g` games).
 - **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only on the user's word: a `shop_adjust` row
   of `v` (either sign; [backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup
-  first. **`unadjust <id>`** deletes it and takes `v` back from the wallet (a new epoch).
+  first. **`unadjust <id>`** deletes it and takes `v` back from the wallet (a new epoch; a row a `load` brought
+  never reached the wallet, so its unadjust takes `v` it never had).
 - **The wallets** ([backend](../backend.md#the-wallet)): **`wallet`** prints each person's `h` (what the phones show),
-  `seq`, `at` and the fold of their rows beside it. **`walletcheck`** lists those that differ from their fold floored at 0 (the
-  03:00 cron runs it and logs `wallet.drift`; nothing fixes itself). **`walletset <A|B|G> <h> <note>`** makes a
+  `seq`, `at` and the fold of their rows beside it. **`walletcheck`**: `drift`, those not at their fold plus
+  what the floor took (the 03:00 cron logs `wallet.drift`; nothing fixes itself); `explained`, the floor's part (no
+  action). **`walletset <A|B|G> <h> <note>`** makes a
   wallet `h` with one correction row of what the rows lack for it, so the rows say `h` after it: `h` the stored value
   keeps it, the fold's takes the rows'. Only on the user's word; backup first. `shopcheck fix` mends a pocket, never a
   wallet.

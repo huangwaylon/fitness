@@ -193,7 +193,8 @@ row on the server's clock, so read-time rules judge it as the server will. Recom
 - **かいがら** (`model/shop.ts shopView`): [the wallet](#the-wallet) the cache keeps (a snapshot's or an ack's, each
   person's highest `seq`: `sync/wallets.ts`) plus this phone's **unsent** shop rows (queued, not acked), judged by
   `shopStep` as the record will, never below 0; buys are gated on it. A reply with rows and no `wallets` (an older
-  relay) drops them: the fold again. A queued buy refused `wallet short`: its own toast, the ack's wallet shown.
+  relay) drops them, as does an ack of a wallet-moving event without them (`movesWallet`): the fold again. A queued
+  buy refused `wallet short`: its own toast, the ack's wallet shown.
 
 <a id="live-sync"></a>
 ### When it syncs
@@ -243,16 +244,16 @@ one tile").
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`relay/test/compact.test.ts` fails while it is set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
 - <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
-  show (`h`; `n` its changes, `seq` on the wire; `t` the last one's time). Only a new row's own step moves it, in that
-  row's transaction (`h` after less before: `shopStep`, `reowe`, the field, a reward per recipient, `adjust`,
-  `unadjust`, `walletset`), **never below 0** (a give-back after the かいがら were spent takes what is left). Nothing folds it again:
-  not a rule change, `shopcheck` or a `load` (which lets the pockets go, `{h, n, t}` kept). Seeded from the fold
-  (`wallet.seed`) only when there is none: a first op, a load into an empty record, or an older relay's ledger today's
-  rules can't read (those relays folded it again too). A restore brings it back with the rows; a dump has rows only.
-  **Drift** (`h` against the floored fold): `walletcheck` at the 03:00 cron logs `wallet.drift` (warn), never fixes
-  (a credit after a floored step, a debt's repay or an `unadjust`, leaves `h` above the fold: drift too);
-  `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `relay/test/wallet.test.ts` (property:
-  the served `h` after every random step equals the fold's change applied in order with the floor).
+  show (`h`; `n` its changes, `seq` on the wire; `t` the last one's; `u` what the floor took). Only a new row's step
+  moves it, in that row's transaction (`h` after less before: `shopStep`, `reowe`, the field, a reward per recipient,
+  `adjust`, `unadjust`, `walletset`), **never below 0** (a give-back after a spend takes what is left, the rest into
+  `u`). Nothing folds it again: not a rule change, `shopcheck` or a `load` (pockets let go, `{h, n, t, u}` kept).
+  Seeded from the fold (`wallet.seed`) only when there is none: a first op, a load into an empty record, an older
+  relay's unreadable ledger. A ledger without `n` (an older relay's: a rollback) starts its count at 0 in a new epoch.
+  A restore brings it back with the rows; a dump has rows only. **`walletcheck`** (03:00 cron): `h` = fold + `u` is in
+  order (`explained` when `u` shows: a credit after a floored step pays in full); anything else is `drift`, logged
+  `wallet.drift` (warn), never fixed; `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)); one with no
+  row starts a new epoch. Tests: `relay/test/wallet.test.ts` (property: served `h`, `u` and walletcheck per step).
 - **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, hence the paging.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
