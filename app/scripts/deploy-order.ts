@@ -60,7 +60,12 @@ async function retry<T>(what: string, get: () => Promise<T>): Promise<T> {
 
 async function json(url: string, token: string) {
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', 'User-Agent': 'island-fund-deploy' }, signal: AbortSignal.timeout(20_000) });
-  if (!res.ok) throw new Error(`${res.status} from ${url.replace(/accounts\/[^/]+/, 'accounts/…')}`);
+  if (!res.ok) {
+    // the why of a refusal: rate-limit headers and the body's message (a 403 is a rate limit or a permission)
+    const left = res.headers.get('x-ratelimit-remaining'), reset = res.headers.get('x-ratelimit-reset');
+    const body = (await res.text().catch(() => '')).slice(0, 200).replace(/\s+/g, ' ');
+    throw new Error(`${res.status} from ${url.replace(/accounts\/[^/]+/, 'accounts/…')}${left !== null ? ` (rate limit left ${left}, reset ${reset})` : ''}${body ? `: ${body}` : ''}`);
+  }
   return res.json();
 }
 
