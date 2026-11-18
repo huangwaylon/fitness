@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 0, new 3, ctx 4, tx 31
+// R4 REVIEW 2026-11-18: keep 8, rewrite 10, retire 0, new 3, ctx 4, tx 31, qa 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
 // “Spencer Roasts Carly w/ His Art?! 📺🔥 New iCarly | NickRewind” (NickRewind, Best of Carly Shay ❤️): Carly reviews
 // Spencer's "Museum of Influence" on her Insta live, brings on Willow, finds the show mocks her too, and tells Spencer
@@ -67,7 +67,7 @@ export const spencerRoastsCarly: Clip = {
       stem: 'Why does Carly want to talk to art fans?',
       ja: 'カーリーはなぜ美術好きの人と話したい？',
       choices: ['Most viewers don’t like the show', 'Most viewers want more of it', 'Most viewers think she’s mean'], a: 0,
-      choicesJa: ['見ている人の多くが展示を気に入っていない', 'もっと見たい人が多い', '彼女が意地悪だと思う人が多い'],
+      choicesJa: ['展示を気に入らない人が多い', 'もっと見たい人が多い', '彼女が意地悪だと思う人が多い'],
       cue: '「comments」のあと。',
       line: 'Most of you *don’t seem to be loving it*. But why don’t we talk to some true art aficionados…',
       said: '「コメントが来てる。みんな気に入ってないみたい。美術通に聞いてみよう」と言う。',
@@ -137,7 +137,7 @@ export const spencerRoastsCarly: Clip = {
       choicesJa: ['ウィローはカーリーの味方', 'ウィローは残って展示を楽しむ', 'ウィローはカーリーに怒って去る'],
       cue: 'ウィローの最後の一言。',
       line: 'Us influencers, we have to *stick together*. I’ll go find *more people to be mad with us*.',
-      said: '展示で自分もからかわれていると知ったウィローは、「一緒に怒ってくれる人を探してくる」と言って去る。',
+      said: 'ウィローは「インフルエンサー同士、団結しなきゃ。一緒に怒ってくれる人を探してくる」と言って去る。',
       mean: 'stick together ＝ 団結する。mad with us ＝ 私たちと一緒に怒る。二人は同じ側。',
       trap: '去っていくので、カーリーに怒ったと勘違いしやすい。with us（私たちと一緒に）を聞く。',
       use: 'We have to stick together.（団結しなきゃ）' },
@@ -241,7 +241,7 @@ export const spencerRoastsCarly: Clip = {
       choicesJa: ['意地悪く笑いものにする', 'それで楽しく遊ぶ', 'もっと使いやすくする'],
       cue: '「Oh!」のあと、「This is the part where…」の文。',
       line: 'This is the part where they *make fun of* JavaScript!',
-      said: 'フレディが「ここはジャバスクリプト（プログラムの言語）をからかうコーナーだ！」と喜ぶ。',
+      said: '「ここはジャバスクリプト（プログラムの言語）をからかうコーナーだ！」と喜ぶ。',
       mean: 'make fun of 〜 ＝ 〜をからかう、笑いものにする。fun（楽しみ）があっても、相手は楽しくない。',
       trap: 'fun から「楽しく遊ぶ」と考えがち。have fun（楽しむ）とは別物で、of のあとが笑われる相手。',
       use: 'Please don’t make fun of my English.（私の英語をからかわないで）' },

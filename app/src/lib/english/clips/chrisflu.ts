@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 2, retire 3, new 2, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 11, rewrite 2, retire 3, new 2, ctx 4, tx 3, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 3
 // “Chris Gets the Flu | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Chris, who calls
 // his body a finely tuned microchip, wears a flu mask and confirms a dinner date with Ann; Ann tells the camera he's
@@ -23,7 +23,7 @@ export const chrisFlu: Clip = {
       line: 'Ended with a *5 1/2-minute mile*, my personal low.',
       said: '「最後の1マイルは5分半。自分の最速記録」と答える。',
       mean: 'five and a half ＝ 5と半分。and a が弱く「ファイヴァナハーフ」とつながる。',
-      trap: 'nine も同じ「アイ」の音。最初が f なら five。four、six には「アイ」がない。',
+      trap: 'nine も同じ「アイ」の音。n でなく f で始まれば five。four、six には「アイ」がない。',
       use: 'It takes about five and a half hours.（5時間半くらいかかる）' },
 
     // why: worst ← "low" read as bad (落ちこみ); felt low ← "low" read as mood, as in "feeling low"
@@ -130,17 +130,7 @@ export const chrisFlu: Clip = {
       trap: 'forward（前へ）から「先にのばす」と思いやすい。前を見て待つ、の意味。',
       use: 'Thanks! I’m looking forward to it.（ありがとう！楽しみにしてます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [38.1, 43.4],
-      stem: 'Type what Ann says: “We’ve been on ___ dates.” (3 words)', ja: '書こう：“We’ve been on ___ dates.”（3語）',
-      answer: 'a couple of',
-      cue: '「been on」のあと',
-      line: 'We’ve been on *a couple of* dates. I really like him.',
-      said: '「何回かデートした。彼のこと、すごく好き」と話す。',
-      mean: 'a couple of ＝ 2、3の。of は小さく短く言い、「アカプラ」と一語のように聞こえる。',
-      trap: 'of が消えて a couple だけ書きやすい。最後の「ラ」が of。',
-      use: 'Give me a couple of minutes.（2、3分ちょうだい）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'perfect', seg: [39.3, 55.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'perfect', seg: [34.3, 49.4],
       stem: 'What is Ann’s problem with Chris?', ja: 'アンは、クリスの何が問題だと言う？',
       choices: ['He seems too perfect', 'He moves too fast', 'He doesn’t really like her'], a: 0,
       choicesJa: ['完璧すぎる', '進むのが速すぎる', '彼女をあまり好きではない'],
@@ -151,7 +141,17 @@ export const chrisFlu: Clip = {
       trap: 'can’t find から、悪いことを言うと考えがち。The problem is のあとの perfect を聞く。',
       use: 'The problem is, it’s too far.（問題は、遠すぎること）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hours', seg: [57.3, 65.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'couple', seg: [38.1, 43.4],
+      stem: 'Type what Ann says: “We’ve been on ___ dates.” (3 words)', ja: '書こう：“We’ve been on ___ dates.”（3語）',
+      answer: 'a couple of',
+      cue: '「been on」のあと',
+      line: 'We’ve been on *a couple of* dates. I really like him.',
+      said: '「何回かデートした。彼のこと、すごく好き」と話す。',
+      mean: 'a couple of ＝ 2、3の。of は小さく短く言い、「アカプラ」と一語のように聞こえる。',
+      trap: 'of が消えて a couple だけ書きやすい。最後の「ラ」が of。',
+      use: 'Give me a couple of minutes.（2、3分ちょうだい）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hours', seg: [57.3, 61.2],
       stem: 'When did Ann last see Chris healthy?', ja: 'アンが元気なクリスを最後に見たのはいつ？',
       choices: ['A few hours ago', 'A few days ago', 'Earlier this week'], a: 0,
       choicesJa: ['数時間前', '数日前', '今週のはじめ'],
@@ -176,7 +176,7 @@ export const chrisFlu: Clip = {
       trap: '言い足した中身を本音と取りやすい。Not like A but B は B だと念を押す形。',
       use: 'Not “cheap” cheap, but affordable.（安っぽいじゃなくて、手頃ってこと）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'fat', seg: [61.5, 70.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'fat', seg: [63.4, 70.3],
       stem: 'Why did Chris get sick so fast, he says?', ja: 'クリスによると、なぜすぐ病気になった？',
       choices: ['He has no fat to protect him', 'He ran too hard in the cold', 'He took off his mask'], a: 0,
       choicesJa: ['体を守る脂肪がない', '寒い中で走りすぎた', 'マスクを外した'],
@@ -262,17 +262,6 @@ export const chrisFlu: Clip = {
       trap: '機械の話と取りやすい。前に出たたとえが、あとで説明なしに戻ってくることは多い。',
       use: 'My Monday brain has been compromised.（月曜の頭はもうダメ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [102.0, 117.0],
-      stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
-      choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
-      choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],
-      cue: '最後のカメラへの一言',
-      line: 'Nothing like a complete physical breakdown to make a guy seem *less intimidating*. I love the flu.',
-      said: '「すっかり弱った姿ほど、男の人を気楽に見せるものはない。インフル最高」と話す。',
-      mean: 'intimidating ＝ 気おくれさせる、近寄りがたい。完璧な人が弱って、気が楽になった。',
-      trap: '明日の夕食がなくなるので、それを喜んでいると思いやすい。less intimidating が理由。',
-      use: 'He’s human after all.（彼もやっぱり人間だね）' },
-
     { id: 's2', skill: 'sound', level: 'B1', point: 'hafta', seg: [104, 109.5],
       stem: 'Fill the gap: “You ___ get up off the floor now.”', ja: '空所に入るのは？ “You ___ get up off the floor now.”',
       choices: ['have to', 'had to', 'want to'], a: 0,
@@ -295,6 +284,17 @@ export const chrisFlu: Clip = {
       mean: '文字どおりは「床は友だち」。→ 友だちとは離れたくない → 起きたくない、という冗談まじりの弱音。',
       trap: '答えに yes も no もないので迷いやすい。床を friend と呼ぶ＝離れたくない。',
       use: 'I don’t want to get up yet.（まだ起きたくない）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'lovesflu', seg: [105.2, 120.3],
+      stem: 'Why does Ann say “I love the flu”?', ja: 'アンはなぜ “I love the flu” と言う？',
+      choices: ['He seems less scary now', 'She can skip the dinner', 'She likes caring for him'], a: 0,
+      choicesJa: ['彼が前ほど近寄りがたくない', '夕食に行かなくていい', '看病するのが好き'],
+      cue: '最後のカメラへの一言',
+      line: 'Nothing like a complete physical breakdown to make a guy seem *less intimidating*. I love the flu.',
+      said: '「すっかり弱った姿ほど、男の人を気楽に見せるものはない。インフル最高」と話す。',
+      mean: 'intimidating ＝ 気おくれさせる、近寄りがたい。完璧な人が弱って、気が楽になった。',
+      trap: '明日の夕食がなくなるので、それを喜んでいると思いやすい。less intimidating が理由。',
+      use: 'He’s human after all.（彼もやっぱり人間だね）' },
 
     // R fix: V2 — "so tough" was weak; now "feel sorry for him", a fluent near miss ("breakdown" read as pity)
     // why: sorry ← "complete physical breakdown" heard as pity, "less intimidating" half-caught; scare off ← "nothing like" read literally (= not at all like, so a breakdown would be off-putting); tough ←
