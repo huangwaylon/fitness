@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 5, new 4, ctx 8, tx 11
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 2
 // “Ben Punches a Jerk for Leslie | Parks and Recreation” (the official Parks and Recreation channel, Season 4): at a
 // campaign bowling night Leslie works on a voter, Derek, who says no; she wins a rematch bet for his vote, and after the
@@ -5,6 +6,10 @@
 // Segments from the captions, words from whisper (2026-11-16). Left out on purpose: 151–176 s (Derek's slur and the
 // punch), the teasing at 30–44 s, the beer exchange at 110–115 s, the last 10 s, and the vulgar "introduce" line.
 // The sources differ at 27.5 s, 107.5 s and 201.9 s; no line or key uses those words. Tom is named at 37.1 s.
+// Leslie lost the first game: she says “I pretended to lose” (86 s), Derek answers “Yeah, right. I destroyed you”.
+// EXCLUDE 108.5–111.4 (vulgar)
+// EXCLUDE 151.8–159.3 (slur)
+// SKIP 151.5–179.5: the slur, the punch and the apologies (left out)
 import type { Clip } from '../types.ts';
 
 export const benpunch: Clip = {
@@ -34,7 +39,7 @@ export const benpunch: Clip = {
       line: 'I think it *might be broken*.',
       said: '「指がはさまってた。折れてるかもしれない」と言う。',
       mean: 'might be 〜 ＝ 〜かもしれない。broken ＝ 折れた。',
-      trap: 'might（かも）があるので、軽いけがと思いやすい。broken（折れた）を聞く。',
+      trap: 'might（かも）があるので軽いけがに聞こえるが、broken（折れた）がポイント。',
       use: 'I think my arm might be broken.（腕が折れてるかもしれない）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'warmup', seg: [45.5, 62.1],
@@ -70,7 +75,7 @@ export const benpunch: Clip = {
       line: 'I’m not one to complain about free beer and free bowling. *See you around*.',
       said: '「タダなら文句はない。じゃあね」と帰ろうとする。',
       mean: 'See you around ＝ またそのうち。軽い別れのあいさつ。',
-      trap: 'around から「周り」の話と思いやすい。帰るときのあいさつ。',
+      trap: 'around から「周り」の話と考えがち。帰るときのあいさつ。',
       use: 'Thanks! See you around.（ありがとう、またね）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'notone', reveals: ['yeahno'], seg: [51.7, 57.05], retired: true,
@@ -84,7 +89,7 @@ export const benpunch: Clip = {
       trap: 'not one to complain, but… なら不満の前置きだが、but は来ない。何に触れないかを聞く。',
       use: 'The food was great, I’ll give them that.（料理は良かった、それは認める）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'event', reveals: ['yeahno', 'counting'], seg: [57.7, 102],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'event', reveals: ['yeahno', 'counting'], seg: [57.7, 83.0],
       stem: 'What does Derek say when Leslie asks for his vote?',
       ja: 'レスリーが投票を頼むと、デレクは何と言う？',
       choices: ['He says no, two times', 'He says yes right away', 'He says he will think'], a: 0,
@@ -96,7 +101,7 @@ export const benpunch: Clip = {
       trap: 'Yeah が聞こえて、2回目は OK と思いやすい。そのあとの no が答え。',
       use: 'Can I count on you?（あなたを頼りにしていい？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'count', seg: [66.4, 73.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'count', seg: [66.4, 73.7], retired: true,
       stem: 'Type her question: “___ your vote?” (4 words)', answer: 'can i count on',
       ja: '「___ your vote?」の空所を書こう（4語）',
       cue: '「For reals」のあと',
@@ -106,19 +111,19 @@ export const benpunch: Clip = {
       trap: 'count on がつながり「カウントン」と聞こえる。can I も「キャナイ」とつながる。',
       use: 'Can I count on your help?（手伝いを当てにしていい？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'yeahno', seg: [68.3, 73.3],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'yeahno', reveals: ['count'], ctx: true, seg: [66.5, 73.5],
       stem: 'What does “*Yeah, no*” mean here?',
       ja: 'ここでの「Yeah, no」はどういう意味？',
       choices: ['It means no', 'It means yes', 'It means maybe'], a: 0,
       choicesJa: ['「いいえ」の意味', '「はい」の意味', '「たぶん」の意味'],
       cue: '「your vote?」のあと',
-      line: '*Yeah, no*, uh, *I don’t think so*.',
+      line: 'Leslie: For reals. Can I count on your vote? / Derek: *Yeah, no*, uh, *I don’t think so*.',
       said: '2回目のお願いに「うん、いや、それはないかな」と答える。',
       mean: 'Yeah, no ＝ いや、ないね。Yeah は「聞いたよ」の合図で、答えは no。',
-      trap: 'Yeah から「はい」と思いやすい。あとの no と I don’t think so が答え。',
+      trap: 'Yeah から「はい」と考えがち。決め手はあとの no と I don’t think so。',
       use: 'Yeah, no, I’m busy.（いや、無理。忙しいんだ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'counting', seg: [71.5, 83.5],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'counting', seg: [71.5, 83.5], retired: true,
       stem: 'What did Leslie think would win his vote?',
       ja: 'レスリーは何で彼の票がもらえると思っていた？',
       choices: ['A fun night together', 'A promise he made to her', 'Winning at bowling'], a: 0,
@@ -130,7 +135,18 @@ export const benpunch: Clip = {
       trap: 'あとで勝負の話が出るので、勝てばと思いやすい。この時点では楽しい夜の話。',
       use: 'We’ve been waiting all day.（一日中待っている）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'pretend', seg: [83, 90.6],
+    { id: 'w1', skill: 'detail', level: 'B1', point: 'why', ctx: true, seg: [79.0, 85.5],
+      stem: 'Why won’t Derek vote for Leslie?',
+      ja: 'デレクはなぜレスリーに投票しない？',
+      choices: ['He doesn’t like her', 'She is a bad bowler', 'He has already voted'], a: 0,
+      choicesJa: ['彼女が嫌いだから', '彼女はボウリングが下手だから', 'もう投票したから'],
+      cue: 'レスリーの「Why?」への答え',
+      line: 'Leslie: And you’re still not gonna vote for me? Why? / Derek: *I don’t like you*, okay?',
+      said: '「それでも投票しないの？なんで？」と聞くと、デレクは「あんたが嫌いなんだよ」と答える。',
+      mean: 'I don’t like you ＝ あなたが嫌い。okay? を付けると「分かった？」と突き放す感じ。かなり失礼な言い方。',
+      trap: 'このあと bowler（ボウリングする人）の話が出るので、腕前の話と考えがち。理由は Why? のすぐあと。',
+      use: 'I don’t really like spicy food.（辛いものはあまり好きじゃない）' },
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'pretend', seg: [83, 90.6], retired: true,
       stem: 'What does Derek say about the game?',
       ja: 'デレクは試合について何と言う？',
       choices: ['He lost on purpose', 'He didn’t have fun', 'He drank too much'], a: 0,
@@ -142,16 +158,16 @@ export const benpunch: Clip = {
       trap: 'lose（負ける）だけ聞くと、本当に負けたと思いやすい。pretended を聞く。',
       use: 'He pretended to be asleep.（彼は寝たふりをした）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'yeahright', reveals: ['pretend'], seg: [84.8, 96.1],
-      stem: 'What does Leslie mean by “*Yeah, right*”?',
-      ja: 'レスリーの「Yeah, right」はどういう意味？',
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'yeahright', ctx: true, seg: [85.0, 92.5],
+      stem: 'What does Derek mean by “*Yeah, right*”?',
+      ja: 'デレクの「Yeah, right」はどういう意味？',
       choices: ['I don’t believe you', 'You are right about that', 'That’s a good idea'], a: 0,
       choicesJa: ['信じないよ', 'その点はあなたの言うとおり', 'それはいい考えだね'],
-      cue: '「pretended to lose」のあと',
-      line: '*Yeah, right.* I *destroyed* you. … I’m a really good bowler.',
-      said: '「はいはい。私の圧勝でしょ。本当にうまいんだから」と返す。',
-      mean: 'Yeah, right ＝ はいはい、うそでしょ。信じないときの言い方。',
-      trap: 'right から「正しい」と思いやすい。すぐあとに I destroyed you と反論している。',
+      cue: 'レスリーの「pretended to lose」への返事',
+      line: 'Leslie: …and *I pretended to lose* to you. / Derek: *Yeah, right.* I *destroyed* you.',
+      said: '「わざと負けてあげたの」に、デレクは「へえ、どうだか。俺の圧勝だろ」と返す。',
+      mean: 'Yeah, right ＝ 文字どおりは「うん、正しい」。でも本当は逆の意味で「へえ、どうだか」。信じないときの言い方。',
+      trap: 'right から「正しい」と勘違いしやすい。すぐあとに I destroyed you と言い返す。',
       use: 'You cooked this? Yeah, right.（あなたが作った？まさか）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'tellyou', reveals: ['bet'], seg: [95.6, 103.9],
@@ -178,6 +194,17 @@ export const benpunch: Clip = {
       trap: 'week（ウィーク）や year（イヤー）とまぎれやすい。「マンス」と聞こえれば month。',
       use: 'I’m staying for a month.（1か月滞在します）' },
 
+    { id: 'dn', skill: 'pragma', level: 'B1', point: 'done', reveals: ['month'], ctx: true, seg: [100.5, 106.5],
+      stem: 'What does Leslie mean by “Done”?',
+      ja: 'レスリーの「Done」はどういう意味？',
+      choices: ['I agree to the deal', 'I am finished now', 'I am tired of you'], a: 0,
+      choicesJa: ['その条件でいい', 'もう終わった', 'あなたにはうんざり'],
+      cue: '「clean my house for a month」への返事',
+      line: 'Derek: If I win, you clean my house for a month. / Leslie: *Done*.',
+      said: 'デレクが「俺が勝ったら1か月掃除しろ」と言うと、レスリーは「決まり」と即答する。',
+      mean: 'Done ＝ 文字どおりは「済んだ」。話はもう済んだ→「決まり」「のった」。条件を受けるときの短い返事。',
+      trap: 'done を「終わった」と考えがち。条件のすぐあとの一語なので「それでいい」。',
+      use: 'Ten dollars? Done.（10ドル？それで決まり）' },
     { id: 'h1', skill: 'humor', level: 'C1', point: 'introduce', seg: [103.6, 110.55], retired: true,
       stem: 'Why does the reply to the offer of an introduction get a laugh?',
       choices: ['It turns his polite phrase into a threat', 'It calls Derek her good friend instead', 'It mixes up which person is the friend'], a: 0,
@@ -187,6 +214,30 @@ export const benpunch: Clip = {
       mean: '丁寧な紹介の決まり文句で「蹴飛ばしたい」と言う。形と中身の落差が笑い。',
       trap: 'introduce と friend が続くと人の紹介に聞こえる。何を何に紹介するかを聞く。',
       use: 'I’d like you to meet my coworker, Ken.（同僚のケンを紹介します）' },
+
+    { id: 'b1', skill: 'detail', level: 'B1', point: 'beer', ctx: true, seg: [111.6, 118.0],
+      stem: 'What does Derek say to “I don’t work here”?',
+      ja: '「I don’t work here」と言われて、デレクは何と言う？',
+      choices: ['He offers twenty dollars', 'He says he is sorry', 'He gets the beer himself'], a: 0,
+      choicesJa: ['20ドル出すと言う', 'ごめんと言う', '自分でビールを取りに行く'],
+      cue: '「Give me another beer.」のあとのやりとり',
+      line: 'Derek: Give me another beer. / *I don’t work here*. / Derek: *$20*.',
+      said: 'デレクが「ビールもう1杯」と頼むと「ここの店員じゃない」と言われ、「20ドル払うから」と返す。',
+      mean: 'I don’t work here ＝ ここの店員じゃない。店員とまちがえられたときの決まった返し方。',
+      trap: '店員じゃないと言われたので謝ると考えがち。デレクは twenty（20ドル）とだけ言う。',
+      use: 'Sorry, I don’t work here.（すみません、ここの店員じゃないんです）' },
+
+    { id: 'so', skill: 'pragma', level: 'B2', point: 'so', ctx: true, seg: [131.5, 137.5],
+      stem: 'What does Derek mean by “So?”',
+      ja: 'デレクの「So?」はどういう意味？',
+      choices: ['I don’t care', 'Tell me more', 'I am sorry'], a: 0,
+      choicesJa: ['だから何？', 'もっと話して', 'ごめん'],
+      cue: '「Check out the scoreboard.」への返事',
+      line: 'Leslie: *Check out the scoreboard*. / Derek: *So?*',
+      said: 'レスリーに「スコアボードを見て」と言われ、負けているデレクは「だから何？」と返す。',
+      mean: 'So? ＝ 文字どおりは「それで？」。一語だけだと「だから何？」と気にしないふり。失礼なので目上には使わない。',
+      trap: '話の続きをうながす「それで？」に聞こえるが、負けを認めたくない強がり。',
+      use: 'So? What happened next?（それで？次はどうなったの？）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'gloat', reveals: ['much'], seg: [136.7, 145.1], retired: true,
       stem: 'When Leslie greets Derek after the rematch, how does she come across?',
@@ -221,7 +272,7 @@ export const benpunch: Clip = {
       trap: '本気の合図のあとで願いに聞こえるが、冗談でもない。前の条件と結果を結びつける。',
       use: 'A deal’s a deal. Pay up!（約束は約束。払ってね）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'aside', seg: [144.5, 151.7],
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'aside', seg: [145.0, 151.5],
       stem: 'What does “*All joking aside*” mean?',
       ja: '「All joking aside」はどういう意味？',
       choices: ['Now I’m being serious', 'Here is one more joke', 'It is time to go'], a: 0,
@@ -245,7 +296,7 @@ export const benpunch: Clip = {
       trap: '殴ったあとなので、怒っていると思いやすい。a lot of adrenaline を聞く。',
       use: 'What’s wrong? Are you okay?（どうしたの？大丈夫？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'breaths', seg: [181.6, 187.9],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'breaths', seg: [181.6, 187.9], retired: true,
       stem: 'Type: “Just take a few ___, okay?” (2 words)', answer: 'deep breaths',
       ja: '「Just take a few ___, okay?」の空所を書こう（2語）',
       cue: '「adrenaline」のあと',
@@ -255,7 +306,7 @@ export const benpunch: Clip = {
       trap: 'breaths の最後の「ス」は小さい。deep breaths でひとまとまり。',
       use: 'Take a deep breath and relax.（深呼吸して落ち着いて）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'charges', seg: [183.7, 190.5],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'charges', seg: [183.7, 190.5], retired: true,
       stem: 'What does “*press charges*” mean?',
       ja: '「press charges」はどういう意味？',
       choices: ['Make a legal complaint', 'Ask Ben to pay for it all', 'Ask Ben to say sorry'], a: 0,
@@ -267,29 +318,29 @@ export const benpunch: Clip = {
       trap: 'charge（料金）から、お金を払わせると思いやすい。ここは「訴える」。',
       use: 'Will you press charges?（訴えますか）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'after', seg: [184.4, 203],
-      stem: 'What does Leslie tell the police officer?',
-      ja: 'レスリーは警官に何と言う？',
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'option', reveals: ['charges'], ctx: true, seg: [185.3, 193.7],
+      stem: 'What does “*that wasn’t an option*” mean here?',
+      ja: 'ここでの「that wasn’t an option」はどういう意味？',
+      choices: ['It was never her choice', 'It was a good choice', 'It is too late now'], a: 0,
+      choicesJa: ['もともと彼女が選べることではない', 'いい選択だった', 'もう遅い'],
+      cue: '「pressing charges」のあと',
+      line: 'Leslie: Randy, I would like you to know that *we will not be pressing charges*. / Randy: Yeah, that really *wasn’t an option*.',
+      said: '「こちらは訴えません」と言うと、「そもそも選べる話じゃない」と返される。',
+      mean: 'option ＝ 選べること。殴ったのはベンなので、訴えるかどうかは相手が決める。',
+      trap: 'Yeah から賛成と考えがち。wasn’t an option は「選べない」。',
+      use: 'Sorry, that’s not an option.（すみません、それはできません）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'after', seg: [189.0, 204.0],
+      stem: 'What does Leslie tell Randy about Ben?',
+      ja: 'レスリーはランディにベンのことを何と言う？',
       choices: ['Ben did a great thing', 'Ben must say sorry to him', 'Ben was too drunk'], a: 0,
       choicesJa: ['ベンはすばらしいことをした', 'ベンは彼に謝るべき', 'ベンは酔いすぎていた'],
       cue: '「Randy」と呼ぶあと',
       line: 'What Ben did was warranted and *extremely awesome*, by the way.',
       said: '警官のランディにベンをかばい、「最高にかっこよかった」と報告書に書いてほしがる。',
       mean: 'awesome ＝ 最高。ベンは悪くない、と言っている。',
-      trap: 'police（警察）の話なので、ベンを責めると思いやすい。レスリーはほめている。',
+      trap: '警察への話なので、ベンを責めると考えがち。決め手は extremely awesome（最高にかっこいい）。',
       use: 'That was awesome!（最高だったよ！）' },
-
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'option', reveals: ['charges'], seg: [185.3, 193.7],
-      stem: 'What does “*that wasn’t an option*” mean here?',
-      ja: 'ここでの「that wasn’t an option」はどういう意味？',
-      choices: ['It was never her choice', 'It was a good choice', 'It is too late now'], a: 0,
-      choicesJa: ['もともと彼女が選べることではない', 'いい選択だった', 'もう遅い'],
-      cue: '「pressing charges」のあと',
-      line: 'Randy, I would like you to know that *we will not be pressing charges*. — Yeah, that really *wasn’t an option*.',
-      said: '「こちらは訴えません」と言うと、「そもそも選べる話じゃない」と返される。',
-      mean: 'option ＝ 選べること。殴ったのはベンなので、訴えるかどうかは相手が決める。',
-      trap: 'Yeah から、賛成していると思いやすい。wasn’t an option は「選べない」。',
-      use: 'Sorry, that’s not an option.（すみません、それはできません）' },
 
     { id: 'f5', skill: 'phrase', level: 'C1', point: 'warrant', seg: [191.8, 197.4], retired: true,
       stem: 'Besides “awesome”, how is what Ben did described to Randy?',
@@ -301,16 +352,16 @@ export const benpunch: Clip = {
       trap: 'かばうとき「やりすぎだけど」と認めがちだが、ここは全面的に正しいという主張。',
       use: 'Your concern is totally warranted.（心配するのはもっともだよ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'report', seg: [197.4, 204.6],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'report', ctx: true, seg: [197.4, 204.6],
       stem: 'Why won’t Randy write “awesome” in his report?',
       ja: 'ランディが報告書に「awesome」と書かないのはなぜ？',
       choices: ['Reports don’t use such words', 'It wasn’t awesome to him', 'Ben would get in trouble'], a: 0,
       choicesJa: ['報告書ではそんな言葉は使わない', '彼にはすごくなかった', 'ベンが困ることになる'],
       cue: '「When we write」のあと',
-      line: 'When we write official reports, we *refrain from using words like* … awesome.',
+      line: 'Leslie: Did you write down how awesome it was? / Randy: When we write official reports, we *refrain from using words like* … awesome.',
       said: '「すごかったって書いた？」に「報告書ではそういう言葉は使わない」と答える。',
       mean: 'refrain from 〜ing ＝ 〜するのを控える。official ＝ 正式な。',
-      trap: '書かないので、すごくないと思っていると考えやすい。理由は報告書の決まり。',
+      trap: '書かないので、すごくないと思っていると考えがち。理由は official reports（正式な報告書）の決まり。',
       use: 'Please refrain from smoking.（おたばこはご遠慮ください）' },
   ]
 };
