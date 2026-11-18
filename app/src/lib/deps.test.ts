@@ -162,7 +162,28 @@ describe('src/lib folder boundaries', () => {
       .map((e) => `${e.file} → ${e.to}`);
     expect(bad).toEqual([]);
   });
+
+  it('no folder loop: no folder reaches back to itself through others (but the loops listed, on their way out)', () => {
+    const next = new Map<string, Set<string>>();
+    for (const e of edges) if (!e.to.startsWith('..') && !LOOPS.some(([a, b]) => e.from === a && e.to === b)) next.set(e.from, (next.get(e.from) ?? new Set()).add(e.to));
+    const reaches = (a: string) => {
+      const seen = new Set<string>(), todo = [a];
+      while (todo.length) for (const b of next.get(todo.pop()!) ?? []) if (!seen.has(b)) (seen.add(b), todo.push(b));
+      return seen;
+    };
+    expect([...next.keys()].filter((a) => reaches(a).has(a)).sort()).toEqual([]);
+    for (const [a, b] of LOOPS) expect(edges.some((e) => e.from === a && e.to === b), `${a} → ${b} (gone: off the list)`).toBe(true);
+  });
 });
+
+/** Folder edges that close a loop, each on its way out. English Study and すごろく sit on components/' kit (ui/,
+ *  characters/); back the other way: components/sugoroku3d → sugoroku (the 3D board: it moves into lib/sugoroku,
+ *  fitness-c5), and the HUD opening English Study (island/Hud, HudMenu, sheetChunks → english/open.svelte.ts: the kit
+ *  as a folder of its own ends that one, once ui/ and characters/ stop reaching into motion/ and look/). */
+const LOOPS: [string, string][] = [
+  ['components', 'english'],
+  ['components', 'sugoroku']
+];
 
 // Inside components/: the 3D renderers and rooms draw, the sheets are the UI over them. A renderer never imports a
 // sheet (what both need is world/'s, or a kit's), and a sheet another sheet only by an edge named here.

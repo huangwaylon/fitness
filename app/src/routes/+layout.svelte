@@ -13,7 +13,8 @@
   import Sprites from '#lib/components/ui/Sprites.svelte';
   import Bubble from '#lib/components/ui/Bubble.svelte';
   import Host from '#lib/components/characters/Host.svelte';
-  import ToastHost from '#lib/components/ui/ToastHost.svelte';
+  import ToastHost, { hostBanner } from '#lib/components/ui/ToastHost.svelte';
+  import InviteBanner from '#lib/sugoroku/components/InviteBanner.svelte';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -106,7 +107,8 @@
   });
 
   // 英語すごろく's online games heard on every screen once the week's in (an invitation comes wherever the phone is: the
-  // banner in ToastHost), its small part fetched then
+  // banner in ToastHost's slot, bound here so the kit imports no feature), its small part fetched then
+  hostBanner(InviteBanner);
   let sgListening = false;
   $effect(() => {
     if (!week.view || onPair || sgListening) return;
