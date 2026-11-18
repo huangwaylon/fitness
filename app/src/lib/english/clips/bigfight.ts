@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 3, retire 7, new 7, ctx 4, tx 14
+// R4 REVIEW 2026-11-18: keep 5, rewrite 3, retire 7, new 7, ctx 4, tx 14, qa 21
 // A2 REVIEW 2026-11-17: keep 4, rewrite 10, retire 7, new 1
 // “Leslie and Ann's Big Fight | Parks and Recreation” (the official Parks and Recreation channel, Season 3): at a bar,
 // a lost book turns into a jab about Ann's boyfriends, a “no offense, but” exchange about Leslie and Ben, and, after
@@ -6,8 +6,8 @@
 // Same scene as annoffended and snakejuice (R4): their points are left to them (the book, should have known, how long
 // will it last, seem mad, kiss and make up, No offense, the job, acting on feelings, Offense, another drink, stay
 // calm, the push, favors, not working together); this bank tests the talk around them.
-// EXCLUDE 5.4–7.9 (the crude "douches" pickup line)
-// EXCLUDE 69.4–70.4 ("Douche, you're up")
+// EXCLUDE 5.25–7.9 (the crude "douches" pickup line)
+// EXCLUDE 69.1–71.1 ("Douche, you're up"; json3 hears it 69.2–71.1)
 // EAR CHECK: 72.5–78.8 s — d4/c3 say Ann is the drunk one asked "are you okay?"; the scenes file says Leslie.
 import type { Clip } from '../types.ts';
 
@@ -17,7 +17,7 @@ export const bigFight: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'meet', seg: [0.5, 5.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'meet', seg: [0.5, 5.2],
       stem: 'Where did the couple first meet?',
       ja: '二人は最初どこで知り合った？',
       choices: ['At the supermarket', 'At a bar like this', 'At a friend’s party'], a: 0,
@@ -40,7 +40,7 @@ export const bigFight: Clip = {
       trap: 'what’s his name を本の題名と取りやすい。his（彼の）なので人のこと。',
       use: 'Can I get my charger back?（充電器、返してもらえる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'start', reveals: ['comego'], seg: [9.2, 36.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'start', reveals: ['comego'], seg: [9.7, 24.75],
       stem: 'What does Leslie say about Ann’s boyfriends?', ja: 'レスリーはアンの彼氏たちについて何と言う？',
       choices: ['They never last long', 'They are all very nice', 'They borrow too much'], a: 0,
       choicesJa: ['長続きしない', 'みんなとてもいい人', '物を借りすぎる'],
@@ -51,7 +51,7 @@ export const bigFight: Clip = {
       trap: 'loan（貸す）が聞こえるので、物を借りる話と思いやすい。言いたいのは so fast の方。',
       use: 'It started over something small.（ささいなことから始まった）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'name', reveals: ['comego'], seg: [9.65, 20.3], retired: true,
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'name', reveals: ['comego'], seg: [9.7, 20.3], retired: true,
       stem: 'When Ann trails off naming who has the book, what does it suggest?',
       choices: ['He was a short fling she’s already forgotten', 'He is her date tonight, and she’s teasing him',
                 'She is keeping his name from Leslie on purpose'], a: 0,
@@ -73,7 +73,7 @@ export const bigFight: Clip = {
       trap: 'known（知っていた）から「最初から分かっていた」と思いやすい。「しなければよかった」の意味。',
       use: 'I should have known better.（もっと考えるべきだった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'comego', seg: [14.9, 22.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'comego', seg: [14.9, 22.2],
       stem: 'Type the gap: “They ___ so fast.” (3 words)', ja: '「They ___ so fast」の3語を書こう', answer: 'come and go',
       cue: '「your boyfriends」のあと',
       line: 'They *come and go* so fast.',
@@ -82,7 +82,7 @@ export const bigFight: Clip = {
       trap: 'and が消えて2語に聞こえやすい。2つの動詞の間には、小さな and があることが多い。',
       use: 'Trends come and go.（流行は来ては去る）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B2', point: 'sitting', ctx: true, seg: [22.0, 28.6],
+    { id: 'c1', skill: 'pragma', level: 'B2', point: 'sitting', ctx: true, seg: [19.83, 25.83],
       stem: 'What does the date mean by “Sitting right here”?',
       ja: '連れの男の「Sitting right here」はどういう意味？',
       choices: ['I can hear you', 'Please sit down', 'This seat is taken'], a: 0,
@@ -94,7 +94,7 @@ export const bigFight: Clip = {
       trap: 'sit から席の話を連想しやすいが、彼はもう座っている。本人の前の悪口への一言。',
       use: 'Um, I’m sitting right here.（あの、私ここにいるんだけど）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'dumbfun', seg: [24.9, 29.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'dumbfun', seg: [25.7, 29.3],
       stem: 'What does Ann think of her date?',
       ja: 'アンは連れの男をどう思っている？',
       choices: ['Not smart, but fun', 'Smart, but boring', 'Kind, but too quiet'], a: 0,
@@ -117,7 +117,7 @@ export const bigFight: Clip = {
       trap: 'idiot を話し相手のアンに向けたと取りやすい。this が指すのは同じ席の男。',
       use: 'Well, this one’s a keeper.（これは手放せないね）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'hats', seg: [29.4, 35.0],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'hats', seg: [29.2, 35.0],
       stem: 'What does Ann say is the point of dating around?',
       ja: 'いろんな人とデートする意味は何だとアンは言う？',
       choices: ['Trying many different people', 'Trying lots of different looks', 'Finding the right one fast'], a: 0,
@@ -140,7 +140,7 @@ export const bigFight: Clip = {
       trap: '言葉だけなら「怒っていない」。同じ否定を何度も早口でくり返すのは、逆の気持ち。',
       use: 'I’m not mad at you. Really.（あなたに怒ってないよ。ほんとに）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'atall', seg: [42.7, 48.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'atall', seg: [42.85, 48.6],
       stem: 'Fill the gap: “I’m not mad ___.”', ja: '空所に入るのは？',
       choices: ['at all', 'at you', 'after all'], a: 0,
       choicesJa: ['全然', 'あなたに', '結局'],
@@ -151,7 +151,7 @@ export const bigFight: Clip = {
       trap: '直前の mad at you につられやすい。「アロール」なら at all、「アッチュー」なら at you、「アフター」なら after all。',
       use: 'I don’t mind at all.（全然かまわないよ）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'neither', ctx: true, reveals: ['atall'], seg: [42.7, 49.4],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'neither', ctx: true, reveals: ['atall'], seg: [42.85, 49.05],
       stem: 'What does “Neither am I” mean here?',
       ja: 'ここでの「Neither am I」の意味は？',
       choices: ['I’m not mad either', 'I’m mad too', 'I don’t know why'], a: 0,
@@ -174,7 +174,7 @@ export const bigFight: Clip = {
       trap: '「すみませんが」のように、あやまっていると思いやすい。言いたいのは but のあと。',
       use: 'No offense, but that shirt is loud.（悪いけど、そのシャツ派手だよ）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'lovelives', seg: [51.1, 67.8],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'lovelives', seg: [51.45, 67.55],
       stem: 'What do Ann and Leslie criticize about each other?',
       ja: 'アンとレスリーは、お互いの何を批判する？',
       choices: ['How each one dates', 'How each one talks', 'How each one works'], a: 0,
@@ -219,7 +219,7 @@ export const bigFight: Clip = {
       trap: 'no の言い忘れに聞こえやすい。すぐあとに That’s rude（失礼）と続くので、わざと。',
       use: 'No offense. — None taken.（悪気はないよ。—気にしてないよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'yelling', seg: [70.7, 76.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'yelling', seg: [71.5, 74.5],
       stem: 'Why does a stranger come over to Ann?', ja: '知らない男の人は、なぜアンのところに来た？',
       choices: ['He heard yelling', 'He wants to dance', 'He heard she was drunk'], a: 0,
       choicesJa: ['大声が聞こえたから', '踊りたいから', '酔っていると聞いたから'],
@@ -227,10 +227,10 @@ export const bigFight: Clip = {
       line: 'Hey, are you okay? *I heard yelling*.',
       said: '「大丈夫？どなり声が聞こえたけど」と声をかける。',
       mean: 'yelling ＝ 大声、どなり声。Are you okay? ＝ 大丈夫？',
-      trap: 'すぐあとに drunk（酔って）や dance（踊る）が出る。理由は heard のすぐあと。',
+      trap: 'このあと drunk（酔って）や dance（踊る）も出てくるが、来た理由は heard のすぐあと。',
       use: 'I heard a noise. Are you okay?（音がしたけど、大丈夫？）' },
 
-    { id: 'c3', skill: 'detail', level: 'B1', point: 'drunk', ctx: true, reveals: ['yelling'], seg: [72.5, 78.8],
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'drunk', ctx: true, reveals: ['yelling'], seg: [72.1, 78.6],
       stem: 'How does Ann answer “Are you okay?”',
       ja: '「Are you okay?」にアンはどう答える？',
       choices: ['She is angry and drunk', 'She is fine, just tired', 'She wants to go home'], a: 0,
@@ -274,7 +274,7 @@ export const bigFight: Clip = {
       trap: '正直に話すと言ったので計画どおりに聞こえるが、子どもの悪口をくり返すのは冷静の逆。',
       use: 'So much for staying calm.（冷静でいるはずが、これだよ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B2', point: 'closer', seg: [89.7, 94.7],
+    { id: 'd6', skill: 'detail', level: 'B2', point: 'closer', seg: [89.5, 94.45],
       stem: 'What does Leslie believe honest talks between friends do?',
       ja: 'レスリーは、友だち同士の正直な話し合いはどうなると信じている？',
       choices: ['Bring them closer', 'End the friendship', 'Fix problems at work'], a: 0,
@@ -295,7 +295,7 @@ export const bigFight: Clip = {
       trap: '習った形に直して not everything と書きたくなる。聞こえた順番のまま書く。',
       use: 'Not everything is your fault.（全部が君のせいじゃない）' },
 
-    { id: 'h3', skill: 'pragma', level: 'B2', point: 'meant', ctx: true, seg: [114.6, 122.6],
+    { id: 'h3', skill: 'pragma', level: 'B2', point: 'meant', ctx: true, seg: [114.6, 122.38],
       stem: 'What does “I didn’t mean it like that” mean?',
       ja: '「I didn’t mean it like that」はどういう意味？',
       choices: ['That was not my point', 'I was only joking', 'I said the wrong word'], a: 0,
@@ -318,14 +318,14 @@ export const bigFight: Clip = {
       trap: '途中で I’m sorry（ごめん）と言うので、仲直りしたと思いやすい。そのあとも言い合いが続く。',
       use: 'Maybe we should take a break.（少し距離を置いた方がいいかも）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', seg: [122.2, 128.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', seg: [122.38, 128.95],
       stem: 'What does Leslie say she is sorry for?',
       ja: 'レスリーは何について「悪かった」と言う？',
       choices: ['Picking Ann for a job', 'Calling Ann a bad name', 'Bringing Ann to the bar'], a: 0,
       choicesJa: ['アンを仕事の候補にしたこと', 'アンの悪口を言ったこと', 'アンをバーに連れてきたこと'],
       cue: '「Look」のあと',
       line: 'Look, *I’m sorry that I thought about you for the job*, okay?',
-      said: 'レスリーは「ねえ、あなたを仕事の候補に考えて悪かったわね」と言う。',
+      said: 'レスリーは「ねえ、あなたを仕事の候補に考えて悪かったね」と言う。',
       mean: 'Look ＝「ねえ、いい？」と話を切りかえる言葉。okay? をつけた sorry は、本気のおわびではなく開き直り。',
       trap: '直前まで stupid と言い合っていたので、悪口へのおわびと考えがち。sorry that のあとを聞く。',
       use: 'Look, I’m sorry I was late, okay?（ねえ、遅れて悪かったってば）' },
