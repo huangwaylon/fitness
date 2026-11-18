@@ -3,8 +3,13 @@ import { SHOWER_GAP, nextStarMs, showerAt, showerNight } from './meteor.ts';
 import { fragmentsOn, zodiacOf } from './beach.ts';
 import { visitorAt } from './visitors.ts';
 import { addDays, weekKeyOf } from '#lib/time/dates.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
+
+// (the visitors' lines: their own catalog, i18n/visitors.ts)
+const ja: Record<string, string> = { ...jaMain, ...jaVisitors }, en: Record<string, string> = { ...enMain, ...enVisitors };
 
 const days = (from: string, n: number): string[] => Array.from({ length: n }, (_, i) => addDays(from, i));
 const nights = days('2026-01-05', 7 * 156); // three years of Monday-to-Sunday weeks

@@ -33,6 +33,7 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import type { WeekView } from '#lib/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { loadTentNames } from '#lib/i18n/tent.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { shopView } from '#lib/model/shop.ts';

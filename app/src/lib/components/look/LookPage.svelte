@@ -30,6 +30,7 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { mine } from '#lib/ui-state/viewer.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
 
   let { view }: { view: WeekView } = $props();
 

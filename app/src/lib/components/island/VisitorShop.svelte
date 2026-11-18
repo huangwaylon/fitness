@@ -15,6 +15,7 @@
   import { localDateAt, ZONE_OFFSET_MS, dateMs } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { loadTentNames } from '#lib/i18n/tent.ts';
 
   let { open = $bindable(), id, pool, name }: { open: boolean; id: GuestId; pool: 'dear' | 'any'; name: string } = $props();

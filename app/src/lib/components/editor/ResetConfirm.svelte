@@ -6,6 +6,7 @@
   import Sheet from '../ui/Sheet.svelte';
   import { staticUrl } from '#lib/staticUrl.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/visitors.ts'; // リセットさん's line (the visitors' catalog)
 
   interface Props {
     open: boolean;

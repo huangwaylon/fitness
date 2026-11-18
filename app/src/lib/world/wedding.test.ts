@@ -6,8 +6,13 @@ import { addDays } from '#lib/time/dates.ts';
 import { setWeddingSource, WEDDING, weddingDate } from '#lib/time/holidays.ts';
 import { eventMusicAt } from '#lib/sound/events.ts';
 import { heldFine } from './weather.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
+
+// (the visitors' lines: their own catalog, i18n/visitors.ts)
+const ja: Record<string, string> = { ...jaMain, ...jaVisitors }, en: Record<string, string> = { ...enMain, ...enVisitors };
 
 const weekday = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay();
 

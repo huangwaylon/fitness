@@ -23,6 +23,7 @@
   import { DEFAULT_LOOKS, playerOf, sameLook } from '#lib/contract/look.ts';
   import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
   import { lastSentAt, unsentStuck } from '#lib/sync/queue.ts';

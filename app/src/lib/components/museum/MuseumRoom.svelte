@@ -61,6 +61,7 @@
   import { benchSeats, seatOf, type MuseumSeat } from './seats.ts';
   import { createSeating } from '../rooms/seating.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import '#lib/i18n/sheets.ts';
   import catchJa from '#lib/i18n/catch.ja.json';
   import catchEn from '#lib/i18n/catch.en.json';

@@ -16,6 +16,7 @@
   import LookPreview from './LookPreview.svelte';
   import LookPortrait from './LookPortrait.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
 
   interface Props {
     who: Who;

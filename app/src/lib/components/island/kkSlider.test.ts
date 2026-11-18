@@ -14,8 +14,13 @@ import { KK_MODES, KK_SEAT, KK_STOOL_H, kkAct, kkBye, kkEmote, kkGreeting, kkMod
 import { visitorAt } from '#lib/world/visitors.ts';
 import { placeObjects } from '../world3d/objects.ts';
 import { modelBounds } from '../world3d/models3d.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
+
+// (the visitors' lines: their own catalog, i18n/visitors.ts)
+const ja: Record<string, string> = { ...jaMain, ...jaVisitors }, en: Record<string, string> = { ...enMain, ...enVisitors };
 
 const errorsOf = (l: ReturnType<typeof defaultLayout>, id = 'kk-slider') => validate(l).filter((i) => i.level === 'error' && i.ids.includes(id)).map((i) => i.code);
 const record = () => {

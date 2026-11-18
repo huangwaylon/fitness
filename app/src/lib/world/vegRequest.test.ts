@@ -5,8 +5,13 @@ import { addDays } from '#lib/time/dates.ts';
 import { GARDEN, GIFT_ONE_IN, askerOn, asks, requestOn, vegGift } from './vegRequest.ts';
 import { GUESTS, ROLES, guestOn } from './visitorRoles.ts';
 import { treeFurniture } from '../components/island/catalog.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
+
+// (the visitors' lines: their own catalog, i18n/visitors.ts)
+const ja: Record<string, string> = { ...jaMain, ...jaVisitors }, en: Record<string, string> = { ...enMain, ...enVisitors };
 
 const days = (from: string, n: number) => Array.from({ length: n }, (_, i) => addDays(from, i));
 

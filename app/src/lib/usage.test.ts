@@ -33,6 +33,10 @@ import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 import jaTent from '#lib/i18n/tent.ja.json';
 import enTent from '#lib/i18n/tent.en.json';
+import jaRooms from '#lib/i18n/rooms.ja.json';
+import enRooms from '#lib/i18n/rooms.en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
 import { artKeys, REACTIONS } from '#lib/art.ts';
 import { RING_FRUITS } from '#lib/config/rules.ts';
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
@@ -85,10 +89,12 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaRooms, ...jaVisitors, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enSheets, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enRooms, ...enVisitors, ...enTravel, ...enWed, ...enGym, ...enIts, ...enKalori, ...enBots };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach|art)\.name\.|^art\.real\.|^fossil\.set\./;
+/** The rooms' and すがた's own (i18n/rooms.ts; the rooms' NH names, tent.item.* …, are tent.ts's), the visitors' lines (i18n/visitors.ts). */
+const ROOMS_KEY = /^(tent|look)\./, VISITORS_KEY = /^chat\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
 const CATALOG_KEY = /^(item|recipe)\.name\./;
 
@@ -136,6 +142,22 @@ describe('i18n catalogs', () => {
     for (const c of [jaBots, enBots]) expect(Object.keys(c).filter((k) => !k.startsWith('bots.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('bots.'))).toEqual(['bots.attention', 'bots.say']);
     expect(Object.keys(jaBots).sort()).toEqual(Object.keys(enBots).sort());
+  });
+  it('keep the rooms’ and すがた’s strings (tent.*, look.*: i18n/rooms.ts) and the visitors’ lines (chat.*: i18n/visitors.ts) in their own catalogs, out of the first load', () => {
+    for (const c of [jaRooms, enRooms]) expect(Object.keys(c).filter((k) => !ROOMS_KEY.test(k))).toEqual([]);
+    for (const c of [jaVisitors, enVisitors]) expect(Object.keys(c).filter((k) => !VISITORS_KEY.test(k))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => ROOMS_KEY.test(k) || VISITORS_KEY.test(k))).toEqual([]);
+    expect(Object.keys(jaRooms).sort()).toEqual(Object.keys(enRooms).sort());
+    expect(Object.keys(jaVisitors).sort()).toEqual(Object.keys(enVisitors).sort());
+  });
+  it('the rooms’ and the visitors’ strings: each module naming one imports its catalog (else it shows the raw key)', () => {
+    for (const [re, part] of [[/['"`](tent\.(?!glb)|look\.)[\w$]/, 'rooms'], [/['"`]chat\.sp\./, 'visitors']] as const) {
+      // (world/visitors.ts and island/kkSlider.ts build a line's key for Visitor.svelte and KKSlider.svelte, which say
+      // it; i18n/tent.ts loads the rooms' NH names; portraits' look.* are storage keys, museum/engine.ts's a comment)
+      const names = sources.filter((s) => re.test(s.text) && !/^lib\/i18n\/|^lib\/world\/visitors\.ts$|island\/kkSlider\.ts$|look\/portraits\.svelte\.ts$|museum\/engine\.ts$/.test(s.f));
+      expect(names.length, part).toBeGreaterThan(1);
+      expect(names.filter((s) => !s.text.includes(`import '#lib/i18n/${part}.ts'`)).map((s) => s.f), part).toEqual([]);
+    }
   });
   it('keep the catchables’ names in their own catalog (i18n/catch.ts), out of the first load', () => {
     for (const c of [jaNames, enNames]) expect(Object.keys(c).filter((k) => !NAME_KEY.test(k))).toEqual([]);

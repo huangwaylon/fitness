@@ -30,6 +30,7 @@
   import { SAVE_NAME_CHARS, saveName, type RoomSaveOp } from '#lib/contract/roomSave.ts';
   import { clearStep, plan, restoreStep, savedPieces, type Snap } from './steps.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { formatSyncTime } from '#lib/i18n/format.ts';
   import type { rooms } from '#lib/store/tent.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';

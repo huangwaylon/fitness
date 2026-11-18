@@ -10,6 +10,7 @@
   import PanHint from './PanHint.svelte';
   import RecentreIcon from './RecentreIcon.svelte';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
 
   interface Props extends HTMLAttributes<HTMLElement> {
     room: 'tent' | 'museum' | 'shop';

@@ -29,6 +29,7 @@
   import { gardenIcons } from '../editor/gardenIcons.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import type { Live } from '#lib/sync/live.ts';
   import { objectAt } from '../editor/edits.ts';
   import { WHO_OF_HOME, type Who } from '#lib/layout/homes.ts';

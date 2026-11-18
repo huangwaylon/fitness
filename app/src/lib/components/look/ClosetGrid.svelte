@@ -10,6 +10,7 @@
   import { roving } from '../ui/roving.ts';
   import { closet, GARMENT_KINDS, OPTIONAL_KINDS, wornIn, type ClosetItem, type ClosetKind, type Hue, type Variant } from './closet.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import { artSrc, artSrcNow } from '#lib/artPack/artPack.ts';
 
   interface Props {

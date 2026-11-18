@@ -36,6 +36,7 @@
   import { BEHAVIOUR, EDGE_FADE_MS, MUMBLES, POP_MS, VISITOR_SPEED, WAY_MS, nudge, pickAct, pickEmote, strollSpots, tapMotion, wayMs, type Way } from './visitorLife.ts';
   import type { Pt } from '#lib/world/walkGraph.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/visitors.ts'; // its strings, loaded with it
   import { dayKey, minuteNow, now } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';

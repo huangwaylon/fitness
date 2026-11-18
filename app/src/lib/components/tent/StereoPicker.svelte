@@ -3,6 +3,7 @@
   // last one), or one of K.K.'s songs by name; ✕ or a tap outside closes it. `onpick` gets it: the room's stage plays
   // it as its aircheck for everyone (TentRoom playStereo: stage.svelte.ts request).
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import NavButton from '../ui/NavButton.svelte';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
   import { dropPrefetched, prefetchKK } from '#lib/sound/sound.svelte.ts';

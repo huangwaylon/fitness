@@ -23,6 +23,7 @@
   import { villagerEmote, type EmoteIcon } from '#lib/art.ts';
   import { actors, addFx, cancel, place as placeActor, removeFx, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/visitors.ts'; // its strings, loaded with it
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';

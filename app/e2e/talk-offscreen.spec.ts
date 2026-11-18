@@ -5,6 +5,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, islandUp } from './island.ts';
 import JA from '../src/lib/i18n/ja.json' with { type: 'json' };
+import VISITORS from '../src/lib/i18n/visitors.ja.json' with { type: 'json' };
 import CATCH from '../src/lib/i18n/catch.ja.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -58,7 +59,7 @@ test('Chip out of view (past the horizon from まえ): his cheer at a catch is a
   await camTo(page, g.CAMS.mae);
   await expect.poll(() => chipShown(page)).toBe(false);
   await catchFish(page);
-  await expect(page.locator('.banner[role="status"] .txt')).toContainText(JA['chat.sp.chip.cheer'].split(' ')[0], { timeout: 8000 });
+  await expect(page.locator('.banner[role="status"] .txt')).toContainText(VISITORS['chat.sp.chip.cheer'].split(' ')[0], { timeout: 8000 });
   await expect(page.locator('.banner[role="status"] .txt')).toContainText(JA['visitor.chip']);
   await expect(page.locator('[data-fx="talk"].placed')).toHaveCount(0);
   // the banner is his: his own icon on the left (not しずえ's), the fish's real name, and its closing 」 never alone on a line

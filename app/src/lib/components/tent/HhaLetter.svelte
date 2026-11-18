@@ -3,6 +3,7 @@
      decorating, or by its ハニワ button. ✕ (top-right, as every dialog's) or the scrim closes it. -->
 <script lang="ts">
   import { t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import NavButton from '../ui/NavButton.svelte';
   import { BADGES, type HhaBadge, type HhaRating } from './hha.ts';
 

@@ -50,6 +50,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { setPlace } from '#lib/sound/sound.svelte.ts';
   import { formatNum, i18n, t } from '#lib/i18n/index.ts';
+  import '#lib/i18n/rooms.ts'; // its strings, loaded with it
   import '#lib/i18n/catch.ts';
   import { loadTentNames } from '#lib/i18n/tent.ts';
   import { staticUrl } from '#lib/staticUrl.ts';

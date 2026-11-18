@@ -8,8 +8,13 @@ import { addDays } from '#lib/time/dates.ts';
 import type { EventNow } from './events.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { has3d } from '../components/villager3d/manifest.ts';
-import ja from '#lib/i18n/ja.json';
-import en from '#lib/i18n/en.json';
+import jaMain from '#lib/i18n/ja.json';
+import enMain from '#lib/i18n/en.json';
+import jaVisitors from '#lib/i18n/visitors.ja.json';
+import enVisitors from '#lib/i18n/visitors.en.json';
+
+// (the visitors' lines: their own catalog, i18n/visitors.ts)
+const ja: Record<string, string> = { ...jaMain, ...jaVisitors }, en: Record<string, string> = { ...enMain, ...enVisitors };
 
 const at = (date: string, hour: number, weekday: number, ev?: EventNow | null) =>
   ev === undefined ? visitorAt(date, addDays(date, -1), hour, weekday) : visitorAt(date, addDays(date, -1), hour, weekday, undefined, ev);
