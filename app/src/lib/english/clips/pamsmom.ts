@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 0, new 5, ctx 10, tx 15
+// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 0, new 5, ctx 10, tx 15, qa 13
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 0
 // “Michael Is Dating Pam's Mom - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US):
 // Michael tells Jim he is seeing Helene, Pam's mother; Jim makes him promise to end it and keep it from Pam. Later
@@ -8,7 +8,8 @@
 // EXCLUDE 21–33
 // EAR CHECK: 89 s i3 n1 — whisper “from four people to two”, captions “from for people to -” (no “two”); 170 s has
 //   “to two people” in both, which n1 rests on
-// EAR CHECK: 108–120 s nt4 — words from whisper (captions differ); 140–156 s d6 and 191–197 s p4 timed by ear
+// EAR CHECK: 108–120 s nt4 — words from whisper (captions differ). Segs timed from the caption word offsets.
+// SKIP 138.5–161.5: the gift is handed over to music, no words
 import type { Clip } from '../types.ts';
 
 export const pamsMom: Clip = {
@@ -41,7 +42,7 @@ export const pamsMom: Clip = {
       trap: 'パムのお母さんなので、パムの誕生日と思いやすい。from のあとの your wedding を聞く。',
       use: 'Remember? From the party last week.（覚えてる？先週のパーティーで）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', seg: [13.9, 20.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'messing', reveals: ['react'], seg: [13.9, 20.8],
       stem: 'What does “You’re messing with me” mean?',
       ja: '「You’re messing with me」はどういう意味？',
       choices: ['You’re joking with me', 'You’re making me angry', 'You mean a different woman'], a: 0,
@@ -54,15 +55,15 @@ export const pamsMom: Clip = {
       use: 'Come on, you’re messing with me.（もう、からかってるでしょ）' },
 
     { id: 'r1', skill: 'detail', level: 'B1', point: 'pact', ctx: true, seg: [35, 45.3],
-      stem: 'What does Michael plan to do tonight?',
-      ja: 'マイケルは今夜、何をするつもり？',
-      choices: ['Tell Pam over dinner', 'Meet Pam’s dad for dinner', 'Have dinner with Jim'], a: 0,
-      choicesJa: ['夕食でパムに話す', 'パムのお父さんと夕食', 'ジムと夕食を食べる'],
+      stem: 'Why might Michael break the promise tonight?',
+      ja: 'マイケルが今夜、約束をやぶるかもしれないのはなぜ？',
+      choices: ['He and Helene will tell Pam', 'He will meet Pam’s dad', 'He has dinner with Jim'], a: 0,
+      choicesJa: ['ヘレンと2人でパムに話すから', 'パムのお父さんに会うから', 'ジムと夕食の約束があるから'],
       cue: '「Although」のあと',
       line: 'Jim: *Never tell Pam*… / Michael: A pact. *Although I may have to break it tonight when Helene and I tell Pam over dinner*.',
       said: '「パムには絶対に言わないで」に「約束だ。でも今夜やぶるかも。ヘレンと夕食でパムに話すから」。',
       mean: 'although ＝「とはいえ」。break it の it は pact（約束）。約束した直後にやぶる話。',
-      trap: 'ジムと話しているので、ジムと食事と勘違いしやすい。when のあとの tell Pam を聞く。',
+      trap: '約束は「パムに言わない」こと。ジムと食事と勘違いしやすいが、when のあとの tell Pam を聞く。',
       use: 'Sure. Although I might be late.（いいよ。おくれるかもしれないけど）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', seg: [52.4, 68.7],
@@ -93,8 +94,8 @@ export const pamsMom: Clip = {
       ja: 'ジムの言葉を入力：「please, for ___」（4語）',
       cue: '「please, for」のあと',
       line: 'please, for *both of our sakes*, never ever ever see her again.',
-      said: '「たのむから、ぼくたち2人のために、もう二度と会わないで」と言う。',
-      mean: 'for 〜’s sake ＝「〜のために」。both of our sakes ＝ ぼくたち2人のために。',
+      said: '「お願いだから、僕たち二人のために、もう絶対に彼女に会わないでください」と言う。',
+      mean: 'for 〜’s sake ＝「〜のために」。both of our sakes ＝ 僕たち二人のために。',
       trap: 'of と our が小さく、「ボウサヴァ」のように1つに聞こえる。4語あるか数える。',
       use: 'For your own sake, get some sleep.（自分のためにも、少し寝て）' },
 
@@ -111,8 +112,8 @@ export const pamsMom: Clip = {
       use: 'I like it, just not more than pizza.（好きだけど、ピザほどじゃない）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'route', ctx: true, seg: [69.5, 78.3],
-      stem: 'What does Jim tell Michael to do?',
-      ja: 'ジムはマイケルに、どうしろと言う？',
+      stem: 'What does Jim tell Michael to do after work?',
+      ja: '仕事のあと、どうしろとジムはマイケルに言う？',
       choices: ['Go home a different way', 'Move to a new house', 'Stay late at work'], a: 0,
       choicesJa: ['別の道で帰る', '引っこす', '会社に遅くまで残る'],
       cue: '「Then」のあと',
@@ -130,7 +131,7 @@ export const pamsMom: Clip = {
       cue: '文のいちばん最後',
       line: 'It’s the last thing in the world I would want to do, is *upset Pam*.',
       said: '「パムを悲しませるなんて、世界でいちばんしたくないことだ」と言う。',
-      mean: 'the last thing I want ＝ 文字どおりは「最後のこと」、本当は「いちばんしたくないこと」。',
+      mean: 'the last thing I want ＝ 文字どおりは「したいことの最後」。順番がいちばん最後→「いちばんしたくないこと」。',
       trap: '秘密の話なので、うそと思いやすい。長い前置きのあと、最後の upset Pam を待つ。',
       use: 'The last thing I want is to be late.（おくれるのだけは絶対いやだ）' },
 
@@ -145,7 +146,7 @@ export const pamsMom: Clip = {
       trap: '前の「夕食で Pam に話す」が頭に残りやすい。人数が減った分、誰が来ないかを数える。',
       use: 'Could we make it a table for two?（2名席に変えられますか）', retired: true },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'okayif', ctx: true, seg: [89.5, 97.5],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'okayif', ctx: true, seg: [90.1, 97.5],
       stem: 'What is the answer to “Is it okay if I put out some candy”?',
       ja: '「お菓子を出してもいい？」への答えは？',
       choices: ['Yes, and thanks for checking', 'No, not in the office', 'Only after Pam comes back'], a: 0,
@@ -154,10 +155,10 @@ export const pamsMom: Clip = {
       line: 'Is it okay if I put out some candy that Pam brought back from Puerto Rico? / *Sure. Thanks for asking.*',
       said: '「パムのプエルトリコのおみやげ、出してもいい？」に「もちろん。聞いてくれてありがとう」。',
       mean: 'Is it okay if I 〜? ＝「〜してもいい？」とていねいに許可を取る形。Thanks for asking ＝ 確認へのお礼。',
-      trap: 'Pam の名前が出るので、パムを待つ話と勘違いしやすい。最初の Sure が答え。',
+      trap: 'Pam の名前が出るので、パムを待つ話と勘違いしやすい。質問のすぐあとの Sure が答え。',
       use: 'Is it okay if I sit here? — Sure.（ここ座ってもいい？—どうぞ）' },
 
-    { id: 'nt4', skill: 'infer', level: 'B2', point: 'rum', ctx: true, seg: [108.8, 120.3],
+    { id: 'nt4', skill: 'infer', level: 'B2', point: 'rum', ctx: true, seg: [109.6, 120.6],
       stem: 'What gift do they choose for Michael?',
       ja: 'マイケルへのプレゼントは、どちらに決まる？',
       choices: ['The bottle of rum', 'The seashell clock', 'They’ll decide next week'], a: 0,
@@ -169,7 +170,7 @@ export const pamsMom: Clip = {
       trap: 'weekend to decide から、決めるのは来週と考えがち。でも返事を待たずに Bottle of rum it is。',
       use: 'Pizza it is, then.（じゃあ、ピザで決まりね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'later', ctx: true, seg: [121.1, 133.1],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'later', ctx: true, seg: [120.7, 133.1],
       stem: 'What does the busy coworker suggest?',
       ja: '忙しい同僚は何を提案する？',
       choices: ['Doing it some other time', 'Doing it in two seconds', 'Asking Michael about it first'], a: 0,
@@ -181,7 +182,7 @@ export const pamsMom: Clip = {
       trap: 'two seconds は別の人の言葉。この人は when things are less crazy とぼかす。',
       use: 'Can we do this when things calm down?（落ち着いてからにしない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seconds', seg: [130, 139.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seconds', seg: [134.5, 139.5],
       stem: 'Fill the gap: “Come on, ___ two seconds.”',
       ja: 'すき間をうめよう：「Come on, ___ two seconds.」',
       choices: ['it’ll take', 'it takes', 'I’ll take'], a: 0,
@@ -193,7 +194,7 @@ export const pamsMom: Clip = {
       trap: 'it takes なら最後に「ス」。I’ll take なら「アイル」とはっきり。「イロ」と短く始まれば it’ll。',
       use: 'It’ll only take a minute.（すぐ終わるよ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'feellike', seg: [140, 156],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'feellike', seg: [161.5, 168.0],
       stem: 'What does Michael say he feels like?',
       ja: 'マイケルは、何になった気分だと言う？',
       choices: ['A real Puerto Rican', 'A little child again', 'A real pirate'], a: 0,
@@ -208,19 +209,19 @@ export const pamsMom: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'resv', seg: [163.5, 174], keep: true,
       stem: 'How many people is Michael’s booking for now?',
       ja: 'マイケルの予約は今、何人？',
-      choices: ['1', '2', '3'], a: 1,
-      choicesJa: ['1人', '2人', '3人'],
+      choices: ['1', '2', '3', '4'], a: 1,
+      choicesJa: ['1人', '2人', '3人', '4人'],
       cue: '「reservation」のあと',
       line: 'I changed the reservation *to two people*.',
       said: '「予約を2人に変えました」と伝える。',
       mean: 'to two ＝「トゥ・トゥー」と同じ音が続く。前の to は小さく、あとの two が強い。',
-      trap: '同じ音が続くので1つに聞こえやすい。「ワン」や「スリー」ではなく、強い「トゥー」なら2人。',
+      trap: '同じ音が続くので1つに聞こえやすい。4人（four）は変える前の人数。強い「トゥー」なら2人。',
       use: 'A table for two, please.（2名でお願いします）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'yeahno', ctx: true, seg: [175.4, 183.9],
       stem: 'What does Michael mean by “Yeah, no”?',
       ja: 'マイケルの「Yeah, no」はどういう意味？',
-      choices: ['No, it’s nothing special', 'Yes, it’s a big night', 'Maybe, he can’t tell yet'], a: 0,
+      choices: ['No, it’s nothing special', 'Yes, it’s a big night', 'Maybe, he isn’t sure yet'], a: 0,
       choicesJa: ['いや、特別なことじゃない', 'うん、大事な夜だ', 'さあ、まだ分からない'],
       cue: '最初の2語のあとの方',
       line: 'Botticelli’s, that sounds like a special occasion. / Michael: *Yeah, no*, it’s nobody.',
@@ -252,7 +253,7 @@ export const pamsMom: Clip = {
       trap: 'drop から物を置く動きを連想しやすい。because のあと doesn’t want to talk で「話」のことだと分かる。',
       use: 'Okay, let’s just drop it.（まあ、その話はもういいよ）' },
 
-    { id: 'p4', skill: 'pragma', level: 'B1', point: 'deserve', ctx: true, seg: [191.3, 197.3],
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'deserve', ctx: true, seg: [190.9, 197.3],
       stem: 'What do the others answer to “I don’t deserve this”?',
       ja: '「こんなことしてもらう資格はない」に、みんなは何と答える？',
       choices: ['That he does deserve it', 'That he’s right about it', 'That it’s from Pam only'], a: 0,
@@ -323,15 +324,15 @@ export const pamsMom: Clip = {
       use: 'Ooh, gossip! Tell me everything.（え、なになに？全部教えて）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'turn', reveals: ['lastthing'], seg: [229.8, 254.7],
-      stem: 'How does Pam react to the news?',
-      ja: 'パムはこの知らせにどう反応する？',
-      choices: ['She gets upset', 'She is happy for him', 'She laughs about it'], a: 0,
-      choicesJa: ['動揺する', '喜んでくれる', '笑い飛ばす'],
+      stem: 'What does Michael say he never expected?',
+      ja: 'マイケルが「まさか」と思ったのは何？',
+      choices: ['Pam being unhappy about it', 'Pam being happy for him', 'Pam asking so many times'], a: 0,
+      choicesJa: ['パムがいやがること', 'パムが喜んでくれること', 'パムが何度も聞くこと'],
       cue: '最後のカメラへの言葉',
       line: 'That could have gone one of two ways, but I never expected her to *get upset*.',
       said: '相手を知ったパムは取り乱す。マイケルは「まさか動揺するとは思わなかった」と話す。',
       mean: 'get upset ＝ 動揺する。could have gone one of two ways ＝ どっちに転んでもおかしくなかった。',
-      trap: 'パムが最初は応援していたので、喜ぶと考えがち。最後の but のあとの get upset を聞く。',
+      trap: 'パムは最初応援していたので、喜ぶ話と考えがち。決め手は but のあとの get upset。',
       use: 'I didn’t expect her to get upset.（彼女が動揺するとは思わなかった）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'twoways', reveals: ['resv'], seg: [249.0, 255.2],
