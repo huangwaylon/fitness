@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 0, new 3, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 0, new 3, ctx 5, tx 6, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 4, new 1
 // “Jerry Gets Mugged | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Leslie uses Jerry's
 // mugging on the local news to shame City Hall, her boss scolds her but the parks get money, and at the press event it
@@ -24,7 +24,7 @@ export const jerryMugged: Clip = {
       line: 'We’ve all heard the old saying, “Parks *are supposed to be* fun.” But sometimes muggers have their own ideas.',
       said: '「『公園は楽しい場所のはず』。でも、強盗には別の考えがあることも」と始まる。',
       mean: 'be supposed to 〜 ＝ 〜のはず、〜することになっている。本来そうあるべきなのに、という気持ちを含む。',
-      trap: 'supposed を「想像する」と考えがち。be supposed to はひとまとまりで「〜のはず」。',
+      trap: 'used to（昔は〜）や might（〜かも）と取りちがえやすい。be supposed to ＝「本来〜のはず」。',
       use: 'The train is supposed to come at 9.（電車は9時に来るはずです）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'intro', seg: [11.5, 23.15], retired: true,
@@ -62,7 +62,7 @@ export const jerryMugged: Clip = {
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'security', seg: [32.5, 39.0],
       stem: 'What does Leslie say about the head of security?', ja: '警備主任について、レスリーは何と言う？',
-      choices: ['He tries, but he’s failing', 'He doesn’t try at all', 'He keeps the park safe'], a: 0,
+      choices: ['He tries, but it’s no good', 'He doesn’t try at all', 'He keeps the park safe'], a: 0,
       choicesJa: ['がんばっているが、うまくいっていない', 'まったく努力していない', '公園を安全に守っている'],
       cue: '「doing his best」のあと',
       line: 'Head of security Karl Lorthner is *doing his best* to keep the park safe, *but he’s failing*.',
@@ -116,9 +116,9 @@ export const jerryMugged: Clip = {
       use: 'It worked, but I got in trouble.（うまくいったけど、怒られた）' },
 
     { id: 'p1', ctx: true, skill: 'pragma', level: 'B2', point: 'sorrybut', seg: [59.4, 67.2],
-      stem: 'Why does Leslie say “I’m sorry, Paul, but” here?', ja: 'レスリーは、なぜここで「I’m sorry, Paul, but」と言う？',
-      choices: ['To explain why she did it', 'To say sorry and stop', 'To blame the security head'], a: 0,
-      choicesJa: ['なぜやったかを説明するため', '謝って、もうやめるため', '警備の責任者のせいにするため'],
+      stem: 'What does Leslie do after “I’m sorry, Paul”?', ja: '「I’m sorry, Paul」のあと、レスリーは何をする？',
+      choices: ['She explains why she did it', 'She says sorry and stops', 'She blames the security head'], a: 0,
+      choicesJa: ['なぜやったかを説明する', '謝って、それ以上言わない', '警備の責任者のせいにする'],
       cue: '「sorry」のあと',
       line: 'Paul: What possessed you to do that? / Leslie: I’m sorry, Paul, *but* one of my guys *got mugged* in the park.',
       said: '「一体どういうつもりで？」に「すみません、でも部下が公園で襲われたんです」と返す。',
@@ -162,8 +162,8 @@ export const jerryMugged: Clip = {
 
     { id: 'p2', ctx: true, skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 92.2],
       stem: 'Why does Leslie say “We treat everyone with respect”?', ja: 'レスリーは、なぜ「We treat everyone with respect」と言う？',
-      choices: ['To stand up for Jerry', 'To ask who he means', 'To go along with his joke'], a: 0,
-      choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に乗るため'],
+      choices: ['To protect Jerry', 'To ask who he means', 'To laugh at his joke'], a: 0,
+      choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に笑うため'],
       cue: '「分からない」のあとの一文',
       line: 'Paul: …make sure you bring the doofus… / Leslie: I don’t know *who you’re referring to*. We treat everyone with *respect* around here.',
       said: '「あのまぬけも連れてこい」に「誰のことか分かりません。ここでは皆を大切にしています」と返す。',
@@ -171,21 +171,21 @@ export const jerryMugged: Clip = {
       trap: '「分からない」をそのまま取ると、本当に聞いていると考えがち。決め手は次の respect。',
       use: 'Sorry, who are you referring to?（失礼、誰のことでしょう）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 111.3],
-      stem: 'How does Leslie talk to Jerry just before the event?', ja: 'イベントの直前、レスリーはジェリーにどう話す？',
-      choices: ['Gently, to settle his nerves', 'Gently, but hurrying him along', 'Firmly, telling him what to say'], a: 0,
-      choicesJa: ['やさしく、落ち着かせる', 'やさしいが、急かしている', '強く、言うことを指示している'],
+    { id: 't2', skill: 'infer', level: 'B1', point: 'nervous', reveals: ['heart'], seg: [101.9, 111.3],
+      stem: 'What is Leslie trying to do for Jerry here?', ja: 'ここでレスリーは、ジェリーに何をしてあげようとしている？',
+      choices: ['Help him feel calm', 'Make him go faster', 'Talk for him instead'], a: 0,
+      choicesJa: ['落ち着かせる', '急がせる', '代わりに話す'],
       cue: '最初の質問と最後の一文',
       line: 'Jerry, are you *nervous*?… Speak from the heart. *You’ll be fine.*',
       said: '「緊張してる？心のままに話して。大丈夫」と声をかける。',
       mean: 'nervous ＝ 緊張している。You’ll be fine ＝ 大丈夫だよ。落ち着かせようとしている。',
-      trap: 'Just talk about… を指示と聞くと、押しつけに思いやすい。最後は安心させる言葉。',
+      trap: 'あとでレスリーが代わりに話すが、ここではまだ。are you nervous? と You’ll be fine で、落ち着かせている。',
       use: 'Take a breath. You’ll be fine.（深呼吸して。大丈夫）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'heart', seg: [103.2, 109.9],
       stem: 'What does Leslie tell Jerry to do in his speech?', ja: 'スピーチで何をするよう、レスリーはジェリーに言う？',
-      choices: ['Say honestly how he feels', 'Learn what to say by heart', 'Talk about his health'], a: 0,
-      choicesJa: ['気持ちを正直に話す', '言うことを暗記する', '自分の健康の話をする'],
+      choices: ['Say honestly how he feels', 'Learn his speech first', 'Talk about his health'], a: 0,
+      choicesJa: ['気持ちを正直に話す', '先にスピーチを覚える', '自分の健康の話をする'],
       cue: '「Speak」のあと',
       line: 'Just talk about how hard it was for you. *Speak from the heart.*',
       said: '「大変だったことを、心から話せばいい」と助言する。',
@@ -205,14 +205,14 @@ export const jerryMugged: Clip = {
       use: 'I can’t talk right now, sorry.（今ちょっと話せないの、ごめん）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'notmugged', reveals: ['mute', 'reach'], seg: [137.0, 165.8],
-      stem: 'Was Jerry really mugged in the park?', ja: 'ジェリーは本当に公園で強盗にあった？',
-      choices: ['No, he fell by himself', 'Yes, but not badly', 'Yes, and he can’t talk'], a: 0,
-      choicesJa: ['いいえ、自分で転んだ', 'はい、でも軽く', 'はい、それで話せない'],
+      stem: 'What really happened to Jerry in the park?', ja: 'ジェリーに公園で本当は何があった？',
+      choices: ['He fell by himself', 'A man robbed him', 'His dog bit him'], a: 0,
+      choicesJa: ['自分で転んだ', '男に強盗された', '犬にかまれた'],
       cue: '裏での会話',
       line: 'I dropped the burrito… and *I lose my balance, and I fall on my shoulder*.',
       said: '裏では、落としたブリトーを取ろうとして転んだだけだと本人が話す。',
       mean: 'lose one’s balance ＝ バランスを崩す。予算は取れたが、きっかけの事件はなかった、という皮肉な流れ。',
-      trap: '「ショックで話せない」をそのまま信じやすい。あとの裏の会話で本当のことが分かる。',
+      trap: '「強盗にあった」という表の話を信じやすい。裏の会話で、ブリトーを取ろうとして自分で転んだと分かる。',
       use: 'Wait, so it never happened?（待って、じゃあ実際はなかったの？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'doubt', seg: [137.3, 146.7], retired: true,
@@ -226,7 +226,7 @@ export const jerryMugged: Clip = {
       trap: '直前の Is this fake? から、けがを疑っていると思いやすい。けがは本物だと答えたあと。',
       use: 'Were you even listening?（そもそも聞いてた？）' },
 
-    { id: 'd3', ctx: true, skill: 'detail', level: 'B1', point: 'way', seg: [139.5, 147.0],
+    { id: 'd3', ctx: true, skill: 'detail', level: 'B1', point: 'way', seg: [139.5, 146.6],
       stem: 'Where was Jerry going when it all started?', ja: 'ことの始まりのとき、ジェリーはどこへ行くところだった？',
       choices: ['To feed the hummingbirds', 'To buy a breakfast burrito', 'To walk his dog'], a: 0,
       choicesJa: ['ハチドリにえさをやりに', '朝食のブリトーを買いに', '犬の散歩に'],
@@ -280,8 +280,8 @@ export const jerryMugged: Clip = {
 
     { id: 'i3', ctx: true, skill: 'infer', level: 'B1', point: 'truth', reveals: ['tom'], seg: [157.3, 165.8],
       stem: 'Why didn’t Jerry tell everyone the truth?', ja: 'ジェリーはなぜ本当のことを言わなかった？',
-      choices: ['Everyone would laugh at him', 'Tom would never believe him', 'Tom would tell the boss'], a: 0,
-      choicesJa: ['みんなに笑われるから', 'トムが絶対に信じないから', 'トムが上司に言いつけるから'],
+      choices: ['Tom would laugh at him', 'Tom would never believe him', 'Tom would tell the boss'], a: 0,
+      choicesJa: ['トムに笑われるから', 'トムが絶対に信じないから', 'トムが上司に言いつけるから'],
       cue: '「Imagine」のあと',
       line: 'Why didn’t you just tell everybody the truth? / Jerry: Are you kidding me? *Imagine what Tom would have said.*',
       said: '「なぜ本当のことを言わなかったの？」に「冗談だろ。トムに何を言われるか」と答える。',

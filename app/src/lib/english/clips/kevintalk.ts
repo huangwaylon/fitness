@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 0, new 1, ctx 4, tx 1
+// R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 0, new 1, ctx 4, tx 1, qa 6
 // A2 REVIEW 2026-11-17: keep 12, rewrite 3, retire 6, new 1
 // “Kevin's Small Talk - The Office US” (the official The Office channel, BEST OF The Office - Season 8): Kevin has
 // started talking in as few words as possible; coworkers think he's ill or "making a statement", a coworker invokes a
@@ -32,7 +32,7 @@ export const kevinTalk: Clip = {
       line: 'Can you just *hunt down* the original for it?',
       said: '同僚が「元の書類を探してきてくれる？」と頼む。',
       mean: 'hunt down ＝ 文字どおり「狩る」、ここでは「探し出す」。original ＝ 原本。',
-      trap: 'hunt（狩り）から意味を取りにくい。Can you just ＝ ちょっと〜して、の頼み。',
+      trap: 'hunt down を知らないと、読む・コピーするなど書類の作業を選びがち。hunt ＝ 狩る→「探しまわって見つける」。',
       use: 'Can you just check this for me?（ちょっとこれ見てくれる？）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'medo', seg: [12.8, 15.9], retired: true,
@@ -52,7 +52,7 @@ export const kevinTalk: Clip = {
       line: 'Kevin, do you feel okay? / Me feel *good*, body *strong*, sleep *big* last night.',
       said: 'ケビンが「気分いい、体は丈夫、昨夜はよく寝た」と単語だけで答える。',
       mean: '普通は I feel good. I slept well last night. と言う。sleep big は片言。',
-      trap: 'big の意味がわかりにくい。よく寝た、という意味。',
+      trap: 'sleep big は片言。寝不足と考えがちだが、big ＝ たくさん→「よく寝た」。',
       use: 'I feel good. I slept well.（元気だよ。よく眠れた）' },
 
     { id: 'i1', ctx: true, skill: 'infer', level: 'B1', point: 'hospital', reveals: ['feel'], seg: [26.2, 36.7],
@@ -67,9 +67,9 @@ export const kevinTalk: Clip = {
       use: 'I think we should get him to a doctor.（医者に連れて行った方がいい）' },
 
     { id: 'd5', ctx: true, skill: 'detail', level: 'B1', point: 'always', seg: [35.5, 43.5],
-      stem: 'Why is Kevin fine, says one coworker?', ja: '同僚の一人によると、ケビンはなぜ大丈夫？',
-      choices: ['He’s always been like that', 'He just slept very badly', 'He is only joking around'], a: 0,
-      choicesJa: ['ずっとあんな感じだから', 'よく眠れなかっただけだから', 'ふざけているだけだから'],
+      stem: 'Why does one coworker say Kevin is fine?', ja: '同僚の一人は、ケビンはなぜ大丈夫だと言う？',
+      choices: ['He has always talked this way', 'He just slept very badly', 'He is only joking around'], a: 0,
+      choicesJa: ['前からずっとこう話すから', 'よく眠れなかっただけだから', 'ふざけているだけだから'],
       cue: '「fine」と言ったあと',
       line: 'Kev, why don’t you come with us? / No, no, guys. He’s fine. *He’s always been like that.* / No, he hasn’t. / I mean, he’s gotten worse over the years.',
       said: '病院へ行こうとするみんなに「大丈夫。ずっとあんな感じだから」と止める。',
@@ -233,7 +233,7 @@ export const kevinTalk: Clip = {
       trap: 'SeaWorld なら「ザ」がない。whole なら「ホウル」が入る。ここは「スィーザワールド」。',
       use: 'I want to see the world.（世界を見て回りたい）' },
 
-    { id: 'h3', skill: 'infer', level: 'B1', point: 'method', reveals: ['seeworld'], seg: [121.5, 133.5],
+    { id: 'h3', skill: 'infer', level: 'B1', point: 'method', reveals: ['seeworld', 'scene'], seg: [121.5, 133.5],
       stem: 'Why is “see world” a problem?', ja: '「see world」の何が問題？',
       choices: ['It can mean two things', 'It is far too long', 'Kevin can’t say it'], a: 0,
       choicesJa: ['2つの意味に取れる', '長すぎる', 'ケビンが言えない'],
@@ -241,19 +241,19 @@ export const kevinTalk: Clip = {
       line: 'I still don’t know if you’re saying *see world or see the world*… it’s *taken a lot of time to explain* it.',
       said: '同僚が「どっちの意味か、まだわからない。説明にも時間がかかった」と言う。',
       mean: '言葉を減らすと意味が2つに取れて、かえって時間がかかる。',
-      trap: 'right there（まさにそこ）を場所の話と考えがち。ここは「それが問題」の意味。',
+      trap: '短い言い方なので「長すぎる」は外れ。短すぎて、see world と see the world の2つに取れるのが問題。',
       use: 'That’s the problem right there.（まさにそこが問題だ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'normal', seg: [130.3, 138.8],
-      stem: 'How does Kevin sound when he agrees?', ja: '同意する時、ケビンはどんな様子？',
-      choices: ['He gives in, not happily', 'He is glad to change', 'He is very relieved'], a: 0,
-      choicesJa: ['しぶしぶ折れる', '喜んで変える', 'すごくほっとしている'],
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'normal', seg: [130.3, 138.8],
+      stem: 'What does Kevin’s “Fine, fine” mean here?', ja: 'ケビンの「Fine, fine」はどういう意味？',
+      choices: ['OK, you win', 'I feel very well', 'That sounds great'], a: 0,
+      choicesJa: ['わかったよ、君の勝ち', '体調はとてもいい', 'それはすごくいいね'],
       cue: '最後の「Fine」',
       line: '*Fine, fine.* I’ll talk normally.',
       said: 'ケビンが「わかったわかった。普通に話すよ」と言う。',
       mean: 'Fine, fine ＝ わかったよ（しぶしぶ）。2回くり返すのは、仕方なく折れる時。',
-      trap: 'fine（いい）から、喜んでいると思いやすい。くり返しはしぶしぶの合図。',
-      use: 'Fine, fine. You win.（わかったよ、君の勝ち）' },
+      trap: 'fine を「元気」や「いいね」と考えがち。Fine, fine と2回くり返すのは、しぶしぶ折れる時。',
+      use: 'Fine, fine. I’ll do it.（わかったよ、やるよ）' },
 
     { id: 'c1', skill: 'infer', level: 'C2', point: 'normal', seg: [131.3, 141.6], retired: true,
       stem: 'After his comment to the camera, how should we hear “I’ll talk normally”?',
