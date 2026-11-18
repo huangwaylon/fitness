@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 4, new 7, ctx 5, tx 13
+// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 4, new 7, ctx 5, tx 13, qa 29
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 2
 // “Ben Meets Leslie's Ex-boyfriend | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Dave,
 // Leslie's ex and a cop, joins Leslie and Ben for dinner, competes with Ben, then tells Leslie he still loves her.
@@ -29,7 +29,7 @@ export const daveReturns: Clip = {
       trap: 'I’m fine now で話が終わったと考えがち。そのあとの as long as が条件。',
       use: 'I can come, as long as I’m home by ten.（10時までに帰れるなら行けるよ）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'who', seg: [20.7, 42.2],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'who', seg: [20.4, 39.5],
       stem: 'Who is Dave?',
       ja: 'デイブは誰？',
       choices: ['Leslie’s old boyfriend', 'Ben’s old friend', 'Leslie’s new boss'], a: 0,
@@ -52,7 +52,7 @@ export const daveReturns: Clip = {
       trap: 'romantical は詩的に聞こえるが、involvement や terminated は書類の語。語の種類を見る。',
       use: 'We used to date, a long time ago.（ずっと前に付き合ってたんだ）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'moved', seg: [38.3, 52.6],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'moved', reveals: ['who'], seg: [39.55, 52.6],
       stem: 'Why did Dave and Leslie break up?',
       ja: 'デイブとレスリーが別れた理由は？',
       choices: ['Dave moved far away', 'Leslie met Ben', 'Dave met someone new'], a: 0,
@@ -64,7 +64,7 @@ export const daveReturns: Clip = {
       trap: 'terminated（終了）から、けんか別れを連想しやすい。理由は until I のあとの引っ越し。',
       use: 'I moved to Osaka for work.（仕事で大阪に引っ越しました）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'stay', seg: [51.2, 59.7],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'stay', seg: [51.2, 59.43],
       stem: 'How long is Dave staying in town?',
       ja: 'デイブはどのくらい町にいる？',
       choices: ['Just tonight', 'For a week', 'For a few days'], a: 0,
@@ -76,7 +76,7 @@ export const daveReturns: Clip = {
       trap: '質問の for a while が耳に残りやすい。答えの No のあとを聞く。',
       use: 'I’m only here for tonight.（今夜だけここにいます）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'burrito', seg: [59.9, 71.9],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'burrito', seg: [59.42, 71.9],
       stem: 'What will Dave eat for dinner?',
       ja: 'デイブは夕食に何を食べるつもり？',
       choices: ['A frozen burrito', 'French food with them', 'Dinner at the party'], a: 0,
@@ -88,7 +88,7 @@ export const daveReturns: Clip = {
       trap: 'French restaurant はレスリーとベンの予定。Cool のあとがデイブの予定。',
       use: 'I’ll just grab something on the way.（途中で何か買って食べるよ）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'invite', ctx: true, seg: [69, 78.4],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'invite', ctx: true, seg: [68.6, 78.2],
       stem: 'What is Dave invited to do?',
       ja: 'デイブは何に誘われる？',
       choices: ['Have dinner with them', 'Go to the party early', 'Drive them to the party'], a: 0,
@@ -100,7 +100,7 @@ export const daveReturns: Clip = {
       trap: 'should（〜すべき）から、注意や命令と考えがち。友だちへの should は「〜しなよ」という誘い。',
       use: 'You should come with us!（一緒に来なよ！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', seg: [77.3, 95.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'rivals', seg: [77.7, 94.9],
       stem: 'What do Ben and Dave keep doing at dinner?',
       ja: '夕食の間、ベンとデイブは何をくり返している？',
       choices: ['Trying to praise Leslie more', 'Talking about their own jobs', 'Planning Leslie’s campaign'], a: 0,
@@ -147,7 +147,7 @@ export const daveReturns: Clip = {
       trap: '署長の退職パーティーの話が前に出るので、引かれやすい。',
       use: 'Can you support my plan?（私の案を応援してもらえますか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'idprob', reveals: ['endorse'], seg: [96.7, 103.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'idprob', reveals: ['endorse'], seg: [96.85, 103.4],
       stem: 'Fill the gap: “___ get him to endorse you.”',
       ja: '「___ get him to endorse you.」の空所は？',
       choices: ['I’ll probably', 'I’d probably', 'I probably'], a: 1,
@@ -159,11 +159,11 @@ export const daveReturns: Clip = {
       trap: '小さな「ド」があれば I’d。I’ll なら「アイル」と「ル」、I だけなら「アイプロ」とすぐつながる。',
       use: 'I’d probably take the train.（たぶん電車にするかな）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [117.2, 126.5],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'denial', seg: [117.2, 124.6],
       stem: 'Why does Dave say “Nothing was said”?',
       ja: 'デイブは、なぜ「Nothing was said」と言う？',
-      choices: ['To hide what he just said', 'To say it once more', 'To ask Ben to listen'], a: 0,
-      choicesJa: ['今言ったことをごまかすため', 'もう一度言うため', 'ベンに聞いてと頼むため'],
+      choices: ['To hide what he just said', 'To say it once more', 'To ask her to repeat it'], a: 0,
+      choicesJa: ['今言ったことをごまかすため', 'もう一度言うため', '彼女にもう一度言わせるため'],
       cue: '「just say?」のあと',
       line: 'What did you just say? — Nothing, I didn’t, *nothing was said*.',
       said: '「今なんて？」と聞かれ、「何も、言ってない、何も言われてない」と答える。',
@@ -171,7 +171,7 @@ export const daveReturns: Clip = {
       trap: 'said が聞こえて、もう一度言うと思いやすい。Nothing のくり返しを聞く。',
       use: 'Forget I said anything.（今のは聞かなかったことにして）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['refuse'], seg: [117.6, 148.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'leslie', reveals: ['denial'], seg: [117.3, 132.4],
       stem: 'What happens while Ben is in the bathroom?',
       ja: 'ベンがトイレに行っている間に何が起こる？',
       choices: ['Dave says he still loves Leslie', 'Dave asks Leslie for a job', 'Dave says he is getting married'], a: 0,
@@ -195,7 +195,7 @@ export const daveReturns: Clip = {
       trap: '告白なので、うれしいと思いやすい。here and now（今ここで）を責めている。',
       use: 'Why would you say that?（なんでそんなこと言うの？）' },
 
-    { id: 'd4', skill: 'infer', level: 'B2', point: 'whynow', ctx: true, seg: [127.9, 136],
+    { id: 'd4', skill: 'infer', level: 'B2', point: 'whynow', ctx: true, seg: [127.55, 135.72],
       stem: 'Why does Dave pick this moment?',
       ja: 'デイブがこのタイミングを選んだのはなぜ？',
       choices: ['Ben is not at the table', 'Dinner is almost over', 'Leslie asked him to'], a: 0,
@@ -219,18 +219,6 @@ export const daveReturns: Clip = {
       trap: '「ファイヴ」の「アイ」なら five。fifteen は「ティーン」、fifty は「ティ」で終わる。',
       use: 'Can I have five minutes?（5分だけいいですか）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [135.6, 143],
-      stem: 'What does “*bring this up*” mean?',
-      ja: '「bring this up」はどういう意味？',
-      choices: ['Talk about this', 'Say this loudly', 'Carry this upstairs'], a: 0,
-      choicesJa: ['この話をする', 'これを大声で言う', 'これを上の階に運ぶ'],
-      cue: '「cannot」のすぐあと',
-      line: 'No, you cannot *bring this up at all* when my boyfriend is here.',
-      said: '「だめ、この話は絶対に持ち出さないで。彼氏がいるときには」と言う。',
-      mean: '文字どおりは「持ち上げる」。話を人の前に出す→「話題に出す・持ち出す」。at all で「少しでも」と強めている。',
-      trap: 'up から「上へ運ぶ」と考えがち。bring 〜 up でひとまとまり。',
-      use: 'Please don’t bring it up at dinner.（夕食のときにその話はしないで）' },
-
     { id: 'nt1', skill: 'pragma', level: 'C2', point: 'getrid', seg: [137.6, 147.2], retired: true,
       stem: 'How does Dave take Leslie’s “not… when my boyfriend is here”?',
       choices: ['As a timing issue he can get around', 'As a sign to bring it up another day',
@@ -242,7 +230,19 @@ export const daveReturns: Clip = {
       trap: '「今はだめ」を「また今度」と取りやすい。返事は言葉の形より、次に何をしようとするかで聞く。',
       use: 'Not now. — Okay, later then?（今はだめ。—じゃあ、あとで？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [137.7, 144.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'bringup', seg: [137.88, 141.0],
+      stem: 'What does “*bring this up*” mean?',
+      ja: '「bring this up」はどういう意味？',
+      choices: ['Talk about this', 'Say this loudly', 'Carry this upstairs'], a: 0,
+      choicesJa: ['この話をする', 'これを大声で言う', 'これを上の階に運ぶ'],
+      cue: '「cannot」のすぐあと',
+      line: 'No, you cannot *bring this up at all* when my boyfriend is here.',
+      said: '「だめ、この話は絶対に持ち出さないで。彼氏がいるときには」と言う。',
+      mean: '文字どおりは「持ち上げる」。話を人の前に出す→「話題に出す・持ち出す」。at all で「少しでも」と強めている。',
+      trap: 'up から「上へ運ぶ」と考えがち。bring 〜 up でひとまとまり。',
+      use: 'Please don’t bring it up at dinner.（夕食のときにその話はしないで）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [139.6, 144.5],
       stem: 'Type the 4 words Dave says before “that’s a good call.”', answer: 'get rid of him',
       ja: '「that’s a good call」の前の4語を書こう',
       cue: '「good call」の直前',
@@ -263,11 +263,11 @@ export const daveReturns: Clip = {
       trap: 'funny name をからかいと取りやすい。another と I thought of は手柄の話。',
       use: 'I came up with that one myself.（それは自分で考えたんだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [160.5, 166.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [160.4, 165.25], keep: true,
       stem: 'How many bad guys does Dave say he caught?',
       ja: 'デイブは悪いやつを何人捕まえたと言う？',
-      choices: ['About six', 'About sixteen', 'About sixty'], a: 0,
-      choicesJa: ['6人くらい', '16人くらい', '60人くらい'],
+      choices: ['About six', 'About seven', 'About sixteen', 'About sixty'], a: 0,
+      choicesJa: ['6人くらい', '7人くらい', '16人くらい', '60人くらい'],
       cue: '「a lot of」のあと',
       line: 'caught a lot of bad guys. *About six* bad guys.',
       said: '「悪いやつをたくさん捕まえた。6人くらい」と言う。',
@@ -287,7 +287,7 @@ export const daveReturns: Clip = {
       trap: 'fifteen は「ティーン」が長く、fifty は短い。oh five や two で始まる時刻とも分ける。',
       use: 'My train leaves at six fifteen.（電車は6時15分発です）' },
 
-    { id: 'pr5', skill: 'pragma', level: 'B1', point: 'goodsee', ctx: true, seg: [165.5, 174.9],
+    { id: 'pr5', skill: 'pragma', level: 'B1', point: 'goodsee', ctx: true, seg: [165.25, 174.6],
       stem: 'What is Leslie doing with “It was so good to see you”?',
       ja: 'レスリーの「It was so good to see you」は何のため？',
       choices: ['Saying goodbye to him', 'Saying hello to him', 'Asking him to stay'], a: 0,
@@ -311,7 +311,7 @@ export const daveReturns: Clip = {
       trap: '前に聞いた退職パーティーに引かれやすい。mainly のあとが本当の目的。',
       use: 'I’m mainly here for work.（主に仕事で来ています）' },
 
-    { id: 'c3', skill: 'infer', level: 'B2', point: 'chief', ctx: true, seg: [175.8, 185.3],
+    { id: 'c3', skill: 'infer', level: 'B2', point: 'chief', ctx: true, seg: [175.42, 185.05],
       stem: 'Why does Ben want Dave to be chief?',
       ja: 'ベンがデイブに署長になってほしいのはなぜ？',
       choices: ['So he can support Leslie', 'So he can live here again', 'So he can be Ben’s boss'], a: 0,
@@ -334,7 +334,7 @@ export const daveReturns: Clip = {
       trap: '決まった形に合わせて you と聞きたくなる。言いそこないは、ずれた一語に本音が出る。',
       use: 'You look like you could use a coffee.（コーヒーが要りそうな顔だね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'caughtup', reveals: ['six'], seg: [194.2, 205],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'caughtup', reveals: ['six'], seg: [194.75, 203.25],
       stem: 'Leslie says, “*I think we’re good*.” What does she mean?',
       ja: 'レスリーの「I think we’re good」はどういう意味？',
       choices: ['No, thank you', 'Yes, let’s go', 'We are good friends'], a: 0,
@@ -342,7 +342,7 @@ export const daveReturns: Clip = {
       cue: '「catch up?」への答えの最後',
       line: 'Would you like to step outside with me and catch up? — *We have caught up.* … *I think we’re good.*',
       said: '「外で話さない？」に「もう話した。もう十分」と答える。',
-      mean: 'I think we’re good ＝ もう大丈夫・けっこうです。やわらかく断る言い方。',
+      mean: '文字どおりは「私たちはいい状態」→ もう足りている →「もう十分、けっこうです」。やわらかく断る言い方。',
       trap: 'good から「いいよ」と賛成に思いやすい。前の一言で断っている。',
       use: 'More water? — No, I think I’m good.（お水は？—大丈夫です）' },
 
@@ -369,7 +369,7 @@ export const daveReturns: Clip = {
       trap: 'time から「時間だ」と思いやすい。take your time は「自分のペースで」。',
       use: 'Take your time. There’s no rush.（ごゆっくり。急がなくていいですよ）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'getalong', seg: [214.7, 220.2],
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'getalong', seg: [214.3, 218.75],
       stem: 'How does Ben think it’s going with Dave?',
       ja: 'ベンは、デイブとのことがどうだと思っている？',
       choices: ['Good so far', 'Not good at all', 'He can’t tell yet'], a: 0,
@@ -393,8 +393,8 @@ export const daveReturns: Clip = {
       trap: 'in love から、やきもちと思いやすい。話の中心は gun（銃）。',
       use: 'Relax, I’m not freaking out.（落ち着いて、取り乱してないから）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'gun', seg: [224.5, 230.9],
-      stem: 'What worries Ben about Dave, he says?',
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'gun', seg: [224.15, 229.7],
+      stem: 'What worries Ben about Dave?',
       ja: 'デイブについて、ベンは何が心配だと言う？',
       choices: ['He has a gun', 'He is the new chief', 'He gets angry fast'], a: 0,
       choicesJa: ['銃を持っている', '新しい署長だ', 'すぐ怒る人だ'],

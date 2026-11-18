@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 10, retire 0, new 3, ctx 6, tx 18
+// R4 REVIEW 2026-11-18: keep 11, rewrite 10, retire 0, new 3, ctx 6, tx 18, qa 21
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 3
 // “Time-Capsule Nutjob Kelly Larson | Parks and Recreation” (the official Parks and Recreation channel, Season 3): a fan
 // asks Leslie to put the Twilight books in Pawnee's time capsule, handcuffs himself in her office when she says no, and
@@ -14,18 +14,7 @@ export const kellyLarson: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', reveals: ['plead'], seg: [0, 27.4],
-      stem: 'What does Kelly want from Leslie?',
-      ja: 'ケリーはレスリーに何を求めている？',
-      choices: ['Twilight in the time capsule', 'A job in Leslie’s own office', 'Leslie to email him back'], a: 0,
-      choicesJa: ['トワイライトをタイムカプセルに入れること', 'レスリーの職場での仕事', 'メールの返事'],
-      cue: '「make a suggestion」のあと。',
-      said: 'ケリーがタイムカプセルに「トワイライト」の本を入れてほしいと頼みに来る。',
-      mean: 'suggestion ＝ 提案。タイムカプセルに入れる物を提案しに来た。',
-      trap: 'e-mailing が聞こえるのでメールの話と思いやすい。本題は suggestion のあと。',
-      use: 'Can I make a suggestion?（ひとつ提案してもいい？）' },
-
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'refuse', ctx: true, seg: [4.3, 10.3],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'refuse', ctx: true, seg: [3.45, 10.3],
       stem: 'How does Leslie answer Kelly’s idea?',
       ja: 'ケリーの提案に、レスリーはどう答える？',
       choices: ['She says no, politely', 'She asks him to write it', 'She says yes, gladly'], a: 0,
@@ -35,6 +24,17 @@ export const kellyLarson: Clip = {
       mean: 'この I’m sorry は謝りではなく、断りをやわらげる前置き。take ＝ 受け付ける。',
       trap: 'sorry から謝っているだけと考えがち。決め手はあとの not taking（受け付けない）。',
       use: 'Sorry, we’re not taking orders now.（すみません、今は注文を受けていません）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', seg: [9.85, 26.9],
+      stem: 'What does Kelly want from Leslie?',
+      ja: 'ケリーはレスリーに何を求めている？',
+      choices: ['Twilight in the time capsule', 'A job in Leslie’s own office', 'Leslie to email him back'], a: 0,
+      choicesJa: ['トワイライトをタイムカプセルに入れること', 'レスリーの職場での仕事', 'メールの返事'],
+      cue: '最初のひと言と「should be included」。',
+      said: 'ケリーがタイムカプセルに「トワイライト」の本を入れてほしいと頼みに来る。',
+      mean: 'suggestion ＝ 提案。タイムカプセルに入れる物を提案しに来た。',
+      trap: 'e-mailing が聞こえるのでメールの話と考えがち。本題は最初の The Twilight books と、should be included。',
+      use: 'Can I make a suggestion?（ひとつ提案してもいい？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'boy', seg: [13.8, 23.2], retired: true,
       stem: 'Why does the audience laugh at Kelly’s answer to Leslie’s guess?',
@@ -47,7 +47,7 @@ export const kellyLarson: Clip = {
       trap: '失礼なことを言われたら怒るのが普通の流れ。ここは淡々と言葉を入れ替えるだけ。',
       use: 'Sorry, I’m not who you expected.（すみません、思ってた人と違って）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'haveseat', ctx: true, seg: [22.9, 31.0],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'haveseat', ctx: true, seg: [22.6, 30.5],
       stem: 'What does Leslie say when Kelly asks to explain?',
       ja: '理由を話したいと言うケリーに、レスリーは何と言う？',
       choices: ['Yes, sit down and tell me', 'No, I’m too busy now', 'Later, after my meeting'], a: 0,
@@ -67,7 +67,7 @@ export const kellyLarson: Clip = {
       trap: 'plead を「頼みこむ・謝る」と取りやすい。case は「言い分」の意味。',
       use: 'Okay, go ahead and make your case.（じゃあ、言い分をどうぞ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'birth', seg: [32.9, 43.5],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'birth', seg: [32.9, 39.7],
       stem: 'How does Leslie feel when Kelly starts with the author’s birth?',
       ja: '作者の誕生から話し始めたケリーに、レスリーはどう感じている？',
       choices: ['Tired of it already', 'Very interested in it', 'Angry at Kelly now'], a: 0,
@@ -78,18 +78,18 @@ export const kellyLarson: Clip = {
       trap: '言葉だけならほめているようにも聞こえやすい。最後の Okay でしかたなく聞く感じ。',
       use: 'Oh, we’re starting from the very beginning.（あ、最初から話すのね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [36.5, 46.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'copies', seg: [36.7, 43.1], keep: true,
       stem: 'How many copies have the books sold, says Kelly?',
       ja: '本は何部売れたとケリーは言う？',
-      choices: ['More than 1 million', 'More than 10 million', 'More than 100 million'], a: 2,
-      choicesJa: ['100万部以上', '1000万部以上', '1億部以上'],
+      choices: ['More than 1 million', 'More than 10 million', 'More than 100 million', 'More than 1 billion'], a: 2,
+      choicesJa: ['100万部以上', '1000万部以上', '1億部以上', '10億部以上'],
       cue: '「more than」のあと。', line: 'they have sold more than *100 million* copies worldwide.',
       said: '「合わせて世界で1億部以上売れた」と言う。',
       mean: 'a hundred million ＝ 1億。英語は3けたごとに区切って数える。',
-      trap: 'hundred が弱いと a million（100万）に聞こえやすい。ten なら「テン」。a と million の間を聞く。',
+      trap: 'hundred が弱いと a million（100万）に聞こえやすい。ten なら「テン」、billion なら「ビ」。a と million の間を聞く。',
       use: 'It sold over a million copies.（100万部以上売れたんだよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [39.6, 48.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seen', seg: [43.1, 48.2],
       stem: 'Fill the gap: “Now, ___ any of the Twilight movies?”',
       ja: '「Now, ___ any of the Twilight movies?」の空所は？',
       choices: ['have you seen', 'haven’t you seen', 'did you see'], a: 0,
@@ -111,7 +111,7 @@ export const kellyLarson: Clip = {
       trap: 'ショットを「写真」と取りやすい。映画の shot は1つのカットのこと。',
       use: 'He told me the whole plot in detail.（話を一から全部聞かされた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [57, 69],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pawnee', seg: [55.85, 69],
       stem: 'Why does Leslie say no to the books?',
       ja: 'レスリーはなぜその本を断る？',
       choices: ['They aren’t about Pawnee', 'They are too new for it', 'They are only for kids'], a: 0,
@@ -122,7 +122,7 @@ export const kellyLarson: Clip = {
       trap: 'moment in time から「新しすぎる」と思いやすい。理由は Pawnee との関係。',
       use: 'It has nothing to do with our town.（うちの町とは関係ないよ）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B2', point: 'forks', seg: [67.6, 77.2],
+    { id: 'h2', skill: 'phrase', level: 'B2', point: 'forks', seg: [67.9, 76.8],
       stem: 'What does “except for” mean here?',
       ja: 'ここでの「except for」はどういう意味？',
       choices: ['But not', 'And also', 'Because of'], a: 0,
@@ -133,7 +133,7 @@ export const kellyLarson: Clip = {
       trap: 'exactly like のあとなので、同じ点を足すと思いやすい。except は「除いて」。',
       use: 'The room is nice, except for the noise.（音以外は、いい部屋だね）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'askleave', ctx: true, seg: [75.9, 82],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'askleave', ctx: true, seg: [75.15, 82],
       stem: 'How does Leslie answer Kelly’s begging?',
       ja: 'ケリーの頼みに、レスリーはどう答える？',
       choices: ['She tells him to go', 'She says she will think again', 'She asks for more time'], a: 0,
@@ -167,7 +167,7 @@ export const kellyLarson: Clip = {
       trap: 'those kids（その子たち）から、同僚の友だちの話と勘違いしやすい。本人が just annoyed と言う。',
       use: 'Sorry, I’m just a little tired.（ごめん、ちょっと疲れてるだけ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'subject', seg: [102.3, 110],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'subject', seg: [102.6, 110],
       stem: 'What does “while we’re on the subject” mean?',
       ja: '「while we’re on the subject」はどういう意味？',
       choices: ['Since we’re talking about this', 'Let’s talk about something new', 'Let’s stop talking now'], a: 0,
@@ -189,7 +189,7 @@ export const kellyLarson: Clip = {
       trap: 'thirty は前、thirteen は後ろを強く言う。単位は minutes でなく seconds（セカンズ）。',
       use: 'Give me five minutes.（5分ちょうだい）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [114, 119.8],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'push', seg: [114, 119.4],
       stem: 'What does Leslie want to do with the meeting?',
       ja: 'レスリーは会議をどうしたい？',
       choices: ['Move it an hour later', 'Make it an hour longer', 'Start it an hour earlier'], a: 0,
@@ -200,7 +200,7 @@ export const kellyLarson: Clip = {
       trap: 'push（押す）から「前に早める」と思いやすい。予定の push はふつう遅らせる。',
       use: 'Can we push dinner to eight?（夕食を8時にずらせる？）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B1', point: 'again', ctx: true, seg: [119.2, 127.2],
+    { id: 'i1', skill: 'phrase', level: 'B1', point: 'again', ctx: true, seg: [119.4, 127.2],
       stem: 'What does “Again?” mean here?',
       ja: 'ここでの「Again?」はどういう意味？',
       choices: ['It has happened before', 'Please say that once more', 'It is the very first time'], a: 0,
@@ -233,9 +233,9 @@ export const kellyLarson: Clip = {
       trap: 'tell から「言う・教える」を思いやすい。can tell は「見分けられる」。',
       use: 'You’re nervous. I can tell.（緊張してるね。分かるよ）' },
 
-    { id: 'c2', skill: 'detail', level: 'B2', point: 'whoelse', ctx: true, seg: [148.6, 158.9],
-      stem: 'Who is Kelly thinking of?',
-      ja: 'ケリーは誰のことを考えている？',
+    { id: 'c2', skill: 'detail', level: 'B2', point: 'whoelse', ctx: true, seg: [146.1, 158.5],
+      stem: 'Who else knows about heartbreak, says Kelly?',
+      ja: 'ほかに失恋が分かる人として、ケリーは誰の名前を出す？',
       choices: ['The writer of Twilight', 'A famous singer', 'Bella from the movie'], a: 0,
       choicesJa: ['トワイライトの作者', '有名な歌手', '映画のベラ'],
       cue: '「No.」のあと。', line: 'Kelly: And you know who else does? / Man: Kenneth “Babyface” Edmonds? / Kelly: No. A little lady named Twilight author *Stephenie Meyer*.',
@@ -244,7 +244,7 @@ export const kellyLarson: Clip = {
       trap: '男性の答え（歌手）を答えと考えがち。ケリーは No と言ってから名前を出す。',
       use: 'You know who else likes sushi? My dad.（ほかに誰がおすし好きか知ってる？ 父だよ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'monsters', seg: [160.0, 170.6],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'monsters', seg: [159.7, 170.37],
       stem: 'What kind of books does the woman love?',
       ja: 'その女性はどんな本が大好き？',
       choices: ['Scary and magic stories', 'Books about real history', 'Books for small kids'], a: 0,
@@ -255,7 +255,7 @@ export const kellyLarson: Clip = {
       trap: '直前の Those books are good から、トワイライトの話だけと考えがち。並べた言葉は全部怪物や魔法。',
       use: 'I love any movie about space.（宇宙の映画なら何でも好き）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'timeup', seg: [175.6, 181.4],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'timeup', seg: [176.45, 179.45],
       stem: 'What does “Time is up” mean here?',
       ja: 'ここでの「Time is up」はどういう意味？',
       choices: ['There is no more time', 'It is time to wake up', 'It is a good time'], a: 0,
@@ -266,7 +266,7 @@ export const kellyLarson: Clip = {
       trap: 'up から「起きる」を連想しやすい。Time’s up は「時間が終わった」。',
       use: 'Time’s up. Pens down, please.（時間です。ペンを置いてください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'keys', seg: [176.3, 183.1],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'keys', seg: [176.45, 182.75],
       stem: 'Where are the handcuff keys, says Kelly?',
       ja: '手錠の鍵はどこにあるとケリーは言う？',
       choices: ['In a secret place, far away', 'In his car out in front', 'Thrown away in the trash'], a: 0,
@@ -288,18 +288,18 @@ export const kellyLarson: Clip = {
       trap: 'fact と legal で法律に詳しいように聞こえるが、何も示していない。',
       use: 'The fact remains, we’re late.（とにかく、遅刻は遅刻だよ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'trouble', seg: [188.4, 196.4],
-      stem: 'What comes after Kelly’s “I don’t want to cause trouble”?',
-      ja: 'ケリーの「I don’t want to cause any trouble」のあとに何が来る？',
-      choices: ['A strong demand', 'A quick goodbye', 'A plan to fight'], a: 0,
-      choicesJa: ['強い要求', '短いお別れ', 'けんかの計画'],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'trouble', reveals: ['leave'], seg: [190.4, 196.25],
+      stem: 'What does Kelly say after “I don’t want to cause any trouble”?',
+      ja: '「I don’t want to cause any trouble」のあと、ケリーは何と言う？',
+      choices: ['He won’t leave without the books', 'He will leave if they ask him', 'He is sorry and will go home'], a: 0,
+      choicesJa: ['本を入れるまで帰らない', '頼まれたら帰る', '謝って家に帰る'],
       cue: '前置きのあと、But の文。', line: 'Look, I really *don’t want to cause any trouble*. *But*…',
-      said: '「もめごとを起こしたいわけじゃない」と前置きして、But のあとで条件を言う。',
+      said: '「もめごとを起こしたいわけじゃない」と前置きして、But のあとで「本を入れるまで帰らない」と言う。',
       mean: '本音は but のあと。I don’t want to 〜, but… は強い要求をやわらげる前置き。',
       trap: 'trouble から謝って帰ると考えがち。but が来たら本題の合図。',
       use: 'I don’t mean to be rude, but…（失礼なつもりはないけど…）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [190.8, 196.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'leave', seg: [190.4, 196.25],
       stem: 'Type what Kelly says: “But I am ___ until…” (3 words)', answer: 'not gonna leave',
       ja: '「But I am ___ until…」の空所を書こう（3語）',
       cue: '「But I am」のあと。', line: 'But I am *not gonna leave* until you put Twilight in the time capsule.',
@@ -308,18 +308,18 @@ export const kellyLarson: Clip = {
       trap: 'not の t は止まるだけで「ナッ」、gonna は「ガナ」。2語が1つに聞こえやすい。',
       use: 'I’m not gonna give up.（あきらめないよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'standoff', reveals: ['pillow'], seg: [199.4, 221.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'standoff', seg: [199.4, 219.8],
       stem: 'What does Leslie decide to do with Kelly?',
       ja: 'レスリーはケリーをどうすることにする？',
       choices: ['Let him stay there', 'Have the guard remove him', 'Put the books in'], a: 0,
       choicesJa: ['そこにいさせておく', '警備員に連れ出させる', '本を入れる'],
       cue: '「stop!」のあとのレスリーの言葉。',
-      said: '警備員を止めて「いたいならいさせてあげる」と決めるが、彼は枕まで持ってきていた。',
+      said: '警備員を止めて「いたいならいさせてあげる」と決める。2時間で音を上げると読んでいる。',
       mean: 'let him stay ＝ いさせておく。おなかがすけば帰る、という作戦。',
       trap: 'Go ahead, Artie（やって）で、連れ出されると考えがち。決め手は stop! のあと。',
       use: 'Fine, stay as long as you like.（いいよ、好きなだけいれば）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'pillow', seg: [211.7, 223.7],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'pillow', seg: [213.2, 225.0],
       stem: 'What does Kelly’s pillow tell Leslie?',
       ja: 'ケリーの枕から、レスリーは何が分かる？',
       choices: ['He will stay a long time', 'He is hungry already', 'He wants to go home'], a: 0,

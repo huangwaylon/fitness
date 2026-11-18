@@ -1,10 +1,10 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 3, new 0, ctx 4, tx 11
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 3, new 0, ctx 4, tx 11, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 7, retire 4, new 1
 // “Joey Gets a New Brain | Friends” (the official Friends channel, Best of Season 7): Joey tells his friends his soap
 // character is coming out of his coma with a new brain, a dying character's; the friends mourn the actress, and one
 // friend can't follow who Joey's character will be.
 // Segments from the captions, words from whisper (2026-11-16; whisper runs 1–3 s early here). Talk ends at ≈93.2 s.
-// EXCLUDE 39.4–44: a sex jab (“…you haven't had sex in three and a half months”); its reply (47–52 s) is untested.
+// EXCLUDE 39.1–44: a sex jab (“…you haven't had sex in three and a half months”); its reply (47–52 s) is untested.
 // Untested: 56.3–57.9 s, 68.3–69.0 s; speakers other than Joey aren't named, so no item turns on who says what.
 import type { Clip } from '../types.ts';
 
@@ -14,17 +14,6 @@ export const joeyBrain: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'mood', seg: [0, 23.7],
-      stem: 'Why has Joey come to see his friends?',
-      ja: 'ジョーイはなぜ友だちに会いに来た？',
-      choices: ['To share good news', 'To complain about the show', 'To say he lost his job'], a: 0,
-      choicesJa: ['いい知らせを話すため', '番組の文句を言うため', '仕事を失ったと言うため'],
-      cue: '最初の切り出し方。', line: 'Anyway, *you’re not gonna believe it*… And *not only that*…',
-      said: '「信じられないよ」と切り出し、「それだけじゃない」と役の知らせを重ねる。',
-      mean: 'You’re not gonna believe it ＝ 信じられないよ。いい知らせを話すときの前置き。',
-      trap: 'あとで役が殺される話が出るので、文句を言いに来たと思いやすい。最初の言い方で気分が分かる。',
-      use: 'You’re not gonna believe this!（ねえ、信じられないよ！）' },
-
     { id: 'd2', skill: 'detail', level: 'B1', point: 'dool', ctx: true, seg: [1.5, 7.9],
       stem: 'What does Joey say DOOL is?',
       ja: 'ジョーイは、DOOL が何だと言う？',
@@ -56,6 +45,17 @@ export const joeyBrain: Clip = {
       mean: 'come out of a coma ＝ 昏睡から出てくる＝意識が戻る。out of が「アウタヴ」とつながり、of はほぼ「ア」。',
       trap: 'of が弱すぎて coming out his と書きやすい。come out のあとには of が来やすい。',
       use: 'I’m just coming out of a meeting.（ちょうど会議が終わったところ）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'mood', reveals: ['coma'], seg: [8.2, 23.7],
+      stem: 'Why has Joey come to see his friends?',
+      ja: 'ジョーイはなぜ友だちに会いに来た？',
+      choices: ['To share good news', 'To complain about the show', 'To say he lost his job'], a: 0,
+      choicesJa: ['いい知らせを話すため', '番組の文句を言うため', '仕事を失ったと言うため'],
+      cue: '最初の切り出し方。', line: 'Anyway, *you’re not gonna believe it*… And *not only that*…',
+      said: '「信じられないよ」と切り出し、「それだけじゃない」と役の知らせを重ねる。',
+      mean: 'You’re not gonna believe it ＝ 信じられないよ。いい知らせを話すときの前置き。',
+      trap: 'あとで役が死ぬ話が出るので、文句を言いに来たと考えがち。最初の言い方で気分が分かる。',
+      use: 'You’re not gonna believe this!（ねえ、信じられないよ！）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'personal', seg: [13.5, 23.7], retired: true,
       stem: 'What is the joke in the friend’s “…and in your personal life”?',
@@ -91,7 +91,7 @@ export const joeyBrain: Clip = {
       trap: 'さっきの coma の話が残ると、目覚めた役と混ざりやすい。dies と her brain をつなげる。',
       use: 'He had a heart transplant last year.（彼は去年心臓移植を受けた）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'killoff', seg: [25.6, 32.5],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'killoff', seg: [25.95, 32.5],
       stem: 'What does “they’re killing off one of the characters” mean?',
       ja: '「they’re killing off one of the characters」はどういう意味？',
       choices: ['A character will die and leave', 'A new actress will play her', 'A character will move far away'], a: 0,
@@ -102,7 +102,7 @@ export const joeyBrain: Clip = {
       trap: 'off だけ聞くと、引っ越しや交代での退場にも思える。kill が付けば死による退場。',
       use: 'They killed off my favorite character.（好きなキャラが死んで退場した）' },
 
-    { id: 'at1', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [32.3, 39.3],
+    { id: 'at1', skill: 'attitude', level: 'B1', point: 'ridiculous', seg: [32.3, 39.05],
       stem: 'What does Joey’s friend think of the transplant story?',
       ja: '脳移植の話を、ジョーイの友だちはどう思っている？',
       choices: ['It’s silly', 'It’s exciting', 'It’s scary'], a: 0,
@@ -147,7 +147,7 @@ export const joeyBrain: Clip = {
       trap: '演技で飲むふりをする話と取りやすい。前の文の throwing と結びつけて聞く。',
       use: 'She’s never once been on time.（彼女、一度も時間通りに来たことがない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['throw'], seg: [58.6, 67.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['throw'], seg: [58.6, 65.45],
       stem: 'What does the friend’s “I mean” mean here?',
       ja: 'ここでの友だちの「I mean」はどういう意味？',
       choices: ['Even more than that', 'No, that was wrong', 'Let’s talk about something else'], a: 0,
@@ -168,7 +168,7 @@ export const joeyBrain: Clip = {
       trap: '速さで I’ve を落とし I ever seen と書きやすい。ever seen の前に小さな「ヴ」。',
       use: 'I don’t think I’ve ever been there.（あそこには行ったことがないと思う）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'wouldnt', seg: [62.5, 70],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'wouldnt', seg: [62.7, 70],
       stem: 'What does the friend want to try?',
       ja: '友だちは何をやってみたい？',
       choices: ['Hitting someone’s face', 'Throwing a drink', 'Being on TV'], a: 0,
@@ -190,7 +190,7 @@ export const joeyBrain: Clip = {
       trap: 'gotta は「ガラ」、It’ll は「イドゥル」と短い。「ガナ」なら gonna。',
       use: 'It’s gonna be a long day.（長い一日になりそう）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'shoes', seg: [70.0, 76.8],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'shoes', seg: [70.0, 76.45],
       stem: 'What does “fill her shoes” mean?',
       ja: '「fill her shoes」はどういう意味？',
       choices: ['Take her place well', 'Say goodbye to her', 'Buy her some new shoes'], a: 0,
@@ -201,7 +201,7 @@ export const joeyBrain: Clip = {
       trap: 'shoes から本物の靴を思いやすい。fill（埋める）で「代わりになる」。',
       use: 'Our old boss had big shoes to fill.（前の上司の後任は大変だった）' },
 
-    { id: 'at3', skill: 'attitude', level: 'B2', point: 'yeahyeah', reveals: ['beher'], seg: [73.6, 85],
+    { id: 'at3', skill: 'attitude', level: 'B2', point: 'yeahyeah', reveals: ['beher'], seg: [72.85, 84.9],
       stem: 'What does “Yeah, yeah” mean here?',
       ja: 'ここでの「Yeah, yeah」はどういう意味？',
       choices: ['Okay, let’s move on', 'I really agree with you', 'I’m very sad, too'], a: 0,
@@ -212,7 +212,7 @@ export const joeyBrain: Clip = {
       trap: 'yeah から賛成と思いやすい。2回重ねてすぐ話題を変えたら、聞き流し。',
       use: 'Yeah, yeah, okay. So what happened?（はいはい、で、どうなったの）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'getit', reveals: ['beher'], seg: [74.0, 93.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'getit', reveals: ['beher'], seg: [74.85, 93.6],
       stem: 'What can’t Joey’s friend understand?',
       ja: 'ジョーイの友だちは、何が分からない？',
       choices: ['Who Joey’s character will be', 'Who the show will kill off', 'Whether Joey will keep his job'], a: 0,

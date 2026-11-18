@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 6, ctx 8, tx 15
+// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 6, ctx 8, tx 15, qa 29
 // A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 4, new 1
 // “Ron Swanson Goes off the Grid | Parks and Recreation” (the official Parks and Recreation channel, Season 6): a
 // coupon flyer reaches Ron at Diane's address, so he sets out to erase himself (the mailman, his last card, the diner
@@ -6,7 +6,7 @@
 // captions, words from whisper (2026-11-16). Talk ends at ≈ 297 s. The coworkers at 33–103 s are not named in both
 // sources. Untested: 52–70 s (social-media chatter), 120–126 s, 150–159 s, the "Erase" chant and Vine stretch
 // (210–223 s, 231–243 s, garbled).
-// EXCLUDE 25.6–33.7 (the Ebony "clerical error" joke: racial)
+// EXCLUDE 25.6–32.85 (the Ebony "clerical error" joke: racial)
 // EXCLUDE 78.7–80.8 (sexual slang "jump-offs")
 // EAR CHECK: 127.7 s s1 / 260.3 s x1 / 281.2 s s2 — the reductions are there (an audible ’ll in “I’ll be paying”;
 //   “get in touch with” run together; “on our” linked, “our” weak); both sources have these words
@@ -18,7 +18,7 @@ export const offGrid: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'penny', ctx: true, seg: [0, 6.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'penny', ctx: true, seg: [0, 6.15],
       stem: 'What is the Penny Saver?',
       ja: '「ペニーセーバー」とは何？',
       choices: ['Free ads with coupons', 'A store savings card', 'A bank savings account'], a: 0,
@@ -29,18 +29,6 @@ export const offGrid: Clip = {
       mean: 'circular ＝ 配られる広告のチラシ。a bunch of 〜 ＝ たくさんの〜。',
       trap: 'Saver（節約する人）から、ポイントカードと思いやすい。すぐあとの説明を聞く。',
       use: 'Do you have any coupons?（クーポンありますか）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'trigger', reveals: ['month', 'invasion'], seg: [0, 25.5],
-      stem: 'What makes Ron angry at the start?',
-      ja: '最初、ロンは何に怒っている？',
-      choices: ['Mail came to his new address', 'Mail came in Diane’s own name', 'His P.O. box was full'], a: 0,
-      choicesJa: ['新しい住所に郵便が届いた', 'ダイアンあての郵便が来た', '私書箱がいっぱいだった'],
-      cue: '最初の数行、どこに何が届いたか',
-      line: 'This was sent to Ron Swanson at Diane’s address, where I’ve lived for less than a month.',
-      said: '自分あての広告が、住んで1か月もたたない妻の家に届き、「プライバシーの侵害だ」と怒る。',
-      mean: 'ただのチラシでも、新しい住所を知られたのが大問題。これが計画の始まり。',
-      trap: 'Diane’s address（ダイアンの住所）から、ダイアンあてと思いやすい。宛名はロン本人。',
-      use: 'How did you get my address?（どうして私の住所を知ってるの？）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'month', seg: [2.8, 13.3], retired: true, keep: true,
       stem: 'How long has Ron lived at Diane’s address?',
@@ -54,7 +42,19 @@ export const offGrid: Clip = {
       trap: '「マンス」なら month。week は「ウィーク」、few months は「フュー」で less than がなく、years は「イヤーズ」。',
       use: 'I’ve lived here for less than a year.（ここに住んで1年たたない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'invasion', seg: [11.3, 19.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'trigger', reveals: ['month', 'invasion'], seg: [5.6, 25.3],
+      stem: 'What makes Ron angry at the start?',
+      ja: '最初、ロンは何に怒っている？',
+      choices: ['Mail came to his new address', 'Mail came in Diane’s own name', 'His P.O. box was full'], a: 0,
+      choicesJa: ['新しい住所に郵便が届いた', 'ダイアンあての郵便が来た', '私書箱がいっぱいだった'],
+      cue: '最初の数行、どこに何が届いたか',
+      line: 'This was sent to Ron Swanson at Diane’s address, where I’ve lived for less than a month.',
+      said: '自分あての広告が、住んで1か月もたたない妻の家に届き、「プライバシーの侵害だ」と怒る。',
+      mean: 'ただのチラシでも、新しい住所を知られたのが大問題。これが計画の始まり。',
+      trap: 'Diane’s address（ダイアンの住所）から、ダイアンあてと思いやすい。宛名はロン本人。',
+      use: 'How did you get my address?（どうして私の住所を知ってるの？）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'invasion', seg: [11.2, 18.9],
       stem: 'How does Ron feel about getting the flyer?',
       ja: 'チラシが届いて、ロンはどんな気持ち？',
       choices: ['Very angry and upset', 'Puzzled and a bit amused', 'A little worried about it'], a: 0,
@@ -66,7 +66,7 @@ export const offGrid: Clip = {
       trap: 'How is that possible?（どうして？）だけ聞くと、ふしぎがっていると思いやすい。',
       use: 'That’s a total invasion of privacy.（それは完全にプライバシーの侵害だよ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'donna', ctx: true, seg: [33.8, 41],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'donna', ctx: true, seg: [32.85, 40.9],
       stem: 'Who can help Ron stop the mail?',
       ja: 'ロンが郵便を止めるのを手伝えるのは誰？',
       choices: ['Donna', 'Diane', 'Paul'], a: 0,
@@ -89,7 +89,7 @@ export const offGrid: Clip = {
       trap: 'Donna が登録したと取ると笑いが消える。but のあとは話し手の行動。',
       use: 'I’m hooked on this show.（この番組にハマってる）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'second', seg: [46.5, 52.3],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'second', seg: [47.2, 51.9],
       stem: 'What does “the second Donna returns” mean?',
       ja: '「the second Donna returns」はどういう意味？',
       choices: ['As soon as she is back', 'When she comes a 2nd time', 'If she ever comes back'], a: 0,
@@ -101,7 +101,7 @@ export const offGrid: Clip = {
       trap: 'second ＝「2番目」と思いやすい。ここは「〜した瞬間」。',
       use: 'Call me the second you arrive.（着いたらすぐ電話して）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'grid', seg: [70.5, 76.4],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'grid', seg: [70.4, 75.85],
       stem: 'Ron wants to get “off the grid.” What does he mean?',
       ja: 'ロンの言う「off the grid」はどういう意味？',
       choices: ['Leave no trace of himself', 'Move far away from town', 'Stop using electric power'], a: 0,
@@ -113,19 +113,7 @@ export const offGrid: Clip = {
       trap: 'grid を電気の網と取ると、電気をやめる話と考えがち。ここは自分の記録や情報のこと。',
       use: 'I’m going off the grid this weekend.（今週末はネットから離れるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', seg: [80.9, 105.1],
-      stem: 'Why do the two coworkers change their minds?',
-      ja: '2人の同僚はなぜ意見を変える？',
-      choices: ['Ron lets them go home early', 'Ron pays them some more money', 'Ron buys them lunch'], a: 0,
-      choicesJa: ['ロンが早く帰らせてくれるから', 'ロンがお金を多くくれるから', 'ロンがお昼をおごるから'],
-      cue: '「If you help me」のあと',
-      line: 'If you help me get off the grid, *I will let both of you go home early*. — No grid! No grid!',
-      said: '「手伝えば2人とも早く帰す」と言われ、「グリッド反対！」とすぐ意見を変える。',
-      mean: 'let 〜 go home early ＝ 〜を早く帰らせる。条件を聞いたとたん、反対が消える。',
-      trap: 'お金の話は出ていない。go home early（早く帰る）を最後まで聞く。',
-      use: 'If you help me, I’ll buy lunch.（手伝ってくれたらお昼おごるよ）' },
-
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'eating', ctx: true, seg: [80.9, 90.2],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'eating', ctx: true, seg: [80.9, 90.05],
       stem: '“Food is for eating. Places are for being.” What does Ron mean?',
       ja: '「Food is for eating. Places are for being」ロンが言いたいことは？',
       choices: ['Just enjoy them, no photos', 'Post only the special meals', 'Take photos for yourself'], a: 0,
@@ -137,19 +125,31 @@ export const offGrid: Clip = {
       trap: '特別な料理なら…と条件を考えやすい。End of discussion（以上）で全部否定。',
       use: 'Vacations are for relaxing.（休みはのんびりするためのもの）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ifanything', seg: [89.6, 95.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', seg: [89.4, 104.4],
+      stem: 'Why do the two coworkers change their minds?',
+      ja: '2人の同僚はなぜ意見を変える？',
+      choices: ['Ron lets them go home early', 'Ron pays them some more money', 'Ron buys them lunch'], a: 0,
+      choicesJa: ['ロンが早く帰らせてくれるから', 'ロンがお金を多くくれるから', 'ロンがお昼をおごるから'],
+      cue: '「If you help me」のあと',
+      line: 'If you help me get off the grid, *I will let both of you go home early*. — No grid! No grid!',
+      said: '「手伝えば2人とも早く帰す」と言われ、「ネット反対！」とすぐ意見を変える。',
+      mean: 'let 〜 go home early ＝ 〜を早く帰らせる。条件を聞いたとたん、反対が消える。',
+      trap: 'お金の話は出ていない。go home early（早く帰る）を最後まで聞く。',
+      use: 'If you help me, I’ll buy lunch.（手伝ってくれたらお昼おごるよ）' },
+
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'ifanything', seg: [90.0, 95.2],
       stem: 'What does “if anything” mean here?',
       ja: 'ここでの「if anything」はどういう意味？',
       choices: ['Actually, the opposite', 'Maybe, I guess', 'Anything at all is fine'], a: 0,
       choicesJa: ['むしろ逆に', 'たぶん、かな', '何でもまったくかまわない'],
       cue: '「the grid is the best」のあと',
       line: 'Don’t leave the grid, Ron. The grid is the best. — *If anything*, you need to get more on the grid.',
-      said: '「グリッドを出るな」のあと、「むしろ、もっとつながるべきだよ」と言う。',
+      said: '「ネットから消えないで」のあと、「むしろ、もっとネットにつながるべきよ」と言う。',
       mean: 'if anything ＝ むしろ。相手の考えと逆のほうが正しい、と言う前置き。',
       trap: 'anything（何でも）や if（もし）から、弱い言い方と思いやすい。逆を言う合図。',
       use: 'If anything, it’s better than before.（むしろ前より良くなった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buck', ctx: true, seg: [109.6, 117.8],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buck', ctx: true, seg: [110.3, 117.5],
       stem: 'What does “passing the buck” mean?',
       ja: '「passing the buck」はどういう意味？',
       choices: ['Blaming someone else', 'Taking some money', 'Running from a fight'], a: 0,
@@ -161,7 +161,7 @@ export const offGrid: Clip = {
       trap: 'buck ＝ ドル（くだけた語）でもあるので、お金の話と考えがち。pass と組めば責任。',
       use: 'Don’t pass the buck to me.（こっちに責任をおしつけないで）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'harsh', reveals: ['buck'], ctx: true, seg: [113, 119.5],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'harsh', reveals: ['buck'], ctx: true, seg: [112.9, 119.3],
       stem: '“That seems harsh.” What does Paul mean?',
       ja: '「That seems harsh」ポールが言いたいことは？',
       choices: ['That’s too strong', 'That’s very kind', 'That’s hard to do'], a: 0,
@@ -173,7 +173,7 @@ export const offGrid: Clip = {
       trap: 'hard（むずかしい）と音が似ていて迷いやすい。harsh は言葉の強さのこと。',
       use: 'Wow, that seems a little harsh.（うわ、それはちょっときつくない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cash', seg: [126.8, 132],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cash', seg: [126.8, 130.9],
       stem: 'Which words do you hear: “and ___ paying in cash”?',
       ja: '「and ___ paying in cash」どれが聞こえる？',
       choices: ['I’ll be', 'I’d be', 'I’ve been'], a: 0,
@@ -185,7 +185,7 @@ export const offGrid: Clip = {
       trap: 'I’d be は「アイドビ」、I’ve been は最後に「ン」。前半の同じ I’ll be が手がかり。',
       use: 'I’ll be working from home tomorrow.（明日は家で仕事します）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eggs', seg: [144.3, 151.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eggs', seg: [144.4, 151.75], keep: true,
       stem: 'How many eggs did Ron eat at the diner?',
       ja: 'ロンはダイナーで卵を何個食べた？',
       choices: ['15', '20', '50', '51'], a: 3,
@@ -197,7 +197,7 @@ export const offGrid: Clip = {
       trap: 'fifteen は最後の「ティーン」が長い。50 なら one がない。20 は時間の数。',
       use: 'I ate two plates in ten minutes.（10分で2皿食べた）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'toomuch', ctx: true, seg: [159.5, 170.9],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'toomuch', ctx: true, seg: [159.2, 170.6],
       stem: 'What does Ron think of the photo now?',
       ja: 'ロンは今の写真をどう思っている？',
       choices: ['Someone could still know him', 'It looks nothing like him', 'It is a great photo'], a: 0,
@@ -209,7 +209,7 @@ export const offGrid: Clip = {
       trap: 'JJ が「誰にも分からない」と言うので、似ていないと考えがち。返事は too much（多すぎる）。',
       use: 'Please don’t post my address. That’s too much information.（住所は載せないで。情報の出しすぎ）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'nameplate', seg: [178.7, 189.1],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'nameplate', seg: [178.7, 188.5],
       stem: 'What did Ron take off his office door?',
       ja: 'ロンはオフィスのドアから何を外した？',
       choices: ['His name sign', 'His photo', 'His phone number'], a: 0,
@@ -255,7 +255,7 @@ export const offGrid: Clip = {
       trap: 'do を強めると「もちろん分かってた」になり、謝る流れと合わない。強勢は、何と比べているかを示す。',
       use: 'I get it now. Sorry.（今やっと分かった、ごめん）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'sorry', ctx: true, seg: [200, 210.6],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'sorry', ctx: true, seg: [199.7, 210.1],
       stem: 'What does Tom say when Ron asks about a problem?',
       ja: '問題があると思わないかと聞かれ、トムは何と言う？',
       choices: ['He gets it now and apologizes', 'He sees no problem at all', 'Ron asked him to do it'], a: 0,
@@ -267,7 +267,7 @@ export const offGrid: Clip = {
       trap: 'maybe（たぶん）があるので、軽い質問と考えがち。Sorry（ごめん）で、責められたと分かっている。',
       use: 'Oh, I see it now. Sorry!（あ、今分かった。ごめん！）' },
 
-    { id: 'd8', skill: 'detail', level: 'B1', point: 'accident', seg: [223.5, 231.3],
+    { id: 'd8', skill: 'detail', level: 'B1', point: 'accident', seg: [222.9, 231.15],
       stem: 'What did Ron do by accident?',
       ja: 'ロンはうっかり何をした？',
       choices: ['Opened a video app', 'Erased all his photos', 'Called his wife'], a: 0,
@@ -279,7 +279,7 @@ export const offGrid: Clip = {
       trap: 'Erase（消せ）が何度も聞こえるので、写真を消したと考えがち。答えは opened up Vine。',
       use: 'I accidentally deleted the file.（うっかりファイルを消しちゃった）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'parked', ctx: true, seg: [248.2, 257.2],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'parked', ctx: true, seg: [244.0, 256.7],
       stem: 'What address does Ron give for the RV?',
       ja: 'ロンはキャンピングカーの住所を何と言う？',
       choices: ['Any place it stops', 'No address at all', 'Diane’s house for now'], a: 0,
@@ -303,7 +303,7 @@ export const offGrid: Clip = {
       trap: 'flat ＝「平ら」と思うと意味がつかめない。flat tire でパンク。',
       use: 'Our rental car got a flat tire.（レンタカーがパンクした）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'touch', seg: [256.6, 264],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'touch', seg: [256.6, 263.8],
       stem: 'Type: “I’ve been trying to ___ you for hours.” (4 words)', answer: 'get in touch with',
       ja: '空いている所を書こう：「I’ve been trying to ___ you for hours.」（4語）',
       cue: '「trying to」のあと',
@@ -324,7 +324,7 @@ export const offGrid: Clip = {
       trap: 'postal worker を遅れの原因と取りやすいが、脅したのは Ron の方。',
       use: 'Sorry, I’ve been busy packing.（ごめん、荷造りで忙しくて）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'value', seg: [268.6, 274.9],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'value', seg: [268.5, 274.6],
       stem: 'Why does Diane say “I know you value your privacy”?',
       ja: 'ダイアンは、なぜ「I know you value your privacy」と言う？',
       choices: ['To agree first, then disagree', 'To disagree first, then agree', 'To ask a small favor'], a: 0,
@@ -336,7 +336,7 @@ export const offGrid: Clip = {
       trap: 'I know から、賛成していると思いやすい。but のあとが本音。',
       use: 'I know you’re busy, but this is important.（忙しいのはわかるけど、大事な話なの）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'ourgrid', reveals: ['value'], seg: [269, 297.2],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'ourgrid', reveals: ['value'], seg: [268.5, 285.5],
       stem: 'By the end, what does Diane ask of Ron?',
       ja: '最後に、ダイアンはロンに何を求める？',
       choices: ['Stay reachable for family', 'Come back fully online', 'Phone home every single day'], a: 0,
@@ -348,14 +348,14 @@ export const offGrid: Clip = {
       trap: '怒っているので、完全にネットに戻れと言うと考えがち。not entirely で半分は認めている。',
       use: 'Just keep your phone on for us.（私たちのために電源は入れておいて）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'ourgrid', seg: [278.3, 283.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'ourgrid', seg: [278.65, 282.6],
       stem: 'Which words do you hear: “but you have to be ___ grid”?',
       ja: '「but you have to be ___ grid」どれが聞こえる？',
       choices: ['on our', 'on the', 'on your'], a: 0,
       choicesJa: ['私たちの', 'その', 'あなたの'],
       cue: '「have to be」のあと',
       line: 'you don’t have to be entirely on the grid, but you have to be *on our* grid.',
-      said: '「でも、私たちのグリッドには入っていて」と言う。',
+      said: '「でも、私たちとはつながっていてほしい」と言う。',
       mean: 'on our は「オナー」のようにつながり、our は小さい。前半の on the grid とくらべている。',
       trap: 'the なら「ザ」、your なら「ヨー」。「オナー」と聞こえれば on our。',
       use: 'You’re on our team now.（もう私たちのチームだよ）' },
@@ -371,7 +371,7 @@ export const offGrid: Clip = {
       trap: 'wouldn’t で話を引っこめたように聞こえるが、説得が続けば頼みごと。',
       use: 'I suppose you wouldn’t lend me your car?（車、貸してくれたりしないよね？）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'mountain', seg: [290.7, 297.2],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'mountain', seg: [290.8, 297.2],
       stem: '“Your solution to every problem…” What does Diane mean?',
       ja: '「Your solution to every problem…」ダイアンが言いたいことは？',
       choices: ['He always does this', 'It’s good for the kids', 'It’s a funny joke'], a: 0,

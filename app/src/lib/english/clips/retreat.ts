@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 12, retire 0, new 0, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 4, rewrite 12, retire 0, new 0, ctx 3, tx 7, qa 7
 // A2 REVIEW 2026-11-17: keep 3, rewrite 11, retire 5, new 2
 // “Michael Wasn't Invited To The Retreat - The Office US” (the official The Office channel, BEST OF SEASON 4 - The
 // Office US): Toby is back from Ryan's weekend in the woods with some branch managers and can't stop talking about it;
@@ -38,7 +38,7 @@ export const retreat: Clip = {
       trap: 'didn’t の「ン」を聞き落とすと逆の意味になる。was も小さく、落としやすい。',
       use: 'I didn’t think I was going to make it.（間に合わないと思ってた）' },
 
-    { id: 't2', skill: 'detail', level: 'B2', point: 'retreatword', ctx: true, seg: [3.4, 12.1],
+    { id: 't2', skill: 'detail', level: 'B2', point: 'retreatword', ctx: true, seg: [3.4, 11.8],
       stem: 'How does Toby answer “I love camping”?',
       ja: '「I love camping」に、トビーはどう答える？',
       choices: ['He gives it a fancier name', 'He says he loves it too', 'He says it was scary'], a: 0,
@@ -50,7 +50,7 @@ export const retreat: Clip = {
       trap: 'Anything can happen（何が起きるか分からない）から、こわい話を連想しやすい。トビーは呼び名を直すだけ。',
       use: 'It’s more of a café than a restaurant.（レストランというよりカフェかな）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guests', seg: [10.3, 19.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guests', seg: [10.3, 16.6],
       stem: 'Who did Ryan invite into the woods?',
       ja: 'ライアンは誰を森に招いた？',
       choices: ['A few managers, plus Toby', 'All managers, but not Toby', 'Just Toby and Michael'], a: 0,
@@ -96,18 +96,6 @@ export const retreat: Clip = {
       trap: 'already を落とすと「まだ知らない」に、主語を逆にすると Michael 側の話になる。',
       use: 'I think I know all I need to know.（もう十分分かったと思う）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'notasked', reveals: ['didntgo'], seg: [17.2, 43.5],
-      stem: 'What do people keep saying about Michael?',
-      ja: 'みんなはマイケルについて何をくり返し言う？',
-      choices: ['Nobody asked him to go', 'He didn’t want to go', 'He was sick that weekend'], a: 0,
-      choicesJa: ['誰も彼を誘わなかった', '彼は行きたくなかった', '彼はその週末、病気だった'],
-      cue: '「Michael wasn’t」のあと',
-      line: '*Michael wasn’t invited.* … *He wasn’t invited.*',
-      said: 'カメラに向かって何人もが「マイケルは招かれなかった」とくり返す。',
-      mean: 'wasn’t invited ＝ 招かれなかった。本人が行かなかったのではなく、誘われなかった。何度も言うのが笑いどころ。',
-      trap: 'didn’t go（行かなかった）も聞こえるので、本人が断ったと考えがち。最後は He wasn’t invited。',
-      use: 'I wasn’t invited to the party.（パーティーに誘われなかったんだ）' },
-
     { id: 'd2', skill: 'detail', level: 'B1', point: 'stars', ctx: true, seg: [23.8, 30.0],
       stem: 'Where did they sleep on the trip?',
       ja: '旅行ではどこで寝た？',
@@ -120,7 +108,7 @@ export const retreat: Clip = {
       trap: '質問の cabins（小屋）が耳に残りやすい。答えは質問とは別の場所。',
       use: 'We slept under the stars.（星空の下で寝た）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'share', reveals: ['stars', 'smores', 'shouldcome', 'didntgo'], seg: [24.4, 56.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'share', reveals: ['stars', 'smores', 'shouldcome', 'didntgo', 'rock'], seg: [24.4, 56.0],
       stem: 'What does Toby keep talking about?',
       ja: 'トビーは何の話を続けている？',
       choices: ['His weekend trip with Ryan', 'A trip he is planning', 'Why Michael didn’t go'], a: 0,
@@ -132,7 +120,7 @@ export const retreat: Clip = {
       trap: 'You should come が聞こえて、次の計画と考えがち。話の大部分は、行ってきた旅の思い出。',
       use: 'You have to hear about my trip!（旅行の話、聞いてよ！）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'shouldcome', seg: [25.9, 32.8],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'shouldcome', seg: [27.4, 30.0],
       stem: 'What does “You should come” mean here?',
       ja: 'ここでの「You should come」はどういう意味？',
       choices: ['Please join us next time', 'You must come right now', 'You came too late'], a: 0,
@@ -166,6 +154,18 @@ export const retreat: Clip = {
       trap: '直後なので返事に聞こえる。返事なら I’d love to など、はい・いいえが来る。',
       use: 'That reminds me, I tried surfing once.（そういえば、サーフィンを一度やったよ）' },
 
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'notasked', reveals: ['didntgo'], seg: [35.0, 50.3],
+      stem: 'What do people keep saying about Michael?',
+      ja: 'みんなはマイケルについて何をくり返し言う？',
+      choices: ['Nobody asked him to go', 'He didn’t want to go', 'He was sick that weekend'], a: 0,
+      choicesJa: ['誰も彼を誘わなかった', '彼は行きたくなかった', '彼はその週末、病気だった'],
+      cue: '「Michael wasn’t」のあと',
+      line: '*Michael wasn’t invited.* … *He wasn’t invited.*',
+      said: 'カメラに向かって何人もが「マイケルは招かれなかった」とくり返す。',
+      mean: 'wasn’t invited ＝ 招かれなかった。本人が行かなかったのではなく、誘われなかった。何度も言うのが笑いどころ。',
+      trap: 'didn’t go（行かなかった）も聞こえるので、本人が断ったと考えがち。最後は He wasn’t invited。',
+      use: 'I wasn’t invited to the party.（パーティーに誘われなかったんだ）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'repeat', reveals: ['didntgo'], seg: [35.5, 43.4], retired: true,
       stem: 'Why is the “Toby went…” comment funny?',
       choices: ['It says one plain fact three times over', 'It mixes up which man went and which didn’t',
@@ -180,13 +180,13 @@ export const retreat: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'didntgo', seg: [35.6, 43.5],
       stem: 'Fill the gap: “Toby went, but Michael ___.”',
       ja: '「Toby went, but Michael ___.」の空所は？',
-      choices: ['didn’t go', 'didn’t know', 'didn’t mind'], a: 0,
-      choicesJa: ['行かなかった', '知らなかった', '気にしなかった'],
-      cue: '「Toby went, but」のあと',
+      choices: ['didn’t go', 'couldn’t go', 'won’t go'], a: 0,
+      choicesJa: ['行かなかった', '行けなかった', '行かないつもり'],
+      cue: '「Toby went, but Michael」のあと',
       line: 'Toby went, but Michael *didn’t go*.',
       said: '「トビーは行ったが、マイケルは行かなかった」と言う。',
-      mean: 'went（行った）と didn’t go（行かなかった）の対比。didn’t は「ディドン」と短い。',
-      trap: 'know は「ノウ」、mind は「マインド」。最後が「ゴウ」なら go。',
+      mean: 'didn’t は「ディドン」と短く、最後の t はほぼ聞こえない。行かなかった、という事実だけを言う。',
+      trap: 'couldn’t（クドゥン）と似て聞こえるが、出だしが「ディ」なら didn’t。won’t は「ウォウント」と長い。',
       use: 'She went, but I didn’t go.（彼女は行ったけど、私は行かなかった）' },
 
     { id: 'd5', skill: 'detail', level: 'B2', point: 'guests', seg: [43.5, 50.3], retired: true,
@@ -224,7 +224,7 @@ export const retreat: Clip = {
       trap: 'no more から、なくなったと思いやすい。前の so many が理由。',
       use: 'No more coffee for me, thanks.（コーヒーはもう結構です）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'cares', ctx: true, seg: [62.5, 70.3],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'cares', ctx: true, seg: [63.6, 70.3],
       stem: 'What does Michael mean by “Nobody cares”?',
       ja: 'マイケルの「Nobody cares」はどういう意味？',
       choices: ['No one wants to hear it', 'No one is worried about it', 'No one is careful'], a: 0,
