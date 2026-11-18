@@ -31,7 +31,7 @@
   const ps = $derived(player?.state ?? 'loading');
 </script>
 
-<div class="player" data-yt-state={online || player ? ps : 'offline'} data-yt-time={player?.time ?? 0}>
+<div class="player" data-yt-state={online || player ? ps : 'offline'}>
   <div class="frame">
     {#if online || player}
       <iframe bind:this={frame} {src} {title} referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" data-yt-frame></iframe>

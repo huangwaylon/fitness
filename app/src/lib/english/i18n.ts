@@ -222,7 +222,8 @@ const S = {
   flagOpen: { ja: '確認待ち', en: 'Waiting' },
   flagFixed: { ja: '確認済み：直しました', en: 'Checked: fixed' },
   flagKept: { ja: '確認済み：このままです', en: 'Checked: kept as is' },
-  flagWhereClip: { ja: '動画', en: 'The clip' }
+  flagWhereClip: { ja: '動画', en: 'The clip' },
+  flagWhereQ: { ja: '質問：', en: 'Question: ' }
 } satisfies Record<string, { ja: string; en: string }>;
 
 export type StringKey = keyof typeof S;

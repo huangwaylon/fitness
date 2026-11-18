@@ -62,7 +62,8 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
 
 ## The page
 
-One sheet: two tabs, **ホーム · フレーズ** (the kit's TabBar, on those two only; each opening on ホーム), and the levels
+One sheet: three tabs, **ホーム · フレーズ · すごろく** (the kit's TabBar, on those three only; each opening on ホーム;
+すごろく: docs/sugoroku.md), and the levels
 pushed over them, with no tab bar: the library, a clip's lesson (‹ back to where it was opened) and ⚙
 (難しめの質問を増やす, 報告した内容).
 

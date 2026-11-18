@@ -62,7 +62,8 @@
       skipped = skipsOf(me, today);
     }
   }
-  const resumes = (c: Clip) => partWay(loadSaved(me, c.id, c.v));
+  /** The clip shown has a play left part-way (続きから). */
+  const resumed = $derived(partWay(loadSaved(me, shown.id, shown.v)));
 
   /** The library card: the latest play left part-way (not the one on today's card), then the next unfinished in order. */
   const saved = untrack(() => partWays(me));
@@ -115,7 +116,7 @@
       <h3 lang="en">{shown.title}</h3>
       <p class="meta">{meta(shown)}</p>
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
-        <Icon name="play" />{resumes(shown) ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
+        <Icon name="play" />{resumed ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
       {#if !online}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}

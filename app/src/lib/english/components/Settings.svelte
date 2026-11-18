@@ -15,8 +15,8 @@
   const open = $derived(flags.filter((f) => !f.done).length);
   const when = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'short', timeStyle: 'short' });
   const formatWhen = (iso: string) => (iso ? when.format(new Date(iso)) : '');
-  /** Where a flag is: the clip, or its question as the flag saw it (its stem). */
-  const whereOf = (f: (typeof flags)[number]['flag']) => (f.q === null ? s('flagWhereClip') : (f.seen?.stem?.replaceAll('*', '') ?? String(f.q)));
+  /** A flag's question as the flag saw it (its stem). */
+  const stemOf = (f: (typeof flags)[number]['flag']) => f.seen?.stem?.replaceAll('*', '') ?? String(f.q);
   const titleOf = (id: string) => metaById(id)?.title ?? id;
   let hard = $state(harderOn());
   function toggleHard(): void {
@@ -39,7 +39,7 @@
         {#each flags as f (f.id)}
           <div class="row item" role="listitem" data-en-flag-row={f.done ? f.done.outcome : 'open'}>
             <p class="state">{f.done ? (f.done.outcome === 'fixed' ? s('flagFixed') : s('flagKept')) : s('flagOpen')}{#if f.done?.note}<span class="soft">「{f.done.note}」</span>{/if}</p>
-            <p>{s(`kind.${f.flag.kind}`)} · {titleOf(f.flag.item)} · <span lang="en">{whereOf(f.flag)}</span></p>
+            <p>{s(`kind.${f.flag.kind}`)} · {titleOf(f.flag.item)} · {#if f.flag.q === null}{s('flagWhereClip')}{:else}{s('flagWhereQ')}<span lang="en">{stemOf(f.flag)}</span>{/if}</p>
             {#if f.flag.note}<p class="soft">「{f.flag.note}」</p>{/if}
             <p class="soft">{formatWhen(f.at)}</p>
           </div>

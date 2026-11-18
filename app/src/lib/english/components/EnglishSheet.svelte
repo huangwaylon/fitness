@@ -1,6 +1,6 @@
 <script lang="ts">
-  // English Study's sheet (docs/english.md "The page"), its own chunk: a full sheet on the unified kit, two tabs (ホーム,
-  // フレーズ: the kit's TabBar, shown on them only) and the levels pushed over them: the library, a clip's lesson (‹ back
+  // English Study's sheet (docs/english.md "The page"), its own chunk: a full sheet on the unified kit, three tabs (ホーム,
+  // フレーズ, すごろく: the kit's TabBar, shown on them only) and the levels pushed over them: the library, a clip's lesson (‹ back
   // to where it was opened from) and ⚙. Each opening starts on home (a lesson left part-way resumes from its card:
   // lib/english/session.ts; フレーズ at its card: deck.ts). The island is paused under it (+page's sheetOpen).
   import Sheet from '#lib/components/ui/Sheet.svelte';

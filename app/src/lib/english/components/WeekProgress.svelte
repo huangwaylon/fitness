@@ -16,9 +16,9 @@
 <section class="card pad wk" data-en-week={view.days} aria-label={s('week')}>
   <p class="row">
     <b>{s('week')}</b>
-    <span class="dots" aria-hidden="true">{#each dots(view.days) as on, i (i)}<i class:on></i>{/each}</span>
-    {#if view.days > WEEK_TARGET}<span class="n" data-en-week-n>{s('weekMore', { k: view.days })}</span>
-    {:else if view.days > 0 && !met}<span class="n" data-en-week-n>{s('weekDays', { k: view.days })}</span>{/if}
+    <span class="dots" role="img" aria-label={`${s('week')} ${view.days > WEEK_TARGET ? s('weekMore', { k: view.days }) : s('weekDays', { k: view.days })}`}>{#each dots(view.days) as on, i (i)}<i class:on></i>{/each}</span>
+    {#if view.days > WEEK_TARGET}<span class="n" aria-hidden="true" data-en-week-n>{s('weekMore', { k: view.days })}</span>
+    {:else if view.days > 0 && !met}<span class="n" aria-hidden="true" data-en-week-n>{s('weekDays', { k: view.days })}</span>{/if}
   </p>
   {#if met}<p class="line met" data-en-met>{s('weekMet')}</p>
   {:else if view.fresh}<p class="line" data-en-fresh>{s('weekNew')}</p>{/if}
@@ -29,7 +29,7 @@
   {#if view.partner && (view.partner.today || view.partner.days > 0)}
     <p class="partner" data-en-partner>
       {#if view.partner.today}{s('partnerDone', { name: view.partner.name })}<Icon name="check" size={14} stroke={2.6} />
-      {:else}<span>{s('partnerWeek', { name: view.partner.name })}</span><span class="dots s" aria-label={s('weekDays', { k: Math.min(view.partner.days, WEEK_TARGET) })}>{#each dots(view.partner.days) as on, i (i)}<i class:on></i>{/each}</span>{/if}
+      {:else}<span>{s('partnerWeek', { name: view.partner.name })}</span><span class="dots s" role="img" aria-label={s('weekDays', { k: Math.min(view.partner.days, WEEK_TARGET) })}>{#each dots(view.partner.days) as on, i (i)}<i class:on></i>{/each}</span>{/if}
     </p>
   {/if}
   {#if view.both}<p class="line met" data-en-both>{s('both')}</p>{/if}

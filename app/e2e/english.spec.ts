@@ -273,7 +273,7 @@ test('⚑ 報告 on a question and on the clip, a kind and a note or neither; �
   const rows = sheet(page).locator('[data-en-flag-row]');
   await expect(rows).toHaveCount(2);
   // (the question as the flag saw it: no bank needed)
-  await expect(rows.nth(0)).toContainText(`答え · Rachel Is a Bad Waitress · ${q0.stem}`);
+  await expect(rows.nth(0)).toContainText(`答え · Rachel Is a Bad Waitress · 質問：${q0.stem}`);
   await expect(rows.nth(0)).toContainText('「salary の前が聞こえない」');
   await expect(rows.nth(1)).toContainText('その他 · Rachel Is a Bad Waitress · 動画');
   await expect(rows.nth(0)).toHaveAttribute('data-en-flag-row', 'open');
