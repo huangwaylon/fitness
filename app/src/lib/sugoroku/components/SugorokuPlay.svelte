@@ -21,6 +21,7 @@
   import Setup from './Setup.svelte';
   import TurnPanel from './TurnPanel.svelte';
   import Results from './Results.svelte';
+  import './turns.css';
   import { week } from '#lib/store/week.svelte.ts';
   import { rewardOf, speakOn, teamGoal, teamStars, lastRound as isLast, boardFor, type Game, type Length, type Level } from '../game.ts';
   import { pathOf } from '../board.ts';
@@ -314,8 +315,8 @@
             {#each g.players as p, i (i)}
               <span class="score obj-cream" class:now={i === g.turn} aria-current={i === g.turn ? 'true' : undefined} data-sg-score={i}>
                 <Avatar person={p.who} worn size={24} /><span class="pn">{p.name}</span><span class="tag" data-sg-level-tag>{s(`level.${p.level}`)}</span>
-                {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
-                {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
+                {#each p.pocket as l, j (j)}<b class="tag pl" lang="en" aria-label={s('pocketOf', { l: l.toUpperCase() })}>{l.toUpperCase()}</b>{/each}
+                {#if p.forced}<b class="tag pl must" lang="en" aria-label={s('hasForced', { l: p.forced.toUpperCase() })}>{p.forced.toUpperCase()}</b>{/if}
               </span>
             {/each}
           </div>
@@ -370,17 +371,16 @@
   </div>
 
 <style>
-  /* the game's own tokens (its turns', below it): the letter tiles' paper, lip and darker edge; the mic's coral */
-  .sg { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface);
-    --sg-tile: #f6e7c6; --sg-tile-lip: #b99364; --sg-tile-edge: #8a6d48; --sg-rec: #f6b8a6; --sg-rec-lip: #c98a77; }
+  .sg { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
   .top { flex: none; background-color: var(--surface); }
   .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px;
     padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
   /* (a scroller's column: its cards keep their height, never squeezed to fit) */
   .body > * { flex-shrink: 0; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
-  .pl { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 5px; background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); font: 600 12px/1 var(--font-num); color: var(--c-ink); }
-  .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
+  /* a pocket letter (the kit's .tag, mint) and a sent one waiting (lilac, ringed) */
+  .score .pl { padding: 2px 6px; font-family: var(--font-num); color: var(--c-ink); background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); }
+  .score .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
   .centre { text-align: center; }
   /* a score that changed pops once (stars in) */
   .bump { display: inline-block; animation: bump 420ms var(--ease-bounce); }
@@ -397,9 +397,9 @@
   .team { display: flex; align-items: center; gap: 5px; height: 32px; width: min(208px, 100%); padding: 0 12px 0 10px; box-sizing: border-box;
     border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-gold); }
   .team b { font: 600 17px/1 var(--font-num); color: var(--c-ink); }
-  .team .goal { font: 600 12px/1 var(--font-num); color: var(--text-soft); }
+  .team .goal { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .tbar { flex: 1; min-width: 24px; display: flex; }
-  .round { flex: none; font: 700 12px/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  .round { flex: none; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   /* the players' pills: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: fit-content; margin-top: 4px; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); }
   .score { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px 0 4px; box-sizing: border-box; border-radius: var(--r-pill);

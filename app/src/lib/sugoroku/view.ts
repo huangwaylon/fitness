@@ -6,11 +6,11 @@
 import { MAX_BYTES, type SgPanel, type SgView } from '#lib/contract/live-protocol.ts';
 
 /** A turn's try: placing, 「おしい！」 shown, right, or 答えはこれ. */
-type Stage = 'try' | 'miss' | 'right' | 'answer';
+export type Stage = 'try' | 'miss' | 'right' | 'answer';
 const STAGES: readonly Stage[] = ['try', 'miss', 'right', 'answer'];
 /** The ことば turn's notes (WordTurn), by index. */
 const WORD_NOTES = ['', 'mustUse', 'noWord', 'hintNote', 'hintFree', 'minLen', 'notWord'] as const;
-export type WordNote = (typeof WORD_NOTES)[number];
+type WordNote = (typeof WORD_NOTES)[number];
 /** The speaking step's phases and notes (SpeakStep), by index. */
 const SPEAK_PHASES = ['ask', 'rec', 'stt', 'confirm', 'feedback'] as const;
 type SpeakPhase = (typeof SPEAK_PHASES)[number];

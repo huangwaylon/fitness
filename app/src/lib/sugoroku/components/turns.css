@@ -1,0 +1,22 @@
+/* 英語すごろく's turn tiles (WordTurn, SentenceTurn, PictureTurn; imported by SugorokuPlay, under whose sheet they all
+   show): the paper of a tile with the brown edge's lip, pressed down a step; placed ones mint. The sheet is cream at
+   every hour (.obj-cream), so these are the day's colours. */
+.sg-tile, .sg-wt {
+  position: relative; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
+  background: var(--c-paper); color: var(--c-ink); box-shadow: 0 3px 0 var(--c-edge);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.sg-tile:active:not(:disabled), .sg-wt:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-edge); }
+.sg-tile:disabled, .sg-wt:disabled { opacity: .25; }
+/* a letter: 42 × 48 (8 to a row at 393), its hit 46 × 52 */
+.sg-tile { width: 42px; height: 48px; display: grid; place-items: center; padding: 0; flex: none; font: 600 20px/1 var(--font-num); }
+.sg-tile::before { content: ''; position: absolute; inset: -2px; }
+/* placed in the slots (a tap takes it back): mint, a step smaller, its hit 45 wide */
+.sg-tile.in { width: 37px; height: 44px; font-size: 19px; background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
+.sg-tile.in::before { inset: -2px -4px; }
+/* a word (ぶん) or a spelling (絵's やさしい): 44 tall, at least 44 wide (a one-letter "a") */
+.sg-wt { min-height: 44px; min-width: 44px; padding: 0 12px; font: 600 17px/1 var(--font-body); }
+.sg-wt.in { background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
+/* the strip the placed tiles sit in; yuzu while 「おしい！」 shows the miss */
+.sg-strip { min-height: 52px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); }
+.sg-strip.miss { background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }

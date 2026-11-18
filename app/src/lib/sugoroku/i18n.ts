@@ -79,6 +79,7 @@ const S = {
   restedNote: { ja: 'イベントはおやすみ。ことばに挑戦！', en: 'No second event: a word instead!' },
   whyForced: { ja: '送られた文字 +{n}', en: 'sent letter +{n}' },
   pocket: { ja: 'ポケット', en: 'Pocket' },
+  pocketOf: { ja: '持っている文字：{l}', en: 'Pocket letter: {l}' },
   sendLetter: { ja: '贈り物：ポケットの文字を送る', en: 'A gift: send a pocket letter' },
   sendTo: { ja: '{l}を誰に送る？（次のことばで使うとチームに星+3）', en: 'Send {l} to whom? (used in their next word: +3 for the team)' },
   sent: { ja: '{name}に{l}を送った', en: 'Sent {l} to {name}' },

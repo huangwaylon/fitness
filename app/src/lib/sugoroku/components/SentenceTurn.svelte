@@ -5,10 +5,12 @@
   // second miss → 「答えはこれ」 (still a few stars). Never red, never ×. Online, its state goes to the others at the table
   // (`onview`), and a phone watching shows it as the player's (`mirror`: view.ts, read-only).
   import { untrack } from 'svelte';
-  import Icon from '#lib/components/ui/Icon.svelte';
+  import Nudge from './Nudge.svelte';
+  import TurnResult from './TurnResult.svelte';
   import { inOrder, tilesOf, type Sentence } from '../sentences.ts';
   import { sentenceStars, UNSEEN_BONUS } from '../game.ts';
   import { s } from '../i18n.ts';
+  import { stageOf, tries } from '../tries.svelte.ts';
   import type { SentenceView } from '../view.ts';
 
   interface Props {
@@ -30,95 +32,62 @@
   let { line, seed, hideJa, misses0 = 0, peeked0 = false, ontry, ondone, onview, mirror = null }: Props = $props();
 
   const tiles = $derived(tilesOf(line, seed));
-  let placed = $state<number[]>([]);
-  let misses = $state(untrack(() => misses0));
-  let stage = $state<'try' | 'miss' | 'right' | 'answer'>(untrack(() => (misses0 >= 2 ? 'answer' : 'try')));
-  let peeked = $state(untrack(() => peeked0));
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  $effect(() => () => clearTimeout(timer));
-  const unseen = $derived(hideJa && !peeked);
-  const words = $derived(placed.map((id) => tiles.find((t) => t.id === id)!.w));
+  /** The turn as it shows (and as the others watch it): the tiles placed, the stage, the misses, 意味を見る. */
+  let v = $state<SentenceView>(untrack(() => ({ placed: [], stage: stageOf(misses0), misses: misses0, peeked: peeked0 })));
+  const two = tries(() => v);
+  $effect(() => two.stop);
+  const unseen = $derived(hideJa && !v.peeked);
+  const wordOf = (id: number) => tiles.find((t) => t.id === id)!.w;
+  const words = $derived(v.placed.map(wordOf));
 
   function put(id: number) {
-    if (stage !== 'try' || placed.includes(id)) return;
-    placed = [...placed, id];
-    if (placed.length < tiles.length) return;
-    if (inOrder(line, words)) stage = 'right';
-    else if (misses >= 1) (misses = 2), (stage = 'answer'), ontry({ misses, peeked });
-    else {
-      misses = 1;
-      ontry({ misses, peeked });
-      stage = 'miss';
-      timer = setTimeout(() => ((placed = []), (stage = 'try')), 900);
-    }
+    if (v.stage !== 'try' || v.placed.includes(id)) return;
+    v.placed.push(id);
+    if (v.placed.length < tiles.length) return;
+    if (inOrder(line, words)) v.stage = 'right';
+    else two.miss((misses) => ontry({ misses, peeked: v.peeked }), () => (v.placed = []));
   }
-  const takeBack = (k: number) => stage === 'try' && (placed = placed.slice(0, k));
+  const takeBack = (k: number) => v.stage === 'try' && (v.placed = v.placed.slice(0, k));
   // online: the turn as it is, sent (my turn), or the player's shown (another's)
-  $effect(() => void onview?.({ placed, stage, misses, peeked }));
+  $effect(() => void onview?.($state.snapshot(v)));
   $effect.pre(() => {
     const m = mirror;
-    if (m) untrack(() => ((placed = [...new Set(m.placed)].filter((id) => tiles.some((t) => t.id === id))), (stage = m.stage), (misses = m.misses), (peeked = m.peeked)));
+    if (m) untrack(() => (v = { ...m, placed: [...new Set(m.placed)].filter((id) => tiles.some((t) => t.id === id)) }));
   });
 </script>
 
-<section class="turn" data-sg-sentence data-sg-stage={stage}>
+<section class="turn" data-sg-sentence data-sg-stage={v.stage}>
   <div class="head">
-    <h3 class="ttl">{s('sentenceTitle')}</h3>
-    {#if hideJa && !peeked && (stage === 'try' || stage === 'miss')}
+    <h3 class="tag">{s('sentenceTitle')}</h3>
+    {#if hideJa && !v.peeked && (v.stage === 'try' || v.stage === 'miss')}
       <span class="soft">{s('unseen', { n: UNSEEN_BONUS })}</span>
-      <button type="button" class="chip" data-sfx="tick" data-sg-peek onclick={() => ((peeked = true), ontry({ misses, peeked }))}>{s('peek')}</button>
-    {:else}
-      <p class="ja">{line.ja}</p>
+      <button type="button" class="chip" data-sfx="tick" data-sg-peek onclick={() => ((v.peeked = true), ontry({ misses: v.misses, peeked: true }))}>{s('peek')}</button>
     {/if}
   </div>
-  {#if stage === 'try' || stage === 'miss'}
-    {#if misses && (stage === 'miss' || !placed.length)}<p class="toast" aria-live="polite">{s('nudge')}</p>{/if}
-    <div class="line" class:miss={stage === 'miss'} lang="en" data-sg-line={words.join(' ')}>
-      {#each placed as id, k (id)}<button type="button" class="wt in" data-sfx="tick" onclick={() => takeBack(k)}>{tiles.find((t) => t.id === id)!.w}</button>{/each}
+  {#if !hideJa || v.peeked || v.stage === 'right' || v.stage === 'answer'}<p class="ja">{line.ja}</p>{/if}
+  {#if v.stage === 'try' || v.stage === 'miss'}
+    {#if v.misses && (v.stage === 'miss' || !v.placed.length)}<Nudge text={s('nudge')} />{/if}
+    <div class="line sg-strip" class:miss={v.stage === 'miss'} lang="en" data-sg-line={words.join(' ')}>
+      {#each v.placed as id, k (id)}<button type="button" class="sg-wt in" data-sfx="tick" onclick={() => takeBack(k)}>{wordOf(id)}</button>{/each}
     </div>
     <div class="pool" lang="en">
       {#each tiles as t (t.id)}
-        <button type="button" class="wt" disabled={placed.includes(t.id)} data-sfx="tick" data-sg-wt={t.w} onclick={() => put(t.id)}>{t.w}</button>
+        <button type="button" class="sg-wt" disabled={v.placed.includes(t.id)} data-sfx="tick" data-sg-wt={t.w} onclick={() => put(t.id)}>{t.w}</button>
       {/each}
     </div>
   {:else}
-    <div class="res">
-      {#if stage === 'answer'}<p class="soft">{s('answer')}</p>{/if}
-      <p class="en" lang="en" data-sg-answer>{line.en}</p>
-      <p class="pts"><Icon name="star" size={20} soft /><b>{sentenceStars(misses, unseen)}</b></p>
-    </div>
-    <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone({ misses, unseen })}>{s('next')}</button>
+    <TurnResult answer={v.stage === 'answer'} text={line.en} stars={sentenceStars(v.misses, unseen)} kind="line" onnext={() => ondone({ misses: v.misses, unseen })} />
   {/if}
 </section>
 
 <style>
   .turn { display: flex; flex-direction: column; gap: 8px; }
-  /* the header: ぶん, then the meaning on a line or two */
+  /* the header: the 文 tag (and むずかしい's 意味を見る); the meaning on its own line under it */
   .head { display: flex; align-items: center; gap: 8px; min-height: 32px; }
-  .ttl { flex: none; margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .ja { flex: 1; min-width: 0; margin: 0; font: 700 var(--fs-body)/1.35 var(--font-ui); text-wrap: pretty; }
+  .head .tag { flex: none; margin: 0; }
+  .ja { margin: 0; font: 700 var(--fs-body)/1.35 var(--font-ui); text-wrap: pretty; }
   .soft { flex: 1; min-width: 0; margin: 0; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .chip { position: relative; flex: none; height: 32px; padding: 0 12px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer;
-    background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; }
-  .chip::after { content: ''; position: absolute; inset: -6px -2px; }
+  .head .chip { flex: none; }
   .line, .pool { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-  .line { min-height: 52px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); align-content: center; }
-  .line.miss { background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
-  .wt {
-    min-height: 44px; padding: 0 12px; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
-    background: var(--sg-tile); color: var(--c-ink); box-shadow: 0 3px 0 var(--sg-tile-lip); font: 600 17px/1 var(--font-body);
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .wt:disabled { opacity: .25; }
-  .wt.in { background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
-  /* 「おしい！」: a pill 8 px over the sheet (the sheet is its containing block), never a line of its own */
-  .toast { position: absolute; left: 50%; bottom: calc(100% + 8px); translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0;
-    padding: 8px 14px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge);
-    font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink); pointer-events: none; }
-  .res { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
-  .res .soft { flex: none; }
-  .en { margin: 0; font: 600 22px/1.3 var(--font-body); text-wrap: pretty; }
-  .pts { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--c-gold); }
-  .pts b { font: 600 28px/1 var(--font-num); color: var(--c-ink); }
-  .btn { margin: 0; min-height: 48px; }
+  .line { padding: 4px 8px; align-content: center; }
 </style>

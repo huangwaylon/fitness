@@ -65,7 +65,7 @@ test('ことば: B sees A’s tiles placed and taken back, ヒント, ↻入れ�
   await sheet(a).locator('[data-sg-tile]:not([disabled])').first().tap();
   await expect(slots(a)).not.toHaveAttribute('data-sg-slots', /^.?$/);
   await same();
-  await sheet(a).locator('.slots .tile.in').last().tap();
+  await sheet(a).locator('.slots .sg-tile.in').last().tap();
   await same();
   // B can't tap: its panel is inert, a tap on its rack places nothing anywhere
   await expect(watched(b)).toHaveAttribute('inert', '');
@@ -74,7 +74,7 @@ test('ことば: B sees A’s tiles placed and taken back, ヒント, ↻入れ�
   // ヒント: its word in the slots and its note, on both
   await sheet(a).locator('[data-sg-hint]').tap();
   await same();
-  await expect(sheet(b).locator('.toast')).toHaveText((await sheet(a).locator('.toast').textContent())!);
+  await expect(sheet(b).locator('[data-sg-nudge]')).toHaveText((await sheet(a).locator('[data-sg-nudge]').textContent())!);
   // ↻入れかえ's ask, then キャンセル
   await sheet(a).locator('[data-sg-swap]').tap();
   await expect(sheet(b).locator('[data-sg-swap-yes]')).toBeVisible();
@@ -99,7 +99,7 @@ test('ぶん: B sees A’s tiles in order, 「おしい！」 and 答えはこ�
   await expect(line(b)).toHaveAttribute('data-sg-line', (await line(a).getAttribute('data-sg-line'))!);
   // the rest as they lie: never the line's order (sentences.ts tilesOf), so 「おしい！」
   for (let n = await open.count(); n > 0; n--) await open.first().tap();
-  await expect(sheet(b).locator('[data-sg-sentence] .toast')).toHaveText('おしい！もう一度並べてみよう');
+  await expect(sheet(b).locator('[data-sg-sentence] [data-sg-nudge]')).toHaveText('おしい！もう一度並べてみよう');
   await expect(sheet(a).locator('[data-sg-stage]')).toHaveAttribute('data-sg-stage', 'try');
   for (let n = await open.count(); n > 0; n--) await open.first().tap();
   await expect(sheet(a).locator('[data-sg-answer]')).toBeVisible();

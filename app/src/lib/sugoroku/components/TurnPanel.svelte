@@ -11,7 +11,7 @@
   import PictureTurn from './PictureTurn.svelte';
   import { PICTURES } from '../pictures.ts';
   import { CARDS } from '../cards.ts';
-  import { HOME_BONUS, LEVEL, rollMode, wordScore, type Game, type Player } from '../game.ts';
+  import { HOME_BONUS, LEVEL, rollMode, wordScore, type Game } from '../game.ts';
   import { toGoal, waysAt, type Board } from '../board.ts';
   import { pickSentence, type Line, type Sentence } from '../sentences.ts';
   import type { Words } from '../words.ts';
@@ -51,7 +51,6 @@
 
   const cur = $derived(g.players[g.turn]);
   const ph = $derived(g.phase);
-  const headOf = (x: { who: Player['who'] }) => ({ person: x.who, worn: true });
 
   /** A fork's two ways as its sign reads: the area's 近道 / 遠回り, its steps and what's on it (the rare kinds). */
   const ways = $derived(board.forks.includes(cur.pos) ? waysAt(board, cur.pos).map((w, i, all) => {
@@ -100,13 +99,13 @@
 {#if watch}
   <!-- another's turn, as their sheet shows it: whose under 「Xが考え中…」, the panel below read-only -->
   <div class="who watching" data-sg-waiting>
-    <Avatar {...headOf(cur)} size={28} />
+    <Avatar person={cur.who} worn size={28} />
     <p class="note one">{connected ? s('thinkingOf', { name: cur.name }) : s('offlineNote')}</p>
   </div>
 {/if}
 {#if !myTurn && ph.k !== 'end' && !watch}
   <div class="who" data-sg-waiting>
-    <Avatar {...headOf(cur)} size={40} />
+    <Avatar person={cur.who} worn size={40} />
     <div class="txt">
       <p class="turnof">{s('turnOf', { name: cur.name })}</p>
       <p class="note one">{#if !connected}{s('offlineNote')}{:else if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
@@ -114,7 +113,7 @@
   </div>
 {:else}<div class="panel" inert={!!watch} data-sg-watch={watch?.p}>{#if ph.k === 'spin'}
   <div class="who">
-    <Avatar {...headOf(cur)} size={48} />
+    <Avatar person={cur.who} worn size={48} />
     <div class="txt">
       <p class="turnof">{s('turnOf', { name: cur.name })}</p>
       {#if mode === 'local'}<p class="note">{s('passTo', { name: cur.name })}</p>{/if}
@@ -188,7 +187,7 @@
   </div>
 {:else if ph.k === 'home'}
   <div class="event" data-sg-home>
-    <span class="tagrow"><Avatar {...headOf(cur)} size={32} /><span class="tag">{s('homeTitle')}</span></span>
+    <span class="tagrow"><Avatar person={cur.who} worn size={32} /><span class="tag">{s('homeTitle')}</span></span>
     <p class="ja big">{s('homeTeam', { b: HOME_BONUS })}</p>
     <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => onact({ a: 'home' })}>{s('next')}</button>
   </div>
@@ -210,13 +209,13 @@
   .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .way { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; min-height: 72px; padding: 8px 6px; margin: 0 0 3px; appearance: none; border: 0; cursor: pointer;
-    border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-body)/1.2 var(--font-ui); }
+    border-radius: var(--r-card); background: var(--c-card); box-shadow: var(--sh-ctl); color: var(--c-ink); font: 700 var(--fs-body)/1.2 var(--font-ui); -webkit-tap-highlight-color: transparent; }
+  .way:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .way:first-child { background: color-mix(in srgb, var(--c-sky) 45%, var(--c-card)); }
   .way:last-child { background: color-mix(in srgb, var(--c-lilac) 45%, var(--c-card)); }
   .way small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }
   .event { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
   .tagrow { display: flex; align-items: center; gap: 6px; height: 32px; align-self: flex-start; }
-  .tag { padding: 3px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-lilac) 55%, var(--c-cream)); font: 700 12px/1.3 var(--font-ui); }
   .event .en { margin: 0; font: 500 20px/1.35 var(--font-body); text-wrap: pretty; }
   .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
   .event .ja { margin: 0; font-size: var(--fs-s); line-height: 18px; color: var(--text-soft); }

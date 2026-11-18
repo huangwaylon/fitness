@@ -178,7 +178,7 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
 const clipped = (p: Page) => sheet(p).locator('.sbody').evaluate((sb) => {
   sb.scrollTop = sb.scrollHeight;
   const box = sb.getBoundingClientRect(), out: string[] = [];
-  for (const el of sb.querySelectorAll<HTMLElement>('button, .tile')) {
+  for (const el of sb.querySelectorAll<HTMLElement>('button, .sg-tile')) {
     const r = el.getBoundingClientRect();
     if (!r.height || r.bottom < box.top) continue; // (hidden, or scrolled above)
     // the deepest outer shadow under it: `<color> 0 4px 0` (offset-y the 2nd length, spread the 4th)
