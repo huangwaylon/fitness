@@ -1,10 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 16, rewrite 3, retire 0, new 5, ctx 5, tx 4
 // A2 REVIEW 2026-11-17: keep 14, rewrite 3, retire 6, new 1
 // “Dwight Hits on Amy Adams - The Office US” (the official The Office channel, Best of Season 1): Michael bans a
 // handbag seller until he meets her, then hands her the conference room; the seller explains who buys from her; Dwight
 // is coached into "buying a purse" and goes straight to it; Jim chats with Katie, then has an awkward weekend talk.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 273 s; whisper's lines after that are a
-// loop. Untested: 26–34 s (the "henhouse" innuendo), 78–96 s (Dwight's checklist talking head, sexual), 148–158 s,
-// 183–197 s, 225–232 s (speakers unclear), 12.7 s and 251 s (sources differ), 68–71 s "'em" vs "him".
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 274 s; whisper's lines after that are a
+// loop. 12.7 s and 251 s: sources differ.
+// EXCLUDE 26.6–34 (the "henhouse" innuendo)
+// EXCLUDE 81.9–96.3 (Dwight's checklist talking head, sexual)
+// EAR CHECK: 108–135 s pr1 — who coaches Dwight (Jim?); the bank says only "Dwight is told"
+// EAR CHECK: 138–144 s a2 — who says "this is going to be good" (Jim to Pam?)
 import type { Clip } from '../types.ts';
 
 export const dwightAmyAdams: Clip = {
@@ -25,16 +29,16 @@ export const dwightAmyAdams: Clip = {
       trap: '会議室はあとで貸す部屋の話で、理由ではない。理由は No のあとの一文。',
       use: 'My phone is a big distraction.（スマホがすごく気を散らす）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', seg: [12.5, 18.5],
-      stem: 'How does Michael sound in “Pam, Pam, come on”?',
-      ja: '「Pam, Pam, come on」と言うマイケルはどんな様子？',
-      choices: ['Impatient and busy', 'Sorry he can’t help', 'Curious about her'], a: 0,
-      choicesJa: ['いらいらして、いそがしい', '手伝えなくて申しわけない', '彼女に興味がある'],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', ctx: true, seg: [12.5, 18.5],
+      stem: 'How does Michael feel about meeting the seller?',
+      ja: '物売りに会うことを、マイケルはどう思っている？',
+      choices: ['Annoyed', 'Sorry', 'Curious'], a: 0,
+      choicesJa: ['うんざりしている', '申しわけなく思っている', '興味がある'],
       cue: '名前を2回呼んだあと。',
-      line: 'Pam, Pam, *come on*. I’m busy. So *just tell her to go away*.',
-      said: '「パム、頼むよ。いそがしいんだ。帰ってもらって」と言う。',
-      mean: 'come on ＝ いいかげんにして。just tell her to go away ＝ 帰れと言っといて、と突き放す言い方。',
-      trap: 'I’m busy を「すみません、いそがしくて」の遠慮だと思いやすい。come on と just tell her は突き放し。',
+      line: 'Pam: I told her you talked to her at least. / Michael: Pam, Pam, *come on*. I’m busy. So *just tell her to go away*.',
+      said: '「話はしてくれると伝えた」に「勘弁してよ。忙しいんだ。帰ってもらって」。',
+      mean: 'come on ＝ 勘弁してよ。just tell her to go away ＝ 帰れと言っといて、と突き放す言い方。',
+      trap: 'I’m busy を「すみません」の遠慮と考えがち。come on と just tell her は突き放し。',
       use: 'Come on, I’m in the middle of something.（ちょっと、今取りこみ中なんだ）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rule', reveals: ['ykw', 'decisive'], seg: [34.0, 73.6],
@@ -49,15 +53,16 @@ export const dwightAmyAdams: Clip = {
       trap: '11:30 は人事の会議の時刻で、期限ではない。部屋は all day（一日中）使っていい。',
       use: 'Okay, just this once.（じゃあ、今回だけね）' },
 
-    { id: 'i1', retired: true, skill: 'infer', level: 'C1', point: 'pam6', seg: [40.3, 47.4],
-      stem: 'What does Michael’s comparison of Katie to Pam suggest about Pam?',
-      choices: ['She’s the older version that Katie beats', 'She’s the original that Katie is copying',
-                'She’s the sixth person to have her job'], a: 0,
-      cue: '「new and」のあとの語と、数字の付け方。',
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'pam6', seg: [40.3, 47.4],
+      stem: 'What does “the new and improved Pam” mean?',
+      ja: '「the new and improved Pam」はどういう意味？',
+      choices: ['A newer, better Pam', 'Pam’s younger sister', 'Pam in new clothes'], a: 0,
+      choicesJa: ['新しくて、もっといいパム', 'パムの妹', '新しい服を着たパム'],
+      cue: '「You’re like」のあと。',
       line: 'You’re like the *new and improved* Pam. *Pam 6.0*.',
-      said: 'ケイティに「新しく改良されたパムだね。パム6.0」と言う。',
-      mean: '製品の新型のような言い方。ほめたつもりでも、本物のパムは旧型扱いになる。',
-      trap: '6.0 を年数と取ると通じない。new and improved は「前の型より良い」という宣伝文句。',
+      said: 'ケイティに「新しく改良されたパムみたいだ。パム6.0だ」と言う。',
+      mean: 'new and improved ＝「新しく改良された」。商品の宣伝文句。6.0 はソフトの新しい版の番号。ほめたつもりでも、パムは旧型扱い。',
+      trap: 'like から「パムに似た家族」と考えがち。new and improved は宣伝で聞く決まり文句。',
       use: 'It’s the new and improved version.（新しく改良された版だよ）' },
 
     { id: 'mk1', skill: 'marker', level: 'B2', point: 'ykw', seg: [52.6, 64.6],
@@ -95,13 +100,13 @@ export const dwightAmyAdams: Clip = {
       trap: 'カメラの言葉をそのまま信じやすい。この形式では、場面とのずれに笑いがある。',
       use: 'I call it being flexible.（柔軟って言ってほしいね）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'hallway', seg: [64.3, 74.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'hallway', ctx: true, seg: [64.3, 74.8],
       stem: 'What does Michael do about the HR meeting?',
       ja: 'マイケルは人事の会議をどうする？',
       choices: ['Moves it to the hallway', 'Moves it to the afternoon', 'Gives Katie his office'], a: 0,
       choicesJa: ['廊下に移す', '午後に移す', 'ケイティに自分の部屋を貸す'],
       cue: '「Well」で始まる返事。',
-      line: 'Well, let’s put ’em in the *hallway*. I’ll give ’em some chairs.',
+      line: 'Pam: There’s an HR meeting in there… / Michael: Well, let’s put ’em in the *hallway*. I’ll give ’em some chairs.',
       said: '「じゃあ人事の会議は廊下でやってもらおう。いすも出すから」と答える。',
       mean: 'hallway ＝ 廊下。会議より物売りを優先する決め方。',
       trap: '時刻の話が出たので、時間をずらすと思いやすい。動かしたのは時間ではなく場所。',
@@ -117,7 +122,19 @@ export const dwightAmyAdams: Clip = {
       trap: 'him も h が弱いと似る。前に複数の人の話があれば ’em を疑う。',
       use: 'Just tell ’em I’ll be late.（遅れるって伝えといて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'customers', seg: [96.3, 108.3],
+    { id: 'ks', skill: 'detail', level: 'B1', point: 'keys', seg: [72.6, 78.4],
+      stem: 'What does Michael call one of the keys to success?',
+      ja: 'マイケルが「成功の秘訣のひとつ」と言うのは？',
+      choices: ['Making quick decisions', 'Following the rules', 'Being nice to people'], a: 0,
+      choicesJa: ['すぐに決めること', 'ルールを守ること', '人に親切にすること'],
+      cue: '「One of the keys」の前の1語。',
+      line: '*Decisiveness.* One of the *keys to success*, according to Small Businessman.',
+      said: 'カメラに「決断力。成功の秘訣のひとつだ」と言う。',
+      mean: 'decisiveness ＝ 決断力（すぐ決める力）。key ＝ 文字どおりは「かぎ」→ 成功の扉を開けるもの ＝ 秘訣。',
+      trap: 'ルールを守ることと考えがち。さっき break some rules（ルールを破る）と言ったばかり。',
+      use: 'Practice is the key to success.（練習が成功の秘訣だ）' },
+
+    { id: 'd3', skill: 'who', level: 'B1', point: 'customers', seg: [96.3, 108.3],
       stem: 'Who usually buys the most from Katie?',
       ja: 'ケイティからいちばんよく買うのはだれ？',
       choices: ['Men buying gifts', 'Women buying gifts', 'Men buying for work'], a: 0,
@@ -153,16 +170,16 @@ export const dwightAmyAdams: Clip = {
       trap: 'stall には「売店」の意味もあり、売り場の話に聞こえやすい。keep talking のあとなので会話の話。',
       use: 'If we hit a problem, call me.（何か問題が起きたら電話して）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'listen', seg: [123.1, 131.7],
-      stem: 'What is the coach really telling Dwight?',
-      ja: 'コーチは本当はドワイトに何を伝えている？',
-      choices: ['Go and talk to her now', 'I’m too busy for this', 'You talk too much'], a: 0,
-      choicesJa: ['今すぐ彼女と話しに行け', '今いそがしい', 'しゃべりすぎだ'],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'listen', reveals: ['bathroom'], ctx: true, seg: [123.1, 135.3],
+      stem: 'What is Dwight told to do?',
+      ja: 'ドワイトは何をしろと言われている？',
+      choices: ['Go and talk to her now', 'Come back after lunch', 'Use the bathroom first'], a: 0,
+      choicesJa: ['今すぐ彼女と話しに行け', '昼ごはんのあとに来い', '先にトイレに行け'],
       cue: '「Listen」のあと。',
-      line: 'Listen, you are spending *way too much time talking to me*.',
-      said: '「いいか、俺と話してる時間が長すぎる」と言う。',
-      mean: '文句の形の後押し。「ここにいないで、早く彼女のところへ行け」という意味。way too much ＝ 多すぎる。',
-      trap: '文字どおり時間の文句に聞こえやすい。to me（俺と）が大事で、話す相手がちがう、ということ。',
+      line: 'Listen, you are spending *way too much time talking to me*. / Dwight: Okay, I’m just gonna use the bathroom… / No, you don’t need the bathroom. *Go.*',
+      said: '「俺と話す時間が長すぎる」「ちょっとトイレに…」「トイレはいい。行け」。',
+      mean: '文句の形の後押し。to me（俺と）ではなく彼女と話せ、ということ。最後の Go.（行け）ではっきりする。',
+      trap: 'Dwight が bathroom と言うので、トイレの話に聞こえるが、すぐ No と止められる。',
       use: 'Why are you still here? Go!（まだここにいるの？行って！）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'bathroom', seg: [126.4, 133.6],
@@ -187,7 +204,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'good を「うまくいく」と思うと応援に聞こえる。人を呼んで見せるなら、見物の good。',
       use: 'Grab some popcorn. This’ll be good.（ポップコーン用意して。見ものだよ）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'opener', reveals: ['stall'], seg: [142.9, 151.3],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'opener', reveals: ['stall'], seg: [144.0, 151.3],
       stem: 'What is the first thing Dwight says he wants?',
       ja: 'ドワイトが最初に、ほしいと言うものは？',
       choices: ['To buy a purse from her', 'To sell her a purse', 'To know her name'], a: 0,
@@ -221,6 +238,30 @@ export const dwightAmyAdams: Clip = {
       mean: '「バッグは女の物」と嫌がっていた本人が、自分を女の子に見立ててはしゃぐ落差。',
       trap: 'I’m は弱く、ケイティの話にも聞こえる。主語を聞き、さっきの発言と比べる。',
       use: 'I’m gonna be the best-dressed guy there.（その場でいちばんおしゃれになるぞ）' },
+
+    { id: 'hm', skill: 'detail', level: 'B1', point: 'howmuch', reveals: ['stress'], seg: [180.0, 186.3],
+      stem: 'What does Dwight ask about the prettiest bag?',
+      ja: 'いちばんきれいなバッグについて、ドワイトは何を聞く？',
+      choices: ['How much it is', 'If it comes in pink', 'If it is strong'], a: 0,
+      choicesJa: ['いくらか', 'ピンクがあるか', 'じょうぶか'],
+      cue: '「prettiest girl」のあと。',
+      line: 'I’m gonna be the prettiest girl in the ball. *Oh, how much?*',
+      said: 'すっかり気に入って「で、いくら？」と聞く。見ている人たちは「悲しい」とあきれる。',
+      mean: 'How much? ＝ いくら？ 値段を聞くいちばん短い言い方。店ではていねいに How much is this? と言う。',
+      trap: 'さっき stress test（じょうぶか試す）をしたので、強さの質問を連想しやすい。ここは値段。',
+      use: 'How much is this bag?（このバッグはいくらですか）' },
+
+    { id: 'tq', skill: 'pragma', level: 'B2', point: 'sitthere', ctx: true, seg: [204.2, 213.4],
+      stem: 'How does Jim answer “You sit out there, don’t you?”',
+      ja: '「You sit out there, don’t you?」に、ジムはどう答える？',
+      choices: ['I do', 'I don’t', 'Not really'], a: 0,
+      choicesJa: ['うん、座ってる', 'いや、座ってない', 'そうでもない'],
+      cue: 'Katie の質問への返事。',
+      line: 'Katie: Hi, you sit out there, *don’t you?* / Jim: *I do.* That’s what I’m best known for. Sitting out there.',
+      said: '「あっちに座ってる人ですよね？」「そう。それでいちばん知られてるんだ。あそこに座ってることでね」。',
+      mean: '〜, don’t you? ＝「〜ですよね？」と確かめる言い方。座っているなら I do（はい）と、事実で答える。',
+      trap: 'don’t につられて「いいえ」側を考えがち。座っている事実が yes なら I do。',
+      use: 'You work here, don’t you? — I do.（ここで働いてますよね？—はい）' },
 
     { id: 'h4', retired: true, skill: 'humor', level: 'B2', point: 'known', seg: [207.3, 213.55],
       stem: 'When Katie asks about where he sits, why is Jim’s answer funny?',
@@ -278,6 +319,18 @@ export const dwightAmyAdams: Clip = {
       trap: '四つ並ぶと計画的に聞こえる。最後に極端な一つが来たら、全部を冗談にする合図。',
       use: 'Dinner, a movie, maybe a wedding.（食事、映画、たぶん結婚式）' },
 
+    { id: 'cz', skill: 'infer', level: 'B1', point: 'truck', ctx: true, seg: [253.8, 262.9],
+      stem: 'Why will they help Roy’s cousin move?',
+      ja: 'ロイのいとこの引っ越しを手伝うのはなぜ？',
+      choices: ['Roy has a truck', 'The cousin is sick', 'Roy has the day off'], a: 0,
+      choicesJa: ['ロイがトラックを持っている', 'いとこが病気', 'ロイが休みの日'],
+      cue: '「Okay」のあとの ’Cause。',
+      line: 'Jim: What are you doing? / Pam: …we’re gonna help Roy’s cousin move. … ’Cause *Roy’s got a truck*.',
+      said: '「君は？」「ロイのいとこの引っ越しを手伝う」「そっか」「ロイがトラック持ってるから」。',
+      mean: '’Cause ＝ because（だって）。Roy’s got ＝ Roy has got ＝ ロイは持っている。理由をあとから足している。',
+      trap: 'Roy’s を「ロイは（is）」と聞くとつながらない。got が続けば has got。',
+      use: 'I can help. I’ve got a car.（手伝えるよ。車があるから）' },
+
     { id: 'a3', retired: true, skill: 'attitude', level: 'C1', point: 'cool', reveals: ['weekend'], seg: [259.1, 268.2],
       stem: 'What do the repeated “That’s cool” replies show about the chat?',
       choices: ['Both have run out of things to say', 'Both are glad the other has nice plans',
@@ -300,5 +353,16 @@ export const dwightAmyAdams: Clip = {
       mean: 'I’ll see you Monday ＝ 月曜に会おう。週末はそれぞれ予定があるので、次は月曜。',
       trap: 'weekend の話をしていたので週末だと思いやすい。週末は別々で、次は Monday。',
       use: 'See you Monday!（また月曜日に！）' },
+    { id: 'hb', skill: 'phrase', level: 'B1', point: 'headback', seg: [268.2, 273.9],
+      stem: 'What does “I’m gonna head back” mean?',
+      ja: '「I’m gonna head back」はどういう意味？',
+      choices: ['I’ll go back to my desk', 'I’ll go home early', 'I’ll come back later'], a: 0,
+      choicesJa: ['自分の席に戻る', '早めに家に帰る', 'あとでまた来る'],
+      cue: '「Okay」で始まる最後の一言。',
+      line: 'Okay, *I’m gonna head back*. — All right.',
+      said: '「じゃあ、戻るね」「分かった」と、会話を切り上げる。',
+      mean: 'head ＝ 文字どおりは「頭」。動詞だと「頭を向ける」→「〜へ向かう」。head back ＝ （今いた場所へ）戻る。',
+      trap: 'back から「またあとで来る」と考えがち。今いた場所（自分の席）へ戻る、の意味。',
+      use: 'It’s late. I’m gonna head back.（遅いから、戻るね）' },
   ]
 };

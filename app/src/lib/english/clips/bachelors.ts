@@ -1,12 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 4, retire 1, new 8, ctx 10, tx 13
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 8, new 2
 // “Three Bachelors, One Party | Parks and Recreation” (the official Parks and Recreation channel, Season 5): the
 // guys tease Jerry and toast him with ice-cream cones, Chris turns Andy's "impossible" dream into a visit to the Colts,
-// they phone Anne to brag, and at the steakhouse Ron admits he likes Diane and a former business partner of Tom's pays.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 0–10 s, 18.8 s, 42.8 s, 55.5 s, 115–118 s,
-// 132–153 s (the catch and a montage), 170–197 s (Anne's end of the call, the stripper, "I want meat"), 209–232 s,
-// 245–260 s (the toast), 265–273 s.
+// they phone Ann to brag, and at the steakhouse Ron admits he likes Diane, Chris toasts him in two words and Tom's
+// former business partner Roy Hibbert pays. Segments from the captions, words from whisper (2026-11-16).
+// EXCLUDE 4.8–8.7 (Jerry describes Gail's body)
+// EXCLUDE 178.7–182.5 (the stripper line)
+// SKIP 128.7–151.6: the catch, cheering and a song montage, no usable talk
 // EAR CHECK: 90.2 s s1 — "can't": confirm the long vowel of "can't" against "can" (both sources say "can't")
 // EAR CHECK: 278.2 s s2 — "owes me a lot of" run together (≈"owzmi-alotta"); both sources agree on the words
+// EAR CHECK: 186.5–191 s c2 — who asks for a break and who says no (the women's side; not named in the bank)
 import type { Clip } from '../types.ts';
 
 export const threeBachelors: Clip = {
@@ -16,14 +19,14 @@ export const threeBachelors: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'g2', skill: 'gist', level: 'B1', point: 'jerry', seg: [10.6, 42.4],
-      stem: 'What do the guys do for Jerry at the start?', ja: '最初の場面で、みんなはジェリーに何をする？',
-      choices: ['Tease him, then toast him', 'Toast him, then leave him alone', 'Give him a big gift'], a: 0,
-      choicesJa: ['からかってから乾杯する', '乾杯してから置いていく', '大きなプレゼントをあげる'],
+      stem: 'What do the guys do for Jerry?', ja: 'みんなはジェリーに何をする？',
+      choices: ['Tease him, then toast him', 'Toast him, then leave him alone', 'Ask him, then give him a gift'], a: 0,
+      choicesJa: ['からかってから乾杯する', '乾杯してから置いていく', '質問してからプレゼントを渡す'],
       cue: '「You know what?」のあと',
       line: 'Was she ill? … All that matters is you got married and you’re happy. … I suggest we *raise a cone to Jerry Gergich*.',
       said: '妻とのなれそめを「病気だった？」とからかい、最後は「ジェリーに乾杯」とアイスを掲げる。',
       mean: 'tease ＝ からかう。toast ＝ 乾杯する。からかったあとで、ちゃんと祝っている。',
-      trap: 'からかいだけ聞くと、冷たい扱いだと思いやすい。最後の乾杯まで聞く。',
+      trap: 'からかいだけ聞くと、冷たい扱いと考えがち。最後の raise a cone（乾杯）まで聞く。',
       use: 'Let’s make a toast to Ken!（ケンに乾杯しよう！）' },
 
     // R fix: V2 (blind 65 %): "romantic story" and "saved her" were fillers; now two other "why her?" readings
@@ -58,16 +61,16 @@ export const threeBachelors: Clip = {
       cue: '「I suggest we」のあと',
       line: 'I suggest we *raise a cone* to Jerry Gergich.',
       said: '「ベストマンとして、ジェリーにコーンを掲げよう」と言う。',
-      mean: 'raise a glass to 〜（〜に乾杯）の glass を、アイスのコーンに替えた言い方。',
+      mean: '文字どおりは「コーンを掲げる」。乾杯の決まり文句 raise a glass to 〜 の glass を、手に持つアイスに替えた。',
       trap: 'raise から「手を挙げる（投票）」と思いやすい。raise 〜 to 人 は乾杯の決まり文句。',
       use: 'Let’s raise a glass to the happy couple.（お二人に乾杯しましょう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'backup', seg: [35.8, 44.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'backup', ctx: true, seg: [35.8, 44.4],
       stem: 'Why was a new cone ready so fast?', ja: '新しいコーンがすぐ出てきたのはなぜ？',
       choices: ['Jerry often drops his', 'Every cone comes with a spare', 'It was for someone else'], a: 0,
       choicesJa: ['ジェリーがよく落とすから', 'どのコーンにも予備が付くから', 'ほかの人の分だったから'],
       cue: '「backup cone」のあと',
-      line: 'I always make a *backup cone*. *He drops it about half the time.*',
+      line: 'How did you have that ready so fast? / I always make a *backup cone*. *He drops it about half the time.*',
       said: '「どうしてそんなに早く？」「いつも予備を作ってるの。彼、半分は落とすから」。',
       mean: 'backup ＝ 予備。half the time ＝ 2回に1回。よく落とすのを知っていて、先に用意していた。',
       trap: 'always から、店の決まりだと思いやすい。理由は次の文の He（ジェリー）にある。',
@@ -91,8 +94,8 @@ export const threeBachelors: Clip = {
       cue: '「Patriots」のすぐあと',
       line: 'I want to see the Colts beat the Patriots *49–nothing*',
       said: '「コルツがペイトリオッツに49対0で勝つのが見たい」と言う。',
-      mean: 'nothing ＝ スコアの 0。forty-nine は前の「フォー」を強く言う。',
-      trap: '「ナインティーン」なら19対0、「フォーティ」で切れて最後が「ナイン」なら40対9、「フォーティナイン・ナッシング」なら49対0。',
+      mean: 'nothing ＝ スコアの 0（ゼロ）。スポーツの点では zero より nothing がよく使われる。',
+      trap: '19 なら「ナインティーン」。40対9 なら「フォーティ」で切れる。「フォーティナイン・ナッシング」と続くので49対0。',
       use: 'We won three to nothing.（3対0で勝った）' },
 
     { id: 'a1', skill: 'phrase', level: 'B1', point: 'specific', seg: [55.9, 64],
@@ -113,9 +116,20 @@ export const threeBachelors: Clip = {
       cue: '「dead」のあと',
       line: '*I’m dead.* I am dead. And *this is what heaven is like*. I knew it.',
       said: '「僕は死んだ。ここが天国なんだ。やっぱりね」と言う。',
-      mean: 'heaven ＝ 天国。うれしすぎて天国にいるようだ、という大げさな喜び。',
-      trap: 'I’m dead は「疲れた」「まずい」にも使うので、そう思いやすい。直後の heaven で最高の気分と分かる。',
+      mean: '文字どおりは「僕は死んだ」。→ 死んで天国に来たみたい → 「最高すぎる」。heaven ＝ 天国。大げさな喜び。',
+      trap: 'I’m dead は「疲れた」「まずい」にも使うので、そちらに聞こえるが、直後の heaven で最高の気分と分かる。',
       use: 'This cake is so good. I’m in heaven.（このケーキおいしすぎ。天国だ）' },
+
+    { id: 'gr', skill: 'pragma', level: 'B1', point: 'meet', ctx: true, seg: [76.0, 85.8],
+      stem: 'What does Jim Irsay say when he meets Andy?', ja: 'アンディに会って、ジム・アーセイは何と言う？',
+      choices: ['Good to meet you', 'Good to see you again', 'How have you been?'], a: 0,
+      choicesJa: ['会えてうれしいよ（初対面）', 'また会えてうれしいよ', '元気にしてた？'],
+      cue: '紹介されたあとの最初のひと言',
+      line: 'Chris: Andy, I want you to *meet* … Jim Irsay. / Jim: Andy, *good to meet you*, my friend. / Andy: Thank you.',
+      said: '「紹介しよう、ジム・アーセイだ」「アンディ、会えてうれしいよ」。',
+      mean: 'Good to meet you ＝ はじめまして、会えてうれしい。初対面のあいさつ。I want you to meet 〜 ＝ 人を紹介する言い方。',
+      trap: 'see you again（また会えた）と勘違いしやすい。2回目以降は see、初対面は meet。',
+      use: 'Good to meet you. I’m Ken.（はじめまして、ケンです）' },
 
     // R fix: K6 (blind 60 %): the key was the only hedged, two-part choice; the distractors are now two-part too
     // why: takes it as praise ← "I hope you're not" heard without "I can't tell"; takes it as a dig ← "joking"
@@ -142,7 +156,7 @@ export const threeBachelors: Clip = {
       trap: 'can は「クン」と短く弱い。couldn’t は「クドゥン」。「キャーン」と長く強ければ can’t。',
       use: 'I can’t tell the difference.（違いが分からない）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [92.4, 99.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [92.4, 99.3], retired: true,
       stem: 'How did Chris and Jim Irsay become friends?', ja: 'クリスとジム・アーセイはどうやって友だちになった？',
       choices: ['Helping teens as volunteers', 'Working at the Statehouse', 'Coaching a youth football team'], a: 0,
       choicesJa: ['ボランティアで十代を助けて', '州議会で働いて', '少年フットボールチームを教えて'],
@@ -169,26 +183,26 @@ export const threeBachelors: Clip = {
       trap: 'preferred の主語が若者なので、彼らへの皮肉に聞こえやすい。負けたのは話し手の贈り物。',
       use: 'I brought salad. They preferred the pizza.（私はサラダ。みんなピザがよかった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'jersey', seg: [109.1, 117.1],
-      stem: 'How does Reggie Wayne react to the jersey story?', ja: 'ジャージの話に、レジー・ウェインはどう反応する？',
-      choices: ['It’s weird, but okay', 'He feels very honored', 'He thinks it’s a lie'], a: 0,
-      choicesJa: ['変だけど、いいと思う', 'とても光栄に思う', 'うそだと思う'],
-      cue: 'ジャージの話への返事',
-      line: 'I got married in your jersey. That’s no joke. — *That’s weird. But I respect that.*',
-      said: '「あなたのジャージで結婚式を挙げたんです」「変だね。でも、いいと思うよ」。',
-      mean: 'weird ＝ 変な。I respect that ＝ その気持ちは認める。正直に言ってから、but で認めている。',
-      trap: 'respect から、とても感激したと思いやすい。前の weird と合わせて一つの反応。',
-      use: 'Odd choice, but I respect it.（変わった選び方だけど、いいと思う）' },
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'jersey', ctx: true, seg: [109.1, 117.1],
+      stem: 'What does Reggie Wayne say after “That’s weird”?', ja: '「That’s weird」のあと、レジー・ウェインは何と言う？',
+      choices: ['He respects it', 'He doesn’t believe it', 'He wants it back'], a: 0,
+      choicesJa: ['その気持ちを認める', '信じない', '返してほしい'],
+      cue: '「That’s weird」のあとの But',
+      line: 'Andy: I got married in *your jersey*. That’s no joke. / Reggie: That’s weird. *But I respect that.*',
+      said: '「あなたのユニフォームで結婚したんです」「変だね。でも、そういうのは認めるよ」。',
+      mean: 'weird ＝ 変な。I respect that ＝ その気持ちは認める・いいと思う。正直に「変」と言ってから、but で受け入れる。',
+      trap: 'weird（変だ）で話が終わると考えがち。決め手は but のあと。',
+      use: 'Odd choice, but I respect that.（変わった選び方だけど、いいと思う）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'honor', seg: [119.2, 127.9],
-      stem: 'Why does Andy say “Could you do me the honor?”', ja: 'アンディはなぜ「Could you do me the honor?」と言う？',
-      choices: ['To ask politely', 'To say thank you', 'To say sorry'], a: 0,
-      choicesJa: ['ていねいに頼むため', 'お礼を言うため', '謝るため'],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'honor', ctx: true, seg: [119.2, 126.4],
+      stem: 'What does Andy ask, and what does Luck say?', ja: 'アンディは何を頼み、ラックは何と答える？',
+      choices: ['A pass, and he says yes', 'A pass, but he says no', 'A photo, and he says yes'], a: 0,
+      choicesJa: ['パスを頼み、いいよと言う', 'パスを頼み、だめと言う', '写真を頼み、いいよと言う'],
       cue: '「pass thrown by you」のあと',
-      line: 'it’s every groom’s dream to catch a touchdown pass thrown by you. *Could you do me the honor?* — Yeah, let’s do it.',
-      said: '「あなたのパスを受けるのが夢です。お願いできますか？」と頼み、「いいよ」と返事がくる。',
-      mean: 'do me the honor ＝ 光栄なことをしてくれる。とてもていねいに頼む言い方。',
-      trap: 'honor（名誉）から、お礼だと思いやすい。Could you…? は頼む形。',
+      line: 'Andy: …to catch a touchdown *pass* thrown by you. *Could you do me the honor?* / Luck: *Yeah, let’s do it.*',
+      said: '「あなたのパスを取るのが花婿の夢です。お願いできますか？」「ああ、やろう」。',
+      mean: 'do me the honor ＝ 文字どおりは「私に名誉をくれる」。→ してくれたら光栄です → とてもていねいなお願い。',
+      trap: 'honor（名誉）から、お礼の言葉に聞こえるが、Could you…? は頼む形。答えは Yeah で OK。',
       use: 'Could you take our picture, please?（写真を撮っていただけますか）' },
 
     // R fix: V2 (blind 70 %): "can't really throw" was a filler; now the star mocking him, after "Settle down"
@@ -205,16 +219,49 @@ export const threeBachelors: Clip = {
       trap: 'I’ll try は投げる側の返事。誰が誰に言ったかは返事で分かる。',
       use: 'Could you do me the honor?（お願いできますか）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'rubit', seg: [158.6, 166.3],
+    { id: 'tr', skill: 'pragma', level: 'B1', point: 'try', ctx: true, seg: [124.0, 130.4],
+      stem: 'How does Luck answer “Keep the spiral tight?”', ja: '「Keep the spiral tight?」に、ラックは何と答える？',
+      choices: ['I’ll try', 'No problem', 'I can’t'], a: 0,
+      choicesJa: ['やってみるよ', '楽勝だよ', 'できないよ'],
+      cue: 'Andy の注文への返事',
+      line: 'Andy: Keep the spiral *tight*? / Luck: *I’ll try.*',
+      said: '「きれいな回転で投げてくれる？」「やってみるよ」。',
+      mean: 'I’ll try ＝ やってみる。「できるか分からないけど頑張る」という控えめな返事。spiral ＝ ボールの回転。',
+      trap: 'プロ選手なので No problem（楽勝）と答えそうに思えるが、聞こえるのは try（やってみる）。',
+      use: 'I’ll try, but I can’t promise.（やってみるけど、約束はできない）' },
+
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'rubit', seg: [151.6, 163.6],
       stem: 'What does “rub it in” mean?', ja: '“rub it in” はどういう意味？',
       choices: ['Brag to make her jealous', 'Share the fun with her', 'Check on her night'], a: 0,
       choicesJa: ['自慢してうらやましがらせる', '楽しさを分けてあげる', '彼女の夜の様子を聞く'],
-      cue: '「calling you to」のあと',
-      line: '…the time of our lives, and I’m calling you to *rub it in*.',
+      cue: '「call Ann」のあと',
+      line: 'Let’s call Ann real quick and *rub it in*. … I’m calling you to *rub it in*.',
       said: '「最高の夜を過ごしてて、それを自慢したくて電話してる」と言う。',
-      mean: 'rub it in ＝ わざと見せつけて悔しがらせる。傷に塩をすり込むイメージ。',
+      mean: '文字どおりは「すり込む」。→ 傷に塩をすり込む → わざと見せつけて悔しがらせる。くだけた言い方。',
       trap: '楽しい報告の電話なので「おすそ分け」と思いやすい。rub it in ははっきり「自慢」。',
       use: 'Okay, you won. Don’t rub it in.（分かった、君の勝ち。見せつけないで）' },
+
+    { id: 'n2', skill: 'detail', level: 'B1', point: 'steak', seg: [163.0, 171.8],
+      stem: 'Where are the guys going next?', ja: '男たちは次にどこへ行く？',
+      choices: ['To a steakhouse', 'To an insane bar', 'To a Colts game'], a: 0,
+      choicesJa: ['ステーキハウス', 'すごいバー', 'コルツの試合'],
+      cue: '「Now we’re going」のあと',
+      line: 'We went to an insane bar. Played football with the Colts! *Now we’re going to a steakhouse.*',
+      said: '「すごいバーに行って、コルツとフットボールもした！これからステーキハウスだ」と話す。',
+      mean: 'went ＝ もう行った。Now we’re going to 〜 ＝ 今から〜へ向かう。これからの予定を言う形。',
+      trap: 'bar と Colts が先に聞こえるが、どちらも went／played（もう済んだこと）。Now のあとが次の行き先。',
+      use: 'Now we’re going to the station.（今から駅に向かうところ）' },
+
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'hot', ctx: true, seg: [169.6, 177.6],
+      stem: 'What does Ann say to “What are you doing?”', ja: '「What are you doing?」に、アンは何と答える？',
+      choices: ['She’s with lots of cute guys', 'She’s at home with a movie', 'She’s out at a quiet dinner'], a: 0,
+      choicesJa: ['かっこいい男の人がたくさんいる', '家で映画を見ている', '静かな夕食に出ている'],
+      cue: '「What are you doing?」への返事',
+      line: 'Guys: Now we’re going to a steakhouse. *What are you doing?* / Ann: Uh, well, we’re *surrounded by hot guys*.',
+      said: '「君は何してるの？」に「えっと、イケメンに囲まれてるところ」と答える。',
+      mean: 'hot ＝ ここでは「かっこいい」（くだけた言い方）。surrounded by 〜 ＝ 〜に囲まれて。Uh, well で言葉を探している。',
+      trap: 'hot を「暑い」（ホット）と勘違いしやすい。人に使う hot は見た目のほめ言葉。',
+      use: 'We’re surrounded by mountains here.（ここは山に囲まれてるよ）' },
 
     // R fix: K6/V2 (blind 65 %): the key was the only hedged choice; now duller/wilder in one form
     // why: even wilder ← the hot guys and Donna's stunt taken at face value; who is on the phone ← "who are you… to?"
@@ -230,16 +277,49 @@ export const threeBachelors: Clip = {
       trap: '派手な話をそのまま信じやすい。lying to は相手を聞く質問ではなく、うその指摘。',
       use: 'Who are you kidding?（誰をだますつもり？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'table', seg: [198.6, 208.4],
+    { id: 'c2', skill: 'infer', level: 'B1', point: 'break', ctx: true, seg: [184.8, 191.2],
+      stem: 'Why is the answer to “Can I take a break?” no?', ja: '「Can I take a break?」の答えが no なのはなぜ？',
+      choices: ['They paid for an hour', 'It’s almost time to eat', 'The others are still digging'], a: 0,
+      choicesJa: ['1時間分お金を払ったから', 'もうすぐ食事だから', 'ほかの人はまだ掘っているから'],
+      cue: '「Uh-uh」のあと',
+      line: '*Can I take a break?* My hands are tired. / *Uh-uh.* *We paid for an hour*, you’re gonna dig for an hour.',
+      said: '「休んでいいですか？手が疲れて」「だめ。1時間分払ったんだから、1時間掘ってもらう」。',
+      mean: 'take a break ＝ 休憩する。Uh-uh ＝「ううん」という no。理由は we paid（お金を払った）。',
+      trap: 'Uh-huh（うん）と Uh-uh（ううん）は似た音。すぐ後に払った理由が続くので no。',
+      use: 'Can I take a short break?（少し休憩してもいいですか）' },
+
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'table', ctx: true, seg: [198.6, 208.4],
       stem: 'Why did Jerry think the table was theirs?', ja: 'ジェリーはなぜ、その席を自分たちの席だと思った？',
       choices: ['He misheard a name', 'It had four seats', 'He booked it last week'], a: 0,
       choicesJa: ['名前を聞きまちがえた', '席が4つあった', '先週予約した'],
       cue: '「I thought you said」のあと',
-      line: 'I thought you said the Gergich party. — No, no. I said the *Gingrich party*.',
+      line: 'Jerry: I thought you said the Gergich party. / Waiter: No, no. I said the *Gingrich party*.',
       said: '「ゲーギッチ様のお席と言いましたよね」「いえ、ギングリッチ様です」。',
       mean: 'I thought you said 〜 ＝ 〜って言ったと思った。似た名前を自分の名前と聞きちがえた。',
       trap: 'four settings（4人分）は、席がおかしいと思う理由。取りちがえた原因ではない。',
       use: 'Sorry, I thought you said Tuesday.（すみません、火曜って聞こえました）' },
+
+    { id: 'r1', skill: 'detail', level: 'B1', point: 'related', seg: [210.0, 217.0],
+      stem: 'What does Jerry wonder about the Gingrich family?', ja: 'ジェリーはギングリッチ家について何を考える？',
+      choices: ['If they are family', 'If they are famous', 'If they are still here'], a: 0,
+      choicesJa: ['親戚かどうか', '有名人かどうか', 'まだ店にいるかどうか'],
+      cue: '「I wonder if」のあと',
+      line: 'Gingrich, Gergich. *I wonder if we’re related.* — I don’t think so, Jerry.',
+      said: '「ギングリッチ、ガーギッチ。親戚だったりしてね」「それはないと思うぞ」。',
+      mean: 'related ＝ 親戚の、血がつながった。I wonder if 〜 ＝ 〜かなあ。I don’t think so はやわらかい no。',
+      trap: '名前が似ているという話なので、有名人の話を連想しやすい。決め手は related（親戚）。',
+      use: 'I wonder if it will rain.（雨が降るかなあ）' },
+
+    { id: 'o1', skill: 'detail', level: 'B1', point: 'rare', seg: [216.8, 224.0],
+      stem: 'How are the two steaks cooked?', ja: '2つのステーキの焼き方は？',
+      choices: ['Rare', 'Medium', 'Well-done'], a: 0,
+      choicesJa: ['レア', 'ミディアム', 'ウェルダン'],
+      cue: '「porterhouse」の前',
+      line: 'One *rare* porterhouse, one *rare* sirloin, and a rasher of bacon.',
+      said: '「レアのポーターハウスを1つ、レアのサーロインを1つ、ベーコンをひと切れ」と料理が来る。',
+      mean: 'rare ＝ 中が赤い焼き方。ステーキの注文は rare／medium／well-done（よく焼く）で答える。',
+      trap: 'レアは「めずらしい」の意味もあるが、ステーキでは焼き方。2回とも rare と言う。',
+      use: 'Medium rare, please.（ミディアムレアでお願いします）' },
 
     // R fix: V2 (blind 50 %): the key reworded to match the distractors' form; the cue no longer says "liquid", now in the key
     // why: far more than four ← "four more glasses" heard as what would surprise; wrong one ← "specify" heard as
@@ -255,15 +335,15 @@ export const threeBachelors: Clip = {
       trap: '量への驚きではない。返事は specify（わざわざ言う）に対するもの。',
       use: 'You’d be surprised how often that happens.（それ、意外とよくあるんだよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'likeher', seg: [231.1, 242.6],
-      stem: 'What does Ron say about Diane?', ja: 'ロンはダイアンについて何と言う？',
-      choices: ['He likes her', 'He misses her', 'He will marry her'], a: 0,
-      choicesJa: ['彼女が好き', '彼女に会いたい', '彼女と結婚する'],
+    { id: 'd5', skill: 'pragma', level: 'B2', point: 'likeher', ctx: true, seg: [231.1, 242.6],
+      stem: 'How does Ron answer the question about Diane?', ja: 'ダイアンのことを聞かれて、ロンはどう答える？',
+      choices: ['He says he likes her', 'He says they’ll marry', 'He says it’s going badly'], a: 0,
+      choicesJa: ['彼女が好きだと言う', '結婚すると言う', 'うまくいっていないと言う'],
       cue: '「very candid」のあと',
-      line: 'So, bachelor boy, how’s it going with Diane? — I’m gonna be *very candid* with you all. *I like her.*',
+      line: 'Chris: So, bachelor boy, *how’s it going with Diane?* / Ron: I’m gonna be *very candid* with you all. *I like her.*',
       said: '「ダイアンとはどう？」に「正直に言おう」と間を置き、「彼女が好きだ」とだけ言う。',
-      mean: 'candid ＝ 正直な。I’m gonna be candid ＝ 正直に言うよ。本音の前置き。',
-      trap: '大げさな前置きなので、結婚の話だと思いやすい。言うのは短い I like her だけ。',
+      mean: 'How’s it going with 〜? ＝ 〜とはどう？ candid ＝ 正直な。I’m gonna be candid は本音の前置き。',
+      trap: '大げさな前置きなので、結婚の話と考えがち。言うのは短い I like her だけ。',
       use: 'I’ll be honest with you. I like it.（正直に言うと、気に入ってる）' },
 
     // R fix: C2 rule (blind 50 %): two "Small:" distractors made the key the odd one out; now two Big, one Small
@@ -281,6 +361,17 @@ export const threeBachelors: Clip = {
       mean: '口数の少ない人には、「好きだ」は精いっぱいの告白。大きな前置きは本人の中の重さで、ふざけていない。',
       trap: '前置きと答えの差を冗談と取りやすい。続く乾杯の「山ほどあるが一言」で、口数の少ない人だと分かる。',
       use: 'I’ll be honest with you. I’m nervous.（正直に言うと、緊張してる）' },
+
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'toron', ctx: true, seg: [245.3, 260.3],
+      stem: 'What does Ron think of Chris’s short toast?', ja: 'クリスの短い乾杯を、ロンはどう思う？',
+      choices: ['He thinks it’s great', 'He wanted a longer one', 'He thinks it’s rude'], a: 0,
+      choicesJa: ['すばらしいと思う', 'もっと長いのがよかった', '失礼だと思う'],
+      cue: '「To Ron!」のあと',
+      line: 'Chris: …So I will just say, *to Ron*. / All: To Ron! / Ron: *Just perfect.* Perfect, Chris.',
+      said: '「一言だけ言おう。ロンに」「ロンに！」「完璧だ。完璧だよ、クリス」。',
+      mean: 'To 〜! ＝ 〜に乾杯！ just perfect ＝ まさに完璧。話の短いのが好きなロンには最高のスピーチ。',
+      trap: 'so many things I could say のあとなので、長い話を待っていたと考えがち。Ron の Perfect が答え。',
+      use: 'To the team! Cheers!（チームに乾杯！）' },
 
     // R fix: V2 (blind 50 %): "save it for later" was a filler; now "so many things" read as the reason
     // why: nothing nice ← "so many things that I could say… but" heard as hiding bad things; too much to pick ←
