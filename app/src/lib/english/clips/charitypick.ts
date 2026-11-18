@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 2, new 2, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 2, new 2, ctx 5, tx 10, qa 7
 // A2 REVIEW 2026-11-17: keep 10, rewrite 8, retire 6, new 0
 // “Nothing Matters and I'm Always Tired | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Ben needs help picking his new foundation's first charity; Andy, low since failing the police exam, finds a kids'
@@ -224,7 +224,7 @@ export const charityPick: Clip = {
       line: 'Anyone else *come across* anything good?',
       said: '「ほかに何かいいものを見つけた人は？」とみんなに聞く。',
       mean: 'come across ＝ たまたま見つける。come の m と across がつながり「カマクロス」。',
-      trap: '1語に聞こえやすいが2語。前の Did が落ちた、くだけた聞き方。',
+      trap: '1語に聞こえやすいが2語。文頭の Did（または Has）が落ちた、くだけた聞き方。',
       use: 'Did you come across my keys?（私の鍵、見かけなかった？）' },
 
     { id: 'd6', skill: 'detail', level: 'B1', point: 'farhospital', seg: [140.1, 148.7],
@@ -252,10 +252,10 @@ export const charityPick: Clip = {
       use: 'What about the other one?（もう一つのほうはどう？）' },
 
     { id: 'a3', skill: 'pragma', level: 'B2', point: 'fine', ctx: true, seg: [155.5, 162],
-      stem: 'What does Andy say when Ben says sorry?',
-      ja: 'ベンに謝られて、アンディは何と言う？',
-      choices: ['It’s totally fine', 'It isn’t fair', 'He wants another try'], a: 0,
-      choicesJa: ['全然いいよ', 'ずるい', 'もう一回やりたい'],
+      stem: 'How does Andy answer Ben’s “Sorry, Andy”?',
+      ja: 'ベンの「Sorry, Andy」に、アンディはどう答える？',
+      choices: ['He says it’s okay', 'He says it isn’t fair', 'He asks for another try'], a: 0,
+      choicesJa: ['気にしないでと言う', 'ずるいと言う', 'もう一回やりたいと頼む'],
       cue: '「Sorry, Andy」のあと、Why? に続く一文。',
       line: 'Ben: *Sorry, Andy*. / Andy: Why? No, *that’s totally fine*. I’m happy for them.',
       said: '「ごめんね、アンディ」に「なんで？いや、全然いいよ。あの人たちのためにうれしいよ」と返す。',
@@ -289,8 +289,8 @@ export const charityPick: Clip = {
     { id: 'g2', skill: 'gist', level: 'B2', point: 'blame', reveals: ['weeks'], seg: [176.3, 195],
       stem: 'Why is Ben called selfish at the end?',
       ja: '最後にベンはなぜ「自分勝手」と言われる？',
-      choices: ['He let sad Andy down', 'He picked a dumb charity', 'He took Andy’s idea'], a: 0,
-      choicesJa: ['落ちこんだアンディをがっかりさせた', 'くだらない団体を選んだ', 'アンディの案を横取りした'],
+      choices: ['He made Andy sad again', 'He picked a dumb charity', 'He took Andy’s idea'], a: 0,
+      choicesJa: ['アンディをまた落ちこませた', 'くだらない団体を選んだ', 'アンディの案を横取りした'],
       cue: 'アンディの最近の様子の話。',
       line: 'Ever since Andy failed the police exam, he’s been really depressed. … *You’re so selfish*.',
       said: '落ちこんでいたアンディが久しぶりに張り切っていたのに、とベンを責める。',
@@ -301,24 +301,24 @@ export const charityPick: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'weeks', seg: [180.8, 188.8], keep: true,
       stem: 'It’s the most excited Andy has been in how long?',
       ja: 'アンディがこんなに張り切ったのは、どのくらいぶり？',
-      choices: ['Days', 'Weeks', 'Months'], a: 1,
-      choicesJa: ['数日', '数週間', '数か月'],
+      choices: ['Days', 'Weeks', 'Months', 'Years'], a: 1,
+      choicesJa: ['数日', '数週間', '数か月', '数年'],
       cue: '「the most excited he’s been」のあと。',
       line: 'Picking out a dumb charity is the most excited he’s been *in weeks*.',
       said: '「つまらない寄付先選びが、ここ何週間かでいちばん張り切ってたことなのに」と言う。',
       mean: 'in weeks ＝ ここ何週間も。それだけ長く元気がなかった。',
-      trap: 'days は「デイズ」、months は「マンス」。「ウィークス」と長い「イー」なら weeks。',
+      trap: 'days は「デイズ」、months は「マンス」、years は「イヤーズ」。「ウィークス」と長い「イー」なら weeks。',
       use: 'That’s the best I’ve slept in weeks.（ここ何週間かでいちばんよく眠れた）' },
 
     { id: 'nt2', skill: 'pragma', level: 'B1', point: 'charity', ctx: true, seg: [187.2, 194.2],
       stem: 'What does Ben say to “You’re so selfish”?',
       ja: '「You’re so selfish」に、ベンは何と返す？',
-      choices: ['He runs a charity', 'He is sorry', 'Andy is fine'], a: 0,
-      choicesJa: ['慈善団体をやっている', 'ごめん', 'アンディは平気だ'],
+      choices: ['He’s doing good work', 'He’s very sorry about it', 'Andy said he’s fine'], a: 0,
+      choicesJa: ['いい仕事をしている', 'とても申しわけない', 'アンディは平気と言った'],
       cue: 'Selfish? と聞き返したあとの一文。',
       line: 'You’re *so selfish*. / Ben: Selfish? *I’m running a charity*.',
-      said: '「あなたって本当に自分勝手」に「自分勝手？慈善団体をやってるんだよ」と返す。',
-      mean: 'run ＝ ここでは「運営する」。人のために働いているのに、と反論。でも「あなたの話ばかり」とさらに言われる。',
+      said: '「ほんと自分勝手だね」に「自分勝手？慈善団体をやってるんだよ」と返す。',
+      mean: 'run ＝ ここでは「運営する」。人のために働いているのに、と反論。でも「自分のことばっかり」とさらに言われる。',
       trap: 'Selfish? と聞き返すので謝ると考えがち。続く I’m running a charity は言い返し。',
       use: 'I run a small café.（小さなカフェを経営しています）' },
   ]
