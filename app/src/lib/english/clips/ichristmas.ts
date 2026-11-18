@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 2, new 6, ctx 6, tx 20
+// R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 2, new 6, ctx 6, tx 20, qa 10
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 8, new 1
 // “Top 5 Weirdest Moments from iChristmas | iCarly” (NickRewind, official YouTube channel): a narrator walks through
 // the episode where Carly wishes Spencer were normal: an angel (Mitch, 29 s) grants it, the world changes (no iCarly,
@@ -30,7 +30,7 @@ export const iChristmas: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'fire', seg: [18.7, 30.7],
       stem: 'What happens just before Carly’s wish?',
       ja: 'カーリーが願う直前に何が起きる？',
-      choices: ['The tree catches fire', 'A fight starts over the tree', 'A big storm hits'], a: 0,
+      choices: ['The Christmas tree burns', 'A fight starts over the tree', 'A big storm hits'], a: 0,
       choicesJa: ['ツリーが燃える', 'ツリーのことでけんかになる', '大きな嵐が来る'],
       cue: '「after a freak」のあと。',
       line: 'after a freak *Christmas tree fire*, Carly wishes…',
@@ -61,7 +61,7 @@ export const iChristmas: Clip = {
       said: '「天使とは信じにくい。見た目がかなり雑だから」と言う。',
       mean: '文字どおりは「ふちのあたりが粗い」。→ 仕上げが雑＝洗練されていない。天使らしくない見た目。',
       trap: 'rough（荒い）から、乱暴で怖いと考えがち。ここは見た目がきちんとしていないこと。',
-      use: 'He’s a bit rough around the edges, but kind.（ちょっと雑だけど、優しい人だよ）' },
+      use: 'The hotel looks a bit rough around the edges.（そのホテル、見た目はちょっと雑な感じ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'trick', seg: [52.3, 60.1],
       stem: 'How does Carly feel when she says “So, anyone can do card tricks?”',
@@ -78,7 +78,7 @@ export const iChristmas: Clip = {
     { id: 'd6', skill: 'detail', level: 'B1', point: 'born', reveals: ['wish'], ctx: true, seg: [73.2, 80.5],
       stem: 'What does Mitch say about Spencer?',
       ja: 'ミッチはスペンサーについて何と言う？',
-      choices: ['He was born normal', 'He is an angel too', 'He is gone for good'], a: 0,
+      choices: ['He was born normal', 'He is an angel too', 'He is gone forever'], a: 0,
       choicesJa: ['普通に生まれた', '彼も天使だ', 'もう戻らない'],
       cue: '「What just happened?」への答え',
       line: 'Carly: What just happened? / Mitch: He was *born normal*.',
@@ -217,7 +217,7 @@ export const iChristmas: Clip = {
     { id: 'i5', skill: 'infer', level: 'B2', point: 'fault', reveals: ['wish'], ctx: true, seg: [191.5, 199.5],
       stem: 'What does Sam think “It’s my fault” means?',
       ja: 'サムは「It’s my fault」をどういう意味だと思う？',
-      choices: ['Carly called the cops on her', 'Carly is sorry she didn’t visit', 'Carly got her into crime'], a: 0,
+      choices: ['Carly reported her to the police', 'Carly is sorry she didn’t visit', 'Carly got her into crime'], a: 0,
       choicesJa: ['カーリーが警察に通報した', '面会に来なかったことを謝っている', 'カーリーが悪いことに誘った'],
       cue: 'サムの返事の質問',
       line: 'Carly: It’s my fault you’re in here. / Sam: *You’re the one who called the cops?*',
@@ -274,11 +274,11 @@ export const iChristmas: Clip = {
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'straw', seg: [224.3, 233.5],
       stem: 'What does “the final straw” mean here?',
       ja: '「the final straw」はここではどういう意味？',
-      choices: ['The last thing she could take', 'Her last bit of hope', 'Something she never saw coming'], a: 0,
-      choicesJa: ['もう我慢できない最後の一押し', '最後の希望', 'まったく予想しなかったこと'],
+      choices: ['The end of her patience', 'Her last bit of hope', 'A big surprise for her'], a: 0,
+      choicesJa: ['我慢の限界', '最後の希望', 'とても驚いたこと'],
       cue: '「that was the final」のあと。',
       line: 'that was *the final straw* for Carly, and she wished that everything would go back…',
-      said: '「それがカーリーにとって最後の一押しで、元に戻ってと願った」と言う。',
+      said: '「それがカーリーにとって我慢の限界で、元に戻ってと願った」と言う。',
       mean: '文字どおりは「最後のわら一本」。重い荷にわら1本でつぶれる、の話から→ 我慢の限界を超える最後の一つ。',
       trap: 'straw（わら、ストロー）から意味を想像しにくい。決まり文句でひとまとまり。',
       use: 'That was the final straw. I quit.（もう我慢の限界。辞める）' },

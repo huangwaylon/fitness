@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 2, ctx 6, tx 13
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 2, ctx 6, tx 13, qa 10
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 1 · sweep: jerryplace twins retired (g1 n1 d4 p3), new g3
 // “Leslie gets cancelled ft. Kathryn Hahn | Parks And Rec” (the official Parks and Recreation channel, Season 4):
 // on TV, Leslie calls Nick Newport a jerk without knowing he died that day; Jen calls on her to cancel her campaign
@@ -25,7 +25,7 @@ export const leslieCancelled: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'promise', seg: [0, 9.9],
       stem: 'What did Leslie promise to do if elected?',
       ja: '当選したら、レスリーは何をすると約束した？',
-      choices: ['Stop firms polluting the river', 'Clean the river by next year', 'Close the candy factory'], a: 0,
+      choices: ['Stop companies polluting the river', 'Clean the river by next year', 'Close the candy factory'], a: 0,
       choicesJa: ['会社が川を汚すのを止める', '来年までに川をきれいにする', 'お菓子工場を閉める'],
       cue: '「if elected」のあと',
       line: 'I promise to stop the Newports and … from *blatantly dumping contaminants into the* … River.',
@@ -143,7 +143,7 @@ export const leslieCancelled: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cancel', ctx: true, seg: [62, 72.6],
       stem: 'What did Jen call on Leslie to do?',
       ja: 'ジェンはレスリーに何をするよう求めた？',
-      choices: ['Cancel all her campaign events', 'Apologize to the Newport family', 'Quit the race for good'],
+      choices: ['Cancel all her campaign events', 'Apologize to the Newport family', 'Quit the election forever'],
       a: 0,
       choicesJa: ['選挙の催しを全部中止する', 'ニューポート家に謝る', '選挙から完全に降りる'],
       cue: '「I am calling on」のあと',
@@ -189,7 +189,7 @@ export const leslieCancelled: Clip = {
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'lose', ctx: true, seg: [103.4, 111.3],
       stem: 'What does Ben mean by “the stakes are too high”?', ja: 'ベンの「the stakes are too high」はどういう意味？',
-      choices: ['Stopping would cost too much', 'Going on would cost too much', 'The race is too close'], a: 0,
+      choices: ['Stopping would cost too much', 'Continuing would cost too much', 'The race is too close'], a: 0,
       choicesJa: ['やめたら失うものが大きすぎる', '続けたら失うものが大きすぎる', '接戦すぎる'],
       cue: '「unfortunate, but」のあと',
       line: 'Leslie: Okay, Ben, what do we do? / Ben: …it’s unfortunate, but *the stakes are too high*. We can’t just stop campaigning.',
@@ -252,7 +252,7 @@ export const leslieCancelled: Clip = {
       choicesJa: ['〜していなかった', '〜していた', '〜している'],
       cue: '「April?」のあと',
       line: 'April? — I *wasn’t* listening, but I strongly disagree with Ann.',
-      said: '「聞いてなかったけど、アンには大反対」と言う。',
+      said: '「聞いてなかったけど、アンには断固反対」と言う。',
       mean: 'I wasn’t listening ＝「聞いていなかった」。but のあとが変な本音。',
       trap: 'was なら「ワズ」で終わる。「ン」が残れば wasn’t。am は「アム」。',
       use: 'Sorry, I wasn’t listening.（ごめん、聞いてなかった）' },
