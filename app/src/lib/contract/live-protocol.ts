@@ -120,9 +120,11 @@ export type Intent =
    *  stereo, `pc` the piece) from `at` (the relay's clock: position 0 of the song) for `ms`; no `song`: stopped. Acked,
    *  never in the ring: the room keeps the last record per source (newerMusic), replayed at hello while musicLive. */
   | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string }
-  /** 英語すごろく on several phones (docs/sugoroku.md "Online"): one move of game `g`, its `i`th (0: the start), kept in
-   *  the day's ring so a phone that opens later (or reloads) replays the game from its moves; every phone folds them
-   *  through the same pure rules (lib/sugoroku/online.ts). */
+  /** 英語すごろく on several phones (docs/sugoroku.md "Online"): one move of game `g`, its `i`th (0: the start), kept
+   *  by the room per game (apart from the day's ring: relay/src/room.ts games) so a phone that opens later (or
+   *  reloads) replays the game from its moves; every phone folds them through the same pure rules
+   *  (lib/sugoroku/online.ts). The room takes a game's moves in order, the first of each `i` only; an `end`'s `i` is
+   *  the moves it follows (the earliest end stands, the moves from it on count for nothing). */
   | SgIntent;
 
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
@@ -140,15 +142,14 @@ export interface SgIntent {
   s?: string;
   /** start: the length (s short, n normal, l long). */
   l?: 's' | 'n' | 'l';
-  /** roll: a サイコロ2つ券 spent. */
-  d?: 1;
+  /** start: the rules' version (lib/sugoroku/online.ts rulesTag): a phone on another folds nothing (アプリを更新). */
+  r?: string;
   /** fork: the way (0 近道, 1 遠回り). */
   b?: 0 | 1;
   /** word: the word. */
   w?: string;
-  /** word / try: ヒント used; word: a ヒント券 spent (k). */
+  /** word / try: ヒント used. */
   h?: 1;
-  k?: 1;
   /** sent / pic / try: misses (0–2); sent: without the Japanese (u); try: 意味を見る opened (p). */
   m?: number;
   u?: 1;
@@ -163,6 +164,7 @@ export interface SgIntent {
 const SG_GAME = /^[a-z0-9]{6,12}$/;
 const SG_SEATS = /^(?:[ABG][123]){2,3}$/;
 const SG_WORD = /^[a-z]{2,8}$/;
+const SG_RULES = /^[a-z0-9]{1,12}$/;
 /** The most moves a game sends (a long game is ~200). */
 const SG_MOVES_MAX = 999;
 
@@ -548,16 +550,17 @@ function intentOf(o: Obj): Intent | null {
       const out: SgIntent = { kind: 'sg', g: o.g, i: o.i as number, a: o.a };
       if (o.a === 'start') {
         if (o.i !== 0 || typeof o.s !== 'string' || !SG_SEATS.test(o.s) || new Set(o.s.match(/[ABG]/g)).size !== o.s.length / 2 || !(o.l === 's' || o.l === 'n' || o.l === 'l')) return null;
-        return { ...out, s: o.s, l: o.l };
+        if (o.r !== undefined && (typeof o.r !== 'string' || !SG_RULES.test(o.r))) return null;
+        return { ...out, s: o.s, l: o.l, ...(o.r !== undefined ? { r: o.r } : {}) };
       }
-      if (o.i === 0 || !one('d') || !one('h') || !one('k') || !one('u') || !one('p') || !opt(o, 'm', (x): x is number => within(x, [0, 2]))) return null;
+      if (o.i === 0 || !one('h') || !one('u') || !one('p') || !opt(o, 'm', (x): x is number => within(x, [0, 2]))) return null;
       if (o.a === 'fork' && o.b !== 0 && o.b !== 1) return null;
       if (o.a === 'word' && (typeof o.w !== 'string' || !SG_WORD.test(o.w))) return null;
       if (o.a === 'gift' && (typeof o.ch !== 'string' || !/^[a-z]$/.test(o.ch) || !isWho(o.to))) return null;
       return {
         ...out, ...(o.a === 'fork' ? { b: o.b as 0 | 1 } : {}), ...(o.a === 'word' ? { w: o.w as string } : {}),
         ...(o.a === 'gift' ? { ch: o.ch as string, to: o.to as Who } : {}),
-        ...(o.d ? { d: 1 as const } : {}), ...(o.h ? { h: 1 as const } : {}), ...(o.k ? { k: 1 as const } : {}),
+        ...(o.h ? { h: 1 as const } : {}),
         ...(o.m !== undefined ? { m: o.m as number } : {}), ...(o.u ? { u: 1 as const } : {}), ...(o.p ? { p: 1 as const } : {}),
         // (a bad or misplaced `y` is dropped, not the move: an older phone's pic still counts)
         ...(o.a === 'pic' && (o.y === 1 || o.y === 2 || o.y === 3) ? { y: o.y } : {})

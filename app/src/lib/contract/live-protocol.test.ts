@@ -436,7 +436,11 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
   it('takes a start (seats, length) and each move with its own fields only, and keeps them in the day', () => {
     const start = parseClient(j({ kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1G3', l: 'n', w: 'zoo' }));
     expect(start).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1G3', l: 'n' });
-    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 });
+    // the rules' version on the start (and nowhere else)
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 's', r: 'k3x9' }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 's', r: 'k3x9' });
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 4, a: 'roll', r: 'k3x9' }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 4, a: 'roll' });
+    // (the tickets' `d` and `k` are gone: dropped, never kept)
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1, k: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 4, a: 'word', w: 'zoo', h: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 5, a: 'fork', b: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' });
@@ -454,7 +458,7 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
       { g: 'AB', i: 1, a: 'roll' }, { g: 'abc123', i: 3, a: 'start', s: 'A2B1', l: 'n' }, { g: 'abc123', i: 0, a: 'start', s: 'A2A1', l: 'n' },
       { g: 'abc123', i: 0, a: 'start', s: 'A2', l: 'n' }, { g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 'x' }, { g: 'abc123', i: 0, a: 'roll' },
       { g: 'abc123', i: 2, a: 'word', w: 'Zoo' }, { g: 'abc123', i: 2, a: 'word', w: 'toolongword' }, { g: 'abc123', i: 2, a: 'fork', b: 2 },
-      { g: 'abc123', i: 2, a: 'sent', m: 3 }, { g: 'abc123', i: 2, a: 'roll', d: 2 }, { g: 'abc123', i: 2, a: 'dance' }, { g: 'abc123', i: 1000, a: 'roll' }
+      { g: 'abc123', i: 2, a: 'sent', m: 3 }, { g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 'n', r: 'X!' }, { g: 'abc123', i: 2, a: 'dance' }, { g: 'abc123', i: 1000, a: 'roll' }
     ]) expect(parseClient(j({ kind: 'sg', ...o })), JSON.stringify(o)).toBeNull();
   });
 });
