@@ -2,7 +2,8 @@
 // buildings and homes, the island's day light) with the route's stepping stones and signs (scenery.ts),
 // the players as their own characters (person3d: their human player or their villager, as the rooms draw them) standing
 // on their stones and hopping stone to stone, a die tossed and settling on its face (die.ts), and a fixed 3/4 camera
-// that eases after the player in focus down the long board. Plain three.js on one canvas (its own screen: one WebGL
+// that eases after the player in focus down the long board, framing the part of the canvas the screen's overlays leave
+// (setInsets: the canvas full-bleed, never resized by a phase; plan.ts visibleOf, cameraFor). Plain three.js on one canvas (its own screen: one WebGL
 // context at a time on an iPhone); the pure parts are plan.ts and islandPlan.ts. The board (its stones, people and die)
 // is a group in plan.ts's units, put on the island at islandPlan.ts BOARD_AT, K times bigger (the island's units).
 // Drawn on demand (world3d/stage.ts createStage, at most FPS a second): every frame while something moves (a hop, the
@@ -25,7 +26,7 @@ import { buildBoardIsland, type BoardIsland } from './island.ts';
 import { BOARD_AT, K, LAND } from './islandPlan.ts';
 import { DAY_SUN } from '../world3d/islandCam.ts';
 import { buildDie } from './die.ts';
-import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, hopAt, hopsOf, restOf, slotOf, stoneAt, topOf, tumbleAt } from './plan.ts';
+import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, forkAim, hopAt, hopsOf, restOf, slotOf, stoneAt, topOf, tumbleAt, visibleOf } from './plan.ts';
 
 /** A seat at the table: who, the look they wear (store/look.ts lookOf), their villager pref (the `villager` pref:
  *  drawn for a villager look). @public (the game sheet, once wired) */
@@ -57,6 +58,11 @@ export interface Board3D {
   roll(n: number): Promise<void>;
   /** The canvas's CSS size read again (its ResizeObserver does this too). */
   resize(): void;
+  /** What the overlays cover of the canvas (CSS px from its top and bottom): the camera frames the part between
+   *  (plan.ts visibleOf), easing there; the canvas itself stays the size it is. */
+  setInsets(top: number, bottom: number): void;
+  /** A fork's choice on: the camera between the two ways, wider. */
+  setFork(on: boolean): void;
   /** No frames (under a sheet, the turn's English full screen): a walk or roll under way finishes at once. */
   pause(): void;
   resume(): void;
@@ -139,6 +145,18 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
   const seats: Seat[] = [];
   let focusK = 0, paused = false, gone = false, lastT = 0, camSet = false;
   const camPos = new Vector3(), camAt = new Vector3();
+  /** The canvas's CSS size; the overlays' insets wanted, and as eased so far (the camera's ease). */
+  let cw = opts.at?.[0] ?? 300, ch = opts.at?.[1] ?? 150, fork = false, insetSet = false;
+  const inset = { top: 0, bottom: 0 }, insetNow = { top: 0, bottom: 0 }, view = { w: 0, h: 0, top: -1, hv: 0 };
+  /** The projection for the visible part (the canvas drawn whole, framed by the part between the overlays). */
+  function frameView() {
+    const v = visibleOf(ch, insetNow.top, insetNow.bottom);
+    if (view.w === cw && view.h === ch && Math.abs(view.top - v.top) < 0.05 && Math.abs(view.hv - v.hv) < 0.05) return;
+    Object.assign(view, { w: cw, h: ch }, v);
+    camera.aspect = cw / v.hv;
+    camera.setViewOffset(cw, v.hv, 0, -v.top, cw, ch);
+    camera.updateProjectionMatrix();
+  }
   /** Whether the scene as it stands has been drawn (a change from outside clears it: one frame then). */
   let drawn = false, frames = 0;
   const redraw = () => {
@@ -149,8 +167,8 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
   let roll: { t0: number; n: number; rest: Quaternion; axis: Vector3; from: Vector3; to: Vector3; done: () => void } | null = null;
 
   const stage = createStage(canvas, { antialias: true, at: opts.at }, frame, (w, h) => {
-    camera.aspect = w / h;
-    camera.updateProjectionMatrix();
+    (cw = w), (ch = h);
+    frameView();
   });
   const { renderer, noDraw } = stage;
   // the island (not in the logic mode), its shadows drawn when it changes: the sun's box over the whole land
@@ -270,11 +288,16 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
         moving = true;
       }
     }
-    // the camera after the player in focus
-    const f = seats[focusK];
-    const want = cameraFor(f ? f.x : 0, f ? f.z : stoneAt(0)[1], camera.aspect);
-    tmp.set(...want.pos);
+    // the camera after the player in focus (a fork's choice: between the ways), framed by the part the overlays leave
     const k = camSet ? 1 - Math.exp(-dt / CAM_TAU) : 1;
+    for (const e of ['top', 'bottom'] as const) {
+      if (Math.abs(inset[e] - insetNow[e]) > 0.5) (insetNow[e] += (inset[e] - insetNow[e]) * k), (moving = true);
+      else insetNow[e] = inset[e];
+    }
+    frameView();
+    const f = seats[focusK], aim = fork ? forkAim() : null;
+    const want = aim ? cameraFor(aim.x, aim.z, camera.aspect, aim.wide) : cameraFor(f ? f.x : 0, f ? f.z : stoneAt(0)[1], camera.aspect);
+    tmp.set(...want.pos);
     camSet = true;
     if (camPos.distanceToSquared(tmp) > 0.01) moving = true;
     camPos.lerp(tmp, k);
@@ -378,9 +401,22 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       const w = Math.round(canvas.clientWidth), h = Math.round(canvas.clientHeight);
       if (w < 8 || h < 8) return;
       renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
+      (cw = w), (ch = h);
+      frameView();
       redraw();
+    },
+    setInsets(top, bottom) {
+      if (top === inset.top && bottom === inset.bottom) return;
+      inset.top = top;
+      inset.bottom = bottom;
+      // (the first: at once, not eased in from nothing)
+      if (!insetSet) Object.assign(insetNow, inset), (insetSet = true), (camSet = false), frameView();
+      stage.kick();
+    },
+    setFork(on) {
+      if (fork === on) return;
+      fork = on;
+      stage.kick();
     },
     pause() {
       paused = true;
@@ -419,6 +455,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       models: () => seats.map((s) => (s.v3 ? s.person.key : null)),
       busy: () => !!roll || seats.some((s) => s.walk),
       frames: () => frames,
+      framed: () => ({ w: view.w, h: view.h, top: view.top, hv: view.hv }),
       calls: () => renderer.info.render.calls
     };
   }

@@ -3,14 +3,14 @@
   // route a sandy path through it with the fork, each space a stepping stone in its kind's colour with its mark (A ことば,
   // ×2 ダブル, 文 ぶん, 絵 絵, ! イベント), each stretch's wooden sign, ふりだし and あがり; the players' heads over their stones
   // (the one whose turn it is ringed in yuzu), gliding a stone at a time as `shown` moves. The route is long: the board is
-  // a window onto it that follows whose turn it is (and scrolls by hand). `compact`: a smaller window during a turn's
-  // English, so the turn's controls stay on screen.
+  // a window onto it, under the whole screen (the 3D board's slot, its fallback), that follows whose turn it is (and
+  // scrolls by hand), centred in the part the overlays leave (`top` and `bottom`: what they cover, CSS px).
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import { BOARD, GOAL, H, W } from '../board.ts';
   import type { Player } from '../game.ts';
   import { s } from '../i18n.ts';
 
-  let { players, shown, turn, compact = false, letters = {} }: { players: readonly Player[]; shown: readonly number[]; turn: number; compact?: boolean; letters?: Readonly<Record<number, string>> } = $props();
+  let { players, shown, turn, top = 0, bottom = 0, letters = {} }: { players: readonly Player[]; shown: readonly number[]; turn: number; top?: number; bottom?: number; letters?: Readonly<Record<number, string>> } = $props();
   const MARK = { start: '', word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: '' } as const;
   const edges = BOARD.flatMap((sp, i) => sp.next.map((j) => [i, j] as const));
   const signs = BOARD.map((sp, i) => ({ sp, i })).filter(({ sp, i }) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
@@ -20,24 +20,24 @@
     const same = players.map((_, j) => j).filter((j) => (shown[j] ?? 0) === at);
     const n = same.indexOf(k), m = same.length;
     /** Apart in pixels (the small board's heads are small too). */
-    const dx = m > 1 ? (n - (m - 1) / 2) * (compact ? 12 : 18) : 0;
+    const dx = m > 1 ? (n - (m - 1) / 2) * 18 : 0;
     // (on ふりだし and あがり below the stone: its name stays readable)
     const end = sp.kind === 'start' || sp.kind === 'goal';
     return { p, k, dx, x: sp.x, y: end ? sp.y + 26 : sp.y - 16 - (m > 2 && n % 2 ? 8 : 0) };
   }));
-  // the window follows whose turn it is (its head in the middle), smoothly
+  // the window follows whose turn it is (its head in the middle of the part the overlays leave), smoothly
   let win: HTMLDivElement | undefined = $state();
+  let boardEl: HTMLDivElement | undefined = $state();
   const focusY = $derived(heads[turn]?.y ?? 0);
   $effect(() => {
-    const el = win, y = focusY;
-    if (!el) return;
-    const top = (y / H) * el.scrollHeight - el.clientHeight / 2;
-    el.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    const el = win, b = boardEl, y = focusY, hv = Math.max(80, (win?.clientHeight ?? 0) - top - bottom);
+    if (!el || !b) return;
+    el.scrollTo({ top: Math.max(0, (y / H) * b.offsetHeight - hv / 2), behavior: 'smooth' });
   });
 </script>
 
-<div class="win" class:compact bind:this={win}>
-<div class="board" role="img" aria-label={s('board')} data-sg-board>
+<div class="win" bind:this={win} style:padding-top="{top}px" style:padding-bottom="{bottom}px">
+<div class="board" role="img" aria-label={s('board')} data-sg-board bind:this={boardEl}>
   <svg viewBox="0 0 {W} {H}" aria-hidden="true">
     <!-- the island -->
     <rect width={W} height={H} rx="22" class="grass" />
@@ -66,7 +66,7 @@
   </svg>
   {#each heads as h (h.k)}
     <span class="head" class:now={h.k === turn} style:left="{(h.x / W) * 100}%" style:top="{(h.y / H) * 100}%" style:margin-left="{h.dx}px" data-sg-token={h.k} data-at={shown[h.k]}>
-      <Avatar person={h.p.who} worn size={compact ? 18 : 26} />
+      <Avatar person={h.p.who} worn size={26} />
     </span>
   {/each}
   {#each BOARD as _, i (i)}<span class="hit" data-sg-space={i} data-kind={BOARD[i].kind} style:left="{(BOARD[i].x / W) * 100}%" style:top="{(BOARD[i].y / H) * 100}%"></span>{/each}
@@ -74,10 +74,8 @@
 </div>
 
 <style>
-  /* a window onto the long route, short enough that the turn's panel stays above Safari's fold (the sheet's ~330 px
-     besides it); smaller during a turn's English */
-  .win { flex: none; height: max(200px, calc(100svh - 360px)); overflow-y: auto; border-radius: 22px; scrollbar-width: none; overscroll-behavior: contain; }
-  .win.compact { height: max(130px, calc(100svh - 600px)); }
+  /* a window onto the long route under the whole screen; the overlays' insets its padding, so both ends scroll clear */
+  .win { position: absolute; inset: 0; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; box-sizing: border-box; }
   .board { position: relative; width: 100%; aspect-ratio: 360 / 700; }
   svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 0 var(--c-edge)); }
   .grass { fill: color-mix(in srgb, var(--c-mint) 70%, #9fd38a); }

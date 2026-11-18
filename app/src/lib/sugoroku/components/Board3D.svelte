@@ -1,6 +1,7 @@
 <script lang="ts">
   // 英語すごろく's 3D board on its own screen (docs/sugoroku.md "The 3D board"): the engine (components/sugoroku3d, its
-  // own chunk with three) on a canvas filling the screen's top, the players as their own characters (store/look.ts
+  // own chunk with three) on a canvas under the whole screen (full-bleed, never resized by a phase: `top` and `bottom`
+  // are what the overlays cover, the camera framing the part between; `fork` a fork's choice), the players as their own characters (store/look.ts
   // lookOf, their villager pref). It follows the game: a stone of `shown` reached → a hop to it; whose `turn` → the
   // camera to them; `roll` (a new key) → the die tumbling onto its face; `cheer` (a new key) → their joy. No WebGL
   // (refused twice): `fallback` (the 2D board) in its place.
@@ -17,9 +18,13 @@
     turn: number;
     roll: { n: number; key: number } | null;
     cheer: { k: number; kind: Celebration; key: number } | null;
+    /** What the overlays cover (CSS px): the top bar and chips, the turn's sheet. */
+    top: number;
+    bottom: number;
+    fork: boolean;
     fallback: Snippet;
   }
-  let { players, shown, turn, roll, cheer, fallback }: Props = $props();
+  let { players, shown, turn, roll, cheer, top, bottom, fork, fallback }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let board: Board3D | null = $state.raw(null);
@@ -36,13 +41,13 @@
         if (!alive) return b.dispose();
         board = b;
         b.resize();
+        b.setInsets(untrack(() => top), untrack(() => bottom));
         b.setPlayers(untrack(() => players.map((p) => ({ who: p.who, look: lookOf(p.who), villager: villagerOf(p.who) }))));
         untrack(() => shown.forEach((s, k) => b.place(k, s)));
         b.focus(untrack(() => turn));
       })
       .catch(() => (failed = true));
-    // the board's box changes with the turn's panel (a word's tiles, a card), not only the window: a canvas resized
-    // without the camera's aspect looked stretched after a turn
+    // (the window's size: a phase never resizes the canvas, only its insets)
     const ro = new ResizeObserver(() => board?.resize());
     ro.observe(el);
     return () => {
@@ -67,6 +72,8 @@
     });
   });
   $effect(() => void board?.focus(turn));
+  $effect(() => void board?.setInsets(top, bottom));
+  $effect(() => void board?.setFork(fork));
   let rollKey = 0;
   $effect(() => {
     const r = roll, b = board;
@@ -86,6 +93,6 @@
 {/if}
 
 <style>
-  .b3 { position: relative; flex: 1; min-height: 0; border-radius: 22px; overflow: hidden; box-shadow: 0 3px 0 var(--c-edge); }
+  .b3 { position: absolute; inset: 0; overflow: hidden; }
   canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 </style>

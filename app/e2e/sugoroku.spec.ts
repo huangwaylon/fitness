@@ -1,6 +1,6 @@
 // 英語すごろく (docs/sugoroku.md): English Study's third tab, すごろく; a new game for the two members, one at むずかしい;
 // turns play through (the dice, the fork's 遠回り, then the space's ことば with ヒント and これにする, ぶん and 絵 tapped in any order till 答えはこれ, イベント's OK); the game
-// resumes after a reload; 終了 shows the results. A game plays on its own screen (/sugoroku: the 3D board). The logic tier.
+// resumes after a reload; ⋯'s 終了する shows the results. A game plays on its own screen (/sugoroku: the 3D board). The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -31,7 +31,11 @@ async function onePhase(p: Page) {
   if (phase === 'word') {
     await s.locator('[data-sg-hint]').click();
     // (むずかしい's 4+ letters: a rack with none is swapped)
-    if ((await s.locator('[data-sg-slots]').getAttribute('data-sg-slots')) === '') return void (await s.locator('[data-sg-swap]').click());
+    if ((await s.locator('[data-sg-slots]').getAttribute('data-sg-slots')) === '') {
+      // (↻入れかえ asks once more, in the header)
+      await s.locator('[data-sg-swap]').click();
+      return void (await s.locator('[data-sg-swap-yes]').click());
+    }
     await s.locator('[data-sg-play]').click();
     await expect(s.locator('[data-sg-made]')).toBeVisible();
     await s.locator('[data-sg-next]').click();
@@ -100,8 +104,9 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await playTurn(page);
   await playTurn(page);
 
-  // 終了 (asked once more), the results: a winner and the words made
-  await sheet(page).locator('[data-sg-end]').click();
+  // ⋯ → 終了する (asked once more), the results: a winner and the words made
+  await sheet(page).locator('[data-sg-menu]').click();
+  await sheet(page).locator('dialog[open] [data-sg-end]').click();
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   // a team game: no ranking, each one's good thing

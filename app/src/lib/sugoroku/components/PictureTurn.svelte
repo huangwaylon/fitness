@@ -23,6 +23,8 @@
   let { pic, level, seed, misses0 = 0, ontry, ondone }: Props = $props();
   let timer: ReturnType<typeof setTimeout> | undefined;
   $effect(() => () => clearTimeout(timer));
+  /** The picture didn't load (offline, blocked): its Japanese alone, no broken frame. */
+  let broken = $state(false);
 
   const choices = $derived(level === 1 ? choicesFor(pic, seeded(`${seed}:c:${pic.w}`)) : []);
   const tiles = $derived(level > 1 ? lettersFor(pic, level, seeded(`${seed}:l:${pic.w}`)).map((l, id) => ({ id, l })) : []);
@@ -58,10 +60,13 @@
 </script>
 
 <section class="turn" data-sg-picture={pic.w}>
-  <h3 class="ttl">{s('pictureTitle')}</h3>
-  <div class="pic"><img src={pictureSrc(pic)} alt="" width="72" height="72" referrerpolicy="no-referrer" /><span class="ja">{pic.ja}</span></div>
+  <div class="head">
+    {#if !broken}<img src={pictureSrc(pic)} alt="" width="48" height="48" referrerpolicy="no-referrer" onerror={() => (broken = true)} />{/if}
+    <h3 class="ja">{pic.ja}</h3>
+    {#if level === 1 && (stage === 'try' || stage === 'miss')}<span class="soft">{s('pictureAskPick')}</span>{/if}
+  </div>
   {#if stage === 'try' || stage === 'miss'}
-    <p class="ask" aria-live="polite">{misses ? s('nudge') : level === 1 ? s('pictureAskPick') : s('pictureAsk')}</p>
+    {#if misses && (stage === 'miss' || placed.length <= (given >= 0 ? 1 : 0))}<p class="toast" aria-live="polite">{s('nudge')}</p>{/if}
     {#if level === 1}
       <div class="choices" lang="en">
         {#each choices as c (c)}
@@ -79,22 +84,25 @@
       </div>
     {/if}
   {:else}
-    <p class="ask">{stage === 'answer' ? s('answer') : ''}</p>
-    <p class="en" lang="en" data-sg-answer>{pic.w}</p>
-    <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
+    <div class="res">
+      {#if stage === 'answer'}<p class="soft">{s('answer')}</p>{/if}
+      <p class="en" lang="en" data-sg-answer>{pic.w}</p>
+      <p class="pts"><Icon name="star" size={20} soft /><b>{pictureStars(misses)}</b></p>
+    </div>
     <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => ondone(misses)}>{s('next')}</button>
   {/if}
 </section>
 
 <style>
-  .turn { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .ttl { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .pic { display: flex; align-items: center; gap: 10px; }
-  .pic img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 2px 0 rgb(0 0 0 / .12)); }
-  .pic .ja { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .ask { margin: 0; font-size: var(--fs-s); color: var(--text-soft); min-height: 1.2em; text-align: center; }
-  .choices, .rack, .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-  .slots { min-height: 52px; min-width: 200px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); }
+  .turn { display: flex; flex-direction: column; gap: 8px; }
+  /* the header: the picture (48) and its Japanese */
+  .head { display: flex; align-items: center; gap: 10px; min-height: 48px; }
+  .head img { flex: none; width: 48px; height: 48px; object-fit: contain; filter: drop-shadow(0 2px 0 rgb(0 0 0 / .12)); }
+  .ja { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .soft { margin: 0 0 0 auto; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .choices, .rack, .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+  .choices { gap: 6px; }
+  .slots { min-height: 52px; padding: 4px 8px; gap: 3px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); align-content: center; }
   .slots.miss { background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .wt {
     min-height: 44px; padding: 0 16px; margin: 0; appearance: none; border: 0; border-radius: 10px; cursor: pointer;
@@ -102,14 +110,23 @@
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .wt:disabled { opacity: .3; }
+  /* the word turn's tiles: 42 × 48, 8 to a row at 393 (a 46 × 52 hit each) */
   .tile {
-    width: 44px; height: 44px; display: grid; place-items: center; padding: 0; margin: 0; appearance: none; border: 0; border-radius: 10px;
-    cursor: pointer; background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364; font: 600 22px/1 var(--font-num);
+    position: relative; width: 42px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; flex: none; appearance: none; border: 0;
+    border-radius: 10px; cursor: pointer; background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364; font: 600 20px/1 var(--font-num);
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
+  .tile::before { content: ''; position: absolute; inset: -2px; }
   .tile:disabled { opacity: .25; }
-  .tile.in { background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
+  .tile.in { width: 28px; height: 42px; font-size: 18px; background: color-mix(in srgb, var(--c-mint) 50%, var(--c-cream)); }
+  /* 「おしい！」: a pill 8 px over the sheet (the sheet is its containing block), never a line of its own */
+  .toast { position: absolute; left: 50%; bottom: calc(100% + 8px); translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0;
+    padding: 8px 14px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge);
+    font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink); pointer-events: none; }
+  .res { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .res .soft { margin: 0; }
   .en { margin: 0; font: 600 28px/1.2 var(--font-num); letter-spacing: .04em; }
   .pts { display: flex; align-items: center; gap: 4px; margin: 0; color: var(--c-gold); }
   .pts b { font: 600 28px/1 var(--font-num); color: var(--c-ink); }
+  .btn { margin: 0; min-height: 48px; }
 </style>

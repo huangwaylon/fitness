@@ -7,6 +7,8 @@
     danger?: boolean;
     /** Shown but can't act now (上へ on the first row): it boops. */
     off?: boolean;
+    /** A `data-` attribute on its row (the e2e's hook), without the prefix. */
+    hook?: string;
   }
 </script>
 
@@ -45,7 +47,7 @@
     {#each groups as g, gi (gi)}
       <div class="card dense">
         {#each g as a (a.id)}
-          <button type="button" class="row" class:danger={a.danger} aria-disabled={a.off ? 'true' : undefined} data-action={a.id} data-sfx="tick" onclick={() => pick(a)}>
+          <button type="button" class="row" class:danger={a.danger} aria-disabled={a.off ? 'true' : undefined} data-action={a.id} {...a.hook ? { [`data-${a.hook}`]: '' } : {}} data-sfx="tick" onclick={() => pick(a)}>
             {#if a.icon}<Icon name={a.icon} size={20} />{/if}<span>{a.label}</span>
           </button>
         {/each}

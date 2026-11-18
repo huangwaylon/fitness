@@ -3,7 +3,7 @@
 // stone, the places of people sharing a stone, the river's line and its bridges, the die's faces and the camera's
 // framing. No three.js objects but its maths.
 import { Quaternion, Vector3 } from 'three';
-import { BOARD, GOAL, H, W } from '#lib/sugoroku/board.ts';
+import { BOARD, FORK, GOAL, H, W } from '#lib/sugoroku/board.ts';
 import { clamp } from '#lib/math.ts';
 
 /** World units a plan unit. */
@@ -143,16 +143,48 @@ export function tumbleAt(u: number, rest: Quaternion, axis: Vector3, out = new Q
 /** The camera's pitch down (radians) and its vertical field (degrees). */
 const PITCH = (50 * Math.PI) / 180;
 export const FOV = 34;
+const HALF = Math.tan(((FOV / 2) * Math.PI) / 180);
+/** The land's half width (plan units) the view keeps to: past it the beach, then the sea. */
+const LAND_HALF = 170;
+/** The steepest the canvas's top ray may get (degrees below the horizon): never the horizon, nor the open sea. */
+export const TOP_RAY_MIN = 20;
 
-/** The camera for a view of `aspect` (w / h) following plan-world point [fx, fz]: where it stands and what it looks at
- *  (world). It keeps ~WIDTH across at the focus (the long board's width on a phone), follows x part way (the board stays
- *  centred-ish), and stands behind the focus (+Z), looking down the route. */
-export function cameraFor(fx: number, fz: number, aspect: number): { pos: [number, number, number]; at: [number, number, number] } {
-  const WIDTH = 190, MIN_H = 230;
-  const half = Math.tan(((FOV / 2) * Math.PI) / 180);
-  // (distance for the width across, and at least for a height of view on a wide screen)
-  const dist = Math.max(WIDTH / 2 / (half * Math.max(aspect, 0.2)), MIN_H / 2 / half);
-  // (the look ahead stops short of the sea past あがり)
-  const x = fx * 0.6, z = Math.max(fz - 70, stoneAt(GOAL)[1] + 25);
+/** The view's visible part on a canvas `h` tall (CSS px), the overlays' insets `top` and `bottom` off it: `hv` the
+ *  height framed, from `top` down. The canvas is also drawn under the top overlay; when the part left is so short that
+ *  its top ray would tip under TOP_RAY_MIN, some of the bottom inset is given back (the board framed a little under
+ *  the sheet). */
+export function visibleOf(h: number, top: number, bottom: number): { top: number; hv: number } {
+  const t = clamp(top, 0, h / 2);
+  // (the canvas's top is (1 + 2t/hv) half fields above the middle: at most PITCH − TOP_RAY_MIN)
+  const k = Math.tan(PITCH - (TOP_RAY_MIN * Math.PI) / 180) / HALF - 1;
+  const hv = clamp(h - t - Math.max(0, bottom), Math.min(h - t, (2 * t) / k), h - t);
+  return { top: t, hv: Math.max(1, hv) };
+}
+
+/** How far below the horizon (degrees) the canvas's top ray is, the visible part `hv` tall starting `top` down. */
+export const topRayOf = (top: number, hv: number): number => ((PITCH - Math.atan(HALF * (1 + (2 * top) / hv))) * 180) / Math.PI;
+
+/** The camera for a visible part of `aspect` (its w / hv: the canvas less the overlays) following plan-world point
+ *  [fx, fz]: where it stands and what it looks at (world). ~190 across at the focus on a phone (wider on a wider view,
+ *  `wide` at a fork's choice) and at least ~3 stones ahead; x follows part way but never past the land (the beach at
+ *  the sides, never open sea); the focus in the view's lower third with the stones ahead above it; the look ahead
+ *  stops short of the sea past あがり. */
+export function cameraFor(fx: number, fz: number, aspect: number, wide = 0): { pos: [number, number, number]; at: [number, number, number] } {
+  const a = Math.max(aspect, 0.2);
+  const spanX = Math.max(wide, clamp(190 * Math.sqrt(Math.max(1, a / 0.8)), 190, 280));
+  const dist = Math.max(spanX / 2 / (HALF * a), 120 / 2 / HALF);
+  const edge = Math.max(0, LAND_HALF - spanX / 2);
+  // (but whose turn it is stays well inside the view: a stone at the land's edge shows a strip of beach past it; a fork's
+  // aim is taken as it is, the beach's strip allowed, so the fork and both ways show)
+  const keep = spanX / 2 - 40;
+  const x = wide ? clamp(fx, -(LAND_HALF + 20 - spanX / 2), LAND_HALF + 20 - spanX / 2) : clamp(clamp(fx * 0.6, -edge, edge), fx - keep, fx + keep);
+  const z = Math.max(fz - 0.2 * 2 * dist * HALF, stoneAt(GOAL)[1] + 25);
   return { pos: [x, Math.sin(PITCH) * dist, z + Math.cos(PITCH) * dist], at: [x, 0, z] };
+}
+
+/** A fork's choice: the camera's aim (between the fork and its two ways' first stones: cameraFor's look ahead puts the
+ *  ways above whoever stands there) and its width across. */
+export function forkAim(): { x: number; z: number; wide: number } {
+  const [a, b] = BOARD[FORK].next.map(stoneAt), [fx, fz] = stoneAt(FORK);
+  return { x: (fx + (a[0] + b[0]) / 2) / 2, z: (fz + (a[1] + b[1]) / 2) / 2, wide: 260 };
 }

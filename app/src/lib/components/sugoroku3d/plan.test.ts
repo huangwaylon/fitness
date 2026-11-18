@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Quaternion, Vector3 } from 'three';
+import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { BOARD, FORK, GOAL, H, W, pathOf } from '#lib/sugoroku/board.ts';
-import { DIE_FACES, HOP_H, ROLL_MS, bridges, cameraFor, hopAt, hopsOf, normalOf, restOf, riverY, slotOf, stoneAt, toWorld, topFace, topOf, tumbleAt } from './plan.ts';
+import { DIE_FACES, FOV, HOP_H, ROLL_MS, TOP_RAY_MIN, bridges, cameraFor, forkAim, hopAt, hopsOf, normalOf, restOf, riverY, slotOf, stoneAt, toWorld, topFace, topOf, topRayOf, tumbleAt, visibleOf } from './plan.ts';
 
 describe('plan → world', () => {
   it('centres the plan on x and runs the route away from the camera (−Z)', () => {
@@ -114,5 +114,58 @@ describe('the camera', () => {
     expect(dist(phone)).toBeGreaterThan(dist(wide));
     // x follows part way: the board stays in view
     expect(Math.abs(phone.at[0])).toBeLessThan(Math.abs(x) + 1e-9);
+  });
+  /** Where world point [x, 0, z] lands on the visible part (NDC: −1 bottom … 1 top) for camera `c` of aspect `a`. */
+  function ndc(c: ReturnType<typeof cameraFor>, a: number, x: number, z: number) {
+    const cam = new PerspectiveCamera(FOV, a, 1, 5000);
+    cam.position.set(...c.pos);
+    cam.lookAt(...c.at);
+    cam.updateMatrixWorld();
+    return new Vector3(x, 0, z).project(cam);
+  }
+  it('keeps whose turn it is in the lower part of the visible view, the stones ahead above them, at every phase\'s size', () => {
+    // (iPhone 15's 393 wide: the roll's, the word's, the sentence's visible heights)
+    for (const hv of [430, 339, 240]) {
+      const a = 393 / hv;
+      for (let i = 0; i < GOAL - 4; i++) {
+        const [x, z] = stoneAt(i), c = cameraFor(x, z, a), p = ndc(c, a, x, z);
+        // (near あがり the look ahead stops short of the sea: the player rises up the view there)
+        if (c.at[2] <= stoneAt(GOAL)[1] + 25 + 1e-6) continue;
+        expect(p.y, `stone ${i} at hv ${hv}`).toBeLessThan(-0.15);
+        expect(p.y).toBeGreaterThan(-0.85);
+        expect(Math.abs(p.x)).toBeLessThan(1);
+        // (3 stones ahead in view)
+        const [ax, az] = stoneAt(i + 3), q = ndc(c, a, ax, az);
+        expect(q.y, `stone ${i + 3} from ${i}`).toBeLessThan(1);
+      }
+    }
+  });
+  it('keeps to the land at the sides (at most a strip of beach past it beside an edge stone, never open sea)', () => {
+    const half = Math.tan((FOV / 2) * Math.PI / 180);
+    for (const a of [393 / 515, 393 / 339, 393 / 240, 16 / 9]) for (let i = 0; i < BOARD.length; i++) {
+      const [x, z] = stoneAt(i), c = cameraFor(x, z, a);
+      const dist = Math.hypot(c.pos[0] - c.at[0], c.pos[1] - c.at[1], c.pos[2] - c.at[2]);
+      // (the land's edge at ±180; the view's sides at the look-at point)
+      expect(Math.abs(c.at[0]) + dist * half * a, `stone ${i}`).toBeLessThanOrEqual(200);
+      expect(Math.abs(ndc(c, a, x, z).x), `stone ${i} in view`).toBeLessThan(0.8);
+    }
+    // a middle stone: the view inside the land
+    const c = cameraFor(0, 0, 393 / 339), dist = Math.hypot(c.pos[0] - c.at[0], c.pos[1] - c.at[1], c.pos[2] - c.at[2]);
+    expect(Math.abs(c.at[0]) + dist * half * (393 / 339)).toBeLessThanOrEqual(170 + 1e-6);
+  });
+  it('frames the visible part between the overlays, giving the bottom inset back before the horizon could show', () => {
+    expect(visibleOf(659, 88, 232)).toEqual({ top: 88, hv: 339 });
+    for (const bottom of [56, 140, 232, 330, 411, 600]) {
+      const v = visibleOf(659, 88, bottom);
+      expect(topRayOf(v.top, v.hv), `sheet ${bottom}`).toBeGreaterThanOrEqual(TOP_RAY_MIN - 1e-6);
+    }
+    // a fork's choice: both ways' first stones in view, wider
+    const f = forkAim(), c = cameraFor(f.x, f.z, 393 / 435, f.wide);
+    for (const j of [FORK, ...BOARD[FORK].next]) {
+      const [x, z] = stoneAt(j), p = ndc(c, 393 / 435, x, z);
+      // (inside, with a person's margin)
+      expect(Math.abs(p.x), `stone ${j}`).toBeLessThan(0.8);
+      expect(Math.abs(p.y), `stone ${j}`).toBeLessThan(0.85);
+    }
   });
 });

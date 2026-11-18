@@ -1,14 +1,19 @@
 <script lang="ts">
   // 英語すごろく, English Study's third tab (docs/sugoroku.md "Rules"), its own chunk (the tab's Lazy), its levels
   // menu (続きから / 新しいゲーム / あそびかた) → だれが遊ぶ？ (2–3 of us, each as their own character, in the
-  // order picked, each its English level) → the game (the board over the turn's panel: whose turn and the dice, the
-  // fork's choice, then the space's ことば, ぶん, 絵, イベント or あがり; the board drawn small during a turn's English;
-  // ) → 結果 (the ranking, ふりかえり:
+  // order picked, each its English level) → the game (the board full-bleed under a top overlay, ‹ ⋯ ✕ with the team's
+  // stars and the players' chips, and the turn's bottom sheet: whose turn and the dice, the fork's choice, then the
+  // space's ことば, ぶん, 絵, イベント or あがり, its action the last row; the sheet folds to a bar to see the board, and
+  // the camera frames the part the two leave) → 結果 (the ranking, ふりかえり:
   // a no-fail matching of the game's words, and 今日のことば). Played on one phone passed round (saved after every step:
   // save.ts, so ‹ or ✕ mid-game leaves it to 続きから), or on each player's own phone (online.svelte.ts: every action a
   // move to the relay, the game the moves folded; a phone whose turn it isn't watches). No ベル. The island is paused under it.
   import { untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
+  import NavButton from '#lib/components/ui/NavButton.svelte';
+  import Sheet from '#lib/components/ui/Sheet.svelte';
+  import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
+  import { t } from '#lib/i18n/index.ts';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
@@ -140,10 +145,9 @@
   let rolling = $state<number | null>(null);
   /** The dice's number shown while its walk is on (not a card's move). */
   let rolled = $state(0);
-  let confirmEnd = $state(false);
   function set(g: Game) {
     game = g;
-    confirmEnd = false;
+    endOpen = false;
     if (shown.length !== g.players.length) shown = g.players.map((p) => p.pos);
     if (g.phase.k === 'end') {
       clearGame();
@@ -238,8 +242,42 @@
   const cur = $derived(g ? g.players[g.turn] : null);
   const ph = $derived(g?.phase ?? null);
   const lastRound = $derived(!!g && isLast(g));
-  /** The board small: a turn's English (the controls stay on screen). */
-  const compact = $derived(!!ph && (ph.k === 'word' || ph.k === 'sentence' || ph.k === 'picture' || ph.k === 'event') && !walking);
+  /** The heads walking or the die rolling: the sheet a bar with the die. */
+  const moving = $derived(walking || rolling !== null);
+  // the play screen's overlays (the top bar and chips, the turn's sheet): their heights the board's insets
+  let hudH = $state(88), sheetH = $state(140);
+  /** The sheet folded to its bar (the board seen); every new phase opens it again. */
+  let folded = $state(false);
+  const phaseKey = $derived(g && ph ? `${g.n}:${g.turn}:${ph.k}:${moving}:${myTurn}` : '');
+  $effect(() => {
+    void phaseKey;
+    folded = false;
+  });
+  let menuOpen = $state(false), howOpen = $state(false), endOpen = $state(false);
+  /** The folded bar's name: the phase's, or whose turn it is. */
+  const phaseName = $derived.by(() => {
+    if (!ph || !cur) return '';
+    if (!myTurn || ph.k === 'spin') return s('turnOf', { name: cur.name });
+    const k = ({ word: 'wordTitle', sentence: 'sentenceTitle', picture: 'pictureTitle', event: 'eventTitle', home: 'homeTitle', fork: 'forkTitle' } as const)[ph.k as 'word'];
+    return k ? s(k) : '';
+  });
+  /** The roll's one note, the most important: a letter sent, one picked up, then the dice's rule. */
+  const spinNote = $derived.by(() => {
+    if (!g || !cur) return '';
+    if (cur.forced) return s('hasForced', { l: cur.forced.toUpperCase() });
+    if (pickNote) return pickNote;
+    const m = rollMode(g);
+    return m === 'fast' ? s('twice') : m === 'slow' ? s('slowRoll') : '';
+  });
+  // the fold's handle: a tap, or a drag down (the bar: a tap or a drag up)
+  let dragY: number | null = null;
+  const down = (e: PointerEvent) => ((dragY = e.clientY), (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId));
+  function up(e: PointerEvent, fold: boolean) {
+    if (dragY === null) return;
+    const dy = e.clientY - dragY;
+    dragY = null;
+    if (Math.abs(dy) < 8 || (fold ? dy > 24 : dy < -24)) folded = fold;
+  }
   /** むずかしい's event cards: the Japanese on a tap. */
   let cardJa = $state(false);
   $effect(() => void (ph?.k === 'event' && (cardJa = false)));
@@ -390,134 +428,159 @@
         <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={start}>{s('start')}</button>
       </div>
     {:else if level === 'play' && g && cur && ph}
-      <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
-      <div class="body sheet-scroll play" class:screen={!!screen} data-sg-turn={g.turn} data-sg-phase={ph.k}>
-        <!-- the team's stars toward its goal (one number: a team game), then who's at the table -->
-        <div class="team" data-sg-team={teamStars(g)}>
-          <Icon name="star" size={18} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/ {teamGoal(g)}</span>
-          <span class="bar"><i style:width="{Math.min(100, (teamStars(g) / teamGoal(g)) * 100)}%"></i></span>
-          <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
-        </div>
-        <div class="scores">
-          {#each g.players as p, i (i)}
-            <span class="score" class:now={i === g.turn} data-sg-score={i}>
-              <Avatar {...headOf(p)} size={28} /><small class="lv">{s(`level.${p.level}`)}</small>
-              {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
-              {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
-            </span>
-          {/each}
-        </div>
-        {#if screen}
-          <Board3D players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3}>
-            {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} {compact} letters={g.letters} />{/snippet}
-          </Board3D>
-        {:else}
-          <Board players={g.players} {shown} turn={g.turn} {compact} letters={g.letters} />
-        {/if}
-        <div class="panel card pad">
-          {#if walking || rolling !== null}
-            <div class="spinning">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><p>{rolling === null ? s('spun', { n: rolled }) : ''}</p>
-              {:else}<p data-sg-moving>{s('walking')}</p>{/if}</div>
-          {:else if !myTurn && ph.k !== 'end'}
-            <div class="who" data-sg-waiting>
-              <Avatar {...headOf(cur)} size={64} />
-              <div>
-                <p class="turnof">{s('waiting', { name: cur.name })}</p>
-                <p class="note">{#if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
-                {#if !online.connected}<p class="note">{s('offlineNote')}</p>{/if}
-              </div>
-            </div>
-          {:else if ph.k === 'spin'}
-            <div class="who">
-              <Avatar {...headOf(cur)} size={64} />
-              <div>
-                <p class="turnof">{s('turnOf', { name: cur.name })}</p>
-                <p class="note">{s('passTo', { name: cur.name })}</p>
-              </div>
-            </div>
-            {#if pickNote}<p class="note" data-sg-picked>{pickNote}</p>{/if}
-            {#if cur.forced}<p class="note">{s('hasForced', { l: cur.forced.toUpperCase() })}</p>{/if}
-            <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
-            {#if cur.pocket.length && takers.length}
-              <!-- おくりもの: a pocket letter to someone (their next word uses it: +3 for the team) -->
-              <div class="gift" data-sg-gift>
-                {#if giving}
-                  <span class="note">{s('sendTo', { l: giving.toUpperCase() })}</span>
-                  {#each takers as t (t.who)}
-                    <button type="button" class="sg-chip" data-sfx="confirm" data-sg-give={t.who}
-                      onclick={() => { const l = giving!; giving = null; act((x) => giveLetter(x, l, t.who), { a: 'gift', ch: l, to: t.who }); }}>
-                      <Avatar person={t.who} worn size={20} /> {t.name}</button>
-                  {/each}
-                  <button type="button" class="link" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
-                {:else}
-                  <span class="note">{s('sendLetter')}</span>
-                  {#each cur.pocket as l, j (j)}<button type="button" class="sg-chip" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}
-                {/if}
-              </div>
-            {/if}
-            {#if rollMode(g) === 'fast'}<p class="note">{s('twice')}</p>{:else if rollMode(g) === 'slow'}<p class="note">{s('slowRoll')}</p>{/if}
-          {:else if ph.k === 'fork'}
-            <div class="event" data-sg-fork>
-              <h3 class="ttl">{s('forkTitle')}</h3>
-              <p class="note">{s('forkAsk', { n: ph.left })}</p>
-              <div class="ways">
-                {#each [0, 1] as const as b (b)}
-                  <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => act((x) => choose(x, b), { a: 'fork', b })}>
-                    <b>{s(`branch.${b}`)}</b><small>{s(`branch.${b}.note`)}</small>
-                  </button>
-                {/each}
-              </div>
-            </div>
-          {:else if ph.k === 'word'}
-            {#if ph.rested}<p class="note" data-sg-rested>{s('restedNote')}</p>{/if}
-            {#if words}
-              {#key `${g.n}`}
-                <WordTurn rack={cur.rack} pocket={cur.pocket} forced={cur.forced} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
-                  hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
-                  score={(w, c, h) => wordScore(g, w, c, h)}
-                  onplay={(w, h) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h }), { a: 'word', w, ...(h ? { h: 1 } : {}) })}
-                  onswap={() => act(swap, { a: 'swap' })} />
-              {/key}
-            {:else if failed}
-              <p class="note">{s('offline')}</p><button type="button" class="btn small" data-sfx="tick" onclick={load}>{s('retry')}</button>
-            {:else}<p class="note">{s('loading')}</p>{/if}
-          {:else if ph.k === 'sentence'}
-            {#if line}
-              {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses, ...(t.peeked ? { p: 1 } : {}) })} ondone={(o) => act((x) => sentenceDone(x, { ...o, text: line.en, ja: line.ja }), { a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })} />{/key}
-            {:else if failed || lines}
-              <p class="note">{lines ? s('noLine') : s('offline')}</p>
-              <button type="button" class="btn small" data-sfx="tick" onclick={() => act(sentenceAsWord, { a: 'noline' })}>{s('next')}</button>
-            {:else}<p class="note">{s('loading')}</p>{/if}
-          {:else if ph.k === 'picture'}
-            {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(t) => act((x) => tried(x, t), { a: 'try', m: t.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
-          {:else if ph.k === 'event' && card}
-            <div class="event" data-sg-event={ph.card}>
-              {#if card.who}<Avatar person="G" villager={card.who} size={48} />{/if}
-              <h3 class="ttl">{s('eventTitle')}</h3>
-              <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
-              {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
-              {:else}<button type="button" class="btn small paper" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
-              <span class="chip-eff" data-sg-effect>{effectOf(card)}</span>
-              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(eventDone, { a: 'ev' })}>{s('ok')}</button>
-            </div>
-          {:else if ph.k === 'home'}
-            <div class="event" data-sg-home>
-              <Avatar {...headOf(cur)} size={64} />
-              <h3 class="ttl">{s('homeTitle')}</h3>
-              <p class="ja">{s('homeTeam', { b: HOME_BONUS })}</p>
-              <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(homeDone, { a: 'home' })}>{s('next')}</button>
-            </div>
+      <!-- the board full-bleed, never resized by a phase: the top overlay and the turn's sheet are its insets -->
+      <div class="play" data-sg-turn={g.turn} data-sg-phase={ph.k} style:--hud="{hudH}px">
+        <div class="stage">
+          {#if screen}
+            <Board3D players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3} top={hudH} bottom={sheetH} fork={ph.k === 'fork' && !moving}>
+              {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />{/snippet}
+            </Board3D>
+          {:else}
+            <Board players={g.players} {shown} turn={g.turn} top={hudH} bottom={sheetH} letters={g.letters} />
           {/if}
         </div>
-        <div class="end">
-          {#if confirmEnd}
-            <span class="note">{s('endAsk')}</span>
-            <button type="button" class="btn small" data-sfx="confirm" data-sg-end-yes onclick={() => ((confirmEnd = false), act(finish, { a: 'end' }))}>{s('end')}</button>
+        <div class="hud" bind:offsetHeight={hudH}>
+          {#snippet tools()}<NavButton kind="tool" icon="more" label={s('menu')} popup sfx="open" data-sg-menu onclick={() => (menuOpen = true)} />{/snippet}
+          {#snippet team()}
+            <!-- the team's stars toward its goal (one number: a team game), and the round -->
+            <span class="team" data-sg-team={teamStars(g)}>
+              <Icon name="star" size={16} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/{teamGoal(g)}</span>
+              <span class="bar"><i style:width="{Math.min(100, (teamStars(g) / teamGoal(g)) * 100)}%"></i></span>
+              <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
+            </span>
+          {/snippet}
+          <NavBar pad title={s('title')} onback={toMenu} onclose={close} trailing={tools} middle={team} />
+          <div class="scores">
+            {#each g.players as p, i (i)}
+              <span class="score" class:now={i === g.turn} data-sg-score={i}>
+                <Avatar {...headOf(p)} size={24} /><small class="lv">{s(`level.${p.level}`)}</small>
+                {#each p.pocket as l, j (j)}<b class="pl" lang="en">{l.toUpperCase()}</b>{/each}
+                {#if p.forced}<b class="pl must" lang="en">{p.forced.toUpperCase()}</b>{/if}
+              </span>
+            {/each}
+          </div>
+        </div>
+        <div class="sheet" class:folded={folded && !moving} bind:offsetHeight={sheetH}>
+          {#if moving}
+            <div class="bar">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><b>{rolling === null ? s('spun', { n: rolled }) : ''}</b>
+              {:else}<b data-sg-moving>{s('walking')}</b>{/if}</div>
           {:else}
-            <button type="button" class="link" data-sfx="tick" data-sg-end onclick={() => (confirmEnd = true)}>{s('end')}</button>
+            {#if folded}
+              <button type="button" class="bar unfold" data-sfx="open" aria-label={s('unfold')} data-sg-unfold
+                onpointerdown={down} onpointerup={(e) => up(e, false)} onclick={(e) => e.detail === 0 && (folded = false)}>
+                <b>{phaseName}</b><Icon name="chevron-up" size={20} />
+              </button>
+            {:else}
+              <button type="button" class="handle" data-sfx="tick" aria-label={s('fold')} data-sg-fold
+                onpointerdown={down} onpointerup={(e) => up(e, true)} onclick={(e) => e.detail === 0 && (folded = true)}><i></i></button>
+            {/if}
+            <div class="sbody" hidden={folded}>
+              {#if !myTurn && ph.k !== 'end'}
+                <div class="who" data-sg-waiting>
+                  <Avatar {...headOf(cur)} size={40} />
+                  <div class="txt">
+                    <p class="turnof">{s('turnOf', { name: cur.name })}</p>
+                    <p class="note one">{#if !online.connected}{s('offlineNote')}{:else if g.made.length}{@const m = g.made[g.made.length - 1]}{s('lastMove', { name: g.players[m.p].name, text: m.text, n: m.stars })}{:else}{s('thinking')}{/if}</p>
+                  </div>
+                </div>
+              {:else if ph.k === 'spin'}
+                <div class="who">
+                  <Avatar {...headOf(cur)} size={48} />
+                  <div class="txt">
+                    <p class="turnof">{s('turnOf', { name: cur.name })}</p>
+                    {#if mode === 'local'}<p class="note">{s('passTo', { name: cur.name })}</p>{/if}
+                  </div>
+                </div>
+                {#if spinNote}<p class="note one" data-sg-picked={spinNote === pickNote ? '' : undefined}>{spinNote}</p>{/if}
+                {#if cur.pocket.length && takers.length}
+                  <!-- おくりもの: a pocket letter to someone (their next word uses it: +3 for the team) -->
+                  <div class="gift" data-sg-gift>
+                    {#if giving}
+                      <span class="note">{s('sendTo', { l: giving.toUpperCase() })}</span>
+                      {#each takers as tk (tk.who)}
+                        <button type="button" class="sg-chip" data-sfx="confirm" data-sg-give={tk.who}
+                          onclick={() => { const l = giving!; giving = null; act((x) => giveLetter(x, l, tk.who), { a: 'gift', ch: l, to: tk.who }); }}>
+                          <Avatar person={tk.who} worn size={20} /> {tk.name}</button>
+                      {/each}
+                      <button type="button" class="sg-chip" data-sfx="back" onclick={() => (giving = null)}>{s('cancel')}</button>
+                    {:else}
+                      <span class="note">{s('sendLetter')}</span>
+                      {#each cur.pocket as l, j (j)}<button type="button" class="sg-chip" data-sfx="tick" data-sg-pocket={l} onclick={() => (giving = l)} lang="en">{l.toUpperCase()}</button>{/each}
+                    {/if}
+                  </div>
+                {/if}
+                <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
+              {:else if ph.k === 'fork'}
+                <div class="fork" data-sg-fork>
+                  <p class="ask">{s('forkAsk', { n: ph.left })}</p>
+                  <div class="ways">
+                    {#each [0, 1] as const as b (b)}
+                      <button type="button" class="way" data-sfx="confirm" data-sg-branch={b} onclick={() => act((x) => choose(x, b), { a: 'fork', b })}>
+                        <b>{s(`branch.${b}`)}</b><small>{s(`branch.${b}.note`)}</small>
+                      </button>
+                    {/each}
+                  </div>
+                </div>
+              {:else if ph.k === 'word'}
+                {#if ph.rested}<p class="note one" data-sg-rested>{s('restedNote')}</p>{/if}
+                {#if words}
+                  {#key `${g.n}`}
+                    <WordTurn rack={cur.rack} pocket={cur.pocket} forced={cur.forced} lucky={g.lucky} mult={ph.mult} minLen={LEVEL[cur.level].minLen} hintHalf={LEVEL[cur.level].hintHalf}
+                      hinted0={ph.hinted} onhint={() => act((x) => tried(x, { hinted: true }), { a: 'try', h: 1 })} {words}
+                      score={(w, c, h) => wordScore(g, w, c, h)}
+                      onplay={(w, h) => act((x) => playWord(x, w, { everyday: !!words!.ja(w), ja: words!.ja(w), hinted: h }), { a: 'word', w, ...(h ? { h: 1 } : {}) })}
+                      onswap={() => act(swap, { a: 'swap' })} />
+                  {/key}
+                {:else if failed}
+                  <p class="note">{s('offline')}</p><button type="button" class="btn" data-sfx="tick" onclick={load}>{s('retry')}</button>
+                {:else}<p class="note">{s('loading')}</p>{/if}
+              {:else if ph.k === 'sentence'}
+                {#if line}
+                  {#key line.en}<SentenceTurn {line} seed={g.seed} hideJa={cur.level === 3} misses0={ph.misses} peeked0={ph.peeked} ontry={(tr) => act((x) => tried(x, tr), { a: 'try', m: tr.misses, ...(tr.peeked ? { p: 1 } : {}) })} ondone={(o) => act((x) => sentenceDone(x, { ...o, text: line.en, ja: line.ja }), { a: 'sent', m: o.misses, ...(o.unseen ? { u: 1 } : {}) })} />{/key}
+                {:else if failed || lines}
+                  <p class="note">{lines ? s('noLine') : s('offline')}</p>
+                  <button type="button" class="btn" data-sfx="tick" onclick={() => act(sentenceAsWord, { a: 'noline' })}>{s('next')}</button>
+                {:else}<p class="note">{s('loading')}</p>{/if}
+              {:else if ph.k === 'picture'}
+                {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => act((x) => tried(x, tr), { a: 'try', m: tr.misses })} ondone={(m) => act((x) => pictureDone(x, m), { a: 'pic', m })} />{/key}
+              {:else if ph.k === 'event' && card}
+                <div class="event" data-sg-event={ph.card}>
+                  <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>
+                  <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
+                  {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
+                  {:else}<button type="button" class="sg-chip peek" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
+                  <div class="actrow">
+                    <span class="chip-eff" data-sg-effect>{effectOf(card)}</span>
+                    <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(eventDone, { a: 'ev' })}>{s('ok')}</button>
+                  </div>
+                </div>
+              {:else if ph.k === 'home'}
+                <div class="event" data-sg-home>
+                  <span class="tagrow"><Avatar {...headOf(cur)} size={32} /><span class="tag">{s('homeTitle')}</span></span>
+                  <p class="ja big">{s('homeTeam', { b: HOME_BONUS })}</p>
+                  <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => act(homeDone, { a: 'home' })}>{s('next')}</button>
+                </div>
+              {/if}
+            </div>
           {/if}
         </div>
       </div>
+      <ActionSheet bind:open={menuOpen} title={s('title')} groups={[[{ id: 'how', label: s('howTo'), icon: 'info' }, { id: 'end', label: s('end'), icon: 'flag', hook: 'sg-end' }]]}
+        onpick={(id) => (id === 'how' ? (howOpen = true) : (endOpen = true))} />
+      <Sheet bind:open={howOpen} title={s('howTo')}>
+        <ol class="how">
+          <li>{s('how1')}</li><li>{s('how2')}</li><li>{s('how3')}</li><li>{s('how4')}</li><li>{s('how5')}</li>
+        </ol>
+      </Sheet>
+      <Sheet bind:open={endOpen} title={s('endAsk')}>
+        <p class="note centre">{s('endNote')}</p>
+        {#snippet footer()}
+          <div class="two-cta">
+            <button type="button" class="btn paper" data-sfx="back" onclick={() => (endOpen = false)}>{t('common.cancel')}</button>
+            <button type="button" class="btn" data-sfx="confirm" data-sg-end-yes onclick={() => ((endOpen = false), act(finish, { a: 'end' }))}>{s('end')}</button>
+          </div>
+        {/snippet}
+      </Sheet>
     {:else if level === 'results' && g}
       <div class="top"><NavBar pad title={s('results')} onback={toMenu} onclose={close} /></div>
       <div class="body sheet-scroll" data-sg-results>
@@ -573,15 +636,7 @@
   .ord { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
     background: var(--c-ink); color: var(--c-cream); font: 600 13px/1 var(--font-num); }
   .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .play { gap: 8px; }
-  /* the board's own screen: the 3D board takes what the panel leaves, nothing scrolls */
-  .play.screen { overflow: hidden; }
-  .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .team { display: flex; align-items: center; gap: 6px; color: var(--c-gold); }
-  .team b { font: 600 20px/1 var(--font-num); color: var(--c-ink); }
-  .team .goal, .total .goal { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
-  .team .bar { flex: 1; height: 10px; border-radius: 6px; background: color-mix(in srgb, var(--c-edge) 45%, transparent); overflow: hidden; }
-  .team .bar i { display: block; height: 100%; background: var(--c-yuzu); border-radius: 6px; transition: width 400ms var(--ease-soft); }
+  .total .goal { font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .pl { display: inline-grid; place-items: center; min-width: 18px; height: 18px; border-radius: 5px; background: color-mix(in srgb, var(--c-mint) 55%, var(--c-cream)); font: 600 12px/1 var(--font-num); color: var(--c-ink); }
   .pl.must { background: color-mix(in srgb, var(--c-lilac) 65%, var(--c-cream)); box-shadow: 0 0 0 1.5px var(--c-ink); }
   .gift { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; }
@@ -590,9 +645,6 @@
   .centre { text-align: center; }
   .shells { margin: 2px 0 6px; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink); }
   .hl { display: block; font: 500 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
-  .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
-  .score b { font: 600 16px/1 var(--font-num); }
   /* a score that changed pops once (stars in) */
   .bump { display: inline-block; animation: bump 420ms var(--ease-bounce); }
   @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.45); color: var(--c-gold); } 100% { transform: scale(1); } }
@@ -601,7 +653,6 @@
   .die.rolling { animation: shake 140ms linear infinite; }
   @keyframes shake { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-10deg) translateY(-2px); } 75% { transform: rotate(10deg) translateY(1px); } }
   .lv { font: 700 10px/1 var(--font-ui); color: var(--text-soft); }
-  .chip-eff { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .lrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
   .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .lrow .seg { margin-left: auto; }
@@ -609,27 +660,9 @@
   .sg-chip { min-height: 36px; padding: 0 10px; margin: 0; appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer;
     background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-s)/1 var(--font-ui); }
   .sg-chip[aria-checked='true'] { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
-  .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
-  .way { display: flex; flex-direction: column; gap: 4px; align-items: center; padding: 12px 6px; margin: 0; appearance: none; border: 0; cursor: pointer;
-    border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .way:first-child { background: color-mix(in srgb, var(--c-sky) 45%, var(--c-card)); }
   .way:last-child { background: color-mix(in srgb, var(--c-lilac) 45%, var(--c-card)); }
   .way small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }
-  .round { margin-left: auto; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
-  .panel { display: flex; flex-direction: column; align-items: center; gap: 10px; min-height: 150px; justify-content: center; }
-  .who { display: flex; align-items: center; gap: 12px; }
-  .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .spinning { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .spinning p { margin: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); min-height: 1.2em; }
-  .die { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 16px; background: var(--c-cream);
-    box-shadow: 0 4px 0 var(--c-edge); font: 600 36px/1 var(--font-num); }
-  .event { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-  .ttl { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
-  .event .en { margin: 0; font: 500 20px/1.4 var(--font-body); text-wrap: pretty; }
-  .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
-  .event .ja { margin: 0; font-size: var(--fs-s); color: var(--text-soft); }
-  .end { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
-  .link { appearance: none; border: 0; background: none; padding: 10px; min-height: 44px; color: var(--text-soft); font: 500 var(--fs-s)/1.2 var(--font-ui); text-decoration: underline; cursor: pointer; }
   .podium { display: flex; flex-direction: column; gap: 8px; }
   .win { margin: 0 0 4px; text-align: center; font: 700 22px/1.3 var(--font-ui); }
   .rrow { display: flex; align-items: center; gap: 10px; }
@@ -638,4 +671,65 @@
   .txt { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .en2 { font: 600 var(--fs-body)/1.3 var(--font-body); }
   .ja2 { font-size: var(--fs-s); color: var(--text-soft); }
+  /* ---- the play screen: the board under everything, the top overlay and the turn's sheet over it */
+  .play { position: absolute; inset: 0; overflow: hidden; }
+  .stage { position: absolute; inset: 0; }
+  .hud { position: absolute; inset: 0 0 auto; z-index: 1; padding-bottom: 4px; pointer-events: none; }
+  .hud > :global(*) { pointer-events: auto; }
+  /* the team's pill in the title's place: ★ 5/120, a thin bar, the round */
+  .team { display: flex; align-items: center; gap: 5px; height: 32px; width: min(208px, 100%); padding: 0 12px 0 10px; box-sizing: border-box;
+    border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-gold); }
+  .team b { font: 600 17px/1 var(--font-num); color: var(--c-ink); }
+  .team .goal { font: 600 12px/1 var(--font-num); color: var(--text-soft); }
+  .team .bar { flex: 1; min-width: 24px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 45%, transparent); overflow: hidden; }
+  .team .bar i { display: block; height: 100%; background: var(--c-yuzu); border-radius: 3px; transition: width 400ms var(--ease-soft); }
+  .round { flex: none; font: 700 12px/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  /* the players' chips: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
+  .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: fit-content; margin-top: 4px; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); }
+  .score { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 10px 0 4px; box-sizing: border-box; border-radius: var(--r-pill);
+    background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); }
+  .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
+  /* the turn's sheet: cream, its content's height (at most what leaves the board 160 px), folded a 56 px bar */
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
+    max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(12px + var(--safe-bottom)) calc(12px + var(--safe-left));
+    box-sizing: border-box; border-radius: 22px 22px 0 0; background: var(--c-cream); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
+  .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
+  .sbody { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; display: flex; flex-direction: column; gap: 10px; }
+  .sbody[hidden] { display: none; }
+  .sbody > * { flex-shrink: 0; }
+  .sbody :global(.btn) { margin: 0; min-height: 48px; }
+  /* the fold's handle: a 5 × 36 bar, its hit 44 tall */
+  .handle { position: relative; flex: none; display: grid; place-items: center; width: 120px; height: 24px; margin: 0 auto; padding: 0; appearance: none; border: 0;
+    background: none; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
+  .handle::after { content: ''; position: absolute; inset: -4px 0 -16px; }
+  .handle i { width: 36px; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 80%, transparent); }
+  /* the 56 px bar: the walk's die and its number, or the folded sheet's phase ▲ */
+  .bar { flex: none; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .unfold { width: 100%; padding: 0; margin: 0; appearance: none; border: 0; background: none; color: var(--c-ink); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
+  .unfold :global(svg) { color: var(--text-soft); }
+  .die { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 11px; background: var(--c-card);
+    box-shadow: 0 3px 0 var(--c-edge); font: 600 24px/1 var(--font-num); }
+  .who { display: flex; align-items: center; gap: 12px; }
+  .turnof { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .one { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gift .sg-chip { min-height: 44px; }
+  .fork { display: flex; flex-direction: column; gap: 8px; }
+  .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
+  .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .way { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; min-height: 72px; padding: 8px 6px; margin: 0 0 3px; appearance: none; border: 0; cursor: pointer;
+    border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge); color: var(--c-ink); font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .way:first-child { background: color-mix(in srgb, var(--c-sky) 45%, var(--c-card)); }
+  .way:last-child { background: color-mix(in srgb, var(--c-lilac) 45%, var(--c-card)); }
+  .way small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }
+  .event { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+  .tagrow { display: flex; align-items: center; gap: 6px; height: 32px; align-self: flex-start; }
+  .tag { padding: 3px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-lilac) 55%, var(--c-cream)); font: 700 12px/1.3 var(--font-ui); }
+  .event .en { margin: 0; font: 500 20px/1.35 var(--font-body); text-wrap: pretty; }
+  .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
+  .event .ja { margin: 0; font-size: var(--fs-s); line-height: 18px; color: var(--text-soft); }
+  .event .ja.big { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
+  .peek { min-height: 44px; }
+  .actrow { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; }
+  .chip-eff { flex: none; padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
+  .actrow .btn { flex: 1; min-width: 0; }
 </style>

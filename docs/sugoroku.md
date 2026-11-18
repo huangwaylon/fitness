@@ -23,7 +23,7 @@ with characters in it, since they are the pieces. A team game: one team total to
 - **The board** (`board.ts`): 47 stones on a drawn island (grass, river, beach, sea; signs for 家 広場 川 博物館 お店 飛行場
   浜辺), ふりだし to あがり, one **fork** after 広場: 川の近道 (4 stones) or 博物館の遠回り (7: two 絵, two イベント): 39 or 42
   steps, about 11 rounds. A tall map: the board is a window onto it that follows whose turn it is (and scrolls by hand),
-  smaller during a turn's English so its controls stay on screen.
+  full-bleed under the play screen's overlays like the 3D board (its fallback).
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
   and walk; the fork stops the walk for the choice. The table kept together (`rollMode`): the one 6+ steps behind
   whoever's furthest on rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
@@ -63,8 +63,19 @@ moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only)
 A game plays on its **own screen**, `/sugoroku` (`?m=local` this phone's, `?m=online` the shared one; the page's query
 kept), like the museum: the island isn't drawn meanwhile (one WebGL context on the phone). Starting or resuming in the
 tab goes there; ‹ goes back to the island with English Study open on the tab; a reload there resumes the game. The
-board (`Board3D.svelte`) takes what the turn's panel leaves: the heads hop a stone at a time (260 ms), the die tumbles
-before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). No WebGL: the 2D map in its place.
+board (`Board3D.svelte`) covers the whole screen and is never resized by a phase: the heads hop a stone at a time (260
+ms), the die tumbles before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). No WebGL: the 2D map in its place.
+
+**The play screen** (iPhone 15's 393 × 659 the target): over the board, a top overlay (the NavBar on a clear ground: ‹,
+⋯ then ✕, the team's ★ pill in the title's place; under it the players' chips, whose turn yuzu, their pocket letters)
+and the turn's bottom sheet (cream, its content's height up to what leaves the board 160 px, then it scrolls; its action
+the last row, full width). The engine frames only the part between (`setInsets`: `setViewOffset` on the visible part,
+plan.ts `visibleOf` / `cameraFor`): whose turn it is in the lower third with the stones ahead, x kept to the land (only
+the beach at the sides), the horizon never shown (the bottom inset given back first); a fork's choice aims between the
+ways. Two exceptions to design.md's kit, for the board's room: the team pill in the title bar's place, and this
+sheet's handle (a tap or a drag down) folding it to a 56 px bar (the phase ▲) to see the board; every new phase
+opens it again; a walk shows the die and 「3マス」 in that bar. A check's note is a toast pill over the sheet. ⋯ holds 遊び方
+and 終了する (「ゲームを終了しますか？」 [キャンセル][終了する]); ↻入れかえ asks inline (「星なしで入れかえる？」).
 
 ## Online
 
