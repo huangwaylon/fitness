@@ -1,10 +1,10 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 5, ctx 4, tx 24 (p1, n2, pr1 restored)
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 0, new 5, ctx 4, tx 24 (p1, n2, pr1 restored), qa 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 5, new 3 (i1, nt1, d2, nt2 stay retired)
 // “You're On With Ron | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Ron comes on
 // Joan's TV show to promote the Pawnee Commons gala; Joan, hung over and calling it allergies, stops on air, the crew
 // keeps the cameras on, and Ron ends up taking viewers' calls on whiskey, dogs, banks and movies.
-// EXCLUDE 60.7–66.4 (sexual bet, names garbled)
-// Untested: 143–151.5 s (montage; "morons"), 175–199 s.
+// Untested: 60.7–66.4 s (a caller's "sexiest couple" bet: mild, playable, but the names are garbled), 143–151.5 s
+// (montage; "morons"), 175–199 s.
 // EAR CHECK: 8.2 s g4 — whisper "booze cruise", captions "boost cruise": confirm "booze"
 import type { Clip } from '../types.ts';
 
@@ -86,7 +86,7 @@ export const ronRadio: Clip = {
       use: 'Don’t worry about me. I’ll be fine.（私のことは心配しないで。大丈夫だから）' },
     { id: 'h1', skill: 'detail', level: 'B1', point: 'goon', seg: [21.5, 34.9],
       stem: 'What does Joan say when the show starts?', ja: '番組が始まると、ジョーンは何と言う？',
-      choices: ['Today’s show is off', 'The show will go on', 'Ron is the host today'], a: 0,
+      choices: ['There is no show today', 'The show will go on', 'Ron is the host today'], a: 0,
       choicesJa: ['今日の番組はなし', '番組は続ける', '今日の司会はロン'],
       cue: '「I’m Joan Calamazzo」のあと',
       line: 'The show must go on. … Hello, I’m Joan Calamazzo. *Today’s show will not go on.*',
@@ -233,8 +233,8 @@ export const ronRadio: Clip = {
       use: 'Is there a cheap way to get there?（そこへ安く行く方法はある？）' },
     { id: 'c1', skill: 'detail', level: 'B1', point: 'walnut', reveals: ['table'], ctx: true, seg: [125.2, 134.0],
       stem: 'How does Ron say to fix the table?', ja: 'ロンはテーブルをどう直せと言う？',
-      choices: ['Rub a walnut on the legs', 'Paint over the scratches', 'Buy new legs for it'], a: 0,
-      choicesJa: ['脚にクルミをこすりつける', '傷の上から色を塗る', '新しい脚を買う'],
+      choices: ['Rub a walnut on the legs', 'Paint the scratched legs', 'Buy new legs for it'], a: 0,
+      choicesJa: ['脚にクルミをこすりつける', '傷ついた脚に色を塗る', '新しい脚を買う'],
       cue: '「Great question」のあと',
       line: 'Caller: Is there a *cheap way to repair* that? / Ron: Great question. *Take a walnut and rub it* into the legs of your table.',
       said: '「安く直す方法は？」に、ロンが「いい質問だ。クルミを脚にこすりつけて」と答える。',

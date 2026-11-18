@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 2, new 7, ctx 7, tx 18
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 2, new 7, ctx 7, tx 18, qa 22
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 4, new 0
 // “Is Sam Puckett a Terrible Friend? 🧈🧦 (Or a Great One 👀) | iCarly” (NickRewind, Best of iCarly 📲): a narrator
 // weighs Sam as a friend over short cuts: loyal (pushing Carly toward Jake, threatening a girl), aggressive, teasing
@@ -18,8 +18,8 @@ export const samFriend: Clip = {
   questions: [
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'edges', seg: [0, 6.5],
       stem: 'What does “rough around the edges” mean?', ja: '“rough around the edges” はどういう意味？',
-      choices: ['A bit rude, but good inside', 'Having a very hard life', 'Not very loyal to her friends'], a: 0,
-      choicesJa: ['少し荒っぽいが、根はいい', 'とても苦労している', '友だちに誠実でない'],
+      choices: ['Not always nice or polite', 'Having a very hard life', 'Not very kind to her friends'], a: 0,
+      choicesJa: ['いつも感じがいいとは限らない', 'とても苦労している', '友だちに冷たい'],
       cue: '「but sometimes」のあと',
       line: 'But sometimes, she can be a little *rough around the edges*.',
       said: '「でも時々、ちょっと荒っぽい」と言う。',
@@ -40,8 +40,8 @@ export const samFriend: Clip = {
 
     { id: 'h1', skill: 'detail', level: 'B1', point: 'punch', seg: [10.5, 17.4],
       stem: 'Who would punch her best friend, says Sam?', ja: 'サムによると、親友を殴るのは誰？',
-      choices: ['Anybody but Sam', 'Only Sam herself', 'Nobody at all'], a: 0,
-      choicesJa: ['サム以外の誰でも', 'サムだけ', '誰も殴らない'],
+      choices: ['Everyone except Sam', 'Only Sam herself', 'Nobody at all'], a: 0,
+      choicesJa: ['サム以外のみんな', 'サムだけ', '誰も殴らない'],
       cue: '最初の文の主語',
       line: 'anybody *but me* would punch you right in the head. Which is *why you are my best friend*.',
       said: '「私以外なら、みんなあんたを殴ってる。だから親友」と言う。',
@@ -114,8 +114,8 @@ export const samFriend: Clip = {
 
     { id: 't2', skill: 'attitude', level: 'B2', point: 'try', ctx: true, seg: [62.1, 72],
       stem: 'How does the other girl react to “Rip her head off”?', ja: '“Rip her head off” に、相手の女の子はどう反応する？',
-      choices: ['Not scared, she dares Sam', 'Shocked by the threat', 'Very happy to watch a fight'], a: 0,
-      choicesJa: ['怖がらず、挑発する', 'おどしに驚く', 'けんかを見るのが楽しみ'],
+      choices: ['She isn’t afraid of Sam', 'She is shocked by it', 'She wants to watch a fight'], a: 0,
+      choicesJa: ['サムを怖がっていない', 'おどしに驚いている', 'けんかを見物したい'],
       cue: '聞き返しのあとの一言',
       line: 'Rip her head off. / *Rip my head off? I’d love to see her try it.*',
       said: '「この子の頭、引きちぎっちゃって」と言われ、「やれるもんならやってみなさいよ」と返す。',
@@ -170,7 +170,7 @@ export const samFriend: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'quality', seg: [151.8, 159.4],
       stem: 'What does the narrator call Sam’s greatest quality?', ja: 'ナレーターが言う、サムのいちばんの長所は？',
       choices: ['Her confidence', 'Her loyalty', 'Her sense of fun'], a: 0,
-      choicesJa: ['自信', '誠実さ', '楽しさ'],
+      choicesJa: ['自信', '仲間思いなところ', '楽しさ'],
       cue: '「greatest quality is」のあと',
       line: 'Sam’s greatest quality is *her confidence*, making her super fun…',
       said: '「サムのいちばんの長所は自信。だから一緒にいて楽しい」と言う。',
@@ -204,9 +204,9 @@ export const samFriend: Clip = {
       use: 'With three kids, there’s never a dull moment.（子ども3人だと、退屈するひまがない）' },
 
     { id: 'sw', skill: 'pragma', level: 'B1', point: 'getown', ctx: true, seg: [191.3, 199.0],
-      stem: 'What does Sam say when asked for her sandwich?', ja: 'サンドイッチをねだられて、サムは何と言う？',
-      choices: ['No, get your own', 'Sure, take half', 'Okay, just one bite'], a: 0,
-      choicesJa: ['だめ、自分のを買って', 'いいよ、半分あげる', 'いいよ、一口だけね'],
+      stem: 'How does Sam answer the sandwich question?', ja: 'サンドイッチをねだられて、サムはどう答える？',
+      choices: ['She won’t share it', 'She gives half of it', 'She allows one bite'], a: 0,
+      choicesJa: ['分けてあげない', '半分あげる', '一口だけならいい'],
       cue: '「Can I have that sandwich?」への返事',
       line: 'Can I have that sandwich? / Sam: *No way, get your own.*',
       said: '「そのサンドイッチ、もらっていい？」に「だめ、自分のを買って」と即答する。',
@@ -216,8 +216,8 @@ export const samFriend: Clip = {
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'shirt', seg: [201.8, 237.4],
       stem: 'What is Sam and Carly’s fight about?', ja: 'サムとカーリーのけんかの原因は？',
-      choices: ['Sam gave away Carly’s gift', 'Sam forgot Carly’s gift', 'Sam won’t take Carly along'], a: 0,
-      choicesJa: ['サムがカーリーの贈り物を手放した', 'サムが贈り物を忘れた', 'サムがカーリーを連れて行かない'],
+      choices: ['Sam traded Carly’s homemade shirt', 'Sam lost Carly’s homemade shirt', 'Sam didn’t buy Carly a ticket'], a: 0,
+      choicesJa: ['カーリー手作りのTシャツを交換した', 'カーリー手作りのTシャツをなくした', 'カーリーのチケットを買わなかった'],
       cue: '「I can’t believe you」のあと',
       line: '… you *just gave it away*.',
       said: '手作りTシャツをサムがチケットと交換し、カーリーが怒る。',
@@ -227,19 +227,19 @@ export const samFriend: Clip = {
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'another', seg: [209.2, 217.3],
       stem: 'What does Sam think about the shirt?', ja: 'サムはTシャツのことをどう思っている？',
-      choices: ['She can just make another', 'She feels very sorry', 'She will get it back'], a: 0,
-      choicesJa: ['また作ればいい', 'とても申し訳ない', '取り戻すつもり'],
+      choices: ['Carly can make a new one', 'She feels very sorry', 'She wishes she still had it'], a: 0,
+      choicesJa: ['カーリーがまた作ればいい', 'とても申し訳ない', 'まだ持っていればよかった'],
       cue: '「Look,」のあと',
       line: 'Look, *make me another shirt* if you want to *after we go to the… concert*.',
       said: '「なんならまた作ってよ、コンサートのあとでさ」と軽く返す。',
       mean: 'another ＝ もう一つの。作り直せばいい、という返事。手作りの重みが分かっていない。',
-      trap: 'make から「つぐなう」と思いやすい。謝る言葉はなく、先に予定を言っている。',
+      trap: 'make me another を「私が作り直す」と勘違いしやすい。make me ＝ 私に作って。作るのはカーリーで、謝る言葉もない。',
       use: 'Don’t worry, I’ll get you another one.（大丈夫、また買ってくるよ）' },
 
     { id: 'h3', skill: 'humor', level: 'B2', point: 'care', seg: [219.1, 228.4],
       stem: 'What are they arguing about here?', ja: 'ここで二人は何を言い合っている？',
-      choices: ['Who cares less', 'Who is more hurt', 'Who is right'], a: 0,
-      choicesJa: ['どっちがより気にしていないか', 'どっちがより傷ついたか', 'どっちが正しいか'],
+      choices: ['Who is less upset', 'Who started the fight', 'Who should say sorry'], a: 0,
+      choicesJa: ['どっちがより気にしていないか', 'どっちがけんかを始めたか', 'どっちが謝るべきか'],
       cue: '同じ語のくり返し',
       line: 'I *care way less than you* care. — You don’t know *how much I don’t care*.',
       said: '「どうでもいい」「そっちよりずっと」「どれだけどうでもいいか」と張り合う。',
@@ -292,8 +292,8 @@ export const samFriend: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'backat', reveals: ['cant'], ctx: true, seg: [264.2, 271.4],
       stem: 'What does “Back at you” mean here?', ja: 'ここでの “Back at you” はどういう意味？',
-      choices: ['Same to you', 'It’s all your fault', 'Let’s make up now'], a: 0,
-      choicesJa: ['こっちも同じ', '全部あなたのせい', 'もう仲直りしよう'],
+      choices: ['Same to you', 'It’s all your fault', 'Let’s be friends'], a: 0,
+      choicesJa: ['こっちも同じ', '全部あなたのせい', 'また仲良くしよう'],
       cue: '短い返事',
       line: 'I can’t believe I *almost made up with you*. / *Back at you.*',
       said: '「仲直りしかけたなんて信じられない」に「こっちのセリフよ」と返す。',
