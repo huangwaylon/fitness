@@ -1,12 +1,16 @@
+// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 1, new 6, ctx 4, tx 14
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 8, new 1 · sweep: workbestie twins retired (t1 r1 d4 d5)
 // “When your coworker is a lot but you respect the hustle | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 6): Leslie pairs her staff with their Eagleton counterparts and brings in Craig as a filing temp; his
 // intensity wins Donna over, and when Leslie plans to cut him, Donna defends him and the staff start offering to leave.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈175 s; music to 196 s. Untested: 9.6 s
-// "Tinnifer" (a name), 31–34 s "No! Why? This can't be happening. Why, Leslie?" (several voices, speakers unknown),
-// 49–52 s the "Spanish man named Terrence" joke, 68.6 s and 90 s (who says the Bermuda-grass line and the medication
+// "Tinnifer" (a name), 49–52 s the "Spanish man named Terrence" joke, 68.6 s and 90 s (who says the Bermuda-grass line and the medication
 // question; no item asks), 136.7 s "It won't last" (speaker unclear), 149.4 s "Okie dokie, Leslie", 158–175 s (the
-// Scandal turns: whisper and the captions split them differently).
+// Scandal turns: whisper and the captions split them differently; c3 rests only on Donna's "except for—" and the reply).
+// SAME SCENE as workbestie (ENw2r_HY6RU, R4): this bank stays off its live points (Ron, one of a kind, counterpart,
+// the temp surprise, perfect name, office manager, the grass rant, 10% off, caring too much, the cut, others offer to
+// leave, I could, the condo, big plans, Excuse me?); g1 (why Leslie is upset = its g1) retired for a Scandal gist.
+// "I'm right here" (122.5 s) is Leslie's: Donna answers her "he might care more than you".
 import type { Clip } from '../types.ts';
 
 export const craigTemp: Clip = {
@@ -15,7 +19,7 @@ export const craigTemp: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pairs', seg: [0, 30.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pairs', seg: [0, 15.0],
       stem: 'What is Leslie doing at the start?',
       ja: '最初に、レスリーは何をしている？',
       choices: ['Putting her staff in pairs', 'Holding a vote with her staff', 'Naming a new boss'], a: 0,
@@ -24,7 +28,7 @@ export const craigTemp: Clip = {
       line: 'you will be *paired up* with the person who is roughly your *equivalent in Eagleton*',
       said: '「イーグルトンで同じ立場の人と組んでもらいます」と、1人ずつ相手の名前を言う。',
       mean: 'be paired up with 〜 ＝ 〜と2人組になる。Donna, you’ll be with Craig のように発表する。',
-      trap: 'with のあとに名前が来るので、新しい上司の発表と思いやすい。paired up は「組になる」。',
+      trap: 'with のあとに名前が来るので、新しい上司の発表と考えがち。paired up は「組になる」。',
       use: 'We’ll pair you up with a buddy.（相棒と組んでもらいます）' },
 
     { id: 't1', skill: 'attitude', level: 'B2', point: 'tom', seg: [12.0, 21.1], retired: true,
@@ -38,6 +42,30 @@ export const craigTemp: Clip = {
       mean: 'one of a kind ＝「ほかにない、たった1つの物」。相手がいないのを、特別だからと得意になる。',
       trap: '相手がいないのはふつうさびしい場面。でも one of a kind はじまんの言葉。',
       use: 'This bag is one of a kind.（このバッグは一点物なんだ）' },
+
+    { id: 'hd', skill: 'detail', level: 'B1', point: 'heard', seg: [21.0, 25.4],
+      stem: 'What has Leslie heard about Eric?',
+      ja: 'レスリーはエリックについて何を聞いている？',
+      choices: ['He is amazing', 'He is very busy', 'He is new here'], a: 0,
+      choicesJa: ['すごい人', 'とても忙しい', 'ここでは新人'],
+      cue: '「His name is Eric」のあと',
+      line: 'His name is Eric, and *I’ve heard he’s amazing*.',
+      said: '「エリックっていう人で、すごいって聞いてる」と言う。',
+      mean: 'I’ve heard 〜 ＝「〜と聞いている」。人から聞いた話を伝える言い方。amazing ＝ すごい、すばらしい。',
+      trap: 'Eric の名前のすぐあとなので聞き逃しやすい。I’ve heard のあとの一語を聞く。',
+      use: 'I’ve heard this place is really good.（この店すごくおいしいって聞いた）' },
+
+    { id: 'rx', skill: 'detail', level: 'B1', point: 'react', seg: [29.5, 36.0],
+      stem: 'How do the staff react when Craig comes in?',
+      ja: 'クレイグが入ってくると、職員たちはどんな反応？',
+      choices: ['They are unhappy', 'They cheer for him', 'They don’t notice him'], a: 0,
+      choicesJa: ['いやがっている', '彼を歓迎する', '彼に気づかない'],
+      cue: '「Hey, everybody!」のすぐあと',
+      line: 'Hey, everybody! — No! Why? *This can’t be happening.*',
+      said: '「やあ、みんな！」に、「うそ！なんで？ありえない」と声が上がる。',
+      mean: 'This can’t be happening ＝ 文字どおりは「これが起きているはずがない」→「うそでしょ、ありえない」。信じたくない時の言い方。',
+      trap: 'Hey, everybody! が明るいので、歓迎されたと考えがち。返事は No! と Why?',
+      use: 'This can’t be happening. I missed the last train.（うそでしょ、終電逃した）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'wasnt', reveals: ['planning'], seg: [35.0, 42.0],
       stem: 'What makes Donna’s short reply to Craig funny?',
@@ -107,6 +135,18 @@ export const craigTemp: Clip = {
       trap: '健康の質問は日本語では気づかいだが、ここは「ゼロか多すぎ」の両極端が皮肉の印。',
       use: 'Did you, I don’t know, forget to sleep?（もしかして、寝るの忘れた？）', retired: true },
 
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'medicine', reveals: ['meds'], seg: [90.0, 98.6],
+      stem: 'What is the coworker’s question about medicine saying?',
+      ja: '同僚の薬についての質問は、何を言おうとしている？',
+      choices: ['Craig is acting crazy', 'Craig looks sick today', 'Craig should rest more'], a: 0,
+      choicesJa: ['クレイグの様子がおかしい', 'クレイグは今日具合が悪そう', 'クレイグはもっと休むべき'],
+      cue: '「I’m just guessing here」のあと',
+      line: 'Is there, and *I’m just guessing here*, some kind of medication that you maybe need a lot of and have *taken none of*, or maybe *too much of* today?',
+      said: '「ただの推測だけど、薬を全然飲んでないか、飲みすぎたとか？」と聞く。',
+      mean: '本気の質問ではなく皮肉。「どうかしてるよ」の意味。I’m just guessing here ＝「ただの推測だけど」。',
+      trap: '体調を気づかう質問に聞こえるが、決め手は none（ゼロ）と too much（多すぎ）の両極端。',
+      use: 'I’m just guessing here, but are you tired?（ただの推測だけど、疲れてる？）' },
+
     { id: 'c2', skill: 'dict', level: 'C2', point: 'meds', seg: [94.35, 98.2],
       stem: 'Type the missing words: “…a lot of ___, or maybe too much…” (5 words)', answer: 'and have taken none of',
       cue: '「a lot of」と「or maybe」の間、弱い語が多い。',
@@ -137,7 +177,8 @@ export const craigTemp: Clip = {
       trap: 'Also を「実は」と取ると、うその告白に聞こえる。大きな話のすぐあとの小さな話は、たいていオチ。',
       use: 'I’m tired, broke, and also hungry.（疲れてて金欠で、あと腹ぺこ）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'cuts', reveals: ['cut', 'keep', 'leave', 'larry', 'even'], seg: [108, 151.3],
+    // retired (R4): the same fact as workbestie g1 (others offer to leave), and 43 s long
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cuts', reveals: ['cut', 'keep', 'leave', 'larry', 'even'], seg: [108, 151.3], retired: true,
       stem: 'Why is Leslie upset at the end?',
       ja: '最後に、レスリーはなぜ怒っている？',
       choices: ['Her staff want to leave', 'Donna is getting married', 'Craig refuses to leave'], a: 0,
@@ -173,28 +214,28 @@ export const craigTemp: Clip = {
       trap: 'glue から「くっついて動かない」と思いやすい。ほめ言葉で、まとめ役のこと。',
       use: 'She’s the glue of our team.（彼女がチームのまとめ役だ）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'keep', seg: [116.3, 129.0],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'keep', ctx: true, seg: [114.5, 122.6],
       stem: 'Why does Donna want to keep Craig?',
       ja: 'ドナはなぜクレイグを残したい？',
       choices: ['He really cares about the job', 'He gets a lot of work done', 'He helped her once in the past'], a: 0,
       choicesJa: ['仕事を本当に大事にしている', '仕事をたくさん片づける', '前に助けてくれた'],
       cue: '「but I’ve never met」のあと',
-      line: 'He’s *crazy intense*, but I’ve *never met anyone who cares more* about this job.',
+      line: 'Leslie: I think Craig’s gonna have to go. / Donna: No, you should keep him. He’s *crazy intense*, but I’ve *never met anyone who cares more* about this job.',
       said: '「すごく暑苦しいけど、彼ほど仕事を大事にする人に会ったことがない」と言う。',
       mean: 'care about 〜 ＝ 〜を大事に思う。crazy intense（すごく熱すぎる）は欠点、but のあとが理由。',
-      trap: '「何でもやった」から、仕事が速いと思いやすい。理由は but のあとの cares more。',
+      trap: '「何でもやった」から、仕事が速いと考えがち。決め手は but のあとの cares more。',
       use: 'He’s a lot, but he really cares.（クセは強いけど、本当に一生けんめい）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'here', reveals: ['keep'], seg: [116.3, 129.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'here', reveals: ['keep'], ctx: true, seg: [118.4, 126.7],
       stem: 'Why does Leslie say “Donna, I’m right here”?',
       ja: 'レスリーはなぜ「ドナ、私ここにいるよ」と言う？',
       choices: ['She cares about the job too', 'She wants to remind Donna she’s boss', 'Craig can hear them'], a: 0,
       choicesJa: ['私だって仕事を大事にしている', '上司は自分だと思い出させたい', 'クレイグに聞こえている'],
       cue: '直前のドナのほめ言葉',
-      line: 'anyone who *cares more* about this job. — Uh, Donna, *I’m right here.*',
+      line: 'Donna: …anyone who *cares more* about this job. / Leslie: Uh, Donna, *I’m right here.* / Donna: No joke, he might care more than you.',
       said: 'ドナが「彼ほど仕事を大事にする人はいない」と言うと、「私、ここにいるけど」と言う。',
       mean: 'I’m right here ＝「私ここにいるよ」。私だってだれより大事にしている、という文句。',
-      trap: '上司としての注意と思いやすい。直前の「だれより cares more」への反応。',
+      trap: '上司としての注意に聞こえるが、ドナの返事 more than you（あなたより）で、仕事への思いの話と分かる。',
       use: 'Hello? I’m right here.（ちょっと、本人ここにいるんですけど）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'choose', seg: [124.4, 131.2],
@@ -245,16 +286,16 @@ export const craigTemp: Clip = {
       trap: 'cut から給料をへらす話と思いやすい。cut the staff は人の数をへらすこと。',
       use: 'I would be happy to help.（よろこんでお手伝いします）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'even', reveals: ['larry'], seg: [137.1, 144.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'even', reveals: ['larry'], ctx: true, seg: [137.2, 143.4],
       stem: 'What does “Even Larry wants out?” show?',
       ja: '「Even Larry wants out?」から何が分かる？',
       choices: ['She didn’t expect Larry to go', 'She is glad Larry will go', 'She thinks Larry is just joking'], a: 0,
       choicesJa: ['ラリーがやめるとは思わなかった', 'ラリーがやめてうれしい', 'ラリーは冗談だと思う'],
       cue: '「What?」のあと',
-      line: 'What? *Even Larry* wants out?',
+      line: 'Larry: I would be happy to go back into retirement… / Leslie: What? *Even Larry* wants out?',
       said: '「え？ラリーまでやめたいの？」とおどろく。',
       mean: 'even ＝「〜まで、〜でさえ」。やめそうにない人まで、というおどろき。want out ＝ ぬけたい。',
-      trap: '人をへらしたいのだから喜ぶはず、と思いやすい。even はおどろきの言葉。',
+      trap: '人をへらしたいのだから喜ぶはず、と考えがち。even は「まさか」のおどろき。',
       use: 'Even my mom liked it!（母でさえ気に入った！）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'game', seg: [141.3, 151.3],
@@ -291,6 +332,29 @@ export const craigTemp: Clip = {
       trap: 'pregnant を文字通りに取ると赤ちゃんの話になる。機械のたとえなので「中身で満杯」。',
       use: 'My phone is full of unwatched videos.（スマホが見てない動画でいっぱい）', retired: true },
 
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'share', seg: [151.6, 168.7],
+      stem: 'What do Craig and Donna find out they share?',
+      ja: 'クレイグとドナは、何が同じだと分かる？',
+      choices: ['A favorite TV show', 'A favorite food', 'The same hometown'], a: 0,
+      choicesJa: ['一番好きなドラマ', '一番好きな食べ物', '同じ出身地'],
+      cue: '「Scandal’s my」のあと',
+      said: 'クレイグの録画の話に、ドナも「一番好きなドラマ」と言う。',
+      mean: 'Scandal ＝ アメリカの政治ドラマ。my favorite show ＝「一番好きな番組」。',
+      trap: 'Big plans tonight（今夜の予定）から食事の話と考えがち。my favorite show を聞く。',
+      use: 'That’s my favorite show too!（それ、私も一番好きな番組！）' },
+
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'mellie', reveals: ['share'], ctx: true, seg: [157.8, 164.0],
+      stem: 'What does Craig do when Donna says “except for—”?',
+      ja: 'ドナが「except for—」と言いかけると、クレイグはどうする？',
+      choices: ['He finishes her sentence', 'He changes the subject', 'He says he hates the show'], a: 0,
+      choicesJa: ['彼女の言葉の続きを言う', '話題を変える', 'そのドラマは嫌いだと言う'],
+      cue: '「except for—」のすぐあと',
+      line: 'Donna: I love every character, except for— / Craig: *For Mellie.*',
+      said: '「どのキャラも好き。ただ一人をのぞいて…」に、「メリーだろ」と続ける。',
+      mean: 'except for 〜 ＝「〜をのぞいて」。続きを相手が言う ＝ 考えが同じで、息が合っている。',
+      trap: 'Mellie はドラマの人物の名前。ドラマを嫌いと言ったのではない。',
+      use: 'I like all vegetables, except for carrots.（にんじん以外の野菜は全部好き）' },
+
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'love', seg: [158.0, 172.2],
       stem: 'In the last exchange, what does “I love you” mean here?',
       choices: ['Wild joy at finding a fellow fan', 'A heartfelt confession of romance',
@@ -301,5 +365,17 @@ export const craigTemp: Clip = {
       mean: '好きな番組が同じでうれしすぎての、大げさな友情表現。恋の告白ではない。',
       trap: 'I love you を恋愛と取りやすいが、理由は「同じ番組が好き」。理由の部分を聞く。',
       use: 'You like this band too? I love you!（このバンド好きなの？最高！）', retired: true },
+
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'nomatter', seg: [166.0, 172.8],
+      stem: 'What does “no matter what happens” mean?',
+      ja: '「no matter what happens」はどういう意味？',
+      choices: ['Whatever happens', 'If nothing happens', 'When it happens'], a: 0,
+      choicesJa: ['何が起きても', '何も起きなければ', 'それが起きたら'],
+      cue: '「I love you. And」のあと',
+      line: 'And *no matter what happens* with this job, I will always love you.',
+      said: '「この仕事がどうなっても、ずっと大好きだよ」と言う。',
+      mean: '文字どおりは「何が起きても問題ではない」→「何があっても」。I love you はここでは友情の大げさな言い方。',
+      trap: 'no から「何も起きなければ」と勘違いしやすい。no matter でひとまとまり。',
+      use: 'No matter what happens, I’m on your side.（何があっても味方だよ）' },
   ]
 };
