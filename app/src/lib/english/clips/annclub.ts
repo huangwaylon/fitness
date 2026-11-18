@@ -1,16 +1,21 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 5, ctx 4, tx 9
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 5, ctx 4, tx 9, qa 9
 // A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 2, new 2
 // “Ann gets kicked out of the exclusive club | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 6): Ann walks in on the staff's monthly venting club, uses her turn to pour out her pregnancy troubles, and
 // soon the members feel she has taken their club over. Segments from the captions, words from whisper (2026-11-16).
-// 108–244 s is the same footage as goodhusband 0–113 s (R4): goodhusband tests 'wanna', 'all the way up', Tylenol /
-// 'Is that better?', 'Wait 'til I tell you', feel bad → annoyed, 'be cool with', 'I see how it is' — not tested here.
+// Same footage: goodhusband (OdA8QNTqn-A) 0–60 s ≈ 108–168 s here and its 61–118 s ≈ 187–245 s; ronwhiners
+// (DemeythwnzU) is this clip minus 113–170 s (its 0–108 s ≈ 0–107 here, its 108–182 s ≈ 171–245 here).
+// OWNED POINTS (q41 split, 2026-11-18) — annclub tests: face wash, Can we help you, monthly, Ron's headphones, cede my
+// time to Ann (k1), pee every six minutes, never not hungry, can't have cheese, jelly beans, Pac-Man instead of dots
+// (h3), you asked for it, emergency club, do not respond (p3), out of hand, you've taken it over, I see how it is
+// (a2), Chris wants to help. Not here: ronwhiners's and goodhusband's points (listed in their headers: Kyle's fourth
+// time, I don't / I feel amazing, Wait 'til I tell you, Is that better?, …). Don't add another bank's point.
 // Donna is named at 61 s and 193 s (the cigar and the yellowtail are hers).
 // EXCLUDE 238.8–240.6
 // (Ann wetting herself, as in goodhusband)
 // SKIP 113–168: 115–141 s is goodhusband's footage and points (pains, Tylenol, 'Is that better?'); 141–168 s the
 //   nipple-kit body talk
-// Left out: 46–57 s (whisper and captions split; "choke him"), 182–197 s (vomit; 'Wait till…' is goodhusband's).
+// Left out: 42–46 s (ronwhiners's Kyle), 46–57 s (music, "choke him"), 182–192 s (vomit; 'Wait till…' is goodhusband's).
 // EAR CHECK: 62 s k1 — both sources hear "I'll save my time to Ann" (perhaps "cede"); the key stands on "to Ann"
 import type { Clip } from '../types.ts';
 
@@ -56,8 +61,8 @@ export const annclub: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'monthly', reveals: ['club'], seg: [17.4, 27.6],
       stem: 'How often does the club meet?',
       ja: 'クラブはどのくらいの間かくで集まる？',
-      choices: ['Once a month', 'Twice a month', 'Once a week'], a: 0,
-      choicesJa: ['月に1回', '月に2回', '週に1回'],
+      choices: ['Once a month', 'Twice a month', 'Once a week', 'Twice a week'], a: 0,
+      choicesJa: ['月に1回', '月に2回', '週に1回', '週に2回'],
       cue: '「It’s a」のすぐあと',
       line: 'It’s a *monthly* gathering',
       said: '「月に一度の集まり」と言う。',
@@ -75,7 +80,8 @@ export const annclub: Clip = {
       mean: 'Willie Nelson ＝ アメリカのカントリー歌手。月1回は出るが、話は聞かずに音楽を聞く、という意味。',
       trap: 'rules（決まり）と聞くと、まじめに話を聞くと考えがち。headphones まで聞く。',
       use: 'Can I listen to music here?（ここで音楽を聞いてもいいですか）' },
-    { id: 'n4', skill: 'number', level: 'B1', point: 'fourth', seg: [42.0, 46.5],
+    // retired (R4 QA): ronwhiners n2 tests Kyle's fourth time (same footage)
+    { id: 'n4', skill: 'number', level: 'B1', point: 'fourth', seg: [42.0, 46.5], retired: true,
       stem: 'How many times this month has Kyle taken that parking spot?',
       ja: 'カイルは今月、何回その駐車スペースに車を止めた？',
       choices: ['Two', 'Three', 'Four', 'Five'], a: 2,
@@ -100,8 +106,8 @@ export const annclub: Clip = {
     { id: 'n3', skill: 'number', level: 'B1', point: 'pee', seg: [64.4, 74.3], keep: true,
       stem: 'How often does Ann have to go to the bathroom?',
       ja: 'アンはどのくらいの間かくでトイレに行かなきゃいけない？',
-      choices: ['Every 6 minutes', 'Every 16 minutes', 'Every 60 minutes'], a: 0,
-      choicesJa: ['6分ごと', '16分ごと', '60分ごと'],
+      choices: ['Every 6 minutes', 'Every 10 minutes', 'Every 16 minutes', 'Every 60 minutes'], a: 0,
+      choicesJa: ['6分ごと', '10分ごと', '16分ごと', '60分ごと'],
       cue: '「pee every」のすぐあと',
       line: 'I have to pee *every six minutes*',
       said: '「6分おきにトイレに行かなきゃいけない」と言う。',
@@ -216,7 +222,7 @@ export const annclub: Clip = {
       trap: 'meaning（意味）から、言葉の意味を聞いていると勘違いしやすい。決め手は Emergency。',
       use: 'Sorry, is this an emergency?（すみません、これは急ぎですか）' },
     // restored in R4 (Ann's own rule for her emergency club)
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'respond', seg: [174.8, 183.6],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'respond', seg: [174.6, 183.6],
       stem: 'What does Ann ask the others not to do?',
       ja: 'アンはみんなに、何をしないでと頼んでいる？',
       choices: ['Answer anything she says', 'Wear their headphones', 'Leave the room'], a: 0,
@@ -238,18 +244,18 @@ export const annclub: Clip = {
       mean: 'can’t be around 〜 ＝ 〜のそばにいられない。アンがだめな物をわざと選んだ。',
       trap: 'すしと葉巻は高い物なので、豪華にしたと思いやすい。アンの一言とつなげる。',
       use: 'I can’t be around smoke.（煙のそばにはいられないんです）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'outofhand', seg: [194.2, 200.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'outofhand', seg: [192.8, 200.38],
       stem: '“It’s gotten out of hand.” What does it mean?',
       ja: '「It’s gotten out of hand」はどういう意味？',
       choices: ['It has gone too far', 'It has gotten boring', 'It is hard to hide'], a: 0,
       choicesJa: ['度が過ぎてしまった', 'つまらなくなった', '隠しにくい'],
       cue: '「this was funny, but」のあと',
       line: 'At first, this was funny, but *it’s gotten out of hand*.',
-      said: '「最初はおもしろかったけど、もうやりすぎだよ」と言う。',
+      said: '「最初は面白かったけど、もう度が過ぎてる」と言う。',
       mean: 'out of hand ＝ 手に負えない、度が過ぎた。but の前の funny と反対の気持ち。',
       trap: 'hand（手）から「手から離れる＝隠せない」と思いやすい。but のあとが本音。',
       use: 'The party got a little out of hand.（パーティーが少し羽目を外しすぎた）' },
-    { id: 's2', skill: 'sound', level: 'B2', point: 'takeover', reveals: ['club'], seg: [197.5, 207.1],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'takeover', reveals: ['club'], seg: [197.5, 206.75],
       stem: 'Which word do you hear: “and ___ taken it over”?',
       ja: '「and ___ taken it over」どれが聞こえる？',
       choices: ['you’ve', 'you’d', 'she’s'], a: 0,
@@ -270,18 +276,7 @@ export const annclub: Clip = {
       mean: 'take over ＝ 乗っ取る、自分のものにする。仕事の愚痴の会が、アンの会になった。',
       trap: 'アンが最初に「仕事中に飲んでる」と言ったので、注意した話と考えがち。仕事の愚痴の場、が決め手。',
       use: 'This was our chance to talk about work.（仕事の話をする場だったのに）' },
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'seehow', seg: [204.1, 211.1], retired: true,
-      stem: 'How does Ann feel when she hears the new name?',
-      ja: '新しい会の名前を聞いて、アンはどんな気持ち？',
-      choices: ['Hurt and left out', 'Happy for them', 'Fine with it'], a: 0,
-      choicesJa: ['傷ついて、のけ者の気分', 'みんなのために喜んでいる', '別にかまわない'],
-      cue: '「Wow. Okay.」に続く一言',
-      line: 'Wow. Okay. *I see how it is*.',
-      said: '「へえ。そう。そういうことね」と返す。',
-      mean: 'I see how it is ＝ そういうつもりなのね。のけ者にされて、すねた言い方。',
-      trap: 'Okay や I see（わかった）から、納得したと思いやすい。how it is が付くと不満。',
-      use: 'Oh, I see how it is.（へえ、そういうことね）' },
-    // retired (R4): goodhusband (same footage) tests 'I see how it is' live (its a2)
+    // retired (R4): a2 tests 'I see how it is'
     { id: 'x1', skill: 'dict', level: 'B1', point: 'seehow', seg: [204.7, 212.6], retired: true,
       stem: 'Type what Ann says: “Wow. Okay. ___.” (5 words)', answer: 'i see how it is',
       ja: 'アンの言葉を書こう：「Wow. Okay. ___.」（5語）',
@@ -291,8 +286,20 @@ export const annclub: Clip = {
       mean: 'how it is がつながって「ハウイティズ」のように聞こえる。',
       trap: 'how と it がつながり、it の t も小さい。is は「ズ」だけに近い。',
       use: 'That’s just how it is.（そういうものだよ）' },
-    // restored in R4 as a context item (goodhusband retired its copy for annclub)
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'amazing', ctx: true, seg: [210.0, 216.3],
+    // restored (R4 QA): no bank tested 'I see how it is' (goodhusband a2 and this one had each retired it for the other)
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'seehow', seg: [206.65, 211.2],
+      stem: 'What does Ann mean by “I see how it is”?',
+      ja: 'アンの「I see how it is」はどういう意味？',
+      choices: ['You don’t want me here', 'I understand the rules now', 'I can see it clearly'], a: 0,
+      choicesJa: ['私はいらないってことね', 'やっとルールが分かった', 'はっきり見える'],
+      cue: '「Wow. Okay.」のあと',
+      line: 'Wow. Okay. *I see how it is*.',
+      said: '「すしと葉巻の会」と聞いて、「へえ。そう。そういうことね」と返す。',
+      mean: 'I see how it is ＝ 文字どおりは「どうなってるか分かった」→「そういうことね」。冷たくされたと気づいた、すねた言い方。',
+      trap: 'I see（分かった）だけだと、納得したと勘違いしやすい。how it is まで付くと「のけ者にしたいのね」。',
+      use: 'Oh, I see how it is.（へえ、そういうことね）' },
+    // retired (R4 QA): ronwhiners a2 tests Donna's 'I don't / I feel amazing' (same footage)
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'amazing', ctx: true, seg: [210.0, 216.3], retired: true,
       stem: 'How does Donna answer “I feel bad”?',
       ja: '「I feel bad」に、ドナはどう答える？',
       choices: ['She feels great', 'She feels bad too', 'She wants to stop'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 9, retire 4, new 4, ctx 4, tx 22
+// R4 REVIEW 2026-11-18: keep 4, rewrite 9, retire 4, new 4, ctx 4, tx 22, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 11, retire 4, new 2
 // “Chris' guide to being a good husband | Parks and recreation” (the official Parks and Recreation channel, Season 6):
 // pregnant Ann unloads her complaints on Chris, then on the wine-and-cheese club, who push her out; Chris is told to
@@ -9,8 +9,13 @@
 // EXCLUDE 196.6–203
 // (Ann wetting herself; the gas lines)
 // SKIP 34–61: the nipple-kit speech (body-part jokes, nothing reusable)
-// SKIP 64–92: the club scene is the same footage as annclub, which tests it (d3, g2, x1, a2 retired for that)
-// annclub shares 0–113 s too; items here test only points annclub doesn't (fixing, Is that better?, Wait 'til…).
+// SKIP 64–92: the club scene is the same footage as annclub and ronwhiners, which test it (d3, g2, x1, a2 retired)
+// Same footage: 0–60 s ≈ annclub 108–168 s; 61–118 s ≈ annclub 187–245 s and ronwhiners 124–182 s.
+// OWNED POINTS (q41 split, 2026-11-18) — goodhusband tests: wanna, all the way up, never fear / fixing, Is that
+// better?, Wait 'til I tell you, feel bad → annoyed, be cool with, Hard pass, 1,000 questions, She's upset that…?,
+// she can get it herself, don't try to fix it, legs/calves, That really sucks → thanks, don't apologize, a girl could
+// ask for. Not here: you asked for it, I see how it is, out of hand, you've taken it over, Chris wants to help
+// (annclub); sushi and cigars, I don't / I feel amazing, you know what?, I don't care, That sucks (ronwhiners).
 import type { Clip } from '../types.ts';
 
 export const goodHusband: Clip = {
@@ -209,8 +214,8 @@ export const goodHusband: Clip = {
     { id: 'c3', skill: 'attitude', level: 'B2', point: 'feelbad', seg: [94.4, 102.8],
       stem: 'How does Ann feel when Chris tries to help?',
       ja: 'クリスが助けようとすると、アンはどんな気持ちになる？',
-      choices: ['Bad, then annoyed', 'Happy, then sleepy', 'Calm, then hungry'], a: 0,
-      choicesJa: ['申し訳なくて、それからイライラ', 'うれしくて、それから眠い', '落ち着いて、それからおなかがすく'],
+      choices: ['Bad, then annoyed', 'Happy, then thankful', 'Loved, then calm'], a: 0,
+      choicesJa: ['申し訳なくて、それからイライラ', 'うれしくて、それから感謝', '愛されて、それから安心'],
       cue: '「and then」が2回続く所',
       line: 'he just wants to help me and then *I feel bad* about that and then *I get annoyed*…',
       said: '「助けたいだけの彼に申し訳なくなって、今度はイライラして、もっと申し訳なくなる」と話す。',
@@ -230,7 +235,7 @@ export const goodHusband: Clip = {
       trap: 'cool を「かっこいい」「冷たい」と考えがち。be cool with ＋こと ＝ 気にしない、OK。',
       use: 'Are you cool with that?（それでいい？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'pass', ctx: true, seg: [119.8, 127.4],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'pass', ctx: true, seg: [119.8, 127.05],
       stem: 'What does “*Hard pass*” mean?',
       ja: '「Hard pass」はどういう意味？',
       choices: ['No, not at all', 'Yes, but only a bit', 'Maybe, if it’s short'], a: 0,
@@ -254,7 +259,7 @@ export const goodHusband: Clip = {
       trap: 'literally から本当の数と考えがち。ten なら前に「テン」。thousand の「サウ」を聞く。',
       use: 'I have a thousand things to do.（やることが山ほどある）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'upset', reveals: ['fix'], ctx: true, seg: [134.7, 145],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'upset', reveals: ['fix'], ctx: true, seg: [134.7, 144.6],
       stem: 'Why does Chris repeat what he hears?',
       ja: 'クリスが聞いたことをくり返すのはなぜ？',
       choices: ['He is surprised by it', 'He didn’t hear it well', 'He agrees with it'], a: 0,
@@ -324,7 +329,7 @@ export const goodHusband: Clip = {
       trap: 'headache（頭痛）がはっきり聞こえるので、頭を選びやすい。but のあとを聞く。',
       use: 'My legs really hurt.（脚がすごく痛い）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'lesson', reveals: ['fix', 'thanks', 'dontfix'], seg: [204.0, 224.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'lesson', reveals: ['fix', 'thanks', 'dontfix'], seg: [203.7, 224.0],
       stem: 'What makes Ann feel better at the end?',
       ja: '最後にアンが元気になるのは何のおかげ？',
       choices: ['Chris just says it’s hard', 'Chris fixes her pain', 'Chris gives her a gift'], a: 0,
@@ -335,7 +340,7 @@ export const goodHusband: Clip = {
       trap: 'クリスは前のように解決しようとする、と予想しやすい。今回は一言だけ。',
       use: 'I don’t need advice. Just listen.（アドバイスより、聞いてほしいの）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', ctx: true, seg: [204.0, 211.3],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', ctx: true, seg: [203.7, 211.3],
       stem: 'How does Ann feel after “That really sucks”?',
       ja: '「That really sucks」のあと、アンはどんな気持ち？',
       choices: ['She is thankful', 'She is annoyed', 'She is amused'], a: 0,

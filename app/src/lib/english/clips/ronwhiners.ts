@@ -1,17 +1,19 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 5, ctx 6, tx 15
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 5, ctx 6, tx 15, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 13, retire 3, new 0
 // “Ron Swanson Can't Handle Whiners | Parks and Recreation” (the official Parks and Recreation channel, Season 6): the
 // staff's monthly Wine and Cheese Club lets everyone vent about work; Ann joins, her pregnancy complaints take it over,
 // and the others push her out with sushi and cigars.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 36–42 s (Ron's headphones), 46.7–56 s (under
-// music). en 31 “I'll save my time to end” is “I'll cede my time to Ann” (json3 hears “to Anne”); ja and c2 follow the
-// audio. No scenes file. The id h1 was dropped before it shipped: never reuse it.
-// The same scene as annclub (YTVezU88sgY) and goodhusband 64–110 s (OdA8QNTqn-A). Points live there are not tested
-// here: Can we help you, monthly, Ron's headphones, pee every six minutes, never not hungry, can't have cheese, jelly
-// beans, you asked for it, out of hand, you've taken it over, I see how it is, Chris is too kind (annclub); Wait 'til
-// I tell you, feel bad → annoyed, cool with me complaining (goodhusband). ronwhiners owns: brief recess, looking for
-// Leslie, the club's purpose, Kyle's fourth time, cede my time, That sucks, Larry, instead of, a lot of complaints,
-// don't respond, sushi and cigars, I don't / I feel amazing, Ann's final speech, you know what?, I don't care.
+// Segments from the captions, words from whisper (2026-11-16). en 31 “I'll save my time to end” is “I'll cede my time
+// to Ann” (json3 hears “to Anne”). No scenes file. The id h1 was dropped before it shipped: never reuse it.
+// Same footage: annclub (YTVezU88sgY) is this clip plus Chris and Ann at its 113–170 s (0–108 s here ≈ 0–107 there,
+// 108–182 s here ≈ 171–245 there); goodhusband (OdA8QNTqn-A) 61–118 s ≈ 124–182 s here.
+// OWNED POINTS (q41 split, 2026-11-18) — ronwhiners tests: brief recess, looking for Leslie, the club's purpose, HR
+// requires, Kyle's fourth time (n2), That sucks, Larry, where's my trash bag of potatoes (d6), a lot of complaints,
+// sushi and cigars, I don't / I feel amazing (a2), Ann's final speech, you know what?, I don't care.
+// Not here (annclub): face wash, Can we help you, monthly, Ron's headphones, cede my time (c2 retired), pee every six
+// minutes, never not hungry, can't have cheese, jelly beans, Pac-Man instead of dots (d3 retired), emergency club,
+// do not respond (i2 retired), out of hand, you've taken it over, I see how it is, Chris wants to help. Not here
+// (goodhusband): Wait 'til I tell you, feel bad → annoyed, cool with me complaining. Untested: 46.7–56 s (music).
 // EXCLUDE 120.6–124.3 (vomiting talk)
 // EXCLUDE 175.3–177.4 (Ann wets herself)
 import type { Clip } from '../types.ts';
@@ -109,12 +111,12 @@ export const ronWhiners: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'kyle', seg: [42.3, 46.7], keep: true,
       stem: 'How often has Kyle taken the parking spot?',
       ja: 'カイルはその駐車場所に何回とめた？',
-      choices: ['3 times this month', '4 times this month', '4 times this week'], a: 1,
-      choicesJa: ['今月3回', '今月4回', '今週4回'],
+      choices: ['3 times this month', '4 times this month', '5 times this month', '4 times this week'], a: 1,
+      choicesJa: ['今月3回', '今月4回', '今月5回', '今週4回'],
       cue: '「that is the」のあと', line: 'that is the *fourth time this month*',
       said: '「カイルがまた私の場所にとめた。今月4回目だ」と言う。',
       mean: 'the fourth time ＝ 4回目。this month ＝ 今月。回数で不満の大きさを伝える。',
-      trap: '「フォース」なら4回目、「サード」なら3回目。最後が month（マンス）か week（ウィーク）かも聞く。',
+      trap: '「フォース」なら4回目、「サード」なら3回目、「フィフス」なら5回目。最後が month（マンス）か week（ウィーク）かも聞く。',
       use: 'That’s the third time this week.（今週これで3回目だよ）' },
 
     // retired (A2): whisper hears “Time?”, so whether it ends a turn is unsure
@@ -127,7 +129,8 @@ export const ronWhiners: Clip = {
       trap: '文字通り「何時？」と取りやすいが、会議や試合で Time は「時間切れ」の合図。',
       use: 'Okay, time’s up. Next!（はい、時間です。次の人）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'cede', ctx: true, seg: [57.05, 64.7],
+    // retired (R4 QA): annclub k1 tests the cede (same footage)
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'cede', ctx: true, seg: [57.05, 64.7], retired: true,
       stem: 'What does Donna do when Ann wants to try?',
       ja: 'アンが「やってみたい」と言うと、ドナはどうする？',
       choices: ['She lets Ann go first', 'She tells Ann to wait', 'She asks Ann to leave'], a: 0,
@@ -151,14 +154,14 @@ export const ronWhiners: Clip = {
       trap: 'sixteen は後ろ、sixty は前を強く言う。six は短い一音。',
       use: 'The bus comes every ten minutes.（バスは10分おきに来ます）' },
 
-    { id: 'c3', skill: 'phrase', level: 'B1', point: 'sucks', ctx: true, seg: [68.9, 75.3],
+    { id: 'c3', skill: 'phrase', level: 'B1', point: 'sucks', ctx: true, seg: [64.65, 75.2],
       stem: 'What does “*That sucks*” mean here?',
       ja: 'ここでの「That sucks」はどういう意味？',
       choices: ['That sounds hard', 'That sounds funny', 'That is not true'], a: 0,
       choicesJa: ['それはつらいね', 'それは面白いね', 'それは本当じゃない'],
       cue: 'アンの悩みへの短い返事',
-      line: 'Ann: …a beach ball in my stomach that’s punching on my bladder. / *That sucks.* / Ann: I know.',
-      said: 'お腹の重さを話すアンに「それはきついな」と返し、アンは「でしょ」と言う。',
+      line: 'Ann: …I have a beach ball in my stomach… / *That sucks.* / Ann: I know.',
+      said: 'トイレが近いと話すアンに「それはきついな」と返し、アンは「でしょ」と言う。',
       mean: 'That sucks ＝ 文字どおりは「それは吸う」→「最悪だね・きついね」。友だちの愚痴に同情する、くだけた決まり文句。',
       trap: 'suck（吸う）から意味を取ると分からない。返事の I know（でしょ）で、同情されたと分かる。',
       use: 'Your flight got canceled? That’s too bad.（便が欠航？それは大変だね）' },
@@ -197,7 +200,8 @@ export const ronWhiners: Clip = {
       trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱い。could は「クッ」。次の either も否定の印。',
       use: 'I can’t have caffeine after six.（6時以降カフェインはだめなんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.9, 96.7],
+    // retired (R4 QA): annclub h3 tests 'instead of dots' (same footage); d6 is the replacement
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.9, 96.7], retired: true,
       stem: 'What does Ann want instead of the dots?',
       ja: 'アンは点の代わりに何がほしい？',
       choices: ['Cinnamon buns', 'Some jelly beans', 'Pork rinds'], a: 0,
@@ -208,7 +212,20 @@ export const ronWhiners: Clip = {
       trap: '少し前にほかの食べ物も並べている。instead of のあとが答え。',
       use: 'I’d like tea instead of coffee, please.（コーヒーの代わりに紅茶をお願いします）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120.5],
+    // new (R4 QA): replaces d3 (Pac-Man is annclub's)
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'trashbag', seg: [94.33, 101.7],
+      stem: 'What does Ann ask “Where’s my…?” about?',
+      ja: 'アンが「Where’s my…?（私の〜はどこ？）」と聞いているのは何？',
+      choices: ['Her bag of potatoes', 'Her jelly beans', 'Her glass of wine'], a: 0,
+      choicesJa: ['ポテトの袋', 'ジェリービーンズ', 'グラスのワイン'],
+      cue: '「junk food pellets」のあと', line: 'And *where’s my trash bag of potatoes*?',
+      said: 'ジャンクフードの話のあと、「で、私のポテト入りゴミ袋はどこ？」と言う。',
+      mean: 'Where’s my 〜? ＝「私の〜はどこ？」。物を探す基本の言い方。前に言ったポテトの袋を、本当にあるように聞く。',
+      trap: 'jelly beans も少し前に「食べたい」と言っていた。決め手は where’s my のあとの potatoes。',
+      use: 'Excuse me, where’s my coat?（すみません、私のコートはどこですか）' },
+
+    // retired (R4 QA): annclub p3 tests 'do not respond' (same footage)
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120.5], retired: true,
       stem: 'In the emergency meeting, what does Ann want from the others?',
       ja: '緊急の集まりで、アンはみんなに何をしてほしい？',
       choices: ['Just to listen to her', 'To give her advice', 'To leave the room'], a: 0,
@@ -263,7 +280,7 @@ export const ronWhiners: Clip = {
       trap: 'I see を「分かりました」と思うと納得に聞こえる。how it is まで付くと不満。',
       use: 'Oh, I see how it is.（ふーん、そういうことね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', ctx: true, seg: [145.8, 152.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', ctx: true, seg: [143.6, 152.6],
       stem: 'After “I feel bad,” how does Donna feel?',
       ja: '「悪いことしたな」のあと、ドナはどんな気持ち？',
       choices: ['Not sorry at all', 'A little sorry for Ann', 'Very sorry too'], a: 0,
