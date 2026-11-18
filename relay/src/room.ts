@@ -55,7 +55,7 @@ export interface RoomIO<S extends Sock> {
   /** Persist the day's claims and nests (fire and forget): they outlive the ring's trimming and a restart. */
   saveDay?(d: DayIndex): void;
   /** Persist one すごろく move (fire and forget), a storage row of its own (sgKey), and let a game's rows go. */
-  saveSg?(key: string, e: SgKept): void;
+  saveSg?(key: string, e: SgRow): void;
   dropSg?(keys: string[]): void;
   /** When the runtime last answered this socket's heartbeat (ms; the auto-response's timestamp: HB_PING never reaches
    *  the room), or null. */
@@ -90,20 +90,36 @@ export interface DayIndex {
 export type Kept = Relayed & { c?: number; sk?: string };
 /** A すごろく move as the room keeps it. */
 export type SgKept = Extract<Kept, { kind: 'sg' }>;
+/** A game's moves folded into one row (`sg:<g>`): its first moves, and its end once it has one. */
+interface SgFold {
+  moves: SgKept[];
+  end?: SgKept;
+}
+/** A すごろく storage row: a move, or a game's fold. */
+export type SgRow = SgKept | SgFold;
 
 /** 英語すごろく's games (docs/backend.md#shared-world), apart from the day's ring (a long game is ~250 moves: in the ring
  *  they were the first trimmed, and every move rewrote it): each game's moves in order (`moves[i]`, the first of each
  *  `i`), its earliest end (`end`: its `i` the moves it follows), and its last move's stamp. One storage row a move
- *  (`sg:<g>:<i>`, the end `sg:<g>:e`); a game goes SG_KEEP_MS after its last move, and past SG_GAMES the oldest. */
+ *  (`sg:<g>:<i>`, the end `sg:<g>:e`) until SG_FOLD of them, or the end: then the game's moves so far go into its fold
+ *  row (`sg:<g>`, `fold` of them) and their own rows go, so a wake reads a game's few rows, not its every move (2026-11-18,
+ *  network review N4). A game goes SG_KEEP_MS after its last move, and past SG_GAMES the oldest. */
 interface SgGame {
   moves: SgKept[];
   end?: SgKept;
   last: number;
+  /** How many of its moves its fold row holds (0: none), and whether the end. */
+  fold: number;
+  foldEnd?: boolean;
 }
+const SG_FOLD = 32;
+/** A fold row at most this long (JSON): past it, the moves keep their own rows (the store takes 128 KiB a value). */
+const SG_FOLD_MAX = 100_000;
 const SG_KEEP_MS = 2 * 86_400_000;
 const SG_GAMES = 12;
 /** A move's storage row. */
 const sgKey = (e: Pick<SgIntent, 'g' | 'i' | 'a'>): string => `sg:${e.g}:${e.a === 'end' ? 'e' : e.i}`;
+const foldKey = (g: string): string => `sg:${g}`;
 /** Whether a game takes a move: a start for a game the room hasn't; a move at the game's next `i`; an end after the
  *  start, at most at the next `i`, before any end it has (an end ahead of a move at its `i` beats it on every phone:
  *  lib/sugoroku/online.ts heard). Nothing at or past the game's end. */
@@ -171,11 +187,9 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg: SgKept[] = []) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg?: SgRow[]) {
     this.music = { ...music };
-    // the games as kept (rows in no order): each in its order, up to a gap
-    const rows = [...sg].sort((a, b) => (a.a === 'end' ? 1 : 0) - (b.a === 'end' ? 1 : 0) || a.i - b.i);
-    for (const e of rows) this.takeSg(e);
+    if (sg) this.loadSg(sg);
     // (2026-11-18) the moves the day's ring held from before: into their games, out of the ring
     const old = ring.filter((e): e is SgKept => e.kind === 'sg');
     if (old.length) {
@@ -623,6 +637,7 @@ export class RoomCore<S extends Sock> {
     for (const p of this.others(who)) if (seats.includes(this.io.meta(p)!.who!)) this.send(p, strip(out));
     this.takeSg(out);
     this.io.saveSg?.(sgKey(out), out);
+    this.foldSg(m.g);
     // past SG_GAMES, the game left longest goes
     if (this.games.size > SG_GAMES) this.dropGame([...this.games].reduce((a, b) => (b[1].last < a[1].last ? b : a))[0]);
     if (c !== undefined) this.ack(s, c, out.t, true);
@@ -638,11 +653,40 @@ export class RoomCore<S extends Sock> {
     for (const p of this.others(who)) if (seats.includes(this.io.meta(p)!.who!)) this.send(p, out);
   }
 
+  /** The games as kept (rows in no order: the folds first, then each game's own rows in its order, up to a gap), those
+   *  past SG_KEEP_MS let go. The room's storage reads them when a message needs them (index.ts: a hello, a move, a
+   *  view), never on every wake. */
+  loadSg(rows: readonly SgRow[]): void {
+    const folds = rows.filter((r): r is SgFold => 'moves' in r);
+    for (const f of folds) {
+      for (const e of f.moves) this.takeSg(e);
+      if (f.end) this.takeSg(f.end);
+      const x = this.games.get(f.moves[0]?.g ?? '');
+      if (x) (x.fold = f.moves.length), (x.foldEnd = !!f.end);
+    }
+    const own = rows.filter((r): r is SgKept => !('moves' in r)).sort((a, b) => (a.a === 'end' ? 1 : 0) - (b.a === 'end' ? 1 : 0) || a.i - b.i);
+    for (const e of own) this.takeSg(e);
+    for (const [g, x] of this.games) if (this.io.now() - x.last > SG_KEEP_MS) this.dropGame(g);
+  }
+
+  /** A game's moves since its fold into the fold row, their own rows gone, at SG_FOLD of them or the end. */
+  private foldSg(g: string): void {
+    const x = this.games.get(g);
+    if (!x || (x.moves.length - x.fold < SG_FOLD && !(x.end && !x.foldEnd))) return;
+    const f: SgFold = { moves: x.moves, ...(x.end ? { end: x.end } : {}) };
+    if (JSON.stringify(f).length > SG_FOLD_MAX) return;
+    const own = [...x.moves.slice(x.fold), ...(x.end && !x.foldEnd ? [x.end] : [])].map(sgKey);
+    this.io.saveSg?.(foldKey(g), f);
+    this.io.dropSg?.(own);
+    x.fold = x.moves.length;
+    x.foldEnd = !!x.end;
+  }
+
   /** Take a move into its game (sgTakes); true when it did. */
   private takeSg(e: SgKept): boolean {
     const game = this.games.get(e.g);
     if (!sgTakes(game, e)) return false;
-    const x = game ?? { moves: [], last: 0 };
+    const x: SgGame = game ?? { moves: [], last: 0, fold: 0 };
     if (e.a === 'end') x.end = e;
     else x.moves.push(e);
     x.last = Math.max(x.last, e.t);
@@ -655,7 +699,7 @@ export class RoomCore<S extends Sock> {
     const x = this.games.get(g);
     if (!x) return;
     this.games.delete(g);
-    this.io.dropSg?.([...x.moves, ...(x.end ? [x.end] : [])].map(sgKey));
+    this.io.dropSg?.([...(x.fold ? [foldKey(g)] : []), ...[...x.moves.slice(x.fold), ...(x.end && !x.foldEnd ? [x.end] : [])].map(sgKey)]);
   }
 
   /** The games' moves after `since` (a hello's), the moves from an end on left out; the hello's own game (`at`) from

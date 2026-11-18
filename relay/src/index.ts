@@ -4,7 +4,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
-import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type SgKept } from './room.ts';
+import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type SgRow } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
@@ -63,8 +63,11 @@ export interface Env {
 export type WxHealth = ReturnType<typeof wxHealth>;
 
 const RING = 'ring';
-/** 英語すごろく's moves, a row each (room.ts sgKey: `sg:<game>:<i>`, `sg:<game>:e`). */
+/** 英語すごろく's games (room.ts SgGame: a fold row `sg:<game>`, and a row a move since, `sg:<game>:<i>`, `sg:<game>:e`):
+ *  read when a message needs them (SG_NEEDS: a hello replays them, a move or a view joins one), never on a wake that
+ *  doesn't (the ghosts' alarm, a world intent, the record's RPC: 2026-11-18, network review N4). */
 const SG = 'sg:';
+const SG_NEEDS = new Set(['hello', 'sg', 'sgv']);
 /** The day's claims and nests (room.ts DayIndex): apart from the ring, which trims. */
 const DAY = 'day';
 /** The record's last change (welcome `rec`), the last the guest heard of (room.ts guestNotice: no member's ingest), and
@@ -119,7 +122,6 @@ export class IslandRoom extends DurableObject<Env> {
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
       const music = (await ctx.storage.get<Music>(MUSIC)) ?? {};
-      const sg = [...(await ctx.storage.list<SgKept>({ prefix: SG })).values()];
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -151,7 +153,7 @@ export class IslandRoom extends DurableObject<Env> {
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music, sg);
+      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music);
     });
   }
 
@@ -185,7 +187,21 @@ export class IslandRoom extends DurableObject<Env> {
     await this.alarmBy(due);
   }
 
-  webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
+  /** The すごろく games being read in (once a wake; the room's other events held till then: every message waits in its
+   *  order), and once they are. */
+  private sgIn: Promise<void> | null = null;
+  private sgDone = false;
+
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    if (!this.sgDone) {
+      if (!this.sgIn && typeof message === 'string' && SG_NEEDS.has(kindOf(message))) {
+        this.sgIn = this.ctx.blockConcurrencyWhile(async () => {
+          this.core.loadSg([...(await this.ctx.storage.list<SgRow>({ prefix: SG })).values()]);
+          this.sgDone = true;
+        });
+      }
+      if (this.sgIn) await this.sgIn;
+    }
     // a throw here (a bug, a storage hiccup) would be the runtime's: an error logged nowhere we read, the socket
     // possibly reset. Caught: the log's do.error (its class only), the socket kept
     try {
@@ -400,4 +416,14 @@ function reqEvent(m: ReqMeta, ms: number): RelayEvent {
   const { role, rid, sid, ...d } = m;
   const l = m.st === 'unavailable' ? 3 : m.st === 'ok' && !m.rej ? 1 : 2;
   return { e: 'req', l, role, rid, sid, d: { ...d, ms } };
+}
+
+/** A message's `kind` (cheaply: the room parses it again), '' when it has none. */
+function kindOf(raw: string): string {
+  try {
+    const k = (JSON.parse(raw) as { kind?: unknown } | null)?.kind;
+    return typeof k === 'string' ? k : '';
+  } catch {
+    return '';
+  }
 }

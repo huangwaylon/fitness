@@ -386,10 +386,11 @@ is a small intent over the relay, kept by the room for the day, folded by every 
 - **The room** (`relay/src/room.ts`): the last `RING_MAX` changes and each person's last `walk` in one storage value
   (`ring`); the day's claims and each tree's last nest apart (`day`), so neither a trimmed ring nor a hibernation lets
   a claim be made twice (`NEST_GAP_MS`). [英語すごろく](sugoroku.md#online)'s moves (`sg`) are kept apart from the
-  ring, a storage row each (`sg:<game>:<i>`, its end `sg:<game>:e`): a game takes its moves in order, the first of each
-  `i` only (a later one is refused: `ack {ok: false}`), and nothing past its earliest end; replayed at hello after
-  `since` with the day's world; a game goes 2 days after its last move, and past 12 games the one left longest. Never a
-  health row.
+  ring, a row each (`sg:<game>:<i>`, `sg:<game>:e`), folded into the game's row (`sg:<game>`) every 32 and at its end;
+  read only when a hello, move or view needs them. Moves in order, the first of each `i` only (else `ack {ok: false}`),
+  nothing past the earliest end; sent to the game's seats only. Replayed at hello after `since`, and the hello's own
+  game (`sg: {g, n}`) from move `n` whatever `since` (midnight); a game goes 2 days after its last move, past 12 the
+  one left longest.
 - **Test mode** (`sync/live-local.ts`, [testing](ops/testing.md#test-mode)): the players are tabs of one browser (`?demo`, `&as=B`, `as=G`), a
   BroadcastChannel the room, so the two-player e2e run without a network.
 - **The record's day row** (`island` event, `store/actions.ts sendIslandDay`): my part of the day, sent whole when it

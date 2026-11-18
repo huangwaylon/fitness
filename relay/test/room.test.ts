@@ -1277,7 +1277,8 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
       now += 60;
       say(a, { kind: 'world', op: 'watered', id: `x${i}` });
     }
-    expect(rows.size).toBe(250);
+    // folded every 32 moves: one row for the first 224, the last 26 their own
+    expect(rows.size).toBe(1 + 26);
     room = new RoomCore(sgIo(), saved.at(-1) as never, null, {}, {}, null, null, null, [], {}, [...rows.values()].reverse() as never);
     const b = join(KEY_B, 0);
     expect(b.sent.filter((m) => m.kind === 'sg')).toHaveLength(250);
@@ -1317,6 +1318,39 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     expect(moves(hello({ g: 'zzzzzzzzzz', n: 0 }))).toEqual(['5endA']);
     const bad = hello({ g: 'NO', n: -1 });
     expect(bad.sent[0]).toMatchObject({ kind: 'welcome', me: 'B' });
+  });
+
+  it('an ended game is one row: it survives a wake, a resend of its end is acked again, and it goes whole', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    say(a, { ...start, c: 1 });
+    for (let i = 1; i <= 40; i++) (now += 100), say(a, { kind: 'sg', g: G, i, a: 'roll', c: 1 + i });
+    expect([...rows.keys()].sort()).toEqual([`sg:${G}`, ...Array.from({ length: 41 - 32 }, (_, k) => `sg:${G}:${32 + k}`)].sort());
+    say(b, { kind: 'sg', g: G, i: 41, a: 'end', c: 1 });
+    expect([...rows.keys()]).toEqual([`sg:${G}`]);
+    // a wake (the rows in no order): the game as it was
+    room = new RoomCore(sgIo(), [], null, {}, {}, null, null, null, [], {}, [...rows.values()] as never);
+    const b2 = join(KEY_B, 0);
+    expect(moves(b2)).toHaveLength(42);
+    expect(moves(b2).at(-1)).toBe('41endB');
+    say(b2, { kind: 'sg', g: G, i: 41, a: 'end', c: 1 });
+    say(b2, { kind: 'sg', g: G, i: 42, a: 'roll', c: 2 });
+    expect(acks(b2)).toEqual([true, false]);
+    expect([...rows.keys()]).toEqual([`sg:${G}`]);
+    // two days on: gone, its one row too
+    now += 2 * 86_400_000 + 10_000;
+    expect(moves(join(KEY_B, 0))).toEqual([]);
+    expect(rows.size).toBe(0);
+  });
+
+  it('a wake mid-game: the fold and the rows after it, the next moves folded on from there', () => {
+    const a = join(KEY_A);
+    say(a, { ...start, c: 1 });
+    for (let i = 1; i < 40; i++) (now += 100), say(a, { kind: 'sg', g: G, i, a: 'roll', c: 1 + i });
+    room = new RoomCore(sgIo(), [], null, {}, {}, null, null, null, [], {}, [...rows.values()].reverse() as never);
+    const a2 = join(KEY_A, 0);
+    for (let i = 40; i < 64; i++) (now += 100), say(a2, { kind: 'sg', g: G, i, a: 'roll', c: 100 + i });
+    expect([...rows.keys()]).toEqual([`sg:${G}`]);
+    expect((rows.get(`sg:${G}`) as { moves: unknown[] }).moves).toHaveLength(64);
   });
 
   it('a turn’s view (sgv) goes live to the game’s other seats only, at its next move only, never kept or acked', () => {

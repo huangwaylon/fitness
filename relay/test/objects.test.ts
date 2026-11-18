@@ -408,6 +408,25 @@ describe('IslandRoom', () => {
     expect(replay?.es?.map((e) => e.a)).toEqual(['start', 'roll']);
   });
 
+  it('すごろく’s rows are read when a message needs them (a hello, a move), once a wake; never by a wake that doesn’t', async () => {
+    let meta: unknown = { who: 'A', opened: NOW };
+    const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send() {}, close() {} };
+    const st = fakeState({ sockets: () => [ws] });
+    const lists = vi.spyOn(st.storage, 'list');
+    const r = new IslandRoom(st.state, envOf());
+    await settle();
+    await r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'ping', c: 1 }));
+    await r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'world', op: 'watered', id: 'fl:1:2' }));
+    expect(lists.mock.calls.filter(([o]) => o.prefix === 'sg:')).toHaveLength(0);
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    meta = { who: null, opened: NOW };
+    await r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
+    await r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'sg', g: 'abcdefghij', i: 0, a: 'start', s: 'A2B1', l: 's', c: 2 }));
+    await settle();
+    expect(lists.mock.calls.filter(([o]) => o.prefix === 'sg:')).toHaveLength(1);
+  });
+
   it('a closing socket is logged as `room.close` and closed with a clean code', async () => {
     const closed: unknown[][] = [];
     const ws = { deserializeAttachment: () => ({ who: 'A', opened: NOW - 30_000 }), serializeAttachment() {}, send() {}, close: (...a: unknown[]) => closed.push(a) };

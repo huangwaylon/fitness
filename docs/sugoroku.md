@@ -129,7 +129,7 @@ trial); off, no step shows. The relay's `POST /grade`: relay/src/gradeRoute.ts (
 
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
 `a` and its few fields, ≤ 256 bytes; a game id of 10 letters is its board's layout seed, an older 6–8 the classic board), sent to the relay and kept by the room per game
-([backend](backend.md#shared-world): a row a move, apart from the day's ring), so a phone that opens later or reloads
+([backend](backend.md#shared-world): a row a move, folded into one a game, apart from the day's ring), so a phone that opens later or reloads
 gets them again (its own too); the room keeps a game 2 days after its last move, 12 games at most. Each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
 through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
 ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
