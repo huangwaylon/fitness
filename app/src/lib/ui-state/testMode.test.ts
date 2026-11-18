@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { shaderChecks, testHooks, testModeAllowed, testModeAsked } from './testMode.ts';
 import { hooksOn } from './preview.ts';
@@ -38,5 +40,24 @@ describe('test mode (`?demo`) in a production build', () => {
     vi.stubEnv('DEV', true);
     page('?demo');
     expect(testModeAsked(new URLSearchParams('?demo'))).toBe(true);
+  });
+});
+
+/** Every source file under `p` (.ts, .svelte; no tests). */
+const sources = (p: string): string[] =>
+  readdirSync(p, { withFileTypes: true }).flatMap((d) =>
+    d.isDirectory() ? sources(join(p, d.name)) : /\.(ts|svelte)$/.test(d.name) && !d.name.includes('.test.') ? [join(p, d.name)] : []
+  );
+
+describe("the window hooks (window.__world3d, __tent, …) on a visitor's phone", () => {
+  // Known: the /editor route's own and すごろく's board preview page (their engines live only while they're open).
+  const KNOWN = ['lib/components/editor/Editor.svelte', 'lib/components/editor/Preview3D.svelte', 'lib/components/layoutEdit/IslandEdit.svelte', 'lib/sugoroku/board3d/Preview.svelte'];
+  it('each file that sets one gates it (testHooks, hooksOn, DEV or demo)', () => {
+    const src = join(import.meta.dirname, '..', '..');
+    const ungated = sources(src)
+      .map((f) => [relative(src, f), readFileSync(f, 'utf8')] as const)
+      .filter(([, t]) => /(window|\))\.__\w+ = /.test(t) && !/testHooks\(\)|hooksOn\(|import\.meta\.env\.DEV|\.demo\b/.test(t))
+      .map(([f]) => f);
+    expect(ungated).toEqual(KNOWN);
   });
 });

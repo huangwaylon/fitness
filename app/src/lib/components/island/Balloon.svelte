@@ -20,6 +20,7 @@
   import { fx3d } from '#lib/world/fx3d.ts';
   import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from '#lib/world/balloonFlight.ts';
   import { chooseLanding, footprints, openGround, type LandView } from '#lib/world/presentLanding.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
 
   interface Props {
     ondone?: () => void;
@@ -136,8 +137,9 @@
       tap();
     };
     el?.addEventListener('click', onClick, true);
-    // the e2e's: where it is, a pop, and the flight moved over a spot (a pop over the back of the island)
-    window.__balloon = {
+    // the e2e's: where it is, a pop, and the flight moved over a spot (a pop over the back of the island; testHooks:
+    // never on a live phone)
+    if (testHooks()) window.__balloon = {
       flight: () => flying(),
       pop: () => tap(),
       move: (x: number, z: number) => moveFlight(x, z, laneY(skyView(), z)),

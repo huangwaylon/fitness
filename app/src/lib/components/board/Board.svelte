@@ -18,6 +18,7 @@
   import { postDate } from './date.ts';
   import type { Face3 } from './face3d.ts';
   import type { Season } from '#lib/ui-state/season.ts';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
 
   interface Props {
     /** Live, not covered by a sheet, page visible. */
@@ -103,6 +104,7 @@
 
   // ---- the e2e's hook: what the face drew, and where it is in 3D ----
   onMount(() => {
+    if (!testHooks()) return; // never on a live phone
     window.__board = {
       drawn: () => drawn,
       /** The 3D face's place in the scene (null: none, or not in it). */

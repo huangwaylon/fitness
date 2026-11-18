@@ -73,7 +73,7 @@
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
-  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { drawOff, testHooks } from '#lib/ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
@@ -1143,7 +1143,8 @@
       world.invalidate();
     });
     ro.observe(canvas);
-    window.__world3d = {
+    // the e2e's and the console's hooks (testMode.ts testHooks: never on a live phone, a hook holds the engine)
+    if (testHooks()) window.__world3d = {
       stats: () => e.stats(), swaps: () => swaps.slice(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
       zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx),
