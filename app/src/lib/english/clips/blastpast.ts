@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 5, retire 4, new 5, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 10, rewrite 5, retire 4, new 5, ctx 4, tx 5, qa 4
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 3, new 4
 // “Michael's Blast From the Past - The Office US” (the official The Office channel, BEST OF SEASON 6): Michael shows
 // the office a tape of "Fundle Bundle", the kids' show he was on; another boy wanted to be on TV and now is, young
@@ -8,7 +8,7 @@
 // captions: stems say "the first boy". The office voices asking the questions (116–137 s) are unnamed. Untested: 30–66 s
 // (remarks over the tape, unclear words), 84.6 s ("I'm Ed"), 127.5 s ("I do okay"), 129.8 s. Speech ends at 150.5 s
 // (whisper's "Thank you." at 159.7 s is over the music).
-// EXCLUDE 31.3–35.4 (Michael on the host's body)
+// 31.3–35.4 (Michael on the host's “amazing body”) is mild innuendo: no EXCLUDE (user decision 2026-11-18).
 // SKIP 150.5–189.7: music to the end (whisper's “Thank you.” is a hallucination)
 import type { Clip } from '../types.ts';
 
@@ -95,7 +95,7 @@ export const michaelBlastPast: Clip = {
       use: 'Can you fast forward a little?（ちょっと早送りしてくれる？）' },
 
     { id: 'w1', skill: 'detail', level: 'B2', point: 'weather', reveals: ['chet'], seg: [57.0, 66.0],
-      stem: 'What is Chet’s job now?', ja: 'チェットの今の仕事は？',
+      stem: 'What is the first boy’s job now?', ja: '最初の男の子（チェット）の今の仕事は？',
       choices: ['A TV weather man', 'A kids’ show host', 'A TV news reader'], a: 0,
       choicesJa: ['テレビの気象予報士', '子ども番組の司会', 'テレビのニュースを読む人'],
       cue: '「Is that Chet Montgomery?」のあと',
@@ -173,13 +173,13 @@ export const michaelBlastPast: Clip = {
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hundred', reveals: ['wish', 'friends'], seg: [94.4, 102.5], keep: true,
       stem: 'How many kids does young Michael want?', ja: '子どものマイケルは、子どもが何人ほしい？',
-      choices: ['10', '12', '100'], a: 2,
-      choicesJa: ['10人', '12人', '100人'],
+      choices: ['10', '12', '100', '1,000'], a: 2,
+      choicesJa: ['10人', '12人', '100人', '1000人'],
       cue: '「have a」のあと、kids の前',
       line: 'have *a hundred* kids so I can have *a hundred* friends',
       said: '子どもを100人、そうすれば友だちが100人、と言う。',
       mean: 'a hundred ＝ 100。同じ数を2回言うので、2回目で確かめられる。',
-      trap: 'ten は「テン」、twelve は「トゥエルヴ」と短い。「ハンドレッド」と長ければ100。',
+      trap: 'ten は「テン」、twelve は「トゥエルヴ」と短い。thousand なら「サウザンド」。「ハンドレッド」なら100。',
       use: 'I’ve told you a hundred times!（何回も言ったでしょ！）' },
 
     { id: 'i3', skill: 'infer', level: 'C1', point: 'friends', reveals: ['wish'], seg: [94.4, 102.3], retired: true,
@@ -240,7 +240,7 @@ export const michaelBlastPast: Clip = {
       use: 'We wanted to go, but it just never happened.（行きたかったけど、結局行けなかった）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'hopes', seg: [116.0, 140.5],
-      stem: 'What do the office’s questions keep asking about?', ja: 'テープのあと、みんなは何について質問する？',
+      stem: 'What does the office ask Michael about?', ja: 'テープのあと、みんなはマイケルに何を聞く？',
       choices: ['If his wishes came true', 'If he sees the other kids', 'If he misses being on TV'], a: 0,
       choicesJa: ['夢がかなったか', 'ほかの子に会っているか', 'テレビが恋しいか'],
       cue: '「Did you get married?」から',

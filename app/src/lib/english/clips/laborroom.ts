@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 1, new 1, ctx 4, tx 12
+// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 1, new 1, ctx 4, tx 12, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 4, new 2
 // “Rachel Goes Into Labor | Friends” (the official Friends channel, Best of Season 8): Ross is proud of a record-fast
 // trip to the hospital, the friends got there first anyway, and at the desk the private room they asked for is gone.
@@ -17,13 +17,13 @@ export const laborroom: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [1, 6.6], keep: true,
       stem: 'How long did the trip to the hospital take?',
       ja: '病院までどのくらいかかった？',
-      choices: ['Under 7 minutes', 'Under 11 minutes', 'Under 17 minutes'], a: 0,
-      choicesJa: ['7分以内', '11分以内', '17分以内'],
+      choices: ['Under 7 minutes', 'Under 11 minutes', 'Under 17 minutes', 'Under 70 minutes'], a: 0,
+      choicesJa: ['7分以内', '11分以内', '17分以内', '70分以内'],
       cue: '「in under」のすぐあと。',
       line: 'From home to the hospital *in under seven minutes*.',
       said: '「家から病院まで7分かからなかった。やった！」と喜ぶ。',
       mean: 'in under 〜 minutes ＝ 〜分もかからずに。速さを自慢する言い方。',
-      trap: 'eleven なら「イレ」で始まる。seventeen なら最後の「ティーン」が長く強い。「セヴン」で止まれば 7。',
+      trap: 'eleven なら「イレ」で始まる。seventeen なら最後の「ティーン」、seventy なら「ティ」が付く。「セヴン」で止まれば 7。',
       use: 'The bus got us there in under ten minutes.（バスで10分もかからずに着いた）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'over', seg: [5, 13.2], retired: true,
@@ -68,8 +68,8 @@ export const laborroom: Clip = {
       choicesJa: ['病院までの道を練習した', '病院で検査を受けた', '病院に電話した'],
       cue: '「but I did」のあと。',
       line: 'No, we took a cab, too, but I *did test runs*.',
-      said: '「僕らもタクシーだよ。でも僕は試しに何度も走ってみたんだ」と言う。',
-      mean: 'test run ＝ 本番前の試し。準備までしたのに負けて悔しい。',
+      said: '「僕らもタクシーだよ。しかも予行演習までしたのに」と言う。',
+      mean: 'test run ＝ 本番前の試し（予行演習）。病院まで試しに行ってみた。準備までしたのに負けて悔しい。',
       trap: 'test から病院の「検査」を思いやすい。run と組むと「試しにやってみる」。',
       use: 'Let’s do a test run first.（まず一度試してみよう）' },
 
@@ -208,7 +208,7 @@ export const laborroom: Clip = {
       choicesJa: ['〜だろうね（もしもの話）', '〜になる', '〜だ'],
       cue: '「Well, then」のすぐあと。',
       line: 'Well, then *we’d be* in a lot of trouble.',
-      said: '「もしそうなら大変なことになるわ」と言う。',
+      said: '「それなら大変なことになるね」と返す。',
       mean: 'we’d ＝ we would。「もし大統領だったら？」へのもしもの返事。',
       trap: 'we’ll be なら小さい「ル」が残る。we’re なら be が来ない。「ウィッビー」と詰まれば we’d be。',
       use: 'Then we’d have to leave early.（それなら早めに出ないとね）' },
@@ -216,8 +216,8 @@ export const laborroom: Clip = {
     { id: 'h2', skill: 'detail', level: 'B1', point: 'president', reveals: ['wed'], ctx: true, seg: [83.8, 90.6],
       stem: 'Why would Ross as president be trouble?',
       ja: 'ロスが大統領だと、なぜ大変？',
-      choices: ['He doesn’t know where countries are', 'He can’t make up his mind fast', 'He talks far too much to people'], a: 0,
-      choicesJa: ['国の場所を知らない', 'なかなか決められない', '人にしゃべりすぎる'],
+      choices: ['He knows little about other countries', 'He can’t decide things quickly', 'He talks too much to people'], a: 0,
+      choicesJa: ['ほかの国のことをよく知らない', 'なかなか物事を決められない', '人にしゃべりすぎる'],
       cue: '「in a lot of trouble」のあと。',
       line: 'Ross: What if I was the president? / Rachel: Well, then we’d be in a lot of trouble. *You don’t know where any countries are*.',
       said: '「大統領だったら？」に「それは大変。あなた、国の場所も知らないし」と返す。',
@@ -268,7 +268,7 @@ export const laborroom: Clip = {
       choicesJa: ['あなたの言い方が気に入らない', 'あなたの言い方は気にしない', 'あなたの考えはどうでもいい'],
       cue: '「I have to say」のあと。',
       line: 'I have to say, I *don’t really care for your tone*.',
-      said: '「言わせてもらうけど、その言い方は気に入らないわ」と言う。',
+      said: '「言わせてもらうけど、その言い方、あまり気に入らない」と言う。',
       mean: 'not care for 〜 ＝ 〜が好きではない。tone ＝ 口調、言い方。',
       trap: 'don’t care から「気にしない」と思いやすい。care for は「好む」。',
       use: 'I don’t really care for spicy food.（辛い物はあまり好きじゃない）' },
