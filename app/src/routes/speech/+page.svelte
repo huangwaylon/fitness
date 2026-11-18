@@ -30,7 +30,7 @@
     session: 'アプリの音とマイクがぶつかりました。もう一度録音してください。', insecure: 'このページではマイクが使えません',
     empty: '録音が短すぎました。もう少し長く話してください。', silent: '音が録れていませんでした（マイクが止まっていたようです）。もう一度どうぞ。',
     off: 'サーバーの音声認識が止まっています', capped: '今日の回数を使い切りました',
-    network: 'つながりませんでした', ai: '認識に失敗しました', other: 'うまくいきませんでした'
+    network: 'つながりませんでした', timeout: '返事がありませんでした', ai: '認識に失敗しました', other: 'うまくいきませんでした'
   };
   // what the log says about the phone's mic (docs/speech-test.md "What's logged"): the home-screen app or Safari, the
   // island's audio context and audio session as the page opened (WebKit refuses the mic under 'ambient'), the mic's

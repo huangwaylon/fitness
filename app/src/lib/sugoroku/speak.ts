@@ -1,9 +1,9 @@
 // 英語すごろく's speaking step (docs/sugoroku.md "Speaking"), its pure parts: whether a heard or typed sentence is one to
 // grade (Whisper's words on silence aren't), on task (the picture's word in it, a mishearing credited; not a bare noun),
-// the relay's answer checked again on the phone (lib/speech/grade.ts asks), their words against the recast (what
-// changed), when the tip opens by itself, and the stars. Only the speaking step's chunk imports this (SpeakStep.svelte).
-import { gradeOf, type Grade as ContractGrade, type GradeSrc } from '#lib/contract/grade.ts';
+// their words against the recast (what changed: the relay's answer is lib/speech/grade.ts's), when the tip opens by
+// itself, and the stars. Only the speaking step's chunk imports this (SpeakStep.svelte).
 import { i18n } from '#lib/i18n/index.ts';
+import type { Grade } from '#lib/speech/grade.ts';
 import { wordsOf } from '#lib/speech/match.ts';
 import type { Level } from './game.ts';
 
@@ -91,16 +91,6 @@ export function check(text: string, target: string, relayUsed = false): Check {
   if (!targetUsed(text, target) && !relayUsed) return 'target';
   if (bareNoun(text, target)) return 'verb';
   return 'ok';
-}
-
-/** The relay's answer as the phone shows it (contract/grade.ts) and where it came from. */
-export type Grade = ContractGrade & { src: GradeSrc };
-/** The relay's JSON checked again on the phone (contract/grade.ts gradeOf: one sanitiser with the relay's); null: not
- *  an answer. */
-export function cleanGrade(x: unknown, s: string): Grade | null {
-  const j = x as Record<string, unknown> | null;
-  const g = j?.ok === true ? gradeOf(j, s) : null;
-  return g && { ...g, src: j!.src === 'wasei' ? 'wasei' : 'ai' };
 }
 
 /** A word of a sentence as shown, and whether it differs from the other sentence's (an LCS over the words). */

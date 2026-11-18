@@ -1,5 +1,6 @@
 // The speech test's pure parts (docs/speech-test.md): a take as 16 kHz 16-bit mono WAV (what the relay's /stt takes), why the mic or a take failed, and how close what was heard is to the sentence asked for (word-level, so "I'd" vs "I would" and punctuation don't
 // count against it).
+import type { Keyed } from '#lib/keyed.ts';
 
 /** Mono samples (any rate already resampled to 16 kHz) as a WAV, at most `maxS` seconds. */
 export function wav16k(x: Float32Array, maxS = 10): Uint8Array {
@@ -25,6 +26,15 @@ export function micMiss(name: string | undefined): MicMiss {
     case 'SecurityError': case 'TypeError': return 'insecure';
     default: return 'other';
   }
+}
+
+/** Why a relay call (/stt, /grade) gave nothing to show: switched off (503), the day's cap (429), the model (502), no
+ *  answer in time, unreached, or anything else (a refusal, no key, an answer that isn't one). */
+export type RelayMiss = 'off' | 'capped' | 'ai' | 'timeout' | 'network' | 'other';
+export function relayMiss(r: Keyed): RelayMiss {
+  if (!r.res) return r.ok ? 'other' : r.why === 'timeout' ? 'timeout' : r.why === 'unreached' ? 'network' : 'other';
+  const st = r.res.status;
+  return st === 429 ? 'capped' : st === 503 ? 'off' : st === 502 ? 'ai' : 'other';
 }
 
 /** The shortest take sent (s): less is a tap and a tap, nothing said. */

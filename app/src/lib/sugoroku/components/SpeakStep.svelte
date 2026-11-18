@@ -12,11 +12,11 @@
   import { log } from '#lib/sync/log.ts';
   import { MAX_S, record, transcribe, type Take } from '#lib/speech/stt.ts';
   import { micFocus } from '#lib/sound/sound.svelte.ts';
-  import { grade, type Graded } from '../grade.ts';
+  import { grade, type Grade, type Graded } from '#lib/speech/grade.ts';
   import { s } from '../i18n.ts';
   import type { Level } from '../game.ts';
   import type { SpeakView } from '../view.ts';
-  import { check, cheerOf, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check, type Grade } from '../speak.ts';
+  import { check, cheerOf, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check } from '../speak.ts';
 
   interface Props {
     /** The picture's English (the word the sentence should use). */
@@ -71,10 +71,9 @@
   const abort = new AbortController();
   $effect(() => () => (clearInterval(timer), take?.cancel(), micFocus(false), abort.abort()));
 
-  const lv = untrack(() => level);
   function prefetch(t: string) {
     if (ask?.text === t) return ask;
-    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, lv, abort.signal), r: null, t0: performance.now() };
+    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, abort.signal), r: null, t0: performance.now() };
     a.p.then((r) => (a.r = r));
     return (ask = a);
   }

@@ -19,7 +19,7 @@ type Grade = { verdict: 'great' | 'ok' | 'tip'; fixed: string; natural?: string;
 /** The phone: paired (a person's key), the game saved at the stone, the mic stood in, the relay mocked; `heard` what
  *  /stt answers in turn, `grade` what /grade answers (null: never). Returns the /grade bodies asked for. */
 async function phone(page: Page, o: { heard?: string[]; grade?: (s: string) => Grade | null; speak?: boolean } = {}) {
-  const asked: { s: string; t: string; lv: number }[] = [];
+  const asked: { s: string; t: string }[] = [];
   const stt: string[] = [];
   await page.addInitScript((game) => {
     localStorage.setItem('island.key', 'ab'.repeat(16));
@@ -69,7 +69,7 @@ test('speak → 聞こえた文 → the feedback: the recast, the tip, +2; sayin
   await s.locator('[data-sg-ok]').tap();
   await expect(s.locator('[data-sg-feedback="graded"]')).toBeVisible();
   test.info().annotations.push({ type: 'ui-ms', description: `stop→聞こえた文 ${heardMs} ms, これでOK→feedback ${Date.now() - t1} ms (mocks answer at once)` });
-  expect(asked).toEqual([{ s: 'I eated an apple.', t: 'apple', lv: 1 }]);
+  expect(asked).toEqual([{ s: 'I eated an apple.', t: 'apple' }]);
   // their word that changed underlined, the recast's in bold, the tip open (the player's first)
   await expect(s.locator('[data-sg-mine] .chg')).toHaveText(['eated']);
   await expect(s.locator('[data-sg-recast] b')).toHaveText(['ate']);

@@ -1,5 +1,5 @@
 // `POST /grade`'s answer (docs/sugoroku.md "Speaking"): its shape and the one sanitiser both sides apply, the relay to
-// the model's output (relay/src/gradeRoute.ts) and the phone to the relay's reply (lib/sugoroku/grade.ts). Dependency-free.
+// the model's output (relay/src/gradeRoute.ts) and the phone to the relay's reply (lib/speech/grade.ts). Dependency-free.
 
 /** @public (relay/) */
 export type Verdict = 'great' | 'ok' | 'tip';

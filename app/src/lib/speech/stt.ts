@@ -6,9 +6,9 @@
 import { keyed } from '#lib/keyed.ts';
 import { relayUrl } from '#lib/sync/transport.ts';
 import { getKey } from '#lib/sync/storage.ts';
-import { micMiss, peakOf, wav16k, takeMiss, type MicMiss } from './match.ts';
+import { micMiss, peakOf, relayMiss, wav16k, takeMiss, type MicMiss, type RelayMiss } from './match.ts';
 
-export type Miss = MicMiss | 'empty' | 'silent' | 'off' | 'capped' | 'network' | 'ai';
+export type Miss = MicMiss | 'empty' | 'silent' | RelayMiss;
 export type Heard = { ok: true; text: string; audS: number; kb: number; encMs: number; netMs: number; aiMs: number; totMs: number } | { ok: false; miss: Miss };
 
 /** The longest take (the relay's cap). */
@@ -86,13 +86,12 @@ export async function transcribe(pcm: Float32Array, t0 = performance.now(), sign
   const wav = wav16k(pcm, MAX_S);
   const t1 = performance.now();
   const r = await keyed(relayUrl('/stt'), getKey(), { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wav as BodyInit, signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
-  if (!r.ok && !r.res) return { ok: false, miss: 'network' };
-  const res = r.res!;
-  const j = (await res.json().catch(() => null)) as { ok?: boolean; text?: unknown; aiMs?: unknown; error?: unknown } | null;
+  if (!r.ok) return { ok: false, miss: relayMiss(r) };
+  const j = (await r.res.json().catch(() => null)) as { ok?: boolean; text?: unknown; aiMs?: unknown } | null;
   const t2 = performance.now();
-  if (res.ok && j?.ok && typeof j.text === 'string') {
+  if (j?.ok && typeof j.text === 'string') {
     const aiMs = typeof j.aiMs === 'number' ? j.aiMs : 0;
     return { ok: true, text: j.text, audS: Math.round(audS * 10) / 10, kb: Math.round(wav.length / 1024), encMs: Math.round(t1 - t0), netMs: Math.round(t2 - t1 - aiMs), aiMs, totMs: Math.round(t2 - t0) };
   }
-  return { ok: false, miss: res.status === 429 ? 'capped' : res.status === 503 ? 'off' : res.status === 502 ? 'ai' : 'other' };
+  return { ok: false, miss: relayMiss(r) };
 }

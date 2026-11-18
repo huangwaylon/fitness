@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bareNoun, check, cheerOf, cleanGrade, diffWords, editDistance, formsOf, isSilence, longEnough, nextCheer, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf, type Grade } from './speak.ts';
-import { TIP_MAX } from '#lib/contract/grade.ts';
+import { bareNoun, check, cheerOf, diffWords, editDistance, formsOf, isSilence, longEnough, nextCheer, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf } from './speak.ts';
+import { cleanGrade } from '#lib/speech/grade.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import { isGame, newGame } from './game.ts';
 import { PICTURES } from './pictures.ts';
@@ -58,19 +58,6 @@ describe('the speaking step', () => {
     expect(check('a cat', 'cat')).toBe('verb');
     expect(check('I have a cat.', 'cat')).toBe('ok');
     expect(check('I went bowling yesterday.', 'boring')).toBe('ok');
-  });
-  it('the relay’s answer checked on the phone: tips with failure words or grammar terms dropped, also only on great', () => {
-    expect(cleanGrade(answer(), 'I like apple.')).toEqual<Grade>({ verdict: 'tip', fixed: 'I like apples.', natural: 'I love apples.', also: '', tip: 'りんご全体の話なら apples だよ', used: true, src: 'ai' });
-    for (const tip of ['a を忘れないでね', 'これは間違いです', '三人称なら has', 'apples'.repeat(3), 'あ'.repeat(TIP_MAX + 1)])
-      expect(cleanGrade(answer({ tip }), 'I like apple.')!.tip, tip).toBe('');
-    expect(cleanGrade(answer({ verdict: 'ok', also: 'I love apples.' }), 'I like apples.')!.also).toBe('');
-    expect(cleanGrade(answer({ verdict: 'great', also: 'I really like apples.' }), 'I like apples.')!.also).toBe('I really like apples.');
-    // a placeholder, an empty or a non-English fix: their own sentence
-    for (const fixed of ['I like ...', '', 'りんごが好き', 'x'.repeat(120)]) expect(cleanGrade(answer({ fixed }), 'I like apple.')!.fixed).toBe('I like apple.');
-    expect(cleanGrade({ ok: false, error: 'capped' }, 'x')).toBeNull();
-    expect(cleanGrade(answer({ verdict: 'wrong' }), 'x')).toBeNull();
-    expect(cleanGrade(null, 'x')).toBeNull();
-    expect(cleanGrade(answer({ src: 'wasei' }), 'x')!.src).toBe('wasei');
   });
   it('their words against the recast: changed ones marked, case and punctuation aside', () => {
     const d = diffWords('i like apple', 'I like apples.');
