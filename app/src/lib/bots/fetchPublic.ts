@@ -1,21 +1,26 @@
 // A public bot status read (ジム's Worker /status, メニュー's status.json): no key, no header of ours (a simple
-// request, no preflight). Never throws; a failure is logged as `logEvent` (the HTTP status, the phone's code, ms), but
-// not the caller's abort (the page left). 保養所 keeps its own call (lib/its/client.ts: the member key, a request id).
+// request, no preflight), 20 s for the whole answer (as memberCall: a hung read would hold the page's 更新中 and the
+// dot's read for the session). Never throws; a failure is logged as `logEvent` (the HTTP status, the phone's code
+// `offline` `timeout` `http` `json`, ms), but not the caller's abort (the page left). 保養所 keeps its own call
+// (lib/its/client.ts: the member key, a request id).
 import { log } from '#lib/sync/log.ts';
 import type { BotReply } from './types.ts';
 
-export type PublicReply<S> = { ok: true; status: S } | { ok: false; err: 'offline' | 'http' | 'json'; http: number | null };
+const TIMEOUT_MS = 20_000;
+
+export type PublicReply<S> = { ok: true; status: S } | { ok: false; err: 'offline' | 'timeout' | 'http' | 'json'; http: number | null };
 
 export async function fetchPublic<S>(url: string, logEvent: 'gym.fail' | 'kalori.fail', parse: (x: unknown) => S | null,
   o: { signal?: AbortSignal; cache?: RequestCache } = {}): Promise<PublicReply<S> & BotReply<S>> {
   const t0 = performance.now();
+  const late = AbortSignal.timeout(TIMEOUT_MS);
   let r: PublicReply<S>;
   try {
-    const res = await fetch(url, { signal: o.signal, ...(o.cache ? { cache: o.cache } : {}) });
+    const res = await fetch(url, { signal: o.signal ? AbortSignal.any([o.signal, late]) : late, ...(o.cache ? { cache: o.cache } : {}) });
     const s = res.ok ? parse(await res.json().catch(() => null)) : null;
-    r = s ? { ok: true, status: s } : { ok: false, err: res.ok ? 'json' : 'http', http: res.status };
+    r = late.aborted ? { ok: false, err: 'timeout', http: null } : s ? { ok: true, status: s } : { ok: false, err: res.ok ? 'json' : 'http', http: res.status };
   } catch {
-    r = { ok: false, err: 'offline', http: null };
+    r = { ok: false, err: late.aborted ? 'timeout' : 'offline', http: null };
   }
   if (!r.ok && !o.signal?.aborted) log(logEvent, { op: 'status', err: r.err, ms: Math.round(performance.now() - t0), ...(r.http === null ? {} : { http: r.http }) }, r.err === 'offline' ? 1 : 2);
   return r;

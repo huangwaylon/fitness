@@ -49,7 +49,7 @@
 </script>
 
 <div class="bpage" {...{ [`data-${attr}-page`]: '' }} {...rootAttr} aria-busy={busy}>
-  {#if bot.failed}<LoadError text={t('bots.loadFailed', { code: bot.failed === 'offline' ? t('bots.offline') : bot.failed })} {busy} {onretry} {...{ [`data-${attr}-error`]: '' }} />{/if}
+  {#if bot.failed}<LoadError text={t('bots.loadFailed', { code: bot.failed === 'offline' ? t('bots.offline') : bot.failed === 'timeout' ? t('bots.timeout') : bot.failed })} {busy} {onretry} {...{ [`data-${attr}-error`]: '' }} />{/if}
   {#if verdict}
     <StatusCard {verdict} attr={{ [`data-${attr}-verdict`]: vid ?? verdict.w }} stale={bot.stale} readAt={bot.readAt} {now} page={attr} {menu} {note} {strip} />
     {#if showAttn}

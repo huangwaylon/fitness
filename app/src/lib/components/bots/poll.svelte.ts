@@ -45,7 +45,11 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
     const c = (ctl = new AbortController());
     const signal = AbortSignal.any([c.signal, life.signal]);
     st.loading = true;
-    await read(signal);
+    try {
+      await read(signal);
+    } catch {
+      /* a read that threw: the loop goes on (the next read in `every()` ms) */
+    }
     if (signal.aborted) return;
     ctl = null;
     st.loading = false;

@@ -208,7 +208,7 @@ describe('fetchStatus', () => {
     vi.stubGlobal('fetch', fetch);
     fetch.mockResolvedValueOnce(new Response(JSON.stringify(sample(NOW))));
     expect(await fetchStatus(undefined, 'https://gym.test')).toEqual({ ok: true, status: sample(NOW) });
-    expect(fetch.mock.calls[0]).toEqual(['https://gym.test/status', { signal: undefined }]);
+    expect(fetch.mock.calls[0]).toEqual(['https://gym.test/status', { signal: expect.any(AbortSignal) }]);
     fetch.mockResolvedValueOnce(new Response('boom', { status: 500 }));
     expect(await fetchStatus(undefined, 'https://gym.test')).toEqual({ ok: false, err: 'http', http: 500 });
     fetch.mockResolvedValueOnce(new Response('{"hello":1}'));

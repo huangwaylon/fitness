@@ -57,6 +57,19 @@ describe('useBot (a bot page’s status)', () => {
     expect(h.calls).toBe(2);
   });
 
+  it('a read that throws: 更新中 let go, the next read a poll later', async () => {
+    const { useBot } = await load();
+    h.answer = () => Promise.reject(new Error('x'));
+    const bot = useBot('gym', driver);
+    const stop = bot.poll.start();
+    await settle();
+    expect([h.calls, bot.poll.loading]).toEqual([1, false]);
+    h.answer = () => Promise.resolve({ ok: true, status: { tone: 'good' } });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect([h.calls, bot.data]).toEqual([2, { tone: 'good' }]);
+    stop();
+  });
+
   it('the kept status at once (not fresh: 更新中 while the read is on its way)', async () => {
     h.store.set('k.kalori', JSON.stringify({ me: 'A', s: { tone: 'bad' } }));
     const { useBot } = await load();

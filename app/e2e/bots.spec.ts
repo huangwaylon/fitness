@@ -40,7 +40,7 @@ type Kalori = ((now: number) => Record<string, unknown>) | 'offline';
 
 /** A member's phone; the ITS Worker answers its example (a hold waiting: 要対応; `its: false`: no answer), the gym bot
  *  `gymVerdict` (故障 by default; 不調: the site failing), status.json `kalori()` (its current answer: `setKalori`). */
-async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' | 'failing' | 'healthy' = 'broken', o: { kalori?: Kalori; its?: boolean; gym?: boolean } = {}) {
+async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' | 'failing' | 'healthy' = 'broken', o: { kalori?: Kalori; its?: boolean; gym?: boolean | 'hang' } = {}) {
   const rec = newRecord();
   await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await rec.pair(context, 'A');
@@ -57,9 +57,10 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' |
     calls.its++;
     return route.fulfill({ status: 200, contentType: 'application/json', headers: cors(), body: JSON.stringify(payload(rec.now())) });
   });
-  let gymUp = o.gym !== false;
+  let gymUp: boolean | 'hang' = o.gym ?? true;
   await page.route(`${GYM}/**`, (route) => {
     const now = rec.now();
+    if (gymUp === 'hang') return void setTimeout(() => void route.abort().catch(() => {}), 4000); // fetchPublic's timeout first
     if (!gymUp) return route.abort('internetdisconnected');
     if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization' } });
     if (new URL(route.request().url()).pathname !== '/status') return route.fulfill({ status: 404, headers: { 'Access-Control-Allow-Origin': '*' }, body: '' });
@@ -74,7 +75,7 @@ async function phone(page: Page, context: BrowserContext, gymVerdict: 'broken' |
   await islandUp(page);
   return {
     calls, now: rec.now, sheet: page.locator('dialog[open] [data-bots]'), tab: (id: 'its' | 'gym' | 'kalori') => page.locator(`dialog[open] [data-bots-tab="${id}"]`),
-    setKalori: (k: Kalori) => void (kalori = k), setGym: (up: boolean) => void (gymUp = up)
+    setKalori: (k: Kalori) => void (kalori = k), setGym: (up: boolean | 'hang') => void (gymUp = up)
   };
 }
 
@@ -398,6 +399,26 @@ test('メニュー offline: 「読み込めませんでした（オフライン�
   await err.getByRole('button', { name: 'もう一度' }).click();
   await expect(err).toHaveCount(0);
   await expect(k.locator('[data-bots-stale]')).toHaveCount(0);
+});
+
+test('ジム hung (no answer): 「読み込めませんでした（時間切れ）」 after the timeout, not 更新中 for good; a retry recovers', async ({ page, context }) => {
+  // fetchPublic's 20 s made 1.5 s (only a 20 s timeout: the bots' reads); the mock lets go after 4 s (an abort:
+  // 「オフライン」 if the timeout hadn't come first), as Playwright's WebKit settles an aborted fetch only once its route does
+  await context.addInitScript(() => {
+    const orig = AbortSignal.timeout.bind(AbortSignal);
+    AbortSignal.timeout = (ms: number) => orig(ms === 20_000 ? 1500 : ms);
+  });
+  const { sheet, tab, setGym } = await phone(page, context, 'healthy', { gym: 'hang', its: false });
+  await fromMenu(page, 'bots');
+  await expect(sheet).toHaveAttribute('data-tab', 'gym');
+  const err = sheet.locator('[data-gym-error]');
+  await expect(err).toContainText('読み込めませんでした（時間切れ）', { timeout: 10_000 });
+  await expect(sheet.locator('[data-gym-page]')).toHaveAttribute('aria-busy', 'false');
+  setGym(true);
+  await err.getByRole('button', { name: 'もう一度' }).click();
+  await expect(err).toHaveCount(0);
+  await expect(sheet.locator('[data-gym-verdict="healthy"]')).toBeVisible();
+  await expect(tab('gym')).toHaveAttribute('data-tab-status', 'good');
 });
 
 test('メニュー offline with nothing kept: the error row only, no skeleton left', async ({ page, context }) => {
