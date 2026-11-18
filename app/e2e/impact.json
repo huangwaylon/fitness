@@ -2,11 +2,11 @@
   "//": "Which e2e specs a changed file reaches (scripts/e2e-impact.ts, docs/ops/testing.md \"The gate\"): [path glob, [spec names]], paths under app/, the first rule whose specs exist wins. /editor/?view=phone is the island's もようがえ (e2e/island.ts openEditor): every spec that opens it is in the editor/ and layoutEdit/ rules. A spec name is its file without .spec.ts, `*` any run of letters, $1 the path's first `*`. A src file no rule maps tries its own name (fishing3d.ts: fishing3d*.spec.ts); one still unmapped adds nothing: the gate set runs, and the full logic tier after the deploy. Over the gate's budget, the push gets the gate set only. Every directory under src/ has a file some rule (or its name) maps, or is in `unmapped` with why (src/lib/e2e-impact.test.ts).",
   "rules": [
     ["src/lib/english/**", ["english*"]],
-    ["src/lib/sugoroku/**", ["sugoroku"]],
+    ["src/lib/sugoroku/**", ["sugoroku", "night"]],
     ["src/lib/components/sugoroku3d/**", ["sugoroku"]],
     ["src/routes/sugoroku/**", ["sugoroku"]],
     ["src/lib/speech/**", ["speech"]],
-    ["src/routes/speech/**", ["speech"]],
+    ["src/routes/speech/**", ["speech", "night"]],
     ["src/lib/components/food/**", ["food*"]],
     ["src/lib/food/**", ["food*"]],
     ["src/lib/scan/**", ["food-scan", "leaks-sheets"]],
@@ -64,9 +64,9 @@
     ["src/lib/components/layoutEdit/**", ["editor*", "island-edit", "layout-island", "decor", "gym", "camp", "island3d-layout", "visitor-spot"]],
     ["src/lib/layout/**", ["layout-island", "island3d-layout", "island-edit", "editor"]],
     ["src/lib/*/layout*", ["layout-island", "island3d-layout", "editor"]],
-    ["src/lib/components/board/**", ["board"]],
+    ["src/lib/components/board/**", ["board", "night"]],
     ["src/lib/*/board*", ["board"]],
-    ["src/lib/components/look/**", ["look", "players"]],
+    ["src/lib/components/look/**", ["look", "players", "night"]],
     ["src/lib/artPack/**", ["zukan", "look", "critters"]],
     ["src/lib/*/look*", ["look", "players"]],
     ["src/lib/components/player3d/**", ["players", "look"]],
@@ -183,7 +183,7 @@
     ["src/lib/components/sheets/**", ["demo"]],
     ["src/lib/config/**", ["demo", "stretch"]],
     ["src/lib/scoring/**", ["demo", "stretch"]],
-    ["src/lib/styles/**", ["hud-menu", "scroll"]]
+    ["src/lib/styles/**", ["hud-menu", "scroll", "night"]]
   ],
   "unmapped": {
     "src": "app.html and the type declarations: every spec loads them (the gate set)",
