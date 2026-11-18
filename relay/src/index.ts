@@ -385,7 +385,7 @@ export default {
     if (url.pathname === '/log') {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
-    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 300), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
+    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 100), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
     if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
