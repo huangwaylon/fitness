@@ -1112,14 +1112,10 @@ export class StoreCore {
   private shopState(who: Who): ShopState {
     const raw = this.meta(`shop|${who}`);
     const { pocket, wallet } = raw ? shopStateOf(raw) : { pocket: null, wallet: null };
-    if (pocket && wallet) return { ...pocket, l: { ...pocket.l, shells: wallet.h }, n: wallet.n, t: wallet.t };
+    if (pocket && wallet) return withWallet(pocket, wallet);
     const fold = this.shopFold(who);
-    let st: ShopState;
-    if (wallet) st = { ...fold, l: { ...fold.l, shells: wallet.h }, n: wallet.n, t: wallet.t };
-    else {
-      st = { ...fold, l: { ...fold.l, shells: Math.max(0, fold.l.shells) }, n: 0, t: this.iso() };
-      this.io.log?.('wallet.seed', { who, h: st.l.shells });
-    }
+    const st = withWallet(fold, wallet ?? { h: Math.max(0, fold.l.shells), n: 0, t: this.iso() });
+    if (!wallet) this.io.log?.('wallet.seed', { who, h: st.l.shells });
     this.setMeta(`shop|${who}`, shopStateJson(st));
     return st;
   }
@@ -1156,7 +1152,7 @@ export class StoreCore {
   private ledgerKept(who: Who): ShopState | null {
     const raw = this.meta(`shop|${who}`);
     const p = raw ? shopStateOf(raw) : null;
-    return p?.pocket && p.wallet ? { ...p.pocket, l: { ...p.pocket.l, shells: p.wallet.h }, n: p.wallet.n, t: p.wallet.t } : null;
+    return p?.pocket && p.wallet ? withWallet(p.pocket, p.wallet) : null;
   }
 
   /** A ledger after a step into meta: the wallet never below 0 (the user, 2026-11-18: a give-back after a sale takes
@@ -1221,7 +1217,7 @@ export class StoreCore {
       const pocketDiffers = !pocket || (diff?.differs as string[] | undefined)?.some((k) => k !== 'h');
       if (o.fix === true && pocketDiffers) {
         const w = wallet ?? { h: Math.max(0, fold.l.shells), n: 0, t: this.iso() };
-        this.setMeta(`shop|${who}`, shopStateJson({ ...fold, l: { ...fold.l, shells: w.h }, n: w.n, t: w.t }));
+        this.setMeta(`shop|${who}`, shopStateJson(withWallet(fold, w)));
       }
     }
     return { ok: true, ...out };
@@ -1781,6 +1777,9 @@ export class StoreCore {
 interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger; n: number; t: string }
 type Pocket = Pick<ShopState, 'caught' | 'back' | 'l'>;
 interface Wallet { h: number; n: number; t: string }
+
+/** A ledger of a pocket's part and a wallet: the wallet's `h` its かいがら (a copy: the pocket's own ledger untouched). */
+const withWallet = (p: Pocket, w: Wallet): ShopState => ({ ...p, l: { ...p.l, shells: w.h }, n: w.n, t: w.t });
 
 /** The pocket's part of a ledger as meta keeps it (each map as its entries without the zeros, sorted): a running one
  *  and a fold compare as text. */
