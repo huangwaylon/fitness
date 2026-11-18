@@ -19,7 +19,7 @@ import {
   WebGLRenderTarget, PCFSoftShadowMap, MeshDepthMaterial, RGBADepthPacking, FrontSide, BackSide, DoubleSide, type Material, type MeshLambertMaterial, type Object3D, type Side, type WebGLRenderer
 } from 'three';
 import { cubicInOut, cubicOut } from '#lib/math.ts';
-import { bendTree, bendU, pointMask, unbendRay } from './bend.ts';
+import { bendTree, bendU, unbendRay } from './bend.ts';
 import { waterFog, waterU } from './water.ts';
 import { createThings, type Things } from './things.ts';
 import { shadowBox, sunOn, type ShadowBox } from './shadowBox.ts';
@@ -88,19 +88,9 @@ export interface Options {
   ambient: number;
   /** The models' textures from their KTX2 (ktx2.ts; default on): off, their WebPs (`?ktx2=0`, an A/B). */
   ktx2?: boolean;
-  /** The pixel ratio while the camera moves (stage.ts DPR_MOVING; `?dprmove=`, an A/B: at `dpr` or above, no swap). */
-  dprMoving?: number;
-  /** The shadow map's size (2048; `?shadow=`, an A/B). */
-  shadowSize?: number;
   /** A still model's nearest instances out of view left undrawn (things.ts cull; default on): off, all drawn
    *  (`?cull=0`, an A/B). */
   cull?: boolean;
-  /** The real point lights (lights.ts POINTS: 6; `?points=`, an A/B of their GPU cost by day). */
-  points?: number;
-  /** Each point light's work skipped in the shaders while it's off (bend.ts pointMask): the island's
-   *  default since r3 L4 (Mac GPU −16–21 % a frame by day, the iOS Simulator's dusk and night drawn the same); Island3D's
-   *  `?pointmask=0` turns it off. */
-  pointMask?: boolean;
 }
 interface Stats {
   fps: number;
@@ -123,8 +113,6 @@ interface Stats {
   compiles: number;
   linking: number;
   dpr: number;
-  /** The shadow map's size. */
-  shadowSize: number;
   frames: number;
   /** The last frame's time (performance.now's clock: what the scene moved to; a sampler's own may be a tick off). */
   at: number;
@@ -135,9 +123,6 @@ interface Stats {
   zoom: number;
   points: number;
   lamps: number;
-  /** The real point lights (lit or not) and whether their shader mask is on (bend.ts pointMask). */
-  slots: number;
-  pointMask: boolean;
   /** The flourishes playing (effects.ts). */
   fx: number;
   /** How many flourishes' parts (not the ambience's) have come on so far (a short one may be over when it's read). */
@@ -330,8 +315,6 @@ export interface Island3 {
 
 export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: WebGLRenderer) => BuiltGround, init: Partial<Options> & { aa?: boolean } = {}): Island3 {
   const opts: Options = { dpr: Math.min(2, window.devicePixelRatio || 1), shadows: true, ambient: 30, ...init };
-  // (before any material compiles: bend.ts reads it then)
-  pointMask.on = !!opts.pointMask;
   // the e2e's logic mode (testMode.ts): every frame runs (the scene, the cameras, the hooks), nothing is drawn
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
@@ -352,7 +335,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const hemi = new HemisphereLight(0xeaf6ff, 0x9ac276, 1.55);
   const sun = new DirectionalLight(0xfff3df, 1.9);
   sun.castShadow = opts.shadows;
-  sun.shadow.mapSize.set(opts.shadowSize ?? 2048, opts.shadowSize ?? 2048);
+  sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.bias = -0.0006;
   sun.shadow.normalBias = 1.2;
   // the map made now, as three's pass would make it in the first shadowed frame (WebGLShadowMap: its size, nearest
@@ -370,7 +353,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // ---- the things, the cards, the lights ----
   const things = createThings(scene, src.height, (sh = true, added = true) => (sh && shadowed(sh === 'slow'), kick(added)), { cull: opts.cull !== false });
   const cards = createCards(scene, (sh, added = true) => (sh && shadowed(), kick(added)));
-  const lights = createLights(scene, opts.points);
+  const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
   const marks = createBiteMarks(addObj);
   let extraGlows: readonly LampSpot[] = [];
@@ -557,11 +540,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   let swapAt = 0, swapSet = 0, swapOn = false;
   let swapHook: ((on: boolean, setMs: number, frameMs: number) => void) | null = null;
   function light(on: boolean) {
-    const moving = opts.dprMoving ?? DPR_MOVING;
-    if (on === lightened || opts.dpr <= moving) return;
+    if (on === lightened || opts.dpr <= DPR_MOVING) return;
     lightened = on;
     const t0 = now();
-    renderer.setPixelRatio(on ? moving : opts.dpr);
+    renderer.setPixelRatio(on ? DPR_MOVING : opts.dpr);
     renderer.setSize(W, H, false);
     swapAt = t0;
     swapSet = now() - t0;
@@ -1373,8 +1355,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, sceneCalls, sceneTris, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), shadowSize: sun.shadow.mapSize.x, frames, at: lastFrame, input: lastInput,
-        loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, slots: l.slots, pointMask: pointMask.on, fx: effects.count(),
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: warm.size(), dpr: renderer.getPixelRatio(), frames, at: lastFrame, input: lastInput,
+        loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], full, fullWhy: { ...fullWhy }, fxWhy: { ...fxWhy }, paused, drawn: !noDraw, island
       };
     },

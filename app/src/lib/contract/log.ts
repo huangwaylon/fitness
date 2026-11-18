@@ -83,17 +83,15 @@ export const LOG_EVENTS = {
   // the island's first return to it a load (back from a room: perf.boot's marks, ms from the mount), and
   // the island at rest (untouched 2 s+), counted all the time, at each hide with 3 s+ of it (r3 L4; was 15 s untouched,
   // then 10 s, once a load: it never fired): its seconds, drawn frames, shadow passes, the pacers' wake-ups a
-  // second, and the scene's draw calls and triangles a frame, the pixel ratio, the camera's z and the shadow
-  // map's size; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
+  // second, and the scene's draw calls and triangles a frame, the pixel ratio and the camera's z; the share (%) of frames at the full rate and its top three reasons, each's share of the frames drawn;
   // of `fx`'s, the flourish's kind that asked most (`fx1`, effects.ts FxKind) and its share (`fw1`); of `nodes`', the
-  // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`); the point lights
-  // (`?points=`) and their mask (on by default, `?pointmask=0` off): world3d/rest.ts)
+  // moving node's tag that did (`nd1`, camera.svelte.ts moveStart) and its share (`nw1`): world3d/rest.ts)
   // ごはん's barcode scanner, once a session (lib/scan/timing.ts): ms from the camera's open to its first frame and to
   // the read, the decode's p50 and max and the band grab's p50 (ms a frame read), the frames read, how it ended (a
   // read, a typed number, the idle stop, none); never the code or the food
   "perf.scan": { src: 'c', f: { frame: 'n', read: 'n', dec50: 'n', decMax: 'n', grab: 'n', n: 'n', end: ['read', 'typed', 'idle', 'none'] } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
-  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', sm: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n', pts: 'n', pm: 'b' } },
+  "perf.rest": { src: 'c', f: { s: 'n', fps: 'n', shadows: 'n', wakes: 'n', calls: 'n', tris: 'n', dpr: 'n', camZ: 'n', full: 'n', why1: LOG_FULL_WHY, w1: 'n', why2: LOG_FULL_WHY, w2: 'n', why3: LOG_FULL_WHY, w3: 'n', fx1: 't', fw1: 'n', nd1: LOG_MOVE_TAGS, nw1: 'n' } },
   // src: the file and line (a listener's), or the tag of the code that caught it (quiet.ts caught: `live`, `world`, …)
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES, ...AT } },
   "api.fail": { src: 'c', f: { ...API, ...AT } },

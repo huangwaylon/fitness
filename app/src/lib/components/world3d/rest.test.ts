@@ -32,7 +32,7 @@ function sim() {
  *  rate, a villager's (and a fish's dart every 8th, a name the log doesn't know every 12th); a flourish's dust every
  *  24th, a splash every 48th. */
 function island(s: ReturnType<typeof sim>) {
-  const st = { frames: 0, shadows: 0, input: 0, sceneCalls: 240, sceneTris: 290_000, dpr: 2, camZ: 412.4, shadowSize: 2048, full: 0, fullWhy: {} as Record<string, number>, fxWhy: {} as Record<string, number>, slots: 6, pointMask: true };
+  const st = { frames: 0, shadows: 0, input: 0, sceneCalls: 240, sceneTris: 290_000, dpr: 2, camZ: 412.4, full: 0, fullWhy: {} as Record<string, number>, fxWhy: {} as Record<string, number> };
   const stats = () => {
     st.frames = Math.floor(s.at() / (1000 / 12));
     st.shadows = st.full = Math.floor(st.frames / 4);
@@ -58,7 +58,7 @@ describe('perf.rest', () => {
     expect(logged).toHaveLength(1);
     const [e, d] = logged[0];
     expect(e).toBe('perf.rest');
-    expect(d).toMatchObject({ s: 11, fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number, calls: 240, tris: 290_000, dpr: 2, camZ: 412, sm: 2048, full: 25, why1: 'vil', w1: 25, why2: 'crit-fish', w2: 12, why3: 'other', w3: 8, fx1: 'dust', fw1: 4, pts: 6, pm: true });
+    expect(d).toMatchObject({ s: 11, fps: expect.closeTo(12, 0) as number, shadows: expect.closeTo(3, 0) as number, wakes: expect.closeTo(12, 0) as number, calls: 240, tris: 290_000, dpr: 2, camZ: 412, full: 25, why1: 'vil', w1: 25, why2: 'crit-fish', w2: 12, why3: 'other', w3: 8, fx1: 'dust', fw1: 4 });
     expect(d).not.toHaveProperty('why4');
     // hidden: no timer; the next show counts afresh and logs at its own hide
     expect(s.pending()).toBe(0);

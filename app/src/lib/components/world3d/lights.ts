@@ -117,15 +117,15 @@ export interface Lights {
   level(v: number): void;
   /** One frame: true while something still fades. `cx, cz`: the view's centre on the ground (world). */
   frame(t: number, cx: number, cz: number, R: number, pivotZ: number): boolean | 'ambient';
-  /** How many point lights are lit (any share), the lights' count and the point lights' (stats). */
-  stats(): { points: number; lamps: number; slots: number };
+  /** How many point lights are lit (any share) and the lights' count (stats). */
+  stats(): { points: number; lamps: number };
   /** The ids of the lights lit now (their halos on: the level over 0; a stand-in's `s:` prefixed). */
   lit(): string[];
   dispose(): void;
 }
 
-/** `n`: the point lights (POINTS; `?points=`, the phones' GPU A/B: 0 none, the lamps lit by their glows and pools). */
-export function createLights(scene: Scene, n = POINTS): Lights {
+export function createLights(scene: Scene): Lights {
+  const n = POINTS;
   const target = Math.min(TARGET, n);
   const halo = sprites(HALO_VERT, FRAG(2.0), 6), pool = sprites(POOL_VERT, FRAG(1.6), 3);
   // the pools under every upright thing, over the ground and the water
@@ -138,7 +138,7 @@ export function createLights(scene: Scene, n = POINTS): Lights {
     scene.add(l);
     return { l, lamp: null as Spot | null };
   });
-  // (the point lights' mask, bend.ts pointMask: every slot off till it's lit)
+  // (the point lights' mask, bend.ts maskedLights: every slot off till it's lit)
   const on = (pointsU.uPointOn.value = Array.from({ length: n }, () => 0));
   interface Spot extends LampSpot {
     /** Its share of a point light now and where it's heading (0 / 1). */
@@ -238,7 +238,7 @@ export function createLights(scene: Scene, n = POINTS): Lights {
     set,
     level: (v) => void (lvlTo = v),
     frame,
-    stats: () => ({ points: points.filter((p) => p.l.intensity > 0).length, lamps: spots.length, slots: n }),
+    stats: () => ({ points: points.filter((p) => p.l.intensity > 0).length, lamps: spots.length }),
     lit: () => (lvl > 0 ? spots.map((s) => s.id) : []),
     dispose() {
       for (const m of [halo, pool]) {

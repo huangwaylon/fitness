@@ -4,15 +4,13 @@
 // z' = pivot − (R + y)·sin θ, y' = (R + y)·cos θ − R (three's z runs out of the screen: world z into the island is
 // three's −z). Exact (not the parabola), so a tall thing leans back with the ground, as NH's do. One shared uniform
 // pair: a frame updates it once. bendPoint() is the same on the CPU (taps, hit tests, overlays).
-// The point lights' mask (pointMask, on by default since r3 L4; `?pointmask=0` off): each bent lit material's point-light loop skips a light that's
+// The point lights' mask (r3 L4: Mac GPU −16–21 % a frame by day): each bent lit material's point-light loop skips a light that's
 // off (lights.ts: its intensity 0, all of them by day), by a uniform: one program set, nothing compiled at dusk.
 import { AddEquation, CustomBlending, OneFactor, ShaderChunk, SrcAlphaFactor, ZeroFactor, type Material, type Mesh, type Object3D, type WebGLProgramParametersWithUniforms } from 'three';
 
 export const bendU = { uBendZ: { value: 0 }, uBendR: { value: 900 } };
 /** Each point light on (1) or off (0), by its slot (lights.ts writes it: as many as the scene's point lights). */
 export const pointsU = { uPointOn: { value: [] as number[] }, uPointN: { value: 0 } };
-/** The mask's in the bent materials compiled from now (the island's option, set before its first frame). */
-export const pointMask = { on: false };
 
 const LOOP_START = '#pragma unroll_loop_start', LOOP_END = '#pragma unroll_loop_end', POINT_AT = 'pointLight = pointLights[ i ];';
 /** A fragment shader's point-light loop skipped while no point light is lit (uPointN: up to the last lit slot), and in
@@ -63,13 +61,11 @@ export function bend<M extends Material>(m: M): M {
     s.uniforms.uBendZ = bendU.uBendZ;
     s.uniforms.uBendR = bendU.uBendR;
     s.vertexShader = BEND_GLSL + s.vertexShader.replace('#include <project_vertex>', PROJECT);
-    if (pointMask.on) {
-      Object.assign(s.uniforms, pointsU);
-      s.fragmentShader = maskedLights(s.fragmentShader);
-    }
+    Object.assign(s.uniforms, pointsU);
+    s.fragmentShader = maskedLights(s.fragmentShader);
   };
   const key = m.customProgramCacheKey.bind(m);
-  m.customProgramCacheKey = () => `bend${pointMask.on ? '-pm' : ''}|${key()}`;
+  m.customProgramCacheKey = () => `bend|${key()}`;
   return m;
 }
 

@@ -3,7 +3,7 @@
 // shadow map's passes, the pacers' display frames asked for and the frames drawn at the full rate (and what asked for
 // them) are added up; at each hide (and as the island goes) with MIN_S or more of it, one event: the seconds, their
 // rates a second, the full rate's share and top three reasons, and the scene as it stands (draw calls and triangles a
-// frame, the pixel ratio, the camera's z, the shadow map's size, the point lights and their mask). It used to wait for
+// frame, the pixel ratio, the camera's z). It used to wait for
 // 15 s untouched and sample 10 s once a load: the phones never rest that long (time since the last touch at a hide:
 // p90 15 s, max 19.8 s), so it fired twice in a week. A 1 s timer, no frames of its own (a rAF loop would be the
 // wake-ups it counts), none while hidden. No three.js.
@@ -24,12 +24,9 @@ interface Stats {
   sceneTris: number;
   dpr: number;
   camZ: number;
-  shadowSize: number;
   full: number;
   fullWhy: Readonly<Record<string, number>>;
   fxWhy: Readonly<Record<string, number>>;
-  slots: number;
-  pointMask: boolean;
 }
 interface RestSource {
   stats(): Stats;
@@ -82,7 +79,7 @@ export function watchRest(o: RestSource, clock: RestClock = PAGE): () => void {
     if (s >= MIN_S) {
       const st = o.stats(), per = (n: number) => Math.round((n / s) * 10) / 10;
       const pct = (n: number) => Math.round((n / Math.max(1, frames)) * 100);
-      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), sm: st.shadowSize, full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct), pts: st.slots, pm: st.pointMask });
+      log('perf.rest', { s: Math.round(s), fps: per(frames), shadows: per(shadows), wakes: per(wk), calls: st.sceneCalls, tris: st.sceneTris, dpr: st.dpr, camZ: Math.round(st.camZ), full: pct(full), ...top(why, pct), ...topFx(fx, pct), ...topNode(why, pct) });
     }
     ms = frames = shadows = wk = full = 0;
     why = {};

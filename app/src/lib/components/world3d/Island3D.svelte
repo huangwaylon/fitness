@@ -1022,13 +1022,7 @@
         shadows: soft ? q.get('shadows') === '1' : q.get('shadows') !== '0',
         aa: q.get('aa') !== null ? q.get('aa') !== '0' : !soft,
         ktx2: q.get('ktx2') !== '0',
-        cull: q.get('cull') !== '0',
-        points: num('points') ?? undefined,
-        pointMask: q.get('pointmask') !== '0',
-        // (the phones' A/B, perf.drag and perf.rest: the pixel ratio while moving, at the full one no swap; the shadow
-        // map's size. Once the A/B is decided, remove: ?points, ?pointmask, ?dprmove, ?shadow, and perf.rest's pts/pm)
-        dprMoving: num('dprmove') ?? undefined,
-        shadowSize: num('shadow') ?? undefined
+        cull: q.get('cull') !== '0'
       });
     } catch (err) {
       // (in IslandLog either way: a context refused, NoWebGL, is tried again once, as WebKit under load gives one back
