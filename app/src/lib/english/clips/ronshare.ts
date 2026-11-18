@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 1, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 1, ctx 4, tx 5, qa 8
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 3, new 1
 // “Ron Swanson Doesn't Share Food | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at a
 // party, Tom tells Ron he's been working on tomorrow's presentation, Ron mentions his gold and catches himself, Tom asks
@@ -78,11 +78,11 @@ export const ronShare: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'secret', seg: [19.6, 28],
       stem: 'Ron says, “I’ve said too much.” What does he mean?',
       ja: 'ロンの「I’ve said too much.」はどういう意味？',
-      choices: ['He shared too much', 'He talked too long', 'He was too rude'], a: 0,
-      choicesJa: ['話しすぎて秘密をもらした', '長く話しすぎた', '失礼すぎた'],
+      choices: ['He told a secret', 'He talked too long', 'He was rude to Tom'], a: 0,
+      choicesJa: ['秘密をもらした', '長く話しすぎた', 'トムに失礼だった'],
       cue: 'money のあとの間と、短い一文。',
       line: 'So I have a certain amount of money. … *I’ve said too much*.',
-      said: '「ある程度のお金はある」と言って黙り、「しゃべりすぎた」と足す。',
+      said: '「それなりの額のお金がある」と言って黙り、「しゃべりすぎた」と足す。',
       mean: 'I’ve said too much ＝ 言わなくていいことまで言った。秘密をもらしたときの決まり文句。金額は言っていないのが笑い。',
       trap: '「言いすぎた」から、失礼なことを言ったと勘違いしやすい。ここは中身、お金の話。',
       use: 'Oops, I’ve said too much.（おっと、しゃべりすぎた）' },
@@ -252,10 +252,10 @@ export const ronShare: Clip = {
       use: 'Sorry, I got a little carried away.（ごめん、ちょっと調子に乗った）' },
 
     { id: 'nt2', skill: 'detail', level: 'B1', point: 'chain', reveals: ['partner'], seg: [76.0, 80.0],
-      stem: 'What does Tom say about Jean-Ralphio’s jokes?',
-      ja: 'ジャン・ラルフィオの冗談について、トムは何と言う？',
-      choices: ['It’s one of his skills', 'It’s a bad habit', 'It’s his first time'], a: 0,
-      choicesJa: ['彼の才能の一つ', '悪いくせ', '初めてのこと'],
+      stem: 'How does Tom describe Jean-Ralphio’s word games?',
+      ja: 'ジャン・ラルフィオの言葉遊びを、トムはどう言う？',
+      choices: ['As a real talent', 'As a bad habit', 'As a silly mistake'], a: 0,
+      choicesJa: ['本物の才能', '悪いくせ', 'ばかな失敗'],
       cue: 'That’s just のあと。',
       line: 'That’s just *one of many skills* he brings to this business partnership.',
       said: '「それも彼がこの事業に持ちこむ、たくさんの才能の一つです」と言う。',
