@@ -3,7 +3,9 @@
 // that leaks the key, dictations, coverage per bank, reveals, and draws over five plays. A lesson from before the
 // banks (under 16 items) is held to the schema, segments, banned words, dictations and the draws only. A bank whose
 // file has the line `// A2 REVIEW` (reviewed for the A1–A2 learner) is held to the A2 rules for size, coverage and
-// levels (and a looser key-length tell); the others to the older ones until their review.
+// levels (and a looser key-length tell); the others to the older ones until their review. No live item plays a header
+// `// EXCLUDE a–b` range; a bank with the line `// R4 REVIEW` is held to the R4 rubric's coverage (quarters of the
+// speech span, gaps under `// SKIP a–b: why`), density, context items (`ctx`, lines `A: … / B: …`) and trap openers.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -11,7 +13,7 @@ import { bandsOf, CLIPS } from './clips/index.ts';
 import { draw, GROUP_OF, seedOf, type History } from './draw.ts';
 import { cleanLine } from '#lib/contract/text.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
-import type { Clip, Question } from './types.ts';
+import type { Clip, Question, TranscriptFile } from './types.ts';
 
 const SKILLS = Object.keys(GROUP_OF);
 const BANNED = /不正解|誤り|間違い|ざんねん|残念|×/;
@@ -60,6 +62,31 @@ const A2 = new Set(readdirSync(DIR).filter((f) => f.endsWith('.ts')).flatMap((f)
   const src = readFileSync(join(DIR, f), 'utf8');
   return /^\/\/ A2 REVIEW\b/m.test(src) ? [...src.matchAll(/^\s*id: '([^']+)'/gm)].map((m) => m[1]) : [];
 }));
+/** Each clip file's source, by its video. */
+const SRC = new Map(readdirSync(DIR).filter((f) => f.endsWith('.ts')).flatMap((f) => {
+  const src = readFileSync(join(DIR, f), 'utf8'), v = src.match(/video: '([\w-]{11})'/)?.[1];
+  return v ? [[v, src] as const] : [];
+}));
+type Span = readonly [number, number];
+/** A header's `// <tag> a–b[, c–d][: why]` ranges (en dash or hyphen), and whether each line gave a why. */
+const ranges = (src: string, tag: string) => [...src.matchAll(new RegExp(`^// ${tag} ([^:\\n]*)(:\\s*\\S)?`, 'gm'))].map((m) => ({
+  spans: [...m[1].matchAll(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)/g)].map((r) => [+r[1], +r[2]] as Span), why: !!m[2]
+}));
+/** Seconds of [a, b] the spans cover (spans may overlap). */
+function covered([a, b]: Span, spans: readonly Span[]): number {
+  let n = 0, at = a;
+  for (const [x, y] of [...spans].sort((p, q) => p[0] - q[0])) {
+    const from = Math.max(x, at), to = Math.min(y, b);
+    if (to > from) (n += to - from), (at = to);
+  }
+  return n;
+}
+const overlaps = (s: Span, spans: readonly Span[]) => spans.some(([x, y]) => s[0] < y && s[1] > x);
+const f1 = (n: number) => +n.toFixed(1);
+/** A context item's line: its turns, `A: … / B: …` (rubric R4 §3). */
+const turns = (line: string) => line.split(' / ').filter((t) => t.trim()).length;
+/** The clips in the R4 review (the 2026-11-18 rubric): their files' `// R4 REVIEW` line. */
+const R4 = new Set(CLIPS.filter((c) => /^\/\/ R4 REVIEW\b/m.test(SRC.get(c.video) ?? '')).map((c) => c.id));
 
 describe('the clips', () => {
   it('ids unique and short; the order a plain list', () => {
@@ -258,6 +285,68 @@ describe('the clips', () => {
         expect(share('B1') >= 0.2 && share('B1') <= 0.35, `B1 ${share('B1')}`).toBe(true);
         expect(share('B2') >= 0.4 && share('B2') <= 0.55, `B2 ${share('B2')}`).toBe(true);
         expect(share('C1') >= 0.2 && share('C1') <= 0.35, `C1 ${share('C1')}`).toBe(true);
+      });
+
+      const src = SRC.get(c.video) ?? '';
+      const live = qs.filter((q) => !q.retired);
+      it('no live item plays a header `// EXCLUDE a–b` line', () => {
+        const ex = ranges(src, 'EXCLUDE').flatMap((r) => r.spans);
+        const bad = live.flatMap((q) => [q.seg, ...(q.then ? [q.then] : [])].filter((s) => overlaps(s, ex)).map((s) => `${q.id} [${s.join(', ')}]`));
+        expect(bad.length, `${c.id}: segments over EXCLUDE ${ex.map((s) => s.join('–')).join(', ')}: ${bad.join('; ')}`).toBe(0);
+      });
+
+      // the R4 rules (rubric-r4.md §2–§5) for a bank whose file has the line `// R4 REVIEW`
+      const r4 = R4.has(c.id);
+      describe.runIf(r4)('R4 rules', () => {
+        const skips = ranges(src, 'SKIP');
+        const skip = skips.flatMap((r) => r.spans);
+        /** The speech span: the transcript's first line to its last. */
+        const speech = (): Span => {
+          const { lines } = JSON.parse(readFileSync(join(import.meta.dirname, 'transcripts', `${c.video}.en.json`), 'utf8')) as TranscriptFile;
+          return [lines[0].t[0], lines.at(-1)!.t[1]];
+        };
+        it('coverage: the speech span’s quarters, and gaps ≥ 25 s under `// SKIP a–b: why`', () => {
+          expect(skips.every((r) => r.why && r.spans.length), `${c.id}: a SKIP line is \`// SKIP a–b: why\``).toBe(true);
+          const [lo, hi] = speech(), q4 = (hi - lo) / 4;
+          const starts = live.filter((q) => q.skill !== 'gist').map((q) => q.seg[0]);
+          const bad: string[] = [];
+          for (let i = 0; i < 4; i++) {
+            const quarter: Span = [lo + i * q4, lo + (i + 1) * q4];
+            // an item before the first line counts in the first quarter, after the last in the last
+            const n = starts.filter((s) => (i === 0 || s >= quarter[0]) && (i === 3 || s < quarter[1])).length;
+            const at = `Q${i + 1} ${f1(quarter[0])}–${f1(quarter[1])} s`;
+            if (n < 2 && covered(quarter, skip) < q4 / 2) bad.push(`${at}: ${n} non-gist starts (≥ 2, or SKIP ≥ half of it)`);
+            if (n > 0.4 * starts.length) bad.push(`${at}: ${n} of ${starts.length} non-gist starts (≤ 40 %)`);
+          }
+          const all = [lo, ...live.map((q) => q.seg[0]).filter((s) => s > lo && s < hi).sort((a, b) => a - b), hi];
+          for (let i = 1; i < all.length; i++) {
+            const gap: Span = [all[i - 1], all[i]], d = gap[1] - gap[0];
+            if (d >= 25 && covered(gap, skip) < 0.8 * d) bad.push(`no item start ${f1(gap[0])}–${f1(gap[1])} s (${f1(d)} s): SKIP covers ${f1(covered(gap, skip))} s (≥ 80 %)`);
+          }
+          expect(bad.length, `${c.id}: speech ${f1(lo)}–${f1(hi)} s: ${bad.join('; ')}`).toBe(0);
+        });
+
+        it('≤ 3 live item starts in any 10 s (≤ 4 when the speech span is under 80 s)', () => {
+          const [lo, hi] = speech(), k = hi - lo < 80 ? 4 : 3;
+          const s = live.map((q) => q.seg[0]).sort((a, b) => a - b);
+          const bad = s.flatMap((x, i) => (s[i + k] !== undefined && s[i + k] - x < 10 ? [`${s.slice(i, i + k + 1).join(', ')} s`] : []));
+          expect(bad.length, `${c.id}: over ${k} starts within 10 s (speech ${f1(hi - lo)} s): ${bad.join('; ')}`).toBe(0);
+        });
+
+        it('context items: ≥ 3 and ≥ 15 % of live, seg 6–18 s, a line of ≥ 2 turns (`A: … / B: …`)', () => {
+          const ctx = live.filter((q) => q.ctx);
+          expect(ctx.length >= 3 && ctx.length >= 0.15 * live.length, `${c.id}: ctx ${ctx.length} of ${live.length} live (≥ 3, ≥ ${Math.ceil(0.15 * live.length)})`).toBe(true);
+          const bad = ctx.flatMap((q) => {
+            const d = f1(q.seg[1] - q.seg[0]);
+            return [...(d >= 6 && d <= 18 ? [] : [`${q.id}: seg ${d} s (6–15, ≤ 18)`]), ...(!q.line || turns(q.line) >= 2 ? [] : [`${q.id}: line of ${turns(q.line)} turn (turns split by ' / ')`])];
+          });
+          expect(bad.length, `${c.id}: context items: ${bad.join('; ')}`).toBe(0);
+        });
+
+        it('trap opener 「思いやすい」 in ≤ ⌈live / 3⌉ traps', () => {
+          const n = live.filter((q) => q.trap.includes('思いやすい')).length, max = Math.ceil(live.length / 3);
+          expect(n, `${c.id}: 思いやすい in ${n} traps (≤ ${max}; rotate 〜と考えがち, 〜に聞こえるが, 〜と勘違いしやすい, 〜を連想しやすい)`).toBeLessThanOrEqual(max);
+        });
       });
 
       it('draws: five plays × 20 seeds, each well-formed; play 2 new when the bank allows', () => {
