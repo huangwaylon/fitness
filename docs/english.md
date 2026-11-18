@@ -23,10 +23,12 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
   C1 ≤ 15 %; a key-length tell with 6 characters of slack; said + mean + trap 60–160 characters; a gist's segment ≤ 45 s;
   3 choices an item (a number 3–4). The others keep the older rules until their review.
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
-  first, then the best set of the rest (a bounded search): the unseen before any repeat, then the group quotas
-  (L I F: n 6 2 1 2, play 2+ 2 2 1; n 7 2 1 3 / 2 2 2; n 8 3 1 3 / 2 2 3), new points first; always ≤ 1 C1, ≤ 1
-  dictation, humor and predict, one item a point, nothing that reveals a chosen point; then clip order. A play's ids
-  are kept with its place; choices are shuffled per player unless `keep`.
+  first (unseen, a set-up one: starting in the first 40 %), then the best set of the rest (a bounded search): the
+  unseen before any repeat, then the group quotas (L I F: n 6 2 1 2, play 2+ 2 2 1; n 7 2 1 3 / 2 2 2; n 8 3 1 3 / 2 2
+  3), then ≥ 1 context item (`ctx`: the answer needs two turns) when one fits, then spread (the speech span in n − 1
+  parts: the most parts hit, no two segments overlapping by over half), new points first, a B1 opening; always ≤ 1 C1,
+  ≤ 1 dictation, humor and predict, one gist, one item a point, nothing that reveals a chosen point; then clip order.
+  A play's ids are kept with its place; choices are shuffled per player unless `keep`.
 - **The native tier (C2):** 0 or 2–4 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
   dict, notes 90–140 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) ships `retired` until
   its ear check (an A2-reviewed bank: 0–2). The draw takes none unless `{ harder: true }` (the ⚙ むずかしめ opt-in),

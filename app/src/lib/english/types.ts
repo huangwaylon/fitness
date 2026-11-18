@@ -27,6 +27,9 @@ export interface Question {
   point: string;
   /** Other points its stem, choices, line or notes give away: never drawn with those. */
   reveals?: readonly string[];
+  /** A context item: the answer needs ≥ 2 turns (what X asks and Y answers, why Y says no, what they decide); the draw
+   *  puts ≥ 1 in a play. */
+  ctx?: true;
   /** The segment that answers it, s into the video: [from, to]. */
   seg: readonly [number, number];
   /** predict only: the continuation, played at the reveal. */

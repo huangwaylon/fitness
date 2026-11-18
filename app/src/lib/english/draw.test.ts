@@ -1,6 +1,7 @@
-// The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play 1
-// L2 I1 F2; play 2+ L2 I2 F1), ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first, ≤ 1 dict, points
-// and reveals, a predict's continuation, the same draw for the same seed; the history from listen rows; the choices' order.
+// The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play
+// 1 L2 I1 F2; play 2+ L2 I2 F1), ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first,
+// ≤ 1 dict, points and reveals, a predict's continuation, spread over the clip, a context item, a set-up gist and
+// one a play, the same draw for the same seed; the history from listen rows; the choices' order.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { choiceOrder, draw, drawSize, GROUP_OF, historyOf, seedOf, type History } from './draw.ts';
@@ -37,12 +38,15 @@ describe('draw', () => {
     }
   });
   it('play 2: the other gist, L2 I2 F1, the unseen first', () => {
-    const one = draw(clip, {}, 1, 's');
-    const seen: History = Object.fromEntries(one.map((x) => [x.id, { play: 1, ok: true }]));
-    const two = draw(clip, seen, 2, 's2');
-    expect(two[0].id).toBe('g1');
-    expect(groups(two)).toEqual({ L: 2, I: 2, F: 1 });
-    expect(two.slice(1).filter((x) => one.includes(x))).toEqual([]);
+    // a play 1 that took n1 (g1 reveals it), so two unseen L are left
+    const one = ['g2', 'd1', 'n1', 'i1', 'm1', 'p1'];
+    const seen: History = Object.fromEntries(one.map((id) => [id, { play: 1, ok: true }]));
+    for (let s = 0; s < 30; s++) {
+      const two = draw(clip, seen, 2, String(s));
+      expect(two[0].id).toBe('g1');
+      expect(groups(two)).toEqual({ L: 2, I: 2, F: 1 });
+      expect(two.slice(1).filter((x) => one.includes(x.id))).toEqual([]);
+    }
   });
   it('≤ 1 C1 on every play; the unseen before any repeat', () => {
     for (let s = 0; s < 30; s++) for (const play of [1, 2, 3]) expect(draw(clip, {}, play, String(s)).filter((x) => x.level === 'C1').length).toBeLessThanOrEqual(1);
@@ -81,6 +85,30 @@ describe('draw', () => {
     for (let s = 0; s < 40; s++) {
       const d = draw(c2, {}, 2, String(s));
       expect(d.includes(k) && d.includes(cover)).toBe(false);
+    }
+  });
+  it('spread over the clip: one scene gives at most one item, the rest across the clip', () => {
+    const at = (id: string, skill: Skill, s0: number) => q(id, skill, 'B1', { seg: [s0, s0 + 4] });
+    // five items across the speech span (0–104 s, 5 bins), a scene of six at 60–69 s
+    const scene = [at('cd1', 'detail', 60), at('cd2', 'number', 61), at('cd3', 'who', 62), at('ci1', 'infer', 63), at('cm1', 'marker', 64), at('cm2', 'phrase', 65)];
+    const far = [at('sd1', 'number', 2), at('sd2', 'detail', 20), at('sm1', 'marker', 40), at('sm2', 'phrase', 80), at('si1', 'infer', 100)];
+    const c: Clip = { ...clip, questions: [q('g0', 'gist', 'B1', { seg: [0, 20] }), ...scene, ...far] };
+    for (let s = 0; s < 30; s++) {
+      const rest = draw(c, {}, 1, String(s)).slice(1);
+      expect(groups([c.questions[0], ...rest])).toEqual({ L: 2, I: 1, F: 2 });
+      expect(rest.filter((x) => scene.includes(x)).length).toBeLessThanOrEqual(1);
+    }
+  });
+  it('a context item in every play while one fits, though it costs more', () => {
+    const c: Clip = { ...clip, questions: [...bank, q('cx', 'detail', 'C1', { ctx: true })] };
+    for (let s = 0; s < 30; s++) expect(draw(c, {}, 1, String(s)).map((x) => x.id)).toContain('cx');
+  });
+  it('the head a set-up gist (starting in the first 40 %), one gist a play', () => {
+    const c: Clip = { ...clip, questions: [q('ge', 'gist', 'B1', { seg: [40, 60] }), q('gs', 'gist', 'B1', { seg: [5, 25], reveals: ['d1', 'd2'] }), ...bank.filter((x) => x.skill !== 'gist')] };
+    for (let s = 0; s < 30; s++) {
+      const d = draw(c, {}, 1, String(s));
+      expect(d[0].id).toBe('gs');
+      expect(d.filter((x) => x.skill === 'gist')).toHaveLength(1);
     }
   });
   it('the same seed, the same draw; a lesson smaller than the size: all of it', () => {
