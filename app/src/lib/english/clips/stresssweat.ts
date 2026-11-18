@@ -27,7 +27,7 @@ export const stressSweat: Clip = {
       trap: '物が消えたら困るはず、という型で聞きやすい。この形式では、カメラへの一言が答え合わせになる。',
       use: 'Finally, a real case! Let’s do this.（ついに本物の事件だ！さあやるぞ）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'exam', seg: [14, 22], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'exam', seg: [14, 22],
       stem: 'What is part of the police academy entrance exam?',
       ja: '警察学校の入試には何がある？',
       choices: ['Investigating a crime', 'Writing a crime report', 'Catching a thief'], a: 0,
@@ -97,7 +97,7 @@ export const stressSweat: Clip = {
       trap: '先に look at me が聞こえるので、目を見る決まりと思いやすい。have to のあとの tell me が中身。',
       use: 'You have to tell me the truth.（本当のことを言わなきゃだめ）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'notme', seg: [77.5, 89.3], keep: true,
+    { id: 'w1', skill: 'who', level: 'B1', point: 'notme', seg: [77.5, 89.3],
       stem: 'Who says “I’m sorry, Andy, it wasn’t me”?',
       ja: '「ごめん、アンディ、ぼくじゃない」と言うのはだれ？',
       choices: ['The man Andy called Jerry', 'The coworker back from Miami', 'The person who lost glasses'], a: 0,
@@ -133,7 +133,7 @@ export const stressSweat: Clip = {
       trap: 'tell から「言う」と思いやすい。can’t tell ＋ when/if は「分からない」。',
       use: 'I can’t tell if he’s joking.（彼が冗談か本気か分からない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'perimeter', seg: [94.4, 99.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'perimeter', seg: [94.4, 99.4],
       stem: 'Type what Andy says: “We gonna ___, maybe bug a few phones?” (4 words)', answer: 'set up a perimeter',
       ja: 'アンディの言葉を入力：「We gonna ___, maybe bug a few phones?」（4語）',
       cue: '「We gonna」のあと',
@@ -179,7 +179,7 @@ export const stressSweat: Clip = {
       trap: 'love が聞こえて、賛成と思いやすい。but のあとが本当に言いたいこと。',
       use: 'I love the idea, but not today.（いい考えだけど、今日はやめとこう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'money', reveals: ['paperwork'], seg: [107.3, 113.3], retired: true, keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'money', reveals: ['paperwork'], seg: [107.3, 113.3], retired: true,
       stem: 'Why won’t the police do more, the officer says?',
       ja: '警察がそれ以上しない理由は何だと、警官は言う？',
       choices: ['There isn’t the money for it', 'The computer isn’t worth enough', 'There isn’t any proof of a crime'],
@@ -251,7 +251,7 @@ export const stressSweat: Clip = {
       trap: 'might や I think を本当の迷いと取りやすい。遠回しな言い方は、返事で中身を確かめる。',
       use: 'You might want to check that again.（もう一度確認した方がいいかもね）', retired: true },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'bummed', seg: [163.6, 169.9], keep: true,
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'bummed', seg: [163.6, 169.9],
       stem: 'What makes Andy take his shirt off, he says?',
       ja: 'アンディがシャツをぬぐのは、どんなとき？',
       choices: ['Feeling down', 'Feeling hot', 'Feeling nervous'], a: 0,
@@ -263,7 +263,7 @@ export const stressSweat: Clip = {
       trap: 'sweaty（汗が出る）から「暑い」と思いやすい。get のあとの bummed out が気持ち。',
       use: 'I’m kind of bummed out today.（今日はちょっと落ちこんでる）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bail', seg: [169.7, 174.7], keep: true,
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'bail', seg: [169.7, 174.7],
       stem: 'What is Andy thinking of doing about becoming a cop?',
       ja: '警官になることについて、アンディは何を考えている？',
       choices: ['Giving up on it', 'Paying to get in', 'Putting it off'], a: 0,

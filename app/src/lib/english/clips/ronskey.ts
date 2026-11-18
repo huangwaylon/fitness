@@ -82,7 +82,7 @@ export const ronsKey: Clip = {
       mean: 'impossible ＝ 不可能な。鍵をなくされた怒りより、難しい謎への喜びが勝っている。',
       trap: '「怒らないで」や「最悪の悪夢」から怒りを思いやすい。最後の I love puzzles が答え。',
       use: 'A challenge? I love a challenge.（難題？大好物だよ）' },
-    { id: 'f1', skill: 'phrase', level: 'C1', point: 'donuts', seg: [67.25, 72.6], retired: true, keep: true,
+    { id: 'f1', skill: 'phrase', level: 'C1', point: 'donuts', seg: [67.25, 72.6], retired: true,
       stem: 'When the movie ticket is linked to Donna, how sure is the speaker?',
       choices: ['Doubtful, a small bet at best', 'Half sure, like a coin toss',
                 'Almost certain, sure to win a bet'], a: 2,

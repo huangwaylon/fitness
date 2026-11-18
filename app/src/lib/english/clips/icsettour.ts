@@ -43,7 +43,7 @@ export const icSetTour: Clip = {
       trap: 'あとでパンを焼く冗談が出るので、料理と思いやすい。何度も出るのは「昔は〜、今は〜」。',
       use: 'Let me show you around the apartment.（部屋を案内するね）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'rich', seg: [16.6, 28.6], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'rich', seg: [16.6, 28.6],
       stem: 'How did Spencer get rich, they joke?',
       ja: 'スペンサーはどうやってお金持ちになったと、冗談で言う？',
       choices: ['By making and selling art', 'By winning a lottery', 'From Carly’s web show'], a: 0,
@@ -99,7 +99,7 @@ export const icSetTour: Clip = {
       trap: 'sorry ＋会社名で「壊した」と取りやすい。直前の一言が謝る理由。',
       use: 'No offense, Mom, but this is better.（ママ、悪いけどこっちの方がいい）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 109.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 109.6],
       stem: 'Type the words: “Spencer’s like, let’s ___ all the cheesy, lame stuff.” (3 words)', answer: 'get rid of',
       ja: '言葉を入力：「let’s ___ all the cheesy, lame stuff.」（3語）',
       cue: '「let’s」のあと',
@@ -178,7 +178,7 @@ export const icSetTour: Clip = {
       trap: 'uh-oh を本気の驚きと取りやすい。直前の It goes nowhere が答え合わせ。',
       use: 'Oh no, who could have seen that coming?（まさか、そんなの予想できた？）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [187.5, 195.5], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [187.5, 195.5],
       stem: 'Type the words: “So let’s ___, shall we?” (4 words)', answer: 'run on up there',
       ja: '言葉を入力：「So let’s ___, shall we?」（4語）',
       cue: '「let’s」のあと',
@@ -224,7 +224,7 @@ export const icSetTour: Clip = {
       trap: 'upgraded から、全部新しいと思いやすい。But のあとと a little old を聞く。',
       use: 'It’s a little old, a little new.（ちょっと古くて、ちょっと新しい）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'bike', seg: [275, 282.9], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'bike', seg: [275, 282.9],
       stem: 'Where is the bike now?',
       ja: '自転車は今どこにある？',
       choices: ['Above the elevator', 'Above the fridge', 'Beside the stairs'], a: 0,

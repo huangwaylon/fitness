@@ -68,7 +68,7 @@ export const scarnRead: Clip = {
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'america', seg: [16.2, 21.5], retired: true,
       stem: 'When Jim defends the reading to Dwight, how serious is he?',
       choices: ['Not at all; he’s teasing with mock praise', 'Partly; he likes it but is mostly polite',
-                'Fully; he thinks the script is really good'], a: 0, keep: true,
+                'Fully; he thinks the script is really good'], a: 0,
       cue: '同僚の手作り脚本に、どれほど大きな言葉を使うか。',
       line: 'This is a movie. I mean, this is *for all of America to enjoy*.',
       said: '同僚の手作り脚本を「全米が楽しむための映画だ」と持ち上げる。',

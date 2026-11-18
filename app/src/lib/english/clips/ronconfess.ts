@@ -42,7 +42,7 @@ export const ronConfession: Clip = {
       trap: 'apparent（明らか）から「絶対に」と思いやすい。文頭の Apparently は「〜らしい」。',
       use: 'Apparently, the train is late.（電車が遅れているらしい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'clothes', seg: [7, 14.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'clothes', seg: [7, 14.7],
       stem: 'Why is Ron wearing these clothes?',
       ja: 'ロンはなぜこの服を着ている？',
       choices: ['They were the only dry ones', 'He was going to do yoga', 'Craig left them for him'], a: 0,
@@ -196,7 +196,7 @@ export const ronConfession: Clip = {
       trap: 'pick up the kids は夫への頼みで、本人の用事ではない。理由は Washington。',
       use: 'Sorry, something came up at work.（ごめん、仕事で急用が入って）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'flight', seg: [113, 119.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'flight', seg: [113, 119.9],
       stem: 'Type the request: “Get us the ___.” (5 words)', answer: 'first flight out of here',
       ja: '「Get us the ___.」の5語を書こう。',
       cue: '「Okay,」のあと、Get us the に続く部分。',

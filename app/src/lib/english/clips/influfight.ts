@@ -32,7 +32,7 @@ export const influencerFightClub: Clip = {
       trap: '「こっそり」の話なので、気づかれないと思いやすい。最初の they will（気づく）を聞く。',
       use: 'Sorry, I’m hard to miss.（ごめん、目立っちゃうんだよね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'land', seg: [10.9, 18.7], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'land', seg: [10.9, 18.7],
       stem: 'What does “get a lay of the land” mean?',
       ja: '「get a lay of the land」はどういう意味？',
       choices: ['Get to know the place', 'Hide until they can leave', 'Stay near the exit'], a: 0,
@@ -90,7 +90,7 @@ export const influencerFightClub: Clip = {
       trap: 'mad-dog を逃すと、ファンの視線と取りやすい。liver からお酒にも引かれる。動詞として聞く。',
       use: 'Why is that guy mad-dogging me?（なんであの人、こっちにらんでるの？）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'rule', seg: [92.9, 103.3], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'rule', seg: [92.9, 103.3],
       stem: 'What is the rule for someone’s first night at the club?',
       ja: 'クラブの初日の人には、どんな決まりがある？',
       choices: ['They have to fight that night', 'They watch one night, then fight', 'They fight if picked'], a: 0,
@@ -161,7 +161,7 @@ export const influencerFightClub: Clip = {
       trap: 'but schoolwork から、不満と思いやすい。最後の so のあとが本音。',
       use: 'Work, but with free pizza. So, fun work.（仕事だけどピザつき。楽しい仕事）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'help', seg: [164.5, 172.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'help', seg: [164.5, 172.5],
       stem: 'Type what he says: “I ___, and I uploaded Derek’s picture.” (3 words)', answer: "couldn't help myself",
       ja: '彼の言葉を入力：「I ___, and I uploaded Derek’s picture.」（3語）',
       cue: '「when you get older」のあと',
@@ -171,7 +171,7 @@ export const influencerFightClub: Clip = {
       trap: 'couldn’t の t が消えて could に聞こえやすいが、could では意味が逆。3語あるか数える。',
       use: 'Sorry, I couldn’t help myself.（ごめん、つい）' },
 
-    { id: 'i8', skill: 'infer', level: 'B2', point: 'app', reveals: ['derek'], seg: [172.8, 180.8], keep: true,
+    { id: 'i8', skill: 'infer', level: 'B2', point: 'app', reveals: ['derek'], seg: [172.8, 180.8],
       stem: 'What does Millicent think the old-Derek picture means?',
       ja: '年を取ったデレクの写真を、ミリセントはどういう意味だと思う？',
       choices: ['They’ll grow old together', 'Derek won’t stay cute', 'Derek is older than he looks'], a: 0,
@@ -183,7 +183,7 @@ export const influencerFightClub: Clip = {
       trap: 'Woof（うわ、ひどい）は見せた側の感想。ミリセントの答えは grow old together。',
       use: 'Does this mean we’re friends now?（これって、もう友だちってこと？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'overheard', seg: [195.8, 204.9], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'overheard', seg: [195.8, 204.9],
       stem: 'What did Derek tell his mother, he says?',
       ja: 'デレクはお母さんに何と言っていた、と彼は言う？',
       choices: ['He’s only nice to get his way', 'His mother doesn’t like her', 'He wants to work alone'], a: 0,
@@ -206,7 +206,7 @@ export const influencerFightClub: Clip = {
       trap: '日本語の「もっと早く言えば」は謝罪になりやすい。I’m the hero で自慢と分かる。',
       use: 'For the record, I said this first.（言っとくけど、最初に言ったのは私）', retired: true },
 
-    { id: 'a6', skill: 'attitude', level: 'B1', point: 'ruined', seg: [205.6, 211.4], keep: true,
+    { id: 'a6', skill: 'attitude', level: 'B1', point: 'ruined', seg: [205.6, 211.4],
       stem: 'How does Millicent react to what they tell her?',
       ja: '話を聞いて、ミリセントはどうする？',
       choices: ['Angry at them for telling her', 'Thankful, but sad about him', 'Angry at Derek, not at them'], a: 0,

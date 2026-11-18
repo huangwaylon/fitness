@@ -96,7 +96,7 @@ export const shelbyFight: Clip = {
       trap: 'Hi で始まるのでただのあいさつに見える。promised は過去形で、新しく頼んではいない。',
       use: 'Remember how you said you’d help?（手伝うって言ったよね？）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'easy', seg: [127.9, 132.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'easy', seg: [127.9, 132.3],
       stem: 'Type what Shelby promised: “…promised to ___ and not really hit?” (4 words)', answer: 'go easy on me',
       ja: '「…promised to ___ and not really hit?」の空所を書こう（4語）',
       cue: '「promised to」のあと',

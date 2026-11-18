@@ -70,7 +70,7 @@ export const bonVoyage: Clip = {
       trap: 'snuck into your house（家にしのびこんだ）から、プレゼントと思いやすい。packed a bag を聞く。',
       use: 'I packed a bag for the trip.（旅行のかばんをつめた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'bunch', seg: [39.8, 47.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'bunch', seg: [39.8, 47.1],
       stem: 'Type what Ann says: “This is just ___ bras and knives.” (3 words)', answer: 'a bunch of',
       ja: 'アンの言葉を入力：「This is just ___ bras and knives.」（3語）',
       cue: '「This is just」のあと',
@@ -139,7 +139,7 @@ export const bonVoyage: Clip = {
       trap: '警備員の話も出るので、パーティーに来ると思いやすい。警備員がいるのは空き地。',
       use: 'Is everything okay over there?（そっちは大丈夫？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'apply', reveals: ['lot'], seg: [93, 98], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'apply', reveals: ['lot'], seg: [93, 98],
       stem: 'Fill the gap: “That probably ___ apply to us.”',
       ja: 'すき間をうめよう：「That probably ___ apply to us.」',
       choices: ['does', 'doesn’t', 'didn’t'], a: 1,
@@ -163,7 +163,7 @@ export const bonVoyage: Clip = {
       trap: 'Copenhagen から、有名な知り合いの話と思いやすい。教授を出すのは、自分じゃないと言うため。',
       use: 'They probably mean someone else.（たぶん別の人のことだよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'hyper', seg: [131.7, 138.1], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'hyper', seg: [131.7, 138.1],
       stem: 'What can’t Leslie do before bedtime?',
       ja: 'レスリーは寝る前に何をしてはいけない？',
       choices: ['Watch Julie Andrews movies', 'Eat chia seeds at night', 'Drink sugary drinks'], a: 0,
@@ -267,7 +267,7 @@ export const bonVoyage: Clip = {
       trap: 'ride から、移動や旅と思いやすい。ジェットコースターのような上がり下がりのたとえ。',
       use: 'That year was quite a ride.（あの1年はいろいろあった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'present', seg: [213.3, 222.9], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'present', seg: [213.3, 222.9],
       stem: 'What going-away present does Tom give Ann?',
       ja: 'トムはアンに、どんなお別れのプレゼントをあげる？',
       choices: ['He deletes her number', 'A pass to his club', 'A new photo of her'], a: 0,

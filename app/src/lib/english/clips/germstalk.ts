@@ -54,7 +54,7 @@ export const germsTalk: Clip = {
       trap: 'year から年末を思いやすい。毎年くり返すことを言う決まり文句。',
       use: 'It’s that time of year again.（またこの季節が来たね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [2.5, 13.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'study', seg: [2.5, 13.7],
       stem: 'Who did the study the presenter talks about?',
       ja: '発表する人が話す調査は、だれがした？',
       choices: ['A university', 'A health office', 'Their own company'], a: 0,
@@ -124,7 +124,7 @@ export const germsTalk: Clip = {
       trap: '相づちは賛成に聞こえやすい。すぐあとに And や But で反論が来るかを聞く。',
       use: 'Uh-huh. Right. And who pays for that?（へえ。で、誰が払うの？）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'flushot', seg: [40.2, 48.2], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'flushot', seg: [40.2, 48.2],
       stem: 'Type the presenter’s last tip: “and ___.” (4 words)', answer: 'get your flu shot',
       ja: '最後のアドバイスを入力：「and ___.」（4語）',
       cue: '手洗いと休む話のあと',
@@ -134,7 +134,7 @@ export const germsTalk: Clip = {
       trap: 'get と your がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'Did you get your flu shot yet?（もう予防接種した？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'stations', seg: [46.9, 53.9], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'stations', seg: [46.9, 53.9],
       stem: 'What will the presenter set up around the office?',
       ja: '発表する人は、オフィスのあちこちに何を置く？',
       choices: ['Places to clean your hands', 'Places to get a flu shot', 'Places to pick up some tissues'], a: 0,
@@ -182,7 +182,7 @@ export const germsTalk: Clip = {
       trap: 'あとの fight から、無理をさせると思いやすい。最悪なのは守りすぎのほう。',
       use: 'Don’t coddle him. He’ll be fine.（あまやかさないで。大丈夫だから）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'bowl', seg: [64.4, 71], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'bowl', seg: [64.4, 71],
       stem: 'What would fill the bowls the coworker wants?',
       ja: '同僚がほしいボウルには、何が入る？',
       choices: ['Dirt and filth', 'Soap and water', 'Candy and snacks'], a: 0,

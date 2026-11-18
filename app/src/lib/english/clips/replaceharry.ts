@@ -143,7 +143,7 @@ export const replaceHarry: Clip = {
       trap: '「言った」と認めたら次は謝る、と思いやすいが、proud で開き直っている。',
       use: 'Guilty as charged. I’d do it again.（その通り。また言うよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.2, 65.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofbed', seg: [59.2, 65.6],
       stem: 'Type the words: “…motivate Harry to ___ and back on stage.” (4 words)', answer: 'get out of bed',
       ja: '「…motivate Harry to ___ and back on stage.」の空所を書こう（4語）',
       cue: '「Harry to」のあと',

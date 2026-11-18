@@ -87,7 +87,7 @@ export const joeyfinds: Clip = {
       trap: 'went（過去形）から「ありえない話」、what if から心配だと思いやすい。これは提案の形。',
       use: 'What if we got takeout tonight?（今夜はテイクアウトにしない？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [52.7, 61.7], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cover', seg: [52.7, 61.7],
       stem: 'What cover story does Chandler plan for himself?',
       ja: 'チャンドラーは自分のために、どんな言い訳を考える？',
       choices: ['A work conference', 'A cooking festival', 'A trip to Jersey'], a: 0,
@@ -122,7 +122,7 @@ export const joeyfinds: Clip = {
       trap: 'busted（ばれた）と似ていて、秘密がばれた話に聞こえやすい。a bust は「失敗」。',
       use: 'The party was a total bust.（パーティーは大失敗だった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'curler', seg: [111.3, 120.6], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'curler', seg: [111.3, 120.6],
       stem: 'What did the hotel say was left in Chandler’s room?',
       ja: 'ホテルは、チャンドラーの部屋に何が残っていたと言った？',
       choices: ['An eyelash curler', 'A pair of earrings', 'A woman’s sweater'], a: 0,
@@ -146,7 +146,7 @@ export const joeyfinds: Clip = {
       trap: '女の子の物、というのはこのあとジョーイが言う考え。チャンドラーの返事は mine。',
       use: 'Oh, that’s mine. Thanks.（あ、それ私のです。どうも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'sense', seg: [125.1, 132], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'sense', seg: [125.1, 132],
       stem: 'Fill the gap: “Yes, that ___ more sense.”',
       ja: '空いている所に入る語は？',
       choices: ['would have made', 'would make', 'will make'], a: 0,
@@ -192,7 +192,7 @@ export const joeyfinds: Clip = {
       trap: '真剣な前置きのあとは謝罪や対決が来そうに思える。質問の中身を聞く。',
       use: 'I’ll only ask this once.（一度しか聞かないよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'believe', seg: [136.6, 143.2], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'believe', seg: [136.6, 143.2],
       stem: 'Type what Joey says: “…and ___, I’ll believe you.” (3 words)', answer: 'whatever you say',
       ja: '「and」のあとの3語を書こう。',
       cue: '「this one time」のあと。',
@@ -249,7 +249,7 @@ export const joeyfinds: Clip = {
       trap: 'telling everyone（みんなに話す）が聞こえると、話す手伝いだと思いやすい。頼んでいるのは言わないこと。',
       use: 'Promise you won’t tell anyone.（だれにも言わないって約束して）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'reason', seg: [209.2, 215.6], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'reason', seg: [209.2, 215.6],
       stem: 'Why didn’t they tell anyone, they say?',
       ja: '二人はなぜだれにも言わなかったと言う？',
       choices: ['They didn’t want a fuss', 'They weren’t sure it’d last', 'It was nobody’s business'], a: 0,

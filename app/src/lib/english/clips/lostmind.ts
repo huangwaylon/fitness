@@ -39,7 +39,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '子どもが大勢来るので、学校の見学だと思いやすい。daughter（娘）と work で分かる。',
       use: 'Are you bringing your kids to work?（子どもを職場に連れてくる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'married', seg: [2.9, 8.7], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'married', seg: [2.9, 8.7],
       stem: 'Why does Pam want to get better with kids?',
       ja: 'パムはなぜ子どもの相手がうまくなりたい？',
       choices: ['She’s getting married', 'Her daughter starts school', 'She’ll work with kids'], a: 0,
@@ -51,7 +51,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'Daughter という語から自分の娘を思いやすいが、娘の話はしていない。理由は because のあと。',
       use: 'I want to get better at cooking.（料理がうまくなりたい）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'candy', seg: [7.5, 13.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'candy', seg: [7.5, 13.7],
       stem: 'Why has Pam put extra candy on her desk?',
       ja: 'パムはなぜ机にお菓子を多めに置いた？',
       choices: ['So kids will talk to her', 'To keep the kids quiet', 'As a treat when kids leave'], a: 0,
@@ -168,7 +168,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dad が聞こえるので父親になりたい話と取りやすい。why be a dad は「なる必要ない」の反語。',
       use: 'Why pay more when you can rent?（借りられるのに、なぜ高く払う？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [114.4, 122.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [114.4, 122.4],
       stem: 'Type what he says: “…when you can be a ___?” (2 words)', answer: 'fun uncle',
       ja: '「when you can be a」のあとの2語を書こう。',
       cue: '「when you can be a」のあと。',
@@ -202,7 +202,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dorky を本気の悪口と思いやすい。すぐあとの Give me your number で気持ちが分かる。',
       use: 'Give me your number, I’ll text you.（番号教えて、メッセージ送るね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gimme', seg: [134.4, 140], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gimme', seg: [134.4, 140],
       stem: 'Fill the gap: “___ number…”',
       ja: '空いている所に入る語は？',
       choices: ['Give me your', 'Give me the', 'Give him your'], a: 0,
@@ -237,7 +237,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'Can I have… は普通のお願いで、乗り気に聞こえやすい。Um の間と番号を出さない点に注目。',
       use: 'Could we do email instead?（メールでもいいですか）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fishy', seg: [145.8, 155], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fishy', seg: [145.8, 155],
       stem: 'What does “something a little fishy” mean?',
       ja: '「something a little fishy」の意味は？',
       choices: ['Something seems wrong', 'Something smells bad', 'Someone is being lazy'], a: 0,
@@ -272,7 +272,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '否定が二つで「肯定」と計算しやすいが、話し言葉では強調。直後の Jesus の文で確かめる。',
       use: 'Ain’t nobody got time for that.（そんなのやってられない）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'scared', seg: [171.3, 177.6], keep: true,
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'scared', seg: [171.3, 177.6],
       stem: 'How does Ryan feel about what happened?',
       ja: 'ライアンは、起きたことをどう感じている？',
       choices: ['Very scared', 'Secretly amused', 'A bit embarrassed'], a: 0,

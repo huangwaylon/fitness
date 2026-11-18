@@ -40,7 +40,7 @@ export const pacMan: Clip = {
       trap: 'look at that は驚きにも聞こえるが、Monica への見せつけ。直前の Yes! を聞く。',
       use: 'Oh no, I won again. How sad.（あら、また勝っちゃった）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'scores', seg: [2.6, 9.2], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'scores', seg: [2.6, 9.2],
       stem: 'What has Phoebe just done to Monica’s scores?',
       ja: 'フィービーはモニカのスコアをどうした？',
       choices: ['Beaten every one of them', 'Beaten a few of them', 'Erased every one of them'], a: 0,
@@ -52,7 +52,7 @@ export const pacMan: Clip = {
       trap: 'off から「消した」と思いやすいが、勝って順位から落とした意味。all も聞きのがさない。',
       use: 'She knocked me off the top spot.（彼女に1位を取られた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'next', seg: [8.9, 15.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'next', seg: [8.9, 15.1],
       stem: 'Type what Monica says: “No, don’t start another game. ___.” (5 words)', answer: 'i said i was next',
       ja: 'モニカの言葉を入力：「No, don’t start another game. ___.」（5語）',
       cue: '「another game」のあと',
@@ -85,7 +85,7 @@ export const pacMan: Clip = {
       trap: 'can’t なら「キャン」で始まる。could なら「クッド」で終わる。「クドゥン」と「ン」が残れば couldn’t。',
       use: 'I couldn’t hear you. Say again?（聞こえなかった。もう一回？）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'whocares', seg: [17.7, 25.8], keep: true,
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'whocares', seg: [17.7, 25.8],
       stem: 'What does Chandler mean by “Who cares?”',
       ja: 'チャンドラーの「Who cares?」はどういう意味？',
       choices: ['I don’t care about it', 'Tell me who is upset', 'Someone should take care of it'], a: 0,
@@ -97,7 +97,7 @@ export const pacMan: Clip = {
       trap: 'who から、本当の質問と思いやすい。続く It’s a stupid game で「どうでもいい」と分かる。',
       use: 'Who cares what they think?（人がどう思おうと関係ない）' },
 
-    { id: 'w1', skill: 'who', level: 'B2', point: 'whosucks', reveals: ['suckat'], seg: [19.9, 30.1], keep: true,
+    { id: 'w1', skill: 'who', level: 'B2', point: 'whosucks', reveals: ['suckat'], seg: [19.9, 30.1],
       stem: 'Who answers “I don’t suck”?',
       ja: '「I don’t suck」と言い返すのはだれ？',
       choices: ['Chandler', 'Monica', 'Phoebe'], a: 0,
@@ -109,7 +109,7 @@ export const pacMan: Clip = {
       trap: 'モニカがずっと話しているので、同じ人と思いやすい。だれが言われたかを追う。',
       use: 'I’m not bad at it. It’s just hard.（下手じゃない、むずかしいだけ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'suckat', seg: [20.2, 28.6], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'suckat', seg: [20.2, 28.6],
       stem: 'Why does Chandler call the game stupid, she says?',
       ja: 'チャンドラーがゲームをくだらないと言うのはなぜだと、彼女は言う？',
       choices: ['He can’t play it well', 'He can’t get a turn on it', 'It’s too easy for him'], a: 0,
@@ -226,7 +226,7 @@ export const pacMan: Clip = {
       trap: 'Clark bar が聞こえて、おかしが出ると思いやすい。最初の it’s not like が全体を打ち消す。',
       use: 'It’s not like it’s free, you know.（タダってわけじゃないんだよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'chair', seg: [49.5, 54.5], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'chair', seg: [49.5, 54.5],
       stem: 'Type the last words: “Come on. Come on. ___.” (4 words)', answer: 'out of the chair',
       ja: '最後の言葉を入力：「Come on. Come on. ___.」（4語）',
       cue: '最後の「come on」2回のあと',

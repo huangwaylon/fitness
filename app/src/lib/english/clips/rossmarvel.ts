@@ -26,7 +26,7 @@ export const rossMarvel: Clip = {
       trap: 'gym や stranger が聞こえるので、その話と思いやすい。どれも親のあつかいの例。',
       use: 'My parents love my brother more.（親は兄の方をかわいがる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'stranger', seg: [0, 5], keep: true,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'stranger', seg: [0, 5],
       stem: 'Fill the gap: “Some stranger ___ in my room.”',
       ja: 'すき間をうめよう：「Some stranger ___ in my room.」',
       choices: ['is going to be living', 'was going to be living', 'has been living'], a: 0,
@@ -73,7 +73,7 @@ export const rossMarvel: Clip = {
       trap: 'please から「お願い」と思いやすい。すぐあとに反対の話が続くので、打ち消し。',
       use: 'Oh, please. You love it.（よく言うよ。好きなくせに）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'gym', seg: [11.4, 16.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'gym', seg: [11.4, 16.7],
       stem: 'What did Dad do with Monica’s room?',
       ja: 'パパはモニカの部屋をどうした？',
       choices: ['Turned it into a gym', 'Made it a guest room', 'Filled it with boxes'], a: 0,
@@ -143,7 +143,7 @@ export const rossMarvel: Clip = {
       trap: '知らない語は前の firstborn とつなげて絞る。she は母親。',
       use: 'We’d almost given up hope.（ほとんどあきらめかけていた）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'safe', seg: [30.4, 38.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'safe', seg: [30.4, 38.4],
       stem: 'Type what Ross says: “All my stuff is ___.” (3 words)', answer: 'safe and dry',
       ja: 'ロスの言葉を入力：「All my stuff is ___.」（3語）',
       cue: '「Look」のあと',

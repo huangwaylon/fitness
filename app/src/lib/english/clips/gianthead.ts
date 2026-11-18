@@ -152,7 +152,7 @@ export const giantHead: Clip = {
       trap: 'how often を本当の質問と思いやすい。答えが分かりきった質問は、意見の言い方。',
       use: 'Who has time for that?（そんな暇ある人いる？）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'sure', seg: [30.3, 41], keep: true,
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'sure', seg: [30.3, 41],
       stem: 'Is Chandler really listening to Allison?',
       ja: 'チャンドラーはアリソンの話を本当に聞いている？',
       choices: ['No, he’s thinking of her head', 'Yes, and he agrees with her', 'Yes, but he is very tired'], a: 0,

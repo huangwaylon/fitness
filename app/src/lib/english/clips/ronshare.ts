@@ -158,7 +158,7 @@ export const ronShare: Clip = {
       trap: '「今回だけだぞ」のような渋い OK と取りやすい。others to do the same ＝ 君も守れ。',
       use: 'I like to stick to the plan.（予定どおりにやりたいんだ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'backdown', reveals: ['appoint', 'eight'], seg: [38, 48.9], keep: true,
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'backdown', reveals: ['appoint', 'eight'], seg: [38, 48.9],
       stem: 'How does Tom answer Ron’s reply about appointments?',
       ja: '約束についてのロンの返事に、トムはどう答える？',
       choices: ['He gives in at once', 'He asks for another day', 'He argues a little'], a: 0,
@@ -218,7 +218,7 @@ export const ronShare: Clip = {
       trap: 'realize をカタカナの「リアライズ（実現）」と取りやすい。会話では「気づく」。',
       use: 'Sorry, I didn’t realize you were busy.（ごめん、忙しいとは知らなかった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'partner', seg: [58.4, 64.5], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'partner', seg: [58.4, 64.5],
       stem: 'How does Tom describe the newcomer’s role?',
       ja: 'トムは、来た男の役割をどう説明する？',
       choices: ['His business partner', 'His business assistant', 'His business backer'], a: 0,

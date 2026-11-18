@@ -30,7 +30,7 @@ export const michaelsNephew: Clip = {
       trap: '9時だけ聞くと、時間どおりと思いやすい。supposed to は「予定ではそうだった（のに）」。',
       use: 'I thought we were supposed to meet at 7.（7時に会う約束じゃなかった？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'decaf', seg: [12.8, 18.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'decaf', seg: [12.8, 18.7],
       stem: 'What’s wrong with one of the coffees Luke brings?',
       ja: 'ルークが持ってきたコーヒーの1つは、何がおかしい？',
       choices: ['It’s decaf', 'It’s cold', 'It’s the wrong size'], a: 0,
@@ -136,7 +136,7 @@ export const michaelsNephew: Clip = {
       trap: 'good なら短い「グッ」、gonna なら「ガナ」と n が入る。「ガラ」なら got to。',
       use: 'I’ve got to go. Talk later!（もう行かなきゃ。またね）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [77.6, 85], keep: true,
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [77.6, 85],
       stem: 'What does Michael promise to do?',
       ja: 'マイケルは何をすると約束する？',
       choices: ['Check on the problem', 'Keep a close eye on Luke', 'Let Luke go soon'], a: 0,
@@ -225,7 +225,7 @@ export const michaelsNephew: Clip = {
       trap: '文法どおり Do you just want と書きたくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'So you’re not coming tonight?（じゃあ今夜は来ないってこと？）', retired: true },
 
-    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [178, 184.5], keep: true,
+    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [178, 184.5],
       stem: 'What does Michael want Luke to do with the pointer?',
       ja: 'マイケルは、ルークにポインターをどうしてほしい？',
       choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,
@@ -237,7 +237,7 @@ export const michaelsNephew: Clip = {
       trap: 'down から「下に向ける」と思いやすい。機械の話の power down は電源のこと。',
       use: 'Please power down your phones now.（携帯の電源をお切りください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [178.1, 184.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [178.1, 184.5],
       stem: 'Type what Luke says: “I’m just gonna ___ it.” (4 words)', answer: 'go ahead and move',
       ja: 'ルークの言葉を入力：「I’m just gonna ___ it.」（4語）',
       cue: '「unclear here」のすぐあと',
@@ -282,7 +282,7 @@ export const michaelsNephew: Clip = {
       trap: 'capital を「資本」と取るとお金の話になる。2語で一つの言い方。',
       use: 'There are different schools of thought on that.（それには色々な考え方がある）', retired: true },
 
-    { id: 'at2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [241.6, 253.6], keep: true,
+    { id: 'at2', skill: 'attitude', level: 'B1', point: 'awesome', seg: [241.6, 253.6],
       stem: 'How do the coworkers feel right afterward?',
       ja: 'そのすぐあと、同僚たちはどう思っている？',
       choices: ['Happy about it', 'Worried about Michael', 'Sorry for Luke'], a: 0,
@@ -294,7 +294,7 @@ export const michaelsNephew: Clip = {
       trap: '上司が部下をばっすると引くはず、と思いやすい。最初の awesome で決まる。',
       use: 'That was awesome! Let’s do it again.（最高！もう一回やろう）' },
 
-    { id: 'd6', skill: 'detail', level: 'B2', point: 'betty', seg: [255.2, 266.4], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B2', point: 'betty', seg: [255.2, 266.4],
       stem: 'Why does one coworker follow Luke on Twitter?',
       ja: '同僚の1人は、なぜルークのツイッターをフォローしている？',
       choices: ['He doesn’t talk about Betty White', 'He posts jokes about Betty White', 'His posts about work need watching'], a: 0,

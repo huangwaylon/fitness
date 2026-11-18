@@ -140,7 +140,7 @@ export const benDestress: Clip = {
       trap: 'three は「スリー」、ten は「テン」。just のあとの「トゥー」が答え。',
       use: 'I’m two stamps away from a free coffee.（あとスタンプ2個でコーヒー無料）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'treat', seg: [71.9, 79.3], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'treat', seg: [71.9, 79.3],
       stem: 'Type the words: “Once a year, Donna and I ___ ourselves.” (4 words)', answer: 'spend a day treating',
       ja: '「Once a year, Donna and I ___ ourselves.」の空所を書こう（4語）',
       cue: '「Donna and I」のあと',

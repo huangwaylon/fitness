@@ -103,7 +103,7 @@ export const ronpothole: Clip = {
       trap: 'need から「必要だ」と思いやすいが、No need は「必要ない」。',
       use: 'No need to apologize. It’s fine.（謝らなくていいよ。大丈夫）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 98.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gravel', seg: [90.5, 98.5],
       stem: 'Type what Ron says: “I dug the loose gravel ___ hole.” (3 words)', answer: 'out of the',
       ja: '「I dug the loose gravel ___ hole.」の3語を書こう。',
       cue: 'gravel のすぐあとの短い3語。',

@@ -85,7 +85,7 @@ export const birthdayGuide: Clip = {
       trap: 'No を聞くと反対か格下げを待ちやすい。No は語を直して程度を上げることもある。',
       use: 'Good? No. It was amazing.（良かった？いや、最高だった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [77.2, 82.2], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'memo', seg: [77.2, 82.2],
       stem: 'Fill the gap: “Oh, ___ see my memo, by the way?”',
       ja: '空いている所に入る語は？',
       choices: ['did you', 'do you', 'didn’t you'], a: 0,
@@ -97,7 +97,7 @@ export const birthdayGuide: Clip = {
       trap: 'do you なら「ドゥユ」で「ディ」がない。didn’t you なら「ディドゥンチュ」と「ン」が入る。',
       use: 'Oh, did you get my email?（そうだ、メール届いた？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', seg: [81, 90.7], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cake', seg: [81, 90.7],
       stem: 'What does the memo want a break from?',
       ja: 'メモには、何から一休みしたいと書いてある？',
       choices: ['All the cake', 'All the songs', 'All the gifts'], a: 0,
@@ -109,7 +109,7 @@ export const birthdayGuide: Clip = {
       trap: '冒頭で歌やプレゼントの話も出るので、それだと思いやすい。名前が出るのはケーキだけ。',
       use: 'I could use a break.（ちょっと休みたいな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', seg: [95.8, 103.8], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'outofway', seg: [95.8, 103.8],
       stem: 'Type the words: “This way we ___ out of the way at once.” (3 words)', answer: 'get it all',
       ja: '「This way we」のあとの3語を書こう。',
       cue: '「This way we」のすぐあと。',
@@ -214,7 +214,7 @@ export const birthdayGuide: Clip = {
       trap: 'great を2回重ねるので、本気でほめていると思いやすい。本音は but のあと。',
       use: 'He’s nice, but a bit much.（いい人だけど、ちょっとしつこい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [194.4, 200.9], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'merrier', reveals: ['include'], seg: [194.4, 200.9],
       stem: 'What does “the more the merrier” mean?',
       ja: '「the more the merrier」の意味は？',
       choices: ['More people, more fun', 'One more won’t matter', 'Everyone gets a turn'], a: 0,
@@ -273,7 +273,7 @@ export const birthdayGuide: Clip = {
       trap: 'conference room（会議室）がはっきり聞こえるが、そのあと No と打ち消す。最後の right here が答え。',
       use: 'Could I have your attention, please?（ちょっと聞いてください）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'hands', reveals: ['outcome'], seg: [231.3, 241.1], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'hands', reveals: ['outcome'], seg: [231.3, 241.1],
       stem: 'How many people have problems with the plan?',
       ja: 'この案に不満がある人は何人？',
       choices: ['Three people', 'About half', 'All of them'], a: 2,

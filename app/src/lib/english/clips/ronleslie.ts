@@ -211,7 +211,7 @@ export const ronLeslieLocked: Clip = {
     { id: 'a4', skill: 'attitude', level: 'B2', point: 'bet', seg: [114.3, 125],
       stem: 'How sure is Ron that he will win the bet?',
       ja: 'ロンは、かけに勝つ自信がどのくらいある？',
-      choices: ['Completely sure', 'A little sure', 'Not sure at all'], a: 0, keep: true,
+      choices: ['Completely sure', 'A little sure', 'Not sure at all'], a: 0,
       choicesJa: ['完全に自信がある', '少し自信がある', '全く自信がない'],
       cue: '「I’ll take that bet」のあと。',
       line: 'I’ll take that bet at any odds… over *any length of time*, stretching from now *into infinity*.',

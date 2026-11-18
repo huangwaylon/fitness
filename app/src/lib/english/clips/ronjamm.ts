@@ -73,7 +73,7 @@ export const ronNoRegret: Clip = {
       trap: 'never の n が弱く、just met などに聞こえやすい。否定の一語は文頭で聞く。',
       use: 'Never met him, but he seems nice.（会ったことないけど、いい人そう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [29, 35], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'coulduse', seg: [29, 35],
       stem: 'Type the gap: “He looks like he ___ swift punch in the face.” (3 words)', answer: 'could use a',
       ja: '「He looks like he」のあとの3語を書こう。',
       cue: '「looks like he」のすぐあと。',
@@ -106,7 +106,7 @@ export const ronNoRegret: Clip = {
       trap: 'bully を「いじめる」と取りやすい。古い決まり文句は、後ろの一言で本気か皮肉かを決める。',
       use: 'You finished early? Well, bully for you.（早く終わった？そりゃよかったね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44, 50.9], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'daydream', seg: [44, 50.9],
       stem: 'What does Ron say he is doing?',
       ja: 'ロンは何をしていると言う？',
       choices: ['Dreaming about hitting Jamm', 'Planning to hit Jamm', 'Joking about hitting Jamm'], a: 0,
@@ -153,7 +153,7 @@ export const ronNoRegret: Clip = {
       trap: 'Councilman が耳に残りやすい。never does と直前の he did を比べる。',
       use: 'He talks big, but he never does it.（口は大きいけど、やらないんだ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [70.5, 78.5], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thatll', seg: [70.5, 78.5],
       stem: 'Fill the gap: “Well, ___ a nice pull quote for the article…”',
       ja: '空いている所に入る語は？',
       choices: ['that’ll make', 'that’d make', 'that made'], a: 0,
@@ -199,7 +199,7 @@ export const ronNoRegret: Clip = {
       trap: 'ロンが堂々としているので、ジャムが負けたと思いやすい。ジャムの最初の一言を聞く。',
       use: 'That went better than I expected.（思ったよりうまくいった）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82, 90.4], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'warned', seg: [82, 90.4],
       stem: 'What did Ron tell Jamm several times?',
       ja: 'ロンはジャムに何度も何と言った？',
       choices: ['To back off', 'To fight back', 'To say sorry'], a: 0,

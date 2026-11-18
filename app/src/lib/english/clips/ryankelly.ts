@@ -229,7 +229,7 @@ export const ryankelly: Clip = {
     { id: 'h4', skill: 'attitude', level: 'B2', point: 'probably', seg: [129, 138],
       stem: 'How sure is Ryan about marrying Kelly “someday”?',
       ja: '「いつか」結婚することに、ライアンはどのくらい自信がある？',
-      choices: ['Fairly sure', 'Totally certain', 'Not sure at all'], a: 0, keep: true,
+      choices: ['Fairly sure', 'Totally certain', 'Not sure at all'], a: 0,
       choicesJa: ['まあまあ自信がある', '完全に自信がある', '全く自信がない'],
       cue: '「someday」のあとの一語。',
       line: 'Maybe not today, maybe not tomorrow, but someday. *And probably.*',

@@ -37,7 +37,7 @@ export const housetour: Clip = {
       trap: 'except を「〜もした」と取りやすい。except のあとは、同じでない部分。',
       use: 'Same here, except the long drive.（こっちも同じ。長い運転以外はね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'gift', seg: [29.4, 35.9], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'gift', seg: [29.4, 35.9],
       stem: 'What does the host say the gift is good for?',
       ja: 'もらった贈り物は何に使えると言う？',
       choices: ['To cook with', 'To serve food on', 'To put on a table'], a: 0,
@@ -49,7 +49,7 @@ export const housetour: Clip = {
       trap: 'パーティーなので、客に出す物だと思いやすい。cook with は「料理するときに使う」。',
       use: 'This will be great to cook with.（料理に使えそう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['home'], seg: [33.6, 42.6], keep: true,
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['home'], seg: [33.6, 42.6],
       stem: 'How does Michael sound as he asks them in?',
       ja: '二人を中へ案内するとき、マイケルはどんな様子？',
       choices: ['Nervous and unsure', 'Bossy and strict', 'Calm and relaxed'], a: 0,
@@ -82,7 +82,7 @@ export const housetour: Clip = {
       trap: '習った at home に直したくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'Uh, I mean, have a seat.（えっと、つまり、座って）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'call', seg: [48.4, 54.3], keep: true,
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'call', seg: [48.4, 54.3],
       stem: 'What does “Totally your call” mean?',
       ja: '「Totally your call」の意味は？',
       choices: ['You decide', 'I have no idea', 'Good idea'], a: 0,
@@ -106,7 +106,7 @@ export const housetour: Clip = {
       trap: 'テレビの部屋と寝室はあとで出てくる。最初は office と workspace。',
       use: 'This is my office. Check it out.（ここが私の仕事部屋。見て）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'twospaces', seg: [80.3, 89.7], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'twospaces', seg: [80.3, 89.7],
       stem: 'Why does Jan have a workspace and an office?',
       ja: 'ジャンはなぜ作業部屋と仕事部屋を両方持っている？',
       choices: ['She can’t create where she works', 'Her office is much too small', 'The candles smell too strong'], a: 0,
@@ -140,7 +140,7 @@ export const housetour: Clip = {
       trap: 'the same は共感に聞こえるが、呼び方に本音が出る。相手の物を何と呼ぶかを聞く。',
       use: 'I’m sure you’re the same way.（あなたもきっと同じでしょう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'candles', seg: [101.7, 113.1], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'candles', seg: [101.7, 113.1],
       stem: 'What does Jan do when she gets angry?',
       ja: 'ジャンは怒ったとき、何をする？',
       choices: ['Smells her candles', 'Lights her candles', 'Sits in silence'], a: 0,
@@ -152,7 +152,7 @@ export const housetour: Clip = {
       trap: 'キャンドルなら火をつけると思いやすいが、動詞は smell。',
       use: 'When I’m stressed, I go for a walk.（ストレスがたまったら散歩する）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'candles', seg: [105.9, 111.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'candles', seg: [105.9, 111.1],
       stem: 'Type what she does up here: “I just ___.” (4 words)', answer: 'smell all my candles',
       ja: '「I just」のあとの4語を書こう。',
       cue: '「I come up here and」のあと。',
@@ -220,7 +220,7 @@ export const housetour: Clip = {
       trap: 'ベッドはこの前のベンチの話、キャンドルはジャンの物。ここは TV。',
       use: 'Check it out. I did it myself.（見て、自分でやったんだ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'brokedown', seg: [153.6, 164.1], keep: true,
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'brokedown', seg: [153.6, 164.1],
       stem: 'What does “I finally broke down and bought” mean?',
       ja: '「I finally broke down and bought」の意味は？',
       choices: ['He gave in at last', 'His old TV broke down', 'He had a bad day'], a: 0,
@@ -232,7 +232,7 @@ export const housetour: Clip = {
       trap: 'broke（こわれた）から、古いテレビがこわれたと思いやすい。主語は I で、折れたのは本人。',
       use: 'I finally broke down and called her.（とうとう折れて彼女に電話した）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hung', seg: [162.2, 168.4], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hung', seg: [162.2, 168.4],
       stem: 'Fill the gap: “I actually ___ this on the wall myself.”',
       ja: '空いている所に入る語は？',
       choices: ['hung', 'hanged', 'had'], a: 0,
@@ -244,7 +244,7 @@ export const housetour: Clip = {
       trap: 'hanged なら最後に「ド」がつく。had なら「ハッド」で「ング」がない。',
       use: 'I hung the picture myself.（絵は自分でかけた）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'tv', seg: [172.5, 182.7], keep: true,
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'tv', seg: [172.5, 182.7],
       stem: 'How does Michael feel about his new TV?',
       ja: 'マイケルは新しいテレビをどう思っている？',
       choices: ['He loves it a lot', 'He rarely uses it', 'He liked the old one'], a: 0,

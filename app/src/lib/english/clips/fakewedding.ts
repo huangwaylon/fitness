@@ -109,7 +109,7 @@ export const fakeWedding: Clip = {
       trap: '友だちの話なので「しつこく聞かれた」と思いやすい。理由は friends are のあとの言葉。',
       use: 'My parents are a bit old-fashioned.（うちの親、ちょっと考えが古いの）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'told', seg: [49.6, 59.1], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'told', seg: [49.6, 59.1],
       stem: 'Fill the gap: “…which is why ___ told them all you’re married.”',
       ja: '空いている所に入る語は？',
       choices: ['we', 'we’ve', 'we’d'], a: 1,
@@ -132,7 +132,7 @@ export const fakeWedding: Clip = {
       trap: 'Thanks で「落ち着いてくれた」お礼と取りやすいが、二人は驚いたまま。for のあとを聞く。',
       use: 'Thanks for covering for me tomorrow!（明日の代わり、よろしくね！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'thanks', seg: [54.5, 62], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'thanks', seg: [54.5, 62],
       stem: 'Type what the parent says: “Thanks for ___ this.” (3 words)', answer: 'going along with',
       ja: '「Thanks for」のあとの3語を書こう。',
       cue: '「What?」のすぐあと。',
@@ -199,7 +199,7 @@ export const fakeWedding: Clip = {
       trap: 'I know は同意に聞こえるが、続くのは耳の話。may as well は「ついでに」。',
       use: 'While you’re at it, do the windows too.（ついでに窓もお願い）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', seg: [78.6, 88.3], keep: true,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'wont', seg: [78.6, 88.3],
       stem: 'Fill the gap: “…we just ___ say anything.”',
       ja: '空いている所に入る語は？',
       choices: ['won’t', 'want to', 'don’t'], a: 0,
@@ -235,7 +235,7 @@ export const fakeWedding: Clip = {
       trap: '前の相談で「ほほえんでうなずく」と決めたので、それだと思いやすい。実際は話をどんどん盛る。',
       use: 'It was small, but really special.（小さいけど、すごく特別だった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'where', seg: [127.6, 136.9], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'where', seg: [127.6, 136.9],
       stem: 'Where was the wedding, in their story?',
       ja: '二人の話では、結婚式はどこだった？',
       choices: ['On a cliff in Barbados', 'On a beach in the Bahamas', 'On a boat off Barbados'], a: 0,

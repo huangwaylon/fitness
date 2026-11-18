@@ -17,7 +17,7 @@ export const jerryPlace: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'river', seg: [0, 8.4], retired: true, keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'river', seg: [0, 8.4], retired: true,
       stem: 'What does Leslie promise to do if she is elected?',
       ja: '当選したら、レスリーは何をすると約束する？',
       choices: ['Stop dumping waste in the river', 'Pay to clean up the river', 'Stop them from buying river land'], a: 0,
@@ -53,7 +53,7 @@ export const jerryPlace: Clip = {
       trap: '前置きなので、やわらかくすると思いやすい。Frankly のあとは強い本音が来る。',
       use: 'Frankly, I liked the first hotel better.（正直、最初のホテルの方がよかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [21.1, 27.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [21.1, 27.9],
       stem: 'Type what the reporter says: “comment on Nick Newport ___ today?” (2 words)', answer: 'dying earlier',
       ja: '記者の言葉を入力：「comment on Nick Newport ___ today?」（2語）',
       cue: '名前のすぐあと',
@@ -120,7 +120,7 @@ export const jerryPlace: Clip = {
       trap: '途中の逆接で結論や謝罪と取りやすい。逆接が続くなら、最後まで聞いて決める。',
       use: 'It’s pricey. However, it’s really good.（高い。とはいえ、本当においしい）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'work', seg: [96.4, 104.4], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'work', seg: [96.4, 104.4],
       stem: 'What did Nick do to a lot of people?',
       ja: 'ニックは多くの人に何をした？',
       choices: ['Put them out of work', 'Took all of their savings', 'Took their homes away'], a: 0,
@@ -132,7 +132,7 @@ export const jerryPlace: Clip = {
       trap: 'a lot of people だけだと、中身を想像でうめやすい。out of work を聞く。',
       use: 'The storm put the shop out of business.（あらしで店がつぶれた）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [101.6, 107.6], keep: true,
+    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [101.6, 107.6],
       stem: 'Who does Leslie ask first for advice?',
       ja: 'レスリーが最初に意見を聞くのはだれ？',
       choices: ['Ben', 'Ann', 'April'], a: 0,
@@ -168,7 +168,7 @@ export const jerryPlace: Clip = {
       trap: 'can なら「キャン」と短い。could なら「クッ」で始まる。「キャーン」と長く強ければ can’t。',
       use: 'We can’t just leave it here.（ここに置いていくわけにはいかない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.8, 118.6], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.8, 118.6],
       stem: 'What does “Not with that attitude” mean?',
       ja: '「Not with that attitude」はどういう意味？',
       choices: ['You can if you believe', 'You should be nicer', 'You’re right, so give up'], a: 0,
@@ -204,7 +204,7 @@ export const jerryPlace: Clip = {
       trap: 'fine から賛成や「がんばる」と思いやすい。すぐあとの文がベンと反対なので、本音の前置き。',
       use: 'Okay, fine. I’ll tell you what happened.（分かった、何があったか話すよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'apologize', seg: [114.8, 120.3], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'apologize', seg: [114.8, 120.3],
       stem: 'Until when does the teammate want Leslie to stop?',
       ja: 'そのチームの人は、いつまでレスリーにやめてほしい？',
       choices: ['Until she says sorry to Bobby', 'Until the family has the funeral', 'Until people forget the clip'], a: 0,

@@ -204,7 +204,7 @@ export const pilotFacts: Clip = {
       trap: '「行かせる」から早く帰すと思いやすい。downsizing（人を減らす）のあとなので仕事の話。',
       use: 'The company let ten people go.（会社は10人を解雇した）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'theft', seg: [202.5, 207.6], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'theft', seg: [202.5, 207.6],
       stem: 'Type Michael’s reason: “Well, ___.” (3 words)', answer: 'theft and stealing',
       ja: 'マイケルの理由「Well, ___.」を書こう（3語）',
       cue: '「Why?」のあと',

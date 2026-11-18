@@ -117,7 +117,7 @@ export const benSaves: Clip = {
     { id: 'h2', skill: 'attitude', level: 'B2', point: 'cooler', seg: [71.9, 81.6],
       stem: 'How sure is Leslie about “something much cooler”?',
       ja: '「もっとすごいこと」について、レスリーはどのくらい自信がある？',
-      choices: ['Very sure', 'Not really sure', 'Sure it won’t happen'], a: 1, keep: true,
+      choices: ['Very sure', 'Not really sure', 'Sure it won’t happen'], a: 1,
       choicesJa: ['とても自信がある', 'あまり自信がない', '起きないと確信している'],
       cue: '約束の文の最後。',
       line: 'something much cooler is going to happen. *I think.*',

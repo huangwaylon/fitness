@@ -237,7 +237,7 @@ export const snakeJuice: Clip = {
       trap: 'right direction（正しい方向）から、方向の話と思いやすい。最後の standing still が答え。',
       use: 'Sometimes you need a little push.（ときには少し背中を押されないとね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'favor', seg: [150.1, 156.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'favor', seg: [150.1, 156.9],
       stem: 'Type what Leslie says: “I was just trying to ___.” (4 words)', answer: 'do you a favor',
       ja: '「I was just trying to ___.」の空所を書こう（4語）',
       cue: '「standing still」のあと',
@@ -283,7 +283,7 @@ export const snakeJuice: Clip = {
       trap: 'one of you が耳に残り、その人だけと思いやすい。後半の all が答え。',
       use: 'If even one of you is late, we all wait.（一人でも遅れたら全員待つ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'hire', seg: [249.5, 257.8], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'hire', seg: [249.5, 257.8],
       stem: 'The next morning, what do they have to go and do?',
       ja: '次の朝、何をしに行かなければならない？',
       choices: ['Hire a new PR director', 'Fire the PR director', 'Become the new PR director'], a: 0,

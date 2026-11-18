@@ -189,7 +189,7 @@ export const andyJamie: Clip = {
       trap: 'teacher が先に聞こえるので引かれやすい。No のあとが本当の答え。',
       use: 'I work part-time at a café.（カフェでアルバイトしてます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [102.7, 107.7], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'time', seg: [102.7, 107.7],
       stem: 'Type the words: “We ___ time…” (5 words)', answer: "don't have a lot of",
       ja: '「We ___ time…」の空所を書こう（5語）',
       cue: '「you know what」のあと',

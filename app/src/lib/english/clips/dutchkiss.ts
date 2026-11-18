@@ -43,7 +43,7 @@ export const dutchKiss: Clip = {
       trap: '服や賞の話から始まるので、それと思いやすい。すぐに You like her と好きな人の話になる。',
       use: 'Okay, fine. I like him.（分かったよ、好きなの）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'dutch', seg: [11.4, 18.7], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'dutch', seg: [11.4, 18.7],
       stem: 'Why did Harper pack all the cute clothes, Carly says?',
       ja: 'ハーパーがかわいい服をつめたのはなぜだと、カーリーは言う？',
       choices: ['To look good for Dutch', 'To dress Dutch for the award', 'To wear to Carly’s award'], a: 0,
@@ -78,7 +78,7 @@ export const dutchKiss: Clip = {
       trap: '同じ型なので、言い返しの否定に聞こえやすい。true events で、認めていると分かる。',
       use: 'How dare you remember my birthday.（よくも誕生日を覚えてたね）', retired: true },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'page', seg: [39.4, 46], keep: true,
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'page', seg: [39.4, 46],
       stem: 'What does Carly say about Wes and her this weekend?',
       ja: 'この週末のウェスと自分について、カーリーは何と言う？',
       choices: ['They don’t agree on things', 'They don’t have time together', 'They aren’t talking at all'], a: 0,
@@ -90,7 +90,7 @@ export const dutchKiss: Clip = {
       trap: 'page から、連絡やメッセージを思いやすい。いっしょにいても気持ちがずれていること。',
       use: 'Let’s make sure we’re on the same page.（考えを合わせておこう）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'page', seg: [39.4, 46], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'page', seg: [39.4, 46],
       stem: 'Fill the gap: “Wes and I ___ been on the same page…”',
       ja: 'すき間をうめよう：「Wes and I ___ been on the same page…」',
       choices: ['have', 'haven’t', 'hadn’t'], a: 1,
@@ -138,7 +138,7 @@ export const dutchKiss: Clip = {
       trap: 'first なら「ファースト」。thirtieth なら「サーティエス」と長い。短く「サード」なら3回目。',
       use: 'That was like the third time this week.（今週これで3回目くらい）' },
 
-    { id: 'f2', skill: 'phrase', level: 'C1', point: 'complement', seg: [62.1, 68.3], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'C1', point: 'complement', seg: [62.1, 68.3],
       stem: 'What is the second kind of partner in Harper’s question?',
       ja: 'ハーパーの質問の、2つ目の相手はどんな人？',
       choices: ['Someone different who balances you', 'Someone who praises you a lot', 'Someone who does what you want'], a: 0,
@@ -161,7 +161,7 @@ export const dutchKiss: Clip = {
       trap: 'risk から「仕事を奪われる」「転職」を想像しやすいが、恋と仕事が同じ場所にあるから危ない。',
       use: 'Is it worth risking your job?（仕事を危険にさらす価値ある？）', retired: true },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'dad', seg: [135.2, 147.6], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'dad', seg: [135.2, 147.6],
       stem: 'Why can’t the investor put money in?',
       ja: '投資家はなぜお金を出せない？',
       choices: ['His dad doesn’t believe in it', 'He doesn’t like dogs himself', 'He has already spent all his money'], a: 0,
@@ -197,7 +197,7 @@ export const dutchKiss: Clip = {
       trap: 'set this up から、感謝と思いやすい。続く failure と give up が気持ちを表す。',
       use: 'Wait, did you set this up?（待って、これ仕組んだの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'squeeze', seg: [159.9, 166.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'squeeze', seg: [159.9, 166.1],
       stem: 'Type the words: “…just so I could ___ before I give up entirely.” (5 words)',
       answer: 'squeeze in one last failure',
       ja: '言葉を入力：「just so I could ___ before I give up」（5語）',

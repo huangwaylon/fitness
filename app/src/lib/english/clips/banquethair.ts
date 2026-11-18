@@ -184,7 +184,7 @@ export const banquetHair: Clip = {
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'drink', seg: [94.6, 106.2],
       stem: 'How much does Ann want a drink?',
       ja: 'アンはどのくらい飲み物がほしい？',
-      choices: ['Very much', 'A little', 'Not at all'], a: 0, keep: true,
+      choices: ['Very much', 'A little', 'Not at all'], a: 0,
       choicesJa: ['とても', '少し', '全然'],
       cue: '「Yes, I do」のあと。',
       line: 'You want a drink? — Yes, I do. *Very much* want a drink.',

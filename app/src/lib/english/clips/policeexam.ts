@@ -202,7 +202,7 @@ export const policeExam: Clip = {
       trap: '「ええ」に似ていて、「はい」と思いやすい。Well のあとは説明が続く。',
       use: 'Well, it’s a little difficult.（えっと、ちょっとむずかしくて）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'sono', reveals: ['name'], seg: [71.2, 80.7], keep: true,
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'sono', reveals: ['name'], seg: [71.2, 80.7],
       stem: 'Why does the officer say, “So, no?”',
       ja: '係の人はなぜ「じゃあ、いいえ？」と言う？',
       choices: ['Andy says his name is Andrew', 'Andy gives no answer at all', 'No one calls him Andy'], a: 0,

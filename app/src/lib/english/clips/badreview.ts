@@ -46,7 +46,7 @@ export const badReview: Clip = {
       mean: 'have had one’s share of 〜 ＝ 〜をそれなりにたくさん経験してきた。苦労話でよく使う。',
       trap: 'share ＝「分け前」から、少しだけと思いやすい。実際は「けっこう多く」。',
       use: 'I’ve had my share of bad dates.（ひどいデートは何度も経験した）' },
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'abysmal', seg: [8.2, 22.1], keep: true,
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'abysmal', seg: [8.2, 22.1],
       stem: 'What does Joey think “abysmal” means?',
       ja: 'ジョーイは「abysmal」をどういう意味だと思っている？',
       choices: ['Very good', 'Very bad', 'Just okay'], a: 0,

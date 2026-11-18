@@ -64,7 +64,7 @@ export const twilightCapsule: Clip = {
       trap: 'considering を「考えている」と思いやすい。最後に一語だけ置くと「〜のわりには」。',
       use: 'The hotel was nice, considering the price.（値段のわりにいいホテルだった）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'pickup', seg: [50.6, 56.6], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'pickup', seg: [50.6, 56.6],
       stem: 'What does “I picked you up some coffee” mean?',
       ja: '「I picked you up some coffee」の意味は？',
       choices: ['She bought him a coffee', 'She’ll drive him to a café', 'She wants him to buy one'], a: 0,
@@ -158,7 +158,7 @@ export const twilightCapsule: Clip = {
       trap: 'divorced（離婚した）から元妻の話だと思いやすい。her は娘のこと。',
       use: 'It’s been really hard on all of us.（みんなにとって本当につらかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldve', seg: [104.8, 113.6], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'shouldve', seg: [104.8, 113.6],
       stem: 'Fill the gap: “You ___ told me you were doing this…”',
       ja: '空いている所に入る語は？',
       choices: ['should have', 'shouldn’t have', 'could have'], a: 0,
@@ -181,7 +181,7 @@ export const twilightCapsule: Clip = {
       trap: '「べきだった」と訳すと叱責、shouldn’t と聞くと逆の意味。直前の sweet と聞く。',
       use: 'You should have told me! I’d have helped.（言ってくれれば手伝ったのに）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'drag', seg: [107.9, 115], keep: true,
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'drag', seg: [107.9, 115],
       stem: 'What does “drag her into it” mean?',
       ja: '「drag her into it」の意味は？',
       choices: ['Get her mixed up in it', 'Pull her into the office', 'Make her bored with it'], a: 0,
@@ -239,7 +239,7 @@ export const twilightCapsule: Clip = {
       trap: 'some guy をケリーだと思いやすいが、some は知らないだれか。every time で「次々に」。',
       use: 'If we say yes, everyone will ask.（OKしたら、みんな頼んでくるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gonna', seg: [136.9, 144.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gonna', seg: [136.9, 144.9],
       stem: 'Type what’s said: “…anything, ___ come into your office…” (3 words)', answer: 'some guy\'s gonna',
       ja: '「anything,」のあとの3語を書こう。',
       cue: '「anything」のすぐあと。',

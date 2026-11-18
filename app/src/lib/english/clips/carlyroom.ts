@@ -97,7 +97,7 @@ export const carlyRoom: Clip = {
       trap: 'favor（親切）から、自分が何かしてあげると思いやすい。me が受け取る側。',
       use: 'Could you do me a favor?（ちょっとお願いしていい？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'plug', seg: [51.8, 59.8], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'plug', seg: [51.8, 59.8],
       stem: 'Type the step before turning it on: “___ and turn it on.” (3 words)', answer: 'plug it in',
       ja: '「___ and turn it on.」の空所を書こう（3語）',
       cue: '「Carly’s bed」のあと',
@@ -143,7 +143,7 @@ export const carlyRoom: Clip = {
       trap: 'time から、長くかかった話と思いやすい。「いつ起きるかだけの問題」という意味。',
       use: 'It’s only a matter of time.（時間の問題だよ）' },
 
-    { id: 'c3', skill: 'dict', level: 'C2', point: 'letout', seg: [78.6, 86.1], keep: true,
+    { id: 'c3', skill: 'dict', level: 'C2', point: 'letout', seg: [78.6, 86.1],
       stem: 'Type: “It’s probably time to ___ emotions.” (4 words)', answer: 'let out all those',
       ja: '「It’s probably time to ___ emotions.」の空所を書こう（4語）',
       cue: '「time to」のあと',

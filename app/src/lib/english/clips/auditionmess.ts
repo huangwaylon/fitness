@@ -159,7 +159,7 @@ export const auditionDisaster: Clip = {
       trap: '13は「サーティーン」と後ろがのびる。23は前の案内の数。「サーティ・ワン」なら31。',
       use: 'Our flight leaves in thirty-one minutes.（飛行機はあと31分で出る）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'abit', seg: [174.2, 180.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'abit', seg: [174.2, 180.9],
       stem: 'Type how Raul begins: “___.” (5 words)', answer: 'a little bit about me',
       ja: 'ラウルの最初の一言を書こう（5語）',
       cue: '「always wrong」のあと',

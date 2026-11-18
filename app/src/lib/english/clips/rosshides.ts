@@ -79,7 +79,7 @@ export const rossHidesIt: Clip = {
       trap: '質問に質問で返すのは、からかいとは限らない。ここは早く出てほしい気持ちの表れ。',
       use: 'Do you really need that?（それ、本当に要る？）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'rushing', seg: [59.8, 68.7], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'rushing', seg: [59.8, 68.7],
       stem: 'Why is Ross in a hurry?',
       ja: 'ロスはなぜ急いでいる？',
       choices: ['His girlfriend wants him back', 'His girlfriend wants revenge', 'His girlfriend knows about Chloe'],
@@ -161,7 +161,7 @@ export const rossHidesIt: Clip = {
       trap: '「せめてタイミングを待て」だけなら普通の助言。次の一文で「一生言うな」に変わる。',
       use: 'Now’s not the time.（今はその時じゃない）', retired: true },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'trailq', seg: [157.3, 162.3], keep: true,
+    { id: 's1', skill: 'sound', level: 'B1', point: 'trailq', seg: [157.3, 162.3],
       stem: 'Fill the gap: “___ think about the trail?”',
       ja: 'すき間をうめよう：「___ think about the trail?」',
       choices: ['Did you', 'Do you', 'Would you'], a: 0,
@@ -185,7 +185,7 @@ export const rossHidesIt: Clip = {
       trap: 'trail から山道や公園の小道を思いやすい。from 人 to 人 なので、人のつながり。',
       use: 'News travels fast here.（ここではうわさがすぐ広まる）' },
 
-    { id: 'd3', skill: 'who', level: 'B1', point: 'jasmine', seg: [179.5, 191.5], keep: true,
+    { id: 'd3', skill: 'who', level: 'B1', point: 'jasmine', seg: [179.5, 191.5],
       stem: 'Who works with Phoebe?',
       ja: 'フィービーと同じ職場なのはだれ？',
       choices: ['Jasmine', 'Isaac', 'Chloe'], a: 0,
@@ -220,7 +220,7 @@ export const rossHidesIt: Clip = {
       trap: 'その前に「だれにも言ってない」と言うので、だれにも話さないと思いやすい。',
       use: 'I tell my sister everything.（姉には何でも話すの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'happen', seg: [216.1, 222.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'happen', seg: [216.1, 222.1],
       stem: 'Type what Ross says: “See, I ___ a girlfriend.” (3 words)', answer: 'happen to have',
       ja: 'ロスの言葉を入力：「See, I ___ a girlfriend.」（3語）',
       cue: '「a girlfriend」の前の3語',
@@ -277,7 +277,7 @@ export const rossHidesIt: Clip = {
       trap: 'I’m sorry から、言っていないと思いやすい。だめだった？は、もう言ったあとの言葉。',
       use: 'Was I not supposed to say that?（それ、言っちゃだめだった？）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'workout', seg: [259.8, 268.9], keep: true,
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'workout', seg: [259.8, 268.9],
       stem: 'What does Ross want most with his girlfriend?',
       ja: 'ロスが彼女といちばん望んでいることは？',
       choices: ['To fix things and stay together', 'To go to the gym with her', 'To find out what to tell her'], a: 0,
@@ -289,7 +289,7 @@ export const rossHidesIt: Clip = {
       trap: 'カタカナのワークアウト（運動）と思いやすい。work it out with 人 は「話し合って解決する」。',
       use: 'I’m sure we can work it out.（きっと解決できるよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [272, 281.2], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'roommate', seg: [272, 281.2],
       stem: 'Why should Ross talk to Jasmine’s roommate?',
       ja: 'ロスはなぜジャスミンのルームメイトと話すべき？',
       choices: ['She told him about it', 'He wants to meet Ross', 'He can keep Phoebe quiet'], a: 0,

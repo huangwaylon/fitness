@@ -13,7 +13,7 @@ export const dwightAmyAdams: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'distraction', seg: [7.3, 15.4], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'distraction', seg: [7.3, 15.4],
       stem: 'Why doesn’t Michael allow vendors at first?',
       ja: 'マイケルは最初、なぜ物売りを入れない？',
       choices: ['They stop people working', 'They use the meeting room', 'HR doesn’t allow it'], a: 0,
@@ -25,7 +25,7 @@ export const dwightAmyAdams: Clip = {
       trap: '会議室はあとで貸す部屋の話で、理由ではない。理由は No のあとの一文。',
       use: 'My phone is a big distraction.（スマホがすごく気を散らす）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', seg: [12.5, 18.5], keep: true,
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'busy', seg: [12.5, 18.5],
       stem: 'How does Michael sound in “Pam, Pam, come on”?',
       ja: '「Pam, Pam, come on」と言うマイケルはどんな様子？',
       choices: ['Impatient and busy', 'Sorry he can’t help', 'Curious about her'], a: 0,
@@ -60,7 +60,7 @@ export const dwightAmyAdams: Clip = {
       trap: '6.0 を年数と取ると通じない。new and improved は「前の型より良い」という宣伝文句。',
       use: 'It’s the new and improved version.（新しく改良された版だよ）' },
 
-    { id: 'mk1', skill: 'marker', level: 'B2', point: 'ykw', seg: [52.6, 64.6], keep: true,
+    { id: 'mk1', skill: 'marker', level: 'B2', point: 'ykw', seg: [52.6, 64.6],
       stem: 'What does “you know what?” signal here?',
       ja: 'ここでの「you know what?」は何の合図？',
       choices: ['He’s about to change his mind', 'He is asking her a real question', 'He warns them about fights'], a: 0,
@@ -95,7 +95,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'カメラの言葉をそのまま信じやすい。この形式では、場面とのずれに笑いがある。',
       use: 'I call it being flexible.（柔軟って言ってほしいね）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'hallway', seg: [64.3, 74.8], keep: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'hallway', seg: [64.3, 74.8],
       stem: 'What does Michael do about the HR meeting?',
       ja: 'マイケルは人事の会議をどうする？',
       choices: ['Moves it to the hallway', 'Moves it to the afternoon', 'Gives Katie his office'], a: 0,
@@ -117,7 +117,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'him も h が弱いと似る。前に複数の人の話があれば ’em を疑う。',
       use: 'Just tell ’em I’ll be late.（遅れるって伝えといて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'customers', seg: [96.3, 108.3], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'customers', seg: [96.3, 108.3],
       stem: 'Who usually buys the most from Katie?',
       ja: 'ケイティからいちばんよく買うのはだれ？',
       choices: ['Men buying gifts', 'Women buying gifts', 'Men buying for work'], a: 0,
@@ -129,7 +129,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'バッグなら女性客だと思いやすい。usually の前の Guys をまず聞く。',
       use: 'Students are our best customers.（学生がいちばんのお客さんです）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'suggest', reveals: ['customers'], seg: [98.2, 108.3], keep: true,
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'suggest', reveals: ['customers'], seg: [98.2, 108.3],
       stem: 'Which bags does Katie suggest to men?',
       ja: 'ケイティは男性にどのバッグをすすめる？',
       choices: ['The expensive ones', 'The cheaper ones', 'Her best sellers'], a: 0,
@@ -141,7 +141,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'suggestions を親切な助言とだけ思いやすい。前の high-end stuff とつなげて聞く。',
       use: 'Can you suggest something under fifty?（50ドル以下で何かおすすめは？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'stall', seg: [108.4, 115.7], keep: true,
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'stall', seg: [108.4, 115.7],
       stem: 'What does “If you hit a stall” mean?',
       ja: '「If you hit a stall」の意味は？',
       choices: ['If you run out of words', 'If her table gets busy', 'If she makes you wait'], a: 0,
@@ -153,7 +153,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'stall には「売店」の意味もあり、売り場の話に聞こえやすい。keep talking のあとなので会話の話。',
       use: 'If we hit a problem, call me.（何か問題が起きたら電話して）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'listen', seg: [123.1, 131.7], keep: true,
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'listen', seg: [123.1, 131.7],
       stem: 'What is the coach really telling Dwight?',
       ja: 'コーチは本当はドワイトに何を伝えている？',
       choices: ['Go and talk to her now', 'I’m too busy for this', 'You talk too much'], a: 0,
@@ -165,7 +165,7 @@ export const dwightAmyAdams: Clip = {
       trap: '文字どおり時間の文句に聞こえやすい。to me（俺と）が大事で、話す相手がちがう、ということ。',
       use: 'Why are you still here? Go!（まだここにいるの？行って！）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'bathroom', seg: [126.4, 133.6], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'bathroom', seg: [126.4, 133.6],
       stem: 'Type Dwight’s words: “Okay, I’m ___ the bathroom.” (3 words)', answer: 'just gonna use',
       ja: '「I’m」のあとの3語を書こう。',
       cue: '「I’m」のすぐあと。',
@@ -175,7 +175,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'going to と書きたくなるが、音は gonna。just は小さく短く、落としやすい。',
       use: 'I’m just gonna grab a coffee.（ちょっとコーヒー買ってくる）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'good', seg: [137.5, 144.4], keep: true,
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'good', seg: [137.5, 144.4],
       stem: 'How does the one saying “this is going to be good” feel?',
       ja: '「this is going to be good」と言う人はどんな気持ち？',
       choices: ['Excited to watch him fail', 'Hopeful that it goes well', 'Worried about trouble'], a: 0,
@@ -199,7 +199,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'from you を聞き落とすと、売りこみに聞こえる。buy … from you ＝ あなたから買う。',
       use: 'I would like to buy a ticket, please.（チケットを1枚買いたいです）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'stress', seg: [161.1, 167.6], keep: true,
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'stress', seg: [161.1, 167.6],
       stem: 'Why does Dwight want to “stress test” the purse?',
       ja: 'ドワイトはなぜバッグを「stress test」したい？',
       choices: ['To see if it’s strong', 'To feel less stressed', 'To see if it’s worth it'], a: 0,
@@ -233,7 +233,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'best known を自慢や不満と取りやすい。大げさな語に小さな中身は自分いじり。',
       use: 'That’s what I’m famous for.（それで有名なんだ、僕は）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'learn', seg: [215.4, 226.4], keep: true,
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'learn', seg: [215.4, 226.4],
       stem: 'Why does Jim say “I’m just here to learn”?',
       ja: 'ジムはなぜ「I’m just here to learn」と言う？',
       choices: ['He wants to talk, not buy', 'He wants to learn selling', 'He has no money now'], a: 0,
@@ -245,7 +245,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'learn から「売り方を習う」と思いやすい。前の Don’t try to sell me one（売りこまないで）が中心。',
       use: 'I’m just looking, thanks.（見てるだけです、どうも）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'plans', seg: [231.3, 236.9], keep: true,
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'plans', seg: [231.3, 236.9],
       stem: 'Type the question: “Um, so ___ this weekend?” (4 words)', answer: 'you got big plans',
       ja: '「so」のあとの4語を書こう。',
       cue: '「so」のすぐあと。',

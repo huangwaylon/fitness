@@ -26,7 +26,7 @@ export const retreat: Clip = {
       trap: '前半の didn’t think だけ聞くと、楽しくなかったと思いやすい。but のあとが答え。',
       use: 'I didn’t expect to like it, but I did.（好きになると思わなかったけど、なった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goodtime', seg: [0, 5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goodtime', seg: [0, 5],
       stem: 'Type what Toby says: “I really ___ have a good time.” (6 words)',
       answer: "didn't think i was going to",
       ja: '「I really ___ have a good time.」の空所を書こう（6語）',
@@ -235,7 +235,7 @@ export const retreat: Clip = {
       trap: 'care を「心配」や「注意」と思いやすい。ここは「気にかける、興味がある」。',
       use: 'I don’t really care.（別にどっちでもいいよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'room', seg: [66.8, 76.9], keep: true,
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'room', seg: [66.8, 76.9],
       stem: 'How soon does Michael need the room?',
       ja: 'マイケルはどのくらいすぐ部屋が必要？',
       choices: ['Right away, this minute', 'In the next few minutes', 'Sometime later, no rush'], a: 2,

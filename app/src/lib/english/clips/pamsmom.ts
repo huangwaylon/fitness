@@ -27,7 +27,7 @@ export const pamsMom: Clip = {
       trap: '最初の congratulations から、喜んでいると思いやすい。名前のあとの What? を聞く。',
       use: 'Wait, what? Are you serious?（え、ちょっと待って、本気？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'wedding', seg: [13.9, 19.3], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'wedding', seg: [13.9, 19.3],
       stem: 'Where does Michael say Jim has seen her before?',
       ja: 'ジムはどこで彼女に会ったと、マイケルは言う？',
       choices: ['At Jim’s wedding', 'At Pam’s birthday party', 'At the office party'], a: 0,
@@ -86,7 +86,7 @@ export const pamsMom: Clip = {
       trap: 'both を話題の二人の女性やカップルと取りやすい。our は話し手を含む。',
       use: 'For both our sakes, let’s leave early.（お互いのために、早めに出よう）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'sakes', seg: [54.5, 61.8], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'sakes', seg: [54.5, 61.8],
       stem: 'Type what Jim says: “please, for ___” (4 words)', answer: 'both of our sakes',
       ja: 'ジムの言葉を入力：「please, for ___」（4語）',
       cue: '「please, for」のあと',
@@ -108,7 +108,7 @@ export const pamsMom: Clip = {
       trap: 'No から、全然気にしないと思いやすい。not のすぐあとの more than anything だけを打ち消している。',
       use: 'I like it, just not more than pizza.（好きだけど、ピザほどじゃない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'route', seg: [69.5, 74.9], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'route', seg: [69.5, 74.9],
       stem: 'What problem does Michael raise about Helene?',
       ja: 'マイケルはヘレンについて、どんな問題を言う？',
       choices: ['She lives on his way home', 'She lives on his way to work', 'She lives next to the office'], a: 0,
@@ -120,7 +120,7 @@ export const pamsMom: Clip = {
       trap: 'work が耳に残ると、行く道や会社と思いやすい。way のあとの home を聞く。',
       use: 'The bakery is right on my way.（そのパン屋、ちょうど通り道なんだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'lastthing', seg: [75, 83], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'lastthing', seg: [75, 83],
       stem: 'What does Michael call “the last thing” he’d want?',
       ja: 'マイケルが「いちばんしたくないこと」と言うのは？',
       choices: ['To upset Pam', 'To lie to Pam', 'To lose Helene'], a: 0,

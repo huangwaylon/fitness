@@ -270,7 +270,7 @@ export const leslieDate: Clip = {
       trap: '謝っているので、失敗したデートと思いやすい。そのあと「何でも話せる」と喜んでいる。',
       use: 'Sorry, I shouldn’t bring up work at dinner.（ごめん、食事中に仕事の話はやめよう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'night', reveals: ['firstdate'], seg: [166.1, 172.9], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'night', reveals: ['firstdate'], seg: [166.1, 172.9],
       stem: 'Type what comes after “Let’s have some more wine.” (6 words)',
       answer: 'see where the night takes us',
       ja: '「Let’s have some more wine.」のあとを書こう（6語）',
@@ -292,7 +292,7 @@ export const leslieDate: Clip = {
       trap: 'neither だけでは向きが不明。直後の he で、彼の年の話と決まる。',
       use: 'Neither are you, my friend.（それはお互いさまだよ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'younger', seg: [179.9, 187.2], keep: true,
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'younger', seg: [179.9, 187.2],
       stem: 'Type what her mother says: “Leslie, you’re ___.” (4 words)', answer: 'not getting any younger',
       ja: '「Leslie, you’re ___.」の空所を書こう（4語）',
       cue: '「Leslie」のあと',

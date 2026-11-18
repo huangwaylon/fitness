@@ -76,6 +76,11 @@ describe('the clips', () => {
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 
+  it('choices kept in order only for numbers (else the key sits where it was written: 150 were all first)', () => {
+    const bad = CLIPS.flatMap((c) => c.questions.filter((q) => !q.retired && q.keep && q.skill !== 'number').map((q) => `${c.id}:${q.id}`));
+    expect(bad).toEqual([]);
+  });
+
   for (const c of CLIPS)
     describe(c.id, () => {
       const qs = c.questions;

@@ -19,7 +19,7 @@ export const getIn: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [22.2, 28.6], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'monitor', seg: [22.2, 28.6],
       stem: 'In the car, who does Dwight say might be listening?',
       ja: '車の中で、ドワイトはだれが聞いているかもと言う？',
       choices: ['People in customer service', 'People at the car rental desk', 'People in the head office'], a: 0,
@@ -54,7 +54,7 @@ export const getIn: Clip = {
       trap: 'ばかげた名前は冗談に聞こえやすい。名前を挙げ、理由まで考えるのは Dwight。',
       use: 'Who benefits from this?（これで得するのは誰？）', retired: true },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [37, 42.9], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'little', seg: [37, 42.9],
       stem: 'Fill the gap: “and there’s ___ evidence of that.”',
       ja: 'すき間をうめよう：「and there’s ___ evidence of that.」',
       choices: ['little', 'a little', 'a lot of'], a: 0,
@@ -124,7 +124,7 @@ export const getIn: Clip = {
       trap: '問いつめられた人はとぼけるのが普通の流れ。ここは本気。almost never ＝ ほとんど〜ない。',
       use: 'You always say that.（いつもそう言うよね）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [93.9, 99.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'upto', seg: [93.9, 99.4],
       stem: 'Type Dwight’s question: “___, girl, huh?” (5 words)', answer: 'what are you up to',
       ja: 'ドワイトの質問を入力：「___, girl, huh?」（5語）',
       cue: '「girl」の前まで',
@@ -169,7 +169,7 @@ export const getIn: Clip = {
       trap: '前に you scared me と言うので、こわがっていると思いやすい。ここは強く言い返している。',
       use: 'You can’t just yell at me.（いきなりどなるなんてないでしょ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 116], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'polite', seg: [109, 116],
       stem: 'Why does Dwight get bad reviews, Kelly says?',
       ja: 'ケリーによると、ドワイトの評価が悪いのはなぜ？',
       choices: ['He isn’t nice or polite', 'He pushes people to buy', 'He makes order mistakes'], a: 0,
@@ -274,7 +274,7 @@ export const getIn: Clip = {
       trap: 'favor から「親切」や「お礼」を思いやすい。配ったのは主催のケリー。',
       use: 'We gave out candy as party favors.（パーティーのおみやげにおかしを配った）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 202.6], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'party', seg: [196.4, 202.6],
       stem: 'What was Kelly’s party for?',
       ja: 'ケリーのパーティーは何のため？',
       choices: ['A TV show’s last episode', 'The end of the summer', 'A contest at the office'], a: 0,
@@ -286,7 +286,7 @@ export const getIn: Clip = {
       trap: 'summer が最後に聞こえるので、夏のパーティーと思いやすい。party の前の finale が中身。',
       use: 'We’re having a finale party on Sunday.（日曜に最終回を見る会をする）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 213.9], keep: true,
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'skip', seg: [207.9, 213.9],
       stem: 'Why did Jim skip the party, he hears?',
       ja: 'ジムがパーティーに行かなかったのは、なぜだと分かる？',
       choices: ['He went to visit someone', 'He had to work late', 'Nobody told him about it'], a: 0,

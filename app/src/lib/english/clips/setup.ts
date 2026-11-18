@@ -37,7 +37,7 @@ export const officeSetUp: Clip = {
       trap: 'ジムの質問を的外れと取りやすい。答えが Yes なら、質問は図星だった。',
       use: 'Don’t make it sound like a big secret.（大げさな秘密みたいに言わないで）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'tweak', seg: [5.5, 12], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'tweak', seg: [5.5, 12],
       stem: 'Type what he says: “___, it becomes a different office.” (4 words)', answer: 'with a little tweaking',
       ja: '「___, it becomes a different office.」の空所を書こう（4語）',
       cue: '「Yes, Jim」のあと',

@@ -167,7 +167,7 @@ export const paperco: Clip = {
       trap: 'face（顔）から、見た目をほめていると思いやすい。前の Tuck in your shirt とつなげる。',
       use: 'You’re the face of the team now.（今は君がチームの顔だよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [123.9, 131], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'name', seg: [123.9, 131],
       stem: 'Type what Michael says: “We’re small, but we’re eager to ___.” (5 words)',
       answer: 'make a name for ourselves',
       ja: '「We’re small, but we’re eager to ___.」の空所を書こう（5語）',

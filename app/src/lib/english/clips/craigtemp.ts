@@ -50,7 +50,7 @@ export const craigTemp: Clip = {
       trap: 'wasn’t を was と聞くと「変える気だった」になる。短い返事ほど否定の n を確かめる。',
       use: 'Relax, I wasn’t going to.（大丈夫、そのつもりはないよ）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'wasnt', reveals: ['planning'], seg: [36.4, 43.4], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'wasnt', reveals: ['planning'], seg: [36.4, 43.4],
       stem: 'Type what Donna says: “___.” (2 words)', answer: "wasn't gonna",
       ja: 'ドナの言葉を入力：「___.」（2語）',
       cue: '「Never change it!」のすぐあと',
@@ -60,7 +60,7 @@ export const craigTemp: Clip = {
       trap: 'wasn’t の t が消えて「ワズン」と聞こえる。「ン」が残れば否定。gonna ＝ going to。',
       use: 'Don’t tell her. — Wasn’t gonna.（言わないでね—言う気ないよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'name', seg: [41.6, 49.3], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'name', seg: [41.6, 49.3],
       stem: 'What does Craig think of his own name?',
       ja: 'クレイグは自分の名前をどう思っている？',
       choices: ['It is boring', 'It is perfect', 'It is too long'], a: 0,
@@ -233,7 +233,7 @@ export const craigTemp: Clip = {
       trap: 'Denver もすぐあとに出るが、そこは婚約者（fiancé）がいる所。condo のあとを聞く。',
       use: 'I’ve got a place in Seattle.（シアトルに家があるんだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'larry', seg: [137.1, 141.1], retired: true, keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'larry', seg: [137.1, 141.1], retired: true,
       stem: 'What does Larry offer to do?',
       ja: 'ラリーは何をすると申し出る？',
       choices: ['Go back into retirement', 'Take a smaller salary', 'Move to the Eagleton office'], a: 0,

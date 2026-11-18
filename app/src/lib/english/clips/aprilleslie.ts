@@ -59,7 +59,7 @@ export const aprilLeslie: Clip = {
       trap: 'this week だけ聞くと、一回だけと思いやすい。前の every day まで聞く。',
       use: 'I have meetings every day this week.（今週は毎日会議だ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'hate', seg: [19.9, 26.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hate', seg: [19.9, 26.5],
       stem: 'Type what April says: “…this week, and ___.” (5 words)', answer: 'i hate talking to people',
       ja: '「…this week, and ___.」の空所を書こう（5語）',
       cue: '「every day this week」のあと',

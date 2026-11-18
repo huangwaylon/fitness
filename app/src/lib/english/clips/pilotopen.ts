@@ -167,7 +167,7 @@ export const pilotOpening: Clip = {
       trap: '最初の I hope she’ll be very happy を本心と思いやすい。すぐあとの No, I don’t が本音。',
       use: 'I’m fine. No, actually, I’m not.（平気。いや、本当は平気じゃない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'married', seg: [150.5, 158.5], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'married', seg: [150.5, 158.5],
       stem: 'Type what Ross wants: “I just ___ again.” (4 words)', answer: 'want to be married',
       ja: '「I just ___ again.」の空所を書こう（4語）',
       cue: '3回目の「I just」のあと',
@@ -189,7 +189,7 @@ export const pilotOpening: Clip = {
       trap: 'you weren’t there（いなかった）を文句と思いやすい。最初の Thank God が気持ち。',
       use: 'Thank God you’re here!（来てくれてよかった！）' },
 
-    { id: 'nt2', skill: 'dict', level: 'C2', point: 'youare', seg: [171.4, 179.4], keep: true,
+    { id: 'nt2', skill: 'dict', level: 'C2', point: 'youare', seg: [171.4, 179.4],
       stem: 'Type what Rachel says: “…you might be here, ___!” (3 words)', answer: 'and you are',
       ja: '「…you might be here, ___!」の空所を書こう（3語）',
       cue: '「might be here」のあと',

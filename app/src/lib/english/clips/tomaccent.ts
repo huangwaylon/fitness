@@ -52,7 +52,7 @@ export const tomAccent: Clip = {
       trap: 'sort からカタカナの「ソート（並べかえ）」を思いやすい。get＋人＋sorted は人の用事の話。',
       use: 'Don’t worry, we’ll get you sorted.（ご心配なく、なんとかします）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'diseases', seg: [68.0, 79.0], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'diseases', seg: [68.0, 79.0],
       stem: 'Why does Doctors Without Borders want to come to Pawnee?',
       ja: '国境なき医師団は、なぜポーニーに来たい？',
       choices: ['It has many strange illnesses', 'Its only hospital is very old', 'Its kids have missed their shots'],
@@ -76,7 +76,7 @@ export const tomAccent: Clip = {
       trap: 'wins を「得をする」と取りやすい。何と何を比べた直後かを聞く。',
       use: 'Looks like I win this round.（今回は私の勝ちみたい）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'forms', seg: [86, 94], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'forms', seg: [86, 94],
       stem: 'Type what Tom says: “Uh, just ___ and we will be all set.” (4 words)', answer: 'fill out these forms',
       ja: 'トムの言葉を入力：「Uh, just ___ and we will be all set.」（4語）',
       cue: '「just」のすぐあと',
@@ -168,7 +168,7 @@ export const tomAccent: Clip = {
       trap: '「フォー」のすぐあとに bags なら4、「トゥー」なら2。「フォーティーン」と後ろが長ければ14、「フォーティ」なら40。',
       use: 'I got you a little of everything.（いろいろ少しずつ買ってきたよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cold', seg: [133.5, 145.3], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cold', seg: [133.5, 145.3],
       stem: 'How does Tom explain why his accent is gone?',
       ja: 'なまりが消えたわけを、トムはどう説明する？',
       choices: ['He had a cold', 'He went to London', 'He talked too much'], a: 0,
@@ -262,7 +262,7 @@ export const tomAccent: Clip = {
       trap: '後半が「フォーティエイト」なら3248、「オーエイト」なら3208、「エイティーン」なら3218、「エイティ」で終われば3280。',
       use: 'You’re supposed to use the other door.（反対のドアを使うことになってるよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'stall', seg: [209.3, 220.7], keep: true,
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'stall', seg: [209.3, 220.7],
       stem: 'Why does Tom bring out the blender and fruit?',
       ja: 'トムはなぜ、ミキサーと果物を出してくる？',
       choices: ['To keep her there longer', 'To say sorry for the mix-up', 'To celebrate the done forms'], a: 0,

@@ -276,7 +276,7 @@ export const empOfMonth: Clip = {
 
     { id: 'h4', skill: 'humor', level: 'B1', point: 'doubled', seg: [179, 189.4],
       stem: 'Pam doubled her sales. To how many?', ja: 'パムは売上を倍にした。何件になった？',
-      choices: ['4', '12', '20'], a: 0, keep: true,
+      choices: ['4', '12', '20'], a: 0,
       choicesJa: ['4件', '12件', '20件'],
       cue: '「From what?」のあと',
       line: 'I *doubled my sales* last month. — From what? *Two to four?* — Yup.',

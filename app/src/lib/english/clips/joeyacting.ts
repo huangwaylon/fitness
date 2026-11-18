@@ -26,7 +26,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'Days of Our Lives（出演中のドラマ）の名前も出るので、出演中だと思いやすい。I will be teaching が答え。',
       use: 'I’ll be teaching English this term.（今学期は英語を教えます）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [15.8, 32.3], keep: true,
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [15.8, 32.3],
       stem: 'When did Joey learn the lesson he shares?',
       ja: 'ジョーイが話す教えは、いつ学んだもの？',
       choices: ['His first day as Dr. Drake', 'His very first acting class', 'His last day as Dr. Drake'], a: 0,
@@ -71,7 +71,7 @@ export const joeyTeachesActing: Clip = {
       trap: 're- から「もう一度」と思いやすいが、本人が not mean acting again と打ち消している。',
       use: 'Don’t talk. Just react.（しゃべらないで、反応だけして）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'byway', seg: [48.8, 56.4], keep: true,
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'byway', seg: [48.8, 56.4],
       stem: 'How does Joey bring in the point about looks?',
       ja: 'ジョーイは見た目の話をどうやって始める？',
       choices: ['As a side point', 'As his main point', 'As a student’s question'], a: 0,
@@ -127,7 +127,7 @@ export const joeyTeachesActing: Clip = {
       trap: '演技の授業なので「本当の気持ちを思い出す」と思いやすい。どれも小ワザで顔を作るだけ。',
       use: 'Here’s a little trick I use.（私がやってるちょっとしたコツがあるの）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [63, 74.7], keep: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [63, 74.7],
       stem: 'What does Joey use when a scene needs him to cry?',
       ja: '泣く場面で、ジョーイは何を使う？',
       choices: ['A pair of tweezers', 'A pair of scissors', 'A slice of onion'], a: 0,
@@ -139,7 +139,7 @@ export const joeyTeachesActing: Clip = {
       trap: '直前の cut（切る）から「はさみ」を思いやすい。take a pair of のあとを聞く。',
       use: 'Do you have a pair of tweezers?（ピンセットある？）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'pain', reveals: ['tweezers', 'hole'], seg: [63.4, 75.4], keep: true,
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'pain', reveals: ['tweezers', 'hole'], seg: [63.4, 75.4],
       stem: 'How does Joey’s crying trick work?',
       ja: 'ジョーイの泣くコツは、どういうしくみ？',
       choices: ['Pain brings real tears', 'He thinks of sad things', 'He hides a tear bottle'], a: 0,
@@ -151,7 +151,7 @@ export const joeyTeachesActing: Clip = {
       trap: '演技の授業なので「悲しいことを考える」と思いやすい。pulling で、体を使う方法だと分かる。',
       use: 'Just start typing, and it’ll come.（とにかく書き始めれば出てくるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [64.1, 72.1], keep: true,
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [64.1, 72.1],
       stem: 'Type what he says: “I ___ my pocket.” (4 words)', answer: 'cut a hole in',
       ja: '「I」と「my pocket」の間の4語を書こう。',
       cue: '「have to cry」のあと。',
@@ -161,7 +161,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'cut a が1語に聞こえ、a を落としやすい。小さな a も1語として書く。',
       use: 'I cut a hole in the box.（箱に穴を開けた）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'evil', seg: [76.9, 88.5], keep: true,
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'evil', seg: [76.9, 88.5],
       stem: 'What is the fish-hook face meant to show?',
       ja: '釣り針の顔は、何を表すため？',
       choices: ['He just did something bad', 'He just got some bad news', 'He is in great pain'], a: 0,
@@ -196,7 +196,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'your を「あなたの」、basic を「初心者向け」と思いやすい。your basic でひとまとまり。',
       use: 'It’s your basic hotel room.（よくある普通のホテルの部屋だよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [89.9, 94.9], keep: true,
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotten', seg: [89.9, 94.9],
       stem: 'Fill the gap: “Okay, let’s say ___ bad news.”',
       ja: '空いている所に入る語は？',
       choices: ['I’ve just gotten', 'I just got', 'I just get'], a: 0,
@@ -208,7 +208,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'get なら「ゲッ」。got は「ガッ」で「ン」がない。「ガッン」と「ン」で終われば gotten。',
       use: 'I’ve just gotten home.（今帰ったところ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'math', reveals: ['divide', 'gotten'], seg: [91.4, 100.9], keep: true,
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'math', reveals: ['divide', 'gotten'], seg: [91.4, 100.9],
       stem: 'Why does a hard sum work for bad news?',
       ja: 'なぜむずかしい計算が、悪い知らせの顔に使える？',
       choices: ['Thinking hard looks like worry', 'It helps him remember his lines', 'It stops him from laughing'], a: 0,
