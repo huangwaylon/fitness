@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 2, new 3, ctx 4, tx 12
+// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 2, new 3, ctx 4, tx 12, qa 22
 // A2 REVIEW 2026-11-17: keep 9, rewrite 7, retire 6, new 4
 // “People Are Getting Sick Again?! | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Leslie
 // wages war on flu season, the concert's teen headliner drops out, and she and Andy set off to win him back, ending at
@@ -31,7 +31,7 @@ export const fluSeason: Clip = {
       trap: 'd が小さく、I have to と思いやすい。I’ll なら「ル」の音。小さな「ド」を聞く。',
       use: 'I’d have to ask my boss.（上司に聞いてみないと）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'germs', seg: [5.2, 30.5],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'germs', seg: [5.2, 30.1],
       stem: 'What does Leslie tell everyone to do?',
       ja: 'レスリーはみんなに何をするよう言う？',
       choices: ['Stay away from germs', 'Go home if they feel sick', 'Get ready for the concert'], a: 0,
@@ -42,7 +42,7 @@ export const fluSeason: Clip = {
       trap: 'かぜの季節なので「休んで」と言うと考えがち。レスリーが言うのは、うつらない工夫。',
       use: 'It’s flu season, so wash your hands.（インフルエンザの季節だから手を洗ってね）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'face', seg: [14.5, 20],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'face', seg: [15.05, 19.95],
       stem: 'Type Leslie’s rule: “Don’t ___.” (3 words)', answer: 'touch your face',
       ja: '「Don’t ___.」の空所を書こう（3語）',
       cue: '「Kleenex」のすぐあと', line: 'Stock up on Kleenex. Don’t *touch your face*.',
@@ -51,7 +51,7 @@ export const fluSeason: Clip = {
       trap: 'touch your がつながり「タッチュア」と聞こえる。your を落とさない。',
       use: 'Please don’t touch the paintings.（絵にさわらないでください）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flies', seg: [17.6, 24.1],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'flies', seg: [17.25, 23.7],
       stem: 'What does “*dropping like flies*” mean?',
       ja: '「dropping like flies」はどういう意味？',
       choices: ['Many people are getting sick', 'Many people are quitting their jobs', 'Many people are visiting'], a: 0,
@@ -75,7 +75,7 @@ export const fluSeason: Clip = {
       trap: 'すぐあとにラリーの「家で仕事」の頼みが出るので、混ざりやすい。',
       use: 'We had to quarantine for a week.（1週間隔離しなければならなかった）' },
 
-    { id: 'nt2', skill: 'pragma', level: 'B2', point: 'tent', ctx: true, seg: [21.5, 30.6],
+    { id: 'nt2', skill: 'pragma', level: 'B2', point: 'tent', ctx: true, seg: [21.5, 30.1],
       stem: 'Larry asks to work from home. What does Leslie say?',
       ja: 'ラリーは家で仕事したいと頼む。レスリーの答えは？',
       choices: ['No, he has to stay in the tent', 'Yes, but only for today', 'Yes, after he sees a doctor'], a: 0,
@@ -87,11 +87,11 @@ export const fluSeason: Clip = {
       trap: 'Yes も No も言わないので、許したと勘違いしやすい。home をテントにすりかえている。',
       use: 'Can I work from home today?（今日は在宅勤務してもいいですか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [38.9, 45.3], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [39.1, 44.9], keep: true,
       stem: 'How old is Chip McCapp?',
       ja: 'チップ・マッキャップは何歳？',
-      choices: ['Seven', 'Seventeen', 'Seventy'], a: 1,
-      choicesJa: ['7歳', '17歳', '70歳'],
+      choices: ['Seven', 'Seventeen', 'Twenty-seven', 'Seventy'], a: 1,
+      choicesJa: ['7歳', '17歳', '27歳', '70歳'],
       cue: '「the most amazing」のあと',
       line: 'the most amazing *17-year-old* country singer',
       said: '「世界で一番すごい17歳のカントリー歌手」と紹介する。',
@@ -109,7 +109,7 @@ export const fluSeason: Clip = {
       trap: 'Chip に似た語なので本人のあだ名と取りやすい。themselves は「自分たちを」。',
       use: 'What do his fans call themselves?（彼のファンは自分たちを何て呼んでるの？）' },
 
-    { id: 'f7', skill: 'phrase', level: 'B1', point: 'hugefan', seg: [44.5, 49.0],
+    { id: 'f7', skill: 'phrase', level: 'B1', point: 'hugefan', seg: [44.9, 48.65],
       stem: 'What does “We are *huge* chipmunks” mean?',
       ja: '「We are huge chipmunks」はどういう意味？',
       choices: ['They are big fans of Chip', 'They are big like animals', 'They are part of Chip’s family'], a: 0,
@@ -132,7 +132,7 @@ export const fluSeason: Clip = {
       trap: 'support で「ママが支えてくれた」、前半だけで「幼い」と取りやすい。かっこの中は別のテーマ。',
       use: 'What’s that got to do with anything?（それ何の関係があるの？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [69.7, 77.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'getrid', seg: [69.7, 77.4],
       stem: 'Type the line: “…I can ___ awesome wish list.” (4 words)', answer: 'get rid of my',
       ja: '「…I can ___ awesome wish list.」の空所を書こう（4語）',
       cue: '「headliner」のあと',
@@ -142,7 +142,7 @@ export const fluSeason: Clip = {
       trap: 'of は小さく短く「ア」程度で、聞き落としやすい。4語でひとまとまり。',
       use: 'Can you help me get rid of these boxes?（この箱を処分するの手伝ってくれる？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'longshots', seg: [74.1, 79.1],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'longshots', seg: [74.2, 78.75],
       stem: '“Those are *long shots*.” What does this mean?',
       ja: '「Those are long shots」はどういう意味？',
       choices: ['They probably won’t come', 'They are worth trying anyway', 'They cost too much'], a: 0,
@@ -154,7 +154,7 @@ export const fluSeason: Clip = {
       trap: 'shot から give it a shot（やってみよう）を連想しやすい。Yeah はリストを捨てる話への賛成。',
       use: 'It’s a long shot, but let’s try.（望み薄だけど、やってみよう）' },
 
-    { id: 'i3', skill: 'detail', level: 'B2', point: 'wishlist', seg: [77.0, 83.0],
+    { id: 'i3', skill: 'detail', level: 'B2', point: 'wishlist', seg: [77.4, 83.1],
       stem: 'Why was “Bob Dylan’s friends” on the list?',
       ja: '「ボブ・ディランの友だち」がリストにあったのはなぜ？',
       choices: ['They could bring Bob Dylan', 'They once played in his band', 'They cost less than Dylan'], a: 0,
@@ -166,11 +166,11 @@ export const fluSeason: Clip = {
       trap: 'friends から昔のバンド仲間と思いやすい。get … to come を聞く。',
       use: 'Can you get him to call me?（彼に電話するよう言ってもらえる？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'split', seg: [83.4, 89.0], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'split', seg: [83.1, 86.25], keep: true,
       stem: 'How long ago did the band’s singer leave?',
       ja: 'バンドのボーカルが抜けたのは何年前？',
-      choices: ['Two years ago', 'Ten years ago', 'Twenty years ago'], a: 1,
-      choicesJa: ['2年前', '10年前', '20年前'],
+      choices: ['Two years ago', 'Ten years ago', 'Twelve years ago', 'Twenty years ago'], a: 1,
+      choicesJa: ['2年前', '10年前', '12年前', '20年前'],
       cue: '「lead singer split」のあと',
       line: 'Their lead singer split *10 years ago*.',
       said: '「ボーカルは10年前に抜けた」と言う。',
@@ -178,7 +178,7 @@ export const fluSeason: Clip = {
       trap: 'twenty は「トゥエニー」と t が弱くなる。短い「テン」なら10。',
       use: 'We moved here ten years ago.（10年前にここに引っ越しました）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'landho', reveals: ['split'], seg: [84.8, 90.9],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'landho', reveals: ['split'], seg: [84.4, 90.55],
       stem: 'Why won’t the band get back together?',
       ja: 'バンドが再結成しないのはなぜ？',
       choices: ['The singer said he never would', 'They all stopped playing music', 'They lost the band’s name'], a: 0,
@@ -190,7 +190,7 @@ export const fluSeason: Clip = {
       trap: '昔の話なので、音楽をやめたと思いやすい。アルバム名に never が入っている。',
       use: 'They’re never getting back together.（あの二人がよりを戻すことはない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'trip', seg: [94.0, 122.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'trip', seg: [94.0, 121.7],
       stem: 'What do Leslie and Andy decide to do?',
       ja: 'レスリーとアンディは何をすることに決める？',
       choices: ['Go and talk to Chip', 'Look for a new singer', 'Cancel the concert'], a: 0,
@@ -213,7 +213,7 @@ export const fluSeason: Clip = {
       trap: 'かぜの話が続くので「手洗い」と取りやすい。直後の「手がない」は人手のこと。',
       use: 'It’s all hands on deck this weekend.（今週末は総出だよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'winery', seg: [97.8, 104.1],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'winery', seg: [98.1, 103.7],
       stem: 'Why is nobody around to help Leslie?',
       ja: 'レスリーを手伝える人がいないのはなぜ？',
       choices: ['Everyone is at the winery', 'Everyone is home sick', 'Everyone is at the concert'], a: 0,
@@ -225,7 +225,7 @@ export const fluSeason: Clip = {
       trap: 'かぜの話が続くので、病気で休んでいると勘違いしやすい。because のあとの場所を聞く。',
       use: 'Everyone’s at lunch right now.（みんな今お昼に出てる）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'upfor', seg: [121, 129.7],
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'upfor', seg: [121.7, 129.4],
       stem: 'What does “*feeling up for this*” mean?',
       ja: 'アンディの「feeling up for this」はどういう意味？',
       choices: ['Well enough to do it', 'Happy about the trip', 'Ready to go home'], a: 0,
@@ -237,7 +237,7 @@ export const fluSeason: Clip = {
       trap: 'up から「楽しみにしている」と考えがち。体調を心配して聞いている。',
       use: 'Are you up for a walk?（散歩に行く元気ある？）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'fine', ctx: true, reveals: ['upfor'], seg: [122.5, 130.1],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'fine', ctx: true, reveals: ['upfor'], seg: [123.0, 129.7],
       stem: 'How does Leslie answer Andy’s worry?',
       ja: 'アンディの心配に、レスリーはどう答える？',
       choices: ['She says she is okay', 'She says she will rest', 'She asks Andy for help'], a: 0,
@@ -260,7 +260,7 @@ export const fluSeason: Clip = {
       trap: '言いよどみや白状と取りやすい。It is if… と言い返すので、本気だと分かる。',
       use: 'Technically, that counts.（厳密には、それもありだよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'candy', ctx: true, seg: [136.5, 143.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'candy', ctx: true, seg: [136.6, 143.6],
       stem: 'Andy says he “won’t get any.” What does he really want?',
       ja: 'アンディは「買わない」と言う。本当はどうしたい？',
       choices: ['Some candy for himself', 'Nothing at all', 'Medicine for Leslie'], a: 0,
@@ -272,7 +272,7 @@ export const fluSeason: Clip = {
       trap: '「買わない」を約束と取りがち。返事の You can buy two で本音が分かる。',
       use: 'I’ll just look around.（ちょっと見るだけです）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'nausea', seg: [143.5, 151.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'nausea', seg: [143.5, 151.3],
       stem: 'What does Leslie tell the pharmacist is wrong?',
       ja: 'レスリーは薬剤師に、どこが悪いと言う？',
       choices: ['She feels like vomiting', 'She has a bad headache', 'She has a high fever'], a: 0,
@@ -284,7 +284,7 @@ export const fluSeason: Clip = {
       trap: 'flu（インフルエンザ）から熱を連想しやすいが、熱の話はしていない。吐き気の話だけ。',
       use: 'I feel nauseated.（吐き気がします）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'flu', reveals: ['stuff'], seg: [144.0, 172.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'flu', reveals: ['stuff'], seg: [143.8, 172.9],
       stem: 'What does Leslie do at the end?',
       ja: '最後にレスリーは何をする？',
       choices: ['Asks for flu medicine', 'Goes to see a doctor', 'Buys candy for Andy'], a: 0,
@@ -295,7 +295,7 @@ export const fluSeason: Clip = {
       trap: '薬剤師と話すので、医者にみてもらうと勘違いしやすい。ここは薬局。',
       use: 'I have the flu. What do you recommend?（インフルエンザです。何がおすすめですか）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'stuff', seg: [148.9, 156.8],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'stuff', seg: [148.95, 156.8],
       stem: 'Leslie needs “*the good stuff*.” What does she want?',
       ja: 'レスリーの言う「the good stuff」は何？',
       choices: ['The strongest medicine', 'Something for her voice', 'Some candy'], a: 0,
@@ -331,7 +331,7 @@ export const fluSeason: Clip = {
       trap: '熱がないので、治りかけと思いやすい。the flu そのものを疑っている。',
       use: 'That doesn’t seem like a cold.（それ、かぜっぽくないね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'sure', ctx: true, reveals: ['notflu'], seg: [158.8, 166.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'sure', ctx: true, reveals: ['notflu'], seg: [158.68, 166.3],
       stem: 'How does Leslie answer the pharmacist?',
       ja: 'レスリーは薬剤師にどう答える？',
       choices: ['She says it is the flu', 'She says she is not sure', 'She gets scared it is bad'], a: 0,

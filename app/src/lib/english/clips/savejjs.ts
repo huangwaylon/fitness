@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 2, new 3, ctx 6, tx 13
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 2, new 3, ctx 6, tx 13, qa 26
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 5, new 2
 // “The Mission To Save Breakfast Food | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // Leslie has lost a land deal and hears that JJ's diner is closing too; after a talking head on how Pawnee has changed,
@@ -9,6 +9,7 @@
 // free-market line at 43 s is taken as Ron's. Untested on purpose: 7.8–11 s ("voodoo"), 57 s ("Can't win them all",
 // speaker unknown), 82–92 s (Putin; "that bastard"), 115–120 s (Andy's backstory), 131–141 s (chanting). No scenes
 // file. R4 restored a3 ("I'm on it") as a context item.
+// EXCLUDE 88.1–89.7 (“that bastard”)
 // EAR CHECK: 33.0 s x1 — "losing some of its" runs together (both sources have the four words)
 // EAR CHECK: 113.1 s s1 — "you thinking", with no "are" before it (both sources)
 import type { Clip } from '../types.ts';
@@ -19,11 +20,11 @@ export const saveJJs: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'value', seg: [0, 8.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'value', seg: [0, 7.7], keep: true,
       stem: 'What is the land said to be worth?',
       ja: 'その土地の価値はいくらだと言う？',
-      choices: ['$100,000', '$25 million', '$100 million'], a: 2,
-      choicesJa: ['10万ドル', '2,500万ドル', '1億ドル'],
+      choices: ['$100,000', '$1 million', '$25 million', '$100 million'], a: 3,
+      choicesJa: ['10万ドル', '100万ドル', '2,500万ドル', '1億ドル'],
       cue: '「valued at」のすぐあと',
       line: 'valued at *100 million dollars*',
       said: '「1億ドルの価値がある土地を、タダでほしかった」と言う。',
@@ -31,7 +32,7 @@ export const saveJJs: Clip = {
       trap: '先に聞こえる 25 は広さの数。数字のすぐあとの単位までセットで聞く。',
       use: 'It’s valued at about two million.（約200万の価値がある）' },
 
-    { id: 'h1', skill: 'phrase', level: 'B1', point: 'askfree', reveals: ['value'], seg: [0, 9.3],
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'askfree', reveals: ['value'], seg: [0, 7.7],
       stem: 'What does “Is that too much to ask?” mean?',
       ja: '「Is that too much to ask?」はどういう意味？',
       choices: ['Am I asking for a lot?', 'How much does it cost?', 'Can I ask one more thing?'], a: 0,
@@ -55,7 +56,7 @@ export const saveJJs: Clip = {
       trap: '直前の「10年で見ちがえる」に引かれやすい。最後の一語を聞く。',
       use: 'Even my favorite café is closing.（お気に入りのカフェまで閉店する）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'getyou', seg: [16.7, 22.8],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'getyou', seg: [16.6, 22.4],
       stem: 'What does JJ mean by “What can I get you guys?”',
       ja: 'JJ の「What can I get you guys?」はどういう意味？',
       choices: ['What would you like?', 'What should I take home?', 'Where can I find you?'], a: 0,
@@ -67,7 +68,7 @@ export const saveJJs: Clip = {
       trap: 'get（手に入れる）から、自分が何かをもらう話と考えがち。客に聞く言い方。',
       use: 'What can I get you? — A coffee, please.（ご注文は？—コーヒーをください）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'waffles', ctx: true, seg: [16.8, 22.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'waffles', reveals: ['getyou'], ctx: true, seg: [16.6, 22.6],
       stem: 'Why does Leslie order so many waffles?',
       ja: 'レスリーはなぜワッフルをたくさん頼む？',
       choices: ['To help keep the diner open', 'She is very hungry today', 'To take some home for Ron'], a: 0,
@@ -91,7 +92,7 @@ export const saveJJs: Clip = {
       trap: 'happy から、全部に満足していると思いやすい。but のあとが本音。',
       use: 'I miss the old place, though.（でも前のお店が恋しい）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [22.5, 31.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [22.4, 31.5],
       stem: 'What does “I mean” do in Leslie’s talk?',
       ja: 'レスリーの話の中で、「I mean」はどんな働き？',
       choices: ['It brings in examples', 'It takes back her words', 'It starts a complaint'], a: 0,
@@ -103,7 +104,7 @@ export const saveJJs: Clip = {
       trap: 'I mean は言い直しにも使うので、取り消しと勘違いしやすい。うしろが例なら説明。',
       use: 'It’s fine. I mean, it works.（まあいいよ。ちゃんと動くし）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'charm', seg: [30.1, 36.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'charm', seg: [31.1, 36.6],
       stem: 'Type the 4 words: “But I think the town is ___ charm.”', answer: 'losing some of its',
       ja: '空いている4語を入力：「But I think the town is ___ charm.」',
       cue: '「the town is」と「charm」の間',
@@ -135,19 +136,19 @@ export const saveJJs: Clip = {
       trap: 'free market を原因と聞きやすい。even though と still が組なら、両方とも本心として聞く。',
       use: 'It’s partly your fault, but I’m still sorry.（君のせいもあるけど、気の毒に思う）', retired: true },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'lease', ctx: true, seg: [49.3, 57.3],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'lease', ctx: true, seg: [49.2, 57.05],
       stem: 'Who does JJ blame for the closing?',
       ja: 'JJ は閉店を誰のせいにしている？',
-      choices: ['The building’s new owner', 'His own bad business', 'The free market itself'], a: 0,
-      choicesJa: ['建物の新しい持ち主', '自分の下手な経営', '自由市場そのもの'],
+      choices: ['The building’s new owner', 'The city’s new rules', 'The free market itself'], a: 0,
+      choicesJa: ['建物の新しい持ち主', '市の新しい決まり', '自由市場そのもの'],
       cue: 'JJ の But のあと',
       line: 'Ron: …it’s still a travesty your diner is closing. / JJ: Well, I agree with you. But *the guy who bought the property* didn’t even give me a chance…',
-      said: 'ロンの「閉店はひどい話だ」に、JJ が「建物を買った男が、契約更新のチャンスもくれなかった」と言う。',
+      said: 'JJ は「でも、建物を買った男が、契約を更新するチャンスもくれなかった」と言う。',
       mean: 'the guy who bought the property ＝「建物を買った男」。re-up the lease ＝ 契約を更新する。',
-      trap: 'ロンの「君の経営の失敗が原因」に同意したと考えがち。決め手は But のあと。',
+      trap: 'ロンの free market（自由市場）が耳に残りやすい。決め手は JJ の But のあと。',
       use: 'I agree with you. But we need more time.（同感です。でも時間がもっと必要です）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['waffles'], seg: [50.0, 68.5],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['waffles'], seg: [51.5, 68.1],
       stem: 'Why does Leslie decide to fight?',
       ja: 'レスリーはなぜ、戦うことにする？',
       choices: ['She won’t lose the diner too', 'She wants the town unchanged', 'JJ asks her for help'], a: 0,
@@ -170,7 +171,7 @@ export const saveJJs: Clip = {
       trap: 'I’ll be damned! だけなら驚きの声。if が続くと「絶対に〜させない」になる。',
       use: 'I’ll be damned if I pay that much.（そんな額、絶対払わない）', retired: true },
 
-    { id: 'c2', skill: 'detail', level: 'B1', point: 'weirdname', ctx: true, seg: [74.4, 82.2],
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'weirdname', ctx: true, seg: [74.25, 82.2],
       stem: 'What does JJ remember about the buyer?',
       ja: 'JJ は買った人について何を覚えている？',
       choices: ['Its name sounded strange', 'It was from Russia', 'It was a big bank'], a: 0,
@@ -194,7 +195,7 @@ export const saveJJs: Clip = {
       trap: 'figure out（考える）から、調べると思いやすい。うしろの the worst を聞く。',
       use: 'It’s raining again? Figures.（また雨？だと思った）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'rally', seg: [99, 106],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'rally', seg: [99.2, 105.6],
       stem: 'How does Leslie plan to fight the new owner?',
       ja: 'レスリーは、新しいオーナーとどう戦うつもり？',
       choices: ['With a public rally', 'With a court case', 'With an online campaign'], a: 0,
@@ -217,7 +218,7 @@ export const saveJJs: Clip = {
       trap: '方法に返すと皮肉を本気に取ったことになる。返事は言葉の形でなく、相手のしたことに返す。',
       use: 'Okay, okay, I’m old. I get it.（はいはい、年寄りですよ。分かった）', retired: true },
 
-    { id: 'a3', skill: 'pragma', level: 'B1', point: 'onit', ctx: true, seg: [104.3, 112.8],
+    { id: 'a3', skill: 'pragma', level: 'B1', point: 'onit', ctx: true, seg: [104.1, 112.68],
       stem: 'What does April’s “I’m on it” mean?',
       ja: 'エイプリルの「I’m on it」はどういう意味？',
       choices: ['I’ll do it now', 'I already did it', 'I can’t do that'], a: 0,
@@ -229,7 +230,7 @@ export const saveJJs: Clip = {
       trap: 'キツネの話は、古くさい頼み方へのからかい。断ったと考えがちだが、最後の一言で引き受けている。',
       use: 'The printer’s broken? I’m on it.（プリンターが故障？すぐ見ます）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'thinking', seg: [108.6, 116.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'thinking', seg: [108.75, 116.2],
       stem: 'Fill the gap: “Andy, ___ what I’m thinking?”',
       ja: 'すき間をうめよう：「Andy, ___ what I’m thinking?」',
       choices: ['you thinking', 'are you thinking', 'you think'], a: 0,
@@ -256,8 +257,8 @@ export const saveJJs: Clip = {
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'noble', reveals: ['whatsay'], ctx: true, seg: [120.9, 130.0],
       stem: 'How does Ron answer Leslie’s invitation?',
       ja: 'ロンは、レスリーのさそいにどう答える？',
-      choices: ['He happily agrees', 'He politely says no', 'He asks for more time'], a: 0,
-      choicesJa: ['喜んで引き受ける', 'ていねいに断る', '時間がほしいと言う'],
+      choices: ['He agrees to join', 'He politely says no', 'He asks for more time'], a: 0,
+      choicesJa: ['仲間に加わると言う', 'ていねいに断る', '時間がほしいと言う'],
       cue: '「can’t」で始まる文の最後まで',
       line: 'Leslie: Ron, what do you say? … / Ron: I *can’t think of anything more noble* to go to war over than bacon and eggs.',
       said: '「ロン、どう？」に、「ベーコンと卵ほど、戦う価値のある立派なものは思いつかない」と答える。',
@@ -268,8 +269,8 @@ export const saveJJs: Clip = {
     { id: 'n3', skill: 'number', level: 'B1', point: 'years41', seg: [141, 146.5], keep: true,
       stem: 'How long has JJ’s diner been part of Pawnee?',
       ja: 'JJ のダイナーは、何年ポーニーの町にある？',
-      choices: ['14 years', '40 years', '41 years'], a: 2,
-      choicesJa: ['14年', '40年', '41年'],
+      choices: ['14 years', '40 years', '41 years', '51 years'], a: 2,
+      choicesJa: ['14年', '40年', '41年', '51年'],
       cue: '「for」と「years」の間',
       line: 'JJ’s diner has been a part of Pawnee for *41 years*.',
       said: '「JJ のダイナーは41年間、町の一部だった」と集会で話す。',
@@ -277,19 +278,19 @@ export const saveJJs: Clip = {
       trap: 'forty は前が強く、fourteen はうしろが強い。最後の one も落とさない。',
       use: 'We’ve lived here for twenty-one years.（ここに21年住んでいる）' },
 
-    { id: 'i4', skill: 'infer', level: 'B2', point: 'narrative', ctx: true, seg: [146.1, 154.1],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'narrative', ctx: true, seg: [146.3, 153.97],
       stem: 'Why does Leslie tell JJ’s story that way?',
       ja: 'レスリーはなぜ JJ の話をそんなふうに話す？',
       choices: ['To make the story nicer', 'Because JJ is too shy', 'Because she believes it'], a: 0,
       choicesJa: ['話をよく聞こえるようにするため', 'JJ が恥ずかしがりだから', '本当だと信じているから'],
       cue: 'JJ の「That’s not true」への返事',
       line: 'Leslie: …built that diner from the ground up with his own two hands. / JJ: That’s not true. / Leslie: It’s called *constructing a narrative*, JJ.',
-      said: '「自分の手で建てた」に JJ が「違うよ」と言い、「物語づくりっていうのよ」と返す。',
+      said: '「自分の手で建てた」に JJ が「違うよ」と言い、「物語づくりっていうの」と返す。',
       mean: 'narrative ＝ 物語。construct ＝ 組み立てる。本当でないと知りながら、集会のために話を盛っている。',
       trap: 'JJ をかばっているように聞こえるが、本人が事実と違うと言っている。',
       use: 'Don’t let the facts spoil a good story.（事実でいい話をこわさないで）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'stickto', seg: [151, 156.4],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'stickto', seg: [151, 156.35],
       stem: 'What does Leslie tell JJ at the rally?',
       ja: '集会で、レスリーは JJ に何と言う？',
       choices: ['Leave the talking to me', 'Go and cook for everyone', 'I’ll stay out of your kitchen'], a: 0,

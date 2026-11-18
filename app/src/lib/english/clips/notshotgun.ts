@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 2, ctx 7, tx 9
+// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 2, ctx 7, tx 9, qa 22
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 3
 // “Chris and Ann Are Definitely Not Having a Shotgun Wedding | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 6): at a jewelry store, Chris and Ann talk themselves out of a ring, back into it and out again, while
@@ -10,6 +10,7 @@
 // “Hello? Actually, we don't want the ring” (141.9 s) it is. Chris and Ann return their ring at 87.4 s (the scenes file
 // agrees: the other couple only starts doubting) and buy it back at 122.3 s.
 // EAR CHECK: 87.4 s — "Theodore, we would like to return that ring" is Chris and Ann's (f3); A2 had it as the other couple's
+// EXCLUDE 70.2–71.6 (“You let me pee with the door open”: bathroom line)
 import type { Clip } from '../types.ts';
 
 export const notShotgun: Clip = {
@@ -30,7 +31,7 @@ export const notShotgun: Clip = {
       trap: 'this isn’t を妊娠の否定と取りやすいが、すぐ妊娠を認めている。',
       use: 'Okay, maybe it is a little rushed.（まあ、ちょっと急ぎかも）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'notyet', seg: [12.8, 22.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'notyet', seg: [13.05, 22.4],
       stem: 'What haven’t they done yet?',
       ja: '二人がまだしていないことは？',
       choices: ['Told their families', 'Decided to marry', 'Picked a jewelry store'], a: 0,
@@ -42,11 +43,11 @@ export const notShotgun: Clip = {
       trap: 'decide が聞こえ「まだ決めていない」と思いやすいが、did just decide ＝ 今日決めた。',
       use: 'We haven’t picked a venue yet.（まだ会場を決めていません）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [19.3, 24.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [20.75, 24.1], keep: true,
       stem: 'How long has the other couple been planning their wedding?',
       ja: 'もう一組は、どのくらい前から式の準備をしている？',
-      choices: ['For weeks', 'For months', 'For a year'], a: 1,
-      choicesJa: ['何週間も', '何か月も', '1年'],
+      choices: ['For weeks', 'For months', 'For a year', 'For years'], a: 1,
+      choicesJa: ['何週間も', '何か月も', '1年', '何年も'],
       cue: 'planning ours のすぐあと。',
       line: 'We’ve been planning ours *for months*.',
       said: '「うちは何か月も前から準備してる」と言う。',
@@ -54,7 +55,7 @@ export const notShotgun: Clip = {
       trap: 'months は「マンス」、weeks は「ウィークス」。a year なら「ア・イヤー」と a が入る。',
       use: 'I’ve been planning this for months.（何か月も前から計画してたの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'todo', seg: [20.3, 27.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'todo', seg: [20.75, 27.3],
       stem: 'Type it: “You ___ how much there is to do.” (2 words)', answer: 'wouldn\'t believe',
       ja: '「You ___ how much there is to do.」の2語を書こう。',
       cue: 'months の文のすぐあと、You に続く2語。',
@@ -87,7 +88,7 @@ export const notShotgun: Clip = {
       trap: '車のナビの話なので、車でお昼などと考えがち。決め手は I was getting gas。',
       use: 'I need to get gas.（ガソリン入れなきゃ）' },
 
-    { id: 'p4', skill: 'detail', level: 'B1', point: 'iflike', seg: [44.8, 50.0],
+    { id: 'p4', skill: 'detail', level: 'B1', point: 'iflike', seg: [44.8, 49.7],
       stem: 'What does the jeweler offer to do?',
       ja: '店員は何をしようと申し出る？',
       choices: ['Put the date inside the ring', 'Make the ring a little smaller', 'Wrap the ring as a gift'], a: 0,
@@ -99,7 +100,7 @@ export const notShotgun: Clip = {
       trap: 'band（指輪の輪）から、サイズ直しの話と考えがち。engrave the date ＝ 日付を彫る。',
       use: 'If you like, I could carry that.（よければ持ちましょうか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'date', ctx: true, reveals: ['iflike'], seg: [46.0, 53.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'date', ctx: true, reveals: ['iflike'], seg: [46.7, 53.35],
       stem: 'Why might engraving the date be tough?',
       ja: '日付を彫るのが難しいかもしれないのはなぜ？',
       choices: ['They haven’t talked about it', 'They want it secret', 'They can’t agree on one'], a: 0,
@@ -123,15 +124,15 @@ export const notShotgun: Clip = {
       trap: 'アルファベット3文字なので頭文字に聞こえやすい。予定表の「未定」でよく使う略語。',
       use: 'Time and place: TBD.（日時と場所は未定）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'feelmarried', reveals: ['date'], seg: [57.6, 85.0],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'feelmarried', reveals: ['date', 'tbd'], seg: [54.9, 70.1],
       stem: 'Why do Chris and Ann start to doubt the wedding?',
       ja: 'クリスとアンは、なぜ結婚式に迷い始める？',
       choices: ['They feel married already', 'They can’t agree on a date', 'Weddings take too much work'], a: 0,
       choicesJa: ['もう夫婦同然だと感じる', '日取りで意見が合わない', '結婚式は手間がかかりすぎる'],
       cue: 'Hang on のあと、二人の話',
-      line: 'we are *already more married than most married people*… why spend *thousands of dollars* just to reaffirm what we already know',
-      said: '「考えたこともないのは理由があるのかも。もう夫婦同然。なぜ大金をかけて確かめるの？」と話す。',
-      mean: 'reaffirm ＝ もう一度確かめる。子どもも引っ越しも一緒。式で愛を証明しなくていい、と考え始める。',
+      line: 'maybe there’s a reason… we are *already more married than most married people*… we’re having a child together',
+      said: '「考えたこともないのは理由があるのかも。もう夫婦同然だよね。子どもも生まれるし」と話す。',
+      mean: 'more married than most married people ＝ たいていの夫婦より夫婦らしい。なのに式はいるのか、と考え始める。',
       trap: '日付の話のすぐあとなので、日取りでもめたと考えがち。二人は話し合ってもいない。',
       use: 'Why spend so much on one day?（たった一日に、なぜそんなにお金をかけるの？）' },
 
@@ -147,7 +148,7 @@ export const notShotgun: Clip = {
       trap: '「夫婦以上」を「準備ができた」と思いやすいが、話は式をやめる方向。',
       use: 'We’re basically family already.（もう家族みたいなものだよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'thinkabout', reveals: ['feelmarried'], seg: [62.0, 67.5],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'thinkabout', reveals: ['feelmarried'], seg: [61.05, 67.25],
       stem: 'What does “When you think about it” mean here?',
       ja: 'ここでの「When you think about it」はどういう意味？',
       choices: ['If we look at it closely', 'When we have more free time', 'Whenever you want to'], a: 0,
@@ -170,7 +171,7 @@ export const notShotgun: Clip = {
       trap: '相手の優しさをほめる返事を予想しやすいが、出てくるのはドラマへのほめ言葉ばかり。',
       use: 'Don’t get me started on that show.（あのドラマの話を始めたら止まらない）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'refund', seg: [85.5, 95.1],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'refund', seg: [85.35, 94.7],
       stem: 'What do Chris and Ann want to do with the ring?',
       ja: 'クリスとアンは、指輪をどうしたい？',
       choices: ['Get their money back', 'Buy a second ring', 'Make the ring bigger'], a: 0,
@@ -194,7 +195,7 @@ export const notShotgun: Clip = {
       trap: 'we を4人と取ると、助言しているように聞こえる。too があれば「自分たちも」。',
       use: 'Maybe we should sleep on it.（一晩考えたほうがいいかも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'house', seg: [92.8, 99.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'house', seg: [93.0, 99.7],
       stem: 'Fill the gap: “…what we could do if we ___ this ring.”',
       ja: '「…if we ___ this ring.」の空所は？',
       choices: ['didn’t buy', 'don’t buy', 'did buy'], a: 0,
@@ -206,7 +207,7 @@ export const notShotgun: Clip = {
       trap: '「ディドゥン」と「ン」が残れば didn’t、「ディッ」で切れれば did、「ドン」なら don’t。家の話も買わない側。',
       use: 'What if we didn’t go?（行かなかったらどうなる？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'benefits', seg: [101.8, 111],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'benefits', seg: [101.8, 110.65],
       stem: 'Which benefits of marriage does Chris list first?',
       ja: 'クリスが最初に挙げる、結婚のいい点は？',
       choices: ['Taxes and health insurance', 'Taxes and a home loan', 'Gifts and a honeymoon'], a: 0,
@@ -218,7 +219,7 @@ export const notShotgun: Clip = {
       trap: 'taxes のあとに直前の house を足しやすいが、家は別の二人の話。二つ目まで聞く。',
       use: 'On the other hand, it’s cheaper.（その一方で、安いんだよね）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'allset', seg: [117.7, 123.9],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'allset', seg: [117.7, 123.7],
       stem: 'What does the jeweler mean by “You’re all set”?',
       ja: '店員の「You’re all set」はどういう意味？',
       choices: ['Everything is done', 'Please sit down', 'You must wait'], a: 0,
@@ -230,7 +231,7 @@ export const notShotgun: Clip = {
       trap: 'set から「座る（sit）」と思いやすい。all set ＝ 準備や手続きが全部すんだ。',
       use: 'Okay, you’re all set. Enjoy your stay.（はい、手続き完了です。ごゆっくり）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'chargeit', ctx: true, reveals: ['refund'], seg: [119.0, 127.5],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'chargeit', ctx: true, reveals: ['refund'], seg: [119.6, 127.5],
       stem: 'The refund is done. What do Chris and Ann decide?',
       ja: '返金がすんだ。クリスとアンはどうすることにする？',
       choices: ['To buy the ring again', 'To ask for more money', 'To look at other shops'], a: 0,
@@ -254,7 +255,7 @@ export const notShotgun: Clip = {
       trap: 'maybe から「たぶんする」と思いやすい。let’s not は「〜しないでおこう」。',
       use: 'Me neither. Let’s not, then.（僕も。じゃあ、やめとこう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'late', seg: [144.8, 151.8],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'late', seg: [144.8, 151.5],
       stem: 'What does the jeweler say on the phone?',
       ja: '店員は電話で何と言う？',
       choices: ['He can’t get home tonight', 'His son is sick at home', 'He will be home soon'], a: 0,
@@ -277,10 +278,10 @@ export const notShotgun: Clip = {
       trap: 'pick を「おすすめ」と取りやすいが、a thing は何でもいいという言い方。質問にも答えていない。',
       use: 'Just pick one, please.（とにかく一つ選んで）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'want', reveals: ['nowedding'], seg: [152.3, 163.1],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'want', reveals: ['nowedding'], seg: [152.6, 162.75],
       stem: 'How does Ann feel about the locket?',
       ja: 'ロケットを見つけて、アンはどう感じている？',
-      choices: ['Sure it’s what they want', 'Torn between it and the ring', 'Sad to give up the ring'], a: 0,
+      choices: ['Sure it’s what she wants', 'Torn between it and the ring', 'Sad to give up the ring'], a: 0,
       choicesJa: ['これがほしいと確信', '指輪と迷っている', '指輪をあきらめて悲しい'],
       cue: 'look at this のあと。',
       line: 'This is *what I want*. I don’t want a ring… I *just want this locket*',
@@ -289,7 +290,7 @@ export const notShotgun: Clip = {
       trap: 'Honey, look at this を相談と思いやすいが、すぐ what I want と言い切る。',
       use: 'This is exactly what I wanted.（まさにこれがほしかったの）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'nowedding', reveals: ['whystart'], seg: [157.0, 186.5],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'nowedding', reveals: ['whystart'], seg: [157.4, 186.5],
       stem: 'Why do Chris and Ann choose a locket?',
       ja: 'クリスとアンは、なぜロケットを選ぶ？',
       choices: ['A wedding isn’t their style', 'They’ll wait for the baby', 'They’re saving for a house'], a: 0,
@@ -300,7 +301,7 @@ export const notShotgun: Clip = {
       trap: '子どもの写真から「産まれるまで待つ」と思いやすいが、式自体いらないと言う。家は別の二人の話。',
       use: 'Let’s skip the big wedding.（盛大な式はやめよう）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'thatpart', ctx: true, seg: [164.8, 175.1],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'thatpart', ctx: true, seg: [165.1, 174.75],
       stem: 'What does Chris mean by “let’s maybe not talk about that”?',
       ja: '「let’s maybe not talk about that part」で、クリスは何を言いたい？',
       choices: ['Let’s change the subject', 'Let’s agree it was awful', 'Let’s tell it later'], a: 0,
@@ -321,7 +322,7 @@ export const notShotgun: Clip = {
       trap: '習った語順に直したくなる。書き取りは、正しい形でなく聞こえた順で書く。',
       use: 'Let’s maybe not tell Mom yet.（ママにはまだ言わないでおこうか）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whystart', seg: [171.3, 178.7],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whystart', seg: [171.45, 178.6],
       stem: 'What does “so why start now?” mean?',
       ja: '「so why start now?」はどういう意味？',
       choices: ['No reason to be normal now', 'Time to do one thing normally', 'They wish they’d been normal'], a: 0,

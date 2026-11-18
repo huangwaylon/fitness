@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 0, new 2, ctx 5, tx 9
+// R4 REVIEW 2026-11-18: keep 13, rewrite 5, retire 0, new 2, ctx 5, tx 9, qa 19
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 9, new 2
 // “Ron's Permit | Parks and Recreation” (the official Parks and Recreation channel, Season 5): with Leslie away, Ron
 // takes over the staff barbecue to strip it down to meat, brings a live pig named Tom, and backs down over his
@@ -49,7 +49,7 @@ export const ronPermit: Clip = {
       trap: '直前の Leslie’s gone から送別会と思いやすい。名前の中身を聞く。',
       use: 'We’re having our annual office party.（毎年恒例の会社のパーティーがあるんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'point', seg: [9, 49.6],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'point', seg: [15.6, 43.9],
       stem: 'What will Ron’s barbecue be like?',
       ja: 'ロンのバーベキューはどんなものになる？',
       choices: ['None of Leslie’s fun extras', 'Bigger than Leslie’s ever was', 'Just like Leslie’s every year'], a: 0,
@@ -61,7 +61,7 @@ export const ronPermit: Clip = {
       trap: '出し物の名前がたくさん聞こえるので、全部やると思いやすい。not doing any of that を聞く。',
       use: 'No speeches this time. That’s the point.（今回はスピーチなし。それが狙い）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'popsicle', seg: [21.0, 27.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'popsicle', seg: [21.65, 26.5],
       stem: 'Which contest does she name first?',
       ja: '彼女が最初に挙げる大会は？',
       choices: ['A popsicle eating contest', 'A watermelon eating contest', 'A hot dog eating contest'], a: 0,
@@ -73,19 +73,19 @@ export const ronPermit: Clip = {
       trap: 'Watermelon（スイカ）も聞こえるが、それは carvy（彫刻）のほう。oversee のすぐあとを聞く。',
       use: 'Who will oversee the project?（このプロジェクトはだれが仕切るの？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrify', reveals: ['event'], seg: [42.6, 50.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'horrify', reveals: ['event'], seg: [43.8, 50.6],
       stem: 'How does Ron feel about Leslie’s summer barbecue?',
       ja: 'レスリーの夏のバーベキューを、ロンはどう思っている？',
       choices: ['He really hates it', 'He is scared of it', 'He is jealous of it'], a: 0,
       choicesJa: ['本当に嫌い', '怖がっている', 'うらやましい'],
       cue: '「staff」のあとの一言。',
-      line: 'Every summer Leslie throws a barbecue… *It’s horrifying.*',
+      line: 'Every summer, Leslie throws a barbecue… *It’s horrifying.*',
       said: '「毎年夏、レスリーがバーベキューを開く。ぞっとする」と言う。',
       mean: 'horrifying ＝ ぞっとする。ここは「本当にいや」の大げさな言い方。',
       trap: 'horror（ホラー）から「怖い」と思いやすい。好みの話では強い「嫌い」。',
       use: 'That song is horrifying. Turn it off.（あの曲ひどい。止めて）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'meat', seg: [49, 57.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'meat', seg: [50.6, 57.3],
       stem: 'What should a barbecue be about, says Ron?',
       ja: 'ロンによると、バーベキューは何のためにある？',
       choices: ['Meat that everyone shares', 'Meat that each person grills', 'Meat cooked slowly over a fire'], a: 0,
@@ -132,7 +132,7 @@ export const ronPermit: Clip = {
       trap: 'at least の頼み方だと妥協が来そうに思えるが、Ron は交渉に乗らない。',
       use: 'The answer is no. Sorry.（答えはノー。ごめんね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'job', seg: [73.4, 81],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'job', seg: [73.4, 80.7],
       stem: 'Type what is said: “I offered Ron a job… and he ___.” (3 words)', answer: 'turned me down',
       ja: '聞こえた言葉を書こう：「I offered Ron a job… and he ___.」（3語）',
       cue: '「last month and he」のあと。',
@@ -142,11 +142,11 @@ export const ronPermit: Clip = {
       trap: 'turned の -ed は弱く、me とつながって「ターンミー」に近い。3語を数える。',
       use: 'I had to turn down the offer.（その申し出は断るしかなかった）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'belongs', reveals: ['job'], seg: [75, 88.9],
-      stem: 'How does he feel about Ron staying now?',
-      ja: 'ロンが残ったことを、彼は今どう思っている？',
-      choices: ['Happy Ron stayed here', 'Still sad Ron said no', 'Worried Ron is unhappy'], a: 0,
-      choicesJa: ['ロンが残ってうれしい', '断られてまだ悲しい', 'ロンが不幸そうで心配'],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'belongs', reveals: ['job'], seg: [74.8, 88.9],
+      stem: 'How does he feel about Ron’s choice now?',
+      ja: 'ロンの選んだ道を、彼は今どう思っている？',
+      choices: ['Glad Ron is where he is', 'Still sad Ron said no', 'Worried Ron is unhappy'], a: 0,
+      choicesJa: ['ロンが今の場所にいてうれしい', '断られてまだ悲しい', 'ロンが不幸そうで心配'],
       cue: '「But now」のあと。',
       line: '…it *literally broke my heart*. *But now* I see that this is truly *where he belongs*.',
       said: '「胸が張り裂けた。でも今は、ここが彼の居場所だと分かる」と言う。',
@@ -154,7 +154,7 @@ export const ronPermit: Clip = {
       trap: 'broke my heart が強く残るが、それは過去。but のあとが今。',
       use: 'I was upset, but now I get it.（最初は落ち込んだけど、今は分かる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hear', seg: [83.3, 94],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hear', seg: [83.7, 93.6],
       stem: 'Fill the gap: “He ___ hear me.”',
       ja: '空いている所に入る語は？「He ___ hear me.」',
       choices: ['can’t', 'can', 'could'], a: 0,
@@ -178,7 +178,7 @@ export const ronPermit: Clip = {
       trap: 'your は弱く、our や the と区別しにくい。「ユァ」を聞く。',
       use: 'Everyone, meet my sister, Yuki.（みんな、妹のユキです）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'circle', ctx: true, seg: [101.8, 110.8],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'circle', ctx: true, seg: [101.8, 110.4],
       stem: 'What does Ron think people should do?',
       ja: 'ロンは、人は何をするべきだと思っている？',
       choices: ['Look at the animal they eat', 'Thank the animal before eating', 'Raise their own animals'], a: 0,
@@ -221,11 +221,11 @@ export const ronPermit: Clip = {
       trap: 'ほめ言葉で情が移ったと取りやすいが、最後の三つの動詞で考えが変わっていないと分かる。',
       use: 'He’s basically family.（もう家族みたいなもんだ）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'goodpoint', ctx: true, seg: [122.8, 132.3],
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'goodpoint', ctx: true, seg: [122.8, 131.9],
       stem: 'Ron answers, “*Good point*.” What does it mean?',
       ja: 'ロンの「Good point」はどういう意味？',
-      choices: ['You’re right about that', 'That’s a funny joke', 'Point at the kids'], a: 0,
-      choicesJa: ['それは確かにそうだ', '面白い冗談だ', '子どもを指さして'],
+      choices: ['You’re right about that', 'That’s a funny joke', 'I don’t agree at all'], a: 0,
+      choicesJa: ['それは確かにそうだ', '面白い冗談だ', 'まったく賛成しない'],
       cue: '「kids around here」のあと。',
       line: 'Dude, there’s kids around here! / Ron: *Good point.*',
       said: '「おい、子どもがいるんだぞ！」と言われ、「確かに」と答える。',
@@ -244,7 +244,7 @@ export const ronPermit: Clip = {
       trap: 'Good point で止めると思いやすい。次の言葉で、何に同意したかを確かめる。',
       use: 'Good point. I hadn’t thought of that.（確かに。それは考えてなかった）' },
 
-    { id: 'pd2', skill: 'phrase', level: 'B1', point: 'worry', ctx: true, seg: [133.7, 142.4],
+    { id: 'pd2', skill: 'phrase', level: 'B1', point: 'worry', ctx: true, seg: [133.95, 142.4],
       stem: 'Ron says, “*Not to worry*. I have a permit.” Meaning?',
       ja: 'ロンの「Not to worry. I have a permit.」はどういう意味？',
       choices: ['It’s fine, no problem', 'Don’t do it here', 'It’s a big problem'], a: 0,
@@ -268,7 +268,7 @@ export const ronPermit: Clip = {
       trap: 'permit で押し通すと考えがち。Fine（わかった）で引き下がる。延期は中止ではない。',
       use: 'The meeting is postponed until Friday.（会議は金曜に延期です）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'permit', reveals: ['worry'], seg: [136.8, 145.7],
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'permit', reveals: ['worry'], seg: [136.95, 145.7],
       stem: 'What does Ron’s permit say?',
       ja: 'ロンの許可証には何と書いてある？',
       choices: ['He can do what he wants', 'He can cook a pig here', 'He can close the park'], a: 0,
@@ -291,7 +291,7 @@ export const ronPermit: Clip = {
       trap: '許可証と聞くと市が出したと思いやすい。根拠が自分の肩書だけなら、自分で出した許可を疑う。',
       use: 'I’m the boss, so it’s fine.（責任者は私だから、いいの）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'director', reveals: ['permit'], ctx: true, seg: [144.0, 151.0],
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'director', reveals: ['permit'], ctx: true, seg: [144.0, 150.9],
       stem: 'Why does Ron think his permit is fine?',
       ja: 'ロンは、なぜ自分の許可証で大丈夫だと思っている？',
       choices: ['He is the boss of the parks', 'The city signed it for him', 'Leslie gave it to him'], a: 0,
@@ -303,7 +303,7 @@ export const ronPermit: Clip = {
       trap: '許可証なら市が出したと考えがち。決め手は I am the director。',
       use: 'I am the manager of this store.（私がこの店の責任者です）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['codes'], seg: [149.5, 155.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'like', reveals: ['codes'], seg: [149.7, 155.7],
       stem: '“It’s against *like* three laws.” What does “like” mean?',
       ja: '「It’s against like three laws」の like はどういう意味？',
       choices: ['About', 'Similar to', 'Enjoy'], a: 0,
@@ -315,11 +315,11 @@ export const ronPermit: Clip = {
       trap: 'like を「〜のような」と思うと意味が通らない。数字の前なら about と同じ。',
       use: 'It took like two hours to get there.（行くのに2時間くらいかかった）' },
 
-    { id: 'n1', skill: 'number', level: 'B2', point: 'codes', reveals: ['like'], seg: [149.5, 155.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B2', point: 'codes', reveals: ['like'], seg: [149.7, 155.7], keep: true,
       stem: 'How many health codes does the slaughter break?',
       ja: '豚をつぶすと、衛生規則をいくつ破る？',
-      choices: ['3', '12', '24'], a: 1,
-      choicesJa: ['3つ', '12個', '24個'],
+      choices: ['3', '12', '20', '24'], a: 1,
+      choicesJa: ['3つ', '12個', '20個', '24個'],
       cue: '「three laws」のあと。',
       line: 'It’s against like three laws and *a dozen* health codes.',
       said: '「法律三つくらいと、衛生規則12個に違反してる」と言う。',
