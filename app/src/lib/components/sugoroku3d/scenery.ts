@@ -23,6 +23,9 @@ const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", system-ui, sans-seri
  *  with a second line: 近道 or 遠回り and its steps). */
 const CELLS = 4, PX = 128;
 const cellOfKind = (k: Kind) => KINDS.indexOf(k);
+/** A sign's board (2:1, the atlas cell's middle band) and its middle's height: 1.6× the first boards (22 × 11 at 12),
+ *  so 「飛行場 遠回り 9マス」 reads at the default camera (B-U3); the same one draw. */
+const SIGN_W = 35, SIGN_H = 17.5, SIGN_Y = 19;
 
 function atlas(areas: readonly AreaId[], notes: ReadonlyMap<AreaId, string>): CanvasTexture {
   const c = document.createElement('canvas');
@@ -40,17 +43,23 @@ function atlas(areas: readonly AreaId[], notes: ReadonlyMap<AreaId, string>): Ca
   };
   const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
   KINDS.forEach((k, i) => cell(i, hex(KIND_COLOUR[k]), MARK[k], INK, k === 'start' || k === 'goal' ? 26 : k === 'double' ? 54 : 64));
+  // a sign's label: heavy, outlined in dark wood (it reads at the camera's distance on a phone: B-U3)
+  const label = (text: string, cx: number, cy: number, size: number, fg: string, max: number) => {
+    g.font = `800 ${size}px ${FONT}`;
+    g.lineJoin = 'round';
+    g.lineWidth = Math.max(3, size * 0.16);
+    g.strokeStyle = '#4a3220';
+    g.strokeText(text, cx, cy, max);
+    g.fillStyle = fg;
+    g.fillText(text, cx, cy, max);
+  };
   areas.forEach((a, i) => {
     const note = notes.get(a), x = ((8 + i) % CELLS) * PX, y = Math.floor((8 + i) / CELLS) * PX;
-    if (!note) return cell(8 + i, hex(WOOD), s(`area.${a}`), '#fff8e8', 40);
-    // (the name up a little, the way's note under it: both in the band the sign shows)
     cell(8 + i, hex(WOOD), '', '#fff8e8', 30);
-    g.fillStyle = '#fff8e8';
-    g.font = `700 30px ${FONT}`;
-    g.fillText(s(`area.${a}`), x + PX / 2, y + PX / 2 - 11, PX - 10);
-    g.fillStyle = '#ffe9a8';
-    g.font = `700 19px ${FONT}`;
-    g.fillText(note, x + PX / 2, y + PX / 2 + 17, PX - 8);
+    if (!note) return label(s(`area.${a}`), x + PX / 2, y + PX / 2 + 2, 42, '#fff8e8', PX - 10);
+    // (the name up a little, the way's note under it: both in the band the sign shows)
+    label(s(`area.${a}`), x + PX / 2, y + PX / 2 - 11, 31, '#fff8e8', PX - 10);
+    label(note, x + PX / 2, y + PX / 2 + 17, 21, '#ffe9a8', PX - 6);
   });
   const t = new CanvasTexture(c);
   t.colorSpace = SRGBColorSpace;
@@ -147,7 +156,7 @@ export function buildIsland(b: Board): Group {
   parts.push(paint(new BoxGeometry(46, 22, 30).translate(mx, 11, mz), 0xf2e2c4, true));
   parts.push(paint(new ConeGeometry(34, 16, 4).rotateY(Math.PI / 4).scale(1, 1, 0.68).translate(mx, 30, mz), 0xb9785a, true));
   parts.push(paint(new BoxGeometry(10, 14, 1).translate(mx, 7, mz + 15.2), 0x8a5a3c, true));
-  for (const sg of b.signs) parts.push(paint(at(new BoxGeometry(1.6, 10, 1.6).translate(0, 5, 0), sg.x, sg.y, 0), 0x8a6440));
+  for (const sg of b.signs) parts.push(paint(at(new BoxGeometry(2, SIGN_Y - SIGN_H / 2 + 1, 2).translate(0, (SIGN_Y - SIGN_H / 2 + 1) / 2, 0), sg.x, sg.y, 0), 0x8a6440));
   // round trees (a trunk, a low-poly crown), kept off the route
   for (const [x, y, r] of b.trees) {
     parts.push(paint(at(new CylinderGeometry(r * 0.16, r * 0.22, r * 1.1, 6).translate(0, r * 0.55, 0), x, y, 0), 0x8a6440, true));
@@ -180,10 +189,10 @@ export function buildIsland(b: Board): Group {
     tops.push(at(intoCell(new CircleGeometry(r, 28), cellOfKind(sp.kind), 0.04).rotateX(-Math.PI / 2), sp.x, sp.y, STONE_T + 0.06).toNonIndexed());
   });
   for (const sg of b.signs) {
-    const board = new PlaneGeometry(22, 11), uv = board.getAttribute('uv');
+    const board = new PlaneGeometry(SIGN_W, SIGN_H), uv = board.getAttribute('uv');
     // (the cell's middle band: the label's 2:1)
     for (let k = 0; k < uv.count; k++) uv.setY(k, 0.25 + uv.getY(k) * 0.5);
-    tops.push(at(intoCell(board, cellOfArea(BOARD[sg.i].area)).rotateX(-0.35), sg.x, sg.y, 12).toNonIndexed());
+    tops.push(at(intoCell(board, cellOfArea(BOARD[sg.i].area)).rotateX(-0.35), sg.x, sg.y, SIGN_Y).toNonIndexed());
   }
   root.add(new Mesh(mergeGeometries(tops), marks));
   for (const g of tops) g.dispose();
