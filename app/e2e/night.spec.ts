@@ -141,6 +141,20 @@ test('a trail’s chart and plan read at night (the elevation line, the start/go
   expect(await low(page)).toEqual([]);
 });
 
+test('a trip’s 日程 reads at night: the day number and the row on now in the day’s colour, mixed light', async ({ page }, info) => {
+  const how = howOf(info.project.name);
+  // Feb 12, 19:30 in Tokyo (night) = 23:30 in Auckland: NZ's day 2, the pill opens into it
+  await page.goto('?demo&date=2027-02-12T19:30');
+  await islandUp(page);
+  await fromMenu(page, 'travel', how);
+  const day = page.locator('dialog[open] [data-trip-view="nz"] [data-day="2"]');
+  await expect(day.locator('[data-now]')).toHaveCount(1);
+  await day.locator('[data-now]').scrollIntoViewIfNeeded();
+  expect(await low(page)).toEqual([]);
+  await day.locator('.dn').scrollIntoViewIfNeeded();
+  expect(await low(page)).toEqual([]);
+});
+
 test('English Study at night: the week’s 達成 and an answered choice’s ○ (the night’s leaf text on navy)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await fakeYoutube(page);

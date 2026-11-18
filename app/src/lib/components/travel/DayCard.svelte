@@ -110,7 +110,8 @@
   .dh { position: relative; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 8px 12px; }
   .dh::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; border-top: 1.5px dashed var(--stitch); }
   .dn { flex: none; min-width: 32px; text-align: center; font: 600 1.75rem/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c); }
-  :global(:root[data-tod='night']) .dn { filter: brightness(1.35) saturate(.9); }
+  /* (night: the day's colour mixed into the cream text, 3.9:1 or more on the navy card for every trip's colour) */
+  :global(:root[data-tod='night']) .dn { color: color-mix(in srgb, var(--c) 30%, var(--text)); }
   .dm { flex: none; display: flex; flex-direction: column; font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .meta { flex: 1; min-width: 0; display: grid; margin: 0 0 0 2px; font: inherit; }
   .ttl { font: 700 var(--fs-body)/1.35 var(--font-ui); }

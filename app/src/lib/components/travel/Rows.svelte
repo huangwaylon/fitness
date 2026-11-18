@@ -76,6 +76,7 @@
   /* now: a big filled dot with a soft ring, its time in the day's colour */
   .now .sp i { left: 0; top: 7px; width: 14px; height: 14px; background: var(--c); border: 0; box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent); }
   .now .t { color: var(--c); }
+  :global(:root[data-tod='night']) .now .t { color: color-mix(in srgb, var(--c) 30%, var(--text)); }
   .now .ln { font-weight: 600; }
   .nx { margin-right: 6px; color: var(--leaf-text); vertical-align: 1px; }
 
