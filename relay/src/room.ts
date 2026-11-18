@@ -91,7 +91,7 @@ export type Kept = Relayed & { c?: number; sk?: string };
 /** A すごろく move as the room keeps it. */
 export type SgKept = Extract<Kept, { kind: 'sg' }>;
 
-/** 英語すごろく's games (docs/backend.md "すごろく"), apart from the day's ring (a long game is ~250 moves: in the ring
+/** 英語すごろく's games (docs/backend.md#shared-world), apart from the day's ring (a long game is ~250 moves: in the ring
  *  they were the first trimmed, and every move rewrote it): each game's moves in order (`moves[i]`, the first of each
  *  `i`), its earliest end (`end`: its `i` the moves it follows), and its last move's stamp. One storage row a move
  *  (`sg:<g>:<i>`, the end `sg:<g>:e`); a game goes SG_KEEP_MS after its last move, and past SG_GAMES the oldest. */
