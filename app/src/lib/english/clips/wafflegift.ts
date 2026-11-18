@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 9, retire 2, new 3, ctx 6, tx 22
+// R4 REVIEW 2026-11-18: keep 12, rewrite 9, retire 2, new 3, ctx 6, tx 22, qa 27
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 5
 // “Ann and Ben compete for the *perfect* gift | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): Ann and Ben fight over a waffle iron for Leslie, lose it at auction, join a pawn-shop bidding war, then
@@ -14,9 +14,9 @@ export const waffleGift: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'jjs', seg: [14.8, 24.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'jjs', seg: [14.8, 24.4],
       stem: 'What does Ann’s special day celebrate?', ja: 'アンの記念日は何のお祝い？',
-      choices: ['Her first time out with Leslie', 'Leslie’s first date with Ben', 'Her first waffle at JJ’s'], a: 0,
+      choices: ['Her first day out with Leslie', 'Leslie’s first date with Ben', 'Her first waffle at JJ’s'], a: 0,
       choicesJa: ['レスリーと初めて遊んだ日', 'レスリーとベンの初デート', 'JJ’s で初めて食べたワッフル'],
       cue: '「Please, Ben」のあと',
       line: 'the anniversary of the *first time we hung out* at JJ’s…',
@@ -24,17 +24,6 @@ export const waffleGift: Clip = {
       mean: 'hang out ＝ 一緒に遊ぶ・過ごす。anniversary ＝ 記念日。友だちの記念日にも使う。',
       trap: 'anniversary から恋人の記念日を連想しやすいが、ここは友だちの記念日。',
       use: 'We first hung out at a café.（初めて遊んだのはカフェだった）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'lost', seg: [16.0, 44.6],
-      stem: 'What happens to the waffle iron at the auction?', ja: 'オークションで、ワッフルメーカーはどうなる？',
-      choices: ['Someone else wins it', 'Ben wins it in the end', 'Ann wins it in the end'], a: 0,
-      choicesJa: ['ほかの人が手に入れる', '最後にベンが手に入れる', '最後にアンが手に入れる'],
-      cue: '言い合いの途中、急に声が変わる所',
-      line: 'Oh, God, oh, no, *we’ve lost the auction*. … *Somebody swooped in* at the last second.',
-      said: '「オークションに負けた。最後の最後で誰かに横取りされた」と言う。',
-      mean: 'lost the auction ＝ オークションに負けた。2人とも買えなかった。',
-      trap: 'at the last second（最後の一瞬）から、どちらかが勝ったと考えがち。we’ve lost＝2人とも負け。',
-      use: 'We lost the auction.（オークションで負けちゃった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'benfeel', reveals: ['pillow'], seg: [22.5, 33.45], retired: true,
       stem: 'How does Ben feel about the way Leslie celebrates?',
@@ -58,16 +47,27 @@ export const waffleGift: Clip = {
       trap: 'pillow を本物の贈り物と取りやすいが、like があるので例え。動詞が怖い方を向く。',
       use: 'I’m drowning in work.（仕事に溺れそう）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'senior', seg: [31.3, 39.8],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'senior', seg: [31.4, 37.75],
       stem: 'Why does Ann say the gift should be hers?', ja: 'アンは、なぜ自分が贈るべきだと言う？',
-      choices: ['She has known Leslie longer', 'She has more money than Ben', 'She found the gift first'], a: 0,
-      choicesJa: ['レスリーとの付き合いが長い', 'ベンよりお金がある', '先に贈り物を見つけた'],
+      choices: ['She met Leslie before Ben did', 'She has more money than Ben', 'She found the gift first'], a: 0,
+      choicesJa: ['ベンより先にレスリーと出会った', 'ベンよりお金がある', '先に贈り物を見つけた'],
       cue: '「Look」のあとのアンの言葉',
       line: 'Look, *I have known her for longer*. I have five years’ worth of anniversaries, so I have seniority.',
       said: 'アンが「私の方が付き合いが長い。だから私が先」と言う。',
       mean: 'for longer ＝ より長く。seniority ＝ 長くいる人が先、という順番。',
       trap: 'seniority が難しく聞こえるが、答えは最初の文。',
       use: 'I’ve known her for ten years.（彼女とは10年の付き合いだ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'lost', seg: [34.85, 51.4],
+      stem: 'What happens to the waffle iron at the auction?', ja: 'オークションで、ワッフルメーカーはどうなる？',
+      choices: ['Someone else wins it', 'Ben wins it in the end', 'Ann wins it in the end'], a: 0,
+      choicesJa: ['ほかの人が手に入れる', '最後にベンが手に入れる', '最後にアンが手に入れる'],
+      cue: '「Oh, God, oh, no」のあと',
+      line: 'Oh, God, oh, no, *we’ve lost the auction*. … *Somebody swooped in* at the last second.',
+      said: '「オークションに負けた。最後の最後で誰かに横取りされた」と言う。',
+      mean: 'lost the auction ＝ オークションに負けた。2人とも買えなかった。',
+      trap: 'at the last second（最後の一瞬）から、どちらかが勝ったと考えがち。we’ve lost＝2人とも負け。',
+      use: 'We lost the auction.（オークションで負けちゃった）' },
 
     { id: 'p1', skill: 'phrase', level: 'C1', point: 'swoop', reveals: ['lost'], seg: [37.6, 43.6], retired: true,
       stem: 'When the auction news comes, what happened at the end?',
@@ -80,7 +80,7 @@ export const waffleGift: Clip = {
       trap: 'last second だけを聞くと自分たちの遅れに思える。主語の somebody が誰の動きかを決める。',
       use: 'Someone swooped in and took the last seat.（誰かが最後の席をさっと取った）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', reveals: ['bug'], seg: [47.9, 53.1],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', reveals: ['bug'], seg: [48.65, 53.1],
       stem: 'Ben says, “*Actually*, it’s gonna bug me.” What does “Actually” show?',
       ja: 'ベンの「Actually, it’s gonna bug me」。Actually は何を表す？',
       choices: ['He changes his mind', 'He agrees with Ann', 'He wants to stop talking'], a: 0,
@@ -92,7 +92,7 @@ export const waffleGift: Clip = {
       trap: 'actually を「実は」と覚えていると迷いやすい。このあと結局説明する。',
       use: 'Actually, I’ll have tea.（やっぱり紅茶にします）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'bug', reveals: ['actually'], seg: [48.1, 53.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'bug', reveals: ['actually'], seg: [48.65, 53.1],
       stem: 'Type what he says: “Actually, it’s ___ if I don’t.” (3 words)', ja: '空所の3語を書こう', answer: 'gonna bug me',
       cue: 'it’s のあと、短く速い3語',
       line: 'Actually, it’s *gonna bug me* if I don’t.',
@@ -101,7 +101,7 @@ export const waffleGift: Clip = {
       trap: 'gonna は「ガナ」とひとまとまりに聞こえ、bug と me もつながりやすい。',
       use: 'It’s really bugging me.（それがずっと気になってる）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'helpout', seg: [61.4, 67.5],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'helpout', seg: [61.4, 65.5],
       stem: 'Type Ann’s request: “I was wondering if you could ___.” (3 words)', ja: 'アンの頼みの空所3語を書こう',
       answer: 'help me out',
       cue: 'アンの最初の頼み',
@@ -122,7 +122,7 @@ export const waffleGift: Clip = {
       trap: 'no が耳に残ると、断っているように聞こえる。すぐ品物を出しているので引き受けている。',
       use: 'Say no more. I’ll do it.（言わなくていいよ、やっておく）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'everyone', ctx: true, seg: [73.9, 80.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'everyone', ctx: true, seg: [70.8, 79.6],
       stem: 'What does the shop owner mean by “You and everyone else”?', ja: '店主の「You and everyone else」はどういう意味？',
       choices: ['Many people want it', 'He is tired of helping', 'Nobody wants it'], a: 0,
       choicesJa: ['欲しい人がたくさんいる', '手伝うのに疲れた', '誰も欲しがらない'],
@@ -133,15 +133,15 @@ export const waffleGift: Clip = {
       trap: '頼まれるのにうんざりしている、と考えがち。buy it への返事なので「買いたい人は多い」。',
       use: 'You and everyone else.（みんなそう言うんだよ）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B2', point: 'getinline', seg: [79.7, 88.7],
+    { id: 'p5', skill: 'phrase', level: 'B2', point: 'getinline', reveals: ['everyone'], seg: [79.7, 86.8],
       stem: 'What does “*Get in line*” mean here?', ja: 'ここでの「Get in line」の意味は？',
-      choices: ['Others want it first', 'Stand in a straight row', 'Leave the shop now'], a: 0,
-      choicesJa: ['先に欲しい人がいる', 'まっすぐ一列に並べ', '今すぐ店を出ろ'],
+      choices: ['You are not the only one', 'Stand in a straight row', 'Leave the shop now'], a: 0,
+      choicesJa: ['あなただけじゃない', 'まっすぐ一列に並べ', '今すぐ店を出ろ'],
       cue: '2回聞こえる短い言葉',
       line: 'Seems like I love Leslie more than you do. — *Get in line.* — Yeah. *Get in line*, pal.',
       said: '「レスリーへの愛なら負けない」に「順番を待ちな」と返す。',
-      mean: 'get in line ＝ 文字どおり「列に並ぶ」。ここでは「ほかにも欲しい人がいる」。',
-      trap: '本当に列を作る話だと思いやすい。同じ物を欲しい人が多いだけ。',
+      mean: 'get in line ＝ 文字どおり「列に並ぶ」。ここでは「（レスリーへの愛を言いたい人は）ほかにもいる、順番を待て」。',
+      trap: '本当に列を作る話だと思いやすい。「あなただけじゃない」という返し。',
       use: 'Please get in line.（列に並んでください）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'roz', seg: [85.3, 92.7], retired: true,
@@ -155,7 +155,7 @@ export const waffleGift: Clip = {
       trap: '名前のあとの説明を聞き逃すと、友だちだと思いやすい。mail が手がかり。',
       use: 'Who are you? — I’m Ken’s friend.（どなた？—ケンの友だちです）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'mailday', seg: [87.7, 92.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'mailday', seg: [87.62, 92.7], retired: true,
       stem: 'When does Roz need the present?', ja: 'ロズはいつまでにプレゼントが必要？',
       choices: ['By next Wednesday', 'By next Tuesday', 'By this Wednesday'], a: 0,
       choicesJa: ['来週の水曜までに', '来週の火曜までに', '今週の水曜までに'],
@@ -166,7 +166,7 @@ export const waffleGift: Clip = {
       trap: 'this と next を聞き分ける。next のあとが曜日。',
       use: 'I need it by next Wednesday.（来週の水曜までに必要です）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'getit', reveals: ['mailday'], ctx: true, seg: [88.2, 97.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'getit', reveals: ['mailday'], ctx: true, seg: [88.42, 97.4],
       stem: 'How do Ann and Ben feel about Roz’s reason?', ja: 'アンとベンは、ロズの理由をどう思っている？',
       choices: ['Tired of hearing it', 'Very moved by the story', 'Surprised by it'], a: 0,
       choicesJa: ['もう聞き飽きた', '話にとても感動した', '驚いている'],
@@ -177,7 +177,7 @@ export const waffleGift: Clip = {
       trap: '理由を一緒に言うので、感動していると思いやすい。we get it は「もう十分」。',
       use: 'Yeah, we get it. You love it.（はいはい、分かったよ。大好きなんだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'start', seg: [97.2, 106.9],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'start', seg: [97.4, 106.5],
       stem: 'What first price does the shop owner say?', ja: '店主が最初に言う値段は？',
       choices: ['$650', '$6,500', '$615,000', '$650,000'], a: 3, keep: true,
       choicesJa: ['650ドル', '6,500ドル', '61万5千ドル', '65万ドル'],
@@ -199,7 +199,7 @@ export const waffleGift: Clip = {
       trap: 'tell から意見を言うと思いやすい。この言い方のあとは if 付きの提案が多い。',
       use: 'I’ll tell you what: I’ll pay for lunch.（じゃあこうしよう、お昼はおごるよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'onedate', reveals: ['tellwhat'], ctx: true, seg: [108.4, 118.4],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'onedate', reveals: ['tellwhat'], ctx: true, seg: [109.1, 118.0],
       stem: 'How does Ann feel about the date?', ja: 'アンはデートのことをどう思っている？',
       choices: ['She hates it but says yes', 'She is happy and says yes', 'She hates it and says no'], a: 0,
       choicesJa: ['嫌だけど OK する', 'うれしくて OK する', '嫌なので断る'],
@@ -232,7 +232,7 @@ export const waffleGift: Clip = {
       trap: 'go out で約束が生きていると思いやすい。still は「状況が変わったのに」の合図。',
       use: 'Do you still want to come?（それでもまだ来たい？）' },
 
-    { id: 'mk', skill: 'detail', level: 'B1', point: 'mini', ctx: true, seg: [126.0, 135.0],
+    { id: 'mk', skill: 'detail', level: 'B1', point: 'mini', ctx: true, seg: [126.0, 135.15],
       stem: 'What is Ann making for Leslie?', ja: 'アンはレスリーに何を作っている？',
       choices: ['A tiny Leslie made of food', 'A big breakfast for her', 'A new waffle iron'], a: 0,
       choicesJa: ['食べ物でできた小さなレスリー', 'レスリーへの豪華な朝ごはん', '新しいワッフルメーカー'],
@@ -243,7 +243,7 @@ export const waffleGift: Clip = {
       trap: 'breakfast food から、朝ごはんを作っていると考えがち。miniature Leslie が答え。',
       use: 'I made a cake out of fruit.（果物でケーキを作った）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'goin', reveals: ['wouldyou'], seg: [134.9, 143.4],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'goin', reveals: ['wouldyou'], seg: [135.15, 143.4],
       stem: 'What does “*going in on*” the waffle iron mean?', ja: 'ワッフルメーカーを「going in on」するとは？',
       choices: ['Paying for it together', 'Going into the shop', 'Taking turns with it'], a: 0,
       choicesJa: ['一緒にお金を出して買う', '店の中に入る', '順番に使う'],
@@ -254,7 +254,7 @@ export const waffleGift: Clip = {
       trap: 'go in を「中に入る」と思いやすい。on のあとの物と together が手がかり。',
       use: 'Want to go in on a gift?（プレゼント、一緒に出さない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldyou', reveals: ['goin'], seg: [134.9, 140.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wouldyou', reveals: ['goin'], seg: [135.15, 140.05],
       stem: '“___ feel about going in on the waffle iron?”', ja: '空所に入るのは？',
       choices: ['How would you', 'How do you', 'How could you'], a: 0,
       choicesJa: ['どう思う？（提案）', 'どう感じる？', 'よくもそんな…'],
@@ -265,7 +265,7 @@ export const waffleGift: Clip = {
       trap: 'do なら「ハウドゥユ」、could なら「ク」で始まる。ここは「ハウウッジュ」。',
       use: 'How would you feel about a break?（ちょっと休憩するのはどう？）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B1', point: 'imin', seg: [150.9, 157.2],
+    { id: 'p6', skill: 'phrase', level: 'B1', point: 'imin', seg: [143.05, 155.5],
       stem: 'What does “*I’m in*” mean here?', ja: 'ここでの「I’m in」の意味は？',
       choices: ['I will join you', 'I am inside the shop', 'I am too busy'], a: 0,
       choicesJa: ['私も乗る（参加する）', '店の中にいる', '忙しすぎる'],
@@ -275,6 +275,17 @@ export const waffleGift: Clip = {
       mean: 'I’m in ＝ 文字どおり「中にいる」、ここでは「参加する、乗った」。誘われた時の返事。',
       trap: 'in から場所の話に聞こえるが、whatever it is（何であれ）への返事。',
       use: 'A hike on Sunday? I’m in.（日曜にハイキング？行く行く）' },
+
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'burnit', reveals: ['mini'], ctx: true, seg: [155.45, 161.8],
+      stem: 'What should Ann do with the tiny Leslie?', ja: 'アンは小さなレスリーをどうすればいい？',
+      choices: ['Burn it and bury it', 'Give it to Leslie', 'Eat it for breakfast'], a: 0,
+      choicesJa: ['燃やして埋める', 'レスリーにあげる', '朝ごはんに食べる'],
+      cue: '「What should I do with this?」への返事',
+      line: 'Ann: *What should I do with this?* / Ben: Uh, just *burn it and bury the ashes*…',
+      said: '「これ、どうしたらいい？」に、ベンは「燃やして灰を埋めて」と答える。',
+      mean: 'What should I do with 〜? ＝ 〜はどうしたらいい？ 物の扱いに困った時の聞き方。ashes ＝ 灰。人形が不気味だ、という冗談。',
+      trap: 'プレゼント用なので、渡すと考えがち。答えは burn（燃やす）と bury（埋める）。',
+      use: 'What should I do with this box?（この箱、どうしたらいい？）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'dying', seg: [174.0, 185.25], retired: true,
       stem: 'Why is Leslie’s first reaction to the news funny?',
@@ -287,7 +298,7 @@ export const waffleGift: Clip = {
       trap: '驚きの声を冗談と取りやすい。Wait, what? は本気で動揺した反応。',
       use: 'Wait, what? Are you serious?（え、待って。本気？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'compromise', reveals: ['keepup'], seg: [175.3, 203.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'compromise', reveals: ['keepup'], seg: [175.3, 203.3],
       stem: 'What do Ann and Ben ask Leslie for?', ja: 'アンとベンはレスリーに何を頼む？',
       choices: ['Fewer special days', 'One gift a year', 'Cheaper gifts'], a: 0,
       choicesJa: ['記念日を減らすこと', 'プレゼントは年に1つ', 'もっと安いプレゼント'],
@@ -298,7 +309,7 @@ export const waffleGift: Clip = {
       trap: '直前に joint present（2人からの贈り物）があるので、贈り物の話と勘違いしやすい。',
       use: 'Let’s find a compromise.（歩み寄ろうよ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'keepup', seg: [183.1, 192],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'keepup', seg: [183.1, 191.65],
       stem: 'What does “we *can’t keep up with*” them mean?', ja: '「we can’t keep up with」の意味は？',
       choices: ['There are too many', 'We forget the dates', 'The gifts cost too much'], a: 0,
       choicesJa: ['数が多すぎる', '日にちを忘れる', 'プレゼントが高すぎる'],
@@ -309,7 +320,7 @@ export const waffleGift: Clip = {
       trap: 'too much（多すぎる）を値段の話と考えがち。all the anniversaries の数の話。',
       use: 'I can’t keep up with you.（君のペースについていけないよ）' },
 
-    { id: 'pt', skill: 'phrase', level: 'B2', point: 'pointtaken', seg: [189.9, 195.0],
+    { id: 'pt', skill: 'phrase', level: 'B2', point: 'pointtaken', seg: [190.1, 194.0],
       stem: 'What does “Point taken” mean?', ja: '「Point taken」はどういう意味？',
       choices: ['You make a fair point', 'Please stop talking now', 'I don’t understand you'], a: 0,
       choicesJa: ['言うとおりだね', 'もう話すのをやめて', '言っている意味がわからない'],
@@ -319,17 +330,6 @@ export const waffleGift: Clip = {
       mean: 'Point taken ＝ 文字どおりは「要点は受け取った」→「なるほど、言うとおり」。相手の言い分を認める決まり文句。',
       trap: 'taken から「取られた」に聞こえるが、言いたいことを受け取った＝認めた、の意味。',
       use: 'Point taken. I’ll be more careful.（なるほど、気をつけます）' },
-
-    { id: 'n3', skill: 'number', level: 'B1', point: 'week', ctx: true, seg: [201.8, 213.4],
-      stem: 'In the end, how long is each friend’s celebration?', ja: '最後に、1人分のお祝いはどのくらいの長さに？',
-      choices: ['One day', 'One week', 'One month'], a: 1, keep: true,
-      choicesJa: ['1日', '1週間', '1か月'],
-      cue: 'レスリーの「Fine」の直前',
-      line: 'Leslie: What about Ann Month and Ben Month? / How about *a week*? / Leslie: Fine.',
-      said: '「アンの月とベンの月は？」「1週間でどう？」「いいわ」で決まる。',
-      mean: 'How about 〜? ＝ 〜はどう？（提案）。Fine ＝ それでいい（決まり）。',
-      trap: '最初の one day とレスリーの month も耳に残る。決まるのは Fine の直前の数。',
-      use: 'How about a week?（1週間でどう？）' },
 
     { id: 'i5', skill: 'infer', level: 'C1', point: 'tactic', reveals: ['week'], seg: [203.25, 215.2], retired: true,
       stem: 'What does the comment right after Leslie agrees show about the deal?',
@@ -342,6 +342,17 @@ export const waffleGift: Clip = {
       trap: 'went in with a day を本当の希望と取りやすい。go in with は「最初にこう出る」。',
       use: 'Start low and meet in the middle.（低めに出して、間で決めよう）' },
 
+    { id: 'n3', skill: 'number', level: 'B1', point: 'week', ctx: true, seg: [203.3, 210.0],
+      stem: 'In the end, how long is each friend’s celebration?', ja: '最後に、1人分のお祝いはどのくらいの長さに？',
+      choices: ['One day', 'One week', 'One month', 'One year'], a: 1, keep: true,
+      choicesJa: ['1日', '1週間', '1か月', '1年'],
+      cue: 'レスリーの「Fine」の直前',
+      line: 'Leslie: What about Ann Month and Ben Month? / How about *a week*? / Leslie: Fine.',
+      said: '「アンの月とベンの月は？」「1週間でどう？」「いいわ」で決まる。',
+      mean: 'How about 〜? ＝ 〜はどう？（提案）。Fine ＝ それでいい（決まり）。',
+      trap: '最初の one day と every year、レスリーの month も耳に残る。決まるのは Fine の直前の数。',
+      use: 'How about a week?（1週間でどう？）' },
+
     { id: 'd5', skill: 'detail', level: 'B2', point: 'friendweek', seg: [216.0, 223.6],
       stem: 'What will Friend Week celebrate?', ja: '「友だちの週（Friend Week）」は何のお祝い？',
       choices: ['Ann and Ben becoming friends', 'Leslie and Ann becoming friends', 'Leslie and Ben becoming friends'], a: 0,
@@ -353,7 +364,7 @@ export const waffleGift: Clip = {
       trap: 'best friends が2回聞こえるので、レスリー自身の話だと考えがち。each other’s が決め手。',
       use: 'We help each other.（私たちは助け合っている）' },
 
-    { id: 'hg', skill: 'pragma', level: 'B1', point: 'hereyougo', seg: [222.9, 228.6],
+    { id: 'hg', skill: 'pragma', level: 'B1', point: 'hereyougo', seg: [223.2, 228.4],
       stem: 'What does Leslie mean by “Here you go”?', ja: 'レスリーの「Here you go」はどういう意味？',
       choices: ['Take this, it’s for you', 'Let’s go there now', 'You can go home now'], a: 0,
       choicesJa: ['はい、これあなたに', '今からそこへ行こう', 'もう帰っていいよ'],

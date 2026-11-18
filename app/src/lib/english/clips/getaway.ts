@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 1, new 1, ctx 5, tx 11
+// R4 REVIEW 2026-11-18: keep 7, rewrite 10, retire 1, new 1, ctx 5, tx 11, qa 13
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 2, new 1
 // “Chandler & Monica Delay Their Getaway | Friends” (the official Friends channel, Best of Season 10): Monica has booked
 // the inn Chandler wanted for the weekend, but it's baby Emma's first birthday, and her parents talk the couple into
@@ -21,6 +21,18 @@ export const getaway: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['when'], seg: [0.5, 15.7],
+      stem: 'Why can’t the couple go away this weekend?',
+      ja: '二人はなぜ今週末、旅行に行けない？',
+      choices: ['It’s the baby’s birthday party', 'There’s a big family dinner', 'The parents have their own trip'], a: 0,
+      choicesJa: ['赤ちゃんの誕生日パーティーがある', '家族の大きな食事会がある', '親たちが自分たちの旅行に行く'],
+      cue: '「But」で始まる反対の理由。',
+      line: 'But you can’t go away this weekend. It’s *Emma’s birthday*. We’re *having a party*.',
+      said: '旅行の話を聞き、赤ちゃんの親が「今週末はだめ。エマの誕生日でパーティーをする」と言う。',
+      mean: '週末旅行と誕生日パーティーが重なった、というのが場面の始まり。',
+      trap: '家族の集まりなら食事会を連想しやすい。言っているのは誕生日のパーティー。',
+      use: 'I can’t this weekend. It’s my mom’s birthday.（今週末は無理。母の誕生日なの）' },
+
     { id: 'p3', skill: 'phrase', level: 'B1', point: 'gotus', seg: [2.9, 8.9],
       stem: 'Monica says, “I *got us* that room.” What does she mean?',
       ja: '「I got us that room」とはどういう意味？',
@@ -45,18 +57,6 @@ export const getaway: Clip = {
       trap: '宿の予約は先のことと考えがちで、next に引かれやすい。最初の文の最後を聞く。',
       use: 'Are you free this weekend?（今週末あいてる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['when'], seg: [4.1, 21],
-      stem: 'Why can’t the couple go away this weekend?',
-      ja: '二人はなぜ今週末、旅行に行けない？',
-      choices: ['It’s the baby’s birthday party', 'There’s a big family dinner', 'The parents have their own trip'], a: 0,
-      choicesJa: ['赤ちゃんの誕生日パーティーがある', '家族の大きな食事会がある', '親たちが自分たちの旅行に行く'],
-      cue: '「But」で始まる反対の理由。',
-      line: 'But you can’t go away this weekend. It’s *Emma’s birthday*. We’re *having a party*.',
-      said: '旅行の話を聞き、赤ちゃんの親が「今週末はだめ。エマの誕生日でパーティーをする」と言う。',
-      mean: '週末旅行と誕生日パーティーが重なった、というのが場面の始まり。',
-      trap: '家族の集まりなら食事会を連想しやすい。言っているのは誕生日のパーティー。',
-      use: 'I can’t this weekend. It’s my mom’s birthday.（今週末は無理。母の誕生日なの）' },
-
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'hint', seg: [4.1, 11.7],
       stem: 'Chandler says, “You can *take a hint*!” What does he mean?',
       ja: '「You can take a hint!」とはどういう意味？',
@@ -80,7 +80,7 @@ export const getaway: Clip = {
       trap: 'hint を強めると話の中心がヒントに、you なら他人との対比になる。強勢は、何に驚いたかを示す。',
       use: 'You can cook! This is great.（料理できるんだ！おいしい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', reveals: ['move'], seg: [14.2, 21],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', reveals: ['move'], seg: [14.45, 18.2],
       stem: 'Fill the gap: “Well, ___ have the party when we get back?”',
       ja: '空いている所に入る語は？「Well, ___ have the party when we get back?」',
       choices: ['can’t you just', 'can you just', 'could you just'], a: 0,
@@ -92,7 +92,7 @@ export const getaway: Clip = {
       trap: 't が聞こえないので can と勘違いしやすい。強く長い音なら can’t。',
       use: 'Can’t you just call him back later?（あとでかけ直せばいいじゃない）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'real', ctx: true, reveals: ['move', 'cant'], seg: [14.3, 21],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'real', ctx: true, reveals: ['move', 'cant'], seg: [14.45, 21],
       stem: 'Why won’t the parents have the party later?',
       ja: '親たちはなぜパーティーをあとにしない？',
       choices: ['It has to be on the day', 'The guests are only free then', 'The place is only booked then'], a: 0,
@@ -175,11 +175,11 @@ export const getaway: Clip = {
       trap: 'カップルの旅行なら記念日や休みと考えがち。need to のあとの語を聞く。',
       use: 'We need to reconnect as a family.（家族の時間を取り戻したい）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'nextday', ctx: true, reveals: ['cant'], seg: [36.5, 42.7],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'nextday', ctx: true, reveals: ['cant'], seg: [36.7, 42.7],
       stem: 'What do the parents suggest instead?',
       ja: '親たちは代わりに何を提案する？',
-      choices: ['Leave for Vermont the next day', 'Go away the weekend before', 'Bring the baby to the inn'], a: 0,
-      choicesJa: ['次の日にバーモントへ行く', '前の週末に行く', '赤ちゃんを宿に連れて行く'],
+      choices: ['Leave one day later', 'Leave the weekend before', 'Take the baby with them'], a: 0,
+      choicesJa: ['1日遅れて出発する', '前の週末に出発する', '赤ちゃんを連れて行く'],
       cue: '「Well, can’t you just」の文の最後。',
       line: 'Chandler: I read about it in Maxim. / Parents: Well, can’t you just go to Vermont *the next day*?',
       said: '旅行がしたい二人に、親が「じゃあ、次の日にバーモントへ行けばいいじゃない？」と返す。',
@@ -198,7 +198,7 @@ export const getaway: Clip = {
       trap: '最初はパーティーをずらす話だったので迷いやすい。最後の we’ll stay が答え。',
       use: 'All right, we’ll stay.（分かった、残るよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'bigdeal', seg: [47.7, 52.7],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'bigdeal', seg: [48.7, 52.7],
       stem: '“This is *a big deal*.” What does it mean here?',
       ja: '「This is a big deal」はここでどういう意味？',
       choices: ['It’s very important', 'It’s a lot of work', 'It’s a fixed plan'], a: 0,
@@ -222,7 +222,7 @@ export const getaway: Clip = {
       trap: '日本語の「えーと」のような迷いだと思いやすい。あとが強い言葉なら、押している。',
       use: 'It’s cheap. I mean, really cheap.（安いよ。いや、ほんとに安い）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'aunt', reveals: ['age'], seg: [52.6, 57.4],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'aunt', reveals: ['age'], seg: [52.7, 57.4],
       stem: '“How can we have the party without her aunt and uncle?” Meaning?',
       ja: '「おばとおじ抜きでどうやってパーティーするの？」の本当の意味は？',
       choices: ['We need you two there', 'Tell us who can come instead', 'You will be sorry later'], a: 0,
@@ -234,7 +234,7 @@ export const getaway: Clip = {
       trap: '質問の形なので、代わりの人を聞いていると勘違いしやすい。how can we 〜 without? は「無理」。',
       use: 'How can we start without you?（あなた抜きで始められないよ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [52.6, 57.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [52.7, 57.4], keep: true,
       stem: 'How old is the baby turning?',
       ja: '赤ちゃんは何歳になる？',
       choices: ['1', '2', '3', '4'], a: 0,
@@ -246,7 +246,7 @@ export const getaway: Clip = {
       trap: 'first を「初めて開く会」とだけ取ると、年齢と結びつかない。first birthday は1歳。',
       use: 'It’s his first birthday next week.（来週、あの子の1歳の誕生日）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'after', seg: [56.2, 61.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'after', seg: [56.6, 61.1],
       stem: 'Type what is said: “We can just ___ the party.” (3 words)', answer: 'drive up after',
       ja: '聞こえた言葉を書こう：「We can just ___ the party.」（3語）',
       cue: '「just」のあとの3語。',
@@ -267,7 +267,7 @@ export const getaway: Clip = {
       trap: 'All right を投げやりと取りやすいが、すぐ具体的な案を足す。旅行はやめずに後ろへずらしただけ。',
       use: 'All right, we’ll wait. We can eat later.（分かった、待つよ。食べるのは後で）' },
 
-    { id: 'c1', skill: 'infer', level: 'B2', point: 'notwhy', ctx: true, seg: [60.7, 67.0],
+    { id: 'c1', skill: 'infer', level: 'B2', point: 'notwhy', ctx: true, seg: [61.1, 67.1],
       stem: 'What does Monica tell Chandler about the Maxim plan?',
       ja: 'マキシムの計画について、モニカはチャンドラーに何と言う？',
       choices: ['They won’t do it anyway', 'They will do it after the party', 'They can do it next weekend'], a: 0,

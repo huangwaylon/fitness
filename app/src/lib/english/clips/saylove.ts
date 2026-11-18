@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 1, new 0, ctx 3, tx 3
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 1, new 0, ctx 3, tx 3, qa 22
 // A2 REVIEW 2026-11-17: keep 7, rewrite 5, retire 4, new 3
 // “The First Time Ross & Rachel Say "Love" | Friends” (the official Friends channel, Best of Season 2): Rachel tells
 // Ross she doesn't want everything planned for her; he fires back that he will keep planning, and the fight ends in
@@ -12,20 +12,20 @@ export const saylove: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['planning'], seg: [0.3, 42],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'clash', reveals: ['planning'], seg: [0.3, 30.1],
       stem: 'What are Rachel and Ross arguing about?', ja: 'レイチェルとロスは何について言い合っている？',
       choices: ['Planning their future', 'Rachel’s old boyfriend', 'Being scared of love'], a: 0,
       choicesJa: ['二人の将来の計画', 'レイチェルの元カレ', '恋がこわいこと'],
-      cue: '何度も出る言葉',
+      cue: 'レイチェルの話と、ロスの言い返し',
       said: '「全部決められるのは嫌」「僕は将来の計画をやめない」と言い合う。',
       mean: 'plan ＝ 計画する。先のことをどこまで決めるかで、ぶつかっている。',
-      trap: '元カレの名前や scares（こわがらせる）が聞こえて、その話と考えがち。何度も出るのは plan。',
+      trap: '元カレの名前や scares（こわがらせる）が聞こえて、その話と考えがち。ぶつかるのは、先のことを決めておくかどうか。',
       use: 'I don’t like having everything planned.（全部決められているのは苦手）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', seg: [0.3, 7.9],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'amazing', seg: [0.3, 7.7],
       stem: 'What does Rachel think of their relationship?', ja: 'レイチェルは二人の関係をどう思っている？',
-      choices: ['It’s amazing', 'It’s boring', 'It’s almost over'], a: 0,
-      choicesJa: ['最高', '退屈', '終わりかけ'],
+      choices: ['It’s really great', 'It’s quite boring', 'It’s almost over'], a: 0,
+      choicesJa: ['すごくいい', 'かなり退屈', '終わりかけ'],
       cue: '「listen」のあと',
       line: 'Listen, what we have is *amazing*, but…',
       said: '「聞いて。私たちの関係は最高。でも…」と話し始める。',
@@ -33,10 +33,10 @@ export const saylove: Clip = {
       trap: 'すぐ but が来るので、別れ話だと思いやすい。関係そのものは amazing と言う。',
       use: 'This place is amazing.（ここ、最高だね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'barry', seg: [0.6, 12],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'barry', seg: [0.6, 12.5],
       stem: 'What was one reason Rachel left Barry?', ja: 'レイチェルがバリーと別れた理由の一つは？',
-      choices: ['Everything was decided for her', 'He never made any plans', 'He was scared about the future'], a: 0,
-      choicesJa: ['何でも決められていた', '彼が計画を立てなかった', '彼が将来をこわがっていた'],
+      choices: ['She could not choose anything', 'He never made any plans', 'He was scared of the future'], a: 0,
+      choicesJa: ['自分で何も選べなかった', '彼が計画を立てなかった', '彼が将来をこわがっていた'],
       cue: '「Barry」の前',
       line: 'I do not want to have *everything decided for me*… it’s what I had with Barry',
       said: '「全部決められるのは嫌。バリーとはそうだった。それで別れた」。',
@@ -44,7 +44,7 @@ export const saylove: Clip = {
       trap: '名前のあたりだけ聞くと、理由がつかみにくい。理由は Barry の前。',
       use: 'That’s one of the reasons I moved.（それが引っ越した理由の一つ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'wholelife', seg: [2.8, 10.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'wholelife', seg: [5.0, 9.75],
       stem: 'Type what she says: “I spent my ___.” (4 words)', ja: '彼女が言ったことを書こう：“I spent my ___.”（4語）',
       answer: 'whole life like that',
       cue: '「I spent my」のあと', line: 'I spent my *whole life like that*.',
@@ -53,7 +53,7 @@ export const saylove: Clip = {
       trap: 'like と that がつながり「ライクザッ」とひと続きになる。最後の t はほぼ消える。',
       use: 'I’ve lived here my whole life.（生まれてからずっとここに住んでいる）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'notknowing', seg: [10.9, 15.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'notknowing', seg: [11.0, 14.85],
       stem: 'What does Rachel say she likes right now?', ja: 'レイチェルが今いいと言っていることは？',
       choices: ['Not knowing what comes next', 'Knowing where things are going', 'Being alone for a while'], a: 0,
       choicesJa: ['この先どうなるか分からないこと', 'この先どうなるか分かること', 'しばらく一人でいること'],
@@ -74,7 +74,7 @@ export const saylove: Clip = {
       trap: 'if で始まると相手の気持ちを疑っているように聞こえる。if の文のあとに何を求めるかで決める。',
       use: 'If you’re coming, be ready by six.（来たいなら6時までに準備して）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', seg: [12.4, 19.0],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'sorry', reveals: ['deal'], seg: [12.55, 19.0],
       stem: 'What does Rachel mean by “I’m sorry if that scares you, but…”?', ja: '「I’m sorry if that scares you, but…」でレイチェルが言いたいことは？',
       choices: ['I won’t change, though', 'I will change for you', 'I am scared of it too'], a: 0,
       choicesJa: ['それでも変えない', 'あなたのために変わる', '私もそれがこわい'],
@@ -85,7 +85,7 @@ export const saylove: Clip = {
       trap: '決め手は but のあと。「すみません」と同じに聞くと、ゆずったと勘違いしやすい。',
       use: 'Sorry if that sounds rude, but I’m busy.（失礼に聞こえたらごめん、でも忙しいの）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [14.3, 20.1],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'deal', seg: [14.85, 20.1],
       stem: 'What does “deal with that” mean here?', ja: 'ここでの “deal with that” はどういう意味？',
       choices: ['Accept it as it is', 'Make a deal with her', 'Fix the problem for her'], a: 0,
       choicesJa: ['そのまま受け入れる', '彼女と取引する', '彼女のために問題を直す'],
@@ -96,7 +96,7 @@ export const saylove: Clip = {
       trap: 'deal からカタカナの「ディール（取引）」を連想しやすい。deal with でひとまとまり。',
       use: 'No Wi-Fi? We’ll have to deal with it.（Wi-Fi なし？ 仕方ないね）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'notdone', ctx: true, seg: [16.4, 23.0],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'notdone', ctx: true, seg: [16.3, 23.0],
       stem: 'What does Ross mean by “We’re not done”?', ja: '“We’re not done” で、ロスは何を言いたい？',
       choices: ['He has more to say', 'He wants to stop now', 'He is happy now'], a: 0,
       choicesJa: ['まだ言いたいことがある', 'もうやめたい', 'もう満足している'],
@@ -120,8 +120,8 @@ export const saylove: Clip = {
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'planning', seg: [23.2, 30.1],
       stem: 'What does Ross say he isn’t going to stop doing?', ja: 'ロスが「やめない」と言っていることは？',
-      choices: ['Planning his future with her', 'Telling her how he feels', 'Asking her to plan with him'], a: 0,
-      choicesJa: ['彼女との将来を計画すること', '自分の気持ちを伝えること', '一緒に計画しようと頼むこと'],
+      choices: ['Making plans for them both', 'Telling her how he feels', 'Asking her to plan with him'], a: 0,
+      choicesJa: ['二人の先のことを計画すること', '自分の気持ちを伝えること', '一緒に計画しようと頼むこと'],
       cue: '「stop」のすぐあと',
       line: 'a guy who’s not going to stop *planning his future* with you',
       said: '「将来の計画をやめない男なんだ」と自分のことを言う。',
@@ -129,7 +129,7 @@ export const saylove: Clip = {
       trap: 'not と stop で否定が重なり、混乱しやすい。stop のあとの動詞を聞く。',
       use: 'I’m not going to stop trying.（あきらめないよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'endup', reveals: ['planning'], seg: [25.6, 31.2],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'endup', reveals: ['planning'], seg: [25.72, 31.2],
       stem: 'Why does Ross keep planning?', ja: 'ロスはなぜ計画をやめない？',
       choices: ['He’s sure they’ll stay together', 'He’s afraid of losing her', 'He thinks Rachel wants plans'], a: 0,
       choicesJa: ['二人はずっと一緒だと信じている', '彼女を失うのがこわい', 'レイチェルが計画を望んでいると思う'],
@@ -140,7 +140,7 @@ export const saylove: Clip = {
       trap: 'end（終わる）が聞こえて、別れの話に聞こえるが、end up together ＝ 最後は一緒。',
       use: 'We ended up eating at the hotel.（結局ホテルで食べることになった）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B2', point: 'tough', seg: [28, 33],
+    { id: 'a1', skill: 'pragma', level: 'B2', point: 'tough', seg: [28.1, 33.4],
       stem: 'What does Ross mean by “tough”?', ja: 'ロスの「tough」はどういう意味？',
       choices: ['That’s your problem', 'This is hard for me', 'You are very strong'], a: 0,
       choicesJa: ['それは君の問題だ', '僕にはつらい', '君はとても強い'],
@@ -150,17 +150,6 @@ export const saylove: Clip = {
       mean: 'tough ＝ 文字どおりは「きつい」。→ きつくても我慢しろ→「知るもんか」。くだけた強い言い方で、人には使わない。',
       trap: 'カタカナの「タフ（強い）」を連想しやすい。if that scares you のあとの一語は「我慢して」。',
       use: 'Sorry, rules are rules.（ごめんね、決まりは決まりなの）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'accept', reveals: ['love'], seg: [31.0, 53],
-      stem: 'How does the fight end?', ja: '言い合いはどう終わる？',
-      choices: ['They say they love each other', 'Rachel leaves the room very angry', 'Ross says sorry to Rachel'], a: 0,
-      choicesJa: ['お互いに「愛してる」と言う', 'レイチェルがひどく怒って出ていく', 'ロスがレイチェルに謝る'],
-      cue: '最後の「Good」のあと',
-      line: 'Fine. I will. — Good, cause *I love you*. … Well, *I love you too*.',
-      said: '「いいよ」「よし、だって愛してるから」「私も愛してる」。',
-      mean: 'Fine. I will. ＝ いいよ、そうする。けんかの調子のまま、最後は愛してると言い合う。',
-      trap: '強い言い方が続くので、けんか別れだと思いやすい。言葉は I love you。',
-      use: 'Fine, we’ll do it your way.（いいよ、君のやり方でやろう）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'love', reveals: ['accept'], seg: [31.3, 35.55], retired: true,
       stem: 'Why does the audience laugh at the end of this exchange?',
@@ -172,6 +161,17 @@ export const saylove: Clip = {
       mean: '告白なのに、けんかの決めぜりふと同じ強い言い方。そのずれが笑いになる。',
       trap: 'Good や Fine は話の終わりに聞こえやすい。笑いの前の一言が、どんな調子で何を言うかを聞く。',
       use: 'Good, because I need your help.（よかった、手を貸してほしいんだ）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'accept', reveals: ['love'], seg: [31.4, 53],
+      stem: 'How does the fight end?', ja: '言い合いはどう終わる？',
+      choices: ['They say they love each other', 'Rachel leaves the room very angry', 'Ross says sorry to Rachel'], a: 0,
+      choicesJa: ['お互いに「愛してる」と言う', 'レイチェルがひどく怒って出ていく', 'ロスがレイチェルに謝る'],
+      cue: '最後の「Good」のあと',
+      line: 'Fine. I will. — Good, cause *I love you*. … Well, *I love you too*.',
+      said: '「いいよ」「よし、だって愛してるから」「私も愛してる」。',
+      mean: 'Fine. I will. ＝ いいよ、そうする。けんかの調子のまま、最後は愛してると言い合う。',
+      trap: '強い言い方が続くので、けんか別れだと思いやすい。言葉は I love you。',
+      use: 'Fine, we’ll do it your way.（いいよ、君のやり方でやろう）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'love', ctx: true, seg: [33.4, 42],
       stem: 'Who says “I love you” first?', ja: '先に “I love you” と言うのは誰？',
@@ -195,7 +195,7 @@ export const saylove: Clip = {
       trap: 'well を「えーと」と取ると迷っているように聞こえる。強く短い well は言い返しの合図。',
       use: 'Well, I think you’re wrong.（いや、それは違うと思う）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'firsttime', seg: [35.9, 42],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'firsttime', seg: [36.3, 39.7],
       stem: 'Fill the gap: “Well, that’s the first time ___ that.”', ja: '空所に入るのは？ “Well, that’s the first time ___ that.”',
       choices: ['we’ve said', 'we’re saying', 'you’ve said'], a: 0,
       choicesJa: ['私たちが言った', '私たちが言っている', 'あなたが言った'],
