@@ -91,8 +91,7 @@
       markBack(me, last);
     }
     // today's bank and the part-way one's ahead, once home is idle (their lessons then open with the questions, offline too)
-    const idle = (f: () => void) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(f, { timeout: 2000 }) : setTimeout(f, 300));
-    idle(() => prefetch([shown, part?.clip, review]));
+    prefetch([shown, part?.clip, review]);
     const on = () => (online = true), off = () => (online = false);
     addEventListener('online', on);
     addEventListener('offline', off);

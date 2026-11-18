@@ -49,9 +49,14 @@ export function loadBank(m: ClipMeta): Promise<Bank> {
   return cachedJson(banks, path, isBank, { what: 'bank', clip: m.id }).then((b) => (loaded.set(path, b), b));
 }
 
-/** Fetch these banks ahead (home, while idle), quietly. */
+/** Fetch these banks ahead once the page is idle (home's), quietly. Queued here, not in the component: a closure made
+ *  there holds its whole scope, and with it the closed sheet's DOM, until the callback runs (up to its 2 s timeout). */
 export function prefetch(ms: readonly (ClipMeta | undefined)[]): void {
-  for (const m of ms) if (m) loadBank(m).catch(() => {});
+  const go = () => {
+    for (const m of ms) if (m) loadBank(m).catch(() => {});
+  };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 2000 });
+  else setTimeout(go, 300);
 }
 
 const shards = new Map<string, Promise<PhraseEntry[]>>();

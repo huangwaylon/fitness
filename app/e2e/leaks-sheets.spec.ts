@@ -15,11 +15,14 @@ const Q = '?demo&date=2026-11-04T12:00&as=B&critter=none&visitor=none';
 /** The before → after on the test (MB). */
 const note = (what: string, a: Probe, b: Probe) =>
   test.info().annotations.push({ type: 'memory', description: `${what}: JS heap ${a.heap} → ${b.heap} MB, ArrayBuffers ${a.ab} → ${b.ab} MB, nodes ${a.nodes} → ${b.nodes}, gl ${a.gl} → ${b.gl}, listeners ${a.ls} → ${b.ls}` });
-/** Every open sheet closed (Esc: a level back first, as ごはん's search), the topmost first. */
+/** Every open sheet closed (Esc: a level back first, as ごはん's search), the topmost first, and a frame let by: Chromium
+ *  fires a dialog's close event with the next frame's events, rare here with the island idle, so a sheet reopened
+ *  before it came was shut by it, and HudMenu's refocus listener still waited on it. */
 async function closeAll(page: Page) {
   const open = page.locator('dialog[open]');
   for (let k = 0; k < 8 && (await open.count()); k++) await page.keyboard.press('Escape');
   await expect(open).toHaveCount(0);
+  await page.evaluate(() => new Promise(requestAnimationFrame));
 }
 /** The last round against the first: nothing more held. */
 function flat(a: Probe, b: Probe, abMb = 1) {
