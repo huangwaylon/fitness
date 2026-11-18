@@ -324,7 +324,7 @@ export const goodHusband: Clip = {
       trap: 'headache（頭痛）がはっきり聞こえるので、頭を選びやすい。but のあとを聞く。',
       use: 'My legs really hurt.（脚がすごく痛い）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'lesson', reveals: ['fix', 'thanks', 'dontfix'], seg: [203.0, 224.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'lesson', reveals: ['fix', 'thanks', 'dontfix'], seg: [204.0, 224.0],
       stem: 'What makes Ann feel better at the end?',
       ja: '最後にアンが元気になるのは何のおかげ？',
       choices: ['Chris just says it’s hard', 'Chris fixes her pain', 'Chris gives her a gift'], a: 0,
@@ -335,7 +335,7 @@ export const goodHusband: Clip = {
       trap: 'クリスは前のように解決しようとする、と予想しやすい。今回は一言だけ。',
       use: 'I don’t need advice. Just listen.（アドバイスより、聞いてほしいの）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', ctx: true, seg: [203.0, 211.3],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'thanks', ctx: true, seg: [204.0, 211.3],
       stem: 'How does Ann feel after “That really sucks”?',
       ja: '「That really sucks」のあと、アンはどんな気持ち？',
       choices: ['She is thankful', 'She is annoyed', 'She is amused'], a: 0,

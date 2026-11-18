@@ -6,7 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16; its times are rounded, so EXCLUDEs are caption times).
 // Not tested (may play): 25–30 s (“Darfur”/“therefore”), 94–102 s (mumbled), 112–118 s and 138–148 s (shown, not said),
 // 150–156 s (the Danish word), 223–228 s (“Whiz Palace”).
-// EXCLUDE 176–181
+// EXCLUDE 175.8–181
 // EXCLUDE 183.5–186.5
 // EXCLUDE 255.5–260.5
 // EXCLUDE 282.5–287
