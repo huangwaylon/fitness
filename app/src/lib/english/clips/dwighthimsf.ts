@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 2, new 1, ctx 4, tx 2
+// R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 2, new 1, ctx 4, tx 2, qa 8
 // A2 REVIEW 2026-11-17: keep 3, rewrite 10, retire 7, new 4 · sweep: dwightself twins retired (d2 d4 f1 p2 s1 i1), new d5 d6
 // “Dwight Fights Himself - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): at his
 // yearly karate seminar Dwight pitches the throat punch with a Yakuza story; Kevin refuses to be his partner, a coworker
@@ -136,7 +136,7 @@ export const dwightHimself: Clip = {
       trap: 'No way は「うそでしょ！」と驚くときにも使う。ここは「来い」への返事なので断り。',
       use: 'Sing at the party? No way!（パーティーで歌う？絶対いや！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'lasttime', ctx: true, seg: [44.5, 56.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'lasttime', reveals: ['noway'], ctx: true, seg: [44.5, 56.5],
       stem: 'Why does Kevin say no to Dwight?', ja: 'ケビンはなぜドワイトに「いや」と言う？',
       choices: ['Dwight hurt him last time', 'He hurt Dwight last time', 'He ripped his pants last time'], a: 0,
       choicesJa: ['前回ドワイトにひどい目にあった', '前回ドワイトにけがをさせた', '前回ズボンを破いた'],
@@ -267,24 +267,24 @@ export const dwightHimself: Clip = {
       trap: '少し前に Block と言ったので「防ぐ」を選びやすい。absorb は吸収、つまり受ける側。',
       use: 'The company can absorb the cost.（会社がその費用をかぶれる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'eggon', seg: [94.0, 115.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'eggon', reveals: ['matched', 'fool'], seg: [94.0, 115.0],
       stem: 'What do the others do during Dwight’s fight?', ja: 'ドワイトのひとり試合の間、ほかの人たちはどうする？',
       choices: ['Cheer like it’s a real fight', 'Tell him to stop now', 'Leave the room quietly'], a: 0,
       choicesJa: ['本物の試合のように盛り上げる', 'もうやめてと言う', '静かに部屋を出る'],
       cue: '見ている人たちの声',
       line: 'He’s making you look like *such a fool*. … You two are *so evenly matched*.',
-      said: '「もう片方の手は？」「ばかにされてるよ」「互角だね」と、試合のように声をかける。',
+      said: '「うそでしょ」「ばかにされてるよ」「互角だね」と、試合のように声をかける。',
       mean: '止めずに実況して盛り上げている。ドワイトは本気で受けて戦い続ける。',
       trap: 'Oh my God を心配の声と思いやすい。そのあとの言葉は、止める話ではなく実況。',
       use: 'Come on, keep going!（ほら、続けて！）' },
 
     { id: 'a3', skill: 'phrase', level: 'B2', point: 'fool', ctx: true, seg: [94.7, 104.2],
       stem: 'What does Dwight mean by “But not for long”?', ja: 'ドワイトの “But not for long” はどういう意味？',
-      choices: ['He’ll turn it around soon', 'He’ll stop the fight soon', 'He’ll take a break soon'], a: 0,
-      choicesJa: ['すぐに逆転する', 'すぐに試合をやめる', 'すぐにひと休みする'],
+      choices: ['He’ll start winning soon', 'He’ll stop the fight soon', 'He’ll take a break soon'], a: 0,
+      choicesJa: ['すぐに勝ち始める', 'すぐに試合をやめる', 'すぐにひと休みする'],
       cue: '「He really is」のあと',
       line: 'Coworker: He’s making you look like *such a fool*. / Dwight: He *really is*. *But not for long.*',
-      said: '「ばかにされてるね」に「確かに。だが今のうちだ」と返す。',
+      said: '「ばかにされてるじゃない」に「まったくだ。だが、それも今のうちだ」と返す。',
       mean: 'not for long ＝ 長くは続かない。ばかにされている今の状態は、すぐ終わるという宣言。',
       trap: 'not for long を「もうやめる」と思いやすい。続かないのは、負けている状態のほう。',
       use: 'I’m behind now, but not for long.（今は遅れてるけど、すぐ追いつく）' },
