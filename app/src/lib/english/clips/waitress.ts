@@ -1,10 +1,10 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 3, retire 5, new 0, ctx 4, tx 5
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 2
 // “Rachel Is a Bad Waitress | Friends” (the official Friends channel, Best of Season 1): Rachel asks her boss Terry
 // for an advance on her pay, and he tells her how her work really is. Rachel asks the café “Does anybody need coffee?”.
-// EAR CHECK: 19.9 s s3 — the weak “I've” in “but I've sort of started” (whisper and captions both have I've; confirm the v is heard)
+// 54 s of speech holds 13 live items (at most 3 starts in 10 s): p0, a1, d2, s3, x1 retired for room.
 // EAR CHECK: 4.6 s x2 — “was” is weak in “but I was wondering” (both agree on the words)
 // EAR CHECK: 42.3 s r1 — the cut falls after “I'm with you” and the “um”, before “but”
-// EAR CHECK: 46.6 s x1 — “doing better”: the flapped t (captions: “I'm I'm doing better”, whisper drops the repeat)
 // EAR CHECK: 51.8 s w1 p5 — two customers answer (“Yeah, over here” / “Yeah, I do”)
 import type { Clip } from '../types.ts';
 
@@ -21,8 +21,8 @@ export const waitress: Clip = {
       choicesJa: ['感謝祭の休み', '給料の一部を先にもらう', '昇給'],
       cue: '「salary」の少し前', line: 'if I got a *hundred dollar advance* on my salary?',
       said: '「給料を少し前借りできないかな」と店長のテリーに頼む。',
-      mean: 'advance ＝ 前払い・前借り。昇給（raise）とは別の話。',
-      trap: 'Thanksgiving（感謝祭）が聞こえて「休み」と思いやすいが、頼んでいるのはお金。',
+      mean: 'advance ＝ 前払い・前借り。昇給（raise）とは別の話。I know 〜, but で弱みを認めてから頼む。',
+      trap: 'Thanksgiving（感謝祭）が聞こえて「休み」の話と考えがち。頼んでいるのはお金。',
       use: 'Could I get an advance on my pay?（給料を前借りできますか）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wondering', seg: [0, 8], retired: true, stem: '“I was ___, do you think it would be possible…”',
@@ -34,7 +34,7 @@ export const waitress: Clip = {
       trap: 'thinking / hoping も文としては自然。音で wondering を聞き分けましょう。',
       use: 'I was wondering if you could help me.（手伝ってもらえないかと思って）' },
 
-    { id: 'p0', skill: 'pragma', level: 'B2', point: 'preface', reveals: ['wondering', 'amount', 'ask'], seg: [0.8, 12.2],
+    { id: 'p0', skill: 'pragma', level: 'B2', point: 'preface', reveals: ['wondering', 'amount', 'ask'], seg: [0.8, 12.2], retired: true,
       stem: 'Why does Rachel first say she is new here?',
       ja: 'レイチェルはなぜ最初に「まだ新人だ」と言う？',
       choices: ['To make her request softer', 'To explain her slow work', 'To thank Terry for the job'], a: 0,
@@ -46,7 +46,16 @@ export const waitress: Clip = {
       trap: '言いわけやお礼に聞こえやすいが、but のあとが本題の頼みごと。',
       use: 'I know it’s short notice, but…（急なのは分かってるけど…）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [1.2, 12.2],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'wondering', seg: [2.8, 10.7],
+      stem: 'Type what she says: “but I ___, do you think…” (2 words)', answer: 'was wondering',
+      ja: '「but I ___, do you think…」の空所を書こう（2語）',
+      cue: '「but I」のすぐあと', line: 'but I *was wondering*, do you think it would be possible…',
+      said: '「〜かなと思って」と頼み始める。',
+      mean: 'I was wondering ＝「〜かなと思って」。丁寧に頼む決まった出だし。was は「ワz」と小さく短く言う。',
+      trap: 'was が聞こえず、I wondering と書きやすい。',
+      use: 'I was wondering if I could leave early.（早めに帰れないかなと思って）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [4.0, 12.2],
       stem: 'How much money does Rachel ask for?',
       ja: 'レイチェルが頼んだ金額は？',
       choices: ['$100', '$200', '$1,000'], a: 0, keep: true,
@@ -57,17 +66,7 @@ export const waitress: Clip = {
       trap: '弱い a が two に、hundred が thousand に聞こえやすい。最初の短い音を聞く。',
       use: 'Can I borrow twenty dollars?（20ドル借りてもいい？）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'wondering', seg: [2.8, 10.7],
-      stem: 'Type what she says: “but I ___, do you think…” (2 words)', answer: 'was wondering',
-      ja: '「but I ___, do you think…」の空所を書こう（2語）',
-      cue: '「but I」のすぐあと', line: 'but I *was wondering*, do you think it would be possible…',
-      said: '「〜かなと思って」と頼み始める。',
-      mean: 'I was wondering ＝「〜かなと思って」。丁寧に頼む決まった出だし。was は「ワz」と小さく短く言う。',
-      trap: 'was が聞こえず、I wondering と書きやすい。',
-      use: 'I was wondering if I could leave early.（早めに帰れないかなと思って）' },
-
-    // A2: was a pragma on what the echo “does” (tone and the speaker unsure); now what Rachel does after it
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'echo', seg: [9, 16],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'echo', seg: [9, 16], retired: true,
       stem: 'After “An advance?”, what does Rachel do?',
       ja: '「An advance?」と聞き返されたあと、レイチェルはどうする？',
       choices: ['She explains why she needs it', 'She asks for less money', 'She says sorry and stops'], a: 0,
@@ -87,7 +86,7 @@ export const waitress: Clip = {
       cue: '文の最初の短い一語', line: '*See*, every year we go skiing in Vail…',
       said: '「というのはね、毎年スキーに行くの」と事情を話し始める。',
       mean: 'See, ＝「というのはね」。文の頭の See は「見て」ではなく、事情を説明し始める合図。',
-      trap: 'see ＝ 見る と思いやすいが、何も見せていない。すぐ説明が続く。',
+      trap: 'see ＝ 見る と考えがちだが、何も見せていない。すぐ説明が続く。',
       use: 'See, I usually take the train.（というのも、いつもは電車なんです）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'reason', reveals: ['father'], seg: [13.5, 25.5],
@@ -98,11 +97,11 @@ export const waitress: Clip = {
       cue: '「every year」のあと',
       line: 'every year we go *skiing* … and normally my father pays for my *ticket*',
       said: '「毎年スキーに行って、いつもは父がチケット代を払う」と言う。',
-      mean: 'go skiing ＝ スキーに行く。お金が要るのは旅行のチケット代。感謝祭は「いつ」の話。',
-      trap: 'Thanksgiving から「ディナー」を思いやすい。ticket（チケット）を聞く。',
+      mean: 'go skiing ＝ スキーに行く。要るのはチケット代。感謝祭（11月の、家族が集まる祝日）は「いつ」の話。',
+      trap: 'Thanksgiving から「ディナー」を連想しやすい。ticket（チケット）を聞く。',
       use: 'I need to book my ticket home.（帰りのチケットを予約しないと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'father', reveals: ['reason'], seg: [14.3, 25.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'father', reveals: ['reason'], seg: [14.3, 25.5], retired: true,
       stem: 'Who normally pays for Rachel’s ticket?',
       ja: 'いつもレイチェルのチケット代を払うのはだれ？',
       choices: ['Her father', 'Terry, her boss', 'Rachel herself'], a: 0,
@@ -113,7 +112,7 @@ export const waitress: Clip = {
       trap: '前借りの話なので「店長が払う」と思いやすい。normally のすぐあとの my father を聞く。',
       use: 'Normally I take the bus.（ふだんはバスで行きます）' },
 
-    { id: 's3', skill: 'sound', level: 'B2', point: 'ive', seg: [14.6, 25.5],
+    { id: 's3', skill: 'sound', level: 'B2', point: 'ive', seg: [14.6, 25.5], retired: true,
       stem: 'Fill the gap: “but ___ sort of started this whole…”',
       ja: '「but ___ sort of started this whole…」の空所は？',
       choices: ['I', 'I’ve', 'I’d'], a: 1,
@@ -131,12 +130,11 @@ export const waitress: Clip = {
       choicesJa: ['自分で払いたいから', '今回は父親が断ったから', '父親に怒っているから'],
       cue: '「but」のあと、何を始めたか',
       line: 'but I’ve sort of started this whole *independent* thing … which is actually why I took this job',
-      said: '「最近『自立』を始めて、この仕事もそのためなの」と言う。',
+      said: '「最近『自立』ってやつを始めて、この仕事もそのためなの」と言う。',
       mean: 'independent ＝ 自立した（人に頼らない）。父に頼らず、自分で払いたいということ。',
-      trap: '「父が断った」と思いやすいが、そうは言っていない。but のあとが本当の理由。',
+      trap: '決め手は but のあと。「父が断った」とは一言も言っていない。',
       use: 'I’m trying to pay my own way.（自分のお金でやっていこうとしてるの）' },
 
-    // retired (A2): a twin of i3's point, the phrase's sense too loose for one key
     { id: 'p2', skill: 'phrase', level: 'C1', point: 'independent', reveals: ['ive'], seg: [18.7, 26], retired: true,
       stem: 'What does Rachel mean by “this whole independent thing”?',
       choices: ['Her new plan to support herself', 'A small business she has started',
@@ -148,20 +146,18 @@ export const waitress: Clip = {
       trap: 'independent を「独立して事業」と取りやすい。thing は仕事ではなく生き方の話。',
       use: 'I’m doing this whole healthy-eating thing.（健康的な食生活ってやつを始めたんだ）' },
 
-    // A2: was “What is this conversation mainly about?” (choices of 9 words); now Terry's answer itself
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', seg: [26, 50.4],
-      stem: 'What does Terry tell Rachel?',
-      ja: 'テリーはレイチェルに何と言う？',
-      choices: ['Her work is really bad', 'She can have the money', 'She can go skiing'], a: 0,
-      choicesJa: ['仕事ぶりが本当にひどい', 'お金を前借りしてもいい', 'スキーに行ってもいい'],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', ctx: true, seg: [23.4, 38.4],
+      stem: 'How does Terry answer Rachel’s request?',
+      ja: 'テリーはレイチェルの頼みにどう答える？',
+      choices: ['He says her work is bad', 'He gives her the money', 'He lets her go skiing'], a: 0,
+      choicesJa: ['仕事ぶりがひどいと言う', 'お金を渡す', 'スキーに行かせてくれる'],
       cue: '名前を2回呼んだあと',
-      line: 'you’re a *terrible, terrible waitress*. Really, really awful.',
-      said: 'テリーは頼みに答えず、「君はひどいウェイトレスだ」と言う。',
-      mean: 'terrible ＝ ひどい。awful も同じ意味。お金の答えの代わりに、仕事の評価を返している。',
-      trap: 'sweetheart（ねえ君）と優しく始まるので「いいよ」と思いやすいが、悪い話。',
+      line: 'Rachel: …which is actually why I took this job. / Terry: Rachel, Rachel, sweetheart, you’re a *terrible, terrible waitress*.',
+      said: 'お金の頼みには答えず、「君はひどいウェイトレスだ」と言う。',
+      mean: 'terrible ＝ ひどい。sweetheart ＝「ねえ君」という甘い呼びかけで、悪い話をやわらげている。yes も no も言わない。',
+      trap: 'sweetheart（ねえ君）と優しく始まるので「いいよ」に聞こえるが、続くのは仕事の悪口。',
       use: 'Sorry, I have some bad news.（ごめん、悪い知らせがあるんだ）' },
 
-    // retired (A2): the key rests on tone alone
     { id: 't2', skill: 'attitude', level: 'C1', point: 'tone', reveals: ['outcome'], seg: [26, 38.3], retired: true,
       stem: 'When Terry says “Rachel, Rachel, sweetheart…”, is he being sarcastic?',
       choices: ['Yes; he is making fun of her request', 'No; he is softening a real criticism',
@@ -173,7 +169,6 @@ export const waitress: Clip = {
       trap: '皮肉なら笑うような言い方になる。ここは本気で、言いにくいことを優しく言っている。',
       use: 'Honey, I’m going to be honest with you.（あのね、正直に言うよ）' },
 
-    // retired (A2): a meta stem (“suggest”); g2 asks it plainly
     { id: 'i4', skill: 'infer', level: 'C1', point: 'outcome', seg: [26, 38.3], retired: true,
       stem: 'What does Terry’s reply suggest about the advance?',
       choices: ['No, because of how bad her work is', 'No, because the café is short of money',
@@ -193,6 +188,19 @@ export const waitress: Clip = {
       mean: '名前を2回呼び、sweetheart と付けるのは、悪い知らせを和らげる前置き。',
       trap: 'sweetheart は優しい言葉なので「ほめる」と思いやすい。',
       use: 'Honey, I have to be honest with you…（正直に言うとね…）' },
+
+    { id: 't3', skill: 'detail', level: 'B1', point: 'better', reveals: ['hear', 'reply'], ctx: true, seg: [33.5, 48.0],
+      stem: 'What does Rachel say about her work?',
+      ja: 'レイチェルは自分の仕事ぶりについて何と言う？',
+      choices: ['It is getting better', 'It is really awful', 'It is too hard for her'], a: 0,
+      choicesJa: ['よくなってきている', '本当にひどい', '自分には難しすぎる'],
+      cue: 'テリーの「awful」への返事',
+      line: 'Terry: Really, really awful. / Rachel: …I’m trying really hard, and I think I’m *doing better*.',
+      said: '「ひどい」と言われ、「頑張ってるし、良くなってると思う」と返す。',
+      mean: 'doing better ＝ 前より上手くいっている。体調が良くなった時にも使う。awful（ひどい）への言い返し。',
+      trap: 'awful（ひどい）が耳に残るが、それはテリーの言葉。本人は but のあとで言い返す。',
+      use: 'I’m doing better, thanks.（だいぶ良くなったよ）' },
+
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'hear', seg: [37, 44], retired: true, stem: '“I hear what you’re saying, I’m with you” — what does Rachel mean?',
       choices: ['I understand, but let me push back', 'I agree, so I will quit now', 'Sorry, I can’t hear you well'], a: 0,
       cue: 'その次に来る「but」の後を聞いてみましょう。',
@@ -227,20 +235,7 @@ export const waitress: Clip = {
       trap: 'with から「一緒に行く」と思いやすいが、話を聞いて「分かる」と返している。',
       use: 'I hear you. I’m with you.（分かるよ。同じ意見だよ）' },
 
-    // A2: was “How does Rachel take the criticism?” (two-part choices); now her plain view of her work
-    { id: 't3', skill: 'attitude', level: 'B1', point: 'better', reveals: ['hear', 'reply'], seg: [41, 52.3],
-      stem: 'How does Rachel feel about her own work?',
-      ja: 'レイチェルは自分の仕事ぶりをどう思っている？',
-      choices: ['It is getting better', 'It is really awful', 'It is too hard for her'], a: 0,
-      choicesJa: ['よくなってきている', '本当にひどい', '自分には難しすぎる'],
-      cue: '最後の「I really do」の前',
-      line: 'But I’m trying really hard, and I think I’m *doing better*. I really do.',
-      said: '「すごく頑張ってるし、良くなってると思う」と言う。',
-      mean: 'doing better ＝ 前より上手くいっている。I really do ＝「本当に」と念を押す。',
-      trap: 'terrible や awful（ひどい）はテリーの言葉。本人は「良くなってる」と言う。',
-      use: 'I think I’m getting better.（上達してると思う）' },
-
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', reveals: ['reply'], seg: [42.6, 50.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'better', reveals: ['reply'], seg: [42.6, 50.6], retired: true,
       stem: 'Type what she says: “I’m ___.” (2 words)', answer: 'doing better',
       ja: '「I’m ___.」の空所を書こう（2語）',
       cue: '「I think」のあと', line: 'and I think I’m — I’m *doing better*.',
@@ -260,19 +255,18 @@ export const waitress: Clip = {
       trap: 'Doesn’t なら「ン」が残り、Did なら「ディ」で始まる。ここは「ダ」で「ン」がない。',
       use: 'Does anybody want the last slice?（最後のひと切れ、要る人？）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'coffee', reveals: ['does'], seg: [49, 60.7],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'coffee', reveals: ['does'], ctx: true, seg: [49.0, 55.0],
       stem: 'Who answers “Does anybody need coffee?”',
       ja: '「Does anybody need coffee?」に答えるのはだれ？',
       choices: ['Some customers', 'Terry himself', 'No one at all'], a: 0,
       choicesJa: ['何人かの客', 'テリー本人', 'だれも答えない'],
       cue: '質問のあとの声の数',
-      line: '— Yeah, *over here*. — Yeah, *I do*.',
-      said: '質問のすぐあと、「こっち！」「私も！」と別々の客が答える。',
-      mean: '声が2つ続く。待っていた客がまだいた、つまり仕事が遅れていたということ。',
-      trap: 'anybody を nobody（だれも〜ない）と聞くと「答えなし」と思いやすい。声は2つ。',
+      line: 'Does anybody need coffee? — Yeah, *over here*. — Yeah, *I do*.',
+      said: '「コーヒー要る人？」に、すぐ二人の客が「こっち！」「はい！」と答える。',
+      mean: 'Yeah, I do ＝「はい、要ります」。need で聞かれたら I do で答える。待っていた客がいた＝仕事が遅い。',
+      trap: 'anybody を nobody（だれも〜ない）と聞き違えると「答えなし」と考えがち。声は2つ。',
       use: 'Yes, I do, please.（はい、お願いします）' },
 
-    // retired (A2): a “why does the audience laugh” item
     { id: 'h1', skill: 'humor', level: 'C1', point: 'coffee', reveals: ['does'], seg: [49, 57], retired: true,
       stem: 'Why does the audience laugh after “Does anybody need coffee?”',
       choices: ['The quick replies prove Terry’s point', 'No one replies, so the café looks empty',
@@ -293,16 +287,16 @@ export const waitress: Clip = {
       trap: 'Terry は頼んでいない。会話の途中で急に言うのがポイント。',
       use: 'Anyway… does anyone need anything?（ところで、何かいる？）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['coffee'], seg: [49.3, 54.3],
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['coffee', 'does'], ctx: true, seg: [49.3, 54.3],
       stem: 'A customer says “Over here.” What does it mean?',
       ja: '客の「Over here」はどういう意味？',
       choices: ['Bring it to me', 'Put it over there', 'I don’t need it'], a: 0,
       choicesJa: ['こっちに持ってきて', 'あそこに置いて', '私は要らない'],
       cue: '質問のすぐあとの返事',
-      line: '— Yeah, *over here*.',
+      line: 'Does anybody need coffee? — Yeah, *over here*.',
       said: '「コーヒー要る人？」に、客が「はい、こっち！」と答える。',
       mean: 'over here ＝「こっちです」。店で店員を呼ぶときや、場所を知らせるときの言い方。',
-      trap: 'over から「向こう」と思いやすいが、here（ここ）なので「こっち」。',
+      trap: 'over から「向こう」に聞こえるが、here（ここ）なので「こっち」。',
       use: 'Excuse me, over here, please!（すみません、こっちお願いします）' },
   ]
 };
