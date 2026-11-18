@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 1, new 4, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 5, rewrite 10, retire 1, new 4, ctx 3, tx 7, qa 8
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 6, new 2
 // “Is Kevin the Dad of Jan's Baby? | Season 5 Deleted Scene | Superfan - The Office US” (the official The Office
 // channel, Best of Season 5): at Jan's office baby shower the group's stroller turns out to be far worse than the
@@ -89,10 +89,10 @@ export const jansStroller: Clip = {
       use: 'That’s twelve hundred dollars!（それ、1,200ドルだよ！）' },
 
     { id: 'r1', skill: 'pragma', level: 'B1', point: 'else', ctx: true, reveals: ['price'], seg: [18.4, 28],
-      stem: 'What happens right after the talk about the price?',
-      ja: '値段の話のすぐあと、どうなる？',
-      choices: ['They open the next gift', 'They ask Jan about the price', 'They return the stroller'], a: 0,
-      choicesJa: ['次のプレゼントを開ける', 'ジャンに値段を聞く', 'ベビーカーを返品する'],
+      stem: 'What does “Okay, what else?” ask for?',
+      ja: '「Okay, what else?」は何をたずねている？',
+      choices: ['The next present to open', 'What else the stroller can do', 'Other stores selling strollers'], a: 0,
+      choicesJa: ['次に開けるプレゼント', 'ベビーカーのほかの機能', 'ベビーカーを売るほかの店'],
       cue: '値段のくり返しのあとの一言。',
       line: 'That’s a $1,200 stroller. / $1,200 for a stroller. / *Okay, what else?*',
       said: '「1,200ドルのベビーカーだ」「ベビーカーに1,200ドル」のあと、「じゃあ、ほかには？」と言う。',
@@ -192,16 +192,16 @@ export const jansStroller: Clip = {
       trap: 'whole を聞きのがすと、シェルターのほうが高く聞こえやすい。is what I spent ＝ ちょうどその額。',
       use: 'That’s what I paid for my whole car.（それ、私の車1台分だよ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'kindmoney', reveals: ['shelter'], seg: [87.9, 96.2],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'kindmoney', reveals: ['shelter', 'indestr'], seg: [87.9, 96.2],
       stem: 'What does “for that kind of money” mean?',
       ja: '「for that kind of money」はどういう意味？',
       choices: ['At such a high price', 'For a little money', 'To make more money'], a: 0,
       choicesJa: ['そんなに高いなら', '少しのお金で', 'もっともうけるために'],
       cue: '「shelter」の話のあと',
       line: '*For that kind of money*, this stroller should be indestructible.',
-      said: '「そんな値段なら、このベビーカーは絶対こわれないはずだ」と言う。',
+      said: '「それだけのお金を払うなら、このベビーカーは絶対に壊れないはずだ」と言う。',
       mean: 'that kind of money ＝「そんな（大きな）金額」。高いなら当然〜のはず、と言うときに使う。',
-      trap: 'kind（親切な）から、別の意味を思いやすい。kind of ＝「〜のような」。',
+      trap: 'kind（親切な）を連想しやすいが、ここは「種類」。that kind of money ＝ そういう額のお金＝大金。',
       use: 'For that kind of money, I want the best.（その値段なら、最高のがほしい）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'indestr', seg: [89.0, 96.9],
@@ -263,7 +263,7 @@ export const jansStroller: Clip = {
       trap: 'Uh-oh を本当の驚きと取りやすい。驚きの言葉は、その前に計画が語られていないかで確かめる。',
       use: 'Oops, did I eat the last cookie?（あれ、最後のクッキー食べちゃった？）' },
 
-    { id: 'd7', skill: 'detail', level: 'B2', point: 'inconclusive', seg: [114, 121],
+    { id: 'd7', skill: 'detail', level: 'B2', point: 'inconclusive', seg: [114, 122.8],
       stem: 'What does he say the curb test showed?',
       ja: '段差のテストで何がわかったと、彼は言う？',
       choices: ['Nothing for sure', 'The stroller is safe', 'The stroller is weak'], a: 0,
@@ -282,10 +282,10 @@ export const jansStroller: Clip = {
       choicesJa: ['彼の両親', 'スパルタの人', 'だれでもない'],
       cue: '「left me」の前',
       line: '*My parents left me* beside the road. But I crawled home.',
-      said: '「両親はぼくを道ばたに置いていった。でも、はって帰った」と話す。',
+      said: '「私の両親も、私を道ばたに置いていった。でも、はって家に帰った」と話す。',
       mean: 'left me ＝ ぼくを置いていった。スパルタの話は前置きで、続くのは自分の話。',
       trap: '直前の Spartans が耳に残りやすい。My で始まると、自分の家の話。',
-      use: 'My parents dropped me off at school.（親が学校まで送ってくれた）' },
+      use: 'I left my bag on the train.（電車にかばんを置いてきた）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'weak', reveals: ['parents', 'mom'], seg: [119.7, 129.5],
       stem: 'Why is his story about the Spartans funny?',
