@@ -1,10 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 1, new 0, ctx 4, tx 3
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 3, new 1
 // “April Ludgate's Getting Fired | Parks and Recreation” (the official Parks and Recreation channel, Season 4): April
 // deletes every department file and hides under a table; Andy tries to help, and Donna turns out to have a backup.
 // Segments from the captions, words from whisper (2026-11-16). Untested: 105.5–110 s (Donna's "almost made it with
 // Councilman Hauser", sexual), 122–128 s ("I love you… Bring it in, boy": speakers unclear), and the lines where the
 // two sources differ: 6.3 s "Where/Why are you hiding?", 90 s "Pawnee and Wreck / Parks and Rec history", 92 s
-// "You'll most / And we'll certainly get fired", 115 s "Fix it / Fixed it".
+// "You'll most / And we'll certainly get fired", 115 s "Fix it / Fixed it". Donna's "almost made it with…" is mild
+// innuendo and may play (user decision 2026-11-18).
+// EAR CHECK: 45 s f1 — who says "I told her it's a matter of life and death" (Andy or April); the item names neither.
+// R4: s1 retired (= w1's line; 43–49 s held four starts); a1, pr1 (banned "why say here's the deal") and f1 rewritten;
+// a1, pr1, a2, a3 follow the exchange.
 import type { Clip } from '../types.ts';
 
 export const aprilFired: Clip = {
@@ -37,16 +42,16 @@ export const aprilFired: Clip = {
       trap: 'files から「消す仕事」と思いやすい。supposed to の直後が本来の仕事。',
       use: 'I was supposed to call you yesterday.（昨日電話するはずだったんだけど）' },
 
-    { id: 'a1', skill: 'marker', level: 'B1', point: 'hiding', seg: [18.9, 29.8],
-      stem: 'Why does Andy say “First of all… Secondly” here?',
-      ja: 'アンディは、なぜここで「First of all… Secondly」と言う？',
-      choices: ['To give his points in order', 'To tell her a long, sad story', 'To ask her two questions'], a: 0,
-      choicesJa: ['言いたいことを順番に言うため', '長い悲しい話をするため', '質問を二つするため'],
-      cue: '「calm down」のあと。',
-      line: '*First of all*, you did the right thing by hiding under this table. *Secondly*, your man is here.',
-      said: '「まず、机の下に隠れたのは正しかった。次に、俺が来た」と言う。',
-      mean: 'First of all ＝ まず。Secondly ＝ 次に。言いたいことを順に並べる合図。',
-      trap: 'First を「最初の出来事」と思いやすい。Secondly が続けば、話の順番。',
+    { id: 'a1', skill: 'marker', level: 'B1', point: 'hiding', ctx: true, seg: [18.9, 25.5],
+      stem: 'April says the files are gone. What does Andy say first?',
+      ja: 'ファイルが消えたと言うエイプリルに、アンディはまず何と言う？',
+      choices: ['She was right to hide', 'She should call Leslie', 'She can fix it herself'], a: 0,
+      choicesJa: ['隠れたのは正しかった', 'レスリーに電話すべきだ', '自分で直せる'],
+      cue: '「First of all」のあと',
+      line: 'April: They’re all gone. / Andy: Okay, okay, calm down. *First of all*, you did the right thing by hiding under this table.',
+      said: '「全部消えちゃった」に、アンディは「落ち着いて。まず、机の下に隠れたのは正しかった」と言う。',
+      mean: 'First of all ＝ まず。言いたいことを順に並べる合図で、このあと Secondly（次に）が続く。',
+      trap: 'calm down（落ち着いて）のあとなので、直し方の話と考えがち。First of all の直後が答え。',
       use: 'First of all, you did nothing wrong.（まず、あなたは何も悪くない）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'man', seg: [21.6, 32],
@@ -54,11 +59,11 @@ export const aprilFired: Clip = {
       ja: '「Your man is here」とはどういう意味？',
       choices: ['He’s here to fix it', 'A computer man is coming', 'Her boss is here'], a: 0,
       choicesJa: ['自分が来たから任せて', 'パソコンの人が来る', '上司が来た'],
-      cue: '「Secondly」のあと。',
+      cue: '「Secondly」のあと',
       line: 'Secondly, *your man is here*. I’m gonna take care of this for us.',
-      said: '「それに、君の男が来た。俺が何とかする」と言う。',
-      mean: 'your man ＝ 彼氏・夫が自分を指す言い方。「俺がついてる」と頼もしく見せる。',
-      trap: 'man を「作業員」と思うと修理の人に聞こえる。直後の I’m gonna で本人と分かる。',
+      said: '「次に、君の彼氏がついてる。俺が何とかする」と言う。',
+      mean: 'your man ＝ 文字どおりは「君の男」。彼氏・夫が自分を指す言い方で、「俺がついてる」と頼もしく見せる。',
+      trap: 'man を「作業員」と考えると修理の人に聞こえる。直後の I’m gonna で本人と分かる。',
       use: 'Don’t worry, I’ll take care of it.（心配しないで、私が何とかする）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'xbox', seg: [27.4, 36.4],
@@ -85,15 +90,15 @@ export const aprilFired: Clip = {
       use: 'Let’s ask someone who’s been here longer.（もっと長くいる人に聞こう）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'urgent', seg: [43.3, 48.7],
-      stem: 'What did Andy tell Donna about the problem?',
-      ja: 'アンディはドナに、問題について何と伝えた？',
+      stem: 'What does “a matter of life and death” mean here?',
+      ja: 'ここでの「a matter of life and death」の意味は？',
       choices: ['It’s very, very urgent', 'Someone’s life is in danger', 'It’s a private thing'], a: 0,
       choicesJa: ['ものすごく急ぎだ', 'だれかの命が危ない', '人に言えないことだ'],
-      cue: '「Please hurry」のすぐあと。',
-      line: 'I told her it’s a *matter of life and death*.',
-      said: '「生きるか死ぬかの問題だって伝えた」と言う。',
-      mean: 'a matter of life and death ＝ 一刻を争う大問題。大げさに急ぎを伝える言い方。',
-      trap: '文字どおりだと命の危険に聞こえる。だれもけがをしていないので、急ぎの強調。',
+      cue: '「Please hurry」のすぐあと',
+      line: 'Please hurry. I told her it’s a *matter of life and death*.',
+      said: '「急いで。生きるか死ぬかの問題だって伝えた」と言う。',
+      mean: 'a matter of life and death ＝ 文字どおりは「生死の問題」。大げさに「一刻を争う」と急ぎを伝える言い方。',
+      trap: '文字どおり命の危険と考えがち。だれもけがをしていないので、急ぎの強調。',
       use: 'It’s not a matter of life and death.（そんなに急ぐことじゃないよ）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'donna', seg: [44.5, 49.5],
@@ -108,7 +113,7 @@ export const aprilFired: Clip = {
       trap: 'すぐあとでエイプリルがレスリーの名前を出すので迷いやすい。Honey のあとを聞く。',
       use: 'Ask Mr. Kato. He’s been here forever.（加藤さんに聞いて。ずっといる人だから）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', reveals: ['donna'], seg: [46.0, 49.5],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gonna', reveals: ['donna'], seg: [46.0, 49.5], retired: true,
       stem: 'Fill the gap: “___ know what to do.”',
       ja: '空いている所に入る語は？「___ know what to do.」',
       choices: ['She’s gonna', 'She’s gotta', 'She doesn’t'], a: 0,
@@ -132,17 +137,17 @@ export const aprilFired: Clip = {
       trap: 'クビが一番悪いと思いやすい。even worse のあとに何が来るかを聞く。',
       use: 'Or even worse, it might rain.（もっと悪いと、雨かも）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'deal', reveals: ['quit'], seg: [55.3, 62.4],
-      stem: 'Why does Andy say “here’s the deal” here?',
-      ja: 'アンディは、なぜここで「here’s the deal」と言う？',
-      choices: ['To bring in his plan', 'To bring in bad news', 'To ask for a favor'], a: 0,
-      choicesJa: ['自分の案を出すため', '悪い知らせを言うため', 'お願いをするため'],
-      cue: '「I can’t do it」のあと。',
-      line: 'I’ll tell you what, honey, *here’s the deal*.',
-      said: '「いいかい、こうしよう」と前置きして、一緒に出ていく案を話す。',
-      mean: 'I’ll tell you what も here’s the deal も「じゃあこうしよう」。',
-      trap: 'deal を「取引」と思うと交換条件に聞こえる。ここは「話はこうだ」。',
-      use: 'Tell you what: I’ll pay this time.（じゃあこうしよう、今回は私が払う）' },
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'deal', ctx: true, seg: [54.5, 62],
+      stem: 'April fears getting fired. What does Andy offer?',
+      ja: 'クビをこわがるエイプリルに、アンディは何を申し出る？',
+      choices: ['To quit his job, too', 'To talk to Leslie for her', 'To fix the files himself'], a: 0,
+      choicesJa: ['自分も仕事を辞める', '代わりにレスリーと話す', '自分でファイルを直す'],
+      cue: '「Here’s the deal」のあと',
+      line: 'April: I can’t do it. / Andy: I’ll tell you what, honey. Here’s the deal. *You get fired, I’ll quit.* We’ll leave together.',
+      said: '「無理」と言うエイプリルに、アンディは「じゃあこうしよう。君がクビなら俺も辞める。一緒に出ていこう」と言う。',
+      mean: 'Here’s the deal ＝ 文字どおりは「取引はこうだ」→「いいかい、こうしよう」と案を出す前置き。',
+      trap: 'Leslie の説教の話のあとなので、レスリーと話すと考えがち。決め手は I’ll quit。',
+      use: 'Here’s the deal: I’ll cook, you wash.（こうしよう、私が作るから君が洗って）' },
 
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'quit', seg: [58.66, 61.5], retired: true,
       stem: 'Type his offer: “___ … we’ll leave together.” (5 words)', answer: 'you get fired i\'ll quit',
@@ -153,16 +158,16 @@ export const aprilFired: Clip = {
       trap: '文法の感覚で if を足して書きたくなる。聞こえた語だけを書き、if がない形も条件と受け取る。',
       use: 'You cook, I’ll do the dishes.（君が作るなら、皿は僕が洗う）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'serious', seg: [60.3, 70.5],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'serious', ctx: true, seg: [60.3, 70.5],
       stem: 'How serious is Andy about leaving with April?',
       ja: 'エイプリルと一緒に出ていく話、アンディはどのくらい本気？',
       choices: ['He really means it', 'He’s only joking', 'He’s testing her'], a: 0,
       choicesJa: ['本気で言っている', '冗談を言っているだけ', '彼女を試している'],
-      cue: '「What?」と聞き返されたあとの返事。',
-      line: '*I’m serious.* Move to a new city… swap faces… *if we have to*.',
-      said: '「本気だよ。新しい町に移る。顔を取りかえる」と言い、驚かれても「必要ならね」。',
+      cue: '「What?」と聞き返されたあとの返事',
+      line: 'Andy: *I’m serious.* Move to a new city… Swap faces. / April: What? / Andy: *If we have to.*',
+      said: '「本気だよ。新しい町に移る。顔を取りかえる」と言い、「何？」と驚かれても「必要ならね」。',
       mean: 'I’m serious ＝ 本気だよ。やり方はむちゃだが、一緒にいる気持ちは本気。',
-      trap: '話が大げさなので冗談に聞こえやすい。聞き返されても引かないなら本気。',
+      trap: '話が大げさなので冗談に聞こえるが、聞き返されても引かない。決め手は If we have to。',
       use: 'I’m serious. I’ll come with you.（本気だよ。一緒に行く）' },
 
     { id: 'p2', skill: 'phrase', level: 'B1', point: 'goback', seg: [68.7, 77],
@@ -182,9 +187,9 @@ export const aprilFired: Clip = {
       ja: 'アンディのリストにある夢の仕事は、だれのもの？',
       choices: ['Jobs Andy wants for himself', 'Jobs they could share', 'Jobs Andy picks for April'], a: 0,
       choicesJa: ['アンディ自身がやりたい仕事', '二人でできる仕事', 'アンディがエイプリルに選んだ仕事'],
-      cue: 'リストのあと、「So」の一言。',
+      cue: 'リストのあと、「So」の一言',
       line: 'I have detective, FBI agent, policeman, CIA agent. So, *we need more for you*.',
-      said: '探偵、FBI、警官、CIAと並べ、「君の分がもっといるね」と言う。',
+      said: '刑事、FBI、警官、CIAと並べ、「君の分がもっといるね」と言う。',
       mean: 'for you と言うので、今までのリストは全部アンディ自身の夢だったと分かる。',
       trap: 'we から二人の仕事に聞こえやすい。for you でリストの持ち主が分かる。',
       use: 'We need more ideas for you.（君のアイデアがもっといるね）' },
@@ -210,14 +215,14 @@ export const aprilFired: Clip = {
       trap: '責める言葉が並ぶので意地悪に聞こえる。「助けたい」をくり返す人が、ずれている側。',
       use: 'Sorry, that didn’t help, did it?（ごめん、励ましになってないね）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', seg: [93.6, 98.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'fine', ctx: true, seg: [93, 99.5],
       stem: 'How does April answer “Dream big, kid”?',
       ja: '「Dream big, kid」に、エイプリルはどう答える？',
       choices: ['She agrees, but not happily', 'She agrees, and feels better', 'She says no to him'], a: 0,
       choicesJa: ['しぶしぶ応じる', '応じて、元気になる', '断る'],
-      cue: '「Dream big」のすぐあとの一語。',
-      line: 'Dream big, kid. — *Fine.*',
-      said: 'せかされて、エイプリルは「分かったよ」とだけ返し、答え始める。',
+      cue: '「Dream big」のすぐあとの一語',
+      line: 'Andy: So, dream jobs. Go. Dream big, kid. / April: *Fine.*',
+      said: 'せかされて、エイプリルは「…わかったよ」とだけ返し、答え始める。',
       mean: '一語の Fine. は「しかたない、やるよ」。乗り気ではないが付き合う。',
       trap: 'fine を「元気・良い」と思うと明るい返事に聞こえる。せかされたあとの Fine. はしぶしぶ。',
       use: 'Fine, I’ll do it.（分かったよ、やるよ）' },
