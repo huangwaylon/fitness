@@ -23,7 +23,7 @@ export const womensAppreciation: Clip = {
   credit: 'The Office (official YouTube channel)',
   questions: [
     { id: 'p4', skill: 'phrase', level: 'B1', point: 'feellike', seg: [4.3, 7.7],
-      stem: 'She says, “I don’t feel like answering phones.” Meaning?',
+      stem: 'She says, “I don’t *feel like* answering phones.” Meaning?',
       ja: '「I don’t feel like answering phones」とはどういう意味？',
       choices: ['She doesn’t want to', 'She isn’t able to', 'She is too busy to'], a: 0,
       choicesJa: ['やる気がしない', 'やることができない', '忙しくてできない'],
@@ -188,7 +188,7 @@ export const womensAppreciation: Clip = {
       use: 'Please treat everyone with respect.（みんなを尊重してください）' },
 
     { id: 'p6', skill: 'phrase', level: 'B2', point: 'thatsit', reveals: ['minutes'], seg: [72.3, 78.5],
-      stem: 'Michael says, “You know what? That’s it.” What does he mean?',
+      stem: 'Michael says, “You know what? *That’s it.*” What does he mean?',
       ja: 'マイケルの「You know what? That’s it.」はどういう意味？',
       choices: ['Enough, I’ve decided', 'That’s the right answer', 'That’s all I know'], a: 0,
       choicesJa: ['もういい、決めた', 'それが正しい答えだ', '知っているのはそれだけ'],
@@ -316,7 +316,7 @@ export const womensAppreciation: Clip = {
       use: 'I hate gossip. Did you hear about Tom?（うわさ話は嫌い。トムの話聞いた？）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'against', seg: [175.4, 183.0],
-      stem: 'Michael says the women are “up against it.” Meaning?',
+      stem: 'Michael says the women are “*up against it*.” Meaning?',
       ja: '女性たちは「up against it」だとマイケルは言う。どういう意味？',
       choices: ['They have a hard time', 'They should fight back', 'They are doing well'], a: 0,
       choicesJa: ['苦しい立場にいる', 'やり返すべきだ', 'うまくいっている'],

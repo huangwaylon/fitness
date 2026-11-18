@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 0, ctx 4, tx 8, qa 18
+// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 0, ctx 4, tx 8, qa 19
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 2, new 1
 // “Parks and Recreation | Pilot (Episode Highlight)” (the official Parks and Recreation channel, Season 1): Tom dodges a
 // gift rule on the phone, then he and Leslie brainstorm how to get her park built, and land on bringing in Mark.

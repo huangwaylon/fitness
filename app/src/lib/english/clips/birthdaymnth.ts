@@ -14,7 +14,7 @@ export const birthdayMonth: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['shared', 'thirteen'], seg: [0, 16],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['shared', 'thirteen', 'meredith'], seg: [0, 16],
       stem: 'What does Jim want to do about the birthdays?',
       ja: '誕生日のことで、ジムは何をしたい？',
       choices: ['Have one party for everyone', 'Split the cost of all parties', 'Stop having parties'], a: 0,

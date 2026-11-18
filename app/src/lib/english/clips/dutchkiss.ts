@@ -188,7 +188,7 @@ export const dutchKiss: Clip = {
       trap: 'タンク（入れ物）を連想しやすい。直前の failed（失敗）の連続が決め手。',
       use: 'Sales tanked last month.（先月、売り上げががくんと落ちた）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'learn', seg: [103.0, 108.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'learn', seg: [103.5, 108.5],
       stem: 'How does Freddie say you learn?',
       ja: 'フレディは、人は何によって学ぶと言う？',
       choices: ['By failing', 'By reading', 'By asking'], a: 0,

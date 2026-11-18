@@ -6,6 +6,7 @@
 // Leslie, still in her skates, starts a filibuster, and Jamm tries everything to make her stop.
 // Segments from the captions, words from whisper (2026-11-16). No item uses Milton's age joke (143–147 s), the REM
 // album names (48–56 s, band knowledge) or the Reagan line (198–204 s).
+// EXCLUDE 106.4–110.2 (Jamm's "duking on my chest" / "No. Gross." potty joke)
 // EXCLUDE 118.9–123.8 (Ben's "sex fantasy" line)
 // EXCLUDE 185.6–191.4 (Jamm's "Chinese crap" list)
 // EXCLUDE 261.4–273.9 (the 1817 quote about killing Indians)
@@ -133,6 +134,17 @@ export const benSkates: Clip = {
       mean: 'I don’t care ＝「どうでもいい」。相手の事情に関心がない。',
       trap: 'blades（インラインスケート）から、スケート好き同士と考えがち。I don’t care が答え。',
       use: 'Honestly, I don’t care either way.（正直、どっちでもいい）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'filibuster', reveals: ['yield', 'nor', 'blades'], seg: [85.6, 106.3],
+      stem: 'What does Leslie decide to do?',
+      ja: 'レスリーはどうすることにする？',
+      choices: ['Keep talking to stop the vote', 'Leave now for Ben’s party', 'Let them vote on it tonight'], a: 0,
+      choicesJa: ['投票させないよう話し続ける', '今すぐベンのパーティーに行く', '今夜の投票を認める'],
+      cue: '「but」のあとと「I will not yield」',
+      line: '…but *this is more important*. … No. *I will not yield.* … — A filibuster?',
+      said: '「パーティーよりこっちが大事」と言い、「ゆずりません」と断る。ジャムが「議事妨害か？」と聞く。',
+      mean: 'filibuster ＝ 議事妨害。長く話し続けて、時間切れで投票をさせないやり方。',
+      trap: 'パーティーの話が出るので、帰ると考えがち。決め手は but のあとの this is more important。',
+      use: 'I’m not going anywhere.（どこにも行かないよ）' },
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'yield', seg: [94, 102.45],
       stem: 'What does Jamm ask Leslie to do so they can vote?',
       ja: '投票するために、ジャムはレスリーに何をたのむ？',
@@ -155,17 +167,6 @@ export const benSkates: Clip = {
       mean: 'Nor will I 〜 ＝「〜もしない」。no を重ねるとき、will と I の順番が入れかわる。',
       trap: 'Now（ナウ）とまぎれやすい。Nor は「ノー」とのびる。would なら d の音が残る。',
       use: 'I can’t swim. Nor can my brother.（泳げない。弟もだ）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'filibuster', reveals: ['yield'], seg: [100.5, 116.35],
-      stem: 'What does Leslie decide to do?',
-      ja: 'レスリーはどうすることにする？',
-      choices: ['Keep talking to stop the vote', 'Leave now for Ben’s party', 'Let them vote on it tonight'], a: 0,
-      choicesJa: ['投票させないよう話し続ける', '今すぐベンのパーティーに行く', '今夜の投票を認める'],
-      cue: '「I will not yield」と、続く filibuster',
-      line: 'No. I will not yield. … And yes, *it’s a filibuster*, okay?',
-      said: '「ゆずりません」と言い、「そう、議事妨害よ」と認める。',
-      mean: 'filibuster ＝ 議事妨害。長く話し続けて、時間切れで投票をさせないやり方。',
-      trap: '「パーティーに行くところだった」と話していたので、帰ると考えがち。I will not yield は「話す番をゆずらない」。',
-      use: 'I’m not going anywhere.（どこにも行かないよ）' },
     { id: 'd2', skill: 'detail', level: 'B1', point: 'hours', seg: [114.4, 118.45],
       stem: 'What does Ben say Leslie must wear for hours?',
       ja: 'レスリーは何時間も何をはいたままだと、ベンは言う？',

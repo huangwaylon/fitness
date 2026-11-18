@@ -123,7 +123,7 @@ export const ronNoRegret: Clip = {
       use: 'Sorry, I was just daydreaming.（ごめん、ぼーっとしてた）' },
 
     { id: 'pr1', skill: 'phrase', level: 'B2', point: 'picture', ctx: true, seg: [45.5, 51.85],
-      stem: 'What does “We get the picture” mean?',
+      stem: 'What does “*We get the picture*” mean?',
       ja: '「We get the picture」の意味は？',
       choices: ['We understand already', 'We want to see a photo', 'We can’t follow you'], a: 0,
       choicesJa: ['もう分かった', '写真が見たい', '話についていけない'],

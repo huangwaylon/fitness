@@ -32,7 +32,7 @@ export const creddieTogether: Clip = {
       trap: 'call（電話する）に聞こえるが、let go（手放す）への返事なので「おしまい」。',
       use: 'It’s late. Let’s call it a day.（遅いし、今日はここまでにしよう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'photos', seg: [11, 20],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'photos', seg: [11, 19.35],
       stem: 'What upsets Carly most about losing her phone?',
       ja: '電話がこわれて、カーリーが一番悲しいのは？',
       choices: ['All her photos', 'All her messages', 'All her music'], a: 0,
@@ -244,7 +244,7 @@ export const creddieTogether: Clip = {
       trap: 'won’t なら「ウォン」と w で始まる。didn’t なら「ディ」。「ド」で始まれば don’t。',
       use: 'I don’t want to be late.（遅れたくないんだ）' },
 
-    { id: 'nt', skill: 'detail', level: 'B1', point: 'note', ctx: true, seg: [177.0, 183.5],
+    { id: 'nt', skill: 'detail', level: 'B1', point: 'note', ctx: true, seg: [176.25, 183.5],
       stem: 'Where did Carly leave a note for Freddie?',
       ja: 'カーリーはフレディへの手紙をどこに置いた？',
       choices: ['Up in the studio', 'At her apartment door', 'In his school locker'], a: 0,

@@ -138,7 +138,7 @@ export const dwightDate: Clip = {
       use: 'I did it without help.（手伝いなしでやったよ）' },
 
     { id: 'i2', skill: 'phrase', level: 'B2', point: 'considering', seg: [64.4, 72.5],
-      stem: 'What does “still considering it” mean?', ja: '「still considering it」の意味は？',
+      stem: 'What does “still *considering* it” mean?', ja: '「still considering it」の意味は？',
       choices: ['No one has decided yet', 'They have all said yes', 'They have all said no'], a: 0,
       choicesJa: ['まだ誰も決めていない', '全社が OK した', '全社が断った'],
       cue: '何度もくり返す言葉',
