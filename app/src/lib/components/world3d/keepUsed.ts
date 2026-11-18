@@ -1,6 +1,6 @@
-// A page-wide cache's bound by use (player3d's parts' GLBs, the tent's furniture): how many users each entry has, and of
-// those none uses, the `keep` last used stay (back at once), the older evicted (oldest first), as world3d/things.ts
-// keeps the island's lazy models. Taken (use) before its load is awaited, so an eviction never frees what a user is
+// A page-wide cache's bound by use (player3d's parts' GLBs, the rooms' models, the island's lazy models: things.ts): how
+// many users each entry has, and of those none uses, the `keep` last used stay (back at once), the older evicted (oldest
+// first). Taken (use) before its load is awaited, so an eviction never frees what a user is
 // about to draw.
 
 export interface Kept<K> {

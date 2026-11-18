@@ -8,10 +8,11 @@ import {
   BackSide, Color, DoubleSide, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh as MeshOf, MeshDepthMaterial, MeshLambertMaterial, Quaternion,
   RGBADepthPacking, Box3, Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene, type Side
 } from 'three';
-import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { lean } from './release.ts';
-import { ktx2Plugin } from './ktx2.ts';
+import { glbLoader } from './gltf.ts';
+import { keepUsed } from './keepUsed.ts';
+import { freeModel } from './modelCache.ts';
 import { bend, bendTree } from './bend.ts';
 import { withMaps } from './blank.ts';
 import { twoPass } from './sides.ts';
@@ -217,44 +218,14 @@ const LAZY = (() => {
   return new Set([...lazy].filter(([, l]) => l).map(([m]) => m));
 })();
 const LAZY_KEEP = 12;
-/** The mounts using each loaded model (by URL), and the lazy ones no mount uses, oldest first (the LRU). */
-const users = new Map<string, number>(), idle = new Set<string>();
-function use(url: string) {
-  users.set(url, (users.get(url) ?? 0) + 1);
-  idle.delete(url);
-}
-function unuse(url: string, lazy: boolean) {
-  const n = (users.get(url) ?? 1) - 1;
-  if (n > 0) return void users.set(url, n);
-  users.delete(url);
-  if (!lazy) return;
-  idle.add(url);
-  // (the oldest past LAZY_KEEP: its decoded model let go of, its images closed; fetched and decoded again if it comes back)
-  for (const old of idle) {
-    if (idle.size <= LAZY_KEEP) break;
-    idle.delete(old);
-    const p = loaded.get(old);
-    loaded.delete(old);
-    inNow.delete(old);
-    void p?.then((g) => g && free(g, true));
-  }
-}
-/** A model's GPU copies let go of on every renderer (its geometries, textures and materials: three uploads them again
- *  to the next that draws them); `close`: its decoded images too (it's not to be drawn again). */
-function free(g: GLTF, close = false) {
-  g.scene.traverse((n) => {
-    const mesh = n as Mesh;
-    if (!mesh.isMesh) return;
-    mesh.geometry.dispose();
-    const s = mesh.material as MeshStandardMaterial;
-    for (const t of [s.map, s.emissiveMap]) {
-      if (!t) continue;
-      t.dispose();
-      if (close) (t.image as { close?: () => void } | null)?.close?.();
-    }
-    s.dispose();
-  });
-}
+/** The mounts using each lazy model (by URL; no pack mixes lazy and standing members), and of those no mount uses, the
+ *  LAZY_KEEP last used stay: the older let go of (their images closed; fetched and decoded again if one comes back). */
+const lazyKept = keepUsed<string>(LAZY_KEEP, (url) => {
+  const p = loaded.get(url);
+  loaded.delete(url);
+  inNow.delete(url);
+  void p?.then((g) => g && freeModel(g.scene, true));
+});
 /** A pack's member (assets.json `pack`): its node, named its model's last part, as a model of its own (one wrapper a
  *  member, kept, so its builds share it); a model of its own as it is. */
 const members = new WeakMap<GLTF, Map<string, GLTF | null>>();
@@ -268,13 +239,11 @@ function member(g: GLTF, name: ModelName): GLTF | null {
   }
   return by.get(name)!;
 }
-let loader: GLTFLoader | null = null;
 function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
   if (p) return p;
-  if (!loader) (loader = ktx2Plugin(new GLTFLoader())).setMeshoptDecoder(MeshoptDecoder);
   // (an outdoor catalogue piece's: its room piece's own model, outdoorModels.ts)
-  p = (isRoomModel(name) ? loadRoomModel(name) : loader.loadAsync(url)).then(
+  p = (isRoomModel(name) ? loadRoomModel(name) : glbLoader({ ktx2: true }).loadAsync(url)).then(
     (g) => {
       lean(g);
       if (loaded.get(url) === p) inNow.set(url, g);
@@ -321,7 +290,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       pending++;
       if (holds) holding++;
       const url = urlOf(name);
-      use(url);
+      if (LAZY.has(name)) lazyKept.use(url);
       p = load(url, name).then((g) => (pending--, holds && holding--, arrived(name, url), (g = g && member(g, name)), g && got.add(g), g));
       gltfs.set(name, p);
     }
@@ -353,10 +322,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
             retire(r.depth);
           }
         });
-        free(g);
+        freeModel(g.scene);
       }
       // (always: a mount disposed meanwhile hands back only what's still in gltfs, and this one's left it)
-      unuse(urlOf(name), true);
+      lazyKept.unuse(urlOf(name));
     });
   }
 
@@ -1039,11 +1008,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       // already have the shared ones on its own: a late dispose would drop its copies too). Every model in, not only
       // this mount's: a lazy one released while a villager still held it (heldIn, lift) was drawn here outside `got`,
       // and its texture's dispose listener held this dead renderer, its context and canvas, while in a room.
-      for (const g of got) free(g);
-      for (const g of inNow.values()) free(g);
+      for (const g of got) freeModel(g.scene);
+      for (const g of inNow.values()) freeModel(g.scene);
       got.clear();
       // (this mount's loads handed back: the lazy ones may be let go of now, as no mount uses them)
-      for (const name of gltfs.keys()) if (!name.startsWith('proc/')) unuse(urlOf(name), LAZY.has(name));
+      for (const name of gltfs.keys()) if (LAZY.has(name)) lazyKept.unuse(urlOf(name));
       gltfs.clear();
     }
   };
