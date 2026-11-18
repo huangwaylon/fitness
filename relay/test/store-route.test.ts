@@ -123,9 +123,9 @@ describe('/admin', () => {
     expect(core.counts().metrics).toBe(1);
   });
 
-  it('a signed restore, rev, logpurge or purge_listen is taken once: its replay within the window is refused (409)', async () => {
+  it('a signed restore, rev or logpurge is taken once: its replay within the window is refused (409)', async () => {
     // 2026-11-05 review: a logged signed request could be sent again for 5 minutes (a second restore, a second purge)
-    for (const op of ['rev', 'restore', 'logpurge', 'purge_listen']) {
+    for (const op of ['rev', 'restore', 'logpurge']) {
       const body = JSON.stringify({ op });
       const s = await signed(body);
       const again = new Request(s.url, { method: 'POST', body, headers: s.headers });

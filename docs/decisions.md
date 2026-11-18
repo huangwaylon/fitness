@@ -439,8 +439,9 @@ NH's event tracks replace the hour's on their days; surf, wind, rain, birds and 
 
 ## ききみみ
 
-Replaced by English Study ([english.md](english.md)). Its `listen` rows were deleted from the record (admin
-`purge_listen`, after a verified dump); its live intents, the relay's `/stt` and its `mic.*` log events are gone.
+Replaced by English Study ([english.md](english.md)). Its `listen` rows were deleted from the record (a one-off
+admin purge, 2026-11-16, after a verified dump; its code is gone); its live intents, the relay's `/stt` and its
+`mic.*` log events are gone.
 - **No microphone:** `microphone=()`. While it shipped it was off by default, recordings stayed in memory, and no
   transcript or speaking score left the phone.
 - **Old rows kept, never re-read for progress:** `listenOf` parses every shape ever written until the rows are deleted.
