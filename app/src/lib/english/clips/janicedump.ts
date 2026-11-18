@@ -1,11 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 4, retire 5, new 1, ctx 4, tx 3
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 1, new 0
 // “Janice Breaks Up with Ross | Friends” (the official Friends channel, Best of Season 5): Ross moans about a wrong
 // coffee order and his bad luck; Janice finishes his list for him, then breaks up with him because he
 // whines too much; he checks the reason, and by the end he's relieved.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Janice (84.2 s); Ross only in
 // whisper (45 s, captions "was"; 23 s whisper "Boss, we need to talk", captions "yeah of course we need to talk").
-// Untested: 23–25 s (see above); 87–90 s "Oh. My. God." (a catchphrase, not asked); whisper repeats "I'm not going to
-// be okay" over the music at 95–107 s (a hallucination, the captions have nothing).
+// Untested: 87–90 s "Oh. My. God." (a catchphrase, not asked); whisper repeats "I'm not going to be okay" over the
+// music at 95–107 s (a hallucination, the captions have nothing).
 import type { Clip } from '../types.ts';
 
 export const janicedump: Clip = {
@@ -14,19 +15,31 @@ export const janicedump: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [0, 5.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', ctx: true, seg: [0, 6.5],
       stem: 'What is wrong with Ross’s coffee?',
       ja: 'ロスのコーヒーの何がいけない？',
       choices: ['It isn’t what he ordered', 'It isn’t hot enough', 'It costs too much'], a: 0,
       choicesJa: ['頼んだものと違う', '熱さが足りない', '値段が高すぎる'],
       cue: '「What is wrong now?」への答え。',
-      line: 'What is wrong now? — This *isn’t what I ordered*.',
+      line: 'Janice: *What is wrong now?* / Ross: This *isn’t what I ordered*.',
       said: '「今度は何？」と聞かれ、「頼んだものと違う」と答える。',
       mean: 'This isn’t what I ordered ＝ これは頼んだものと違う。店で使える決まり文句。',
-      trap: 'coffee の話なので温度や値段と思いやすい。isn’t のあとの what I ordered を聞く。',
+      trap: 'coffee の話なので、温度や値段を連想しやすい。isn’t のあとの what I ordered を聞く。',
       use: 'Excuse me, this isn’t what I ordered.（すみません、これ頼んだものと違います）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'right', reveals: ['order'], seg: [2.3, 10.5],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'luck', seg: [0, 22.6],
+      stem: 'What is Ross upset about?',
+      ja: 'ロスは何に落ちこんでいる？',
+      choices: ['All his bad luck', 'A fight with Janice', 'A rude waiter'], a: 0,
+      choicesJa: ['自分の不運の数々', 'ジャニスとのけんか', '失礼な店員'],
+      cue: '「First」から始まるリスト。',
+      line: 'First, my marriage falls apart… and then you lose your apartment… *and now the coffee*, ah!',
+      said: 'コーヒーのことから始めて、人生の不運を次々に並べて嘆く。',
+      mean: 'bad luck ＝ 不運。小さなコーヒーの失敗から、人生の大きな不運まで一気に嘆いている。',
+      trap: 'コーヒーの話から始まるので、店員への文句と考えがち。そのあと結婚や家の話まで広がる。',
+      use: 'Nothing is going right today.（今日は何もうまくいかない）' },
+
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'right', reveals: ['order'], seg: [2.3, 10.5], retired: true,
       stem: 'How does Ross feel about the wrong order?',
       ja: '注文違いについて、ロスはどんな気持ち？',
       choices: ['Sorry for himself', 'Angry at the waiter', 'Angry at himself'], a: 0,
@@ -50,7 +63,7 @@ export const janicedump: Clip = {
       trap: 'can なら弱く短い「クン」。couldn’t なら「クッドゥン」。長く強い「キャー」なら can’t。',
       use: 'Can’t anyone help me?（だれか手伝ってくれないの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'first', reveals: ['exwife'], seg: [9.1, 21.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'first', reveals: ['exwife'], seg: [9.1, 21.1], retired: true,
       stem: 'What is the first of Ross’s troubles?',
       ja: 'ロスの不運の最初は何？',
       choices: ['His marriage ended', 'He lost his apartment', 'He lost his job'], a: 0,
@@ -70,11 +83,11 @@ export const janicedump: Clip = {
       cue: '主語が you に変わる所。',
       line: 'I know, I know. And then *you* lose your apartment…',
       said: '「分かってる、分かってる」と言い、「そしてあなたはアパートを失って…」と続ける。',
-      mean: 'you（あなた）を主語にして話すので、ロス本人ではなくジャニスが続けている。',
-      trap: 'ロスの不運の話なので、ロスが続けていると思いやすい。I ではなく you に変わる。',
+      mean: 'I know, I know ＝ もう分かってる。you（あなた）が主語なので、ジャニスが何度も聞いた話を先に言っている。',
+      trap: 'ロスの不運の話なので、ロスが続けていると考えがち。I ではなく you に変わる。',
       use: 'I know, I know. I’m late again.（分かってる、また遅刻だよね）' },
 
-    { id: 'i1', skill: 'infer', level: 'C1', point: 'list', seg: [11.3, 23.3],
+    { id: 'i1', skill: 'infer', level: 'C1', point: 'list', seg: [11.3, 23.3], retired: true,
       stem: 'What does Janice’s “I know, I know” show?',
       ja: 'ジャニスの「I know, I know」から何が分かる？',
       choices: ['She has heard it many times', 'She had the same troubles', 'She wants the whole story'], a: 0,
@@ -95,7 +108,7 @@ export const janicedump: Clip = {
       line: 'and then your *ex-wife gets married so fast*',
       said: '「それから元奥さんがすぐ結婚して」と続ける。',
       mean: 'ex-wife ＝ 元妻。get married ＝ 結婚する。so fast ＝ とても早く。',
-      trap: 'job の話のすぐあとなので、仕事の話と思いやすい。ex-wife のあとを聞く。',
+      trap: 'job の話のすぐあとなので、仕事の話と勘違いしやすい。ex-wife のあとを聞く。',
       use: 'My sister got married last year.（姉は去年結婚した）' },
 
     { id: 'n1', skill: 'humor', level: 'C2', point: 'list', seg: [13.6, 26.8], retired: true,
@@ -119,16 +132,16 @@ export const janicedump: Clip = {
       trap: 'you と your が弱く、lose job と聞こえやすい。4語を数えて聞く。',
       use: 'I don’t want to lose my job.（仕事を失いたくない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'talk', seg: [23.5, 34.6],
-      stem: 'Why does Janice say “I’m going to talk”?',
-      ja: 'ジャニスはなぜ「I’m going to talk」と言う？',
-      choices: ['To cut in so she can talk', 'To refuse to talk about it', 'To say his feeling is wrong'], a: 0,
-      choicesJa: ['さえぎって自分が話すため', 'その話をするのを断るため', '彼の気持ちはまちがいだと言うため'],
-      cue: '「Sometimes I feel」のあと。',
-      line: 'Sometimes I feel… — No, no, no… *I’m going to talk.*',
-      said: '彼が「時々思うんだ…」と話し始めると、「だめだめ、私が話すの」とさえぎる。',
-      mean: 'I’m going to talk ＝ 私が話す。相手の話を止めて、自分が話す番にしている。',
-      trap: 'No が続くので、話すのを断ったと思いやすい。そのあと I’m going to talk と言う。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'talk', ctx: true, seg: [24.0, 34.6],
+      stem: 'Ross starts to talk. What does Janice do?',
+      ja: 'ロスが話し始める。ジャニスはどうする？',
+      choices: ['Stops him to talk herself', 'Lets him finish first', 'Refuses to talk at all'], a: 0,
+      choicesJa: ['止めて自分が話す', '先に彼に話させる', '話すこと自体を断る'],
+      cue: '「Sometimes I feel」のあとの返事。',
+      line: 'Janice: Ross, we need to talk. / Ross: Okay. *Sometimes I feel*— / Janice: *No, no, no*… *I’m going to talk.*',
+      said: 'ロスが「時々僕は…」と話し始めると、「だめ、私が話すの」と止める。',
+      mean: 'we need to talk ＝ 話があるの（別れ話の前によく言う）。I’m going to talk ＝ 私が話す番。',
+      trap: 'No が7回続くので、話すこと自体を断ったと考えがち。決め手はそのあとの I’m going to talk。',
       use: 'Wait, let me talk first.（待って、先に話させて）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'sun', seg: [33.1, 44.9],
@@ -139,9 +152,9 @@ export const janicedump: Clip = {
       cue: '「I believe that」のあと。',
       line: 'I believe that *the sun has set on our day in the sun*.',
       said: '「私たちの輝く日々に、日が沈んだと思うの」と詩のように言う。',
-      mean: 'the sun has set ＝ 日が沈んだ（終わった）。day in the sun ＝ いちばんいい時期。',
+      mean: 'day in the sun ＝ 文字どおりは「日の当たる日」→輝いていた時期。そこに日が沈んだ＝いい時は終わった。',
       trap: 'sun（太陽）が2回出るので明るい話に聞こえやすい。has set（沈んだ）は終わりの合図。',
-      use: 'Our day in the sun is over.（私たちの全盛期は終わった）' },
+      use: 'Everyone has their day in the sun.（だれにでも輝く時がある）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'sweet', seg: [43.7, 55.7],
       stem: 'Why does Janice say “You’re a very sweet person” first?',
@@ -152,7 +165,7 @@ export const janicedump: Clip = {
       line: 'You’re a very *sweet person*… *Unfortunately*, I just don’t think…',
       said: '「とても優しい人ね」とほめてから、「でも、あいにく」と本題に入る。',
       mean: 'ほめてから unfortunately（あいにく）で悪い話。断るときによく使う流れ。',
-      trap: 'sweet（優しい）で、うまくいく話と思いやすい。Unfortunately のあとが本音。',
+      trap: '決め手は Unfortunately（あいにく）のあと。sweet だけ聞くと、いい話に聞こえる。',
       use: 'You’re very kind. Unfortunately, I can’t.（優しいね。でもあいにく無理なの）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'reason', reveals: ['whiny', 'second'], seg: [44.6, 71.2],
@@ -167,7 +180,7 @@ export const janicedump: Clip = {
       trap: '元奥さんや不運の話が先に出るので迷いやすい。理由は whining（愚痴）。',
       use: 'Stop whining and help me.（文句言ってないで手伝って）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'second', seg: [50.6, 57.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'second', seg: [50.6, 57.6], retired: true,
       stem: 'Fill the gap: “Unfortunately, I just ___ take another second…”',
       ja: '空いている所は？「Unfortunately, I just ___ take another second…」',
       choices: ['don’t think I can', 'don’t think I could', 'didn’t think I could'], a: 0,
@@ -191,7 +204,7 @@ export const janicedump: Clip = {
       trap: 'second を「2番目」や「少し待って」と思いやすい。can’t take で「耐えられない」。',
       use: 'I can’t take it anymore.（もう耐えられない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['now'], seg: [58, 97],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['now'], seg: [58, 97], retired: true,
       stem: 'How does Ross feel at the end?',
       ja: '最後に、ロスはどんな気持ち？',
       choices: ['Glad it’s over', 'Sad and hurt', 'Angry at Janice'], a: 0,
@@ -204,15 +217,16 @@ export const janicedump: Clip = {
       use: 'Are you okay? — I am now.（大丈夫？—今はね）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'hearing', seg: [58.3, 63.8],
-      stem: 'Why does Ross say “let me make sure”?',
+      stem: 'What does Ross mean by “let me make sure”?',
       ja: 'ロスはなぜ「let me make sure」と言う？',
-      choices: ['To check he understood her', 'To say he can’t hear her', 'To agree before arguing'], a: 0,
-      choicesJa: ['正しく分かったか確かめるため', '聞こえないと言うため', '反論する前に賛成するため'],
+      choices: ['I want to check I understood', 'I can’t hear you very well', 'I agree with you on this'], a: 0,
+      choicesJa: ['正しく分かったか確かめたい', 'よく聞こえない', 'この点は賛成だ'],
       cue: 'ジャニスの理由のあと。',
       line: '*Let me make sure I’m hearing this right.*',
       said: '「ちょっと確認させて。聞きまちがいじゃないよね」と前置きする。',
       mean: 'Let me make sure 〜 ＝ 〜か確かめさせて。信じられない話を聞き返す前置き。',
-      trap: 'hearing から、耳が聞こえない話と思いやすい。ここは「意味を正しく受け取ったか」。',
+      trap: 'hearing から、耳が聞こえない話を連想しやすい。ここは「意味を正しく受け取ったか」。'
+,
       use: 'Let me make sure I understand.（ちゃんと分かってるか確認させて）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'whiny', reveals: ['reason'], seg: [59.2, 71.1],
@@ -227,18 +241,6 @@ export const janicedump: Clip = {
       trap: 'ending this（別れる）だけ聞くと、別れに驚いていると思いやすい。because のあとを聞く。',
       use: 'Wait, because I’m late?（待って、遅れたから？）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'yeah', seg: [71.6, 88.6],
-      stem: 'How does Janice answer “I annoy you”?',
-      ja: '「I annoy you」に、ジャニスはどう答える？',
-      choices: ['Bluntly, of course', 'Gently, to spare him', 'Unsure, after a pause'], a: 0,
-      choicesJa: ['はっきり、もちろんと', 'やさしく、気をつかって', 'まだ分からない、と迷って'],
-      cue: '「that I annoy you」のあと。',
-      line: 'So you’re saying… that I annoy you, Janice. — *Well, yeah!*',
-      said: '「僕が君をイライラさせてるって？」に、「まあ、そうね！」とすぐ明るく認める。',
-      mean: 'annoy ＝ イライラさせる。Well, yeah! ＝ そりゃそうでしょ。当たり前という返事。',
-      trap: 'Well（ええと）で迷っているように聞こえやすい。すぐ yeah! と強く言う。',
-      use: 'Well, yeah! Of course.（まあ、そりゃそうでしょ）' },
-
     { id: 'n2', skill: 'sound', level: 'C2', point: 'annoy', seg: [72.6, 85.7], retired: true,
       stem: 'Where is the stress in “…that I annoy you, Janice”, and why?',
       choices: ['On “you”: she, of all people, finds him annoying', 'On “annoy”: he can’t believe he annoys anyone',
@@ -250,15 +252,28 @@ export const janicedump: Clip = {
       trap: 'annoy を強めると単なる驚き、become なら変化を認めたことになる。強勢は、何と比べているかを示す。',
       use: 'You think I’m late? You?（僕が遅刻？君が言う？）' },
 
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'now', seg: [92.0, 96.4], retired: true,
-      stem: 'When Ross is asked if he’ll be okay, why is his answer funny?',
-      choices: ['He is glad to be free of her', 'He is putting on a brave face', 'He is cheered that she still cares'],
-      a: 0,
-      cue: '答えの最後の一語。',
-      line: 'Are you gonna be okay? — *I am now.*',
-      said: '「大丈夫？」と聞かれ、「今はね」と答える。',
-      mean: 'now ＝ 君と別れた今は。ふられたのに、ほっとしていると明かしてしまう。',
-      trap: '強がりや、気づかいへの喜びに聞こえやすいが、now が「別れたから」を指す。短い答えは最後の語を聞く。',
-      use: 'I feel better now that it’s over.（終わってほっとした）' },
+    { id: 't2', skill: 'detail', level: 'B1', point: 'yeah', ctx: true, seg: [73.0, 87.6],
+      stem: 'Ross asks if he annoys Janice. What does she say?',
+      ja: 'ロスは「君をイライラさせてる？」と聞く。ジャニスの答えは？',
+      choices: ['Yes, he does', 'No, not at all', 'Only a little'], a: 0,
+      choicesJa: ['うん、させてる', 'ううん、全然', '少しだけ'],
+      cue: '「Janice」と呼ばれたあとの返事。',
+      line: 'Ross: So you’re saying… *that I annoy you*, Janice. / Janice: *Well, yeah!*',
+      said: '「僕が君をイライラさせてるってこと？」に、「まあ、そうね！」とすぐ認める。',
+      mean: 'annoy ＝ イライラさせる。Well, yeah! ＝ 「まあ、そりゃね」。当たり前でしょ、とあっさり認める返事。',
+      trap: 'Well（ええと）で迷うように聞こえるが、すぐ yeah! と言い切る。少しだけ、とは言っていない。',
+      use: 'Is it too late? — Well, yeah.（もう遅い？—まあ、そうだね）' },
+
+    { id: 'h1', skill: 'pragma', level: 'B1', point: 'now', ctx: true, seg: [88.6, 96.0],
+      stem: 'What does Ross mean by “I am now”?',
+      ja: 'ロスの「I am now」はどういう意味？',
+      choices: ['He is okay now', 'He will be okay later', 'He is not okay now'], a: 0,
+      choicesJa: ['今はもう大丈夫', 'あとで大丈夫になる', '今は大丈夫じゃない'],
+      cue: '「Are you going to be okay?」の返事。',
+      line: 'Janice: *Are you going to be okay?* / Ross: *I am now.*',
+      said: '「大丈夫？」と聞かれ、「今は大丈夫」と答える。',
+      mean: 'I am now ＝ I am okay now の略。別れた今はもう大丈夫、ほっとした、という本音。',
+      trap: 'going to（これから）の質問なので、あとで大丈夫になると考えがち。答えの最後の now を聞く。',
+      use: 'Are you okay? — I am now, thanks.（大丈夫？—もう大丈夫、ありがとう）' },
   ]
 };

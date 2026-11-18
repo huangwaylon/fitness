@@ -1,11 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 0, new 5, ctx 5, tx 7
 // A2 REVIEW 2026-11-17: keep 13, rewrite 4, retire 7, new 0
 // “Tom finds his true purpose: failure | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // Leslie praises Tom's success at his bistro; his friends back a big expansion; a narrator reports that he lost
 // everything; Tom tells Lucy why this failure hurts; years later he is a best-selling author of “Failure”, speaking
 // to a crowd and signing copies for his friends.
-// Segments from the captions, words from whisper (2026-11-16). Tom, Leslie, Ben, Ron and Lucy are named in the audio.
-// Untested on purpose: 0–10 s (speakers unclear), 25.6 s, 75.5 s, 189–216 s (the Gary joke), 232–274 s (the
-// signing gag; music, whisper loops "I love you"). Open: the title ("failure") helps h2 blind.
+// Segments from the captions, words from whisper (2026-11-16). Tom, Leslie, Ben, Ron and Lucy are named in the audio;
+// the friend at 76–80 s and the one answering at 220–229 s aren't, so items say "friend".
+// SKIP 176–216: the rest of the book talk (n4 asks the number), the cast-name list and the Gary joke (show lore).
+// Untested: 0–7 s (speakers unclear), 25.6 s (whisper garbage), 75.5 s. Open: the title ("failure") helps h2 blind.
 import type { Clip } from '../types.ts';
 
 export const tomFailure: Clip = {
@@ -14,28 +16,41 @@ export const tomFailure: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'canijust', seg: [8.9, 15.7],
-      stem: 'Why does Leslie say “Can I just say, Tom”?',
-      ja: 'レスリーはなぜ「Can I just say, Tom」と言う？',
-      choices: ['To start a warm compliment', 'To calm him about the problem', 'To lead up to a favor'], a: 0,
-      choicesJa: ['心からほめ始めるため', '問題について安心させるため', '頼みごとの前置きにするため'],
-      cue: '「Tom」と呼んだあと',
-      line: 'Can I just say, Tom, *you have accomplished so much*.',
-      said: '「ちょっと言わせて。トム、本当にいろいろ成し遂げたね」と話しはじめる。',
-      mean: 'Can I just say 〜 ＝「ちょっと言わせて」。気持ちのこもった一言の前置き。',
-      trap: '頼みごとの前置きにも聞こえるが、返事を待たずにほめ言葉が続く。',
-      use: 'Can I just say, this is delicious.（言わせて、これおいしい）' },
+    { id: 'c4', skill: 'phrase', level: 'B1', point: 'nosweat', seg: [7.5, 11.2],
+      stem: 'What does Tom mean by “No sweat”?',
+      ja: 'トムの「No sweat」はどういう意味？',
+      choices: ['Easy, don’t worry', 'It’s too hot today', 'I can’t do it today'], a: 0,
+      choicesJa: ['簡単だよ、心配ない', '今日は暑すぎる', '今日はできない'],
+      cue: '「Tommy will solve this problem」のあと',
+      line: 'Don’t worry, boo-boo. Tommy will solve this problem. *No sweat.*',
+      said: '「心配しないで。トミーが解決するよ。楽勝さ」と言う。',
+      mean: 'No sweat ＝ 文字どおりは「汗なし」。汗もかかずにできる→「楽勝・お安いご用」。くだけた言い方。',
+      trap: 'sweat（汗）から暑さの話を連想しやすい。前の Don’t worry と同じ気持ち。',
+      use: 'Can you help? — Sure, no sweat.（手伝える？—いいよ、お安いご用）' },
 
-    // retired (A2): about 75 % blind from Tom’s persona
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'proud', reveals: ['canijust'], seg: [16.3, 25.3], retired: true,
-      stem: 'How does Tom take Leslie’s praise?',
-      choices: ['He thanks her and adds praise for himself', 'He thanks her and says he’s proud of her too',
-                'He thanks her but says it was mostly luck'], a: 0,
-      cue: 'ほめ言葉への、Tom の二つの返し。',
-      line: 'Don’t forget *well-dressed*. … Thanks, Leslie. *I’m proud of me, too*.',
-      said: '「おしゃれも忘れずに」と自分で足し、最後は「僕も自分が誇らしいよ」と言う。',
-      mean: '遠慮せず、ほめ言葉にさらに自分で上乗せしている。Tom らしい明るい自信。',
-      trap: 'よくある proud of you too に聞こえやすい。of me の一語を聞く。',
+    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'canijust', seg: [10.4, 15.7],
+      stem: 'What does Leslie mean by “Can I just say”?',
+      ja: 'レスリーの「Can I just say」はどういう意味？',
+      choices: ['I want to tell you something', 'I want to ask you something', 'I want to say goodbye to you'], a: 0,
+      choicesJa: ['ちょっと言わせて', 'ちょっと聞いてもいい？', 'お別れを言いたい'],
+      cue: '「Tom」と呼ぶ前の言葉',
+      line: '*Can I just say*, Tom, you have accomplished so much.',
+      said: '「ちょっと言わせて。トム、本当にいろいろ成しとげたね」と話しはじめる。',
+      mean: 'Can I just say 〜 ＝ 文字どおりは「ただ言ってもいい？」→「ちょっと言わせて」。気持ちのこもった一言の前置き。',
+      trap: '疑問文なので、何か聞く前置きと考えがち。返事を待たずに、ほめ言葉が続く。',
+      use: 'Can I just say, this is delicious.（ちょっと言わせて、これおいしい）' },
+
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'proud', ctx: true, seg: [18.0, 25.0],
+      stem: 'Leslie is proud of Tom. What does Tom say?',
+      ja: 'レスリーはトムを誇りに思うと言う。トムの返事は？',
+      choices: ['He is proud of himself too', 'He is proud of her too', 'It was mostly just good luck'], a: 0,
+      choicesJa: ['自分も自分を誇りに思う', '自分も彼女を誇りに思う', 'ほとんど運がよかっただけ'],
+      cue: '「Thanks, Leslie」のあと',
+      line: 'Leslie: *I am so very proud of you.* / Tom: Thanks, Leslie. *I’m proud of me, too.*',
+      said: '「本当に誇りに思う」に、「ありがとう。俺も自分を誇りに思うよ」と返す。',
+      mean: 'I’m proud of you ＝ あなたを誇りに思う。ふつうは I’m proud of you too と返すが、トムは of me（自分）。',
+      trap: 'よくある返事 proud of you too に聞こえやすい。of me の一語を聞く。',
+
       use: 'Thanks! I’m pretty proud of it.（ありがとう、けっこう自信作なんだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'wine', seg: [25.2, 35],
@@ -50,19 +65,18 @@ export const tomFailure: Clip = {
       trap: 'card からお礼のカードと思いやすい。business card ＝ 名刺で、メモでも請求書でもない。',
       use: 'The couple over there sent you this.（あちらのお客様からです）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'expand', seg: [38.0, 82.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'expand', seg: [35.7, 62.0],
       stem: 'What does Tom ask his friends to help him decide?',
       ja: 'トムは仲間に、何を決める手助けを頼む？',
-      choices: ['Whether to open more restaurants', 'Whether to make his place bigger', 'Whether to sell his restaurant'], a: 0,
-      choicesJa: ['もっと店を出すかどうか', '店を広くするかどうか', '店を売るかどうか'],
+      choices: ['Whether to open more restaurants', 'Whether to sell his restaurant', 'Whether to put calzones on the menu'], a: 0,
+      choicesJa: ['店をもっと出すかどうか', '店を売るかどうか', 'カルツォーネを出すかどうか'],
       cue: '最初の「as you all know」のあと',
       line: 'Tom’s Bistro has been presented with a *huge expansion opportunity*.',
-      said: '「店に大きな拡大の話が来ている。決める前に意見がほしい」と言う。',
+      said: '「店を大きく広げるチャンスが来た。決める前に意見がほしい」と言う。',
       mean: 'expansion ＝ 拡大。仲間は「新しい店にはリスクも」と、何店も出す話をする。',
-      trap: 'expansion を一店の拡張と思いやすい。new restaurants で、何店も出す話と分かる。',
+      trap: 'ベンがカルツォーネ（包み焼きピザ）をすすめるが、それはついでの話。聞かれているのは店を増やすこと。',
       use: 'I want your opinion before I decide.（決める前に意見がほしい）' },
 
-    // retired (A2): a C1 reading of teasing
     { id: 'i2', skill: 'infer', level: 'C1', point: 'bigshot', seg: [44.6, 55.3], retired: true,
       stem: 'When Ben asks to be called by his name, what does the reply imply?',
       choices: ['His new title earns him no special treatment here', 'He should stop bragging about his new job',
@@ -74,6 +88,18 @@ export const tomFailure: Clip = {
       trap: 'whining を自慢と取りやすい。理由は before のあと。',
       use: 'You’re still just Mike to me.（私にとっては今もただのマイクだよ）' },
 
+    { id: 'c8', skill: 'pragma', level: 'B1', point: 'nocando', ctx: true, seg: [46.8, 53.0],
+      stem: 'Ben asks to be called Ben. What does Tom say?',
+      ja: 'ベンは「ベンと呼んで」と頼む。トムの返事は？',
+      choices: ['No, he won’t', 'Yes, he will', 'Maybe next time'], a: 0,
+      choicesJa: ['いや、呼ばない', 'うん、そう呼ぶ', 'また今度ね'],
+      cue: '「call me Ben?」への返事',
+      line: 'Ben: Can you at least *call me Ben*? / Tom: *No can-do*, accounting nerd.',
+      said: '「せめてベンと呼んで」に、「それは無理だね、会計オタク」と返す。',
+      mean: 'No can do ＝ 「それは無理」。くだけた断り方。at least ＝ せめて。',
+      trap: 'can-do（できる）が聞こえて、引き受けたと勘違いしやすい。頭の No と、また accounting nerd と呼ぶのが答え。',
+      use: 'Friday? Sorry, no can do.（金曜？ごめん、無理だ）' },
+
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'homework', seg: [53.7, 62.8],
       stem: 'What does “you’ve done your homework” mean here?',
       ja: '「you’ve done your homework」は、ここではどういう意味？',
@@ -82,8 +108,8 @@ export const tomFailure: Clip = {
       cue: '「risks」の話のあと',
       line: 'there are always going to be risks… but *you’ve done your homework*. All the numbers line up.',
       said: '「リスクはつきもの。でも下調べはしてある。数字も合っている」と言う。',
-      mean: 'do one’s homework ＝ 事前にしっかり調べる。宿題の意味ではない。',
-      trap: 'homework を「書類仕事」と思いやすい。仕事の話では「下調べ」。',
+      mean: 'do one’s homework ＝ 文字どおりは「宿題をする」→仕事では「事前にしっかり調べる」。',
+      trap: 'homework から書類仕事を連想しやすい。直後の All the numbers line up（数字が合う）が下調べの結果。',
       use: 'Do your homework before you buy a car.（車を買う前に下調べを）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'ron', seg: [69.5, 78.9],
@@ -94,13 +120,13 @@ export const tomFailure: Clip = {
       cue: '「but」のあとのことわざ',
       line: 'it’s a *bold capitalistic gambit*, son, but *nothing ventured, nothing gained*.',
       said: '「大胆な賭けだ。だが、何もしなければ何も得られない」と言う。',
-      mean: 'nothing ventured, nothing gained ＝ やってみなければ何も得られない。賛成の言葉。',
+      mean: 'nothing ventured, nothing gained ＝ 文字どおりは「何も賭けなければ何も得ない」。やってみよう、と賛成することわざ。',
       trap: 'gambit が gamble（ギャンブル）に聞こえて反対と思いやすい。but のあとが結論。',
       use: 'Nothing ventured, nothing gained. Let’s apply.（やってみなきゃ。応募しよう）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'realestate', seg: [75.3, 83.2],
-      stem: 'What reason does the next friend give for doing it now?',
-      ja: '次の仲間は、今やるべき理由を何と言う？',
+      stem: 'Why is now a good time, says the next friend?',
+      ja: '次の仲間は、なぜ今がいい時期だと言う？',
       choices: ['Property is cheap right now', 'Restaurants are popular right now', 'Loans are easy right now'], a: 0,
       choicesJa: ['今は不動産が安い', '今はレストランが人気', '今はお金を借りやすい'],
       cue: '最初の二語',
@@ -123,18 +149,19 @@ export const tomFailure: Clip = {
       use: 'There’ll be twenty of us at dinner.（夕食は20人になります）' },
 
     { id: 'h2', skill: 'humor', level: 'B2', point: 'blowup', seg: [86.1, 96.1],
-      stem: 'Why is the narrator’s “blow up he did” funny?',
-      ja: 'ナレーションの「blow up he did」はなぜおかしい？',
-      choices: ['His word for success means crash', 'It means Tom got very angry', 'Tom really became a hit'], a: 0,
-      choicesJa: ['トムの「大成功」が「大失敗」になる', 'トムがすごく怒ったという意味', 'トムが本当に大成功した'],
+      stem: 'What does the narrator mean by “blow up he did”?',
+      ja: 'ナレーションの「blow up he did」はどういう意味？',
+      choices: ['His business crashed', 'He got very angry', 'He became a very big hit'], a: 0,
+      choicesJa: ['事業がだめになった', 'ひどく怒った', '大ヒットした'],
+
       cue: 'トムの最後の言葉と、ナレーション',
       line: 'Tommy’s about to *blow up*. — And blow up he did, *but not in a good way*.',
-      said: '「大ブレイクするぞ」に、ナレーションが「ブレイクした。悪い意味で」と続ける。',
+      said: '「大ブレイク（blow up）するぞ」に、ナレーションが「確かに blow up した。悪い意味で」と続ける。',
+
       mean: 'blow up は「大当たりする」と「爆発する・だめになる」の両方。同じ語で意味を裏返す。',
       trap: 'blow up には「怒る」の意味もある。次の He lost everything で破産と分かる。',
       use: 'Her video totally blew up.（彼女の動画がバズった）' },
 
-    // retired (A2): a C2 inference over the film
     { id: 'c1', skill: 'infer', level: 'C2', point: 'swagger', seg: [94.0, 111.1], retired: true,
       stem: 'Who decided that losing his swagger was “worst of all”?',
       choices: ['Tom himself, in a film he made', 'Lucy, in a film she made about him', 'A TV news report on his downfall'],
@@ -146,31 +173,30 @@ export const tomFailure: Clip = {
       trap: '声だけだと他人がからかっていると取りやすい。That you made が、だれの言葉かを変える。',
       use: 'You wrote this about yourself?（これ自分で自分のこと書いたの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'lucy', reveals: ['careful'], seg: [102, 145.2],
-      stem: 'What is Tom’s talk with Lucy mainly about?',
-      ja: 'トムとルーシーの話は、主に何について？',
-      choices: ['Why this failure hurts more', 'Whether to stop watching the film', 'What business to try next'], a: 0,
-      choicesJa: ['今回の失敗がなぜもっとつらいか', '映像を見るのをやめるか', '次に何の商売をするか'],
-      cue: '後半の「That’s the problem」',
-      line: 'That’s the problem, though. … This time, *I was smart and careful, and I still went broke*.',
-      said: 'ルーシーが慰めるが、トムは「今回は慎重にやったのに失敗した」と悩む。',
-      mean: '失敗そのものより、正しくやっても失敗したことがつらい。',
-      trap: '映像の話や「次はどうする」も出るが、中心は後半の「今回は何がちがうか」。',
-      use: 'That’s the part that really hurts.（そこが本当につらいところ）' },
-
-    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', seg: [102, 108.5],
-      stem: 'What does “I can’t tear myself away” mean?',
-      ja: '「I can’t tear myself away」はどういう意味？',
+    { id: 'f6', skill: 'phrase', level: 'B2', point: 'tear', ctx: true, seg: [102.0, 108.5],
+      stem: 'What does Tom mean by “I can’t tear myself away”?',
+      ja: 'トムの「I can’t tear myself away」はどういう意味？',
       choices: ['I can’t stop watching it', 'I can’t watch without crying', 'I can’t bear to watch it'], a: 0,
       choicesJa: ['見るのをやめられない', '泣かずに見られない', 'つらくて見られない'],
-      cue: 'ルーシーの最初の一言のあと',
-      line: 'I *can’t tear myself away*.',
-      said: '「目が離せないんだ。僕の失敗のドキュメンタリーだよ」と言う。',
-      mean: 'tear oneself away ＝ 自分を引きはがす。can’t と組んで「やめられない」。',
-      trap: 'tear を「涙（ティア）」と思いやすい。ここは「テア」で「引きはがす」。',
+      cue: 'ルーシーの最初の一言への返事',
+      line: 'Lucy: Tommy, *you’ve got to stop watching this*. / Tom: I *can’t tear myself away*.',
+      said: '「もう見るのはやめなきゃ」に、「目が離せないんだ」と答える。',
+      mean: 'tear oneself away ＝ 文字どおりは「自分を引きはがす」。can’t と組んで「やめられない・目が離せない」。',
+      trap: 'tear を「涙（ティア）」と勘違いしやすい。ここは「テア」で「引きはがす」。',
       use: 'I couldn’t tear myself away from the game.（試合から目が離せなかった）' },
 
-    // retired (A2): a “why does it get a laugh” item
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'lucy', seg: [108.0, 131.0],
+      stem: 'What does Lucy want Tom to do?',
+      ja: 'ルーシーはトムに何をしてほしい？',
+      choices: ['Move on from his failure', 'Make a new film about it', 'Buy back his collection'], a: 0,
+      choicesJa: ['失敗から前に進む', 'それの新しい映像を作る', 'コレクションを買い戻す'],
+      cue: 'ルーシーの最後の言葉',
+      line: 'Look, you had a tough break. … *You just got to move on*.',
+      said: '「運が悪かっただけ」と慰め、最後に「とにかく前に進まなきゃ」と励ます。',
+      mean: 'move on ＝ 気持ちを切りかえて前に進む。you’ve got to 〜 ＝ 〜しなきゃ。',
+      trap: 'トムが失敗の映像や売った物の話をするので、そちらに引かれやすい。ルーシーの言葉を聞く。',
+      use: 'It’s over. You have to move on.（終わったこと。前に進まなきゃ）' },
+
     { id: 'h4', skill: 'humor', level: 'C1', point: 'pocket', seg: [110.95, 121.4], retired: true,
       stem: 'Why does Tom’s list of losses get a laugh at the end?',
       choices: ['He mourns a fashion item as much as his fortune', 'He blames his spending on clothes for the loss',
@@ -182,7 +208,6 @@ export const tomFailure: Clip = {
       trap: '服の話なので「服にお金を使った」と取りやすいが、売ったのは失ったあと。',
       use: 'I lost my wallet and, worse, my lucky pen.（財布と、もっと痛いのは幸運のペン）' },
 
-    // retired (A2): “credit dried up” is economics jargon
     { id: 'f7', skill: 'phrase', level: 'C1', point: 'credit', seg: [121.35, 128.3], retired: true,
       stem: 'What does Lucy say happened with credit?',
       choices: ['Loans became hard to get', 'His credit card was cut off', 'His credit rating went down'], a: 0,
@@ -193,14 +218,14 @@ export const tomFailure: Clip = {
       trap: 'カタカナのクレジットでカードの話と取りやすい。株と並ぶ、経済全体の話。',
       use: 'The money just dried up.（お金がすっかり底をついた）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'beef', seg: [121.4, 131.8],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'beef', seg: [121.4, 128.6],
       stem: 'Why does Lucy ask “Who could have predicted…?”',
       ja: 'ルーシーはなぜ「Who could have predicted…?」と聞く？',
       choices: ['To say nobody could have known', 'To say he should have known', 'To ask why beef ran out'], a: 0,
       choicesJa: ['だれにも分からなかったと言うため', '彼は分かるべきだったと言うため', 'なぜ牛肉がなくなったか聞くため'],
       cue: '質問のあと、答えを待つかどうか',
-      line: '*Who could have predicted* that the country would run out of beef? You just gotta move on.',
-      said: '「国から牛肉がなくなるなんて、だれが予想できた？前に進むしかないよ」と言う。',
+      line: 'Stock market tanked, credit dried up. *Who could have predicted* that the country would run out of beef?',
+      said: '「株は暴落、お金も借りられない。国から牛肉がなくなるなんて、だれが予想できた？」と言う。',
       mean: 'Who could have 〜? ＝「だれが〜できた？（だれもできない）」。トムを責めずに慰めている。',
       trap: '疑問文なので答えを探しやすい。答えを待たずに続くなら、問いの形の励まし。',
       use: 'Who could have known it would rain?（雨なんてだれが分かった？）' },
@@ -263,7 +288,19 @@ export const tomFailure: Clip = {
       trap: 'second or third が先に聞こえるが、isn’t で打ち消されている。',
       use: 'Don’t give up. Try again.（あきらめないで、もう一回）' },
 
-    // retired (A2): a C2 humor item (Do not be a Gary)
+    { id: 'n4', skill: 'number', level: 'B1', point: 'seven', seg: [174.0, 188.6],
+      stem: 'How many types of successful people are in Tom’s book?',
+      ja: 'トムの本では、成功する人は何タイプ？',
+      choices: ['Five', 'Six', 'Seven', 'Eleven'], a: 2,
+      choicesJa: ['5タイプ', '6タイプ', '7タイプ', '11タイプ'],
+
+      cue: '「I’ve outlined」のあと',
+      line: 'As you know if you’ve read the book, I’ve outlined *seven different types* of successful people.',
+      said: '「本を読んだ方はご存じの通り、成功する人を7つのタイプに分けました」と話す。',
+      mean: 'seven ＝ 7。「セヴン」と v が入る。As you know ＝ ご存じの通り。',
+      trap: 'eleven も「…レヴン」で終わり、似て聞こえる。頭の「イ」がなければ seven。',
+      use: 'As you know, the shop opens at seven.（ご存じの通り、店は7時開店です）' },
+
     { id: 'c2', skill: 'humor', level: 'C2', point: 'gary', seg: [194.5, 215.4], retired: true,
       stem: 'In “Do not be a Gary”, who is the joke on?',
       choices: ['The one friend left off the list', 'Anyone in the crowd named Gary',
@@ -275,19 +312,30 @@ export const tomFailure: Clip = {
       trap: '「～みたいな人」という一般名詞に聞こえやすい。名前が仲間のものと気づくと、特定の一人だと分かる。',
       use: 'Don’t be that guy.（ああいう人にはならないで）' },
 
-    { id: 'h5', skill: 'phrase', level: 'B2', point: 'take', seg: [221.4, 232.4],
+    { id: 'c6', skill: 'pragma', level: 'B2', point: 'kidding', ctx: true, seg: [216.5, 226.0],
+      stem: 'Tom thanks his friends for coming. What do they mean?',
+      ja: 'トムは来てくれたお礼を言う。仲間の返事の意味は？',
+      choices: ['They are happy to be there', 'They are only joking with him', 'They had to come for work'], a: 0,
+      choicesJa: ['来られてうれしい', 'からかっているだけ', '仕事で来るしかなかった'],
+      cue: '「thanks so much for coming」の返事',
+      line: 'Tom: Hey, *thanks so much for coming*, guys. / Friend: *Are you kidding*, Tom? *This is incredible.*',
+      said: '「来てくれてありがとう」に、「何言ってるの、トム？すごいじゃない」と返す。',
+      mean: 'Are you kidding? ＝ 文字どおりは「冗談でしょ？」。お礼への返事では「お礼なんていらない、来て当然」。',
+      trap: 'kidding（冗談）から、ふざけていると考えがち。続く This is incredible（すごい）が本音。',
+      use: 'Thanks for helping! — Are you kidding? Anytime.（手伝ってくれてありがとう—何言ってるの、いつでも）' },
+
+    { id: 'h5', skill: 'phrase', level: 'B2', point: 'take', ctx: true, seg: [225.0, 232.4],
       stem: 'What does “I don’t know how to take that” mean?',
       ja: '「I don’t know how to take that」はどういう意味？',
-      choices: ['I’m not sure it’s a compliment', 'I don’t know where it goes', 'I can’t carry the book'], a: 0,
-      choicesJa: ['ほめ言葉か分からない', 'どこに置くか分からない', '本を持てない'],
+      choices: ['I’m not sure it’s a compliment', 'I don’t know where to put this', 'I can’t carry the book'], a: 0,
+      choicesJa: ['ほめ言葉か分からない', 'どこに置けばいいか分からない', '本を持って帰れない'],
       cue: '本の題の話のあと',
-      line: 'I couldn’t have done it without you. — Well, *the book’s called Failure*. *I don’t know how to take that.*',
-      said: '「君たちのおかげ」に、「本の題は『失敗』だよ。どう受け取れば」と返す。',
+      line: 'Tom: I couldn’t have done it without you. / Friend: Well, *the book’s called Failure*. *I don’t know how to take that.*',
+      said: '「君たちのおかげ」に、「本の題は『失敗』でしょ。どう受け取れば」と返す。',
       mean: 'how to take 〜 ＝「〜をどう受け取るか」。take は「持つ」でなく「受け取る・理解する」。',
-      trap: 'take（持っていく）から、物の話と思いやすい。言われた言葉の受け取り方の話。',
+      trap: 'take（持っていく）から、物の話と考えがち。「失敗」は君たちのおかげ、とも聞こえるのが笑いどころ。',
       use: 'I’m not sure how to take that.（それ、どう受け取ればいいのかな）' },
 
-    // retired (A2): a C2 humor item (I mean every word of it)
     { id: 'c3', skill: 'attitude', level: 'C2', point: 'everyword', seg: [232.0, 252.4], retired: true,
       stem: 'How does “I mean every word of it” land after their copy is read?',
       choices: ['Funny: there are only two words to mean', 'Awkward: he handed them the wrong copy',
@@ -298,5 +346,17 @@ export const tomFailure: Clip = {
       mean: '「一語一語本気」と言っても、二語しかない。立派な決め文句が、短すぎる中身で空回りしている。',
       trap: '取りちがえで終わったように見えるが、すぐ本物が渡される。決め文句は何に向けたかを聞く。',
       use: 'Short, but I mean it.（短いけど本気だよ）' },
+
+    { id: 'c5', skill: 'detail', level: 'B2', point: 'bestwish', seg: [240.0, 249.5],
+      stem: 'What does Tom write in his friends’ book?',
+      ja: 'トムは仲間の本に何と書いた？',
+      choices: ['Best wishes', 'I love you', 'You inspire me'], a: 0,
+      choicesJa: ['ご多幸を', '愛しています', 'あなたは私のお手本'],
+      cue: '「Here’s yours」のあと',
+      line: 'I love you. … Oh, sorry. *That’s actually for Kendrick Lamar.* Here’s yours. *Best wishes.*',
+      said: '熱い言葉を読んだあと「ごめん、それは別の人用。君たちのはこれ」と渡す。中は一言。',
+      mean: 'That’s actually for 〜 ＝ それは実は〜用。ケンドリック・ラマーは有名ラッパー。Best wishes ＝ 手紙の決まった結び。',
+      trap: '長く熱い言葉が先に読まれるので、それと考えがち。決め手は Here’s yours のあと。',
+      use: 'Oh, sorry, that’s for someone else.（あ、ごめん、それは別の人の）' },
   ]
 };

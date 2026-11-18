@@ -1,13 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 3, new 4, ctx 7, tx 6
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 7, new 4
 // “911 CALL ME  - The Office US” (the official The Office channel, BEST OF SEASON 5 - The Office US): Michael phones
 // David Wallace to get rid of Toby, who is back at work; David refuses and tells him to get along with Toby. Michael then
 // puts on a warm welcome for Toby, asks about his trip, and tells the camera how much it costs him, with a horror-movie
 // comparison.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Michael, David (Wallace), Toby.
-// Untested on purpose: 0–15 s (unnamed speakers on Toby's tan), 95.3 s (captions "no", whisper "Nope"), 106–114 s ("No /
-// Yep / I don't", then captions "goodbye Michael … do that", whisper "Don't do that": speakers and words unsettled),
-// 120–122 s (the "Kurt Russell… served" line), 155–158 s, 168–175 s ("this was hot", the air conditioner lines:
-// unclear), 175.9 s (who asks "Are you all right?"), 193–211 s (the horror-movie comparison: left out).
+// SKIP 193–233: the horror-movie comparison (a killer murdering friends), then music under a stretched caption.
+// Untested: 0–15 s (unnamed speakers on Toby's tan), 106–114 s ("No / Yep / I don't / Don't do that": speakers and words
+// unsettled), 120–122 s (the "Kurt Russell… served" line), 156–158 s, 168–175 s (the air conditioner lines: unclear).
+// c4: who asks "Are you all right?" at 175 s isn't settled, so the stem says "someone".
 import type { Clip } from '../types.ts';
 
 export const callMe911: Clip = {
@@ -16,16 +17,53 @@ export const callMe911: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'f1', retired: true, skill: 'phrase', level: 'B2', point: 'surface', seg: [38.8, 43.4],
-      stem: 'When asked if anyone is hurt, what does Michael’s answer mean?',
-      choices: ['No one is hurt, but people are upset inside', 'No one looks hurt, but some may have hidden injuries',
-                'No one is hurt, but the office is in a mess'], a: 0,
-      cue: '「no」のあと、but に続く形容詞。',
-      line: '*Not on the surface*, no. But I can tell people are *disturbed*',
-      said: '「表面上はいない。でもみんな動揺しているのが分かる」と答える。',
-      mean: 'on the surface ＝ 見た目には。体のけがはないが、心が傷ついたと大げさに言う。',
-      trap: 'surface を体の表面と取ると、隠れたけがの話に。but のあとの気持ちを聞く。',
-      use: 'On the surface, she seems fine.（表面上は、彼女は平気そう）' },
+    { id: 'c1', skill: 'phrase', level: 'B1', point: 'online', seg: [22.5, 27.5],
+      stem: 'What does “on the line for you” mean here?',
+      ja: 'ここでの「on the line for you」はどういう意味？',
+      choices: ['Waiting for you on the phone', 'Standing in a line for you', 'Waiting for you at the front door'], a: 0,
+      choicesJa: ['電話であなたを待っている', 'あなたのために列に並んでいる', '玄関前であなたを待っている'],
+      cue: '「David Wallace is」のあと。',
+      line: 'David Wallace is *on the line for you*.',
+      said: '「デビッド・ウォレスさんからお電話です」と取りつぐ。',
+      mean: 'on the line ＝ 文字どおりは「線の上」。電話線につながっている→電話に出て待っている。職場の取りつぎの決まり文句。',
+      trap: 'line から「列に並ぶ」を連想しやすい。直後に Hello と電話の会話が始まる。',
+      use: 'Ms. Sato is on the line for you.（佐藤さんからお電話です）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', seg: [23.0, 49.0],
+      stem: 'Why does Michael call David?',
+      ja: 'マイケルはなぜデビッドに電話する？',
+      choices: ['To get help with Toby', 'To report that someone is hurt', 'To ask for a day off'], a: 0,
+      choicesJa: ['トビーのことで助けてほしい', 'けが人が出たと知らせたい', '休みがほしい'],
+      cue: '電話に出た直後。',
+      line: 'Hello, *we need your help*. … *Toby Flenderson* of HR has made a sudden reappearance.',
+      said: '「助けてほしい」と言い、「人事のトビーが突然戻ってきた」と告げる。',
+      mean: 'reappearance ＝ また現れること。大事件のように言うが、中身は嫌いな同僚が戻っただけ。',
+      trap: 'デビッドが「けが人は？」と聞くので、事故と考えがち。だれもけがはしていない。',
+      use: 'Hello, I need your help.（もしもし、助けてほしいんです）' },
+
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'afraid', ctx: true, seg: [27.5, 35.5],
+      stem: 'David asks if everyone is okay. What does Michael say?',
+      ja: 'デビッドは「みんな無事か？」と聞く。マイケルの答えは？',
+      choices: ['Sadly, no', 'Yes, everyone is', 'He is not sure'], a: 0,
+      choicesJa: ['あいにく、無事じゃない', 'うん、みんな無事', 'よく分からない'],
+      cue: '「is everyone okay?」の返事。',
+      line: 'David: Michael, *is everyone okay?* / Michael: Well, *I’m afraid not*.',
+      said: '「みんな無事か？」に、「いや、あいにく無事じゃない」と答える。',
+      mean: 'I’m afraid not ＝ あいにく違う。afraid は「怖い」でなく、悪い返事をやわらげる言い方。ていねいな断りにも使う。',
+      trap: 'afraid（怖い）から、怖がっていると考えがち。not で終わるので答えは「いいえ」。',
+      use: 'Do you have a table? — I’m afraid not.（席はありますか？—あいにく満席です）' },
+
+    { id: 'f1', skill: 'detail', level: 'B1', point: 'surface', ctx: true, seg: [35.5, 43.5],
+      stem: 'David asks if anyone is hurt. What does Michael say?',
+      ja: 'デビッドは「けが人は？」と聞く。マイケルの答えは？',
+      choices: ['No, but people are upset', 'Yes, a few people are hurt', 'He doesn’t know yet'], a: 0,
+      choicesJa: ['いないが、みんな動揺している', 'うん、何人か', 'まだ分からない'],
+      cue: '「Is anyone hurt?」の返事。',
+      line: 'David: *Is anyone hurt?* / Michael: *Not on the surface, no.* But I can tell *people are disturbed*, David.',
+      said: '「けが人は？」に「見た目にはいない。でもみんな動揺している」と答える。',
+      mean: 'on the surface ＝ 表面上は・見た目には。disturbed ＝ 動揺している。体ではなく心が傷ついた、と大げさに言う。',
+      trap: '決め手は no と but のあと。けが人を聞かれて「はい」と考えがちだが、答えは no。',
+      use: 'Is anyone hurt? — No, everyone’s fine.（けが人は？—いません、みんな無事です）' },
 
     { id: 'd1', skill: 'detail', level: 'B2', point: 'text911', seg: [48.9, 56.2],
       stem: 'Why does Michael text “911”?',
@@ -50,19 +88,7 @@ export const callMe911: Clip = {
       trap: 'always return を好かれている証拠と取りやすい。because の後が本当の理由。',
       use: 'Works every time.（毎回うまくいくんだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', reveals: ['getrid'], seg: [62.0, 103.5],
-      stem: 'What does Michael want David to do?',
-      ja: 'マイケルはデビッドに何をしてほしい？',
-      choices: ['Get rid of Toby', 'Come to the office', 'Say sorry to him'], a: 0,
-      choicesJa: ['トビーを追い出す', '会社に来る', '彼に謝る'],
-      cue: '電話の後半、マイケルが直接たずねる質問。',
-      line: 'Is there no way we can *get rid of him*?',
-      said: '理由を聞かされたあと、最後に「彼を追い出す方法はないのか」と聞く。',
-      mean: 'get rid of ＝ 追い払う。嫌いな同僚を辞めさせたい、という相談。',
-      trap: '「話し合いになっていない」の不満から、謝ってほしいと思いやすい。本題は最後の質問。',
-      use: 'Is there any way we can change seats?（席を替えてもらう方法はありますか）' },
-
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'reasons', seg: [62.7, 70.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'reasons', seg: [62.7, 70.1], retired: true,
       stem: 'What is David’s last reason for hiring Toby back?',
       ja: 'トビーを戻した理由のうち、デビッドの最後の理由は？',
       choices: ['David likes him', 'Michael likes him', 'The staff like him'], a: 0,
@@ -87,27 +113,27 @@ export const callMe911: Clip = {
       use: 'We’re leaving at six, and that’s that.（6時に出る。以上）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'respect', seg: [68.3, 75],
-      stem: 'Why does Michael say “With all due respect” here?',
-      ja: 'マイケルは、なぜここで「With all due respect」と言う？',
+      stem: 'Why does Michael start with “With all due respect”?',
+      ja: 'マイケルはなぜ「With all due respect」で話しはじめる？',
       choices: ['To disagree with David politely', 'To thank David for his help', 'To ask David to repeat it'], a: 0,
       choicesJa: ['ていねいに反対するため', '手助けにお礼を言うため', 'もう一度言ってと頼むため'],
       cue: '前置きのあとに続く文の中身。',
       line: '*With all due respect*, David, this hardly seems like a dialogue.',
       said: '「お言葉ですが、これは話し合いとは言えません」と返す。',
       mean: 'With all due respect ＝「お言葉ですが」。目上の人に反対する前の前置き。',
-      trap: 'respect から尊敬やお礼と思いやすい。この前置きのあとには、ほぼ反論が来る。',
+      trap: 'respect から尊敬やお礼を連想しやすい。この前置きのあとには、ほぼ反論が来る。',
       use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'decided', seg: [69.4, 75.5],
-      stem: 'David says, “That’s because it isn’t.” What does he mean?',
-      ja: '「That’s because it isn’t.」で、デビッドは何を言いたい？',
-      choices: ['It’s not a discussion', 'He will listen now', 'Michael can talk later'], a: 0,
-      choicesJa: ['これは話し合いではない', 'これからは話を聞く', 'マイケルはあとで話せる'],
-      cue: '返事の最後、it のあとの短い否定。',
-      line: '…this hardly seems like a dialogue. — That’s because *it isn’t*, Michael.',
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'decided', ctx: true, seg: [68.5, 75.0],
+      stem: 'Michael says it isn’t a dialogue. What does David answer?',
+      ja: 'マイケルは「話し合いじゃない」と言う。デビッドの返事は？',
+      choices: ['It isn’t meant to be one', 'He is ready to listen now', 'Michael can talk later'], a: 0,
+      choicesJa: ['もともと話し合いではない', '今から話を聞く', 'マイケルはあとで話せる'],
+      cue: '「dialogue」のあとの返事。',
+      line: 'Michael: …this hardly seems like a *dialogue*. / David: That’s because *it isn’t*, Michael.',
       said: '「話し合いになっていない」に「話し合いではないからだ」と返す。',
-      mean: 'it isn’t ＝ it isn’t a dialogue。相談ではなく通告だ、ということ。',
-      trap: 'That’s because を言い訳の始まりと思いやすい。it は直前の a dialogue を指す。',
+      mean: 'dialogue ＝ 話し合い。it isn’t ＝ it isn’t a dialogue の略。相談ではなく通告だ、ということ。',
+      trap: 'That’s because を言い訳の始まりと考えがち。it は直前の a dialogue を指す。',
       use: 'That’s because it isn’t up to you.（それは君が決めることじゃないからだ）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [75, 81], keep: true,
@@ -135,10 +161,10 @@ export const callMe911: Clip = {
       use: 'That’s where we first met.（そこは私たちが初めて会った場所）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'havetogo', reveals: ['haveto'], seg: [88.5, 98.2],
-      stem: 'Why does David say “I have to go” here?',
-      ja: 'デビッドは、なぜここで「I have to go」と言う？',
-      choices: ['To end the phone call', 'To go and see Toby', 'To ask Michael to leave'], a: 0,
-      choicesJa: ['電話を終えるため', 'トビーに会いに行くため', 'マイケルに帰れと言うため'],
+      stem: 'What does David mean by “I have to go”?',
+      ja: 'デビッドの「I have to go」はどういう意味？',
+      choices: ['I’m ending this call', 'I’m going to see Toby', 'You should leave now'], a: 0,
+      choicesJa: ['電話を切るね', 'トビーに会いに行く', '君は帰りなさい'],
       cue: 'icky の話のあと。',
       line: 'Okay. *I have to go*. — David, wait. — Nope.',
       said: '「よし、もう切るよ」と言い、「待って」にも「だめ」と返す。',
@@ -156,14 +182,15 @@ export const callMe911: Clip = {
       trap: 'of と him が弱く、二語に聞こえやすい。get rid of はひとまとまりで覚える。',
       use: 'How do I get rid of this smell?（このにおい、どうやって消すの？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cause', seg: [94.9, 101.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'cause', ctx: true, seg: [95.5, 102.0],
       stem: 'What does David mean by “Not without cause”?',
       ja: 'デビッドの「Not without cause.」はどういう意味？',
       choices: ['Only with a good reason', 'Only when his contract ends', 'Only if Toby wants to go'], a: 0,
       choicesJa: ['正当な理由があるときだけ', '契約が切れたときだけ', 'トビーが辞めたいときだけ'],
-      cue: '「Not without」のあとの一語。',
-      line: 'Not *without cause*, Michael.',
-      said: '「正当な理由がなければ無理だ」と答える。',
+      cue: '「get rid of him?」への返事。',
+
+      line: 'Michael: Is there no way we can…? / David: Not *without cause*, Michael.',
+      said: '「何か方法はないのか」に、「正当な理由がなければ無理だ」と答える。',
       mean: 'cause ＝ 正当な理由。好き嫌いでは辞めさせられない、ということ。',
       trap: 'not と without の否定が重なる。「〜なしではだめ」＝「〜があれば」と考える。',
       use: 'You can’t return it without a receipt.（レシートなしでは返品できません）' },
@@ -179,7 +206,7 @@ export const callMe911: Clip = {
       trap: 'I have cause で本当の問題を期待しやすい。because のあとで中身を確かめる。',
       use: 'I have a reason: I don’t like it.（理由はある。気に入らないだけ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [102.6, 107.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [102.6, 107.6], retired: true,
       stem: 'Fill the gap: “You ___ get along with Toby.”',
       ja: '「You ___ get along with Toby.」の空所は？',
       choices: ['have to', 'had to', '’ll have to'], a: 0,
@@ -203,7 +230,7 @@ export const callMe911: Clip = {
       trap: '電話で「嫌いだ」と言ったので、辞めさせると思いやすい。電話では断られている。',
       use: 'Nice to see you again.（また会えてうれしい）' },
 
-    { id: 'nt1', skill: 'infer', level: 'B2', point: 'acting', reveals: ['sweet'], seg: [114.9, 127.9],
+    { id: 'nt1', skill: 'infer', level: 'B2', point: 'acting', reveals: ['sweet'], seg: [114.9, 127.9], retired: true,
       stem: 'Does Michael really mean his warm welcome?',
       ja: 'マイケルの温かい歓迎は本心？',
       choices: ['No, it is an act', 'Yes, he missed Toby', 'He is not sure yet'], a: 0,
@@ -251,6 +278,18 @@ export const callMe911: Clip = {
       trap: 'must から「〜しなければ」と思いやすい。must have been は「きっと〜だった」。',
       use: 'That must have been hard.（それは大変だったでしょう）' },
 
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'amazing', ctx: true, seg: [145.0, 156.0],
+      stem: 'Michael asks about Costa Rica. What does Toby say?',
+      ja: 'マイケルはコスタリカのことを聞く。トビーの答えは？',
+      choices: ['It was amazing', 'It was too hot', 'It was boring'], a: 0,
+      choicesJa: ['最高だった', '暑すぎた', '退屈だった'],
+      cue: '「Did you have fun?」の返事。',
+      line: 'Michael: So Costa Rica… *Did you have fun?* / Toby: Well, *it was amazing*. It really was. *Thanks for asking.*',
+      said: '「楽しかった？」に、「最高だったよ。聞いてくれてありがとう」と答える。',
+      mean: 'amazing ＝ 最高の。Thanks for asking ＝ 聞いてくれてありがとう。様子を聞かれたときの感じのいい返し。',
+      trap: 'あとで This was hot（暑かった）とも言うので迷いやすい。最初の返事は amazing。',
+      use: 'How was your trip? — Great, thanks for asking.（旅行どうだった？—最高、聞いてくれてありがとう）' },
+
     { id: 'f3', retired: true, skill: 'phrase', level: 'C1', point: 'cathartic', seg: [158.4, 161.6],
       stem: 'With his last word about the trip, what does Toby say it did for him?',
       choices: ['Let him release feelings he had held in', 'Gave him the break from work he needed',
@@ -294,7 +333,21 @@ export const callMe911: Clip = {
       trap: '努力不足の話とも取れるが、for you は人柄を指す。文のあとの付け足しは、皮肉が出やすい場所。',
       use: 'Mornings are hard. For me, anyway.（朝はつらいよ。少なくとも僕はね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'dying', seg: [179.1, 194.8],
+    { id: 'c4', skill: 'pragma', level: 'B1', point: 'iam', ctx: true, seg: [175.2, 181.5],
+
+      stem: 'Someone asks if Michael is all right. What does he say?',
+      ja: '「大丈夫？」と聞かれて、マイケルは何と答える？',
+      choices: ['He says he is fine', 'He says he is sick', 'He says he is tired'], a: 0,
+      choicesJa: ['大丈夫だと言う', '具合が悪いと言う', '疲れたと言う'],
+      cue: '「Are you alright, Mike?」の返事。',
+      line: '*Are you alright*, Mike? / Michael: *I am. I am.*',
+      said: '「大丈夫、マイク？」に、「大丈夫。大丈夫だ」と2回答える。',
+      mean: 'I am ＝ I am all right の略。質問の動詞だけで短く答える形。このあとカメラに本音を言う。',
+      trap: 'すぐ後で dying inside（つらい）と言うので迷いやすい。質問への返事そのものは「大丈夫」。',
+      use: 'Are you okay? — I am, thanks.（大丈夫？—うん、ありがとう）' },
+
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'dying', seg: [179.1, 193.0],
+
       stem: 'How does Michael feel after trying to be nice?',
       ja: '仲良くしようとしたあと、マイケルはどう感じている？',
       choices: ['Very unhappy inside', 'Angry at David', 'Hopeful about Toby'], a: 0,
