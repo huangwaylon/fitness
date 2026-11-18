@@ -418,12 +418,12 @@
           {/if}
         </div>
       </div>
-      <ActionSheet bind:open={menuOpen} title={s('title')} groups={[[{ id: 'how', label: s('howTo'), icon: 'info' }, { id: 'end', label: s('end'), icon: 'flag', hook: 'sg-end' }]]}
+      <ActionSheet name="sugoroku.menu" bind:open={menuOpen} title={s('title')} groups={[[{ id: 'how', label: s('howTo'), icon: 'info' }, { id: 'end', label: s('end'), icon: 'flag', hook: 'sg-end' }]]}
         onpick={(id) => (id === 'how' ? (howOpen = true) : (endOpen = true))} />
-      <Sheet bind:open={howOpen} title={s('howTo')}>
+      <Sheet bind:open={howOpen} title={s('howTo')} name="sugoroku.howto">
         <HowTo />
       </Sheet>
-      <Sheet bind:open={endOpen} title={s('endAsk')} confirm>
+      <Sheet bind:open={endOpen} title={s('endAsk')} confirm name="sugoroku.end">
         <!-- (online: an end is everyone's, so the verb is the danger one, docs/design.md "Forms and confirms") -->
         <p class="note centre" data-sg-end-note>{mode === 'online' ? s('endNoteOnline') : s('endNote')}</p>
         {#snippet footer()}

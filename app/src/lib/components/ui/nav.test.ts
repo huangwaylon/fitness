@@ -35,9 +35,7 @@ describe('navigation', () => {
     for (const x of phones) expect(x.src, x.f).toMatch(/<NavBar\b[^>]*onback=[^>]*onclose=/);
   });
   it('every sheet names its usage counter (Sheet / ActionSheet `name` or `timed`: unnamed, all counted as sheet:other)', () => {
-    // (fitness-c5's English Study, すごろく and speech folders aside: theirs to name)
-    const c5 = /^(lib\/(english|sugoroku|speech)|routes\/(speech|sugoroku))\//;
-    const tags = files.filter((x) => !c5.test(x.f) && !x.f.endsWith('ui/ActionSheet.svelte')).flatMap((x) => [...x.src.matchAll(/<(?:Action)?Sheet\b(?:[^>{]|\{[^}]*\})*>/g)].map((m) => ({ f: x.f, tag: m[0] })));
+    const tags = files.filter((x) => !x.f.endsWith('ui/ActionSheet.svelte')).flatMap((x) => [...x.src.matchAll(/<(?:Action)?Sheet\b(?:[^>{]|\{[^}]*\})*>/g)].map((m) => ({ f: x.f, tag: m[0] })));
     expect(tags.length).toBeGreaterThan(20);
     expect(tags.filter((x) => !/\b(name|timed)=/.test(x.tag)).map((x) => x.f)).toEqual([]);
   });

@@ -27,8 +27,8 @@
     title: string;
     groups: readonly (readonly Action[])[];
     onpick: (id: string) => void;
-    /** Its usage counter's id (Sheet `name`: `sheet:<name>`, a stable token; unnamed: sheet:other, which says nothing). */
-    name?: string;
+    /** Its usage counter's id (Sheet `name`: `sheet:<name>`, a stable token). */
+    name: string;
     /** The sheet's accessible name (defaults to the title). */
     label?: string;
     /** A line under the title. */
