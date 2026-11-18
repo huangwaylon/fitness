@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 2, new 3, ctx 4, tx 6
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 2, new 3, ctx 4, tx 6, qa 9
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 5, new 1
 // “Wet Cement  - The Office US” (the official The Office channel, BEST OF SEASON 4): the sidewalk outside is wet,
 // and Michael begs the office for something to put in it; he turns down initials and a picture, loves the celebrity
@@ -6,7 +6,7 @@
 // what it means to him.
 // Segments from the captions, words from whisper (2026-11-16). Only Michael is named in the audio; the others are
 // "a coworker". Untested: 24–28 s, 36–39 s (the childhood story, garbled), 63–69 s (crowd).
-// EXCLUDE 87.6–91 (“Force it in…” / “That's what she said”)
+// 87.6–91 (“Force it in…” / “That's what she said”) is mild innuendo: no EXCLUDE (user decision 2026-11-18).
 import type { Clip } from '../types.ts';
 
 export const wetCement: Clip = {
@@ -142,7 +142,7 @@ export const wetCement: Clip = {
       cue: '「She’s talking about」のあと。',
       line: 'She’s talking about *the handprints that celebrities make in the cement*.',
       said: '「有名人がセメントに付ける手形の話です」と説明する。',
-      mean: 'handprints ＝ 手形。celebrities ＝ 有名人。hand ＋ prints（跡）。',
+      mean: 'handprints ＝ 手形。celebrities ＝ 有名人。hand ＋ prints（跡）。E! ＝ アメリカの芸能ニュースのテレビ局。',
       trap: 'prints だけ聞くと足形かもと迷いやすい。決め手は前の hand。',
       use: 'There are handprints on the window.（窓に手の跡がついてる）' },
 
@@ -171,10 +171,10 @@ export const wetCement: Clip = {
       use: 'That doesn’t seem safe.（それ、危なそうだよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'ignore', reveals: ['safe', 'arc'], ctx: true, seg: [56.5, 63.6],
-      stem: 'How does Michael take the safety warning?',
-      ja: '安全の注意を、マイケルはどう受け止める？',
-      choices: ['He ignores it, thrilled', 'He gets nervous about it', 'He thanks the coworker'], a: 0,
-      choicesJa: ['大喜びで聞き流す', '心配になる', '同僚にお礼を言う'],
+      stem: 'What does Michael do with the safety warning?',
+      ja: '安全の注意を、マイケルはどうする？',
+      choices: ['He ignores it', 'He agrees to stop', 'He thanks the coworker'], a: 0,
+      choicesJa: ['聞き流す', 'やめると言う', '同僚にお礼を言う'],
       cue: '「doesn’t seem safe」への返事。',
       line: 'Coworker: Michael, *that doesn’t seem safe*. / Michael: *I love it!*',
       said: '「それ、安全じゃなさそう」と言われても、「最高！」とまた叫ぶ。',
@@ -244,7 +244,7 @@ export const wetCement: Clip = {
       ja: 'マイケルは将来のどんな場面を思い描いている？',
       choices: ['Showing kids his face print', 'Seeing his face on TV', 'Making a new sidewalk'], a: 0,
       choicesJa: ['子どもたちに顔の跡を見せる', '自分の顔をテレビで見る', '新しい歩道を作る'],
-      cue: '話の後半。',
+      cue: '「Look,」で始まる、未来の自分の一言。',
       line: 'It’s about my *great-grandkids*. … and say, *“That’s me.”* “Look, kids, your daddy left that face hole.”',
       said: '孫やひ孫の話をし、100歳になったらここに来て「これが僕だ」と言う日を思い描く。',
       mean: 'Look, kids ＝ ほら、みんな（子どもたち）。顔の跡を見せる日を想像している。',
@@ -274,8 +274,8 @@ export const wetCement: Clip = {
       use: 'Can I have a piece of cake?（ケーキを一切れもらえる？）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'goodfeel', seg: [104.9, 113.7],
-      stem: 'How does Michael feel at the end?',
-      ja: '最後にマイケルはどんな気持ち？',
+      stem: 'How does the cement make Michael feel?',
+      ja: 'セメントのことで、マイケルはどんな気持ち？',
       choices: ['Good about it', 'Sorry about it', 'Bored with it'], a: 0,
       choicesJa: ['いい気分', '後悔している', 'あきている'],
       cue: '最後の一文。',

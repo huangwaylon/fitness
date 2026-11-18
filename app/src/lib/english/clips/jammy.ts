@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 2, new 1, ctx 3, tx 1
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 2, new 1, ctx 3, tx 1, qa 6
 // A2 REVIEW 2026-11-17: keep 1, rewrite 14, retire 5, new 1
 // “Discovering Jammy | Parks and Recreation” (the official Parks and Recreation channel, Season 7): Leslie visits her old
 // council colleague Jeremy to win his deciding vote against rezoning the Newport land; he defers to his new girlfriend,
@@ -8,6 +8,7 @@
 // 0–7.4 s ("I just farted"), 27.2–31.5 s ("gas station sushi"), 42–52 s (who says "Hello, Leslie"), 80–82 s ("blonde
 // bimbo"). EAR CHECK: 83 s — Tammy or Jeremy says “Oh, let me mull it over” (ml names neither).
 // EAR CHECK: 84.5 s m1 i2 — assumed Leslie's talking head to camera ("terrible people"); the words point to it
+// EXCLUDE 5.5–7.2 (“I just farted”; the captions put it at 6.5–7.2)
 import type { Clip } from '../types.ts';
 
 export const discoveringJammy: Clip = {
@@ -16,18 +17,6 @@ export const discoveringJammy: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'never', seg: [6.3, 12.2],
-      stem: 'How does Leslie feel about seeing Jeremy again?',
-      ja: 'ジェレミーにまた会って、レスリーはどう思っている？',
-      choices: ['She didn’t want to', 'She missed him', 'She is scared of him'], a: 0,
-      choicesJa: ['会いたくなかった', '会いたかった', '彼がこわい'],
-      cue: '「Oh, Jeremy」のあと',
-      line: 'I truly thought that I would *never have to interact with you again*.',
-      said: '「もう二度と関わらなくていいと本気で思ってた」と言う。',
-      mean: 'never have to 〜 ＝ 〜しなくて済む。interact with 〜 ＝ 〜と関わる。会いたくなかった本音。',
-      trap: 'すぐあとの I missed you, too（僕も会いたかった）はジェレミーの言葉。レスリーの気持ちではない。',
-      use: 'I hoped I’d never have to do this again.（二度とやらずに済むと思ってた）' },
-
     { id: 'h1', skill: 'humor', level: 'C1', point: 'missed', reveals: ['never'], seg: [6.9, 12.15], retired: true,
       stem: 'After Leslie’s first words to Jeremy, why is his reply funny?',
       choices: ['He replies as if she’d said she missed him', 'He replies as if she’d said she was sorry',
@@ -38,6 +27,18 @@ export const discoveringJammy: Clip = {
       mean: 'きつい言葉を「会いたかった」と聞いたかのように、too で返している。',
       trap: '返事の頭だけでは何への返事か分からない。最後の too が何を受けるかを聞く。',
       use: 'I missed you too, you know.（私も会いたかったんだよ）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'never', seg: [7.3, 12.2],
+      stem: 'How does Leslie feel about seeing Jeremy again?',
+      ja: 'ジェレミーにまた会って、レスリーはどう思っている？',
+      choices: ['She didn’t want to', 'She missed him', 'She is scared of him'], a: 0,
+      choicesJa: ['会いたくなかった', '会いたかった', '彼がこわい'],
+      cue: '「Oh, Jeremy」のあと',
+      line: 'I truly thought that I would *never have to interact with you again*.',
+      said: '「もう二度と関わらなくていいと本気で思ってた」と言う。',
+      mean: 'never have to 〜 ＝ 〜しなくて済む。interact with 〜 ＝ 〜と関わる。会いたくなかった本音。',
+      trap: 'すぐあとの I missed you, too（僕も会いたかった）はジェレミーの言葉。レスリーの気持ちではない。',
+      use: 'I hoped I’d never have to do this again.（二度とやらずに済むと思ってた）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'zone', seg: [10.8, 22.8],
       stem: 'What is the city council voting on?',
@@ -57,7 +58,7 @@ export const discoveringJammy: Clip = {
       choices: ['Build anything there', 'Sell the land to anyone', 'Vote on the land'], a: 0,
       choicesJa: ['そこに何も建てられない', '土地を誰にも売れない', '土地について投票できない'],
       cue: '「If I win」のあと',
-      line: 'If I win, stupid Grizzle and stupid Ron *can’t build anything there*',
+      line: 'If I win, stupid Gryzzl and stupid Ron *can’t build anything there*',
       said: '「私が勝てば、グリズルとロンはあそこに何も建てられない」と言う。',
       mean: 'If I win ＝ もし私が勝ったら。can’t build anything ＝ 何も建てられない。',
       trap: 'can’t の t は小さいが、「キャーン」と長く強い。そのあとの build（建てる）が答え。',
@@ -130,9 +131,9 @@ export const discoveringJammy: Clip = {
       choicesJa: ['ショックを受けている', 'うれしい', 'うらやましい'],
       cue: '「cute」のあと、言いかけてやめる所',
       line: 'You guys are *so cute*. When did you — *Why would either one of you*… *Dear God, why?*',
-      said: '「かわいいね。いつから…」と言いかけ、「なんで？ああ、なんで？」と取り乱す。',
-      mean: 'Dear God, why? ＝ ああ、なんで？信じられないときの言い方。so cute はただのお世辞。',
-      trap: 'so cute（かわいい）から、喜んでいるように聞こえる。最後の Dear God, why? が本音。',
+      said: '「二人ともすごくお似合い。いつから…」と言いかけ、「なんで？ああ、なんで？」と取り乱す。',
+      mean: 'Dear God, why? ＝ ああ、なんで？信じられないときの言い方。so cute（お似合い）はただのお世辞。',
+      trap: 'so cute（お似合い）から、喜んでいるように聞こえる。最後の Dear God, why? が本音。',
       use: 'Wait, you two? Since when?（え、二人が？いつから？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hitoff', ctx: true, seg: [58.4, 64.7],

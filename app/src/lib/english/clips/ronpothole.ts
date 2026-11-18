@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 0, new 4, ctx 6, tx 6
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 0, new 4, ctx 6, tx 6, qa 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 3, new 1
 // “The only time Ron was pro-government | Parks and Recreation” (the official Parks and Recreation channel, Season 5 |
 // Parks and Recreation): Ron and Andy fix Diane's pothole; her daughters pull Andy (and then Ron) into a princess game;
@@ -14,7 +14,7 @@
 // (another room: a book read aloud, sexual, and a birth question); 217 s ("Is that a euphemism?": innuendo); 238 s
 // ("I don't screw around": left out of every line).
 // EXCLUDE 172–175 (the erotic book read aloud)
-// EXCLUDE 217–219 (“Is that a euphemism?”)
+// 217–219 (“Is that a euphemism?”) is mild innuendo: no EXCLUDE (user decision 2026-11-18).
 // SKIP 13–39.5: Andy's mock old English, the tag game and an unsure aside (no usable everyday English)
 import type { Clip } from '../types.ts';
 
@@ -71,16 +71,16 @@ export const ronpothole: Clip = {
       trap: 'Diane の穴なので頼まれたと思いやすいが、理由は no one … was gonna fix。',
       use: 'Nobody else was going to, so I did it myself.（誰もやらないから、自分でやった）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'yesmaam', ctx: true, seg: [53, 60],
-      stem: 'How does Ron answer “Do you know what you’re doing?”',
-      ja: '「何をしているか分かってるの？」に、ロンはどう答える？',
-      choices: ['Calm and sure', 'Polite but unsure', 'Annoyed by the question'], a: 0,
-      choicesJa: ['落ち着いて自信がある', 'ていねいだが自信がない', '質問にイラッとしている'],
-      cue: '短い返事を2回言うところ。',
+    { id: 't1', skill: 'pragma', level: 'B1', point: 'yesmaam', ctx: true, seg: [53, 60],
+      stem: 'Diane asks if Ron knows what he’s doing. His answer?',
+      ja: 'やり方は分かってるの、とダイアンが聞く。ロンの答えは？',
+      choices: ['Yes, he knows how', 'No, he’s still learning', 'Only Andy knows how'], a: 0,
+      choicesJa: ['うん、やり方は分かる', 'いや、まだ勉強中', 'アンディだけが分かる'],
+      cue: '質問のすぐあと、短い返事を2回言うところ。',
       line: 'Diane: Do you know what you’re doing? / Ron: Yes, ma’am. *Yes, I do.*',
-      said: '「はい。ええ、分かっています」と短く2回答える。',
-      mean: 'Yes, I do をくり返すのは「心配いらない」という自信。言い訳はしない。',
-      trap: 'ma’am を遠慮と取りやすいが、ていねいな呼びかけ。言い足しがないのは自信の印。',
+      said: '「やり方は分かってるの？」に「ええ。分かっています」と短く2回答える。',
+      mean: 'Do you 〜? には Yes, I do. と短く答える。ma’am ＝ 女性へのていねいな呼びかけ（「奥さん」「お客様」くらい）。',
+      trap: 'ma’am は「マム」と短く、聞き逃しやすい。大事なのはそのあとの Yes, I do。',
       use: 'Do you know the way? — Yes, I do.（道分かる？うん、分かる）' },
 
     { id: 'p2', skill: 'pragma', level: 'B1', point: 'please', ctx: true, seg: [65.7, 72.5],
@@ -98,8 +98,8 @@ export const ronpothole: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'curt', seg: [68.3, 75.6],
       stem: 'Diane says she was “curt.” What does that mean?',
       ja: 'ダイアンの言う「curt」はどういう意味？',
-      choices: ['Short and unfriendly', 'Busy and tired', 'Curious and nosy'], a: 0,
-      choicesJa: ['そっけなく冷たい', '忙しくて疲れている', '知りたがりでせんさく好き'],
+      choices: ['Short and unfriendly', 'Busy and tired', 'Nervous and shy'], a: 0,
+      choicesJa: ['そっけなく冷たい', '忙しくて疲れている', '緊張して内気'],
       cue: 'I’m sorry if I was のあとの一語。',
       line: 'I’m sorry if I was *curt* earlier.',
       said: '「さっきはそっけなくてごめんなさい」と謝る。',
@@ -145,11 +145,11 @@ export const ronpothole: Clip = {
       stem: 'What will Ron fill the hole with?',
       ja: 'ロンは穴を何で埋める？',
       choices: ['Cold patch asphalt', 'Hot asphalt', 'The loose gravel'], a: 0,
-      choicesJa: ['冷えたまま使える補修材', '熱いアスファルト', '取り出した砂利'],
+      choicesJa: ['常温の補修用アスファルト', '熱いアスファルト', '取り出した砂利'],
       cue: 'fill it with のあと。',
       line: 'then I’ll spray down the hole to settle the dust, and *fill it with cold patch asphalt*.',
-      said: '「穴に水をかけてほこりを抑え、補修材で埋める」と説明する。',
-      mean: 'fill A with B ＝ A を B で埋める。then, and で手順をつなぐ説明の仕方。',
+      said: '「穴に水をまいてほこりを抑え、常温の補修用アスファルトで埋める」と説明する。',
+      mean: 'fill A with B ＝ A を B で埋める。cold patch ＝ 熱くしなくても使える補修材。then, and で手順をつなぐ。',
       trap: '道路工事は熱いものと思いやすいが cold と言う。砂利は最初に取り出した物。',
       use: 'Fill the glass with water, please.（グラスに水を入れてください）' },
 
@@ -203,8 +203,8 @@ export const ronpothole: Clip = {
     { id: 'mk', skill: 'pragma', level: 'B1', point: 'mocked', ctx: true, seg: [148.5, 161.5],
       stem: 'What does Diane say is funny?',
       ja: 'ダイアンは何がおかしいと言う？',
-      choices: ['His face looks so funny', 'He fell into the hole', 'He forgot the lemonade'], a: 0,
-      choicesJa: ['ロンの顔がおかしい', '穴に落ちた', 'レモネードを忘れた'],
+      choices: ['How his face looks', 'How he fell in the hole', 'How he spilled the lemonade'], a: 0,
+      choicesJa: ['ロンの顔の見た目', '穴に落ちたところ', 'レモネードをこぼしたところ'],
       cue: '「not be mocked」のあとの返事。',
       line: 'Ron: I came here to fix a pothole, *not be mocked*. / Diane: I’m sorry. It’s just *your face is ridiculous*.',
       said: '「穴を直しに来た。笑われるためじゃない」に、「ごめん。ただ、その顔がおかしくて」と返す。',
@@ -226,13 +226,13 @@ export const ronpothole: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [161.9, 169.5], keep: true,
       stem: 'When will the new asphalt be ready?',
       ja: '新しいアスファルトはいつ使えるようになる？',
-      choices: ['In half an hour', 'In an hour', 'In two hours'], a: 1,
-      choicesJa: ['30分後', '1時間後', '2時間後'],
+      choices: ['In half an hour', 'In an hour', 'In two hours', 'In four hours'], a: 1,
+      choicesJa: ['30分後', '1時間後', '2時間後', '4時間後'],
       cue: 'bear weight のすぐあと。',
       line: 'The asphalt will bear weight *in an hour*.',
       said: '「アスファルトは1時間で重さに耐えられる」と伝える。',
       mean: 'in an hour ＝ 1時間後に。「イナナウア」とつながり、h は発音しない。',
-      trap: 'half なら「ハーフ」、two なら「トゥー」が前に入る。「イナナウア」だけなら1時間。',
+      trap: 'half なら「ハーフ」、two なら「トゥー」、four なら「フォー」が前に入り、hours と s も付く。「イナナウア」だけなら1時間。',
       use: 'I’ll be back in an hour.（1時間で戻ります）' },
 
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'nottype', reveals: ['date'], seg: [184.0, 207.0],
@@ -283,10 +283,10 @@ export const ronpothole: Clip = {
       use: 'Are you free for dinner Friday?（金曜の夜、食事どう？）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', reveals: ['date'], seg: [224.6, 232.3],
-      stem: 'Diane starts with “Actually.” What does it show?',
-      ja: 'ダイアンは「Actually」で話し始める。何を表している？',
-      choices: ['Ron guessed wrong', 'She feels shy', 'She has a complaint'], a: 0,
-      choicesJa: ['ロンの予想が外れた', '照れている', '苦情がある'],
+      stem: 'What does Diane’s “Actually” tell Ron?',
+      ja: 'ダイアンの「Actually」は、ロンに何を伝えている？',
+      choices: ['His guess is wrong', 'She feels a bit shy', 'She has a complaint'], a: 0,
+      choicesJa: ['ロンの予想は外れ', '少し照れている', '苦情がある'],
       cue: '「苦情なら」のすぐあとの一語。',
       line: '*Actually*, I’m here to ask you out for dinner.',
       said: '「苦情なら」と言うロンに、「実は、食事に誘いに来たの」と返す。',
@@ -331,8 +331,8 @@ export const ronpothole: Clip = {
     { id: 't2', skill: 'attitude', level: 'B2', point: 'begrudging', seg: [249.8, 257.5],
       stem: 'How does Ron feel about praising the program?',
       ja: '制度をほめることを、ロンはどう感じている？',
-      choices: ['Unhappy to admit it', 'Delighted with it', 'Sure that it is failing'], a: 0,
-      choicesJa: ['認めるのが不本意', 'とても喜んでいる', '失敗だと思っている'],
+      choices: ['He doesn’t like saying it', 'He is very happy with it', 'He thinks it is failing'], a: 0,
+      choicesJa: ['ほめるのは気が進まない', 'とても満足している', '失敗だと思っている'],
       cue: '文の最初、that の前まで。',
       line: 'I *begrudgingly admit* that the… program is a *moderate success*.',
       said: '「しぶしぶ認めるが、311の制度はまあまあの成功だ」と話す。',
@@ -343,13 +343,13 @@ export const ronpothole: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: '311', seg: [250.8, 257.5], keep: true,
       stem: 'Which program does Ron call a moderate success?',
       ja: 'ロンが「まあまあの成功」と言う制度は？',
-      choices: ['3-1-1', '4-1-1', '9-1-1'], a: 0,
-      choicesJa: ['311番', '411番', '911番'],
+      choices: ['2-1-1', '3-1-1', '4-1-1', '9-1-1'], a: 1,
+      choicesJa: ['211番', '311番', '411番', '911番'],
       cue: 'the のすぐあとの数字3つ。',
       line: 'the *3-1-1* program is a moderate success.',
       said: '「311の制度は、まあまあの成功だ」と言う。',
       mean: '311 は市民が役所に困りごとを伝える番号。ここでは穴の通報のこと。',
-      trap: 'nine なら「ナイン」、four なら「フォー」で始まる。「スリー」で始まれば311。',
+      trap: 'nine なら「ナイン」、four なら「フォー」、two なら「トゥー」で始まる。「スリー」で始まれば311。',
       use: 'Call 3-1-1 to report a pothole.（道路の穴は311に通報を）' },
   ]
 };
