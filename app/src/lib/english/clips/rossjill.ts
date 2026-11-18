@@ -1,10 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 0, ctx 4, tx 4
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 1, new 1
 // “Ross Is Dating Rachel's Sister | Friends” (the official Friends channel, Best of Season 6): Ross tells Rachel her
 // sister has asked him out again for Valentine's Day; Rachel says she can't handle it, Ross agrees to stop (after one
 // more date, then tonight), and when he offers to call right away she says no, asks about his news, then says do it now.
-// Segments from the captions, words from whisper (2026-11-16). No names are said; the speakers are told apart by what
-// they say (Rachel is the one who says "my sister"). Untested on purpose: 16.9–20 s (innuendo), 22.2–25 s, 32–37 s
-// and 75.9–77 s (the sources differ).
+// Segments from the captions, words from whisper. No names are said; the speakers are told apart by what they say
+// (Rachel is the one who says "my sister"). Untested: the drapes/slides innuendo (16–20 s; it plays, mild), 32–37 s
+// (the sources differ). R4: retired d1 (same fact as x1) and m1 (same point as i1); a2, p3, d3 and i1 now follow
+// the exchange.
 import type { Clip } from '../types.ts';
 
 export const rossJill: Clip = {
@@ -13,7 +15,7 @@ export const rossJill: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'again', reveals: ['askout'], seg: [0.8, 7.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'again', reveals: ['askout'], seg: [0.8, 7.9], retired: true,
       stem: 'Why does Ross think she likes him?',
       ja: 'ロスは、なぜ彼女に好かれていると思う？',
       choices: ['She asked him out again', 'She met his whole family', 'She said yes to him'], a: 0,
@@ -58,16 +60,16 @@ export const rossJill: Clip = {
       trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend、「トゥモロー」と長ければ tomorrow night。',
       use: 'Let’s meet tomorrow night.（明日の夜に会おう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hope', seg: [8.6, 20.6],
-      stem: 'What does “*Who knows what could happen?*” show?',
-      ja: '「Who knows what could happen?」から何が分かる？',
-      choices: ['He hopes for romance', 'He is afraid of the date', 'He has no plans at all'], a: 0,
-      choicesJa: ['恋の進展を期待している', 'デートがこわい', 'まったく予定がない'],
-      cue: '「most romantic day」のあと',
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'hope', seg: [10.5, 16.5],
+      stem: 'What does “Who knows what could happen?” mean here?',
+      ja: 'ここでの「Who knows what could happen?」はどういう意味？',
+      choices: ['Something romantic might happen', 'Nobody knows the date plan', 'Something bad might happen'], a: 0,
+      choicesJa: ['ロマンチックなことが起きるかも', 'デートの予定は誰も知らない', '悪いことが起きるかも'],
+      cue: '「of the year」のあと',
       line: 'the most romantic day of the year. *Who knows what could happen?*',
-      said: '「一年でいちばんロマンチックな日。何が起きるか分からないよ」と言う。',
-      mean: 'Who knows 〜? ＝ だれにも分からない＝何でもありうる。期待している言い方。',
-      trap: '分からないと言うので、こわがっていると思いやすい。romantic のあとの期待の声。',
+      said: '「一年でいちばんロマンチックな日。何が起きるか分からないだろ？」と言う。',
+      mean: '文字どおりは「何が起きるか誰が知ってる？」＝誰にも分からない→何でもありうる。いいことを期待する言い方。',
+      trap: '「分からない」から予定の話と考えがち。直前の romantic で、期待していると分かる。',
       use: 'Who knows? Maybe we’ll win.（分からないよ、勝つかも）' },
 
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'gotit', seg: [16.7, 26.1],
@@ -79,7 +81,7 @@ export const rossJill: Clip = {
       line: '*Okay, okay, okay*, okay, *I got it, I got it*.',
       said: 'okay を何度も言い、「分かった、分かった」と重ねて止める。',
       mean: 'I got it ＝ 分かった。何度もくり返すと「もう十分」という意味になる。',
-      trap: 'got から「手に入れた」と思いやすい。話を止めたいときの「分かった」。',
+      trap: 'got から「手に入れた」と考えがち。くり返すのは、話を止めたいときの「分かった」。',
       use: 'Okay, I got it. Thanks.（分かった、ありがとう）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['weird', 'wont'], seg: [19.4, 56],
@@ -115,7 +117,7 @@ export const rossJill: Clip = {
       line: 'I just *freak out*. It *freaks me out* and I can’t do it',
       said: '「取り乱しちゃう。ぞっとして、無理なの」と言う。',
       mean: 'freak out ＝ 取り乱す・パニックになる。It freaks me out ＝ それでぞっとする。',
-      trap: 'freak を「変な人（フリーク）」と思いやすい。気持ちが乱れること。',
+      trap: 'freak を「変な人（フリーク）」と勘違いしやすい。freak out は気持ちが乱れること。',
       use: 'Spiders freak me out.（クモはぞっとする）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [36.9, 42.5],
@@ -130,7 +132,7 @@ export const rossJill: Clip = {
       trap: 'want to なら「ワナ」、will なら「ウィル」。口を丸めた「ウォウント」なら won’t。',
       use: 'I won’t be late again.（もう遅れません）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [38.2, 45],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [38.2, 45], retired: true,
       stem: 'What does Ross’s “*I mean*” do to his promise?',
       ja: 'ロスの「I mean」は約束をどう変える？',
       choices: ['It adds one condition', 'It makes it much stronger', 'It gives the reason'], a: 0,
@@ -142,28 +144,28 @@ export const rossJill: Clip = {
       trap: 'I mean のあとは理由が来ると思いやすい。ここは「明日のあとで」という条件。',
       use: 'I’ll call you. I mean, after work.（電話するね。つまり、仕事のあとで）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', reveals: ['when', 'wont'], seg: [38.2, 45],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', ctx: true, reveals: ['when', 'wont'], seg: [38.2, 45],
       stem: 'What does Ross still want?',
       ja: 'ロスはまだ何をしたい？',
       choices: ['One last date', 'A night to think', 'To stay friends'], a: 0,
       choicesJa: ['最後のデートを一回', '考える一晩', '友だちでいること'],
-      cue: '「I mean」のあと',
-      line: 'I won’t see her again. … I mean, *after tomorrow night*.',
-      said: '「もう会わない」と言った直後に「明日の夜のあとでね」と付ける。',
-      mean: 'after tomorrow night ＝ 明日の夜のあと。つまり明日のデートには行きたい。',
-      trap: 'I won’t see her again だけ聞くと、すぐやめると思いやすい。after 〜 が条件。',
+      cue: '「Thank you」のあとの I mean',
+      line: 'Ross: I won’t see her again. / Rachel: Thank you. / Ross: I mean, *after tomorrow night*.',
+      said: '「もう会わない」「ありがとう」のあと、「つまり、明日の夜のあとでね」と足す。',
+      mean: 'I mean ＝ つまり、正確には（言い直し）。明日の夜のあと＝明日のデートには行きたい。',
+      trap: 'I won’t see her again だけ聞くと、すぐやめると考えがち。I mean のあとに条件が来る。',
       use: 'I’ll start my diet after the party.（パーティーのあとでダイエットする）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'please', seg: [42.4, 48.8],
-      stem: 'How does Rachel sound as she answers?',
-      ja: '答えるとき、レイチェルはどんな様子？',
-      choices: ['She is begging him', 'She is joking with him', 'She is angry at him'], a: 0,
-      choicesJa: ['必死にお願いしている', 'ふざけている', '怒っている'],
-      cue: '「after tomorrow night」のあと',
-      line: 'No, no, no, no, no, no. *Please*, I can’t…',
-      said: '「だめだめだめ、お願い、無理」と言う。',
-      mean: 'Please ＝ お願い。No をくり返して、必死に頼んでいる。',
-      trap: 'No が何度も続くので、怒っていると思いやすい。Please が気持ち。',
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'please', ctx: true, reveals: ['after', 'when'], seg: [42, 48.8],
+      stem: 'How does Rachel answer “after tomorrow night”?',
+      ja: '「after tomorrow night」に、レイチェルはどう答える？',
+      choices: ['She begs him not to go', 'She says that is fine', 'She laughs at his joke'], a: 0,
+      choicesJa: ['行かないでと必死に頼む', 'それでいいと言う', '冗談だと笑う'],
+      cue: 'No をくり返したあとの一語',
+      line: 'Ross: I mean, after tomorrow night. / Rachel: *No, no, no, no…* *Please*, I can’t, I can’t do it.',
+      said: '「明日の夜が終わったらね」に「だめだめだめ…お願い、無理」と言う。',
+      mean: 'Please ＝ お願い。No の連続と I can’t（無理）で、明日のデートもやめてと必死に頼んでいる。',
+      trap: '最初の Thank you で納得していたので、それでいいと考えがち。決め手は Please。',
       use: 'Please, I really need help.（お願い、本当に助けが要るの）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'tonight', seg: [48.8, 56.4],
@@ -178,7 +180,7 @@ export const rossJill: Clip = {
       trap: 'tonight（今夜）が聞こえて、今夜デートすると思いやすい。tell her を聞く。',
       use: 'I can’t see you anymore.（もう会えない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic'], seg: [56, 88],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic', 'offer'], seg: [56, 80],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Rachel wants him to call now', 'Ross goes on his date', 'Rachel calls her sister herself'], a: 0,
@@ -187,19 +189,19 @@ export const rossJill: Clip = {
       line: 'Yeah, *do it now*. Call her right now.',
       said: '「今すぐ電話しようか？」に「いいの」と言うが、話を変えたあと「今して」と言う。',
       mean: 'do it now ＝ 今やって。最初は遠慮したが、本当はすぐ電話してほしかった。',
-      trap: '最初に No と断るので、電話しないと思いやすい。最後の一言が本音。',
+      trap: '最初に No と断るので、電話しないと考えがち。最後の do it now が本音。',
       use: 'Call her right now.（今すぐ彼女に電話して）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'offer', reveals: ['scene'], seg: [56.5, 63.6],
-      stem: 'What is Ross doing when he asks about calling her?',
-      ja: '電話のことを聞くとき、ロスは何をしている？',
-      choices: ['Offering to call her now', 'Asking for her phone number', 'Saying he won’t call'], a: 0,
-      choicesJa: ['今すぐ電話しようと申し出ている', '彼女の電話番号を聞いている', '電話しないと言っている'],
-      cue: '「Oh, thanks」のあと',
-      line: '*You want me to call her right now?*',
-      said: '「今すぐ彼女に電話しようか？」と聞く。',
-      mean: 'You want me to 〜? ＝ 〜しようか？ 申し出の気軽な言い方。Do you の Do が落ちている。',
-      trap: 'want（ほしい）から、何かを頼んでいると思いやすい。自分がしようかと聞いている。',
+    { id: 'p3', skill: 'detail', level: 'B1', point: 'offer', ctx: true, seg: [57.5, 65.5],
+      stem: 'How does Rachel first answer Ross’s offer?',
+      ja: 'ロスの申し出に、レイチェルは最初どう答える？',
+      choices: ['She says no to it', 'She says she will call', 'She says after the date'], a: 0,
+      choicesJa: ['いいと断る', '自分で電話すると言う', 'デートのあとでと言う'],
+      cue: '「call her right now?」への返事',
+      line: 'Ross: *You want me to call her right now?* / Rachel: Oh, *no, no, no*… I mean, come on, *that’s crazy*.',
+      said: '「今すぐ電話しようか？」に「ううん、いい…それはばかげてる」と答える。',
+      mean: 'You want me to 〜? ＝ 〜しようか？（Do you が落ちた気軽な申し出）。that’s crazy ＝ それはばかげてる。',
+      trap: 'want（ほしい）から、ロスが何か頼んでいると考えがち。自分が電話しようかと申し出ている。',
       use: 'You want me to help?（手伝おうか？）' },
 
     { id: 'c1', skill: 'attitude', level: 'C2', point: 'callnow', reveals: ['teach'], seg: [62.5, 77.3], retired: true,
@@ -237,15 +239,15 @@ export const rossJill: Clip = {
       trap: 'do it を直前の「授業」に結びつけやすいが、it は電話のこと。',
       use: 'Anyway, enough about me.（まあ、私の話はいいとして）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'teach', seg: [70.4, 77.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'teach', ctx: true, seg: [68, 77.6],
       stem: 'What news does Ross start to share?',
       ja: 'ロスはどんな近況を話し始める？',
       choices: ['He may teach another class', 'He may take another class', 'He may stop teaching'], a: 0,
       choicesJa: ['授業をもう一つ受け持つかも', '授業をもう一つ受けるかも', '教えるのをやめるかも'],
       cue: '「Well, um, oh」のあと',
-      line: 'I may be *teaching another class* this semester.',
-      said: '「今学期、もう一つ授業を受け持つかも」と言う。',
-      mean: 'teach a class ＝ 授業を教える。semester ＝ 学期。',
+      line: 'Rachel: So what’s going on with you? / Ross: Well, um, oh, I may be *teaching another class* this semester.',
+      said: '「で、あなたはどう？」に「今学期、もう一つ授業を受け持つかも」と答える。',
+      mean: 'teach a class ＝ 授業を教える。semester ＝ 学期。may ＝ 〜かもしれない。',
       trap: 'take a class（授業を受ける）とまぎれやすい。teaching の「ティー」を聞く。',
       use: 'I’m taking a cooking class.（料理教室に通ってる）' },
   ]
