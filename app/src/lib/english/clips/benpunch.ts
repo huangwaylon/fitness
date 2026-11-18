@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 5, new 4, ctx 8, tx 11
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 5, new 4, ctx 8, tx 11, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 2
 // “Ben Punches a Jerk for Leslie | Parks and Recreation” (the official Parks and Recreation channel, Season 4): at a
 // campaign bowling night Leslie works on a voter, Derek, who says no; she wins a rematch bet for his vote, and after the
@@ -43,7 +43,7 @@ export const benpunch: Clip = {
       use: 'I think my arm might be broken.（腕が折れてるかもしれない）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'warmup', seg: [45.5, 62.1],
-      stem: 'Why does Leslie make small talk with Derek first?',
+      stem: 'Why does Leslie chat with Derek first?',
       ja: 'レスリーがまずデレクと雑談するのはなぜ？',
       choices: ['To ask him for something next', 'To say a friendly goodbye to him', 'To plan a rematch with him'], a: 0,
       choicesJa: ['このあと頼みごとをするため', '感じよくさよならを言うため', '再戦の約束をするため'],
@@ -57,8 +57,8 @@ export const benpunch: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'notone', seg: [49.6, 57.4],
       stem: 'What does “*I’m not one to complain*” mean?',
       ja: '「I’m not one to complain」はどういう意味？',
-      choices: ['I don’t complain', 'I have one complaint', 'I’m the only happy one'], a: 0,
-      choicesJa: ['文句は言わない', '文句が一つある', '満足しているのは自分だけ'],
+      choices: ['I have no problem with it', 'I have one complaint', 'I’m the only happy one'], a: 0,
+      choicesJa: ['文句はない', '文句が一つある', '満足しているのは自分だけ'],
       cue: '「You have fun?」のあと',
       line: 'Yeah, *I’m not one to complain* about free beer and free bowling.',
       said: '「楽しかった？」に「タダのビールとボウリングに文句は言わないよ」と答える。',
@@ -66,7 +66,7 @@ export const benpunch: Clip = {
       trap: 'one から「一つ」と思いやすい。not one to complain でひとまとまり。',
       use: 'I’m not one to complain, but it’s cold.（文句は言わないたちだけど、寒い）' },
 
-    { id: 'f6', skill: 'phrase', level: 'B1', point: 'around', seg: [49.6, 59.9],
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'around', reveals: ['notone'], seg: [49.6, 59.9],
       stem: 'What does “*See you around*” mean?',
       ja: '「See you around」はどういう意味？',
       choices: ['Bye, see you later', 'Look around the room', 'I can see you there'], a: 0,
@@ -185,13 +185,13 @@ export const benpunch: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'month', seg: [99, 104],
       stem: 'If Derek wins, for how long must Leslie clean his house?',
       ja: 'デレクが勝ったら、レスリーはどのくらい彼の家を掃除する？',
-      choices: ['A week', 'A month', 'A year'], a: 1,
-      choicesJa: ['1週間', '1か月', '1年'],
+      choices: ['A day', 'A week', 'A month', 'A year'], a: 2,
+      choicesJa: ['1日', '1週間', '1か月', '1年'],
       cue: '「clean my house」のあと',
       line: 'If I win, you clean my house *for a month*.',
-      said: '「おれが勝ったら、1か月うちの掃除をしろ」と返す。',
+      said: '「俺が勝ったら、1か月うちの掃除をしろ」と返す。',
       mean: 'for a month ＝ 1か月間。If I win, 〜 ＝ 私が勝ったら〜。',
-      trap: 'week（ウィーク）や year（イヤー）とまぎれやすい。「マンス」と聞こえれば month。',
+      trap: 'day（デイ）、week（ウィーク）、year（イヤー）とまぎれやすい。「マンス」と聞こえれば month。',
       use: 'I’m staying for a month.（1か月滞在します）' },
 
     { id: 'dn', skill: 'pragma', level: 'B1', point: 'done', reveals: ['month'], ctx: true, seg: [100.5, 106.5],
@@ -230,14 +230,14 @@ export const benpunch: Clip = {
     { id: 'so', skill: 'pragma', level: 'B2', point: 'so', ctx: true, seg: [131.5, 137.5],
       stem: 'What does Derek mean by “So?”',
       ja: 'デレクの「So?」はどういう意味？',
-      choices: ['I don’t care', 'Tell me more', 'I am sorry'], a: 0,
-      choicesJa: ['だから何？', 'もっと話して', 'ごめん'],
+      choices: ['I don’t care', 'Tell me more', 'Yes, I see it'], a: 0,
+      choicesJa: ['だから何？', 'もっと話して', 'うん、見たよ'],
       cue: '「Check out the scoreboard.」への返事',
       line: 'Leslie: *Check out the scoreboard*. / Derek: *So?*',
       said: 'レスリーに「スコアボードを見て」と言われ、負けているデレクは「だから何？」と返す。',
       mean: 'So? ＝ 文字どおりは「それで？」。一語だけだと「だから何？」と気にしないふり。失礼なので目上には使わない。',
       trap: '話の続きをうながす「それで？」に聞こえるが、負けを認めたくない強がり。',
-      use: 'So? What happened next?（それで？次はどうなったの？）' },
+      use: 'So? It’s just one game.（だから？たった1試合だよ）' },
 
     { id: 'a3', skill: 'attitude', level: 'C1', point: 'gloat', reveals: ['much'], seg: [136.7, 145.1], retired: true,
       stem: 'When Leslie greets Derek after the rematch, how does she come across?',

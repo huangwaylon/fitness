@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 1, new 1, ctx 5, tx 13
+// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 1, new 1, ctx 5, tx 13, qa 6
 // A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 3, new 1
 // “Scheduling an Appointment with Dwight - The Office US” (the official The Office channel, BEST OF The Office -
 // Season 8): Dwight, the new owner of the building, has been cutting costs; when Pam asks him about the cutbacks he
@@ -7,6 +7,7 @@
 // ("Are you gonna just sit there…", speaker unclear and garbled). Who says "Which is you" (30 s) is not named.
 // EXCLUDE 9–15 (the anus lines)
 // EAR CHECK: 100.25 s r1 — the cut falls in the pause after "You know what, Pam?", before "You're right"
+// EAR CHECK: 15 s who says "Okay, um, Stanley, maybe you can just unspool…" (not Dwight's voice; Dwight speaks next)
 import type { Clip } from '../types.ts';
 
 export const dwightAppt: Clip = {
@@ -56,7 +57,7 @@ export const dwightAppt: Clip = {
       choices: ['He’s offended by it', 'He’s embarrassed by it', 'He’s amused by it'], a: 0,
       choicesJa: ['むっとしている', '恥ずかしがっている', 'おもしろがっている'],
       cue: 'スタンリーの短い返事',
-      line: 'Dwight: Stanley, maybe you can just *unspool a little more* each time… / Stanley: *Don’t tell me how to do my business*.',
+      line: 'Stanley, maybe you can just *unspool a little more* each time… / Stanley: *Don’t tell me how to do my business*.',
       said: '「使うたびに少し多めに引き出せば」と言われ、「やり方に口を出すな」と返す。',
       mean: 'Don’t tell me how to 〜 ＝ 〜のやり方に口を出すな。強い不快。do my business は「用を足す」の遠回しでもある。',
       trap: 'トイレの話なので、恥ずかしがっていると考えがち。Don’t で始まる返事は拒否。',
@@ -168,8 +169,8 @@ export const dwightAppt: Clip = {
     { id: 'i3', skill: 'detail', level: 'B2', point: 'excuse', reveals: ['tellher'], ctx: true, seg: [69.4, 78.5],
       stem: 'What does Dwight tell Nate to do?',
       ja: 'ドワイトはネイトに何をしろと言う？',
-      choices: ['Make up a reason for Pam', 'Put Pam’s call through', 'Tell Pam the real reason'], a: 0,
-      choicesJa: ['パムへの理由をでっち上げる', 'パムの電話をつなぐ', 'パムに本当の理由を言う'],
+      choices: ['Invent an excuse for Pam', 'Pass Pam’s call to him', 'Tell Pam the real reason'], a: 0,
+      choicesJa: ['パムへの言い訳を考える', 'パムの電話を自分につなぐ', 'パムに本当の理由を言う'],
       cue: '「I don’t know」のあと',
       line: 'Nate: Dwight Schrute? / Dwight: Mm-hmm. Tell her I’m busy. I don’t know. *Make something up*.',
       said: 'ネイトに呼ばれ、ドワイトは「忙しいと言え。さあな、何か作り話をしろ」と言う。',
@@ -287,13 +288,13 @@ export const dwightAppt: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [106.6, 113], keep: true,
       stem: 'How much does Dwight say the cuts save on plumbing and electricity?',
       ja: '水道と電気で、いくら浮くとドワイトは言っている？',
-      choices: ['Dozens', 'Hundreds', 'Thousands'], a: 1,
-      choicesJa: ['何十（ドル）', '何百（ドル）', '何千（ドル）'],
+      choices: ['Dozens', 'Hundreds', 'Thousands', 'Millions'], a: 1,
+      choicesJa: ['何十（ドル）', '何百（ドル）', '何千（ドル）', '何百万（ドル）'],
       cue: '「save」のすぐあと',
       line: 'than save *hundreds* on plumbing and electricity.',
       said: '「水道や電気で何百ドルも浮かせるより」と言う。',
       mean: 'hundreds ＝ 何百。具体的な金額を言わない言い方。plumbing ＝ 水道の設備。',
-      trap: 'dozens は「ダズンズ」、thousands は「サウ」で始まる。「ハンドレッ」なら hundreds。',
+      trap: 'dozens は「ダズンズ」、thousands は「サウ」、millions は「ミリ」で始まる。「ハンドレッ」なら hundreds。',
       use: 'It saves us hundreds a year.（年に何百ドルも浮く）' },
   ]
 };
