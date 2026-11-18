@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 0, new 5, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 0, new 5, ctx 5, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 4, new 0
 // “Employee of the Month - The Office US” (the official The Office channel, BEST OF SEASON 6): Andy pitches an
 // employee-of-the-month award to Jim, Dwight explains to the camera that it's a trap to get Jim fired, and the
@@ -36,7 +36,7 @@ export const empOfMonth: Clip = {
       choicesJa: ['（病気に）かかる', '〜と一緒に下りる', '〜に怒る'],
       cue: '「The entire office has」のあと',
       line: 'The entire office has *come down with* a pernicious *case of the Mondays*.',
-      said: '「オフィス全体が悪性の『月曜病』にかかった」と言う。',
+      said: '「職場全体が、たちの悪い『月曜病』にかかった」と言う。',
       mean: 'come down with 〜 ＝ （病気に）かかる。the Mondays は月曜のだるさ。元気のなさを病気にたとえている。',
       trap: 'down から「下りる」を連想しやすい。come down with ＋病気で「かかる」。',
       use: 'I think I’m coming down with a cold.（風邪をひきかけてるみたい）' },
@@ -66,10 +66,10 @@ export const empOfMonth: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'wentfor', seg: [40.1, 45.7],
       stem: 'What does “They totally went for our idea” mean?', ja: '“They totally went for our idea” はどういう意味？',
       choices: ['They liked our idea', 'They went to talk about it', 'They said no to it'], a: 0,
-      choicesJa: ['アイデアに乗ってきた', '相談しに行った', '断った'],
+      choicesJa: ['案に乗ってきた', '相談しに行った', '断った'],
       cue: '「totally」のあと',
       line: 'They *totally went for* our idea.',
-      said: '「完全に乗ってきた、僕らのアイデアに」と報告する。',
+      said: '「俺たちの案に完全に乗ってきた」と報告する。',
       mean: 'go for 〜 ＝ （案に）乗る、受け入れる。totally で「すっかり」と強めている。',
       trap: 'went を「行った」と取ると、相談しに行った話に聞こえる。go for ＋案 ＝ 賛成。',
       use: 'I think the boss will go for it.（上司は乗ってくると思う）' },
@@ -198,7 +198,7 @@ export const empOfMonth: Clip = {
       choices: ['He won’t take any of them', 'He will share them all', 'He wants only the day off'], a: 0,
       choicesJa: ['どれも受け取らない', '全部みんなで分ける', '休みの日だけほしい'],
       cue: 'stop for a second のあと',
-      line: 'Dwight: …a vacation day, and a nice tidy quarter of $1,000. / Jim: …obviously *I’m not taking any of it*.',
+      line: '…a vacation day, and a nice tidy quarter of $1,000. / Jim: …obviously *I’m not taking any of it*.',
       said: '賞品を並べられ、「みんな待って。もちろん僕は何も受け取らない」と言う。',
       mean: 'not 〜 any of it ＝ その一つも〜しない。obviously（もちろん）で、当然だと強めている。',
       trap: 'vacation day（休み）が魅力的に聞こえるが、決め手は not taking any（何も取らない）。',
@@ -288,8 +288,8 @@ export const empOfMonth: Clip = {
 
     { id: 'k4', skill: 'pragma', level: 'B2', point: 'fair', ctx: true, seg: [151.5, 161.0],
       stem: 'What do the others say to Pam’s idea?', ja: 'パムの提案に、ほかの人たちは何と言う？',
-      choices: ['They agree it’s fair', 'They want to vote again', 'They want Jim to keep it'], a: 0,
-      choicesJa: ['公平だと賛成する', 'もう一度投票したい', 'ジムがそのままもらえばいい'],
+      choices: ['Everyone says yes to it', 'They want to vote again', 'They want Jim to keep it'], a: 0,
+      choicesJa: ['全員が賛成する', 'もう一度投票したい', 'ジムがそのままもらえばいい'],
       cue: 'move on? のあとの短い返事',
       line: 'Pam: why doesn’t Jim just pick the next highest score…? / Others: *Yeah, okay. — That’s fair. — Fine.*',
       said: '「次に点数が高い人にしたら？」に、「いいよ」「それなら公平」「いいわ」と返る。',
@@ -321,13 +321,13 @@ export const empOfMonth: Clip = {
 
     { id: 'h4', skill: 'humor', level: 'B1', point: 'doubled', ctx: true, seg: [179, 189.4],
       stem: 'Pam doubled her sales. To how many?', ja: 'パムは売上を倍にした。何件になった？',
-      choices: ['4', '12', '20'], a: 0,
-      choicesJa: ['4件', '12件', '20件'],
+      choices: ['4', '2', '24'], a: 0,
+      choicesJa: ['4件', '2件', '24件'],
       cue: '「From what?」のあと',
       line: 'Pam: I *doubled my sales* last month. / Others: From what? *Two to four?* — Yup.',
       said: '「売上を倍にした」と言うと、「2件から4件？」と聞かれ、「そう」と答える。',
       mean: 'double ＝ 2倍にする。「倍」は立派に聞こえるが、元が2なら4。小さい数で大きな言葉を使うのが笑い。',
-      trap: '「トゥー・トゥ」は twenty（トゥエニ）や twelve（トゥエルヴ）に似るが、最後が「フォー」なら4。',
+      trap: 'Two to four が続けて「トゥートゥフォー」と聞こえ、24 と勘違いしやすい。2から4、の意味。',
       use: 'Our sales doubled, from one to two.（売上が倍に、1から2に）' },
 
     // anchor: 189.2 s "this isn't some elaborate scam" → 193.4 s "a custom cake, Jim Halpert" → 198.4 s "I didn't
