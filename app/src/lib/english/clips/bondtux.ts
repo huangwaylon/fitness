@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 11, rewrite 9, retire 0, new 2, ctx 5, tx 8
 // A2 REVIEW 2026-11-17: keep 8, rewrite 6, retire 8, new 4
 // “Chandler Fangirls Over James Bond’s Tux | Friends” (the official Friends channel, Best of Season 7): at Rachel's
 // store Chandler is thrilled to get James Bond's tux for his wedding, until Ross shows up with "Batman's tux"; Chandler
@@ -5,9 +6,12 @@
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Rach (13.9 s), Monica (9.6 s, 21.9
 // s), Rachel (112.5 s). Chandler and Ross are never named, so stems name them as the show does. The friend who tries on
 // the jacket and reads the invitation (187–217 s) is never named: stems avoid him.
-// Untested: 24.9–26.1 s (garbled in both); 46.9 s ("Might I suggest"); 161.8–175 s / 192–194 s (the "slept with my
-// sister" / "double-O and seven" jokes: sexual, left out); 165–178 s (who says "mine doesn't fit" and "that stinks"
-// isn't clear: f4 names no one); 200.5 s ("Holy double vented comfort, Batman": needs the TV show).
+// Untested: 24.9–26.1 s (garbled in both); 54–64 s (whisper "Not bad", captions "Okay."); 165–172 s; 200.5 s ("Holy
+// double vented comfort, Batman": needs the TV show); 222–230 s (the "superpower" tease). Who says "mine doesn't
+// fit" and "that stinks" isn't clear: f4 names no one. Who says "Might I suggest…" (46.9 s) isn't clear: i1 names no one.
+// EXCLUDE 161.8–167.6: "you slept with my sister / That was pretty 007" (sexual)
+// EXCLUDE 172.5–176.6: "A little tight? I could see double-O and seven in those things" (sexual)
+// EXCLUDE 192–196.2: "double-O and seven are not getting in there" (sexual)
 // EAR CHECK: 181.6 s s2 — "you're not gonna be" (whisper "gonna", captions "going to"); the item turns only on "not".
 import type { Clip } from '../types.ts';
 
@@ -26,7 +30,7 @@ export const bondtux: Clip = {
       line: 'if there’s anything that you like, we can *make you a deal*.',
       said: '「気に入ったものがあれば、お安くしますよ」と言う。',
       mean: 'make you a deal ＝ 値段を特別にする（まける）。店でよく聞く言い方。',
-      trap: 'make は「作る」なので「新しく作る」と思いやすい。a のあとの deal まで聞く。',
+      trap: 'make は「作る」なので「新しく作る」と考えがち。a のあとの deal まで聞く。',
       use: 'Buy two and I’ll make you a deal.（2つ買うならまけますよ）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [6.7, 11.7], keep: true,
@@ -41,17 +45,29 @@ export const bondtux: Clip = {
       trap: 'these と three は出だしが似る。three は「スリー」と r が入る。two は「トゥー」、four は「フォー」。',
       use: 'These three are already approved.（この3つはもう承認ずみです）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'guest', seg: [14.1, 24.2],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'guest', ctx: true, seg: [14.1, 24.2],
       stem: 'What is Rachel’s job at the wedding?',
       ja: '結婚式でのレイチェルの役目は？',
       choices: ['Monica’s maid of honor', 'Chandler’s special guest', 'The wedding planner'], a: 0,
       choicesJa: ['モニカの付き添い役', 'チャンドラーの特別な客', '式のプランナー'],
       cue: 'チャンドラーのお礼への返事。',
-      line: 'I want you to attend our wedding as my guest. — I’m *Monica’s maid of honor*.',
-      said: '「僕の客として招待する」と言うと、「私は付き添い役よ」と返される。',
+      line: 'Chandler: I want you to attend our wedding *as my guest*. / Rachel: I’m *Monica’s maid of honor*.',
+      said: '「僕のゲストとして式に来てほしい」と言うと、「私はモニカの花嫁付き添い役よ」と返される。',
       mean: 'maid of honor ＝ 花嫁のいちばん近くで支える友だち。招待される必要はない。',
-      trap: '先に as my guest（僕の客として）が聞こえ、そう思いやすい。答えは返事。',
-      use: 'Thanks a lot for helping me.（手伝ってくれて本当にありがとう）' },
+      trap: '先に as my guest が聞こえるので、招待客と考えがち。答えは返事のほう。',
+      use: 'I’m the maid of honor at my sister’s wedding.（妹の結婚式で花嫁の付き添い役をするの）' },
+
+    { id: 'g0', skill: 'gist', level: 'B1', point: 'celebs', seg: [28.7, 46.8],
+      stem: 'What is special about these tuxes?',
+      ja: 'このタキシードは何が特別？',
+      choices: ['Famous people wore them', 'They are very cheap now', 'Monica made them herself'], a: 0,
+      choicesJa: ['有名人が着たもの', '今とても安い', 'モニカが自分で作った'],
+      cue: '「we custom make tuxedos」のあと。',
+      line: 'we custom make tuxedos *for celebrities*… these tuxes have been down the *red carpet*?',
+      said: '店で有名人用にタキシードを作っていて、レッドカーペットを歩いた服もあると聞き、チャンドラーははしゃぐ。',
+      mean: 'celebrity ＝ 有名人。red carpet ＝ 授賞式などでスターが歩く赤いじゅうたん。',
+      trap: '最初の make you a deal（お安くする）から、安さの話と考えがち。for celebrities を聞く。',
+      use: 'This hotel is popular with celebrities.（このホテルは有名人に人気です）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sendback', seg: [30.6, 39.2],
       stem: 'Once the celebrities are done with the tuxes, what do they do?',
@@ -62,19 +78,20 @@ export const bondtux: Clip = {
       line: 'when they’re done with them, they *just send them back*.',
       said: '「有名人用に作って、使い終わったら送り返してくるの」と説明する。',
       mean: 'send back ＝ 送り返す。be done with ＝ 使い終わる。',
-      trap: 'deal が残ると「安売り」と思いやすい。done with them のあとの動詞を聞く。',
+      trap: 'deal が耳に残ると「安売り」と勘違いしやすい。done with them のあとの動詞を聞く。',
       use: 'Can I send it back if it doesn’t fit?（合わなかったら返品できますか）' },
 
-    { id: 'i1', retired: true, skill: 'infer', level: 'C1', point: 'espn', reveals: ['oneill'], seg: [39.5, 52.8],
-      stem: 'What is Rachel hinting about Chandler with her TV advice?',
-      choices: ['He is far too into celebrity news', 'He is far too into how he looks',
-                'He is far too into TV in general'], a: 0,
-      cue: '直前の、レッドカーペットのまねとのつながり。',
-      line: 'Might I suggest watching a little *more ESPN* and a little *less E*?',
-      said: '「スポーツ番組を少し増やして、芸能番組を少し減らしたら？」と言う。',
-      mean: 'E は芸能ニュースの局。有名人の話に夢中な彼を軽くからかう。',
-      trap: 'fabulous で見た目、less で「TV を減らせ」と取りやすい。何と何の比較かを聞く。',
-      use: 'Might I suggest a little less coffee?（コーヒー、少し控えたら？）' },
+    { id: 'i1', skill: 'pragma', level: 'B1', point: 'espn', reveals: ['oneill'], seg: [46.9, 54.1],
+      stem: 'What is Chandler told to watch more of?',
+      ja: 'チャンドラーは何をもっと見たら、と言われる？',
+      choices: ['Sports on TV', 'Movie star news', 'Award shows'], a: 0,
+      choicesJa: ['テレビのスポーツ', '芸能ニュース', '授賞式の番組'],
+      cue: '「Might I suggest」のあと。',
+      line: '*Might I suggest* watching a little *more ESPN* and a little less E?',
+      said: '有名人の服にはしゃぐチャンドラーに「スポーツ番組をもう少し、芸能番組を少し控えたら？」と言う。',
+      mean: 'Might I suggest 〜? ＝ 〜してはいかが？ ていねいな提案の形。ESPN はスポーツ専門、E は芸能のチャンネル。',
+      trap: 'more と less が並ぶので逆に取りやすい。more のあとが ESPN（スポーツ）。',
+      use: 'Might I suggest the fish today?（本日は魚料理はいかがでしょう）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'oneill', seg: [65.8, 71.4],
       stem: 'Who is the second celebrity, says Rachel?',
@@ -85,7 +102,7 @@ export const bondtux: Clip = {
       line: 'He *plays for the Yankees*. Seriously, ESPN.',
       said: '「誰？」と聞かれ「ヤンキースの選手よ」と答える。',
       mean: 'play for ＋ チーム ＝ そのチームでプレーする。役を演じるのは play ＋ 役名。',
-      trap: 'plays だけだと俳優を思いやすい。play のあとの for が目印。',
+      trap: 'plays だけだと俳優を連想しやすい。play のあとの for が目印。',
       use: 'My brother plays for a local team.（兄は地元のチームでプレーしてる）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'background', seg: [68.6, 75],
@@ -97,7 +114,7 @@ export const bondtux: Clip = {
       line: '*Have it on in the background*.',
       said: '「見なくていいから、つけておいて」と付け足す。',
       mean: 'have it on ＝ つけておく。in the background ＝ 何かしながら流す。',
-      trap: 'background から「後ろの席」を思いやすい。have it on とセットで聞く。',
+      trap: 'background から「後ろの席」と考えがち。have it on とセットで聞く。',
       use: 'I like music on in the background.（音楽を流しながらが好き）' },
 
     { id: 'nt1', retired: true, skill: 'infer', level: 'C2', point: 'background', reveals: ['while'], seg: [68.6, 74.4],
@@ -131,19 +148,20 @@ export const bondtux: Clip = {
       line: 'Pierce Brosnan? *Are you serious?* … I *have to* get married in James Bond’s tux!',
       said: '「本気で？」と聞き返し、「ボンドのタキシードで結婚する！」と大喜び。',
       mean: 'Are you serious? ＝ 本気？うそでしょ？ うれしい驚きにも使う。',
-      trap: 'serious（まじめな）から怒っていると思いやすい。続く勢いで決まる。',
+      trap: 'serious（まじめな）から怒っているように聞こえるが、うれしい驚きは続く勢いで分かる。',
       use: 'Are you serious? That’s amazing!（本当？すごい！）' },
 
-    { id: 'p1', retired: true, skill: 'pragma', level: 'B2', point: 'notjust', seg: [89.6, 94.6],
-      stem: 'When the tux is called “pretty cool”, what does Chandler’s reply do?',
-      choices: ['Says “cool” is far too small a word', 'Says the tux is cool, and that’s all',
-                'Says the tux isn’t all that cool'], a: 0,
-      cue: '返事の最初の短い一文と、そのあとの大きな話。',
-      line: 'Ah, *it’s not just that*. I would be England’s most powerful weapon.',
-      said: '「それだけじゃない。僕はイギリス最強の武器だ」とボンド気分で語る。',
-      mean: 'It’s not just that ＝ それどころじゃない。相手の言葉に上乗せする。',
-      trap: 'not で反対意見に取りやすい。not just なら「それだけじゃない」。',
-      use: 'It’s not just good. It’s amazing.（いいなんてもんじゃない、最高だよ）' },
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notjust', ctx: true, seg: [90.1, 96.1],
+      stem: 'What does Chandler mean by “It’s not just that”?',
+      ja: 'チャンドラーの「It’s not just that」はどういう意味？',
+      choices: ['There’s more to it than that', 'You’re wrong about that', 'I don’t really like it all that much'], a: 0,
+      choicesJa: ['それだけじゃない、もっとある', 'それは違う', 'そんなに好きじゃない'],
+      cue: '「pretty cool tux」への返事。',
+      line: 'A: It’s a pretty cool tux. / Chandler: Ah, *it’s not just that*. I would be England’s most powerful weapon.',
+      said: '「かなりかっこいいタキシードね」に「それだけじゃない。僕は英国最強の武器になるんだ」と返す。',
+      mean: '文字どおりは「それだけではない」。相手の言葉を否定せず、もっと大きな話を足す前置き。',
+      trap: 'not から反対していると考えがち。cool は認めた上で、話をさらに広げている。',
+      use: 'It’s not just the money. I love the work.（お金だけじゃない。仕事が好きなんだ）' },
 
     { id: 'm2', skill: 'marker', level: 'B1', point: 'guess', seg: [104.5, 111.3],
       stem: 'Ross says, “Guess what…?” What is he about to do?',
@@ -178,7 +196,7 @@ export const bondtux: Clip = {
       line: 'No, Rachel *hooked me up* with a tux, but not just any tux…',
       said: '「レイチェルが手配してくれた。それもただのじゃない」と言う。',
       mean: 'hook 人 up with 〜 ＝ 〜を手配してあげる（くだけた言い方）。',
-      trap: 'hook から「フックにかける」を思いやすい。人＋up＋with で「手配」。',
+      trap: 'hook から「フックにかける」を連想しやすい。人＋up＋with で「手配」。',
       use: 'Can you hook me up with a ticket?（チケット、なんとかならない？）' },
 
     { id: 's1', retired: true, skill: 'sound', level: 'B2', point: 'expressly', seg: [118.7, 125.0],
@@ -203,13 +221,13 @@ export const bondtux: Clip = {
       trap: 'あいまいさを「見ていない」と取りやすいが、そうは言っていない。言い直しは物忘れの合図。',
       use: 'You know, that movie with the dog in it.（ほら、犬が出てたあの映画）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'lessspecial', seg: [128.5, 136.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'lessspecial', ctx: true, seg: [128.5, 136.4],
       stem: 'Why doesn’t Chandler want Ross to wear his tux?',
       ja: 'チャンドラーはなぜ、ロスにそのタキシードを着てほしくない？',
       choices: ['It would make his less special', 'Batman and Bond don’t match', 'Monica didn’t approve it'], a: 0,
       choicesJa: ['自分のが特別でなくなる', 'バットマンとボンドが合わない', 'モニカが OK していない'],
       cue: 'ロスの So? への答え。',
-      line: 'So, if you wear that, it’ll make *mine less special*.',
+      line: 'Ross: So? / Chandler: So, if you wear that, it’ll make *mine less special*.',
       said: '「君がそれを着たら、僕のが特別じゃなくなる」と理由を言う。',
       mean: 'mine ＝ 僕のタキシード。理由はただ、自分が目立てなくなること。',
       trap: 'Batman と Bond が並ぶので「合わない」と思いやすい。理由は So? のすぐあと。',
@@ -226,19 +244,19 @@ export const bondtux: Clip = {
       trap: 'Bond の話のあとなので、それが欲しいと取りやすい。立派な話のあと、その人が何を手放したかを見る。',
       use: 'Money isn’t everything. So, my turn to pick.（お金がすべてじゃない。じゃ、僕が選ぶね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'pretty', seg: [149.7, 157.2],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'pretty', ctx: true, seg: [149.7, 157.2],
       stem: 'How does Ross answer Chandler’s “Pretty please”?',
       ja: 'チャンドラーの「Pretty please」に、ロスはどう返す？',
       choices: ['He teases him', 'He says yes', 'He gets angry'], a: 0,
       choicesJa: ['からかう', 'いいよと言う', '怒る'],
       cue: '同じ言葉をくり返したあとの、短い一言。',
-      line: 'Pretty please? *Not very 007*.',
-      said: '「お願いお願い？007らしくないね」と返す。',
+      line: 'Chandler: Pretty please? / Ross: *Not very 007*.',
+      said: '「お願い、本当にお願い？」と頼むチャンドラーに「あんまり007っぽくないね」と返す。',
       mean: 'pretty please ＝ 子どもっぽい「お願い、お願い」。ボンドとは正反対だとからかう。',
-      trap: 'くり返すので同情していると思いやすい。続く Not very 007 がからかい。',
+      trap: 'くり返し頼まれて同情した、と考えがち。続く Not very 007 がからかい。',
       use: 'Can I have one? Pretty please?（1つちょうだい？お願い！）' },
 
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 164.1],
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'weddingday', seg: [157.3, 161.7],
       stem: 'Why does Chandler say, “It’s my wedding day”?',
       ja: 'チャンドラーはなぜ「今日は僕の結婚式だ」と言う？',
       choices: ['To make Ross say yes', 'To say sorry to Ross', 'To end the talk'], a: 0,
@@ -250,16 +268,16 @@ export const bondtux: Clip = {
       trap: 'Look, … okay? は謝りにも聞こえるが、続くのはロスに求める話。',
       use: 'Come on, it’s my birthday.（ねえ、今日は私の誕生日だよ）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stinks', seg: [173.5, 183.4],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'stinks', seg: [176.7, 182.3],
       stem: 'What does “That stinks” mean here?',
       ja: 'ここでの「That stinks」はどんな意味？',
       choices: ['That’s too bad', 'That smells bad', 'That’s so funny'], a: 0,
       choicesJa: ['それはついてないね', 'それはくさい', 'それはおかしい'],
       cue: 'ズボンがきつい話のあと。',
       line: 'Well, *that stinks*. I was looking forward to us wearing our celebrity tuxes together.',
-      said: '「ついてないね。一緒に有名人のタキシードを着たかったのに」と言う。',
-      mean: 'That stinks ＝ 最悪・ついてない（くだけた言い方）。stink は文字どおりは「くさい」。',
-      trap: 'stinks から、においの話と思いやすい。ここは悪い知らせへの返事。',
+      said: '「最悪だね。一緒に有名人のタキシードを着たかったのに」と言う。',
+      mean: '文字どおりは「それはくさい」。くさい→いやなもの→「最悪・ついてない」。くだけた言い方。',
+      trap: 'stinks から、においの話に聞こえるが、ここは悪い知らせへの返事。',
       use: 'You have to work Sunday? That stinks.（日曜も仕事？最悪だね）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'notgonna', seg: [180.1, 185.8],
@@ -274,19 +292,19 @@ export const bondtux: Clip = {
       trap: 'not が弱いと「着る」に聞こえ、意味が逆になる。you were は「ユーワー」と長い。',
       use: 'So you’re not coming tonight?（じゃあ今夜は来ないの？）' },
 
-    { id: 'd4', skill: 'pragma', level: 'B2', point: 'kidding', seg: [181.5, 186.5],
+    { id: 'd4', skill: 'pragma', level: 'B2', point: 'kidding', reveals: ['notgonna'], ctx: true, seg: [181.5, 187.5],
       stem: 'Ross says, “What, are you kidding?” What does he mean?',
       ja: 'ロスの「What, are you kidding?」はどういう意味？',
       choices: ['Of course I will', 'I’m only joking', 'No, I won’t'], a: 0,
       choicesJa: ['もちろん着るよ', '冗談だよ', 'いや、着ない'],
       cue: 'そのあとの「It’s」で始まる一言。',
-      line: 'What, *are you kidding*? It’s *Batman’s tux*.',
+      line: 'Chandler: Does that mean you’re not gonna be wearing yours? / Ross: What, *are you kidding*? It’s Batman’s tux.',
       said: '「は？冗談でしょ。バットマンのタキシードだよ」と返す。',
       mean: 'Are you kidding? ＝「冗談でしょ？」。ここでは「着るに決まってる」。',
       trap: 'kidding（冗談）から、自分が冗談を言ったと思いやすい。冗談かと聞く相手は向こう。',
       use: 'Are you kidding? I’d love to!（冗談でしょ？もちろん行きたい！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'twist', seg: [205.3, 227.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'twist', reveals: ['lovestory'], seg: [205.3, 227.6],
       stem: 'What do they learn from the invitation?',
       ja: '招待状から何が分かる？',
       choices: ['It wasn’t worn in Batman', 'Another actor wore it', 'It has to go back'], a: 0,
@@ -308,6 +326,18 @@ export const bondtux: Clip = {
       mean: 'some ＋ 名詞で「どうでもいい何かの」。tutti-frutti で甘さを笑う、見下した言い方。',
       trap: 'premiere は華やかでも言い方は冷たい。この some は「不明」より軽蔑。',
       use: 'Some silly show about cooking.（料理のくだらない番組）' },
+
+    { id: 'love', skill: 'detail', level: 'B1', point: 'lovestory', reveals: ['twist'], seg: [213.2, 221.3],
+      stem: 'Where did Val Kilmer really wear this tux?',
+      ja: 'ヴァル・キルマーは本当はどこでこのタキシードを着た？',
+      choices: ['To a love movie event', 'In the Batman movie itself', 'At an award show'], a: 0,
+      choicesJa: ['恋愛映画のイベント', 'バットマンの映画の中', '授賞式'],
+      cue: '「He wore it to」のあと。',
+      line: 'He wore it to *the premiere* of some tutti-frutti *love story* where he played a blind guy.',
+      said: '招待状を見て「バットマンじゃなく、甘ったるい恋愛映画の試写会で着たんだ」と分かる。',
+      mean: 'premiere ＝ 映画の初公開イベント（試写会）。tutti-frutti ＝ 甘ったるい（フルーツ味のお菓子から）。',
+      trap: 'ロスが自慢していたので Batman を選びがち。He wore it to のあとが本当の場所。',
+      use: 'We’re going to a movie premiere tonight.（今夜は映画の試写会に行くんだ）' },
 
     { id: 'i2', retired: true, skill: 'infer', level: 'C1', point: 'smell', reveals: ['twist'], seg: [214.1, 227.4],
       stem: 'What does the last line say about the tux now?',

@@ -1,12 +1,17 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 5, new 6, ctx 4, tx 11
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 9, new 3
 // “Halloween Contest - The Office US” (the official The Office channel, BEST OF SEASON 7): the office goes all out for
 // a costume contest whose prize is a coupon book "worth over $15,000 in savings"; Pam's paired costume falls flat
 // without Jim, Kelly is challenged for changing costumes, Oscar scoffs at the prize and wins it anyway.
 // Segments from the captions, words from whisper (2026-11-16); whisper's timings drift after ~195 s, so the captions'
-// are used there. Untested: 16–30 s ("Two seconds, McRobert/McGrubber" shouted over the talking head), 45–70 s
-// (the Strangler bit, Dwight's jab at Pam), 78–79 s and 91.8 s ("I am Popeye", "No.": visual), 122–131 s (True Blood),
-// 157–196 s (Michael's costume of a coworker: a race-based gag), 232–253 s (visual), 279–288 s (world knowledge).
-// The a2/m1 speaker is never named, so a2 says "she".
+// are used there (the in-app transcript lines after ~195 s sit 15–25 s early). Untested: 16–30 s (McGruber shouts),
+// 45–58 s (the Strangler bit), 91.8 s ("No.": visual), 122–131 s (True Blood), 246–256 s (spinach: visual).
+// EXCLUDE 159–175: Michael's impression of Darryl (a race-based gag)
+// EXCLUDE 282–290.1: "Best Edward James Olmos costume" (a race-based joke about Oscar)
+// SKIP 154–180: Michael's Darryl impression (excluded above)
+// SKIP 279.5–308.1: the Olmos joke (excluded), then music
+// Speakers never named: who stops Michael at 180 s, who asks him to let them enjoy the party, a2's "she", the
+// sold-out costume's "she" and the first voter at 273 s; stems don't name them.
 import type { Clip } from '../types.ts';
 
 export const costumePrize: Clip = {
@@ -27,15 +32,15 @@ export const costumePrize: Clip = {
       trap: '有名人の名で政治の話に聞こえる。kind of look like が答えの中身。',
       use: 'That outfit really makes a statement.（その服、すごく主張してるね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kindof', seg: [0, 9.4],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'kindof', ctx: true, seg: [0, 9.4],
       stem: 'What does Kevin mean by “I kind of look like”?',
       ja: 'ケビンの「I kind of look like」はどういう意味？',
       choices: ['I look a bit like', 'I don’t look like', 'I want to look like'], a: 0,
       choicesJa: ['少し似ている', '似ていない', '似せたい'],
       cue: 'オスカーの名前のあと',
-      line: 'The statement that I am making, Oscar, is *I kind of look like* Michael Moore.',
-      said: '「僕の主張は、マイケル・ムーアにちょっと似てるってこと」と言う。',
-      mean: 'kind of ＝「ちょっと・なんとなく」。はっきり言い切らないときに使う。',
+      line: 'Oscar: What kind of statement are you making with that costume? / Kevin: The statement… is *I kind of look like* Michael Moore.',
+      said: '「その仮装で何を主張してるの？」に「僕の主張は、マイケル・ムーアにちょっと似てるってこと」。',
+      mean: 'kind of ＝ ちょっと・なんとなく。言い切らない言い方。Michael Moore は政治的な映画で有名な監督。',
       trap: 'kind（種類・親切）と思いやすい。kind of でひとまとまり、「ちょっと」。',
       use: 'I’m kind of tired today.（今日はちょっと疲れてる）' },
 
@@ -121,6 +126,18 @@ export const costumePrize: Clip = {
       trap: 'chicken には「弱虫」の意味もあり、悪口に聞こえやすい。my が付くので自分の鶏。',
       use: 'To my kids, I’m the bad guy.（子どもたちから見れば、私は悪者）' },
 
+    { id: 'dressup', skill: 'phrase', level: 'B1', point: 'dressup', seg: [58.8, 68.4],
+      stem: 'What does “dress up as” mean here?',
+      ja: 'ここでの「dress up as」はどういう意味？',
+      choices: ['Wear a costume to look like', 'Wear nice clothes to go see', 'Make a costume to give to'], a: 0,
+      choicesJa: ['〜の仮装をする', '〜に会うためにおしゃれする', '〜にあげる衣装を作る'],
+      cue: '「someone decided to」のあと。',
+      line: 'Looks like someone decided to *dress up as* old Dwight Schrute’s mom.',
+      said: 'ドワイトがパムの仮装を見て「誰かさんはドワイトのお袋の仮装をしてきたようだな」とからかう。',
+      mean: 'dress up as 〜 ＝ 〜の仮装をする。as のあとが「なりきる相手」。ハロウィーンの定番表現。',
+      trap: 'カタカナのドレスアップ（着飾る）を連想しやすい。as 〜 が付くと「〜の格好をする」。',
+      use: 'I’m going to dress up as a cat.（ネコの仮装をするつもり）' },
+
     { id: 'd1', skill: 'detail', level: 'B1', point: 'popeye', reveals: ['putcost'], seg: [70.4, 80.1],
       stem: 'Why doesn’t Pam’s costume work yet?',
       ja: 'パムの仮装が、まだうまく伝わらないのはなぜ？',
@@ -166,7 +183,7 @@ export const costumePrize: Clip = {
       trap: 'number を数字や番号と取りやすい。this little number は服を指す。',
       use: 'Check out this little number I bought.（この服見て、買っちゃった）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'kelly', seg: [95.3, 102.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'kelly', seg: [95.3, 102.4], retired: true,
       stem: 'Why does someone say Kelly should be out?',
       ja: 'ケリーは失格だと言われるのはなぜ？',
       choices: ['She changed costumes midday', 'She wore someone else’s costume', 'She voted for herself'], a: 0,
@@ -178,19 +195,19 @@ export const costumePrize: Clip = {
       trap: 'costume だけ聞くと、人の衣装を着たと思いやすい。change costumes（衣装を変える）を聞く。',
       use: 'You can’t change plans halfway through.（途中で予定は変えられないよ）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B2', point: 'sue', seg: [100.3, 105.9],
-      stem: 'Why does Kelly say “If I’m out…”?',
-      ja: 'ケリーはなぜ「If I’m out…」と言う？',
-      choices: ['To threaten to sue the company', 'To threaten to quit her job', 'To ask Pam about the rules'], a: 0,
-      choicesJa: ['会社を訴えると脅すため', '仕事を辞めると脅すため', 'パムにルールを聞くため'],
-      cue: '「If I’m out」のあと',
-      line: 'If I’m out, I’m gonna *sue this entire company* for discrimination.',
-      said: '「私を外すなら、差別で会社全体を訴える」と返す。',
-      mean: 'If 〜, I’m gonna 〜 ＝「〜なら、〜するよ」。大げさに脅して失格を取り消させたい。',
-      trap: 'entire company から、辞める話と思いやすい。gonna のあとの sue（訴える）を聞く。',
-      use: 'If you cancel, I want a refund.（キャンセルするなら返金してね）' },
+    { id: 'r1', skill: 'pragma', level: 'B1', point: 'sue', ctx: true, seg: [96.5, 106],
+      stem: 'What does Kelly say she’ll do if she’s out?',
+      ja: '失格にされたら、ケリーは何をすると言う？',
+      choices: ['Take the company to court', 'Quit her job at the company', 'Ask Pam to change the rules'], a: 0,
+      choicesJa: ['会社を訴える', '会社を辞める', 'パムにルールを変えてもらう'],
+      cue: '「Pam, she’s out」への返事。',
+      line: 'A: Kelly, you cannot change costumes in the middle of the day. Pam, she’s out. / Kelly: If I’m out, I’m gonna *sue this entire company*…',
+      said: '途中で衣装を変えたから失格、と言われ、「失格なら会社全体を差別で訴える」と返す。',
+      mean: 'sue ＝ 訴える（裁判にする）。If 〜, I’m gonna 〜 ＝「〜なら〜するからね」。大げさに脅して失格を取り消させたい。',
+      trap: 'entire company から辞める話と考えがち。gonna のあとの sue（スー）を聞く。',
+      use: 'If it rains, I’m gonna stay home.（雨なら家にいるよ）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'sue', seg: [100.6, 105.9],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'sue', seg: [100.6, 105.9], retired: true,
       stem: 'Fill the gap: “If I’m out, ___ sue this entire company.”',
       ja: '「If I’m out, ___ sue this entire company.」の空所は？',
       choices: ['I’m gonna', 'I wanna', 'I gotta'], a: 0,
@@ -202,7 +219,7 @@ export const costumePrize: Clip = {
       trap: 'wanna は「ワナ」、gotta は「ガラ」に近い。ここは「ゴナ」で、前に「アイム」がある。',
       use: 'I’m gonna call you later.（あとで電話するね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'odds', seg: [102.3, 112.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'odds', seg: [102.3, 112.9], retired: true,
       stem: 'What are their chances of winning, according to Oscar?',
       ja: 'オスカーによると、勝つ確率は？',
       choices: ['1 in 6', '1 in 16', '1 in 60'], a: 1,
@@ -214,7 +231,7 @@ export const costumePrize: Clip = {
       trap: 'sixteen は「ティーン」が強く長い。sixty は前が強く、six なら「ティーン」がない。',
       use: 'There’s a one in ten chance of rain.（雨の確率は10分の1）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'worth', reveals: ['forty', 'odds', 'fifteen'], seg: [102.3, 112.9],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'worth', reveals: ['forty', 'odds', 'fifteen'], seg: [105.5, 111.8],
       stem: 'What point is Oscar making to the others?',
       ja: 'オスカーはみんなに何を言いたい？',
       choices: ['The prize isn’t worth the fight', 'They should share the prize', 'They have a good chance'], a: 0,
@@ -222,11 +239,11 @@ export const costumePrize: Clip = {
       cue: '「arguing over」のあと',
       line: 'you’re arguing over a 1 in 16 chance, over a prize *worth 40 bucks*.',
       said: '「16分の1の確率で、40ドルの賞品を言い争ってる」と言う。',
-      mean: 'argue over 〜 ＝「〜のことで言い争う」。小さな物のためにもめている、という指摘。',
-      trap: '1 in 16 から、勝ちやすいと思いやすい。worth 40 bucks（40ドルの価値）が言いたいこと。',
+      mean: 'argue over 〜 ＝ 〜のことで言い争う。1 in 16 ＝ 16分の1。bucks ＝ ドルのくだけた言い方。小さな物でもめている。',
+      trap: '1 in 16 を「勝てる見込み」と考えがち。言いたいのは worth 40 bucks（たった40ドル）。',
       use: 'It’s not worth fighting over.（取り合うほどのものじゃない）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [105.7, 112.9], keep: true,
+    { id: 'n3', skill: 'number', level: 'B1', point: 'forty', seg: [105.7, 112.9], retired: true,
       stem: 'How much does Oscar say the prize is really worth?',
       ja: 'オスカーは、賞品の本当の価値はいくらだと言う？',
       choices: ['$14', '$40', '$400'], a: 1,
@@ -238,7 +255,7 @@ export const costumePrize: Clip = {
       trap: 'forty は前が強く、fourteen は「ティーン」が強い。400 なら hundred が聞こえる。',
       use: 'It cost me forty bucks.（40ドルかかった）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [112.4, 123.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [112.4, 123.7], retired: true,
       stem: 'Why is “I mean” said here?',
       ja: 'ここではなぜ「I mean」と言う？',
       choices: ['To explain what she just said', 'To ask Pam a quick question', 'To change to a new topic'], a: 0,
@@ -250,16 +267,16 @@ export const costumePrize: Clip = {
       trap: 'mean（意味する）から、質問と思いやすい。前の amazing prize の話が続く。',
       use: 'It’s great. I mean, really great.（いいよ。というか、本当にいい）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'grudge', seg: [113.4, 123.7],
-      stem: 'In her talk to camera, how does she feel about Pam?',
-      ja: 'カメラに向かって、彼女はパムをどう思っていると話す？',
-      choices: ['Dislikes her but praises her', 'Thinks Pam did a bad job', 'Likes Pam very much'], a: 0,
-      choicesJa: ['嫌いだが、ほめている', 'パムはよくなかったと思う', 'パムが大好き'],
+    { id: 'a2', skill: 'detail', level: 'B2', point: 'grudge', seg: [113.4, 123.7],
+      stem: 'What does she finally say about Pam?',
+      ja: '彼女は最後にパムのことを何と言う？',
+      choices: ['She did a good job', 'She is too bossy', 'She is a good friend'], a: 0,
+      choicesJa: ['いい仕事をした', '仕切りすぎ', 'いい友だち'],
       cue: '「compliment」のあと',
       line: 'I don’t even want to give Pam a compliment… *but she did a good job*.',
       said: '「パムをほめたくもないけど、よくやった」と話す。',
-      mean: 'compliment ＝ ほめ言葉。嫌いな相手でも、but のあとで良さを認めている。',
-      trap: '前半だけ聞くと、悪く言っていると思いやすい。but のあとが本音。',
+      mean: 'compliment ＝ ほめ言葉。「ほめたくもない」と言いつつ、but のあとで「いい仕事をした」と認める。',
+      trap: '前半の悪口に引かれて、悪く言う話と考えがち。決め手は but のあと。',
       use: 'I hate to say it, but you’re right.（言いたくないけど、君が正しい）' },
 
     // retired (A2): a joke on “rational consumer” (C1)
@@ -274,16 +291,28 @@ export const costumePrize: Clip = {
       trap: '人名や買い物の予定と取りがち。you could say ＝ 言ってみれば。',
       use: 'Let’s be rational about this.（ここは冷静に考えよう）' },
 
-    { id: 'i3', skill: 'who', level: 'B1', point: 'line', seg: [143.4, 148.4],
+    { id: 'consumer', skill: 'detail', level: 'B1', point: 'consumer', seg: [132.3, 139],
+      stem: 'What does Oscar say his costume is?',
+      ja: 'オスカーは自分の仮装を何だと言う？',
+      choices: ['A rational consumer', 'A vampire from TV', 'A coupon book'], a: 0,
+      choicesJa: ['賢い消費者', 'テレビの吸血鬼', 'クーポン本'],
+      cue: '「I guess you could say」の文のあと。',
+      line: 'I guess you could say I’m *still in costume*. I’m a *rational consumer*.',
+      said: '仮装していないオスカーが「僕もまだ仮装中と言えるかな。賢い消費者なんだ」と言う。',
+      mean: 'rational ＝ 理屈で考える、consumer ＝ 消費者。賞品にだまされない自分を「仮装」と言う冗談。',
+      trap: '直前に吸血鬼の仮装の話があるので vampire と考えがち。I’m a のあとが答え。',
+      use: 'I guess you could say I’m a morning person.（朝型と言えるかな）' },
+
+    { id: 'i3', skill: 'who', level: 'B1', point: 'line', reveals: ['consumer'], ctx: true, seg: [141.2, 148.8],
       stem: 'Who did Oscar say his line to before?',
       ja: 'オスカーは前に、そのセリフを誰に言った？',
       choices: ['Phyllis', 'Michael', 'Kelly'], a: 0,
       choicesJa: ['フィリス', 'マイケル', 'ケリー'],
       cue: '「say it to」のあと',
-      line: 'I’m a rational consumer. — Yeah, *I heard you say it to Phyllis*.',
+      line: 'Oscar: Have you seen my costume? I’m a rational consumer. / — Yeah, *I heard you say it to Phyllis*.',
       said: '「合理的な消費者だ」に「フィリスに言ってたの聞いたよ」と返される。',
       mean: 'I heard you say it to 人 ＝「〜に言うのを聞いた」。同じセリフを何度も言っている。',
-      trap: 'マイケルやケリーの話も多いので迷いやすい。say it to のあとの名前を聞く。',
+      trap: 'マイケルやケリーの話も多いので迷いやすい。決め手は say it to のあとの名前。',
       use: 'I heard you say that before.（前にもそう言うのを聞いたよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'rule', seg: [148.3, 158.1],
@@ -298,6 +327,30 @@ export const costumePrize: Clip = {
       trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱く短い。最後は your team ではなく yourself。',
       use: 'Sorry, you can’t vote twice.（すみません、2回は投票できません）' },
 
+    { id: 'never', skill: 'infer', level: 'B2', point: 'never', ctx: true, seg: [180, 190.5],
+      stem: 'Has dressing up as someone worked for Michael?',
+      ja: 'だれかの仮装をして、マイケルはうまくいったことがある？',
+      choices: ['No, never, he says', 'Yes, once, he says', 'Yes, always, he says'], a: 0,
+      choicesJa: ['一度もない、と言う', '一度だけある、と言う', 'いつもうまくいく、と言う'],
+      cue: '「worked for you?」への短い返事。',
+      line: 'A: Dressing up as somebody… when has that *ever worked* for you? / Michael: *Never!*',
+      said: '「誰かの仮装なんて、うまくいったことある？」と止められ、マイケルは「一度もない！」と認める。',
+      mean: '文字どおりは「いつうまくいった？」。答えは「一度もない」と決まっている反語の質問。',
+      trap: '質問の形なので、答えを考えてしまいがち。マイケル自身が Never! と答える。',
+      use: 'When has that ever worked? Let’s try something new.（それでうまくいったことある？別の手にしよう）' },
+
+    { id: 'party', skill: 'pragma', level: 'B1', point: 'foronce', seg: [192.5, 198.8],
+      stem: 'What is Michael asked to do?',
+      ja: 'マイケルは何をするよう頼まれる？',
+      choices: ['Let them enjoy the party', 'Leave the party right now', 'Plan the next party'], a: 0,
+      choicesJa: ['みんなにパーティーを楽しませる', '今すぐパーティーから出ていく', '次のパーティーを企画する'],
+      cue: '「Could you, for once,」のあと。',
+      line: 'Could you, *for once*, just *let us enjoy a party* instead of making it about all your issues?',
+      said: 'マイケルに「一度くらい、自分の問題の話にしないで、パーティーを楽しませてくれない？」と言う。',
+      mean: 'for once ＝ 一度くらいは（いつもはしない、という不満）。let us 〜 ＝ 私たちに〜させて。',
+      trap: 'instead of の前後を混ぜて、出ていけと言われたと考えがち。頼みの中身は let us enjoy。',
+      use: 'Could you, for once, be on time?（たまには時間どおりに来てくれない？）' },
+
     // retired (A2): “as it were” is rare
     { id: 'p3', skill: 'phrase', level: 'C1', point: 'asitwere', seg: [214.3, 219.9], retired: true,
       stem: 'When “the rational consumer” is presented, what do the last two words add?',
@@ -310,7 +363,31 @@ export const costumePrize: Clip = {
       trap: 'were を過去と取ったり as you were と聞いたりしがち。決まり文句で覚える。',
       use: 'He’s our leader, as it were.（彼はいわば私たちのリーダー）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'winner', seg: [258.1, 288],
+    { id: 'present', skill: 'phrase', level: 'B1', point: 'present', reveals: ['consumer'], seg: [214.5, 222],
+      stem: 'What does “I present to you…” mean here?',
+      ja: 'ここでの「I present to you…」はどういう意味？',
+      choices: ['Let me show you', 'I give you a gift of', 'I am here now as'], a: 0,
+      choicesJa: ['ご紹介します', '〜をプレゼントします', '今ここにいるのは'],
+      cue: 'ランウェイでの最初の文。',
+      line: 'I *present to you* the rational consumer. As it were.',
+      said: 'オスカーがランウェイで「ご紹介しましょう、いわば『賢い消費者』です」と自分を披露する。',
+      mean: 'present 〜 to 人 ＝ 〜を人に紹介する・見せる。発表やスピーチで使う、かしこまった言い方。',
+      trap: 'カタカナのプレゼント（贈り物）を連想しやすい。動詞の present は「紹介する、発表する」。',
+      use: 'Today, I’d like to present our new plan.（今日は新しい計画を発表します）' },
+
+    { id: 'soldout', skill: 'detail', level: 'B1', point: 'soldout', seg: [232.5, 240.2],
+      stem: 'Why did she choose her costume?',
+      ja: '彼女はなぜその衣装を選んだ？',
+      choices: ['The others were sold out', 'It was the cheapest one', 'Her friend picked it for her'], a: 0,
+      choicesJa: ['ほかは売り切れだった', 'いちばん安かった', '友だちが選んでくれた'],
+      cue: '「Look,」のあと。',
+      line: 'I don’t like your tone. Look, they were *sold out* of all the other costumes, okay?',
+      said: '衣装を責められ、「その言い方、気に入らない。ほかは全部売り切れだったの」と言い返す。',
+      mean: 'be sold out of 〜 ＝ 〜が売り切れ。I don’t like your tone ＝ その言い方、気に入らない。',
+      trap: 'Look を「見て」と考えがち。ここは「いい？」と言い訳を始める合図。決め手は sold out。',
+      use: 'Sorry, we’re sold out of that size.（すみません、そのサイズは売り切れです）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'winner', seg: [252, 270],
       stem: 'How does the costume contest end?',
       ja: '仮装コンテストはどう終わる？',
       choices: ['Oscar wins the coupon book', 'Kelly wins in her new costume', 'Kevin wins as Michael Moore'], a: 0,
@@ -319,19 +396,19 @@ export const costumePrize: Clip = {
       line: 'I’ve tallied the votes, and the winner… *Oscar Martinez*.',
       said: '「集計しました。優勝はオスカー・マルティネス」と発表する。',
       mean: 'tally the votes ＝ 票を数える。賞品をばかにしたオスカーが勝つのが皮肉。',
-      trap: 'ケリーの衣装でもめた話が長いので、その結果と思いやすい。最後の名前で決める。',
+      trap: 'ケリーの衣装の話が長いので、その結果と勘違いしやすい。最後の名前で決める。',
       use: 'And the winner is…（そして優勝は…）' },
 
-    // retired (A2): a C2 inference over the talking heads
-    { id: 'nt2', skill: 'infer', level: 'C2', point: 'win', seg: [258.4, 279.5], retired: true,
-      stem: 'What do the comments to the camera after the result explain?',
-      choices: ['Why votes went to someone who was no threat', 'Why votes went to the cleverest costume idea',
-                'Why votes went to whoever people felt sorry for'], a: 0,
-      cue: '結果のあと、カメラへの一言の理由づけ。',
+    { id: 'nt2', skill: 'infer', level: 'B2', point: 'win', reveals: ['winner'], seg: [273.3, 279],
+      stem: 'Why does one person vote for Oscar?',
+      ja: 'ある人がオスカーに投票した理由は？',
+      choices: ['Oscar won’t be a strong rival', 'Oscar has the best costume', 'Oscar needs the coupon book'], a: 0,
+      choicesJa: ['オスカーは手ごわい相手じゃない', 'オスカーの仮装がいちばんいい', 'オスカーはクーポン本が必要'],
+      cue: '「If I have to vote for someone,」のあと。',
       line: 'If I have to vote for someone, I *don’t want it to be someone who can beat me*.',
-      said: '結果発表のあと、カメラに「誰かに入れるなら、自分に勝てそうな人は嫌」と話す人がいる。',
-      mean: 'カメラへの本音が結果を書きかえる。自分には入れられないので、脅威にならない相手に票が流れた。',
-      trap: '「いいセリフ」と言われていたので、アイデアが評価されたと思いやすい。カメラへの一言が答え合わせ。',
-      use: 'I voted for the one who couldn’t win.（勝てなさそうな人に入れた）' },
+      said: '結果発表のあと、カメラに「誰かに入れなきゃいけないなら、自分に勝てそうな人は嫌」と話す。',
+      mean: 'If I have to 〜 ＝ どうしても〜なら。beat ＝ 勝負で勝つ。仮装なしのオスカーなら安全、という計算。',
+      trap: '優勝したので、仮装がよかったと考えがち。理由は can beat me（自分に勝てる人）を避けたこと。',
+      use: 'If I have to choose, I’ll take the blue one.（どうしても選ぶなら、青いほうにする）' },
   ]
 };
