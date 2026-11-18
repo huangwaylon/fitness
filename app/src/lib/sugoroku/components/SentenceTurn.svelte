@@ -49,7 +49,7 @@
   const takeBack = (k: number) => stage === 'try' && (placed = placed.slice(0, k));
 </script>
 
-<section class="turn" data-sg-sentence>
+<section class="turn" data-sg-sentence data-sg-stage={stage}>
   <div class="head">
     <h3 class="ttl">{s('sentenceTitle')}</h3>
     {#if hideJa && !peeked && (stage === 'try' || stage === 'miss')}

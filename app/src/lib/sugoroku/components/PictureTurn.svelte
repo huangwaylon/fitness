@@ -69,7 +69,7 @@
   const takeBack = (k: number) => stage === 'try' && k > (given >= 0 ? 0 : -1) && (placed = placed.slice(0, k));
 </script>
 
-<section class="turn" data-sg-picture={pic.w}>
+<section class="turn" data-sg-picture={pic.w} data-sg-stage={stage}>
   <div class="head">
     {#if !broken}<img src={pictureSrc(pic)} alt="" width="48" height="48" referrerpolicy="no-referrer" onerror={() => (broken = true)} />{/if}
     <h3 class="ja">{pic.ja}</h3>

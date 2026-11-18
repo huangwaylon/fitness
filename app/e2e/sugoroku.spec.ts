@@ -30,13 +30,17 @@ async function onePhase(p: Page, phase: Phase) {
     await s.locator('[data-sg-play]').tap();
     await expect(s.locator('[data-sg-made]')).toBeVisible();
   } else if (phase === 'sentence' || phase === 'picture') {
-    // tap whatever's first till the answer (a word tile, a choice or a letter): 答えはこれ comes by the second miss
-    for (let k = 0; k < 30 && !(await s.locator('[data-sg-answer]').count()); k++) {
-      await expect(s.locator('.miss')).toHaveCount(0); // (「おしい！」's moment: taps wait for it)
-      const b = s.locator('[data-sg-wt]:not([disabled]), [data-sg-choice]:not([disabled]), [data-sg-letter]:not([disabled])').first();
-      if (await b.count()) await b.tap();
+    // a try: every tile (a word, a letter) or a choice tapped, first first; 答えはこれ comes by the second miss
+    const open = s.locator('[data-sg-wt]:not([disabled]), [data-sg-choice]:not([disabled]), [data-sg-letter]:not([disabled])');
+    const answer = s.locator('[data-sg-answer]'), turn = s.locator('[data-sg-stage]');
+    for (let k = 0; k < 3; k++) {
+      // (「おしい！」's 900 ms: the next try waits for it to be over, or for the answer)
+      await expect(turn).not.toHaveAttribute('data-sg-stage', 'miss');
+      if (await answer.count()) break;
+      const n = phase === 'picture' && (await s.locator('[data-sg-choice]').count()) ? 1 : await open.count();
+      for (let i = 0; i < n; i++) await open.first().tap();
     }
-    await expect(s.locator('[data-sg-answer]')).toBeVisible();
+    await expect(answer).toBeVisible();
   }
   await s.locator('[data-sg-next]').tap();
 }
