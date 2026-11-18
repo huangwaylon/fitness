@@ -349,7 +349,10 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       gone.add(ev.id);
     };
     const drop = (ev: QueuedEvent, error: ApiError, detail?: string) => {
-      log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
+      // its reason (the record's rule, store.ts) once; a game's reward another phone of the table sent first (`reward
+      // paid`: every recipient paid it already) loses nothing, so not an error
+      const why = detail?.replace(/ /g, '_');
+      log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1, ...(why ? { why } : {}) }, ev.type === 'sg_reward' && detail === 'reward paid' ? 1 : 3);
       out.dropped.push(detail ? { ...ev, detail } : ev);
       gone.add(ev.id);
     };

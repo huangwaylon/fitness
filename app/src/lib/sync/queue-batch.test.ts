@@ -1,10 +1,13 @@
 // The queue against the relay's record (docs/backend.md#write-queue, #the-record): what may go now goes in one
 // `events` request, in order, holds and subjects kept; each id's answer acks, drops or holds it (and what follows).
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, enqueueAll, flush, queued, ackedEvents, lastSentAt, nextRetryAt, PARK_AFTER, releaseHeld, STUCK_MS, unpark, unsentStuck } from './queue.ts';
 import { setKey } from './pairing.ts';
+
+const logged = vi.hoisted(() => [] as [string, Record<string, unknown>, number | undefined][]);
+vi.mock('./log.ts', async (orig) => ({ ...(await orig<typeof import('./log.ts')>()), log: (e: string, d: Record<string, unknown>, l?: number) => void logged.push([e, d, l]) }));
 
 class Mem implements KV {
   m = new Map<string, string>();
@@ -316,5 +319,17 @@ describe('a group (the shop’s ぜんぶ かう: relay store.ts group)', () => 
     const r = await flush(() => T);
     expect(r.dropped.map((e) => [e.id, e.detail])).toEqual([[a.id, 'owned']]);
     expect(r.acked.map((e) => e.id)).toEqual([b.id]);
+  });
+
+  it('a drop logs the record’s rule once; a game’s reward another phone sent first (`reward paid`) as info, not an error (2026-11-18)', async () => {
+    logged.length = 0;
+    const r1 = enqueue('sg_reward', { g: 'sg-1y7h2jr', v: 500, to: ['A', 'B'], d: '2026-11-18' }, T);
+    const b1 = enqueue('buy', { item: 'f1', price: 100, d: '2026-11-18' }, T);
+    answer = () => ({ ok: true, results: [{ id: r1.id, ok: false, error: 'bad_request', detail: 'reward paid' }, { id: b1.id, ok: false, error: 'bad_request', detail: 'wallet short' }] });
+    await flush(() => T + 10_000);
+    expect(logged.filter(([e]) => e === 'queue.drop')).toEqual([
+      ['queue.drop', { type: 'sg_reward', err: 'bad_request', tries: 1, why: 'reward_paid' }, 1],
+      ['queue.drop', { type: 'buy', err: 'bad_request', tries: 1, why: 'wallet_short' }, 3]
+    ]);
   });
 });

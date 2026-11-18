@@ -152,9 +152,12 @@ describe('英語すごろく’s reward (rewardGame)', () => {
     await model('G');
     expect(rewardGame('sg-game-0001', 500, ['A', 'B', 'G'])).toBe(true);
     expect(rewards()).toEqual([{ g: 'sg-game-0001', v: 500, to: ['A', 'B', 'G'], d: '2026-11-18' }]);
-    for (const [g, v, to] of [['short', 500, ['A']], ['sg-game-0002', 0, ['A']], ['sg-game-0002', 1001, ['A']], ['sg-game-0002', 5, []], ['sg-game-0002', 5, ['A', 'A']]] as const)
+    for (const [g, v, to] of [['short', 500, ['A']], ['sg-game-0002', 0, ['A']], ['sg-game-0002', 2.5, ['A']], ['sg-game-0002', 5, []], ['sg-game-0002', 5, ['A', 'A']], ['sg-game-0002', 5, ['X']]] as const)
       expect(rewardGame(g, v, to as never), `${g} ${v} ${to.join()}`).toBe(false);
     expect(rewards()).toHaveLength(1);
+    // more than the record takes pays its most (never a row it would refuse, never nothing)
+    expect(rewardGame('sg-game-0002', 1001, ['A'])).toBe(true);
+    expect(rewards()[1]).toEqual({ g: 'sg-game-0002', v: 1000, to: ['A'], d: '2026-11-18' });
   });
 
   it('a game already paid every player (another phone’s reward kept) isn’t sent again; one that pays someone new is', async () => {

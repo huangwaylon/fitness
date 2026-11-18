@@ -15,7 +15,7 @@ import { shopPrice } from '#lib/contract/rules.ts';
 import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import { newOpId } from '#lib/contract/ops.ts';
 import type { RoomSaveOp } from '#lib/contract/roomSave.ts';
-import { sellPrice, shopRowOf } from '#lib/contract/shop.ts';
+import { sellPrice, SG_REWARD_MAX, shopRowOf } from '#lib/contract/shop.ts';
 import { isGoods } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
 import { world } from './world.svelte.ts';
@@ -303,15 +303,16 @@ export function sell(picks: ReadonlyMap<string, number>, opts: { group?: boolean
 }
 
 /**
- * 英語すごろく's かいがら for a game that ended (docs/backend.md#events `sg_reward`): `v` (1–SG_REWARD_MAX) for each of
- * `to`, once a game (`gameId`, /^[a-z0-9:.-]{6,40}$/), dated today. Whether it was queued: false for a bad shape, or
+ * 英語すごろく's かいがら for a game that ended (docs/backend.md#events `sg_reward`): `v` (at most SG_REWARD_MAX: more
+ * pays that) for each of `to`, once a game (`gameId`, /^[a-z0-9:.-]{6,40}$/), dated today; the row checked by the
+ * record's own reading (contract/shop.ts rewardOf), never sent when it would refuse it. Whether it was queued: false for a bad shape, or
  * when it would pay none of `to` (each one's game paid already, by this phone's wallets: another phone's send). Its
  * かいがら show at once (model/shop.ts); the record keeps it while it pays one of them.
  */
 export function rewardGame(gameId: string, v: number, to: readonly Who[]): boolean {
   const m = week.model;
   if (!m) return false;
-  const data = { g: gameId, v, to: [...to], d: localDateAt(m.now) };
+  const data = { g: gameId, v: Math.min(v, SG_REWARD_MAX), to: [...to], d: localDateAt(m.now) };
   const row = shopRowOf('sg_reward', data);
   if (!row || row.type !== 'reward' || row.data.to.every((who) => shopView(m.state, who).games.has(gameId))) return false;
   return week.send('sg_reward', data).ok;
