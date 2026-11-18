@@ -4,6 +4,7 @@
 // first (tomorrow); at most PER_DAY a day, 今日はスキップ ends today's. Per player, on this phone; pure but for the store.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
+import { listensOf } from './listens.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
@@ -29,16 +30,8 @@ export interface Mine {
 /** The day each question was last met in a finished play of mine. */
 export function metOf(rows: readonly EventRow[], me: Who): Map<Key, LocalDate> {
   const out = new Map<Key, LocalDate>();
-  for (const r of rows) {
-    if (r[1] !== me || r[3] !== 'listen') continue;
-    let d: unknown;
-    try {
-      d = JSON.parse(r[4]);
-    } catch {
-      continue;
-    }
-    const row = listenOf(d);
-    if (row?.f !== 1) continue;
+  for (const row of listensOf(rows, me, listenOf)) {
+    if (row.f !== 1) continue;
     for (const [id] of row.r) {
       const k: Key = `${row.u}/${id}`;
       if ((out.get(k) ?? '') < row.d) out.set(k, row.d);

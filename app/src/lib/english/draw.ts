@@ -9,6 +9,7 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 import { seeded, shuffle } from '#lib/random.ts';
+import { listensOf } from './listens.ts';
 import type { Who } from '#lib/types.ts';
 import type { Clip, Question, Skill } from './types.ts';
 
@@ -25,15 +26,8 @@ export type History = Record<string, { play: number; ok: boolean }>;
 export function historyOf(rows: readonly EventRow[], me: Who, clip: string): { plays: number; seen: History } {
   let plays = 0;
   const seen: History = {};
-  for (const r of rows) {
-    if (r[1] !== me || r[3] !== 'listen') continue;
-    let row;
-    try {
-      row = listenOf(JSON.parse(r[4]));
-    } catch {
-      continue;
-    }
-    if (!row || row.u !== clip) continue;
+  for (const row of listensOf(rows, me, listenOf)) {
+    if (row.u !== clip) continue;
     for (const [id, ok] of row.r) seen[id] = { play: plays + 1, ok: ok === 1 };
     if (row.f === 1) plays++;
   }

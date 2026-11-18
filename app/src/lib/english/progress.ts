@@ -4,6 +4,7 @@
 // through one empty week, and ends with two empty weeks in a row.
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, listenSummaryOf } from '#lib/contract/listen.ts';
+import { listensOf } from './listens.ts';
 import { addDays, daysBetween, weekKeyOf } from '#lib/time/dates.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
@@ -11,6 +12,9 @@ import type { LocalDate, Who } from '#lib/types.ts';
 export const WEEK_TARGET = 3;
 /** Days away after which the sheet welcomes me back (once). */
 const AWAY_DAYS = 7;
+
+type Own = NonNullable<ReturnType<typeof listenOf>>;
+type Summary = NonNullable<ReturnType<typeof listenSummaryOf>>;
 
 interface Study {
   /** The days a まとめ was reached. */
@@ -33,16 +37,10 @@ interface Study {
 /** `who`'s English Study rows, read as `me` gets them (mine whole, anyone else's summary). */
 export function studyOf(rows: readonly EventRow[], who: Who, me: Who): Study {
   const out: Study = { days: new Set(), clips: new Set(), ms: new Map(), last: null, plays: new Map(), lastOn: new Map(), seen: new Map(), again: new Set() };
-  for (const r of rows) {
-    if (r[1] !== who || r[3] !== 'listen') continue;
-    let d: unknown;
-    try {
-      d = JSON.parse(r[4]);
-    } catch {
-      continue;
-    }
-    const own = who === me ? listenOf(d) : null, row = who === me ? own : listenSummaryOf(d);
-    if (!row) continue;
+  const mine = who === me;
+  // (mine whole: a summary and more)
+  for (const row of listensOf<Summary>(rows, who, mine ? listenOf : listenSummaryOf)) {
+    const own = mine ? (row as Own) : null;
     if (own) {
       const seen = out.seen.get(own.u) ?? new Set<string>();
       for (const [id] of own.r) seen.add(id);
