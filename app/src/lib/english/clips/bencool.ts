@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 1, new 2, ctx 5, tx 2
+// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 1, new 2, ctx 5, tx 2, qa 23
 // A2 REVIEW 2026-11-17: keep 16, rewrite 3, retire 3, new 2 (nt1, nt2 stay retired)
 // “Ben is Finally Cool | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Ben starts at
 // Barney's accounting firm, cracks its toughest case and is treated like a star, then his friends offer him a job
@@ -17,12 +17,12 @@ export const benCool: Clip = {
   questions: [
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'passup', seg: [10.4, 18],
       stem: 'What does “when you *passed it up*” mean?', ja: '「when you passed it up」の意味は？',
-      choices: ['When you said no to it', 'When you tried to get it', 'When you left it later'], a: 0,
+      choices: ['When you said no to it', 'When you tried to get it', 'When you quit it later'], a: 0,
       choicesJa: ['あなたが断った時', 'あなたが取ろうとした時', 'あなたがあとで辞めた時'],
       cue: '「I’m Frank」のあと',
       line: 'Hello, Ben. I’m Frank. I took the job *when you passed it up* last time.',
-      said: 'フランクが「前回あなたが断った仕事を、僕が引き受けた」と言う。',
-      mean: 'pass 〜 up ＝ （チャンスを）見送る、断る。',
+      said: 'フランクが「前回君が断った仕事を、僕が引き受けた」と言う。',
+      mean: 'pass 〜 up ＝ 文字どおりは「通り過ぎる」。チャンスの前を素通り→見送る、断る。',
       trap: 'pass（通る）から、合格した話だと思いやすい。up がつくと「見送る」。',
       use: 'Don’t pass up this chance.（このチャンスを逃さないで）' },
 
@@ -43,8 +43,8 @@ export const benCool: Clip = {
       choicesJa: ['本気の挑戦として', 'ちょっとした冗談として', '温かい歓迎として'],
       cue: '最後の「I’m not」のあと',
       line: 'Ben: Well, all good things, I hope. / Frank: A little too good. Let’s see if you *live up to the hype*. … *I’m not joking.*',
-      said: 'フランクが「評判どおりか見せてもらおう」と言い、「冗談じゃない」と付け足す。',
-      mean: 'I’m not joking ＝ 冗談じゃない（本気だ）。ベンを試すつもり。',
+      said: 'フランクが「評判どおりか見せてもらおう」と言い、「冗談で言ってるんじゃない」と付け足す。',
+      mean: 'I’m not joking ＝ 冗談で言ってるんじゃない（本気だ）。ベンを試すつもり。',
       trap: '笑いが起きそうな言い方なので冗談に聞こえるが、本人が not joking と言っている。',
       use: 'I’m not joking.（冗談じゃないよ）' },
 
@@ -118,20 +118,20 @@ export const benCool: Clip = {
       choicesJa: ['もう前に考えていた', 'まったく新しい案だ', '前にうまくいった'],
       cue: '同僚の最初の案への返事',
       line: 'Coworker: Okay, we dissolve the loan out and file bankruptcy. / Coworker: *Great idea… that we had a month ago*. The problem is…',
-      said: '「すばらしい案だ…ひと月前に僕らが出したね」と言い、問題点を挙げる。',
-      mean: 'ほめてから、それは古い案だと言っている。The problem is ＝ 問題は。',
+      said: '「すばらしい案だね…1か月前に僕らが出したけど」と言い、問題点を挙げる。',
+      mean: 'Great idea は本気のほめ言葉ではなく皮肉。a month ago で「もう出た古い案」と落とす。The problem is ＝ 問題は。',
       trap: 'Great idea で、ほめていると考えがち。本音は a month ago（1か月前）。',
       use: 'The problem is, it’s too late.（問題は、もう遅いってことだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'trust', seg: [77.5, 91.6],
       stem: 'What idea does Ben have that the others never thought of?', ja: 'ほかの人が考えつかなかったベンの案は？',
-      choices: ['Dissolving the trust', 'Filing for bankruptcy', 'Selling the property'], a: 0,
-      choicesJa: ['信託を解消する', '破産を申し立てる', '土地を売る'],
+      choices: ['Ending the family trust', 'Getting all clients to agree', 'Selling the land'], a: 0,
+      choicesJa: ['家族の信託をなくす', '依頼人全員の同意を得る', '土地を売る'],
       cue: '「Then we」のあと',
       line: 'Then we *dissolve the trust*. … — He’s right. We never thought of that.',
       said: 'ベンが「なら信託を解消しよう」と言い、皆が「考えもしなかった」と認める。',
-      mean: 'dissolve ＝ 解消する。We never thought of that ＝ それは考えなかった。',
-      trap: 'bankruptcy（破産）は前に出た別の人の案。Then のあとを聞く。',
+      mean: 'dissolve ＝ 文字どおりは「溶かす」→ しくみをなくす。trust ＝ 信託（財産を預けるしくみ）。',
+      trap: 'would have to agree（同意が必要）は案の条件。案そのものは Then we のあと。',
       use: 'I never thought of that.（それは考えつかなかった）' },
 
     { id: 'h3', skill: 'humor', level: 'C1', point: 'light', seg: [91.4, 99.9], retired: true,
@@ -147,13 +147,13 @@ export const benCool: Clip = {
 
     { id: 'pr2', skill: 'phrase', level: 'B1', point: 'withyou', seg: [97.4, 106.4],
       stem: 'Ben says, “Yeah, *I’m with you*.” What does he mean?', ja: 'ベンの「I’m with you」の意味は？',
-      choices: ['I understand, I’ll do it', 'I am standing next to you', 'I agree about the case'], a: 0,
-      choicesJa: ['わかった、やるよ', 'あなたの隣にいる', '案件について賛成だ'],
+      choices: ['I understand, I’ll do it', 'I am standing next to you', 'I want to work with you'], a: 0,
+      choicesJa: ['わかった、やるよ', 'あなたの隣にいる', 'あなたと一緒に働きたい'],
       cue: '照明の案のあと',
       line: 'Sure. Sure. Yeah, *I’m with you*. Um, okay. Uh, what if…',
       said: 'ベンが「うん、うん、わかった」と言い、言い直しのセリフを演じる。',
       mean: 'I’m with you ＝ わかった、話についていってる。ここは頼みを分かったという返事。',
-      trap: 'with you（あなたと一緒）から、場所の話だと思いやすい。',
+      trap: 'with you（あなたと一緒）から、そばにいる・一緒に働く話と考えがち。頼みへの返事なので「了解」。',
       use: 'Okay, I’m with you.（うん、わかってるよ）' },
 
     { id: 'p4', skill: 'phrase', level: 'B1', point: 'myjob', ctx: true, seg: [105, 111.2],
@@ -180,8 +180,8 @@ export const benCool: Clip = {
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'calzone', ctx: true, seg: [129.5, 140.1],
       stem: 'Why do they say “We know!”?', ja: 'みんなはなぜ「We know!」と言う？',
-      choices: ['They knew he loves calzones', 'They played a joke on him', 'The pizza had run out'], a: 0,
-      choicesJa: ['カルツォーネ好きを知っていた', '彼にいたずらをした', 'ピザがなくなった'],
+      choices: ['They knew he loves calzones', 'They wanted to trick him', 'The pizza had run out'], a: 0,
+      choicesJa: ['カルツォーネ好きを知っていた', '彼をだましたかった', 'ピザがなくなった'],
       cue: '料理を見たベンの叫びのあと',
       line: 'Ben: That’s not pizza. Those are calzones! *I love calzones!* / Everyone: *We know!*',
       said: '「ピザじゃない、カルツォーネだ！大好き！」に、皆が「知ってる！」と返す。',
@@ -206,7 +206,7 @@ export const benCool: Clip = {
       choicesJa: ['その一方で', '結局', '正直に言うと'],
       cue: '「ethical thing」のあと',
       line: 'it’s *not the most ethical thing* that I’ve ever done, *but on the flip side*, Jamm is a big mean dope',
-      said: '友人が「正しいとは言えないけど、逆に、ジャムは意地悪なバカだし」と言う。',
+      said: '友人が「一番正しいことではないけど、その一方で、ジャムは意地悪なばかだし」と言う。',
       mean: 'on the flip side ＝ 逆に言えば、その一方で。悪い点のあとに、別の見方を言う。',
       trap: 'flip（ひっくり返す）から、話を終える合図を連想しやすい。but のあとが別の面。',
       use: 'It’s expensive, but on the flip side, it’s good.（高いけど、そのぶんいい）' },
@@ -217,8 +217,8 @@ export const benCool: Clip = {
       choicesJa: ['まだ受け入れられない', 'みんなに断った', '忙しくて考えられない'],
       cue: '「moving away」のあと',
       line: 'the pain of us moving away… — Oh, I’m currently *in deep denial* that that’s happening.',
-      said: '「引っ越しのつらさが和らげば」に「それ、全力で認めてない」と返す。',
-      mean: 'be in denial ＝ 認めようとしない、現実から目をそらす。deep ＝ 強く。',
+      said: '「引っ越しのつらさが和らげば」に「今それを全力で認めないようにしてる」と返す。',
+      mean: 'denial ＝ 否定。in denial ＝ 文字どおりは「否定の中にいる」→ つらい現実を認めようとしない。',
       trap: 'denial（否定）から、誰かに「いいえ」と言った話を連想しやすい。',
       use: 'I’m in denial about Monday.（月曜が来るのを認めたくない）' },
 
@@ -267,13 +267,13 @@ export const benCool: Clip = {
       use: 'I’d be crazy to say no.（断るなんてありえないよ）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'kidding', seg: [193.8, 201.4],
-      stem: 'What does “You can do whatever you want” show?', ja: '「You can do whatever you want」からわかることは？',
-      choices: ['Ben can come any time', 'Ben must be on time', 'Ben is in trouble now'], a: 0,
-      choicesJa: ['ベンはいつ来てもいい', 'ベンは時間を守らなければならない', 'ベンは今まずいことになっている'],
+      stem: 'After “I’m just kidding,” what does Barney tell Ben?', ja: '「I’m just kidding」のあと、バーニーはベンに何と言う？',
+      choices: ['Ben can do as he likes', 'Ben must be on time', 'Ben is in trouble now'], a: 0,
+      choicesJa: ['ベンは好きにしていい', 'ベンは時間を守るべき', 'ベンは今まずいことになっている'],
       cue: '「I’m just kidding」のあと',
       line: 'Wyatt, you’re late. — *I’m just kidding. You can do whatever you want.*',
       said: 'バーニーが「ワイアット、遅刻だぞ。冗談だよ。好きにしていい」と言う。',
-      mean: 'I’m just kidding ＝ 冗談だよ。ベンは特別あつかいされている。',
+      mean: 'I’m just kidding ＝ 冗談だよ。whatever you want ＝ 何でも好きなこと。ベンは特別あつかい。',
       trap: 'you’re late（遅刻だ）だけ聞くと、叱られていると思いやすい。',
       use: 'I’m just kidding.（冗談だよ）' },
 
@@ -283,7 +283,7 @@ export const benCool: Clip = {
       choicesJa: ['言いにくいけど', 'こわい', '自信がない'],
       cue: '「Actually, Barney」のあと',
       line: 'Actually, Barney, *I’m afraid* I have some bad news.',
-      said: 'ベンが「実はバーニー、悪い知らせがあるんだ」と言う。',
+      said: 'ベンが「実はバーニー、言いにくいんだけど、悪い知らせがあるんだ」と言う。',
       mean: 'I’m afraid 〜 ＝ 申し訳ないけど〜。悪い知らせの前のていねいな言い方。',
       trap: 'afraid（こわい）から、こわがっている話を連想しやすい。直後が bad news（悪い知らせ）。',
       use: 'I’m afraid we’re full tonight.（あいにく今夜は満席です）' },
@@ -300,7 +300,7 @@ export const benCool: Clip = {
       use: 'It was an offer I couldn’t say no to.（断れない話だった）' },
 
     { id: 'at3', skill: 'attitude', level: 'B2', point: 'toogood', ctx: true, seg: [210.6, 218.3],
-      stem: 'How does Barney take the news?', ja: 'バーニーはこの知らせをどう受け止める？',
+      stem: 'How does Barney feel about the news?', ja: 'バーニーはこの知らせをどう受け止める？',
       choices: ['He isn’t surprised', 'He is very angry', 'He doesn’t care at all'], a: 0,
       choicesJa: ['驚いていない', 'ベンにすごく怒っている', '全然気にしていない'],
       cue: '「No need to explain」のあと',

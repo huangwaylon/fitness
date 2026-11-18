@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 4, new 10, ctx 7, tx 5
+// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 4, new 10, ctx 7, tx 5, qa 22
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 10, new 2
 // “Ross & Rachel's Fake Wedding | Friends” (the official Friends channel, Best of Season 8): at his parents' party for
 // 35 years of marriage, Ross and Rachel learn that the parents have told their friends the two are married (the baby is
@@ -200,7 +200,7 @@ export const fakeWedding: Clip = {
       trap: 'I know は同意に聞こえるが、続くのは耳の話。may as well は「ついでに」。',
       use: 'While you’re at it, do the windows too.（ついでに窓もお願い）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B1', point: 'nod', reveals: ['wont'], ctx: true, seg: [76.5, 88.5],
+    { id: 'k1', skill: 'pragma', level: 'B1', point: 'nod', reveals: ['wont'], ctx: true, seg: [72.5, 87.9],
       stem: 'What does Rachel suggest they do?', ja: 'レイチェルは二人でどうしようと提案する？',
       choices: ['Just smile and nod', 'Tell everyone the truth', 'Leave the party early'], a: 0,
       choicesJa: ['ほほえんでうなずくだけ', 'みんなに本当のことを言う', '早めにパーティーを出る'],
@@ -249,12 +249,12 @@ export const fakeWedding: Clip = {
     { id: 'g1', skill: 'gist', level: 'B2', point: 'scene', reveals: ['wont', 'where', 'nod'], seg: [124.0, 152.0],
       stem: 'What do they tell the relatives about the wedding?',
       ja: '二人は親せきに結婚式のことをどう話す？',
-      choices: ['They make up a big story', 'They just smile and nod', 'They tell the truth'], a: 0,
+      choices: ['They invent a big story', 'They just smile and nod', 'They tell the truth'], a: 0,
       choicesJa: ['大げさな話を作る', 'ほほえんでうなずくだけ', '本当のことを話す'],
       cue: '「Where did you have it?」のあと。',
       line: 'it was small, but kind of *spectacular*. … *On a cliff in Barbados*. — At sunset.',
       said: '小さな式と言いながら、崖の上、夕日、有名人の歌と、話をどんどん大きくしていく。',
-      mean: 'spectacular ＝ ものすごい。黙ってうなずくはずが、夢の結婚式の作り話になる。',
+      mean: 'spectacular ＝ 見事な、ものすごい。黙ってうなずくはずが、夢の結婚式の作り話になる。',
       trap: '前の相談で「ほほえんでうなずく」と決めたので、それと考えがち。実際は話をどんどん盛る。',
       use: 'It was small, but really special.（小さいけど、すごく特別だった）' },
 
@@ -272,7 +272,7 @@ export const fakeWedding: Clip = {
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'pictures', ctx: true, seg: [141.5, 152.5],
       stem: 'Why can’t the relatives see wedding pictures?', ja: '親せきはなぜ結婚式の写真を見られない？',
-      choices: ['There was no film in the camera', 'The pictures aren’t back yet', 'Ross lost all the pictures'], a: 0,
+      choices: ['The camera had no film', 'The pictures aren’t back yet', 'Ross lost all the pictures'], a: 0,
       choicesJa: ['カメラにフィルムがなかった', '写真がまだできていない', 'ロスが写真を全部なくした'],
       cue: 'so would I のあと',
       line: 'Aunt: I’d love to see pictures. / Rachel: Yeah, so would I. You wouldn’t think that Annie Leibovitz would *forget to put film in the camera*.',
@@ -283,13 +283,13 @@ export const fakeWedding: Clip = {
 
     { id: 'k3', skill: 'phrase', level: 'B1', point: 'excuse', seg: [154.0, 158.5],
       stem: 'What does “Would you excuse us for a second?” mean?', ja: '“Would you excuse us for a second?” はどういう意味？',
-      choices: ['We need to step away briefly', 'Please forgive our mistake', 'Could you wait one second?'], a: 0,
-      choicesJa: ['少し席を外させて', '私たちのミスを許して', '1秒だけ待ってくれる？'],
+      choices: ['We’ll leave you for a moment', 'Please forgive our mistake', 'Please say that again'], a: 0,
+      choicesJa: ['少し席を外させて', '私たちのミスを許して', 'もう一度言って'],
       cue: 'フィルムの話のあと',
       line: '*Would you excuse us for a second?*',
       said: '「ちょっと失礼してもいい？」と言って、二人で席を外す。',
       mean: '文字どおりは「私たちを許してくれる？」→「ちょっと席を外すね」。人の輪から抜けるときのていねいな決まり文句。',
-      trap: 'excuse から「許して・謝る」を連想しやすい。ここは席を外すあいさつ。a second は「少し」。',
+      trap: 'excuse から「許して」や、聞き返しの Excuse me?（もう一度）と考えがち。for a second（少し）で席を外すあいさつ。',
       use: 'Would you excuse me for a moment?（少し失礼してもいいですか）' },
 
     { id: 'k4', skill: 'infer', level: 'B1', point: 'only', ctx: true, seg: [159.5, 170.5],
@@ -325,7 +325,7 @@ export const fakeWedding: Clip = {
       trap: 'not at first を「全員ではない」と取りやすい。first は時間の話。',
       use: 'It was hard, but totally worth it.（大変だったけど、やる価値はあった）' },
 
-    { id: 'k5', skill: 'detail', level: 'B1', point: 'angel', ctx: true, seg: [191.0, 200.0],
+    { id: 'k5', skill: 'detail', level: 'B1', point: 'angel', ctx: true, seg: [191.3, 200.0],
       stem: 'What does Rachel say people told her?', ja: 'レイチェルは、人に何と言われたと言う？',
       choices: ['She looked like an angel', 'She looked like a princess', 'She looked very tired'], a: 0,
       choicesJa: ['天使みたいだった', 'お姫様みたいだった', 'とても疲れて見えた'],
@@ -371,12 +371,12 @@ export const fakeWedding: Clip = {
       use: 'I remembered your favorite song.（好きな曲、覚えてたよ）' },
 
     { id: 'k6', skill: 'phrase', level: 'B1', point: 'knee', seg: [229.5, 236.5],
-      stem: 'What did Ross do when the lights came down?', ja: '照明が暗くなったとき、ロスは何をした？',
+      stem: 'When the room got dark, what did Ross do?', ja: '部屋が暗くなると、ロスは何をした？',
       choices: ['He got down on one knee', 'He sat down next to her', 'He stood up and sang'], a: 0,
       choicesJa: ['片ひざをついた', '彼女の横に座った', '立ち上がって歌った'],
       cue: 'the lights came down のあと',
       line: 'and the lights came down and I, I *got on one knee*',
-      said: '「照明が暗くなって、僕はひざまずいたんだ」と話す。',
+      said: '「照明が暗くなって、僕は片ひざをついたんだ」と話す。',
       mean: 'get on one knee ＝ 片ひざをつく。英語圏でプロポーズするときの決まった動作。',
       trap: 'came down（暗くなった）の down から「座った」を連想しやすい。knee（ひざ）が聞こえれば片ひざ。',
       use: 'He got down on one knee and proposed.（彼は片ひざをついてプロポーズした）' },
@@ -389,7 +389,7 @@ export const fakeWedding: Clip = {
       line: 'and *written across the dome in the stars* were the words, “Will you marry me?”',
       said: '「ドームいっぱいに、星で『結婚してくれますか？』と書いてあった」と話す。',
       mean: 'written across 〜 ＝ 〜いっぱいに書かれて。dome ＝ プラネタリウムの丸い天井。',
-      trap: 'ring（指輪）の話がすぐあとに出るので、指輪と考えがち。in the stars（星で）を聞く。',
+      trap: 'プロポーズの言葉なので、指輪の箱やケーキを連想しやすい。決め手は across the dome in the stars。',
       use: 'Will you marry me?（結婚してくれますか）' },
 
     { id: 'k8', skill: 'humor', level: 'B1', point: 'ring', seg: [239.5, 245.2],
