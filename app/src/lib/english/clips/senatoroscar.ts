@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 0, new 2, ctx 4, tx 9
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 6, new 1
 // “Is the Senator Seducing Oscar? - The Office US” (the official The Office channel, BEST OF The Office - Season 8):
 // the senator gives Oscar his cell number and Oscar decides he was hit on; a coworker tests the theory, gets both
@@ -5,6 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Untested: 4.8–7 s, 50.3–51.7 s (whisper “schmoozing a
 // voter”, captions “schmoozing him over”), 54.9–56 s, 57–66 s (visual), 68.7–71 s (a reference) and 74.9 s.
 // The coworkers are never named, so stems say “a coworker”. Oscar is named in both sources (“Okay, Oscar”).
+// EAR CHECK: 48–100 s is the coworker who says “dreamy” and tests the theory a man or a woman? (ja reads female; stems stay neutral)
 // EAR CHECK: 107.0–107.7 s x1 — “don't forget to call” is taken as the senator's, to Oscar (no name)
 import type { Clip } from '../types.ts';
 
@@ -14,6 +16,18 @@ export const senatorOscar: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'involved', reveals: ['animals'], ctx: true, seg: [0, 10.8],
+      stem: 'What does the senator ask Oscar to do?',
+      ja: '議員はオスカーに何をしてと言う？',
+      choices: ['Call him to help out', 'Bring his dog to work', 'Vote for him soon'], a: 0,
+      choicesJa: ['協力するなら電話して', '犬を職場に連れてきて', '近いうちに投票して'],
+      cue: '「Really? Well」のあとの if の文。',
+      line: 'Senator: Oscar, I really had no idea that you were so *passionate about animals*. … / Senator: Really? Well, *if you want to get involved, call me*.',
+      said: '「君がそんなに動物に熱心だとは知らなかった」と言い、「協力したかったら電話して」と番号を渡す。',
+      mean: 'get involved ＝ かかわる、活動に加わる。passionate about 〜 ＝ 〜に熱心な。',
+      trap: 'dog（犬）が聞こえるので、犬の話と考えがち。決め手は if のあとの call me。',
+      use: 'If you want to get involved, call me.（参加したかったら電話してね）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [10.3, 18.8], keep: true,
       stem: 'After what time is the senator more likely to pick up?',
       ja: '議員は、何時以降なら電話に出やすい？',
@@ -34,8 +48,8 @@ export const senatorOscar: Clip = {
       cue: '三つ並べるうちの、まん中。',
       line: 'I’m right about the senator, *I still got it*, and poor Angela.',
       said: 'カメラに「議員の読みは正しい、まだイケてる、アンジェラがかわいそう」と言う。',
-      mean: 'I’ve still got it ＝ 魅力や腕はまだ衰えていない。うれしいときの決まり文句。',
-      trap: 'got it から「受け取った・分かった」と思いやすい。still got it は「まだイケる」。',
+      mean: '文字どおりは「まだそれを持っている」。それ＝魅力→「まだイケてる」。くだけた自慢の決まり文句。',
+      trap: 'got it から「分かった」と勘違いしやすい。still がつくと「まだイケる」。',
       use: 'Ha, I’ve still got it.（ふふ、まだまだいけるね）' },
 
     { id: 't1', skill: 'attitude', level: 'C1', point: 'poor', seg: [21, 27.45], retired: true,
@@ -52,13 +66,13 @@ export const senatorOscar: Clip = {
     { id: 'g3', skill: 'gist', level: 'B1', point: 'hiton', reveals: ['animals'], seg: [21, 45.6],
       stem: 'What does Oscar think happened?',
       ja: 'オスカーは、何があったと思っている？',
-      choices: ['Angela’s husband hit on him', 'The senator just wants his vote', 'Angela is angry with him'], a: 0,
-      choicesJa: ['アンジェラの夫に口説かれた', '議員が票をほしがっている', 'アンジェラが怒っている'],
+      choices: ['The senator wants to date him', 'The senator just wants his vote', 'Angela is angry with him'], a: 0,
+      choicesJa: ['議員が自分とデートしたがっている', '議員が票をほしがっている', 'アンジェラが怒っている'],
       cue: '「dramatic situation」のあと。',
       line: 'Angela’s husband *just hit on me*.',
       said: '議員（アンジェラの夫）に携帯番号をもらい、「口説かれた」と同僚に話す。',
-      mean: 'hit on 人 ＝ 人を口説く、言い寄る。オスカーはそう信じている。',
-      trap: 'hit から「なぐる」を思いやすい。hit on は「口説く」。',
+      mean: 'hit on 人 ＝ 文字どおりは「人にぶつかる」→ 近づいて言い寄る、口説く。議員はアンジェラの夫。',
+      trap: 'hit から「なぐる」を連想しやすい。hit on は「口説く」。',
       use: 'Was he hitting on you?（あの人、あなたを口説いてた？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'animals', seg: [37.7, 41.4],
@@ -70,7 +84,7 @@ export const senatorOscar: Clip = {
       line: 'Come on, we were *talking about animals*.',
       said: '「だって、動物の話をしてただけなのに」と言う。',
       mean: 'animals ＝ 動物。話題は動物なのに番号を渡された、という前置き。',
-      trap: 'よく出る名前（アンジェラ）に引っぱられやすい。about のあとの一語を聞く。',
+      trap: 'よく出る名前（アンジェラ）を選びたくなるが、about のあとの一語を聞く。',
       use: 'We were just talking about work.（仕事の話をしてただけだよ）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'dying', seg: [41.1, 46.4],
@@ -81,20 +95,20 @@ export const senatorOscar: Clip = {
       cue: '「he was just」のあと。',
       line: 'he was just *dying for me to have it*.',
       said: '「携帯番号をくれた。どうしても僕に持っててほしいって感じで」と言う。',
-      mean: 'be dying for 〜 ＝ 〜したくてたまらない。相手の熱心さを強めている。',
-      trap: 'dying（死にそう）から、病気の話と思いやすい。dying for は強い願い。',
+      mean: '文字どおりは「〜を求めて死にそう」→ 〜したくてたまらない。くだけた大げさな言い方。',
+      trap: 'dying（死にそう）から、病気の話と勘違いしやすい。dying for は強い願い。',
       use: 'I’m dying for a cup of coffee.（コーヒーが飲みたくてたまらない）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dreamy', seg: [41.3, 50.6],
-      stem: 'After “but”, what is the coworker really saying?',
-      ja: '「but」のあと、同僚が本当に言いたいことは？',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'dreamy', reveals: ['dying'], ctx: true, seg: [41.3, 50.3],
+      stem: 'What does the coworker suggest after “but”?',
+      ja: '「but」のあと、同僚は何を言おうとしている？',
       choices: ['He was just being friendly', 'Oscar is very good-looking', 'The senator loves animals'], a: 0,
       choicesJa: ['議員はただ愛想がよかっただけ', 'オスカーはとてもかっこいい', '議員は動物が大好き'],
       cue: '「because you are」のあと。',
-      line: 'I’m not saying you’re not dreamy, *because you are*, *but* isn’t it possible…',
+      line: 'Oscar: He was just *dying for me to have it*. / I’m not saying you’re not dreamy, *because you are*, *but* isn’t it possible…',
       said: '「あなたが素敵じゃないとは言わない、素敵だし。でも、ただの愛想だったかも」と言う。',
       mean: 'ほめ言葉は前置き。本音は but のあとの「勘違いかも」。やんわり反対する言い方。',
-      trap: 'because you are（素敵だから）が先に聞こえ、ほめ言葉が本題と思いやすい。',
+      trap: 'because you are（素敵だから）が先に聞こえ、ほめ言葉が本題と考えがち。決め手は but のあと。',
       use: 'You’re great, but are you sure?（あなたは素敵、でも本当にそう？）' },
 
     // anchor: 51.6–53.4 s both sources have “If you would have seen the look he gave me”; standard grammar wants
@@ -116,19 +130,19 @@ export const senatorOscar: Clip = {
       line: 'Okay, guys, *not every glance means something*. All right?',
       said: '「みんな、目が合うたびに意味があるわけじゃない。いい？」と止める。',
       mean: 'not every 〜 ＝ 全部が〜とは限らない。glance ＝ ちらっと見ること。',
-      trap: 'Okay, guys から、場をなだめる話と思いやすい。中身は「意味ないかも」という反論。',
+      trap: 'Okay, guys から、場をなだめるだけに聞こえるが、中身は「意味ないかも」という反論。',
       use: 'Not every email needs a reply.（すべてのメールに返事が要るわけじゃない）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'test', reveals: ['bet', 'office'], seg: [66, 90.2],
       stem: 'What happens when the coworker talks to the senator?',
       ja: '同僚が議員と話すと、どうなる？',
-      choices: ['He gets the numbers too', 'He gets asked out too', 'He hears Oscar was wrong'], a: 0,
-      choicesJa: ['自分も番号をもらう', '自分もデートに誘われる', 'オスカーの勘違いだと聞く'],
+      choices: ['Gets the same numbers', 'Gets asked out to dinner', 'Hears Oscar was wrong'], a: 0,
+      choicesJa: ['同じ番号をもらう', '食事に誘われる', 'オスカーの勘違いだと聞く'],
       cue: '議員が最後に渡すもの。',
       line: 'here’s my *office number and my cell number*.',
-      said: '同僚が議員と話すと、議員は彼にも「いつでもどうぞ」と番号を渡す。',
+      said: '同僚が議員と話すと、議員はその同僚にも「いつでもどうぞ」と番号を渡す。',
       mean: '番号はだれにでも渡すらしい。オスカーの考えは弱くなる。',
-      trap: '同僚が疑っていたので、「勘違いだと聞いた」と思いやすい。渡された物を聞く。',
+      trap: '同僚が疑っていたので、「勘違いだと聞いた」と考えがち。渡された物を聞く。',
       use: 'Let me check that for myself.（自分で確かめてみる）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'bet', seg: [71.3, 83.3],
@@ -150,9 +164,9 @@ export const senatorOscar: Clip = {
       choicesJa: ['いつでも話しに来て', '部屋のドアに鍵がない', '新しい考えが好き'],
       cue: '「some more」のあと。',
       line: 'If you would like to talk about this some more, *my door is always open*.',
-      said: '「この件をもっと話したければ、いつでも歓迎だよ」と言う。',
-      mean: 'my door is always open ＝ いつでも相談に来て。上司や政治家の決まり文句。',
-      trap: 'door（ドア）から鍵の話と思いやすい。気軽に話せる、という意味。',
+      said: '「この件をもっと話したければ、いつでも気軽に来てくれ」と言う。',
+      mean: '文字どおりは「私のドアはいつも開いている」→ いつでも入って相談していい。上司や政治家の決まり文句。',
+      trap: 'door（ドア）から鍵の話を連想しやすい。気軽に話せる、という意味。',
       use: 'Any questions, my door is always open.（質問があればいつでもどうぞ）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'office', seg: [77.7, 83.3],
@@ -176,7 +190,7 @@ export const senatorOscar: Clip = {
       line: 'looks like he really did *just want to talk about the issues*. I’m sorry, Oscar.',
       said: '「本当に政策の話がしたかっただけみたい。ごめんね、オスカー」と言う。',
       mean: 'issues ＝（政治の）問題、政策。really did just ＝ 本当にそれだけ。',
-      trap: '番号をもらったので「誘いたかった」と思いやすい。just want to talk が答え。',
+      trap: '番号をもらったので「誘いたかった」と勘違いしやすい。just want to talk が答え。',
       use: 'Looks like it really was just a mistake.（本当にただのミスだったみたい）' },
 
     { id: 'g2', skill: 'gist', level: 'C1', point: 'ending', reveals: ['call', 'poor'], seg: [83.3, 120.3], retired: true,
@@ -190,16 +204,16 @@ export const senatorOscar: Clip = {
       trap: '途中の「政策の話だけ」で止めやすい。最後の this が何を指すかを聞く。',
       use: 'Why does this always happen to me?（なんでいつも私ばっかり）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'sorry', seg: [86.4, 102],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'sorry', ctx: true, seg: [86.4, 101.3],
       stem: 'How does Oscar really feel about the news?',
       ja: 'その知らせに、オスカーは本当はどう感じている？',
       choices: ['Disappointed', 'Relieved', 'Very pleased'], a: 0,
       choicesJa: ['がっかりしている', 'ほっとしている', 'とてもうれしい'],
       cue: '「sorry about what?」のあと。',
-      line: 'No, *sorry about what*? … I’m *certainly not disappointed*… *A lonely, aging monster*.',
-      said: '「何を謝るの？がっかりなんかしてない」と打ち消し、「孤独で年をとった怪物」と足す。',
-      mean: 'disappointed ＝ がっかりした。聞かれる前から打ち消すほど、本音が見える。',
-      trap: 'not disappointed をそのまま「平気」と思いやすい。最後の自分の姿が本音。',
+      line: 'I’m sorry, Oscar. / Oscar: No, *sorry about what*? … I’m *certainly not disappointed*… *A lonely, aging monster*.',
+      said: '「気の毒だったね」に「何が？がっかりなんかしてない」と打ち消し、「さびしくて年老いた人でなし」と足す。',
+      mean: 'I’m sorry ＝ ここでは同情。disappointed ＝ がっかりした。必死に打ち消すほど本音が見える。',
+      trap: 'not disappointed をそのまま「平気」と取りやすい。最後に足した自分の姿が本音。',
       use: 'What? No, I’m totally fine.（え？ううん、全然平気）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'monster', reveals: ['sorry', 'idhave'], seg: [90.2, 100.75], retired: true,
@@ -232,10 +246,22 @@ export const senatorOscar: Clip = {
       choicesJa: ['（今）〜しなければならない', '（もしそうなら）〜でなければならない', '（これから）〜しなければならない'],
       cue: '文の最初。',
       line: '*I’d have* to be a monster to root for that.',
-      said: '「そんなことを応援するなら、怪物でなきゃ」と言う。',
+      said: '「そんなことを期待するなんて、人でなしだよ」と言う。',
       mean: 'I’d have to ＝（もしそうなら）〜でなければ。d はほとんど聞こえない。',
       trap: 'I’ll なら「アイル」と「ル」が残る。I のあとで小さく止まれば I’d、止まらなければ I have。',
       use: 'I’d have to check my calendar.（予定を確認しないと）' },
+
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'lovely', reveals: ['call'], ctx: true, seg: [100.5, 108.0],
+      stem: 'After “Nice to see you again”, what is the reply?',
+      ja: '「Nice to see you again」のあと、返事は？',
+      choices: ['It was lovely', 'Nice to meet you', 'See you later'], a: 0,
+      choicesJa: ['楽しかったです', 'はじめまして', 'またあとで'],
+      cue: 'Oscar と2回呼んだあとのやりとり。',
+      line: 'Senator: Oscar, *nice to see you again*. / *It was lovely.* / It was lovely. And don’t forget to call.',
+      said: '「また会えてうれしいよ」に「楽しかったです」と返す。',
+      mean: 'Nice to see you again ＝ また会えてうれしい（別れぎわにも使う）。It was lovely ＝ 楽しかったです。',
+      trap: 'nice to から Nice to meet you を連想しやすいが、それは初対面のあいさつ。again がついたら再会。',
+      use: 'Nice to see you again. — It was lovely.（また会えてうれしいです — 楽しかったです）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'call', seg: [102, 108.9],
       stem: 'Type the parting words: “And ___.” (4 words)', answer: "don't forget to call",
