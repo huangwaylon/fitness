@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 1, new 2, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 1, new 2, ctx 5, tx 6, qa 24
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 4, new 2
 // “Bobby Newport Returns to Pawnee | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // visitors offer Bobby Newport a two-month stint as interim mayor; he loves the idea but is off to space, pitches the
@@ -26,7 +26,7 @@ export const newport: Clip = {
       trap: 'while（〜の間）から「今日長く待った」と考えがち。会っていなかった時間の話。',
       use: 'It’s been a while. How are you?（久しぶり。元気？）' },
 
-    { id: 'i1', skill: 'pragma', level: 'B2', point: 'forgot', ctx: true, seg: [10.4, 16.6],
+    { id: 'i1', skill: 'pragma', level: 'B2', point: 'forgot', ctx: true, seg: [10.1, 16.15],
       stem: 'What does Bobby show with “if you say so”?',
       ja: 'ボビーの「if you say so」から分かることは？',
       choices: ['He doesn’t remember it', 'He remembers it now', 'He wants to hear it again'], a: 0,
@@ -60,19 +60,19 @@ export const newport: Clip = {
       trap: '選挙の話なので悔しさを読みたくなるが、本人はほぼ覚えていない。忘れたのは選挙で、相手ではない。',
       use: 'Let’s pretend you didn’t say that.（今のは聞かなかったことにしよう）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ignore', ctx: true, seg: [15.5, 23.4],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'ignore', ctx: true, seg: [14.15, 20.95],
       stem: 'What does the visitor do about Bobby’s “boring” remark?',
       ja: 'ボビーの「退屈なこと」発言に、相手はどうする？',
       choices: ['Pretends not to hear it', 'Gets angry about it', 'Asks him to explain it'], a: 0,
       choicesJa: ['聞かなかったことにする', 'そのことで怒る', '説明してと頼む'],
       cue: '「boring stuff」のすぐあと',
-      line: 'Bobby: it’s so hard to remember *boring stuff like that*. / Visitor: *Choosing to ignore what you just said*, we need an interim mayor…',
+      line: 'Bobby: it’s so hard to remember *boring stuff like that*. / Visitor: *Choosing to ignore what you just said*…',
       said: '自分が出た選挙を「退屈なこと」と言うボビーに、「今の発言は聞かなかったことにして」と本題に入る。',
       mean: '文字どおりは「今言ったことは無視することにして」。あきれつつ、まずい発言を流して先へ進む言い方。',
-      trap: 'ignore（無視する）から怒っていると考えがち。すぐ we need と頼みごとに入っている。',
+      trap: 'ignore（無視する）から怒っていると考えがち。言い返さず、さらっと流している。',
       use: 'Anyway, about the plan…（それはさておき、計画の件だけど）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'offer', seg: [18.0, 33.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'offer', reveals: ['whyhim', 'ignore'], seg: [16.15, 31.5],
       stem: 'Why have the visitors come to see Bobby?',
       ja: '訪ねてきた人たちは、何のためにボビーに会いに来た？',
       choices: ['To make him mayor for now', 'To ask him to run again', 'To ask him for money'], a: 0,
@@ -84,7 +84,7 @@ export const newport: Clip = {
       trap: 'ran（立候補した）や mayor から、また選挙に出る話と考えがち。用件は we need のあと。',
       use: 'I thought you might be interested.（興味があるかと思って）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', reveals: ['offer'], seg: [19.8, 26.0], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', reveals: ['offer'], seg: [20.9, 23.7], keep: true,
       stem: 'How long would the job last?',
       ja: 'その仕事はどのくらいの期間？',
       choices: ['Two weeks', 'Two months', 'Twelve months', 'Two years'], a: 1,
@@ -96,7 +96,7 @@ export const newport: Clip = {
       trap: 'two と twelve は出だしが同じ。短い「トゥー」のすぐあとに months が来れば two。',
       use: 'It’s just for two weeks.（2週間だけだよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'whyhim', seg: [22.8, 27.6],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'whyhim', seg: [23.7, 27.52],
       stem: 'Why do they think Bobby is right for it?',
       ja: 'なぜボビーがふさわしいと思っている？',
       choices: ['His name, and people like him', 'His name, and his family money', 'How well he did last time'], a: 0,
@@ -107,18 +107,6 @@ export const newport: Clip = {
       mean: 'given 〜 ＝「〜を考えると」。well-liked ＝ 人に好かれている（like の形）。',
       trap: '有名な一家なのでお金と考えがちだが、name のあとは好かれ方。and の後ろまで聞く。',
       use: 'Given the weather, let’s stay in.（この天気だし、家にいよう）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', ctx: true, seg: [25.6, 40.8],
-      stem: 'How does Bobby answer the offer?',
-      ja: 'ボビーは誘いにどう答える？',
-      choices: ['He likes it, but says no', 'He likes it and says yes', 'He says Ben should do it'], a: 0,
-      choicesJa: ['気に入るが、断る', '気に入って、引き受ける', 'ベンがやるべきだと言う'],
-      cue: '「Mayor?」のあと、though まで',
-      line: 'Visitor: I thought you might be interested. / Bobby: Man, that would be fun! God, *I don’t think I can do it, though*.',
-      said: '「興味があるかと思って」に、「うわあ、楽しそう！でも、たぶん無理だなあ」と答える。',
-      mean: 'though ＝「でも」。前の「楽しそう」を打ち消すので答えは no。I don’t think I can はやわらかい断り方。',
-      trap: 'Man, that would be fun! だけなら受けそうに聞こえる。決め手は though の文。',
-      use: 'I’d love to, but I can’t.（ぜひやりたいけど、無理なんだ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'firstreact', seg: [26, 32.8], retired: true,
       stem: 'How does Bobby react when he first hears the offer?',
@@ -132,6 +120,18 @@ export const newport: Clip = {
       trap: 'What? は疑いにも聞こえるが、すぐ「楽しそう」と続く。そのあとの一言で決まる。',
       use: 'Man, that’d be fun!（うわ、それ楽しそう！）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', ctx: true, reveals: ['space', 'readyto', 'toofun'], seg: [26.5, 41.9],
+      stem: 'How does Bobby answer the offer?',
+      ja: 'ボビーは誘いにどう答える？',
+      choices: ['He likes it, but says no', 'He likes it and says yes', 'He says Ben should do it'], a: 0,
+      choicesJa: ['気に入るが、断る', '気に入って、引き受ける', 'ベンがやるべきだと言う'],
+      cue: '「Mayor?」のあと、though まで',
+      line: 'Visitor: I thought you might be interested. / Bobby: Man, that would be fun! God, *I don’t think I can do it, though*.',
+      said: '「興味があるかと思って」に、「うわあ、楽しそう！でも、たぶん無理だなあ」と答える。',
+      mean: 'though ＝「でも」。前の「楽しそう」を打ち消すので答えは no。I don’t think I can はやわらかい断り方。',
+      trap: 'Man, that would be fun! だけなら受けそうに聞こえる。決め手は though の文。',
+      use: 'I’d love to, but I can’t.（ぜひやりたいけど、無理なんだ）' },
+
     { id: 'i2', skill: 'infer', level: 'C1', point: 'samefun', reveals: ['firstreact', 'toofun'], seg: [29.2, 37.95], retired: true,
       stem: 'How does Bobby seem to think of being mayor, next to his trip?',
       choices: ['As one more fun thing, just like the trip', 'As a duty to the town, unlike the trip',
@@ -143,7 +143,7 @@ export const newport: Clip = {
       trap: '市長は公の務めと思いやすいが、本人は旅行と同じく too で並べる。重さの話はない。',
       use: 'That sounds fun, too.（それも楽しそう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'space', seg: [32.6, 36.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'space', seg: [32.5, 36.05],
       stem: 'What does Bobby say he is getting ready for?',
       ja: 'ボビーは何の準備をしていると言う？',
       choices: ['A big trip to space', 'A big trip to Russia', 'A long family trip'], a: 0,
@@ -155,7 +155,7 @@ export const newport: Clip = {
       trap: 'big trip だけだと家族旅行などに聞こえる。trip のあとの to space まで聞く。',
       use: 'I can’t, ’cause I’m going away.（行けないんだ、出かけるから）' },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'readyto', reveals: ['space'], seg: [32.6, 36.4],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'readyto', reveals: ['space'], seg: [32.5, 36.05],
       stem: 'Type the gap: “’Cause I’m ___ on a big trip…” (4 words)', answer: 'getting ready to go',
       ja: '「’Cause I’m ___ on a big trip to space.」の空所を書こう（4語）',
       cue: '「’Cause I’m」のあと',
@@ -176,7 +176,7 @@ export const newport: Clip = {
       trap: 'always just so ～ は皮肉にも使うが、同意した相手をほめているので本気。',
       use: 'Isn’t life great?（人生って最高じゃない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'toofun', seg: [35.9, 40.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'toofun', seg: [35.9, 38.0],
       stem: 'Fill the gap: “___ really fun, too.”',
       ja: '「___ really fun, too.」の空所は？',
       choices: ['That’ll be', 'That’d be', 'It’ll be'], a: 0,
@@ -188,7 +188,7 @@ export const newport: Clip = {
       trap: 'That’d（もし〜なら）に聞こえるが、最後は「ル」の音。最初の「ザ」も聞く。',
       use: 'That’ll be great.（それは最高だね）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'whatswhat', seg: [39.8, 43.8],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'whatswhat', seg: [40.15, 43.8],
       stem: 'What does “This guy knows what’s what” mean?',
       ja: '「This guy knows what’s what」はどういう意味？',
       choices: ['He really understands life', 'He knows what everybody here wants', 'He knows today’s plans'], a: 0,
@@ -200,7 +200,7 @@ export const newport: Clip = {
       trap: 'what から「何がほしいか」など具体的なことと考えがち。同意してくれたからほめている。',
       use: 'She really knows what’s what.（彼女は本当に分かってる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'checkit', seg: [44.8, 49.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'checkit', seg: [44.8, 48.98],
       stem: 'Type what Bobby says: “You should ___.” (3 words)', answer: 'check it out',
       ja: '「You should ___.」の空所を書こう（3語）',
       cue: '「You should」のあと',
@@ -210,7 +210,7 @@ export const newport: Clip = {
       trap: 'check it out がつながり「チェキラウ」と一語に聞こえる。3語に分けて書く。',
       use: 'You should check out that cafe.（あのカフェ行ってみなよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'coolwith', reveals: ['space'], seg: [48.9, 52.4],
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'coolwith', reveals: ['space'], seg: [49.0, 51.9],
       stem: 'What does “would be cool with it” mean?',
       ja: '「would be cool with it」はどういう意味？',
       choices: ['They’d be fine with it', 'They’d think Ben is cool', 'They’d give a free seat'], a: 0,
@@ -233,7 +233,7 @@ export const newport: Clip = {
       trap: '値段への不満や、乗り気だった相手の落胆に目が行きやすい。小さく言う語と中身の差がある人が的。',
       use: 'Just one small thing: it costs $500.（1つだけ、500ドルかかるの）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'deposit', seg: [52.2, 56.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'deposit', seg: [51.9, 56.6], keep: true,
       stem: 'How much do they need for a deposit?',
       ja: '頭金はいくら要る？',
       choices: ['$600', '$60,000', '$600,000', '$6,000,000'], a: 2,
@@ -245,7 +245,7 @@ export const newport: Clip = {
       trap: 'six hundred thousand の順に聞く。sixty でも million でもない。hundred で止めない。',
       use: 'They need a deposit first.（まず頭金が要るって）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'wellno', reveals: ['deposit'], ctx: true, seg: [52.2, 58.4],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'wellno', reveals: ['deposit'], ctx: true, seg: [51.9, 58.4],
       stem: 'Does Ben have the money for the trip?',
       ja: 'ベンは旅行のお金を持っている？',
       choices: ['No, he doesn’t have it', 'Yes, he has it', 'He has half of it'], a: 0,
@@ -268,7 +268,7 @@ export const newport: Clip = {
       trap: 'guy from ～ は「〜に出てくる人」。見た目の話ではない。Nice try は信じない返事。',
       use: 'Nice try, but I don’t believe you.（その手には乗らないよ）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'second', reveals: ['space'], seg: [57.9, 64.7],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'second', reveals: ['space'], seg: [58.38, 64.55],
       stem: 'Which person to walk on the moon was the man?',
       ja: 'その男性は、月を歩いた何番目の人？',
       choices: ['The first', 'The second', 'The third', 'The fourth'], a: 1,
@@ -280,14 +280,14 @@ export const newport: Clip = {
       trap: 'second を「秒」と考えがち。the のあとなら順番で「2番目」。first（1番目）ではない。',
       use: 'This is my second time here.（ここに来るのは2回目です）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'nicetry', ctx: true, seg: [62.9, 69.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'nicetry', ctx: true, reveals: ['second'], seg: [59.8, 69.5],
       stem: 'What does Bobby mean by “Nice try”?',
       ja: 'ボビーの「Nice try」はどういう意味？',
       choices: ['I don’t believe you', 'You tried very hard', 'That was a nice trip'], a: 0,
       choicesJa: ['信じないよ', 'よく頑張ったね', 'いい旅だったね'],
       cue: '名乗ったあとの短い返事',
-      line: 'Man: Buzz Aldrin, nice to meet you. / Bobby: *Nice try.* That’s the guy from Toy Story.',
-      said: '本物の宇宙飛行士が名乗ると、「その手には乗らないよ。トイ・ストーリーのやつじゃん」と返す。',
+      line: 'Man: I was the second person to walk on the moon. Buzz Aldrin, nice to meet you. / Bobby: *Nice try.* That’s the guy from Toy Story.',
+      said: '「月を歩いた2人目」の本物の宇宙飛行士が名乗ると、「その手には乗らないよ。トイ・ストーリーのやつじゃん」と返す。',
       mean: '文字どおりは「いい挑戦だね」。だまそうとしても分かる→「その手には乗らないよ」。映画のバズはこの人の名前から。',
       trap: 'nice から、ほめていると考えがち。うそだと決めつけて信じない返事。',
       use: 'Nice try, but I don’t believe you.（その手には乗らないよ）' },
