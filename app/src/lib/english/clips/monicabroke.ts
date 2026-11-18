@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 2, ctx 7, tx 8
+// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 2, ctx 7, tx 8, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 1
 // “Monica Is Broke | Friends” (the official Friends channel, Best of Season 2): out of work after a bad interview,
 // Monica turns down a loan, is told to borrow from her parents, finds them turning her room into a gym, admits at
@@ -121,7 +121,7 @@ export const monicabroke: Clip = {
       cue: '文の最後、might のかたまり。',
       line: 'You *might as well* make some money off of them.',
       said: '「どうせ気まずいなら、お金ももらっちゃえば」とすすめる。',
-      mean: 'might as well 〜 ＝ どうせなら〜すればいい。損はないから、という言い方。',
+      mean: '文字どおりは「〜しても同じくらいいい」。もう気まずいなら、借りても同じ→「どうせなら〜すれば」。',
       trap: 'might を「かもしれない」と分けて思うと「少し見込みがある」に聞こえる。ひとかたまりで覚える。',
       use: 'We might as well walk.（どうせなら歩こうか）' },
 
@@ -210,10 +210,10 @@ export const monicabroke: Clip = {
       use: 'Where have you been? I missed you.（どこ行ってたの？会いたかったよ）' },
 
     { id: 'i2', skill: 'infer', level: 'B1', point: 'asked', ctx: true, seg: [99.9, 111.9],
-      stem: 'Did her parents lend Monica the money?',
-      ja: '両親はモニカにお金を貸した？',
-      choices: ['She hasn’t asked yet', 'They said no to her', 'They gave her the money'], a: 0,
-      choicesJa: ['まだ頼んでいない', '断られた', 'お金を貸してくれた'],
+      stem: 'What does Monica say about borrowing from her parents?',
+      ja: '両親から借りる話について、モニカは何と言う？',
+      choices: ['She hasn’t asked yet', 'They said no to her', 'They already gave it'], a: 0,
+      choicesJa: ['まだ頼んでいない', '断られた', 'もう貸してくれた'],
       cue: '「No, but」のあと。',
       line: 'So, did they lend you the money yet? / Monica: No, but that’s probably cuz I *haven’t asked them yet*.',
       said: '「借りられた？」「ううん、たぶんまだ頼んでないから」と答える。',
@@ -228,7 +228,7 @@ export const monicabroke: Clip = {
       choicesJa: ['母はあわて、父がなだめる', '父がモニカに怒る', '二人とも傷ついて悲しむ'],
       cue: '「どうするの」のあと。',
       line: 'What are you going to do? — *Judy, Judy, relax*.',
-      said: '母が「どうするの」とあわて、父が「ジュディ、落ち着け。貯金があるだろう」となだめる。',
+      said: '母が「どうするの」とあわて、父が「ジュディ、落ち着いて。貯金があるだろう」となだめる。',
       mean: 'relax ＝ 落ち着いて。心配する母と、楽観的な父。',
       trap: '最初の驚きの声が責めているように聞こえやすいが、そのあとは心配となだめ。',
       use: 'Relax, it’s going to be fine.（落ち着いて、大丈夫だから）' },
@@ -293,11 +293,11 @@ export const monicabroke: Clip = {
       use: 'I had to dip into my travel fund.（旅行資金に手をつけちゃった）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'extra', seg: [141.4, 153.1],
-      stem: 'What is Jack offering at the end?',
-      ja: 'ジャックは最後に何を申し出ている？',
+      stem: 'What does Jack offer Monica?',
+      ja: 'ジャックはモニカに何を申し出る？',
       choices: ['More money if she needs it', 'Help finding a new job', 'A room in their house'], a: 0,
       choicesJa: ['足りなければお金を出す', '新しい仕事探しを手伝う', '家の部屋'],
-      cue: '最後の文。',
+      cue: '「she’s gonna be fine」のあとの文。',
       line: 'if you need *a little extra*, *you know where to find it*.',
       said: '「少し足りなければ、どこにあるか分かってるだろ」と言う。',
       mean: 'you know where to find it ＝ どこにあるか知ってるよね。「うちに来れば出すよ」の遠回しな言い方。',
@@ -331,8 +331,8 @@ export const monicabroke: Clip = {
     { id: 't3', skill: 'attitude', level: 'B1', point: 'saurus', seg: [166.3, 178.3],
       stem: 'How does Monica really feel about the loan?',
       ja: 'お金を貸してもらって、モニカは本当はどう思っている？',
-      choices: ['Very grateful', 'Upset it’s so small', 'Embarrassed by it'], a: 0,
-      choicesJa: ['とても感謝している', '少なくて不満', '恥ずかしい'],
+      choices: ['Thankful for the help', 'Upset it’s so small', 'Embarrassed to take it'], a: 0,
+      choicesJa: ['助けてもらって感謝している', '少なくて不満', '受け取るのが恥ずかしい'],
       cue: '「I’m kidding」のあと。',
       line: 'Hey, you’re a *cheap-a-saurus*. … *I’m kidding*. Thank you. I’m very grateful.',
       said: '「ケチザウルスね」と言い、すぐ「冗談。ありがとう、感謝してる」と言う。',

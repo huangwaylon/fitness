@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 3, new 0, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 3, new 0, ctx 5, tx 6, qa 7
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 2
 // “The Most Loved Woman in Denmark | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at an
 // awards event Leslie meets a fellow honoree, Ollie, whose Danish hometown adores her (a goat-cheese statue to be eaten
@@ -17,13 +17,13 @@ export const mostLovedDenmark: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'mongolia', seg: [8, 18.5],
       stem: 'What did the guest from Mongolia become?',
       ja: 'モンゴルから来たゲストは何になった？',
-      choices: ['Mayor, then police chief', 'A teacher, then the mayor', 'A police chief’s wife'], a: 0,
-      choicesJa: ['町長、それから警察署長', '先生、それから町長', '警察署長の妻'],
+      choices: ['Mayor, then police chief', 'Police chief, then mayor', 'A teacher, then the mayor'], a: 0,
+      choicesJa: ['町長、それから警察署長', '警察署長、それから町長', '先生、それから町長'],
       cue: '「Then she became」のあと',
       line: 'she grew up in a hut… made of ice and mud. Then she *became their mayor, then their police chief*',
       said: '「氷と泥の小屋で育ち、町長になり、それから警察署長に」と紹介する。',
       mean: 'became ＝ 〜になった（become の過去形）。then で順番に並べている。',
-      trap: 'police chief の前の then を聞き落とすと、だれかの妻と勘違いしやすい。then が順番の合図。',
+      trap: '最後の police chief が耳に残り、順番を逆に考えがち。先に mayor、then のあとに police chief。',
       use: 'First I was a student, then a teacher.（最初は学生、それから先生になった）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'admire', seg: [10.4, 21.9],
@@ -92,21 +92,21 @@ export const mostLovedDenmark: Clip = {
       ja: '「Well, what ___ are you from?」の空所を書こう（3語）',
       cue: '「of course」のあと',
       line: 'Well, what *part of Denmark* are you from?',
-      said: '「で、デンマークのどこの出身なの？」と聞く。',
+      said: '「デンマークのどちらのご出身？」と聞く。',
       mean: 'What part of 〜 are you from? ＝ 〜のどこの出身？ 旅先の会話でよく使う。',
       trap: 'part of がつながり「パーロヴ」と聞こえる。of は小さく短い。',
       use: 'What part of Japan are you from?（日本のどこの出身ですか）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'loves', reveals: ['statue', 'crackers'], seg: [34.0, 58.0],
-      stem: 'How does Ollie’s town feel about her?',
-      ja: 'オリーの町は彼女をどう思っている？',
-      choices: ['It loves her very much', 'It wants her to go away', 'It doesn’t know her'], a: 0,
-      choicesJa: ['とても愛している', '出ていってほしい', '彼女を知らない'],
-      cue: '「I love it」のあと',
-      line: 'I love it, and *it loves me*.',
-      said: '「町が大好きで、町も私が大好き」と言い、町が作った自分の像を見せる。',
-      mean: '町と人がおたがいに好き。像まで作ってもらっている。',
-      trap: '像を「食べる」と聞くと、きらわれているように聞こえるが、最後に They just love me（みんな大好き）。',
+      stem: 'What does Ollie say about her hometown?',
+      ja: 'オリーは自分の町について何と言う？',
+      choices: ['It loves her back', 'She wants to move away', 'It’s a perfect place'], a: 0,
+      choicesJa: ['町も彼女が大好き', '引っ越したい', '完璧な場所'],
+      cue: '「but I love it」のあと',
+      line: 'It’s *not* one of the most perfect places in the world, but I love it, and *it loves me*.',
+      said: '「完璧な場所じゃないけど大好きで、町も私が大好き」と言い、町が作った自分の像を見せる。',
+      mean: 'it loves me ＝ 町も私が大好き。町と人がおたがいに好き。像まで作ってもらっている。',
+      trap: 'most perfect places が耳に残るが、前に not がある。完璧ではないけど大好き、の流れ。',
       use: 'I love this city.（この街が大好き）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'done', seg: [40.9, 47],
