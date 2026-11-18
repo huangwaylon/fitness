@@ -5,8 +5,8 @@
 // grader, so Carly and a friend pick out men his own age in the park; the dinner with them falls apart over chili fries
 // and name-calling, and Spencer tells Carly he hates them. A fan scene closes the clip.
 // Named in the audio: Spencer, Ryan, Darnell, Carly, Gibby. Carly's friend isn't named, so stems say “the girls”.
-// SKIP 237–266: the fan squeals over everyone (I love you / I need pics); crosstalk.
-// SKIP 277–299: the fan finds Gibby and squeals; crosstalk.
+// SKIP 232–268: the fan squeals over everyone (I love you / I need pics); crosstalk.
+// SKIP 274.5–299: the fan finds Gibby and squeals; crosstalk.
 // EAR CHECK: 84 s n2 — “You got a name?” ends a long whisper line (71.6–84.5); check the seg holds it.
 // EAR CHECK: 272 s m2 — “he's in the men's room” under the fan's squeals.
 import type { Clip } from '../types.ts';
@@ -35,7 +35,7 @@ export const spencerFriends: Clip = {
       choices: ['Sure, why?', 'No, I was alone', 'Not really, sorry'], a: 0,
       choicesJa: ['もちろん、なんで？', 'いや、一人だった', 'そうでもない、ごめん'],
       cue: '「right?」のすぐあと。',
-      line: 'if you played tennis, then you were with a friend, right? — *Sure, why?*',
+      line: 'if you played tennis, then you were with a friend, right? / *Sure, why?*',
       said: '「テニスなら友だちと一緒だったよね？」に「もちろん、なんで？」と返す。',
       mean: 'Sure ＝ もちろん、うん。why? を付けて「なんで聞くの？」。〜, right? は「〜だよね？」と確かめる形。',
       trap: 'right? を「正しい？」と考えがち。文の最後の right? は「〜だよね？」で、答えは Yes か No。',
@@ -151,7 +151,7 @@ export const spencerFriends: Clip = {
       choices: ['His name', 'His age', 'His phone number'], a: 0,
       choicesJa: ['名前', '年齢', '電話番号'],
       cue: '「What?」のあとの質問。',
-      line: '*You got a name?* — Yeah, Darnell.',
+      line: '*You got a name?* / Yeah, Darnell.',
       said: '「名前は？」と聞き、「ああ、ダーネル」と答えが返る。',
       mean: 'You got a name? ＝ (Have) you got a name? 「名前は？」のくだけた聞き方。答えが名前なので分かる。',
       trap: 'got から「手に入れた」と考えがち。have got ＝ have。初対面の人にはくだけすぎる。',
@@ -175,7 +175,7 @@ export const spencerFriends: Clip = {
       choices: ['What do you guys need?', 'Sorry, I’m busy now', 'Do I know you two?'], a: 0,
       choicesJa: ['何か用？', 'ごめん、今いそがしい', '君たち、知り合いだっけ？'],
       cue: '二人の「excuse us」のあと。',
-      line: 'Uh, excuse us. — Yes, excuse us. — *What do you guys need?*',
+      line: 'Uh, excuse us. / Yes, excuse us. / *What do you guys need?*',
       said: '二人で「すみません」と声をかけ、男性が「何か用？」と答える。',
       mean: 'Excuse us ＝（二人で）すみません。知らない人に声をかける決まり文句。What do you need? ＝ 何か用？',
       trap: 'excuse から「言いわけ」を連想しやすい。ここは呼びかけの「すみません」。',
@@ -199,7 +199,7 @@ export const spencerFriends: Clip = {
       choices: ['Having dinner with friends', 'Going bowling with the girls', 'Staying at home alone'], a: 0,
       choicesJa: ['友だちと夕食', '女の子たちとボウリング', '一人で家にいる'],
       cue: '「ready to go bowling?」への返事。',
-      line: 'you guys ready to go bowling? — We’re not really going bowling… *You are going out to dinner with some friends*.',
+      line: 'you guys ready to go bowling? / We’re not really going bowling… *You are going out to dinner with some friends*.',
       said: '「ボウリング行く？」に「本当は行かない。友だちと夕食に行くの」と返される。',
       mean: 'not really 〜 ＝ 本当は〜しない。go out to dinner ＝ 外へ夕食に行く。ボウリングは口実だった。',
       trap: 'bowling が何度も聞こえるが、not really で打ち消している。決め手は最後の dinner。',
@@ -235,7 +235,7 @@ export const spencerFriends: Clip = {
       choices: ['Spencer took their fries', 'The fries came very late', 'Spencer wanted nachos'], a: 0,
       choicesJa: ['スペンサーがポテトを取った', 'ポテトが来るのがおそかった', 'スペンサーがナチョスをほしがった'],
       cue: '「What the heck」のすぐあとの文。',
-      line: 'Oh, God, those look good. — What the heck? *You said you didn’t want chili fries*.',
+      line: 'Oh, God, those look good. / What the heck? *You said you didn’t want chili fries*.',
       said: '「うまそう」と手を出し、「いらないって言ったじゃん」と言われる。',
       mean: 'What the heck? ＝ おい、何だよ。断ったものを取られて文句を言う。',
       trap: 'About time や nachos が耳に残りやすい。文句の中身はすぐ次の文。',
@@ -270,7 +270,7 @@ export const spencerFriends: Clip = {
       choices: ['Spencer', 'Darnell', 'Carly'], a: 0,
       choicesJa: ['スペンサー', 'ダーネル', 'カーリー'],
       cue: '「mean and boring」への言い返し。',
-      line: 'You guys are so mean and boring. — Well, you are *childish*. — I am not!',
+      line: 'You guys are so mean and boring. / Well, you are *childish*. / I am not!',
       said: '「意地悪で退屈だ」と言うと、「お前は子どもっぽい」と言い返される。',
       mean: 'childish ＝ 子どもっぽい（悪い意味）。mean ＝ 意地悪な。boring ＝ 退屈な。悪口の言い合い。',
       trap: 'mean と boring は男性たちへの悪口。Well, you are のあとで向きが逆になる。',
@@ -282,7 +282,7 @@ export const spencerFriends: Clip = {
       choices: ['He says no right away', 'He agrees to try again', 'He asks for more time'], a: 0,
       choicesJa: ['すぐに「やだ」と言う', 'もう一度ためすと言う', 'もっと時間がほしいと言う'],
       cue: '「chance to」の直後。',
-      line: 'Just give them a chance to— *No!*',
+      line: 'Just give them a chance to— / *No!*',
       said: '「チャンスを…」と言いかけたところに「やだ！」とかぶせる。',
       mean: 'give ～ a chance ＝ 〜にチャンスをあげる。最後まで聞かずに断っている。',
       trap: '理由があとに続くので、聞いてから断ったと勘違いしやすい。No! は to の直後。',
@@ -327,7 +327,7 @@ export const spencerFriends: Clip = {
       choices: ['In the men’s room', 'At the front door', 'Out in the car'], a: 0,
       choicesJa: ['男子トイレ', '玄関', '外の車の中'],
       cue: '「Where’s Gibby?」への返事。',
-      line: 'Where’s Gibby? — Oh, he’s *in the men’s room*.',
+      line: 'Where’s Gibby? / Oh, he’s *in the men’s room*.',
       said: 'ファンの「ギビーはどこ？」に「男子トイレにいるよ」と答える。',
       mean: 'men’s room ＝ 男性用トイレ。女性用は ladies’ room。店や駅で bathroom と同じように使う。',
       trap: 'men’s room を「男の人の部屋」と考えがち。お店などでは「男子トイレ」のこと。',

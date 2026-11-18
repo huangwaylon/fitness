@@ -5,7 +5,7 @@
 // robot. Neville gloats to Freddie and has him put in the robot suit, so the girls beat up the wrong "Neville".
 // Freddie is named at 149 s and 163 s, Neville at 161 s and 183 s; the adults at the door (54 s) and asking about the
 // voices (103–134 s) are unnamed.
-// SKIP 18.8–38.8: the mock legal warning (written consent, arrest and beating) and garbled arrival greetings.
+// SKIP 16–38.5: d1's line ends, then the mock legal warning (written consent, arrest and beating) and garbled arrival greetings.
 import type { Clip } from '../types.ts';
 
 export const halfoween: Clip = {
@@ -27,7 +27,7 @@ export const halfoween: Clip = {
       trap: 'Halloween が何度も聞こえるのでハロウィン当日と考えがち。決め手は invented（考え出した）。',
       use: 'I just bought a brand new bike.（新品の自転車を買ったばかり）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'halfway', seg: [9.1, 18.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'halfway', seg: [11.0, 18.9],
       stem: 'When is their holiday?',
       ja: 'その祝日はいつ？',
       choices: ['Between two Halloweens', 'Between Halloween and Christmas', 'In the middle of October'], a: 0,
@@ -61,7 +61,7 @@ export const halfoween: Clip = {
       trap: '前の written は弱く短く、落としやすい。名詞の前の語も拾う。',
       use: 'Do I need your consent for this?（これにはあなたの同意が必要ですか）' },
 
-    { id: 'f6', skill: 'pragma', level: 'B1', point: 'invite', seg: [40.5, 47.8],
+    { id: 'f6', skill: 'pragma', level: 'B1', point: 'invite', seg: [38.5, 47.8],
       stem: 'What does the robot thank them for?',
       ja: 'ロボットは何のお礼を言う？',
       choices: ['Inviting it to the party', 'Giving it some candy', 'Opening the door'], a: 0,
@@ -91,7 +91,7 @@ export const halfoween: Clip = {
       choices: ['Sure, thanks', 'No, thanks', 'Maybe later'], a: 0,
       choicesJa: ['うん、ありがとう', 'いや、いらない', 'あとでね'],
       cue: '「Candy?」のすぐあと。',
-      line: 'Candy? — *Sure, thanks.*',
+      line: 'Candy? / *Sure, thanks.*',
       said: '「お菓子どう？」と勧められ、「うん、ありがとう」と受け取る。',
       mean: 'Candy? ＝ 一語で「お菓子どう？」と勧める言い方。Sure, thanks ＝ 「うん、ありがとう」。軽く受け取る返事。',
       trap: 'thanks だけだと No, thanks（いりません）と区別しにくい。決め手は前の Sure。',
@@ -162,7 +162,7 @@ export const halfoween: Clip = {
       choices: ['Candy from the robot', 'A drink at the party', 'The corn dogs'], a: 0,
       choicesJa: ['ロボットのお菓子', 'パーティーの飲み物', 'コーンドッグ'],
       cue: '「ate or drank」への返事。',
-      line: 'Is there anything that all three of you ate or drank? — No, I don’t think so. — Wait. Yeah, *we all had that candy*.',
+      line: 'Is there anything that all three of you ate or drank? / No, I don’t think so. / Wait. Yeah, *we all had that candy*.',
       said: '「三人とも口にした物は？」に「ない」と言いかけ、「あのお菓子だ」と気づく。',
       mean: 'we all had 〜 ＝ みんな〜を食べた。have は「食べる・飲む」にも使う。最初の No を Wait で取り消す。',
       trap: 'drank（飲んだ）が耳に残るが、答えは Wait のあと。No, I don’t think so で終わりではない。',
@@ -208,7 +208,7 @@ export const halfoween: Clip = {
       choices: ['An old friend', 'A new friend', 'A party guest'], a: 0,
       choicesJa: ['昔からの友だち', '新しい友だち', 'パーティーの客'],
       cue: 'フレディの「Who are you?」のあと。',
-      line: 'Who are you? — *An old friend.*',
+      line: 'Who are you? / *An old friend.*',
       said: '「だれだ？」に「昔からの友だちさ」と答え、頭を外す。',
       mean: 'an old friend ＝ 昔からの知り合い。old は「年をとった」ではなく「古くからの」。正体はこのあと見せる。',
       trap: 'old を「年寄り」と考えがち。an old friend はひと続きで「昔なじみ」。',
@@ -232,7 +232,7 @@ export const halfoween: Clip = {
       choices: ['I don’t agree with you', 'I agree with you', 'I don’t understand you'], a: 0,
       choicesJa: ['君の言うことには反対だ', '君の言うとおりだ', '君の言うことが分からない'],
       cue: 'フレディの「It’s not funny!」への返事。',
-      line: 'It’s not funny! — *On the contrary*, it is quite funny.',
+      line: 'It’s not funny! / *On the contrary*, it is quite funny.',
       said: '「笑いごとじゃない！」に「それどころか、実に面白い」と返す。',
       mean: 'On the contrary ＝ 「それどころか、その逆だ」。相手の言葉をはっきり打ち消す、少しかたい言い方。',
       trap: 'contrary は聞き慣れず飛ばしやすい。決め手はあとの it is quite funny。not funny の逆。',
@@ -314,7 +314,7 @@ export const halfoween: Clip = {
       choices: ['He says nothing', 'He says sorry', 'He laughs at them'], a: 0,
       choicesJa: ['何も言わない', '謝る', '二人を笑う'],
       cue: '「Why’d you do it」のあと。',
-      line: 'Why’d you do it, Neville? — Hey, what’s the matter with you? — Oh, *don’t wanna talk?*',
+      line: 'Why’d you do it, Neville? / Hey, what’s the matter with you? / Oh, *don’t wanna talk?*',
       said: '「なんでやったの？」と聞くが返事がなく、「話したくないの？」と言う。',
       mean: 'don’t wanna talk? ＝ 「話したくないの？」。wanna ＝ want to。返事がないから出る言葉。',
       trap: 'Why’d you do it の答えを待ちがち。返事はなく、次の don’t wanna talk で黙っていると分かる。',
