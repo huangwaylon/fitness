@@ -3,7 +3,7 @@
 // never turns it), and the short glide between it and the room's own camera. Its math is plain; the camera's blend is three's.
 // The engine places the room's camera first (its orbit), then apply() takes it toward the eyes by the blend.
 import { Euler, Vector3, type PerspectiveCamera } from 'three';
-import { hermite } from '#lib/math.ts';
+import { hermite, wrapAngle } from '#lib/math.ts';
 
 /** The lens (vertical degrees): a head's, not the rooms' long 32°. */
 export const FOV = 70;
@@ -27,7 +27,6 @@ const LOOK_TC = 45, EYE_TC = 40, EYE_TC_Y = 140;
 export interface Rect { x0: number; x1: number; z0: number; z1: number }
 
 export const clampPitch = (p: number): number => Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, p));
-export const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
 
 /**
  * The eye (x, z) kept off what it could see into: out of each `solid` rect grown by `m` (by its nearest side), and in

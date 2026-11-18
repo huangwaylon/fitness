@@ -4,6 +4,9 @@
 /** `v` held to [lo, hi]. */
 export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
+/** An angle (radians) in (−π, π]: the short way round. */
+export const wrapAngle = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));
+
 /** `v` held to [0, 1]. */
 export const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 

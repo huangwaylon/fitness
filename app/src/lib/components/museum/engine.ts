@@ -16,7 +16,7 @@ import {
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
-import { cubicOut } from '#lib/math.ts';
+import { cubicOut, wrapAngle } from '#lib/math.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
@@ -35,7 +35,7 @@ import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
 import { COST_FRAMES, ENTRY_HOLD_MS, HOME_MS, PACE, VILLAGER_H, along, atAim, roomScreen, roomView, walkLens, type Insets, type Walk } from '../rooms/view.ts';
-import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
+import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, CARPETS, CORNICE, DESK, DOOR_H, DOOR_HALF, DOORMAT, ENTRANCE, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENING, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
   boundsOf, navOf, roomHeld, roomIdAt, roomOf, walkable, wallDistance, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing

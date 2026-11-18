@@ -12,6 +12,7 @@ import {
 } from 'three';
 import type { Look } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
+import { wrapAngle } from '#lib/math.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
 import { testHooks } from '#lib/ui-state/testMode.ts';
 import { createStage, watchContext } from '#lib/components/world3d/stage.ts';
@@ -87,8 +88,6 @@ const PAWN_COLOUR: Record<Who, number> = { A: 0x4f9be0, B: 0xf08aa0, G: 0xcdb4f2
 const V3_SCALE = PERSON_H / 80;
 /** The camera's ease (ms to close ~63 % of the way). */
 const CAM_TAU = 220;
-
-const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
 export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Board3DOpts = {}): Board3D {
   const dirs: Dirs = opts.dirs ?? { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
@@ -221,13 +220,13 @@ export function createBoard3D(canvas: HTMLCanvasElement, board: Board, opts: Boa
           s.x = p.x;
           s.y = p.y;
           s.z = p.z;
-          s.yaw += wrap(p.yaw - s.yaw) * Math.min(1, dt / 60);
+          s.yaw += wrapAngle(p.yaw - s.yaw) * Math.min(1, dt / 60);
           moving = true;
         }
       }
       // at rest it turns back to face the camera
-      if (!s.walk && Math.abs(wrap(s.yaw)) > 0.01) {
-        s.yaw -= wrap(s.yaw) * Math.min(1, dt / 120);
+      if (!s.walk && Math.abs(wrapAngle(s.yaw)) > 0.01) {
+        s.yaw -= wrapAngle(s.yaw) * Math.min(1, dt / 120);
         moving = true;
       }
       for (const g of [s.pawn, s.v3?.group]) if (g) (g.position.set(s.x, s.y, s.z), (g.rotation.y = s.yaw));
