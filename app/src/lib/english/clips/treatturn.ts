@@ -1,10 +1,10 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 5, new 2, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 5, new 2, ctx 5, tx 7, qa 16
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 3, new 0
 // “Parks and Recreation | Treat Yo Self Turnabout (Episode Highlight)” (the official Parks and Recreation channel,
 // Season 7): at a sushi bar whose fish once belonged to celebrities, Donna gives Tom her gift: advice to stop checking
 // his phone over Lucy and ask her out. Then she adds the shoes he wanted, and a celebrity eats his own sushi.
 // Talk ends at ≈82 s. Untested: the celebrity names at 6–18 s, 73–77 s (a garbled order), 80.4 s (“balling”).
-// EXCLUDE 39–39.9 (“son of a hitch”: a swear pun)
+// EXCLUDE 39.6–40.55 (“son of a hitch”: a swear pun)
 // SKIP 82–104: music only, no talk
 import type { Clip } from '../types.ts';
 
@@ -14,7 +14,7 @@ export const treatTurnabout: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'fish', seg: [0, 9.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'fish', seg: [0, 9.4],
       stem: 'What is special about this restaurant’s sushi?', ja: 'この店のすしは何が特別？',
       choices: ['Stars kept the fish as pets', 'Stars caught the fish', 'Stars cooked the fish'], a: 0,
       choicesJa: ['有名人がペットとして飼っていた', '有名人が海で釣った', '有名人が家で料理した'],
@@ -31,7 +31,7 @@ export const treatTurnabout: Clip = {
       choicesJa: ['一番人気の店', '一番からい料理の店', '店内が一番暖かい店'],
       cue: '最初の一文',
       line: '*This is the hottest restaurant* in LA.',
-      said: 'ドナが「ここはロサンゼルスで一番人気のレストランなの」と紹介する。',
+      said: '「ここはロサンゼルスで一番人気のレストランなの」と紹介する。',
       mean: 'hot ＝ ここでは「人気の、話題の」。hottest ＝ 一番人気の。店や流行に使う。',
       trap: 'hot ＝「暑い・からい」と考えがち。店や物に使うと「人気の」。',
       use: 'It’s the hottest café in town.（町で一番人気のカフェだよ）' },
@@ -47,15 +47,15 @@ export const treatTurnabout: Clip = {
       trap: 'bad（悪い）から、病気や悪いことだと思いやすい。恋の話。',
       use: 'Wow, you’ve got it bad.（わあ、本気で好きなんだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'often', seg: [20, 26.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'often', seg: [20, 26.0],
       stem: 'How often does Tom check his phone?', ja: 'トムはどのくらいの間隔でスマホを見ている？',
-      choices: ['Every minute', 'Every 5 minutes', 'Every 15 minutes'], a: 1, keep: true,
-      choicesJa: ['1分おき', '5分おき', '15分おき'],
+      choices: ['Every minute', 'Every 5 minutes', 'Every 15 minutes', 'Every 50 minutes'], a: 1, keep: true,
+      choicesJa: ['1分おき', '5分おき', '15分おき', '50分おき'],
       cue: '「checking your phone」のあと',
       line: 'checking your phone *every five minutes*',
       said: 'ドナが「5分おきにスマホを見てる」と言う。',
       mean: 'every five minutes ＝ 5分おきに。every ＋時間 ＝ 〜ごとに。',
-      trap: 'five と fifteen は似ている。teen がなければ5。',
+      trap: 'five は fifteen や fifty と聞きまちがえやすい。後ろに teen も ty もなければ5。',
       use: 'I check my email every hour.（1時間おきにメールを見る）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'wedding', seg: [21.3, 27.7], retired: true,
@@ -69,7 +69,7 @@ export const treatTurnabout: Clip = {
       trap: 'Lucy の名前だけ聞くと、別の話だと思いやすい。wedding を聞く。',
       use: 'Will you come with me to the party?（パーティーに一緒に来てくれる？）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'sorry', ctx: true, seg: [22.5, 29],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'sorry', ctx: true, reveals: ['often'], seg: [21.7, 28.9],
       stem: 'How does Donna answer Tom’s “I’m sorry”?', ja: 'トムの「I’m sorry」に、ドナはどう答える？',
       choices: ['Hey, I understand.', 'You should be sorry.', 'No more phones.'], a: 0,
       choicesJa: ['いいよ、わかるよ', '反省してよね', 'もう見ないで'],
@@ -80,7 +80,7 @@ export const treatTurnabout: Clip = {
       trap: 'Hey で始まるので、怒っていると考えがち。I understand は許す言葉。',
       use: 'Hey, I understand. Don’t worry.（いいよ、わかるよ。気にしないで）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'protest', seg: [29, 34.3],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'protest', seg: [28.9, 33.9],
       stem: 'Tom says, “You’re not supposed to get me anything.” Why?', ja: 'トムはなぜ「何もくれなくていい」と言う？',
       choices: ['It’s her day, not his', 'He wants a bigger gift', 'She forgot his birthday'], a: 0,
       choicesJa: ['ドナの日で、自分の日じゃない', 'もっと大きい贈り物がほしい', '誕生日を忘れられた'],
@@ -91,7 +91,7 @@ export const treatTurnabout: Clip = {
       trap: 'あとで靴を期待していたと分かるので、大きい贈り物がほしいと考えがち。理由は your special day。',
       use: 'You’re not supposed to park here.（ここに駐車しちゃいけないんだよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'shoes', seg: [33.7, 38.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'shoes', seg: [33.9, 38.3],
       stem: 'How does Tom feel when he hears the gift is advice?', ja: '贈り物が助言だと聞いて、トムはどんな気持ち？',
       choices: ['Disappointed', 'Very touched', 'Very relieved'], a: 0,
       choicesJa: ['がっかり', 'とても感動', 'とてもほっとした'],
@@ -102,7 +102,7 @@ export const treatTurnabout: Clip = {
       trap: '靴の話が出るので、靴をもらって喜ぶと考えがち。まだもらっていない。',
       use: 'I was secretly hoping for cake.（実はケーキを期待してた）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', reveals: ['askout'], seg: [40, 61],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'goal', reveals: ['askout'], seg: [40.55, 61],
       stem: 'What does Donna tell Tom to do?', ja: 'ドナはトムに何をしろと言う？',
       choices: ['Ask Lucy out', 'Wait for Lucy’s text', 'Forget about Lucy'], a: 0,
       choicesJa: ['ルーシーをデートに誘う', 'ルーシーのメッセージを待つ', 'ルーシーのことは忘れる'],
@@ -113,7 +113,7 @@ export const treatTurnabout: Clip = {
       trap: 'トムはスマホで返事を待っているので、待てと言うと思いやすい。',
       use: 'He finally asked her out.（彼はついに彼女をデートに誘った）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'upfront', seg: [40.2, 46.8], retired: true,
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'upfront', seg: [40.55, 46.8], retired: true,
       stem: 'Donna says Tom must be “*upfront*” with Lucy. What does it mean?', ja: '「upfront」の意味は？',
       choices: ['Honest and clear with her', 'Faster than other men', 'Patient and slow with her'], a: 0,
       choicesJa: ['正直にはっきり伝える', 'ほかの男より早く動く', 'ゆっくり待つ'],
@@ -124,7 +124,7 @@ export const treatTurnabout: Clip = {
       trap: 'front（前）から、先に動く話だと思いやすい。',
       use: 'Let me be upfront with you.（正直に言いますね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'askout', seg: [40.4, 47.5], retired: true,
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'askout', seg: [40.55, 47.5], retired: true,
       stem: 'Type what Donna says: “Be a man and ___.” (3 words)', ja: 'ドナの言葉の空所3語を書こう', answer: 'ask her out',
       cue: '「Be a man and」のあと',
       line: 'Be a man and *ask her out*.',
@@ -133,10 +133,10 @@ export const treatTurnabout: Clip = {
       trap: 'ask her はつながり「アスカー」に聞こえやすい。out の t は小さい。',
       use: 'Why don’t you ask her out?（彼女を誘えば？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['goal', 'boss', 'askout'], ctx: true, seg: [41.5, 56.5],
-      stem: 'What is Tom most afraid of?', ja: 'トムが一番こわいのは何？',
-      choices: ['Lucy rejecting him', 'Lucy has a boyfriend', 'Lucy might leave town'], a: 0,
-      choicesJa: ['ルーシーに断られること', 'ルーシーに彼氏がいること', 'ルーシーが町を出ること'],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['goal', 'boss', 'askout', 'wont'], ctx: true, seg: [40.55, 55.6],
+      stem: 'What worry does Tom have about asking Lucy?', ja: 'ルーシーを誘うことで、トムはどんな心配をしている？',
+      choices: ['She might say no', 'She has a boyfriend', 'She might leave town'], a: 0,
+      choicesJa: ['断られるかもしれない', '彼氏がいる', '町を出るかもしれない'],
       cue: '「And what if」のあと',
       line: 'Donna: Be a man and ask her out. / Tom: She works for me… *And what if she says no?*',
       said: '「誘いなさい」に、トムは「部下だし、断られたらどうする？」と返す。',
@@ -144,7 +144,7 @@ export const treatTurnabout: Clip = {
       trap: 'move to Pawnee（引っ越してきた）から、町を出る話と勘違いしやすい。',
       use: 'What if it rains tomorrow?（明日雨だったらどうする？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'boss', reveals: ['goal', 'askout'], ctx: true, seg: [44.1, 51],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'boss', reveals: ['goal', 'askout'], ctx: true, seg: [44.6, 51.5],
       stem: 'What is Tom’s first reason not to ask Lucy?', ja: 'ルーシーを誘わない、トムの最初の理由は？',
       choices: ['She works for him', 'She works with him', 'She moved for him'], a: 0,
       choicesJa: ['彼の部下', '彼の同僚', '彼のために引っ越してきた'],
@@ -155,14 +155,14 @@ export const treatTurnabout: Clip = {
       trap: 'for と with は小さく言うので聞き落としやすい。「フォー」を聞く。',
       use: 'I work for a small company.（小さな会社で働いています）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'uproot', seg: [50.3, 55],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'uproot', seg: [50.6, 54.45],
       stem: 'What does “I don’t want to *make it weird*” mean?', ja: '「make it weird」の意味は？',
       choices: ['Make things awkward', 'Make her laugh', 'Make it a secret'], a: 0,
       choicesJa: ['気まずくする', '彼女を笑わせる', '秘密にする'],
-      cue: '「for this job」のあと',
-      line: 'She uprooted her whole life to move to Pawnee for this job. *I don’t want to make it weird*.',
-      said: 'トムが「仕事のために生活ごと移ってきた。気まずくしたくない」と言う。',
-      mean: 'make it weird ＝ 気まずくする。uproot ＝ 根こそぎ移る（すべてを変えて引っ越す）。',
+      cue: '「what if」の前',
+      line: '*I don’t want to make it weird*.',
+      said: '仕事のために町に越してきたルーシーのことで、トムが「気まずくしたくない」と言う。',
+      mean: 'make it weird ＝ 文字どおりは「それを変にする」→ 二人の関係を気まずくする。',
       trap: 'weird（変な）から、おかしなことで笑わせる話を連想しやすい。人間関係の話。',
       use: 'I don’t want to make it weird.（気まずくしたくないんだ）' },
 
@@ -200,7 +200,7 @@ export const treatTurnabout: Clip = {
       trap: 'treat を「ごちそうする」と取ると彼女を甘やかす話、「いたわる」なら慰め。前の ask とつなげる。',
       use: 'Life’s short. Order the dessert.（人生短いよ。デザート頼みなよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [54.2, 59.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wont', seg: [54.45, 56.0],
       stem: '“You ___ until you ask.”', ja: '空所に入るのは？',
       choices: ['won’t know', 'don’t know', 'wouldn’t know'], a: 0,
       choicesJa: ['わからないだろう', 'わからない', 'わからないだろうに'],
@@ -211,7 +211,7 @@ export const treatTurnabout: Clip = {
       trap: 'don’t なら「ドン」、wouldn’t なら「ウドゥン」。ここは口を丸める「ウォウン」。',
       use: 'You won’t know until you try.（やってみなきゃわからない）' },
 
-    { id: 'mk1', skill: 'marker', level: 'B1', point: 'basically', seg: [55.5, 62.5],
+    { id: 'mk1', skill: 'marker', level: 'B1', point: 'basically', seg: [55.9, 62.2],
       stem: 'What does “Basically” mean here?', ja: 'ここでの「Basically」の意味は？',
       choices: ['In short', 'At first', 'For example'], a: 0,
       choicesJa: ['要するに', '最初は', 'たとえば'],
@@ -233,7 +233,7 @@ export const treatTurnabout: Clip = {
       trap: 'お礼はそのまま最高の評価と取りやすく、前の「ちぇっ」から建前にも聞こえる。あとの比較が答え合わせ。',
       use: 'That’s nice, but this is even better!（それもいいけど、こっちはもっといい！）' },
 
-    { id: 'shoes2', skill: 'detail', level: 'B2', point: 'better', reveals: ['shoes'], ctx: true, seg: [63, 69.5],
+    { id: 'shoes2', skill: 'detail', level: 'B2', point: 'better', reveals: ['shoes'], ctx: true, seg: [63.5, 69.5],
       stem: 'What does Tom think of the shoes?', ja: 'トムは靴をどう思う？',
       choices: ['He likes them more', 'He liked the advice more', 'He owns a pair'], a: 0,
       choicesJa: ['靴のほうがうれしい', '助言のほうがよかった', 'もう持っている'],
@@ -244,7 +244,7 @@ export const treatTurnabout: Clip = {
       trap: 'さっき助言を great gift とほめたので、助言が上と考えがち。決め手は even better。',
       use: 'That’s even better!（それはもっといいね！）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'behind', reveals: ['groban'], seg: [69.1, 80.2],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'behind', reveals: ['groban'], seg: [69.1, 79.9],
       stem: 'What does “*don’t be obvious*” mean here?', ja: '「don’t be obvious」の意味は？',
       choices: ['Don’t let him see you look', 'Turn around very fast', 'Say his name loudly'], a: 0,
       choicesJa: ['見ているとばれないように', 'すばやくふり向いて', '名前を大声で呼んで'],

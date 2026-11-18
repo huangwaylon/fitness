@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 3, new 2, ctx 3, tx 9
+// R4 REVIEW 2026-11-18: keep 6, rewrite 5, retire 3, new 2, ctx 3, tx 9, qa 11
 // A2 REVIEW 2026-11-17: keep 5, rewrite 8, retire 5, new 2
 // “Joey Skips Work on Thanksgiving | Friends” (the official Friends channel, Best of Season 9): Joey asks his friends
 // for a good lie to explain why he missed a work thing; a friend says he stinks at lying, Phoebe tests him with her
@@ -14,7 +14,7 @@ export const joeyLie: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goingon', seg: [3, 10.5],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'goingon', seg: [4.7, 10.2],
       stem: 'What does “What’s going on?” mean here?',
       ja: 'ここで「What’s going on?」はどういう意味？',
       choices: ['What’s happening?', 'Where are you going?', 'Are you leaving?'], a: 0,
@@ -50,7 +50,7 @@ export const joeyLie: Clip = {
       trap: 'raccoon も Grandma もあとで出るうそ。この友だちが出すのは How about のあとの月の話。',
       use: 'How about Friday?（金曜日はどう？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', seg: [8.6, 18.3],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['moon'], seg: [8.6, 18.3],
       stem: 'What does “You know?” mean here?',
       ja: 'ここで「You know?」はどういう意味？',
       choices: ['Right? You agree?', 'Do you know this story?', 'Now it’s your turn'], a: 0,
@@ -107,7 +107,7 @@ export const joeyLie: Clip = {
       trap: '直前の主張への反対と取りやすい。No のあとで頼みを言い直したら、誤解を正す合図。',
       use: 'No, no, I mean a table for two.（いえ、2人用の席という意味です）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'stink', seg: [21.0, 25.5],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'stink', seg: [22.5, 25.45],
       stem: 'What does “you stink at lying” mean?',
       ja: '「you stink at lying」はどういう意味？',
       choices: ['You are bad at lying', 'You lie too often', 'Your lies are mean'], a: 0,
@@ -119,7 +119,7 @@ export const joeyLie: Clip = {
       trap: '回数の話と思いやすい。at のあとは苦手なこと。',
       use: 'I stink at remembering names.（名前を覚えるのが本当に苦手）' },
 
-    { id: 'at1', skill: 'attitude', level: 'B1', point: 'donot', reveals: ['stink'], seg: [21.7, 27.7], retired: true,
+    { id: 'at1', skill: 'attitude', level: 'B1', point: 'donot', reveals: ['stink'], seg: [22.5, 27.7], retired: true,
       stem: 'How does Joey answer “you stink at lying”?',
       ja: '「うそが下手」と言われて、ジョーイはどう答える？',
       choices: ['He says it’s not true', 'He says she’s right', 'He changes the subject'], a: 0,
@@ -131,7 +131,7 @@ export const joeyLie: Clip = {
       trap: 'あとで助けを頼むので、ここでも認めたと思いやすい。この時点では not で否定。',
       use: 'Hey, I do not!（ちょっと、そんなことないよ！）' },
 
-    { id: 'at2', skill: 'attitude', level: 'C1', point: 'really', reveals: ['test', 'donot'], seg: [22.36, 27.35], retired: true,
+    { id: 'at2', skill: 'attitude', level: 'C1', point: 'really', reveals: ['test', 'donot'], seg: [22.5, 27.35], retired: true,
       stem: 'When Joey denies it, how does Phoebe’s “Oh, really?” sound?',
       choices: ['Doubtful, and about to test him', 'Doubtful, but willing to let it go',
                 'Surprised, and asking him to explain'], a: 0,
@@ -142,7 +142,7 @@ export const joeyLie: Clip = {
       trap: '「本当？」を素直な驚きと取りやすい。Okay, let me… が続いたら反証の前ぶれ。',
       use: 'Oh, really? Prove it.（へえ、じゃあ証明して）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'test', reveals: ['donot', 'ask'], seg: [22.4, 51.3], retired: true,
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'test', reveals: ['donot', 'ask'], seg: [22.5, 51.3], retired: true,
       stem: 'Why does Phoebe ask about her muffin?',
       ja: 'フィービーはなぜマフィンのことを聞く？',
       choices: ['To test Joey’s lying', 'To find her muffin', 'To talk about her day'], a: 0,
@@ -166,7 +166,7 @@ export const joeyLie: Clip = {
       trap: 'really（本当に）に、納得したように聞こえるが、疑いの「へえ」。すぐ質問が続く。',
       use: 'Can I ask you something?（ちょっと聞いてもいい？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'gone', seg: [27.2, 34.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'gone', seg: [27.3, 34.15],
       stem: 'What happened while Phoebe was in the bathroom?',
       ja: 'フィービーがトイレにいる間に何があった？',
       choices: ['Her muffin was gone', 'Her coffee was gone', 'Her muffin was half eaten'], a: 0,
@@ -178,7 +178,7 @@ export const joeyLie: Clip = {
       trap: 'coffee house が聞こえるので、コーヒーの話と考えがち。came back のあとが答え。',
       use: 'When I came back, my bag was gone.（戻ったらかばんがなかった）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'culprit', reveals: ['test', 'door', 'gone', 'straight'], seg: [27.2, 39.95], retired: true,
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'culprit', reveals: ['test', 'door', 'gone', 'straight'], seg: [27.3, 39.95], retired: true,
       stem: 'What does Phoebe’s question suggest she believes?',
       choices: ['She thinks he’s the one who took it', 'She thinks he was there and saw it',
                 'She thinks he’ll help track it down'], a: 0,
@@ -189,7 +189,7 @@ export const joeyLie: Clip = {
       trap: '目撃者として聞いたと取りやすい。見ただけなら、作り話は要らない。',
       use: 'Okay, who ate my yogurt?（で、私のヨーグルト食べたの誰？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'door', seg: [32.7, 39.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'door', seg: [31.9, 39.95],
       stem: 'In Joey’s story, how did the raccoon get in?',
       ja: 'ジョーイの話で、アライグマはどうやって入った？',
       choices: ['Somebody opened the door', 'Phoebe left a door open', 'It came in through a window'], a: 0,
@@ -223,7 +223,7 @@ export const joeyLie: Clip = {
       trap: '弱い for は to と同じくらい短い。go to の型に引かれやすいが、狙う相手には for。',
       use: 'The kids went straight for the cake.（子どもたちは一直線にケーキへ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'phoebes', seg: [38.5, 43.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'phoebes', seg: [38.62, 43.5],
       stem: 'In Joey’s story, what did he tell the raccoon?',
       ja: 'ジョーイの話で、彼はアライグマに何と言った？',
       choices: ['Don’t eat it, it’s Phoebe’s', 'Don’t eat it, it’s Joey’s', 'Share it, it’s Phoebe’s'], a: 0,
@@ -258,7 +258,7 @@ export const joeyLie: Clip = {
       trap: '作り話の続きと取りやすい。返事が何に答えたかで、問いの意味を決める。',
       use: 'I can’t do this alone. Help?（一人じゃ無理。手伝って？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeup', seg: [48.6, 53.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'comeup', seg: [48.6, 53.3],
       stem: 'Type the promise: “We’ll ___ a good lie.” (3 words)', answer: 'come up with',
       ja: '約束の言葉を書き取る：「We’ll ___ a good lie.」（3語）',
       cue: '「Don’t worry」を2回言ったあと',
@@ -280,13 +280,13 @@ export const joeyLie: Clip = {
       trap: 'That’ll なら最後が「ル」、It’ll なら「イ」で始まる。ここは短い「ザッド」。',
       use: 'That’d be great. Thank you so much.（それは助かります。本当にありがとう）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'sure', ctx: true, seg: [51.8, 58.5],
-      stem: 'What does Phoebe mean by “Sure” after his thanks?',
-      ja: 'お礼のあとのフィービーの「Sure」はどういう意味？',
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'sure', ctx: true, seg: [51.95, 58.3],
+      stem: 'What does “Sure” mean after Joey’s thanks?',
+      ja: 'ジョーイのお礼のあとの「Sure」はどういう意味？',
       choices: ['You’re welcome', 'Are you sure?', 'That’s right'], a: 0,
       choicesJa: ['どういたしまして', '本当に？', 'そのとおり'],
       cue: 'お礼の直後の一語',
-      line: 'Joey: Thank you. / Phoebe: *Sure.* What— what was the work thing?',
+      line: 'Joey: Thank you. / Friend: *Sure.* What— what was the work thing?',
       said: 'お礼に「いいよ」と軽く返し、すぐ「で、その仕事の用事って何だったの？」と聞く。',
       mean: 'お礼への Sure ＝「いいよ」「どういたしまして」。You’re welcome より軽い、友だちどうしの返し方。',
       trap: 'sure から「確かに」「本当に？」と考えがち。お礼のすぐあとなら「いいよ」。',

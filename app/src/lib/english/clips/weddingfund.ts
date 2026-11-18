@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 3, new 0, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 2, rewrite 11, retire 3, new 0, ctx 4, tx 8, qa 7
 // A2 REVIEW 2026-11-17: keep 8, rewrite 6, retire 4, new 1
 // “Monica's Parents Spent All of Her Wedding Money | Friends” (the official Friends channel, Best of Season 7): at
 // dinner Monica brings up the wedding fund, and her parents explain, one excuse at a time, that it became the beach
@@ -61,7 +61,7 @@ export const weddingFund: Clip = {
       trap: 'We have it（ある）から、お金が残っていると思いやすい。only のあとを聞く。',
       use: 'We call it the blue house.（私たちは青い家と呼んでいます）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'believe', seg: [20.4, 28.4],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'believe', seg: [20.4, 24.4],
       stem: 'Type: “I ___ you spent my wedding fund…” (2 words)', answer: 'can\'t believe',
       ja: '「I ___ you spent my wedding fund…」の空所を書こう（2語）',
       cue: 'ビーチハウスの話のあと',
@@ -95,8 +95,8 @@ export const weddingFund: Clip = {
       trap: '直前に 30 が聞こえて迷いやすい。「トゥエ」で始まり、three で終われば23。',
       use: 'I moved here when I was twenty.（20歳のときにここに来た）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'assumed', seg: [24.0, 28.5],
-      stem: 'Type what she says: “We’re sorry, honey, but ___…” (3 words)', answer: 'we just assumed',
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'assumed', seg: [24.0, 29.0],
+      stem: 'Type the gap: “We’re sorry, honey, but ___…” (3 words)', answer: 'we just assumed',
       ja: '「We’re sorry, honey, but ___…」の空所を書こう（3語）',
       cue: '「sorry, honey, but」のあと',
       line: 'We’re sorry, honey, but *we just assumed*…',
@@ -128,7 +128,7 @@ export const weddingFund: Clip = {
       trap: 'sorry と謝っていたので、失敗だったと言うと思いやすい。beach fun（ビーチの楽しみ）を聞く。',
       use: 'Which means we have more time.（つまり、時間がもっとあるってこと）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'price', reveals: ['beachfun'], seg: [31.1, 37.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'price', reveals: ['beachfun'], seg: [31.5, 37.7],
       stem: 'What does “you can’t put a price on that” mean?',
       ja: '「you can’t put a price on that」はどういう意味？',
       choices: ['It’s worth more than money', 'It cost far too much money', 'Don’t ask what it cost'], a: 0,
@@ -210,7 +210,7 @@ export const weddingFund: Clip = {
       trap: 'still have（まだある）が聞こえて、残っていると思いやすい。if … hadn’t は「実際はした」。',
       use: 'If I hadn’t missed the bus…（バスに乗り遅れなければ…）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'ice', seg: [61.9, 69.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'ice', seg: [61.85, 66.5],
       stem: 'Which business idea of her father’s gets the blame?',
       ja: '父のどの商売のアイデアのせいにされる？',
       choices: ['Selling ice over the internet', 'Selling ice cream on the internet', 'Selling ice at the beach'], a: 0,
@@ -237,8 +237,8 @@ export const weddingFund: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'enough', seg: [66.5, 82.4],
       stem: 'How does Monica end the talk about the money?',
       ja: 'モニカはお金の話をどう終わらせる？',
-      choices: ['She doesn’t want to hear more', 'She asks them to sell it', 'She says they’ll pay themselves'], a: 0,
-      choicesJa: ['もう聞きたくないと言う', '家を売ってと頼む', '自分たちで払うと言う'],
+      choices: ['She doesn’t want to hear more', 'She wants the house sold', 'She says they’ll pay themselves'], a: 0,
+      choicesJa: ['もう聞きたくないと言う', '家を売ってほしいと言う', '自分たちで払うと言う'],
       cue: '「All right」のあと',
       line: 'All right, *enough*. I don’t want to *hear about it anymore*.',
       said: '「もういい。もうその話は聞きたくない」と話を打ち切る。',

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 1, new 3, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 1, new 3, ctx 4, tx 4, qa 14
 // A2 REVIEW 2026-11-17: keep 10, rewrite 8, retire 6, new 0
 // “Leslie and Tom's "Joint" Mission | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
 // Leslie shows off the community garden in the pit, where Tom passes off rappers' names as Latin plant names; someone
@@ -6,10 +6,12 @@
 // name, and a surprise when the "kingpin" turns up.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 195.6 s (music after). The marijuana
 // is only the premise: no item keys on it (55–61 s is never asked about). Untested on purpose: 37–43 s (the rapper
-// names), 48–53 s, 109–126 s (the camera test), 146–147 s, 156–160 s (the birth name), 175.5 s (the sources give
-// opposite meanings). Named in the audio: Tom (10.9 s, 23.8 s), Leslie (30.8 s, 134.7 s), "Tom Haverford" (99.7 s,
+// names), 48–53 s, 109–126 s (the camera test), 156–160 s (the birth name: played, not asked), 175.5 s (the sources
+// give opposite meanings). Named in the audio: Tom (10.9 s, 23.8 s), Leslie (30.8 s, 134.7 s), "Tom Haverford" (99.7 s,
 // 161.6 s), Andy (189.3 s).
 // SKIP 109–131.5: the camera test (crosstalk, unclear whisper) and the sung "shovel guitar" bit.
+// EXCLUDE 141.5–153.95 (ethnic joke: Leslie assumes Tom is from abroad, "conceived in Libya")
+// EXCLUDE 163.8–165.98 ("brown guys with funny-sounding Muslim names")
 import type { Clip } from '../types.ts';
 
 export const jointMission: Clip = {
@@ -29,7 +31,7 @@ export const jointMission: Clip = {
       mean: 'community garden ＝ 町のみんなの菜園。whatever they want ＝ 好きな物を。',
       trap: '「Tom and I」から、二人が育てたと思いやすい。植えているのは people（町の人）。',
       use: 'Feel free to bring whatever you want.（好きな物を持ってきてね）' },
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'brainstorm', seg: [0, 7.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'brainstorm', seg: [0, 7.2],
       stem: 'What does Leslie mean by “brainstorm” here?',
       ja: 'ここでの「brainstorm」はどういう意味？',
       choices: ['A great idea', 'A long meeting', 'A big storm'], a: 0,
@@ -39,7 +41,7 @@ export const jointMission: Clip = {
       mean: 'brainstorm ＝ ふと浮かんだ名案。ここでは自分のアイデアを自慢している。',
       trap: 'カタカナの「ブレスト」は会議なので、話し合いと思いやすい。一人のひらめきにも使う。',
       use: 'I just had a brainstorm!（いいこと思いついた！）' },
-    { id: 'd1', skill: 'phrase', level: 'B1', point: 'helpout', seg: [7.1, 16.5],
+    { id: 'd1', skill: 'phrase', level: 'B1', point: 'helpout', seg: [7.1, 15.9],
       stem: 'What does “help out” mean here?',
       ja: 'ここでの「help out」はどういう意味？',
       choices: ['Do some of the work', 'Go outside for a while', 'Ask someone for help'], a: 0,
@@ -49,7 +51,7 @@ export const jointMission: Clip = {
       mean: 'help out ＝ 手伝う、手を貸す。out がついても「外」の意味はない。植えるのは町の人で、二人は手伝い役。',
       trap: 'out から「外に出る」と考えがち。help のあとの out は「すっかり、最後まで」の気持ち。',
       use: 'Can I help out with anything?（何か手伝おうか）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'embrace', seg: [14.2, 22.1],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'embrace', seg: [15.9, 21.8],
       stem: 'What does “People have really embraced this” mean?',
       ja: '「People have really embraced this」はどういう意味？',
       choices: ['People really like it', 'People hugged Leslie', 'People are careful about it'], a: 0,
@@ -59,7 +61,7 @@ export const jointMission: Clip = {
       mean: 'embrace ＝ 考えや計画を喜んで受け入れる。',
       trap: 'embrace から「抱きしめる」を思いやすい。あとが物や計画なら「受け入れる」。',
       use: 'The team really embraced the new plan.（チームは新しい計画を大歓迎した）' },
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'rappers', seg: [24.0, 35.0],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'rappers', seg: [24.2, 35.6],
       stem: 'What does Tom give Leslie when she asks for Latin names?',
       ja: 'ラテン語の名前を聞かれると、トムは何を答える？',
       choices: ['Names of music stars', 'Real Latin plant names', 'Names of his friends'], a: 0,
@@ -70,7 +72,7 @@ export const jointMission: Clip = {
       mean: 'whenever ＝ 〜するたびに。rapper ＝ ラップ歌手。学名を知らないので、ラッパーの名前でごまかしている。',
       trap: 'Latin names と聞くと、本当の学名を答えると考えがち。give her のあとを聞く。',
       use: 'Whenever I visit, she makes tea.（行くたびに、彼女はお茶をいれてくれる）' },
-    { id: 'w1', skill: 'who', level: 'B1', point: 'newplant', seg: [43.5, 48.0],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'newplant', seg: [44.2, 47.8],
       stem: 'Who planted the new plant?',
       ja: '新しい植物を植えたのは誰？',
       choices: ['Someone else', 'Tom himself', 'Leslie herself'], a: 0,
@@ -153,7 +155,7 @@ export const jointMission: Clip = {
       mean: 'ブランド品と思われるのが自慢。お金を払って得たのが人の勘違いなので、笑われているのは本人。',
       trap: 'everyone を、見抜けない人へのからかいと取りやすい。自慢の一言は、まず話し手に向いた笑いを疑う。',
       use: 'People always think it’s real gold.（みんな本物の金だと思うんだよね）' },
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'black', ctx: true, seg: [102.1, 111.9],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'black', ctx: true, seg: [102.2, 111.4],
       stem: 'Why does Leslie give Tom something black?',
       ja: 'レスリーはなぜトムに黒い服を渡す？',
       choices: ['You wear black on a stakeout', 'His shirt cost too much', 'It will be cold tonight'], a: 0,
@@ -164,7 +166,7 @@ export const jointMission: Clip = {
       mean: 'You should 〜 ＝ 〜したほうがいい。シャツを直接けなさず、張り込みの決まりを理由にしている。',
       trap: '夜なので寒さ、120ドルなので値段が理由と考えやすい。理由は最後の文。',
       use: 'You might want to wear something warmer.（もっと暖かい服がいいかも）' },
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'black', seg: [104.2, 111.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'black', seg: [104.0, 111.4],
       stem: 'Type: “___ in a stakeout.” (5 words)', answer: 'black is what you wear',
       ja: '「___ in a stakeout.」の空所を書こう（5語）',
       cue: '「Wear black.」のすぐあと。', line: 'Wear black. *Black is what you wear* in a stakeout.',
@@ -183,16 +185,16 @@ export const jointMission: Clip = {
       trap: 'ただの報告に聞こえやすい。時間をわざわざ言うのは、うんざりのしるし。',
       use: 'He’s been talking for an hour now.（もう1時間しゃべってる）' },
     { id: 'n2', skill: 'number', level: 'B1', point: 'hour', seg: [131.6, 140.2], keep: true,
-      stem: 'How long has Leslie been playing, says Tom?',
+      stem: 'How long has Leslie been playing the shovel?',
       ja: 'トムによると、レスリーはどのくらい弾いている？',
-      choices: ['about half an hour', 'about an hour', 'about four hours'], a: 1,
-      choicesJa: ['30分くらい', '1時間くらい', '4時間くらい'],
+      choices: ['About half an hour', 'About an hour', 'About two hours', 'About four hours'], a: 1,
+      choicesJa: ['30分くらい', '1時間くらい', '2時間くらい', '4時間くらい'],
       cue: 'shovel guitar のあと。', line: 'Leslie’s been playing shovel guitar *for about an hour* now.',
       said: '「もう1時間くらい弾いている」と言う。',
       mean: 'for about an hour ＝ 約1時間。have been 〜ing ＝ 今も続いている。',
-      trap: 'for は弱く「フォ」なので four に聞こえやすい。half（ハーフ）は聞こえない。about のあとを聞く。',
+      trap: 'for は弱く「フォ」なので four に聞こえやすい。half（ハーフ）や two は聞こえない。about のあとは an hour。',
       use: 'I’ve been here for about an hour.（ここに1時間くらいいるよ）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'talk', seg: [141.0, 171.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'talk', seg: [141.0, 171.0], retired: true,
       stem: 'What does Tom talk about while they wait?',
       ja: '待っている間、トムは何について話す？',
       choices: ['Why he changed his name', 'Why he left South Carolina', 'How his parents met'], a: 0,
@@ -213,7 +215,7 @@ export const jointMission: Clip = {
       mean: 'アメリカ出身と聞いても、外国が本当の出身のはずだと思いこんでいる。',
       trap: '答えに納得したように取りやすい。But で始まる質問は、相手の答えを受け入れていない印。',
       use: 'Wait, so where did you grow up?（え、じゃあどこで育ったの？）' },
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'wow', ctx: true, reveals: ['abroad'], seg: [146.1, 156.0],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'wow', ctx: true, reveals: ['abroad'], seg: [146.1, 156.0], retired: true,
       stem: 'How does Tom answer the question about Libya?',
       ja: 'リビアについての質問に、トムはどう答える？',
       choices: ['He can’t believe she asked', 'He says she guessed right', 'He is glad she knows'], a: 0,
@@ -224,7 +226,18 @@ export const jointMission: Clip = {
       mean: 'この Wow は感心ではなく「よくそんなこと聞くね」というあきれ。すぐに No が続く。',
       trap: 'Wow（ワオ）から「すごい、当たり」に聞こえるが、すぐあとに No が来たら、あきれている。',
       use: 'Wow. No. That’s not true.（うわ、違うよ。そうじゃない）' },
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'politics', reveals: ['talk'], seg: [159.4, 168.7],
+    { id: 'c1', skill: 'detail', level: 'B2', point: 'renamed', ctx: true, seg: [154.0, 163.8],
+      stem: 'Where did the name Haverford come from?',
+      ja: 'ハヴァフォードという名前は、どこから来た？',
+      choices: ['Tom chose it himself', 'It’s his father’s name', 'It’s his birth name'], a: 0,
+      choicesJa: ['トムが自分で選んだ', '父親の名前', '生まれたときの名前'],
+      cue: 'レスリーの質問への答え',
+      line: 'Leslie: Where did the name Haverford come from? / Tom: My birth name is Darwish… Then I *changed it to Tom Haverford*.',
+      said: '名前の由来を聞かれ、「本名はダーウィッシュ…。それで今の名前に変えた」と答える。',
+      mean: 'birth name ＝ 本名。change A to B ＝ A を B に変える。今の名前は自分で選んだ。',
+      trap: '先に my birth name is（本名は）が聞こえ、本名と勘違いしやすい。決め手は Then I changed it。',
+      use: 'Where does your name come from?（お名前の由来は？）' },
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'politics', reveals: ['talk'], seg: [159.4, 168.7], retired: true,
       stem: 'Why did Tom change his name, he says?',
       ja: 'トムはなぜ名前を変えたと言う？',
       choices: ['To do well in politics', 'To be easier to say', 'To do well in business'], a: 0,
@@ -234,7 +247,7 @@ export const jointMission: Clip = {
       mean: 'make it far in 〜 ＝ 文字どおりは「〜で遠くまで行く」→「〜の世界で成功する」。名前の響きが選挙に不利だと考えた。',
       trap: 'funny-sounding（変な響き）から、言いにくいからと考えがち。文の最後まで聞く。',
       use: 'I want to go far in this company.（この会社で上に行きたい）' },
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'obama', ctx: true, reveals: ['politics'], seg: [165.0, 172.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'obama', ctx: true, reveals: ['politics', 'renamed'], seg: [166.0, 175.4],
       stem: 'What does Leslie mean by “What about Barack Obama?”',
       ja: 'レスリーの「What about Barack Obama?」はどういう意味？',
       choices: ['Obama proves you wrong', 'I really like Obama', 'Tell me about Obama'], a: 0,
@@ -254,7 +267,7 @@ export const jointMission: Clip = {
       mean: '過去の仮定なので文法では If I had known だが、会話では If I knew もよく使う。',
       trap: '習った仮定法に合わせて had を足したくなる。正しい文でなく聞こえた音を書く。',
       use: 'If I knew, I’d have told you.（知ってたら言ってたよ）' },
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'kingpin', seg: [177.85, 196.5], retired: true,
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'kingpin', reveals: ['looks'], seg: [176.75, 196.5],
       stem: 'How does the stakeout end?',
       ja: '張り込みはどう終わる？',
       choices: ['The man is someone they know', 'A stranger runs away', 'They scare the man off'], a: 0,

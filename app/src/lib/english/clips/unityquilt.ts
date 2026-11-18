@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 2, new 3, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 2, new 3, ctx 5, tx 10, qa 19
 // A2 REVIEW 2026-11-17: keep 4, rewrite 10, retire 6, new 1
 // “The Knope-Wyatt Unity Quilt - Parks and Recreation” (the official Parks and Recreation channel, Season 5): Leslie
 // walks Ben through her plan to bring his feuding parents together with a quilt; at the party the quilt only starts
@@ -14,7 +14,7 @@ export const unityQuilt: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goover', seg: [0, 5],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goover', seg: [0, 3.1],
       stem: 'What does “*go over the plan*” mean?', ja: '「go over the plan」の意味は？',
       choices: ['Check it step by step', 'Start it right away', 'Change some parts'], a: 0,
       choicesJa: ['ひとつずつ確認する', 'すぐに始める', '一部を変える'],
@@ -25,7 +25,7 @@ export const unityQuilt: Clip = {
       trap: 'go（行く）や over（終わり）から別の意味を考えやすい。go over ＋ 物は「確認する」。',
       use: 'Let’s go over the schedule once more.（予定をもう一度確認しよう）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'parents', seg: [1.8, 10.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'parents', seg: [2.5, 10.8],
       stem: 'What does Ben say about his parents?', ja: 'ベンは両親について何と言う？',
       choices: ['They hate each other', 'They rarely meet', 'They tease each other'], a: 0,
       choicesJa: ['憎み合っている', 'めったに会わない', 'からかい合っている'],
@@ -36,7 +36,7 @@ export const unityQuilt: Clip = {
       trap: 'each other は仲のいい話にも使うので、からかい合いと考えがち。前の動詞 strangle で決まる。',
       use: 'They can’t stand each other.（あの二人はお互い大きらいなんだ）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'strangle', reveals: ['parents'], seg: [2.3, 11.4], retired: true,
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'strangle', reveals: ['parents'], seg: [2.5, 11.4], retired: true,
       stem: 'When Ben gives his own version of the plan, how serious is he?',
       choices: ['Joking; he expects a fight', 'Joking; he just wants a night out', 'Serious; he expects a fight'], a: 0,
       cue: '「while my parents」のあとの動詞。',
@@ -46,29 +46,29 @@ export const unityQuilt: Clip = {
       trap: '前半だけならデート、後半だけなら本気の心配に聞こえる。大げさな動詞が冗談の印。',
       use: 'Sure, and then the sky will fall.（はいはい、そのあと空が落ちてくるんだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [9.4, 16], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'seven', seg: [9.4, 15.9], keep: true,
       stem: 'When does Ben’s mom arrive, says Leslie?', ja: 'レスリーによると、ベンのお母さんは何時に来る？',
-      choices: ['7:00', '7:30', '11:00'], a: 0,
-      choicesJa: ['7時', '7時半', '11時'],
+      choices: ['7:00', '7:15', '7:30', '11:00'], a: 0,
+      choicesJa: ['7時', '7時15分', '7時半', '11時'],
       cue: '「arrives at」のあと',
       line: 'No. Your mom arrives at *seven o’clock*.',
       said: 'レスリーが「違う。お母さんは7時に着く」と言う。',
       mean: 'seven o’clock ＝ 7時ちょうど。arrive ＝ 着く。',
-      trap: '7時半なら後ろに thirty が続く。eleven は「イレ」で始まる。ここは「セブン オクロック」。',
+      trap: '7時15分なら fifteen、7時半なら thirty が後ろに続く。eleven は「イレ」で始まる。ここは「セブン オクロック」。',
       use: 'Dinner is at seven o’clock.（夕食は7時です）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scheme', reveals: ['smalltalk', 'thirty'], seg: [10.8, 33.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scheme', reveals: ['smalltalk', 'thirty'], seg: [10.8, 33.55],
       stem: 'What is Leslie’s plan for the evening?', ja: 'レスリーの今夜の計画は？',
-      choices: ['Small talk, then a surprise', 'Go stargazing in the park', 'Keep his parents apart'], a: 0,
-      choicesJa: ['世間話をして、サプライズ', '公園で星を見る', '両親を会わせない'],
+      choices: ['Get both families together', 'Go stargazing in the park', 'Keep his parents apart'], a: 0,
+      choicesJa: ['両方の家族を集める', '公園で星を見る', '両親を会わせない'],
       cue: '「No.」のあと',
-      line: 'Your mom arrives at 7 o’clock. … We *make some small talk*, and 30 minutes later, I show everybody *the big surprise*.',
-      said: 'レスリーが「7時にお母さんが来て…世間話をして、30分後にみんなにサプライズを見せる」と言う。',
-      mean: 'small talk ＝ 世間話。the big surprise ＝ 大きなサプライズ。時間の順に計画を話す。',
+      line: '*Your mom arrives* at 7 o’clock… *my mom is walking over*… Then later, *Steven Wyatt shows up*.',
+      said: 'レスリーが「7時にお母さんが来て…私のママも来て…あとでお父さんも来る」と順に話す。',
+      mean: 'show up ＝ 来る、顔を出す。walk over ＝ 歩いてこっちに来る。両方の家族を一つの部屋に集める計画。',
       trap: '両親の仲が悪いので、会わせない計画と考えがち。レスリーは二人を同じ部屋に呼ぶ。',
       use: 'First we eat, then the big surprise.（まず食べて、それから大きなサプライズ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'common', seg: [15.4, 23.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'common', seg: [15.65, 21.3],
       stem: 'What do the two mothers have in common?', ja: '二人のお母さんの共通点は？',
       choices: ['Both are teachers and moms', 'Both are teachers and writers', 'Both work at one school'], a: 0,
       choicesJa: ['二人とも先生で母親', '二人とも先生で作家', '同じ学校で働いている'],
@@ -79,7 +79,7 @@ export const unityQuilt: Clip = {
       trap: 'mothers と authors（作家）は後ろの音が同じ。最初の「マ」を聞く。',
       use: 'We’re both teachers, actually.（実は二人とも先生なんです）' },
 
-    { id: 'p1', skill: 'pragma', level: 'C1', point: 'staged', seg: [15.4, 21.3], retired: true,
+    { id: 'p1', skill: 'pragma', level: 'C1', point: 'staged', seg: [15.65, 21.3], retired: true,
       stem: 'What is Leslie doing with “oh, look…” and “what a fabulous coincidence”?',
       choices: ['Acting out a meeting she has set up', 'Hoping the moms will meet by chance', 'Admitting her mom just invited herself'], a: 0,
       cue: '計画を説明している途中の、声の変化。',
@@ -89,10 +89,10 @@ export const unityQuilt: Clip = {
       trap: 'coincidence を文字通り「偶然」と取りやすい。計画の説明の中の偶然は、演出。',
       use: 'Oh, what a surprise! (Not really.)（あら偶然！（じつは計画））' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', reveals: ['smalltalk'], seg: [24.2, 33.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirty', reveals: ['smalltalk'], seg: [24.3, 33.55], keep: true,
       stem: 'How long after the small talk is the big surprise?', ja: '世間話の何分後に、大きなサプライズがある？',
-      choices: ['13 minutes', '30 minutes', '90 minutes'], a: 1,
-      choicesJa: ['13分', '30分', '90分'],
+      choices: ['3 minutes', '13 minutes', '30 minutes', '90 minutes'], a: 2,
+      choicesJa: ['3分', '13分', '30分', '90分'],
       cue: '「small talk, and」のあと',
       line: 'We make some small talk, and *thirty minutes later*, I show everybody the big surprise.',
       said: 'レスリーが「世間話をして、30分後にサプライズを見せる」と言う。',
@@ -100,7 +100,7 @@ export const unityQuilt: Clip = {
       trap: 'thirteen なら後ろの「ティーン」を強く伸ばす。ninety は「ナイ」で始まる。ここは前が強い「サーティ」。',
       use: 'I’ll be there in thirty minutes.（30分で着きます）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'smalltalk', seg: [24.2, 31.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'smalltalk', seg: [24.3, 31.4],
       stem: 'Type what Leslie says: “We ___, and…” (4 words)', ja: '「We ___, and…」の4語を書こう', answer: 'make some small talk',
       cue: '「he’s terrifying」のあと',
       line: 'We *make some small talk*, and…',
@@ -129,7 +129,7 @@ export const unityQuilt: Clip = {
       trap: '今回がキルトなので「キルトを何枚も」と取りやすい。metaphorical が作品の種類を示す。',
       use: 'Of all my trips, this was the best.（今までの旅で、これが一番）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hard', ctx: true, seg: [43.5, 49.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hard', ctx: true, seg: [41.2, 49.0],
       stem: 'What does Leslie say about making the quilt?', ja: 'キルト作りについて、レスリーは何と言う？',
       choices: ['She worked really hard', 'She made it really fast', 'Her mom helped her'], a: 0,
       choicesJa: ['すごく頑張った', 'すごく早く作った', 'お母さんが手伝った'],
@@ -140,7 +140,7 @@ export const unityQuilt: Clip = {
       trap: 'I know を「知ってる」とだけ取りやすい。ほめられた時の「でしょ」。そのあとが答え。',
       use: 'Thanks! I worked really hard on it.（ありがとう！すごく頑張ったんだ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'biden', ctx: true, seg: [49.2, 56.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'biden', ctx: true, seg: [49.0, 55.75],
       stem: 'What does Ben point out on the quilt?', ja: 'ベンはキルトの何を指さす？',
       choices: ['Joe Biden is on it', 'His dad isn’t on it', 'Leslie is on it twice'], a: 0,
       choicesJa: ['ジョー・バイデンがいる', 'お父さんがいない', 'レスリーが2回いる'],
@@ -151,7 +151,7 @@ export const unityQuilt: Clip = {
       trap: 'did not include だけ聞くと「入っていない」と考えがち。決め手はベンの返事。',
       use: 'I didn’t eat it. — Yes, you did!（食べてないよ—食べたでしょ！）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'point', seg: [54.3, 64.6],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'point', seg: [55.7, 61.4],
       stem: 'Why does Leslie say “*The point is*”?', ja: 'レスリーはなぜ「The point is」と言う？',
       choices: ['To go back to the main idea', 'To say Ben is right', 'To explain the small square'], a: 0,
       choicesJa: ['本題に戻るため', 'ベンが正しいと言うため', '小さい絵を説明するため'],
@@ -173,10 +173,10 @@ export const unityQuilt: Clip = {
       trap: 'will なら「ウィル」と短い。does なら「ダズ」。ここは口を丸めた「ウォウ」の音。',
       use: 'It won’t take long.（長くはかからないよ）' },
 
-    { id: 't3', skill: 'attitude', level: 'B2', point: 'wont', ctx: true, seg: [57.7, 65.0],
+    { id: 't3', skill: 'attitude', level: 'B2', point: 'wont', ctx: true, seg: [57.55, 65.0],
       stem: 'What does Ben think of the quilt?', ja: 'ベンはキルトをどう思っている？',
-      choices: ['Nice, but it won’t work', 'Nice, and it will work', 'Ugly, but it will work'], a: 0,
-      choicesJa: ['きれいだが、うまくいかない', 'きれいで、うまくいく', '見た目は悪いが、うまくいく'],
+      choices: ['Nice, but it will fail', 'Nice, and it will work', 'Ugly, but it will work'], a: 0,
+      choicesJa: ['きれいだが、失敗する', 'きれいで、うまくいく', '見た目は悪いが、うまくいく'],
       cue: '「It’s beautiful」のあと',
       line: 'Leslie: this quilt is going to unite the Wyatt clan. / Ben: It’s beautiful. *And it won’t.*',
       said: 'レスリーが「このキルトで一族はひとつになる」と言い、ベンが「きれいだね。で、ならないよ」。',
@@ -184,7 +184,7 @@ export const unityQuilt: Clip = {
       trap: 'beautiful だけで賛成に聞こえるが、won’t のあとに、レスリーの unite が省かれている。',
       use: 'It looks great. But it won’t fit.（すてきだけど、入らないよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'square', seg: [73.5, 80.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'square', seg: [73.5, 79.78],
       stem: 'What does each family member have on the quilt?', ja: 'キルトには、家族一人一人の何がある？',
       choices: ['Their own square', 'Their own color', 'A photo of them'], a: 0,
       choicesJa: ['自分専用のマス', '自分の色', '自分の写真'],
@@ -195,7 +195,7 @@ export const unityQuilt: Clip = {
       trap: 'キルトの話なので色や写真を連想しやすい。personalized のすぐあとの square を聞く。',
       use: 'Each of us gets our own room.（一人一人に自分の部屋がある）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['square'], seg: [80.0, 104.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['square'], seg: [79.8, 104.3],
       stem: 'What happens when Leslie shows the quilt?', ja: 'レスリーがキルトを見せると、どうなる？',
       choices: ['People start to argue', 'Everyone loves it', 'Only Ben likes it'], a: 0,
       choicesJa: ['言い合いが始まる', 'みんなが気に入る', 'ベンだけが気に入る'],
@@ -227,19 +227,19 @@ export const unityQuilt: Clip = {
       trap: '四角がない理由は「家族じゃない」と予想しやすい。止まった文は、あとの言い直しで答え合わせ。',
       use: 'He’s not technically my boss.（厳密には、彼は上司じゃない）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'concerned', seg: [89.3, 99.3],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'concerned', seg: [89.45, 98.95],
       stem: 'What does “*as far as I’m concerned*” mean?', ja: '「as far as I’m concerned」の意味は？',
       choices: ['In my opinion', 'I am worried', 'For everyone here'], a: 0,
       choicesJa: ['私の考えでは', '私は心配だ', 'ここにいる全員にとって'],
       cue: '「omission, Leslie」のあと',
       line: 'And *as far as I’m concerned*, if there’s no… square, this is not a legitimate unity quilt.',
-      said: '「私に言わせれば、あの人の四角がなければ本物のキルトじゃない」と言う。',
+      said: '「私に言わせれば、ウラニのマスがなければ正式なキルトじゃない」と言う。',
       mean: 'as far as I’m concerned ＝ 私に言わせれば、私としては。自分の意見の前置き。',
       trap: 'concerned（心配して）から「心配だ」と思いやすい。as far as と組むと「私としては」。',
       use: 'As far as I’m concerned, it’s fine.（私としては、問題ないよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'ulani', reveals: ['square'], ctx: true, seg: [105.8, 111.8],
-      stem: 'What does the name “Ulani” mean, she says?', ja: '「ウラニ」という名前は、どういう意味だと言う？',
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'ulani', reveals: ['square'], ctx: true, seg: [104.6, 110.9],
+      stem: 'What does the name “Ulani” mean?', ja: '「ウラニ」という名前は、どういう意味だと言う？',
       choices: ['Cheerful', 'Family', 'Beautiful'], a: 0,
       choicesJa: ['明るい', '家族', '美しい'],
       cue: '「What does Ulani mean?」への返事',
@@ -249,7 +249,7 @@ export const unityQuilt: Clip = {
       trap: 'family（家族）のキルトの話なので、家族の意味と考えがち。答えは質問のすぐあとの1語。',
       use: 'Sorry, what does this word mean?（すみません、この言葉はどういう意味ですか）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'mean', seg: [118.8, 124.8],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'mean', seg: [119.65, 124.68],
       stem: 'What does “mean” mean in “I think it’s mean”?', ja: '「I think it’s mean」の mean はどういう意味？',
       choices: ['Unkind', 'Important', 'Strange'], a: 0,
       choicesJa: ['いじわる', '大事', '変'],
@@ -279,7 +279,7 @@ export const unityQuilt: Clip = {
       trap: '「意見が合う」だけ聞くと前進に見える。何について合っているかを聞く。',
       use: 'Well, at least we agree on something.（まあ、一つは意見が合ったね）' },
 
-    { id: 'f3', skill: 'pragma', level: 'B2', point: 'sayagain', ctx: true, seg: [124.8, 130.9],
+    { id: 'f3', skill: 'pragma', level: 'B2', point: 'sayagain', ctx: true, seg: [124.68, 130.9],
       stem: 'What does the answer to Steve mean?', ja: 'スティーブへの返事はどういう意味？',
       choices: ['I agree with you', 'Please say it again', 'Don’t say that again'], a: 0,
       choicesJa: ['まったく同感', 'もう一度言って', 'それはもう言わないで'],
