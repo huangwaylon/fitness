@@ -97,8 +97,9 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
-  choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card's
-  meta is 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
+  choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card is tight, so its
+  choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts` checks): one control row, its
+  meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (the lesson bar's one labelled button, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕): 字幕
@@ -168,9 +169,10 @@ The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, 
 `iframe_api` script (it would need a third-party `script-src`). A segment pauses 0.4 s past its end (the time
 extrapolated between deliveries, by 1 s at most for the stop: a stall not yet reported never pauses it early). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);
-`playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`): play / pause (on from where it
-stopped), −5秒 and 0.75× (only when the frame's `availablePlaybackRates` offer more than 1) side by side, 字幕 at the row's end,
-each a 44 pt target, and a scrubber with the time (never locked) (a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
+`playsinline=1`, `controls=0`: our controls under it (`app/src/lib/english/components/Controls.svelte`), each a 44 pt
+target: one row, play / pause (on from where it stopped), the scrubber with the time (never locked) and 字幕; off a
+question card a second, −5秒 and 0.75× (only when the frame's `availablePlaybackRates` offer more than 1; ツール's 再生速度
+too). A question's segment is its card's この部分を聞く, not a control. A drag seeks once a frame. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
 it by the frame's device pixels, so the edge-to-edge width is what drives it. Captions are unloaded at ready and at each play, unless 字幕 is on.
