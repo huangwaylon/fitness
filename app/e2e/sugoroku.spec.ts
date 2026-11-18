@@ -78,7 +78,7 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('[data-sg-length="short"]').click();
   await sheet(page).locator('[data-sg-start]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
-  await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(27);
+  await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(47);
   await expect(sheet(page).locator('[data-sg-token]')).toHaveCount(2);
 
   await playTurn(page);

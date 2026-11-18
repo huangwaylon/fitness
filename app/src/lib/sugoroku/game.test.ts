@@ -57,10 +57,10 @@ describe('board', () => {
     expect(stepFrom(FORK, null)).toBeNull();
     const short = toGoal(0, 0), long = toGoal(0, 1);
     expect(short).toBeLessThan(long);
-    expect(short).toBeGreaterThanOrEqual(18);
-    expect(long).toBeLessThanOrEqual(26);
+    expect(short).toBeGreaterThanOrEqual(36);
+    expect(long).toBeLessThanOrEqual(45);
     expect(pathOf(FORK, BOARD[FORK].next[1], 1)).toEqual([BOARD[FORK].next[1]]);
-    for (const sp of BOARD) expect(sp.x >= 20 && sp.x <= 340 && sp.y >= 20 && sp.y <= 400).toBe(true);
+    for (const sp of BOARD) expect(sp.x >= 20 && sp.x <= 340 && sp.y >= 20 && sp.y <= 680).toBe(true);
   });
   it('cards: short A1 English, Japanese in the font, good only', () => {
     for (const c of CARDS) {
@@ -99,11 +99,11 @@ describe('game', () => {
       expect(ranking(g)).toHaveLength(lv.length);
     }
   });
-  it('rounds stay 10–20 minutes (≈ 5–10 rounds), the fork taken', () => {
+  it('a long route: about 11 rounds, the fork taken', () => {
     const rounds = Array.from({ length: 40 }, (_, i) => playOut(`r${i}`).round);
     const mean = rounds.reduce((a, b) => a + b, 0) / rounds.length;
-    expect(mean).toBeGreaterThan(5);
-    expect(mean).toBeLessThanOrEqual(10);
+    expect(mean).toBeGreaterThan(9);
+    expect(mean).toBeLessThanOrEqual(14);
     expect(playOut('fork').players.every((p) => p.branch !== null || p.pos <= FORK)).toBe(true);
   });
   it('levels: the shortest word and the everyday bonus; the table stays close', () => {
@@ -146,12 +146,12 @@ describe('game', () => {
     expect(tried(spinning, { misses: 1 })).toBe(spinning);
     expect(isGame(JSON.parse(JSON.stringify(tried(g, { misses: 2 }))))).toBe(true);
   });
-  it('lengths: みじかい by round 5, ながい till everyone’s home (12 at most)', () => {
+  it('lengths: みじかい by round 7, ながい till everyone’s home (20 at most)', () => {
     for (let i = 0; i < 10; i++) {
-      expect(playOut(`L${i}`, [2, 2], 'short').round).toBeLessThanOrEqual(5);
+      expect(playOut(`L${i}`, [2, 2], 'short').round).toBeLessThanOrEqual(7);
       const long = playOut(`L${i}`, [2, 2], 'long');
-      expect(long.round).toBeLessThanOrEqual(12);
-      expect(long.players.every((p) => p.home !== null) || long.round === 12).toBe(true);
+      expect(long.round).toBeLessThanOrEqual(20);
+      expect(long.players.every((p) => p.home !== null) || long.round === 20).toBe(true);
     }
   });
   it('a corrupt save reads as none', () => {

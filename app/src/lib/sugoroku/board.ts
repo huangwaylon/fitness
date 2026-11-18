@@ -2,7 +2,7 @@
 // way (川の近道: short, ×2 words; 博物館の遠回り: longer, two 絵 stones), both joining again at お店. Each space a kind:
 // ことば (make a word), ことば×2 (its points doubled), ぶん (put a line in order), 絵 (spell a picture: a souvenir),
 // イベント (a card), and the two ends;
-// each at a point of the drawing (Board.svelte: a 360 × 420 box).
+// each at a point of the drawing (Board.svelte: a W × H box).
 
 type SpaceKind = 'start' | 'word' | 'double' | 'sentence' | 'picture' | 'event' | 'goal';
 type AreaId = 'home' | 'plaza' | 'river' | 'museum' | 'shop' | 'airport' | 'beach';
@@ -17,18 +17,32 @@ export interface Space {
 }
 
 const K: Record<string, SpaceKind> = { S: 'start', w: 'word', d: 'double', s: 'sentence', p: 'picture', e: 'event', G: 'goal' };
-/** [kind, area, x, y, next (default: the one after)]. */
+/** The drawing's box (Board.svelte): 360 wide, H tall (a long route: the board scrolls to whose turn it is). */
+export const W = 360;
+export const H = 700;
+/** A snake row of `kinds` (one letter each: w d s p e) at height `y`, left to right or back, in `area`. */
+const row = (kinds: string, area: AreaId, y: number, rtl: boolean, x0 = 34, x1 = 326): [string, AreaId, number, number][] =>
+  [...kinds].map((k, i, all) => {
+    const t = all.length === 1 ? 0 : i / (all.length - 1);
+    const x = Math.round(rtl ? x1 - t * (x1 - x0) : x0 + t * (x1 - x0));
+    return [k, area, x, y + (i % 2 ? 6 : -4)];
+  });
+/** [kind, area, x, y, next (default: the one after)]: 家 → 広場 → the fork → お店 → 飛行場 → 浜辺, about 40 steps. */
+const PART1 = [...row('Swpwse', 'home', 44, false), ...row('wdwwsp', 'plaza', 116, true), ...row('ewwdsw', 'plaza', 188, false)];
+const FORK_AT = PART1.length - 1;
+const SHORT: [string, AreaId, number, number][] = row('dswd', 'river', 262, true, 62, 270);
+const LONG: [string, AreaId, number, number][] = [['e', 'museum', 334, 262], ['p', 'museum', 334, 330], ['s', 'museum', 282, 390], ['w', 'museum', 212, 402],
+  ['e', 'museum', 142, 398], ['p', 'museum', 84, 376], ['w', 'museum', 40, 336]];
+const PART2 = [...row('wswepd', 'shop', 462, false), ...row('wswewp', 'airport', 534, true), ...row('sdwesG', 'beach', 612, false)];
+const JOIN = PART1.length + SHORT.length + LONG.length;
 const ROWS: readonly [string, AreaId, number, number, number[]?][] = [
-  ['S', 'home', 34, 42], ['w', 'home', 88, 36], ['p', 'home', 142, 44], ['s', 'home', 196, 38],
-  ['e', 'plaza', 250, 46], ['w', 'plaza', 304, 58], ['d', 'plaza', 330, 108], ['w', 'plaza', 300, 152, [8, 11]],
-  // 近道 (8–10), by the river
-  ['d', 'river', 240, 150], ['s', 'river', 182, 146], ['d', 'river', 124, 152, [16]],
-  // 遠回り (11–15), round the museum
-  ['e', 'museum', 318, 206], ['p', 'museum', 266, 224], ['s', 'museum', 210, 232], ['e', 'museum', 154, 230], ['p', 'museum', 100, 216],
+  ...PART1.map((r, i) => (i === FORK_AT ? [...r, [PART1.length, PART1.length + SHORT.length]] as [string, AreaId, number, number, number[]] : r)),
+  // 近道, by the river
+  ...SHORT.map((r, i) => (i === SHORT.length - 1 ? [...r, [JOIN]] as [string, AreaId, number, number, number[]] : r)),
+  // 遠回り, round the museum
+  ...LONG,
   // joined again
-  ['w', 'shop', 50, 182], ['e', 'shop', 40, 240], ['p', 'shop', 78, 290], ['s', 'shop', 132, 304],
-  ['d', 'airport', 188, 308], ['w', 'airport', 244, 304], ['e', 'airport', 300, 306],
-  ['p', 'beach', 330, 356], ['s', 'beach', 276, 386], ['w', 'beach', 216, 392], ['G', 'beach', 152, 388]
+  ...PART2
 ];
 
 export const BOARD: readonly Space[] = ROWS.map(([k, area, x, y, next], i) => ({ kind: K[k], area, x, y, next: next ?? (k === 'G' ? [] : [i + 1]) }));

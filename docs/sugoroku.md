@@ -10,7 +10,7 @@ with characters in it, since they are the pieces.
 
 - **Seats** (だれが遊ぶ？): 2–3 of us (the members and the guest), each as their own character (the island's look),
   turns in the order picked, each an English **level** (`game.ts LEVEL`): what its spaces ask, not what they pay, so a
-  mixed table stays close. A **length**: みじかい (by round 5), ふつう (the round someone's home), ながい (everyone home, 12 rounds at most).
+  mixed table stays close. A **length**: みじかい (by round 7), ふつう (the round someone's home), ながい (everyone home, 20 rounds at most).
 
   | | やさしい | ふつう | むずかしい |
   |---|---|---|---|
@@ -20,9 +20,10 @@ with characters in it, since they are the pieces.
   | ぶん's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
   | 絵 | one of three spellings | its letters, the first given | its letters and two more |
   | イベント's Japanese | shown | shown | on a tap |
-- **The board** (`board.ts`): 27 stones on a drawn island (grass, river, beach, sea; signs for 家 広場 川 博物館 お店 飛行場
-  海), ふりだし to あがり, one **fork** after 広場: 川の近道 (3 stones, two ダブル) or 博物館の遠回り (5: two 絵, two イベント):
-  20 or 22 steps. 5 絵 stones in all. The board draws small during a turn's English, so its controls stay on screen.
+- **The board** (`board.ts`): 47 stones on a drawn island (grass, river, beach, sea; signs for 家 広場 川 博物館 お店 飛行場
+  浜辺), ふりだし to あがり, one **fork** after 広場: 川の近道 (4 stones) or 博物館の遠回り (7: two 絵, two イベント): 39 or 42
+  steps, about 11 rounds. A tall map: the board is a window onto it that follows whose turn it is (and scrolls by hand),
+  smaller during a turn's English so its controls stay on screen.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
   and walk; the fork stops the walk for the choice. The last in stars (2+ behind everyone) rolls two dice and keeps the
   better (the catch-up). The stone:
@@ -38,7 +39,7 @@ with characters in it, since they are the pieces.
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
     it), its effect as a chip: good or neutral only; a move stops at the fork. The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
   - **あがり**: +6, +3, +1 by order home. The game ends with the round someone got home in (equal turns), after
-    `MAX_ROUNDS` (10, 9, 8 by seats), or 終了: about 5 rounds, 10–20 minutes.
+    `MAX_ROUNDS` (16, 14 by seats), or 終了.
 - **Results**: the ranking, **ふりかえり** (up to five of the game's things with Japanese, each Japanese once, to match
   English ↔ Japanese; a mismatch just lets go), and 今日のことば.
 

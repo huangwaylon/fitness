@@ -22,10 +22,10 @@ export interface Seat {
   name: string;
   level: Level;
 }
-/** How long a game runs: みじかい ends by round 5, ふつう when someone's home (or MAX_ROUNDS), ながい when everyone's
- *  home (or 12 rounds). */
+/** How long a game runs: みじかい ends by round 7, ふつう when someone's home (or MAX_ROUNDS), ながい when everyone's
+ *  home (or 20 rounds). */
 export type Length = 'short' | 'normal' | 'long';
-const ROUND_CAP: Record<Length, (seats: number) => number> = { short: () => 5, normal: (n) => MAX_ROUNDS[n] ?? 10, long: () => 12 };
+const ROUND_CAP: Record<Length, (seats: number) => number> = { short: () => 7, normal: (n) => MAX_ROUNDS[n] ?? 14, long: () => 20 };
 export interface Player extends Seat {
   pos: number;
   stars: number;
@@ -93,8 +93,8 @@ export interface Game {
 
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 3;
-/** The last round, by seats (10–20 minutes: the round someone gets home in ends it earlier). */
-export const MAX_ROUNDS: Readonly<Record<number, number>> = { 2: 10, 3: 9, 4: 8 };
+/** The last round, by seats (the round someone gets home in ends it earlier: about 11). */
+export const MAX_ROUNDS: Readonly<Record<number, number>> = { 2: 16, 3: 14, 4: 12 };
 /** Home first, second, third… */
 export const HOME_BONUS = [6, 3, 1, 0];
 /** A line in order: first try, after a nudge, after 答えはこれ; むずかしい's without its Japanese +2. */

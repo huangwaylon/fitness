@@ -2,15 +2,15 @@
   // 英語すごろく's board (docs/sugoroku.md "The board"): the island drawn (grass, the river, the beach and the sea), the
   // route a sandy path through it with the fork, each space a stepping stone in its kind's colour with its mark (A ことば,
   // ×2 ダブル, 文 ぶん, 絵 絵, ! イベント), each stretch's wooden sign, ふりだし and あがり; the players' heads over their stones
-  // (the one whose turn it is ringed in yuzu), gliding a stone at a time as `shown` moves. `compact`: drawn small during a
-  // turn's English, so the turn's controls stay on screen.
+  // (the one whose turn it is ringed in yuzu), gliding a stone at a time as `shown` moves. The route is long: the board is
+  // a window onto it that follows whose turn it is (and scrolls by hand). `compact`: a smaller window during a turn's
+  // English, so the turn's controls stay on screen.
   import Avatar from '#lib/components/characters/Avatar.svelte';
-  import { BOARD, GOAL } from '../board.ts';
+  import { BOARD, GOAL, H, W } from '../board.ts';
   import type { Player } from '../game.ts';
   import { s } from '../i18n.ts';
 
   let { players, shown, turn, compact = false }: { players: readonly Player[]; shown: readonly number[]; turn: number; compact?: boolean } = $props();
-  const W = 360, H = 420;
   const MARK = { start: '', word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: '' } as const;
   const edges = BOARD.flatMap((sp, i) => sp.next.map((j) => [i, j] as const));
   const signs = BOARD.map((sp, i) => ({ sp, i })).filter(({ sp, i }) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
@@ -25,17 +25,28 @@
     const end = sp.kind === 'start' || sp.kind === 'goal';
     return { p, k, dx, x: sp.x, y: end ? sp.y + 26 : sp.y - 16 - (m > 2 && n % 2 ? 8 : 0) };
   }));
+  // the window follows whose turn it is (its head in the middle), smoothly
+  let win: HTMLDivElement | undefined = $state();
+  const focusY = $derived(heads[turn]?.y ?? 0);
+  $effect(() => {
+    const el = win, y = focusY;
+    if (!el) return;
+    const top = (y / H) * el.scrollHeight - el.clientHeight / 2;
+    el.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
 </script>
 
-<div class="board" class:compact role="img" aria-label={s('board')} data-sg-board>
+<div class="win" class:compact bind:this={win}>
+<div class="board" role="img" aria-label={s('board')} data-sg-board>
   <svg viewBox="0 0 {W} {H}" aria-hidden="true">
     <!-- the island -->
     <rect width={W} height={H} rx="22" class="grass" />
-    <path class="river" d="M0 104 C 60 96, 110 128, 170 118 S 260 96, 290 122 L 290 132 C 250 110, 210 134, 168 132 S 70 112, 0 120 Z" />
-    <path class="sand" d="M110 420 C 140 360, 260 340, 360 330 L 360 420 Z" />
-    <path class="sea" d="M180 420 C 230 404, 300 398, 360 392 L 360 420 Z" />
-    <circle class="tree" cx="22" cy="300" r="12" /><circle class="tree" cx="340" cy="250" r="10" /><circle class="tree" cx="200" cy="190" r="9" />
-    <rect class="house" x="186" y="252" width="40" height="22" rx="4" /><path class="roof" d="M182 254 L206 238 L230 254 Z" />
+    <path class="river" d="M0 222 C 60 214, 110 246, 170 236 S 260 214, 300 240 L 300 250 C 250 228, 210 252, 168 250 S 70 230, 0 238 Z" />
+    <path class="sand" d="M80 {H} C 120 650, 260 628, 360 618 L 360 {H} Z" />
+    <path class="sea" d="M170 {H} C 220 684, 300 676, 360 670 L 360 {H} Z" />
+    <circle class="tree" cx="20" cy="80" r="11" /><circle class="tree" cx="342" cy="150" r="10" /><circle class="tree" cx="200" cy="330" r="9" />
+    <circle class="tree" cx="18" cy="420" r="12" /><circle class="tree" cx="340" cy="500" r="10" /><circle class="tree" cx="24" cy="580" r="11" />
+    <rect class="house" x="186" y="314" width="40" height="22" rx="4" /><path class="roof" d="M182 316 L206 300 L230 316 Z" />
     <!-- the path -->
     {#each edges as [a, b] (`${a}-${b}`)}<line class="path" x1={BOARD[a].x} y1={BOARD[a].y} x2={BOARD[b].x} y2={BOARD[b].y} />{/each}
     <!-- the stones -->
@@ -59,11 +70,14 @@
   {/each}
   {#each BOARD as _, i (i)}<span class="hit" data-sg-space={i} data-kind={BOARD[i].kind} style:left="{(BOARD[i].x / W) * 100}%" style:top="{(BOARD[i].y / H) * 100}%"></span>{/each}
 </div>
+</div>
 
 <style>
-  /* as wide as fits, and short enough that the turn's panel stays above Safari's fold (the sheet's ~330 px besides it) */
-  .board { position: relative; width: min(100%, calc((100svh - 330px) * 360 / 420)); aspect-ratio: 360 / 420; margin: 0 auto; }
-  .board.compact { width: max(150px, min(40%, calc((100svh - 520px) * 360 / 420))); }
+  /* a window onto the long route, short enough that the turn's panel stays above Safari's fold (the sheet's ~330 px
+     besides it); smaller during a turn's English */
+  .win { flex: none; height: max(200px, calc(100svh - 360px)); overflow-y: auto; border-radius: 22px; scrollbar-width: none; overscroll-behavior: contain; }
+  .win.compact { height: max(130px, calc(100svh - 600px)); }
+  .board { position: relative; width: 100%; aspect-ratio: 360 / 700; }
   svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 3px 0 var(--c-edge)); }
   .grass { fill: color-mix(in srgb, var(--c-mint) 70%, #9fd38a); }
   .river { fill: color-mix(in srgb, var(--c-sky) 85%, white); }
