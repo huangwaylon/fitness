@@ -82,6 +82,8 @@ test('英語すごろく’s results read at night (the team’s stars and か�
   await page.locator('dialog[open] [data-en-tab="game"]')[how]();
   const sh = page.locator('[data-sugoroku]');
   await sh.locator('[data-sg-new]')[how]();
+  // (the seats: themed controls, navy by night, not cream slabs)
+  expect(await low(page), 'setup').toEqual([]);
   await sh.locator('[data-sg-start]')[how]();
   await expect(sh).toHaveAttribute('data-level', 'play');
   expect(await low(page), 'play').toEqual([]);
