@@ -1,11 +1,16 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 3, new 6, ctx 4, tx 9
 // A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 3, new 0 · sweep: cross-bank twins retired or rewritten
 // “Tom's Screen Ban | Parks and Recreation” (the official Parks and Recreation channel, Season 5): banned from screens
 // for a week, Tom gets lost driving to work, despairs at Jerry's email habits, and goes to Ron's cabin to detox, where
 // Ron's “talk it all out” idea opens a flood about every site and app he loves.
-// Segments from the captions, words from whisper (2026-11-16). Untested: the “LaRon James” greeting, 27.4 s, 69.0 s
-// (“get me” vs “give me a ride”), 98.4 s, 118.9 s, 83.0 s, the Gchat story, and 131–144 s and 166.7–175 s (a sex-tape
-// mention and the emoji riff), kept out of every segment.
-// EAR CHECK: 122.6 s r1 — the cut falls after Ron's “See, that was easy” and before Tom's “Then I like to go on Reddit”
+// Segments from the captions, words from whisper (2026-11-16). ronpatience (Bqfu0wox3-g) is the same scene, longer:
+// its live points (breakfast plans, "an hour and a half late", lost driving, "Big deal", "click those", bookmarks, the
+// paper iPhone, the cabin's distance, the ride, Paul Bunyan, "See, that was easy", Wikipedia, Brad, emoji, "you told
+// me", the addict talk) stay out of this bank. Untested: the "LaRon James" greeting.
+// EXCLUDE 135.3–138.2: "that classic sex tape" (sexual)
+// EXCLUDE 166.8–175.2: the emoji riff ("racist", turban and hat)
+// SKIP 186.5–210.1: "you told me…" and "how much you had in your system" (tested in ronpatience); whisper stretches
+// the last line over the music to 210 s
 import type { Clip } from '../types.ts';
 
 export const tomScreenBan: Clip = {
@@ -14,7 +19,7 @@ export const tomScreenBan: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', seg: [0.4, 8.1],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', seg: [0.4, 8.1], retired: true,
       stem: 'How does Ron answer “We still on for breakfast?”', ja: '“We still on for breakfast?” に、ロンはどう答える？',
       choices: ['He just says Tom is late', 'He says yes, see you there', 'He says no, not today'], a: 0,
       choicesJa: ['トムが遅刻だと言うだけ', 'いいよ、向こうで会おう', 'だめ、今日は無理'],
@@ -61,13 +66,13 @@ export const tomScreenBan: Clip = {
       trap: 'drove around in が「ドロウヴァラウンディン」とつながる。in はほぼ「ン」。',
       use: 'We’re going around in circles here.（話が堂々めぐりだね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'miles', seg: [8.9, 19.3], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'miles', seg: [11, 17.5], keep: true,
       stem: 'How far does Tom live from work, by his GPS?', ja: 'トムのGPSでは、家から職場まで何マイル？',
       choices: ['3 miles', '3.4 miles', '4.3 miles', '34 miles'], a: 1,
       choicesJa: ['3マイル', '3.4マイル', '4.3マイル', '34マイル'],
       cue: '「according to my GPS」の前',
       line: 'You live three miles from here. — *3.4*, according to my GPS',
-      said: '「3マイルだろ」に、「GPSでは3.4マイル」と言い直す。',
+      said: '「君の家はここから3マイルだぞ」に、「GPSによれば3.4マイル」と言い直す。',
       mean: '3.4 は three point four と読む。細かく直すのが、GPS 頼りのトムらしい。',
       trap: 'three point four と point が聞こえれば小数。4.3 は four が先、34 は「サーティ」。',
       use: 'It’s about two point five kilometers.（だいたい2.5キロです）' },
@@ -76,13 +81,13 @@ export const tomScreenBan: Clip = {
       stem: 'Type the words: “…according to my GPS, ___ every day.” (5 words)', ja: '書こう：“…according to my GPS, ___ every day.”（5語）',
       answer: 'which i used to use',
       cue: '「GPS」のすぐあと',
-      line: '3.4, according to my GPS, *which I used to use* every day.',
-      said: '「GPSでは3.4。毎日使ってたのにね」と足す。',
+      line: '…according to my GPS, *which I used to use* every day.',
+      said: '「前は毎日使ってたんですけどね」と足す。',
       mean: 'used to 〜 ＝ 前は〜していた。used to は「ユーストゥ」。今は使えない不満を足している。',
       trap: 'use が2回続くので1つにまとめたくなる。聞こえた語を全部書く。',
       use: 'This is where I used to live.（ここが前に住んでいた所）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adapting', seg: [17.7, 29.3],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'adapting', seg: [17.7, 29.3], retired: true,
       stem: 'How is Tom really doing without screens?', ja: '画面なしで、トムは本当はどうしている？',
       choices: ['Not well, but acting fine', 'Fine, he doesn’t miss them', 'Great, he found a fix'], a: 0,
       choicesJa: ['つらいのに、平気なふり', '平気で、恋しくない', '絶好調、うまい方法を見つけた'],
@@ -104,15 +109,27 @@ export const tomScreenBan: Clip = {
       trap: 'bookmarks が出てくるので、ブックマークを使うと思いやすい。ジェリーは What’s bookmarks? と聞く。',
       use: 'Is there a quicker way to do this?（もっと早いやり方ある？）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'deserve', seg: [41.5, 47.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'howelse', ctx: true, seg: [34.4, 41],
+      stem: 'Why does Jerry say “How else would I do it?”',
+      ja: 'ジェリーはなぜ「How else would I do it?」と言う？',
+      choices: ['He knows no other way', 'He is angry at Tom', 'He is making a joke'], a: 0,
+      choicesJa: ['ほかのやり方を知らない', 'トムに怒っている', '冗談を言っている'],
+      cue: 'トムの質問への返事',
+      line: 'Tom: …you go to AltaVista and type please go to yahoo.com? / Jerry: Well, *how else would I do it*?',
+      said: '「『yahoo.com に行って』って打ってるの？」に「だって、ほかにどうやるの？」と返す。',
+      mean: 'How else 〜? ＝ 文字どおりは「ほかにどうやって〜？」。「これしか知らない」という気持ちの質問。',
+      trap: 'トムがあきれているので、怒って言い返したと考えがち。Well は軽い前置きで、本気でほかを知らない。',
+      use: 'How else can I get there?（ほかにどうやって行ける？）' },
+
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'deserve', ctx: true, seg: [41.5, 47.7],
       stem: 'How does Tom feel about Jerry and the internet?', ja: 'ジェリーとネットのことを、トムはどう思う？',
       choices: ['Fed up with Jerry', 'Amused by Jerry', 'Sorry for Jerry'], a: 0,
       choicesJa: ['ジェリーにあきれている', 'ジェリーを面白がっている', 'ジェリーを気の毒に思う'],
-      cue: '「God, Jerry」のあと',
-      line: 'God, Jerry, *you don’t deserve the internet*.',
-      said: '「ジェリー、君にインターネットはもったいない」と言う。',
+      cue: '「What’s bookmarks?」への返事',
+      line: 'Jerry: What’s bookmarks? / Tom: God, Jerry, *you don’t deserve the internet*.',
+      said: '「ブックマークって何？」に「ジェリー、あんたにインターネットはもったいない」と言う。',
       mean: 'don’t deserve 〜 ＝ 〜を持つ資格がない。使いこなせない相手へのあきれ。',
-      trap: 'God, Jerry を笑いまじりの呼びかけと思うと、面白がっているように聞こえる。続く言葉で決める。',
+      trap: 'God, Jerry を笑いまじりの呼びかけと考えると、面白がっているように聞こえる。続く言葉で決める。',
       use: 'This cake is too good. I don’t deserve it.（このケーキ、私にはもったいない）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'detox', seg: [43.5, 72.5],
@@ -127,7 +144,7 @@ export const tomScreenBan: Clip = {
       use: 'I need a digital detox.（スマホ断ちが必要だ）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'cabin', seg: [57.8, 68.5],
-      stem: 'What does the electric company line tell us?', ja: '電力会社の話から、何が分かる？',
+      stem: 'What does Ron’s line about the electric company mean?', ja: '電力会社についてのロンの言葉は、どういう意味？',
       choices: ['The cabin has no power', 'The cabin is hard to find', 'Ron hides the cabin'], a: 0,
       choicesJa: ['小屋には電気がない', '小屋は見つけにくい', 'ロンは小屋を隠している'],
       cue: '「electric company」のあと',
@@ -154,7 +171,7 @@ export const tomScreenBan: Clip = {
       choicesJa: ['〜できる', '〜できない', '〜できた'],
       cue: '「no chance I」のあと',
       line: 'There’s no chance I *can* find my way home.',
-      said: '「家に帰れる見込みはゼロ」と言う。',
+      said: '「家に帰れる見込みはゼロなんで」と言う。',
       mean: 'no chance がもう否定なので、あとはふつうの can。弱く「クン」に近い。',
       trap: 'can’t なら「キャーン」と長く、t で止まる。could は「クッド」。短く弱い「クン」なら can。',
       use: 'There’s no way I can eat all that.（あれを全部食べるなんて無理）' },
@@ -171,7 +188,7 @@ export const tomScreenBan: Clip = {
       trap: '前に GPS や運転の話があったので、そちらと思いやすい。good at のあとが答え。',
       use: 'I’m getting good at cooking.（料理が上手になってきた）' },
 
-    { id: 'i4', skill: 'detail', level: 'B2', point: 'splinter', seg: [84, 93.6],
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'splinter', seg: [84, 93.6],
       stem: 'What does Tom want to do about the splinter?', ja: 'とげが刺さって、トムは何をしたい？',
       choices: ['Look it up on a website', 'Call a doctor on the phone', 'Pull it out himself'], a: 0,
       choicesJa: ['サイトで調べる', '電話で医者を呼ぶ', '自分で抜く'],
@@ -181,6 +198,18 @@ export const tomScreenBan: Clip = {
       mean: 'get on 〜 ＝ （サイトに）入る。WebMD は医療の情報サイト。小さなけがでも、まずネット。',
       trap: 'iPhone と聞くと、電話で助けを呼ぶと思いやすい。目的は WebMD で調べること。',
       use: 'Let me just look it up.（ちょっと調べてみる）' },
+
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'yeahidea', ctx: true, seg: [97, 104.5],
+      stem: 'What does Ron mean by “Yeah, I have a new idea”?',
+      ja: 'ロンの「Yeah, I have a new idea」はどういう意味？',
+      choices: ['Let’s not do your plan', 'Your plan is a good one', 'Let’s find a computer'], a: 0,
+      choicesJa: ['君の案はやめておこう', '君の案はいいね', 'パソコンを探そう'],
+      cue: '「Google」の提案への返事',
+      line: 'Tom: I still think we should find a computer and Google… / Ron: *Yeah, I have a new idea.*',
+      said: '「パソコンを探してグーグルで調べよう」に「ああ、新しい考えがある」と返す。',
+      mean: 'この Yeah は賛成ではなく「ああ、はいはい」。すぐ new idea（別の案）を出して、相手の案を流している。',
+      trap: 'Yeah から「賛成」と考えがち。賛成なら computer の話が続くはず。出てくるのは別の案。',
+      use: 'Yeah, I have a better idea.（うーん、もっといい案があるよ）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'idea', seg: [100.4, 111.3],
       stem: 'What does Ron’s new idea ask Tom to do?', ja: 'ロンの新しいアイデアでは、トムは何をする？',
@@ -193,18 +222,18 @@ export const tomScreenBan: Clip = {
       trap: 'words（言葉）から、書く作業だと思いやすい。最初の動詞は Talk。',
       use: 'Just talk it out.（とにかく話して吐き出しなよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'shot', seg: [107.8, 112.8],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'shot', ctx: true, seg: [107.3, 113.5],
       stem: 'What does “worth a shot” mean?', ja: '“worth a shot” はどういう意味？',
       choices: ['Worth a try', 'Sure to work', 'Not worth it'], a: 0,
       choicesJa: ['やってみる価値はある', '絶対うまくいく', 'やる価値はない'],
-      cue: '「Okay」のあと',
-      line: 'Okay, *worth a shot*.',
-      said: '「よし、やってみる価値はある」と答える。',
-      mean: 'worth a shot ＝ ダメもとでやってみる価値がある。期待しすぎない前向きな返事。',
+      cue: 'ロンの案への返事',
+      line: 'Ron: …And then we will be done. / Tom: Okay, *worth a shot*.',
+      said: '「そうすれば、それで終わりだ」に「わかりました、やってみる価値はある」と答える。',
+      mean: 'shot ＝ 文字どおりは「一発・ひと打ち」。一回打ってみる価値がある→「ダメもとでやってみよう」。',
       trap: 'shot を「命中」と思うと、自信満々に聞こえやすい。worth は「価値がある」くらい。',
       use: 'It’s worth a shot.（ダメもとでやってみよう）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'easy', seg: [110.8, 122.6], then: [122.6, 131],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'easy', seg: [110.8, 122.6], retired: true, then: [122.6, 131],
       stem: 'After Ron’s “See, that was easy”, what comes next?', ja: 'ロンの “See, that was easy” のあと、何が来る？',
       choices: ['More of Tom’s list', 'Tom feels better', 'A new task from Ron'], a: 0,
       choicesJa: ['トムのリストの続き', 'トムが楽になったと言う', 'ロンからの新しい課題'],
@@ -226,6 +255,30 @@ export const tomScreenBan: Clip = {
       trap: 'throw を「捨てる」と思うと、やめる話に聞こえやすい。in があれば「中に入れる」。',
       use: 'They threw in a free dessert.（デザートをおまけしてくれた）' },
 
+    { id: 'd9', skill: 'detail', level: 'B1', point: 'reddit', seg: [122.4, 128],
+      stem: 'Why does Tom say Reddit is great?',
+      ja: 'トムは、レディットのどこが最高だと言う？',
+      choices: ['It has the links you need', 'It has the latest music', 'All his friends use it'], a: 0,
+      choicesJa: ['必要なリンクが全部ある', '最新の音楽がある', '友だちがみんな使っている'],
+      cue: '「’cause」のあと',
+      line: 'Reddit’s great *’cause it has all the important links you need*.',
+      said: '「レディットが最高なのは、必要な大事なリンクが全部あるから」と言う。',
+      mean: '’cause ＝ because のくだけた形で「コズ」。理由はそのあとに来る。links ＝ ほかのページへの入口。',
+      trap: 'great だけで終わったと考えがち。’cause（コズ）は短いが、理由の始まり。',
+      use: 'I like this café ’cause it’s quiet.（このカフェが好き、静かだから）' },
+
+    { id: 'n3', skill: 'number', level: 'B1', point: 'year96', seg: [138.4, 146.5], keep: true,
+      stem: 'What year is the movie Tom names?',
+      ja: 'トムが言う映画は何年のもの？',
+      choices: ['1986', '1996', '1990', '2006'], a: 1,
+      choicesJa: ['1986年', '1996年', '1990年', '2006年'],
+      cue: '「he was in the」のあと',
+      line: 'and he was in the *’96* Tim Burton movie, Mars Attacks?',
+      said: '「96年のティム・バートンの映画『マーズ・アタック！』に出てたのは知ってた？」と言う。',
+      mean: '’96 ＝ 1996年。年は下2けただけで ninety-six（ナインティシックス）と言うことが多い。',
+      trap: 'ninety（90）だけ聞くと1990と考えがち。続く six まで聞く。eighty なら86。',
+      use: 'I was born in ’96.（96年生まれです）' },
+
     // R fix: V2 (blind 60 %): "a Brad from Pittsburgh" spelt out the pun; the key no longer names the city, and the
     //   impostor distractor now has the star posing as the teacher
     // why: never found out ← "brad.pitt" said first; posing ← "wasn't the actor… a teacher" heard in the wrong
@@ -241,16 +294,29 @@ export const tomScreenBan: Clip = {
       trap: 'brad.pitt で俳優を想像しやすい。actually のあとが本当の話。',
       use: 'Turns out it was someone else.（実は別人だった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'purge', seg: [175.2, 190.3],
-      stem: 'How does Tom’s long talk end?', ja: 'トムの長い話は、どう終わる？',
-      choices: ['Ron tells him to stop', 'Tom runs out of things', 'Tom feels much better'], a: 0,
-      choicesJa: ['ロンが「もうやめろ」と言う', 'トムの話すことがなくなる', 'トムがすっきりする'],
-      cue: 'ロンの「No more」のあたり',
-      line: '*Okay, that’s enough. No more talking.*',
-      said: 'トムはポッドキャストの話まで続け、ロンが「もういい。話すな」と止める。',
-      mean: 'That’s enough ＝ もう十分、そこまで。吐き出させる作戦は、量が多すぎて打ち切りになる。',
-      trap: '吐き出してすっきりした、と思いやすい。最後は No more talking で止められる。',
-      use: 'Okay, that’s enough for today.（よし、今日はここまで）' },
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'common', seg: [155.6, 160.4],
+      stem: 'What does “We don’t have a lot in common” mean?',
+      ja: '「We don’t have a lot in common」はどういう意味？',
+      choices: ['We’re not very alike', 'We don’t meet often', 'We don’t live near'], a: 0,
+      choicesJa: ['あまり似ていない', 'あまり会わない', '近くに住んでいない'],
+      cue: '「Pittsburgh」のあと',
+      line: '*We don’t have a lot in common*, but we chat quite a bit.',
+      said: '「共通点はあまりないけど、結構チャットしてます」と言う。',
+      mean: 'have 〜 in common ＝ 〜を共通に持つ→ 共通点がある。a lot がないので「共通点が少ない」。',
+      trap: 'common から「よく会う・ふつう」と考えがち。in common でひとかたまり。',
+      use: 'We have a lot in common.（私たち、共通点が多いね）' },
+
+    { id: 'n4', skill: 'number', level: 'B2', point: 'million', seg: [175.3, 181], keep: true,
+      stem: 'How many podcasts are there, Tom says?',
+      ja: 'トムによると、ポッドキャストはいくつある？',
+      choices: ['A hundred', 'A thousand', 'A million', 'A billion'], a: 2,
+      choicesJa: ['100個', '1,000個', '100万個', '10億個'],
+      cue: '「Podcasts」のあと',
+      line: 'There are *a million* of them, and they’re all amazing.',
+      said: '「何百万もあって、どれも最高」と言う。',
+      mean: 'a million ＝ 文字どおりは「100万」。会話では「ものすごくたくさん」の大げさな言い方。',
+      trap: 'million と billion は音が近い。最初が「ミ」なら million、「ビ」なら billion。',
+      use: 'I have a million things to do.（やることが山ほどある）' },
 
     { id: 'd8', skill: 'detail', level: 'B1', point: 'podcast', seg: [178.4, 185.4],
       stem: 'What do Tom and Jean-Ralphio do on their podcast?', ja: 'トムとジャン・ラルフィオは、ポッドキャストで何をする？',
@@ -262,6 +328,17 @@ export const tomScreenBan: Clip = {
       mean: 'rate ＝ 点数をつける、評価する。',
       trap: 'rate には「割合」「料金」の意味もあるので、戸惑いやすい。ここは「採点する」。',
       use: 'How would you rate it?（点数をつけるとどれくらい？）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'purge', seg: [181, 196],
+      stem: 'How does Tom’s long talk end?', ja: 'トムの長い話は、どう終わる？',
+      choices: ['Ron tells him to stop', 'Tom runs out of things', 'Tom feels much better'], a: 0,
+      choicesJa: ['ロンが「もうやめろ」と言う', 'トムの話すことがなくなる', 'トムがすっきりする'],
+      cue: 'ロンの「No more」のあたり',
+      line: '*Okay, that’s enough. No more talking.*',
+      said: 'ナチョスのポッドキャストの話の途中で、ロンが「もういい、十分だ。もう話すな」と止める。',
+      mean: 'That’s enough ＝ もう十分、そこまで。吐き出させる作戦は、量が多すぎて打ち切りになる。',
+      trap: '吐き出してすっきりした、と考えがち。最後は No more talking で止められる。',
+      use: 'Okay, that’s enough for today.（よし、今日はここまで）' },
 
     // C2: a plain-English paraphrase
     // anchor: 183.5–189.8 s "Okay, that's enough. No more talking." → "you told me to get it all out of my system" →
