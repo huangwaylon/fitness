@@ -1,14 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 7, ctx 6, tx 10
 // A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 5, new 2
 // “Leslie refuses Ron's generous offer | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // Leslie calls her old team together against Ron, but Tom and Donna have both signed on with him; Terry explains his
 // new name; Tom's gala speech turns out to be about Tom; Leslie and Ron fight over the team and a candle; and the cake
-// runs out.
-// Segments from the captions, words from whisper (2026-11-16). Left out: the realty firm's name and "broker the deal"
-// (captions "regalmigo realty… broke up the deal"), "Shia LaBeouf design wedding dresses do not come treat" at 31 s
-// (both garbled), the streaking plan at 205–216 s (nudity, "my wiener"), "Morningstar"/"Voldemort or Ron" at 222–231 s
-// (backstory and world knowledge), and the candle grab at 236–241 s (captions "I steal your kids", whisper "your
-// candle"). Tom names himself, Donna, Ron, Terry and Ben are named in the audio, and Leslie is "Les" at 51.6 s and
-// "Leslie" in the closing lines; the stink-bomb pair are never named, so their stems don't name them.
+// runs out. No scenes file.
+// Segments from the captions, words from whisper (2026-11-16). Untested: the realty firm's name, "Shia LaBeouf design
+// wedding dresses do not come treat" at 31 s (garbled), "Morningstar"/"Voldemort or Ron" at 222–231 s (backstory), and
+// the candle grab at 236–241 s (captions "I steal your kids", whisper "your candle"; g4 rests on 233–235 s). Tom names
+// himself, Donna, Ron, Terry and Ben are named in the audio; the stink-bomb pair are never named.
+// EXCLUDE 201.8–214.6
 // EAR CHECK: 128.7 s s1 — “They can wrap shrimp”: a weak “can” (クン), not “can't” (both sources have “can”)
 // EAR CHECK: 188.2 s s2 — “turn ’em back on” (whisper “’em”, captions “them”): the reduced form sounds like a weak “him”
 // EAR CHECK: 199.3 s x1 — “got rid of” runs together (ガリダヴ); both sources agree on the words
@@ -32,19 +32,20 @@ export const ronsTeam: Clip = {
       trap: '「あまり会わなくなった」と話すので、集まりの話と思いやすい。but のあとが用件。',
       use: 'I need your help one last time.（最後にもう一度だけ手を貸して）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'restaurant', seg: [12.4, 23.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'restaurant', seg: [12.4, 23.7], ctx: true,
       stem: 'What did Ron promise Tom?',
       ja: 'ロンはトムに何を約束した？',
       choices: ['A restaurant on the new campus', 'A job in the campus kitchen', 'Money for his restaurant'], a: 0,
-      choicesJa: ['新しいキャンパスにレストランを建てられる', 'キャンパスの厨房の仕事', '自分の店へのお金'],
-      cue: '「Ron promised me」のあと',
-      line: 'Ron promised me *I could build a restaurant* on the new Grizzle campus',
-      said: '「ロンが、新キャンパスにレストランを建てていいって約束した」と言う。',
-      mean: 'promise 人 〜 ＝「人に〜と約束する」。だからロン側についた。',
-      trap: 'restaurant だけ聞くと「お金をもらう」と思いやすい。build（建てる）を聞く。',
+      choicesJa: ['新しいキャンパスにレストランを作れる', 'キャンパスの厨房の仕事', '自分の店へのお金'],
+      cue: '「One, two, three!」のあとのトムの返事',
+      line: 'Leslie: …defeat Ron on three. One, two, three! / Tom: Oh, actually, Ron promised me *I could build a restaurant* on the new Gryzzl campus.',
+      said: '「1、2、3！」「あ、実はロンが、新キャンパスにレストランを作らせてくれるって」。',
+      mean: 'promise 人 〜 ＝ 人に〜と約束する。Oh, actually ＝「あ、実は」。相手の期待とちがう話を切り出す合図。',
+      trap: 'restaurant だけ聞くと、お金をもらう話と考えがち。build（建てる・作る）を聞く。',
       use: 'He promised me a day off.（彼は休みをくれると約束した）' },
 
     // retired (A2): “kind of totally” is a native’s hedge, too fine for one key
+
     { id: 'm1', skill: 'marker', level: 'C1', point: 'kindof', seg: [15.6, 23.2], retired: true,
       stem: 'How sure is Tom about being on Ron’s side?',
       choices: ['Fully sure, though he eases into it', 'Fully sure, and happy to rub it in',
@@ -56,7 +57,7 @@ export const ronsTeam: Clip = {
       trap: 'kind of だけ拾うと「迷っている」に聞こえる。あとに来る強い語の方が本音。',
       use: 'I’m kind of totally lost right now.（正直、完全に迷子です）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dead', seg: [17, 23.3],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'dead', seg: [17, 23.3], retired: true,
       stem: 'What does Leslie mean by “Tom’s dead to me”?',
       ja: 'レスリーの「Tom’s dead to me」はどういう意味？',
       choices: ['She jokingly cuts him off', 'She thinks his plan will fail', 'She thinks Ron will drop him'], a: 0,
@@ -68,19 +69,19 @@ export const ronsTeam: Clip = {
       trap: 'dead（死んだ）から計画の失敗と思いやすい。人との関係の話。',
       use: 'You ate my cake? You’re dead to me.（私のケーキ食べた？もう絶交）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'donna', seg: [21.2, 33.2],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'donna', seg: [21.2, 33.2], ctx: true,
       stem: 'Why does Donna side with Ron too?',
       ja: 'ドナもなぜロンの味方なの？',
       choices: ['Ron’s deal will pay her firm', 'Ron promised her a shop too', 'Ron will plan her wedding'], a: 0,
       choicesJa: ['ロンの取引で会社にお金が入る', 'ロンが店を約束した', 'ロンが結婚式を準備する'],
-      cue: '「Ron hired」のあと',
-      line: 'Ron *hired* … *Realty* … and I’m gonna *need the money for my wedding*.',
-      said: '「ロンがうちの不動産会社に仲介を頼んだ。結婚式にお金が要るの」と言う。',
-      mean: 'hire ＝ 雇う・仕事を頼む。need the money for 〜 ＝「〜にお金が要る」。',
-      trap: 'wedding が聞こえて、ロンが式を手伝うと思いやすい。お金が要るのは本人。',
+      cue: '「waiting for your hand」へのドナの返事',
+      line: 'Leslie: Donna, I’m waiting for your hand. / Donna: Yeah, Ron *hired* … Realty to broker the deal, and I’m gonna *need the money for my wedding*.',
+      said: '「ドナ、手を待ってるんだけど」「ロンがうちの会社を雇ったの。結婚式にお金が要るの」。',
+      mean: 'hire ＝ 雇う・仕事を頼む。need the money for 〜 ＝ 〜にお金が要る。手を重ねない理由を答えている。',
+      trap: 'wedding が聞こえて、ロンが式を手伝うと勘違いしやすい。お金が要るのはドナ本人。',
       use: 'I need the money for my trip.（旅行にお金が要るの）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'furious', seg: [29.8, 39.5],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'furious', seg: [29.8, 39.5], retired: true,
       stem: 'How does Leslie feel about Donna’s news?',
       ja: 'ドナの知らせに、レスリーはどんな気持ち？',
       choices: ['Happy, but upset she wasn’t told', 'Happy, and not upset at all', 'Upset that Donna will marry'], a: 0,
@@ -92,16 +93,16 @@ export const ronsTeam: Clip = {
       trap: 'furious（激怒）だけ聞くと、結婚に反対と思いやすい。怒っているのは知らせの遅さ。',
       use: 'You’re getting married? That’s amazing!（結婚するの？すごい！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'person', seg: [37.6, 44.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'person', seg: [35.6, 43.4], ctx: true,
       stem: 'Why didn’t Donna share her news online?',
       ja: 'ドナはなぜネットに知らせを載せなかった？',
       choices: ['To tell Leslie in person', 'Joe asked her to wait', 'Her family didn’t know yet'], a: 0,
       choicesJa: ['レスリーに直接伝えたかった', 'ジョーに待ってと言われた', '家族がまだ知らなかった'],
-      cue: '「’cause」のあと',
-      line: 'I didn’t post anything… ’cause I wanted to tell you *in person*.',
-      said: '「直接伝えたかったから、何も載せなかった」と言う。',
-      mean: 'in person ＝「直接・会って」。大事な知らせを会って伝えたかった。',
-      trap: 'Joe（婚約者）の名前が出るので、彼の頼みと思いやすい。’cause のあとが理由。',
+      cue: '「how could you?」へのドナの返事の ’cause のあと',
+      line: 'Leslie: And you didn’t tell me earlier, how could you? / Donna: …I didn’t post anything on Gryzzl Feed ’cause I wanted to tell you *in person*.',
+      said: '「なんで早く教えてくれなかったの？」「直接伝えたかったから、何も載せなかった」。',
+      mean: 'in person ＝ 直接、会って。大事な知らせは会って伝えたかった、という答え。',
+      trap: 'Joe（婚約者）の名前が先に出るので、彼の頼みと考えがち。’cause のあとが理由。',
       use: 'I wanted to tell you in person.（直接言いたかったの）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'three', reveals: ['em'], seg: [45.9, 51.8], keep: true,
@@ -116,7 +117,7 @@ export const ronsTeam: Clip = {
       trap: 'two は「トゥー」、four は「フォー」。「スリー」と r の音があれば three。',
       use: 'There are three of us.（私たちは3人です）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kids', seg: [45.9, 51.5],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'kids', seg: [45.9, 51.5], retired: true,
       stem: 'How does Leslie really feel about her kids?',
       ja: 'レスリーは子どもたちのことを本当はどう思っている？',
       choices: ['Tired, but happy', 'Sorry she has so many', 'Full of energy'], a: 0,
@@ -129,6 +130,7 @@ export const ronsTeam: Clip = {
       use: 'It’s crazy, but I love it.（大変だけど、気に入ってる）' },
 
     // retired (A2): a joking gloat (sarcasm); f5 teaches “crushing it”
+
     { id: 'pr1', skill: 'pragma', level: 'C1', point: 'crush', seg: [51.2, 56.9], retired: true,
       stem: 'As Tom and Donna leave, what is the “sorry” doing?',
       choices: ['Gloating about their win, just as a joke', 'Admitting they feel bad about beating her',
@@ -148,35 +150,48 @@ export const ronsTeam: Clip = {
       cue: '「Sorry for totally」のあと',
       line: 'Sorry for *totally crushing it*, and you in the process.',
       said: '「大成功しちゃって、ついでにあなたを負かしてごめん」と言う。',
-      mean: 'crush it ＝「大成功する・すごくうまくやる」。くだけた言い方。',
-      trap: 'crush（つぶす）から「壊す」と思いやすい。ここは「大成功」。',
+      mean: 'crush it ＝ 文字どおりは「それをつぶす」。課題をつぶすほど→「大成功する」。くだけた言い方。',
+      trap: 'crush（つぶす）から「壊す」を連想しやすい。Sorry も本当の謝罪ではなく自慢。',
       use: 'You’re crushing it today!（今日は絶好調だね！）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'cares', seg: [64.3, 74.8],
-      stem: 'What does Terry’s name story show about his coworkers?',
-      ja: 'テリーの名前の話から、同僚について何が分かる？',
-      choices: ['They don’t care about his name', 'They gave him a nice nickname', 'They always get names right'], a: 0,
-      choicesJa: ['彼の名前を気にしていない', 'いいあだ名をつけた', 'いつも名前を正しく呼ぶ'],
-      cue: '「Gary」のあと',
+      stem: 'What did Terry’s coworkers say about his real name?',
+      ja: 'テリーの本名について、同僚は何と言った？',
+      choices: ['That it didn’t matter', 'That it was too long', 'That they liked it better'], a: 0,
+      choicesJa: ['どうでもいい', '長すぎる', 'そっちのほうがいい'],
+      cue: '「Gary」のあとの「they said」',
       line: 'I said my real name is *Gary*, and they said, “*Who cares?*” So, it’s just a fun group.',
-      said: '「本名はゲーリーと言ったら、『どうでもいい』と言われた」と話す。',
-      mean: 'Who cares? ＝「どうでもいい」。本当の名前を気にしていない。',
-      trap: '「楽しいグループ」と言うので仲良しと思いやすいが、名前はどうでもいい扱い。',
-      use: 'Who cares? It’s just a name.（どうでもいいよ。ただの名前だし）' },
+      said: '「本名はゲイリーだって言ったら、『どうでもいい』って言われた」と話す。',
+      mean: 'Who cares? ＝ 文字どおりは「誰が気にする？」→誰も気にしない＝「どうでもいい」。くだけて少し冷たい言い方。',
+      trap: 'just a fun group（楽しい職場）と続くので、ほめられたと考えがち。本名はどうでもいい扱い。',
+      use: 'Who cares about the rain? Let’s go.（雨なんて気にしない。行こう）' },
+
+    { id: 'f7', skill: 'phrase', level: 'B2', point: 'map', seg: [82.4, 90.2],
+      stem: 'What does “barely on the map” mean?',
+      ja: '「barely on the map」はどういう意味？',
+      choices: ['Almost no one knew it', 'It had no good maps', 'It was far from roads'], a: 0,
+      choicesJa: ['ほとんど知られていなかった', 'いい地図がなかった', '道路から遠かった'],
+      cue: '「this town was」のあと',
+      line: 'Not long ago, this town was *barely on the map*.',
+      said: '「少し前まで、この町は地図にもほとんど載っていませんでした」とスピーチする。',
+      mean: '文字どおりは「地図にほとんど載っていない」→ほとんど知られていない町。barely ＝ ほとんど〜ない。',
+      trap: 'map（地図）から、本物の地図の話に聞こえるが、町の知名度のこと。続く冗談の map も「一覧」の意味。',
+      use: 'This café was barely on the map ten years ago.（10年前、このカフェはほぼ無名だった）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'me', seg: [91.3, 106.5],
       stem: 'Who is the “one great man” in Tom’s speech?',
       ja: 'トムのスピーチの「ある偉大な男」とはだれ？',
-      choices: ['Tom Haverford himself', 'Ben, the man of the year', 'The man who started the town'], a: 0,
-      choicesJa: ['トム・ハヴァフォード本人', '今年の人、ベン', '町をつくった人'],
+      choices: ['Tom himself', 'Ben Wyatt', 'The town’s founder'], a: 0,
+      choicesJa: ['トム本人', 'ベン・ワイアット', '町をつくった人'],
       cue: '「that man was」のあと',
       line: 'one great man came along… And *that man was me*, Tom Haverford',
       said: '「ある偉大な男が現れ、皆を引き上げた。その男とは私、トム」と言う。',
       mean: 'lift 〜 up ＝「〜を引き上げる」。自分のことを大げさにほめている。',
-      trap: 'このあとベンが「今年の人」と紹介されるので、ベンと思いやすい。was me を聞く。',
+      trap: 'このあとベンが「今年の人」と紹介されるので、ベンと考えがち。was me を聞く。',
       use: 'That man was my father.（その男こそ私の父です）' },
 
     // retired (A2): a “why does it get a laugh” item
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'skewer', seg: [113.3, 119.65], retired: true,
       stem: 'Why does Ron’s answer to “how could you?” get a laugh?',
       choices: ['He hears it as a question about cooking', 'He hears it as a question about Tom and Donna',
@@ -188,7 +203,7 @@ export const ronsTeam: Clip = {
       trap: 'how を「どうやって」と取ると答えが合って見えるが、問いの本題はチームの件。',
       use: 'How could you eat my sandwich?（なんで私のサンド食べたの？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'team', seg: [113.4, 144.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'team', seg: [113.4, 144.8], retired: true,
       stem: 'What is Leslie’s main complaint against Ron?',
       ja: 'レスリーのロンへのいちばんの不満は？',
       choices: ['He took her old team', 'He took her park', 'He left their old team'], a: 0,
@@ -200,16 +215,28 @@ export const ronsTeam: Clip = {
       trap: 'park（公園）が先に聞こえるので選びやすいが、それは前の話。now のあとを聞く。',
       use: 'First you’re late, and now you’re rude.（最初は遅刻、今度は失礼）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'movedon', seg: [119.6, 130.4],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'skewer', seg: [113.4, 120.4], keep: true, ctx: true,
+      stem: 'How many shrimp fit on one skewer, says Ron?',
+      ja: '串1本にエビが何尾刺せると、ロンは言う？',
+      choices: ['2 or 3', '5 or 6', '8 or 9', '15 or 16'], a: 1,
+      choicesJa: ['2、3尾', '5、6尾', '8、9尾', '15、16尾'],
+      cue: '「long enough for」のあと',
+      line: 'Leslie: Ron, how could you? / Ron: I simply took a skewer for one shrimp… They’re long enough for *five or six*.',
+      said: '「よくもこんなことを」「1尾用の串にエビを足しただけ。5、6尾刺せる長さだ」。',
+      mean: 'how could you? ＝「よくも」と責める言葉。ロンは串の話で答える。long enough for 〜 ＝ 〜に足りる長さ。',
+      trap: 'fifteen なら teen が長く強い。five は「ファイヴ」と短い。',
+      use: 'Is it big enough for four people?（4人分の大きさはある？）' },
+
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'movedon', seg: [119.6, 130.4], ctx: true,
       stem: 'What does Ron mean by “just like you did”?',
       ja: 'ロンの「just like you did」はどういう意味？',
       choices: ['She moved on too', 'She took people too', 'She should join him'], a: 0,
       choicesJa: ['彼女も先へ進んだ', '彼女も人を取った', '彼女も仲間に入るべき'],
       cue: '「better things」のあと',
-      line: 'They’re independent people who have *moved on* to better things, *just like you did*.',
-      said: '「彼らは自立した大人で、いい道に進んだ。君と同じく」と返す。',
-      mean: 'move on ＝「次へ進む」。just like you did ＝「君もそうしたように」。',
-      trap: 'steal の話の続きなので「君も取った」と思いやすい。did は moved on を指す。',
+      line: 'Leslie: …and now you steal my team. / Ron: …They’re independent people who have *moved on* to better things, *just like you did*.',
+      said: '「今度はチームを奪うのね」「いい道に進んだだけだ。君と同じようにな」。',
+      mean: 'move on ＝ 次へ進む。just like you did ＝ 君もそうしたように。did は moved on の言いかえ。',
+      trap: 'steal の話の続きなので「君も取った」と考えがち。did が指すのは直前の moved on。',
       use: 'I moved on, just like you did.（君と同じく、僕も次に進んだ）' },
 
     { id: 's1', skill: 'sound', level: 'B1', point: 'can', seg: [127.2, 133.3],
@@ -227,16 +254,17 @@ export const ronsTeam: Clip = {
     { id: 'ph3', skill: 'phrase', level: 'B2', point: 'stab', reveals: ['can'], seg: [132.4, 137.4],
       stem: 'What does “stab me in the back” mean?',
       ja: '「stab me in the back」はどういう意味？',
-      choices: ['Betray her', 'Talk about her', 'Eat all the food'], a: 0,
-      choicesJa: ['裏切る', 'うわさをする', '食べ物を全部食べる'],
+      choices: ['Betray her', 'Ignore her', 'Laugh at her'], a: 0,
+      choicesJa: ['裏切る', '無視する', '笑いものにする'],
       cue: '「when I turn around」のあと',
       line: 'when I turn around, you can *stab me in the back* with the skewer.',
-      said: '「私が振り向いたら、その串で背中を刺せば」と言う。',
-      mean: 'stab 人 in the back ＝「〜を裏切る」。串を持っているので、言葉どおりにも言っている。',
-      trap: '本当に刺す話と思いやすいが、裏切りの決まり文句。',
+      said: '「私が背中を向けたら、その串で背中を刺せばいいわ」と言う。',
+      mean: '文字どおりは「背中を刺す」。見ていないすきに攻撃する→裏切る。ロンが串を持っているので、言葉どおりにも言っている。',
+      trap: '本当に刺す話に聞こえるが、裏切りを責める決まり文句。チームを取られた話の続き。',
       use: 'He stabbed me in the back.（彼に裏切られた）' },
 
     // retired (A2): a “why does it get a laugh” item; f6 teaches “enough about me”
+
     { id: 'h3', skill: 'humor', level: 'C1', point: 'humble', seg: [137.9, 151.0], retired: true,
       stem: 'Why does Tom’s answer about staying humble get a laugh?',
       choices: ['He boasts about how good he is at being humble', 'He admits humility is hard, then boasts anyway',
@@ -263,13 +291,37 @@ export const ronsTeam: Clip = {
       stem: 'What does Tom mean by “enough about me”?',
       ja: 'トムの「enough about me」はどういう意味？',
       choices: ['Let’s stop talking about me', 'I have done enough for you', 'I am tired of myself'], a: 0,
-      choicesJa: ['ぼくの話はこのへんで', 'あなたたちに十分尽くした', '自分にうんざりだ'],
+      choicesJa: ['私の話はこのくらいで', 'あなたたちに十分尽くした', '自分にうんざりだ'],
       cue: '「being humble」のあと',
       line: 'But, *enough about me*.',
-      said: '自分の話を長くしたあと、「でも、ぼくの話はこのへんで」と言う。',
-      mean: 'enough about me ＝「私の話はもういい」。話を相手や次の人に移す決まり文句。',
-      trap: 'enough（十分）から「もう十分やった」と思いやすい。話題を変える合図。',
+      said: '自分の話を長くしたあと、「でも、私の話はこのくらいにして」と言う。',
+      mean: 'enough about me ＝ 私の話はもういい。話を相手や次の人に移す決まり文句。',
+      trap: 'enough（十分）から「もう十分やった」と考えがち。話題を変える合図。',
       use: 'Enough about me. How are you?（私の話はいいや。元気？）' },
+
+    { id: 'n3', skill: 'number', level: 'B1', point: 'year', seg: [153.6, 160.4], keep: true,
+      stem: 'Ben is the Man of the Year for which year?',
+      ja: 'ベンは何年の「今年の人」？',
+      choices: ['2007', '2016', '2017', '2070'], a: 2,
+      choicesJa: ['2007年', '2016年', '2017年', '2070年'],
+      cue: '「Man of the Year」のすぐあと',
+      line: 'please welcome Pawnee’s Man of the Year *2017*, Mr. Ben Wyatt.',
+      said: '「2017年ポーニー市の今年の人、ベン・ワイアットさんです」。',
+      mean: '年は2けたずつ読む：2017 ＝ twenty seventeen。Man of the Year ＝ その年にいちばん活躍した人。',
+      trap: 'seventeen は teen を長く強く言う。seventy なら前が強く、2070 になる。',
+      use: 'I was born in twenty oh-five.（2005年生まれです）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'timing', seg: [175.6, 185],
+      stem: 'What does Ben mean by “Perfect timing”?',
+      ja: 'ベンの「Perfect timing」はどういう意味？',
+      choices: ['The timing is bad', 'The cake is right on time', 'He wants cake'], a: 0,
+      choicesJa: ['タイミングが悪い', 'ケーキがちょうどいい時に来た', 'ケーキが食べたい'],
+      cue: '話が「I—」で切れたあと',
+      line: 'You know, when I first moved here, I— oh, uh, I guess it’s time for cake. Okay, great. *Perfect timing.*',
+      said: '「僕が初めてここに来たとき…あ、ケーキの時間みたいだね。はい、いいね。まったく、いいタイミングだ」。',
+      mean: '文字どおりは「完ぺきなタイミング」。本当は逆の意味の皮肉。話のとちゅうでケーキが来て、さえぎられた。',
+      trap: '言葉どおりなら喜んでいる。決め手は、話が I— で途切れたこと。',
+      use: 'Rain on my day off? Perfect timing.（休みの日に雨？なんていいタイミング）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'em', seg: [185.4, 191.3],
       stem: 'Fill the gap: “We shut off the lights, turn ___ back on.”',
@@ -284,6 +336,7 @@ export const ronsTeam: Clip = {
       use: 'Turn them off, please.（それ、消してください）' },
 
     // retired (A2): “sucks butts” is crude, and the reading a feeling read into it
+
     { id: 'i3', skill: 'infer', level: 'B2', point: 'grown', seg: [194.9, 205.0], retired: true,
       stem: 'What does the stink-bomb exchange show about the pair now?',
       choices: ['They’ve grown up, and they don’t love it', 'They’ve grown up, and they’re proud of it',
@@ -295,15 +348,38 @@ export const ronsTeam: Clip = {
       trap: 'Leslie の名前から「怒られるのが怖い」と取りやすい。処分した理由は子どもの安全。',
       use: 'Being an adult is hard sometimes.（大人って時々つらい）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [197.5, 202.7],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gotrid', seg: [197.3, 201.7],
       stem: 'Type the missing words: “I ___ all the stink bombs.” (3 words)', answer: 'got rid of',
       ja: '「I ___ all the stink bombs.」の空所を書こう（3語）',
       cue: '「I forgot」のあと',
-      line: 'I *got rid of* all the stink bombs before you…',
-      said: '「子守りの前に、臭い玉は全部捨てちゃった」と言う。',
-      mean: 'get rid of 〜 ＝「〜を捨てる・処分する」。got rid of は「ガリダヴ」とつながる。',
+      line: 'I *got rid of* all the stink bombs before you babysat Leslie’s kids.',
+      said: '「臭い玉は全部捨てちゃったんだ。君がレスリーの子どもの子守りをする前に」と言う。',
+      mean: 'get rid of 〜 ＝ 〜を捨てる・処分する。got rid of は「ガリダヴ」とつながる。',
       trap: 'of は小さく、ほぼ聞こえない。3語なので of まで書く。',
       use: 'I need to get rid of these boxes.（この箱を処分しないと）' },
+
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'rhetoric', seg: [216, 223],
+      stem: 'What does Leslie mean by “What have you ever done for this city?”',
+      ja: 'レスリーの「What have you ever done for this city?」はどういう意味？',
+      choices: ['You’ve done nothing for it', 'Tell me about your work', 'Thank you for your help'], a: 0,
+      choicesJa: ['町のために何もしていない', 'あなたの仕事を教えて', '手伝ってくれてありがとう'],
+      cue: '「Why are you even here?」のあと',
+      line: 'Why are you even here? *What have you ever done for this city?*',
+      said: '「なんでここにいるの？この町のために何をしたっていうの？」と責める。',
+      mean: '答えを求めない質問（反語）。「何をした？」→「何もしていない」。ever ＝ 今まで一度でも、と強めている。',
+      trap: 'ロンが本当に答えるので、ふつうの質問と考えがち。直前の Why are you even here? で責めている。',
+      use: 'Who doesn’t love pizza?（ピザが嫌いな人なんている？）' },
+
+    { id: 'g4', skill: 'gist', level: 'B1', point: 'candle', seg: [226.4, 241.6],
+      stem: 'What do Leslie and Ron fight over at the end?',
+      ja: '最後に、レスリーとロンは何を取り合う？',
+      choices: ['A candle', 'A cake', 'A shrimp skewer'], a: 0,
+      choicesJa: ['ろうそく', 'ケーキ', 'エビの串'],
+      cue: '「You know what?」のあと、何度も出る語',
+      said: 'レスリーが「そのろうそくをよこして」とつかみ、ロンも「私のだ」と放さない。',
+      mean: 'You don’t deserve 〜 ＝ あなたに〜はふさわしくない。チームを取られた仕返しに、ろうそくを取ろうとする。',
+      trap: 'このあとケーキの話になるので、ケーキと考えがち。何度も聞こえる candle を聞く。',
+      use: 'Can you give me that, please?（それ、取ってもらえますか）' },
 
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'cake', seg: [246.4, 259.5], retired: true,
       stem: 'In “Who doesn’t bake a backup cake?”, who is the joke on?',
@@ -316,6 +392,18 @@ export const ronsTeam: Clip = {
       trap: '疑問形の文句は、責められる誰かに向くと聞きやすい。直後の反応が笑いの的を名指しする。',
       use: 'Who doesn’t pack a spare charger?（予備の充電器を持たない人いる？）' },
 
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'backup', seg: [246.4, 254.6], ctx: true,
+      stem: 'What happens when Leslie asks for the backup cake?',
+      ja: 'レスリーが予備のケーキを頼むと、どうなる？',
+      choices: ['There isn’t one', 'It’s on its way', 'It’s still in the oven'], a: 0,
+      choicesJa: ['予備はない', '今運んでいる', 'まだオーブンの中'],
+      cue: '「backup cake」を頼んだあとの返事',
+      line: 'Leslie: It’s okay, everything’s fine. Just wheel out the *backup cake*. / *There’s no backup cake.*',
+      said: '「予備のケーキを運んできて」「予備のケーキはありません」。',
+      mean: 'backup ＝ 予備。wheel out ＝ ワゴンで運んでくる。There’s no 〜 ＝ 〜はない。予備はそもそも無かった。',
+      trap: 'everything’s fine（大丈夫）と言うので、うまくいくと考えがち。決め手は返事の no。',
+      use: 'Do we have a backup plan?（予備の計画はある？）' },
+
     { id: 'ph4', skill: 'phrase', level: 'B2', point: 'cake', seg: [252, 262.3],
       stem: 'What does “that seals it” mean?',
       ja: '「that seals it」はどういう意味？',
@@ -324,7 +412,7 @@ export const ronsTeam: Clip = {
       cue: '「backup cake」のあと',
       line: 'Okay, well, *that seals it*. Even Leslie is crazier than we are.',
       said: '「よし、これで決まり。レスリーの方が私たちよりおかしい」と言う。',
-      mean: 'that seals it ＝「これで決まりだ」。seal ＝ 封をする（もう変わらない）。',
+      mean: '文字どおりは「それが封をする」。封をした手紙はもう変えられない→「これで決まり」。',
       trap: 'seal（封）から「秘密にする」と思いやすい。決まった、の意味。',
       use: 'You’re late again? That seals it.（また遅刻？これで決まりだね）' },
   ]
