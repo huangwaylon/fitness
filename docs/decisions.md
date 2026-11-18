@@ -449,13 +449,14 @@ NH's event tracks replace the hour's on their days; surf, wind, rain, birds and 
 
 ## ききみみ
 
-Replaced by English Study ([english.md](english.md)). Its `listen` rows were deleted from the record (a one-off
-admin purge, 2026-11-16, after a verified dump; its code is gone); its live intents, the relay's `/stt` and its
-`mic.*` log events are gone.
-- **No microphone:** `microphone=()`. While it shipped it was off by default, recordings stayed in memory, and no
-  transcript or speaking score left the phone.
-- **Old rows kept, never re-read for progress:** `listenOf` parses every shape ever written until the rows are deleted.
-  Why: the partner's summaries and a restore re-read the record.
+Replaced by English Study ([english.md](english.md)). Its `listen` rows were deleted after a verified dump; its code,
+live intents and `mic.*` events are gone. `listenOf` still parses every shape ever written (a restore re-reads them).
+
+## Microphone
+
+`microphone=(self)`, for the speech test and すごろく's speaking step ([speech-test](speech-test.md),
+[sugoroku](sugoroku.md#speaking)): the mic is asked for only on a tap; the relay's `/stt` keeps neither the audio nor
+its text. Why: speaking practice without recordings anywhere.
 
 ## Trips and offline
 
