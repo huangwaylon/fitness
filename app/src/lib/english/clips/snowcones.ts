@@ -1,12 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 6, ctx 5, tx 14
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 8, new 3
 // “Leslie tries bribing like a real politician | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): Ron's budget plan cuts the town's public mini golf course; before the vote, Leslie treats Councilman Jamm
 // to snow cones and a round there, Ron turns up to talk about the cost, and she ends up admitting she'll do anything
 // for Jamm's vote.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈249 s. Untested: 8–11 s (“Pawnee Poms”
-// vs “Palms”), 51 s (“vigor” vs “vicar”), 67–70 s (an unrelated cutaway), 78–85 s (Chris's “lubricant” line),
-// 105–108 s and 120–123 s (Jamm's insult and “you racist” lines), 138–142 s (a beer brand), 157.7 s (a film title),
-// 190 s (the golf term “away”), and every line that rests on world knowledge (Hoover Dam, putt-putt windmills).
+// vs “Palms”), 67–70 s (an unrelated cutaway), 78–85 s (Chris's “lubricant” line), 138–142 s (a beer brand), 157.7 s
+// (a film title), 190 s (the golf term “away”). Kept out: Jamm's “fat Hawaiian guy” and his “you racist” reply.
+// EXCLUDE 106.7–109.2
+// EXCLUDE 121–123.6
 import type { Clip } from '../types.ts';
 
 export const snowCones: Clip = {
@@ -15,16 +17,16 @@ export const snowCones: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'cut', reveals: ['putt'], seg: [0, 35.5],
-      stem: 'Why is Leslie angry at the start?',
-      ja: '最初、レスリーはなぜ怒っている？',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cut', seg: [0, 35.5],
+      stem: 'Why is Leslie angry at Ron?',
+      ja: 'レスリーはなぜロンに怒っている？',
       choices: ['Ron wants to cut mini golf', 'Ron blames her for cuts', 'Ron canceled her council plan'], a: 0,
       choicesJa: ['ロンがミニゴルフの予算を削りたい', 'ロンが削減を彼女のせいにする', 'ロンが彼女の議会案を取り消した'],
       cue: '「Second,」のあと',
       line: 'Second, you want to *cut funding* for the… public putt-putt?',
       said: 'ロンの案を見て「公営ミニゴルフの予算を削るの？」と詰め寄る。',
       mean: 'cut funding ＝ 予算を削る。レスリーの大好きな場所なので怒っている。',
-      trap: 'budget cut から予算全体の話と思いやすいが、怒りは Second のあと。',
+      trap: 'budget cut から予算全体の話と考えがち。怒りの中身は Second のあと。',
       use: 'They’re cutting funding for the library.（図書館の予算が削られる）' },
 
     // retired (A2): a “what makes it funny” item
@@ -75,16 +77,16 @@ export const snowCones: Clip = {
       trap: '反政府のロンなので「市のためには作らない」と取りやすいが、返事は材料の話。',
       use: 'That’s not quite the right word.（それはちょっと言葉が違うね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'putt', seg: [42.7, 48.7],
-      stem: 'What is on tomorrow’s council agenda?',
-      ja: '明日の市議会の議題は何？',
-      choices: ['Ending money for mini golf', 'Ending money for a golf club', 'Ending money for merry-go-rounds'], a: 0,
-      choicesJa: ['ミニゴルフへの予算をやめる', 'ゴルフクラブへの予算をやめる', 'メリーゴーラウンドへの予算をやめる'],
-      cue: '「Look,」のあと',
-      line: 'the *defunding of the mini golf course* is on the agenda…',
-      said: '「ミニゴルフ場の予算打ち切りが、明日の議会の議題だ」と言う。',
-      mean: 'agenda ＝ 会議の議題。defunding ＝ 予算をなくすこと。',
-      trap: 'golf course だけ聞くと本物のゴルフ場と思いやすい。mini は短く弱い。',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tomorrow', seg: [42.7, 49.3],
+      stem: 'When will the council talk about the mini golf?',
+      ja: 'ミニゴルフの件は、いつ市議会で話し合う？',
+      choices: ['Tomorrow', 'Tonight', 'Next week'], a: 0,
+      choicesJa: ['明日', '今夜', '来週'],
+      cue: '「city council meeting」のあと',
+      line: 'the defunding of the mini golf course is on the agenda for the city council meeting *tomorrow*.',
+      said: 'ロンが「ミニゴルフ場の予算打ち切りは、明日の市議会の議題だ」と言う。',
+      mean: 'on the agenda ＝ 会議の議題に入っている。英語は「いつ」を文の最後に置くので、tomorrow は最後に来る。',
+      trap: 'このあと夜にゴルフをするので、今夜と勘違いしやすい。meeting のあとの一語を聞く。',
       use: 'It’s on the agenda for Monday.（それは月曜の議題に入ってる）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'double', seg: [55.9, 67.5], keep: true,
@@ -116,7 +118,7 @@ export const snowCones: Clip = {
       ja: '「How?」のあとの言葉を書こう（4語）',
       cue: '「How?」のすぐあと',
       line: '*I’ll figure it out*, it already has windmills',
-      said: '「何とかするわよ」と、方法は言わずに返す。',
+      said: '「何とかする」と、方法は言わずに返す。',
       mean: 'figure it out ＝「考えて答えを出す」。方法がまだないときの決まり文句。',
       trap: 'figure it out が「フィギャリラウ」とつながる。I’ll の ll も小さい。',
       use: 'We’ll figure something out.（何とかなるよ）' },
@@ -129,11 +131,12 @@ export const snowCones: Clip = {
       cue: '「fall in love with」のあと',
       line: 'I need to have Jamm fall in love with this place, so I’m *rolling out the red carpet*.',
       said: '「ジャムにここを好きになってもらう。だから大歓迎する」と言う。',
-      mean: 'roll out the red carpet ＝ 大切な客として大歓迎する。',
-      trap: 'red carpet から式典やパーティーを思いやすい。もてなし方の決まり文句。',
+      mean: '文字どおりは「赤いじゅうたんを広げる」。スターを迎える赤い道から→大切な客として大歓迎する。',
+      trap: 'red carpet から式典やパーティーを連想しやすい。ここはもてなし方の決まり文句。',
       use: 'They rolled out the red carpet for us.（私たちを大歓迎してくれた）' },
 
-    { id: 'a5', skill: 'attitude', level: 'B1', point: 'lovecaddy', seg: [82.1, 92.7],
+    // retired (R4): the key “He loves it” repeats the line's “I love”
+    { id: 'a5', skill: 'attitude', level: 'B1', point: 'lovecaddy', seg: [82.1, 92.7], retired: true,
       stem: 'How does Chris feel about being a caddy?',
       ja: 'クリスはキャディの仕事をどう思っている？',
       choices: ['He loves it', 'He hates it', 'He is bored of it'], a: 0,
@@ -145,17 +148,29 @@ export const snowCones: Clip = {
       trap: 'carrying clubs（運ぶだけ）で不満と思いやすい。最初の I love が答え。',
       use: 'I love being a teacher.（先生の仕事が大好き）' },
 
-    // retired (A2): “positive reinforcement” is above this learner; the figurative caddy needs a native ear
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'caddy', reveals: ['offnight'], seg: [84.9, 95.9], retired: true,
-      stem: 'What does Chris mean by being a caddy to everyone in his life?',
-      choices: ['He keeps cheering on everyone he knows', 'He carries things for all his friends',
-                'He gives everyone tips on their game'], a: 0,
-      cue: '「more than just carrying clubs」のあとの文。',
-      line: 'It’s about offering *positive reinforcement*. I consider myself a caddy to everyone in my life.',
-      said: '「キャディは励ます役。僕はみんなのキャディ」。',
-      mean: 'positive reinforcement ＝ ほめて伸ばすこと。誰でも励ます人。',
-      trap: 'caddy で「荷物運び」を思い浮かべやすいが、本人が just carrying clubs を否定。',
-      use: 'I’m always in your corner.（いつも君の味方だよ）' },
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'caddy', reveals: ['offnight'], seg: [85.2, 97.4],
+      stem: 'What does Chris say a caddy really does?',
+      ja: 'キャディは本当は何をする人だとクリスは言う？',
+      choices: ['Says nice things to players', 'Only carries the golf clubs', 'Teaches people the rules'], a: 0,
+      choicesJa: ['プレーヤーにいい言葉をかける', 'ゴルフクラブを運ぶだけ', 'ルールを教える'],
+      cue: '「more than just carrying clubs」のあと',
+      line: 'It’s so much *more than just carrying clubs*. It’s about *offering positive reinforcement*.',
+      said: '「運ぶだけじゃない。励ますことだ」と言い、「ナイスショット！」と声をかける。',
+      mean: 'more than just 〜 ＝「ただ〜だけじゃない」。positive reinforcement ＝ ほめて励ますこと。',
+      trap: 'carrying clubs が聞こえるので、運ぶ係と考えがち。more than just は「だけじゃない」。',
+      use: 'It’s more than just a job.（ただの仕事じゃないんだ）' },
+
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'thanks', ctx: true, seg: [100.4, 106.6],
+      stem: 'How does Jamm answer “nice putter”?',
+      ja: '「nice putter（いいパターですね）」に、ジャムは何と答える？',
+      choices: ['He says thank you', 'He says it’s nothing special', 'He says it’s brand new'], a: 0,
+      choicesJa: ['ありがとうと言う', 'たいした物じゃないと言う', '新品だと言う'],
+      cue: '「nice putter」のすぐあと',
+      line: '*Councilman, nice putter.* / Jamm: Oh, *thank you very much*.',
+      said: 'パターをほめられて、ジャムは「ああ、どうもありがとう」と受ける。',
+      mean: 'ほめられたら Thank you で受けるのが英語のふつう。謙遜して否定すると、相手の言葉を断る感じになる。',
+      trap: '日本語の「いえいえ」の感覚だと、謙遜する答えを選びたくなる。Oh のすぐあとを聞く。',
+      use: 'Thanks! I just got it.（ありがとう！買ったばかりなんだ）' },
 
     // retired (A2): sincere or not rests on tone
     { id: 'a4', skill: 'attitude', level: 'C1', point: 'story', seg: [108.8, 119.9], retired: true,
@@ -169,7 +184,19 @@ export const snowCones: Clip = {
       trap: '大げさなほめ言葉は皮肉にも聞こえるが、続けて食べ物を勧めている。怒らせる気はない。',
       use: 'Wow, what a great story!（へえ、いい話ですね！）' },
 
-    { id: 'p5', skill: 'phrase', level: 'B1', point: 'onme', seg: [123.1, 128.1],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'hotdog', seg: [115, 120],
+      stem: 'What does Leslie ask if anybody wants?',
+      ja: '始める前に、レスリーは何がほしいか聞く？',
+      choices: ['A hot dog', 'A soda', 'A sandwich'], a: 0,
+      choicesJa: ['ホットドッグ', 'ソーダ', 'サンドイッチ'],
+      cue: '「before we start」のあと',
+      line: 'Okay, before we start, *anybody want a hot dog*?',
+      said: '「始める前に、ホットドッグほしい人いる？」と聞く。',
+      mean: 'Anybody want 〜? ＝「〜ほしい人いる？」。Does anybody want の Does が落ちた、くだけた聞き方。',
+      trap: 'soda や sandwich に聞き違えやすいが、want a のあとは hot dog。',
+      use: 'Anybody want coffee?（コーヒーほしい人いる？）' },
+
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'onme', seg: [123.7, 127.6],
       stem: 'What does Leslie mean by “On me”?',
       ja: 'レスリーの「On me」はどういう意味？',
       choices: ['I’ll pay for it', 'Put it on me', 'I will eat it'], a: 0,
@@ -181,16 +208,28 @@ export const snowCones: Clip = {
       trap: 'on から「上に」と思いやすい。お金の話で on me は「私が払う」。',
       use: 'Lunch is on me today.（今日のお昼は私のおごり）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bargain', reveals: ['subsidy'], seg: [147.3, 159.7],
-      stem: 'Ron says it costs a lot. What does Leslie say?',
-      ja: '高いと言うロンに、レスリーは何と言う？',
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'notplay', ctx: true, seg: [142.5, 149],
+      stem: 'Leslie asks Ron about joining. What does he answer?',
+      ja: '一緒にやるかと聞かれて、ロンは何と答える？',
+      choices: ['He won’t play at all', 'He’ll play later', 'He’ll play one hole'], a: 0,
+      choicesJa: ['まったくプレーしない', 'あとでプレーする', '1ホールだけプレーする'],
+      cue: '「joining us?」のあと',
+      line: 'Leslie: Ron, are you gonna be *joining us*? / Ron: *I won’t be playing.*',
+      said: '「一緒にやる？」に、ロンは「私はやらない」と答え、念を押しに来ただけだと言う。',
+      mean: 'I won’t be 〜ing ＝「〜はしない」と予定をはっきり断る言い方。Mind if I join you?（ご一緒しても？）と来たのに見るだけ。',
+      trap: 'join（加わる）と聞くと一緒に遊ぶと考えがち。won’t の「ウォウン」を聞く。',
+      use: 'I won’t be coming tonight.（今夜は行けません）' },
+
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bargain', reveals: ['subsidy'], ctx: true, seg: [147.3, 159.7],
+      stem: 'Ron says it costs a lot. What does Leslie answer?',
+      ja: '高いと言うロンに、レスリーは何と答える？',
       choices: ['It’s good value', 'It’s too expensive', 'It should be free'], a: 0,
       choicesJa: ['お得だ', '高すぎる', 'ただにすべきだ'],
       cue: '「thousands of dollars」の直後',
-      line: 'cost the taxpayers *thousands of dollars a year*. — *And what a bargain!*',
+      line: 'Ron: …cost the taxpayers *thousands of dollars a year*. / Leslie: *And what a bargain!*',
       said: '「年に何千ドルもかかる」に、すかさず「なんてお得！」と返す。',
       mean: 'What a bargain! ＝「なんてお得！」。相手の「高い」を「安い」に言い換えている。',
-      trap: '皮肉に聞こえやすいが、続けて「子どもも大人も大好き」とほめている。',
+      trap: '皮肉に聞こえるが本気。続けて「子どもも大人も大好き」とほめている。',
       use: 'For that price? What a bargain!（その値段で？お得だね！）' },
 
     // retired (A2): “You don't say” is sarcasm, a native's ear
@@ -228,6 +267,18 @@ export const snowCones: Clip = {
       trap: 'ロン（Swanson）に話しているので、ロンと思いやすい。buying の前の名前を聞く。',
       use: 'Let’s go. I’m buying.（行こう。僕がおごるよ）' },
 
+    { id: 'c3', skill: 'infer', level: 'B2', point: 'bribe', reveals: ['tomorrow'], ctx: true, seg: [163, 171.4],
+      stem: 'What is Ron saying about the snow cones?',
+      ja: 'ロンはかき氷について何を言いたい？',
+      choices: ['They are a way to get votes', 'They cost the city money', 'They are bad for Jamm'], a: 0,
+      choicesJa: ['票を得るための手段だ', '市のお金がかかっている', 'ジャムの体に悪い'],
+      cue: '「You don’t say」のあと',
+      line: 'Jamm: *Have a snow cone.* / Ron: She’s buying you snow cones *and tomorrow you’re voting* on an issue that she cares about.',
+      said: 'ロンは「彼女がかき氷をおごり、明日君は彼女の大事な件で投票する」と二つを並べる。',
+      mean: '二つの事実を and でつなぐだけで「票のためのおごりだ」と伝えている。はっきり言わずに気づかせる話し方。',
+      trap: 'ロンはいつもお金の話をするので、費用の話と考えがち。決め手は and tomorrow you’re voting。',
+      use: 'There’s no such thing as a free lunch.（ただより高いものはない）' },
+
     // retired (A2): “spout off unrelated facts” is above this learner, the key a reading of manner
     { id: 'i5', skill: 'infer', level: 'B2', point: 'spout', reveals: ['dontsay', 'offnight'], seg: [170.6, 178.9], retired: true,
       stem: 'How does the next speaker treat Ron’s point about the snow cones?',
@@ -247,10 +298,22 @@ export const snowCones: Clip = {
       choicesJa: ['先に自分がもらう', 'もう持っている', '人にあげる'],
       cue: '「balloons」のあと',
       line: 'I *got dibs on* the dinosaur. And the pirate and the dolphin. *I want all of them*.',
-      said: '「恐竜はおれのもの。海賊とイルカも。全部ほしい」と言う。',
+      said: '「恐竜はおれがもらった。海賊とイルカも。全部ほしい」と言う。',
       mean: 'dibs on 〜 ＝「〜は自分が先に取った」という宣言。子どもっぽい言い方。',
       trap: 'got を「持っている」と思いやすい。dibs は「先取り」の決まった言い方。',
       use: 'Dibs on the front seat!（助手席は僕ね！）' },
+
+    { id: 'c4', skill: 'pragma', level: 'B2', point: 'luck', reveals: ['fire'], ctx: true, seg: [190.8, 199],
+      stem: 'What does Jamm mean when Chris wishes them luck?',
+      ja: 'クリスに「頑張って」と言われたジャムの返事の意味は？',
+      choices: ['He is just a great player', 'He needs a lot of luck', 'He thanks Chris for it'], a: 0,
+      choicesJa: ['自分の腕がいいだけ', '運がたくさん必要だ', 'クリスにお礼を言う'],
+      cue: '「Good luck to you both」のあと',
+      line: 'Chris: *Good luck* to you both. / Jamm: *Luck has nothing to do with it*, Chris. Yeah, I could be a pro.',
+      said: '「お二人とも頑張って」に、ジャムは「運なんて関係ない。プロになれるかもな」と返す。',
+      mean: 'have nothing to do with 〜 ＝「〜とは関係ない」。運ではなく実力で勝っている、と自慢している。',
+      trap: 'luck が2回聞こえるので、運の話に乗ったと勘違いしやすい。nothing が否定のかなめ。',
+      use: 'Age has nothing to do with it.（年齢は関係ないよ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'fire', seg: [197.1, 202.1],
       stem: 'What does “you are on fire” mean here?',
@@ -260,7 +323,7 @@ export const snowCones: Clip = {
       cue: '「Wow」のあと',
       line: 'Wow, *you are on fire*, Jeremy. Having fun?',
       said: '「すごい、絶好調ね、ジェレミー。楽しい？」と声をかける。',
-      mean: 'on fire ＝「絶好調」。スポーツやゲームで調子がいい人に言う。',
+      mean: '文字どおりは「燃えている」。勢いが止まらない→「絶好調」。スポーツやゲームで調子がいい人に言う。',
       trap: 'fire から「怒り」を思いやすい。直前の「プロになれる」と合わせる。',
       use: 'You’re on fire today!（今日は絶好調だね！）' },
 
@@ -275,6 +338,18 @@ export const snowCones: Clip = {
       mean: 'annual ＝「年間の」。nine thousand ＝ 9,000。',
       trap: 'nine と nineteen、ninety は語尾で区別する。thousand の「サウ」まで聞く。',
       use: 'It costs about nine thousand a year.（年に約9,000かかる）' },
+
+    { id: 'n3', skill: 'number', level: 'B1', point: 'eight', seg: [217.3, 225.4],
+      stem: 'How many strokes ahead is Jamm?',
+      ja: 'ジャムは何打リードしている？',
+      choices: ['Two', 'Eight', 'Eighteen', 'Eighty'], a: 1,
+      choicesJa: ['2打', '8打', '18打', '80打'],
+      cue: '「leads by」のあと',
+      line: 'Councilman Jamm *leads by eight strokes*',
+      said: 'クリスが「大事なお知らせが2つ。ジャム議員が8打リード」と伝える。',
+      mean: 'lead by 〜 ＝「〜の差でリードしている」。strokes ＝ ゴルフで打った回数。少ないほうが勝ち。',
+      trap: '直前の two important pieces の two に引かれやすい。leads by のあとの数を聞く。',
+      use: 'We’re leading by two points.（2点リードしてる）' },
 
     { id: 'g2', skill: 'gist', level: 'B2', point: 'anything', reveals: ['losing'], seg: [226.9, 249.8],
       stem: 'How does the argument with Ron end?',
