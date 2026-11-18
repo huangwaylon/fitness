@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 0, new 3, ctx 7, tx 7
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 1
 // “Michael's Nephew - The Office US” (the official The Office channel, Best of Season 7): Michael's new assistant, his
 // nephew Luke, botches the coffee run and the samples; the staff want him fired and Michael waves it off, explains to
@@ -8,8 +9,8 @@
 // coworker". Talk ends at ≈ 265 s (music after). Untested on purpose: 0–2 s, 4–12 s (Luke's nicknames for coworkers),
 // 16 s, 30–39 s (an unnamed talking head), 46–52 s (the Nard Dog nickname: captions garble it), 52–57 s (Luke's
 // favourite films), 77–79 s, 88–90 s ("Venus": a jab at looks), 99–108 s ("scram, twerp": rude), 114 s, 159 s ("lost him
-// in a forest"), 181–183 s (a crude line), 195–201 s, 212–231 s (the punishment itself: shown, not said), 245–247 s
-// ("Texas justice"), 255 s.
+// in a forest"), 195–201 s, 212–220 s (the punishment itself: shown, not said), 245–247 s ("Texas justice"), 255 s.
+// EXCLUDE 181.2–183 (a crude line)
 import type { Clip } from '../types.ts';
 
 export const michaelsNephew: Clip = {
@@ -18,16 +19,16 @@ export const michaelsNephew: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', seg: [0, 6.5],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'late', ctx: true, seg: [0, 6.5],
       stem: 'Why does someone say “supposed to be here at 9”?',
       ja: 'なぜ「9時に来るはずだった」と言う？',
       choices: ['The coffee is late', 'The coffee is early', 'He wants more coffee'], a: 0,
       choicesJa: ['コーヒーがおそい', 'コーヒーが早い', 'もっとコーヒーがほしい'],
       cue: '「arrived」のすぐあと',
-      line: 'I thought the coffee was *supposed to be here at 9*.',
+      line: 'Luke: Coffee monkeys arrived. / I thought the coffee was *supposed to be here at 9*.',
       said: '届いたコーヒーに「9時に来るはずだったと思うけど」と言う。',
       mean: 'be supposed to 〜 ＝「〜することになっている」。今ごろ来たので、おそいという文句。',
-      trap: '9時だけ聞くと、時間どおりと思いやすい。supposed to は「予定ではそうだった（のに）」。',
+      trap: '9時だけ聞くと、時間どおりと考えがち。supposed to は「予定ではそうだった（のに）」。',
       use: 'I thought we were supposed to meet at 7.（7時に会う約束じゃなかった？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'decaf', seg: [12.8, 18.7],
@@ -51,7 +52,7 @@ export const michaelsNephew: Clip = {
       line: 'Must be *some sort of mix-up* there.',
       said: '「何か手ちがいがあったみたい」と言い、「そのまま飲む？はるばるもどろうか？」と聞く。',
       mean: 'mix-up ＝ 手ちがい、取りちがえ。some sort of ＝ 何かの。だれのせいかをぼかしている。',
-      trap: 'mix（まぜる）から、飲み物の話と思いやすい。mix-up は「取りちがえ」。',
+      trap: 'mix（まぜる）から、飲み物の作り方を連想しやすい。mix-up は「取りちがえ」。',
       use: 'Sorry, there was a mix-up with the rooms.（すみません、部屋の手ちがいがありました）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [38.8, 44.4], keep: true,
@@ -88,28 +89,16 @@ export const michaelsNephew: Clip = {
       trap: '次の「父」の一言から I’m を強めたくなるが、直すのは直前の Man。強勢は、何と比べるかで決まる。',
       use: 'Not the red one. The BLUE one.（赤じゃなくて、青いほう）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', seg: [55, 99.6],
-      stem: 'What is the staff’s main problem with Luke?',
-      ja: 'みんなは、ルークの何がいちばん困る？',
-      choices: ['He gets simple jobs wrong', 'He talks about movies too much', 'He comes in late every day'], a: 0,
-      choicesJa: ['かんたんな仕事をまちがえる', '映画の話ばかりする', '毎日おくれて来る'],
-      cue: '「He messed yours up, too」',
-      line: '*He messed yours up, too.* … Did you send those samples…? Because *he didn’t get them*.',
-      said: 'コーヒーの注文をまちがえ、たのまれた見本もとどかない。同僚は「クビにすべき」と言う。',
-      mean: 'mess up ＝ だめにする、まちがえる。かんたんな用事を何度も失敗している。',
-      trap: '映画好きの自己紹介が耳に残りやすい。同僚が怒っているのは、仕事の失敗。',
-      use: 'He keeps getting my order wrong.（いつも注文をまちがえるんだ）' },
-
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'deflect', seg: [57.7, 69.7],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'deflect', ctx: true, seg: [57.7, 69.7],
       stem: 'Why does Michael ask “You know who’s the worst?”',
       ja: 'マイケルはなぜ「最悪なのはだれか知ってる？」と聞く？',
       choices: ['To talk about someone else', 'To have them name someone', 'To say Luke is still new'], a: 0,
       choicesJa: ['別の人の話にするため', 'みんなに名前を言わせるため', 'ルークはまだ新人だと言うため'],
       cue: '「not the worst」のあと',
-      line: 'He’s *not the worst*, okay? You know who’s the worst? *That intern* we had a few years ago.',
+      line: 'That kid is the worst. Needs to be fired, Michael. / Michael: He’s *not the worst*, okay? You know who’s the worst? *That intern*…',
       said: '「あいつは最悪じゃない。最悪はだれか分かる？前にいたインターンだ」と返す。',
       mean: 'You know who 〜? ＝ 答えを待たず、自分で答える前置き。ルークから話をそらしている。',
-      trap: '質問なので、みんなに答えさせたいと思いやすい。すぐ自分で That intern と答える。',
+      trap: '質問の形なので、みんなに答えさせたいように聞こえるが、すぐ自分で That intern と答える。',
       use: 'You know who’s the best? My mom.（だれが一番か知ってる？うちの母だよ）' },
 
     { id: 'h1', skill: 'marker', level: 'B2', point: 'intern', seg: [63.7, 75.5],
@@ -124,7 +113,19 @@ export const michaelsNephew: Clip = {
       trap: 'though は文の最後に来ると気づきにくい。but と同じで、前の話を少し打ち消す。',
       use: 'Nice place. Kind of pricey, though.（いい店。ちょっと高いけどね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', seg: [77.1, 82.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', seg: [73.0, 99.6],
+      stem: 'What is the staff’s main problem with Luke?',
+      ja: 'みんなは、ルークの何がいちばん困る？',
+      choices: ['He gets simple jobs wrong', 'He talks about movies too much', 'He comes in late every day'], a: 0,
+      choicesJa: ['かんたんな仕事をまちがえる', '映画の話ばかりする', '毎日おくれて来る'],
+      cue: '「He messed yours up, too」',
+      line: '*He messed yours up, too.* … Did you send those samples…? Because *he didn’t get them*.',
+      said: 'コーヒーの注文をまちがえ、たのまれた見本もとどかない。同僚は「クビにすべき」と言う。',
+      mean: 'mess up ＝ だめにする、まちがえる。かんたんな用事を何度も失敗している。',
+      trap: '映画好きの自己紹介を連想しやすいが、同僚が怒るのは仕事の失敗。messed up と didn’t get them が決め手。',
+      use: 'He keeps getting my order wrong.（いつも注文をまちがえるんだ）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gotto', reveals: ['lookinto'], seg: [77.1, 82.1],
       stem: 'Fill the gap: “He’s ___ go, Mike.”',
       ja: 'すき間をうめよう：「He’s ___ go, Mike.」',
       choices: ['got to', 'good to', 'gonna'], a: 0,
@@ -136,28 +137,28 @@ export const michaelsNephew: Clip = {
       trap: 'good なら短い「グッ」、gonna なら「ガナ」と n が入る。「ガラ」なら got to。',
       use: 'I’ve got to go. Talk later!（もう行かなきゃ。またね）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', seg: [77.6, 85],
+    { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', ctx: true, seg: [77.6, 85],
       stem: 'What does Michael promise to do?',
       ja: 'マイケルは何をすると約束する？',
       choices: ['Check on the problem', 'Keep a close eye on Luke', 'Let Luke go soon'], a: 0,
       choicesJa: ['問題を調べる', 'ルークをよく見はる', 'すぐルークをやめさせる'],
       cue: '「But yeah」のあと',
-      line: 'It’s just coffee, guys. But yeah, *I’ll look into it*, okay?',
+      line: 'He’s got to go, Mike. / Michael: It’s just coffee, guys. But yeah, *I’ll look into it*, okay?',
       said: '「ただのコーヒーだろ。でもまあ、調べてみるよ」と言う。',
       mean: 'look into 〜 ＝ 〜を調べる。その場をおさめる決まり文句。',
       trap: 'look から「見る」と思い、「見はる」に聞こえやすい。look into は中身を調べること。',
       use: 'I’ll look into it and get back to you.（確認して折り返します）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'ifasked', seg: [90.7, 99.6],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'ifasked', ctx: true, seg: [90.7, 99.6],
       stem: 'Does Luke remember sending the samples?',
       ja: 'ルークは見本を送ったことを覚えている？',
       choices: ['No, he isn’t really sure', 'Yes, he remembers it well', 'He says nobody asked him'], a: 0,
       choicesJa: ['いや、はっきりは覚えていない', 'うん、よく覚えている', 'だれにもたのまれていないと言う'],
       cue: '答えの最初の「if」',
-      line: 'If you asked me to do it, *I’m sure I did it*.',
-      said: '「たのまれたなら、きっと送ったはず」と答える。',
+      line: 'Did you send those samples…? He didn’t get them. / Luke: If you asked me to do it, *I’m sure I did it*.',
+      said: '「見本、送った？届いてないって」に「たのまれたなら、きっと送ったはず」と答える。',
       mean: 'If 〜, I’m sure I did ＝「〜なら、やったはず」。覚えていたら「送った」と言うはず。',
-      trap: 'I’m sure だけ聞くと、自信があると思いやすい。if で始まるのは、覚えていない合図。',
+      trap: 'I’m sure だけ聞くと自信がありそうに聞こえるが、if で始まるのは、覚えていない合図。',
       use: 'If I said that, I didn’t mean it.（もしそう言ったなら、本気じゃなかった）' },
 
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'scram', seg: [101.65, 105.45],
@@ -170,7 +171,19 @@ export const michaelsNephew: Clip = {
       trap: 'scramble（あわてて動く）に似て「急げ」に聞こえやすい。scram は一語で「消えろ」。',
       use: 'Okay, kids, scram! I’m working.（ほら、あっち行って！仕事中）', retired: true },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'family', seg: [121.2, 158.7],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'icecream', ctx: true, seg: [108.5, 117.5],
+      stem: 'What does Michael send Luke to buy?',
+      ja: 'マイケルはルークに何を買いに行かせる？',
+      choices: ['Ice cream for everyone', 'Coffee for the staff', 'Lunch for Michael'], a: 0,
+      choicesJa: ['みんなのアイスクリーム', 'みんなのコーヒー', 'マイケルのお昼'],
+      cue: '「What for?」の答え',
+      line: 'Michael: Luke, I want you to go to the supermarket for me. / Luke: What for? / Michael: To get *some ice cream for everybody*.',
+      said: '「スーパーに行ってきて」「何しに？」「みんなにアイスを買ってくるんだ」。',
+      mean: 'What for? ＝「何のために？・何しに？」。答えは To 〜（〜するために）の形で返ってくる。',
+      trap: '朝のコーヒーの失敗が頭に残り、またコーヒーと考えがち。決め手は What for? の答えの ice cream。',
+      use: 'Can you go to the store? — What for?（お店に行ってくれる？ー何しに？）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'family', reveals: ['years'], seg: [131.0, 156.0],
       stem: 'Why is having Luke there a big deal for Michael?',
       ja: 'ルークがいることは、なぜマイケルにとって大事？',
       choices: ['His family cut him off before', 'His sister asked him to do it', 'Luke is a great worker'], a: 0,
@@ -179,7 +192,7 @@ export const michaelsNephew: Clip = {
       line: '…his mother… kind of *cut me off* from that side of the family',
       said: 'ルークの母（異母姉）に、15年前に家族の縁を切られた話をする。',
       mean: 'cut 人 off ＝ 人との縁を切る。甥をやとって、切れた家族とのつながりを取りもどしたい。',
-      trap: 'half-sister（姉）が出るので、姉にたのまれたと思いやすい。cut me off は「縁を切った」。',
+      trap: 'half-sister（異母姉）が出るので、姉にたのまれたと考えがち。cut me off は「縁を切った」。',
       use: 'It means a lot to have you here.（来てくれて本当にうれしい）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'forest', reveals: ['years', 'family'], seg: [133.75, 158.7],
@@ -205,6 +218,18 @@ export const michaelsNephew: Clip = {
       trap: '最後の「フィフティーン」が答え。「フィフティ」なら50、「ファイブ」だけなら5、「フォーティーン」なら14。',
       use: 'See you at nine on the dot.（9時ぴったりに会おう）' },
 
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'stopping', ctx: true, seg: [164.5, 175.5],
+      stem: 'What does Luke say when Michael tells him to stop?',
+      ja: '「やめろ」と言われて、ルークは何と言う？',
+      choices: ['He is stopping, as told', 'He will not stop it', 'It was not him'], a: 0,
+      choicesJa: ['言われたとおりやめている', 'やめない', '自分じゃない'],
+      cue: '「stop it」の返事',
+      line: 'Michael: Not on Oscar’s head. … Luke, come on, stop it. / Luke: What? *I’m stopping it, that’s what you said.*',
+      said: '「ほら、やめろ」に「何？やめてるよ、そう言ったじゃん」と返す。',
+      mean: 'I’m stopping it ＝「今やめてる」。that’s what you said ＝「言われたとおりでしょ」。とぼけた返事。',
+      trap: 'What?（何？）で始まるので、言い返して断ると考えがち。中身は「やめてる」と言いながら、とぼけている。',
+      use: 'I’m doing it, that’s what you said.（やってるよ、言われたとおり）' },
+
     { id: 'at1', skill: 'attitude', level: 'C1', point: 'unclear', seg: [169.4, 180.85],
       stem: 'During the laser pointer back-and-forth, how is Luke acting?',
       choices: ['He’s playing dumb to keep his game going', 'He’s honestly confused by Michael’s orders',
@@ -225,19 +250,7 @@ export const michaelsNephew: Clip = {
       trap: '文法どおり Do you just want と書きたくなる。書き取りは、正しい形でなく言われた音を書く。',
       use: 'So you’re not coming tonight?（じゃあ今夜は来ないってこと？）', retired: true },
 
-    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [178, 184.5],
-      stem: 'What does Michael want Luke to do with the pointer?',
-      ja: 'マイケルは、ルークにポインターをどうしてほしい？',
-      choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,
-      choicesJa: ['電源を切る', 'もっと下に向ける', '少し動かす'],
-      cue: '「No, just」のあと',
-      line: 'No, just *power it down*.',
-      said: '「動かすんじゃない、電源を切れ」と言う。',
-      mean: 'power down ＝ 電源を切る。power off とほぼ同じ。',
-      trap: 'down から「下に向ける」と思いやすい。機械の話の power down は電源のこと。',
-      use: 'Please power down your phones now.（携帯の電源をお切りください）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [178.1, 184.5],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'goahead', seg: [176.5, 180.6],
       stem: 'Type what Luke says: “I’m just gonna ___ it.” (4 words)', answer: 'go ahead and move',
       ja: 'ルークの言葉を入力：「I’m just gonna ___ it.」（4語）',
       cue: '「unclear here」のすぐあと',
@@ -246,6 +259,18 @@ export const michaelsNephew: Clip = {
       mean: 'go ahead and 〜 ＝「かまわず〜する」。and は小さく「ン」だけになる。',
       trap: 'ahead と and がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'I’ll go ahead and order for us.（先に注文しておくね）' },
+
+    { id: 'ph4', skill: 'phrase', level: 'B1', point: 'powerdown', seg: [177.0, 181.1],
+      stem: 'What does Michael want Luke to do with the pointer?',
+      ja: 'マイケルは、ルークにポインターをどうしてほしい？',
+      choices: ['Switch it off', 'Point it lower', 'Move it a little'], a: 0,
+      choicesJa: ['電源を切る', 'もっと下に向ける', '少し動かす'],
+      cue: '「No, just」のあと',
+      line: 'No, just *power it down*.',
+      said: '「動かすんじゃない、電源を切れ」と言う。',
+      mean: 'power down ＝ 電源を切る。power off とほぼ同じ。',
+      trap: 'down から「下に向ける」と勘違いしやすい。機械の話の power down は電源のこと。',
+      use: 'Please power down your phones now.（携帯の電源をお切りください）' },
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'kidding', seg: [201.8, 211.4],
       stem: 'What does “I’m not kidding” mean?',
@@ -270,6 +295,18 @@ export const michaelsNephew: Clip = {
       trap: '言い直しに聞こえるが、ほかの数は順に言えている。同じ数のくり返しは、ためらいの合図。',
       use: 'Last chance. I mean it this time.（最後のチャンス。今度は本気）', retired: true },
 
+    { id: 'k3', skill: 'detail', level: 'B1', point: 'hadto', ctx: true, seg: [221.5, 230.5],
+      stem: 'What does Michael say when asked about it?',
+      ja: '今のは何かと聞かれて、マイケルは何と言う？',
+      choices: ['He had to do it', 'It was only a joke', 'He is very sorry'], a: 0,
+      choicesJa: ['ああするしかなかった', 'ただの冗談だった', '本当にすまない'],
+      cue: '「What … was that?」の返事',
+      line: 'What the hell was that? / Michael: *I had to do that.*',
+      said: '「今の、一体何？」に「ああするしかなかったんだ」と答える。',
+      mean: 'I had to 〜 ＝「〜しなければならなかった」。have to の過去形。the hell は強い驚き（人前では使わない）。',
+      trap: '冗談（kidding）の話が少し前にあったので、冗談だったと考えがち。答えは had to（しかたなかった）。',
+      use: 'Sorry, I had to leave early.（ごめん、早く帰らなきゃいけなかったんだ）' },
+
     { id: 'h2', skill: 'humor', level: 'C1', point: 'capital', seg: [239, 245.7],
       stem: 'In the comment to the camera about punishment, why is the wording funny?',
       choices: ['It’s the phrase for the death penalty, far too big for this',
@@ -291,7 +328,7 @@ export const michaelsNephew: Clip = {
       line: '*That was awesome.* … Yeah, your nephew is *so lame*.',
       said: '「最高だった」「あんたの甥、本当にダサいし」と口々に言う。',
       mean: 'That was awesome ＝「最高だった」。きらっていた甥がこらしめられて、すっきりしている。',
-      trap: '上司が部下をばっすると引くはず、と思いやすい。最初の awesome で決まる。',
+      trap: '上司が部下を罰すると引くはず、と考えがち。決め手は最初の awesome（最高）。',
       use: 'That was awesome! Let’s do it again.（最高！もう一回やろう）' },
 
     { id: 'd6', skill: 'detail', level: 'B2', point: 'betty', seg: [255.2, 266.4],
@@ -302,7 +339,7 @@ export const michaelsNephew: Clip = {
       cue: '「Finally」のあと',
       line: '*Finally, a kid who’s not talking about Betty White.* Of course I follow him.',
       said: '「どこもベティ・ホワイトの話ばかり。やっとそうじゃない若者がいた」と言う。',
-      mean: 'Finally, 〜 ＝「やっと〜がいた」。流行りの話をしないのが気に入っている。',
+      mean: 'Finally, 〜 ＝「やっと〜がいた」。ベティ・ホワイト（人気の高齢女優）の話をしないのが気に入っている。',
       trap: 'Betty White が何度も聞こえ、その投稿をしていると思いやすい。who’s not の not を落とさない。',
       use: 'Finally, someone who gets it.（やっと分かってくれる人がいた）' },
   ]

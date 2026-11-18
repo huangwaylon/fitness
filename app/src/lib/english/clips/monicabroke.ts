@@ -1,11 +1,16 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 2, ctx 7, tx 8
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 6, new 1
 // “Monica Is Broke | Friends” (the official Friends channel, Best of Season 2): out of work after a bad interview,
 // Monica turns down a loan, is told to borrow from her parents, finds them turning her room into a gym, admits at
 // dinner that she was let go (her dad says she has savings), and finally takes a loan paid in dinosaur checks.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Monica (13.2 s, 106.5 s), Jack
 // (91.1 s), Judy (130.9 s); Ross only as "Ross's room" and "your brother". The lender at 13–29 s and 155–175 s is never
-// named, so stems say "the lender" and no key rests on who it is. Untested on purpose: 64–75 s, 78–89 s, 90–94 s,
-// 132–136 s, 151 s, 176–188 s (a jab at her old weight).
+// named, so no stem names the lender and no key rests on who it is. Untested on purpose: 83–92 s, 132–134 s, 151 s,
+// 176–188 s (a jab at her old weight).
+// EXCLUDE 63–74.5 (Jack's remark on a tennis player's body)
+// EAR CHECK: 75–82.5 s k1 — whisper lumps 61.7–85.7 s into two lines; confirm the grandson exchange sits in the seg
+//   and Judy's "a woman in my office…" remark (≈ 83 s) doesn't
+// EAR CHECK: 93–99.5 s k2 — "Where have you been? / Emotional hell." (whisper line 94.2–105.4 s): confirm the timing
 // EAR CHECK: 17.3 s s1 d1 — "couldn't" (both sources): said with the t dropped, ending on the n (≈ "couldn")
 // EAR CHECK: 8.0 s x2 — "do you have any" (both sources): do you runs into one weak syllable, have any linked
 import type { Clip } from '../types.ts';
@@ -17,8 +22,8 @@ export const monicabroke: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'rent', reveals: ['possib'], seg: [1.5, 29.9],
-      stem: 'At the start, what is Monica’s main worry?',
-      ja: '最初、モニカのいちばんの心配は？',
+      stem: 'What is Monica worried about?',
+      ja: 'モニカは何を心配している？',
       choices: ['Paying this month’s rent', 'Owing money to a friend', 'Telling her parents the news'], a: 0,
       choicesJa: ['今月の家賃を払うこと', '友だちにお金を借りていること', '両親に知らせること'],
       cue: '「ほかの当ては？」の答え。',
@@ -29,10 +34,10 @@ export const monicabroke: Clip = {
       use: 'I might not make rent this month.（今月の家賃、払えないかも）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'shower', seg: [1.8, 7.5], keep: true,
-      stem: 'Which shower washed off the interview, Monica says?',
-      ja: 'モニカは、何回目のシャワーで面接の気分が落ちたと言う？',
-      choices: ['Her fourth', 'Her fifth', 'Her fifteenth'], a: 1,
-      choicesJa: ['4回目', '5回目', '15回目'],
+      stem: 'How many showers did Monica take?',
+      ja: 'モニカは何回シャワーを浴びた？',
+      choices: ['4', '5', '15'], a: 1,
+      choicesJa: ['4回', '5回', '15回'],
       cue: '「shower」の直前。',
       line: 'I think that *fifth shower* actually got the interview off me.',
       said: '「5回目のシャワーで、やっと面接が落ちた気がする」と言う。',
@@ -72,6 +77,18 @@ export const monicabroke: Clip = {
       trap: '聞き違えたのではなく、わざと言葉を拾って遊んでいる。Oh, yeah は皮肉の前置き。',
       use: 'Good news? Well, it can’t get worse.（いい知らせ？まあ、これ以上悪くはならないよ）' },
 
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guilty', reveals: ['couldnt'], ctx: true, seg: [12.0, 24.0],
+      stem: 'Why does Monica say no to the loan?',
+      ja: 'モニカはなぜお金を借りるのを断る？',
+      choices: ['She’d feel bad if she paid late', 'She’d rather ask her parents', 'She already has the money'], a: 0,
+      choicesJa: ['すぐ返せないと気まずいから', '両親に頼みたいから', 'もうお金はあるから'],
+      cue: '「No, no, no」のあと。',
+      line: 'If you want, I can lend you some money. / Monica: No, no, no, cuz if I *couldn’t pay you back right away*, then I’d *feel guilty and tense*…',
+      said: '「少し貸そうか？」に「いい、いい。すぐ返せなかったら、会うたびに気まずくなる」と断る。',
+      mean: 'pay 人 back ＝ 人にお金を返す。お金の貸し借りで関係がぎくしゃくするのがいや。',
+      trap: 'mom and dad（両親）は相手があとで出す話。理由は返せないときの気まずさ。',
+      use: 'I don’t want things to get weird.（気まずくなりたくないの）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'couldnt', reveals: ['guilty'], seg: [15, 27],
       stem: 'Fill the gap: “cuz if I ___ pay you back right away…”',
       ja: '空いている所に入る語は？',
@@ -83,18 +100,6 @@ export const monicabroke: Clip = {
       mean: 'couldn’t の t はほぼ消え、「クドゥン」と「ン」で止まる。もしもの話なので過去の形。',
       trap: 'could には「ン」がなく、can’t は「キャン」で始まる。「クドゥン」なら couldn’t。',
       use: 'If I couldn’t come, I’d call you.（来られなかったら電話するね）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guilty', reveals: ['couldnt'], seg: [15, 27],
-      stem: 'Why does Monica say no to the loan?',
-      ja: 'モニカはなぜお金を借りるのを断る？',
-      choices: ['She’d feel bad if she paid late', 'She’d rather ask her parents', 'She’s too proud to borrow'], a: 0,
-      choicesJa: ['すぐ返せないと気まずいから', '両親に頼みたいから', 'プライドが高くて借りられない'],
-      cue: '「No, no, no」のあと。',
-      line: 'if I *couldn’t pay you back right away*, then I’d *feel guilty and tense*',
-      said: 'すぐに返せなかったら、会うたびに気まずくなる、と断る。',
-      mean: 'pay 人 back ＝ 人にお金を返す。お金の貸し借りで関係がぎくしゃくするのがいや。',
-      trap: 'mom and dad（両親）は相手があとで出す話。理由は返せないときの気まずさ。',
-      use: 'I don’t want things to get weird.（気まずくなりたくないの）' },
 
     // anchor: 24.4–25.9 s "guilty and tense" are Monica's own words from 18.9–19.4 s, now pinned on her and her parents
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'already', seg: [21.5, 29.4], retired: true,
@@ -129,16 +134,16 @@ export const monicabroke: Clip = {
       line: 'We’re *turning your room into a gym*.',
       said: '「あなたの部屋をジムにするの」と言う。',
       mean: 'turn A into B ＝ A を B に変える。だから昔の荷物を出してきた。',
-      trap: '古い荷物が出てくるので「人に貸す」と思いやすい。turning … into のあとが答え。',
+      trap: '古い荷物が出てくるので「人に貸す」と考えがち。決め手は turning … into のあと。',
       use: 'We turned the garage into an office.（ガレージを仕事部屋にしたんだ）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'whynot', seg: [45.8, 53.2],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'whynot', ctx: true, seg: [44.0, 53.2],
       stem: 'How does Monica sound when she answers the surprise?',
       ja: 'サプライズへの返事で、モニカはどんな感じ？',
       choices: ['Upset, but polite', 'Happy, but surprised', 'Calm and fine with it'], a: 0,
       choicesJa: ['不満だけど、ていねい', 'うれしいけど、おどろいている', '落ち着いていて、平気'],
       cue: '「Wow」のあとの質問。',
-      line: 'Wow, that is a surprise. Just *one little question*, uh, *why not Ross’s room*?',
+      line: 'Judy: We’re turning your room into a gym. / Monica: Wow, that is a surprise. Just *one little question*, uh, *why not Ross’s room*?',
       said: '「驚いた。ひとつだけ聞くけど、なんでロスの部屋じゃないの？」と言う。',
       mean: 'Just one little question ＝ ひとつだけ聞かせて。不満を、ていねいな言い方で包んでいる。',
       trap: 'Wow、surprise から喜んでいると思いやすい。「なぜ兄じゃなく私？」は不満のしるし。',
@@ -157,16 +162,16 @@ export const monicabroke: Clip = {
       trap: 'トロフィーの話なので「賞好きの親」と取りやすいが、問うのは「なぜ兄でなく私か」。',
       use: 'Why is it always me?（なんでいつも私なの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'trophies', seg: [50.5, 62.5],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'trophies', ctx: true, seg: [50.5, 62.5],
       stem: 'Why didn’t her parents use Ross’s room?',
       ja: '両親はなぜロスの部屋を使わなかった？',
       choices: ['They won’t move his awards', 'His old science kits fill it', 'They keep it for his son'], a: 0,
       choicesJa: ['ロスの賞を動かしたくない', '昔の理科の道具でいっぱい', 'ロスの息子のために取ってある'],
       cue: '「your brother has」のあと。',
-      line: 'your brother has so many *science trophies and plaques and merit badges*… we *didn’t want to disturb them*.',
+      line: 'Monica: Why not Ross’s room? / Your brother has so many *science trophies and plaques and merit badges*… we *didn’t want to disturb them*.',
       said: 'ロスの部屋には科学のトロフィーや盾、バッジが多く、動かしたくなかった、と言う。',
       mean: 'disturb ＝ 動かして乱す。trophies, plaques, badges ＝ どれも賞の品。',
-      trap: 'science だけ聞くと理科の道具に思いやすい。並ぶのは賞の品ばかり。',
+      trap: 'science だけ聞くと理科の道具を連想しやすい。並ぶのは賞の品ばかり。',
       use: 'Please don’t disturb my desk.（机の上、いじらないでね）' },
 
     { id: 't2', skill: 'attitude', level: 'C1', point: 'forbid', seg: [58.4, 62.5], retired: true,
@@ -180,19 +185,43 @@ export const monicabroke: Clip = {
       trap: '言葉どおりなら同意だが、自分の部屋は片づけられた直後。状況と言葉が逆なら皮肉を疑う。',
       use: 'Oh, God forbid we’re five minutes late.（5分遅れたら大変だもんね（皮肉））' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'asked', seg: [99.9, 111.9],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'grandson', ctx: true, seg: [75.0, 82.5],
+      stem: 'Where is the grandson today?',
+      ja: '孫は今日どこにいる？',
+      choices: ['With Carol and Susan', 'At school all day', 'At home with a sitter'], a: 0,
+      choicesJa: ['キャロルとスーザンのところ', '一日じゅう学校', '家でシッターと'],
+      cue: '「You didn’t bring him?」の答え',
+      line: 'Judy: Where’s my grandson? You didn’t bring him? / No, he’s at *Carol and Susan’s* today.',
+      said: '「孫はどこ？連れてこなかったの？」に「うん、今日はキャロルとスーザンのところ」と答える。',
+      mean: 'at 〜’s ＝「〜の家に」。’s のあとの house が省かれている。',
+      trap: 'No（いいえ）から「連れてきた」と考えがち。英語の No は「連れてこなかった」＝日本語の「うん」。',
+      use: 'I’m staying at my sister’s tonight.（今夜は姉の家に泊まる）' },
+
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'whereabouts', ctx: true, seg: [93.0, 99.5],
+      stem: 'What does Monica answer to “Where have you been?”',
+      ja: '「Where have you been?」に、モニカは何と答える？',
+      choices: ['A really bad time', 'Out at the new gym', 'Busy at her job'], a: 0,
+      choicesJa: ['ひどくつらい時間', 'ジムに行っていた', '仕事で忙しかった'],
+      cue: '短い質問への2語の答え',
+      line: 'Where have you been? / Monica: *Emotional hell.*',
+      said: '「どこに行ってたの？」に「心の地獄よ」と答える。',
+      mean: 'Where have you been? ＝「どこに行ってたの？」。答えは場所でなく気分。emotional ＝ 心の。hell ＝ 地獄（強い言葉）。',
+      trap: 'Where（どこ）と聞かれたので場所の答えを考えがち。ここは「つらい思いをしてた」という冗談の答え。',
+      use: 'Where have you been? I missed you.（どこ行ってたの？会いたかったよ）' },
+
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'asked', ctx: true, seg: [99.9, 111.9],
       stem: 'Did her parents lend Monica the money?',
       ja: '両親はモニカにお金を貸した？',
       choices: ['She hasn’t asked yet', 'They said no to her', 'They gave her the money'], a: 0,
       choicesJa: ['まだ頼んでいない', '断られた', 'お金を貸してくれた'],
       cue: '「No, but」のあと。',
-      line: 'No, but that’s probably cuz I *haven’t asked them yet*.',
+      line: 'So, did they lend you the money yet? / Monica: No, but that’s probably cuz I *haven’t asked them yet*.',
       said: '「借りられた？」「ううん、たぶんまだ頼んでないから」と答える。',
       mean: 'haven’t 〜 yet ＝ まだ〜していない。断られたのではなく、言い出せていない。',
-      trap: 'No が先に来るので断られたと思いやすい。but のあとが事情。',
+      trap: 'No が先に来るので断られたと考えがち。決め手は but のあと。',
       use: 'I haven’t asked yet, but I will.（まだ聞いてないけど、聞いてみる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'panic', reveals: ['dip'], seg: [110.0, 150.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'panic', reveals: ['dip', 'fired', 'tenpct'], seg: [113.0, 141.0],
       stem: 'How do Monica’s parents react to her news?',
       ja: 'モニカの知らせに、両親はどうする？',
       choices: ['Mom panics, Dad calms her', 'Dad gets angry at Monica', 'Both feel hurt and sad'], a: 0,
@@ -213,16 +242,16 @@ export const monicabroke: Clip = {
       line: 'I’m sorry *I didn’t tell you this before*, but um, I’m no longer at my job.',
       said: '「前に言わなくてごめん。実はもう仕事にいないの」と話し始める。',
       mean: 'I’m sorry I didn’t 〜 ＝ 〜しなくてごめん。言いにくい話の前の謝り方。',
-      trap: '仕事の話なので、仕事を失ったことを謝ったと思いやすい。謝ったのは言わなかったこと。',
+      trap: '仕事の話なので、仕事を失ったことを謝ったと勘違いしやすい。謝ったのは言わなかったこと。',
       use: 'Sorry I didn’t tell you before.（前に言わなくてごめん）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fired', seg: [114.2, 126.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'fired', ctx: true, seg: [114.2, 126.2],
       stem: 'How does Monica first tell them about her job?',
       ja: 'モニカは最初、仕事のことをどう伝える？',
       choices: ['She avoids saying she was fired', 'She tells them she was fired', 'She says she chose to quit'], a: 0,
       choicesJa: ['クビになったとは言わない', 'クビになったと言う', '自分で辞めたと言う'],
       cue: '仕事の言い方と、「Why?」の答え。',
-      line: 'I’m *no longer at my job*. I had to *leave* it. — Why? — Because *they made me*.',
+      line: 'Monica: I’m *no longer at my job*. I had to *leave* it. / Why? / Monica: Because *they made me*.',
       said: '「もうその仕事にはいないの。辞めるしかなくて」。理由は「向こうがそうさせたから」。',
       mean: 'no longer ＝ もう〜ない。fired（クビ）という語をさけて、ぼかしている。',
       trap: 'had to leave から、自分で辞めたと思いやすい。they made me でやめさせられたと分かる。',
@@ -290,8 +319,8 @@ export const monicabroke: Clip = {
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [161.1, 170.2],
       stem: 'What does “I mean” do after “Yeah, yeah”?',
       ja: '「Yeah, yeah」のあとの「I mean」の働きは？',
-      choices: ['Gives a reason for it', 'Corrects what she said', 'Says it was a joke'], a: 0,
-      choicesJa: ['理由を言う', '言ったことを直す', '冗談だったと言う'],
+      choices: ['Starts a reason', 'Fixes a mistake', 'Says it’s a joke'], a: 0,
+      choicesJa: ['理由を言い始める', '言いまちがいを直す', '冗談だと言う'],
       cue: '恐竜の小切手の話のあと。',
       line: 'Yeah, *I mean*, you get your money and you learn a little something.',
       said: '「うん。だってさ、お金はもらえるし、ちょっと勉強にもなる」と言う。',
