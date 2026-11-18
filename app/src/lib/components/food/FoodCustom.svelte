@@ -146,7 +146,7 @@
   .nuts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
   .kc input { font-size: var(--fs-title); }
   .hint { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
-  .hint.bad { color: var(--c-coral); }
+  .hint.bad { color: var(--coral-text); }
   .ih { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
   .ih .big { font-size: var(--fs-title); white-space: nowrap; }
   .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0; }

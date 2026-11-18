@@ -1411,6 +1411,7 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
   await lv.locator('[data-custom-g]').fill('10'); // 2,400 kcal per 100 g: no food is that dense
   await expect(lv.locator('[data-custom-g]')).toHaveAttribute('aria-invalid', 'true');
   await expect(lv.locator('[data-custom-g-hint]')).toContainText('多すぎます');
+  await expect(lv.locator('[data-custom-g-hint]')).toHaveCSS('color', 'rgb(173, 63, 43)'); // --coral-text (the fill --c-coral read 2.2:1)
   await expect(save).toHaveAttribute('aria-disabled', 'true');
   await lv.locator('[data-custom-g]').fill('１２０');
   await lv.locator('[data-custom-nut=p]').fill('20');

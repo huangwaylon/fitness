@@ -191,7 +191,7 @@
   .u { flex: none; font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
   .hint { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--text); }
-  .hint.bad::before { content: '! '; color: var(--c-coral); }
+  .hint.bad::before { content: '! '; color: var(--coral-text); }
   /* the gentle note: the panel's ink on a soft yuzu wash, never coral (the goal is still allowed) */
   .warn {
     margin: 0; padding: 6px 10px; border-radius: 10px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text);

@@ -324,5 +324,5 @@
   textarea:focus { outline: none; box-shadow: inset 0 0 0 3px var(--c-ink); }
   .count { margin-right: auto; color: var(--c-ink-soft); font: 700 var(--fs-s) / 1 var(--font-num); white-space: nowrap; }
   .count.low { color: var(--c-ink); }
-  .count.low::before { content: '! '; color: var(--c-coral); }
+  .count.low::before { content: '! '; color: var(--coral-text); }
 </style>

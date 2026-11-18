@@ -859,7 +859,7 @@
   /* 全部片付ける asked: キャンセル beside the coral one (BuyConfirm's footer) */
   .clear-note { margin: 0 4px 8px; text-align: center; text-wrap: pretty; word-break: auto-phrase; }
   .hint.bad { color: var(--c-ink); }
-  .hint.bad::before { content: '! '; color: var(--c-coral); }
+  .hint.bad::before { content: '! '; color: var(--coral-text); }
   /* 広さ: three cards, each NH's room as a plan */
   .sizes { flex: 1; min-width: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 2px; }
   .sz {

@@ -296,5 +296,5 @@
   .door .ico { width: 44px; height: 44px; }
   .foot { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
   .why { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text); text-align: center; }
-  .why::before { content: '! '; color: var(--c-coral); }
+  .why::before { content: '! '; color: var(--coral-text); }
 </style>
