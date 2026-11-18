@@ -1,9 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 11, rewrite 8, retire 2, new 2, ctx 4, tx 9
 // A2 REVIEW 2026-11-17: keep 6, rewrite 14, retire 4, new 1
 // “Leslie Runs Again | Parks and Recreation” (the official Parks and Recreation channel, Season 6): Leslie packs up her
-// council office, sees Councilman Dexhart's new scandal on TV, decides to run for his seat, and asks everyone for advice.
-// Segments from the captions, words from whisper (2026-11-16). The news stretch (31–90 s: sexting, "junk", "gets me
-// off") is left out on purpose. Nothing is built on 128 s (whisper "campaign form", captions "campaign for him"), on
-// the banner (167–176 s, garbled in both and mostly visual), or on the last speaker at 252.6 s (not named).
+// council office, sees Councilman Dexhart's new scandal on TV, decides to run for his seat, and asks everyone for advice;
+// all say no, and she runs anyway. The caller at 0 s is unnamed. Segments from the captions, words from whisper
+// (2026-11-16). Nothing is built on 128 s (whisper "campaign form", captions "campaign for him"), on the banner
+// (167–176 s, garbled in both and mostly visual), or on the last speaker at 252.6 s (not named).
+// EXCLUDE 56.2–77
+// EXCLUDE 88.3–90.4
+// EXCLUDE 237.8–239
+// SKIP 52–90.5: Dexhart's sexting confession and pseudonyms (explicit; the EXCLUDEd lines)
 import type { Clip } from '../types.ts';
 
 export const runsAgain: Clip = {
@@ -24,13 +29,13 @@ export const runsAgain: Clip = {
       use: 'I’m sorry you lost your job.（仕事のこと、大変だったね）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'leave', seg: [11.5, 30],
-      stem: 'What does Ben tell Leslie at the start?',
-      ja: '最初にベンはレスリーに何と言う？',
-      choices: ['Leaving the council is best', 'She will be back there soon', 'She should get her things back'], a: 0,
-      choicesJa: ['議会を離れるのが一番いい', 'すぐそこに戻る', '荷物を取り戻すべき'],
+      stem: 'What does Ben tell Leslie as she packs up?',
+      ja: '荷物を片付けるレスリーに、ベンは何と言う？',
+      choices: ['Leaving the council is best', 'She will be back there soon', 'She should return for the salt'], a: 0,
+      choicesJa: ['議会を離れるのが一番いい', 'すぐそこに戻る', '塩を取りに戻るべき'],
       cue: '「trust me」まで',
       line: 'getting away from the city council is *absolutely the best thing for you*',
-      said: '荷物を片付けるレスリーに、「議会を離れるのが一番だよ」と言う。',
+      said: '荷物を片付けるレスリーに、「議会を離れるのが一番だよ。信じて」と言う。',
       mean: 'getting away from 〜 ＝「〜から離れること」。best thing for you ＝「一番いい」。',
       trap: 'go back for those（取りに戻る）はレスリーの言葉。ベンは止めている。',
       use: 'Trust me, this is best for you.（信じて、これが一番だよ）' },
@@ -46,6 +51,18 @@ export const runsAgain: Clip = {
       trap: 'broken から「約束を破る」と思いやすい。同じ所を回るレコードの様子。',
       use: 'Sorry to sound like a broken record, but…（何度も言ってごめん、でも…）' },
 
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'straight', seg: [43.4, 51.9],
+      stem: 'What does Dexhart say about the stories?',
+      ja: 'うわさについて、デックスハートは何と言う？',
+      choices: ['They are all true', 'They are all lies', 'Only some are true'], a: 0,
+      choicesJa: ['全部本当', '全部うそ', '一部だけ本当'],
+      cue: '「set the record straight」のあと',
+      line: 'I’m here to *set the record straight*. *I totally did all of it.*',
+      said: 'デックスハートが「真相をはっきりさせに来ました。全部私がやりました」と言う。',
+      mean: 'set the record straight ＝ 文字どおりは「記録をまっすぐにする」→ 誤解を正す。否定の前置きなのに、全部認めるのが笑い。',
+      trap: 'ふつうは否定の前に言うので、うそだと言うと考えがち。続く did all of it が答え。',
+      use: 'Let me set the record straight.（誤解を正させてください）' },
+
     // retired (A2): predicting “what comes next” is not a set reply
     { id: 'r1', skill: 'predict', level: 'B2', point: 'herself', seg: [90.1, 97.2], then: [97.2, 104.6], retired: true,
       stem: 'After Leslie says someone will beat him in the next election, what comes next?',
@@ -58,6 +75,18 @@ export const runsAgain: Clip = {
       mean: 'someone とわざとぼかすのは、自分のことを匂わせる前置き。',
       trap: 'タイトルから応援の頼みが来ると思いやすい。ぼかした主語は話し手自身のことが多い。',
       use: 'I know someone who could do it.（それができる人、知ってるよ）' },
+
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'beatshim', ctx: true, seg: [90.5, 97.4],
+      stem: 'When does Leslie say they’ll be free of Dexhart?',
+      ja: 'デックスハートと関わらずに済むのはいつだと、レスリーは言う？',
+      choices: ['When someone beats him', 'When she leaves office', 'When his scandal ends'], a: 0,
+      choicesJa: ['誰かが選挙で彼に勝ったら', '自分が議員を辞めたら', 'スキャンダルが終わったら'],
+      cue: '「You’re right」のあと',
+      line: 'Ben: Well, at least you won’t have to deal with that guy anymore. / Leslie: You’re right. *Not after someone beats him* in the next election.',
+      said: '「もうあの男と関わらずに済むね」に、「次の選挙で誰かが彼に勝ったらね」と返す。',
+      mean: 'at least ＝ 少なくとも（悪い中のいい点）。Not after 〜 ＝「〜のあとなら」関わらない、という条件。',
+      trap: 'You’re right で、議員を辞めるからと考えがち。レスリーの条件は someone beats him。',
+      use: 'Well, at least it’s not raining.（まあ、少なくとも雨じゃないし）' },
 
     // retired (A2): a “why does the audience laugh” item
     { id: 'h1', skill: 'humor', level: 'C1', point: 'isit', reveals: ['herself'], seg: [97.0, 108.4], retired: true,
@@ -84,16 +113,16 @@ export const runsAgain: Clip = {
       trap: 'run を「走る」と思いやすい。選挙の話では「立候補する」。',
       use: 'She’s running for mayor.（彼女は市長選に出る）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'district', seg: [118.4, 130.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'district', ctx: true, seg: [118.4, 130.1],
       stem: 'How does Leslie solve the problem of where they live?',
       ja: '住んでいる地区の問題を、レスリーはどう解決する？',
       choices: ['Rent a second apartment there', 'Run in her own district', 'Move there after she wins'], a: 0,
       choicesJa: ['そこに2つ目の部屋を借りる', '自分の地区で出る', '勝ってから引っ越す'],
       cue: '「Not yet」のあと',
-      line: 'we don’t even live in Dexhart’s district. — Not yet. But we can go and *rent a second apartment*',
-      said: '「地区に住んでない」と言われ、「まだね。もう1つ部屋を借りればいい」と言う。',
-      mean: 'Not yet ＝「まだね」（これから住む）。rent ＝ 借りる。',
-      trap: 'district が何度も出るので、地区を変えると思いやすい。but のあとが案。',
+      line: 'Ben: We don’t even live in Dexhart’s district. / Leslie: *Not yet.* But we can go and *rent a second apartment*',
+      said: '「彼の選挙区に住んでもいない」と言われ、「まだね。もう1つ部屋を借りればいい」と言う。',
+      mean: 'Not yet ＝「まだね」（これから住む）。短い決まった返事。rent ＝ 借りる。',
+      trap: 'district が何度も出るので、地区を変えて出ると考えがち。but のあとが案。',
       use: 'We could rent a place for a month.（ひと月だけ部屋を借りてもいいね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'percent', reveals: ['district'], seg: [122.5, 132.6],
@@ -125,19 +154,20 @@ export const runsAgain: Clip = {
       choicesJa: ['勝つためにずるい手を使う', '過去がスキャンダルだらけ', 'お金をたくさん使う'],
       cue: '「And also」のあと',
       line: 'Dexhart *fights dirty*. And he’s never lost an election because he runs *brutal*… campaigns.',
-      said: '「デックスハートは汚い手を使うし、選挙で負けたことがない」と言う。',
-      mean: 'fight dirty ＝「反則も気にせず戦う」。戦い方の話。',
-      trap: 'スキャンダルの話のあとなので、dirty を「汚れた過去」と思いやすい。',
+      said: 'ベンが「デックスハートは汚い手を使うし、選挙で負けたことがない」と言う。',
+      mean: 'fight dirty ＝ 文字どおりは「汚く戦う」→ 反則も気にせず戦う。戦い方の話。',
+      trap: 'スキャンダルの話のあとなので、dirty を「汚れた過去」と考えがち。戦い方の話。',
       use: 'Be careful, he fights dirty.（気をつけて、あの人は手段を選ばない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bringit', seg: [139.9, 150.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'bringit', ctx: true, seg: [139.9, 150.9],
       stem: 'How does Leslie take Ben’s warning?',
       ja: 'ベンの注意を、レスリーはどう受け止める？',
       choices: ['She is ready to fight', 'She is scared of him', 'She wants a clean fight'], a: 0,
       choicesJa: ['戦う気満々', '彼が怖い', 'きれいに戦いたい'],
-      cue: '最初の2語と、最後の言葉', line: 'Well, *so what*? … I say *bring it on*.',
-      said: '「だから何？弱みは十分握ってる。かかってこい」と言う。',
-      mean: 'So what? ＝「だから何？」。bring it on ＝「かかってこい・受けて立つ」。',
+      cue: '最初の2語と、最後の言葉',
+      line: 'Ben: He’s never lost an election because he runs brutal… campaigns. / Leslie: Well, *so what*? … I say *bring it on*.',
+      said: '「だから何？弱みならたっぷり握ってる。受けて立つ」と言う。',
+      mean: 'So what? ＝「だから何？」。bring it on ＝ 文字どおりは「それを持ってこい」→ かかってこい、受けて立つ。',
       trap: '注意されたら心配するのが普通の流れ。でも So what? は「気にしない」の合図。',
       use: 'A harder test? Bring it on.（もっと難しい？受けて立つよ）' },
 
@@ -174,7 +204,7 @@ export const runsAgain: Clip = {
       trap: 'listen から「私の話を聞いて」と思いやすい。to yourself（自分に）を聞く。',
       use: 'Listen to yourself. That’s not like you.（自分の言葉を聞いて。らしくないよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'support', seg: [183, 190.3],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'support', seg: [183, 190.3], retired: true,
       stem: 'How does Leslie feel about Ben’s objection?',
       ja: 'ベンの反対に、レスリーはどんな気持ち？',
       choices: ['Upset with Ben', 'Happy with Ben', 'Afraid of Ben'], a: 0,
@@ -197,7 +227,7 @@ export const runsAgain: Clip = {
       trap: 'not a coincidence だけだと「仕組まれた」と思いやすい。次の文が決め手。',
       use: 'Maybe it was meant to be.（運命だったのかもね）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'feedback', reveals: ['meeting'], seg: [192.3, 200.9],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'feedback', reveals: ['meeting'], seg: [192.3, 200.9], retired: true,
       stem: 'Why does Ben suggest bringing everyone in?',
       ja: 'ベンはなぜみんなを呼ぼうと言う？',
       choices: ['He hopes they’ll say no', 'He wants help with the campaign', 'He wants them to hear first'], a: 0,
@@ -209,15 +239,16 @@ export const runsAgain: Clip = {
       trap: '直前まで反対していたので、手伝いの話ではない。流れで考える。',
       use: 'Why don’t we ask the others?（ほかの人にも聞いてみない？）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'talking', seg: [197, 202.9],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'talking', ctx: true, seg: [192.9, 200.1],
       stem: 'What does “Now you’re talking” mean?',
       ja: '「Now you’re talking」はどういう意味？',
       choices: ['That’s more like it', 'Now you’re saying too much', 'Now it’s your turn'], a: 0,
       choicesJa: ['そうこなくちゃ', 'しゃべりすぎ', '今度はあなたの番'],
-      cue: '提案の直後', line: '— *Now you’re talking.*',
-      said: 'ベンの提案に、すぐ「そうこなくちゃ」と返す。',
-      mean: 'Now you’re talking ＝「いいね、そうこなくちゃ」。相手の案に乗るときの決まり文句。',
-      trap: '文字どおり「今あなたが話している」と思いやすい。気に入った案への返事。',
+      cue: 'ベンの提案の直後',
+      line: 'Ben: Why don’t we gather everyone in here… and we get some feedback. / Leslie: *Now you’re talking.*',
+      said: '「みんなを集めて意見を聞こう」というベンの提案に、すぐ「そうこなくちゃ」と返す。',
+      mean: 'Now you’re talking ＝ 文字どおりは「今あなたは話している」→ やっといい話をしている＝そうこなくちゃ。相手の案に乗る決まり文句。',
+      trap: '文字どおり「今あなたが話している」と考えがち。気に入った案への返事。',
       use: 'Free dessert? Now you’re talking.（デザート無料？そうこなくちゃ）' },
 
     // retired (A2): a “why is her line funny” item
@@ -232,27 +263,26 @@ export const runsAgain: Clip = {
       trap: '相手を責めてはいない。良いほうに読もうとする言い方と、確かめる right? を聞く。',
       use: 'That’s a good sign, right?（いい兆しだよね？）' },
 
-    // A2: seg was 52 s (the gist cap is 45)
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'meeting', seg: [207.5, 252.5],
-      stem: 'How does the group meeting go for Leslie?',
-      ja: 'みんなとの話し合いは、レスリーにとってどうなる？',
-      choices: ['All say no, but she runs', 'Only Ron says no', 'Most of them say yes'], a: 0,
-      choicesJa: ['全員反対だが、それでも出る', 'ロンだけが反対する', 'ほとんどが賛成する'],
-      cue: '一人ずつの答えと最後の一言',
-      line: 'This is the worst. … I do not think you should run again. … I am running again *with or without you*.',
-      said: '発表に誰も喜ばず、一人ずつ聞いてもみな反対。それでも出馬すると言う。',
-      mean: 'with or without you ＝「あなたたちがいてもいなくても」。助言を聞く気はなかった。',
-      trap: 'アンディの「でも違うかも」で意見が割れたと思いやすいが、彼も危ないと言っている。',
-      use: 'Everyone said no, but I did it anyway.（みんな反対したけど、やった）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'meeting', seg: [207.5, 237.6],
+      stem: 'What do the others think of Leslie’s plan?',
+      ja: 'みんなはレスリーの計画をどう思う？',
+      choices: ['They think it’s a bad idea', 'They want to help her run', 'They can’t decide about it'], a: 0,
+      choicesJa: ['よくない考えだと思う', '選挙を手伝いたい', '決められない'],
+      cue: '発表のあとの沈黙と、一人ずつの答え',
+      line: 'I heard a lot of bad ideas today. *This is the worst.* … you probably *shouldn’t* do it.',
+      said: '発表に誰も喜ばず、一人ずつ聞いても「最悪」「やめたほうがいい」「危なそう」と言われる。',
+      mean: 'shouldn’t ＝ 〜しないほうがいい。誰も賛成していない。拍手のない沈黙もその表れ。',
+      trap: 'アンディの「でも違うかも」で意見が割れたと考えがち。彼も危ないと言っている。',
+      use: 'Everyone said it was a bad idea.（みんな、よくない考えだと言った）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'worst', reveals: ['meeting'], seg: [218, 224.9],
       stem: 'How does the first person to answer rate the idea?',
       ja: '最初に答えた人は、この案をどう言う？',
-      choices: ['The worst idea all day', 'A pretty good idea', 'Bad, but not the worst'], a: 0,
-      choicesJa: ['今日いちばんひどい案', 'かなりいい案', '悪いが、いちばんではない'],
+      choices: ['The worst idea all day', 'A pretty good idea', 'The best idea all day'], a: 0,
+      choicesJa: ['今日いちばんひどい案', 'かなりいい案', '今日いちばんいい案'],
       cue: '「a lot of bad ideas」のあと',
       line: 'Leslie, no offense. I heard a lot of bad ideas today. *This is the worst.*',
-      said: '「悪いけど、今日は悪い案をたくさん聞いた。これが一番ひどい」と言う。',
+      said: '「悪いけど、今日はひどい案をたくさん聞いた。これが最悪」と言う。',
       mean: 'no offense ＝「気を悪くしないで」。きつい本音の前置き。the worst ＝ いちばん悪い。',
       trap: 'no offense のあとはほめ言葉ではなく、厳しい意見が来る合図。',
       use: 'No offense, but that’s a bad idea.（悪いけど、それはやめたほうがいい）' },
@@ -264,10 +294,10 @@ export const runsAgain: Clip = {
       choicesJa: ['出ないほうがいい', '出たほうがいい', '待ったほうがいい'],
       cue: '「But that means」のあと',
       line: 'I would love it if you ran an *insane* campaign… *But that means* you probably *shouldn’t* do it.',
-      said: '「むちゃな選挙戦になったら最高。だからやめたほうがいい」と言う。',
+      said: '「むちゃくちゃな選挙戦になったら最高。でもそれって、やめたほうがいいってこと」と言う。',
       mean: 'I would love it ＝「最高に楽しい」。but that means ＝「でも、つまり」。だから反対。',
-      trap: 'I would love it で賛成と思いやすい。but that means のあとが結論。',
-      use: 'I’d love that, so it’s a bad idea.（最高だけど、だからダメ）' },
+      trap: 'I would love it で賛成と考えがち。but that means のあとが結論。',
+      use: 'I’d love it if you came.（来てくれたら最高だな）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'hate', seg: [231.5, 237.6],
       stem: 'Fill the gap: “It seems risky, and ___ see you go through…”',
