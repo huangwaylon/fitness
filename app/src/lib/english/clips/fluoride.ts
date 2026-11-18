@@ -1,10 +1,10 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 12, retire 0, new 1, ctx 4, tx 15
+// R4 REVIEW 2026-11-18: keep 9, rewrite 12, retire 0, new 1, ctx 4, tx 15, qa 13
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 4, new 5
 // “Leslie and Tom Sex Up Fluoride | Parks and Recreation” (the official Parks and Recreation channel, Season 6): after a
 // scare ad on TV, Leslie snaps at callers about fluoride, then lets Tom rebrand it as a fun product.
 // Segments from the captions, words from whisper (2026-11-16). Whisper drops the last stretch (161–193 s, the crowd and
-// Tom's pitch) and hallucinates over it; nothing is built on that stretch. Speakers are named only where the audio names
-// them (Leslie, Tom); the man on TV is not named in his own segment.
+// Tom's pitch) and hallucinates over it; g3 (173.4–193.6 s, the T-shirt prize) is set from the json3 captions.
+// Speakers are named only where the audio names them (Leslie, Tom); the man on TV is not named in his own segment.
 // EXCLUDE 54.6–56.8 (“a white male US senator” joke)
 // EXCLUDE 128–130.8 (“tiny genitals”)
 import type { Clip } from '../types.ts';
@@ -40,13 +40,13 @@ export const fluoride: Clip = {
       trap: '番号と聞くと、番組への電話だと考えやすい。contact のあとの「だれに」を聞く。',
       use: 'Just call the number on the website.（サイトにある番号に電話して）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'temper', seg: [28.7, 54.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'temper', seg: [27.15, 42.2],
       stem: 'What happens when Leslie answers the calls?',
       ja: 'レスリーが電話に出ると、どうなる？',
       choices: ['She gets angry and rude', 'She calmly explains the facts', 'She says sorry to each one'], a: 0,
       choicesJa: ['怒って失礼な言い方をする', '落ち着いて事実を説明する', '一人ひとりに謝る'],
-      cue: '電話の相手への言い方と、そばの人の「You can’t do that」。',
-      said: 'レスリーは電話で事実を言うが、すぐ相手を「ばか」と呼び、注意されても平気だと言う。',
+      cue: '電話の相手への言い方と、そばの人の「Whoa」。',
+      said: 'レスリーは電話で事実を言うが、すぐ相手を「うそつきのばか」と呼び、そばの人に驚かれる。',
       mean: 'いつもの丁寧な対応をやめ、感情のまま言い返している場面。',
       trap: '最初の一言は事実の説明なので、落ち着いていると考えがち。そのあとの言い方の変化を追う。',
       use: 'Sorry, I lost my temper.（ごめん、カッとなった）' },
@@ -54,8 +54,8 @@ export const fluoride: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'healthy', seg: [28.7, 37.5],
       stem: 'On her first call, what does Leslie say about fluoride?',
       ja: '最初の電話で、レスリーはフッ素について何と言う？',
-      choices: ['It’s perfectly healthy for you', 'It’s healthy in very small amounts', 'It’s safe once it’s in water'], a: 0,
-      choicesJa: ['体にまったく問題ない', 'ほんの少しなら体にいい', '水に入れば安全'],
+      choices: ['It’s not bad for you at all', 'It’s good only in small amounts', 'It’s safe once it’s in water'], a: 0,
+      choicesJa: ['体にまったく悪くない', 'ほんの少しなら体にいい', '水に入れば安全'],
       cue: '「teeth」のあと、and に続く部分。',
       line: 'fluoride protects your teeth and it’s *perfectly healthy* for you.',
       said: '「フッ素は歯を守るし、体にもまったく問題ない」と言い切る。',
@@ -94,7 +94,7 @@ export const fluoride: Clip = {
       choicesJa: ['母親', '上司', 'トム'],
       cue: '「Oh, hey」のあとの呼び方。',
       line: 'Oh, hey, *mom*, sorry.',
-      said: '相手をどなりかけて「あら、ママ、ごめん」と言う。',
+      said: '相手をどなりかけて「あっ、ママ、ごめん」と言う。',
       mean: 'Oh, hey ＝ 知っている人だと気づいたときの「あ、どうも」。相手は母親。',
       trap: 'どなったあとなので、仕事の相手と考えがち。Oh, hey のすぐあとの一語を聞く。',
       use: 'Oh, hey, sorry. I didn’t see you.（あ、ごめん。気づかなかった）' },
@@ -122,7 +122,7 @@ export const fluoride: Clip = {
       trap: 'expected（期待した）から、ほめる言葉を連想しやすい。過去の期待なので「期待はずれ」。',
       use: 'Honestly, I expected more from this hotel.（正直、このホテルにはもっと期待してた）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'loosecannon', reveals: ['free'], seg: [70.5, 75.9],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'loosecannon', reveals: ['free'], seg: [70.5, 74.2],
       stem: 'Leslie says, “I’m a *loose cannon*.” What does she mean?',
       ja: '「I’m a loose cannon」とはどういう意味？',
       choices: ['I may do wild things', 'I have lost my power', 'I have a big weapon'], a: 0,
@@ -215,31 +215,19 @@ export const fluoride: Clip = {
       trap: 'I mean を迷いの「えっと」と思いやすい。質問への答えの頭なら、言い直しが続く。',
       use: 'I mean, we could just take a taxi.（つまり、タクシーで行けばいいってこと）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [103.1, 108.7],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tenyears', seg: [103.1, 108.35],
       stem: 'Tom imagines the singer’s next name. When?',
       ja: 'トムは歌手の次の名前を想像する。いつのこと？',
-      choices: ['in 10 years', 'in 12 years', 'in 20 years'], a: 0, keep: true,
-      choicesJa: ['10年後', '12年後', '20年後'],
+      choices: ['in 2 years', 'in 10 years', 'in 12 years', 'in 20 years'], a: 1, keep: true,
+      choicesJa: ['2年後', '10年後', '12年後', '20年後'],
       cue: '「gonna be in」のあと。',
       line: 'What’s he gonna be in *ten years*?',
       said: '「10年後には何になってるかな」と、先の名前を想像する。',
       mean: 'in ten years ＝ 今から10年後。この in は「〜後」。',
-      trap: 'ten は短く、すぐ years が続く。twenty なら「トゥエニ」と2つの音に聞こえる。',
+      trap: 'ten は短く、すぐ years が続く。twenty なら「トゥエニ」、two なら「トゥー」、twelve なら「トゥエルヴ」。',
       use: 'Where do you see yourself in ten years?（10年後、何してると思う？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'fightback', reveals: ['loosecannon'], seg: [111.3, 126.3], ctx: true,
-      stem: 'What does Leslie decide in the end?',
-      ja: '最後に、レスリーは何を決める？',
-      choices: ['Let Tom do it his way', 'Give out yellow binders', 'Stop talking about fluoride'], a: 0,
-      choicesJa: ['トムのやり方に任せる', '黄色い資料を配る', 'フッ素の話をやめる'],
-      cue: 'トムの最後の質問と、レスリーの返事。',
-      line: 'Tom: Now, are you a loose cannon or not? / Leslie: Yeah. I’m as loose as a goose. *Do your thing*, Tom.',
-      said: '「何をするか分からない人なの？」と聞かれ、少し間をおいて「好きにやって」と任せる。',
-      mean: 'Do your thing ＝ 文字どおりは「君のことをやって」→君のやり方でやって。as loose as a goose は韻を踏んだ冗談。',
-      trap: '返事の前に間があるので、断る流れと考えがち。最後の Do your thing が答え。',
-      use: 'Go ahead, do your thing.（どうぞ、好きにやって）' },
-
-    { id: 's2', skill: 'sound', level: 'B2', point: 'gotta', seg: [113.0, 117.7],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'gotta', seg: [113.0, 115.7],
       stem: 'Fill the gap: “Leslie, you ___ give people something.”',
       ja: '空いている所に入る語は？「Leslie, you ___ give people something.」',
       choices: ['gotta', 'gonna', 'wanna'], a: 0,
@@ -274,6 +262,18 @@ export const fluoride: Clip = {
       trap: 'most（いちばん多く）から「たくさん働く」と読みたくなるが、make the most of でひとまとまり。',
       use: 'Let’s make the most of the weekend.（週末を目いっぱい楽しもう）' },
 
+    { id: 'g1', skill: 'pragma', level: 'B1', point: 'fightback', reveals: ['loosecannon'], seg: [118.6, 126.3], ctx: true,
+      stem: 'What does Leslie decide?',
+      ja: 'レスリーは何を決める？',
+      choices: ['Let Tom do it his way', 'Give out yellow binders', 'Stop talking about fluoride'], a: 0,
+      choicesJa: ['トムのやり方に任せる', '黄色い資料を配る', 'フッ素の話をやめる'],
+      cue: 'トムの最後の質問と、レスリーの返事。',
+      line: 'Tom: Now, are you a loose cannon or not? / Leslie: Yeah. I’m as loose as a goose. *Do your thing*, Tom.',
+      said: '「何をするか分からない人なの？」と聞かれ、少し間をおいて「好きにやって」と任せる。',
+      mean: 'Do your thing ＝ 文字どおりは「君のことをやって」→君のやり方でやって。as loose as a goose は韻を踏んだ冗談。',
+      trap: '返事の前に間があるので、断る流れと考えがち。最後の Do your thing が答え。',
+      use: 'Go ahead, do your thing.（どうぞ、好きにやって）' },
+
     { id: 'i3', skill: 'infer', level: 'C1', point: 'dry', seg: [136.2, 143.6],
       stem: 'What does Tom think of the speech before his?',
       ja: 'トムは、自分の前のスピーチをどう思っている？',
@@ -287,10 +287,10 @@ export const fluoride: Clip = {
       use: 'The lecture was a little dry.（講義はちょっと退屈だった）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'whatsay', seg: [138.4, 143.6],
-      stem: 'Why does Tom say “What do you say we…”?',
-      ja: 'トムは、なぜ「What do you say we…」と言う？',
-      choices: ['To suggest something fun', 'To ask for their opinion', 'To say no to the plan'], a: 0,
-      choicesJa: ['楽しいことを提案するため', '意見を聞くため', '計画を断るため'],
+      stem: 'What is Tom doing with “What do you say we…”?',
+      ja: 'トムは「What do you say we…」で何をしている？',
+      choices: ['Suggesting something fun', 'Asking for their opinion', 'Saying no to the plan'], a: 0,
+      choicesJa: ['楽しいことを提案している', '意見を聞いている', '計画を断っている'],
       cue: '「a little dry」のあとの問いかけ。',
       line: '*What do you say we* have some fun, huh?',
       said: '「楽しいことしませんか？」と言って、新しい水を見せる。',
@@ -319,5 +319,17 @@ export const fluoride: Clip = {
       mean: 'make ＋ 物 ＋ 形容詞 ＝ 〜を…にする。stronger ＝ もっと強い。',
       trap: 'makes your が「メイクスュア」とひと続きになる。teeth の th は息だけの音。',
       use: 'Coffee makes me feel awake.（コーヒーを飲むと目が覚める）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'tshirt', seg: [173.4, 193.6],
+      stem: 'What does Tom offer people who tweet?',
+      ja: 'トムは、ツイートした人に何を出すと言う？',
+      choices: ['A chance to win a T-shirt', 'Free bottles of the water', 'A free visit to a dentist'], a: 0,
+      choicesJa: ['Tシャツが当たるチャンス', '水のボトルを無料で', '歯医者に無料で行ける'],
+      cue: '「Everyone who tweets」のあと',
+      line: 'Everyone who tweets a Teeth Dazzle in the next hour will be *entered to win* an exciting *plain blue T-shirt*.',
+      said: 'トムが「1時間以内にツイートした人は、無地の青いTシャツが当たる抽選に入れます」と言う。',
+      mean: 'be entered to win 〜 ＝ 〜が当たる抽選に入る。exciting（わくわく）と言いながら賞品はただのTシャツ、という笑い。',
+      trap: '水の宣伝なので、水がもらえると考えがち。決め手は win のあとの T-shirt。',
+      use: 'Everyone who signs up will be entered to win.（登録した人はみんな抽選に参加できます）' },
   ]
 };

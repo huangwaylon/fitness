@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 4, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 4, ctx 5, tx 3, qa 16
 // A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 4, new 0
 // “The One With the Thanksgiving Football Game | Friends” (the official Friends channel, Best of Season 3): the friends
 // want a halftime game; Chandler is talked into it, and Ross and Monica explain why their mom banned them from football
@@ -26,7 +26,7 @@ export const gellerBowl: Clip = {
       trap: 'once（一度）から、1回見たことがあると考えがち。for once は「今回くらいは」。',
       use: 'For once, I left work early.（珍しく早く仕事を終えた）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'never', seg: [12.7, 20.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'never', seg: [12.85, 20.2],
       stem: 'What does she say about football when she asks to play?', ja: '入れてと頼む時、彼女はフットボールについて何と言う？',
       choices: ['She has never played it', 'She played it at school', 'She only watches it on TV'], a: 0,
       choicesJa: ['一度もやったことがない', '学校でやっていた', 'テレビで見るだけ'],
@@ -59,7 +59,7 @@ export const gellerBowl: Clip = {
       trap: 'That’s not true を本気の反論と取りやすい。続く中身が反論かどうかを聞く。',
       use: 'I have plans: my couch and a pizza.（予定ならある。ソファとピザ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'nothing', ctx: true, seg: [22.4, 28.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'nothing', ctx: true, seg: [22.3, 28.65],
       stem: 'What does his friend say about Chandler?',
       ja: '友だちはチャンドラーについて何と言う？',
       choices: ['He wants to do nothing', 'He is too busy at work', 'He never liked sports'], a: 0,
@@ -106,15 +106,15 @@ export const gellerBowl: Clip = {
       trap: 'I’d なら「アイド」で最後が「ド」。pay なら l の音がない。ここは「アイルプレイ」。',
       use: 'All right, I’ll do it.（わかった、やるよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['mom'], seg: [52, 95],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['mom'], seg: [51.5, 67.6],
       stem: 'Why aren’t Ross and Monica supposed to play?', ja: 'ロスとモニカはなぜフットボールをしてはいけない？',
-      choices: ['Their mom said no', 'They are both hurt', 'They hate football'], a: 0,
-      choicesJa: ['母親に禁止された', '2人ともけがをしている', 'フットボールが嫌い'],
+      choices: ['Their mom said no', 'They don’t know how', 'They hate football'], a: 0,
+      choicesJa: ['母親に禁止された', 'やり方を知らない', 'フットボールが嫌い'],
       cue: '「Says who」のあと',
       line: 'Monica and I aren’t supposed to play football. — Says who, *your mom*? — *Yes.*',
       said: '「僕とモニカはしちゃいけない」「誰が言ったの、ママ？」「うん」。',
       mean: 'be not supposed to 〜 ＝ 〜してはいけないことになっている。昔のけんかで禁止された。',
-      trap: '鼻を折った話が出るので、けがのせいだと思いやすい。理由は母親の禁止。',
+      trap: 'Says who, your mom? は冗談の形だが、ロスの答えは Yes。本当にママの決まり。',
       use: 'We’re not supposed to park here.（ここに止めちゃいけないんだ）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'mom', seg: [55.8, 69.5], retired: true,
@@ -139,7 +139,7 @@ export const gellerBowl: Clip = {
       trap: '質問の形なので、本当に聞いていると考えがち。冗談でからかっている。',
       use: 'Says who?（誰が決めたの？）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'competitive', seg: [76, 87.6],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'competitive', seg: [76, 81.95],
       stem: 'What does “it got *kind of competitive*” mean?', ja: '「it got kind of competitive」の意味は？',
       choices: ['They played hard to win', 'They stopped playing', 'They played just for fun'], a: 0,
       choicesJa: ['勝つために本気でやった', 'やめてしまった', '楽しむためだけにやった'],
@@ -150,15 +150,15 @@ export const gellerBowl: Clip = {
       trap: 'kind of（ちょっと）で、軽い話だと思いやすい。そのあと鼻を折った話が出る。',
       use: 'My brother is very competitive.（兄はすごく負けず嫌いだ）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [80.5, 91.8],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'six', seg: [80.5, 89.0],
       stem: 'In which game did Ross’s nose get broken?', ja: 'ロスの鼻が折れたのはどの試合？',
-      choices: ['Game 6', 'Game 16', 'Game 60'], a: 0, keep: true,
-      choicesJa: ['第6回', '第16回', '第60回'],
+      choices: ['Game 6', 'Game 16', 'Game 26', 'Game 60'], a: 0, keep: true,
+      choicesJa: ['第6回', '第16回', '第26回', '第60回'],
       cue: '「Geller Bowl」のあと',
       line: 'And one year, Geller Bowl *six*, I accidentally broke Ross’s nose.',
       said: 'モニカが「ゲラーボウル6で、ロスの鼻を折っちゃった」と話す。',
       mean: 'six ＝ 6。Geller Bowl six ＝ 第6回ゲラーボウル。',
-      trap: 'sixteen なら「ティーン」、sixty なら「ティ」が続く。ここは短い「シックス」。',
+      trap: 'sixteen なら「ティーン」、sixty なら「ティ」が続き、26 なら前に twenty。ここは短い「シックス」だけ。',
       use: 'I live on the sixth floor.（6階に住んでいます）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'accident', seg: [86.4, 91.4],
@@ -192,7 +192,7 @@ export const gellerBowl: Clip = {
       trap: '話題を変える合図と取ると別の反則に聞こえる。まねた形が、誰のどの言葉から来たかを聞く。',
       use: 'Oh, and by the way, you owe me.（あ、ちなみに貸しだからね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'bitter', seg: [101.9, 113.9],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'bitter', seg: [101.9, 113.7],
       stem: 'How does Ross feel about that old game now?', ja: 'ロスはその昔の試合のことを今どう思っている？',
       choices: ['Still upset about it', 'Amused by the story', 'Embarrassed about it'], a: 0,
       choicesJa: ['まだ怒っている', '話をおもしろがっている', '恥ずかしく思っている'],
@@ -214,7 +214,7 @@ export const gellerBowl: Clip = {
       trap: 'how（どうやって）から、方法を聞いていると思いやすい。how come ＝ なぜ。',
       use: 'How come you’re late?（どうして遅れたの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'lake', reveals: ['cup'], seg: [126.3, 140],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'lake', reveals: ['cup'], seg: [126.3, 139.2],
       stem: 'What happened to the trophy in the end?', ja: 'トロフィーは最後にどうなった？',
       choices: ['It went into a lake', 'Their dad locked it up', 'It went out with the trash'], a: 0,
       choicesJa: ['湖に投げられた', '父が鍵をかけてしまった', 'ごみと一緒に捨てられた'],
@@ -222,29 +222,18 @@ export const gellerBowl: Clip = {
       line: 'so we took the trophy… *threw it in the lake*.',
       said: '父が「勝者なし」と言い、トロフィーを持って行って湖に投げた、と話す。',
       mean: 'threw ＝ throw（投げる）の過去形。lake ＝ 湖。',
-      trap: 'our dad（父）が出るので、父が取り上げたと思いやすい。最後の lake。',
+      trap: 'our dad が取り上げた話なので、父がしまったと考えがち。決め手は最後の lake。',
       use: 'He threw it in the river.（彼はそれを川に投げた）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'decide', reveals: ['mom', 'second'], seg: [143, 176],
-      stem: 'How do Ross and Monica decide about the game?', ja: 'ロスとモニカは試合をどう決める？',
-      choices: ['They talk alone, then agree', 'They say no to it again', 'Their mom says it is okay'], a: 0,
-      choicesJa: ['2人で話してから、やると決める', 'また断る', '母親がいいと言う'],
-      cue: '「Can I see you」のあと',
-      line: 'Can I see you for a second? … All right, *we’re going to play*.',
-      said: '2人だけで話して戻り、「よし、やろう」と決める。',
-      mean: 'we’re going to 〜 ＝ 〜することにした。母親の許可はもらっていない。',
-      trap: 'mom（母親）の話が続くので、許しが出たと思いやすい。',
-      use: 'All right, we’re going to do it.（よし、やろう）' },
-
-    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [148.3, 156.4],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [148.3, 154.5],
       stem: 'How long has it been since they last played?', ja: '最後に試合をしてから何年たった？',
-      choices: ['2 years', '12 years', '20 years'], a: 1, keep: true,
-      choicesJa: ['2年', '12年', '20年'],
+      choices: ['2 years', '11 years', '12 years', '20 years'], a: 2, keep: true,
+      choicesJa: ['2年', '11年', '12年', '20年'],
       cue: '「it’s been」のあと',
       line: 'I mean, come on, *it’s been 12 years*.',
       said: '「だって、もう12年だよ」と言う。',
       mean: 'it’s been 〜 years ＝ 〜年たった。twelve ＝ 12。',
-      trap: 'two なら「トゥー」、twenty なら「トゥエニ」。ここは「トゥエルヴ」と v で終わる。',
+      trap: 'two なら「トゥー」、twenty なら「トゥエニ」、eleven なら「イレヴン」。ここは「トゥエルヴ」。',
       use: 'It’s been ten years.（10年たった）' },
 
     { id: 'm2', skill: 'marker', level: 'B1', point: 'imean', seg: [148.3, 156.4], retired: true,
@@ -269,6 +258,17 @@ export const gellerBowl: Clip = {
       trap: 'see（見る）から、顔を見る話と勘違いしやすい。second ＝ ちょっとの間。',
       use: 'Can I see you for a second?（ちょっと話せる？）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'decide', reveals: ['mom', 'second'], seg: [154.1, 169.38],
+      stem: 'How do Ross and Monica decide about the game?', ja: 'ロスとモニカは試合をどう決める？',
+      choices: ['They talk alone, then agree', 'They say no to it again', 'Their mom says it is okay'], a: 0,
+      choicesJa: ['2人で話してから、やると決める', 'また断る', '母親がいいと言う'],
+      cue: '「Can I see you」のあと',
+      line: 'Can I see you for a second? … All right, *we’re going to play*.',
+      said: '2人だけで話して戻り、「よし、やろう」と決める。',
+      mean: 'we’re going to 〜 ＝ 〜することにした。母親の許可はもらっていない。',
+      trap: 'mom（母親）の話が続くので、許しが出たと思いやすい。',
+      use: 'All right, we’re going to do it.（よし、やろう）' },
+
     { id: 'c1', skill: 'humor', level: 'C2', point: 'street', seg: [161.9, 172.6], retired: true,
       stem: 'In the line about crossing the street, who is the joke on?',
       choices: ['Ross and Monica, for still minding their mom', 'The speaker himself, for being so sheltered',
@@ -281,8 +281,8 @@ export const gellerBowl: Clip = {
       use: 'Should we ask your mom first?（先にママに聞いとく？）' },
 
     { id: 'c3', skill: 'pragma', level: 'B2', point: 'rough', ctx: true, seg: [165.2, 174.8],
-      stem: 'How is the joke about the mom answered?',
-      ja: 'ママの冗談に、どう言い返される？',
+      stem: 'How do they answer the joke about the mom?',
+      ja: 'ママの冗談に、どう言い返す？',
       choices: ['They’ll play hard too', 'They say sorry and leave', 'They defend their mom'], a: 0,
       choicesJa: ['こっちも激しくやれる', '謝って出ていく', 'ママをかばう'],
       cue: '「cross the street」への返事',

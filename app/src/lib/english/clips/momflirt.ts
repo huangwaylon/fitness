@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 9, ctx 6, tx 16
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 9, ctx 6, tx 16, qa 17
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 9, new 2 (c2 stays retired)
 // “Is Leslie's Mother Flirting With Ben? | Parks and Recreation” (the official Parks and Recreation channel, Season 3):
 // after a bad first meeting, Leslie's mother Marlene raises the school-bus request; Leslie coaches Ben by playing her
@@ -19,8 +19,8 @@ export const momFlirt: Clip = {
   questions: [
     { id: 'c4', skill: 'infer', level: 'B1', point: 'whatif', reveals: ['nowthat'], ctx: true, seg: [0, 7.4],
       stem: 'What is Ben afraid Marlene will do?', ja: 'ベンは、マーリーンが何をするのを心配している？',
-      choices: ['Tell people he is weak', 'Tell people they are dating', 'Call his boss about him'], a: 0,
-      choicesJa: ['押しに弱いと言いふらす', '二人の交際を言いふらす', '彼の上司に電話する'],
+      choices: ['Tell people he is weak', 'Tell people he is mean', 'Call his boss about him'], a: 0,
+      choicesJa: ['押しに弱いと言いふらす', '意地悪だと言いふらす', '彼の上司に電話する'],
       cue: '「No, it’s not fine」のあと',
       line: 'Leslie: Don’t worry about it. It’s totally fine. / Ben: No, it’s not fine. What if she starts going around *telling people I’m a pushover*?',
       said: '「気にしないで、全然大丈夫」に、「大丈夫じゃない。押しに弱いって言いふらされたら？」と返す。',
@@ -38,18 +38,18 @@ export const momFlirt: Clip = {
       trap: 'pushover は直前の Ben の言葉。cute はあとの付け足し。',
       use: 'He seems strict, but he’s really kind.（厳しそうだけど本当は優しい）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [15.5, 24], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [14.6, 21.1], keep: true,
       stem: 'How many buses did they want before?', ja: '前は、バスを何台ほしがっていた？',
-      choices: ['4', '10', '40'], a: 0,
-      choicesJa: ['4台', '10台', '40台'],
+      choices: ['4', '10', '14', '40'], a: 0,
+      choicesJa: ['4台', '10台', '14台', '40台'],
       cue: '「I thought they only wanted」のあと',
       line: 'Ben: Education department now officially requesting 10 school buses. / Leslie: I thought they only wanted *four*.',
       said: '「教育局がバス10台を正式に要求」「4台だけのはずじゃ？」と言う。',
       mean: 'four ＝ 4。only wanted four ＝ 4台だけほしかった。要求が4台から10台に増えた。',
-      trap: '先に聞こえる10は新しい数。forty なら最後に「ティ」がつく。ここは「フォー」だけ。',
+      trap: '先に聞こえる10は新しい数。fourteen なら「ティーン」、forty なら「ティ」がつく。ここは「フォー」だけ。',
       use: 'I thought you only wanted one.（1個だけほしいんだと思ってた）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'nowthat', seg: [19.2, 26.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'nowthat', seg: [21.0, 26.5],
       stem: 'Fill the gap: “Well, ___ I’m a pushover…”', ja: '空所に入るのは？',
       choices: ['now that', 'not that', 'now, as'], a: 0,
       choicesJa: ['〜になった今', '〜というわけではないが', '今、〜として'],
@@ -93,6 +93,17 @@ export const momFlirt: Clip = {
       trap: '旅行の話は休息やご褒美に聞こえるが、Or は「その代わりに」。前の案を避ける合図。',
       use: 'Or we could just order pizza.（それか、ピザ頼んじゃう？）' },
 
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'roleplay', seg: [36.35, 53.7],
+      stem: 'How will Leslie help Ben get ready?', ja: 'レスリーは、ベンの準備をどう手伝う？',
+      choices: ['She will act as her mom', 'She will talk to her mom', 'She will write his speech'], a: 0,
+      choicesJa: ['母の役をやる', '母と話してあげる', '彼のスピーチを書く'],
+      cue: '「Okay, you need to be strong」から',
+      line: 'This is not a meeting. It’s a battle. … *I’ll be my mom*, and I’m gonna be very harsh with you.',
+      said: 'レスリーが「これは会議じゃなくて戦い。私がママの役をやって、すごく厳しくするね」と言う。',
+      mean: 'I’ll be my mom ＝ 私がママになる→「ママの役をやる」。本番の前に練習する、という作戦。',
+      trap: 'my mom が聞こえるので、母と話してくれると考えがち。I’ll be（私が〜になる）は役をやる意味。',
+      use: 'I’ll be the customer, and you be the clerk.（私がお客さん役、あなたは店員役ね）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'harsh', seg: [48.6, 57.6],
       stem: 'Why will Leslie be harsh with Ben, she says?', ja: 'レスリーは、なぜベンに厳しくすると言う？',
       choices: ['She likes him a lot', 'He asked her to', 'Her mom is worse'], a: 0,
@@ -104,7 +115,7 @@ export const momFlirt: Clip = {
       trap: 'I’ll be my mom（母の役をやる）が前にあるので、母のせいだと思いやすい。because のあとを聞く。',
       use: 'It’s only because I care about you.（あなたが大事だからだよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'hello', seg: [58, 67.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'hello', seg: [58, 67.3],
       stem: 'Why does Leslie say “Wrong” to Ben?', ja: 'レスリーはなぜベンに「Wrong」と言う？',
       choices: ['He said hello first', 'He sat down too soon', 'He talked too fast'], a: 0,
       choicesJa: ['最初にあいさつしたから', '早く座りすぎたから', '早口すぎたから'],
@@ -168,7 +179,7 @@ export const momFlirt: Clip = {
       trap: 'あとの ten minutes に引かれやすい。「ハンドレッド」なら100、「サウザンド」なら1000、ten だけなら10。',
       use: 'Here’s my top five list.（これが私のベスト5）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'thoughtful', seg: [94.7, 104.2],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'thoughtful', seg: [94.8, 104.2],
       stem: 'Marlene says, “That is *so thoughtful of you*.” Meaning?', ja: 'マーリーンの「That is so thoughtful of you」の意味は？',
       choices: ['How kind of you', 'You think too much', 'Let me think'], a: 0,
       choicesJa: ['なんて気が利くの', '考えすぎよ', '考えさせて'],
@@ -190,7 +201,7 @@ export const momFlirt: Clip = {
       trap: 'このあとベンが来るので、ベンの話をするためだと思いやすい。good mood を聞く。',
       use: 'Coffee puts me in a good mood.（コーヒーを飲むと機嫌がよくなる）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B2', point: 'another', ctx: true, seg: [116.0, 125.5],
+    { id: 'k1', skill: 'pragma', level: 'B2', point: 'another', ctx: true, seg: [116.0, 123.7],
       stem: 'What does Marlene want to do about the buses?', ja: 'バスの話を、マーリーンはどうしたい？',
       choices: ['Talk about it another time', 'Talk about it right now', 'Let Leslie decide it'], a: 0,
       choicesJa: ['また別の機会に話す', '今すぐ話す', 'レスリーに決めさせる'],
@@ -201,7 +212,7 @@ export const momFlirt: Clip = {
       trap: 'now が強く聞こえて勘違いしやすい。now はベンの返事。マーリーンは another time。',
       use: 'Maybe we could do this another time?（また今度にしませんか）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'yourcall', seg: [120.4, 130.5],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'yourcall', seg: [120.65, 128.75],
       stem: 'Ben says, “*It’s your call*.” What does he mean?', ja: 'ベンの「It’s your call」の意味は？',
       choices: ['You decide', 'Call me later', 'It’s your turn'], a: 0,
       choicesJa: ['あなたが決めて', 'あとで電話して', 'あなたの番だ'],
@@ -223,7 +234,7 @@ export const momFlirt: Clip = {
       trap: 'self-assured を「うぬぼれ」と取ると心配に聞こえる。ここは Ben の後押し。',
       use: 'She seems pretty confident.（彼女、かなり自信ありそうだね）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'sudden', seg: [135.6, 143.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'sudden', seg: [135.75, 142.85],
       stem: 'What does “*all of a sudden*” mean?', ja: '「all of a sudden」の意味は？',
       choices: ['Suddenly', 'Little by little', 'Once again'], a: 0,
       choicesJa: ['急に', '少しずつ', 'もう一度'],
@@ -278,7 +289,7 @@ export const momFlirt: Clip = {
       trap: 'hit（打つ）から、けんかと思いやすい。Thank God（よかった）が続くので良い知らせ。',
       use: 'We hit it off right away.（すぐに意気投合したよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'cafe', seg: [173.5, 195.1],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'cafe', seg: [170.1, 185.9],
       stem: 'How does the coffee meeting end?', ja: 'カフェでの話し合いはどう終わる？',
       choices: ['She will think and meet again', 'She says yes to the deal', 'She says no to the deal'], a: 0,
       choicesJa: ['考えて、また会う', '取引にOKする', '取引を断る'],
@@ -300,7 +311,7 @@ export const momFlirt: Clip = {
       trap: 'rough（荒い・厳しい）から、ベンには無理と考えがち。レスリーは can で「できる」と言っている。',
       use: 'Don’t worry, I can handle it.（心配しないで、自分でなんとかできるから）' },
 
-    { id: 'k2', skill: 'pragma', level: 'B1', point: 'goodidea', ctx: true, seg: [205.6, 219.0],
+    { id: 'k2', skill: 'pragma', level: 'B1', point: 'goodidea', ctx: true, seg: [205.6, 218.7],
       stem: 'What does Ben think of Leslie’s gift plan?', ja: 'レスリーのプレゼント作戦を、ベンはどう思う？',
       choices: ['It may be a bad idea', 'It’s a really great idea', 'Her mom will love it'], a: 0,
       choicesJa: ['よくない考えかも', 'すごくいい考え', 'お母さんはきっと喜ぶ'],
@@ -333,15 +344,15 @@ export const momFlirt: Clip = {
       trap: 'number one（1位）を「一番いいこと」と勘違いしやすい。壊す方法のリストの1位＝最悪。',
       use: 'Cleaning is number one on my list today.（今日は掃除が最優先）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'reveal', seg: [259.5, 282.4],
-      stem: 'What does Ben tell Leslie’s mom?', ja: 'ベンはレスリーのお母さんに何を言う？',
-      choices: ['He is dating Leslie', 'He is going to Mexico', 'He will tell his boss'], a: 0,
-      choicesJa: ['レスリーと付き合っている', 'メキシコに行く', '上司に言う'],
-      cue: '「Hi again」のあと',
+    { id: 'g3', skill: 'infer', level: 'B1', point: 'reveal', seg: [259.5, 269.0],
+      stem: 'Why does Ben go back to Leslie’s mom?', ja: 'ベンはなぜレスリーのお母さんの所へ戻る？',
+      choices: ['To say he is dating Leslie', 'To say sorry for being rude', 'To ask for more buses'], a: 0,
+      choicesJa: ['レスリーと付き合っていると言うため', '失礼だったと謝るため', 'バスをもっと頼むため'],
+      cue: '「Hi again」のあとのベンの一言',
       line: '*Leslie and I are dating.*',
       said: 'ベンがお母さんのところへ戻り、「レスリーと僕は付き合ってるんです」と打ち明ける。',
       mean: 'date ＝ 付き合う。Leslie and I are dating ＝ レスリーとぼくは付き合っている。',
-      trap: 'その前にレスリーが「メキシコに行って」と言うので、行くと考えがち。ベンは母に話しに行く。',
+      trap: 'Hi again のあとなので、おわびの言葉を予想しやすい。ベンが言うのは are dating（付き合っている）。',
       use: 'We’ve been dating for a year.（付き合って1年です）' },
 
     { id: 'c2', skill: 'attitude', level: 'C2', point: 'knee', reveals: ['reveal'], seg: [266.4, 279.8], retired: true,
@@ -390,13 +401,13 @@ export const momFlirt: Clip = {
 
     { id: 'n3', skill: 'number', level: 'B2', point: 'final', reveals: ['four'], seg: [295, 300.2], keep: true,
       stem: 'How many buses do they agree on?', ja: '最後に、バスは何台で決まる？',
-      choices: ['2', '4', '10'], a: 0,
-      choicesJa: ['2台', '4台', '10台'],
+      choices: ['2', '4', '10', '20'], a: 0,
+      choicesJa: ['2台', '4台', '10台', '20台'],
       cue: '最後の3つのやりとり',
       line: '*Four buses.* — *Two.* — *Deal.*',
       said: '「バス4台」「2台」「決まり」と短くやりとりする。',
       mean: 'Deal ＝ それで決まり。直前の数に「OK」と言う言葉。',
-      trap: '10は最初の要求、four は次の数。Deal は最後の Two への返事。',
+      trap: '10は最初の要求、four は次の数。twenty なら「ティ」がつく。Deal は最後の Two への返事。',
       use: 'Twenty dollars? — Fifteen. — Deal.（20ドル？—15。—決まり）' },
   ]
 };
