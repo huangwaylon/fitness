@@ -1,18 +1,20 @@
+// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 2, new 1, ctx 4, tx 16
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 2, new 0
 // “Michael Wants to be Captain - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office US): on
-// the office booze cruise Michael hands out TV-show roles and calls himself "captain of this party", the boat's Captain
-// Jack claims the ship and everyone on it, Michael tells the camera rank on a boat is "nebulous", keeps cutting into
-// the safety talk, and is finally asked to sit back and let the crew do its job.
+// the office booze cruise Michael hands out Gilligan's Island roles and calls himself "captain of this party", the
+// boat's Captain Jack claims the ship and everyone on it, Michael tells the camera rank on a boat is "nebulous", keeps
+// cutting into the safety talk, and is finally asked to sit back and let the crew do its job.
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Pam (4.1 s), Angela (10 s), Dwight
 // (20.6 s), Michael Scott (28.2 s, 69 s), Captain Jack (31.3 s, 65 s), "Michael"/"Mike" (112.4 s, 118.9 s).
-// Who says "Actually, I'm the Skipper" (23.4 s) and "I'd rather die" (26.2 s) isn't settled by a name, so m1, t1 and
-// x1 never say who, and no key rests on it. "Don't worry… life preservers" (78 s) isn't named either.
-// Untested on purpose: 0–4 s (the theme song, whisper only); 4–20 s (the Gilligan's Island cast: TV knowledge; 13–18 s
-// "the native… neighboring… Globetrotters" is a joke on race); 48–60 s ("King of the World" and cheering: a film
-// reference); 78–82 s (captions "you are not going to be needing", whisper "we're… tonight. Well, we might be");
-// 96–100 s and 104–108 s (voices overlap; captions "body captain", whisper "party captain"); 109.7 s ("If the boat's
-// rocking…": innuendo); 125–146 s (no speech).
-// EAR CHECK: 26.2 s x1 — "I'd rather" (both sources): the 'd is nearly silent, so it can sound like "I rather"
+// Who says "Actually, I'm the Skipper" (23.4 s) and "I'd rather die" (26.2 s) isn't settled by a name, so m1 and t1
+// never say who. "Don't worry… life preservers" (78 s) isn't named either (captions "you are not going to be needing").
+// EXCLUDE 10.1–18.7
+// EXCLUDE 109.6–112.1
+// SKIP 123.4–146: no new speech (Okay/Yep, then a whisper repeat over the closing silence)
+// Untested on purpose: 0–10 s (theme song, TV cast list); 10–19 s (the native/Globetrotters joke on race: excluded);
+// 48–60 s ("King of the World", cheering); 96–108 s (voices overlap: "party captain", "Rock it"); 109.7 s (innuendo:
+// excluded).
+// EAR CHECK: 26.2 s t1 — "I'd rather" (both sources): the 'd is nearly silent, so it can sound like "I rather"
 // EAR CHECK: 82.2 s s1 — "let me" (both sources): said as one syllable, ≈ "lemme"
 import type { Clip } from '../types.ts';
 
@@ -22,31 +24,31 @@ export const captainjack: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [15.6, 26.5],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', seg: [20.2, 25.0],
       stem: 'What does “Actually” mean in “Actually, I’m the Skipper”?',
       ja: '「Actually, I’m the Skipper」の Actually はどういう意味？',
       choices: ['Wait, that’s not right', 'Yes, and there’s more', 'Now, a new topic'], a: 0,
       choicesJa: ['いや、ちょっと違う', 'うん、それに加えて', 'さて、別の話'],
       cue: '「Cool」のあと、文頭の一語。',
-      line: 'I am the Skipper… — Cool. — *Actually*, I’m the Skipper.',
-      said: '「僕が船長役」と言ったあと、別の声が「いや、船長は私だ」と言う。',
-      mean: '文頭の actually ＝ いや、実は。相手の言ったことを、やんわり直す合図。',
-      trap: 'actually から「実際に」の付け足しを思いやすい。直後に逆のことを言えば、直している。',
+      line: 'And Dwight, you will be Gilligan. — Cool. — *Actually*, I’m the Skipper.',
+      said: '「ドワイト、君はギリガン役」と言われたあと、「いや、実は僕が船長役です」と返す声。',
+      mean: '文頭の actually ＝ いや、実は。相手の言ったことを、やんわり直す合図。会話でとてもよく使う。',
+      trap: '「実際に」の付け足しと考えがち。直後に違う役を言っているので、直している。',
       use: 'Actually, I ordered the fish.（あの、私が頼んだのは魚です）' },
 
-    { id: 't1', skill: 'phrase', level: 'B2', point: 'rather', seg: [23.2, 29.3],
-      stem: 'What does “I’d rather die” mean here?',
-      ja: 'ここでの「I’d rather die」はどういう意味？',
+    { id: 't1', skill: 'phrase', level: 'B2', point: 'rather', ctx: true, seg: [22.7, 29.0],
+      stem: 'What does the reply to “you could be Gilligan” mean?',
+      ja: '「you could be Gilligan」への返事はどういう意味？',
       choices: ['No way, not ever', 'Okay, if I must', 'I’m scared to die'], a: 0,
       choicesJa: ['絶対いや', 'しかたないなら、いいよ', '死ぬのがこわい'],
       cue: '役をすすめられた直後の、短い返事。',
-      line: '…you could be Gilligan. — *I’d rather die*.',
-      said: '「君がギリガン役でもいい」と言われ、「死んだほうがまし」と返す。',
-      mean: 'I’d rather die ＝ 文字どおりは「死んだほうがまし」。「絶対いや」の大げさな言い方。',
-      trap: 'die（死ぬ）を文字どおりに取ると、こわがっているように聞こえやすい。きっぱりした no。',
-      use: 'Karaoke? I’d rather die.（カラオケ？絶対いや）' },
+      line: 'Actually, I’m the Skipper. But you could be Gilligan. / Oh, *I’d rather die*.',
+      said: '「でも、あなたがギリガン役でもいいですよ」と言われ、「死んだほうがまし」と返す。',
+      mean: 'I’d rather die ＝ 文字どおりは「死んだほうがまし」。それほどいや→「絶対いや」の大げさな言い方。くだけた冗談。',
+      trap: 'die（死ぬ）を文字どおりに取ると、こわがっているように聞こえる。きっぱりした no。',
+      use: 'Karaoke? I’d rather stay home.（カラオケ？家にいたいな）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'rather', seg: [24.3, 29.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'rather', seg: [24.3, 29.3], retired: true,
       stem: 'Type the reply: “___ die.” (2 words)', answer: "i'd rather",
       ja: '返事を書こう：「___ die.」（2語）',
       cue: '「Gilligan」のあと、短い返事の最初の2語。',
@@ -56,7 +58,7 @@ export const captainjack: Clip = {
       trap: 'd が消えて I rather と書きやすい。英語では必ず I’d rather の形になる。',
       use: 'I’d rather stay in tonight.（今夜は家にいたいな）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'partycap', seg: [25.7, 31.8],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'partycap', seg: [25.7, 31.8], retired: true,
       stem: 'What does Michael first say he is captain of?',
       ja: 'マイケルは最初、自分を何の船長だと言う？',
       choices: ['This party', 'This ship', 'Dunder Mifflin'], a: 0,
@@ -67,18 +69,6 @@ export const captainjack: Clip = {
       mean: 'captain ＝ 船長、まとめ役。本物の船長の前で、自分もパーティーの仕切り役だと言いたい。',
       trap: 'ship はこのあと船長が言う語。マイケルが言うのは party。',
       use: 'I’m in charge of tonight’s party.（今夜のパーティーの仕切り役です）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['partycap', 'shipcap', 'regional'], seg: [26.9, 71.4],
-      stem: 'What does Michael want on the boat?',
-      ja: 'マイケルは船の上で何をしたい？',
-      choices: ['To be a boss there too', 'To steer the boat himself', 'To leave the party early'], a: 0,
-      choicesJa: ['そこでも自分が仕切りたい', '自分で船を動かしたい', 'パーティーを早く抜けたい'],
-      cue: 'マイケルと船長の名乗り方。',
-      line: 'I am the *captain of this party*. … manager is higher than captain. … And *I am the Regional Manager*…',
-      said: '「パーティーの船長」と名乗り、船長のあいさつにも「私は支店長」と続ける。',
-      mean: '船長と張り合って、自分も上の立場だと見せたい。カメラには「船ではどっちが上か分からない」と話す。',
-      trap: 'captain から操船の話に思いやすい。言っているのは、どっちが上かという話。',
-      use: 'Who’s in charge here?（ここの責任者は誰ですか）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'partycap', reveals: ['office', 'nebulous'], seg: [26.9, 47.6],
       retired: true,
@@ -103,17 +93,17 @@ export const captainjack: Clip = {
       trap: 'ship だけだと船に限って聞こえる。anyone には Michael も入る。',
       use: 'In my kitchen, I’m the boss.（うちの台所では私がボス）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'shipcap', seg: [30.4, 36.8],
-      stem: 'What does Captain Jack say he is captain of?',
-      ja: 'ジャック船長は、自分を何の船長だと言う？',
-      choices: ['The ship and everyone on it', 'The ship and the party', 'The ship and the whole sea'], a: 0,
-      choicesJa: ['船と、乗っている人みんな', '船と、パーティー', '船と、海全体'],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'shipcap', reveals: ['partycap'], ctx: true, seg: [27.2, 36.2],
+      stem: 'How does Captain Jack answer Michael?',
+      ja: 'ジャック船長は、マイケルにどう答える？',
+      choices: ['He’s captain of everyone on board', 'He’s captain of the party too', 'He’s happy to share the job'], a: 0,
+      choicesJa: ['船に乗った人みんなの船長だ', 'パーティーの船長も自分だ', '喜んで役を分け合う'],
       cue: '2回続く「captain of」の2回目。',
-      line: 'I’m captain of the ship. I’m also *captain of anyone who sets foot on the ship*.',
-      said: '「私は船の船長。船に足を踏み入れた人みんなの船長でもある」と言う。',
-      mean: 'set foot on 〜 ＝ 〜に足を踏み入れる。乗った人はみんな自分の指示に従う、ということ。',
-      trap: 'party は直前のマイケルの語。anyone（誰でも）のあとは「船に乗った人」。海の話ではない。',
-      use: 'Don’t set foot in my room!（私の部屋に入らないで！）' },
+      line: 'Michael: I am the captain of this party. / Jack: I’m captain of the ship. I’m also *captain of anyone who sets foot on the ship*.',
+      said: '「このパーティーの船長です」に、「私は船の船長。船に足を踏み入れた人みんなの船長でもある」と返す。',
+      mean: 'set foot on 〜 ＝ 〜に足を踏み入れる。乗った人はマイケルも含めて自分の指示に従う、と言い返している。',
+      trap: 'party は直前のマイケルの語。決め手は also のあと：anyone（誰でも）＝船に乗った人。',
+      use: 'Please don’t set foot in the kitchen.（キッチンには入らないでください）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'office', reveals: ['nebulous'], seg: [36.7, 45.7],
       stem: 'Where does Michael say a manager ranks higher than a captain?',
@@ -127,17 +117,17 @@ export const captainjack: Clip = {
       trap: 'on a boat の反対で「陸」と思いやすいが、言うのは office（会社）。',
       use: 'At work, she’s my boss.（職場では彼女が上司）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'nebulous', reveals: ['office'], seg: [37.0, 47.6],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'nebulous', reveals: ['office'], seg: [40.5, 47.0],
       stem: 'What does Michael say about rank on a boat?',
       ja: '船の上での上下について、マイケルは何と言う？',
       choices: ['Nobody really knows', 'The captain is higher', 'The manager is higher'], a: 0,
       choicesJa: ['誰にもよく分からない', '船長のほうが上', 'マネージャーのほうが上'],
       cue: '会社の話のあと、「On a boat」に続く部分。',
-      line: 'manager is higher than captain. On a boat, *who knows*? It’s nebulous.',
-      said: '「会社ならマネージャーが上。船の上では、さあね。はっきりしない」と話す。',
-      mean: 'Who knows? ＝ 誰が知ってる？→「さあね、分からない」。nebulous ＝ ぼんやりした（硬い語）。',
+      line: 'Manager is higher than captain. On a boat, *who knows*? It’s nebulous.',
+      said: '「マネージャーのほうが船長より上。船の上では、さあね。あいまいだな」とカメラに話す。',
+      mean: 'Who knows? ＝ 文字どおりは「誰が知ってる？」→「さあね」。nebulous ＝ あいまいな（硬い語）。',
       trap: 'manager is higher を船にも当てはめやすい。On a boat のあとは who knows。',
-      use: 'Will it rain? Who knows.（雨降るかな？さあね）' },
+      use: 'Will it rain tomorrow? Who knows.（明日雨かな？さあね）' },
 
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'nebulous', seg: [43.2, 47.6], retired: true,
       stem: 'What does Michael mean by the last word of his comment?',
@@ -149,65 +139,77 @@ export const captainjack: Clip = {
       trap: 'who knows を「どうでもいい」と取ると unimportant に引かれる。ここは「分からない」。',
       use: 'The plan is still a bit nebulous.（計画はまだぼんやりしてる）' },
 
-    { id: 't2', skill: 'infer', level: 'B2', point: 'regional', seg: [61.9, 71.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cutin', reveals: ['regional', 'finish'], seg: [57.6, 85.0],
+      stem: 'What happens while Captain Jack welcomes everyone?',
+      ja: 'ジャック船長があいさつする間、何が起きる？',
+      choices: ['Michael keeps talking too', 'Michael helps with the rules', 'Everyone listens quietly'], a: 0,
+      choicesJa: ['マイケルが何度も口をはさむ', 'マイケルが説明を手伝う', 'みんな静かに聞いている'],
+      cue: '船長の名乗りと、救命具の説明のあいだ。',
+      line: 'I am your captain, Captain Jack. — And I am the Regional Manager… — Don’t worry… — Okay, please let me finish.',
+      said: '船長の名乗りに自分の肩書きを足し、救命具の説明にも「心配ないよ」と口をはさむ。',
+      mean: 'マイケルは船長の話のたびに自分の声を足す。船長はとうとう「最後まで言わせて」と頼む。',
+      trap: '救命具の話に加わるので手伝いに見えやすいが、説明の途中で割り込んでいるだけ。',
+      use: 'Sorry, I didn’t mean to cut in.（すみません、話の途中に）' },
+
+    { id: 't2', skill: 'infer', level: 'B2', point: 'regional', ctx: true, seg: [61.9, 71.1],
       stem: 'Why does Michael say his job title right after the captain?',
       ja: 'マイケルはなぜ船長のすぐあとに自分の肩書きを言う？',
       choices: ['To look important as well', 'To introduce the captain', 'To make fun of the captain'], a: 0,
       choicesJa: ['自分もえらく見せるため', '船長を紹介するため', '船長をからかうため'],
       cue: '船長のあいさつと、同じ形で続く名乗り。',
-      line: 'I am your captain, Captain Jack. — And *I am the Regional Manager* of Dunder Mifflin, Michael Scott.',
-      said: '船長の「私が船長のジャック」に、すぐ「そして私が支店長のマイケル・スコット」と続ける。',
-      mean: 'Regional Manager ＝ 支店長。船長と同じ形で肩書きを並べ、自分もえらいと見せたい。',
-      trap: '同じ形なのでからかいに聞こえやすいが、本人は本気。船長はもう自分で名乗っている。',
+      line: 'Jack: I am your captain, Captain Jack. / Michael: And *I am the Regional Manager* of Dunder Mifflin, Michael Scott.',
+      said: '船長の「私が船長のジャックです」に、すぐ「そして私が、ダンダー・ミフリンの支店長、マイケル・スコットです」と続ける。',
+      mean: 'Regional Manager ＝ 支店長。船長と同じ I am … の形で肩書きを並べ、自分もえらいと見せたい。',
+      trap: '同じ形なのでからかいに聞こえるが、本人は本気。船長はもう自分で名乗っている。',
       use: 'I’m the manager here.（ここの責任者です）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', seg: [77.5, 85.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', ctx: true, seg: [78.0, 85.6],
       stem: 'What does the captain ask for after being cut off?',
       ja: '話をさえぎられたあと、船長は何を頼む？',
       choices: ['To finish his safety talk', 'To take a short break', 'To start the party now'], a: 0,
       choicesJa: ['安全の説明を最後まで言いたい', '少し休ませてほしい', 'もうパーティーを始めたい'],
       cue: '口をはさまれた直後の、短い頼み。',
-      line: '*Please let me finish*.',
-      said: '救命具の説明の途中で「使わないよ」と口をはさまれ、「最後まで言わせて」と返す。',
+      line: 'Don’t worry, we’re not going to be needing life preservers tonight. / Okay, *please let me finish*.',
+      said: '救命具の説明の途中で「今夜は救命具なんていらないよ」と口をはさまれ、「最後まで言わせてください」と返す。',
       mean: 'let me finish ＝ 最後まで言わせて。話をさえぎられたときの、ていねいだがはっきりした頼み。',
-      trap: 'そのあとの Okay, thank you はお礼に聞こえやすいが、話を戻すためのつなぎ。',
+      trap: 'そのあとの Okay, thank you はお礼に聞こえるが、話を戻すためのつなぎ。',
       use: 'Sorry, can I just finish?（すみません、最後まで言ってもいい？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'finish', seg: [80.5, 85.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'finish', seg: [81.5, 85.0],
       stem: 'Fill the gap: “Please ___ finish.”',
       ja: '空所に入る語は？「Please ___ finish.」',
       choices: ['let me', 'let him', 'let us'], a: 0,
       choicesJa: ['私に〜させて', '彼に〜させて', '私たちに〜させて'],
       cue: 'Please のあと、一つにつながる短い2語。',
-      line: '*Please let me finish*.',
-      said: '説明をさえぎられ、「最後まで言わせて」と言う。',
+      line: 'Okay, *please let me* finish.',
+      said: '説明をさえぎられ、「最後まで言わせてください」と言う。',
       mean: 'let me は t が消えて「レミ」と一つにつながる。自分が話を続けたいときの言い方。',
       trap: 'let him なら「レティム」、let us なら「レタス」と聞こえる。最後が「ミ」なら let me。',
       use: 'Let me check and get back to you.（確認して折り返します）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'coastguard', seg: [83.1, 90.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'coastguard', seg: [85.2, 90.4],
       stem: 'What does the captain say the rules require him to tell them?',
       ja: '決まりで伝えないといけない、と船長が言うのは何？',
       choices: ['Where the safety exits are', 'Where the life jackets are', 'How to call for help'], a: 0,
-      choicesJa: ['非常口の場所', '救命胴衣の場所', '助けの呼び方'],
+      choicesJa: ['非常口の場所', '救命具の場所', '助けの呼び方'],
       cue: '「requires」のあと。',
       line: 'the Coast Guard requires that I tell you *where the safety exits are*.',
-      said: '「沿岸警備隊の決まりで、非常口の場所をお伝えします」と言う。',
+      said: '「沿岸警備隊の決まりで、非常口の場所をお伝えしないといけません」と言う。',
       mean: 'require ＝ 求める、義務づける。safety exit ＝ 非常口。案内の前置きによく使う形。',
       trap: '救命具は少し前の話。tell you のあとの where … are を聞く。',
       use: 'Where is the emergency exit?（非常口はどこですか）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'overside', reveals: ['coastguard'], seg: [85.4, 92.8],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'overside', reveals: ['coastguard'], seg: [88.5, 92.8],
       stem: 'Where does the captain say this ship’s exits are?',
       ja: 'この船の出口はどこだ、と船長は言う？',
       choices: ['Anywhere over the side', 'Under all the seats', 'At the back of the boat'], a: 0,
       choicesJa: ['船べりの向こうならどこでも', '全部の席の下', '船の後ろ'],
       cue: '「very easy」のあと。',
-      line: 'on this ship, it’s very easy. *Anywhere over the side*.',
-      said: '「この船は簡単。手すりの向こうなら、どこでも」と言う。',
+      line: 'Now, on this ship, it’s very easy. *Anywhere over the side*.',
+      said: '「この船では、とても簡単です。船べりの向こうなら、どこでも」と言う。',
       mean: 'over the side ＝ 船べりの外、つまり海。非常口＝海に飛び込む、という冗談。',
       trap: 'under the seats は救命具の場所。over the side（船べりの外）まで聞く。',
-      use: 'Don’t lean over the side.（船べりから身を乗り出さないで）' },
+      use: 'Please don’t lean over the side.（船べりから身を乗り出さないでください）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'dancing', seg: [98.4, 107.6],
       stem: 'What are the guests told to get ready for later on?',
@@ -221,30 +223,6 @@ export const captainjack: Clip = {
       trap: 'shoes（靴）を文字どおりに取ると、着がえや散歩に聞こえやすい。ひとまとまりで覚える。',
       use: 'Put on your dancing shoes tonight!（今夜は踊るよ！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', seg: [108, 126.1],
-      stem: 'What does the captain ask Michael to do at the end?',
-      ja: '最後に船長はマイケルに何を頼む？',
-      choices: ['Sit back and have fun', 'Run the party for him', 'Keep his staff quiet'], a: 0,
-      choicesJa: ['ゆっくり楽しんでいて', '代わりにパーティーを仕切って', '社員を静かにさせて'],
-      cue: '「Listen, Mike」のあとの頼み。',
-      line: '…my crew do our job. You just *sit back and have a good time*.',
-      said: '「仕事は私とクルーに任せて、くつろいで楽しんで」とマイケルに言う。',
-      mean: 'sit back ＝ ゆったり座る、手を出さない。親切な形だが、中身は「口を出さないで」。',
-      trap: 'your company employees（君の社員）の話は前置き。頼みは最後の sit back。',
-      use: 'Just sit back and enjoy the ride.（ゆっくり乗っててね）' },
-
-    { id: 'p2', skill: 'pragma', level: 'C1', point: 'others', seg: [111.9, 120],
-      stem: 'Why does the captain say other people are on the boat?',
-      ja: '船長はなぜ、ほかの人も乗っていると言う？',
-      choices: ['To ask Michael to calm down', 'To ask Michael to invite them', 'To ask Michael to count people'], a: 0,
-      choicesJa: ['マイケルに落ち着いてもらうため', 'マイケルに彼らを誘ってもらうため', 'マイケルに人数を数えてもらうため'],
-      cue: '名前を呼んだあと、「only」を含む文。',
-      line: 'your company employees are *not the only people on the boat* tonight',
-      said: '「今夜乗っているのは、君の会社の人だけじゃない。みんなで楽しもう」と言う。',
-      mean: 'not the only 〜 ＝ 〜だけではない。事実を言うだけで「騒ぎすぎ」とたしなめている。',
-      trap: 'We’re all going to have a good time は誘いに聞こえやすいが、遠回しの注意。',
-      use: 'There are other people here, you know.（ほかにも人がいるんだけどね）' },
-
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'others', reveals: ['sitback'], seg: [111.9, 123.6],
       retired: true,
       stem: 'Which reply from Michael would show he got the captain’s point?',
@@ -255,6 +233,42 @@ export const captainjack: Clip = {
       said: '船長は「ほかの客もいる」と言い、続けて「仕事は私たちに任せて、くつろいで」と頼む。',
       mean: '前の一言は事実の報告でなく、引いてほしいという合図。答えは言葉の形でなく、頼まれたことに返す。',
       trap: '社員の話を「部下を静かに」と取りやすいが、頼まれたのは Michael 本人が引くこと。',
-      use: 'Got it. I’ll leave it to you.（了解、お任せします）' }
+      use: 'Got it. I’ll leave it to you.（了解、お任せします）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', seg: [112.3, 127.5],
+      stem: 'What does the captain ask Michael to do at the end?',
+      ja: '最後に船長はマイケルに何を頼む？',
+      choices: ['Sit back and have fun', 'Run the party for him', 'Keep his staff quiet'], a: 0,
+      choicesJa: ['ゆっくり楽しんでいて', '代わりにパーティーを仕切って', '社員を静かにさせて'],
+      cue: '「Listen, Mike」のあと、最後の頼み。',
+      line: 'Listen, Mike. … You just *sit back and have a good time*.',
+      said: '「マイク、あなたはゆっくりして、楽しんでください」と言う。',
+      mean: 'sit back ＝ 文字どおりは「深く座る」→手を出さずにくつろぐ。親切な形だが、中身は「口を出さないで」。',
+      trap: 'your company employees（あなたの社員）の話は前置き。頼みは最後の sit back。',
+      use: 'Just sit back and enjoy the ride.（ゆっくり乗っててね）' },
+
+    { id: 'p2', skill: 'pragma', level: 'C1', point: 'others', seg: [112.3, 120.0],
+      stem: 'Why does the captain say other people are on the boat?',
+      ja: '船長はなぜ、ほかの人も乗っていると言う？',
+      choices: ['To ask Michael to calm down', 'To ask Michael to invite them', 'To ask Michael to count people'], a: 0,
+      choicesJa: ['マイケルに落ち着いてもらうため', 'マイケルに彼らを誘ってもらうため', 'マイケルに人数を数えてもらうため'],
+      cue: '名前を呼んだあと、「only」を含む文。',
+      line: 'your company employees are *not the only people on the boat* tonight, okay?',
+      said: '「今夜この船に乗っているのは、あなたの会社の社員だけじゃないんですよ」と言う。',
+      mean: 'not the only 〜 ＝ 〜だけではない。事実を言うだけで「騒ぎすぎ」とたしなめている。',
+      trap: '直後の We’re all going to have a good time は誘いと考えがち。遠回しの注意。',
+      use: 'There are other people here, you know.（ほかにも人がいるんだけどね）' },
+
+    { id: 'w1', skill: 'pragma', level: 'B1', point: 'whydont', reveals: ['finish'], seg: [118.5, 123.6],
+      stem: 'What does the captain mean by “Why don’t you let me…”?',
+      ja: '船長の「Why don’t you let me…」はどういう意味？',
+      choices: ['Please leave the work to us', 'Why can’t we do our work?', 'Can you do the work for us?'], a: 0,
+      choicesJa: ['仕事は私たちに任せてください', 'なぜ私たちは仕事ができないの？', '代わりに仕事をしてくれる？'],
+      cue: '「Listen, Mike」のすぐあとの文。',
+      line: '*Why don’t you let me* and my crew do our job?',
+      said: '「私とクルーに仕事をさせてくれませんか？」とマイケルに言う。',
+      mean: 'Why don’t you 〜? ＝ 文字どおりは「なぜ〜しないの？」→「〜したら？」「〜してくれない？」。理由は聞いていない提案・お願いの形。',
+      trap: 'Why から理由を聞く質問と考えがち。答えは Okay で、理由は誰も言わない。',
+      use: 'Why don’t you take a break?（ちょっと休んだら？）' },
   ]
 };
