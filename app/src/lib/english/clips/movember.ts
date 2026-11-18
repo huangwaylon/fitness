@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 1, new 2, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 1, new 2, ctx 4, tx 3, qa 11
 // A2 REVIEW 2026-11-17: keep 3, rewrite 11, retire 6, new 1
 // “Smile If You Love Men's Prostates - The Office US” (the official The Office channel, BEST OF SEASON 9 - The Office
 // US): the men grow mustaches for Movember; a conference call with Jim breaks down over his echoing line; Erin's
@@ -18,13 +18,13 @@ export const movember: Clip = {
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [0, 17.9],
       stem: 'Why do the men have mustaches?', ja: '男性たちはなぜ口ひげを生やしている？',
-      choices: ['To raise money for a charity', 'To win a contest set by Toby', 'To look like Tom Selleck'], a: 0,
-      choicesJa: ['チャリティーのお金を集めるため', 'トビーのコンテストで勝つため', 'トム・セレックに似せるため'],
+      choices: ['To raise money for a charity', 'To win a contest set by Toby', 'To look like a famous actor'], a: 0,
+      choicesJa: ['チャリティーのお金を集めるため', 'トビーのコンテストで勝つため', '有名な俳優に似せるため'],
       cue: '「Toby got us all」から',
       line: 'It’s *a charity* for prostate cancer.',
       said: '前立腺がんの寄付のために、11月のあいだ口ひげを伸ばす企画に、男性みんなで参加したと話す。',
       mean: 'charity ＝ チャリティー、寄付の活動。口ひげは、寄付の企画に参加したしるし。',
-      trap: 'Toby の名前から、彼のコンテストと考えがち。It’s a charity と説明している。',
+      trap: 'Tom Selleck（口ひげで有名な俳優）や Toby から、まねやコンテストと考えがち。決め手は It’s a charity。',
       use: 'It’s for a good cause.（いいことのためなんだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 17.9],
@@ -39,8 +39,8 @@ export const movember: Clip = {
       use: 'I pledged twenty dollars.（20ドル寄付すると約束した）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'got', seg: [24.6, 35.1],
-      stem: 'What did this man do about Movember?', ja: 'この男性は、モーベンバーで何をした？',
-      choices: ['Made all the men join', 'Joined after the other men', 'Started a new charity'], a: 0,
+      stem: 'What does “I got all of the dudes to do Movember” mean?', ja: '「I got all of the dudes to do Movember」の意味は？',
+      choices: ['I made all the men join', 'I joined after the other men', 'I started a new charity'], a: 0,
       choicesJa: ['男性みんなを参加させた', 'ほかの男性のあとに参加した', '新しいチャリティーを始めた'],
       cue: '「so glad」のあと',
       line: 'I am so glad I *got all of the dudes to do* Movember.',
@@ -96,8 +96,8 @@ export const movember: Clip = {
 
     { id: 'i1', skill: 'who', level: 'B1', point: 'on', ctx: true, seg: [43.2, 51.7],
       stem: 'Who is on the phone line?', ja: '電話でつながっているのは誰？',
-      choices: ['Only the caller', 'Everyone in the room', 'No one yet'], a: 0,
-      choicesJa: ['電話をかけている人だけ', '部屋にいる全員', 'まだ誰も'],
+      choices: ['Only Jim', 'Everyone in the room', 'No one yet'], a: 0,
+      choicesJa: ['ジムだけ', '部屋にいる全員', 'まだ誰も'],
       cue: '「Well」のあと',
       line: 'We all on? / Well, *you’re the only one on*. We’re *all here*.',
       said: '「みんな入ってる？」と聞かれ、「入ってるのは君だけ。みんなここにいる」と返す。',
@@ -171,8 +171,8 @@ export const movember: Clip = {
       cue: '電話会議の最後',
       line: 'We’re trying to reach Jim Halpert, *not Batman*. … I’ll *call you right back*.',
       said: 'ジムの声が響いて「バットマンじゃない」と言われ、彼は場所を変えてかけ直すと言う。',
-      mean: 'a bad line ＝ 電話の音が悪いこと。話の中身に入る前に、音の問題で止まる。',
-      trap: 'my cell が聞こえて、携帯で続けたと考えがち。最後は call you right back。',
+      mean: 'a bad line ＝ 電話の音が悪いこと。not Batman ＝ 声が響いて、低い声のバットマン（ヒーロー）みたいだという冗談。',
+      trap: 'call you right back を、だれかに呼ばれたと考えがち。音が悪くて、かけ直すだけ。',
       use: 'Can you hear me okay?（ちゃんと聞こえてる？）' },
 
     // R fix: V2 (blind 60 %): "his important new job" had no hook in the clip. Now "acting like a hero" (a reading of
@@ -204,24 +204,24 @@ export const movember: Clip = {
     { id: 'c4', skill: 'pragma', level: 'B2', point: 'thing', ctx: true, seg: [101.2, 108.6],
       stem: 'What does Erin say to “It’s for the thing”?',
       ja: '「It’s for the thing」に、エリンは何と言う？',
-      choices: ['She says it’s great', 'She asks what thing', 'She tells him to shave'], a: 0,
-      choicesJa: ['すごくいいと言う', '何のことか聞く', 'ひげをそるように言う'],
+      choices: ['She already knows about it', 'She asks what thing', 'She tells him to shave'], a: 0,
+      choicesJa: ['もう知っている', '何のことか聞く', 'ひげをそるように言う'],
       cue: '「the thing」への返事。',
       line: 'Erin: I just, I saw your face. / I’m sorry. *It’s for the thing*. / Erin: *I know. That’s great.*',
       said: '「顔を見ちゃって」に「ごめん、あれのためなんだ」と返し、エリンは「分かってる。すごくいいと思う」と言う。',
       mean: 'the thing ＝ 「あれ」。名前を言わずにモーベンバーを指している。I know ＝ 分かってる。',
-      trap: 'saw your face から、責めると考えがち。決め手は I know のあとの That’s great。',
+      trap: 'the thing（あれ）だけでは何か分からず、聞き返すと考えがち。答えは I know（分かってる）。',
       use: 'I know. That’s great.（分かってる。いいと思うよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'eyebrow', seg: [107.4, 113.2],
       stem: 'What does Erin say the mustache looks like?', ja: 'エリンは、口ひげが何みたいだと言う？',
-      choices: ['An eyebrow in the middle', 'His eyebrows grown together', 'A smile above his lip'], a: 0,
-      choicesJa: ['顔の真ん中の眉毛', 'つながった眉毛', '唇の上の笑顔'],
+      choices: ['An eyebrow in the middle', 'An eye in the middle', 'A smile above his lip'], a: 0,
+      choicesJa: ['顔の真ん中の眉毛', '顔の真ん中の目', '唇の上の笑顔'],
       cue: '「makes it look like」のあと',
       line: 'it makes it look like there’s *an eyebrow in the middle of your face*.',
       said: '「顔の真ん中に眉毛があるみたい」と言う。',
       mean: 'make 〜 look like … ＝ 〜を…みたいに見せる。口ひげを、顔の真ん中の眉毛にたとえている。',
-      trap: 'eyebrow から「眉がつながる」と勘違いしやすい。in the middle of your face まで聞く。',
+      trap: 'あとで eye socket や Cyclops（一つ目の巨人）も出るので、「目」と混ざりやすい。ここは eyebrow（眉毛）。',
       use: 'That hat makes you look taller.（その帽子だと背が高く見えるね）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'but', reveals: ['socket'], seg: [111.9, 119],
@@ -291,7 +291,7 @@ export const movember: Clip = {
       choicesJa: ['最後はいいことを言うため', '彼にお金を頼むため', '計画を変えるため'],
       cue: '最後の一文',
       line: 'Which is great. *It’s such a great cause.*',
-      said: '「素敵よ。すごくいい活動だし」と、最後は寄付の目的をほめる。',
+      said: '「素敵。すごく立派な活動だもの」と、最後は寄付の目的をほめる。',
       mean: 'cause ＝ （寄付などの）目的、活動。ひげはほめられないので、活動のほうをほめて終える。',
       trap: 'cause を「原因」と思いやすい。a great cause は「立派な目的」。',
       use: 'It’s for a great cause.（立派な目的のためなんだ）' },

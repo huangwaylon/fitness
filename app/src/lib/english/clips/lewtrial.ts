@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 5, new 10, ctx 6, tx 2
+// R4 REVIEW 2026-11-18: keep 10, rewrite 6, retire 5, new 10, ctx 6, tx 2, qa 12
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 5, new 0
 // “Lewbert, Guppy, and Chuck RETURN to iCarly | Full Scene | NickRewind” (NickRewind, Best of iCarly): a mock trial.
 // Lewbert sues Carly: he cross-examines Freddie, then Guppy and Chuck; Carly's side calls Mrs. Benson, who melts when
@@ -25,9 +25,9 @@ export const lewTrial: Clip = {
       choicesJa: ['すぐに「いいえ」と言う', 'ていねいに賛成する', 'はっきり答えない'],
       cue: '最初の短い一語。',
       line: 'Pretty horrific, wouldn’t you say? — *No, I wouldn’t.*',
-      said: '「かなりひどいよね？」に「いや、そうは思わない」とすぐ答える。',
-      mean: 'No, I wouldn’t ＝ そうは言わない。No は中身への反対。',
-      trap: '日本語では「いいえ」で同意することもあるが、英語の No は中身の否定。',
+      said: '「かなりひどいと思わないかね？」に「いいえ、思いません」とすぐ答える。',
+      mean: 'wouldn’t you say? ＝ そう思うよね？ No, I wouldn’t ＝ いいえ、そうは言わない。きっぱり反対。',
+      trap: 'wouldn’t you say? は同意を求める聞き方なので、合わせて賛成すると考えがち。答えは No。',
       use: 'No, I wouldn’t say that.（いや、そうは思わないな）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'whyname', retired: true, seg: [27.3, 34.4],
@@ -43,7 +43,7 @@ export const lewTrial: Clip = {
       use: 'We tried it, but it tested poorly.（試したけど、反応がいまいちだった）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'tested', reveals: ['whyname', 'apparently'], ctx: true, seg: [27.6, 35.3],
-      stem: 'Who really turned the name down?',
+      stem: 'Who really didn’t like the name?',
       ja: '本当にその名前に反対したのは誰？',
       choices: ['Only Carly', 'A group of viewers', 'The TV bosses'], a: 0,
       choicesJa: ['カーリーだけ', '視聴者のグループ', 'テレビ局のえらい人'],
@@ -106,7 +106,7 @@ export const lewTrial: Clip = {
       said: '「振り出しに戻って、彼女の言いなりで、ニセの交際まで。全部誰のため？」に、フレディは「カーリー」と答える。',
       mean: 'for whose benefit ＝ 誰のために。カーリーに利用されてきた、と認めさせる質問。',
       trap: 'idea や producing は途中の言葉。最後の質問 all for whose benefit? が答え。',
-      use: 'No further questions.（質問は以上です）' },
+      use: 'I did it all for you.（全部あなたのためにやったんだよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'become', retired: true, seg: [63.1, 73.6],
       stem: 'How does Freddie feel when he says “What has become of me?”',
@@ -241,13 +241,13 @@ export const lewTrial: Clip = {
     { id: 'i3', skill: 'infer', level: 'B1', point: 'liar', seg: [175.8, 184],
       stem: 'What does Spencer mean by “You did all that stuff to me!”?',
       ja: 'スペンサーの「You did all that stuff to me!」はどういう意味？',
-      choices: ['Chuck did it to him', 'Chuck did it to Carly', 'Chuck made it all up'], a: 0,
-      choicesJa: ['チャックが自分にやった', 'チャックがカーリーにやった', 'チャックが全部作った'],
+      choices: ['Chuck did it to Spencer', 'Spencer did it to Chuck', 'Chuck did it to Carly'], a: 0,
+      choicesJa: ['チャックがスペンサーにやった', 'スペンサーがチャックにやった', 'チャックがカーリーにやった'],
       cue: '「Liar!」のすぐあと。',
       line: 'Liar! *You did all that stuff to me!*',
       said: '「うそつき！全部お前がぼくにやったんだ！」と言い返す。',
       mean: 'やった人とやられた人が逆だ、と言っている。to me ＝ ぼくに。',
-      trap: 'Liar! だけ聞くと「全部作り話」と思いやすい。you と to me で、誰が誰にしたかを聞く。',
+      trap: 'チャックの話のままだと、スペンサーがやったと考えがち。you（チャック）が to me（スペンサー）に、の向き。',
       use: 'No, it was the other way around.（いや、逆だよ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'offgame', seg: [181.4, 186.4],
@@ -257,7 +257,7 @@ export const lewTrial: Clip = {
       choicesJa: ['調子をくるわせる', 'わざと負けさせる', 'かわいそうに思わせる'],
       cue: '「brought Chuck here to」のあと。',
       line: 'He brought Chuck here to *throw you off your game*.',
-      said: '「チャックはあなたを動揺させるために呼ばれた」と注意される。',
+      said: '「チャックが呼ばれたのは、あなたの調子をくるわせるため」と注意される。',
       mean: 'throw 〜 off one’s game ＝ 〜の調子をくるわせる。',
       trap: 'throw the game（わざと負ける）に似るが、off your game なら「調子をくずす」。',
       use: 'Don’t let him throw you off your game.（あいつにペースを乱されないで）' },
@@ -278,7 +278,7 @@ export const lewTrial: Clip = {
       stem: 'What is the answer to “Can I do that?”',
       ja: '「Can I do that?」への答えは？',
       choices: ['Yes, if he brings a cupcake', 'No, he must get a lawyer', 'Only if Carly agrees to it'], a: 0,
-      choicesJa: ['カップケーキを持ってくればいい', 'だめ、弁護士が必要', 'カーリーが同意すれば'],
+      choicesJa: ['いい、カップケーキを取ってくれたら', 'だめ、弁護士が必要', 'カーリーが同意すれば'],
       cue: 'スペンサーの質問への返事。',
       line: 'Spencer: I hereby nominate myself to represent myself. Can I do that? / *Only if you grab me one of those cupcakes*.',
       said: '「自分の弁護を自分でします。できますか？」に「カップケーキを一つ取ってくれたらね」と返る。',
@@ -295,7 +295,7 @@ export const lewTrial: Clip = {
       line: 'So what’s your plan? / I have called up the one person who *hates Lewbert as much as we do*.',
       said: '「私たちと同じくらいルーバートをきらう人を呼んだ」と答える。',
       mean: 'as much as we do ＝ 私たちと同じくらい。do は hate のくり返し。',
-      trap: 'the one person を「知らない人」と考えがち。ここは「ただ一人の人」。',
+      trap: 'as much as we do を聞き落とすと、だれでもよく聞こえる。決め手は hates Lewbert。',
       use: 'She loves pizza as much as I do.（彼女も私と同じくらいピザ好き）' },
 
     { id: 'k6', skill: 'phrase', level: 'B1', point: 'nailed', seg: [233.5, 245],
