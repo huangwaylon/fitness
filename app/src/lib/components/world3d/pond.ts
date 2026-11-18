@@ -79,11 +79,12 @@ export function buildPond(p: PondPlace): Group {
   g.add(w);
   // stones round the edge, a little each way (NH's pond-side rocks: grey and sandy, flat)
   const n = Math.max(12, Math.round((Math.PI * (p.rx + p.rz)) / 9));
-  const greys = [0xa7a196, 0x8f8a80, 0xb8ae98, 0x9c9488];
+  // (one geometry and the four greys shared by the pond's stones: placeGroup's release disposes each once)
+  const greys = [0xa7a196, 0x8f8a80, 0xb8ae98, 0x9c9488].map(lambert), stone = new DodecahedronGeometry(1, 0);
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2 + Math.sin(i * 7.3) * 0.08, r = 1.04 + 0.05 * Math.sin(i * 3.1);
     const s = 3.4 + 1.6 * ((i * 37) % 5) / 5;
-    const st = new Mesh(new DodecahedronGeometry(1, 0), lambert(greys[i % greys.length]));
+    const st = new Mesh(stone, greys[i % greys.length]);
     st.position.set(Math.cos(a) * p.rx * r, s * 0.25, Math.sin(a) * p.rz * r);
     st.scale.set(s, s * 0.55, s * 0.85);
     st.rotation.set(i * 0.7, i * 1.3, i * 0.4);
