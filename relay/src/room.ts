@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgIntent, type SgView, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgAt, type SgIntent, type SgView, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -376,7 +376,7 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, { key, since, v, beat, dev }: Extract<ClientMsg, { kind: 'hello' }>): void {
+  private hello(s: S, meta: Meta, { key, since, v, beat, dev, sg }: Extract<ClientMsg, { kind: 'hello' }>): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // a ticket's socket is its person's alone
@@ -420,8 +420,8 @@ export class RoomCore<S extends Sock> {
     }
     if (since !== undefined) {
       // the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back)
-      // (the games' moves after the day's world: each game's in its order)
-      const day = [...this.fresh().filter((e) => e.t > since), ...this.sgSince(since).sort((a, b) => a.t - b.t)];
+      // (the games' moves after the day's world: each game's in its order; the phone's own game from its `n`th move)
+      const day = [...this.fresh().filter((e) => e.t > since), ...this.sgSince(since, sg).sort((a, b) => a.t - b.t)];
       for (const es of chunks(day.map(strip))) this.send(s, { v: LIVE_V, kind: 'replay', es, t });
     }
     // the high-fives held for me while I was away, one from each (a day old: let go); each goes once my phone says `got`
@@ -657,12 +657,14 @@ export class RoomCore<S extends Sock> {
     this.io.dropSg?.([...x.moves, ...(x.end ? [x.end] : [])].map(sgKey));
   }
 
-  /** The games' moves after `since` (a hello's), the moves from an end on left out. */
-  private sgSince(since: number): SgKept[] {
+  /** The games' moves after `since` (a hello's), the moves from an end on left out; the hello's own game (`at`) from
+   *  its `n`th move and its end, however old (a game crosses Tokyo midnight: `since` restarts at it). */
+  private sgSince(since: number, at?: SgAt): SgKept[] {
     const out: SgKept[] = [];
-    for (const x of this.games.values()) {
-      for (const e of x.moves) if (e.t > since && !(x.end && e.i >= x.end.i)) out.push(e);
-      if (x.end && x.end.t > since) out.push(x.end);
+    for (const [g, x] of this.games) {
+      const n = at?.g === g ? at.n : Infinity, after = (e: SgKept) => e.t > since || e.i >= n;
+      for (const e of x.moves) if (after(e) && !(x.end && e.i >= x.end.i)) out.push(e);
+      if (x.end && (x.end.t > since || at?.g === g)) out.push(x.end);
     }
     return out;
   }

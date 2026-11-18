@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CLOSE, HB_PING, HB_PONG, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, dayStart, parseServer, tokyoDayNum, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { WORLD_X, WORLD_Z } from '../../app/src/lib/contract/layout.ts';
 /** The 20 × 156 grid's last land row, its last column's middle (app/src/lib/layout/grid.ts tileMid(19, 154): the grid's
  *  last row is its ring of sea) and its last chunk row. */
@@ -1278,6 +1278,34 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     say(a, { kind: 'world', op: 'watered', id: 'next' }); // (the day turns)
     expect(rows.size).toBe(0);
     expect(moves(join(KEY_B, 0))).toEqual([]);
+  });
+
+  it('a game across Tokyo midnight: a hello the next day (`since` its midnight) gets its game from the `n`th move it says, the end too', () => {
+    const midnight = dayStart(tokyoDayNum(now) + 1);
+    now = midnight - 10 * 60_000; // 23:50
+    const a = join(KEY_A), b = join(KEY_B);
+    say(a, { ...start, c: 1 });
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 });
+    say(a, { kind: 'sg', g: G, i: 2, a: 'word', w: 'cat', c: 3 });
+    bye(b); // B hidden, 3 moves heard
+    for (let i = 3; i <= 4; i++) (now += 60_000), say(a, { kind: 'sg', g: G, i, a: 'roll', c: 1 + i });
+    now = midnight + 5 * 60_000; // 00:05
+    const hello = (sg?: object) => {
+      const s = new FakeSock();
+      socks.push(s);
+      room.open(s);
+      room.message(s, JSON.stringify({ v: 3, kind: 'hello', key: KEY_B, since: midnight, ...(sg ? { sg } : {}) }));
+      return s;
+    };
+    // without `sg` (an older phone): the day's only, the pre-midnight moves never come
+    expect(moves(hello())).toEqual([]);
+    expect(moves(hello({ g: G, n: 3 }))).toEqual(['3rollA', '4rollA']);
+    // the end comes whenever it was; another game still by `since`; a bad `sg` is left out, the hello kept
+    say(a, { kind: 'sg', g: G, i: 5, a: 'end', c: 6 });
+    expect(moves(hello({ g: G, n: 5 }))).toEqual(['5endA']);
+    expect(moves(hello({ g: 'zzzzzzzzzz', n: 0 }))).toEqual(['5endA']);
+    const bad = hello({ g: 'NO', n: -1 });
+    expect(bad.sent[0]).toMatchObject({ kind: 'welcome', me: 'B' });
   });
 
   it('a turn’s view (sgv) goes live to the game’s other seats only, at its next move only, never kept or acked', () => {

@@ -249,12 +249,20 @@ export type ClientMsg =
   /** `beat` (2026-11-05): this phone sends something, the heartbeat at least, whenever it has sent nothing for 20 s, so
    *  the room may take a minute's silence for a ghost (relay/src/room.ts sweepSilent).
    *  `dev` (2026-11-09): this device's id (sync/live.ts deviceId), so a hello replaces only this device's earlier socket,
-   *  not the person's other devices' (one without it replaces only the others without it: the phones before it). */
-  | { v: LiveV; kind: 'hello'; key: string; since?: number; beat?: true; dev?: string }
+   *  not the person's other devices' (one without it replaces only the others without it: the phones before it).
+   *  `sg` (2026-11-18): the すごろく game this phone holds and how many of its moves (`n`): the room replays that game
+   *  from move `n` (and its end) whatever `since` says (a game crosses Tokyo midnight, `since` doesn't). */
+  | { v: LiveV; kind: 'hello'; key: string; since?: number; beat?: true; dev?: string; sg?: SgAt }
   | { v: LiveV; kind: 'ping'; c: number }
   /** I heard the partner's high-five `at` (the one the room held for me goes). */
   | { v: LiveV; kind: 'got'; at: number }
   | ({ v: LiveV; c?: number } & Intent);
+
+/** A hello's すごろく game (`g`) and the moves this phone has of it (`n`). @public (relay/, sync/live.ts) */
+export interface SgAt {
+  g: string;
+  n: number;
+}
 
 /** An intent as relayed: who sent it and the relay's clock when it arrived (ms since the epoch). */
 export type Relayed = Intent & { v: LiveV; who: Who; t: number };
@@ -634,7 +642,9 @@ export function parseClient(raw: unknown): ClientMsg | null {
   if (o.kind === 'hello') {
     if (typeof o.key !== 'string' || !KEY.test(o.key) || !opt(o, 'since', isTime)) return null;
     const dev = typeof o.dev === 'string' && SID.test(o.dev) ? o.dev : undefined;
-    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}) };
+    // (a bad `sg` is left out, the hello kept)
+    const g = o.sg as Obj | undefined, sg = g && typeof g === 'object' && typeof g.g === 'string' && SG_GAME.test(g.g) && within(g.n, [0, SG_MOVES_MAX]) ? { g: g.g, n: g.n as number } : undefined;
+    return { v, kind: 'hello', key: o.key, ...(o.since !== undefined ? { since: o.since as number } : {}), ...(o.beat === true ? { beat: true as const } : {}), ...(dev ? { dev } : {}), ...(sg ? { sg } : {}) };
   }
   if (o.kind === 'ping') return isTime(o.c) ? { v, kind: 'ping', c: o.c } : null;
   if (o.kind === 'got') return isTime(o.at) ? { v, kind: 'got', at: o.at } : null;
