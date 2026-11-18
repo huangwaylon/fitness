@@ -130,6 +130,10 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
 /* .yuzu: taking in what's ready (畑's 収穫: a gift to collect, not the leaf's "do"); sunk like any while it can't */
 .btn.yuzu:not(:disabled, [aria-disabled='true'], .off) { --fill: var(--c-yuzu); --lip-c: var(--c-yuzu-lip); }
+/* .sky: a listening act (English Study's この部分を聞く, 意味を見る): the sky's tint, the paper's edge */
+.btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }
+/* .quiet: a text button out of the way (今日はスキップ, 答えを見る, ⚑ 報告), 44 tall */
+.quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); min-height: var(--hit); padding: 0 8px; cursor: pointer; }
 /* a confirm's footer: キャンセル (paper) and the verb, wider (docs/design.md "Forms and confirms") */
 .two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 .two-cta .btn { margin: 0; }

@@ -19,7 +19,6 @@ const S = {
   prTitle: { ja: 'フレーズの復習', en: 'Phrase review' },
   prSkip: { ja: '今日はスキップ', en: 'Skip today' },
   prShow: { ja: '意味を見る', en: 'Show the meaning' },
-  prFrom: { ja: '動画のセリフ', en: 'In the clip' },
   prHear: { ja: 'この場面を聞く', en: 'Hear this moment' },
   prKept: { ja: '覚えた', en: 'Got it' },
   prAgain: { ja: 'もう一回', en: 'Once more' },

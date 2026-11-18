@@ -26,6 +26,7 @@
   import ClipPhrases from './ClipPhrases.svelte';
   import Transcript from './Transcript.svelte';
   import Scenes from './Scenes.svelte';
+  import KeyedText from './KeyedText.svelte';
   import StudySheet from './StudySheet.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -42,7 +43,6 @@
   import { safeReload } from '#lib/ui-state/reload.ts';
   import { log } from '#lib/sync/log.ts';
   import { durText, s } from '../i18n.ts';
-  import { keyed } from '../phrases.ts';
   import type { ClipMeta } from '../catalog.ts';
   import type { Bank, Question } from '../types.ts';
   import type { LocalDate, Who } from '#lib/types.ts';
@@ -300,7 +300,7 @@
               <button type="button" class="chip s" aria-pressed={tr} aria-label={s('trLabel')} data-sfx="tick" data-en-tr={tr ? 'on' : 'off'} onclick={() => (tr = !tr)}>{s('tr')}</button>
             {/if}
           </div>
-          <p class="stem" lang="en"><b>{#each keyed(q.stem) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</b></p>
+          <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
           {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
           <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
@@ -323,7 +323,7 @@
             <div class="reveal" data-en-reveal={cur.r.k} {@attach (el) => untrack(() => intoView(el, 'reveal'))}>
               <p class="rhead">{head(cur)}</p>
               {#if cur.r.k === 'dict'}<p class="words" lang="en">{#each cur.r.words as w, i (i)}<span class:hit={w.hit} class:gap={!w.hit}>{w.w}</span>{' '}{/each}</p>{/if}
-              {#if q.line}<p class="line" lang="en">{#each keyed(q.line) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>{/if}
+              {#if q.line}<p class="line" lang="en"><KeyedText text={q.line} /></p>{/if}
               <dl class="why"><dt>{s('mean')}</dt><dd>{q.mean}</dd></dl>
               <p class="phrase"><b>{s('use')}</b> <span lang="en">{q.use}</span></p>
               <!-- the deeper notes folded; open by themselves after a miss, when the trap matters most -->
@@ -391,7 +391,6 @@
   /* ⚑ at the card's foot: quiet, out of the way of the stem and the choices */
   .quiet.flag { justify-self: end; display: inline-flex; align-items: center; gap: 3px; margin: -4px -4px -8px 0; padding: 0 8px; font: 700 var(--fs-s)/1 var(--font-ui); }
   .btn { margin: 0; }
-  .btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }
   .btn.small { justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
   .choices { display: grid; gap: 8px; }
   .choice[aria-disabled='true'] { cursor: default; }
@@ -400,13 +399,12 @@
   input { font-size: var(--fs-input); padding: 10px 12px; border-radius: var(--r-row); border: 2px solid var(--c-edge); background: var(--c-card); color: var(--c-ink); }
   .nudge { display: grid; gap: 4px; padding: 10px 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); color: var(--c-ink); }
   .nudge .meta { color: inherit; }
-  .quiet { appearance: none; border: 0; background: none; color: var(--text-soft); font: inherit; font-size: var(--fs-s); min-height: var(--hit); padding: 0 4px; cursor: pointer; justify-self: start; }
+  .quiet { padding: 0 4px; justify-self: start; }
   .nudge .quiet { color: var(--c-ink-soft); text-decoration: underline; }
   .reveal, .nudge, .choice { scroll-margin-top: 8px; }
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-ink); }
   .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-leaf-text); }
   .line { font-style: italic; }
-  .line u { font-style: normal; font-weight: 700; text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
   .words .hit { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
   .words .gap { color: var(--c-leaf-text); font-weight: 700; }
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }

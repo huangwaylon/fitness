@@ -4,7 +4,8 @@
   // key words underlined), 言っていること, 意味 and the phrase to use. The lines are the questions' own short quotes,
   // never a transcript.
   import Icon from '#lib/components/ui/Icon.svelte';
-  import { keyed, momentsOf } from '../phrases.ts';
+  import KeyedText from './KeyedText.svelte';
+  import { momentsOf } from '../phrases.ts';
   import { clock, s } from '../i18n.ts';
   import type { Clip } from '../types.ts';
 
@@ -22,7 +23,7 @@
       </button>
       {#each m.qs as q (q.id)}
         <div class="item" data-en-phrase={q.id}>
-          <p class="line" lang="en">{#each keyed(q.line ?? '') as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</p>
+          <p class="line" lang="en"><KeyedText text={q.line} /></p>
           <dl class="why">
             <dt>{s('said')}</dt><dd>{q.said}</dd>
             <dt>{s('mean')}</dt><dd>{q.mean}</dd>
@@ -40,12 +41,10 @@
   .card { display: grid; gap: 10px; }
   .card p { margin: 0; }
   .btn { margin: 0; justify-self: start; display: inline-flex; gap: 6px; align-items: center; }
-  .btn.sky { --fill: color-mix(in srgb, var(--c-sky) 22%, var(--c-card)); --lip-c: var(--c-edge); color: var(--c-ink); }
   .t { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
   .item { display: grid; gap: 6px; }
   .item + .item { padding-top: 10px; border-top: 2px dashed var(--edge); }
   .line { font-size: var(--fs-talk); line-height: 1.45; font-style: italic; }
-  .line u { font-style: normal; font-weight: 700; text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
