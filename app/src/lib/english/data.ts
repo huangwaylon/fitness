@@ -14,34 +14,39 @@ export const LIBRARY: readonly ClipMeta[] = INDEX;
 const byId = new Map(LIBRARY.map((m) => [m.id, m]));
 export const metaById = (id: string): ClipMeta | undefined => byId.get(id);
 
-const keyOf = (m: ClipMeta) => `${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}`;
+/** One fetch at a time of each file, its JSON checked; a failure forgotten (asked again next time) and logged
+ *  (english.fail: `fail`, with its HTTP status, none for no answer; `bad` an answer that wasn't the file). */
+function cachedJson<T>(cache: Map<string, Promise<T>>, path: string, check: (x: unknown) => x is T, fail: Record<string, string | number>): Promise<T> {
+  let p = cache.get(path);
+  if (!p) {
+    let http: number | undefined;
+    p = fetch(staticUrl(path)).then(async (res) => {
+      http = res.status;
+      if (!res.ok) throw new Error(`english ${path}: ${res.status}`);
+      const x: unknown = await res.json();
+      if (!check(x)) throw new Error(`english ${path}: not the file`);
+      return x;
+    });
+    p.catch(() => {
+      cache.delete(path);
+      const on = navigator.onLine;
+      log('english.fail', { ...fail, ...(http !== undefined && { http }), ...(http !== undefined && http < 300 && { bad: true }), on }, on ? 2 : 1);
+    });
+    cache.set(path, p);
+  }
+  return p;
+}
+
 const banks = new Map<string, Promise<Bank>>();
 /** The banks fetched this session (a lesson opened on one starts with it, no wait). */
 const loaded = new Map<string, Bank>();
-export const bankNow = (m: ClipMeta): Bank | undefined => loaded.get(keyOf(m));
+export const bankNow = (m: ClipMeta): Bank | undefined => loaded.get(bankPath(m));
 
 /** A clip's bank. Rejects offline or on a failed fetch (asked again next time). */
 export function loadBank(m: ClipMeta): Promise<Bank> {
-  const key = keyOf(m);
-  let p = banks.get(key);
-  if (!p) {
-    let http: number | undefined;
-    p = fetch(staticUrl(bankPath(m))).then(async (res) => {
-      http = res.status;
-      if (!res.ok) throw new Error(`english bank ${key}: ${res.status}`);
-      const clip = (await res.json()) as Bank;
-      if (clip.id !== m.id || !Array.isArray(clip.questions)) throw new Error(`english bank ${key}: not its clip`);
-      loaded.set(key, clip);
-      return clip;
-    });
-    p.catch(() => {
-      banks.delete(key);
-      const on = navigator.onLine;
-      log('english.fail', { what: 'bank', clip: m.id, ...(http !== undefined && { http }), ...(http !== undefined && http < 300 && { bad: true }), on }, on ? 2 : 1);
-    });
-    banks.set(key, p);
-  }
-  return p;
+  const path = bankPath(m);
+  const isBank = (x: unknown): x is Bank => (x as Bank | null)?.id === m.id && Array.isArray((x as Bank).questions);
+  return cachedJson(banks, path, isBank, { what: 'bank', clip: m.id }).then((b) => (loaded.set(path, b), b));
 }
 
 /** Fetch these banks ahead (home, while idle), quietly. */
@@ -49,26 +54,8 @@ export function prefetch(ms: readonly (ClipMeta | undefined)[]): void {
   for (const m of ms) if (m) loadBank(m).catch(() => {});
 }
 
-const shards = new Map<number, Promise<PhraseEntry[]>>();
+const shards = new Map<string, Promise<PhraseEntry[]>>();
 /** フレーズ's deck file `n` (catalog.ts shardsOf). Rejects offline or on a failed fetch (asked again next time; logged:
  *  english.fail `deck`). */
-export function loadShard(n: number): Promise<PhraseEntry[]> {
-  let p = shards.get(n);
-  if (!p) {
-    let http: number | undefined;
-    p = fetch(staticUrl(shardPath(n, DECK[n]))).then(async (res) => {
-      http = res.status;
-      if (!res.ok) throw new Error(`english deck ${n}: ${res.status}`);
-      const out = (await res.json()) as PhraseEntry[];
-      if (!Array.isArray(out)) throw new Error(`english deck ${n}: not a deck`);
-      return out;
-    });
-    p.catch(() => {
-      shards.delete(n);
-      const on = navigator.onLine;
-      log('english.fail', { what: 'deck', n, ...(http !== undefined && { http }), on }, on ? 2 : 1);
-    });
-    shards.set(n, p);
-  }
-  return p;
-}
+export const loadShard = (n: number): Promise<PhraseEntry[]> =>
+  cachedJson(shards, shardPath(n, DECK[n]), (x): x is PhraseEntry[] => Array.isArray(x), { what: 'deck', n });
