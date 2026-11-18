@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 2, new 8, ctx 5, tx 6
 // A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 7, new 0
 // “Spencer is Rich?!  New iCarly Set Tour w/ Miranda Cosgrove and Jerry Trainor! | NickRewind” (NickRewind, official
 // YouTube channel, Best of Carly Shay ❤️): Miranda and Jerry walk through Spencer's remodelled apartment on the new set,
@@ -5,10 +6,10 @@
 // Segments from the captions, words from whisper (2026-11-16). Named in the audio: Miranda and Jerry (5.9–14.8 s,
 // 179.2 s). Who says which line is mostly not settled by the words, so stems say "she", "they" or "the reply", and no
 // item asks who.
-// Untested: 127–134 s and 172–177 s (whisper only: the glued item, "He collects records", the stairs chat), 201–209 s
+// Untested: 127–133 s and 172–177 s ("He collects records", the stairs chat), 201–209 s
 // (whisper "You can cuss?", captions "what you confess"), 214–216 s ("that was actually the coolest" whisper only),
 // 229–237 s (whisper "nobody ever saw it", "She meant fortunately", "Jerry hates the gum wall", "No."; captions only
-// "unfortunately unfortunately"), 239–249 s (the bass guitars: "chicks dig bassists", talk overlaps), 303–305 s
+// "unfortunately unfortunately"), 245–249 s ("chicks dig bassists", talk overlaps), 303–305 s
 // (whisper "this has been Jerry and…", captions "this is benjarian"), 87–100 s (the stove: "in-counter" vs "encounter").
 // EAR CHECK: 217.9 s i3 — whisper "In a post-COVID world", captions "post-covered world" (an ASR slip?); the key also
 //   stands on "we're not gonna stick food on anything" (both sources)
@@ -31,7 +32,7 @@ export const icSetTour: Clip = {
       trap: 'uh や名前のくり返しは緊張にも見えるが、名乗った直後の「どなた？」は冗談。',
       use: 'And you are…? Oh right, my brother.（で、どなた？…ああ、兄だった）', retired: true },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', seg: [12.0, 56.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', seg: [12.0, 36.0],
       stem: 'What are Miranda and Jerry doing in this video?',
       ja: 'ミランダとジェリーは、この動画で何をしている？',
       choices: ['Showing the new apartment set', 'Cooking a meal in the kitchen', 'Moving into a new home'], a: 0,
@@ -52,8 +53,20 @@ export const icSetTour: Clip = {
       line: 'now that Spencer is rich. … *Get into art*. That’s where the *real money* is, kids.',
       said: '「お金持ちになった」と言い、「アートをやりなさい、本当のお金はそこにある」と続ける。',
       mean: 'get into 〜 ＝ 〜を始める。real money ＝ 本当にもうかるお金。アートでもうけたという冗談。',
-      trap: 'rich から、宝くじを思いやすい。続く Get into art が答え。',
+      trap: 'rich から、宝くじを連想しやすい。続く Get into art が答え。',
       use: 'I want to get into cooking.（料理を始めてみたい）' },
+
+    { id: 'd8', skill: 'infer', level: 'B1', point: 'bottlebot', seg: [40.0, 51.0],
+      stem: 'Why was the Bottle Bot made again?',
+      ja: 'ボトルボットが作り直されたのはなぜ？',
+      choices: ['The first one is in a museum', 'The first one got broken', 'The first one was too small'], a: 0,
+      choicesJa: ['最初のものは博物館にあるから', '最初のものがこわれたから', '最初のものは小さすぎたから'],
+      cue: '「because」のあと',
+      line: 'The Bottle Bot, made by the original sculptor… who did a great job recreating it *because the original is in the Smithsonian*.',
+      said: '「元の彫刻家が作り直してくれた。元の作品はスミソニアン博物館にあるから」と話す。',
+      mean: 'the Smithsonian ＝ アメリカの有名な国立博物館。recreate ＝ 作り直す。番組の小道具が博物館に入るほどだった。',
+      trap: '決め手は because のあと。作り直した理由を、こわれたからと考えがち。',
+      use: 'The original is in a museum.（本物は博物館にあります）' },
 
     { id: 'c2', skill: 'dict', level: 'B2', point: 'wall', seg: [56.6, 64.6],
       stem: 'Type the words: “there ___ like a wall here.” (3 words)', answer: 'used to be',
@@ -85,8 +98,20 @@ export const icSetTour: Clip = {
       line: 'this is kind of a throwback, but *he knocked out the wall*… *modernized the kitchen*',
       said: '「いすは昔のまま。でもかべを取って、台所を今風にした」と言う。',
       mean: 'modernize ＝ 今風にする。knock out the wall ＝ かべを取りはらう。',
-      trap: 'いすは昔のままなので、全部同じと思いやすい。but のあとが変わったところ。',
+      trap: 'いすは昔のままなので、全部同じと考えがち。but のあとが変わったところ。',
       use: 'They modernized the old station.（古い駅を今風にした）' },
+
+    { id: 'k1', skill: 'humor', level: 'B1', point: 'bread', ctx: true, seg: [87.0, 100.0],
+      stem: 'What do they pretend when the stove is on?',
+      ja: 'コンロがついていると分かって、何のふりをする？',
+      choices: ['Bread is baking', 'Soup is cooking', 'Pizza is burning'], a: 0,
+      choicesJa: ['パンが焼けている', 'スープを煮ている', 'ピザがこげている'],
+      cue: '「Perfect timing」のあと',
+      line: '— Ah, that’s on. That’s real and it’s on. / — Perfect timing. I think *my loaf of bread* is just about done.',
+      said: '「あ、ついてる。本物だ」に、「ちょうどいいタイミング。私のパン、もうすぐ焼けるころ」とふざける。',
+      mean: 'Perfect timing ＝ ちょうどいいところに。loaf ＝ パンのひとかたまり。セットのコンロが本物だったので、料理のふり。',
+      trap: 'コンロの話なので、なべで煮るスープと考えがち。my loaf of bread を聞く。',
+      use: 'Perfect timing! Dinner’s ready.（ちょうどいいところに！ごはんできたよ）' },
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'paramount', reveals: ['cheesy'], seg: [100.5, 113.1],
       stem: 'Why does someone say “Sorry, Paramount” here?',
@@ -99,7 +124,7 @@ export const icSetTour: Clip = {
       trap: 'sorry ＋会社名で「壊した」と取りやすい。直前の一言が謝る理由。',
       use: 'No offense, Mom, but this is better.（ママ、悪いけどこっちの方がいい）', retired: true },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 109.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'cheesy', seg: [102.5, 109.6], retired: true,
       stem: 'Type the words: “Spencer’s like, let’s ___ all the cheesy, lame stuff.” (3 words)', answer: 'get rid of',
       ja: '言葉を入力：「let’s ___ all the cheesy, lame stuff.」（3語）',
       cue: '「let’s」のあと',
@@ -121,7 +146,7 @@ export const icSetTour: Clip = {
       trap: 'bachelor は「学士（大学卒業）」の意味もあり、学生を思いやすい。ここは独身の男。',
       use: 'His apartment is a real bachelor pad.（彼の部屋はいかにも独身男の部屋だ）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'couch', seg: [114.7, 127.9],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'couch', seg: [114.7, 127.9],
       stem: 'What does she say about the new couch?',
       ja: '新しいソファについて、彼女は何と言う？',
       choices: ['It’s a bit like the old one', 'It’s just like the old one', 'It’s nothing like the old one'], a: 0,
@@ -133,17 +158,29 @@ export const icSetTour: Clip = {
       trap: 'not the same だけ聞くと、全然ちがうと思いやすい。but のあとの similar まで聞く。',
       use: 'It’s not the same, but it’s similar.（同じじゃないけど、似てる）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'glue', seg: [133.2, 143.8],
+    { id: 'd4', skill: 'infer', level: 'B2', point: 'glue', ctx: true, seg: [133.0, 143.8],
       stem: 'Why does Spencer glue his things down, they joke?',
       ja: 'スペンサーはなぜ物を接着していると、冗談で言う？',
       choices: ['There were many break-ins', 'Things keep falling off', 'He keeps breaking his art'], a: 0,
       choicesJa: ['どろぼうが何度も入った', '物が落ちてばかりいる', '自分の作品をこわしてばかり'],
       cue: '「Spencer glues down his stuff」のあと',
-      line: 'Spencer glues down his stuff. There’s been *a rash of burglaries*. *We’ve been robbed*.',
-      said: '「物を接着してるんだ。どろぼうが続いてて、うちもやられた」と言う。',
+      line: '— Oh, it’s glued down. Okay. / — Spencer glues down his stuff. There’s been *a rash of burglaries*. *We’ve been robbed*.',
+      said: '「あ、くっついてるのね」に、「スペンサーは物を接着するんだ。泥棒が続いてて、うちも入られた」と返す。',
       mean: 'We’ve been robbed ＝「どろぼうに入られた」。burglary ＝ 空き巣。',
-      trap: 'glue から、落ちないようにと思いやすい。続く robbed が理由。',
+      trap: 'glue から、落ちないようにと考えがち。続く robbed が理由。',
       use: 'Help! We’ve been robbed!（助けて！どろぼうに入られた！）' },
+
+    { id: 'd9', skill: 'sound', level: 'B1', point: 'bacon', seg: [141.0, 152.0],
+      stem: 'Fill the gap: “It’s okay. They ___ the bacon.”',
+      ja: '「It’s okay. They ___ the bacon.」の空所は？',
+      choices: ['didn’t get', 'did get', 'didn’t eat'], a: 0,
+      choicesJa: ['盗らなかった', '盗った', '食べなかった'],
+      cue: '「It’s okay」のあと',
+      line: 'It’s okay. They *didn’t get* the bacon.',
+      said: '大げさに嘆いたあと、「大丈夫、ベーコンは盗られてない」と言う。',
+      mean: 'get ＝ ここでは「持っていく・盗る」。didn’t get が「ディドゥンゲッ」とつながり、t はほとんど聞こえない。',
+      trap: 'did get なら「ディッドゲッ」と d がはっきり。eat なら「イー」とのびる。「ディドゥンゲッ」なら didn’t get。',
+      use: 'Don’t worry, they didn’t get my wallet.（大丈夫、財布は盗られなかった）' },
 
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'penchant', seg: [153.7, 162.1],
       stem: 'What does the speaker say about Spencer’s taste now?',
@@ -167,6 +204,18 @@ export const icSetTour: Clip = {
       trap: 'made out of を「彼のトラック」と取りやすい。to のあとを聞く。',
       use: 'This song is a throwback to the 90s.（この曲は90年代を思い出させる）', retired: true },
 
+    { id: 'd10', skill: 'detail', level: 'B1', point: 'truck', seg: [162.0, 168.5],
+      stem: 'What is Spencer’s little bar made from?',
+      ja: 'スペンサーの小さなバーは何でできている？',
+      choices: ['The back of a truck', 'Old bass guitars', 'An old car seat'], a: 0,
+      choicesJa: ['トラックの荷台', '古いベースギター', '古い車のシート'],
+      cue: '「made out of」のあと',
+      line: 'He’s got a cool little bar *made out of the back of a pickup truck*.',
+      said: '「ピックアップトラックの荷台で作った、かっこいい小さなバーもある」と話す。',
+      mean: 'made out of 〜 ＝ 〜で作られた。pickup truck ＝ 後ろに荷台のある小型トラック。',
+      trap: '直後に「車の後ろのソファ」の話が出るので、車のシートと勘違いしやすい。バーは truck の荷台。',
+      use: 'This bag is made out of old jeans.（このバッグは古いジーンズでできてる）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'stairs', seg: [183.8, 198.05],
       stem: 'Why is finding “nothing there” at the top of the stairs funny?',
       choices: ['They fake shock at what they just said', 'They really expected the old studio there',
@@ -178,7 +227,7 @@ export const icSetTour: Clip = {
       trap: 'uh-oh を本気の驚きと取りやすい。直前の It goes nowhere が答え合わせ。',
       use: 'Oh no, who could have seen that coming?（まさか、そんなの予想できた？）', retired: true },
 
-    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [187.5, 195.5],
+    { id: 'x2', skill: 'dict', level: 'B2', point: 'upstairs', seg: [186.5, 194.5],
       stem: 'Type the words: “So let’s ___, shall we?” (4 words)', answer: 'run on up there',
       ja: '言葉を入力：「So let’s ___, shall we?」（4語）',
       cue: '「let’s」のあと',
@@ -187,6 +236,18 @@ export const icSetTour: Clip = {
       mean: 'run on up there ＝ さっと上に行く。shall we? ＝「〜しようか？」とさそう言い方。',
       trap: 'on と up がつながり、「ラノナップ」と1語に聞こえる。there まで入れて4語。',
       use: 'Let’s go up there, shall we?（上に行ってみようか）' },
+
+    { id: 'd11', skill: 'detail', level: 'B1', point: 'top', seg: [192.0, 201.0],
+      stem: 'What do they find at the top of the stairs?',
+      ja: '階段の上には何がある？',
+      choices: ['Nothing at all', 'The old studio', 'A new bedroom'], a: 0,
+      choicesJa: ['何もない', '昔のスタジオ', '新しい寝室'],
+      cue: '「We have a problem」のあと',
+      line: 'Uh-oh. *We have a problem.* There’s… *there’s nothing*. There is no studio here.',
+      said: '上っていき、「あらら、問題発生。何もない。ここにスタジオはない」と言う。',
+      mean: 'We have a problem ＝ 困ったことになった。セットの階段はどこにも続かないと知っていて、驚くふりをしている。',
+      trap: '直前に「階段でスタジオに行ける」と言うので、昔のスタジオを連想しやすい。there’s nothing を聞く。',
+      use: 'Uh-oh, we have a problem.（あらら、困ったことになった）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'covid', seg: [215.6, 221.8],
       stem: 'Why won’t they stick gum on the walls again?',
@@ -200,7 +261,7 @@ export const icSetTour: Clip = {
       trap: 'grown-ups（大人）の話のあとなので、子どもっぽいと思いやすい。理由は post-COVID。',
       use: 'Please don’t touch the food.（食べ物にさわらないでください）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [220.2, 230.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'gum', seg: [222.0, 229.5], keep: true,
       stem: 'How many pieces of gum were on the old gum wall?',
       ja: '昔のガムのかべには、ガムが何個あった？',
       choices: ['500', '5,000', '50,000'], a: 1,
@@ -211,6 +272,18 @@ export const icSetTour: Clip = {
       mean: 'five thousand ＝ 5000。like ＝ ここは「〜くらい」。',
       trap: '500 なら「ハンドレッド」、5万なら「フィフティ・サウザンド」。「ファイブ・サウザンド」なら5000。',
       use: 'There were like five thousand people.（5000人くらいいた）' },
+
+    { id: 'k2', skill: 'attitude', level: 'B1', point: 'bass', ctx: true, seg: [239.0, 245.0],
+      stem: 'What do they think of the bass guitars?',
+      ja: 'ベースギターをどう思う？',
+      choices: ['Really great', 'Way too big', 'Way too loud'], a: 0,
+      choicesJa: ['すごくいい', '大きすぎる', 'うるさすぎる'],
+      cue: '「What do you think about」への答え',
+      line: '— Um, what do you think about Spencer collecting the bass guitars? / — *I think they’re super cool.*',
+      said: '「スペンサーがベースギターを集めてるのはどう？」に「すごくかっこいいと思う」と答える。',
+      mean: 'What do you think about 〜? ＝ 〜をどう思う？ 意見を聞く基本の形。I think 〜 で答える。',
+      trap: 'あとで Big と聞こえるので、大きすぎると考えがち。質問への答えは super cool。',
+      use: 'What do you think about this color?（この色、どう思う？）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'look', seg: [251.6, 275],
       stem: 'How do they describe the apartment’s new look?',
@@ -260,19 +333,19 @@ export const icSetTour: Clip = {
       trap: 'I mean を「私は〜という意味」と思いやすい。会話では「というか」と話を足す合図。',
       use: 'I mean, it’s just too expensive.（というか、高すぎるんだよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'abnormal', seg: [287.5, 296],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'abnormal', ctx: true, seg: [287.5, 296],
       stem: 'What does “You’re still doing it” point out?',
       ja: '「You’re still doing it」は何を指している？',
       choices: ['The bike is still on a wall', 'They still argue about bikes', 'The bike is still above the fridge'], a: 0,
       choicesJa: ['自転車はまだかべにある', 'まだ自転車のことで言いあっている', '自転車はまだ冷蔵庫の上にある'],
       cue: '「isn’t it?」への返事',
-      line: 'mounting a bicycle on the wall is just weird, isn’t it? — *You’re still doing it*, ten years later.',
+      line: '— I mean, mounting a bicycle on the wall is just weird, isn’t it? / — *You’re still doing it*, ten years later.',
       said: '「かべに自転車なんて変だよね？」に、「10年たっても、まだやってるじゃん」と返される。',
       mean: 'still ＝ まだ。エレベーターの上も、かべにかけているのと同じ、と言っている。',
-      trap: 'still から、冷蔵庫の上のままと思いやすい。場所は変わったが、かべにあるのは同じ。',
+      trap: 'still から、冷蔵庫の上のままと勘違いしやすい。場所は変わったが、かべにあるのは同じ。',
       use: 'You’re still doing it!（まだやってるじゃん！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'abnormal', seg: [287.9, 296],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'abnormal', seg: [287.9, 296], retired: true,
       stem: 'Fill the gap: “You’re still ___, ten years later.”',
       ja: 'すき間をうめよう：「You’re still ___, ten years later.」',
       choices: ['doing it', 'into it', 'doing that'], a: 0,
@@ -284,6 +357,18 @@ export const icSetTour: Clip = {
       trap: 'into it なら「イントゥ」で始まる。doing that なら最後が「ザッ」。「ドゥーイニッ」なら doing it。',
       use: 'Are you still doing it?（まだやってるの？）' },
 
+    { id: 'i4', skill: 'infer', level: 'B2', point: 'stillgot', seg: [302.0, 316.0],
+      stem: 'Why do they say “Still got it” at the end?',
+      ja: '最後に「Still got it」と言うのはなぜ？',
+      choices: ['To joke about their messy ending', 'Because the tour went perfectly', 'Because they found old gum'], a: 0,
+      choicesJa: ['ぐだぐだな終わり方への冗談', 'ツアーが完ぺきだったから', '昔のガムを見つけたから'],
+      cue: '「This has been…」のくり返しのあと',
+      line: 'This has been… this has been… This has been… Miranda. — And Jerry… for the tour… — *Still got it.*',
+      said: 'しめの言葉で「これは…」と何度もつっかえ、言い終わると「腕は落ちてないね」と言う。',
+      mean: 'Still got it ＝ 文字どおりは「まだ持ってる」→「腕は落ちてない」。つっかえた直後なので、本当は逆の意味の冗談。',
+      trap: 'Still got it は本気の自慢にも使う。直前に何度もつっかえているので冗談と分かる。',
+      use: 'I made a cake! Still got it.（ケーキ作れた！腕は落ちてないね）' },
+
     { id: 'c1', skill: 'humor', level: 'C2', point: 'stillgot', seg: [305.2, 317.6],
       stem: 'In “Still got it”, who is the joke on?',
       choices: ['Themselves, after a clumsy sign-off', 'Nobody; it’s real pride in the tour',
@@ -294,5 +379,17 @@ export const icSetTour: Clip = {
       mean: 'つっかえた直後の自慢は、自分たちへのツッコミ。さえない場面に決めぜりふを当てる笑い。',
       trap: 'still got it は本気の自慢にも使う。直前がうまくいったかどうかで、本気か冗談かが決まる。',
       use: 'Tripped on the stairs. Still got it!（階段でつまずいた。腕は健在！）', retired: true },
+
+    { id: 'k3', skill: 'pragma', level: 'B1', point: 'gumend', ctx: true, seg: [317.0, 323.0],
+      stem: 'What do they plan to do with the gum?',
+      ja: 'ガムをどうするつもり？',
+      choices: ['Stick it on the wall', 'Throw it away', 'Give it to Spencer'], a: 0,
+      choicesJa: ['壁にくっつける', '捨てる', 'スペンサーにあげる'],
+      cue: '「Sure」のあと',
+      line: '— You want some gum? / — Sure. / — *Let’s go stick… to the wall.*',
+      said: '「ガムいる？」「うん」「壁にくっつけに行こう」と、昔のガムの壁をまねる。',
+      mean: 'You want some 〜? ＝ 〜いる？ くだけたすすめ方。Sure ＝ うん、もらう。さっき「もうやらない」と言ったのに、という冗談。',
+      trap: 'stick（くっつける）を知らないと、捨てると考えがち。to the wall（壁に）が手がかり。',
+      use: 'You want some gum? — Sure, thanks.（ガムいる？—うん、ありがとう）' },
   ]
 };
