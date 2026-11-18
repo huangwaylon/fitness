@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 4, rewrite 6, retire 3, new 7, ctx 4, tx 5
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 0 · sweep: lesliecancel twins retired (d1 w2 h1 g1), new g3
 // “Jerry Knows His Place | Parks and Recreation” (the official Parks and Recreation channel, Season 4): asked about
 // Nick Newport on camera, Leslie calls him a jerk without knowing he died that day; Jen calls on her to cancel her
@@ -5,9 +6,12 @@
 // and respectful way".
 // Segments from the captions, words from whisper (2026-11-16). Names in the audio: Leslie, Jen, Ben, April, Andy, Ann.
 // Ann is never named in her own turn (113.5–120.2 s); April's "I strongly disagree with Ann" and Leslie's "Ann…
-// saying no to your beautiful face… No" settle it, so stems call her "a teammate" until w2.
-// Untested on purpose: 30–36.6 s ("I… sad" / "I said": the sources split), 45–55 s (rally crowd, garbled), 75–79.4 s
-// (Jen's simile: sexual), 100.5–101.8 s ("mistresses"), 110.8–113.4 s ("Great body"), 136.8 s ("Who wants a panini?":
+// saying no to your beautiful face… No" settle it.
+// Twin of lesliecancel (same scene): points live there (frankly, sad, bummer, cannons, cancel, trust, stakes, Not with
+// that attitude, April, certain death, the decision, backs) are retired or avoided here.
+// EXCLUDE 72.6–79.4 (Jen's simile: sexual)
+// Untested on purpose: 30–36.6 s ("I… sad" / "I said": the sources split), 45–55 s (rally crowd, garbled),
+// 100.5–101.8 s ("mistresses"), 110.8–113.4 s ("Great body"), 136.8 s ("Who wants a panini?":
 // the sources split), 151–153.8 s (captions "get animal from our backs", whisper "get Ann off of our backs").
 import type { Clip } from '../types.ts';
 
@@ -29,19 +33,31 @@ export const jerryPlace: Clip = {
       trap: '川とよごれだけ聞くと、そうじの話と思いやすい。stop … from dumping は「捨てさせない」。',
       use: 'Please stop dumping trash here.（ここにゴミを捨てないで）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'interview', reveals: ['died'], seg: [9.3, 44.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'interview', reveals: ['died', 'knew'], seg: [9.3, 30],
       stem: 'What goes wrong for Leslie in the interview?',
       ja: 'インタビューで、レスリーは何を失敗する？',
       choices: ['She insults a man who just died', 'She forgets what she wants to say', 'She gets angry at the reporter'], a: 0,
       choicesJa: ['亡くなったばかりの人の悪口を言う', '言いたいことを忘れる', '記者に怒る'],
       cue: '「Sorry, I meant」のあと',
-      line: 'Sorry, I meant can you comment on Nick Newport *dying earlier today*?',
+      line: 'Frankly, he’s a *real jerk*… — *He died?*',
       said: 'ニックについて聞かれて悪口を言うと、記者は「今日亡くなった件です」と言い直す。',
       mean: 'Sorry, I meant 〜 ＝「すみません、〜のことです」。亡くなったと知らずに悪口を言ってしまった。',
-      trap: 'He died? の前の悪口が長いので、記者に怒ったと思いやすい。Sorry, I meant のあとが本当の質問。',
+      trap: '悪口が長いので、記者に怒る話と考えがち。決め手は Sorry, I meant のあと。',
       use: 'Sorry, I meant Tuesday, not Thursday.（すみません、木曜じゃなく火曜のことです）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'frankly', seg: [16.7, 22.6],
+    { id: 'years', skill: 'detail', level: 'B1', point: 'foryears', seg: [9.7, 18],
+      stem: 'How long has Nick been hurting the town, Leslie says?',
+      ja: 'レスリーによると、ニックはどのくらい町を苦しめてきた？',
+      choices: ['For a long time', 'Only since last week', 'Only since today'], a: 0,
+      choicesJa: ['長いあいだ', '先週からだけ', '今日からだけ'],
+      cue: '「this town」のあと',
+      line: 'Nick Newport has been intimidating and bullying and poisoning this town *for years*.',
+      said: '「ニック・ニューポートは何年も、この町を脅して、いじめて、汚してきた」と言う。',
+      mean: 'has been 〜ing for years ＝ 何年も〜し続けてきた。bully ＝ いじめる。poison ＝ 毒で汚す。',
+      trap: '今日亡くなった話が続くので、today に近い答えを選びがち。最後の for years を聞く。',
+      use: 'I’ve been working here for years.（ここで何年も働いています）' },
+
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'frankly', seg: [16.7, 22.6], retired: true,
       stem: 'What does “Frankly” tell us here?',
       ja: 'ここでの「Frankly」から何が分かる？',
       choices: ['She’ll say what she thinks', 'She’ll say something kind', 'She’ll change the topic'], a: 0,
@@ -63,6 +79,30 @@ export const jerryPlace: Clip = {
       trap: 'dying の g はほぼ消え、earlier とつながって「ダイイナーリア」に近い。2語あるか数える。',
       use: 'Can you comment on the delay?（おくれについて一言いただけますか）' },
 
+    { id: 'knew', skill: 'infer', level: 'B2', point: 'knew', reveals: ['died'], ctx: true, seg: [22.7, 30],
+      stem: 'Did Leslie know that Nick had died?',
+      ja: 'レスリーはニックが亡くなったことを知っていた？',
+      choices: ['No, it’s news to her', 'Yes, she heard this morning', 'Yes, but she forgot'], a: 0,
+      choicesJa: ['いいえ、今はじめて聞いた', 'はい、今朝聞いていた', 'はい、でも忘れていた'],
+      cue: '記者の言い直しへの返事',
+      line: 'Reporter: …can you comment on Nick Newport dying earlier today? / Leslie: *He died?*',
+      said: '「今日亡くなった件についてです」と言われ、「亡くなったの？」と聞き返す。',
+      mean: 'He died? ＝ 文の形のまま語尾を上げると「〜なの？」と驚いて聞き返す言い方。',
+      trap: '悪口をはっきり言ったので、知っていたと考えがち。驚いた He died? が答え。',
+      use: 'He quit? I didn’t know.（彼、辞めたの？知らなかった）' },
+
+    { id: 'overall', skill: 'phrase', level: 'B2', point: 'overall', seg: [36.6, 44.5],
+      stem: 'What does “overall” mean in Leslie’s statement?',
+      ja: 'レスリーのコメントの「overall」の意味は？',
+      choices: ['All in all', 'Most of all', 'Over and over'], a: 0,
+      choicesJa: ['全体として', '何よりも', '何度も何度も'],
+      cue: '「that is」のあと',
+      line: 'No. My official statement is, that is *overall* a bummer.',
+      said: '「いいえ。公式のコメントは『全体として、ついてない』です」と言い直す。',
+      mean: 'overall ＝ 全体として、まとめると。かたい言葉のあとに軽い a bummer が来るちぐはぐさが笑い。',
+      trap: 'over が聞こえるので、over and over（何度も）を連想しやすい。overall は「全体」。',
+      use: 'Overall, it was a good trip.（全体として、いい旅だった）' },
+
     { id: 'h1', skill: 'humor', level: 'B2', point: 'bummer', seg: [36.9, 44.4], retired: true,
       stem: 'Why is “a bummer” a strange thing to say here?',
       ja: 'ここで「a bummer」と言うのは、なぜ変？',
@@ -75,6 +115,18 @@ export const jerryPlace: Clip = {
       trap: 'official statement（公式声明）とかたく始めるので、中身もかたいと思いやすい。最後の a bummer が軽い。',
       use: 'The rain is a bit of a bummer.（雨はちょっとがっかりだね）' },
 
+    { id: 'harsh', skill: 'phrase', level: 'B1', point: 'harsh', seg: [55.5, 61.7],
+      stem: 'The reporter says “Harsh words.” What are harsh words?',
+      ja: '記者の「Harsh words」とは、どんな言葉？',
+      choices: ['Very unkind words', 'Very hard words to say', 'Very loud words'], a: 0,
+      choicesJa: ['とてもきつい言葉', 'とても言いにくい言葉', 'とても大きな声の言葉'],
+      cue: '「Frankly, he’s a real jerk」の映像のあと',
+      line: 'Frankly, he’s a real jerk. — *Harsh words*, but this reporter does love those T-shirt cannons.',
+      said: 'ニュースで悪口の場面が流れ、記者が「きつい言葉ですが…」と続ける。',
+      mean: 'harsh ＝ きつい、厳しい。harsh words ＝ 相手を傷つけるような強い言葉。',
+      trap: 'hard（かたい・難しい）に似て聞こえ、言いにくい言葉と勘違いしやすい。',
+      use: 'Sorry for my harsh words yesterday.（昨日はきついことを言ってごめん）' },
+
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'cannons', seg: [55.8, 61.75],
       stem: 'After the clip of Leslie’s insult airs, what is the reporter’s stance?',
       choices: ['He notes the harsh words, then enjoys the rally', 'He notes the harsh words, then condemns them',
@@ -85,6 +137,18 @@ export const jerryPlace: Clip = {
       mean: '悪口には軽く触れるだけで、楽しい話に流す。does love は「本当に好き」の強め。',
       trap: 'Harsh words だけで非難と取りやすい。but のあとが言いたいこと。',
       use: 'Pricey, but I do love this place.（高いけど、この店は本当に好き）', retired: true },
+
+    { id: 'respect', skill: 'detail', level: 'B2', point: 'respect', ctx: true, seg: [61.7, 72.4],
+      stem: 'Why does Jen say Leslie should cancel her events?',
+      ja: 'ジェンは、なぜレスリーはイベントを中止すべきだと言う？',
+      choices: ['For the sake of Nick’s family', 'Because Leslie is losing badly', 'Because the town is angry'], a: 0,
+      choicesJa: ['ニックの家族のため', 'レスリーが大負けしているから', '町の人が怒っているから'],
+      cue: '「out of」のあと',
+      line: 'Host: Now, Jen, what are your thoughts about all of this? / Jen: …cancel all of her campaign events *out of respect for the Newport family*.',
+      said: '「ジェン、どう思いますか？」に、「ニューポート家への敬意として、中止すべき」と答える。',
+      mean: 'out of respect for 〜 ＝ 〜への敬意から。What are your thoughts? ＝ どう思いますか（ていねい）。',
+      trap: '選挙の話なので、勝ち負けが理由と考えがち。決め手は out of respect のあと。',
+      use: 'What are your thoughts on this?（これについてどう思いますか）' },
 
     { id: 'c2', skill: 'attitude', level: 'C2', point: 'jen', seg: [61.75, 74.8],
       stem: 'When Jen says politics should wait, what is her call doing?',
@@ -97,7 +161,7 @@ export const jerryPlace: Clip = {
       trap: 'respect を本心と取りやすい。求めているのは謝罪でなく中止、それも her の分だけ。',
       use: 'Out of respect, let’s skip the speeches.（敬意を込めて、スピーチはなしで）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [87.4, 94.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [86, 94.9], keep: true,
       stem: 'How old was Nick Newport?',
       ja: 'ニック・ニューポートは何歳だった？',
       choices: ['88', '90', '98', '99'], a: 2,
@@ -123,11 +187,11 @@ export const jerryPlace: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'work', seg: [96.4, 104.4],
       stem: 'What did Nick do to a lot of people?',
       ja: 'ニックは多くの人に何をした？',
-      choices: ['Put them out of work', 'Took all of their savings', 'Took their homes away'], a: 0,
-      choicesJa: ['仕事をうばった', '貯金を全部取った', '家を取り上げた'],
+      choices: ['Made them lose their jobs', 'Took all of their savings', 'Took their homes'], a: 0,
+      choicesJa: ['仕事を失わせた', '貯金を全部取った', '家を取り上げた'],
       cue: '「a lot of people」のあと',
       line: 'He *put a lot of people out of work*. … He polluted this town.',
-      said: '「たくさんの人を失業させた。町をよごした」と悪い行いをならべる。',
+      said: '「たくさんの人を失業させた。この町を汚した」と悪い行いをならべる。',
       mean: 'put 人 out of work ＝ 人を失業させる、仕事をなくさせる。',
       trap: 'a lot of people だけだと、中身を想像でうめやすい。out of work を聞く。',
       use: 'The storm put the shop out of business.（あらしで店がつぶれた）' },
@@ -144,7 +208,7 @@ export const jerryPlace: Clip = {
       trap: 'Ben は短く、Okay のすぐあとで聞き落としやすい。よびかけの名前は文の最初か最後に来る。',
       use: 'Okay, Maya, what do you think?（じゃあマヤ、どう思う？）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'unfortunate', reveals: ['ben', 'cant'], seg: [103.1, 110.8],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'unfortunate', reveals: ['ben', 'cant'], seg: [103.1, 110.8], retired: true,
       stem: 'How does Ben feel about Nick’s death?',
       ja: 'ニックの死について、ベンはどう思っている？',
       choices: ['Sorry, but they must go on', 'Very sad and unsure', 'Happy, but quiet about it'], a: 0,
@@ -168,7 +232,7 @@ export const jerryPlace: Clip = {
       trap: 'can なら「キャン」と短い。could なら「クッ」で始まる。「キャーン」と長く強ければ can’t。',
       use: 'We can’t just leave it here.（ここに置いていくわけにはいかない）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.8, 118.6],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'attitude', seg: [110.8, 118.6], retired: true,
       stem: 'What does “Not with that attitude” mean?',
       ja: '「Not with that attitude」はどういう意味？',
       choices: ['You can if you believe', 'You should be nicer', 'You’re right, so give up'], a: 0,
@@ -192,28 +256,28 @@ export const jerryPlace: Clip = {
       trap: '最初の No で「やめる」と思いやすい。No はアンへの返事で、決めたのは keep campaigning。',
       use: 'We’ll keep going, but quietly.（続けるけど、静かにね）' },
 
-    { id: 'i2', skill: 'marker', level: 'B2', point: 'fine', seg: [113.4, 120.6],
+    { id: 'i2', skill: 'marker', level: 'B2', point: 'fine', ctx: true, seg: [113.4, 120.6],
       stem: 'What does “Okay, fine” mean here?',
       ja: 'ここでの「Okay, fine」はどういう意味？',
       choices: ['All right, I’ll say it', 'I agree with Ben', 'I will try a lot harder'], a: 0,
       choicesJa: ['分かった、じゃあ言う', 'ベンに賛成', 'もっとずっとがんばる'],
       cue: '「Not with that attitude」のあと',
-      line: '*Okay, fine.* I think you should stop.',
-      said: 'はげまされた人が「分かった、じゃあ言う。やめるべきだと思う」と続ける。',
+      line: 'Leslie: Not with that attitude. / Ann: *Okay, fine.* I think you should stop.',
+      said: 'はげまされたアンが「分かった、いいよ。やめるべきだと思う」と続ける。',
       mean: 'Okay, fine ＝「そこまで言うなら、分かった」。おされて本音を言う前置き。',
-      trap: 'fine から賛成や「がんばる」と思いやすい。すぐあとの文がベンと反対なので、本音の前置き。',
+      trap: 'fine から賛成と考えがち。すぐあとの文はベンと反対なので、本音の前置き。',
       use: 'Okay, fine. I’ll tell you what happened.（分かった、何があったか話すよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'apologize', seg: [114.8, 120.3],
-      stem: 'Until when does the teammate want Leslie to stop?',
-      ja: 'そのチームの人は、いつまでレスリーにやめてほしい？',
+      stem: 'Until when does Ann want Leslie to stop?',
+      ja: 'アンは、いつまでレスリーにやめてほしい？',
       choices: ['Until she says sorry to Bobby', 'Until the family has the funeral', 'Until people forget the clip'], a: 0,
       choicesJa: ['ボビーにあやまるまで', '家族が葬式をするまで', 'みんながその映像を忘れるまで'],
       cue: '「at least until」のあと',
       line: 'I think you should stop. *At least until you apologize to Bobby in person.*',
       said: '「やめるべき。少なくとも、ボビーに直接あやまるまでは」と言う。',
       mean: 'in person ＝ 本人に会って直接。at least until 〜 ＝「少なくとも〜までは」。',
-      trap: 'ジェンの family という言葉から、葬式と思いやすい。until のあとが条件。',
+      trap: '人が亡くなった話なので、葬式を連想しやすい。until のあとが条件。',
       use: 'I’d like to thank you in person.（直接お礼を言いたいです）' },
 
     { id: 'w2', skill: 'who', level: 'B2', point: 'ann', reveals: ['april'], seg: [116.05, 123.65], retired: true,
@@ -238,6 +302,7 @@ export const jerryPlace: Clip = {
       mean: '中身を聞かずに反対するのは、意見ではなく「アンに逆らいたいだけ」だから。そのずれが笑い。',
       trap: 'but のあとを正式な意見と取りやすい。前半とセットで、理由のない反対と分かる。',
       use: 'I didn’t read it, but I love it.（読んでないけど、気に入った）', retired: true },
+
     { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', seg: [123.9, 140.9],
       stem: 'What does Andy think the team should do?', ja: 'アンディは、チームはどうすべきだと思っている？',
       choices: ['Keep campaigning, no matter what', 'Stop until Leslie says sorry', 'Take a short break first'], a: 0,
@@ -248,7 +313,6 @@ export const jerryPlace: Clip = {
       mean: 'keep 〜ing ＝ 〜し続ける。the worst thing ＝ いちばん悪いこと。やめないで、という意見。',
       trap: 'stop が何度も聞こえるので、やめる派と思いやすい。keep campaigning が彼の意見。',
       use: 'I think we should keep going.（続けたほうがいいと思う）' },
-
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'panini', seg: [135.05, 139.7],
       stem: 'Right after Andy’s speech, what does his next question do?',
@@ -261,16 +325,40 @@ export const jerryPlace: Clip = {
       trap: 'Anyone? Everyone? を賛成の確認と聞きやすい。何が欲しいかを聞いている文。',
       use: 'Okay, enough of that. Who wants coffee?（その話はもういい。コーヒー欲しい人？）', retired: true },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'face', reveals: ['call', 'ann'], seg: [142.5, 151.1],
+    { id: 'call', skill: 'phrase', level: 'B1', point: 'yourcall', seg: [139.8, 145],
+      stem: 'What does “what’s your call?” mean here?',
+      ja: 'ここでの「what’s your call?」の意味は？',
+      choices: ['What do you decide?', 'Who will you phone?', 'What will you say?'], a: 0,
+      choicesJa: ['どう決める？', 'だれに電話する？', '何て言う？'],
+      cue: '「All right, Leslie」のあと',
+      line: 'All right, Leslie, *what’s your call?*',
+      said: 'みんなの意見が出そろい、「さあ、レスリー、どうする？」と聞かれる。',
+      mean: 'call ＝ ここでは「判断・決定」。審判の判定（call）から。your call ＝ 決めるのはあなた。',
+      trap: 'call（電話する）を連想しやすい。みんなの意見を聞いたあとの「決めて」。',
+      use: 'It’s your call.（決めるのはあなただよ）' },
+
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'face', reveals: ['call', 'ann'], ctx: true, seg: [141, 151],
       stem: 'Why does Leslie say “your beautiful face” to Ann?',
       ja: 'レスリーはなぜアンに「your beautiful face」と言う？',
       choices: ['To say no to her kindly', 'To agree with her idea', 'To ask her for some help'], a: 0,
       choicesJa: ['やさしく断るため', 'アンの考えに賛成するため', 'アンに手伝いをたのむため'],
       cue: '「but」のあと',
-      line: 'nothing harder… than *saying no to your beautiful face*, *but I’m going to*.',
-      said: '「あなたのきれいな顔にノーと言うほどつらいことはない。でも言う」と言う。',
+      line: 'All right, Leslie, what’s your call? / Leslie: Ann, there is nothing harder… than *saying no to your beautiful face*, *but I’m going to*.',
+      said: '「あなたのきれいな顔にノーと言うのは、世界で一番つらい。でも言う」と言う。',
       mean: '大げさなほめ言葉は、断る前のクッション。but I’m going to ＝「でも（ノーと）言う」。',
-      trap: 'ほめ言葉で始まるので、賛成と思いやすい。but I’m going to で断りと分かる。',
+      trap: 'ほめ言葉で始まるので、賛成と考えがち。but I’m going to で断りと分かる。',
       use: 'I hate to say no, but I have to.（断りたくないけど、断らなきゃ）' },
+
+    { id: 'sched', skill: 'detail', level: 'B1', point: 'schedule', seg: [149, 155.2],
+      stem: 'What does Leslie ask at the end?',
+      ja: '最後にレスリーは何を聞く？',
+      choices: ['The day’s next plan', 'Who wants some lunch', 'Where Ann went'], a: 0,
+      choicesJa: ['今日の次の予定', 'お昼がほしい人', 'アンがどこに行ったか'],
+      cue: '最後の質問',
+      line: '*What’s next on the schedule?*',
+      said: '話がまとまり、「次の予定は？」と聞いて先へ進める。',
+      mean: 'What’s next on the schedule? ＝ 次の予定は何？ schedule ＝ 予定表。仕事でよく使う。',
+      trap: '少し前にパニーニの話が出たので、お昼の話と考えがち。schedule（予定）を聞く。',
+      use: 'What’s next on the schedule?（次の予定は何ですか）' },
   ]
 };
