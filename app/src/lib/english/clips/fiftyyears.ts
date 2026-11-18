@@ -1,9 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 1, new 0, ctx 3, tx 7
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 3, new 1
 // “50 Years of Marriage | Parks and Recreation” (the official Parks and Recreation channel, Season 6): a TV host
 // interviews a couple married 50 years, Leslie cuts in to sell the two towns' unity, and the couple drops the act.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 79 s. Untested: 73–79 s (the couple's
-// sexual confessions). The host's “Never, ever would have thought of that” is sarcasm, left out.
-// EAR CHECK: 15.3 s g2 d3 pr1 — the "bridge… Pawnee and Eagleton" cut-in is Leslie's (assumed; "my show, my questions" shows it isn't the host's)
+// Segments from the captions, words from whisper (2026-11-16). Rosie is named at 0 s; she speaks of "Dougie here".
+// EXCLUDE 73.6–79.7
+// (the couple's sexual confessions)
+// The host's “Never, ever would have thought of that” is sarcasm, left out.
+// EAR CHECK: 15.3 s d3 pr1 — the "bridge… Pawnee and Eagleton" cut-in is Leslie's (assumed; "my show, my questions" shows it isn't the host's)
 import type { Clip } from '../types.ts';
 
 export const fiftyYears: Clip = {
@@ -12,17 +15,17 @@ export const fiftyYears: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'aim', reveals: ['bridge'], seg: [0, 45],
-      stem: 'Why does Leslie care about this couple?',
-      ja: 'レスリーがこの夫婦を大事にするのはなぜ？',
-      choices: ['They help bring the towns together', 'They give tips on marriage', 'They show her town is better'], a: 0,
-      choicesJa: ['二つの町をまとめる役に立つ', '結婚のこつを教えてくれる', '自分の町の方がいいと示せる'],
-      cue: 'インタビューに割り込む声',
-      line: 'helping to *bridge the meaningless divide* between Pawnee and Eagleton.',
-      said: '途中で割り込み、「50年の結婚が二つの町の溝を埋めている」と言う。',
-      mean: 'レスリーのねらいは、夫婦の話より、二つの町の仲をよく見せること。',
-      trap: '町の名前が二つ出るので、張り合いに聞こえやすい。溝は meaningless（意味がない）。',
-      use: 'This could bring people together.（これでみんながまとまるかも）' },
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', seg: [0, 22.8],
+      stem: 'Who is the TV host talking to?',
+      ja: 'テレビの司会者が話している相手は？',
+      choices: ['A couple married 50 years', 'Two town leaders', 'A couple getting married'], a: 0,
+      choicesJa: ['結婚50年の夫婦', '二つの町のリーダー', 'これから結婚する二人'],
+      cue: '最初の名前のあと',
+      line: 'Doug and Rosie DiMarco, *50 years*!',
+      said: '「ダグとロージー・ディマルコ夫妻、結婚50年です！」と紹介する。',
+      mean: '50 years ＝ 50年。紹介の決まった形で、結婚して50年の夫婦をゲストに迎えている。',
+      trap: 'あとで町の名前が二つ出るので、町の代表と考えがち。最初の 50 years が決め手。',
+      use: 'Happy anniversary! Ten years!（記念日おめでとう！10年だね！）' },
 
     { id: 'x2', skill: 'dict', level: 'B1', point: 'firstmet', seg: [0.4, 8.4],
       stem: 'Type the host’s request: “Tell us ___.” (4 words)', answer: 'how you first met',
@@ -80,7 +83,7 @@ export const fiftyYears: Clip = {
       trap: 'Yeah で始まるので賛成に聞こえやすい。ここの Yeah は話を切る合図。',
       use: 'My car, my rules.（私の車だから、私が決める）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [20.8, 30.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'sauce', seg: [22.85, 30.3],
       stem: 'What does “*secret sauce*” mean here?',
       ja: 'ここでの「secret sauce」はどういう意味？',
       choices: ['Why it works so well', 'A secret they keep', 'A food they both love'], a: 0,
@@ -92,16 +95,16 @@ export const fiftyYears: Clip = {
       trap: 'secret から「隠しごと」と思いやすい。ここは「ひけつ」の意味。',
       use: 'What’s your secret for staying healthy?（健康のひけつは何ですか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'advice', seg: [22.3, 32.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'advice', ctx: true, seg: [22.85, 32.3],
       stem: 'What is the couple’s marriage advice?',
       ja: '夫婦の結婚のアドバイスは？',
       choices: ['Never go to bed angry', 'Never keep secrets', 'Always laugh together'], a: 0,
       choicesJa: ['怒ったまま寝ない', '秘密を持たない', 'いつも一緒に笑う'],
       cue: 'Well で始まる答え',
-      line: 'Well, we never go to bed *angry*.',
-      said: '「怒ったまま寝ることはない」と答える。',
+      line: 'Host: So, what is the secret sauce…? / — Well, we never go to bed *angry*.',
+      said: '「結婚のひみつのソースは何ですか？」に、「怒ったまま寝ないことです」と答える。',
       mean: 'go to bed angry ＝ 怒ったまま寝る。けんかはその日のうちに仲直り、という教え。',
-      trap: '直前の secret sauce から、秘密の話と思いやすい。最後の angry を聞く。',
+      trap: '直前の secret sauce から、秘密の話と考えがち。最後の angry を聞く。',
       use: 'Let’s not go to bed angry.（けんかしたまま寝るのはやめよう）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'never', seg: [27.6, 32.2], retired: true,
@@ -115,27 +118,27 @@ export const fiftyYears: Clip = {
       trap: '言葉だけ取ると感心に聞こえる。答えが平凡なのに強くほめたら、皮肉を疑うくせを。',
       use: 'Wow, never would’ve guessed.（へえ、意外だなあ〔皮肉〕）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['bribe'], seg: [28, 63],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['bribe'], seg: [32.0, 56.9],
       stem: 'How does the interview change?',
       ja: 'インタビューはどう変わる？',
       choices: ['The couple tells the truth', 'Leslie asks the questions', 'The host gives the money back'], a: 0,
       choicesJa: ['夫婦が本当のことを話す', 'レスリーが質問をする', '司会者がお金を返す'],
       cue: '「Okay」のあとの短い一言',
       line: 'Okay. *I can’t do this.*',
-      said: '幸せな夫婦の話のはずが、「もう無理」と本当の理由を話しだす。',
+      said: '幸せな夫婦の話のはずが、「もう無理」と、結婚した本当の理由を話しだす。',
       mean: 'I can’t do this ＝ もう無理。お祝いのインタビューが、本音の話に変わる。',
       trap: 'keep your money（お金はいらない）は夫婦の言葉。お金を返すのは司会者ではない。',
       use: 'Sorry, I can’t do this anymore.（ごめん、もう無理）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'bribe', seg: [33.6, 40.8],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'bribe', ctx: true, seg: [33.6, 40.8],
       stem: 'What does “*keep your money*” tell us?',
       ja: '「keep your money」から何が分かる？',
       choices: ['Leslie paid them to come', 'Leslie owes them money', 'They won a prize'], a: 0,
       choicesJa: ['レスリーがお金を払って出てもらった', 'レスリーが二人に借金がある', '二人が賞をもらった'],
       cue: '「I can’t do this」のあと',
-      line: 'Leslie, you can *keep your money*. — Money? To bribe them to be here?',
-      said: '「レスリー、お金はいらない」と言い、司会者が「買収？」と聞く。',
-      mean: 'keep your money ＝ お金はいらない。お金で出演を頼まれていた。',
+      line: '— Leslie, you can *keep your money*. / Host: Money? *To bribe them to be here?*',
+      said: '「レスリー、お金はいらない」に、司会者が「お金？ここに来てもらうための買収？」と聞く。',
+      mean: 'keep your money ＝ 文字どおりは「あなたのお金を持っていて」→「お金はいらない」。bribe ＝ 買収する。',
       trap: 'keep を「もらっておく」と取りやすい。your money なので、相手に返している。',
       use: 'Keep the change.（おつりは取っておいて）' },
 
@@ -151,7 +154,8 @@ export const fiftyYears: Clip = {
       trap: '「トゥーハンドレッド」なら200。one hundred は「ワン」、twenty や thousand とも違う。',
       use: 'They paid us fifty bucks each.（一人50ドルずつもらった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [40.7, 48.5],
+    // retired (R4): the same line as n2, in a 10 s stretch with five item starts
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'going', seg: [40.7, 48.5], retired: true,
       stem: 'Type the end: “…to ___, but it’s impossible.” (3 words)', answer: 'keep this going',
       ja: '「…to ___, but it’s impossible.」の空所を書こう（3語）',
       cue: '「bucks to」のあと',
@@ -161,19 +165,19 @@ export const fiftyYears: Clip = {
       trap: 'this の th は小さく、keep の p とつながってひと続きに聞こえる。',
       use: 'Let’s keep this going.（この調子で続けよう）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', seg: [44.9, 52.5],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'bringit', ctx: true, seg: [44.9, 52.5],
       stem: 'The host says, “*Bring it*.” What does she mean?',
       ja: '司会者の「Bring it」はどういう意味？',
       choices: ['Yes, tell me now', 'Give back the money', 'Please stop talking'], a: 0,
       choicesJa: ['いいよ、今すぐ話して', 'お金を返して', 'もう話さないで'],
       cue: '「got married?」のすぐあと',
-      line: 'You want to know why we got married? — *Bring it.*',
-      said: '「結婚した理由、聞きたい？」に「どうぞ、来い」と返す。',
-      mean: 'Bring it (on) ＝ どんどん来い、受けて立つ。聞きたくてたまらない様子。',
-      trap: 'bring から「持ってくる」と思い、お金の話に聞こえやすい。短い返事は勢いで言っている。',
+      line: '— You want to know why we got married? / Host: *Bring it.*',
+      said: '「どうして結婚したか知りたい？」に「どんどん来て」と返す。',
+      mean: 'Bring it (on) ＝ 文字どおりは「それを持ってこい」→「どんどん来い、受けて立つ」。くだけた言い方。',
+      trap: 'bring（持ってくる）から、お金の話と勘違いしやすい。聞きたくてたまらない返事。',
       use: 'Another game? Bring it on!（もう一勝負？受けて立つよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'prospects', reveals: ['turn'], seg: [45.9, 52.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'prospects', reveals: ['turn'], seg: [46.35, 52.2],
       stem: 'What does Rosie say about herself back then?',
       ja: 'ロージーは当時の自分について何と言う？',
       choices: ['She had no good future', 'She had a drinking problem', 'She had no family'], a: 0,
@@ -185,7 +189,7 @@ export const fiftyYears: Clip = {
       trap: 'お酒の問題は夫の話。and のあとで話が Dougie（ダギー）に変わる。',
       use: 'The job has good prospects.（その仕事は将来性がある）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'alcohol', seg: [45.9, 52.2],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'alcohol', seg: [46.35, 52.2],
       stem: 'Fill the gap: “…and Dougie here ___ alcohol problem.”',
       ja: '「…and Dougie here ___ alcohol problem.」の空所は？',
       choices: ['had an', 'has an', 'has had an'], a: 0,
@@ -197,17 +201,18 @@ export const fiftyYears: Clip = {
       trap: 'has なら「ズ」の音が聞こえる。「ハダン」なら had an。',
       use: 'I had an early flight.（朝早い便だったんだ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'reasons', reveals: ['prospects', 'turn'], seg: [50.9, 62.9],
-      stem: 'Why did they really get married?',
-      ja: '二人が本当に結婚した理由は？',
-      choices: ['Bad reasons, not love', 'Love at first sight', 'Their parents wanted it'], a: 0,
-      choicesJa: ['愛ではない、ひどい理由', 'ひとめぼれ', '親が望んだから'],
-      cue: '「Plus」のあとに続く理由',
-      line: '…the Cold War was happening, and frankly, we all thought we were *gonna die*.',
-      said: '酒の問題、冷戦、「みんな死ぬと思ってた」、親への反抗と理由が並ぶ。',
-      mean: 'frankly ＝ 正直に言うと。愛の話は一つもなく、不安や反抗で一緒になった。',
-      trap: 'parents が聞こえるので親が決めたと思いやすい。夫は親を怒らせたかった。',
-      use: 'Frankly, I had no other choice.（正直、ほかに道がなかった）' },
+    // rewritten in R4: was a C1 "why did they really marry" summary; now the Cold War line
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'die', reveals: ['prospects'], seg: [52.1, 56.9],
+      stem: 'What did everyone think back then, Rosie says?',
+      ja: '当時みんなはどう思っていたと、ロージーは言う？',
+      choices: ['The world would end soon', 'They would all get rich', 'The two towns would join'], a: 0,
+      choicesJa: ['もうすぐ世界が終わる', 'みんなお金持ちになる', '二つの町が一つになる'],
+      cue: '「frankly」のあと',
+      line: 'Plus, the Cold War was happening, and, frankly, *we all thought we were gonna die*.',
+      said: '「それに冷戦の真っただ中で、正直、みんな死ぬと思ってた」と言う。',
+      mean: 'the Cold War ＝ 冷戦（アメリカとソ連が核兵器でにらみ合った時代）。frankly ＝ 正直に言うと。',
+      trap: '直前の no prospects（あてがない）から、お金の話を連想しやすい。決め手は gonna die。',
+      use: 'Frankly, I was scared.（正直、こわかった）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'tickoff', reveals: ['turn'], seg: [55.5, 62.9],
       stem: 'What does “*tick off* my parents” mean?',
@@ -244,7 +249,7 @@ export const fiftyYears: Clip = {
       trap: '文字どおりの「一日の終わり」と思いやすい。but のあとの結論の合図。',
       use: 'At the end of the day, you decide.（結局はあなたが決めることだよ）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [63.7, 75.7],
+    { id: 'pr3', skill: 'pragma', level: 'B2', point: 'tap', seg: [63.7, 73.5],
       stem: 'Why does Leslie ask, “Who likes tap dancing?”',
       ja: 'レスリーが「タップダンス好きな人？」と聞くのはなぜ？',
       choices: ['To change the subject', 'To start a dance show', 'To ask about their hobby'], a: 0,
