@@ -1173,10 +1173,12 @@ export class StoreCore {
   }
 
   /** The running ledgers' pockets let go (a load or an import brought rows past them: folded again at the next read),
-   *  their wallets kept: a load never moves one (a ledger without one goes whole, seeded at its next read). */
-  private shopForget(): void {
+   *  their wallets kept: a load never moves one (a ledger without one goes whole, seeded at its next read). `whole`:
+   *  the record had no event before the load, so a wallet there is only a read's seed of nothing (a phone's poll, the
+   *  admin's `wallet`): it goes too, seeded from the loaded rows. */
+  private shopForget(whole = false): void {
     for (const who of ['A', 'B', 'G'] as const) {
-      const raw = this.meta(`shop|${who}`);
+      const raw = whole ? null : this.meta(`shop|${who}`);
       const w = raw ? shopStateOf(raw).wallet : null;
       if (w) this.setMeta(`shop|${who}`, JSON.stringify({ h: w.h, n: w.n, t: w.t }));
       else this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${who}`);
@@ -1481,6 +1483,8 @@ export class StoreCore {
     return this.io.tx(() => {
       const out: ImportResult = { metrics: 0, events: 0, uploads: 0, skipped: 0, ...(rows.held ? { held: 0 } : {}) };
       const arrived = this.io.now();
+      // (a load into an empty record: its wallets seeded from the loaded rows, shopForget)
+      const empty = this.io.sql.exec('SELECT 1 AS x FROM events LIMIT 1').toArray().length === 0;
       this.refused = { prefKey: 0, profileLocked: 0 };
       for (const { tab, r } of all) {
         const v = !Array.isArray(r) ? 'skipped' : tab === 'metrics' ? this.importMetric(r, arrived) : tab === 'events' ? this.importEvent(r, arrived) : tab === 'held' ? this.importHeld(r) : this.importUpload(r);
@@ -1495,7 +1499,7 @@ export class StoreCore {
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
         this.pruneLoaded();
-        this.shopForget();
+        this.shopForget(empty);
         this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
       }
       return out;

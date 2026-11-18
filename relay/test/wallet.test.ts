@@ -234,6 +234,14 @@ describe('the wallet', () => {
     expect(t.served().A).toMatchObject({ h, seq: 2 });
   });
 
+  it('a load into an empty record seeds the wallets from its rows, though a read seeded them from nothing before', () => {
+    expect(t.served().A).toEqual({ h: 0, seq: 0 }); // (a phone's first fetch on the new record)
+    const at = new Date(T0 - DAY).toISOString();
+    expect(t.store.load({ rows: { events: [[at, 'A', 'ld-e', 'shop_adjust', JSON.stringify({ v: 500, note: 'dump' })]] } })).toMatchObject({ ok: true, events: 1 });
+    expect(t.served().A.h).toBe(500);
+    expect(t.store.walletCheck().drift).toEqual([]);
+  });
+
   it('adjust then unadjust: the wallet +v then back, its seq counting both; a correction past 0 stops at 0', () => {
     koi('B', 1);
     const w0 = t.served().B;
