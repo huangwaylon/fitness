@@ -56,9 +56,10 @@ export function slotOf(n: number, m: number): [number, number] {
   return [t * 13, m > 2 && n % 2 ? -6 : 2];
 }
 
-/** The river's middle (plan y) at plan x: across the island near y 235 (Board.svelte's river), RIVER_HALF wide. */
-export const riverY = (x: number): number => 236 + 6 * Math.sin(x / 45) - 4 * Math.cos(x / 23);
-export const RIVER_HALF = 11;
+/** The river's middle (plan y) at plan x: straight across the island between the plaza and the river rows, a tile
+ *  (islandPlan.ts TILE_P) wide, as an NH river is on the island's grid. */
+export const riverY = (_x: number): number => 230;
+export const RIVER_HALF = 10;
 
 /** The route's crossings of the river (plan x, y, and the path's yaw across it): a bridge at each. */
 export function bridges(): { x: number; y: number; yaw: number }[] {

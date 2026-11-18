@@ -1,13 +1,16 @@
-// 英語すごろく's board in 3D (docs/sugoroku.md "The board"): the island (scenery.ts) with the route's stepping stones,
+// 英語すごろく's board in 3D (docs/sugoroku.md "The board"): our own island (island.ts: its ground, water, NH's trees,
+// buildings and homes, the island's day light) with the route's stepping stones and signs (scenery.ts),
 // the players as their own characters (person3d: their human player or their villager, as the rooms draw them) standing
 // on their stones and hopping stone to stone, a die tossed and settling on its face (die.ts), and a fixed 3/4 camera
 // that eases after the player in focus down the long board. Plain three.js on one canvas (its own screen: one WebGL
-// context at a time on an iPhone); the pure part is plan.ts.
+// context at a time on an iPhone); the pure parts are plan.ts and islandPlan.ts. The board (its stones, people and die)
+// is a group in plan.ts's units, put on the island at islandPlan.ts BOARD_AT, K times bigger (the island's units).
 // Drawn on demand (world3d/stage.ts createStage, at most FPS a second): every frame while something moves (a hop, the
 // die, the camera, an action), at rest only a blink's frame, nothing while paused. In the logic mode (testMode.ts
-// drawOff) the frames run and nothing is drawn, and no model is loaded (each player its stand-in pawn).
+// drawOff) the frames run and nothing is drawn, and no model is loaded (each player its stand-in pawn), nor the island.
+// The island's shadows are drawn once (the trees', the homes', the stones'), again only when something comes in.
 import {
-  AmbientLight, CapsuleGeometry, Color, DirectionalLight, Fog, Group, HemisphereLight, Mesh, MeshLambertMaterial, PerspectiveCamera, Quaternion, Scene, SphereGeometry, Vector3
+  CapsuleGeometry, Color, DirectionalLight, Fog, Group, HemisphereLight, Mesh, MeshLambertMaterial, PCFSoftShadowMap, PerspectiveCamera, Quaternion, Scene, SphereGeometry, Vector3
 } from 'three';
 import type { Look } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
@@ -17,7 +20,10 @@ import { createStage } from '../world3d/stage.ts';
 import { person3, type Dirs, type Person3 } from '../person3d/person3d.ts';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import { ACTION_MS } from '../villager3d/poses.ts';
-import { buildIsland } from './scenery.ts';
+import { buildRoute } from './scenery.ts';
+import { buildBoardIsland, type BoardIsland } from './island.ts';
+import { BOARD_AT, K, LAND } from './islandPlan.ts';
+import { DAY_SUN } from '../world3d/islandCam.ts';
 import { buildDie } from './die.ts';
 import { DIE_SIZE, FOV, HOP_MS, PERSON_H, ROLL_MS, cameraFor, hopAt, hopsOf, restOf, slotOf, stoneAt, topOf, tumbleAt } from './plan.ts';
 
@@ -81,21 +87,54 @@ const CAM_TAU = 220;
 
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
+/** The sun from DAY_SUN's way over the island's land (islandPlan.ts LAND, three's space), its shadow's box fitted round
+ *  the land as the sun sees it. */
+function sunOver(sun: DirectionalLight) {
+  const mid = new Vector3((LAND.x0 + LAND.x1) / 2, 0, -(LAND.z0 + LAND.z1) / 2), dir = new Vector3(...DAY_SUN).normalize();
+  sun.target.position.copy(mid);
+  sun.position.copy(mid).addScaledVector(dir, 1500);
+  sun.castShadow = true;
+  sun.shadow.bias = -0.0006;
+  sun.shadow.normalBias = 1.2;
+  sun.updateMatrixWorld();
+  sun.target.updateMatrixWorld();
+  const cam = sun.shadow.camera;
+  cam.position.copy(sun.position);
+  cam.lookAt(mid);
+  cam.updateMatrixWorld();
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const p = new Vector3();
+  for (const x of [LAND.x0, LAND.x1]) for (const z of [LAND.z0, LAND.z1]) for (const y of [0, 70]) {
+    p.set(x, y, -z).applyMatrix4(cam.matrixWorldInverse);
+    (x0 = Math.min(x0, p.x)), (x1 = Math.max(x1, p.x)), (y0 = Math.min(y0, p.y)), (y1 = Math.max(y1, p.y));
+  }
+  Object.assign(cam, { left: x0, right: x1, bottom: y0, top: y1, near: 1, far: 3000 });
+  cam.updateProjectionMatrix();
+  // (2048 texels along the box's long side, its short side's in proportion: ~0.6u a texel)
+  const k = 2048 / Math.max(x1 - x0, y1 - y0);
+  sun.shadow.mapSize.set(Math.round((x1 - x0) * k), Math.round((y1 - y0) * k));
+}
+
 export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {}): Board3D {
   const dirs: Dirs = opts.dirs ?? { villagers: staticUrl('room/villagers3d/'), player: staticUrl('room/player/') };
   const scene = new Scene();
-  const sky = new Color(0xbfe6f4);
+  // the island's day (world3d/engine.ts TOD.day: its fog and sky, its hemisphere and sun, from DAY_SUN's way)
+  const sky = new Color(0xd7f0ff);
   scene.background = sky;
-  scene.fog = new Fog(sky, 900, 1700);
-  // NH's warm day: a sky-and-grass fill, a low warm sun from the left behind the camera, a touch of ambient
-  scene.add(new HemisphereLight(0xfff6e2, 0x9ac276, 1.5));
-  const sun = new DirectionalLight(0xfff0d6, 1.7);
-  sun.position.set(-120, 260, 160);
-  scene.add(sun, new AmbientLight(0xffe8cc, 0.25));
-  scene.add(buildIsland());
+  scene.fog = new Fog(sky, 900 * K, 1800 * K);
+  scene.add(new HemisphereLight(0xffffff, 0xe6efd4, 3.0));
+  const sun = new DirectionalLight(0xfff3df, 1.5);
+  scene.add(sun, sun.target);
+  // the board over the island, in plan.ts's units
+  const board = new Group();
+  board.name = 'board';
+  board.scale.setScalar(K);
+  board.position.set(BOARD_AT.x, BOARD_AT.y, BOARD_AT.z);
+  scene.add(board);
+  board.add(buildRoute());
   const die = buildDie();
-  scene.add(die.group);
-  const camera = new PerspectiveCamera(FOV, 1, 10, 2400);
+  board.add(die.group);
+  const camera = new PerspectiveCamera(FOV, 1, 10 * K, 2400 * K);
 
   const seats: Seat[] = [];
   let focusK = 0, paused = false, gone = false, lastT = 0, camSet = false;
@@ -114,6 +153,16 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
     camera.updateProjectionMatrix();
   });
   const { renderer, noDraw } = stage;
+  // the island (not in the logic mode), its shadows drawn when it changes: the sun's box over the whole land
+  let shadowsDue = true;
+  const island: BoardIsland | null = noDraw ? null : buildBoardIsland(renderer, scene, (sh) => (sh && (shadowsDue = true), redraw()));
+  if (island) {
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = false;
+    sunOver(sun);
+  }
+  board.updateMatrixWorld(true);
 
   // ---- the people ----
   const pawnBody = new CapsuleGeometry(5, 9, 4, 10).translate(0, 9.5, 0), pawnHead = new SphereGeometry(5.5, 14, 10).translate(0, 22, 0);
@@ -126,7 +175,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
     return g;
   }
   function dropModel(s: Seat) {
-    if (s.v3) (scene.remove(s.v3.group), s.v3.dispose(), (s.v3 = null));
+    if (s.v3) (board.remove(s.v3.group), s.v3.dispose(), (s.v3 = null));
   }
   function loadModel(k: number, s: Seat) {
     if (noDraw || !s.person.has3d) return;
@@ -137,7 +186,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       s.v3 = v;
       v.group.scale.setScalar(V3_SCALE);
       v.lift(0.32);
-      scene.add(v.group);
+      board.add(v.group);
       s.pawn.visible = false;
       redraw();
     }, () => {});
@@ -145,7 +194,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
   function removeSeat(s: Seat) {
     s.walk?.done();
     dropModel(s);
-    scene.remove(s.pawn);
+    board.remove(s.pawn);
   }
   /** Each standing seat's spot on its stone, side by side with whoever shares it. */
   function settle() {
@@ -230,11 +279,14 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
     if (camPos.distanceToSquared(tmp) > 0.01) moving = true;
     camPos.lerp(tmp, k);
     camAt.lerp(tmp.set(...want.at), k);
-    camera.position.copy(camPos);
-    camera.lookAt(camAt);
+    camera.position.copy(camPos).applyMatrix4(board.matrixWorld);
+    camera.lookAt(tmp.copy(camAt).applyMatrix4(board.matrixWorld));
+    if (moving || !drawn) island?.view(camera, tmp.z);
+    if (island?.frame(t)) shadowsDue = true;
     let blinked = false;
     if (!moving) for (const s of seats) if (s.v3?.blink(t)) blinked = true;
     if (!noDraw && (moving || blinked || !drawn)) {
+      if (shadowsDue) (renderer.shadowMap.needsUpdate = true), (shadowsDue = false);
       renderer.render(scene, camera);
       drawn = true;
       frames++;
@@ -259,7 +311,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
         }
         if (was) removeSeat(was);
         const pawn = pawnOf(p.who);
-        scene.add(pawn);
+        board.add(pawn);
         const s: Seat = { who: p.who, person, pawn, v3: null, space: was?.space ?? 0, x: 0, y: 0, z: 0, yaw: 0, walk: null, faceTill: 0 };
         seats[k] = s;
         loadModel(k, s);
@@ -352,6 +404,7 @@ export function createBoard3D(canvas: HTMLCanvasElement, opts: Board3DOpts = {})
       roll = null;
       gone = true;
       if (hooked) delete (window as { __sugoroku3d?: unknown }).__sugoroku3d;
+      island?.dispose();
       // (the models' shared resources released off this renderer too, then each model let go of: villager3d's cache)
       stage.dispose([scene], [pawnBody, pawnHead, skin, ...pawnMats.values()]);
       for (const s of seats) s.v3?.dispose();

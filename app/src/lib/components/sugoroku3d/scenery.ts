@@ -1,15 +1,11 @@
-// 英語すごろく's island in 3D (engine.ts): the grass, the river and its bridges, the beach and the sea, the sandy path,
-// the stepping stones (their kind's colour, its mark on top), the stretches' wooden signs, round trees and the museum.
-// Low-poly and few materials: everything of one colour a vertex colour, merged into one mesh (one draw); the marks and
-// the signs one canvas atlas; the water one.
-import {
-  BoxGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, ConeGeometry, CylinderGeometry, Float32BufferAttribute, Group, IcosahedronGeometry, Mesh,
-  MeshLambertMaterial, PlaneGeometry, SRGBColorSpace, Shape, ShapeGeometry
-} from 'three';
+// 英語すごろく's route in 3D (engine.ts; the island under it: island.ts): the stepping stones (NH's round flat stones in
+// their kind's colour, its mark on top) and the stretches' wooden signs. Few draws: the stones' bodies and the signs'
+// posts one mesh (vertex colours), the marks and the signs' boards one canvas atlas.
+import { BoxGeometry, BufferGeometry, CanvasTexture, CircleGeometry, Color, Float32BufferAttribute, Group, LatheGeometry, Mesh, MeshLambertMaterial, PlaneGeometry, SRGBColorSpace, Vector2 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { BOARD, GOAL, W } from '#lib/sugoroku/board.ts';
 import { s } from '#lib/sugoroku/i18n.ts';
-import { END_R, RIVER_HALF, STONE_R, STONE_T, bridges, riverY, toWorld } from './plan.ts';
+import { END_R, STONE_R, STONE_T, toWorld } from './plan.ts';
 
 type Kind = (typeof BOARD)[number]['kind'];
 /** Each kind's stone (Board.svelte's fills): ことば cream, ダブル sky, ぶん mint, 絵 peach, イベント lilac, the ends yuzu. */
@@ -17,7 +13,7 @@ const KIND_COLOUR: Record<Kind, number> = { word: 0xfff9e3, double: 0x84b9e9, se
 const MARK: Record<Kind, string> = { start: s('kind.start'), word: 'A', double: '×2', sentence: '文', picture: '絵', event: '!', goal: s('kind.goal') };
 const KINDS = Object.keys(KIND_COLOUR) as Kind[];
 const AREAS = [...new Set(BOARD.map((b) => b.area))];
-const INK = '#4a3a2c', WOOD = 0xa8835a, GRASS = 0x9fd38a, SAND = 0xf3dfa8, PATH = 0xefe0b8;
+const INK = '#4a3a2c', WOOD = 0xa8835a, TONE = 0xe8e8e8;
 const FONT = '"Hiragino Maru Gothic ProN", "Hiragino Sans", system-ui, sans-serif';
 
 /** The atlas's cells (4 × 4 of 128 px): the kinds' tops 0–6, the areas' signs 8–14. */
@@ -48,12 +44,11 @@ function atlas(): CanvasTexture {
   return t;
 }
 
-/** `geo` (non-indexed, uv kept if `uv`) with one colour on every vertex, ready to merge. */
-function paint(geo: BufferGeometry, colour: number, flat = false, uv = false): BufferGeometry {
-  let g = geo.index ? geo.toNonIndexed() : geo;
+/** `geo` (non-indexed, no uv) with one colour on every vertex, ready to merge. */
+function paint(geo: BufferGeometry, colour: number): BufferGeometry {
+  const g = geo.index ? geo.toNonIndexed() : geo;
   if (g !== geo) geo.dispose();
-  if (!uv) g.deleteAttribute('uv');
-  if (flat) g.computeVertexNormals();
+  g.deleteAttribute('uv');
   const c = new Color(colour), n = g.getAttribute('position').count, a = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3);
   g.setAttribute('color', new Float32BufferAttribute(a, 3));
@@ -76,116 +71,64 @@ const at = (geo: BufferGeometry, x: number, y: number, h: number) => {
   return geo.translate(wx, h, wz);
 };
 
-/** Trees by the route (plan points: Board.svelte's, more beyond its edges), kept off the stones and the path. */
-const TREES: [number, number, number][] = [
-  [20, 80, 11], [342, 150, 10], [18, 420, 12], [340, 500, 10], [24, 580, 11], [-30, 30, 14], [395, 60, 13], [-40, 170, 12], [400, 230, 14], [-45, 300, 13],
-  [405, 360, 12], [-35, 440, 14], [395, 450, 12], [-40, 540, 13], [400, 580, 11], [130, 330, 9], [250, 345, 9], [-80, 100, 16], [440, 140, 15], [-90, 380, 16],
-  [450, 300, 16], [-85, 500, 15], [445, 520, 14], [180, -10, 12], [60, -20, 13], [300, -15, 12]
-];
-
-/** Distance from plan point (x, y) to the route (its stones and the segments between). */
-function routeDist(x: number, y: number): number {
-  let d = Infinity;
-  for (const sp of BOARD) for (const j of sp.next) {
-    const b = BOARD[j], vx = b.x - sp.x, vy = b.y - sp.y, l2 = vx * vx + vy * vy;
-    const t = Math.max(0, Math.min(1, ((x - sp.x) * vx + (y - sp.y) * vy) / l2));
-    d = Math.min(d, Math.hypot(x - sp.x - vx * t, y - sp.y - vy * t));
+/** A stepping stone's body (NH's: a round flat stone, its top's edge rounded off, its foot sunk in the path): its top
+ *  `top`, shading to `side` down its side (vertex colours). */
+function stoneBody(r: number, top: number, side: number): BufferGeometry {
+  const T = STONE_T;
+  const prof = [[r * 0.9, -1.2], [r, 0.4], [r, T - 1.4], [r - 0.35, T - 0.55], [r - 1.1, T - 0.1], [r - 1.8, T], [0, T]].map(([x, y]) => new Vector2(x, y));
+  const g = new LatheGeometry(prof, 32);
+  const flat = g.toNonIndexed();
+  g.dispose();
+  flat.deleteAttribute('uv');
+  flat.computeVertexNormals();
+  const pos = flat.getAttribute('position'), a = new Float32Array(pos.count * 3), ct = new Color(top), cs = new Color(side), c = new Color();
+  for (let i = 0; i < pos.count; i++) {
+    c.copy(cs).lerp(ct, Math.min(1, Math.max(0, (pos.getY(i) - (T - 1.4)) / 1.2)));
+    a.set([c.r, c.g, c.b], i * 3);
   }
-  return d;
+  flat.setAttribute('color', new Float32BufferAttribute(a, 3));
+  return flat;
 }
 
-/** The island's group (its geometries, materials and atlas released with the scene: engine.ts). */
-export function buildIsland(): Group {
-  const root = new Group();
-  root.name = 'island';
-  const solid = new MeshLambertMaterial({ vertexColors: true });
-  const water = new MeshLambertMaterial({ color: 0x7cc3ea, emissive: 0x2a6f9a, emissiveIntensity: 0.25 });
-  const tex = atlas();
-  const marks = new MeshLambertMaterial({ map: tex });
+/** Where a stretch's sign stands (plan point): beside its first stone, on the board's outer side, on the beach at most
+ *  (islandPlan.ts: the land is the board's width). */
+const signAt = (sp: (typeof BOARD)[number]): [number, number] => [Math.min(W - 8, Math.max(8, sp.x < W / 2 ? sp.x - 26 : sp.x + 26)), sp.y + 4];
 
-  // the ground: grass, the beach's sand along a wavy shore, the sea beyond
-  const parts: BufferGeometry[] = [];
-  parts.push(paint(new PlaneGeometry(1800, 2000).rotateX(-Math.PI / 2).translate(0, 0, 0), GRASS));
-  const shore = (y0: number, amp: number) => {
-    const sh = new Shape();
-    // (the shape's y is −Z once laid flat: the region beyond the shore, away from the camera)
-    sh.moveTo(-900, 1400);
-    for (let x = -900; x <= 900; x += 20) sh.lineTo(x, -toWorld(0, y0 + amp * Math.sin(x / 70) + amp * 0.5 * Math.cos(x / 31))[1]);
-    sh.lineTo(900, 1400);
-    return new ShapeGeometry(sh).rotateX(-Math.PI / 2);
-  };
-  parts.push(paint(shore(636, 6).translate(0, 0.15, 0), SAND));
-  // the path: a strip along each link, a round patch under each stone
-  for (const sp of BOARD) {
-    parts.push(paint(at(new CircleGeometry(STONE_R + 5, 20).rotateX(-Math.PI / 2), sp.x, sp.y, 0.3), PATH));
-    for (const j of sp.next) {
-      const b = BOARD[j], len = Math.hypot(b.x - sp.x, b.y - sp.y), [ax, az] = toWorld(sp.x, sp.y), [bx, bz] = toWorld(b.x, b.y);
-      const strip = new PlaneGeometry(14, len).rotateX(-Math.PI / 2).rotateY(Math.atan2(bx - ax, bz - az)).translate((ax + bx) / 2, 0.28, (az + bz) / 2);
-      parts.push(paint(strip, PATH));
-    }
-  }
-  // the bridges over the river: planks and two rails
-  for (const br of bridges()) {
-    const [x, z] = toWorld(br.x, br.y);
-    const deck = new BoxGeometry(18, 1.6, RIVER_HALF * 2 + 10);
-    const rail = (side: number) => new BoxGeometry(1.4, 3, RIVER_HALF * 2 + 8).translate(side * 9, 2, 0);
-    for (const [g, c] of [[deck.translate(0, 0.8, 0), 0xc49a6c], [rail(-1), 0x9a6f45], [rail(1), 0x9a6f45]] as const) parts.push(paint(g.rotateY(br.yaw).translate(x, 0, z), c));
-  }
-  // the stones' bodies, the ends bigger
-  BOARD.forEach((sp) => {
-    const end = sp.kind === 'start' || sp.kind === 'goal', r = end ? END_R : STONE_R, c = new Color(KIND_COLOUR[sp.kind]).multiplyScalar(0.86).getHex();
-    parts.push(paint(at(new CylinderGeometry(r * 0.94, r, STONE_T, 28).translate(0, STONE_T / 2, 0), sp.x, sp.y, 0), c));
+/** The route's group: the stones, their marks, the signs (its geometries, materials and atlas released with the scene:
+ *  engine.ts). */
+export function buildRoute(): Group {
+  const root = new Group();
+  root.name = 'route';
+  // (toned for the island's bright day light, world3d/engine.ts TOD.day: the kinds' colours as Board.svelte shows them)
+  const solid = new MeshLambertMaterial({ vertexColors: true, color: TONE });
+  const marks = new MeshLambertMaterial({ map: atlas(), color: TONE });
+
+  // the stones' bodies (the ends bigger), the signs' posts
+  const parts: BufferGeometry[] = BOARD.map((sp) => {
+    const end = sp.kind === 'start' || sp.kind === 'goal', c = new Color(KIND_COLOUR[sp.kind]);
+    return at(stoneBody(end ? END_R : STONE_R, c.getHex(), c.clone().multiplyScalar(0.74).getHex()), sp.x, sp.y, 0);
   });
-  // the museum the long way goes round (Board.svelte's house), and the signs' posts
-  const [mx, mz] = toWorld(205, 318);
-  parts.push(paint(new BoxGeometry(46, 22, 30).translate(mx, 11, mz), 0xf2e2c4, true));
-  parts.push(paint(new ConeGeometry(34, 16, 4).rotateY(Math.PI / 4).scale(1, 1, 0.68).translate(mx, 30, mz), 0xb9785a, true));
-  parts.push(paint(new BoxGeometry(10, 14, 1).translate(mx, 7, mz + 15.2), 0x8a5a3c, true));
-  const signs = BOARD.map((sp, i) => ({ sp, i })).filter(({ sp, i }) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
-  for (const { sp } of signs) {
-    const sx = sp.x < W / 2 ? sp.x - 26 : sp.x + 26;
-    parts.push(paint(at(new BoxGeometry(1.6, 10, 1.6).translate(0, 5, 0), sx, sp.y + 4, 0), 0x8a6440));
-  }
-  // round trees (a trunk, a low-poly crown), kept off the route
-  for (const [x, y, r] of TREES) {
-    if (routeDist(x, y) < r + 16 || Math.abs(y - riverY(x)) < RIVER_HALF + r * 0.6) continue;
-    parts.push(paint(at(new CylinderGeometry(r * 0.16, r * 0.22, r * 1.1, 6).translate(0, r * 0.55, 0), x, y, 0), 0x8a6440, true));
-    parts.push(paint(at(new IcosahedronGeometry(r, 1).scale(1, 0.9, 1).translate(0, r * 1.55, 0), x, y, 0), (x * 7 + y) % 3 ? 0x5f9e54 : 0x6fb25e, true));
-  }
-  root.add(new Mesh(mergeGeometries(parts), solid));
+  const signs = BOARD.filter((sp, i) => i > 0 && i < GOAL && BOARD[i - 1].area !== sp.area);
+  for (const sp of signs) parts.push(paint(at(new BoxGeometry(1.6, 10, 1.6).translate(0, 5, 0), ...signAt(sp), 0), 0x8a6440));
+  const body = new Mesh(mergeGeometries(parts), solid);
+  body.castShadow = body.receiveShadow = true;
+  root.add(body);
   for (const g of parts) g.dispose();
 
-  // the water: the river's ribbon across the island, the sea past the beach
-  const pos: number[] = [], idx: number[] = [];
-  for (let x = -720, n = 0; x <= 1080; x += 12, n++) {
-    const y = riverY(x), [wx, z0] = toWorld(x, y - RIVER_HALF), [, z1] = toWorld(x, y + RIVER_HALF);
-    pos.push(wx, 0.2, z0, wx, 0.2, z1);
-    if (n) idx.push(2 * n - 2, 2 * n, 2 * n - 1, 2 * n - 1, 2 * n, 2 * n + 1);
-  }
-  const river = new BufferGeometry();
-  river.setAttribute('position', new Float32BufferAttribute(pos, 3));
-  river.setIndex(idx);
-  river.computeVertexNormals();
-  const sea = shore(668, 5).translate(0, 0.4, 0).deleteAttribute('uv');
-  const waterGeo = mergeGeometries([river.toNonIndexed(), sea.toNonIndexed()]);
-  river.dispose();
-  sea.dispose();
-  root.add(new Mesh(waterGeo, water));
-
   // the marks on the stones' tops, the signs' boards: one atlas
-  const tops: BufferGeometry[] = [];
-  BOARD.forEach((sp) => {
-    const end = sp.kind === 'start' || sp.kind === 'goal', r = (end ? END_R : STONE_R) * 0.86;
-    tops.push(at(intoCell(new CircleGeometry(r, 28), cellOfKind(sp.kind), 0.04).rotateX(-Math.PI / 2), sp.x, sp.y, STONE_T + 0.06).toNonIndexed());
+  const tops: BufferGeometry[] = BOARD.map((sp) => {
+    const end = sp.kind === 'start' || sp.kind === 'goal', r = (end ? END_R : STONE_R) * 0.84;
+    return at(intoCell(new CircleGeometry(r, 32), cellOfKind(sp.kind), 0.04).rotateX(-Math.PI / 2), sp.x, sp.y, STONE_T + 0.06).toNonIndexed();
   });
-  for (const { sp } of signs) {
-    const sx = sp.x < W / 2 ? sp.x - 26 : sp.x + 26;
+  for (const sp of signs) {
     const board = new PlaneGeometry(22, 11), uv = board.getAttribute('uv');
     // (the cell's middle band: the label's 2:1)
     for (let k = 0; k < uv.count; k++) uv.setY(k, 0.25 + uv.getY(k) * 0.5);
-    tops.push(at(intoCell(board, cellOfArea(sp.area)).rotateX(-0.35), sx, sp.y + 4, 12).toNonIndexed());
+    tops.push(at(intoCell(board, cellOfArea(sp.area)).rotateX(-0.35), ...signAt(sp), 12).toNonIndexed());
   }
-  root.add(new Mesh(mergeGeometries(tops), marks));
+  const top = new Mesh(mergeGeometries(tops), marks);
+  top.receiveShadow = true;
+  root.add(top);
   for (const g of tops) g.dispose();
   return root;
 }
