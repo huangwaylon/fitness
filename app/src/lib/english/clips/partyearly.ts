@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 4, tx 5
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 4, new 0
 // “Michael and Dwight Rock Up to the Party Early - The Office US” (the official The Office channel, Best of Season 3):
 // on the drive, Jan calls on speakerphone; at the house, one of them is dressed like the staff and they swap shirts;
@@ -6,6 +7,9 @@
 // 14.8–38 s and 41–51 s. Untested on purpose: 14.8–17.3 s and 30–36 s (sexual), 26.6–28.8 s, 38–41 s, 54–59 s, 78–85 s,
 // 102–103.8 s, 129.9 s on. The caller is Jan (24.1–24.8 s, both sources). Who says "I am on my way… about 15" (Michael
 // or Jan) isn't settled, and the host and the speakers at the house are never named, so no item asks who says what there.
+// R4: a1 retired (the same point as f1); new g3 (the set-up gist) and c1 on the end of the call.
+// EXCLUDE 14.8–17.3 (“blow this party off” / “That's what she said”)
+// EXCLUDE 30–36.8 (the motel line)
 import type { Clip } from '../types.ts';
 
 export const partyEarly: Clip = {
@@ -32,7 +36,7 @@ export const partyEarly: Clip = {
       choicesJa: ['君は〜するべき？', '君は〜するべきじゃない？', '私は〜するべき？'],
       cue: '「Wait」のすぐあとの2語。',
       line: 'Wait, *should you* be going?',
-      said: '「待って、君は来ていいんだっけ？」と、相手が来ることを疑う。',
+      said: '「待てよ、お前、来ていいのか？」と、相手が来ることを疑う。',
       mean: 'should you は「シュジュ」とつながる。d と y がくっついて「ジュ」になる。',
       trap: 'shouldn’t なら「ン」が入る。should I なら「シュダイ」。ここは「シュジュ」。',
       use: 'Should you be lifting that?（それ、持って大丈夫？）' },
@@ -46,7 +50,7 @@ export const partyEarly: Clip = {
       trap: '文法どおり I を足したくなるが、言っていない。書き取りは、聞こえた語だけを書く。',
       use: 'Didn’t see you there. Hi!（いるの気づかなかった、やあ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [10.9, 16.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [10.9, 14.8], keep: true,
       stem: 'On the phone, how soon will someone be there?',
       ja: '電話で、あとどのくらいで着くと言う？',
       choices: ['In about 5', 'In about 15', 'In about 50'], a: 1,
@@ -58,7 +62,20 @@ export const partyEarly: Clip = {
       trap: 'fifty なら前の「フィフ」が強い。five なら「ファイヴ」で終わる。ここは「フィフティーン」。',
       use: 'I’ll be there in fifteen.（15分で着くよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'speaker', seg: [22.2, 28.1],
+
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'speaker', ctx: true, seg: [18.0, 26.8],
+      stem: 'Why does Jan ask to come off speakerphone?',
+      ja: 'ジャンはなぜスピーカーをやめてとたのむ？',
+      choices: ['She doesn’t want Dwight to hear', 'She wants Dwight to hear too', 'She can’t hear Michael well'], a: 0,
+      choicesJa: ['ドワイトに聞かれたくない', 'ドワイトにも聞いてほしい', 'マイケルの声がよく聞こえない'],
+      cue: 'たのむ直前に、誰にあいさつしたか。',
+      line: 'Jan: Am I on speakerphone? … Who is anybody else? / Dwight: Hello, Jan. / Jan: *Hi, Dwight.* Okay, Michael, take me off speakerphone.',
+      said: 'ドワイトにあいさつしたすぐあとに、スピーカーをやめてとたのむ。',
+      mean: 'ドワイトにも聞こえていると気づき、二人だけで話したくなった。',
+      trap: 'Dwight の名前から、ドワイトも話に入れたいと考えがち。あいさつは「いるのね」の確認。',
+      use: 'Wait, am I on speaker?（待って、スピーカーになってる？）' },
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'speaker', seg: [23.0, 28.2],
       stem: 'What does Jan ask Michael to do?',
       ja: 'ジャンはマイケルに何をたのむ？',
       choices: ['Take her off speakerphone', 'Put her on speakerphone', 'Put Dwight on the line'], a: 0,
@@ -67,31 +84,42 @@ export const partyEarly: Clip = {
       line: 'Hi, Dwight. Okay, Michael, *take me off speakerphone*.',
       said: '電話の相手が「マイケル、スピーカーをやめて」とたのむ。',
       mean: 'take ～ off speakerphone ＝ スピーカー通話をやめる。二人だけで話したい。',
-      trap: 'off は短く弱いので on と思いやすい。take me のあとの off を聞く。',
+      trap: 'off は短く弱いので on と聞き違えやすい。take me のあとの off を聞く。',
       use: 'Can you take me off speaker?（スピーカー、切ってくれる？）' },
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'bigstep', reveals: ['still'], seg: [36.8, 53.0],
+      stem: 'What does Michael tell Jan about the party?',
+      ja: 'マイケルはジャンに、パーティーについて何と言う？',
+      choices: ['It’s a big step for them', 'It will be very boring', 'He wants to skip it'], a: 0,
+      choicesJa: ['二人にとって大きな一歩だ', 'すごく退屈だろう', '行きたくない'],
+      cue: 'Jan, Jan と呼びかけたあとの文。',
+      line: 'Okay, Jan, Jan, this party is actually *a very big step for us*, so I— … Okay, see you soon.',
+      said: '「このパーティーは、僕たちにとってすごく大きな一歩なんだ」と言い、電話を切る。',
+      mean: 'a big step ＝ 文字どおりは「大きな一歩」。関係が前に進む大事な機会、という意味。',
+      trap: '直前にジャンが行かずにおこうと誘うので、行きたくない話と考えがち。actually（実は）のあとを聞く。',
+      use: 'This is a big step for me.（これは私にとって大きな一歩なの）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'speaker', seg: [22.2, 28.1],
-      stem: 'Why does Jan ask to come off speakerphone?',
-      ja: 'ジャンはなぜスピーカーをやめてとたのむ？',
-      choices: ['She doesn’t want Dwight to hear', 'She wants Dwight to hear too', 'She can’t hear Michael well'], a: 0,
-      choicesJa: ['ドワイトに聞かれたくない', 'ドワイトにも聞いてほしい', 'マイケルの声がよく聞こえない'],
-      cue: 'たのむ直前に、誰にあいさつしたか。',
-      line: '*Hi, Dwight.* Okay, Michael, take me off speakerphone.',
-      said: 'ドワイトにあいさつしたすぐあとに、スピーカーをやめてとたのむ。',
-      mean: 'ドワイトにも聞こえていると気づき、二人だけで話したくなった。',
-      trap: 'Dwight の名前から、ドワイトも入れたいと思いやすい。あいさつは「いるのね」の確認。',
-      use: 'Wait, am I on speaker?（待って、スピーカーになってる？）' },
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'still', ctx: true, seg: [40.4, 49.0],
+      stem: 'Jan asks a question. What does Michael answer?',
+      ja: 'ジャンが質問する。マイケルはどう答える？',
+      choices: ['He doesn’t know', 'Yes, she still is', 'No, not anymore'], a: 0,
+      choicesJa: ['分からない', 'うん、まだそうだ', 'いや、もう違う'],
+      cue: 'Still on speaker? のあとの返事。',
+      line: 'Jan: *Still on speaker?* / Michael: Um, I, I *don’t know*. / Jan: The camera’s there? / Michael: Maybe.',
+      said: '「まだスピーカーなの？」と聞かれ、「えっと、さあ、どうかな」とはぐらかす。',
+      mean: 'Still on speaker? ＝ まだスピーカー？（Am I が落ちた形）。Um, I don’t know で答えをにごしている。',
+      trap: 'はい・いいえで答える質問なので、Yes か No を予想しやすい。Um のあとは don’t know。',
+      use: 'Um, I don’t know. Maybe?（えっと、どうかな。たぶん？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'swap', reveals: ['servants', 'shirts', 'crisis'], seg: [57.1, 91.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'swap', reveals: ['servants', 'shirts', 'crisis'], seg: [58.5, 88.0],
       stem: 'How do they fix the problem with the clothes?',
       ja: '服の問題を、二人はどうやって直す？',
       choices: ['They swap shirts', 'One goes home to change', 'They buy new shirts'], a: 0,
       choicesJa: ['シャツを取りかえる', '一人が家に着がえに帰る', '新しいシャツを買う'],
       cue: '「Okay」のあとの命令。',
       line: 'You’re dressed exactly like the servants. … Okay, *change shirts*.',
-      said: '「使用人と同じ服だ」と気づき、「シャツを替えろ」と言って、その場で取りかえる。',
+      said: '「使用人と同じ服だ」と気づき、「シャツを交換しろ」と言って、その場で取りかえる。',
       mean: 'change shirts ＝ シャツを取りかえる。家に帰らず、その場で直す。',
-      trap: 'change から「着がえに帰る」と思いやすい。shirts と複数なので、二人のシャツの交換。',
+      trap: 'change から「着がえに帰る」を連想しやすい。shirts と複数なので、二人のシャツの交換。',
       use: 'Let’s change seats.（席を替わろう）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'servants', seg: [59.3, 65.1],
@@ -103,19 +131,19 @@ export const partyEarly: Clip = {
       line: 'You’re dressed *exactly like the servants*.',
       said: '「使用人とまったく同じ服装だぞ」と言われる。',
       mean: 'servants ＝ 使用人。給仕と同じ服では、客に見えない。',
-      trap: '服の話なので「カジュアルすぎ」と思いやすい。exactly like のあとの servants で決まる。',
+      trap: '服の話なので「カジュアルすぎ」と考えがち。exactly like のあとの servants で決まる。',
       use: 'You look exactly like the waiter.（ウェイターにそっくりだよ）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B1', point: 'shirts', seg: [65.3, 72.6],
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'shirts', ctx: true, seg: [65.3, 72.6],
       stem: 'What does “I don’t care” mean here?',
       ja: 'ここで「I don’t care」はどういう意味？',
       choices: ['The size doesn’t matter', 'He hates that shirt', 'He doesn’t like clothes'], a: 0,
       choicesJa: ['サイズはどうでもいい', 'そのシャツがきらい', '服に興味がない'],
       cue: '「won’t fit me」への短い返事。',
-      line: 'I don’t think yours will fit me. — *I don’t care*.',
+      line: 'I don’t think yours will fit me. / *I don’t care*.',
       said: '「シャツが合わないと思う」と言われ、「かまわない」と返す。',
       mean: 'I don’t care ＝ かまわない、どうでもいい。サイズより見た目を直したい。',
-      trap: '「服に興味がない」と思いやすい。何がどうでもいいかは、直前の fit（サイズ）。',
+      trap: '「服に興味がない」に聞こえるが、何がどうでもいいかは、直前の fit（サイズ）。',
       use: 'I don’t care if it’s small. Try it.（小さくてもいいから、着てみて）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'embarr', seg: [82.4, 90.3],
@@ -130,7 +158,7 @@ export const partyEarly: Clip = {
       trap: 'could なら「ク」で始まる。would be なら最後が「ビー」。ここは「ビン」が聞こえる。',
       use: 'That would have been a disaster.（それは大変なことになってたね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'crisis', reveals: ['embarr'], seg: [82.4, 91],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'crisis', reveals: ['embarr'], seg: [82.4, 91], retired: true,
       stem: 'How do they feel after swapping shirts?',
       ja: 'シャツを取りかえたあと、二人はどんな気持ち？',
       choices: ['Relieved it got fixed', 'Embarrassed it happened', 'Worried it still shows'], a: 0,
@@ -149,12 +177,12 @@ export const partyEarly: Clip = {
       choicesJa: ['問題はさけられた', '問題はまだやってくる', '問題は気にしないで'],
       cue: '「Yes」のあとの2語。',
       line: 'Yes, *crisis averted*.',
-      said: '「恥ずかしかった」に「ああ、危機回避だ」と返す。',
+      said: '「恥ずかしいことになるところだった」に「はい、危機回避です」と返す。',
       mean: 'crisis ＝ 危機。averted ＝ さけられた。少し大げさに「助かった」と言う決まり文句。',
-      trap: 'avert は「目をそらす」にも使うので、見ないふりと思いやすい。crisis と組むと「回避」。',
+      trap: 'avert は「目をそらす」にも使うので、見ないふりと勘違いしやすい。crisis と組むと「回避」。',
       use: 'Found my keys. Crisis averted!（鍵あった。危機回避！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', seg: [91.1, 108],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'early', reveals: ['polite'], seg: [91.1, 108],
       stem: 'Why is arriving early good, he says?',
       ja: '早く着くのはなぜいい、と彼は言う？',
       choices: ['You become a good friend', 'You help the host get ready', 'You get the best food'], a: 0,
@@ -162,7 +190,7 @@ export const partyEarly: Clip = {
       cue: '「only」で始まる文と、最後の部分。',
       line: 'Only really good friends show up early. … go to a party early, *become a really good friend*.',
       said: '「早く来るのは本当の友だちだけ。だから早く行けば本当の友だちになれる」と話す。',
-      mean: 'show up ＝ 来る、現れる。理屈がさかさまだが、本人は本気。',
+      mean: 'show up ＝ 来る、現れる。Ergo de facto ＝ 「ゆえに」の意味の気取ったラテン語。理屈がさかさまだが本人は本気。',
       trap: 'polite（礼儀正しい）が聞こえるので、礼儀の話と思いやすい。最後は become a friend。',
       use: 'Come early and grab a good seat.（早めに来て、いい席を取って）' },
 
@@ -188,16 +216,16 @@ export const partyEarly: Clip = {
       trap: '遅れて来る人への皮肉と取りやすいが、話は自分たちのこと。何と何が入れかわったかを聞く。',
       use: 'That’s not how it works.（そういうものじゃないよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'both', seg: [105.9, 111.5],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'both', ctx: true, seg: [104.9, 111.5],
       stem: 'What does “No, it’s not” mean here?',
       ja: 'ここで「No, it’s not」はどういう意味？',
       choices: ['Only one of us brought it', 'It is from both of us', 'It isn’t potato salad'], a: 0,
       choicesJa: ['持ってきたのは一人だけ', '二人からのもの', 'ポテトサラダじゃない'],
       cue: '「both of us」へのすぐの返事。',
-      line: '…from *both of us*. — *No, it’s not.*',
+      line: 'Oh, a potato salad. / That’s from *both of us*. / *No, it’s not.*',
       said: '「二人からです」と一人が言うと、もう一人が「いや、違う」とすぐ打ち消す。',
       mean: '手土産を「二人から」にされたくない。持ってきたのは自分だけ、という主張。',
-      trap: '直前の「ポテトサラダね」への返事と思いやすい。返事は both of us に向いている。',
+      trap: '直前の「ポテトサラダね」への返事に聞こえるが、返事は both of us に向いている。',
       use: 'Actually, that one’s just from me.（実はそれ、私からだけなの）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'cover', reveals: ['mayo'], seg: [115.3, 123.3],
@@ -242,7 +270,7 @@ export const partyEarly: Clip = {
       line: 'It’s been sitting in my car *all day*. The sun beating down on the *mayonnaise*.',
       said: '「一日じゅう車に置いてあった。マヨネーズに日が照りつけて」と言う。',
       mean: '暑い車の中のマヨネーズ ＝ いたんでいるかも。はっきり言わずに伝えている。',
-      trap: 'all day を手間の話と思いやすい。マヨネーズと日差しの組み合わせに注目。',
+      trap: 'all day を作る手間の話と考えがち。マヨネーズと日差しの組み合わせに注目。',
       use: 'It’s been in the fridge for a week.（冷蔵庫に1週間入ってた）' },
   ]
 };
