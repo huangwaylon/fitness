@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 12, retire 0, new 5, ctx 8, tx 19
+// R4 REVIEW 2026-11-18: keep 7, rewrite 12, retire 0, new 5, ctx 8, tx 19, qa 25
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 6, new 1
 // “Leslie Throws Ann an Epic Going-Away Party | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 6): Leslie's farewell party for Ann celebrates every event of the year; her surprise at the lot is blocked
@@ -71,7 +71,7 @@ export const bonVoyage: Clip = {
       trap: 'snuck into your house（家にしのびこんだ）から、プレゼントを連想しやすい。packed a bag を聞く。',
       use: 'I packed a bag for the trip.（旅行のかばんをつめた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'bunch', seg: [39.8, 47.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'bunch', seg: [41.9, 47.1],
       stem: 'Type what Ann says: “This is just ___ bras and knives.” (3 words)', answer: 'a bunch of',
       ja: 'アンの言葉を入力：「This is just ___ bras and knives.」（3語）',
       cue: '「This is just」のあと',
@@ -84,7 +84,7 @@ export const bonVoyage: Clip = {
     { id: 'pr2', skill: 'phrase', level: 'B2', point: 'donna', seg: [49.6, 55.5],
       stem: 'What does Ann mean by “another Donna Meagle”?',
       ja: 'アンの「another Donna Meagle」はどういう意味？',
-      choices: ['Donna is one of a kind', 'She won’t make any friends', 'She will forget Donna soon'], a: 0,
+      choices: ['No one else is like Donna', 'She won’t make any friends', 'She will forget Donna soon'], a: 0,
       choicesJa: ['ドナみたいな人はほかにいない', '友だちが1人もできない', 'すぐドナを忘れる'],
       cue: '「I will not meet」のあと',
       line: 'I’m 100% sure that I will *not meet another Donna Meagle* in Michigan. I’m gonna miss you.',
@@ -104,7 +104,7 @@ export const bonVoyage: Clip = {
       trap: 'run this town を町を仕切る仕事と取りやすい。直前の理由が何の話かを決める。',
       use: 'He’s officially off the market.（彼はもう売約済みだよ）', retired: true },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'ribs', seg: [74.4, 84.5], ctx: true,
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'ribs', seg: [74.4, 85.3], ctx: true,
       stem: 'Has Ron seen April?',
       ja: 'ロンはエイプリルを見かけた？',
       choices: ['No, he was busy eating', 'Yes, she was near the food', 'Yes, she went out for food'], a: 0,
@@ -116,7 +116,7 @@ export const bonVoyage: Clip = {
       trap: 'Yes も No も言わないので、見たと考えがち。リブしか見ていなかった、が答え。',
       use: 'Sorry, I was focused on my work.（ごめん、仕事に集中してた）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'outof', seg: [77, 85.7],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'outof', seg: [77.8, 85.7],
       stem: 'What does “you’re out of Easter ham” mean?',
       ja: '「you’re out of Easter ham」はどういう意味？',
       choices: ['There’s no ham left', 'The ham is outside', 'The ham has gone bad'], a: 0,
@@ -128,7 +128,7 @@ export const bonVoyage: Clip = {
       trap: 'out から「外に」と思いやすい。out of ＋物 は「〜がなくなった」。',
       use: 'Sorry, we’re out of milk.（すみません、牛乳を切らしています）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'lot', seg: [85.4, 114],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'lot', seg: [85.4, 113.8],
       stem: 'What is the bad news on the phone?',
       ja: '電話の悪い知らせは何？',
       choices: ['They can’t get onto the lot', 'The party must end early', 'Guards are coming to the party'], a: 0,
@@ -152,7 +152,7 @@ export const bonVoyage: Clip = {
       trap: 'does なら「ダズ」で終わる。didn’t なら「ディ」で始まる。「ダズン」と「ン」が残れば doesn’t。',
       use: 'That rule doesn’t apply to kids.（その決まりは子どもには関係ない）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B2', point: 'professor', reveals: ['lot'], seg: [98.1, 107.5], ctx: true,
+    { id: 'a1', skill: 'pragma', level: 'B2', point: 'professor', reveals: ['lot'], seg: [98.1, 106.7], ctx: true,
       stem: 'Why does Leslie talk about a professor in Copenhagen?',
       ja: 'レスリーはなぜ、コペンハーゲンの教授の話をする？',
       choices: ['To say the sign isn’t about her', 'To show that she is famous', 'Because she knows him well'], a: 0,
@@ -164,7 +164,7 @@ export const bonVoyage: Clip = {
       trap: 'Copenhagen から、有名な知り合いの話と勘違いしやすい。自分じゃないと言うため。',
       use: 'They probably mean someone else.（たぶん別の人のことだよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'photo', seg: [106.8, 114.2], ctx: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'photo', seg: [106.7, 113.8], ctx: true,
       stem: 'What else does the sign have on it?',
       ja: '看板には、ほかに何がある？',
       choices: ['A photo of Leslie', 'The professor’s name', 'Harold’s phone number'], a: 0,
@@ -176,7 +176,7 @@ export const bonVoyage: Clip = {
       trap: 'professor が聞こえるので、教授の名前と勘違いしやすい。picture of you で本人だと分かる。',
       use: 'There’s a picture of you on the wall.（壁にあなたの写真があるよ）' },
 
-    { id: 'd2', skill: 'infer', level: 'B1', point: 'hyper', seg: [130.5, 138.1],
+    { id: 'd2', skill: 'infer', level: 'B1', point: 'hyper', seg: [130.5, 137.7],
       stem: 'Why can’t Leslie watch Julie Andrews before bedtime?',
       ja: 'レスリーが寝る前にジュリー・アンドリュースを見てはいけないのはなぜ？',
       choices: ['It makes her too excited', 'It makes her cry all night', 'It keeps Ben awake'], a: 0,
@@ -188,7 +188,7 @@ export const bonVoyage: Clip = {
       trap: '映画で泣く話と考えがち。決め手は because のあとの too hyper。',
       use: 'Coffee makes me too hyper at night.（夜のコーヒーは目がさえすぎる）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'intense', seg: [136.3, 143.05],
+    { id: 'i3', skill: 'phrase', level: 'B2', point: 'intense', seg: [137.7, 144.6],
       stem: 'What does “cranky” mean here?',
       ja: '「cranky」は、ここでどういう意味？',
       choices: ['In a bad mood', 'Feeling sick', 'Very sleepy'], a: 0,
@@ -200,7 +200,7 @@ export const bonVoyage: Clip = {
       trap: '食べ物で直すので、具合が悪いと思いやすい。cranky は体ではなく気分のこと。',
       use: 'He gets cranky when he’s hungry.（彼はお腹がすくときげんが悪くなる）' },
 
-    { id: 'c1', skill: 'infer', level: 'B1', point: 'surprise', seg: [149, 156], ctx: true,
+    { id: 'c1', skill: 'infer', level: 'B1', point: 'surprise', seg: [149, 155.1], ctx: true,
       stem: 'Why hasn’t Ann seen Leslie in a while?',
       ja: 'アンがしばらくレスリーを見ていないのはなぜ？',
       choices: ['She’s planning something for Ann', 'She went home to sleep', 'She’s out dancing with Chris'], a: 0,
@@ -223,7 +223,7 @@ export const bonVoyage: Clip = {
       trap: 'attitude を踊りへの悪口と取りやすい。何に返した言葉かを聞く。',
       use: 'Can’t do it? Not with that attitude!（できない？その考えじゃね！）', retired: true },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twoyears', seg: [166.5, 177.5], keep: true, ctx: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twoyears', seg: [165.8, 178.8], keep: true, ctx: true,
       stem: 'How long did Ann live with her old boyfriend?',
       ja: 'アンは元恋人と、どれくらい一緒に住んでいた？',
       choices: ['One year', 'Two years', 'Three years', 'Ten years'], a: 1,
@@ -235,7 +235,7 @@ export const bonVoyage: Clip = {
       trap: 'two の「トゥ」は短く、for とつながって「フォトゥー」。ten なら「テン」と n で終わる。',
       use: 'We used to work together.（前は一緒に働いてたんだ）' },
 
-    { id: 'i4', skill: 'infer', level: 'C1', point: 'full', seg: [179.7, 189.1],
+    { id: 'i4', skill: 'infer', level: 'C1', point: 'full', seg: [179.7, 186.9],
       stem: 'How many times has Leslie called Harold?',
       ja: 'レスリーはハロルドに何回電話した？',
       choices: ['Many times', 'Only once', 'Never before'], a: 0,
@@ -247,7 +247,7 @@ export const bonVoyage: Clip = {
       trap: '1回の電話だけが聞こえるので、1回と思いやすい。again と full が何回もかけた印。',
       use: 'Sorry, it’s me again.（たびたびすみません）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'screen', seg: [180.7, 189.1],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'screen', seg: [180.7, 186.9],
       stem: 'What does “screening my calls” mean?',
       ja: '「screening my calls」はどういう意味？',
       choices: ['Not answering on purpose', 'Blocking her phone number', 'Recording all her calls'], a: 0,
@@ -259,7 +259,7 @@ export const bonVoyage: Clip = {
       trap: 'カタカナの「スクリーン」から、録音やブロックを思いやすい。電話は鳴るが、出ないだけ。',
       use: 'Are you screening my calls?（私の電話、わざと出てないでしょ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'wall', seg: [180.7, 200.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'wall', seg: [184.95, 200.2],
       stem: 'What can Ben do about the lot?',
       ja: 'ベンは空き地について何ができる？',
       choices: ['Nothing for now', 'Wait for Harold’s call', 'Use a rule to get in'], a: 0,
@@ -271,7 +271,7 @@ export const bonVoyage: Clip = {
       trap: '規則（bylaws）を調べたと聞くと、入る方法が見つかったと思いやすい。anything I can do の前の don’t を聞く。',
       use: 'I think we’ve hit a wall.（行きづまったみたい）' },
 
-    { id: 'h5', skill: 'infer', level: 'B2', point: 'married', seg: [190, 199], ctx: true,
+    { id: 'h5', skill: 'infer', level: 'B2', point: 'married', seg: [190.3, 199], ctx: true,
       stem: 'What does Ben hope, in his answer to Leslie?',
       ja: 'レスリーへの返事で、ベンは何を願っている？',
       choices: ['She loves him, not his power', 'He can still find a way in', 'Harold will call them soon'], a: 0,
@@ -305,7 +305,7 @@ export const bonVoyage: Clip = {
       trap: 'ride から、移動や旅を連想しやすい。乗り物は人生のたとえ。',
       use: 'That year was quite a ride.（あの1年はいろいろあった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'present', seg: [213.3, 222.9],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'present', seg: [213.3, 222.6],
       stem: 'What going-away present does Tom give Ann?',
       ja: 'トムはアンに、どんなお別れのプレゼントをあげる？',
       choices: ['He deletes her number', 'A pass to his club', 'A new photo of her'], a: 0,
@@ -317,11 +317,11 @@ export const bonVoyage: Clip = {
       trap: 'あとでクラブの話が出るので、招待と考えがち。present のすぐあとの deleting を聞く。',
       use: 'I got you a little something.（ちょっとしたものを買ってきたよ）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'generous', seg: [235.5, 245], ctx: true,
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'generous', seg: [235.5, 247.5], ctx: true,
       stem: 'What does Ann mean by “That’s very generous”?',
       ja: 'アンの「That’s very generous」はどういう意味？',
-      choices: ['That isn’t kind at all', 'Thank you very much', 'Your club is very big'], a: 0,
-      choicesJa: ['ちっとも親切じゃない', '本当にありがとう', 'あなたのクラブは大きい'],
+      choices: ['That isn’t kind at all', 'Thank you very much', 'You give away so much'], a: 0,
+      choicesJa: ['ちっとも親切じゃない', '本当にありがとう', 'あなたは気前がいい'],
       cue: '「let her in the back」の返事',
       line: 'Tom: That woman’s *way too old* to get into this club. But why don’t you let her in the back? / Ann: *That’s very generous.*',
       said: '「年を取りすぎだが、裏口から入れてやれ」と未来の自分を語るトムに、アンは「ずいぶんお優しいこと」と返す。',
@@ -329,7 +329,7 @@ export const bonVoyage: Clip = {
       trap: '言葉だけならお礼に聞こえるが、直前の way too old（年を取りすぎ）が決め手。',
       use: 'Wow, thanks a lot.（わあ、どうもありがとう）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'mother', seg: [247.5, 258.2],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'mother', seg: [247.5, 257.6],
       stem: 'What does Larry say Ann will be?',
       ja: 'ラリーは、アンが何になると言う？',
       choices: ['A wonderful mother', 'A great nurse', 'A good teacher'], a: 0,

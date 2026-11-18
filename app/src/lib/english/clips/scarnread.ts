@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 14, retire 2, new 2, ctx 4, tx 19
+// R4 REVIEW 2026-11-18: keep 5, rewrite 14, retire 2, new 2, ctx 4, tx 19, qa 24
 // A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 4, new 1
 // “Threat Level Midnight Read Through - The Office US” (the official The Office channel, BEST OF SEASON 2): Jim
 // runs a read-through of Michael's spy script; Dwight objects, then reads the hero, until a leftover name shows the
@@ -13,7 +13,7 @@ export const scarnRead: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'reading', seg: [0, 30],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'reading', reveals: ['actions'], seg: [0, 16.2],
       stem: 'What are the coworkers doing?',
       ja: '同僚たちは何をしている？',
       choices: ['Reading Michael’s movie script', 'Watching Michael’s new spy movie', 'Writing a script together'], a: 0,
@@ -22,13 +22,13 @@ export const scarnRead: Clip = {
       line: 'Do we all have our *copy* of “Threat Level Midnight” by Michael Scott? … I’m gonna be *reading*',
       said: '「みんなマイケル作の脚本を持ってる？じゃあ始めよう」と言い、役を決めて読む。',
       mean: 'copy ＝（同じ物の）1部。紙の脚本をみんなで声に出して読む「読み合わせ」をしている。',
-      trap: 'This is a movie（これは映画だ）に聞こえて、映画を見ていると考えがち。手には紙の copy。',
+      trap: '題名から映画を見ていると考えがち。our copy（1部ずつの紙）と reading で、読み合わせと分かる。',
       use: 'Does everyone have a copy?（みんな1部ずつある？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'actions', seg: [4.6, 10.1],
       stem: 'What will Jim read?',
       ja: 'ジムは何を読む？',
-      choices: ['The action descriptions', 'The main hero’s lines', 'Catherine Zeta-Jones’s lines'], a: 0,
+      choices: ['The notes on what happens', 'The main hero’s lines', 'Catherine Zeta-Jones’s lines'], a: 0,
       choicesJa: ['場面の説明（ト書き）', '主人公のせりふ', 'キャサリン・ゼタ＝ジョーンズのせりふ'],
       cue: '「started」のあと',
       line: 'I’m gonna be *reading the action descriptions*.',
@@ -37,7 +37,7 @@ export const scarnRead: Clip = {
       trap: 'action から「アクションの主役」を連想しやすい。descriptions（説明）まで聞く。',
       use: 'I’ll be taking notes.（私はメモ係をやります）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'objection', ctx: true, seg: [13, 24.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'objection', ctx: true, seg: [13, 25.2],
       stem: 'Why does Dwight want them to stop?',
       ja: 'ドワイトはなぜやめさせたい？',
       choices: ['It isn’t their script', 'They should be working', 'The script isn’t finished'], a: 0,
@@ -60,9 +60,9 @@ export const scarnRead: Clip = {
       trap: '最初の強い反対だけ覚えていると、参加しないと思いやすい。誰の声で主役が読まれるかを追う。',
       use: 'Want to take the lead on this?（これ、仕切ってみる？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [16.1, 24.3],
-      stem: 'Why does Jim say “I mean” here?',
-      ja: 'ジムは、なぜここで「I mean」と言う？',
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [16.1, 21.45],
+      stem: 'What does “I mean” do in Jim’s answer?',
+      ja: 'ジムの答えの「I mean」は、どんな働きをしている？',
       choices: ['To say more about it', 'To change the whole topic', 'To cancel what he said'], a: 0,
       choicesJa: ['同じ話をもっと言うため', '話題を変えるため', '言ったことを取り消すため'],
       cue: '「This is a movie」の次の文',
@@ -83,7 +83,7 @@ export const scarnRead: Clip = {
       trap: '言葉だけならほめ言葉。中身と言葉の大きさが合わないときは、冗談のことが多い。',
       use: 'Oh, it’s a masterpiece, clearly.（ああ、まさに傑作だね〈皮肉〉）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'offer', seg: [21.3, 30.6],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'offer', seg: [25.2, 30.6],
       stem: 'Why does Jim say “Do you want to play”?',
       ja: 'ジムは、なぜ「Do you want to play」と言う？',
       choices: ['To offer Dwight the main part', 'To ask Dwight to leave', 'To ask Dwight to just watch'], a: 0,
@@ -107,7 +107,7 @@ export const scarnRead: Clip = {
       trap: '机に足をのせている（ト書き）ので、ひまだからと考えがち。Okay の直前の一言が理由。',
       use: 'It’s important. Do you have a minute?（大事な話です。少しいいですか）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'messages', seg: [41.6, 49],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'messages', seg: [41.6, 47.0],
       stem: 'Who is Catherine’s first message from?',
       ja: 'キャサリンの最初の伝言は誰から？',
       choices: ['From Catherine herself', 'From Samuel L. Chang', 'From Golden Face'], a: 0,
@@ -119,7 +119,7 @@ export const scarnRead: Clip = {
       trap: 'message（伝言）なので、ほかの人からと勘違いしやすい。最後の from me を聞く。',
       use: 'This one’s from me.（これは私からです）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [45.6, 51.5],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thousand', seg: [46.9, 51.3],
       stem: 'Which number do you hear: “Not in a ___ years”?',
       ja: '「Not in a ___ years」どの数が聞こえる？',
       choices: ['hundred', 'thousand', 'million', 'billion'], a: 1, keep: true,
@@ -146,13 +146,13 @@ export const scarnRead: Clip = {
     { id: 'i2', skill: 'infer', level: 'B1', point: 'filler', seg: [55.5, 65.3],
       stem: 'Why did the school make roles like “Muty the Mailman”?',
       ja: '学校はなぜ「郵便屋のムーティ」のような役を作った？',
-      choices: ['They had too many kids', 'They had too few kids', 'The kids asked for them'], a: 0,
-      choicesJa: ['子どもが多すぎたから', '子どもが少なすぎたから', '子どもたちが頼んだから'],
+      choices: ['So all the kids got a part', 'They didn’t have enough kids', 'The kids asked for those parts'], a: 0,
+      choicesJa: ['子ども全員に役があるように', '子どもが足りなかったから', '子どもたちがその役を頼んだから'],
       cue: '「so they」の前',
       line: 'They had *too many kids*, so they made up roles like that.',
       said: '「子どもが多すぎたから、そういう役を作ってたんだ」と話す。',
       mean: 'A, so B ＝ A だから B。全員を劇に出すために作った小さな役。made up ＝ 作り出した。',
-      trap: 'many と few は反対の意味。too のあとが「メニー」か「フュー」かを聞く。',
+      trap: '小さな役なので、子どもが足りなかったと考えがち。too many kids（子どもが多すぎた）なので、全員に役を作った。',
       use: 'Too many people came, so we split into two groups.（人が多すぎたので2組に分けた）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'madeup', reveals: ['filler'], seg: [59.2, 65.3], retired: true,
@@ -167,7 +167,7 @@ export const scarnRead: Clip = {
       trap: 'make なら今の形、take なら「テイ」で始まる。「メイダップ」と d が聞こえれば made。',
       use: 'Did you make that up?（それ、作り話でしょ？）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'noticing', ctx: true, seg: [68.4, 75.6],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'noticing', ctx: true, seg: [69.0, 75.6],
       stem: '“You lost some weight.” How does Scarn answer?',
       ja: '「You lost some weight」に、スカーンはどう答える？',
       choices: ['Thank you for noticing', 'You’re joking, right?', 'Hey, I have to work late'], a: 0,
@@ -179,7 +179,7 @@ export const scarnRead: Clip = {
       trap: '残りの2つもこのクリップで聞こえる言葉。日本語の感覚だと謙遜を選びがち。返事は Thank you から。',
       use: 'New haircut? — Thank you for noticing!（髪切った？—気づいてくれてありがとう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'company', seg: [74.67, 79.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'company', seg: [74.67, 79.45],
       stem: 'Type the missing words: “Now, ___ for one more mission.” (3 words)', answer: 'keep me company',
       ja: '空いている所の英語3語を書こう：「Now, ___ for one more mission.」',
       cue: '「Now」のあと、for の前',
@@ -202,8 +202,8 @@ export const scarnRead: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B1', point: 'thumbs', seg: [92.5, 98.6],
       stem: '“Two thumbs down.” What does it mean?',
       ja: '「Two thumbs down」はどういう意味？',
-      choices: ['It’s really bad', 'It’s bad but fun', 'It’s good but long'], a: 0,
-      choicesJa: ['すごくひどい', 'ひどいけど楽しい', 'いいけど長い'],
+      choices: ['It’s really bad', 'It’s really good', 'It’s just okay'], a: 0,
+      choicesJa: ['すごくひどい', 'すごくいい', 'まあまあ'],
       cue: '「Michael’s movie?」のすぐあと',
       line: 'Michael’s movie? *Two thumbs down*.',
       said: '「マイケルの映画？親指2本とも下」と答える。',
@@ -223,7 +223,7 @@ export const scarnRead: Clip = {
       trap: 'could は「クッド」、will は「ウィル」。「ウッド」と聞こえれば would。',
       use: 'Would you like a window seat?（窓側の席はいかがですか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'luggage', ctx: true, seg: [112.1, 122.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'luggage', ctx: true, seg: [112.1, 122.85],
       stem: 'What did Samuel forget?',
       ja: 'サミュエルは何を忘れた？',
       choices: ['The luggage', 'The jet tickets', 'The cake'], a: 0,
@@ -235,7 +235,7 @@ export const scarnRead: Clip = {
       trap: '直前に private jet（自家用ジェット）と聞こえるので、チケットと考えがち。',
       use: 'I left my luggage at the hotel.（ホテルに荷物を置いてきた）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['original', 'leftover'], seg: [113.9, 149.3],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'turn', reveals: ['original', 'leftover'], seg: [122.85, 149.3],
       stem: 'What do they find out about the script?',
       ja: '脚本について、みんなは何に気づく？',
       choices: ['The idiot was named Dwight', 'The hero was a bad guy', 'Oscar wrote some of it'], a: 0,
@@ -283,9 +283,9 @@ export const scarnRead: Clip = {
       trap: '直前の Oops（しまった）から、謝っていると勘違いしやすい。打ち切りの短い文が3つ続く。',
       use: 'I’m done with this game.（このゲーム、もうやめた）' },
 
-    { id: 'm2', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['done'], seg: [150.6, 158.1],
-      stem: 'Why does Dwight say “Okay, you know what?”',
-      ja: 'ドワイトは、なぜ「Okay, you know what?」と言う？',
+    { id: 'm2', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['done'], seg: [150.6, 157.7],
+      stem: 'What does Dwight use “you know what?” for?',
+      ja: 'ドワイトは「you know what?」を何のために使っている？',
       choices: ['To bring up a big decision', 'To ask a real question', 'To tell a secret'], a: 0,
       choicesJa: ['大事な決断を言い出すため', '本当に質問するため', '秘密を話すため'],
       cue: 'つづりのあとの最初の一言',
@@ -317,7 +317,7 @@ export const scarnRead: Clip = {
       trap: 'speak（話す）から、声の大きさの話と思いやすい。for 〜 は「〜の代わりに」。',
       use: 'I can only speak for myself.（私個人の意見ですが）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'realshow', seg: [161.8, 171.6],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'realshow', seg: [162.1, 171.6],
       stem: 'Why does Dwight invite everyone outside?',
       ja: 'ドワイトはなぜみんなを外に誘う？',
       choices: ['To stop the reading', 'To celebrate the end', 'To read outside'], a: 0,

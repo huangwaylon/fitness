@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 1, new 1, ctx 4, tx 6
+// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 1, new 1, ctx 4, tx 6, qa 17
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 3, new 0
 // “Joey Teaches Acting | Friends” (the official Friends channel, Best of Season 3): Joey opens a soap-opera acting
 // class, explains "reacting", tells some students they'll need to be better-looking, and shares his tricks for crying,
@@ -16,7 +16,7 @@ export const joeyTeachesActing: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'mister', seg: [5.7, 14.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'mister', seg: [5.7, 12.3],
       stem: 'What does Joey tell the class to call him?',
       ja: 'ジョーイは生徒に、自分を何と呼ばせる？',
       choices: ['Mr. Tribbiani', 'Joey', 'Dr. Drake Ramoray'], a: 0,
@@ -28,7 +28,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'Dr. Drake Ramoray はドラマでの役の名前。I am のあとを聞く。',
       use: 'Hello, I’m Ms. Tanaka, your teacher.（こんにちは、担任の田中です）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'class', seg: [5.7, 22.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'class', reveals: ['mister', 'firstday'], seg: [5.7, 22.5],
       stem: 'What is Joey doing in this scene?',
       ja: 'このシーンでジョーイは何をしている？',
       choices: ['Teaching soap opera acting', 'Teaching acting for the stage', 'Acting in a soap opera'], a: 0,
@@ -40,7 +40,7 @@ export const joeyTeachesActing: Clip = {
       trap: 'Days of Our Lives（出演中のドラマ）の名前も出るので、出演中だと思いやすい。I will be teaching が答え。',
       use: 'I’ll be teaching English this term.（今学期は英語を教えます）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [15.8, 32.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'firstday', seg: [15.8, 31.7],
       stem: 'When did Joey learn the lesson he shares?',
       ja: 'ジョーイが話す教えは、いつ学んだもの？',
       choices: ['His first day as Dr. Drake', 'His very first acting class', 'His last day as Dr. Drake'], a: 0,
@@ -73,11 +73,11 @@ export const joeyTeachesActing: Clip = {
       trap: '辞書どおりの強勢を予想しやすい。強さの位置で意味が変わる。直後の打ち消しが手がかり。',
       use: 'It’s RE-cover, as in cover again.（「もう一度覆う」の re-cover だよ）', retired: true },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'reacting', ctx: true, seg: [31.7, 39.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'reacting', ctx: true, seg: [31.7, 39.5],
       stem: 'What does “reacting” mean, Joey says?',
       ja: 'ジョーイによると「reacting」とはどういう意味？',
-      choices: ['Answering others’ lines', 'Saying your very own line', 'Acting a scene again'], a: 0,
-      choicesJa: ['ほかの人のセリフに反応する', '自分のセリフを言う', '同じ場面をもう一度演じる'],
+      choices: ['Making a face at others’ lines', 'Saying your very own line', 'Acting a scene again'], a: 0,
+      choicesJa: ['ほかの人のセリフに顔で反応する', '自分のセリフを言う', '同じ場面をもう一度演じる'],
       cue: '「It means」のあと。',
       line: 'This does not mean acting again. / *It means you don’t have a line, but someone else just did*.',
       said: '「もう一度演じる、ではない。自分にセリフがなくて、ほかの人が言ったとき」と説明する。',
@@ -117,11 +117,11 @@ export const joeyTeachesActing: Clip = {
       trap: 'are を聞き落として going to から書きやすい。弱い be動詞も一語に数える。',
       use: 'We’re going to have to wait.（待つしかなさそうだ）', retired: true },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'moving', reveals: ['attractive'], ctx: true, seg: [53.0, 60.5],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'moving', reveals: ['attractive'], ctx: true, seg: [53.3, 60.5],
       stem: 'What does Joey do right after the remark about looks?',
       ja: '見た目の話のすぐあと、ジョーイはどうする？',
-      choices: ['Goes on to the next point', 'Says sorry to the class', 'Asks if they have questions'], a: 0,
-      choicesJa: ['次の話に進む', '生徒に謝る', '質問はあるか聞く'],
+      choices: ['Quickly changes the subject', 'Says sorry to the class', 'Asks if they have questions'], a: 0,
+      choicesJa: ['さっと話を変える', '生徒に謝る', '質問はあるか聞く'],
       cue: '「All right」のあと。',
       line: 'some of you are going to have to become much more attractive. / All right, *moving right along*.',
       said: '「何人かはもっと見た目をよくしないと」と言い、「はい、では次へ」と進む。',
@@ -129,7 +129,7 @@ export const joeyTeachesActing: Clip = {
       trap: '失礼なことを言ったので、謝ると考えがち。返事を待たずに次へ進む。',
       use: 'Okay, moving right along…（はい、では次に…）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'tips', reveals: ['tweezers', 'evil'], seg: [57.5, 87.6],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'tips', reveals: ['tweezers', 'evil', 'pain', 'hole', 'basic'], seg: [59.2, 87.6],
       stem: 'What are Joey’s acting tips like?',
       ja: 'ジョーイの演技のコツはどんなもの？',
       choices: ['Simple tricks to make a face', 'Remembering real feelings', 'Staying calm on camera'], a: 0,
@@ -153,7 +153,7 @@ export const joeyTeachesActing: Clip = {
       trap: '演技の授業なので「悲しいことを考える」と思いやすい。pulling で、体を使う方法だと分かる。',
       use: 'Just start typing, and it’ll come.（とにかく書き始めれば出てくるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [64.1, 72.1],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hole', seg: [65.2, 70.0],
       stem: 'Type what he says: “I ___ my pocket.” (4 words)', answer: 'cut a hole in',
       ja: '「I」と「my pocket」の間の4語を書こう。',
       cue: '「have to cry」のあと。',
@@ -163,12 +163,12 @@ export const joeyTeachesActing: Clip = {
       trap: 'cut a が1語に聞こえ、a を落としやすい。小さな a も1語として書く。',
       use: 'I cut a hole in the box.（箱に穴を開けた）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [68.0, 74.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'tweezers', reveals: ['hole'], seg: [69.7, 72.55],
       stem: 'What does Joey use when a scene needs him to cry?',
       ja: '泣く場面で、ジョーイは何を使う？',
       choices: ['A pair of tweezers', 'A pair of scissors', 'A slice of onion'], a: 0,
       choicesJa: ['ピンセット', 'はさみ', '玉ねぎ1切れ'],
-      cue: '「cut a hole」のあと。',
+      cue: '「my pocket」のすぐあと。',
       line: 'I cut a hole in my pocket, take *a pair of tweezers*',
       said: '「泣く場面では、ポケットに穴を開けて、ピンセットを使う」と言う。',
       mean: 'tweezers ＝ ピンセット・毛抜き。2本で1組の道具は a pair of と数える。',
@@ -198,7 +198,7 @@ export const joeyTeachesActing: Clip = {
       trap: '本人が「定番」と言うので本当の技に聞こえるが、言い方の大げささが笑いの中心。',
       use: 'You look like you just won the lottery.（宝くじ当たったみたいな顔してる）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'basic', seg: [80.4, 89.2],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'basic', seg: [83.4, 89.2],
       stem: 'What does “your basic” mean here?',
       ja: 'ここでの「your basic」の意味は？',
       choices: ['The usual, standard', 'Yours and nobody else’s', 'For beginners only'], a: 0,
@@ -234,18 +234,6 @@ export const joeyTeachesActing: Clip = {
       trap: '計算は笑いをこらえるのにも使えるが、ここは bad news（悪い知らせ）の顔の作り方。',
       use: 'Try to look worried.（困った顔をしてみて）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'divide', seg: [92.7, 100.9], keep: true,
-      stem: 'What sum does Joey do in his head for bad news?',
-      ja: '悪い知らせの顔のために、ジョーイは頭の中で何を計算する？',
-      choices: ['222 divided by 13', '222 divided by 30', '232 divided by 13', '232 divided by 30'], a: 2,
-      choicesJa: ['222を13で割る', '222を30で割る', '232を13で割る', '232を30で割る'],
-      cue: '「divide」のあと。',
-      line: 'all I do there is try and divide *232 by 13*.',
-      said: '「悪い知らせの顔は、232を13で割ろうとするだけ」と言う。',
-      mean: 'two thirty-two ＝ 232。区切って言う読み方。divide A by B ＝ A を B で割る。',
-      trap: '222 なら「トゥエンティ」、232 は「サーティ」。13 は「サーティーン」と最後をのばす。30 は「サーティ」と短い。',
-      use: 'What’s twenty percent of sixty?（60の20%っていくつ？）' },
-
     // retired (R4): a vague mood item; four starts in 10 s here
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'allido', reveals: ['divide'], seg: [92.7, 100.9], retired: true,
       stem: 'How does Joey talk about this trick?',
@@ -258,5 +246,17 @@ export const joeyTeachesActing: Clip = {
       mean: 'all I do is 〜 ＝ 〜するだけ。簡単さを強く言い、得意げに種明かしをしている。',
       trap: '裏ワザを明かすので、照れや苦労話に聞こえやすい。all I do は「これだけ」の合図。',
       use: 'All I do is add a little salt.（塩を少し足すだけ）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'divide', seg: [94.85, 100.9], keep: true,
+      stem: 'What sum does Joey do in his head for bad news?',
+      ja: '悪い知らせの顔のために、ジョーイは頭の中で何を計算する？',
+      choices: ['222 divided by 13', '222 divided by 30', '232 divided by 13', '232 divided by 30'], a: 2,
+      choicesJa: ['222を13で割る', '222を30で割る', '232を13で割る', '232を30で割る'],
+      cue: '「divide」のあと。',
+      line: 'all I do there is try and divide *232 by 13*.',
+      said: '「悪い知らせの顔は、232を13で割ろうとするだけ」と言う。',
+      mean: 'two thirty-two ＝ 232。区切って言う読み方。divide A by B ＝ A を B で割る。',
+      trap: '222 なら「トゥエンティ」、232 は「サーティ」。13 は「サーティーン」と最後をのばす。30 は「サーティ」と短い。',
+      use: 'What’s twenty percent of sixty?（60の20%っていくつ？）' },
   ]
 };
