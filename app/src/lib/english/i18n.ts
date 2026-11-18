@@ -21,7 +21,7 @@ const S = {
   prShow: { ja: '意味を見る', en: 'Show the meaning' },
   prHear: { ja: 'この場面を聞く', en: 'Hear this moment' },
   prKept: { ja: '覚えた', en: 'Got it' },
-  prAgain: { ja: 'もう一回', en: 'Once more' },
+  prAgain: { ja: 'もう一度', en: 'Once more' },
   // the tabs, フレーズ (deck.ts, Phrases.svelte)
   tabs: { ja: 'ページ', en: 'Pages' },
   tabHome: { ja: 'ホーム', en: 'Home' },
@@ -198,10 +198,10 @@ const S = {
   bankOffline: { ja: 'オフラインのため質問を読み込めません。つながると読み込めます。', en: "You're offline: the questions load once you're back online." },
   retryBank: { ja: 'もう一度', en: 'Try again' },
   // ⚙
-  hard: { ja: 'むずかしめの質問を増やす', en: 'More harder questions' },
+  hard: { ja: '難しめの質問を増やす', en: 'More harder questions' },
   // (two short lines, broken where it reads: Safari wraps Japanese anywhere, mid-word at 393 pt)
   hardNote: { ja: 'ネイティブ級のニュアンスの質問が\n1回目から出ます', en: 'Questions on the nuances native speakers hear, from the first play' },
-  hardTag: { ja: 'むずかしめ', en: 'Harder' },
+  hardTag: { ja: '難しめ', en: 'Harder' },
   // flags
   flag: { ja: '報告', en: 'Report' },
   flagHead: { ja: 'どこが気になりましたか？', en: 'What looks off?' },

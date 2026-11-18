@@ -31,7 +31,7 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
   A play's ids are kept with its place; choices are shuffled per player unless `keep`.
 - **The native tier (C2):** 0 or 2–4 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
   dict, notes 90–140 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) ships `retired` until
-  its ear check (an A2-reviewed bank: 0–2). The draw takes none unless `{ harder: true }` (the ⚙ むずかしめ opt-in),
+  its ear check (an A2-reviewed bank: 0–2). The draw takes none unless `{ harder: true }` (the ⚙ 難しめ opt-in),
   then ≤ 1 a play, one while one is unseen.
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
@@ -64,7 +64,7 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
 
 One sheet: two tabs, **ホーム · フレーズ** (the kit's TabBar, on those two only; each opening on ホーム), and the levels
 pushed over them, with no tab bar: the library, a clip's lesson (‹ back to where it was opened) and ⚙
-(むずかしめの質問を増やす, 報告した内容).
+(難しめの質問を増やす, 報告した内容).
 
 **Back (2026-11-17), as 設定's levels:** every pushed level has ‹ at the NavBar's top left and goes back exactly one
 level: ⚙, the library → home; a 場面 → the library; a lesson → where it was opened (home, the library with its chip, or
@@ -92,8 +92,8 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   situation is reachable one way only (never a chip as well): one row of pills at a time. Not courses: no order,
   nothing locked. Thumbnails are YouTube's stills from i.ytimg.com (CSP img-src,
   no referrer); offline or gone, a paper tile with the show's name.
-- **むずかしめの質問を増やす** (off by default, this phone's) lets the native tier into the draw (≤ 1 a play; never without it); a C2 item's card
-  carries a むずかしめ tag. Nothing is locked either way.
+- **難しめの質問を増やす** (off by default, this phone's) lets the native tier into the draw (≤ 1 a play; never without it); a C2 item's card
+  carries a 難しめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
@@ -131,7 +131,7 @@ then every 30 days after it was last met in a play, saved or shown here. At most
 before first (the longest overdue first), then the never shown (the latest met first), one per English phrase.
 
 - One at a time: the English, 意味を見る → its Japanese, the clip's line (key words underlined) and the clip's player,
-  この場面を聞く playing the question's segment; then もう一回 (tomorrow again) or 覚えた (a step on). These only space
+  この場面を聞く playing the question's segment; then もう一度 (tomorrow again) or 覚えた (a step on). These only space
   it: never a score, a percentage, red or ×. 今日はスキップ ends today's (the steps as they were).
 - Kept per player on this phone (`island.english.phrases`). Banks it needs are fetched (at most 4); one that doesn't
   load is passed over, and the card never holds up today's clip. Counted: `act:english.phrase.<show | kept | again | skip>`.

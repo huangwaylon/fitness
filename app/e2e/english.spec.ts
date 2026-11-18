@@ -849,7 +849,7 @@ test('a bank that doesn’t load: the player and the watch card all the same, �
   await expect(cardAt(page, 0)).toHaveAttribute('data-result', 'open');
 });
 
-test('別の動画にする: the next clip, and the one passed over stays skipped (today’s card after a reload); ⚙ むずかしめ kept on this phone', async ({ page }) => {
+test('別の動画にする: the next clip, and the one passed over stays skipped (today’s card after a reload); ⚙ 難しめ kept on this phone', async ({ page }) => {
   await fakeYoutube(page);
   await open(page);
   const today = sheet(page).locator('[data-en-today]');
@@ -868,7 +868,7 @@ test('別の動画にする: the next clip, and the one passed over stays skippe
   await expect(sheet(page).locator('[data-en-hard]')).toHaveAttribute('aria-checked', 'true');
 });
 
-test('フレーズの復習: yesterday’s phrases above today’s clip, the Japanese and the clip’s line on a tap, its segment played; 覚えた / もう一回 only space them; 今日はスキップ for today', async ({ page }) => {
+test('フレーズの復習: yesterday’s phrases above today’s clip, the Japanese and the clip’s line on a tap, its segment played; 覚えた / もう一度 only space them; 今日はスキップ for today', async ({ page }) => {
   await fakeYoutube(page);
   // yesterday's finished play of waitress, two choice questions with phrases met (the pinned day is 2026-11-04)
   const qs = waitress.questions.filter((q) => !q.retired && q.line && q.use && q.a !== undefined).slice(0, 2); // choice items: the seeded answers are [id, 1, a, 0]

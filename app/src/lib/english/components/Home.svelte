@@ -6,7 +6,7 @@
   // days: prefs.ts), its thumbnail, one meta line and
   // the one button (始める, 続きから, もう一度（新しい質問）). 今週 (WeekProgress). ライブラリ: at most five rows (a play left
   // part-way, a finished clip offered again at most once a week (progress.ts reviewOf), the next clips in order, すべて見る ›
-  // the library level). ⚙: むずかしめ and 報告した内容. After 7+ days away, once: おかえりなさい. Today's bank (and the
+  // the library level). ⚙: 難しめ and 報告した内容. After 7+ days away, once: おかえりなさい. Today's bank (and the
   // part-way and offered ones') is fetched ahead while idle.
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';

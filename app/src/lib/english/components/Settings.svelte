@@ -1,5 +1,5 @@
 <script lang="ts">
-  // English Study's ⚙ (docs/english.md "Flags"): むずかしめの質問を増やす (this phone's: the native tier from a first
+  // English Study's ⚙ (docs/english.md "Flags"): 難しめの質問を増やす (this phone's: the native tier from a first
   // play, prefs.ts), then 報告した内容, every flag on the island (everyone's: it's shared content), newest first, 確認待ち
   // or the review's outcome and note.
   import NavBar from '#lib/components/ui/NavBar.svelte';
