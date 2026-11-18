@@ -1,10 +1,10 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 0, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 2, new 0, ctx 4, tx 8, qa 18
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 2, new 1
 // “Parks and Recreation | Pilot (Episode Highlight)” (the official Parks and Recreation channel, Season 1): Tom dodges a
 // gift rule on the phone, then he and Leslie brainstorm how to get her park built, and land on bringing in Mark.
 // Segments from the captions, words from whisper (2026-11-16; its times are rounded to 2 s). Talk ends at ≈ 114 s;
 // whisper's repeated "He's a smart, capable guy" after that is a hallucination.
-// EXCLUDE 37.1–43.0: "I think he's a Libyan" and "I'm what you might call a redneck" (the joke turns on ethnicity).
+// EXCLUDE 37.1–43.55: "I think he's a Libyan" and "I'm what you might call a redneck" (the joke turns on ethnicity).
 // EAR CHECK: 99–114 s, who describes Mark (Leslie in the old notes; the ja had male speech), so items name no speaker.
 import type { Clip } from '../types.ts';
 
@@ -14,7 +14,7 @@ export const parkspilot: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'suits', reveals: ['amount'], seg: [0, 15.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'suits', reveals: ['amount', 'em'], seg: [0, 15.0],
       stem: 'Why does Tom want the suits given to his wife?',
       ja: 'トムはなぜスーツを妻に渡してほしい？',
       choices: ['So the gift isn’t reported', 'So she can try them on', 'So they go to his home'], a: 0,
@@ -26,7 +26,7 @@ export const parkspilot: Clip = {
       trap: 'fit（サイズが合う）が聞こえるので試着の話と思いやすい。problem is が理由。',
       use: 'The problem is, it’s over the limit.（問題は、上限を超えてることで）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', reveals: ['suits'], seg: [1.6, 6.6],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', reveals: ['suits'], seg: [2.4, 6.5],
       stem: 'Anything over what amount “has a report”?',
       ja: 'いくらを超えると「報告がいる」？',
       choices: ['$20', '$25', '$35', '$250'], a: 1, keep: true,
@@ -48,7 +48,7 @@ export const parkspilot: Clip = {
       trap: 'it なら「ギヴィッ」と詰まる。him は「ギヴィム」、’em は「ギヴェム」と「エ」の音。',
       use: 'Just leave ’em by the door.（ドアのところに置いといて）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'saturday', seg: [15, 25],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'saturday', seg: [15, 24.8],
       stem: 'Where will Tom see the mayor on Saturday?',
       ja: '土曜日、トムはどこで市長に会う？',
       choices: ['At a Frisbee game', 'At a golf game', 'At a football game'], a: 0,
@@ -72,8 +72,8 @@ export const parkspilot: Clip = {
       use: 'We were just chatting about work.（仕事の話をちょっとしてただけ）' },
 
     { id: 'i3', skill: 'infer', level: 'B2', point: 'outsiders', seg: [30.8, 37.0],
-      stem: 'Why do Leslie and Tom work well together, she says?',
-      ja: 'レスリーによると、二人はなぜ相性がいい？',
+      stem: 'Why does Leslie say she and Tom work well together?',
+      ja: 'レスリーは、なぜトムと息が合うと言う？',
       choices: ['They’re not typical officials', 'They both love working outside', 'They both grew up here'], a: 0,
       choicesJa: ['二人ともふつうの役人とは違う', '二人とも外で働くのが好き', '二人ともここで育った'],
       cue: '「work really well」のあと。', line: 'We’re both *outsiders*. I’m a woman, he’s a…',
@@ -82,7 +82,7 @@ export const parkspilot: Clip = {
       trap: 'outside から「屋外」を連想しやすい。続く I’m a woman がヒント。',
       use: 'We both feel like outsiders here.（二人ともここではよそ者みたい）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'priority', ctx: true, seg: [43.3, 53.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'priority', ctx: true, seg: [43.7, 51.15],
       stem: 'Why does Leslie say no to the city council idea?',
       ja: 'レスリーはなぜ市議会に行く案を断る？',
       choices: ['Parks aren’t important to it', 'It has no money left', 'She asked it once before'], a: 0,
@@ -94,7 +94,7 @@ export const parkspilot: Clip = {
       trap: '直前の money が耳に残り「お金がない」と考えがち。No のあとの理由を聞く。',
       use: 'It’s not really a priority right now.（今はあまり優先じゃない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'park', seg: [43.47, 66.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'park', reveals: ['priority', 'firepower', 'couldwork'], seg: [43.7, 61.0],
       stem: 'What are Leslie and Tom trying to do?',
       ja: 'レスリーとトムは何をしようとしている？',
       choices: ['Find how to build a park', 'Plan a game with the mayor', 'Write a book together'], a: 0,
@@ -106,7 +106,7 @@ export const parkspilot: Clip = {
       trap: '前半で市長との試合の話が出るので迷いやすい。brainstorm のあとの質問が中心。',
       use: 'How do we make this happen?（どうやって実現する？）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'firepower', seg: [46.4, 55.3],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'firepower', seg: [51.1, 54.3],
       stem: 'What does Leslie mean by “bigger guns”?',
       ja: 'レスリーの「bigger guns」はどういう意味？',
       choices: ['More powerful people to help', 'A tougher way to argue', 'A bigger protest outside'], a: 0,
@@ -128,7 +128,7 @@ export const parkspilot: Clip = {
       trap: 'right を「正しい」と思うと自慢に聞こえる。上がり調子なら相手への確認。',
       use: 'Let’s leave at eight, right?（8時に出よう、いいよね？）' },
 
-    { id: 'ph6', skill: 'phrase', level: 'B1', point: 'couldwork', ctx: true, seg: [53.9, 61.3],
+    { id: 'ph6', skill: 'phrase', level: 'B1', point: 'couldwork', ctx: true, seg: [54.1, 61.0],
       stem: 'What does Tom think of Leslie’s committee idea?',
       ja: 'レスリーの委員会の案を、トムはどう思う？',
       choices: ['It may be a good idea', 'It is too much work', 'It will never work'], a: 0,
@@ -151,7 +151,7 @@ export const parkspilot: Clip = {
       trap: 'That’s really good から、トムをほめたと思いやすい。だれの言葉か聞く。',
       use: 'Ooh, that’s good. Write that down.（お、いいね。メモしといて）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'memoirs', reveals: ['proud'], seg: [67.1, 75.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'memoirs', reveals: ['proud'], seg: [67.1, 73.4],
       stem: 'Who writes down Leslie’s sayings?',
       ja: 'レスリーの言葉を書き留めるのはだれ？',
       choices: ['Tom does', 'Leslie does', 'A writer does'], a: 0,
@@ -172,7 +172,7 @@ export const parkspilot: Clip = {
       trap: 'メモの出来が悪いだけなら笑いは小さい。元の lifeblood と blood を聞き比べる。',
       use: 'That’s not quite what I said.（そうは言ってないんだけど）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'readback', seg: [74.6, 79.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'readback', seg: [76.6, 79.6],
       stem: 'Type what Leslie says: “Okay, ___.” (5 words)', answer: 'read it back to me',
       ja: 'レスリーの言葉を書こう：「Okay, ___.」（5語）',
       cue: '「Okay,」のあと。', line: 'Okay, *read it back to me*.',
@@ -181,11 +181,11 @@ export const parkspilot: Clip = {
       trap: 'read it がつながって「リーディッ」、to me も弱い。5語あると思って聞く。',
       use: 'Could you read that back to me?（復唱してもらえますか）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'still', ctx: true, seg: [79.5, 92.0],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'still', ctx: true, seg: [79.5, 90.9],
       stem: 'What does Leslie decide about the quote?',
       ja: 'レスリーは読み上げられた言葉をどう思うことにする？',
-      choices: ['She likes it anyway', 'It must be changed', 'It’s Tom’s fault'], a: 0,
-      choicesJa: ['それでも気に入っている', '直さないとだめ', 'トムのせい'],
+      choices: ['She likes it anyway', 'She wants it changed', 'She blames Tom'], a: 0,
+      choicesJa: ['それでも気に入っている', '直してほしい', 'トムのせいにする'],
       cue: '「Hmm.」のあとの二文目。',
       line: 'Tom: Um, committees *cover our democracy with blood*. / Leslie: Hmm. Sounded better when I said it. *Still good, though.*',
       said: 'メモは「委員会は民主主義を血で覆う」。「言ったときのほうがよかった。でも、やっぱりいい」。',
@@ -193,11 +193,11 @@ export const parkspilot: Clip = {
       trap: '前半だけだと、直してほしいと勘違いしやすい。最後の though で気持ちが決まる。',
       use: 'Not perfect, but still good, though.（完璧じゃないけど、まあいい）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['onboard', 'fixer'], seg: [89.7, 114.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['onboard', 'fixer', 'planner'], seg: [90.6, 114.3],
       stem: 'How does the brainstorm end?',
       ja: 'アイデア出しはどう終わる？',
-      choices: ['A plan to bring in Mark', 'A plan to ask the council', 'A plan to call the mayor'], a: 0,
-      choicesJa: ['マークを仲間にする案', '議会に頼む案', '市長に電話する案'],
+      choices: ['A plan to get Mark’s help', 'A plan to ask the council', 'A plan to call the mayor'], a: 0,
+      choicesJa: ['マークに手伝ってもらう案', '議会に頼む案', '市長に電話する案'],
       cue: '「I have an idea」のあと。',
       line: 'Okay, I have an idea. *What about bringing Mark on board?*',
       said: 'トムがマークを加える案を出し、そのあとマークがどんな人かが語られる。',
@@ -216,7 +216,7 @@ export const parkspilot: Clip = {
       trap: 'board を委員会と思いやすい。on board は「船に乗る」から「仲間入り」。',
       use: 'Let’s bring her on board.（彼女にも加わってもらおう）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'planner', seg: [100, 107],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'planner', seg: [100, 105.5],
       stem: 'What is Mark’s job?',
       ja: 'マークの仕事は？',
       choices: ['A city planner', 'A city lawyer', 'A city manager'], a: 0,
@@ -227,7 +227,7 @@ export const parkspilot: Clip = {
       trap: 'planner は lawyer や manager と終わりが似る。頭の音を聞く。',
       use: 'She’s more than just a coworker.（ただの同僚以上よ）' },
 
-    { id: 'i6', skill: 'infer', level: 'B2', point: 'fixer', seg: [102.8, 111.3],
+    { id: 'i6', skill: 'infer', level: 'B2', point: 'fixer', seg: [102.8, 111.2],
       stem: 'What kind of person is Mark, beyond his job?',
       ja: '仕事以外に、マークはどんな人？',
       choices: ['He gets problems solved', 'He fixes up old houses', 'He plans the town’s parks'], a: 0,

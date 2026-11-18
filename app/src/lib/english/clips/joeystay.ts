@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 14, retire 2, new 0, ctx 4, tx 2
+// R4 REVIEW 2026-11-18: keep 2, rewrite 14, retire 2, new 0, ctx 4, tx 2, qa 13
 // A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 4, new 2
 // “Joey Wants Rachel to Stay | Friends” (the official Friends channel, Best of Season 8): Rachel is looking for a new
 // place before the baby comes; Joey tries to talk her into staying, and they end up saying how much they'll miss it.
@@ -7,6 +7,7 @@
 // EAR CHECK: 71 s d4 — Joey says "I blame Ross for this", Rachel "I do, too" (assumed); 61–68 s speakers unsure, untested.
 // EAR CHECK: 0.1 s d1 — the first voice (male) is Joey and "Oh, yeah" is Rachel (assumed)
 // EAR CHECK: 10.5 s x1 — "kind of hoping": "kind of" shrinks to ≈ kinda
+// EAR CHECK: 26.6 s s1 — whisper “we could put it”, json3 “we can put it” (the gap is put it either way)
 // EAR CHECK: 78.6 s p4 — captions "I'm going to miss you", whisper "gonna" (p4 asks the meaning only)
 import type { Clip } from '../types.ts';
 
@@ -28,7 +29,7 @@ export const joeyStay: Clip = {
       trap: '引っ越すのはレイチェルなので、本人が言い出すと思いやすい。',
       use: 'I was talking to my boss, and…（上司と話してたんだけど…）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'where', ctx: true, seg: [0, 7.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'where', ctx: true, seg: [0, 9.7],
       stem: 'Where does Rachel hope to move?',
       ja: 'レイチェルはどこに引っ越したい？',
       choices: ['In with Ross', 'In the next building', 'Across the street'], a: 2,
@@ -63,7 +64,7 @@ export const joeyStay: Clip = {
       trap: 'stay だけ聞くと命令に聞こえやすい。kind of はやわらげる言葉。',
       use: 'I was kind of hoping to leave early.（ちょっと早めに帰れたらなと思って）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hoping', seg: [9.3, 13.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hoping', seg: [9.7, 13.0],
       stem: 'Type what Joey says: “I was ___ you’d stay.” (3 words)', answer: 'kind of hoping',
       ja: 'ジョーイの言葉を入力：「I was ___ you’d stay.」（3語）',
       cue: '「I was」のすぐあと',
@@ -85,7 +86,7 @@ export const joeyStay: Clip = {
       trap: 'room を「部屋」と思いやすい。no room for 〜 で「〜の入る場所がない」。',
       use: 'Is there room for one more?（もう1人入れますか）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'big', reveals: ['room'], ctx: true, seg: [13.5, 21.0],
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'big', reveals: ['room'], ctx: true, seg: [13.3, 21.0],
       stem: 'Why does Joey say the baby is “this big”?',
       ja: 'ジョーイはなぜ、赤ちゃんは「this big」だと言う？',
       choices: ['He thinks size is the problem', 'He believes the baby is huge', 'He is angry at Rachel'], a: 0,
@@ -97,7 +98,7 @@ export const joeyStay: Clip = {
       trap: 'big から「大きい」と考えがち。手で小ささを見せ、だから置けると言いたい。',
       use: 'The fish was, like, this big!（魚がこーんなに大きくて！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['put'], seg: [21.0, 44.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['put'], seg: [21.0, 37.5],
       stem: 'What is Joey trying to show Rachel?',
       ja: 'ジョーイはレイチェルに何を分からせようとしている？',
       choices: ['The baby could fit here', 'How to hold a baby', 'Where he will move to'], a: 0,
@@ -120,7 +121,7 @@ export const joeyStay: Clip = {
       trap: 'つながって that や push にも聞こえやすい。短い「イッ」で終わるか聞く。',
       use: 'Just put it over there.（そこに置いといて）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'matter', reveals: ['imean', 'put'], ctx: true, seg: [29.3, 41.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'matter', reveals: ['imean', 'put'], ctx: true, seg: [28.0, 42.95],
       stem: 'What is Rachel’s point about the baby?',
       ja: '赤ちゃんについて、レイチェルが言いたいことは？',
       choices: ['Where it goes isn’t the problem', 'She dislikes the spots he picks', 'She needs a bigger place'], a: 0,
@@ -132,7 +133,7 @@ export const joeyStay: Clip = {
       trap: 'where you put it だけ聞くと、場所の相談に聞こえやすい。not just が決め手。',
       use: 'It’s not just a matter of money.（お金だけの問題じゃない）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['matter', 'put'], seg: [36.8, 43.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['matter', 'put'], seg: [37.5, 42.95],
       stem: 'What does “I mean” do in Rachel’s line?',
       ja: 'レイチェルの「I mean」は何をしている？',
       choices: ['She explains more clearly', 'She says the opposite', 'She changes to a new topic'], a: 0,
@@ -156,7 +157,7 @@ export const joeyStay: Clip = {
       trap: 'changes everything から、お金の話を連想しやすい。They のあとの動詞 cry を聞く。',
       use: 'It rains all the time here.（ここはしょっちゅう雨が降る）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'challenge', seg: [49.5, 53.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'challenge', seg: [49.85, 53.9],
       stem: 'What does Joey mean by “I could use a challenge”?',
       ja: 'ジョーイの「I could use a challenge」はどういう意味？',
       choices: ['He’d like something harder', 'He can use the baby', 'He wants to argue with her more'], a: 0,
@@ -168,9 +169,9 @@ export const joeyStay: Clip = {
       trap: 'use から「赤ちゃんを使う」と考えがち。could use ＋ 物 は「ほしい」の決まった言い方。',
       use: 'I could use a coffee.（コーヒーが飲みたいな）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'sweet', seg: [53.5, 59.4],
-      stem: 'How does Rachel answer Joey’s idea?',
-      ja: 'レイチェルは、ジョーイの気持ちにどう答える？',
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'sweet', seg: [53.7, 59.4],
+      stem: 'How does Rachel reply when Joey wants her to stay?',
+      ja: '残ってほしいと言うジョーイに、レイチェルはどう答える？',
       choices: ['She thanks him, then says no', 'She says yes, for a while', 'She says she’ll think about it'], a: 0,
       choicesJa: ['お礼を言ってから断る', 'しばらくならいいと言う', '考えておくと言う'],
       cue: '「sweet」の文のあと',
@@ -191,7 +192,7 @@ export const joeyStay: Clip = {
       trap: '英語の so sweet は皮肉にも使うので迷いやすい。続く理由が相手思いなら本気。',
       use: 'Aw, that means a lot.（わあ、すごくうれしい）', retired: true },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'dothat', reveals: ['sweet'], seg: [55.5, 61.0],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'dothat', reveals: ['sweet'], seg: [53.7, 61.0],
       stem: 'What does Rachel mean by “I can’t do that to you”?',
       ja: '「I can’t do that to you」で、レイチェルは何が言いたい？',
       choices: ['Rules say she can’t stay', 'She’d make his life hard', 'She doesn’t like his place'], a: 1,
@@ -203,7 +204,7 @@ export const joeyStay: Clip = {
       trap: 'can’t から「決まりでだめ」と思いやすい。I mean のあとが理由。',
       use: 'I can’t do that to her.（彼女にそんなことできない）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'change', seg: [59.7, 71.2],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'change', seg: [59.9, 71.0],
       stem: 'How do they feel about living apart?',
       ja: '別々に住むことを、2人はどう感じている？',
       choices: ['Sad about it', 'Glad about it', 'Angry about it'], a: 0,
@@ -215,7 +216,7 @@ export const joeyStay: Clip = {
       trap: 'love（大好き）が聞こえるので、うれしいと思いやすい。続く wish を聞く。',
       use: 'I wish you didn’t have to go.（行かなくてすめばいいのに）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['miss', 'change'], seg: [64.0, 83.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['miss', 'change', 'blame'], seg: [63.75, 83.0],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Rachel is still moving out', 'Rachel will stay till the baby', 'Joey will move out too'], a: 0,
@@ -229,8 +230,8 @@ export const joeyStay: Clip = {
     { id: 'd4', skill: 'detail', level: 'B1', point: 'blame', ctx: true, seg: [70.5, 76.5],
       stem: 'How does Rachel answer “I blame Ross for this”?',
       ja: '「I blame Ross for this」に、レイチェルはどう答える？',
-      choices: ['She agrees, a little', 'She says it’s her fault', 'She takes Ross’s side'], a: 0,
-      choicesJa: ['少しそう思うと言う', '自分のせいだと言う', 'ロスをかばう'],
+      choices: ['She agrees with Joey', 'She says it’s her fault', 'She takes Ross’s side'], a: 0,
+      choicesJa: ['ジョーイに賛成する', '自分のせいだと言う', 'ロスをかばう'],
       cue: '「I do, too」のあと',
       line: 'Joey: You know, I *blame Ross* for this. / Rachel: *I do, too, a little bit*.',
       said: '「これはロスのせいだと思う」に「私も、ちょっとそう思う」と答える。',

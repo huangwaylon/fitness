@@ -1,11 +1,11 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 12, retire 4, new 1, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 2, rewrite 12, retire 4, new 1, ctx 3, tx 7, qa 17
 // A2 REVIEW 2026-11-17: keep 10, rewrite 6, retire 4, new 2
 // “If You Haven't Fallen In Love With Me By Then - The Office US” (the official The Office channel, BEST OF SEASON
 // 7): Dwight, acting manager, explains away his villain-style office, asks Jim to behave while Joe visits, can't fire
 // him, so "pre-fires" him; Jim tells the camera he never thought Dwight would keep the job.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈64.5 s (music after; whisper loops the
 // last line). Untested: 0–2.7 s (“Bond villain” rests on world knowledge), 58.3–61 s (captions “pretty premature”,
-// whisper “pre-premature”; f4 plays its tail only). Both sources agree on every key's words.
+// whisper “pre-premature”; f4 plays it as set-up only). Both sources agree on every key's words.
 import type { Clip } from '../types.ts';
 
 export const prefired: Clip = {
@@ -36,7 +36,7 @@ export const prefired: Clip = {
       trap: 'Joe の名前が出るので、ジョーの考えと思いやすい。ジョーは銃を集めている人。',
       use: 'There’s a reason for everything here.（ここの物には全部わけがある）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'gun', seg: [3.9, 11],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'gun', seg: [3.9, 9.1],
       stem: 'Why is the old gun in Dwight’s office?',
       ja: '古い銃はなぜドワイトの部屋にある？',
       choices: ['To chat with Joe about it', 'To give Joe as a gift', 'To show his own collection'], a: 0,
@@ -47,7 +47,7 @@ export const prefired: Clip = {
       trap: 'Joe collects から「ジョーにあげる」と考えがち。about it（それについて）まで聞く。',
       use: 'He’s good at small talk.（彼は世間話がうまい）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'rescue', seg: [6.8, 11.8],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'rescue', seg: [9.1, 11.7],
       stem: 'What does “the piranha’s a rescue” mean?',
       ja: '「the piranha’s a rescue」はどういう意味？',
       choices: ['He gave it a new home', 'It saves the other fish', 'He saved it from being eaten'], a: 0,
@@ -58,7 +58,7 @@ export const prefired: Clip = {
       trap: 'rescue（救助）から、魚が助ける役目と勘違いしやすい。a rescue は「保護された動物」。',
       use: 'Our dog is a rescue.（うちの犬は保護犬なの）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'desk', seg: [10.7, 18.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'desk', seg: [10.7, 16.55],
       stem: 'What does Dwight say about his desk?',
       ja: 'ドワイトは机について何と言う？',
       choices: ['It copies one in a photo', 'It is a famous man’s desk', 'It was a gift from Joe'], a: 0,
@@ -69,7 +69,7 @@ export const prefired: Clip = {
       trap: '有名人の名前が出るので本物と思いやすい。replica と picture が手がかり。',
       use: 'It’s just a replica, not the real thing.（ただの複製で、本物じゃない）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'business', seg: [15.1, 20.5],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'business', seg: [16.55, 20.2],
       stem: 'What does “Let’s get right down to business” mean?',
       ja: '「Let’s get right down to business」はどういう意味？',
       choices: ['Let’s talk about the main point', 'Let’s go back to work now', 'Let’s start a new company'], a: 0,
@@ -80,7 +80,7 @@ export const prefired: Clip = {
       trap: 'business から「仕事」や「会社」を連想しやすい。ここは「用件」の意味。',
       use: 'Okay, let’s get down to business.（じゃあ、本題に入りましょう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'joe', seg: [16.1, 23], retired: true,
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'joe', seg: [16.6, 23], retired: true,
       stem: 'When is Joe coming to the office?',
       ja: 'ジョーはいつ会社に来る？',
       choices: ['Later today', 'Tomorrow', 'This weekend'], a: 0,
@@ -91,7 +91,7 @@ export const prefired: Clip = {
       trap: 'later だけ聞くと「そのうち」に聞こえやすい。後ろの today まで聞く。',
       use: 'I’ll call you later today.（今日このあと電話するね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'stupid', seg: [18.7, 25.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'stupid', seg: [19.0, 22.7],
       stem: 'Type the end: “a subordinate trying to ___.” (4 words)', answer: 'make me look stupid',
       ja: '「a subordinate trying to ___.」の空所を書こう（4語）',
       cue: 'subordinate のあと。', line: 'I cannot have a subordinate trying to *make me look stupid*.',
@@ -100,7 +100,7 @@ export const prefired: Clip = {
       trap: 'make me が「メイクミ」とひと続きで、look も短い。最後の stupid だけ強い。',
       use: 'Don’t make me look bad.（私の顔をつぶさないで）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'best', seg: [20, 25.3],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'best', seg: [22.68, 25.25],
       stem: 'What does “on your best behavior” mean?',
       ja: '「on your best behavior」はどういう意味？',
       choices: ['Be good, cause no trouble', 'Work as hard as you can', 'Act like my close friend'], a: 0,
@@ -111,7 +111,7 @@ export const prefired: Clip = {
       trap: 'best から「全力で働く」と思いやすい。behavior（ふるまい）が付くと態度の話。',
       use: 'Be on your best behavior at Grandma’s.（おばあちゃんちではいい子にね）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'worst', seg: [22.2, 31.5], retired: true,
+    { id: 's2', skill: 'sound', level: 'B2', point: 'worst', seg: [22.68, 31.5], retired: true,
       stem: 'Fill the gap: “I promised other people that ___ be on my…”',
       ja: '「I promised other people that ___ be on my…」の空所は？',
       choices: ['I’d', 'I’ll', 'I can'], a: 0,
@@ -122,7 +122,7 @@ export const prefired: Clip = {
       trap: 'I’ll なら「アイル」と「ル」が残る。I can なら「キャン」が聞こえる。短い「アイ(ド)」なら I’d。',
       use: 'I said I’d be there by six.（6時までに行くって言ったよ）' },
 
-    { id: 'h1', skill: 'humor', level: 'B2', point: 'worst', reveals: ['best'], seg: [22.2, 31.5], retired: true,
+    { id: 'h1', skill: 'humor', level: 'B2', point: 'worst', reveals: ['best'], seg: [22.68, 31.5], retired: true,
       stem: 'Why is Jim’s answer funny?',
       ja: 'ジムの答えはなぜおかしい？',
       choices: ['He says “worst”, not “best”', 'He promises the very same thing', 'He asks for the day off'], a: 0,
@@ -133,7 +133,7 @@ export const prefired: Clip = {
       trap: '同じ形の文なので、同じ約束に聞こえやすい。変わった一語を聞く。',
       use: 'That’s the worst idea ever.（それ、最悪の考えだね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'behave', reveals: ['best', 'worst'], seg: [22.5, 37.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'behave', reveals: ['best', 'worst', 'acting'], seg: [22.68, 37.7],
       stem: 'What does Jim say to Dwight’s request?',
       ja: 'ドワイトの頼みに、ジムは何と言う？',
       choices: ['He won’t promise to behave', 'He promises to be good', 'He asks to meet Joe'], a: 0,
@@ -155,7 +155,7 @@ export const prefired: Clip = {
       trap: '語尾が消えるので迷っていると思いやすい。so で止めたら、結論は言わなくても分かる。',
       use: 'I already have plans, so…（もう予定があって、だから…）' },
 
-    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'makeme', seg: [29.2, 37.5],
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'makeme', seg: [29.2, 33.45],
       stem: 'What does “Don’t make me fire you” mean?',
       ja: '「Don’t make me fire you」はどういう意味？',
       choices: ['Behave, or I will fire you', 'Please don’t ever fire me', 'I don’t want to fire anyone'], a: 0,
@@ -167,8 +167,8 @@ export const prefired: Clip = {
       use: 'Don’t make me say it again.（二度も言わせないでね）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'acting', ctx: true, seg: [30.9, 37.5],
-      stem: 'Why can’t Dwight fire Jim, says Jim?',
-      ja: 'ジムによると、ドワイトはなぜジムをクビにできない？',
+      stem: 'Why does Jim say Dwight can’t fire him?',
+      ja: 'ジムは、なぜドワイトには自分をクビにできないと言う？',
       choices: ['He is just a temporary boss', 'Only Joe can fire people', 'Jim has already quit the job'], a: 0,
       choicesJa: ['ドワイトは一時的な代理だ', 'クビにできるのはジョーだけ', 'ジムはもう辞めている'],
       cue: 'You’re のあと。', line: 'Dwight: Don’t make me fire you. / Jim: You can’t fire me. You’re *acting manager*, not office manager…',
@@ -177,7 +177,7 @@ export const prefired: Clip = {
       trap: 'acting から「演技」を思いやすい。役職名の前の acting は「代理」。',
       use: 'She’s the acting manager this month.（今月は彼女がマネージャー代理です）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'dare', ctx: true, seg: [36.5, 42.5],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'dare', ctx: true, seg: [37.0, 43.5],
       stem: 'What does Jim mean by “You wouldn’t dare”?',
       ja: 'ジムの「You wouldn’t dare」はどういう意味？',
       choices: ['You’re too scared to do it', 'You would really like it', 'You did it already'], a: 0,
@@ -219,7 +219,7 @@ export const prefired: Clip = {
       trap: '「いつも言う」が自分の話に聞こえやすい。相手の言葉をまねて大げさにしたら、的は相手。',
       use: 'Oh, I’m super-duper sure.（ええ、超絶確かですとも）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'ifpromo', reveals: ['prequit'], ctx: true, seg: [43.0, 51.0],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'ifpromo', reveals: ['prequit'], ctx: true, seg: [43.0, 49.85],
       stem: 'What does Jim think about Dwight’s promotion?',
       ja: 'ドワイトの昇進について、ジムはどう思っている？',
       choices: ['It may never happen', 'It will happen soon', 'He should get it instead'], a: 0,
@@ -240,9 +240,9 @@ export const prefired: Clip = {
       trap: '恋の話を文字どおりに取ると告白に聞こえる。ありえない条件は、からかいの合図。',
       use: 'Sure, when pigs fly.（はいはい、そのうちね）' },
 
-    { id: 'i2', skill: 'detail', level: 'B2', point: 'prequit', reveals: ['ifpromo'], seg: [52.5, 59.0],
-      stem: 'What would Jim have done if he believed it?',
-      ja: '本当にそう思っていたら、ジムはどうしていた？',
+    { id: 'i2', skill: 'detail', level: 'B2', point: 'prequit', reveals: ['ifpromo'], seg: [52.6, 58.25],
+      stem: 'What would Jim have done if Dwight stayed manager?',
+      ja: 'ドワイトがずっと支店長なら、ジムはどうしていた？',
       choices: ['Quit his job first', 'Asked Joe for help', 'Tried harder to please Dwight'], a: 0,
       choicesJa: ['先に自分から辞める', 'ジョーに助けを求める', 'ドワイトに気に入られるようがんばる'],
       cue: 'If I had thought で始まる文の最後。', line: 'If I had thought that there was *a real chance*… I *would have pre-quit*.',
@@ -251,7 +251,7 @@ export const prefired: Clip = {
       trap: 'pre-quit から「もう辞めた」と考えがち。would have 〜 は「〜していただろう」で、実際はしていない。',
       use: 'If I’d known, I would have come.（知ってたら来たのに）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'beprepared', seg: [60.5, 66.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'beprepared', seg: [58.3, 66.2],
       stem: 'What does Jim mean by “better to be pre-pre-prepared”?',
       ja: 'ジムの「better to be pre-pre-prepared」はどういう意味？',
       choices: ['Get ready early, just in case', 'Plans usually go wrong anyway', 'Don’t think too far ahead'], a: 0,

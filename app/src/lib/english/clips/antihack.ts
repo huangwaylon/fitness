@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 5, ctx 4, tx 19
+// R4 REVIEW 2026-11-18: keep 8, rewrite 9, retire 1, new 5, ctx 4, tx 19, qa 22
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 3, new 1
 // “Donna's Anti-Hacking Trick Saves Leslie | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): Leslie works out that a reporter (Kim) is reading her email, combs through it before a press conference,
@@ -39,7 +39,7 @@ export const antiHack: Clip = {
       trap: 'なくした話が先に出るので「なぜなくした」と考えがち。でも実はなくしていない。',
       use: 'Then how did they find out?（じゃあ、どうやって知ったの？）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'ahead', seg: [12.6, 17.6],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'ahead', seg: [14.25, 17.55],
       stem: 'What does “one step ahead of me” mean?',
       ja: '「one step ahead of me」はどういう意味？',
       choices: ['They know things before me', 'They follow me everywhere', 'They walk faster than me'], a: 0,
@@ -51,7 +51,7 @@ export const antiHack: Clip = {
       trap: 'step（歩み）から、歩く話を連想しやすい。続く例はどれも「先に知っていた」話。',
       use: 'They’re always one step ahead of us.（あの人たち、いつも一枚上手だ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'hacked', seg: [23.4, 33.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'hacked', seg: [22.03, 33.45],
       stem: 'What did Kim’s questions always come right after?',
       ja: 'キムの質問は、いつも何の直後に来た？',
       choices: ['Emails to Leslie', 'Talks with Ron', 'Her city meetings'], a: 0,
@@ -63,7 +63,7 @@ export const antiHack: Clip = {
       trap: 'Ron の名前から、ロンとの話に思いやすい。Ron emailed me（メールした）まで聞く。',
       use: 'He called right after I left.（私が出た直後に彼が電話してきた）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'smash', seg: [36.2, 41.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'smash', seg: [37.6, 41.4],
       stem: 'Fill the gap: “Okay, smashing your phone ___ stop hacking.”',
       ja: '空所に入る語は？「電話を壊しても、ハッキングは ___」',
       choices: ['won’t', 'will', 'can’t'], a: 0,
@@ -85,19 +85,19 @@ export const antiHack: Clip = {
       trap: 'weather（天気）と同じ音で、天気と混ざりやすい。or は弱く、ほぼ「ア」。',
       use: 'I can’t tell whether or not he’s joking.（冗談かどうか分からない）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [53.5, 64.1], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [56.3, 63.7], keep: true,
       stem: 'When is Leslie’s press conference?',
       ja: 'レスリーの記者会見はいつ？',
-      choices: ['In an hour', 'In two hours', 'In two days'], a: 1,
-      choicesJa: ['1時間後', '2時間後', '2日後'],
+      choices: ['In an hour', 'In two hours', 'In three hours', 'In two days'], a: 1,
+      choicesJa: ['1時間後', '2時間後', '3時間後', '2日後'],
       cue: '「Pawnee Commons」のすぐあと。',
       line: 'a press conference about the Pawnee Commons *in two hours*',
       said: '「2時間後に、コモンズについての記者会見がある」と言う。',
       mean: 'in two hours ＝ 今から2時間後。「2時間以内」ではなく、その時を指す。',
-      trap: 'an hour なら two がない。two のあと、hours（時間）か days（日）かまで聞く。',
+      trap: 'an hour なら two がない。three なら「スリー」。two のあと、hours（時間）か days（日）かまで聞く。',
       use: 'The bus leaves in two hours.（バスは2時間後に出る）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['hacked'], seg: [56.1, 81],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['hacked', 'typewriter'], seg: [58.85, 74.7],
       stem: 'What is Leslie looking for in her emails?',
       ja: 'レスリーは自分のメールの中に何を探している？',
       choices: ['Things that could hurt her', 'Her missing speech', 'The person who hacked her'], a: 0,
@@ -143,11 +143,11 @@ export const antiHack: Clip = {
       trap: 'can を「できる」、it を手元の物と取りやすい。命令の形で文頭に来たら、決まり文句を疑う。',
       use: 'Can it, I’m trying to sleep.（静かにして、寝たいの）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'embarrassed', seg: [79.4, 94],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'embarrassed', seg: [79.4, 93.7],
       stem: 'How does Leslie feel about the pen-pal letters being found?',
       ja: '文通の手紙が見つかって、レスリーはどう感じる？',
-      choices: ['A little embarrassed by them', 'Not at all embarrassed by them', 'Quite amused by them'], a: 0,
-      choicesJa: ['ちょっと恥ずかしい', '全然恥ずかしくない', 'かなりおもしろがっている'],
+      choices: ['She feels a little silly', 'She doesn’t mind at all', 'She finds it very funny'], a: 0,
+      choicesJa: ['ちょっと恥ずかしい', 'まったく気にしない', 'すごくおもしろがる'],
       cue: '前の「恥ずかしくない」との違い。',
       line: 'Yeah, I’m not embarrassed by that. … *I am a little embarrassed* by that.',
       said: '前のメールは「恥ずかしくない」、この空想の文通は「ちょっと恥ずかしい」と言う。',
@@ -182,8 +182,8 @@ export const antiHack: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'boyfriends', seg: [105, 113.9],
       stem: 'Why does Donna know about email hacking?',
       ja: 'ドナはなぜメールのハッキングにくわしい？',
-      choices: ['Her boyfriends all tried it', 'She hacked a boyfriend herself', 'Her boyfriend works with computers'], a: 0,
-      choicesJa: ['彼氏がみんなやろうとした', '自分が彼氏のをハッキングした', '彼氏がコンピューターの仕事をしている'],
+      choices: ['Men she dated did it to her', 'She hacked a boyfriend herself', 'Her boyfriend works with computers'], a: 0,
+      choicesJa: ['付き合った相手にやられてきた', '自分が彼氏のをハッキングした', '彼氏がコンピューターの仕事をしている'],
       cue: '「Listen」のあと、ドナ自身の経験。',
       line: '*Every single one of my boyfriends* has tried to hack into my email.',
       said: '名前を呼ばれ、「歴代の彼氏は一人残らず、私のメールに入ろうとした」と言う。',
@@ -227,7 +227,7 @@ export const antiHack: Clip = {
       trap: '誇らしげな声なので、とてもよかったと思いやすい。minimal（最低限）を聞く。',
       use: 'It’s not perfect, but it’s acceptable.（完璧じゃないけど、許容範囲）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'months', seg: [133.1, 140.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'months', seg: [133.1, 140.85], keep: true,
       stem: 'How long has Leslie said construction will take?',
       ja: '工事にどれくらいかかると、レスリーは言ってきた？',
       choices: ['18 weeks', '8 months', '18 months', '80 months'], a: 2,
@@ -262,7 +262,7 @@ export const antiHack: Clip = {
       trap: 'very serious から、土が本当に危ないと考えがち。本題は which のあと。',
       use: 'It’s almost as hot as summer.（ほとんど夏と同じくらい暑い）' },
 
-    { id: 'h5', skill: 'detail', level: 'B2', point: 'gasp', seg: [158, 164],
+    { id: 'h5', skill: 'detail', level: 'B2', point: 'gasp', seg: [158, 163.7],
       stem: 'What did Leslie expect people to do?',
       ja: 'レスリーは、みんなにどうしてほしかった？',
       choices: ['Look very surprised', 'Laugh out loud', 'Clap and cheer'], a: 0,
@@ -274,7 +274,7 @@ export const antiHack: Clip = {
       trap: 'みんなが静かなので、何を期待したか迷いやすい。would のあとの gasp（息をのむ）を聞く。',
       use: 'I really thought you’d laugh at that.（そこ、笑うと思ったのに）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'trap', seg: [163.7, 186.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'trap', reveals: ['sidenote'], seg: [163.7, 186.1],
       stem: 'How do Leslie and Donna catch Kim?',
       ja: 'レスリーとドナは、どうやってキムを捕まえる？',
       choices: ['With a fake email', 'With help from the police', 'With a hidden camera'], a: 0,
@@ -297,7 +297,7 @@ export const antiHack: Clip = {
       trap: 'baseless と言い返すのでレスリーが、夫の話が出るので夫が笑われていると取りやすい。誰の欠点が見えるかで判断する。',
       use: 'Side note: the coffee here is great.（余談だけど、ここのコーヒーおいしい）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'sidenote', seg: [170.8, 176.8],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'sidenote', seg: [170.8, 176.75],
       stem: 'What does Kim mean by “side note”?',
       ja: 'キムの「side note」の意味は？',
       choices: ['A small extra comment', 'Her most important point', 'A note she wrote down'], a: 0,
@@ -309,7 +309,7 @@ export const antiHack: Clip = {
       trap: 'note（メモ）から、書いたメモを連想しやすい。ここは話し言葉の「ちなみに」。',
       use: 'Quick side note before we start.（始める前にちょっと余談）' },
 
-    { id: 'nt1', skill: 'infer', level: 'C2', point: 'trap', seg: [176.95, 186.0], retired: true,
+    { id: 'nt1', skill: 'infer', level: 'C2', point: 'trap', seg: [176.87, 186.0], retired: true,
       stem: 'Why doesn’t Kim’s expert answer about midichlorians help her?',
       choices: ['Only a fake email to Leslie had mentioned them', 'Only Leslie’s stolen speech had mentioned them',
                 'Only the new EPA report had mentioned them'], a: 0,
@@ -320,7 +320,7 @@ export const antiHack: Clip = {
       trap: 'EPA や原稿が出どころと取りやすい。about the EPA は偽メールの中身。問題はどこで知ったか。',
       use: 'Where did you hear that, exactly?（それ、どこで聞いたの？）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'hourago', reveals: ['trap'], seg: [177, 186.1],
+    { id: 'n3', skill: 'number', level: 'B1', point: 'hourago', reveals: ['trap'], seg: [176.87, 186.1],
       stem: 'When did Donna send the fake email?',
       ja: 'ドナはいつ偽のメールを送った？',
       choices: ['An hour ago', 'Three hours ago', 'Last week', 'A month ago'], a: 0,
@@ -335,8 +335,8 @@ export const antiHack: Clip = {
     { id: 'd4', skill: 'detail', level: 'B1', point: 'jokes', seg: [198.3, 206.7],
       stem: 'What does the man say Kim stole from him?',
       ja: 'その男性は、キムに何を盗まれたと言う？',
-      choices: ['All of his jokes', 'His news story', 'His lunch money'], a: 0,
-      choicesJa: ['自分の冗談を全部', '自分のニュース記事', '自分の昼食代'],
+      choices: ['His funny lines', 'His news story', 'His lunch money'], a: 0,
+      choicesJa: ['自分の笑いのネタ', '自分のニュース記事', '自分の昼食代'],
       cue: '「Kim Terlando stole」のあと',
       line: 'Kim Terlando *stole all of my jokes* for the Pawnee Correspondents’ Lunch… So I spent the whole night writing new ones.',
       said: '「キムは記者昼食会用の冗談を全部盗んだ。だから一晩中、新しいのを書いた」と言う。',

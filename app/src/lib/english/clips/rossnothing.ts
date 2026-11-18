@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 10, retire 4, new 3, ctx 4, tx 9
+// R4 REVIEW 2026-11-18: keep 3, rewrite 10, retire 4, new 3, ctx 4, tx 9, qa 11
 // A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 3, new 2
 // “Rachel Means NOTHING to Ross | Friends” (the official Friends channel, Best of Season 6): Ross insists he isn't in
 // love with Rachel, his friends don't buy it, and he vows to end the marriage at once to prove it.
@@ -8,6 +8,7 @@
 // EAR CHECK: 12.0 s t2 d1 — the voice answering "Phoebe, will you help me out here?" is Phoebe's (assumed by turn)
 // EAR CHECK: 39.5 s — "Bravo, Meg" (whisper and captions); may be "Bravo, me" (she praises her own guess)
 // EAR CHECK: 49.4 s g2 — captions "get this marriage annulled", whisper "get this marriage a no"
+// EAR CHECK: 51.2 s s2 — captions “Because Rachel means nothing to me”, whisper “She means…” (s2 follows the captions)
 // EAR CHECK: 56.9–63.1 s c1 a1 — "I wouldn't date you" and "I am so attracted to him" taken as two women's voices
 import type { Clip } from '../types.ts';
 
@@ -28,7 +29,7 @@ export const rossNothing: Clip = {
       trap: 'just には「ちょうど今」の意味もあり「さっき妻になった」と取りがち。名詞の前なら「ただの〜」。',
       use: 'He’s just my coworker.（彼はただの同僚だよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['past'], seg: [0, 29.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'claim', reveals: ['past', 'wife', 'phoebe'], seg: [0, 15.4],
       stem: 'What does Ross want his friends to believe?',
       ja: 'ロスは友だちに何を信じさせたい？',
       choices: ['He doesn’t love Rachel now', 'He never loved Rachel', 'Rachel doesn’t love him'], a: 0,
@@ -139,7 +140,7 @@ export const rossNothing: Clip = {
       trap: 'worse だけ聞くと自分を下げているようだが、「〜より悪い人はいる」＝自分はいい。',
       use: 'Hey, I’m a great catch!（おい、俺はいい男だぞ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wrong', seg: [24.7, 30.3],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'wrong', seg: [24.7, 28.33],
       stem: 'What does Ross mean by “I’m sorry, but…”?',
       ja: 'ロスの「I’m sorry, but…」はどういう意味？',
       choices: ['I don’t agree with you', 'I feel bad about this', 'Please help me here'], a: 0,
@@ -164,8 +165,8 @@ export const rossNothing: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [25.6, 31.5], keep: true,
       stem: 'How many divorces would this be for Ross?',
       ja: 'これでロスは何回目の離婚になる？',
-      choices: ['2', '3', '4'], a: 1,
-      choicesJa: ['2回', '3回', '4回'],
+      choices: ['2', '3', '4', '5'], a: 1,
+      choicesJa: ['2回', '3回', '4回', '5回'],
       cue: '「divorced」のあとの数。', line: 'I just don’t want to be *divorced three times*.',
       said: '「ただ、3回も離婚したくないだけなんだ」と言う。今回で3回目になる。',
       mean: 'three times ＝ 3回。twice（2回）、once（1回）も合わせて覚えたい。',
@@ -184,7 +185,7 @@ export const rossNothing: Clip = {
       trap: 'reason が聞こえるので、もっともな理由だと考えがち。決め手は最後の because のあと。',
       use: 'He’s just using that as an excuse.（それを言い訳にしてるだけ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'welldone', seg: [36, 41],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'welldone', seg: [37.6, 41],
       stem: 'What does “well done” mean here?',
       ja: 'ここでの「well done」はどういう意味？',
       choices: ['You did a good job', 'It was cooked a lot', 'It ended too late'], a: 0,
@@ -195,7 +196,7 @@ export const rossNothing: Clip = {
       trap: 'ステーキの「ウェルダン（よく焼き）」を連想しやすい。人に言えば「よくやった」。',
       use: 'Well done! That was great.（よくやった！すばらしかった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'annul', reveals: ['fine', 'forget'], seg: [40.1, 55.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'annul', reveals: ['fine', 'forget', 'nothing'], seg: [40.5, 55.5],
       stem: 'What does Ross say he will do now?',
       ja: 'ロスはこれから何をすると言う？',
       choices: ['End the marriage right now', 'Stay married a while longer', 'Let Rachel decide about it'], a: 0,
@@ -239,13 +240,13 @@ export const rossNothing: Clip = {
       trap: '言葉だけなら事実の説明だが、叫び方が中身と合わない。強すぎる否定は本音の裏返し。',
       use: 'I don’t care. Really, I don’t!（気にしてない。ほんとだって！）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'nothing', seg: [50.9, 54.4],
-      stem: 'Fill the gap: “She ___ nothing to me.”',
-      ja: '「She ___ nothing to me.」の空所は？',
+    { id: 's2', skill: 'sound', level: 'B1', point: 'nothing', seg: [51.15, 55.0],
+      stem: 'Fill the gap: “Because Rachel ___ nothing to me.”',
+      ja: '「Because Rachel ___ nothing to me.」の空所は？',
       choices: ['means', 'meant', 'needs'], a: 0,
       choicesJa: ['意味する（今）', '意味した（昔）', '必要とする'],
-      cue: '「annulled, okay?」のあと。', line: 'She *means* nothing to me. Nothing.',
-      said: '「彼女なんて、僕にとって何でもない。何でもない！」と叫ぶ。',
+      cue: '「annulled, okay?」のあと。', line: 'Because Rachel *means* nothing to me. Nothing! Nothing!',
+      said: '「レイチェルなんて、僕にとって何でもない。何でもない！」と叫ぶ。',
       mean: 'mean nothing to 〜 ＝ 〜にとって何でもない（どうでもいい）。means の最後は「ズ」。今の気持ちの話。',
       trap: 'meant（過去）と勘違いしやすいが、最後の音は「ト」ではなく「ズ」。now の話を続けている。',
       use: 'It means a lot to me.（それは私にとって大切なんだ）' },
@@ -261,7 +262,7 @@ export const rossNothing: Clip = {
       trap: 'まだ結婚中なのは本当だが、彼女の理由ではない。決め手は because のあと。',
       use: 'This place seems a little creepy.（ここ、ちょっと不気味だね）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'attracted', seg: [58.8, 63.4],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'attracted', reveals: ['creepy'], seg: [56.9, 63.4],
       stem: 'What does “I am so attracted to him” mean?',
       ja: '「I am so attracted to him」はどういう意味？',
       choices: ['I like him a lot', 'I feel sorry for him', 'I am a bit scared'], a: 0,
