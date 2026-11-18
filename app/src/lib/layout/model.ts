@@ -85,7 +85,8 @@ function mergeEntries(entries: Iterable<LayoutEntry>): Map<string, LayoutEntry> 
 }
 
 /** The layout: the default with the record's ops merged over it (a reset voids every object and chunk op before it). */
-export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntry>, from: Layout = defaultLayout()): Layout {
+export function layoutOf(entries: Iterable<LayoutEntry> | Map<string, LayoutEntry>): Layout {
+  const from = defaultLayout();
   const m = entries instanceof Map ? entries : mergeEntries(entries);
   const reset = resetAt(m);
   const codes = from.codes.slice();

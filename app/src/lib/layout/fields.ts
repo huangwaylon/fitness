@@ -43,7 +43,8 @@ const CHANNELS = 7;
 
 /** Whether a point at (u, v) in tile (c, r) (u, v in 0…1) is inside the rounded region `m` (a test on tiles): a
  *  convex corner cut round, a concave one filled round (NH's island has no square corner). */
-export function roundedIn(m: (c: number, r: number) => boolean, c: number, r: number, u: number, v: number, R = ROUND): boolean {
+export function roundedIn(m: (c: number, r: number) => boolean, c: number, r: number, u: number, v: number): boolean {
+  const R = ROUND;
   const own = m(c, r);
   const sx = u < 0.5 ? -1 : 1, sz = v < 0.5 ? -1 : 1;
   const du = sx < 0 ? u : 1 - u, dv = sz < 0 ? v : 1 - v;

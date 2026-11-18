@@ -67,8 +67,8 @@ export let POND: Oval = { x: 74, z: 772, rx: 46, rz: 26 };
 /** The ponds put down on the layout (kind `pond`: layout/ponds.ts), each its water's oval: fresh water as the pond's
  *  (none on world.ts's own island). */
 export let PONDS: readonly Oval[] = [];
-/** The pond's oval a point is in (`grow` u round its edge): the painted pond's or one put down, else null. */
-export const pondAt = (x: number, z: number, grow = 0): Oval | null => [POND, ...PONDS].find((o) => inOval(o, x, z, grow)) ?? null;
+/** The pond's oval a point is in: the painted pond's or one put down, else null. */
+export const pondAt = (x: number, z: number): Oval | null => [POND, ...PONDS].find((o) => inOval(o, x, z)) ?? null;
 
 /** Where a freshwater cast lands, NH's locations (spec Q3): the pond, the river, its mouth, or the clifftop. */
 export type FreshWhere = 'pond' | 'river' | 'mouth' | 'clifftop';
@@ -422,9 +422,9 @@ export const onLayout = (): boolean => geo !== null;
 export const layoutNav = (): LayoutNav | null => geo?.nav ?? null;
 /** Whether a thing `r` u round (x, z) would lie on a building's ground (layout/clear.ts onBuilding: its footprint, its
  *  door's step, the strip behind it its model hides); never on world.ts's own island. */
-export const onBuildingAt = (x: number, z: number, r?: number): boolean => {
+export const onBuildingAt = (x: number, z: number): boolean => {
   const g = layoutNav();
-  return !!g && onBuilding(g, x, z, r);
+  return !!g && onBuilding(g, x, z);
 };
 /** Where a thing meant for (x, z) lies: there, or off the buildings at the nearest free spot (layout/clear.ts
  *  offBuildings), the same on every phone holding the layout. */

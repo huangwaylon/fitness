@@ -236,7 +236,8 @@ export const baseName = (u: string): string => (u.split(/[?#]/)[0].split('/').po
  * A stack as its top `n` frames, `fn@file:line:col` (the file's base name), from Safari's `fn@url:l:c` lines and
  * Chrome's `at fn (url:l:c)`: no message, no URL's query or fragment, nothing else.
  */
-export function scrubStack(s: unknown, n = 4): string {
+export function scrubStack(s: unknown): string {
+  const n = 4;
   const out: string[] = [];
   for (const line of String(s ?? '').split('\n')) {
     const m = /^\s*(?:at\s+)?(?:(.*?)\s*[@(]\s*)?([a-z][a-z0-9+.-]*:[^\s)]*?|[\w./-]+\.(?:js|ts|svelte|mjs)):(\d+):(\d+)\)?\s*$/i.exec(line);

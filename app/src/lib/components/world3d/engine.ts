@@ -556,8 +556,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     const L = ground.land, half = (L.x1 - L.x0) / 2 + SEA_X, view = VIEW_W / (2 * k);
     return Math.max(0, half - view) * Math.min(1, (k - ZOOM.min) / X_RAMP);
   }
-  const clampX = (x: number, k = zoomK) => {
-    const r = xRoom(k);
+  const clampX = (x: number) => {
+    const r = xRoom(zoomK);
     const m = midX();
     return Math.max(m - r, Math.min(m + r, x));
   };

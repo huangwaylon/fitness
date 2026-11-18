@@ -122,7 +122,8 @@ const DRIFT_S = 0.3;
 
 /** Where a shared stage's track is now (s into its file, docs/sound-sync.md): `from` is when its position 0 played, on
  *  this device's clock; a loop's (`end`: the period) wraps. */
-export function stagePos(t: MusicTrack, nowMs = Date.now()): number {
+export function stagePos(t: MusicTrack): number {
+  const nowMs = Date.now();
   const p = t.start + (nowMs - (t.from ?? nowMs)) / 1000;
   return t.end ? p % t.end : p;
 }

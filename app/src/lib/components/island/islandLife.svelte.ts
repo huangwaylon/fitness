@@ -31,7 +31,7 @@ interface Ctx {
 
 /** On-screen daytime until the next balloon (ms): 20–40 s for the first, then 45–90 s from one to the next (the
  *  countdown holds while one is up). */
-const balloonMs = (first = false, r = Math.random): number => (first ? 20_000 + r() * 20_000 : 45_000 + r() * 45_000);
+const balloonMs = (first = false): number => (first ? 20_000 : 45_000) * (1 + Math.random());
 
 /** Four ripeness stages of a fruit's day (a stage-up is R7): < 25% · < 60% · < 100% · the goal. */
 const stage = (pct: number): number => (pct >= 100 ? 3 : pct >= 60 ? 2 : pct >= 25 ? 1 : 0);

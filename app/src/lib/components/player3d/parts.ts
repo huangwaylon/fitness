@@ -123,7 +123,7 @@ export function partBytes(f: PartFile, dir: string, ktx2 = false): Promise<Array
   return ref ? storeOf(dir).bytes(ref) : Promise.resolve(null);
 }
 /** The everyday pack (both いつもの looks, the body) fetched whole and held: its files are sliced from memory. */
-export function warmEveryday(dir: string, t: PartTable = PARTS): void {
-  const stem = t.everyday === undefined ? undefined : t.packs?.[t.everyday];
+export function warmEveryday(dir: string): void {
+  const stem = PARTS.everyday === undefined ? undefined : PARTS.packs?.[PARTS.everyday];
   if (stem) void storeOf(dir).pack(stem);
 }
