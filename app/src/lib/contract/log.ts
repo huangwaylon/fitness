@@ -102,7 +102,8 @@ export const LOG_EVENTS = {
   "auth.lost": { src: 'c', f: { from: ['refresh', 'flush', 'ws'], code: 'n' } },
   "sync.fail": { src: 'c', f: { err: LOG_STATUS, cached: 'b', ...AT } },
   "queue.retry": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', n: 'n' } },
-  "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
+  // why: the record's rule when it named one (`owned`, `reward_paid`, `wallet_short`…: relay/src/store.ts)
+  "queue.drop": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n', why: 't' } },
   // an event set aside (the record failed it 30 times, or too large alone) / a batch refused whole, halved
   "queue.poison": { src: 'c', f: { type: EV_TYPES, err: LOG_STATUS, tries: 'n' } },
   "queue.split": { src: 'c', f: { n: 'n', err: LOG_STATUS } },

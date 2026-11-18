@@ -228,6 +228,16 @@ describe('/api’s req meta', () => {
     expect([call({ action: 'whoami', key: 'f'.repeat(64) }).meta.st, apiWithMeta(s, '{x', roleOf).meta.st, call({ key: KEY_C, action: 'ingest' }).meta]).toEqual(['unauthorized', 'bad_request', expect.objectContaining({ st: 'forbidden', role: 'G' })]);
   });
 
+  it('a game’s reward another phone of the table sent first: refused `reward_paid` by name (2026-11-18: A’s two were logged bad_request alone, B’s kept ms before)', () => {
+    const s = store();
+    const call = (o: object) => apiWithMeta(s, JSON.stringify(o), roleOf);
+    const reward = (key: string, id: string) => call({ key, action: 'events', events: [{ id, type: 'sg_reward', data: { g: 'sg-1y7h2jr', v: 500, to: ['A', 'B'], d: '2026-11-05' } }] });
+    expect(reward(KEY_B, 'r1').meta).toMatchObject({ n: 1, rej: 0 });
+    const a = reward(KEY_A, 'r2');
+    expect(a.meta).toMatchObject({ n: 1, rej: 1, why: 'sg_reward.reward_paid' });
+    expect(JSON.parse(a.body).results[0]).toMatchObject({ ok: false, error: 'bad_request', detail: 'reward paid' });
+  });
+
   it('the rows the record wrote and read for it (the cursors\' counts, as Durable Objects give them)', () => {
     const inner = memSql().sql;
     // node:sqlite's cursors count nothing: each statement here says it wrote 2 rows and read 3

@@ -64,7 +64,8 @@ const utf8 = new TextEncoder();
 const RULES: Record<string, string> = {
   'no such spend': 'no_such_spend', 'tent full': 'tent_full', 'layout full': 'layout_full', 'decor full': 'decor_full',
   owned: 'owned', 'pocket short': 'pocket_short', 'wallet short': 'wallet_short', 'no such repeat': 'no_such_repeat',
-  'pack full': 'pack_full', 'pack owner': 'pack_owner', 'wedding full': 'wedding_full', 'wedding parent': 'wedding_parent', 'profile locked': 'profile_locked'
+  'pack full': 'pack_full', 'pack owner': 'pack_owner', 'wedding full': 'wedding_full', 'wedding parent': 'wedding_parent', 'profile locked': 'profile_locked',
+  'reward paid': 'reward_paid'
 };
 
 /** One refusal as a rule: `<type>.<rule or code>`. */
