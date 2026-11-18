@@ -1,11 +1,12 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 4, new 8, ctx 10, tx 3
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 4, new 8, ctx 10, tx 3, qa 21
 // A2 REVIEW 2026-11-17: keep 5, rewrite 14, retire 2, new 0
 // “Just guys gently ribbing each other - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office
 // US): Jim is having a party tonight and hasn't invited Michael. Michael, who hears about it, tries hard to be “one of
 // the guys”; Jim teases him and calls it “gently ribbing”; Jim tells Dwight the party is a surprise to keep him quiet;
 // and at five Michael asks around for evening plans and is turned down by everyone, Dwight last.
 // Segments from the captions, words from whisper (2026-11-16; times rounded to whole seconds). Jim is named at 88 s,
-// Pam 209 s, Oscar 214 s, Dwight at 226–253 s. Untested: 46–56 s (a crude line), 217–225 s (the co-worker isn't named).
+// Pam 209 s, Oscar 214 s, Dwight at 226–253 s. Untested: 217–225 s (the co-worker isn't named).
+// EXCLUDE 54–56 (“riding my ass”)
 // SKIP 183–209: Michael's silent improv miming, then one line naming it
 // EAR CHECK: 11.2 s p1 — “Wonder where my e-vitation is” is Michael's (assumed: he is the one not invited)
 // EAR CHECK: 123–128 s k3 — “I got my lunch. I'm good.” is Michael's (assumed: he has his cup of noodles)
@@ -30,11 +31,11 @@ export const ribbing: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'evite', ctx: true, seg: [6.0, 13.0],
       stem: 'What does Michael mean by “Wonder where my e-vitation is”?', ja: 'マイケルの “Wonder where my e-vitation is” はどういう意味？',
-      choices: ['He feels left out', 'He doesn’t care about it', 'He lost his invitation'], a: 0,
-      choicesJa: ['仲間外れにされて気になる', 'どうでもいい', '招待状をなくした'],
+      choices: ['He wants to be invited', 'He doesn’t care about it', 'He lost his invitation'], a: 0,
+      choicesJa: ['招待してほしい', 'どうでもいい', '招待状をなくした'],
       cue: '「Tonight」をくり返したあと',
       line: 'Barbecue at Jim’s tonight. / Michael: Tonight. … *Wonder where my e-vitation is.*',
-      said: 'パーティーの話を聞き、「僕の招待状はどこかな」とつぶやく。',
+      said: 'パーティーの話を聞き、「私の招待状はどこかな」とつぶやく。',
       mean: 'I wonder 〜 ＝ 〜かなあ。本当に探しているのではなく、呼ばれていないことへの遠回しなアピール。',
       trap: 'where（どこ）から、なくした物を探していると考えがち。そもそも届いていない。',
       use: 'I wonder where my invitation is.（私の招待状はどこかなあ）' },
@@ -57,8 +58,8 @@ export const ribbing: Clip = {
       cue: '「respect him」のすぐあと',
       line: '*What’ll I* do if I drop spinach dip on him at a party?',
       said: '部下の心の声として「ディップをこぼしたらどうしよう」と言う。',
-      mean: 'What’ll ＝ What will。t が軽い「ラ」の音で「ワロー」に近く、’ll は短い「ル」だけ。',
-      trap: 'What do I なら「ワドゥアイ」、would I なら「ウダイ」。「ワロー」と短い「ル」が入れば What’ll I。',
+      mean: 'What’ll ＝ What will。t が軽い「ラ」の音になり、What’ll I で「ワラライ」に近い。',
+      trap: 'What do I も What would I も d の音が入る。d が聞こえず「ワラ」と流れれば What’ll I。',
       use: 'What’ll I say if she calls?（彼女から電話が来たら何て言おう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'approach', seg: [27.4, 39],
@@ -72,7 +73,18 @@ export const ribbing: Clip = {
       trap: 'distance（距離）の話のあとなので、上司らしくする話に聞こえるが、決め手は even（もっと）。',
       use: 'Maybe I need to be even friendlier.（もっと気さくにならないとね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'snub', seg: [44.0, 67.0],
+    { id: 'k7', skill: 'phrase', level: 'B1', point: 'sameold', seg: [48.0, 53.5],
+      stem: 'What does “same old stuff” mean?', ja: '“same old stuff” はどういう意味？',
+      choices: ['Nothing new, as usual', 'Some old things to sell', 'A very old problem'], a: 0,
+      choicesJa: ['いつもどおり、特に何もない', '売るための古い物', 'とても古い問題'],
+      cue: '「Talk to me」への返事',
+      line: 'What’s going on, Michael? Talk to me. — Yeah, you know, *same old stuff*.',
+      said: '「どうしたの、話してよ」と聞かれ、「まあ、いつものことさ」と答える。',
+      mean: '文字どおりは「同じ古いもの」→ いつもと同じこと＝「相変わらずだよ」。How are you? への軽い返事にも使う。',
+      trap: 'old から「古い物」を連想しやすい。ここは物ではなく、毎日のこと。',
+      use: 'How’s work? — Oh, same old stuff.（仕事どう？―まあ、相変わらずだよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'snub', seg: [56.5, 72.0],
       stem: 'What does Michael say he wants?', ja: 'マイケルは、何がしたいと言う？',
       choices: ['To be one of the guys', 'To get more respect', 'To plan a surprise party'], a: 0,
       choicesJa: ['仲間の一人になること', 'もっと尊敬されること', 'サプライズパーティーを開くこと'],
@@ -138,7 +150,7 @@ export const ribbing: Clip = {
       cue: '「gently」のあと',
       line: 'This is just guys *gently ribbing* each other.',
       said: '「これは男同士の、ちょっとしたからかいだよ」と言う。',
-      mean: 'rib ＝ からかう、冷やかす。gently が付いて「悪気のない」いじり。',
+      mean: 'rib ＝ 文字どおりは「あばら骨」。脇腹をつついてふざける→言葉で軽くからかう。gently ＝ 悪気なく。',
       trap: 'rib は「あばら骨」でもあるので、体をつつくと考えがち。ここは言葉でのいじり。',
       use: 'Don’t worry, I’m just ribbing you.（気にしないで、からかってるだけ）' },
 
@@ -221,8 +233,8 @@ export const ribbing: Clip = {
 
     { id: 'h1', skill: 'humor', level: 'B1', point: 'madeup', seg: [145.4, 152.8],
       stem: 'What does Jim’s roommate think about Dwight?', ja: 'ジムのルームメイトは、ドワイトのことをどう思っている？',
-      choices: ['Jim made him up', 'He is very funny', 'He is Jim’s boss'], a: 0,
-      choicesJa: ['ジムの作り話', 'とても面白い', 'ジムの上司'],
+      choices: ['Jim invented him', 'He is very funny', 'He is Jim’s boss'], a: 0,
+      choicesJa: ['ジムが作った人物', 'とても面白い', 'ジムの上司'],
       cue: '「pretty sure」のあと',
       line: 'I’m pretty sure he thinks I’m *making Dwight up*.',
       said: '「ルームメイトは、僕がドワイトを作り話だと思ってるらしい」と言う。',
@@ -232,17 +244,17 @@ export const ribbing: Clip = {
 
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'down', ctx: true, seg: [153.8, 162.9],
       stem: 'What does “Keep that down” mean?', ja: '“Keep that down” はどういう意味？',
-      choices: ['Talk more quietly', 'Write it all down', 'Slow down a little'], a: 0,
-      choicesJa: ['もっと小さい声で話して', '全部書きとめて', '少しゆっくりして'],
+      choices: ['Talk more quietly', 'Write it on paper', 'Say it more slowly'], a: 0,
+      choicesJa: ['もっと小さい声で話して', '紙に書いて', 'もっとゆっくり言って'],
       cue: '道順の話のあとの短い命令',
       line: 'Dwight: …to get to your house for the party tonight. / Jim: *Keep that down.*',
       said: 'ドワイトが大声でパーティーへの道順を話し、ジムが「声を小さくして」と言う。',
-      mean: 'keep it down ＝ 声を小さくして。パーティーのことを聞かれたくない。',
+      mean: '文字どおりは「下げたままにして」→ 声の大きさを下げて＝声を小さくして。パーティーのことを聞かれたくない。',
       trap: 'down から「書きとめる」「ゆっくり」を連想しやすい。keep 〜 down は音の大きさ。',
       use: 'Could you keep it down, please?（少し静かにしてもらえますか）' },
 
     { id: 'i5', skill: 'infer', level: 'B2', point: 'surprise', ctx: true, seg: [165, 176.2],
-      stem: 'What does Dwight come to believe?', ja: 'ドワイトは何を信じこむ？',
+      stem: 'What does Dwight now think the party is?', ja: 'ドワイトは、パーティーを何だと思いこむ？',
       choices: ['It’s a surprise for Michael', 'It’s a secret from everyone', 'It’s a surprise for Dwight'], a: 0,
       choicesJa: ['マイケルへのサプライズ', 'みんなに秘密', 'ドワイトへのサプライズ'],
       cue: '最後の質問への答え',
@@ -253,7 +265,7 @@ export const ribbing: Clip = {
       use: 'Don’t tell him. It’s a surprise.（彼には言わないで。サプライズだから）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'five', seg: [177.5, 183.0], keep: true,
-      stem: 'What time is it when Michael heads to improv?', ja: 'マイケルが即興劇に出かけるのは何時？',
+      stem: 'What time is it when Michael leaves for improv?', ja: 'マイケルが即興劇に出かけるのは何時？',
       choices: ['4 o’clock', '5 o’clock', '6 o’clock', '9 o’clock'], a: 1,
       choicesJa: ['4時', '5時', '6時', '9時'],
       cue: 'Time to go の前',

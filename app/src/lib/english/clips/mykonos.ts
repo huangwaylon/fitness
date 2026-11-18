@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 4, retire 2, new 6, ctx 6, tx 3
+// R4 REVIEW 2026-11-18: keep 13, rewrite 4, retire 2, new 6, ctx 6, tx 3, qa 20
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 5, new 2
 // “No more brain damage - The Office US” (the official The Office channel, BEST OF SEASON 7): Michael plans to be the
 // "plant" at Andy's small-business seminar as a Greek character, Mykonos; Holly, just out of a breakup, says no, then
@@ -17,8 +17,8 @@ export const mykonos: Clip = {
   credit: 'The Office (official YouTube channel)',
   questions: [
     { id: 'd5', skill: 'detail', level: 'B1', point: 'herefor', seg: [0, 6.5],
-      stem: 'Why has he come, he says?',
-      ja: '何のために来たと言っている？',
+      stem: 'What does Michael say he is here for?',
+      ja: 'マイケルは、何のために来たと言っている？',
       choices: ['For a small business seminar', 'For a big job interview today', 'For a weekly cooking class'], a: 0,
       choicesJa: ['中小企業のセミナーのため', '今日の大事な面接のため', '毎週の料理教室のため'],
       cue: '「I’m here for」のあと',
@@ -36,7 +36,7 @@ export const mykonos: Clip = {
       cue: '「My job is」のあと。',
       line: '*I am the plant.* … My job is to *make the speaker look good*',
       said: '「僕はサクラ。仕事は話し手をよく見せること」とカメラに話す。',
-      mean: 'plant ＝ ここではサクラ（客のふりをする仲間）。make 人 look good ＝ 人をよく見せる。',
+      mean: 'plant ＝ 文字どおりは「植えたもの」。客席に仕込んだ仲間＝サクラ。make 人 look good ＝ 人をよく見せる。',
       trap: 'plant を植物やスパイと思いやすい。My job is のあとを聞く。',
       use: 'This jacket makes you look good.（このジャケット似合ってるね）' },
 
@@ -59,8 +59,8 @@ export const mykonos: Clip = {
       choicesJa: ['そんな気分じゃない', '考えておく', '楽しそうだと思う'],
       cue: '「Oh, I don’t know」のあと',
       line: 'Michael: What if we went in as a Greek couple? / Holly: Oh, *I don’t know*, Michael. *I’m not feeling up to that*.',
-      said: '「ギリシャ人の夫婦として出るのはどう？」に「うーん、どうかな。そんな気分じゃないの」と答える。',
-      mean: 'not feeling up to 〜 ＝ 〜する気力がない。I don’t know で和らげた、ていねいな断り方。',
+      said: '夫婦役の誘いに「うーん、どうかな。そんな気分じゃないの」と答える。',
+      mean: 'up to 〜 ＝ 〜する元気がある。not feeling up to that ＝ その元気がない。I don’t know で和らげた断り。',
       trap: 'I don’t know から「考えておく」と考えがち。not feeling up to で断りと分かる。',
       use: 'Sorry, I’m not feeling up to it tonight.（ごめん、今夜はそんな気分じゃない）' },
 
@@ -161,13 +161,13 @@ export const mykonos: Clip = {
     { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [113, 118],
       stem: 'What does “*Look*” mean here?',
       ja: 'ここでの「Look」はどういう意味？',
-      choices: ['Listen, hurry up', 'Please look at this', 'Welcome to the shop'], a: 0,
-      choicesJa: ['ねえ、早くして', 'これを見て', 'いらっしゃいませ'],
+      choices: ['Listen, hurry up', 'Please look at this', 'Watch out, be careful'], a: 0,
+      choicesJa: ['ねえ、早くして', 'これを見て', 'あぶない、気をつけて'],
       cue: '店員の文の最初の一語。',
       line: '*Look*, you want to order something?',
       said: '「あのさ、何か注文するの？」と聞く。',
       mean: '文の頭の Look ＝ 「いいかい、あのさ」。いら立って本題を急かす言い方。',
-      trap: 'look から「見て」と思いやすい。何かを見せてはいない。',
+      trap: 'look から「見て」「気をつけて（Look out）」と思いやすい。何も見せず、危険もない。',
       use: 'Look, I don’t have much time.（あのね、あまり時間がないの）' },
 
     { id: 'p6', skill: 'pragma', level: 'B1', point: 'shehave', seg: [117.0, 123.0],
@@ -214,7 +214,7 @@ export const mykonos: Clip = {
       cue: '「confident that you can」のあと。',
       line: 'I need you to be confident that you can *pull this off*.',
       said: '「やりとげられると、自信を持ってほしい」と言う。',
-      mean: 'pull 〜 off ＝ 難しいことをうまくやりとげる。',
+      mean: '文字どおりは「引っぱってはがす」。難しいことをぐいっとやってのける→「うまくやりとげる」。',
       trap: 'off から「やめる」と思いやすい。pull it off は「うまくやる」。',
       use: 'I know you can pull this off.（君ならうまくやれるよ）' },
 
@@ -230,8 +230,8 @@ export const mykonos: Clip = {
       use: 'I’ll do my best. No promises.（全力は尽くす。約束はできないけど）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'wrapup', seg: [176, 187.7],
-      stem: 'How does Andy end his talk?',
-      ja: 'アンディは話をどう終える？',
+      stem: 'How does Andy first try to finish his talk?',
+      ja: 'アンディは最初、話をどう終えようとする？',
       choices: ['Without asking anyone to buy', 'By asking everyone to buy', 'By planning more calls'], a: 0,
       choicesJa: ['だれにも買ってと言わずに', '全員に買ってと頼んで', '電話の約束をして'],
       cue: '「ready to go」のあと、文の終わり方。',
@@ -253,10 +253,10 @@ export const mykonos: Clip = {
       use: 'You’re not getting to it, you’re avoiding it.（やるんじゃなくて、避けてるだけ）' },
 
     { id: 'i4', ctx: true, skill: 'infer', level: 'B2', point: 'gettingto', seg: [195.5, 202.0],
-      stem: 'Is Andy really about to close the sale?',
-      ja: 'アンディは本当に今、売り込みを決めようとしている？',
-      choices: ['No, he keeps avoiding it', 'Yes, he is about to', 'Yes, he already did'], a: 0,
-      choicesJa: ['いいえ、ずっと避けている', 'はい、今するところ', 'はい、もう済んだ'],
+      stem: 'What does Michael think Andy is doing?',
+      ja: 'マイケルは、アンディが何をしていると思っている？',
+      choices: ['Avoiding the sale', 'Closing the sale now', 'Done with the sale'], a: 0,
+      choicesJa: ['売り込みを避けている', '今まさに決めている', 'もう決め終えた'],
       cue: 'マイケルの「No, you’re not」',
       line: 'Michael: You have to close. Right now. / Andy: Yeah, *I am getting to it*. / Michael: *No, you’re not.* You’re getting past it.',
       said: '「今すぐ決めろ」「今やろうとしてる」「いや、してない。通り過ぎてる」と言い合う。',
@@ -279,13 +279,13 @@ export const mykonos: Clip = {
     { id: 'p9', skill: 'phrase', level: 'B2', point: 'letdown', seg: [205.4, 214.9],
       stem: 'What does “*Don’t let them down*” mean?',
       ja: '「Don’t let them down」はどういう意味？',
-      choices: ['Don’t disappoint them', 'Don’t look down on them', 'Don’t leave them alone'], a: 0,
-      choicesJa: ['みんなをがっかりさせるな', 'みんなを見下すな', 'みんなを一人にするな'],
+      choices: ['Don’t disappoint them', 'Don’t laugh at them', 'Don’t leave them alone'], a: 0,
+      choicesJa: ['みんなをがっかりさせるな', 'みんなを笑うな', 'みんなを一人にするな'],
       cue: '「they believe in you」のあと。',
       line: 'Kelly and Creed, Kevin, they believe in you. *Don’t let them down*.',
       said: '「みんな君を信じてる。がっかりさせるな」と励ます。',
-      mean: 'let 人 down ＝ 人をがっかりさせる。believe in you ＝ 君ならできると信じている。',
-      trap: 'down から「見下す」と思いやすい。見下すは look down on。',
+      mean: 'let 人 down ＝ 文字どおりは「下におろす」。期待を下げる→がっかりさせる。believe in you ＝ 君ならできると信じている。',
+      trap: 'down（下）から「下に見る、ばかにする」と考えがち。直前の believe in you で、期待を裏切るなと分かる。',
       use: 'I won’t let you down.（がっかりさせないよ）' },
 
     { id: 'p7', skill: 'phrase', level: 'B2', point: 'snowball', seg: [222, 232.8],
