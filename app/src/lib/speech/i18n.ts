@@ -45,7 +45,7 @@ const S = {
 
 type StringKey = keyof typeof S;
 
-/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). @public (i18n/linebreaks.test.ts) */
+/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
 export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
 
 /** The string in the reader's locale, `{name}` filled in. */

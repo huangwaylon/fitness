@@ -164,7 +164,7 @@ test('on two phones: A starts a game for A and B, B is invited and joins, each p
   // ⋯ → 終了する online: everyone's game ends, so the verb is the danger one and the note says so
   await sheet(a).locator('[data-sg-menu]').tap();
   await sheet(a).locator('dialog[open] [data-sg-end]').tap();
-  await expect(a.locator('[data-sg-end-note]')).toHaveText('全員のゲームが終わります');
+  await expect(a.locator('[data-sg-end-note]')).toHaveText('全員のゲームが終わるよ');
   await expect(a.locator('[data-sg-end-yes]')).toHaveClass(/danger/);
   await a.locator('[data-sg-end-yes]').tap();
   await expect(sheet(a)).toHaveAttribute('data-level', 'results');

@@ -17,7 +17,7 @@ with characters in it, since they are the pieces. A team game: one team total to
   | shortest word | 3 | 3 | 4 |
   | everyday word | +3 | +2 | +1 |
   | ヒント's word | full | half | half |
-  | ぶん's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
+  | 文's lines | level 1 | level 2 | level 3, the Japanese behind 意味を見る (+2 unopened) |
   | 絵 | one of three spellings | its letters, the first given | its letters and two more |
   | イベント's Japanese | shown | shown | on a tap |
 - **The board** (`board.ts`, `layout.ts`): a new one every game, generated from the game's layout seed (kept in the
@@ -26,9 +26,9 @@ with characters in it, since they are the pieces. A team game: one team total to
   (split lanes either side, a corner cut short or gone round, a crossroads; joining early or late; the short way's
   stones richer: ×2, 絵 or イベント, the long way's steadier), 4–7 stretches (家 first, 浜辺's あがり last; 広場 川 博物館
   お店 飛行場 森 丘 駅 公園 in a new order), mirrored half the time. Rules (`problems`, tested over 240 seeds): every route
-  37–45 steps (about 11 rounds), at most 6 apart, its play (ことば 1, ダブル 1.7, 絵 1.3, ぶん 1.2, イベント 1.1) within
+  37–45 steps (about 11 rounds), at most 6 apart, its play (ことば 1, ダブル 1.7, 絵 1.3, 文 1.2, イベント 1.1) within
   12 % of the richest route's, each kind's count per route in a band, no 4 ことば in a row, ×2 / 絵 / イベント 3 apart
-  and ぶん 2; stones apart, links 40–100 (a crossing's 150), nothing on another's link, links crossing only at a
+  and 文 2; stones apart, links 40–100 (a crossing's 150), nothing on another's link, links crossing only at a
   crossroads, the river under one bridge link (two bridges at most), signs, the house and trees off the route, no
   more scenery than the classic (6 signs, 22 trees, one house). A layout breaking one is tried again with the next
   sub-seed. A golden hash of pinned seeds' boards (`layout.test`) is tied to `GEN` (`family.ts`): change the
@@ -47,7 +47,7 @@ with characters in it, since they are the pieces. A team game: one team total to
     + 2 for each of the game's two lucky letters, × 2 on ダブル, + the level's everyday bonus, at least 3, said in words.
     ヒント fills in the rack's best everyday word (sticks for the turn). 入れかえる swaps the rack for no stars. Not a word:
     a soft note, the tiles kept.
-  - **ぶん**: put a line's word tiles in order: 6 stars, 4 after 「おしい！」 (the wrong order shown a moment), 2 with
+  - **文**: put a line's word tiles in order: 6 stars, 4 after 「おしい！」 (the wrong order shown a moment), 2 with
     「答えはこれ」. No line left for the level (or offline): the stone plays as ことば.
   - **絵** (`pictures.ts`): an everyday thing's picture (Google's Noto Emoji, Apache 2.0, hotlinked from its CDN: the CSP
     allows that path only; `pictures.json`, 706 things one emoji shows, our Japanese, no signs), a tier by the seat's level (TIERS:
@@ -91,8 +91,8 @@ the beach at the sides), the horizon never shown (the bottom inset given back fi
 ways. Two exceptions to design.md's kit, for the board's room: the team pill in the title bar's place, and this
 sheet's handle (a tap or a drag down) folding it to a 56 px bar (the phase ▲) to see the board; every new phase
 opens it again; a walk shows the die and 「3マス」 in that bar. A check's note is a toast pill over the sheet. ⋯ holds 遊び方
-and 終了する (「ゲームを終了しますか？」 [キャンセル][終了する]: passed round 「ここまでの星で結果を見ます」, online the danger
-button and 「全員のゲームが終わります」). The fork and stretch signs read at the default camera; ↻入れかえ asks inline (「星なしで入れかえる？」).
+and 終了する (「ゲームを終了する？」 [キャンセル][終了する]: passed round 「ここまでの星で結果を見るよ」, online the danger
+button and 「全員のゲームが終わるよ」). The fork and stretch signs read at the default camera; ↻入れかえ asks inline (「星なしで入れかえる？」).
 
 ## みんなで！ (mini-games)
 
@@ -177,11 +177,11 @@ on for a page (the tests, a trial); off, no step shows.
 ([backend](backend.md#shared-world): a row a move, folded into one a game, apart from the day's ring), so a phone that opens later or reloads
 gets them again (its own too); the room keeps a game 2 days after its last move, 12 games at most. Each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
 through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
-ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
+文's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
 from anyone at the table; a mini-game's plays and close from any seat: みんなで！). The phone whose turn it isn't watches (whose turn, the last move), then the player's turn live.
 
 - **Watching** (`view.ts`, `sgv`: presence only, never kept or logged): while it's my turn, my sheet's panel (the
-  ことば's tiles, ヒント, ↻入れかえ's ask, the check; the ぶん's tiles, 「おしい！」, 答えはこれ; the 絵's letters or choices; the
+  ことば's tiles, ヒント, ↻入れかえ's ask, the check; the 文's tiles, 「おしい！」, 答えはこれ; the 絵's letters or choices; the
   card's Japanese; the fork; the speaking step's phase and words) goes to the relay as a whole snapshot (indices and flags,
   the speaking step's texts cut to fit 256 bytes: ~100 a frame, ~190 at most), on change at most every 200 ms, again
   whole when someone arrives, and every 30 s unchanged (so the room sleeps between); one heard unchanged isn't set again. The relay sends it to the game's other seats only (the guest when seated), and only
@@ -202,7 +202,7 @@ from anyone at the table; a mini-game's plays and close from any seat: みんな
 
 A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
 screens, the museum; listening starts with the app, `routes/+layout.svelte`): a banner with the starter's head,
-「Xが英語すごろくを始めました」 [参加] ✕ (`sugoroku/components/InviteBanner.svelte`, placed with the toasts by
+「Xが英語すごろくを始めたよ」 [参加] ✕ (`sugoroku/components/InviteBanner.svelte`, placed with the toasts by
 ToastHost: in the open sheet's dialog when there is one). It stays till 参加 (straight into `/sugoroku?m=online`) or ✕,
 each remembered by game id on the phone (`DEVICE.sugorokuAnswered`); never on that game's own screen. One at a time, the
 latest game's. Not for my own start, a phone not seated, a game over (an 終了 or the fold's end) or one whose last move

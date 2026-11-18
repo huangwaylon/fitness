@@ -187,7 +187,7 @@ const S = {
   fine: { ja: '録音は文字にするだけで、保存しません', en: 'Your voice is only turned into text, never kept' }
 } as const satisfies Record<string, { ja: string; en: string }>;
 export type SayKey = keyof typeof S;
-/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). @public (i18n/linebreaks.test.ts) */
+/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). */
 export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
 export function say(key: SayKey, params: Record<string, string | number> = {}): string {
   const raw: string = S[key][i18n.locale === 'en' ? 'en' : 'ja'];

@@ -19,11 +19,17 @@ import jaBots from './bots.ja.json';
 import jaRooms from './rooms.ja.json';
 import jaVisitors from './visitors.ja.json';
 import { jaStrings as jaEnglishTable } from '#lib/english/i18n.ts';
+import { jaStrings as jaSugorokuTable } from '#lib/sugoroku/i18n.ts';
+import { jaStrings as jaSpeakTable } from '#lib/sugoroku/speak.ts';
+import { jaStrings as jaSpeechTable } from '#lib/speech/i18n.ts';
 
-// English Study's own table (lib/english/i18n.ts): a sheet's copy, keyed english.* here.
-const jaEnglish = Object.fromEntries(Object.entries(jaEnglishTable()).map(([k, v]) => [`english.${k}`, v]));
+// The feature tables of their own, a sheet's copy each, keyed by their prefix here: English Study (lib/english/i18n.ts),
+// 英語すごろく (lib/sugoroku/i18n.ts, its speaking step's speak.ts) and the speech test (lib/speech/i18n.ts).
+const keyed = (prefix: string, table: Record<string, string>) => Object.fromEntries(Object.entries(table).map(([k, v]) => [`${prefix}.${k}`, v]));
+const jaEnglish = keyed('english', jaEnglishTable());
+const jaSugoroku = { ...keyed('sugoroku', jaSugorokuTable()), ...keyed('sugoroku.speak', jaSpeakTable()), ...keyed('speech', jaSpeechTable()) };
 
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaSheets, ...jaFood, ...jaNames, ...jaTravel, ...jaWed, ...jaGym, ...jaIts, ...jaKalori, ...jaBots, ...jaRooms, ...jaVisitors, ...jaEnglish, ...jaSugoroku };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */
@@ -86,6 +92,10 @@ describe('ja copy: one spelling per term, every sheet', () => {
   const bad = (re: RegExp) => sheets.filter(([, v]) => re.test(v)).map(([k, v]) => `${k}: ${v}`);
   it('図鑑, 捕まえた, 作る, 取り消す', () => {
     expect(bad(/ずかん|つかまえ|つくる|つくり|つくっ|とりけ|元に戻した/)).toEqual([]);
+  });
+  it('もう一度 (never もう一回); 英語すごろく’s stone is 文 (never ぶん)', () => {
+    expect(bad(/もう一回/)).toEqual([]);
+    expect(bad(/(?<![じずたはさ])ぶん/).filter((k) => /^(sugoroku|speech)\./.test(k))).toEqual([]);
   });
   it('a range is 〜', () => {
     expect(bad(/～|[\d}）)]\s?[–—-]\s?[\d{]/)).toEqual([]);
