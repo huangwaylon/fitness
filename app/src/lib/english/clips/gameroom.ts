@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 7, retire 1, new 0, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 12, rewrite 7, retire 1, new 0, ctx 5, tx 10, qa 9
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 5, new 3
 // “Chandler & Monica Argue About Move In Plans | Friends” (the official Friends channel, Best of Season 6): Monica
 // plans a beautiful guest room for Rachel's old room, Chandler wants a game room, she says no, he mocks her plan; then
@@ -53,7 +53,7 @@ export const gameRoom: Clip = {
       trap: '「ワナ」なら wanna、「ガナ」なら gonna、「ガラ」なら gotta。ここは口を丸めた「ワナ」。',
       use: 'You wanna get some coffee?（コーヒー飲みに行かない？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'guest', reveals: ['cards'], seg: [16.7, 24.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'guest', reveals: ['cards'], seg: [16.7, 27.0],
       stem: 'What does Monica want to turn Rachel’s room into?',
       ja: 'モニカは、レイチェルの部屋を何にしたい？',
       choices: ['A room for guests to stay', 'An office with a big desk', 'A room kept for Rachel'], a: 0,
@@ -112,10 +112,10 @@ export const gameRoom: Clip = {
       use: 'I haven’t decided yet.（まだ決めてない）' },
 
     { id: 'p3', skill: 'pragma', level: 'B1', point: 'likeidea', seg: [33.2, 41.7],
-      stem: 'How does Chandler bring up his own idea?',
-      ja: 'チャンドラーは、自分の案をどう切り出す？',
-      choices: ['He likes hers, but adds his', 'He says hers is bad', 'He waits until she asks him'], a: 0,
-      choicesJa: ['彼女の案をほめてから、自分のを言う', '彼女の案はだめだと言う', '彼女に聞かれるまで待つ'],
+      stem: 'What does Chandler do before giving his idea?',
+      ja: 'チャンドラーは自分の案を言う前に、何をする？',
+      choices: ['He praises her idea', 'He says hers is bad', 'He waits for her to ask'], a: 0,
+      choicesJa: ['彼女の案をほめる', '彼女の案はだめだと言う', '彼女に聞かれるのを待つ'],
       cue: '「Well」で始まる返事',
       line: 'Well, *I like that idea*. Obviously. *But I was thinking maybe*… it could be a game room.',
       said: '「その案いいね。もちろん。でも、ゲーム部屋もいいかなって」と言う。',
@@ -124,10 +124,10 @@ export const gameRoom: Clip = {
       use: 'I like that idea, but I was thinking maybe Friday.（いい案だね。でも金曜もいいかなって）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'mean', seg: [37.9, 49.9],
-      stem: 'Why does Chandler say “I mean” after “game room”?',
-      ja: 'チャンドラーは「game room」のあと、なぜ「I mean」と言う？',
-      choices: ['To give a reason for it', 'To fix a wrong word', 'To change the topic'], a: 0,
-      choicesJa: ['その理由を言うため', 'まちがえた言葉を直すため', '話題を変えるため'],
+      stem: 'What comes after Chandler’s “I mean”?',
+      ja: 'チャンドラーの「I mean」のあとに続くのは？',
+      choices: ['A reason for his idea', 'A fix for a wrong word', 'A new topic'], a: 0,
+      choicesJa: ['自分の案のいい理由', 'まちがえた言葉の言い直し', '別の話題'],
       cue: '「game room」のあとの2語',
       line: 'it could be a game room, you know? *I mean*, you can buy old arcade games',
       said: '「ゲーム部屋とか。だってさ、昔のゲーム機が買えるんだよ」と続ける。',
@@ -138,13 +138,13 @@ export const gameRoom: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'price', seg: [41.3, 49.9], keep: true,
       stem: 'What does Chandler say an old arcade game costs?',
       ja: '昔のゲーム機はいくらだと、チャンドラーは言う？',
-      choices: ['$20', '$200', '$2,000'], a: 1,
-      choicesJa: ['20ドル', '200ドル', '2,000ドル'],
+      choices: ['$20', '$100', '$200', '$2,000'], a: 2,
+      choicesJa: ['20ドル', '100ドル', '200ドル', '2,000ドル'],
       cue: '「Asteroids」のすぐあと',
       line: 'like Space Invaders and Asteroids *for $200*',
       said: '「本物の昔のゲーム機が、200ドルで買える」と言う。',
       mean: 'arcade game ＝ ゲームセンターの大きなゲーム機。two hundred ＝ 200。',
-      trap: '「トゥー・ハンドレッド」なら200、「トゥエニ」だけなら20、「トゥー・サウザンド」なら2,000。',
+      trap: '「トゥー・ハンドレッド」なら200、「ワン・ハンドレッド」なら100、「トゥエニ」だけなら20、「トゥー・サウザンド」なら2,000。',
       use: 'You can get one for about fifty bucks.（50ドルくらいで買えるよ）' },
 
     { id: 'h2', skill: 'pragma', level: 'B1', point: 'butno', ctx: true, seg: [53.5, 67.5],
@@ -170,7 +170,7 @@ export const gameRoom: Clip = {
       trap: '甘い口調をまねるので「優しく断って」に聞こえやすい。最後の文の Let’s（一緒に）が本題。',
       use: 'Can we talk before you decide?（決める前に話せる？）', retired: true },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'reject', seg: [56.2, 63.1],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'reject', retired: true, seg: [56.2, 63.1],
       stem: 'How does Chandler feel about Monica’s “No”?',
       ja: 'モニカの「No」に、チャンドラーはどう感じている？',
       choices: ['Unhappy and wants to talk', 'Hurt and gives up the idea', 'Amused and only joking'], a: 0,
@@ -231,7 +231,7 @@ export const gameRoom: Clip = {
       stem: 'Fill the gap: “___ against the beautiful guest room?”',
       ja: 'すき間をうめよう：「___ against the beautiful guest room?」',
       choices: ['What do you have', 'What did you have', 'What have you got'], a: 0,
-      choicesJa: ['何が気に入らないの（What do you have）', '何が気に入らなかったの（What did you have）', '何を持ってるの（What have you got）'],
+      choicesJa: ['何が気に入らないの（What do you have）', '何が気に入らなかったの（What did you have）', '同じ意味の別の言い方（What have you got）'],
       cue: '文の最初の速い部分',
       line: '*What do you have* against the beautiful guest room?',
       said: '「客間の何が気に入らないの？」と聞く。',

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 0, new 1, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 0, new 1, ctx 5, tx 7, qa 10
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 6, new 1
 // “The letter S hates to see Stacey Dillson coming 😭 #Shorts” (NickRewind, Best of iCarly 📲): three cuts of Stacey,
 // a fan of cotton swabs: an owner scolds someone for cleaning their ears with a display swab; at a question time
@@ -105,7 +105,7 @@ export const staceySwab: Clip = {
       use: 'My sister and I are going.（姉と私で行きます）' },
 
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'respect', ctx: true, seg: [50.3, 58.6],
-      stem: 'What does Stacey mean by “*Respectfully, I disagree*”?', ja: 'ステイシーの「Respectfully, I disagree」の意味は？',
+      stem: 'What does Stacey mean by “Respectfully, I disagree”?', ja: 'ステイシーの「Respectfully, I disagree」の意味は？',
       choices: ['I don’t believe you', 'I’m sorry for asking', 'Okay, I understand'], a: 0,
       choicesJa: ['信じません', '聞いてごめんなさい', 'はい、分かりました'],
       cue: '「romantic relationship」のあと',
@@ -116,7 +116,7 @@ export const staceySwab: Clip = {
       use: 'With respect, I see it differently.（恐れ入りますが、私は違う意見です）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'tellyou', reveals: ['if', 'deal'], seg: [54.3, 65.6],
-      stem: 'What does Stacey’s “*Tell you what*” start?', ja: 'ステイシーの「Tell you what」は何の始まり？',
+      stem: 'What does Stacey’s “Tell you what” start?', ja: 'ステイシーの「Tell you what」は何の始まり？',
       choices: ['An offer of a deal', 'A secret about Logan', 'A goodbye to them'], a: 0,
       choicesJa: ['取引の申し出', 'ローガンの秘密', 'お別れのあいさつ'],
       cue: '「I disagree. Okay,」のあと',
@@ -143,9 +143,9 @@ export const staceySwab: Clip = {
       choicesJa: ['デートの代わりに一人で作業する', 'カーリーがピラミッドを手伝う', '恋愛の質問をやめる'],
       cue: '「Okay, deal」のあと',
       line: 'Then get me a date with him, and I’ll finish this pyramid solo. — *Okay, deal.*',
-      said: 'ステイシーが「デートを取りつけてくれたら一人で仕上げる」と言い、「よし、決まり」となる。',
+      said: 'ステイシーが「デートを取りつけてくれたら一人で仕上げる」と言い、「わかった、決まりね」となる。',
       mean: 'deal ＝ 取引、それで決まり。get me a date ＝ デートを取りつけて。',
-      trap: 'romantic（恋愛）の話から始まるが、二人は否定している。最後は取引の話。',
+      trap: 'ローガンの話が長いので、恋愛の話と考えがち。決め手は Okay, deal の前の条件。',
       use: 'Okay, deal. You drive, I’ll pay for gas.（よし決まり。運転してくれたらガソリン代出す）' },
 
     { id: 'nt1', skill: 'pragma', level: 'C2', point: 'which', seg: [68.4, 77.6], retired: true,
@@ -170,7 +170,7 @@ export const staceySwab: Clip = {
       trap: 'Haven’t なら n の音が残る。You’ve なら「ユーヴ」で始まる。ここは「ハヴュ」。',
       use: 'Have you tried the soup here?（ここのスープ食べたことある？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'whylogan', ctx: true, seg: [73.1, 82.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'whylogan', reveals: ['haveyou'], ctx: true, seg: [73.1, 82.9],
       stem: 'Why does Stacey want to go out with Logan?', ja: 'ステイシーはなぜローガンとデートしたい？',
       choices: ['She likes how he looks', 'She likes his acting', 'She is his old friend'], a: 0,
       choicesJa: ['見た目が好き', '演技が好き', '昔からの友だち'],
@@ -182,7 +182,7 @@ export const staceySwab: Clip = {
       use: 'This cake looks scrumptious.（このケーキ、すごくおいしそう）' },
 
     { id: 'a2', skill: 'phrase', level: 'B1', point: 'sorta', seg: [82.1, 91.2],
-      stem: 'What does “Uh, yeah, *sort of*” mean?', ja: '「Uh, yeah, sort of」の意味は？',
+      stem: 'What does “Uh, yeah, sort of” mean?', ja: '「Uh, yeah, sort of」の意味は？',
       choices: ['Yes, a little', 'Yes, very much', 'No, not at all'], a: 0,
       choicesJa: ['うん、まあね', 'うん、すごく', 'ううん、全然'],
       cue: '「you’re friends with him」のあと',
@@ -218,7 +218,7 @@ export const staceySwab: Clip = {
       choicesJa: ['ローガンの妻になる', 'ローガンのお母さんに会う', 'ローガンくらい有名になる'],
       cue: '「One day, I could be」のあと',
       line: 'One day, I could be *Mrs. Stacey Reese*!',
-      said: 'ステイシーが「いつか私、ミセス・ステイシー・リースになれるかも！」と言う。',
+      said: 'ステイシーが「いつか私、ステイシー・リース夫人になれるかも！」と言う。',
       mean: 'Mrs. ＋ 自分の名前 ＋ 相手の名字 ＝ 結婚した自分。デートの約束だけで結婚を夢見る。',
       trap: 'Mrs. Reese だけ聞くと、ローガンのお母さんに聞こえる。間に自分の名前が入っている。',
       use: 'One day, I could live in Paris.（いつかパリに住めるかも）' },
@@ -246,7 +246,7 @@ export const staceySwab: Clip = {
       use: 'I’m really into board games.（ボードゲームにはまってるの）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'now', seg: [113.1, 120.8],
-      stem: 'What does Stacey’s “*Now*” mean here?', ja: 'ここでのステイシーの「Now」の意味は？',
+      stem: 'What does Stacey’s “Now” mean here?', ja: 'ここでのステイシーの「Now」の意味は？',
       choices: ['Okay, next thing', 'Do it right now', 'That is all'], a: 0,
       choicesJa: ['さて、次に', '今すぐやって', 'それで全部'],
       cue: '「internship capacity」のあと',
@@ -257,12 +257,12 @@ export const staceySwab: Clip = {
       use: 'Now, about the price…（さて、お値段ですが…）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'getout', ctx: true, seg: [117.8, 126],
-      stem: 'What does “*Get out of here!*” mean here?', ja: 'ここでの「Get out of here!」の意味は？',
+      stem: 'What does “Get out of here!” mean here?', ja: 'ここでの「Get out of here!」の意味は？',
       choices: ['Leave right now', 'No way, that’s great!', 'Let’s all go out'], a: 0,
       choicesJa: ['今すぐ出ていけ', 'うそ、すごい！', 'みんなで出かけよう'],
       cue: '「cotton swabs and white glue」のあと',
       line: '*Get out of here!* / Carly. / Dude, it’s okay. *This always happens.*',
-      said: '「出ていけ！」のあと、「大丈夫、いつものことだから」と言う。',
+      said: '「出ていけ！」のあと、「大丈夫。いつもこうなるの」と言う。',
       mean: 'Get out of here ＝ 出ていけ。「うそでしょ！」の意味もあるが、ここは This always happens で追い出されたと分かる。',
       trap: '「うそ、すごい！」の意味もある。どちらかは、そのあとの「いつものこと」で決まる。',
       use: 'Get out of here, the floor’s wet!（ここから出て、床がぬれてるよ）' },
