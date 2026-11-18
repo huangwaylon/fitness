@@ -21,6 +21,7 @@ import { LONG_BONUS, MARKET_FINDS, MARKET_TILES, market, marketCheck, marketHint
 import { SORT_STREAM, binOf, sort, sortStream } from './sort.ts';
 import { SPELL_ROUNDS, spell, spellWord, type SpellState } from './spell.ts';
 import { mayPlace, nextWord, together, type TogetherState } from './together.ts';
+import { BOXES, FRAMES, SHOP_ASK_MS, SHOP_FILL_MS, SHOP_ITEMS, SHOP_LISTS, SHOP_ROUNDS, SHOP_SHELF, basketRight, lineJa, listJa, readCode, requestCheck, requestCode, requestText, rightSlots, shopRequest, shopping, slotText, type ShoppingState } from './shopping.ts';
 import { NUMBER_STREAM, inWords, numberStream, numbers, yearWords, type NumberPrompt } from './numbers.ts';
 import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
@@ -533,6 +534,146 @@ describe('数字キャッチ', () => {
   });
 });
 
+describe('おつかい', () => {
+  const picture = (w: string) => PICTURES.findIndex((p) => p.w === w);
+  it('the content: every thing a picture with its plural or container and a counter; every list three different things; enough lists a level', () => {
+    const words = new Set(SHOP_ITEMS.map((i) => i.w));
+    expect(words.size).toBe(SHOP_ITEMS.length);
+    for (const i of SHOP_ITEMS) {
+      expect(picture(i.w), i.w).toBeGreaterThanOrEqual(0);
+      expect(!!i.many !== !!i.box, i.w).toBe(true);
+      if (i.box) expect(BOXES as readonly string[]).toContain(i.box);
+      expect(i.ja).toMatch(/^[^a-zA-Z]+$/);
+      expect(['つ', '個', '本', '枚', '冊', '斤', 'びん', '袋', 'パック', '房']).toContain(i.ctr);
+    }
+    let boxed = 0;
+    for (const row of SHOP_LISTS) {
+      const ws = [row[1], row[3], row[5]];
+      expect(row).toHaveLength(7);
+      expect(new Set(ws).size, row[0]).toBe(3);
+      for (const w of ws) expect(words.has(w as string), `${row[0]} ${w}`).toBe(true);
+      for (const n of [row[2], row[4], row[6]]) expect(Number.isInteger(n) && (n as number) >= 1 && (n as number) <= 6).toBe(true);
+      if (ws.some((w) => SHOP_ITEMS.find((i) => i.w === w)!.box)) boxed++;
+    }
+    expect([SHOP_LISTS.length - boxed >= 25, boxed >= 15]).toEqual([true, true]);
+  });
+  const seats = [H('A', 1), H('B', 3), H('G', 2)];
+  const s0 = shopping.deal(deal(seats, 'sh', 'B'), ctx);
+  it('deals two lists, the お客さん the lander then the next; やさしい two lines of countable things, むずかしい three with a container; a shelf of 9 with them', () => {
+    expect(s0.rounds.map((r) => r.asker)).toEqual(['B', 'G']);
+    // (both rounds' timers fit its 90 s)
+    expect(SHOP_ROUNDS * (SHOP_ASK_MS + SHOP_FILL_MS)).toBeLessThanOrEqual(MINIS.shopping.ms);
+    expect(shopping.deal(deal(seats, 'sh', 'B'), ctx)).toEqual(s0);
+    for (let k = 0; k < 60; k++) {
+      const s = shopping.deal(deal(seats, `sh${k}`, (['A', 'B', 'G'] as const)[k % 3]), ctx);
+      expect(s.rounds).toHaveLength(SHOP_ROUNDS);
+      for (const round of s.rounds) {
+        const level = seats.find((x) => x.who === round.asker)!.level;
+        const items = round.lines.map((l) => SHOP_ITEMS.find((i) => i.w === l.w)!);
+        expect(round.lines).toHaveLength(level === 1 ? 2 : 3);
+        expect(items.some((i) => i.box)).toBe(level === 3);
+        expect(round.shelf).toHaveLength(SHOP_SHELF);
+        expect(new Set(round.shelf).size).toBe(SHOP_SHELF);
+        for (const l of round.lines) {
+          expect(round.shelf).toContain(picture(l.w));
+          expect(round.words).toContain(l.w);
+        }
+        expect(round.words.length).toBe(round.lines.length + 2);
+      }
+    }
+  });
+  it('the list in Japanese and the request in English: counters, a / an, plurals, containers, and', () => {
+    const round = { asker: 'A' as Who, title: 't', lines: [{ w: 'apple', n: 2 }, { w: 'egg', n: 1 }, { w: 'bread', n: 2 }], words: ['bread', 'apple', 'egg'], shelf: [] };
+    expect(listJa(round)).toBe('りんご2つ、卵1個、食パン2斤');
+    expect(requestText(0, rightSlots(round), round.words)).toBe('Can I have two apples, an egg and two loaves of bread, please?');
+    expect(requestText(3, rightSlots(round), round.words)).toBe('Two apples, an egg and two loaves of bread, please.');
+    expect(requestText(1, rightSlots(round).slice(0, 1), round.words)).toBe('I’d like two apples, please.');
+    expect(slotText({ word: 0, n: 1, many: false, box: BOXES.indexOf('loaf') }, round.words)).toBe('a loaf of bread');
+    expect(slotText({ word: 0, n: 3, many: true, box: -1 }, ['tomato'])).toBe('three tomatoes');
+    expect(slotText({ word: 0, n: 2, many: true, box: BOXES.indexOf('pack') }, ['strawberry'])).toBe('two packs of strawberries');
+    expect(lineJa({ w: 'grapes', n: 1 })).toBe('ぶどう1房');
+    // every list's request reads
+    for (const k of SHOP_LISTS.keys()) {
+      const lines = [1, 3, 5].map((i) => ({ w: SHOP_LISTS[k][i] as string, n: SHOP_LISTS[k][i + 1] as number }));
+      const r2 = { ...round, lines, words: lines.map((l) => l.w) };
+      expect(requestText(2, rightSlots(r2), r2.words)).toMatch(/^Could I get (?:an? |two |three |four |five |six )[a-z ,]+ and (?:an? |two |three |four |five |six )[a-z ]+, please\?$/);
+    }
+    expect(FRAMES).toHaveLength(4);
+  });
+  it('the request on the wire: one code (≤ 16, the wire’s), read back; the fold judges it: right, sent; not yet, the slot and part; two misses, the right one shown', () => {
+    const round = s0.rounds[0], right = rightSlots(round), code = requestCode(2, right);
+    expect(code).toMatch(/^[a-z0-9]{1,16}$/);
+    expect(readCode(code)).toEqual({ frame: 2, slots: right });
+    expect([readCode('9'), readCode('0zz'), readCode('')]).toEqual([null, null, null]);
+    expect(requestCheck(round, code)).toBeNull();
+    const wrong = (f: (sl: (typeof right)[number]) => object) => requestCode(0, right.map((sl, i) => (i === 1 ? { ...sl, ...f(sl) } : sl)));
+    expect(requestCheck(round, wrong((sl) => ({ word: (sl.word + 1) % round.words.length })))).toEqual({ slot: 1, part: 'word' });
+    expect(requestCheck(round, wrong((sl) => ({ n: sl.n === 6 ? 5 : sl.n + 1 })))).toEqual({ slot: 1, part: 'number' });
+    expect(requestCheck(round, wrong((sl) => ({ many: !sl.many })))).toEqual({ slot: 1, part: 'many' });
+    expect(requestCheck(round, requestCode(0, right.slice(0, 2)))).toEqual({ slot: 2, part: 'word' });
+    // only the お客さん's, once
+    expect(shopping.play(s0, 'A', { op: code }, ctx)).toBe(s0);
+    const sent = shopping.play(s0, 'B', { op: code }, ctx);
+    expect([sent.frame, shopRequest(sent)]).toEqual([2, requestText(2, right, round.words)]);
+    expect(shopping.play(sent, 'B', { op: code }, ctx)).toBe(sent);
+    const miss = wrong((sl) => ({ many: !sl.many }));
+    const once = shopping.play(s0, 'B', { op: miss }, ctx);
+    expect([once.tries, shopRequest(once)]).toEqual([1, null]);
+    const twice = shopping.play(once, 'B', { op: miss }, ctx);
+    expect([twice.shown, shopRequest(twice)]).toEqual([true, requestText(0, right, round.words)]);
+  });
+  it('the shop fills the basket (the お客さん can’t; alone, they do), hands it over: right, the round over; else one more go', () => {
+    const round = s0.rounds[0];
+    expect(shopping.play(s0, 'A', { k: 0 }, ctx)).toBe(s0);
+    let s = shopping.play(s0, 'B', { op: requestCode(0, rightSlots(round)) }, ctx);
+    expect(shopping.play(s, 'B', { k: 0 }, ctx)).toBe(s);
+    const fill = (x: ShoppingState, who: Who) => round.lines.reduce((y, l) => Array.from({ length: l.n }).reduce<ShoppingState>((z) => shopping.play(z, who, { k: round.shelf.indexOf(picture(l.w)) }, ctx), y), x);
+    // one too many of the first, then taken out
+    const slot = round.shelf.indexOf(picture(round.lines[0].w));
+    s = shopping.play(fill(s, 'A'), 'G', { k: slot }, ctx);
+    expect(basketRight(s)).toBe(round.lines.length - 1);
+    const paid = shopping.play(s, 'A', { op: 'pay' }, ctx);
+    expect([paid.r, paid.pays]).toEqual([0, 1]);
+    s = shopping.play(paid, 'G', { k: slot, op: 'out' }, ctx);
+    expect(basketRight(s)).toBe(round.lines.length);
+    expect(shopping.play(s0, 'B', { k: slot, op: 'out' }, ctx)).toBe(s0);
+    const done = shopping.play(s, 'G', { op: 'pay' }, ctx);
+    expect([done.r, done.results[0]]).toEqual([1, { first: true, right: round.lines.length, of: round.lines.length }]);
+    // alone: the お客さん shops too
+    const solo = shopping.deal(deal([H('A', 2)], 'solo'), ctx);
+    const sr = solo.rounds[0];
+    const sent = shopping.play(solo, 'A', { op: requestCode(0, rightSlots(sr)) }, ctx);
+    expect(shopping.play(sent, 'A', { k: 0 }, ctx).basket[0]).toBe(1);
+  });
+  it('the timers: the list not in, it goes as written (no bonus); then the round over with the basket as it is; a late second next nothing; stars to everyone', () => {
+    const next = { op: 'next', k: s0.stage };
+    const shown = shopping.play(s0, 'A', next, ctx);
+    expect([shown.shown, shopRequest(shown) !== null, shown.r]).toEqual([true, true, 0]);
+    expect(shopping.play(shown, 'G', next, ctx)).toBe(shown);
+    const round = s0.rounds[0], first = round.lines[0];
+    let s = shopping.play(shown, 'G', { k: round.shelf.indexOf(picture(first.w)) }, ctx);
+    for (let n = 1; n < first.n; n++) s = shopping.play(s, 'A', { k: round.shelf.indexOf(picture(first.w)) }, ctx);
+    s = shopping.play(s, 'A', { op: 'next', k: s.stage }, ctx);
+    expect([s.r, s.results[0]]).toEqual([1, { first: false, right: 1, of: round.lines.length }]);
+    // one line right, no bonus: 2 each
+    expect(shopping.close(s).stars).toEqual({ A: 2, B: 2, G: 2 });
+    expect(shopping.close(s0)).toEqual({ stars: {}, made: [] });
+    // both right first time: (2 × lines + 2) a list, capped at 12 a seat; the requests made
+    let all = s0;
+    for (let k = 0; k < SHOP_ROUNDS; k++) {
+      const rd = all.rounds[all.r], shop = seats.find((x) => x.who !== rd.asker)!.who;
+      all = shopping.play(all, rd.asker, { op: requestCode(0, rightSlots(rd)) }, ctx);
+      for (const l of rd.lines) for (let n = 0; n < l.n; n++) all = shopping.play(all, shop, { k: rd.shelf.indexOf(picture(l.w)) }, ctx);
+      all = shopping.play(all, shop, { op: 'pay' }, ctx);
+    }
+    expect(shopping.done(all)).toBe(true);
+    const res = shopping.close(all);
+    expect(res.stars).toEqual({ A: 12, B: 12, G: 12 });
+    expect(res.made.map((m) => [m.who, m.kind])).toEqual([['B', 'sentence'], ['G', 'sentence']]);
+    expect(res.made[0].ja).toBe(listJa(all.rounds[0]));
+  });
+});
+
 describe('every game: whatever the plays, never a negative star, and the same plays give the same game', () => {
   const seats = [H('A', 1), H('B', 2), H('G', 3)];
   const rackWords = new Map<string, string[]>();
@@ -566,6 +707,16 @@ describe('every game: whatever the plays, never a negative star, and the same pl
         return [[who, { n: Math.floor(r() * 100) }]];
       case 'numbers':
         return [[who, { n: Math.floor(r() * 100) }]];
+      case 'shopping': {
+        const sh = s as ShoppingState, round = sh.rounds[sh.r], x = r();
+        if (!round) return [[who, { k: 0 }]];
+        if (x < 0.15) return [[round.asker, { op: requestCode(Math.floor(r() * 4), rightSlots(round)) }]];
+        if (x < 0.25) return [[round.asker, { op: requestCode(0, rightSlots(round).map((sl) => ({ ...sl, n: 1 + Math.floor(r() * 6) }))) }]];
+        if (x < 0.3) return [[who, { op: 'next', k: sh.stage % 64 }]];
+        if (x < 0.4) return [[who, { op: 'pay' }]];
+        if (x < 0.5) return [[who, { k: Math.floor(r() * SHOP_SHELF), op: 'out' }]];
+        return [[who, { k: Math.floor(r() * SHOP_SHELF) }]];
+      }
       case 'chain': {
         const c = s as ChainState, x = r(), turn = chainTurn(c);
         if (x < 0.55) return [[turn, { w: ctx.words.starting!(letterOf(c)).find((w) => !chainCheck(c, turn, w, ctx)) ?? 'cat' }]];

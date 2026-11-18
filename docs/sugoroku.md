@@ -120,7 +120,12 @@ tested), the screens `components/mini/`; design: the 11-18 proposal (user-approv
   skips), パス free, ヒント two letters (free at やさしい, else no everyday +1); a round all passed: a new start; 1 a link
   +1 everyday, ≤ 10 a seat); 数字キャッチ (`numbers.ts`: a number, time or price in words, four to tap with the classic
   misses (13 / 30, 45 / 54, a quarter to eight / 8:15), each phone its own seeded stream: やさしい 1–100, ふつう + times
-  and prices, むずかしい + "a quarter to", "twelve ninety-nine", years, thousands; 30 s, one count a seat as なかま分け).
+  and prices, むずかしい + "a quarter to", "twelve ninety-nine", years, thousands; 30 s, one count a seat as なかま分け);
+  おつかい (`shopping.ts`, `data/shopping.json`: 55 things with their plural or container and counter, 50 lists; two
+  rounds, the お客さん builds the Japanese list's English from chips (one `op` code: frame, then each line's word,
+  number, -s, container), the fold judges it (おしい: the slot; two misses: the right one goes); the shop fills one
+  basket from 9 pictures and hands it over; やさしい 2 lines, word only; ふつう 3, number and -s; むずかしい a container;
+  2 a line right each, +2 asked right first time).
 - **Online:** the lander's `mg` (the option `b`, the seats present `s`: only they are dealt in), then `mp` plays (`w`,
   `k`, `n`, `y`, `op`) and the `mc` close from any seat at the table (the relay refuses moves from anyone not seated).
   They race for the next `i`: the room keeps the first, the log's order decides (the first finder, a tile's place) the

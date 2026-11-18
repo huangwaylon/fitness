@@ -14,7 +14,7 @@ import { boardFor, choose, eventDone, homeDone, isGame, newGame, next, pictureDo
 import { closeMini, miniOn, openMini, playMini } from './turn.ts';
 import { sortStream, binOf } from './sort.ts';
 import type { Ctx } from './types.ts';
-import { MINI_IDS } from './registry.ts';
+import { OFFERED } from './offer.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[] };
@@ -143,7 +143,7 @@ describe('a みんなで！ stone, passed round', () => {
         expect(JSON.stringify(again)).toBe(JSON.stringify(g));
       }
     }
-    expect([...seen].sort()).toEqual([...MINI_IDS].sort());
+    expect([...seen].sort()).toEqual([...OFFERED].sort());
   });
 });
 

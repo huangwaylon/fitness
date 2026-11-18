@@ -2,7 +2,7 @@
 // rules' version, a whole game's moves folded, and phones racing through a room (the relay's rule: the first of each
 // `i`) in any order of delivery, a race lost sent again at the next slot (wire.ts Outbox), a close racing the plays, an
 // end racing a mini-game, a phone dropping and coming back: every phone the room's log and the same game.
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fnv1a, seeded } from '#lib/random.ts';
@@ -19,9 +19,18 @@ import { applyMove, foldMoves } from '../online.ts';
 import { OUTBOX, RULES, answered, beaten, heard, miniOpenedAt, otherRules, playsRules, queued, sameMove, toSend, type Move, type Outbox } from '../wire.ts';
 import { miniOn } from './turn.ts';
 import { MINI_IDS, type MiniId } from './registry.ts';
+import { OFFERED } from './offer.ts';
 import { chainCheck, chainTurn, letterOf } from './chain.ts';
+import { requestCode, rightSlots } from './shopping.ts';
 
 vi.mock('./flag.ts', () => ({ MINIS: true }));
+// (a game without its screen yet is never offered: its tables' games offer every game, this file's switch)
+const hook = vi.hoisted(() => ({ all: false }));
+vi.mock('./offer.ts', async (load) => {
+  const o = await load<typeof import('./offer.ts')>(), { miniOptions } = await import('./registry.ts');
+  return { ...o, offer: (played: MiniId[], r: () => number) => (hook.all ? miniOptions(played, r) : o.offer(played, r)) };
+});
+afterEach(() => void (hook.all = false));
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt')));
@@ -52,6 +61,16 @@ function playsOf(g: Game, who: Who, r: () => number): Body[] {
     case 'together': {
       const line = on.s.lines[on.s.l];
       return line ? line.owner.map((o, k) => (o === who ? k : -1)).filter((k) => k >= 0).map((k) => ({ a: 'mp', k })) : [];
+    }
+    case 'shopping': {
+      // (the お客さん: a request, right; the shop: the list's things in, a pay; anyone: the timers' next)
+      const s = on.s, round = s.rounds[s.r];
+      if (!round) return [];
+      const out: Body[] = [{ a: 'mp', op: 'next', k: s.stage % 64 }];
+      if (who === round.asker) out.unshift({ a: 'mp', op: requestCode(1, rightSlots(round)) });
+      if (who !== round.asker || s.seats.length === 1) for (const l of round.lines) for (let n = 0; n < l.n; n++) out.unshift({ a: 'mp', k: round.shelf.indexOf(PICTURES.findIndex((p) => p.w === l.w)) });
+      if (who !== round.asker) out.push({ a: 'mp', op: 'pay' });
+      return out;
     }
     case 'chain': {
       // (whose turn: a word; anyone: the timers' skips for the next stages, a pass)
@@ -150,7 +169,7 @@ describe('online with mini-games on: the rules', () => {
   it('RULES moves with what a fold makes of the moves', () => {
     const hash = hashOf(RULES, PIN[RULES]?.[1] ?? 'abcdefghij minigame03 minigame06');
     expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]?.[0]);
-    expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(MINI_GAMES));
+    expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(OFFERED));
   });
   it('an old game (RULES 2: みんなで一文 dealt in order) folds as it did; on 3 its hands are dealt anew', () => {
     expect(hashOf('2', PIN['2'][1])).toBe(PIN['2'][0]);
@@ -247,16 +266,18 @@ class Phone {
 }
 
 /** A table at a mini-game's open (its log so far the same on every phone and in the room), the room: the first game
- *  from `seed` with a pick of `id` (a game's first pick is a ★ one: the others at a later stone; none given: the first). */
+ *  from `seed` with a pick of `id` (a game's first pick is a ★ one: the others at a later stone; none given: the first).
+ *  One not offered yet: the games offer every game (`hook`, till the test's end: the phones fold the same). */
 const opens = new Map<string, { id: MiniId; base: Move[] }[]>();
 function table(seed: string, id?: MiniId): { phones: Phone[]; room: Room; at: number } {
-  for (let k = 0; ; k++) {
+  hook.all = !!id && !OFFERED.includes(id);
+  for (let k = 0; k < 200; k++) {
     const gid = `${seed}x${k}`.padEnd(10, '0').slice(0, 12);
-    const picks = opens.get(gid) ?? opens.set(gid, ((all) => all.flatMap((m, i) => {
+    const picks = opens.get(`${gid}${hook.all}`) ?? opens.set(`${gid}${hook.all}`, ((all) => all.flatMap((m, i) => {
       if (m.a !== 'mg') return [];
       const base = all.slice(0, i + 1);
       return [{ id: miniOn(foldMoves(base, ctx)!)!.id, base }];
-    }))(playMoves(gid))).get(gid)!;
+    }))(playMoves(gid))).get(`${gid}${hook.all}`)!;
     const hit = picks.find((p) => !id || p.id === id);
     if (!hit) continue;
     const base = hit.base, at = base.length - 1;
@@ -265,6 +286,7 @@ function table(seed: string, id?: MiniId): { phones: Phone[]; room: Room; at: nu
     room.moves = [...base];
     return { phones, room, at };
   }
+  throw new Error(`no game picks ${id}`);
 }
 const MINI_GAMES = MINI_IDS;
 
