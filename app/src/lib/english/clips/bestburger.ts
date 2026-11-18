@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 4, new 2, ctx 3, tx 9
+// R4 REVIEW 2026-11-18: keep 4, rewrite 11, retire 4, new 2, ctx 3, tx 9, qa 16
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 1
 // “The Best Burger | Parks and Recreation” (the official Parks and Recreation channel, Season 3): a burger contest at
 // work. Chris presents a long, fancy turkey burger, Ron a plain beef one, and the tasters pick Ron's.
@@ -26,19 +26,19 @@ export const bestBurger: Clip = {
       trap: '控えめな語を本当の謙遜と取りやすい。控えめな一語のあとに自慢が続いたら、形だけの謙遜を疑う。',
       use: 'I humbly present my famous chili.（自慢のチリを謹んでお出しします）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', seg: [0, 41.2],
-      stem: 'How are the two burgers different?',
-      ja: '二つのバーガーはどう違う？',
-      choices: ['Chris’s is fancy, Ron’s is plain', 'Chris’s is plain, Ron’s is fancy', 'Both are fancy and costly'], a: 0,
-      choicesJa: ['クリスのは豪華、ロンのはシンプル', 'クリスのはシンプル、ロンのは豪華', 'どちらも豪華で高い'],
-      cue: 'ロンの「Here’s mine」のあと',
-      line: '…an Asian fusion burger made with… black truffle aioli… — *Here’s mine.* It’s a hamburger…',
-      said: 'クリスは高級な材料を長々と並べ、ロンは一文で「これが私のだ」と終わる。',
-      mean: 'fancy ＝ 凝った・高級な。plain ＝ シンプルな。説明の長さもまったく違う。',
-      trap: '二人とも自信たっぷりなので、どちらも豪華と考えがち。説明の長さを比べる。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', reveals: ['turkey'], seg: [0, 15.7],
+      stem: 'What is Chris’s burger like?',
+      ja: 'クリスのバーガーはどんなもの？',
+      choices: ['Fancy, with many extras', 'Plain, with nothing on it', 'Small, and very spicy'], a: 0,
+      choicesJa: ['豪華で、いろいろのっている', 'シンプルで、何ものっていない', '小さくて、とても辛い'],
+      cue: 'クリスが並べる材料の数',
+      line: '…an Asian fusion burger made with… organic turkey… *black truffle aioli*, and microgreens on a gluten-free brioche bun',
+      said: 'クリスは有機七面鳥、チーズ、トリュフなど、高級な材料を長々と並べて紹介する。',
+      mean: 'fancy ＝ 凝った・高級な。材料の名前が次から次へと続くのは、手の込んだ高いバーガーだから。',
+      trap: '何ものっていないのは、あとで出るロンのバーガー。クリスは材料をたくさん並べている。',
       use: 'I’d like a plain burger, please.（シンプルなバーガーをください）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'turkey', seg: [0, 9.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'turkey', seg: [0, 9.1],
       stem: 'What meat is in Chris’s burger?',
       ja: 'クリスのバーガーの肉は何？',
       choices: ['Turkey', 'Beef', 'Chicken'], a: 0,
@@ -50,7 +50,7 @@ export const bestBurger: Clip = {
       trap: 'ハンバーガーなら牛肉と考えがち。burger の前の語が肉の種類。',
       use: 'Is this burger beef or turkey?（このバーガーは牛肉？ 七面鳥？）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B1', point: 'enjoy', seg: [9.2, 17.0],
+    { id: 'p2', skill: 'phrase', level: 'B1', point: 'enjoy', seg: [9.1, 17.0],
       stem: 'Chris serves his burger and says “Enjoy.” What does he mean?',
       ja: 'クリスはバーガーを出して「Enjoy.」と言う。どういう意味？',
       choices: ['Please eat it', 'I enjoyed making it', 'Have a nice day'], a: 0,
@@ -62,7 +62,7 @@ export const bestBurger: Clip = {
       trap: 'enjoy（楽しむ）から、自分が楽しかった話に聞こえるが、出す側が食べる人に言う決まり文句。',
       use: 'Here’s your coffee. Enjoy!（コーヒーです。どうぞ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B2', point: 'guessing', seg: [17.0, 21.6],
+    { id: 'h1', skill: 'detail', level: 'B2', point: 'guessing', seg: [17.0, 21.45],
       stem: 'The taster says, “I’m guessing.” What is he guessing?',
       ja: '試食した人は「I’m guessing」と言う。何を推測している？',
       choices: ['How Beyoncé smells', 'How much it costs', 'Who made it'], a: 0,
@@ -74,7 +74,7 @@ export const bestBurger: Clip = {
       trap: '味の感想のあとなので、材料の推測と考えがち。直前で比べた相手を聞く。',
       use: 'It’s about ten minutes from here, I’m guessing.（ここから10分くらいかな、たぶん）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'palate', seg: [20.9, 27.8], ctx: true,
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'palate', seg: [21.45, 27.8], ctx: true,
       stem: 'Someone asks, “Saffron?” What does Chris’s reply mean?',
       ja: '「サフラン？」と聞かれる。クリスの返事はどういう意味？',
       choices: ['The guess is right', 'The guess is wrong', 'It is a secret'], a: 0,
@@ -120,7 +120,7 @@ export const bestBurger: Clip = {
       trap: 'made out of がつながり「メイダウラヴ」と聞こえる。of は小さく短い。',
       use: 'It’s made out of wood.（それは木でできている）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'care', seg: [35.9, 41.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'care', seg: [36.65, 41.5],
       stem: 'What does “*I couldn’t care less*” mean?',
       ja: '「I couldn’t care less」はどういう意味？',
       choices: ['I don’t care at all', 'I care a little', 'I care about it a lot'], a: 0,
@@ -132,7 +132,7 @@ export const bestBurger: Clip = {
       trap: 'less（より少なく）から「少し気にする」と読みたくなるが、全体で「まったく気にしない」。',
       use: 'I couldn’t care less about the rain.（雨なんてまったく気にしない）' },
 
-    { id: 'a2', skill: 'detail', level: 'B2', point: 'disappoint', seg: [40.5, 48.6],
+    { id: 'a2', skill: 'detail', level: 'B2', point: 'disappoint', seg: [40.5, 46.8],
       stem: 'Why does Chris say he is disappointed?',
       ja: 'クリスが「がっかりだ」と言うのはなぜ？',
       choices: ['He wanted a harder contest', 'Ron made fun of him', 'Ron’s burger looks bad'], a: 0,
@@ -144,16 +144,16 @@ export const bestBurger: Clip = {
       trap: 'disappointed から、ばかにされたと勘違いしやすい。I thought that のあとが理由。',
       use: 'I’m so disappointed.（すごくがっかり）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'winner', reveals: ['turkey'], seg: [41.4, 72],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'winner', reveals: ['turkey', 'sorry'], seg: [46.8, 62.4],
       stem: 'Which burger wins?',
       ja: 'どちらのバーガーが勝つ？',
       choices: ['Ron’s plain burger', 'Chris’s turkey burger', 'Neither, it’s a tie'], a: 0,
       choicesJa: ['ロンのシンプルなバーガー', 'クリスの七面鳥バーガー', '引き分け'],
       cue: '「Kyle?」のあとの答え',
-      line: '*Ron’s is better*. … *I don’t understand*.',
-      said: '試食した人たちが「ロンの方がうまい」と言い、クリスは「分からない」と首をかしげる。',
-      mean: 'better ＝ よりよい。何年も工夫したクリスのバーガーが、シンプルなバーガーに負ける。',
-      trap: 'クリスのバーガーは最初ほめられていたので、勝つと考えがち。何人もが Ron’s と言う。',
+      line: 'Never mind. *This is better*. … Sorry, Andy. *Ron’s is better*. … Turkey can never beat cow, Chris.',
+      said: '試食した人たちが次々に「ロンの方がうまい」と言い、「七面鳥は牛に勝てない」とまで言われる。',
+      mean: 'better ＝ よりよい。凝ったクリスの七面鳥バーガーが、シンプルなロンのバーガーに負ける。',
+      trap: 'クリスのバーガーは最初ほめられていたので、勝つと考えがち。何人もが「こっちの方がいい」と言う。',
       use: 'This one is better.（こっちの方がいい）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'nevermind', reveals: ['winner'], seg: [46.8, 51.3],
@@ -194,13 +194,13 @@ export const bestBurger: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'years', reveals: ['turkey'], seg: [59.6, 67.6], ctx: true,
       stem: 'How long has Chris been working on his recipe?',
       ja: 'クリスはどのくらいレシピを工夫してきた？',
-      choices: ['For weeks', 'For months', 'For years'], a: 2,
-      choicesJa: ['何週間も', '何か月も', '何年も'],
+      choices: ['For days', 'For weeks', 'For months', 'For years'], a: 3,
+      choicesJa: ['何日も', '何週間も', '何か月も', '何年も'],
       cue: 'クリスの返事、「this recipe」のあと。',
       line: 'Turkey can never beat cow, Chris. Sorry. / Chris: I don’t understand. I’ve tinkered with this recipe *for years*.',
       said: '「七面鳥は牛に勝てない」と言われ、「何年もこのレシピをいじってきたのに」と返す。',
       mean: 'for years ＝ 何年も。tinker with 〜 ＝ 〜を少しずついじる。I’ve 〜ed ＝ ずっと〜してきた。',
-      trap: 'years は「イヤーズ」と最後の z が聞こえる。months なら「マンス」、weeks なら「ウィークス」。',
+      trap: 'years は「イヤーズ」。months は「マンス」、weeks は「ウィークス」、days は「デイズ」。',
       use: 'I’ve lived here for years.（何年もここに住んでいる）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'tinker', reveals: ['years'], seg: [62.9, 67.9], retired: true,
@@ -225,7 +225,7 @@ export const bestBurger: Clip = {
       trap: 'I’ve の v はほとんど聞こえない。since の s と I’ve がつながり「シンサイヴ」になる。',
       use: 'It’s been years since I’ve had sushi.（お寿司は何年ぶりだろう）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'granted', seg: [67.6, 72.6],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'granted', reveals: ['grantedm'], seg: [67.6, 72.6],
       stem: 'Why might Chris have lost?',
       ja: 'クリスが負けたのはなぜかもしれない？',
       choices: ['He forgot how burgers taste', 'He didn’t taste his own burger', 'He likes beef better'], a: 0,

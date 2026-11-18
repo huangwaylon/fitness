@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 9, ctx 8, tx 13
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 4, new 9, ctx 8, tx 13, qa 13
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 6, new 0
 // “I am not to be ******** with - The Office US” (the official The Office channel, BEST OF SEASON 5 - The Office US):
 // Michael brings Pam and Ryan back as salespeople with the clients his paper company took; the old salespeople want
@@ -17,7 +17,7 @@ export const truffled: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'dispute', reveals: ['lost'], seg: [5.5, 35.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'dispute', reveals: ['lost', 'getback'], seg: [5.97, 35.5],
       stem: 'What is the first argument about?',
       ja: '最初の言い合いは何についてか？',
       choices: ['Who the clients belong to', 'How Pam and Ryan will sell', 'Whether anyone has a job'], a: 0,
@@ -29,7 +29,7 @@ export const truffled: Clip = {
       trap: '最初の you have a job（仕事はある）に引かれやすいが、それは言い合いではない。決め手は stole from us。',
       use: 'So how is that going to work?（で、それってどうなるの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'getback', seg: [23.5, 29],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'getback', seg: [23.5, 26.7],
       stem: 'Fill the gap: “Yeah, ___ those clients back?”',
       ja: '「Yeah, ___ those clients back?」の空所は？',
       choices: ['aren’t we getting', 'are we getting', 'aren’t we giving'], a: 0,
@@ -41,7 +41,7 @@ export const truffled: Clip = {
       trap: '「ン」が残るかを聞く。残らなければ are we。giving なら「ギヴィン」と v の音。',
       use: 'Aren’t we supposed to check in first?（先にチェックインするんじゃないの？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'lost', ctx: true, reveals: ['getback'], seg: [23.5, 30.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'lost', ctx: true, reveals: ['getback'], seg: [23.5, 30.55],
       stem: 'What does Michael answer about the clients?',
       ja: 'マイケルは顧客についてどう答える？',
       choices: ['No, those clients are gone', 'No, they were never theirs', 'Not yet, corporate decides'], a: 0,
@@ -113,7 +113,7 @@ export const truffled: Clip = {
       trap: 'such a bad thing だけだと、悪いと言っているように聞こえる。決め手は I don’t know why。',
       use: 'I don’t know why this train is so late.（なんでこの電車、こんなに遅れてるのか分からない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [84.0, 91.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'coolit', seg: [84.0, 91.45],
       stem: 'Type the advice: “I think ___ cool it with that.” (4 words)', answer: "you're gonna want to",
       ja: '忠告「I think ___ cool it with that.」の空所を書こう（4語）',
       cue: '「I think」のあと',
@@ -124,7 +124,7 @@ export const truffled: Clip = {
       use: 'You’re gonna want to bring a jacket.（上着を持って行ったほうがいいよ）' },
 
     // restored in R4 as a plain detail item (where the mutiny is)
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'mutiny', seg: [95.4, 101.0],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'mutiny', seg: [95.22, 101.0],
       stem: 'Where is a mutiny forming?',
       ja: 'mutiny（反乱）が起きかけているのはどこ？',
       choices: ['In the warehouse', 'In the bathroom', 'At corporate'], a: 0,
@@ -136,7 +136,7 @@ export const truffled: Clip = {
       trap: '直前の bathroom（トイレ）を連想しやすいが、それは今みんながいる場所。',
       use: 'This is awkward to talk about, but…（言いにくいんだけど…）' },
 
-    { id: 'k2', skill: 'detail', level: 'B1', point: 'against', ctx: true, seg: [101.4, 108.0],
+    { id: 'k2', skill: 'detail', level: 'B1', point: 'against', ctx: true, seg: [101.4, 108.28],
       stem: 'Who is the mutiny against?',
       ja: '反乱は誰に向けられている？',
       choices: ['Michael, Pam and Ryan', 'The other salespeople', 'The people at corporate'], a: 0,
@@ -172,7 +172,7 @@ export const truffled: Clip = {
       trap: 'Sorry you feel that way から、怒る理由を聞くと考えがち。質問は anything I can do。',
       use: 'Is there anything I can do to help?（何か手伝えることはある？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [167.2, 174.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'ten', seg: [167.2, 174.5], keep: true,
       stem: 'How long does the angry salesman say the lost client was his?',
       ja: '怒った営業は、失った客が何年自分の顧客だったと言う？',
       choices: ['Two years', 'Ten years', 'Twelve years', 'Twenty years'], a: 1,
@@ -221,7 +221,7 @@ export const truffled: Clip = {
       trap: 'no hard feelings を仲直りと取りやすい。but のあとで謝罪を求めるので挑発。',
       use: 'Go ahead, I dare you.（やれるものならやってみな）' },
 
-    { id: 'f7', skill: 'phrase', level: 'B1', point: 'hardfeelings', seg: [220.2, 224.5],
+    { id: 'f7', skill: 'phrase', level: 'B1', point: 'hardfeelings', seg: [220.2, 224.38],
       stem: 'What does “no hard feelings” mean here?',
       ja: 'ここでの「no hard feelings」の意味は？',
       choices: ['I won’t be angry with you', 'Don’t be sad about leaving', 'You should feel bad'], a: 0,
@@ -233,7 +233,7 @@ export const truffled: Clip = {
       trap: 'feelings から、悲しい気持ちの話と勘違いしやすい。hard feelings は恨みや怒り。',
       use: 'You won fair and square. No hard feelings.（正々堂々君の勝ち。恨みっこなしだよ）' },
 
-    { id: 'k4', skill: 'infer', level: 'B2', point: 'backwards', ctx: true, seg: [224.4, 238.55],
+    { id: 'k4', skill: 'infer', level: 'B2', point: 'backwards', ctx: true, seg: [224.36, 238.55],
       stem: 'What do they say about the apology Michael wants?',
       ja: 'マイケルが求める謝罪について、彼らは何と言う？',
       choices: ['He should say sorry to them', 'They are happy to say sorry', 'They will say sorry later'], a: 0,
@@ -357,7 +357,7 @@ export const truffled: Clip = {
       trap: 'Aren’t なら「ン」が入る。giving up なら p で止まる。us our は「アサウア」。',
       use: 'Are you giving us a discount?（割引してくれるの？）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'dodge', ctx: true, reveals: ['givingus'], seg: [297.6, 312.2],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'dodge', ctx: true, reveals: ['givingus'], seg: [297.68, 312.2],
       stem: 'How does Michael answer the question about the clients?',
       ja: '顧客についての質問に、マイケルはどう答える？',
       choices: ['He doesn’t answer it', 'He says yes, after apologies', 'He says no, with a reason'], a: 0,
@@ -381,7 +381,7 @@ export const truffled: Clip = {
       trap: 'promised から「いい顧客を約束」と考えがち。約束の中身は「営業にする」こと。',
       use: 'There won’t be enough seats for everyone.（全員分の席は足りない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', seg: [316.3, 333.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'outcome', reveals: ['notenough'], seg: [316.3, 333.1],
       stem: 'How does the apology meeting end?',
       ja: '謝罪の会議はどう終わる？',
       choices: ['Clients returned, apology canceled', 'Clients returned, apology refused', 'No clients, apology accepted'], a: 0,

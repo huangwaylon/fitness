@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 3, new 0, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 3, new 0, ctx 4, tx 4, qa 9
 // A2 REVIEW 2026-11-17: keep 1, rewrite 15, retire 2, new 0
 // “Phoebe Hates Her Sister | Friends” (the official Friends channel, Best of Season 1): the friends tell Phoebe they
 // ran into her sister Ursula, and Phoebe explains why the two of them don't talk.
@@ -35,7 +35,7 @@ export const ursula: Clip = {
       mean: '有名人を当てる流れで、友だちが知らない身近な人を大ニュースのように言う。そのずれが笑い。',
       trap: '直後に正解が出るので当たりに聞こえやすい。答えのあとの反応で、外れかどうかを確かめる。',
       use: 'Is it someone famous?（有名な人？）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', seg: [0, 22.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'news', reveals: ['longgame'], seg: [0, 15.2],
       stem: 'Who did the friends see today?',
       ja: '友だちは今日、だれに会った？',
       choices: ['Phoebe’s sister', 'Phoebe’s hairdresser', 'Phoebe’s mother'], a: 0,
@@ -68,7 +68,7 @@ export const ursula: Clip = {
       mean: 'Yeah, I know ＝「うん、知ってる」。店の名前（リフス）もフィービーが先に言っている。',
       trap: 'uh…（えっと）と言いよどむのは友だちの方。店の名前を出したのはフィービー。',
       use: 'Yeah, I know. She told me.（うん、知ってる。聞いたよ）' },
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'oyoudo', reveals: ['knew', 'talked'], ctx: true, seg: [15.9, 22.0],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'oyoudo', reveals: ['knew', 'talked'], ctx: true, seg: [15.3, 21.85],
       stem: 'Why is Phoebe’s friend surprised that she knows?',
       ja: 'フィービーが知っていて、友だちはなぜ驚く？',
       choices: ['The sisters don’t talk now', 'Ursula just started there', 'They had a fight last week'], a: 0,
@@ -123,7 +123,7 @@ export const ursula: Clip = {
       mean: 'from where I was standing ＝ 僕の見た限り。Not なので「太ってなかった」。',
       trap: 'standing（立っていた）から「よく見えなかった」と思いやすい。最初の Not が答え。',
       use: 'Not from where I’m sitting.（ここから見る限り、そうでもないよ）' },
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'getalong', seg: [36.9, 40.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'getalong', seg: [37.12, 40.8],
       stem: 'Type: “So, you guys just ___?” (3 words)', answer: "don't get along",
       ja: '空いている所を書こう：「So, you guys just ___?」（3語）',
       cue: '「you guys just」のあと',
@@ -132,7 +132,7 @@ export const ursula: Clip = {
       mean: 'get along ＝ 仲よくやる。don’t get along ＝ 仲がよくない。',
       trap: 'get along がつながって「ゲラロン」と1語に聞こえる。don’t の「ン」で否定と分かる。',
       use: 'Do you get along with your roommate?（ルームメイトとうまくいってる？）' },
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'dumb', reveals: ['getalong'], ctx: true, seg: [36.9, 43.0],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'dumb', reveals: ['getalong'], ctx: true, seg: [37.12, 43.15],
       stem: 'How does Phoebe describe the problem?',
       ja: 'フィービーは問題をどう説明する？',
       choices: ['Small, silly things', 'A big family fight', 'All her sister’s fault'], a: 0,
@@ -165,7 +165,7 @@ export const ursula: Clip = {
       mean: 'I mean, like ＝ つまりね、たとえば。ぼかした話のあとに中身を言う合図。',
       trap: 'I mean は言い直しにも使うが、前の話は取り消していない。そのあと例が続く。',
       use: 'It’s hard. I mean, like, really hard.（大変なの。ほんとに大変）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'pretty', seg: [42.2, 46.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'pretty', seg: [42.65, 46.6],
       stem: 'What did everyone think of Phoebe’s sister?',
       ja: 'みんなはフィービーの妹をどう思っていた？',
       choices: ['The pretty one', 'The witty one', 'The smart one'], a: 0,
@@ -176,7 +176,7 @@ export const ursula: Clip = {
       mean: 'think of A as B ＝ AをBだと思う。the pretty one ＝ かわいい方。',
       trap: 'witty（ウィティ）と似た音。pretty は「プリ」と、p のあとに r が入る。',
       use: 'He’s always been the quiet one.（彼はいつもおとなしい方だった）' },
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['pretty', 'walkfirst'], seg: [43.0, 59.6],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['pretty', 'walkfirst', 'walking'], seg: [43.1, 59.6],
       stem: 'What is Phoebe’s problem with her sister?',
       ja: 'フィービーの、妹との問題は何？',
       choices: ['Ursula always came first', 'Ursula always copied her', 'Ursula stopped calling her'], a: 0,
@@ -186,7 +186,7 @@ export const ursula: Clip = {
       mean: 'the first one ＝「最初の人・一番」。どの例も、いつも妹が先だった話。',
       trap: 'pretty（かわいい）だけ聞くと、見た目の話と考えがち。どの例も「妹が先・妹が上」。',
       use: 'She was always the first one to try.（いつも最初にやるのは彼女だった）' },
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'walkfirst', seg: [47.2, 51.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'walkfirst', seg: [47.2, 50.6],
       stem: 'What was Phoebe’s sister the first one to do?',
       ja: 'フィービーの妹が最初にしたことは？',
       choices: ['Start walking', 'Start talking', 'Start dating'], a: 0,

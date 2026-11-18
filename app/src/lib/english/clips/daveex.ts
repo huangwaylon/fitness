@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 2, new 7, ctx 5, tx 8
+// R4 REVIEW 2026-11-18: keep 11, rewrite 5, retire 2, new 7, ctx 5, tx 8, qa 31
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 6, new 2
 // “Leslie's ex has the audacity and a gun ft. Louis C.K. | Parks and Recreation” (the official Parks and Recreation
 // channel, Season 4): at dinner with Leslie and Ben, her ex Dave, a cop, says he's still in love with her and keeps
@@ -7,6 +7,7 @@
 // Untested: the "Wiz Palace" exchange (29–36 s; captions and whisper garble who calls it that), "How's work out there,
 // Dave?" (81 s; whisper "Dick", captions "da") and "you're contrioring me / I don't think that's a word" (229 s; the
 // word itself is garbled). The end (256–264 s) is a visual gag: n6 tests only the words "You brought it on yourself".
+// EXCLUDE 80.7–82.5 ("How's work out there, Dave?": whisper hears "Dick"; davereturns EXCLUDEs the same jab)
 import type { Clip } from '../types.ts';
 
 export const daveex: Clip = {
@@ -26,7 +27,7 @@ export const daveex: Clip = {
       trap: 'Oh, Ben で話を切られた、からかわれたと取りやすい。ほめ言葉が誰に向いているかを追う。',
       use: 'Hey, I said it first!（ちょっと、先に言ったのは僕だよ）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'sayagain', seg: [9.4, 16.4],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'sayagain', seg: [9.4, 16.2],
       stem: 'What does Ben mean by “You can say that again”?',
       ja: 'ベンの「You can say that again」はどういう意味？',
       choices: ['I totally agree', 'Please say it once more', 'I’m not so sure'], a: 0,
@@ -38,7 +39,7 @@ export const daveex: Clip = {
       trap: '「もう一度言って」と頼んでいるように聞こえるが、聞き返しは Sorry? を使う。直後に賛成の中身が続く。',
       use: 'You can say that again.（ほんと、その通り）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'endorse', seg: [17.4, 23.2],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'endorse', seg: [17.6, 21.6],
       stem: 'Why were Leslie and Ben at the police station?',
       ja: 'レスリーとベンはなぜ警察署にいた？',
       choices: ['To get the chief’s support', 'To get a rally permit', 'To invite the chief to dinner'], a: 0,
@@ -49,7 +50,7 @@ export const daveex: Clip = {
       trap: '選挙の話なので集会の手続きを思いやすい。get のあとの名詞を聞く。',
       use: 'We’re hoping to get her support.（彼女の支持がほしいと思ってる）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'buddy', reveals: ['endorse'], seg: [19.3, 26.2],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'buddy', reveals: ['endorse'], seg: [19.45, 26.08],
       stem: 'What is Dave offering about the chief?',
       ja: '署長について、デイブは何を申し出ている？',
       choices: ['To get his friend to help', 'To say the chief helps already', 'To ask for a favor back'], a: 0,
@@ -84,7 +85,7 @@ export const daveex: Clip = {
       trap: 'were から過去と思い、still を聞き落とすと「昔は」になる。still を聞く。',
       use: 'Wait, did you just say that?（待って、今それ言った？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'whatdid', seg: [39.8, 46.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'whatdid', seg: [39.8, 46.1],
       stem: 'Type Leslie’s question: “___?” (5 words)', answer: 'what did you just say',
       ja: 'レスリーの質問を書こう：「___?」（5語）',
       cue: '急な一言のあとの聞き返し。', line: '*What did you just say?* — Nothing.',
@@ -105,7 +106,7 @@ export const daveex: Clip = {
       trap: '最初はベンをほめていたので、仲良くしたいと考えがち。ベンがいない間の頼みを聞く。',
       use: 'Can we talk alone for a minute?（ちょっと二人で話せる？）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'whynow', ctx: true, seg: [50.1, 58.6],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'whynow', ctx: true, seg: [50.1, 58.3],
       stem: 'Why does Dave tell Leslie this now?',
       ja: 'デイブはなぜ今、それを言う？',
       choices: ['Ben is away right now', 'Leslie asked about it', 'He is leaving tonight'], a: 0,
@@ -128,7 +129,7 @@ export const daveex: Clip = {
       trap: 'him を me と聞くと、自分が去る話に聞こえる。誰を get rid of するかを聞く。',
       use: 'That’s a good call.（それはいい判断だね）' },
 
-    { id: 'ph5', skill: 'phrase', level: 'B2', point: 'goodcall', seg: [63.3, 67.2],
+    { id: 'ph5', skill: 'phrase', level: 'B2', point: 'goodcall', seg: [63.6, 66.85],
       stem: 'What does Dave mean by “That’s a good call”?',
       ja: 'デイブの「That’s a good call」はどういう意味？',
       choices: ['That’s a smart idea', 'That’s a nice phone call', 'That’s a good name'], a: 0,
@@ -151,7 +152,8 @@ export const daveex: Clip = {
       trap: 'bathroom が聞こえると場所の話に取りやすい。another と I thought of が対抗の合図。',
       use: 'I came up with that myself.（それ、自分で考えたんだ）' },
 
-    { id: 'n3', skill: 'number', level: 'B1', point: 'six', seg: [80.5, 88.0], keep: true,
+    // retired (R4 QA): davereturns n1 tests the same "About six", and the seg played the EXCLUDEd "Dave"/"Dick" jab
+    { id: 'n3', skill: 'number', level: 'B1', point: 'six', seg: [80.5, 87.8], keep: true, retired: true,
       stem: 'How many bad guys did Dave catch?',
       ja: 'デイブは悪いやつを何人捕まえた？',
       choices: ['6', '7', '16', '60'], a: 0,
@@ -163,18 +165,18 @@ export const daveex: Clip = {
       trap: 'sixteen なら「ティーン」が長く強い。sixty は後ろに「ティ」が付く。seven は「セ」で始まる。',
       use: 'About six people came.（6人くらい来た）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [87.6, 96],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'flight', seg: [87.7, 95.55],
       stem: 'What time is Dave’s flight tomorrow?',
       ja: 'デイブの明日の便は何時？',
-      choices: ['12:05', '12:15', '12:50'], a: 1, keep: true,
-      choicesJa: ['12時5分', '12時15分', '12時50分'],
+      choices: ['2:15', '12:05', '12:15', '12:50'], a: 2, keep: true,
+      choicesJa: ['2時15分', '12時5分', '12時15分', '12時50分'],
       cue: '「on the」のあと。', line: 'I’m scheduled to leave tomorrow on the *12:15* flight…',
       said: '「明日の12時15分の便で、ソルトレイク経由で帰る予定」と言う。',
       mean: 'twelve fifteen と言う。fifteen は後ろの「ティーン」を強く長く言う。',
-      trap: '「フィフティーン」と後ろが伸びれば15、「フィフティ」と前が強ければ50、「オー・ファイブ」なら05。',
+      trap: '「フィフティーン」と後ろが伸びれば15、「フィフティ」と前が強ければ50、「オー・ファイブ」なら05。twelve がなければ2時。',
       use: 'I’m on the 12:15 flight.（12時15分の便です）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'chief', seg: [95.7, 103.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'chief', seg: [95.6, 102.9],
       stem: 'Why is Dave in town?',
       ja: 'デイブはなぜ町に来ている？',
       choices: ['To interview for police chief', 'To help the chief’s office', 'To work on a case'], a: 0,
@@ -185,7 +187,7 @@ export const daveex: Clip = {
       trap: 'bad guys（悪者）の話から事件だと思いやすい。interview for を聞く。',
       use: 'I’m here to interview for a job.（仕事の面接で来ました）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'candidates', reveals: ['haveto'], ctx: true, seg: [104.3, 111.8],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'candidates', reveals: ['haveto'], ctx: true, seg: [104.4, 111.65],
       stem: 'What does Leslie mean by “You don’t have to”?',
       ja: 'レスリーの「You don’t have to」はどういう意味？',
       choices: ['No need, thank you', 'Please help me out', 'Yes, I’d love that'], a: 0,
@@ -209,7 +211,7 @@ export const daveex: Clip = {
       trap: 'want to なら「ワナ」、need to なら「ニード」。「ハフタ」と「フ」の息があれば have to。',
       use: 'You don’t have to wait for me.（待たなくていいよ）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'catchup', seg: [115.3, 126],
+    { id: 'ph2', skill: 'phrase', level: 'B1', point: 'catchup', seg: [115.3, 125.9],
       stem: 'What does “catch up” mean here?',
       ja: 'ここでの「catch up」はどういう意味？',
       choices: ['Talk about recent news', 'Talk about their past problems', 'Plan to meet again'], a: 0,
@@ -220,7 +222,7 @@ export const daveex: Clip = {
       trap: '元恋人の誘いなので「昔の話」に聞こえるが、返事の San Diego が近況の中身。',
       use: 'We should get coffee and catch up.（お茶でもして近況話そうよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outside', reveals: ['catchup', 'weregood', 'word'], seg: [115.7, 137.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outside', reveals: ['catchup', 'weregood', 'word'], seg: [115.5, 137.1],
       stem: 'When Dave asks her outside, what does Leslie do?',
       ja: 'デイブに外へ誘われ、レスリーはどうする？',
       choices: ['She says no to him', 'She goes out with him', 'She asks Ben to come'], a: 0,
@@ -243,7 +245,7 @@ export const daveex: Clip = {
       trap: 'good を「仲がいい」「元気」と思うとずれる。誘いへの返事なら「結構です」。',
       use: 'I think we’re good, thanks.（大丈夫です、足りてます）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'word', reveals: ['outside'], ctx: true, seg: [127.2, 134.2],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'word', reveals: ['outside'], ctx: true, seg: [127.32, 134.12],
       stem: 'Why does Dave still go outside alone?',
       ja: 'デイブはなぜそれでも一人で外に出る？',
       choices: ['He said he would go', 'He wants her to think', 'He needs some fresh air'], a: 0,
@@ -277,7 +279,7 @@ export const daveex: Clip = {
       trap: '言葉だけなら落ち着いている。繰り返しと途切れは、言葉と逆の本音の合図。',
       use: 'I’m fine. Totally fine.（大丈夫。全然大丈夫）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'rain', seg: [157.9, 165.6],
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'rain', seg: [158.9, 165.25],
       stem: 'Why does Dave say he came back so soon?',
       ja: 'デイブは、なぜすぐ戻ってきたと言う？',
       choices: ['It was raining outside', 'He forgot his phone', 'He wanted some dessert'], a: 0,
@@ -288,7 +290,7 @@ export const daveex: Clip = {
       trap: 'すぐあとに dessert が出てくるので迷いやすい。最初の一文の raining を聞く。',
       use: 'It was raining, so I came back.（雨だったから戻ってきた）' },
 
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'quick', ctx: true, seg: [165.2, 173.0],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'quick', ctx: true, seg: [165.3, 175.45],
       stem: 'Why does Ben want to pay the bill right away?',
       ja: 'ベンはなぜすぐに会計をしたい？',
       choices: ['To end the night quickly', 'To pay before Dave can', 'He’s too full for dessert'], a: 0,
@@ -300,7 +302,7 @@ export const daveex: Clip = {
       trap: '張り合いが続くので、支払いの競争に見えやすい。quick now と締めのお礼を聞く。',
       use: 'Could we get the check, please?（お会計お願いします）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'mind', seg: [173, 182.8],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'mind', seg: [173, 182.45],
       stem: 'What does Dave mean by “Would you mind if…?”',
       ja: 'デイブの「Would you mind if…?」はどういう意味？',
       choices: ['Is it okay if I…?', 'I’m sorry about this', 'Come with us, Ben'], a: 0,
@@ -312,7 +314,7 @@ export const daveex: Clip = {
       trap: 'mind（気にする）から謝っていると思いやすい。if I 〜 のあとが頼みの中身。',
       use: 'Would you mind if I sit here?（ここに座ってもいいですか）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'together', seg: [186.4, 191.9],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'together', seg: [186.2, 191.9],
       stem: 'What does Leslie want after talking to Ben?',
       ja: 'ベンと話したあと、レスリーは何をしたい？',
       choices: ['All three of them to talk', 'To leave with Ben now', 'To talk to Dave alone'], a: 0,
@@ -334,7 +336,7 @@ export const daveex: Clip = {
       trap: '速いやりとりを、同時に話している、人を取り違えていると取りやすい。順番の talk to を聞く。',
       use: 'Okay, who’s going first?（じゃあ、誰からいく？）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'sameway', ctx: true, seg: [208.9, 221.9],
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'sameway', ctx: true, seg: [208.9, 222.25],
       stem: 'Dave says Leslie loves him. What does Ben answer?',
       ja: 'レスリーも自分を好きだと言うデイブに、ベンは何と答える？',
       choices: ['She is dating Ben now', 'She should decide today', 'She loves them both'], a: 0,
@@ -356,7 +358,7 @@ export const daveex: Clip = {
       trap: '警官なので脅しを想像しやすい。怒鳴る言葉はなく、事務的な語が並ぶ。',
       use: 'That’s not relevant right now.（それは今は関係ないよ）' },
 
-    { id: 'n4', skill: 'number', level: 'B1', point: 'threemin', seg: [231.6, 237.5], keep: true,
+    { id: 'n4', skill: 'number', level: 'B1', point: 'threemin', seg: [231.95, 237.5], keep: true,
       stem: 'How long does Dave want with Leslie alone?',
       ja: 'デイブはレスリーと二人で、どのくらい話したい？',
       choices: ['3 minutes', '5 minutes', '13 minutes', '30 minutes'], a: 0,
@@ -368,7 +370,7 @@ export const daveex: Clip = {
       trap: '前に five minutes（5分）と頼んでいたので、5分を思い出しやすい。今回は three。',
       use: 'I’d appreciate it if you could call me back.（折り返しお電話いただけると助かります）' },
 
-    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'blessing', reveals: ['want'], seg: [240.4, 250.9],
+    { id: 'ph4', skill: 'phrase', level: 'B2', point: 'blessing', reveals: ['want'], seg: [240.4, 250.85],
       stem: 'What won’t Ben give Dave?',
       ja: 'ベンがデイブにあげないものは？',
       choices: ['His OK to chase Leslie', 'His help to win her back', 'His promise to stay away'], a: 0,
@@ -380,7 +382,7 @@ export const daveex: Clip = {
       trap: 'すぐあとの win my girlfriend から「手伝い」を連想しやすい。blessing ＝ 許し。',
       use: 'You have my blessing.（応援するよ、どうぞ）' },
 
-    { id: 'n6', skill: 'phrase', level: 'B2', point: 'brought', seg: [260.0, 263.6],
+    { id: 'n6', skill: 'phrase', level: 'B2', point: 'brought', seg: [260.4, 263.6],
       stem: 'What does “You brought it on yourself” mean?',
       ja: '「You brought it on yourself」はどういう意味？',
       choices: ['It’s your own fault', 'You brought it here', 'You did it all alone'], a: 0,

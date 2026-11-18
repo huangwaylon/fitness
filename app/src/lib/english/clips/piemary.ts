@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 2, new 7, ctx 6, tx 14
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 2, new 7, ctx 6, tx 14, qa 26
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 7, new 1
 // “Leslie won't be intimidated by cream pies | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 7): Ben's campaign drops a pie contest for candidates' wives from Leslie's schedule; the press turns it into
@@ -18,7 +18,7 @@ export const piemary: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'poncho', seg: [8.1, 16.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'poncho', seg: [8.1, 16.6],
       stem: 'Why is the visitor wearing a poncho in Leslie’s house?',
       ja: '客はなぜレスリーの家でポンチョを着ている？',
       choices: ['Everything in the house is sticky', 'It has been raining all day', 'She spilled coffee on her jacket'], a: 0,
@@ -30,7 +30,7 @@ export const piemary: Clip = {
       trap: 'ポンチョから雨を思いやすい。because のあとの理由を最後まで聞く。',
       use: 'My hands are sticky. Where’s the sink?（手がベタベタ。流しはどこ？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'skip', seg: [19.8, 27.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'skip', seg: [19.35, 27.4],
       stem: 'What does the adviser say they must skip?',
       ja: 'アドバイザーは何を飛ばすしかないと言う？',
       choices: ['A pie event and a squash toss', 'A photo shoot and a dinner', 'A speech and a parade'], a: 0,
@@ -42,7 +42,7 @@ export const piemary: Clip = {
       trap: '明日の photo op（写真撮影）が先に出るので混ざりやすい。skip のあとの2つを聞く。',
       use: 'Let’s skip lunch today.（今日はお昼を抜こう）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'city', seg: [33.8, 41.9],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'city', seg: [33.8, 41.55],
       stem: 'What does the visitor mean by “a city where things happen”?',
       ja: '客の「a city where things happen」はどういう意味？',
       choices: ['Nothing happens in this town', 'This town is quiet and nice', 'This town is too busy'], a: 0,
@@ -54,7 +54,7 @@ export const piemary: Clip = {
       trap: 'busy な街の話なので「この町は忙しい」と思いやすい。逆で「ここは退屈」。',
       use: 'I need to get back to work.（仕事に戻らなきゃ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'minefield', seg: [49.9, 55.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'minefield', seg: [50.08, 55.6],
       stem: 'What does “minefield” mean here?',
       ja: '「minefield」はここではどういう意味？',
       choices: ['Full of hidden dangers', 'Full of hard battles', 'Something nobody wants'], a: 0,
@@ -78,7 +78,7 @@ export const piemary: Clip = {
       trap: 'actual candidate が聞こえるので経験の話と取りやすい。結論は最後の一文。',
       use: 'Don’t overthink it. Keep it simple.（考えすぎないで、シンプルに）' },
 
-    { id: 'h1', skill: 'infer', level: 'B2', point: 'possible', ctx: true, seg: [65.4, 71.9],
+    { id: 'h1', skill: 'infer', level: 'B2', point: 'possible', ctx: true, seg: [65.5, 71.9],
       stem: 'What does the adviser think of the voters?',
       ja: 'アドバイザーは有権者をどう思っている？',
       choices: ['She thinks very little of them', 'She trusts them to decide well', 'She thinks they like Leslie'], a: 0,
@@ -90,7 +90,7 @@ export const piemary: Clip = {
       trap: 'I don’t think から見くびっていないと言うように聞こえるが、that は「見くびること」。',
       use: 'I think you’re underestimating him.（彼を見くびってると思うよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'careto', seg: [89.6, 97.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'careto', seg: [89.55, 97.2],
       stem: 'The reporter asks, “Care to explain?” What does he want?',
       ja: '記者は「Care to explain?」と聞く。何がほしい？',
       choices: ['Ben’s reason for it', 'Some of Ben’s time', 'A copy of the schedule'], a: 0,
@@ -102,7 +102,7 @@ export const piemary: Clip = {
       trap: 'care（気にする）から「気にしますか」と考えがち。Care to 〜? ＝ 〜してくれる？',
       use: 'Care to join us?（一緒にどう？）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'wives', seg: [97.5, 104.6],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'wives', seg: [97.27, 104.35],
       stem: 'Who competes in the pie contest?',
       ja: 'パイのコンテストで競うのはだれ？',
       choices: ['Candidates’ wives', 'Local bakers', 'The candidates'], a: 0,
@@ -126,19 +126,7 @@ export const piemary: Clip = {
       trap: 'June の名前の直後なので彼女のパイの話と取りやすい。loser は all women。',
       use: 'Honestly, nobody wins here.（正直、これじゃ誰も得しない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'press', seg: [111.6, 134.8],
-      stem: 'What do the reporters say about Leslie skipping the contest?',
-      ja: 'コンテストに出ないレスリーについて、記者たちは何と言う？',
-      choices: ['She looks down on home life', 'She is hiding from reporters', 'She is too busy to cook'], a: 0,
-      choicesJa: ['家庭を見下している', '記者から逃げている', '忙しくて料理ができない'],
-      cue: '記者たちの質問の中身。',
-      line: 'Leslie, you’ve made it pretty clear that *you don’t think homemaking is important*.',
-      said: '欠場を「何の主張か」と聞かれ、ベンの事業に話を向けても、家事や子どもの質問が続く。',
-      mean: 'homemaking ＝ 家事、家庭づくり。欠場を「家庭を軽く見ている」話にされる。',
-      trap: 'ベンの事業の話も出るが、それはレスリーのかわし。記者の質問を聞く。',
-      use: 'That’s not what I meant at all.（そんなつもりじゃまったくない）' },
-
-    { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [117.9, 128], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'million', seg: [117.9, 127.7], keep: true,
       stem: 'How much does Leslie say Ben’s project costs?',
       ja: 'レスリーは、ベンの事業はいくらだと言う？',
       choices: ['$15 million', '$50 million', '$115 million', '$150 million'], a: 3,
@@ -150,7 +138,19 @@ export const piemary: Clip = {
       trap: 'hundred ありなら 115 か 150。後ろを伸ばす「フィフティーン」は 15 系、前が強い「フィフティ」は 50 系。',
       use: 'It costs about two million yen.（だいたい200万円かかる）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cook', seg: [129.6, 134.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'press', reveals: ['cook'], seg: [126.4, 141.55],
+      stem: 'What do the reporters say about Leslie skipping the contest?',
+      ja: 'コンテストに出ないレスリーについて、記者たちは何と言う？',
+      choices: ['She looks down on home life', 'She is hiding from reporters', 'She is too busy to cook'], a: 0,
+      choicesJa: ['家庭を見下している', '記者から逃げている', '忙しくて料理ができない'],
+      cue: '記者たちの質問の中身。',
+      line: 'Leslie, you’ve made it pretty clear that *you don’t think homemaking is important*.',
+      said: '記者は「家事なんて大事じゃないと思っている」と決めつけ、子どもに料理するのか、だれが見ているのかと問いつめる。',
+      mean: 'homemaking ＝ 家事、家庭づくり。欠場を「家庭を軽く見ている」話にされる。',
+      trap: '料理の話が出るので、忙しくて料理できない話と考えがち。記者が言うのは「家事を大事だと思っていない」。',
+      use: 'That’s not what I meant at all.（そんなつもりじゃまったくない）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cook', seg: [129.8, 134.7],
       stem: 'Fill the gap: “___ cook for your children?”',
       ja: '空いている所に入る語は？「___ cook for your children?」',
       choices: ['Do you ever', 'Did you ever', 'Do you even'], a: 0,
@@ -198,7 +198,7 @@ export const piemary: Clip = {
       trap: 'None of your business（余計なお世話）のあとなので、怒っていると考えがち。最後はお礼。',
       use: 'Oh, thank you for noticing!（わあ、気づいてくれてありがとう！）' },
 
-    { id: 'd8', skill: 'infer', level: 'B1', point: 'stupid', seg: [164.5, 172.3],
+    { id: 'd8', skill: 'infer', level: 'B1', point: 'stupid', seg: [164.55, 172.0],
       stem: 'What does the host say Leslie is really saying?',
       ja: '司会者は、レスリーが本当は何を言っていると言う？',
       choices: ['Women who choose family are dumb', 'Pie contests waste everyone’s time', 'Husbands should do more cooking'], a: 0,
@@ -210,7 +210,7 @@ export const piemary: Clip = {
       trap: 'パイ大会の話なので、大会がむだと言っていると考えがち。she’s saying のあとを聞く。',
       use: 'That’s not what I’m saying.（そういう意味じゃないよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B1', point: 'haveitall', ctx: true, reveals: ['stupid'], seg: [169, 178.9],
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'haveitall', ctx: true, reveals: ['stupid'], seg: [168.93, 178.75],
       stem: 'What does June say she chose to do?',
       ja: 'ジューンは自分が何を選んだと言う？',
       choices: ['Put her family first', 'Try to have it all', 'Skip the pie contest'], a: 0,
@@ -245,7 +245,7 @@ export const piemary: Clip = {
       trap: '「スリー・アワーズ」で 3時間。「サーティーン」と伸ばせば 13、two は「トゥー」、days なら「デイズ」。',
       use: 'It only took ten minutes.（たった10分で済んだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'enter', reveals: ['hours'], seg: [184.7, 208.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'enter', reveals: ['hours', 'less'], seg: [184.7, 208.5],
       stem: 'Why does Leslie decide to enter the pie contest?',
       ja: 'レスリーはなぜパイのコンテストに出ると決める？',
       choices: ['So Ben’s plan gets heard', 'To prove the reporters wrong', 'Just to sell her cookbook'], a: 0,
@@ -257,7 +257,7 @@ export const piemary: Clip = {
       trap: 'cookbook（料理本）の話も出るが、それは「それに」と足したおまけ。',
       use: 'I don’t want to be a distraction.（じゃまになりたくない）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'less', seg: [193.6, 201.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'less', seg: [193.6, 201.28],
       stem: 'Type it: “The more they talk about this, ___ talk about…” (5 words)',
       ja: '聞こえた言葉を書こう：「…talk about this, ___ talk about…」（5語）',
       answer: "the less they're going to",
@@ -268,7 +268,7 @@ export const piemary: Clip = {
       trap: 'they’re が弱く、消えたように聞こえやすい。5語を数えて聞く。',
       use: 'The more you practice, the less you worry.（練習するほど不安は減る）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['enter'], seg: [196.9, 208.5],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['enter', 'less'], seg: [196.9, 208.5],
       stem: '“*Besides*, I’m good at making pies.” What does “Besides” mean?',
       ja: '「Besides, I’m good at making pies」の Besides はどういう意味？',
       choices: ['Also', 'However', 'Actually'], a: 0,
@@ -280,7 +280,7 @@ export const piemary: Clip = {
       trap: 'but のような逆の話と考えがち。besides は同じ向きに足す語。',
       use: 'Besides, it’s on the way.（それに、通り道だし）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'kids', seg: [217.5, 225.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'kids', seg: [217.6, 225.5],
       stem: 'After all that, what are the kids doing now?',
       ja: 'いろいろあったあと、子どもたちは今どうしている？',
       choices: ['They are all asleep', 'They are all awake', 'One is still outside'], a: 0,
@@ -301,7 +301,7 @@ export const piemary: Clip = {
       trap: '習った文法に合わせて into my mouth と足したくなる。書き取りは聞こえた音だけ。',
       use: 'One for now, one for later.（一つは今、一つはあとで）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B1', point: 'knowme', ctx: true, seg: [225.5, 232.8],
+    { id: 'k1', skill: 'pragma', level: 'B1', point: 'knowme', ctx: true, seg: [225.5, 233.0],
       stem: 'What does Leslie mean by “You know me so well”?',
       ja: 'レスリーの「You know me so well」はどういう意味？',
       choices: ['He picked just what she likes', 'They have known each other long', 'He should know she hates it'], a: 0,
@@ -325,7 +325,7 @@ export const piemary: Clip = {
       trap: 'あとで抗議の話になるので、心配していると勘違いしやすい。来た直後の言葉を聞く。',
       use: 'Are you here to pick up your order?（ご注文の受け取りですか）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dumb', seg: [256.7, 264.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'dumb', seg: [257.08, 264.25],
       stem: 'What does Leslie herself think of the pie contest?',
       ja: 'レスリー自身はパイのコンテストをどう思っている？',
       choices: ['It’s dumb, but for Ben', 'It’s dumb, so she’ll skip it', 'It’s fun, and she loves it'], a: 0,
@@ -349,7 +349,7 @@ export const piemary: Clip = {
       trap: 'battle と war は似た語なので混ざりやすい。war（全体）で勝つのが目的。',
       use: 'Sometimes you lose a battle to win the war.（大きく勝つために小さく負けることもある）' },
 
-    { id: 'e1', skill: 'detail', level: 'B1', point: 'protest', ctx: true, seg: [266.8, 275.3],
+    { id: 'e1', skill: 'detail', level: 'B1', point: 'protest', ctx: true, seg: [266.32, 274.95],
       stem: 'What will Elise’s group do if Leslie enters?',
       ja: 'レスリーが出場したら、エリースの団体はどうする？',
       choices: ['Protest at the event', 'Give her an award', 'Enter the contest too'], a: 0,
@@ -384,7 +384,7 @@ export const piemary: Clip = {
       trap: '明るい声なので応援に聞こえやすいが、急かす命令。あいさつが後なので、客には気づいていない。',
       use: 'Chop, chop! We’re going to be late.（急いで！遅れるよ）' },
 
-    { id: 'b1', skill: 'phrase', level: 'B1', point: 'chop', ctx: true, seg: [285.4, 293.4],
+    { id: 'b1', skill: 'phrase', level: 'B1', point: 'chop', ctx: true, seg: [285.52, 292.95],
       stem: 'What does Ben mean by “Chop, chop”?',
       ja: 'ベンの「Chop, chop」はどういう意味？',
       choices: ['Hurry up', 'Cut the fruit', 'Good job'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 1, new 4, ctx 5, tx 8
+// R4 REVIEW 2026-11-18: keep 10, rewrite 8, retire 1, new 4, ctx 5, tx 8, qa 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 5, new 0
 // “BOY HAVE YOU LOST YOUR MIND - The Office US” (the official The Office channel, Best of Season 2): Take Your
 // Daughter to Work Day. Pam hopes to get better with kids, Michael dreads having them around, then misjudges Stanley's
@@ -30,7 +30,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'actual（実際の）から「今まさに」と思いやすい。苦手と言う前の「実は」。',
       use: 'I’m actually enjoying this.（意外と楽しんでる）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'day', seg: [0, 17.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'day', reveals: ['married', 'candy'], seg: [0, 17.1],
       stem: 'What is special about today at the office?',
       ja: '今日のオフィスは何が特別？',
       choices: ['Kids come to the office', 'A school class visits', 'Staff take a class on kids'], a: 0,
@@ -66,7 +66,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '職場なので「静かにさせるため」と考えがち。so のあとが目的。',
       use: 'I put snacks out for visitors.（来客用にお菓子を出した）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'forgot', ctx: true, seg: [29.8, 36.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'forgot', reveals: ['likebut'], ctx: true, seg: [29.8, 36.4],
       stem: 'Why doesn’t Michael know about today?',
       ja: 'マイケルはなぜ今日のことを分かっていない？',
       choices: ['He forgot what he was told', 'Nobody told him about it', 'The day was just changed'], a: 0,
@@ -126,7 +126,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'fine から「元気」「順調」を連想しやすい。相手をさえぎってのくり返しは不満のサイン。',
       use: 'Fine, fine, I’ll do it.（分かったよ、やるってば）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'charge', seg: [62.5, 69.6],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'charge', seg: [62.35, 69.6],
       stem: 'What does “in charge of this place” mean?',
       ja: '「in charge of this place」の意味は？',
       choices: ['He is the boss here', 'He paid for it all', 'He cleans the rooms'], a: 0,
@@ -149,7 +149,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'citizens を「ヒーロー」と取ると別の話になる。短い一言がたとえへのツッコミ。',
       use: 'Okay, bad example.（今のはたとえが悪かった）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'ocean', ctx: true, seg: [77.4, 84.4],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'ocean', ctx: true, seg: [76.65, 84.4],
       stem: 'Where do the kids say Aquaman lives?',
       ja: '子どもたちは、アクアマンはどこに住んでいると言う？',
       choices: ['Under the sea', 'In Gotham City', 'In a big office'], a: 0,
@@ -173,16 +173,16 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'grown を「年をとった」と勘違いしやすい。子どもへのほめ言葉。Good to see you（会えてうれしい）も一緒に。',
       use: 'Wow, you’ve really grown up!（わあ、大きくなったね！）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'grade', ctx: true, seg: [102.5, 109.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'grade', ctx: true, seg: [102.5, 109.25], keep: true,
       stem: 'What grade is Melissa in?',
       ja: 'メリッサは何年生？',
-      choices: ['Eighth grade', 'Eleventh grade', 'She’s eighteen'], a: 0,
-      choicesJa: ['8年生（中学2年）', '11年生（高校2年）', '18歳'],
+      choices: ['She’s eight', 'Eighth grade', 'Eleventh grade', 'She’s eighteen'], a: 1,
+      choicesJa: ['8歳', '8年生（中学2年）', '11年生（高校2年）', '18歳'],
       cue: '「frat boys」のすぐあと。',
       line: 'Michael: Better keep the frat boys away from her. / Melissa: I’m in *eighth grade*.',
       said: '「大学の男子学生を近づけないように」と言われ、メリッサが「私、8年生（中2）です」と返す。',
       mean: 'eighth grade ＝ 8年生、日本の中2。frat boys ＝ 大学の男子学生。年を大きく見まちがえた。',
-      trap: 'eighteen なら「エイティーン」と「ティーン」をのばす。eleventh は「イレヴン」で始まる。',
+      trap: 'eighteen は「ティーン」をのばす。eleventh は「イレヴン」。8歳なら grade がない。',
       use: 'My son is in third grade.（息子は小学3年です）' },
 
     { id: 'a2', retired: true, skill: 'attitude', level: 'C1', point: 'oops', reveals: ['grade'], seg: [105.5, 113.85],
@@ -196,7 +196,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'amazing を文字通り取ると、ほめ言葉に思える。短い Oh. と同じ語のくり返しは動揺のサイン。',
       use: 'Oh. Well, that’s… great.（あ、えっと…いいね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', seg: [112.4, 118.9],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'notthat', reveals: ['uncle'], seg: [112.4, 118.9],
       stem: 'What comes after “It’s just that”?',
       ja: '「It’s just that」のあとに来るのは何？',
       choices: ['The real reason', 'A second problem', 'The same thing again'], a: 0,
@@ -219,7 +219,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'dad が聞こえるので父親になりたい話と取りやすい。why be a dad は「なる必要ない」の反語。',
       use: 'Why pay more when you can rent?（借りられるのに、なぜ高く払う？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [114.4, 122.4],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'uncle', seg: [114.4, 122.0],
       stem: 'Type what he says: “…when you can be a ___?” (2 words)', answer: 'fun uncle',
       ja: '「when you can be a」のあとの2語を書こう。',
       cue: '「when you can be a」のあと。',
@@ -229,16 +229,16 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'n が続くので1語に聞こえやすい。2語あると思って書く。',
       use: 'He’s the fun uncle at parties.（彼はパーティーで楽しいおじさん役）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'macchiato', seg: [118.8, 126.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'macchiato', seg: [121.9, 126.8], keep: true,
       stem: 'How many iced drinks a day does Melissa claim?',
       ja: 'メリッサは1日に何杯アイスドリンクを飲むと言う？',
-      choices: ['About a dozen', 'About a hundred', 'About a thousand'], a: 1,
-      choicesJa: ['12杯くらい', '100杯くらい', '1000杯くらい'],
+      choices: ['About a dozen', 'About a hundred', 'About two hundred', 'About a thousand'], a: 1,
+      choicesJa: ['12杯くらい', '100杯くらい', '200杯くらい', '1000杯くらい'],
       cue: '「I drink like」のあと。',
       line: 'I drink *like a hundred* iced macchiatos a day and practically nothing else.',
       said: '「1日100杯くらいアイスマキアートを飲んで、ほかはほとんど飲まない」と話す。',
       mean: 'like ＋ 数 ＝ 〜くらい（くだけた言い方）。大人っぽく見せたい大げさな話。',
-      trap: 'dozen は「ダズン」、thousand は「サウザンド」。「ハンドレッド」なら100。like は「好き」ではない。',
+      trap: 'dozen は「ダズン」、thousand は「サウザンド」。two hundred なら「トゥー」が入る。like は「好き」ではない。',
       use: 'I walked like ten miles today.（今日10マイルくらい歩いた）' },
 
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'dorky', reveals: ['gimme'], seg: [132.4, 140],
@@ -265,7 +265,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'Give me the なら最後が「ザ」。Give him なら h が消えて「ギヴィム」。「ギミヨ」なら Give me your。',
       use: 'Give me your email, I’ll send it.（メール教えて、送るから）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'email', reveals: ['gimme'], ctx: true, seg: [137.0, 146.1],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'email', reveals: ['gimme'], ctx: true, seg: [136.7, 146.1],
       stem: 'What does Ryan offer instead of his number?',
       ja: 'ライアンは電話番号の代わりに何を出す？',
       choices: ['A way to email him', 'His home address', 'His work number'], a: 0,
@@ -289,7 +289,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: 'fish（魚）から「くさい」と思いやすい。is going on（起きている）なので出来事の話。',
       use: 'Something seems fishy about this deal.（この取引、何かあやしい）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'melissa', reveals: ['scared'], seg: [148.6, 177.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'melissa', reveals: ['scared'], seg: [148.4, 177.6],
       stem: 'What happens to Ryan in the end?',
       ja: '最後にライアンはどうなる？',
       choices: ['Stanley shouts at him', 'Melissa texts him', 'He goes to Jitters'], a: 0,
@@ -312,7 +312,7 @@ export const boyHaveYouLostYourMind: Clip = {
       trap: '否定が二つで「肯定」と計算しやすいが、話し言葉では強調。直後の Jesus の文で確かめる。',
       use: 'Ain’t nobody got time for that.（そんなのやってられない）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mind', seg: [162.0, 167.2],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'mind', seg: [162.0, 166.8],
       stem: 'What does “Have you lost your mind?” mean?',
       ja: '「Have you lost your mind?」の意味は？',
       choices: ['Are you crazy?', 'Did you forget?', 'Are you lost?'], a: 0,
