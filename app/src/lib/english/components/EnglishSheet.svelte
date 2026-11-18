@@ -29,14 +29,13 @@
   // every opening on home
   /** すごろく's tab: its menu shown (the tab bar with it), and an invitation's 参加 (english.show('sugoroku')). */
   let gameTop = $state(true);
-  let join = $state(false);
   let askSeen: unknown = null;
   $effect(() => {
     if (!open) return;
     const ask = english.ask;
-    const fresh = ask !== askSeen, invited = fresh && ask?.arg === 'sugoroku', back = fresh && ask?.arg === 'game';
+    const fresh = ask !== askSeen, back = fresh && ask?.arg === 'game';
     askSeen = ask;
-    (level = { k: invited || back ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (join = invited), (gameTop = true);
+    (level = { k: back ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (gameTop = true);
   });
   const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
   const tab = $derived<Tab | null>(level.k === 'home' || level.k === 'phrases' || (level.k === 'game' && gameTop) ? level.k : null);
@@ -67,7 +66,7 @@
       {:else if level.k === 'game'}
         <!-- 英語すごろく (lib/sugoroku): its own chunk -->
         <Lazy load={() => import('#lib/sugoroku/components/SugorokuGame.svelte')}>
-          {#snippet children(Game)}<Game active={open} {join} onclose={close} ontop={(t) => (gameTop = t)} onscreen={toBoard} />{/snippet}
+          {#snippet children(Game)}<Game active={open} onclose={close} ontop={(t) => (gameTop = t)} onscreen={toBoard} />{/snippet}
         </Lazy>
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />

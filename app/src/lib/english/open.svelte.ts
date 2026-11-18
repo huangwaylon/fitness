@@ -2,6 +2,5 @@
 // and the player), opened by the leaf menu's 英語 pill (island/HudMenu.svelte) and mounted by the HUD (island/Hud.svelte).
 import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 
-/** `show('sugoroku')`: on すごろく's tab, straight into the online game (an invitation's 参加); `show('game')`: on the
- *  tab (back from the board's own screen). */
-export const english = lazySheet<'sugoroku' | 'game'>(() => import('./components/EnglishSheet.svelte'));
+/** `show('game')`: on すごろく's tab (back from the board's own screen). */
+export const english = lazySheet<'game'>(() => import('./components/EnglishSheet.svelte'));

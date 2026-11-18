@@ -46,8 +46,6 @@
   interface Props {
     /** The tab is shown (English Study open on it). */
     active: boolean;
-    /** Opened by an invitation's 参加: straight into the online game. */
-    join?: boolean;
     onclose: () => void;
     /** Whether its top level (the menu) is shown: English Study's tab bar only there. */
     ontop?: (top: boolean) => void;
@@ -56,7 +54,7 @@
     /** On the board's own screen (/sugoroku): this game, straight into play, the 3D board over the turn's panel. */
     screen?: 'local' | 'online';
   }
-  let { active, join = false, onclose, ontop, onscreen, screen }: Props = $props();
+  let { active, onclose, ontop, onscreen, screen }: Props = $props();
   const open = $derived(active);
   $effect(() => ontop?.(level === 'menu'));
   type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
@@ -71,16 +69,10 @@
     untrack(() => {
       saved = loadGame();
       level = 'menu';
-      // an invitation's 参加: straight into the online game, once it's folded (the words and lines may still be on their way)
-      wantOnline = join;
       // the board's own screen: its game at once (a passed-round one from the save, else back to the tab)
       if (screen === 'local') saved ? resume() : onclose();
       else if (screen === 'online') resumeOnline();
     });
-  });
-  let wantOnline = $state(false);
-  $effect(() => {
-    if (wantOnline && onlineGame && onlineGame.phase.k !== 'end') untrack(() => ((wantOnline = false), resumeOnline()));
   });
   const close = () => onclose();
   /** To the menu: the save as it is now (a game played since the opening). */
