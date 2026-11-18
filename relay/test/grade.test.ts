@@ -1,8 +1,8 @@
 // `POST /grade` (src/gradeRoute.ts, docs/speech-test.md#grade): auth, CORS, sizes, the fields, the wasei list before the
 // model, the day's cap (the log object's caps table), the off switch, the model's call and its answer sanitised
 // (cleanGrade); the sentence passed as data; nothing of the sentence or the answer kept or logged.
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import { GRADE_MAX, GRADE_MODEL, GRADE_SYSTEM, cleanGrade, gradeRoute, usedIn, type GradeAi, type GradeEnv } from '../src/gradeRoute.ts';
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
+import { GRADE_MAX, GRADE_MODEL, GRADE_SYSTEM, HEDGE_MS, cleanGrade, gradeRoute, hedge, usedIn, type GradeAi, type GradeEnv } from '../src/gradeRoute.ts';
 import { WASEI, waseiOf } from '../src/wasei.ts';
 import { LogCore, type RelayEvent } from '../src/log.ts';
 import { keyOwner } from '../src/auth.ts';
@@ -127,6 +127,67 @@ describe('POST /grade', () => {
     const out = JSON.stringify([logged, spies.map((s) => s.mock.calls)]);
     expect(out).not.toMatch(/apple|リンゴ|TV|turn/i);
     spies.forEach((s) => s.mockRestore());
+  });
+});
+
+describe('the hedge: a second identical call after HEDGE_MS without an answer, the first answer wins', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(T0);
+  });
+  afterEach(() => vi.useRealTimers());
+  /** A model whose calls answer (or fail) after these ms, in order. */
+  const slow = (...ms: (number | [number, 'fail'])[]) => {
+    let i = 0;
+    return { run: vi.fn<GradeAi['run']>(() => { const m = ms[i++]!; return new Promise((ok, no) => setTimeout(() => (Array.isArray(m) ? no(new Error('boom')) : ok(chat(ANSWER))), Array.isArray(m) ? m[0] : m)); }) };
+  };
+  const run = async (model: { run: Mock<GradeAi['run']> }, untilMs: number, spend = vi.fn(async () => true)) => {
+    const p = gradeRoute(post(), env({ ai: model, spend, now: () => Date.now() }));
+    await vi.advanceTimersByTimeAsync(untilMs);
+    const r = await p;
+    return { r, body: await r.json() as Record<string, unknown>, spend };
+  };
+
+  it('a fast answer: one call, nothing hedged', async () => {
+    const m = slow(1_200);
+    const { body } = await run(m, 1_200);
+    expect([body.ok, body.aiMs, m.run.mock.calls.length]).toEqual([true, 1_200, 1]);
+    expect(logged[0]?.d).toEqual({ ms: 1_200, inC: 13, ok: true, verdict: 'tip', src: 'ai' });
+  });
+
+  it('a slow first call: the twin starts at HEDGE_MS, the same input, answers first; one call against the cap', async () => {
+    const m = slow(7_300, 1_400);
+    const { body, spend } = await run(m, HEDGE_MS + 1_400);
+    expect([body.ok, body.aiMs, m.run.mock.calls.length, spend.mock.calls.length]).toEqual([true, HEDGE_MS + 1_400, 2, 1]);
+    expect(m.run.mock.calls[1]).toEqual(m.run.mock.calls[0]);
+    expect(logged).toEqual([{ e: 'grade', l: 1, role: 'A', d: { ms: 3_900, inC: 13, ok: true, verdict: 'tip', src: 'ai', hedged: true, won: 2 } }]);
+    await vi.runAllTimersAsync();
+    expect(logged).toHaveLength(1);
+  });
+
+  it('the first call answering after the twin started still wins', async () => {
+    const { body } = await run(slow(3_000, 5_000), 3_000);
+    expect(body.ok).toBe(true);
+    expect(logged[0]?.d).toMatchObject({ hedged: true, won: 1 });
+  });
+
+  it('one call failing waits for the other; both failing is 502', async () => {
+    expect((await run(slow([3_000, 'fail'], 1_000), 3_500)).body.ok).toBe(true);
+    logged = [];
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const both = await run(slow([3_000, 'fail'], [1_000, 'fail']), 3_500);
+    expect([both.r.status, both.body]).toEqual([502, { ok: false, error: 'ai' }]);
+    // a failure before HEDGE_MS: no twin, at once
+    const m = slow([500, 'fail']);
+    expect((await run(m, 500)).r.status).toBe(502);
+    expect(m.run).toHaveBeenCalledTimes(1);
+    vi.mocked(console.warn).mockRestore();
+  });
+
+  it('hedge() alone: no timer left behind after an answer', async () => {
+    const p = hedge(() => Promise.resolve(1), HEDGE_MS);
+    await expect(p).resolves.toEqual({ out: 1, won: 1, hedged: false });
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 

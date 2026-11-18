@@ -173,8 +173,9 @@ export const LOG_EVENTS = {
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
   stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },
   // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
-  // gave it (the wasei list or the AI), never the sentence or the answer
-  grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'] } }
+  // gave it (the wasei list or the AI), never the sentence or the answer; hedged: a second identical call started
+  // (no answer in 2.5 s), won: which call answered first
+  grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'], hedged: 'b', won: 'n' } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;

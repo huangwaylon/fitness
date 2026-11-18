@@ -56,6 +56,8 @@ else.
   friend's Japanese (〜だよ, 〜してみてね), no grammar terms, no scolding. The sentence is sent as `<s>` data.
 - The relay cleans the answer: a tip with a scolding word or a grammar term, or over 50 chars, is dropped; `also` only
   on great; a placeholder `fixed` falls back to the sentence.
+- No answer in 2.5 s: one identical second call, the first answer wins (the slow calls come alone); one call against
+  the cap, the log says `hedged` and which `won`.
 - About 6–8 neurons a call; two roles' caps (250 + 100 STT each) stay under the free 10k a day.
 - **Nothing is kept:** the `grade` log line has the length, ms, verdict and source only; the phone's `sg.grade` the
   layer, verdict, ms and takes.
