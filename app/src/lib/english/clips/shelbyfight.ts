@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 3, new 11, ctx 7, tx 25
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 3, new 11, ctx 7, tx 25, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 14, retire 6, new 0
 // “Victoria Justice Guest Stars As Shelby Marx! 🥊 | Full Scene | iCarly” (NickRewind, Best of Carly Shay): Carly's
 // exhibition fight with the champion Shelby Marx, which she survives by clinging to Shelby's leg; afterwards Shelby
@@ -160,8 +160,8 @@ export const shelbyFight: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['record', 'dearlife', 'pry', 'left'], seg: [141.0, 186.0],
       stem: 'How does Carly get through the fight?',
       ja: 'カーリーはどうやって試合を乗り切る？',
-      choices: ['By holding on to her leg', 'By punching her very hard', 'By hiding behind the referee'], a: 0,
-      choicesJa: ['相手の脚にしがみついて', '相手を強く殴って', 'レフェリーの後ろに隠れて'],
+      choices: ['By holding on to Shelby’s leg', 'By punching Shelby really hard', 'By hiding behind the referee'], a: 0,
+      choicesJa: ['シェルビーの脚にしがみついて', 'シェルビーを強く殴って', 'レフェリーの後ろに隠れて'],
       cue: '「Let go, Carly!」から',
       line: '*Let go, Carly! Let go of my leg!* … Shay, hangin’ on to the left leg of the champion!',
       said: 'カーリーは王者の脚にしがみついて離さず、残り時間がどんどん減っていく。',
@@ -264,7 +264,7 @@ export const shelbyFight: Clip = {
       trap: 'want から、何か物がほしいと考えがち。答えは To talk to Carly（カーリーと話すこと）。',
       use: 'I just want to talk.（ちょっと話したいだけなの）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'cause', reveals: ['easy', 'gym', 'claim', 'getit', 'must', 'kid'], seg: [262.6, 289.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'cause', reveals: ['easy', 'gym', 'claim', 'getit', 'must', 'kid', 'admit'], seg: [262.6, 289.2],
       stem: 'Why did Shelby fight hard after all?',
       ja: 'シェルビーが結局本気で戦ったのはなぜ？',
       choices: ['She saw a fake video', 'She wanted to win big', 'Her coach told her to'], a: 0,
@@ -303,8 +303,8 @@ export const shelbyFight: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'claim', seg: [268, 276.8],
       stem: 'What did the video show Carly and her friends saying?',
       ja: '動画では、カーリーたちは何と言っていた？',
-      choices: ['They’d push her grandmother', 'They’d bring her grandmother', 'They’d push Shelby around'], a: 0,
-      choicesJa: ['彼女のおばあちゃんを突き飛ばす', '彼女のおばあちゃんを連れてくる', 'シェルビーをこづき回す'],
+      choices: ['They’d push her grandmother', 'They’d bring her grandmother', 'They’d hit Shelby very hard'], a: 0,
+      choicesJa: ['彼女のおばあちゃんを突き飛ばす', '彼女のおばあちゃんを連れてくる', 'シェルビーを思いきり殴る'],
       cue: '「talking about how you were gonna」のあと',
       line: 'talking about how you were gonna *push my grandmother down*',
       said: '動画では、カーリーたちが「おばあちゃんを突き飛ばす」と話していた、と言う。',
@@ -389,7 +389,7 @@ export const shelbyFight: Clip = {
       choicesJa: ['シェルビーをだました', 'カーリーを勝たせた', 'シェルビーとも戦った'],
       cue: '「Just admit it.」から',
       line: 'Just admit it. / Neville: I did *no such thing*. … *Okay*, I tricked Shelby.',
-      said: '「認めなさい」と言われ、「そんなことはしてない」と言うが、少しして「分かった、シェルビーをだました」と言う。',
+      said: '「いいから認めなよ」と言われ「そんなことはしてない」と言うが、「分かった、シェルビーをだました」と言う。',
       mean: 'trick ＝ だます。I did no such thing ＝ そんなことはしていない（強い否定）。',
       trap: '最初の no such thing（そんなことはしてない）で終わりと思いやすい。Okay のあとで認める。',
       use: 'Okay, fine. It was me.（分かったよ、ぼくがやった）' },
@@ -402,8 +402,8 @@ export const shelbyFight: Clip = {
       cue: '「Okay, I tricked Shelby.」のあと',
       line: 'Okay, I tricked Shelby. … *So?*',
       said: 'だましたと認めたあと、「だから何？」と開き直る。',
-      mean: 'So? ＝ 文字どおりは「それで？」。上げ調子で一語だけだと「だから何？」と開き直る言い方。失礼なので目上には使わない。',
+      mean: 'So? ＝ 文字どおりは「それで？」。悪いことを認めた直後に一語だけ→「だから何？」と開き直る言い方。失礼なので目上には使わない。',
       trap: '話の続きをうながす「それで？」に聞こえるが、謝らずに開き直っている。',
-      use: 'So? What happened next?（それで？次はどうなったの？）' },
+      use: 'So? What happened next?（それで？どうなったの？＝続きをうながす普通の使い方）' },
   ]
 };
