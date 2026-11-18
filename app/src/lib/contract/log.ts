@@ -176,7 +176,7 @@ export const LOG_EVENTS = {
   // the かいがら wallet (relay/src/store.ts): one seeded from the fold of the rows (absent, or kept by a relay that
   // can't be read), and the daily check's (walletcheck) stored value that isn't the fold's; never fixed by itself
   "wallet.seed": { src: 'r', f: { who: ['A', 'B', 'G'], h: 'n' } },
-  "wallet.drift": { src: 'r', f: { who: ['A', 'B', 'G'], stored: 'n', fold: 'n' } },
+  "wallet.drift": { src: 'r', f: { who: ['A', 'B', 'G'], stored: 'n', fold: 'n', floor: 'n' } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text

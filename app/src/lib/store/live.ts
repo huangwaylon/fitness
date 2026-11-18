@@ -2,12 +2,12 @@
 // queue, fetch rows `since` the last seen server time), with undo windows.
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
-import type { EventRow, EventType } from '#lib/contract/api.ts';
+import { movesWallet, type EventRow, type EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
 import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, replaceHeld, retryNow, unpark, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
-import { addOwnRows, addWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
+import { addOwnRows, addWallets, dropWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import type { RecordMark } from '#lib/contract/live-protocol.ts';
@@ -410,8 +410,9 @@ export class LiveBackend implements Backend {
     const r = await flush(Date.now, { paced: true });
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
-    // the かいがら wallets the acks carried, at once (a refused buy's too: the number snaps back to the record's)
-    const withWallets = r.wallets ? addWallets(r.wallets) : null;
+    // the かいがら wallets the acks carried, at once (a refused buy's too: the number snaps back to the record's); none
+    // for an acked event that may move one: an older relay's ack, so the phone folds the rows again
+    const withWallets = r.wallets ? addWallets(r.wallets) : r.acked.some((ev) => movesWallet(ev.type)) ? dropWallets() : null;
     if (withWallets && withWallets !== this.#cache) {
       this.#cache = withWallets;
       this.#host.changed();

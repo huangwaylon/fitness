@@ -2,11 +2,11 @@
 // full localStorage.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
-import type { SnapshotRows } from '#lib/contract/api.ts';
+import { movesWallet, type SnapshotRows } from '#lib/contract/api.ts';
 import { LIVE, configureStorage, onStorageProblem, type KV, type StorageProblem } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
-import { addWallets, applySnapshot, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
+import { addWallets, applySnapshot, dropWallets, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
 import { newestWallets } from './wallets.ts';
 import { setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
@@ -373,5 +373,16 @@ describe('the wallets', () => {
     expect(addWallets(r.wallets!)?.wallets).toEqual({ A: { h: 42, seq: 8 } });
     expect(addWallets({ A: { h: 1, seq: 7 } })?.wallets).toEqual({ A: { h: 42, seq: 8 } });
     expect(newestWallets({ A: { h: 1, seq: 1 } }, { B: { h: 2, seq: 1 } })).toEqual({ A: { h: 1, seq: 1 }, B: { h: 2, seq: 1 } });
+  });
+
+  it('an older relay’s ack (a wallet-moving event, no wallets): dropWallets lets them go, kept so on a reload', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), wallets: { A: { h: 500, seq: 3 } } });
+    await refreshSnapshot();
+    expect(movesWallet('buy') && movesWallet('tally') && !movesWallet('pref')).toBe(true);
+    const c = dropWallets();
+    expect(c && 'wallets' in c).toBe(false);
+    expect(dropWallets()).toBe(c);
+    await reload();
+    expect((await loadCache())?.wallets).toBeUndefined();
   });
 });

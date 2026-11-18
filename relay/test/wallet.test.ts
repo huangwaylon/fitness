@@ -57,7 +57,7 @@ describe('the wallet, property: after every step the served h is the fold with t
   // state, so the two agree only if every path keeps that state the fold's (review 11/18: tally repays, farm, undo…).
   const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
   const STEPS = 260;
-  const totals = { floors: 0, loads: 0, unadjusts: 0, rewards: 0, farms: 0, backs: 0, kept: 0 };
+  const totals = { floors: 0, loads: 0, unadjusts: 0, rewards: 0, farms: 0, backs: 0, kept: 0, sets: 0, explained: 0 };
 
   for (const seed of SEEDS)
     it(`seed ${seed}: ${STEPS} random steps (tallies, give-backs, sells, buys, starts, rewards, farm, adjust/unadjust, loads, days)`, () => {
@@ -70,6 +70,9 @@ describe('the wallet, property: after every step the served h is the fold with t
       const plots = ['fd:f.0.0', 'fd:f.1.0', 'fd:f.2.0', 'fd:f.3.0'];
       let loadN = 0, adjN = 0;
       const expected: Record<W, number> = { A: 0, B: 0, G: 0 };
+      // (what the floor took from each, in all: walletcheck's explanation of h above the fold)
+      const floor: Record<W, number> = { A: 0, B: 0, G: 0 };
+      let set: { who: W; h: number } | null = null;
       let last = t.served();
       expect(last).toEqual({ A: { h: 0, seq: 0 }, B: { h: 0, seq: 0 }, G: { h: 0, seq: 0 } });
       for (let step = 0; step < STEPS; step++) {
@@ -79,6 +82,7 @@ describe('the wallet, property: after every step the served h is the fold with t
         const who = pick(WHO), today = tokyo(t.box.now + 20);
         const x = r();
         let load = false;
+        set = null;
         if (x < 0.22) {
           // a tally: today's counts grow
           const key = `${who}|${today}`, s = pick(species);
@@ -130,8 +134,13 @@ describe('the wallet, property: after every step the served h is the fold with t
             : [at, who, `ld-${seed}-${loadN}`, 'shop_adjust', JSON.stringify({ v: 1 + Math.floor(r() * 500), note: 'loaded' })];
           expect(t.store.load({ rows: { events: [row] } })).toMatchObject({ ok: true });
           totals.loads++;
-        } else if (x < 0.93) {
+        } else if (x < 0.915) {
           t.box.now += DAY;
+        } else if (x < 0.93) {
+          // the admin's walletset: the wallet made h, the rows made to say it
+          set = { who, h: Math.floor(r() * 5000) };
+          expect(t.store.walletSet({ id: `ws-${seed}-${step}`, who, h: set.h, note: 'property' })).toMatchObject({ ok: true });
+          totals.sets++;
         } else {
           // a batch of sells (全部売る) and a group of buys (ぜんぶ かう)
           const s = pick(species);
@@ -141,9 +150,10 @@ describe('the wallet, property: after every step the served h is the fold with t
         }
         const now = t.served();
         for (const w of WHO) {
-          if (!load) {
+          if (set?.who === w) (expected[w] = set.h), (floor[w] = 0);
+          else if (!load) {
             const raw = expected[w] + t.fold(w) - before[w];
-            if (raw < 0) totals.floors++;
+            if (raw < 0) totals.floors++, (floor[w] += -raw);
             expected[w] = Math.max(0, raw);
           }
           expect(now[w].h, `seed ${seed} step ${step} ${w}`).toBe(expected[w]);
@@ -151,6 +161,13 @@ describe('the wallet, property: after every step the served h is the fold with t
           expect(now[w].seq > last[w].seq, `seed ${seed} step ${step} ${w} seq`).toBe(now[w].h !== last[w].h);
         }
         last = now;
+        // walletcheck: the floor's part explained, never a drift; a load's (rows the wallet never took) a drift
+        const wc = t.store.walletCheck(), f = { A: t.fold('A'), B: t.fold('B'), G: t.fold('G') };
+        const inOrder = (w: W) => expected[w] === f[w] + floor[w];
+        expect(wc.drift.map((d) => d.who), `seed ${seed} step ${step} drift`).toEqual(WHO.filter((w) => !inOrder(w) && !(floor[w] === 0 && expected[w] === Math.max(0, f[w]))));
+        expect(wc.explained.map((d) => d.who), `seed ${seed} step ${step} explained`).toEqual(WHO.filter((w) => inOrder(w) && expected[w] !== Math.max(0, f[w])));
+        if (wc.explained.length) totals.explained++;
+        for (const w of WHO) expect(t.ledger(w).u ?? 0, `seed ${seed} step ${step} ${w} u`).toBe(floor[w]);
       }
       // the pockets' part stays the fold's all along (only the wallets may differ, by the floor and the loads)
       for (const w of WHO) {
@@ -188,6 +205,31 @@ describe('the wallet', () => {
     // the catch made good: the debt's かいがら back, on the 0
     t.send('A', 'tally', { date: D, counts: { 'fish:whale-shark': 2 * k } });
     expect(t.served().A.h).toBe(k * WS);
+    // h above the fold by what the floor took: explained, no drift (and no wallet.drift line)
+    expect(t.store.walletCheck()).toEqual({ ok: true, drift: [], explained: [{ who: 'A', stored: k * WS, fold: left, floor: k * WS - left }] });
+  });
+
+  it('an unadjust of a correction the floor cut short pays out in full; walletcheck explains it', () => {
+    koi('B', 1);
+    expect(t.store.adjust({ id: 'adj-f', who: 'B', v: -(K + 5000), note: 'past 0' })).toMatchObject({ after: 0 });
+    expect(t.store.unadjust({ id: 'adj-f' })).toMatchObject({ before: 0, after: K + 5000 });
+    expect(t.store.walletCheck()).toEqual({ ok: true, drift: [], explained: [{ who: 'B', stored: K + 5000, fold: K, floor: 5000 }] });
+    // walletset settles it: the rows say h, nothing left to explain
+    expect(t.store.walletSet({ id: 'ws-f', who: 'B', h: K + 5000, note: 'keep' })).toMatchObject({ ok: true, v: 5000 });
+    expect(t.store.walletCheck()).toEqual({ ok: true, drift: [], explained: [] });
+  });
+
+  it('a walletset without a row (the rows say h already) starts a new epoch, so the phones refetch the wallet', () => {
+    koi('A', 1);
+    const at = new Date(T0 - DAY).toISOString();
+    t.store.load({ rows: { events: [[at, 'A', 'ld-x', 'shop_adjust', JSON.stringify({ v: 7, note: 'dump' })]] } });
+    const rev = t.store.rev();
+    const r = t.store.walletSet({ id: 'ws-x', who: 'A', h: K + 7, note: 'take the rows' });
+    expect(r).toMatchObject({ ok: true, before: K, after: K + 7 });
+    expect(r).not.toHaveProperty('at');
+    expect(r.rev).not.toBe(rev);
+    expect(t.store.rev()).toBe(r.rev);
+    expect(t.snap('A').wallets.A).toEqual({ h: K + 7, seq: 2 });
   });
 
   it('a snapshot carries the wallets on a first fetch and with rows; a poll with nothing new carries none; the guest only its own', () => {
@@ -222,7 +264,7 @@ describe('the wallet', () => {
     const at = new Date(T0 - DAY).toISOString();
     expect(t.store.load({ rows: { events: [[at, 'A', 'ld-1', 'tally', JSON.stringify({ date: '2026-11-02', counts: { 'fish:koi': 6 } })], [at, 'A', 'ld-2', 'sell', JSON.stringify({ species: 'fish:koi', n: 6, v: 6 * K })]] } })).toMatchObject({ ok: true, events: 2 });
     expect(t.served().A).toMatchObject({ h, seq: 2 });
-    expect(t.store.walletCheck()).toEqual({ ok: true, drift: [{ who: 'A', stored: h, fold: h + 6 * K }] });
+    expect(t.store.walletCheck()).toEqual({ ok: true, drift: [{ who: 'A', stored: h, fold: h + 6 * K, floor: 0 }], explained: [] });
     // the pocket folded again, the wallet as it was: the loaded koi are sold (the pocket empty), their かいがら not added
     expect(koi('A', 1)).toMatchObject({ ok: false, detail: 'pocket short' });
     // the admin keeps the stored number: the rows are made to say it
@@ -258,7 +300,12 @@ describe('the wallet', () => {
     // (the older relay's JSON: the same ledger without the wallet's fields, its h moved by its own steps)
     const { n: _n, t: _t, ...old } = t.ledger('A');
     t.db.db.prepare('UPDATE meta SET v = ? WHERE k = ?').run(JSON.stringify({ ...old, h: 2 * K + 7 }), 'shop|A');
-    expect(t.served().A).toEqual({ h: 2 * K + 7, seq: 0 });
+    const rev = t.store.rev();
+    // (its change count starts again at 0, in a new epoch: the phones take it as it is; the reply says the new one)
+    const s = t.snap('A');
+    expect(s.wallets.A).toEqual({ h: 2 * K + 7, seq: 0 });
+    expect(s.rev).not.toBe(rev);
+    expect(t.snap('A').rev).toBe(s.rev); // once
     koi('A', 1, '2026-11-03');
     expect(t.served().A).toEqual({ h: 3 * K + 7, seq: 1 });
   });
@@ -288,6 +335,6 @@ describe('the wallet', () => {
 
   it('the admin’s wallet: each person’s h, seq, at and the fold beside it', () => {
     koi('A', 1);
-    expect(t.store.wallets()).toEqual({ ok: true, A: { h: K, seq: 1, at: expect.any(String), fold: K }, B: { h: 0, seq: 0, at: expect.any(String), fold: 0 }, G: { h: 0, seq: 0, at: expect.any(String), fold: 0 } });
+    expect(t.store.wallets()).toEqual({ ok: true, A: { h: K, seq: 1, at: expect.any(String), floor: 0, fold: K }, B: { h: 0, seq: 0, at: expect.any(String), floor: 0, fold: 0 }, G: { h: 0, seq: 0, at: expect.any(String), floor: 0, fold: 0 } });
   });
 });

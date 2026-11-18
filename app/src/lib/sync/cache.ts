@@ -290,6 +290,16 @@ export function addWallets(w: Wallets): SnapshotCache | null {
   return next;
 }
 
+/** The wallets let go: an ack of an event that may move one came without any, as only an older relay (a rollback)
+ *  answers so; the phone folds the rows again (model/shop.ts). Returns the cache, or null when there is none. */
+export function dropWallets(): SnapshotCache | null {
+  const c = mem;
+  if (!c?.wallets) return c ?? null;
+  const { wallets: _w, ...next } = c;
+  void saveCache(next);
+  return next;
+}
+
 /**
  * My events the record just stored, as the rows it holds (its `at`), into the cache at once: no re-read after an ack.
  * `since` stays where it was, so the next poll still brings everything written after it (these rows again too: the

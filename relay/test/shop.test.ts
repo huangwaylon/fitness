@@ -496,7 +496,7 @@ describe('英語すごろく’s reward in the record', () => {
     expect(reward('A', 'sg-game-0004', 1, ['A'])).toMatchObject({ ok: true });
     expect(ledger('A')).toMatchObject({ h: 2 * K + 541, g: ['sg-game-0001', 'sg-game-0002', 'sg-game-0003', 'sg-game-0004'] });
     expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [2 * K + 541, 2 * K + 548] }, G: 'none' });
-    expect(store.walletCheck().drift).toEqual([{ who: 'A', stored: 2 * K + 541, fold: 2 * K + 548 }]);
+    expect(store.walletCheck().drift).toEqual([{ who: 'A', stored: 2 * K + 541, fold: 2 * K + 548, floor: 0 }]);
   });
 });
 

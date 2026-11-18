@@ -22,7 +22,7 @@ import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot } from '../../app/src/lib/contract/record.ts';
 import { validEvent } from '../../app/src/lib/contract/shopCheck.ts';
 import {
-  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, PREF_KEYS, PROFILE_PREF_KEYS, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENTS_MAX, EVENT_TYPES, GROUP_MAX, isActivityMetric, isId, ISO_AT, isMetricKey, isPersonId, isWho, movesWallet, PREF_KEYS, PROFILE_PREF_KEYS, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
@@ -441,16 +441,17 @@ export class StoreCore {
     } else if (body.after !== undefined) return fail('bad_request');
     // the guest's: the activity and the events, never a からだ row, a からだ goal or a member's profile; a member's:
     // never the guest's profile (contract/guest.ts rowsFor)
-    const head = { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() };
     // (and the かいがら: the relay's wallets, the phones' number since 2026-11-18, walletsFor; with a first fetch or
-    // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing)
+    // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing; read before
+    // the head's rev, as an older relay's ledger read starts a new epoch: shopState)
     const wallets = (rows: SnapshotRows) => (!since || rows.metrics.length || rows.events.length ? { wallets: this.walletsFor(me) } : {});
+    const head = () => ({ ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() });
     if (!page) {
-      const rows = this.rowsSince(since);
-      return { ...head, rows: rowsFor(me, rows), ...wallets(rows) };
+      const rows = this.rowsSince(since), w = wallets(rows);
+      return { ...head(), rows: rowsFor(me, rows), ...w };
     }
-    const p = this.rowsPage(since, page.after, page.limit);
-    return { ...head, rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...wallets(p.rows) };
+    const p = this.rowsPage(since, page.after, page.limit), w = wallets(p.rows);
+    return { ...head(), rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...w };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
@@ -1108,15 +1109,22 @@ export class StoreCore {
   /** `who`'s running shop ledger (meta `shop|<who>`), as kept. Its pocket's part folded again from the rows when today's
    *  rules can't read it (a load let it go, an older relay kept it), the wallet kept as it was; the whole seeded from
    *  the fold (`wallet.seed`) only when there's no wallet to keep (the record's first op of theirs, a load into an
-   *  empty record, a ledger from before the wallet that its relay folded again too). Nothing else folds the wallet. */
+   *  empty record, a ledger from before the wallet that its relay folded again too). Nothing else folds the wallet.
+   *  A ledger without the change count (`n`: an older relay's, a rollback's) starts it again at 0 in a new epoch, so
+   *  the phones take the count as it is (they keep each person's highest within an epoch). */
   private shopState(who: Who): ShopState {
     const raw = this.meta(`shop|${who}`);
-    const { pocket, wallet } = raw ? shopStateOf(raw) : { pocket: null, wallet: null };
-    if (pocket && wallet) return withWallet(pocket, wallet);
-    const fold = this.shopFold(who);
-    const st = withWallet(fold, wallet ?? { h: Math.max(0, fold.l.shells), n: 0, t: this.iso() });
-    if (!wallet) this.io.log?.('wallet.seed', { who, h: st.l.shells });
+    const { pocket, wallet, legacy } = raw ? shopStateOf(raw) : { pocket: null, wallet: null, legacy: false };
+    if (pocket && wallet && !legacy) return withWallet(pocket, wallet);
+    let st: ShopState;
+    if (pocket && wallet) st = withWallet(pocket, wallet);
+    else {
+      const fold = this.shopFold(who);
+      st = withWallet(fold, wallet ?? seedOf(fold, this.iso()));
+      if (!wallet) this.io.log?.('wallet.seed', { who, h: st.l.shells });
+    }
     this.setMeta(`shop|${who}`, shopStateJson(st));
+    if (raw && legacy) this.bumpRev();
     return st;
   }
 
@@ -1152,12 +1160,14 @@ export class StoreCore {
   private ledgerKept(who: Who): ShopState | null {
     const raw = this.meta(`shop|${who}`);
     const p = raw ? shopStateOf(raw) : null;
-    return p?.pocket && p.wallet ? withWallet(p.pocket, p.wallet) : null;
+    return p?.pocket && p.wallet && !p.legacy ? withWallet(p.pocket, p.wallet) : null;
   }
 
   /** A ledger after a step into meta: the wallet never below 0 (the user, 2026-11-18: a give-back after a sale takes
-   *  at most what is left), and when it moved from `before`, a change counted (`n`) at the record's time. */
+   *  at most what is left; what the floor took counted in `u`, walletCheck's), and when it moved from `before`, a
+   *  change counted (`n`) at the record's time. */
   private keepLedger(who: Who, st: ShopState, before: number): void {
+    if (st.l.shells < 0) st.u += -st.l.shells;
     st.l.shells = Math.max(0, st.l.shells);
     if (st.l.shells !== before) (st.n += 1), (st.t = this.iso());
     this.setMeta(`shop|${who}`, shopStateJson(st));
@@ -1175,9 +1185,10 @@ export class StoreCore {
   private shopForget(whole = false): void {
     for (const who of ['A', 'B', 'G'] as const) {
       const raw = whole ? null : this.meta(`shop|${who}`);
-      const w = raw ? shopStateOf(raw).wallet : null;
-      if (w) this.setMeta(`shop|${who}`, JSON.stringify({ h: w.h, n: w.n, t: w.t }));
+      const p = raw ? shopStateOf(raw) : null, w = p?.wallet;
+      if (w) this.setMeta(`shop|${who}`, JSON.stringify({ h: w.h, n: w.n, t: w.t, u: w.u }));
       else this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${who}`);
+      if (w && p.legacy) this.bumpRev();
     }
     this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
   }
@@ -1208,7 +1219,7 @@ export class StoreCore {
         out[who] = 'none';
         continue;
       }
-      const { pocket, wallet } = shopStateOf(raw);
+      const { pocket, wallet, legacy } = shopStateOf(raw);
       const fold = this.shopFold(who, field);
       // (a pocket today's rules can't read is `stale`, folded again at the next read: only its wallet judged)
       const foldParts = pocketParts(fold);
@@ -1216,38 +1227,43 @@ export class StoreCore {
       out[who] = pocket ? diff ?? 'same' : { ...diff, differs: ['stale', ...((diff?.differs as string[] | undefined) ?? [])] };
       const pocketDiffers = !pocket || (diff?.differs as string[] | undefined)?.some((k) => k !== 'h');
       if (o.fix === true && pocketDiffers) {
-        const w = wallet ?? { h: Math.max(0, fold.l.shells), n: 0, t: this.iso() };
-        this.setMeta(`shop|${who}`, shopStateJson(withWallet(fold, w)));
+        this.setMeta(`shop|${who}`, shopStateJson(withWallet(fold, wallet ?? seedOf(fold, this.iso()))));
+        if (legacy) this.bumpRev();
       }
     }
     return { ok: true, ...out };
   }
 
-  /** The admin's `wallet`: each person's wallet (`h`, its changes `seq`, the last one's time `at`) and the fold of
-   *  their rows' かいがら beside it (`fold`: below 0 when a give-back took more than was left; the wallet stops at 0). */
+  /** The admin's `wallet`: each person's wallet (`h`, its changes `seq`, the last one's time `at`, what the floor took
+   *  `floor`) and the fold of their rows' かいがら beside it (`fold`: below 0 when a give-back took more than was left;
+   *  the wallet stops at 0). */
   wallets(): Record<string, unknown> {
     const out: Record<string, unknown> = { ok: true };
     for (const who of ['A', 'B', 'G'] as const) {
       const st = this.shopState(who);
-      out[who] = { h: st.l.shells, seq: st.n, at: st.t, fold: this.shopFold(who).l.shells };
+      out[who] = { h: st.l.shells, seq: st.n, at: st.t, floor: st.u, fold: this.shopFold(who).l.shells };
     }
     return out;
   }
 
-  /** The daily `walletcheck` (and the admin's): each kept wallet against its fold (never below 0), the ones that differ
-   *  (`drift`, each `{who, stored, fold}`). Reads only: a drift is the admin's to settle (walletset). */
-  walletCheck(): { ok: true; drift: { who: Who; stored: number; fold: number }[] } {
-    const drift: { who: Who; stored: number; fold: number }[] = [];
+  /** The daily `walletcheck` (and the admin's): each kept wallet against its fold. In order when `h` is the fold plus
+   *  what the floor took (`u`: a credit after a floored step pays out in full, the user's rule): `explained`, each
+   *  `{who, stored, fold, floor}`, when the floor's part shows; else `drift` (the same fields, `wallet.drift` warn).
+   *  Reads only: a drift is the admin's to settle (walletset). */
+  walletCheck(): { ok: true; drift: WalletDrift[]; explained: WalletDrift[] } {
+    const drift: WalletDrift[] = [], explained: WalletDrift[] = [];
     const field = this.farmFold();
     for (const who of ['A', 'B', 'G'] as const) {
       const raw = this.meta(`shop|${who}`);
       const w = raw ? shopStateOf(raw).wallet : null;
       if (!w) continue;
-      const fold = Math.max(0, this.shopFold(who, field).l.shells);
-      if (w.h !== fold) drift.push({ who, stored: w.h, fold });
+      const fold = this.shopFold(who, field).l.shells, d = { who, stored: w.h, fold, floor: w.u };
+      if (w.h === fold + w.u) {
+        if (w.h !== Math.max(0, fold)) explained.push(d);
+      } else if (!(w.u === 0 && w.h === Math.max(0, fold))) drift.push(d);
     }
     for (const d of drift) this.io.log?.('wallet.drift', d);
-    return { ok: true, drift };
+    return { ok: true, drift, explained };
   }
 
   /** The admin's `adjust {id, who, v, note}`: a `shop_adjust` row of `who`'s (contract/shop.ts adjustOf: `v` かいがら
@@ -1288,11 +1304,15 @@ export class StoreCore {
       if (v && !adjustOf({ v, note })) return { ok: false, error: 'bad_request', detail: `a correction of ${v} is past ±${ADJUST_MAX}` };
       const at = v ? this.nextAt() : undefined;
       if (at) this.put(id, at, who, 'shop_adjust', JSON.stringify({ v, note }), null, null);
+      // (the rows say `h` after it: nothing of the floor's left to explain)
       st.l.shells = h;
+      st.u = 0;
       this.keepLedger(who, st, before);
       return { ok: true, ...(at ? { id, at, v } : {}), before, after: h };
     });
     if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who: who as Who, at: r.at, rev: this.rev() }, true);
+    // (no row: no `since` would bring the wallet, so a new epoch, every phone refetching)
+    else if (typeof r.after === 'number') return { ...r, rev: this.bumpRev() };
     return r;
   }
 
@@ -1774,12 +1794,17 @@ export class StoreCore {
 /** A person's running shop ledger (store.ts shopState): their tallies' totals less the give-backs, the give-backs, the
  *  ledger of their shop rows (contract/shop.ts) whose `shells` are THE wallet (never below 0, never folded again once
  *  kept), and the wallet's changes (`n`, counted) and the last one's time (`t`). */
-interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger; n: number; t: string }
+interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger; n: number; t: string; u: number }
 type Pocket = Pick<ShopState, 'caught' | 'back' | 'l'>;
-interface Wallet { h: number; n: number; t: string }
+/** A wallet: `h` かいがら, `n` changes, `t` the last one's time, `u` what the floor took in all (walletCheck's). */
+interface Wallet { h: number; n: number; t: string; u: number }
+type WalletDrift = { who: Who; stored: number; fold: number; floor: number };
 
 /** A ledger of a pocket's part and a wallet: the wallet's `h` its かいがら (a copy: the pocket's own ledger untouched). */
-const withWallet = (p: Pocket, w: Wallet): ShopState => ({ ...p, l: { ...p.l, shells: w.h }, n: w.n, t: w.t });
+const withWallet = (p: Pocket, w: Wallet): ShopState => ({ ...p, l: { ...p.l, shells: w.h }, n: w.n, t: w.t, u: w.u });
+
+/** A wallet seeded from the fold: its かいがら never below 0, what that took counted as the floor's. */
+const seedOf = (fold: Pocket, t: string): Wallet => ({ h: Math.max(0, fold.l.shells), n: 0, t, u: Math.max(0, -fold.l.shells) });
 
 /** The pocket's part of a ledger as meta keeps it (each map as its entries without the zeros, sorted): a running one
  *  and a fold compare as text. */
@@ -1791,31 +1816,33 @@ function pocketParts(st: Pocket): { c: [string, number][]; b: [string, number][]
 /** A ledger as meta keeps it: the pocket's part, the wallet `h`, its changes `n` and time `t`. */
 function shopStateJson(st: ShopState): string {
   const { c, b, s, v, o, w, g } = pocketParts(st);
-  return JSON.stringify({ c, b, s, v, o, h: st.l.shells, w, g, n: st.n, t: st.t });
+  return JSON.stringify({ c, b, s, v, o, h: st.l.shells, w, g, n: st.n, t: st.t, ...(st.u ? { u: st.u } : {}) });
 }
 
 /** A ledger from meta in its two parts. The pocket's: null when today's rules can't read it (kept before 英語すごろく's
  *  rewards, without `g`; before an old goal fruit counted as its goal's, contract/pocket.ts pocketKey; or let go by a
  *  load, shopForget). The wallet's: null when there's none to keep (a ledger from before the wallet whose pocket can't
  *  be read either: those relays folded such a one again, its かいがら with it, so that fold is what they served). */
-function shopStateOf(raw: string): { pocket: Pocket | null; wallet: Wallet | null } {
+function shopStateOf(raw: string): { pocket: Pocket | null; wallet: Wallet | null; legacy: boolean } {
   let x: unknown;
   try {
     x = JSON.parse(raw);
   } catch {
-    return { pocket: null, wallet: null };
+    return { pocket: null, wallet: null, legacy: true };
   }
-  if (!isRec(x)) return { pocket: null, wallet: null };
+  if (!isRec(x)) return { pocket: null, wallet: null, legacy: true };
   const maps = [x.c, x.b, x.s, x.v, x.o] as ([string, number][] | undefined)[];
   const ok = Array.isArray(x.c) && Array.isArray(x.w) && Array.isArray(x.g) && typeof x.h === 'number' && !maps.some((m) => m?.some(([k]) => pocketKey(k) !== k));
   const pocket = ok
     ? { caught: new Map(maps[0]), back: new Map(maps[1]), l: { sold: new Map(maps[2]), soldV: new Map(maps[3]), owed: new Map(maps[4]), shells: x.h as number, owned: x.w as string[], games: new Set(x.g as string[]) } }
     : null;
-  // (a readable one a relay before the wallet kept: its `h` as that relay served it, never below 0)
-  const wallet = typeof x.h === 'number' && Number.isFinite(x.h) && (typeof x.n === 'number' || ok)
-    ? { h: Math.max(0, Math.round(x.h)), n: typeof x.n === 'number' ? x.n : 0, t: typeof x.t === 'string' ? x.t : '' }
+  // (a readable one a relay before the wallet kept: its `h` as that relay served it, never below 0, what that took
+  // the floor's; `legacy`, so its change count starts again in a new epoch: shopState)
+  const legacy = typeof x.n !== 'number';
+  const wallet = typeof x.h === 'number' && Number.isFinite(x.h) && (!legacy || ok)
+    ? { h: Math.max(0, Math.round(x.h)), n: legacy ? 0 : (x.n as number), t: typeof x.t === 'string' ? x.t : '', u: typeof x.u === 'number' ? x.u : Math.max(0, -Math.round(x.h)) }
     : null;
-  return { pocket, wallet };
+  return { pocket, wallet, legacy };
 }
 
 /** Where a running ledger and its fold differ (shopcheck's detail), or null when they don't: `differs`, the fields that
@@ -1865,8 +1892,9 @@ function walletsTouched(me: Who, events: readonly unknown[]): Set<Who> {
   const out = new Set<Who>();
   for (const e of events) {
     if (!isRec(e) || typeof e.type !== 'string') continue;
-    if (e.type === 'tally' || e.type === 'tally_back' || e.type === 'farm' || isShopEvent(e.type)) out.add(me);
-    else if (e.type === 'sg_reward' && isRec(e.data) && Array.isArray(e.data.to)) for (const w of e.data.to) if (isWho(w)) out.add(w);
+    if (e.type === 'sg_reward') {
+      if (isRec(e.data) && Array.isArray(e.data.to)) for (const w of e.data.to) if (isWho(w)) out.add(w);
+    } else if (movesWallet(e.type)) out.add(me);
   }
   return out;
 }
