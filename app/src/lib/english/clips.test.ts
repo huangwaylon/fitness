@@ -5,7 +5,9 @@
 // file has the line `// A2 REVIEW` (reviewed for the A1–A2 learner) is held to the A2 rules for size, coverage and
 // levels (and a looser key-length tell); the others to the older ones until their review. No live item plays a header
 // `// EXCLUDE a–b` range; a bank with the line `// R4 REVIEW` is held to the R4 rubric's coverage (quarters of the
-// speech span, gaps under `// SKIP a–b: why`), density, context items (`ctx`, lines `A: … / B: …`) and trap openers.
+// speech span, gaps under `// SKIP a–b: why`), density, context items (`ctx`, lines `A: … / B: …`), trap openers and
+// swears (a transcript line with one is under EXCLUDE, whole or from the swear's end, or `// SWEAR-OK a–b: why` for a
+// name like Moby Dick).
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -17,6 +19,8 @@ import type { Clip, Question, TranscriptFile } from './types.ts';
 
 const SKILLS = Object.keys(GROUP_OF);
 const BANNED = /不正解|誤り|間違い|ざんねん|残念|×/;
+/** The swears no item may play (the user, 2026-11-18; damn, hell, crap and sucks may): its `line` mustn't quote one either. */
+const SWEAR = /\b(bitch\w*|ass|asses|asshole\w*|jackass|shit\w*|bullshit|bastard\w*|dick\w*|fuck\w*|f\*+\w*|goddamn\w*|piss\w*|screw you|son of a b\w*)\b/i;
 const JA = /[぀-ヿ㐀-鿿]/;
 /** A bank, not a lesson from before them. */
 const isBank = (c: Clip) => c.questions.length >= 16;
@@ -342,6 +346,27 @@ describe('the clips', () => {
             return [...(d >= 6 && d <= 18 ? [] : [`${q.id}: seg ${d} s (6–15, ≤ 18)`]), ...(!q.line || turns(q.line) >= 2 ? [] : [`${q.id}: line of ${turns(q.line)} turn (turns split by ' / ')`])];
           });
           expect(bad.length, `${c.id}: context items: ${bad.join('; ')}`).toBe(0);
+        });
+
+        it('no live item plays or quotes a swear (a transcript line not under EXCLUDE; `// SWEAR-OK a–b: why` for a name)', () => {
+          const ex = ranges(src, 'EXCLUDE').flatMap((r) => r.spans), ok = ranges(src, 'SWEAR-OK').flatMap((r) => r.spans);
+          const lines = (JSON.parse(readFileSync(join(import.meta.dirname, 'transcripts', `${c.video}.en.json`), 'utf8')) as TranscriptFile).lines;
+          // a line is shut when a range covers it to within half a second at each end (whisper's timing), or an EXCLUDE
+          // reaches one end of it, the end the swear is at (ronfire's “…than a wishy-washy kiss-ass”), the rest playable
+          const shut = (t: Span) =>
+            [ex, ok].some((sp) => sp.some(([a, b]) => a <= t[0] + 0.5 && b >= t[1] - 0.5)) ||
+            ex.some(([a, b]) => (a <= t[0] + 0.5 && b > t[0]) || (b >= t[1] - 0.5 && a < t[1]));
+          const bad = lines.flatMap((l) => {
+            const w = l.en.match(SWEAR)?.[0];
+            if (!w || shut(l.t)) return [];
+            const ids = live.filter((q) => [q.seg, ...(q.then ? [q.then] : [])].some((s) => overlaps(s, [l.t]))).map((q) => q.id);
+            return ids.length ? [`${ids.join(', ')} play ${f1(l.t[0])}–${f1(l.t[1])} s “${w}”`] : [];
+          });
+          for (const q of live) {
+            const w = q.line?.match(SWEAR)?.[0];
+            if (w && !overlaps(q.seg, ok)) bad.push(`${q.id}'s line quotes “${w}”`);
+          }
+          expect(bad.length, `${c.id}: swears (add \`// EXCLUDE a–b\` over the line and trim the seg): ${bad.join('; ')}`).toBe(0);
         });
 
         it('trap opener 「思いやすい」 in ≤ ⌈live / 3⌉ traps', () => {

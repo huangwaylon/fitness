@@ -8,6 +8,7 @@
 // EAR CHECK: 62 s w1 — "What about a long sleeve tee?" taken as Michael's, "Well, that'll work" as Toby's
 // EAR CHECK: 96.4 s w3 — merged whisper line: check the seg starts after "that dim light is a b…" and holds "Actually, you did"
 // EAR CHECK: 52.5 s a1 — "…skip ahead to the really dangerous stuff" taken as Michael's (no name in the line)
+// EXCLUDE 92–100.6: swear (“that dim light is a bitch”; whisper runs it into one long line)
 import type { Clip } from '../types.ts';
 
 export const tobySafety: Clip = {
@@ -235,14 +236,14 @@ export const tobySafety: Clip = {
       trap: 'Thank God を文字どおり取ると同情に聞こえる。何と何を比べたかで皮肉の的を見る。',
       use: 'Oh no, a paper cut. Call an ambulance.（紙で指を切った？救急車呼ぶ？）' },
 
-    { id: 'w3', skill: 'pragma', level: 'B2', point: 'actually', ctx: true, seg: [96.4, 104.2],
-      stem: 'How do the warehouse guys answer Michael?',
-      ja: '倉庫の人たちはマイケルにどう答える？',
+    { id: 'w3', skill: 'pragma', level: 'B2', point: 'actually', ctx: true, seg: [100.6, 106.6],
+      stem: 'Michael says he didn’t cut in on their talk. How do the warehouse guys answer?',
+      ja: 'マイケルは「君たちの話の邪魔はしなかった」と言う。倉庫の人たちの返事は？',
       choices: ['He did cut in on them', 'He wasn’t at their talk', 'Their talk was boring'], a: 0,
       choicesJa: ['実際、邪魔をした', '彼は講習に来ていなかった', '自分たちの講習は退屈だった'],
-      cue: 'マイケルの言い分への返事',
-      line: 'Michael: I *didn’t interrupt* when you were having your presentation. / *Actually, you did.*',
-      said: 'マイケルが「君たちの発表の時、私は邪魔しなかった」と言うと、「いや、邪魔したよ」と返される。',
+      cue: '最初の返事',
+      line: '*Actually, you did.* / Yes. / Okay, let’s do another one.',
+      said: 'マイケルが「君たちの発表の時、私は邪魔しなかった」と言ったあと、「いや、邪魔したよ」と返される。',
       mean: 'Actually, 〜 ＝ 「いや、実は〜」。相手の言ったことをやんわり打ち消す前置き。you did ＝ （邪魔）したよ。',
       trap: 'Actually を「実際に」とだけ取ると、同意に聞こえるが、打ち消しの合図。did（した）を聞く。',
       use: 'Actually, I think it’s on Friday.（いや、実は金曜だと思うよ）' },

@@ -9,6 +9,7 @@
 // 136–146 s (who says "your idea", the pregnancy aside), 165–167 s (a bleeped swear).
 // EAR CHECK: 82.9–91.0 s a2 — the stammer (“I was not… I did not…”) is Jim's (assumed from what follows)
 // EAR CHECK: 180.6–188.1 s h4 — “I doubled my sales last month” and “Yup” are Pam's (assumed from turn-taking)
+// EXCLUDE 162–169: swear (“which is son of a bitch, Pam Halpert”)
 import type { Clip } from '../types.ts';
 
 export const empOfMonth: Clip = {
@@ -297,7 +298,7 @@ export const empOfMonth: Clip = {
       trap: 'Why と聞こえるので理由を聞いているように聞こえるが、提案。返事は全部 OK。',
       use: 'That’s fair. Let’s do that.（それなら公平だね。そうしよう）' },
 
-    { id: 'd5', skill: 'who', level: 'B1', point: 'pam', seg: [159.8, 169.9],
+    { id: 'd5', skill: 'who', level: 'B1', point: 'pam', seg: [159.8, 169.9], retired: true,
       stem: 'Whose name comes up with the next highest score?', ja: '次に点数が高いのは誰？',
       choices: ['It’s Pam’s name', 'It’s Dwight’s name', 'It’s Jim’s name again'], a: 0,
       choicesJa: ['パム', 'ドワイト', 'またジム'],
@@ -308,7 +309,18 @@ export const empOfMonth: Clip = {
       trap: '途中で言葉を飲みこむので、名前の前で聞くのをやめやすい。最後まで待つ。',
       use: 'And the winner is… me?（そして勝者は…私？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'rigged', reveals: ['pam'], seg: [161.0, 189.5],
+    { id: 'd6', skill: 'who', level: 'B1', point: 'pam', seg: [169, 175],
+      stem: 'Whose high score can’t the others believe?', ja: 'みんなが信じられないのは、誰の高い点数？',
+      choices: ['Pam’s', 'Dwight’s', 'Jim’s'], a: 0,
+      choicesJa: ['パム', 'ドワイト', 'ジム'],
+      cue: '「No offense」のすぐあと',
+      line: '*No offense, Pam*, but how the hell is that possible?',
+      said: '「悪いけど、パム、いったいどうしてそんなことが？」と言う。',
+      mean: 'No offense, 〜 ＝ 悪気はないけど、〜。失礼なことを言う前の前置き。すぐあとの名前で、誰の話か分かる。',
+      trap: '点数を選ぶのはジムなので、ジムを選びがち。No offense のすぐあとの名前を聞く。',
+      use: 'No offense, but I don’t like it.（悪気はないけど、それは好きじゃない）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'rigged', reveals: ['pam'], seg: [169, 189.5],
       stem: 'How do the others take Pam’s win?', ja: 'パムが選ばれたことを、みんなはどう受け止める？',
       choices: ['They don’t believe it', 'They cheer for her', 'They ask Jim to choose'], a: 0,
       choicesJa: ['信じられないと言う', '彼女を応援する', 'ジムに選び直させる'],

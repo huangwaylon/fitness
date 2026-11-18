@@ -5,6 +5,7 @@
 // he is drinking everything before his callback, and learns what the “eggnog” in the fridge was.
 // Segments from the captions, words from whisper (2026-11-16). Untested: 36.5–39 s, 53–62 s (greetings), 86 s on
 // (whisper loops one line). Named in the audio: Joey (80.6 s), Leonard Hayes; the other speakers aren't named.
+// EXCLUDE 35–37: swear (“They played it right before Jackass”)
 import type { Clip } from '../types.ts';
 
 export const joeyBroadwayAudition: Clip = {
@@ -100,15 +101,15 @@ export const joeyBroadwayAudition: Clip = {
       trap: '劇の話なので、脚本（writing）と考えがち。and のあとの directing を聞く。',
       use: 'She wrote it, and she’s directing it.（脚本も演出も彼女）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', ctx: true, seg: [30.5, 38.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'macbeth', seg: [29.5, 35],
       stem: 'What did the person praising Macbeth see?', ja: 'マクベスをほめた人は、何を見た？',
       choices: ['Just the previews', 'The whole movie', 'The play on Broadway'], a: 0,
       choicesJa: ['予告編だけ', '映画を全部', 'ブロードウェイの劇'],
       cue: '「No, but」のあと',
-      line: 'He was so good in that movie of Macbeth. / You saw that? / No, but I saw the *previews*. They played it right before Jackass.',
-      said: '「見たの？」「ううん、でも予告編は見た。ジャッカスの前に流れてたの」と答える。',
-      mean: 'previews ＝ 予告編。ほめた理由が予告編だけで、本編は見ていない。Jackass は別のドタバタ映画。',
-      trap: 'They played it（流れた）から本編を見たと考えがち。it は予告編。最初の No が答え。',
+      line: 'He was so good in that movie of Macbeth. / You saw that? / No, but I saw the *previews*.',
+      said: '「見たの？」「ううん、でも予告編は見た」と答える。',
+      mean: 'previews ＝ 予告編。ほめた理由が予告編だけで、本編は見ていない。',
+      trap: 'saw（見た）から本編を見たと考えがち。最初の No が答えで、見たのは予告編だけ。',
       use: 'Haven’t seen it, but I saw the trailer.（見てないけど、予告は見た）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ads', seg: [38.3, 48.4], retired: true,

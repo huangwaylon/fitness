@@ -9,6 +9,7 @@
 // 124.6 s (captions "going to find it in your heart to be able to", whisper "gonna finally be able to").
 // EXCLUDE 130.2–133.1 (the crude detail of where Ben's kidney stone is lodged)
 // SKIP 165–185: music and the end card; whisper's lone "You're good." at 184 s
+// EXCLUDE 158.3–159.9: swear (“screw you, Partridge”)
 import type { Clip } from '../types.ts';
 
 export const iceClown: Clip = {
@@ -240,6 +241,16 @@ export const iceClown: Clip = {
       mean: 'She’d ＝ She had。出身ではなく、住んだことがあるだけ。',
       trap: 'She’s なら「ズ」が聞こえる。She lived なら She のあとに音がない。「ド」なら She’d。',
       use: 'I’d never been there before.（それまで一度も行ったことがなかった）' },
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared'], seg: [143.0, 158.3],
+      stem: 'What does Leslie keep saying about Ben?',
+      ja: 'レスリーはベンについて、何度も何と言う？',
+      choices: ['He’s better than all of them', 'He’s not as good as Judy Garland', 'He’s too sick to care about the town'], a: 0,
+      choicesJa: ['誰よりもすごい', 'ジュディ・ガーランドにはかなわない', '病気で町のことはどうでもいい'],
+      cue: '何度もくり返す、比べる言い方',
+      said: '「ベンはリー・ジャンセンより、ジュディ・ガーランドより、あなたたち全員よりすごい」とくり返す。',
+      mean: 'A is better than B ＝ A は B よりすごい。町の有名人を出されても、ベンが一番だと言いはる。',
+      trap: '「ジュディ・ガーランドはすばらしい」とも言うので、負けを認めたと考えがち。But のあとで、やはりベンが上。',
+      use: 'Honestly, you’re better than all of them.（正直、あなたが誰よりもすごいよ）' },
     { id: 'h1', skill: 'phrase', level: 'B1', point: 'jansen', ctx: true, seg: [143.5, 149.5],
       stem: 'What does “He’s pretty good” mean here?',
       ja: 'ここでの「He’s pretty good」はどういう意味？',
@@ -251,16 +262,6 @@ export const iceClown: Clip = {
       mean: 'pretty good ＝ けっこういい、まあまあ。pretty は「かなり」。大スターの次にしては弱いのが笑い。',
       trap: 'pretty から「かわいい、きれい」を連想しやすい。good の前の pretty は「けっこう」。',
       use: 'The food here is pretty good.（ここの料理、けっこうおいしい）' },
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared', 'sled'], seg: [144.0, 165.0],
-      stem: 'How does Leslie end her talk?',
-      ja: 'レスリーは話をどう終える？',
-      choices: ['She gets angry at the town', 'She says sorry for Ben', 'She thanks the town'], a: 0,
-      choicesJa: ['町に腹を立てる', 'ベンのことで謝る', '町にお礼を言う'],
-      cue: '最後の数語',
-      said: 'ベンは町の有名人の誰よりも上だと言いはり、最後は「ふざけないでよ、パートリッジ」と言い放つ。',
-      mean: 'screw you ＝ とても失礼な「ふざけるな」。自分では使わない言葉。夫を守るために町に怒っている。',
-      trap: '最初は sure（確かに）と認めていたので、謝る話と考えがち。最後の言葉で怒りと分かる。',
-      use: 'I tried to be nice. Enough is enough.（優しくしたけど、もう限界）' },
     { id: 'nt3', skill: 'humor', level: 'C2', point: 'crazy', seg: [147.0, 158.1], retired: true,
       stem: 'Who is Leslie’s “That’s crazy” aimed at?',
       choices: ['Herself, for ranking Ben above Judy Garland', 'The official, for claiming Garland for Partridge',
@@ -271,7 +272,7 @@ export const iceClown: Clip = {
       mean: '言いすぎた自分に、自分でつっこむ。but のあと比べる相手を町の人へ下げた。',
       trap: '口論中なので相手への反論に聞こえやすい。but のあとの比べる相手の変化で決まる。',
       use: 'Okay, that’s crazy. Let me take that back.（いや、それは言いすぎ。取り消す）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 160.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 158.3],
       stem: 'Why does Leslie say Ben is better than them?',
       ja: 'ベンのほうが町の人より上だ、とレスリーはなぜ言う？',
       choices: ['He cared and tried to help', 'He came all this way today', 'He forgave the town'], a: 0,
@@ -297,9 +298,9 @@ export const iceClown: Clip = {
       ja: 'レスリーは、町のマスコットについて何と言う？',
       choices: ['It’s a silly mascot', 'It’s a cute mascot', 'It’s a scary mascot'], a: 0,
       choicesJa: ['ばかみたいなマスコット', 'かわいいマスコット', 'こわいマスコット'],
-      cue: '「screw you」のあとの And',
-      line: 'You know, screw you, Partridge. *And a sled is a stupid mascot.*',
-      said: '「ふざけないでよ、パートリッジ」のあと、「それに、そりなんてばかみたいなマスコットよ」と付け足す。',
+      cue: '最後の And のあと',
+      line: '*And a sled is a stupid mascot.*',
+      said: '町に怒ったあと、最後に「それに、そりなんてばかみたいなマスコットよ」と付け足す。',
       mean: 'sled ＝ そり。stupid ＝ ばかみたいな、くだらない。And で最後にもう一つ悪口を足している。',
       trap: '前に「特別な時にしか出てこない」と聞いたので、ほめていると考えがち。stupid を聞く。',
       use: 'And another thing: the coffee here is bad.（それともう一つ、ここのコーヒーはまずい）' },

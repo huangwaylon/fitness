@@ -6,9 +6,10 @@
 // Segments from the captions, words from whisper (2026-11-16). The product word at 2.8 s, the word before "off your
 // brain" at 19.9 s and the nickname at 42–45 s differ between the sources: no key or shown line uses them. Speakers
 // aren't named in the audio: stems name Spencer and Lewbert (the seller) as the show does; the keys rest on words and
-// turn order only. Never asked about: the Ben Affleck lines (24–30 s) and the swear before "Trina" at 48 s (it plays
-// inside the ending segments; not an EXCLUDE under the 11-18 scope). Restored: h2 (the "Please, you're the cool one"
-// reply). Retired: d3 (the same fact as g1), a1 (the same beat as g2).
+// turn order only. Never asked about: the Ben Affleck lines (24–30 s; g3 plays them). The swear before "Trina" at
+// 48 s is under EXCLUDE (the 11-18 swear rule): g2 (the ending gist) retired, g3 (the middle) the second gist.
+// Restored: h2 (the "Please, you're the cool one" reply). Retired: d3 (the same fact as g1), a1 (the same beat as g2).
+// EXCLUDE 47.6–49.6: swear (“that bitch Trina”)
 import type { Clip } from '../types.ts';
 
 export const lewbJuice: Clip = {
@@ -107,6 +108,16 @@ export const lewbJuice: Clip = {
       mean: 'Go ahead ＝ 文字どおりは「先へ進んで」。→ 止めないから →「さあ、やってみな」。効き目を試させる挑戦。',
       trap: 'Go ahead だけだと「どうぞ飲んで」に聞こえる。あとの Try to lie で何をするか決まる。',
       use: 'Go ahead, try it. It’s good.（どうぞ食べてみて。おいしいよ）' },
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'feelings', seg: [24, 46.3],
+      stem: 'After drinking, what do they say to each other?', ja: '飲んだあと、おたがいに何を言う？',
+      choices: ['Honest feelings, bad and good', 'Polite lies to be nice', 'Angry words, then a fight'], a: 0,
+      choicesJa: ['本音（悪いことも、いいことも）', '気をつかったうそ', '怒った言葉、そしてけんか'],
+      cue: '「I wish」の2文と、そのあとの返事',
+      line: 'I wish you weren’t marrying my mother. / I wish you weren’t her son. … *Please, you’re the cool one*…',
+      said: '結婚への不満をぶつけ合ったあと、今度は「あなたみたいになりたい」「かっこいいのはあなた」とほめ合う。',
+      mean: 'ジュースで本音しか言えないので、悪口も、照れくさいほめ言葉も、そのまま出てくる。',
+      trap: 'I wish you weren’t 〜 が続くので、けんかになると考えがち。後半はほめ合いに変わる。',
+      use: 'To be honest, I really admire you.（正直に言うと、本当に尊敬してる）' },
     { id: 'd4', skill: 'detail', level: 'B1', point: 'mother', ctx: true, seg: [28.6, 35],
       stem: 'What does the second speaker wish?', ja: '二人目の人は、何を願う？',
       choices: ['That he weren’t her son', 'That he weren’t so young', 'That he weren’t here'], a: 0,
@@ -176,7 +187,7 @@ export const lewbJuice: Clip = {
       mean: 'Please ＝ ここは「お願い」ではなく「いやいや、何言ってるの」。ほめられて照れつつ、ほめ返す言い方。',
       trap: 'Please から何かを頼んでいると考えがち。うしろの you’re the cool one がほめ返し。',
       use: 'Oh, please. You’re the expert here.（いやいや、専門家はあなたでしょ）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [44, 59.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [44, 59.8], retired: true,
       stem: 'Why is it suddenly an “emergency” at the end?', ja: '最後に、なぜ急に「緊急事態」になる？',
       choices: ['Someone they must avoid arrives', 'Someone gets sick from it', 'The juice turns out unsafe'], a: 0,
       choicesJa: ['会いたくない人が来た', '誰かが飲んで具合が悪くなった', 'ジュースが危ないと分かった'],
@@ -196,7 +207,7 @@ export const lewbJuice: Clip = {
       mean: 'We gotta go ＝ 行かなきゃ。会いたくない人が来た驚きとあせり。',
       trap: 'Oh my God は喜びにも使う。続く No と We gotta go で、逃げたいと分かる。',
       use: 'Oh no. We need to go, now.（やばい。今すぐ行かないと）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'aslongas', seg: [46, 54.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'aslongas', seg: [49.6, 54.6],
       stem: 'What does “as long as I didn’t sell it” mean?', ja: '“as long as I didn’t sell it” はどういう意味？',
       choices: ['Only if I didn’t sell it', 'While I was selling it', 'Even if I sold it'], a: 0,
       choicesJa: ['売らないならいい', '売っている間は', '売ってもいい'],
@@ -206,7 +217,7 @@ export const lewbJuice: Clip = {
       mean: 'as long as 〜 ＝ 文字どおりは「〜と同じだけ長く」。→ 〜である限り →「〜さえすれば」。条件つきの許可。',
       trap: 'long から「〜の間ずっと」と時間の話に聞こえるが、うしろに文が来たら条件。',
       use: 'You can stay as long as you’re quiet.（静かにしてるなら、いていいよ）' },
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [46.9, 58.9],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'aslongas', seg: [49.6, 58.9],
       stem: 'What has Lewbert probably been doing?', ja: 'ルーバートは、たぶん何をしていた？',
       choices: ['Selling the juice', 'Drinking too much', 'Giving it away'], a: 0,
       choicesJa: ['ジュースを売っていた', '飲みすぎていた', 'タダで配っていた'],

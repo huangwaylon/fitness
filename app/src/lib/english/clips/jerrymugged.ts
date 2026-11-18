@@ -8,6 +8,7 @@
 // speakers out).
 // EXCLUDE 167.3–169.3: the Klondike-bar line (“kill your wife”)
 // SKIP 166–202: Tom's teasing and the Klondike-bar line, then the outro (whisper's “Thank you” at 172–202 runs past the clip)
+// EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
 import type { Clip } from '../types.ts';
 
 export const jerryMugged: Clip = {
@@ -104,7 +105,7 @@ export const jerryMugged: Clip = {
       trap: 'possess（取りつく）から、誰かにやらされた話だと思いやすい。叱るときの決まった言い方。',
       use: 'What possessed you to buy that?（なんでそんなの買ったの）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [59.2, 88.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['stunt'], seg: [59.2, 80.4],
       stem: 'What does Leslie’s TV appearance get her?', ja: 'テレビに出た結果、レスリーは何を得る？',
       choices: ['Money, but an angry boss', 'Praise, but no money', 'A new head of security'], a: 0,
       choicesJa: ['お金。でも上司は怒っている', 'ほめられるが、お金はない', '新しい警備の責任者'],
@@ -137,7 +138,7 @@ export const jerryMugged: Clip = {
       trap: 'upset が先に聞こえ、「怒りを見せるな」と考えがち。禁止の中身は do not のあと。',
       use: 'Never badmouth your old boss.（前の上司の悪口は言わないこと）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80.5],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'stunt', seg: [70, 80.4],
       stem: 'How does Paul feel when he tells her the news?', ja: '知らせを伝えるとき、ポールはどんな気持ち？',
       choices: ['Annoyed her trick worked', 'Glad the money finally came', 'Happy the mayor agreed'], a: 0,
       choicesJa: ['彼女の作戦がうまくいって不満', 'やっとお金が来てうれしい', '市長が賛成してうれしい'],
@@ -148,7 +149,7 @@ export const jerryMugged: Clip = {
       trap: 'happy や worked から、喜んでいるように聞こえるが、little stunt（小細工）という見下す言葉が本音。',
       use: 'Happy now? You got your way.（満足？思いどおりだね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [71.3, 80.4], keep: true,
       stem: 'How much will the mayor move to the parks?', ja: '市長は公園にいくら回す？',
       choices: ['$250', '$2,500', '$25,000'], a: 1,
       choicesJa: ['250ドル', '2,500ドル', '25,000ドル'],
@@ -160,13 +161,13 @@ export const jerryMugged: Clip = {
 
       use: 'It’s twenty-five hundred dollars.（2,500ドルです）' },
 
-    { id: 'p2', ctx: true, skill: 'pragma', level: 'B2', point: 'respect', seg: [84.5, 92.2],
-      stem: 'Why does Leslie say “We treat everyone with respect”?', ja: 'レスリーは、なぜ「We treat everyone with respect」と言う？',
+    { id: 'p2', ctx: true, skill: 'pragma', level: 'B2', point: 'respect', seg: [87.4, 93.4],
+      stem: 'Paul has just called Jerry a rude name. Why does Leslie say “We treat everyone with respect”?', ja: 'ポールがジェリーを失礼に呼んだ。レスリーは、なぜ「We treat everyone with respect」と言う？',
       choices: ['To protect Jerry', 'To ask who he means', 'To laugh at his joke'], a: 0,
       choicesJa: ['ジェリーをかばうため', '誰のことか聞くため', '彼の冗談に笑うため'],
       cue: '「分からない」のあとの一文',
-      line: 'Paul: …make sure you bring the doofus… / Leslie: I don’t know *who you’re referring to*. We treat everyone with *respect* around here.',
-      said: '「あのまぬけも連れてこい」に「誰のことか分かりません。ここでは皆を大切にしています」と返す。',
+      line: 'Leslie: I don’t know *who you’re referring to*. We treat everyone with *respect* around here. / Okay.',
+      said: 'ポールがジェリーを「あのまぬけ」と呼んだあと、「誰のことか分かりません。ここでは皆を大切にしています」と返す。',
       mean: 'refer to 〜 ＝ 〜のことを言う。分からないふりで、ジェリーの悪口に反対している。',
       trap: '「分からない」をそのまま取ると、本当に聞いていると考えがち。決め手は次の respect。',
       use: 'Sorry, who are you referring to?（失礼、誰のことでしょう）' },

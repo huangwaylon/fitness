@@ -7,6 +7,7 @@
 // 137 s, 226–235 s.
 // EAR CHECK: 19.4–24.4 s at1 — “A little too good… I'm not joking” is Frank's (assumed; no name is said)
 // EAR CHECK: 21.2 s x1, 189.3 s s1 — “live up to” runs together; “would be” is weak
+// EXCLUDE 148.8–153.3: swear (“Jamm is going to be so pissed”)
 import type { Clip } from '../types.ts';
 
 export const benCool: Clip = {
@@ -189,7 +190,7 @@ export const benCool: Clip = {
       trap: 'That’s not pizza で、注文のミスと勘違いしやすい。We know（知ってる）が答え。',
       use: 'I love sushi! — We know!（すし大好き！—知ってるよ！）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'vote', seg: [143.9, 148.9],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'vote', seg: [143.9, 148.8],
       stem: 'What was the score of the vote?', ja: '投票の結果は何対何？',
       choices: ['2–1', '3–1', '3–2'], a: 2, keep: true,
       choicesJa: ['2対1', '3対1', '3対2'],
@@ -200,7 +201,7 @@ export const benCool: Clip = {
       trap: '「ツー・ワン」なら2対1、「スリー・ワン」なら3対1。ここは「スリー・ツー」で3対2。',
       use: 'We won three to two.（3対2で勝った）' },
 
-    { id: 'at2', skill: 'marker', level: 'B2', point: 'ethical', seg: [153.2, 163.5],
+    { id: 'at2', skill: 'marker', level: 'B2', point: 'ethical', seg: [153.3, 163.5],
       stem: 'What does “on the flip side” mean here?', ja: 'ここでの「on the flip side」はどういう意味？',
       choices: ['On the other hand', 'At the very end', 'To be really honest'], a: 0,
       choicesJa: ['その一方で', '結局', '正直に言うと'],

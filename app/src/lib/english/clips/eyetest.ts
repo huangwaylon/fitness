@@ -10,6 +10,8 @@
 // handsome) are left to it; this bank tests the Ann scene and the rash, tongue, fuzzy, glasses and No offense lines.
 // Untested: 57–74 s ("we used to live together", the drug jab), 135.6–147.3 s (the eye chart, visual).
 // EXCLUDE 0–4.0
+// EXCLUDE 48–51.5: swear (“Hey, smart ass” twice)
+// EXCLUDE 53–54.5: swear (“Neither of your asses are that smart”)
 import type { Clip } from '../types.ts';
 
 export const andyEyeTest: Clip = {
@@ -106,7 +108,7 @@ export const andyEyeTest: Clip = {
       trap: '話が変わるので「ところで」と思いやすい。Point is のあとが言いたいこと。',
       use: 'Point is, we made it on time.（要するに、間に合ったってこと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [43.0, 49.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'real', seg: [43.0, 48],
       stem: 'What can Ann help Andy with?', ja: 'アンは、何なら手当てできる？',
       choices: ['Small cuts and bruises', 'His head and his eyes', 'His teeth and his tongue'], a: 0,
       choicesJa: ['小さな切り傷やあざ', '頭と目', '歯と舌'],
@@ -117,7 +119,7 @@ export const andyEyeTest: Clip = {
       trap: '頭や目は前に出た話なので選びたくなる。but のあとは「医者に行って」。',
       use: 'I can help with that, but not this.（それは手伝えるけど、これは無理）' },
 
-    { id: 'c3', skill: 'pragma', level: 'B1', point: 'afford', ctx: true, seg: [45.5, 52.0],
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'afford', ctx: true, seg: [45.5, 52.0], retired: true,
       stem: 'Ann says to see a doctor. What does Andy’s wife say?', ja: 'アンは医者に行くよう言う。アンディの妻の返事は？',
       choices: ['They can’t pay for it', 'They don’t have time', 'They saw one already'], a: 0,
       choicesJa: ['お金が払えない', '時間がない', 'もう診てもらった'],
@@ -145,7 +147,7 @@ export const andyEyeTest: Clip = {
       trap: '悪口が強いので、言われた二人が笑われていると取りやすい。誰の説明が外れているかを追う。',
       use: 'Says the guy who got lost twice.（2回も道に迷った人が言う？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'insurance', seg: [52.4, 61.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'insurance', seg: [54.5, 61.9],
       stem: 'What does Andy’s wife say insurance is for?', ja: 'アンディの妻は、保険は何のためだと言う？',
       choices: ['When your car gets damaged', 'When your house gets damaged', 'When you get sick'], a: 0,
       choicesJa: ['車に何かあったとき', '家に何かあったとき', '病気になったとき'],
@@ -291,6 +293,17 @@ export const andyEyeTest: Clip = {
       mean: 'on this side ＝ こっち側。doesn’t taste anything ＝ 何の味もしない。not 〜 anymore ＝ もう〜ない。',
       trap: '直前の rash（発疹）がひざの話なのに、舌の話と混ざりやすい。doesn’t taste を聞く。',
       use: 'This soup doesn’t taste like anything.（このスープ、何の味もしない）' },
+
+    { id: 's2', skill: 'sound', level: 'B1', point: 'ankles', seg: [104.3, 109.5],
+      stem: 'Fill the gap: “When I walk, my ___ make a sound.”', ja: '空所に入るのは？ “When I walk, my ___ make a sound.”',
+      choices: ['ankles', 'uncles', 'angles'], a: 0,
+      choicesJa: ['足首', 'おじたち', '角度'],
+      cue: '「when I walk, my」のすぐあと',
+      line: 'Sometimes when I walk, my *ankles* make like a weird rattlesnake sound.',
+      said: '「歩くと、ときどき足首からガラガラヘビみたいな変な音がする」と言う。',
+      mean: 'ankle ＝ 足首。「エァンクル」と口を横に開く「ア」で始まる。rattlesnake ＝ ガラガラヘビ。',
+      trap: 'uncle は「アンクル」と口をあまり開けない「ア」。angle は「エァングル」で k がない。歩く話なので体の部分。',
+      use: 'I hurt my ankle when I walked down the stairs.（階段を下りて足首を痛めた）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'fuzzy', reveals: ['eyes'], seg: [108.3, 113.0],
       stem: 'What does Andy mean by “far away… are fuzzy”?', ja: 'アンディの「far away… are fuzzy」はどういう意味？',

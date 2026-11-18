@@ -9,6 +9,7 @@
 // SKIP 164.3–202: swearing and the crude joke, then music
 // EAR CHECK: 157.8–159.2 s s1 — “didn't you just” said as one weak “dinchu-just” (both sources: “didn't you just”)
 // EAR CHECK: 142.5–143.2 s x1 — “on my way” runs together; both sources agree on the words
+// EXCLUDE 80.4–87.4: swear (“the doofus that got his ass kicked”)
 import type { Clip } from '../types.ts';
 
 export const jerryBurritoLie: Clip = {
@@ -138,7 +139,7 @@ export const jerryBurritoLie: Clip = {
       trap: 'happy で喜び、乾いた言い方で皮肉と取りやすい。成功は本当で、不満は呼び方に出る。',
       use: 'Nice little stunt you pulled there.（うまいことやったね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [74.4, 80.3], retired: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'amount', seg: [74.4, 80.3],
       stem: 'How much will the mayor send to the parks?', ja: '市長は公園にいくら回す？',
       choices: ['$250', '$2,000', '$2,500', '$25,000'], a: 2, keep: true,
       choicesJa: ['250ドル', '2,000ドル', '2,500ドル', '25,000ドル'],
@@ -149,7 +150,7 @@ export const jerryBurritoLie: Clip = {
       trap: '250 なら two-fifty。2,000 と 25,000 なら最後が「サウザンド」。ここは最後が「ハンドレッド」。',
       use: 'It costs twenty-five hundred yen.（2,500円です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'security', seg: [74.4, 80.4],
       stem: 'What is the mayor’s money for?', ja: '市長のお金は何のため？',
       choices: ['Better security in parks', 'New equipment in parks', 'A reward for finding the mugger'], a: 0,
       choicesJa: ['公園の警備を強くする', '公園の新しい設備', '強盗を見つけた人へのお礼'],
@@ -160,7 +161,7 @@ export const jerryBurritoLie: Clip = {
       trap: 'upgrade は設備にも使うので、設備の話と勘違いしやすい。前の security を聞く。',
       use: 'We need better security.（もっと警備が必要だ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'time', seg: [79.1, 84.4],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'time', seg: [79.1, 84.4], retired: true,
       stem: 'When is the announcement?', ja: '発表はいつ？',
       choices: ['Today at 2', 'Today at 10', 'Tomorrow at 2', 'Tomorrow at 10'], a: 3, keep: true,
       choicesJa: ['今日の2時', '今日の10時', '明日の2時', '明日の10時'],
@@ -182,15 +183,15 @@ export const jerryBurritoLie: Clip = {
       trap: '言葉どおりなら「誰か説明する」返事になる。知らないふりは、言い方を直せという合図。',
       use: 'Sorry, who? Oh, you mean Ken.（え、誰？ああ、ケンさんね）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'respect', ctx: true, seg: [85.8, 92.2],
-      stem: 'How does Leslie answer Paul’s rude name for Jerry?',
-      ja: 'ジェリーへのポールの失礼な呼び方に、レスリーはどう返す？',
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'respect', ctx: true, seg: [87.4, 93.4],
+      stem: 'Paul has just called Jerry a rude name. How does Leslie answer?',
+      ja: 'ポールがジェリーを失礼な呼び方で呼んだ。レスリーはどう返す？',
       choices: ['She pretends not to know who', 'She really doesn’t know who', 'She agrees with Paul’s name'], a: 0,
       choicesJa: ['知らないふりをする', '本当に誰か分からない', 'ポールの呼び方に賛成する'],
-      cue: 'ポールの「doofus」のあと。',
-      line: 'Paul: …make sure you bring *the doofus*… / Leslie: I don’t know who you’re referring to. *We treat everyone with respect* around here.',
-      said: '「あのまぬけ」に、レスリーは「誰のことでしょう。ここではみんなを尊重してます」と返す。',
-      mean: 'doofus ＝ まぬけ（失礼な呼び方）。refer to 〜 ＝ 〜のことを言う。知らないふりで、たしなめている。',
+      cue: 'レスリーの2つ目の文。',
+      line: 'Leslie: I don’t know who you’re referring to. *We treat everyone with respect* around here. / Okay.',
+      said: 'ポールがジェリーを「まぬけ」と呼ぶと、レスリーは「誰のことでしょう。ここではみんなを尊重してます」と返す。',
+      mean: 'refer to 〜 ＝ 〜のことを言う。知らないふりで、ジェリーの悪口をたしなめている。',
       trap: 'I don’t know だけだと、本当に分からないと考えがち。続く with respect で、わざとだと分かる。',
       use: 'We treat everyone with respect.（ここではみんなを大切に扱います）' },
 

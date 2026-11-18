@@ -6,6 +6,7 @@
 // giving him the crib and telling him that worrying this much means he'll be a great father.
 // The captions garble 2, 23, 49, 65, 68, 74, 104.6, 133.7 and 165–169 s; no key rests on those words. Whisper ends on
 // a profanity (267 s); nothing quotes it. h2 restored as an exchange; the potty-training line (181–186 s) isn't quoted.
+// SWEAR-OK 199–201: “Moby Dick”, the novel's title
 import type { Clip } from '../types.ts';
 
 export const ronChrisCrib: Clip = {

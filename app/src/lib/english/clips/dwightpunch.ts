@@ -12,6 +12,8 @@
 //   Dwight says "'Cause we're friends" (whisper's dashes mark the turns; no name settles them)
 // EAR CHECK: 109 s d6 — whisper "No. He cried at the end of it." vs captions "no right at the end of it" (Dwight's
 //   "That was because…" stands in both)
+// EXCLUDE 10.2–13.1: swear (“Because I would kick his ass”)
+// EXCLUDE 101.6–102.5: swear (“that could kick his ass”)
 import type { Clip } from '../types.ts';
 
 export const dwightPunch: Clip = {
@@ -31,17 +33,6 @@ export const dwightPunch: Clip = {
       trap: 'No women or children で止めると、絶対しないと思いやすい。最後の unless が例外。',
       use: 'No refunds, unless the item is damaged.（破損品以外は返金なし）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', seg: [5.4, 37.6],
-      stem: 'What does Michael keep saying about himself?', ja: 'マイケルは自分のことを何度も何と言う？',
-      choices: ['He could beat Dwight', 'Dwight is much stronger', 'He never fights'], a: 0,
-      choicesJa: ['ドワイトに勝てる', 'ドワイトの方がずっと強い', '自分はケンカをしない'],
-      cue: '「friends」への言い直しと、昔の話',
-      line: 'So? *I’d beat up black belts*, yeah. … I used to run with a *very tough crowd*',
-      said: 'ドワイトに勝てると言い張り、黒帯にも勝ったし、昔は荒っぽい連中といたと話す。',
-      mean: '一貫して、自分の方が強いと言いたい。「友だちだから」という理由は自分で打ち消す。',
-      trap: 'belt（帯）や friends が耳に残りやすい。誰が強いという話かを聞く。',
-      use: 'I could beat you at tennis.（テニスなら君に勝てるよ）' },
-
     // why: too close ← Dwight's "'Cause we're friends" comes just before, from the other voice; too loyal ← the boss
     //   frame: a staff member wouldn't hit the boss
     { id: 'd3', skill: 'detail', level: 'B2', point: 'kick', reveals: ['friends'], seg: [5.4, 13.2], retired: true,
@@ -55,7 +46,7 @@ export const dwightPunch: Clip = {
       trap: '先の friends を Michael の理由と取りやすい。Because が答え。',
       use: 'I’d beat you at tennis any day.（テニスならいつでも勝てる）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'friends', seg: [5.8, 13.5],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'friends', seg: [5.8, 13.5], retired: true,
       stem: 'Fill the gap: “___ friends.”', ja: '空所に入るのは？ “___ friends.”',
       choices: ['’Cause we’re', 'Of course we’re', '’Cause we were'], a: 0,
       choicesJa: ['だって〜だから', 'もちろん〜だ', 'だって〜だったから'],
@@ -65,6 +56,17 @@ export const dwightPunch: Clip = {
       mean: '’Cause は because の短い形で「カズ」と弱い。we’re も一拍。',
       trap: 'Of course なら「オブコース」と長い。we were なら「ワー」が2回。短い「カズウィア」なら ’Cause we’re。',
       use: 'I’ll go, ’cause you asked.（行くよ、頼まれたから）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'prove', seg: [13.1, 37.6],
+      stem: 'What does Michael keep saying about himself?', ja: 'マイケルは自分のことを何度も何と言う？',
+      choices: ['He’s a tough fighter', 'Dwight is much stronger', 'He never fights'], a: 0,
+      choicesJa: ['自分はケンカが強い', 'ドワイトの方がずっと強い', '自分はケンカをしない'],
+      cue: '黒帯の話と、昔の話',
+      line: 'So? *I’d beat up black belts*, yeah. … I used to run with a *very tough crowd*',
+      said: '黒帯にも勝ったと言い張り、昔は荒っぽい連中といたと話す。',
+      mean: '一貫して、自分はケンカが強いと言いたい。',
+      trap: 'belt（帯）が耳に残りやすい。誰が強いという話かを聞く。',
+      use: 'I could beat you at tennis.（テニスなら君に勝てるよ）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'after', ctx: true, seg: [16.5, 23.5],
       stem: 'When did Michael learn they were black belts?', ja: 'マイケルは、相手が黒帯だといつ知った？',
@@ -217,7 +219,7 @@ export const dwightPunch: Clip = {
       trap: 't が消えると、どれも「〜ン」で終わる。最初の母音「キャ」と、一拍かどうかで聞き分ける。',
       use: 'I can’t, I’m driving tonight.（無理なんだ、今夜は運転するから）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'worthless', seg: [95.9, 103.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'worthless', seg: [95.9, 101.6],
       stem: 'Type what Michael says: “Well, that would be ___.” (3 words)', ja: '書こう：“Well, that would be ___.”（3語）',
       answer: 'kind of worthless',
       cue: '「would be」のあと',
@@ -227,7 +229,7 @@ export const dwightPunch: Clip = {
       trap: 'of がほぼ消えて、二語に聞こえやすい。kinda と聞こえたら kind of と書く。',
       use: 'That’s kind of a long walk.（歩くにはちょっと遠いね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [96.9, 102.35], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'fourteen', seg: [96.9, 101.6], keep: true,
       stem: 'How old are the girls Michael talks about?', ja: 'マイケルが話す女の子たちは何歳？',
       choices: ['4', '14', '15', '40'], a: 1,
       choicesJa: ['4歳', '14歳', '15歳', '40歳'],

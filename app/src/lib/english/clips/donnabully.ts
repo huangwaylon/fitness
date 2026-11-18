@@ -13,6 +13,7 @@
 // you, Reconsider your life, What's going to happen.
 // EAR CHECK: 49.0 s s2, 54.8 s x1 — "have to" said as hafta (not "had to"); "hunt you down" linked (t‿y ≈ チュ)
 // EAR CHECK: 141 s c1 — "How much postage…?" assumed Ron (as in ronreviews); "Who's it going to?" a coworker
+// EXCLUDE 77.6–80.4: swear (“go Mjolnir on his ass”)
 import type { Clip } from '../types.ts';
 
 export const donnaBully: Clip = {
@@ -151,7 +152,7 @@ export const donnaBully: Clip = {
       trap: 'down から「下の階へ行く」に聞こえるが、come down on 人 は「〜にきつく当たる」。',
       use: 'My boss came down hard on me.（上司にきつく叱られた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [80.1, 91.3],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [80.4, 91.3],
       stem: 'What does Ron’s “Speaking of bad reviews” mean?',
       ja: 'ロンの「Speaking of bad reviews」はどういう意味？',
       choices: ['On the topic of reviews', 'I wrote that bad review', 'Let’s stop talking now'], a: 0,
