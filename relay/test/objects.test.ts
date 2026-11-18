@@ -165,6 +165,20 @@ describe('IslandStore', () => {
     expect(calls['LOG.add']).toBeUndefined();
   });
 
+  it('walletTick() logs each wallet that differs from its fold as `wallet.drift` (warn), a seed as `wallet.seed`', async () => {
+    const s = make();
+    expect((await admin(s, { op: 'adjust', id: 'adj-1', who: 'A', v: 100, note: 'x' })).body).toMatchObject({ ok: true, before: 0, after: 100 });
+    // (a load brings a correction the wallet never saw: a load never moves a wallet)
+    await admin(s, { op: 'load', rows: { events: [['2026-11-01T00:00:00.000Z', 'A', 'adj-2', 'shop_adjust', '{"v":5,"note":"y"}']] } });
+    expect((await admin(s, { op: 'wallet' })).body).toMatchObject({ ok: true, A: { h: 100, seq: 1, fold: 105 } });
+    calls = {};
+    expect(s.walletTick()).toEqual({ ok: true, drift: 1 });
+    await settle();
+    expect(added()).toEqual([{ e: 'wallet.drift', l: 2, d: { who: 'A', stored: 100, fold: 105 } }]);
+    expect((await admin(s, { op: 'walletset', id: 'ws-1', who: 'A', h: 100, note: 'stored wins' })).body).toMatchObject({ ok: true, v: -5, before: 100, after: 100 });
+    expect(s.walletTick()).toEqual({ ok: true, drift: 0 });
+  });
+
   it('refuses an unsigned or badly signed admin body with its status', async () => {
     const s = make();
     expect(await s.adminSigned('{"op":"counts"}', null, null)).toEqual({ status: 401, body: 'unauthorized' });

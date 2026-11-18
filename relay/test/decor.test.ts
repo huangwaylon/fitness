@@ -5,7 +5,7 @@ import { StoreCore } from '../src/store.ts';
 import { LAYOUT_MAX } from '../../app/src/lib/contract/layout.ts';
 import { buyPrice, stockOf } from '../../app/src/lib/contract/stock.ts';
 import { sellPrice } from '../../app/src/lib/contract/shop.ts';
-import { memSql } from './sqlite.ts';
+import { memSql, noWallets } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
 const KEY_B = 'b'.repeat(64);
@@ -102,7 +102,7 @@ describe('an op’s time (health A6, sync #3)', () => {
 
 describe('every home’s room is anyone’s (2026-11-10)', () => {
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
-  const as = (who: 'A' | 'B' | 'G', type: string, data: object) => store.handle({ key: keyOf[who], action: 'event', id: `e${++seq}`, type, data }, 100) as Record<string, any>;
+  const as = (who: 'A' | 'B' | 'G', type: string, data: object) => noWallets(store.handle({ key: keyOf[who], action: 'event', id: `e${++seq}`, type, data }, 100));
   const piece = (sc: string, id: string, item: string, at: number, x = 2) => ({ sc, id, at, item, x, z: 3, f: 0, p: T0 });
   const room = (sc: string) => (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as Record<string, any>).rows.events
     .filter((r: unknown[]) => r[3] === 'decor').map((r: unknown[]) => [r[1], JSON.parse(r[4] as string)]).filter(([, d]: [string, { sc?: string }]) => d.sc === sc);

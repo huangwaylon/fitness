@@ -58,7 +58,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): own entries, owner-only edits (`foodAccept`); いつもの's skipped day stays skipped (`repeatAccept`); a recipe or custom food logs as an ordinary `food` with a snapshot |
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short`; never which pieces a stock holds (each person's own, the phones': `shop/stock.ts`) |
 | `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `g` the game's id (`/^[a-z0-9:.-]{6,40}$/`), `v` 1–1000 each, `to` a unique set of A/B/G, `d` the record's day or yesterday; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast); `rewardGame` on the phone |
-| `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>the admin's correction of one person's かいがら: `{v, note}`, `v` a whole number, 0 < \|v\| ≤ 100,000, `note` 1–80 chars; **never a phone's** (refused from every key, `validEventData`), only `record.ts adjust <who> <v> <note>` (admin op `adjust`, a new `at`: the phones get it with their next `since`, into the running ledger, so `shopcheck` stays). Folds as `shells += v`, nothing else; history stays as kept. Undo: `unadjust <id>` deletes it (a new epoch). An older build ignores the type (not in its `EVENT_TYPES`), so the relay ships first |
+| `shop_adjust` | `shop.ts adjustOf` | <a id="shop-adjust"></a>the admin's correction of one person's かいがら: `{v, note}`, `v` a whole number, 0 < \|v\| ≤ 100,000, `note` 1–80 chars; **never a phone's** (refused from every key, `validEventData`), only `record.ts adjust <who> <v> <note>` or `walletset` (a new `at`: the phones get it with their next `since`, into [the wallet](#the-wallet)). Folds as `shells += v`, nothing else; history stays as kept. Undo: `unadjust <id>` deletes it and takes `v` back from the wallet (a new epoch). An older build ignores the type (not in its `EVENT_TYPES`), so the relay ships first |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
@@ -98,12 +98,16 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `action` | Request | Reply |
 |---|---|---|
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
-| `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate before any check, so retries are safe |
-| `events` | `events: [{id, type, data, group?}, …]` (≤ `EVENTS_MAX`; a group ≤ `GROUP_MAX`) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each as `event` would, in order, `at` its stored row's |
-| `snapshot` | `since?` (the max `at` cached); `page?` (≤ `SNAPSHOT_PAGE_MAX` rows), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, paged in (at, table, seq) order while `next` comes |
+| `event` | `id, type, data` | `{ok, duplicate?, wallets?}`: a repeated `id` is acked as a duplicate before any check, so retries are safe |
+| `events` | `events: [{id, type, data, group?}, …]` (≤ `EVENTS_MAX`; a group ≤ `GROUP_MAX`) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}], wallets?}`: each as `event` would, in order, `at` its stored row's |
+| `snapshot` | `since?` (the max `at` cached); `page?` (≤ `SNAPSHOT_PAGE_MAX` rows), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?, wallets?}`: compact arrays in column order, rows with `at > since`, paged in (at, table, seq) order while `next` comes |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows |
 | `whoami` | | `{ok, me, build}` (pairing) |
 | `health` | no `key` | `{ok, build}` (the deployed commit, as `/health`'s `sha`; `dev` unstamped) |
+
+**`wallets`** ([The wallet](#the-wallet)): `{A?: {h, seq}, B?, G?}`, the guest only its own. On a first fetch and on
+a page with rows (a poll with nothing new reads nothing); on an ack, the wallets its ledger events may have moved
+(the sender's for a tally, give-back, shop or field event, kept or refused; each recipient's for an `sg_reward`).
 
 <a id="groups"></a>**Groups:** the events of one `group` (the shop's 全部, a room's whole change) are all or none in one
 transaction: a piece already owned is refused `owned` alone, any other refusal rolls the lot back (`detail: 'group'`);
@@ -219,11 +223,11 @@ one tile").
   `contract/shopCheck.ts validEvent`, the relay's only, so they stay off the phones' first load); an event id once,
   forever; **slots**, a later event of a slot replacing it (`eventSlot`, and the per-id ops' `decorAccept`,
   `foodAccept`, …); a pref the model ignores takes no slot.
-- **Running checks:** the shop's against each person's ledger (meta `shop|<who>`, kept by `contract/shop.ts shopStep`, an
-  `sg_reward` into each recipient's, its games paid in `g` (a ledger without `g`, an older relay's, is folded again);
-  `shopcheck {fix?}` compares it and the field, meta `farm|g<growDays>r<regrowDays>`: a growth-rule change folds it
-  again by itself, with the full fold, as does a start that finds another relay's copy: a rollback's), a decor op's against its own slots
-  and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).
+- **Running checks:** the shop's against each person's ledger (meta `shop|<who>`: [The wallet](#the-wallet)) and the
+  field (meta `farm|g<growDays>r<regrowDays>`: a growth-rule change folds it again by itself, with the full fold, as
+  does a start that finds another relay's copy: a rollback's); `shopcheck {fix?}` compares both with the full fold. A
+  decor op's against its own slots and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the
+  voided rows (`dropVoided`).
 - **`since`:** from the `at` index; a row that arrived out of `at` order (an import's) is `late`, and a poll returns
   late rows too (`LATE_MARGIN_MS`).
 - **Admin:** `POST /admin`, signed (the secret above; a `restore`, `rev` or `logpurge` taken once
@@ -234,6 +238,21 @@ one tile").
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`relay/test/compact.test.ts` fails while it is set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
+- <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance, **the number
+  the phones show** (`h`, with `n` its changes, `seq` on the wire, and `t` the last one's time). It moves only by the
+  step of a new row kept, in that row's transaction (`h` after less `h` before the ledger's own step: `shopStep`,
+  `reowe` for a tally that repays or a give-back that owes, the field's harvests and plants, a reward per recipient,
+  `adjust`/`unadjust`), and **never below 0** (a give-back after the かいがら were spent takes what is left; a later
+  catch that repays the debt pays it in full). Nothing folds it again once kept: not a rule change, not `shopcheck`,
+  not a `load` (a load lets the pockets go, `{h, n, t}` kept, and they are folded again at the next read). It is
+  seeded from the fold (`wallet.seed` in the log) only when there is none: the record's first op of that person, a
+  load into an empty record, or a ledger an older relay kept that today's rules can't read (those relays folded such a
+  one again, かいがら included, so that fold is what they served: the guest's, kept before `g`). A
+  point-in-time restore brings the ledgers back with the rows; a dump carries rows only. **Drift** (the stored `h`
+  against the fold of the rows, floored): `walletcheck`, daily with the 03:00 backup cron, logs `wallet.drift {who,
+  stored, fold}` (warn) and never fixes; the admin settles it with `walletset` ([runbook §9](ops/runbook.md#9-the-record)),
+  whose correction row makes the rows say the chosen number. Tests: `relay/test/wallet.test.ts` (a property test:
+  random sequences, the served `h` after every step equal to the fold's change applied in order with the floor).
 - **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, hence the paging.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).

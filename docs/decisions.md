@@ -198,6 +198,11 @@ A correction is a row, never an edit (2026-11-18, the user's "each player's last
 kept and one `shop_adjust` per person adds the difference (`20,000 − v` of their last `sell`), so the balance is as if
 that sale had paid it, the change shows in the record as a correction, and deleting the row undoes it. Only the admin
 adds one (`record.ts adjust`); no phone can.
+The stored balance is the truth (2026-11-18): the relay's running ledger keeps each person's かいがら ([backend](backend.md#the-wallet)),
+moved only by each new row's own step and never folded again, and the phones show it (plus their own unsent ops). A
+rule or price change never reprices the past; a give-back after a sale floors at 0, never a negative balance. If the
+stored number and the rows disagree, the daily check says so and the admin settles it with one correction row, so the
+rows always explain the number. Why: one number everyone sees, unmoved by code changes, and every change on record.
 
 ## App and hosting
 

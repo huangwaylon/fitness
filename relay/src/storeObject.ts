@@ -28,7 +28,7 @@ export async function twice<T>(f: () => Promise<T>): Promise<T> {
 /** The backups' state (archive.ts): one key of the object's storage, never the record's tables. */
 const ARCHIVE = 'archive';
 /** The signed ops that only read (no audit row when they succeed). */
-const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held']);
+const READ_OPS = new Set(['logs', 'logstats', 'counts', 'held', 'wallet']);
 
 export class IslandStore extends DurableObject<Env> implements StoreRoom {
   private core: StoreCore;
@@ -47,7 +47,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       now: () => Date.now(),
       notify: (n, guest) => this.tellRoom(n, guest),
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
-      corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }])
+      corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }]),
+      // the wallet's (store.ts shopState, walletCheck): a seed is news (info), a drift the admin's to settle (warn)
+      log: (e, d) => this.log([{ e, l: e === 'wallet.drift' ? 2 : 1, d }])
     });
   }
 
@@ -85,6 +87,12 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     const r = this.core.compact();
     this.log([{ e: 'cron.compact', l: 1, d: { dates: r.dates, deleted: r.deleted, more: r.more, metrics: r.metrics, ms: Date.now() - t0 } }]);
     return { ok: true, ...r };
+  }
+
+  /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the daily walletcheck (store.ts walletCheck: each drift
+   *  logged `wallet.drift`, never fixed). */
+  walletTick(): { ok: true; drift: number } {
+    return { ok: true, drift: this.core.walletCheck().drift.length };
   }
 
   /** RPC from the Worker's cron at 03:00 Tokyo (index.ts): the backup is due, so the alarm runs it (on the object's
@@ -165,7 +173,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
    * - `shopcheck {fix?}`: the running field and each person's running shop ledger against the full fold of the rows (store.ts shopCheck);
    * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts adjust);
-   *   `unadjust {id}`: that row deleted (a new epoch);
+   *   `unadjust {id}`: that row deleted (a new epoch); `walletset {id, who, h, note}`: the wallet made `h`, a correction
+   *   row of what the rows lack for it (store.ts walletSet);
+   * - `wallet`: each wallet, its changes, the fold beside it; `walletcheck`: the wallets that differ from their fold;
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -228,6 +238,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.adjust(o);
       case 'unadjust':
         return this.core.unadjust(o);
+      // the かいがら wallets: read with the fold beside them, the drift check, and one set (store.ts)
+      case 'wallet':
+        return this.core.wallets();
+      case 'walletcheck':
+        return this.core.walletCheck();
+      case 'walletset':
+        return this.core.walletSet(o);
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);

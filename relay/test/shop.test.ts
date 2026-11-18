@@ -7,7 +7,7 @@ import { sellPrice } from '../../app/src/lib/contract/shop.ts';
 import { buyPrice, stockOf } from '../../app/src/lib/contract/stock.ts';
 import { BUY } from '../../app/src/lib/contract/buyPrices.ts';
 import { TALLY_PAST_DAYS } from '../../app/src/lib/contract/record.ts';
-import { memSql } from './sqlite.ts';
+import { memSql, noWallets } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
 const KEY_B = 'b'.repeat(64);
@@ -29,7 +29,7 @@ describe('the shop in the record', () => {
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
   let n = 0;
   const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `e${++n}`) =>
-    store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+    noWallets(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
   const tally = (who: 'A' | 'B' | 'G', counts: Record<string, number>, date = D) => send(who, 'tally', { date, counts });
   const sell = (who: 'A' | 'B' | 'G', species: string, k: number, v: number, id?: string) => send(who, 'sell', { species, n: k, v }, id);
   const item = stockOf(D)[0];
@@ -277,14 +277,17 @@ describe('the shop’s running ledger (O5)', () => {
     batch([{ type: 'tally', data: { date: day(1), counts: { 'fish:whale-shark': 2 } } }]); // the debt paid
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
     store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'A', 'x1', 'tally', JSON.stringify({ date: day(2), counts: { 'fish:koi': 9 } })]] } });
-    expect(store.shopCheck()).toMatchObject({ A: 'none' }); // let go: the next sale folds again
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale'] } }); // the pocket let go: the next read folds it again
     expect(batch([{ type: 'sell', data: { species: 'fish:koi', n: 10, v: 10 * K } }]).results[0].ok).toBe(true);
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
-    // a ledger gone wrong (by hand) is found and mended
-    db.db.prepare("UPDATE meta SET v = replace(v, '\"h\":', '\"h\":1') WHERE k = 'shop|A'").run();
-    const h = JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h as number;
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [h, Number(String(h).slice(1))] } });
-    expect(store.shopCheck({ fix: true })).toMatchObject({ A: { differs: ['h'] } });
+    // a pocket gone wrong (by hand) is found and mended by `fix`; a wallet gone wrong is found, never mended by it
+    // (the stored number wins): walletset settles it with a correction row
+    db.db.prepare("UPDATE meta SET v = replace(replace(v, '\"h\":', '\"h\":1'), '\"c\":[[\"fish:koi\",10]', '\"c\":[[\"fish:koi\",11]') WHERE k = 'shop|A'").run();
+    const h = JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h as number, fold = Number(String(h).slice(1));
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h', 'c'], h: [h, fold], c: { 'fish:koi': [11, 10] } } });
+    expect(store.shopCheck({ fix: true })).toMatchObject({ A: { differs: ['h', 'c'] } });
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [h, fold] } });
+    expect(store.walletSet({ id: 'ws-1', who: 'A', h: fold, note: 'the fold' })).toMatchObject({ ok: true, before: h, after: fold });
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
   });
 
@@ -293,7 +296,7 @@ describe('the shop’s running ledger (O5)', () => {
     batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 5 } }]);
     // the running ledger as the record kept it before 2026-11-16's conversion: the old fruit under its own key
     db.db.prepare(`UPDATE meta SET v = replace(v, 'goods:goal-apple', 'goods:apple') WHERE k = 'shop|A'`).run();
-    expect(store.shopCheck()).toMatchObject({ A: { differs: ['c', 's', 'v'], c: { 'goods:apple': [2, 0], 'goods:goal-apple': [0, 2] } } });
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale'] } }); // (its pocket folded again at the next read)
     expect(batch([{ type: 'sell', data: { species: 'goods:goal-apple', n: 1, v: 60 } }]).results[0].ok).toBe(true);
     expect(batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 60 } }]).results[0]).toMatchObject({ ok: false, detail: 'pocket short' });
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
@@ -420,14 +423,14 @@ describe('英語すごろく’s reward in the record', () => {
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
   let n = 0;
   const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `w${++n}`) =>
-    store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+    noWallets(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
   const reward = (who: 'A' | 'B' | 'G', g: string, v: number, to: string[], d = D, id?: string) => send(who, 'sg_reward', { g, v, to, d }, id);
   const refused = (detail?: string) => ({ ok: false, error: 'bad_request', ...(detail ? { detail } : {}) });
   const item = stockOf(D)[0], price = buyPrice(item)!;
   const buy = (who: 'A' | 'B' | 'G') => send(who, 'buy', { item, price, d: D });
   const ledger = (who: 'A' | 'B' | 'G') => {
     const raw = db.db.prepare('SELECT v FROM meta WHERE k = ?').get(`shop|${who}`) as { v: string } | undefined;
-    return raw ? (JSON.parse(raw.v) as { h: number; g: string[] }) : null;
+    return raw ? (JSON.parse(raw.v) as { h: number; g: string[]; n: number; t: string }) : null;
   };
 
   it('keeps one from anyone (the guest too); its かいがら are each recipient’s, spendable at the shop; never the sender’s unnamed', () => {
@@ -481,14 +484,19 @@ describe('英語すごろく’s reward in the record', () => {
     const want = ledger('A');
     expect(want).toMatchObject({ h: 2 * K + 540, g: ['sg-game-0001', 'sg-game-0002'] });
     // a running ledger as an older relay kept it (no `g`): folded again, the rewards' rows included
+    // (its wallet with it: that relay served the fold of such a one)
     db.db.prepare(`UPDATE meta SET v = '{"c":[],"b":[],"s":[],"v":[],"o":[],"h":0,"w":[]}' WHERE k = 'shop|A'`).run();
     expect(reward('B', 'sg-game-0001', 500, ['A'])).toEqual(refused('reward paid'));
-    expect(ledger('A')).toEqual(want);
+    const { n: _n, t: _t, ...rest } = want!;
+    expect(ledger('A')).toMatchObject({ ...rest, n: 0 });
+    // a load never moves a wallet (the stored number wins): the rows it brought are the pockets' only, and the
+    // check says the wallet and the fold differ by them, for the admin to settle (walletset)
     store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'B', 'x1', 'sg_reward', JSON.stringify({ g: 'sg-game-0003', v: 7, to: ['A', 'G'], d: D })]] } });
-    expect(store.shopCheck()).toMatchObject({ A: 'none' });
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['stale', 'h'], h: [2 * K + 540, 2 * K + 547] } });
     expect(reward('A', 'sg-game-0004', 1, ['A'])).toMatchObject({ ok: true });
-    expect(ledger('A')!.h).toBe(2 * K + 540 + 7 + 1);
-    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'none', G: 'none' }); // (B's and G's folded at their next op)
+    expect(ledger('A')).toMatchObject({ h: 2 * K + 541, g: ['sg-game-0001', 'sg-game-0002', 'sg-game-0003', 'sg-game-0004'] });
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [2 * K + 541, 2 * K + 548] }, G: 'none' });
+    expect(store.walletCheck().drift).toEqual([{ who: 'A', stored: 2 * K + 541, fold: 2 * K + 548 }]);
   });
 });
 
@@ -506,7 +514,7 @@ describe('a correction (shop_adjust)', () => {
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
   let n = 0;
   const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `c${++n}`) =>
-    store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+    noWallets(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
   const foldOf = (s: StoreCore, who: 'A' | 'B' | 'G'): number => (s as unknown as { shopFold(w: string): { l: { shells: number } } }).shopFold(who).l.shells;
   const shells = (who: 'A' | 'B' | 'G'): number => foldOf(store, who);
   const snap = (who: 'A' | 'B' | 'G', since?: string) =>
@@ -564,7 +572,7 @@ describe('a correction (shop_adjust)', () => {
     expect(r.rev).not.toBe(rev);
     expect(shells('B')).toBe(before);
     expect(snap('A').some((x) => x[3] === 'shop_adjust')).toBe(false);
-    expect(store.shopCheck()).toMatchObject({ B: 'none' }); // (folded again at B's next op)
+    expect(store.shopCheck()).toMatchObject({ B: 'same' }); // (its wallet less the correction, nothing folded again)
     sellKoi('B', 1);
     expect(store.shopCheck()).toMatchObject({ B: 'same' });
     expect(store.unadjust({ id: 'adj-b' })).toMatchObject({ ok: false });

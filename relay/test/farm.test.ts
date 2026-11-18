@@ -7,7 +7,7 @@ import { StoreCore } from '../src/store.ts';
 import { sellPrice } from '../../app/src/lib/contract/shop.ts';
 import { emptyFarm, FARM, farmStep, type Watered } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
-import { memSql } from './sqlite.ts';
+import { memSql, noWallets } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
 const KEY_B = 'b'.repeat(64);
@@ -33,7 +33,7 @@ describe('the fields in the record', () => {
   const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
   type W = 'A' | 'B' | 'G';
   let n = 0;
-  const send = (who: W, type: string, data: object, id = `e${++n}`) => store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+  const send = (who: W, type: string, data: object, id = `e${++n}`) => noWallets(store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100));
   /** `who` gets at least `k` かいがら by selling common butterflies (the cheapest catch: a dearer one, since the × 10, buys more starts than one buy takes): how many. */
   const shells = (who: W, k: number): number => {
     const fish = Math.ceil(k / K);
@@ -124,7 +124,8 @@ describe('the fields in the record', () => {
     now += DAY;
     expect(farm('A', D2, [{ o: 'harvest', p: P1, n: 1 }, { o: 'harvest', p: P2, n: 1 }])).toEqual({ ok: true });
     expect(rows().at(-1).ops.map((o: { n: number }) => o.n)).toEqual([3, 1]);
-    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'none', G: 'none' });
+    // (B's and G's seeded by the snapshots' wallets)
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'same', G: 'same' });
   });
 
   it('a harvest kept under an older rule replays at its kept n (the fold reads it as kept, never reckons it anew)', () => {

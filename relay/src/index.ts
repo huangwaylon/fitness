@@ -298,7 +298,7 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth; wet: string[] };
 
 export default {
-  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup only. At :15 and :45: the real weather when it's due
+  /** At 03:00 Tokyo (ARCHIVE_CRON): the record's backup and the walletcheck only. At :15 and :45: the real weather when it's due
    *  (IslandRoom weatherTick; the health workflows' dispatch is its-bot's: its/worker dispatch.ts); once a day, at 04:15 Tokyo (just after a
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -306,12 +306,18 @@ export default {
     const log = sinkOf(env, ctx);
     // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick); nothing else
     if (ev.cron === ARCHIVE_CRON) {
-      ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).archiveKick().then(
+      const store = env.STORE.get(env.STORE.idFromName('record'));
+      ctx.waitUntil(store.archiveKick().then(
         () => {},
         (e) => {
           console.warn('backup-kick-fail', errName(e));
           log([{ e: 'do.error', l: 3, d: { where: 'backup', name: errName(e) } }]);
         }
+      ));
+      // and the daily walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed)
+      ctx.waitUntil(store.walletTick().then(
+        () => {},
+        (e) => log([{ e: 'do.error', l: 3, d: { where: 'walletcheck', name: errName(e) } }])
       ));
       return;
     }

@@ -27,6 +27,11 @@
 //   adjust <A|B|G> <v> <note>   a correction of that person's かいがら: a `shop_adjust` row of `v` (either sign, the
 //                       user's call only), its id printed (contract/shop.ts adjustOf)
 //   unadjust <id>       that correction deleted (undone; a new epoch: the phones refetch)
+//   wallet              each person's かいがら as the relay keeps them (h, its changes seq, the last one's at) and the
+//                       fold of their rows beside it
+//   walletcheck         the wallets that differ from their fold (the 03:00 cron's, logged wallet.drift)
+//   walletset <A|B|G> <h> <note>   that person's かいがら made h, with a correction row of what the rows lack for it
+//                       (the user's call only; backup first)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
@@ -162,6 +167,15 @@ switch (cmd) {
   case 'unadjust':
     console.log(JSON.stringify(await signed({ op: 'unadjust', id: arg })));
     break;
+  case 'wallet':
+  case 'walletcheck':
+    console.log(JSON.stringify(await signed({ op: cmd })));
+    break;
+  case 'walletset': {
+    const [, who, h, ...note] = args;
+    console.log(JSON.stringify(await signed({ op: 'walletset', id: `walletset-${randomUUID()}`, who, h: Number(h), note: note.join(' ') })));
+    break;
+  }
   case 'verify-dump':
     await verifyDump(arg);
     break;
@@ -169,6 +183,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | wallet | walletcheck | walletset <who> <h> <note>  [--test]');
     process.exit(1);
 }

@@ -256,4 +256,19 @@ describe('the cron', () => {
     await settle();
     expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'compact', name: 'RangeError' } }]);
   });
+
+  it('at 03:00 Tokyo kicks the backup and runs the walletcheck, nothing else; a failure logged as `do.error`', async () => {
+    const daily = (env = envOf()) => worker.scheduled({ scheduledTime: TICK, cron: '0 18 * * *', noRetry() {} } as ScheduledController, env, ctx());
+    Object.assign(store, {
+      archiveKick: () => (rec('STORE.archiveKick'), Promise.resolve({ due: 'run' })),
+      walletTick: () => (rec('STORE.walletTick'), Promise.resolve({ ok: true, drift: 0 }))
+    });
+    await daily();
+    await settle();
+    expect([calls['STORE.archiveKick'], calls['STORE.walletTick'], calls['ROOM.weatherTick']]).toEqual([[[]], [[]], undefined]);
+    Object.assign(store, { walletTick: () => Promise.reject(new RangeError('cpu')) });
+    await daily();
+    await settle();
+    expect(added().filter((e) => e.e === 'do.error')).toEqual([{ e: 'do.error', l: 3, d: { where: 'walletcheck', name: 'RangeError' } }]);
+  });
 });

@@ -23,7 +23,11 @@ beforeEach(() => {
   store = make();
 });
 
-const call = (key: string, action: string, extra: object = {}) => store.handle({ key, action, ...extra }, 100) as Record<string, any>;
+// (an op's ack carries the wallets it may have moved: shop.test.ts's; these read the rest)
+const call = (key: string, action: string, extra: object = {}) => {
+  const { wallets: _w, ...r } = store.handle({ key, action, ...extra }, 100) as Record<string, any>;
+  return action === 'snapshot' ? { ...r, ...(_w ? { wallets: _w } : {}) } : r;
+};
 const a = (action: string, extra: object = {}) => call(KEY_A, action, extra);
 const b = (action: string, extra: object = {}) => call(KEY_B, action, extra);
 const tick = (ms = 1000) => (now += ms);

@@ -42,7 +42,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
-import { adjustOf, caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
+import { ADJUST_MAX, adjustOf, caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
@@ -72,6 +72,8 @@ export interface StoreIO {
   /** A stored row that isn't JSON (or not an object) was skipped, at `where` (a fold's name): the log's warning
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
+  /** The wallet's events to the log (shopState's `wallet.seed`, walletCheck's `wallet.drift`). */
+  log?(e: 'wallet.seed' | 'wallet.drift', d: Record<string, string | number>): void;
 }
 
 export const RATE_PER_MINUTE = 120;
@@ -440,9 +442,15 @@ export class StoreCore {
     // the guest's: the activity and the events, never a からだ row, a からだ goal or a member's profile; a member's:
     // never the guest's profile (contract/guest.ts rowsFor)
     const head = { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() };
-    if (!page) return { ...head, rows: rowsFor(me, this.rowsSince(since)) };
+    // (and the かいがら: the relay's wallets, the phones' number since 2026-11-18, walletsFor; with a first fetch or
+    // rows only, as a wallet moves only with a row kept, so a poll with nothing new still reads nothing)
+    const wallets = (rows: SnapshotRows) => (!since || rows.metrics.length || rows.events.length ? { wallets: this.walletsFor(me) } : {});
+    if (!page) {
+      const rows = this.rowsSince(since);
+      return { ...head, rows: rowsFor(me, rows), ...wallets(rows) };
+    }
     const p = this.rowsPage(since, page.after, page.limit);
-    return { ...head, rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}) };
+    return { ...head, rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}), ...wallets(p.rows) };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
@@ -628,7 +636,8 @@ export class StoreCore {
     const r = this.keep(me, body);
     if (r.ok && r.at) this.io.notify({ what: 'event', who: me, at: r.at, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calmType(body.type) ? { calm: true } : {}) });
     const { at: _at, ...reply } = r;
-    return reply;
+    const touched = walletsTouched(me, [body]);
+    return touched.size ? { ...reply, wallets: this.walletsFor(me, touched) } : reply;
   }
 
   /**
@@ -659,7 +668,9 @@ export class StoreCore {
       i = j;
     }
     if (last) this.io.notify({ what: 'event', who: me, at: last, rev: this.rev(), ...(this.sid ? { sid: this.sid } : {}), ...(calm ? { calm: true } : {}) });
-    return { ok: true, results };
+    // (the wallets the batch may have moved, kept or refused: a phone keeps each one's highest `seq`)
+    const touched = walletsTouched(me, list);
+    return { ok: true, results, ...(touched.size ? { wallets: this.walletsFor(me, touched) } : {}) };
   }
 
   /** One event of a batch kept as `keep` would; a write that throws is `unavailable` (its transaction rolled back, its
@@ -829,6 +840,9 @@ export class StoreCore {
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
       // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
+      // (each ledger it moves made ready first: a step goes into the wallet as it was before this row; shopState)
+      const ledgers = type === 'tally' || type === 'tally_back' || isShopEvent(type) ? [me] : rewardTo;
+      for (const who of ledgers) this.shopState(who);
       this.put(id, at, me, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
       for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
@@ -1091,28 +1105,35 @@ export class StoreCore {
     return h && isTally(h) ? h.counts : {};
   }
 
-  /** `who`'s running shop ledger (meta `shop|<who>`), folded from their rows when it isn't there (the first sale
-   *  after a deploy, a load, a re-check). */
+  /** `who`'s running shop ledger (meta `shop|<who>`), as kept. Its pocket's part folded again from the rows when today's
+   *  rules can't read it (a load let it go, an older relay kept it), the wallet kept as it was; the whole seeded from
+   *  the fold (`wallet.seed`) only when there's no wallet to keep (the record's first op of theirs, a load into an
+   *  empty record, a ledger from before the wallet that its relay folded again too). Nothing else folds the wallet. */
   private shopState(who: Who): ShopState {
     const raw = this.meta(`shop|${who}`);
-    if (raw) {
-      const st = shopStateOf(raw);
-      if (st) return st;
+    const { pocket, wallet } = raw ? shopStateOf(raw) : { pocket: null, wallet: null };
+    if (pocket && wallet) return { ...pocket, l: { ...pocket.l, shells: wallet.h }, n: wallet.n, t: wallet.t };
+    const fold = this.shopFold(who);
+    let st: ShopState;
+    if (wallet) st = { ...fold, l: { ...fold.l, shells: wallet.h }, n: wallet.n, t: wallet.t };
+    else {
+      st = { ...fold, l: { ...fold.l, shells: Math.max(0, fold.l.shells) }, n: 0, t: this.iso() };
+      this.io.log?.('wallet.seed', { who, h: st.l.shells });
     }
-    const st = this.shopFold(who);
     this.setMeta(`shop|${who}`, shopStateJson(st));
     return st;
   }
 
-  /** A kept row into `who`'s running ledger, when it has one (else the next sale folds it from the rows, this one's
-   *  included): a tally's or a give-back's change (its kept counts less `was`, the row it replaced), a sell or a buy
-   *  by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe). */
+  /** A kept row into `who`'s running ledger (made ready before the row was put: shopState): a tally's or a
+   *  give-back's change (its kept counts less `was`, the row it replaced), a sell, a buy, starts, a reward or a
+   *  correction by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe); the
+   *  wallet moved by the step's change (keepLedger). */
   private shopNote(who: Who, type: 'tally' | 'tally_back' | LedgerEvent, kept: string, was: Record<string, number> | null): void {
-    const raw = this.meta(`shop|${who}`);
-    const st = raw ? shopStateOf(raw) : null;
+    const st = this.ledgerKept(who);
     if (!st) return;
     const d = this.rowRec(kept, 'shop');
     if (!d) return;
+    const before = st.l.shells;
     if (type === 'tally' || type === 'tally_back') {
       if (!isTally(d)) return;
       const sign = type === 'tally_back' ? -1 : 1;
@@ -1128,16 +1149,56 @@ export class StoreCore {
       const row = shopRowOf(type, d);
       if (row) shopStep(st.l, st.caught, st.back, row);
     }
+    this.keepLedger(who, st, before);
+  }
+
+  /** `who`'s running ledger as meta holds it, or null when it isn't ready (shopState makes it so). */
+  private ledgerKept(who: Who): ShopState | null {
+    const raw = this.meta(`shop|${who}`);
+    const p = raw ? shopStateOf(raw) : null;
+    return p?.pocket && p.wallet ? { ...p.pocket, l: { ...p.pocket.l, shells: p.wallet.h }, n: p.wallet.n, t: p.wallet.t } : null;
+  }
+
+  /** A ledger after a step into meta: the wallet never below 0 (the user, 2026-11-18: a give-back after a sale takes
+   *  at most what is left), and when it moved from `before`, a change counted (`n`) at the record's time. */
+  private keepLedger(who: Who, st: ShopState, before: number): void {
+    st.l.shells = Math.max(0, st.l.shells);
+    if (st.l.shells !== before) (st.n += 1), (st.t = this.iso());
     this.setMeta(`shop|${who}`, shopStateJson(st));
   }
 
-  /** The running ledgers let go (a load or an import brought rows past them): the next sale folds each again. */
-  private shopForget(): void {
-    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G') OR k = 'farm' OR k LIKE 'farm|%'");
+  /** The record's clock now, as an ISO time. */
+  private iso(): string {
+    return new Date(this.io.now()).toISOString();
   }
 
-  /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows; `fix`: the
-   *  fold's taken (the running one dropped and made again). */
+  /** The running ledgers' pockets let go (a load or an import brought rows past them: folded again at the next read),
+   *  their wallets kept: a load never moves one (a ledger without one goes whole, seeded at its next read). */
+  private shopForget(): void {
+    for (const who of ['A', 'B', 'G'] as const) {
+      const raw = this.meta(`shop|${who}`);
+      const w = raw ? shopStateOf(raw).wallet : null;
+      if (w) this.setMeta(`shop|${who}`, JSON.stringify({ h: w.h, n: w.n, t: w.t }));
+      else this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${who}`);
+    }
+    this.io.sql.exec("DELETE FROM meta WHERE k = 'farm' OR k LIKE 'farm|%'");
+  }
+
+  /** The wallets a phone of `me`'s is told (a reply's `wallets`): `who`'s of them (all: the visible ones), each its
+   *  かいがら and changes. The guest only its own; a member each person's (a member's phone shows only its own). */
+  private walletsFor(me: Who, who: Iterable<Who> = ['A', 'B', 'G']): Partial<Record<Who, { h: number; seq: number }>> {
+    const out: Partial<Record<Who, { h: number; seq: number }>> = {};
+    for (const w of who) {
+      if (me === 'G' && w !== 'G') continue;
+      const st = this.shopState(w);
+      out[w] = { h: st.l.shells, seq: st.n };
+    }
+    return out;
+  }
+
+  /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows: its pocket's
+   *  part, and its wallet against the fold's かいがら (never below 0); where they differ, the fields (ledgerDiff). `fix`:
+   *  the fold's pocket taken; never the wallet (a drift is the admin's to settle with a correction row: walletset). */
   shopCheck(o: Rec = {}): Record<string, unknown> {
     // the field first, folded anew: the ledgers' fold reads its goods (a wrong running field would make them differ)
     const field = this.farmFold(), json = JSON.stringify(farmJson(field)), was = this.meta(FARM_META);
@@ -1145,54 +1206,122 @@ export class StoreCore {
     if (o.fix === true && out.farm === 'differs') this.setMeta(FARM_META, json);
     for (const who of ['A', 'B', 'G'] as const) {
       const raw = this.meta(`shop|${who}`);
-      const fold = shopStateJson(this.shopFold(who, field));
-      const same = raw === null ? null : raw === fold;
-      out[who] = same === null ? 'none' : same ? 'same' : ledgerDiff(raw!, fold);
-      if (o.fix === true && same === false) this.setMeta(`shop|${who}`, fold);
+      if (raw === null) {
+        out[who] = 'none';
+        continue;
+      }
+      const { pocket, wallet } = shopStateOf(raw);
+      const fold = this.shopFold(who, field);
+      // (a pocket today's rules can't read is `stale`, folded again at the next read: only its wallet judged)
+      const foldParts = pocketParts(fold);
+      const diff = ledgerDiff({ ...(pocket ? pocketParts(pocket) : foldParts), h: wallet?.h ?? null }, { ...foldParts, h: Math.max(0, fold.l.shells) });
+      out[who] = pocket ? diff ?? 'same' : { ...diff, differs: ['stale', ...((diff?.differs as string[] | undefined) ?? [])] };
+      const pocketDiffers = !pocket || (diff?.differs as string[] | undefined)?.some((k) => k !== 'h');
+      if (o.fix === true && pocketDiffers) {
+        const w = wallet ?? { h: Math.max(0, fold.l.shells), n: 0, t: this.iso() };
+        this.setMeta(`shop|${who}`, shopStateJson({ ...fold, l: { ...fold.l, shells: w.h }, n: w.n, t: w.t }));
+      }
     }
     return { ok: true, ...out };
   }
 
+  /** The admin's `wallet`: each person's wallet (`h`, its changes `seq`, the last one's time `at`) and the fold of
+   *  their rows' かいがら beside it (`fold`: below 0 when a give-back took more than was left; the wallet stops at 0). */
+  wallets(): Record<string, unknown> {
+    const out: Record<string, unknown> = { ok: true };
+    for (const who of ['A', 'B', 'G'] as const) {
+      const st = this.shopState(who);
+      out[who] = { h: st.l.shells, seq: st.n, at: st.t, fold: this.shopFold(who).l.shells };
+    }
+    return out;
+  }
+
+  /** The daily `walletcheck` (and the admin's): each kept wallet against its fold (never below 0), the ones that differ
+   *  (`drift`, each `{who, stored, fold}`). Reads only: a drift is the admin's to settle (walletset). */
+  walletCheck(): { ok: true; drift: { who: Who; stored: number; fold: number }[] } {
+    const drift: { who: Who; stored: number; fold: number }[] = [];
+    const field = this.farmFold();
+    for (const who of ['A', 'B', 'G'] as const) {
+      const raw = this.meta(`shop|${who}`);
+      const w = raw ? shopStateOf(raw).wallet : null;
+      if (!w) continue;
+      const fold = Math.max(0, this.shopFold(who, field).l.shells);
+      if (w.h !== fold) drift.push({ who, stored: w.h, fold });
+    }
+    for (const d of drift) this.io.log?.('wallet.drift', d);
+    return { ok: true, drift };
+  }
+
   /** The admin's `adjust {id, who, v, note}`: a `shop_adjust` row of `who`'s (contract/shop.ts adjustOf: `v` かいがら
-   *  added, either sign), kept now (a new `at`: the phones fetch it as any new row, no new epoch) and into their running
-   *  ledger, so shopcheck stays as it was. `id` the caller's (a retry is acknowledged as `duplicate`). The only way one
-   *  comes in besides a dump's `load`: a phone's is refused (contract/record.ts validEventData). */
+   *  added, either sign), kept now (a new `at`: the phones fetch it as any new row, no new epoch) and into their wallet
+   *  (never below 0). `id` the caller's (a retry is acknowledged as `duplicate`). The only way one comes in besides a
+   *  dump's `load`: a phone's is refused (contract/record.ts validEventData). */
   adjust(o: Rec): Record<string, unknown> {
     const { id, who } = o;
     const data = { v: o.v, note: o.note };
     if (!isId(id) || !isWho(who) || !adjustOf(data)) return { ok: false, error: 'bad_request' };
-    const json = JSON.stringify(data);
-    const r = this.io.tx((): Record<string, unknown> => {
-      if (this.known(id)) return { ok: true, duplicate: true };
-      const at = this.nextAt();
-      this.put(id, at, who, 'shop_adjust', json, null, null);
-      this.shopNote(who, 'shop_adjust', json, null);
-      return { ok: true, id, at };
-    });
+    const r = this.io.tx((): Record<string, unknown> => (this.known(id) ? { ok: true, duplicate: true } : this.adjustKept(id, who, data as { v: number; note: string })));
     // (an `ingest`: never skipped as a phone's own event; the guest hears of it too, its かいがら among them)
     if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who, at: r.at, rev: this.rev() }, true);
     return r;
   }
 
-  /** The admin's `unadjust {id}`: that `shop_adjust` row deleted (its correction undone; its id stays known), its
-   *  person's running ledger folded again, and a new epoch (a phone drops a row only by refetching). */
+  /** A correction kept (in the caller's transaction): its row, and the wallet before and after it. */
+  private adjustKept(id: string, who: Who, data: { v: number; note: string }): Record<string, unknown> {
+    const before = this.shopState(who).l.shells;
+    const at = this.nextAt(), json = JSON.stringify(data);
+    this.put(id, at, who, 'shop_adjust', json, null, null);
+    this.shopNote(who, 'shop_adjust', json, null);
+    return { ok: true, id, at, before, after: this.shopState(who).l.shells };
+  }
+
+  /** The admin's `walletset {id, who, h, note}`: `who`'s wallet made `h`, with a correction row of what the rows lack
+   *  for it (`v`: `h` less the fold of their rows, worked out in the transaction), so the rows explain the stored value
+   *  after it. Without a drift that is the wallet's own difference; with one (walletcheck) it settles it, whichever side
+   *  the admin takes (`h` the stored value: the rows made to say it; the fold's: the wallet made the rows'). Nothing
+   *  written when both are `h` already (`same`); no row when the rows say `h` already. */
+  walletSet(o: Rec): Record<string, unknown> {
+    const { id, who, h, note } = o;
+    if (!isId(id) || !isWho(who) || typeof h !== 'number' || !Number.isInteger(h) || h < 0 || !adjustOf({ v: 1, note })) return { ok: false, error: 'bad_request' };
+    const r = this.io.tx((): Record<string, unknown> => {
+      if (this.known(id)) return { ok: true, duplicate: true };
+      const st = this.shopState(who), before = st.l.shells, v = h - this.shopFold(who).l.shells;
+      if (!v && before === h) return { ok: true, same: true, h };
+      if (v && !adjustOf({ v, note })) return { ok: false, error: 'bad_request', detail: `a correction of ${v} is past ±${ADJUST_MAX}` };
+      const at = v ? this.nextAt() : undefined;
+      if (at) this.put(id, at, who, 'shop_adjust', JSON.stringify({ v, note }), null, null);
+      st.l.shells = h;
+      this.keepLedger(who, st, before);
+      return { ok: true, ...(at ? { id, at, v } : {}), before, after: h };
+    });
+    if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who: who as Who, at: r.at, rev: this.rev() }, true);
+    return r;
+  }
+
+  /** The admin's `unadjust {id}`: that `shop_adjust` row deleted (its correction undone; its id stays known), its `v`
+   *  taken back from its person's wallet (never below 0), and a new epoch (a phone drops a row only by refetching). */
   unadjust(o: Rec): Record<string, unknown> {
     const id = o.id;
     if (!isId(id)) return { ok: false, error: 'bad_request' };
-    const who = this.io.tx(() => {
-      const row = this.io.sql.exec<{ person: string }>("SELECT person FROM events WHERE id = ? AND type = 'shop_adjust'", id).toArray()[0];
+    const r = this.io.tx(() => {
+      const row = this.io.sql.exec<{ person: string; data: string }>("SELECT person, data FROM events WHERE id = ? AND type = 'shop_adjust'", id).toArray()[0];
       if (!row || !isWho(row.person)) return null;
+      // (ready before the row goes: a wallet seeded now holds it, so taking it back is right either way)
+      const st = this.shopState(row.person), before = st.l.shells;
+      const x = this.rowRec(row.data, 'shop');
       this.io.sql.exec('DELETE FROM events WHERE id = ?', id);
-      this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${row.person}`);
-      return row.person;
+      st.l.shells -= (x && adjustOf(x)?.v) ?? 0;
+      this.keepLedger(row.person, st, before);
+      return { who: row.person, before, after: st.l.shells };
     });
-    if (!who) return { ok: false, error: 'bad_request', detail: 'no such shop_adjust' };
-    return { ok: true, who, rev: this.bumpRev() };
+    if (!r) return { ok: false, error: 'bad_request', detail: 'no such shop_adjust' };
+    return { ok: true, ...r, rev: this.bumpRev() };
   }
 
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
-   *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
-  private shopFold(me: Who, field: Farm = this.farmState()): ShopState {
+   *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. Its
+   *  `shells` are the rows' sum, unfloored (the wallet's, shopState, never below 0). */
+  private shopFold(me: Who, field: Farm = this.farmState()): Pocket {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     // (their days' tallies less what was given back, a claim race lost, and the field's net: contract/shop.ts caughtOf,
     // the phones' fold too)
@@ -1276,14 +1405,17 @@ export class StoreCore {
    *  (farmKept's: meta FARM_META parsed once a row). */
   private farmNote(me: Who, f: Farm, before: ReadonlyMap<string, number>): void {
     this.setMeta(FARM_META, JSON.stringify(farmJson(f)));
-    const raw = this.meta(`shop|${me}`);
-    const st = raw ? shopStateOf(raw) : null;
+    const st = this.ledgerKept(me);
     if (!st) return;
+    const was = st.l.shells;
     for (const [k, n] of f.net[me] ?? []) {
       const delta = n - (before.get(k) ?? 0);
-      if (delta) st.caught.set(k, (st.caught.get(k) ?? 0) + delta);
+      if (!delta) continue;
+      st.caught.set(k, (st.caught.get(k) ?? 0) + delta);
+      // (a debt of a sold kind again, as a tally's: the fold reads the field's net with the tallies)
+      if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
     }
-    this.setMeta(`shop|${me}`, shopStateJson(st));
+    this.keepLedger(me, st, was);
   }
 
   /**
@@ -1639,41 +1771,54 @@ export class StoreCore {
   }
 }
 
-/** A person's running shop ledger (store.ts shopState): their tallies' totals less the give-backs, the give-backs, and
- *  the ledger of their shop rows (contract/shop.ts). */
-interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger }
+/** A person's running shop ledger (store.ts shopState): their tallies' totals less the give-backs, the give-backs, the
+ *  ledger of their shop rows (contract/shop.ts) whose `shells` are THE wallet (never below 0, never folded again once
+ *  kept), and the wallet's changes (`n`, counted) and the last one's time (`t`). */
+interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger; n: number; t: string }
+type Pocket = Pick<ShopState, 'caught' | 'back' | 'l'>;
+interface Wallet { h: number; n: number; t: string }
 
-/** A ledger as meta keeps it: each map as its entries without the zeros, sorted, so a running one and a fold compare
- *  as text. */
-function shopStateJson(st: ShopState): string {
+/** The pocket's part of a ledger as meta keeps it (each map as its entries without the zeros, sorted): a running one
+ *  and a fold compare as text. */
+function pocketParts(st: Pocket): { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; w: string[]; g: string[] } {
   const m = (x: ReadonlyMap<string, number>) => [...x].filter(([, n]) => n !== 0).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return JSON.stringify({ c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), h: st.l.shells, w: st.l.owned, g: [...st.l.games].sort() });
+  return { c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), w: st.l.owned, g: [...st.l.games].sort() };
 }
 
-function shopStateOf(raw: string): ShopState | null {
-  try {
-    const x = JSON.parse(raw) as { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; h: number; w: string[]; g: string[] };
-    // (one kept before 英語すごろく's rewards, without `g`: folded again)
-    if (!Array.isArray(x.c) || !Array.isArray(x.w) || !Array.isArray(x.g) || typeof x.h !== 'number') return null;
-    // (one kept before an old goal fruit counted as its goal's, 2026-11-16: folded again, contract/pocket.ts pocketKey)
-    if ([x.c, x.b, x.s, x.v, x.o].some((m) => m?.some(([k]) => pocketKey(k) !== k))) return null;
-    return { caught: new Map(x.c), back: new Map(x.b), l: { sold: new Map(x.s), soldV: new Map(x.v), owed: new Map(x.o), shells: x.h, owned: x.w, games: new Set(x.g) } };
-  } catch {
-    return null;
-  }
+/** A ledger as meta keeps it: the pocket's part, the wallet `h`, its changes `n` and time `t`. */
+function shopStateJson(st: ShopState): string {
+  const { c, b, s, v, o, w, g } = pocketParts(st);
+  return JSON.stringify({ c, b, s, v, o, h: st.l.shells, w, g, n: st.n, t: st.t });
 }
 
-/** Where a running ledger (meta JSON) and its fold differ (shopcheck's detail): `differs`, the fields that do (`h` the
- *  かいがら; `c` caught, `b` given back, `s` sold, `v` what they fetched, `o` owed: each key `[stored, fold]`; `w` the
- *  pieces, `g` the games: what only one side holds). */
-function ledgerDiff(stored: string, fold: string): Record<string, unknown> {
-  let a: Record<string, unknown>, b: Record<string, unknown>;
+/** A ledger from meta in its two parts. The pocket's: null when today's rules can't read it (kept before 英語すごろく's
+ *  rewards, without `g`; before an old goal fruit counted as its goal's, contract/pocket.ts pocketKey; or let go by a
+ *  load, shopForget). The wallet's: null when there's none to keep (a ledger from before the wallet whose pocket can't
+ *  be read either: those relays folded such a one again, its かいがら with it, so that fold is what they served). */
+function shopStateOf(raw: string): { pocket: Pocket | null; wallet: Wallet | null } {
+  let x: unknown;
   try {
-    a = JSON.parse(stored) as Record<string, unknown>;
-    b = JSON.parse(fold) as Record<string, unknown>;
+    x = JSON.parse(raw);
   } catch {
-    return { differs: ['unreadable'] };
+    return { pocket: null, wallet: null };
   }
+  if (!isRec(x)) return { pocket: null, wallet: null };
+  const maps = [x.c, x.b, x.s, x.v, x.o] as ([string, number][] | undefined)[];
+  const ok = Array.isArray(x.c) && Array.isArray(x.w) && Array.isArray(x.g) && typeof x.h === 'number' && !maps.some((m) => m?.some(([k]) => pocketKey(k) !== k));
+  const pocket = ok
+    ? { caught: new Map(maps[0]), back: new Map(maps[1]), l: { sold: new Map(maps[2]), soldV: new Map(maps[3]), owed: new Map(maps[4]), shells: x.h as number, owned: x.w as string[], games: new Set(x.g as string[]) } }
+    : null;
+  // (a readable one a relay before the wallet kept: its `h` as that relay served it, never below 0)
+  const wallet = typeof x.h === 'number' && Number.isFinite(x.h) && (typeof x.n === 'number' || ok)
+    ? { h: Math.max(0, Math.round(x.h)), n: typeof x.n === 'number' ? x.n : 0, t: typeof x.t === 'string' ? x.t : '' }
+    : null;
+  return { pocket, wallet };
+}
+
+/** Where a running ledger and its fold differ (shopcheck's detail), or null when they don't: `differs`, the fields that
+ *  do (`h` the wallet against the fold's かいがら; `c` caught, `b` given back, `s` sold, `v` what they fetched, `o` owed:
+ *  each key `[stored, fold]`; `w` the pieces, `g` the games: what only one side holds). */
+function ledgerDiff(a: Record<string, unknown>, b: Record<string, unknown>): Record<string, unknown> | null {
   const out: Record<string, unknown> = {};
   const differs: string[] = [];
   if (a.h !== b.h) differs.push('h'), (out.h = [a.h, b.h]);
@@ -1686,9 +1831,9 @@ function ledgerDiff(stored: string, fold: string): Record<string, unknown> {
   for (const k of ['w', 'g']) {
     const x = Array.isArray(a[k]) ? (a[k] as string[]) : [], y = Array.isArray(b[k]) ? (b[k] as string[]) : [];
     const only = { stored: x.filter((i) => !y.includes(i)), fold: y.filter((i) => !x.includes(i)) };
-    if (only.stored.length || only.fold.length || x.length !== y.length) differs.push(k), (out[k] = only);
+    if (only.stored.length || only.fold.length || x.join() !== y.join()) differs.push(k), (out[k] = only);
   }
-  return { differs: differs.length ? differs : ['order'], ...out };
+  return differs.length ? { differs, ...out } : null;
 }
 
 /** A page's place (contract/api.ts CURSOR_RE): the last row's `at`, its table and its seq. */
@@ -1710,6 +1855,18 @@ const metricRow = (r: MetricCols): MetricRow => [r.at, r.person, r.date, r.metri
 const eventRow = (r: EventCols): EventRow => [r.at, r.person, r.id, r.type, r.data];
 /** `at`, then `seq`. */
 const byAt = (x: { at: string; seq: number }, y: { at: string; seq: number }): number => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.seq - y.seq);
+
+/** The wallets a batch of `me`'s may move (an op's ack carries them): theirs for a ledger's event of theirs (a tally,
+ *  a give-back, the shop's, the field's), each recipient's for a reward. */
+function walletsTouched(me: Who, events: readonly unknown[]): Set<Who> {
+  const out = new Set<Who>();
+  for (const e of events) {
+    if (!isRec(e) || typeof e.type !== 'string') continue;
+    if (e.type === 'tally' || e.type === 'tally_back' || e.type === 'farm' || isShopEvent(e.type)) out.add(me);
+    else if (e.type === 'sg_reward' && isRec(e.data) && Array.isArray(e.data.to)) for (const w of e.data.to) if (isWho(w)) out.add(w);
+  }
+  return out;
+}
 
 /** An event the island doesn't draw (contract/live-protocol.ts CALM_EVENTS): its change's notice is `calm`. */
 const calmType = (t: unknown): boolean => (CALM_EVENTS as readonly unknown[]).includes(t);

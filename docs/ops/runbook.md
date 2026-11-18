@@ -151,15 +151,22 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **Backups** (§6): `bookmark [ms]` prints the bookmark now or `ms` ago (within 30 days); `restore <bookmark>`
   restarts the object on it (requests meanwhile get `unavailable`, retried). The room starts a new epoch ~5 s later;
   run `rev` only when the reply's `note` says the room wasn't told. `dump > island-record-YYYY-MM-DD.json` (every
-  row, held values too; keep it off the repo); `load <file>` into an empty record.
+  row, held values too; keep it off the repo); `load <file>` into an empty record (its wallets are seeded from the
+  fold at the first read after it: `wallet`, then `walletcheck`; a load never moves a wallet that is there).
 - **`rev`**: a new epoch (§4).
 - **`shopcheck [fix]`, `decorcheck [fix]`**: the running field, shop ledgers and decor caps' counts against a full
   fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused. A ledger that differs says
   which fields (`h` かいがら; `c` caught, `b` given back, `s` sold, `v` fetched, `o` owed per key `[stored, fold]`;
   `w` pieces, `g` games).
 - **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only on the user's word: a `shop_adjust` row
-  of `v` (either sign; [backend](../backend.md#shop-adjust)), its id printed; backup first. **`unadjust <id>`** deletes
-  it (a new epoch).
+  of `v` (either sign; [backend](../backend.md#shop-adjust)), its id and the wallet before/after printed; backup
+  first. **`unadjust <id>`** deletes it and takes `v` back from the wallet (a new epoch).
+- **The wallets** ([backend](../backend.md#the-wallet)): **`wallet`** prints each person's `h` (what the phones show),
+  `seq`, `at` and the fold of their rows beside it. **`walletcheck`** lists those that differ from their fold (the
+  03:00 cron runs it and logs `wallet.drift`; nothing fixes itself). **`walletset <A|B|G> <h> <note>`** makes a
+  wallet `h` with one correction row of what the rows lack for it, so the rows say `h` after it: `h` the stored value
+  keeps it, the fold's takes the rows'. Only on the user's word; backup first. `shopcheck fix` mends a pocket, never a
+  wallet.
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.

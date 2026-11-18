@@ -39,3 +39,10 @@ export function memSql(): { sql: Sql; tx: <R>(fn: () => R) => R; db: DatabaseSyn
   };
   return { sql, tx, db, reads: () => read };
 }
+
+/** A reply without its `wallets` (an op's ack carries the wallets it may have moved: store.ts walletsFor), for the
+ *  tests that judge the rest of it. */
+export const noWallets = (r: unknown): Record<string, any> => {
+  const { wallets: _w, ...rest } = r as Record<string, any>;
+  return rest;
+};
