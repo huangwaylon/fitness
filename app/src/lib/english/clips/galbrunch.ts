@@ -22,7 +22,7 @@ export const galBrunch: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 11.4],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'hours', seg: [0, 11.7],
       stem: 'How long will Leslie be in her office?',
       ja: 'レスリーはどのくらいオフィスにいると言う？',
       choices: ['1 or 2 hours', '1 to 7 hours', '2 to 7 hours', '1 to 3 hours'], a: 1, keep: true,
@@ -82,7 +82,7 @@ export const galBrunch: Clip = {
       trap: 'husband（夫）の話なので、のろけと考えがち。weirdo（変な人）と Bye で、うんざりと分かる。',
       use: 'Can I get back to work now?（もう仕事に戻っていい？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', seg: [74.8, 82.9],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'werent', seg: [74.5, 82.9],
       stem: 'Fill the gap: “I thought you ___ do Galentine’s Day this year…”',
       ja: '空いている所は？「I thought you ___ do Galentine’s Day this year…」',
       choices: ['weren’t gonna', 'were gonna', 'wouldn’t'], a: 0,

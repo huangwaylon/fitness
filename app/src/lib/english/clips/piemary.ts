@@ -268,7 +268,7 @@ export const piemary: Clip = {
       trap: 'they’re が弱く、消えたように聞こえやすい。5語を数えて聞く。',
       use: 'The more you practice, the less you worry.（練習するほど不安は減る）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['enter'], seg: [196.9, 208.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', reveals: ['enter'], seg: [196.9, 208.5],
       stem: '“*Besides*, I’m good at making pies.” What does “Besides” mean?',
       ja: '「Besides, I’m good at making pies」の Besides はどういう意味？',
       choices: ['Also', 'However', 'Actually'], a: 0,

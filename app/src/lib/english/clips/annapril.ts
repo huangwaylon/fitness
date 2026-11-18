@@ -54,7 +54,7 @@ export const annApril: Clip = {
       trap: 'school だけ聞くと合格の話に聞こえる。thinking about で、まだ考えている段階と分かる。',
       use: 'I’m thinking about applying for that job.（あの仕事に応募しようか考え中）' },
 
-    { id: 'a1', skill: 'pragma', level: 'B1', point: 'wonder', reveals: ['reco'], ctx: true, seg: [31.53, 38.6],
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'wonder', reveals: ['reco'], ctx: true, seg: [29.2, 38.6],
       stem: 'What is April asking with “I was wondering if…”?',
       ja: '「I was wondering if…」で、エイプリルは何を頼んでいる？',
       choices: ['For Ann to write it', 'Whether Ann is a nurse', 'Why Ann works there'], a: 0,
