@@ -279,7 +279,9 @@ never data of record: the record still catches an offline phone up.
   each person's last socket closed; `mine`: another device of mine is here).
 - **Close codes:** 4001 bad key, 4002 replaced by the same device's newer socket, 4003 no hello within `HELLO_MS`,
   4004 an unknown `v` (the client waits for a reload; a bump ships as [Relay versions side by
-  side](decisions.md#relay-versions-side-by-side) says).
+  side](decisions.md#relay-versions-side-by-side) says). The phone's own (`sync/live.ts`, in the log's `ws.close`):
+  4000 a socket given up on as dead (a ping unanswered; replaced at once), 4010 no welcome within `WELCOME_MS` (another
+  after the backoff; at once when the app comes back).
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`: both sides' parsers, each field's bounds): JSON, `LIVE_VS`, ≤
   `MAX_BYTES` (a `replay` ≤ `REPLAY_BYTES`). Client intents:
   - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
