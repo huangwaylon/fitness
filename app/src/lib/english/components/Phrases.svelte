@@ -6,6 +6,7 @@
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import PhraseCard from './PhraseCard.svelte';
+  import Icon from '#lib/components/ui/Icon.svelte';
   import Thumb from './Thumb.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
@@ -134,7 +135,7 @@
             <p class="say">{s('deckSay')}</p>
             <div class="pair save">
               <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}>{isSaved ? s('deckSaved') : s('deckSave')}</button>
-              <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}</button>
+              <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
             </div>
           {/snippet}
         </PhraseCard>

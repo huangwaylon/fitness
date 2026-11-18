@@ -113,7 +113,7 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   // ‹ home (the lesson's place kept: 続きから)
   await lesson(page).locator('[data-en-to-q]').click();
   await page.locator('dialog[open] [data-en-lesson] .navbar .back').click();
-  await expect(sheet(page).locator('[data-en-start]')).toHaveText('▶ 続きから');
+  await expect(sheet(page).locator('[data-en-start]')).toHaveText('続きから');
   await sheet(page).locator('[data-en-start]').click();
   expect(await at(page)).toBe('0');
 });
@@ -222,12 +222,12 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
   await lesson(page).locator('[data-en-done]').click();
   // the main card goes on to the plan's next clip (the finished one isn't offered again today, not even as a row)
   await expect(sheet(page).locator('[data-en-today]')).toHaveAttribute('data-en-today', AFTER.id);
-  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('▶ 始める');
+  await expect(sheet(page).locator('[data-en-today] [data-en-start]')).toHaveText('始める');
   await expect(sheet(page).locator('[data-en-lib] [data-en-clip="waitress"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-en-week]')).toHaveAttribute('data-en-week', '1');
   await expect(sheet(page).locator('[data-en-week-n]')).toHaveText('1/3日');
   await expect(sheet(page).locator('[data-en-clips]')).toHaveText('これまで 1本');
-  await expect(sheet(page).locator('[data-en-today]')).toContainText('次の動画 · 今日の分は完了 ✓');
+  await expect(sheet(page).locator('[data-en-today]')).toContainText('次の動画 · 今日の分は完了');
   // the library: ✓ on its row, last
   await sheet(page).locator('[data-en-all]').click();
   // (もっと見る till the whole library shows: it grows as banks land)

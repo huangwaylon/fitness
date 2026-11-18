@@ -266,7 +266,7 @@
       <article class="card pad" data-en-watch>
         <p class="lead"><b>{s('watchHead')}</b><span class="meta">{s('watchNote')}</span></p>
         <button type="button" class="btn" class:sky={!played} class:paper={played} data-sfx="tick" data-en-watch-all onclick={() => ((watched = true), player?.play(0, null))}>
-          {played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
+          <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
     {:else if bank !== 'ready'}
@@ -289,7 +289,7 @@
           <p class="stem" lang="en"><b><KeyedText text={q.stem} /></b></p>
           {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
-          <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>
+          <button type="button" class="btn small hear" class:sky={!cur.r} class:paper={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear')}</button>
           {#if q.choices}
             <div class="choices">
               {#each choiceOrder(q, seed) as i (i)}{@const c = q.choices[i]}{@const ja = cur.r || (tr && !FORM.has(q.skill)) ? q.choicesJa?.[i] : undefined}
@@ -333,7 +333,7 @@
           <ul class="again">
             {#each again as i (i)}
               <li><button type="button" class="btn small paper seg" data-sfx="tick" data-en-again={i} onclick={() => seg(qs[i])}>
-                <span>{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
+                <span class="at"><Icon name="play" size={16} />{s('seg', span(qs[i]))}</span><span class="ph" lang="en">{phrase(qs[i])}</span></button></li>
             {/each}
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
@@ -347,13 +347,13 @@
   </div>
   <div class="foot" class:off={study}>
     {#if at === -1}
-      <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}</button>
+      <button type="button" class="btn" class:paper={!played} data-sfx="page" data-en-to-q onclick={() => go(0)}>{s('toQuestions')}<Icon name="chevron-right" /></button>
     {:else}
-      <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => go(at - 1)}>{s('prev')}</button>
+      <button type="button" class="btn paper" data-sfx="back" data-en-prev onclick={() => go(at - 1)}><Icon name="back" />{s('prev')}</button>
       {#if bank !== 'ready'}
         <span class="btn-gap"></span>
       {:else if at < len}
-        <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}</button>
+        <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}<Icon name="chevron-right" /></button>
       {:else}
         <button type="button" class="btn" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
       {/if}
@@ -410,6 +410,7 @@
   .more[open] .why { margin-top: 6px; }
   .again { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .seg { width: 100%; justify-content: flex-start; text-align: left; flex-wrap: wrap; height: auto; padding: 8px 14px; }
+  .at { display: inline-flex; align-items: center; gap: 6px; }
   .ph { color: var(--text-soft); font-size: var(--fs-s); }
   .prow :global(svg) { flex: none; color: var(--text-soft); }
   .credit { margin: 4px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }

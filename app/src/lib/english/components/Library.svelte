@@ -7,6 +7,7 @@
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import ChipRow from '#lib/components/ui/ChipRow.svelte';
   import Chip from '#lib/components/ui/Chip.svelte';
+  import Icon from '#lib/components/ui/Icon.svelte';
   import ClipRow from './ClipRow.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { LIBRARY } from '../data.ts';
@@ -65,7 +66,7 @@
           {@const done = clips.filter((m) => mine.clips.has(m.id)).length}
           <button type="button" class="prow tile" data-sfx="page" data-en-colrow={c.id} onclick={() => into(c.id)}>
             <span class="prl"><span class="name">{s(`col.${c.id}`)}</span><small class="count">{s('libN', { n: clips.length })}{#if done}{` · ${s('colDone', { n: done })}`}{/if}</small></span>
-            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+            <Icon name="chevron-right" size={18} stroke={2.6} />
           </button>
         {/each}
       </div>
@@ -94,6 +95,6 @@
   .tile { min-height: 56px; padding-right: 8px; text-align: left; }
   .tile .name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .count { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
-  .chev { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
+  .tile :global(svg) { color: var(--text-soft); }
   .more { width: 100%; justify-content: center; font-weight: 700; color: var(--text-soft); }
 </style>

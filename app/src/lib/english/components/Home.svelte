@@ -11,6 +11,7 @@
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import NavButton from '#lib/components/ui/NavButton.svelte';
+  import Icon from '#lib/components/ui/Icon.svelte';
   import WeekProgress from './WeekProgress.svelte';
   import ClipRow from './ClipRow.svelte';
   import PhraseReview from './PhraseReview.svelte';
@@ -110,11 +111,11 @@
     <PhraseReview {rows} {me} {today} />
     <article class="card pad today" data-en-today={shown.id}>
       <Thumb hero video={shown.video} show={shown.show} len={clock(shown.dur)} />
-      <p class="kicker">{allDone && !other ? s('allDone') : doneToday && !other ? s('todayDone') : s('today')}</p>
+      <p class="kicker">{allDone && !other ? s('allDone') : doneToday && !other ? s('todayDone') : s('today')}{#if doneToday && !other && !allDone}<Icon name="check" size={14} stroke={2.6} />{/if}</p>
       <h3 lang="en">{shown.title}</h3>
       <p class="meta">{meta(shown)}</p>
       <button type="button" class="btn" data-sfx="open" data-en-start onclick={() => onopen(shown.id)}>
-        {resumes(shown) ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
+        <Icon name="play" />{resumes(shown) ? s('resume') : mine.clips.has(shown.id) ? s('again') : s('start')}
       </button>
       {#if !online}<p class="meta off" data-en-offline>{s('offlineHome')}</p>{/if}
       {#if CLIPS.length > 1}<button type="button" class="quiet" data-sfx="tick" data-en-other onclick={another}>{s('other')}</button>{/if}
@@ -127,7 +128,7 @@
       {#each upNext as c (c.id)}<ClipRow clip={c} plays={mine.plays.get(c.id)} {onopen} />{/each}
       <button type="button" class="row all" data-sfx="page" data-en-all onclick={onlibrary}>
         <span class="name">{s('seeAll', { n: CLIPS.length })}</span>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        <Icon name="chevron-right" size={22} stroke={2.6} />
       </button>
     </div>
   </div>
@@ -150,5 +151,6 @@
   .lib { flex: none; }
   .all { width: 100%; text-align: left; }
   .all .name { flex: 1; min-width: 0; font-weight: 700; }
-  .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; color: var(--text-soft); }
+  .all :global(svg) { color: var(--text-soft); }
+  .kicker :global(svg) { margin-left: 4px; vertical-align: -2px; }
 </style>

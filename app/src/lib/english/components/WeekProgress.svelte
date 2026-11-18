@@ -6,6 +6,7 @@
   import type { WeekView } from '../progress.ts';
   import { WEEK_TARGET } from '../progress.ts';
   import { s } from '../i18n.ts';
+  import Icon from '#lib/components/ui/Icon.svelte';
 
   let { view }: { view: WeekView } = $props();
   const dots = (k: number) => Array.from({ length: WEEK_TARGET }, (_, i) => i < k);
@@ -27,7 +28,7 @@
   {#if view.minutes > 0}<p class="soft" data-en-minutes>{s('minutes', { n: view.minutes })}</p>{/if}
   {#if view.partner && (view.partner.today || view.partner.days > 0)}
     <p class="partner" data-en-partner>
-      {#if view.partner.today}{s('partnerDone', { name: view.partner.name })}
+      {#if view.partner.today}{s('partnerDone', { name: view.partner.name })}<Icon name="check" size={14} stroke={2.6} />
       {:else}<span>{s('partnerWeek', { name: view.partner.name })}</span><span class="dots s" aria-label={s('weekDays', { k: Math.min(view.partner.days, WEEK_TARGET) })}>{#each dots(view.partner.days) as on, i (i)}<i class:on></i>{/each}</span>{/if}
     </p>
   {/if}
