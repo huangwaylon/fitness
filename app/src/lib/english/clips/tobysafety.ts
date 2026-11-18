@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 5, new 6, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 5, new 6, ctx 4, tx 4, qa 8
 // A2 REVIEW 2026-11-17: keep 3, rewrite 12, retire 8, new 4
 // “Toby's Health And Safety Meeting - The Office US” (the official The Office channel, Best of Season 3): Michael hands
 // the office safety talk to Toby, keeps cutting in to make desk work sound dangerous, and the warehouse crew mocks it;
@@ -25,7 +25,7 @@ export const tobySafety: Clip = {
       cue: '冒頭、トビーの名前のすぐあと',
       line: 'Toby *now has the floor*…',
       said: '「さあ、ここからはトビーの番だ」と、話す人を交代させる。',
-      mean: 'have the floor ＝ 会議で話す番にある。場所や地位の話ではない。',
+      mean: 'have the floor ＝ 文字どおりは「床を持つ」。会議で床の真ん中に立つ人＝話す人→「話す番だ」。場所や地位の話ではない。',
       trap: 'floor ＝「床」から、立つ場所の話と思いやすい。会議の floor は「話す番」。',
       use: 'You have the floor. Go ahead.（どうぞ、話してください）' },
 
@@ -61,7 +61,7 @@ export const tobySafety: Clip = {
       line: 'take a 10-minute *break* from typing *every hour*… move around about 10 minutes *every hour*…',
       said: 'タイピング、血のめぐり、目のために、1時間ごとに休むよう勧める。',
       mean: 'every hour ＝ 1時間ごとに。どれも、座りっぱなしの仕事への注意。',
-      trap: 'warehouse（倉庫）の話も出るが、それは別のチームの講習。',
+      trap: 'warehouse（倉庫）の講習の話はほかの場面。ここは机の仕事の注意ばかり。',
       use: 'Let’s take a short break.（少し休憩しよう）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'typing', seg: [17.4, 25.9], keep: true,
@@ -111,8 +111,8 @@ export const tobySafety: Clip = {
       use: 'It takes about half an hour.（30分くらいかかるよ）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'same', ctx: true, reveals: ['halfhour'], seg: [43.6, 51.0],
-      stem: '“Take them at the same time.” What does it mean?',
-      ja: '「Take them at the same time」はどういう意味？',
+      stem: '“Take them at the same time.” What does Toby mean?',
+      ja: '「Take them at the same time」トビーが言いたいことは？',
       choices: ['Take the 3 breaks as one', 'Take breaks with everyone', 'Take breaks after lunch'], a: 0,
       choicesJa: ['3つの休憩をまとめて取る', 'みんなと一緒に休む', '昼食のあとに休む'],
       cue: '30分という計算への返事',
@@ -131,17 +131,17 @@ export const tobySafety: Clip = {
       trap: '習った形に合わせて a を消したくなる。弱くても、聞こえた語は書く。',
       use: 'I’ll be there in a half an hour.（30分で着くよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'lame', seg: [48.6, 57.2],
-      stem: 'What does Michael think of the talk so far?',
-      ja: 'マイケルは、ここまでの講習をどう思っている？',
-      choices: ['It sounds boring and weak', 'It takes too much time', 'It sounds safe and good'], a: 0,
-      choicesJa: ['つまらなくて、さえない', '時間がかかりすぎる', '安全そうでいい'],
-      cue: '口をはさんだ理由',
-      line: 'you’re making it *sound kind of lame*, so skip ahead to the *really dangerous stuff*',
-      said: '「なんだかさえない話に聞こえる。本当に危ない話に飛ばして」と言う。',
-      mean: 'lame ＝ ださい、さえない（くだけた語）。skip ahead ＝ 先に飛ばす。',
-      trap: '直前に「30分も」と驚いたので、時間の不満と思いやすい。so の前が理由。',
-      use: 'This party is kind of lame.（このパーティー、ちょっとイマイチ）' },
+    { id: 'a1', skill: 'pragma', level: 'B1', point: 'skipahead', seg: [48.6, 57.2],
+      stem: 'What does Michael ask Toby to do?',
+      ja: 'マイケルはトビーに何をするよう頼む？',
+      choices: ['Go to the dangerous part', 'Read the list more slowly', 'Start the talk again'], a: 0,
+      choicesJa: ['危ない話まで進む', 'リストをもっとゆっくり読む', '講習を最初からやり直す'],
+      cue: '「so」のあと',
+      line: 'you’re making it sound kind of lame, so *skip ahead to the really dangerous stuff*',
+      said: '「なんだかさえない話に聞こえるから、本当に危ない話まで飛ばしてくれ」と頼む。',
+      mean: 'skip ahead ＝ 文字どおりは「先へ跳ぶ」。途中を飛ばして先へ進む。lame（さえない）が so の前の理由。',
+      trap: 'skip を聞き逃すと、やり直しの頼みと勘違いしやすい。ahead は「先へ」。',
+      use: 'Let’s skip ahead to the last page.（最後のページまで飛ばそう）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['lame'], seg: [48.6, 57.2], retired: true,
       stem: 'Why does Michael say “Okay, you know what” here?',
@@ -222,7 +222,7 @@ export const tobySafety: Clip = {
       line: 'A depression that includes weight gain, fatigue, irritability *brought on by the low light of winter*.',
       said: '「季節性情動障害。冬の弱い光のせいで、体重増加や疲れ、イライラが起こるうつです」と読む。',
       mean: 'brought on by 〜 ＝ 〜が原因で起こる。low light ＝ 弱い光、日が短いこと。',
-      trap: '直前に desk（机）の話が続いたので、座りすぎと考えがち。by のあとの winter を聞く。',
+      trap: '職場の講習なので、机仕事のせいと考えがち。by のあとの winter を聞く。',
       use: 'My headache was brought on by stress.（頭痛はストレスのせいだった）' },
 
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'baler', seg: [91.7, 101.6], retired: true,
@@ -237,10 +237,10 @@ export const tobySafety: Clip = {
       use: 'Oh no, a paper cut. Call an ambulance.（紙で指を切った？救急車呼ぶ？）' },
 
     { id: 'w3', skill: 'pragma', level: 'B2', point: 'actually', ctx: true, seg: [100.6, 106.6],
-      stem: 'Michael says he didn’t cut in on their talk. How do the warehouse guys answer?',
+      stem: 'Michael says he didn’t interrupt them. How do the warehouse guys answer?',
       ja: 'マイケルは「君たちの話の邪魔はしなかった」と言う。倉庫の人たちの返事は？',
-      choices: ['He did cut in on them', 'He wasn’t at their talk', 'Their talk was boring'], a: 0,
-      choicesJa: ['実際、邪魔をした', '彼は講習に来ていなかった', '自分たちの講習は退屈だった'],
+      choices: ['He did interrupt them', 'He never interrupted them', 'He missed their talk'], a: 0,
+      choicesJa: ['実は邪魔をした', '一度も邪魔しなかった', '講習に来なかった'],
       cue: '最初の返事',
       line: '*Actually, you did.* / Yes. / Okay, let’s do another one.',
       said: 'マイケルが「君たちの発表の時、私は邪魔しなかった」と言ったあと、「いや、邪魔したよ」と返される。',
@@ -386,7 +386,7 @@ export const tobySafety: Clip = {
       said: '「ダリルに客を迎えさせてみたいね。たぶん相手を弱虫みたいな気分にさせる。私は違う」と言う。',
       mean: 'wimp ＝ 弱虫（くだけた言い方）。I’d like to see 〜 ＝ 「〜できるものならやってみろ」という挑発。',
       trap: 'greet（迎える）から、歓迎の話と考えがち。feel like のあとの wimps を聞く。',
-      use: 'I’d like to see you try!（やれるものならやってみて）' },
+      use: 'I felt like a wimp.（自分が弱虫みたいに思えた）' },
 
     { id: 'w5', skill: 'phrase', level: 'B1', point: 'special', seg: [194.5, 203.7],
       stem: 'What does “a special on khaki pants” mean?',

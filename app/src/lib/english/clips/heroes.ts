@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 1, new 7, ctx 5, tx 5
+// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 1, new 7, ctx 5, tx 5, qa 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 4, new 1 (nt1, nt2 stay retired)
 // “Leslie discovers the truth about her heroes | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 2): Leslie gathers every living former parks director for a picnic and asks each about the job; one kept
@@ -20,7 +20,7 @@ export const heroes: Clip = {
   questions: [
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'howlong', ctx: true, seg: [15.8, 25],
       stem: 'How does David feel about meeting Leslie?', ja: 'デビッドはレスリーに会ってどんな気持ち？',
-      choices: ['He wants it over fast', 'He is shy about it', 'He is happy to talk more'], a: 0,
+      choices: ['He wants it to end fast', 'He is shy about it', 'He is happy to talk more'], a: 0,
       choicesJa: ['早く終わらせたい', '照れている', 'もっと話せてうれしい'],
       cue: '「such an honor」への返事',
       line: 'Leslie: It is such an honor to meet you. / David: *Right. How long is this gonna take?*',
@@ -117,12 +117,12 @@ export const heroes: Clip = {
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'bestfriends', reveals: ['knows'], seg: [86.4, 91.4],
       stem: 'What does “*not exactly best friends*” mean?', ja: '「not exactly best friends」の意味は？',
-      choices: ['They don’t get along', 'They are close friends', 'They have just met'], a: 0,
+      choices: ['They don’t like each other', 'They are close friends', 'They have just met'], a: 0,
       choicesJa: ['仲がよくない', 'とても仲がいい', '会ったばかり'],
       cue: '「and we’re」のあと',
       line: 'and we’re *not exactly best friends*.',
       said: 'ロンが「マイケルとは、親友ってわけじゃない」と言う。',
-      mean: 'not exactly 〜 ＝ 必ずしも〜ではない。やわらかく「仲がよくない」と言う形。',
+      mean: 'not exactly 〜 ＝ 文字どおりは「正確には〜ではない」。遠回しに「〜とはほど遠い」。ここは仲がよくない。',
       trap: 'best friends が聞こえるので、仲がいいと思いやすい。前に not がある。',
       use: 'It’s not exactly cheap.（安いとは言えない）' },
 
@@ -138,25 +138,25 @@ export const heroes: Clip = {
       use: 'Don’t be such a baby. It’s just a shot.（大げさだなあ、ただの注射だよ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'bacon', seg: [91.4, 102.9],
-      stem: '“I ___ already.”', ja: '空所に入るのは？',
-      choices: ['ate it', 'hate it', 'had it'], a: 0,
-      choicesJa: ['（もう）食べた', '（もう）嫌いだ', '（もう）持っていた'],
+      stem: 'Fill the gap: “I ___ already.”', ja: '空所をうめよう：「I ___ already.」',
+      choices: ['ate it', 'hate it', 'made it'], a: 0,
+      choicesJa: ['（もう）食べた', '（もう）嫌いだ', '（もう）作った'],
       cue: 'ベーコンの話への返事',
       line: 'I cooked you some bacon… — *I ate it* already. … I could *smell it in your purse*…',
       said: '「ベーコンを焼いてきた」に「もう食べた。バッグの中で匂ってた」と答える。',
       mean: 'ate ＝ eat の過去形。ate it は「エイティッ」とつながる。',
-      trap: 'hate it と似て聞こえやすい。h の音があるかを聞く。',
+      trap: 'hate it と似て聞こえやすい。h の息の音があるか、made なら頭に「メ」があるかを聞く。',
       use: 'I ate it already.（もう食べちゃった）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'four', seg: [105.9, 117.6],
       stem: 'How many classes did they offer that first year?', ja: '最初の年、講座はいくつあった？',
-      choices: ['4', '14', '40'], a: 0, keep: true,
-      choicesJa: ['4つ', '14個', '40個'],
+      choices: ['4', '14', '40', '44'], a: 0, keep: true,
+      choicesJa: ['4つ', '14個', '40個', '44個'],
       cue: '「that first year」のあと',
       line: 'that first year we *offered four classes*.',
       said: 'クラレンスが「最初の年は、講座を4つ開いた」と言う。',
       mean: 'four ＝ 4。offer ＝ 提供する。class ＝ 講座、教室。',
-      trap: 'fourteen や forty と似て聞こえやすい。短い「フォー」だけ。',
+      trap: 'fourteen は後ろの「ティーン」が強く、forty や forty-four は「フォーティ」。短い「フォー」だけなら 4。',
       use: 'We offer four classes a week.（週に4つ講座があります）' },
 
     { id: 'i5', skill: 'infer', level: 'B2', point: 'women', ctx: true, seg: [117, 125],
@@ -205,13 +205,13 @@ export const heroes: Clip = {
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'eight', seg: [156.1, 168.1],
       stem: 'How long was David in public works?', ja: 'デビッドは公共事業の部署に何年いた？',
-      choices: ['8 years', '18 years', '80 years'], a: 0, keep: true,
-      choicesJa: ['8年', '18年', '80年'],
+      choices: ['8 years', '18 years', '80 years', 'A year'], a: 0, keep: true,
+      choicesJa: ['8年', '18年', '80年', '1年'],
       cue: '「public works for」のあと',
       line: 'I was in public works *for eight years*…',
       said: 'デビッドが「公共事業の部署に8年いた」と話し始める。',
       mean: 'eight ＝ 8。for 〜 years ＝ 〜年間。public works ＝ 公共事業。',
-      trap: 'eighteen や eighty と似て聞こえやすい。「エイト」と短い。',
+      trap: 'eighteen や eighty と似て聞こえやすい。「エイト」と短い。a year なら t がなく、years の s もない。',
       use: 'I lived there for eight years.（そこに8年住んでいた）' },
 
     { id: 'i6', skill: 'infer', level: 'C1', point: 'young', seg: [156.9, 167.6], retired: true,

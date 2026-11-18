@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 2, new 1, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 2, new 1, ctx 5, tx 6, qa 7
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 4, new 1
 // “How to Prevent the Spread of Germs - The Office US” (the official The Office channel, BEST OF SEASON 7 - The Office
 // US): a presenter gives the office tips against colds (a keyboard study, the "vampire cough", hand washing, sanitizing
@@ -34,13 +34,13 @@ export const germsTalk: Clip = {
     { id: 'f5', skill: 'phrase', level: 'B2', point: 'weather', seg: [0, 5],
       stem: 'What does “under the weather” mean?',
       ja: '「under the weather」はどういう意味？',
-      choices: ['A little sick', 'Very busy', 'Wet from the rain'], a: 0,
-      choicesJa: ['少し体調が悪い', 'とてもいそがしい', '雨でぬれている'],
+      choices: ['Not well', 'Very busy', 'Wet from the rain'], a: 0,
+      choicesJa: ['体調がよくない', 'とてもいそがしい', '雨でぬれている'],
       cue: '「feeling」のあと',
       line: 'feeling *under the weather* lately.',
       said: '「最近、体調をくずしている人が多いですね」と言う。',
-      mean: 'under the weather ＝ 文字どおりは「天気の下」、本当は「少し体調が悪い」。',
-      trap: 'weather（天気）から、雨や天気の話と思いやすい。決まり文句で「ちょっと具合が悪い」。',
+      mean: 'under the weather ＝ 文字どおりは「天気の下」。悪い天気に押されて元気がない→「ちょっと体調が悪い」。',
+      trap: 'weather（天気）から、雨にぬれた話と考えがち。決まり文句で「ちょっと具合が悪い」。',
       use: 'I’m feeling a bit under the weather today.（今日はちょっと具合が悪くて）' },
 
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'season', seg: [1.2, 6.0],
@@ -50,7 +50,7 @@ export const germsTalk: Clip = {
       choicesJa: ['かぜがはやる季節だ', 'もうすぐ年が終わる', '今年は特別な年だ'],
       cue: '体調の話のすぐあと',
       line: 'It’s *that time of year*.',
-      said: '体調をくずす人が多いと言い、「そういう時期ですから」と足す。',
+      said: '体調をくずす人が多いと言い、「そういう季節ですからね」と足す。',
       mean: 'that time of year ＝「毎年それが起こる時期」。ここはかぜがはやる季節。',
       trap: 'year から年末を連想しやすい。毎年くり返すことを言う決まり文句。',
       use: 'It’s that time of year again.（またこの季節が来たね）' },
@@ -68,7 +68,7 @@ export const germsTalk: Clip = {
       use: 'According to a recent study…（最近の調査によると）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'hundreds', seg: [6.0, 12.9], keep: true,
-      stem: 'How many times more bacteria do keyboards have?',
+      stem: 'How many times more bacteria do keyboards have than toilet seats?',
       ja: 'キーボードには、便座の何倍の細菌がいる？',
       choices: ['Ten times', 'Dozens of times', 'Hundreds of times', 'Thousands of times'], a: 2,
       choicesJa: ['10倍', '何十倍', '何百倍', '何千倍'],
@@ -82,7 +82,7 @@ export const germsTalk: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'tips', seg: [21.0, 52.0],
       stem: 'What is most of the presenter’s talk about?',
       ja: '発表する人の話は、ほとんど何について？',
-      choices: ['Ways to stop germs spreading', 'Ways to get over a cold', 'How to clean your keyboard'], a: 0,
+      choices: ['Ways to stop germs spreading', 'Ways to treat a cold', 'How to clean your keyboard'], a: 0,
       choicesJa: ['ばい菌を広げない方法', 'かぜを治す方法', 'キーボードのそうじの仕方'],
       cue: '「other things you can do」のあと',
       line: 'One of the *simplest ways* to cut down on the spread of germs… *other things you can do*…',
@@ -150,7 +150,7 @@ export const germsTalk: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'stations', seg: [46.9, 53.9],
       stem: 'What will the presenter set up around the office?',
       ja: '発表する人は、オフィスのあちこちに何を置く？',
-      choices: ['Places to clean your hands', 'Places to get a flu shot', 'Places to pick up some tissues'], a: 0,
+      choices: ['Places to clean your hands', 'Places to get a flu shot', 'Places to get some tissues'], a: 0,
       choicesJa: ['手を消毒する場所', '予防接種を受ける場所', 'ティッシュを取る場所'],
       cue: '「Also」のあと',
       line: 'I’m going to set up *hand sanitizing stations* around the office.',

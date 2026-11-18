@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 13, retire 3, new 2, ctx 3, tx 3
+// R4 REVIEW 2026-11-18: keep 3, rewrite 13, retire 3, new 2, ctx 3, tx 3, qa 3
 // A2 REVIEW 2026-11-17: keep 10, rewrite 7, retire 2, new 0
 // “Parks and Recreation | Chris Loves Champion (Episode Highlight)” (the official Parks and Recreation channel,
 // Season 4): Chris hands Champion, April and Andy's three-legged dog, back after minding him for a night, raves about
@@ -106,7 +106,7 @@ export const wonderDog: Clip = {
       line: 'April and Andy *went away for the night*',
       said: '「エイプリルとアンディが一晩出かけていたので」と説明する。',
       mean: 'for the night ＝ その晩だけ、一泊。the night と1つなので一晩。',
-      trap: '週末旅行と思いやすい。「ナイト」なら一晩、「ウィーク」で切れれば1週間、「ウィークエンド」なら週末。',
+      trap: 'the night の the は弱い「ザ」。two nights なら「トゥー」が強く、最後に s。week なら「ウィーク」で終わる。',
       use: 'We’re just staying for the night.（一泊だけです）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'lookedafter', seg: [20, 28],
@@ -158,8 +158,8 @@ export const wonderDog: Clip = {
     { id: 'i1', skill: 'infer', level: 'B1', point: 'healthier', seg: [33, 39.5],
       stem: 'What does “He’s healthier than ever” mean?',
       ja: '「He’s healthier than ever」はどういう意味？',
-      choices: ['He is healthier than before', 'He is healthier than other dogs', 'He will always be healthy'], a: 0,
-      choicesJa: ['前よりも健康', 'ほかの犬より健康', 'ずっと健康でいる'],
+      choices: ['He has never been so well', 'He is healthier than other dogs', 'He will always be healthy'], a: 0,
+      choicesJa: ['今までで一番元気', 'ほかの犬より健康', 'ずっと健康でいる'],
       cue: '世話の報告の、最後の一言。',
       line: 'He’s *healthier than ever*.',
       said: '世話をひと通り報告して「今までで一番健康だよ」と締める。',
@@ -253,8 +253,8 @@ export const wonderDog: Clip = {
     { id: 'a2', skill: 'pragma', level: 'B2', point: 'whowouldnt', ctx: true, seg: [50, 57.5],
       stem: 'What is the reply to Chris’s couch warning?',
       ja: 'クリスのソファの忠告への返事は？',
-      choices: ['That day sounds great', 'I will change my ways', 'You are wrong about dogs'], a: 0,
-      choicesJa: ['その一日、最高だね', '暮らし方を変えるよ', '犬のことはあなたの誤解'],
+      choices: ['Everyone wants a day like that', 'I’ll stop eating snacks', 'You are wrong about dogs'], a: 0,
+      choicesJa: ['だれだってそんな一日がいい', 'もうお菓子はやめるよ', '犬のことはあなたの誤解'],
       cue: '「he would want to do, too」への返事。',
       line: 'Chris: …that’s what he would want to do, too. / *Who wouldn’t?* That sounds like an *amazing day*.',
       said: '「この子もそうしたくなる」に、「誰だってそうしたいでしょ。最高の一日じゃん」と返す。',
