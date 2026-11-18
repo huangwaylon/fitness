@@ -1,11 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 5, rewrite 11, retire 0, new 5, ctx 5, tx 8
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 8, new 0
-// “House Tour from Hell - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office US): two
-// guests arrive for dinner, and the hosts give a proud tour of a home full of odd choices (a "workspace" for
+// “House Tour from Hell - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office US): Jim and
+// Pam arrive for dinner, and Michael and Jan give a proud tour of a home full of odd choices (a "workspace" for
 // candles, a repainted bedroom, a bench for a bed, a TV set into the wall, awards put away).
 // Segments from the captions, words from whisper (2026-11-16); whisper runs in uniform 1 s blocks, so every time is
-// the captions'. Named in the audio: Michael (190 s); Jan (137 s, whisper "Jen"); the guests are never named, so stems
-// say "the guest". Untested: 0–7 s, 31 s, 54–60 s, 89–99 s (garbled candle names), 125–131 s, 141–150 s, 168–170 s,
-// 184–189 s, 201.5 s ("I bet you are": delivery), 209–222 s (the Dundies; speakers unsettled).
+// the captions'. Named in the audio: Michael (190 s), Jan (137 s, whisper "Jen"), Pam (31 s); Jim from the scenes
+// file. Who says "This is my office", "Just like that?", "And short", "It's pine" and the TiVo story is unsettled, so
+// those stems name no one. Untested: 0–7 s, 54–60 s, 89–99 s (garbled candle names), 125–131 s (speakers
+// unsettled), 201.5 s ("I bet you are": delivery), 204–216 s (the Dundies; speakers unsettled).
 import type { Clip } from '../types.ts';
 
 export const housetour: Clip = {
@@ -14,15 +16,15 @@ export const housetour: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'pr1', skill: 'number', level: 'B1', point: 'hour', seg: [15.2, 24.5],
-      stem: 'When did the guest last see the hosts?',
-      ja: 'お客さんが前に二人に会ったのはいつ？',
+    { id: 'pr1', skill: 'number', level: 'B1', point: 'hour', ctx: true, seg: [15.2, 24.5],
+      stem: 'When did Jim last see Michael?',
+      ja: 'ジムが前にマイケルに会ったのはいつ？',
       choices: ['An hour ago', 'Two hours ago', 'A day ago'], a: 0,
       choicesJa: ['1時間前', '2時間前', '1日前'],
-      cue: '「Let’s see」のあと。',
-      line: 'So, what have you been doing? — Let’s see, *since I saw you an hour ago*?',
+      cue: '「what have you been doing?」への返事',
+      line: 'Michael: So, what have you been doing? / Jim: Let’s see, *since I saw you an hour ago*?',
       said: '「最近どうしてた？」と聞かれ、「えーと、1時間前に会ってから？」と返す。',
-      mean: 'an hour ago ＝ 1時間前。1時間前に会ったばかりなのに「最近どう？」と聞かれた、とやんわり返している。',
+      mean: 'an hour ago ＝ 1時間前。職場で会ったばかりなのに「最近どう？」と聞かれ、とぼけて返している。',
       trap: 'an hour は h を言わず「アナウア」とつながる。two なら「トゥー」、a day なら「デイ」が聞こえる。',
       use: 'So, what have you been doing?（で、最近どうしてた？）' },
 
@@ -38,15 +40,15 @@ export const housetour: Clip = {
       use: 'Same here, except the long drive.（こっちも同じ。長い運転以外はね）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'gift', seg: [29.4, 35.9],
-      stem: 'What does the host say the gift is good for?',
-      ja: 'もらった贈り物は何に使えると言う？',
+      stem: 'What will the gift be good for?',
+      ja: 'もらった贈り物は、何に使えそうだと言う？',
       choices: ['To cook with', 'To serve food on', 'To put on a table'], a: 0,
       choicesJa: ['料理に使う', '料理を盛る', 'テーブルに置く'],
       cue: '「Thank you」のあと。',
       line: 'Thank you. That’s so nice. This will be *great to cook with*.',
       said: '贈り物に「ありがとう、すてき。料理に使えそう」と答える。',
       mean: 'great to cook with ＝ 料理に使えそう。お礼のあと、使い道をほめる言い方。',
-      trap: 'パーティーなので、客に出す物だと思いやすい。cook with は「料理するときに使う」。',
+      trap: 'パーティーなので、客に出す物と考えがち。cook with は「料理するときに使う」。',
       use: 'This will be great to cook with.（料理に使えそう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'nervous', reveals: ['home'], seg: [33.6, 42.6],
@@ -90,19 +92,19 @@ export const housetour: Clip = {
       cue: '「Upstairs first?」への返事。',
       line: 'Upstairs first? — *Totally your call*, babe.',
       said: '「2階から？」と聞かれ、「完全に君が決めていいよ」と答える。',
-      mean: 'It’s your call ＝ 決めるのはあなた。call ＝ 判断、決めること。',
+      mean: '文字どおりは「完全にあなたの判断」。call ＝ 判断。→「君が決めていいよ」と任せる言い方。',
       trap: 'good call（いい判断）と混ざりやすい。your call は「あなたに任せる」。',
       use: 'It’s your call. I’m fine either way.（任せるよ。どっちでもいい）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', reveals: ['twospaces', 'candles'], seg: [61, 105.7],
-      stem: 'What rooms does Jan show first?',
-      ja: 'ジャンが最初に見せる部屋は？',
-      choices: ['Her office and workspace', 'The kitchen and bedroom', 'The big TV room'], a: 0,
-      choicesJa: ['仕事部屋と作業部屋', '台所と寝室', '大きなテレビの部屋'],
-      cue: '「carpet」のあと。',
-      line: 'This is my office. … And this is my workspace. … Check that out.',
-      said: 'カーペットを謝ったあと、「ここが私の仕事部屋。こっちが作業部屋。見て」と案内する。',
-      mean: 'office ＝ 仕事部屋。workspace ＝ 作業する場所。ここではキャンドルの部屋。',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'guests', reveals: ['twospaces', 'candles'], seg: [61, 89],
+      stem: 'What rooms do they see first upstairs?',
+      ja: '2階で最初に見る部屋は？',
+      choices: ['An office and a workspace', 'A kitchen and a bedroom', 'A big TV room'], a: 0,
+      choicesJa: ['オフィスと作業スペース', '台所と寝室', '大きなテレビの部屋'],
+      cue: '「carpet」を謝ったあと',
+      line: 'This is my office. … Never been used. … And this is my workspace.',
+      said: 'カーペットを謝ったあと、「ここは私のオフィス」「で、ここが私の作業スペース」と見せる。',
+      mean: 'office ＝ 仕事部屋。workspace ＝ 作業する場所。ここではキャンドルだらけの部屋。',
       trap: 'テレビの部屋と寝室はあとで出てくる。最初は office と workspace。',
       use: 'This is my office. Check it out.（ここが私の仕事部屋。見て）' },
 
@@ -115,7 +117,7 @@ export const housetour: Clip = {
       line: 'I *cannot create in the same space that I conduct business*.',
       said: '「仕事をする場所では、創作できないの」と話す。',
       mean: 'create ＝ 何かを作る、創作する。conduct business ＝ 仕事をする。だから部屋を分けている。',
-      trap: '前ににおいの話があるので、においが理由だと思いやすい。理由は cannot のあと。',
+      trap: '前ににおいの話があるので、においが理由と考えがち。理由は cannot のあと。',
       use: 'I can’t work where I sleep.（寝る場所では仕事ができない）' },
 
     { id: 'c1', retired: true, skill: 'infer', level: 'C2', point: 'twospaces', seg: [80.3, 87.45],
@@ -149,7 +151,7 @@ export const housetour: Clip = {
       line: 'I come up here and I just *smell all my candles*, and it just, poof, goes away.',
       said: '「いらいらしたら、ここに来てキャンドルの香りをかぐ。するとぱっと消える」と言う。',
       mean: 'smell ＝ 香りをかぐ。poof ＝ ぱっと消える音。go away ＝ 消える。',
-      trap: 'キャンドルなら火をつけると思いやすいが、動詞は smell。',
+      trap: 'キャンドルなら火をつけるものに聞こえるが、動詞は smell（かぐ）。',
       use: 'When I’m stressed, I go for a walk.（ストレスがたまったら散歩する）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'candles', seg: [105.9, 111.1],
@@ -162,16 +164,16 @@ export const housetour: Clip = {
       trap: 'all が smell に溶けて聞こえにくい。4語とあるので、消えた語を探す。',
       use: 'I just smell the coffee.（コーヒーの香りをかぐだけ）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'poof', seg: [106.4, 115.6],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'poof', ctx: true, seg: [106.4, 115.6],
       stem: 'What does the guest mean by “Just like that?”',
       ja: 'お客さんの「Just like that?」はどういう意味？',
       choices: ['He doubts it works so fast', 'He wants her to show him', 'He wants her to say it again'], a: 0,
       choicesJa: ['そんなにすぐ効くか疑っている', 'やって見せてほしい', 'もう一度言ってほしい'],
-      cue: '「poof, goes away」のあと。',
-      line: 'it just, poof, goes away. — *Just like that?* — Just like that.',
+      cue: '「poof, goes away」への返事',
+      line: 'Jan: And it just, *poof*, goes away. / *Just like that?* / Jan: Just like that.',
       said: '「ぱっと消えるの」に「そんな簡単に？」と聞き返し、「そう、簡単に」と返る。',
       mean: 'Just like that? ＝ そんなに簡単に？ 相手の話を少し疑う、軽い聞き返し。',
-      trap: '質問の形なので、やり方を聞いていると思いやすい。短いくり返しは「本当に？」の合図。',
+      trap: '質問の形なので、やり方を聞いていると読みたくなる。短いくり返しは「本当に？」の合図。',
       use: 'Just like that? Really?（そんな簡単に？本当に？）' },
 
     { id: 'h2', skill: 'detail', level: 'B1', point: 'eggshell', seg: [114.8, 126],
@@ -181,10 +183,22 @@ export const housetour: Clip = {
       choicesJa: ['前と同じだった', '彼女には暗すぎた', 'ちがう色だった'],
       cue: '「Guess what?」のあと。',
       line: 'I had it painted in eggshell white. Guess what? White and eggshell white are *exactly the same color*.',
-      said: '「白をやわらかくしたくて卵の殻の白にしたら、なんと同じ色だった」と話す。',
+      said: '「白をやわらかくしたくてエッグシェルホワイト（卵の殻の白）にしたら、なんと同じ色だった」と話す。',
       mean: 'Guess what? ＝ なんと、聞いて。exactly the same ＝ まったく同じ。',
-      trap: '塗装屋の失敗だと思いやすいが、注文どおり。白と卵の殻の白が同じ色だった。',
+      trap: '塗装屋の失敗と勘違いしやすいが、注文どおり。白とエッグシェルホワイトが同じ色だった。',
       use: 'Guess what? They’re exactly the same.（聞いて！まったく同じなんだって）' },
+
+    { id: 'd4', skill: 'infer', level: 'B1', point: 'bed', ctx: true, seg: [132, 139],
+      stem: 'Where does Michael sleep?',
+      ja: 'マイケルはどこで寝ている？',
+      choices: ['On the bench', 'In the bed with Jan', 'In front of the TV'], a: 0,
+      choicesJa: ['ベンチの上', 'ジャンと同じベッド', 'テレビの前'],
+      cue: '「What a cute」とほめられた返事',
+      line: 'What a *cute bench*. / Michael: Thanks. *That’s my bed*. Jan has, uh, some space issues.',
+      said: '「かわいいベンチ」とほめられ、「ありがとう。それ、僕のベッドなんだ」と答える。',
+      mean: 'What a cute 〜! ＝ なんてかわいい〜！ そのベンチが自分のベッドだ、という意外な返事。',
+      trap: 'master bedroom（主寝室）の中なので、ベッドで寝ると考えがち。決め手は Thanks のあと。',
+      use: 'What a cute bag!（なんてかわいいバッグ！）' },
 
     { id: 'p3', retired: true, skill: 'phrase', level: 'C1', point: 'puppy', seg: [134.5, 141.2],
       stem: 'When the host explains the bench, what do his last two words refer to?',
@@ -208,7 +222,19 @@ export const housetour: Clip = {
       trap: 'space を部屋の広さと取りやすい。言いよどんだあとの遠回しな語は、言いにくい本当の理由。',
       use: 'She has some, uh, scheduling issues.（彼女はちょっと、その、予定の都合が）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151, 184.9],
+    { id: 'd5', skill: 'pragma', level: 'B2', point: 'bigger', ctx: true, seg: [141, 149],
+      stem: 'How does Michael answer “narrow” and “short”?',
+      ja: '「narrow」「short」と言われて、マイケルはどう答える？',
+      choices: ['It’s bigger than it looks', 'It’s too short for him', 'It’s too narrow to sleep on'], a: 0,
+      choicesJa: ['見た目より大きい', '自分には短すぎる', '細すぎて寝られない'],
+      cue: '「And short」のあとの返事',
+      line: 'Really? … pretty *narrow*. / And *short*. / Michael: It’s actually *a lot bigger than it seems*.',
+      said: '「かなり細いし、短いですよね」と言われ、「実は見た目よりずっと大きいんだ」と言い返す。',
+      mean: 'bigger than it seems ＝ 見た目より大きい。seem ＝ 〜に見える。',
+      trap: 'narrow と short が続けて聞こえるので、小さいと認めたと勘違いしやすい。決め手は actually のあと。',
+      use: 'It’s a lot bigger than it seems.（見た目よりずっと広いんです）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tone', reveals: ['tv'], seg: [151, 181],
       stem: 'What is Michael showing off here?',
       ja: 'ここでマイケルが自慢しているのは何？',
       choices: ['His new TV', 'His new bed', 'His candles'], a: 0,
@@ -228,8 +254,8 @@ export const housetour: Clip = {
       cue: '「I finally」のあと。',
       line: 'I finally *broke down* and bought myself… a plasma TV.',
       said: '「とうとうがまんできずに、プラズマテレビを買った」と言う。',
-      mean: 'break down and 〜 ＝ 迷ったすえに折れて〜する。finally（とうとう）とよく一緒に使う。',
-      trap: 'broke（こわれた）から、古いテレビがこわれたと思いやすい。主語は I で、折れたのは本人。',
+      mean: '文字どおりは「くずれ落ちる」。がまんがくずれる→「とうとう折れて〜する」。finally とよく一緒に使う。',
+      trap: 'broke（こわれた）から、古いテレビがこわれたと考えがち。主語は I で、折れたのは本人。',
       use: 'I finally broke down and called her.（とうとう折れて彼女に電話した）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'hung', seg: [162.2, 168.4],
@@ -253,8 +279,20 @@ export const housetour: Clip = {
       line: 'Sometimes I will just stand here and watch television for hours. I love it. *I love this TV.*',
       said: '「ときどきここに立って何時間も見てる。最高。このテレビ大好き」と言う。',
       mean: 'for hours ＝ 何時間も。I love をくり返して、すごく気に入っていると言う。',
-      trap: 'sometimes（ときどき）だけ聞くと「あまり見ない」と思いやすいが、続きは for hours。',
+      trap: 'sometimes（ときどき）だけ聞くと、あまり見ないと読みたくなる。続きは for hours（何時間も）。',
       use: 'I love this place.（ここ、大好き）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'pine', ctx: true, seg: [184, 190],
+      stem: 'What wood is the table made of, in the end?',
+      ja: 'テーブルの木は、結局何？',
+      choices: ['Pine', 'Chestnut', 'Nordic cherry'], a: 0,
+      choicesJa: ['パイン（マツ）', 'クリ', 'ノルディックチェリー'],
+      cue: '「Chestnut?」と聞かれたあとのやりとり',
+      line: 'What is that? *Chestnut?* / No. I think that is *either pine or Nordic cherry*. / *It’s pine*.',
+      said: '「クリ？」と聞かれ、「いや、パインかノルディックチェリーのどっちか」と迷う答えに、「パインよ」と決まる。',
+      mean: 'either A or B ＝ AかBのどちらか。自分で作ったテーブルなのに、材料が分かっていない。',
+      trap: 'Chestnut と Nordic cherry も聞こえるが、最後の It’s pine で決まる。',
+      use: 'It’s either Tuesday or Wednesday.（火曜か水曜のどっちかです）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [193.1, 201.4], keep: true,
       stem: 'How long was the guest’s TV without sound?',
@@ -268,6 +306,18 @@ export const housetour: Clip = {
       trap: 'for a がつながり「フォラ」。day は「デイ」、month は「マンス」。two weeks なら「トゥー」と s が聞こえる。',
       use: 'I had no Wi-Fi for a week.（1週間Wi-Fiがなかった）' },
 
+    { id: 'p5', skill: 'phrase', level: 'B1', point: 'phone', seg: [196.8, 201.6],
+      stem: 'What does “I am just a phone call away” mean?',
+      ja: '「I am just a phone call away」はどういう意味？',
+      choices: ['Call me and I’ll come', 'I’m busy on the phone', 'My phone is far away'], a: 0,
+      choicesJa: ['電話してくれたらすぐ行く', '電話で忙しい', '電話が遠くにある'],
+      cue: '「If you ever need any help」のあと',
+      line: 'If you ever need any help, *I am just a phone call away*.',
+      said: '「何か手伝いが必要なら、電話1本ですぐ行くよ」と言う。',
+      mean: '文字どおりは「電話1本ぶんの距離にいる」。→ 電話してくれれば、すぐ助けに行ける、という申し出。',
+      trap: 'away から「遠くにいる」を連想しやすい。just（たった）が付くので、とても近い。',
+      use: 'If you need anything, I’m just a phone call away.（何かあったら電話してね。すぐ行くよ）' },
+
     { id: 'i2', retired: true, skill: 'infer', level: 'C1', point: 'dundies', seg: [204.0, 209.6],
       stem: 'What does the guest’s surprise about the coffee table suggest?',
       choices: ['The host loves showing off his awards', 'The host is secretly ashamed of his awards',
@@ -279,15 +329,17 @@ export const housetour: Clip = {
       trap: '隠していると取ると恥ずかしがりに聞こえるが、surprised は「いつもと違う」への驚き。',
       use: 'I’m surprised you’re not out dancing.（踊りに行ってないなんて意外）' },
 
-    { id: 'h3', retired: true, skill: 'humor', level: 'C1', point: 'trophy', seg: [216.8, 222.6],
-      stem: 'Why does the line about the best trophy end in a laugh?',
-      choices: ['He ranks his awards above her after all', 'He says she means more than any award',
-                'He says she has won an award of her own'], a: 0,
-      cue: 'best trophy のあと、Aside from で始まる一言。',
-      line: 'I have *the best trophy* right here… *Aside from my Dundies*.',
-      said: '「最高のトロフィーはここに」と彼女を指し、「ダンディー賞を除けば」と足す。',
-      mean: 'aside from ～ ＝「〜を除けば」。一番と言った直後に、自分の賞を上に置く。',
-      trap: 'aside from を「〜よりも」と取ると、彼女が一番のまま。例外を足す語。',
-      use: 'Best day ever, aside from the rain.（最高の日。雨を除けばね）' },
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'trophy', seg: [216.8, 222.6],
+      stem: 'What does “Aside from my Dundies” mean here?',
+      ja: 'ここでの「Aside from my Dundies」はどういう意味？',
+      choices: ['Except for my awards', 'More than my awards', 'Next to my awards'], a: 0,
+      choicesJa: ['自分の賞は別として', '自分の賞よりも', '自分の賞のとなりに'],
+      cue: '「the best trophy right here」のあと',
+      line: 'Oh, honey, I have *the best trophy* right here. — Oh! — *Aside from my Dundies*.',
+      said: '「ハニー、最高のトロフィーならここにいるよ」と言い、「ダンディー賞は別としてね」と付け足す。',
+      mean: 'aside from 〜 ＝ 〜は別として。Dundies ＝ 社内のお遊びの賞。ジャンを一番と言った直後に、賞を上に置く。',
+      trap: 'aside（わきに）から「となりに」を連想しやすい。aside from は例外を足す言い方。',
+      use: 'Aside from the rain, it was a great trip.（雨は別として、最高の旅だった）' },
+
   ]
 };
