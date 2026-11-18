@@ -35,6 +35,8 @@ export type View =
   | { p: 'sentence'; v: SentenceView }
   | { p: 'picture'; v: PictureView }
   | { p: 'event'; v: EventView }
+  /** A mini-game's live state (the typing, a race's counts): its own short code (mini/'s, ≤ 64 of [0-9a-z.]). */
+  | { p: 'mini'; v: string }
   | { p: 'fork' | 'home'; v: null };
 
 /** A view's frame as sent, the relay's `who` and `t` still to come (`,"who":"A","t":` and 13 digits: 28). */
@@ -68,6 +70,8 @@ export function encode(view: View): Pick<SgView, 'p' | 's' | 'x'> {
     }
     case 'event':
       return { p: 'event', s: bits(view.v.ja) };
+    case 'mini':
+      return { p: 'mini', s: view.v };
     default:
       return { p: view.p, s: '' };
   }
@@ -105,6 +109,8 @@ export function decode(p: SgPanel, s: string, x: readonly string[] = []): View |
     }
     case 'event':
       return digit(s, 1) === null ? null : { p, v: { ja: bit(s, 0) } };
+    case 'mini':
+      return { p, v: s };
     default:
       return s === '' ? { p, v: null } : null;
   }

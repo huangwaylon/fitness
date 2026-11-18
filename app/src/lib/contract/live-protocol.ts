@@ -134,7 +134,7 @@ export type Intent =
   | SgView;
 
 /** The panels a すごろく view shows (the turn's phases but the dice). */
-const SG_PANELS = ['fork', 'word', 'sentence', 'picture', 'event', 'home'] as const;
+const SG_PANELS = ['fork', 'word', 'sentence', 'picture', 'event', 'home', 'mini'] as const;
 /** @public (lib/sugoroku/view.ts) */
 export type SgPanel = (typeof SG_PANELS)[number];
 /** @public (lib/sugoroku/view.ts) */
@@ -152,8 +152,10 @@ const SGV_TEXTS = 4;
 export const SGV_TEXT_MAX = 120;
 
 /** A すごろく move's names (lib/sugoroku/online.ts): start, roll, fork, word, swap, sent(ence), pic(ture), ev(ent), home,
- *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent). */
-const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end', 'gift'] as const;
+ *  try (a miss, ヒント or 意味を見る kept), noline (a ぶん with no line played as ことば), end, gift (a pocket letter sent);
+ *  a みんなで！ stone's mini-game (lib/sugoroku/mini/): mg (the lander's pick), mp (a play, from any seat), mc (its close,
+ *  from any seat: the first counts). */
+const SG_ACTS = ['start', 'roll', 'fork', 'word', 'swap', 'sent', 'pic', 'ev', 'home', 'try', 'noline', 'end', 'gift', 'mg', 'mp', 'mc'] as const;
 type SgAct = (typeof SG_ACTS)[number];
 /** @public (lib/sugoroku/online.ts) */
 export interface SgIntent {
@@ -161,23 +163,27 @@ export interface SgIntent {
   g: string;
   i: number;
   a: SgAct;
-  /** start: the seats in order, who + level ("A2B1G3"). */
+  /** start: the seats in order, who + level ("A2B1G3"); mg: the seats present ("AB"). */
   s?: string;
   /** start: the length (s short, n normal, l long). */
   l?: 's' | 'n' | 'l';
   /** start: the rules' version (lib/sugoroku/online.ts rulesTag): a phone on another folds nothing (アプリを更新). */
   r?: string;
-  /** fork: the way (0 近道, 1 遠回り). */
+  /** fork: the way (0 近道, 1 遠回り); mg: the option picked (0, 1). */
   b?: 0 | 1;
-  /** word: the word. */
+  /** word, mp: the word. */
   w?: string;
+  /** mp: an index (a tile, a picture: 0–SG_K_MAX), a count (0–SG_N_MAX), a chip or control code (SG_CHIP; `c` is the message's number). */
+  k?: number;
+  n?: number;
+  op?: string;
   /** word / try: ヒント used. */
   h?: 1;
   /** sent / pic / try: misses (0–2); sent: without the Japanese (u); try: 意味を見る opened (p). */
   m?: number;
   u?: 1;
   p?: 1;
-  /** pic: the spoken sentence's bonus stars (1–3: on task +2, a re-say after a tip +1); none when not said. */
+  /** pic: the spoken sentence's bonus stars (1–3: on task +2, a re-say after a tip +1); none when not said. mp: a flag (1). */
   y?: 1 | 2 | 3;
   /** gift: the letter (`ch`), and whom to (`to`). */
   ch?: string;
@@ -188,6 +194,10 @@ const SG_GAME = /^[a-z0-9]{6,12}$/;
 const SG_SEATS = /^(?:[ABG][123]){2,3}$/;
 const SG_WORD = /^[a-z]{2,8}$/;
 const SG_RULES = /^[a-z0-9]{1,12}$/;
+/** A mini-game's present seats (mg), its play's fields (mp): an index, a count, a chip or control code. */
+const SG_HERE = /^[ABG]{1,3}$/;
+const SG_K_MAX = 63, SG_N_MAX = 99;
+const SG_CHIP = /^[a-z0-9]{1,16}$/;
 /** The most moves a game sends (a long game is ~200). */
 const SG_MOVES_MAX = 999;
 
@@ -593,6 +603,19 @@ function intentOf(o: Obj): Intent | null {
         return { ...out, s: o.s, l: o.l, ...(o.r !== undefined ? { r: o.r } : {}) };
       }
       if (o.i === 0 || !one('h') || !one('u') || !one('p') || !opt(o, 'm', (x): x is number => within(x, [0, 2]))) return null;
+      if (o.a === 'mg') {
+        if ((o.b !== 0 && o.b !== 1) || (o.s !== undefined && (typeof o.s !== 'string' || !SG_HERE.test(o.s) || new Set(o.s).size !== o.s.length))) return null;
+        return { ...out, b: o.b, ...(o.s !== undefined ? { s: o.s as string } : {}) };
+      }
+      if (o.a === 'mp') {
+        if (!['w', 'k', 'n', 'y', 'op'].some((f) => o[f] !== undefined) || !opt(o, 'w', (x): x is string => typeof x === 'string' && SG_WORD.test(x)) || !opt(o, 'k', (x): x is number => within(x, [0, SG_K_MAX]))
+          || !opt(o, 'n', (x): x is number => within(x, [0, SG_N_MAX])) || !one('y') || !opt(o, 'op', (x): x is string => typeof x === 'string' && SG_CHIP.test(x))) return null;
+        return {
+          ...out, ...(o.w !== undefined ? { w: o.w as string } : {}), ...(o.k !== undefined ? { k: o.k as number } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}),
+          ...(o.y ? { y: 1 as const } : {}), ...(o.op !== undefined ? { op: o.op as string } : {})
+        };
+      }
+      if (o.a === 'mc') return out;
       if (o.a === 'fork' && o.b !== 0 && o.b !== 1) return null;
       if (o.a === 'word' && (typeof o.w !== 'string' || !SG_WORD.test(o.w))) return null;
       if (o.a === 'gift' && (typeof o.ch !== 'string' || !/^[a-z]$/.test(o.ch) || !isWho(o.to))) return null;

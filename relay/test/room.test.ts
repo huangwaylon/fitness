@@ -1239,6 +1239,25 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     expect(saved).toEqual([]);
   });
 
+  it('a mini-game’s plays from any seat race for the next i (the first of each kept, the loser refused, its resend at the next taken); none from someone not seated', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    say(a, { ...start, c: 1 });
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 });
+    say(a, { kind: 'sg', g: G, i: 2, a: 'mg', b: 1, s: 'AB', c: 3 });
+    say(b, { kind: 'sg', g: G, i: 3, a: 'mp', w: 'cat', c: 1 });
+    say(a, { kind: 'sg', g: G, i: 3, a: 'mp', w: 'tea', c: 4 }); // the race lost
+    say(a, { kind: 'sg', g: G, i: 4, a: 'mp', w: 'tea', c: 5 }); // sent again at the next slot
+    say(g, { kind: 'sg', g: G, i: 5, a: 'mp', k: 3, c: 1 }); // not at this table
+    say(g, { kind: 'sg', g: G, i: 5, a: 'end', c: 2 });
+    say(b, { kind: 'sg', g: G, i: 5, a: 'mc', c: 2 });
+    say(a, { kind: 'sg', g: G, i: 5, a: 'mc', c: 6 }); // the close raced: refused (the fold takes the first only anyway)
+    say(a, { kind: 'sg', g: G, i: 6, a: 'mc', c: 7 }); // a later close: kept, a no-op in the fold
+    expect([acks(a), acks(b), acks(g)]).toEqual([[true, true, true, false, true, false, true], [true, true], [false, false]]);
+    expect(moves(b)).toEqual(['0startA', '1rollA', '2mgA', '4mpA', '6mcA']);
+    expect(moves(join(KEY_A, 0)).slice(2)).toEqual(['2mgA', '3mpB', '4mpA', '5mcB', '6mcA']);
+    expect(b.sent.find((m) => m.kind === 'sg' && (m as { i: number }).i === 2)).toMatchObject({ b: 1, s: 'AB' });
+  });
+
   it('a move goes to the game’s other seats only (the guest’s phone, not at this table, hears none)', () => {
     const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
     say(a, { ...start, c: 1 });

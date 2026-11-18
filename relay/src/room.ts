@@ -122,10 +122,13 @@ const sgKey = (e: Pick<SgIntent, 'g' | 'i' | 'a'>): string => `sg:${e.g}:${e.a =
 const foldKey = (g: string): string => `sg:${g}`;
 /** Whether a game takes a move: a start for a game the room hasn't; a move at the game's next `i`; an end after the
  *  start, at most at the next `i`, before any end it has (an end ahead of a move at its `i` beats it on every phone:
- *  lib/sugoroku/online.ts heard). Nothing at or past the game's end. */
-function sgTakes(game: SgGame | undefined, m: SgIntent): boolean {
+ *  lib/sugoroku/online.ts heard). Nothing at or past the game's end, nothing from someone not seated (`who`, a move
+ *  sent; the rows read back were taken so). Whose turn it is the fold's (a mini-game's plays come from any seat, racing
+ *  for the next `i`: lib/sugoroku/wire.ts). */
+function sgTakes(game: SgGame | undefined, m: SgIntent, who?: Who): boolean {
   if (m.a === 'start') return !game;
   if (!game || m.i < 1 || (game.end && m.i >= game.end.i)) return false;
+  if (who && !(game.moves[0]?.s ?? '').includes(who)) return false;
   return m.a === 'end' ? m.i <= game.moves.length : m.i === game.moves.length;
 }
 
@@ -631,7 +634,7 @@ export class RoomCore<S extends Sock> {
     const game = this.games.get(m.g);
     const had = m.a === 'end' ? game?.end : game?.moves[m.i];
     if (had && had.who === who && JSON.stringify(bare(had)) === JSON.stringify(m)) return c !== undefined ? this.ack(s, c, had.t, true) : undefined;
-    if (!sgTakes(game, m)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    if (!sgTakes(game, m, who)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     const out: SgKept = { ...m, v: LIVE_V, who, t: this.stamp(), ...(c !== undefined ? { c } : {}) };
     const seats = (m.a === 'start' ? m.s : game?.moves[0]?.s) ?? '';
     for (const p of this.others(who)) if (seats.includes(this.io.meta(p)!.who!)) this.send(p, strip(out));
