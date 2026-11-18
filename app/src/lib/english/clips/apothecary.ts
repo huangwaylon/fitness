@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 3, ctx 4, tx 9
+// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 3, ctx 4, tx 9, qa 8
 // A2 REVIEW 2026-11-17: keep 7, rewrite 8, retire 6, new 2
 // “My Apothecary Table! | Friends” (the official Friends channel, Best of Season 6): Ross shows off a new table from
 // Pottery Barn, the very table Rachel bought and told Phoebe was an original; Phoebe hates the store, so the table hides
@@ -17,8 +17,8 @@ export const apothecaryTable: Clip = {
     { id: 'p5', skill: 'phrase', level: 'B1', point: 'anysec', seg: [10.5, 17.7],
       stem: 'What does “any second” mean here?',
       ja: 'ここで「any second」はどういう意味？',
-      choices: ['Very soon, at any moment', 'In exactly one second', 'Whenever she likes'], a: 0,
-      choicesJa: ['もうすぐ、今にも', 'ちょうど1秒後', '好きなときに'],
+      choices: ['In just a moment', 'In exactly one second', 'Whenever she likes'], a: 0,
+      choicesJa: ['もうすぐ', 'ちょうど1秒後', '好きなときに'],
       cue: '「Phoebe’s gonna be here」のあと。',
       line: 'Ross, Phoebe’s gonna be here *any second*. She cannot see this.',
       said: '「フィービーがもうすぐ来る。これは見せられない」とあわてる。',
@@ -64,8 +64,8 @@ export const apothecaryTable: Clip = {
     { id: 'a1', skill: 'infer', level: 'B2', point: 'whylie', reveals: ['lie'], ctx: true, seg: [26.5, 34],
       stem: 'Why did Rachel lie to Phoebe about the table?',
       ja: 'レイチェルはなぜテーブルのことでフィービーにうそをついた？',
-      choices: ['Phoebe hates that store', 'Phoebe wanted the same one', 'The table cost too much'], a: 0,
-      choicesJa: ['フィービーがその店を大嫌いだから', 'フィービーが同じ物をほしがったから', 'テーブルが高すぎたから'],
+      choices: ['Phoebe dislikes that store', 'Phoebe wanted the same one', 'The table cost too much'], a: 0,
+      choicesJa: ['フィービーがその店を嫌っているから', 'フィービーが同じ物をほしがったから', 'テーブルが高すぎたから'],
       cue: 'ロスの Why に返す Because のあと。',
       line: 'Ross: *Why* did you do that? / Rachel: *Because she hates Pottery Barn*. / Ross: She hates Pottery Barn?',
       said: '「なんでそんなことを？」に「彼女、ポッタリー・バーンが大嫌いなの」と答える。',
@@ -88,13 +88,13 @@ export const apothecaryTable: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'cover', seg: [43.5, 52.1],
       stem: 'What does Rachel ask to do with the table?',
       ja: 'レイチェルはテーブルをどうしようと頼む？',
-      choices: ['Cover it up', 'Take it back', 'Move it outside'], a: 0,
-      choicesJa: ['何かでかくす', '店に返す', '外に出す'],
+      choices: ['Hide it under something', 'Return it to the store', 'Move it outside'], a: 0,
+      choicesJa: ['何かの下にかくす', '店に返す', '外に出す'],
       cue: '「Can we please just」のあと。',
       line: 'Can we please just *cover this up* with something, please?',
       said: '「お願い、何かでかくせない？」と頼むが、ロスは「かくさない」と言う。',
       mean: 'cover up ＝ おおってかくす。please を2回言うほどあせっている。',
-      trap: 'ロスの hide it が続くので混ざりやすい。頼んでいるのは cover this up。',
+      trap: 'cover を「カバー＝守る」と取りやすいが、ここは上から何かをかぶせてかくすこと。',
       use: 'Can you cover this with a towel?（これタオルでおおってくれる？）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'believe', seg: [61, 67.9],
@@ -123,10 +123,10 @@ export const apothecaryTable: Clip = {
       stem: 'What does Rachel mean by “It’s not like she hates you”?',
       ja: 'レイチェルの「It’s not like she hates you」はどういう意味？',
       choices: ['It’s not about you', 'She may hate you next', 'She said she hates you'], a: 0,
-      choicesJa: ['あなたのことじゃない', '次はあなたが嫌われるかも', 'あなたが嫌いだと言っていた'],
+      choicesJa: ['ロスのことじゃない', '次はロスが嫌われるかも', 'ロスが嫌いだと言っていた'],
       cue: '「get over it」に続く一文。',
       line: 'Ross, get over it. *It’s not like she hates you*.',
-      said: '「あなたが嫌われてるわけじゃないんだから」と言う。',
+      said: '「別にロスが嫌われてるわけじゃないんだから」と言う。',
       mean: 'It’s not like ～ ＝ 〜というわけじゃない。大したことではない、と軽くする。',
       trap: 'she hates you だけ聞くと、こわい話に聞こえるが、It’s not like で打ち消している。',
       use: 'It’s not like we’re in a hurry.（別に急いでるわけじゃないし）' },
