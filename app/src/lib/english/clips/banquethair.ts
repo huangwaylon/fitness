@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 4, retire 6, new 6, ctx 3, tx 13
+// R4 REVIEW 2026-11-18: keep 7, rewrite 4, retire 6, new 6, ctx 3, tx 13, qa 20
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 9, new 3
 // “Two women being brave about who they are | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 1): before her mother's banquet Leslie gets a "political haircut" from a famous local barber; at the banquet
@@ -22,7 +22,7 @@ export const banquetHair: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'salon', seg: [0, 29.7],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'salon', seg: [0, 28.3],
       stem: 'Where is Leslie going before the big event?',
       ja: '大きな会の前に、レスリーはどこへ行く？',
       choices: ['To a famous local barber', 'To buy a new dress', 'To her mother’s house'], a: 0,
@@ -34,7 +34,7 @@ export const banquetHair: Clip = {
       trap: 'アンの「着替えなきゃ」から、服を買いに行く話と考えがち。決め手は salon。',
       use: 'I’m headed to the station now.（今、駅に向かってるところ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hype', seg: [1.9, 13.9],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'hype', seg: [2.2, 13.9],
       stem: 'How does Leslie feel about tonight’s event?',
       ja: 'レスリーは今夜の会のことをどう思っている？',
       choices: ['Very excited about it', 'Bored by it', 'Worried about it'], a: 0,
@@ -46,7 +46,7 @@ export const banquetHair: Clip = {
       trap: 'local（地方の）から地味な会と考えがち。たとえは全部、大きな晴れ舞台。',
       use: 'This party is going to be huge!（このパーティー、すごいことになるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'change', seg: [10.7, 22.7],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'change', seg: [10.8, 16.6],
       stem: 'Ann says, “I should probably change.” What will she change?',
       ja: 'アンの「I should probably change」。何を変える？',
       choices: ['Her clothes', 'Her plans for tonight', 'Her mind'], a: 0,
@@ -70,12 +70,12 @@ export const banquetHair: Clip = {
       trap: '後半が「フィフティエイト」なら58。「フォー」「シ」「エイ」で始まればほかの年。',
       use: 'This place has been here since 1958.（この店は1958年からある）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'movers', seg: [21.0, 28.4],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'movers', seg: [23.6, 28.4],
       stem: 'Who are the “movers and shakers” in Pawnee?',
       ja: 'ポーニーの「movers and shakers」とは、どんな人？',
       choices: ['Important, powerful people', 'People who move house often', 'People who are very nervous'], a: 0,
       choicesJa: ['大事で力のある人たち', 'よく引っ越す人たち', 'とても緊張している人たち'],
-      cue: '「1958」のあと',
+      cue: '「who come through Pawnee」の前',
       line: 'All the *movers and shakers* who come through Pawnee have sat in that chair at one point or another.',
       said: '「ポーニーに来る大物は、みんな一度はあのいすに座ったのよ」と話す。',
       mean: '文字どおりは「動かす人とゆさぶる人」。町を動かし、ゆさぶる力がある→大物、有力者。',
@@ -129,7 +129,7 @@ export const banquetHair: Clip = {
       trap: '有名人の娘と知って驚いたとも取れるが、返事は答え方への文句。the hell は不満の強め。',
       use: 'What else would you call it?（ほかに何て言うの？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [55.8, 61.1],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wantme', seg: [55.8, 60.7],
       stem: 'Fill the gap: “Now, ___ me to do with this?”',
       ja: '空いている所に入る言葉は？',
       choices: ['what do you want', 'what did you want', 'what would you want'], a: 0,
@@ -141,7 +141,7 @@ export const banquetHair: Clip = {
       trap: 'did なら「ディ」、would なら「ウッ」が入る。ここは「ワダヤ」と「ダ」。',
       use: 'What do you want me to do?（どうしてほしい？）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'mixup', seg: [60.4, 72.4],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'mixup', seg: [60.7, 72.4],
       stem: 'What does Leslie mean by “mix things up”?',
       ja: 'レスリーの「mix things up」の意味は？',
       choices: ['Try something new', 'Mix two hair styles', 'Keep it simple'], a: 0,
@@ -211,7 +211,7 @@ export const banquetHair: Clip = {
       trap: 'Yes, I do だけなら軽い「はい」。そのあとの very much まで聞く。',
       use: 'I could really use a drink.（一杯やりたい気分）', retired: true },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'staring', seg: [104.6, 111.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'staring', seg: [104.9, 109.9],
       stem: 'Who is the man staring at Leslie and Ann?',
       ja: 'レスリーとアンをじっと見ている男はだれ？',
       choices: ['A former city councilman', 'The mayor of Pawnee', 'Salvatore the barber'], a: 0,
@@ -269,7 +269,7 @@ export const banquetHair: Clip = {
       trap: 'wow を最上級のほめ言葉と取りやすい。ほめたあとの but は、反対向きの合図。',
       use: 'The cake looks great. But the frosting… wow.（ケーキは素敵。でもクリームが…すごいね）' },
 
-    { id: 'ph6', skill: 'phrase', level: 'B1', point: 'stunning', seg: [141.0, 148.6],
+    { id: 'ph6', skill: 'phrase', level: 'B1', point: 'stunning', seg: [139.5, 149.0],
       stem: 'What does “Ann, you look stunning” mean?',
       ja: '「Ann, you look stunning」はどういう意味？',
       choices: ['Ann looks very beautiful', 'Ann looks very surprised', 'Ann looks very tired'], a: 0,
@@ -305,7 +305,7 @@ export const banquetHair: Clip = {
       trap: '委員会に入る話と思いやすいが、on the board ＝ もう委員。',
       use: 'They turned the old school into a hotel.（古い学校がホテルになった）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', seg: [176.7, 183.1], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'eight', seg: [176.7, 182.0], keep: true,
       stem: 'How many award winners are at that table?',
       ja: 'あのテーブルには受賞者が何人いる？',
       choices: ['Four', 'Eight', 'Eighteen', 'Eighty'], a: 1,
@@ -317,7 +317,7 @@ export const banquetHair: Clip = {
       trap: '「フォー」なら4、「エイティーン」と伸ばせば18、「エイティ」なら80。ここは短い「エイト」。',
       use: 'All four of us are here.（4人全員そろったよ）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'sayhello', ctx: true, seg: [200.5, 210.6],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'sayhello', ctx: true, seg: [200.5, 211.4],
       stem: 'What does Mark tell Leslie to do?',
       ja: 'マークはレスリーに何をするように言う？',
       choices: ['Go and greet Janine', 'Write Janine a letter', 'Ask her mother for help'], a: 0,
@@ -351,7 +351,7 @@ export const banquetHair: Clip = {
       trap: 'over が弱く、thinking だけ残ると「よく考えて」に聞こえる。',
       use: 'Don’t overthink it.（考えすぎないで）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'roleplay', seg: [216, 251.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'roleplay', reveals: ['staring'], seg: [217.4, 252.5],
       stem: 'What happens when Leslie practices with her friends?',
       ja: 'レスリーが友だちと練習すると、どうなる？',
       choices: ['Friends act as powerful people', 'Janine joins their talk', 'Leslie goes to talk to Janine'], a: 0,
@@ -363,7 +363,7 @@ export const banquetHair: Clip = {
       trap: 'ジャニーンの名前が何度も出るので、本人と話したと考えがち。全員が演じている。',
       use: 'Let’s practice. I’ll be the customer.（練習しよう。私が客役ね）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'multiuse', reveals: ['rezone'], seg: [232.5, 241.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'multiuse', reveals: ['rezone'], seg: [232.1, 240.5],
       stem: 'What does Leslie say would be a good idea?',
       ja: 'レスリーは、何がいい考えだと言う？',
       choices: ['A park everyone can use', 'A new zoning board', 'A party for her mom'], a: 0,
@@ -375,7 +375,7 @@ export const banquetHair: Clip = {
       trap: 'zoning board（委員会）が何度も出るので考えがち。good idea のあとの park が答え。',
       use: 'I think it would be a good idea to wait.（待つのがいいと思います）' },
 
-    { id: 'c3', skill: 'infer', level: 'B2', point: 'fun', reveals: ['roleplay'], ctx: true, seg: [253.7, 261.2],
+    { id: 'c3', skill: 'infer', level: 'B2', point: 'fun', reveals: ['roleplay'], ctx: true, seg: [252.8, 261.2],
       stem: 'Why are the friends acting like board members?',
       ja: 'なぜ友だちは委員のふりをしている？',
       choices: ['They think it’s fun', 'Because Ann told them to', 'Because Janine asked them'], a: 0,

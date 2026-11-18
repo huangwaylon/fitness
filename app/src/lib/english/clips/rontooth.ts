@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 11, retire 2, new 1, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 3, rewrite 11, retire 2, new 1, ctx 4, tx 4, qa 20
 // A2 REVIEW 2026-11-17: keep 12, rewrite 3, retire 5, new 0
 // “Ron Swanson Pulls Out His Tooth | Parks and Recreation” (the official Parks and Recreation channel, Season 3): at a
 // staff meeting on street parking and recycling, Ron waves off a toothache and won't see a dentist; to the camera he
@@ -14,15 +14,15 @@ export const ronTooth: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'lot', seg: [0, 4.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'lot', seg: [0, 4.35],
       stem: 'Why is everyone asked to park on the street?', ja: 'なぜみんな路上に駐車するよう頼まれる？',
-      choices: ['They are repainting the lines', 'They are fixing the whole lot', 'They are adding recycling bins'], a: 0,
-      choicesJa: ['駐車場の線を塗り直す', '駐車場全体を直す', 'リサイクル箱を置く'],
+      choices: ['The lot is getting new paint', 'Cars were stolen from the lot', 'Recycling bins go in the lot'], a: 0,
+      choicesJa: ['駐車場を塗り直している', '駐車場で車が盗まれた', '駐車場にリサイクル箱を置く'],
       cue: '最初の「So while they」のあと',
       line: 'So while they *repaint the lines* in the parking lot, we’re asking everyone to do street parking.',
       said: '進行役が「駐車場の白線を塗り直す間、路上駐車をお願いします」と言う。',
       mean: 'repaint ＝ 塗り直す（re ＝ もう一度）。while 〜 ＝ 〜しているあいだ。street parking ＝ 路上駐車。',
-      trap: 'あとでリサイクルの話が出るので、箱を置くと考えがち。repaint を聞く。',
+      trap: 'あとで steal（盗む）やリサイクルの話が出るので、それと考えがち。repaint（塗り直す）を聞く。',
       use: 'Please park on the street.（路上に駐車してください）' },
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'meeting', reveals: ['movingon'], seg: [0, 28.5],
@@ -36,7 +36,7 @@ export const ronTooth: Clip = {
       trap: 'steal（盗む）や tooth（歯）が耳に残りやすいが、議題ではない。',
       use: 'Let’s talk about parking.（駐車の話をしましょう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'mercedes', ctx: true, seg: [2.2, 8.3],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'mercedes', ctx: true, seg: [2.0, 8.0],
       stem: 'What does a coworker say to the street-parking request?', ja: '路上駐車の頼みに、同僚は何と言う？',
       choices: ['He won’t do it', 'He will do it too', 'He wants a better spot'], a: 0,
       choicesJa: ['自分はやらない', '自分もやる', 'もっといい場所がほしい'],
@@ -69,14 +69,14 @@ export const ronTooth: Clip = {
       trap: 'wants to の主語は nobody＝泥棒の側。Saturn を知らなくても「盗む価値なし」と分かる。',
       use: 'Nobody’s going to steal that old thing.（あんな古いの、誰も盗まないよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'saturn', ctx: true, seg: [6.4, 12.6],
-      stem: 'The leader parks on the street too. What is his answer?', ja: '進行役も路上に止めている。同僚の返事は？',
-      choices: ['Her car isn’t worth taking', 'Her car has a really good alarm', 'Her car is parked nearby'], a: 0,
-      choicesJa: ['彼女の車は盗む価値がない', '彼女の車には防犯ブザーがある', '彼女の車は近くに止めてある'],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'saturn', ctx: true, seg: [6.4, 13.6],
+      stem: 'The leader parks on the street too. How does the coworker answer?', ja: '進行役も路上に止めている。同僚の返事は？',
+      choices: ['That car is too cheap to take', 'That car has a good alarm', 'That car is parked nearby'], a: 0,
+      choicesJa: ['あの車は安すぎて盗まれない', 'あの車には防犯ブザーがある', 'あの車は近くに止めてある'],
       cue: '「I’m doing it」への返事',
       line: 'Leader: Well, everyone is. *I’m doing it.* / Coworker: ’Cause *nobody wants to steal* a Saturn.',
       said: '「みんなそうしてる。私もしてる」に、「サターンなんて誰も盗まないからね」と返す。',
-      mean: 'I’m doing it の it ＝ 路上駐車。Saturn（サターン）＝ 安いアメリカの車。だから彼女の例は当てにならない、という皮肉。',
+      mean: 'I’m doing it の it ＝ 路上駐車。Saturn（サターン）＝ 安いアメリカの車。だから進行役の例は当てにならない、という皮肉。',
       trap: 'alarm（防犯）を連想しやすいが、守りの話ではない。盗みたい人がいない、という話。',
       use: 'Everyone is doing it.（みんなやってるよ）' },
 
@@ -91,7 +91,7 @@ export const ronTooth: Clip = {
       trap: 'All right（よし）で、同僚に賛成したと思いやすい。言い返しを流して、話を切りかえている。',
       use: 'Moving on to the next point.（次の点に移ります）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'fine', ctx: true, reveals: ['pain'], seg: [13.5, 19.6],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'fine', ctx: true, reveals: ['pain'], seg: [13.4, 19.42],
       stem: 'Asked if he is okay, what does Ron want?', ja: '大丈夫かと聞かれ、ロンはどうしてほしい？',
       choices: ['The meeting to keep going', 'To leave the meeting early', 'Someone to help him'], a: 0,
       choicesJa: ['会議を続けてほしい', '会議を早く抜けたい', '誰かに助けてほしい'],
@@ -102,7 +102,7 @@ export const ronTooth: Clip = {
       trap: 'pain（痛み）と言うので、助けを求めると考えがち。決め手は最後の Continue。',
       use: 'I’m fine. Please continue.（大丈夫です。続けてください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'pain', seg: [15.8, 19.4],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'pain', seg: [15.12, 19.4],
       stem: 'Type Ron’s answer: “Just a ___.” (3 words)', ja: 'ロンの答えの空所3語を書こう', answer: 'little tooth pain',
       cue: '「You okay, Ron?」のあと',
       line: 'Just a *little tooth pain*. I’m fine.',
@@ -111,7 +111,7 @@ export const ronTooth: Clip = {
       trap: 'little tooth がつながり「リロトゥース」と一語に聞こえやすい。3語に分けて書く。',
       use: 'I have a little tooth pain.（ちょっと歯が痛い）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'bins', seg: [19.2, 22.0],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'bins', seg: [19.0, 22.0],
       stem: 'What will each department be getting?', ja: '各部署に何が配られる？',
       choices: ['Blue bins', 'Blue bags', 'Blue binders'], a: 0,
       choicesJa: ['青い箱', '青い袋', '青いファイル'],
@@ -122,7 +122,7 @@ export const ronTooth: Clip = {
       trap: '「バッグズ」なら bags、「バインダーズ」と長ければ binders。短い「ビンズ」なら bins。',
       use: 'Where is the recycling bin?（リサイクル箱はどこですか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'needto', seg: [23.6, 26.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'needto', seg: [23.45, 25.3],
       stem: '“___ go to the dentist, Ron?”', ja: '空所に入るのは？',
       choices: ['Do you need to', 'Do you want to', 'Did you need to'], a: 0,
       choicesJa: ['〜しなきゃいけないんじゃない？', '〜したい？', '〜する必要があった？'],
@@ -133,10 +133,10 @@ export const ronTooth: Clip = {
       trap: 'want to なら「ワナ」、Did なら「ディッジュ」。ここは「ドゥユニートゥ」。',
       use: 'Do you need to see a doctor?（医者に行かなくて大丈夫？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'dentists', ctx: true, reveals: ['needto'], seg: [23.6, 29.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'dentists', ctx: true, reveals: ['needto'], seg: [23.45, 29.8],
       stem: 'Asked about the dentist, what does Ron say?', ja: '歯医者のことを聞かれ、ロンは何と言う？',
-      choices: ['He doesn’t like dentists', 'He doesn’t need to go', 'He doesn’t have one'], a: 0,
-      choicesJa: ['歯医者は嫌い', '行く必要はない', 'かかりつけがいない'],
+      choices: ['He hates dentists', 'He doesn’t need to go', 'He doesn’t have one'], a: 0,
+      choicesJa: ['歯医者が大嫌い', '行く必要はない', 'かかりつけがいない'],
       cue: '同僚の質問への答え',
       line: 'Coworker: Do you need to go to the dentist, Ron? / Ron: *I don’t like dentists.* Just a second.',
       said: '「歯医者に行ったほうが？」に、ロンが「歯医者は嫌いだ。ちょっと待ってくれ」と言う。',
@@ -146,8 +146,8 @@ export const ronTooth: Clip = {
 
     { id: 'f2', skill: 'detail', level: 'B1', point: 'talkabout', seg: [37.0, 43.3],
       stem: 'After the tooth, what does Ron ask everyone?', ja: '歯のあと、ロンはみんなに何と聞く？',
-      choices: ['What they were talking about', 'If anyone has a tissue', 'When the meeting will be over'], a: 0,
-      choicesJa: ['何の話をしていたか', 'ティッシュを持っている人はいるか', '会議はいつ終わるか'],
+      choices: ['What the topic was', 'If anyone has a tissue', 'When the meeting ends'], a: 0,
+      choicesJa: ['何の話だったか', 'ティッシュを持っている人はいるか', '会議はいつ終わるか'],
       cue: '「I’m sorry, everybody」のあと',
       line: 'Oh, I’m sorry, everybody. *What were we talking about?* Recycling.',
       said: '何事もなかったように「すまない、みんな。何の話だったかな？ リサイクルか」と言う。',
@@ -166,10 +166,10 @@ export const ronTooth: Clip = {
       trap: 'today なら「トゥデイ」、two days ago なら「デイズアゴウ」。ここは「イエスタデイ」。',
       use: 'I went to the dentist yesterday.（昨日、歯医者に行った）' },
 
-    { id: 'g3', skill: 'gist', level: 'B2', point: 'arc', reveals: ['withstand', 'when'], seg: [42.8, 59.4],
+    { id: 'g3', skill: 'gist', level: 'B2', point: 'arc', reveals: ['withstand', 'when'], seg: [43.35, 59.4],
       stem: 'What does Ron tell the camera at the end?', ja: '最後に、ロンはカメラに何と言う？',
-      choices: ['The tooth came out yesterday', 'He will see a dentist later', 'He hates long meetings'], a: 0,
-      choicesJa: ['歯は昨日もう抜いていた', 'あとで歯医者に行く', '長い会議が嫌い'],
+      choices: ['A dentist already removed it', 'He will see a dentist later', 'He hates long meetings'], a: 0,
+      choicesJa: ['歯はもう歯医者が抜いていた', 'あとで歯医者に行く', '長い会議が嫌い'],
       cue: 'カメラの前の最初の一文',
       line: '*Dentist pulled the tooth out yesterday*. But it’s always a good idea to demonstrate…',
       said: 'ロンが「歯は昨日、歯医者に抜いてもらった。だが痛みに強いと見せるのはいい」と話す。',
@@ -199,7 +199,7 @@ export const ronTooth: Clip = {
       trap: 'デモンストレーションから「やり方を見せる」と取りやすい。that 節なら「示す」。痛がる姿を見せるのでもない。',
       use: 'I want to show them I’m ready.（準備ができていると見せたい）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'withstand', seg: [45.0, 54.0],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'withstand', seg: [44.5, 54.0],
       stem: 'What does “*withstanding* a tremendous amount of pain” mean?', ja: '「withstanding a tremendous amount of pain」の意味は？',
       choices: ['Taking a lot of pain', 'Causing a lot of pain', 'Hiding a little pain'], a: 0,
       choicesJa: ['すごい痛みに耐えられる', 'すごい痛みを与えられる', '少しの痛みを隠せる'],
@@ -221,7 +221,7 @@ export const ronTooth: Clip = {
       trap: '「トムへの教訓」と取りやすいが、言葉は always fun。自分の楽しみ。',
       use: 'Plus, it’s on the way home.（それに、帰り道だしね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'faint', seg: [53.0, 59.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'faint', seg: [54.0, 59.4],
       stem: 'How does Ron feel about Tom fainting?', ja: 'トムが気絶することを、ロンはどう思っている？',
       choices: ['He enjoys it', 'He feels bad', 'He is tired of it'], a: 0,
       choicesJa: ['楽しんでいる', '悪いと思っている', 'うんざりしている'],
@@ -232,7 +232,7 @@ export const ronTooth: Clip = {
       trap: 'faint（気絶）は悪いことなので、心配していると考えがち。fun が手がかり。',
       use: 'Plus, it’s always fun.（それに、いつも楽しいし）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'faint', seg: [53.0, 59.4],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'faint', seg: [54.0, 59.4],
       stem: '“Plus it’s always fun to see Tom ___.”', ja: '空所に入るのは？',
       choices: ['faint', 'paint', 'fight'], a: 0,
       choicesJa: ['気絶する', '絵をかく', 'けんかする'],
