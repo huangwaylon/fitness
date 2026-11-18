@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 2, new 1, ctx 4, tx 16
+// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 2, new 1, ctx 4, tx 16, qa 4
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 2, new 0
 // “Michael Wants to be Captain - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office US): on
 // the office booze cruise Michael hands out Gilligan's Island roles and calls himself "captain of this party", the
@@ -139,7 +139,7 @@ export const captainjack: Clip = {
       trap: 'who knows を「どうでもいい」と取ると unimportant に引かれる。ここは「分からない」。',
       use: 'The plan is still a bit nebulous.（計画はまだぼんやりしてる）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'cutin', reveals: ['regional', 'finish'], seg: [57.6, 85.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'cutin', reveals: ['regional', 'finish', 'letme'], seg: [57.6, 85.0],
       stem: 'What happens while Captain Jack welcomes everyone?',
       ja: 'ジャック船長があいさつする間、何が起きる？',
       choices: ['Michael keeps talking too', 'Michael helps with the rules', 'Everyone listens quietly'], a: 0,
@@ -163,9 +163,9 @@ export const captainjack: Clip = {
       trap: '同じ形なのでからかいに聞こえるが、本人は本気。船長はもう自分で名乗っている。',
       use: 'I’m the manager here.（ここの責任者です）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', ctx: true, seg: [78.0, 85.6],
-      stem: 'What does the captain ask for after being cut off?',
-      ja: '話をさえぎられたあと、船長は何を頼む？',
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'finish', reveals: ['letme'], ctx: true, seg: [78.0, 85.6],
+      stem: 'After “Don’t worry…”, what does the captain ask for?',
+      ja: '「Don’t worry…」と言われたあと、船長は何を頼む？',
       choices: ['To finish his safety talk', 'To take a short break', 'To start the party now'], a: 0,
       choicesJa: ['安全の説明を最後まで言いたい', '少し休ませてほしい', 'もうパーティーを始めたい'],
       cue: '口をはさまれた直後の、短い頼み。',
@@ -175,7 +175,7 @@ export const captainjack: Clip = {
       trap: 'そのあとの Okay, thank you はお礼に聞こえるが、話を戻すためのつなぎ。',
       use: 'Sorry, can I just finish?（すみません、最後まで言ってもいい？）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'finish', seg: [81.5, 85.0],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'letme', reveals: ['finish'], seg: [81.5, 85.0],
       stem: 'Fill the gap: “Please ___ finish.”',
       ja: '空所に入る語は？「Please ___ finish.」',
       choices: ['let me', 'let him', 'let us'], a: 0,
@@ -235,10 +235,10 @@ export const captainjack: Clip = {
       trap: '社員の話を「部下を静かに」と取りやすいが、頼まれたのは Michael 本人が引くこと。',
       use: 'Got it. I’ll leave it to you.（了解、お任せします）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', seg: [112.3, 127.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sitback', reveals: ['whydont'], seg: [112.3, 127.5],
       stem: 'What does the captain ask Michael to do at the end?',
       ja: '最後に船長はマイケルに何を頼む？',
-      choices: ['Sit back and have fun', 'Run the party for him', 'Keep his staff quiet'], a: 0,
+      choices: ['Relax and enjoy the party', 'Lead the party for him', 'Keep his staff quiet'], a: 0,
       choicesJa: ['ゆっくり楽しんでいて', '代わりにパーティーを仕切って', '社員を静かにさせて'],
       cue: '「Listen, Mike」のあと、最後の頼み。',
       line: 'Listen, Mike. … You just *sit back and have a good time*.',
@@ -259,7 +259,7 @@ export const captainjack: Clip = {
       trap: '直後の We’re all going to have a good time は誘いと考えがち。遠回しの注意。',
       use: 'There are other people here, you know.（ほかにも人がいるんだけどね）' },
 
-    { id: 'w1', skill: 'pragma', level: 'B1', point: 'whydont', reveals: ['finish'], seg: [118.5, 123.6],
+    { id: 'w1', skill: 'pragma', level: 'B1', point: 'whydont', reveals: ['finish', 'letme'], seg: [118.5, 123.6],
       stem: 'What does the captain mean by “Why don’t you let me…”?',
       ja: '船長の「Why don’t you let me…」はどういう意味？',
       choices: ['Please leave the work to us', 'Why can’t we do our work?', 'Can you do the work for us?'], a: 0,

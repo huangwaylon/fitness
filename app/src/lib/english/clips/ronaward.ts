@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 1, new 5, ctx 5, tx 18
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 1, new 5, ctx 5, tx 18, qa 3
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 4, new 2
 // “Ron toys with Leslie's feelings | Parks and recreation” (the official Parks and Recreation channel, Season 2): Leslie
 // opens a letter from the Indiana Organization of Women sure she's Pawnee's Woman of the Year, but the award is Ron's;
@@ -32,13 +32,13 @@ export const ronAward: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [19, 31], keep: true,
       stem: 'Since what age has Leslie been a paying member?',
       ja: 'レスリーは何歳から会費を払う会員？',
-      choices: ['Since she was nine', 'Since she was nineteen', 'Since she was twenty-nine'], a: 0,
-      choicesJa: ['9歳から', '19歳から', '29歳から'],
+      choices: ['Since she was five', 'Since she was nine', 'Since she was nineteen', 'Since she was twenty-nine'], a: 1,
+      choicesJa: ['5歳から', '9歳から', '19歳から', '29歳から'],
       cue: '「since I was」のあと。',
       line: 'I’ve been a dues-paying member *since I was nine*',
       said: '「9歳のときから会費を払っている会員なの」と言う。',
       mean: 'dues ＝ 会費。子どものころからの熱心な会員だという自慢。',
-      trap: 'nineteen は「ティーン」と長く、twenty-nine は「トゥエ」で始まる。ここは「ナイン」だけ。',
+      trap: 'nineteen は「ティーン」と長く、twenty-nine は「トゥエ」、five は「ファ」で始まる。ここは「ナイン」だけ。',
       use: 'I’ve been a member since I was ten.（10歳のときから会員なの）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'destiny', seg: [27.95, 33.9], retired: true,

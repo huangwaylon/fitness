@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 3, new 9, ctx 5, tx 9
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 3, new 9, ctx 5, tx 9, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 14, retire 4, new 0
 // “Carly Shay's $82,000 Room Makeover! 🤑🔥 iCarly | NickRewind” (NickRewind, Best of iCarly): a narrator walks through
 // the episode: a gummy-bear lamp, a birthday gift, sets Carly's room on fire; insurance on a watch pays out, and Spencer
@@ -6,6 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Speakers other than the narrator, Carly and Spencer
 // aren't named, so stems avoid naming them. Untested: 0–14 s (intro), 176–180 s (garbled), 196–206 s (crosstalk),
 // 243–255 s (slang, imitation), 289–295 s (song), 300–308 s (subscribe).
+// EAR CHECK: 33.6–37.5 s who made the lamp ("I made it for Carly's birthday"; likely Spencer), so d2 doesn't name the maker.
 import type { Clip } from '../types.ts';
 
 export const carlyRoom: Clip = {
@@ -53,8 +54,8 @@ export const carlyRoom: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'gift', reveals: ['lamp'], seg: [30.5, 37.6],
       stem: 'How did Carly get the gummy bear lamp?',
       ja: 'カーリーはグミベアのランプをどうやって手に入れた？',
-      choices: ['A friend made it for her', 'A friend bought it for her', 'She won it as a prize'], a: 0,
-      choicesJa: ['友だちが作ってくれた', '友だちが買ってくれた', '賞品でもらった'],
+      choices: ['It was handmade for her', 'It was bought for her', 'She won it as a prize'], a: 0,
+      choicesJa: ['手作りしてもらった', '買ってもらった', '賞品でもらった'],
       cue: '「gummy bear lamp?」のあと',
       line: 'Is this a gummy bear lamp? — Yeah, I *made it* for Carly’s birthday.',
       said: '「うん、カーリーの誕生日に作ったんだ」と答える。',
@@ -87,8 +88,8 @@ export const carlyRoom: Clip = {
       use: 'Not gonna lie, I’m a bit jealous.（正直、ちょっとうらやましい）' },
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'noproblem', ctx: true, reveals: ['lamp', 'plug'], seg: [50.6, 56.7],
-      stem: 'What does the other boy say to the favor?',
-      ja: '頼まれたもう一人の男の子は何と答える？',
+      stem: 'What is the answer to “do me a favor”?',
+      ja: '「do me a favor」と頼まれて、何と答える？',
       choices: ['He is happy to do it', 'He is too busy now', 'He wants something back'], a: 0,
       choicesJa: ['喜んで引き受ける', '今は忙しい', '何かお返しがほしい'],
       cue: '頼みごとのあとの、短い返事',
@@ -166,6 +167,17 @@ export const carlyRoom: Clip = {
       trap: '誕生日プレゼントの話が前にあるので、そこからと考えがち。insurance money を聞く。',
       use: 'Will the insurance cover it?（保険でまかなえる？）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'rebuild', reveals: ['chain'], seg: [103.6, 118.6],
+      stem: 'What do Spencer and his friends do?',
+      ja: 'スペンサーと友だちは何をする？',
+      choices: ['Build Carly’s room again', 'Clean up the burned room', 'Find Carly a new home'], a: 0,
+      choicesJa: ['カーリーの部屋を作り直す', '焼けた部屋を片付ける', 'カーリーの新しい家を探す'],
+      cue: '「Spencer and friends」のあと',
+      line: 'Spencer and friends *rebuild Carly’s room from the ground up*.',
+      said: 'ナレーターが「スペンサーと友だちは、カーリーの部屋を一から作り直す」と言う。',
+      mean: 'rebuild ＝ 作り直す（re ＝ もう一度）。from the ground up ＝ 一から。保険金で新しい部屋ができる。',
+      trap: 'from the ground up（地面から）を、焼けあとの片付けと考えがち。rebuild は「建て直す」。',
+      use: 'We had to start from the ground up.（一からやり直すしかなかった）' },
     { id: 'i2', skill: 'phrase', level: 'B2', point: 'neversaw', seg: [112, 118.6],
       stem: 'What does “judging by” mean here?',
       ja: 'ここでの「judging by」はどういう意味？',
@@ -306,18 +318,6 @@ export const carlyRoom: Clip = {
       mean: '答えを求めない質問で「嫌いな人はいない＝みんな好き」。loveseat（二人がけソファ）の love にかけている。',
       trap: 'who（誰）と聞いているので、答えを探す質問と考えがち。答えを求めない、言い切りの形。',
       use: 'Who doesn’t love a long weekend?（三連休が嫌いな人なんている？）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'verdict', seg: [228.3, 249.9],
-      stem: 'How does the narrator feel about the new room?',
-      ja: 'ナレーターは新しい部屋をどう思っている？',
-      choices: ['He loves everything in it', 'He thinks it cost too much', 'He thinks it is too small'], a: 0,
-      choicesJa: ['全部大好き', 'お金がかかりすぎだと思う', '狭すぎると思う'],
-      cue: '「A complete new wardrobe」から',
-      line: 'I mean, *there are no words*. This is *beyond epic*.',
-      said: '電動クローゼットに「もう言葉がない。最高をはるかに超えてる」、メイクコーナーも「めちゃくちゃすごい」と言う。',
-      mean: 'there are no words ＝ 言葉が出ない。beyond epic ＝ 最高を超えている。ずっとほめている。',
-      trap: '題名の8万2000ドルから、高すぎるという話を予想しやすい。値段の話はしていない。',
-      use: 'There are no words. It’s amazing.（言葉が出ない。すごい）' },
 
     { id: 'f4', skill: 'phrase', level: 'B1', point: 'happen', seg: [236.8, 242.8],
       stem: 'What does “That did not just happen!” mean?',

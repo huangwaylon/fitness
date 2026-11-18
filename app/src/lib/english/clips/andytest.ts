@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 2, ctx 4, tx 10
+// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 1, new 2, ctx 4, tx 10, qa 3
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 4, new 2
 // “Andy is too smart for this test | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy
 // is about to take the police exams; his wife quizzes him on codes, cheers him up and gives him a lucky charm, the
@@ -37,6 +37,17 @@ export const andyTest: Clip = {
       trap: 'great だけだと自慢に聞こえる。But で始まるほめ言葉の前には、言いにくい事がある。',
       use: 'Well, he’s got a great personality.（まあ、性格はいいんだよね）' },
 
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'quiz', ctx: true, seg: [10.2, 17.4],
+      stem: 'Andy says “quiz me”. What does his wife do?',
+      ja: 'アンディが「quiz me」と言う。妻はどうする？',
+      choices: ['She asks him a test question', 'She gives him the answers', 'She tells him to relax'], a: 0,
+      choicesJa: ['試験の問題を出す', '答えを教える', '落ち着いてと言う'],
+      cue: '「quiz me」のあと',
+      line: 'Andy: Okay, *quiz me*. / Wife: Okay, *what does it mean* when an officer calls in a 35-42? / Andy: Assault and battery.',
+      said: 'アンディが「よし、問題を出して」と言い、妻が「警官が35-42と無線で言ったら、どういう意味？」と聞く。',
+      mean: 'quiz ＝ 小テスト。quiz me ＝「（覚えたか）問題を出して」。試験勉強でよく使う頼み方。',
+      trap: 'あとで妻が励ます場面があるので、それと混ざりやすい。quiz me のすぐあとは質問。',
+      use: 'Can you quiz me on these words?（この単語、問題を出してくれる？）' },
     { id: 'g1', skill: 'gist', level: 'B1', point: 'prep', reveals: ['divorce'], seg: [11, 55.8], retired: true,
       stem: 'What is the first part of the clip mostly about?',
       ja: 'クリップの前半は主に何の話？',
@@ -48,18 +59,6 @@ export const andyTest: Clip = {
       mean: 'quiz me ＝ 問題を出して。妻が問題を出し、励まし、お守りをあげる。',
       trap: 'divorce（離婚）が聞こえて、やめてと言っていると思いやすい。あれは冗談。',
       use: 'Can you quiz me?（問題を出してくれる？）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'code1', ctx: true, seg: [11.9, 18.1],
-      stem: 'What does an officer mean by a 35-42?',
-      ja: '警官の「35-42」はどういう意味？',
-      choices: ['Breaking and entering', 'Assault and battery', 'Driving over the limit'], a: 1,
-      choicesJa: ['不法侵入', '暴行傷害', 'スピード違反'],
-      cue: '「calls in a 35-42?」のあと',
-      line: 'Wife: What does it mean when an officer calls in a 35-42? / Andy: *Assault and battery*.',
-      said: '「35-42と言ったら？」に「暴行」とすぐ答える。',
-      mean: 'assault and battery ＝ 暴行傷害（法律の言葉）。calls in ＝ 無線で連絡する。答えをすぐに言えている。',
-      trap: 'battery から「電池」を連想しやすい。法律では「なぐること」。',
-      use: 'What does this code mean?（この番号はどういう意味ですか）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'arson', seg: [17.9, 26.9],
       stem: 'What code does Andy give for arson?',
@@ -131,8 +130,8 @@ export const andyTest: Clip = {
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'creepy', ctx: true, seg: [47.6, 56.0],
       stem: 'How does Andy feel about the lucky charm?',
       ja: 'アンディはお守りをどう思う？',
-      choices: ['He loves it', 'He hates it', 'He is scared of it'], a: 0,
-      choicesJa: ['すごく気に入っている', 'すごくいやがっている', 'こわがっている'],
+      choices: ['He is really pleased', 'He doesn’t want it', 'He is scared of it'], a: 0,
+      choicesJa: ['とても喜んでいる', 'いらないと思っている', 'こわがっている'],
       cue: '「so creepy」のあと',
       line: 'Wife: I cut its feet off and made it into a lucky charm. / Andy: Baby, you are so creepy. *Thank you, I love it*.',
       said: '死んだウサギの足のお守りに「ベイビー、めちゃくちゃ気味悪いね。ありがとう、大好き」と言う。',
