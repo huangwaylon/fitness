@@ -3,7 +3,7 @@
 // release's upload (a fake GitHub: the same day replaced, the last 90 kept, `notes-*` never touched) and the log's
 // `backupH`.
 import { gunzipSync } from 'node:zlib';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Decrypter, generateX25519Identity, identityToRecipient } from 'age-encryption';
 import {
   after, ARCHIVE_KEEP, assetName, backoff, due, encrypt, gzip, NO_STATE, openDump, retention, retryAt, RETRY_MAX_MS, RETRY_MIN_MS,
@@ -258,6 +258,15 @@ describe('a run', () => {
     expect(retryAt(after(NO_STATE, r, t), r)).toBe(t + RETRY_MIN_MS);
     const thrown = await runArchive(io({ dump: () => { throw new TypeError('boom'); } }));
     expect(thrown).toMatchObject({ ok: false, st: 'TypeError', step: 'dump' });
+  });
+  it('a GitHub call that never answers times out (30 s, here 20 ms): TimeoutError at the github step, retried later', async () => {
+    const orig = AbortSignal.timeout.bind(AbortSignal);
+    const spy = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => orig(20));
+    const hang = (_u: string, init: RequestInit) => new Promise<Response>((_, rej) => init.signal?.addEventListener('abort', () => rej(init.signal!.reason)));
+    const r = await runArchive(io({ gh: { fetch: hang, token: TOKEN, repo: 'o/r', tag: 'dumps' } }));
+    spy.mockRestore();
+    expect(r).toMatchObject({ ok: false, st: 'TimeoutError', step: 'github' });
+    expect(retryAt(after(NO_STATE, r, t), r)).toBe(t + RETRY_MIN_MS);
   });
 });
 

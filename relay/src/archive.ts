@@ -128,9 +128,14 @@ export interface GitHub {
 type Asset = { id: number; name: string };
 type Release = { id: number; upload_url: string };
 
+/** One GitHub call's limit, its answer read too (the slowest upload took 4.1 s): a hung call would hold the backup's
+ *  lock (storeObject.ts `archiving`) for the instance's life; timed out, it's `st:'TimeoutError', step:'github'`, and
+ *  the alarm tries again. */
+const GH_TIMEOUT_MS = 30_000;
+
 async function call<T>(gh: GitHub, step: string, method: string, url: string, body?: BodyInit, type = 'application/json'): Promise<T | null> {
   const res = await gh.fetch(url.startsWith('https://') ? url : `https://api.github.com/repos/${gh.repo}${url}`, {
-    method,
+    method, signal: AbortSignal.timeout(GH_TIMEOUT_MS),
     headers: { Authorization: `Bearer ${gh.token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'island-fund-relay', ...(body !== undefined ? { 'Content-Type': type } : {}) },
     ...(body !== undefined ? { body } : {})
   });
