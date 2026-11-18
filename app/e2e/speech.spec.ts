@@ -77,7 +77,7 @@ test('the mic refused (許可しない): why, in plain Japanese, with the error�
   await sp.locator('[data-speech-mic]').tap();
   const miss = sp.locator('[data-speech-miss]');
   await expect(miss).toHaveAttribute('data-speech-miss', 'refused');
-  await expect(miss).toContainText('マイクが許可されていません');
+  await expect(miss).toContainText('マイクが許可されていないよ');
   await expect(miss).toContainText('NotAllowedError');
   expect(sent).toHaveLength(0);
 });

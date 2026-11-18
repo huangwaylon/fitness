@@ -85,7 +85,7 @@ const ALLOW: Record<string, string[]> = {
   // speaking step's mic and words (speech)
   // the speech test (docs/speech-test.md): the mic, the relay's /stt, the log
   // and /grade's (contract/grade.ts: one sanitiser with the relay)
-  speech: ['sync', 'contract'],
+  speech: ['sync', 'contract', 'i18n'],
   sugoroku: [...DOMAIN, 'sync', 'store', 'ui-state', 'i18n', 'components', 'random', 'sound', 'world', 'speech'],
   components: [...DOMAIN, 'layout', 'food', 'scan', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'artPack', 'villagers', 'sound', 'random', 'travel', 'hiking', 'offline', 'gym', 'its', 'kalori', 'bots', 'world', 'english']
 };
