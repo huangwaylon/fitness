@@ -1,13 +1,14 @@
 // 英語すごろく (docs/sugoroku.md): English Study's third tab, すごろく; a new game for the two members, one at むずかしい;
 // turns play through (the dice, the fork's 遠回り, then the space's ことば with ヒント and これにする, ぶん and 絵 tapped in any order till 答えはこれ, イベント's OK); the game
-// resumes from 続きから after a reload; 終了 shows the results. The logic tier.
+// resumes after a reload; 終了 shows the results. A game plays on its own screen (/sugoroku: the 3D board). The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
-const sheet = (p: Page) => p.locator('dialog[open] [data-sugoroku]');
+/** The game: in English Study's tab (the sheet), or on its own screen (/sugoroku: the 3D board). */
+const sheet = (p: Page) => p.locator('[data-sugoroku]');
 /** English Study from the leaf menu, then its すごろく tab. */
 async function openGame(p: Page) {
   await fromMenu(p, 'english');
@@ -77,9 +78,10 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await expect(sheet(page).locator('[data-sg-level-row]').nth(1).locator('[data-sg-level="3"]')).toHaveAttribute('aria-checked', 'true');
   await sheet(page).locator('[data-sg-length="short"]').click();
   await sheet(page).locator('[data-sg-start]').click();
+  // its own screen: the 3D board over the turn's panel
+  await expect(page).toHaveURL(/\/sugoroku\?.*m=local/);
   await expect(sheet(page)).toHaveAttribute('data-level', 'play');
-  await expect(sheet(page).locator('[data-sg-space]')).toHaveCount(47);
-  await expect(sheet(page).locator('[data-sg-token]')).toHaveCount(2);
+  await expect(sheet(page).locator('[data-sg-board3d]')).toBeVisible();
 
   await playTurn(page);
   await playTurn(page);
@@ -89,8 +91,9 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await sheet(page).locator('[data-sg-end-yes]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'results');
   await expect(sheet(page).locator('[data-sg-rank]')).toHaveCount(2);
-  // the finished game isn't offered again
+  // ‹: back to the island, English Study on the tab; the finished game isn't offered again
   await sheet(page).locator('.navbar button').first().click();
+  await expect(page.locator('dialog[open] [data-sugoroku]')).toHaveAttribute('data-level', 'menu');
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
 });
 
@@ -102,10 +105,9 @@ test('a game left half-way resumes after a reload (続きから), where it was',
   const turn = await sheet(page).locator('[data-sg-turn]').getAttribute('data-sg-turn');
   // the save is down before the reload (it's written on every step)
   await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('island.sugoroku') ?? 'null')?.turn)).toBe(Number(turn));
+  // a reload on its screen: the game again, where it was
   await page.reload();
-  await islandUp(page);
-  await openGame(page);
-  await sheet(page).locator('[data-sg-resume]').click();
+  await expect(sheet(page)).toHaveAttribute('data-level', 'play');
   await expect(sheet(page).locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', turn!);
   await expect(sheet(page).locator('[data-sg-score] b')).toHaveText(stars);
 });

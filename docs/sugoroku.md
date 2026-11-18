@@ -49,8 +49,13 @@ with characters in it, since they are the pieces.
 river with bridges at the fork, the beach and sea, the sandy path, the stones coloured by kind with their marks, signs,
 trees), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
 camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
-moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only). Not in the game yet: it's to be its
-own screen like the museum (one WebGL context on the phone).
+moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only).
+
+A game plays on its **own screen**, `/sugoroku` (`?m=local` this phone's, `?m=online` the shared one; the page's query
+kept), like the museum: the island isn't drawn meanwhile (one WebGL context on the phone). Starting or resuming in the
+tab goes there; ‹ goes back to the island with English Study open on the tab; a reload there resumes the game. The
+board (`Board3D.svelte`) takes what the turn's panel leaves: the heads hop a stone at a time (260 ms), the die tumbles
+before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). No WebGL: the 2D map in its place.
 
 ## Online
 

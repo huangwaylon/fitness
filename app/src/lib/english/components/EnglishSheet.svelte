@@ -6,6 +6,8 @@
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import TabBar from '#lib/components/ui/TabBar.svelte';
   import Lazy from '#lib/components/ui/Lazy.svelte';
+  import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { english } from '../open.svelte.ts';
   import Home from './Home.svelte';
   import Phrases from './Phrases.svelte';
@@ -32,14 +34,22 @@
   $effect(() => {
     if (!open) return;
     const ask = english.ask;
-    const invited = ask?.arg === 'sugoroku' && ask !== askSeen;
+    const fresh = ask !== askSeen, invited = fresh && ask?.arg === 'sugoroku', back = fresh && ask?.arg === 'game';
     askSeen = ask;
-    (level = { k: invited ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (join = invited), (gameTop = true);
+    (level = { k: invited || back ? 'game' : 'home' }), (filter = ''), (col = ''), (count = 20), (join = invited), (gameTop = true);
   });
   const clip = $derived.by(() => { const l = level; return l.k === 'lesson' ? (metaById(l.id) ?? null) : null; });
   const tab = $derived<Tab | null>(level.k === 'home' || level.k === 'phrases' || (level.k === 'game' && gameTop) ? level.k : null);
   const TABS = [{ id: 'home', label: s('tabHome'), icon: 'play' }, { id: 'phrases', label: s('tabPhrases'), icon: 'quote' }, { id: 'game', label: s('tabGame'), icon: 'dice' }] as const;
   const close = () => (open = false);
+  /** すごろく's game on its own screen (the 3D board: /sugoroku), the sheet closed. */
+  const toBoard = (m: 'local' | 'online') => {
+    open = false;
+    // (the page's own query kept: ?demo and the e2e's hooks, as the rooms' doors do)
+    const q = new URLSearchParams(location.search);
+    q.set('m', m);
+    void goto(`${resolve('/sugoroku')}?${q}`);
+  };
   const home = () => ((level = { k: 'home' }), (col = ''));
   const lessonFrom = (from: 'home' | 'library') => (id: string) => (level = { k: 'lesson', id, from });
   const back = () => (level = level.k === 'lesson' && level.from === 'library' ? { k: 'library' } : { k: 'home' });
@@ -57,7 +67,7 @@
       {:else if level.k === 'game'}
         <!-- 英語すごろく (lib/sugoroku): its own chunk -->
         <Lazy load={() => import('#lib/sugoroku/components/SugorokuGame.svelte')}>
-          {#snippet children(Game)}<Game active={open} {join} onclose={close} ontop={(t) => (gameTop = t)} />{/snippet}
+          {#snippet children(Game)}<Game active={open} {join} onclose={close} ontop={(t) => (gameTop = t)} onscreen={toBoard} />{/snippet}
         </Lazy>
       {:else if level.k === 'phrases'}
         <Phrases onhome={home} onclose={close} />

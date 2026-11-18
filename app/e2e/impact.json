@@ -3,6 +3,8 @@
   "rules": [
     ["src/lib/english/**", ["english*"]],
     ["src/lib/sugoroku/**", ["sugoroku"]],
+    ["src/lib/components/sugoroku3d/**", ["sugoroku"]],
+    ["src/routes/sugoroku/**", ["sugoroku"]],
     ["src/lib/components/food/**", ["food*"]],
     ["src/lib/food/**", ["food*"]],
     ["src/lib/scan/**", ["food-scan", "leaks-sheets"]],

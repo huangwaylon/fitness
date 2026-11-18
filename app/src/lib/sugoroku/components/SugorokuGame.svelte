@@ -12,6 +12,7 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
+  import Board3D from './Board3D.svelte';
   import WordTurn from './WordTurn.svelte';
   import SentenceTurn from './SentenceTurn.svelte';
   import PictureTurn from './PictureTurn.svelte';
@@ -39,8 +40,12 @@
     onclose: () => void;
     /** Whether its top level (the menu) is shown: English Study's tab bar only there. */
     ontop?: (top: boolean) => void;
+    /** The tab's: a game started or resumed goes to its own screen (the 3D board, /sugoroku), this way. */
+    onscreen?: (mode: 'local' | 'online') => void;
+    /** On the board's own screen (/sugoroku): this game, straight into play, the 3D board over the turn's panel. */
+    screen?: 'local' | 'online';
   }
-  let { active, join = false, onclose, ontop }: Props = $props();
+  let { active, join = false, onclose, ontop, onscreen, screen }: Props = $props();
   const open = $derived(active);
   $effect(() => ontop?.(level === 'menu'));
   type Level = 'menu' | 'how' | 'setup' | 'play' | 'results';
@@ -57,15 +62,18 @@
       level = 'menu';
       // an invitation's 参加: straight into the online game, once it's folded (the words and lines may still be on their way)
       wantOnline = join;
+      // the board's own screen: its game at once (a passed-round one from the save, else back to the tab)
+      if (screen === 'local') saved ? resume() : onclose();
+      else if (screen === 'online') resumeOnline();
     });
   });
   let wantOnline = $state(false);
   $effect(() => {
-    if (wantOnline && onlineGame && onlineGame.phase.k !== 'end') untrack(() => ((wantOnline = false), (shown = []), (mode = 'online'), (level = 'play')));
+    if (wantOnline && onlineGame && onlineGame.phase.k !== 'end') untrack(() => ((wantOnline = false), resumeOnline()));
   });
   const close = () => onclose();
   /** To the menu: the save as it is now (a game played since the opening). */
-  const toMenu = () => ((saved = loadGame()), (level = 'menu'));
+  const toMenu = () => (screen ? onclose() : ((saved = loadGame()), (level = 'menu')));
 
   // the words and lines (their own chunks), asked for as the sheet opens
   // (raw: never proxied, so a second assignment is no change; each asked for only while missing and not on its way:
@@ -106,15 +114,17 @@
   function start() {
     if (playMode === 'online') {
       startOnline(seatsCode(seatsOf(picked)), lengthCode(length));
-      shown = [];
-      mode = 'online';
-      level = 'play';
-      return;
+      return resumeOnline();
     }
     const g0 = newGame(seatsOf(picked), `${now()}:${picked.join(',')}`, length);
     shown = g0.players.map((p) => p.pos);
     mode = 'local';
     set(g0);
+    toPlay();
+  }
+  /** Into play: on the board's screen here, from the tab to that screen. */
+  function toPlay() {
+    if (onscreen && !screen) return onscreen(mode);
     level = 'play';
   }
   function setup() {
@@ -141,6 +151,22 @@
   /** The online game: its moves folded (with the words and lines in: a word's bonus and a ぶん's line are the fold's). */
   const onlineGame = $derived(words && lines && online.cur.g ? foldMoves(online.cur.log, { words, lines, name: nameOf }) : null);
   const g = $derived(mode === 'online' ? onlineGame : game);
+  // the 3D board's die and joy (Board3D): a roll's face; stars made (6+: a jump of joy, else a hop), あがり a jump
+  let roll3 = $state<{ n: number; key: number } | null>(null);
+  let cheer3 = $state<{ k: number; kind: 'joy' | 'small'; key: number } | null>(null);
+  let madeSeen = -1;
+  $effect(() => {
+    const x = g;
+    if (!x || !screen) return;
+    untrack(() => {
+      const key = (cheer3?.key ?? 0) + 1;
+      if (madeSeen >= 0 && x.made.length > madeSeen) {
+        const m = x.made[x.made.length - 1];
+        cheer3 = { k: m.p, kind: m.stars >= 6 ? 'joy' : 'small', key };
+      } else if (x.phase.k === 'home') cheer3 = { k: x.turn, kind: 'joy', key };
+      madeSeen = x.made.length;
+    });
+  });
   const walking = $derived(!!g && g.players.some((p, i) => shown[i] !== p.pos));
   $effect(() => {
     if (!walking || !g) return;
@@ -149,7 +175,7 @@
       shown = shown.map((v, i) => (v === ps[i].pos ? v : pathOf(v, ps[i].pos, ps[i].branch)[0]));
       // (the dice's number kept while the walk waits at the fork)
       if (shown.every((v, i) => v === ps[i].pos)) (clearInterval(id), g?.phase.k !== 'fork' && (rolled = 0));
-    }, 170);
+    }, screen ? 260 : 170);
     return () => clearInterval(id);
   });
   function resume() {
@@ -157,12 +183,12 @@
     shown = saved.players.map((p) => p.pos);
     mode = 'local';
     set(saved);
-    level = 'play';
+    toPlay();
   }
   function resumeOnline() {
     shown = [];
     mode = 'online';
-    level = 'play';
+    toPlay();
   }
   // an online game's heads start where it is (a new one, a resume); its end: the results
   let shownFor = '';
@@ -192,9 +218,11 @@
     const n = 'spun' in ph ? ph.spun : 1;
     let k = 0;
     rolling = 1;
+    // (the 3D die tumbles ~0.9 s: the move after it lands)
+    if (screen) roll3 = { n, key: (roll3?.key ?? 0) + 1 };
     const id = (rollTimer = setInterval(() => {
       rolling = (k++ % 6) + 1;
-      if (k < 8) return;
+      if (k < (screen ? 13 : 8)) return;
       clearInterval(id);
       rolling = null;
       if (g !== from) return; // (a new game or a resume since: this roll is void)
@@ -313,7 +341,7 @@
       </div>
     {:else if level === 'play' && g && cur && ph}
       <div class="top"><NavBar pad title={s('title')} onback={toMenu} onclose={close} /></div>
-      <div class="body sheet-scroll play" data-sg-turn={g.turn} data-sg-phase={ph.k}>
+      <div class="body sheet-scroll play" class:screen={!!screen} data-sg-turn={g.turn} data-sg-phase={ph.k}>
         <div class="scores">
           {#each g.players as p, i (i)}
             <span class="score" class:now={i === g.turn} data-sg-score={i}>
@@ -323,7 +351,13 @@
           {/each}
           <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
         </div>
-        <Board players={g.players} {shown} turn={g.turn} {compact} />
+        {#if screen}
+          <Board3D players={g.players} {shown} turn={g.turn} roll={roll3} cheer={cheer3}>
+            {#snippet fallback()}<Board players={g.players} {shown} turn={g.turn} {compact} />{/snippet}
+          </Board3D>
+        {:else}
+          <Board players={g.players} {shown} turn={g.turn} {compact} />
+        {/if}
         <div class="panel card pad">
           {#if walking || rolling !== null}
             <div class="spinning">{#if rolling !== null || rolled}<span class="die" class:rolling={rolling !== null} data-sg-die>{rolling ?? rolled}</span><p>{rolling === null ? s('spun', { n: rolled }) : ''}</p>
@@ -463,6 +497,8 @@
     background: var(--c-ink); color: var(--c-cream); font: 600 13px/1 var(--font-num); }
   .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
   .play { gap: 8px; }
+  /* the board's own screen: the 3D board takes what the panel leaves, nothing scrolls */
+  .play.screen { overflow: hidden; }
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .score { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px 2px 2px; border-radius: var(--r-pill); background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); }
   .score.now { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
