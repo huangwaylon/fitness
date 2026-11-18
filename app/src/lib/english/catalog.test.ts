@@ -85,7 +85,7 @@ describe('a bank file (bankOf)', () => {
       live, { id: 'b', retired: true, seg: [10, 14], line: old.line, said: 's', mean: 'm', use: old.use }
     ]);
   });
-  it('every clip: the same draws and the same この動画のフレーズ as its whole bank', () => {
+  it('every clip: the same draws and the same この動画のセリフと解説 as its whole bank', () => {
     for (const c of CLIPS) {
       const b = bankOf(c, undefined, undefined);
       const shown = (x: Clip) => momentsOf(x).map((m) => [m.from, m.to, m.qs.map(({ id, line, said, mean, use }) => [id, line, said, mean, use])]);

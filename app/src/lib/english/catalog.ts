@@ -54,7 +54,7 @@ export const withTranscript = (m: ClipMeta, lines: readonly TranscriptLine[] | u
  *  from an older build asks for a file the deploy took away (data.ts: then a reload). */
 export const bankPath = (m: Pick<ClipMeta, 'id' | 'v' | 'sv' | 'tv'>): string => `english/c/${m.id}.${m.v}${m.sv ?? ''}${m.tv ?? ''}.json`;
 
-/** What a retired question keeps in its bank file: この動画のフレーズ's line and notes (phrases.ts momentsOf), its id and
+/** What a retired question keeps in its bank file: この動画のセリフと解説's line and notes (phrases.ts momentsOf), its id and
  *  `retired` (a saved ☆ on it let go: PhraseReview). Nothing else reads one: a draw, the plan and the deck skip them, a
  *  flag is only on a drawn one and a saved place is dropped with its clip's version. */
 const RETIRED_KEEPS = ['id', 'retired', 'seg', 'line', 'said', 'mean', 'use'] as const;

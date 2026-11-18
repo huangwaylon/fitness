@@ -15,7 +15,7 @@ const clip: Clip = {
   ]
 };
 
-describe('momentsOf (この動画のフレーズ)', () => {
+describe('momentsOf (この動画のセリフと解説)', () => {
   it('every quoted line once (the retired too, none for a scene gist), in time order, a moment’s lines together', () => {
     const m = momentsOf(clip);
     expect(m.map((x) => x.qs.map((q) => q.id))).toEqual([['d1', 'r1'], ['d2']]);

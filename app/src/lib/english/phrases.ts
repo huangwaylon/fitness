@@ -1,4 +1,4 @@
-// この動画のフレーズ (docs/english.md "The page"): the bank's quoted lines, the retired questions' too, once each (by
+// この動画のセリフと解説 (docs/english.md "The page"): the bank's quoted lines, the retired questions' too, once each (by
 // their words, the first kept), in time order; lines starting within a second of a moment's first are that moment, and
 // its ▶ plays from its first start to its last end. No new data: each question's own line, notes and phrase. And what
 // every phrase shown shares: a `use` apart, a line's key words (underlined). Pure.
