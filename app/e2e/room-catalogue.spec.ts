@@ -136,7 +136,7 @@ test('a piece NH never sells, bought at its made-up price, is in my もようが
   await item.click();
   await page.locator('[data-shop-buy]').click();
   await expect(item).toHaveAttribute('data-owned', 'true');
-  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(1300 - price);
+  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(13000 - price);
   await openTent(page, day);
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
@@ -151,8 +151,8 @@ test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is b
     day = date;
   }
   expect(code).not.toBe('');
-  // 16 whale sharks: 10,400 かいがら
-  await seed(page, day, [['tally', { date: day, counts: { 'fish:whale-shark': 16 } }, 'A']]);
+  // 2 whale sharks: 13,000 かいがら
+  await seed(page, day, [['tally', { date: day, counts: { 'fish:whale-shark': 2 } }, 'A']]);
   await page.goto(`shop?demo&date=${day}T12:00`);
   await page.waitForFunction(() => !!(window as unknown as { __shop?: object }).__shop);
   await page.evaluate(() => (window as unknown as { __shop: { talk(): void } }).__shop.talk());
@@ -165,7 +165,7 @@ test('a piece past the old 100,000-Bell cap (unobtainable until 2026-11-10) is b
   await item.click();
   await page.locator('[data-shop-buy]').click();
   await expect(item).toHaveAttribute('data-owned', 'true');
-  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(16 * 650 - 10_000);
+  await expect.poll(async () => Number(await page.locator('[data-shop]').getAttribute('data-shells'))).toBe(2 * 6500 - 10_000);
   await openTent(page, day);
   await page.locator('[data-tab="bought"]').click();
   await expect(page.locator(`[data-tent-items] [data-tent-item="${code}"]`)).toBeVisible();
