@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 1, new 6, ctx 6, tx 6
+// R4 REVIEW 2026-11-18: keep 11, rewrite 7, retire 1, new 6, ctx 6, tx 6, qa 14
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 7, new 2
 // “Leave the Telescope - The Office US” (the official The Office channel, BEST OF SEASON 7): at the office garage sale
 // Dwight sets out to trade a thumbtack up to the finest item there, while Jim tempts him with "Professor Copperfield's
@@ -7,6 +7,8 @@
 // the captions only. Untested: 0–5 s (who has the crooked sign), 26–30 s ("like/black your sign"), 60–66 s (the authors'
 // names), 151–155 s (Ryan's "mom look"), 173–179 s (the set-up of the excluded line), 201–209 s. The montage (219–251 s)
 // and the praise of Ryan (164 s) are tested without naming speakers; n4 tests only what is praised, not how sincerely.
+// EXCLUDE 43.5–44.5 (swear: “Screw you, man”)
+// EXCLUDE 135.5–137.5 (bleeped swear: “… it. I'll sell it”)
 // EXCLUDE 179.6–187.1 (Stanley's album: the line turns on race)
 // EAR CHECK: 211.9 s s1 — "what were the" (both sources): confirm "were" is the weak "wer", not "are"
 import type { Clip } from '../types.ts';
@@ -32,8 +34,8 @@ export const leaveTelescope: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['bytrade', 'notsofast'], seg: [6.4, 34.8],
       stem: 'What is Dwight’s plan for the garage sale?',
       ja: 'ガレージセールでのドワイトの作戦は？',
-      choices: ['Trade up from a small thing', 'Trade his farm food', 'Buy the best thing cheaply'], a: 0,
-      choicesJa: ['小さな物から交換して上げていく', '農場の食べ物と交換する', '一番いい物を安く買う'],
+      choices: ['Swap things, step by step', 'Trade his farm food', 'Buy the best thing cheaply'], a: 0,
+      choicesJa: ['物を少しずつ交換していく', '農場の食べ物と交換する', '一番いい物を安く買う'],
       cue: 'カメラへの話と、最初にすること。',
       line: 'Through *the art of the swap*, I will walk out of this garage sale with *the finest item here*.',
       said: '「交換の技で、ここで一番の品を持って帰る」と言い、まず画びょうを出す。',
@@ -68,7 +70,7 @@ export const leaveTelescope: Clip = {
       use: 'I’ll trade you my apple for your banana.（りんごとバナナ、交換しよう）' },
 
 
-    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 44.1],
+    { id: 'pr3', skill: 'phrase', level: 'B1', point: 'getout', seg: [33.9, 43.4],
       stem: 'What does “Get out of here, Dwight” mean here?',
       ja: 'ここでの「Get out of here, Dwight」はどういう意味？',
       choices: ['Move out of my way', 'I don’t believe you', 'Let’s leave together'], a: 0,
@@ -80,23 +82,23 @@ export const leaveTelescope: Clip = {
       trap: '「うそでしょ！」の意味もあるが、すぐあとに blocking（ふさいでる）が続く。',
       use: 'Excuse me, you’re blocking the door.（すみません、ドアをふさいでます）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [39.5, 47.5],
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hugeline', ctx: true, seg: [37.4, 43.4],
       stem: 'Does Dwight think people want her things?',
       ja: 'ドワイトは、みんなが彼女の物をほしがっていると思っている？',
       choices: ['No, he thinks nobody does', 'Yes, lots of people do', 'Only Ryan wants them'], a: 0,
       choicesJa: ['いや、誰もほしがらないと思っている', 'うん、たくさんの人が', 'ライアンだけがほしがる'],
-      cue: '「Oh, ’cause」のあとと、言い返し',
-      line: 'Dwight: Oh, ’cause there’s *a huge line of people* who want your… tchotchkes. / *People like my stuff.*',
-      said: '「へえ、君のガラクタを欲しがる人が大行列だもんな」に、「みんな私の物を気に入ってる」と返される。',
+      cue: '「じゃま」と言われたあとの「Oh, ’cause」',
+      line: 'You’re *blocking my table* with your giant body. / Dwight: Oh, ’cause there’s *a huge line of people* who want your… tchotchkes.',
+      said: '「テーブルがふさがってる」に「ああ、お前のガラクタをほしがる行列ができてるもんな」と返す。',
       mean: 'Oh, ’cause 〜 ＝「へえ、〜だからね」と相手をからかう皮肉。本当は逆の意味で、行列なんてない。',
-      trap: 'huge line（大行列）を本当と取りやすい。決め手は言い返しの People like my stuff。',
+      trap: 'huge line（大行列）を本当と取りやすい。「じゃま」への返事なので、客はいない。',
       use: 'Sorry, is there a line here?（すみません、ここ並んでますか？）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'pitch', reveals: ['candle'], seg: [48.5, 62.3],
       stem: 'In Dwight’s story, what will Ryan think?',
       ja: 'ドワイトの話では、ライアンはどう思う？',
-      choices: ['She is seeing other men', 'She is trying to save money', 'She likes old candles'], a: 0,
-      choicesJa: ['彼女はほかの男とも会っている', '彼女は節約している', '彼女は古いろうそくが好き'],
+      choices: ['Other men want her too', 'She is trying to save money', 'She likes old candles'], a: 0,
+      choicesJa: ['ほかの男も彼女をねらっている', '彼女は節約している', '彼女は古いろうそくが好き'],
       cue: '「He’s like」のあとの心の声',
       line: 'He’s like, “*Who else is she seeing?* I better *lock her down fast*.”',
       said: '使いかけのろうそくを見たライアンが「ほかに誰と会ってる？早く自分のものにしないと」と焦る、という話。',
@@ -107,11 +109,11 @@ export const leaveTelescope: Clip = {
     { id: 'n2', skill: 'pragma', level: 'B1', point: 'outsorry', ctx: true, seg: [71, 78.2],
       stem: 'What does Jim do when Dwight asks about the beans?',
       ja: 'ドワイトが豆のことを聞くと、ジムはどうする？',
-      choices: ['Says sorry they’re out', 'Tells him the price', 'Offers him a free one'], a: 0,
-      choicesJa: ['出ていたことを謝る', '値段を教える', 'ひとつただであげる'],
+      choices: ['Acts like they were hidden', 'Tells him the price', 'Offers him a free one'], a: 0,
+      choicesJa: ['隠していたふりをする', '値段を教える', 'ひとつただであげる'],
       cue: '「What is this?」への返事',
       line: 'Dwight: *What is this?* / Jim: *How did those get out?* I’m sorry.',
-      said: '「これは何だ？」に、ジムは「なんでそれが出てるんだ？ごめん」と言う。',
+      said: '「これは何だ？」に、ジムは「どうしてそれが出てるんだ？ごめん」と言う。',
       mean: 'How did those get out? ＝ なんで出てるの？ 見せたくなかったふりで、かえって気を引いている。',
       trap: 'ガレージセールなので値段を言う場面に聞こえるが、ジムは謝って引っこめようとする。',
       use: 'Sorry, that’s not for sale.（すみません、それは売り物じゃないんです）' },
@@ -144,8 +146,8 @@ export const leaveTelescope: Clip = {
     { id: 'd3', skill: 'infer', level: 'B1', point: 'told', seg: [89, 96.5],
       stem: 'Why did Jim believe the seller at first?',
       ja: 'ジムはなぜ最初、売り手を信じた？',
-      choices: ['He knew things about Jim', 'He showed proof they worked', 'He said he was a professor'], a: 0,
-      choicesJa: ['ジムのことを知っていた', '効き目の証拠を見せた', '教授だと言った'],
+      choices: ['He knew secrets about Jim', 'He showed proof they worked', 'He said he was a professor'], a: 0,
+      choicesJa: ['ジムの秘密を知っていた', '効き目の証拠を見せた', '教授だと言った'],
       cue: 'Dwight, he told me のあと。',
       line: 'he *told me things about myself* that there’s *no way he could have known*.',
       said: '「自分しか知らないはずのことを、あの男は言い当てた」と話す。',
@@ -182,8 +184,8 @@ export const leaveTelescope: Clip = {
     { id: 'a2', skill: 'phrase', level: 'B2', point: 'nicetry', seg: [111.2, 120.6],
       stem: 'What does Dwight mean by “Nice try”?',
       ja: 'ドワイトの「Nice try」はどういう意味？',
-      choices: ['I won’t fall for it', 'You almost fooled me', 'That was very smart'], a: 0,
-      choicesJa: ['その手には乗らない', 'もう少しでだまされた', 'とても頭がいいね'],
+      choices: ['You can’t fool me', 'You almost fooled me', 'That was very smart'], a: 0,
+      choicesJa: ['だまされないぞ', 'もう少しでだまされた', 'とても頭がいいね'],
       cue: 'try が2回。前につく語の変化。',
       line: '*Nice try*. No, correction. *Terrible try*.',
       said: '「その手には乗らないぞ。いや訂正、下手な手だ」と返す。',
@@ -191,11 +193,11 @@ export const leaveTelescope: Clip = {
       trap: 'nice（いい）からほめ言葉に聞こえるが、ほめていない。直後の Terrible try が手がかり。',
       use: 'Nice try. I’m not falling for it.（その手には乗らないよ）' },
 
-    { id: 'n3', skill: 'pragma', level: 'B1', point: 'family', ctx: true, seg: [128.5, 137.6],
+    { id: 'n3', skill: 'pragma', level: 'B1', point: 'family', ctx: true, seg: [128.5, 135.5],
       stem: 'How does Ryan’s mom answer “You should sell this”?',
       ja: '「これ売ったほうがいいよ」に、ライアンのお母さんは何と答える？',
-      choices: ['It’s only for family', 'It isn’t good enough', 'She has no time'], a: 0,
-      choicesJa: ['家族のためだけのもの', 'そこまでおいしくない', '時間がない'],
+      choices: ['No, it’s not for selling', 'Yes, it’s a great idea', 'Maybe, if it’s easy'], a: 0,
+      choicesJa: ['だめ、売り物じゃない', 'うん、いい考えね', '簡単なら考える'],
       cue: '「she always says」のあと',
       line: 'Ryan: Mom, *you should sell this*. You’d make a fortune. / Mom: No, *it’s just for family*.',
       said: '「ママ、これ売ったら大もうけできるよ」と言うと、母はいつも「だめ、家族のためだけ」と言う、と話す。',
@@ -203,7 +205,7 @@ export const leaveTelescope: Clip = {
       trap: '大もうけと聞いて、母も乗り気と考えがち。答えは No のあと。',
       use: 'Sorry, this recipe is just for family.（ごめん、このレシピは家族だけの秘密なの）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [137.5, 147.2],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'party', seg: [137.6, 147.2],
       stem: 'How does Ryan get his mom to make so much pesto?',
       ja: 'ライアンはどうやって母親にペストをたくさん作らせる？',
       choices: ['It’s for a big party', 'He’ll share the money', 'The family wants it'], a: 0,
@@ -219,13 +221,13 @@ export const leaveTelescope: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'bottles', seg: [145.9, 151.3],
       stem: 'How much pesto does Ryan say his mom made?',
       ja: '母親はペストをどれくらい作った、とライアンは言う？',
-      choices: ['About 50 bottles', 'About 100 bottles', 'About 1,000 bottles'], a: 1, keep: true,
-      choicesJa: ['約50本', '約100本', '約1,000本'],
+      choices: ['About 10 bottles', 'About 50 bottles', 'About 100 bottles', 'About 1,000 bottles'], a: 2, keep: true,
+      choicesJa: ['約10本', '約50本', '約100本', '約1,000本'],
       cue: 'Anyway のあと、bottles の前。',
       line: 'she makes *like a hundred bottles* worth.',
       said: '「結局、母はだいたい100本分作った」と話す。',
       mean: '数の前の like ＝ だいたい。a hundred ＝ 100。',
-      trap: 'fifty なら「フィフ」、thousand なら「サウ」で始まる。「ハン」と聞こえたら100。',
+      trap: 'ten なら「テン」と短く、fifty なら「フィフ」、thousand なら「サウ」で始まる。「ハン」と聞こえたら100。',
       use: 'It took like an hour.（1時間くらいかかった）' },
 
 
@@ -318,8 +320,8 @@ export const leaveTelescope: Clip = {
     { id: 'n6', skill: 'infer', level: 'B2', point: 'worthless', reveals: ['ending'], ctx: true, seg: [251.8, 259.6],
       stem: 'What do Dwight and Jim agree on?',
       ja: 'ドワイトとジムは何について意見が合う？',
-      choices: ['The beans are likely worthless', 'The beans are really magic', 'The telescope is broken'], a: 0,
-      choicesJa: ['豆はたぶん価値がない', '豆は本当に魔法の豆', '望遠鏡はこわれている'],
+      choices: ['The beans may be useless', 'The beans are really magic', 'The telescope is broken'], a: 0,
+      choicesJa: ['豆はたぶん役に立たない', '豆は本当に魔法の豆', '望遠鏡はこわれている'],
       cue: '「I’ll take them」のあと',
       line: 'Dwight: All right, I’ll take them. They’re *probably worthless*. / Jim: *Probably.*',
       said: '「よし、もらおう。たぶん価値はないけどな」に、ジムが「たぶんね」と返し、「望遠鏡は置いていけ」と言う。',

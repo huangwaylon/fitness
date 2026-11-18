@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 13, rewrite 6, retire 2, new 4, ctx 5, tx 29
+// R4 REVIEW 2026-11-18: keep 13, rewrite 6, retire 2, new 4, ctx 5, tx 29, qa 8
 // A2 REVIEW 2026-11-17: keep 11, rewrite 7, retire 3, new 3
 // “Monica Helps Rachel Connect with Mark | Friends” (the official Friends channel, Best of Season 3): Mark hasn't
 // called, a friend talks Rachel into calling him herself (over Ross's "only good things for you"), the call gets her a
@@ -52,7 +52,7 @@ export const markCall: Clip = {
       choicesJa: ['本当は喜んでいる', '本当に気の毒に思っている', '助けたい'],
       cue: '「Yeah」のあとの決まり文句と、最後の形容詞。',
       line: '*Yeah, right.* Look at you. You’re *practically giddy*.',
-      said: '「よく言うよ。ほとんど浮かれてるじゃない」と言い返す。',
+      said: '「よく言うよ。ほとんどウキウキしてるじゃない」と言い返す。',
       mean: 'Yeah, right は同意でなく「うそでしょ」。giddy ＝ うきうき。',
       trap: 'Yeah を「そうだね」と取ると同意に聞こえる。Yeah, right は疑いの決まり文句。',
       use: 'Yeah, right. You never get up early.（よく言うよ、早起きなんてしないくせに）' },
@@ -155,8 +155,8 @@ export const markCall: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'excuse', seg: [56.6, 64.6],
       stem: 'What excuse does Rachel pass on for Mark?',
       ja: 'マークの言い訳として、レイチェルは何を伝える？',
-      choices: ['He left it at work', 'He was busy all weekend', 'He lost it at home'], a: 0,
-      choicesJa: ['番号を職場に置いてきた', '週末ずっと忙しかった', '家でなくした'],
+      choices: ['He left it at work', 'He lost his phone', 'He was out of town'], a: 0,
+      choicesJa: ['番号を職場に置いてきた', '携帯をなくした', '町を離れていた'],
       cue: '「He」で始まる最初の文の最後。',
       line: 'He *left my number at work*. He was going to get it, but…',
       said: '「番号を職場に置いてきたんだって。姪の宿題を手伝ってたって」と伝える。',
@@ -179,13 +179,13 @@ export const markCall: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [67.1, 75.3], keep: true,
       stem: 'Which day does Mark suggest on the phone?',
       ja: 'マークは電話で、いつを提案する？',
-      choices: ['Tonight', 'Tomorrow', 'Next Sunday'], a: 1,
-      choicesJa: ['今夜', '明日', '次の日曜'],
+      choices: ['Today', 'Tonight', 'Tomorrow', 'Next Sunday'], a: 2,
+      choicesJa: ['今日', '今夜', '明日', '次の日曜'],
       cue: '「oh my God」のあと、驚いた一語。',
       line: 'Yeah, oh, my God, *tomorrow*? That— no, it’s perfect.',
       said: '「えっ、明日？いや、ちょうどいい」と、驚きながら受ける。',
       mean: '急な日程に一瞬とまどうが、すぐ「完璧」と言い直す。それだけ乗り気だと分かる。',
-      trap: 'tonight なら「トゥナイト」、next Sunday なら「ネクスト」で始まる。「トゥモロウ」なら明日。',
+      trap: 'today なら「トゥデイ」、tonight なら「トゥナイト」、next Sunday なら「ネクスト」で始まる。「トゥモロウ」なら明日。',
       use: 'Tomorrow? Sure, that works for me.（明日？うん、大丈夫）' },
 
     { id: 'k1', skill: 'pragma', level: 'B1', point: 'thereyougo', reveals: ['outcome'], ctx: true, seg: [75.0, 82.0],
@@ -284,7 +284,7 @@ export const markCall: Clip = {
       use: 'Dinner, as in a real date?（ディナーって、本当のデートってこと？）' },
 
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'crazy', reveals: ['expect'], seg: [119, 129],
-      stem: 'What does Ross mean with “Am I out of my mind?”',
+      stem: 'What does Ross mean by “Am I out of my mind?”',
       ja: '「Am I out of my mind?」で、ロスは何を言いたい？',
       choices: ['He thinks he’s right', 'He thinks he’s wrong', 'He wants an opinion'], a: 0,
       choicesJa: ['自分は正しいと思っている', '自分が悪いと思っている', '意見を聞きたい'],
@@ -302,8 +302,8 @@ export const markCall: Clip = {
       choicesJa: ['自分の話にしている', '秘密にすべき', 'レイチェルを手伝うべき'],
       cue: '「Ross」と名前を呼んだあとの2文。',
       line: 'Ross: This dreamy guy is taking my girlfriend out for a meal. / Friend: Ross, this *isn’t even about you*. This is about Rachel and *something wonderful happening for her*.',
-      said: '「素敵な男が僕の彼女を食事に」に、「あなたの話じゃない。レイチェルにいいことが起きてる話」。',
-      mean: 'it isn’t even about you ＝「そもそもあなたの話じゃない」。主役はレイチェルだと示す。',
+      said: '「素敵な男が僕の彼女を食事に」に、「そもそもロスの話じゃない。レイチェルにすてきなことが起きてる話」。',
+      mean: 'it isn’t even about you ＝「そもそもロスの話じゃない」。主役はレイチェルだと示す。',
       trap: 'about Rachel から「手伝って」と考えがち。not A, B の形は A を消して B を立てる。',
       use: 'This isn’t about me. It’s about the team.（これは私の話じゃない。チームの話だ）' },
 
