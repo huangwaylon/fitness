@@ -1,6 +1,7 @@
 // 英語すごろく's words (docs/sugoroku.md "Words"): the familiar list (scripts/sugoroku-words.ts: words.txt) and the everyday
 // ones with their Japanese (everyday.json), what a word may be (accept.txt: any real word), loaded once with the game
 // (their own chunks), and what a rack can make (ヒント: the familiar only).
+import { once } from '#lib/once.ts';
 import { spellable } from './tiles.ts';
 
 export interface Words {
@@ -40,13 +41,6 @@ export function wordsOf(list: string, everyday: Readonly<Record<string, string>>
   };
 }
 
-let loading: Promise<Words> | null = null;
-/** The words, fetched once. */
-export function loadWords(): Promise<Words> {
-  return (loading ??= Promise.all([import('./words.txt?raw'), import('./everyday.json'), import('./accept.txt?raw')]).then(([l, e, a]) =>
-    wordsOf(l.default, e.default, decodeAccept(a.default))))
-    .catch((err: unknown) => {
-      loading = null;
-      throw err;
-    });
-}
+/** The words, fetched once (a failure tried again next time). */
+export const loadWords: () => Promise<Words> = once(() =>
+  Promise.all([import('./words.txt?raw'), import('./everyday.json'), import('./accept.txt?raw')]).then(([l, e, a]) => wordsOf(l.default, e.default, decodeAccept(a.default))));

@@ -1,5 +1,6 @@
 // 英語すごろく's ぶん spaces (docs/sugoroku.md "Rules"): a line from English Study's フレーズ deck (3–6 words with its
 // Japanese and a level: scripts/sugoroku-words.ts writes sentences.json), its words shuffled into tiles to put back in order.
+import { once } from '#lib/once.ts';
 import { seeded, shuffle } from '#lib/random.ts';
 
 export interface Sentence {
@@ -37,11 +38,5 @@ export function tilesOf(s: Sentence, seed: string): { id: number; w: string }[] 
 /** Whether the words picked read the line (judged by the string: equal words in either order count). */
 export const inOrder = (s: Sentence, picked: readonly string[]): boolean => picked.join(' ') === s.en;
 
-let loading: Promise<readonly Line[]> | null = null;
-/** The lines, fetched once (their own chunk). */
-export function loadSentences(): Promise<readonly Line[]> {
-  return (loading ??= import('./sentences.json').then((m) => m.default as unknown as Line[])).catch((err: unknown) => {
-    loading = null;
-    throw err;
-  });
-}
+/** The lines, fetched once (their own chunk; a failure tried again next time). */
+export const loadSentences: () => Promise<readonly Line[]> = once(() => import('./sentences.json').then((m) => m.default as unknown as Line[]));
