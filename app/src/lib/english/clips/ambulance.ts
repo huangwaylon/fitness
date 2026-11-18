@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 2, ctx 6, tx 6
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 2, ctx 6, tx 6, qa 6
 // A2 REVIEW 2026-11-17: keep 15, rewrite 2, retire 6, new 1
 // “Andy Runs Into an Ambulance | Parks and Recreation” (the official Parks and Recreation channel, Season 5): after a
 // day of doctors, Andy is handed a $500 bill, insists his “free medicine card” and “the insurance thing” cover it, runs
@@ -17,8 +17,8 @@ export const ambulance: Clip = {
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
     { id: 'd1', skill: 'detail', level: 'B1', point: 'food', seg: [0, 5],
-      stem: 'What will they find out in a few days?', ja: '数日でわかるのは何？',
-      choices: ['If he is allergic to food', 'If his blood test is fine', 'If he is allergic to drugs'], a: 0,
+      stem: 'What will the doctor know in a few days?', ja: '数日後に医者にわかるのは何？',
+      choices: ['If Andy is allergic to food', 'If his blood tests are fine', 'If Andy is allergic to drugs'], a: 0,
       choicesJa: ['食べ物アレルギーがあるか', '血液検査が大丈夫か', '薬のアレルギーがあるか'],
       cue: '最初の「if you’re」のあと',
       line: 'Okay, if you’re *allergic to any food*, we’ll know in a few days.',
@@ -105,7 +105,7 @@ export const ambulance: Clip = {
       use: 'It’s five hundred dollars.（500ドルです）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'hedge', reveals: ['covered'], seg: [36.3, 43.9],
-      stem: 'Why does Andy say “I think, uh, you’re wrong”?', ja: 'アンディはなぜ「I think」と付ける？',
+      stem: 'Why does Andy put “I think” before “you’re wrong”?', ja: 'アンディはなぜ「you’re wrong」の前に I think を付ける？',
       choices: ['To say no softly', 'To ask her to check', 'To agree to pay'], a: 0,
       choicesJa: ['やわらかく反対するため', '確認を頼むため', '払うと同意するため'],
       cue: '金額を言われたあと',
@@ -237,8 +237,8 @@ export const ambulance: Clip = {
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'reel', reveals: ['bam'], seg: [65.8, 71.5],
       stem: 'What does “*reel you in* with the free stuff” mean?', ja: '「reel you in with the free stuff」の意味は？',
-      choices: ['Pull you in, like a fish', 'Push you away from them', 'Send you home with gifts'], a: 0,
-      choicesJa: ['魚のように引きこむ', '遠ざける', 'おみやげを持たせて帰す'],
+      choices: ['Catch you, like a fish', 'Push you away from them', 'Send you home with gifts'], a: 0,
+      choicesJa: ['魚のようにつかまえる', '遠ざける', 'おみやげを持たせて帰す'],
       cue: '「scam artists」のあと',
       line: '*Reel you in* with the free stuff.',
       said: 'アンディが「タダのもので釣って、引きこむんだ」と言う。',
@@ -271,7 +271,7 @@ export const ambulance: Clip = {
       choices: ['She loves it', 'She hates it', 'She thinks it’s silly'], a: 0,
       choicesJa: ['すごく気に入っている', '大嫌い', 'ばかげていると思う'],
       cue: 'アンディの計画への、エイプリルの返事。',
-      line: 'Andy: You could sew up my lip underneath the bridge somewhere. / April: Mmm, *so romantic*.',
+      line: 'Andy: You could sew up my lip underneath the bridge somewhere. / April: Mmm, it’s *so romantic*.',
       said: '「橋の下で唇を縫えばいい」に、エイプリルが「うん、ロマンチック」と言う。',
       mean: 'so romantic ＝ すごくロマンチック。変な計画でも、エイプリルは喜んでいる。',
       trap: '計画が変なので、皮肉に聞こえるが、本当は本気。この2人は変な計画ほど喜ぶ。',
@@ -289,14 +289,14 @@ export const ambulance: Clip = {
       use: 'Let’s meet under the bridge.（橋の下で会おう）' },
 
     { id: 'i4', skill: 'infer', level: 'B1', point: 'what', ctx: true, seg: [87.5, 95],
-      stem: 'What do they say about insurance at the end?', ja: '最後に、2人は保険について何と言う？',
+      stem: 'What do Andy and April know about insurance?', ja: 'アンディとエイプリルは、保険について何を知っている？',
       choices: ['They don’t know what it is', 'It pays for sewing kits', 'It pays for games too'], a: 0,
       choicesJa: ['保険が何か知らない', '裁縫セットも払ってくれる', 'ゲームも払ってくれる'],
-      cue: '最後の短い質問',
-      line: 'Andy: Do you think sewing kits are covered by insurance? … Or, like, Xbox games? / April: *What is insurance?* / Andy: *I don’t know.*',
+      cue: '「Xbox games?」のあとの短い質問と返事。',
+      line: 'Andy: Do you think sewing kits are covered by insurance? … Or, like, Xbox games? / *What is insurance?* / *I don’t know.*',
       said: '「裁縫セットは保険がきく？ゲームは？」に「保険って何？」「知らない。どうでもいい」と返る。',
       mean: 'What is 〜? ＝ 〜って何？ Who cares? ＝ どうでもいい（くだけた言い方）。2人とも保険が分かっていない。',
-      trap: 'ゲームまで出るので、ふざけていると考えがち。決め手は What is insurance? の返事。',
+      trap: '裁縫セットやゲームは聞いているだけ。決め手は What is insurance?',
       use: 'Is this covered by insurance?（これは保険がききますか）' },
   ]
 };
