@@ -1038,7 +1038,7 @@ const probe = () => {
   window.clearInterval = ((id?: number) => (id !== undefined && w.__iv.delete(id), ci(id))) as typeof window.clearInterval;
 };
 const live = (p: Page) => p.evaluate(() => { const w = window as unknown as { __msg: number; __iv: Set<number> }; return [w.__msg, w.__iv.size]; });
-const ytVideo = (p: Page) => p.frames().find((f) => f.url().startsWith('https://www.youtube-nocookie.com/'))?.evaluate(() => (window as unknown as { __yt: { videoId: string } }).__yt.videoId);
+const ytVideo = (p: Page) => p.frames().find((f) => f.url().startsWith('https://www.youtube-nocookie.com/'))?.evaluate(() => (window as unknown as { __yt?: { videoId: string } }).__yt?.videoId);
 
 test('フレーズ: one embed a set — 5 cards, one frame throughout, each next clip cued into it, ▶ its segment on a later card; leaving the tab leaves no listener or timer', async ({ page }) => {
   await fakeYoutube(page, { rate: 8, dur: 3000 });
