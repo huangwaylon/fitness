@@ -218,7 +218,7 @@ YouTube's own small; this phone's), sent each time the captions load and when it
 the frame with a stand-in player.
 
 **The log** (`npm run logs -- --event english.fail`): a bank that didn't load (`bank`: its HTTP status, none for no
-answer, `bad` a file not its clip), a フレーズ deck file that didn't (`deck`, its number `n`, likewise), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the
+answer, `bad` a file not its clip), a フレーズ deck file that didn't (`deck`, its number `n`, likewise) (failing a second time online: a reload into the newer build, as a lesson's bank), the embed in error (`embed` with YouTube's `code`; `hello` no answer to the
 handshake), a play that didn't start (`stuck`, once a lesson); each with the clip and whether the phone was online.
 
 ## Scene summaries

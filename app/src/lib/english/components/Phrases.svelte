@@ -12,6 +12,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { count } from '#lib/sync/log.ts';
+  import { safeReload } from '#lib/ui-state/reload.ts';
   import { LIBRARY, loadShard, metaById } from '../data.ts';
   import { cursorOf, heldOf, keyOf, newSet, nextShard, onCard, ordered, passed, revealed, saveCursor, SET, shardAt, type Cursor } from '../deck.ts';
   import { mineOf, saved, saveMine, unsaved } from '../phrase-review.ts';
@@ -37,6 +38,7 @@
   /** The cursor's shard, in my order. */
   let cards = $state.raw<PhraseEntry[]>([]);
   let status = $state<'loading' | 'ok' | 'failed'>('loading');
+  let fails = 0;
   let review = $state.raw(untrack(() => mineOf(me)));
   let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
 
@@ -64,6 +66,8 @@
       try {
         list = ordered(me, x.r, await loadShard(shardAt(me, x)));
       } catch {
+        // a second failure online: the file is gone (a deploy since this page loaded), so the newer build (as Lesson's bank)
+        if (++fails > 1 && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
         status = 'failed';
         return;
       }
