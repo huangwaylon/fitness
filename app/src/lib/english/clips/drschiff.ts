@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 16, retire 0, new 3, ctx 5, tx 12
+// R4 REVIEW 2026-11-18: keep 2, rewrite 16, retire 0, new 3, ctx 5, tx 12, qa 2
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 2, new 0
 // “Why Rachel Can’t Stop Flirting with Her Gynecologist | Friends” (the official Friends channel, Best of Season 8):
 // Rachel finds herself drawn to every man she sees; a friend says it's normal around the fourth month of pregnancy.
@@ -42,13 +42,13 @@ export const rachelFlirtsDoctor: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'fourth', seg: [16.2, 27.1], keep: true,
       stem: 'According to Phoebe, which month of pregnancy is Rachel in?',
       ja: 'フィービーによると、レイチェルは妊娠何か月目？',
-      choices: ['The third', 'The fourth', 'The fifth'], a: 1,
-      choicesJa: ['3か月目', '4か月目', '5か月目'],
+      choices: ['The third', 'The fourth', 'The fifth', 'The sixth'], a: 1,
+      choicesJa: ['3か月目', '4か月目', '5か月目', '6か月目'],
       cue: '「Around the」のあと。2回出てくる。',
       line: 'about the *fourth month* … Around the *fourth month*, your hormones start going crazy.',
       said: '「今4か月目くらいでしょ？そのころホルモンが暴れだすの」と言う。',
       mean: 'fourth ＝ 4番目（フォース）。月を順番で言うので、four ではなく fourth。',
-      trap: 'あとの triplets（三つ子）から3を選びやすい。fourth は「フォース」、third は「サード」、fifth は「フィフス」。',
+      trap: 'あとの triplets（三つ子）から3を選びやすい。fourth は「フォース」、third「サード」、fifth「フィフス」、sixth「シックスス」。',
       use: 'I’m in my fourth month.（今、妊娠4か月なんです）' },
 
     { id: 'c1', skill: 'pragma', level: 'B1', point: 'absolutely', ctx: true, seg: [25.0, 31.5],

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 5, ctx 7, tx 19
+// R4 REVIEW 2026-11-18: keep 9, rewrite 10, retire 0, new 5, ctx 7, tx 19, qa 13
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 5, new 1
 // “when you get drunk at the work party | Parks and Recreation” (the official Parks and Recreation channel, Season 3):
 // a night of "snake juice" at a club: Ron pushes the drink on a stranger, Chris tells the club's owner he must sell his
@@ -37,8 +37,8 @@ export const snakeJuice: Clip = {
       choices: ['Drink it right now', 'Buy a bottle later', 'Leave the club'], a: 0,
       choicesJa: ['今すぐ飲め', 'あとでボトルを買え', '店から出ていけ'],
       cue: '「Thanks, man」のあと',
-      line: 'Ron: You should buy it. / Man: Yeah, okay. Thanks, man. / Ron: Son, my recommendation is essentially a guarantee. *Drink this, now.*',
-      said: '「ああ、うん、どうも」と流され、「俺のおすすめは保証も同然。今すぐ飲め」と押す。',
+      line: 'Ron: You should buy it. / Man: Yeah, okay. Thanks, man. / Ron: Son, … my recommendation is essentially a guarantee. *Drink this, now.*',
+      said: '「ああ、うん、どうも」と流され、「私のおすすめは保証も同然。今すぐ飲め」と押す。',
       mean: 'Yeah, okay. Thanks, man ＝「はいはい、どうも」。話を終わらせたいときの軽い返事。ロンは引かない。',
       trap: '最初の You should buy it（買うべき）が耳に残りやすい。最後の Drink this, now が答え。',
       use: 'Trust me, you’ll love it.（信じて、きっと気に入るよ）' },
@@ -63,7 +63,7 @@ export const snakeJuice: Clip = {
       cue: '「I believe」のあと',
       line: 'I believe an *ounce* of that would *literally kill me*.',
       said: '「1オンスでも飲んだら、本当に死ぬと思う」と返す。',
-      mean: 'literally ＝ 文字どおりは「本当に」。ここは大げさに強める言い方で「マジで死ぬ」。少しでも飲みたくない。',
+      mean: 'literally ＝ もとは「文字どおりに」。ここは大げさに強める言い方で「マジで死ぬ」。少しでも飲みたくない。',
       trap: 'ounce（少しの量）が聞こえると、少しなら飲むと勘違いしやすい。would literally kill me まで聞く。',
       use: 'That would literally kill me.（そんなの本当に死んじゃう）' },
 
@@ -144,7 +144,7 @@ export const snakeJuice: Clip = {
       line: '*No offense, but* maybe you think I’m going too fast because you’re going too slow with Ben.',
       said: '「悪いけど、私が早すぎると思うのは、あなたがベンとのことで遅すぎるからじゃない？」と言う。',
       mean: '文字どおりは「攻撃じゃないよ」。このあと失礼なことを言う前置き＝「悪いけど」。言われた側はむっとしやすい。',
-      trap: 'offense に「ごめん」の響きがあり、謝っていると考えがち。決め手は but のあとの失礼な中身。',
+      trap: 'No offense を「ごめんね」という謝りと考えがち。決め手は but のあとの失礼な中身。',
       use: 'No offense, but I don’t like this song.（悪いけど、この曲は好きじゃないな）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'slow', ctx: true, reveals: ['nooffense'], seg: [74.0, 81.3],
@@ -319,7 +319,7 @@ export const snakeJuice: Clip = {
       line: '*Turn this music down.*',
       said: 'うるさい店の中で、誰かが「音楽を小さくしろ」と叫ぶ。',
       mean: 'turn 〜 down ＝ 音を小さくする（down ＝ 下げる）。大きくするのは turn up。最後の down が強く聞こえる。',
-      trap: 'クラブなので、もっと大きく（up）と考えがち。最後は「ダウン」で、up の p で止まる音はない。',
+      trap: 'クラブなので、もっと大きく（up）と考えがち。最後は「ダウン」。up なら p で止まり、off なら「オフ」。',
       use: 'Could you turn the music down, please?（音楽を小さくしてもらえますか）' },
 
     { id: 'c2', skill: 'detail', level: 'B1', point: 'cab', ctx: true, seg: [224.2, 230.7],
@@ -335,20 +335,20 @@ export const snakeJuice: Clip = {
       use: 'Let’s take a cab to the station.（駅までタクシーで行こう）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'walking', seg: [237.9, 244.6],
-      stem: 'What happens if anyone dry-heaves in the car?',
-      ja: '誰かが車で吐きそうになったら、どうなる？',
-      choices: ['Everyone walks home', 'Only that person walks', 'That person cleans up'], a: 0,
-      choicesJa: ['全員歩いて帰る', 'その人だけ歩く', 'その人が掃除する'],
+      stem: 'What happens if anyone feels sick in the car?',
+      ja: '誰かが車で気持ち悪くなったら、どうなる？',
+      choices: ['Everyone walks home', 'Only that person walks', 'That person cleans the car'], a: 0,
+      choicesJa: ['全員歩いて帰る', 'その人だけ歩く', 'その人が車を掃除する'],
       cue: '「If even one of you」のあと',
       line: 'If *even one of you* thinks about dry heaving in my car, *you’re all walking home*.',
       said: '「一人でも車で吐きそうになったら、全員歩いて帰ってもらう」と言い渡す。',
-      mean: 'even one of you ＝ 一人でも。you’re all walking ＝ 全員歩く。',
+      mean: 'dry heave ＝ 吐きそうでえずくこと。even one of you ＝ 一人でも。you’re all walking ＝ 全員歩く。',
       trap: 'one of you が耳に残り、その人だけと思いやすい。後半の all が答え。',
       use: 'If even one of you is late, we all wait.（一人でも遅れたら全員待つ）' },
 
     { id: 'g3', skill: 'gist', level: 'B1', point: 'hungover', seg: [248.5, 264.0],
       stem: 'What is wrong with everyone the next morning?',
-      ja: '次の朝、みんなはどうした？',
+      ja: '次の朝、みんなはどんな具合？',
       choices: ['They drank too much last night', 'They are late for a meeting', 'They are still angry about the fight'], a: 0,
       choicesJa: ['ゆうべ飲みすぎた', '会議に遅れている', 'まだけんかに怒っている'],
       cue: '「health department」のあと',
