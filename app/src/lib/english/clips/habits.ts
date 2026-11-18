@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 3, new 2, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 3, new 2, ctx 4, tx 3, qa 17
 // A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 4, new 0
 // “Everyone's Annoying Habits | Friends” (the official Friends channel, Best of Season 1): told off for his own habit,
 // Chandler lists his friends' flaws (Joey's knuckle-cracking, Ross's over-pronouncing, Monica's snort) and asks to be
@@ -21,7 +21,7 @@ export const habits: Clip = {
       cue: '「don’t do that」への返事',
       line: '*Hey, don’t do that.* It’s worse than the thumb. / Chandler: Hey, this is *so unfair*.',
       said: '「それやめて」と言われ、「こんなの不公平だよ」と返す。',
-      mean: 'unfair ＝ 不公平（fair の反対）。謝らずに言い返している。the thumb ＝ 前の別の癖（親指）。',
+      mean: 'unfair ＝ 不公平（fair の反対）。謝らずに言い返している。the thumb ＝ 前の話で缶ジュースに入っていた親指。',
       trap: 'それやめて、のあとなので謝ると考えがち。返事は so unfair という不満。',
       use: 'That’s not fair!（それはずるいよ）' },
 
@@ -63,7 +63,7 @@ export const habits: Clip = {
       trap: 'flaw だけ拾うと「欠点を聞かれた」と取りやすい。返事の勢いを聞く。',
       use: 'So I was late. Big deal.（遅れたからって、何？）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'knuckle', seg: [12.5, 16.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'knuckle', seg: [12.98, 16.24],
       stem: 'Which habit of Joey’s does Chandler mention?', ja: 'チャンドラーが挙げるジョーイの癖は？',
       choices: ['Cracking his knuckles', 'Cracking his neck', 'Drumming his fingers'], a: 0,
       choicesJa: ['指の関節を鳴らす', '首を鳴らす', '指で机をたたく'],
@@ -79,7 +79,7 @@ export const habits: Clip = {
     // why: nobody minds ← "like" read as "for example" and the words taken literally; fix first ← the list heard as a
     //   ranking against his own flaw
 
-    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'like', reveals: ['knuckle'], seg: [12.5, 16.4], retired: true,
+    { id: 'pr1', skill: 'pragma', level: 'C1', point: 'like', reveals: ['knuckle'], seg: [12.98, 16.4], retired: true,
       stem: 'What is Chandler really saying in his first example, about Joey?',
       choices: ['That Joey’s habit is just as annoying', 'That nobody seems to mind Joey’s habit',
                 'That Joey’s habit is the one to fix first'], a: 0,
@@ -90,7 +90,7 @@ export const habits: Clip = {
       trap: 'Like を「例えば」と取ると文字通りの意味になる。文頭の Like は反語を疑う。',
       use: 'Like you’ve never been late!（君だって遅刻したことあるくせに）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'pronounce', seg: [12.8, 23.6], retired: true,
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'pronounce', seg: [12.98, 23.6], retired: true,
       stem: 'Which habit of Ross’s does Chandler name?', ja: 'チャンドラーが挙げるロスの癖は？',
       choices: ['Over-pronouncing every word', 'Mispronouncing every word', 'Over-explaining every word'], a: 0,
       choicesJa: ['一語一語はっきり言いすぎる', '一語一語発音をまちがえる', '一語一語説明しすぎる'],
@@ -101,7 +101,7 @@ export const habits: Clip = {
       trap: 'every single word だけ拾うと、別の癖と迷いやすい。長い一語の頭の over を聞く。',
       use: 'Could you say that word slowly?（その単語、ゆっくり言って）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'snort', seg: [17.5, 21.5],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'snort', seg: [17.92, 21.28],
       stem: 'What does Chandler say about Monica?', ja: 'チャンドラーはモニカについて何と言う？',
       choices: ['She snorts when she laughs', 'She sniffs when she laughs', 'She sneezes when she laughs'], a: 0,
       choicesJa: ['笑うと鼻を鳴らす', '笑うと鼻をすする', '笑うとくしゃみをする'],
@@ -125,13 +125,13 @@ export const habits: Clip = {
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [23.3, 30],
       stem: 'Fill the gap: “Why ___ accept me for this?”', ja: '空所に入るのは？ “Why ___ accept me for this?”',
-      choices: ['can’t you', 'can you', 'won’t you'], a: 0,
-      choicesJa: ['〜できないの', '〜できるの', '〜してくれないの'],
+      choices: ['can’t you', 'don’t you', 'won’t you'], a: 0,
+      choicesJa: ['〜できないの', '〜しないの', '〜してくれないの'],
       cue: 'Why のすぐあと',
       line: 'I accept all those flaws. Why *can’t you* accept me for this?',
       said: '「全部受け入れてる。なのに、なぜ受け入れられない？」と聞く。',
       mean: 'can’t you が「キャンチュ」のようにつながる。t は消えても母音は長め。',
-      trap: 'can you なら「キャニュ」と短く弱い。won’t you は「ウォンチュ」。強く長い「キャンチュ」なら can’t you。',
+      trap: 'don’t you は「ドンチュ」、won’t you は「ウォンチュ」。「キャ」で始まる「キャンチュ」なら can’t you。',
       use: 'Why can’t you just say yes?（なんで素直にイエスと言えないの）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'accept', reveals: ['cant'], seg: [23.3, 30], retired: true,
@@ -147,7 +147,7 @@ export const habits: Clip = {
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'everybody', reveals: ['knuckle'], seg: [34.1, 39.1],
       stem: 'What does Joey ask about his habit?', ja: 'ジョーイは自分の癖について何を聞く？',
-      choices: ['Whether it bothers everybody', 'Whether everybody does it too', 'Whether it is really loud'], a: 0,
+      choices: ['Whether it annoys everyone', 'Whether everyone does it too', 'Whether it is really loud'], a: 0,
       choicesJa: ['みんな気になっているか', 'みんなもやっているか', '本当にうるさいか'],
       cue: '「knuckle-cracking」のあと',
       line: 'Does the knuckle-cracking *bother everybody* at this point?',
@@ -167,7 +167,7 @@ export const habits: Clip = {
       trap: 'live without を live with（平気）と混ぜやすい。Well… のためらいは、言いにくい本音の合図。',
       use: 'Honestly, I could live without the music.（正直、音楽はなくてもいいかな）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', seg: [41.0, 71.0],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'turn', seg: [41.0, 70.38],
       stem: 'What happens after Chandler’s speech?', ja: 'チャンドラーの話のあと、どうなる？',
       choices: ['They complain about each other', 'They agree his is the worst', 'They say sorry to each other'], a: 0,
       choicesJa: ['お互いの癖に文句を言う', '彼の癖が最悪だと認める', 'お互いに謝る'],
@@ -208,7 +208,7 @@ export const habits: Clip = {
       trap: '話題がジョーイなので、的も彼と取りやすい。比べる物に出された人が本当の的。',
       use: 'Is it bad, or Mike’s-singing bad?（まずい？それともマイクの歌くらい？）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'him', seg: [53.2, 58.2],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'him', seg: [53.2, 57.22],
       stem: 'Fill the gap: “Don’t listen ___, Pheebs.”', ja: '空所に入るのは？ “Don’t listen ___, Pheebs.”',
       choices: ['to him', 'to them', 'to me'], a: 0,
       choicesJa: ['彼の言うこと', '彼らの言うこと', '私の言うこと'],
@@ -241,7 +241,7 @@ export const habits: Clip = {
       trap: 'isn’t が聞こえて反対に聞こえるが、nothing wrong に isn’t で合わせた「そう、悪くない」。',
       use: 'Indeed, it’s a lovely day.（まことに、いい日ですね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'backwork', seg: [73.6, 79.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'backwork', seg: [73.6, 76.5],
       stem: 'Type what Rachel says: “I should really ___.” (4 words)', ja: '書こう：“I should really ___.”（4語）',
       answer: 'get back to work',
       cue: '「really」のあと',
@@ -253,8 +253,8 @@ export const habits: Clip = {
 
     { id: 'i1', skill: 'infer', level: 'C1', point: 'ordered', ctx: true, reveals: ['backwork'], seg: [74.6, 80.6],
       stem: 'What does the reply say about Rachel’s work?', ja: 'この返事は、レイチェルの仕事について何を言っている？',
-      choices: ['She often brings the wrong food', 'She takes orders too slowly', 'The café is busy without her'], a: 0,
-      choicesJa: ['よく注文とちがう物を出す', '注文を取るのが遅い', '彼女がいないと店が忙しい'],
+      choices: ['She often gets orders wrong', 'She takes orders too slowly', 'The café is busy without her'], a: 0,
+      choicesJa: ['よく注文をまちがえる', '注文を取るのが遅い', '彼女がいないと店が忙しい'],
       cue: '「otherwise」のあと',
       line: 'Rachel: I should really get back to work. / Yeah, otherwise someone might get *what they actually ordered*.',
       said: '「仕事に戻らなきゃ」に「そうだね、じゃないと誰かが注文どおりの物を受け取っちゃう」と返す。',
@@ -280,7 +280,7 @@ export const habits: Clip = {
       trap: 'Yeah で始まるので賛成に聞こえやすい。返事は言葉の形でなく中身に返す。',
       use: 'Hey, I’m not that bad at this!（ちょっと、そこまで下手じゃないよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'gloves', reveals: ['hair'], seg: [80, 87.1],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'gloves', reveals: ['hair'], seg: [80.5, 85.9],
       stem: 'What does “the gloves come off” mean?', ja: '“the gloves come off” はどういう意味？',
       choices: ['She will stop being nice', 'She will stop fighting', 'She is going back to work'], a: 0,
       choicesJa: ['もう遠慮しない', 'けんかをやめる', '仕事に戻る'],
