@@ -7,10 +7,11 @@ import { sort, type SortState } from './sort.ts';
 import { chain, type ChainState } from './chain.ts';
 import { numbers, type NumbersState } from './numbers.ts';
 import { shopping, type ShoppingState } from './shopping.ts';
+import { reply, type ReplyState } from './reply.ts';
 import type { MiniGame, MiniId } from './types.ts';
 
-export interface MiniStates { market: MarketState; spell: SpellState; together: TogetherState; sort: SortState; chain: ChainState; numbers: NumbersState; shopping: ShoppingState }
+export interface MiniStates { market: MarketState; spell: SpellState; together: TogetherState; sort: SortState; chain: ChainState; numbers: NumbersState; shopping: ShoppingState; reply: ReplyState }
 /** A game's state with its id (the phase's: game.ts). */
 export type MiniState = { [K in MiniId]: { id: K; s: MiniStates[K] } }[MiniId];
 
-export const GAMES: { readonly [K in MiniId]: MiniGame<MiniStates[K]> } = { market, spell, together, sort, chain, numbers, shopping };
+export const GAMES: { readonly [K in MiniId]: MiniGame<MiniStates[K]> } = { market, spell, together, sort, chain, numbers, shopping, reply };

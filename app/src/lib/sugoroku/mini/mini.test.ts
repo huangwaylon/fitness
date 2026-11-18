@@ -1,7 +1,7 @@
 // The mini-games' pure parts (docs/sugoroku.md "みんなで！"): the building blocks (options, clock, stars, hands) and each
 // game's reducer, hermetic (pinned seeds, the real word and line lists, no clock but the numbers given).
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
@@ -22,6 +22,7 @@ import { SORT_STREAM, binOf, sort, sortStream } from './sort.ts';
 import { SPELL_ROUNDS, spell, spellWord, type SpellState } from './spell.ts';
 import { mayPlace, nextWord, together, type TogetherState } from './together.ts';
 import { BOXES, FRAMES, SHOP_ASK_MS, SHOP_FILL_MS, SHOP_ITEMS, SHOP_LISTS, SHOP_ROUNDS, SHOP_SHELF, basketRight, lineJa, listJa, readCode, requestCheck, requestCode, requestText, rightSlots, shopRequest, shopping, slotText, type ShoppingState } from './shopping.ts';
+import { EXCHANGES, REPLY_ROUNDS, REPLY_TURN_MS, cardLine, reply, replyOn, type ReplyState } from './reply.ts';
 import { NUMBER_STREAM, inWords, numberStream, numbers, yearWords, type NumberPrompt } from './numbers.ts';
 import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
@@ -674,6 +675,99 @@ describe('おつかい', () => {
   });
 });
 
+describe('返事はどれ？', () => {
+  it('the content: 80–120 exchanges, ids once, A1–A2, one reply that fits and three that don’t, all different, each with casual Japanese; the フレーズ cards it reuses real', () => {
+    expect(EXCHANGES.length).toBeGreaterThanOrEqual(80);
+    expect(EXCHANGES.length).toBeLessThanOrEqual(120);
+    expect(new Set(EXCHANGES.map((e) => e.id)).size).toBe(EXCHANGES.length);
+    expect(new Set(EXCHANGES.map((e) => e.q[0])).size).toBe(EXCHANGES.length);
+    const dir = join(import.meta.dirname, '../../english/clips');
+    const clips = readdirSync(dir).map((f) => readFileSync(join(dir, f), 'utf8')).join('\n');
+    for (const e of EXCHANGES) {
+      expect([1, 2]).toContain(e.lv);
+      expect(e.x, e.id).toHaveLength(3);
+      const all = [e.q, e.a, ...e.x];
+      expect(new Set([e.a, ...e.x].map(([en]) => en.toLowerCase())).size, e.id).toBe(4);
+      for (const [en, ja] of all) {
+        expect(en, e.id).toMatch(/^[A-Z][A-Za-z0-9’,.!?\- ]+[.!?]$/);
+        expect(en, e.id).not.toMatch(/'/);
+        expect(ja, e.id).toMatch(/[ぁ-んァ-ヶ一-龯]/);
+        expect(ja, e.id).not.toMatch(/です|ます/);
+      }
+      // (a source: an existing clip, cited as clip/qid)
+      if (e.src) {
+        const [clip, qid] = e.src.split('/');
+        expect(clips.includes(`id: '${clip}'`) && clips.includes(`{ id: '${qid}'`), e.src).toBe(true);
+      }
+    }
+    expect(EXCHANGES.filter((e) => e.lv === 1).length).toBeGreaterThanOrEqual(40);
+    expect(new Set(EXCHANGES.map((e) => e.t))).toEqual(new Set(['travel', 'shop', 'food', 'home', 'work', 'chat']));
+  });
+  const seats = [H('A', 1), H('B', 3), H('G', 2)];
+  const s0 = reply.deal(deal(seats, 're', 'G'), ctx);
+  const holder = (s: ReplyState) => Object.entries(s.rounds[s.r].hands).find(([, h]) => h!.includes(0))!;
+  it('deals 4 exchanges, the asker the lander then round; two cards each at 3 seats (one fits, in one hand), three at 2, the closest wrong one to the strongest', () => {
+    expect(s0.rounds.map((r) => r.asker)).toEqual(['G', 'A', 'B', 'G']);
+    expect(reply.deal(deal(seats, 're', 'G'), ctx)).toEqual(s0);
+    expect(MINIS.reply.ms / REPLY_TURN_MS).toBe(REPLY_ROUNDS);
+    for (let k = 0; k < 50; k++) {
+      const s = reply.deal(deal(seats, `re${k}`), ctx);
+      expect(new Set(s.rounds.map((r) => r.ex)).size).toBe(REPLY_ROUNDS);
+      for (const round of s.rounds) {
+        // (a table with a やさしい seat: A1 lines)
+        expect(EXCHANGES[round.ex].lv).toBe(1);
+        expect(round.hands[round.asker]).toBeUndefined();
+        const cards = Object.values(round.hands).flat();
+        expect(cards.sort()).toEqual([0, 1, 2, 3]);
+        for (const h of Object.values(round.hands)) expect(h).toHaveLength(2);
+        // (むずかしい the closest wrong one; やさしい, not holding it, the plainest two)
+        if (round.asker !== 'B') expect(round.hands.B).toContain(1);
+        if (round.asker !== 'A' && !round.hands.A!.includes(0)) expect(round.hands.A!.slice().sort()).toEqual([2, 3]);
+      }
+    }
+    const two = reply.deal(deal([H('A', 3), H('B', 2)], 'two'), ctx);
+    for (const round of two.rounds) expect(Object.values(round.hands).map((h) => h!.slice().sort())).toEqual([[0, 1, 2]]);
+    const strong = reply.deal(deal([H('A', 2), H('B', 3)], 'lv'), ctx);
+    expect(strong.rounds.some((r) => EXCHANGES[r.ex].lv === 2)).toBe(true);
+    const solo = reply.deal(deal([H('A', 1)], 'solo'), ctx);
+    expect(solo.rounds[0].hands.A).toHaveLength(3);
+    expect(cardLine(EXCHANGES[0], 0)).toEqual(EXCHANGES[0].a);
+    expect(cardLine(EXCHANGES[0], 1)).toEqual(EXCHANGES[0].x[0]);
+  });
+  it('the fitting card: the round over, its finder; one that doesn’t: おしい (once a card); the asker holds none; the timer shows it', () => {
+    const [who, hand] = holder(s0);
+    const wrongK = hand!.findIndex((c) => c !== 0);
+    const other = Object.entries(s0.rounds[0].hands).find(([w]) => w !== who)!;
+    let s = reply.play(s0, other[0] as Who, { k: 0 }, ctx);
+    expect(s.tried[other[0] as Who]).toEqual([0]);
+    expect(reply.play(s, other[0] as Who, { k: 0 }, ctx)).toBe(s);
+    expect(reply.play(s0, 'G', { k: 0 }, ctx)).toBe(s0);
+    if (wrongK >= 0) s = reply.play(s, who as Who, { k: wrongK }, ctx);
+    s = reply.play(s, who as Who, { k: hand!.indexOf(0) }, ctx);
+    expect([s.r, s.results[0].by, s.results[0].misses]).toEqual([1, who, wrongK >= 0 ? 2 : 1]);
+    expect(replyOn(s)).toBe(EXCHANGES[s.rounds[1].ex]);
+    const next = { op: 'next', k: s.stage };
+    const t = reply.play(s, 'A', next, ctx);
+    expect([t.r, t.results[1].by]).toEqual([2, null]);
+    expect(reply.play(t, 'B', next, ctx)).toBe(t);
+  });
+  it('stars: 2 each a reply found, +2 all four with no おしい; made the exchanges found', () => {
+    let s = s0;
+    for (let k = 0; k < REPLY_ROUNDS; k++) {
+      const [who, hand] = holder(s);
+      s = reply.play(s, who as Who, { k: hand!.indexOf(0) }, ctx);
+    }
+    expect(reply.done(s)).toBe(true);
+    const res = reply.close(s);
+    expect(res.stars).toEqual({ A: 10, B: 10, G: 10 });
+    expect(res.made).toHaveLength(4);
+    expect(res.made[0].text).toBe(`${EXCHANGES[s.rounds[0].ex].q[0]} — ${EXCHANGES[s.rounds[0].ex].a[0]}`);
+    expect(reply.close(s0)).toEqual({ stars: {}, made: [] });
+    const one = reply.play(s0, holder(s0)[0] as Who, { k: holder(s0)[1]!.indexOf(0) }, ctx);
+    expect(reply.close(one).stars).toEqual({ A: 2, B: 2, G: 2 });
+  });
+});
+
 describe('every game: whatever the plays, never a negative star, and the same plays give the same game', () => {
   const seats = [H('A', 1), H('B', 2), H('G', 3)];
   const rackWords = new Map<string, string[]>();
@@ -707,6 +801,12 @@ describe('every game: whatever the plays, never a negative star, and the same pl
         return [[who, { n: Math.floor(r() * 100) }]];
       case 'numbers':
         return [[who, { n: Math.floor(r() * 100) }]];
+      case 'reply': {
+        const rp = s as ReplyState, round = rp.rounds[rp.r];
+        if (!round) return [[who, { k: 0 }]];
+        if (r() < 0.1) return [[who, { op: 'next', k: rp.stage % 64 }]];
+        return [[who, { k: Math.floor(r() * 3) }]];
+      }
       case 'shopping': {
         const sh = s as ShoppingState, round = sh.rounds[sh.r], x = r();
         if (!round) return [[who, { k: 0 }]];

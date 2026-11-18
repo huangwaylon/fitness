@@ -125,7 +125,10 @@ tested), the screens `components/mini/`; design: the 11-18 proposal (user-approv
   rounds, the お客さん builds the Japanese list's English from chips (one `op` code: frame, then each line's word,
   number, -s, container), the fold judges it (おしい: the slot; two misses: the right one goes); the shop fills one
   basket from 9 pictures and hands it over; やさしい 2 lines, word only; ふつう 3, number and -s; むずかしい a container;
-  2 a line right each, +2 asked right first time).
+  2 a line right each, +2 asked right first time); 返事はどれ？ (`reply.ts`, `data/replies.json`: 108 everyday
+  exchanges, A1–A2, a line, the one reply that fits and three that don't (the closest first), each with casual
+  Japanese, 41 from フレーズ cards (`src`); 4 rounds, the asker round the seats, the others' cards (2 each, 3 at two
+  seats) one fitting: tap it; おしい once a card; 15 s timers show it; 2 each a reply, +2 all four clean).
 - **Online:** the lander's `mg` (the option `b`, the seats present `s`: only they are dealt in), then `mp` plays (`w`,
   `k`, `n`, `y`, `op`) and the `mc` close from any seat at the table (the relay refuses moves from anyone not seated).
   They race for the next `i`: the room keeps the first, the log's order decides (the first finder, a tile's place) the

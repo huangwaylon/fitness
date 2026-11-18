@@ -1,7 +1,7 @@
 // 英語すごろく's mini-games by id (docs/sugoroku.md "みんなで！"), light: what a みんなで！ stone's landing needs (game.ts:
 // the two options) without the games themselves (games.ts). In the order they're built: the ★ four, then the next wave
 // (しりとり, 数字キャッチ, おつかい, 返事はどれ？).
-export const MINI_IDS = ['market', 'spell', 'together', 'sort', 'chain', 'numbers', 'shopping'] as const;
+export const MINI_IDS = ['market', 'spell', 'together', 'sort', 'chain', 'numbers', 'shopping', 'reply'] as const;
 export type MiniId = (typeof MINI_IDS)[number];
 
 export interface MiniInfo {
@@ -23,7 +23,9 @@ export const MINIS: Readonly<Record<MiniId, MiniInfo>> = {
   chain: { ms: 60_000, local: 'shared', star: false },
   numbers: { ms: 30_000, local: 'hotseat', turnMs: 20_000, star: false },
   // (the list behind a cover, then the shop's turn: the rounds' own timers)
-  shopping: { ms: 90_000, local: 'hotseat', star: false }
+  shopping: { ms: 90_000, local: 'hotseat', star: false },
+  // (one phone: every seat's replies on it, each in its colour)
+  reply: { ms: 60_000, local: 'shared', star: false }
 };
 export const isMiniId = (x: unknown): x is MiniId => (MINI_IDS as readonly unknown[]).includes(x);
 

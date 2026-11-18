@@ -62,6 +62,11 @@ function playsOf(g: Game, who: Who, r: () => number): Body[] {
       const line = on.s.lines[on.s.l];
       return line ? line.owner.map((o, k) => (o === who ? k : -1)).filter((k) => k >= 0).map((k) => ({ a: 'mp', k })) : [];
     }
+    case 'reply': {
+      // (each replier's cards in order, the fitting one somewhere; anyone: the timer's next)
+      const s = on.s, round = s.rounds[s.r];
+      return round ? [...(round.hands[who] ?? []).map((_, k): Body => ({ a: 'mp', k })), { a: 'mp', op: 'next', k: s.stage % 64 }] : [];
+    }
     case 'shopping': {
       // (the お客さん: a request, right; the shop: the list's things in, a pay; anyone: the timers' next)
       const s = on.s, round = s.rounds[s.r];
