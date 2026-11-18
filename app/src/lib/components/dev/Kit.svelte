@@ -14,6 +14,9 @@
   import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
+  import PhraseCard from '#lib/english/components/PhraseCard.svelte';
+  import KeyedText from '#lib/english/components/KeyedText.svelte';
+  import { keyed } from '#lib/english/phrases.ts';
 
   let open = $state(true);
   let form = $state(false);
@@ -56,6 +59,12 @@
         <button type="button" class="prow" role="switch" aria-checked={sw} data-sfx="self" onclick={() => (sw = !sw)}><span class="prl">.prow + .sw<small>.card.pad · .prows</small></span><span class="sw" aria-hidden="true"><i></i></span></button>
         <div class="row-x"><span class="tag">.tag</span><span class="tag new">NEW</span></div>
       </div>
+      <div class="row-x"><button type="button" class="btn small sky" data-sfx="tick">.btn.sky</button><button type="button" class="btn sky" data-sfx="tick">意味を見る</button><button type="button" class="quiet" data-sfx="tick">.quiet</button></div>
+      <p class="note" lang="en">KeyedText: <KeyedText text="I *made* it *up* on the spot." /></p>
+      <PhraseCard tag="deck" k="kit" en={keyed('*make* something *up*')} ja="（話などを）でっちあげる" line="I *made* it *up* on the spot." mean="その場ででっちあげた" title="kit" seg={[0, 3]} onshow={() => {}}>
+        {#snippet head()}<p class="note">PhraseCard · head</p>{/snippet}
+        {#snippet actions()}<button type="button" class="quiet" data-sfx="tick">actions</button>{/snippet}
+      </PhraseCard>
       <div class="card form"><label class="fld">.card.form<input type="text" /></label><label class="fld">メモ<input type="text" /></label></div>
       <hr class="stitch" />
       <p class="grain note">Body text in --font-body 15/1.45; a note in --fs-s.</p>
