@@ -130,7 +130,7 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   // the stem as written, its *key words* underlined, never the stars
   await expect(card.locator('.stem')).toHaveText(q0.stem.replaceAll('*', ''));
   // question 1 says what to do (its question is English) till the first pick
-  await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから、合うものを選びましょう。何回聞いてもOK');
+  await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから選びましょう。何回聞いてもOK');
   const n0 = (await ytCommands(page)).length;
   await card.locator(`[data-choice="${miss1}"]`).click();
   await expect(card.locator('[data-en-howto]')).toHaveCount(0);
@@ -319,10 +319,10 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   await open(page);
   await start(page);
   const c = lesson(page).locator('[data-yt-controls]');
-  // ▶ −5秒 0.75× then 字幕 at the end, each a full 44 pt; no ⋯
-  await expect(c.locator('button')).toHaveCount(4);
-  const order = await c.locator('button').evaluateAll((els) => els.map((e) => Object.keys((e as HTMLElement).dataset).find((k) => k.startsWith('yt'))));
-  expect(order).toEqual(['ytToggle', 'ytBack5', 'ytRate', 'ytCc']);
+  const order = () => c.locator('button, input').evaluateAll((els) => els.map((e) => Object.keys((e as HTMLElement).dataset).find((k) => k.startsWith('yt'))));
+  // ▶ | the scrubber | 字幕, then −5秒 0.75× under them, each a full 44 pt; no ⋯
+  await expect.poll(order).toEqual(['ytToggle', 'ytScrub', 'ytCc', 'ytBack5', 'ytRate']);
+  await expect(c.locator('[data-yt-cc]')).toHaveAttribute('aria-label', '字幕 オフ（タップで英語）');
   for (const b of await c.locator('button').all()) {
     const box = (await b.boundingBox())!;
     expect(Math.min(box.width, box.height), await b.textContent() ?? '').toBeGreaterThanOrEqual(44);
@@ -344,8 +344,17 @@ test('the controls: play / pause on from where it stopped, −5 秒, the scrubbe
   await c.locator('[data-yt-rate]').click();
   await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['setPlaybackRate', [0.75]]);
   await expect(c.locator('[data-yt-rate]')).toHaveAttribute('aria-pressed', 'true');
-  // on a question: its part from the card's この部分を聞く, none in the controls
+  // on a question: one row (▶ | the scrubber | 字幕), its part from the card's この部分を聞く; the speed in ツール
   await lesson(page).locator('[data-en-to-q]').click();
+  expect(await order()).toEqual(['ytToggle', 'ytScrub', 'ytCc']);
+  expect(Math.round((await c.boundingBox())!.height)).toBe(44);
+  await lesson(page).locator('[data-en-tools]').click();
+  const rate = page.locator('dialog[open] [data-en-tools-sheet] [data-en-rate]');
+  await expect(rate).toHaveText(['1×', '0.75×']);
+  await expect(rate.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await rate.nth(0).click();
+  await expect.poll(async () => (await since(page, n1)).at(-1)?.slice(0, 2)).toEqual(['setPlaybackRate', [1]]);
+  await page.locator('dialog[open]:has([data-en-tools-sheet]) .navbar .close').last().click();
   await expect(c.locator('[data-yt-seg]')).toHaveCount(0);
   const start0 = (await questionAt(page, 0)).seg[0];
   const n2 = (await ytCommands(page)).length;
@@ -364,6 +373,47 @@ test('no speed control when the frame offers only 1×', async ({ page }) => {
   await start(page);
   await expect(lesson(page).locator('[data-yt-scrub]')).toBeEnabled();
   await expect(lesson(page).locator('[data-yt-rate]')).toHaveCount(0);
+  await lesson(page).locator('[data-en-tools]').click();
+  await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toBeVisible();
+  await expect(page.locator('dialog[open] [data-en-rate]')).toHaveCount(0);
+});
+
+/** A question card's choices and ⚑ inside the scroller's view (the foot's top), unscrolled. */
+async function aboveFold(page: Page) {
+  await expect(lesson(page).locator('[data-en-q] [data-en-flag]')).toBeVisible();
+  return lesson(page).evaluate((el) => {
+    const body = el.querySelector('.body')!, view = body.getBoundingClientRect(), card = el.querySelector('[data-en-q]')!;
+    const inView = (e: Element) => { const r = e.getBoundingClientRect(); return r.top >= view.top && r.bottom <= view.bottom; };
+    return { scrolled: body.scrollTop, choices: [...card.querySelectorAll('[data-choice]')].map(inView), flag: inView(card.querySelector('[data-en-flag]')!) };
+  });
+}
+
+test('a question card at 393×852: every choice and ⚑ 報告 above the fold; the 聞いてから hint on question 1 only', async ({ page }) => {
+  await fakeYoutube(page);
+  await open(page);
+  await start(page);
+  await lesson(page).locator('[data-en-to-q]').tap();
+  for (const i of [0, 1]) {
+    await expect(lesson(page)).toHaveAttribute('data-en-at', String(i));
+    await expect(lesson(page).locator('[data-en-howto]')).toHaveCount(i ? 0 : 1);
+    const f = await aboveFold(page);
+    if (!i) expect(f.choices.length).toBeGreaterThanOrEqual(3); // (the next may be a dictation: its field, no choices)
+    expect(f).toEqual({ scrolled: 0, choices: f.choices.map(() => true), flag: true });
+    await lesson(page).locator('[data-en-next]').tap();
+  }
+});
+
+test.describe('375×667', () => {
+  test.use({ viewport: { width: 375, height: 667 } });
+  test('a question card at 375×667: the first two choices without scrolling (question 1, its hint and all)', async ({ page }) => {
+    await fakeYoutube(page);
+    await open(page);
+    await start(page);
+    await lesson(page).locator('[data-en-to-q]').tap();
+    await expect(lesson(page).locator('[data-en-howto]')).toBeVisible();
+    const f = await aboveFold(page);
+    expect([f.scrolled, ...f.choices.slice(0, 2)]).toEqual([0, true, true]);
+  });
 });
 
 test('no captions on the video, and an answer’s notes come into view (they sit under the choices, below an iPhone’s fold)', async ({ page }) => {
@@ -464,14 +514,15 @@ test('字幕の大きさ (ツール): 大 by default, sent each time captions lo
   const sh = page.locator('dialog[open] [data-en-tools-sheet]');
   await lesson(page).locator('[data-en-tools]').click();
   // the size chips a full 44 × 44 (polled: the sheet may still be rising)
-  await expect.poll(() => sh.locator('[data-en-cc-size]').evaluateAll((els) => Math.min(...els.map((e) => Math.min(e.getBoundingClientRect().width, e.getBoundingClientRect().height))))).toBeGreaterThanOrEqual(44);
-  await expect(sh.locator('[data-en-cc-mode="off"]')).toHaveAttribute('aria-checked', 'true');
-  await expect(sh.locator('[data-en-cc-size="1"]')).toHaveAttribute('aria-checked', 'true');
+  // (the kit's Segmented: 36 drawn in a 44 hit)
+  await expect.poll(() => sh.locator('[data-en-cc-size]').evaluateAll((els) => Math.min(...els.map((e) => Math.min(e.getBoundingClientRect().width, e.getBoundingClientRect().height))))).toBeGreaterThanOrEqual(36);
+  await expect(sh.locator('[data-en-cc-mode="off"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sh.locator('[data-en-cc-size="1"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sh.locator('[data-en-cc-size]')).toHaveText(['小', '中', '大', '特大']);
   // captions off: a size is kept, nothing sent
   const n0 = (await ytCommands(page)).length;
   await sh.locator('[data-en-cc-size="2"]').click();
-  await expect(sh.locator('[data-en-cc-size="2"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sh.locator('[data-en-cc-size="2"]')).toHaveAttribute('aria-pressed', 'true');
   expect((await funcs(n0)).filter((f) => f.includes('fontSize'))).toEqual([]);
   // 英語 from the sheet: loaded with it; another size: sent at once
   await sh.locator('[data-en-cc-mode="en"]').click();

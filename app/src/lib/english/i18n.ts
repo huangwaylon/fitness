@@ -102,7 +102,7 @@ const S = {
   tr: { ja: '訳', en: 'JA' },
   trLabel: { ja: '選択肢の日本語訳', en: 'The choices in Japanese' },
   // question 1's line while open: what to do on a card whose question is English
-  howTo: { ja: '聞いてから、合うものを選びましょう。何回聞いてもOK', en: 'Listen, then pick the one that fits. Listen as often as you like' },
+  howTo: { ja: '聞いてから選びましょう。何回聞いてもOK', en: 'Listen, then pick. As often as you like' },
   typeHere: { ja: '聞こえた英語を入力', en: 'Type the English you hear' },
   answer: { ja: '答える', en: 'Answer' },
   answerAgain: { ja: 'もう一度答える', en: 'Answer again' },

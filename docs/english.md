@@ -100,7 +100,7 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
   choices) while answering, 次へ (green) once answered, 完了 at まとめ (green; もう一度、通して見る a small paper button with ▶). A question card is tight, so its
   choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts` checks): one control row, its
-  meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
+  meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (the lesson bar's tool icon, labelled ツール, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕;
