@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 4, new 1, ctx 6, tx 1
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 4, new 1, ctx 6, tx 1, qa 7
 // A2 REVIEW 2026-11-17: keep 9, rewrite 11, retire 3, new 1
 // “Dwight Meets a Hobbit - The Office US” (the official The Office channel, BEST OF SEASON 4): Michael and Dwight
 // turn up at a club to take Ryan up on his offer to party; Ryan's friend Troy keeps teasing Dwight (a Tolkien
@@ -64,8 +64,8 @@ export const dwightHobbit: Clip = {
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'offer', seg: [10.1, 15.4],
       stem: 'What does “taking you up on your offer” mean?', ja: '“taking you up on your offer” はどういう意味？',
-      choices: ['Accepting Ryan’s invite', 'Raising Ryan’s offer', 'Checking the offer still stands'], a: 0,
-      choicesJa: ['ライアンの誘いに乗る', 'ライアンの申し出を上げる', '誘いがまだ有効か確かめる'],
+      choices: ['Accepting Ryan’s invite', 'Raising Ryan’s offer', 'Asking if Ryan still wants them'], a: 0,
+      choicesJa: ['ライアンの誘いに乗る', 'ライアンの申し出を上げる', 'まだ来てほしいか聞く'],
       cue: '「offer」の前',
       line: 'just *taking you up on* your offer to party.',
       said: '「きみの誘いに乗りに来た」と言う。up on がつながり「アポン」。',
@@ -97,8 +97,8 @@ export const dwightHobbit: Clip = {
 
     { id: 'p6', skill: 'phrase', level: 'B1', point: 'howyou', seg: [36.5, 42.1],
       stem: 'What does “How you doing?” mean here?', ja: 'ここでの “How you doing?” はどういう意味？',
-      choices: ['Hello, nice to meet you', 'What are you doing?', 'How did you get here?'], a: 0,
-      choicesJa: ['こんにちは、よろしく', '何してるの？', 'どうやって来たの？'],
+      choices: ['Just a friendly hello', 'What are you doing?', 'How did you get here?'], a: 0,
+      choicesJa: ['ただの気軽なあいさつ', '何してるの？', 'どうやって来たの？'],
       cue: '「This is Troy」のあと',
       line: 'This is Troy. — Hey, nice to meet you. — *How you doing?*',
       said: '「こちらトロイ」「どうも、はじめまして」「やあ、元気？」とあいさつする。',
@@ -141,8 +141,8 @@ export const dwightHobbit: Clip = {
 
     { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wizard', 'house', 'normal'], seg: [46.6, 76.6],
       stem: 'What keeps happening to Dwight at the club?', ja: 'クラブで、ドワイトに何度も起きることは？',
-      choices: ['Friends tease Dwight a lot', 'Dwight teases the friends', 'Dwight gets angry at everyone'], a: 0,
-      choicesJa: ['友だちにたくさんからかわれる', 'ドワイトが友だちをからかう', 'ドワイトがみんなに怒る'],
+      choices: ['Troy keeps teasing him', 'He keeps teasing Troy', 'He gets angry at everyone'], a: 0,
+      choicesJa: ['トロイに何度もからかわれる', 'ドワイトがトロイをからかう', 'ドワイトがみんなに怒る'],
       cue: 'ドワイトについて言われること',
       line: 'He’s a regular banking wizard. — Not a wizard. *A hobbit*. … Do you live in a *regular-sized house*?',
       said: 'ライアンの友人がドワイトをホビット扱いして何度もからかい、ドワイトはまじめに答える。',
@@ -208,8 +208,8 @@ export const dwightHobbit: Clip = {
     { id: 'c1', skill: 'detail', level: 'B1', point: 'normal', ctx: true, seg: [69.8, 76],
       stem: 'How does Ryan answer Troy’s question about Dwight?',
       ja: 'トロイのドワイトについての質問に、ライアンはどう答える？',
-      choices: ['He is a normal guy', 'He lives in a tiny house', 'He lives on a farm'], a: 0,
-      choicesJa: ['ふつうのやつだ', '小さな家に住んでいる', '農場に住んでいる'],
+      choices: ['Dwight is like everyone else', 'He lives in a tiny house', 'He lives on a farm'], a: 0,
+      choicesJa: ['ほかのみんなと同じだ', '小さな家に住んでいる', '農場に住んでいる'],
       cue: 'トロイの質問への、ライアンの返事。',
       line: 'Troy: Do you live in a *regular-sized house*? / Ryan: Yeah, *he’s a normal guy*. He’s cool.',
       said: 'トロイの「普通サイズの家に住んでるの？」に、ライアンが「うん、普通のやつだよ。いいやつさ」と答える。',
@@ -233,7 +233,7 @@ export const dwightHobbit: Clip = {
       answer: "i don't even know",
       cue: '「crazy word, man」のすぐあと',
       line: '*I don’t even know* what that means.',
-      said: '「すごい言葉だね。どういう意味かも分からないよ」と言う。',
+      said: '「変な言葉だな。どういう意味かも分からないよ」と言う。',
       mean: 'don’t even ＝ 〜すらない。「ドンティーヴン」とつながる。',
       trap: 'don’t の t が次の even にくっつき、2語が1語に聞こえる。「ン」を手がかりにする。',
       use: 'I don’t even know where to start.（どこから始めればいいかも分からない）' },
@@ -284,8 +284,8 @@ export const dwightHobbit: Clip = {
 
     { id: 'p5', skill: 'pragma', level: 'B2', point: 'maybe', ctx: true, seg: [101.5, 108.4],
       stem: 'How does Ryan answer Dwight’s worry?', ja: 'ドワイトの心配に、ライアンはどう答える？',
-      choices: ['He just says maybe', 'He says no, he’s fine', 'He says he needs a doctor'], a: 0,
-      choicesJa: ['「かもね」とだけ言う', '「大丈夫」と否定する', '医者が必要だと言う'],
+      choices: ['He gives no real answer', 'He says no, he’s fine', 'He says he needs a doctor'], a: 0,
+      choicesJa: ['はっきり答えない', '「大丈夫」と否定する', '医者が必要だと言う'],
       cue: '病気の話のあとの短い返事',
       line: 'Dwight: Maybe you have some kind of bladder infection. / Ryan: *I don’t know, maybe*.',
       said: '「ぼうこうの病気かも」と言われ、「さあね、かもね」とだけ返す。',
