@@ -82,8 +82,9 @@ test('a dead socket (open, carrying nothing) is found out: what I sent on it rea
   island.dead('A');
   const id = `e2e-dead-${Date.now().toString(36).slice(-5)}`;
   expect(await w<boolean>(a, 'share', fakeCatch(id))).toBe(true);
-  // its ack never comes: the phone gives the socket up, opens another and sends it again
-  await expect.poll(() => w<string>(b, 'canon').then((c) => c.includes(id)), { timeout: 15_000 }).toBe(true);
+  // its ack never comes: the phone gives the socket up, opens another and sends it again (live.ts: the ack due in
+  // ACK_MS 5 s, the probe's answer 5 s more, then a backoff and a handshake: ~12 s, so 25 s, not a 15 s edge)
+  await expect.poll(() => w<string>(b, 'canon').then((c) => c.includes(id)), { timeout: 25_000 }).toBe(true);
 });
 
 test('a dead socket is found out on coming back to the app (focus): the partner’s news arrives', async ({ browser }) => {
@@ -99,7 +100,8 @@ test('a dead socket is found out on coming back to the app (focus): the partner�
   // the room's send to A's socket was lost; back in the app, a ping goes unanswered and a new socket replays the day
   await a.waitForTimeout(300);
   await a.evaluate(() => window.dispatchEvent(new Event('focus')));
-  await expect.poll(() => w<string>(a, 'canon').then((c) => c.includes(id)), { timeout: 15_000 }).toBe(true);
+  // (live.ts: PONG_WAIT_MS 10 s unanswered, then a new socket: ~11 s, so 25 s)
+  await expect.poll(() => w<string>(a, 'canon').then((c) => c.includes(id)), { timeout: 25_000 }).toBe(true);
 });
 
 test('an intent the relay drops without a word (one it can’t read): sent again on the same socket, never a reconnect loop', async ({ browser }) => {
