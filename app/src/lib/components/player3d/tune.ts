@@ -15,10 +15,11 @@
 //     the cast's wind-up swings out to the side, past the head, not across the face.
 //   - Faces: the player's 16 eye and 9 mouth frames hold the same expressions in another order (PLAYER_EYE,
 //     PLAYER_MOUTH); its resting mouth is the look's own (B's an open smile).
-import { Box3, Euler, Matrix4, Quaternion, Vector3, type Bone, type Object3D, type SkinnedMesh } from 'three';
+import { Box3, Matrix4, Vector3, type Bone, type Object3D, type SkinnedMesh } from 'three';
 import { action as villagerAction, type Action, type Body, type Pose, type State } from '../villager3d/poses.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Kind } from '../villager3d/villager3d.ts';
+import { bonesOf, jointOf, restAt, restFrame, turnJoint, type J } from '../villager3d/rig.ts';
 import { smooth01 } from '#lib/math.ts';
 
 type V3 = readonly [number, number, number];
@@ -60,44 +61,18 @@ export function playerCell(part: 'eye' | 'mouth', i: number, face: Face, rest = 
   return i === 0 ? (face === 'sleepy' ? 0 : rest) : PLAYER_MOUTH[i] ?? i;
 }
 
-interface J { bone: Bone; rest: Quaternion; w: Quaternion; wi: Quaternion }
-const e = new Euler(0, 0, 0, 'XYZ'), r = new Quaternion(), d = new Quaternion();
 
 /** A player's Kind for villager3d.ts animateModel: `model` the assembled player at rest (its skinned parts bound),
  *  `rest` its look's resting mouth frame. The drivers find whatever cloth and hair joints the outfit has; `rebind()`
  *  finds them again after a part is swapped. */
 export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void } {
-  model.updateMatrixWorld(true);
-  const rootQ = model.getWorldQuaternion(new Quaternion()).invert();
-  const rootM = model.matrixWorld.clone().invert();
-  const bones = new Map<string, Bone>();
-  const scan = () => {
-    bones.clear();
-    model.traverse((n) => {
-      if ((n as Bone).isBone && !bones.has(n.name)) bones.set(n.name, n as Bone);
-    });
-  };
-  scan();
-  const jOf = (b: Bone): J => {
-    const w = rootQ.clone().multiply(b.getWorldQuaternion(new Quaternion()));
-    return { bone: b, rest: b.quaternion.clone(), w, wi: w.clone().invert() };
-  };
-  const set = (j: J, v: V3 | null | undefined) => {
-    if (!v || (v[0] === 0 && v[1] === 0 && v[2] === 0)) {
-      j.bone.quaternion.copy(j.rest);
-      return;
-    }
-    r.setFromEuler(e.set(v[0], v[1], v[2]));
-    d.copy(j.wi).multiply(r).multiply(j.w);
-    j.bone.quaternion.copy(j.rest).multiply(d);
-  };
-  const at = (n: string) => {
-    const b = bones.get(n);
-    return b ? new Vector3().setFromMatrixPosition(b.matrixWorld).applyMatrix4(rootM) : null;
-  };
+  const { q: rootQ, m: rootM } = restFrame(model);
+  const bones = bonesOf(model);
+  const jOf = (b: Bone): J => jointOf(rootQ, b);
+  const at = (n: string) => restAt(bones, rootM, n);
   // the measures at rest: the ankle over the sole, the torso's depth (under the neck: the body without its head)
   const neckY = at('Neck')?.y ?? 8.5, ankle = at('Ankle_L')?.y ?? 0.79;
-  const v = new Vector3(), torso = new Box3(), headBox = new Box3();
+  const v = new Vector3(), vl = new Vector3(), torso = new Box3(), headBox = new Box3();
   const head = bones.get('Head') ?? null;
   const headInv = head ? head.matrixWorld.clone().invert() : new Matrix4();
   model.traverse((n) => {
@@ -112,7 +87,7 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
       v.fromBufferAttribute(pos, i);
       m.applyBoneTransform(i, v);
       v.applyMatrix4(m.matrixWorld);
-      const local = v.clone().applyMatrix4(rootM);
+      const local = vl.copy(v).applyMatrix4(rootM);
       if (local.y < neckY - 0.3) torso.expandByPoint(local);
       // (the head as an ellipsoid in the head bone's frame, from the skin over the neck: the hands' clearance)
       else if (body && local.y > neckY + 0.6) headBox.expandByPoint(v.applyMatrix4(headInv));
@@ -125,7 +100,7 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
   let longSkirt = false;
   const arms: Partial<Record<string, J>> = {};
   const findExtra = () => {
-    scan();
+    bonesOf(model, bones);
     extra = new Map();
     for (const c of CHAINS) for (const k of [1, 2, 3]) {
       const b = bones.get(`Skirt_${k}_${c}`);
@@ -209,12 +184,12 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
         let dz = 0;
         while (dz < 0.9 && inside(side) < 1) {
           dz += 0.06;
-          set(a1, [v1[0], v1[1], v1[2] + out * dz]);
+          turnJoint(a1, [v1[0], v1[1], v1[2] + out * dz]);
         }
         let k = 1;
         while (k > 0.2 && inside(side) < 1) {
           k -= 0.08;
-          set(a2, [v2[0] * k, v2[1] * k, v2[2] * k]);
+          turnJoint(a2, [v2[0] * k, v2[1] * k, v2[2] * k]);
         }
       }
     }
@@ -226,17 +201,17 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
       const leg = pose.j[`Leg_1_${side as 'L' | 'R'}`] ?? [0, 0, 0];
       const fwd = Math.min(0, leg[0]), back = Math.max(0, leg[0]);
       const kf = SKIRT[pos], kb = pos === 'B' ? SKIRT.F * 0.6 : pos === 'C' ? SKIRT.C * 0.5 : SKIRT.B;
-      set(s1, [(kf * fwd + kb * back) * (longSkirt ? 1 : SKIRT.hem), 0, leg[2] * SKIRT.spread * (pos === 'C' ? 1 : 0.6)]);
+      turnJoint(s1, [(kf * fwd + kb * back) * (longSkirt ? 1 : SKIRT.hem), 0, leg[2] * SKIRT.spread * (pos === 'C' ? 1 : 0.6)]);
       const s3 = extra.get(`Skirt_3_${c}`);
-      if (s3) set(s3, [-0.92 * kf * fwd, 0, 0]);
+      if (s3) turnJoint(s3, [-0.92 * kf * fwd, 0, 0]);
       const s2 = extra.get(`Skirt_2_${c}`);
-      if (s2) set(s2, null);
+      if (s2) turnJoint(s2, null);
     }
     // the ponytail
     const h1 = extra.get('Hair_1');
     if (h1) {
       const hd = pose.j.Head ?? [0, 0, 0], sp = pose.j.Spine_1 ?? [0, 0, 0];
-      set(h1, pitch < -0.5 ? [0, 0, 1.1 * Math.sign(hd[1] || 1)] : [-HAIR_K * (hd[0] + sp[0]), 0, -HAIR_K * (hd[2] + sp[2])]);
+      turnJoint(h1, pitch < -0.5 ? [0, 0, 1.1 * Math.sign(hd[1] || 1)] : [-HAIR_K * (hd[0] + sp[0]), 0, -HAIR_K * (hd[2] + sp[2])]);
     }
   };
 
@@ -264,8 +239,8 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
     const x = [0, -0.5, 0.3, 0, 0, 1.0];
     const hand = new Vector3(), inv = new Matrix4();
     const err = () => {
-      set(a1, [x[0], x[1], x[2]]);
-      set(a2, [x[3], x[4], x[5]]);
+      turnJoint(a1, [x[0], x[1], x[2]]);
+      turnJoint(a2, [x[3], x[4], x[5]]);
       model.updateMatrixWorld(true);
       inv.copy(model.matrixWorld).invert();
       w.getWorldPosition(hw);
