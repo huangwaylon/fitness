@@ -10,7 +10,7 @@
 // Each `/api` request is timed here (the wall time of the record's answer: in a Worker the clock moves only across
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).
-import { corsOf, keyOwner, preflight, type Keys } from './auth.ts';
+import { corsRoute, keyOwner, type Keys } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, sigShaped, verifyAdmin } from './sign.ts';
 import { MAX_BODY_CHARS } from '../../app/src/lib/contract/api.ts';
 import { isRec } from '../../app/src/lib/contract/guards.ts';
@@ -74,15 +74,12 @@ function callerOf(text: string): { action: string; rid: string | null; sid: stri
 export type OnReq = (meta: ReqMeta, ms: number) => void;
 
 export async function apiRoute(req: Request, allowed: string, store: () => StoreRoom, onReq?: OnReq, keys?: Keys): Promise<Response> {
-  const cors = corsOf(req.headers.get('Origin'), allowed);
-  if (!cors) return new Response('forbidden', { status: 403 });
-  const headers: Record<string, string> = { ...cors, 'Cache-Control': 'no-store' };
+  const headers = corsRoute(req, allowed, 'Content-Type');
+  if (headers instanceof Response) return headers;
   // the request id echoed (the phone sent it in the body: its failure joins the relay's `req` row)
   const json = (body: string, rid?: string | null) => new Response(body, {
-    headers: { ...headers, 'Content-Type': 'application/json', ...(rid ? { 'X-Request-Id': rid, ...(cors['Access-Control-Allow-Origin'] ? { 'Access-Control-Expose-Headers': 'X-Request-Id' } : {}) } : {}) }
+    headers: { ...headers, 'Content-Type': 'application/json', ...(rid ? { 'X-Request-Id': rid, ...(headers['Access-Control-Allow-Origin'] ? { 'Access-Control-Expose-Headers': 'X-Request-Id' } : {}) } : {}) }
   });
-  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Content-Type');
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
   const t0 = Date.now();
   const bare = (st: string, inB: number, exc?: string): ReqMeta => ({ action: 'other', st, role: null, rid: null, sid: null, inB, outB: 0, ...(exc ? { exc } : {}) });
   if (Number(req.headers.get('Content-Length') ?? 0) > MAX_BODY_CHARS * 4) {

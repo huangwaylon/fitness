@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bearerOf, corsOf, keyOwner, originAllowed, preflight, tokenOk } from '../src/auth.ts';
+import { bearerOf, corsOf, corsRoute, keyOwner, originAllowed, preflight, tokenOk } from '../src/auth.ts';
 import { sameKey } from '../../app/src/lib/contract/ticket.ts';
 import { Bucket } from '../src/bucket.ts';
 
@@ -61,6 +61,19 @@ describe('the HTTP helpers', () => {
     const r = preflight(corsOf('https://example.test', 'https://example.test')!, 'GET', 'Authorization');
     expect([r.status, ...['Access-Control-Allow-Origin', 'Vary', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers', 'Access-Control-Max-Age'].map((h) => r.headers.get(h))])
       .toEqual([204, 'https://example.test', 'Origin', 'GET', 'Authorization', '86400']);
+  });
+
+  it("corsRoute: another site 403, the preflight 204 with the route's headers, not POST 405, else CORS + no-store", () => {
+    const O = 'https://example.test';
+    const req = (method: string, origin: string | null = O) => new Request('https://r/x', { method, headers: origin ? { Origin: origin } : {} });
+    const res = (method: string, origin?: string | null) => corsRoute(req(method, origin), O, 'Content-Type') as Response;
+    expect([res('POST', 'https://evil.example').status, res('POST', 'https://evil.example').headers.get('Access-Control-Allow-Origin')]).toEqual([403, null]);
+    const pre = res('OPTIONS');
+    expect([pre.status, pre.headers.get('Access-Control-Allow-Methods'), pre.headers.get('Access-Control-Allow-Headers'), pre.headers.get('Cache-Control')]).toEqual([204, 'POST', 'Content-Type', 'no-store']);
+    const get = res('GET');
+    expect([get.status, get.headers.get('Allow'), get.headers.get('Access-Control-Allow-Origin'), get.headers.get('Cache-Control')]).toEqual([405, 'POST', O, 'no-store']);
+    expect(corsRoute(req('POST'), O, 'Content-Type')).toEqual({ 'Access-Control-Allow-Origin': O, Vary: 'Origin', 'Cache-Control': 'no-store' });
+    expect(corsRoute(req('POST', null), O, 'Content-Type')).toEqual({ 'Cache-Control': 'no-store' });
   });
 
   it('bearerOf: the token of a Bearer header, else empty', () => {

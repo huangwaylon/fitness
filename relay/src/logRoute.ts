@@ -8,7 +8,7 @@
 //   (a secret the health workflow holds: it reads counts, nothing else).
 // - `relaySink`: the relay's own events to the object, best effort, never in a reply's path; once the relay's day is
 //   capped it stops sending until midnight (per isolate).
-import { bearerOf, corsOf, preflight, tokenOk } from './auth.ts';
+import { bearerOf, corsRoute, tokenOk } from './auth.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
 import { errName, type RelayEvent } from './log.ts';
 import type { Who } from '../../app/src/lib/contract/api.ts';
@@ -35,12 +35,9 @@ export const resetLogRoute = (): void => closed.clear();
 const MAX_CHARS = LOG_BODY_MAX * 2;
 
 export async function logRoute(req: Request, env: LogEnv, log: () => LogRoom): Promise<Response> {
-  const cors = corsOf(req.headers.get('Origin'), env.allowed);
-  if (!cors) return new Response('forbidden', { status: 403 });
-  const headers = { ...cors, 'Cache-Control': 'no-store' };
+  const headers = corsRoute(req, env.allowed, 'Content-Type');
+  if (headers instanceof Response) return headers;
   const json = (o: object) => new Response(JSON.stringify(o), { headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Content-Type');
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
   if (Number(req.headers.get('Content-Length') ?? 0) > MAX_CHARS * 4) return json({ ok: false, error: 'too_large' });
   const text = await req.text();
   if (text.length > MAX_CHARS) return json({ ok: false, error: 'too_large' });

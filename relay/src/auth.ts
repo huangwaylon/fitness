@@ -50,6 +50,17 @@ export function preflight(headers: Record<string, string>, methods: string, allo
   return new Response(null, { status: 204, headers: { ...headers, 'Access-Control-Allow-Methods': methods, 'Access-Control-Allow-Headers': allow, 'Access-Control-Max-Age': '86400' } });
 }
 
+/** A page-facing POST route's opening: refused (403) off an allowed origin, the preflight (204, `allow`: the request
+ *  headers allowed), 405 for any other method; else the headers to answer with (CORS, no-store). */
+export function corsRoute(req: Request, allowed: string, allow: string): Record<string, string> | Response {
+  const cors = corsOf(req.headers.get('Origin'), allowed);
+  if (!cors) return new Response('forbidden', { status: 403 });
+  const headers = { ...cors, 'Cache-Control': 'no-store' };
+  if (req.method === 'OPTIONS') return preflight(headers, 'POST', allow);
+  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
+  return headers;
+}
+
 /** The token of a request's `Authorization: Bearer <token>` ('' without one). */
 export function bearerOf(req: Request): string {
   const auth = req.headers.get('Authorization') ?? '';
