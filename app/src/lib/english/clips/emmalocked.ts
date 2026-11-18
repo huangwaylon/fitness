@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 4, new 2, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 7, rewrite 7, retire 4, new 2, ctx 4, tx 3, qa 17
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 6, new 3
 // “Emma Is Locked in the Apartment | Friends” (the official Friends channel, Best of Season 9): the baby is locked
 // inside; Rachel fears the worst, and Ross answers each fear, then mocks them with a wild eagle story.
@@ -30,18 +30,18 @@ export const emmaLocked: Clip = {
       trap: 'super が聞こえると管理人が来ると思いやすい。すぐあとの not home を聞く。',
       use: 'She’ll be here in a minute.（すぐ来るよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', seg: [0, 22.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['wait', 'iwould', 'knock'], seg: [0, 17.38],
       stem: 'What problem do Ross and Rachel have?',
       ja: 'ロスとレイチェルは、どんな問題をかかえている？',
-      choices: ['The baby is locked inside', 'They lost the baby’s bag', 'The baby won’t stop crying'], a: 0,
-      choicesJa: ['赤ちゃんが中にいて入れない', '赤ちゃんのバッグをなくした', '赤ちゃんが泣きやまない'],
-      cue: 'key と door と baby の話',
+      choices: ['The baby is locked inside', 'Ross’s mom lost the key', 'The baby won’t stop crying'], a: 0,
+      choicesJa: ['赤ちゃんが中にいて入れない', 'ロスの母親がかぎをなくした', '赤ちゃんが泣きやまない'],
+      cue: '「has the key」と「The baby’s sleeping」。',
       said: '管理人は留守で、かぎはロスの母親が持ってくる。ドアの向こうでは赤ちゃんが寝ている。',
       mean: 'super ＝ アパートの管理人。ドアが開かず、赤ちゃんだけが部屋の中にいる。',
       trap: '赤ちゃんの心配をしているので、泣いていると考えがち。ロスは The baby’s sleeping と言う。',
       use: 'I locked myself out.（かぎを中に置いたまま閉めちゃった）' },
 
-    { id: 'i3', skill: 'attitude', level: 'B1', point: 'wait', reveals: ['key'], ctx: true, seg: [1, 8.9],
+    { id: 'i3', skill: 'attitude', level: 'B1', point: 'wait', reveals: ['key'], ctx: true, seg: [1, 8.62],
       stem: 'How does Rachel feel about waiting for the key?',
       ja: 'かぎを待つことを、レイチェルはどう思っている？',
       choices: ['Too worried to wait', 'Happy to wait a minute', 'Angry at Ross’s mother'], a: 0,
@@ -65,7 +65,7 @@ export const emmaLocked: Clip = {
       trap: '力仕事なのでロスの案と思いやすい。ロスは I would, but と答える側。',
       use: 'You have to do something!（何とかしてよ！）' },
 
-    { id: 'f1', skill: 'pragma', level: 'B2', point: 'iwould', reveals: ['knock'], ctx: true, seg: [5.5, 11.8],
+    { id: 'f1', skill: 'pragma', level: 'B2', point: 'iwould', reveals: ['knock'], ctx: true, seg: [5.62, 11.8],
       stem: 'How does Ross answer Rachel’s request?',
       ja: 'レイチェルの頼みに、ロスはどう答える？',
       choices: ['No, he might get hurt', 'Yes, he’ll do it now', 'Only if she helps him'], a: 0,
@@ -77,7 +77,7 @@ export const emmaLocked: Clip = {
       trap: 'I would で「やる」と考えがち。決め手は but のあと。',
       use: 'I would, but I’m really tired.（そうしたいけど、すごく疲れてて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'knock', reveals: ['knockwho'], seg: [6.4, 10.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'knock', reveals: ['knockwho'], seg: [6.62, 10.95],
       stem: 'Type what Rachel says: “___!” (4 words)', answer: 'knock that door down',
       ja: 'レイチェルの言葉を書こう：「___!」（4語）',
       cue: '「do something」のすぐあと。',
@@ -87,16 +87,16 @@ export const emmaLocked: Clip = {
       trap: 'knock を「ノック」とだけ思うと、最後の down を聞きのがしやすい。',
       use: 'They knocked down the old wall.（古い壁を取り壊した）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [12.1, 19.5],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'besides', seg: [12.1, 17.38],
       stem: 'Ross begins, “*Besides*…” What does “besides” mean here?',
       ja: 'ロスの「Besides…」はどういう意味？',
-      choices: ['And also', 'But then', 'Anyway'], a: 0,
-      choicesJa: ['それに', 'でも', 'ともかく'],
+      choices: ['And also', 'But then', 'Instead'], a: 0,
+      choicesJa: ['それに', 'でも', 'その代わりに'],
       cue: '「peach」のあと、次の話の最初の一語。',
       line: '*Besides*, you know, everything’s gonna be fine. The baby’s sleeping.',
       said: '「それにさ、大丈夫。赤ちゃんは寝てるし」と続ける。',
       mean: 'besides ＝「それに」。安心できる理由をもう一つ足している。',
-      trap: '話を変える anyway と思いやすい。besides は同じ方向に話を足す語。',
+      trap: 'but（でも）のように話を逆に向けると考えがち。besides は同じ方向に理由を足す語。',
       use: 'Besides, it’s too late to go now.（それに、もう行くには遅いよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'sleeping', seg: [13, 19.5], retired: true,
@@ -111,7 +111,7 @@ export const emmaLocked: Clip = {
       trap: 'すぐあとに jumped と聞こえるので迷いやすい。ロスの言葉は sleeping。',
       use: 'Shh, the baby’s sleeping.（しーっ、赤ちゃんが寝てるの）' },
 
-    { id: 't1', skill: 'pragma', level: 'B2', point: 'jumped', ctx: true, seg: [16.6, 22.8],
+    { id: 't1', skill: 'pragma', level: 'B2', point: 'jumped', ctx: true, seg: [16.12, 22.8],
       stem: 'What does Ross mean about the baby jumping out?',
       ja: '赤ちゃんが飛び出したかも、について、ロスは何を言いたい？',
       choices: ['She can’t possibly do that', 'She probably did jump out', 'She jumps out all the time'], a: 0,
@@ -135,7 +135,7 @@ export const emmaLocked: Clip = {
       trap: 'すぐあとに stove（コンロ）も出てくるので迷いやすい。最初の心配は water。',
       use: 'I think I left the water running.（水を出しっぱなしにしたかも）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'water', reveals: ['leftwater'], seg: [22.4, 29.2],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'water', reveals: ['leftwater'], seg: [22.4, 28.84],
       stem: 'Fill the gap: “You ___ leave the water running.”',
       ja: '空いている所に入る語は？「You ___ leave the water running.」',
       choices: ['did not', 'did', 'do not'], a: 0,
@@ -147,7 +147,7 @@ export const emmaLocked: Clip = {
       trap: 'not を聞きのがすと did（した）に聞こえやすい。did のあとの「ナッ」を聞く。',
       use: 'No, I did not eat your cake.（いや、君のケーキは食べてないって）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pull', seg: [24.7, 30.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'pull', seg: [24.88, 30.28],
       stem: 'Ross says, “*Pull yourself together*.” What does he want?',
       ja: '「Pull yourself together」で、ロスは何をしてほしい？',
       choices: ['Calm down and be strong', 'Stay close to him', 'Pack her things to go'], a: 0,
@@ -155,11 +155,11 @@ export const emmaLocked: Clip = {
       cue: '「please, just」のあと。',
       line: 'Please, just *pull yourself together*, okay?',
       said: '「頼むから、しっかりして」と言う。',
-      mean: 'pull yourself together ＝ 落ち着いてしっかりする。取り乱した人にかける言葉。',
+      mean: '文字どおりは「自分をひとつにまとめる」。ばらばらの気持ちをまとめる→「しっかりして」。取り乱した人にかける言葉。',
       trap: 'together を「一緒に」と思うと「そばにいて」に聞こえる。yourself と組むと別の意味。',
       use: 'Pull yourself together. You can do this.（しっかり。きっとできるよ）' },
 
-    { id: 'i1', skill: 'detail', level: 'B2', point: 'cooked', ctx: true, seg: [26.7, 33.4],
+    { id: 'i1', skill: 'detail', level: 'B2', point: 'cooked', ctx: true, seg: [26.86, 33.4],
       stem: 'Why does Ross say the stove isn’t on?',
       ja: 'ロスはなぜ、コンロはついていないと言う？',
       choices: ['She never cooks', 'She cooked today', 'He turned it off'], a: 0,
@@ -171,11 +171,11 @@ export const emmaLocked: Clip = {
       trap: 'cooked だけ拾うと「料理した」に聞こえる。haven’t の否定と since を合わせて聞く。',
       use: 'You haven’t cooked in years!（もう何年も料理してないじゃん）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cooked', seg: [28.4, 33.4], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cooked', seg: [28.84, 33.4], keep: true,
       stem: 'Since when has Rachel not cooked, according to Ross?',
       ja: 'ロスによると、レイチェルはいつから料理していない？',
-      choices: ['1990', '1996', '1999'], a: 1,
-      choicesJa: ['1990年', '1996年', '1999年'],
+      choices: ['1986', '1990', '1996', '1999'], a: 2,
+      choicesJa: ['1986年', '1990年', '1996年', '1999年'],
       cue: '「since」のあとの年。',
       line: 'You haven’t cooked *since 1996*.',
       said: '「1996年から料理してないじゃん」と言う。',
@@ -183,7 +183,7 @@ export const emmaLocked: Clip = {
       trap: '最後の six は短く弱いので、ninety で切れたように聞こえやすい。年は最後の語まで聞く。',
       use: 'I’ve lived here since 2019.（2019年からここに住んでいます）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'window', reveals: ['eagle'], seg: [32.5, 38.9],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'window', reveals: ['eagle'], seg: [32.5, 37.4],
       stem: 'Type Rachel’s question: “___?” (4 words)', answer: 'is the window open',
       ja: 'レイチェルの質問を書こう：「___?」（4語）',
       cue: '「cooked since」のあと、次の心配。',
@@ -215,7 +215,7 @@ export const emmaLocked: Clip = {
       trap: '勢いがあるので本気にも聞こえるが、窓も鳥もコンロも Rachel の心配。前の話とのつながりを聞く。',
       use: 'Now you’re just being silly.（それはもう考えすぎだよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'story', seg: [37.3, 66],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'story', reveals: ['bird', 'aid'], seg: [37.42, 66],
       stem: 'What is Ross doing in his long story?',
       ja: 'ロスは長い話で何をしている？',
       choices: ['Making her worries sound silly', 'Telling her what really happened', 'Keeping her busy until help comes'], a: 0,
@@ -237,11 +237,11 @@ export const emmaLocked: Clip = {
       trap: 'No が続くと「やっぱりない」と引くように聞こえやすいが、ここは自分の言葉の訂正。',
       use: 'It was big. No, no — huge.（大きかった。いや、巨大だった）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'bird', seg: [40.8, 49.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'bird', seg: [40.9, 49.5],
       stem: 'In Ross’s story, what bird flies in?',
       ja: 'ロスの話で、どんな鳥が飛び込んでくる？',
-      choices: ['An eagle', 'A pigeon', 'A small parrot'], a: 0,
-      choicesJa: ['ワシ', 'ハト', '小さなオウム'],
+      choices: ['An eagle', 'A pigeon', 'A seagull'], a: 0,
+      choicesJa: ['ワシ', 'ハト', 'カモメ'],
       cue: '「No, no, wait」のあと',
       line: 'A pigeon. No, no, wait, no, no. *An eagle flew in!* Landed on the stove and caught fire!',
       said: 'ロスが「ハトが…いや違う、ワシが飛び込んできた！コンロにとまって火がついた！」と話を大きくする。',
@@ -282,7 +282,7 @@ export const emmaLocked: Clip = {
       trap: '頭の mis- が聞こえないと「正しく理解する」になる。mis- は「〜し損なう」。',
       use: 'Please don’t read this as a no.（これを断りだと思わないで）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'meanwhile', seg: [61.2, 66],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'meanwhile', seg: [61.24, 66],
       stem: 'What does “meanwhile” mean in Ross’s story?',
       ja: 'ロスの話の「meanwhile」の意味は？',
       choices: ['At the same time', 'After a long time', 'Just one more time'], a: 0,
@@ -301,7 +301,7 @@ export const emmaLocked: Clip = {
       choicesJa: ['いやあ、きみは（強める）', 'ああ、きみは', 'いやあ、きみは〜じゃない？'],
       cue: '最初の短い一語のあとの語の順番。',
       line: 'Boy, *are you* gonna be sorry if that’s true.',
-      said: '「それが本当なら、きみは本当に後悔するぞ」と言う。',
+      said: '「もし本当だったら、すっごく後悔するからね」と言う。',
       mean: 'Boy, are you 〜 ＝ 質問の形で「本当に〜だぞ」と強める言い方。',
       trap: '意味は you’re とほぼ同じ。語の順番で聞き分ける。aren’t なら「ン」が残る。',
       use: 'Boy, am I tired!（いやあ、本当に疲れた）' },

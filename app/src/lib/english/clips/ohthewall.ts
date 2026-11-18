@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 0, new 1, ctx 4, tx 7
+// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 0, new 1, ctx 4, tx 7, qa 22
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 3, new 2
 // “Oh, the Wall - The Office US” (the official The Office channel, BEST OF SEASON 6): a company email and a news item
 // that cuts off before its last word leave the office fearing bankruptcy; people panic, Michael can't reach his boss,
@@ -30,7 +30,7 @@ export const ohTheWall: Clip = {
       trap: 'killed から、こわい話と思いやすい。お笑いの話で使うと「大うけ」。',
       use: 'You killed it today!（今日は最高だったよ！）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'dwight', reveals: ['haveto'], seg: [6.9, 16.6],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'dwight', reveals: ['haveto'], seg: [9.22, 17],
       stem: 'Who asks Michael about the email everyone got?',
       ja: 'みんなに来たメールについてマイケルに聞くのはだれ？',
       choices: ['Dwight', 'Erin', 'David Wallace'], a: 0,
@@ -42,7 +42,7 @@ export const ohTheWall: Clip = {
       trap: 'メールを書いたのは David Wallace なので、選びやすい。聞いたのは返事で呼ばれた人。',
       use: 'Could you be more specific about the time?（時間をもう少し具体的に言えますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [12.3, 19.7], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'eight', seg: [12.3, 19.4], keep: true,
       stem: 'How many emails a day does Michael say he gets?',
       ja: 'マイケルは一日に何通メールが来ると言う？',
       choices: ['Eight', 'Eighteen', 'Eighty', 'Eighty-eight'], a: 0,
@@ -54,9 +54,9 @@ export const ohTheWall: Clip = {
       trap: '「エイティーン」と後ろが長ければ18、「エイティ」と前が強ければ80、「エイト」で止まれば8。',
       use: 'It takes like ten minutes.（10分くらいかかる）' },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'conjecture', seg: [20.6, 29.8],
-      stem: 'What does the boss’s email say about the news?',
-      ja: '社長のメールは、そのニュースについて何と言っている？',
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'conjecture', seg: [20.7, 28.2],
+      stem: 'What does David Wallace’s email say about the news?',
+      ja: 'デビッド・ウォレスのメールは、そのニュースについて何と言っている？',
       choices: ['It is only a guess', 'It is true but not final', 'It is partly right'], a: 0,
       choicesJa: ['ただの推測だ', '本当だがまだ決まっていない', '一部は正しい'],
       cue: '「Just want to stress」のあと',
@@ -66,7 +66,7 @@ export const ohTheWall: Clip = {
       trap: 'concrete news（確かな情報）が聞こえるので、本当の話と考えがち。conjecture は「推測」。',
       use: 'Please reply ASAP.（できるだけ早く返信してください）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'journal', ctx: true, seg: [28, 37],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'journal', ctx: true, seg: [28.1, 36.6],
       stem: 'Michael asks for “the journal.” What does he want?',
       ja: 'マイケルは「the journal」がほしいと言う。何のこと？',
       choices: ['A newspaper’s website', 'A newspaper on paper', 'His feelings diary'], a: 0,
@@ -78,7 +78,7 @@ export const ohTheWall: Clip = {
       trap: 'Feelings Journal（気持ち日記）が先に出るので選びたくなる。決め手は he means のあと。',
       use: 'I read it online.（ネットで読んだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'price', seg: [45.2, 52.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'price', seg: [45.3, 52.8], keep: true,
       stem: 'How much does it cost to finish the article?',
       ja: '記事の続きを読むのにいくらかかる？',
       choices: ['$1.09', '$1.19', '$1.90', '$1.99'], a: 3,
@@ -101,7 +101,7 @@ export const ohTheWall: Clip = {
       trap: 'I wonder を「知っている」ほのめかしと取りやすい。直後の反応が答え。',
       use: 'Are you serious? Just pay for it.（本気？払えばいいでしょ）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'beat', seg: [55.6, 62],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'beat', seg: [56.2, 61.3],
       stem: 'What does “*beat me to it*” mean?',
       ja: '「beat me to it」はどういう意味？',
       choices: ['Did it before me', 'Hit me really hard', 'Got the joke first'], a: 0,
@@ -109,11 +109,11 @@ export const ohTheWall: Clip = {
       cue: '「I got it」のあと',
       line: 'I got it. I got it. — Oh! Tuna *beat me to it*.',
       said: '「買えた、買えた」の声に、ドワイトが「ツナに先を越された」と言う。',
-      mean: '文字どおりは「そこまで私に勝った」。競走で先に着く→「先を越す」。ツナ＝ドワイトがジムにつけたあだ名。',
+      mean: '文字どおりは「それに向かう競走で私に勝った」→「先を越された」。ツナ＝ドワイトがジムにつけたあだ名。',
       trap: 'beat から「たたく」を連想しやすい。to it がつくと「先を越す」。',
       use: 'Oh, you beat me to it!（あ、先を越された！）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'bankrupt', seg: [59.5, 67.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'bankrupt', seg: [61.3, 67.35],
       stem: 'What will the board probably recommend?',
       ja: '取締役会は何を勧めるらしい？',
       choices: ['Declaring bankruptcy', 'Closing some offices', 'Selling the company'], a: 0,
@@ -125,19 +125,19 @@ export const ohTheWall: Clip = {
       trap: '会社の悪い知らせなので、支社を閉める話と思いやすい。recommend のあとを聞く。',
       use: 'It is rumored that he quit.（彼が辞めたといううわさだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reaction', seg: [64.9, 87.3],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reaction', reveals: ['bankrupt', 'notnec'], seg: [64.85, 80.25],
       stem: 'How do people react to the article?',
       ja: 'みんなは記事にどう反応する？',
-      choices: ['They get scared about their jobs', 'They don’t believe it at all', 'They laugh about it'], a: 0,
-      choicesJa: ['仕事がなくなるとこわがる', 'まったく信じない', '笑い話にする'],
-      cue: '「What?」のあと',
+      choices: ['They get scared about their jobs', 'They think it is good news', 'They laugh about it'], a: 0,
+      choicesJa: ['仕事がなくなるとこわがる', 'いい知らせだと思う', '笑い話にする'],
+      cue: '「Oh, Lord」のあとの一言',
       line: 'We’re all going to *lose our jobs*. … Or it could mean *the end of Dunder Mifflin*.',
       said: '「みんな仕事を失う」「会社が終わる」と、次々に不安を口にする。',
       mean: 'lose our jobs ＝ 仕事を失う。うわさだけで、事務所じゅうがあわてる。',
-      trap: '社長のメールが「推測」と言っていたので、信じないと考えがち。',
+      trap: 'Not necessarily（そうとは限らない）で、落ち着いて受け止めたと考えがち。',
       use: 'I’m worried about my job.（仕事が心配だ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnec', ctx: true, reveals: ['bankrupt'], seg: [67.4, 74.1],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'notnec', ctx: true, reveals: ['bankrupt'], seg: [67.3, 73.72],
       stem: 'What does “*Not necessarily*” mean here?',
       ja: 'ここでの「Not necessarily」はどういう意味？',
       choices: ['That may not be true', 'That is surely true', 'That is not important'], a: 0,
@@ -160,7 +160,7 @@ export const ohTheWall: Clip = {
       trap: 'awful を皮肉と取りやすい。just restructuring は「ましな方」として出ている。',
       use: 'Relax, it’s just a small change.（落ち着いて、ちょっとした変更だよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'scarecrow', seg: [79.8, 88.5],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'scarecrow', seg: [80.25, 87.3],
       stem: 'What jobs does Dwight offer everyone at his farm?',
       ja: 'ドワイトは自分の農場でみんなにどんな仕事をくれると言う？',
       choices: ['As scarecrows in the fields', 'Picking crops for low pay', 'Selling food at the farm'], a: 0,
@@ -169,7 +169,7 @@ export const ohTheWall: Clip = {
       line: 'You can all have jobs at Schrute Farms, *as human scarecrows*. It *doesn’t pay much*…',
       said: '「みんなうちの農場で雇ってやる。人間かかしとして。給料は安い」と言う。',
       mean: 'scarecrow ＝ かかし。It doesn’t pay much ＝ 給料はあまり出ない。',
-      trap: 'doesn’t pay much（安い）から、作物とりと思いやすい。as のあとが仕事。',
+      trap: '農場と聞くと、作物とりを思い浮かべがち。仕事の中身は as のあと。',
       use: 'The job doesn’t pay much.（その仕事は給料が安い）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'spy', seg: [87.3, 100], retired: true,
@@ -183,7 +183,7 @@ export const ohTheWall: Clip = {
       trap: '本人が「面白い」と言うので、うけたと取りやすい。返事が冗談に触れているかを聞く。',
       use: 'I’ll have her call you back.（彼女から折り返させます）' },
 
-    { id: 'f6', skill: 'detail', level: 'B1', point: 'callback', seg: [98.3, 103.4],
+    { id: 'f6', skill: 'detail', level: 'B1', point: 'callback', seg: [98, 103.4],
       stem: 'What will David do when he is free?',
       ja: 'デビッドは手があいたら何をする？',
       choices: ['Call Michael back', 'Come to see Michael', 'Send Michael an email'], a: 0,
@@ -196,8 +196,8 @@ export const ohTheWall: Clip = {
       use: 'Can I call you back later?（あとでかけ直してもいい？）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'lastday', seg: [122.6, 128.8],
-      stem: 'What does this office worker worry about?',
-      ja: 'この社員は何を心配している？',
+      stem: 'What is one worker afraid of?',
+      ja: 'ある社員がこわがっているのは何？',
       choices: ['Never seeing friends again', 'Not getting paid this month', 'Working too late tonight'], a: 0,
       choicesJa: ['もう仲間に会えないこと', '今月の給料が出ないこと', '今夜遅くまで働くこと'],
       cue: '「last day at work?」のあと',
@@ -207,7 +207,7 @@ export const ohTheWall: Clip = {
       trap: 'last day at work から、仕事やお金の心配と考えがち。次の文が心配の中身。',
       use: 'What if we miss the last train?（終電を逃したらどうしよう）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'saidit', seg: [132.9, 138],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'saidit', seg: [132.9, 137.8],
       stem: '“I like Erin. *There, I said it.*” What does Andy mean?',
       ja: '「I like Erin. There, I said it.」でアンディが言いたいことは？',
       choices: ['That was hard to say', 'He is only joking', 'He told Erin already'], a: 0,
@@ -267,7 +267,7 @@ export const ohTheWall: Clip = {
       trap: 'had to なら「ハッタ」、got to なら「ガッタ」。「ハフ」の f なら have to。',
       use: 'We have to leave now.（もう出なきゃ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'calm', ctx: true, seg: [179.5, 194.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'calm', ctx: true, seg: [179.5, 194.85],
       stem: 'What does Jim suggest to calm the office?',
       ja: 'ジムは事務所を落ち着かせるために何を提案する？',
       choices: ['Act normal and keep working', 'Show a funny video', 'Send everyone home early'], a: 0,
@@ -288,7 +288,7 @@ export const ohTheWall: Clip = {
       trap: '習った疑問文に合わせて do を足したくなる。言われた語をそのまま書く。',
       use: 'What have we here?（さて、これは何かな）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'meeting', ctx: true, seg: [198.3, 207.7],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'meeting', ctx: true, seg: [198.52, 207.7],
       stem: 'Michael asks about today’s plan. What is the answer?',
       ja: 'マイケルは今日の予定を聞く。答えは？',
       choices: ['A monthly staff meeting', 'A weekly sales meeting', 'A big office party'], a: 0,
@@ -300,7 +300,7 @@ export const ohTheWall: Clip = {
       trap: 'meeting と聞いて営業会議と考えがち。monthly（月の）と staff（社員）を聞く。',
       use: 'We have a staff meeting at ten.（10時に社員会議があります）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'yet', reveals: ['calm'], seg: [207, 212.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'yet', reveals: ['calm'], seg: [207.65, 212.3],
       stem: 'Type it: “There is no new information ___.” (3 words)', answer: 'as of yet',
       ja: '「There is no new information ___.」の空所を書こう（3語）',
       cue: '「new information」のあと',
@@ -321,7 +321,7 @@ export const ohTheWall: Clip = {
       trap: 'slack off だけ聞くと「これからさぼる」と取りやすい。only … when の条件を裏返して考える。',
       use: 'I only cook when I’m stressed.（料理するのはストレスがあるときだけ）' },
 
-    { id: 'a4', skill: 'infer', level: 'B1', point: 'nervous', reveals: ['calm'], seg: [208.3, 216],
+    { id: 'a4', skill: 'infer', level: 'B1', point: 'nervous', reveals: ['calm'], seg: [210.22, 215.6],
       stem: 'Why does Michael say they should keep working?',
       ja: 'マイケルはなぜ仕事を続けようと言う？',
       choices: ['Work will help them relax', 'The boss will check on them', 'There is too much to do'], a: 0,

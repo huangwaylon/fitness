@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 11, rewrite 9, retire 0, new 3, ctx 7, tx 3
+// R4 REVIEW 2026-11-18: keep 11, rewrite 9, retire 0, new 3, ctx 7, tx 3, qa 32
 // A2 REVIEW 2026-11-17: keep 6, rewrite 13, retire 3, new 1
 // “Dwight's Evil Laugh - The Office US” (the official The Office channel, Best of Season 7): Dwight turns Jim's
 // daycare troubles into a business idea and tours Jim and Pam round his “daycare”; then a talking head on his bosses,
@@ -18,7 +18,7 @@ export const evilLaugh: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'late', ctx: true, seg: [2.5, 9.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'late', ctx: true, seg: [2.5, 9.7],
       stem: 'Why has Jim been late every day this week?',
       ja: 'ジムはなぜ今週、毎日遅刻している？',
       choices: ['The daycare is far away', 'They moved across town', 'The daycare opens late'], a: 0,
@@ -30,7 +30,7 @@ export const evilLaugh: Clip = {
       trap: 'other side of town から、引っ越したと考えがち。主語の It は保育園。',
       use: 'My office is on the other side of town.（会社は町の反対側なんだ）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'idea', seg: [5.9, 10.9],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'idea', seg: [5.62, 10.9],
       stem: 'What does “Why didn’t I think of this before?” mean?',
       ja: '「Why didn’t I think of this before?」はどういう意味？',
       choices: ['He just got a good idea', 'He forgot to do something', 'He is angry at Jim'], a: 0,
@@ -42,7 +42,7 @@ export const evilLaugh: Clip = {
       trap: 'Why から、怒っている・責めていると思いやすい。自分（I）に言っている。',
       use: 'Why didn’t I think of that?（なんで思いつかなかったんだろう）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'didja', seg: [10.8, 16.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'didja', seg: [10.94, 15.72],
       stem: 'Fill the gap: “___ that there is a daycare center…”',
       ja: '空所を埋める：「___ that there is a daycare center…」',
       choices: ['Did you know', 'Do you know', 'Don’t you know'], a: 0,
@@ -54,7 +54,7 @@ export const evilLaugh: Clip = {
       trap: '「ジュ」が聞こえたら did you。Do you なら「ドゥユ」、Don’t you なら「ドンチュ」。',
       use: 'Did you know they’re closing early?（早く閉まるって知ってた？）' },
 
-    { id: 'd7', skill: 'infer', level: 'B1', point: 'revenue', ctx: true, seg: [15.8, 22.4],
+    { id: 'd7', skill: 'infer', level: 'B1', point: 'revenue', ctx: true, seg: [15.72, 22.4],
       stem: 'Why is Dwight opening a daycare?',
       ja: 'ドワイトはなぜ保育所を開く？',
       choices: ['To make more money', 'To help Jim and Pam', 'To play with kids'], a: 0,
@@ -77,18 +77,6 @@ export const evilLaugh: Clip = {
       trap: '悪役の笑い声を、そのまま悪だくみと取りやすい。カメラへの本音が答え合わせになる。',
       use: 'It’s not a big plan. Just a plan.（大した計画じゃない。ただの計画だよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'daycare', seg: [24.0, 40.2],
-      stem: 'What is Dwight starting in the building?',
-      ja: 'ドワイトは建物の中で何を始める？',
-      choices: ['A daycare center', 'A new restaurant', 'A big toy store'], a: 0,
-      choicesJa: ['保育園', '新しいレストラン', '大きなおもちゃ屋'],
-      cue: '「Welcome to」のあと',
-      line: 'Welcome to the Sesame Avenue *daycare center* for infants and toddlers.',
-      said: '「セサミ通り保育所へようこそ。赤ちゃんと幼児のための保育所だ」と、自分の保育園を見せる。',
-      mean: 'daycare center ＝ 保育園。infants ＝ 赤ちゃん、toddlers ＝ よちよち歩きの幼児。',
-      trap: 'あとでおもちゃ箱が出るので、おもちゃ屋と考えがち。Welcome to のあとが店の名前。',
-      use: 'Is there a daycare center near here?（この近くに保育園はある？）' },
-
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'regular', seg: [27.0, 33.0],
       stem: 'What kind of idea does Dwight say it is?',
       ja: 'ドワイトは、これはどんな案だと言う？',
@@ -101,11 +89,23 @@ export const evilLaugh: Clip = {
       trap: '直前の高笑いと evil（悪い）が耳に残り、悪い案と考えがち。not がついている。',
       use: 'It’s just a regular day.（ただの普通の日だよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'kidsplace', ctx: true, seg: [47.0, 53.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'daycare', seg: [33.6, 49.05],
+      stem: 'What is Dwight starting in the building?',
+      ja: 'ドワイトは建物の中で何を始める？',
+      choices: ['A daycare center', 'A new restaurant', 'A big toy store'], a: 0,
+      choicesJa: ['保育園', '新しいレストラン', '大きなおもちゃ屋'],
+      cue: '「Welcome to」のあと',
+      line: 'Welcome to the Sesame Avenue *daycare center* for infants and toddlers.',
+      said: '「セサミ通り保育所へようこそ。赤ちゃんと幼児のための保育所だ」と、自分の保育園を見せる。',
+      mean: 'daycare center ＝ 保育園。infants ＝ 赤ちゃん、toddlers ＝ よちよち歩きの幼児。',
+      trap: 'あとでおもちゃ箱が出るので、おもちゃ屋と考えがち。Welcome to のあとが店の名前。',
+      use: 'Is there a daycare center near here?（この近くに保育園はある？）' },
+
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'kidsplace', ctx: true, seg: [47.0, 53.15],
       stem: 'Asked “Is this your place?”, how does Dwight answer?',
       ja: '「ここはあなたの？」と聞かれて、ドワイトはどう答える？',
-      choices: ['He says it’s for the children', 'He says yes, very proudly', 'He says Mose owns it'], a: 0,
-      choicesJa: ['子どもたちのものだと言う', 'とても得意げに「そう」と言う', 'モーズの店だと言う'],
+      choices: ['He says it’s for the children', 'He says yes, the place is his', 'He says Mose owns it'], a: 0,
+      choicesJa: ['子どもたちのものだと言う', 'ここは自分のだと認める', 'モーズの店だと言う'],
       cue: '「your place」への返事の後半',
       line: 'Jim: Wait, is this your place, Dwight? / Dwight: Oh, no, no. I like to think of it as *the kids’ place*.',
       said: '「ここって君の施設？」に「いや、子どもたちの場所だと思いたいね」と答える。',
@@ -125,7 +125,7 @@ export const evilLaugh: Clip = {
       trap: 'パムが断りかけるので、上に戻ると考えがち。決め手はジムの let’s。',
       use: 'Would you like a tour?（ご案内しましょうか）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'toybox', ctx: true, seg: [63.8, 70.3],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'toybox', ctx: true, seg: [63.8, 70.95],
       stem: 'Where does Jim say the “toys” came from?',
       ja: 'ジムは「おもちゃ」がどこから来たと言う？',
       choices: ['The break room', 'The mail room', 'The back rooms'], a: 0,
@@ -171,7 +171,7 @@ export const evilLaugh: Clip = {
       trap: 'beat を「たたく」と文字どおり取ると、けがの話に聞こえる。yourself up で心の中の話。',
       use: 'Don’t beat yourself up. It happens.（自分を責めないで。よくあることだよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'locked', reveals: ['whirl'], seg: [83, 107.3],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'locked', reveals: ['whirl', 'noone'], seg: [83.6, 107.3],
       stem: 'How does the daycare tour end?',
       ja: '保育園の見学はどう終わる？',
       choices: ['Jim and Pam test the lock', 'They sign their baby up', 'Dwight locks them both in'], a: 0,
@@ -183,8 +183,8 @@ export const evilLaugh: Clip = {
       trap: '閉じ込められるのはジムたちと思いやすい。head outside と言うのはジム。',
       use: 'Let’s test it and see.（試してみよう）' },
 
-    { id: 'd4', skill: 'who', level: 'B1', point: 'noone', ctx: true, seg: [90.3, 96.5],
-      stem: 'Who will be watching the children, says Dwight?',
+    { id: 'd4', skill: 'who', level: 'B1', point: 'noone', ctx: true, seg: [89.05, 95.9],
+      stem: 'Who does Dwight say will watch the children?',
       ja: 'ドワイトによると、子どもを見ているのは誰？',
       choices: ['Nobody at all', 'His cousin Mose', 'Dwight himself'], a: 0,
       choicesJa: ['誰もいない', 'いとこのモーズ', 'ドワイト自身'],
@@ -195,7 +195,7 @@ export const evilLaugh: Clip = {
       trap: '紹介されたいとこが頭に残りやすい。答えは質問のすぐあとの2語。',
       use: 'Who’s picking up the kids today?（今日は誰が子どもを迎えに行く？）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'whirl', seg: [94.42, 102.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'whirl', seg: [94.42, 102.2],
       stem: 'Jim says, “Give it a whirl.” What does he want?',
       ja: 'ジムの「Give it a whirl」は、何をしたいということ？',
       choices: ['To try the lock for real', 'To walk around outside', 'To see the place from outside'], a: 0,
@@ -207,28 +207,28 @@ export const evilLaugh: Clip = {
       trap: 'whirl（くるくる回る）から「ひと回り」を思いやすい。give it a ～ は「試す」。',
       use: 'Never tried sushi? Give it a whirl!（お寿司食べたことない？試してみて！）' },
 
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'gabe', seg: [107.9, 117.5],
+    { id: 'a2', skill: 'attitude', level: 'C1', point: 'gabe', seg: [107.9, 113.4],
       stem: 'What does Dwight think of Gabe as his boss?',
       ja: 'ドワイトは、上司としてのゲイブをどう思っている？',
       choices: ['Gabe won’t last long', 'Gabe is the best boss', 'Gabe is just like Ed'], a: 0,
       choicesJa: ['ゲイブは長く続かない', 'ゲイブは最高の上司', 'ゲイブはエドにそっくり'],
       cue: '最初の一文、Gabe の前の言葉。',
       line: '*Better men than Gabe* have tried to be my boss.',
-      said: '「ゲイブより上の男たちも、私の上司になろうとした」と言う。',
-      mean: 'better men than Gabe ＝ ゲイブより上の人。その人たちもダメだった。',
+      said: '「ゲイブより優れた男たちも、私の上司になろうとしてきた」と言う。',
+      mean: '文字どおりは「ゲイブより優れた男たちも挑んだ」。→ その人たちもだめだった。だからゲイブも続かない。',
       trap: 'better から、ゲイブをほめていると思いやすい。ほめているのは前の上司たちのほう。',
       use: 'Better cooks than me have tried this.（私よりうまい人もこれに挑戦してる）' },
 
-    { id: 'h4', skill: 'detail', level: 'B1', point: 'fates', reveals: ['gabe'], seg: [110.5, 120.4],
-      stem: 'What happened to Davey and Charles?',
-      ja: 'デイビーとチャールズはどうなった？',
+    { id: 'h4', skill: 'detail', level: 'B1', point: 'fates', reveals: ['gabe'], seg: [112.6, 117.15],
+      stem: 'What happened to David and Charles?',
+      ja: 'デビッドとチャールズはどうなった？',
       choices: ['They got fired', 'They went crazy', 'They quit'], a: 0,
       choicesJa: ['クビになった', 'おかしくなった', '辞めた'],
       cue: '上司の名前のあとの2語。',
-      line: 'Davey *got fired*. Charles *got fired*. Jane went crazy.',
-      said: '「デイビーはクビ。チャールズもクビ。ジェーンは狂った」と並べる。',
+      line: 'David *got fired*. Charles *got fired*. Jan went crazy.',
+      said: '「デビッドはクビ。チャールズもクビ。ジャンはおかしくなった」と並べる。',
       mean: 'got fired ＝ クビになった。fire には「クビにする」の意味もある。',
-      trap: 'went crazy も聞こえるが、それはジェーン。名前のすぐあとの言葉を組で聞く。',
+      trap: 'went crazy も聞こえるが、それはジャン。名前のすぐあとの言葉を組で聞く。',
       use: 'My friend got fired today.（友だちが今日クビになった）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'list', reveals: ['me'], seg: [121, 130.9],
@@ -243,7 +243,7 @@ export const evilLaugh: Clip = {
       trap: 'didn’t の t が消えて、「ついていった人」に聞こえやすい。「ン」があるか聞く。',
       use: 'I made a list of everyone who’s coming.（来る人全員のリストを作った）' },
 
-    { id: 'h5', skill: 'phrase', level: 'B2', point: 'me', seg: [127.5, 134.9],
+    { id: 'h5', skill: 'phrase', level: 'B2', point: 'me', seg: [128.7, 135.3],
       stem: 'Dwight reads, “Me. At first…” What does “at first” mean?',
       ja: '「Me. At first…」の「at first」はどういう意味？',
       choices: ['In the beginning', 'Before everyone else', 'In first place'], a: 0,
@@ -255,7 +255,7 @@ export const evilLaugh: Clip = {
       trap: 'first から「一番に」と思いやすい。at first は「最初は（でも後で変わった）」。',
       use: 'I didn’t like it at first.（最初は好きじゃなかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gonna', seg: [133.8, 138.8],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gonna', seg: [133.72, 138.8],
       stem: 'Type the start: “___ quiet that baby?” (3 words)', answer: 'are you gonna',
       ja: '最初を書き取る：「___ quiet that baby, or do I have to?」（3語）',
       cue: 'リストのあと、問いの最初の3語。',
@@ -274,7 +274,7 @@ export const evilLaugh: Clip = {
       line: 'In the Schrute family, *the youngest child* always raises the others.',
       said: '「うちでは、一番下の子がほかの子を育てる」と言う。',
       mean: 'the youngest ＝ 一番若い、一番下の子。raise ＝ 育てる。ありえない話で笑いになる。',
-      trap: 'ふつうは上の子が育てるので、oldest と思いやすい。「ヤンゲスト」の音を聞く。',
+      trap: 'ふつうは上の子が育てるので、oldest を予想しがち。「ヤンゲスト」の音を聞く。',
       use: 'I’m the youngest of three.（3人きょうだいの末っ子です）' },
 
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'sleep', seg: [158.7, 166.3],
@@ -286,7 +286,7 @@ export const evilLaugh: Clip = {
       line: 'If I could get her *sleeping normally*, I would *get my life back*.',
       said: '「この子がふつうに寝てくれたら、生活が戻るのに」と言う。',
       mean: 'get my life back ＝ 自分の生活を取り戻す。今は寝られず、とても疲れている。',
-      trap: 'normally から病気の心配と思いやすい。話の中心は自分の生活。',
+      trap: 'normally から病気の心配に聞こえるが、話の中心は自分の生活。',
       use: 'If I could sleep more, I’d feel better.（もっと寝られたら元気になるのに）' },
 
     { id: 'g3', skill: 'gist', level: 'C1', point: 'herewe', reveals: ['doubt', 'suet'], seg: [159.7, 191.6],
@@ -301,7 +301,7 @@ export const evilLaugh: Clip = {
       trap: '案が詳しいので、実行したと思いやすい。最後の一言で何も変わらないと分かる。',
       use: 'No taxis? Well, here we are.（タクシーなし？まあ、こうなるよね）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'suet', seg: [169.8, 180.7],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'suet', seg: [169.45, 180.7],
       stem: 'What does Dwight say to put in the baby’s mouth?',
       ja: 'ドワイトは赤ちゃんの口に何を入れろと言う？',
       choices: ['Animal fat', 'A cold toy', 'A warm bottle'], a: 0,
@@ -313,7 +313,7 @@ export const evilLaugh: Clip = {
       trap: 'refrigerator（冷蔵庫）から、冷たい物を連想しやすい。口に入れるのは脂。',
       use: 'Any kind of tape will do.（テープなら何でもいいよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'doubt', ctx: true, seg: [179.6, 186.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'doubt', ctx: true, seg: [179.55, 186.0],
       stem: 'How does the parent answer Dwight’s idea?',
       ja: '赤ちゃんの親は、ドワイトの案にどう答える？',
       choices: ['Gently says no to it', 'Asks Dwight to check', 'Happily agrees with it'], a: 0,

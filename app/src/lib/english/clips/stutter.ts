@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 2, new 1, ctx 5, tx 8
+// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 2, new 1, ctx 5, tx 8, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 5, new 1
 // “Did I Stutter? - The Office US” (the official The Office channel, Best of Season 4): Michael calls a meeting to
 // "energize" the office; Jim teases Pam with a fake proposal and Andy's idea; Stanley flatly refuses to join in.
@@ -53,7 +53,7 @@ export const didIStutter: Clip = {
       trap: 'g と session がつながり「ストーミンセッション」と聞こえる。',
       use: 'Let’s do a quick brainstorming session.（さっとブレストしよう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'propose', ctx: true, seg: [47.2, 54.0],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'propose', ctx: true, seg: [47.2, 53.6],
       stem: 'Why does Pam stop Jim after he says her full name?',
       ja: 'ジムがフルネームを言ったあと、パムはなぜ止める？',
       choices: ['She thinks Jim will propose', 'She thinks she is in trouble', 'She thinks Jim is angry'], a: 0,
@@ -65,7 +65,7 @@ export const didIStutter: Clip = {
       trap: 'フルネームはしかられる合図にもなるので迷いやすい。決め手は続く propose。',
       use: 'He proposed to her in Paris.（彼はパリで彼女にプロポーズした）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'proposing', reveals: ['propose'], ctx: true, seg: [51.4, 61.4],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'proposing', reveals: ['propose'], ctx: true, seg: [51.2, 60.85],
       stem: 'What does Jim really ask Pam for?',
       ja: 'ジムが本当にパムに頼んだことは？',
       choices: ['To get him some coffee', 'To marry him some day', 'To leave the meeting early'], a: 0,
@@ -88,7 +88,7 @@ export const didIStutter: Clip = {
       trap: 'get me が「ゲッミ」、cup of が「カパ」と縮む。6語あると思って書く。',
       use: 'Could you get me a cup of coffee?（コーヒー1杯もらえる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'energize', seg: [59.5, 80.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'energize', seg: [59.12, 75.78],
       stem: 'What is Michael’s meeting for?',
       ja: 'マイケルの会議は何のため？',
       choices: ['Ideas to make work more fun', 'Ideas to fix the phones', 'Ideas for the Christmas party'], a: 0,
@@ -121,7 +121,7 @@ export const didIStutter: Clip = {
       trap: 'コーヒーの話と取りやすい。直前の get things going と同じ意味の言いかえ。',
       use: 'Ideas are starting to percolate.（アイデアがわいてきた）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'anybody', seg: [73.9, 79.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'anybody', seg: [74.1, 79.45],
       stem: 'Fill the gap: “___ any ideas what we could do?”',
       ja: '空いている所に入る言葉は？',
       choices: ['Anybody have', 'Does anybody have', 'Nobody has'], a: 0,
@@ -133,7 +133,7 @@ export const didIStutter: Clip = {
       trap: 'Does なら最初に「ダ」、Nobody なら「ノウ」。ここは「エニ」で始まる。',
       use: 'Anybody want some tea?（お茶ほしい人いる？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'message', seg: [79, 89.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'message', seg: [79.45, 89.05],
       stem: 'What does Andy want to change?',
       ja: 'アンディは何を変えたい？',
       choices: ['The phone message', 'The office song', 'The coffee machine'], a: 0,
@@ -145,7 +145,7 @@ export const didIStutter: Clip = {
       trap: 'machine が聞こえるので、コーヒーマシンを連想しやすい。前の answering が決め手。',
       use: 'What if we tried something new?（何か新しいことをやってみたら？）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', reveals: ['message'], ctx: true, seg: [84.0, 91.4],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'see', reveals: ['message'], ctx: true, seg: [83.8, 91.15],
       stem: 'What does “See” mean at the start of Michael’s line?',
       ja: 'マイケルが最初に言う「See」の意味は？',
       choices: ['That’s just what I want', 'I knew you would say it', 'I’m not sure about it'], a: 0,
@@ -180,7 +180,7 @@ export const didIStutter: Clip = {
       trap: 'even more は普通「さらに良く」だが、新しい中身がないなら冗談。',
       use: 'Great idea. Even more zing!（いいね、もっと勢いを！）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'cooking', ctx: true, seg: [91.5, 101.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'cooking', ctx: true, seg: [91.66, 98.68],
       stem: 'What does “Now we’re cooking” mean?',
       ja: '「Now we’re cooking」の意味は？',
       choices: ['Now it’s going well', 'Now it’s time to eat', 'Now we’re in trouble'], a: 0,
@@ -190,7 +190,7 @@ export const didIStutter: Clip = {
       said: 'ジムが前の案をまねして言うと、マイケルは本気で「いい感じになってきた。これはいいな」と言う。',
       mean: 'Now we’re cooking ＝ 文字どおりは「さあ料理してる」。火が入ってきた→「調子が出てきた」。',
       trap: 'cooking から料理の話と思いやすい。続く I like this（これはいいな）が手がかり。',
-      use: 'Now we’re talking!（そうこなくちゃ）' },
+      use: 'Now we’re cooking! Good idea.（いい感じになってきた！いい案だね）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'oblivious', reveals: ['mock', 'rap'], seg: [94.6, 101.2], retired: true,
       stem: 'What does Michael’s reply to that idea show?',
@@ -203,7 +203,7 @@ export const didIStutter: Clip = {
       trap: 'ノリで合わせているとも取れるが、自分から案を足すのは本気の印。',
       use: 'I like where this is going.（いい流れだね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'rap', reveals: ['oblivious'], seg: [97.2, 103.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'rap', reveals: ['oblivious'], seg: [97.6, 102.8],
       stem: 'What kind of theme does Michael want for the message?',
       ja: 'マイケルは、メッセージをどんなテーマにしたい？',
       choices: ['A rap song', 'A rock song', 'A short poem'], a: 0,
@@ -215,7 +215,7 @@ export const didIStutter: Clip = {
       trap: 'rhyme（韻）が聞こえると詩を選びやすい。その前に2回出る語を聞く。',
       use: 'Maybe something like a song?（歌みたいなのとか？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'refusal', reveals: ['stutter', 'water', 'alone'], seg: [103.0, 126.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'refusal', reveals: ['stutter', 'water', 'alone'], seg: [102.82, 126.35],
       stem: 'How does Stanley answer Michael?',
       ja: 'スタンリーはマイケルにどう答える？',
       choices: ['He keeps saying no', 'He joins the group', 'He helps after his game'], a: 0,
@@ -226,7 +226,7 @@ export const didIStutter: Clip = {
       trap: '最後は折れると考えがちだが、スタンリーは一度も yes と言わない。',
       use: 'No, thank you. I’m busy.（いいえ、結構です。忙しいので）' },
 
-    { id: 'alone', skill: 'phrase', level: 'B1', point: 'alone', seg: [110.5, 115.4],
+    { id: 'alone', skill: 'phrase', level: 'B1', point: 'alone', seg: [111.65, 115.4],
       stem: 'What does “Leave me alone” mean?',
       ja: '「Leave me alone」の意味は？',
       choices: ['Don’t bother me', 'Let me go home', 'Stay here with me'], a: 0,
@@ -238,7 +238,7 @@ export const didIStutter: Clip = {
       trap: 'alone（ひとり）から「ひとりで帰る」を連想しやすい。ここは「かまうな」。',
       use: 'Please leave me alone for a while.（しばらくひとりにして）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'stutter', ctx: true, seg: [111.1, 120],
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'stutter', ctx: true, seg: [112.5, 120],
       stem: 'What does Stanley mean by “Did I stutter?”',
       ja: 'スタンリーの「Did I stutter?」はどういう意味？',
       choices: ['I already told you no', 'Please say that again', 'My words came out badly'], a: 0,
