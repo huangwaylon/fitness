@@ -12,6 +12,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import Phrases from './Phrases.svelte';
+  import NavButton from './NavButton.svelte';
   import { staticUrl } from '#lib/staticUrl.ts';
 
   interface Props {
@@ -23,7 +24,11 @@
     /** Official reaction icon on the right (`reactions/<id>`). */
     reaction?: string;
     /** A button on the banner (e.g. 取り消す); replaces the reaction icon. */
-    action?: { label: string; run: () => void };
+    action?: { label: string; run: () => void; sfx?: string };
+    /** A lasting banner (英語すごろく's invitation): high, no timeout, no tap-to-dismiss; it goes by its action or its ✕. */
+    onclose?: () => void;
+    /** Under a toast shown in the same slot. */
+    below?: boolean;
     /** Docked low like an undo banner (a popup's confirmation, kept off the level under the title bar). */
     low?: boolean;
     /** Hover / touch / focus on the banner holds it; leaving lets it time out again (WCAG 2.2.1). */
@@ -33,7 +38,8 @@
     /** Sliding out (the store drops it right after). */
     leaving?: boolean;
   }
-  let { text, person, npc, reaction, action, low = false, onhold, ondismiss, leaving = false }: Props = $props();
+  let { text, person, npc, reaction, action, onclose, below = false, low = false, onhold, ondismiss, leaving = false, ...rest }: Props & Record<`data-${string}`, unknown> = $props();
+  const undo = $derived((!!action || low) && !onclose);
 
   let gone = $state(false);
   let startY = 0;
@@ -66,7 +72,7 @@
    *  wherever they sit (a short level holds them mid-screen, not at the foot): never on them. */
   let over = $state<number | null>(null);
   $effect(() => {
-    if ((!action && !low) || document.querySelector('[data-shop]')) return;
+    if (!undo || document.querySelector('[data-shop]')) return;
     const place = () => {
       const acts = document.querySelector('dialog[open] .level-acts');
       const top = acts?.getBoundingClientRect().top;
@@ -85,15 +91,15 @@
 </script>
 
 {#if !gone}
-  <div bind:this={el} class="banner" class:undo={!!action || low} class:leaving style:bottom={over === null ? undefined : `${over}px`} role="status" popover="manual" use:topLayer
-    onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
+  <div bind:this={el} class="banner" class:obj-cream={!!onclose} class:undo class:lasting={!!onclose} class:below class:leaving style:bottom={over === null ? undefined : `${over}px`} role="status" popover="manual" use:topLayer
+    onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur} {...rest}>
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page (a
          swipe: a move while pressed, never a mouse passing over a banner that slid in under it). Then
          this layer is pointer-only (no "close" that does nothing for a screen reader or the keyboard): 取り消す is the
          one control, and the banner ends by itself. -->
-    <button type="button" class="hit" data-sfx={action ? 'none' : 'back'} aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
+    {#if !onclose}<button type="button" class="hit" data-sfx={action ? 'none' : 'back'} aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
       tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
-      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.buttons > 0 && (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
+      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.buttons > 0 && (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>{/if}
     <span class="pebble" aria-hidden="true">
       {#if person && lookOf(person).kind === 'player'}<Avatar worn {person} size={36} />
       {:else if person}<Villager {person} size={36} head animate={false} eager />
@@ -101,8 +107,9 @@
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt"><Phrases {text} /></span>
-    {#if action}<button type="button" class="act" data-sfx="undo" onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
+    {#if action}<button type="button" class="btn small act" data-sfx={action.sfx ?? 'undo'} data-toast-act onclick={() => { action.run(); dismiss(); }}>{action.label}</button>
     {:else if reaction}<span class="re" aria-hidden="true"><OfficialArt key="reactions/{reaction}" size={28} eager /></span>{/if}
+    {#if onclose}<NavButton kind="close" data-toast-close onclick={() => { onclose(); dismiss(); }} />{/if}
   </div>
 {/if}
 
@@ -144,13 +151,12 @@
   .undo .txt { font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
-  /* Undo: above the dismiss layer, a 44px-tall button on the right. */
-  .act {
-    position: relative; z-index: 2; flex: none; appearance: none; cursor: pointer; min-height: 44px; margin-right: -6px; padding: 0 14px;
-    border-radius: var(--r-pill); border: 0; background: var(--c-leaf); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge);
-    font: 700 var(--fs-body)/1 var(--font-ui);
-  }
-  .act:focus-visible { outline: 3px solid var(--c-ink); outline-offset: 2px; }
+  /* the action (取り消す, 参加): the kit's small leaf button above the dismiss layer, 44 tall, on the right */
+  .act { position: relative; z-index: 2; flex: none; width: auto; min-height: 44px; margin: 0 -6px 0 0; padding: 0 14px; }
+  /* a lasting banner: its ✕ after the action */
+  .lasting { gap: 8px; padding-right: 4px; }
+  .lasting .act { margin-right: 0; }
+  .banner.below { translate: 0 68px; }
   .banner.leaving { pointer-events: none; animation: out 220ms var(--ease-soft) both; }
   .banner.undo.leaving { animation-name: down-out; }
   @keyframes out { to { transform: translateY(-120%); opacity: 0; } }

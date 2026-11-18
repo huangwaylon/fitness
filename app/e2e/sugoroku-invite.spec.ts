@@ -36,12 +36,12 @@ test('B sees the invitation on the island and in English Study, 参加 goes stra
   const how = info.project.name === 'webkit' ? 'tap' : 'click';
   const b = await started(page, how);
   await expect(banner(b)).toBeVisible();
-  await expect(banner(b)).toContainText('英語すごろくを始めました');
+  await expect(banner(b)).toContainText('英語すごろくを始めたよ');
   // it stays over English Study's ホーム (inside its dialog)
   await fromMenu(b, 'english', how);
   await expect(b.locator('dialog[open] [data-english]')).toHaveAttribute('data-level', 'home');
   await expect(b.locator('dialog[open] [data-sg-invite]')).toBeVisible();
-  await b.locator('[data-sg-invite-join]')[how]();
+  await b.locator('[data-sg-invite] [data-toast-act]')[how]();
   await expect(b).toHaveURL(/\/sugoroku\?.*m=online/);
   await expect(sheet(b)).toHaveAttribute('data-level', 'play');
   await expect(sheet(b).locator('[data-sg-waiting]')).toBeVisible();
@@ -52,7 +52,7 @@ test('✕ hides the invitation for good (a reload too); すごろく’s tab sti
   const how = info.project.name === 'webkit' ? 'tap' : 'click';
   const b = await started(page, how);
   await expect(banner(b)).toBeVisible();
-  await b.locator('[data-sg-invite-close]')[how]();
+  await b.locator('[data-sg-invite] [data-toast-close]')[how]();
   await expect(banner(b)).toHaveCount(0);
   await b.reload();
   await islandUp(b);

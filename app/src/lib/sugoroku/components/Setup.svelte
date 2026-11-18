@@ -62,7 +62,7 @@
   <Segmented items={LENGTHS} value={length} label={s('length')} attr="sg-length" onpick={(id) => (length = id)} />
   <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={onstart}>{s('start')}</button>
   <!-- the relay's Whisper on trial (docs/speech-test.md) -->
-  <button type="button" class="speech" data-sfx="tick" data-sg-speech onclick={onspeech}>{s('speechTest')}</button>
+  <button type="button" class="quiet" data-sfx="tick" data-sg-speech onclick={onspeech}>{s('speechTest')}</button>
 </div>
 
 <style>
@@ -72,18 +72,20 @@
   .body > * { flex-shrink: 0; }
   .note { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }
   .seats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  /* a seat: the kit's themed control (its edge and the press; navy by night), picked yuzu as a chosen chip */
   .seat {
     position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; margin: 0;
-    appearance: none; border: 0; border-radius: var(--r-card); background: var(--c-card); box-shadow: 0 3px 0 var(--c-edge);
-    color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    appearance: none; border: 0; border-radius: var(--r-card); background: var(--ctl); box-shadow: var(--sh-ctl);
+    color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .seat.on { background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
+  .seat:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .seat.on { background: var(--ctl-sel); color: var(--c-ink); }
   .ord { position: absolute; top: 6px; right: 8px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%;
-    background: var(--c-ink); color: var(--c-cream); font: 600 13px/1 var(--font-num); }
+    background: var(--c-ink); color: var(--c-cream); font: 600 var(--fs-s)/1 var(--font-num); }
   .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
   .lrow { display: flex !important; flex-wrap: wrap; align-items: center; gap: 8px; }
   .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   /* (a row's level switch: its own line on a narrow phone) */
   .lseg { flex: 1 1 13.5em; min-width: 0; margin-left: auto; padding: 4px 0; }
-  .speech { align-self: center; margin-top: 4px; min-height: 44px; padding: 0 12px; border: 0; background: none; color: var(--text-soft); font: 600 var(--fs-s)/1 var(--font-ui); }
+  .quiet { align-self: center; margin-top: 4px; }
 </style>

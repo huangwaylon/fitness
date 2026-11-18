@@ -1,6 +1,6 @@
 <script lang="ts">
   // 英語すごろく's ふりかえり (docs/sugoroku.md "Rules"): the game's words, lines and pictures that have Japanese, up to
-  // five, as two columns to match (tap an English, then its Japanese); a pair found fades out, a mismatch just lets go
+  // five, as two columns to match (tap one, then its other half: either column first); a pair found fades out, a mismatch just lets go
   // (no mark, no sound of failure). All found: できた！ Skippable: it's only on the results.
   import { seeded, shuffle } from '#lib/random.ts';
   import { s } from '../i18n.ts';
@@ -14,14 +14,16 @@
     for (let k = 0; k < 5 && (k === 0 || out.every((x, j) => x.i === j)); k++) out = shuffle([...out], r);
     return out;
   });
-  let held = $state<number | null>(null);
+  /** The one held (either column first), till its pair's other half is tapped. */
+  let held = $state<{ side: 'en' | 'ja'; i: number } | null>(null);
   let found = $state<number[]>([]);
-  function pickJa(i: number) {
-    if (held === null) return;
+  function tap(side: 'en' | 'ja', i: number) {
+    if (!held || held.side === side) return void (held = held?.side === side && held.i === i ? null : { side, i });
     // (the pairs' Japanese are all different: results.ts pairsOf)
-    if (held === i) found = [...found, i];
+    if (held.i === i) found = [...found, i];
     held = null;
   }
+  const on = (side: 'en' | 'ja', i: number) => held?.side === side && held.i === i;
 </script>
 
 <section class="review card pad" data-sg-review>
@@ -30,17 +32,17 @@
     <p class="done" data-sg-review-done>{s('reviewDone')}</p>
   {:else}
     <p class="ask">{s('reviewAsk')}</p>
-    <div class="cols" class:waiting={held === null}>
+    <div class="cols">
       <div class="col" lang="en">
         {#each left as x (x.i)}
-          <button type="button" class="pair" class:held={held === x.i} aria-pressed={held === x.i} class:gone={found.includes(x.i)} disabled={found.includes(x.i)}
-            data-sfx="tick" data-sg-review-en={x.i} onclick={() => (held = x.i)}>{x.t}</button>
+          <button type="button" class="chip big pair" aria-pressed={on('en', x.i)} class:gone={found.includes(x.i)} disabled={found.includes(x.i)}
+            data-sfx="tick" data-sg-review-en={x.i} onclick={() => tap('en', x.i)}>{x.t}</button>
         {/each}
       </div>
       <div class="col">
         {#each right as x (x.i)}
-          <button type="button" class="pair" class:gone={found.includes(x.i)} disabled={found.includes(x.i) || held === null}
-            data-sfx="tick" data-sg-review-ja={x.i} onclick={() => pickJa(x.i)}>{x.t}</button>
+          <button type="button" class="chip big pair" aria-pressed={on('ja', x.i)} class:gone={found.includes(x.i)} disabled={found.includes(x.i)}
+            data-sfx="tick" data-sg-review-ja={x.i} onclick={() => tap('ja', x.i)}>{x.t}</button>
         {/each}
       </div>
     </div>
@@ -53,13 +55,8 @@
   .ask, .done { margin: 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
   .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .col { display: flex; flex-direction: column; gap: 6px; }
-  .pair { min-height: 44px; padding: 6px 8px; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
-    background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 600 var(--fs-s)/1.25 var(--font-body);
-    transition: opacity 200ms; text-wrap: pretty; }
-  .pair.held { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
-  .pair.gone { opacity: .2; }
-  .pair:disabled:not(.gone) { cursor: default; }
-  /* the Japanese wait for an English picked: shown soft till then */
-  .waiting .col:last-child .pair:not(.gone) { opacity: .55; box-shadow: none; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  /* the kit's big chip (its edge, the press, yuzu held), a word or two a line */
+  .pair { width: 100%; height: auto; padding: 6px 8px; font: 600 var(--fs-s)/1.25 var(--font-body); text-wrap: pretty; transition: opacity 200ms; }
+  .pair.gone { opacity: .2; box-shadow: none; }
 </style>
