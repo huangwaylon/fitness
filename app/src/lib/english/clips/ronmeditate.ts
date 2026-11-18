@@ -37,7 +37,7 @@ export const ronMeditate: Clip = {
       line: 'It *doesn’t look like much*.',
       said: '建物を見て「見た目は大したことないな」と言う。',
       mean: 'doesn’t look like much ＝ 文字どおりは「大した物に見えない」→見た目はぱっとしない。建物を見た感想。',
-      trap: 'much から「広さ」や「量」と思いやすい。look like much でひとまとまり。',
+      trap: 'much から「広さ」や「量」を連想しやすい。look like much でひとまとまり。',
       use: 'It doesn’t look like much, but it’s great.（見た目は地味だけど最高）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'smells', seg: [5.3, 16],
@@ -166,7 +166,7 @@ export const ronMeditate: Clip = {
       line: 'Chris: It takes a ton of work for me… *no matter how hard I try*. / Ron: *Don’t try so hard.*',
       said: '「どんなに頑張っても無理」と言うクリスに、ロンは「頑張りすぎるな」と2回言う。',
       mean: 'Don’t try so hard ＝ そんなに頑張らないで。力を抜けば楽になる、という助言。',
-      trap: 'Don’t try から「やめろ」と思いやすい。so hard がつくと「頑張りすぎるな」。',
+      trap: 'Don’t try が「やめろ」に聞こえるが、so hard がつくと「頑張りすぎるな」。',
       use: 'Take it easy. Don’t try so hard.（気楽にね。頑張りすぎないで）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'nomatter', seg: [74.3, 76.8],
@@ -272,7 +272,7 @@ export const ronMeditate: Clip = {
       line: '*You want to head back?* / Ron: I do. *But first*, there’s a hot, spinning cone of meat…',
       said: '「戻る？」「ああ。でもその前に、隣の店の回る肉だ」と言う。',
       mean: 'But first ＝ でも、その前に。帰る前に、先にやることを言う合図。',
-      trap: 'first から「初めて」や「一番」と思いやすい。But first は「その前に」。',
+      trap: 'first から「初めて」や「一番」と考えがち。But first は「その前に」。',
       use: 'Sure, but first, coffee.（いいよ、でもその前にコーヒー）' },
 
     // retired (R4): the same fact as g1 (he wants to eat the meat)
