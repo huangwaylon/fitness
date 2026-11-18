@@ -34,7 +34,7 @@ describe('the draft', () => {
     expect(sameDraft(d, removeDate(d, '2026-11-21'))).toBe(false);
   });
 
-  it('設定’s rows: 自動で確定 is 通知’s (its summary and 未保存), 詳細 only 確認の間隔 and 人数', () => {
+  it('設定’s rows: 自動で確定 is 通知’s (its summary and 未保存), 間隔と人数 only 確認の間隔 and 人数', () => {
     const d = draft(), on = draft({ autoConfirm: true }), p = { search: [], off: [] };
     expect(settingsSummary(d, p, false)).toMatchObject({ detail: '15秒・2人', notify: 'オフ' });
     expect(settingsSummary(on, p, true)).toMatchObject({ detail: '15秒・2人', notify: 'オン・自動で確定' });

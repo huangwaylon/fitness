@@ -238,7 +238,7 @@ export function dateRows(d: Draft, now: number, hotels: readonly HotelRow[] = []
   });
 }
 
-/** 設定's folded rows' summaries (docs/bots.md): 施設 「探す12・除外4」, 詳細 「15秒・2人」, 通知 「オフ・自動で確定」
+/** 設定's folded rows' summaries (docs/bots.md): 施設 「探す12・除外4」, 間隔と人数 「15秒・2人」, 通知 「オフ・自動で確定」
  *  (this phone's push, `push`, then 自動で確定 while on). */
 export function settingsSummary(d: Draft, p: Pick<HotelParts, 'search' | 'off'>, push: boolean): { hotels: string; detail: string; notify: string } {
   const every = d.intervalSec < 60 ? t('its.interval.s', { n: d.intervalSec }) : t('its.interval.m', { n: d.intervalSec / 60 });

@@ -88,7 +88,7 @@ async function unfold(its: ReturnType<Page['locator']>, id: 'hotels' | 'detail' 
   if (!(await d.evaluate((e) => (e as HTMLDetailsElement).open))) await d.locator('> summary').click();
 }
 
-/** The page shown, 設定's 詳細 opened. */
+/** The page shown, 設定's 間隔と人数 opened. */
 async function open(sheet: ReturnType<Page['locator']>) {
   await expect(sheet.locator('[data-its-verdict]')).toBeVisible();
   const its = sheet.locator('[data-its-page]');
@@ -270,7 +270,7 @@ test('a draft isn’t dropped by a stray ✕, Esc or the ジム tab: each asks f
   const { sheet, its } = await phone(page, context, 'A');
   await open(sheet);
   const ask = page.locator('dialog[open] [data-discard-ask]');
-  // 自動で確定 in 通知 (the user asked: out of 詳細), still in the 保存 draft: 通知 says 未保存 and 自動で確定
+  // 自動で確定 in 通知 (the user asked: out of 間隔と人数, once 詳細), still in the 保存 draft: 通知 says 未保存 and 自動で確定
   await expect(its.locator('[data-its-fold="detail"] [data-its-auto]')).toHaveCount(0);
   await unfold(its, 'notify');
   const auto = its.locator('[data-its-fold="notify"] [data-its-auto]');

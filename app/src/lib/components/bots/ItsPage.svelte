@@ -8,7 +8,7 @@
   // weekday's header its column) and the nights under it (any, up to 400 days ahead; ✕; tapped open to their
   // facilities by why: view.ts dateRows); 予約 (the other stays); 設定, its rows folded
   // (plain <details>, each with its summary and 未保存 while the draft changed it): 施設 (探す is the allow-list; presets,
-  // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 詳細 (確認の間隔, 人数),
+  // then 探す · 日程に合わない · 除外, the new ones' banners above the rows, never folded), 間隔と人数 (確認の間隔, 人数),
   // 通知 (自動で確定 first, in the draft: 保存で反映 under it; this phone's push, at once: ItsNotify, the same switch row) and 最近の操作; くわしく last, 最近の動き at its bottom. The settings are one draft
   // saved with 保存 (the sticky bar while it differs, with why: someone else's save, the draft note or the refusal; ✕,
   // the backdrop and Esc ask first: guardForm, a tab switch too: `leave`). Read every 15 s while the runner is on its
