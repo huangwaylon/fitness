@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 0, new 4, ctx 6, tx 3
+// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 0, new 4, ctx 6, tx 3, qa 13
 // A2 REVIEW 2026-11-17: keep 7, rewrite 0, retire 1, new 13
 // “Ross and Rachel's First Date at the Laundromat | Friends” (official Friends channel): a 'coincidence', a saved
 // machine, sorting a wash, and a cart fight. Segments from the captions, words checked against whisper (2026-11-16).
@@ -18,15 +18,15 @@ export const laundromat: Clip = {
   credit: 'Ross and Rachel’s First Date at the Laundromat | Friends, official Friends channel (YouTube)',
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'g1', seg: [0, 21],
-      stem: 'How does Ross say he’ll be at the laundromat too?',
-      ja: 'ロスは、自分もコインランドリーに行くことをどう伝える？',
-      choices: ['He makes it sound like luck', 'He says he lives near there', 'He says he needs her help'], a: 0,
-      choicesJa: ['ただの偶然のように言う', '近くに住んでいると言う', '手伝いが要ると言う'],
+      stem: 'What does Ross tell Rachel about tonight?',
+      ja: 'ロスはレイチェルに、今夜について何と言う？',
+      choices: ['He’ll be at the laundromat too', 'He has to work late', 'He’s going out with Monica'], a: 0,
+      choicesJa: ['自分もコインランドリーに行く', '遅くまで仕事がある', 'モニカと出かける'],
       cue: 'ロスの「Guess who」の前後',
       line: 'you want to hear a *freakish coincidence*? Guess who’s doing laundry there, too? — Who? — *Me.*',
       said: '「すごい偶然があるんだ。そこで洗濯するの、だれだと思う？」「僕」。',
       mean: 'freakish coincidence ＝ びっくりする偶然。本当は会いたいだけなのに、偶然のふり。',
-      trap: '決め手は coincidence（偶然）。住所や手伝いの話は出てこない。',
+      trap: 'Monica の名前が出るので、モニカと出かける話と考えがち。決め手は Guess who のあとの Me。',
       use: 'What a coincidence!（すごい偶然だね）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'join', seg: [20, 28.9], stem: 'Ross asks, “Why don’t I just join you?” What does he want?',
@@ -272,19 +272,19 @@ export const laundromat: Clip = {
       choicesJa: ['レイチェルがカートを守る', '女性がカートを持っていく', 'ロスがカート代を払う'],
       cue: 'レイチェルの「listen」のあと',
       line: 'If you want this cart, you’re going to have to *take me with it*. … *You were incredible.*',
-      said: '「このカートがほしいなら、私ごと持っていきなさい」と言う。',
+      said: '「このカートがほしいなら、私ごと持っていくことね」と言う。',
       mean: 'take me with it ＝「私ごと持っていけ」。一歩も引かない言い方。女性はあきらめる。',
       trap: '引っぱり合いが長いので、女性が勝ったと考えがち。最後のロスのほめ言葉で分かる。',
       use: 'You were incredible!（すごかったよ）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B2', point: 'without', seg: [284, 290], stem: 'What does Rachel tell Ross at the end?',
-      ja: 'レイチェルは最後に、ロスに何と言う？',
+    { id: 'p6', skill: 'phrase', level: 'B2', point: 'without', seg: [284, 290], stem: 'What does Rachel tell Ross after the fight?',
+      ja: 'けんかのあと、レイチェルはロスに何と言う？',
       choices: ['She did it thanks to him', 'He must help next time', 'She did it all by herself'], a: 0,
       choicesJa: ['あなたのおかげでできた', '次は手伝ってほしい', '全部ひとりでやった'],
       cue: 'キスの直前の一言',
       line: 'Thank you. *I could not have done this without you.*',
       said: '「ありがとう。あなたなしではできなかった」と言う。',
-      mean: 'could not have done 〜 without you ＝ お礼の決まり文句。',
+      mean: '文字どおりは「あなたなしではできなかった」→「あなたのおかげ」。お礼の決まり文句。',
       trap: 'not から「できなかった」と思いやすい。without you で「おかげで」。',
       use: 'I couldn’t have done this without your help.（あなたの助けがなければできなかった）' },
   ]

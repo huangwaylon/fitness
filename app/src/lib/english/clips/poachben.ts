@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 5, tx 2
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 5, tx 2, qa 11
 // A2 REVIEW 2026-11-17: keep 13, rewrite 3, retire 2, new 0 (c1, c2 stay retired)
 // “Michael Tries To Steal A Sales Person - The Office US” (the official The Office channel, Best of Season 4): Michael
 // phones Karen to stop her branch taking Stanley, offers Toby instead, then threatens to poach one of hers and pitches
@@ -17,16 +17,16 @@ export const poachBen: Clip = {
   questions: [
     { id: 'g1', skill: 'gist', level: 'B1', point: 'stanley', reveals: ['poach', 'offer', 'transfer'], seg: [7.0, 30.0],
       stem: 'Why did Michael call Karen?', ja: 'マイケルはなぜカレンに電話した？',
-      choices: ['To stop her taking Stanley', 'To give her a new worker', 'To ask her for a job'], a: 0,
-      choicesJa: ['スタンリーを取られないため', '新しい部下をあげるため', '仕事を頼むため'],
+      choices: ['To stop her taking Stanley', 'To say sorry to her', 'To ask her for a job'], a: 0,
+      choicesJa: ['スタンリーを取られないため', '彼女に謝るため', '仕事を頼むため'],
       cue: '「Yes. Listen.」のあと',
       line: 'you cannot *tear Stanley from his family* like this.',
       said: 'マイケルが「スタンリーをこんなふうに家族から引き離すな」と言う。',
       mean: 'tear 〜 from … ＝ 〜を…から引き離す。部下のスタンリーを取られたくない。',
-      trap: 'あとでトビーをあげると言うので、部下をあげる電話と考えがち。最初の頼みは Stanley。',
+      trap: 'very hard for me（つらい）から、謝る電話と考えがち。トビーの話も引き止めるため。頼みは Stanley。',
       use: 'Listen, I need to talk to you.（ねえ、話があるんだ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'family', ctx: true, seg: [11, 18.1],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'family', ctx: true, seg: [11, 18.7],
       stem: 'By “his family,” what does Michael really mean?', ja: 'マイケルの言う「家族」とは本当は何？',
       choices: ['His coworkers', 'His wife and kids', 'His mom and dad'], a: 0,
       choicesJa: ['職場の仲間', '妻と子ども', '両親'],
@@ -94,8 +94,8 @@ export const poachBen: Clip = {
 
     { id: 'h1', skill: 'attitude', level: 'B1', point: 'bluff', seg: [29.0, 37.5],
       stem: 'What does Michael really think of Toby?', ja: 'マイケルは本当はトビーをどう思っている？',
-      choices: ['He is the worst', 'He is smart and fun', 'He is a good friend'], a: 0,
-      choicesJa: ['最悪だ', '賢くておもしろい', 'いい友だちだ'],
+      choices: ['He doesn’t like him at all', 'He thinks he’s smart and fun', 'He thinks of him as a friend'], a: 0,
+      choicesJa: ['まったく好きではない', '賢くておもしろいと思う', '友だちだと思っている'],
       cue: '「I can’t do it」のあと',
       line: 'and charming. … You know, I can’t do it. *Toby is the worst*. That was a bluff.',
       said: '「魅力的」とほめた直後、「無理だ。トビーは最悪。はったりだ」と言う。',
@@ -116,8 +116,8 @@ export const poachBen: Clip = {
 
     { id: 'p1', skill: 'pragma', level: 'B1', point: 'goodbye', reveals: ['poach'], ctx: true, seg: [38.4, 47.5],
       stem: 'How does Karen answer Michael’s threat?', ja: 'マイケルのおどしに、カレンはどう答える？',
-      choices: ['She says goodbye', 'She agrees to it', 'She gets very angry'], a: 0,
-      choicesJa: ['「じゃあね」と言う', '受け入れる', 'すごく怒る'],
+      choices: ['She ends the call', 'She agrees to it', 'She gets very angry'], a: 0,
+      choicesJa: ['電話を終わらせる', '受け入れる', 'すごく怒る'],
       cue: '「poach one of yours」のあと',
       line: 'Michael: I am going to poach one of yours. / Karen: *Ooh. Goodbye, Michael*.',
       said: 'カレンが「へえ。じゃあね、マイケル」と電話を切ろうとする。',
@@ -152,7 +152,7 @@ export const poachBen: Clip = {
       choicesJa: ['トップの営業', '新人の営業', '営業部長'],
       cue: '「He is」のあと',
       line: 'I have Ben Nugent on the line. He is *the top salesman* in…',
-      said: 'カレンが「ベン・ニュージェントです。うちのトップ営業よ」と電話をつなぐ。',
+      said: 'カレンが「ベン・ニュージェントです。ユーティカ支店のトップ営業です」と電話をつなぐ。',
       mean: 'on the line ＝ 電話に出ている。top salesman ＝ 一番売る営業。',
       trap: 'manager（部長）とは言っていない。top のあとを聞く。',
       use: 'I have Mr. Sato on the line.（佐藤様からお電話です）' },
@@ -164,7 +164,7 @@ export const poachBen: Clip = {
       cue: '「Hi, Michael」のあと',
       line: 'I’m going to *cut right to the chase* here.',
       said: 'マイケルが「単刀直入に言おう」と切り出す。',
-      mean: 'cut to the chase ＝ 前置きなしで本題に入る（決まり文句）。',
+      mean: '文字どおりは「追いかけっこの場面まで飛ばす」。映画の退屈な所を切って見せ場へ→前置きなしで本題に入る。',
       trap: 'chase（追いかける）から、追いかける話を連想しやすい。',
       use: 'Let me cut to the chase.（単刀直入に言います）' },
 
@@ -252,8 +252,8 @@ export const poachBen: Clip = {
       cue: 'カメラへの言葉',
       line: 'What is that guy talking about? *Scranton is not lame*. Scranton is the cool, fun branch.',
       said: '「何言ってるんだ。スクラントンはダサくない。楽しい支店だ」と言う。',
-      mean: 'lame ＝ ダサい（くだけた言い方）。What is he talking about? ＝ 何を言ってるんだ（＝おかしい）。',
-      trap: 'What is he talking about? が、わからなくて聞いているように聞こえるが、ここは「ありえない」。',
+      mean: 'lame ＝ ダサい（くだけた言い方）。What is that guy talking about? ＝ 何を言ってるんだ（＝おかしい）。',
+      trap: '前半は、わからなくて聞いているように聞こえるが、ここは「ありえない」。',
       use: 'This town is not boring at all.（この町は全然つまらなくない）' },
   ]
 };
