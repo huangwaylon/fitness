@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { seeded } from '#lib/random.ts';
-import { friendly, newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
+import { newBag, refill, scoreOf, spellable, without, RACK } from './tiles.ts';
+import seedsJson from './seeds.json';
 import { BOARD, FORK, GOAL, pathOf, stepFrom, toGoal } from './board.ts';
 import { CARDS } from './cards.ts';
-import { choose, eventDone, finish, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
+import { choose, eventDone, finish, rollMode, pictureDone, tried, homeDone, isGame, LEVEL, MAX_ROUNDS, newGame, playWord, ranking, sentenceAsWord, sentenceDone, sentenceStars, spin, swap,
   wordScore, type Game, type Level } from './game.ts';
 import { decodeAccept, wordsOf } from './words.ts';
 import { inOrder, pickSentence, sentenceOf, tilesOf, type Line } from './sentences.ts';
@@ -30,17 +31,17 @@ describe('tiles', () => {
     expect(scoreOf('at', o).total).toBe(3);
     expect(scoreOf('box', { ...o, half: true }).total).toBe(4);
   });
-  it('racks are friendly almost always and keep the tile count', () => {
-    let bad = 0;
+  it('every rack holds a common word of 5–8 letters (and keeps the tile count), kept tiles or not', () => {
+    const long = (seedsJson as { w: string[] }).w;
     for (let i = 0; i < 300; i++) {
       const r = seeded(`t${i}`);
       const bag = newBag(r);
-      const { rack, bag: left } = refill([], bag, r);
+      const keep = i % 3 ? [] : ['q', 'x', 'z'].slice(0, i % 4).filter((l) => bag.includes(l));
+      const { rack, bag: left } = refill(keep, bag, r);
       expect(rack).toHaveLength(RACK);
-      expect(left.length + rack.length).toBe(bag.length);
-      if (!friendly(rack)) bad++;
+      if (!keep.length) expect(left.length + rack.length).toBe(bag.length);
+      expect(long.some((w) => spellable(w, rack)), rack.join('')).toBe(true);
     }
-    expect(bad).toBeLessThan(15);
   });
   it('spells from the rack once each', () => {
     expect(spellable('zoo', ['z', 'o', 'o'])).toBe(true);
@@ -158,6 +159,21 @@ describe('game', () => {
     const g = playOut('bad');
     expect(isGame({ ...g, turn: 9 })).toBe(false);
     expect(isGame({ ...g, players: g.players.map((p) => ({ ...p, level: 9 as Level })) })).toBe(false);
+  });
+  it('the table stays together: the one well ahead rolls low, the one well behind high; the gap at the end stays small', () => {
+    const at = (posA: number, posB: number) => ({ ...newGame(seats, 'gap'), players: newGame(seats, 'gap').players.map((p, i) => ({ ...p, pos: i ? posB : posA, branch: 0 })) });
+    expect(rollMode({ ...at(20, 2), turn: 0 })).toBe('slow');
+    expect(rollMode({ ...at(20, 2), turn: 1 })).toBe('fast');
+    expect(rollMode({ ...at(5, 3), turn: 0 })).toBe('even');
+    let worst = 0, sum = 0;
+    for (let i = 0; i < 60; i++) {
+      const g = playOut(`spread${i}`, [2, 2]);
+      const gap = Math.abs(toGoal(g.players[0].pos, g.players[0].branch ?? 0) - toGoal(g.players[1].pos, g.players[1].branch ?? 0));
+      worst = Math.max(worst, gap);
+      sum += gap;
+    }
+    expect(sum / 60).toBeLessThan(7);
+    expect(worst).toBeLessThan(18);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
 });

@@ -25,9 +25,10 @@ with characters in it, since they are the pieces.
   steps, about 11 rounds. A tall map: the board is a window onto it that follows whose turn it is (and scrolls by hand),
   smaller during a turn's English so its controls stay on screen.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
-  and walk; the fork stops the walk for the choice. The last in stars (2+ behind everyone) rolls two dice and keeps the
-  better (the catch-up). The stone:
-  - **ことば**: make a word from your 7 tiles (tap to place, tap to take back). Points (`tiles.ts scoreOf`) = letters
+  and walk; the fork stops the walk for the choice. The table kept together (`rollMode`): the one 6+ steps behind
+  whoever's furthest on, or last in stars by 2+, rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
+  furthest back rolls two and keeps the lower. The stone:
+  - **ことば**: make a word from your 8 tiles (tap to place, tap to take back). Points (`tiles.ts scoreOf`) = letters
     (1 for E A I O N R T L S U, 2 D G B C M P, 3 F H V W Y, 4 K, 5 J X Z: a short word with a rare letter ties a long one)
     + 2 for each of the game's two lucky letters, × 2 on ダブル, + the level's everyday bonus, at least 3, said in words.
     ヒント fills in the rack's best everyday word (sticks for the turn). 入れかえる swaps the rack for no stars. Not a word:
@@ -71,8 +72,11 @@ keeps any parsed kept intent; after a contract change the relay deploys first.
 
 ## Tiles
 
-`tiles.ts`: Scrabble's spread without Q (no Q for a beginner), the vowels richer. A rack is drawn friendly when it can
-be (2–4 vowels, one of S T R N D, at most one of J K X Z, at most two of a letter): a dozen tries, then as drawn.
+`tiles.ts`: Scrabble's spread without Q (no Q for a beginner), the vowels richer. A rack is 8 tiles, drawn round a seed
+(`seeds.json`, `npm run sugoroku:words`): a common word of 5–8 letters the bag can spell (lengths 5 and 6 likeliest, 8
+least; an everyday word 6 times in 10), its missing letters taken from the bag, the rest as they come, shuffled; so every
+rack holds a real 5–8 letter word (and the shorter ones in it). No seed fits (a short bag): a friendly draw (2–4
+vowels) as before.
 
 ## Words
 

@@ -120,10 +120,19 @@ export function newGame(seats: readonly Seat[], seed: string, length: Length = '
   return { v: V, content: CONTENT, seed, length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [] };
 }
 
-/** Whether this turn's player spins twice (keeps the better): the catch-up for the last in stars, 2+ behind. */
-export function twice(g: Game): boolean {
-  const me = g.players[g.turn], others = g.players.filter((_, i) => i !== g.turn);
-  return others.every((p) => p.stars >= me.stars + 2);
+/** How far ahead on the route a lead counts as too far (steps to あがり). */
+const GAP = 6;
+/** This turn's dice, keeping the table together: `fast` (two dice, the higher) for the one well behind on the route
+ *  (GAP+ steps behind whoever's furthest on) or last in stars (2+ behind everyone), `slow` (two dice, the lower) for the
+ *  one well ahead (GAP+ steps ahead of whoever's furthest back), else one die. */
+export function rollMode(g: Game): 'fast' | 'slow' | 'even' {
+  const me = g.players[g.turn], others = g.players.filter((_, i) => i !== g.turn && g.players[i].home === null);
+  if (!others.length) return 'even';
+  const left = (p: Player) => toGoal(p.pos, p.branch);
+  const mine = left(me);
+  if (mine - Math.min(...others.map(left)) >= GAP || others.every((p) => p.stars >= me.stars + 2)) return 'fast';
+  if (Math.max(...others.map(left)) - mine >= GAP) return 'slow';
+  return 'even';
 }
 
 /** Roll (1–6) and walk; the fork stops the walk for a choice; the space decides what comes next. */
@@ -132,7 +141,8 @@ export function spin(g: Game): Game {
   const players = copy(g);
   const r = rnd(g);
   const a = 1 + Math.floor(r() * 6), b = 1 + Math.floor(r() * 6);
-  const spun = twice(g) ? Math.max(a, b) : a;
+  const mode = rollMode(g);
+  const spun = mode === 'fast' ? Math.max(a, b) : mode === 'slow' ? Math.min(a, b) : a;
   return walk({ ...g, n: g.n + 1, players }, spun, spun, r);
 }
 

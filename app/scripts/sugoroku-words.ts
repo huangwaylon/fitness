@@ -33,6 +33,18 @@ if (lists) {
   console.log(`${common.size} common, ${accept.size} accepted`);
 }
 
+// The racks' seeds (seeds.json: tiles.ts refill draws each rack round one, so every rack holds a real word of 5–8
+// letters): the common words of 5–8 letters a fresh bag can spell, the everyday ones first (`e`: their count).
+{
+  const { COUNT } = await import('../src/lib/sugoroku/tiles.ts');
+  const common = readFileSync(join(root, 'src/lib/sugoroku/words.txt'), 'utf8').split('\n').filter((w) => w.length >= 5 && w.length <= 8);
+  const fits = (w: string) => [...new Set(w)].every((c) => (COUNT[c] ?? 0) >= w.split(c).length - 1);
+  const ok = common.filter(fits);
+  const ev = ok.filter((w) => w in everyday), rest = ok.filter((w) => !(w in everyday));
+  writeFileSync(join(root, 'src/lib/sugoroku/seeds.json'), JSON.stringify({ e: ev.length, w: [...ev, ...rest] }) + '\n');
+  console.log(`${ok.length} seeds (${ev.length} everyday)`);
+}
+
 // ぶん's lines: English Study's フレーズ deck (catalog.ts deckOf, in the plan's order), its `use` (our portable example
 // over the TV line) with its Japanese, 3–6 words, each a level (game.ts Level): 1 (やさしい) ≤ 4 words, every one an
 // everyday word, no slang; 2 (ふつう) ≤ 5 words, 80 %+ everyday; 3 (むずかしい) the rest, unless line-overrides.json

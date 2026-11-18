@@ -22,7 +22,7 @@
   import { now } from '#lib/time/clock.ts';
   import { CARDS } from '../cards.ts';
   import { choose, eventDone, pictureDone, tried, finish, homeDone, lastRound as isLast, LEVEL, MAX_PLAYERS, MIN_PLAYERS, newGame, playWord, ranking, sentenceAsWord,
-    sentenceDone, spin, swap, twice, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
+    sentenceDone, spin, swap, rollMode, wordScore, HOME_BONUS, type Game, type Length, type Level as SeatLevel, type Seat } from '../game.ts';
   import { pathOf } from '../board.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, pickSentence, type Line, type Sentence } from '../sentences.ts';
@@ -380,7 +380,7 @@
               </div>
             </div>
             <button type="button" class="btn" data-sfx="confirm" data-sg-spin onclick={() => doSpin()}>{s('spin')}</button>
-            {#if twice(g)}<p class="note">{s('twice')}</p>{/if}
+            {#if rollMode(g) === 'fast'}<p class="note">{s('twice')}</p>{:else if rollMode(g) === 'slow'}<p class="note">{s('slowRoll')}</p>{/if}
           {:else if ph.k === 'fork'}
             <div class="event" data-sg-fork>
               <h3 class="ttl">{s('forkTitle')}</h3>

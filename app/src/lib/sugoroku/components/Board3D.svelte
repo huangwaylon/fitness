@@ -35,16 +35,19 @@
       .then((b) => {
         if (!alive) return b.dispose();
         board = b;
+        b.resize();
         b.setPlayers(untrack(() => players.map((p) => ({ who: p.who, look: lookOf(p.who), villager: villagerOf(p.who) }))));
         untrack(() => shown.forEach((s, k) => b.place(k, s)));
         b.focus(untrack(() => turn));
       })
       .catch(() => (failed = true));
-    const onResize = () => board?.resize();
-    addEventListener('resize', onResize);
+    // the board's box changes with the turn's panel (a word's tiles, a card), not only the window: a canvas resized
+    // without the camera's aspect looked stretched after a turn
+    const ro = new ResizeObserver(() => board?.resize());
+    ro.observe(el);
     return () => {
       alive = false;
-      removeEventListener('resize', onResize);
+      ro.disconnect();
       board?.dispose();
       board = null;
     };

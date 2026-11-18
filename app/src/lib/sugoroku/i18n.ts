@@ -24,6 +24,7 @@ const S = {
   passTo: { ja: 'スマホを{name}に渡してね', en: 'Pass the phone to {name}' },
   spin: { ja: 'サイコロをふる', en: 'Roll' },
   twice: { ja: 'サイコロ2つ！大きい目のほうで進む', en: 'Two dice: the bigger counts' },
+  slowRoll: { ja: '先頭なのでサイコロ2つ。小さい目のほうで進む', en: 'In the lead: two dice, the smaller counts' },
   spun: { ja: '{n}マス進む', en: 'Move {n}' },
   walking: { ja: '進んでいます…', en: 'On the way…' },
   lucky: { ja: 'ラッキーレター', en: 'Lucky letters' },

@@ -118,12 +118,12 @@
   .soft { color: var(--text-soft); font-weight: 500; }
   .slots, .rack { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
   .slots { min-height: 52px; padding: 4px 8px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); min-width: 200px; }
-  .empty { width: 44px; }
+  .empty { width: 40px; }
   .tile {
-    position: relative; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; margin: 0;
+    position: relative; width: 40px; height: 44px; display: grid; place-items: center; padding: 0; margin: 0;
     appearance: none; border: 0; border-radius: 10px; cursor: pointer;
     background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364;
-    font: 600 22px/1 var(--font-num); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    font: 600 21px/1 var(--font-num); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .tile small { position: absolute; right: 4px; bottom: 2px; font: 600 11px/1 var(--font-num); opacity: .75; }
   .tile.lucky { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
