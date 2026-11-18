@@ -66,6 +66,7 @@
   import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish, type Line, type Net, type P3, type Pool, type Shared } from './critterTypes.ts';
   import { critterMotion3d } from './critterMotion3d.ts';
   import { clamp } from '#lib/math.ts';
+  import { once } from '#lib/once.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -132,8 +133,7 @@
   let diving = $state<{ n: number; item: DiveItem; x: number; z: number; ax: number; az: number; ms: number; size: number; chase: boolean; until: number; gone: boolean; cid?: string } | null>(null);
   /** The sea creatures' module (world/sea.ts): loaded with the first bubble spot, out of the island's first load. */
   let S: typeof import('#lib/world/sea.ts') | null = null;
-  let seaChunk: Promise<typeof import('#lib/world/sea.ts')> | null = null;
-  const loadSea = () => (seaChunk ??= import('#lib/world/sea.ts').then((m) => (S = m)).catch((e) => ((seaChunk = null), Promise.reject(e))));
+  const loadSea = once(() => import('#lib/world/sea.ts').then((m) => (S = m)));
   /** Earth flying up where a mole cricket was dug up. */
   let dig = $state<Net | null>(null);
   let seq = 0;
@@ -216,8 +216,7 @@
 
   /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
   let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
-  let sprite: Promise<unknown> | null = null;
-  const loadSprite = () => (sprite ??= import('./BugSprite.svelte').then((m) => (Sprite = m.default)).catch(() => (sprite = null)));
+  const loadSprite = once(() => import('./BugSprite.svelte').then((m) => (Sprite = m.default)));
 
   function preload(key: string) {
     const url = artUrl(key);
@@ -225,10 +224,9 @@
   }
 
   // ---------- fish ----------
-  /** The fresh-water fish table: its own chunk, fetched with the first fresh-water shadow. */
-  let pondChunk: Promise<typeof import('#lib/world/pondFish.ts')> | null = null;
-  // (a failed fetch let go of: the next shadow asks again, as loadSea does)
-  const loadPond = () => (pondChunk ??= import('#lib/world/pondFish.ts').catch((e) => ((pondChunk = null), Promise.reject(e))));
+  /** The fresh-water fish table: its own chunk, fetched with the first fresh-water shadow (a failed fetch let go of:
+   *  the next shadow asks again, as loadSea does). */
+  const loadPond = once(() => import('#lib/world/pondFish.ts'));
 
   /** A shadow in `water`, `want` being one of its fish: a shared one (`o.path`) where its seed puts it, wherever that is
    *  (the projector shows it when the camera sees it); else (a dev hook's) where the camera can see it (`pinned`: or
@@ -660,7 +658,7 @@
   function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean; keep?: BugOpts['keep'] } & Shared = {}): boolean {
     const { area, stay = true, pinned = false } = o;
     if (!id || bugs.length >= MAX_BUGS) return bugs.length > 0;
-    void loadSprite();
+    void loadSprite().catch(() => {});
     preload(critterArt(id));
     void loadLines().catch(() => {});
     if (o.path) return placeBug(id, o, o.path);

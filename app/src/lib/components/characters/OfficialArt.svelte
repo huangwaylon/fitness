@@ -1,10 +1,9 @@
 <script lang="ts" module>
   // (the packed icons' reader, lib/artPack/artPack.ts: loaded with the first catalogue key, out of the first load)
+  import { once } from '#lib/once.ts';
   type ArtPack = typeof import('#lib/artPack/artPack.ts');
   let packs: ArtPack | null = null;
-  let loadingPacks: Promise<ArtPack> | null = null;
-  const loadPacks = (): Promise<ArtPack> =>
-    (loadingPacks ??= import('#lib/artPack/artPack.ts').then((m) => (packs = m)).catch((e) => ((loadingPacks = null), Promise.reject(e))));
+  const loadPacks = once(() => import('#lib/artPack/artPack.ts').then((m) => (packs = m)));
 </script>
 
 <script lang="ts">

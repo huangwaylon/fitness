@@ -8,26 +8,20 @@ import type { AssetModel } from './assets.ts';
 import { isGarden } from '#lib/layout/garden.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import { WINDOWS } from '#lib/world/fixedDecor.ts';
+import { once } from '#lib/once.ts';
 
 let ready = false;
-let loading: Promise<void> | null = null;
 
 /** Whether the garden's models are known (MODELS has them). */
 export const gardenReady = (): boolean => ready;
 
 /** The garden's manifest into MODELS (once; a failed chunk fetch is tried again at the next call). */
-export function loadGarden(): Promise<void> {
-  return (loading ??= import('./garden.json').then(
-    (m) => {
-      Object.assign(MODELS, (m.default as unknown as { models: Record<string, AssetModel> }).models);
-      ready = true;
-    },
-    (e: unknown) => {
-      loading = null;
-      throw e;
-    }
-  ));
-}
+export const loadGarden: () => Promise<void> = once(() =>
+  import('./garden.json').then((m) => {
+    Object.assign(MODELS, (m.default as unknown as { models: Record<string, AssetModel> }).models);
+    ready = true;
+  })
+);
 
 /** NH's cedars wear their lights (PltTreeCedarDeco) in the illuminated weeks, the island's own (fixedDecor.ts WINDOWS
  *  illumi: Dec 15 – Jan 6, the illuminated tree's). */

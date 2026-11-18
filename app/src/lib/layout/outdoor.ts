@@ -7,6 +7,7 @@
 import { addKinds, type KindDef } from './catalog.ts';
 import type { Layout } from './model.ts';
 import type { PackRef } from '#lib/packStore.ts';
+import { once } from '#lib/once.ts';
 
 /** A seat's or a bed's shape in its model's frame (villager3d/seats3d.ts Shape: the room's, seats3d.json tent). */
 type Seat = { k: 's'; y: number; x: number[]; z0: number; z1: number; back: number } | { k: 'l'; y: number; a: 'x' | 'z'; head: -1 | 1; s: [number, number]; c: number[]; py: number; sway?: 1 };
@@ -46,7 +47,6 @@ export interface OutdoorPiece {
 const U = 3;
 const PREFIX = 'nh-';
 const BY_KIND = new Map<string, OutdoorPiece>();
-let loading: Promise<void> | null = null;
 
 /** Whether a kind is the outdoor catalogue's (`nh-<code>`). */
 export const isOutdoor = (k: string): boolean => k.startsWith(PREFIX);
@@ -70,19 +70,13 @@ export function kindOf(p: OutdoorPiece): KindDef {
 }
 
 /** The table in (once): its kinds into the catalogue. */
-export function loadOutdoor(): Promise<void> {
-  return (loading ??= import('./outdoor.json').then(
-    (m) => {
-      const pieces = (m.default as unknown as { pieces: Record<string, Omit<OutdoorPiece, 'code'>> }).pieces;
-      for (const [code, p] of Object.entries(pieces)) BY_KIND.set(PREFIX + code, { code, ...p });
-      addKinds([...BY_KIND.values()].map(kindOf));
-    },
-    (e: unknown) => {
-      loading = null;
-      throw e;
-    }
-  ));
-}
+export const loadOutdoor: () => Promise<void> = once(() =>
+  import('./outdoor.json').then((m) => {
+    const pieces = (m.default as unknown as { pieces: Record<string, Omit<OutdoorPiece, 'code'>> }).pieces;
+    for (const [code, p] of Object.entries(pieces)) BY_KIND.set(PREFIX + code, { code, ...p });
+    addKinds([...BY_KIND.values()].map(kindOf));
+  })
+);
 
 /** Whether a layout has a piece of the catalogue's. */
 export function wantsOutdoor(l: Layout): boolean {

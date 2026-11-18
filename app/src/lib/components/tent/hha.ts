@@ -7,6 +7,7 @@
 import type { TentPiece } from '#lib/contract/tent.ts';
 import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, footprint } from './items.ts';
 import { DOOR_TILES } from './grid.ts';
+import { once } from '#lib/once.ts';
 
 /** An item's (a piece's, a wallpaper's, a floor's) HHA numbers. */
 interface HhaMeta {
@@ -159,12 +160,6 @@ export function rate(room: HhaRoom, table: HhaTable): HhaRating {
   return { total, badge, parts, note, next: up ? up[1] - total : null };
 }
 
-let table: Promise<HhaTable> | null = null;
 /** hha.json (its own chunk: only a rating needs it). */
-export function loadHha(): Promise<HhaTable> {
-  return (table ??= import('./hha.json').then((m) => m.default as HhaTable, (e: unknown) => {
-    table = null;
-    throw e;
-  }));
-}
+export const loadHha: () => Promise<HhaTable> = once(() => import('./hha.json').then((m) => m.default as HhaTable));
 

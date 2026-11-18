@@ -19,6 +19,7 @@ import { IdleTimer, QUEUED_DROP_MS, WRAP, canSound, gestureAction, needsFadeIn, 
 import type { AmbientLayer } from './ambient.ts';
 import type { SoundSettings } from './settings.ts';
 import { quiet } from '#lib/quiet.ts';
+import { once } from '#lib/once.ts';
 
 /** The music when muffled (a sheet or the phone is up: NH muffles its BGM under the phone and menus). */
 const MUFFLE_HZ = 900;
@@ -56,7 +57,6 @@ interface Deck {
 
 type AudioSessionNav = Navigator & { audioSession?: { type: string } };
 type Synth = typeof import('./synth.ts');
-type BedSynth = typeof import('./ambientSynth.ts');
 
 /** A 50 ms silent WAV: played once inside the first tap so iOS lets the music <audio> elements play later. */
 function silentWav(): Blob {
@@ -161,7 +161,8 @@ export class Engine {
   /** The sounding layers and their buffers, by bed and variant (`birds:spring`). */
   #ambient = new Map<string, { src: AudioBufferSourceNode; gain: GainNode }>();
   #ambientBuffers = new Map<string, Promise<AudioBuffer | null>>();
-  #beds: Promise<BedSynth> | null = null;
+  /** The procedural beds' chunk (offline before it came: the next change tries again). */
+  #beds = once(() => import('./ambientSynth.ts'));
   #ambientToken = 0;
   /** When the last resume() was asked for (performance.now()): a tap's own cue may sound while it settles. */
   #resumeAt = -Infinity;
@@ -884,8 +885,7 @@ export class Engine {
   #bed(ctx: AudioContext, l: AmbientLayer): Promise<AudioBuffer | null> {
     const path = AUDIO.ambient[l.id];
     if (path) return this.#decode(path);
-    this.#beds ??= import('./ambientSynth.ts');
-    return this.#beds.then(
+    return this.#beds().then(
       (m) =>
         new Promise((done) =>
           whenIdle(() => {
@@ -895,10 +895,7 @@ export class Engine {
             done(b);
           })
         ),
-      () => {
-        this.#beds = null; // offline before the chunk came: the next change tries again
-        return null;
-      }
+      () => null
     );
   }
 

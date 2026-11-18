@@ -15,6 +15,7 @@ import { wedBookOf, wedDate } from '#lib/contract/wedding.ts';
 import { DEMO, DEVICE, getStoredMe, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
 import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
 import { testModeAllowed, testModeAsked } from '#lib/ui-state/testMode.ts';
+import { once } from '#lib/once.ts';
 import { composeModel, type ComposedModel } from './view.ts';
 import { LiveBackend } from './live.ts';
 import type { Backend, Host, SendOptions, SendResult } from './backend.ts';
@@ -40,7 +41,7 @@ class WeekStore implements Host {
   }
 
   #backend: Backend | null = null;
-  #loadingBackend: Promise<Backend> | null = null;
+  #demoChunk = once(() => import('./demo/backend.ts'));
   #demoMe: Who = 'A';
   #stopClock: (() => void) | null = null;
   /** The device's locale as last read or written (DEVICE.locale: the first paint's before any rows). */
@@ -80,8 +81,7 @@ class WeekStore implements Host {
     if (this.#backend) return this.#backend;
     const demo = this.demo;
     if (!demo) return (this.#backend = new LiveBackend(this));
-    this.#loadingBackend ??= import('./demo/backend.ts').then(({ DemoBackend }) => (this.#backend ??= new DemoBackend(this, demo, this.#demoMe)));
-    return this.#loadingBackend;
+    return this.#demoChunk().then(({ DemoBackend }) => (this.#backend ??= new DemoBackend(this, demo, this.#demoMe)));
   }
 
   /** Recompute the view from the backend's rows + events (pure; the reduce is reused while they are unchanged). */
