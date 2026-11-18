@@ -12,13 +12,13 @@ import { FOSSILS, FRAGMENTS, SHELLS } from '#lib/world/beach.ts';
 import { GOODS } from './pocket.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {
-  it('sells a catch and prices a piece at NH’s Bells ÷ 20, nothing selling for under 3', () => {
-    expect(sellPrice('fish:sea-bass')).toBe(20); // 400 Bells
-    expect(sellPrice('fish:koi')).toBe(200); // 4,000
-    expect(sellPrice('fish:whale-shark')).toBe(650); // 13,000
+  it('sells a catch and prices a piece at NH’s Bells ÷ 20 (a fish × 10), nothing selling for under 3', () => {
+    expect(sellPrice('fish:sea-bass')).toBe(200); // 400 Bells, × 10
+    expect(sellPrice('fish:koi')).toBe(2000); // 4,000
+    expect(sellPrice('fish:whale-shark')).toBe(6500); // 13,000
     expect(sellPrice('bug:tarantula')).toBe(400); // 8,000
     expect(sellPrice('sea:octopus')).toBe(60); // 1,200
-    expect(sellPrice('fish:bitterling')).toBe(45); // 900
+    expect(sellPrice('fish:bitterling')).toBe(450); // 900
     expect(Math.min(...Object.values(SELL))).toBe(3);
     expect(buyPrice('f3672')).toBe(6); // the cardboard box, 120 Bells
     expect(buyPrice('f7047')).toBe(25); // the zen cushion, 500
@@ -64,9 +64,9 @@ describe('a sell and a buy', () => {
   });
   it('the record keeps a sell at most at its price, a buy at exactly its price from a stock of about today', () => {
     const today = '2026-11-04';
-    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 600 }, today)).toBe(true);
-    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 601 }, today)).toBe(false);
-    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 120 }, today)).toBe(true); // an older app's list (÷ 100)
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 6000 }, today)).toBe(true);
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 6001 }, today)).toBe(false);
+    expect(shopPriced('sell', { species: 'fish:koi', n: 3, v: 600 }, today)).toBe(true); // an older app's list (before the fish × 10)
     expect(shopPriced('sell', { species: 'fish:nope', n: 1, v: 1 }, today)).toBe(false);
     const item = stockOf(today)[0];
     expect(shopPriced('buy', { item, price: buyPrice(item)!, d: today }, today)).toBe(true);
@@ -181,7 +181,7 @@ describe('the ledger', () => {
     expect(shopRefusal(l, caught, sell('fish:sea-bass', 1))).toBe('pocket');
     expect(shopRefusal(l, caught, buy('f3672', KOI3 + 1))).toBe('wallet');
     expect(shopRefusal(l, caught, buy('f3672', KOI3))).toBeNull();
-    const l2 = shopLedger(caught, [sell('fish:koi', 3), buy('f3672'), queued(buy('f3672')), queued(sell('fish:koi', 1)), queued(buy('f7047', 999))]);
+    const l2 = shopLedger(caught, [sell('fish:koi', 3), buy('f3672'), queued(buy('f3672')), queued(sell('fish:koi', 1)), queued(buy('f7047', KOI3))]);
     expect(l2.owned).toEqual(['f3672']);
     expect(l2.shells).toBe(KOI3 - 6);
     expect(shopRefusal(l2, caught, buy('f3672'))).toBe('owned');

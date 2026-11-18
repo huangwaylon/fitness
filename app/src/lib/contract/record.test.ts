@@ -205,9 +205,9 @@ describe('validEventData: each type\'s shape', () => {
   it('a sell, a buy and starts at their prices, an English Study row not after tomorrow, a pack and a wedding op by their own rules', () => {
     // (the shop's prices: contract/shopCheck.ts validEvent, the record's whole check; validEventData its shape only)
     const full = (type: string, d: Record<string, unknown>) => validEvent(type, d, now);
-    expect(full('sell', { species: 'fish:koi', n: 3, v: 600 })).toBe(true);
-    expect(full('sell', { species: 'fish:koi', n: 3, v: 601 })).toBe(false);
-    expect(ok('sell', { species: 'fish:koi', n: 3, v: 601 })).toBe(true);
+    expect(full('sell', { species: 'fish:koi', n: 3, v: 6000 })).toBe(true);
+    expect(full('sell', { species: 'fish:koi', n: 3, v: 6001 })).toBe(false);
+    expect(ok('sell', { species: 'fish:koi', n: 3, v: 6001 })).toBe(true);
     expect(ok('sell', { species: 'fish:koi', n: 3 })).toBe(false);
     const item = stockOf('2026-11-05')[0];
     expect(full('buy', { item, price: buyPrice(item)!, d: '2026-11-05' })).toBe(true);
