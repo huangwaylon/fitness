@@ -11,13 +11,13 @@
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
-  import '#lib/i18n/sheets.ts';
+  import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
   import type { Fix } from './map/engine.ts';
   import { EngineFeed } from './map/feed.svelte.ts';
   import { mapLoader } from '../travel/map/cached.ts';
+  import MapStatus from '../travel/map/MapStatus.svelte';
 
   interface Props {
     region: Region;
@@ -87,31 +87,14 @@
   {:else}
     <div class="gl" bind:this={el}></div>
   {/if}
-  {#if mode === 'failed'}
-    <div class="failed" data-map-failed>
-      <p>{pick(S.mapFailed, i18n.locale)}</p>
-      <button type="button" class="btn small paper" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
-    </div>
-  {:else if saved && !online.current && mode !== 'stub'}
-    <p class="note" role="status" data-map-note="saved">{t('offline.savedOnly')}</p>
-  {:else if mode === 'offline'}
-    <p class="note" role="status" data-map-note>{pick(S.mapOffline, i18n.locale)}</p>
-  {/if}
+  <MapStatus failed={mode === 'failed'} note={saved && !online.current && mode !== 'stub' ? 'saved' : mode === 'offline' ? 'offline' : null}
+    top="calc(var(--ui-top) + 52px)" bottom="30%" onretry={draw} />
 </div>
 
 <style>
-  .map { position: absolute; inset: 0; background: var(--ctl-off); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  .map { position: absolute; inset: 0; isolation: isolate; background: var(--ctl-off); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; }
   .stub { position: absolute; inset: 70px 20px 45% 20px; width: calc(100% - 40px); height: auto; max-height: 50%; }
-  .failed {
-    position: absolute; inset: 0 0 30% 0; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
-    color: var(--text-soft); font: 700 var(--fs-body)/1.4 var(--font-ui); text-align: center;
-  }
-  .failed p { margin: 0; }
-  .note {
-    position: absolute; z-index: 2; top: calc(var(--ui-top) + 52px); left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); margin: 0;
-    padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-cream); font: 700 var(--fs-s)/1.3 var(--font-ui); box-shadow: var(--sh-float);
-  }
   /* MapLibre's attribution, small, on the card, always over the sheet's peek (GSI's 出典 must show) */
   .map :global(.maplibregl-ctrl-bottom-right) { bottom: var(--peek, 0px); transition: bottom .32s var(--ease-soft); }
   .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: color-mix(in srgb, var(--c-card) 86%, transparent); color: var(--c-ink-soft); }

@@ -55,8 +55,6 @@ export const S = {
   locate: { ja: '現在地', en: 'My location' },
   locDenied: { ja: '位置情報がオフです。設定 → プライバシーとセキュリティ → 位置情報サービス → Safari で許可してください。', en: 'Location is off. Allow it in Settings → Privacy & Security → Location Services → Safari.' },
   trackFailed: { ja: 'このコースの地図データを読み込めませんでした。', en: "Couldn't load this trail's map data." },
-  mapFailed: { ja: '地図を読み込めませんでした', en: "The map didn't load" },
-  mapOffline: { ja: '地図はオフラインです（コースのみ表示）', en: 'Map offline: the trail only' },
   retry: { ja: 'もう一度', en: 'Try again' },
   locked: { ja: 'オンラインで開くと表示されます', en: 'Shows when opened online' }
 } satisfies Record<string, Required<L>>;

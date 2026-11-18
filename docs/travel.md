@@ -93,8 +93,8 @@ shows, `removeMap`), `cached.ts`, `tiles.ts`.
   labels; stops as numbered HTML pins, stops within 30 m **merged into one pin** (「2·6」), the selected one raised and
   named; a `keepout` symbol per pin so basemap labels give way; Okinawa's candidates as circles behind MapPane's layer
   button (off at first).
-- **States** (`data-mode`): `loading`, `ready`; `offline` (no basemap tile came: the route alone, 「地図はオフライン —
-  ルートのみ」); `failed` (no chunk or WebGL: 「地図を読み込めません」 + もう一度; offline the chunk is asked for only if
+- **States** (`data-mode`): `loading`, `ready`; `offline` (no basemap tile came: the route alone, 「地図はオフラインです
+  （ルートのみ表示）」); `failed` (no chunk or WebGL: 「地図を読み込めませんでした」 + もう一度, map/MapStatus as the trail map's; offline the chunk is asked for only if
   the service worker holds it, `map/cached.ts`, and it draws by itself once online); `lost` (iOS took the WebGL
   context, till restored). `removeMap` on unmount (the style's font faces go too).
 - **Locate:** permission is asked on the first tap (`geolocation=(self)`); the first fix flies there (zoom ≥ 14), unless

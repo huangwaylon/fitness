@@ -13,6 +13,7 @@
   import { lazy } from '#lib/ui-state/reload.ts';
   import { mapStub } from '#lib/ui-state/testMode.ts';
   import { pick } from '../text.ts';
+  import MapStatus from './MapStatus.svelte';
   import { LocWatch } from './geo.ts';
   import { mapLoader } from './cached.ts';
   import { candidatesOf, farFrom, layersOn, legsData, pinLabel, pinsOf } from './overlay.ts';
@@ -126,13 +127,8 @@
   {:else}
     <div class="gl" bind:this={mapEl}></div>
   {/if}
-  {#if mode === 'failed'}
-    <div class="failed" data-map-failed>
-      <p>{t('travel.map.failed')}</p>
-      <button type="button" class="btn small paper" data-map-retry data-sfx="tick" onclick={draw}>{t('travel.map.retry')}</button>
-    </div>
-  {:else}
-    {#if note}<p class="note" data-map-note={note} role="status">{note === 'saved' ? t('offline.savedOnly') : t(`travel.map.note.${note}`)}</p>{/if}
+  <MapStatus failed={mode === 'failed'} {note} text={say ? t(`travel.map.note.${say}`) : undefined} top="50px" onretry={draw} />
+  {#if mode !== 'failed'}
     <button type="button" class="locate" data-locate={loc} data-sfx="tick" aria-label={t(`travel.map.locate.${loc}`)} aria-pressed={loc === 'on'} onclick={locate}>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2.8v3.4M12 17.8v3.4M2.8 12h3.4M17.8 12h3.4" />
@@ -179,21 +175,6 @@
   :global(.tm-pin:focus-visible) { outline: none; }
   :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus, #4A3A2C); outline-offset: 2px; }
   .cand { width: var(--hit); height: var(--hit); border: 0; border-radius: 50%; background: #FFFFFF; }
-
-  /* a note over the map (offline, the location off or far): a cream tag under the save pill and the layer button, the
-     pins under it still tappable */
-  .note {
-    position: absolute; z-index: 1001; top: 50px; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
-    border-radius: 14px; background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C); font: 700 var(--fs-s, 13px)/1.35 var(--font-ui); text-align: center;
-    white-space: pre-line; pointer-events: none;
-    box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 3px 0 var(--c-edge, #937047);
-  }
-  /* the map's chunk or its WebGL didn't come (offline before a map ever drew): the paper, a word, a retry */
-  .failed {
-    position: absolute; inset: 0; z-index: 1001; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
-    background: var(--c-paper, #F5E4BC); color: var(--c-ink-soft, #6B5544); font: 700 var(--fs-body, 15px)/1.4 var(--font-ui); text-align: center;
-  }
-  .failed p { margin: 0; }
 
   /* the attribution (ODbL): small, cream, in the corner */
   .tm :global(.maplibregl-ctrl-attrib) {

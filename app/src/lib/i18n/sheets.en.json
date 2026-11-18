@@ -110,5 +110,7 @@
   "offline.refuse.limit": "Area too large",
   "offline.refuse.busy": "Another map is saving",
   "offline.savedOnly": "Saved area only",
+  "offline.mapFailed": "The map didn't load",
+  "offline.mapRoute": "Map offline: the route only",
   "offline.deleteAria": "Delete {name}"
 }

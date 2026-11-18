@@ -110,5 +110,7 @@
   "offline.refuse.limit": "範囲が大きすぎます",
   "offline.refuse.busy": "ほかの地図を保存中です",
   "offline.savedOnly": "保存した範囲のみ",
+  "offline.mapFailed": "地図を読み込めませんでした",
+  "offline.mapRoute": "地図はオフラインです（ルートのみ表示）",
   "offline.deleteAria": "{name}を削除"
 }

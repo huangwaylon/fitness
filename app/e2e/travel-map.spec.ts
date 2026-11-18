@@ -187,6 +187,7 @@ test('drawn, offline: the map chunk never asked for, a retry; back online, drawn
   await page.locator('dialog[open] [data-trip-tab="map"]').click();
   const map = pane(page).locator('[data-travel-map]');
   await expect(map).toHaveAttribute('data-mode', 'failed');
+  await expect(map.locator('[data-map-failed] p')).toHaveText('地図を読み込めませんでした');
   await expect(map.locator('[data-map-retry]')).toHaveText('もう一度');
   await expect(map.locator('.locate')).toHaveCount(0);
   await map.locator('[data-map-retry]').click();
@@ -194,6 +195,6 @@ test('drawn, offline: the map chunk never asked for, a retry; back online, drawn
   // online again: drawn by itself, but its tiles don't come: the route alone, said so
   await context.setOffline(false);
   await expect(map).toHaveAttribute('data-mode', 'offline', { timeout: 30_000 });
-  await expect(map.locator('[data-map-note="offline"]')).toHaveText('地図はオフライン — ルートのみ');
+  await expect(map.locator('[data-map-note="offline"]')).toHaveText('地図はオフラインです（ルートのみ表示）');
   await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin')).toHaveCount(5);
 });
