@@ -8,7 +8,7 @@
 // a profanity (267 s); nothing quotes it. h2 restored as an exchange; the potty-training line (181–186 s) isn't quoted.
 // EXCLUDE 182.4–185.95 (potty-training joke)
 // EXCLUDE 266.9–269.5 (“s***ty”)
-// SWEAR-OK 199–201: “Moby Dick”, the novel's title
+// SWEAR-OK 199–201.5: “Moby Dick”, the novel's title
 import type { Clip } from '../types.ts';
 
 export const ronChrisCrib: Clip = {

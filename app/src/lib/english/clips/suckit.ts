@@ -7,7 +7,7 @@
 // “Actually, you're speculating there, Jim”). Untested: 14.9–17.4 s and 172–184 s (speakers unclear), 40–46 s.
 // “It's on me” (126 s) names no speaker: whisper's order leaves who pays unclear.
 // EAR CHECK: 100.1 s x1 — captions “Oscar, it must be killing you”, whisper “Oscar, I must be killing you”
-// EXCLUDE 121.3–126.3 (an ethnic stereotype)
+// EXCLUDE 121.3–126.95 (an ethnic stereotype, to the end of json3’s “Mexican.”)
 // EXCLUDE 142.3–145.3 (“one white, one Latina” joke)
 // EXCLUDE 165.3–166.3 (“Good girl” to Oscar)
 import type { Clip } from '../types.ts';
@@ -260,7 +260,7 @@ export const suckit: Clip = {
       trap: '中身は Jim への指摘なので、Jim が笑われているように聞こえる。割り込みが何をしたかを聞く。',
       use: 'Case in point.（ほら、まさにそれ）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B1', point: 'onme', seg: [126.4, 129.6],
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'onme', seg: [127.3, 129.6],
       stem: 'What does “it’s on me” mean?',
       ja: '「it’s on me」はどういう意味？',
       choices: ['I’ll pay for it', 'It’s my fault', 'It’s my turn to order'], a: 0,

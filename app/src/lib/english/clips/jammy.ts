@@ -8,7 +8,7 @@
 // 0–7.4 s ("I just farted"), 27.2–31.5 s ("gas station sushi"), 42–52 s (who says "Hello, Leslie"), 80–82 s ("blonde
 // bimbo"). EAR CHECK: 83 s — Tammy or Jeremy says “Oh, let me mull it over” (ml names neither).
 // EAR CHECK: 84.5 s m1 i2 — assumed Leslie's talking head to camera ("terrible people"); the words point to it
-// EXCLUDE 5.5–7.2 (“I just farted”; the captions put it at 6.5–7.2)
+// EXCLUDE 5.5–7.4 (“I just farted”; json3 words 6.5–7.4)
 import type { Clip } from '../types.ts';
 
 export const discoveringJammy: Clip = {
@@ -28,7 +28,7 @@ export const discoveringJammy: Clip = {
       trap: '返事の頭だけでは何への返事か分からない。最後の too が何を受けるかを聞く。',
       use: 'I missed you too, you know.（私も会いたかったんだよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'never', seg: [7.3, 12.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'never', seg: [7.42, 12.2],
       stem: 'How does Leslie feel about seeing Jeremy again?',
       ja: 'ジェレミーにまた会って、レスリーはどう思っている？',
       choices: ['She didn’t want to', 'She missed him', 'She is scared of him'], a: 0,
