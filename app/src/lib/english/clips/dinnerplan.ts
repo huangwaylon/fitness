@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 4, new 0
 // “Michael's Cunning Dinner Party Plan - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office
 // US): the staff are kept late on a Friday; Michael stages an angry call to corporate, sends everyone home, then holds
@@ -86,7 +86,7 @@ export const dinnerplan: Clip = {
       line: 'go *enjoy your Friday*. — Thank you, Michael.',
       said: '本社と話したと言い、「金曜を楽しんで」と全員を帰す。お礼の声が返る。',
       mean: 'go enjoy your Friday ＝ 金曜の夜を楽しんで。残業はなし、もう帰っていい、という知らせ。',
-      trap: 'overtime（残業）と聞こえて残業が続く話に聞こえるが、答えは最後の go enjoy。',
+      trap: 'overtime（残業）が聞こえて、残業が続く話と考えがち。決め手は最後の go enjoy。',
       use: 'Go enjoy the rest of your day.（残りの一日を楽しんでね）' },
 
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'horn', seg: [42.5, 47.5],
@@ -135,7 +135,7 @@ export const dinnerplan: Clip = {
       trap: '直前の Happy Friday から一週間の話に思いやすい。弾をよける＝危ないことを避けた。',
       use: 'The flight was canceled. We dodged a bullet.（あの便は欠航。助かった）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', seg: [58.5, 82.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'invite', reveals: ['celebrate'], seg: [58.5, 82.6],
       stem: 'Who does Michael invite to dinner tonight?',
       ja: 'マイケルは今夜、誰を夕食に誘う？',
       choices: ['Jim and Pam', 'Everybody in the office', 'Only Dwight'], a: 0,
@@ -207,11 +207,11 @@ export const dinnerplan: Clip = {
     { id: 't2', skill: 'attitude', level: 'B2', point: 'credit', seg: [75.5, 87.5],
       stem: 'How does Jim feel about Michael’s trick?',
       ja: 'マイケルのやり方を、ジムはどう思っている？',
-      choices: ['A bit impressed', 'Hurt and angry', 'Glad to go there'], a: 0,
-      choicesJa: ['ちょっと感心している', '傷ついて怒っている', '行けてうれしい'],
+      choices: ['He has to admire it', 'He is hurt and angry', 'He is glad to go'], a: 0,
+      choicesJa: ['うまいと認めるしかない', '傷ついて怒っている', '行けてうれしい'],
       cue: 'But で始まる文と、最後の短い文。',
       line: 'But I gotta *give him credit*. *He got me.*',
-      said: '「でも、認めなきゃな。一本取られた」と言う。',
+      said: '「でも、認めるしかない。一本取られたよ」と言う。',
       mean: 'give someone credit ＝ 相手のうまさを認める。He got me ＝ やられた。くやしいが感心。',
       trap: 'credit をお礼と思うと喜んでいるように聞こえやすい。He got me（やられた）で気持ちが分かる。',
       use: 'I have to give her credit. She’s good.（認めるよ。彼女うまいね）' },
@@ -272,7 +272,7 @@ export const dinnerplan: Clip = {
       line: 'it’s couples only, *and besides*, I only have six wine glasses',
       said: '「カップル限定だし、それにワイングラスが6個しかない」と言う。',
       mean: 'besides ＝ それに。理由をもう一つ重ねて、断りを強くする。',
-      trap: 'besides を「でも」や「実は」と思いやすい。and besides は理由をもう一つ足す合図。',
+      trap: 'besides を「でも」や「実は」と勘違いしやすい。and besides は理由をもう一つ足す合図。',
       use: 'It’s late, and besides, I’m tired.（遅いし、それに疲れてる）' },
 
     { id: 'nt3', skill: 'pragma', level: 'C2', point: 'excuse', reveals: ['couples', 'six', 'besides'], seg: [88.4, 97.4],

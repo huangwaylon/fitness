@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 0, new 5, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 0, new 5, ctx 5, tx 7, qa 13
 // A2 REVIEW 2026-11-17: keep 13, rewrite 4, retire 7, new 0
 // “Tom finds his true purpose: failure | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // Leslie praises Tom's success at his bistro; his friends back a big expansion; a narrator reports that he lost
@@ -48,7 +48,7 @@ export const tomFailure: Clip = {
       cue: '「Thanks, Leslie」のあと',
       line: 'Leslie: *I am so very proud of you.* / Tom: Thanks, Leslie. *I’m proud of me, too.*',
       said: '「本当に誇りに思う」に、「ありがとう。俺も自分を誇りに思うよ」と返す。',
-      mean: 'I’m proud of you ＝ あなたを誇りに思う。ふつうは I’m proud of you too と返すが、トムは of me（自分）。',
+      mean: 'I’m proud of you ＝「君を誇りに思う」とほめる言葉。ふつうは I’m proud of you too と返すが、トムは of me（自分）。',
       trap: 'よくある返事 proud of you too に聞こえやすい。of me の一語を聞く。',
 
       use: 'Thanks! I’m pretty proud of it.（ありがとう、けっこう自信作なんだ）' },
@@ -65,7 +65,7 @@ export const tomFailure: Clip = {
       trap: 'card からお礼のカードと思いやすい。business card ＝ 名刺で、メモでも請求書でもない。',
       use: 'The couple over there sent you this.（あちらのお客様からです）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'expand', seg: [35.7, 62.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'expand', seg: [35.7, 68.5],
       stem: 'What does Tom ask his friends to help him decide?',
       ja: 'トムは仲間に、何を決める手助けを頼む？',
       choices: ['Whether to open more restaurants', 'Whether to sell his restaurant', 'Whether to put calzones on the menu'], a: 0,
@@ -73,7 +73,7 @@ export const tomFailure: Clip = {
       cue: '最初の「as you all know」のあと',
       line: 'Tom’s Bistro has been presented with a *huge expansion opportunity*.',
       said: '「店を大きく広げるチャンスが来た。決める前に意見がほしい」と言う。',
-      mean: 'expansion ＝ 拡大。仲間は「新しい店にはリスクも」と、何店も出す話をする。',
+      mean: 'expansion ＝ 拡大、opportunity ＝ チャンス。新しい店を何軒も出すかどうかの相談で、仲間はリスクや下調べの話をする。',
       trap: 'ベンがカルツォーネ（包み焼きピザ）をすすめるが、それはついでの話。聞かれているのは店を増やすこと。',
       use: 'I want your opinion before I decide.（決める前に意見がほしい）' },
 
@@ -125,8 +125,8 @@ export const tomFailure: Clip = {
       use: 'Nothing ventured, nothing gained. Let’s apply.（やってみなきゃ。応募しよう）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'realestate', seg: [75.3, 83.2],
-      stem: 'Why is now a good time, says the next friend?',
-      ja: '次の仲間は、なぜ今がいい時期だと言う？',
+      stem: 'Why does a friend say now is a good time?',
+      ja: '仲間のひとりは、なぜ今がいい時期だと言う？',
       choices: ['Property is cheap right now', 'Restaurants are popular right now', 'Loans are easy right now'], a: 0,
       choicesJa: ['今は不動産が安い', '今はレストランが人気', '今はお金を借りやすい'],
       cue: '最初の二語',
@@ -279,8 +279,8 @@ export const tomFailure: Clip = {
     { id: 'i5', skill: 'infer', level: 'B1', point: 'chances', seg: [155.5, 170.2],
       stem: 'What is Tom’s point about chances?',
       ja: 'チャンスについて、トムは何を言いたい？',
-      choices: ['Success can take many tries', 'America gives second chances', 'Two or three tries are enough'], a: 0,
-      choicesJa: ['成功には何度も挑戦が要る', 'アメリカは2度目のチャンスをくれる', '2、3回で勝てる'],
+      choices: ['Success can take many tries', 'You only get a few chances', 'Two or three tries are enough'], a: 0,
+      choicesJa: ['成功には何度も挑戦が要る', 'チャンスは数回しかない', '2、3回で勝てる'],
       cue: '「isn’t about」のあと',
       line: 'the story of America *isn’t about second or third chances*. It’s about fourth, fifth… *fiftieth chances*.',
       said: '「アメリカは2度目や3度目でなく、4度目、5度目…50度目のチャンスの話だ」と言う。',
@@ -327,13 +327,13 @@ export const tomFailure: Clip = {
     { id: 'h5', skill: 'phrase', level: 'B2', point: 'take', ctx: true, seg: [225.0, 232.4],
       stem: 'What does “I don’t know how to take that” mean?',
       ja: '「I don’t know how to take that」はどういう意味？',
-      choices: ['I’m not sure it’s a compliment', 'I don’t know where to put this', 'I can’t carry the book'], a: 0,
-      choicesJa: ['ほめ言葉か分からない', 'どこに置けばいいか分からない', '本を持って帰れない'],
+      choices: ['I’m not sure it’s a compliment', 'I don’t know where to put this', 'I can’t accept your thanks'], a: 0,
+      choicesJa: ['ほめ言葉か分からない', 'どこに置けばいいか分からない', 'お礼は受け取れない'],
       cue: '本の題の話のあと',
       line: 'Tom: I couldn’t have done it without you. / Friend: Well, *the book’s called Failure*. *I don’t know how to take that.*',
       said: '「君たちのおかげ」に、「本の題は『失敗』でしょ。どう受け取れば」と返す。',
       mean: 'how to take 〜 ＝「〜をどう受け取るか」。take は「持つ」でなく「受け取る・理解する」。',
-      trap: 'take（持っていく）から、物の話と考えがち。「失敗」は君たちのおかげ、とも聞こえるのが笑いどころ。',
+      trap: 'take を「持っていく」「（お礼を）受け取る」と考えがち。「失敗」は君たちのおかげ、とも聞こえるのが笑いどころ。',
       use: 'I’m not sure how to take that.（それ、どう受け取ればいいのかな）' },
 
     { id: 'c3', skill: 'attitude', level: 'C2', point: 'everyword', seg: [232.0, 252.4], retired: true,
@@ -351,11 +351,11 @@ export const tomFailure: Clip = {
       stem: 'What does Tom write in his friends’ book?',
       ja: 'トムは仲間の本に何と書いた？',
       choices: ['Best wishes', 'I love you', 'You inspire me'], a: 0,
-      choicesJa: ['ご多幸を', '愛しています', 'あなたは私のお手本'],
+      choicesJa: ['幸運を祈って', '愛しています', 'あなたは私のお手本'],
       cue: '「Here’s yours」のあと',
       line: 'I love you. … Oh, sorry. *That’s actually for Kendrick Lamar.* Here’s yours. *Best wishes.*',
       said: '熱い言葉を読んだあと「ごめん、それは別の人用。君たちのはこれ」と渡す。中は一言。',
-      mean: 'That’s actually for 〜 ＝ それは実は〜用。ケンドリック・ラマーは有名ラッパー。Best wishes ＝ 手紙の決まった結び。',
+      mean: 'Best wishes ＝「幸運を祈って」。だれにでも書く決まった結びで、熱い言葉との差が笑いどころ。ケンドリック・ラマーは有名ラッパー。',
       trap: '長く熱い言葉が先に読まれるので、それと考えがち。決め手は Here’s yours のあと。',
       use: 'Oh, sorry, that’s for someone else.（あ、ごめん、それは別の人の）' },
   ]
