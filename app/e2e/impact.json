@@ -185,6 +185,7 @@
     "src": "app.html and the type declarations: every spec loads them (the gate set)",
     "src/lib/components/characters": "the /dev/characters page's viewer: not in the app",
     "src/lib/components/dev": "dev-only overlays: not in the app",
+    "src/routes/dev/sugoroku3d": "the 3D board's dev preview (vite dev only): not in the app",
     "src/lib/model/fixtures": "the model's unit-test fixtures",
     "src/routes/dev/characters": "a dev page: not in the app",
     "src/routes/dev/kit": "a dev page: not in the app",

@@ -43,6 +43,15 @@ with characters in it, since they are the pieces.
 - **Results**: the ranking, **ふりかえり** (up to five of the game's things with Japanese, each Japanese once, to match
   English ↔ Japanese; a mismatch just lets go), and 今日のことば.
 
+## The 3D board
+
+`components/sugoroku3d/` (engine.ts `createBoard3D`, the pure parts in plan.ts): the board as a 3D island (grass, the
+river with bridges at the fork, the beach and sea, the sandy path, the stones coloured by kind with their marks, signs,
+trees), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
+camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
+moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only). Not in the game yet: it's to be its
+own screen like the museum (one WebGL context on the phone).
+
 ## Online
 
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
