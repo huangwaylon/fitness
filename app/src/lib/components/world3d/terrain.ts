@@ -19,7 +19,7 @@ import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
 import { bandInView, DAY_SUN } from './islandCam.ts';
 import { NH_GROUND, nhImage, nhURL } from './groundTex.ts';
-import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf } from '#lib/layout/grid.ts';
+import { CHUNKS_X, CHUNKS_Z, GRID, TILE } from '#lib/layout/grid.ts';
 import { chunkMesh, meshKeyOf, openSeaRow, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf, type Fields } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
@@ -576,7 +576,7 @@ interface BandArrays { top: Part & { uv: Float32Array; normal: Float32Array }; w
  *  chunk and its normals (~140 of a return's ~350 ms main-thread stretch at 4x CPU). Another layout's build (an
  *  editor stroke's, a もようがえ) replaces the set. */
 let kept: { key: string; rows: (BandArrays | null | undefined)[] } | null = null;
-/** The kept set's size (bytes: perf's and the tests'). */
+/** The kept set's size (bytes: the tests'). */
 export const keptBytes = (): number =>
   (kept?.rows ?? []).reduce((n, b) => n + (b ? [b.top, b.walls, b.falls, b.water].reduce((m, p) => m + Object.values(p).reduce((k, a: ArrayLike<number> & { byteLength: number }) => k + a.byteLength, 0), 0) : 0), 0);
 /** Tests: forget the kept set. */
@@ -1006,6 +1006,3 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     }
   };
 }
-
-/** The chunks a set of tiles is in (an editor stroke's). */
-export const chunksOf = (tiles: Iterable<[number, number]>): number[] => [...new Set([...tiles].map(([c, r]) => chunkOf(c, r)))];
