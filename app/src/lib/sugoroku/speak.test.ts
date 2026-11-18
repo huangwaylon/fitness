@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bareNoun, check, cleanGrade, diffWords, editDistance, formsOf, isSilence, longEnough, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf, TIP_MAX, type Grade } from './speak.ts';
+import { bareNoun, check, cleanGrade, diffWords, editDistance, formsOf, isSilence, longEnough, nextCheer, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf, TIP_MAX, type Grade } from './speak.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import { isGame, newGame } from './game.ts';
 import { PICTURES } from './pictures.ts';
@@ -123,6 +123,8 @@ describe('the speaking step', () => {
     expect(notInTrimmedFont(ja)).toEqual([]);
     expect(ja).not.toMatch(/間違|不正解|×|%|です|ます/);
     expect(say('useWord', { w: 'cat' })).toBe('「cat」を入れて言ってみてね');
+    // a great sentence's cheers in turn
+    expect(Array.from({ length: 5 }, nextCheer)).toEqual(['いい文だね！', 'バッチリ！', 'すごくいいね！', 'その言い方、自然だよ！', 'いい文だね！']);
   });
 });
 

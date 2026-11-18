@@ -34,7 +34,7 @@ function playMoves(n = 400, id = 'game01'): Move[] {
       const w = words.from(g.players[g.turn].rack, (x) => wordScore(g!, x, false)?.total ?? 0).find((x) => wordScore(g!, x, false));
       push(w ? { a: 'word', w } : { a: 'swap' });
     } else if (ph.k === 'sentence') push({ a: 'sent', m: 1 });
-    else if (ph.k === 'picture') push({ a: 'pic', m: 0 });
+    else if (ph.k === 'picture') push({ a: 'pic', m: 0, ...(k % 2 ? { y: 2 as const } : {}) });
     else if (ph.k === 'event') push({ a: 'ev' });
     else if (ph.k === 'home') push({ a: 'home' });
   }
@@ -88,6 +88,15 @@ describe('online: the moves folded', () => {
     expect(parseClient(JSON.stringify({ v: 3, kind: 'sg', ...start }))).toEqual({ v: 3, kind: 'sg', ...start });
     // the next game's board another family
     for (let k = 0; k < 10; k++) expect(familyOf(newGameId(id, seeded(`n${k}`)))).not.toBe(familyOf(id));
+  });
+  it('a 絵 with a spoken sentence: its stars (`y`) on every phone, the words never on the wire', () => {
+    const start: Move = { g: 'game01', i: 0, a: 'start', s: 'A1B2', l: 'n', who: 'A' };
+    const g0 = foldMoves([start], ctx)!;
+    const g = { ...g0, phase: { k: 'picture' as const, item: 0, spun: 1, r: 0 } };
+    const pic = (y?: 1 | 2 | 3) => applyMove(g, { g: 'game01', i: 1, a: 'pic', m: 1, ...(y ? { y } : {}), who: 'A' }, ctx)!;
+    expect(pic().players[0].stars).toBe(3);
+    expect(pic(2).players[0].stars).toBe(5);
+    expect(pic(3).made.at(-1)?.stars).toBe(6);
   });
   it('seats: who and level, both ways', () => {
     expect(seatsOf('A1G3')).toEqual([{ who: 'A', level: 1 }, { who: 'G', level: 3 }]);

@@ -110,10 +110,12 @@ relay/src/gradeRoute.ts.
   (boring → bowling), or the relay's `used`; missing → 「「apple」を入れて言ってみてね」, no stars yet. A bare noun phrase
   ("a red apple") → 「動詞を入れて文にしてみよう」; casual sentences ("So tired today.") pass.
 - **No visible wait:** /grade is asked as soon as the words arrive (again only if edited). これでOK gives the stars at once
-  and the sentence shimmers; the recast slides in, or after 4 s (or offline, capped, off) praise only. Never 判定 or 採点.
+  and the sentence shimmers; the recast slides in, or praise only once 4 s have passed since it was asked for (the relay's
+  slow tail: p90 ~7 s), or offline, capped, off; a later answer is let go, never swapped in. Never 判定 or 採点.
 - **Feedback:** their sentence (changed words a soft yuzu underline); 「こう言うともっと自然」 and the recast (changed words
   bold) when it differs; the tip folded under ヒント, opening by itself at most once in three sentences a player a game
-  (やさしい: no tip when only an article or an -s changed); a great sentence's `also` as 「こんな言い方も」. The phone
+  (やさしい: no tip when only an article or an -s changed); a great sentence: a cheer of the phone's, a few in turn,
+  and its `also` as 「こんな言い方も」. The phone
   checks the answer again (`cleanGrade`: failure words and grammar terms drop the tip, a placeholder fix keeps theirs).
   まねして言ってみる after a recast: +1 「言い直せた！」.
 - **Stars:** +2 an on-task sentence, +1 said again (3 at most: `game.ts pictureDone(g, misses, said)`); the verdict never

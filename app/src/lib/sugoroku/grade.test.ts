@@ -25,6 +25,8 @@ describe('the speaking step’s /grade', () => {
     const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('https://relay.test/grade');
     expect(JSON.parse(init.body as string)).toEqual({ s: 'I eated an apple.', t: 'apple', lv: 1 });
+    await grade('I went to Tokyo.', 'Tokyo', 2);
+    expect(JSON.parse((f.mock.calls[1] as unknown as [string, RequestInit])[1].body as string).t).toBe('tokyo');
     expect((init.headers as Record<string, string>).Authorization).toBe(`Bearer ${'k'.repeat(32)}`);
   });
   it('a refusal, a cap, off, the AI failing or no network: a miss (praise only)', async () => {

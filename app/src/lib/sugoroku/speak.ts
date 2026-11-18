@@ -199,6 +199,9 @@ const S = {
   tip: { ja: 'ヒント', en: 'Tip' },
   also: { ja: 'こんな言い方も', en: 'You could also say' },
   great: { ja: 'いい文だね！', en: 'Nice sentence!' },
+  great2: { ja: 'バッチリ！', en: 'Spot on!' },
+  great3: { ja: 'すごくいいね！', en: 'Really good!' },
+  great4: { ja: 'その言い方、自然だよ！', en: 'That sounds natural!' },
   praise: { ja: 'いいね！ちゃんと伝わったよ', en: 'Nice! That came across' },
   longer: { ja: '次は{n}語以上にも挑戦してみてね', en: 'Next time, try {n} words or more' },
   resay: { ja: 'まねして言ってみる', en: 'Say it like that' },
@@ -213,3 +216,8 @@ export function say(key: SayKey, params: Record<string, string | number> = {}): 
   const raw: string = S[key][i18n.locale === 'en' ? 'en' : 'ja'];
   return raw.replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
 }
+
+/** A great sentence's cheer (the relay's tip is empty then): a few in turn, so a game's cheers don't repeat. */
+const CHEERS = ['great', 'great2', 'great3', 'great4'] as const;
+let cheers = 0;
+export const nextCheer = (): string => say(CHEERS[cheers++ % CHEERS.length]);

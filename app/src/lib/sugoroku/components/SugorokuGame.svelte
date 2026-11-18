@@ -567,7 +567,7 @@
                 {:else}<p class="note">{s('loading')}</p>{/if}
               {:else if ph.k === 'picture'}
                 {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => act((x) => tried(x, tr), { a: 'try', m: tr.misses })} speak={speakable ? { tipKey: `${g.seed}:${g.turn}` } : null}
-                  ondone={(m, y = 0) => act((x) => pictureDone(x, m, y), { a: 'pic', m, ...(y ? { y } : {}) })} />{/key}
+                  ondone={(m, y = 0) => act((x) => pictureDone(x, m, y), { a: 'pic', m, ...(y ? { y: Math.min(y, 3) as 1 | 2 | 3 } : {}) })} />{/key}
               {:else if ph.k === 'event' && card}
                 <div class="event" data-sg-event={ph.card}>
                   <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>

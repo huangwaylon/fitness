@@ -12,7 +12,7 @@
   import { grade, type Graded } from '../grade.ts';
   import { s } from '../i18n.ts';
   import type { Level } from '../game.ts';
-  import { check, diffWords, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check, type Grade } from '../speak.ts';
+  import { check, diffWords, nextCheer, FRAMES, GRADE_WAIT_MS, HARD_WORDS, longEnough, noteTip, onlySmall, recastOf, RESAYS, saidStars, say, tipOpens, tipsOf, type Check, type Grade } from '../speak.ts';
 
   interface Props {
     /** The picture's English (the word the sentence should use). */
@@ -42,6 +42,8 @@
   let said = $state('');
   let graded = $state.raw<Grade | null>(null);
   let settled = $state(false);
+  /** A great sentence's cheer (the phone's: the relay's tip is empty then). */
+  let cheer = $state('');
   let onTask = $state(false);
   /** Saying the recast again after a tip (+1). */
   let resaying = $state(false), resaid = $state(false);
@@ -56,15 +58,15 @@
 
   let take: Take | null = null;
   let timer: ReturnType<typeof setInterval> | undefined;
-  /** /grade asked for one text: its answer, once in. */
-  let ask: { text: string; p: Promise<Graded>; r: Graded | null } | null = null;
+  /** /grade asked for one text (at `t0`): its answer, once in. */
+  let ask: { text: string; p: Promise<Graded>; r: Graded | null; t0: number } | null = null;
   const abort = new AbortController();
   $effect(() => () => (clearInterval(timer), take?.cancel(), abort.abort()));
 
   const lv = untrack(() => level);
   function prefetch(t: string) {
     if (ask?.text === t) return ask;
-    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, lv, abort.signal), r: null };
+    const a: NonNullable<typeof ask> = { text: t, p: grade(t, target, lv, abort.signal), r: null, t0: performance.now() };
     a.p.then((r) => (a.r = r));
     return (ask = a);
   }
@@ -140,14 +142,18 @@
     said = t;
     onTask = true;
     graded = null;
+    cheer = '';
     settled = false;
     phase = 'feedback';
+    // (GRADE_WAIT_MS from when it was asked for, the words' arrival: the relay's slow tail never holds the sheet; an
+    // answer after it is let go, never swapped in late)
     const a = prefetch(t);
-    const r = await Promise.race([a.p, new Promise<null>((done) => setTimeout(done, GRADE_WAIT_MS, null))]);
+    const r = await Promise.race([a.p, new Promise<null>((done) => setTimeout(done, Math.max(0, GRADE_WAIT_MS - (performance.now() - a.t0)), null))]);
     if (abort.signal.aborted || said !== t) return;
     ms = Math.round(performance.now() - tStop);
     if (r?.ok) {
       graded = r.grade;
+      cheer = r.grade.verdict === 'great' ? nextCheer() : '';
       layer = r.grade.src;
       err = undefined;
       const tip = shownTip;
@@ -226,7 +232,7 @@
           <p class="lab">{say('better')}</p>
           <p class="better" lang="en" data-sg-recast>{#each diff.better as w, i (i)}{#if w.changed}<b>{w.w}</b>{:else}{w.w}{/if}{' '}{/each}</p>
         {:else}
-          <p class="praise" data-sg-praise>{graded?.verdict === 'great' ? say('great') : say('praise')}</p>
+          <p class="praise" data-sg-praise>{cheer || say('praise')}</p>
         {/if}
         {#if graded?.also}<p class="lab">{say('also')}</p><p class="better" lang="en" data-sg-also>{graded.also}</p>{/if}
         {#if shownTip}

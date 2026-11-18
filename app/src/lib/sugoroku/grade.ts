@@ -12,7 +12,7 @@ export type Graded = { ok: true; grade: Grade; aiMs: number } | { ok: false; mis
 /** The relay's grade of `s` (the target `t`, level `lv`); never throws. */
 export async function grade(s: string, t: string, lv: 1 | 2 | 3, signal?: AbortSignal): Promise<Graded> {
   const r = await keyed(relayUrl('/grade'), getKey(), {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ s: s.slice(0, 200), t, lv }),
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ s: s.slice(0, 200), t: t.toLowerCase(), lv }),
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(15_000)]) : AbortSignal.timeout(15_000)
   });
   if (!r.ok && !r.res) return { ok: false, miss: r.why === 'timeout' ? 'timeout' : r.why === 'unreached' ? 'network' : 'other' };

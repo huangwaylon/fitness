@@ -66,7 +66,7 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
       return line ? sentenceDone(g, { misses: m.m ?? 0, unseen: !!m.u, text: line.en, ja: line.ja }) : sentenceAsWord(g);
     }
     case 'noline': return sentenceAsWord(g);
-    case 'pic': return pictureDone(g, m.m ?? 0);
+    case 'pic': return pictureDone(g, m.m ?? 0, m.y ?? 0);
     case 'ev': return eventDone(g);
     case 'home': return homeDone(g);
     case 'try': return tried(g, { ...(m.m !== undefined ? { misses: m.m } : {}), ...(m.h ? { hinted: true } : {}), ...(m.p ? { peeked: true } : {}) });
