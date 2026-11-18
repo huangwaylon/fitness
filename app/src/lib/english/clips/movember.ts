@@ -1,9 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 6, retire 1, new 2, ctx 4, tx 3
 // A2 REVIEW 2026-11-17: keep 3, rewrite 11, retire 6, new 1
 // “Smile If You Love Men's Prostates - The Office US” (the official The Office channel, BEST OF SEASON 9 - The Office
 // US): the men grow mustaches for Movember; a conference call with Jim breaks down over his echoing line; Erin's
 // compliments on a coworker's mustache keep turning into insults.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 128 s. Jim is named at 68.9 s and 77.4 s.
 // Untested: the slang and innuendo at 18–42 s, 66.9 s ("spooky sexy"), 81–85 s (garbled), the wait at 90–99 s.
+// EXCLUDE 18–21, 36–42, 66–69 (innuendo)
+// SKIP 128.5–154.4: talk ends; the last line runs over the end music
 // EAR CHECK: 100–128 s d3 m1 a2 pr2 — the woman who answers after “Erin, did this call come?” is Erin (from the turns)
 import type { Clip } from '../types.ts';
 
@@ -13,7 +16,7 @@ export const movember: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [7, 41],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', seg: [0, 17.9],
       stem: 'Why do the men have mustaches?', ja: '男性たちはなぜ口ひげを生やしている？',
       choices: ['To raise money for a charity', 'To win a contest set by Toby', 'To look like Tom Selleck'], a: 0,
       choicesJa: ['チャリティーのお金を集めるため', 'トビーのコンテストで勝つため', 'トム・セレックに似せるため'],
@@ -21,10 +24,10 @@ export const movember: Clip = {
       line: 'It’s *a charity* for prostate cancer.',
       said: '前立腺がんの寄付のために、11月のあいだ口ひげを伸ばす企画に、男性みんなで参加したと話す。',
       mean: 'charity ＝ チャリティー、寄付の活動。口ひげは、寄付の企画に参加したしるし。',
-      trap: 'Toby の名前から、彼のコンテストだと思いやすい。It’s a charity と説明している。',
+      trap: 'Toby の名前から、彼のコンテストと考えがち。It’s a charity と説明している。',
       use: 'It’s for a good cause.（いいことのためなんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 18.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'pledge', seg: [10.3, 17.9],
       stem: 'What do you do first for Movember?', ja: 'モーベンバーでは、まず何をする？',
       choices: ['Promise some money', 'Bet a lot of money', 'Get a checkup'], a: 0,
       choicesJa: ['お金を出すと約束する', '大金を賭ける', '健康診断を受ける'],
@@ -32,7 +35,7 @@ export const movember: Clip = {
       line: 'You *pledge money* and then you grow a mustache for the month of November.',
       said: '「お金を出すと約束して、それから11月のあいだ口ひげを伸ばす」と説明する。',
       mean: 'pledge ＝ （寄付を）約束する。and then ＝ それから。順番を言っている。',
-      trap: 'money だけ聞くと、賭けだと思いやすい。pledge は「出すと約束する」こと。',
+      trap: 'money だけ聞くと、賭けと勘違いしやすい。pledge は「出すと約束する」こと。',
       use: 'I pledged twenty dollars.（20ドル寄付すると約束した）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'got', seg: [24.6, 35.1],
@@ -91,27 +94,16 @@ export const movember: Clip = {
       trap: '前立腺という語そのものや、女性への冗談と取りやすい。pick up babes の直後の、彼の決めぜりふ。',
       use: 'I thought it was smooth. It wasn’t.（うまく言えたと思ったのに）' },
 
-    { id: 'i1', skill: 'who', level: 'B1', point: 'on', seg: [43.2, 51.7],
+    { id: 'i1', skill: 'who', level: 'B1', point: 'on', ctx: true, seg: [43.2, 51.7],
       stem: 'Who is on the phone line?', ja: '電話でつながっているのは誰？',
       choices: ['Only the caller', 'Everyone in the room', 'No one yet'], a: 0,
       choicesJa: ['電話をかけている人だけ', '部屋にいる全員', 'まだ誰も'],
       cue: '「Well」のあと',
-      line: 'We all on? — Well, *you’re the only one on*. We’re *all here*.',
+      line: 'We all on? / Well, *you’re the only one on*. We’re *all here*.',
       said: '「みんな入ってる？」と聞かれ、「入ってるのは君だけ。みんなここにいる」と返す。',
       mean: 'on ＝ 電話会議につながっている。the only one ＝ ただ一人。ほかの全員は同じ部屋にいる。',
       trap: 'all から、全員つながっていると思いやすい。you’re the only one on を聞く。',
       use: 'Is everyone on the call?（全員つながってる？）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', seg: [45, 90],
-      stem: 'What happens to the call with Jim?', ja: 'ジムとの電話会議はどうなる？',
-      choices: ['A bad line stops it', 'Jim gets called away', 'They finish their plan'], a: 0,
-      choicesJa: ['音が悪くて止まる', 'ジムが呼ばれていなくなる', '計画を決め終える'],
-      cue: '電話会議の最後',
-      line: 'We’re trying to reach Jim Halpert, *not Batman*. … I’ll *call you right back*.',
-      said: '会議を始めるが、ジムの声が響いて聞きづらく、彼は場所を変えてかけ直すと言う。',
-      mean: 'a bad line ＝ 電話の音が悪いこと。話の中身に入る前に、音の問題で止まる。',
-      trap: 'three months や ideas が聞こえて、計画が進んだと思いやすい。最後は call you right back。',
-      use: 'Can you hear me okay?（ちゃんと聞こえてる？）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [51.2, 60.3], keep: true,
       stem: 'How far ahead does the meeting plan?', ja: '会議では、どのくらい先まで計画する？',
@@ -124,7 +116,7 @@ export const movember: Clip = {
       trap: '30 は「サーティ」、13 は「サーティーン」。「スリー」のあと「マンス」なら3か月、「ウィーク」なら3週間。',
       use: 'Over the next three months, I’ll save money.（この先3か月で貯金する）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 66.3],
+    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'trustme', seg: [58.5, 65.9],
       stem: 'What does Jim mean by “Trust me”?', ja: 'ジムの “Trust me” はどういう意味？',
       choices: ['Believe me', 'Keep it secret', 'Do what I say'], a: 0,
       choicesJa: ['本当だって', '秘密にして', '言うとおりにして'],
@@ -132,10 +124,22 @@ export const movember: Clip = {
       line: 'Are you at your office right now? — Yeah. *Trust me*, I’d rather be with you guys.',
       said: '「今、自分のオフィス？」と聞かれ、「うん。本当だよ、そっちにいたい」と答える。',
       mean: 'Trust me ＝ 本当だって、信じて。自分の気持ちが本当だと強めるときの前置き。',
-      trap: 'trust（信用する）から、何かを任せる話だと思いやすい。ここは「本当だよ」の前置き。',
+      trap: 'trust（信用する）から、何かを任せる話を連想しやすい。ここは「本当だよ」の前置き。',
       use: 'Trust me, this place is good.（本当だって、この店いいよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [61.3, 66.3],
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'office', ctx: true, seg: [59.5, 65.9],
+      stem: 'Where is Jim during the call?',
+      ja: '電話会議のあいだ、ジムはどこにいる？',
+      choices: ['At his own office', 'In the same room', 'In the annex'], a: 0,
+      choicesJa: ['自分のオフィス', 'みんなと同じ部屋', '別館'],
+      cue: '「Are you at」の質問への返事。',
+      line: 'Are you at your office right now? / Jim: *Yeah*.',
+      said: '「今、自分のオフィスにいるの？」に、ジムは「うん」と答える。',
+      mean: 'Are you at 〜 right now? ＝ 今〜にいるの？ Yeah で「そうだ」と答えている。',
+      trap: 'with you guys から、みんなと同じ部屋と考えがち。決め手は質問への Yeah。',
+      use: 'Are you at the office right now?（今、会社にいる？）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'rather', reveals: ['trustme'], seg: [61.3, 65.9],
       stem: 'Fill the gap: “Trust me, ___ be with you guys.”', ja: '空所に入るのは？ “Trust me, ___ be with you guys.”',
       choices: ['I’d rather', 'I’d better', 'I’d like to'], a: 0,
       choicesJa: ['むしろ〜したい', '〜したほうがいい', '〜したい'],
@@ -160,6 +164,17 @@ export const movember: Clip = {
       trap: 'sexy だけ拾うと口説きに聞こえるが、話しているのは電話の音のこと。',
       use: 'You’re breaking up a little.（ちょっと声が途切れてるよ）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', seg: [71, 95],
+      stem: 'What happens to the call with Jim?', ja: 'ジムとの電話会議はどうなる？',
+      choices: ['A bad line stops it', 'Jim gets called away', 'They finish their plan'], a: 0,
+      choicesJa: ['音が悪くて止まる', 'ジムが呼ばれていなくなる', '計画を決め終える'],
+      cue: '電話会議の最後',
+      line: 'We’re trying to reach Jim Halpert, *not Batman*. … I’ll *call you right back*.',
+      said: 'ジムの声が響いて「バットマンじゃない」と言われ、彼は場所を変えてかけ直すと言う。',
+      mean: 'a bad line ＝ 電話の音が悪いこと。話の中身に入る前に、音の問題で止まる。',
+      trap: 'my cell が聞こえて、携帯で続けたと考えがち。最後は call you right back。',
+      use: 'Can you hear me okay?（ちゃんと聞こえてる？）' },
+
     // R fix: V2 (blind 60 %): "his important new job" had no hook in the clip. Now "acting like a hero" (a reading of
     //   "not Batman"), and the wrong-number choice is reworded.
     // why: a stranger ← "there's been a mistake… trying to reach Jim" is the usual wrong-person line; hero ← "not
@@ -175,16 +190,28 @@ export const movember: Clip = {
       trap: 'mistake を本当の人違い、Batman をヒーロー気取りへの皮肉と取りやすい。話題は声。',
       use: 'Sorry, I think you have the wrong number.（番号をお間違えのようです）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'spot', seg: [82.5, 92],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'spot', ctx: true, seg: [79.5, 89.5],
       stem: 'What does Jim say he’ll do next?', ja: 'ジムは、次に何をすると言う？',
       choices: ['Call back from another spot', 'Send them his ideas by email', 'Have them call his cell'], a: 0,
       choicesJa: ['別の場所からかけ直す', 'アイデアをメールで送る', '携帯にかけてもらう'],
       cue: '「I’m gonna try」のあと',
-      line: 'I’m gonna try a *different spot*, okay? … I’ll *call you right back*.',
-      said: '「別の場所で試してみる。すぐかけ直すね」と言う。',
+      line: 'Jim: I should have just had you call me on my cell. / Yeah. / Jim: *I’m gonna try a different spot*, okay?',
+      said: '「携帯にかけてもらえばよかった」「うん」「別の場所で試してみるよ」と言う。',
       mean: 'spot ＝ 場所。call you right back ＝ すぐかけ直す。電話の音が悪いので場所を変える。',
-      trap: '前の my cell から「携帯にかけてもらう」と思いやすい。あれは「そうすればよかった」の話。',
+      trap: 'my cell から「携帯にかけてもらう」と考えがち。あれは「そうすればよかった」の話。',
       use: 'Let me call you right back.（すぐかけ直します）' },
+
+    { id: 'c4', skill: 'pragma', level: 'B2', point: 'thing', ctx: true, seg: [101.2, 108.6],
+      stem: 'What does Erin say to “It’s for the thing”?',
+      ja: '「It’s for the thing」に、エリンは何と言う？',
+      choices: ['She says it’s great', 'She asks what thing', 'She tells him to shave'], a: 0,
+      choicesJa: ['すごくいいと言う', '何のことか聞く', 'ひげをそるように言う'],
+      cue: '「the thing」への返事。',
+      line: 'Erin: I just, I saw your face. / I’m sorry. *It’s for the thing*. / Erin: *I know. That’s great.*',
+      said: '「顔を見ちゃって」に「ごめん、あれのためなんだ」と返し、エリンは「分かってる。すごくいいと思う」と言う。',
+      mean: 'the thing ＝ 「あれ」。名前を言わずにモーベンバーを指している。I know ＝ 分かってる。',
+      trap: 'saw your face から、責めると考えがち。決め手は I know のあとの That’s great。',
+      use: 'I know. That’s great.（分かってる。いいと思うよ）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'eyebrow', seg: [107.4, 113.2],
       stem: 'What does Erin say the mustache looks like?', ja: 'エリンは、口ひげが何みたいだと言う？',
@@ -194,7 +221,7 @@ export const movember: Clip = {
       line: 'it makes it look like there’s *an eyebrow in the middle of your face*.',
       said: '「顔の真ん中に眉毛があるみたい」と言う。',
       mean: 'make 〜 look like … ＝ 〜を…みたいに見せる。口ひげを、顔の真ん中の眉毛にたとえている。',
-      trap: 'eyebrow から「眉がつながる」と思いやすい。in the middle of your face まで聞く。',
+      trap: 'eyebrow から「眉がつながる」と勘違いしやすい。in the middle of your face まで聞く。',
       use: 'That hat makes you look taller.（その帽子だと背が高く見えるね）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'but', reveals: ['socket'], seg: [111.9, 119],
@@ -218,18 +245,18 @@ export const movember: Clip = {
       trap: 'k と l、n と eye がつながって、語の切れ目が消える。like のあとの短い an を落としやすい。',
       use: 'You look like a movie star.（映画スターみたい）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'notbad', seg: [113.2, 123],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'notbad', seg: [117.6, 123],
       stem: 'Fill the gap: “___ bad.”', ja: '空所に入るのは？ “___ bad.”',
       choices: ['Which isn’t', 'Which is', 'It isn’t'], a: 0,
       choicesJa: ['（それは）〜ではない', '（それは）〜だ', 'それは〜ではない'],
       cue: '「eye socket」のすぐあと',
-      line: '…an eye socket. *Which isn’t* bad.',
-      said: '「目のくぼみみたい。…悪くはないけど」と付け足す。',
+      line: '*Which isn’t* bad.',
+      said: '「…悪くはないけど」と付け足す。',
       mean: 'isn’t の t はほぼ消えて「イズン」。悪口のあとに、あわててフォローしている。',
       trap: 'n’t が弱いと Which is に聞こえやすい。最後の「ン」が否定。出だしは「ウィッチ」で It ではない。',
       use: 'Which isn’t a bad thing.（それは悪いことじゃないけど）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cover', seg: [117.8, 129.2],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'cover', retired: true, seg: [117.8, 129.2],
       stem: 'How does Erin feel as she talks?', ja: '話しながら、エリンはどんな気持ち？',
       choices: ['Nervous, trying to be nice', 'Happy, joking with him', 'Angry, being mean to him'], a: 0,
       choicesJa: ['あせって、やさしくしようとしている', '楽しく、冗談を言っている', '怒って、意地悪をしている'],
@@ -258,8 +285,8 @@ export const movember: Clip = {
       trap: 'cause を活動への本音と、handsome や great を好意と取りやすい。直前のたとえが本音。',
       use: 'Well, it’s the thought that counts.（まあ、気持ちが大事だよね）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'cause', reveals: ['cover'], seg: [122.5, 129.2],
-      stem: 'Why does Erin end with “such a great cause”?', ja: 'エリンはなぜ “such a great cause” で終える？',
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'cause', seg: [122.5, 128.4],
+      stem: 'What is Erin trying to do with “such a great cause”?', ja: 'エリンは「such a great cause」で何をしようとしている？',
       choices: ['To end on something nice', 'To ask him for some money', 'To change the plan'], a: 0,
       choicesJa: ['最後はいいことを言うため', '彼にお金を頼むため', '計画を変えるため'],
       cue: '最後の一文',
