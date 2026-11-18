@@ -89,7 +89,7 @@ describe('e2e impact', () => {
 
 describe('e2e/impact.json', () => {
   const app = join(import.meta.dirname, '..', '..');
-  const impact = JSON.parse(readFileSync(join(app, 'e2e', 'impact.json'), 'utf8')) as { rules: Ctx['rules']; unmapped: Record<string, string> };
+  const impact = JSON.parse(readFileSync(join(app, 'e2e', 'impact.json'), 'utf8')) as { rules: Ctx['rules']; unmapped: Record<string, string>; exact: Record<string, string> };
   const specs = readdirSync(join(app, 'e2e')).filter((f) => f.endsWith('.spec.ts'));
   const walk = (d: string): string[] => readdirSync(join(app, d)).flatMap((f) => (statSync(join(app, d, f)).isDirectory() ? walk(`${d}/${f}`) : [`${d}/${f}`]));
   const dirs = new Map<string, string[]>();
@@ -125,8 +125,23 @@ describe('e2e/impact.json', () => {
     expect(impact.rules.filter(([glob]) => !all.some((f) => reOf(glob).test(f))).map(([glob]) => glob)).toEqual([]);
   });
 
+  // src/lib/sugoroku/** named `sugoroku` alone: sugoroku-watch, -speak and -invite ran only after the deploy
+  const named = (p: string, s: string) => new RegExp(`^${p.replace(/[.-]/g, '\\$&').replace(/\*/g, '.*')}\\.spec\\.ts$`).test(s);
+  const left = impact.rules.flatMap(([glob, pats]) =>
+    pats.filter((p) => !/[*$]/.test(p)).flatMap((p) => {
+      const out = specs.filter((s) => s.startsWith(`${p}-`) && !repo.gate.includes(s) && !pats.some((q) => named(q, s)));
+      return out.length ? [[p, `${glob}: ${p} without ${out.join(', ')}`]] : [];
+    }));
+  it("a rule naming an exact spec lists its siblings outside the gate set (or `x*`), or the spec is in `exact` with why", () => {
+    expect(left.filter(([p]) => !impact.exact[p]).map(([, why]) => why)).toEqual([]);
+  });
+
+  it('lists in `exact` only specs some rule leaves siblings out for', () => {
+    expect(Object.keys(impact.exact).filter((p) => !left.some(([q]) => q === p))).toEqual([]);
+  });
+
   it('names only specs there are', () => {
-    const none = impact.rules.flatMap(([glob, pats]) => pats.filter((p) => !p.includes('$1') && !specs.some((s) => new RegExp(`^${p.replace(/[.-]/g, '\\$&').replace(/\*/g, '.*')}\\.spec\\.ts$`).test(s))).map((p) => `${glob}: ${p}`));
+    const none = impact.rules.flatMap(([glob, pats]) => pats.filter((p) => !p.includes('$1') && !specs.some((s) => named(p, s))).map((p) => `${glob}: ${p}`));
     expect(none).toEqual([]);
   });
 });
