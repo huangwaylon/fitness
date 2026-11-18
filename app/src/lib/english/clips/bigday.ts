@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 4, ctx 6, tx 21
+// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 1, new 4, ctx 6, tx 21, qa 10
 // A2 REVIEW 2026-11-17: keep 5, rewrite 13, retire 3, new 2
 // “Parks and Recreation | Donna, Ben and Gary's Big Day (Episode Highlight)” (the official Parks and Recreation
 // channel, Season 7 | Parks and Recreation): with the kids' stuffed zebras found, Ben asks Leslie whether he should run
@@ -144,7 +144,7 @@ export const bigDay: Clip = {
       line: 'Reporter: Any comment on the report that you’re running for Congress? / Ben: *I’m sorry, I can’t talk about this right now.*',
       said: '「出馬の報道についてコメントは？」と聞かれ、「すみません、今はその話はできません」と答える。',
       mean: 'I can’t talk about this right now ＝ 今はこの話はできない。答えをていねいに断る決まった言い方。',
-      trap: 'I’m sorry で謝っていると考えがち。ここは断りの前置き。',
+      trap: 'right now から「あとで答える」と考えがち。そんな約束はしていない。',
       use: 'Sorry, I can’t talk right now.（ごめん、今は話せない）' },
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'mayor', seg: [46.8, 52.2],
@@ -160,13 +160,13 @@ export const bigDay: Clip = {
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'wedding', seg: [51.3, 56.3],
       stem: 'Why does Ben want the reporters to stop?', ja: 'ベンはなぜ、記者にやめてほしい？',
-      choices: ['He’s busy at a wedding', 'He hasn’t decided yet', 'He must call home'], a: 0,
-      choicesJa: ['結婚式で手がふさがっている', 'まだ決めていない', '家に電話しないといけない'],
+      choices: ['He’s busy at a wedding', 'The bride asked him to', 'He must call home'], a: 0,
+      choicesJa: ['結婚式で手がふさがっている', '花嫁に頼まれた', '家に電話しないといけない'],
       cue: '「please, everyone」のあと',
       line: 'we’re *at a wedding*, and I’m *holding zebras*.',
       said: '「みなさん、ここは結婚式で、僕はシマウマを抱えてるんです」と言う。',
       mean: 'hold ＝ 抱える、持つ。今は答える場面じゃない、という理由を二つ並べている。',
-      trap: '迷っていた話が頭にあると、「まだ決めていない」を選びやすい。言った理由だけで選ぶ。',
+      trap: 'wedding から、花嫁に頼まれたと考えがち。理由は本人が言う二つ：結婚式の最中、シマウマを抱えている。',
       use: 'Not now, my hands are full.（今は手がふさがってる）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'pitch', seg: [56.2, 92.3],
@@ -192,13 +192,13 @@ export const bigDay: Clip = {
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'years5', seg: [68.7, 75.4], keep: true,
       stem: 'How long was Ben city manager, he says?', ja: 'ベンはシティマネージャーを何年やった？',
-      choices: ['5 years', '9 years', '15 years'], a: 0,
-      choicesJa: ['5年', '9年', '15年'],
+      choices: ['5 years', '9 years', '15 years', '50 years'], a: 0,
+      choicesJa: ['5年', '9年', '15年', '50年'],
       cue: '「city manager」の少し前',
       line: 'and for *five years* as city manager',
       said: '予算の専門家として、そして5年間シティマネージャーとして問題を解決してきた、と言う。',
       mean: 'for five years ＝ 5年間。実績を数字で示している。',
-      trap: 'fifteen なら「ティーン」と長く伸びる。nine は「ナイン」。短い「ファイヴ」がすぐ years に続く。',
+      trap: 'fifteen は「ティーン」と長く、fifty は「フィフティ」と2音。nine は「ナイン」。短い「ファイヴ」がすぐ years に続く。',
       use: 'I lived there for five years.（そこに5年住んでいました）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'goodat', seg: [68.7, 75.4],
@@ -339,8 +339,8 @@ export const bigDay: Clip = {
 
     { id: 'gn', skill: 'infer', level: 'B2', point: 'newname', ctx: true, seg: [145.5, 152.4],
       stem: 'What do the coworkers think “Gary” is?', ja: '同僚たちは「Gary」を何だと思っている？',
-      choices: ['A funny new name for him', 'Another guest’s name', 'The groom’s middle name'], a: 0,
-      choicesJa: ['彼のおかしな新しい呼び名', '別の客の名前', '新郎のミドルネーム'],
+      choices: ['A joke name for him', 'Another guest’s name', 'The groom’s middle name'], a: 0,
+      choicesJa: ['彼をからかう呼び名', '別の客の名前', '新郎のミドルネーム'],
       cue: '「Ha-ha」のあとの一言',
       line: 'Who’s Gary? / Oh, I think *that’s supposed to be me*. / Ha-ha, that’s your *new name*, Gary.',
       said: '「ゲイリーって誰？」に本人が「たぶん僕のこと」と答え、同僚は「お前の新しい名前だ」と笑う。',
@@ -350,13 +350,13 @@ export const bigDay: Clip = {
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'years30', seg: [157.6, 167], keep: true,
       stem: 'How long has it taken, says Gary?', ja: 'ゲイリーによると、何年かかった？',
-      choices: ['3 years', '13 years', '30 years'], a: 2,
-      choicesJa: ['3年', '13年', '30年'],
+      choices: ['3 years', '13 years', '30 years', '33 years'], a: 2,
+      choicesJa: ['3年', '13年', '30年', '33年'],
       cue: '「After」のすぐあと',
       line: 'After *30 years*, my coworkers are finally going to call me by my real name.',
       said: '「30年たって、同僚がやっと本当の名前で呼んでくれる」と言う。',
       mean: 'after 30 years ＝ 30年たって。thirty は前の「サー」が強い。',
-      trap: 'thirteen なら後ろの「ティーン」が強く長い。three なら「スリー」だけ。前が強ければ30。',
+      trap: 'thirteen なら後ろの「ティーン」が強く長い。three なら「スリー」だけ。33 なら thirty のあとに three。',
       use: 'After ten years, I finally visited Kyoto.（10年越しにやっと京都へ）' },
 
     { id: 'a4', skill: 'attitude', level: 'B1', point: 'gary', seg: [157.8, 167.7],

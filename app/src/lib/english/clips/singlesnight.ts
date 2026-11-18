@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 2, new 6, ctx 8, tx 13
+// R4 REVIEW 2026-11-18: keep 9, rewrite 9, retire 2, new 6, ctx 8, tx 13, qa 5
 // A2 REVIEW 2026-11-17: keep 12, rewrite 7, retire 3, new 1
 // “Singles Night | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Ann tries a singles
 // night to be "a whole new Ann Perkins". Donna, there too, first treats her as a rival ("every woman for herself"), then
@@ -57,8 +57,8 @@ export const singlesNight: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'outthere', seg: [19, 27.9],
       stem: 'What does Ann mean by “putting myself out there”?',
       ja: 'アンの「putting myself out there」はどういう意味？',
-      choices: ['Opening herself up to new people', 'Going out to bars more', 'Putting herself first for once'], a: 0,
-      choicesJa: ['新しい人に心を開く', 'もっとバーに行く', 'たまには自分を優先する'],
+      choices: ['Taking risks to meet others', 'Going out to bars more', 'Putting herself first for once'], a: 0,
+      choicesJa: ['勇気を出して人と出会う', 'もっとバーに行く', 'たまには自分を優先する'],
       cue: '「I’m putting myself」のあと',
       line: 'I’m *putting myself out there*, meeting some new people…',
       said: '「思い切って自分から飛び込んで、新しい人と会ってる」と言う。',
@@ -299,7 +299,7 @@ export const singlesNight: Clip = {
       choices: ['Probably not', 'Yes, very soon', 'Yes, later tonight'], a: 0,
       choicesJa: ['たぶん会わない', 'うん、すぐに', 'うん、今夜あとで'],
       cue: '別れのあいさつの最後',
-      line: 'Cool. *See you around, maybe.*',
+      line: 'Cool. We’ll *see you around, maybe.*',
       said: '「そっか。じゃあ、またどこかで。たぶんね」と言って去る。',
       mean: 'see you around ＝「またどこかで」。約束はしない別れの言葉。maybe が付くと、会う気はさらに薄い。',
       trap: 'see you から「また会う約束」と勘違いしやすい。最後の maybe が気持ちを表す。',
@@ -379,8 +379,8 @@ export const singlesNight: Clip = {
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'choice', seg: [174.5, 188.5],
       stem: 'What does Donna want Ann to do?',
       ja: 'ドナはアンにどうしてほしい？',
-      choices: ['Talk to the cute boy', 'Go home and rest', 'Call her ex-boyfriend'], a: 0,
-      choicesJa: ['あのかわいい男の子と話す', '家に帰って休む', '元カレに電話する'],
+      choices: ['Meet the boy watching her', 'Go home and rest', 'Call her ex-boyfriend'], a: 0,
+      choicesJa: ['見ている男の子と話す', '家に帰って休む', '元カレに電話する'],
       cue: '「Or do you want to」のあと',
       line: 'Do you want to go home and *feel sorry for yourself*…? Or do you want to go *talk to that cute boy*…',
       said: '「家で落ちこみたい？それとも、見てる男の子と話して番号を渡す？」と聞く。',
