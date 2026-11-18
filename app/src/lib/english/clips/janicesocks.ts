@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 13, retire 4, new 5, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 2, rewrite 13, retire 4, new 5, ctx 5, tx 7, qa 14
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 5, new 2
 // “Chandler Can't Break Up with Janice | Friends” (the official Friends channel, Best of Season 1): at the coffee
 // house Janice talks about her awful day and gives Chandler a pair of Bullwinkle socks; back with his friends, he
@@ -27,7 +27,7 @@ export const janiceSocks: Clip = {
       trap: 'あとの awful day（最悪の日）が強く聞こえて、疲れていると思いやすい。最初の一言が気持ち。',
       use: 'I’m so glad to see you.（会えてすごくうれしい）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'called', seg: [1, 7.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'called', seg: [1.2, 4.55],
       stem: 'Who made the phone call?', ja: '電話をかけたのは誰？',
       choices: ['Chandler called Janice', 'Janice called Chandler', 'Nobody called anyone'], a: 0,
       choicesJa: ['チャンドラーがジャニスに', 'ジャニスがチャンドラーに', 'どちらもかけていない'],
@@ -49,7 +49,7 @@ export const janiceSocks: Clip = {
       trap: 'caught（コート）も似ている。called back なら「バック」が残る。「ゥ」の音なら called。',
       use: 'So glad you made it!（来てくれてうれしい！）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'notgood', ctx: true, seg: [4.0, 11.4],
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'notgood', ctx: true, seg: [4.5, 11.9],
       stem: 'What does Chandler say about Janice’s awful day?', ja: 'ジャニスの「最悪な一日」に、チャンドラーは何と返す？',
       choices: ['Sorry, that’s too bad', 'Mine was awful too', 'Tell me what happened'], a: 0,
       choicesJa: ['それは気の毒に', '僕の日も最悪だった', '何があったか教えて'],
@@ -60,7 +60,7 @@ export const janiceSocks: Clip = {
       trap: 'awful day のあとなので、自分も最悪だったと返すと考えがち。返事は短い同情だけ。',
       use: 'Oh, that’s not good. Are you okay?（えっ、それはよくないね。大丈夫？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [9.7, 17.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'order', seg: [9.7, 15.5],
       stem: 'What drinks are ordered?', ja: '注文した飲み物は？',
       choices: ['An espresso and a latte', 'Two espressos and a tea', 'A latte and a tea'], a: 0,
       choicesJa: ['エスプレッソ1つとラテ1つ', 'エスプレッソ2つと紅茶', 'ラテと紅茶1杯'],
@@ -71,7 +71,7 @@ export const janiceSocks: Clip = {
       trap: 'and a が「アンナ」とつながり、数が聞き取りにくい。an は「1つ」。',
       use: 'Can I get a coffee, please?（コーヒーをください）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['order'], seg: [9.7, 17.7],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'overhere', reveals: ['order'], seg: [9.7, 15.5],
       stem: 'What does “over here” mean in the order?', ja: '注文の中の “over here” はどういう意味？',
       choices: ['To this table', 'Right now', 'To take away'], a: 0,
       choicesJa: ['このテーブルに', '今すぐ', '持ち帰りで'],
@@ -104,7 +104,7 @@ export const janiceSocks: Clip = {
       trap: '新しい話を始めると思いやすい。このあとも同じ写真の話が続く。',
       use: 'Anyway, that’s what happened.（とにかく、そういうことがあったの）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'sucked', seg: [17.2, 22.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'sucked', seg: [17.3, 21.85],
       stem: 'Type what she says: “Anyway, they ___ sucked.” (2 words)', ja: '彼女の言葉を書こう：“Anyway, they ___ sucked.”（2語）',
       answer: 'pretty much',
       cue: '「they」のすぐあと',
@@ -114,7 +114,7 @@ export const janiceSocks: Clip = {
       trap: 'pretty の t は軽い「ラ」の音で「プリディ」。much とつながって短く聞こえる。',
       use: 'I’m pretty much done here.（もうほとんど終わったよ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'blewoff', reveals: ['shopping'], seg: [18.7, 26.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'blewoff', reveals: ['shopping'], seg: [18.9, 26.7],
       stem: 'What did Janice do with her afternoon?', ja: 'ジャニスは午後をどう過ごした？',
       choices: ['She skipped the rest of work', 'She got angry all afternoon', 'She stayed late to fix photos'], a: 0,
       choicesJa: ['残りの仕事をサボった', '午後ずっと怒っていた', '残って写真を直した'],
@@ -125,7 +125,7 @@ export const janiceSocks: Clip = {
       trap: 'blow up（かっとなる）と勘違いしやすい。すぐあとの I went shopping もヒント。',
       use: 'I blew off the gym today.（今日はジムをサボった）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['gotyou'], seg: [20.0, 46.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['gotyou'], seg: [20.2, 46.6],
       stem: 'What does Janice do on this visit?', ja: '今回、ジャニスは何をする？',
       choices: ['Gives Chandler a present', 'Asks Chandler for help', 'Shows Chandler her photos'], a: 0,
       choicesJa: ['チャンドラーに贈り物を渡す', 'チャンドラーに助けを頼む', 'チャンドラーに写真を見せる'],
@@ -136,7 +136,7 @@ export const janiceSocks: Clip = {
       trap: '写真の話が出るので、写真を見せに来たと考えがち。写真は話に出るだけで、手渡すのは靴下。',
       use: 'I got you these. Do you like them?（これ買ってきたよ。気に入った？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'shopping', seg: [21.3, 26.7],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'shopping', seg: [21.8, 26.7],
       stem: 'What did Janice do after hearing about the photos?', ja: '写真のことを聞いたあと、ジャニスは何をした？',
       choices: ['She went shopping', 'She went to bed', 'She went back to work'], a: 0,
       choicesJa: ['買い物に行った', '寝た', '仕事に戻った'],
@@ -179,8 +179,8 @@ export const janiceSocks: Clip = {
       trap: 'Rockies は山脈の名前でもあり、旅行の話に聞こえやすい。続く組み合わせの話で判断。',
       use: 'I knew you liked blue, so…（青が好きだって知ってたから…）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mix', seg: [47.8, 55.4],
-      stem: 'How can Chandler wear the socks, Janice says?', ja: 'ジャニスによると、チャンドラーは靴下をどうはける？',
+    { id: 'f2', skill: 'phrase', level: 'B1', point: 'mix', seg: [47.75, 55.7],
+      stem: 'How does Janice say he can wear the socks?', ja: 'ジャニスによると、チャンドラーは靴下をどうはける？',
       choices: ['Wear two different kinds', 'Swap them for others', 'Match them to his clothes'], a: 0,
       choicesJa: ['ちがう種類を組み合わせる', '別のものと交換する', '服に合わせる'],
       cue: '「or you can」のあと',
@@ -190,7 +190,7 @@ export const janiceSocks: Clip = {
       trap: 'match を「服に合わせる」と考えがち。mix とセットで「組み合わせる」。',
       use: 'You can mix and match the toppings.（トッピングは自由に組み合わせられます）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'whatever', seg: [51.8, 58.4],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'whatever', seg: [51.95, 59.5],
       stem: 'What does Janice mean by “Whatever you want”?', ja: 'ジャニスの「Whatever you want」はどういう意味？',
       choices: ['Wear them as you like', 'Tell me what you want', 'I don’t care about you'], a: 0,
       choicesJa: ['好きなようにはいて', 'ほしい物を教えて', 'あなたのことはどうでもいい'],
@@ -212,7 +212,7 @@ export const janiceSocks: Clip = {
       trap: 'すぐあとに More latte?（ラテのおかわりは？）と聞くので、ラテと勘違いしやすい。自分のは espresso。',
       use: 'Can I get another coffee, please?（コーヒーをもう一杯ください）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'working', reveals: ['order'], ctx: true, seg: [62.3, 76.5],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'working', reveals: ['order'], ctx: true, seg: [63.5, 75.5],
       stem: 'Why does Chandler say no to more latte?', ja: 'チャンドラーはなぜラテのおかわりを断る？',
       choices: ['His first cup isn’t finished', 'He must go back to work', 'He wants an espresso instead'], a: 0,
       choicesJa: ['最初の1杯がまだ残っている', '仕事に戻らないといけない', '代わりにエスプレッソがほしい'],
@@ -223,7 +223,7 @@ export const janiceSocks: Clip = {
       trap: 'working から「仕事に戻る」と考えがち。on のあとの mine（自分の飲み物）を聞く。',
       use: 'I’m still working on this, thanks.（まだ食べてます、どうも）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'tease', reveals: ['brutal', 'thatsit'], seg: [68.5, 84],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'tease', reveals: ['brutal', 'thatsit'], seg: [68.0, 84],
       stem: 'What do Chandler’s friends do at the end?', ja: '最後に、チャンドラーの友だちは何をする？',
       choices: ['Tease him about the hug', 'Feel sorry for him', 'Tease him about the socks'], a: 0,
       choicesJa: ['ハグのことでからかう', '彼に同情する', '靴下のことでからかう'],
@@ -234,7 +234,7 @@ export const janiceSocks: Clip = {
       trap: 'brutal や hard をそのまま取ると同情に聞こえる。小さなハグに強い言葉＝からかいの合図。',
       use: 'Wow, that sounds brutal.（うわ、それはきつそう）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'thatsit', ctx: true, seg: [74.2, 81.3],
+    { id: 'i3', skill: 'phrase', level: 'B2', point: 'thatsit', ctx: true, seg: [74.2, 81.15],
       stem: 'What does “That’s it?” mean here?', ja: 'ここでの “That’s it?” はどういう意味？',
       choices: ['Is that all?', 'Is that true?', 'Are you okay?'], a: 0,
       choicesJa: ['それだけ？', 'それ本当？', '大丈夫？'],

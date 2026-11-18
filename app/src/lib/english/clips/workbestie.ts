@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 0, rewrite 9, retire 3, new 6, ctx 5, tx 16
+// R4 REVIEW 2026-11-18: keep 0, rewrite 9, retire 3, new 6, ctx 5, tx 16, qa 10
 // A2 REVIEW 2026-11-17: keep 14, rewrite 4, retire 4, new 1 · sweep: craigtemp twins retired (f1 f2 x1 i3 n1 d4 a3)
 // “Donna meets her new dramatic work bestie | Parks and recreation” (the official Parks and Recreation channel, Season 6):
 // Leslie pairs her staff with their Eagleton matches; Donna's match, Craig, adores her, rants at a grass supplier, and
@@ -27,7 +27,7 @@ export const workBestie: Clip = {
       trap: 'Eagleton の人と聞いて、入れ替わると思いやすい。組むだけ。',
       use: 'You’ll be paired up with Ken.（ケンと組んでもらいます）' },
 
-    { id: 'd1', skill: 'who', level: 'B1', point: 'ron', seg: [5.9, 12.8],
+    { id: 'd1', skill: 'who', level: 'B1', point: 'ron', seg: [5.65, 12.8],
       stem: 'Who is Ron paired with?', ja: 'ロンの相手は誰？',
       choices: ['Someone named Ron', 'Someone named Craig', 'Someone named Eric'], a: 0,
       choicesJa: ['ロンという人', 'クレイグという人', 'エリックという人'],
@@ -38,7 +38,7 @@ export const workBestie: Clip = {
       trap: 'Craig はドナの相手、Eric はあとで出るトムの相手。決め手は also named。',
       use: 'My brother is also named Ken.（兄もケンという名前です）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'unique', seg: [12.8, 21.4],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'unique', seg: [12.8, 21.15],
       stem: 'Tom says he is “*one of a kind*.” What does that mean?', ja: 'トムの「one of a kind」の意味は？',
       choices: ['The only one like him', 'One of many like him', 'A very kind person'], a: 0,
       choicesJa: ['自分のような人はほかにいない', '自分のような人はたくさんいる', 'とても優しい人'],
@@ -82,7 +82,7 @@ export const workBestie: Clip = {
       trap: 'surprise から、パーティーを連想しやすい。決め手は introduce（紹介する）のあと。',
       use: 'We have a new temp this week.（今週は臨時の人が来ています）' },
 
-    { id: 'pn', skill: 'pragma', level: 'B2', point: 'perfect', ctx: true, seg: [35.8, 42.4],
+    { id: 'pn', skill: 'pragma', level: 'B2', point: 'perfect', ctx: true, seg: [35.8, 42.15],
       stem: 'What does Craig say about Donna’s name?', ja: 'クレイグはドナの名前について何と言う？',
       choices: ['It suits her very well', 'It is hard to say', 'It sounds like his own'], a: 0,
       choicesJa: ['彼女にとても合っている', '言いにくい', '自分の名前に似ている'],
@@ -234,7 +234,7 @@ export const workBestie: Clip = {
       trap: 'crazy（クレイジー）が耳に残りやすいが、but のあとが理由。',
       use: 'I’ve never met anyone so kind.（こんなに優しい人に会ったことがない）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['planning', 'condo'], seg: [116.8, 144.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['planning', 'condo'], seg: [116.8, 144.15],
       stem: 'What happens when Leslie wants to cut Craig?', ja: 'レスリーがクレイグを減らそうとすると、どうなる？',
       choices: ['Others offer to leave', 'Everyone fights to stay', 'Craig goes home angry'], a: 0,
       choicesJa: ['ほかの人が辞めてもいいと言い出す', 'みんな残ろうと必死になる', 'クレイグが怒って帰る'],
@@ -311,7 +311,7 @@ export const workBestie: Clip = {
       trap: '13 months を「13か月録画してきた」と取りやすい。pregnant with は「〜でパンパン」。',
       use: 'My inbox is full of emails.（受信箱がメールでいっぱい）' },
 
-    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'bigplans', ctx: true, seg: [151.6, 158.3],
+    { id: 'pr1', skill: 'phrase', level: 'B1', point: 'bigplans', ctx: true, seg: [151.45, 158.3],
       stem: 'What does Craig say he has to do tonight?', ja: 'クレイグは今夜、何をすると言う？',
       choices: ['A lot of work', 'A big dinner', 'A date with Donna'], a: 0,
       choicesJa: ['仕事が山ほど', '大きな夕食会', 'ドナとのデート'],
@@ -322,7 +322,7 @@ export const workBestie: Clip = {
       trap: 'big（大きな）から、特別な予定を考えがち。答えは a ton of work。',
       use: 'Big plans this weekend?（週末、何か予定ある？）' },
 
-    { id: 'ex', skill: 'phrase', level: 'B2', point: 'excuse', ctx: true, seg: [167.6, 175.7],
+    { id: 'ex', skill: 'phrase', level: 'B2', point: 'excuse', ctx: true, seg: [167.45, 175.7],
       stem: 'What does “*Excuse me?*” mean here?', ja: 'ここでの「Excuse me?」はどういう意味？',
       choices: ['What did you just say?', 'Sorry to bother you.', 'Can I get past you?'], a: 0,
       choicesJa: ['今なんて言ったの？', 'おじゃましてすみません', '通ってもいいですか？'],

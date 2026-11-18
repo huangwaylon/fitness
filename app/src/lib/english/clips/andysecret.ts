@@ -1,11 +1,13 @@
-// R4 REVIEW 2026-11-18: keep 2, rewrite 16, retire 2, new 6, ctx 7, tx 13
+// R4 REVIEW 2026-11-18: keep 2, rewrite 16, retire 2, new 6, ctx 7, tx 13, qa 19
 // A2 REVIEW 2026-11-17: keep 9, rewrite 9, retire 4, new 1
 // “Can Andy keep a secret? | Parks and Recreation” (the official Parks and Recreation channel, Season 6): April
 // spots a secret Andy is keeping and pushes him all day; he invents a sick Larry, then a run of silly fake secrets,
 // until he gives in, and the real news is announced to everyone before he can tell her.
 // Segments from the captions, words from whisper (2026-11-16; whisper runs ≈ 5 s early around 170–190 s). Talk ends
-// at ≈250 s. Untested: 118–131 s (the ring-passing toilet joke, the grail), 164 s (Tom's butt), 207–209 s, 242 s.
+// at ≈250 s. Untested: 118–131 s (the ring-passing toilet joke, the grail), 164 s (Tom's butt; both EXCLUDEd), 207–209 s, 242 s.
 // “Good call, babe” (77 s) is Andy's.
+// EXCLUDE 117.9–121.8
+// EXCLUDE 163.0–164.5
 import type { Clip } from '../types.ts';
 
 export const andySecret: Clip = {
@@ -14,7 +16,7 @@ export const andySecret: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'itin', ctx: true, seg: [12.5, 26.5],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'itin', ctx: true, seg: [12.5, 25.95],
       stem: 'What does April offer to do for Andy?', ja: 'エイプリルはアンディに何をしてあげると言う？',
       choices: ['Make him a schedule', 'Go to the auction', 'Sing the songs for him'], a: 0,
       choicesJa: ['予定表を作ってあげる', 'オークションに行く', '代わりに歌う'],
@@ -25,7 +27,7 @@ export const andySecret: Clip = {
       trap: 'auction（オークション）が何度も出るので、そこへ行くと思いやすい。決め手は I’ll のあとの申し出。',
       use: 'I’ll write it down for you.（書いておいてあげるね）' },
 
-    { id: 'g0', skill: 'gist', level: 'B1', point: 'ask', reveals: ['haveto', 'backwork'], seg: [29.0, 61.0],
+    { id: 'g0', skill: 'gist', level: 'B1', point: 'ask', reveals: ['haveto', 'backwork'], seg: [29.0, 61.15],
       stem: 'What does April keep asking Andy for?', ja: 'エイプリルはアンディに何をしつこく求める？',
       choices: ['To tell her his secret', 'To come to a party', 'To get back to work'], a: 0,
       choicesJa: ['秘密を教えて', 'パーティーに来て', '仕事に戻って'],
@@ -59,7 +61,7 @@ export const andySecret: Clip = {
       trap: 'twice だけ拾うと数の話に聞こえる。何が2倍になるのか、後ろの名詞まで聞く。',
       use: 'That’s the whole point of a vacation.（それが休暇ってものでしょ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'weird', seg: [37.0, 44.0],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'weird', seg: [36.8, 42.1],
       stem: 'What is Andy doing when April asks?', ja: 'エイプリルに聞かれて、アンディは何をしている？',
       choices: ['Hiding something', 'Telling the truth', 'Getting angry'], a: 0,
       choicesJa: ['何かを隠している', '本当のことを言っている', '怒っている'],
@@ -81,7 +83,7 @@ export const andySecret: Clip = {
       trap: '文末の語を強く読む癖だと weird に置きがち。くり返された語は弱く、入れ替わった語が強い。',
       use: 'I’m not late. You’re early.（僕が遅いんじゃない。君が早いんだ）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'backwork', seg: [40.7, 45.7],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'backwork', seg: [40.9, 45.7],
       stem: 'Type: “Excuse me, I have to ___ now.” (4 words)', answer: 'get back to work',
       ja: '「Excuse me, I have to ___ now.」の空所を書こう（4語）',
       cue: '「You’re acting weird」のあと',
@@ -91,7 +93,7 @@ export const andySecret: Clip = {
       trap: 'get back がつながり「ゲッバック」と聞こえる。to は小さく短い。',
       use: 'Sorry, I have to get back to work.（すみません、仕事に戻らないと）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'shower', seg: [47.8, 56.7],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'shower', seg: [47.8, 56.25],
       stem: 'How long does April give Andy for the car shower?',
       ja: 'エイプリルは車での「シャワー」に何分あげる？',
       choices: ['15 minutes', '30 minutes', '45 minutes', '50 minutes'], a: 0, keep: true,
@@ -161,7 +163,7 @@ export const andySecret: Clip = {
       trap: 'good call を「当たり」と取ると、本当の秘密を当てた話になる。相手に乗るだけの返事は作り話の印。',
       use: 'Yes. Exactly. That’s totally what happened.（そう、まさにそれ。そういうこと）' },
 
-    { id: 'hh', skill: 'pragma', level: 'B1', point: 'hush', ctx: true, seg: [84.0, 93.0],
+    { id: 'hh', skill: 'pragma', level: 'B1', point: 'hush', ctx: true, seg: [84.0, 93.3],
       stem: 'What does Larry say about his problem?', ja: 'ラリーは自分の悩みについて何と言う？',
       choices: ['He wanted to keep it quiet', 'He wants everyone to know', 'He has no problem at all'], a: 0,
       choicesJa: ['内緒にしておきたかった', 'みんなに知ってほしい', '悩みなんてない'],
@@ -172,7 +174,7 @@ export const andySecret: Clip = {
       trap: 'Really? を喜びと取りやすいが、内緒にしたかった驚き。決め手は keep it hush-hush。',
       use: 'Let’s keep this hush-hush for now.（今はこれ、内緒にしておこう）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'near', seg: [93.0, 100.0],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'near', seg: [93.3, 100.0],
       stem: 'What does “*I’m here for you*” mean?',
       ja: '「I’m here for you」はどういう意味？',
       choices: ['I will help you', 'I am waiting for you', 'I came to get you'], a: 0,
@@ -196,7 +198,7 @@ export const andySecret: Clip = {
       trap: 'icing、finger、ring と名詞が続く。決め手は boom のあとの動詞。',
       use: 'Oops, I swallowed my gum.（あ、ガム飲みこんじゃった）' },
 
-    { id: 'nd', skill: 'infer', level: 'B2', point: 'notdying', ctx: true, reveals: ['sick'], seg: [109.0, 118.0],
+    { id: 'nd', skill: 'infer', level: 'B2', point: 'notdying', ctx: true, reveals: ['sick'], seg: [109.0, 117.85],
       stem: 'What does April find out from Larry?', ja: 'エイプリルはラリーから何を知る？',
       choices: ['Larry isn’t really ill', 'Larry is getting worse', 'Larry lost his job'], a: 0,
       choicesJa: ['ラリーは本当は病気じゃない', 'ラリーは悪くなっている', 'ラリーは仕事を失った'],
@@ -207,7 +209,7 @@ export const andySecret: Clip = {
       trap: 'No を何度も言うので、強く悩んでいると考えがち。質問への「ちがう」の答え。',
       use: 'Wait, so you’re not coming?（待って、じゃあ来ないってこと？）' },
 
-    { id: 'a1', skill: 'detail', level: 'B1', point: 'horrible', reveals: ['notdying'], seg: [131.0, 139.3],
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'horrible', reveals: ['notdying'], seg: [131.35, 139.3],
       stem: 'What does April say was horrible?', ja: 'エイプリルは何が最悪だったと言う？',
       choices: ['Talking with Larry', 'Worrying about Larry', 'Hearing the news'], a: 0,
       choicesJa: ['ラリーと話したこと', 'ラリーを心配したこと', '知らせを聞いたこと'],
@@ -218,7 +220,7 @@ export const andySecret: Clip = {
       trap: '病気のうそなので「心配させた」と怒ると考えがち。horrible の直前の文を聞く。',
       use: 'How could you do that to me?（よくもそんなことができたね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'dodge', seg: [137.2, 171.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'dodge', seg: [137.4, 163.0],
       stem: 'What does Andy do when April asks again?',
       ja: 'エイプリルがまた聞くと、アンディはどうする？',
       choices: ['He tells silly fake secrets', 'He tells her the real secret', 'He gets angry at her'], a: 0,
@@ -241,8 +243,8 @@ export const andySecret: Clip = {
       trap: 'moving（引っ越す）が2回聞こえるので、新しい知らせと勘違いしやすい。決め手は already。',
       use: 'I already know. They told me.（もう知ってるよ。聞いたから）' },
 
-    { id: 'p1', skill: 'infer', level: 'B1', point: 'encore', seg: [166.0, 171.1],
-      stem: 'Why does Andy say he has to go?', ja: 'アンディは、なぜ行かなきゃと言う？',
+    { id: 'p1', skill: 'infer', level: 'B1', point: 'encore', seg: [165.3, 168.7],
+      stem: 'What reason does Andy give for leaving?', ja: 'アンディは、その場を離れる理由に何と言う？',
       choices: ['The kids want more songs', 'Someone heard the secret', 'April has to go home'], a: 0,
       choicesJa: ['子どもたちがもっと歌を聞きたい', 'だれかに秘密を聞かれた', 'エイプリルが帰らなきゃ'],
       cue: '「Did you hear that?」のあと',
@@ -252,7 +254,7 @@ export const andySecret: Clip = {
       trap: '秘密の話のあとなので、だれかに聞かれたと考えがち。次の一文がアンコールの話。',
       use: 'Oh, is that my phone? Sorry.（あ、電話かな？ごめん）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'hide', seg: [179.5, 185.7],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hide', seg: [179.5, 185.3],
       stem: 'Type what April says: “Babe, you ___ from me.” (4 words)', answer: 'don\'t have to hide',
       ja: '「Babe, you ___ from me.」の空所を書こう（4語）',
       cue: '「Babe」のあと',
@@ -285,7 +287,7 @@ export const andySecret: Clip = {
       trap: 'screw は乱暴な語なので怒りに聞こえやすい。ここは自分への「もういい」。次の文が向きを決める。',
       use: 'Screw it, let’s get dessert.（もういいや、デザート頼もう）' },
 
-    { id: 'h3', skill: 'phrase', level: 'B2', point: 'juicy', seg: [198.6, 205.7],
+    { id: 'h3', skill: 'phrase', level: 'B2', point: 'juicy', seg: [198.6, 205.3],
       stem: 'What does “*super juicy*” mean here?',
       ja: 'ここでの「super juicy」はどういう意味？',
       choices: ['Very fun to tell', 'Full of fruit juice', 'Very sad to hear'], a: 0,
@@ -297,7 +299,7 @@ export const andySecret: Clip = {
       trap: 'ジューシーから食べ物の話を連想しやすい。日本語の「おいしい話（もうけ話）」とも違う。',
       use: 'Ooh, tell me. Is it juicy?（ねえ教えて。面白いネタ？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'reveal', seg: [203.6, 228],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'reveal', reveals: ['proud'], seg: [203.75, 228],
       stem: 'How does April finally learn the secret?',
       ja: 'エイプリルは最後にどうやって秘密を知る？',
       choices: ['Leslie tells everyone', 'Andy tells only April', 'Larry lets it slip'], a: 0,
@@ -309,7 +311,7 @@ export const andySecret: Clip = {
       trap: '「教えるよ、準備いい？」の流れで、アンディが言うと考えがち。',
       use: 'Everybody, can I have your attention?（皆さん、ちょっと聞いてください）' },
 
-    { id: 'i4', skill: 'phrase', level: 'B1', point: 'ruse', seg: [212.5, 221.8],
+    { id: 'i4', skill: 'phrase', level: 'B1', point: 'ruse', seg: [210.1, 221.3],
       stem: 'Leslie says, “*It doesn’t matter*, Larry.” What does she mean?',
       ja: 'レスリーの「It doesn’t matter」はどういう意味？',
       choices: ['That is not important now', 'That was a big help', 'That was very bad'], a: 0,
@@ -344,7 +346,7 @@ export const andySecret: Clip = {
       trap: 'disagree が親への皮肉に聞こえやすい。ほめ言葉のあとに but が来るか聞く。来なければ本気。',
       use: 'Congrats. Your kid will be smarter than me.（おめでとう。君の子は僕より賢くなるよ）' },
 
-    { id: 'm2', skill: 'detail', level: 'B2', point: 'plural', ctx: true, seg: [229.0, 241.0],
+    { id: 'm2', skill: 'detail', level: 'B2', point: 'plural', ctx: true, seg: [229.0, 241.4],
       stem: 'What news does Leslie add after Ron speaks?', ja: 'ロンのあと、レスリーはどんな知らせを付け足す？',
       choices: ['Three babies are coming', 'Two babies are coming', 'The baby is a girl'], a: 0,
       choicesJa: ['三つ子が生まれる', '双子が生まれる', '赤ちゃんは女の子'],

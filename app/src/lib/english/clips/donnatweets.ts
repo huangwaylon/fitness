@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 2, new 6, ctx 7, tx 11
+// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 2, new 6, ctx 7, tx 11, qa 14
 // A2 REVIEW 2026-11-17: keep 3, rewrite 16, retire 4, new 0
 // “Donna Triggers B*tch Boss Leslie | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at a
 // council hearing Donna's private posts mocking Leslie are read out; Leslie is hurt, asks the man who backs her whether
@@ -32,7 +32,7 @@ export const donnaTweets: Clip = {
       trap: 'Miss Meagle（ドナの姓）に気をとられやすい。of のあとの your writing が答え。',
       use: 'I’m a big fan of this café.（このカフェの大ファンなんです）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'private', seg: [24.5, 32.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'private', seg: [24.15, 32.6],
       stem: 'What does Donna say about her account?',
       ja: 'ドナは自分のアカウントについて何と言う？',
       choices: ['It is set to private', 'She posts only after work', 'She never names the office'], a: 0,
@@ -57,8 +57,8 @@ export const donnaTweets: Clip = {
       use: 'You could’ve bothered to call.（電話くらいくれてもよかったのに）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'recess', ctx: true, seg: [56.3, 64.4],
-      stem: '“Can I request a brief recess?” What does Donna want?',
-      ja: '「Can I request a brief recess?」ドナは何がほしい？',
+      stem: 'What does Donna ask for when her tweets come up?',
+      ja: 'ツイートの話が出ると、ドナは何をお願いする？',
       choices: ['A short break', 'A good lawyer', 'Fewer posts read out'], a: 0,
       choicesJa: ['少しの休憩', 'いい弁護士', '読む投稿を減らすこと'],
       cue: '「Uh-oh」のあとの頼みごと',
@@ -68,7 +68,7 @@ export const donnaTweets: Clip = {
       trap: '裁判のような場なので、弁護士を呼ぶと考えがち。Uh-oh は「まずい」の声。',
       use: 'Can we take a quick break?（ちょっと休憩しませんか）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'worried', ctx: true, seg: [63.5, 69.7],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'worried', ctx: true, seg: [62.95, 69.7],
       stem: '“It’s not me I’m worried about.” Who is Donna worried about?',
       ja: '「It’s not me I’m worried about」ドナは誰を心配している？',
       choices: ['Leslie', 'Typhoon', 'The whole department'], a: 0,
@@ -139,7 +139,7 @@ export const donnaTweets: Clip = {
       trap: '注意のあとなので「やめて」と思いやすい。your thing は「あなたらしさ」。',
       use: 'Baking is kind of my thing.（お菓子作りは、まあ私の得意なこと）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'steam', seg: [126.8, 130.4],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'steam', seg: [126.8, 130.05],
       stem: 'What does “blow off steam” mean?',
       ja: '「blow off steam」はどういう意味？',
       choices: ['Let out stress', 'Keep up with friends', 'Get excited for work'], a: 0,
@@ -154,13 +154,13 @@ export const donnaTweets: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'years', seg: [133.0, 137.0], keep: true,
       stem: 'How long have Leslie and Donna been through things together?',
       ja: 'レスリーとドナは何年いっしょにやってきた？',
-      choices: ['2 years', '10 years', '20 years'], a: 1,
-      choicesJa: ['2年', '10年', '20年'],
+      choices: ['2 years', '10 years', '20 years', '30 years'], a: 1,
+      choicesJa: ['2年', '10年', '20年', '30年'],
       cue: '「we’ve been through」のあと',
       line: 'You really think I hate you after all we’ve been through *the last 10 years*?',
       said: '「この10年いろいろあったのに、本気で私が嫌ってると思う？」と聞く。',
       mean: 'after all we’ve been through ＝ いっしょに乗りこえてきたのに。',
-      trap: 'through が two に聞こえやすい。twenty は「トゥエニ」。last のあとの「テン」が10。',
+      trap: 'through が two に聞こえやすい。twenty は「トゥエニ」、thirty は「サーティ」。last のあとの短い「テン」が10。',
       use: 'After all we’ve been through, really?（あれだけのことがあったのに、本当に？）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'dontknow', ctx: true, reveals: ['years'], seg: [133.0, 139.0],
@@ -211,7 +211,7 @@ export const donnaTweets: Clip = {
       trap: '直前の Are you lying? から、前の答えがうそだったと思いやすい。今のことだけ。',
       use: 'Am I talking too much right now?（今しゃべりすぎてる？）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'asking', seg: [152.2, 178.1],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'asking', seg: [152.2, 178.35],
       stem: 'What does Leslie keep asking the man?',
       ja: 'レスリーは男性に何を何度も聞く？',
       choices: ['If she is annoying', 'Why he didn’t stop the hearing', 'If Donna hates her'], a: 0,
@@ -223,7 +223,7 @@ export const donnaTweets: Clip = {
       trap: '直前の謝罪から、聴聞会の話を続けると勘違いしやすい。聞いているのは自分のこと。',
       use: 'I have a question for you.（ひとつ聞いてもいい？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'protect', seg: [156.0, 159.0],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'protect', seg: [156.2, 158.45],
       stem: 'Type what Leslie asks: “Are you ___ my feelings?” (3 words)', answer: 'trying to protect',
       ja: 'レスリーの質問を書こう：「Are you ___ my feelings?」（3語）',
       cue: '「Are you lying?」の次の質問',
@@ -291,16 +291,16 @@ export const donnaTweets: Clip = {
       trap: '仲直りには「もうしない」が付くと思いやすい。ここは「変わらない」ことを約束。',
       use: 'Deal. Let’s shake on it.（決まり。握手しよう）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'heroic', seg: [210.7, 220.0],
-      stem: 'Is Leslie fully sorry in her apology?',
-      ja: 'レスリーは心から全部謝っている？',
-      choices: ['Only partly', 'Yes, fully', 'Not at all'], a: 0,
-      choicesJa: ['一部だけ', 'はい、全部', 'まったく謝っていない'],
+    { id: 'a3', skill: 'pragma', level: 'B2', point: 'heroic', seg: [210.7, 220.0],
+      stem: 'After saying sorry, what does Leslie say about being annoying?',
+      ja: '謝ったあと、レスリーは自分のウザさについて何と言う？',
+      choices: ['Some people see it as good', 'She will stop doing it', 'Donna is annoying too'], a: 0,
+      choicesJa: ['いいことだと思う人もいる', 'もうやめる', 'ドナもウザい'],
       cue: '「I’m sorry if」のあとの But',
       line: 'I’m sorry if I can be a little annoying at times. *But* one person’s annoying is *another person’s inspiring and heroic*.',
-      said: '「時々ウザかったらごめん。でも、ある人のウザいは、別の人にはヒーローみたいなものなの」と言う。',
-      mean: 'I’m sorry if 〜 ＝ もし〜ならごめん。謝りながら、ウザさを長所に言いかえている。',
-      trap: 'I’m sorry で、全部謝っていると考えがち。決め手は if と But のあと。',
+      said: '「ウザかったらごめん。でも、ある人のウザいは、別の人には刺激的でヒーローみたい」と言う。',
+      mean: 'I’m sorry if 〜 ＝ もし〜ならごめん（全部は認めない）。another person’s 〜 ＝ 別の人にとっての〜。',
+      trap: 'I’m sorry のあとには「もうしない」が続くと考えがち。決め手は But のあと。',
       use: 'I’m sorry if that came out wrong.（言い方が悪かったらごめん）' },
 
     { id: 'i5', skill: 'infer', level: 'B1', point: 'some', seg: [220.3, 225.3],

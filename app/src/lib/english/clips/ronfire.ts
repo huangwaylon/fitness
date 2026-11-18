@@ -1,14 +1,14 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 1, new 0, ctx 5, tx 5
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 1, new 0, ctx 5, tx 5, qa 17
 // A2 REVIEW 2026-11-17: keep 2, rewrite 16, retire 3, new 1
 // “Ron Swanson Tried to Fire Leslie Knope | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Leslie comes to Ron before a vote she can't decide; he shows her the four requests he once made to fire her, explains
 // why he withdrew them, and gives her a compass. Segments from the captions, words from whisper (2026-11-16).
-// EXCLUDE 49.3–53.3
+// EXCLUDE 48.9–53.3
 // EXCLUDE 64.3–68.3
 // EXCLUDE 80.5–82.4
 // (49–53 s "boot again" = vomit; the swears "a pain in my…", whose line also holds "bubbly", so h1 is retired, and
 // "…kiss-ass", which ends the 77–82.2 s line.)
-// EAR CHECK: d3 ends at 80.4 s on whisper timing — "person of conviction" must fall before the cut, "kiss-ass" after.
+// d3 ends at 80.35 s: the json3 hears “conviction” at 79.7 s and “than a wishy-washy kiss-ass” from 80.4 s.
 // R4: i3 now asks what Ron gives her (her "embarrassing photo" guess is the distractor); i1, n1, a1, pr2 and i3
 // follow the exchange.
 // EAR CHECK: 35.6 s r1 — the cut falls after "Keep reading" and before "Request for termination?" (captions 36.2 s, whisper 36.6 s)
@@ -20,7 +20,7 @@ export const ronFire: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'opener', reveals: ['help'], seg: [0, 9.4],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'opener', reveals: ['help'], seg: [0, 9.05],
       stem: 'Why does Leslie start with big praise for Ron?',
       ja: 'レスリーはなぜ、ロンを大げさにほめて話し始める？',
       choices: ['She wants to ask a favor', 'She wants to say sorry', 'She wants to say thank you'], a: 0,
@@ -44,7 +44,7 @@ export const ronFire: Clip = {
       trap: 'vote（投票）から、ロンの票がほしいと思いやすい。票を入れるのは I（彼女）。',
       use: 'I can’t decide. What would you do?（決められない。あなたならどうする？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [9.5, 17.5],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [10.95, 14.1],
       stem: 'Type Ron’s reply: “I’m sure you’ll ___.” (3 words)', answer: 'figure it out',
       ja: 'ロンの返事を書こう：「I’m sure you’ll ___.」（3語）',
       cue: '「what I’m gonna do」のすぐあと',
@@ -54,7 +54,7 @@ export const ronFire: Clip = {
       trap: 'it の t が軽い「ラ」の音になり、1語に聞こえやすい。3語ある。',
       use: 'Don’t worry, we’ll figure it out.（大丈夫、なんとかなるよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'forum', seg: [12.7, 19.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'forum', seg: [14.1, 19.8],
       stem: 'Who might want to fire Leslie?',
       ja: 'レスリーを辞めさせたいかもしれないのは誰？',
       choices: ['People at a meeting', 'People on the council', 'Reporters on TV'], a: 0,
@@ -66,7 +66,7 @@ export const ronFire: Clip = {
       trap: '直前に議場（chambers）の話があるので、議員と考えがち。said の前の public forum を聞く。',
       use: 'I heard they might let him go.（彼、クビになるかもって）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'joking', ctx: true, seg: [15.1, 27.1],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'joking', ctx: true, seg: [15.1, 26.75],
       stem: 'How does Leslie first take “I tried to fire you”?',
       ja: '「クビにしようとした」を、レスリーは最初どう受け取る？',
       choices: ['As a joke', 'As a threat', 'As an apology'], a: 0,
@@ -90,7 +90,7 @@ export const ronFire: Clip = {
       trap: 'see ＝「会う」と考えがち。ここは「見て確かめる」。',
       use: 'Don’t believe me? See for yourself.（信じないなら、自分で見て）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'keep', seg: [24.5, 35.6], then: [35.6, 40.9],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'keep', seg: [24.5, 35.6], then: [35.6, 40.55],
       stem: 'Ron says, “Keep reading.” What comes next?',
       ja: 'ロンの「Keep reading」このあと何が出てくる？',
       choices: ['Something bad about her', 'More praise for her work', 'An award for her'], a: 0,
@@ -113,19 +113,19 @@ export const ronFire: Clip = {
       trap: 'fire は衝撃の語なので強く感じやすいが、彼女も言った語。強勢は新しい情報に乗る。',
       use: 'Not two hours. I waited three hours.（2時間じゃない、3時間待った）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [36.9, 48.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'four', ctx: true, seg: [38.3, 48.85], keep: true,
       stem: 'How many times did Ron try to fire Leslie?',
       ja: 'ロンはレスリーを何回クビにしようとした？',
-      choices: ['Once', '4 times', '5 times'], a: 1,
-      choicesJa: ['1回', '4回', '5回'],
+      choices: ['Once', '2 times', '4 times', '5 times'], a: 2,
+      choicesJa: ['1回', '2回', '4回', '5回'],
       cue: '「No, no, no」のあとの数',
       line: 'Leslie: You tried to fire me *once*? / Ron: No, no, no, no. I tried to fire you *four times*.',
       said: '「1回？」と聞く彼女に、「いや、4回だ」と答える。',
       mean: 'four times ＝ 4回。once（1回）は彼女の思いこみで、ロンが直している。',
-      trap: 'ロンの答えは「フォー」で 4。once（ワンス）は彼女の質問の語。「fire times」は five でなく、four との言いまちがい。',
+      trap: 'to fire の to は two に聞こえやすい。once は彼女の質問の語。「fire times」は five でなく four の言いまちがい。',
       use: 'I’ve been there four times.（そこには4回行ったよ）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'nuts', ctx: true, seg: [53.4, 62.5],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'nuts', ctx: true, seg: [54.2, 62.15],
       stem: '“You drove me nuts.” What does Ron mean?',
       ja: '「You drove me nuts」ロンが言いたいことは？',
       choices: ['You annoyed me a lot', 'You made me love you', 'You drove me home'], a: 0,
@@ -137,7 +137,7 @@ export const ronFire: Clip = {
       trap: 'drove（運転した）から車の話を連想しやすい。drive me nuts で決まり文句。',
       use: 'This noise is driving me nuts.（この音、本当にイライラする）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'would', reveals: ['ignore'], seg: [57.5, 63],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'would', reveals: ['ignore'], seg: [57.55, 62.15],
       stem: 'Which word do you hear: “and ___ ignore me”?',
       ja: '「and ___ ignore me」どれが聞こえる？',
       choices: ['you', 'you’d', 'you’ll'], a: 1,
@@ -152,8 +152,8 @@ export const ronFire: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'ignore', reveals: ['would'], seg: [59, 64.3],
       stem: 'When Ron said no, what did Leslie do?',
       ja: 'ロンがだめと言ったとき、レスリーはどうした？',
-      choices: ['She did it anyway', 'She asked again and again', 'She gave up on it'], a: 0,
-      choicesJa: ['結局やってしまった', '何度も頼んだ', 'あきらめた'],
+      choices: ['She still did it', 'She asked again and again', 'She gave up on it'], a: 0,
+      choicesJa: ['それでもやった', '何度も頼んだ', 'あきらめた'],
       cue: '「I would say no」のあと',
       line: 'I would say no… and you’d *ignore me*. Or go over my head and *do it anyway*.',
       said: '「僕がだめと言うと、君は無視するか、上に話して結局やった」と言う。',
@@ -194,7 +194,7 @@ export const ronFire: Clip = {
       trap: 'Right を「そうだね」と取ると同意に聞こえる。直後の一文で、自慢が欠点に変わる。',
       use: 'Right. That’s exactly the problem.（そう、まさにそこが問題なんだ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'point', seg: [71, 77.5],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'point', seg: [71.0, 77.05],
       stem: '“The point is…” What does Ron do next?',
       ja: '「The point is…」ロンは次に何をする？',
       choices: ['Says what really matters', 'Adds one more of her faults', 'Says sorry for it'], a: 0,
@@ -206,7 +206,7 @@ export const ronFire: Clip = {
       trap: '悪口のあとなので、もう1つ悪口が来ると思いやすい。本題はここから。',
       use: 'The point is, we need more time.（要するに、もっと時間が要るんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'conviction', seg: [72.5, 80.4],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'conviction', seg: [72.75, 80.35],
       stem: 'Why did Ron keep Leslie in the end?',
       ja: 'ロンは結局、なぜレスリーを辞めさせなかった？',
       choices: ['She has strong beliefs', 'Her work was so great', 'She was hard to replace'], a: 0,
@@ -221,8 +221,8 @@ export const ronFire: Clip = {
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'bearings', seg: [82.5, 91],
       stem: '“I’ve lost my bearings.” What does Leslie mean?',
       ja: '「I’ve lost my bearings」レスリーが言いたいことは？',
-      choices: ['I feel lost and unsure', 'I feel much too scared', 'I got very angry'], a: 0,
-      choicesJa: ['迷って、自信がない', '怖くてたまらない', 'すごく怒った'],
+      choices: ['I feel unsure what to do', 'I feel much too scared', 'I got very angry'], a: 0,
+      choicesJa: ['どうしていいか分からない', '怖くてたまらない', 'すごく怒った'],
       cue: '「new job」のあとの文',
       line: 'I don’t know with this new job. I just feel like I’ve *lost my bearings*.',
       said: '「方向を見失った気がする」と言う。',
@@ -230,7 +230,7 @@ export const ronFire: Clip = {
       trap: 'lost my temper（かっとなる）と形が同じで迷いやすい。最後の語まで聞く。',
       use: 'I lost my bearings in the new city.（新しい街で方向がわからなくなった）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['stillyou', 'compass'], seg: [86.7, 116],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['stillyou', 'compass'], seg: [86.85, 116],
       stem: 'How does Ron help Leslie at the end?',
       ja: '最後に、ロンはどうやってレスリーを助ける？',
       choices: ['He says she’s still herself', 'He tells her how to vote', 'He says sorry to her'], a: 0,
@@ -242,7 +242,7 @@ export const ronFire: Clip = {
       trap: '最初の相談は投票なので、投票の仕方を教えると考えがち。',
       use: 'Trust yourself. You know what’s right.（自分を信じて。正しいことはわかってるはず）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'stillyou', ctx: true, seg: [86.7, 95.5],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'stillyou', ctx: true, seg: [86.85, 95.5],
       stem: 'Why does Ron say “but you’re still you”?',
       ja: 'ロンは、なぜ「but you’re still you」と言う？',
       choices: ['To cheer her up', 'To tell her to quit', 'To say goodbye'], a: 0,

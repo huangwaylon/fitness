@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 0, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 0, ctx 4, tx 4, qa 15
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 1, new 1
 // “Ross Is Dating Rachel's Sister | Friends” (the official Friends channel, Best of Season 6): Ross tells Rachel her
 // sister has asked him out again for Valentine's Day; Rachel says she can't handle it, Ross agrees to stop (after one
@@ -48,16 +48,16 @@ export const rossJill: Clip = {
       trap: '驚きの問い返しは喜びにも聞こえる。くり返された語と、そのあとの本音を合わせて読む。',
       use: 'Wait, you’re still seeing him?（え、まだ会ってるの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [7.8, 17],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [7.8, 16.6],
       stem: 'When is Ross’s next date with her?',
       ja: 'ロスの次のデートはいつ？',
-      choices: ['Tonight', 'Tomorrow night', 'This weekend'], a: 1,
-      choicesJa: ['今夜', '明日の夜', '今週末'],
+      choices: ['Tonight', 'Tomorrow night', 'Tomorrow morning', 'This weekend'], a: 1,
+      choicesJa: ['今夜', '明日の夜', '明日の朝', '今週末'],
       cue: '「Yeah, uh-huh」のあと',
       line: '*Tomorrow night*, Valentine’s Day, the most romantic day of the year.',
       said: '「明日の夜、バレンタインデー。一年でいちばんロマンチックな日」と言う。',
       mean: 'tomorrow night ＝ 明日の夜。バレンタインデーが明日。',
-      trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend、「トゥモロー」と長ければ tomorrow night。',
+      trap: '「トゥナイ」で始まれば tonight、「ウィーケン」なら this weekend。tomorrow のあとは morning でなく night（ナイ）。',
       use: 'Let’s meet tomorrow night.（明日の夜に会おう）' },
 
     { id: 'i2', skill: 'phrase', level: 'B2', point: 'hope', seg: [10.5, 16.5],
@@ -72,7 +72,7 @@ export const rossJill: Clip = {
       trap: '「分からない」から予定の話と考えがち。直前の romantic で、期待していると分かる。',
       use: 'Who knows? Maybe we’ll win.（分からないよ、勝つかも）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'gotit', seg: [16.7, 26.1],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'gotit', seg: [16.7, 25.75],
       stem: 'What does Rachel mean by “*I got it, I got it*”?',
       ja: 'レイチェルの「I got it, I got it」はどういう意味？',
       choices: ['I understand, so stop', 'I caught the ball', 'I have it here with me'], a: 0,
@@ -84,7 +84,7 @@ export const rossJill: Clip = {
       trap: 'got から「手に入れた」と考えがち。くり返すのは、話を止めたいときの「分かった」。',
       use: 'Okay, I got it. Thanks.（分かった、ありがとう）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['weird', 'wont'], seg: [19.4, 56],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['weird', 'wont'], seg: [19.5, 42.45],
       stem: 'What does Rachel want from Ross?',
       ja: 'レイチェルはロスに何をしてほしい？',
       choices: ['To stop seeing her sister', 'To skip only Valentine’s Day', 'To keep the dates secret'], a: 0,
@@ -96,11 +96,11 @@ export const rossJill: Clip = {
       trap: '明日の夜の話が多いので、その日だけと思いやすい。I won’t see her again で納得する。',
       use: 'Please don’t see her again.（もう彼女に会わないで）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'weird', reveals: ['freak'], seg: [23.3, 33.5],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'weird', reveals: ['freak'], seg: [23.4, 33.5],
       stem: 'How does Rachel feel about Ross and her sister?',
       ja: 'レイチェルはロスと妹のことをどう感じている？',
-      choices: ['It feels too weird', 'She worries for her sister', 'She thinks it is funny'], a: 0,
-      choicesJa: ['変すぎる', '妹が心配', '面白いと思う'],
+      choices: ['It feels very strange', 'She worries for her sister', 'She thinks it is funny'], a: 0,
+      choicesJa: ['すごく変な感じ', '妹が心配', '面白いと思う'],
       cue: '「It’s just」のあと',
       line: 'It’s just *too weird*… I imagine the two of you together, I just *freak out*.',
       said: '「変すぎるの。二人が一緒のところを想像すると、取り乱しちゃう」と言う。',
@@ -108,7 +108,7 @@ export const rossJill: Clip = {
       trap: 'my sister から、妹が心配と思いやすい。too weird（変すぎる）が気持ち。',
       use: 'That’s too weird for me.（それは私には変すぎる）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'freak', reveals: ['weird'], seg: [27, 33.5],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'freak', reveals: ['weird'], seg: [27.45, 33.5],
       stem: 'What does “*It freaks me out*” mean?',
       ja: '「It freaks me out」はどういう意味？',
       choices: ['It makes me very uneasy', 'It makes me very angry', 'It makes me feel very sad'], a: 0,
@@ -144,7 +144,7 @@ export const rossJill: Clip = {
       trap: 'I mean のあとは理由が来ると思いやすい。ここは「明日のあとで」という条件。',
       use: 'I’ll call you. I mean, after work.（電話するね。つまり、仕事のあとで）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', ctx: true, reveals: ['when', 'wont'], seg: [38.2, 45],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'after', ctx: true, reveals: ['when', 'wont'], seg: [38.2, 44.98],
       stem: 'What does Ross still want?',
       ja: 'ロスはまだ何をしたい？',
       choices: ['One last date', 'A night to think', 'To stay friends'], a: 0,
@@ -156,7 +156,7 @@ export const rossJill: Clip = {
       trap: 'I won’t see her again だけ聞くと、すぐやめると考えがち。I mean のあとに条件が来る。',
       use: 'I’ll start my diet after the party.（パーティーのあとでダイエットする）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B1', point: 'please', ctx: true, reveals: ['after', 'when'], seg: [42, 48.8],
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'please', ctx: true, reveals: ['after', 'when'], seg: [42.45, 48.8],
       stem: 'How does Rachel answer “after tomorrow night”?',
       ja: '「after tomorrow night」に、レイチェルはどう答える？',
       choices: ['She begs him not to go', 'She says that is fine', 'She laughs at his joke'], a: 0,
@@ -168,7 +168,7 @@ export const rossJill: Clip = {
       trap: '最初の Thank you で納得していたので、それでいいと考えがち。決め手は Please。',
       use: 'Please, I really need help.（お願い、本当に助けが要るの）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'tonight', seg: [48.8, 56.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'tonight', seg: [48.8, 57.5],
       stem: 'What will Ross do tonight?',
       ja: 'ロスは今夜何をする？',
       choices: ['Tell her it’s over', 'Take her out once more', 'Ask her to wait'], a: 0,
@@ -180,7 +180,7 @@ export const rossJill: Clip = {
       trap: 'tonight（今夜）が聞こえて、今夜デートすると思いやすい。tell her を聞く。',
       use: 'I can’t see you anymore.（もう会えない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic', 'offer'], seg: [56, 80],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'scene', reveals: ['callnow', 'topic', 'offer'], seg: [56, 77.5],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Rachel wants him to call now', 'Ross goes on his date', 'Rachel calls her sister herself'], a: 0,
@@ -192,11 +192,11 @@ export const rossJill: Clip = {
       trap: '最初に No と断るので、電話しないと考えがち。最後の do it now が本音。',
       use: 'Call her right now.（今すぐ彼女に電話して）' },
 
-    { id: 'p3', skill: 'detail', level: 'B1', point: 'offer', ctx: true, seg: [57.5, 65.5],
+    { id: 'p3', skill: 'detail', level: 'B1', point: 'offer', ctx: true, seg: [57.5, 67.55],
       stem: 'How does Rachel first answer Ross’s offer?',
       ja: 'ロスの申し出に、レイチェルは最初どう答える？',
-      choices: ['She says no to it', 'She says she will call', 'She says after the date'], a: 0,
-      choicesJa: ['いいと断る', '自分で電話すると言う', 'デートのあとでと言う'],
+      choices: ['She tells him not to', 'She says she will call', 'She says after the date'], a: 0,
+      choicesJa: ['しなくていいと言う', '自分で電話すると言う', 'デートのあとでと言う'],
       cue: '「call her right now?」への返事',
       line: 'Ross: *You want me to call her right now?* / Rachel: Oh, *no, no, no*… I mean, come on, *that’s crazy*.',
       said: '「今すぐ電話しようか？」に「ううん、いい…それはばかげてる」と答える。',
@@ -215,7 +215,7 @@ export const rossJill: Clip = {
       trap: '断りの言葉をそのまま本音と取りやすい。遠慮のあとに態度が変わったら、そちらが本音。',
       use: 'No, you don’t have to… okay, do it.（いいよいいよ…やっぱりお願い）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'topic', seg: [66.6, 71.6],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'topic', seg: [67.6, 71.4],
       stem: 'Why does Rachel ask, “What’s going on with you?”',
       ja: 'レイチェルが「あなたはどうなの？」と聞くのはなぜ？',
       choices: ['To change the subject', 'To ask his opinion', 'Because she is worried'], a: 0,
