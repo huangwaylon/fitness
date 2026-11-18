@@ -1,9 +1,10 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 3, new 0, ctx 4, tx 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 3, new 1
 // “Jim Threatens Dwight With A Full Disadulation - The Office US” (the official The Office channel, Best of Season 3):
 // Dwight hands Jim a demerit for lateness and lays out his chain of penalties; Jim turns the system back on him.
 // Segments from the captions, words from whisper (2026-11-16). Talk runs ≈ 6–66 s. Untested: 27.5 s ("Lay it on me" /
 // "Play it on me"); the made-up word at ≈ 58 s differs in both sources and is never spelled; Jim's "I love it
-// already" (sarcasm).
+// already" (sarcasm). R4: the 29–46 s penalty chain held 8 starts — i1, n3, s2 out, a2 restored as a context item.
 // EAR CHECK: 63.0 s r1 — the cut falls after Dwight's "What's that?", before "Oh, you don't want to know"
 import type { Clip } from '../types.ts';
 
@@ -13,7 +14,7 @@ export const disadulation: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'purpose', reveals: ['tardy'], seg: [5.5, 50.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'purpose', reveals: ['tardy'], seg: [5.5, 35.5],
       stem: 'What is Dwight doing in this scene?',
       ja: 'この場面でドワイトは何をしている？',
       choices: ['Explaining his penalty system', 'Teaching Jim to manage staff', 'Asking Jim to sign a form'], a: 0,
@@ -21,17 +22,17 @@ export const disadulation: Clip = {
       cue: 'ドワイトが数字を重ねていく所',
       said: '遅刻の罰点を渡し、罰点が重なると何が起きるかを順に説明する。',
       mean: 'demerit ＝ 罰点。罰のしくみを並べて、遅刻を重く受け止めさせたい。',
-      trap: 'written up（書かれた）から書類の話と思いやすい。どれも罰の説明の一部。',
+      trap: 'citation（警告書）と聞いて、書類にサインさせる話と考えがち。どれも罰の段階の説明。',
       use: 'Let me explain the rules.（ルールを説明させて）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'tardy', seg: [5.8, 12.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tardy', ctx: true, seg: [5.8, 12.9],
       stem: 'What is Jim’s demerit for?',
       ja: 'ジムの罰点の理由は？',
       choices: ['Coming in late', 'Leaving work early', 'Missing a meeting'], a: 0,
       choicesJa: ['遅刻した', '早退した', '会議を休んだ'],
-      cue: 'ジムのフルネームのすぐあと',
-      line: 'That is a demerit. Jim Halpert, *tardiness*.',
-      said: '「これは罰点だ。ジム・ハルパート、遅刻」と読み上げる。',
+      cue: '「What’s this?」への答え',
+      line: 'Jim: Oh, what’s this? / Dwight: That is a demerit. Jim Halpert, *tardiness*.',
+      said: '「あれ、これは何？」に、「それは罰点だ。ジム・ハルパート、遅刻」と読み上げる。',
       mean: 'tardiness ＝ 遅刻。late（遅れる）と同じ向きの、書類で使うかたい言葉。',
       trap: '時間の違反なので早退も浮かびやすい。tardy は「来るのが遅い」方。',
       use: 'Sorry I’m late.（遅れてすみません）' },
@@ -66,9 +67,9 @@ export const disadulation: Clip = {
       choicesJa: ['ジムもルールを守らなければならない', 'ジムはルールを少し破ってもいい', 'ここではジムがルールを決める'],
       cue: '「but」のあと',
       line: 'You are second in command, but that does not put you *above the law*.',
-      said: '「ナンバー2でも、法の上には立てない」と言う。',
+      said: '「ナンバー2でも、法の上に立てるわけじゃない」と言う。',
       mean: 'above the law ＝ ルールの外にいる。not がつくので「例外ではない」。',
-      trap: 'second in command（ナンバー2）から、ルールを決める側と思いやすい。but のあとが本題。',
+      trap: 'second in command（ナンバー2）から、ルールを決める側と考えがち。決め手は but のあと。',
       use: 'Nobody is above the rules.（ルールの例外はだれにもない）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'like', seg: [18, 25.5],
@@ -80,10 +81,10 @@ export const disadulation: Clip = {
       line: 'I also have lots of questions, *like*, what does a demerit mean?',
       said: '「質問もたくさんある。たとえば、罰点ってどういう意味？」と聞く。',
       mean: 'この like ＝ たとえば。例を出す前の合図で、会話でとても多い。',
-      trap: 'like から「好き」や「〜のような」と思いやすい。質問の前の like は「たとえば」。',
+      trap: 'like は「好き」や「〜のような」と勘違いしやすい。質問の前の like は「たとえば」。',
       use: 'I like fruit, like apples.（果物が好き。たとえばりんご）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'putway', seg: [21.3, 28.5],
+    { id: 'pr1', skill: 'pragma', level: 'B2', point: 'putway', seg: [21.5, 28.5],
       stem: 'What does “*Let’s put it this way*” mean?',
       ja: '「Let’s put it this way」はどういう意味？',
       choices: ['I’ll explain it simply', 'Let’s put it down here', 'Let’s do it my way'], a: 0,
@@ -92,7 +93,7 @@ export const disadulation: Clip = {
       line: '*Let’s put it this way.* You do not want to receive…',
       said: '「こう言っておこう。それを3つはもらいたくないはずだ」と答える。',
       mean: 'put it ＝ 言い表す。「こう言えば分かるかな」と、言い方を変える前置き。',
-      trap: 'put から「置く」と思いやすい。ここの put は「言う」。',
+      trap: 'put は「置く」を連想しやすいが、ここの put は「言う」。',
       use: 'Let’s put it this way: it’s not cheap.（まあ言ってみれば、安くはないね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'three', seg: [23.3, 32.3],
@@ -107,8 +108,9 @@ export const disadulation: Clip = {
       trap: 'two は「トゥー」、four は「フォー」、five は「ファイブ」。demerits の前の「スリー」が答え。',
       use: 'Three strikes and you’re out.（3回でアウトだよ）' },
 
+    // retired (R4): a broad C1 reading that gives away four number items
     { id: 'i1', skill: 'infer', level: 'C1', point: 'chain', reveals: ['three', 'five', 'two', 'verbal'],
-      seg: [29.4, 41.1],
+      seg: [29.4, 41.1], retired: true,
       stem: 'How serious is Jim’s one demerit, really?',
       ja: 'ジムの罰点1つは、本当はどのくらい重い？',
       choices: ['Far from real trouble', 'Almost a warning', 'Nearly a citation'], a: 0,
@@ -119,18 +121,20 @@ export const disadulation: Clip = {
       trap: 'warning や citation が耳に残り、重い罰に思いやすい。段階の多さに注目。',
       use: 'It’s a long way from that.（そこまではまだ遠いよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'serious', seg: [29.4, 35.6], retired: true,
-      stem: 'How does Dwight take Jim’s “Now that sounds…” remark?',
-      choices: ['At face value, and he keeps going happily', 'As a joke, and he plays along with it',
-                'As a complaint, and he scolds Jim for it'], a: 0,
-      cue: 'Jim の一言への返事と、そのあと続ける勢い。',
-      line: 'Now that sounds serious. — Oh, *it is serious*.',
-      said: 'Jim が「それは重大そうだ」と言い、Dwight は「ああ、重大だとも」と続ける。',
-      mean: 'Jim のからかいを Dwight はそのまま受け取り、うれしそうに先へ進む。',
-      trap: 'Oh で始まると冗談に乗る返事にも見える。返事のあと話を広げるかを見る。',
-      use: 'Oh, it’s serious, believe me.（いや本当に深刻なんだって）' },
+    // restored in R4 as a context item (Jim teases, Dwight takes it straight)
+    { id: 'a2', skill: 'pragma', level: 'B1', point: 'serious', ctx: true, seg: [29.5, 35.55],
+      stem: 'What does Dwight answer to “Now that sounds serious”?',
+      ja: '「Now that sounds serious」に、ドワイトは何と答える？',
+      choices: ['Yes, it really is', 'No, it’s just a joke', 'It’s not that bad'], a: 0,
+      choicesJa: ['そう、本当にそうだ', 'いや、ただの冗談だ', 'そこまで悪くない'],
+      cue: '「Oh」で始まる返事',
+      line: 'Jim: Now that sounds serious. / Dwight: Oh, *it is serious*.',
+      said: '「それは深刻そうだね」に、「ああ、深刻だとも」と返して、さらに説明を続ける。',
+      mean: 'Now that sounds 〜 ＝「それは〜そうだね」。ジムはからかっているが、ドワイトは本気で受け取る。',
+      trap: 'Oh で始まるので、冗談に乗る返事と考えがち。it is serious（深刻だ）と言い切っている。',
+      use: 'That sounds serious. Are you okay?（それは大変そう。大丈夫？）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'five', seg: [29.7, 38.7],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'five', seg: [31.9, 38.7],
       stem: 'How many citations lead to a violation?',
       ja: '警告書が何枚で違反になる？',
       choices: ['Three', 'Four', 'Five'], a: 2, keep: true,
@@ -142,7 +146,7 @@ export const disadulation: Clip = {
       trap: 'three は「スリー」、four は「フォー」。citations の前の「ファイブ」が答え。',
       use: 'You’re looking at a two-hour wait.（2時間待ちになりますよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'verbal', seg: [32.6, 41.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'verbal', seg: [35.4, 40.9],
       stem: 'What do four violations get you?',
       ja: '違反4つで何をもらう？',
       choices: ['A verbal warning', 'A written warning', 'A citation'], a: 0,
@@ -154,7 +158,8 @@ export const disadulation: Clip = {
       trap: 'warning が2回出るので、前の言葉を聞き落としやすい。warning の前を聞く。',
       use: 'I got a verbal warning.（口頭で注意された）' },
 
-    { id: 'n3', skill: 'number', level: 'B2', point: 'two', reveals: ['hurt', 'thatll'], seg: [35.4, 46.4],
+    // retired (R4): a third number item in a crowded 10 s; f2 keeps the line
+    { id: 'n3', skill: 'number', level: 'B2', point: 'two', reveals: ['hurt', 'thatll'], seg: [35.4, 46.4], retired: true,
       stem: 'How many written warnings lead to a review?',
       ja: '書面の注意がいくつで審査になる？',
       choices: ['One', 'Two', 'Four'], a: 1, keep: true,
@@ -166,7 +171,7 @@ export const disadulation: Clip = {
       trap: 'one は「ワン」。前の four も残りやすい。of those の前の「トゥー」が答え。',
       use: 'Two of those, please.（それを2つください）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'keepup', seg: [36.3, 44.3],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'keepup', seg: [37.4, 44.3],
       stem: 'Type: “___, and you’re looking at a written warning.” (3 words)', answer: 'keep it up',
       ja: '「___, and you’re looking at a written warning.」の空所を書こう（3語）',
       cue: '「verbal warning」のすぐあと',
@@ -176,19 +181,8 @@ export const disadulation: Clip = {
       trap: 'keep it up がつながり「キーピラップ」と一語のように聞こえる。',
       use: 'Great job, keep it up!（いいね、その調子！）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hurt', reveals: ['two', 'thatll'], seg: [38.2, 43.9],
-      stem: 'What does “*a world of hurt*” mean?',
-      ja: '「a world of hurt」はどういう意味？',
-      choices: ['Very big trouble', 'A bad injury', 'Feeling very sorry'], a: 0,
-      choicesJa: ['とても大きなトラブル', 'ひどいけが', 'とても申し訳ない気持ち'],
-      cue: '「land you in」のあと',
-      line: 'Two of those, that’ll land you in *a world of hurt*.',
-      said: '「それが2つで、ひどい目にあうぞ」と言う。',
-      mean: 'a world of hurt ＝ とんでもなくひどい目。大げさな脅し文句。land you in ＝ 〜に落とす。',
-      trap: 'hurt から、けがや心の痛みと思いやすい。あとに「審査」と中身が続く。',
-      use: 'You’ll be in big trouble.（大変なことになるよ）' },
-
-    { id: 's2', skill: 'sound', level: 'B2', point: 'thatll', reveals: ['two'], seg: [38.2, 43.9],
+    // retired (R4): the same line and seg as f2
+    { id: 's2', skill: 'sound', level: 'B2', point: 'thatll', reveals: ['two'], seg: [38.2, 43.9], retired: true,
       stem: 'Fill the gap: “Two of those, ___ you in…”',
       ja: '「Two of those, ___ you in…」の空所は？',
       choices: ['that’ll land', 'that’d land', 'that land'], a: 0,
@@ -200,19 +194,31 @@ export const disadulation: Clip = {
       trap: 'that’d なら「ド」、that land なら t がはっきり。「ザロー」なら that’ll。',
       use: 'That’ll be twelve dollars.（12ドルになります）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'superior', seg: [43.8, 53.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hurt', reveals: ['two', 'thatll'], seg: [41.0, 46.3],
+      stem: 'What does “*a world of hurt*” mean?',
+      ja: '「a world of hurt」はどういう意味？',
+      choices: ['Very big trouble', 'A bad injury', 'Feeling very sorry'], a: 0,
+      choicesJa: ['とても大きなトラブル', 'ひどいけが', 'とても申し訳ない気持ち'],
+      cue: '「land you in」のあと',
+      line: 'Two of those, that’ll land you in *a world of hurt*.',
+      said: '「それが2つで、ひどい目にあうぞ」と言う。',
+      mean: 'a world of hurt ＝ とんでもなくひどい目。大げさな脅し文句。land you in ＝ 〜に落とす。',
+      trap: 'hurt から、けがや心の痛みと思いやすい。あとに「審査」と中身が続く。',
+      use: 'You’ll be in big trouble.（大変なことになるよ）' },
+
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'superior', ctx: true, seg: [46.4, 53.9],
       stem: 'Who will get Dwight’s report?',
       ja: 'ドワイトの報告書を受け取るのはだれ？',
       choices: ['Jim himself', 'Their boss', 'The office staff'], a: 0,
       choicesJa: ['ジム本人', '二人の上司', '会社のみんな'],
       cue: '「superior」のあと',
-      line: 'placed on the desk of my immediate superior. — *Which would be me.* — That is correct.',
-      said: '報告書は直属の上司に届くと聞き、ジムが「それって僕だね」と言う。',
-      mean: 'immediate superior ＝ 直属の上司。それはジムなので、罰はジムに届く。',
-      trap: 'superior から、もっと上のボスを思いやすい。',
+      line: 'Dwight: …placed on the desk of my immediate superior. / Jim: *Which would be me.* / Dwight: That is correct.',
+      said: '報告書は直属の上司の机に置くと聞き、ジムが「それは僕だね」と言い、ドワイトも認める。',
+      mean: 'immediate superior ＝ 直属の上司。それはジムなので、罰の報告はジム本人に届く。',
+      trap: 'superior（上司）から、もっと上のボスと考えがち。決め手はジムの Which would be me。',
       use: 'Which would be me, right?（それって僕のことだよね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'flip', reveals: ['superior', 'dontknow'], seg: [43.9, 66],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'flip', reveals: ['superior', 'dontknow'], seg: [47.9, 66],
       stem: 'How does the scene end?',
       ja: 'この場面はどう終わる？',
       choices: ['Jim turns the rules on Dwight', 'Dwight gives Jim a citation', 'Jim says sorry for being late'], a: 0,
@@ -223,7 +229,7 @@ export const disadulation: Clip = {
       trap: 'citation が何度も出るので、ジムが罰を受けると思いやすい。最後に命令するのはジム。',
       use: 'Now it’s my turn.（今度はこっちの番だ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'copy', seg: [50.7, 60],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'copy', seg: [50.9, 60],
       stem: 'When does Jim want the copy?',
       ja: 'ジムはコピーをいつまでにほしい？',
       choices: ['By the end of the day', 'By tomorrow morning', 'By next week'], a: 0,
@@ -232,16 +238,16 @@ export const disadulation: Clip = {
       line: 'I want a copy on my desk *by the end of the day*.',
       said: '「今日中に、コピーを僕の机に置いて」と言う。',
       mean: 'by the end of the day ＝ 今日中に。仕事の締め切りでよく使う。',
-      trap: 'day が最後なので、日にちの話と思いやすい。the end of the day ＝ 今日の終わり。',
+      trap: 'end（終わり）から、もっと先の締め切りを連想しやすい。the end of the day ＝ 今日の終わり。',
       use: 'Send it by the end of the day.（今日中に送って）' },
 
-    { id: 'r1', skill: 'predict', level: 'B2', point: 'dontknow', seg: [53.2, 63], then: [63, 67.2],
+    { id: 'r1', skill: 'predict', level: 'B2', point: 'dontknow', ctx: true, seg: [53.2, 63], then: [63, 67.2],
       stem: 'Dwight asks, “What’s that?” What does Jim answer?',
       ja: 'ドワイトが「それ何？」と聞く。ジムの答えは？',
       choices: ['You don’t want to know', 'It means you are fired', 'I made that word up'], a: 0,
       choicesJa: ['知らない方がいいよ', 'クビという意味だ', 'その言葉は作ったんだ'],
       cue: '前半でドワイトがした答え方',
-      line: 'What’s that? — Oh, *you don’t want to know*.',
+      line: 'Dwight: What’s that? / Jim: Oh, *you don’t want to know*.',
       said: '「それ何？」と聞かれ、ジムは「知らない方がいいよ」とだけ答える。',
       mean: 'you don’t want to know ＝ 知らない方がいい。中身を言わずに、怖さを残す。',
       trap: '質問には説明が来ると思いやすい。前半のドワイトと同じく、わざと答えない。',
