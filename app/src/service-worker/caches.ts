@@ -120,14 +120,14 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
 export const FOOD_CACHE = 'island-food-v2';
 export const isFoodData = (path: string): boolean => /\/food\/(jan\/)?[\w-]+\.json$/.test(path);
 /** English Study's banks (`english/c/<id>.<v>.json`, written by the build: lib/english/data.ts, catalog.ts bankPath):
- *  ~6.5 KB each, fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
+ *  ~12 KB on the wire, ~35 KB as stored (the Cache API keeps the decoded body), fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
  *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). フレーズ's deck files
  *  (`english/p/<n>.<v>.json`, catalog.ts shardPath, ~28 KB gzipped each) the same way. */
 export const ENGLISH_CACHE = 'island-english-v1';
 const ENGLISH_BANK = /\/english\/c\/([\w-]+)\.[0-9a-z]+\.json$/;
 const ENGLISH_SHARD = /\/english\/p\/(\d+)\.[0-9a-z]+\.json$/;
 export const isEnglishData = (path: string): boolean => ENGLISH_BANK.test(path) || ENGLISH_SHARD.test(path);
-/** The banks kept (~2.6 MB): past it, the first stored go (the deck's files aren't counted: one each). */
+/** The banks kept (the library's 400: ~14 MB stored): past it, the first stored go (the deck's files aren't counted: one each). */
 const ENGLISH_KEEP = 400;
 /** Which files go (`keys` in the order stored): a clip's (or a deck file's) older versions once a newer one is stored,
  *  then the first banks stored past `keep`. */
