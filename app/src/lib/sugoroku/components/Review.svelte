@@ -18,7 +18,7 @@
   let found = $state<number[]>([]);
   function pickJa(i: number) {
     if (held === null) return;
-    // (the pairs' Japanese are all different: SugorokuSheet's pairs)
+    // (the pairs' Japanese are all different: results.ts pairsOf)
     if (held === i) found = [...found, i];
     held = null;
   }
@@ -30,10 +30,10 @@
     <p class="done" data-sg-review-done>{s('reviewDone')}</p>
   {:else}
     <p class="ask">{s('reviewAsk')}</p>
-    <div class="cols">
+    <div class="cols" class:waiting={held === null}>
       <div class="col" lang="en">
         {#each left as x (x.i)}
-          <button type="button" class="pair" class:held={held === x.i} class:gone={found.includes(x.i)} disabled={found.includes(x.i)}
+          <button type="button" class="pair" class:held={held === x.i} aria-pressed={held === x.i} class:gone={found.includes(x.i)} disabled={found.includes(x.i)}
             data-sfx="tick" data-sg-review-en={x.i} onclick={() => (held = x.i)}>{x.t}</button>
         {/each}
       </div>
@@ -54,10 +54,12 @@
   .done { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .col { display: flex; flex-direction: column; gap: 6px; }
-  .pair { min-height: 44px; padding: 6px 8px; margin: 0; appearance: none; border: 0; border-radius: 10px; cursor: pointer;
+  .pair { min-height: 44px; padding: 6px 8px; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
     background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-ink); font: 600 var(--fs-s)/1.25 var(--font-body);
     transition: opacity 200ms; text-wrap: pretty; }
   .pair.held { background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); }
   .pair.gone { opacity: .2; }
   .pair:disabled:not(.gone) { cursor: default; }
+  /* the Japanese wait for an English picked: shown soft till then */
+  .waiting .col:last-child .pair:not(.gone) { opacity: .55; box-shadow: none; }
 </style>

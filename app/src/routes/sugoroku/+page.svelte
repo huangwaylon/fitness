@@ -8,6 +8,7 @@
   import SugorokuGame from '#lib/sugoroku/components/SugorokuGame.svelte';
   import { english } from '#lib/english/open.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
+  import { s } from '#lib/sugoroku/i18n.ts';
 
   const m = $derived(page.url.searchParams.get('m') === 'online' ? 'online' : 'local');
   const leave = () => {
@@ -19,9 +20,10 @@
 
 <!-- (.kit: the unified kit's scope, as English Study's sheet gives the tab) -->
 <div class="screen kit">
-  {#if week.view}<SugorokuGame active screen={m} onclose={leave} />{/if}
+  {#if week.view}<SugorokuGame active screen={m} onclose={leave} />{:else}<p class="wait" data-sg-wait>{s('loading')}</p>{/if}
 </div>
 
 <style>
+  .wait { margin: auto; font-size: var(--fs-s); color: var(--text-soft); }
   .screen { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
 </style>
