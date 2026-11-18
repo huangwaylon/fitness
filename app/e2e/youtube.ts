@@ -1,7 +1,8 @@
 // YouTube's embed, stood in for (docs/english.md "The player"): CI can't reach YouTube, so every request to
 // youtube-nocookie.com (and i.ytimg.com's thumbnails) is answered here with a page that speaks the embed's postMessage protocol. It answers
 // `listening` with onReady and then an infoDelivery every 100 ms ({currentTime, playerState}), plays at `rate`× real
-// time from where it was sought, ends at `dur`, and keeps every command it got (with the time then) in window.__yt.
+// time from where it was sought, ends at `dur`, and keeps every command it got (with the time then) in window.__yt
+// (cueVideoById: that video, cued at its start: its videoId).
 // `error`: an onError with that code instead (150: not embeddable). `silent`: never answers. `noPlay`: a play never starts. `rates`: the speeds offered.
 // `tracks`: its caption tracks (language codes), reported (apiInfoDelivery: tracklist, track, translationLanguages) once
 // the captions module is loaded and at each track set; none: captions never reported (the shape is undocumented).
@@ -48,6 +49,7 @@ addEventListener('message', (e) => {
     if (m.func === 'seekTo') { t = m.args[0]; at = performance.now(); }
     else if (m.func === 'playVideo') { if (!NO_PLAY) set(1); }
     else if (m.func === 'pauseVideo') set(2);
+    else if (m.func === 'cueVideoById') { yt.videoId = m.args[0]; t = m.args[1] ?? 0; at = performance.now(); set(5); }
     else if (m.func === 'setPlaybackRate') { t = now(); at = performance.now(); speed = m.args[0]; }
     else if (m.func === 'loadModule') cc();
     else if (m.func === 'setOption' && m.args[1] === 'track') { track = m.args[2]; cc(); }

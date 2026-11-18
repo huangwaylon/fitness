@@ -67,23 +67,21 @@
 
 {#if c}
   <div class="pr">
-    {#key c.k}
-      <PhraseCard tag="pr" k={c.k} en={c.en} ja={c.ja} line={c.q.line} source={c.title} video={c.video} title={c.title} seg={c.q.seg}
-        onshow={() => count('act:english.phrase.show')}>
-        {#snippet head()}
-          <div class="head">
-            <p class="kicker">{s('prTitle')} <span class="n">{i + 1}/{cards.length}</span></p>
-            <button type="button" class="quiet" data-sfx="tick" data-en-pr-skip onclick={skip}>{s('prSkip')}</button>
-          </div>
-        {/snippet}
-        {#snippet actions()}
-          <div class="pair">
-            <button type="button" class="btn paper" data-sfx="tick" data-en-pr-again onclick={() => next(rated(mine, c.k, today, false), 'again')}>{s('prAgain')}</button>
-            <button type="button" class="btn" data-sfx="tick" data-en-pr-kept onclick={() => next(rated(mine, c.k, today, true), 'kept')}>{s('prKept')}</button>
-          </div>
-        {/snippet}
-      </PhraseCard>
-    {/key}
+    <PhraseCard tag="pr" k={c.k} en={c.en} ja={c.ja} line={c.q.line} source={c.title} video={c.video} title={c.title} seg={c.q.seg}
+      onshow={() => count('act:english.phrase.show')}>
+      {#snippet head()}
+        <div class="head">
+          <p class="kicker">{s('prTitle')} <span class="n">{i + 1}/{cards.length}</span></p>
+          <button type="button" class="quiet" data-sfx="tick" data-en-pr-skip onclick={skip}>{s('prSkip')}</button>
+        </div>
+      {/snippet}
+      {#snippet actions()}
+        <div class="pair">
+          <button type="button" class="btn paper" data-sfx="tick" data-en-pr-again onclick={() => next(rated(mine, c.k, today, false), 'again')}>{s('prAgain')}</button>
+          <button type="button" class="btn" data-sfx="tick" data-en-pr-kept onclick={() => next(rated(mine, c.k, today, true), 'kept')}>{s('prKept')}</button>
+        </div>
+      {/snippet}
+    </PhraseCard>
   </div>
 {/if}
 

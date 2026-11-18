@@ -182,8 +182,8 @@ a clip already in this set, of today's clip and of the next 2 open ones in the p
 
 - Front: the clip's thumbnail beside 1/5 and show · title, the phrase (the key words it shares with the line
   underlined, punctuation outside), **意味を見る**. Back: its Japanese, 動画では + the line (key words underlined) and
-  its 意味 (small; it explains the line, so it sits under it), the clip's player (mounted at 意味を見る, so ▶ meets a ready
-  frame within the tap; one frame at most, none on the front, gone on 次へ), **▶ この場面を聞く** (its segment, paused at
+  its 意味 (small; it explains the line, so it sits under it), the clip's player (mounted at the first 意味を見る, so ▶ meets
+  a ready frame within the tap; then kept for the set, hidden on the fronts, the next clip cued into it: one embed a set), **▶ この場面を聞く** (its segment, paused at
   its end), 声に出して言ってみよう, then ☆ 復習に入れる (paper; ★ 復習に入れました, tapped again: out) and 次へ ›.
 - After the 5th: 「5枚見ました · これまで Nフレーズ」 (cards revealed), もう5枚 / ホームへ. Never a score, %, red or ×.
 - A shard that doesn't load: フレーズを読み込めませんでした (offline: its note) with もう一度. Counted:
@@ -192,7 +192,8 @@ a clip already in this set, of today's clip and of the next 2 open ones in the p
 ## The player
 
 The player drives the youtube-nocookie embed over postMessage (`enablejsapi=1`, `origin=`): the
-`listening` handshake, `infoDelivery` for the time and the state, `command` for seekTo / playVideo / pauseVideo. No
+`listening` handshake, `infoDelivery` for the time and the state, `command` for seekTo / playVideo / pauseVideo
+(cueVideoById: another clip into the same frame, フレーズ's cards). No
 `iframe_api` script (it would need a third-party `script-src`). A segment pauses 0.4 s past its end (the time
 extrapolated between deliveries, by 1 s at most for the stop: a stall not yet reported never pauses it early). CSP `frame-src https://www.youtube-nocookie.com`; the iframe's own
 `referrerpolicy="strict-origin-when-cross-origin"` (the site sends `no-referrer`, which the embed refuses: error 153);

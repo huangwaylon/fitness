@@ -3,8 +3,9 @@
   // driven by player.svelte.ts. Its own referrer policy (the site sends no-referrer, which the embed refuses), inline
   // on iOS. Offline: a note in its place, the embed once back online. Unavailable (an error, no answer): a note, a link
   // to the video on YouTube and もう一度読み込む. A play that doesn't start: the tap-the-video hint under it. Edge to edge
-  // (393 pt wide on an iPhone 15, ~1,179 device px: YouTube picks its quality by the frame's size).
-  import { onDestroy } from 'svelte';
+  // (393 pt wide on an iPhone 15, ~1,179 device px: YouTube picks its quality by the frame's size). Another `video`:
+  // cued into the same frame (フレーズ's cards), loaded afresh only while the frame hasn't answered or is unavailable.
+  import { onDestroy, untrack } from 'svelte';
   import { YtPlayer, embedUrl } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
   import { ccSizeOf } from '../prefs.ts';
@@ -13,7 +14,20 @@
 
   let online = $state(typeof navigator === 'undefined' || navigator.onLine !== false);
   let frame: HTMLIFrameElement | undefined = $state();
-  const src = $derived(embedUrl(video, location.origin));
+  /** The video the frame's src loads (follows `video` only until there's a player: then it's cued). */
+  let base = $state(untrack(() => video));
+  const src = $derived(embedUrl(base, location.origin));
+  let cued = untrack(() => video);
+  $effect(() => {
+    const v = video;
+    untrack(() => {
+      if (v === cued) return;
+      cued = v;
+      if (!player) base = v;
+      else if (player.state === 'loading' || player.state === 'error') player.reload(embedUrl(v, location.origin));
+      else player.cue(v);
+    });
+  });
 
   $effect(() => {
     const on = () => (online = true), off = () => (online = false);
@@ -42,7 +56,7 @@
       <div class="note" data-yt-unavailable={player?.error ?? 'none'}>
         <p>{s('unavailable')}</p>
         <a class="btn small paper" href="https://www.youtube.com/watch?v={video}" target="_blank" rel="noopener noreferrer" data-sfx="tick">{s('openYoutube')}</a>
-        <button type="button" class="btn small paper" data-sfx="tick" data-yt-retry onclick={() => player?.reload(src)}>{s('retry')}</button>
+        <button type="button" class="btn small paper" data-sfx="tick" data-yt-retry onclick={() => player?.reload(embedUrl(video, location.origin))}>{s('retry')}</button>
       </div>
     {/if}
   </div>

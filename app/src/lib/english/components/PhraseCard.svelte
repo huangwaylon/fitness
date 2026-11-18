@@ -1,10 +1,11 @@
 <script lang="ts">
   // A phrase's flashcard, フレーズ's deck (Phrases) and home's フレーズの復習 (PhraseReview) alike (docs/english.md
   // "フレーズ", "Phrase review"). Front: `head`, the phrase (the words it shares with its line underlined), 意味を見る.
-  // Back: its Japanese, 動画では + the clip's line and its 意味, the clip's player (mounted at 意味を見る, so ▶ この場面を聞く
-  // meets a ready frame within the tap: iOS; one frame at most, none on the front), then `actions`. One card a mount:
-  // the parent keys it by its phrase, so the next comes face down, its player new. Never a score.
-  import type { Snippet } from 'svelte';
+  // Back: its Japanese, 動画では + the clip's line and its 意味, the clip's player (mounted at the first 意味を見る, so
+  // ▶ この場面を聞く meets a ready frame within the tap: iOS), then `actions`. A new `k` is the next card, face down; the
+  // player stays mounted for the cards after (hidden on their fronts, paused), the next clip cued into the same frame:
+  // one embed a deck, not one a card. Never a score.
+  import { untrack, type Snippet } from 'svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import Player from './Player.svelte';
   import KeyedText from './KeyedText.svelte';
@@ -33,8 +34,16 @@
     actions: Snippet;
   }
   let { tag, k, en, ja, line, mean, source, video, title, seg, onshow, onhear, head, actions }: Props = $props();
-  let open = $state(false);
+  /** The card turned (its key: the next card comes face down). */
+  let shown = $state<string | null>(null);
+  const open = $derived(shown === k);
+  /** The player's mounted (at the first 意味を見る), kept for the cards after. */
+  let booted = $state(false);
   let player = $state<YtPlayer>();
+  // a card face down: its player quiet
+  $effect(() => {
+    if (!open) untrack(() => (player?.state === 'playing' || player?.state === 'buffering') && player.pause());
+  });
   const d = (part: string) => ({ [`data-en-${tag}-${part}`]: '' });
   function hear(): void {
     if (!player) return;
@@ -47,7 +56,7 @@
   {@render head()}
   <p class="en" lang="en" {...d('en')}><KeyedText parts={en} /></p>
   {#if !open}
-    <button type="button" class="btn sky" data-sfx="tick" {...d('show')} onclick={() => ((open = true), onshow())}>{s('prShow')}</button>
+    <button type="button" class="btn sky" data-sfx="tick" {...d('show')} onclick={() => ((shown = k), (booted = true), onshow())}>{s('prShow')}</button>
   {:else}
     {#if ja}<p class="ja" {...d('ja')}>{ja}</p>{/if}
     {#if line}
@@ -57,8 +66,12 @@
         {#if mean}<p class="mean" {...d('mean')}>{mean}</p>{/if}
       </div>
     {/if}
+  {/if}
+  {#if video && booted}
+    <div class="video" hidden={!open}><Player {video} {title} bind:player /></div>
+  {/if}
+  {#if open}
     {#if video}
-      <div class="video"><Player {video} {title} bind:player /></div>
       <button type="button" class="btn small sky hear" data-sfx="tick" {...d('hear')} disabled={!player || player.state === 'loading'} onclick={hear}>
         <Icon name="play" size={18} />{s('prHear')}
       </button>

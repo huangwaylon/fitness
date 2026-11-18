@@ -973,7 +973,7 @@ async function shownCard(p: Page) {
   return { k, e: e! };
 }
 
-test('フレーズ: the tab bar on ホーム and フレーズ only; a card face down, 意味を見る → its Japanese, the clip’s line and the player (one frame at most), ▶ plays its segment and pauses; 次へ the next, no frame', async ({ page }) => {
+test('フレーズ: the tab bar on ホーム and フレーズ only; a card face down, 意味を見る → its Japanese, the clip’s line and the player (one frame at most), ▶ plays its segment and pauses; 次へ the next face down, the frame kept hidden', async ({ page }) => {
   await fakeYoutube(page, { rate: 8, dur: 3000 });
   await open(page);
   await expect(tabOf(page, 'home')).toHaveAttribute('aria-selected', 'true');
@@ -1016,12 +1016,62 @@ test('フレーズ: the tab bar on ホーム and フレーズ only; a card face 
   expect(cmds[0][1]).toEqual([e[2], true]);
   expect(cmds.find((c) => c[0] === 'pauseVideo')![2]).toBeGreaterThanOrEqual(e[3]);
   expect(await card.evaluate((el) => /不正解|間違|×|%|ざんねん/.test(el.textContent ?? ''))).toBe(false);
-  // 次へ: the next card, face down, the frame gone
+  // 次へ: the next card, face down, the frame kept (hidden: the next clip cued into it)
   await card.locator('[data-en-deck-next]').click();
   await expect(card).not.toHaveAttribute('data-en-deck', k);
   await expect(card).toHaveAttribute('data-face', 'front');
   await expect(card).toContainText('2/5');
-  await expect(page.locator('[data-yt-frame]')).toHaveCount(0);
+  await expect(page.locator('[data-yt-frame]')).toHaveCount(1);
+  await expect(page.locator('[data-yt-frame]')).toBeHidden();
+});
+
+/** Live window 'message' listeners and the player's 100 / 250 ms intervals (YtPlayer's: one each a player). */
+const probe = () => {
+  const w = window as unknown as { __msg: number; __iv: Set<number> };
+  w.__msg = 0;
+  w.__iv = new Set();
+  const add = window.addEventListener.bind(window), rem = window.removeEventListener.bind(window);
+  window.addEventListener = ((t: string, f: EventListener, o?: AddEventListenerOptions) => (t === 'message' && w.__msg++, add(t, f, o))) as typeof window.addEventListener;
+  window.removeEventListener = ((t: string, f: EventListener, o?: EventListenerOptions) => (t === 'message' && w.__msg--, rem(t, f, o))) as typeof window.removeEventListener;
+  const si = window.setInterval.bind(window), ci = window.clearInterval.bind(window);
+  window.setInterval = ((f: TimerHandler, ms?: number, ...a: unknown[]) => { const id = si(f, ms, ...a); if (ms === 100 || ms === 250) w.__iv.add(id); return id; }) as typeof window.setInterval;
+  window.clearInterval = ((id?: number) => (id !== undefined && w.__iv.delete(id), ci(id))) as typeof window.clearInterval;
+};
+const live = (p: Page) => p.evaluate(() => { const w = window as unknown as { __msg: number; __iv: Set<number> }; return [w.__msg, w.__iv.size]; });
+const ytVideo = (p: Page) => p.frames().find((f) => f.url().startsWith('https://www.youtube-nocookie.com/'))?.evaluate(() => (window as unknown as { __yt: { videoId: string } }).__yt.videoId);
+
+test('フレーズ: one embed a set — 5 cards, one frame throughout, each next clip cued into it, ▶ its segment on a later card; leaving the tab leaves no listener or timer', async ({ page }) => {
+  await fakeYoutube(page, { rate: 8, dur: 3000 });
+  await page.addInitScript(probe);
+  const embeds: string[] = [];
+  page.on('request', (r) => void (r.url().startsWith('https://www.youtube-nocookie.com/embed/') && embeds.push(r.url())));
+  await open(page);
+  const base = await live(page);
+  await tabOf(page, 'phrases').tap();
+  const card = deckCard(page), frame = page.locator('[data-yt-frame]');
+  for (let i = 1; i <= 5; i++) {
+    await expect(card).toContainText(`${i}/5`);
+    await expect(frame).toHaveCount(i === 1 ? 0 : 1);
+    const { e } = await shownCard(page);
+    await card.locator('[data-en-deck-show]').tap();
+    await expect(frame).toHaveCount(1);
+    await expect(frame).toBeVisible();
+    // the frame holds this card's clip (the first loaded, the rest cued), ready for ▶
+    await expect.poll(() => ytVideo(page)).toBe(PLAN.find((c) => c.id === e[0])!.video);
+    await expect(card.locator('[data-en-deck-hear]')).toBeEnabled();
+    if (i === 3) {
+      const n0 = (await ytCommands(page)).length;
+      await card.locator('[data-en-deck-hear]').tap();
+      await expect.poll(async () => (await from(page, n0, 'seekTo')).map((c) => c[0])).toEqual(['seekTo', 'playVideo', 'pauseVideo']);
+      expect((await from(page, n0, 'seekTo'))[0][1]).toEqual([e[2], true]);
+    }
+    await card.locator('[data-en-deck-next]').tap();
+  }
+  await expect(sheet(page).locator('[data-en-deck-end]')).toBeVisible();
+  expect(embeds).toHaveLength(1);
+  await expect(frame).toHaveCount(0);
+  await tabOf(page, 'home').tap();
+  await expect.poll(() => live(page)).toEqual(base);
 });
 
 test('フレーズ: the same card face down after a lesson; ☆ 復習に入れる saves it apart from its schedule, home’s review has a saved one the next day; 5 a set, never two of one clip, then 5枚見ました with もう5枚 / ホームへ', async ({ page }) => {

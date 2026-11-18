@@ -122,24 +122,22 @@
         </div>
       </article>
     {:else if view}
-      {#key view.k}
-        <PhraseCard tag="deck" k={view.k} en={view.en} ja={view.ja} line={view.line} mean={view.mean} video={view.m?.video} title={view.m?.title ?? ''} seg={view.seg}
-          onshow={reveal} onhear={() => count('act:english.deck.play')}>
-          {#snippet head()}
-            <div class="head">
-              {#if view.m}<Thumb video={view.m.video} show={view.m.show} />{/if}
-              <p class="kicker"><span class="n">{c.set.length + 1}/{SET}</span>{#if view.m}<span class="t" lang="en">{`${view.m.show} · ${view.m.title}`}</span>{/if}</p>
-            </div>
-          {/snippet}
-          {#snippet actions()}
-            <p class="say">{s('deckSay')}</p>
-            <div class="pair save">
-              <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}>{isSaved ? s('deckSaved') : s('deckSave')}</button>
-              <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
-            </div>
-          {/snippet}
-        </PhraseCard>
-      {/key}
+      <PhraseCard tag="deck" k={view.k} en={view.en} ja={view.ja} line={view.line} mean={view.mean} video={view.m?.video} title={view.m?.title ?? ''} seg={view.seg}
+        onshow={reveal} onhear={() => count('act:english.deck.play')}>
+        {#snippet head()}
+          <div class="head">
+            {#if view.m}<Thumb video={view.m.video} show={view.m.show} />{/if}
+            <p class="kicker"><span class="n">{c.set.length + 1}/{SET}</span>{#if view.m}<span class="t" lang="en">{`${view.m.show} · ${view.m.title}`}</span>{/if}</p>
+          </div>
+        {/snippet}
+        {#snippet actions()}
+          <p class="say">{s('deckSay')}</p>
+          <div class="pair save">
+            <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}>{isSaved ? s('deckSaved') : s('deckSave')}</button>
+            <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
+          </div>
+        {/snippet}
+      </PhraseCard>
     {:else if status === 'failed'}
       <div class="card pad note" data-en-deck-failed>
         <p>{online ? s('deckFailed') : s('deckOffline')}</p>

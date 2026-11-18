@@ -55,3 +55,32 @@ describe('the 100 ms check', () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe('cue', () => {
+  it('another video into the same frame: cueVideoById, its length and time start over, no new greeting', async () => {
+    const { YtPlayer } = await import('./player.svelte.ts');
+    vi.useFakeTimers();
+    let onMsg: ((e: unknown) => void) | undefined;
+    vi.stubGlobal('addEventListener', (_: string, f: (e: unknown) => void) => void (onMsg = f));
+    vi.stubGlobal('removeEventListener', () => {});
+    const sent: { event: string; func?: string; args?: unknown[] }[] = [];
+    const win = { postMessage: (m: string) => void sent.push(JSON.parse(m)) };
+    const frame = { contentWindow: win, addEventListener: () => {}, removeEventListener: () => {} } as unknown as HTMLIFrameElement;
+    const p = new YtPlayer(frame);
+    const say = (event: string, info: unknown) => onMsg!({ origin: YT_ORIGIN, source: win, data: JSON.stringify({ event, info }) });
+    say('onReady', null);
+    say('infoDelivery', { currentTime: 30, duration: 68, playerState: 2 });
+    expect([p.time, p.duration]).toEqual([30, 68]);
+    const greeted = vi.getTimerCount();
+    sent.length = 0;
+    p.cue('abc');
+    expect(sent.map((m) => [m.func, m.args])).toEqual([['cueVideoById', ['abc', 0]]]);
+    expect([p.time, p.duration]).toEqual([0, 0]);
+    expect(vi.getTimerCount()).toBe(greeted);
+    say('onStateChange', 5);
+    expect(p.state).toBe('ready');
+    p.destroy();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+});

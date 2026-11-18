@@ -1,7 +1,8 @@
 // YouTube's embed driven over postMessage (docs/english.md "The player"): no iframe_api script (a third-party
 // script-src). The frame is told `listening` until it answers; it reports `onReady`, `infoDelivery` (the time, the
 // state) and `onError`; it's sent `command`s (seekTo, playVideo, pauseVideo). A segment pauses SEG_TAIL past its end:
-// the time between deliveries is extrapolated (≤ LEAP_S for the stop), checked every 100 ms while it plays. A play that doesn't start
+// the time between deliveries is extrapolated (≤ LEAP_S for the stop), checked every 100 ms while it plays. Another
+// video goes into the same frame (`cue`: cueVideoById), so フレーズ's cards share one embed. A play that doesn't start
 // (iOS wants a tap on the video itself the first time) says so (`stuck`). The quality can't be set (setPlaybackQuality
 // has been a no-op since YouTube's 2019-10-24 revision): YouTube picks it from the frame's device pixels, so the player
 // is full width. Captions off, unless the lesson's 字幕 choice turns YouTube's own on (`setCaptions`; this player's, so a
@@ -185,6 +186,20 @@ export class YtPlayer {
   pause(): void {
     this.#stopAt = null;
     this.#cmd('pauseVideo');
+  }
+
+  /** Another video into this frame, cued (not playing): a new card's clip without a new embed. Its length, time and
+   *  captions' info start over; a stop or a seek on its way is let go. */
+  cue(video: string): void {
+    this.#stopAt = null;
+    this.#seek = null;
+    this.#last = { t: 0, at: performance.now() };
+    this.time = 0;
+    this.duration = 0;
+    this.#cc = null;
+    this.stuck = false;
+    clearTimeout(this.#stuckTimer);
+    this.#cmd('cueVideoById', [video, 0]);
   }
 
   /** Load the embed again (after an error or offline). */
