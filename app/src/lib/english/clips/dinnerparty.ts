@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 6, ctx 4, tx 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 3, new 1
 // “The Dinner Party From Hell - The Office US” (the official The Office channel, BEST OF SEASON 4): at Michael and
 // Jan's dinner party the hosts snipe at each other and at Pam, a guest says she only wants to eat, Jim tells the camera
@@ -8,7 +9,11 @@
 // the toast's crude wine remark (11 s), Hunter's song (30–65 s, innuendo), the first guessing game (87–106 s: a state
 // capital and a quarterback, world knowledge), 106–130 s (overlapping argument), "Wait till you hear this" (whisper
 // only), "No rhyming" (captions "Riley") and the celebrity clues after 199 s (world knowledge; captions garbled).
-// EAR CHECK: 143.4 s x1 — “You’ll” reduced to ユル (’ll nearly gone); both sources agree on the words
+// Whisper-only lines now tested: "No, I was making people laugh" (120 s, n3) and "Michael, you're up" (186 s, n4; the
+// captions read "hi"). EAR CHECK both.
+// EXCLUDE 29.9–65.3 (Hunter's song, innuendo)
+// SKIP 27.6–65.4: Hunter's song (excluded) and its whisper-only intro
+// SKIP 211.5–238.8: clues that need world knowledge (Schwarzenegger, Terminator, Tom Cruise), garbled captions, shouting
 // EAR CHECK: 1.9 s s1 — “Here’s to” with a weak “to” (≈ タ, same as “two”); both sources agree on the words
 import type { Clip } from '../types.ts';
 
@@ -18,6 +23,18 @@ export const dinnerParty: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
+    { id: 'n7', skill: 'gist', level: 'B1', point: 'hunter', reveals: ['songwriter'], seg: [0, 29],
+      stem: 'What does Jan want everyone to hear?',
+      ja: 'ジャンはみんなに何を聞かせたい？',
+      choices: ['A song by her old assistant', 'A toast to good friends', 'A story about her job'], a: 0,
+      choicesJa: ['前の助手が作った曲', 'いい友だちへの乾杯', '仕事の話'],
+      cue: '乾杯のあと、ジャンの質問',
+      line: 'Do you guys remember *my old assistant, Hunter*? He is an *excellent songwriter*.',
+      said: '乾杯のあと、ジャンが「前の助手のハンター、覚えてる？すばらしい作曲家なの」と言い、曲をかける。',
+      mean: 'Do you guys remember 〜? ＝「〜覚えてる？」と話を切り出す形。songwriter ＝ 曲を作る人。',
+      trap: '最初に乾杯があるので、乾杯の話と考えがち。ジャンが聞かせたいのは助手の曲。',
+      use: 'Do you guys remember my friend Ken?（友だちのケン、覚えてる？）' },
+
     { id: 's1', skill: 'sound', level: 'B2', point: 'toast', seg: [0, 6.2],
       stem: 'Fill the gap: “___ good friends.”',
       ja: '空いている所に入る語は？「___ good friends.」',
@@ -25,21 +42,21 @@ export const dinnerParty: Clip = {
       choicesJa: ['〜に乾杯', '〜に乾杯（Cheers）', '2つある'],
       cue: '「How about a toast?」のあと。',
       line: 'How about a toast? … *Here’s to* good friends.',
-      said: '「乾杯しよう」のあと、「良き友に」と杯を上げる。',
+      said: '「乾杯しない？」のあと、「いい友だちに」と杯を上げる。',
       mean: 'Here’s to 〜 ＝「〜に乾杯」。to は弱く「タ」に近い。',
       trap: 'すぐあとの Cheers につられやすい。最初は「ヒアズ」で始まる。',
       use: 'Here’s to a great trip!（楽しい旅に乾杯！）' },
 
     { id: 'm1', skill: 'marker', level: 'B1', point: 'music', seg: [9.8, 20.3],
-      stem: 'Why is “So” said after “What was that?”',
-      ja: '「What was that?」のあと、なぜ「So」と言う？',
-      choices: ['To change the topic', 'To explain the remark', 'To end the party'], a: 0,
-      choicesJa: ['話題を変えるため', '今の一言を説明するため', 'パーティーを終わらせるため'],
+      stem: 'What does “So, music?” mean here?',
+      ja: 'ここでの「So, music?」はどういう意味？',
+      choices: ['Anyway, shall we have music?', 'Is that why there’s music?', 'Was that sound the music?'], a: 0,
+      choicesJa: ['それはさておき、音楽かける？', 'だから音楽があるの？', '今の音は音楽？'],
       cue: '「What was that?」のあと。',
       line: 'What was that? — *So*, music?',
-      said: '妙な一言に「今の何？」と聞かれ、すぐ「で、音楽は？」と言う。',
+      said: '妙な一言に「今の何？」と聞かれ、すぐ「じゃあ、音楽は？」と言う。',
       mean: '文の頭の So ＝「で、さて」。気まずい流れを止めて、話題を変える合図。',
-      trap: 'So を「だから」と思うと説明が続くように聞こえる。説明はなく、すぐ音楽の話。',
+      trap: 'So を「だから」と考えがちだが、説明はなく、すぐ音楽の話。気まずさから逃げている。',
       use: 'So, anyway… how was your weekend?（で、それはそうと…週末どうだった？）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'songwriter', seg: [19.5, 28],
@@ -66,7 +83,8 @@ export const dinnerParty: Clip = {
       trap: 'Ryan の名前が出るので二人の仲の話に聞こえやすい。理由は That is why の前。',
       use: 'That’s why I left early.（だから早く帰ったんだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'sofar', reveals: ['afternoon', 'faxes'], seg: [65.4, 90.7],
+    // retired (R4): four starts in 4 s at 65–70 s; n7 is the set-up gist now
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'sofar', reveals: ['afternoon', 'faxes'], seg: [65.4, 90.7], retired: true,
       stem: 'How is the dinner party going?',
       ja: '食事会はどんな様子？',
       choices: ['The hosts keep being mean', 'Everyone is having fun', 'The food is very good'], a: 0,
@@ -135,8 +153,8 @@ export const dinnerParty: Clip = {
       use: 'Clean towels? Is that too much to ask?（きれいなタオルって、高望み？）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'nofood', seg: [78.7, 90.7],
-      stem: '“I just want to eat.” What does it tell us about dinner?',
-      ja: '「ただ食べたい」から、夕食について何が分かる？',
+      stem: 'Why does the guest say she just wants to eat?',
+      ja: 'その客はなぜ「ただ食べたい」と言う？',
       choices: ['It hasn’t been served yet', 'It isn’t very good', 'There isn’t much of it'], a: 0,
       choicesJa: ['まだ出てきていない', 'あまりおいしくない', '量が少ない'],
       cue: '「just want to」のあと。',
@@ -145,6 +163,30 @@ export const dinnerParty: Clip = {
       mean: '食事が出ていないので、「食べる」こと自体が願いになっている。',
       trap: '乾杯のときの妙な感想から「まずい」と思いやすい。味の話は一言もない。',
       use: 'When do we eat?（ごはんはいつ？）' },
+
+    { id: 'n2', skill: 'detail', level: 'B1', point: 'clue', seg: [93.5, 101.8],
+      stem: 'In the clue, what is the second name?',
+      ja: 'ヒントでは、2つ目の名前（名字）は何？',
+      choices: ['The name of a state', 'The name of an animal', 'The name of a city'], a: 0,
+      choicesJa: ['州の名前', '動物の名前', '都市の名前'],
+      cue: '「and the second name is」のあと',
+      line: 'First name of that animal, and *the second name is the state* where Helena is the capital.',
+      said: '「名前はその動物。名字は、ヘレナが州都の州」とヒントを出す。',
+      mean: 'first name ＝ 名前、second name ＝ 名字（last name とも言う）。capital ＝ 州都・首都。',
+      trap: 'Helena（ヘレナ）は都市の名前なので、つい都市と答えたくなる。名字は the state（州）。',
+      use: 'My last name is Sato.（名字は佐藤です）' },
+
+    { id: 'n3', skill: 'who', level: 'B1', point: 'laughing', ctx: true, seg: [117.5, 128.7],
+      stem: 'Who does Michael say was laughing?',
+      ja: 'マイケルは、誰が笑っていたと言う？',
+      choices: ['Jim', 'Pam', 'Jan'], a: 0,
+      choicesJa: ['ジム', 'パム', 'ジャン'],
+      cue: '「I was watching」のあと',
+      line: 'Jan: Can you just sit down, seriously? / Michael: No, I was *making people laugh*. … I was watching *Jim’s face*. And he was laughing.',
+      said: '「ちゃんと座って」に「みんなを笑わせてたんだ。ジムも笑ってた」と言い返す。',
+      mean: 'make people laugh ＝ 人を笑わせる。座れと言われて、ふざけていたわけじゃないと言い訳している。',
+      trap: '二人が同時に話すので聞き分けにくい。決め手は Jim’s face のあとの he was laughing。',
+      use: 'I was just trying to make people laugh.（みんなを笑わせようとしただけ）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'game', reveals: ['sofar'], seg: [130.2, 142.7], retired: true,
       stem: 'In the talking head about Michael and Jan, why is “both winning” funny?',
@@ -169,7 +211,8 @@ export const dinnerParty: Clip = {
       trap: '偶然の不運と取ると筋は通るが、順番を見落としている。この形式では、カメラへの言葉が先に種明かしをする。',
       use: 'Oh, look at the time! Gotta run.（あ、もうこんな時間！行かなきゃ）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'run', seg: [137.6, 145],
+    // retired (R4): f2 tests the same line; four starts in 6 s
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'run', seg: [137.6, 145], retired: true,
       stem: 'How does Jim feel about staying at the party?',
       ja: 'ジムは食事会に残ることをどう思っている？',
       choices: ['He’s had enough and wants out', 'He’s having fun watching', 'He’s happy to stay late'], a: 0,
@@ -193,7 +236,8 @@ export const dinnerParty: Clip = {
       trap: 'run を「走る」と思いやすい。for it が付くと「逃げ出す」の決まり文句。',
       use: 'It’s raining. Let’s make a run for it.（雨だ、走って逃げよう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'guess', seg: [141.9, 148.3],
+    // retired (R4): too many starts at 138–150 s; the ear-check dictation goes
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'guess', seg: [141.9, 148.3], retired: true,
       stem: 'Type what Jim says first: “___. I just got a message…” (3 words)', answer: "you'll never guess",
       ja: 'ジムの最初の言葉を書こう：「___. I just got a message…」（3語）',
       cue: 'カメラの場面のあとの最初の一言。',
@@ -213,9 +257,21 @@ export const dinnerParty: Clip = {
       said: '「大家からの連絡で、どうやら部屋が水びたしらしい」と言う。',
       mean: 'flood ＝ 水があふれる。apparently ＝ 聞いた話では、どうやら。',
       trap: 'landlord（大家）から泥棒や停電を思いやすい。最後の flooded を聞く。',
-      use: 'Apparently the train is delayed.（どうやら電車が遅れてるらしい）' },
+      use: 'Apparently it’s going to snow.（どうやら雪が降るらしい）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'escape', reveals: ['run', 'flood', 'getgoing', 'abandon', 'newparty', 'thanks'], seg: [143, 186.5],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'getgoing', reveals: ['flood'], seg: [148, 154.1],
+      stem: 'What does Jim mean by “we should probably get going”?',
+      ja: 'ジムの「we should probably get going」はどういう意味？',
+      choices: ['It’s time for us to leave', 'Do you want to stay longer?', 'Can you help me clean?'], a: 0,
+      choicesJa: ['そろそろ帰ろう', 'もっといたい？', '掃除を手伝ってくれる？'],
+      cue: '「we should probably」のあと。',
+      line: 'Pam, *we should probably get going* and see the damage.',
+      said: '「パム、そろそろ行って被害を見たほうがいいかも」と言う。',
+      mean: 'get going ＝ 出発する。we should probably get going は帰るときの決まり文句。',
+      trap: 'probably（たぶん）で相談に聞こえるが、もう帰ると決めている、やわらかい言い方。',
+      use: 'Well, we should probably get going.（じゃあ、そろそろ失礼しようか）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'escape', reveals: ['run', 'flood', 'getgoing', 'abandon', 'newparty', 'thanks'], seg: [150.3, 180],
       stem: 'How does Jim’s plan to leave end?',
       ja: 'ジムの帰る作戦はどうなる？',
       choices: ['He is made to stay', 'He leaves with Pam', 'He leaves by himself'], a: 0,
@@ -225,18 +281,6 @@ export const dinnerParty: Clip = {
       mean: '逃げ出す作戦は失敗。結局パーティーに残ることになる。',
       trap: 'パムを置いて帰りかける場面があるので迷いやすい。最後の Sit down まで聞く。',
       use: 'I tried to sneak out, but got caught.（こっそり帰ろうとしたら、見つかった）' },
-
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'getgoing', reveals: ['flood'], seg: [148, 154.1],
-      stem: 'Why does Jim say “we should probably get going” here?',
-      ja: 'ジムは、なぜここで「we should probably get going」と言う？',
-      choices: ['To say they should leave', 'To ask if she wants to stay', 'To ask her to help clean'], a: 0,
-      choicesJa: ['帰ろうと言うため', '残りたいか聞くため', '掃除の手伝いを頼むため'],
-      cue: '「we should probably」のあと。',
-      line: 'Pam, *we should probably get going* and see the damage.',
-      said: '「パム、そろそろ行って被害を見たほうがいいかも」と言う。',
-      mean: 'get going ＝ 出発する。we should probably get going は帰るときの決まり文句。',
-      trap: 'probably（たぶん）で相談に聞こえやすい。もう帰ると決めている言い方。',
-      use: 'Well, we should probably get going.（じゃあ、そろそろ失礼しようか）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'leavepam', reveals: ['getgoing'], seg: [153.6, 168.6], retired: true,
       stem: 'Why is Jim’s quick “That’s true” funny?',
@@ -261,31 +305,55 @@ export const dinnerParty: Clip = {
       trap: 'delicious から料理の話と思いやすい。sounded（おいしそうだった）は食べていない合図。',
       use: 'Thank you so much. It was a great night.（本当にありがとう。いい夜でした）' },
 
-    { id: 'p3', skill: 'pragma', level: 'C1', point: 'abandon', seg: [163.2, 173.7],
-      stem: '“*I don’t think you’re going to* abandon this party.” Michael is…?',
-      ja: '「I don’t think you’re going to abandon…」でマイケルは何をしている？',
-      choices: ['Telling Jim not to go', 'Guessing Jim will stay', 'Asking Jim to come back'], a: 0,
-      choicesJa: ['帰るなと言っている', 'ジムは残ると予想している', 'また来てと頼んでいる'],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'abandon', seg: [163.2, 173.7],
+      stem: 'What does Michael want Jim to do?',
+      ja: 'マイケルはジムにどうしてほしい？',
+      choices: ['Stay at the party', 'Go home and check', 'Come back later'], a: 0,
+      choicesJa: ['パーティーに残る', '家に帰って確かめる', 'あとでまた来る'],
       cue: '「Oh, Jim」のあと。',
       line: 'Oh, Jim, *I don’t think you’re going to abandon* this party here all by itself.',
       said: '「ジム、このパーティーをひとりぼっちにしないよね」と言う。',
-      mean: 'I don’t think you’re going to 〜 ＝ 予想ではなく、やわらかい「〜させないよ」。',
+      mean: '文字どおりは「〜しないと思う」。相手の行動に使うと、やわらかい「〜させないよ」。abandon ＝ 見捨てる。',
       trap: 'I don’t think（〜と思わない）で意見に聞こえる。相手の行動に使うと遠回しな命令。',
       use: 'I don’t think you’re leaving yet.（まだ帰さないよ）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'newparty', reveals: ['abandon'], seg: [168, 176.1],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'newparty', reveals: ['abandon'], ctx: true, seg: [168, 176.1],
       stem: 'What does Michael say you can’t buy?',
       ja: 'マイケルは、何は買えないと言う？',
       choices: ['A new party', 'A new apartment', 'New friends'], a: 0,
       choicesJa: ['新しいパーティー', '新しいアパート', '新しい友だち'],
       cue: '「but」のあと。',
-      line: 'everything I own is there. — You can buy new stuff, but *you can’t buy a new party*.',
+      line: 'Jim: everything I own is there. / Michael: You can buy new stuff, but *you can’t buy a new party*.',
       said: '「全財産があるんだ」に「物は買い直せる。でもパーティーは買えない」と返す。',
       mean: 'You can’t buy 〜 ＝ 〜はお金で買えない。自分のパーティーを全財産より上に置いている。',
       trap: 'stuff（物）から部屋を選びやすい。but のあとの a new party を聞く。',
       use: 'You can’t buy memories like this.（こんな思い出はお金で買えない）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'head', seg: [190.6, 201.3],
+    { id: 'n4', skill: 'phrase', level: 'B2', point: 'youreup', seg: [184.5, 192],
+      stem: 'What does “Michael, you’re up” mean?',
+      ja: '「Michael, you’re up」はどういう意味？',
+      choices: ['Your turn, Michael', 'Wake up, Michael', 'Stand up, Michael'], a: 0,
+      choicesJa: ['マイケル、あなたの番', 'マイケル、起きて', 'マイケル、立って'],
+      cue: '「Let’s go」の前',
+      line: '*Michael, you’re up.* Let’s go. — All right. Here we go. This is going to be fun.',
+      said: '「マイケル、あなたの番よ。さあ」と言われ、「よし、いくぞ。楽しくなるぞ」と始める。',
+      mean: 'you’re up ＝「次はあなたの番」。ゲームや順番待ちで使う。文字どおりの「起きている」とは別。',
+      trap: 'up から「起きて」「立って」を連想しやすい。直後に Here we go と始めるので「番」。',
+      use: 'Next, please. You’re up.（次の方どうぞ。あなたの番です）' },
+
+    { id: 'n5', skill: 'pragma', level: 'B1', point: 'nonames', ctx: true, seg: [188.5, 196.5],
+      stem: 'Why do the others stop Michael right away?',
+      ja: 'みんなはなぜ、すぐにマイケルを止める？',
+      choices: ['He said a name', 'He took too long', 'He started too early'], a: 0,
+      choicesJa: ['名前を言った', '時間がかかりすぎた', '始めるのが早すぎた'],
+      cue: '「Tom」のすぐあと',
+      line: 'Michael: First name is *Tom*. / No, no, no. *No names.* No names. No rhyming. No sound-alike.',
+      said: '「名前はトム」と言ったとたん、「だめだめ、名前は禁止。韻も、似た音も禁止」と止められる。',
+      mean: 'No names ＝ 名前は禁止。No 〜 で「〜はだめ」と短くルールを言う形（No smoking と同じ）。',
+      trap: '止められたのは時間のせいと考えがち。決め手は No names。',
+      use: 'No phones at the table, please.（食事中はスマホ禁止ね）' },
+
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'head', reveals: ['nonames'], seg: [190.6, 201.3],
       stem: '“*You’re getting into my head*.” What does Michael mean?',
       ja: '「You’re getting into my head」とはどういう意味？',
       choices: ['You’re making me nervous', 'You’re reading my mind', 'You’re giving me a headache'], a: 0,
@@ -296,5 +364,17 @@ export const dinnerParty: Clip = {
       mean: 'get into 人’s head ＝ 気にさせて調子を乱す。スポーツでもよく使う。',
       trap: '頭に入る＝心を読む、と思いやすい。ルールを並べられた直後の、困った言葉。',
       use: 'Don’t let them get into your head.（相手のペースに乗せられないで）' },
+
+    { id: 'n6', skill: 'infer', level: 'B2', point: 'realperson', ctx: true, seg: [205, 212],
+      stem: 'Why does Michael say no to Jim’s answer?',
+      ja: 'マイケルはなぜジムの答えをだめと言う？',
+      choices: ['It must be a real person', 'Jim answered too late', 'It has to be a woman'], a: 0,
+      choicesJa: ['実在の人じゃないとだめ', '答えるのが遅かった', '女性じゃないとだめ'],
+      cue: '「Dawson’s Creek」への返事',
+      line: 'Jim: Oh, Dawson’s Creek. / Michael: No, no. *It has to be a real person*, Jim. Come on.',
+      said: 'ジムの「『ドーソンズ・クリーク』？」に、「違う違う。実在の人じゃなきゃ。頼むよ」と返す。',
+      mean: 'Dawson’s Creek ＝ 昔のアメリカのドラマの名前。has to be 〜 ＝ 〜でなければならない。',
+      trap: '直前に女性の名前が出たので、女性限定と勘違いしやすい。決め手は real person。',
+      use: 'It has to be done by Friday.（金曜までにやらないといけない）' },
   ]
 };
