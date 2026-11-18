@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 1, new 6, ctx 8, tx 1
+// R4 REVIEW 2026-11-18: keep 15, rewrite 0, retire 1, new 6, ctx 8, tx 1, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 4, new 0
 // “Emma Stone Guest Stars on 'iCarly'! 🎉 | Full Episode in 5 Minutes | @NickRewind” (NickRewind, the official iCarly
 // channel, Best of iCarly 📲): an episode cut down to five minutes. Spencer's only tennis friend turns out to be a third
@@ -212,7 +212,7 @@ export const spencerFriends: Clip = {
       choicesJa: ['けんかで終わる', 'とてもうまくいく', '静かで落ち着いている'],
       cue: 'テーブルの後半、互いに何と言うか。',
       line: 'You said you didn’t want chili fries… You guys are so *mean and boring*. — Well, you’re *childish*.',
-      said: 'チリポテトの取り合いから、「意地悪でつまらない」「子どもっぽい」と言い合いになる。',
+      said: 'チリフライの取り合いから、「意地悪でつまらない」「子どもっぽい」と言い合いになる。',
       mean: 'mean ＝ 意地悪な。childish ＝ 子どもっぽい。友だち作りは失敗。',
       trap: '最初の cilantro（パクチー）のプレゼントで仲よくなると思いやすい。最後は言い合い。',
       use: 'Well, that went badly.（うーん、散々だったね）' },
@@ -244,8 +244,8 @@ export const spencerFriends: Clip = {
     { id: 'd3', skill: 'detail', level: 'B2', point: 'fries', seg: [182.7, 191.7],
       stem: 'Why had Spencer said no to the fries?',
       ja: 'スペンサーはなぜポテトをいらないと言っていた？',
-      choices: ['He thought his nachos would come too', 'He thought they’d be too spicy', 'He thought they’d take too long'], a: 0,
-      choicesJa: ['ナチョスも一緒に来ると思った', '辛すぎると思った', '時間がかかると思った'],
+      choices: ['His nachos were coming too', 'He thought they were spicy', 'He thought they’d be slow'], a: 0,
+      choicesJa: ['ナチョスも一緒に来るはずだった', '辛いと思った', '来るのがおそいと思った'],
       cue: '「’cause I thought」のあと。',
       line: '’cause I thought *my nachos were going to come out at the same time*.',
       said: '「ナチョスが同時に来ると思ったから」と言い訳する。',

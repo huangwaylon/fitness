@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 3, retire 5, new 3, ctx 6, tx 0
+// R4 REVIEW 2026-11-18: keep 9, rewrite 3, retire 5, new 3, ctx 6, tx 0, qa 7
 // A2 REVIEW 2026-11-17: keep 2, rewrite 4, retire 2, new 10
 
 // “Rachel Doesn't Understand Dating Language | Friends” (official Friends channel): Phoebe is back from a date; the
@@ -119,15 +119,15 @@ export const datinglang: Clip = {
       cue: '「It’s not you」のすぐあと',
       line: 'Like “It’s not you” means… — *It is you.*',
       said: '「『君のせいじゃない』は…」「君のせい、って意味」。',
-      mean: 'It’s not you, it’s me ＝「君のせいじゃない、僕の問題」。別れの決まり文句。',
+      mean: 'It’s not you, it’s me ＝「君のせいじゃない、僕の問題」。別れの決まり文句。本音は逆の「君のせい」。',
       trap: '続きの it’s me（僕のせい）に引っぱられやすい。すぐ It is you と言う。',
       use: 'It’s not you, it’s me.（君のせいじゃない、僕の問題なんだ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'g2', seg: [24.5, 46.8], stem: 'What do the friends explain to Rachel?',
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'g2', reveals: ['p1'], seg: [24.5, 46.8], stem: 'What do the friends explain to Rachel?',
       ja: '友だちはレイチェルに何を説明している？',
       choices: ['What dating lines mean', 'How to ask a person out', 'Where to go for a date'], a: 0,
       choicesJa: ['デートの決まり文句の意味', 'デートに誘う方法', 'デートで行く場所'],
-      cue: '真ん中の、いくつもの例',
+      cue: '「It’s like」から続く例',
       line: 'It’s like *dating language*. … “It’s not you” means… It is you.',
       said: '「デート用の言葉なの。『君のせいじゃない』は『君のせい』」。',
       mean: 'dating language ＝ デートで使う決まり文句。言葉と本音がちがう例をいくつも挙げている。',
@@ -162,7 +162,7 @@ export const datinglang: Clip = {
       choicesJa: ['もう他の人と付き合っている', '新しい友だちを作りたい', '少しひとりになりたい'],
       cue: '笑い声のあとの一言',
       line: '“I think we should see other people” means, *“Ha, ha, I already am.”*',
-      said: '「『他の人とも会うべき』は『もう会ってる』って意味」。',
+      said: '「『他の人とも付き合うべき』は『もう付き合ってる』って意味」。',
       mean: 'see other people ＝ 他の人とも付き合う。I already am ＝ もうそうしている。',
       trap: 'see を「会う」と思うと、友だちの話に聞こえやすい。',
       use: 'I think we should see other people.（ほかの人とも付き合うべきだと思う）' },
@@ -187,7 +187,7 @@ export const datinglang: Clip = {
       line: 'Oh, yeah. *Cushions the blow.*',
       said: '「ああ、そうね。ショックを和らげるのよ」と言う。',
       mean: '文字どおりは「打撃にクッションを当てる」。→ 痛みが小さくなる → 悪い知らせをやわらかく伝えること。',
-      trap: 'blow から「なぐる」「けんか」を連想しやすい。ここは決まり文句の役目をほめている。',
+      trap: 'blow から「なぐる」「けんか」を連想しやすい。ここは決まり文句がショックをやわらげる、という話。',
       use: 'I tried to cushion the blow.（やんわり伝えるようにした）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'farm', seg: [47.8, 54], retired: true, stem: 'Where do parents say the dog went?',
