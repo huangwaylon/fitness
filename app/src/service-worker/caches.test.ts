@@ -110,6 +110,13 @@ describe('precache', () => {
     expect(carryPlan(['_app/immutable/chunks/scan.N1.js', '_app/immutable/assets/zxing_reader.N2.wasm'], ['https://x.test/_app/immutable/chunks/scan.O1.js']).fetch).toEqual(['_app/immutable/chunks/scan.N1.js', '_app/immutable/assets/zxing_reader.N2.wasm']);
     for (const p of ['_app/immutable/chunks/scanner.Ab1.js', '_app/immutable/assets/other.Ab1.wasm']) expect(carried(p)).toBe(false);
   });
+  it("英語すごろく's word lists left out, kept once used, carried by the name sg (all four once one is held)", () => {
+    const sg = ['_app/immutable/chunks/sg.A1.js', '/fitness/_app/immutable/chunks/sg.B2.js'];
+    for (const p of sg) expect([precachable(p), carried(p)]).toEqual([false, true]);
+    expect(sg.map(carriedNameOf)).toEqual(['sg', 'sg']);
+    expect(carryPlan(['_app/immutable/chunks/sg.N1.js', '_app/immutable/chunks/sg.N2.js'], ['https://x.test/_app/immutable/chunks/sg.O1.js']).fetch).toEqual(['_app/immutable/chunks/sg.N1.js', '_app/immutable/chunks/sg.N2.js']);
+    for (const p of ['_app/immutable/chunks/sgx.Ab1.js', '_app/immutable/chunks/sugoroku.Ab1.js']) expect(carried(p)).toBe(false);
+  });
   it('an install fetches a changed feature chunk by its name (the board: all of its chunks), the rest at first use', () => {
     const files = ['_app/immutable/chunks/en.N1.js', '_app/immutable/chunks/en-food.N2.js', '_app/immutable/chunks/en-tent.N5.js', '_app/immutable/chunks/wedding.N3.js', '_app/immutable/chunks/wedding.N4.js'];
     const old = (p: string) => `https://x.test/_app/immutable/chunks/${p}`;

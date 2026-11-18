@@ -266,8 +266,8 @@ const mapLibreNames: Plugin = {
 };
 
 /** What a phone may never open, under stable names (`_app/immutable/chunks/<name>.<hash>.js`): the English catalogs
- *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on), the wedding board's sheet (`wedding`) and
- *  ごはん's barcode scanner and its decoder (`scan`), so
+ *  (`en`, `en-<part>`: lib/i18n's *.en.json, loaded only with English on), the wedding board's sheet (`wedding`),
+ *  ごはん's barcode scanner and its decoder (`scan`) and 英語すごろく's word lists (`sg`: ~150 KB on the wire), so
  *  the service worker leaves them out of its precache (caches.ts carried: kept once used, an install carrying a changed
  *  one by its name). Not トレイル's: a trail never opened works offline on the mountain
  *  (offline.spec). A chunk is named only if all of it is the feature's; nothing outside the feature imports one
@@ -278,7 +278,9 @@ const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
   [/\/src\/lib\/(?:components\/)?wedding\/|\/src\/lib\/i18n\/wedding\.(?:ts|ja\.json)$|\/src\/lib\/contract\/wedCats\.ts$/, () => 'wedding'],
   // ごはん's barcode scanner: its level (FoodScan, its lookup scan.ts, lib/scan/) and its decoder (zxing-wasm, its wasm
   // beside it as assets/zxing_reader.<hash>.wasm: lib/scan/decode.ts)
-  [/\/src\/lib\/scan\/|\/src\/lib\/components\/food\/(?:FoodScan\.svelte|scan\.ts)$/, () => 'scan']
+  [/\/src\/lib\/scan\/|\/src\/lib\/components\/food\/(?:FoodScan\.svelte|scan\.ts)$/, () => 'scan'],
+  // 英語すごろく's word lists (lib/sugoroku/words.ts, sentences.ts: imported when a game opens)
+  [/\/src\/lib\/sugoroku\/(?:words\.txt|accept\.txt|everyday\.json|sentences\.json)$/, () => 'sg']
 ];
 /** A chunk's feature: all its modules one feature's (or a package's only it uses: svelte/transition with the board). */
 const featureOf = (ids: readonly string[]): string | null => {
@@ -307,9 +309,9 @@ const featureNames: Plugin = {
   },
   generateBundle(_, bundle) {
     // (a feature's own: its chunks, the English ones each other's)
-    const groupOf = (f: string) => /(?:^|\/)(en|wedding|scan)(?:-[\w-]+)?\.[\w-]+\.js$/.exec(f)?.[1] ?? null;
+    const groupOf = (f: string) => /(?:^|\/)(en|wedding|scan|sg)(?:-[\w-]+)?\.[\w-]+\.js$/.exec(f)?.[1] ?? null;
     const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
-    for (const want of ['en', 'wedding', 'scan']) if (!chunks.some((c) => groupOf(c.fileName) === want)) throw new Error(`vite.config.ts feature-names: no ${want} chunk named; recheck FEATURE_CHUNK`);
+    for (const want of ['en', 'wedding', 'scan', 'sg']) if (!chunks.some((c) => groupOf(c.fileName) === want)) throw new Error(`vite.config.ts feature-names: no ${want} chunk named; recheck FEATURE_CHUNK`);
     for (const c of chunks) {
       const bad = c.imports.find((f) => groupOf(f) && groupOf(f) !== groupOf(c.fileName));
       if (bad) throw new Error(`vite.config.ts feature-names: ${c.fileName} imports ${bad} statically (offline before it's used, it wouldn't load); load the feature lazily`);

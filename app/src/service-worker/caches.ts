@@ -363,15 +363,15 @@ export const isGuidePhoto = (path: string): boolean => ((isTravel(path) || isHik
  *  carried by each install after that (copied when unchanged, fetched when changed: index.ts). */
 const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
 /** What a phone may never open (vite.config.ts feature-names): the English catalogs' chunks (`en`, `en-<part>`: only
- *  with English on), the wedding board's (`wedding`) and ごはん's barcode decoder (`scan`, its wasm beside it, ~400 KB
- *  on the wire). Not precached (~0.1 MB on the wire, and the English ones
- *  change with every string): kept once used, and carried by each install after that. */
-const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm)$/.test(path);
-/** A carried chunk's name (`en-<part>`, `wedding`: one name for all the board's chunks; `scan`, its
+ *  with English on), the wedding board's (`wedding`), ごはん's barcode decoder (`scan`, its wasm beside it, ~400 KB
+ *  on the wire) and 英語すごろく's word lists (`sg`, ~150 KB: a game first opened offline has no words). Not precached
+ *  (the English ones change with every string): kept once used, and carried by each install after that. */
+const isFeatureChunk = (path: string): boolean => /\/_app\/immutable\/(chunks\/(en(-[\w-]+)?|wedding|scan|sg)\.[\w-]+\.js|assets\/zxing_reader\.[\w-]+\.wasm)$/.test(path);
+/** A carried chunk's name (`en-<part>`; `wedding`, `sg`: one name for all the feature's chunks; `scan`, its
  *  wasm's too) in its path or URL, else null. */
 export const carriedNameOf = (path: string): string | null =>
   /(?:^|\/)_app\/immutable\/assets\/zxing_reader\.[\w-]+\.wasm$/.test(path) ? 'scan'
-  : (/(?:^|\/)_app\/immutable\/chunks\/(en(?:-[\w-]+)?|wedding|scan)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
+  : (/(?:^|\/)_app\/immutable\/chunks\/(en(?:-[\w-]+)?|wedding|scan|sg)\.[\w-]+\.js$/.exec(path)?.[1] ?? null);
 /** The build files kept in the shell on first use and carried by each install (MapLibre and the features above): listed in the worker's manifest though not precached (vite.config.ts swPrecacheOnly). */
 export const carried = (path: string): boolean => {
   const p = path.startsWith('/') ? path : `/${path}`;

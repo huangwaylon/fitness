@@ -22,7 +22,8 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
  *  useless offline without their audio packs, which aren't precached either) kept on first use instead (caches.ts
  *  isKikiPart), so the cap back to 3 MB; 2.94 → 2.61 MB with the wedding's and the trips' heroes cached on first view
  *  (2026-11-09: caches.ts isGuidePhoto); 2.95 → 2.85 MB with the English catalogs and the wedding board carried
- *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16). */
+ *  once used (2026-11-11: caches.ts carried); 2.85 → 2.64 MB with ききみみ's sheet gone (2026-11-16); 2.92 → 2.77 MB with
+ *  英語すごろく's word lists carried once used (2026-11-18). */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
@@ -81,8 +82,9 @@ for (const src of LAZY_SOURCES) {
 }
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
 
-// what a phone may never open (the English catalogs, the wedding board: vite.config.ts feature-names): carried
-const feats = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^(en|en-[\w-]+|wedding)\./.test(f)).map((f) => `_app/immutable/chunks/${f}`);
+// what a phone may never open (the English catalogs, the wedding board, ごはん's scanner, すごろく's word lists:
+// vite.config.ts feature-names): carried
+const feats = readdirSync(join(BUILD, '_app/immutable/chunks')).filter((f) => /^(en|en-[\w-]+|wedding|scan|sg)\./.test(f)).map((f) => `_app/immutable/chunks/${f}`);
 for (const f of feats) if (first.has(f) || precachable(f)) fail.push(`${f} (a feature carried once used) is in the first load or the precache`);
 
 // English Study: its banks are files fetched on use (caches.ts isEnglishData), never precached; its sheet's chunk holds
