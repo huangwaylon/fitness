@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 3, new 4, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 3, new 4, ctx 4, tx 4, qa 18
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
 // “Deep Down Everyone is Faking It | Parks and Recreation” (the official Parks and Recreation channel, Season 2
 // playlist): Andy, home from his London job, tells April work is going great; April tells the camera she's proud of
@@ -9,7 +9,7 @@
 // "I'm not a fan of the world" is a hallucination over music). Names said: Andy (50.7, 66.0, 68.3, 162.2 s), Mr. Dwyer
 // (89.9–93.3 s, quoted). April's name is never said; stems use it where the turn settles who speaks (she runs animal
 // control, 117 s; she makes the sandwiches for the one going to the airport, 144–147 s; she finds Andy, 62–80 s).
-// EXCLUDE 16.3–17.7: “I'm kicking ass” (the swear at the end of whisper's 15–17 s line; “Yeah, that's awesome” plays).
+// EXCLUDE 16.3–17.5: “I'm kicking ass” (the swear at the end of whisper's 15–17 s line; “Yeah, that's awesome” plays).
 // Untested on purpose: 0–4 s (captions "uh watch this", whisper "Whoa"), 26–33 s (a making-out line), 44.5–46 s ("See
 // you on stupid Skype": speaker never named), 92–93 s ("That's not a toilet"), 144.7 s (five sandwiches), 170–174 s
 // (noodles). Who says the moon line (37–44 s) isn't settled, so its item names no one.
@@ -34,7 +34,7 @@ export const fakingIt: Clip = {
       trap: '「学んでいる」「好かれている」とは言っていない。言葉どおり「最高・絶好調」。',
       use: 'Work’s going great, thanks.（仕事は順調だよ、ありがとう）' },
 
-    { id: 'br', skill: 'phrase', level: 'B1', point: 'brilliant', seg: [4.0, 11.86],
+    { id: 'br', skill: 'phrase', level: 'B1', point: 'brilliant', seg: [4.0, 11.75],
       stem: 'What does “That’s brilliant” mean, says Andy?',
       ja: 'アンディによると「That’s brilliant」はどういう意味？',
       choices: ['The same as “cool”', 'It shines very brightly', 'It costs a lot'], a: 0,
@@ -46,7 +46,7 @@ export const fakingIt: Clip = {
       trap: 'カタカナのブリリアント（宝石の輝き）を連想しやすい。cool と並べて説明している。',
       use: 'That’s brilliant! Thank you.（すごい！ありがとう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9, 16.2],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9.38, 16.28],
       stem: 'What does “Speaking of London” mean here?',
       ja: '「Speaking of London」は、ここではどういう意味？',
       choices: ['On the topic of London', 'I miss London so much', 'Let’s go to London now'], a: 0,
@@ -70,7 +70,7 @@ export const fakingIt: Clip = {
       trap: 'crushing it（絶好調）から同僚の話に聞こえやすい。instead of のあとを聞く。',
       use: 'I’m basically a superhero, only with spreadsheets.（要はヒーロー、ただし表計算の）' },
 
-    { id: 'cr', skill: 'detail', level: 'B1', point: 'documents', seg: [17.8, 24.6],
+    { id: 'cr', skill: 'detail', level: 'B1', point: 'documents', seg: [17.55, 24.6],
       stem: 'What is Andy “crushing” at his job?',
       ja: 'アンディが仕事で「crushing」しているのは何？',
       choices: ['Paperwork', 'Bad guys', 'Other teams'], a: 0,
@@ -93,7 +93,7 @@ export const fakingIt: Clip = {
       trap: '距離の寂しさに聞こえやすいが、距離の話はない。the と a の差を聞く。',
       use: 'Think of me when you see the moon.（月を見たら私を思い出して）' },
 
-    { id: 'mo', skill: 'detail', level: 'B1', point: 'samemoon', seg: [36.5, 44.2],
+    { id: 'mo', skill: 'detail', level: 'B1', point: 'samemoon', seg: [36.7, 44.55],
       stem: 'In the goodbye, what is called impossible?',
       ja: '別れのあいさつで、何が「無理」だと言う？',
       choices: ['Seeing the same moon', 'Going with Andy to London', 'Talking every day'], a: 0,
@@ -108,8 +108,8 @@ export const fakingIt: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'limb', seg: [49.5, 60],
       stem: 'What does “gone out on a limb” mean?',
       ja: '「gone out on a limb」はどういう意味？',
-      choices: ['Taking a real risk', 'Helping other people', 'Standing up for himself'], a: 0,
-      choicesJa: ['思い切って挑戦する', '人を助ける', '自分を主張する'],
+      choices: ['Taking a real risk', 'Helping other people', 'Saying what he thinks'], a: 0,
+      choicesJa: ['思い切って挑戦する', '人を助ける', '思ったことを言う'],
       cue: '「the first time he’s」のあと',
       line: 'This is the first time he’s really *gone out on a limb*.',
       said: 'カメラに「彼が思い切って挑戦したのは初めて」と話す。',
@@ -141,7 +141,7 @@ export const fakingIt: Clip = {
       trap: '言いよどみや jumped in に引かれやすい。because のあとに新しい情報があるか聞く。',
       use: 'Why am I here? Because I came.（なぜいるかって？来たからだよ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'overhead', seg: [82.8, 90.5],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'overhead', seg: [83.5, 88.55],
       stem: 'What does “in over my head” mean?',
       ja: '「in over my head」はどういう意味？',
       choices: ['Too much for him', 'Fully under control', 'All he thinks about'], a: 0,
@@ -153,7 +153,7 @@ export const fakingIt: Clip = {
       trap: 'head（頭）から「頭の中がそれでいっぱい」と思いやすい。溺れるイメージ。',
       use: 'I’m in over my head with this.（これ、手に負えない）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sign', seg: [86.2, 93.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sign', seg: [86.85, 93.7],
       stem: 'What do people come to Andy for every day?',
       ja: '毎日、人がアンディに何を求めてくる？',
       choices: ['To give the OK on things', 'To explain how things work', 'To check and fix documents'], a: 0,
@@ -165,11 +165,11 @@ export const fakingIt: Clip = {
       trap: 'documents（書類）の話が前にあるので、書類を直すと考えがち。approval を聞く。',
       use: 'I just need your signature here.（ここに署名だけお願いします）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'said', seg: [92, 97.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'said', seg: [92.15, 97.15],
       stem: 'What did Andy say before, according to April?',
       ja: 'エイプリルによると、アンディは前に何と言っていた？',
-      choices: ['Everything was going great', 'He wanted to come home soon', 'He hated his new boss'], a: 0,
-      choicesJa: ['全部うまくいっている', '早く家に帰りたい', '新しい上司が嫌い'],
+      choices: ['His job was going really well', 'He wanted to come home soon', 'He hated his new boss'], a: 0,
+      choicesJa: ['仕事はとてもうまくいっている', '早く家に帰りたい', '新しい上司が嫌い'],
       cue: '「But you said」のあと',
       line: '*But you said* everything was going *awesome*.',
       said: '「でも、全部最高にうまくいってるって言ってたじゃない」と言う。',
@@ -199,7 +199,7 @@ export const fakingIt: Clip = {
       trap: '文法から him and me と書きたくなる。正しい文でなく、聞こえた形を書く。',
       use: 'Between you and I, it’s a mess.（ここだけの話、ひどいよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [108, 114.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'gonna', seg: [107.95, 114.6],
       stem: 'Fill the gap: “___ tell you a secret about everyone else’s job.”',
       ja: '「___ tell you a secret about everyone else’s job.」の空所は？',
       choices: ['I’m gonna', 'I wanna', 'I gotta'], a: 0,
@@ -210,18 +210,6 @@ export const fakingIt: Clip = {
       mean: 'I’m gonna 〜 ＝ I’m going to 〜（これから〜する）。gonna は「ゴナ」。',
       trap: 'wanna は「ワナ」、gotta は「ガラ」。ここは「ゴナ」と聞こえる。',
       use: 'I’m gonna tell you something.（ちょっと言っておくね）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', reveals: ['figure'], seg: [110.9, 135.6],
-      stem: 'What does April want Andy to see?',
-      ja: 'エイプリルはアンディに何を分かってほしい？',
-      choices: ['He’ll be fine, like everyone', 'He could quit and stay home', 'She needs his help, too'], a: 0,
-      choicesJa: ['みんなと同じで、大丈夫になる', '辞めて家にいればいい', '彼女も助けが必要'],
-      cue: '最後の「And you will too」',
-      line: 'No one knows what they’re doing… faking it *until they figure it out*.',
-      said: '「誰も分かってない。みんな、分かるまでふりをしてるだけ。あなたもそう」と言う。',
-      mean: 'fake it ＝「ふりをする」。figure it out ＝ 分かる・解決する。あなたもできる、という励まし。',
-      trap: '「私も分からない」から、助けを求めていると思いやすい。最後の you will too が結論。',
-      use: 'Fake it till you make it.（できるまで、できるふりを）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'secret', reveals: ['run', 'advice'], seg: [110.9, 123], retired: true,
       stem: 'Why does April share her “secret”?',
@@ -259,7 +247,19 @@ export const fakingIt: Clip = {
       trap: '「ハーフ」なら Half、「モウスト」なら Most、「オール」なら All、「フュー」なら A few。',
       use: 'Half the time, I’m just guessing.（半分くらいは勘でやってる）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], ctx: true, seg: [119.2, 130.9],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'advice', reveals: ['figure'], seg: [122.95, 138.0],
+      stem: 'What does April want Andy to see?',
+      ja: 'エイプリルはアンディに何を分かってほしい？',
+      choices: ['He’ll be fine, like everyone', 'He could quit and stay home', 'She needs his help, too'], a: 0,
+      choicesJa: ['みんなと同じで、大丈夫になる', '辞めて家にいればいい', '彼女も助けが必要'],
+      cue: '最後の「And you will too」',
+      line: 'Deep down, everyone is just faking it *until they figure it out*. *And you will too.*',
+      said: '「心の底では、みんな分かるまでふりをしてるだけ。あなたもきっとそうなる」と言う。',
+      mean: 'fake it ＝「ふりをする」。figure it out ＝ 分かる・解決する。あなたもできる、という励まし。',
+      trap: 'everyone else sucks から、辞めていいと考えがち。結論は And you will too。',
+      use: 'Fake it till you make it.（できるまで、できるふりを）' },
+
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], ctx: true, seg: [122.95, 130.9],
       stem: 'What does April mean by “I seem like it”?',
       ja: 'エイプリルの「I seem like it」はどういう意味？',
       choices: ['She only looks like she knows', 'She really does know it all', 'She knows more than he does'], a: 0,
@@ -271,17 +271,6 @@ export const fakingIt: Clip = {
       trap: 'Yeah（うん）で認めたと考えがち。認めているのは「そう見える」ことだけ。',
       use: 'I seem calm, but I’m really nervous.（落ち着いて見えるけど、本当は緊張してる）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [124.9, 131.6],
-      stem: 'Type the gap: “faking it until they ___.” (3 words)', answer: 'figure it out',
-      ja: '「faking it until they ___.」の空所を書こう（3語）',
-      cue: '「faking it until they」のあと',
-      line: 'Deep down, everyone is just faking it until they *figure it out*.',
-      said: '「心の底では、みんな分かるまでふりをしてるだけ」と言う。',
-      mean: 'figure it out ＝「分かる・やり方を見つける」。「フィギャリラウ」とつながる。',
-      trap: 'figure it がつながって一語に聞こえやすい。out まで3語で書く。',
-      use: 'Don’t worry, you’ll figure it out.（大丈夫、そのうち分かるよ）' },
-
-    // retired (A2): a C2 item on the same point as x1
     { id: 'nt4', skill: 'infer', level: 'C2', point: 'figure', reveals: ['advice'], seg: [126.6, 135.6], retired: true,
       stem: 'What exactly does April predict for Andy with “And you will too”?',
       choices: ['That he will work it out too', 'That he will keep faking it too', 'That he will get bored of it too'], a: 0,
@@ -292,6 +281,17 @@ export const fakingIt: Clip = {
       trap: 'faking it が耳に残りやすい。省略は助動詞の形で、受ける語が決まる。',
       use: 'I passed, and you will too.（私も受かったし、あなたも受かるよ）' },
 
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [126.9, 131.6],
+      stem: 'Type the gap: “faking it until they ___.” (3 words)', answer: 'figure it out',
+      ja: '「faking it until they ___.」の空所を書こう（3語）',
+      cue: '「faking it until they」のあと',
+      line: 'Deep down, everyone is just faking it until they *figure it out*.',
+      said: '「心の底では、みんな分かるまでふりをしてるだけ」と言う。',
+      mean: 'figure it out ＝「分かる・やり方を見つける」。「フィギャリラウ」とつながる。',
+      trap: 'figure it がつながって一語に聞こえやすい。out まで3語で書く。',
+      use: 'Don’t worry, you’ll figure it out.（大丈夫、そのうち分かるよ）' },
+
+    // retired (A2): a C2 item on the same point as x1
     // retired (A2): the key rests on tone (over the top, but sincere)
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'awesome', seg: [131.5, 135.6], retired: true,
       stem: 'How does April’s last reason for him come across?',
@@ -315,7 +315,7 @@ export const fakingIt: Clip = {
       trap: 'real（本当）から「永遠に」と思いやすい。this time（今度は）が手がかり。',
       use: 'Okay, I’m leaving for real this time.（じゃあ、今度こそ本当に帰るね）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cookies', seg: [143.7, 152.3],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cookies', seg: [144.15, 150.55],
       stem: 'What did April make the sandwiches with instead of bread?',
       ja: 'エイプリルはパンの代わりに何でサンドイッチを作った？',
       choices: ['Cookies', 'Crackers', 'Bagels'], a: 0,
@@ -327,11 +327,11 @@ export const fakingIt: Clip = {
       trap: 'bologna（ハム）のサンドイッチなので、パンに近い物を選びやすい。cookies を聞く。',
       use: 'Can I get rice instead of fries?（ポテトの代わりにライスにできる？）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'cookies', ctx: true, seg: [143.7, 154.2],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'cookies', ctx: true, seg: [144.15, 154.2],
       stem: 'How does Andy feel about the sandwiches?',
       ja: 'サンドイッチをもらって、アンディはどんな気持ち？',
-      choices: ['Touched and thankful', 'Amused by her joke', 'Polite but secretly unhappy'], a: 0,
-      choicesJa: ['感動して、感謝している', '冗談を面白がっている', '礼儀正しいが、内心いやがっている'],
+      choices: ['Thankful', 'Amused', 'Disappointed'], a: 0,
+      choicesJa: ['感謝している', '面白がっている', 'がっかりしている'],
       cue: '「instead of bread」への返事',
       line: 'April: I used cookies instead of bread. / Andy: *You think of everything.* — *I love you.*',
       said: '「パンの代わりにクッキーを使った」に、「本当に気が利くね。愛してる」と言う。',

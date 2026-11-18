@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 4, new 3, ctx 3, tx 5
+// R4 REVIEW 2026-11-18: keep 7, rewrite 5, retire 4, new 3, ctx 3, tx 5, qa 16
 // A2 REVIEW 2026-11-17: keep 8, rewrite 7, retire 2, new 1
 // “Chandler's Date Has a Giant Head | Friends” (the official Friends channel, Best of Season 2): Chandler tells his
 // friends he's finally asking out Allison from work despite her unusually large head; on the date he can't stop
@@ -38,7 +38,7 @@ export const giantHead: Clip = {
       trap: '「トゥナイ」で終われば今夜、「トゥモロー・ナイ」なら明日の夜、「ネクスト」で始まれば来週末。',
       use: 'I have a date tomorrow night.（明日の夜、デートがあるの）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'work', ctx: true, seg: [0, 6.8],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'work', ctx: true, seg: [0, 6.45],
       stem: 'How does Chandler know Allison?',
       ja: 'チャンドラーはアリソンとどういう知り合い？',
       choices: ['They work at the same place', 'She lives in the same building', 'She’s a friend of a friend'], a: 0,
@@ -61,17 +61,6 @@ export const giantHead: Clip = {
       trap: 'smart を「細い」と思いやすい（日本語のスマート）。英語の smart は「頭がいい」。',
       use: 'She’s smart and really kind.（彼女は頭がよくて、すごくやさしい）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'holdoff', reveals: ['askout'], seg: [6.3, 13],
-      stem: 'What does “holding off asking her out” mean?',
-      ja: '「holding off asking her out」はどういう意味？',
-      choices: ['Not asking her yet', 'Waiting for her to ask', 'Asking her again and again'], a: 0,
-      choicesJa: ['まだ誘わないでいる', '彼女から誘われるのを待つ', '何度も誘う'],
-      cue: '「I’ve been」のあと。', line: 'I’ve been *holding off* asking her out in the past',
-      said: '「今まではデートに誘うのを控えてたんだ」と言う。',
-      mean: '文字どおりは「離して持っておく」。手を出さずにおく→hold off 〜ing ＝ 〜するのを先にのばす。ask 人 out ＝ デートに誘う。',
-      trap: 'hold off から「待つ」と思うと、彼女から誘われる話に聞こえやすい。誘うのは彼。',
-      use: 'Let’s hold off on booking until Friday.（予約は金曜まで待とう）' },
-
     { id: 's1', skill: 'sound', level: 'B2', point: 'askout', seg: [6.3, 13], retired: true,
       stem: 'Fill the gap: “I’ve been holding off ___ in the past…”',
       ja: '「I’ve been holding off ___ in the past…」の空所は？',
@@ -93,10 +82,21 @@ export const giantHead: Clip = {
       trap: 'in the past を昔の出来事と取ると、断られた話に聞こえる。まだ一度も誘っていない。',
       use: 'I’ve been meaning to call you.（ずっと電話しようと思ってたんだ）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hangup', seg: [13.1, 22.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'holdoff', reveals: ['askout'], seg: [8.65, 13],
+      stem: 'What does “holding off asking her out” mean?',
+      ja: '「holding off asking her out」はどういう意味？',
+      choices: ['Not asking her yet', 'Waiting for her to ask', 'Asking her again and again'], a: 0,
+      choicesJa: ['まだ誘わないでいる', '彼女から誘われるのを待つ', '何度も誘う'],
+      cue: '「I’ve been」のあと。', line: 'I’ve been *holding off* asking her out in the past',
+      said: '「今まではデートに誘うのを控えてたんだ」と言う。',
+      mean: '文字どおりは「離して持っておく」。手を出さずにおく→hold off 〜ing ＝ 〜するのを先にのばす。ask 人 out ＝ デートに誘う。',
+      trap: 'hold off から「待つ」と思うと、彼女から誘われる話に聞こえやすい。誘うのは彼。',
+      use: 'Let’s hold off on booking until Friday.（予約は金曜まで待とう）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hangup', seg: [13.1, 21.05],
       stem: 'What does “not gonna let that stuff hang me up” mean?',
       ja: '「not gonna let that stuff hang me up」はどういう意味？',
-      choices: ['It won’t stop me now', 'I won’t call her again', 'I won’t hang up on her'], a: 0,
+      choices: ['It won’t stop me now', 'I won’t call her again', 'I won’t end her calls'], a: 0,
       choicesJa: ['もうそれで止まらない', 'もう彼女に電話しない', '彼女の電話を切らない'],
       cue: '「but」のあと。', line: 'but I’m not gonna let that stuff *hang me up* anymore',
       said: '「でも、もうそういうことで止まったりしない」と言う。',
@@ -104,7 +104,7 @@ export const giantHead: Clip = {
       trap: 'hang up（電話を切る）が有名なので電話の話に聞こえやすい。人が間に入ると別の意味。',
       use: 'Don’t let one bad day hang you up.（一日の失敗で止まらないで）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B2', point: 'growing', ctx: true, seg: [16.2, 23.6],
+    { id: 'c1', skill: 'pragma', level: 'B2', point: 'growing', ctx: true, seg: [16.35, 23.6],
       stem: 'What does Chandler say about himself?',
       ja: 'チャンドラーは自分のことを何と言う？',
       choices: ['He’s a better person now', 'He’s getting taller', 'He’s ready to get married'], a: 0,
@@ -126,7 +126,7 @@ export const giantHead: Clip = {
       trap: '勇気を出した話に聞こえやすいが、直前の決心は頭を気にしないこと。小さな話を大きく言うのが笑い。',
       use: 'Look at me, cooking dinner!（見て、夕飯作ってるよ！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'major', seg: [25.2, 33],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'major', seg: [25.2, 32.45],
       stem: 'What does Allison say about what she studied?',
       ja: 'アリソンは大学で勉強したことについて何と言う？',
       choices: ['It didn’t help get a job', 'It helps her at work now', 'It was too hard to finish'], a: 0,
@@ -137,7 +137,7 @@ export const giantHead: Clip = {
       trap: 'useless だけだと今の仕事の話にも聞こえやすい。続く求人の話で、仕事探しと分かる。',
       use: 'My degree was totally useless here.（ここでは学位がまるで役に立たない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'date', reveals: ['list'], seg: [25.5, 56.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'date', reveals: ['list', 'sure'], seg: [25.5, 56.5],
       stem: 'What does Chandler keep thinking about on the date?',
       ja: 'デート中、チャンドラーはずっと何を考えている？',
       choices: ['Allison’s big head', 'Allison’s job', 'His own clothes tonight'], a: 0,
@@ -159,7 +159,7 @@ export const giantHead: Clip = {
       trap: 'I mean は言い直しにも使うが、ここは前の言葉を取り消していない。',
       use: 'It’s far. I mean, two hours by bus.（遠いよ。だってバスで2時間）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'often', reveals: ['major'], seg: [26.5, 34.6],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'often', reveals: ['major'], seg: [26.5, 32.45],
       stem: 'What does Allison mean with her “how often…” question?',
       ja: 'アリソンの「how often…」の質問はどういう意味？',
       choices: ['Nobody hires for that', 'Read the ads more often', 'Do you know such a job?'], a: 0,
@@ -173,8 +173,8 @@ export const giantHead: Clip = {
     { id: 't1', skill: 'attitude', level: 'B2', point: 'sure', ctx: true, seg: [28.6, 37],
       stem: 'Is Chandler really listening to Allison?',
       ja: 'チャンドラーはアリソンの話を本当に聞いている？',
-      choices: ['No, he’s thinking of her head', 'Yes, and he agrees with her', 'Yes, but he is very tired'], a: 0,
-      choicesJa: ['いいえ、彼女の頭のことを考えている', 'はい、賛成している', 'はい、でもとても疲れている'],
+      choices: ['No, he’s thinking of her head', 'Yes, he agrees with her', 'Yes, he wants to hear more'], a: 0,
+      choicesJa: ['いいえ、彼女の頭のことを考えている', 'はい、賛成している', 'はい、もっと聞きたがっている'],
       cue: '短い返事と、すぐあとの心の声。',
       line: 'Allison: …how often do you see “philosopher wanted”? / Chandler: *Hmm, sure.* … My God, that’s a big head.',
       said: '「うん、そうだね」とだけ返し、すぐ心の中で「なんて大きな頭だ」と思う。',
@@ -193,7 +193,7 @@ export const giantHead: Clip = {
       trap: 'がっかりや退屈にも見えやすいが、心の声は驚いたあと、照明のせいにしている。',
       use: 'Okay, stay calm. It’s probably nothing.（落ち着け、きっと大丈夫）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'lighting', seg: [37, 45.4],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'lighting', seg: [37, 42.55],
       stem: 'Why does Chandler think about the lighting?',
       ja: 'チャンドラーはなぜ照明のことを考える？',
       choices: ['To explain her big head', 'To move to a brighter table', 'Because she looks tired'], a: 0,
@@ -215,7 +215,7 @@ export const giantHead: Clip = {
       trap: 'ゴルフボールの色や形に引かれやすい。前の文とつないで、比べている物を追う。',
       use: 'If that’s small, mine must be tiny.（それが小さいなら、私のは極小だ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'golf', seg: [38.6, 45],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'golf', seg: [38.45, 45.4],
       stem: 'What does Chandler think his head looks like at work?',
       ja: 'チャンドラーは、会社で自分の頭が何のように見えると思う？',
       choices: ['A golf ball', 'A baseball', 'A ping-pong ball'], a: 0,
@@ -227,7 +227,7 @@ export const giantHead: Clip = {
       trap: 'must を「〜しなければ」と考えがち。ここの must は「きっと〜にちがいない」。',
       use: 'You must be tired.（きっと疲れてるよね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'hangup', seg: [45.5, 51.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'hangup', seg: [45.5, 50.95],
       stem: 'Type what Chandler tells himself: “All right, ___.” (6 words)', answer: "don't get hung up on it",
       ja: '「All right, ___.」の空所を書こう（6語）',
       cue: '「All right」のすぐあと。', line: 'All right, *don’t get hung up on it*.',
@@ -239,12 +239,12 @@ export const giantHead: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'five', seg: [45.9, 50.9], keep: true,
       stem: 'How many things does Chandler tell himself to list?',
       ja: 'チャンドラーは自分に、いくつ挙げろと言う？',
-      choices: ['Three', 'Five', 'Nine'], a: 1,
-      choicesJa: ['3つ', '5つ', '9つ'],
+      choices: ['Three', 'Four', 'Five', 'Nine'], a: 2,
+      choicesJa: ['3つ', '4つ', '5つ', '9つ'],
       cue: '「list」の直後の数。', line: 'Quick, quick, list *five things* you like about her.',
       said: '「早く、彼女の好きなところを5つ挙げろ」と自分に言う。',
       mean: 'list ＝ 挙げる、並べる。良いところに目を向けて、気をそらそうとする。',
-      trap: 'three は「スリー」。five と nine は「アイ」の音が同じなので、最初の「ファ」を聞く。',
+      trap: 'three は「スリー」、four は「フォー」。five と nine は「アイ」が同じなので、出だしの「ファ」を聞く。',
       use: 'Name three things you like.（好きなことを3つ挙げて）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'list', reveals: ['five'], seg: [46.3, 56], retired: true,
@@ -257,7 +257,7 @@ export const giantHead: Clip = {
       trap: '話題が彼女の見た目なので、彼女が的に見えやすい。誰の作戦が失敗しているかを聞く。',
       use: 'Don’t think about pizza. Great, now I am.（ピザを考えるな…考えちゃった）' },
 
-    { id: 'd5', skill: 'phrase', level: 'B1', point: 'dresser', seg: [48.4, 54.9],
+    { id: 'd5', skill: 'phrase', level: 'B1', point: 'dresser', seg: [48.4, 55.4],
       stem: 'What does “good dresser” mean?',
       ja: '「good dresser」はどういう意味？',
       choices: ['Wears nice clothes', 'Cooks really well', 'Sells clothes in a shop'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 0, new 3, ctx 3, tx 7
+// R4 REVIEW 2026-11-18: keep 9, rewrite 7, retire 0, new 3, ctx 3, tx 7, qa 18
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 2
 // “The day Leslie fell in love with Ann | Parks and Recreation” (the official Parks and Recreation channel, Season 1):
 // at a public forum Ann asks the parks department to deal with a dangerous pit; Tom flirts with her, Leslie
@@ -6,7 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Untested: 26–31 s (the bad-words complaint), 63–69 s
 // (applause), 77–89 s (whisper loops one garbled line; only the captions have the developer and the condos), 124–128 s
 // (innuendo). Named in the audio: Leslie Knope and Tom Haverford (3–7 s), Ann Perkins (57 s).
-// EXCLUDE 31.2–37.2: obscene heckling (f-words), and its set-up line.
+// EXCLUDE 31.2–36.75: obscene heckling (f-words), and its set-up line (json3: Leslie's “These people” starts 36.8).
 // Same scene as tomhitsonann (KHark3X5jHI): this bank keeps off its points (fire away, Barry / Anyone else, I have
 // kids, dug out, went bankrupt, both legs, pretty serious, move on, open person, exchange numbers, I'd love to, bottom
 // line, I'll do something about it, pinky promise, going there tomorrow, six years).
@@ -28,6 +28,18 @@ export const leslieAnnForum: Clip = {
       mean: 'take ＝ 撮影の1回分。take two ＝「2回目の撮り」→ もう一度最初から。',
       trap: 'take（取る）と two から「2つ取る」と考えがち。撮影の言葉で「2回目」。',
       use: 'Okay, take two. Let me try that again.（よし、もう一回。やり直させて）' },
+
+    { id: 'g0', skill: 'gist', level: 'B1', point: 'forum', seg: [0.5, 16.3],
+      stem: 'What are Leslie and Tom there to do?',
+      ja: 'レスリーとトムは何をしに来ている？',
+      choices: ['Answer people’s questions', 'Give a talk about the city', 'Choose a new police chief'], a: 0,
+      choicesJa: ['みんなの質問に答える', '町について話をする', '新しい警察署長を選ぶ'],
+      cue: '「We are here to」のあと。',
+      line: 'We are here to *answer any and all of your questions*…',
+      said: '自己紹介のあと、「みなさんのどんな質問にもお答えします」と言う。',
+      mean: 'We are here to 〜 ＝ 私たちは〜するために来ています。集会（フォーラム）で、市の職員が住民の質問に答える場。',
+      trap: 'すぐあとに jail（刑務所）の話が出るが、それは住民の意見。二人の役目は We are here to のあと。',
+      use: 'We are here to help.（お手伝いするために来ています）' },
 
     { id: 'fa', skill: 'phrase', level: 'B2', point: 'fireaway', seg: [6.5, 10.1], retired: true,
       stem: 'Leslie says, “So *fire away*.” What does she mean?',
@@ -52,7 +64,7 @@ export const leslieAnnForum: Clip = {
       trap: 'music is so loud も聞こえるが、それは文句。頼みは Stop のあと。',
       use: 'Stop the music, please.（音楽を止めてください）' },
 
-    { id: 'nt1', skill: 'infer', level: 'B2', point: 'loudly', seg: [37.3, 47.5],
+    { id: 'nt1', skill: 'infer', level: 'B2', point: 'loudly', seg: [36.75, 47.5],
       stem: 'What does Leslie hear when people yell at her?',
       ja: 'どなられるとき、レスリーには何が聞こえる？',
       choices: ['That they love their town', 'That they are angry at her', 'That she should go home'], a: 0,
@@ -100,14 +112,14 @@ export const leslieAnnForum: Clip = {
       trap: 'Excellent（すばらしい）から、いい話だと思いやすい。No は good idea への返事。',
       use: 'No, it’s more of a complaint.（いえ、どちらかというと苦情です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [88.6, 93.8],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'year', seg: [88.9, 93.45],
       stem: 'How long has the pit been there?',
       ja: '穴はどのくらいそこにある？',
       choices: ['2 months', '6 months', '12 months', '20 months'], a: 2, keep: true,
       choicesJa: ['2か月', '6か月', '12か月', '20か月'],
       cue: '「almost a year」のすぐあと。',
       line: 'it’s been there for *almost a year*. — *Twelve months*.',
-      said: '「穴はもう1年近く、12か月そのまま」と言う。',
+      said: 'アンの「もう1年近くそのまま」に、すぐ「12か月」と言いそえる声が入る。',
       mean: 'almost a year を twelve months と言い直して、長さを強めている。',
       trap: 'six は「スィ」で始まり、two は「トゥー」だけ。twelve は「ルヴ」、twenty は「ティ」で終わる。',
       use: 'It’s been like this for almost a year.（もう1年近くこのままです）' },
@@ -150,16 +162,16 @@ export const leslieAnnForum: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'goingon', seg: [112.8, 121.9],
       stem: 'What does Tom say about the boyfriend’s life?',
       ja: '彼氏の生活について、トムは何と言う？',
-      choices: ['It wasn’t going well before', 'He had few plans before', 'He had little money before'], a: 0,
-      choicesJa: ['もともとうまくいっていなかった', 'もともと予定が少なかった', 'もともとお金がなかった'],
+      choices: ['It wasn’t going well before', 'He was doing great before', 'He was very busy before'], a: 0,
+      choicesJa: ['もともとうまくいっていなかった', 'もともと絶好調だった', 'もともととても忙しかった'],
       cue: '「to start with」の前。',
       line: 'this guy sounds like he *didn’t have a lot going on for him* to start with.',
       said: '「その彼、もともとパッとしない感じみたいだし。そのうえ両脚骨折」と言う。',
       mean: 'have a lot going for 〜 ＝ 〜にはいい点が多い。否定なので「パッとしない」。',
-      trap: 'going on を「予定」と思うと忙しさの話になる。for him が付くと、いい点の話。',
+      trap: 'a lot going on だけ聞くと「忙しかった」と考えがち。前に didn’t があり、for him が付くと、いい点の話。',
       use: 'She has a lot going for her.（彼女はいいところがたくさんある）' },
 
-    { id: 't1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [127.9, 133.4],
+    { id: 't1', skill: 'attitude', level: 'B2', point: 'surprise', seg: [127.9, 133.0],
       stem: 'How does Ann react to Tom?',
       ja: 'アンはトムにどう反応する？',
       choices: ['Shocked he’s flirting here', 'Glad that he likes her', 'Not sure what he means'], a: 0,
@@ -197,8 +209,8 @@ export const leslieAnnForum: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'ask', reveals: ['owned'], seg: [148.4, 166.1],
       stem: 'What does Ann want the city to do?',
       ja: 'アンは市に何をしてほしい？',
-      choices: ['Fix a dangerous hole', 'Pay for his broken legs', 'Go after the builder'], a: 0,
-      choicesJa: ['危ない穴を直す', '彼の骨折のお金を払う', '業者を訴える'],
+      choices: ['Fix a dangerous hole', 'Pay for his broken legs', 'Find the builder'], a: 0,
+      choicesJa: ['危ない穴を直す', '彼の骨折のお金を払う', '業者を見つける'],
       cue: '「bottom line」のあとの頼み。',
       line: 'it’s ugly and it’s dangerous and it’s government owned and *you need to do something about it*.',
       said: '「何か月も直してもらおうとしてるのに、だれも何もしない。何とかして」と訴える。',
@@ -217,7 +229,7 @@ export const leslieAnnForum: Clip = {
       trap: 'I’d love to は本当の承諾にも使う。すぐ本題に戻るなら、受け流しの合図。',
       use: 'I’d love to, but let’s focus.（ぜひ、でも今は本題を）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'fixed', seg: [152.9, 160],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'fixed', seg: [153.0, 159.95],
       stem: 'Type what Ann says: “I’ve been trying to ___ for months.” (4 words)', answer: 'get this thing fixed',
       ja: 'アンの言葉を書こう：「I’ve been trying to ___ for months.」（4語）',
       cue: '「bottom line is」のあと。',
@@ -227,14 +239,14 @@ export const leslieAnnForum: Clip = {
       trap: 'get の t と this がつながり「ゲディス」に近い。fixed の ed も弱く短い。',
       use: 'I need to get my phone fixed.（スマホを直してもらわないと）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'owned', seg: [158.2, 165.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'owned', seg: [158.4, 165.4],
       stem: 'Why should the city fix the pit, says Ann?',
       ja: 'アンによると、なぜ市が穴を直すべき？',
       choices: ['The land is the government’s', 'The builder works for the city', 'The city allowed the condos'], a: 0,
       choicesJa: ['その土地は市のものだから', '業者は市の仕事をしているから', '市がマンションを許したから'],
       cue: '「ugly」「dangerous」のあと。',
       line: 'it’s ugly and it’s dangerous and it’s *government owned*',
-      said: '「見苦しいし、危ないし、市の土地なんだから」と理由を並べる。',
+      said: '「見た目もひどいし、危ないし、市の土地なんです」と理由を並べる。',
       mean: 'government owned ＝ 国や市が持っている。だから市が責任を持つべき、という理屈。',
       trap: 'government だけ拾うと「市の業者」に聞こえる。owned まで聞くと土地の持ち主の話。',
       use: 'Is this place privately owned?（ここは私有地ですか）' },
@@ -251,7 +263,7 @@ export const leslieAnnForum: Clip = {
       trap: '「明日行く」で止めると、見に行くだけに聞こえる。and then のあとに次の計画。',
       use: 'And when that’s done, we’ll celebrate.（それが済んだら、お祝いしよう）' },
 
-    { id: 'hp', skill: 'detail', level: 'B1', point: 'selfhelp', ctx: true, seg: [173.6, 181.0],
+    { id: 'hp', skill: 'detail', level: 'B1', point: 'selfhelp', ctx: true, seg: [174.3, 181.9],
       stem: 'Who does Leslie say will help Ann?',
       ja: 'だれがアンの力になると、レスリーは言う？',
       choices: ['Leslie herself', 'The whole department', 'Tom and Leslie'], a: 0,
@@ -311,7 +323,7 @@ export const leslieAnnForum: Clip = {
       trap: 'ダムを「大変さ」や「市の事業」と取りやすい。my と前の話の枠で読む。',
       use: 'This could be my big break.（これが私の大きなチャンスかも）' },
 
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'sandbox', seg: [211.0, 217.6],
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'sandbox', seg: [212.3, 218.5],
       stem: 'What did Leslie recently clean all over the city?',
       ja: 'レスリーが最近、町じゅうできれいにしたものは？',
       choices: ['The sand kids play in', 'The walls with writing', 'The city’s streets'], a: 0,

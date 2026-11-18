@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 11, retire 1, new 5, ctx 6, tx 17
+// R4 REVIEW 2026-11-18: keep 5, rewrite 11, retire 1, new 5, ctx 6, tx 17, qa 24
 // A2 REVIEW 2026-11-17: keep 12, rewrite 4, retire 8, new 3
 // “Ann gets offended | Parks and Recreation” (the official Parks and Recreation channel, Season 3): Leslie leaves a
 // party to help Ann cram for an interview, finds Ann there with her date Howard (a radio host), and polite digs turn
@@ -16,7 +16,7 @@ export const annOffended: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 's1', skill: 'sound', level: 'B1', point: 'haveto', seg: [0, 7.3],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'haveto', seg: [0, 5.1],
       stem: '“…but I ___ go help Ann.”', ja: '空所に入るのは？',
       choices: ['have to', 'had to', 'want to'], a: 0,
       choicesJa: ['〜しなきゃ', '〜しなきゃならなかった', '〜したい'],
@@ -27,7 +27,7 @@ export const annOffended: Clip = {
       trap: 'had to は「ハットゥ」、want to は「ワナ」。ここは「ハフタ」。',
       use: 'I wish I could stay, but I have to go.（いたいけど、もう行かなきゃ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'cram', seg: [0, 7.3],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'cram', seg: [5.1, 7.35],
       stem: 'Why does Ann need Leslie’s help tonight?', ja: 'アンはなぜ今夜レスリーの助けが要る？',
       choices: ['Ann has a job interview', 'Ann has a very big exam', 'Ann is moving house'], a: 0,
       choicesJa: ['アンは就職の面接がある', 'アンはとても大事な試験がある', 'アンは引っ越しをする'],
@@ -38,7 +38,7 @@ export const annOffended: Clip = {
       trap: 'cram（詰めこみ勉強）から試験だと思いやすい。最後の interview を聞く。',
       use: 'I have a job interview tomorrow.（明日、就職の面接があるんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', seg: [18, 40],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', seg: [11.35, 26.38],
       stem: 'Why is Leslie surprised to see Ann?', ja: 'レスリーはなぜアンを見て驚く？',
       choices: ['Ann should be home studying', 'Ann said she was sick', 'Ann is dancing alone'], a: 0,
       choicesJa: ['アンは家で勉強しているはず', 'アンは具合が悪いと言っていた', 'アンが一人で踊っている'],
@@ -60,7 +60,7 @@ export const annOffended: Clip = {
       trap: 'anyway（どうせ）から、必要なかったと考えがち。理由は way too much stuff。',
       use: 'That’s way too much food.（それ、多すぎるよ）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'blame', reveals: ['toomuch'], seg: [26, 35.4],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'blame', reveals: ['toomuch'], seg: [26.35, 35.4],
       stem: 'Who does Ann blame for not reading?', ja: '読まなかったことを、アンは誰のせいにしている？',
       choices: ['Leslie', 'Herself', 'Her date'], a: 0,
       choicesJa: ['レスリー', '自分', 'デートの相手'],
@@ -71,7 +71,7 @@ export const annOffended: Clip = {
       trap: 'I mean で言い訳が続くと思いやすい。最後の you gave me を聞く。',
       use: 'That’s a ridiculous price.（ばかげた値段だね）' },
 
-    { id: 'd4', skill: 'pragma', level: 'B1', point: 'interview', ctx: true, seg: [33.5, 39.8],
+    { id: 'd4', skill: 'pragma', level: 'B1', point: 'interview', ctx: true, seg: [33.65, 39.8],
       stem: 'Is Ann going to the interview tomorrow?', ja: 'アンは明日の面接に行く？',
       choices: ['Probably yes', 'Definitely not', 'Definitely yes'], a: 0,
       choicesJa: ['たぶん行く', '絶対に行かない', '絶対に行く'],
@@ -82,7 +82,7 @@ export const annOffended: Clip = {
       trap: 'Yes と同じに聞こえるが、I think がつくと「たぶん」。行くと言い切ってはいない。',
       use: 'Is it open today? — I think so.（今日開いてる？—たぶんね）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B1', point: 'introfriend', seg: [45.9, 49],
+    { id: 'f5', skill: 'phrase', level: 'B1', point: 'introfriend', seg: [45.9, 49.05],
       stem: 'How does Ann introduce Howard to Leslie?', ja: 'アンはハワードをレスリーにどう紹介する？',
       choices: ['As her friend', 'As her boyfriend', 'As her coworker'], a: 0,
       choicesJa: ['友だち', '彼氏', '同僚'],
@@ -115,7 +115,7 @@ export const annOffended: Clip = {
       trap: 'book だけ聞くと、なくした話だと思いやすい。',
       use: 'Can I get my money back?（返金してもらえますか）' },
 
-    { id: 'm2', skill: 'marker', level: 'B1', point: 'byway', seg: [73.9, 79.3],
+    { id: 'm2', skill: 'marker', level: 'B1', point: 'byway', seg: [73.9, 78.95],
       stem: 'What does Ann mean by “*by the way*”?', ja: 'アンの「by the way」の意味は？',
       choices: ['A new topic', 'On my way here', 'In the end'], a: 0,
       choicesJa: ['ところで（別の話）', 'ここに来る途中で', '結局'],
@@ -126,7 +126,7 @@ export const annOffended: Clip = {
       trap: 'way（道）から、来る途中の話に聞こえるが、このあとは本の話。in the end（結局）は話のまとめ。',
       use: 'By the way, where’s the station?（ところで、駅はどこですか）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'knownbetter', reveals: ['jab'], seg: [77.5, 84.6],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'knownbetter', reveals: ['jab'], seg: [77.88, 84.6],
       stem: 'Type Leslie’s words: “I ___ better than to loan…” (3 words)', ja: 'レスリーの言葉の空所3語を書こう',
       answer: 'should have known',
       cue: 'I のあとの3語',
@@ -147,7 +147,7 @@ export const annOffended: Clip = {
       trap: 'fast（速い）から、歩く速さの話だと思いやすい。boyfriends が次々替わる話。',
       use: 'Friends come and go.（友だちは出会ったり離れたりするもの）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B1', point: 'exactly', seg: [79, 87.8],
+    { id: 'p1', skill: 'pragma', level: 'B1', point: 'exactly', seg: [79, 86.95],
       stem: 'What does Ann mean by “What are you saying, *exactly*?”', ja: 'アンの「What are you saying, exactly?」の意味は？',
       choices: ['Say clearly what you mean', 'Can you say that once more', 'I agree with you'], a: 0,
       choicesJa: ['はっきり言ってよ', 'もう一回言って', 'その通りね'],
@@ -158,7 +158,7 @@ export const annOffended: Clip = {
       trap: '聞こえなかったから聞き返したと思いやすい。exactly（はっきり）が手がかり。',
       use: 'What do you mean, exactly?（それ、どういう意味？）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'howlong', seg: [84.1, 89.8],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'howlong', seg: [84.1, 89.75],
       stem: 'What does Leslie mean by “How long is it gonna last?”', ja: 'レスリーの「How long is it gonna last?」の本音は？',
       choices: ['It won’t last long', 'She wants to know dates', 'She hopes it lasts'], a: 0,
       choicesJa: ['どうせ長続きしない', '期間を知りたい', '続いてほしい'],
@@ -198,7 +198,7 @@ export const annOffended: Clip = {
       trap: 'Ann とけんか中なので Ann への悪口と取りやすい。this は目の前の人を指す。',
       use: 'Well, this one’s a keeper.（この人は手放しちゃだめね）' },
 
-    { id: 'a2', skill: 'pragma', level: 'B2', point: 'notmad', ctx: true, seg: [100.3, 108.5],
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'notmad', ctx: true, seg: [100.3, 108.45],
       stem: 'What does Leslie say when Ann asks if she’s mad?', ja: '怒ってるの？と聞かれて、レスリーは何と言う？',
       choices: ['Ann seems mad at her', 'She is a little mad', 'She is mad at Howard'], a: 0,
       choicesJa: ['アンのほうが怒っているみたい', '少し怒っている', 'ハワードに怒っている'],
@@ -262,15 +262,15 @@ export const annOffended: Clip = {
       trap: '文字通り学校の話と取りやすい。「〜の資格があったっけ？」は口出しをはねつける型。',
       use: 'Since when are you a doctor?（いつから医者になったの？）' },
 
-    { id: 'h3', skill: 'attitude', level: 'B1', point: 'offense', reveals: ['nooffense'], seg: [122.2, 133.2],
+    { id: 'h3', skill: 'attitude', level: 'B1', point: 'offense', reveals: ['nooffense'], seg: [123.15, 133.2],
       stem: 'How does Ann feel after the line about nursing?', ja: '看護の資格の話のあと、アンはどんな気持ち？',
-      choices: ['Hurt', 'Happy', 'Sorry'], a: 0,
-      choicesJa: ['傷ついた', 'うれしい', '申し訳ない'],
+      choices: ['Hurt', 'Fine with it', 'Sorry'], a: 0,
+      choicesJa: ['傷ついた', '気にしていない', '申し訳ない'],
       cue: 'アンの短い返事',
       line: 'I don’t remember you having a nursing degree in feelings. — *Offense. That’s rude.*',
       said: '「気持ちの看護師の資格なんてあった？」に「悪く思ったよ。失礼ね」と返す。',
-      mean: 'offense ＝ 気分を害すること。No offense（悪く思わないで）をひっくり返して「傷ついた」と言っている。rude ＝ 失礼。',
-      trap: 'Offense の一語では意味がつかみにくいが、続く rude（失礼）で傷ついたとわかる。',
+      mean: 'offense ＝ 気分を害すること。No offense（悪く思わないで）を裏返して「傷ついた」。rude ＝ 失礼。',
+      trap: 'No offense が続くので、気にしていないと考えがち。No のない Offense と rude で傷ついたとわかる。',
       use: 'That’s rude.（それは失礼だよ）' },
 
     { id: 'c3', skill: 'pragma', level: 'B2', point: 'notbest', ctx: true, seg: [138.8, 146.2],
@@ -305,7 +305,7 @@ export const annOffended: Clip = {
       trap: '練習のせりふなら落ち着いた言い方になるはず。方針の直後の一言は、方針の答え合わせ。',
       use: 'So much for staying calm.（冷静でいるはずが、これだ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'staycalm', seg: [158.6, 166.1],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'staycalm', seg: [158.6, 167.4],
       stem: 'What does Leslie say she needs to do in the fight?', ja: 'けんかで自分は何をすればいいと、レスリーは言う？',
       choices: ['Focus and stay calm', 'Say sorry first', 'Go home and sleep'], a: 0,
       choicesJa: ['集中して落ち着いている', '先に謝る', '家に帰って寝る'],
@@ -327,7 +327,7 @@ export const annOffended: Clip = {
       trap: 'sorry が聞こえると謝罪と取りやすい。何を謝っているかと、but のあとを聞く。',
       use: 'Sorry for caring!（心配して悪かったわね！）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', seg: [183.1, 209],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['push', 'favors'], seg: [183.1, 209],
       stem: 'How does the fight end?', ja: 'けんかはどう終わる？',
       choices: ['They may stop working together', 'They agree on a new plan', 'They say sorry to each other'], a: 0,
       choicesJa: ['一緒に働くのをやめるかも', '新しい計画で合意する', 'お互いに謝る'],
@@ -349,7 +349,7 @@ export const annOffended: Clip = {
       trap: 'right direction（正しい方向）から、方向をまちがえる話と考えがち。言っているのは止まったまま。',
       use: 'We ended up staying home.（結局、家にいることになった）' },
 
-    { id: 'p6', skill: 'phrase', level: 'B2', point: 'favors', ctx: true, seg: [193, 199.2],
+    { id: 'p6', skill: 'phrase', level: 'B2', point: 'favors', ctx: true, seg: [193.6, 199.7],
       stem: 'What does Ann mean by “*Enough with* your favors”?', ja: 'アンの「Enough with your favors」の意味は？',
       choices: ['Stop doing favors for me', 'Thanks for all the favors', 'Do me one more favor'], a: 0,
       choicesJa: ['もう私のために何かしないで', 'いろいろありがとう', 'もう一つお願いがある'],

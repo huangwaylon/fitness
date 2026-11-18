@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 0, ctx 3, tx 4
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 0, ctx 3, tx 4, qa 17
 // A2 REVIEW 2026-11-17: keep 6, rewrite 8, retire 5, new 3
 // “"I Am Collar Blind" - The Office US” (the official The Office channel, Best of Season 2): Michael tours the
 // warehouse for the camera crew, introduces its staff, and gives a speech on white collar versus blue collar.
@@ -14,7 +14,7 @@ export const collarBlind: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'wherewere', seg: [26.9, 35.2],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'wherewere', seg: [26.9, 32.95],
       stem: 'What does Michael mean by “Where were we?”',
       ja: 'マイケルの「Where were we?」はどういう意味？',
       choices: ['Let’s go back to it', 'Where should we film?', 'What went wrong here?'], a: 0,
@@ -26,29 +26,29 @@ export const collarBlind: Clip = {
       trap: 'where（どこ）から、場所の質問と考えがち。So とセットで「本題に戻る」合図。',
       use: 'Sorry about that. Where were we?（失礼、どこまで話したっけ）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'notes', seg: [30.8, 37.4],
-      stem: 'What is Michael doing when he talks to Pam?',
-      ja: 'マイケルはパムに話しかけて、何をしている？',
-      choices: ['Asking her to take notes', 'Asking if she feels okay', 'Asking if her notes are done'], a: 0,
-      choicesJa: ['メモを取るよう頼んでいる', '体調は大丈夫か聞いている', 'メモが終わったか聞いている'],
-      cue: 'パムの名前のあと',
-      line: 'Pam, *are you okay taking notes* then?',
-      said: '「パム、メモを取ってもらっていい？」と聞き、お礼を言う。',
-      mean: 'Are you okay 〜ing? ＝「〜してもらっていい？」。ていねいに頼む言い方。',
-      trap: 'okay から「大丈夫？」と体調の質問と思いやすい。うしろに 〜ing が続けばお願い。',
-      use: 'Are you okay driving tonight?（今夜、運転お願いしていい？）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', seg: [37, 66.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'tour', seg: [30.5, 45.55],
       stem: 'What is Michael mainly doing?',
       ja: 'マイケルは主に何をしている？',
       choices: ['Giving the camera crew a tour', 'Talking to Darryl about safety', 'Checking the shipments'], a: 0,
       choicesJa: ['撮影の人たちを案内している', 'ダリルと安全の話をしている', '荷物をチェックしている'],
       cue: '最初の「So let’s」から',
       line: 'So let’s *meet the warehouse*. Let’s *get some shots*.',
-      said: '「倉庫のみんなに会おう。映像を撮ろう」と言い、1人ずつ紹介していく。',
+      said: '「倉庫のみんなに会おう。映像を撮ろう」と言い、「ぐるっと映して」と頼んで、ダリルを紹介し始める。',
       mean: 'get some shots ＝ 映像を撮る。撮影の人たちに倉庫を案内している。',
-      trap: 'biggest fear（一番怖いこと）が安全の話に聞こえるが、それは紹介の中の1つ。',
+      trap: '始めにパムにメモを頼むが、それは準備。本題は Let’s meet the warehouse のあと。',
       use: 'Let me show you around.（ご案内しますね）' },
+
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'notes', seg: [30.8, 37.4],
+      stem: 'What is Michael doing when he talks to Pam?',
+      ja: 'マイケルはパムに話しかけて、何をしている？',
+      choices: ['Asking her to write things down', 'Asking if she feels okay', 'Asking if her notes are done'], a: 0,
+      choicesJa: ['書き留めるよう頼んでいる', '体調は大丈夫か聞いている', 'メモが終わったか聞いている'],
+      cue: 'パムの名前のあと',
+      line: 'Pam, *are you okay taking notes* then?',
+      said: '「パム、メモを取ってもらっていい？」と聞き、お礼を言う。',
+      mean: 'Are you okay 〜ing? ＝「〜してもらっていい？」。ていねいに頼む言い方。',
+      trap: 'okay から「大丈夫？」と体調の質問と思いやすい。うしろに 〜ing が続けばお願い。',
+      use: 'Are you okay driving tonight?（今夜、運転お願いしていい？）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'staff', reveals: ['foreman'], seg: [42.5, 49.8],
       stem: 'Who is Darryl, as Michael first says?',
@@ -83,7 +83,7 @@ export const collarBlind: Clip = {
       trap: '一般的な答えとして聞くと皮肉に気づかない。答えが今の状況に当てはまるかを考える。',
       use: 'No offense, but we’re kind of busy.（悪いけど、ちょっと忙しいんだ）', retired: true },
 
-    { id: 'd1', skill: 'detail', level: 'B2', point: 'fear', ctx: true, seg: [47.4, 55.2],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'fear', ctx: true, seg: [47.35, 53.7],
       stem: 'What does Darryl say worries him most?',
       ja: 'ダリルが一番心配していることは？',
       choices: ['Being kept from work', 'Someone getting hurt', 'Losing the shipments'], a: 0,
@@ -95,11 +95,11 @@ export const collarBlind: Clip = {
       trap: '倉庫なので、けがの心配を連想しやすい。distract（邪魔する）を聞く。',
       use: 'Please don’t distract the driver.（運転手の気を散らさないで）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknow', reveals: ['foreman'], seg: [52.6, 58],
-      stem: 'Why does Michael say “You know what?” here?',
-      ja: 'マイケルはここで、なぜ「You know what?」と言う？',
-      choices: ['To add something new', 'To ask a real question', 'To say he is sorry'], a: 0,
-      choicesJa: ['新しいことを言い足すため', '本当に質問するため', '謝るため'],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknow', reveals: ['foreman'], seg: [53.7, 57.75],
+      stem: 'What does Michael do after “You know what?”',
+      ja: '「You know what?」のあと、マイケルは何をする？',
+      choices: ['He adds a new fact', 'He waits for an answer', 'He says sorry to Darryl'], a: 0,
+      choicesJa: ['新しい事実を言い足す', '答えを待つ', 'ダリルに謝る'],
       cue: 'ダリルの答えのすぐあと',
       line: '*You know what?* Darryl is actually the foreman here.',
       said: '「そうだ、実はここの現場監督はダリルなんだ」と言い足す。',
@@ -107,7 +107,7 @@ export const collarBlind: Clip = {
       trap: '疑問文の形なので、質問していると思いやすい。答えを待たずに話が続く。',
       use: 'You know what? Let’s eat out tonight.（そうだ、今夜は外で食べよう）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'foreman', seg: [53, 60.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'foreman', seg: [53.7, 60.5],
       stem: 'According to Michael, who is the warehouse foreman?',
       ja: 'マイケルによると、倉庫の現場監督はだれ？',
       choices: ['Darryl', 'Roy', 'Michael'], a: 0,
@@ -119,7 +119,7 @@ export const collarBlind: Clip = {
       trap: 'not が小さく、ロイの名前だけが耳に残りやすい。名前の前の not を聞く。',
       use: 'She’s actually the manager here.（実は彼女がここの責任者です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'summer', seg: [59, 68],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'summer', seg: [60.05, 64.9],
       stem: 'When are Roy and Pam getting married?',
       ja: 'ロイとパムはいつ結婚する？',
       choices: ['This spring', 'This summer', 'This fall', 'Next summer'], a: 1, keep: true,
@@ -131,16 +131,16 @@ export const collarBlind: Clip = {
       trap: 'sometime に気を取られて、this を聞きのがしやすい。next なら来年。',
       use: 'Let’s get lunch sometime next week.（来週どこかでランチしよう）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'job', seg: [63.2, 69.2],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'job', seg: [64.0, 69.2],
       stem: 'What is Pam’s job?',
       ja: 'パムの仕事は何？',
       choices: ['Receptionist', 'Warehouse worker', 'Camera person'], a: 0,
       choicesJa: ['受付', '倉庫の作業員', 'カメラの係'],
-      cue: '「And she’s our」のあと',
+      cue: '「And she’s our」のあと（she ＝ パム）',
       line: 'And she’s our *receptionist*.',
       said: '「彼女はうちの受付係だよ」と言う。',
       mean: 'receptionist ＝ 受付の人。会社やホテルで最初に対応する人。',
-      trap: 'ロイと倉庫の話が続いたので、倉庫の人と勘違いしやすい。our のあとを聞く。',
+      trap: '倉庫を案内している途中なので、倉庫の人と勘違いしやすい。our のあとを聞く。',
       use: 'Please ask the receptionist.（受付でたずねてください）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ram', seg: [66, 77.6],
@@ -177,7 +177,7 @@ export const collarBlind: Clip = {
       trap: '軽い口調だと冗談として流したように聞こえるが、「そんなことない」とは言っていない。',
       use: 'Thanks for letting me know.（知らせてくれてありがとう）', retired: true },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'helltry', seg: [78.8, 86],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'helltry', seg: [77.6, 85.25],
       stem: 'Fill the gap: “I bet ___ to beat you up.”',
       ja: 'すき間をうめよう：「I bet ___ to beat you up.」',
       choices: ['he’ll try', 'he tried', 'he’d try'], a: 0,
@@ -189,7 +189,7 @@ export const collarBlind: Clip = {
       trap: 'll の音は小さく、he’d や tried と迷いやすい。I bet は先の話によく使う。',
       use: 'I bet it’ll rain tomorrow.（明日はきっと雨だね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'headsup', ctx: true, reveals: ['helltry'], seg: [80, 87.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'headsup', ctx: true, reveals: ['helltry'], seg: [77.6, 85.25],
       stem: 'What does “Thanks for the heads up” mean?',
       ja: '「Thanks for the heads up」はどういう意味？',
       choices: ['Thanks for telling me first', 'Thanks for cheering me up', 'Thanks for keeping my secret'], a: 0,
@@ -213,7 +213,7 @@ export const collarBlind: Clip = {
       trap: 'back（うしろ）から「かくれる」と考えがち。守るのは相手の背中。',
       use: 'Don’t worry, I’ve got your back.（大丈夫、味方だよ）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'troops', seg: [97.6, 104.5],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'troops', seg: [98.4, 104.5],
       stem: 'Who does Michael mean by “troops”?',
       ja: 'マイケルの「troops」はだれのこと？',
       choices: ['All the workers there', 'Soldiers in the army', 'The camera crew'], a: 0,
@@ -225,7 +225,7 @@ export const collarBlind: Clip = {
       trap: '文字どおり兵士を連想しやすい。ここに兵士はいない。マイケルが大げさに呼んでいるだけ。',
       use: 'Okay, everyone, big day today!（よしみんな、今日は大事な日だ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'message', reveals: ['collarblind', 'because'], seg: [98.1, 117.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'message', reveals: ['collarblind', 'because'], seg: [98.4, 117.5],
       stem: 'What is Michael’s main message to the workers?',
       ja: 'マイケルが働く人たちに一番伝えたいことは？',
       choices: ['They are all one team', 'He can’t see their shirts', 'The groups don’t get along'], a: 0,
