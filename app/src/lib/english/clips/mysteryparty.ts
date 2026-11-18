@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 0, new 10, ctx 6, tx 3
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 0, new 10, ctx 6, tx 3, qa 10
 // A2 REVIEW 2026-11-17: keep 9, rewrite 5, retire 10, new 1 · sweep: cakerush twins retired (p1 s1 x1), new f4 x2
 // “Carly Throws A Murder Mystery Party! | iCarly | NickRewind” (NickRewind, Best of iCarly): a party game flops.
 // The guests draw character cards, the murderer is revealed at once, Freddie tries to keep everyone from leaving, the
@@ -27,7 +27,7 @@ export const mysteryParty: Clip = {
       line: 'It’s *1977*.',
       said: '「時は1977年」と、ゲームの設定を読み上げる。',
       mean: 'nineteen seventy-seven と2けたずつ読む。年号の決まった読み方。',
-      trap: '「ナインティーンセヴンティ」なら 1977、「シックスティ」なら 1967、「エイティ」なら 1987。',
+      trap: 'どれも nineteen で始まる。後半が「セヴンティセヴン」なら 1977、「シックスティ」なら 1967、「エイティ」なら 1987。',
       use: 'I was born in nineteen ninety.（1990年生まれです）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'draw', seg: [19, 31],
@@ -54,7 +54,7 @@ export const mysteryParty: Clip = {
       trap: 'あとで刑事（detective）や秘書の役も出るので、それと考えがち。決め手は flight（飛行機の便）。',
       use: 'Excuse me, I’ll ask the flight attendant.（すみません、客室乗務員に聞いてみます）' },
 
-    { id: 'k2', skill: 'phrase', level: 'B2', point: 'howplay', seg: [59.3, 67.5],
+    { id: 'k2', skill: 'phrase', level: 'B2', point: 'howplay', seg: [59.3, 69.3],
       stem: 'What does “I don’t know how to play this” mean?',
       ja: '「I don’t know how to play this」はどういう意味？',
       choices: ['I can’t act this role', 'I can’t play this game', 'I can’t find the card'], a: 0,
@@ -117,8 +117,8 @@ export const mysteryParty: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'stay', reveals: ['telltm'], seg: [128.0, 146.0],
       stem: 'After the game ends, what does Freddie try to do?',
       ja: 'ゲームが終わったあと、フレディは何をしようとする？',
-      choices: ['Keep his guests at the party', 'Get them to share a ride', 'Make up with Pearl tonight'], a: 0,
-      choicesJa: ['客をパーティーに残す', '客に相乗りさせる', '今夜パールと仲直りする'],
+      choices: ['Keep his guests at the party', 'Get them to share a ride', 'Say sorry to Pearl tonight'], a: 0,
+      choicesJa: ['客をパーティーに残す', '客に相乗りさせる', '今夜パールに謝る'],
       cue: '帰ろうとする人たちへの返事',
       line: 'You think a murder mystery party is all about the murder mystery? … *Pearl and I have so many more things planned*.',
       said: '「ゲームだけの会だと思う？パールとまだいろいろ予定してるんだ」と引き止める。',
@@ -324,7 +324,7 @@ export const mysteryParty: Clip = {
       cue: '「Once」で始まる一言',
       line: 'Millicent and your mom can just go bake you a… cake. / *Once again* the women take on the emotional labor.',
       said: '「女性たちで焼けばいい」と言われ、「またしても女の仕事」と言う。',
-      mean: 'once again ＝「またしても」。不満を込めて、仕事を別の人に回している。',
+      mean: 'once again ＝「またしても」。emotional labor ＝ 気づかいや世話の負担。「また女ばかり」と不満を言っている。',
       trap: 'take on（引き受ける）から、喜んでいると思いやすい。once again は「またか」。',
       use: 'Once again, I’m doing the dishes.（またしても私が皿洗い）' },
 
@@ -353,12 +353,12 @@ export const mysteryParty: Clip = {
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'alone', reveals: ['dance'], seg: [265.6, 276.3],
       stem: 'How does Freddie feel when nobody dances?',
       ja: '誰も踊らないとき、フレディはどんな気持ち？',
-      choices: ['Gloomy about it', 'Proud of his playlist', 'Glad it’s quiet'], a: 0,
+      choices: ['Sad and hopeless', 'Proud of his playlist', 'Glad it’s quiet'], a: 0,
       choicesJa: ['落ちこんでいる', 'プレイリストが自慢', '静かでうれしい'],
       cue: '「I said everybody」のあと',
       line: 'I said *everybody*. … We’re gonna *die alone*.',
-      said: '「全員だってば」と言っても誰も踊らず、「僕たち、ひとりで死ぬんだ」とつぶやく。',
-      mean: 'die alone ＝「一生ひとりぼっち」という大げさな嘆き。',
+      said: '「みんなって言ったんだけど」と言っても誰も踊らず、「僕たち、ひとりぼっちで死ぬんだ」とつぶやく。',
+      mean: 'die alone ＝ 文字どおりは「ひとりで死ぬ」。→「一生ひとりぼっちだ」という大げさな嘆き。',
       trap: 'playlist の直後なので選曲の話と思いやすい。誰も踊らない沈黙のあとの嘆き。',
       use: 'Nobody came. I’m going to die alone.（誰も来ない。一生ひとりだ）' },
 
@@ -421,10 +421,10 @@ export const mysteryParty: Clip = {
       use: 'Oh, I understand—you’re doing the dishes.（分かってるよ、あんたが皿洗いね）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'look', seg: [317.6, 329.6],
-      stem: 'Why does Millicent say “Look” here?',
-      ja: 'ミリセントはここでなぜ「Look」と言う？',
-      choices: ['To start pushing back', 'To start giving in', 'To ask Grandma to see her phone'], a: 0,
-      choicesJa: ['言い返し始めるため', '折れ始めるため', '祖母に携帯を見てと頼むため'],
+      stem: 'What does Millicent’s “Look” mean here?',
+      ja: 'ミリセントの「Look」はここでどういう意味？',
+      choices: ['Listen to my side', 'Okay, you win', 'Look at my phone'], a: 0,
+      choicesJa: ['私の言い分を聞いて', '分かった、私の負け', '私の携帯を見て'],
       cue: '返事の最初の一語',
       line: '*Look*, I’m sorry if I’m focused on the best thing in my life',
       said: '「あのね、人生最高のものに夢中で悪いけど」と言い返す。',

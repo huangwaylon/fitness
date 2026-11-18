@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 4, ctx 9, tx 1
+// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 1, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 2, rewrite 13, retire 6, new 0
 // “Andy is Dating a Highschooler  - The Office US” (the official The Office channel, BEST OF SEASON 3 - The Office US):
 // on the drive to a school Andy keeps up the small talk (and sings when Jim asks for music), Jim endures it; at the
@@ -46,7 +46,7 @@ export const andyJamie: Clip = {
     { id: 'k1', skill: 'pragma', level: 'B1', point: 'apt', ctx: true, seg: [14.5, 20.5],
       stem: 'How does Jim answer about his apartment?',
       ja: 'アパートのことを聞かれ、ジムはどう答える？',
-      choices: ['He says it’s fine', 'He says it’s too small', 'He asks about Andy’s'], a: 0,
+      choices: ['He says it’s okay', 'He says it’s too small', 'He asks about Andy’s'], a: 0,
       choicesJa: ['大丈夫だと言う', '狭すぎると言う', 'アンディの部屋のことを聞く'],
       cue: '「apartment」の質問の答え',
       line: 'Andy: How’s the apartment hanging? / Jim: *It’s fine.*',
@@ -108,7 +108,7 @@ export const andyJamie: Clip = {
       choicesJa: ['歌じゃなくてCDがよかった', '自分のCDを作りたい', 'アンディはCDみたいに歌う'],
       cue: '歌が終わったあと',
       line: 'Andy: …give me the beat, boys… / Jim: I was thinking *more like a CD*.',
-      said: 'アンディが自分で歌い出し、ジムは「CDみたいなのを考えてたんだけど」と言う。',
+      said: 'アンディが自分で歌い出し、ジムは「どっちかというと、CDのつもりだったんだけど」と言う。',
       mean: 'I was thinking more like 〜 ＝ どちらかというと〜のつもりだった。やんわり直す言い方。',
       trap: 'CD から、歌がCDみたいに上手いと勘違いしやすい。more like は「むしろ〜」。',
       use: 'I was thinking more like pizza.（どっちかというとピザの気分だった）' },
@@ -120,7 +120,7 @@ export const andyJamie: Clip = {
       choicesJa: ['君が決めて', '電話したほうがいい', '君が歌う番'],
       cue: '「Or a CD」のあと',
       line: 'Jim: I was thinking more like a CD. / Andy: Or a CD. *Your call*, dude.',
-      said: '「CDでもいいよ。好きに決めて」と相手に任せる。',
+      said: '「CDでもいいね。君が決めて」と相手に任せる。',
       mean: 'your call ＝ 決めるのは君。この call は「決めること、判断」。',
       trap: 'call は「電話」に聞こえるが、your call は「あなたが決めて」。CD か歌か、選ばせている。',
       use: 'Thai or Italian? Your call.（タイ料理かイタリアンか、任せるよ）' },
@@ -199,7 +199,7 @@ export const andyJamie: Clip = {
       choicesJa: ['そこにいて驚いている', '会いに来てくれてうれしい', '病気じゃないか心配'],
       cue: '「Whoa」のあと',
       line: 'Whoa. What the… *Why is my girlfriend here?*',
-      said: '「うわ、なんだ…なんで俺の彼女がここに？」と声を上げる。',
+      said: '「うわ、なんだ…なんで僕の彼女がここに？」と声を上げる。',
       mean: 'Why is 〜 here? ＝ なんで〜がここに？ いるはずのない人を見つけたときの驚き。',
       trap: 'why と where は聞きちがえやすい。「なぜ？」と聞くのは、もう見つけているから。',
       use: 'Wait, why are you here?（あれ、なんでここにいるの？）' },
@@ -265,11 +265,11 @@ export const andyJamie: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['nevertold'], seg: [113.0, 140.0],
       stem: 'How does Andy react when he learns the truth?',
       ja: '本当のことが分かって、アンディはどうする？',
-      choices: ['He panics, he had no idea', 'He calmly explains it all', 'He gets angry at her'], a: 0,
-      choicesJa: ['あわてる。全然知らなかった', '落ち着いて説明する', '彼女に怒る'],
+      choices: ['He starts to panic', 'He calmly explains it all', 'He gets angry at her'], a: 0,
+      choicesJa: ['あわて出す', '落ち着いて説明する', '彼女に怒る'],
       cue: '「Are you a student here?」から',
       line: 'Oh my god, oh my god. *I had no idea.*',
-      said: '彼女が高校生だと分かり、「なんてこった」「全然知らなかった」と言う。',
+      said: '彼女が高校生だと分かり、「うわ、うわ」「全然知らなかったんだ」と言う。',
       mean: 'I had no idea ＝ 全然知らなかった。自分は悪くないと、必死に言い訳している。',
       trap: 'I had no idea を落ち着いた説明と思いやすい。oh my god をくり返して、あわてている。',
       use: 'I swear, I had no idea.（本当に、全然知らなかったんだ）' },
