@@ -265,9 +265,9 @@
   .lab { margin: 0; font: 700 12px/1.3 var(--font-ui); color: var(--text-soft); }
   .row2 { display: flex; gap: 8px; }
   .row2 .btn { flex: 1; min-width: 0; gap: 6px; }
-  .rec { gap: 8px; --fill: #f6b8a6; --lip-c: #c98a77; }
+  .rec { gap: 8px; --fill: var(--sg-rec); --lip-c: var(--sg-rec-lip); }
   .rec.wait { --fill: var(--c-card); --lip-c: var(--c-edge); }
-  .said { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 10px; background: var(--c-cream);
+  .said { width: 100%; box-sizing: border-box; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--r-chip); background: var(--c-cream);
     box-shadow: inset 0 2px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink); font: 600 17px/1.3 var(--font-body); }
   .note { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink); text-wrap: pretty; }
   .soft { margin: 0; font-size: var(--fs-s); color: var(--text-soft); text-wrap: pretty; }

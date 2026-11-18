@@ -16,6 +16,7 @@
   import ActionSheet from '#lib/components/ui/ActionSheet.svelte';
   import { t } from '#lib/i18n/index.ts';
   import Icon from '#lib/components/ui/Icon.svelte';
+  import ProgressBar from '#lib/components/ui/ProgressBar.svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Board from './Board.svelte';
   import Board3D from './Board3D.svelte';
@@ -372,7 +373,7 @@
             <!-- the team's stars toward its goal (one number: a team game), and the round -->
             <span class="team obj-cream" data-sg-team={teamStars(g)}>
               <Icon name="star" size={16} soft />{#key teamStars(g)}<b class="bump">{teamStars(g)}</b>{/key}<span class="goal">/{teamGoal(g)}</span>
-              <span class="bar"><i style:width="{Math.min(100, (teamStars(g) / teamGoal(g)) * 100)}%"></i></span>
+              <span class="tbar"><ProgressBar value={teamStars(g)} max={teamGoal(g)} h={6} fill="var(--c-yuzu)" decor /></span>
               <span class="round">{lastRound ? s('lastRound') : s('round', { n: g.round })}</span>
             </span>
           {/snippet}
@@ -439,7 +440,9 @@
   </div>
 
 <style>
-  .sg { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface); }
+  /* the game's own tokens (its turns', below it): the letter tiles' paper, lip and darker edge; the mic's coral */
+  .sg { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--surface);
+    --sg-tile: #f6e7c6; --sg-tile-lip: #b99364; --sg-tile-edge: #8a6d48; --sg-rec: #f6b8a6; --sg-rec-lip: #c98a77; }
   .top { flex: none; background-color: var(--surface); }
   .body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px;
     padding: 4px calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left)); scrollbar-width: none; }
@@ -471,8 +474,7 @@
     border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-edge); color: var(--c-gold); }
   .team b { font: 600 17px/1 var(--font-num); color: var(--c-ink); }
   .team .goal { font: 600 12px/1 var(--font-num); color: var(--text-soft); }
-  .team .bar { flex: 1; min-width: 24px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--c-edge) 45%, transparent); overflow: hidden; }
-  .team .bar i { display: block; height: 100%; background: var(--c-yuzu); border-radius: 3px; transition: width 400ms var(--ease-soft); }
+  .tbar { flex: 1; min-width: 24px; display: flex; }
   .round { flex: none; font: 700 12px/1 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   /* the players' pills: 32 tall, 92 % cream (no backdrop blur: costly in WebKit); whose turn it is yuzu */
   .scores { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: fit-content; margin-top: 4px; padding: 0 calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); }
@@ -485,7 +487,7 @@
   /* the turn's sheet: cream at every time of day (.obj-cream: the day's text inside, as the team pill and the chips), its content's height (at most what leaves the board 160 px), folded a 56 px bar */
   .sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; display: flex; flex-direction: column;
     max-height: max(220px, calc(100% - var(--hud, 88px) - 160px)); padding: 0 calc(12px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(12px + var(--safe-left));
-    box-sizing: border-box; border-radius: 22px 22px 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
+    box-sizing: border-box; border-radius: var(--r-card) var(--r-card) 0 0; background: var(--c-cream); color: var(--text); box-shadow: 0 -2px 0 var(--c-edge), 0 -6px 18px rgb(60 40 10 / .12); }
   .sheet.folded, .sheet:has(> .bar) { padding-bottom: var(--safe-bottom); }
   /* (a scroller clips at its padding box: the 6 px under and 4 px beside hold the last row's 3–4 px lips and a sent tile's
      2 px ring, which spill out of the tiles' and buttons' boxes) */
@@ -503,6 +505,6 @@
   .bar { flex: none; display: flex; align-items: center; justify-content: center; gap: 10px; height: 56px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .unfold { width: 100%; padding: 0; margin: 0; appearance: none; border: 0; background: none; color: var(--c-ink); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; }
   .unfold :global(svg) { color: var(--text-soft); }
-  .die { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 11px; background: var(--c-card);
+  .die { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r-chip); background: var(--c-card);
     box-shadow: 0 3px 0 var(--c-edge); font: 600 24px/1 var(--font-num); }
 </style>

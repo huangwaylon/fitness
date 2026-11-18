@@ -119,15 +119,15 @@
   .slots { min-height: 52px; padding: 4px 8px; gap: 3px; border-radius: 14px; background: color-mix(in srgb, var(--c-edge) 35%, transparent); align-content: center; }
   .slots.miss { background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .wt {
-    min-height: 44px; padding: 0 16px; margin: 0; appearance: none; border: 0; border-radius: 10px; cursor: pointer;
-    background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364; font: 600 20px/1 var(--font-body);
+    min-height: 44px; padding: 0 16px; margin: 0; appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
+    background: var(--sg-tile); color: var(--c-ink); box-shadow: 0 3px 0 var(--sg-tile-lip); font: 600 20px/1 var(--font-body);
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .wt:disabled { opacity: .3; }
   /* the word turn's tiles: 42 × 48, 8 to a row at 393 (a 46 × 52 hit each) */
   .tile {
     position: relative; width: 42px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; flex: none; appearance: none; border: 0;
-    border-radius: 10px; cursor: pointer; background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364; font: 600 20px/1 var(--font-num);
+    border-radius: var(--r-chip); cursor: pointer; background: var(--sg-tile); color: var(--c-ink); box-shadow: 0 3px 0 var(--sg-tile-lip); font: 600 20px/1 var(--font-num);
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .tile::before { content: ''; position: absolute; inset: -2px; }

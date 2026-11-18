@@ -177,8 +177,8 @@
   .rack { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
   .tile {
     position: relative; width: 42px; height: 48px; display: grid; place-items: center; padding: 0; margin: 0; flex: none;
-    appearance: none; border: 0; border-radius: 10px; cursor: pointer;
-    background: #f6e7c6; color: var(--c-ink); box-shadow: 0 3px 0 #b99364;
+    appearance: none; border: 0; border-radius: var(--r-chip); cursor: pointer;
+    background: var(--sg-tile); color: var(--c-ink); box-shadow: 0 3px 0 var(--sg-tile-lip);
     font: 600 20px/1 var(--font-num); touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   /* (each hit 46 × 52: neighbours touch, never overlap) */
@@ -188,9 +188,9 @@
   .tile.lucky { background: var(--c-yuzu); box-shadow: 0 3px 0 var(--c-yuzu-lip); }
   .tile.used { opacity: .25; }
   /* a pocket letter (picked up on the way) and a sent one (it must be used: a lilac ring) */
-  .tile.pk { background: color-mix(in srgb, var(--c-mint) 45%, #f6e7c6); box-shadow: 0 3px 0 color-mix(in srgb, var(--c-mint) 60%, #8a6d48); }
-  .tile.must { background: color-mix(in srgb, var(--c-lilac) 60%, #f6e7c6); box-shadow: 0 0 0 2px var(--c-lilac), 0 3px 0 #8a6d48; }
-  .tile:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 #b99364; }
+  .tile.pk { background: color-mix(in srgb, var(--c-mint) 45%, var(--sg-tile)); box-shadow: 0 3px 0 color-mix(in srgb, var(--c-mint) 60%, var(--sg-tile-edge)); }
+  .tile.must { background: color-mix(in srgb, var(--c-lilac) 60%, var(--sg-tile)); box-shadow: 0 0 0 2px var(--c-lilac), 0 3px 0 var(--sg-tile-edge); }
+  .tile:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--sg-tile-lip); }
   /* the action row, the sheet's last (the thumb's reach): the pocket's tiles, ヒント, これにする the rest */
   .row { display: flex; align-items: center; gap: 6px; }
   .extra { display: flex; flex: none; gap: 4px; }
