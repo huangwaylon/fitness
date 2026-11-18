@@ -1,8 +1,9 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 4, new 4, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 4, new 4, ctx 5, tx 3, qa 27
 // A2 REVIEW 2026-11-17: keep 13, rewrite 6, retire 2, new 1
 // “Andy's Bucket List | Parks and Recreation” (the official Parks and Recreation channel, Season 4): bored with their
 // usual night in, April helps Andy act out his bucket list: $1,000 in cash, the best grilled cheese ever, an action scene.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 184 s; whisper also repeats 102–109 s.
+// QA: 59–110 s the json3 words run 2–5 s behind whisper; a1, c1, h2, d4 follow the json3.
 // Untested: 76–84 s (nickels, the lottery) and the skit's made-up names (136–147 s, 158–163 s).
 import type { Clip } from '../types.ts';
 
@@ -12,7 +13,7 @@ export const bucketList: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'pizza', seg: [0.3, 9.1],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'pizza', seg: [0.3, 8.78],
       stem: 'What food does Andy want to order tonight?',
       ja: 'アンディは今夜、何を注文したい？',
       choices: ['Pizza', 'Sushi', 'Tacos'], a: 0,
@@ -48,7 +49,7 @@ export const bucketList: Clip = {
       trap: '格言っぽい言い方なので本当の教えに聞こえるが、誰かの言葉ではなく、その場の言い訳。',
       use: 'Practice is the key to getting better.（上達のカギは練習）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['routine', 'bucket'], seg: [0.3, 19.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['routine', 'bucket', 'pizza'], seg: [0.3, 15.7],
       stem: 'Why do Andy and April change their plans tonight?',
       ja: 'アンディとエイプリルは、なぜ今夜の予定を変える？',
       choices: ['April is bored of their routine', 'Andy feels he did too little',
@@ -74,7 +75,7 @@ export const bucketList: Clip = {
       trap: '事実を言うだけで、怒る声ではない。すぐあとの「変なことしよう」で退屈だと分かる。',
       use: 'We had pasta yesterday, too.（昨日もパスタだったよね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'comeon', reveals: ['lastnight'], seg: [10, 20.2],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'comeon', reveals: ['lastnight'], seg: [10, 19.85],
       stem: 'What does April’s “Come on” mean here?',
       ja: 'エイプリルの「Come on」は、ここではどういう意味？',
       choices: ['Please, let’s do it', 'Come over here to me', 'I don’t believe you'], a: 0,
@@ -86,7 +87,7 @@ export const bucketList: Clip = {
       trap: 'come から「来て」と考えがち。前に Let’s があるので、ここは誘い。',
       use: 'Come on, just one more song!（ねえ、あと1曲だけ！）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'lastnight', seg: [13.7, 20.2],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'lastnight', seg: [13.7, 19.85],
       stem: 'What reason does April give for doing something weird?',
       ja: 'エイプリルは、変わったことをする理由に何と言う？',
       choices: ['Tonight might be the last night', 'Something weird happened last night',
@@ -99,7 +100,7 @@ export const bucketList: Clip = {
       trap: 'last night は「昨夜」でよく使うので、過去の話と勘違いしやすい。on earth まで聞く。',
       use: 'Let’s go out. You only live once.（出かけよう。人生一度きり）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bucket', seg: [16.3, 28.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'bucket', seg: [17.72, 28.94],
       stem: 'What is a “bucket list”?',
       ja: '「bucket list」とは何？',
       choices: ['Big things you hope to do', 'Things friends dare you to do',
@@ -112,7 +113,7 @@ export const bucketList: Clip = {
       trap: 'bucket（バケツ）から家の用事を想像しやすい。中身はスーパーボウルなど大きな夢。',
       use: 'Paris is on my bucket list.（パリは死ぬまでに行きたい場所）' },
 
-    { id: 'i2', skill: 'phrase', level: 'B2', point: 'kazam', seg: [27.5, 36.9],
+    { id: 'i2', skill: 'phrase', level: 'B2', point: 'kazam', seg: [28.95, 32.85],
       stem: 'Andy wants to “get it right”. What does that mean?',
       ja: 'アンディの「get it right」はどういう意味？',
       choices: ['Make the movie well this time', 'Play the main role himself',
@@ -125,7 +126,7 @@ export const bucketList: Clip = {
       trap: 'right を「右」や「権利」と勘違いしやすい。get it right でひとまとまり。',
       use: 'This time, let’s get it right.（今度こそちゃんとやろう）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'plane', seg: [28.8, 40.1],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'plane', seg: [32.87, 39.4],
       stem: 'What does Andy want to do on a plane?',
       ja: 'アンディは飛行機で何をしたい？',
       choices: ['Fly first class', 'Fly the plane himself', 'Jump out of it'], a: 0,
@@ -137,7 +138,7 @@ export const bucketList: Clip = {
       trap: 'スカイダイビングも言うが、それは plane の項目とは別。fly のすぐあとの2語を聞く。',
       use: 'I’ve never flown business class.（ビジネスクラスに乗ったことがない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['cash'], seg: [42.3, 66.5],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'scene', reveals: ['cash', 'left'], seg: [42.3, 58.5],
       stem: 'Which item from his list do they try first?',
       ja: 'リストのどれを最初にやってみる？',
       choices: ['Holding $1,000 in cash', 'Riding a unicycle', 'Going skydiving'], a: 0,
@@ -160,7 +161,7 @@ export const bucketList: Clip = {
       trap: 'is が小さく短いので、how much left と3語に聞こえやすい。語数を数える。',
       use: 'How much is left on the card?（カードの残高はいくら？）' },
 
-    { id: 'i3', skill: 'number', level: 'B1', point: 'cash', reveals: ['left', 'actionstar'], seg: [46.7, 59.2], keep: true,
+    { id: 'i3', skill: 'number', level: 'B1', point: 'cash', reveals: ['left', 'actionstar'], seg: [46.4, 59.2], keep: true,
       stem: 'How much cash does Andy want to hold?',
       ja: 'アンディが手に持ちたい現金はいくら？',
       choices: ['$100', '$900', '$1,000', '$10,000'], a: 2,
@@ -172,7 +173,7 @@ export const bucketList: Clip = {
       trap: '900 も聞こえるが、それは数えている途中。最後に言う数が答え。',
       use: 'Can I pay in cash?（現金で払えますか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'left', seg: [48.6, 55.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'left', seg: [48.6, 55.55], keep: true,
       stem: 'How much money is still in their bank account?',
       ja: '口座にまだ残っているお金はいくら？',
       choices: ['$8.04', '$18.04', '$18.40', '$80.04'], a: 1,
@@ -197,7 +198,7 @@ export const bucketList: Clip = {
       trap: '残高が少ないので a little を選びやすい。little は2つの音。a bit なら「アビッ」と b で始まる。',
       use: 'There’s still a lot left.（まだたくさん残ってるよ）' },
 
-    { id: 'a1', skill: 'infer', level: 'B2', point: 'disappoint', seg: [59.3, 70.5],
+    { id: 'a1', skill: 'infer', level: 'B2', point: 'disappoint', seg: [58.2, 74.5],
       stem: 'What makes Andy happy with the cash?',
       ja: 'アンディは何をして現金に満足する？',
       choices: ['Counting it all himself', 'Just holding it in his hands', 'Giving some back to April'], a: 0,
@@ -209,7 +210,7 @@ export const bucketList: Clip = {
       trap: '手に持つのが夢だったので満足と考えがち。持っただけではがっかり。数え終わって Yes!。',
       use: 'Now this is what I imagined!（これこそ想像してたやつ！）' },
 
-    { id: 'c1', skill: 'infer', level: 'B2', point: 'handed', ctx: true, seg: [71.1, 81.5],
+    { id: 'c1', skill: 'infer', level: 'B2', point: 'handed', ctx: true, seg: [74.5, 81.5],
       stem: 'Has April seen this much cash before?',
       ja: 'エイプリルは、こんな大金を前に見たことがある？',
       choices: ['Yes, a minute ago', 'No, never in her life', 'Yes, at her old job'], a: 0,
@@ -232,7 +233,7 @@ export const bucketList: Clip = {
       trap: '「渡したのは私」を恩着せや不満と取りやすい。声が平らなら、ただの冷静なつっこみ。',
       use: 'Um, I was literally just there.（いや、私もその場にいたけど）' },
 
-    { id: 'h2', skill: 'phrase', level: 'B1', point: 'awesome', ctx: true, seg: [91.9, 98.7],
+    { id: 'h2', skill: 'phrase', level: 'B1', point: 'awesome', ctx: true, seg: [91.9, 103.5],
       stem: 'April says the sandwich is “pretty awesome”. What does she mean?',
       ja: 'エイプリルの「pretty awesome」はどういう意味？',
       choices: ['It is quite good', 'It looks pretty', 'It is the best'], a: 0,
@@ -244,7 +245,7 @@ export const bucketList: Clip = {
       trap: 'pretty を「かわいい」と考えがち。形容詞の前の pretty は「かなり」。',
       use: 'The hotel was pretty nice.（ホテルはかなりよかった）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'store', seg: [98.5, 110.1],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'store', seg: [98.6, 105.45],
       stem: 'What does Andy plan to do about the sandwich?',
       ja: 'サンドイッチのことで、アンディは何をするつもり？',
       choices: ['Buy a different cheese', 'Add more cheese to it',
@@ -270,11 +271,11 @@ export const bucketList: Clip = {
       trap: '本当に大好物だと思いやすい。言うのは Andy が店に戻ると言った直後。',
       use: 'No, seriously, it’s perfect.（いや本当に、完璧だよ）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B1', point: 'scared', seg: [109.7, 119.6],
+    { id: 'a3', skill: 'attitude', level: 'B1', point: 'scared', seg: [109.7, 116],
       stem: 'At “Wait!”, how does Andy feel?',
       ja: '「Wait!」のとき、アンディはどんな気持ち？',
-      choices: ['Afraid', 'Sleepy', 'Angry'], a: 0,
-      choicesJa: ['こわい', '眠い', '怒っている'],
+      choices: ['Afraid', 'Excited', 'Angry'], a: 0,
+      choicesJa: ['こわい', 'わくわく', '怒っている'],
       cue: '「Wait!」のあとの短い言葉二つ。',
       line: 'Wait! *Not ready. Super scared.*',
       said: '「準備OK」のすぐあと「待って！無理。超こわい」と言う。',
@@ -282,7 +283,7 @@ export const bucketList: Clip = {
       trap: '先に I’m ready と言うので平気そうに聞こえる。Wait! で気持ちが変わる。',
       use: 'Wait, I’m not ready yet!（待って、まだ準備ができてない！）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'actionstar', seg: [114.6, 120],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'actionstar', seg: [114.6, 120.4],
       stem: 'Fill the gap: “Andy, you said you ___ be an action star.”',
       ja: '空所を埋める：「Andy, you said you ___ be an action star.」',
       choices: ['wanted to', 'want to', 'were going to'], a: 0,
@@ -294,7 +295,7 @@ export const bucketList: Clip = {
       trap: '-ed と to がくっつき、want to に聞こえやすい。「ニッ」の音があるか聞く。were going to なら「ワゴナ」と長い。',
       use: 'I always wanted to try surfing.（ずっとサーフィンをやってみたかった）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'crazy', ctx: true, seg: [130.5, 141.9],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'crazy', ctx: true, seg: [130.9, 141.9],
       stem: 'What does “Just crazy enough to work” mean?',
       ja: '「Just crazy enough to work」はどういう意味？',
       choices: ['It may actually succeed', 'It will surely fail',
@@ -307,7 +308,7 @@ export const bucketList: Clip = {
       trap: 'work を「仕事」と思いやすい。計画や案の話で work と来たら「うまくいく」。',
       use: 'It’s crazy, but it might just work.（むちゃだけど、案外いけるかも）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B1', point: 'goodjob', ctx: true, seg: [148, 158],
+    { id: 'c2', skill: 'pragma', level: 'B1', point: 'goodjob', ctx: true, seg: [149.6, 157.6],
       stem: 'The man can’t read his lines. What do they tell him?',
       ja: '男の人はセリフが読めない。何と言われる？',
       choices: ['He is doing great', 'He should read slowly', 'He can try it later'], a: 0,
@@ -319,7 +320,7 @@ export const bucketList: Clip = {
       trap: '読めないと謝っているので、やり直しの話と考えがち。Hey のあとは、はげましの言葉。',
       use: 'You’re doing great. Keep going!（すごくいいよ。その調子！）' },
 
-    { id: 'c3', skill: 'phrase', level: 'B2', point: 'youthink', seg: [164, 171.5],
+    { id: 'c3', skill: 'phrase', level: 'B2', point: 'youthink', seg: [164.45, 171.5],
       stem: 'What does “That’s what you think” mean here?',
       ja: 'ここでの「That’s what you think」はどういう意味？',
       choices: ['You are wrong there', 'I agree with you', 'Tell me your idea'], a: 0,

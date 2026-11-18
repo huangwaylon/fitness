@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 15, retire 1, new 4, ctx 8, tx 15
+// R4 REVIEW 2026-11-18: keep 5, rewrite 15, retire 1, new 4, ctx 8, tx 15, qa 33
 // A2 REVIEW 2026-11-17: keep 9, rewrite 10, retire 4, new 1
 // “Ann tortures April with her friendship | Parks and recreation” (the official Parks and Recreation channel, Season
 // 5): April needs a recommendation letter for vet school, and Ann's price is a week of being her friend; the week
@@ -8,6 +8,7 @@
 // weird": the voices aren't settled by words). Jerry names himself at 10.8 s. Ann is named at 133.6 s, April at
 // 18.8 s, Chris at 140.4 s; who says "Why don't we talk now?" (139 s) isn't settled, so d6 asks only Chris's answer.
 // EXCLUDE 59.9–65.0 (the hook-up talk)
+// QA: i3 retired (its key, "she cares more about Ann", was arguable); k1 new ("I would be happy to", 55 s).
 // SKIP 195.5–217.5: the song (singing only)
 // SKIP 257.4–277.3: outro music
 import type { Clip } from '../types.ts';
@@ -30,7 +31,7 @@ export const annApril: Clip = {
       trap: '「知ってる？」という質問に聞こえるが、返事を待たずに次の頼みが来る。',
       use: 'Actually, you know what? Make it two.（やっぱり、2つにして）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'reco', reveals: ['secret'], seg: [12.8, 39.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'reco', reveals: ['secret'], seg: [12.8, 39.7],
       stem: 'Why does April come to Ann?',
       ja: 'エイプリルはなぜアンのところに来た？',
       choices: ['She needs a letter from Ann', 'She needs a ride to town', 'She needs advice about school'], a: 0,
@@ -42,7 +43,7 @@ export const annApril: Clip = {
       trap: '学校の話が先に出るので、相談と考えがち。So のあとに本題が来る。',
       use: 'Could you write me a reference?（推薦状を書いてもらえますか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [14.5, 26.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'secret', seg: [14.5, 26.1],
       stem: 'What secret does April tell Ann?',
       ja: 'エイプリルがアンに話す秘密は？',
       choices: ['She may apply to vet school', 'She already applied there', 'She got into vet school'], a: 0,
@@ -78,7 +79,7 @@ export const annApril: Clip = {
       trap: 'honey と money は最初の音だけの差。お金なら pouring（注ぐ）とは言わない。',
       use: 'Someone spilled coffee in my bag.（だれかがバッグにコーヒーをこぼした）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [40.3, 52.3],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'upper', seg: [39.8, 52.6],
       stem: 'Ann says, “Now *I have the upper hand*.” What does she mean?',
       ja: '「Now I have the upper hand」とはどういう意味？',
       choices: ['Now she is in control', 'Now she has a better job', 'Now she can help April'], a: 0,
@@ -101,7 +102,19 @@ export const annApril: Clip = {
       trap: 'crush には「好きになる」の意味もあるが、ここは後ろに into ～ が続く。',
       use: 'They pressured him into saying yes.（彼らは無理やり彼にイエスと言わせた）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [65.1, 72], keep: true,
+    { id: 'k1', skill: 'pragma', level: 'B1', point: 'happyto', reveals: ['reco'], seg: [55.0, 59.85],
+      stem: 'What does Ann mean by “I would be happy to”?',
+      ja: 'アンの「I would be happy to」はどういう意味？',
+      choices: ['Yes, I will gladly do it', 'I will be happy after it', 'I would, but I can’t'], a: 0,
+      choicesJa: ['喜んで引き受ける', '書いたあとで幸せになる', 'やりたいけど、できない'],
+      cue: '「write you that letter」の前。',
+      line: '*I would be happy to* write you that letter.',
+      said: '「喜んで推薦状を書くよ」と言う。',
+      mean: 'I would be happy to 〜 ＝ 文字どおりは「〜したらうれしい」→「喜んで〜します」。頼みを引き受ける、ていねいな決まり文句。',
+      trap: 'would から「もしできたら（でも無理）」と考えがち。would は言い方をやわらげるだけ。',
+      use: 'I’d be happy to help.（喜んでお手伝いします）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'week', seg: [65.1, 71.6], keep: true,
       stem: 'How long must April spend with Ann?',
       ja: 'エイプリルはどのくらいアンと過ごさなければならない？',
       choices: ['The next weekend', 'The next week', 'The next two weeks', 'The next month'], a: 1,
@@ -113,7 +126,7 @@ export const annApril: Clip = {
       trap: '「ウィーク」で切れれば next week。weekend なら「エンド」、two weeks なら前に「トゥー」が付く。',
       use: 'I’ll be away for the next week.（これから1週間いません）' },
 
-    { id: 'h2', skill: 'attitude', level: 'B1', point: 'worse', ctx: true, seg: [69.6, 75.6],
+    { id: 'h2', skill: 'attitude', level: 'B1', point: 'worse', ctx: true, seg: [69.6, 75.9],
       stem: 'How does April feel about being Ann’s friend?',
       ja: 'アンの友だちになることを、エイプリルはどう思う？',
       choices: ['She hates the idea', 'She is happy about it', 'She doesn’t mind it'], a: 0,
@@ -125,7 +138,7 @@ export const annApril: Clip = {
       trap: '最初の No（違う）はアンの言葉。エイプリルの No のあとの worse で、もっと嫌だと分かる。',
       use: 'That’s even worse!（それはもっとひどい！）' },
 
-    { id: 'r1', skill: 'pragma', level: 'B1', point: 'whatabout', ctx: true, seg: [84.0, 91.4],
+    { id: 'r1', skill: 'pragma', level: 'B1', point: 'whatabout', ctx: true, seg: [86.0, 92.7],
       stem: 'What does April do after “What about you?”',
       ja: '「What about you?」のあと、エイプリルは何をする？',
       choices: ['Lists her own perfect guy', 'Agrees with Ann’s list', 'Refuses to answer'], a: 0,
@@ -160,7 +173,7 @@ export const annApril: Clip = {
       trap: 'fishing for（～を引き出す）に音が近い。layers と deep down が、掘る話だと教える。',
       use: 'I’m just digging for the truth.（本当のことを掘り出そうとしてるだけ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'braids', ctx: true, seg: [106.8, 113.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'braids', ctx: true, seg: [107.5, 114.6],
       stem: 'Why is April unable to think?',
       ja: 'エイプリルはなぜ考えられない？',
       choices: ['Her new hairstyle is painful', 'She is too sleepy', 'The choice is too hard'], a: 0,
@@ -172,19 +185,19 @@ export const annApril: Clip = {
       trap: '「選んで」のあとなので、選ぶのが難しいと勘違いしやすい。理由は直後の braids（三つ編み）。',
       use: 'This noise is making my head hurt.（この音で頭が痛くなる）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'private', seg: [129.4, 136.0],
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'private', seg: [129.4, 136.3],
       stem: 'What does Chris mean by “talk in private”?',
       ja: 'クリスの「talk in private」はどういう意味？',
-      choices: ['Talk with just Ann', 'Talk with April too', 'Talk later at home'], a: 0,
-      choicesJa: ['アンとだけ話す', 'エイプリルも入れて話す', 'あとで家で話す'],
+      choices: ['Talk with just Ann', 'Talk with April too', 'Talk in a quiet voice'], a: 0,
+      choicesJa: ['アンとだけ話す', 'エイプリルも入れて話す', '小さな声で話す'],
       cue: '「Do you want to」のあと。',
       line: 'Do you want to, uh, *talk in private*? — No. Anything you can say to Ann, you can say to me…',
       said: '「二人で話したい？」に、エイプリルが「今週は親友だから」と残る。',
       mean: 'in private ＝ 人のいない所で、二人だけで。',
-      trap: 'private（プライベート）から「家で」を連想しやすい。in private は「二人だけで」。',
+      trap: '「ひそひそ声で」と勘違いしやすいが、in private は声ではなく、ほかの人がいない所で、ということ。',
       use: 'Can we talk in private?（二人で話せますか）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'later', ctx: true, seg: [135.6, 141.6],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'later', ctx: true, seg: [136.2, 144],
       stem: 'What does Chris decide?',
       ja: 'クリスはどうすることにする？',
       choices: ['To talk another time', 'To talk right now', 'To tell April everything'], a: 0,
@@ -208,7 +221,7 @@ export const annApril: Clip = {
       trap: 'パジャマの話のあとなので「楽しむため」と考えがち。何を聞かれ、何で返したかを聞く。',
       use: 'Nice try changing the subject.（話をそらそうとしてもだめだよ）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'letter', reveals: ['reco'], seg: [161, 170.6],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'letter', reveals: ['reco'], seg: [161.2, 170.6], retired: true,
       stem: 'Why does April say she doesn’t care about the letter?',
       ja: 'エイプリルはなぜ推薦状なんてどうでもいいと言う？',
       choices: ['She cares more about Ann', 'She doesn’t want vet school', 'She’s tired of Ann'], a: 0,
@@ -220,7 +233,7 @@ export const annApril: Clip = {
       trap: '「どうでもいい」を学校をやめる話と思いやすい。比べているのは推薦状とアンの話。',
       use: 'Forget the money. Just tell me what happened.（お金はいいから、何があったか話して）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'mind', seg: [169.1, 181.1],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'mind', seg: [170.2, 175.35],
       stem: 'What is Ann worried about with Chris?',
       ja: 'アンはクリスの何が心配？',
       choices: ['He’s slow to decide', 'He already said no', 'He wants a baby sooner'], a: 0,
@@ -232,7 +245,7 @@ export const annApril: Clip = {
       trap: '返事が遅い＝断り、と思いやすい。ここはまだ決めていないだけ。',
       use: 'Take your time making up your mind.（ゆっくり決めていいよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'freaking', seg: [173.9, 181.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'freaking', seg: [175.38, 177.95],
       stem: 'Type what Ann says: “and it’s really ___.” (3 words)', answer: 'freaking me out',
       ja: 'アンの言葉を書こう：「and it’s really ___.」（3語）',
       cue: '「and it’s really」のあと。',
@@ -242,7 +255,7 @@ export const annApril: Clip = {
       trap: '「フリーキンミアウ」と3語がつながる。最後の out の t はほぼ消えるが、落とさない。',
       use: 'Stop it, you’re freaking me out.（やめて、怖くなってきた）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'song', ctx: true, seg: [190.6, 198.6],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'song', ctx: true, seg: [191.9, 198.55],
       stem: 'How does April feel about the song?',
       ja: 'エイプリルはその歌をどう思っている？',
       choices: ['She really loves it', 'She finds it too common', 'She isn’t interested'], a: 0,
@@ -254,7 +267,7 @@ export const annApril: Clip = {
       trap: 'Everyone knows は「ありふれた」にも取れる。最後の amazing で本気と分かる。',
       use: 'Of course I know it. It’s a classic.（もちろん知ってる。名曲だよ）' },
 
-    { id: 'nt2', skill: 'phrase', level: 'B2', point: 'never', seg: [217.4, 224.0],
+    { id: 'nt2', skill: 'phrase', level: 'B2', point: 'never', seg: [218.7, 224.0],
       stem: 'What does April mean by “This never happened”?',
       ja: 'エイプリルの「This never happened」はどういう意味？',
       choices: ['Don’t tell anyone about this', 'She can’t remember the song', 'The song was really bad'], a: 0,
@@ -266,7 +279,7 @@ export const annApril: Clip = {
       trap: '直前の Good stuff（よかった）でほめているので、歌がひどかったわけではない。恥ずかしくて口止めしている。',
       use: 'I fell asleep in the meeting. This never happened, okay?（会議で寝ちゃった。内緒ね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hook', reveals: ['reco'], seg: [222.9, 230.2],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'hook', reveals: ['reco'], seg: [224.2, 229.85],
       stem: 'What does Ann mean by “you’re off the hook”?',
       ja: 'アンの「you’re off the hook」はどういう意味？',
       choices: ['April is free from the deal', 'April owes Ann money now', 'April must stay with Ann forever'], a: 0,
@@ -278,7 +291,7 @@ export const annApril: Clip = {
       trap: 'hook（引っかける）から「つかまった」と考えがち。off（外れる）が付いて自由。',
       use: 'You’re off the hook for tonight.（今夜は来なくていいよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['hook', 'gift', 'reco', 'week'], seg: [227.5, 252.3],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'end', reveals: ['hook', 'gift', 'reco', 'week', 'canttell'], seg: [227.6, 253.3],
       stem: 'How does the week of friendship end?',
       ja: '1週間の友だち作戦はどう終わる？',
       choices: ['Ann still calls April a friend', 'Ann lets the friendship end', 'Ann keeps the letter for now'], a: 0,
@@ -301,7 +314,7 @@ export const annApril: Clip = {
       trap: '「分からない」を傷ついた言葉と取りやすいが、but のあとで迷いごと受け入れている。前の「好きなはず」とも違う。',
       use: 'Say what you want. You’re stuck with me.（何と言っても、私からは離れられないよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'canttell', seg: [229.4, 234.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'canttell', seg: [229.85, 234.9],
       stem: 'Fill the gap: “I ___ tell if you actually hate me.”',
       ja: '空いている所に入る語は？「I ___ tell if you actually hate me.」',
       choices: ['can’t', 'can', 'couldn’t'], a: 0,
@@ -313,7 +326,7 @@ export const annApril: Clip = {
       trap: '「キャーン」と長く強ければ can’t、弱く短い「クン」なら can、「クドゥン」と「ドゥ」が入れば couldn’t。',
       use: 'I can’t tell if he’s joking.（彼が冗談を言ってるのか分からない）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'sothere', reveals: ['secret'], seg: [237, 244.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'sothere', reveals: ['secret'], seg: [237, 245.2],
       stem: 'What does “So there” mean here?',
       ja: 'ここの「So there」はどういう意味？',
       choices: ['I said it, and I mean it', 'Here, take this from me', 'Please give me an answer'], a: 0,
@@ -325,7 +338,7 @@ export const annApril: Clip = {
       trap: 'there から「はい、どうぞ」（Here you go）を連想しやすい。推薦状はもう渡している。',
       use: 'I’m right, so there.（私が正しい。以上）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'gift', seg: [243.8, 252.3],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'gift', seg: [244.9, 253.3],
       stem: 'What gift does April give Ann?',
       ja: 'エイプリルはアンに何を贈る？',
       choices: ['A book of baby names', 'A song she wrote for Ann', 'A letter for school'], a: 0,
@@ -348,7 +361,7 @@ export const annApril: Clip = {
       trap: 'いつもの皮肉に見えやすいが、願いの文に冗談がない。if it doesn’t は予想でなく、だめな時の励まし。',
       use: 'If it doesn’t work out, something better will.（だめでも、もっといいことがあるよ）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'hug', ctx: true, seg: [252.4, 258.4],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'hug', ctx: true, seg: [253.4, 259.4],
       stem: 'How does April feel about the hug?',
       ja: 'エイプリルはハグをどう思っている？',
       choices: ['She doesn’t want it', 'She is glad about it', 'She asks for a hug'], a: 0,

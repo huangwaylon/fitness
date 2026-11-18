@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 3, new 0, ctx 4, tx 10
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 3, new 0, ctx 4, tx 10, qa 14
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 2, new 2
 // “Joey Is Wearing Makeup | Friends” (the official Friends channel, Best of Season 1): Joey turns up in makeup with
 // news of a modeling job, and then Monica offers to cook Thanksgiving dinner and checks everyone's plans.
@@ -21,7 +21,7 @@ export const joeymakeup: Clip = {
       trap: 'wearing の ing は小さく「ウェアリン」と聞こえる。makeup はひと続きの一語。',
       use: 'Are you wearing a watch?（時計をしてる？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['clinic'], seg: [8.3, 36.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['clinic'], seg: [11, 35.6],
       stem: 'What news does Joey bring?',
       ja: 'ジョーイはどんな知らせを持ってくる？',
       choices: ['He got a modeling job', 'He lost his acting job', 'He has a bad illness'], a: 0,
@@ -32,7 +32,7 @@ export const joeymakeup: Clip = {
       trap: 'ぜんそくなど病気の名前が出るが、それはポスターの役の話。ジョーイ本人は元気。',
       use: 'I got a new job!（新しい仕事が決まったよ！）' },
 
-    { id: 'a2', skill: 'phrase', level: 'B1', point: 'asoftoday', seg: [11, 18.5],
+    { id: 'a2', skill: 'phrase', level: 'B1', point: 'asoftoday', seg: [11, 18],
       stem: 'Joey says, “*As of today*, I am…” What does he mean?',
       ja: 'ジョーイの「As of today」はどういう意味？',
       choices: ['Starting today', 'Only for today', 'Until today'], a: 0,
@@ -67,7 +67,7 @@ export const joeymakeup: Clip = {
       trap: 'モデルと聞くと雑誌やテレビを連想しやすい。答えの posters（ポスター）で決まる。',
       use: 'Is there a clinic near here?（この近くに診療所はありますか）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['clinic'], seg: [25.8, 31.7],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'youknow', reveals: ['clinic'], seg: [25, 31.7],
       stem: 'Joey asks, “*You know* those posters?” What does he mean?',
       ja: 'ジョーイの「You know those posters?」はどういう意味？',
       choices: ['You have seen them, right?', 'I don’t know about them.', 'Please listen to me now.'], a: 0,
@@ -91,7 +91,7 @@ export const joeymakeup: Clip = {
       trap: 'healthy が3回聞こえるが、それは予想。あとに病名が続く。',
       use: 'I have asthma.（ぜんそくがあります）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'which', seg: [34.6, 39.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'which', seg: [34.6, 40.6],
       stem: 'Fill the gap: “Do you know which one ___ be?”',
       ja: '「Do you know which one ___ be?」の空所は？',
       choices: ['you’re going to', 'you want to', 'you were going to'], a: 0,
@@ -103,7 +103,7 @@ export const joeymakeup: Clip = {
       trap: 'wanna なら「ワナ」、you were なら「ユワ」。「ヨガナ」なら you’re going to。',
       use: 'What are you gonna order?（何を頼むつもり？）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'lyme', ctx: true, seg: [35.5, 43.7],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'lyme', ctx: true, seg: [34.6, 41],
       stem: 'Joey says, “Lyme disease is *open*.” What does he mean?',
       ja: 'ジョーイの「Lyme disease is open」はどういう意味？',
       choices: ['No one has that role yet', 'The clinic is open today', 'The poster is already up'], a: 0,
@@ -124,14 +124,14 @@ export const joeymakeup: Clip = {
       trap: 'get it がつながって「ゲリッ」と聞こえる。t はほとんど聞こえない。',
       use: 'Good luck! I hope you get it.（頑張って、受かるといいね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'offer', seg: [48, 70.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'offer', reveals: ['willyou'], seg: [48, 64.6],
       stem: 'What does Monica offer to do?',
       ja: 'モニカは何をしようと申し出る？',
       choices: ['Cook dinner at her place', 'Take everyone to her mom’s', 'Book a table at a restaurant'], a: 0,
       choicesJa: ['自分の家で夕食を作る', 'みんなを母親の家に連れていく', 'レストランを予約する'],
       cue: '「Thanksgiving」のあと、モニカの提案',
       said: '感謝祭の予定がだめになり、モニカが「うちで夕食を作るのはどう？」と言う。',
-      mean: '家に帰らない仲間で、感謝祭の夕食をしようという話。モニカが一人ずつ予定を確かめる。',
+      mean: '家に帰らない仲間で、感謝祭の夕食をしようという話。マッシュポテトの注文もつく。',
       trap: 'just like Mom’s（ママの味）から、母親の家に行く話と勘違いしやすい。場所は at my place。',
       use: 'Why don’t you come over for dinner?（うちに夕食を食べに来ない？）' },
 
@@ -158,7 +158,7 @@ export const joeymakeup: Clip = {
       trap: 'ダマはふつうない方がいいので「なし」を選びやすい。with the lumps と聞こえる。',
       use: 'Can I have it without onions?（玉ねぎ抜きにできますか）' },
 
-    { id: 's2', skill: 'sound', level: 'B1', point: 'willyou', reveals: ['lumps'], seg: [56.2, 61.8],
+    { id: 's2', skill: 'sound', level: 'B1', point: 'willyou', reveals: ['lumps'], seg: [56.7, 61.1],
       stem: 'Fill the gap: “___ make the mashed potatoes with the lumps?”',
       ja: '「___ make the mashed potatoes with the lumps?」の空所は？',
       choices: ['Will you', 'Would you', 'Can you'], a: 0,
@@ -193,7 +193,7 @@ export const joeymakeup: Clip = {
       trap: 'モニカが夕食に誘った直後なので、モニカの家で食べると考えがち。Yeah で帰省に決まる。',
       use: 'The station is this way, right?（駅はこっちですよね？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'boycott', seg: [68.3, 75],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'boycott', seg: [68.3, 75.8],
       stem: 'Monica says Chandler is “*still* boycotting.” What does “still” tell us?',
       ja: 'モニカの言う「still」から何が分かる？',
       choices: ['He did it last year too', 'He just started this year', 'He has to work this year'], a: 0,
@@ -243,8 +243,8 @@ export const joeymakeup: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'december', reveals: ['grandma'], seg: [78.2, 85.5], keep: true,
       stem: 'When will Phoebe’s group celebrate Thanksgiving?',
       ja: 'フィービーたちは感謝祭をいつ祝う？',
-      choices: ['In November', 'In December', 'In January'], a: 1,
-      choicesJa: ['11月', '12月', '1月'],
+      choices: ['In October', 'In November', 'In December', 'In January'], a: 2,
+      choicesJa: ['10月', '11月', '12月', '1月'],
       cue: '「Thanksgiving」のあと',
       line: 'we’re celebrating Thanksgiving *in December* ’cause he’s lunar',
       said: '「彼が月の暦で動く人だから、感謝祭は12月に祝うの」と言う。',

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 2, new 1, ctx 4, tx 1
+// R4 REVIEW 2026-11-18: keep 7, rewrite 9, retire 2, new 1, ctx 4, tx 1, qa 22
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 3, new 2
 // “Ben and Leslie Say "Screw It" | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Leslie
 // apologizes to Ben for deciding things alone when they broke up, then asks whether they could just be together.
@@ -9,6 +9,7 @@
 //   apologizes and proposes, Ben = the one who came and lists the problems.
 // R4: h1 (= n1's "usual twenty") and d4 (= t2's "tell Chris") retired for the 10-s density; d1, pr2, t2 and new k1
 // follow the exchange; g1 and g2 cut to ≤ 25 s.
+// QA: x2 retired (the same "I appreciate that" as pr2; with seg edges fixed it broke the 10-s density).
 // EAR CHECK: 5.5 s s3 — "I wasn't sure you were gonna come" (whisper 2–4 s, so ≈ 5–7 s on the captions' clock)
 import type { Clip } from '../types.ts';
 
@@ -30,7 +31,7 @@ export const screwIt: Clip = {
       trap: 'wanna（ワナ）や gotta（ガラ）とまぎれやすい。最初が「ガ」で、n の音があれば gonna。',
       use: 'I’m gonna take a nap.（ちょっと昼寝する）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'curious', ctx: true, seg: [2.4, 13.5],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'curious', reveals: ['voicemail'], ctx: true, seg: [2.4, 13.5],
       stem: 'Why did Ben decide to come?',
       ja: 'ベンはなぜ来ることにした？',
       choices: ['He was curious about it', 'He had his final answer', 'He was worried about her'], a: 0,
@@ -54,19 +55,19 @@ export const screwIt: Clip = {
       trap: 'only（たった）から、文句と思いやすい。冗談の言い方。',
       use: 'Only three coffees today? That’s new.（今日はコーヒー3杯だけ？めずらしいね）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'voicemail', seg: [7.4, 14.5], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'voicemail', seg: [7.4, 13.7], keep: true,
       stem: 'How many messages does Leslie usually leave, says Ben?',
       ja: 'ベンによると、レスリーはふだん何件メッセージを残す？',
-      choices: ['2', '12', '20'], a: 2,
-      choicesJa: ['2件', '12件', '20件'],
+      choices: ['2', '12', '20', '30'], a: 2,
+      choicesJa: ['2件', '12件', '20件', '30件'],
       cue: '「instead of」のあと',
       line: 'you only left me *one* voicemail message instead of your *usual twenty*',
       said: '「いつもは20件なのに、留守電が1件だけだった」と言う。',
       mean: 'your usual 〜 ＝ いつもの〜。20件を「いつものこと」と言い、連絡の多さを軽くからかっている。',
-      trap: 'twelve は「ルヴ」で終わる。two は一音だけ。twenty は「トゥエンティ」と長い。',
+      trap: 'twelve は「ルヴ」で終わる。two は一音だけ。twenty は「トゥエンティ」と長い。thirty は「サー」。',
       use: 'I’ll have my usual, please.（いつものをお願いします）' },
 
-    { id: 'd2', skill: 'detail', level: 'B2', point: 'intense', seg: [12.4, 18.6],
+    { id: 'd2', skill: 'detail', level: 'B2', point: 'intense', seg: [13.7, 17.55],
       stem: 'What is Leslie trying to change about herself?',
       ja: 'レスリーは、自分のどこを変えようとしている？',
       choices: ['Less intense, more caring', 'Less intense, more fun', 'Calmer, more open'], a: 0,
@@ -78,7 +79,7 @@ export const screwIt: Clip = {
       trap: 'less intense は落ち着く話にも聞こえる。more のあとの considerate で決まる。',
       use: 'I’m trying to be more patient.（もっと気長になろうとしてるの）' },
 
-    { id: 'h2', skill: 'pragma', level: 'B1', point: 'seat', reveals: ['intense'], seg: [16.1, 23.1],
+    { id: 'h2', skill: 'pragma', level: 'B1', point: 'seat', reveals: ['intense'], seg: [15.7, 23.1],
       stem: 'Why does Leslie add “only if you want to”?',
       ja: 'レスリーはなぜ「座りたければでいい」と付け足す？',
       choices: ['To be polite and not push', 'To ask him to leave now', 'To test what he will do'], a: 0,
@@ -90,7 +91,7 @@ export const screwIt: Clip = {
       trap: '来てほしくないサインと思いやすい。直前の considerate とつなげて聞く。',
       use: 'Come with us, but only if you want to.（来て。でも、来たければでいいよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'decided', seg: [20.5, 34.8],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'decided', seg: [20.5, 33.75],
       stem: 'What does Leslie say she did when they broke up?',
       ja: '別れたとき、自分は何をしたとレスリーは言う？',
       choices: ['She decided alone', 'She kept her plans secret', 'She left without a word'], a: 0,
@@ -102,7 +103,7 @@ export const screwIt: Clip = {
       trap: 'ended between us（終わった）から「何も言わずに去った」と考えがち。決め手は I just decided。',
       use: 'I should have asked you first.（先にあなたに聞くべきだった）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'sorry', reveals: ['appreciate'], ctx: true, seg: [33.6, 42.6],
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'sorry', reveals: ['appreciate'], ctx: true, seg: [33.75, 42.6],
       stem: 'How does Ben answer Leslie’s apology?',
       ja: 'レスリーの謝罪に、ベンはどう答える？',
       choices: ['He accepts it kindly', 'He says it’s too late', 'He says sorry, too'], a: 0,
@@ -114,7 +115,7 @@ export const screwIt: Clip = {
       trap: 'I’m very sorry のあとなので、自分も謝ると考えがち。返事は thank you（お礼）。',
       use: 'Thank you. I appreciate that.（ありがとう。そう言ってくれてうれしい）' },
 
-    { id: 'x2', skill: 'dict', level: 'B1', point: 'appreciate', seg: [37.6, 42.6],
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'appreciate', seg: [40.0, 42.6], retired: true,
       stem: 'Type what Ben says: “Well, thank you. ___.” (3 words)', answer: 'i appreciate that',
       ja: 'ベンの言葉を入力：「Well, thank you. ___.」（3語）',
       cue: '「thank you」のすぐあと',
@@ -124,7 +125,7 @@ export const screwIt: Clip = {
       trap: 'I と appreciate がつながって速い。that の t も聞こえにくい。',
       use: 'Thank you. I appreciate that.（ありがとう。助かります）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'contact', seg: [40.4, 50.2],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'contact', seg: [42.65, 48.0],
       stem: 'What is Leslie saying about “any more contact”?',
       ja: '「any more contact」について、レスリーは何を言っている？',
       choices: ['She’ll accept no contact', 'She wants to see him soon', 'He must stop calling her'], a: 0,
@@ -136,9 +137,9 @@ export const screwIt: Clip = {
       trap: 'contact と「やめる」から、自分で決めたと思いやすい。if のあとは相手の気持ち。',
       use: 'If you’d rather not, I understand.（気が進まないなら、わかるよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'apart', reveals: ['best', 'forbest'], seg: [43.7, 61],
-      stem: 'Before the long pause, what do they agree on?',
-      ja: '長い間の前に、2人は何に同意する？',
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'apart', reveals: ['best', 'forbest'], seg: [42.65, 61],
+      stem: 'What do they agree on after her apology?',
+      ja: '謝ったあと、2人は何に同意する？',
       choices: ['To stay apart', 'To get back together', 'To blame each other'], a: 0,
       choicesJa: ['距離を置くこと', 'よりを戻すこと', 'おたがいを責めること'],
       cue: 'ベンの「But」のあと',
@@ -183,7 +184,7 @@ export const screwIt: Clip = {
       trap: '直前が「離れるのが一番」なので穏やかな案を予想しやすいが、この前置きは大胆な案につながりやすい。',
       use: 'There is another option, though.（でも、別の手もあるよ）', retired: true },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'screwit', reveals: ['forreal'], seg: [64.3, 74.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'screwit', reveals: ['forreal'], seg: [64.3, 74.8],
       stem: 'What does “say screw it” mean here?',
       ja: '「say screw it」は、ここでどういう意味？',
       choices: ['Stop worrying and do it', 'Forget the whole idea', 'Ruin it all again'], a: 0,
@@ -195,7 +196,7 @@ export const screwIt: Clip = {
       trap: '「その考えは忘れて」に聞こえるが、うしろの do this（これをやる）で、やる側と分かる。',
       use: 'There is another option.（別の方法もあるよ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'forreal', reveals: ['screwit'], seg: [67, 74.9],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'forreal', reveals: ['screwit'], seg: [67.5, 73.8],
       stem: 'Type what Leslie says: “and do this ___.” (3 words)', answer: 'thing for real',
       ja: 'レスリーの言葉を入力：「and do this ___.」（3語）',
       cue: '「screw it」のあと、文の最後',
@@ -228,7 +229,7 @@ export const screwIt: Clip = {
       trap: 'missed なら t が入り「ミストュー」。I’ll なら「アイル」とのびる。どちらもなければ I miss you。',
       use: 'I miss home sometimes.（ときどき家が恋しくなる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'hope', reveals: ['steam', 'howdo'], seg: [79.6, 104],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'hope', reveals: ['steam', 'howdo'], seg: [80.9, 104],
       stem: 'At the end, what does Leslie do?',
       ja: '最後に、レスリーは何をする？',
       choices: ['Says her feelings, then asks his', 'Explains a plan for the problems', 'Asks him to wait a year'], a: 0,
@@ -251,7 +252,7 @@ export const screwIt: Clip = {
       trap: 'scandal が続くので「ひみつにする」と思いやすい。言っているのは「話す」。',
       use: 'We’d have to leave by six.（6時には出ないといけないね）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'yeah', reveals: ['chris'], ctx: true, seg: [84.5, 92.8],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'yeah', reveals: ['chris'], ctx: true, seg: [84.5, 92.58],
       stem: 'How does Leslie answer each problem Ben lists?',
       ja: 'ベンが問題を言うたびに、レスリーはどう答える？',
       choices: ['She agrees each is real', 'She argues with each one', 'She says none matter'], a: 0,
@@ -263,7 +264,7 @@ export const screwIt: Clip = {
       trap: '「やっちゃえ」と言った人なので、言い返すと考えがち。返事は短い Yeah だけ。',
       use: 'Yeah, I know. Still, I want to try.（うん、わかってる。それでもやってみたい）' },
 
-    { id: 'k1', skill: 'detail', level: 'B1', point: 'howdo', ctx: true, seg: [88.5, 97.6],
+    { id: 'k1', skill: 'detail', level: 'B1', point: 'howdo', ctx: true, seg: [88.25, 97.6],
       stem: 'Ben asks how they would do it. What does Leslie say?',
       ja: 'ベンが「どうやって？」と聞く。レスリーの答えは？',
       choices: ['She doesn’t know', 'She has a clear plan', 'They can tell no one'], a: 0,
@@ -275,7 +276,7 @@ export const screwIt: Clip = {
       trap: '問題を並べられたあとなので、計画があると考えがち。最初の答えは I don’t know。',
       use: 'I don’t know. But I want to try.（わからない。でもやってみたい）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'steam', reveals: ['howdo'], seg: [92.9, 104.9],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'steam', reveals: ['howdo'], seg: [93.1, 104.9],
       stem: 'Why does Leslie end by asking how Ben feels?',
       ja: 'レスリーはなぜ最後に、ベンの気持ちを聞く？',
       choices: ['She won’t decide alone again', 'She wants him to go first', 'She isn’t sure how she feels'], a: 0,
