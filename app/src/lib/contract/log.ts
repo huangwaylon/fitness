@@ -140,6 +140,9 @@ export const LOG_EVENTS = {
   // `held` waiting), a move of mine not sent for it (wait), the relay's move taking the place of mine (clash: an end
   // before it, a resend's race), the relay refusing mine (refused), a start on another build's rules (version)
   "sg.sync": { src: 'c', f: { why: ['gap', 'wait', 'clash', 'refused', 'version', 'drop'], i: 'n', held: 'n' } },
+  // 英語すごろく's みんなで！ (lib/sugoroku/components/mini), on each phone that plays one: its open and close, the game, the
+  // seats dealt in, local or online; at the close, how long it ran here (ms). Never a play, a word or a name
+  "sg.mini": { src: 'c', f: { act: ['open', 'close'], game: ['market', 'spell', 'together', 'sort', 'other'], seats: 'n', mode: ['local', 'online'], ms: 'n' } },
   "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },

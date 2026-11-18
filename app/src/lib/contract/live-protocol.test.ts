@@ -457,7 +457,7 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
       .toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 10, a: 'mp', w: 'zoo', k: 63, n: 99, y: 1, op: 'free0' });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 10, a: 'mp', k: 0 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 10, a: 'mp', k: 0 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 11, a: 'mc', w: 'zoo', k: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 11, a: 'mc' });
-    expect(JSON.stringify(parseClient(j({ kind: 'sg', g: 'abcdefghij', i: 999, a: 'mp', w: 'zzzzzzzz', k: 63, n: 99, y: 1, op: 'z'.repeat(16) }))).length).toBeLessThan(256);
+    expect(JSON.stringify(parseClient(j({ kind: 'sg', g: 'abcdefghij', i: 999, a: 'mp', w: 'zzzzzzzzzzzz', k: 63, n: 99, y: 1, op: 'z'.repeat(16) }))).length).toBeLessThan(256);
     expect(isStored({ kind: 'sg', g: 'abc123', i: 1, a: 'roll' })).toBe(true);
     expect(JSON.stringify(start).length).toBeLessThan(MAX_BYTES);
   });
@@ -469,7 +469,7 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
       { g: 'abc123', i: 2, a: 'sent', m: 3 }, { g: 'abc123', i: 0, a: 'start', s: 'A2B1', l: 'n', r: 'X!' }, { g: 'abc123', i: 2, a: 'dance' }, { g: 'abc123', i: 1000, a: 'roll' },
       { g: 'abc123', i: 2, a: 'mg' }, { g: 'abc123', i: 2, a: 'mg', b: 2 }, { g: 'abc123', i: 2, a: 'mg', b: 0, s: 'AA' }, { g: 'abc123', i: 2, a: 'mg', b: 0, s: 'A2B1' },
       { g: 'abc123', i: 0, a: 'mg', b: 0 }, { g: 'abc123', i: 2, a: 'mp' }, { g: 'abc123', i: 2, a: 'mp', k: 64 }, { g: 'abc123', i: 2, a: 'mp', k: -1 },
-      { g: 'abc123', i: 2, a: 'mp', n: 100 }, { g: 'abc123', i: 2, a: 'mp', n: 1.5 }, { g: 'abc123', i: 2, a: 'mp', y: 2 }, { g: 'abc123', i: 2, a: 'mp', w: 'Zoo' },
+      { g: 'abc123', i: 2, a: 'mp', n: 100 }, { g: 'abc123', i: 2, a: 'mp', n: 1.5 }, { g: 'abc123', i: 2, a: 'mp', y: 2 }, { g: 'abc123', i: 2, a: 'mp', w: 'Zoo' }, { g: 'abc123', i: 2, a: 'mp', w: 'z'.repeat(13) },
       { g: 'abc123', i: 2, a: 'mp', op: 'Free' }, { g: 'abc123', i: 2, a: 'mp', op: 'x'.repeat(17) }, { g: 'abc123', i: 2, a: 'mp', op: '' }
     ]) expect(parseClient(j({ kind: 'sg', ...o })), JSON.stringify(o)).toBeNull();
   });

@@ -193,6 +193,8 @@ export interface SgIntent {
 const SG_GAME = /^[a-z0-9]{6,12}$/;
 const SG_SEATS = /^(?:[ABG][123]){2,3}$/;
 const SG_WORD = /^[a-z]{2,8}$/;
+/** A mini-game play's word: a picture's name (伝えて当てて, up to 12 letters) or a market's (9 tiles). */
+const SG_PLAY_WORD = /^[a-z]{2,12}$/;
 const SG_RULES = /^[a-z0-9]{1,12}$/;
 /** A mini-game's present seats (mg), its play's fields (mp): an index, a count, a chip or control code. */
 const SG_HERE = /^[ABG]{1,3}$/;
@@ -608,7 +610,7 @@ function intentOf(o: Obj): Intent | null {
         return { ...out, b: o.b, ...(o.s !== undefined ? { s: o.s as string } : {}) };
       }
       if (o.a === 'mp') {
-        if (!['w', 'k', 'n', 'y', 'op'].some((f) => o[f] !== undefined) || !opt(o, 'w', (x): x is string => typeof x === 'string' && SG_WORD.test(x)) || !opt(o, 'k', (x): x is number => within(x, [0, SG_K_MAX]))
+        if (!['w', 'k', 'n', 'y', 'op'].some((f) => o[f] !== undefined) || !opt(o, 'w', (x): x is string => typeof x === 'string' && SG_PLAY_WORD.test(x)) || !opt(o, 'k', (x): x is number => within(x, [0, SG_K_MAX]))
           || !opt(o, 'n', (x): x is number => within(x, [0, SG_N_MAX])) || !one('y') || !opt(o, 'op', (x): x is string => typeof x === 'string' && SG_CHIP.test(x))) return null;
         return {
           ...out, ...(o.w !== undefined ? { w: o.w as string } : {}), ...(o.k !== undefined ? { k: o.k as number } : {}), ...(o.n !== undefined ? { n: o.n as number } : {}),
