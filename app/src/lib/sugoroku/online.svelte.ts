@@ -77,7 +77,7 @@ const START_RACE_MS = 15_000;
 
 function hear(m: Relayed): void {
   // (a turn's view: never logged, its words the table's)
-  if (m.kind === 'sgv') return void (m.g === online.cur.g && (online.view = m));
+  if (m.kind === 'sgv') return void (m.g === online.cur.g && viewKey(m) !== viewKey(online.view) && (online.view = m));
   if (m.kind !== 'sg') return;
   const { kind: _k, v: _v, t, who, ...rest } = m as SgIntent & { v: number; t: number; who: Who };
   const move: Move = { ...rest, who };
@@ -159,7 +159,14 @@ export function listen(eager = false): void {
   relay?.onDrop?.((i) => unsend(i, 'drop'));
   // (each hello says the game held and how many of its moves: the room replays it from there, across midnight too)
   relay?.sgAt?.(() => (online.cur.g ? { g: online.cur.g, n: online.cur.log.length } : null));
-  relay?.onStatus((st) => (online.connected = st.connected));
+  let here = new Set<Who>();
+  relay?.onStatus((st) => {
+    online.connected = st.connected;
+    // someone just here (or me back): my turn's view again, whole (the frames go only on change)
+    const now = new Set(st.connected ? st.here : []);
+    if ([...now].some((w) => !here.has(w))) flushView(true);
+    here = now;
+  });
   $effect.root(watchInvite);
 }
 
@@ -191,9 +198,10 @@ function send({ who: _w, ...m }: Move): void {
 }
 
 /** My turn's view (view.ts) for the others at the table: sent as it changes, at most one each VIEW_GAP_MS (the latest
- *  then), and again once VIEW_AGAIN_MS have gone by without one while the turn is open (a phone that comes late or
- *  missed one catches up: each is whole); null, the turn's panel gone. Only with someone there (sync/live.ts send). */
-const VIEW_GAP_MS = 200, VIEW_AGAIN_MS = 2000;
+ *  then); again whole when someone arrives (listen: the status's `here`), and once VIEW_AGAIN_MS have gone by without
+ *  one while the turn is open (a watcher's reload, which no presence tells: a slow beat, so the room sleeps between);
+ *  null, the turn's panel gone. Only with someone there (sync/live.ts send). */
+const VIEW_GAP_MS = 200, VIEW_AGAIN_MS = 30_000;
 let viewNow: View | null = null, viewSent = '', viewAt = -Infinity;
 let viewTimer: ReturnType<typeof setTimeout> | undefined, viewBeat: ReturnType<typeof setInterval> | undefined;
 export function sendView(v: View | null): void {
@@ -205,12 +213,14 @@ export function sendView(v: View | null): void {
     viewSent = '';
     return;
   }
-  viewBeat ??= setInterval(() => performance.now() - viewAt >= VIEW_AGAIN_MS && flushView(true), VIEW_AGAIN_MS / 4);
+  viewBeat ??= setInterval(() => performance.now() - viewAt >= VIEW_AGAIN_MS && flushView(true), VIEW_AGAIN_MS / 3);
   if (viewTimer) return;
   const wait = viewAt + VIEW_GAP_MS - performance.now();
   if (wait <= 0) flushView(false);
   else viewTimer = setTimeout(() => ((viewTimer = undefined), flushView(false)), wait);
 }
+/** A view as the sheet shows it (its stamp aside): one heard again unchanged isn't set again. */
+const viewKey = (v: (SgView & { who: Who }) | null): string => (v ? JSON.stringify([v.who, v.g, v.i, v.p, v.s, v.x]) : '');
 function flushView(again: boolean): void {
   const cur = untrack(() => online.cur);
   if (!viewNow || !relay || !cur.g) return;

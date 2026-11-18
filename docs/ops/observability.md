@@ -148,7 +148,8 @@ the guest:
 | Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the cron's room tick at :15 and :45, a fetch ~30 min after a good one, a `wx` on change) | 48 ticks, ~48 fetches | 0 | 48 | ~10 | | ~48 (one storage key) |
 | The log (`/log` batches, a `req` RPC each `/api`, room closes) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
-| **Total** | | **~630 (0.6 %)** | **~1,650 (1.7 %)** | **~380 (2.9 %)** | **~22,000 (0.4 %)** | **~7,050 (7 %)** |
+| 英語すごろく online (an hour's game: ~250 moves, the turn's view on change and every 30 s unchanged) | 1 game | 0 | ~30 | ~250 (awake while turns are played) | ~50 (a hello's or a move's wake) | ~260 (a row a move, a fold each 32) |
+| **Total** | | **~630 (0.6 %)** | **~1,680 (1.7 %)** | **~630 (4.8 %)** | **~22,050 (0.4 %)** | **~7,310 (7 %)** |
 
 Duration is the binding limit and stays under a tenth of it with the island ten times busier; nothing is sent per
 frame. Compaction, were it on, adds ~8,000 rows written on a Wednesday.
@@ -159,7 +160,7 @@ triggers, 4 used (relay 2, gym-bot 1, its-bot 1). A day:
 
 | Worker | Worker req | DO req | Rows written |
 |---|---|---|---|
-| relay (the table above) | ~630 | ~1,650 | ~7,050 |
+| relay (the table above) | ~630 | ~1,680 | ~7,310 |
 | gym-bot (a check every 15 min: [gym/README](../../gym/README.md#quotas)) | ~110 | ~120 | ~100 |
 | its-bot, a runner all day ([its/README](../../its/README.md#quotas)) | ~3,500 | ~6,000 | ~6,500 (+ ~2,900 alarm writes) |
 

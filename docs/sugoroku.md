@@ -138,8 +138,8 @@ from anyone at the table). The phone whose turn it isn't watches (whose turn, th
 - **Watching** (`view.ts`, `sgv`: presence only, never kept or logged): while it's my turn, my sheet's panel (the
   ことば's tiles, ヒント, ↻入れかえ's ask, the check; the ぶん's tiles, 「おしい！」, 答えはこれ; the 絵's letters or choices; the
   card's Japanese; the fork; the speaking step's phase and words) goes to the relay as a whole snapshot (indices and flags,
-  the speaking step's texts cut to fit 256 bytes: ~100 a frame, ~190 at most), on change at most every 200 ms and again
-  every 2 s while the turn is open. The relay sends it to the game's other seats only (the guest when seated), and only
+  the speaking step's texts cut to fit 256 bytes: ~100 a frame, ~190 at most), on change at most every 200 ms, again
+  whole when someone arrives, and every 30 s unchanged (so the room sleeps between); one heard unchanged isn't set again. The relay sends it to the game's other seats only (the guest when seated), and only
   at the game's next move. A watching phone shows it under 「Xが考え中…」 through the same turn components (`mirror`),
   inert; one of an older move is let go, and the move's fold takes over when it lands. The 3D board isn't touched by it.
 

@@ -35,6 +35,7 @@ vi.mock('#lib/sync/log.ts', () => ({ log: (...a: unknown[]) => void h.logs.push(
 type Mod = typeof import('./online.svelte.ts');
 let o: Mod;
 const status = (here: ('A' | 'B' | 'G')[], connected = true) => h.status!({ connected, me: 'A', peer: here.includes('B'), here });
+const frames = () => h.sent.filter((m) => (m as { kind: string }).kind === 'sgv');
 
 beforeEach(async () => {
   vi.useFakeTimers({ now: 1_800_000_000_000, toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date', 'performance'] });
@@ -71,5 +72,37 @@ describe('online: this phone and the room', () => {
     // another game's, or not a move: nothing
     h.drop!({ kind: 'world', op: 'watered', id: 'fl:1:2' } as Intent);
     expect(o.online.cur.log).toHaveLength(1);
+  });
+
+  it('my turn’s view goes on change only, again after 30 s unchanged and when someone arrives; never every 2 s', () => {
+    const v = { p: 'fork', v: null } as const;
+    o.sendView(v);
+    vi.advanceTimersByTime(300);
+    o.sendView(v);
+    vi.advanceTimersByTime(25_000);
+    expect(frames()).toHaveLength(1);
+    vi.advanceTimersByTime(6000);
+    expect(frames()).toHaveLength(2);
+    // the guest arrives: whole again at once; B still here: nothing more
+    status(['B', 'G']);
+    expect(frames()).toHaveLength(3);
+    status(['B', 'G']);
+    // me back after a drop: again
+    status([], false);
+    status(['B']);
+    expect(frames()).toHaveLength(4);
+    o.sendView({ p: 'home', v: null });
+    vi.advanceTimersByTime(300);
+    expect(frames()).toHaveLength(5);
+  });
+
+  it('a watcher sets a view heard again unchanged no more (no re-render)', () => {
+    const g = o.online.cur.g;
+    h.on!({ kind: 'sgv', g, i: 2, p: 'fork', s: '', v: 3, who: 'B', t: 1 } as Relayed);
+    const first = o.online.view;
+    h.on!({ kind: 'sgv', g, i: 2, p: 'fork', s: '', v: 3, who: 'B', t: 2 } as Relayed);
+    expect(o.online.view).toBe(first);
+    h.on!({ kind: 'sgv', g, i: 2, p: 'home', s: '', v: 3, who: 'B', t: 3 } as Relayed);
+    expect(o.online.view).toMatchObject({ p: 'home' });
   });
 });
