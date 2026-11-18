@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 0, new 4, ctx 7, tx 10
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 0, new 4, ctx 7, tx 10, qa 4
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 7, new 4 · sweep: whitewhale twins retired (d2 x1)
 // A2 LATE: the jokes lean on sexism, killing and a crude body line; good office chunks, but a poor first clip
 // “How to Pitch to Women - The Office US” (the official The Office channel, BEST OF SEASON 9): the office coaches
@@ -91,13 +91,13 @@ export const pitchWomen: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'minutes', reveals: ['needs'], seg: [36.9, 48], keep: true,
       stem: 'How fast does Dwight say he will make the sale?',
       ja: 'ドワイトは、何分で売ると言う？',
-      choices: ['In 10 minutes', 'In 12 minutes', 'In 20 minutes'], a: 1,
-      choicesJa: ['10分で', '12分で', '20分で'],
+      choices: ['In 2 minutes', 'In 10 minutes', 'In 12 minutes', 'In 20 minutes'], a: 2,
+      choicesJa: ['2分で', '10分で', '12分で', '20分で'],
       cue: '「sell to you in」のあと。',
       line: 'I am going to sell to you in *12 minutes*.',
       said: '「12分であなたに売ってみせます」と言う。',
       mean: 'twelve ＝ 12。商談の時間を自分で決めてしまい、すぐ止められる。',
-      trap: '10 なら「テン」。20 は「トゥエニ」と最後が「ニ」。「トゥエルブ」と「ブ」で終われば12。',
+      trap: '10 なら「テン」、2 なら「トゥー」だけ。20 は「トゥエニ」と最後が「ニ」。「トゥエルブ」と「ブ」で終われば12。',
       use: 'I’ll be done in twelve minutes.（12分で終わります）' },
     { id: 'd3', skill: 'detail', level: 'B2', point: 'needs', ctx: true, reveals: ['minutes'], seg: [41.9, 50.9],
       stem: 'What does the client want, he is told?',
@@ -141,7 +141,7 @@ export const pitchWomen: Clip = {
       mean: '質問の形をした感想。答えは求めていない。売り込みが怖かった、と遠回しに伝えている。',
       trap: 'questions から興味を持ったと勘違いしやすい。最後の文は質問ではなく「殺さないで」というお願い。',
       use: 'Honestly, that felt a bit scary.（正直、ちょっと怖かった）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'listen', seg: [74.2, 102.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'listen', reveals: ['haveto'], seg: [74.2, 89.35],
       stem: 'What are they trying to get Dwight to do?',
       ja: 'みんなはドワイトに、何をさせようとしている？',
       choices: ['Show that he is listening', 'Talk much faster in his pitch', 'Speak in simpler words'], a: 0,
@@ -149,7 +149,7 @@ export const pitchWomen: Clip = {
       cue: '「crucial」のあとの動詞。',
       said: '「聞くことが大切」と言い、聞いている様子を見せる練習をさせる。',
       mean: 'crucial ＝ とても大切。聞いていても、相手に伝わらなければ意味がない、という練習。',
-      trap: '耳の毛の長い話が目立つが、それはドワイトの言い返し。頼まれているのは you have to show us。',
+      trap: 'listen だけ聞くと、話し方を直す練習と考えがち。頼まれているのは you have to show us（見せて）。',
       use: 'I’m listening. Go on.（聞いてるよ。続けて）' },
     { id: 's1', skill: 'sound', level: 'B2', point: 'haveto', seg: [84.3, 89.3],
       stem: 'Fill the gap: “Okay, well, ___ show us.”',
@@ -257,7 +257,7 @@ export const pitchWomen: Clip = {
       mean: 'carry on ＝ 文字どおりは「運び続ける」→「続ける」。ドワイトの顔が気になって、話を続けられない。',
       trap: 'carry（運ぶ）から、物を運ぶ話に聞こえるが、on がつくと「続ける」。with that face が理由。',
       use: 'Sorry, please carry on.（失礼、どうぞ続けて）' },
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'extreme', ctx: true, seg: [150.92, 156.95],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'extreme', ctx: true, reveals: ['hour'], seg: [150.92, 156.95],
       stem: 'What does Nellie mean by “I’m sorry, but that is true”?',
       ja: 'ネリーの「I’m sorry, but that is true」はどういう意味？',
       choices: ['She still thinks she’s right', 'She changes her mind', 'She says sorry to Dwight'], a: 0,

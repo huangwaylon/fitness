@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 4, ctx 6, tx 4
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 4, ctx 6, tx 4, qa 4
 // A2 REVIEW 2026-11-17: keep 1, rewrite 16, retire 7, new 0
 // A2 LATE: fast (177 wpm) and the star's lines are full of rude asides ("You dick", "crap town", "dirty hicks"); the
 // polite asks and refusals around him are what an A2 learner can use.
@@ -59,16 +59,16 @@ export const chipMcCapp: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'hits', seg: [49.4, 56.7], keep: true,
       stem: 'About how many YouTube hits does the song have?',
       ja: 'その曲のYouTube再生回数は、だいたい何回？',
-      choices: ['2 million', '12 million', '20 million'], a: 0,
-      choicesJa: ['200万回', '1200万回', '2000万回'],
+      choices: ['2 million', '12 million', '20 million', '2 billion'], a: 0,
+      choicesJa: ['200万回', '1200万回', '2000万回', '20億回'],
       cue: '「has like」のあと',
       line: 'has like *two million* hits on YouTube.',
       said: '最新曲はYouTubeで「200万回くらい」再生されている、と言う。',
       mean: 'like は数の前で「〜くらい」。two million ＝ 200万。',
-      trap: 'twelve は「トゥエルヴ」、twenty は「トゥエニ」と続く。「トゥー」ですぐ million なら two。',
+      trap: 'twelve は「トゥエルヴ」、twenty は「トゥエニ」と続く。billion は「ビ」で始まる。「トゥー」ですぐ million なら two。',
       use: 'It has like a thousand reviews.（レビューが千件くらいあるよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'twoface', reveals: ['fans'], seg: [77.65, 98.9],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'twoface', reveals: ['fans', 'stacks', 'gotit'], seg: [77.65, 98.9],
       stem: 'What is Chip like when they meet him?',
       ja: '会ってみると、チップはどんな人？',
       choices: ['Nice to fans, mean to his dad', 'Nice to everyone around him', 'Rude to fans, nice to his dad'], a: 0,
@@ -89,14 +89,14 @@ export const chipMcCapp: Clip = {
       trap: 'blessed や superstars を本心と取りやすい。always と直後の口調で判断。',
       use: 'You’re too kind. Really.（ご親切に。本当に）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'stacks', seg: [88.7, 95.8],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'stacks', seg: [88.7, 93.65],
       stem: 'Which words do you hear: “Can someone give me ___ lunch stacks?”',
       ja: '「Can someone give me ___ lunch stacks?」の空所に聞こえるのは？',
       choices: ['one of those', 'one of these', 'some of those'], a: 0,
       choicesJa: ['あれを1つ', 'これを1つ', 'あれをいくつか'],
       cue: '「give me」のすぐあと',
       line: 'Can someone give me *one of those* lunch stacks',
-      said: '「だれか、あのランチスタックを1つちょうだい」と言う。',
+      said: '「だれか、あのランチのセットを1つちょうだい」と言う。',
       mean: 'one of those が「ワナヴゾウズ」とつながる。of は小さく短い「ア」。',
       trap: 'these なら「ズィーズ」と長い「イー」。some なら「サ」で始まる。「ワナ…ゾウズ」なら one of those。',
       use: 'Can I try one of those?（それ、1つ試してもいいですか）' },
@@ -284,7 +284,7 @@ export const chipMcCapp: Clip = {
       trap: 'spend a night（泊まる）が聞こえて、ホテルと思いやすい。wouldn’t have to（しなくて済む）。',
       use: 'What if we leave early?（早めに出るのはどう？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sameday'], seg: [156.3, 181.25],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['sameday', 'proud'], seg: [156.3, 181.25],
       stem: 'How does the meeting with Chip end?',
       ja: 'チップとの話し合いはどう終わる？',
       choices: ['Leslie calls it off', 'Chip agrees to come', 'Chip’s dad says no'], a: 0,

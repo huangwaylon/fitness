@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 2, new 11, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 6, rewrite 6, retire 2, new 11, ctx 5, tx 3, qa 5
 // A2 REVIEW 2026-11-17: keep 9, rewrite 11, retire 3, new 0
 // A2 LATE: the title and Donna's hashtags are vulgar ("#BitchBoss"), and the hearing needs the show's backstory
 // “#BitchBoss | Parks and Recreation” (the official Parks and Recreation channel, Season 6): at a hearing, Donna's
@@ -49,7 +49,7 @@ export const donnaPosts: Clip = {
       trap: '決め手は but のあと。you may not know だけ聞くと、だれも知らない話に聞こえる。',
       use: 'You may not like it, but I do.（あなたは好きじゃなくても、私は好き）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'record', seg: [37.6, 61.7],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'record', reveals: ['brunch', 'thirdparty'], seg: [37.6, 61.7],
       stem: 'What do they plan to read at the hearing?',
       ja: '公聴会で、何を読み上げようとしている？',
       choices: ['Donna’s private posts', 'Leslie’s work emails', 'Letters from the town'], a: 0,
@@ -145,13 +145,13 @@ export const donnaPosts: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'poll', seg: [81.5, 93.3], keep: true,
       stem: 'What scale does the poll use?',
       ja: 'アンケートは、どんな段階で聞いている？',
-      choices: ['88 to 100', '90 to 100', '98 to 100'], a: 2,
-      choicesJa: ['88から100', '90から100', '98から100'],
+      choices: ['88 to 100', '90 to 100', '98 to 100', '99 to 100'], a: 2,
+      choicesJa: ['88から100', '90から100', '98から100', '99から100'],
       cue: '「scale of」のあと。',
       line: 'Twitter poll on a scale of *98 to 100*.',
       said: '「ツイッター投票：98から100の段階で」と読み上げる。',
       mean: 'on a scale of A to B ＝ AからBの段階で。一番下でも98という冗談。',
-      trap: 'eight が短く ninety だけに聞こえやすい。88なら「エイティ」で始まる。あとの less than 98 でも確かめる。',
+      trap: 'eight が短く ninety だけに聞こえやすい。88なら「エイティ」で始まり、99なら「ナイン」で終わる。あとの less than 98 でも確かめる。',
       use: 'On a scale of one to ten?（10段階でいうと？）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'poll', reveals: ['aint'], seg: [81.5, 93.3], retired: true,
@@ -224,7 +224,7 @@ export const donnaPosts: Clip = {
       stem: 'Fill the gap: “I mean, I ___ your thing.”',
       ja: '空所を埋める：「I mean, I ___ your thing.」',
       choices: ['thought it was', 'thought that was', 'think that’s'], a: 1,
-      choicesJa: ['それが〜だと思ってた', 'それが〜だと思ってた（that）', 'それが〜だと思う'],
+      choicesJa: ['（it）〜だと思ってた', '（that）それが〜だと思ってた', '（今）それが〜だと思う'],
       cue: '「I mean」のあと、your の前。',
       line: 'I mean, I *thought that was* your thing.',
       said: '「それがあなたの持ち味だと思ってた」と言う。',
@@ -232,7 +232,7 @@ export const donnaPosts: Clip = {
       trap: 'that が小さく、it に聞こえやすい。think なら「シンク」で、was もない。',
       use: 'I thought that was tomorrow!（それ明日だと思ってた！）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'list', reveals: ['thing'], seg: [114.9, 126.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'list', reveals: ['thing'], seg: [114.9, 124.2],
       stem: 'What does Leslie say is one of her real “things”?',
       ja: 'レスリーは、本当の自分らしさは何だと言う？',
       choices: ['Thinking up nicknames', 'Planning surprise parties', 'Writing thank-you notes'], a: 0,

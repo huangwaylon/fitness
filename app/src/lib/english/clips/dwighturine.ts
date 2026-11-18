@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 0, new 4, ctx 6, tx 13
+// R4 REVIEW 2026-11-18: keep 12, rewrite 8, retire 0, new 4, ctx 6, tx 13, qa 6
 // A2 REVIEW 2026-11-17: keep 10, rewrite 8, retire 5, new 1
 // A2 LATE: the plot is a drug test and handing over urine; few everyday chunks, and the topic suits this learner poorly
 // “Dwight Gives Michael His Urine - The Office US” (the official The Office channel, BEST OF SEASON 2 - The Office US):
@@ -26,18 +26,6 @@ export const dwightUrine: Clip = {
       trap: 'あとで within 24 hours と聞こえるので、1日以内を選びがち。決め手は couple of のあとの hours。',
       use: 'I’ll be there in a couple of hours.（2時間ほどで着きます）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'problem', reveals: ['high'], seg: [17, 62],
-      stem: 'What is Michael worried about?',
-      ja: 'マイケルは何を心配している？',
-      choices: ['He may fail the drug test', 'His staff may fail the test', 'The test will take all day'], a: 0,
-      choicesJa: ['自分が薬物検査で引っかかるかも', '部下が検査で引っかかるかも', '検査が一日がかりになる'],
-      cue: '検査の話と、コンサートの話。',
-      line: 'I went to an Alicia Keys concert… one of her friends *started passing around some stuff*.',
-      said: '検査が決まると、マイケルはコンサートで何か回ってきた、と打ち明ける。',
-      mean: 'passing around ＝ みんなに回す。部下を守るためではなく、自分の結果が心配で動いている。',
-      trap: '検査を止めようとするので部下思いに見えるが、コンサートの打ち明け話で自分の心配と分かる。',
-      use: 'I’m worried I won’t pass.（受からない気がして心配）' },
-
     { id: 'i3', skill: 'infer', level: 'B2', point: 'policy', ctx: true, seg: [29.2, 36.3],
       stem: 'What does Toby answer about the drug test?',
       ja: 'トビーは薬物検査について何と答える？',
@@ -60,6 +48,18 @@ export const dwightUrine: Clip = {
       mean: 'score ＝ 文字どおりは「点を取る」。ここでは「うまく手に入れる」。aisle（アイル）は通路で、s は読まない。',
       trap: 'great seats から最前列を連想しやすい。aisle は「アイル」と短く、I’ll に似ている。',
       use: 'Could I have an aisle seat, please?（通路側の席をお願いできますか）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'problem', reveals: ['high', 'lipring'], seg: [44.2, 60.6],
+      stem: 'What is Michael worried about?',
+      ja: 'マイケルは何を心配している？',
+      choices: ['He may fail the drug test', 'His staff may fail the test', 'The test will take all day'], a: 0,
+      choicesJa: ['自分が薬物検査で引っかかるかも', '部下が検査で引っかかるかも', '検査が一日がかりになる'],
+      cue: 'コンサートの打ち明け話。',
+      line: 'I don’t know exactly how this happened, but one of her friends *started passing around some stuff*.',
+      said: '検査が決まると、マイケルは「コンサートで何かが回ってきた」と打ち明ける。',
+      mean: 'passing around ＝ みんなに回す。部下を守るためではなく、自分の結果が心配で動いている。',
+      trap: '検査を止めようとするので部下思いに見えるが、コンサートの打ち明け話で自分の心配と分かる。',
+      use: 'I’m worried I won’t pass.（受からない気がして心配）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'lipring', seg: [44.3, 51.8],
       stem: 'What was special about the girl next to Michael?',
@@ -92,7 +92,7 @@ export const dwightUrine: Clip = {
       trap: 'ほかの人の話なので、言いつけに聞こえるが、言い訳。自分は除いていない。',
       use: 'Everybody was doing it!（みんなやってたんだよ）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'visual', seg: [63, 73.7],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'visual', seg: [63, 71.95],
       stem: 'What will Michael do instead of the test?',
       ja: '検査の代わりに、マイケルは何をする？',
       choices: ['Check each person by eye', 'Let people test at home', 'Bring the testers back later'], a: 0,
@@ -114,7 +114,7 @@ export const dwightUrine: Clip = {
       trap: '質問の形なので、本当に確かめているように聞こえる。決め手はすぐあとの my office。',
       use: 'It’s my day off.（今日は休みなんです）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'official', seg: [73.3, 80.4],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'official', seg: [74.35, 80.4],
       stem: 'Fill the gap: “No, you cannot. It ___ be official.”',
       ja: '「No, you cannot. It ___ be official.」の空所は？',
       choices: ['has to', 'has got to', 'ought to'], a: 0,
@@ -148,19 +148,19 @@ export const dwightUrine: Clip = {
       mean: 'directly ＝ 直接。検査は本人がその場で出すので、人に渡せない、と断っている。',
       trap: 'その前の filing の話につられやすい。決め手は返事の directly to the tester。',
       use: 'Please pay directly at the front desk.（フロントで直接お支払いください）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'plans', seg: [111.4, 140.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'plans', seg: [104.7, 119.9],
       stem: 'What does Michael ask Dwight for?',
       ja: 'マイケルはドワイトに何を頼む？',
-      choices: ['His clean urine', 'Help with filing', 'His job application'], a: 0,
-      choicesJa: ['ドワイトのきれいな尿', '書類整理の手伝い', 'ドワイトの応募書類'],
+      choices: ['His urine, in a cup', 'Help with filing', 'His job application'], a: 0,
+      choicesJa: ['カップに入れたドワイトの尿', '書類整理の手伝い', 'ドワイトの応募書類'],
       cue: 'Dwight の名前のあたり。',
-      line: '*I need your urine.* … We’re not animals, Dwight.',
-      said: 'ドワイトに尿を頼み、理由を聞かれて、うっかりハイになったかもと打ち明ける。',
-      mean: '自分の代わりに検査に出す尿を、ドワイトから手に入れたい。',
+      line: '*I need your urine.* … Yes, in a cup. We’re not animals, Dwight.',
+      said: 'ドワイトに「君の尿が必要だ」と頼み、「カップに入れてね」と付け足す。',
+      mean: '自分の代わりに検査に出す尿を、ドワイトから手に入れたい。We’re not animals ＝「動物じゃないんだから（カップに決まってる）」。',
       trap: 'filing（書類整理）は前の人への頼みの口実。ドワイトには最初から尿を頼んでいる。',
       use: 'I need your help with this.（これ、手伝ってほしいんだ）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B1', point: 'business', seg: [117.5, 123.6],
+    { id: 'p3', skill: 'phrase', level: 'B1', point: 'business', seg: [117.5, 122.5],
       stem: 'What does “It’s none of your business” mean?',
       ja: '「It’s none of your business」はどういう意味？',
       choices: ['It’s not for you to know', 'It’s not your job here', 'You don’t have the money'], a: 0,
@@ -278,7 +278,7 @@ export const dwightUrine: Clip = {
       trap: 'ビスケットと聞くとお菓子を連想しやすいが、ここは朝食のパン。he’d は he would（よく〜した）。',
       use: 'My mom made us breakfast every morning.（母が毎朝朝ごはんを作ってくれた）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'busted', seg: [228.1, 236.9],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'busted', seg: [228.1, 234.5],
       stem: 'What does “I never busted him on it” mean?',
       ja: '「I never busted him on it」はどういう意味？',
       choices: ['I never caught him doing it', 'I never beat him at games', 'I never cheated like him'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 15, retire 0, new 6, ctx 4, tx 23
+// R4 REVIEW 2026-11-18: keep 3, rewrite 15, retire 0, new 6, ctx 4, tx 23, qa 4
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 1
 // A2 LATE: the punchline is that the store now lives off adult videos, and the council talk is bailout politics with
 // dark asides (slitting a throat, a man who owes money); only the plain asks and phrases serve an A2 learner.
@@ -20,7 +20,7 @@ export const videoDome: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'deal', seg: [0, 17.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'deal', reveals: ['landmark', 'afloat', 'meddling'], seg: [0, 17.2],
       stem: 'What is Leslie’s plan for the store?',
       ja: '店についてのレスリーの案は？',
       choices: ['Make it a landmark', 'Have the city buy it', 'Get a city loan'], a: 0,
@@ -223,7 +223,7 @@ export const videoDome: Clip = {
       mean: 'see myself out ＝ 見送りはいりません、自分で帰ります。帰るときの決まり文句。',
       trap: 'myself out がつながり「マイセルファウ」に近い。3語のかたまりで覚える。',
       use: 'Thanks. I’ll see myself out.（どうも。自分で帰ります）' },
-    { id: 'n1', skill: 'number', level: 'B1', point: 'loan', seg: [186.5, 197.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'loan', seg: [189.1, 193.8], keep: true,
       stem: 'How much money does the visitor say he needs?',
       ja: '訪ねてきた男は、いくら必要だと言っている？',
       choices: ['$300', '$3,000', '$13,000', '$30,000'], a: 1,
@@ -276,7 +276,7 @@ export const videoDome: Clip = {
       mean: '食料配給も生活保護も、まさに政府の助け。本人は気づかず、自分の主張を自分で崩している。',
       trap: '矛先はレスリーなので、彼女が笑われていると聞きやすい。例と結論が合わないとき、笑われるのは話し手。',
       use: 'I never eat sweets. Except cake. And cookies.（甘い物は食べない。ケーキとクッキー以外）' },
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'instructions', seg: [216.7, 228.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'instructions', seg: [218.95, 228.3],
       stem: 'What does Leslie say about the money for the store?',
       ja: '店へのお金について、レスリーは何と言う？',
       choices: ['She said how to spend it', 'She will check every bill', 'It is only a loan'], a: 0,
@@ -318,7 +318,7 @@ export const videoDome: Clip = {
       mean: '文字どおりは「それを君に手渡す」。→ 手柄を相手に渡す → ここでは「たいしたものだと認める」。',
       trap: 'hand（手渡す）から、物を渡すと考えがち。続く turned this place around（立て直した）はほめ言葉。',
       use: 'I’ve got to hand it to you.（たいしたものだよ）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['advice'], seg: [258.0, 279.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['advice', 'films'], seg: [258.0, 279.6],
       stem: 'What happens with Leslie’s plan in the end?',
       ja: '結局、レスリーの案はどうなる？',
       choices: ['Not the way she hoped', 'Few customers come back', 'It rents the films she named'], a: 0,
