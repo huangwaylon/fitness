@@ -15,8 +15,8 @@ export const rossBreak: Clip = {
   credit: 'Friends (official YouTube channel)',
   questions: [
     { id: 'g3', skill: 'gist', level: 'B1', point: 'found', seg: [0, 19.5],
-      stem: 'What has Rachel just found out?', ja: 'レイチェルは今、何を知った？',
-      choices: ['Ross was with another woman', 'Ross wants to break up', 'Ross forgot about their date'], a: 0,
+      stem: 'What has Rachel just learned?', ja: 'レイチェルは今、何を知った？',
+      choices: ['Ross was with another woman', 'Ross wants to end things', 'Ross forgot about their date'], a: 0,
       choicesJa: ['ロスがほかの女性と一緒だった', 'ロスが別れたがっている', 'ロスがデートを忘れていた'],
       cue: '「It was a mistake」のあと',
       line: 'It was a mistake. *I made a mistake*, okay?',
@@ -114,7 +114,7 @@ export const rossBreak: Clip = {
       use: 'Let’s get you out of the rain.（雨にぬれないところへ行こう）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'there', ctx: true, seg: [100.6, 114.9],
-      stem: 'What does Rachel work out from Ross’s story?', ja: 'ロスの話から、レイチェルは何に気づく？',
+      stem: 'What does Rachel realize from Ross’s story?', ja: 'ロスの話から、レイチェルは何に気づく？',
       choices: ['The woman hadn’t left yet', 'The woman passed her outside', 'The woman left before the message'], a: 0,
       choicesJa: ['女性はまだ帰っていなかった', '女性と外ですれちがった', '女性はメッセージの前に帰っていた'],
       cue: '「in there」が二回',
@@ -288,7 +288,7 @@ export const rossBreak: Clip = {
       use: 'That’s so sweet of you!（なんて優しいの！）' },
 
     { id: 'n3', skill: 'infer', level: 'B1', point: 'worry', seg: [177.6, 186.6],
-      stem: 'Why does a friend think they can go out now?', ja: '友だちは、なぜもう出ても大丈夫だと思う？',
+      stem: 'Why does a friend think they can leave the room now?', ja: '友だちは、なぜもう出ても大丈夫だと思う？',
       choices: ['Ross and Rachel won’t notice them', 'Ross and Rachel have gone home', 'The fight is over now'], a: 0,
       choicesJa: ['ロスとレイチェルは気づかない', 'ロスとレイチェルは帰った', 'けんかはもう終わった'],
       cue: '「I mean」のあと',

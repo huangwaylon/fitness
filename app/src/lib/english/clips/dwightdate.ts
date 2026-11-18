@@ -128,8 +128,8 @@ export const dwightDate: Clip = {
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'device', seg: [56.9, 64.5],
       stem: 'What does Dwight’s invention do?', ja: 'ドワイトの発明は何をする？',
-      choices: ['Takes meat from a live horse', 'Cooks burgers while you travel', 'Brings burgers by horse'], a: 0,
-      choicesJa: ['生きた馬から肉を取る', '移動中にハンバーガーを焼く', '馬でハンバーガーを届ける'],
+      choices: ['Takes meat from a live animal', 'Cooks burgers while you travel', 'Brings burgers by horse'], a: 0,
+      choicesJa: ['生きた動物から肉を取る', '移動中にハンバーガーを焼く', '馬でハンバーガーを届ける'],
       cue: '最後の「without」のあと',
       line: 'obtain… hamburgers… *from a horse without killing the animal*.',
       said: 'ドワイトが「馬を殺さずに、馬からハンバーガーを取れる装置だ」と話す。',
@@ -224,7 +224,7 @@ export const dwightDate: Clip = {
       use: 'I love finding a good used bookstore.（いい古本屋を見つけるのが好き）' },
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'wrong', seg: [105.9, 112.3],
-      stem: 'How does Michael feel about Dwight at the end?', ja: '最後に、マイケルはドワイトをどう思っている？',
+      stem: 'What does Michael think of Dwight now?', ja: 'マイケルは今、ドワイトをどう思っている？',
       choices: ['Dwight is so weird', 'Dwight is very smart', 'Dwight is very kind'], a: 0,
       choicesJa: ['ドワイトはすごく変だ', 'ドワイトはすごく頭がいい', 'ドワイトはすごく優しい'],
       cue: '最後のマイケルの一言',
