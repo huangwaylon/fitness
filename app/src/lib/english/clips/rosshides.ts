@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 0, new 3, ctx 8, tx 20
+// R4 REVIEW 2026-11-18: keep 18, rewrite 0, retire 0, new 3, ctx 8, tx 20, qa 6
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 6, new 0
 // “Ross Tries (and Fails) to Hide His One-Night Stand from Rachel | Friends” (the official Friends channel, Best of
 // Season 3): Rachel's message says she wants Ross back; he hurries Chloe out, his friends talk him out of telling
@@ -8,8 +8,7 @@
 // disagree ("Break a leg"/"Rachel!", "You got to be kidding me"/"you got my message, Mom?"). 202.6 s: "You said of
 // course you do"/"Did you say of course you do?". 286 s: "copy place" in whisper, "coffee place" in the captions.
 // EAR CHECK: 159.5 s s1 — "Did you" run together (≈"didja"); both sources say "Did you think about the trail?"
-// EAR CHECK: 217.6 s x1 — "happen to have", with a weak "to"; both sources agree. The segment starts at 216.1 s, just
-//   after "But, Isaac": confirm it doesn't clip "see"
+// EAR CHECK: 217.6 s x1 — "happen to have", with a weak "to"; both sources agree ("see" at 217.6 s, inside the seg)
 // EAR CHECK: 79.9 s gl — Ross's "Oh, thank you" (captions keep only "you")
 import type { Clip } from '../types.ts';
 
@@ -39,7 +38,7 @@ export const rossHidesIt: Clip = {
       choicesJa: ['留守電のメッセージで', '機械の上で', '機械が止まったあとで'],
       cue: '「get back together」のあと',
       line: 'I don’t want to get back together *over a machine*.',
-      said: '「留守電で仲直りなんてしたくない」と言う。',
+      said: '「留守電でやり直す話なんてしたくない」と言う。',
       mean: 'over ＝ ここでは「〜を通して」。over the phone（電話で）と同じ。会ってから仲直りしたい。',
       trap: 'over から「〜の上」を連想しやすい。over the phone のように、連絡の手段を言う。',
       use: 'Let’s not talk about it over the phone.（電話でその話はやめよう）' },
@@ -47,13 +46,13 @@ export const rossHidesIt: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'when', seg: [32, 40.7],
       stem: 'What time will Rachel stop by tomorrow?',
       ja: 'レイチェルは明日、何時ごろ寄る？',
-      choices: ['8:13', '8:30', '9:30'], a: 1,
-      choicesJa: ['8時13分', '8時30分', '9時30分'],
+      choices: ['8:13', '8:20', '8:30', '9:30'], a: 2,
+      choicesJa: ['8時13分', '8時20分', '8時30分', '9時30分'],
       cue: '「stop by around」のあと',
       line: 'but on my way to work *tomorrow morning*, I’m going to stop by around *8:30*.',
       said: '「明日の朝、仕事に行くとちゅうで8時半ごろ寄るね」と言う。',
       mean: 'eight thirty ＝ 8:30。stop by ＝ ちょっと立ち寄る。on my way to work ＝ 仕事に行くとちゅう。',
-      trap: '13 なら「サーティーン」と後ろが長く強い。「ナイン」でなく「エイト」で始まり、「サーティ」で終われば8:30。',
+      trap: '13 なら「サーティーン」と後ろが長く強い。20 なら「トゥエンティ」。「エイト」のあと「サーティ」で8:30。',
       use: 'I’ll stop by on my way home.（帰りにちょっと寄るね）' },
 
     { id: 'a2', skill: 'pragma', level: 'B2', point: 'puppy', seg: [49.5, 55.9],
@@ -245,14 +244,14 @@ export const rossHidesIt: Clip = {
       use: 'I told no one. Well, except my mom.（誰にも言ってない。まあ、母は別）', retired: true },
 
     { id: 'i4', skill: 'detail', level: 'B1', point: 'isaac', ctx: true, seg: [195.1, 204.7],
-      stem: 'Who does Chloe tell everything to?',
-      ja: 'クロエは何でもだれに話す？',
-      choices: ['Isaac', 'Jasmine', 'Rachel'], a: 0,
-      choicesJa: ['アイザック', 'ジャスミン', 'レイチェル'],
+      stem: 'What is Chloe’s answer about Isaac?',
+      ja: 'アイザックのことを聞かれて、クロエの答えは？',
+      choices: ['Yes, she told him', 'No, she told nobody', 'Not yet, but she will'], a: 0,
+      choicesJa: ['うん、話した', 'ううん、だれにも話してない', 'まだだけど、話すつもり'],
       cue: '「right?」への返事',
       line: 'Ross: So you didn’t mention anything to Isaac, right? / Chloe: Oh, *I tell Isaac everything*.',
       said: '「アイザックには何も言ってないよね？」に「アイザックには何でも話すの」と答える。',
-      mean: 'I tell 〜 everything ＝「〜には何でも話す」。だから今回のことも話している。',
+      mean: 'I tell 〜 everything ＝「〜には何でも話す」。だから今回のことも、もう話している。',
       trap: 'その前に「だれにも言ってない」と言うので、だれにも話さないと思いやすい。',
       use: 'I tell my sister everything.（姉には何でも話すの）' },
 
@@ -304,8 +303,8 @@ export const rossHidesIt: Clip = {
     { id: 'ph2', skill: 'phrase', level: 'B1', point: 'workout', seg: [259.8, 268.9],
       stem: 'What does Ross want most with his girlfriend?',
       ja: 'ロスが彼女といちばん望んでいることは？',
-      choices: ['To fix things and stay together', 'To go to the gym with her', 'To find out what to tell her'], a: 0,
-      choicesJa: ['問題を解決して、いっしょにいる', '彼女とジムに行く', '何を話すか考える'],
+      choices: ['To fix things and stay together', 'To go to the gym with her', 'To decide what to tell her'], a: 0,
+      choicesJa: ['問題を解決して、いっしょにいる', '彼女とジムに行く', '何を話すか決める'],
       cue: '「more than anything」のあと',
       line: 'I want more than anything to just *work it out* with her',
       said: '「彼女を愛してるし、何よりうまくやり直したい」とたのむ。',
