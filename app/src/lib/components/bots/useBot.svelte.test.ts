@@ -70,6 +70,26 @@ describe('useBot (a bot page’s status)', () => {
     stop();
   });
 
+  it('a read now restarts the timer: the last read’s timer never fires into it (one read in flight, not given up)', async () => {
+    const { useBot } = await load();
+    const bot = useBot('gym', driver);
+    const stop = bot.poll.start();
+    await settle();
+    await vi.advanceTimersByTimeAsync(50_000);
+    let answer!: (r: unknown) => void;
+    h.answer = () => new Promise((ok) => (answer = ok));
+    void bot.poll.refresh();
+    await vi.advanceTimersByTimeAsync(20_000); // past the mount read's 60 s
+    expect([h.calls, bot.poll.loading]).toEqual([2, true]);
+    answer({ ok: true, status: { tone: 'warn' } });
+    await settle();
+    expect(bot.data).toEqual({ tone: 'warn' });
+    h.answer = () => Promise.resolve({ ok: true, status: { tone: 'good' } });
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(h.calls).toBe(3);
+    stop();
+  });
+
   it('the kept status at once (not fresh: 更新中 while the read is on its way)', async () => {
     h.store.set('k.kalori', JSON.stringify({ me: 'A', s: { tone: 'bad' } }));
     const { useBot } = await load();

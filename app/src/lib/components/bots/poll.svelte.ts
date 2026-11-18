@@ -41,6 +41,9 @@ export function statusPoll(read: (signal: AbortSignal) => Promise<void>, every: 
 
   async function refresh() {
     if (life.signal.aborted || skip()) return;
+    // (the timer stopped too: the next read `every()` ms after this one, not the last one's timer firing into it and
+    // aborting it: a phone coming back 14 s after a read read twice, and its.spec's held read was given up by it)
+    clearTimeout(timer);
     ctl?.abort();
     const c = (ctl = new AbortController());
     const signal = AbortSignal.any([c.signal, life.signal]);

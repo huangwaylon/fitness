@@ -437,6 +437,18 @@ test('停止 failing after the sheet closed: said in a toast (the page is gone)'
 test('a read in flight as 保存 goes is let go: its older answer never replaces the saved settings', async ({ page, context }) => {
   let release: (() => void) | null = null;
   let held = false;
+  // the page's own count of its status reads given up (their signal's abort): WebKit's Playwright says nothing of a
+  // routed request the page aborts once it has been held a moment (no requestfailed: 3 s held, never), so under load
+  // the old wait for that event ran out
+  await context.addInitScript(() => {
+    const f = window.fetch;
+    window.fetch = (input, init) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      if (url.endsWith('/its/status')) init?.signal?.addEventListener('abort', () => ((window as unknown as { __statusAborts: number }).__statusAborts = ((window as unknown as { __statusAborts?: number }).__statusAborts ?? 0) + 1));
+      return f(input, init);
+    };
+  });
+  const aborts = () => page.evaluate(() => (window as unknown as { __statusAborts?: number }).__statusAborts ?? 0);
   const { sheet, its, first } = await phone(page, context, 'A', (c) => {
     if (c.method !== 'GET' || !held) return undefined;
     held = false;
@@ -449,9 +461,9 @@ test('a read in flight as 保存 goes is let go: its older answer never replaces
   await poll(page);
   await expect.poll(() => release !== null).toBe(true);
   // 保存 gives the read up (its fetch aborted), so its older answer can't land after the save's
-  const givenUp = page.waitForEvent('requestfailed', (r) => r.url().endsWith('/its/status'));
+  const before = await aborts();
   await its.locator('[data-its-save]').click();
-  await givenUp;
+  await expect.poll(aborts, { message: 'the read in flight given up' }).toBe(before + 1);
   await expect(its.locator('[data-its-save-bar]')).toHaveCount(0);
   await expect(its.locator('[data-its-guests="4"]')).toHaveAttribute('aria-pressed', 'true');
   release!();
