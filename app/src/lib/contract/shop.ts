@@ -20,7 +20,12 @@
 // recipient (1–SG_REWARD_MAX), `to` who gets them (anyone of A, B, G, each once), `d` the game's Tokyo day (the record's
 // or yesterday: record.ts). Anyone may send one; it fans out: it is a row of each recipient's ledger, never the
 // sender's as such (rowConcerns). Per recipient, a game pays once (its `g`); no daily cap (the user, 2026-11-18). Its
-// かいがら are a sell's (never ベル). Shared by the record and the model; pure.
+// かいがら are a sell's (never ベル).
+//
+// A `shop_adjust` is `{v, note}`: the admin's correction of one person's かいがら (relay/scripts/record.ts adjust; the
+// user's call, e.g. 2026-11-18's), `v` a whole number of かいがら, ±ADJUST_MAX and never 0, `note` why (1–80 chars).
+// Never a phone's: the record refuses it from any key (record.ts validEventData), so it only ever comes kept. It adds
+// `v` to its person's かいがら, nothing else; deleting it (`unadjust`) undoes it. Shared by the record and the model; pure.
 import { isLocalDate, isWho, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
@@ -33,6 +38,11 @@ interface BuyData { item: string; price: number; d: LocalDate }
 interface StartsData { crop: Crop; n: number; v: number }
 /** An `sg_reward`: `v` かいがら for each of `to` for the game `g` of the day `d`. */
 interface RewardData { g: string; v: number; to: Who[]; d: LocalDate }
+/** A `shop_adjust`: `v` かいがら (either sign) for its person, and why. */
+interface AdjustData { v: number; note: string }
+
+/** At most this many かいがら either way in one correction. */
+export const ADJUST_MAX = 100_000;
 
 /** At most this many かいがら per recipient in one game's reward. */
 export const SG_REWARD_MAX = 1000;
@@ -84,21 +94,35 @@ export function rewardOf(d: Record<string, unknown>): RewardData | null {
   return { g: d.g, v: d.v, to: [...to], d: d.d };
 }
 
+/** A `shop_adjust`'s data, or null: `v` a whole number, 0 < |v| ≤ ADJUST_MAX, `note` a trimmed line of 1–80 chars. */
+export function adjustOf(d: Record<string, unknown>): AdjustData | null {
+  if (!keysAre(d, ['v', 'note']) || typeof d.v !== 'number' || !Number.isInteger(d.v) || d.v === 0 || Math.abs(d.v) > ADJUST_MAX) return null;
+  const note = d.note;
+  if (typeof note !== 'string' || note !== note.trim() || note.length < 1 || note.length > 80 || /[\u0000-\u001f]/.test(note)) return null;
+  return { v: d.v, note };
+}
+
 // ---- the ledger
 
 /** The shop's event types: a sale, a piece bought, a crop's starts bought. @public (relay/src/store.ts) */
 export const SHOP_EVENTS = ['sell', 'buy', 'buy_starts'] as const;
 export type ShopEvent = (typeof SHOP_EVENTS)[number];
 export const isShopEvent = (type: string): type is ShopEvent => (SHOP_EVENTS as readonly string[]).includes(type);
-/** The ledger's event types: the shop's (the sender's own) and 英語すごろく's reward (its recipients'). */
-export type LedgerEvent = ShopEvent | 'sg_reward';
-export const isLedgerEvent = (type: string): type is LedgerEvent => type === 'sg_reward' || isShopEvent(type);
+/** The ledger's event types: the shop's (the sender's own), 英語すごろく's reward (its recipients') and the admin's
+ *  correction (its person's). */
+export type LedgerEvent = ShopEvent | 'sg_reward' | 'shop_adjust';
+/** Whether a phone's event is of the ledger (a `shop_adjust` never is a phone's). */
+export const isLedgerEvent = (type: string): boolean => type === 'sg_reward' || isShopEvent(type);
 
 /** A ledger event's row for the fold (its data as `sellOf`, `buyOf`, `startsOf`, `rewardOf` read it), or null when malformed. */
 export function shopRowOf(type: LedgerEvent, d: Record<string, unknown>): ShopRow | null {
   if (type === 'sg_reward') {
     const data = rewardOf(d);
     return data && { type: 'reward', data };
+  }
+  if (type === 'shop_adjust') {
+    const data = adjustOf(d);
+    return data && { type: 'adjust', data };
   }
   if (type === 'sell') {
     const data = sellOf(d);
@@ -142,9 +166,9 @@ export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>;
 /** An empty ledger. */
 const emptyLedger = (): Ledger => ({ sold: new Map(), soldV: new Map(), shells: 0, owned: [], owed: new Map(), games: new Set() });
 
-/** A row of the shop: a sell, a buy, starts or a reward, as `sellOf` / `buyOf` / `startsOf` / `rewardOf` read it;
+/** A row of the shop: a sell, a buy, starts, a reward or a correction, as `sellOf` / `buyOf` / `startsOf` / `rewardOf` / `adjustOf` read it;
  *  `queued` when the record hasn't kept it yet (a phone's queue, model/state.ts foldEvents). */
-export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData } | { type: 'reward'; data: RewardData }) & { queued?: true };
+export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData } | { type: 'reward'; data: RewardData } | { type: 'adjust'; data: AdjustData }) & { queued?: true };
 /** A shop row as the model keeps it (model/state.ts `shop`): its sender, and the record's time. */
 export type ShopRowAt = ShopRow & { at: number; person: Who };
 
@@ -157,6 +181,7 @@ export const rowConcerns = (row: ShopRowAt, who: Who): boolean => (row.type === 
  *  (relay/src/store.ts). */
 export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row: ShopRow): 'pocket' | 'wallet' | 'owned' | 'paid' | null {
   if (row.type === 'reward') return l.games.has(row.data.g) ? 'paid' : null;
+  if (row.type === 'adjust') return null;
   if (row.type === 'sell') return row.data.n > (caught.get(row.data.species) ?? 0) - (l.sold.get(row.data.species) ?? 0) ? 'pocket' : null;
   if (row.type === 'starts') return row.data.v > l.shells ? 'wallet' : null;
   if (l.owned.includes(row.data.item)) return 'owned';
@@ -199,6 +224,11 @@ export function shopStep(l: Ledger, caught: ReadonlyMap<string, number>, back: R
     // (kept or queued alike: a game pays a ledger once, whatever else it holds)
     if (l.games.has(row.data.g)) return;
     l.games.add(row.data.g);
+    l.shells += row.data.v;
+    return;
+  }
+  // (the admin's correction: always kept, never a phone's queue)
+  if (row.type === 'adjust') {
     l.shells += row.data.v;
     return;
   }

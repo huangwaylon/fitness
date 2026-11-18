@@ -164,6 +164,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
    * - `decorcheck {fix?}`: the decor caps' kept counts against the rows' (store.ts decorCheck);
    * - `shopcheck {fix?}`: the running field and each person's running shop ledger against the full fold of the rows (store.ts shopCheck);
+   * - `adjust {id, who, v, note}`: a correction of `who`'s かいがら (`v`, either sign: a `shop_adjust` row, store.ts adjust);
+   *   `unadjust {id}`: that row deleted (a new epoch);
    * - `held {person?}`: the values an ingest held back (a past day's 0 over a value above it: never served);
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?, all?}`: the rows a page at a time (the backup, docs/ops/runbook.md#9-the-record; `all`: at once)
@@ -221,6 +223,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       // the running shop ledgers against the full fold of the rows (`fix`: the fold's taken)
       case 'shopcheck':
         return this.core.shopCheck(o);
+      // a correction of someone's かいがら, and its undoing (store.ts adjust, unadjust)
+      case 'adjust':
+        return this.core.adjust(o);
+      case 'unadjust':
+        return this.core.unadjust(o);
       // the decor caps' kept counts against the rows' (`fix`: the rows' taken)
       case 'decorcheck':
         return this.core.decorCheck(o);

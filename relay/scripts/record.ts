@@ -24,8 +24,12 @@
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
 //   shopcheck [fix]     the running field and shop ledgers against the full fold of the rows; `fix`: the fold's taken
 //   decorcheck [fix]    the decor caps' kept counts against the rows'; `fix`: the rows' taken
+//   adjust <A|B|G> <v> <note>   a correction of that person's かいがら: a `shop_adjust` row of `v` (either sign, the
+//                       user's call only), its id printed (contract/shop.ts adjustOf)
+//   unadjust <id>       that correction deleted (undone; a new epoch: the phones refetch)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { signed, TEST } from './admin.ts';
@@ -150,6 +154,14 @@ switch (cmd) {
   case 'decorcheck':
     console.log(JSON.stringify(await signed({ op: cmd, ...(arg === 'fix' ? { fix: true } : {}) })));
     break;
+  case 'adjust': {
+    const [, who, v, ...note] = args;
+    console.log(JSON.stringify(await signed({ op: 'adjust', id: `adjust-${randomUUID()}`, who, v: Number(v), note: note.join(' ') })));
+    break;
+  }
+  case 'unadjust':
+    console.log(JSON.stringify(await signed({ op: 'unadjust', id: arg })));
+    break;
   case 'verify-dump':
     await verifyDump(arg);
     break;
@@ -157,6 +169,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix]  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id>  [--test]');
     process.exit(1);
 }

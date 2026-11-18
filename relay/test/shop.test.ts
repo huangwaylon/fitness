@@ -490,3 +490,93 @@ describe('英語すごろく’s reward in the record', () => {
     expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'none', G: 'none' }); // (B's and G's folded at their next op)
   });
 });
+
+// The admin's correction of someone's かいがら (store.ts adjust / unadjust, contract/shop.ts adjustOf): never a phone's.
+describe('a correction (shop_adjust)', () => {
+  let now: number;
+  let store: StoreCore;
+  const notices: { what: string; who: string; at: string; rev: string }[] = [];
+  beforeEach(() => {
+    now = T0;
+    notices.length = 0;
+    const db = memSql();
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: (x) => void notices.push(x as (typeof notices)[number]) });
+  });
+  const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
+  let n = 0;
+  const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `c${++n}`) =>
+    store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+  const foldOf = (s: StoreCore, who: 'A' | 'B' | 'G'): number => (s as unknown as { shopFold(w: string): { l: { shells: number } } }).shopFold(who).l.shells;
+  const shells = (who: 'A' | 'B' | 'G'): number => foldOf(store, who);
+  const snap = (who: 'A' | 'B' | 'G', since?: string) =>
+    (store.handle({ key: keyOf[who], action: 'snapshot', ...(since ? { since } : {}) }, 100) as unknown as { rows: { events: string[][] } }).rows.events;
+  const sellKoi = (who: 'A' | 'B' | 'G', k: number) => {
+    send(who, 'tally', { date: D, counts: { 'fish:koi': k } });
+    return send(who, 'sell', { species: 'fish:koi', n: k, v: k * K });
+  };
+
+  it('is refused from every key, the guest’s included', () => {
+    expect(send('A', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(send('B', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(send('G', 'shop_adjust', { v: 100, note: 'x' })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(snap('A').some((r) => r[3] === 'shop_adjust')).toBe(false);
+  });
+
+  it('the admin’s is kept, adds its v to its person’s かいがら only, keeps the running ledger the fold’s, and reaches the phones as a new row', () => {
+    sellKoi('A', 3);
+    sellKoi('B', 1);
+    sellKoi('G', 2);
+    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+    const before = { A: shells('A'), B: shells('B'), G: shells('G') };
+    const since = snap('A').at(-1)![0];
+    notices.length = 0;
+    expect(store.adjust({ id: 'adj-a', who: 'A', v: 20_000 - 3 * K, note: 'last sale → 20,000' })).toMatchObject({ ok: true, id: 'adj-a' });
+    expect(store.adjust({ id: 'adj-g', who: 'G', v: -5, note: 'down' })).toMatchObject({ ok: true });
+    expect(shells('A')).toBe(before.A + 20_000 - 3 * K);
+    expect(shells('B')).toBe(before.B);
+    expect(shells('G')).toBe(before.G - 5);
+    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+    // (an `ingest` notice each: never skipped as a phone's own; the guest's phone too)
+    expect(notices.map((x) => [x.what, x.who])).toEqual([['ingest', 'A'], ['ingest', 'G']]);
+    // (incrementally: a phone's next `since` brings it, no new epoch)
+    expect(snap('B', since).filter((x) => x[3] === 'shop_adjust').map((x) => [x[1], x[2]])).toEqual([['A', 'adj-a'], ['G', 'adj-g']]);
+    expect(snap('G', since).filter((x) => x[3] === 'shop_adjust')).toHaveLength(2);
+    // a retry is a duplicate; a bad shape refused
+    expect(store.adjust({ id: 'adj-a', who: 'A', v: 1, note: 'again' })).toEqual({ ok: true, duplicate: true });
+    for (const bad of [{ v: 0 }, { v: 100_001 }, { v: 1.5 }, { who: 'C' }, { note: '' }, { note: 'x'.repeat(81) }])
+      expect(store.adjust({ id: 'adj-x', who: 'B', v: 1, note: 'ok', ...bad })).toEqual({ ok: false, error: 'bad_request' });
+    expect(shells('A')).toBe(before.A + 20_000 - 3 * K);
+    // the かいがら are spendable: a buy against them is covered
+    const item = stockOf(D)[0];
+    expect(send('A', 'buy', { item, price: buyPrice(item)!, d: D })).toEqual({ ok: true });
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+  });
+
+  it('unadjust deletes it: the かいがら back as before, the ledger folded again, a new epoch', () => {
+    sellKoi('B', 2);
+    store.shopCheck();
+    const before = shells('B');
+    store.adjust({ id: 'adj-b', who: 'B', v: 500, note: 'test' });
+    const rev = (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as unknown as { rev: string }).rev;
+    const r = store.unadjust({ id: 'adj-b' });
+    expect(r).toMatchObject({ ok: true, who: 'B' });
+    expect(r.rev).not.toBe(rev);
+    expect(shells('B')).toBe(before);
+    expect(snap('A').some((x) => x[3] === 'shop_adjust')).toBe(false);
+    expect(store.shopCheck()).toMatchObject({ B: 'none' }); // (folded again at B's next op)
+    sellKoi('B', 1);
+    expect(store.shopCheck()).toMatchObject({ B: 'same' });
+    expect(store.unadjust({ id: 'adj-b' })).toMatchObject({ ok: false });
+    // its id stays known: the same correction again needs a new id
+    expect(store.adjust({ id: 'adj-b', who: 'B', v: 500, note: 'test' })).toEqual({ ok: true, duplicate: true });
+  });
+
+  it('a dump’s row comes back with a load (a restore keeps the correction)', () => {
+    store.adjust({ id: 'adj-l', who: 'A', v: 700, note: 'kept' });
+    const rows = snap('A');
+    const db = memSql();
+    const other = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} });
+    expect(other.load({ rows: { events: rows } })).toMatchObject({ ok: true, events: 1 });
+    expect(foldOf(other, 'A')).toBe(700);
+  });
+});

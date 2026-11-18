@@ -155,6 +155,9 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
 - **`rev`**: a new epoch (§4).
 - **`shopcheck [fix]`, `decorcheck [fix]`**: the running field, shop ledgers and decor caps' counts against a full
   fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused.
+- **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only on the user's word: a `shop_adjust` row
+  of `v` (either sign; [backend](../backend.md#shop-adjust)), its id printed; backup first. **`unadjust <id>`** deletes
+  it (a new epoch).
 - **`held [A|B]`**: values an ingest held back (a past day's 0 over a higher value), never served, with first/last
   sent and how often. **`promote <person> <date> <metric> [value]`**: makes one the day's latest row (the held row
   stays, marked); refused when nothing is held or it already is.

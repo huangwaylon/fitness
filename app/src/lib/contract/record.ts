@@ -120,6 +120,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     }
     case 'wet':
       // a wet day: the record's own (relay/src/store.ts wetTick), never a phone's
+    case 'shop_adjust':
+      // a correction of someone's かいがら (contract/shop.ts adjustOf): the admin's only (relay/src/store.ts adjust),
+      // never any key's, the guest's included
       return false;
     case 'room_save': {
       // a room's saved arrangement or its slot emptied (contract/roomSave.ts: its name already clean), its `at` as decor's

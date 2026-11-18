@@ -2,8 +2,9 @@
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
 import { addDays, dayNum, dateOfDayNum } from './tokyo.ts';
-import { buyOf, isLedgerEvent, isSellable, isShopEvent, rewardOf, rowConcerns, sellOf, sellPrice, shopLedger, shopRefusal, shopRowOf, shopStep, SG_REWARD_MAX, type ShopRow, type ShopRowAt } from './shop.ts';
+import { adjustOf, ADJUST_MAX, buyOf, isLedgerEvent, isSellable, isShopEvent, rewardOf, rowConcerns, sellOf, sellPrice, shopLedger, shopRefusal, shopRowOf, shopStep, SG_REWARD_MAX, type ShopRow, type ShopRowAt } from './shop.ts';
 import { shopPriced } from './shopCheck.ts';
+import { validEventData } from './record.ts';
 import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from './stock.ts';
 import { SELL } from './shopPrices.ts';
 import { BUY } from './buyPrices.ts';
@@ -271,5 +272,37 @@ describe('英語すごろく’s reward (sg_reward)', () => {
     const sale: ShopRowAt = { type: 'sell', data: { species: 'fish:koi', n: 1, v: 1 }, at: 2, person: 'B' };
     expect(rowConcerns(sale, 'B')).toBe(true);
     expect(rowConcerns(sale, 'A')).toBe(false);
+  });
+});
+
+describe('a correction (shop_adjust): the admin’s, never a phone’s', () => {
+  const none = new Map<string, number>();
+  const adj = (v: number): ShopRow => ({ type: 'adjust', data: adjustOf({ v, note: 'n' })! });
+
+  it('its shape: a whole v, 0 < |v| ≤ ADJUST_MAX, a trimmed note of 1–80 chars; nothing more', () => {
+    const A = { v: 16_000, note: 'last sale → 20,000 (user, 2026-11-18)' };
+    expect(adjustOf(A)).toEqual(A);
+    expect(shopRowOf('shop_adjust', A)).toEqual({ type: 'adjust', data: A });
+    expect(adjustOf({ v: -ADJUST_MAX, note: 'x' })).not.toBeNull();
+    for (const bad of [{ v: 0 }, { v: ADJUST_MAX + 1 }, { v: -ADJUST_MAX - 1 }, { v: 1.5 }, { v: '5' }, { note: '' }, { note: ' x' }, { note: 'x'.repeat(81) }, { note: 'a\nb' }, { note: 3 }])
+      expect(adjustOf({ ...A, ...bad }), JSON.stringify(bad)).toBeNull();
+    expect(adjustOf({ ...A, extra: 1 })).toBeNull();
+    // never a phone's: the record's shape check refuses it outright, and it isn't a shop event (no price, no queue)
+    expect(validEventData('shop_adjust', A, Date.parse('2026-11-18T03:00:00Z'))).toBe(false);
+    expect(isShopEvent('shop_adjust') || isLedgerEvent('shop_adjust')).toBe(false);
+  });
+
+  it('folds as shells += v, either sign; never refused, never a sale', () => {
+    const sell: ShopRow = { type: 'sell', data: { species: 'fish:koi', n: 1, v: 2000 } };
+    const caught = new Map([['fish:koi', 1]]);
+    const l = shopLedger(caught, [sell, adj(18_000)]);
+    expect(l.shells).toBe(20_000);
+    expect([...l.sold]).toEqual([['fish:koi', 1]]);
+    expect([...l.soldV]).toEqual([['fish:koi', 2000]]); // (the sale's own value kept: a give-back owes what it fetched)
+    expect(shopLedger(none, [adj(-50)]).shells).toBe(-50);
+    expect(shopRefusal(shopLedger(none, []), none, adj(-50))).toBeNull();
+    const step = shopLedger(caught, [sell]);
+    shopStep(step, caught, none, adj(18_000));
+    expect(step).toEqual(l);
   });
 });

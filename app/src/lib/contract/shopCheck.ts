@@ -19,7 +19,7 @@ import type { LocalDate } from '../types.ts';
 export function shopPriced(type: 'sell' | 'buy' | 'buy_starts', d: Record<string, unknown>, today: LocalDate): boolean {
   const row = shopRowOf(type, d);
   if (!row) return false;
-  if (row.type === 'reward') return false; // (never a shop event's: SHOP_EVENTS)
+  if (row.type === 'reward' || row.type === 'adjust') return false; // (never a shop event's: SHOP_EVENTS)
   if (row.type === 'starts') return row.data.v === row.data.n * FARM.startBuy;
   if (row.type === 'sell') {
     const p = sellPrice(row.data.species);

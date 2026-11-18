@@ -137,6 +137,24 @@ describe('英語すごろく’s reward (sg_reward): its recipients’ かいが
   });
 });
 
+describe('a correction (shop_adjust, the admin’s): its person’s かいがら', () => {
+  it('adds its v to its person’s wallet alone, spendable; never a ベル; an unreadable one counts for nothing', () => {
+    const events = [
+      ev(at('09:00'), 'G', 'tally', { date: D, counts: { 'fish:koi': 1 } }),
+      ev(at('09:01'), 'G', 'sell', { species: 'fish:koi', n: 1, v: 2000 }),
+      ev(at('09:02'), 'G', 'shop_adjust', { v: 18_000, note: 'last sale → 20,000' }),
+      ev(at('09:03'), 'A', 'shop_adjust', { v: -30, note: 'down' }),
+      ev(at('09:04'), 'B', 'shop_adjust', { v: 0, note: 'bad' })
+    ];
+    const s = reduce({ metrics: [], events });
+    expect([shopView(s, 'G').shells, shopView(s, 'A').shells, shopView(s, 'B').shells]).toEqual([20_000, -30, 0]);
+    const spent = foldEvents(s, [ev(at('10:00'), 'G', 'buy', { item, price, d: D })], null)!;
+    expect(shopView(spent, 'G')).toMatchObject({ shells: 20_000 - price, owned: [item] });
+    const none = reduce({ metrics: [], events: [] });
+    expect(weekBells(s, '2026-11-02', Date.parse(at('23:00')))).toEqual(weekBells(none, '2026-11-02', Date.parse(at('23:00'))));
+  });
+});
+
 describe('a catch given back (tally_back: a claim race lost after its tally came in)', () => {
   it('leaves the pocket and the ずかん’s count; a lower one later takes nothing more; one without its tally counts for nothing', async () => {
     const { tallyTotals } = await import('./tally.ts');

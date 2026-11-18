@@ -42,7 +42,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
-import { caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
+import { adjustOf, caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
@@ -1153,6 +1153,43 @@ export class StoreCore {
     return { ok: true, ...out };
   }
 
+  /** The admin's `adjust {id, who, v, note}`: a `shop_adjust` row of `who`'s (contract/shop.ts adjustOf: `v` かいがら
+   *  added, either sign), kept now (a new `at`: the phones fetch it as any new row, no new epoch) and into their running
+   *  ledger, so shopcheck stays as it was. `id` the caller's (a retry is acknowledged as `duplicate`). The only way one
+   *  comes in besides a dump's `load`: a phone's is refused (contract/record.ts validEventData). */
+  adjust(o: Rec): Record<string, unknown> {
+    const { id, who } = o;
+    const data = { v: o.v, note: o.note };
+    if (!isId(id) || !isWho(who) || !adjustOf(data)) return { ok: false, error: 'bad_request' };
+    const json = JSON.stringify(data);
+    const r = this.io.tx((): Record<string, unknown> => {
+      if (this.known(id)) return { ok: true, duplicate: true };
+      const at = this.nextAt();
+      this.put(id, at, who, 'shop_adjust', json, null, null);
+      this.shopNote(who, 'shop_adjust', json, null);
+      return { ok: true, id, at };
+    });
+    // (an `ingest`: never skipped as a phone's own event; the guest hears of it too, its かいがら among them)
+    if (typeof r.at === 'string') this.io.notify({ what: 'ingest', who, at: r.at, rev: this.rev() }, true);
+    return r;
+  }
+
+  /** The admin's `unadjust {id}`: that `shop_adjust` row deleted (its correction undone; its id stays known), its
+   *  person's running ledger folded again, and a new epoch (a phone drops a row only by refetching). */
+  unadjust(o: Rec): Record<string, unknown> {
+    const id = o.id;
+    if (!isId(id)) return { ok: false, error: 'bad_request' };
+    const who = this.io.tx(() => {
+      const row = this.io.sql.exec<{ person: string }>("SELECT person FROM events WHERE id = ? AND type = 'shop_adjust'", id).toArray()[0];
+      if (!row || !isWho(row.person)) return null;
+      this.io.sql.exec('DELETE FROM events WHERE id = ?', id);
+      this.io.sql.exec('DELETE FROM meta WHERE k = ?', `shop|${row.person}`);
+      return row.person;
+    });
+    if (!who) return { ok: false, error: 'bad_request', detail: 'no such shop_adjust' };
+    return { ok: true, who, rev: this.bumpRev() };
+  }
+
   /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
   private shopFold(me: Who, field: Farm = this.farmState()): ShopState {
@@ -1168,9 +1205,10 @@ export class StoreCore {
     const rows: ShopRow[] = [];
     const types = SHOP_EVENTS.map((t) => `'${t}'`).join(', ');
     // (their own shop rows, and every 英語すごろく reward naming them, whoever sent it: contract/shop.ts rowConcerns)
-    for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE (type IN (${types}) AND person = ?) OR type = 'sg_reward' ORDER BY at, seq`, me).toArray()) {
+    // (and the admin's corrections of theirs: adjust)
+    for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE (type IN (${types}, 'shop_adjust') AND person = ?) OR type = 'sg_reward' ORDER BY at, seq`, me).toArray()) {
       const x = parse(r.data);
-      const row = x && (isShopEvent(r.type) || r.type === 'sg_reward') ? shopRowOf(r.type, x) : null;
+      const row = x && (isShopEvent(r.type) || r.type === 'sg_reward' || r.type === 'shop_adjust') ? shopRowOf(r.type, x) : null;
       if (row && (row.type !== 'reward' || row.data.to.includes(me))) rows.push(row);
     }
     return { caught, back, l: shopLedger(caught, rows, back) };

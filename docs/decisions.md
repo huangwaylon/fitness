@@ -194,6 +194,10 @@ with all four met, the tree's owner's alone (`contract/pocket.ts GOAL_GOODS`), s
 day's かいがら; goods of their own. The plain fruit picked up before counts as its goal's (`pocketKey`, the user's of
 2026-11-16: one row, 60): the rows stay as kept, past sales keep their かいがら, and an old build's sale of it at 5 is
 still taken.
+A correction is a row, never an edit (2026-11-18, the user's "each player's last sale at 20,000"): history stays as
+kept and one `shop_adjust` per person adds the difference (`20,000 − v` of their last `sell`), so the balance is as if
+that sale had paid it, the change shows in the record as a correction, and deleting the row undoes it. Only the admin
+adds one (`record.ts adjust`); no phone can.
 
 ## App and hosting
 

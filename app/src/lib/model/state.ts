@@ -146,7 +146,7 @@ export interface State {
   /** English Study's flags and their reviews (`eflag`, `eflag_done`: contract/eflag.ts) as raw rows (RAW_EVENTS),
    *  everyone's; read by its sheet only (lib/english/flags.ts). Never read by the economy. */
   eflag: EventRow[];
-  /** The shop's rows (`sell`, `buy`, `buy_starts`, `sg_reward`: contract/shop.ts), each with its sender (the guest's
+  /** The shop's rows (`sell`, `buy`, `buy_starts`, `sg_reward`, `shop_adjust`: contract/shop.ts), each with its sender (the guest's
    *  too; a reward is its recipients': rowConcerns), in server order,
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
    *  by the economy. */
@@ -609,6 +609,8 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   buy_starts: shopRow('buy_starts'),
   // (英語すごろく's reward: its sender's row, each recipient's かいがら: contract/shop.ts rowConcerns)
   sg_reward: shopRow('sg_reward'),
+  // (the admin's correction of its person's かいがら: contract/shop.ts adjustOf)
+  shop_adjust: shopRow('shop_adjust'),
   farm(s, person, at, d) {
     const data = farmOf(d);
     if (data) put(s, 'farm', { at, person, data });
