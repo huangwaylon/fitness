@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 3, new 4, ctx 9, tx 1
+// R4 REVIEW 2026-11-18: keep 9, rewrite 5, retire 3, new 4, ctx 9, tx 1, qa 8
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 5, new 2
 // “Dwight's Accidental Discharge - The Office US” (the official The Office channel, BEST OF SEASON 7): Dwight asks
 // Jordan to collect office gossip about him, turns up with a holster and a gun, is talked into giving the gun up, and
@@ -61,8 +61,8 @@ export const dwightGun: Clip = {
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'uneasy', seg: [59.8, 66.6],
       stem: 'How do guns make Dwight’s coworker feel?',
       ja: '銃があると、ドワイトの同僚はどんな気持ち？',
-      choices: ['Very uneasy', 'Very excited', 'A little bored'], a: 0,
-      choicesJa: ['とても落ち着かない', 'とてもわくわくする', '少し退屈'],
+      choices: ['Very uneasy', 'Very excited', 'Very safe'], a: 0,
+      choicesJa: ['とても落ち着かない', 'とてもわくわくする', 'とても安心'],
       cue: '「Dwight,」のあと',
       line: 'Dwight, guns make me *really uncomfortable*.',
       said: '「ドワイト、銃があると本当に落ち着かない」と言う。',
@@ -259,7 +259,7 @@ export const dwightGun: Clip = {
       cue: '「that’s all we know」のあと',
       line: 'All we know is that a gun fired. / No, that’s not true, *actually*. We heard a loud noise.',
       said: '「銃が発射された、それだけ」に「いや、それも違う」と言い直す。',
-      mean: 'actually ＝「実は」。前の話を直すときの合図。銃とさえ言わずにごまかしている。',
+      mean: 'actually ＝「実は・本当は」。前の話を直すときの合図。銃とさえ言わずにごまかしている。',
       trap: '日本語の「実際」から、賛成に聞こえるが、直前に No と not true（違う）がある。前の人を直す合図。',
       use: 'Actually, I changed my mind.（実は、気が変わった）' },
 
@@ -311,7 +311,7 @@ export const dwightGun: Clip = {
       use: 'Any reason to eat cake, right?（ケーキを食べる口実なら何でもね）' },
 
     { id: 'd5', skill: 'detail', level: 'B1', point: 'plane', seg: [149, 156.8],
-      stem: 'Why can’t the caller get through to Jo?',
+      stem: 'Why can’t anyone reach Jo on the phone?',
       ja: 'なぜジョーに電話がつながらない？',
       choices: ['Jo is already on a plane', 'Jo’s phone is turned off', 'Jo is in a long meeting'], a: 0,
       choicesJa: ['もう飛行機に乗っている', '電話の電源が切れている', '長い会議中'],
@@ -323,10 +323,10 @@ export const dwightGun: Clip = {
       use: 'She must already be at the airport.（もう空港に着いてるはず）' },
 
     { id: 'r4', skill: 'pragma', level: 'B2', point: 'reception', ctx: true, seg: [153.8, 163.9],
-      stem: 'Can the receptionist go to the hospital too?',
-      ja: '受付の人も病院に行ける？',
-      choices: ['No, she has to stay', 'Yes, she can go too', 'No, not until Jo calls'], a: 0,
-      choicesJa: ['いいえ、残らないといけない', 'はい、一緒に行ける', 'いいえ、ジョーから電話が来るまで'],
+      stem: 'What is the receptionist told when she offers to go?',
+      ja: '一緒に行くと言った受付の人は、何と言われる？',
+      choices: ['She has to stay here', 'She can go with them', 'She must wait for Jo’s call'], a: 0,
+      choicesJa: ['残らないといけない', '一緒に行っていい', 'ジョーの電話を待つ'],
       cue: '「No,」のあと',
       line: 'I’ll go with you. / No, we really *shouldn’t be without a receptionist*, now more than ever.',
       said: '「一緒に行く」に「だめ、受付がいないと困る。今こそ」と返す。',
@@ -335,8 +335,8 @@ export const dwightGun: Clip = {
       use: 'Thanks, but I really shouldn’t leave now.（ありがとう、でも今は離れられない）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'darryl', reveals: ['reception'], ctx: true, seg: [156.4, 170.0],
-      stem: 'Who ends up taking the injured man to the hospital?',
-      ja: '結局、けがをした人を病院に連れて行くのは誰？',
+      stem: 'Who takes Andy to the hospital in the end?',
+      ja: '結局、アンディを病院に連れて行くのは誰？',
       choices: ['Darryl', 'Oscar', 'The receptionist'], a: 0,
       choicesJa: ['ダリル', 'オスカー', '受付の人'],
       cue: '断られたあとの申し出',

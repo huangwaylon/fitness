@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 14, rewrite 2, retire 1, new 7, ctx 5, tx 7
+// R4 REVIEW 2026-11-18: keep 14, rewrite 2, retire 1, new 7, ctx 5, tx 7, qa 10
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 0
 // “Carly's Grandpa Returns! 👴 Full Scene | iCarly | NickRewind” (NickRewind, Best of the New iCarly 🎉): Carly is too
 // busy to see her retired granddad, so she makes him her assistant; cut in are Pearl's “J-smops” and hamster story,
@@ -36,7 +36,7 @@ export const grandpaAssistant: Clip = {
       cue: '忙しい理由のリストの最後、wigs のあと。',
       line: 'shopping for wigs that, let’s face it, *I’m never gonna buy*',
       said: '仕事のメール、植物カメラ、それに「どうせ買わないカツラさがし」で忙しい。',
-      mean: 'never gonna ～ ＝ 絶対〜しない。見るだけの物まで「忙しさ」に入れている。',
+      mean: 'never gonna 〜 ＝ 絶対〜しない。見るだけの物まで「忙しさ」に入れている。',
       trap: 'shopping と聞くと買い物好きに聞こえる。never gonna buy まで聞く。',
       use: 'I’m never gonna use this, am I?（これ、どうせ使わないよね）' },
 
@@ -82,7 +82,7 @@ export const grandpaAssistant: Clip = {
       cue: '「since I retired」のすぐあと。',
       line: 'Since I retired, I’ve gotten used to being *lonely and bored*.',
       said: '「退職してから、さびしくて退屈なのにも慣れた」と言う。',
-      mean: 'get used to ～ing ＝ 〜に慣れる。いやな状態が続いている。',
+      mean: 'get used to 〜ing ＝ 〜に慣れる。いやな状態が続いている。',
       trap: '直前にカーリーの busy があるので混ざりやすい。retired のあとの2語を聞く。',
       use: 'I’ve gotten used to working from home.（在宅勤務に慣れた）' },
 
@@ -100,14 +100,14 @@ export const grandpaAssistant: Clip = {
       use: 'Tuesday? No. Not then either.（火曜？だめだ。そこもだめ）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'system', seg: [53.4, 65.8],
-      stem: 'What does Granddad’s schedule show?',
-      ja: 'おじいちゃんの予定表から何が分かる？',
-      choices: ['Every day is the same', 'He watches many shows', 'He is very busy'], a: 0,
-      choicesJa: ['毎日同じことをしている', 'いろいろな番組を見ている', 'とても忙しい'],
+      stem: 'What is on Granddad’s schedule every day?',
+      ja: 'おじいちゃんの予定表には、毎日何が書いてある？',
+      choices: ['The same TV show', 'A different TV show', 'Lots of busy plans'], a: 0,
+      choicesJa: ['同じテレビ番組', '毎日ちがう番組', '忙しい予定がたくさん'],
       cue: '予定表を見たカーリーの一言。',
       line: 'Those *all just say* watch “Third Rock from the Sun.”',
       said: '祖父が見せた予定表は、全部「同じ番組の再放送を見る」だけ。',
-      mean: 'all just say ～ ＝ 全部〜としか書いていない。毎日同じ番組を見るだけ。',
+      mean: 'all just say 〜 ＝ 全部〜としか書いていない。毎日同じ番組を見るだけ。',
       trap: 'show（番組）の話なので、いろいろ見ると勘違いしやすい。all just say（全部〜とだけ）で全部同じ。',
       use: 'It all just says “meeting.”（全部「会議」としか書いてない）' },
 
@@ -119,7 +119,7 @@ export const grandpaAssistant: Clip = {
       cue: '「amazing」のあと、「Wait」で始まる提案。',
       line: 'Wait, *you should be my assistant*.',
       said: '忙しくて祖父と過ごせないカーリーが、整理上手な祖父をアシスタントにする。',
-      mean: 'You should be ～ ＝ 〜になればいいよ。手伝ってもらえて、一緒にいる時間もできる。',
+      mean: 'You should be 〜 ＝ 〜になればいいよ。手伝ってもらえて、一緒にいる時間もできる。',
       trap: 'amazing とほめるので、やり方をまねると考えがち。決め手はすぐあとの Wait のあと。',
       use: 'You should be my travel buddy.（旅の相棒になってよ）' },
 
@@ -193,16 +193,16 @@ export const grandpaAssistant: Clip = {
       trap: 'smoothie は元の材料。menu も聞こえるが、まだ決まっていない（not finalized）。',
       use: 'I made them with honey this time.（今回ははちみつで作ったの）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'smops', seg: [111.7, 118.7],
-      stem: 'What does “Yeah, but I copyrighted J-smops” show?',
-      ja: '「Yeah, but I copyrighted J-smops」から何が分かる？',
-      choices: ['She agrees but is proud', 'She says they aren’t popsicles', 'She is sorry they are plain'], a: 0,
-      choicesJa: ['認めるけど、自慢している', 'アイスじゃないと言う', 'ふつうでごめんと思っている'],
+    { id: 't2', skill: 'infer', level: 'B1', point: 'smops', seg: [111.7, 118.7],
+      stem: 'What does Pearl’s “Yeah” agree to?',
+      ja: 'パールの「Yeah」は何を認めている？',
+      choices: ['They are just popsicles', 'The menu is all finished', 'They are made from smoothies'], a: 0,
+      choicesJa: ['ただのアイスだということ', 'メニューが決まったこと', 'スムージーで作ったこと'],
       cue: '返事の最初の一語と、but のあと。',
       line: 'So, they’re just… popsicles? — *Yeah, but I copyrighted* J-smops.',
       said: '「ただのアイス？」に「そうだけど、J-smops って名前は登録したから」と答える。',
-      mean: 'Yeah, but ＝ そうだけど。認めてから、but で胸を張る。',
-      trap: 'but だけ聞くと反論に聞こえる。最初の Yeah で、アイスだとは認めている。copyright ＝ 権利を取る。',
+      mean: 'Yeah, but ＝ そうだけど。ただのアイスだと認めてから、but のあとで「名前は登録した」と胸を張る。',
+      trap: 'but のあとの自慢に気を取られやすいが、最初の Yeah で、ただのアイスだと認めている。',
       use: 'Yeah, but it’s my recipe.（そうだけど、私のレシピだから）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'hamster', seg: [119.0, 134.6], retired: true,
@@ -242,8 +242,8 @@ export const grandpaAssistant: Clip = {
     { id: 'k5', skill: 'pragma', level: 'B1', point: 'sotrue', ctx: true, seg: [136.3, 144.0],
       stem: 'What is said back to the parking joke?',
       ja: '駐車場の冗談への返事は？',
-      choices: ['It’s very true', 'It’s not funny', 'It doesn’t make sense'], a: 0,
-      choicesJa: ['ほんとにそのとおり', '面白くない', '意味が分からない'],
+      choices: ['I totally agree', 'It’s not funny', 'It doesn’t make sense'], a: 0,
+      choicesJa: ['まったく同感', '面白くない', '意味が分からない'],
       cue: '「a quiet Aries」の返事',
       line: 'Finding a parking spot in Seattle is like finding a quiet Aries. / *So true.*',
       said: '「シアトルで駐車場を探すのは、おとなしいおひつじ座を探すようなもの」に「ほんとそれ」と返す。',
@@ -270,7 +270,7 @@ export const grandpaAssistant: Clip = {
       cue: '「loves astrology」のあと。',
       line: 'Pearl loves astrology, and I want to be able to *talk to her about it*.',
       said: '「パールが星占い好きなので、その話ができるようになりたい」と言う。',
-      mean: 'be able to ～ ＝ 〜できるようになる。理由はパール。',
+      mean: 'be able to 〜 ＝ 〜できるようになる。理由はパール。',
       trap: 'Millicent と feel young が直前に出るが、理由は and のあと。',
       use: 'I want to talk to Mom about it.（母とその話がしたい）' },
 
@@ -330,7 +330,7 @@ export const grandpaAssistant: Clip = {
       cue: 'おやつをもらった直後の一言。',
       line: 'Granddad, you are *begging for a promotion*.',
       said: 'おやつを用意してくれた祖父に「昇進させてって言ってるようなもの」と言う。',
-      mean: 'be begging for ～ ＝ 〜を求めているのも同然。昇進するくらいよくやっている、というほめ言葉。',
+      mean: 'be begging for 〜 ＝ 〜を求めているのも同然。昇進するくらいよくやっている、というほめ言葉。',
       trap: 'beg（ねだる）から、おじいちゃんが頼んだように聞こえるが、ここはカーリーのほめ言葉。',
       use: 'That cake is begging to be eaten.（そのケーキ、食べてくれと言わんばかり）' },
 
