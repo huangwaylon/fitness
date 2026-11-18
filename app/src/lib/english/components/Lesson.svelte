@@ -351,7 +351,7 @@
             {/each}
           </ul>
         {:else}<p data-en-all-first>{s('endAll')}</p>{/if}
-        <button type="button" class="btn sky" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}>{s('endWatch')}</button>
+        <button type="button" class="btn small paper" data-sfx="tick" data-en-rewatch onclick={() => player?.play(0, null)}><Icon name="play" size={18} />{s('endWatch')}</button>
         <button type="button" class="prow" data-sfx="open" data-en-end-phrases onclick={() => toStudy('phrases')}>
           <span class="prl">{s('phrases')}</span><Icon name="chevron-right" size={18} />
         </button>
@@ -369,7 +369,7 @@
       {:else if at < len}
         <button type="button" class="btn" class:paper={!cur?.r} data-sfx="page" data-en-next onclick={() => go(at + 1)}>{at === len - 1 ? s('toEnd') : s('next')}</button>
       {:else}
-        <button type="button" class="btn paper" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
+        <button type="button" class="btn" data-sfx="back" data-en-done onclick={onback}>{s('endHome')}</button>
       {/if}
     {/if}
   </div>

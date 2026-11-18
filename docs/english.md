@@ -97,7 +97,7 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
-  choices) while answering, 次へ (green) once answered, ▶ もう一度、通して見る at まとめ (完了 paper). A question card is tight, so its
+  choices) while answering, 次へ (green) once answered, 完了 at まとめ (green; もう一度、通して見る a small paper button with ▶). A question card is tight, so its
   choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts` checks): one control row, its
   meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから、合うものを選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:

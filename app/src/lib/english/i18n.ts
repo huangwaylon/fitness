@@ -121,7 +121,7 @@ const S = {
   endDone: { ja: 'この動画は完了です', en: 'This clip is done' },
   endAgain: { ja: 'もう一度聞きたい場面', en: 'Scenes to hear again' },
   endAll: { ja: '全部、1回目で聞き取れました ◎', en: 'Every one on the first listen ◎' },
-  endWatch: { ja: '▶ もう一度、通して見る', en: '▶ Watch it through again' },
+  endWatch: { ja: 'もう一度、通して見る', en: 'Watch it through again' },
   endHome: { ja: '完了', en: 'Done' },
   // この動画のフレーズ (ClipPhrases)
   phrases: { ja: 'この動画のフレーズ', en: 'Lines from this clip' },
