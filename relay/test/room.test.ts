@@ -1239,6 +1239,17 @@ describe('英語すごろく’s games, kept apart from the day’s ring', () =>
     expect(saved).toEqual([]);
   });
 
+  it('a move goes to the game’s other seats only (the guest’s phone, not at this table, hears none)', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    say(a, { ...start, c: 1 });
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 });
+    say(b, { kind: 'sg', g: G, i: 2, a: 'end', c: 1 });
+    expect([moves(b), moves(a), moves(g)]).toEqual([['0startA', '1rollA'], ['2endB'], []]);
+    // seated: theirs too
+    say(a, { kind: 'sg', g: 'kkkkkkkkkk', i: 0, a: 'start', s: 'A2G1', l: 's', c: 3 });
+    expect([moves(g), moves(b).length]).toEqual([['0startA'], 2]);
+  });
+
   it('an end races a move at its i: the end stands, the moves from it on count for nothing (and the earliest end wins)', () => {
     const a = join(KEY_A), b = join(KEY_B);
     say(a, { ...start, c: 1 });

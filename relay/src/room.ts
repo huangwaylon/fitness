@@ -610,7 +610,7 @@ export class RoomCore<S extends Sock> {
     };
   }
 
-  /** A すごろく move (sgTakes): relayed to the others and kept, acked; refused (`ok` false) when the game doesn't take
+  /** A すごろく move (sgTakes): relayed to the game's other seats (its start's `s`: no one else's phone plays it) and kept, acked; refused (`ok` false) when the game doesn't take
    *  it (a race lost: the phone takes the winner it hears, lib/sugoroku/online.ts). A resend of one the game has (the
    *  same move from the same person, after a reconnect) is acked again, not relayed twice. */
   private sgMove(s: S, who: Who, c: number | undefined, m: SgIntent): void {
@@ -619,7 +619,8 @@ export class RoomCore<S extends Sock> {
     if (had && had.who === who && JSON.stringify(bare(had)) === JSON.stringify(m)) return c !== undefined ? this.ack(s, c, had.t, true) : undefined;
     if (!sgTakes(game, m)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     const out: SgKept = { ...m, v: LIVE_V, who, t: this.stamp(), ...(c !== undefined ? { c } : {}) };
-    for (const p of this.others(who)) this.send(p, strip(out));
+    const seats = (m.a === 'start' ? m.s : game?.moves[0]?.s) ?? '';
+    for (const p of this.others(who)) if (seats.includes(this.io.meta(p)!.who!)) this.send(p, strip(out));
     this.takeSg(out);
     this.io.saveSg?.(sgKey(out), out);
     // past SG_GAMES, the game left longest goes
