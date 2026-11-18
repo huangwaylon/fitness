@@ -138,9 +138,9 @@ on for a page (the tests, a trial); off, no step shows.
   guest's own phone there's no step). Passed round, everyone speaks on this phone's key (its daily caps). The mic is asked
   for only on 話す.
 - **Flow** (`app/src/lib/sugoroku/components/SpeakStep.svelte`, its own chunk: PictureTurn imports it only with the switch on): 話す (tap to
-  record, tap to stop, 10 s at most: lib/speech/stt.ts) or 書く → **聞こえた文**, editable, これでOK; もう一回 twice,
+  record, tap to stop, 10 s at most: lib/speech/stt.ts) or 書く → **聞こえた文**, editable, これでOK; もう一度 twice,
   then the keyboard → the feedback. Whisper's words on silence (empty, "Thanks for watching!", "Thank you.", mostly not
-  Latin) → 「もう一回どうぞ」, not graded.
+  Latin) → 「もう一度どうぞ」, not graded.
 - **Task check** (`speak.ts`, on the phone): the picture's word in any form, a word a small edit away credited
   (boring → bowling), or the relay's `used`; missing → 「「apple」を入れて言ってみてね」, no stars yet. A bare noun phrase
   ("a red apple") → 「動詞を入れて文にしてみよう」; casual sentences ("So tired today.") pass.

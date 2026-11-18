@@ -10,7 +10,7 @@ import type { Level } from './game.ts';
 /** Stars: an on-task sentence, and said again after a tip (game.ts SAID_MAX caps the sum). */
 const ON_TASK_STARS = 2;
 const RESAID_STARS = 1;
-/** 🎤 もう一回 on the 聞こえた文 screen: this many, then the keyboard. */
+/** 🎤 もう一度 on the 聞こえた文 screen: this many, then the keyboard. */
 export const RESAYS = 2;
 /** How long the feedback waits for /grade after これでOK before it praises without it. */
 export const GRADE_WAIT_MS = 4000;
@@ -60,7 +60,7 @@ export function targetUsed(text: string, target: string): boolean {
 const SILENCE = new Set(['', 'you', 'thank you', 'thanks', 'thank you so much', 'thank you very much', 'thanks for watching', 'thank you for watching',
   'thanks for watching bye', 'bye', 'bye bye', 'goodbye', 'please subscribe', 'subscribe', 'okay', 'ok', 'so', 'uh', 'um', 'hmm', 'oh', 'music', 'applause',
   'see you next time', 'see you in the next video']);
-/** Whether a take is no sentence to grade: empty, a silence caption, or mostly not Latin letters (「もう一回どうぞ」). */
+/** Whether a take is no sentence to grade: empty, a silence caption, or mostly not Latin letters (「もう一度どうぞ」). */
 export function isSilence(text: string): boolean {
   const t = text.replace(/\[[^\]]*\]|\([^)]*\)|[♪♫]/g, ' ').trim();
   const letters = t.replace(/[\s\p{P}\p{S}\d]/gu, '');
@@ -166,8 +166,8 @@ const S = {
   typeHere: { ja: '英語で書いてみよう', en: 'Write it in English' },
   editNote: { ja: '違っていたら直してね', en: 'Fix it if it’s off' },
   ok: { ja: 'これでOK', en: 'Looks good' },
-  again: { ja: 'もう一回', en: 'Say again' },
-  silence: { ja: 'よく聞こえなかったみたい。もう一回どうぞ', en: 'We didn’t catch that. Once more!' },
+  again: { ja: 'もう一度', en: 'Say again' },
+  silence: { ja: 'よく聞こえなかったみたい。もう一度どうぞ', en: 'We didn’t catch that. Once more!' },
   useWord: { ja: '「{w}」を入れて言ってみてね', en: 'Try putting “{w}” in it' },
   addVerb: { ja: '動詞を入れて文にしてみよう', en: 'Add a verb to make it a sentence' },
   better: { ja: 'こう言うともっと自然', en: 'A more natural way' },
@@ -187,6 +187,8 @@ const S = {
   fine: { ja: '録音は文字にするだけで、保存しません', en: 'Your voice is only turned into text, never kept' }
 } as const satisfies Record<string, { ja: string; en: string }>;
 export type SayKey = keyof typeof S;
+/** The Japanese table, for the house copy checks (i18n/linebreaks.test.ts). @public (i18n/linebreaks.test.ts) */
+export const jaStrings = (): Record<string, string> => Object.fromEntries(Object.entries(S).map(([k, v]) => [k, v.ja]));
 export function say(key: SayKey, params: Record<string, string | number> = {}): string {
   const raw: string = S[key][i18n.locale === 'en' ? 'en' : 'ja'];
   return raw.replace(/\{(\w+)\}/g, (_, k: string) => String(params[k] ?? ''));
