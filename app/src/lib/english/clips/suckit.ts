@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 15, retire 1, new 5, ctx 5, tx 10
+// R4 REVIEW 2026-11-18: keep 3, rewrite 15, retire 1, new 5, ctx 5, tx 10, qa 7
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 4, new 1
 // “Suck It, Oscar! - The Office US” (the official The Office channel, BEST OF SEASON 7): Michael says China has 56
 // cities of a million people to America's nine; Oscar says that's a projection, a search proves Michael right, the
@@ -45,13 +45,13 @@ export const suckit: Clip = {
     { id: 'n3', skill: 'number', level: 'B1', point: 'projection', seg: [9, 17.7], keep: true,
       stem: 'Oscar says it’s a projection of how many years?',
       ja: 'オスカーは、何年後の予測だと言う？',
-      choices: ['5', '15', '50'], a: 1,
-      choicesJa: ['5年', '15年', '50年'],
+      choices: ['5', '15', '16', '50'], a: 1,
+      choicesJa: ['5年', '15年', '16年', '50年'],
       cue: '「projection of」のあと',
       line: 'it’s a projection of *15 years* from now.',
       said: '「その数字は知ってる。15年後の予測だよ」と言う。',
       mean: 'projection ＝ 予測。fifteen ＝ 15。今の数ではない、という反論。',
-      trap: '5 なら「ファイヴ」だけ。fifty は前を強く「フィフティ」。15 は後ろの「ティーン」が強く長い。',
+      trap: '5 なら「ファイヴ」だけ。fifty は前を強く「フィフティ」。15 は後ろの「ティーン」が強く長い。16 なら「シックス」で始まる。',
       use: 'In fifteen years, who knows?（15年後なんて分からないよ）' },
 
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'betcha', seg: [17.2, 24.5],
@@ -81,12 +81,12 @@ export const suckit: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'nervous', seg: [30.5, 40.5],
       stem: 'How does Oscar feel when they look it up?',
       ja: '調べ始めると、オスカーはどんな気持ち？',
-      choices: ['Nervous', 'Bored', 'Happy'], a: 0,
-      choicesJa: ['不安', '退屈', 'うれしい'],
+      choices: ['Worried', 'Bored', 'Happy'], a: 0,
+      choicesJa: ['心配', '退屈', 'うれしい'],
       cue: '「Uh-oh」のあとのひと言',
       line: '*Getting nervous*, Oscar? … Guys, it’s *not worth it*, really.',
       said: '「緊張してる？」と言われ、オスカーは「調べるほどのことじゃない」と2回言う。',
-      mean: 'nervous ＝ 不安、緊張している。not worth it ＝ そこまでする価値はない。',
+      mean: 'nervous ＝ 不安、緊張している（worried に近い）。not worth it ＝ そこまでする価値はない。',
       trap: 'not worth it から、興味がないと読みたくなる。急に止めたがるのは不安だから。',
       use: 'I’m getting nervous.（緊張してきた）' },
 
@@ -94,7 +94,7 @@ export const suckit: Clip = {
       stem: 'What does “I’m on it” mean?',
       ja: '「I’m on it」はどういう意味？',
       choices: ['I’ll do it now', 'I agree with you', 'I know the answer'], a: 0,
-      choicesJa: ['今すぐやる', 'あなたに賛成', '答えを知っている'],
+      choicesJa: ['今すぐやる', 'その意見に賛成', '答えを知っている'],
       cue: '「someone look it up」への返事',
       line: 'Okay, someone look it up. — *I’m on it*, Jim.',
       said: '「誰か調べて」に「任せて、すぐやる」と返す。',
@@ -183,8 +183,8 @@ export const suckit: Clip = {
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'getit', reveals: ['aside'], seg: [88.3, 93.4],
       stem: 'What does Oscar mean by “All right, I get it”?',
       ja: '「All right, I get it」でオスカーが言いたいことは？',
-      choices: ['I see the joke, enough', 'I understand the question', 'Michael is smarter than me'], a: 0,
-      choicesJa: ['からかいは分かった、もういい', '質問の意味は分かった', 'マイケルの方が頭がいい'],
+      choices: ['Please stop teasing me', 'I get the question', 'I know about tabs'], a: 0,
+      choicesJa: ['もうからかわないで', '質問の意味は分かった', 'タブのことなら分かる'],
       cue: '「All right」のくり返し',
       line: 'All right, all right, *I get it*.',
       said: '「はいはい、分かったよ」と言ってどく。',
@@ -238,7 +238,7 @@ export const suckit: Clip = {
       trap: 'smarter が2回聞こえるが、前に not がある。決め手は just のあと。',
       use: 'You were right about the time.（時間のことは君が正しかった）' },
 
-    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', seg: [111, 121.2],
+    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', reveals: ['correct'], seg: [111, 121.2],
       stem: 'Why is Oscar called “Actually”?',
       ja: 'オスカーはなぜ「Actually」と呼ばれる？',
       choices: ['He corrects facts and grammar', 'He checks people’s emails', 'He tells long stories'], a: 0,
@@ -304,7 +304,7 @@ export const suckit: Clip = {
       cue: '「But here we are」のあと',
       line: 'Show mercy. But here we are. — *What’s your point?*',
       said: '「でも、こうしてここにいる」と言われ、「何が言いたいんです？」と聞く。',
-      mean: 'point ＝ 話の要点。→「結局、何が言いたいの？」。少しじれた言い方で、目上には Sorry? がやわらか。',
+      mean: 'point ＝ 話の要点。→「結局、何が言いたいの？」。少しじれた、くだけた言い方なので、目上には使わない方が無難。',
       trap: '帰りたいオスカーなので「もう行っていい？」に聞こえるが、要点をたずねる決まり文句。',
       use: 'Sorry, what’s the point of this meeting?（すみません、この会議の目的は？）' },
 
