@@ -1,10 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 3, rewrite 15, retire 1, new 5, ctx 5, tx 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 15, retire 4, new 1
 // “Suck It, Oscar! - The Office US” (the official The Office channel, BEST OF SEASON 7): Michael says China has 56
 // cities of a million people to America's nine; Oscar says that's a projection, a search proves Michael right, the
 // office teases Oscar, and over coffee Michael turns the win into a speech about talking and friendship.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 14.9–17.4 s (speakers unclear), 40–46 s,
-// 121–126 s (an ethnic stereotype), 127–135 s (who pays), 174–184 s (speaker unclear).
+// Segments from the captions, words from whisper (2026-11-16; 103–137 s is out of order and drops Oscar's
+// “Actually, you're speculating there, Jim”). Untested: 14.9–17.4 s and 172–184 s (speakers unclear), 40–46 s.
+// “It's on me” (126 s) names no speaker: whisper's order leaves who pays unclear.
 // EAR CHECK: 100.1 s x1 — captions “Oscar, it must be killing you”, whisper “Oscar, I must be killing you”
+// EXCLUDE 121.3–126.3 (an ethnic stereotype)
+// EXCLUDE 142.3–145.3 (“one white, one Latina” joke)
+// EXCLUDE 165.3–166.3 (“Good girl” to Oscar)
 import type { Clip } from '../types.ts';
 
 export const suckit: Clip = {
@@ -13,17 +18,6 @@ export const suckit: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'argue', seg: [0, 44.5],
-      stem: 'What do Michael and Oscar argue about?',
-      ja: 'マイケルとオスカーは何について言い合っている？',
-      choices: ['Big cities in China', 'Farms in China', 'Newspapers in New York'], a: 0,
-      choicesJa: ['中国の大都市', '中国の農場', 'ニューヨークの新聞'],
-      cue: '最初の質問',
-      line: 'Did you know that in China, there are *56 cities with over a million people*?',
-      said: 'マイケルが中国の大都市の数を言い、オスカーが「それは予測だ」と反論する。',
-      mean: 'over a million people ＝ 100万人以上。都市の数が言い合いの中心。',
-      trap: 'agrarian（農業の）や New York Times も出るが、それは言い合いの途中の話。最初の質問が中心。',
-      use: 'Let’s look it up.（調べてみよう）' },
     { id: 'n1', skill: 'number', level: 'B1', point: 'cities', seg: [2.4, 9.3], keep: true,
       stem: 'How many Chinese cities have over a million people?',
       ja: '人口100万人を超える中国の都市はいくつ？',
@@ -35,6 +29,7 @@ export const suckit: Clip = {
       mean: 'fifty-six ＝ 56。十の位が先、一の位があと。',
       trap: '46 なら「フォーティ」、65・66 なら「シックスティ」で始まる。「フィフティ・シックス」が56。',
       use: 'There are over fifty of them.（50以上あるんだよ）' },
+
     { id: 'm2', skill: 'marker', level: 'B1', point: 'correct', seg: [3.1, 14.9],
       stem: 'What does Oscar’s “Actually” show here?',
       ja: 'ここでのオスカーの「Actually」は何を表す？',
@@ -44,8 +39,9 @@ export const suckit: Clip = {
       line: 'You know how many we have here? Nine. — *Actually*, that’s not true.',
       said: '「アメリカは9つだけ」に「実は、それは違う」と返す。',
       mean: 'actually ＝ 実は。相手の話を直す前に言うことが多い。',
-      trap: 'actually を「本当に」と思って賛成と思いやすい。すぐあとに that’s not true と続く。',
+      trap: 'actually を「本当に」と読んで、賛成と考えがち。すぐあとに that’s not true と続く。',
       use: 'Actually, I think it’s closed today.（実は、今日は休みだと思う）' },
+
     { id: 'n3', skill: 'number', level: 'B1', point: 'projection', seg: [9, 17.7], keep: true,
       stem: 'Oscar says it’s a projection of how many years?',
       ja: 'オスカーは、何年後の予測だと言う？',
@@ -57,6 +53,7 @@ export const suckit: Clip = {
       mean: 'projection ＝ 予測。fifteen ＝ 15。今の数ではない、という反論。',
       trap: '5 なら「ファイヴ」だけ。fifty は前を強く「フィフティ」。15 は後ろの「ティーン」が強く長い。',
       use: 'In fifteen years, who knows?（15年後なんて分からないよ）' },
+
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'betcha', seg: [17.2, 24.5],
       stem: 'What does “you betcha” mean here?',
       ja: 'ここでの「you betcha」はどういう意味？',
@@ -65,20 +62,22 @@ export const suckit: Clip = {
       cue: '「fast」と「but」の間',
       line: 'Urbanizing fast, *you betcha*, but still agrarian.',
       said: '「都市化は速い、それはそう。でもまだ農業の国だ」と言う。',
-      mean: 'you bet(cha) ＝ もちろん、そのとおり。一部を認めてから but で反論する。',
-      trap: 'bet（賭ける）から賭けの話と思いやすいが、決まり文句。すぐあとの but に本題が来る。',
+      mean: '文字どおりは「賭けてもいいよ」。賭けられるほど確か→「そのとおり」。一部を認めてから but で反論。',
+      trap: 'bet（賭ける）から、賭けの誘いに聞こえるが、決まり文句。決め手は but のあと。',
       use: 'Can you help me? — You bet.（手伝ってくれる？—もちろん）' },
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'source', reveals: ['nervous'], seg: [26.4, 32.3],
+
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'source', reveals: ['nervous'], ctx: true, seg: [25.4, 32.3],
       stem: 'Where did Michael get his information?',
       ja: 'マイケルはどこで情報を得た？',
       choices: ['The New York Times', 'The Los Angeles Times', 'The Washington Post'], a: 0,
       choicesJa: ['ニューヨーク・タイムズ', 'ロサンゼルス・タイムズ', 'ワシントン・ポスト'],
-      cue: '「I got it from」のあと',
-      line: 'Where are you getting this information? — I got it from *NewYorkTimes.com*.',
+      cue: '「Where are you getting」への答え',
+      line: 'Oscar: Where are you getting this information? / Michael: I got it from *NewYorkTimes.com*.',
       said: '「どこからの情報？」に「ニューヨーク・タイムズのサイトだよ」と答える。',
       mean: 'I got it from 〜 ＝ 〜で知った、〜から手に入れた。情報の出どころを言う言い方。',
-      trap: 'Times だけ聞くとロサンゼルスとも思いやすい。前の New York まで聞く。',
+      trap: 'Times だけだと、ロサンゼルス・タイムズもありうる。前の New York まで聞く。',
       use: 'I got it from the hotel website.（ホテルのサイトで知りました）' },
+
     { id: 'a1', skill: 'attitude', level: 'B1', point: 'nervous', seg: [30.5, 40.5],
       stem: 'How does Oscar feel when they look it up?',
       ja: '調べ始めると、オスカーはどんな気持ち？',
@@ -88,8 +87,9 @@ export const suckit: Clip = {
       line: '*Getting nervous*, Oscar? … Guys, it’s *not worth it*, really.',
       said: '「緊張してる？」と言われ、オスカーは「調べるほどのことじゃない」と2回言う。',
       mean: 'nervous ＝ 不安、緊張している。not worth it ＝ そこまでする価値はない。',
-      trap: 'not worth it から「興味がない」と思いやすい。急に止めたがるのは不安だから。',
+      trap: 'not worth it から、興味がないと読みたくなる。急に止めたがるのは不安だから。',
       use: 'I’m getting nervous.（緊張してきた）' },
+
     { id: 'p2', skill: 'phrase', level: 'B1', point: 'onit', seg: [31.8, 38.7],
       stem: 'What does “I’m on it” mean?',
       ja: '「I’m on it」はどういう意味？',
@@ -99,8 +99,21 @@ export const suckit: Clip = {
       line: 'Okay, someone look it up. — *I’m on it*, Jim.',
       said: '「誰か調べて」に「任せて、すぐやる」と返す。',
       mean: 'I’m on it ＝ 今すぐ取りかかる。頼まれたことを引き受ける決まり文句。',
-      trap: 'on から「〜の上」や「味方」と思いやすい。頼みのすぐあとの on it は「やります」。',
+      trap: 'on から「〜の上」や「味方」を連想しやすい。頼みのすぐあとの on it は「やります」。',
       use: 'Can you call the hotel? — I’m on it.（ホテルに電話できる？—すぐやる）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'winner', seg: [44.3, 64.3],
+      stem: 'Who turns out to be right about China?',
+      ja: '中国の話で、正しかったのはだれ？',
+      choices: ['Michael', 'Oscar', 'Neither of them'], a: 0,
+      choicesJa: ['マイケル', 'オスカー', 'どちらでもない'],
+      cue: '「Got it」のあと読み上げる結果と、オスカーの返事',
+      line: '*Got it*. China has 56 cities with a population of over one million. The U.S. has nine. … *I was wrong*.',
+      said: '検索結果が読み上げられ、マイケルの数字どおり。オスカーは「僕が間違ってた」と認める。',
+      mean: 'Got it ＝ ここでは「見つけた」。I was wrong ＝ 私が間違っていた。負けを認める言い方。',
+      trap: '物知りのオスカーが「予測だ」と言い切ったので、オスカーと考えがち。結果はマイケルの数字。',
+      use: 'I was wrong. Sorry.（私が間違ってた。ごめん）' },
+
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'admit', seg: [56, 63.1],
       stem: 'How does Oscar feel when he says “I was wrong”?',
       ja: '「I was wrong」と言うとき、オスカーはどんな気持ち？',
@@ -109,9 +122,10 @@ export const suckit: Clip = {
       cue: '最後の短い問いかけ',
       line: '*Great*. I was wrong. I’m wrong. *Is everyone happy?*',
       said: '「はいはい、間違えたよ。俺の負け。みんなこれで満足？」と言う。',
-      mean: 'Is everyone happy? ＝ みんなこれで満足？答えはいらず、からかう周りへの不満。',
-      trap: 'Great や happy から、うれしいと思いやすい。負けを認めたあとの問いかけは不満の声。',
+      mean: 'Great は本当は逆の意味（皮肉）。Is everyone happy? ＝ みんなこれで満足？答えはいらない不満の声。',
+      trap: 'Great や happy はうれしい言葉に聞こえるが、負けを認めた直後の、なげやりな言い方。',
       use: 'Fine, you win. Happy now?（はいはい、君の勝ち。満足？）' },
+
     { id: 'a5', skill: 'attitude', level: 'C1', point: 'care', seg: [63.9, 70.5], retired: true,
       stem: 'In his comment to the camera, how does Michael come across?',
       choices: ['Proud, though he claims it means nothing', 'Uneasy, though he claims it means nothing', 'Calm, since he truly doesn’t care'], a: 0,
@@ -121,6 +135,7 @@ export const suckit: Clip = {
       mean: 'わざわざ「一番の男より上」と言うのが自慢。「気にしない」は照れ隠し。',
       trap: 'I don’t care をそのまま取ると平気に聞こえる。自慢のあとの否定は本音と逆。',
       use: 'Not that I care, but I won.（別にいいけど、勝ったのは僕）' },
+
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'care', reveals: ['bested'], seg: [63.9, 74.0], retired: true,
       stem: 'Right after his talking head, what does Michael’s next line in the room show?',
       choices: ['That he is still thinking about the win', 'That he is ready to get back to their work', 'That he is still sore about the argument'], a: 0,
@@ -130,6 +145,7 @@ export const suckit: Clip = {
       mean: '話を戻すだけなら勝ちに触れなくていい。わざわざ言うので、カメラ前の否定が裏返る。',
       trap: 'where were we は普通「話を戻そう」。でも後ろに付けた一言が本当の用件。',
       use: 'Anyway, as the winner, I say…（ともかく、勝者として言うと…）' },
+
     { id: 's1', skill: 'sound', level: 'C1', point: 'bested', seg: [70.4, 74.0], retired: true,
       stem: 'Fill the gap: “Now where were we before I ___ Oscar?”',
       choices: ['bested', 'busted', 'beat', 'blasted'], a: 0,
@@ -139,6 +155,7 @@ export const suckit: Clip = {
       mean: 'best を動詞にすると「負かす」。少し古風で大げさな語を選んで、勝ちを飾っている。',
       trap: 'busted だと「捕まえた」。母音が「エ」か「ア」かで語が変わる。best の音を思い出す。',
       use: 'She bested me at chess again.（またチェスで彼女に負けた）' },
+
     { id: 'h1', skill: 'phrase', level: 'B2', point: 'order', seg: [74, 85.1],
       stem: 'What does “also in that order” mean?',
       ja: '「also in that order」はどういう意味？',
@@ -148,20 +165,22 @@ export const suckit: Clip = {
       line: 'Michael and Oscar, the two smartest guys in the office, *also in that order*.',
       said: '「オフィスで一番頭のいい二人、マイケルとオスカー。しかもこの順番で」と言う。',
       mean: 'in that order ＝ 言った順に。マイケルを1番にして、オスカーをからかっている。',
-      trap: 'order（順番）から、席や年の順と思いやすい。順番は、今言った名前の順。',
+      trap: 'order（順番）から、席や年の順と考えがち。順番は、今言った名前の順。',
       use: 'Pizza and ice cream, in that order.（ピザとアイス、この順番でね）' },
-    { id: 'h2', skill: 'detail', level: 'B1', point: 'aside', seg: [84.6, 91.2],
+
+    { id: 'h2', skill: 'detail', level: 'B1', point: 'aside', ctx: true, seg: [84.6, 91.2],
       stem: 'What does Jim ask Oscar to do?',
       ja: 'ジムはオスカーに何を頼む？',
       choices: ['Move aside', 'Fix his computer', 'Answer a question'], a: 0,
       choicesJa: ['どく', '彼のパソコンを直す', '質問に答える'],
       cue: '「What is it?」のあと',
-      line: 'Hey, Oscar? — What is it? — Can you *move aside* so that I can *ask Michael*?',
+      line: 'Jim: Hey, Oscar? / Oscar: What is it? / Jim: Can you *move aside* so that I can *ask Michael*?',
       said: 'オスカーが「何？」と答えると、「マイケルに聞きたいから、どいて」と言う。',
       mean: 'move aside ＝ 横によける、どく。so that 〜 ＝ 〜できるように。',
-      trap: 'computer question と言ったあとなので、質問されると思いやすい。質問の相手はマイケル。',
+      trap: 'computer question のあとなので、自分が聞かれると勘違いしやすい。質問の相手はマイケル。',
       use: 'Could you move aside a little?（少しよけてもらえますか）' },
-    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'getit', reveals: ['aside'], seg: [84.7, 92.9],
+
+    { id: 'pr2', skill: 'pragma', level: 'B2', point: 'getit', reveals: ['aside'], seg: [88.3, 93.4],
       stem: 'What does Oscar mean by “All right, I get it”?',
       ja: '「All right, I get it」でオスカーが言いたいことは？',
       choices: ['I see the joke, enough', 'I understand the question', 'Michael is smarter than me'], a: 0,
@@ -170,9 +189,10 @@ export const suckit: Clip = {
       line: 'All right, all right, *I get it*.',
       said: '「はいはい、分かったよ」と言ってどく。',
       mean: 'I get it ＝ 言いたいことは分かった。ここは「もうからかわないで」の気持ち。',
-      trap: '「分かった」を質問の理解や同意と思いやすい。All right のくり返しは、うんざりの合図。',
+      trap: '「分かった」は質問の理解にも聞こえるが、All right のくり返しは、うんざりの合図。',
       use: 'All right, all right, I get it.（分かった、分かったって）' },
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'tab', reveals: ['ctrlp'], seg: [89.4, 95],
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'tab', reveals: ['ctrlp'], seg: [89.4, 95], retired: true,
       stem: 'What does Jim want to do on the computer?',
       ja: 'ジムはパソコンで何をしたい？',
       choices: ['Open a new tab', 'Print a page', 'Fix the printer'], a: 0,
@@ -183,27 +203,42 @@ export const suckit: Clip = {
       mean: 'How do I 〜? ＝ 〜するにはどうするの？やり方を聞く言い方。',
       trap: 'すぐあとに print（印刷）が出るので、印刷と思いやすい。質問は how do I のあと。',
       use: 'How do I get to the station?（駅にはどう行けばいいですか）' },
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'ctrlp', seg: [92.2, 103.3],
+
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'ctrlp', ctx: true, seg: [92.2, 103.3],
       stem: 'Does Michael admit his mistake about “control P”?',
       ja: 'マイケルは「control P」のまちがいを認める？',
       choices: ['No, he makes an excuse', 'Yes, with a little joke', 'Yes, and he says sorry'], a: 0,
       choicesJa: ['いいえ、言い訳をする', 'はい、軽い冗談で', 'はい、そして謝る'],
       cue: '「That’s print.」への返事',
-      line: '*Not if* the printer isn’t hooked up. You are making some very *dangerous assumptions*, Oscar.',
-      said: '「プリンターがつながってなければ印刷じゃない」と言い、逆にオスカーを責める。',
+      line: 'Oscar: That’s print. / Michael: *Not if* the printer isn’t hooked up. You are making some very *dangerous assumptions*, Oscar.',
+      said: '「それは印刷です」に「プリンターがつながってなければ違う」と言い、逆にオスカーを責める。',
       mean: 'Not if 〜 ＝ 〜ならそうじゃない。条件をつけて、負けを認めずにいる。',
       trap: '冗談っぽく聞こえるが、謝りも認めもしない。逆にオスカーを責めている。',
       use: 'Not if the store is closed.（店が閉まっていたら無理だよ）' },
+
     { id: 'x1', skill: 'dict', level: 'B2', point: 'killing', seg: [97.5, 104],
       stem: 'Type: “Oscar, it ___ now…” (4 words)', answer: 'must be killing you',
       ja: '空いている所を書こう：「Oscar, it ___ now…」（4語）',
       cue: '「Oscar, it」のあと',
       line: 'Oscar, it *must be killing you* now that Michael is smarter than you.',
-      said: '「マイケルの方が頭がいいなんて、つらいだろうね」とからかう。',
-      mean: 'It’s killing me ＝ 文字どおりは「殺す」、ここでは「つらくてたまらない」。',
+      said: '「マイケルの方が頭がいいなんて、悔しくてたまらないでしょ」とからかう。',
+      mean: '文字どおりは「それが君を殺している」→ 死ぬほどつらい。ここでは「悔しくてたまらない」。',
       trap: 'must be の t が消えて「マスビ」、killing you もつながる。4語をひと続きで聞く。',
       use: 'This waiting is killing me.（待つのがつらくてたまらない）' },
-    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', seg: [111, 121.9],
+
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'onething', reveals: ['killing'], ctx: true, seg: [100.1, 106.6],
+      stem: 'Does Oscar agree that Michael is smarter?',
+      ja: 'オスカーは、マイケルの方が賢いと認める？',
+      choices: ['No, he was right just once', 'Yes, he is smarter now', 'He isn’t sure yet'], a: 0,
+      choicesJa: ['いいえ、一度当たっただけ', 'はい、今は彼の方が賢い', 'まだ分からない'],
+      cue: '「smarter than you」と言われた返事',
+      line: 'it must be killing you now that Michael is *smarter* than you. / Oscar: He’s not smarter than me, he was just *right about one thing*.',
+      said: '「マイケルの方が賢くて悔しいでしょ」に、「賢いわけじゃない。一つ当たっただけ」と言い返す。',
+      mean: 'just ＝ 〜だけ。right about 〜 ＝ 〜について正しい。負けを小さく見せる言い返し。',
+      trap: 'smarter が2回聞こえるが、前に not がある。決め手は just のあと。',
+      use: 'You were right about the time.（時間のことは君が正しかった）' },
+
+    { id: 'm1', skill: 'detail', level: 'B1', point: 'actually', seg: [111, 121.2],
       stem: 'Why is Oscar called “Actually”?',
       ja: 'オスカーはなぜ「Actually」と呼ばれる？',
       choices: ['He corrects facts and grammar', 'He checks people’s emails', 'He tells long stories'], a: 0,
@@ -212,8 +247,9 @@ export const suckit: Clip = {
       line: 'Oscar is known as *“Actually”*, because he will *insert himself* into… any conversation to *add facts or correct grammar*.',
       said: '「オスカーのあだ名はアクチュアリー。どんな会話にも入ってきて、事実を足したり文法を直したりする」と話す。',
       mean: 'correct ＝ 直す。actually（実は）は人の話を直すときによく使う言葉なので、あだ名に。',
-      trap: 'grammar（文法）だけ聞くとメールの直しと思いやすい。conversation（会話）に入ってくる。',
+      trap: 'grammar（文法）だけ聞くと、メールの直しと勘違いしやすい。conversation（会話）に入ってくる。',
       use: 'Actually, it’s on Tuesday.（実は、火曜日なんです）' },
+
     { id: 'nt2', skill: 'humor', level: 'C2', point: 'actually', seg: [112.9, 123.3], retired: true,
       stem: 'Who is the joke on when Jim’s comment to the camera gets a reply?',
       choices: ['Oscar, who does the very thing Jim describes', 'Jim, whose claim turns out to be only a guess', 'Oscar, whose nickname Jim makes up on the spot'], a: 0,
@@ -223,7 +259,32 @@ export const suckit: Clip = {
       mean: '割り込んで actually で直す事自体が、今の説明そのもの。本人が証明してしまう。',
       trap: '中身は Jim への指摘なので、Jim が笑われているように聞こえる。割り込みが何をしたかを聞く。',
       use: 'Case in point.（ほら、まさにそれ）' },
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'talking', seg: [136.6, 173.3],
+
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'onme', seg: [126.4, 129.6],
+      stem: 'What does “it’s on me” mean?',
+      ja: '「it’s on me」はどういう意味？',
+      choices: ['I’ll pay for it', 'It’s my fault', 'It’s my turn to order'], a: 0,
+      choicesJa: ['私が払う', '私のせいだ', '私が注文する番だ'],
+      cue: '「Don’t worry about the coffee」のあと',
+      line: 'Don’t worry about the coffee, *it’s on me*. — Yeah, I figured that.',
+      said: '「コーヒーのことは気にするな、私のおごりだ」に「ええ、そうだと思ってました」と返る。',
+      mean: '文字どおりは「それは私の上に乗っている」。→ 支払いを私が背負う＝「私のおごり」。',
+      trap: 'on me から「私のせい」と勘違いしやすい。コーヒーの話なので支払いのこと。',
+      use: 'Lunch is on me today.（今日のランチはおごるよ）' },
+
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'forget', ctx: true, seg: [136.2, 142.2],
+      stem: 'What does Michael say Oscar is forgetting?',
+      ja: 'マイケルは、オスカーが何を忘れていると言う？',
+      choices: ['Their little chat', 'To pay for the coffee', 'His coffee cup'], a: 0,
+      choicesJa: ['二人のこの会話', 'コーヒー代を払うこと', '自分のコーヒーカップ'],
+      cue: '「What?」のあとの答え',
+      line: 'Michael: Wait. You’re *forgetting something*. / Oscar: What? / Michael: *This chat*.',
+      said: '帰ろうとするオスカーを「待て、何か忘れてるぞ」と止め、「何を？」に「この会話だ」と答える。',
+      mean: 'You’re forgetting something ＝ 何か忘れてるよ。ここは物ではなく、話の続きのこと。',
+      trap: 'コーヒーの席なので、支払いや忘れ物と考えがち。決め手は What? のあとの This chat。',
+      use: 'Wait, you’re forgetting something.（待って、何か忘れてるよ）' },
+
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'talking', seg: [145.4, 165.2],
       stem: 'What is Michael’s point over coffee?',
       ja: 'コーヒーを飲みながら、マイケルが言いたいことは？',
       choices: ['Keep talking to each other', 'Bosses should be strict', 'America must watch China'], a: 0,
@@ -234,6 +295,31 @@ export const suckit: Clip = {
       mean: 'My point is 〜 ＝ 言いたいのは〜。as long as 〜 ＝ 〜する限り。',
       trap: 'I could fire you（クビにできる）が強く聞こえるが、前置き。要点は My point is のあと。',
       use: 'My point is, we should keep talking.（要するに、話し続けようってこと）' },
+
+    { id: 'pr3', skill: 'pragma', level: 'B1', point: 'whatpoint', seg: [150.3, 156],
+      stem: 'What does Oscar mean by “What’s your point?”',
+      ja: 'オスカーの「What’s your point?」はどういう意味？',
+      choices: ['What are you trying to say?', 'Why are you angry with me?', 'Can I leave now?'], a: 0,
+      choicesJa: ['何が言いたいの？', 'なぜ私に怒ってるの？', 'もう帰っていい？'],
+      cue: '「But here we are」のあと',
+      line: 'Show mercy. But here we are. — *What’s your point?*',
+      said: '「でも、こうしてここにいる」と言われ、「何が言いたいんです？」と聞く。',
+      mean: 'point ＝ 話の要点。→「結局、何が言いたいの？」。少しじれた言い方で、目上には Sorry? がやわらか。',
+      trap: '帰りたいオスカーなので「もう行っていい？」に聞こえるが、要点をたずねる決まり文句。',
+      use: 'Sorry, what’s the point of this meeting?（すみません、この会議の目的は？）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'freedom', seg: [166.4, 171.4],
+      stem: 'What does Michael say he is talking about?',
+      ja: 'マイケルは、自分は何の話をしていると言う？',
+      choices: ['Freedom and choice', 'Money and work', 'China and its cities'], a: 0,
+      choicesJa: ['自由と選択', 'お金と仕事', '中国とその都市'],
+      cue: '「I am talking about」のあと',
+      line: 'I am talking about *freedom*. About *choice*.',
+      said: '「私が話しているのは自由のことだ。選択のことだ」と言う。',
+      mean: 'I’m talking about 〜 ＝ 私が言っているのは〜のこと。話の中身をはっきりさせる言い方。',
+      trap: 'China が何度も出るので、中国の話を連想しやすい。talking about のすぐあとを聞く。',
+      use: 'I’m talking about the price, not the size.（値段の話をしてるの、サイズじゃなくて）' },
+
     { id: 'r1', skill: 'predict', level: 'B2', point: 'dig', seg: [184.3, 191.8], then: [191.8, 199.8],
       stem: 'After “that may be true”, what comes next?',
       ja: '「that may be true」のあと、何が続く？',
@@ -245,6 +331,7 @@ export const suckit: Clip = {
       mean: 'That may be true ＝ そうかもしれない。一度認めて、but で自分の話にもっていく前置き。',
       trap: 'may be true で話が終わったと思いやすい。認めたあとには but が来やすい。',
       use: 'That may be true, but it’s expensive.（そうかもね。でも高いよ）' },
+
     { id: 'h5', skill: 'humor', level: 'C1', point: 'friend', seg: [186.4, 199.8], retired: true,
       stem: 'Why does the end of the digging saying get a laugh?',
       choices: ['An old saying is bent into a corny line on friendship', 'An old saying is used to tease Oscar as hard to talk to', 'An old saying is corrected with a real fact about China'], a: 0,
@@ -255,6 +342,7 @@ export const suckit: Clip = {
       trap: '最後の friend だけ聞くと、Oscar への皮肉に聞こえる。笑いはつなぎ方の無理。',
 
       use: 'Keep talking, and you’ll find a friend.（話し続ければ、友だちができるよ）' },
+
     { id: 'i5', skill: 'infer', level: 'C1', point: 'whole', reveals: ['closed'], seg: [201.9, 215.5], retired: true,
       stem: 'When the talk ends with a toast, what is the last complaint about?',
       choices: ['The toast closes on a point no one argued', 'The coffee still has not been paid for',
@@ -266,6 +354,7 @@ export const suckit: Clip = {
       trap: 'コーヒーや都市の数が頭に残ると、その話に聞こえる。That wasn’t のあとを聞く。',
 
       use: 'That’s not what we were talking about.（そういう話じゃなかったでしょ）' },
+
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'closed', seg: [204.3, 210.8],
       stem: 'What does “Case closed” mean?',
       ja: '「Case closed」はどういう意味？',
@@ -275,7 +364,8 @@ export const suckit: Clip = {
       line: 'Raise your cups on high. *Case closed*.',
       said: '「カップを高く。これにて一件落着」と言う。',
       mean: 'case closed ＝ この件は終わり。自分の結論で話をしめる言い方。',
-      trap: 'カップを上げた直後なので、乾杯の言葉と思いやすい。case は「件」、closed は「終わった」。',
+      trap: 'カップを上げた直後なので、乾杯の言葉と考えがち。case は「件」、closed は「終わった」。',
       use: 'He said sorry. Case closed.（彼は謝った。これで一件落着）' },
+
   ]
 };

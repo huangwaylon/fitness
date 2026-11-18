@@ -1,10 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 10, rewrite 10, retire 0, new 4, ctx 4, tx 16
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 6, new 4
 // “Leslie's MRI Blind Date | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Ann sets
 // Leslie up with Chris, an MRI technician; the dinner stalls (rival schools, "amusement parks", a candle trick), then
 // he gives her a free scan and keeps chatting to her inside the machine.
 // Segments from the captions, words from whisper (2026-11-16). Chris is named at 1 s. Who says "that's not
-// important", "Strike two" and "so awkward" is unclear, so those stems name no one. Untested: 37.8–41 s, 162–171 s
-// and 213–231 s (personal-body talk).
+// important", "Strike two" and "so awkward" is unclear, so those stems name no one.
+// EAR CHECK: the candle trick (56–76 s) — the scenes file gives it to Leslie; the bank and transcript to Chris.
+// EXCLUDE 166.2–172.2 (period question)
+// EXCLUDE 216.8–231.6 (remarks about her body)
 import type { Clip } from '../types.ts';
 
 export const mriBlindDate: Clip = {
@@ -22,7 +25,7 @@ export const mriBlindDate: Clip = {
       line: 'Sorry I’m late. — Oh, *don’t worry about it*.',
       said: '「遅れてごめん」に「気にしないで」と返す。',
       mean: 'Don’t worry about it ＝ 気にしないで。謝られたときの、やさしい返事。',
-      trap: 'worry（心配する）から、心配している話と思いやすい。謝られたあとの返事。',
+      trap: 'worry（心配する）から、心配している話と思いやすい。Sorry に返すお決まりの返事。',
       use: 'Don’t worry about it.（気にしないで）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'heard', seg: [11, 17.9],
@@ -34,20 +37,8 @@ export const mriBlindDate: Clip = {
       line: 'Well done, Ann. — I *actually heard that*. — What?',
       said: '小声で「アン、よくやった」と言うと、「今の、聞こえたよ」と返される。',
       mean: 'heard that ＝ 今のが聞こえた。心の中のつもりの一言が、相手に届いていた。',
-      trap: 'heard（聞いた）から、うわさや知らせの話と思いやすい。that は直前の一言。',
+      trap: 'heard（聞いた）から、うわさや知らせの話と思いやすい。that は直前の小声の一言。',
       use: 'Sorry, I heard that.（ごめん、今の聞こえちゃった）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'date', reveals: ['awkward'], seg: [11.6, 56.2],
-      stem: 'How is the date going at first?',
-      ja: 'デートは、はじめどんな様子？',
-      choices: ['Not well, it’s awkward', 'Very well, they laugh a lot', 'Badly, they start to fight'], a: 0,
-      choicesJa: ['うまくいかず、気まずい', 'とても順調で、よく笑う', 'ひどくて、けんかを始める'],
-      cue: '学校と仕事の話の、空気',
-      line: 'isn’t it funny how these setups are always just *so awkward*?',
-      said: '学校の話も仕事の話もかみ合わず、「お見合いって気まずいね」と言う。',
-      mean: 'awkward ＝ 気まずい。話題を変えるたびに、少しずつずれていく。',
-      trap: '「I’m just glad」（会えてうれしい）と言うので、順調と思いやすい。最後の so awkward で分かる。',
-      use: 'Sorry, this is a little awkward.（ごめん、ちょっと気まずいね）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'school', seg: [16.6, 22.9],
       stem: 'Where did Chris go to school?',
@@ -61,6 +52,18 @@ export const mriBlindDate: Clip = {
       trap: 'すぐあとに Indiana も聞こえるので混ざりやすい。I went to のすぐあとが答え。',
       use: 'I went to Osaka for both.（両方とも大阪の学校でした）' },
 
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'rival', seg: [17.8, 41.2],
+      stem: 'What do Chris and Leslie find out about their colleges?',
+      ja: 'クリスとレスリーは、お互いの大学について何が分かる？',
+      choices: ['They went to rival schools', 'They went to the same school', 'They both went to Indiana'], a: 0,
+      choicesJa: ['ライバル校に通っていた', '同じ大学に通っていた', '二人ともインディアナ大学だった'],
+      cue: '「Go Badgers」と「Boo」のやりとり',
+      line: 'Go Badgers. — *Boo*. Indiana Hoosiers. … I wish she’d told me that you *went to Indiana*.',
+      said: '「行け、バジャーズ」に「ブー。インディアナ・フージャーズ」と返り、クリスは「言っておいてほしかった」とぼやく。',
+      mean: 'Badgers と Hoosiers は大学スポーツのチーム名。Go 〜! ＝ がんばれ〜。Boo ＝ ブーイング。',
+      trap: 'Badgers が2回聞こえるので、同じ学校と考えがち。Boo は反対の合図。',
+      use: 'Go Tigers!（がんばれ、タイガース！）' },
+
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'notimp', seg: [24, 32.1],
       stem: 'What does “that’s not important” mean here?',
       ja: 'ここでの「that’s not important」はどういう意味？',
@@ -69,20 +72,20 @@ export const mriBlindDate: Clip = {
       cue: '「No, Badgers」のあと',
       line: 'Oh, *that’s not important*. I’m just glad that we could make this happen.',
       said: '大学の応援で気まずくなり、「それはいいの。会えてうれしい」と話を変える。',
-      mean: 'that’s not important ＝ それはどうでもいい。気まずい話を流して、話題を変える。',
-      trap: '文字どおり「スポーツに興味がない」と思いやすい。すぐあとに別の話が始まる。',
+      mean: '文字どおりは「それは大事じゃない」。気まずい話を流して「まあ、それはいいの」と話題を変える。',
+      trap: 'つい文字どおり「スポーツに興味がない」と読みたくなる。すぐあとに別の話が始まる。',
       use: 'Anyway, that’s not important.（まあ、それはいいとして）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', seg: [40.5, 48.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'actually', ctx: true, seg: [40.5, 48.9],
       stem: 'Why does Leslie start her reply with “Actually”?',
       ja: 'レスリーが返事を「Actually」で始めるのはなぜ？',
       choices: ['To fix his idea', 'To agree with him', 'To add good news'], a: 0,
       choicesJa: ['彼の思い込みを直すため', '彼に賛成するため', 'いい知らせを足すため'],
-      cue: '「that’s exciting」のあと',
-      line: 'amusement parks, right? Oh, that’s exciting. — *Actually*, it’s regular parks.',
+      cue: '「amusement parks, right?」への返事',
+      line: 'Chris: So, you’re in charge of *amusement parks*, right? / Leslie: *Actually*, it’s regular parks.',
       said: '「遊園地の担当でしょ？」に「実は、普通の公園なの」と返す。',
       mean: 'Actually ＝ 実は。相手の思い込みを、やわらかく直すときの前置き。',
-      trap: 'カタカナの「アクチュアリー」から強調と思いやすい。すぐあとで amusement parks を直している。',
+      trap: '直前の that’s exciting に合わせた返事に聞こえるが、決め手は amusement → regular の言い直し。',
       use: 'Actually, I’m from Osaka.（実は、大阪出身です）' },
 
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'strike', seg: [44.1, 51.9],
@@ -92,9 +95,9 @@ export const mriBlindDate: Clip = {
       choicesJa: ['2つ目のよくないこと', '2つ目のいい点', '2つ目の質問'],
       cue: '「swings and slides」のあと',
       line: 'Like swings and slides and stuff. — *Strike two*.',
-      said: '仕事の話がずれたあと、「ストライク、2つ目」とつぶやく。',
-      mean: 'strike two ＝ 野球の2ストライク。よくないことが2つ目、3つ目でアウト。',
-      trap: 'ボウリングのストライクから「いいこと」と思いやすい。野球ではストライクは打てなかった球。',
+      said: '仕事の話がずれたあと、「これでツーストライク」とつぶやく。',
+      mean: 'Strike two ＝ 野球の「ツーストライク」。あと1つでアウト。相手のがっかりな点を心の中で数えている。',
+      trap: 'ボウリングのストライク（大成功）を連想しやすい。野球では打てなかった球。2つ目のだめな点。',
       use: 'He was late again. Strike two.（また遅刻。これで2回目）' },
 
     { id: 'pr2', skill: 'phrase', level: 'B1', point: 'awkward', seg: [50.5, 58.6],
@@ -104,9 +107,9 @@ export const mriBlindDate: Clip = {
       choicesJa: ['気まずくて話しにくい', 'とてもおかしくて楽しい', '長すぎてたいくつ'],
       cue: '「these setups」のあと',
       line: 'isn’t it funny how these setups are always just *so awkward*?',
-      said: '「お見合いって、いつもすごく気まずいよね」と言う。',
-      mean: 'awkward ＝ 気まずい、ぎこちない。気まずさを口にして、空気を軽くしている。',
-      trap: '前に funny があるので、楽しいと思いやすい。ここの funny は「妙だよね」。',
+      said: '「人の紹介で会うのって、なんでいつもこんなに気まずいんだろうね」と言う。',
+      mean: 'awkward ＝ 気まずい、ぎこちない。setup ＝ 友だちの紹介で会うデート。気まずさを口にして空気を軽くする。',
+      trap: '前に funny があるので楽しい話に聞こえるが、ここの funny は「妙だよね」。',
       use: 'That was so awkward.（あれはすごく気まずかった）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'internet', seg: [69, 76.6],
@@ -131,6 +134,18 @@ export const mriBlindDate: Clip = {
       trap: 'better は「ベラー」、had to は「ハットゥ」。「ガ」で始まれば gotta。',
       use: 'I gotta go, sorry.（もう行かなきゃ、ごめん）' },
 
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'greatq', ctx: true, seg: [79.2, 85.8],
+      stem: 'What does Chris mean by “Great question”?',
+      ja: 'クリスの「Great question」はどういう意味？',
+      choices: ['He’s glad to talk about it', 'He doesn’t want to answer', 'He didn’t hear the question'], a: 0,
+      choicesJa: ['その話ができてうれしい', '答えたくない', '質問が聞こえなかった'],
+      cue: '「do you enjoy it」と聞かれた返事',
+      line: 'Leslie: So, do you *enjoy it*, being an MRI technician? / Chris: *Great question.* Someone steps into the room.',
+      said: '「MRI 技師の仕事って楽しい？」と聞かれ、「いい質問だね」と言って熱く語り始める。',
+      mean: 'Great question ＝ いい質問だね。聞いてほしかった話題を振られたときの、うれしそうな前置き。',
+      trap: '答えに困ったときの時間かせぎにも使うが、ここはすぐに長い話が始まる。',
+      use: 'Great question. Let me think.（いい質問ですね。ちょっと考えさせて）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'mother', reveals: ['hour'], seg: [83.6, 98.6], retired: true,
       stem: 'Why does his “I don’t know” at the end of the story get a laugh?',
       choices: ['He made the patient up, so there’s no answer', 'He can’t talk about a real patient’s health',
@@ -154,16 +169,17 @@ export const mriBlindDate: Clip = {
       trap: 'minute なら「ミニット」、over なら「オウバー」。less と hour が聞こえれば1時間未満。',
       use: 'It takes less than an hour by train.（電車で1時間かからない）' },
 
-    { id: 'a1', skill: 'attitude', level: 'C1', point: 'bread', seg: [110.7, 122.0], retired: true,
-      stem: 'When Leslie replies about the bread, how does she feel about his idea?',
-      choices: ['She finds it a bit silly and teases it', 'She wants to see him try it on the bread',
-                'She is impressed and plays along with it'], a: 0,
-      cue: 'パンの中に何があると言うか、その当たり前さ。',
-      line: 'if you look inside this bread, all you’re gonna find is *more bread*.',
-      said: '「そのパンの中をのぞいても、出てくるのはパンだけ」と返す。',
-      mean: '何でも中が見えると熱く語る相手に、当たり前のことを言って軽くからかっている。',
-      trap: '少し前の Wow で感心していると取りやすいが、それは相づち。最後の返しで判断する。',
-      use: 'Well, that’s one way to look at it.（まあ、そういう見方もあるね）' },
+    { id: 'a1', skill: 'detail', level: 'B1', point: 'bread', ctx: true, seg: [116.6, 124.6],
+      stem: 'What does Chris answer about the bread?',
+      ja: 'パンについて、クリスはどう答える？',
+      choices: ['He’d need an MRI to know', 'There’s butter inside it', 'It’s only more bread'], a: 0,
+      choicesJa: ['MRI を撮らないと分からない', '中にバターが入っている', '中もパンだけだ'],
+      cue: '「more bread」のあとの返事',
+      line: 'Leslie: if you look inside this bread, all you’re gonna find is *more bread*. / Chris: I don’t know. *I’d have to do an MRI*.',
+      said: '「パンの中はパンだけでしょ」と言われ、「さあね。MRI を撮ってみないと」と真顔で返す。',
+      mean: 'I’d have to 〜 ＝ 〜しないと（分からない）。当たり前の冗談に、本気で答えている。',
+      trap: '中もパンだけ、はレスリーの言葉。決め手は I don’t know のあと。',
+      use: 'I don’t know. I’d have to check.（分からないな。確かめないと）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'scan', reveals: ['cost', 'spoil'], seg: [124.6, 148.5],
       stem: 'Why does Leslie get an MRI scan?',
@@ -174,7 +190,7 @@ export const mriBlindDate: Clip = {
       line: 'I’m offering you a *free scan*. … Well, I am a little *curious*.',
       said: 'MRI を受けたことがないと聞き、クリスが「無料で撮ってあげる」と言う。',
       mean: 'I’m offering you 〜 ＝ 〜をどうぞ（申し出る）。レスリーは「ちょっと興味ある」と受ける。',
-      trap: 'I’ve never even had an MRI を、頼んでいると思いやすい。offering と言うのはクリス。',
+      trap: 'I’ve never even had an MRI が頼みごとに聞こえるが、offering と言うのはクリス。',
       use: 'I’m a little curious.（ちょっと興味がある）' },
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'cost', seg: [133.3, 140.9], keep: true,
@@ -193,12 +209,12 @@ export const mriBlindDate: Clip = {
       stem: 'What does “spoiling you” mean here?',
       ja: 'ここでの「spoiling you」はどういう意味？',
       choices: ['Being extra nice to you', 'Ruining it for you', 'Making you wait'], a: 0,
-      choicesJa: ['あなたを特別扱いする', 'あなたのために台無しにする', 'あなたを待たせる'],
+      choicesJa: ['あなたを特別扱いする', 'あなたの楽しみを台無しにする', 'あなたを待たせる'],
       cue: '「kind of」のあと',
       line: 'I’m kind of *spoiling you* here.',
       said: '無料の検査をすすめて「君をちょっと甘やかしてるね」と言う。',
       mean: 'spoil 人 ＝ 甘やかす、特別扱いする。高いものを無料にしてあげる、という意味。',
-      trap: 'ネタバレの spoiler から「台無し」と思いやすい。spoil のあとに人が来たら「甘やかす」。',
+      trap: 'ネタバレの spoiler から「台無し」を連想しやすい。spoil のあとに人が来たら「甘やかす」。',
       use: 'You’re spoiling me!（甘やかしすぎだよ！）' },
 
     { id: 'i2', skill: 'infer', level: 'C1', point: 'invest', seg: [140.6, 148.6], retired: true,
@@ -230,10 +246,22 @@ export const mriBlindDate: Clip = {
       choicesJa: ['失敗のあと、もう一度やる', 'しばらく休む', 'まったく新しいことをする'],
       cue: '「adventure」のあと',
       line: 'Just getting *right back on that horse*.',
-      said: 'カメラに「冒険だと思うことにしてる。すぐまた馬に乗るの」と話す。',
-      mean: 'get back on the horse ＝ 落ちた馬にまた乗る＝失敗のあと、もう一度挑む。',
-      trap: 'adventure（冒険）から「初めてのこと」と思いやすい。back は「もう一度」。',
-      use: 'I failed, but I’ll try again.（失敗したけど、またやってみる）' },
+      said: 'カメラに「冒険だと思うことにしてる。落ちた馬に、すぐまた乗るの」と話す。',
+      mean: '文字どおりは「（落ちた）馬にまた乗る」。→ 失敗のあと、すぐもう一度挑む。ここでは恋愛に戻ること。',
+      trap: 'adventure（冒険）から、初めての挑戦と考えがち。back は「もう一度」。',
+      use: 'Time to get back on the horse.（よし、またやってみよう）' },
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'glass', seg: [172.4, 177.4],
+      stem: 'Where will Chris be during the scan?',
+      ja: '検査のあいだ、クリスはどこにいる？',
+      choices: ['Right behind the glass', 'Next to the machine', 'Back at the restaurant'], a: 0,
+      choicesJa: ['ガラスのすぐ向こう', '機械のすぐ横', 'レストランに戻っている'],
+      cue: '「a little crammed」のあと',
+      line: 'It’s going to be a little *crammed* in there. Don’t worry, I’ll be *right on the other side of that glass*.',
+      said: '「中はちょっと窮屈だよ。心配しないで、ガラスのすぐ向こう側にいるから」と言う。',
+      mean: 'right ＝ すぐ。on the other side of 〜 ＝ 〜の向こう側。crammed ＝ ぎゅうぎゅうで狭い。',
+      trap: 'Don’t worry から、そばについていると勘違いしやすい。the other side は向こう側。',
+      use: 'I’ll be right on the other side of the door.（ドアのすぐ外にいるね）' },
 
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'keepstill', seg: [180.1, 186.8],
       stem: 'What does “Keep still” mean?',
@@ -242,7 +270,7 @@ export const mriBlindDate: Clip = {
       choicesJa: ['動かないで', '話し続けて', '静かにして'],
       cue: '「I’m from Pawnee」のあと',
       line: 'I’m from Pawnee. — *Keep still*, please.',
-      said: '検査中に答えると「動かないでください」と言われる。',
+      said: '出身を答えると「動かないでください」と言われる。',
       mean: 'keep still ＝ じっとして、動かないで。病院や写真撮影でよく聞く。',
       trap: 'still を「まだ」と覚えていると迷いやすい。keep still は「じっとしている」。',
       use: 'Please keep still for a moment.（少しの間、動かないでください）' },
@@ -257,6 +285,18 @@ export const mriBlindDate: Clip = {
       mean: '彼女を動かしているのは彼自身の質問。本人は気づかずに注意し続ける。笑われているのは注意する側。',
       trap: '名前を呼んで注意するので彼女の失敗に聞こえやすい。注意の直前に、誰が話しかけたかを追う。',
       use: 'Don’t make me laugh while I’m drinking!（飲んでるときに笑わせないで！）' },
+
+    { id: 'c2', skill: 'detail', level: 'B1', point: 'allkinds', reveals: ['keepstill'], ctx: true, seg: [184, 191],
+      stem: 'What kind of music does Leslie like?',
+      ja: 'レスリーはどんな音楽が好き？',
+      choices: ['All kinds of music', 'Only quiet music', 'She won’t say'], a: 0,
+      choicesJa: ['いろんな音楽', '静かな音楽だけ', '答えようとしない'],
+      cue: '「Can I answer that?」のあと',
+      line: 'Chris: What kind of music do you like? / Leslie: Can I answer that? / Chris: Sure, keep still. / Leslie: *All kinds.*',
+      said: '好きな音楽を聞かれ、「答えていいの？」と確かめてから「何でも」と答える。',
+      mean: 'All kinds ＝ いろんな種類（＝何でも）。好みを聞かれたときの短い答え。',
+      trap: 'Can I answer that? で止まるので、答えないと考えがち。最後の All kinds が答え。',
+      use: 'All kinds. I like pop and jazz.（何でも。ポップもジャズも好き）' },
 
     { id: 's2', skill: 'sound', level: 'B2', point: 'didyou', seg: [195.9, 201.6],
       stem: 'Fill the gap: “___ ever break your arm?”',
@@ -279,7 +319,7 @@ export const mriBlindDate: Clip = {
       line: 'some boys were making fun of me, *so I chased them* and I *lost control*.',
       said: '「からかわれたから追いかけたら、自転車を操れなくなった」と話す。',
       mean: 'chase ＝ 追いかける。lose control ＝ うまく操れなくなる。',
-      trap: 'boys が先に出るので、追われたと思いやすい。I chased them は自分が追った側。',
+      trap: 'boys が先に出るので、追われたと勘違いしやすい。I chased them は自分が追った側。',
       use: 'I lost control of my bike.（自転車をうまく操れなくなった）' },
 
     { id: 'h2', skill: 'humor', level: 'C1', point: 'threeyrs', reveals: ['bike'], seg: [200.9, 210.1], retired: true,
@@ -314,7 +354,7 @@ export const mriBlindDate: Clip = {
       line: 'I *can’t believe* I turned the machine off *for that*.',
       said: '「あんな話のために機械を止めたなんて」と言う。',
       mean: 'for that ＝ あんなことのために。can’t believe とあわせて、がっかりしている。',
-      trap: 'can’t believe から「すごい」と思いやすい。for that が付くと、価値が低いという意味。',
+      trap: 'can’t believe は「すごい」にも聞こえるが、for that（あんなことで）が付くと、がっかり。',
       use: 'I can’t believe I waited for that.（あんなもののために待ったなんて）' },
 
   ]
