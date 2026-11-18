@@ -48,6 +48,7 @@ const SELF: Record<string, string> = {
 const NONE: Record<string, string> = {
   'lib/components/ui/Toast.svelte': 'a banner with 取り消す: a tap only holds it (the button is the sound)',
   'routes/pair/+page.svelte': 'the key field: the system keyboard clicks',
+  'routes/speech/+page.svelte': 'the mic button: nothing sounds while the mic is open (sound.svelte.ts micFocus)',
   'lib/components/health/GoalEdit.svelte': 'a goal\'s field (its −/＋ tick): the system keyboard clicks',
   'lib/components/tent/TentEdit.svelte': 'a saved room\'s name field (the system keyboard); 保存, 呼び出す and 削除 sound their own (confirm, or boop when they can\'t)',
   'lib/components/look/LookPage.svelte': 'the name fields (the system keyboard); the choice already made does nothing; a full ＋ ほぞん shows its banner, as a disabled ok does nothing',

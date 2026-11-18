@@ -129,7 +129,10 @@ export const LOG_EVENTS = {
   // the site's storage once a Tokyo day (sync/persist.ts storageDaily: navigator.storage.estimate, MB),
   // whether it's kept from eviction, and (r3 L7) each service worker cache's MB (sync/cacheSizes.ts)
   // the speech test (routes/speech, docs/speech-test.md): times and the match only, never the audio or what was heard
-  "speech.test": { src: 'c', f: { audS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'off', 'capped', 'network', 'ai', 'other'] } },
+  // and why the mic failed: getUserMedia's error (`gum` its name, `msg`), the mic's permission, the home-screen app,
+  // the island's audio context and audio session as the page opened and as the mic was asked for; a take's recording
+  // (its KB and type, whether it decoded, the loudest sample ×1000, a muted track). `denied`: builds before 2026-11-19
+  "speech.test": { src: 'c', f: { audS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'refused', 'nomic', 'busy', 'session', 'insecure', 'empty', 'silent', 'off', 'capped', 'network', 'ai', 'other'], gum: 't', msg: 'msg', perm: ['granted', 'denied', 'prompt', 'none'], pwa: 'b', md: 'b', ctx: 't', sess: 't', sessNow: 't', recKB: 'n', type: 't', decoded: 'b', peak: 'n', muted: 'b' } },
   // 英語すごろく's spoken sentence (lib/sugoroku): what decided the feedback (the phone's task check, the wasei list, the
   // relay's AI, none), its verdict, the time to it, the takes, edited before grading, re-said after a tip, why not.
   // Never the sentence

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchOf, wav16k, wordsOf } from './match.ts';
+import { matchOf, micMiss, takeMiss, wav16k, wordsOf } from './match.ts';
 
 describe('speech test: the take and the match', () => {
   it('a WAV the relay takes: RIFF/WAVE, 16 kHz mono 16-bit, capped at 10 s', () => {
@@ -21,5 +21,18 @@ describe('speech test: the take and the match', () => {
     expect(m.words.filter((w) => !w.ok).map((w) => w.w)).toEqual(['train']);
     expect(matchOf('Good morning.', '').score).toBe(0);
     expect(matchOf('Good morning.', 'good morning good morning good morning').score).toBe(0);
+  });
+  it("getUserMedia's errors in the test's words; WebKit's audio-session refusal its own", () => {
+    expect(['NotAllowedError', 'NotFoundError', 'OverconstrainedError', 'NotReadableError', 'AbortError', 'InvalidStateError', 'SecurityError', 'TypeError', 'Weird', undefined].map(micMiss))
+      .toEqual(['refused', 'nomic', 'nomic', 'busy', 'busy', 'session', 'insecure', 'insecure', 'other', 'other']);
+  });
+
+  it('a take not worth sending: under 0.3 s, or all zeros (a muted mic); a quiet room is sent', () => {
+    expect(takeMiss(new Float32Array(16_000 * 0.2).fill(0.3))).toBe('empty');
+    expect(takeMiss(new Float32Array(0))).toBe('empty');
+    expect(takeMiss(new Float32Array(16_000))).toBe('silent');
+    const quiet = new Float32Array(16_000);
+    quiet[500] = 0.002;
+    expect(takeMiss(quiet)).toBeNull();
   });
 });

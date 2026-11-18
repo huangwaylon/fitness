@@ -1,6 +1,7 @@
 <script lang="ts">
   // The speech test (docs/speech-test.md): read a sentence (or say anything), the relay's Whisper writes it down, and
   // the page shows what was heard, each word matched, and each step's time. ‹ goes back to English Study's すごろく tab.
+  import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
   import { english } from '#lib/english/open.svelte.ts';
@@ -8,12 +9,14 @@
   import { getKey } from '#lib/sync/storage.ts';
   import { matchOf, SENTENCES } from '#lib/speech/match.ts';
   import { MAX_S, record, transcribe, type Heard, type Miss, type Take } from '#lib/speech/stt.ts';
+  import { audioState, micFocus } from '#lib/sound/sound.svelte.ts';
 
   type Done = { k: number; asked: string; heard: Extract<Heard, { ok: true }>; match: ReturnType<typeof matchOf> | null };
   let k = $state(0);
   let phase = $state<'idle' | 'rec' | 'wait'>('idle');
   let secs = $state(0);
   let miss = $state<Miss | null>(null);
+  let why = $state('');
   let takes = $state.raw<Done[]>([]);
   let take: Take | null = null;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -22,9 +25,34 @@
   const paired = !!getKey();
 
   const MISS: Record<Miss, string> = {
-    denied: 'マイクが使えません（設定で許可してください）', off: 'サーバーの音声認識が止まっています', capped: '今日の回数を使い切りました',
+    refused: 'マイクが許可されていません。「許可しない」を選んだときは、アプリを閉じて開き直すと、もう一度聞かれます。設定 › アプリ › Safari › マイク が「拒否」でないかも確かめてください。',
+    nomic: 'マイクが見つかりませんでした', busy: 'マイクをほかのアプリが使っています。通話や録音を終えてから、もう一度どうぞ。',
+    session: 'アプリの音とマイクがぶつかりました。もう一度録音してください。', insecure: 'このページではマイクが使えません',
+    empty: '録音が短すぎました。もう少し長く話してください。', silent: '音が録れていませんでした（マイクが止まっていたようです）。もう一度どうぞ。',
+    off: 'サーバーの音声認識が止まっています', capped: '今日の回数を使い切りました',
     network: 'つながりませんでした', ai: '認識に失敗しました', other: 'うまくいきませんでした'
   };
+  // what the log says about the phone's mic (docs/speech-test.md "What's logged"): the home-screen app or Safari, the
+  // island's audio context and audio session as the page opened (WebKit refuses the mic under 'ambient'), the mic's
+  // permission as the Permissions API says
+  type AudioSessionNav = Navigator & { audioSession?: { type: string }; standalone?: boolean };
+  const nav = navigator as AudioSessionNav;
+  const pwa = matchMedia('(display-mode: standalone)').matches || !!nav.standalone;
+  let opened = { ctx: 'none', sess: 'none' };
+  onMount(() => {
+    const ctx = audioState();
+    opened = { ctx, sess: micFocus(true) ?? 'none' };
+  });
+  const abort = new AbortController();
+  onDestroy(() => (take?.cancel(), micFocus(false), abort.abort()));
+  const perm = async (): Promise<string> => {
+    try {
+      return (await navigator.permissions?.query({ name: 'microphone' as PermissionName }))?.state ?? 'none';
+    } catch {
+      return 'none';
+    }
+  };
+  const env = () => ({ pwa, md: !!navigator.mediaDevices, ...opened, sessNow: nav.audioSession?.type ?? 'none' });
   const median = (xs: number[]) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : 0);
   const summary = $derived.by(() => {
     const read = takes.filter((t) => t.match);
@@ -34,9 +62,14 @@
   async function tap() {
     if (!paired || phase === 'wait') return;
     if (phase === 'rec') return stop();
-    miss = null;
+    miss = null, why = '';
+    micFocus(true); // (already, since the page opened: kept in the tap in case)
+    const at = env();
     const t = await record();
-    if (!t) return void ((miss = 'denied'), log('speech.test', { ok: false, err: 'denied', lvl: free ? -1 : k }));
+    if ('miss' in t) {
+      miss = t.miss, why = t.gum;
+      return void log('speech.test', { ok: false, err: t.miss, gum: t.gum, msg: t.msg, lvl: free ? -1 : k, perm: await perm(), ...at });
+    }
     take = t, phase = 'rec', secs = 0;
     const t0 = performance.now();
     timer = setInterval(() => {
@@ -52,15 +85,18 @@
     const t = take;
     take = null;
     const t0 = performance.now();
-    const r = await transcribe(await t.stop(), t0);
+    const p = await t.stop();
+    const r = await transcribe(p.pcm, t0, abort.signal);
+    if (abort.signal.aborted) return;
     phase = 'idle';
     const lvl = free ? -1 : k;
-    if (!r.ok) return void ((miss = r.miss), log('speech.test', { ok: false, err: r.miss, lvl }));
+    const cap = { recKB: p.recKB, type: p.type, decoded: p.decoded, peak: Math.round(p.peak * 1000), muted: p.muted, pwa };
+    if (!r.ok) return void ((miss = r.miss), log('speech.test', { ok: false, err: r.miss, lvl, audS: Math.round((p.pcm.length / 16_000) * 10) / 10, ...cap }));
     const asked = free ? '' : SENTENCES[k].en;
     const match = free ? null : matchOf(asked, r.text);
     takes = [...takes, { k: lvl, asked, heard: r, match }];
     const { ok: _ok, text: _text, ...times } = r;
-    log('speech.test', { ...times, ok: true, lvl, ...(match ? { match: Math.round(match.score * 100) } : {}) });
+    log('speech.test', { ...times, ok: true, lvl, ...cap, ...(match ? { match: Math.round(match.score * 100) } : {}) });
   }
 
   function leave() {
@@ -101,11 +137,11 @@
       {/if}
     </section>
 
-    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait'} data-sfx="confirm" data-speech-mic onclick={tap}>
+    <button type="button" class="mic" class:rec={phase === 'rec'} aria-disabled={!paired || phase === 'wait'} data-sfx="none" data-speech-mic onclick={tap}>
       {phase === 'rec' ? `■ 止める（${secs.toFixed(1)} 秒）` : phase === 'wait' ? '認識中…' : '● 録音'}
     </button>
 
-    {#if miss}<p class="note miss">{MISS[miss]}</p>{/if}
+    {#if miss}<p class="note miss" data-speech-miss={miss}>{MISS[miss]}{#if why}<span class="why">（{why}）</span>{/if}</p>{/if}
 
     {#if last}
       <section class="card result obj-cream" data-speech-result>
@@ -153,6 +189,7 @@
   .mic.rec { background: #f08c7a; box-shadow: 0 3px 0 #c8604f; }
   .mic[aria-disabled='true'] { opacity: .5; }
   .note { margin: 0; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
+  .why { display: block; font-size: 11px; }
   .heard { margin: 0 0 6px; font: 600 18px/1.35 var(--font-body); }
   .words { margin: 0 0 4px; font-size: var(--fs-s); }
   .words span { color: #c8604f; text-decoration: line-through; }

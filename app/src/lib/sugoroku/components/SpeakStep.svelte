@@ -11,6 +11,7 @@
   import Icon from '#lib/components/ui/Icon.svelte';
   import { log } from '#lib/sync/log.ts';
   import { MAX_S, record, transcribe, type Take } from '#lib/speech/stt.ts';
+  import { micFocus } from '#lib/sound/sound.svelte.ts';
   import { grade, type Graded } from '../grade.ts';
   import { s } from '../i18n.ts';
   import type { Level } from '../game.ts';
@@ -68,7 +69,7 @@
   /** /grade asked for one text (at `t0`): its answer, once in. */
   let ask: { text: string; p: Promise<Graded>; r: Graded | null; t0: number } | null = null;
   const abort = new AbortController();
-  $effect(() => () => (clearInterval(timer), take?.cancel(), abort.abort()));
+  $effect(() => () => (clearInterval(timer), take?.cancel(), micFocus(false), abort.abort()));
 
   const lv = untrack(() => level);
   function prefetch(t: string) {
@@ -83,8 +84,10 @@
     if (phase === 'stt') return;
     onengage();
     note = null;
+    // the island's sound paused and the audio session one that allows the mic, in this tap, before the mic is asked for
+    micFocus(true);
     const t = await record();
-    if (!t) return void ((note = 'denied'), (err = 'denied'), toType());
+    if ('miss' in t) return void (micFocus(false), (note = 'denied'), (err = 'denied'), toType());
     take = t;
     phase = 'rec';
     secs = 0;
@@ -102,7 +105,9 @@
     take = null;
     phase = 'stt';
     tStop = performance.now();
-    const r = await transcribe(await t.stop(), tStop);
+    const p = await t.stop();
+    micFocus(false);
+    const r = await transcribe(p.pcm, tStop, abort.signal);
     if (abort.signal.aborted) return;
     typed = false;
     if (!r.ok) {
@@ -222,12 +227,12 @@
       {#if level === 1}<p class="hint" lang="en"><span class="lab">{say('frames')}</span>{FRAMES.join(' / ')}</p>
       {:else if level === 3}<p class="hint">{say('hard', { n: HARD_WORDS })}</p>{/if}
       <div class="row2">
-        <button type="button" class="btn small" data-sfx="confirm" data-sg-say onclick={mic}><Icon name="mic" size={20} />{say('say')}</button>
+        <button type="button" class="btn small" data-sfx="none" data-sg-say onclick={mic}><Icon name="mic" size={20} />{say('say')}</button>
         <button type="button" class="btn small paper" data-sfx="tick" data-sg-type onclick={toType}><Icon name="keyboard" size={20} />{say('type')}</button>
       </div>
     </div>
   {:else if phase === 'rec' || phase === 'stt'}
-    <button type="button" class="btn rec" class:wait={phase === 'stt'} aria-disabled={phase === 'stt'} data-sfx="confirm" data-sg-stop onclick={mic}>
+    <button type="button" class="btn rec" class:wait={phase === 'stt'} aria-disabled={phase === 'stt'} data-sfx="none" data-sg-stop onclick={mic}>
       <Icon name="mic" size={20} />{phase === 'rec' ? (mirror ? say('recording') : say('stop', { s: secs.toFixed(1) })) : say('listening')}
     </button>
   {:else if phase === 'confirm'}
@@ -241,7 +246,7 @@
       <div class="row2">
         <button type="submit" class="btn small" data-sfx="confirm" data-sg-ok>{say('ok')}</button>
         {#if !typed && resays < RESAYS && note !== 'denied'}
-          <button type="button" class="btn small paper" data-sfx="tick" data-sg-again onclick={again}><Icon name="mic" size={20} />{say('again')}</button>
+          <button type="button" class="btn small paper" data-sfx="none" data-sg-again onclick={again}><Icon name="mic" size={20} />{say('again')}</button>
         {/if}
       </div>
     </form>

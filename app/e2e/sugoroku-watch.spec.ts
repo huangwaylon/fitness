@@ -8,6 +8,7 @@ import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { RELAY } from './relay.ts';
+import { heldFor, standInMic } from './mic.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
 
@@ -111,29 +112,9 @@ test('ぶん: B sees A’s tiles in order, 「おしい！」 and 答えはこ�
 
 test('the speaking step: B sees 録音中…, 聞こえた文 and the feedback (the recast, the tip); then its own turn', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
-  // A's phone: a person's key (the step's), the mic stood in (a short silent WAV), /stt and /grade mocked
-  await ctx.addInitScript(() => {
-    localStorage.setItem('island.key', 'ab'.repeat(16));
-    const n = 4800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
-    const tag = (at: number, s: string) => [...s].forEach((c, i) => v.setUint8(at + i, c.charCodeAt(0)));
-    tag(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); tag(8, 'WAVE'); tag(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
-    v.setUint16(22, 1, true); v.setUint32(24, 16000, true); v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
-    tag(36, 'data'); v.setUint32(40, n * 2, true);
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }) } });
-    class Rec {
-      static isTypeSupported = () => true;
-      mimeType = 'audio/wav';
-      state = 'inactive';
-      ondataavailable: ((e: { data: Blob }) => void) | null = null;
-      onstop: (() => void) | null = null;
-      start() { this.state = 'recording'; }
-      stop() {
-        this.state = 'inactive';
-        queueMicrotask(() => (this.ondataavailable?.({ data: new Blob([buf], { type: 'audio/wav' }) }), this.onstop?.()));
-      }
-    }
-    (window as unknown as { MediaRecorder: unknown }).MediaRecorder = Rec;
-  });
+  // A's phone: a person's key (the step's), the mic stood in (e2e/mic.ts), /stt and /grade mocked
+  await ctx.addInitScript(() => localStorage.setItem('island.key', 'ab'.repeat(16)));
+  await standInMic(ctx);
   await ctx.routeWebSocket(/\/room/, () => {});
   const json = { contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } };
   await ctx.route(`${RELAY}/**`, (r) => r.fulfill({ ...json, status: 200, body: '{"ok":true}' }));
@@ -150,6 +131,7 @@ test('the speaking step: B sees 録音中…, 聞こえた文 and the feedback (
   await expect(sheet(b).locator('[data-sg-speak="ask"]')).toBeVisible();
   await sheet(a).locator('[data-sg-say]').tap();
   await expect(sheet(b).locator('[data-sg-stop]')).toHaveText('録音中…');
+  await heldFor(sheet(a).locator('[data-sg-stop]'));
   await sheet(a).locator('[data-sg-stop]').tap();
   await expect(sheet(b).locator('[data-sg-said]')).toHaveValue('I eated an apple.');
   await sheet(a).locator('[data-sg-ok]').tap();

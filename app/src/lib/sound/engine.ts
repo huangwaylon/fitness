@@ -85,8 +85,10 @@ function applySession(type: string): string | null {
 }
 
 /** The page's audio session type: 'ambient' for the island (mixes, follows the Ring/Silent switch), 'playback' while
- *  a video has the floor (English Study: a clip plays on silent, like a video app). WebKit only; elsewhere a no-op. */
-export const setAudioSession = (type: 'ambient' | 'playback'): void => void applySession(type);
+ *  a video has the floor (English Study: a clip plays on silent, like a video app), 'play-and-record' while the mic
+ *  is open (the speech test: the only type, with 'auto', WebKit lets capture under). WebKit only; elsewhere a no-op.
+ *  Returns the type it had (null: none). */
+export const setAudioSession = (type: 'ambient' | 'playback' | 'play-and-record'): string | null => applySession(type);
 
 /** Run `f` when the main thread is idle (Safari has no requestIdleCallback: a short timeout instead). */
 function whenIdle(f: () => void, ms = 60): void {

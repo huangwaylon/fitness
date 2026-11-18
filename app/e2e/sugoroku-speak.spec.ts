@@ -1,11 +1,12 @@
 // 英語すごろく's speaking step (docs/sugoroku.md "Speaking"), switched on by `?speak=1`: a game resumed on its own screen
 // at a 絵 stone (the save made here, so the stone is certain), the picture spelt, then 「この絵で一文言ってみよう」.
-// The mic is stood in (getUserMedia and MediaRecorder give a short silent WAV, so lib/speech/stt.ts runs as on a phone),
+// The mic is stood in (e2e/mic.ts: a real stream of a quiet tone, so lib/speech/stt.ts captures as on a phone),
 // and the relay's /stt and /grade are route mocks: speak → 聞こえた文 → the feedback and its stars (the tip, saying the
 // recast again +1); an edit graded again; no answer in 4 s → praise only; the word or a verb nudged; skipped; the switch
 // off → no step. Run in WebKit too, with taps (Chromium-only once missed an iPhone freeze).
 import { expect, test, type Page } from './fixtures.ts';
 import { RELAY } from './relay.ts';
+import { heldFor, standInMic } from './mic.ts';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -23,27 +24,8 @@ async function phone(page: Page, o: { heard?: string[]; grade?: (s: string) => G
   await page.addInitScript((game) => {
     localStorage.setItem('island.key', 'ab'.repeat(16));
     localStorage.setItem('island.sugoroku', JSON.stringify(game));
-    // a mic: 0.3 s of silence as a 16 kHz WAV (decoded by stt.ts as a phone's take would be)
-    const n = 4800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
-    const tag = (at: number, s: string) => [...s].forEach((c, i) => v.setUint8(at + i, c.charCodeAt(0)));
-    tag(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); tag(8, 'WAVE'); tag(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true);
-    v.setUint16(22, 1, true); v.setUint32(24, 16000, true); v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
-    tag(36, 'data'); v.setUint32(40, n * 2, true);
-    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }) } });
-    class Rec {
-      static isTypeSupported = () => true;
-      mimeType = 'audio/wav';
-      state = 'inactive';
-      ondataavailable: ((e: { data: Blob }) => void) | null = null;
-      onstop: (() => void) | null = null;
-      start() { this.state = 'recording'; }
-      stop() {
-        this.state = 'inactive';
-        queueMicrotask(() => (this.ondataavailable?.({ data: new Blob([buf], { type: 'audio/wav' }) }), this.onstop?.()));
-      }
-    }
-    (window as unknown as { MediaRecorder: unknown }).MediaRecorder = Rec;
   }, AT_PICTURE);
+  await standInMic(page);
   await page.routeWebSocket(/\/room/, () => {});
   const json = { contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' } };
   await page.route(`${RELAY}/**`, (r) => r.fulfill({ ...json, status: 200, body: '{"ok":true}' }));
@@ -77,6 +59,7 @@ test('speak → 聞こえた文 → the feedback: the recast, the tip, +2; sayin
   await expect(team(page)).toHaveAttribute('data-sg-team', '0');
   await s.locator('[data-sg-say]').tap();
   const t0 = Date.now();
+  await heldFor(s.locator('[data-sg-stop]'));
   await s.locator('[data-sg-stop]').tap();
   await expect(s.locator('[data-sg-said]')).toHaveValue('I eated an apple.');
   const heardMs = Date.now() - t0;
@@ -96,6 +79,7 @@ test('speak → 聞こえた文 → the feedback: the recast, the tip, +2; sayin
   await expect(s.locator('[data-sg-speak]')).not.toContainText(/間違|×|%/);
   // say the recast: +1
   await s.locator('[data-sg-resay]').tap();
+  await heldFor(s.locator('[data-sg-stop]'));
   await s.locator('[data-sg-stop]').tap();
   await expect(s.locator('[data-sg-said]')).toHaveValue('I ate an apple.');
   await s.locator('[data-sg-ok]').tap();
@@ -113,10 +97,12 @@ test('an edit is graded again; a great sentence’s other way said', async ({ pa
     grade: (x) => (x.includes('apple') ? { verdict: 'great', fixed: x, also: 'I really love red apples.' } : { verdict: 'great', fixed: x, used: false })
   });
   await s.locator('[data-sg-say]').tap();
+  await heldFor(s.locator('[data-sg-stop]'));
   await s.locator('[data-sg-stop]').tap();
   // Whisper's words on silence: say it again, not graded
   await expect(s.locator('[data-sg-note]')).toHaveAttribute('data-sg-note', 'again');
   await s.locator('[data-sg-again]').tap();
+  await heldFor(s.locator('[data-sg-stop]'));
   await s.locator('[data-sg-stop]').tap();
   await expect(s.locator('[data-sg-said]')).toHaveValue('I like dogs.');
   // not the picture's word: a nudge, no stars
@@ -136,6 +122,7 @@ test('an edit is graded again; a great sentence’s other way said', async ({ pa
 test('no answer from /grade in 4 s: praise only, the stars still given', async ({ page }) => {
   const { s } = await phone(page, { grade: () => null });
   await s.locator('[data-sg-say]').tap();
+  await heldFor(s.locator('[data-sg-stop]'));
   await s.locator('[data-sg-stop]').tap();
   await s.locator('[data-sg-ok]').tap();
   // the stars at once, the sentence shimmering: never a 判定 or 採点 label

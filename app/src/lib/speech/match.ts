@@ -1,5 +1,4 @@
-// The speech test's pure parts (docs/speech-test.md): a take as 16 kHz 16-bit mono WAV (what the relay's /stt takes),
-// and how close what was heard is to the sentence asked for (word-level, so "I'd" vs "I would" and punctuation don't
+// The speech test's pure parts (docs/speech-test.md): a take as 16 kHz 16-bit mono WAV (what the relay's /stt takes), why the mic or a take failed, and how close what was heard is to the sentence asked for (word-level, so "I'd" vs "I would" and punctuation don't
 // count against it).
 
 /** Mono samples (any rate already resampled to 16 kHz) as a WAV, at most `maxS` seconds. */
@@ -12,6 +11,36 @@ export function wav16k(x: Float32Array, maxS = 10): Uint8Array {
   v.setUint32(28, 32_000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); tag(36, 'data'); v.setUint32(40, n * 2, true);
   for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.round(Math.max(-1, Math.min(1, x[i])) * 32_767), true);
   return out;
+}
+
+/** Why the mic gave nothing: getUserMedia's rejection (its error's name) in the speech test's words. `session`:
+ *  WebKit's InvalidStateError under an 'ambient' or 'playback' audio session ("not compatible with audio capture"). */
+export type MicMiss = 'refused' | 'nomic' | 'busy' | 'session' | 'insecure' | 'other';
+export function micMiss(name: string | undefined): MicMiss {
+  switch (name) {
+    case 'NotAllowedError': return 'refused';
+    case 'NotFoundError': case 'OverconstrainedError': return 'nomic';
+    case 'NotReadableError': case 'AbortError': return 'busy';
+    case 'InvalidStateError': return 'session';
+    case 'SecurityError': case 'TypeError': return 'insecure';
+    default: return 'other';
+  }
+}
+
+/** The shortest take sent (s): less is a tap and a tap, nothing said. */
+const MIN_S = 0.3;
+/** A take whose loudest sample is below this is silence (iOS gives a muted or interrupted mic as zeros). */
+const SILENT_PEAK = 1e-4;
+
+/** A take not worth sending: too short (`empty`), or nothing in it (`silent`); else null. */
+export function takeMiss(pcm16k: Float32Array): 'empty' | 'silent' | null {
+  if (pcm16k.length < MIN_S * 16_000) return 'empty';
+  return peakOf(pcm16k) < SILENT_PEAK ? 'silent' : null;
+}
+export function peakOf(x: Float32Array): number {
+  let m = 0;
+  for (let i = 0; i < x.length; i++) m = Math.max(m, Math.abs(x[i]));
+  return m;
 }
 
 const EXPAND: Record<string, string> = {

@@ -156,11 +156,35 @@ export function videoFocus(on: boolean): void {
     setAudioSession('playback');
     return;
   }
-  setAudioSession('ambient');
-  if (!engine?.ctx || document.hidden || silent(sound.settings)) return;
+  setAudioSession(mic ? 'play-and-record' : 'ambient');
+  if (mic || !engine?.ctx || document.hidden || silent(sound.settings)) return;
   engine.resume();
   syncMusic();
 }
+
+/** The mic has the floor (the speech test, docs/speech-test.md): iOS's audio session 'play-and-record' (WebKit refuses
+ *  getUserMedia under 'ambient' or 'playback': "AudioSession category is not compatible with audio capture"), the
+ *  island's audio paused and no effect sounding, till off: then the session it had and the island's sound as it was.
+ *  On before the mic is asked for, in the same tap. Returns the session's type before (null: no audioSession). */
+let mic = false;
+let micWas: string | null = null;
+export function micFocus(on: boolean): string | null {
+  if (mic === on) return micWas;
+  mic = on;
+  if (on) {
+    engine?.pause();
+    tilePaused();
+    return (micWas = setAudioSession('play-and-record'));
+  }
+  setAudioSession(video ? 'playback' : 'ambient');
+  if (video || !engine?.ctx || document.hidden || silent(sound.settings)) return micWas;
+  engine.resume();
+  syncMusic();
+  return micWas;
+}
+
+/** The island's AudioContext's state ('none': not made yet), for the speech test's log. */
+export const audioState = (): string => engine?.ctx?.state ?? 'none';
 
 /** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
  *  paused or the browser refused to start) if any setting wants it (session.ts gestureAction). Any tap does it, on
@@ -170,7 +194,7 @@ export function videoFocus(on: boolean): void {
 function unlock(ev?: Event): void {
   const s = sound.settings;
   if (typeof window === 'undefined') return;
-  if (silent(s) || video) return;
+  if (silent(s) || video || mic) return;
   const e = eng();
   const music = musicOn(s);
   const act = e.gesture((ev?.type ?? 'click') as Gesture, music);
@@ -186,7 +210,7 @@ function unlock(ev?: Event): void {
 function apply(): void {
   const e = engine;
   if (!e?.ctx) return;
-  if (video) return void e.pause();
+  if (video || mic) return void e.pause();
   const s = sound.settings;
   e.setLevels(s);
   sound.unlocked = true;
@@ -241,7 +265,7 @@ function startCutIn(want: CutIn, loopMs?: number): boolean {
  *  room's, the island's), and what stays fetched (pinsFor). `fade`: how a change fades (a cut-in's own is its swap). */
 function syncMusic(fade: Fade = 'hour'): void {
   const e = engine;
-  if (!e?.ctx || document.hidden || video) return;
+  if (!e?.ctx || document.hidden || video || mic) return;
   const s = sound.settings;
   if (!s.music || !anyOn(s)) {
     opening = false;
@@ -311,7 +335,7 @@ export const covered = (): boolean => coveredBy();
 /** Play an effect if 効果音 is on (cues.ts is the usual way in). */
 export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: number }): void {
   const s = sound.settings;
-  if (s.volume > 0 && s.sfx) engine?.play(id, o);
+  if (s.volume > 0 && s.sfx && !mic) engine?.play(id, o);
 }
 
 /** しずえ's announcement (cue 'announce'): the radio jingle of the moment (radio.ts; without its file the PA chime).
@@ -388,7 +412,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   initMediaSession({
     // ▶: only in front, with a kind on; ⏸ (and ⏹): the track holds until a tap in the app
     play: () => {
-      if (document.hidden || video || !engine?.ctx || silent(sound.settings)) return tilePaused();
+      if (document.hidden || video || mic || !engine?.ctx || silent(sound.settings)) return tilePaused();
       engine.unhold();
       engine.resume();
       syncMusic();
@@ -411,7 +435,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   const onVisible = () => {
     if (document.hidden) return onHide();
     hourClock.start(); // even before the first tap: the tap's syncMusic needs the hour change after it
-    if (!engine?.ctx || silent(sound.settings) || video) return;
+    if (!engine?.ctx || silent(sound.settings) || video || mic) return;
     engine.resume();
     syncMusic();
   };

@@ -18,6 +18,15 @@ The page shows:
 
 The mic is asked for only when 録音 is tapped. The site's Permissions-Policy allows `microphone=(self)`.
 
+**The mic and the island's sound** (the bug of 2026-11-18: the home-screen app refused every take). The island sets
+iOS's audio session to `ambient` (or `playback` under a lesson's video), and WebKit refuses getUserMedia under either:
+`InvalidStateError: AudioSession category is not compatible with audio capture` (seen in the iOS Simulator's Safari
+too). Safari worked only while its own storage had the sound off. So the page (and 英語すごろく's speaking step, for the
+take) holds the floor (sound.svelte.ts `micFocus`): the session `play-and-record`, the island's audio paused, no tap
+sounds; leaving puts both back. getUserMedia is asked with plain `{ audio: true }`, in the tap. A take under 0.3 s or
+all zeros (a muted mic) isn't sent (`empty`, `silent`): one empty take had reached the relay as a bare 44-byte WAV.
+A refusal says why on the page, in plain Japanese, with the error's name.
+
 ## The relay
 
 `POST /stt` (relay/src/sttRoute.ts):
@@ -33,7 +42,10 @@ The mic is asked for only when 録音 is tapped. The site's Permissions-Policy a
 ## What's logged
 
 Each take sends one phone event, `speech.test`: the take's seconds, the WAV's KB, each step's ms, the match, the
-sentence's index (`lvl`, −1 for free speech), ok or why not. Never the audio or what was heard. Read the results with
+sentence's index (`lvl`, −1 for free speech), ok or why not. A refusal adds getUserMedia's error (`gum`, `msg`), the mic's permission
+(`perm`), the home-screen app (`pwa`), and the island's audio context and session as the page opened (`ctx`, `sess`)
+and as the mic was asked (`sessNow`); a take adds its recording's KB and type, whether it decoded, its loudest sample
+(×1000) and a muted track. Never the audio or what was heard. Read the results with
 `npm run logs -- --event speech.test --since 1d` in relay/.
 
 ## Deciding
