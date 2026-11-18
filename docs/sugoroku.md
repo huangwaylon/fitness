@@ -62,16 +62,26 @@ be (2–4 vowels, one of S T R N D, at most one of J K X Z, at most two of a let
 
 ## Words
 
-`accept.txt`: what a word may be: any real English word of 2–8 letters (the ENABLE list, public domain, with the lists
-below, minus a short block list; ~80,000, prefix-delta coded), so a right word is never refused. `words.txt` (the hints'
-and glosses' familiar list): the words heard in 3+ of English Study's transcripts, 2–8 letters, that macOS's dictionary knows (its
-base words and simple inflections), minus names and a short list of words not for the table; plus `everyday.json`,
-~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker). `sentences.json`: the
-フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a Japanese reader's
-fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4 everyday words 1, ≤ 5
-and 80 % 2, else 3). All are written by `npm run sugoroku:words` (it needs
-/usr/share/dict, so on a Mac; accept.txt with `SUGOROKU_ENABLE=<enable1.txt>`) and committed; each is its own chunk, loaded as the sheet opens (precached:
-a game night works offline).
+Curated by cross-reference (`scripts/sugoroku-wordlist.py`, then `SUGOROKU_LISTS=… npm run sugoroku:words`):
+
+- `accept.txt`: what a word may be: real and actually used, 2–8 letters (~47,500, prefix-delta coded). An ENABLE word
+  (public domain) in SCOWL ≤ 60, or of 4+ letters with a wordfreq Zipf ≥ 2.5 or in 2 of 3 open frequency sources
+  (wordfreq, Norvig's counts, NGSL's ranks); SCOWL's own forms of those (mingled from mingle); the learner lists, months
+  and days, modern words in SCOWL ≤ 50 (email, selfie), a few loanwords a Japanese table uses (bento, matcha, wifi);
+  minus SCOWL's vulgar and offensive flags and a block list of slurs. Scrabble-only words (aa, qat, zax) don't count;
+  2–3 letter words need SCOWL ≤ 60 (frequency alone takes abbreviations).
+- `words.txt`: the common words (~9,000): NGSL 1.01, NGSL-Spoken 1.2, CEFR-J 1.5 A1–B1 and everyday.json, with their
+  forms; plus Zipf ≥ 4 words that aren't names. The hints draw from it.
+- `everyday.json`: ~1,700 A1–A2 words with a short Japanese gloss (drafted, then read by a Japanese speaker): the
+  everyday bonus and the meaning card.
+- `sentences.json`: the フレーズ deck's `use` lines of 3–6 words with their Japanese and a level, an ESL teacher's and a
+  Japanese reader's fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4
+  everyday words 1, ≤ 5 and 80 % 2, else 3).
+
+Each is its own chunk, loaded with the tab (precached: a game night works offline). Credits: SCOWL (Kevin Atkinson,
+MIT-like), wordfreq data (Robyn Speer, CC BY-SA 4.0), NGSL and NGSL-Spoken (Browne, Culligan & Phillips, CC BY-SA 4.0),
+CEFR-J (Tono Lab, free with citation), Norvig's count_1w (MIT); the derived lists are shared under CC BY-SA 4.0 as they
+must be.
 
 ## Saving
 

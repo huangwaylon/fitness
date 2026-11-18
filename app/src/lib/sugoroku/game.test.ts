@@ -163,12 +163,13 @@ describe('game', () => {
 });
 
 describe('words and sentences', () => {
-  it('any real word is accepted (mingle, cats…), the hints only from the familiar list; nothing blocked', () => {
+  it('any real, used word is accepted (mingle, cats…), not Scrabble-only ones; the hints only from the common list', () => {
     const accept = decodeAccept(readFileSync(join(import.meta.dirname, 'accept.txt'), 'utf8'));
     const all = wordsOf(readFileSync(join(import.meta.dirname, 'words.txt'), 'utf8'), everyday, accept);
     for (const w of ['mingle', 'mingled', 'cats', 'zoo', 'box', 'jam', 'quiz']) expect(all.has(w), w).toBe(true);
-    for (const w of ['sex', 'xqzt', 'mingl']) expect(all.has(w), w).toBe(false);
-    expect(accept.size).toBeGreaterThan(70_000);
+    for (const w of ['xqzt', 'mingl']) expect(all.has(w), w).toBe(false);
+    expect(accept.size).toBeGreaterThan(40_000);
+    for (const w of ["zax", "qat", "aa", "xu"]) expect(all.has(w), w).toBe(false);
     expect(all.from(['m', 'i', 'n', 'g', 'l', 'e', 'x'], () => 0).every((w) => !accept.has(w) || words.has(w))).toBe(true);
   });
   it('the everyday list is in shape and in the font', () => {
