@@ -1,12 +1,12 @@
+// R4 REVIEW 2026-11-18: keep 13, rewrite 3, retire 2, new 8, ctx 6, tx 10
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 4, new 2
 // “Parks and Recreation | Leslie's Finally Ready (Episode Highlight)” (the official Parks and Recreation channel,
 // Season 6): Leslie and Ben agree to let a coin decide which of them runs for governor, Leslie announces she is running
 // and toasts her old team, and years later, as a former governor, she ends a speech on the same idea about work.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 0–8 s, 11.7–12 s (the speakers of the opening
-// turns are unclear, so d1 says "one of them"), 84–89 s (crowd reactions), 96–107 s (the dream journal), 222–245 s
-// (the swing; speakers unclear), 253–295 s (the photo gags lean on backstory).
-// EAR CHECK: 10.6–11.5 s x1, 35.4–36.1 s s1 — both sources have "I haven't had a chance" and "whoever doesn't run";
-//   confirm the linking in "haven't had a" and that the t of "doesn't" is dropped before "run"
+// Segments from the captions, words from whisper (2026-11-16). The speakers of the opening turns and of the swing
+// scene (222–250 s) are unclear, so k1 and k5 name no one.
+// SKIP 285–314: the photo countdown, then music and the end card.
+// EAR CHECK: 10.6–11.5 s x1 — confirm the linking in "haven't had a"; 276 s k4 — Andy says "Found it in the sandbox"?
 import type { Clip } from '../types.ts';
 
 export const leslieReady: Clip = {
@@ -15,6 +15,18 @@ export const leslieReady: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'k1', skill: 'pragma', level: 'B2', point: 'meneither', ctx: true, reveals: ['askthem'], seg: [0.5, 12.6],
+      stem: 'Have they asked their friends yet?',
+      ja: '二人は、もう仲間に聞いた？',
+      choices: ['No, neither of them has', 'Yes, both of them have', 'Only one of them has'], a: 0,
+      choicesJa: ['いいえ、二人ともまだ', 'はい、二人とも聞いた', '一人だけ聞いた'],
+      cue: '最後の短い返事',
+      line: 'A: …did anyone have any insights…? / B: I haven’t had a chance to ask them. / A: Yeah, *me neither*.',
+      said: '「まだ聞く機会がなかった」に「うん、私も（聞けてない）」と返す。',
+      mean: 'Me neither ＝「私も（〜ない）」。否定の文への「私も」。肯定の文には Me too。',
+      trap: '日本語の「私も」から Me too を連想しやすい。neither（どちらも〜ない）は「していない」側の返事。',
+      use: 'I haven’t eaten yet. — Me neither.（まだ食べてないんだ。ー私も）' },
+
     { id: 'x1', skill: 'dict', level: 'B2', point: 'askthem', seg: [8.2, 13.9],
       stem: 'Type the gap: “I ___ to ask them.” (4 words)',
       answer: "haven't had a chance",
@@ -23,10 +35,11 @@ export const leslieReady: Clip = {
       line: 'I *haven’t had a chance* to ask them.',
       said: '「忙しくて、まだみんなに聞く機会がなかった」と言う。',
       mean: 'haven’t had a chance ＝「まだ〜する機会がない」。「ハヴンハダ」とつながる。',
-      trap: 't や d が弱く、語が足りなく聞こえやすい。4語に分けて書く。',
+      trap: 't や d が弱く、語が足りなく聞こえがち。haven’t / had / a / chance の4語に分けて書く。',
       use: 'I haven’t had a chance to check.（まだ確認できてないんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'sides', seg: [8.2, 19.3],
+    // retired (R4): plot detail; the opening is crowded, k1 tests the exchange
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'sides', seg: [8.2, 19.3], retired: true,
       stem: 'What does one of them say they hate?',
       ja: '二人のうち一人は、何が嫌だと言う？',
       choices: ['Being on opposite sides', 'Being too busy to talk', 'Losing the election'], a: 0,
@@ -47,7 +60,7 @@ export const leslieReady: Clip = {
       line: 'It stinks. *Plus*, if one of us runs…',
       said: '「それに、どちらかが出ても、勝てるとは限らない」と続ける。',
       mean: 'Plus ＝「それに・その上」。前の理由に、もう一つ理由を足す合図。',
-      trap: 'plus（足し算の「プラス」）から、数の話と思いやすい。ここは理由を足している。',
+      trap: '足し算の「プラス」から、数の話と考えがち。ここは「負けるかも」という理由を足している。',
       use: 'It’s cheap. Plus, it’s close.（安いし、それに近い）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'good', seg: [19.4, 27.6],
@@ -58,11 +71,11 @@ export const leslieReady: Clip = {
       cue: '「all that matters」のあと',
       line: 'So *all that matters is that we are good*.',
       said: '「だから大事なのは、二人がうまくいっていることだけ」と言う。',
-      mean: 'we’re good ＝「私たちは大丈夫（仲は問題ない）」。all that matters ＝ 大事なのはそれだけ。',
-      trap: 'good（良い）から、良い人という意味と思いやすい。ここは二人の関係の話。',
+      mean: 'we’re good ＝ 文字どおりは「私たちは良い」。→ 仲が良い状態＝「私たちは大丈夫」。くだけた言い方。',
+      trap: 'good（良い）から「良い人」に聞こえるが、ここは二人の仲の話。all that matters（大事なのは〜だけ）が決め手。',
       use: 'Are we good? — Yeah, we’re good.（もう大丈夫？ーうん、大丈夫）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'coin', seg: [22.0, 66.8],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'coin', seg: [24.5, 45.0],
       stem: 'How do Leslie and Ben decide who runs?',
       ja: 'レスリーとベンは、どちらが出馬するかをどう決める？',
       choices: ['They flip a coin', 'They ask their friends', 'They pick the likely winner'], a: 0,
@@ -71,7 +84,7 @@ export const leslieReady: Clip = {
       line: 'Which is why I have an idea. I think we should *flip a coin*.',
       said: '「だから考えがあるの。コインを投げて決めよう」と言う。',
       mean: 'flip a coin ＝ コインを投げる（表か裏かで決める）。出ない方が支える約束。',
-      trap: '「みんなに伝えよう」と言うので、友達が決めると思いやすい。決めるのはコイン。',
+      trap: '最初に仲間の意見の話が出るので、友達に聞くと考えがち。決め手は I think we should のあと。',
       use: 'Let’s just flip a coin.（コインで決めちゃおう）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'literally', reveals: ['coin'], seg: [26.7, 35.4],
@@ -86,7 +99,8 @@ export const leslieReady: Clip = {
       trap: 'I mean（つまり）だけなら言い直し。it が付くと「本気」の意味になる。',
       use: 'I mean it. Call me anytime.（本気だよ。いつでも電話して）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'doesnt', seg: [32.0, 42.3],
+    // retired (R4): the opening quarter is crowded; x1 keeps a form item there
+    { id: 's1', skill: 'sound', level: 'B2', point: 'doesnt', seg: [32.0, 42.3], retired: true,
       stem: 'Fill the gap: “And whoever ___ run is gonna be…”',
       ja: '「And whoever ___ run is gonna be…」の空所は？',
       choices: ['doesn’t', 'does', 'won’t'], a: 0,
@@ -107,19 +121,19 @@ export const leslieReady: Clip = {
       line: 'you, Leslie Knope, the *queen of planning* and binders… You wanna *leave this to chance*?',
       said: '「計画とバインダーの女王が、これを運に任せたいの？」と聞き返す。',
       mean: 'queen of 〜 ＝「〜の女王」＝とても得意な人。leave 〜 to chance ＝ 運に任せる。',
-      trap: 'queen（女王）から、ほめていると思いやすい。運任せが彼女らしくない、と驚いている。',
+      trap: 'queen（女王）はほめ言葉に聞こえるが、ここは「何でも計画する人なのに」。運任せが彼女らしくない。',
       use: 'Let’s not leave it to chance.（運任せにはしないでおこう）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'together', seg: [50.9, 61.6],
-      stem: 'How sure is Leslie about the coin idea?',
-      ja: 'レスリーはコインの案にどれくらい自信がある？',
-      choices: ['Very sure', 'Not sure at all', 'A little worried'], a: 0,
-      choicesJa: ['とても自信がある', 'まったく自信がない', '少し心配'],
-      cue: '「Yes」のあと',
-      line: 'Yes. Because *whatever’s next, you and I are in it together*.',
-      said: '迷わず「うん。次に何があっても、私たちは一緒だから」と答える。',
-      mean: 'in it together ＝「一緒に乗り越える」。だから運任せでも平気。',
-      trap: '運任せは不安そうに思いやすい。すぐ Yes と言い、because で理由を言う。',
+    { id: 'a1', skill: 'infer', level: 'B2', point: 'together', ctx: true, seg: [50.5, 58.6],
+      stem: 'Why does Leslie say yes to Ben?',
+      ja: 'レスリーはなぜベンに「うん」と答える？',
+      choices: ['They will be together anyway', 'She is sure she will win', 'She hates making plans'], a: 0,
+      choicesJa: ['どうなっても二人は一緒だから', '自分が勝つと確信しているから', '計画を立てるのが嫌いだから'],
+      cue: '「Yes」のあとの because',
+      line: 'Ben: You wanna leave this to chance? / Leslie: Yes. Because *whatever’s next, you and I are in it together*.',
+      said: '「運に任せたいの？」に「うん。次に何があっても、二人は一緒だから」と答える。',
+      mean: 'in it together ＝ 文字どおりは「一緒にその中にいる」→ 同じ状況を一緒に乗り越える。だから運任せでも平気。',
+      trap: '決め手は because のあと。勝つ話も計画嫌いの話も出てこない。whatever’s next ＝ 次に何があっても。',
       use: 'Whatever happens, we’re in this together.（何があっても一緒だよ）' },
 
     // retired (A2): a “why is it funny” item
@@ -143,7 +157,7 @@ export const leslieReady: Clip = {
       line: 'they can participate, they can *sign the coin*',
       said: '「みんなも参加できるし、コインにサインもできる」と言う。',
       mean: 'sign ＝ サインする。友達は投げる係でなく、記念にサインする係。',
-      trap: 'participate（参加する）から、表か裏を当てると思いやすい。続く sign を聞く。',
+      trap: 'participate（参加する）から、表か裏を当てる遊びを連想しやすい。続く sign を聞く。',
       use: 'Can everyone sign the card?（みんなでカードにサインしてくれる？）' },
 
     // retired (A2): a C2 paraphrase of an exaggeration
@@ -159,6 +173,18 @@ export const leslieReady: Clip = {
       trap: 'it’s like の言いよどみを控えめと取りやすい。小さな事に大きすぎる言葉が付いたら、喜びの誇張。',
       use: 'This is the best day in human history.（人類史上最高の日だよ）' },
 
+    { id: 'k2', skill: 'gist', level: 'B1', point: 'announce', ctx: true, reveals: ['terms'], seg: [78.4, 93.4],
+      stem: 'What news do Leslie and Ben share?',
+      ja: 'レスリーとベンは、どんな知らせを伝える？',
+      choices: ['Leslie will run for governor', 'Ben will run for governor', 'They are moving to Indiana'], a: 0,
+      choicesJa: ['レスリーが知事選に出る', 'ベンが知事選に出る', '二人でインディアナに引っ越す'],
+      cue: '「announcement」のあとのベン',
+      line: 'Leslie: Ben and I *have an announcement*. / Ben: *Leslie’s running for governor* of Indiana.',
+      said: 'レスリーが「発表があるの」と言い、ベンが「レスリーが州知事選に出る」と伝える。',
+      mean: 'have an announcement ＝「発表がある」。run for 〜 ＝「〜に立候補する」。run は「走る」ではない。',
+      trap: '話すのがベンなので、ベンが出ると勘違いしやすい。主語は Leslie’s（Leslie is）。',
+      use: 'I have an announcement.（みなさんにお知らせがあります）' },
+
     { id: 'p1', skill: 'phrase', level: 'B2', point: 'shot', seg: [88.3, 93.3],
       stem: 'What does “a great shot to win” mean?',
       ja: '「a great shot to win」はどういう意味？',
@@ -167,8 +193,8 @@ export const leslieReady: Clip = {
       cue: '「they think she has」のあと',
       line: 'they think she has *a great shot to win*.',
       said: '「党から声がかかって、勝つ見込みが大きいと思われてる」と言う。',
-      mean: 'shot ＝ ここでは「見込み・チャンス」。a great shot ＝ 大きな見込み。',
-      trap: 'shot（一発）から、一回だけのチャンスと思いやすい。great（大きな）がつく。',
+      mean: 'shot ＝ 文字どおりは「一発・シュート」。→ 当たるかもしれない一打＝「見込み」。a great shot ＝ 大きな見込み。',
+      trap: 'shot（一発）から、一回だけのチャンスに聞こえるが、great（大きな）が付いて「見込みが大きい」。',
       use: 'I think we have a good shot.（いけそうな気がする）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'genius', seg: [109.2, 114.2],
@@ -195,7 +221,7 @@ export const leslieReady: Clip = {
       trap: 'スポーツカーを速さのたとえと取りやすいが、ほめているのは body。little も愛情。',
       use: 'He’s smart, and cute, too.（頭がいいし、かわいいし）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'message', seg: [119.4, 160.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'message', seg: [132.4, 154.4],
       stem: 'What makes work worth doing, says Leslie?',
       ja: 'レスリーによると、仕事をやりがいのあるものにするのは何？',
       choices: ['Working with people you love', 'Making a lot of money', 'Winning a big election'], a: 0,
@@ -243,7 +269,7 @@ export const leslieReady: Clip = {
       trap: 'thirteen なら「ティーン」が強く長い。three なら「ティ」の音がない。',
       use: 'I moved here more than thirty years ago.（ここに来て30年以上になる）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'terms', seg: [158.8, 165.7],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'terms', reveals: ['announce'], seg: [158.8, 165.7],
       stem: 'What job has Leslie had for two terms?',
       ja: 'レスリーが2期務めた仕事は？',
       choices: ['Governor', 'Mayor', 'Park director'], a: 0,
@@ -252,7 +278,7 @@ export const leslieReady: Clip = {
       line: 'I’ve had a lot of different jobs, *including two terms as your governor*.',
       said: '「いろいろな仕事をしてきた。知事の2期も含めて」と言う。',
       mean: 'including 〜 ＝「〜も含めて」。term ＝ 任期。知事を2期務めたあとの場面。',
-      trap: '公園課で始めた話が先に来るので、公園の仕事と思いやすい。as your のあとを聞く。',
+      trap: '公園課で始めた話が先に来るので、公園の仕事と考えがち。決め手は as your のあと。',
       use: 'I’ve had a few jobs, including this one.（いくつか仕事をしたよ、これも含めて）' },
 
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'thrilling', reveals: ['terms'], seg: [165.3, 175.8],
@@ -264,7 +290,7 @@ export const leslieReady: Clip = {
       line: 'a new unknown challenge awaits me. Which, to me, even now, is *thrilling*.',
       said: '「新しい未知の挑戦が待っている。今でもわくわくする」と言う。',
       mean: 'thrilling ＝「わくわくする」。even now ＝ 長く働いた今でも。',
-      trap: 'unknown（未知）から、不安だと思いやすい。even now のあとの thrilling を聞く。',
+      trap: 'unknown（未知）から不安そうに聞こえるが、even now のあとの thrilling が答え。',
       use: 'Even now, it still excites me.（今でもわくわくする）' },
 
     { id: 'nt3', skill: 'sound', level: 'C2', point: 'sexy', seg: [174.95, 183.0], retired: true,
@@ -278,6 +304,18 @@ export const leslieReady: Clip = {
       trap: '長い副詞 definitely に強勢を置きたくなる。否定のすぐあとの短い動詞が強ければ、対比の返し。',
       use: 'Not that I mind. Okay, I do.（気にしてないよ。いや、してる）' },
 
+    { id: 'p4', skill: 'phrase', level: 'B1', point: 'getwork', reveals: ['message'], seg: [189.4, 202.4],
+      stem: 'What does “get to work” mean here?',
+      ja: 'ここでの「get to work」はどういう意味？',
+      choices: ['Start working hard', 'Arrive at the office', 'Go home from work'], a: 0,
+      choicesJa: ['仕事に取りかかる', '職場に着く', '仕事から帰る'],
+      cue: 'スピーチの最後の一文',
+      line: 'Now, go find your team and *get to work*.',
+      said: '「さあ、自分のチームを見つけて、仕事に取りかかって」と締める。',
+      mean: 'get to work ＝「仕事に取りかかる」。Let’s get to work.（さあ始めよう）の形でよく使う。',
+      trap: 'get to 〜 ＝「〜に着く」から、職場に着く意味もある。ここは Now, go…（さあ）の命令なので「始めよう」。',
+      use: 'Okay, let’s get to work.（よし、取りかかろう）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'library', seg: [213.2, 223],
       stem: 'Besides the doctorate, what honor does Leslie get?',
       ja: '名誉博士号のほかに、レスリーは何を受ける？',
@@ -287,7 +325,67 @@ export const leslieReady: Clip = {
       line: 'The campus library will henceforth *bear her name*.',
       said: '名誉博士号に加え、図書館に彼女の名前が付くと発表される。',
       mean: 'bear 〜’s name ＝「〜の名前が付く」。henceforth ＝「今後ずっと」（かたい言い方）。',
-      trap: 'School（学校）が聞こえるので、教える話と思いやすい。bear her name を聞く。',
+      trap: 'School（学校）が聞こえるので、教える話を連想しやすい。決め手は最後の bear her name。',
       use: 'The park will bear his name.（公園には彼の名前が付く）' },
+
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'doit', seg: [225.0, 234.0],
+      stem: 'What does “that should do it” mean?',
+      ja: '「that should do it」はどういう意味？',
+      choices: ['It is fixed now, I think', 'We should try it again', 'You should do it yourself'], a: 0,
+      choicesJa: ['これで直ったはず', 'もう一度やってみるべき', '自分でやるべき'],
+      cue: 'ブランコの作業の終わり',
+      line: 'Yeah, *that should do it*. The swing is fixed.',
+      said: '「よし、これでいいはずだ。ブランコは直ったよ」と言う。',
+      mean: '文字どおりは「それがそれをするはず」。do it ＝ 必要なことをやりとげる→「これで大丈夫なはず」。作業の終わりに言う。',
+      trap: 'should から「〜すべき」と考えがち。ここは「〜のはず」。すぐあとの The swing is fixed が決め手。',
+      use: 'That should do it. Try it now.（これで大丈夫なはず。試してみて）' },
+
+    { id: 'k5', skill: 'pragma', level: 'B2', point: 'okaybye', ctx: true, seg: [235.4, 246.4],
+      stem: 'What answer do they get for fixing it?',
+      ja: '直したことへの返事は？',
+      choices: ['A quick okay and bye', 'A long, warm thank-you', 'A question about the cost'], a: 0,
+      choicesJa: ['短く「どうも、じゃあね」', '長くて心のこもったお礼', '費用についての質問'],
+      cue: '「public servants」のあとの返事',
+      line: 'A: There you have it, sir. Another problem solved by… dedicated public servants. / B: *Okay, great.* / *Bye.*',
+      said: '「また一つ問題が解決しました」と胸を張るが、返事は「はい、どうも」「じゃあね」だけ。',
+      mean: 'Okay, great ＝「はい、どうも」。話を切り上げるときの短い返事。there you have it ＝「はい、これで完了」。',
+      trap: '立派な言葉のあとなので、お礼を言われると考えがち。返事は2語と1語だけ。その素っ気なさが笑いどころ。',
+      use: 'Okay, great. Thanks.（はい、わかりました。どうも）' },
+
+    { id: 'k3', skill: 'pragma', level: 'B1', point: 'goodidea', ctx: true, seg: [249.9, 259.6],
+      stem: 'What do they say to Garry’s picture idea?',
+      ja: 'ゲイリーの写真の提案に、みんなは何と言う？',
+      choices: ['They like the idea', 'They say it’s too late', 'They want to go home'], a: 0,
+      choicesJa: ['いい考えだと言う', 'もう遅いと言う', '家に帰りたいと言う'],
+      cue: 'ゲイリーの提案への返事',
+      line: 'Garry: *Hang on*, Gail made me promise to get a quick picture… / *Good idea!* / Garry had a good idea.',
+      said: '「待って、写真を一枚撮る約束なんだ」に「いい考えね！」と返す。',
+      mean: 'Good idea! ＝「いいね！」。提案に賛成する短い返事。Hang on ＝「ちょっと待って」（くだけた言い方）。',
+      trap: '最初の Hang on（待って）で、反対されると考えがち。決め手はすぐあとの Good idea!。',
+      use: 'Let’s take a picture. — Good idea!（写真撮ろう。ーいいね！）' },
+
+    { id: 'k4', skill: 'detail', level: 'B1', point: 'sandbox', ctx: true, seg: [272.5, 278.6],
+      stem: 'Where does Andy say he found it?',
+      ja: 'アンディは、それをどこで見つけたと言う？',
+      choices: ['In the sandbox', 'In his car', 'At a store'], a: 0,
+      choicesJa: ['砂場', '自分の車の中', 'お店'],
+      cue: '「Where did you get that?」の答え',
+      line: 'A: *Where did you get that?* / Andy: Found it in the sandbox.',
+      said: '「それ、どこで手に入れたの？」に「砂場で見つけた」と答える。',
+      mean: 'Where did you get that? ＝「それどこで手に入れたの？」。get ＝ 買う・もらう・拾う全部に使える。',
+      trap: 'get から、買った場所を答えると考えがち。答えは found（見つけた）で、sandbox ＝ 公園の砂場。',
+      use: 'I love your bag. Where did you get it?（そのバッグいいね。どこで買ったの？）' },
+
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'smile', seg: [279.4, 285.4],
+      stem: 'Why do they want the picture taken fast?',
+      ja: 'なぜみんなは早く写真を撮ってほしい？',
+      choices: ['Smiling this long is hard', 'The lighting is all wrong', 'The kids want to play'], a: 0,
+      choicesJa: ['長く笑顔でいるのはつらい', '照明が全然だめ', '子どもたちが遊びたがっている'],
+      cue: '「Get on with it」のあと',
+      line: 'Get on with it. *I can’t hold this smile forever.* / I look ridiculous.',
+      said: '「早くして。この笑顔、ずっとは続かない」「ばかみたいな格好」と言う。',
+      mean: 'Get on with it ＝「さっさと進めて」（くだけた、少し乱暴な言い方）。hold a smile ＝ 笑顔を保つ。',
+      trap: '照明の文句は少し前に別の人が言ったこと。急ぐ理由は I can’t hold this smile（笑顔がもたない）。',
+      use: 'Can we hurry? I can’t wait forever.（急げる？ずっとは待てないよ）' },
   ]
 };
