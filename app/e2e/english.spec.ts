@@ -89,10 +89,9 @@ test('home: today’s clip, the week, the library; the lesson never locks: 質�
   const frame = lesson(page).locator('[data-yt-frame]');
   await expect(frame).toHaveAttribute('src', /^https:\/\/www\.youtube-nocookie\.com\/embed\/lm2MpPpkGL8\?enablejsapi=1&playsinline=1&.*origin=http/);
   await expect(frame).toHaveAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-  // edge to edge, 16:9: the frame's size is what picks YouTube's quality (it can't be set); its changes listened to
+  // edge to edge, 16:9: the frame's size is what picks YouTube's quality (it can't be set)
   const box = (await frame.boundingBox())!;
   expect([box.x, Math.round(box.width), Math.round(box.height)]).toEqual([0, 393, Math.round((393 * 9) / 16)]);
-  await expect.poll(async () => (await ytCommands(page)).some((c) => c[0] === 'addEventListener' && JSON.stringify(c[1]) === '["onPlaybackQualityChange"]')).toBe(true);
   expect((await ytCommands(page)).some((c) => c[0] === 'setPlaybackQuality')).toBe(false);
   await expect(lesson(page).locator('[data-en-watch]')).toBeVisible();
   await expect(lesson(page).locator('[data-en-to-q]')).toBeEnabled();

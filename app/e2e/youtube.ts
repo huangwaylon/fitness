@@ -40,7 +40,7 @@ addEventListener('message', (e) => {
     if (ERROR) return send('onError', ERROR);
     setInterval(() => {
       if (st === 1 && now() >= DUR) { t = DUR; set(0); }
-      send('infoDelivery', { currentTime: now(), playerState: st, duration: DUR, availablePlaybackRates: RATES, playbackRate: speed, playbackQuality: 'large' });
+      send('infoDelivery', { currentTime: now(), playerState: st, duration: DUR, availablePlaybackRates: RATES, playbackRate: speed });
       document.getElementById('t').textContent = st + ' ' + now().toFixed(1);
     }, 100);
   } else if (m.event === 'command') {

@@ -3,13 +3,10 @@
   // driven by player.svelte.ts. Its own referrer policy (the site sends no-referrer, which the embed refuses), inline
   // on iOS. Offline: a note in its place, the embed once back online. Unavailable (an error, no answer): a note, a link
   // to the video on YouTube and もう一度読み込む. A play that doesn't start: the tap-the-video hint under it. Edge to edge
-  // (393 pt wide on an iPhone 15, ~1,179 device px: YouTube picks its quality by the frame's size); the quality it plays
-  // counted once a play (the log's `use`: act:english.q.<quality>), and so is how 字幕 日本語 went
-  // (act:english.ccja.<track | tr | offer | none | silent>: player.svelte.ts jaOutcome).
+  // (393 pt wide on an iPhone 15, ~1,179 device px: YouTube picks its quality by the frame's size).
   import { onDestroy } from 'svelte';
   import { YtPlayer, embedUrl } from '../player.svelte.ts';
   import { s } from '../i18n.ts';
-  import { count } from '#lib/sync/log.ts';
   import { ccSizeOf } from '../prefs.ts';
 
   let { video, title, player = $bindable() }: { video: string; title: string; player?: YtPlayer } = $props();
@@ -27,7 +24,7 @@
   // the player once the frame is in (offline at first: from when it comes)
   $effect(() => {
     if (!frame || player) return;
-    player = new YtPlayer(frame, (q) => count(`act:english.q.${q}`), (r) => count(`act:english.ccja.${r}`));
+    player = new YtPlayer(frame);
     player.ccSize = ccSizeOf();
   });
   onDestroy(() => player?.destroy());

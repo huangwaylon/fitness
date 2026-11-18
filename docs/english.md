@@ -173,15 +173,12 @@ stopped), −5秒 and 0.75× (only when the frame's `availablePlaybackRates` off
 each a 44 pt target, and a scrubber with the time (never locked) (a question's segment is its card's この部分を聞く, not a control). States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
 iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
-it by the frame's device pixels, so the edge-to-edge width is what drives it. The quality played (`onPlaybackQualityChange`
-or infoDelivery's `playbackQuality`) is counted once a play (`act:english.q.<quality>` in the log's `use`). Captions are unloaded at ready and at each play, unless 字幕 is on.
+it by the frame's device pixels, so the edge-to-edge width is what drives it. Captions are unloaded at ready and at each play, unless 字幕 is on.
 字幕 cycles オフ → 英語 → 日本語 in one tap, the clip playing on, オフ by default and again in each lesson (the player's, not saved); turned on, counted
 once a play (`act:english.cc`). 英語: YouTube's own English track (`loadModule` captions, `setOption` captions track en,
 again at each play). 日本語: `setOption` track `{ languageCode: 'en', translationLanguage: { languageCode: 'ja' } }`
 (YouTube's auto-translation), or `{ languageCode: 'ja' }` once the frame has listed a Japanese track (its `tracklist`,
-read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented). How it went is counted 5 s into
-each play (`act:english.ccja.<track | tr | offer | none | silent>`: a Japanese track on, the translation on, offered
-only, no Japanese reported, nothing reported). Unverified on the iPhone: if the embed ignores it, the captions stay
+read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented). Unverified on the iPhone: if the embed ignores it, the captions stay
 English or off. YouTube shows one caption track only, and the dialogue is never ours to render, so there are never two
 tracks. ツール (The page) holds 字幕 too (the chip's choice) and
 **字幕の大きさ** 小 / 中 / 大 / 特大 = `setOption` captions `fontSize` −1 / 0 / 1 / 2 (大 by default: the user found
