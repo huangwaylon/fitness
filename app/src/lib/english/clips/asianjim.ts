@@ -1,9 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 4, rewrite 7, retire 6, new 3, ctx 3, tx 3
 // A2 REVIEW 2026-11-17: keep 11, rewrite 5, retire 3, new 0
 // “Asian Jim - The Office US” (the official The Office channel, BEST OF SEASON 9): a stranger sits at Jim's desk and
 // insists he's Jim; Dwight tests him (yesterday's sale, the voicemail), Pam plays along, then tells the camera the truth.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 17–26 s ("Weird joke, Dwight" vs captions;
-// the race joke), 56 s (“How did you know?”: speaker unclear), 81–104 s (garbled; whisper loops one line).
+// Segments from the captions, words from whisper (2026-11-16). Untested: 56 s (“How did you know?”: speaker unclear),
+// 81–104 s (garbled; whisper loops one line).
+// EXCLUDE 19.2–25.6
+// (the race joke: "Jim's not Asian" / "hats off to you for not seeing race")
 // Open: the title gives the prank away, so g1 and g2 stay partly guessable; their distractors keep the act.
+// R4: retired m1 (banned "why say All right, then"), i2 (= g1), h2 (a "why funny" stem; = i3's outsider point), and
+// n2, x1, d4 for the 10-s density (x1 = p1's cut it out; d4 = d3's line); new f1 (Morning), c1 (Weird joke), x2.
 import type { Clip } from '../types.ts';
 
 export const asianjim: Clip = {
@@ -12,19 +17,18 @@ export const asianjim: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'act', reveals: ['briefed'], seg: [9.8, 54.8],
-      stem: 'How does the fake Jim handle Dwight’s questions?',
-      ja: 'ニセのジムは、ドワイトの質問にどう対応する？',
-      choices: ['He answers them all as Jim', 'He makes a mistake on one', 'He jokes until Dwight stops'], a: 0,
-      choicesJa: ['全部ジムとして答える', '一つ間違える', 'ドワイトがやめるまでふざける'],
-      cue: '質問に答え続ける様子',
-      line: 'Who am I? *I’m Jim.* … Wellington Systems sold them 10 cases…',
-      said: '「誰だ？」と聞かれても売上の話をされても、ジムとして平然と答える。',
-      mean: '一度もジム役をやめないのが、いたずらの肝。疑うドワイトのほうが変に見える。',
-      trap: 'ドワイトが言い張るので、ぼろが出たと思いやすい。男は一度もジム役をやめない。',
-      use: 'He didn’t miss a beat.（彼は少しも動じなかった）' },
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'morning', seg: [0, 9.5],
+      stem: 'When would you say “Morning, Dwight”?',
+      ja: '「Morning, Dwight」はどんな時に言う？',
+      choices: ['When you arrive at work', 'When you leave at night', 'When you wake someone up'], a: 0,
+      choicesJa: ['出社した時', '夜に帰る時', '人を起こす時'],
+      cue: '最初のあいさつ',
+      line: '*Morning*, Dwight.',
+      said: 'ジムの席に座った男が、ドワイトに「おはよう、ドワイト」とあいさつする。',
+      mean: 'Morning ＝ Good morning の Good を落とした、くだけたあいさつ。同僚や友だちに毎朝使える。',
+      trap: 'morning（朝）だけ聞くと、人を起こす時の言葉と勘違いしやすい。出社した時のあいさつ。',
+      use: 'Morning! How was your weekend?（おはよう！週末どうだった？）' },
 
-    // retired (A2): a tone reading (surprised by the question)
     { id: 'a3', skill: 'attitude', level: 'B2', point: 'whoami', seg: [9.8, 15.0], retired: true,
       stem: 'How does the man react when Dwight asks who he is?',
       choices: ['Surprised, as if the question were absurd', 'Calm, as if he’d expected the question',
@@ -35,6 +39,18 @@ export const asianjim: Clip = {
       mean: '問い返しは「何を言ってるの？」の合図。当たり前の答えで、変なのはドワイトだと示す。',
       trap: '仕込みの役者なので、落ち着いて待っていたと取りやすい。問い返しは「何を言ってるの？」という驚きの形。',
       use: 'Who am I? I’m your neighbor!（誰って、隣の者ですよ）' },
+
+    { id: 'c1', skill: 'pragma', level: 'B2', point: 'weird', ctx: true, seg: [9.8, 18.9],
+      stem: 'How does the man take Dwight’s question?',
+      ja: '男は、ドワイトの質問をどう受け取ってみせる？',
+      choices: ['As a strange joke', 'As a real question', 'As a mean insult'], a: 0,
+      choicesJa: ['変な冗談として', 'まじめな質問として', 'ひどい悪口として'],
+      cue: '男の最後の一言',
+      line: 'Dwight: Who are you? / Man: Who am I? I’m Jim. … *Weird joke, Dwight.*',
+      said: '「お前は誰だ？」に、男は「誰って？ジムだよ」と答え、「変な冗談だな、ドワイト」と言う。',
+      mean: 'Weird joke ＝ 変な冗談。本気の質問を冗談として流し、おかしいのはドワイトのほうだという態度。',
+      trap: 'Who am I? と聞き返すので、まじめな質問として受けたように聞こえるが、決め手は最後の Weird joke。',
+      use: 'Ha, very funny. Weird joke.（はは、おもしろいね。変な冗談）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'years', seg: [11.8, 19.2], keep: true,
       stem: 'How long does the fake Jim say they’ve worked together?',
@@ -48,7 +64,6 @@ export const asianjim: Clip = {
       trap: 'two だけなら「トゥー」。twelve は最後が「ルヴ」、twenty は「トゥエニ」で終わる。',
       use: 'We’ve been friends for 12 years.（もう12年来の友だちだ）' },
 
-    // retired (A2): a “why does it get a laugh” item on race
     { id: 'h1', skill: 'humor', level: 'C1', point: 'hats', seg: [18.9, 26.0], retired: true,
       stem: 'Why does the man’s answer to “Jim’s not Asian” get a laugh?',
       choices: ['He praises Dwight for missing something obvious', 'He scolds Dwight for saying something rude',
@@ -60,7 +75,7 @@ export const asianjim: Clip = {
       trap: 'race の話題なので、たしなめていると取りやすい。hats off to you はほめる言い方。',
       use: 'Hats off to you for finishing that.（やり遂げたなんて脱帽だよ）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'allright', reveals: ['test'], seg: [27.1, 33.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'allright', reveals: ['test'], seg: [27.1, 33.9], retired: true,
       stem: 'Why does Dwight say “All right, then”?',
       ja: 'ドワイトはなぜ「All right, then」と言う？',
       choices: ['To go along with it for now', 'To show he believes it now', 'To drop it for today'], a: 0,
@@ -84,7 +99,19 @@ export const asianjim: Clip = {
       trap: 'why don’t you は提案の形なので雑談と思いやすい。聞く中身が本人確認。',
       use: 'Why don’t you tell me about your trip?（旅行の話を聞かせてよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'cases', seg: [33.1, 40.9], keep: true,
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'act', seg: [28.2, 46],
+      stem: 'How does the fake Jim handle Dwight’s questions?',
+      ja: 'ニセのジムは、ドワイトの質問にどう対応する？',
+      choices: ['He answers them all as Jim', 'He makes a mistake on one', 'He jokes until Dwight stops'], a: 0,
+      choicesJa: ['全部ジムとして答える', '一つ間違える', 'ドワイトがやめるまでふざける'],
+      cue: '売上の質問への答え方',
+      line: 'Wellington Systems sold them 10 cases… *Or were you talking about* Krieger Murphy?',
+      said: '昨日の売上を聞かれても、数や紙の種類、まだ決まっていない件まで、ジムとして平然と答える。',
+      mean: '本物しか知らない細かいことまで答え、一度もジム役をやめない。それがいたずらの肝。',
+      trap: '会社名が二つ出るので、迷ってぼろが出たと思いやすいが、どちらの件か確かめているだけ。',
+      use: 'He knew every detail.（彼は細かいことまで全部知っていた）' },
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'cases', seg: [33.1, 40.9], retired: true, keep: true,
       stem: 'How many cases did Wellington Systems buy?',
       ja: 'ウェリントン・システムズは何箱買った？',
       choices: ['4', '10', '24'], a: 1,
@@ -96,7 +123,7 @@ export const asianjim: Clip = {
       trap: 'cases の前は「テン」。four なら「フォー」、24 なら「トゥエニフォー」で pound の前。',
       use: 'We need ten cases of water.（水を10ケースください）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [34.1, 46.1],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'briefed', reveals: ['cases', 'voicemail'], seg: [34.1, 46.1], retired: true,
       stem: 'How well does the fake Jim answer about the sale?',
       ja: 'ニセのジムは、売上の質問にどれくらいうまく答える？',
       choices: ['Smoothly, with exact details', 'Shakily, guessing the client', 'Vaguely, changing the subject'], a: 0,
@@ -111,40 +138,52 @@ export const asianjim: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'close', seg: [36.9, 41.9],
       stem: 'Fill the gap: “Because I ___ that one yet.”',
       ja: '「Because I ___ that one yet.」の空所は？',
-      choices: ['didn’t close', 'couldn’t close', 'haven’t closed'], a: 0,
-      choicesJa: ['（まだ）決めていない', '決められなかった', '（まだ）決めていない（完了形）'],
+      choices: ['didn’t close', 'couldn’t close', 'didn’t call'], a: 0,
+      choicesJa: ['まだ決めていない', '決められなかった', 'まだ電話していない'],
       cue: '「Because I」のあと',
       line: 'Because I *didn’t close* that one yet.',
       said: '「その件はまだ決まってないから」と言う。',
-      mean: 'close ＝ 契約を決める。アメリカ英語では didn’t 〜 yet もよく使う。',
-      trap: 'didn’t は「ディドゥン」。couldn’t は「クドゥン」、haven’t は「ハヴン」で始まる。',
+      mean: 'close ＝ 文字どおりは「閉じる」→商談を閉じる＝契約を決める。アメリカ英語では didn’t 〜 yet もよく使う。',
+      trap: 'didn’t は「ディドゥン」、couldn’t は「クドゥン」。close（クロウズ）と call（コール）も聞き分ける。',
       use: 'I didn’t finish it yet.（まだ終わってないんだ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'voicemail', seg: [40.5, 46.1],
       stem: 'What is the fake Jim hoping for from Paul?',
       ja: 'ニセのジムは、ポールから何が来ていればいいと思っている？',
-      choices: ['A voicemail from the client', 'A call back from the client', 'An email from the client'], a: 0,
-      choicesJa: ['客からの留守電', '客からの折り返し電話', '客からのメール'],
+      choices: ['A voicemail from the client', 'A text from the client', 'An email from the client'], a: 0,
+      choicesJa: ['客からの留守電', '客からのメッセージ', '客からのメール'],
       cue: '「hoping」のあと',
       line: 'I’m hoping I’ve got a *voicemail* from Paul Krieger…',
       said: '「クリーガーさんから留守電が入ってるといいな」と言う。',
       mean: 'voicemail ＝ 留守番電話の伝言。このあと本当に1件入っている。',
-      trap: 'mail だけ聞くとメールと思いやすい。voice ＋ mail で、声の伝言。',
+      trap: 'mail だけ聞くとメールと考えがち。voice（声）＋ mail で、声の伝言。',
       use: 'Did you get my voicemail?（留守電、聞いてくれた？）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'outsider', reveals: ['voicemail'], seg: [53.8, 64.1],
+    { id: 'i3', skill: 'detail', level: 'B2', point: 'outsider', reveals: ['voicemail'], ctx: true, seg: [53.5, 62.1],
       stem: 'What reason does Dwight give for stopping the message?',
       ja: 'ドワイトは、伝言を止める理由を何と言う？',
       choices: ['It’s only for employees', 'It’s meant for Dwight', 'It’s a fake message'], a: 0,
       choicesJa: ['社員だけのものだから', 'ドワイトあてだから', '偽の伝言だから'],
       cue: '「No, no, no」のあと',
-      line: 'That is sensitive information *only for employees, not outsiders*.',
-      said: '伝言が1件入っていても、「社員だけの情報だ、部外者はダメ」と止める。',
-      mean: 'employee ＝ 社員、outsider ＝ 部外者。何を見せても認めない姿勢。',
-      trap: '偽物だと疑っていると思いやすい。理由として言うのは、相手が部外者だということ。',
+      line: 'Phone: You have one new message. / Dwight: No, no, no, no. That is sensitive information *only for employees, not outsiders*.',
+      said: '「新しいメッセージが1件」と流れると、ドワイトが「社員だけの機密情報だ、部外者はダメ」と止める。',
+      mean: 'employee ＝ 社員、outsider ＝ 部外者。sensitive information ＝ 人に見せてはいけない情報。',
+      trap: '偽物だと疑っているので、偽の伝言と言うと考えがち。理由は「相手が部外者」だということ。',
       use: 'Sorry, staff only beyond this point.（ここから先は関係者のみです）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'cutout', seg: [58.3, 66.1],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'notjim', seg: [55, 81],
+      stem: 'By the end of the clip, where does Dwight stand?',
+      ja: '最後に、ドワイトはどう考えている？',
+      choices: ['He still says it isn’t Jim', 'He finally believes the man', 'He knows Pam set it up'], a: 0,
+      choicesJa: ['まだ男はジムじゃないと言う', 'やっと男を信じる', 'パムの仕業だと分かっている'],
+      cue: '最後のドワイトの一文',
+      line: 'You don’t work here. *You’re not Jim.*',
+      said: '伝言を止め、パムが夕食の話をしても、「お前はジムじゃない」と最後まで言い張る。',
+      mean: 'You’re not Jim ＝ お前はジムじゃない。何を見せられても、最初の主張を曲げない。',
+      trap: 'パムの種明かしでドワイトも気づいたと考えがち。あれはカメラに向けた話。',
+      use: 'Sorry, I just don’t believe it.（悪いけど、信じられない）' },
+
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'cutout', seg: [58.3, 66.1], retired: true,
       stem: 'Type the gap: “Dwight, ___. I’m trying to work.” (3 words)', answer: 'cut it out',
       ja: '「Dwight, ___. I’m trying to work.」の空所を書こう（3語）',
       cue: '「Dwight」のすぐあと',
@@ -157,16 +196,16 @@ export const asianjim: Clip = {
     { id: 'p1', skill: 'phrase', level: 'B1', point: 'cutout', seg: [58.3, 66.1],
       stem: 'What does the fake Jim tell Dwight to do?',
       ja: 'ニセのジムはドワイトに何をしろと言う？',
-      choices: ['Stop bothering him', 'Cut the message off', 'Clear out of the office'], a: 0,
-      choicesJa: ['邪魔をやめる', '伝言を切る', 'オフィスから出ていく'],
+      choices: ['Stop bothering him', 'Delete the message', 'Leave the office'], a: 0,
+      choicesJa: ['邪魔をやめる', '伝言を消す', 'オフィスから出ていく'],
       cue: '「Dwight」のあとの短い命令',
       line: 'Dwight, *cut it out*. I’m trying to work.',
       said: '「ドワイト、やめてくれ。仕事中なんだ」と言う。',
-      mean: 'cut it out ＝「そういうことはやめて」。cut（切る）の意味ではない。',
-      trap: 'cut や out だけ聞くと「切る」「出ていけ」と思いやすい。3語でひとつの命令。',
+      mean: 'cut it out ＝ 文字どおりは「それを切り取れ」→その行動を切って、やめろ。くだけた言い方。',
+      trap: 'cut（切る）や out（外へ）から、「消せ」「出ていけ」と勘違いしやすい。3語でひとつの命令。',
       use: 'Okay, cut it out, you two.（はいはい、二人ともやめなさい）' },
 
-    { id: 'h2', skill: 'humor', level: 'B2', point: 'workhere', seg: [60.8, 65.8],
+    { id: 'h2', skill: 'humor', level: 'B2', point: 'workhere', seg: [60.8, 65.8], retired: true,
       stem: 'Why is “You don’t work here” a funny reply?',
       ja: '「You don’t work here」はなぜおかしい返事？',
       choices: ['He twists the meaning of “work”', 'He admits he’s in the way', 'He says work somewhere else'], a: 0,
@@ -177,18 +216,6 @@ export const asianjim: Clip = {
       mean: 'work here ＝ ここに勤めている。「仕事をする」を「社員だ」にすり替えている。',
       trap: '「よそでやれ」と言っていると思いやすい。ポイントは here（ここで）。',
       use: 'You don’t even work here!（あなた、ここの人じゃないでしょ）' },
-
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'notjim', seg: [62, 83.7],
-      stem: 'By the end of the clip, where does Dwight stand?',
-      ja: '最後に、ドワイトはどう考えている？',
-      choices: ['He still says it isn’t Jim', 'He gives up but still doubts', 'He knows Pam set it up'], a: 0,
-      choicesJa: ['まだ男はジムじゃないと言う', 'あきらめたが、まだ疑っている', 'パムの仕業だと分かっている'],
-      cue: '最後のドワイトの一文',
-      line: 'I don’t know who you are, but *you are not Jim*.',
-      said: '何を見せられても「誰だか知らないが、お前はジムじゃない」と言い張る。',
-      mean: 'I don’t know 〜, but … ＝「〜は知らないが、…だ」。最初の主張を曲げない。',
-      trap: 'パムの種明かしでドワイトも気づいたと思いやすい。あれはカメラへの話。',
-      use: 'Sorry, I just don’t buy it.（悪いけど、信じられない）' },
 
     { id: 'n3', skill: 'number', level: 'B1', point: 'dinner', seg: [64.6, 70.6], keep: true,
       stem: 'What time is the dinner reservation?',
@@ -202,18 +229,6 @@ export const asianjim: Clip = {
       trap: '「セブン」に「サーティ」が続けば 7:30、seven だけなら 7:00、「エイト」で始まれば 8:30。',
       use: 'Table for two at seven thirty?（7時半に2名で）' },
 
-    // retired (A2): a tone reading (pleased, not sarcastic)
-    { id: 'a2', skill: 'attitude', level: 'C1', point: 'cantwait', seg: [65.3, 70.0], retired: true,
-      stem: 'How does the man answer the news about dinner?',
-      choices: ['Warmly: he’s looking forward to it', 'Dryly: he’s teasing her, husband-style',
-                'Vaguely: he isn’t sure what she means'], a: 0,
-      cue: 'Oh, great のあとの短いひと言。',
-      line: 'Oh, great. *Can’t wait.*',
-      said: '「いいね、楽しみ」と短く答える。',
-      mean: 'Can’t wait. ＝ 待ちきれない、楽しみ。ジムとして素直に喜ぶ演技。',
-      trap: 'Oh, great は乾いたからかいにも使うので、冗談と取りやすい。続く Can’t wait の明るさで決める。',
-      use: 'Dinner Friday? Can’t wait!（金曜に夕食？楽しみ！）' },
-
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'plan', reveals: ['steve', 'dentist'], seg: [65.3, 77.6],
       stem: 'After Pam’s comment to the camera, how should we hear her dinner line?',
       choices: ['An act: she and Jim set up the prank', 'An act: she’s helping Dwight test the man',
@@ -224,6 +239,18 @@ export const asianjim: Clip = {
       mean: 'カメラへの一言が場面を書きかえる。of ours でパムも仕掛け人と分かり、夕食の話も芝居になる。',
       trap: '芝居と分かっても、誰の側かを取りちがえやすい。of ours の「私たち」が仕掛けた側。',
       use: 'She was in on it the whole time.（彼女、最初からグルだった）', retired: true },
+
+    { id: 'a2', skill: 'pragma', level: 'B2', point: 'cantwait', ctx: true, seg: [65.7, 72],
+      stem: 'What does the man mean by “Can’t wait”?',
+      ja: '男の「Can’t wait」はどういう意味？',
+      choices: ['He is excited about it', 'He doesn’t want to wait', 'He can’t go tonight'], a: 0,
+      choicesJa: ['楽しみにしている', '待ちたくない', '今夜は行けない'],
+      cue: 'Oh, great のあと',
+      line: 'Pam: Jim, I got us that dinner reservation. / Man: Oh, great. *Can’t wait.*',
+      said: 'パムが「ジム、夕食の予約取れたよ」と言い、男は「いいね、楽しみ」と答える。',
+      mean: 'Can’t wait ＝ 文字どおりは「待てない」→待ちきれないほど楽しみ。誘いへの明るい返事。',
+      trap: 'can’t（できない）から、行けないという返事に聞こえるが、直前の Oh, great で喜んでいる。',
+      use: 'Dinner on Friday? Can’t wait!（金曜に夕食？楽しみ！）' },
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'dentist', reveals: ['plan'], seg: [72.2, 77.7],
       stem: 'Where is the real Jim this morning, according to Pam?',
@@ -237,7 +264,7 @@ export const asianjim: Clip = {
       trap: '「デニスト」なら dentist、「ダクターズ」なら doctor’s、「セイルズ」なら sales call。',
       use: 'I have a dentist appointment at ten.（10時に歯医者の予約がある）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'steve', reveals: ['plan'], seg: [73.2, 81.6],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'steve', reveals: ['plan'], seg: [73.2, 81.6], retired: true,
       stem: 'Who is Steve, according to Pam?',
       ja: 'パムによると、スティーブは誰？',
       choices: ['An actor friend of theirs', 'An old school friend of Jim’s', 'A salesman from another branch'], a: 0,
@@ -249,7 +276,7 @@ export const asianjim: Clip = {
       trap: 'actor の t は軽い「ラ」の音で聞きにくく、friend だけ残りやすい。',
       use: 'She’s a musician friend of mine.（ミュージシャンの友だちなんだ）' },
 
-    { id: 'nt2', skill: 'sound', level: 'C2', point: 'notjim', seg: [77.3, 81.0],
+    { id: 'nt2', skill: 'sound', level: 'C2', point: 'notjim', reveals: ['whoare'], seg: [77.3, 81.0],
       stem: 'Where is the stress in “you are not Jim,” and why?',
       choices: ['On “not”: a flat, total denial', 'On “you”: a contrast with someone else',
                 'On “Jim”: a contrast with another name'], a: 0,
@@ -259,5 +286,15 @@ export const asianjim: Clip = {
       mean: '縮めずに言うと not が強く立ち、「絶対に違う」という断言になる。',
       trap: 'but の後は対比と思い、you を強めたくなる。縮約をほどいた所が強調の目印。',
       use: 'I am not going. Final answer.（行かない。これが最終回答）', retired: true },
+
+    { id: 'x2', skill: 'dict', level: 'B1', point: 'whoare', seg: [77.3, 81],
+      stem: 'Type the gap: “I don’t know ___, but you are not Jim.” (3 words)', answer: 'who you are',
+      ja: '「I don’t know ___, but you are not Jim.」の空所を書こう（3語）',
+      cue: '「I don’t know」のすぐあと',
+      line: 'I don’t know *who you are*, but you are not Jim.',
+      said: 'ドワイトが「お前が誰かは知らないが、ジムじゃない」と言う。',
+      mean: 'I don’t know who you are ＝ お前が誰かは知らない。文の中に入った疑問は、主語が先の who you are の順。',
+      trap: '疑問文の順で who are you と書きがち。文の中では who you are の順になる。',
+      use: 'I don’t know where it is.（それがどこにあるか知らない）' },
   ]
 };
