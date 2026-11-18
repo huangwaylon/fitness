@@ -137,6 +137,36 @@ describe('the settings’ and the island’s small sends', () => {
   });
 });
 
+describe('英語すごろく’s reward (rewardGame)', () => {
+  const NOW = Date.parse('2026-11-18T12:00:00.000Z'); // 21:00 in Tokyo
+  const model = async (me: 'A' | 'G', events: [string, 'A' | 'B' | 'G', string, string, string][] = []) => {
+    const { reduce } = await import('#lib/model/state.ts');
+    week.model = { state: reduce({ metrics: [], events: events as never }), me, now: NOW } as unknown as typeof week.model;
+  };
+  const rewards = () => queued().filter((e) => e.type === 'sg_reward').map((e) => e.data);
+
+  it('queues one sg_reward dated today for the game’s players, the guest’s phone too; false for a bad one or no model', async () => {
+    const { rewardGame } = await import('./actions.ts');
+    week.model = null;
+    expect(rewardGame('sg-game-0001', 500, ['A'])).toBe(false);
+    await model('G');
+    expect(rewardGame('sg-game-0001', 500, ['A', 'B', 'G'])).toBe(true);
+    expect(rewards()).toEqual([{ g: 'sg-game-0001', v: 500, to: ['A', 'B', 'G'], d: '2026-11-18' }]);
+    for (const [g, v, to] of [['short', 500, ['A']], ['sg-game-0002', 0, ['A']], ['sg-game-0002', 1001, ['A']], ['sg-game-0002', 5, []], ['sg-game-0002', 5, ['A', 'A']]] as const)
+      expect(rewardGame(g, v, to as never), `${g} ${v} ${to.join()}`).toBe(false);
+    expect(rewards()).toHaveLength(1);
+  });
+
+  it('a game already paid every player (another phone’s reward kept) isn’t sent again; one that pays someone new is', async () => {
+    const { rewardGame } = await import('./actions.ts');
+    await model('A', [['2026-11-18T11:00:00.000Z', 'B', 'r1', 'sg_reward', JSON.stringify({ g: 'sg-game-0003', v: 500, to: ['A', 'B'], d: '2026-11-18' })]]);
+    expect(rewardGame('sg-game-0003', 500, ['A', 'B'])).toBe(false);
+    expect(rewardGame('sg-game-0003', 500, ['B', 'A'])).toBe(false);
+    expect(rewards()).toEqual([]);
+    expect(rewardGame('sg-game-0003', 500, ['A', 'G'])).toBe(true); // the guest wasn't paid for it
+  });
+});
+
 describe('the goals name whose goal', () => {
   it('setGoal weight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
     expect(setGoal('weight', 'B', 58.04).ok).toBe(true);

@@ -14,7 +14,7 @@ import { boardOpOf } from './board.ts';
 import { isPackType, packOpOf, packSlot } from './pack.ts';
 import { isWedType, wedOpOf, wedSlot } from './wedding.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
-import { shopRowOf } from './shop.ts';
+import { rewardOf, shopRowOf } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
 import { eflagDoneOf, eflagOf } from './eflag.ts';
@@ -105,6 +105,13 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the phones never load the buy prices); whether the pocket or the かいがら cover it is the record's check against
       // the person's rows (shopRefusal)
       return shopRowOf(type, d) !== null;
+    case 'sg_reward': {
+      // 英語すごろく's かいがら for a game (contract/shop.ts rewardOf), its day the record's or yesterday (a game ended
+      // just before midnight); each recipient's once a game is the record's check against their ledgers
+      // (relay/src/store.ts)
+      const r = rewardOf(d), today = localDateAt(now);
+      return r !== null && (r.d === today || r.d === prevDay(today));
+    }
     case 'farm': {
       // the field (contract/farm.ts): its day the sender's, from yesterday to tomorrow; each op is the record's to judge
       // against the field and the pocket (farmStep)

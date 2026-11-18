@@ -412,8 +412,9 @@ export class LiveBackend implements Backend {
     // event that left the queue because it was undone mid-flush must not come back.
     if (r.dropped.length) {
       // (a `listen` row refused, by a relay from before its fields: no toast;
-      // a buy of a piece I have already, my other phone's: nothing lost, no toast)
-      if (r.dropped.some((ev) => ev.type !== 'listen' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      // a buy of a piece I have already, my other phone's: nothing lost, no toast;
+      // 英語すごろく's reward of a game already paid, another phone's: nothing lost)
+      if (r.dropped.some((ev) => ev.type !== 'listen' && ev.type !== 'sg_reward' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {

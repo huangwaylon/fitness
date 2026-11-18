@@ -5,7 +5,7 @@
 //   contract/tally.ts: one row per person and day, its counts only ever growing) less what they sold of it (`sell`).
 //   No write per catch. What it holds: contract/pocket.ts.
 // - **かいがら** are derived too: Σ the sells' values − Σ the buys' and the starts' prices − what a sold catch given back
-//   owes (owedOf), per person (the guest's its own).
+//   owes (owedOf) + 英語すごろく's rewards (`sg_reward`), per person (the guest's its own).
 // - **The stock** (contract/stock.ts): 24 pieces a Tokyo day, never one the island had by the day's start; a buy names
 //   the day whose stock it was bought from.
 //
@@ -14,9 +14,14 @@
 // is `{item, price, d}`: `item` a room's piece (`f…`), `price` its price, `d` the stock's day. The record checks the
 // price and the stock's day (contract/shopCheck.ts, the relay's only; never which pieces the stock holds) and the cover
 // (relay/src/store.ts, `shopRefusal` over `shopLedger`) when it keeps one; the phones fold the same rows by the same
-// rules (model/shop.ts), a kept row as kept and a queued one as the record would judge it. Shared by the record and
-// the model; pure.
-import { isLocalDate, keysAre } from './api.ts';
+// rules (model/shop.ts), a kept row as kept and a queued one as the record would judge it.
+//
+// An `sg_reward` is `{g, v, to, d}`: 英語すごろく's かいがら for a game (docs/sugoroku.md), `g` the game's id, `v` per
+// recipient (1–SG_REWARD_MAX), `to` who gets them (anyone of A, B, G, each once), `d` the game's Tokyo day (the record's
+// or yesterday: record.ts). Anyone may send one; it fans out: it is a row of each recipient's ledger, never the
+// sender's as such (rowConcerns). Per recipient, a game pays once (its `g`); no daily cap (the user, 2026-11-18). Its
+// かいがら are a sell's (never ベル). Shared by the record and the model; pure.
+import { isLocalDate, isWho, keysAre } from './api.ts';
 import { SELL } from './shopPrices.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { GOAL_GOODS, POCKET_KINDS, pocketKey } from './pocket.ts';
@@ -26,6 +31,12 @@ interface SellData { species: string; n: number; v: number }
 interface BuyData { item: string; price: number; d: LocalDate }
 /** A `buy_starts` (docs/farming.md): `n` starts of a crop for `v` かいがら (n × FARM.startBuy), always in stock. */
 interface StartsData { crop: Crop; n: number; v: number }
+/** An `sg_reward`: `v` かいがら for each of `to` for the game `g` of the day `d`. */
+interface RewardData { g: string; v: number; to: Who[]; d: LocalDate }
+
+/** At most this many かいがら per recipient in one game's reward. */
+export const SG_REWARD_MAX = 1000;
+const GAME_RE = /^[a-z0-9:.-]{6,40}$/;
 
 /** At most this many of a species in one sell (a day's tally holds at most 999 of it). */
 const SELL_MAX_N = 999;
@@ -65,15 +76,30 @@ function startsOf(d: Record<string, unknown>): StartsData | null {
   return { crop: d.crop, n: d.n, v: d.v };
 }
 
+/** An `sg_reward`'s data as the model reads it: its shape only (its day the record's check: record.ts). @public */
+export function rewardOf(d: Record<string, unknown>): RewardData | null {
+  if (!keysAre(d, ['g', 'v', 'to', 'd']) || typeof d.g !== 'string' || !GAME_RE.test(d.g) || !isWhole(d.v, SG_REWARD_MAX) || !isLocalDate(d.d)) return null;
+  const to = d.to;
+  if (!Array.isArray(to) || to.length < 1 || to.length > 3 || !to.every(isWho) || new Set(to).size !== to.length) return null;
+  return { g: d.g, v: d.v, to: [...to], d: d.d };
+}
+
 // ---- the ledger
 
 /** The shop's event types: a sale, a piece bought, a crop's starts bought. @public (relay/src/store.ts) */
 export const SHOP_EVENTS = ['sell', 'buy', 'buy_starts'] as const;
 export type ShopEvent = (typeof SHOP_EVENTS)[number];
 export const isShopEvent = (type: string): type is ShopEvent => (SHOP_EVENTS as readonly string[]).includes(type);
+/** The ledger's event types: the shop's (the sender's own) and 英語すごろく's reward (its recipients'). */
+export type LedgerEvent = ShopEvent | 'sg_reward';
+export const isLedgerEvent = (type: string): type is LedgerEvent => type === 'sg_reward' || isShopEvent(type);
 
-/** A shop event's row for the fold (its data as `sellOf`, `buyOf`, `startsOf` read it), or null when malformed. */
-export function shopRowOf(type: ShopEvent, d: Record<string, unknown>): ShopRow | null {
+/** A ledger event's row for the fold (its data as `sellOf`, `buyOf`, `startsOf`, `rewardOf` read it), or null when malformed. */
+export function shopRowOf(type: LedgerEvent, d: Record<string, unknown>): ShopRow | null {
+  if (type === 'sg_reward') {
+    const data = rewardOf(d);
+    return data && { type: 'reward', data };
+  }
   if (type === 'sell') {
     const data = sellOf(d);
     return data && { type, data };
@@ -109,18 +135,28 @@ export function caughtOf(days: Iterable<TallyDay>, farmNet: Iterable<readonly [s
 }
 
 /** A person's shop as their rows leave it: sold per species (and what they fetched, `soldV`), かいがら (less what is
- *  owed), the pieces bought (in order), and the かいがら owed per species (`owed`: sold catches given back since). */
-export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>; shells: number; owned: string[]; owed: Map<string, number> }
+ *  owed), the pieces bought (in order), the かいがら owed per species (`owed`: sold catches given back since), the
+ *  games whose reward this ledger was paid (`games`). */
+export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>; shells: number; owned: string[]; owed: Map<string, number>; games: Set<string> }
 
-/** A row of the shop: a sell or a buy, as `sellOf` / `buyOf` read it; `queued` when the record hasn't kept it yet (a
- *  phone's queue, model/state.ts foldEvents). */
-export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData }) & { queued?: true };
-/** A shop row as the model keeps it (model/state.ts `shop`): whose, and the record's time. */
+/** An empty ledger. */
+const emptyLedger = (): Ledger => ({ sold: new Map(), soldV: new Map(), shells: 0, owned: [], owed: new Map(), games: new Set() });
+
+/** A row of the shop: a sell, a buy, starts or a reward, as `sellOf` / `buyOf` / `startsOf` / `rewardOf` read it;
+ *  `queued` when the record hasn't kept it yet (a phone's queue, model/state.ts foldEvents). */
+export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData } | { type: 'reward'; data: RewardData }) & { queued?: true };
+/** A shop row as the model keeps it (model/state.ts `shop`): its sender, and the record's time. */
 export type ShopRowAt = ShopRow & { at: number; person: Who };
 
+/** Whether a row is of `who`'s ledger: a reward its recipients' (`to`, whoever sent it), anything else its sender's. */
+export const rowConcerns = (row: ShopRowAt, who: Who): boolean => (row.type === 'reward' ? row.data.to.includes(who) : row.person === who);
+
 /** Why the record refuses this one against the ledger (`caught`: the person's tally totals per species), or null:
- *  `pocket` (selling more than the pocket holds), `wallet` (more than the かいがら cover), `owned` (bought already). */
-export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row: ShopRow): 'pocket' | 'wallet' | 'owned' | null {
+ *  `pocket` (selling more than the pocket holds), `wallet` (more than the かいがら cover), `owned` (bought already);
+ *  a reward `paid` (its game paid this ledger already). A reward is refused only when it pays none of its recipients
+ *  (relay/src/store.ts). */
+export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row: ShopRow): 'pocket' | 'wallet' | 'owned' | 'paid' | null {
+  if (row.type === 'reward') return l.games.has(row.data.g) ? 'paid' : null;
   if (row.type === 'sell') return row.data.n > (caught.get(row.data.species) ?? 0) - (l.sold.get(row.data.species) ?? 0) ? 'pocket' : null;
   if (row.type === 'starts') return row.data.v > l.shells ? 'wallet' : null;
   if (l.owned.includes(row.data.item)) return 'owned';
@@ -151,7 +187,7 @@ function owedOf(l: Ledger, species: string, caught: ReadonlyMap<string, number>,
  * The record folds by this (relay/src/store.ts), so the phones and the record agree.
  */
 export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<ShopRow>, back: ReadonlyMap<string, number> = new Map()): Ledger {
-  const l: Ledger = { sold: new Map(), soldV: new Map(), shells: 0, owned: [], owed: new Map() };
+  const l = emptyLedger();
   for (const row of rows) shopStep(l, caught, back, row);
   return l;
 }
@@ -159,6 +195,13 @@ export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<S
 /** One row into the ledger, as shopLedger folds it (the record's running ledger takes its new rows by this). @public
  *  (relay/src/store.ts) */
 export function shopStep(l: Ledger, caught: ReadonlyMap<string, number>, back: ReadonlyMap<string, number>, row: ShopRow): void {
+  if (row.type === 'reward') {
+    // (kept or queued alike: a game pays a ledger once, whatever else it holds)
+    if (l.games.has(row.data.g)) return;
+    l.games.add(row.data.g);
+    l.shells += row.data.v;
+    return;
+  }
   const why = shopRefusal(l, caught, row);
   if (why === 'owned' || (why && row.queued)) return;
   if (row.type === 'sell') {

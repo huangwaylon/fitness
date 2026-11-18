@@ -12,6 +12,8 @@
 //   catches less their sells (the pocket), their sells' かいがら less their buys (shopLedger), a piece bought once.
 // - A `farm` batch (the field, contract/farm.ts) keeps the ops the field and the sender's pocket allow, a harvest at the
 //   yield the record reckons; a `buy_starts` only what their かいがら cover. A `wet` day is the record's own (wetTick).
+// - An `sg_reward` (英語すごろく's かいがら, contract/shop.ts) is a row of each recipient's ledger (its `to`), whoever sent
+//   it: kept when it pays at least one of them (a game pays each once), refused `reward paid` when it pays none.
 // - `since` is answered from the `at` index. A row that arrives out of `at` order (an admin `load` of rows older
 //   than the record's) is marked `late` with its arrival time, and a poll also returns the late rows that arrived after
 //   `since` (less LATE_MARGIN_MS), so no phone misses one.
@@ -40,7 +42,7 @@ import { isLogId, scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { roleOfKey, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { saveName } from '../../app/src/lib/contract/roomSave.ts';
-import { caughtOf, isShopEvent, reowe, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type Ledger, type ShopEvent, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
+import { caughtOf, isShopEvent, reowe, rewardOf, shopLedger, shopRefusal, shopRowOf, shopStep, SHOP_EVENTS, type LedgerEvent, type Ledger, type ShopRow, type TallyDay } from '../../app/src/lib/contract/shop.ts';
 import { pocketKey } from '../../app/src/lib/contract/pocket.ts';
 import { emptyFarm, FARM, farmFromJson, farmJson, farmOf, farmStep, type Farm, type FarmData } from '../../app/src/lib/contract/farm.ts';
 import { gameWet } from '../../app/src/lib/contract/wet.ts';
@@ -762,6 +764,9 @@ export class StoreCore {
         const why = this.shopTarget(me, type, data);
         if (why) return fail('bad_request', why === 'owned' ? 'owned' : `${why} short`);
       }
+      // 英語すごろく's reward: kept while it pays one of its recipients (contract/shop.ts: a game pays each once)
+      const rewardTo = type === 'sg_reward' ? rewardOf(data)?.to ?? [] : [];
+      if (type === 'sg_reward' && rewardTo.every((who) => this.shopTarget(who, type, data))) return fail('bad_request', 'reward paid');
       let drop: string | null = null;
       if (type === 'board') {
         const v = this.boardTarget(me, data);
@@ -829,6 +834,7 @@ export class StoreCore {
       const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
       this.put(id, at, me, type, kept, slot, null);
       if (type === 'tally' || type === 'tally_back' || isShopEvent(type)) this.shopNote(me, type, kept, was);
+      for (const who of rewardTo) this.shopNote(who, 'sg_reward', kept, null);
       if (farm) this.farmNote(me, farm.f, farm.before);
       if (type === 'decor') this.decorNote(me, data, wasDecor);
       return { ok: true, at };
@@ -1074,7 +1080,7 @@ export class StoreCore {
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null: against the
    *  running ledger (shopState: meta, one row), never their history (until 2026-11-05 every sale reread it: a year's
    *  20-sale batch read 153k rows). */
-  private shopTarget(me: Who, type: ShopEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | null {
+  private shopTarget(me: Who, type: LedgerEvent, d: Rec): 'pocket' | 'wallet' | 'owned' | 'paid' | null {
     const st = this.shopState(me);
     // (its data checked already: validEvent)
     const row = shopRowOf(type, d);
@@ -1104,7 +1110,7 @@ export class StoreCore {
   /** A kept row into `who`'s running ledger, when it has one (else the next sale folds it from the rows, this one's
    *  included): a tally's or a give-back's change (its kept counts less `was`, the row it replaced), a sell or a buy
    *  by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe). */
-  private shopNote(who: Who, type: 'tally' | 'tally_back' | ShopEvent, kept: string, was: Record<string, number> | null): void {
+  private shopNote(who: Who, type: 'tally' | 'tally_back' | LedgerEvent, kept: string, was: Record<string, number> | null): void {
     const raw = this.meta(`shop|${who}`);
     const st = raw ? shopStateOf(raw) : null;
     if (!st) return;
@@ -1164,10 +1170,11 @@ export class StoreCore {
     const { caught, back } = caughtOf(days, field.net[me]);
     const rows: ShopRow[] = [];
     const types = SHOP_EVENTS.map((t) => `'${t}'`).join(', ');
-    for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE type IN (${types}) AND person = ? ORDER BY at, seq`, me).toArray()) {
+    // (their own shop rows, and every 英語すごろく reward naming them, whoever sent it: contract/shop.ts rowConcerns)
+    for (const r of this.io.sql.exec<{ type: string; data: string }>(`SELECT type, data FROM events WHERE (type IN (${types}) AND person = ?) OR type = 'sg_reward' ORDER BY at, seq`, me).toArray()) {
       const x = parse(r.data);
-      const row = x && isShopEvent(r.type) ? shopRowOf(r.type, x) : null;
-      if (row) rows.push(row);
+      const row = x && (isShopEvent(r.type) || r.type === 'sg_reward') ? shopRowOf(r.type, x) : null;
+      if (row && (row.type !== 'reward' || row.data.to.includes(me))) rows.push(row);
     }
     return { caught, back, l: shopLedger(caught, rows, back) };
   }
@@ -1639,16 +1646,17 @@ interface ShopState { caught: Map<string, number>; back: Map<string, number>; l:
  *  as text. */
 function shopStateJson(st: ShopState): string {
   const m = (x: ReadonlyMap<string, number>) => [...x].filter(([, n]) => n !== 0).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  return JSON.stringify({ c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), h: st.l.shells, w: st.l.owned });
+  return JSON.stringify({ c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), h: st.l.shells, w: st.l.owned, g: [...st.l.games].sort() });
 }
 
 function shopStateOf(raw: string): ShopState | null {
   try {
-    const x = JSON.parse(raw) as { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; h: number; w: string[] };
-    if (!Array.isArray(x.c) || !Array.isArray(x.w) || typeof x.h !== 'number') return null;
+    const x = JSON.parse(raw) as { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; h: number; w: string[]; g: string[] };
+    // (one kept before 英語すごろく's rewards, without `g`: folded again)
+    if (!Array.isArray(x.c) || !Array.isArray(x.w) || !Array.isArray(x.g) || typeof x.h !== 'number') return null;
     // (one kept before an old goal fruit counted as its goal's, 2026-11-16: folded again, contract/pocket.ts pocketKey)
     if ([x.c, x.b, x.s, x.v, x.o].some((m) => m?.some(([k]) => pocketKey(k) !== k))) return null;
-    return { caught: new Map(x.c), back: new Map(x.b), l: { sold: new Map(x.s), soldV: new Map(x.v), owed: new Map(x.o), shells: x.h, owned: x.w } };
+    return { caught: new Map(x.c), back: new Map(x.b), l: { sold: new Map(x.s), soldV: new Map(x.v), owed: new Map(x.o), shells: x.h, owned: x.w, games: new Set(x.g) } };
   } catch {
     return null;
   }

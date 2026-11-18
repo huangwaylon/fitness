@@ -15,7 +15,7 @@ import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoal
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { roomSaveOf, type RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
-import { shopRowOf, type ShopEvent, type ShopRowAt } from '#lib/contract/shop.ts';
+import { shopRowOf, type LedgerEvent, type ShopRowAt } from '#lib/contract/shop.ts';
 import { farmOf } from '#lib/contract/farm.ts';
 import type { FarmRow } from './farm.ts';
 import { isBirth, isProfileKey, isSex, PROFILE_KEYS, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
@@ -146,7 +146,8 @@ export interface State {
   /** English Study's flags and their reviews (`eflag`, `eflag_done`: contract/eflag.ts) as raw rows (RAW_EVENTS),
    *  everyone's; read by its sheet only (lib/english/flags.ts). Never read by the economy. */
   eflag: EventRow[];
-  /** The shop's rows (`sell`, `buy`: contract/shop.ts), each with whose they are (the guest's too), in server order,
+  /** The shop's rows (`sell`, `buy`, `buy_starts`, `sg_reward`: contract/shop.ts), each with its sender (the guest's
+   *  too; a reward is its recipients': rowConcerns), in server order,
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
    *  by the economy. */
   shop: ShopRowAt[];
@@ -550,7 +551,7 @@ const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d
   if (r) put(s, list, r);
 };
 /** A shop row (contract/shop.ts shopRowOf) onto the shop's list. */
-const shopRow = (type: ShopEvent): OnEvent => (s, person, at, d) => {
+const shopRow = (type: LedgerEvent): OnEvent => (s, person, at, d) => {
   const r = shopRowOf(type, d);
   if (r) put(s, 'shop', { ...r, at, person });
 };
@@ -606,6 +607,8 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   sell: shopRow('sell'),
   buy: shopRow('buy'),
   buy_starts: shopRow('buy_starts'),
+  // (英語すごろく's reward: its sender's row, each recipient's かいがら: contract/shop.ts rowConcerns)
+  sg_reward: shopRow('sg_reward'),
   farm(s, person, at, d) {
     const data = farmOf(d);
     if (data) put(s, 'farm', { at, person, data });

@@ -2,7 +2,7 @@
 // (the same on every phone and the record, from the date alone) and the ledger (the pocket, かいがら, a piece once).
 import { describe, expect, it } from 'vitest';
 import { addDays, dayNum, dateOfDayNum } from './tokyo.ts';
-import { buyOf, isSellable, sellOf, sellPrice, shopLedger, shopRefusal, type ShopRow } from './shop.ts';
+import { buyOf, isLedgerEvent, isSellable, isShopEvent, rewardOf, rowConcerns, sellOf, sellPrice, shopLedger, shopRefusal, shopRowOf, shopStep, SG_REWARD_MAX, type ShopRow, type ShopRowAt } from './shop.ts';
 import { shopPriced } from './shopCheck.ts';
 import { STOCK_N, UNITS_FROM, buyPrice, stockOf } from './stock.ts';
 import { SELL } from './shopPrices.ts';
@@ -211,5 +211,65 @@ describe('the ledger', () => {
     expect(shopLedger(new Map([['fish:koi', 3]]), rows, new Map([['fish:koi', 2]])).shells).toBe(KOI3 - 6);
     // at what they fetched (an older app's lower price), not today's list
     expect(shopLedger(new Map([['fish:koi', 0]]), [{ type: 'sell', data: { species: 'fish:koi', n: 2, v: 2 * K - 2 } }], new Map([['fish:koi', 2]])).shells).toBe(0);
+  });
+});
+
+describe('英語すごろく’s reward (sg_reward)', () => {
+  const R = { g: 'sg-20261118-abc', v: 12, to: ['A', 'G'], d: '2026-11-18' };
+  const reward = (o: Partial<typeof R> = {}, queued = false): ShopRow => ({ type: 'reward', data: rewardOf({ ...R, ...o })!, ...(queued ? { queued: true as const } : {}) });
+  const none = new Map<string, number>();
+
+  it('its shape: a game id, 1–1000 per recipient, a unique non-empty set of A/B/G, a date; nothing more', () => {
+    expect(rewardOf(R)).toEqual(R);
+    expect(shopRowOf('sg_reward', R)).toEqual({ type: 'reward', data: R });
+    expect(rewardOf({ ...R, g: 'abc:1.2-3' })).not.toBeNull();
+    expect(rewardOf({ ...R, to: ['A', 'B', 'G'], v: SG_REWARD_MAX })).not.toBeNull();
+    for (const bad of [
+      { g: 'abc' }, { g: 'a'.repeat(41) }, { g: 'SG-UPPER-1' }, { g: 'sg game 1' }, { g: 7 },
+      { v: 0 }, { v: 1001 }, { v: 1.5 }, { v: '5' },
+      { to: [] }, { to: ['A', 'A'] }, { to: ['C'] }, { to: 'A' }, { to: ['A', 'B', 'G', 'A'] },
+      { d: '2026-02-30' }, { d: 20261118 }
+    ]) expect(rewardOf({ ...R, ...bad }), JSON.stringify(bad)).toBeNull();
+    expect(rewardOf({ ...R, extra: 1 })).toBeNull();
+    const { d: _d, ...noDay } = R;
+    expect(rewardOf(noDay)).toBeNull();
+    // apart from the shop's own events (their price check, the sender's ledger), one of the ledger's
+    expect(isShopEvent('sg_reward')).toBe(false);
+    expect(isLedgerEvent('sg_reward') && isLedgerEvent('sell')).toBe(true);
+  });
+
+  it('adds to かいがら like a sale; a game pays a ledger once (kept or queued)', () => {
+    const l = shopLedger(none, [reward(), reward({ v: 20 }), reward({ g: 'sg-other-game', v: 5 })]);
+    expect(l.shells).toBe(12 + 5);
+    expect(l.games).toEqual(new Set(['sg-20261118-abc', 'sg-other-game']));
+    expect(shopRefusal(l, none, reward())).toBe('paid');
+    expect(shopRefusal(l, none, reward({ g: 'sg-third-game' }))).toBeNull();
+    expect(shopLedger(none, [reward({}, true), reward({}, true)]).shells).toBe(12);
+    // the same rows kept or queued fold alike: the phone shows what the record will keep
+    expect(shopLedger(none, [reward(), reward({ g: 'sg-other-game' }, true)])).toEqual(shopLedger(none, [reward(), reward({ g: 'sg-other-game' })]));
+  });
+
+  it('no daily cap: any number of games a day each pay in full', () => {
+    const rows = Array.from({ length: 10 }, (_, i) => reward({ g: `sg-game-${i}`, v: 600 }));
+    expect(shopLedger(none, rows).shells).toBe(6000);
+  });
+
+  it('spends like a sale: a buy covered by rewards is kept, never past them', () => {
+    const buy = (price: number): ShopRow => ({ type: 'buy', data: { item: 'f3672', price, d: '2026-11-18' } });
+    const l = shopLedger(none, [reward({ v: 6 })]);
+    expect(shopRefusal(l, none, buy(6))).toBeNull();
+    expect(shopRefusal(l, none, buy(7))).toBe('wallet');
+    shopStep(l, none, none, buy(6));
+    expect(l.shells).toBe(0);
+  });
+
+  it('fans out: a row of each recipient’s ledger, whoever sent it; never a non-recipient sender’s', () => {
+    const row: ShopRowAt = { ...reward(), at: 1, person: 'B' };
+    expect(rowConcerns(row, 'A')).toBe(true);
+    expect(rowConcerns(row, 'G')).toBe(true);
+    expect(rowConcerns(row, 'B')).toBe(false); // sent it, not named
+    const sale: ShopRowAt = { type: 'sell', data: { species: 'fish:koi', n: 1, v: 1 }, at: 2, person: 'B' };
+    expect(rowConcerns(sale, 'B')).toBe(true);
+    expect(rowConcerns(sale, 'A')).toBe(false);
   });
 });

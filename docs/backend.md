@@ -57,6 +57,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `board` | `board.ts` | a note or its removal ([board.md](board.md)) |
 | `food`, `food_repeat`, `food_recipe`, `food_custom` | `food.ts` | the meal log ([food-data.md](food-data.md)): own entries, owner-only edits (`foodAccept`); いつもの's skipped day stays skipped (`repeatAccept`); a recipe or custom food logs as an ordinary `food` with a snapshot |
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short`; never which pieces a stock holds (each person's own, the phones': `shop/stock.ts`) |
+| `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `g` the game's id (`/^[a-z0-9:.-]{6,40}$/`), `v` 1–1000 each, `to` a unique set of A/B/G, `d` the record's day or yesterday; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast); `rewardGame` on the phone |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, n, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
@@ -217,7 +218,8 @@ one tile").
   `contract/shopCheck.ts validEvent`, the relay's only, so they stay off the phones' first load); an event id once,
   forever; **slots**, a later event of a slot replacing it (`eventSlot`, and the per-id ops' `decorAccept`,
   `foodAccept`, …); a pref the model ignores takes no slot.
-- **Running checks:** the shop's against each person's ledger (meta `shop|<who>`, kept by `contract/shop.ts shopStep`;
+- **Running checks:** the shop's against each person's ledger (meta `shop|<who>`, kept by `contract/shop.ts shopStep`, an
+  `sg_reward` into each recipient's, its games paid in `g` (a ledger without `g`, an older relay's, is folded again);
   `shopcheck {fix?}` compares it and the field, meta `farm|g<growDays>r<regrowDays>`: a growth-rule change folds it
   again by itself, with the full fold, as does a start that finds another relay's copy: a rollback's), a decor op's against its own slots
   and the caps' counts (meta `decor_live`; `decorcheck {fix?}`); a reset drops the voided rows (`dropVoided`).

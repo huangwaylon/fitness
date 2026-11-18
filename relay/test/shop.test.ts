@@ -404,3 +404,89 @@ describe('a group of buys (ぜんぶ かう)', () => {
     expect(owned('A')).toEqual([pieces[0]]);
   });
 });
+
+// 英語すごろく's reward (contract/shop.ts `sg_reward`): anyone's, the guest's too; a row of each recipient's ledger
+// (its `to`), whoever sent it; a game pays each once; kept while it pays one of them; no daily cap.
+describe('英語すごろく’s reward in the record', () => {
+  let now: number;
+  let db: ReturnType<typeof memSql>;
+  let store: StoreCore;
+  beforeEach(() => {
+    now = T0;
+    db = memSql();
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} });
+  });
+  const keyOf = { A: KEY_A, B: KEY_B, G: KEY_C } as const;
+  let n = 0;
+  const send = (who: 'A' | 'B' | 'G', type: string, data: object, id = `w${++n}`) =>
+    store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
+  const reward = (who: 'A' | 'B' | 'G', g: string, v: number, to: string[], d = D, id?: string) => send(who, 'sg_reward', { g, v, to, d }, id);
+  const refused = (detail?: string) => ({ ok: false, error: 'bad_request', ...(detail ? { detail } : {}) });
+  const item = stockOf(D)[0], price = buyPrice(item)!;
+  const buy = (who: 'A' | 'B' | 'G') => send(who, 'buy', { item, price, d: D });
+  const ledger = (who: 'A' | 'B' | 'G') => {
+    const raw = db.db.prepare('SELECT v FROM meta WHERE k = ?').get(`shop|${who}`) as { v: string } | undefined;
+    return raw ? (JSON.parse(raw.v) as { h: number; g: string[] }) : null;
+  };
+
+  it('keeps one from anyone (the guest too); its かいがら are each recipient’s, spendable at the shop; never the sender’s unnamed', () => {
+    expect(reward('G', 'sg-game-0001', price, ['A', 'G'])).toEqual({ ok: true });
+    expect(buy('A')).toEqual({ ok: true });
+    expect(buy('G')).toEqual({ ok: true });
+    expect(buy('B')).toEqual(refused('wallet short'));
+    expect(reward('A', 'sg-game-0002', price, ['B'])).toMatchObject({ ok: true }); // A sends, B is paid
+    expect(buy('B')).toEqual({ ok: true });
+    expect(buy('A')).toEqual(refused('owned'));
+    expect(ledger('A')).toMatchObject({ h: 0, g: ['sg-game-0001'] });
+    expect(ledger('B')).toMatchObject({ h: 0, g: ['sg-game-0002'] });
+    expect(store.shopCheck()).toEqual({ ok: true, farm: 'same', A: 'same', B: 'same', G: 'same' });
+  });
+
+  it('a game pays each once: a second reward of it (another phone’s) is refused `reward paid`, kept when it pays someone new', () => {
+    expect(reward('A', 'sg-game-0001', 500, ['A', 'B'])).toMatchObject({ ok: true });
+    expect(reward('B', 'sg-game-0001', 500, ['B', 'A'])).toEqual(refused('reward paid'));
+    expect(reward('B', 'sg-game-0001', 700, ['A'])).toEqual(refused('reward paid'));
+    expect(reward('G', 'sg-game-0001', 500, ['A', 'G'])).toMatchObject({ ok: true }); // pays the guest alone
+    expect([ledger('A')!.h, ledger('B')!.h, ledger('G')!.h]).toEqual([500, 500, 500]);
+    // an id once: a retry of the kept one is a duplicate, not a refusal
+    expect(reward('A', 'sg-game-0004', 10, ['A'], D, 'same-id')).toMatchObject({ ok: true });
+    expect(reward('A', 'sg-game-0004', 10, ['A'], D, 'same-id')).toEqual({ ok: true, duplicate: true });
+    expect(ledger('A')!.h).toBe(510);
+    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'same', G: 'same' });
+  });
+
+  it('no daily cap: many games a day each pay in full, up to 1000 a recipient', () => {
+    for (let i = 0; i < 8; i++) expect(reward('A', `sg-day-game-${i}`, 1000, ['A'])).toMatchObject({ ok: true });
+    expect(ledger('A')!.h).toBe(8000);
+    expect(reward('A', 'sg-day-game-x', 1001, ['A'])).toEqual(refused());
+  });
+
+  it('refuses a bad shape and a day other than the record’s or yesterday', () => {
+    expect(reward('A', 'sg-game-0001', 5, ['A'], '2026-11-03')).toMatchObject({ ok: true }); // yesterday
+    expect(reward('A', 'sg-game-0002', 5, ['A'], '2026-11-02')).toEqual(refused());
+    expect(reward('A', 'sg-game-0003', 5, ['A'], '2026-11-05')).toEqual(refused());
+    expect(reward('A', 'sg-game-0004', 5, [])).toEqual(refused());
+    expect(reward('A', 'sg-game-0004', 5, ['A', 'A'])).toEqual(refused());
+    expect(reward('A', 'sg-game-0004', 5, ['X'])).toEqual(refused());
+    expect(reward('A', 'no', 5, ['A'])).toEqual(refused());
+    expect(send('A', 'sg_reward', { g: 'sg-game-0004', v: 5, to: ['A'], d: D, extra: 1 })).toEqual(refused());
+  });
+
+  it('the ledger folded from the rows fans out the same: after a load, and from a ledger kept before rewards (no `g`)', () => {
+    send('A', 'tally', { date: D, counts: { 'fish:koi': 2 } });
+    send('A', 'sell', { species: 'fish:koi', n: 2, v: 2 * K });
+    reward('B', 'sg-game-0001', 500, ['A', 'B']);
+    reward('G', 'sg-game-0002', 40, ['A']);
+    const want = ledger('A');
+    expect(want).toMatchObject({ h: 2 * K + 540, g: ['sg-game-0001', 'sg-game-0002'] });
+    // a running ledger as an older relay kept it (no `g`): folded again, the rewards' rows included
+    db.db.prepare(`UPDATE meta SET v = '{"c":[],"b":[],"s":[],"v":[],"o":[],"h":0,"w":[]}' WHERE k = 'shop|A'`).run();
+    expect(reward('B', 'sg-game-0001', 500, ['A'])).toEqual(refused('reward paid'));
+    expect(ledger('A')).toEqual(want);
+    store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'B', 'x1', 'sg_reward', JSON.stringify({ g: 'sg-game-0003', v: 7, to: ['A', 'G'], d: D })]] } });
+    expect(store.shopCheck()).toMatchObject({ A: 'none' });
+    expect(reward('A', 'sg-game-0004', 1, ['A'])).toMatchObject({ ok: true });
+    expect(ledger('A')!.h).toBe(2 * K + 540 + 7 + 1);
+    expect(store.shopCheck()).toMatchObject({ A: 'same', B: 'none', G: 'none' }); // (B's and G's folded at their next op)
+  });
+});

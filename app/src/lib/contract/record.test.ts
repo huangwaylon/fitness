@@ -99,6 +99,23 @@ describe('validEventData: each type\'s shape', () => {
     expect(ok('find', { kind: 'gold', id: 'koi' })).toBe(false);
   });
 
+  it('英語すごろく’s reward: its shape, its day the record’s or yesterday (Tokyo), up to 1000 a recipient', () => {
+    const R = { g: 'sg-20261105-x1', v: 500, to: ['A', 'B', 'G'], d: '2026-11-05' };
+    expect(ok('sg_reward', R)).toBe(true);
+    expect(validEvent('sg_reward', R, now)).toBe(true);
+    expect(ok('sg_reward', { ...R, d: '2026-11-04' })).toBe(true); // a game ended before midnight
+    expect(ok('sg_reward', { ...R, d: '2026-11-03' })).toBe(false);
+    expect(ok('sg_reward', { ...R, d: '2026-11-06' })).toBe(false);
+    // 00:30 on 11-06 in Tokyo (15:30 UTC on 11-05): the record's day is 11-06
+    expect(validEventData('sg_reward', { ...R, d: '2026-11-06' }, Date.parse('2026-11-05T15:30:00.000Z'))).toBe(true);
+    expect(ok('sg_reward', { ...R, v: 1000 })).toBe(true);
+    expect(ok('sg_reward', { ...R, v: 1001 })).toBe(false);
+    expect(ok('sg_reward', { ...R, to: [] })).toBe(false);
+    expect(ok('sg_reward', { ...R, to: ['B', 'B'] })).toBe(false);
+    expect(ok('sg_reward', { ...R, g: 'x' })).toBe(false);
+    expect(ok('sg_reward', {})).toBe(false);
+  });
+
   it('a spend may say the day it was for: a real date from SPEND_PAST_DAYS before the record’s Tokyo day to that day', () => {
     const T = Date.parse('2026-11-20T03:00:00.000Z'); // 12:00 on 11-20 in Tokyo
     const day = (d: unknown, at = T) => validEventData('spend', { spendId: 's1', item: 'snack', bells: 20, day: d }, at);

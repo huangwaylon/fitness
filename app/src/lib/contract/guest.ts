@@ -23,7 +23,7 @@ type Rec = Record<string, unknown>;
  * it as to anyone: a `decor` op's scope, contract/layout.ts scopeMayWrite; a board note's author, a meal's owner, a
  * pocket's catches): its catches (`find`, `tally`, `tally_back`) and its part of the island's day (`island`), any
  * `decor` op (the island's decorations and its layout, every home's room, its own home's look), the `board`, its
- * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), the field (`farm`: its own plants),
+ * meals (`food`, `food_repeat`, `food_recipe`, `food_custom`), the shop (`sell`, `buy`, `buy_starts`: its own pocket and かいがら), 英語すごろく's rewards (`sg_reward`: it plays too), the field (`farm`: its own plants),
  * its English Study clips (`listen`), a flag on English Study's content (`eflag`; its review's `eflag_done` is the
  * members'), a trip's packing list (`pack`: adding, and changing only what it added,
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
@@ -47,6 +47,7 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'sell':
     case 'buy':
     case 'buy_starts':
+    case 'sg_reward':
     case 'farm':
     case 'listen':
     case 'pack':
