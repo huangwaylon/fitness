@@ -1,11 +1,13 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 3, retire 0, new 4, ctx 6, tx 7
 // A2 REVIEW 2026-11-17: keep 4, rewrite 9, retire 9, new 2
 // “Dwight vs. Andy - The Office US” (the official The Office channel, BEST OF SEASON 3): Dwight and Andy meet and argue
 // over who outranks whom; Michael names Jim his new number two and Andy flatters him; in the parking lot the two trade
 // car insults that sink to "Idiot!", and one of them tells the camera he won.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈154.5 s. Untested: 16.4–18.6 s, 64–73 s
-// (garbled), 103.5–106.7 s ("1985 called…", garbled in both), 124.8–154.8 s (garbled lines and the closing claim).
+// Segments from the captions, words from whisper (2026-11-16). Untested: 64–73 s (garbled), 103.5–106.7 s ("1985
+// called…", garbled in both), 117–130 s ("go die" and the sarcastic praise of it).
 // Dwight and Andy name themselves at 8.5 and 10.8 s; Michael says "Thank you, Andy" at 61.5 s; no key turns on which
-// voice owns which car. OPEN: d2 (Jim) is guessable for fans of the show.
+// voice owns which car, nor on who says the closing line. OPEN: d2 (Jim) is guessable for fans of the show.
+// SKIP 154.8–177.2: music to the end
 import type { Clip } from '../types.ts';
 
 export const dwightVsAndy: Clip = {
@@ -31,21 +33,10 @@ export const dwightVsAndy: Clip = {
       choicesJa: ['自分から名乗るため', 'さよならを言うため', '助けを頼むため'],
       cue: '「Hello」のあと',
       line: '*I don’t believe we’ve been introduced.* Dwight Schrute, assistant regional manager.',
-      said: '「はじめましてですね。ドワイト・シュルート、地域マネージャー補佐です」と名乗る。',
+      said: '「まだ紹介されていませんね。ドワイト・シュルート、地域マネージャー補佐です」と名乗る。',
       mean: '直訳は「紹介されていないと思う」。初対面で自分から名乗るときの、ていねいな前置き。',
       trap: 'don’t believe（信じない）から、疑っていると思いやすい。I don’t believe 〜 は「〜ないと思う」。',
       use: 'Hi, I don’t think we’ve met. I’m Ken.（はじめまして、ケンです）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', seg: [5.2, 31],
-      stem: 'What do Dwight and Andy argue about first?', ja: 'ドワイトとアンディは、まず何で言い合う？',
-      choices: ['Who has the higher job', 'Who knows more about film', 'Who sells the most'], a: 0,
-      choicesJa: ['どちらの役職が上か', 'どちらが映画にくわしいか', 'どちらがいちばん売るか'],
-      cue: '名乗ったあとの最初の質問',
-      line: 'So you’ll be *reporting to me*, then? — On the contrary. My title has “manager” in it, and I’m a director.',
-      said: '自己紹介で役職を言い合い、どちらが上かで張り合う。映画の話もその続き。',
-      mean: 'report to 〜 ＝ 〜の部下になる。映画の話も、自分が上だと言うための材料。',
-      trap: '後半は映画の話が続くので、そちらだと思いやすい。最初の質問 reporting to me を聞く。',
-      use: 'Who do you report to?（あなたの上司は誰ですか）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'title', seg: [8.3, 16.3],
       stem: 'What is Andy’s job title?', ja: 'アンディの役職は？',
@@ -58,21 +49,17 @@ export const dwightVsAndy: Clip = {
       trap: '二人とも regional で始まるので混ざりやすい。後ろが director か manager かを聞く。',
       use: 'Who’s in charge of the booking?（予約の担当はどなたですか）' },
 
-    { id: 'i3', skill: 'phrase', level: 'B2', point: 'rank', seg: [10.6, 19.7],
-      stem: 'What does Andy mean by “On the contrary”?', ja: 'アンディの “On the contrary” はどういう意味？',
-      choices: ['It’s the opposite', 'Yes, that’s right', 'I don’t understand'], a: 0,
-      choicesJa: ['その逆だ', 'うん、そのとおり', '意味が分からない'],
+    { id: 'i3', ctx: true, skill: 'phrase', level: 'B2', point: 'rank', seg: [12.7, 20.2],
+      stem: 'Dwight asks if Andy reports to him. What does Andy say?', ja: 'ドワイトに「私の部下ですね？」と聞かれ、アンディは何と言う？',
+      choices: ['No, Dwight is under him', 'Yes, he is under Dwight', 'They are at the same level'], a: 0,
+      choicesJa: ['いや、ドワイトが自分の下', 'うん、自分がドワイトの下', '二人は同じ立場'],
       cue: '質問への最初の答え',
-      line: 'So you’ll be reporting to me, then? — *On the contrary.*',
-      said: '「じゃあ僕の部下だね」に「その逆だ」と返し、director の方が上だと言う。',
-      mean: 'On the contrary ＝ まったく逆で。相手の言ったことを、反対だと打ち消す。',
-      trap: 'contrary を知らないと、うなずいたように聞こえやすい。あとで director の方が上と言う。',
+      line: 'Dwight: So you’ll be *reporting to me*, then? / Andy: *On the contrary.* … I’m a director.',
+      said: '「私の下につくわけですね？」に「その逆です」と返す。',
+      mean: 'report to 〜 ＝ 〜の部下になる。On the contrary ＝ その逆で。相手の言葉を反対だと打ち消す。',
+      trap: 'contrary を知らないと、うなずいたと考えがち。決め手はあとの I’m a director（自分が上）。',
       use: 'Bored? On the contrary, I loved it.（退屈？いや逆に、すごく楽しかった）' },
 
-    // R fix: V2 (80 % blind): the dream-job distractor was the odd one out. Now "a film job he once had" (the keyword
-    //   trap: film set heard as his past), of the same form.
-    // why: below ← "manager" is heard in the stretch, and "highest" is missed; film job ← "on a film set" heard as
-    //   his own past work
     { id: 'h1', skill: 'humor', level: 'C1', point: 'filmset', reveals: ['rank'], seg: [13.3, 23], retired: true,
       stem: 'When Andy brings up a film set, what makes his argument funny?',
       choices: ['He settles an office rank by film-set rules', 'He admits that a director ranks below a manager',
@@ -84,10 +71,17 @@ export const dwightVsAndy: Clip = {
       trap: 'film が何度も出るので映画好きの話に聞こえるが、肩書き争いの理屈に使っている。',
       use: 'That’s not how it works here.（ここではそうはいかないよ）' },
 
-    // R fix: V2 (80 % blind): envy was a filler. "Doubt: he does not believe the number" (sarcasm read as disbelief) is
-    //   the near miss now.
-    // why: real praise ← "Congratulations" taken at face value (the お祝い frame); doubt ← sarcasm heard as "yeah,
-    //   right", disbelief instead of "that's not much"
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'meet', reveals: ['rank'], seg: [15.3, 31],
+      stem: 'What are Dwight and Andy arguing about?', ja: 'ドワイトとアンディは、何で言い合っている？',
+      choices: ['Who has the higher job', 'Who knows more about film', 'Who sells the most'], a: 0,
+      choicesJa: ['どちらの役職が上か', 'どちらが映画にくわしいか', 'どちらがいちばん売るか'],
+      cue: '「On the contrary」のあと',
+      line: 'My title has “manager” in it, and *I’m a director*. Which on a film set is *the highest title there is*.',
+      said: '肩書きを比べてどちらが上かで張り合い、映画の話もその続きになる。',
+      mean: 'title ＝ 肩書き。highest title ＝ いちばん上の肩書き。映画の話も、自分が上だと言うための材料。',
+      trap: 'film が何度も出るので、映画の知識比べと考えがち。決め手は title（肩書き）。',
+      use: 'What’s your job title?（あなたの肩書きは何ですか）' },
+
     { id: 't1', skill: 'attitude', level: 'C1', point: 'films', seg: [22.7, 31], retired: true,
       stem: 'How does Andy mean his one-word reply to the film count?',
       choices: ['As a put-down: that is not many films', 'As real praise: that is a lot of films',
@@ -99,12 +93,6 @@ export const dwightVsAndy: Clip = {
       trap: 'お祝いの言葉なので本気に取りやすい。大きな主張に小さな根拠が来たら、皮肉を疑う。',
       use: 'Wow, congratulations. Want a medal?（へえ、おめでとう。メダルでもいる？）' },
 
-    // R fix: V2 (60 % blind): the key was the only reply that pushed back. "You think I'm making that up?" (sarcasm read
-    //   as disbelief) replaces the lend filler.
-    // why: thank-you ← praise answered as praise (the お礼 frame); making it up ← sarcasm read as doubt about the
-    //   number, not about its size
-    // anchor: 24.9–29.2 s "I know everything about film… over 240 of them", then at 29.8 s a single "Congratulations":
-    //   the reply is far too small for the claim, and nothing else is said
     { id: 'c2', skill: 'pragma', level: 'C2', point: 'films', seg: [22.7, 31], retired: true,
       stem: 'Which reply from Dwight would show he caught what “Congratulations” meant?',
       choices: ['Hey, 240 is a lot of movies!', 'Thank you. It took years of work.',
@@ -127,13 +115,13 @@ export const dwightVsAndy: Clip = {
       trap: '「ハンドレッド・フォーティ」なら240、「フォーティーン」なら214、hundred なしは24、「サウザンド」は2,400。',
       use: 'I’ve been there over twenty times.（20回以上行ったよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 66.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'announce', seg: [36.1, 55.4],
       stem: 'What is Michael’s big news?', ja: 'マイケルの大事な発表は？',
       choices: ['He picks a new number two', 'Everyone gets a pay raise', 'He picks a new number three'], a: 0,
       choicesJa: ['新しいナンバー2を選んだ', '全員の給料が上がる', '新しいナンバー3を選んだ'],
       cue: '「I have decided」のあと',
       line: 'I have decided to make … *my new number two*.',
-      said: 'マイケルが新しいナンバー2を発表し、アンディが大げさにほめる。',
+      said: 'マイケルが新しいナンバー2を発表し、昇給や3番手についての質問が出る。',
       mean: 'number two ＝ 2番手、右腕。I have decided to 〜 ＝ 〜することに決めた。',
       trap: 'number three も pay raise も聞こえるが、決まったのは2番だけ。3番は not decided yet。',
       use: 'I have decided to move to Osaka.（大阪に引っ越すことに決めた）' },
@@ -149,20 +137,17 @@ export const dwightVsAndy: Clip = {
       trap: 'Jim は一音で短く、make にくっついて聞き逃しやすい。make のすぐあとを待つ。',
       use: 'They made her team leader.（彼女がチームリーダーになった）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'raise', seg: [44.9, 51.1],
+    { id: 'd3', ctx: true, skill: 'detail', level: 'B2', point: 'raise', seg: [44.9, 51.1],
       stem: 'What is true about pay for the new job?', ja: '新しい役目の給料について、正しいのは？',
       choices: ['It comes with a raise', 'It has no raise', 'No one knows yet'], a: 0,
       choicesJa: ['給料が上がる', '給料は上がらない', 'まだ誰も知らない'],
       cue: '「pay raise」のあとの短い返事',
-      line: 'it doesn’t come with a pay raise. — No, *it does, actually*.',
+      line: 'it doesn’t come with a pay raise. / No, *it does, actually*.',
       said: '「昇給はないけどね」に、すぐ「いや、実はある」と返される。',
       mean: 'No, it does ＝ いや、ある。No は前の「ない」を打ち消す。actually ＝ 実は。',
       trap: 'No から「ない」と思いやすい。英語の No のあとの it does は「ある」。',
       use: 'No, it does, actually. I checked.（いや、実はあるんだ。確かめたよ）' },
 
-    // R fix: V2 (80 % blind): the key was the only unkind choice. "Tease Jim for being too eager" is unkind too, and
-    //   "If he even wants it" says the reverse of eager.
-    // why: raise for himself ← "pay raise" heard as his own request; too eager ← a jab is heard, but aimed at Jim
     { id: 'i1', skill: 'infer', level: 'C1', point: 'raise', reveals: ['two'], seg: [44.9, 50.4], retired: true,
       stem: 'What is the speaker trying to do with “If he even wants it…”?',
       choices: ['Make the new job sound less special', 'Hint that he wants a raise himself',
@@ -174,19 +159,17 @@ export const dwightVsAndy: Clip = {
       trap: 'Jim へのからかいに聞こえるが、けなす相手は仕事のほう。even に注目。',
       use: 'If you even want it, that is.（まあ、欲しければだけど）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'flatter', seg: [49.7, 61.7],
+    { id: 'i2', ctx: true, skill: 'infer', level: 'C1', point: 'flatter', seg: [49.7, 61.7],
       stem: 'Why does Andy praise Michael right then?', ja: 'アンディはなぜその時マイケルをほめる？',
       choices: ['He wants to be number three', 'He thinks Jim is a good pick', 'He wants a pay raise'], a: 0,
       choicesJa: ['ナンバー3になりたい', 'ジムはいい人選だと思う', '給料を上げてほしい'],
       cue: '「not decided yet」のすぐあと',
-      line: 'So who will be your new number three? — That I have *not decided yet*. — Michael, I would just like to say…',
+      line: 'So who will be your new number three? / That I have *not decided yet*. / Michael, I would just like to say…',
       said: '「3番はまだ決めていない」と聞いた直後、アンディが「見事な対応でした」とほめる。',
       mean: '空いている3番の座をねらって、ごまをすっている。ほめたタイミングで分かる。',
       trap: 'ほめ言葉は本心にも聞こえやすい。直前の not decided yet（まだ決めていない）とつなげる。',
       use: 'I’m not just saying this, but great job.（お世辞じゃなく、すごく良かった）' },
 
-    // why: fair thinking ← "after a great deal of thought" just before; good humor ← an unknown word guessed from
-    //   Michael's jokey style
     { id: 'f1', skill: 'phrase', level: 'C1', point: 'aplomb', reveals: ['flatter'], seg: [55, 62.5], retired: true,
       stem: 'Andy says Michael handled it “with great aplomb.” What does he mean?',
       choices: ['With calm, sure confidence', 'With careful, fair thinking', 'With a lot of good humor'], a: 0,
@@ -197,20 +180,28 @@ export const dwightVsAndy: Clip = {
       trap: '直前の「よく考えた」に引かれて「慎重・公平」と取りやすいが、aplomb は態度の落ち着き。',
       use: 'She handled the angry guest with aplomb.（怒った客にも動じずに対応した）' },
 
-    { id: 'n2', skill: 'number', level: 'B2', point: 'mpg', seg: [77.1, 84.9], keep: true,
+    { id: 'p2', ctx: true, skill: 'pragma', level: 'B1', point: 'kind', seg: [56.5, 64.5],
+      stem: 'How does Michael answer Andy’s praise?', ja: 'アンディにほめられて、マイケルはどう答える？',
+      choices: ['He thanks him for it', 'He tells him to stop', 'He says it isn’t true'], a: 0,
+      choicesJa: ['お礼を言う', 'やめろと言う', 'そんなことないと言う'],
+      cue: '「aplomb」のあと',
+      line: 'Andy: you have handled this entire situation with great aplomb. / Michael: *Thank you, Andy. That’s very kind.*',
+      said: '「見事でしたね」とほめられ、「ありがとう、アンディ。ご親切にどうも」と返す。',
+      mean: 'That’s very kind ＝ ご親切にどうも。ほめられたり助けてもらったりしたときの、ていねいなお礼の決まり文句。',
+      trap: '日本語の「いえいえ」のように打ち消すと考えがち。英語はまずお礼。kind は「親切な」。',
+      use: 'Thank you, that’s very kind of you.（ありがとうございます、ご親切に）' },
+
+    { id: 'n2', ctx: true, skill: 'number', level: 'B2', point: 'mpg', seg: [77.1, 84.9], keep: true,
       stem: 'How many miles per gallon does Dwight’s car get?', ja: 'ドワイトの車は、1ガロンで何マイル走る？',
       choices: ['2', '4', '8', '40'], a: 2,
       choicesJa: ['2マイル', '4マイル', '8マイル', '40マイル'],
       cue: '「four miles」への返事',
-      line: 'like, *four miles* to the gallon? — Uh, *try double that*.',
-      said: '「4マイルくらい？」に「その倍だね」と返す。つまり約8マイル。',
+      line: 'like, *four miles* to the gallon? / Uh, *try double that*.',
+      said: '「4マイルくらい？」に「いや、その倍だな」と返す。つまり約8マイル。',
       mean: 'Try 〜 ＝ いや〜だよ、と相手の数を直す言い方。double that ＝ その2倍。',
       trap: '「フォー」は4、「フォーティ」なら40。double は「2」ではなく「2倍」。4の2倍で8。',
       use: 'Ten minutes? Try an hour.（10分？いや1時間はかかるよ）' },
 
-    // R fix: V2 (75 % blind): "saves fuel" was a filler. "Andy's guess was way off" (the correction read as a win) is
-    //   the near miss now.
-    // why: half ← "double" and "half" confused; way off ← the proud tone heard as a winning correction
     { id: 'h2', skill: 'humor', level: 'C1', point: 'mpg', seg: [77.1, 84.6], retired: true,
       stem: 'Why is Dwight’s comeback about his mileage funny?',
       choices: ['Even doubled, that mileage is still awful', 'He means half that, but says double by mistake',
@@ -222,12 +213,23 @@ export const dwightVsAndy: Clip = {
       trap: '自信たっぷりに直すので「言い負かした」に聞こえるが、倍でも弱点は残る。',
       use: 'That’s not the comeback you think it is.（それ、言い返せてないよ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'latin', seg: [88.6, 96.5],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'leaveit', seg: [84.5, 90.0],
+      stem: 'What does “Leave it to the Japanese” mean here?', ja: '“Leave it to the Japanese” はここでどういう意味？',
+      choices: ['The Japanese do it best', 'Give it to a Japanese person', 'Japanese cars are too small'], a: 0,
+      choicesJa: ['さすが日本人だ', '日本人にあげて', '日本の車は小さすぎる'],
+      cue: '「Luxurious yet rugged」のあと',
+      line: 'my X-Terra’s pretty sweet. Luxurious yet rugged. *Leave it to the Japanese.*',
+      said: '「僕の車はイケてる。豪華なのにタフ。さすが日本製だね」と自慢する。',
+      mean: 'Leave it to 〜 ＝ 文字どおりは「〜に任せて」。任せればうまくやる→「さすが〜」。ほめる言い方。',
+      trap: 'leave（置いていく）から、だれかに渡す話に聞こえるが、直前が車のほめ言葉なので「さすが」。',
+      use: 'Great coffee. Leave it to the Italians!（おいしいコーヒー。さすがイタリア！）' },
+
+    { id: 'd4', ctx: true, skill: 'detail', level: 'B1', point: 'latin', seg: [88.6, 96.5],
       stem: 'What does Andy say the name of his car means?', ja: 'アンディは、自分の車の名前は何の意味だと言う？',
       choices: ['Earth, in Latin', 'Rugged, in Latin', 'Earth, in Japanese'], a: 0,
       choicesJa: ['ラテン語で「大地」', 'ラテン語で「たくましい」', '日本語で「大地」'],
       cue: '「not even a real word」への返事',
-      line: 'Actually, it is — it’s *Latin for “earth.”*',
+      line: 'Actually, it is / it’s *Latin for “earth.”*',
       said: '「本当の言葉だ。ラテン語で『大地』の意味だ」と言い返す。',
       mean: 'A is Latin for B ＝ A はラテン語で B の意味。言葉の意味を言うときの形。',
       trap: '直前に Japanese と rugged が聞こえるので混ざりやすい。for の前が言語、後ろが意味。',
@@ -243,9 +245,6 @@ export const dwightVsAndy: Clip = {
       trap: 'bet you が一語のように聞こえやすい。t と y がつながって「チュ」になる。',
       use: 'I bet you’re tired after that flight.（そのフライトのあとじゃ疲れてるよね）' },
 
-    // R fix: V2 (85 % blind): "someone phoned" was a filler. "Taken from someone" is the literal reading of "wants its
-    //   car back".
-    // why: built in 1985 ← the year taken as the car's real year; taken ← "wants its car back" read literally
     { id: 'f3', skill: 'phrase', level: 'C1', point: 'old', seg: [103.4, 110.1], retired: true,
       stem: 'When Andy says “1985 called…”, what is he really saying?',
       choices: ['Dwight’s car is badly out of date', 'Dwight’s car was built in 1985', 'Dwight’s car was taken from someone'],
@@ -257,7 +256,7 @@ export const dwightVsAndy: Clip = {
       trap: '1985 を年式と、「返して」を盗んだ車と取りやすい。返事の ’87 がヒント。',
       use: 'The ’80s called. They want that hat back.（その帽子、古くさいね）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'speaking', seg: [106.9, 120.8],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'speaking', seg: [109.2, 120.5],
       stem: 'Why do both men say “speaking of…”?', ja: '二人はなぜ “speaking of…” と言う？',
       choices: ['To start a new insult', 'To change to a calm topic', 'To say sorry'], a: 0,
       choicesJa: ['次の悪口を始めるため', '落ち着いた話に変えるため', '謝るため'],
@@ -268,10 +267,6 @@ export const dwightVsAndy: Clip = {
       trap: 'ていねいな話題の切りかえだと思いやすい。あとに来るのは、相手をけなす話。',
       use: 'Speaking of food, is anyone hungry?（食べ物と言えば、お腹すいた人いる？）' },
 
-    // R fix: V2 (75 % blind): "hurt" was a filler. "Mocks how mean it was" (the right tone, the wrong target; the
-    //   English-professor line settles it) is the near miss now.
-    // why: admires ← "really well-constructed" taken at face value; mean ← "go die" is harsh, so the mockery is read
-    //   as aimed at its cruelty
     { id: 't2', skill: 'attitude', level: 'B2', point: 'sentence', seg: [117.3, 129.6], retired: true,
       stem: 'How does Andy mean his comment on Dwight’s sentence?',
       choices: ['He mocks how badly it was worded', 'He honestly admires how it was put',
@@ -283,22 +278,6 @@ export const dwightVsAndy: Clip = {
       trap: 'ほめ言葉の形なので本気に取りやすい。ほめる中身が明らかに弱いときは皮肉。',
       use: 'Wow, great plan. Really well thought out.（へえ、すごい計画。よく考えたね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'ifidiot', seg: [129.1, 134.1],
-      stem: 'Fill the gap: “If I were an idiot, ___ driving a Trans Am.”', ja: '空所に入るのは？ “If I were an idiot, ___ driving a Trans Am.”',
-      choices: ['I’d be', 'I’ll be', 'I’m'], a: 0,
-      choicesJa: ['〜しているだろう', '〜しているつもりだ', '〜している'],
-      cue: '「idiot」のあと',
-      line: 'If I were an idiot, *I’d be* driving a Trans Am.',
-      said: '「僕がバカなら、トランザムに乗ってるさ」と言い返す。',
-      mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
-      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
-      use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
-
-    // R fix: V2 (60 % blind): "the speaker admits it" was a filler. "A draw both men accepted" (the fizzle read as a
-    //   truce) replaces it. Still near 50 % blind (open).
-    // why: the speaker won ← "totally got the best of" taken at face value; draw ← the fizzle read as a truce
-    // anchor: 130.3–143 s the exchange sinks to "Idiot." … "You're the idiot!"; then 153–154.2 s to camera "I totally
-    //   got the best of that interchange"
     { id: 'c1', skill: 'infer', level: 'C2', point: 'best', seg: [129.8, 154.8], retired: true,
       stem: 'After the closing comment to the camera, how should we judge the argument?',
       choices: ['Nobody won; it sank into name-calling', 'The speaker won, just as he claims',
@@ -309,5 +288,38 @@ export const dwightVsAndy: Clip = {
       mean: 'カメラへの一言が場面を書きかえる形。ここでは逆に、勝ったと思い込む本人のずれが笑いになる。',
       trap: 'カメラへの本音をそのまま答えと取りやすい。本人の評価と、実際のやりとりを比べて聞く。',
       use: 'I think that went well. Right?（うまくいったと思う。だよね？）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'ifidiot', seg: [130.2, 134.5],
+      stem: 'Fill the gap: “If I were an idiot, ___ driving a Trans Am.”', ja: '空所に入るのは？ “If I were an idiot, ___ driving a Trans Am.”',
+      choices: ['I’d be', 'I’ll be', 'I’m'], a: 0,
+      choicesJa: ['〜しているだろう', '〜しているつもりだ', '〜している'],
+      cue: '「idiot」のあと',
+      line: 'If I were an idiot, *I’d be* driving a Trans Am.',
+      said: '「僕がばかなら、トランザムに乗ってるさ」と言い返す。',
+      mean: 'I’d be ＝ 〜しているだろう。I’d の d はほとんど聞こえず、be につながる。',
+      trap: '「アイル」と l が残れば I’ll be、be がなく「アイム」なら I’m、「アイ（ドゥ）ビー」なら I’d be。',
+      use: 'If I were you, I’d take the train.（私なら電車で行くな）' },
+
+    { id: 'f6', skill: 'phrase', level: 'B1', point: 'comeback', seg: [142.5, 148.5],
+      stem: 'What does “comeback” mean in “Nice comeback”?', ja: '“Nice comeback” の comeback はどういう意味？',
+      choices: ['A quick answer back', 'A return to work', 'A second try'], a: 0,
+      choicesJa: ['すばやい言い返し', '仕事への復帰', '2回目の挑戦'],
+      cue: '「You’re the idiot!」のあと',
+      line: 'You’re the idiot! — *Nice comeback!* — I was making fun of your *comeback*!',
+      said: '「お前こそばかだ！」に「いい言い返しだな！」と返す。',
+      mean: 'comeback ＝ 言い返し。悪口にうまく返す一言。Nice comeback はここでは皮肉で、本当は逆の意味。',
+      trap: 'カタカナのカムバック（復帰）を連想しやすい。けんかの中の comeback は「言い返し」。',
+      use: 'I never think of a good comeback in time.（いい言い返しがいつも間に合わない）' },
+
+    { id: 'f7', skill: 'phrase', level: 'B2', point: 'bestof', seg: [151.5, 155.5],
+      stem: 'What does “I totally got the best of that” mean?', ja: '“I totally got the best of that” はどういう意味？',
+      choices: ['I clearly won that', 'I clearly lost that', 'I liked that the best'], a: 0,
+      choicesJa: ['完全に私の勝ちだった', '完全に私の負けだった', 'それがいちばん好きだった'],
+      cue: '最後、カメラへのひと言',
+      line: 'I *totally got the best of* that interchange.',
+      said: '「今の言い合いは、完全に僕の勝ちだ」とカメラに言う。',
+      mean: 'get the best of 〜 ＝ 文字どおりは「〜のいちばんいい所を取る」→〜に勝つ。interchange ＝ やりとり。',
+      trap: 'best から「いちばん好き」と考えがち。get the best of はひとまとまりで「勝つ」。',
+      use: 'Don’t let your nerves get the best of you.（緊張に負けないで）' },
   ]
 };
