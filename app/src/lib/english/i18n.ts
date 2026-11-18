@@ -197,7 +197,6 @@ const S = {
   loading: { ja: '読み込み中…', en: 'Loading…' },
   bankFailed: { ja: '質問を読み込めなかったよ', en: "The questions didn't load" },
   bankOffline: { ja: 'オフラインだから、質問を読み込めないよ。つながったら読み込めるよ。', en: "You're offline: the questions load once you're back online." },
-  retryBank: { ja: 'もう一度', en: 'Try again' },
   // ⚙
   hard: { ja: '難しめの質問を増やす', en: 'More harder questions' },
   // (two short lines, broken where it reads: Safari wraps Japanese anywhere, mid-word at 393 pt)

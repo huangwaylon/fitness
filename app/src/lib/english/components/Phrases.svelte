@@ -4,6 +4,7 @@
   // ☆ 復習に入れる beside 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ.
   // Never a score. The place is this phone's (deck.ts), so the tab comes back to the same card, face down.
   import { onMount, untrack } from 'svelte';
+  import LoadError from '#lib/components/ui/LoadError.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import PhraseCard from './PhraseCard.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
@@ -139,10 +140,7 @@
         {/snippet}
       </PhraseCard>
     {:else if status === 'failed'}
-      <div class="card pad note" data-en-deck-failed>
-        <p>{online ? s('deckFailed') : s('deckOffline')}</p>
-        <button type="button" class="btn small paper" data-sfx="tick" onclick={settle}>{s('retryBank')}</button>
-      </div>
+      <LoadError text={online ? s('deckFailed') : s('deckOffline')} onretry={settle} data-en-deck-failed />
     {:else}
       <p class="wait">{s('loading')}</p>
     {/if}
@@ -154,7 +152,7 @@
   .top { flex: none; background-color: var(--surface); }
   .body { display: flex; flex-direction: column; gap: 12px; padding: 4px calc(12px + var(--safe-right)) 24px calc(12px + var(--safe-left)); scrollbar-width: none; }
   .card { flex: none; }
-  .end, .note { display: grid; gap: 8px; }
+  .end { display: grid; gap: 8px; }
   p { margin: 0; }
   .head { display: flex; gap: 10px; align-items: center; min-width: 0; }
   .kicker { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -167,6 +165,5 @@
   .pair.save { grid-template-columns: 3fr 2fr; }
   .pair .btn { white-space: nowrap; padding-inline: 8px; }
   .done { font-weight: 700; text-align: center; padding: 8px 0; }
-  .note { justify-items: center; text-align: center; }
   .wait { color: var(--text-soft); text-align: center; padding: 24px 0; }
 </style>

@@ -894,9 +894,10 @@ test('a bank that doesn’t load: the player and the watch card all the same, �
   const bank = lesson(page).locator('[data-en-bank]');
   await expect(bank).toHaveAttribute('data-en-bank', 'failed');
   await expect(bank).toContainText('質問を読み込めなかったよ');
+  await expect(bank).toHaveClass(/load-error/);
   await expect(lesson(page).locator('[data-en-next]')).toHaveCount(0);
   fail = false;
-  await bank.locator('[data-en-bank-retry]').click();
+  await bank.getByRole('button', { name: 'もう一度' }).click();
   await expect(cardAt(page, 0)).toHaveAttribute('data-result', 'open');
 });
 
@@ -1039,6 +1040,21 @@ const probe = () => {
 };
 const live = (p: Page) => p.evaluate(() => { const w = window as unknown as { __msg: number; __iv: Set<number> }; return [w.__msg, w.__iv.size]; });
 const ytVideo = (p: Page) => p.frames().find((f) => f.url().startsWith('https://www.youtube-nocookie.com/'))?.evaluate(() => (window as unknown as { __yt?: { videoId: string } }).__yt?.videoId);
+
+test('フレーズ: a deck file that doesn’t load: 読み込めなかったよ with もう一度, then its card', async ({ page }) => {
+  await fakeYoutube(page);
+  let fail = true;
+  await page.route(/\/english\/p\/\d+\.\w+\.json$/, (r) => (fail ? r.fulfill({ status: 503, body: '' }) : r.fallback()));
+  await open(page);
+  await tabOf(page, 'phrases').tap();
+  const err = sheet(page).locator('[data-en-deck-failed]');
+  await expect(err).toContainText('フレーズを読み込めなかったよ');
+  await expect(err).toHaveClass(/load-error/);
+  await expect(deckCard(page)).toHaveCount(0);
+  fail = false;
+  await err.getByRole('button', { name: 'もう一度' }).tap();
+  await expect(deckCard(page)).toBeVisible();
+});
 
 test('フレーズ: one embed a set — 5 cards, one frame throughout, each next clip cued into it, ▶ its segment on a later card; leaving the tab leaves no listener or timer', async ({ page }) => {
   await fakeYoutube(page, { rate: 8, dur: 3000 });

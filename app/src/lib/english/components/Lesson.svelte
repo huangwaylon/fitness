@@ -3,6 +3,7 @@
   // まとめ, never locked; ツール (StudySheet) and the levels it opens (この動画のセリフと解説, セリフ) under the same player.
   // The place is kept on this phone (session.ts); `listen` rows carry the study time; failures go to english.fail.
   import { onDestroy, untrack } from 'svelte';
+  import LoadError from '#lib/components/ui/LoadError.svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';
   import Icon from '#lib/components/ui/Icon.svelte';
   import { count } from '#lib/sync/log.ts';
@@ -269,14 +270,10 @@
           <Icon name="play" />{played ? s('watchAgain') : s('watchAll', { dur: durText(clip.dur) })}
         </button>
       </article>
-    {:else if bank !== 'ready'}
-      <article class="card pad" data-en-bank={bank} aria-live="polite">
-        {#if bank === 'loading'}<p class="meta">{s('loading')}</p>
-        {:else}
-          <p>{navigator.onLine ? s('bankFailed') : s('bankOffline')}</p>
-          <button type="button" class="btn small paper" data-sfx="tick" data-en-bank-retry onclick={fetchBank}>{s('retryBank')}</button>
-        {/if}
-      </article>
+    {:else if bank === 'failed'}
+      <LoadError text={navigator.onLine ? s('bankFailed') : s('bankOffline')} onretry={fetchBank} data-en-bank="failed" />
+    {:else if bank === 'loading'}
+      <article class="card pad" data-en-bank="loading" aria-live="polite"><p class="meta">{s('loading')}</p></article>
     {:else if q && cur}
       {#key at}
         <article class="card pad q" data-en-q={at} data-en-qid={q.id} data-result={cur.r?.k ?? 'open'}>
