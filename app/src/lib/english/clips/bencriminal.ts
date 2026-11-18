@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 0, new 2, ctx 4, tx 6
 // A2 REVIEW 2026-11-17: keep 4, rewrite 14, retire 4, new 0
 // “Ben is a Criminal | Parks and Recreation” (the official Parks and Recreation channel, Season 5): on his first day
 // as city manager Ben tries to be the friendly boss while handing out strict new rules, shares some unpasteurized
@@ -5,6 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16). The sources differ at 10.7 s ("smuggled it back" /
 // "Smuggle the bag"), 80.8 s ("wearing" / "wound" so tight), 132.4 s ("I just said that" / "Just add that" to the charges)
 // and 135–137 s ("prince"/"prints", "wanting"/"wanted"); no key rests on those words, and lines trim them with ….
+// R4: restored p1 (super-mandatory) and h2 (cell phone) as exchanges; new c1 (illegal cheese), j1 (jaywalked).
 import type { Clip } from '../types.ts';
 
 export const benCriminal: Clip = {
@@ -13,6 +15,18 @@ export const benCriminal: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'illegal', ctx: true, seg: [0.5, 12.5],
+      stem: 'What does Ben say about his cheese?',
+      ja: 'ベンは自分のチーズについて何と言う？',
+      choices: ['It is against the law here', 'It is very old and smells strong', 'It was a gift from Chris'], a: 0,
+      choicesJa: ['この国では法律違反', 'とても古くてにおいが強い', 'クリスからのもらい物'],
+      cue: '「what’s that mean?」への答え',
+      line: 'Ben: It’s unpasteurized. / Uh, *what’s that mean*? / Ben: *Technically, it’s illegal* in this country.',
+      said: '「どういう意味？」と聞かれ、「厳密に言うと、この国では違法」と答える。',
+      mean: 'illegal ＝ 違法。Technically ＝ 厳密に言えば（大したことないように見せる前置き）。',
+      trap: 'unpasteurized（殺菌してない）から、古いチーズと勘違いしやすい。答えは Technically のあと。',
+      use: 'Sorry, what does that mean?（すみません、それはどういう意味ですか）' },
+
     { id: 'f1', skill: 'phrase', level: 'B1', point: 'opendoor', seg: [12.2, 22.2],
       stem: 'What does Ben mean by a “total open-door policy”?',
       ja: 'ベンの「total open-door policy」はどういう意味？',
@@ -20,24 +34,25 @@ export const benCriminal: Clip = {
       choicesJa: ['いつでも相談に来ていい', '計画を全部話す', 'よく皆の所に来る'],
       cue: '「clubhouse」のあと',
       line: 'think of my office as a clubhouse, *total open-door policy*.',
-      said: '「僕の部屋はクラブハウスだと思って。いつでも来ていい」と言う。',
-      mean: 'open-door policy ＝「だれでもいつでも相談に来ていい」という方針。',
-      trap: 'open から「隠さない」と思いやすい。言いたいのは話しやすさ。',
+      said: '「僕の部屋はクラブハウスだと思って。ドアはいつでも開いてる」と言う。',
+      mean: '文字どおりは「ドアを開けておく方針」。ドアが開いている＝だれでもいつでも相談に来ていい、という上司の決まり文句。',
+      trap: 'open から「何でも隠さず話す」と考えがち。開いているのは部屋のドア＝話しやすさ。',
       use: 'My door is always open.（いつでも相談に来てね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstday', reveals: ['both'], seg: [15.5, 60.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'firstday', seg: [15.5, 42],
       stem: 'What kind of boss does Ben try to be?',
       ja: 'ベンはどんな上司になろうとしている？',
-      choices: ['A friendly but strict boss', 'A boss with no new rules', 'A boss who just gives gifts'], a: 0,
-      choicesJa: ['親しいけれど厳しい上司', '新しいルールを作らない上司', 'プレゼントをくれるだけの上司'],
-      cue: '「friend」の話と、新しいルール',
-      line: 'I want to be *your friend as well as your boss*. … I have some super cool new rules.',
-      said: '「友だちでいたい」と言いつつ、休暇削減やフェイスブック禁止を告げる。',
-      mean: 'as well as 〜 ＝「〜でもあり」。優しい上司と厳しい上司を一人でやろうとしている。',
-      trap: '前半だけ聞くとやさしい話、チーズだけだと物で釣る話に聞こえる。両方聞く。',
+      choices: ['Friendly and strict at once', 'Friendly, with no new rules', 'Strict, with no time for fun'], a: 0,
+      choicesJa: ['親しくて厳しい、両方', '親しくて、新しいルールなし', '厳しくて、遊びはなし'],
+      cue: '「friend」の話と、最後の do both',
+      line: 'I want to be *your friend as well as your boss*. … now that he’s gone, I kind of have to *do both*.',
+      said: '「友だちにもなりたい」と言い、「クリスがいないから、両方やらなきゃ」と話す。',
+      mean: 'as well as 〜 ＝「〜でもあり」。do both ＝ 優しい役と厳しい役の両方。一人で二役をやろうとしている。',
+      trap: '前半だけ聞くと優しいだけの上司に聞こえる。最後の do both（両方）まで聞く。',
       use: 'I’m your boss, but also your friend.（上司だけど、仲間でもあるよ）' },
 
     // retired (A2): teasing (“Are you in a cult? Can I join?”), a native’s ear
+
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'cult', seg: [20.5, 28.2], retired: true,
       stem: 'How does April take Ben’s friendly speech?',
       choices: ['She mocks it, joking she’ll join his cult', 'She is honestly worried he’s in a cult',
@@ -64,13 +79,13 @@ export const benCriminal: Clip = {
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'hammer', seg: [32, 41.5],
       stem: 'What does “I brought down the hammer” mean?',
       ja: '「I brought down the hammer」はどういう意味？',
-      choices: ['He played the strict one', 'He played the fun one', 'He did the heavy lifting'], a: 0,
-      choicesJa: ['厳しくする役だった', '楽しくする役だった', '力仕事をした'],
+      choices: ['He played the strict one', 'He played the fun one', 'He did the hard work'], a: 0,
+      choicesJa: ['厳しくする役だった', '楽しくする役だった', '大変な仕事をした'],
       cue: '「nice guy」のあと',
       line: 'Chris was always *the nice guy*… while *I brought down the hammer*.',
       said: '「クリスは皆を喜ばせる役、僕は厳しくする役だった」と言う。',
-      mean: 'bring down the hammer ＝「厳しく取りしまる」。nice guy（優しい人）と対になる。',
-      trap: 'hammer（金づち）から力仕事を思いやすい。while の前後は対比。',
+      mean: '文字どおりは「ハンマーを振り下ろす」。裁判官が木づちを打つ姿から→厳しく取りしまる。nice guy と対になる。',
+      trap: 'hammer（金づち）から力仕事を連想しやすい。while の前後は「優しい役」と「その逆」。',
       use: 'Someone has to be the bad guy.（誰かが嫌われ役にならないと）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'both', reveals: ['hammer'], seg: [33.0, 41.3], retired: true,
@@ -86,6 +101,7 @@ export const benCriminal: Clip = {
       use: 'Now I have to do both.（今は両方やらなきゃいけない）' },
 
     // retired (A2): a “what makes it funny” item
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'vitamins', reveals: ['both'], seg: [41.0, 46.9], retired: true,
       stem: 'What makes Ben’s quick run of lines to the staff funny?',
       choices: ['He swings from nice to harsh with each line', 'He tucks one harsh rule inside lots of praise',
@@ -97,19 +113,20 @@ export const benCriminal: Clip = {
       trap: 'ほめ言葉で悪い知らせを包む型に聞こえるが、ここは一文ずつ交互。文の数と順番を数えて聞く。',
       use: 'Good news and bad news.（いい知らせと悪い知らせがある）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'mandatory', seg: [46.8, 53.45], retired: true,
-      stem: 'What does “super mandatory” mean here?',
-      ja: '「super mandatory」は、ここではどういう意味？',
-      choices: ['You must follow them', 'They are very fun', 'They are not needed'], a: 0,
-      choicesJa: ['必ず守らないといけない', 'とても楽しい', 'いらない'],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'mandatory', ctx: true, seg: [47, 54],
+      stem: 'What does Ben add about his new rules?',
+      ja: 'ベンは新しいルールについて何をつけ足す？',
+      choices: ['Everyone must follow them', 'They are only for fun', 'Nobody has to follow them'], a: 0,
+      choicesJa: ['全員が必ず守ること', 'お遊びのルールだ', '誰も守らなくていい'],
       cue: '「Oh, nice」のあと',
-      line: 'I have some *super cool* new rules. — Oh, nice. — That are also *super mandatory*.',
-      said: '「クールな新ルールがある」「いいね」「しかも絶対守ること」と続く。',
-      mean: 'mandatory ＝「必須の・強制の」。super cool と同じ形で言って、喜んだ相手を落とす。',
-      trap: 'super が続くので楽しい話と思いやすい。also のあとが本題。',
+      line: 'Ben: I have some *super-cool* new rules. / Oh, nice. / Ben: That are also *super-mandatory*.',
+      said: '「超クールな新ルールがある」「へえ、いいね」「しかも超・絶対に守ってもらう」と続く。',
+      mean: 'mandatory ＝ 必須の、強制の。super-cool と同じ形で言って、喜んだ相手をがっかりさせる。',
+      trap: 'super-cool と Oh, nice で楽しい話と思いやすい。決め手は also のあと。',
       use: 'Is this meeting mandatory?（この会議は必須ですか）' },
 
     // retired (A2): a motive read into the cheese; d4 asks the news itself
+
     { id: 'p2', skill: 'pragma', level: 'C1', point: 'insurance', seg: [60.4, 68.7], retired: true,
       stem: 'Why does Ben offer cheese right after the health insurance news?',
       choices: ['To soften the bad news with a treat', 'To toast their new, better insurance', 'To be rid of cheese that’s illegal here'], a: 0,
@@ -133,15 +150,18 @@ export const benCriminal: Clip = {
       use: 'Does it cover my dependents?（扶養家族も対象ですか）' },
 
     // retired (A2): a “why is it funny” item
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'cellphone', seg: [68.2, 73.68], retired: true,
-      stem: 'Why is the complaint about the cell phone rule funny?',
-      choices: ['It gives away why the rule is needed', 'It shows the phone is part of his job', 'It shows the rule cuts him off from home'], a: 0,
-      cue: '「not fair」のあと、how で始まる理由。',
-      line: 'That’s not fair. My cell phone is *how I avoid doing work*.',
-      said: '「ずるい。携帯は仕事をサボる手段なのに」と抗議する。',
-      mean: '反対の理由が、そのままルールが必要な理由になっている。本人は気づかずに言う。',
-      trap: '抗議なら「仕事に要る」と続くのが普通。型どおりに聞かず、avoid の意味まで聞く。',
-      use: 'That’s exactly the problem.（まさにそれが問題なんだよ）' },
+
+    { id: 'h2', skill: 'pragma', level: 'B1', point: 'cellphone', ctx: true, seg: [68, 74.5],
+      stem: 'Why does the worker want to keep his phone?',
+      ja: 'その職員は、なぜ携帯を使いたい？',
+      choices: ['To avoid doing work', 'To call his wife and kids', 'To do his job'], a: 0,
+      choicesJa: ['仕事をサボるため', '妻と子どもに電話するため', '仕事で使うため'],
+      cue: '「not fair」のあと',
+      line: 'No cell phone usage on city hall property? / *That’s not fair.* My cell phone is *how I avoid doing work*.',
+      said: '「敷地内で携帯禁止？」に「ずるい。携帯は仕事をサボる道具なのに」と抗議する。',
+      mean: 'That’s not fair ＝「ずるい、不公平だ」と抗議する決まり文句。avoid 〜ing ＝ 〜するのを避ける。理由が正直すぎて笑い。',
+      trap: '抗議なら「仕事に要る」と続くと考えがち。avoid（避ける）が聞こえたら逆の理由。',
+      use: 'That’s not fair!（それはずるいよ）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'five', seg: [71.7, 78], keep: true,
       stem: 'How long can bathroom breaks last under the new rules?',
@@ -163,8 +183,8 @@ export const benCriminal: Clip = {
       cue: '「but」のあと',
       line: 'he’s acting all *loosey-goosey*, but that little dude’s … *so tight he’s gonna pop*.',
       said: '「ゆるく見せてるけど、あいつはガチガチで、今にも爆発しそう」と話す。',
-      mean: 'loosey-goosey ＝ ゆるい。tight はその逆で、緊張がたまっている。pop ＝ はじける。',
-      trap: 'pop を「怒り出す」と思いやすいが、張りつめた状態のこと。but の前後を対で聞く。',
+      mean: '文字どおりは「きつく張りすぎて、パンとはじけそう」（ふくらませすぎた風船）。→緊張がたまって限界。loosey-goosey ＝ ゆるい。',
+      trap: 'pop（はじける）から怒り出す話と考えがち。but の前の「ゆるい」の反対＝張りつめている。',
       use: 'He looks calm, but he’s stressed.（落ち着いて見えるけど、ストレスがたまってる）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'tight', seg: [78.0, 86.6], retired: true,
@@ -184,9 +204,9 @@ export const benCriminal: Clip = {
       choicesJa: ['警察官', '清掃チーム', '税関の職員'],
       cue: '次に来た人たちの用件',
       line: 'Hey, *the boys in blue*.',
-      said: '「やあ、お巡りさんたち」と明るく声をかける。',
-      mean: 'the boys in blue ＝「警察官」（制服の青から）。くだけた言い方。',
-      trap: '直前まで清掃チームに声をかけていたので混ざりやすい。次の用件で分かる。',
+      said: '「やあ、おまわりさんたち」と明るく声をかける。',
+      mean: '文字どおりは「青い服の男たち」。アメリカの警官の制服が紺色なので→警察官。くだけた言い方。',
+      trap: '直前まで清掃チームに声をかけていたので混ざりやすい。次の「通報があって」で分かる。',
       use: 'Uh-oh, here come the boys in blue.（あ、警察が来た）' },
 
     { id: 't2', skill: 'attitude', level: 'B1', point: 'justcheese', seg: [95.8, 102.3],
@@ -225,6 +245,18 @@ export const benCriminal: Clip = {
       trap: 'bribe からお金を思いやすいが、お金の話は出ていない。直前の一言を聞く。',
       use: 'You should try some. It’s really good.（食べてみて。本当においしいよ）' },
 
+    { id: 'j1', skill: 'detail', level: 'B2', point: 'jaywalk', seg: [125.5, 132.5],
+      stem: 'What does Ben say he has never done?',
+      ja: 'ベンは、何を一度もしたことがないと言う？',
+      choices: ['Crossed a road in the wrong place', 'Parked his car in the wrong place', 'Paid his taxes late'], a: 0,
+      choicesJa: ['道を変な所で渡った', '車を変な所に止めた', '税金を遅れて払った'],
+      cue: '「I never break the law」のあと',
+      line: 'I never break the law. *I’ve never even jaywalked.* Never. I mean, I— everyone does it sometimes.',
+      said: '「信号無視もしたことない。一度も。…いや、誰でもたまにはするか」と言う。',
+      mean: 'jaywalk ＝ 横断歩道や信号を守らずに道を渡ること。never even 〜 ＝「〜さえしたことない」。すぐ I mean で言い直す。',
+      trap: 'あとでコロラドの税金の話が出るが、それは警官の話。ここは walk が入った jaywalked。',
+      use: 'I’ve never even been there.（そこには行ったことさえない）' },
+
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [125.6, 132.38], retired: true,
       stem: 'What does Ben’s “I mean” show here?',
       ja: 'ここでのベンの「I mean」は何を表す？',
@@ -237,16 +269,16 @@ export const benCriminal: Clip = {
       trap: 'I mean を「つまり」の説明と思いやすい。前と逆のことが続いたら、言い直し。',
       use: 'I never eat sweets. I mean, almost never.（甘い物は食べない。いや、ほぼね）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'story', seg: [138.8, 147.1],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'story', ctx: true, seg: [138.8, 147.1],
       stem: 'What does “you can’t keep your story straight” mean?',
       ja: '「you can’t keep your story straight」はどういう意味？',
-      choices: ['Your story keeps on changing', 'Your story is far too long', 'Your story keeps wandering off'], a: 0,
-      choicesJa: ['話がどんどん変わる', '話が長すぎる', '話がそれていく'],
+      choices: ['Your story keeps on changing', 'Your story is far too long', 'Your story is very boring'], a: 0,
+      choicesJa: ['話がどんどん変わる', '話が長すぎる', '話がとても退屈'],
       cue: '「Denver once」のあと',
-      line: 'I’ve *never even been* to Colorado. I mean, I *had a layover* in Denver once. — you can’t *keep your story straight*',
-      said: '「行ったこともない。いや、乗り継ぎで一度」と言い、「話が変わるな」と返される。',
-      mean: 'keep one’s story straight ＝「話のつじつまを合わせる」。layover ＝ 乗り継ぎ。',
-      trap: 'straight を「分かりやすい」と思うと別の意味。直前の言い直しが答え。',
+      line: 'Ben: I’ve *never even been* to Colorado. I mean, I *had a layover* in Denver once. / Man, you can’t *keep your story straight*, can you?',
+      said: '「行ったこともない。いや、乗り継ぎで一度」に「話がころころ変わるな」。',
+      mean: '文字どおりは「話をまっすぐに保てない」。まっすぐ＝前と後ろがずれない→話のつじつまが合わない。layover ＝ 乗り継ぎ。',
+      trap: 'straight を「分かりやすい」と取ると別の意味になる。直前の never → I mean の言い直しが答え。',
       use: 'Let’s get our story straight.（話を合わせておこう）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'prank', reveals: ['uptight'], seg: [146.0, 169.6],
@@ -275,11 +307,11 @@ export const benCriminal: Clip = {
       stem: 'What reason do they give for the joke?',
       ja: 'いたずらの理由は何と言う？',
       choices: ['He seemed a bit too tense', 'He looked very bored', 'He bragged about Paris'], a: 0,
-      choicesJa: ['ちょっと堅苦しそうだった', 'とても退屈そうだった', 'パリの自慢をした'],
+      choicesJa: ['ちょっとピリピリしていた', 'とても退屈そうだった', 'パリの自慢をした'],
       cue: '「Classic!」のあと',
       line: 'You seemed *a little uptight*.',
-      said: '「ちょっと堅苦しそうだったから」と理由を言う。',
-      mean: 'uptight ＝「堅い・ぴりぴりしている」。笑わせてほぐそうとした。',
+      said: '「ちょっとピリピリしてるみたいだったから」と理由を言う。',
+      mean: 'uptight ＝ 堅い、ピリピリしている。笑わせて、新しい上司の緊張をほぐそうとした。',
       trap: '厳しいルールへの仕返しと思いやすいが、言っているのは彼の固さ。',
       use: 'Don’t be so uptight.（そんなに堅くならないで）' },
 
