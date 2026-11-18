@@ -1,9 +1,11 @@
+// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 0, new 5, ctx 6, tx 25
 // A2 REVIEW 2026-11-17: keep 10, rewrite 7, retire 6, new 0
 // “Joey’s New Girly Apartment | Friends” (the official Friends channel, Best of Season 6): Chandler warns Joey that
 // his new roommate Janine's things are taking over, Joey tries to push back and gives in on each point, and by the end
 // he is giving flower tips, until one line of his own gives him away.
 // Segments from the captions, words from whisper (2026-11-16). Whisper's timings drift after 60 s and it loops
-// 86–107 s, so every segment after 60 s is from the captions alone. Joey is named at 67.5 s, Janine at 81.8 s, Monica
+// 86–107 s, so every segment after 60 s is from the captions alone (the looped lines' ja reads （聞き取れない）;
+// c3 and c4 are placed from the scenes file, ≈80–104 s). Joey is named at 67.5 s, Janine at 81.8 s, Monica
 // at 197.2 s; Chandler is never named. Untested on purpose: the call at 50.4 s, 40.8 s, the potpourri reply (169.3 s),
 // who says “that's like summer in a bowl” (181 s) and “Joey, that is such a great tip” (193.7 s).
 import type { Clip } from '../types.ts';
@@ -42,8 +44,9 @@ export const girlyApt: Clip = {
       cue: '警告のすぐあと、ソファの上の物。', line: 'This girl thing is dangerous. *It’s spreading already*.',
       said: '「女の子っぽさは危ない。もう広がってる」と言い、ソファのクッションのことを聞く。',
       mean: 'spread ＝ 広がる。病気のように言って、彼女の物がリビングまで来ていると伝える。',
-      trap: 'spreading から病気の話と思いやすい。直後の couch（ソファ）の物が中身。',
+      trap: 'spreading から病気の話を連想しやすい。直後の couch（ソファ）の物が中身。',
       use: 'Her stuff is everywhere now.（彼女の物がもうあちこちに）' },
+
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'box', seg: [27.5, 33.4], retired: true,
       stem: 'With his question about the little box, how does Chandler see it?',
       choices: ['As cute, but no use for anything', 'As too small for the things Joey owns',
@@ -54,6 +57,7 @@ export const girlyApt: Clip = {
       mean: '飾りの小箱を「役に立たない物」として描く。男の目から見た飾り物への皮肉。',
       trap: '「Joey の物には小さすぎる」と取りやすい。anything は「何も」、つまり使い道がない。',
       use: 'It’s cute, but what’s it for?（かわいいけど、何に使うの？）' },
+
     { id: 'ph2', skill: 'phrase', level: 'B2', point: 'letgo', seg: [34.3, 42.4],
       stem: 'What does “If you let this go” mean here?',
       ja: 'ここでの「If you let this go」はどういう意味？',
@@ -64,6 +68,19 @@ export const girlyApt: Clip = {
       mean: 'let 〜 go ＝ 問題にせず放っておく。何もしないと染まる、という脅し。',
       trap: 'let go から「手放す」と思うと、部屋をゆずる話に聞こえる。ここは「見のがす」。',
       use: 'I’ll let it go this time.（今回は見のがすよ）' },
+
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'willtalk', ctx: true, seg: [38, 46],
+      stem: 'What does Joey agree to do?',
+      ja: 'ジョーイは何をすると言う？',
+      choices: ['Talk with Janine about it', 'Find a new apartment', 'Throw out all her stuff'], a: 0,
+      choicesJa: ['ジャニーンと話す', '新しい部屋を探す', '彼女の物を全部捨てる'],
+      cue: '「you’re right」のあと',
+      line: 'Chandler: …you’re gonna be sitting around with your fingers soaking. / Joey: All right, you’re right. *I’ll talk to her*.',
+      said: 'チャンドラーにおどされ、ジョーイは「分かった、お前の言うとおりだ。彼女と話すよ」と言う。',
+      mean: 'I’ll talk to her ＝ 彼女と話す（話をつける）。You’re right ＝「君の言うとおり」と相手を認める決まり文句。',
+      trap: '強くおどされたので、物を捨てると考えがち。ジョーイが言うのは talk（話す）だけ。',
+      use: 'You’re right. I’ll talk to him.（そうだね。彼と話してみる）' },
+
     { id: 'h2', skill: 'humor', level: 'C1', point: 'sweetums', seg: [44.7, 58.2], retired: true,
       stem: 'Why does “Totally different situation” get a laugh?',
       choices: ['He denies a match the audience just heard', 'He admits his home is just as girly, laughing',
@@ -73,7 +90,9 @@ export const girlyApt: Clip = {
       said: '「男らしくしろ」の直後、呼ばれて「すぐ行くよ、ハニー」と答え、「全然別の話」と言う。',
       mean: '飾り付けに呼ばれ、甘い呼び名で返事。自分も同じ状態にいる。',
       trap: 'different を言葉通り取ると、事情が違って聞こえる。直前の Be a man と並べる。',
-      use: 'That’s a totally different thing!（それは全然別の話だよ！）' },    { id: 'nt1', skill: 'humor', level: 'C2', point: 'sweetums', seg: [44.7, 58.2], retired: true,
+      use: 'That’s a totally different thing!（それは全然別の話だよ！）' },
+
+    { id: 'nt1', skill: 'humor', level: 'C2', point: 'sweetums', seg: [44.7, 58.2], retired: true,
       stem: 'After the call from the other room, who is the joke on?',
       choices: ['Chandler, who just told Joey to be a man', 'Joey, who just said “I’m a man” himself',
                 'Janine, whose frilly things started it all'], a: 0,
@@ -83,6 +102,19 @@ export const girlyApt: Clip = {
       mean: '笑いの的は助言した本人。別の話だと否定するほど、自分も同じだと認めている。',
       trap: '話の中心が Joey なので、笑いも Joey に向くと思いやすい。最後に言いわけしたのが誰かで的が決まる。',
       use: 'Do as I say, not as I do.（言う通りにして、まねはしないで）' },
+
+    { id: 'c2', skill: 'phrase', level: 'B1', point: 'beright', seg: [49.5, 57.5],
+      stem: 'What does Chandler mean by “Be right there”?',
+      ja: 'チャンドラーの「Be right there」はどういう意味？',
+      choices: ['I’m coming soon', 'Wait right there', 'You’re right'], a: 0,
+      choicesJa: ['すぐ行く', 'そこで待って', '君の言うとおり'],
+      cue: '呼ばれたすぐあとの返事',
+      line: '*Be right there*, sweetums.',
+      said: '「男らしくしろ」と言った直後、呼ばれて「すぐ行くよ、ハニー」と答える。',
+      mean: '(I’ll) be right there ＝「すぐそっちへ行く」。I’ll が落ちた形。sweetums ＝ 恋人への甘い呼び名。',
+      trap: 'right から「正しい」を連想しやすい。right there は「すぐそこ」。',
+      use: 'Be right there! Just a second.（すぐ行きます！少々お待ちを）' },
+
     { id: 'i1', skill: 'phrase', level: 'B2', point: 'cute', seg: [71.1, 81.1],
       stem: 'What does “That’s what I was afraid of” mean?',
       ja: '「That’s what I was afraid of」はどういう意味？',
@@ -94,16 +126,40 @@ export const girlyApt: Clip = {
       trap: 'afraid（こわい）から、人をこわがっていると思いやすい。ここは「心配」。',
       use: 'That’s what I was afraid of.（それを心配してたんだ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'cute', seg: [73.7, 79.7],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'cute', ctx: true, seg: [73.5, 79.7],
       stem: 'Why does Janine have the picture of the kid?',
       ja: 'ジャニーンはなぜその子の写真を持っている？',
       choices: ['She thought it was cute', 'The kid is her relative', 'She used to babysit the kid'], a: 0,
       choicesJa: ['かわいいと思ったから', '親せきの子だから', '前に子守りをしていたから'],
-      cue: 'ジョーイの質問への返事。', line: 'No, *I just thought it was cute*.',
+      cue: 'ジョーイの質問への返事。', line: 'Joey: Is that, like, a relative or something? / Janine: No, *I just thought it was cute*.',
       said: '親せきかと聞かれ、「ううん、かわいいと思っただけ」と答える。',
       mean: 'I just thought 〜 ＝ 〜と思っただけ。知らない子の写真を、かわいいから飾っている。',
       trap: 'relative（親せき）が耳に残りやすい。答えは No から始まっている。',
       use: 'I just thought it was nice.（いいなと思っただけ）' },
+
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'athome', seg: [80, 91.5],
+      stem: 'Why does Joey first say “I want you to feel at home”?',
+      ja: 'ジョーイはなぜ先に「I want you to feel at home」と言う？',
+      choices: ['To be kind before a complaint', 'To ask her to stay longer', 'To say sorry for his room'], a: 0,
+      choicesJa: ['文句の前にやさしく言うため', 'もっと長くいてと頼むため', '自分の部屋のことを謝るため'],
+      cue: '「but」のあと何が来るか',
+      line: 'Janine, I really *want you to feel at home* here, *but*… some of this new stuff, it’s just too girly.',
+      said: '「ここを自分の家だと思ってほしい。でも…新しい物の一部は女の子っぽすぎる」と切り出す。',
+      mean: 'feel at home ＝ くつろぐ、自分の家のように感じる。やさしい一言→but→本題、は文句を言うときの型。',
+      trap: 'feel at home だけ聞くと歓迎の話と考えがち。決め手は but のあと。',
+      use: 'I love your idea, but it’s too expensive.（いい案だけど、高すぎる）' },
+
+    { id: 'c4', skill: 'infer', level: 'B2', point: 'artist', ctx: true, seg: [91, 104],
+      stem: 'Why does Janine say the baby picture is okay?',
+      ja: 'ジャニーンは、赤ちゃんの写真はなぜいいと言う？',
+      choices: ['A famous artist took it', 'The baby is her niece', 'Joey gave it to her'], a: 0,
+      choicesJa: ['有名な芸術家が撮った', '赤ちゃんは彼女のめい', 'ジョーイにもらった'],
+      cue: '「We can’t have that」への返事',
+      line: 'Joey: Pictures of cute babies we don’t know. *We can’t have that.* / Janine: Joey, it’s Anne Geddes. *She’s a famous artist.*',
+      said: '「知らない赤ちゃんの写真はだめ」に、ジャニーンは「アン・ゲデスよ。有名な芸術家なの」と返す。',
+      mean: 'アン・ゲデス ＝ 赤ちゃん写真で有名な写真家。We can’t have that ＝「それはだめだ」。',
+      trap: 'cute babies we don’t know から、身内の子かと考えがち。決め手は famous artist。',
+      use: 'It’s by a famous photographer.（有名な写真家の作品なんだ）' },
 
     { id: 'nt4', skill: 'dict', level: 'C1', point: 'nicer', seg: [108.1, 115],
       stem: 'Type: “I just thought ___ the place a little nicer.” (4 words)',
@@ -114,6 +170,7 @@ export const girlyApt: Clip = {
       mean: 'try and ＋動詞 ＝ 話し言葉の try to（〜してみる）。I’d の d はほぼ聞こえない。',
       trap: '教科書の形で try to と書きやすい。聞こえた and をそのまま書く。',
       use: 'I’ll try and call you tonight.（今夜電話してみるね）' },
+
     { id: 'a2', skill: 'attitude', level: 'C1', point: 'wateringcan', seg: [119.3, 129.5], retired: true,
       stem: 'When Janine starts to explain the watering can, how does Joey answer?',
       choices: ['Sarcastically, waving off her “famous” point', 'Playfully, hoping she’ll laugh along with him',
@@ -124,6 +181,7 @@ export const girlyApt: Clip = {
       mean: '「有名な画家」を逆手に取った皮肉。I’m sure は「どうせ」に近い。',
       trap: 'I’m sure を「確かに」と取ると、認めたように聞こえる。But come on が本音。',
       use: 'I’m sure it’s very important, but…（さぞ大事なんでしょうけど…）' },
+
     { id: 'g2', skill: 'gist', level: 'B1', point: 'talk', reveals: ['curling', 'peace', 'clean'], seg: [128, 172.8],
       stem: 'How does Joey’s talk with Janine go?',
       ja: 'ジョーイとジャニーンの話はどう進む？',
@@ -136,15 +194,15 @@ export const girlyApt: Clip = {
       trap: '文句が続くので、けんかに思いやすい。ジョーイの返事の終わり方を聞く。',
       use: 'Fair enough. You win.（なるほど、君の勝ち）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'curling', seg: [132.3, 143.9],
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'curling', ctx: true, seg: [132.3, 143.9],
       stem: 'What does Joey mean by “Well, that’s okay then”?',
       ja: 'ジョーイの「Well, that’s okay then」はどういう意味？',
       choices: ['Then it’s fine', 'It’s still not okay', 'Show it to me'], a: 0,
       choicesJa: ['それならいい', 'やっぱりだめ', '見せて'],
-      cue: '名前を聞いたあとの短い返事。', line: 'It’s a curling iron. — *Oh, well, that’s okay then*.',
+      cue: '名前を聞いたあとの短い返事。', line: 'Joey: What is with the *really hot stick* in the bathroom? / Janine: It’s a curling iron. / Joey: Oh, well, *that’s okay then*.',
       said: '「ヘアアイロンよ」と聞くと、「ああ、それならいいや」と引き下がる。',
       mean: '〜 then ＝ それなら〜。正体が分かれば文句はない、とあっさり取り下げる。',
-      trap: '前の文句の流れで、これも嫌みと思いやすい。Oh, well の軽さを聞く。',
+      trap: '前の文句の流れで、これも嫌みと考えがち。Oh, well の軽さを聞く。',
       use: 'Oh, well, that’s fine then.（ああ、それならいいよ）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'towel', seg: [143.5, 154.8],
@@ -158,15 +216,15 @@ export const girlyApt: Clip = {
       trap: 'hook があとに出るので選びやすい。not は「今はそこにない」ということ。',
       use: 'That’s where I keep my keys.（鍵はいつもそこに置いてる）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'clean', seg: [156.9, 161.9],
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'clean', ctx: true, seg: [154.5, 162],
       stem: 'Why does the towel feel different?',
       ja: 'タオルはなぜ感じが違う？',
       choices: ['It’s clean and dry', 'Janine used it', 'It’s a brand-new towel'], a: 0,
       choicesJa: ['きれいで乾いている', 'ジャニーンが使った', '新品のタオルだ'],
-      cue: '「different」のたびに返る一語。', line: '…it feels different. — It’s *dry*.',
+      cue: '「different」のたびに返る一語。', line: 'Joey: And it smells different. / Janine: It’s *clean*. / Joey: Yeah, but it feels different. / Janine: It’s *dry*.',
       said: '「においが違う」には「洗ったから」、「感じが違う」には「乾いてる」と返す。',
       mean: '違和感の正体は、清潔で乾いていること。文句が実は改善の証拠。',
-      trap: 'smells different から「誰かが使った」と思いやすい。ジャニーンの短い答えが理由。',
+      trap: 'smells different から「誰かが使った」と勘違いしやすい。ジャニーンの短い答えが理由。',
       use: 'It’s not different. It’s just clean.（違うんじゃなくて、きれいなだけ）' },
 
     { id: 'ph3', skill: 'phrase', level: 'B2', point: 'peace', reveals: ['clean'], seg: [162.3, 169.6],
@@ -190,6 +248,7 @@ export const girlyApt: Clip = {
       mean: 'sear ＝ 表面をさっと焼く。文句を言っていたジョーイが、花の生け方を教えている。',
       trap: 'sear は soak や cut と同じ場所に来る。frying pan まで聞けば「焼く」と分かる。',
       use: 'Sear the meat first, then lower the heat.（先に肉を焼いて、火を弱める）' },
+
     { id: 'h6', skill: 'humor', level: 'C1', point: 'girlflowers', seg: [193.2, 200.8], retired: true,
       stem: 'When Chandler cuts into the flower talk, why does it get a laugh?',
       choices: ['He calls Joey the girl with the flowers', 'He calls Monica the girl with the flowers',
@@ -201,6 +260,19 @@ export const girlyApt: Clip = {
       mean: 'その場で花のコツを語っていたのは Joey。彼を「女の子」と呼んでからかっている。',
       trap: 'girl と聞くと Janine を思い浮かべやすい。花の話をしていたのは誰か。',
       use: 'Can I talk to the birthday boy?（誕生日の主役と話せる？）' },
+
+    { id: 'c5', skill: 'pragma', level: 'B1', point: 'excuseus', seg: [195.5, 203.5],
+      stem: 'What does Chandler ask Monica to do?',
+      ja: 'チャンドラーはモニカに何を頼む？',
+      choices: ['Leave them alone for a bit', 'Say sorry to Joey', 'Help with the flowers'], a: 0,
+      choicesJa: ['少し二人にしてほしい', 'ジョーイに謝ってほしい', '花を手伝ってほしい'],
+      cue: '「Monica,」のあと',
+      line: 'Monica, *could you excuse us for a second*? I need to talk to the girl with the flowers.',
+      said: '「モニカ、ちょっと二人にしてくれる？花の女の子と話がある」と言う。',
+      mean: 'Could you excuse us? ＝「少し席を外してくれる？」のていねいな頼み方。花の女の子＝ジョーイへのからかい。',
+      trap: 'excuse から「許す・謝る」を連想しやすい。excuse us は「私たちだけにして」。',
+      use: 'Could you excuse us for a minute?（少し席を外してもらえますか）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['curling', 'peace'], seg: [217, 259.2],
       stem: 'How does the talk with Chandler end?',
       ja: 'チャンドラーとの話はどう終わる？',
@@ -212,6 +284,7 @@ export const girlyApt: Clip = {
       mean: '止めるつもりが、自分が染まっていた。その逆転が場面の筋。',
       trap: '最初は否定するので、変わっていないと思いやすい。最後の叫びが答え。',
       use: 'I came to complain. Now I love it.（文句を言いに来たのに、今は大好き）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'famousbaby', reveals: ['wateringcan'], seg: [226.2, 238.4], retired: true,
       stem: 'When Joey defends the baby picture to Chandler, what does his wording show?',
       choices: ['He now argues the way he mocked earlier', 'He mocks it again, the way he did the can',
@@ -222,6 +295,7 @@ export const girlyApt: Clip = {
       mean: '前に皮肉った Janine の言い分を、今度は本気で自分が使う。言葉の借り方が変化の証拠。',
       trap: 'famous の重ね方はじょうろの皮肉と同じ形だが、今は守る側。前に誰の言葉だったかと、今の立場を並べる。',
       use: 'Now you sound just like her.（今の、彼女そっくり）' },
+
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'mean', seg: [239.7, 247.4],
       stem: 'How does Joey feel when Chandler says he’s turning into a woman?',
       ja: '「女になってる」と言われて、ジョーイはどう感じる？',
@@ -244,15 +318,15 @@ export const girlyApt: Clip = {
       trap: '小さな「ヴ」があれば I’ve、「ド」と止まれば I’d、「アイ」からすぐ upset なら I。',
       use: 'Sorry, I’ve kept you waiting.（お待たせしました）' },
 
-    { id: 'h7', skill: 'phrase', level: 'B2', point: 'wayyousaid', reveals: ['mean'], seg: [248.6, 259.2],
+    { id: 'h7', skill: 'phrase', level: 'B2', point: 'wayyousaid', reveals: ['mean', 'turn', 'ive'], ctx: true, seg: [248.6, 259.2],
       stem: 'What does Joey mean by “it’s just the way you said it”?',
       ja: 'ジョーイの「it’s just the way you said it」はどういう意味？',
       choices: ['How you said it hurt', 'What you said was wrong', 'You said it too fast'], a: 0,
       choicesJa: ['言い方が傷ついた', '言った中身がまちがい', '言うのが速すぎた'],
-      cue: '「Not what you said」のあと。', line: '*Not what you said, it’s just the way you said it*. — Oh my God! I’m a woman!',
+      cue: '「Not what you said」のあと。', line: 'Chandler: Now I’ve upset you. What did I say? / Joey: *Not what you said, it’s just the way you said it*.',
       said: '「言った中身じゃなくて、言い方なんだよ」と答えた直後、「女になってる！」と叫ぶ。',
       mean: 'the way you said it ＝ 言い方。けんかで傷ついたときの決まり文句で、自分でも気づく。',
-      trap: 'what you said（中身）と思いやすい。Not のあとを打ち消して、the way（言い方）が答え。',
+      trap: 'what you said（中身）の話に聞こえるが、Not で打ち消している。the way（言い方）が答え。',
       use: 'It’s not what you said. It’s how.（中身じゃなくて、言い方だよ）' },
   ]
 };
