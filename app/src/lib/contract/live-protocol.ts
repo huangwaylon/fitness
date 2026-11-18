@@ -153,6 +153,8 @@ export interface SgIntent {
   m?: number;
   u?: 1;
   p?: 1;
+  /** pic: the spoken sentence's bonus stars (1–3: on task +2, a re-say after a tip +1); none when not said. */
+  y?: 1 | 2 | 3;
   /** gift: the letter (`ch`), and whom to (`to`). */
   ch?: string;
   to?: Who;
@@ -556,7 +558,9 @@ function intentOf(o: Obj): Intent | null {
         ...out, ...(o.a === 'fork' ? { b: o.b as 0 | 1 } : {}), ...(o.a === 'word' ? { w: o.w as string } : {}),
         ...(o.a === 'gift' ? { ch: o.ch as string, to: o.to as Who } : {}),
         ...(o.d ? { d: 1 as const } : {}), ...(o.h ? { h: 1 as const } : {}), ...(o.k ? { k: 1 as const } : {}),
-        ...(o.m !== undefined ? { m: o.m as number } : {}), ...(o.u ? { u: 1 as const } : {}), ...(o.p ? { p: 1 as const } : {})
+        ...(o.m !== undefined ? { m: o.m as number } : {}), ...(o.u ? { u: 1 as const } : {}), ...(o.p ? { p: 1 as const } : {}),
+        // (a bad or misplaced `y` is dropped, not the move: an older phone's pic still counts)
+        ...(o.a === 'pic' && (o.y === 1 || o.y === 2 || o.y === 3) ? { y: o.y } : {})
       };
     }
     case 'say': {

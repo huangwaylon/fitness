@@ -441,6 +441,11 @@ describe('live protocol: 英語すごろく moves (sg)', () => {
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 6, a: 'sent', m: 2, u: 1 });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'z', to: 'B' });
     expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 7, a: 'gift', ch: 'zz', to: 'B' }))).toBeNull();
+    expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 8, a: 'pic', m: 1, y: 3 }))).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 8, a: 'pic', m: 1, y: 3 });
+    // a spoken sentence's stars: 1–3 on a pic only; anything else drops `y`, never the move
+    for (const [a, y] of [['pic', 0], ['pic', 4], ['pic', 2.5], ['pic', '2'], ['sent', 2]] as const) {
+      expect(parseClient(j({ kind: 'sg', g: 'abc123', i: 8, a, y })), `${a} ${y}`).toEqual({ v: 3, kind: 'sg', g: 'abc123', i: 8, a });
+    }
     expect(isStored({ kind: 'sg', g: 'abc123', i: 1, a: 'roll' })).toBe(true);
     expect(JSON.stringify(start).length).toBeLessThan(MAX_BYTES);
   });

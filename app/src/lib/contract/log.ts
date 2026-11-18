@@ -130,6 +130,10 @@ export const LOG_EVENTS = {
   // whether it's kept from eviction, and (r3 L7) each service worker cache's MB (sync/cacheSizes.ts)
   // the speech test (routes/speech, docs/speech-test.md): times and the match only, never the audio or what was heard
   "speech.test": { src: 'c', f: { audS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'off', 'capped', 'network', 'ai', 'other'] } },
+  // 英語すごろく's spoken sentence (lib/sugoroku): what decided the feedback (the phone's task check, the wasei list, the
+  // relay's AI, none), its verdict, the time to it, the takes, edited before grading, re-said after a tip, why not.
+  // Never the sentence
+  "sg.grade": { src: 'c', f: { layer: ['task', 'wasei', 'ai', 'none'], verdict: ['great', 'ok', 'tip', 'none'], ms: 'n', takes: 'n', edited: 'b', resaid: 'b', err: ['denied', 'off', 'capped', 'network', 'ai', 'timeout', 'other'] } },
   "storage.use": { src: 'c', f: { useMb: 'n', quotaMb: 'n', persisted: 'b', shell: 'n', room: 'n', art: 'n', photos: 'n', tiles: 'n', foodImg: 'n', food: 'n', fonts: 'n', audio: 'n', other: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
@@ -167,7 +171,10 @@ export const LOG_EVENTS = {
   admin: { src: 'r', f: { op: 't', st: 't' } },
   "log.cap": { src: 'r', f: { bucket: 't' } },
   // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
-  stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } }
+  stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } },
+  // `POST /grade` (relay/src/gradeRoute.ts): the sentence's length (inC), the time, the outcome, the verdict and who
+  // gave it (the wasei list or the AI), never the sentence or the answer
+  grade: { src: 'r', f: { ms: 'n', inC: 'n', ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'], verdict: ['great', 'ok', 'tip'], src: ['ai', 'wasei'] } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;
