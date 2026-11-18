@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 6, retire 3, new 7, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 4, rewrite 6, retire 3, new 7, ctx 4, tx 5, qa 14
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 0 · sweep: lesliecancel twins retired (d1 w2 h1 g1), new g3
 // “Jerry Knows His Place | Parks and Recreation” (the official Parks and Recreation channel, Season 4): asked about
 // Nick Newport on camera, Leslie calls him a jerk without knowing he died that day; Jen calls on her to cancel her
@@ -69,7 +69,7 @@ export const jerryPlace: Clip = {
       trap: '前置きなので、やわらかくすると思いやすい。Frankly のあとは強い本音が来る。',
       use: 'Frankly, I liked the first hotel better.（正直、最初のホテルの方がよかった）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [21.1, 27.9],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'died', seg: [22.4, 27.6],
       stem: 'Type what the reporter says: “comment on Nick Newport ___ today?” (2 words)', answer: 'dying earlier',
       ja: '記者の言葉を入力：「comment on Nick Newport ___ today?」（2語）',
       cue: '名前のすぐあと',
@@ -82,8 +82,8 @@ export const jerryPlace: Clip = {
     { id: 'knew', skill: 'infer', level: 'B2', point: 'knew', reveals: ['died'], ctx: true, seg: [22.7, 30],
       stem: 'Did Leslie know that Nick had died?',
       ja: 'レスリーはニックが亡くなったことを知っていた？',
-      choices: ['No, it’s news to her', 'Yes, she heard this morning', 'Yes, but she forgot'], a: 0,
-      choicesJa: ['いいえ、今はじめて聞いた', 'はい、今朝聞いていた', 'はい、でも忘れていた'],
+      choices: ['No, she just found out', 'Yes, she heard this morning', 'Yes, but she forgot'], a: 0,
+      choicesJa: ['いいえ、今はじめて知った', 'はい、今朝聞いていた', 'はい、でも忘れていた'],
       cue: '記者の言い直しへの返事',
       line: 'Reporter: …can you comment on Nick Newport dying earlier today? / Leslie: *He died?*',
       said: '「今日亡くなった件についてです」と言われ、「亡くなったの？」と聞き返す。',
@@ -94,8 +94,8 @@ export const jerryPlace: Clip = {
     { id: 'overall', skill: 'phrase', level: 'B2', point: 'overall', seg: [36.6, 44.5],
       stem: 'What does “overall” mean in Leslie’s statement?',
       ja: 'レスリーのコメントの「overall」の意味は？',
-      choices: ['All in all', 'Most of all', 'Over and over'], a: 0,
-      choicesJa: ['全体として', '何よりも', '何度も何度も'],
+      choices: ['In general', 'Most of all', 'Over and over'], a: 0,
+      choicesJa: ['全体として（だいたい）', '何よりも', '何度も何度も'],
       cue: '「that is」のあと',
       line: 'No. My official statement is, that is *overall* a bummer.',
       said: '「いいえ。公式のコメントは『全体として、ついてない』です」と言い直す。',
@@ -141,8 +141,8 @@ export const jerryPlace: Clip = {
     { id: 'respect', skill: 'detail', level: 'B2', point: 'respect', ctx: true, seg: [61.7, 72.4],
       stem: 'Why does Jen say Leslie should cancel her events?',
       ja: 'ジェンは、なぜレスリーはイベントを中止すべきだと言う？',
-      choices: ['For the sake of Nick’s family', 'Because Leslie is losing badly', 'Because the town is angry'], a: 0,
-      choicesJa: ['ニックの家族のため', 'レスリーが大負けしているから', '町の人が怒っているから'],
+      choices: ['To be kind to Nick’s family', 'Because Leslie is losing badly', 'Because the town is angry'], a: 0,
+      choicesJa: ['ニックの家族を思いやって', 'レスリーが大負けしているから', '町の人が怒っているから'],
       cue: '「out of」のあと',
       line: 'Host: Now, Jen, what are your thoughts about all of this? / Jen: …cancel all of her campaign events *out of respect for the Newport family*.',
       said: '「ジェン、どう思いますか？」に、「ニューポート家への敬意として、中止すべき」と答える。',
@@ -161,7 +161,7 @@ export const jerryPlace: Clip = {
       trap: 'respect を本心と取りやすい。求めているのは謝罪でなく中止、それも her の分だけ。',
       use: 'Out of respect, let’s skip the speeches.（敬意を込めて、スピーチはなしで）', retired: true },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [86, 94.9], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'age', seg: [86, 94.5], keep: true,
       stem: 'How old was Nick Newport?',
       ja: 'ニック・ニューポートは何歳だった？',
       choices: ['88', '90', '98', '99'], a: 2,
@@ -196,7 +196,7 @@ export const jerryPlace: Clip = {
       trap: 'a lot of people だけだと、中身を想像でうめやすい。out of work を聞く。',
       use: 'The storm put the shop out of business.（あらしで店がつぶれた）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [101.6, 107.6],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'ben', seg: [101.75, 107.2],
       stem: 'Who does Leslie ask first for advice?',
       ja: 'レスリーが最初に意見を聞くのはだれ？',
       choices: ['Ben', 'Ann', 'April'], a: 0,
@@ -220,7 +220,7 @@ export const jerryPlace: Clip = {
       trap: 'unfortunate から、とても悲しんでいると思いやすい。but のあとの短く強い文が本当の考え。',
       use: 'It’s unfortunate, but we have to go.（気の毒だけど、行かなきゃ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [104.4, 112.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'cant', seg: [104.4, 110.7],
       stem: 'Fill the gap: “We ___ stop campaigning.”',
       ja: 'すき間をうめよう：「We ___ stop campaigning.」',
       choices: ['can’t just', 'can just', 'could just'], a: 0,
@@ -259,8 +259,8 @@ export const jerryPlace: Clip = {
     { id: 'i2', skill: 'marker', level: 'B2', point: 'fine', ctx: true, seg: [113.4, 120.6],
       stem: 'What does “Okay, fine” mean here?',
       ja: 'ここでの「Okay, fine」はどういう意味？',
-      choices: ['All right, I’ll say it', 'I agree with Ben', 'I will try a lot harder'], a: 0,
-      choicesJa: ['分かった、じゃあ言う', 'ベンに賛成', 'もっとずっとがんばる'],
+      choices: ['All right, I’ll say it', 'I agree with Ben', 'That is a fine idea'], a: 0,
+      choicesJa: ['分かった、じゃあ言う', 'ベンに賛成', 'それはいい考えだ'],
       cue: '「Not with that attitude」のあと',
       line: 'Leslie: Not with that attitude. / Ann: *Okay, fine.* I think you should stop.',
       said: 'はげまされたアンが「分かった、いいよ。やめるべきだと思う」と続ける。',
@@ -303,7 +303,7 @@ export const jerryPlace: Clip = {
       trap: 'but のあとを正式な意見と取りやすい。前半とセットで、理由のない反対と分かる。',
       use: 'I didn’t read it, but I love it.（読んでないけど、気に入った）', retired: true },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', seg: [123.9, 140.9],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'andy', reveals: ['apologize'], seg: [123.9, 140.9],
       stem: 'What does Andy think the team should do?', ja: 'アンディは、チームはどうすべきだと思っている？',
       choices: ['Keep campaigning, no matter what', 'Stop until Leslie says sorry', 'Take a short break first'], a: 0,
       choicesJa: ['何があっても選挙活動を続ける', 'レスリーが謝るまでやめる', 'まず少し休む'],
@@ -325,7 +325,7 @@ export const jerryPlace: Clip = {
       trap: 'Anyone? Everyone? を賛成の確認と聞きやすい。何が欲しいかを聞いている文。',
       use: 'Okay, enough of that. Who wants coffee?（その話はもういい。コーヒー欲しい人？）', retired: true },
 
-    { id: 'call', skill: 'phrase', level: 'B1', point: 'yourcall', seg: [139.8, 145],
+    { id: 'call', skill: 'phrase', level: 'B1', point: 'yourcall', seg: [140.3, 145],
       stem: 'What does “what’s your call?” mean here?',
       ja: 'ここでの「what’s your call?」の意味は？',
       choices: ['What do you decide?', 'Who will you phone?', 'What will you say?'], a: 0,
@@ -337,7 +337,7 @@ export const jerryPlace: Clip = {
       trap: 'call（電話する）を連想しやすい。みんなの意見を聞いたあとの「決めて」。',
       use: 'It’s your call.（決めるのはあなただよ）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'face', reveals: ['call', 'ann'], ctx: true, seg: [141, 151],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'face', reveals: ['call', 'ann'], ctx: true, seg: [141, 150.7],
       stem: 'Why does Leslie say “your beautiful face” to Ann?',
       ja: 'レスリーはなぜアンに「your beautiful face」と言う？',
       choices: ['To say no to her kindly', 'To agree with her idea', 'To ask her for some help'], a: 0,
@@ -350,11 +350,11 @@ export const jerryPlace: Clip = {
       use: 'I hate to say no, but I have to.（断りたくないけど、断らなきゃ）' },
 
     { id: 'sched', skill: 'detail', level: 'B1', point: 'schedule', seg: [149, 155.2],
-      stem: 'What does Leslie ask at the end?',
-      ja: '最後にレスリーは何を聞く？',
+      stem: 'What does Leslie ask after her decision?',
+      ja: '決めたあと、レスリーは何を聞く？',
       choices: ['The day’s next plan', 'Who wants some lunch', 'Where Ann went'], a: 0,
       choicesJa: ['今日の次の予定', 'お昼がほしい人', 'アンがどこに行ったか'],
-      cue: '最後の質問',
+      cue: '「keep campaigning」と決めたあと',
       line: '*What’s next on the schedule?*',
       said: '話がまとまり、「次の予定は？」と聞いて先へ進める。',
       mean: 'What’s next on the schedule? ＝ 次の予定は何？ schedule ＝ 予定表。仕事でよく使う。',

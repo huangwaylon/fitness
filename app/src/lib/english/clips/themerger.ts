@@ -1,6 +1,5 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 1, new 5, ctx 9, tx 7, qa 14
+// R4 REVIEW 2026-11-18: keep 9, rewrite 8, retire 1, new 5, ctx 9, tx 7, qa 15
 // A2 REVIEW 2026-11-17: keep 6, rewrite 12, retire 5, new 0
-// OPEN: s1 (60 %) kept: the key is the default grammar and no stronger distractor avoids a second key. Fine to ship?
 // “The Merger - The Office US” (the official The Office channel, BEST OF SEASON 3): staff from the Stamford branch
 // arrive in Scranton; Michael hands out gift bags, Andy explains his plan to rise and tries it on Michael, Jim comes
 // back, Dwight warns him, and Jim's old desk ends up with someone else.
@@ -198,18 +197,6 @@ export const theMerger: Clip = {
       trap: 'awesome を文字どおり喜びと取りやすい。前の言葉と合わない返事は受け流しの合図。',
       use: 'You’re late again? Great. Awesome.（また遅刻？最高だね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'stand', seg: [187.1, 192.9],
-      stem: 'Fill the gap: “___ stand with Pam?”',
-      ja: '「___ stand with Pam?」の空所は？',
-      choices: ['Where do I', 'Where did I', 'Where would I'], a: 0,
-      choicesJa: ['私は（今）どう', '私は（前は）どうだった', '私はどうなるだろう'],
-      cue: 'カメラの前、最初の一言',
-      line: '*Where do I* stand with Pam?',
-      said: '「パムとの関係はどうかって？」と、聞かれた質問をくり返す。',
-      mean: 'Where do I stand with 〜? ＝「〜とはどういう関係？」。do I は「ドゥアイ」とつながる。',
-      trap: '「ドゥ」なら do、「ディ」なら did。would なら「ウッ」で始まる。',
-      use: 'Where do I stand with the team?（チームでの私の立場は？）' },
-
     { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', reveals: ['pam'], seg: [189.8, 201.8], retired: true,
       stem: 'What does Jim’s “I mean” lead into?',
       ja: 'ジムの「I mean」のあとには何が来る？',
@@ -222,7 +209,7 @@ export const theMerger: Clip = {
       trap: '「意味する」と直訳すると反論に聞こえる。I mean のあとには言い直しが来る。',
       use: 'No idea. I mean, I just got here.（さあ。だって、今来たばかりだし）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', seg: [190.4, 201.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'pam', reveals: ['always'], seg: [190.4, 201.8],
       stem: 'How sure is Jim about him and Pam?',
       ja: 'ジムはパムとの関係にどのくらい自信がある？',
       choices: ['Not sure at all', 'Very sure', 'He doesn’t care'], a: 0,
@@ -233,6 +220,18 @@ export const theMerger: Clip = {
       mean: 'no idea ＝「全然分からない」。um と言い直しで迷いが分かる。',
       trap: 'friends のくり返しで満足と思いやすい。最初の no idea が答え。',
       use: 'Honestly? No idea where we stand.（正直、どういう関係か分からない）' },
+
+    { id: 's1', skill: 'sound', level: 'B2', point: 'always', seg: [194.5, 199.1],
+      stem: 'Fill the gap: “___ been friends.”',
+      ja: '「___ been friends.」の空所は？',
+      choices: ['Always have', 'We’ve always', 'We always have'], a: 0,
+      choicesJa: ['（主語なしで）ずっと', '私たちはずっと', '私たちはいつも'],
+      cue: '「we’re friends」のすぐあと',
+      line: 'I mean, we’re friends. *Always have* been friends.',
+      said: '「つまり、友だちだよ。ずっと友だちだった」と言う。',
+      mean: '本当は We’ve always been friends. 会話では主語の We を落として Always have… と言うことがある。',
+      trap: 'どれも意味は同じなので、文法では決まらない。最初に聞こえる音が「オールウェイズ」か「ウィーヴ」かで選ぶ。',
+      use: 'Always have, always will.（今までもずっと、これからもずっと）' },
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'cat', seg: [198.5, 207.8],
       stem: 'What does “Look what the cat dragged in” mean?',

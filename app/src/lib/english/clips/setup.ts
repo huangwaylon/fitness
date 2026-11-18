@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 1, new 7, ctx 6, tx 16
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 1, new 7, ctx 6, tx 16, qa 15
 // A2 REVIEW 2026-11-17: keep 2, rewrite 13, retire 5, new 1
 // “The Set Up - The Office US” (the official The Office channel, BEST OF SEASON 7): the office builds a fake company
 // office to watch the salesman Danny sell; Danny turns the meeting around on Meredith, the replacements they send in
@@ -51,11 +51,11 @@ export const officeSetUp: Clip = {
       trap: 'a little がつながって「アリル」に近い。t が軽い「ラ」の音になり、little が短く聞こえる。',
       use: 'It just needs a little tweaking.（ちょっと手直しすれば大丈夫）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'sting', seg: [13.8, 23.7],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'sting', seg: [14.2, 23.7],
       stem: 'What does “I think you mean The Sting” mean here?',
       ja: 'ここでの「I think you mean The Sting」はどういう意味？',
-      choices: ['The right name is The Sting', 'Which movie do you mean?', 'Your plan is a bad one'], a: 0,
-      choicesJa: ['正しい名前は『スティング』だよ', 'どの映画のこと？', 'あなたの計画はよくない'],
+      choices: ['You said the name wrong', 'Which movie do you mean?', 'Your plan is a bad one'], a: 0,
+      choicesJa: ['名前をまちがえているよ', 'どの映画のこと？', 'あなたの計画はよくない'],
       cue: '「Like a movie」のあと',
       line: 'This is a *stinger*. … Like a movie. — *I think you mean* The Sting.',
       said: '「スティンガーだ、映画みたいな」に「スティングのことでしょ」と返す。',
@@ -75,7 +75,7 @@ export const officeSetUp: Clip = {
       trap: 'one は「ワン」、ten は「テン」。twelve なら最後に「ルヴ」が付く。「トゥー」だけなら2時。',
       use: 'Hi, I’m your three o’clock.（3時に予約している者です）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'meredith', seg: [34.7, 45.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'meredith', seg: [34.7, 45.4],
       stem: 'Why was Meredith chosen to play the boss?',
       ja: 'メレディスが社長役に選ばれたのはなぜ？',
       choices: ['Her lunch break fit the time', 'She once ran a company', 'She is a good actor'], a: 0,
@@ -98,7 +98,7 @@ export const officeSetUp: Clip = {
       trap: '冷めた言い方を皮肉と取りやすい。皮肉か本気かは、言葉が何を理由に挙げるかで決める。',
       use: 'He was perfect. He was free.（彼が最適だった。暇だったから）' },
 
-    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'meet', seg: [43.3, 50.6], ctx: true,
+    { id: 'pr2', skill: 'pragma', level: 'B1', point: 'meet', seg: [43.3, 50.3], ctx: true,
       stem: 'How does Meredith answer “It’s great to meet you”?',
       ja: 'メレディスは「It’s great to meet you」にどう答える？',
       choices: ['Pleased to meet you', 'Good to see you again', 'Thank you for coming'], a: 0,
@@ -122,7 +122,7 @@ export const officeSetUp: Clip = {
       trap: 'mind を「心」や「覚えておく」と考えがち。動詞の mind は「気にする」。直後に暑いと理由を言っている。',
       use: 'I’ll open the window, if you don’t mind.（よければ窓を開けますね）' },
 
-    { id: 'c2', skill: 'attitude', level: 'B1', point: 'looks', seg: [74.6, 81.8], ctx: true,
+    { id: 'c2', skill: 'attitude', level: 'B1', point: 'looks', seg: [75.3, 81.35], ctx: true,
       stem: 'How do the others answer “he’s not that good-looking”?',
       ja: '「he’s not that good-looking」に、ほかの人はどう返す？',
       choices: ['He really is that handsome', 'He isn’t handsome at all', 'He looks better on TV'], a: 0,
@@ -146,7 +146,7 @@ export const officeSetUp: Clip = {
       trap: 'together から、みんなで協力すると思いやすい。すぐあとの Stop looking at him で分かる。',
       use: 'Pull it together. We’re on in five.（しっかり。あと5分で本番）' },
 
-    { id: 'c3', skill: 'pragma', level: 'B2', point: 'actually', seg: [97.6, 104], ctx: true,
+    { id: 'c3', skill: 'pragma', level: 'B2', point: 'actually', seg: [97.6, 103.6], ctx: true,
       stem: 'What does Danny say about selling paper?',
       ja: '紙を売ることについて、ダニーは何と言う？',
       choices: ['That isn’t why he came', 'He has the best paper', 'He will sell it later'], a: 0,
@@ -158,7 +158,7 @@ export const officeSetUp: Clip = {
       trap: 'セールスマンなので、紙を売りに来たと考えがち。決め手は actually のあとの no。',
       use: 'Well, actually, I’m not from here.（いや、実はここの者じゃないんです）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fit', seg: [102.6, 109],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fit', seg: [102.6, 108.6],
       stem: 'What does “a good fit” mean here?',
       ja: 'ここでの「a good fit」はどういう意味？',
       choices: ['Good to work together', 'The right size to wear', 'Cheap enough to buy'], a: 0,
@@ -194,7 +194,7 @@ export const officeSetUp: Clip = {
       trap: 'first date だけ聞くと「同じくらい」と考えがち。決め手は more like a third。',
       use: 'I think it’s going well. How about you?（うまくいってると思う。あなたは？）' },
 
-    { id: 'c5', skill: 'detail', level: 'B1', point: 'road', seg: [127, 136.2], ctx: true,
+    { id: 'c5', skill: 'detail', level: 'B1', point: 'road', seg: [127, 136.4], ctx: true,
       stem: 'What does Danny say about his work?',
       ja: 'ダニーは自分の仕事について何と言う？',
       choices: ['He travels most of the time', 'He sits at a desk all day', 'He works from his home'], a: 0,
@@ -217,7 +217,7 @@ export const officeSetUp: Clip = {
       trap: 'desk man を「在宅派」と文字どおりに取りやすい。far apart は人と人の距離の話。',
       use: 'Let’s not be so formal.（そんなに堅くならずにいこう）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'drink', seg: [142.4, 153.4], ctx: true,
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'drink', seg: [142.4, 153.0], ctx: true,
       stem: 'Why do they send someone else in?',
       ja: 'なぜ別の人を部屋に入れる？',
       choices: ['The talk turned to drinks', 'Meredith wants to leave', 'Danny knows it’s fake'], a: 0,
@@ -229,7 +229,7 @@ export const officeSetUp: Clip = {
       trap: 'ダニーがにせ物に気づいた話は出てこない。決め手は直前の what’s your drink。',
       use: 'So, what’s your drink?（で、何飲む？）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'out', reveals: ['gotta'], seg: [158.6, 166.6],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'out', reveals: ['gotta'], seg: [158.9, 166.2],
       stem: 'What must the new man do first?',
       ja: '新しい人が最初にすることは？',
       choices: ['Get Meredith out fast', 'Make Danny start selling', 'Tell Danny to leave now'], a: 0,
@@ -241,7 +241,7 @@ export const officeSetUp: Clip = {
       trap: '売りこませるのはこのあとの手順。then のあとに次の段階が来る。',
       use: 'Get me out of here.（ここから出して）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [164.8, 170.1],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'gotta', seg: [164.8, 169.95],
       stem: 'Fill the gap: “You ___ see what he’s got.”',
       ja: '「You ___ see what he’s got.」の空所は？',
       choices: ['gotta', 'wanna', 'gonna'], a: 0,
@@ -256,12 +256,12 @@ export const officeSetUp: Clip = {
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'roll', seg: [171.2, 176.4],
       stem: 'What does “roll with it” mean?',
       ja: '「roll with it」はどういう意味？',
-      choices: ['Go along with it', 'Leave right away', 'Stay very quiet'], a: 0,
-      choicesJa: ['その流れに合わせる', 'すぐに出ていく', 'じっと黙っている'],
+      choices: ['Just keep acting', 'Leave right away', 'Stay very quiet'], a: 0,
+      choicesJa: ['そのまま演技を続ける', 'すぐに出ていく', 'じっと黙っている'],
       cue: '「if anything else happens」のあと',
       line: 'if anything else happens, just *roll with it*.',
       said: '「何か起きても、そのまま合わせて」と言う。',
-      mean: 'roll with it ＝ 流れに合わせる、その場でうまく対応する。',
+      mean: 'roll with it ＝ 流れに合わせる、その場でうまく対応する。ここでは「何が起きても、そのまま役を続けて」。',
       trap: 'roll（転がる）から、逃げる話と勘違いしやすい。with it で「流れに乗る」。',
       use: 'Plans changed. Just roll with it.（予定変更。合わせていこう）' },
 
@@ -277,7 +277,7 @@ export const officeSetUp: Clip = {
       trap: '作戦では新しい社長のはず。でもメレディスの紹介は cleaning man。',
       use: 'This is Ken, another friend from work.（こちらケン、もう一人の職場の友だち）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'cover', seg: [195.6, 203.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'cover', seg: [195.6, 203.35],
       stem: 'What is the new man’s story this time?',
       ja: '今回の新しい人の設定は？',
       choices: ['He just bought the company', 'His father gave him the company', 'He checks Meredith’s work'], a: 0,
@@ -300,7 +300,7 @@ export const officeSetUp: Clip = {
       trap: 'awesome を本気の感心と取りやすい。すぐ just が来たら「それはいいから」。',
       use: 'Sounds great. Just be on time.（いいね。とにかく時間どおりに）' },
 
-    { id: 'h1', skill: 'pragma', level: 'B2', point: 'willdo', seg: [208.4, 213.2],
+    { id: 'h1', skill: 'pragma', level: 'B2', point: 'willdo', seg: [208.4, 212.9],
       stem: 'What does “Will do” usually mean as a reply?',
       ja: '返事の「Will do」は、ふつうどういう意味？',
       choices: ['Okay, I will do it', 'I will think about it', 'I can’t do that'], a: 0,
@@ -324,7 +324,7 @@ export const officeSetUp: Clip = {
       trap: '車の話はダニーが帰るための口実で、実際には出ていかない。最後に名乗る人が騒ぎを止める。',
       use: 'Everybody, stop for a second.（みんな、ちょっと止まって）' },
 
-    { id: 'i4', skill: 'phrase', level: 'B2', point: 'getreal', reveals: ['gotta'], seg: [233, 241],
+    { id: 'i4', skill: 'phrase', level: 'B2', point: 'getreal', reveals: ['gotta'], seg: [234.0, 241],
       stem: 'What does “I gotta get real” mean?',
       ja: '「I gotta get real」はどういう意味？',
       choices: ['I have to be honest', 'I have to leave now', 'I have to talk business'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 11, retire 3, new 3, ctx 6, tx 11
+// R4 REVIEW 2026-11-18: keep 7, rewrite 11, retire 3, new 3, ctx 6, tx 11, qa 12
 // A2 REVIEW 2026-11-17: keep 7, rewrite 13, retire 4, new 0
 // “Conflict Resolution Pranks - The Office US” (the official The Office channel, Best of Season 2): Jim's pranks on
 // Dwight (a joint ID photo, a doctored ID card), Dwight's ultimatum to Michael and his offer to get Jim a job in
@@ -6,6 +6,7 @@
 // to camera; Creed explains his smell. Segments from the captions, words from whisper (2026-11-16). Talk ends at
 // ≈ 237 s. Left out: 25–33 s and 37–43 s (the ID photo and the "Kurt, not Fart" line), 62–67 s, 73–75 s ("Doc",
 // "Twice": the captions garble the turns). Who says "Talk to Michael" (49 s) and "Whose side…" (70 s) isn't named.
+// EXCLUDE 37.2–41.2 ("not Fart": potty word)
 // EXCLUDE 168–174
 // SKIP 237–254.7: closing music; a lone "Thank you" at 254 s
 import type { Clip } from '../types.ts';
@@ -16,7 +17,7 @@ export const conflictPranks: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'together', ctx: true, seg: [3.5, 11.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'together', ctx: true, seg: [2.1, 11.0],
       stem: 'Why does Jim want a joint ID photo?',
       ja: 'ジムはなぜ2人いっしょの ID 写真にしたい？',
       choices: ['To save them time', 'To save the company money', 'To look friendlier'], a: 0,
@@ -28,7 +29,7 @@ export const conflictPranks: Clip = {
       trap: 'together（いっしょに）が何度も出るので、仲よしの話と考えがち。理由は時間。',
       use: 'Let’s go together. It saves time.（一緒に行こう、時間の節約になる）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'helpit', seg: [10, 18.8],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'helpit', seg: [10, 18.4],
       stem: 'What does “if I can help it” mean?',
       ja: '「if I can help it」はどういう意味？',
       choices: ['If I can avoid it', 'If it helps me', 'If someone smiles first'], a: 0,
@@ -52,7 +53,7 @@ export const conflictPranks: Clip = {
       trap: '歯を見せる＝おどし、と思うと逆になる。submission は「従う」こと。',
       use: 'Smile for the camera!（カメラに向かって笑って！）' },
 
-    { id: 'id1', skill: 'detail', level: 'B2', point: 'threat', seg: [33.0, 37.5],
+    { id: 'id1', skill: 'detail', level: 'B2', point: 'threat', seg: [33.0, 37.1],
       stem: 'What does Dwight’s new ID card wrongly say?',
       ja: 'ドワイトの新しい身分証には、何がまちがって書いてある？',
       choices: ['That he’s a danger', 'That he’s the boss', 'That he’s a new hire'], a: 0,
@@ -76,7 +77,7 @@ export const conflictPranks: Clip = {
       trap: '先に Jim’s file（ジムの記録）と聞こえるので、ジムと勘違いしやすい。',
       use: 'Talk to the front desk. They have it.（フロントで聞いて、預かってるから）' },
 
-    { id: 'sd', skill: 'phrase', level: 'B1', point: 'side', seg: [67.5, 73.0],
+    { id: 'sd', skill: 'phrase', level: 'B1', point: 'side', seg: [68.1, 73.0],
       stem: 'What does “Whose side are you on?” mean?',
       ja: '「Whose side are you on?」はどういう意味？',
       choices: ['Are you with me or him?', 'Where do you want to sit?', 'Which team do you like?'], a: 0,
@@ -114,13 +115,13 @@ export const conflictPranks: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'deadline', seg: [96.5, 103.7],
       stem: 'What deadline does Dwight give Michael?',
       ja: 'ドワイトはマイケルにいつまでと期限を切る？',
-      choices: ['Until 5 o’clock', 'Until 9 o’clock', 'Until Friday'], a: 0, keep: true,
-      choicesJa: ['5時まで', '9時まで', '金曜日まで'],
+      choices: ['Until 5 o’clock', 'Until 4 o’clock', 'Until 9 o’clock', 'Until Friday'], a: 0, keep: true,
+      choicesJa: ['5時まで', '4時まで', '9時まで', '金曜日まで'],
       cue: '最後の短い一文',
       line: 'You have *till five*.',
       said: '「5時までに決めてください」と期限を切る。',
       mean: 'till five ＝ 5時まで。今日中にジムか自分かを選べ、という最後の通告。',
-      trap: 'nine は「ナイン」、Friday は「フライ」で始まる。till のあと「ファイヴ」で5時。',
+      trap: 'four（フォー）と five（ファイヴ）はどちらも f で始まる。最後の「ヴ」まで聞く。nine は「ナイン」、Friday は「フライ」。',
       use: 'You have till noon to decide.（お昼までに決めてね）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'goodword', seg: [112.5, 120.2],
@@ -157,7 +158,7 @@ export const conflictPranks: Clip = {
       trap: '推薦の申し出は「いい仕事のため」に聞こえるが、’cause のあとに本当の目的がある。',
       use: 'Happy to help. Honestly, it helps me too.（喜んで。正直、こっちも助かるし）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B1', point: 'workout', seg: [124.7, 134.9],
+    { id: 'ph3', skill: 'phrase', level: 'B1', point: 'workout', seg: [124.7, 134.5],
       stem: 'What does “work this out” mean?',
       ja: '「work this out」はどういう意味？',
       choices: ['Settle the problem', 'Finish all their work', 'Do some exercise'], a: 0,
@@ -192,7 +193,7 @@ export const conflictPranks: Clip = {
       trap: 'own（自分の）を聞きのがすと「声に出して読む」と考えがち。your own words が手がかり。',
       use: 'Tell me in your own words.（あなたの言葉で教えて）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'crayons', seg: [140.8, 148.4],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'crayons', seg: [140.8, 148.3],
       stem: 'What were Dwight’s pens and pencils replaced with?',
       ja: 'ドワイトのペンと鉛筆は何に替えられた？',
       choices: ['Crayons', 'Markers', 'Chalk'], a: 0,
@@ -216,7 +217,7 @@ export const conflictPranks: Clip = {
       trap: '仲直りの会議なので、謝ると思いやすい。ジムの短い Yes を聞く。',
       use: 'Guilty as charged.（おっしゃる通り、私がやりました）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', ctx: true, seg: [150.5, 159.0],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', ctx: true, seg: [150.5, 158.5],
       stem: 'How much did Jim pay each person to call Dwight “Dwayne”?',
       ja: 'ジムはドワイトを「ドウェイン」と呼ばせるのに、1人いくら払った？',
       choices: ['$5', '$9', '$15', '$50'], a: 0, keep: true,
@@ -228,16 +229,16 @@ export const conflictPranks: Clip = {
       trap: 'fifty（50）や fifteen（15）は「フィフ」、nine は「ナイン」。「ファイヴ」なら5。',
       use: 'Tickets are ten bucks each.（チケットは1人10ドル）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'worthit', reveals: ['bucks'], seg: [153, 158.6],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'worthit', reveals: ['bucks'], seg: [153, 158.5],
       stem: '“It was totally worth it.” How does Jim feel?',
       ja: '「It was totally worth it」ジムはどんな気持ち？',
-      choices: ['No regrets at all', 'A little sorry about it', 'Angry at Dwight'], a: 0,
-      choicesJa: ['まったく後悔していない', '少し悪いと思っている', 'ドワイトに怒っている'],
+      choices: ['No regrets at all', 'Sorry about the money', 'Angry at Dwight'], a: 0,
+      choicesJa: ['まったく後悔していない', 'お金を使ったのを後悔している', 'ドワイトに怒っている'],
       cue: '「Yes」で始まる答えの最後',
       line: 'Yes. Five bucks each, and *it was totally worth it*.',
       said: '「そう。1人5ドル。払うだけの価値は十分あった」と言う。',
       mean: 'worth it ＝ それだけの価値がある。悪いと思わず、むしろ満足している。',
-      trap: '認めたら謝ると考えがち。totally worth it は「大満足」。',
+      trap: '5ドルずつ払ったので、お金を惜しんでいると考えがち。totally worth it は「払ったかいがあった、大満足」。',
       use: 'It was expensive, but totally worth it.（高かったけど、その価値はあった）' },
 
     { id: 'i1', skill: 'infer', level: 'B1', point: 'glove', seg: [159.5, 171.5], retired: true,
@@ -288,7 +289,7 @@ export const conflictPranks: Clip = {
       trap: 'don’t sound that funny（おもしろくない）で、反省したように聞こえるが、決め手は But のあと。',
       use: 'He deserves a break.（彼は休んで当然だ）' },
 
-    { id: 'n3', skill: 'detail', level: 'B1', point: 'desk', ctx: true, seg: [206.0, 216.0],
+    { id: 'n3', skill: 'detail', level: 'B1', point: 'desk', ctx: true, seg: [206.0, 215.4],
       stem: 'How did Jim move Dwight’s desk?',
       ja: 'ジムはドワイトの机をどうやって動かした？',
       choices: ['A little at a time', 'All at once at night', 'With help from Pam'], a: 0,
@@ -311,7 +312,7 @@ export const conflictPranks: Clip = {
       trap: 'いたずらの的はドワイトなので、彼が笑いの的と思いやすい。最後の文の主語 I と my を追う。',
       use: 'And that’s how I spent my weekend.（で、週末はそれで終わった）' },
 
-    { id: 'cr', skill: 'infer', level: 'B2', point: 'agree', ctx: true, seg: [221.0, 231.0],
+    { id: 'cr', skill: 'infer', level: 'B2', point: 'agree', ctx: true, seg: [221.0, 231.4],
       stem: 'How does Creed answer Ryan’s remark about him?',
       ja: 'ライアンの言葉に、クリードはどう答える？',
       choices: ['He says there is a smell', 'He says Ryan is lying', 'He gets angry at Ryan'], a: 0,
@@ -323,7 +324,7 @@ export const conflictPranks: Clip = {
       trap: '悪口を言われたので、怒ると考えがち。exactly（まさに）は賛成の合図。',
       use: 'I know exactly what you mean.（言いたいこと、よく分かる）' },
 
-    { id: 'h3', skill: 'detail', level: 'B1', point: 'creed', reveals: ['agree'], seg: [230.5, 237.0],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'creed', reveals: ['agree'], seg: [231.3, 237.6],
       stem: 'What does Creed say causes the smell?',
       ja: 'クリードは、においの原因を何だと言っている？',
       choices: ['The beans he grows', 'His old age', 'Ryan’s lunch in the fridge'], a: 0,
