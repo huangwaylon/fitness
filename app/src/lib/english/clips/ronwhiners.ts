@@ -1,11 +1,19 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 5, ctx 6, tx 15
 // A2 REVIEW 2026-11-17: keep 7, rewrite 13, retire 3, new 0
 // “Ron Swanson Can't Handle Whiners | Parks and Recreation” (the official Parks and Recreation channel, Season 6): the
 // staff's monthly Wine and Cheese Club lets everyone vent about work; Ann joins, her pregnancy complaints take it over,
 // and the others push her out with sushi and cigars.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 46.7–54 s ("Hello, Walt… How'd things go",
-// under music, captions missing), "Sweet Pea"/"cede my time" at 59–64 s (both sources garbled), and the closing
-// "Is the nurse upset? / I don't care" (speakers unclear). The same scene as YTVezU88sgY ("Ann gets kicked out of the
-// exclusive club"). The id h1 was dropped before it shipped: never reuse it.
+// Segments from the captions, words from whisper (2026-11-16). Untested: 36–42 s (Ron's headphones), 46.7–56 s (under
+// music). en 31 “I'll save my time to end” is “I'll cede my time to Ann” (json3 hears “to Anne”); ja and c2 follow the
+// audio. No scenes file. The id h1 was dropped before it shipped: never reuse it.
+// The same scene as annclub (YTVezU88sgY) and goodhusband 64–110 s (OdA8QNTqn-A). Points live there are not tested
+// here: Can we help you, monthly, Ron's headphones, pee every six minutes, never not hungry, can't have cheese, jelly
+// beans, you asked for it, out of hand, you've taken it over, I see how it is, Chris is too kind (annclub); Wait 'til
+// I tell you, feel bad → annoyed, cool with me complaining (goodhusband). ronwhiners owns: brief recess, looking for
+// Leslie, the club's purpose, Kyle's fourth time, cede my time, That sucks, Larry, instead of, a lot of complaints,
+// don't respond, sushi and cigars, I don't / I feel amazing, Ann's final speech, you know what?, I don't care.
+// EXCLUDE 120.6–124.3 (vomiting talk)
+// EXCLUDE 175.3–177.4 (Ann wets herself)
 import type { Clip } from '../types.ts';
 
 export const ronWhiners: Clip = {
@@ -14,29 +22,18 @@ export const ronWhiners: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    // A2: was “How does the club change once Ann gets involved?” over 175 s; now what the club is, in 19 s
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['vent'], seg: [8, 28.1],
-      stem: 'What do people do at the club?',
-      ja: 'このクラブでは何をする？',
-      choices: ['Complain about work', 'Plan the office parties', 'Learn about wine'], a: 0,
-      choicesJa: ['仕事の愚痴を言う', '職場のパーティーを計画する', 'ワインを学ぶ'],
-      cue: '「monthly gathering」のあと',
-      line: 'we all get together and vent about *what annoys us at work*',
-      said: '「月に一度集まって、仕事でいやなことを話す会」と説明する。',
-      mean: 'what annoys us ＝「いらいらすること」。ワインとチーズを楽しみながら愚痴を言う会。',
-      trap: 'Wine and Cheese Club という名前から、ワインを学ぶ会と思いやすい。',
-      use: 'We meet once a month.（月に一度集まります）' },
+    { id: 'c1', skill: 'phrase', level: 'B2', point: 'recess', ctx: true, seg: [6.2, 12.4],
+      stem: 'What does “a *brief recess*” mean?',
+      ja: '「a brief recess」はどういう意味？',
+      choices: ['A short break', 'A quick vote', 'A long lunch'], a: 0,
+      choicesJa: ['短い休み', 'すばやい投票', '長い昼休み'],
+      cue: 'アンの「Hey, guys」のあと',
+      line: 'Ann: Hey, guys. / Time out. Let’s take *a brief recess*.',
+      said: 'アンが入ってくると、「タイム。少し休憩にしよう」と会を止める。',
+      mean: 'brief ＝ 短い、recess ＝（会議や学校の）休み時間。Time out も「ちょっと中断」の合図。',
+      trap: 'brief を「ブリーフ（下着）」や「説明」と考えがち。ここは「短い」。直前の Time out が手がかり。',
+      use: 'Let’s take a short break.（少し休憩しましょう）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'leslie', seg: [10.9, 20.3],
-      stem: 'Why did Ann come into the room in the first place?',
-      ja: 'アンはそもそも何をしに来た？',
-      choices: ['She was looking for Leslie', 'She wanted to join the club', 'She came to report the drinking'], a: 0,
-      choicesJa: ['レスリーを探していた', 'クラブに入りたかった', '飲酒を報告しに来た'],
-      cue: '「but now」の前', line: 'I was *looking for Leslie*, but now I’m curious…',
-      said: '「レスリーを探しに来たんだけど」と言ってから、様子が気になる。',
-      mean: 'be looking for 〜 ＝「〜を探している」。もとの目的は別だった。',
-      trap: 'あとで「やってみたい」と言うので参加目的と思いやすいが、それは途中で思いつく。',
-      use: 'I was looking for the front desk.（フロントを探していたんです）' },
 
     // retired (A2): teasing in a question's form, a native's ear
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'curious', seg: [12, 18.6], retired: true,
@@ -50,7 +47,31 @@ export const ronWhiners: Clip = {
       trap: 'curious を文字通り「知りたい」と取ると素直な質問に見える。中身の言葉が答え。',
       use: 'I’m curious why the line is so long.（なんでこんなに並んでるんだろう）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'vent', seg: [19.4, 26.4],
+    { id: 'd1', skill: 'detail', level: 'B2', point: 'leslie', seg: [12.35, 18.1],
+      stem: 'Why did Ann come into the room in the first place?',
+      ja: 'アンはそもそも何をしに来た？',
+      choices: ['She was looking for Leslie', 'She wanted to join the club', 'She came to report the drinking'], a: 0,
+      choicesJa: ['レスリーを探していた', 'クラブに入りたかった', '飲酒を報告しに来た'],
+      cue: '「but now」の前', line: 'I was *looking for Leslie*, but now I’m curious…',
+      said: '「レスリーを探しに来たんだけど」と言ってから、様子が気になる。',
+      mean: 'be looking for 〜 ＝「〜を探している」。もとの目的は別だった。',
+      trap: 'あとで「やってみたい」と言うので参加が目的と考えがち。決め手は but now の前。',
+      use: 'I was looking for the front desk.（フロントを探していたんです）' },
+
+    // A2: was “How does the club change once Ann gets involved?” over 175 s; now what the club is, in 19 s
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'scene', reveals: ['vent'], seg: [12.35, 27.8],
+      stem: 'What do people do at the club?',
+      ja: 'このクラブでは何をする？',
+      choices: ['Complain about work', 'Plan the office parties', 'Learn about wine'], a: 0,
+      choicesJa: ['仕事の愚痴を言う', '職場のパーティーを計画する', 'ワインを学ぶ'],
+      cue: '「monthly gathering」のあと',
+      line: 'we all get together and vent about *what annoys us at work*',
+      said: '「月に一度集まって、仕事でいやなことを話す会」と説明する。',
+      mean: 'what annoys us ＝「いらいらすること」。ワインとチーズを楽しみながら愚痴を言う会。',
+      trap: 'Wine and Cheese Club という名前から、ワインを学ぶ会を連想しやすい。',
+      use: 'We meet once a month.（月に一度集まります）' },
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'vent', seg: [19.4, 26.4], retired: true,
       stem: 'What does “vent” mean here?',
       ja: '「vent」は、ここではどういう意味？',
       choices: ['Talk about what annoys you', 'Complain to get action', 'Take a short break'], a: 0,
@@ -73,7 +94,19 @@ export const ronWhiners: Clip = {
       trap: '「規則」と聞くと真面目に聞く話に思えるが、規則の抜け道の話。',
       use: 'Technically, that’s not against the rules.（厳密には規則違反じゃない）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'kyle', seg: [42, 48.2], keep: true,
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'hr', seg: [27.75, 36.1],
+      stem: 'Why does Ron have to be at the club?',
+      ja: 'ロンはなぜクラブに出なければならない？',
+      choices: ['A work rule says so', 'He loves wine and cheese', 'Leslie asked him to come'], a: 0,
+      choicesJa: ['職場の決まりだから', 'ワインとチーズが大好きだから', 'レスリーに頼まれたから'],
+      cue: '「Human Resources」で始まる文',
+      line: 'The Human Resources Department *requires* that I be available once a month…',
+      said: '「人事部の決まりで、月に一度、部下のもめ事の相談に応じなければならない」と言う。',
+      mean: 'require ＝（決まりで）求める。Human Resources ＝ 人事部。好きで来たのではなく、決まりだから来ている。',
+      trap: 'ワインとチーズの会なので、楽しみに来たと考えがち。決め手は requires（決まりで求める）。',
+      use: 'The hotel requires a credit card.（ホテルではクレジットカードが必要です）' },
+
+    { id: 'n2', skill: 'number', level: 'B1', point: 'kyle', seg: [42.3, 46.7], keep: true,
       stem: 'How often has Kyle taken the parking spot?',
       ja: 'カイルはその駐車場所に何回とめた？',
       choices: ['3 times this month', '4 times this month', '4 times this week'], a: 1,
@@ -94,6 +127,19 @@ export const ronWhiners: Clip = {
       trap: '文字通り「何時？」と取りやすいが、会議や試合で Time は「時間切れ」の合図。',
       use: 'Okay, time’s up. Next!（はい、時間です。次の人）' },
 
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'cede', ctx: true, seg: [57.05, 64.7],
+      stem: 'What does Donna do when Ann wants to try?',
+      ja: 'アンが「やってみたい」と言うと、ドナはどうする？',
+      choices: ['She lets Ann go first', 'She tells Ann to wait', 'She asks Ann to leave'], a: 0,
+      choicesJa: ['アンを先に話させる', 'アンに待つように言う', 'アンに出ていくように言う'],
+      cue: '「Donna’s turn next」のあと',
+      line: 'Ann: I want to try. / There’s rules to this. It’s Donna’s turn next. / Donna: I’ll *cede my time to Ann*.',
+      said: '「次はドナの番」と言われるが、ドナが「私の番はアンにゆずる」と言う。',
+      mean: 'cede ＝ ゆずる。my time ＝ 自分の話す時間。面白くなりそうだから、アンに先に話させる。',
+      trap: 'rules と Donna’s turn next から、待たされると考えがち。決め手は最後の to Ann。',
+      use: 'You go first. I can wait.（お先にどうぞ。私は待てます）' },
+
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'pee', seg: [64.4, 72.8], retired: true, keep: true,
       stem: 'How often does Ann say she needs the bathroom?',
       ja: 'アンはどのくらいの間隔でトイレに行くと言う？',
@@ -104,6 +150,19 @@ export const ronWhiners: Clip = {
       mean: 'every six minutes ＝「6分ごとに」。妊娠中のつらさを大げさに言う。',
       trap: 'sixteen は後ろ、sixty は前を強く言う。six は短い一音。',
       use: 'The bus comes every ten minutes.（バスは10分おきに来ます）' },
+
+    { id: 'c3', skill: 'phrase', level: 'B1', point: 'sucks', ctx: true, seg: [68.9, 75.3],
+      stem: 'What does “*That sucks*” mean here?',
+      ja: 'ここでの「That sucks」はどういう意味？',
+      choices: ['That sounds hard', 'That sounds funny', 'That is not true'], a: 0,
+      choicesJa: ['それはつらいね', 'それは面白いね', 'それは本当じゃない'],
+      cue: 'アンの悩みへの短い返事',
+      line: 'Ann: …a beach ball in my stomach that’s punching on my bladder. / *That sucks.* / Ann: I know.',
+      said: 'お腹の重さを話すアンに「それはきついな」と返し、アンは「でしょ」と言う。',
+      mean: 'That sucks ＝ 文字どおりは「それは吸う」→「最悪だね・きついね」。友だちの愚痴に同情する、くだけた決まり文句。',
+      trap: 'suck（吸う）から意味を取ると分からない。返事の I know（でしょ）で、同情されたと分かる。',
+      use: 'Your flight got canceled? That’s too bad.（便が欠航？それは大変だね）' },
+
 
     { id: 'd2', skill: 'detail', level: 'B2', point: 'hungry', seg: [73, 77], retired: true,
       stem: 'What other problem does Ann add?',
@@ -116,7 +175,7 @@ export const ronWhiners: Clip = {
       trap: 'never だけ聞くと「全く空かない」と逆になる。小さい not を聞き落とさない。',
       use: 'He’s never not on his phone.（彼はいつもスマホを見てる）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'cheese', seg: [75.1, 80.2],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'cheese', seg: [75.3, 79.9],
       stem: 'Who offers Ann some cheese?',
       ja: 'アンにチーズを勧めたのはだれ？',
       choices: ['Larry', 'Ron', 'Donna'], a: 0,
@@ -138,7 +197,7 @@ export const ronWhiners: Clip = {
       trap: 'can’t は「キャーン」と長く強く、can は「クン」と弱い。could は「クッ」。次の either も否定の印。',
       use: 'I can’t have caffeine after six.（6時以降カフェインはだめなんだ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.3, 96.7],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'pacman', seg: [90.9, 96.7],
       stem: 'What does Ann want instead of the dots?',
       ja: 'アンは点の代わりに何がほしい？',
       choices: ['Cinnamon buns', 'Some jelly beans', 'Pork rinds'], a: 0,
@@ -149,7 +208,7 @@ export const ronWhiners: Clip = {
       trap: '少し前にほかの食べ物も並べている。instead of のあとが答え。',
       use: 'I’d like tea instead of coffee, please.（コーヒーの代わりに紅茶をお願いします）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120.9],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'respond', reveals: ['vent'], seg: [110.5, 120.5],
       stem: 'In the emergency meeting, what does Ann want from the others?',
       ja: '緊急の集まりで、アンはみんなに何をしてほしい？',
       choices: ['Just to listen to her', 'To give her advice', 'To leave the room'], a: 0,
@@ -160,7 +219,7 @@ export const ronWhiners: Clip = {
       trap: '悩みを話す＝相談と思いやすいが、I need to vent（吐き出したい）と言っている。',
       use: 'Please just hear me out.（とにかく最後まで聞いて）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'lotof', seg: [111.2, 116.2],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'lotof', seg: [111.45, 115.2],
       stem: 'Type what Ann says: “I have ___.” (4 words)', answer: 'a lot of complaints',
       ja: '「I have ___.」の空所を書こう（4語）',
       cue: '「Ron」のすぐあと', line: 'I have *a lot of complaints*.',
@@ -169,16 +228,16 @@ export const ronWhiners: Clip = {
       trap: 'a と of は小さく短く、ほぼ消える。complaints は「コンプレインツ」。',
       use: 'I have a lot of questions.（聞きたいことがたくさんあります）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'sushi', reveals: ['scene'], seg: [128.8, 143.6], retired: true,
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'sushi', ctx: true, seg: [128.6, 143.7],
       stem: 'Why has the club switched to sushi and cigars?',
       ja: 'クラブはなぜ寿司と葉巻に変わった？',
       choices: ['To keep Ann away', 'To welcome Ann without wine', 'To feel more fancy'], a: 0,
       choicesJa: ['アンを近づけないため', 'ワインなしでアンを迎えるため', '高級な感じにするため'],
       cue: 'アンの「what the hell?」のあと',
-      line: 'You know I *can’t be around smoke or fatty tuna*. … It’s sushi and cigar club now.',
-      said: '「煙もトロもだめなの、知ってるでしょ」と怒り、「乗っ取ったから」と返される。',
-      mean: '妊婦が避けるものをわざと選び、アンを会から遠ざけている。',
-      trap: '寿司と葉巻はごちそうに聞こえるが、アンが近づけないもの。',
+      line: 'Ann: Donna, what the hell? You know I *can’t be around smoke or fatty tuna*. / Donna: Yeah. It’s *sushi and cigar club* now.',
+      said: '「煙もトロもだめなの、知ってるでしょ」と怒るアンに、「今は寿司と葉巻の会」と返す。',
+      mean: '妊娠中のアンが近づけない物（葉巻の煙、脂ののったマグロ）をわざと選び、会から遠ざけている。',
+      trap: '寿司と葉巻はごちそうなので、ぜいたくしたいだけと考えがち。アンの can’t be around が決め手。',
       use: 'Was that on purpose?（それ、わざと？）' },
 
     { id: 'f2', skill: 'phrase', level: 'B2', point: 'hand', seg: [133.8, 141.4], retired: true,
@@ -193,7 +252,7 @@ export const ronWhiners: Clip = {
       use: 'The party got a little out of hand.（パーティーが少し度を越した）' },
 
     // A2: was an attitude on how Ann takes the news; now the set phrase's meaning
-    { id: 'a1', skill: 'phrase', level: 'B2', point: 'see', seg: [140.5, 149.6],
+    { id: 'a1', skill: 'phrase', level: 'B2', point: 'see', seg: [140.5, 149.6], retired: true,
       stem: 'What does Ann mean by “I see how it is”?',
       ja: 'アンの「I see how it is」はどういう意味？',
       choices: ['You don’t want me here', 'I understand the rules now', 'I can see it clearly'], a: 0,
@@ -204,18 +263,18 @@ export const ronWhiners: Clip = {
       trap: 'I see を「分かりました」と思うと納得に聞こえる。how it is まで付くと不満。',
       use: 'Oh, I see how it is.（ふーん、そういうことね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', seg: [147.8, 154.6],
-      stem: 'One says “I feel bad.” How does the other feel?',
-      ja: '一人は「悪いことしたな」。もう一人はどんな気持ち？',
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'guilt', ctx: true, seg: [145.8, 152.6],
+      stem: 'After “I feel bad,” how does Donna feel?',
+      ja: '「悪いことしたな」のあと、ドナはどんな気持ち？',
       choices: ['Not sorry at all', 'A little sorry for Ann', 'Very sorry too'], a: 0,
       choicesJa: ['全然悪いと思っていない', 'アンに少し悪いと思っている', '同じくとても悪いと思っている'],
-      cue: '二人目の最後の一文', line: '*I don’t.* This is a Cuban. … *I feel amazing.*',
-      said: '「私は全然。葉巻と寿司で、最高の気分」と言う。',
-      mean: 'I don’t ＝「私は（悪いと）思わない」。I feel amazing ＝「最高の気分」。',
-      trap: 'I don’t の t は消えやすく、I do と聞こえることも。最後の amazing で決める。',
+      cue: '「I feel bad」への返事', line: 'I feel bad. / Donna: *I don’t.* This is a Cuban. This is yellowtail. *I feel amazing.*',
+      said: '「悪いことしたな」に、ドナは「私は全然。葉巻とブリで最高の気分」と返す。',
+      mean: 'I don’t ＝ I don’t feel bad の略で「私は悪いと思わない」。Cuban ＝ キューバ産の葉巻。',
+      trap: 'I don’t の t は消えやすく、I do（私も）に聞こえることも。最後の amazing で決める。',
       use: 'Honestly, I feel great about it.（正直、すごくいい気分）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'nowhere', reveals: ['chris'], seg: [154, 178],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'nowhere', reveals: ['chris'], seg: [154.3, 175.2],
       stem: 'What is Ann’s final speech mostly about?',
       ja: 'アンの最後の話は、主に何について？',
       choices: ['She has no place to complain', 'Chris doesn’t help her at home', 'Her body hurts all the time'], a: 0,
@@ -239,7 +298,7 @@ export const ronWhiners: Clip = {
       trap: '夫への不満なら「聞いてくれない」が定番だが、ここは逆。',
       use: 'He’s so sweet that I can’t complain.（優しすぎて文句も言えない）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'cool', seg: [165.1, 174.7],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'cool', seg: [165.1, 174.7], retired: true,
       stem: 'Fill the gap: “I thought you guys ___ cool with me complaining”',
       ja: '「I thought you guys ___ cool with me complaining」の空所は？',
       choices: ['would be', 'wouldn’t be', 'could be'], a: 0,
@@ -250,7 +309,7 @@ export const ronWhiners: Clip = {
       trap: 'wouldn’t なら「ン」が残る。could は最初に「ク」の音がある。',
       use: 'I thought you’d be okay with it.（君なら平気だと思ってた）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [166.4, 174.3],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'ykw', seg: [168.6, 175.2],
       stem: 'What does “you know what?” mean here?',
       ja: 'ここでの「you know what?」はどういう意味？',
       choices: ['Here’s what I really think', 'Do you know the answer?', 'Are you even listening to me?'], a: 0,
@@ -258,8 +317,8 @@ export const ronWhiners: Clip = {
       cue: '「but」のすぐあと', line: 'but *you know what*? I guess I was wrong',
       said: '「でもね、私が間違ってたみたい」と言う。',
       mean: 'you know what? ＝「あのね」。答えは求めない。本音やきつい一言の前置き。',
-      trap: '疑問の形なので「知ってる？」と思いやすいが、だれも答えず本人が続ける。',
-      use: 'You know what? I’m done.（もういい、やめた）' },
+      trap: '疑問の形なので「知ってる？」に聞こえるが、だれも答えず本人が続ける。',
+      use: 'You know what? Let’s order pizza.（あのさ、ピザ頼もうよ）' },
 
     // retired (A2): a “what makes it funny” item on a bodily accident
     { id: 'h2', skill: 'humor', level: 'C1', point: 'pants', seg: [173.8, 178.2], retired: true,
@@ -272,5 +331,18 @@ export const ronWhiners: Clip = {
       mean: '堂々と去る場面が、妊娠中の体の事情で台なしになる落差が笑い。',
       trap: 'wrong は「みんなを見誤った」という意味で、自分の愚痴を反省したのではない。',
       use: 'I’d stay longer, but I have to run.（もっといたいけど、行かなきゃ）' },
+
+    { id: 'c4', skill: 'pragma', level: 'B1', point: 'care', ctx: true, seg: [177.4, 183.4],
+      stem: 'What does “I don’t care” mean here?',
+      ja: 'ここでの「I don’t care」はどういう意味？',
+      choices: ['It doesn’t matter to me', 'I don’t like the nurse', 'I can’t hear you'], a: 0,
+      choicesJa: ['自分にはどうでもいい', '看護師さんが好きじゃない', '聞こえない'],
+      cue: '「Is the nurse upset?」への返事',
+      line: 'What’s happening now? Is the nurse upset? / *I don’t care.*',
+      said: '「看護師さん（アン）は怒ってるのか？」と聞かれ、「どうでもいい」と返す。',
+      mean: 'I don’t care ＝ どうでもいい。ここはアンに冷たい返事。「気にしない」と言うなら I don’t mind。',
+      trap: 'care を「世話をする」と考えがち。I don’t care は「どうでもいい」で、冷たく聞こえる。',
+      use: 'I don’t mind where we eat.（どこで食べてもいいよ）' },
+
   ]
 };
