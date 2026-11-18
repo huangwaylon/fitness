@@ -7,10 +7,30 @@ import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
 import { createLocalLive } from '#lib/sync/live-local.ts';
 import { hook } from '#lib/world/devHooks.ts';
 
-/** The e2e's own relay (`relay` and `key` hooks: a ws(s) URL and its key), if named. */
+/** The page's one test socket and how many of its users have started it. */
+let test: { live: Live; users: number } | null = null;
+
+/** The e2e's own relay (`relay` and `key` hooks: a ws(s) URL and its key), if named: one socket per page, as the app's
+ *  liveRelay (each its own, without a `dev`, the island's, a room's and すごろく's hellos replaced each other: 4002),
+ *  open while any user has started it and not stopped. */
 export function testRelay(): Live | null {
   const url = hook('relay'), key = hook('key');
-  return url && /^wss?:\/\//.test(url) && key ? createLive({ url, key: () => key }) : null;
+  if (!url || !/^wss?:\/\//.test(url) || !key) return null;
+  const t = (test ??= { live: createLive({ url, key: () => key }), users: 0 });
+  let on = false;
+  return {
+    ...t.live,
+    start() {
+      if (on) return;
+      on = true;
+      if (t.users++ === 0) t.live.start();
+    },
+    stop() {
+      if (!on) return;
+      on = false;
+      if (--t.users === 0) t.live.stop();
+    }
+  };
 }
 
 /** A room's relay: in the demo its own (`own`, to stop as the room goes: the test relay or the tabs'), else the live
