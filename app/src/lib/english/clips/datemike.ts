@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 1, new 5, ctx 5, tx 5
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 1, new 5, ctx 5, tx 5, qa 6
 // A2 REVIEW 2026-11-17: keep 1, rewrite 14, retire 8, new 0
 // “Date Mike, Nice to Meet Me - The Office US” (the official The Office channel, BEST OF SEASON 6 - The Office US): on
 // a double date with two coworkers, Michael mixes up his date's job with ESP; when he learns the evening is a date he
@@ -42,7 +42,7 @@ export const dateMike: Clip = {
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'nervous', seg: [15.4, 23.4],
       stem: 'Why was Julie nervous before meeting Michael?',
-      ja: 'デートの相手は、マイケルに会う前なぜ緊張していた？',
+      ja: 'ジュリーは、マイケルに会う前なぜ緊張していた？',
       choices: ['Pam said he was her boss', 'Pam said he was very shy', 'Pam said he was a bit odd'], a: 0,
       choicesJa: ['彼はパムの上司だと聞いた', '彼はとても内気だと聞いた', '彼は少し変わっていると聞いた'],
       cue: '「a little nervous when」のあと',
@@ -54,7 +54,7 @@ export const dateMike: Clip = {
 
     { id: 'd3', skill: 'detail', level: 'B1', point: 'noboss', reveals: ['nervous'], seg: [16.4, 26.7],
       stem: 'What does Julie say about Michael now?',
-      ja: '今、デートの相手はマイケルについて何と言う？',
+      ja: '今、ジュリーはマイケルについて何と言う？',
       choices: ['He doesn’t act like a boss', 'He acts too much like a boss', 'He seems very nervous'], a: 0,
       choicesJa: ['全然上司っぽくない', '上司っぽすぎる', 'とても緊張している'],
       cue: '「but」のあと',
@@ -204,10 +204,10 @@ export const dateMike: Clip = {
       use: 'I learn a lot from my own mistakes.（自分の失敗から多くを学ぶ）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'losers', seg: [111.3, 120.4],
-      stem: 'Why does Michael say “Actually” here?',
-      ja: 'マイケルは、なぜここで「Actually」と言う？',
-      choices: ['To fix what he just said', 'To agree with what he said', 'To start a new topic'], a: 0,
-      choicesJa: ['今言ったことを言い直すため', '自分の言葉に賛成するため', '新しい話題を始めるため'],
+      stem: 'What does “Actually” mean here?',
+      ja: 'ここでの「Actually」はどういう意味？',
+      choices: ['Let me change that', 'I really agree', 'Now, a new topic'], a: 0,
+      choicesJa: ['今のを言い直すと', '本当にそう思う', 'さて、別の話'],
       cue: '「the losers.」のあとのひと言',
       line: 'the winners and the losers. *Actually*, I probably learned more from the losers.',
       said: '「勝った人と負けた人から学ぶ」と言い、「実は、負けた人からの方が多いかも」と言い直す。',
@@ -322,8 +322,8 @@ export const dateMike: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'kidding', ctx: true, seg: [160, 174.5],
       stem: 'How does Michael respond in the end?',
       ja: '最後に、マイケルはどう反応する？',
-      choices: ['He says he was kidding', 'He refuses to leave the bar', 'He gets very angry'], a: 0,
-      choicesJa: ['ふざけてただけだと言う', 'バーから帰るのを断る', 'すごく怒る'],
+      choices: ['He says it was a joke', 'He refuses to leave the bar', 'He gets very angry'], a: 0,
+      choicesJa: ['冗談だったと言う', 'バーから帰るのを断る', 'すごく怒る'],
       cue: '「whoa」のあとの一文',
       line: 'All right, go. Get off. Now. / Michael: Okay. All right. Okay… whoa. *I’m just kidding around.*',
       said: '「わかった、分かったよ。おっと。ふざけてただけだよ」と言う。',
