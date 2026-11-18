@@ -1,3 +1,4 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 3, new 4, ctx 4, tx 4
 // A2 REVIEW 2026-11-17: keep 4, rewrite 13, retire 6, new 1
 // “Deep Down Everyone is Faking It | Parks and Recreation” (the official Parks and Recreation channel, Season 2
 // playlist): Andy, home from his London job, tells April work is going great; April tells the camera she's proud of
@@ -7,11 +8,11 @@
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 174 s; music after (whisper's 180–194 s
 // "I'm not a fan of the world" is a hallucination over music). Names said: Andy (50.7, 66.0, 68.3, 162.2 s), Mr. Dwyer
 // (89.9–93.3 s, quoted). April's name is never said; stems use it where the turn settles who speaks (she runs animal
-// control, 117 s; she makes the sandwiches for the one going to the airport, 144–147 s). Untested on purpose: 0–11 s
-// (the "brilliant" bit; captions "uh watch this", whisper "Whoa"), 15.7 s (captions "it's awesome", whisper "that's
-// awesome"), 26–33 s (a making-out line), 44.5–46 s ("See you on stupid Skype": speaker never named), 78.3 s (captions
-// "cause uh", whisper "because": not key words), 92–93 s ("That's not a toilet": bodily), 100.7 s (captions "the
-// beard", whisper "a beard"), 144.7 s (five sandwiches: memory of a detail), 170–174 s (noodles).
+// control, 117 s; she makes the sandwiches for the one going to the airport, 144–147 s; she finds Andy, 62–80 s).
+// EXCLUDE 16.3–17.7: “I'm kicking ass” (the swear at the end of whisper's 15–17 s line; “Yeah, that's awesome” plays).
+// Untested on purpose: 0–4 s (captions "uh watch this", whisper "Whoa"), 26–33 s (a making-out line), 44.5–46 s ("See
+// you on stupid Skype": speaker never named), 92–93 s ("That's not a toilet"), 144.7 s (five sandwiches), 170–174 s
+// (noodles). Who says the moon line (37–44 s) isn't settled, so its item names no one.
 // The ids nt1 and nt3 were dropped before they shipped: never reuse them.
 import type { Clip } from '../types.ts';
 
@@ -21,7 +22,7 @@ export const fakingIt: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'front', seg: [2.5, 26.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'front', seg: [2.5, 26.1], retired: true,
       stem: 'How does Andy say his work is going?',
       ja: 'アンディは仕事がどうだと言う？',
       choices: ['It’s going really well', 'His team really loves him', 'He’s learning a lot'], a: 0,
@@ -33,14 +34,26 @@ export const fakingIt: Clip = {
       trap: '「学んでいる」「好かれている」とは言っていない。言葉どおり「最高・絶好調」。',
       use: 'Work’s going great, thanks.（仕事は順調だよ、ありがとう）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9, 16.6],
+    { id: 'br', skill: 'phrase', level: 'B1', point: 'brilliant', seg: [4.0, 11.5],
+      stem: 'What does “That’s brilliant” mean, says Andy?',
+      ja: 'アンディによると「That’s brilliant」はどういう意味？',
+      choices: ['The same as “cool”', 'It shines very brightly', 'It costs a lot'], a: 0,
+      choicesJa: ['cool と同じ', 'とても光り輝いている', 'とても高い'],
+      cue: '「you Americans say」と「in London we say」。',
+      line: 'You know how you Americans say *cool*…? Over in London we say, “*That’s brilliant*.”',
+      said: '「アメリカ人は cool って言うでしょ？ロンドンでは That’s brilliant って言うんだ」と得意げに話す。',
+      mean: 'brilliant ＝ イギリス英語のほめ言葉で「すごい、最高」。アメリカの cool と同じ使い方。',
+      trap: 'カタカナのブリリアント（宝石の輝き）を連想しやすい。cool と並べて説明している。',
+      use: 'That’s brilliant! Thank you.（すごい！ありがとう）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'speaking', seg: [9, 16.2],
       stem: 'What does “Speaking of London” mean here?',
       ja: '「Speaking of London」は、ここではどういう意味？',
       choices: ['On the topic of London', 'I miss London so much', 'Let’s go to London now'], a: 0,
       choicesJa: ['ロンドンと言えば', 'ロンドンがすごく恋しい', '今からロンドンに行こう'],
       cue: '「brilliant」の話のあと',
       line: '*Speaking of London*, you haven’t told me anything about work.',
-      said: '「ロンドンと言えば、仕事のこと何も聞いてないよ」と言う。',
+      said: '「ロンドンと言えば、仕事のこと何も話してくれてないよね」と言う。',
       mean: 'Speaking of 〜 ＝「〜と言えば」。前の話から、聞きたいことへつなぐ。',
       trap: 'speaking（話す）から「ロンドンの話をしよう」と思いやすい。話題をつなぐ合図。',
       use: 'Speaking of work, how’s your new job?（仕事と言えば、新しい仕事はどう？）' },
@@ -57,6 +70,17 @@ export const fakingIt: Clip = {
       trap: 'crushing it（絶好調）から同僚の話に聞こえやすい。instead of のあとを聞く。',
       use: 'I’m basically a superhero, only with spreadsheets.（要はヒーロー、ただし表計算の）' },
 
+    { id: 'cr', skill: 'detail', level: 'B1', point: 'documents', seg: [17.8, 24.6],
+      stem: 'What is Andy “crushing” at his job?',
+      ja: 'アンディが仕事で「crushing」しているのは何？',
+      choices: ['Paperwork', 'Bad guys', 'Other teams'], a: 0,
+      choicesJa: ['書類', '悪者', 'ほかのチーム'],
+      cue: '「instead of」のあと。', line: '…only instead of crushing bad guys’ skulls, *I’m crushing documents*.',
+      said: '「チャック・ノリスみたい。悪者の頭を砕くんじゃなくて、書類を片っ端から片づけてる」と言う。',
+      mean: 'only instead of 〜 ＝「ただし〜の代わりに」。crush ＝ 砕く→ここは「ガンガン片づける」。',
+      trap: 'bad guys も聞こえるが、それはチャック・ノリスの話。instead of のあとが自分の仕事。',
+      use: 'It’s like a trip, only instead of a beach, it’s my sofa.（旅行みたいなもの、ただしビーチじゃなくソファ）' },
+
     // retired (A2): a “why does it get a laugh” item
     { id: 'h2', skill: 'humor', level: 'C1', point: 'moon', seg: [36.2, 44.4], retired: true,
       stem: 'Why does the goodbye line about the moon get a laugh?',
@@ -69,6 +93,18 @@ export const fakingIt: Clip = {
       trap: '距離の寂しさに聞こえやすいが、距離の話はない。the と a の差を聞く。',
       use: 'Think of me when you see the moon.（月を見たら私を思い出して）' },
 
+    { id: 'mo', skill: 'detail', level: 'B1', point: 'samemoon', seg: [36.5, 44.2],
+      stem: 'In the goodbye, what is called impossible?',
+      ja: '別れのあいさつで、何が「無理」だと言う？',
+      choices: ['Seeing the same moon', 'Going with Andy to London', 'Talking every day'], a: 0,
+      choicesJa: ['同じ月を見ること', 'アンディとロンドンへ行くこと', '毎日話すこと'],
+      cue: '「that’s impossible」の前。',
+      line: 'I too will be looking at *a moon*. *Not the same moon, obviously*, that’s impossible.',
+      said: '「月を見るたび、私もどこかの月を見てる。もちろん同じ月じゃない、そんなの無理」と言う。',
+      mean: 'obviously ＝「もちろん、当然」。本当は月は一つで同じ月が見える。わざと変な訂正をして笑わせる。',
+      trap: '直前に London が出るので、ついて行く話と考えがち。impossible の前の same moon が答え。',
+      use: 'Not today, obviously. Maybe next week.（今日は当然無理。来週かな）' },
+
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'limb', seg: [49.5, 60],
       stem: 'What does “gone out on a limb” mean?',
       ja: '「gone out on a limb」はどういう意味？',
@@ -80,6 +116,18 @@ export const fakingIt: Clip = {
       mean: 'go out on a limb ＝「思い切ったことをする」。limb は木の枝。細い枝の先に出るイメージ。',
       trap: 'limb（枝）が分からず、人を助ける話と思いやすい。first time とセットで「初めての挑戦」。',
       use: 'I went out on a limb and applied.（思い切って応募してみた）' },
+
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'dumpster', seg: [62.0, 83.0],
+      stem: 'Where does April find Andy?',
+      ja: 'エイプリルはアンディをどこで見つける？',
+      choices: ['In a big trash bin', 'At the airport', 'At his office'], a: 0,
+      choicesJa: ['大きなゴミ箱の中', '空港', '職場'],
+      cue: '「I know you’re in there」と、アンディの言いわけ。',
+      line: 'Andy, *I know you’re in there*… — I was just… just here *in this dumpster*, because I jumped in.',
+      said: 'ロンドンに戻ったはずのアンディを、ゴミ箱の中に見つける。アンディは「飛び込んだから」と言いわけする。',
+      mean: 'in there ＝「その中に」。dumpster ＝ 外に置く大きなゴミ箱。仕事から逃げて隠れていた。',
+      trap: 'airport（空港）はあとの場面の言葉。ここで見つかるのは dumpster の中。',
+      use: 'I know you’re in there. Open the door.（中にいるのは分かってる。開けて）' },
 
     // retired (A2): a “why is it funny” item
     { id: 'h3', skill: 'humor', level: 'C1', point: 'jumped', seg: [74.8, 81.7], retired: true,
@@ -108,36 +156,36 @@ export const fakingIt: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sign', seg: [86.2, 93.7],
       stem: 'What do people come to Andy for every day?',
       ja: '毎日、人がアンディに何を求めてくる？',
-      choices: ['To approve and sign things', 'To explain how things work', 'To check and fix documents'], a: 0,
-      choicesJa: ['承認してサインする', '仕組みを説明する', '書類を直す'],
+      choices: ['To give the OK on things', 'To explain how things work', 'To check and fix documents'], a: 0,
+      choicesJa: ['いろいろな物に OK を出す', '仕組みを説明する', '書類を直す'],
       cue: '「Every day」のあと',
       line: 'I need your *approval* on this… I need your *signature*, Mr. Dwyer.',
-      said: '「毎日『承認ください』『サインください』と言われる」と話す。',
-      mean: 'approval ＝ 承認。signature ＝ 署名・サイン。偉い役なので決める仕事ばかり。',
-      trap: 'documents（書類）の話が前にあるので、書類を直すと思いやすい。approval を聞く。',
+      said: '「毎日『ドワイヤーさん、承認してください』『署名をお願いします』と言われる」と話す。',
+      mean: 'approval ＝ 承認。signature ＝ 署名・サイン。偉い役なので、決める仕事ばかり。',
+      trap: 'documents（書類）の話が前にあるので、書類を直すと考えがち。approval を聞く。',
       use: 'I just need your signature here.（ここに署名だけお願いします）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'said', reveals: ['front'], seg: [92, 99.9],
-      stem: 'Why does April say “But you said…”?',
-      ja: 'エイプリルはなぜ「But you said…」と言う？',
-      choices: ['His words before were different', 'She thinks he is doing well', 'She knew the truth already'], a: 0,
-      choicesJa: ['前に言っていたことと違う', 'うまくいっていると彼女は思う', '本当のことを前から知っていた'],
-      cue: '仕事の話のあと',
-      line: '*But you said* everything was going awesome. *You said* you were like Chuck Norris.',
-      said: '「でも、全部最高って言ってたよね。チャック・ノリスみたいって」と言う。',
-      mean: 'But you said 〜 ＝「でも〜って言ってたよね」。前の言葉と今の話の違いを指す。',
-      trap: '元気づけていると思いやすいが、前と話がちがうと指摘している。',
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'said', seg: [92, 97.2],
+      stem: 'What did Andy say before, according to April?',
+      ja: 'エイプリルによると、アンディは前に何と言っていた？',
+      choices: ['Everything was going great', 'He wanted to come home soon', 'He hated his new boss'], a: 0,
+      choicesJa: ['全部うまくいっている', '早く家に帰りたい', '新しい上司が嫌い'],
+      cue: '「But you said」のあと',
+      line: '*But you said* everything was going *awesome*.',
+      said: '「でも、全部最高にうまくいってるって言ってたじゃない」と言う。',
+      mean: 'But you said 〜 ＝「でも〜って言ってたよね」。前の言葉と今の話がちがう、と指摘する言い方。',
+      trap: 'in over my head の直後なので、前も悪い話をしていたと勘違いしやすい。you said のあとが前の言葉。',
       use: 'But you said it was fine!（でも大丈夫って言ってたよね！）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'now', reveals: ['said'], seg: [95.7, 107.9],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'now', reveals: ['said'], ctx: true, seg: [95.7, 107.9],
       stem: 'What kind of Chuck Norris is Andy now?',
       ja: 'アンディは、今の自分はどんなチャック・ノリスだと言う？',
       choices: ['Old and not good anymore', 'New and still learning', 'Strong but tired'], a: 0,
       choicesJa: ['年を取って、もう強くない', '新人で、まだ学んでいる', '強いが、疲れている'],
-      cue: '「now」のあと',
-      line: 'I am, but I’m like Chuck Norris *now*. Some old guy… who *used to be good* at karate…',
-      said: '「今のチャック・ノリスなんだ。昔は空手が得意だった、ひげのおじさん」と言う。',
-      mean: 'used to be 〜 ＝「前は〜だった（今はちがう）」。now ＝ 今の。',
+      cue: 'アンディの返事の now のあと',
+      line: 'April: You said you were like Chuck Norris. / Andy: I am, but I’m like Chuck Norris *now*. Some old guy… who *used to be good* at karate…',
+      said: '「チャック・ノリスみたいって言ってた」に「そう、今のね。昔は空手が得意だった、ひげのおじさん」と返す。',
+      mean: 'used to be 〜 ＝「前は〜だった（今はちがう）」。チャック・ノリスは昔の空手映画のスター。',
       trap: '強いスターにたとえるので、強いと思いやすい。used to be good（昔は）を聞く。',
       use: 'I used to be good at this.（昔はこれ、得意だったんだけど）' },
 
@@ -175,7 +223,7 @@ export const fakingIt: Clip = {
       trap: '「私も分からない」から、助けを求めていると思いやすい。最後の you will too が結論。',
       use: 'Fake it till you make it.（できるまで、できるふりを）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'secret', reveals: ['run', 'advice'], seg: [110.9, 123],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'secret', reveals: ['run', 'advice'], seg: [110.9, 123], retired: true,
       stem: 'Why does April share her “secret”?',
       ja: 'エイプリルはなぜ「秘密」を話す？',
       choices: ['To make him feel better', 'To warn him about coworkers', 'To make him laugh'], a: 0,
@@ -187,7 +235,7 @@ export const fakingIt: Clip = {
       trap: 'secret（秘密）から、悪いうわさや注意と思いやすい。自分の話で彼を安心させている。',
       use: 'Honestly, nobody knows what they’re doing.（正直、誰も分かってないよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'run', seg: [114.3, 119.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'run', seg: [114.3, 119.4], retired: true,
       stem: 'What does April say she doesn’t know how to do?',
       ja: 'エイプリルは何のやり方が分からないと言う？',
       choices: ['Run her department', 'Look after the animals', 'Read her documents'], a: 0,
@@ -211,16 +259,16 @@ export const fakingIt: Clip = {
       trap: '「ハーフ」なら Half、「モウスト」なら Most、「オール」なら All、「フュー」なら A few。',
       use: 'Half the time, I’m just guessing.（半分くらいは勘でやってる）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], seg: [119.2, 130.9],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'seem', reveals: ['advice'], ctx: true, seg: [119.2, 130.9],
       stem: 'What does April mean by “I seem like it”?',
       ja: 'エイプリルの「I seem like it」はどういう意味？',
       choices: ['She only looks like she knows', 'She really does know it all', 'She knows more than he does'], a: 0,
       choicesJa: ['分かっているように見えるだけ', '本当に全部分かっている', '彼より分かっている'],
-      cue: 'アンディの「you seem like」のあと',
-      line: 'But you seem like you do know… — Yeah, *I seem like it*.',
-      said: '「でも分かってるように見える」に、「そう見えるだけ」と返す。',
+      cue: 'アンディの「you seem like」への返事',
+      line: 'Andy: But you seem like you do know what you’re doing. / April: Yeah, *I seem like it*.',
+      said: '「でも君は、分かってるように見えるよ」に、「そう、見えるだけ」と返す。',
       mean: 'seem ＝「〜のように見える」。見えるだけで、本当はちがう、という意味。',
-      trap: 'Yeah（うん）で認めたと思いやすい。認めているのは「そう見える」ことだけ。',
+      trap: 'Yeah（うん）で認めたと考えがち。認めているのは「そう見える」ことだけ。',
       use: 'I seem calm, but I’m really nervous.（落ち着いて見えるけど、本当は緊張してる）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'figure', seg: [124.9, 131.6],
@@ -279,28 +327,28 @@ export const fakingIt: Clip = {
       trap: 'bologna（ハム）のサンドイッチなので、パンに近い物を選びやすい。cookies を聞く。',
       use: 'Can I get rice instead of fries?（ポテトの代わりにライスにできる？）' },
 
-    { id: 'a4', skill: 'attitude', level: 'B1', point: 'cookies', seg: [143.7, 154.2],
+    { id: 'a4', skill: 'attitude', level: 'B1', point: 'cookies', ctx: true, seg: [143.7, 154.2],
       stem: 'How does Andy feel about the sandwiches?',
       ja: 'サンドイッチをもらって、アンディはどんな気持ち？',
-      choices: ['Touched and thankful', 'Amused by her joke', 'Polite but unhappy'], a: 0,
-      choicesJa: ['感動して、感謝している', '冗談を面白がっている', '礼儀正しいが、いやがっている'],
-      cue: '「instead of bread」のあと',
-      line: 'I used cookies instead of bread. — *You think of everything.* — *I love you.*',
-      said: '「君は何でも考えてくれるね。愛してる」と言う。',
-      mean: 'You think of everything ＝「何でも気が利くね」。本気で感謝している。',
-      trap: 'クッキーのハムサンドは変なので、冗談に思いやすい。言葉は素直な感謝。',
+      choices: ['Touched and thankful', 'Amused by her joke', 'Polite but secretly unhappy'], a: 0,
+      choicesJa: ['感動して、感謝している', '冗談を面白がっている', '礼儀正しいが、内心いやがっている'],
+      cue: '「instead of bread」への返事',
+      line: 'April: I used cookies instead of bread. / Andy: *You think of everything.* — *I love you.*',
+      said: '「パンの代わりにクッキーを使った」に、「本当に気が利くね。愛してる」と言う。',
+      mean: 'You think of everything ＝ 文字どおりは「何でも考える」→「本当に気が利くね」。本気で感謝している。',
+      trap: 'クッキーのハムサンドは変なので、冗談に聞こえるが、言葉は素直な感謝。',
       use: 'You think of everything!（気が利くね！）' },
 
-    { id: 'i2', skill: 'infer', level: 'C1', point: 'wallet', seg: [159.9, 170.2],
+    { id: 'i2', skill: 'infer', level: 'C1', point: 'wallet', ctx: true, seg: [159.9, 170.2],
       stem: 'What is Andy’s wallet story, really?',
       ja: 'アンディの財布の話は、本当は何？',
       choices: ['An excuse he just made up', 'The true reason he came back', 'A story about April’s wallet'], a: 0,
       choicesJa: ['今思いついた言いわけ', '戻ってきた本当の理由', 'エイプリルの財布の話'],
-      cue: '最後の「I guess」',
-      line: 'Found it! … I left my wallet in here earlier, *I guess*.',
-      said: 'ゴミ箱から出て「あった！前にここに財布を置いたみたい」と言う。',
+      cue: '「Andy!」への返事。最後の「I guess」',
+      line: 'Are you kidding me? Andy! / Andy: Found it! … I left my wallet in here earlier, *I guess*.',
+      said: '「うそでしょ？アンディ！」に、ゴミ箱から出て「あった！さっきここに財布を落としたみたい」と言う。',
       mean: 'I guess ＝「〜だと思う」。自分のことなのに推測の形なのは、言いわけだから。',
-      trap: 'Found it!（あった）で本当に探していたと思いやすい。最後の I guess が手がかり。',
+      trap: 'Found it!（あった）で本当に探していたと考えがち。最後の I guess が手がかり。',
       use: 'I must have left it here, I guess.（ここに置き忘れたのかな）' },
   ]
 };
