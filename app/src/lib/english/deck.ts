@@ -3,7 +3,8 @@
 // shard's cards in a seeded order; then the next round, in a new order. A card from a clip already in this set, or from
 // today's clip or the next AHEAD in the plan (their lessons stay fresh), is passed over (back next round). Pure but for
 // the store.
-import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { DEVICE } from '#lib/sync/storage.ts';
+import { perPlayer } from './per-player.ts';
 import { SHARDS, type PhraseEntry } from './catalog.ts';
 import { fnv1a } from '#lib/random.ts';
 import type { Key } from './phrase-review.ts';
@@ -67,9 +68,9 @@ export function heldOf(plan: readonly string[], today: string, open: (id: string
   return new Set([today, ...[...plan.slice(i + 1), ...plan.slice(0, Math.max(0, i))].filter(open).slice(0, AHEAD)]);
 }
 
-const read = (): Record<string, Cursor> => readJson<Record<string, Cursor>>(localKV(), DEVICE.englishDeck) ?? {};
+const store = perPlayer<Cursor>(DEVICE.englishDeck);
 export function cursorOf(who: Who): Cursor {
-  const c = read()[who];
+  const c = store.get(who);
   return c && [c.r, c.k, c.i, c.n].every(Number.isInteger) && Array.isArray(c.set) ? c : START;
 }
-export const saveCursor = (who: Who, c: Cursor): void => void writeJson(localKV(), DEVICE.englishDeck, { ...read(), [who]: c });
+export const saveCursor = (who: Who, c: Cursor): void => store.set(who, c);

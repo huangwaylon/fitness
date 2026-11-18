@@ -3,6 +3,7 @@
 // shown, and 大, by default), and the clips 別の動画にする passed over, each for SKIP_DAYS
 // (today's clip skips them; never a lock: the library still opens them).
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { perPlayer } from './per-player.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import { CC_SIZES, type CcSize } from './player.svelte.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
@@ -36,9 +37,6 @@ export function withSkip(all: Skips, clip: string, today: LocalDate): Skips {
   return Object.fromEntries([[clip, today], ...kept]);
 }
 
-const read = (): Record<string, Skips> => readJson<Record<string, Skips>>(localKV(), DEVICE.englishSkip) ?? {};
-export const skipsOf = (who: Who, today: LocalDate): Set<string> => liveSkips(read()[who] ?? {}, today);
-export function skip(who: Who, clip: string, today: LocalDate): void {
-  const all = read();
-  writeJson(localKV(), DEVICE.englishSkip, { ...all, [who]: withSkip(all[who] ?? {}, clip, today) });
-}
+const skips = perPlayer<Skips>(DEVICE.englishSkip);
+export const skipsOf = (who: Who, today: LocalDate): Set<string> => liveSkips(skips.get(who) ?? {}, today);
+export const skip = (who: Who, clip: string, today: LocalDate): void => skips.set(who, withSkip(skips.get(who) ?? {}, clip, today));

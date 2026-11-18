@@ -2,6 +2,7 @@
 // question shown, each question's state and the study time counted but not yet in a row, and the day this play's
 // まとめ wrote its row. Dropped when the clip's content changed (its version), the oldest let go past KEEP.
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { perPlayer } from './per-player.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import type { QState } from './lesson.ts';
 
@@ -51,5 +52,6 @@ export function save(who: Who, id: string, s: Saved): void {
 }
 
 /** Whether おかえりなさい was shown for a gap that ended after `last` (then not again). */
-export const backShown = (who: Who, last: LocalDate): boolean => readJson<Record<string, string>>(localKV(), DEVICE.englishBack)?.[who] === last;
-export const markBack = (who: Who, last: LocalDate): void => void writeJson(localKV(), DEVICE.englishBack, { ...readJson<Record<string, string>>(localKV(), DEVICE.englishBack), [who]: last });
+const back = perPlayer<LocalDate>(DEVICE.englishBack);
+export const backShown = (who: Who, last: LocalDate): boolean => back.get(who) === last;
+export const markBack = (who: Who, last: LocalDate): void => back.set(who, last);

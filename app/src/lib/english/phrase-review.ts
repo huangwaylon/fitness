@@ -5,7 +5,8 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf } from '#lib/contract/listen.ts';
 import { listensOf } from './listens.ts';
-import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { DEVICE } from '#lib/sync/storage.ts';
+import { perPlayer } from './per-player.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
@@ -81,9 +82,9 @@ export function unsaved(mine: Mine, k: Key): Mine {
 /** `mine` with today's phrases skipped (they wait for tomorrow, their steps as they were). */
 export const skipped = (mine: Mine, today: LocalDate): Mine => ({ ...mine, day: [today, PER_DAY] });
 
-const read = (): Record<string, Mine> => readJson<Record<string, Mine>>(localKV(), DEVICE.englishPhrases) ?? {};
+const store = perPlayer<Mine>(DEVICE.englishPhrases);
 export function mineOf(who: Who): Mine {
-  const m = read()[who];
+  const m = store.get(who);
   return m && m.s && typeof m.s === 'object' ? m : { s: {} };
 }
-export const saveMine = (who: Who, mine: Mine): void => void writeJson(localKV(), DEVICE.englishPhrases, { ...read(), [who]: mine });
+export const saveMine = (who: Who, mine: Mine): void => store.set(who, mine);
