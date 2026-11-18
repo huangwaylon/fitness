@@ -87,7 +87,7 @@
       <p class="note">このiPhoneはペアリングされていないので、テストできません。</p>
     {/if}
 
-    <section class="card ask">
+    <section class="card ask obj-cream">
       <div class="nav">
         <button type="button" class="arrow" aria-label="前の文" data-sfx="tick" onclick={() => step(-1)} aria-disabled={phase !== 'idle'}>◀</button>
         <span class="count" data-speech-at={free ? 'free' : k}>{free ? '自由に話す' : `${k + 1} / ${SENTENCES.length}`}</span>
@@ -108,7 +108,7 @@
     {#if miss}<p class="note miss">{MISS[miss]}</p>{/if}
 
     {#if last}
-      <section class="card result" data-speech-result>
+      <section class="card result obj-cream" data-speech-result>
         <p class="heard" lang="en">“{last.heard.text || '（何も聞こえませんでした）'}”</p>
         {#if last.match}
           <p class="words" lang="en">
@@ -135,12 +135,13 @@
 </div>
 
 <style>
-  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--surface); color: var(--c-ink); }
+  .screen { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--surface); color: var(--text); }
   .top { display: flex; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top) + 8px) 12px 8px; }
   .top h1 { margin: 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .back { width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--c-card); box-shadow: 0 2px 0 var(--c-edge); font-size: 26px; color: var(--c-ink); }
   .body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 16px calc(env(safe-area-inset-bottom) + 16px); }
-  .card { background: var(--c-card); border-radius: 16px; box-shadow: 0 2px 0 var(--c-edge); padding: 12px 14px; }
+  /* the page follows the hour (--surface, --text); its cards stay cream (.obj-cream: the day's text inside) */
+  .card { background: var(--c-card); color: var(--text); border-radius: 16px; box-shadow: 0 2px 0 var(--c-edge); padding: 12px 14px; }
   .nav { display: flex; align-items: center; justify-content: space-between; }
   .arrow { width: 44px; height: 44px; border: 0; background: none; color: var(--c-ink); font-size: 18px; }
   .arrow[aria-disabled='true'] { opacity: .3; }

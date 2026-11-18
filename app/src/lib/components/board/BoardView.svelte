@@ -231,7 +231,7 @@
 
   <div class="bar" bind:this={bar}>
     {#if writing}
-      <form class="write" onsubmit={submit} data-board-write>
+      <form class="write obj-cream" onsubmit={submit} data-board-write>
         <textarea bind:this={field} value={writing.text} oninput={typed} rows="4" maxlength={BOARD_CHARS * 2} aria-label={t('board.field')}
           placeholder={t('board.placeholder')} enterkeyhint="enter" data-sfx="none" data-board-field></textarea>
         <div class="row">
@@ -241,7 +241,7 @@
         </div>
       </form>
     {:else if picked}
-      <div class="read" data-board-read={picked.id}>
+      <div class="read obj-cream" data-board-read={picked.id}>
         <div class="who"><b>{board.author(picked.who).name}</b><span>{postDate(picked.p)}{picked.at > picked.p ? ` · ${t('board.edited')}` : ''}</span>
           <NavButton kind="close" onclick={() => ((face.selected = null), (removing = false))} /></div>
         <p class="text">{picked.t}</p>
@@ -254,7 +254,7 @@
         </div>{/if}
       </div>
     {:else}
-      <div class="row pager">
+      <div class="row pager obj-cream">
         <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.newer')} aria-disabled={page === 0} data-board-newer onclick={() => turn(-1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 L8 12 L15 19" /></svg></button>
         <span class="pg" data-board-page={page + 1}>{page + 1} / {pages}</span>
         <button type="button" class="btn small paper arrow" data-sfx="page" aria-label={t('board.older')} aria-disabled={page >= pages - 1} data-board-older onclick={() => turn(1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 L16 12 L9 19" /></svg></button>
@@ -304,6 +304,7 @@
   .bar > * { width: min(100%, 560px); }
   .row { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
   /* the app's buttons (theme.css .btn: leaf the action, cream the rest, sunk when it can't) on fixed-cream game panels */
+  /* the pager and the note's cards: cream at every hour (.obj-cream: their sunk ‹ › and buttons the day's, not night's navy) */
   .pager { justify-content: center; background: var(--c-cream); border-radius: var(--r-card); padding: 8px 8px 4px; box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
   .pg { min-width: 56px; text-align: center; font: 700 var(--fs-body) / 1 var(--font-num); color: var(--c-ink); }
   .row .btn { flex: none; }
