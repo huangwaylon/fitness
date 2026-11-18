@@ -225,6 +225,38 @@ describe('a queue that never wedges (health A3: sync #1, #18, #19)', () => {
     expect(bodies.map((b) => b.body.events.map((e: { id: string }) => e.id))).toEqual([[row.id]]);
     expect(r.remaining).toBe(1);
   });
+  it('hidden while a flush is out: the keepalive goes at once, that flush\'s batch again with the released rows; a repeat acks as a duplicate', async () => {
+    const goal = enqueue('pref', { key: 'moveGoal', value: 450 }, T);
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    const sent: { ids: string[]; keepalive: boolean }[] = [];
+    const seen = new Set<string>();
+    configureTransport({
+      url: RECORD,
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        const b = JSON.parse(String(init?.body));
+        sent.push({ ids: b.events.map((e: { id: string }) => e.id), keepalive: !!init?.keepalive });
+        if (!init?.keepalive) await gate; // (the request iOS may stop with the page)
+        const results = b.events.map((e: { id: string }) => ({ id: e.id, ok: true, ...(seen.has(e.id) ? { duplicate: true } : {}) }));
+        for (const e of b.events) seen.add(e.id);
+        return new Response(JSON.stringify({ ok: true, results }));
+      }) as typeof fetch
+    });
+    const p = flush(() => T);
+    await Promise.resolve();
+    const row = enqueue('island', { date: '2026-11-18', taken: ['catch:a'] }, T, 120_000);
+    expect(releaseHeld(T)).toBe(true);
+    const k = await flush(() => T, { keepalive: true });
+    expect(sent).toEqual([{ ids: [goal.id], keepalive: false }, { ids: [goal.id, row.id], keepalive: true }]);
+    expect(k.acked.map((e) => e.id)).toEqual([goal.id, row.id]);
+    expect(queued()).toEqual([]);
+    release();
+    const r = await p;
+    expect(r.acked.map((e) => e.id)).toEqual([goal.id]);
+    expect(sent).toHaveLength(2);
+    expect(queued()).toEqual([]);
+    expect(ackedEvents().map((e) => e.id).sort()).toEqual([goal.id, row.id].sort());
+  });
 });
 
 describe('what the unsent line counts (health A10)', () => {

@@ -131,7 +131,7 @@ export function enqueue(type: EventType, data: Record<string, unknown>, now = Da
   const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs, ...(group ? { group } : {}) };
   const q = queued();
   const row = dayRow(ev);
-  const stale = (x: QueuedEvent) => dayRow(x) === row && !flushingIds.has(x.id);
+  const stale = (x: QueuedEvent) => dayRow(x) === row && !inFlight(x.id);
   const gone = row === null ? -1 : q.findIndex(stale);
   if (gone < 0) saveQueue([...q, ev]);
   else {
@@ -154,7 +154,7 @@ export function enqueueAll(events: readonly { type: EventType; data: Record<stri
 /** Undo: drop a queued event that has not been sent yet. False if it already went out. */
 export function unqueue(id: string): boolean {
   const q = queued();
-  if (!q.some((x) => x.id === id) || flushingIds.has(id)) return false;
+  if (!q.some((x) => x.id === id) || inFlight(id)) return false;
   saveQueue(q.filter((x) => x.id !== id));
   return true;
 }
@@ -165,7 +165,7 @@ export function unqueue(id: string): boolean {
 export function replaceHeld(id: string, data: Record<string, unknown>, now: number, until: number): boolean {
   const q = queued();
   const ev = q.find((x) => x.id === id);
-  if (!ev || ev.tries > 0 || flushingIds.has(id)) return false;
+  if (!ev || ev.tries > 0 || inFlight(id)) return false;
   saveQueue([...q.filter((x) => x !== ev), { ...ev, data, queuedAt: now, nextAt: until }]);
   return true;
 }
@@ -174,7 +174,7 @@ export function replaceHeld(id: string, data: Record<string, unknown>, now: numb
 export function holdEvent(id: string, until: number): boolean {
   const q = queued();
   const ev = q.find((x) => x.id === id);
-  if (!ev || ev.tries > 0 || flushingIds.has(id)) return false;
+  if (!ev || ev.tries > 0 || inFlight(id)) return false;
   saveQueue(q.map((x) => (x.id === id ? { ...x, nextAt: until } : x)));
   return true;
 }
@@ -203,7 +203,7 @@ export function unpark(now = Date.now()): void {
  *  and the partner behind until the next open. An undo window (a buy's) keeps its time. */
 export function releaseHeld(now = Date.now()): boolean {
   const q = queued();
-  const go = (x: QueuedEvent) => dayRow(x) !== null && isHeld(x, now) && !flushingIds.has(x.id);
+  const go = (x: QueuedEvent) => dayRow(x) !== null && isHeld(x, now) && !inFlight(x.id);
   if (!q.some(go)) return false;
   saveQueue(q.map((x) => (go(x) ? { ...x, nextAt: now } : x)));
   return true;
@@ -252,8 +252,10 @@ export const PARK_AFTER = 30;
 type EventResult = { id: string | null; ok: true; duplicate?: true; at?: string } | { id: string | null; ok: false; error: ApiError; detail?: string };
 
 let flushing: Promise<FlushResult> | null = null;
-/** The events currently in flight (they can't be undone any more). */
-const flushingIds = new Set<string>();
+/** The events currently in flight (they can't be undone any more): one set per flush under way (a keepalive's may run
+ *  beside another: flush). */
+const flights = new Set<Set<string>>();
+const inFlight = (id: string): boolean => [...flights].some((f) => f.has(id));
 
 /** Still inside its undo window (never tried yet, not due): later events may pass it. */
 const isHeld = (ev: QueuedEvent, now: number): boolean => ev.tries === 0 && ev.nextAt > now;
@@ -312,8 +314,14 @@ function due(q: readonly QueuedEvent[], now: number, skip: (ev: QueuedEvent) => 
  * next flush: store/live.ts SEND_PACE_MS), so a stream of taps can't make a request each.
  */
 export function flush(now: () => number = Date.now, opts: { keepalive?: boolean; paced?: boolean } = {}): Promise<FlushResult> {
-  if (flushing) return flushing;
+  // The page being hidden (keepalive) doesn't wait for a flush under way: that request may not outlive the page, so
+  // the keepalive sends what is due now, that flush's batch again too (in order; the record acks a repeat as a
+  // duplicate). The one under way stays `flushing`.
+  if (flushing && !opts.keepalive) return flushing;
   const most = opts.keepalive ? KEEPALIVE_BYTES : BATCH_CHARS;
+  /** This flush's request in flight. */
+  const mine = new Set<string>();
+  flights.add(mine);
   const p = (async (): Promise<FlushResult> => {
     const out: FlushResult = { sent: 0, acked: [], stored: [], dropped: [], remaining: 0 };
     const body = (ev: QueuedEvent) => ({ id: ev.id, type: ev.type, data: ev.data, ...(ev.group ? { group: ev.group } : {}) });
@@ -404,10 +412,10 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
       if (g && next?.group === g && batch[0].group !== g) {
         while (batch[batch.length - 1].group === g) tried.delete(batch.pop()!.id);
       }
-      for (const ev of batch) flushingIds.add(ev.id);
+      for (const ev of batch) mine.add(ev.id);
       const key = getKey();
       const r = await post<{ results: EventResult[]; wallets?: Wallets }>('events', { events: batch.map(body) }, opts.keepalive ? { keepalive: true } : {});
-      flushingIds.clear();
+      mine.clear();
       // Paired as someone else meanwhile (setKey cleared the queue): the reply is the old person's, not ours to show.
       if (getKey() !== key) break;
       if (!r.ok) {
@@ -448,7 +456,8 @@ export function flush(now: () => number = Date.now, opts: { keepalive?: boolean;
     out.remaining = queued().length;
     if (out.sent) writeJson(localKV(), LIVE.sentAt, { at: now() });
     return out;
-  })();
+  })().finally(() => flights.delete(mine));
+  if (flushing) return p;
   flushing = p;
   // cleared however it settles: a throw (storage) must not wedge every later flush
   void p.finally(() => {

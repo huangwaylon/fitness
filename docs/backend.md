@@ -184,7 +184,8 @@ answered by id; a request refused whole is halved, one event alone so refused is
   with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on a sync tap,
   becoming visible and the socket's welcome, at most once per 30 s, and on every `online`.
 - **Hidden:** on hide the held day rows go at once in `keepalive` requests, so a phone locked right after a catch
-  doesn't leave the partner behind.
+  doesn't leave the partner behind; a flush under way doesn't hold them back (its batch goes again with them: a repeat
+  acks as a duplicate).
 
 ### Optimistic view
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
