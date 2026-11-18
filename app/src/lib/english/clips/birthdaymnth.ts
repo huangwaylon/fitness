@@ -1,8 +1,10 @@
+// R4 REVIEW 2026-11-18: keep 9, rewrite 4, retire 4, new 0, ctx 3, tx 5
 // A2 REVIEW 2026-11-17: keep 9, rewrite 6, retire 2, new 1 · sweep: cross-bank twins retired or rewritten
 // “It's Birthday Month - The Office US” (the official The Office channel, Best of Season 4): a coworker lists the
 // month's birthdays, and Jim proposes one shared party, then explains to camera what Michael's parties are like.
-// Segments from the captions, words from whisper (2026-11-16). Talk runs ≈ 0–62 s; whisper loops after 63 s. Untested:
-// 1.8 s, 8.4 s, 39–42 s (the sources differ) and 29–33 s (a racial joke: kept out of every segment).
+// Segments from the captions, words from whisper (2026-11-16). Talk runs ≈ 0–63.7 s, then music. Untested: 39–42 s
+// (the sources differ). Michael's “Happy birthday!” shouts (51–58 s) play only as f2's lead-in.
+// EXCLUDE 29.85–33.3 (a racial joke)
 // EAR CHECK: 8.4 s — the man with the idea (and the talking head) is assumed Jim; stems name him, no key depends on it
 import type { Clip } from '../types.ts';
 
@@ -23,7 +25,7 @@ export const birthdayMonth: Clip = {
       trap: 'shared を「割り勘」と思いやすい。ここは一回にまとめる意味。',
       use: 'Let’s do it all at once.（全部まとめて一度にやろう）' },
 
-    { id: 'i2', skill: 'infer', level: 'B1', point: 'month', seg: [0, 6],
+    { id: 'i2', skill: 'infer', level: 'B1', point: 'month', seg: [0, 6], retired: true,
       stem: 'What does “It’s birthday month” mean?',
       ja: '「It’s birthday month」はどういう意味？',
       choices: ['Many birthdays are this month', 'It is her own birthday', 'There is one party a month'], a: 0,
@@ -35,7 +37,7 @@ export const birthdayMonth: Clip = {
       trap: '自分の誕生月と思いやすい。後ろで、別々の人の日付を次々に挙げている。',
       use: 'It’s wedding season again.（また結婚式シーズンだね）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'meredith', seg: [0, 9.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'meredith', seg: [0, 6],
       stem: 'When is Meredith’s birthday?',
       ja: 'メレディスの誕生日はいつ？',
       choices: ['At the end of the month', 'The week after next', 'Today'], a: 0,
@@ -47,19 +49,7 @@ export const birthdayMonth: Clip = {
       trap: '直前に week after next が出るが、それは別の人。名前と日付を組で聞く。',
       use: 'Mine is at the end of the month.（私のは月末です）' },
 
-    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', reveals: ['shared'], seg: [5.8, 13.2],
-      stem: 'Why does Jim say “Why don’t we just…” here?',
-      ja: 'ジムは、なぜここで「Why don’t we just…」と言う？',
-      choices: ['To make a suggestion', 'To ask for a reason', 'To complain about it'], a: 0,
-      choicesJa: ['提案するため', '理由を聞くため', '文句を言うため'],
-      cue: '「I have an idea」の直後。',
-      line: 'I have an idea. *Why don’t we just* do one big shared party?',
-      said: '「考えがある。一回、大きなパーティーにしない？」と言う。',
-      mean: 'Why don’t we ～? ＝ 〜しようよ。理由を聞く文ではなく、提案。',
-      trap: 'Why から理由の質問と思いやすい。前の I have an idea で提案と分かる。',
-      use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
-
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'shared', reveals: ['whydont'], seg: [5.8, 13.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'shared', reveals: ['whydont'], seg: [5.8, 13.2], retired: true,
       stem: 'Type Jim’s idea: “Why don’t we just do ___?” (4 words)', answer: 'one big shared party',
       ja: 'ジムの案を書き取る：「Why don’t we just do ___?」（4語）',
       cue: '「just do」のあとの4語。',
@@ -69,7 +59,31 @@ export const birthdayMonth: Clip = {
       trap: 'big と shared がつながり、d も消えやすい。「ビッシェアパーリィ」に近い。',
       use: 'Let’s get one big pizza to share.（大きいピザを1枚頼んで分けよう）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [11.8, 17.1], keep: true,
+    { id: 'pr1', skill: 'pragma', level: 'B1', point: 'whydont', ctx: true, reveals: ['shared'], seg: [5.95, 12.2],
+      stem: 'What does Jim do after the birthday list?',
+      ja: '誕生日の話を聞いたあと、ジムは何をする？',
+      choices: ['He suggests a plan', 'He asks for a reason', 'He complains about Michael'], a: 0,
+      choicesJa: ['案を出す', '理由をたずねる', 'マイケルの文句を言う'],
+      cue: '「streamers」のあとのジムの言葉',
+      line: 'Michael usually goes with red and white streamers for… / Jim: You know what? I have an idea. *Why don’t we just* do one big shared party?',
+      said: '飾りの話をさえぎって「考えがある。一回、大きなパーティーにしない？」と言う。',
+      mean: 'Why don’t we 〜? ＝ 文字どおりは「なぜ〜しないの？」→「〜しようよ」という提案。理由は聞いていない。',
+      trap: 'Why が聞こえると、理由をたずねていると考えがち。前の I have an idea が決め手。',
+      use: 'Why don’t we grab lunch?（お昼食べに行かない？）' },
+
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'often', ctx: true, reveals: ['thirteen', 'whydont', 'shared'], seg: [9.5, 21],
+      stem: 'Why does Jim want one shared party?',
+      ja: 'ジムはなぜ、パーティーを一回にまとめたい？',
+      choices: ['There are too many parties', 'Michael cares about everyone', 'The office is too big'], a: 0,
+      choicesJa: ['パーティーが多すぎる', 'マイケルが全員を大事にしている', '職場が大きすぎる'],
+      cue: '「What?」のあとのジムの説明',
+      line: 'Jim: Why don’t we just do one big shared party? / What? / Jim: There are 13 people working in this office, so *13 times a year*…',
+      said: '「え？」と聞かれ、「13人いるから、年に13回ケーキと風船と…」と説明する。',
+      mean: 'times a year ＝ 年に〜回。13 times と回数を強めて、パーティーが多すぎると言っている。',
+      trap: '全員を祝うので、マイケルのやさしさの話と考えがち。強めているのは回数。',
+      use: 'That’s twelve meetings a year!（年に12回も会議だよ）' },
+
+    { id: 'n1', skill: 'number', level: 'B1', point: 'thirteen', seg: [12.8, 16], keep: true,
       stem: 'How many people work in the office?',
       ja: 'この職場では何人が働いている？',
       choices: ['Three', 'Thirteen', 'Thirty'], a: 1,
@@ -81,19 +95,7 @@ export const birthdayMonth: Clip = {
       trap: 'thirteen は後ろの「ティーン」が強く長い。thirty は前が強く、後ろは短い。',
       use: 'There are thirteen of us.（私たちは13人です）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'often', reveals: ['thirteen'], seg: [12.8, 25],
-      stem: 'Why does Jim say “thirteen times a year”?',
-      ja: 'ジムはなぜ「thirteen times a year」と言う？',
-      choices: ['There are too many parties', 'Michael cares about everyone', 'The office is too big'], a: 0,
-      choicesJa: ['パーティーが多すぎる', 'マイケルが全員を大事にしている', '職場が大きすぎる'],
-      cue: '「so」のあとに続く並び。',
-      line: 'so *thirteen times a year*, Michael gets a cake and balloons…',
-      said: '「だから年に13回、ケーキと風船と冗談のプレゼントと乾杯」と話す。',
-      mean: 'times a year ＝ 年に〜回。回数を強めて、多すぎると言いたい。',
-      trap: '全員を祝うので、やさしさの話にも聞こえる。強めているのは回数。',
-      use: 'That’s twelve meetings a year!（年に12回も会議だよ）' },
-
-    { id: 's1', skill: 'sound', level: 'B2', point: 'toast', seg: [13.1, 24.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'toast', seg: [20.3, 24.45],
       stem: 'Fill the gap: “…some sort of joke gift and ___.”',
       ja: '空所を埋める：「…some sort of joke gift and ___.」',
       choices: ['makes a toast', 'makes toast', 'makes the toast'], a: 0,
@@ -105,7 +107,7 @@ export const birthdayMonth: Clip = {
       trap: 'a を落とすと makes toast（パンを焼く）。小さな a があるか聞く。the なら「ザ」が聞こえる。',
       use: 'Let’s make a toast to the new couple!（新しいカップルに乾杯しよう）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'twotypes', seg: [23, 30.2], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'twotypes', seg: [24.45, 27.9], keep: true,
       stem: 'How many kinds of toasts does Michael make?',
       ja: 'マイケルの乾杯のあいさつは何種類？',
       choices: ['One', 'Two', 'Three'], a: 1,
@@ -114,10 +116,10 @@ export const birthdayMonth: Clip = {
       line: 'And there are *two types* of toasts.',
       said: '「乾杯のあいさつには2種類ある」と言う。',
       mean: 'two types ＝ 2種類。One is ～ と the other is ～ で、2つを順に言う。',
-      trap: 'one は「ワン」、three は「スリー」。ここは「トゥー」。One is と the other is も2つの印。',
+      trap: 'one は「ワン」、three は「スリー」。ここは「トゥー」。直後の One is 〜 も手がかり。',
       use: 'There are two kinds of people.（人には2種類いる）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'agejoke', seg: [24.3, 29.9],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'agejoke', seg: [24.45, 29.8],
       stem: 'What is the first kind of toast about?',
       ja: '1つ目の乾杯のあいさつは何について？',
       choices: ['How old the person is', 'How long they have worked there', 'Their bad habits'], a: 0,
@@ -129,19 +131,7 @@ export const birthdayMonth: Clip = {
       trap: 'how old を「どのくらい古い」と思いやすい。人について言えば年齢のこと。',
       use: 'No jokes about how old I am!（年の話はなしね）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'toasts', reveals: ['twotypes'], seg: [29.7, 39.1],
-      stem: 'How does Jim feel about the second kind of toast?',
-      ja: '2つ目の乾杯のあいさつを、ジムはどう思っている？',
-      choices: ['He thinks they are bad', 'He thinks they are fun', 'He is not sure'], a: 0,
-      choicesJa: ['ひどいと思っている', '楽しいと思っている', 'よく分からない'],
-      cue: '「the other is」のあとの言葉。',
-      line: 'And the other is *something inappropriate or horrible*.',
-      said: '「もう一つは、不適切か、ひどいもの」と言う。',
-      mean: 'inappropriate ＝ 場に合わない、失礼な。horrible ＝ ひどい。どちらも悪い意味。',
-      trap: '淡々とした言い方なので、楽しんでいるように聞こえやすい。言葉はどちらも批判。',
-      use: 'Honestly, it was kind of horrible.（正直、けっこうひどかった）' },
-
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'both', reveals: ['toasts', 'twotypes'], seg: [32.8, 39.8],
+    { id: 'h1', skill: 'humor', level: 'C1', point: 'both', reveals: ['toasts', 'twotypes'], seg: [32.8, 39.8], retired: true,
       stem: 'What does Jim add with “Or both”?',
       ja: 'ジムは「Or both」で何を足している？',
       choices: ['Some toasts are rude and bad', 'He takes back what he said', 'He likes both kinds'], a: 0,
@@ -153,7 +143,19 @@ export const birthdayMonth: Clip = {
       trap: '間のあとの付け足しは、言い直しに聞こえやすい。ここは悪さを足すオチ。',
       use: 'Rain or snow. Or both.（雨か雪。または両方）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['often', 'fault', 'toasts'], seg: [33.0, 62.8],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'toasts', reveals: ['twotypes'], seg: [33.3, 38.6],
+      stem: 'How does Jim feel about the second kind of toast?',
+      ja: '2つ目の乾杯のあいさつを、ジムはどう思っている？',
+      choices: ['He thinks they are bad', 'He thinks they are fun', 'He is not sure'], a: 0,
+      choicesJa: ['ひどいと思っている', '楽しいと思っている', 'よく分からない'],
+      cue: '「the other is」のあとの言葉。',
+      line: 'And the other is *something inappropriate or horrible*.',
+      said: '「もう一つは、不適切か、ひどいもの」と言う。',
+      mean: 'inappropriate ＝ 場に合わない、失礼な。horrible ＝ ひどい。どちらも悪い意味。',
+      trap: '淡々とした言い方なので、楽しんでいるように聞こえやすい。言葉はどちらも批判。',
+      use: 'Honestly, it was kind of horrible.（正直、けっこうひどかった）' },
+
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'problem', reveals: ['often', 'fault', 'toasts'], seg: [33.3, 63.7],
       stem: 'What is Jim mostly talking about to the camera?',
       ja: 'ジムはカメラに向かって主に何の話をしている？',
       choices: ['Problems with Michael’s parties', 'Why everyone loves the parties', 'How to plan a party'], a: 0,
@@ -164,7 +166,7 @@ export const birthdayMonth: Clip = {
       trap: 'big believer で楽しい話に聞こえやすい。horrible や to a fault は困りごと。',
       use: 'Here’s the problem with that.（それの困ったところはね）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'believer', reveals: ['fault'], seg: [42, 51.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'believer', reveals: ['fault'], seg: [42.4, 47.85],
       stem: 'What does “a very big believer in surprise parties” mean?',
       ja: '「a very big believer in surprise parties」はどういう意味？',
       choices: ['He loves surprise parties', 'He is afraid of them', 'He plans very big parties'], a: 0,
@@ -173,20 +175,8 @@ export const birthdayMonth: Clip = {
       line: 'And he is *a very big believer in* surprise parties.',
       said: '「それに、彼はサプライズパーティーの大ファンだ」と言う。',
       mean: 'a big believer in ～ ＝ 〜が良いと強く信じている、大好き。',
-      trap: 'big から、大きなパーティーと思いやすい。big は believer にかかる。',
+      trap: 'big から、大きなパーティーを連想しやすい。big は believer にかかる。',
       use: 'I’m a big believer in breakfast.（朝ごはんは大事だと思ってる）' },
-
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', reveals: ['hedge'], seg: [44.5, 50.9], retired: true,
-      stem: 'What does “to a fault” mean here?',
-      ja: 'ここで「to a fault」はどういう意味？',
-      choices: ['Too much', 'By mistake', 'Because of others'], a: 0,
-      choicesJa: ['やりすぎなくらい', 'まちがえて', '人のせいで'],
-      cue: '並ぶ言葉の最後の句。',
-      line: 'Maybe even, arguably, possibly *to a fault*.',
-      said: '「もしかすると、度が過ぎるくらいに」と付け足す。',
-      mean: 'to a fault ＝ 良いことでも、やりすぎて欠点になるほど。',
-      trap: 'fault を「ミス」や「責任」と取りやすい。to a fault でひとまとまり。',
-      use: 'She’s kind to a fault.（彼女はやさしすぎるくらい）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'hedge', seg: [44.5, 50.9], retired: true,
       stem: 'Why does Jim pile up several soft words before his last point?',
@@ -199,7 +189,31 @@ export const birthdayMonth: Clip = {
       trap: '日本語の「かもしれない」のように本当の迷いや言葉探しと取りやすい。3つも重ねるのは演技。',
       use: 'It’s maybe, possibly, a little expensive.（ちょっと、まあ、高いかもね）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'so', seg: [56.2, 63],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'fault', reveals: ['hedge'], seg: [47.85, 50.9],
+      stem: 'What does “to a fault” mean here?',
+      ja: 'ここで「to a fault」はどういう意味？',
+      choices: ['Too much', 'By mistake', 'Because of others'], a: 0,
+      choicesJa: ['やりすぎなくらい', 'まちがえて', '人のせいで'],
+      cue: '「believer in surprise parties」のあと',
+      line: 'Maybe even, arguably, possibly *to a fault*.',
+      said: '「もしかすると、度が過ぎるくらいに」と付け足す。',
+      mean: 'to a fault ＝ 文字どおりは「欠点になるまで」。良いことも、やりすぎると欠点→「度が過ぎるくらい」。',
+      trap: 'fault を「ミス」や「責任」と勘違いしやすい。to a fault でひとまとまり。',
+      use: 'She’s kind to a fault.（彼女はやさしすぎるくらい）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'outway', ctx: true, seg: [53.8, 63.7],
+      stem: 'What does “getting these out of the way” mean?',
+      ja: '「getting these out of the way」はどういう意味？',
+      choices: ['Getting them done', 'Skipping them this year', 'Moving them after work'], a: 0,
+      choicesJa: ['済ませてしまう', '今年はやめる', '仕事のあとに移す'],
+      cue: '「Happy birthday!」のあと、最後の文',
+      line: 'Michael: Happy birthday! / Jim: So, I think, yeah. I think *getting these out of the way* might be productive.',
+      said: 'マイケルの大騒ぎのあと、「これを片付けてしまうのが効率的かも」と言う。',
+      mean: 'get 〜 out of the way ＝ 文字どおりは「〜を道からどける」→ じゃまなものを先に済ませて片付ける。',
+      trap: 'out of the way を「なくす」と考えがち。やめる話ではなく、まとめて早く済ませる話。',
+      use: 'Let’s get the dishes out of the way.（先にお皿洗いを済ませよう）' },
+
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'so', seg: [56.2, 63], retired: true,
       stem: 'Why does Jim say “So” here?',
       ja: 'ジムは、なぜここで「So」と言う？',
       choices: ['To wrap up what he said', 'To tell what happened next', 'To start a new topic'], a: 0,
@@ -211,18 +225,6 @@ export const birthdayMonth: Clip = {
       trap: 'So を「その結果」と思うと、直前の場面の続きに聞こえる。間のあとの So はまとめ。',
       use: 'So, yeah, that’s my plan.（というわけで、それが僕の計画）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'outway', seg: [57.2, 63.7],
-      stem: 'What does “getting these out of the way” mean?',
-      ja: '「getting these out of the way」はどういう意味？',
-      choices: ['Getting them done', 'Skipping them this year', 'Moving them after work'], a: 0,
-      choicesJa: ['済ませてしまう', '今年はやめる', '仕事のあとに移す'],
-      cue: '最後の「I think」のあと。',
-      line: 'I think *getting these out of the way* might be productive.',
-      said: '「これを片付けてしまうのが効率的かも」と言う。',
-      mean: 'get ～ out of the way ＝ 先に済ませて片付ける。',
-      trap: 'out of the way を「どかす、なくす」と思いやすい。get ～ がつくと「済ませる」。',
-      use: 'Let’s get the dishes out of the way.（先にお皿洗いを済ませよう）' },
-
     { id: 'pr2', skill: 'pragma', level: 'C1', point: 'productive', reveals: ['outway'], seg: [57.2, 62.8], retired: true,
       stem: 'What do “I think” and “might” do in Jim’s last sentence?',
       choices: ['They soften a view he clearly holds', 'They show he may change his mind',
@@ -233,5 +235,6 @@ export const birthdayMonth: Clip = {
       mean: 'I think と might で柔らかくしているが、言いたいのははっきりした提案。',
       trap: 'might を本当の迷いと取りやすい。英語ではやわらげ言葉が意見の強さを隠すことが多い。',
       use: 'It might be smart to leave now.（もう出た方がいいかも）' },
+
   ]
 };
