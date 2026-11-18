@@ -6,10 +6,9 @@
 // - **Nothing kept:** the audio and its text are never written anywhere (no Durable Object, R2, KV, log or console);
 //   they live for the request only. The log's `stt` event carries sizes, the time, the model and the outcome.
 // - The recogniser is never given the sentence the user was asked to say (no `initial_prompt`).
+import { aiRoute, type AiEnv } from './aiRoute.ts';
 import { readCapped } from './body.ts';
-import { bearerOf, corsOf, preflight } from './auth.ts';
-import { errName, type RelayEvent } from './log.ts';
-import type { Who } from '../../app/src/lib/contract/api.ts';
+import { errName } from './log.ts';
 
 /** 10 s of 16 kHz 16-bit mono and its header, with room. */
 export const STT_MAX = 340_000;
@@ -20,19 +19,7 @@ export interface SttAi {
   run(model: string, input: { audio: string; language?: string }): Promise<unknown>;
 }
 
-export interface SttEnv {
-  allowed: string;
-  off: boolean;
-  /** The key's owner (auth.ts keyOwner), or null. */
-  roleOf(key: string): Who | null;
-  /** One of the role's calls today (log.ts spend), or false when spent. */
-  spend(role: Who): Promise<boolean>;
-  ai: SttAi | undefined;
-  log(evs: RelayEvent[]): void;
-  now(): number;
-}
-
-type Err = 'off' | 'too_large' | 'bad_request' | 'capped' | 'ai';
+export type SttEnv = AiEnv<SttAi>;
 
 /** Base64 of bytes, in slices (a spread of 340 KB would overflow the stack). */
 function base64(b: Uint8Array): string {
@@ -53,37 +40,24 @@ function heard(out: unknown): { text: string; words?: { w: string; t0: number; t
   return { text: o.text.trim(), ...(words.length ? { words } : {}) };
 }
 
-export async function sttRoute(req: Request, env: SttEnv): Promise<Response> {
-  const cors = corsOf(req.headers.get('Origin'), env.allowed);
-  if (!cors) return new Response('forbidden', { status: 403 });
-  const headers: Record<string, string> = { 'Cache-Control': 'no-store', ...cors };
-  const json = (o: object, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Authorization, Content-Type');
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
-  if (env.off || !env.ai) return json({ ok: false, error: 'off' }, 503);
-  const role = env.roleOf(bearerOf(req));
-  // a person's key only: the guest's (G) isn't one
-  if (!role || role === 'G') return json({ ok: false, error: 'unauthorized' }, 401);
-  const t0 = env.now();
-  // only a person's calls are logged (a stranger's flood never spends the log's requests)
-  const done = (st: number, inB: number, err?: Err, body: object = { ok: false, error: err }) => {
-    env.log([{ e: 'stt', l: err && err !== 'capped' ? 2 : 1, role, d: { ms: env.now() - t0, inB, model: 'turbo', ok: !err, ...(err ? { err } : {}) } }]);
-    return json(body, st);
-  };
-  if (Number(req.headers.get('Content-Length') ?? 0) > STT_MAX) return done(413, Number(req.headers.get('Content-Length')), 'too_large');
-  const bytes = await readCapped(req, STT_MAX);
-  if (!bytes) return done(413, STT_MAX + 1, 'too_large');
-  if (!isWav(bytes)) return done(400, bytes.length, 'bad_request');
-  if (!(await env.spend(role).catch(() => false))) return done(429, bytes.length, 'capped');
-  try {
-    const a0 = env.now();
-    const out = heard(await env.ai.run(STT_MODEL, { audio: base64(bytes), language: 'en' }));
-    if (!out) return done(502, bytes.length, 'ai');
-    // (aiMs: the model's own time, so a phone can tell it from the network's)
-    return done(200, bytes.length, undefined, { ok: true, ...out, aiMs: env.now() - a0 });
-  } catch (e) {
-    // its class only: never a message (it could quote the input)
-    console.warn('stt', errName(e));
-    return done(502, bytes.length, 'ai');
-  }
+export function sttRoute(req: Request, env: SttEnv): Promise<Response> {
+  return aiRoute(req, env, 'stt', async ({ ai, role, done }) => {
+    const log = (st: number, inB: number, err?: Parameters<typeof done>[2], body?: object) => done(st, { inB, model: 'turbo' }, err, body);
+    if (Number(req.headers.get('Content-Length') ?? 0) > STT_MAX) return log(413, Number(req.headers.get('Content-Length')), 'too_large');
+    const bytes = await readCapped(req, STT_MAX);
+    if (!bytes) return log(413, STT_MAX + 1, 'too_large');
+    if (!isWav(bytes)) return log(400, bytes.length, 'bad_request');
+    if (!(await env.spend(role).catch(() => false))) return log(429, bytes.length, 'capped');
+    try {
+      const a0 = env.now();
+      const out = heard(await ai.run(STT_MODEL, { audio: base64(bytes), language: 'en' }));
+      if (!out) return log(502, bytes.length, 'ai');
+      // (aiMs: the model's own time, so a phone can tell it from the network's)
+      return log(200, bytes.length, undefined, { ok: true, ...out, aiMs: env.now() - a0 });
+    } catch (e) {
+      // its class only: never a message (it could quote the input)
+      console.warn('stt', errName(e));
+      return log(502, bytes.length, 'ai');
+    }
+  });
 }

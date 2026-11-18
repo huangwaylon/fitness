@@ -2,6 +2,7 @@
 // grade (Whisper's words on silence aren't), on task (the picture's word in it, a mishearing credited; not a bare noun),
 // the relay's answer checked again on the phone (lib/speech/grade.ts asks), their words against the recast (what
 // changed), when the tip opens by itself, and the stars. Only the speaking step's chunk imports this (SpeakStep.svelte).
+import { gradeOf, type Grade as ContractGrade, type GradeSrc } from '#lib/contract/grade.ts';
 import { i18n } from '#lib/i18n/index.ts';
 import { wordsOf } from '#lib/speech/match.ts';
 import type { Level } from './game.ts';
@@ -92,37 +93,14 @@ export function check(text: string, target: string, relayUsed = false): Check {
   return 'ok';
 }
 
-/** The relay's answer (contract: relay `POST /grade`), as the phone shows it. */
-export interface Grade {
-  verdict: 'great' | 'ok' | 'tip';
-  fixed: string;
-  natural: string;
-  also: string;
-  tip: string;
-  used: boolean;
-  src: 'ai' | 'wasei';
-}
-/** Words a tip never says (the relay drops these too; the phone checks again): failure words, grammar terms. */
-const BANNED = /間違|誤り|不正解|不要|ダメ|NG|違う|忘れ|言いません|いけない|必要です|三人称|他動詞|不可算|冠詞|前置詞|過去分詞|主語|原形|副詞|助動詞/;
-export const TIP_MAX = 40;
-const KANA = /[ぁ-んァ-ン]/;
-/** A recast the phone shows: English-ish, no placeholder, not over twice the sentence's length; else their own. */
-const fine = (x: string, s: string) => !!x && !/\.\.\.|…/.test(x) && !/[^\x20-\x7e’‘“”]/.test(x) && x.length <= Math.max(40, s.length * 2);
-/** The relay's JSON checked against the contract (null: not an answer), its strings trimmed; a tip with a banned word,
- *  no kana or over TIP_MAX dropped (the recast stays); `also` only on great. */
+/** The relay's answer as the phone shows it (contract/grade.ts) and where it came from. */
+export type Grade = ContractGrade & { src: GradeSrc };
+/** The relay's JSON checked again on the phone (contract/grade.ts gradeOf: one sanitiser with the relay's); null: not
+ *  an answer. */
 export function cleanGrade(x: unknown, s: string): Grade | null {
   const j = x as Record<string, unknown> | null;
-  if (!j || j.ok !== true || !['great', 'ok', 'tip'].includes(j.verdict as string)) return null;
-  const str = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 200) : '');
-  const verdict = j.verdict as Grade['verdict'];
-  const fixed = fine(str(j.fixed), s) ? str(j.fixed) : s;
-  const natural = fine(str(j.natural), s) ? str(j.natural) : fixed;
-  const tip = str(j.tip);
-  const also = verdict === 'great' && fine(str(j.also), s) ? str(j.also) : '';
-  return {
-    verdict, fixed, natural, also, used: j.used === true, src: j.src === 'wasei' ? 'wasei' : 'ai',
-    tip: tip && KANA.test(tip) && !BANNED.test(tip) && [...tip].length <= TIP_MAX ? tip : ''
-  };
+  const g = j?.ok === true ? gradeOf(j, s) : null;
+  return g && { ...g, src: j!.src === 'wasei' ? 'wasei' : 'ai' };
 }
 
 /** A word of a sentence as shown, and whether it differs from the other sentence's (an LCS over the words). */

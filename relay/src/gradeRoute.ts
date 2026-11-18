@@ -1,24 +1,24 @@
-// `POST /grade` (docs/speech-test.md#grade): one spoken (or typed) すごろく sentence graded through Workers AI, gently: a
+// `POST /grade` (docs/sugoroku.md#speaking): one spoken (or typed) すごろく sentence graded through Workers AI, gently: a
 // recast and at most one friendly tip, never a score. Free of the Workers runtime, so it is unit-testable
 // (test/grade.test.ts). Mirrors sttRoute.ts:
 // - Auth: a person's key in `Authorization: Bearer <key>` (the guest's isn't one); CORS for our origins, preflight.
-// - Body: JSON `{ s, t, lv }` (the sentence 1–200 chars, the target word, the seat's level), at most GRADE_MAX bytes.
+// - Body: JSON `{ s, t }` (the sentence 1–200 chars, the target word), at most GRADE_MAX bytes (an older phone's `lv`
+//   is let be).
 // - Japanese-English (wasei.ts) is checked first: a hit answers at once, no AI call and nothing spent.
 // - Caps: GRADE_DAY_MAX calls a role a UTC day (the log object's `grade:<role>`), then 429. `off`: 503 (GRADE_OFF).
-// - The sentence goes to the model as data between <s> tags; the answer is schema-bound and sanitised (cleanGrade).
+// - The sentence goes to the model as data between <s> tags; the answer is schema-bound and sanitised (cleanGrade:
+//   contract/grade.ts gradeOf, the phone's check too).
 // - **Nothing kept:** the sentence and the answer are never written anywhere (no object, log or console). The log's
 //   `grade` event carries the length, the time and the outcome.
-import { bearerOf, corsOf, preflight } from './auth.ts';
+import { aiRoute, type AiEnv } from './aiRoute.ts';
 import { readCapped } from './body.ts';
-import { errName, type RelayEvent } from './log.ts';
+import { errName } from './log.ts';
 import { waseiOf } from './wasei.ts';
-import type { Who } from '../../app/src/lib/contract/api.ts';
+import { gradeOf, S_MAX, type Grade, type Verdict } from '../../app/src/lib/contract/grade.ts';
 
 /** The body's most bytes (200 chars of Japanese-keyboard text and the rest, with room). */
 export const GRADE_MAX = 2_048;
 export const GRADE_MODEL = '@cf/google/gemma-4-26b-a4b-it';
-const S_MAX = 200;
-const TIP_MAX = 50;
 const TARGET = /^[a-z][a-z' -]{0,23}$/;
 /** No answer this long: an identical second call, the first answer wins (measured 2026-11-18: a 7.3 s call's twin
  *  answered in 1.4 s; the slow calls come alone, not in bursts). One call against the cap either way. */
@@ -73,29 +73,7 @@ export interface GradeAi {
   run(model: string, input: Record<string, unknown>): Promise<unknown>;
 }
 
-export interface GradeEnv {
-  allowed: string;
-  off: boolean;
-  /** The key's owner (auth.ts keyOwner), or null. */
-  roleOf(key: string): Who | null;
-  /** One of the role's calls today (log.ts spend), or false when spent. */
-  spend(role: Who): Promise<boolean>;
-  ai: GradeAi | undefined;
-  log(evs: RelayEvent[]): void;
-  now(): number;
-}
-
-type Verdict = 'great' | 'ok' | 'tip';
-export interface Graded {
-  verdict: Verdict;
-  fixed: string;
-  natural: string;
-  also: string;
-  tip: string;
-  used: boolean;
-}
-
-type Err = 'off' | 'too_large' | 'bad_request' | 'capped' | 'ai';
+export type GradeEnv = AiEnv<GradeAi>;
 
 /** `run()`, and again if it hasn't answered in `ms`: the first answer, which call gave it, and whether a second
  *  started. A failure waits for the other call, if one is running. Pure (timers only). */
@@ -128,13 +106,6 @@ export function hedge<T>(run: () => Promise<T>, ms: number): Promise<{ out: T; w
   });
 }
 
-/** Words a tip may not hold (scolding, or a grammar term): such a tip is dropped, the recast stays. */
-const TIP_BANNED = ['間違', '不正解', '不要', 'ダメ', 'NG', '忘れ', 'とは言いません', 'いけない', '三人称', '他動詞', '不可算', '冠詞', '前置詞', '過去分詞', '主語', '原形'] as const;
-
-const str = (x: unknown): string => (typeof x === 'string' ? x.trim().slice(0, S_MAX) : '');
-const placeholder = (x: string): boolean => x.includes('...') || x.includes('…');
-const japanese = (x: string): boolean => /[぀-ヿ㐀-鿿＀-￯]/.test(x);
-
 /** The model's answer as an object: Workers AI gives `response` parsed (json_schema) or as text, or an OpenAI-style
  *  `choices`; null when it isn't JSON. */
 function answerOf(out: unknown): Record<string, unknown> | null {
@@ -151,24 +122,10 @@ function answerOf(out: unknown): Record<string, unknown> | null {
   return r && typeof r === 'object' && !Array.isArray(r) ? (r as Record<string, unknown>) : null;
 }
 
-/** The model's raw answer made safe to show (contract: /grade's sanitising), or null (not an answer: 502). Pure. */
-export function cleanGrade(out: unknown, s: string): Graded | null {
+/** The model's raw answer made safe to show (contract/grade.ts gradeOf), or null (not an answer: 502). Pure. */
+export function cleanGrade(out: unknown, s: string): Grade | null {
   const j = answerOf(out);
-  if (!j || (j.verdict !== 'great' && j.verdict !== 'ok' && j.verdict !== 'tip')) return null;
-  const verdict = j.verdict;
-  let fixed = str(j.fixed);
-  if (!fixed || placeholder(fixed) || japanese(fixed)) fixed = s;
-  const natural = str(j.natural);
-  const also = str(j.also);
-  const tip = str(j.tip);
-  return {
-    verdict,
-    fixed,
-    natural: placeholder(natural) || japanese(natural) ? '' : natural,
-    also: verdict === 'great' && !placeholder(also) && !japanese(also) ? also : '',
-    tip: tip.length > TIP_MAX || TIP_BANNED.some((w) => tip.includes(w)) ? '' : tip,
-    used: j.target_used === true
-  };
+  return j && gradeOf({ ...j, used: j.target_used }, s);
 }
 
 /** Whether the target word (or a form of it: its stem) is in the sentence, for a wasei answer (no model). */
@@ -178,70 +135,58 @@ export function usedIn(s: string, t: string): boolean {
 }
 
 /** The request's fields, or why not. */
-function fieldsOf(j: unknown): { s: string; t: string; lv: 1 | 2 | 3 } | 'too_large' | 'bad_request' {
-  const o = j as { s?: unknown; t?: unknown; lv?: unknown } | null;
-  if (!o || typeof o !== 'object' || typeof o.s !== 'string' || typeof o.t !== 'string' || !TARGET.test(o.t) || (o.lv !== 1 && o.lv !== 2 && o.lv !== 3)) return 'bad_request';
+function fieldsOf(j: unknown): { s: string; t: string } | 'too_large' | 'bad_request' {
+  const o = j as { s?: unknown; t?: unknown } | null;
+  if (!o || typeof o !== 'object' || typeof o.s !== 'string' || typeof o.t !== 'string' || !TARGET.test(o.t)) return 'bad_request';
   const s = o.s.trim();
   if (!s) return 'bad_request';
   if (s.length > S_MAX) return 'too_large';
-  return { s, t: o.t, lv: o.lv };
+  return { s, t: o.t };
 }
 
-export async function gradeRoute(req: Request, env: GradeEnv): Promise<Response> {
-  const cors = corsOf(req.headers.get('Origin'), env.allowed);
-  if (!cors) return new Response('forbidden', { status: 403 });
-  const headers: Record<string, string> = { 'Cache-Control': 'no-store', ...cors };
-  const json = (o: object, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...headers, 'Content-Type': 'application/json' } });
-  if (req.method === 'OPTIONS') return preflight(headers, 'POST', 'Authorization, Content-Type');
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: { ...headers, Allow: 'POST' } });
-  const ai = env.ai;
-  if (env.off || !ai) return json({ ok: false, error: 'off' }, 503);
-  const role = env.roleOf(bearerOf(req));
-  // a person's key only: the guest's (G) isn't one
-  if (!role || role === 'G') return json({ ok: false, error: 'unauthorized' }, 401);
-  const t0 = env.now();
-  // only a person's calls are logged; never the sentence or the answer
-  const done = (st: number, inC: number, err?: Err, body: object = { ok: false, error: err }, extra: { verdict?: Verdict; src?: 'ai' | 'wasei'; hedged?: true; won?: 1 | 2 } = {}) => {
-    env.log([{ e: 'grade', l: err && err !== 'capped' ? 2 : 1, role, d: { ms: env.now() - t0, inC, ok: !err, ...(err ? { err } : {}), ...extra } }]);
-    return json(body, st);
-  };
-  const bytes = await readCapped(req, GRADE_MAX);
-  if (!bytes) return done(413, 0, 'too_large');
-  let raw: unknown;
-  try {
-    raw = JSON.parse(new TextDecoder().decode(bytes));
-  } catch {
-    return done(400, 0, 'bad_request');
-  }
-  const f = fieldsOf(raw);
-  if (typeof f === 'string') return done(f === 'too_large' ? 413 : 400, typeof (raw as { s?: unknown })?.s === 'string' ? (raw as { s: string }).s.length : 0, f);
-  const w = waseiOf(f.s);
-  if (w) {
-    const out: Graded = { verdict: 'tip', fixed: w.fixed, natural: '', also: '', tip: w.tip, used: usedIn(f.s, f.t) };
-    return done(200, f.s.length, undefined, { ok: true, ...out, src: 'wasei', aiMs: 0 }, { verdict: 'tip', src: 'wasei' });
-  }
-  if (!(await env.spend(role).catch(() => false))) return done(429, f.s.length, 'capped');
-  try {
-    const a0 = env.now();
-    const input = {
-      messages: [
-        { role: 'system', content: GRADE_SYSTEM },
-        { role: 'user', content: `Target word: "${f.t}"\n<s>${f.s.replace(/<\/?s>/gi, '')}</s>` }
-      ],
-      response_format: { type: 'json_schema', json_schema: SCHEMA },
-      chat_template_kwargs: { enable_thinking: false },
-      temperature: 0,
-      max_tokens: 300
-    };
-    const h = await hedge(() => ai.run(GRADE_MODEL, input), HEDGE_MS);
-    const out = cleanGrade(h.out, f.s);
-    const how = h.hedged ? { hedged: true as const, won: h.won } : {};
-    if (!out) return done(502, f.s.length, 'ai', undefined, how);
-    // (aiMs: the model's own time, so a phone can tell it from the network's)
-    return done(200, f.s.length, undefined, { ok: true, ...out, src: 'ai', aiMs: env.now() - a0 }, { verdict: out.verdict, src: 'ai', ...how });
-  } catch (e) {
-    // its class only: never a message (it could quote the input)
-    console.warn('grade', errName(e));
-    return done(502, f.s.length, 'ai');
-  }
+export function gradeRoute(req: Request, env: GradeEnv): Promise<Response> {
+  return aiRoute(req, env, 'grade', async ({ ai, role, done }) => {
+    // never the sentence or the answer: its length, the verdict and where it came from
+    const log = (st: number, inC: number, err?: Parameters<typeof done>[2], body?: object, extra: { verdict?: Verdict; src?: 'ai' | 'wasei'; hedged?: true; won?: 1 | 2 } = {}) =>
+      done(st, { inC, ...extra }, err, body);
+    const bytes = await readCapped(req, GRADE_MAX);
+    if (!bytes) return log(413, 0, 'too_large');
+    let raw: unknown;
+    try {
+      raw = JSON.parse(new TextDecoder().decode(bytes));
+    } catch {
+      return log(400, 0, 'bad_request');
+    }
+    const f = fieldsOf(raw);
+    if (typeof f === 'string') return log(f === 'too_large' ? 413 : 400, typeof (raw as { s?: unknown })?.s === 'string' ? (raw as { s: string }).s.length : 0, f);
+    const w = waseiOf(f.s);
+    if (w) {
+      const out: Grade = { verdict: 'tip', fixed: w.fixed, natural: '', also: '', tip: w.tip, used: usedIn(f.s, f.t) };
+      return log(200, f.s.length, undefined, { ok: true, ...out, src: 'wasei', aiMs: 0 }, { verdict: 'tip', src: 'wasei' });
+    }
+    if (!(await env.spend(role).catch(() => false))) return log(429, f.s.length, 'capped');
+    try {
+      const a0 = env.now();
+      const input = {
+        messages: [
+          { role: 'system', content: GRADE_SYSTEM },
+          { role: 'user', content: `Target word: "${f.t}"\n<s>${f.s.replace(/<\/?s>/gi, '')}</s>` }
+        ],
+        response_format: { type: 'json_schema', json_schema: SCHEMA },
+        chat_template_kwargs: { enable_thinking: false },
+        temperature: 0,
+        max_tokens: 300
+      };
+      const h = await hedge(() => ai.run(GRADE_MODEL, input), HEDGE_MS);
+      const out = cleanGrade(h.out, f.s);
+      const how = h.hedged ? { hedged: true as const, won: h.won } : {};
+      if (!out) return log(502, f.s.length, 'ai', undefined, how);
+      // (aiMs: the model's own time, so a phone can tell it from the network's)
+      return log(200, f.s.length, undefined, { ok: true, ...out, src: 'ai', aiMs: env.now() - a0 }, { verdict: out.verdict, src: 'ai', ...how });
+    } catch (e) {
+      // its class only: never a message (it could quote the input)
+      console.warn('grade', errName(e));
+      return log(502, f.s.length, 'ai');
+    }
+  });
 }

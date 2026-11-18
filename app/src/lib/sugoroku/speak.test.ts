@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { bareNoun, check, cheerOf, cleanGrade, diffWords, editDistance, formsOf, isSilence, longEnough, nextCheer, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf, TIP_MAX, type Grade } from './speak.ts';
+import { bareNoun, check, cheerOf, cleanGrade, diffWords, editDistance, formsOf, isSilence, longEnough, nextCheer, noteTip, onlySmall, recastOf, saidStars, say, targetUsed, tipOpens, tipsOf, type Grade } from './speak.ts';
+import { TIP_MAX } from '#lib/contract/grade.ts';
 import { notInTrimmedFont } from '../../../scripts/font-subsets.ts';
 import { isGame, newGame } from './game.ts';
 import { PICTURES } from './pictures.ts';
