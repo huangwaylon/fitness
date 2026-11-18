@@ -162,7 +162,12 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
-export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows; next?: string } | Fail;
+export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows; next?: string; wallets?: Wallets } | Fail;
+
+/** The かいがら wallets a reply carries (docs/backend.md#the-wallet): per person, the relay's stored balance `h` and its
+ *  changes `seq` (a phone keeps each one's highest). A member's reply any of the three, the guest's only its own; a
+ *  snapshot's on a first fetch and with rows, an op's ack those it may have moved. @public (relay/src/store.ts) */
+export type Wallets = Partial<Record<Who, { h: number; seq: number }>>;
 
 /** A paged `snapshot` (2026-11-05, docs/backend.md#api): `page` rows at most a reply, the next page asked for with the
  *  reply's `next` as `after` (the same `since`) until a reply has none. A request without `page` gets every row at once,

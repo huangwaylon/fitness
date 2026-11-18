@@ -102,3 +102,24 @@ describe('live optimistic view', () => {
     expect(plain.state.spendVoids).toEqual([]);
   });
 });
+
+// The かいがら wallets (docs/backend.md#the-wallet): the cache's beside the rows; a queued shop row `unsent` until acked.
+describe('the wallet in the composed model', () => {
+  it('the cache’s wallets ride the state; only the unacked events’ shop rows are unsent; the same state while nothing changes', () => {
+    const base = applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-18T12:00:00.000Z', rows: {
+      metrics: [], events: [['2026-11-18T03:00:00.000Z', 'A', 't0', 'tally', '{"date":"2026-11-18","counts":{"fish:koi":3}}']]
+    }, wallets: { A: { h: 100, seq: 2 } } }, NOW);
+    const sell = (id: string) => ev(id, 'sell', { species: 'fish:koi', n: 1, v: 2000 });
+    const q = [{ ...sell('s1'), ackedAt: NOW }, sell('s2')];
+    const m = composeModel(base, q, NOW);
+    expect(m.state.wallets).toEqual({ A: { h: 100, seq: 2 } });
+    expect(m.state.shop.map((r) => [r.queued, r.unsent])).toEqual([[true, undefined], [true, true]]);
+    expect(composeModel(base, q, NOW, m).state).toBe(m.state);
+    // a new wallet (an ack's): a new state
+    const next = composeModel({ ...base, wallets: { A: { h: 2100, seq: 3 } } }, q, NOW, m);
+    expect(next.state).not.toBe(m.state);
+    expect(next.state.wallets?.A).toEqual({ h: 2100, seq: 3 });
+    // none (an older relay): no wallets on the state
+    expect(composeModel({ ...base, wallets: undefined }, q, NOW).state.wallets).toBeUndefined();
+  });
+});

@@ -260,3 +260,52 @@ describe('the fields in the pocket (contract/farm.ts)', () => {
     expect(later.farm.at(-1)?.queued).toBe(true);
   });
 });
+
+// The relay's wallet (docs/backend.md#the-wallet): the stored number, shown with this phone's own unsent ops on top.
+describe('the wallet: the relay’s stored かいがら, and my unsent ops on top', () => {
+  const kept = [
+    ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 5 } }),
+    ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 4000 })
+  ];
+  const base = reduce({ metrics: [], events: kept });
+  const withW = (h: number, seq = 3) => ({ ...base, wallets: { A: { h, seq } } });
+  const q = (s: ReturnType<typeof withW>, rows: EventRow[], unsent = rows) => foldEvents(s, rows, null, new Set(unsent.map((r) => r[2])))!;
+
+  it('shows the stored number, not the fold (a rule change, a load: the stored number wins)', () => {
+    expect(shopView(base, 'A').shells).toBe(4000); // (no wallet: an older relay, the fold)
+    expect(shopView(withW(9_999), 'A')).toMatchObject({ shells: 9_999, pocket: new Map([['fish:koi', 3]]) });
+    // (another person's wallet unheard: their fold)
+    expect(shopView(withW(9_999), 'B').shells).toBe(0);
+  });
+
+  it('the pending estimate: an unsent sell adds, an unsent buy takes, as the record will judge them; never below 0', () => {
+    const s = q(withW(price + 10), [ev(at('10:00'), 'A', 'sell', { species: 'fish:koi', n: 1, v: 2000 }), ev(at('10:01'), 'A', 'buy', { item, price, d: D })]);
+    expect(shopView(s, 'A')).toMatchObject({ shells: 10 + 2000, owned: [item], pocket: new Map([['fish:koi', 2]]) });
+    // a buy past the wallet and what's pending: refused by the record, so nothing here either
+    expect(shopView(q(withW(price - 1), [ev(at('10:00'), 'A', 'buy', { item, price, d: D })]), 'A')).toMatchObject({ shells: price - 1, owned: [] });
+    // starts take their price; a reward naming me adds
+    const more = q(withW(100), [ev(at('10:00'), 'A', 'buy_starts', { crop: 'tomato', n: 2, v: 28 }), ev(at('10:01'), 'A', 'sg_reward', { g: 'sg-game-0009', v: 50, to: ['A'], d: D })]);
+    expect(shopView(more, 'A').shells).toBe(100 - 28 + 50);
+  });
+
+  it('a queued row the record acknowledged is in the wallet it sent back: never counted twice', () => {
+    const sell = ev(at('10:00'), 'A', 'sell', { species: 'fish:koi', n: 1, v: 2000 });
+    // acked (not unsent): the ack's wallet holds it already; its pocket still out
+    expect(shopView(q(withW(6000, 4), [sell], []), 'A')).toMatchObject({ shells: 6000, pocket: new Map([['fish:koi', 2]]) });
+    // unsent: on top of the wallet
+    expect(shopView(q(withW(4000), [sell]), 'A').shells).toBe(6000);
+  });
+
+  it('a queued buy the record refused (the wallet spent meanwhile): out of the queue, the number is the wallet’s again', () => {
+    const buy = ev(at('10:00'), 'A', 'buy', { item, price, d: D });
+    expect(shopView(q(withW(price + 5), [buy]), 'A')).toMatchObject({ shells: 5, owned: [item] });
+    // the refusal's ack: the wallet as the record has it (0: my other phone spent it), the buy dropped from the queue
+    expect(shopView(withW(0, 9), 'A')).toMatchObject({ shells: 0, owned: [] });
+  });
+
+  it('memoised per wallet: a new seq is a new view', () => {
+    const s = withW(500);
+    expect(shopView(s, 'A')).toBe(shopView(s, 'A'));
+    expect(shopView({ ...s, wallets: { A: { h: 600, seq: 4 } } }, 'A').shells).toBe(600);
+  });
+});

@@ -1,0 +1,20 @@
+// The かいがら wallets the relay sends (docs/backend.md#the-wallet: contract/api.ts Wallets), merged as they come in: a
+// snapshot's, a page's, an op's ack. Pure.
+import type { Wallets } from '#lib/contract/api.ts';
+import type { Who } from '#lib/types.ts';
+
+/** Each person's wallet of the higher `seq` of `a` and `b` (`b`'s on a tie): a reply that started before an ack (a page
+ *  of a fetch, a poll) never takes the number back. `a` itself when `b` changes nothing. */
+export function newestWallets(a: Wallets | undefined, b: Wallets | undefined): Wallets | undefined {
+  if (!a || !b) return b ?? a;
+  const out: Wallets = { ...a };
+  let changed = false;
+  for (const who of Object.keys(b) as Who[]) {
+    const x = b[who]!, was = a[who];
+    if (!was || x.seq >= was.seq) {
+      changed ||= !was || was.h !== x.h || was.seq !== x.seq;
+      out[who] = x;
+    }
+  }
+  return changed ? out : a;
+}

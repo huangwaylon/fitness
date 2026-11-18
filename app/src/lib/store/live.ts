@@ -7,7 +7,7 @@ import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
 import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, releaseHeld, replaceHeld, retryNow, unpark, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
-import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
+import { addOwnRows, addWallets, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
 import type { RecordMark } from '#lib/contract/live-protocol.ts';
@@ -410,11 +410,20 @@ export class LiveBackend implements Backend {
     const r = await flush(Date.now, { paced: true });
     // Only events the server acked stay on screen until the snapshot has them (flush keeps them: ackedEvents()). An
     // event that left the queue because it was undone mid-flush must not come back.
+    // the かいがら wallets the acks carried, at once (a refused buy's too: the number snaps back to the record's)
+    const withWallets = r.wallets ? addWallets(r.wallets) : null;
+    if (withWallets && withWallets !== this.#cache) {
+      this.#cache = withWallets;
+      this.#host.changed();
+    }
     if (r.dropped.length) {
-      // (a `listen` row refused, by a relay from before its fields: no toast;
+      // (a buy or starts the record's かいがら no longer covered, my other phone's spending: its own line;
+      // a `listen` row refused, by a relay from before its fields: no toast;
       // a buy of a piece I have already, my other phone's: nothing lost, no toast;
       // 英語すごろく's reward of a game already paid, another phone's: nothing lost)
-      if (r.dropped.some((ev) => ev.type !== 'listen' && ev.type !== 'sg_reward' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
+      const short = (ev: (typeof r.dropped)[number]) => (ev.type === 'buy' || ev.type === 'buy_starts') && ev.detail === 'wallet short';
+      if (r.dropped.some(short)) toasts.show(t('shop.buyRefused'), undefined, { code: 'buy-refused', reaction: 'sheepishness' });
+      if (r.dropped.some((ev) => !short(ev) && ev.type !== 'listen' && ev.type !== 'sg_reward' && !(ev.type === 'buy' && ev.detail === 'owned'))) toasts.show(t('state.saveFailed'), undefined, { code: 'save-failed', reaction: 'sheepishness' });
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {

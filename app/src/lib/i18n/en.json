@@ -535,6 +535,7 @@
   "shop.buyHint": "Pick something",
   "shop.buy": "Buy",
   "shop.short": "{n} shells short",
+  "shop.buyRefused": "Not enough shells: that wasn't bought",
   "shop.shortBy": "{n} short",
   "shop.buyFor": "Buy for {v}",
   "shop.owned": "Owned",

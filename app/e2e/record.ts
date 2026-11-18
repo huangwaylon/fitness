@@ -18,6 +18,8 @@ export function newRecord() {
   /** Every event sent, in order, with what the record said. */
   const sent: Sent[] = [];
   let events = 0;
+  /** The relay out of reach (the phones' requests fail as offline's do). */
+  let down = false;
   return {
     sent,
     /** The record's clock (ms): the phones' devices' too. */
@@ -28,6 +30,7 @@ export function newRecord() {
       await context.addInitScript((key) => localStorage.setItem('island.key', key), KEY_OF[who]);
       await context.routeWebSocket(/\/room/, () => {});
       await context.route(`${RELAY}/**`, (route) => {
+        if (down) return route.abort('internetdisconnected');
         const text = route.request().postData() ?? '';
         const reply = store.handleText(text);
         try {
@@ -37,6 +40,18 @@ export function newRecord() {
         } catch { /* not JSON */ }
         return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: reply });
       });
+    },
+    /** The relay out of reach (true) or back (false), for every phone on this record. */
+    offline(on: boolean) {
+      down = on;
+    },
+    /** The admin's correction of `who`'s かいがら (record.ts adjust): the record's reply. */
+    adjust(who: Who, v: number) {
+      return store.adjust({ id: `adj-${++events}`, who, v, note: 'e2e' });
+    },
+    /** `who`'s wallet as the record keeps it (record.ts wallet). */
+    wallet(who: Who): number {
+      return (store.wallets()[who] as { h: number }).h;
     },
     /** An event straight to the record as `who`'s phone would send it: the record's reply. */
     event(who: Who, type: string, data: Record<string, unknown>) {

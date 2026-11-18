@@ -25,7 +25,7 @@ import type { TallyRow } from './tally.ts';
 import { appendedTo, rowAt } from './snapshot.ts';
 import {
   BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isSeasonLook, isWeatherMode, roundKg, WEIGHT_KG,
-  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SeasonLook, type SnapshotRows, type WeatherMode
+  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SeasonLook, type SnapshotRows, type Wallets, type WeatherMode
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -179,6 +179,9 @@ export interface State {
   rev: string | null;
   /** Server `at`s of the accepted-for-indexing rows (the raw ones aside), ascending, per tab (`rowsUpTo`). */
   ats: number[][];
+  /** The relay's かいがら wallets as last heard (docs/backend.md#the-wallet: sync/cache.ts), or none (an older relay:
+   *  the phones fold the rows instead, model/shop.ts). Set by view.ts composeModel, never by a reduce. */
+  wallets?: Wallets;
 }
 
 /** How many rows are stamped at or before t: with `rev`, identifies the rows a locked week's earnings depend on. */
@@ -292,8 +295,8 @@ function put<K extends keyof Lists>(s: Lists, k: K, v: Lists[K][number]): void {
  *  shopLedger). Rows that extend the last set reduced by appending (a poll's, in `at` order) are folded over its State
  *  (foldRows: the same State a whole reduce gives, without reading every row again: a 3-year record's ~110k rows were
  *  reduced on every poll that brought one). */
-export function reduce(r: SnapshotRows, rev: string | null = null, queued?: ReadonlySet<string>): State {
-  if (queued) return reduceAll(r, rev, queued);
+export function reduce(r: SnapshotRows, rev: string | null = null, queued?: ReadonlySet<string>, unsent?: ReadonlySet<string>): State {
+  if (queued) return reduceAll(r, rev, queued, unsent);
   if (last) {
     const m = appendedTo(r.metrics ?? [], last.rows.metrics ?? []), e = m && appendedTo(r.events ?? [], last.rows.events ?? []);
     const s = m && e ? foldRows(last.state, m, e, rev) : null;
@@ -305,7 +308,7 @@ export function reduce(r: SnapshotRows, rev: string | null = null, queued?: Read
   return (last = { rows: r, state: reduceAll(r, rev) }).state;
 }
 
-function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<string>): State {
+function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<string>, unsent?: ReadonlySet<string>): State {
   own = null;
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
@@ -390,7 +393,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     const subject = eventSubject(type, d, person);
     const from = queuedFrom(s);
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    if (queued?.has(id)) markQueued(s, from);
+    if (queued?.has(id)) markQueued(s, from, unsent?.has(id));
   }
   return s;
 }
@@ -486,9 +489,10 @@ function foldRows(base: State, metrics: readonly MetricRow[], events: readonly E
 /**
  * `reduce` of `base`'s rows plus `events`, without reducing the base again and without touching it (a State is never
  * mutated: bells.ts caches per State): the lists the events write are copied (mine), the rest is shared. Only for
- * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null.
+ * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null. `unsent`: the
+ * ids of those the record hasn't acknowledged yet (their shop rows marked `unsent`: model/shop.ts).
  */
-export function foldEvents(base: State, events: readonly EventRow[], rev: string | null): State | null {
+export function foldEvents(base: State, events: readonly EventRow[], rev: string | null, unsent?: ReadonlySet<string>): State | null {
   own = new Set();
   const baseAts = base.ats[1] ?? [];
   const s: State = { ...base, rev, ats: [base.ats[0] ?? [], baseAts] };
@@ -510,7 +514,7 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const subject = eventSubject(type, d, row[1]);
     const from = queuedFrom(s);
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    markQueued(s, from);
+    markQueued(s, from, unsent?.has(row[2]));
   }
   return s;
 }
@@ -519,11 +523,11 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
 const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding', 'farm'] as const;
 /** Each such list's length: where an event's rows will start. */
 const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
-/** The rows each list gained from `from` on are queued ones. */
-function markQueued(s: State, from: readonly number[]): void {
+/** The rows each list gained from `from` on are queued ones; a shop row also `unsent` while not acknowledged. */
+function markQueued(s: State, from: readonly number[], unsent = false): void {
   QUEUED_LISTS.forEach((k, j) => {
-    const list = s[k] as { queued?: true }[];
-    for (let i = from[j]; i < list.length; i++) list[i] = { ...list[i], queued: true };
+    const list = s[k] as { queued?: true; unsent?: true }[];
+    for (let i = from[j]; i < list.length; i++) list[i] = { ...list[i], queued: true, ...(unsent && k === 'shop' ? { unsent: true as const } : {}) };
   });
 }
 

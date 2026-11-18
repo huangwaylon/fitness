@@ -13,7 +13,7 @@ export interface ComposedModel {
   me: Who;
   now: number;
   /** What `state` was reduced from: an unchanged input reuses it (the minute tick only moves `now`). */
-  readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string; rev: string | null };
+  readonly from?: { rows: SnapshotCache['rows']; demo: SnapshotCache['demo']; extra: string; unsent: string; rev: string | null; wallets: SnapshotCache['wallets'] };
 }
 
 /**
@@ -30,9 +30,12 @@ export function composeModel(cache: SnapshotCache, queue: readonly QueuedEvent[]
   const lastAt = cache.since ? Date.parse(cache.since) : 0;
   let floor = Number.isNaN(lastAt) ? 0 : lastAt;
   const extra: EventRow[] = [];
+  // (the ones the record hasn't acknowledged: its wallets don't hold them yet, model/shop.ts)
+  const unsent = new Set<string>();
   for (const ev of queue) {
     if (known.has(ev.id) || seen.has(ev.id)) continue; // acked but the ack was lost: the server row wins
     seen.add(ev.id); // the same event twice (sent + still queued, overlapping flushes) is one row
+    if (ev.ackedAt === undefined) unsent.add(ev.id);
     const at = Math.max(ev.queuedAt + cache.skewMs, floor + 1);
     floor = at;
     // Only the demo's shared event list names another sender; live events are always mine.
@@ -41,16 +44,25 @@ export function composeModel(cache: SnapshotCache, queue: readonly QueuedEvent[]
   const now = Math.max(clientNow + cache.skewMs, floor);
   const baseRev = cache.demo || !cache.rev ? null : `${cache.rev}@${cache.rowsAt}`;
   const rev = baseRev === null || (extra.length && Date.parse(extra[0][0]) <= lastLockAt(now)) ? null : baseRev;
-  const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), rev };
+  const from = { rows: cache.rows, demo: cache.demo, extra: JSON.stringify(extra), unsent: [...unsent].join(), rev, wallets: cache.wallets };
   const p = prev?.from;
-  if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.rev === from.rev && prev.me === cache.me) {
+  if (prev && p && p.rows === from.rows && p.demo === from.demo && p.extra === from.extra && p.unsent === from.unsent && p.rev === from.rev && p.wallets === from.wallets && prev.me === cache.me) {
     return { state: prev.state, me: cache.me, now, from };
   }
   // The cached rows' state is reduced once per row set; the queued rows are folded over a copy of it (a tap
   // re-reduces nothing).
   const base = reduceRows(cache.rows, baseRev);
-  const state = extra.length ? (foldEvents(base, extra, rev) ?? reduce({ ...cache.rows, events: [...cache.rows.events, ...extra] }, rev, new Set(extra.map((e) => e[2])))) : base;
+  const folded = extra.length ? (foldEvents(base, extra, rev, unsent) ?? reduce({ ...cache.rows, events: [...cache.rows.events, ...extra] }, rev, new Set(extra.map((e) => e[2])), unsent)) : base;
+  // (the relay's かいがら wallets beside the rows: a copy, never the reduced State itself; the same copy while neither
+  // changes, as bells.ts caches per State)
+  const state = cache.wallets ? withWallets(folded, cache.wallets) : folded;
   return { state, me: cache.me, now, from };
+}
+
+let walleted: { of: State; wallets: NonNullable<SnapshotCache['wallets']>; state: State } | null = null;
+function withWallets(of: State, wallets: NonNullable<SnapshotCache['wallets']>): State {
+  if (walleted?.of !== of || walleted.wallets !== wallets) walleted = { of, wallets, state: { ...of, wallets } };
+  return walleted.state;
 }
 
 /** The last row set reduced, and its State (never mutated: bells.ts caches per State). */

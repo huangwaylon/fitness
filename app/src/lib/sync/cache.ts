@@ -3,13 +3,14 @@
 // another epoch: the record rebuilt, docs/backend.md#revision) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
 import type { Who } from '#lib/types.ts';
-import { DATE_RE, isWho, SNAPSHOT_PAGE, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, isWho, SNAPSHOT_PAGE, type EventRow, type SnapshotReply, type SnapshotRows, type Wallets } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
 import { post, type ApiResult } from './transport.ts';
+import { newestWallets } from './wallets.ts';
 import { caught } from '#lib/quiet.ts';
 
 export interface SnapshotCache {
@@ -34,6 +35,9 @@ export interface SnapshotCache {
   fetchedAt: number;
   /** Demo only (never persisted): queued events may name their sender (`person`). */
   demo?: true;
+  /** The relay's かいがら wallets (docs/backend.md#the-wallet), each person's highest `seq` heard (a snapshot's, an
+   *  ack's: addWallets); none from an older relay (a rollback: model/shop.ts folds the rows then). */
+  wallets?: Wallets;
 }
 
 const DB_NAME = 'island';
@@ -264,7 +268,27 @@ export function clearCache(): Promise<void> {
   return p;
 }
 
-type Reply = { me: Who; now: string; rev: string; rows: Partial<SnapshotRows> };
+type Reply = { me: Who; now: string; rev: string; rows: Partial<SnapshotRows>; wallets?: Wallets };
+
+/** The wallets after a snapshot reply: its own on a whole fetch (an epoch's), else the newest of both; none when it
+ *  brought rows (or everything) without any, as only an older relay answers so (a rollback: the phone folds again). */
+function walletsAfter(same: SnapshotCache | null, reply: Reply): Wallets | undefined {
+  if (reply.wallets) return same ? newestWallets(same.wallets, reply.wallets) : reply.wallets;
+  const brought = (reply.rows.metrics?.length ?? 0) + (reply.rows.events?.length ?? 0) > 0;
+  return !same || brought ? undefined : same.wallets;
+}
+
+/** The wallets an op's ack carried (store/live.ts) into the cache at once: each person's newest. Returns the cache,
+ *  or null when there is none. */
+export function addWallets(w: Wallets): SnapshotCache | null {
+  const c = mem;
+  if (!c) return null;
+  const wallets = newestWallets(c.wallets, w);
+  if (wallets === c.wallets) return c;
+  const next = { ...c, wallets };
+  void saveCache(next);
+  return next;
+}
 
 /**
  * My events the record just stored, as the rows it holds (its `at`), into the cache at once: no re-read after an ack.
@@ -302,8 +326,9 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
   const rowsAt = !same || rows !== merged ? clientNow : same.rowsAt;
   // `since` from the rows before compaction: the newest of what was seen and what this reply adds.
   const since = same ? laterAt(same.since, maxAt({ metrics: reply.rows.metrics ?? [], events: reply.rows.events ?? [] })) : maxAt(merged);
+  const wallets = walletsAfter(same, reply);
   return {
-    v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt,
+    v: 1, me: reply.me, rows, since, rev: reply.rev, ...(compactedAt === undefined ? {} : { compactedAt }), rowsAt, ...(wallets ? { wallets } : {}),
     skewMs: Number.isNaN(serverNow) ? (prev?.skewMs ?? 0) : serverNow - clientNow,
     fetchedAt: clientNow
   };
@@ -363,7 +388,7 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
   let from = since;
   for (let attempt = 0; attempt < 2; attempt++, from = null) {
     const metrics: SnapshotRows['metrics'] = [], events: SnapshotRows['events'] = [];
-    let after: string | undefined, first: SnapshotOk | null = null;
+    let after: string | undefined, first: SnapshotOk | null = null, wallets: Wallets | undefined;
     const seen = new Set<string>();
     let n = 0;
     for (; n < RUNAWAY_PAGES; n++) {
@@ -380,7 +405,9 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
       if (!Array.isArray(r.rows?.metrics) || !Array.isArray(r.rows.events)) throw new Error('a malformed snapshot page');
       metrics.push(...r.rows.metrics);
       events.push(...r.rows.events);
-      if (!after) return { ...r, rows: { metrics, events }, whole: !from };
+      // (each page with rows says the wallets: the newest of them)
+      wallets = newestWallets(wallets, r.wallets);
+      if (!after) return { ...r, rows: { metrics, events }, ...(wallets ? { wallets } : {}), whole: !from };
     }
     if (n === RUNAWAY_PAGES) return { ok: false, error: 'unavailable', detail: 'too many snapshot pages' };
   }

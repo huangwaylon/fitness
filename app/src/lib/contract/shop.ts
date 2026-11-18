@@ -167,8 +167,9 @@ export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>;
 const emptyLedger = (): Ledger => ({ sold: new Map(), soldV: new Map(), shells: 0, owned: [], owed: new Map(), games: new Set() });
 
 /** A row of the shop: a sell, a buy, starts, a reward or a correction, as `sellOf` / `buyOf` / `startsOf` / `rewardOf` / `adjustOf` read it;
- *  `queued` when the record hasn't kept it yet (a phone's queue, model/state.ts foldEvents). */
-export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData } | { type: 'reward'; data: RewardData } | { type: 'adjust'; data: AdjustData }) & { queued?: true };
+ *  `queued` when the record hasn't kept it yet (a phone's queue, model/state.ts foldEvents), and `unsent` too while the
+ *  record hasn't acknowledged it (so the wallet it sent back doesn't hold it yet: model/shop.ts). */
+export type ShopRow = ({ type: 'sell'; data: SellData } | { type: 'buy'; data: BuyData } | { type: 'starts'; data: StartsData } | { type: 'reward'; data: RewardData } | { type: 'adjust'; data: AdjustData }) & { queued?: true; unsent?: true };
 /** A shop row as the model keeps it (model/state.ts `shop`): its sender, and the record's time. */
 export type ShopRowAt = ShopRow & { at: number; person: Who };
 

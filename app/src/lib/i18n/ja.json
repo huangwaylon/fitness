@@ -535,6 +535,7 @@
   "shop.buyHint": "欲しいものを選んでください",
   "shop.buy": "買う",
   "shop.short": "あと{n}かいがら足りません",
+  "shop.buyRefused": "かいがらが足りず、買えませんでした",
   "shop.shortBy": "あと{n}",
   "shop.buyFor": "{v}かいがらで買う",
   "shop.owned": "持っている",

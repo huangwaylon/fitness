@@ -6,7 +6,8 @@ import type { SnapshotRows } from '#lib/contract/api.ts';
 import { LIVE, configureStorage, onStorageProblem, type KV, type StorageProblem } from './storage.ts';
 import { configureTransport } from './transport.ts';
 import { enqueue, flush, queued } from './queue.ts';
-import { applySnapshot, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
+import { addWallets, applySnapshot, cacheWritten, configureCache, loadCache, refreshSnapshot, saveCache, SEG_ROWS } from './cache.ts';
+import { newestWallets } from './wallets.ts';
 import { setKey } from './pairing.ts';
 import { asRecord } from './fake-record.ts';
 
@@ -310,5 +311,67 @@ describe('a full localStorage', () => {
     expect(queued()).toEqual([]);
     kv.m.set(LIVE.queue, '[{"id":"x","type":"harvest","data":{"week":"2026-10-26"}},null,3]');
     expect(queued().map((e) => e.id)).toEqual(['x']);
+  });
+});
+
+// The relay's かいがら wallets (docs/backend.md#the-wallet): kept with the rows, each person's highest seq.
+describe('the wallets', () => {
+  const at = (h: string) => `2026-11-02T${h}:00:00.000Z`;
+  const ev = (when: string, id: string): SnapshotRows['events'][number] => [when, 'A', id, 'pref', '{"key":"locale","value":"en"}'];
+
+  it('a first fetch keeps them (a reload too); a poll with nothing new keeps them; one with rows takes the newer seq', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), wallets: { A: { h: 500, seq: 3 }, B: { h: 9, seq: 1 } } });
+    await refreshSnapshot();
+    await reload();
+    expect((await loadCache())?.wallets).toEqual({ A: { h: 500, seq: 3 }, B: { h: 9, seq: 1 } });
+    reply = () => ({ ok: true, me: 'A', now: at('06'), rev: 'r1', rows: { metrics: [], events: [] } });
+    let r = await refreshSnapshot();
+    expect(r.ok && r.cache.wallets).toEqual({ A: { h: 500, seq: 3 }, B: { h: 9, seq: 1 } });
+    // (a page that started before an ack: its older seq never takes the number back)
+    reply = () => ({ ok: true, me: 'A', now: at('07'), rev: 'r1', rows: { events: [ev(at('06'), 'e2')] }, wallets: { A: { h: 400, seq: 2 }, B: { h: 20, seq: 2 } } });
+    r = await refreshSnapshot();
+    expect(r.ok && r.cache.wallets).toEqual({ A: { h: 500, seq: 3 }, B: { h: 20, seq: 2 } });
+  });
+
+  it('a reply with rows and no wallets (an older relay: a rollback) drops them, so the phone folds the rows again', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), wallets: { A: { h: 500, seq: 3 } } });
+    await refreshSnapshot();
+    reply = () => ({ ok: true, me: 'A', now: at('06'), rev: 'r1', rows: { events: [ev(at('05'), 'e2')] } });
+    const r = await refreshSnapshot();
+    expect(r.ok && r.cache.wallets).toBeUndefined();
+  });
+
+  it('a new epoch takes the reply’s as they are (a restore: the seq counts again)', async () => {
+    reply = () => ({ ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), wallets: { A: { h: 500, seq: 30 } } });
+    await refreshSnapshot();
+    reply = () => ({ ok: true, me: 'A', now: at('06'), rev: 'r2', rows: rows(), wallets: { A: { h: 480, seq: 0 } } });
+    const r = await refreshSnapshot();
+    expect(r.ok && r.cache.wallets).toEqual({ A: { h: 480, seq: 0 } });
+  });
+
+  it('a paged fetch: the newest of its pages’', async () => {
+    reply = (b) => b.after
+      ? { ok: true, me: 'A', now: at('05'), rev: 'r1', rows: { metrics: [], events: [ev(at('02'), 'e3')] }, wallets: { A: { h: 7, seq: 5 } } }
+      : { ok: true, me: 'A', now: at('05'), rev: 'r1', rows: rows(), next: `${at('01')}|e|1`, wallets: { A: { h: 6, seq: 4 }, G: { h: 1, seq: 1 } } };
+    const r = await refreshSnapshot();
+    expect(r.ok && r.cache.wallets).toEqual({ A: { h: 7, seq: 5 }, G: { h: 1, seq: 1 } });
+  });
+
+  it('an ack’s wallets reach the flush’s result, the newest of its batches; addWallets keeps each one’s newest', async () => {
+    await refreshSnapshot();
+    // (the batch's reply as the record sends it, its wallets beside the results: not fake-record's per event)
+    configureTransport({
+      url: 'https://script.example/exec',
+      fetch: (async (_u: unknown, init?: RequestInit) => {
+        const b = JSON.parse(String(init?.body)) as { events: { id: string }[] };
+        return new Response(JSON.stringify({ ok: true, results: b.events.map((e) => ({ id: e.id, ok: true })), wallets: { A: { h: 42, seq: 8 } } }));
+      }) as typeof fetch
+    });
+    enqueue('harvest', { week: '2026-10-26' });
+    const r = await flush();
+    expect(r.wallets).toEqual({ A: { h: 42, seq: 8 } });
+    expect(addWallets(r.wallets!)?.wallets).toEqual({ A: { h: 42, seq: 8 } });
+    expect(addWallets({ A: { h: 1, seq: 7 } })?.wallets).toEqual({ A: { h: 42, seq: 8 } });
+    expect(newestWallets({ A: { h: 1, seq: 1 } }, { B: { h: 2, seq: 1 } })).toEqual({ A: { h: 1, seq: 1 }, B: { h: 2, seq: 1 } });
   });
 });

@@ -190,6 +190,10 @@ answered by id; a request refused whole is halved, one event alone so refused is
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
 row on the server's clock, so read-time rules judge it as the server will. Recomputed on every change and each minute
 (not while hidden). The `food*` rows stay raw (`model/state.ts` RAW_EVENTS) till the food sheet parses them.
+- **かいがら** (`model/shop.ts shopView`): [the wallet](#the-wallet) the cache keeps (a snapshot's or an ack's, each
+  person's highest `seq`: `sync/wallets.ts`) plus this phone's **unsent** shop rows (queued, not acked), judged by
+  `shopStep` as the record will, never below 0; buys are gated on it. A reply with rows and no `wallets` (an older
+  relay) drops them: the fold again. A queued buy refused `wallet short`: its own toast, the ack's wallet shown.
 
 <a id="live-sync"></a>
 ### When it syncs
@@ -238,21 +242,16 @@ one tile").
 - **Compaction** (`store.ts compact`): the phones' rule on the record's `metrics`. **It is off: every Health row is
   kept.** The cron runs it only with `COMPACT_CRON=1`, unset (`relay/test/compact.test.ts` fails while it is set); the
   admin's `compact` needs `confirm: 'delete-health-history'`.
-- <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance, **the number
-  the phones show** (`h`, with `n` its changes, `seq` on the wire, and `t` the last one's time). It moves only by the
-  step of a new row kept, in that row's transaction (`h` after less `h` before the ledger's own step: `shopStep`,
-  `reowe` for a tally that repays or a give-back that owes, the field's harvests and plants, a reward per recipient,
-  `adjust`/`unadjust`), and **never below 0** (a give-back after the かいがら were spent takes what is left; a later
-  catch that repays the debt pays it in full). Nothing folds it again once kept: not a rule change, not `shopcheck`,
-  not a `load` (a load lets the pockets go, `{h, n, t}` kept, and they are folded again at the next read). It is
-  seeded from the fold (`wallet.seed` in the log) only when there is none: the record's first op of that person, a
-  load into an empty record, or a ledger an older relay kept that today's rules can't read (those relays folded such a
-  one again, かいがら included, so that fold is what they served: the guest's, kept before `g`). A
-  point-in-time restore brings the ledgers back with the rows; a dump carries rows only. **Drift** (the stored `h`
-  against the fold of the rows, floored): `walletcheck`, daily with the 03:00 backup cron, logs `wallet.drift {who,
-  stored, fold}` (warn) and never fixes; the admin settles it with `walletset` ([runbook §9](ops/runbook.md#9-the-record)),
-  whose correction row makes the rows say the chosen number. Tests: `relay/test/wallet.test.ts` (a property test:
-  random sequences, the served `h` after every step equal to the fold's change applied in order with the floor).
+- <a id="the-wallet"></a>**The wallet** (かいがら): the running ledger `shop|<who>` is the stored balance the phones
+  show (`h`; `n` its changes, `seq` on the wire; `t` the last one's time). Only a new row's own step moves it, in that
+  row's transaction (`h` after less before: `shopStep`, `reowe`, the field, a reward per recipient, `adjust`,
+  `unadjust`), **never below 0** (a give-back after the かいがら were spent takes what is left). Nothing folds it again:
+  not a rule change, `shopcheck` or a `load` (which lets the pockets go, `{h, n, t}` kept). Seeded from the fold
+  (`wallet.seed`) only when there is none: a first op, a load into an empty record, or an older relay's ledger today's
+  rules can't read (those relays folded it again too). A restore brings it back with the rows; a dump has rows only.
+  **Drift** (`h` against the floored fold): `walletcheck` at the 03:00 cron logs `wallet.drift` (warn), never fixes;
+  `walletset` settles it ([runbook §9](ops/runbook.md#9-the-record)). Tests: `relay/test/wallet.test.ts` (property:
+  the served `h` after every random step equals the fold's change applied in order with the floor).
 - **Snapshot size:** a year of three people is ~50–100k rows, ~3–6 MB of JSON, hence the paging.
 - **A restore** (`restore {bookmark}`): every `/api` request is `unavailable` until the restart, so no write is acked
   and then dropped; a new epoch. Backups: [runbook §6](ops/runbook.md#6-backups).
