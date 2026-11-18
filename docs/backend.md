@@ -178,14 +178,13 @@ answered by id; a request refused whole is halved, one event alone so refused is
 - **Set aside** (`parked`, `PARK_AFTER`): an event the record keeps failing stops blocking, is logged `queue.poison`
   and is never dropped; a sync tap tries it again. Unsent 2 minutes past its hold, it shows on the sync chip and in 設定.
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back;
-  `replaceHeld` swaps its data (its id kept, never once tried: a farm tap joining its batch, a catch's held tally or
-  island day, one recompute of the view); a later event on the same spend never overtakes it. A group goes once none of it is held, in one request.
+  `replaceHeld` swaps its data (its id kept, never once tried: a farm tap joining its batch, a catch's held day row);
+  a later event on the same spend never overtakes it. A group goes once none of it is held, in one request.
 - **Replies:** acked → `island.acked` (in the view until a snapshot holds it); `bad_request` / `too_large` → dropped
   with a message; `unauthorized` → pairing; other errors keep it and all after it (`backoffMs`). Retried on a sync tap,
-  becoming visible and the socket's welcome, at most once per 30 s, and on every `online`.
-- **Hidden:** on hide the held day rows go at once in `keepalive` requests, so a phone locked right after a catch
-  doesn't leave the partner behind; a flush under way doesn't hold them back (its batch goes again with them: a repeat
-  acks as a duplicate).
+  a show, the socket's welcome (≤ once per 30 s) and `online`.
+- **Hidden:** the held day rows go at once, `keepalive` (a phone locked), even during a flush (its
+  batch again).
 
 ### Optimistic view
 `store/view.ts composeModel`: the cached rows plus acked and queued events, each stamped just after the newest server
@@ -199,13 +198,12 @@ row on the server's clock, so read-time rules judge it as the server will. Recom
 
 <a id="live-sync"></a>
 ### When it syncs
-On launch (after painting from the cache), on becoming visible (≤ every 30 s), a sync tap, `online`, and on the
-relay's `changed` ([Push](#push)); each refresh flushes the queue, then fetches (waits: `store/live.ts`'s constants).
-A launch, becoming visible or `online` (iOS fires it on any network change) waits briefly for the `welcome`: when the
-cache already has its `rec {at, rev}` and is recent, it only flushes; `online` after a failed fetch always fetches.
-Every welcome whose `rec` is past the cache fetches (`e2e/live-sync.spec.ts`). An ack carries its stored row's `at`
-and the row goes into the cache at once; only a duplicate's ack is followed by a re-read. A failed fetch while the
-socket is up is tried again after 10 s, 30 s, then every 60 s (`FAIL_RETRY_MS`).
+On launch (after painting from the cache), becoming visible (≤ every 30 s), a sync tap, `online`, and the relay's
+`changed` ([Push](#push)); each refresh flushes the queue, then fetches (waits: `store/live.ts`'s constants). A launch,
+a show or `online` waits briefly for the `welcome`: when the cache has its `rec {at, rev}` and is recent, it only
+flushes (after a failed fetch, `online` fetches). Every welcome whose `rec` is past the cache fetches
+(`e2e/live-sync.spec.ts`). An ack's stored row (its `at`) goes into the cache at once; only a duplicate's ack is
+followed by a re-read. A failed fetch with the socket up is retried after 10 s, 30 s, then every 60 s (`FAIL_RETRY_MS`).
 
 **One device, one socket:** each hello names the device and tab (`dev`) and replaces only that tab's earlier socket
 (4002); the person's other devices hear their decor ops live, and only the writing page skips its own `changed`
@@ -279,9 +277,8 @@ never data of record: the record still catches an offline phone up.
   each person's last socket closed; `mine`: another device of mine is here).
 - **Close codes:** 4001 bad key, 4002 replaced by the same device's newer socket, 4003 no hello within `HELLO_MS`,
   4004 an unknown `v` (the client waits for a reload; a bump ships as [Relay versions side by
-  side](decisions.md#relay-versions-side-by-side) says). The phone's own (`sync/live.ts`, in the log's `ws.close`):
-  4000 a socket given up on as dead (a ping unanswered; replaced at once), 4010 no welcome within `WELCOME_MS` (another
-  after the backoff; at once when the app comes back).
+  side](decisions.md#relay-versions-side-by-side) says). The phone's own: 4000 a dead socket (a ping
+  unanswered), 4010 no welcome within `WELCOME_MS`.
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`: both sides' parsers, each field's bounds): JSON, `LIVE_VS`, ≤
   `MAX_BYTES` (a `replay` ≤ `REPLAY_BYTES`). Client intents:
   - The shared world's, kept for the day ([Shared world](#shared-world)): `walk`, `act`, `catch`, `world`, `pick`,
