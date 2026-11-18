@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 9, retire 4, new 0, ctx 4, tx 7
+// R4 REVIEW 2026-11-18: keep 3, rewrite 9, retire 4, new 0, ctx 4, tx 7, qa 5
 // A2 REVIEW 2026-11-17: keep 4, rewrite 11, retire 1, new 0 (nt1, nt2 stay retired)
 // “Rachel's Job Search Isn't Going Well... | Friends” (the official Friends channel, Best of Season 1): Rachel sends
 // résumés out for any job to escape waitressing; a friend's hints reveal a mistake on all of them.
@@ -67,7 +67,7 @@ export const rachResume: Clip = {
       trap: 'Did you なら「ディ」の音、Would you なら「ウ」で始まる。ここは軽い「ダユ」。',
       use: 'Do you want to grab lunch?（お昼食べに行く？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'anything', reveals: ['doyou'], ctx: true, seg: [15.6, 25.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'anything', reveals: ['doyou'], ctx: true, seg: [15.6, 25.6],
       stem: 'Why does Rachel send a résumé to Popular Mechanics?', ja: 'レイチェルはなぜ「ポピュラー・メカニクス」に履歴書を送る？',
       choices: ['She’ll take any job', 'She likes cars a lot', 'A friend works there'], a: 0,
       choicesJa: ['どんな仕事でもいいから', '車が大好きだから', '友だちが働いているから'],
@@ -122,7 +122,7 @@ export const rachResume: Clip = {
       trap: 'excuse me（すみません）から、あやまる話と思いやすい。being called のあとなので呼び方。',
       use: 'Excuse me, could we get the check?（すみません、お会計お願いします）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'tips', seg: [27.7, 32.4],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tips', seg: [27.7, 29.3],
       stem: 'What is Rachel sick of first?', ja: 'レイチェルが最初にうんざりだと言うのは？',
       choices: ['Getting bad tips', 'Working long hours', 'A rude manager'], a: 0,
       choicesJa: ['チップが少ないこと', '長い時間働くこと', '失礼な店長'],
@@ -133,7 +133,7 @@ export const rachResume: Clip = {
       trap: 'lousy は「ラウジー」と短い。長い勤務時間はよくある不満だが、ここでは言っていない。',
       use: 'I’m sick of this rain.（この雨にはもううんざり）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'excuse', seg: [27.7, 32.4],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'excuse', seg: [29.3, 32.4],
       stem: 'What do people call Rachel, she says?', ja: 'レイチェルによると、みんなは彼女を何と呼ぶ？',
       choices: ['“Excuse me”', '“Hey, miss”', '“Waitress”'], a: 0,
       choicesJa: ['「すみません」', '「ねえ、おねえさん」', '「ウェイトレスさん」'],
@@ -144,8 +144,8 @@ export const rachResume: Clip = {
       trap: '店員の呼び方はほかにもある。being called のあとの語をそのまま聞く。',
       use: 'Excuse me, is this seat taken?（すみません、この席空いてますか）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'proofread', ctx: true, seg: [32.5, 38.6],
-      stem: 'Did Rachel proofread her résumés, she says?', ja: 'レイチェルは履歴書を見直したと言う？',
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'proofread', ctx: true, seg: [32.5, 38.9],
+      stem: 'Does Rachel say she proofread them?', ja: 'レイチェルは履歴書を見直したと言う？',
       choices: ['Yes, she did', 'No, she didn’t', 'Only a few'], a: 0,
       choicesJa: ['うん、した', 'ううん、していない', '少しだけ'],
       cue: '「did you proofread these?」への返事',
@@ -177,7 +177,7 @@ export const rachResume: Clip = {
       trap: 'nothing（何もない）から、問題なしと思いやすい。前の uh と、見直したかという質問が手がかり。',
       use: 'Oh, nothing. Never mind.（ううん、何でもない）' },
 
-    { id: 'a2', skill: 'infer', level: 'B2', point: 'teasing', reveals: ['end'], ctx: true, seg: [37.6, 43.7],
+    { id: 'a2', skill: 'infer', level: 'B2', point: 'teasing', reveals: ['end'], ctx: true, seg: [37.6, 45.9],
       stem: 'Is Chandler praising Rachel’s computer skills?', ja: 'チャンドラーはレイチェルのパソコンの腕前をほめている？',
       choices: ['No, he’s teasing her', 'Yes, he thinks she’s good', 'Yes, he wants her help'], a: 0,
       choicesJa: ['いいえ、からかっている', 'はい、上手だと思っている', 'はい、手伝ってほしい'],

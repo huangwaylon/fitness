@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 12, retire 5, new 5, ctx 7, tx 7
+// R4 REVIEW 2026-11-18: keep 5, rewrite 12, retire 5, new 5, ctx 7, tx 7, qa 7
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 4, new 2
 // “When fake dating goes too far | Parks and Recreation” (the official Parks and Recreation channel, Season 5): at a
 // cookout, Ann and Tom keep up a fake relationship to win a bet, while Ron's slow grilling leaves everyone starving.
@@ -106,23 +106,23 @@ export const fakedating: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'day', seg: [40.65, 45.7],
       stem: 'When did they see moving in was a huge mistake?',
       ja: '一緒に住むのは大失敗だと、いつ気づいた？',
-      choices: ['After the first day', 'After the first week', 'After the first month'], a: 0, keep: true,
-      choicesJa: ['最初の1日のあと', '最初の1週間のあと', '最初の1か月のあと'],
+      choices: ['After the first day', 'After the first week', 'After the first month', 'After the first hour'], a: 0, keep: true,
+      choicesJa: ['最初の1日のあと', '最初の1週間のあと', '最初の1か月のあと', '最初の1時間のあと'],
       cue: '「After the first」の最後の一語。',
       line: '*After the first day*, we realized we had made a huge mistake.',
       said: '「最初の日のあとで、大失敗だと気づいた」と話す。',
       mean: 'after the first day ＝ 初日のあと。たった1日で無理だと分かった早さが笑いどころ。',
-      trap: 'あとで another month（あと1か月）が出るので混ざりやすい。ここは day。',
+      trap: 'あとで another month（あと1か月）が出るので混ざりやすい。week は「ウィーク」、hour は「アワー」。ここは day。',
       use: 'After the first day, I felt at home.（初日のあとには、もうなじんでた）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', seg: [41.7, 65.5],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'fake', reveals: ['day'], seg: [41.7, 56.8],
       stem: 'What are Ann and Tom doing?',
       ja: 'アンとトムは何をしている？',
       choices: ['Acting like they’re still a couple', 'Trying to make someone jealous', 'Hiding their love from everyone'], a: 0,
       choicesJa: ['まだ付き合っているふりをしている', 'だれかにやきもちを焼かせようとしている', '恋をみんなに隠している'],
       cue: '「huge mistake」のあとの話。',
       line: 'so *we’re pretending to still be together*.',
-      said: '同棲は1日で失敗だったのに、まだ付き合っているふりを続けている。',
+      said: '同棲はすぐ失敗したのに、みんなが得意げなので、まだ付き合っているふりを続けている。',
       mean: 'pretend to 〜 ＝ 〜のふりをする。周りに見せるための芝居。',
       trap: '「ふりの恋」と聞くと、だれかの気を引く芝居を連想しやすい。本当はもう別れている。',
       use: 'Let’s just pretend everything’s fine.（何もなかったふりをしよう）' },
@@ -178,13 +178,13 @@ export const fakedating: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'amount', seg: [56.1, 60.1], keep: true,
       stem: 'How much did Tom bet Donna?',
       ja: 'トムはドナにいくら賭けた？',
-      choices: ['$100', '$1,000', '$10,000'], a: 1,
-      choicesJa: ['100ドル', '1000ドル', '1万ドル'],
+      choices: ['$100', '$1,000', '$10,000', '$100,000'], a: 1,
+      choicesJa: ['100ドル', '1000ドル', '1万ドル', '10万ドル'],
       cue: '「I bet Donna a」のすぐあと。',
       line: 'I bet Donna *a thousand dollars* that…',
       said: '「あと1か月は一緒にいるって、ドナと1000ドル賭けてる」と言う。',
       mean: 'a thousand ＝ 1000。別れたことがばれたら、この大金を払うことになる。',
-      trap: 'hundred は「ハン」、thousand は「サウ」で始まる。前に ten がなければ1000。',
+      trap: 'hundred は「ハン」、thousand は「サウ」で始まる。前に ten も、あとに hundred もなければ1000。',
       use: 'I bet you ten dollars he’s late.（彼が遅れるのに10ドル賭ける）' },
 
     { id: 'pr2', skill: 'phrase', level: 'B2', point: 'stress', seg: [59.95, 66.4],
@@ -211,7 +211,7 @@ export const fakedating: Clip = {
       trap: 'もう破産したと思いやすいが、if と I’ll があるので、まだ起きていない話。',
       use: 'If I buy this, I’ll go broke.（これを買ったら金欠になる）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'wait', reveals: ['hours'], seg: [66.3, 91.6],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'wait', reveals: ['hours', 'notsofast'], seg: [66.3, 82.3],
       stem: 'What is the problem at the cookout?',
       ja: 'バーベキューで何が問題になっている？',
       choices: ['The food will take hours', 'Ron forgot the meat', 'There is nothing to drink'], a: 0,
@@ -248,8 +248,8 @@ export const fakedating: Clip = {
       use: 'I forgot to thaw the chicken.（鶏肉を解凍し忘れた）' },
 
     { id: 'pr3', skill: 'pragma', level: 'B2', point: 'antsy', seg: [82.1, 88.4],
-      stem: 'What does Chris really want from Ron?',
-      ja: 'クリスは、本当はロンに何をしてほしい？',
+      stem: 'What is Chris asking Ron to do?',
+      ja: 'クリスはロンに何を頼んでいる？',
       choices: ['To cook faster', 'To take a break', 'To sit with them'], a: 0,
       choicesJa: ['もっと早く料理する', '休けいする', 'みんなと座る'],
       cue: '「feeling that」のあと。',

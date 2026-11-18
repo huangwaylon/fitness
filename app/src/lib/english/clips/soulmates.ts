@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 3, new 0, ctx 3, tx 3
+// R4 REVIEW 2026-11-18: keep 5, rewrite 9, retire 3, new 0, ctx 3, tx 3, qa 14
 // A2 REVIEW 2026-11-17: keep 10, rewrite 3, retire 7, new 2
 // “Monica Doesn't Believe in Soul Mates | Friends” (the official Friends channel, Best of Season 8): Chandler is sulking
 // because Phoebe thinks Monica and Don are soulmates; Monica says love is work, not fate.
@@ -13,24 +13,13 @@ export const soulmates: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'worry', reveals: ['pair'], seg: [0, 26.8],
-      stem: 'What is Chandler worried about?', ja: 'チャンドラーは何を心配している？',
-      choices: ['Monica may leave him for Don', 'Phoebe may leave him for Don', 'Don may not like Monica'], a: 0,
-      choicesJa: ['モニカがドンの所へ行くかも', 'フィービーがドンの所へ行くかも', 'ドンがモニカを好きじゃないかも'],
-      cue: '「what’s going on?」のあとの説明',
-      line: 'Phoebe thinks that you and *Don* are *soulmates*… if you want to *run off with Don*…',
-      said: '「フィービーは君とドンが運命の相手だと思ってる。ドンと行きたいなら止めない」と言う。',
-      mean: 'soulmate ＝ 運命の相手。モニカがドンを選ぶのでは、と不安になっている。',
-      trap: 'Phoebe の名前が先に出るので、フィービーの話だと思いやすい。',
-      use: 'What’s going on with you?（どうしたの？）' },
-
     { id: 'd1', skill: 'detail', level: 'B1', point: 'weird', seg: [0, 6.9],
       stem: 'What does Monica say about Chandler?', ja: 'モニカはチャンドラーについて何と言う？',
       choices: ['He has been acting weird', 'He has been working late', 'He has been very quiet'], a: 0,
       choicesJa: ['ずっと様子がおかしい', 'ずっと遅くまで働いている', 'ずっと黙っている'],
       cue: '最初の「Are you okay?」のあと',
       line: 'Are you okay? You’ve been *acting weird* all afternoon.',
-      said: 'モニカが「大丈夫？午後ずっと様子が変だよ」と声をかける。',
+      said: 'モニカが「大丈夫？午後からずっと様子がおかしいよ」と声をかける。',
       mean: 'act weird ＝ いつもと違う、変な様子。心配して聞く時の言い方。',
       trap: 'all afternoon（午後ずっと）で、仕事の話だと思いやすい。weird が様子。',
       use: 'You’ve been acting weird lately.（最近ちょっと変だよ）' },
@@ -66,7 +55,18 @@ export const soulmates: Clip = {
       trap: 'Sheesh は濁らない「シ」、Gee は語尾の z がない。最初の濁りと語尾を両方聞く。',
       use: 'Jeez, that was close!（うわ、危なかった！）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B1', point: 'goingon', seg: [13.6, 16],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'worry', reveals: ['pair', 'runoff'], seg: [12.0, 27.3],
+      stem: 'What is Chandler worried about?', ja: 'チャンドラーは何を心配している？',
+      choices: ['Monica may leave him for Don', 'Phoebe may leave him for Don', 'Don may not like Monica'], a: 0,
+      choicesJa: ['モニカがドンの所へ行くかも', 'フィービーがドンの所へ行くかも', 'ドンがモニカを好きじゃないかも'],
+      cue: '「what’s going on?」のあとの説明',
+      line: 'Phoebe thinks that you and *Don* are *soulmates*… if you want to *run off with Don*…',
+      said: 'チャンドラーが「フィービーは、君とドンがソウルメイトだって言うんだ」と打ち明ける。',
+      mean: 'soulmate ＝ 運命の相手。モニカがドンを選ぶのでは、と不安になっている。',
+      trap: 'Phoebe の名前が先に出るので、フィービーの話だと思いやすい。',
+      use: 'Are you worried about something?（何か心配ごと？）' },
+
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'goingon', seg: [13.6, 15.9],
       stem: 'What does Monica mean by “What’s *going on*?”', ja: 'モニカの「What’s going on?」はどういう意味？',
       choices: ['Tell me what’s wrong', 'Where are you going?', 'What are you doing now?'], a: 0,
       choicesJa: ['何があったか話して', 'どこへ行くの？', '今、何をしているの？'],
@@ -88,7 +88,7 @@ export const soulmates: Clip = {
       trap: '話しているのがチャンドラーなので、自分が入ると思いやすい。you はモニカ。',
       use: 'I think we’re soulmates.（私たち、運命の相手だと思う）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'getalong', seg: [18.4, 21.4],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'getalong', seg: [18.4, 21.35],
       stem: 'What does “you two totally *get along*” mean?', ja: '「you two totally get along」の意味は？',
       choices: ['You two are good friends', 'You two walk together', 'You two fight a lot'], a: 0,
       choicesJa: ['2人はとても仲がいい', '2人は一緒に歩く', '2人はよくけんかする'],
@@ -110,7 +110,7 @@ export const soulmates: Clip = {
       trap: 'want to は「ワナ」、wouldn’t は「ウドゥン」。won’t は口を丸めて「ウォウン」。',
       use: 'I won’t tell anyone.（誰にも言わないよ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'standway', reveals: ['wont', 'runoff'], seg: [20.5, 26.1],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'standway', reveals: ['wont', 'runoff'], seg: [21.3, 26.1],
       stem: 'What does “I won’t *stand in your way*” mean?', ja: '「I won’t stand in your way」の意味は？',
       choices: ['I won’t stop you', 'I won’t wait for you', 'I won’t stand near you'], a: 0,
       choicesJa: ['止めないよ', '待たないよ', 'そばに立たないよ'],
@@ -121,13 +121,13 @@ export const soulmates: Clip = {
       trap: 'stand（立つ）から、立つ場所の話だと思いやすい。if のあとが何を止めないか。',
       use: 'I won’t stand in your way.（あなたの邪魔はしないよ）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'runoff', seg: [21.2, 26.8],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'runoff', seg: [23.0, 26.8],
       stem: 'What does “*run off with* Don” mean here?', ja: 'ここでの「run off with Don」の意味は？',
       choices: ['Leave to be with Don', 'Go running with Don', 'Run away from Don'], a: 0,
       choicesJa: ['家を出てドンと一緒になる', 'ドンとジョギングする', 'ドンから逃げる'],
       cue: '「if you want to」のあと',
       line: 'if you want to *run off with* Don and live in a house of cheese',
-      said: '「ドンと出ていって、チーズの家で暮らしたいなら」と言う。',
+      said: '「君がドンと駆け落ちして、チーズの家で暮らしたいならね」と言う。',
       mean: 'run off with 〜 ＝ 〜と一緒に（駆け落ちのように）出て行く。大げさな言い方。',
       trap: 'run から本当に走る話だと思いやすい。with は「一緒に」で、from とは逆。',
       use: 'He ran off with my bag!（あいつ、私のかばんを持って逃げた！）' },
@@ -154,7 +154,7 @@ export const soulmates: Clip = {
       trap: '短い返事なので、怒っていると思いやすい。上がり調子の聞き返しは驚き。',
       use: 'I don’t like it, either.（私も好きじゃない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'mview', reveals: ['belief', 'workhard'], seg: [34, 62],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'mview', reveals: ['belief', 'workhard'], seg: [37.3, 52.4],
       stem: 'What does Monica say about their love?', ja: 'モニカは2人の愛について何と言う？',
       choices: ['It comes from hard work', 'It was meant to be', 'It started with Don'], a: 0,
       choicesJa: ['努力から生まれた', '運命で決まっていた', 'ドンがきっかけだった'],
@@ -187,7 +187,7 @@ export const soulmates: Clip = {
       trap: 'don’t が弱いと「住みたいの？」に聞こえる。So で始まる質問は、話のまとめ・確認が多い。',
       use: 'So you’re not mad at me?（じゃあ、怒ってないんだね？）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'clean', ctx: true, seg: [48.8, 58.3],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'clean', reveals: ['second'], ctx: true, seg: [48.8, 58.3],
       stem: 'Why doesn’t Monica want the cheese house now?', ja: 'モニカはなぜ今はチーズの家が嫌？',
       choices: ['Too much cleaning', 'Too far from work', 'Too small for two'], a: 0,
       choicesJa: ['掃除が大変すぎる', '職場から遠すぎる', '二人には狭すぎる'],
@@ -198,7 +198,7 @@ export const soulmates: Clip = {
       trap: 'hard（大変）だけ聞くと、ほかの理由も考えやすい。最後の to clean を聞く。',
       use: 'Do you realize how late it is?（もうこんな時間だって分かってる？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'second', seg: [51.7, 58.3],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'second', seg: [52.4, 55.6],
       stem: 'Type what Monica says: “No, I’ve had ___ about that.” (2 words)', ja: 'モニカの言葉の空所2語を書こう',
       answer: 'second thoughts',
       cue: 'I’ve had のあとの2語',
@@ -229,13 +229,13 @@ export const soulmates: Clip = {
       trap: '日本語の「知ってる」は冷たく聞こえやすい。英語でも調子しだいで、ここは笑顔の返事。',
       use: 'I know. I love you too.（知ってる。私も）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknowwhat', reveals: ['mozz'], seg: [59.9, 64.9],
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'youknowwhat', reveals: ['mozz'], seg: [60.5, 64.9],
       stem: 'What does “You know what?” mean here?', ja: 'ここでの「You know what?」はどういう意味？',
       choices: ['I just had an idea', 'Do you know this?', 'I have a complaint'], a: 0,
       choicesJa: ['いいこと思いついた', 'これ知ってる？', '文句がある'],
       cue: '「I love you」「I know」のあと',
       line: '*You know what?* I’m going to take you out to dinner tonight.',
-      said: '「そうだ、今夜ディナーに連れて行くよ」と言い出す。',
+      said: '「そうだ、今夜、夕食に連れていってあげる」と言い出す。',
       mean: 'You know what? ＝ 文字どおりは「何だか分かる？」。答えは求めず、思いつきを言う前の「そうだ」。',
       trap: '疑問の形なので、本当に質問していると考えがち。すぐあとに計画が続く。',
       use: 'You know what? Let’s go out.（そうだ、出かけよう）' },
@@ -246,7 +246,7 @@ export const soulmates: Clip = {
       choicesJa: ['レストランで夕食', '家で夕食を作る', 'ドンと夕食'],
       cue: '「You know what?」のあと',
       line: 'I’m going to *take you out to dinner* tonight.',
-      said: '「今夜、ディナーに連れて行くよ」と言う。',
+      said: '「今夜、夕食に連れていってあげる」と言う。',
       mean: 'take 〜 out to dinner ＝ 〜を外の夕食に連れて行く（ごちそうする）。',
       trap: 'dinner だけ聞くと、家で食べる話だと思いやすい。out が外食の合図。',
       use: 'Let me take you out to dinner.（夕食をごちそうさせて）' },

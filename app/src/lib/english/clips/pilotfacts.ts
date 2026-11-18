@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 4, new 5, ctx 9, tx 11
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 4, new 5, ctx 9, tx 11, qa 16
 // A2 REVIEW 2026-11-17: keep 2, rewrite 15, retire 7, new 2
 // “Pilot Episode Fun Facts | A Peacock Extra | The Office US” (the official The Office channel, BEST OF SEASON 1): scenes
 // from the pilot. Michael calls himself the best boss, bins corporate's mail, says he won't tell the staff some bad news,
@@ -20,7 +20,7 @@ export const pilotFacts: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'boss', seg: [0, 15.2],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'boss', seg: [0, 15.0],
       stem: 'How does Michael feel about himself as a boss?',
       ja: 'マイケルは上司としての自分をどう思っている？',
       choices: ['Proud of himself', 'Unsure of himself', 'Tired of his job'], a: 0,
@@ -32,7 +32,7 @@ export const pilotFacts: Clip = {
       trap: '自分のほめ言葉なので、照れや冗談と考えがち。sums it up で本気だと分かる。',
       use: 'That pretty much sums it up.（まあ、そういうこと）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'tour', seg: [12.4, 31.4],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'tour', seg: [15.0, 31.4],
       stem: 'What is Michael showing the camera?',
       ja: 'マイケルはカメラに何を見せている？',
       choices: ['His office and workers', 'His new apartment', 'The company’s other branch'], a: 0,
@@ -75,7 +75,7 @@ export const pilotFacts: Clip = {
       line: 'Am I going to tell them? *No, I’m not going to tell them*.',
       said: '「みんなに言う？いや、言わない。意味がない」と自分で答える。',
       mean: 'I’m not going to 〜 ＝ 〜しないつもり。自分で聞いて自分で答えている。',
-      trap: 'あとの医者の話から、確かめてから言うと思いやすい。すぐあとの No が答え。',
+      trap: 'Am I going to tell them? と質問の形なので、言うつもりだと考えがち。すぐあとの No が答え。',
       use: 'I don’t see the point of that.（それ、意味ないと思う）' },
 
     { id: 'nt1', skill: 'pragma', level: 'C2', point: 'tell', seg: [64.95, 72.0], retired: true,
@@ -89,7 +89,7 @@ export const pilotFacts: Clip = {
       trap: '本人の「意味がない」に引っぱられ、軽い話と取りやすい。たとえ話では、選んだ例の重さが本音を表す。',
       use: 'That’s like saying the Titanic had a leak.（タイタニックが少し漏れた、と言うようなもの）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'guilty', ctx: true, seg: [71.7, 77.7],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'guilty', ctx: true, seg: [71.6, 77.6],
       stem: 'What does Michael mean by “Guilty”?',
       ja: 'マイケルの「Guilty」はどういう意味？',
       choices: ['Yes, that’s me', 'Sorry, my fault', 'No, not me'], a: 0,
@@ -101,7 +101,7 @@ export const pilotFacts: Clip = {
       trap: '「有罪」から謝っていると思いやすい。紹介された返事なので「はい、本人です」。',
       use: 'Who ate the cake? — Guilty.（ケーキ食べたの誰？—私です）' },
 
-    { id: 'd1', skill: 'who', level: 'B1', point: 'temp', seg: [75.6, 82.9],
+    { id: 'd1', skill: 'who', level: 'B1', point: 'temp', seg: [75.6, 82.6],
       stem: 'Who is Ryan?',
       ja: 'ライアンはどんな人？',
       choices: ['A new short-term worker', 'Pam’s old friend', 'A man from corporate'], a: 0,
@@ -110,7 +110,7 @@ export const pilotFacts: Clip = {
       line: 'Ryan, uh, Howard from the *temp agency*. … sent me down to *start today*.',
       said: '「派遣会社から来たライアン・ハワードです。今日から来るように言われました」と名乗る。',
       mean: 'temp ＝ 派遣・臨時の社員。agency ＝ 会社、事務所。start today ＝ 今日から働く。',
-      trap: '直前にパムが本社の話をしていたので、本社の人と考えがち。temp agency が決め手。',
+      trap: 'from の後なので、本社から来た人と考えがち。決め手は temp agency（派遣会社）。',
       use: 'I’m new here. I start today.（新人です。今日からです）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'safety', ctx: true, seg: [95.4, 103.8],
@@ -183,7 +183,7 @@ export const pilotFacts: Clip = {
       trap: '6000なら thousand。sixteen は「シックスティーン」、sixty は「シックスティ」。ここは「シックス」。',
       use: 'What’s the starting salary?（初任給はいくらですか）' },
 
-    { id: 'r2', skill: 'pragma', level: 'B2', point: 'raise', ctx: true, seg: [157.3, 163.4],
+    { id: 'r2', skill: 'pragma', level: 'B2', point: 'raise', ctx: true, seg: [158.2, 164.4],
       stem: 'What does “Don’t we all?” mean here?',
       ja: 'ここでの「Don’t we all?」はどういう意味？',
       choices: ['Everyone wants that, too', 'Yes, you work so hard', 'Do we all get one?'], a: 0,
@@ -195,7 +195,7 @@ export const pilotFacts: Clip = {
       trap: '質問の形なので、本当に聞いていると思いやすい。答えを待たずに流している。',
       use: 'I need a vacation. — Don’t we all?（休みが欲しい。—みんなそうだよ）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'raise', seg: [157.5, 163.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'raise', seg: [158.2, 163.4],
       stem: 'Fill the gap in the reply: “___ all?”',
       ja: '返事の「___ all?」の空所は？',
       choices: ['Don’t we', 'Do we', 'Didn’t we'], a: 0,
@@ -299,7 +299,7 @@ export const pilotFacts: Clip = {
       trap: '発表をじらす上司が笑いの的に見えるが、彼は「今言う」と言っている。最後の一言が誰の返しかを流れで追う。',
       use: 'You may go. — I wasn’t asking.（行ってよし。—聞いてないけど）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', seg: [233.7, 261.7],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'meeting', seg: [230.5, 248.2],
       stem: 'What news does Michael give the staff?',
       ja: 'マイケルは社員たちにどんな知らせを伝える？',
       choices: ['Their branch may be cut', 'Jan is leaving the company', 'Everyone will get a raise'], a: 0,
@@ -358,28 +358,28 @@ export const pilotFacts: Clip = {
       trap: 'なぐさめの「心配ない」を予想しがち。決め手は Yeah のあとの it’ll be you（君だろう）。',
       use: 'I bet it’s going to rain.（きっと雨になるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'professional', seg: [264.5, 275],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'professional', seg: [264.5, 271.5],
       stem: 'How does Dwight feel about finding his things in Jell-O?',
       ja: 'ドワイトは、自分の物がゼリーに入っていてどう思う？',
       choices: ['He is annoyed', 'He thinks it’s funny', 'He feels sad'], a: 0,
       choicesJa: ['いらいらしている', '面白いと思っている', '悲しい'],
       cue: '「Jell-O again」のあと',
-      line: '*That’s real professional.* Thanks. … it *wasn’t funny* the first two times either',
-      said: '「実にプロらしいね、どうも」と言い、「前も面白くなかった」と続ける。',
-      mean: 'real professional ＝ ここでは皮肉で、本当は逆の意味「全然プロらしくない」。wasn’t funny が本音。',
-      trap: 'professional や Thanks だけ聞くと、ほめているように聞こえるが、wasn’t funny で決まる。',
+      line: 'You put my stuff in Jell-O again. *That’s real professional.* Thanks.',
+      said: '「また私の物をゼリーに入れたな。実にプロらしいね、どうも」と言う。',
+      mean: 'real professional ＝ ここでは皮肉で、本当は逆の意味「全然プロらしくない」。Thanks も皮肉のお礼。',
+      trap: 'professional や Thanks はほめ言葉に聞こえるが、物をゼリーに入れられた直後なので皮肉。',
       use: 'That wasn’t funny.（それ、面白くなかったよ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'third', seg: [269.7, 275],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'third', seg: [271.4, 273.8],
       stem: 'How many times has Dwight’s stuff been put in Jell-O?',
       ja: 'ドワイトの物がゼリーに入れられたのは何回目？',
-      choices: ['2', '3', '4'], a: 1,
-      choicesJa: ['2回', '3回', '4回'],
+      choices: ['2', '3', '4', '30'], a: 1,
+      choicesJa: ['2回', '3回', '4回', '30回'],
       cue: '「Thanks」のあと',
       line: 'This is the *third time*, and it wasn’t funny the first two times either, Jim.',
       said: '「これで3回目だ。前の2回も面白くなかった」とジムに言う。',
       mean: 'the third time ＝ 3回目。the first two times ＝ 最初の2回。',
-      trap: 'あとの two に引かれやすいが「前の2回」のこと。「サード」なら3回目、「フォー」なら4回。',
+      trap: 'あとの two に引かれやすいが「前の2回」のこと。「サード」なら3回目。thirtieth（30回目）なら「サーティエス」と長い。',
       use: 'This is my third time in Tokyo.（東京は3回目です）' },
   ]
 };

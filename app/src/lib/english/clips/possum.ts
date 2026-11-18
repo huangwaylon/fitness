@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 12, retire 1, new 1, ctx 6, tx 15
+// R4 REVIEW 2026-11-18: keep 4, rewrite 12, retire 1, new 1, ctx 6, tx 15, qa 8
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 4, new 2
 // “How to Catch a Possum According to Andy | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
 // a local reporter interviews Andy about catching a possum on the golf course; his story wanders to animal friends and
@@ -25,6 +25,18 @@ export const possum: Clip = {
       mean: 'How could I forget? ＝ 文字どおりは「どうやって忘れられる？」→忘れるわけない。答えを求めない問い。',
       trap: 'forget（忘れる）が聞こえるので、忘れたと勘違いしやすい。続く理由で、よく覚えていると分かる。',
       use: 'How could I forget your birthday?（君の誕生日を忘れるわけないよ）' },
+
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'story', reveals: ['believe'], seg: [11.0, 27.9],
+      stem: 'What is Shauna’s interview about?',
+      ja: 'ショーナのインタビューは何についての話？',
+      choices: ['Catching the possum', 'Andy’s fall into the pit', 'A new golf course'], a: 0,
+      choicesJa: ['ポッサムを捕まえたこと', 'アンディが穴に落ちたこと', '新しいゴルフ場'],
+      cue: 'ショーナの最初の質問と、アンディの説明。',
+      line: 'So, you’re on the *golf course*, and you see *Fairway Frank*.',
+      said: 'ショーナが、ゴルフ場でポッサムを見つけたときのことを聞き、アンディが説明を始める。',
+      mean: 'Fairway Frank はゴルフ場（fairway）に出る有名なポッサムのあだ名。その捕まえ方の取材。',
+      trap: '穴に落ちた話は前の記事のこと。golf course は捕まえた場所で、新しくできたわけではない。',
+      use: 'Can I ask you a few questions?（少し質問してもいいですか）' },
 
     // retired (A2): “Well” as a correction; “buys time” is a second reading
     { id: 'm1', skill: 'marker', level: 'B2', point: 'well', reveals: ['believe'], seg: [14.1, 20.75], retired: true,
@@ -59,18 +71,6 @@ export const possum: Clip = {
       mean: 'believe to be 〜 ＝「〜だと思われる」。確かめていないので言い切らない言い方。',
       trap: 'believe を「信じる＝確か」と考えがちだが、ここは「たぶん」の意味。',
       use: 'We believe it’s the right address.（たぶん正しい住所だと思います）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'story', reveals: ['act'], seg: [14.5, 35.6],
-      stem: 'What is Shauna’s interview about?',
-      ja: 'ショーナのインタビューは何についての話？',
-      choices: ['Catching the possum', 'Andy’s fall into the pit', 'A new golf course'], a: 0,
-      choicesJa: ['ポッサムを捕まえたこと', 'アンディが穴に落ちたこと', '新しいゴルフ場'],
-      cue: 'ショーナの最初の質問と、アンディの説明。',
-      line: 'So, you’re on the golf course, and you see Fairway Frank. … “Don’t think, Andy. Act.”',
-      said: 'ゴルフ場でポッサムを見つけたときのことを聞き、アンディが自分の動きを語る。',
-      mean: 'Fairway Frank はゴルフ場（fairway）に出る有名なポッサムのあだ名。その捕まえ方の取材。',
-      trap: '穴に落ちた話は前の記事のこと。golf course は捕まえた場所で、新しくできたわけではない。',
-      use: 'Can I ask you a few questions?（少し質問してもいいですか）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'explain', seg: [23.4, 27.9],
       stem: 'Why does Andy say “Let me explain something”?',
@@ -202,7 +202,7 @@ export const possum: Clip = {
       trap: 'proud だけ聞くと本気でほめているように取れる。直前の話と比べて本気かどうかを決める。',
       use: 'Wow, you must be so proud.（わあ、さぞ誇らしいでしょうね）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'hope', seg: [64.6, 90.4],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'hope', reveals: ['brokeup'], seg: [64.6, 80.0],
       stem: 'What does Shauna think the article might do?',
       ja: 'ショーナは、記事がどんな結果になるかもと言う？',
       choices: ['Make Ann change her mind', 'Make Andy famous in town', 'Help catch more possums'], a: 0,
@@ -215,8 +215,8 @@ export const possum: Clip = {
       use: 'Maybe this will change her mind.（これで彼女の気が変わるかも）' },
 
     { id: 'i3', skill: 'infer', level: 'C1', point: 'brokeup', seg: [64.6, 74.0], ctx: true,
-      stem: 'From Andy’s whole answer, who ended the relationship?',
-      ja: 'アンディの答え全体から、別れを決めたのはだれ？',
+      stem: 'Who really ended Andy and Ann’s relationship?',
+      ja: 'アンディとアンの関係を本当に終わらせたのはだれ？',
       choices: ['Ann did', 'Andy did', 'They both did'], a: 0,
       choicesJa: ['アン', 'アンディ', 'ふたりとも'],
       cue: '「Yeah」で続ける話',
@@ -238,7 +238,7 @@ export const possum: Clip = {
       trap: 'kick を文字どおり「蹴る」と取りやすい。kick … out の形なら「追い出す」。',
       use: 'They kicked us out at closing time.（閉店時間に追い出された）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wow', reveals: ['hope'], seg: [73.9, 84.4], ctx: true,
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'wow', reveals: ['hope', 'hadnt'], seg: [74.0, 84.4], ctx: true,
       stem: 'How does Andy feel about the article idea?',
       ja: '記事のアイデアに、アンディはどんな気持ち？',
       choices: ['Happy and hopeful', 'Angry and annoyed', 'Bored and tired'], a: 0,
@@ -250,7 +250,7 @@ export const possum: Clip = {
       trap: 'What now? はいらだちにも聞こえるが、ここは驚き。続く Wow で決める。',
       use: 'Wow, what a great idea!（わあ、すごくいい考え！）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['list', 'hope'], seg: [80.8, 84.4],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'hadnt', reveals: ['list'], seg: [80.8, 84.4],
       stem: 'Fill the gap: “___ thought of that.”',
       ja: '「___ thought of that.」の空所は？',
       choices: ['I hadn’t even', 'I haven’t even', 'I’d never even'], a: 0,
@@ -262,7 +262,7 @@ export const possum: Clip = {
       trap: 'n’t の t が消え、never とも聞き違えやすい。I のあとの「ハ」と、d か v かを聞く。',
       use: 'I hadn’t even noticed.（気づいてもいなかった）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'list', reveals: ['hope'], seg: [84.4, 90.6],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'list', seg: [84.4, 90.6],
       stem: 'What does “never on that list” mean here?',
       ja: '「never on that list」は、ここではどういう意味？',
       choices: ['He never thought of it', 'He wrote it down', 'He tried it before'], a: 0,

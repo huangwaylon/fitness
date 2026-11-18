@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 5, rewrite 5, retire 7, new 5, ctx 3, tx 5
+// R4 REVIEW 2026-11-18: keep 5, rewrite 5, retire 7, new 5, ctx 3, tx 5, qa 10
 // A2 REVIEW 2026-11-17: keep 7, rewrite 11, retire 2, new 2
 // “Michael Tricks People Into Coming To His Party - The Office US” (the official The Office channel, Best of Season
 // 4): Michael keeps the staff late on a Friday, "calls corporate" to cancel the overtime, then invites Jim and Pam to
@@ -16,7 +16,7 @@ export const couplesOnly: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['ridiculous'], seg: [0, 20.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['ridiculous'], seg: [0, 17.3],
       stem: 'Why are the workers unhappy on this Friday?', ja: 'この金曜日、みんなが不満なのはなぜ？',
       choices: ['They have to work late', 'Michael forgot their party', 'Corporate cut their pay'], a: 0,
       choicesJa: ['残業しなければならない', 'マイケルがパーティーを忘れた', '本社に給料を減らされた'],
@@ -119,16 +119,6 @@ export const couplesOnly: Clip = {
       trap: '最後の do it だけ聞くと「やる」に聞こえる。前の not を聞き落とさない。',
       use: 'Sorry, I’m not gonna make it tonight.（ごめん、今夜は行けそうにない）' },
 
-    { id: 'g2', skill: 'gist', level: 'C1', point: 'setup', reveals: ['block', 'remember'], seg: [44, 85.6],
-      stem: 'Why did Michael really stop the overtime?', ja: 'マイケルが残業をやめさせた本当の理由は？',
-      choices: ['To get Jim to his dinner', 'Because corporate told him to', 'Because he cares about everyone'], a: 0,
-      choicesJa: ['ジムを自分の食事会に来させるため', '本社に言われたから', 'みんなを大切に思っているから'],
-      cue: '最後のジムの話',
-      said: '予定を入れるなと言っておき、残業をなくしてからジムとパムを食事に誘う。',
-      mean: '残業は口実。「予定はない」と言わせて、誘いを断れなくする作戦だった。',
-      trap: '電話で「みんな友だちで大切」と言うので、やさしさだと思いやすい。ジムは「本社の指示はなかった」と疑う。',
-      use: 'Was that a setup?（あれってわざと仕組んだの？）' },
-
     { id: 'f2', skill: 'phrase', level: 'C1', point: 'horn', seg: [44.1, 47.3], retired: true,
       stem: 'When Michael comes back to the staff, what has he just done?',
       choices: ['Finished his call with corporate', 'Got cut off by corporate mid-call',
@@ -151,7 +141,7 @@ export const couplesOnly: Clip = {
       trap: 'カタカナの「ベーシック」から「簡単」を連想しやすい。話の前に来たら「まとめるとね」。',
       use: 'Basically, we missed the train.（要するに、電車に乗り遅れたの）' },
 
-    { id: 'c2', skill: 'pragma', level: 'B2', point: 'happyfri', seg: [52.3, 58.5], ctx: true,
+    { id: 'c2', skill: 'pragma', level: 'B2', point: 'happyfri', seg: [50.2, 56.4], ctx: true,
       stem: 'Michael says, “Go enjoy your Friday.” How do they answer?',
       ja: 'マイケルが「Go enjoy your Friday」と言う。みんなはどう答える？',
       choices: ['They thank him', 'They say sorry', 'They ask him why'], a: 0,
@@ -180,14 +170,14 @@ export const couplesOnly: Clip = {
       choicesJa: ['いやなことをうまく避けた', 'もう少しで仕事を失うところだった', '仕事が間に合った'],
       cue: '「Happy Friday」のあと、Well で始まる文',
       line: 'Well, I think we *dodged a bullet* there.',
-      said: '「いやあ、危ないところだったね」と言う。',
+      said: '「いやあ、危ないところを逃れたね」と言う。',
       mean: 'dodge a bullet ＝ 文字どおりは「弾をよける」、ここでは「いやなこと（残業）をうまく避ける」。',
       trap: 'bullet（弾）から、大きな危険の話だと思いやすい。避けたのは残業。',
       use: 'The flight got cancelled? We dodged a bullet.（あの便が欠航？助かったね）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'block', reveals: ['remember'], seg: [62.0, 69.6], ctx: true,
-      stem: 'Jim starts to answer. Why does Michael say “You said you didn’t have plans”?',
-      ja: 'ジムが答えかける。マイケルはなぜ「予定はないって言ったよね」と言う？',
+      stem: 'Why does Michael repeat “You said you didn’t have plans”?',
+      ja: 'マイケルはなぜ「予定はないって言ったよね」とくり返す？',
       choices: ['So Jim can’t say no', 'To check Jim’s plans again', 'To say sorry to Jim'], a: 0,
       choicesJa: ['ジムが断れないように', 'ジムの予定をもう一度確かめるため', 'ジムに謝るため'],
       cue: 'ジムが言いかけた直後',
@@ -207,15 +197,25 @@ export const couplesOnly: Clip = {
       trap: '社交辞令のような形だけの誘いと取りやすいが、9回も誘うのは本気。回数に注目。',
       use: 'He won’t take no for an answer.（断っても全然引かないの）' },
 
+    { id: 'g2', skill: 'gist', level: 'C1', point: 'setup', reveals: ['block', 'nine', 'gotto'], seg: [69.6, 85.6],
+      stem: 'Why did Michael really stop the overtime?', ja: 'マイケルが残業をやめさせた本当の理由は？',
+      choices: ['To get Jim to his dinner', 'Because corporate told him to', 'Because he cares about everyone'], a: 0,
+      choicesJa: ['ジムを自分の食事会に来させるため', '本社に言われたから', 'みんなを大切に思っているから'],
+      cue: 'ジムがカメラに話す最後の部分',
+      said: 'ジムが「今回はやられた。本社からの仕事なんてなかったのかも」と話す。',
+      mean: '残業は口実。予定がないと言わせ、残業もなくして、誘いを断れなくする作戦だった。',
+      trap: 'マイケルは電話で「みんな友だちで大切」と言っていたので、やさしさだと考えがち。ジムは「本社からの仕事はなかった」と疑う。',
+      use: 'Was that a setup?（あれってわざと仕組んだの？）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'nine', seg: [69.6, 76.9],
       stem: 'How many times has Michael asked Jim and Pam to dinner?', ja: 'マイケルはジムとパムを何回食事に誘った？',
-      choices: ['At least five', 'At least nine', 'At least nineteen'], a: 1, keep: true,
-      choicesJa: ['少なくとも5回', '少なくとも9回', '少なくとも19回'],
+      choices: ['At least five', 'At least nine', 'At least nineteen', 'At least ninety'], a: 1, keep: true,
+      choicesJa: ['少なくとも5回', '少なくとも9回', '少なくとも19回', '少なくとも90回'],
       cue: '「at least」のすぐあと',
       line: 'to dinner *at least nine times*',
       said: '「少なくとも9回は、僕とパムを食事に誘ってきた」と話す。',
       mean: 'at least ＝ 少なくとも。本当はもっと多いかもしれない、ということ。',
-      trap: 'nineteen なら teen が強く長い。five は「ファイ」。短い「ナイン」なら nine。',
+      trap: 'nineteen なら teen が強く長く、ninety なら「ナインティ」と続く。five は「ファイ」。短い「ナイン」なら nine。',
       use: 'I’ve called at least three times.（少なくとも3回は電話したよ）' },
 
     { id: 'f4', skill: 'phrase', level: 'B2', point: 'getout', seg: [73.8, 76.8], retired: true,
@@ -307,16 +307,16 @@ export const couplesOnly: Clip = {
 
     { id: 'n2', skill: 'number', level: 'B1', point: 'six', seg: [88.5, 92.4],
       stem: 'How many wine glasses does Michael say he has?', ja: 'マイケルはワイングラスがいくつあると言う？',
-      choices: ['Four', 'Six', 'Sixteen'], a: 1, keep: true,
-      choicesJa: ['4つ', '6つ', '16個'],
+      choices: ['Four', 'Six', 'Sixteen', 'Sixty'], a: 1, keep: true,
+      choicesJa: ['4つ', '6つ', '16個', '60個'],
       cue: '「wine」の直前',
       line: 'I only have *six* wine glasses',
       said: '「ワイングラスが6つしかない」と言う。',
       mean: 'only ＝ 〜しかない。グラスが少ないことを、人数を増やせない言い訳にしている。',
-      trap: 'sixteen なら teen が長く強い。four は「フォー」。短い「シックス」なら six。',
+      trap: 'sixteen なら teen が長く強く、sixty なら「シクスティ」と続く。four は「フォー」。短い「シックス」なら six。',
       use: 'We only have two rooms left.（残りは2部屋だけです）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'jan', seg: [92.3, 98.6],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'jan', seg: [92.4, 98.6],
       stem: 'Who is Michael’s partner at the dinner?', ja: '食事会での、マイケルの相手は誰？',
       choices: ['Jan', 'Angela', 'Pam'], a: 0,
       choicesJa: ['ジャン', 'アンジェラ', 'パム'],
