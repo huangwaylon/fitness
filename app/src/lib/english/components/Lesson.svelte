@@ -300,7 +300,7 @@
               <button type="button" class="chip s" aria-pressed={tr} aria-label={s('trLabel')} data-sfx="tick" data-en-tr={tr ? 'on' : 'off'} onclick={() => (tr = !tr)}>{s('tr')}</button>
             {/if}
           </div>
-          <p class="stem" lang="en"><b>{q.stem}</b></p>
+          <p class="stem" lang="en"><b>{#each keyed(q.stem) as part, i (i)}{#if part.key}<u>{part.t}</u>{:else}{part.t}{/if}{/each}</b></p>
           {#if q.ja}<p class="meta" data-en-stem-ja>{q.ja}</p>{/if}
           {#if at === 0 && q.choices && !cur.r && !cur.miss}<p class="meta" data-en-howto>{s('howTo')}</p>{/if}
           <button type="button" class="btn hear" class:sky={!cur.r} class:paper={!!cur.r} class:small={!!cur.r} data-sfx="tick" data-en-hear onclick={() => seg(q)}><Icon name="play" size={18} />{s('hear').replace('▶ ', '')}</button>

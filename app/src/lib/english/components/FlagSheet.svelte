@@ -46,7 +46,7 @@
       <p class="thanks" data-en-flag-thanks>{s('flagThanks')}</p>
       <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('common.close')}</button>
     {:else}
-      <p class="head"><b>{s('flagHead')}</b><br /><span class="meta">{q ? s('flagQ', { i: (n ?? 0) + 1, stem: q.stem }) : s('flagClip')}</span></p>
+      <p class="head"><b>{s('flagHead')}</b><br /><span class="meta">{q ? s('flagQ', { i: (n ?? 0) + 1, stem: q.stem.replaceAll('*', '') }) : s('flagClip')}</span></p>
       <div class="chips" role="radiogroup" aria-label={s('flagHead')}>
         {#each EFLAG_KINDS as k (k)}
           <button type="button" class="chip big" role="radio" aria-checked={kind === k} data-sfx="none" data-en-kind={k} onclick={() => (kind = k)}>{s(`kind.${k}`)}</button>

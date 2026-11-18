@@ -128,6 +128,8 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   // q1 (this draw's: its answer, segment and line from the bank, which content edits change): a miss
   const q0 = await questionAt(page, 0);
   const [miss1, miss2] = q0.choices!.flatMap((_, k) => (k === q0.a ? [] : [k]));
+  // the stem as written, its *key words* underlined, never the stars
+  await expect(card.locator('.stem')).toHaveText(q0.stem.replaceAll('*', ''));
   // question 1 says what to do (its question is English) till the first pick
   await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから、合うものを選びましょう。何回聞いてもOK');
   const n0 = (await ytCommands(page)).length;

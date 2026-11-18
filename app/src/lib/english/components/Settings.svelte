@@ -16,7 +16,7 @@
   const when = new Intl.DateTimeFormat('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'short', timeStyle: 'short' });
   const formatWhen = (iso: string) => (iso ? when.format(new Date(iso)) : '');
   /** Where a flag is: the clip, or its question as the flag saw it (its stem). */
-  const whereOf = (f: (typeof flags)[number]['flag']) => (f.q === null ? s('flagWhereClip') : (f.seen?.stem ?? String(f.q)));
+  const whereOf = (f: (typeof flags)[number]['flag']) => (f.q === null ? s('flagWhereClip') : (f.seen?.stem?.replaceAll('*', '') ?? String(f.q)));
   const titleOf = (id: string) => metaById(id)?.title ?? id;
   let hard = $state(harderOn());
   function toggleHard(): void {
