@@ -58,7 +58,7 @@ describe('rowsFor the guest', () => {
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
     expect(g.events.map((r) => r[2])).toEqual(['e1', 'e2', 'e3', 'e4', 'e9', 'e10', 'e11', 'e12', 'e13', 'e14']);
     // a member's English Study row as its summary, as the other member gets it
-    expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', n: 1, ms: 60_000, gm: 'tv' });
+    expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', ms: 60_000, gm: 'tv' });
     const text = JSON.stringify(g);
     for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean']) expect(text, k).not.toContain(k);
   });

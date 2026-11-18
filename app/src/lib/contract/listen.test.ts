@@ -5,17 +5,20 @@ import { TV_GM, listenOf, listenSeen, listenSummaryJson, listenSummaryOf } from 
 import { rowsFor } from './guest.ts';
 import type { EventRow, SnapshotRows } from './api.ts';
 
-const tv = { d: '2026-11-05', g: 'tv12ab', gm: TV_GM, u: 'waitress', lv: 7, n: 1, ms: 600_000, f: 1, r: [['g1', 1, 1, 0], ['d1', 0, 4, 1]] };
-const sum = { d: '2026-11-05', g: 'tv12ab', n: 1, ms: 600_000, gm: TV_GM, f: 1 };
+const tv = { d: '2026-11-05', g: 'tv12ab', gm: TV_GM, u: 'waitress', ms: 600_000, f: 1, r: [['g1', 1, 1, 0], ['d1', 0, 4, 1]] };
+const sum = { d: '2026-11-05', g: 'tv12ab', ms: 600_000, gm: TV_GM, f: 1 };
+/** A row written before 2026-11-18, with ききみみ's `lv` and `n`. */
+const old = { ...tv, lv: 7, n: 1 };
 
 describe('listenOf', () => {
   it('reads a clip’s row, finished (`f`) or part-way, answers or none; refuses any other shape', () => {
     expect(listenOf(tv)).toEqual(tv);
+    expect(listenOf(old)).toEqual(tv); // (read, not kept)
     const { f: _f, ...part } = { ...tv, r: [] };
     expect(listenOf(part)).toEqual(part);
     expect(listenOf({ ...tv, r: [] })).toEqual({ ...tv, r: [] }); // (まとめ reached with nothing answered: never locked)
     expect(listenOf({ ...tv, r: [['g1', 1, -1, 99], ['d1', 0, 4095, 0]] })).toMatchObject({ r: [['g1', 1, -1, 99], ['d1', 0, 4095, 0]] });
-    for (const bad of [null, [], 'x', { ...tv, extra: 1 }, { ...tv, g: 'a' }, { ...tv, lv: 0 }, { ...tv, lv: 9 }, { ...tv, n: 0 }, { ...tv, ms: -1 }, { ...tv, ms: 1.5 },
+    for (const bad of [null, [], 'x', { ...tv, extra: 1 }, { ...tv, g: 'a' }, { ...tv, lv: 0 }, { ...tv, lv: 9 }, { ...tv, n: 0 }, { ...tv, n: 4 }, { ...tv, ms: -1 }, { ...tv, ms: 1.5 },
       { ...tv, f: 2 }, { ...tv, f: true }, { ...tv, u: undefined }, { ...tv, u: '' }, { ...tv, u: 'abcdefghijklm' }, { ...tv, u: 'U1' },
       { ...tv, r: 'x' }, { ...tv, r: [['g1', 1, 0]] }, { ...tv, r: [['g1', 1, -2, 0]] }, { ...tv, r: [['g1', 1, 4096, 0]] }, { ...tv, r: [['g1', 2, 0, 0]] }, { ...tv, d: '2026-11-31' }])
       expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
@@ -25,8 +28,10 @@ describe('listenOf', () => {
       expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
     expect(listenSummaryJson(JSON.stringify({ ...tv, gm: 'tile' }))).toBeNull();
   });
-  it('the summary: the day, the session, the people, the minutes and `f`; never the clip, the level or the answers', () => {
+  it('the summary: the day, the session, the minutes and `f`; never the clip or the answers', () => {
     expect(JSON.parse(listenSummaryJson(JSON.stringify(tv))!)).toEqual(sum);
+    expect(JSON.parse(listenSummaryJson(JSON.stringify(old))!)).toEqual(sum);
+    expect(listenSummaryOf({ ...sum, n: 1 })).toEqual(sum); // (an older relay's summary)
     const { f: _f, ...part } = tv;
     const { f: _g, ...partSum } = sum;
     expect(JSON.parse(listenSummaryJson(JSON.stringify(part))!)).toEqual(partSum);

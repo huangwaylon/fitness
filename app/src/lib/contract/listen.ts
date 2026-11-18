@@ -22,10 +22,6 @@ interface ListenRow {
   gm: typeof TV_GM;
   /** The clip's id. */
   u: string;
-  /** Its level (1-8: English Study sends 7). */
-  lv: number;
-  /** The people in it (1-3). */
-  n: number;
   /** The active study time the row adds, ms (≤ 1 h). */
   ms: number;
   /** The clip's まとめ reached (a day of study); absent: the minutes of a clip left part-way. */
@@ -34,16 +30,16 @@ interface ListenRow {
   r: ListenAnswer[];
 }
 
-/** What everyone else sees of a row: never the clip, the level or the answers. */
-type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'n' | 'ms' | 'gm' | 'f'>;
+/** What everyone else sees of a row: never the clip or the answers. */
+type ListenSummary = Pick<ListenRow, 'd' | 'g' | 'ms' | 'gm' | 'f'>;
 
 const LISTEN_MAX_Q = 12;
 const LISTEN_MAX_RP = 99;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
 const CLIP_RE = /^[a-z0-9-]{1,12}$/;
-const LV_MAX = 8;
 const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
+/** (`lv` and `n`, ききみみ's level and players, on the rows written before 2026-11-18: still accepted, never read.) */
 const KEYS = new Set(['d', 'g', 'gm', 'u', 'lv', 'n', 'ms', 'f', 'r']);
 
 function answerOf(a: unknown): ListenAnswer | null {
@@ -52,17 +48,19 @@ function answerOf(a: unknown): ListenAnswer | null {
   return typeof id === 'string' && ITEM_ID_RE.test(id) && (ok === 0 || ok === 1) && isInt(pick, -1, 4095) && isInt(rp, 0, LISTEN_MAX_RP) ? [id, ok, pick, rp] : null;
 }
 
-/** The summary's fields every row has: a day, a session, the people, the minutes. */
+/** The summary's fields every row has: a day, a session, the minutes. */
 const summaryFields = (o: Record<string, unknown>): boolean =>
-  isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.n, 1, 3) && isInt(o.ms, 0, LISTEN_MAX_MS) && (o.f === undefined || o.f === 1);
+  isLocalDate(o.d) && typeof o.g === 'string' && GAME_RE.test(o.g) && isInt(o.ms, 0, LISTEN_MAX_MS) && (o.f === undefined || o.f === 1);
+/** An older row's `lv` / `n`, when it has them, in their old range. */
+const oldFields = (o: Record<string, unknown>): boolean => (o.lv === undefined || isInt(o.lv, 1, 8)) && (o.n === undefined || isInt(o.n, 1, 3));
 
 /** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range, another game's). Its day's
  *  bound (not after tomorrow) is the record's check (contract/record.ts validEventData). */
 export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
-  if (Object.keys(o).some((k) => !KEYS.has(k)) || o.gm !== TV_GM || !summaryFields(o)) return null;
-  if (typeof o.u !== 'string' || !CLIP_RE.test(o.u) || !isInt(o.lv, 1, LV_MAX)) return null;
+  if (Object.keys(o).some((k) => !KEYS.has(k)) || o.gm !== TV_GM || !summaryFields(o) || !oldFields(o)) return null;
+  if (typeof o.u !== 'string' || !CLIP_RE.test(o.u)) return null;
   if (!Array.isArray(o.r) || o.r.length > LISTEN_MAX_Q) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {
@@ -70,7 +68,7 @@ export function listenOf(d: unknown): ListenRow | null {
     if (!x) return null;
     r.push(x);
   }
-  return { d: o.d as LocalDate, g: o.g as string, gm: TV_GM, u: o.u, lv: o.lv as number, n: o.n as number, ms: o.ms as number, ...(o.f === 1 && { f: 1 as const }), r };
+  return { d: o.d as LocalDate, g: o.g as string, gm: TV_GM, u: o.u, ms: o.ms as number, ...(o.f === 1 && { f: 1 as const }), r };
 }
 
 /** A summary as anyone else's phone gets it, or null. */
@@ -78,7 +76,7 @@ export function listenSummaryOf(d: unknown): ListenSummary | null {
   if (!d || typeof d !== 'object') return null;
   const o = d as Record<string, unknown>;
   if (o.gm !== TV_GM || !summaryFields(o)) return null;
-  return { d: o.d as LocalDate, g: o.g as string, n: o.n as number, ms: o.ms as number, gm: TV_GM, ...(o.f === 1 && { f: 1 as const }) };
+  return { d: o.d as LocalDate, g: o.g as string, ms: o.ms as number, gm: TV_GM, ...(o.f === 1 && { f: 1 as const }) };
 }
 
 /**
@@ -93,7 +91,7 @@ export function listenSeen(viewer: Who, sender: Who): 'all' | 'summary' {
 export function listenSummaryJson(raw: string): string | null {
   try {
     const row = listenOf(JSON.parse(raw));
-    return row ? JSON.stringify({ d: row.d, g: row.g, n: row.n, ms: row.ms, gm: TV_GM, ...(row.f === 1 && { f: 1 }) }) : null;
+    return row ? JSON.stringify({ d: row.d, g: row.g, ms: row.ms, gm: TV_GM, ...(row.f === 1 && { f: 1 }) }) : null;
   } catch {
     return null;
   }

@@ -12,7 +12,7 @@ const KEY_C = 'c'.repeat(64);
 const T0 = Date.parse('2026-11-05T03:00:00.000Z'); // 12:00 Tokyo, 2026-11-05
 
 const clip = (g: string, extra: object = {}) => ({
-  d: '2026-11-05', g, gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 240_000,
+  d: '2026-11-05', g, gm: 'tv', u: 'waitress', ms: 240_000,
   r: [['g1', 1, 0, 0], ['s3', 0, 2, 1], ['d1', 1, 5, 2], ['p2', 0, -1, 0]],
   ...extra
 });
@@ -46,6 +46,7 @@ describe('English Study progress rows', () => {
     ok(clip('ab15', { d: '2026-11-07' }), false);
     ok(clip('ab16', { d: '2026-02-30' }), false);
     ok(clip('AB17'), false);
+    ok(clip('ab17b', { lv: 7, n: 1 }), true); // (a row written before 2026-11-18: ききみみ's level and players)
     ok(clip('ab18', { lv: 9 }), false);
     ok(clip('ab19', { n: 4 }), false);
     ok(clip('ab20', { ms: 3_600_001 }), false);
@@ -76,12 +77,12 @@ describe('English Study progress rows', () => {
 
   it('sends a row whole to its owner and its summary only to everyone else, the guest and the members alike', () => {
     send(KEY_A, clip('ab12', { f: 1 }));
-    send(KEY_B, clip('ab12', { n: 2 }));
+    send(KEY_B, clip('ab12', { ms: 60_000 }));
     expect(send(KEY_C, clip('zz99')).ok).toBe(true); // the guest writes its own
-    const sum = (g: string, extra: object = {}) => ({ d: '2026-11-05', g, n: 1, ms: 240_000, gm: 'tv', ...extra });
-    expect(listens(KEY_A)).toEqual([['A', clip('ab12', { f: 1 })], ['B', sum('ab12', { n: 2 })], ['G', sum('zz99')]]);
-    expect(listens(KEY_B)).toEqual([['A', sum('ab12', { f: 1 })], ['B', clip('ab12', { n: 2 })], ['G', sum('zz99')]]);
-    expect(listens(KEY_C)).toEqual([['A', sum('ab12', { f: 1 })], ['B', sum('ab12', { n: 2 })], ['G', clip('zz99')]]);
+    const sum = (g: string, extra: object = {}) => ({ d: '2026-11-05', g, ms: 240_000, gm: 'tv', ...extra });
+    expect(listens(KEY_A)).toEqual([['A', clip('ab12', { f: 1 })], ['B', sum('ab12', { ms: 60_000 })], ['G', sum('zz99')]]);
+    expect(listens(KEY_B)).toEqual([['A', sum('ab12', { f: 1 })], ['B', clip('ab12', { ms: 60_000 })], ['G', sum('zz99')]]);
+    expect(listens(KEY_C)).toEqual([['A', sum('ab12', { f: 1 })], ['B', sum('ab12', { ms: 60_000 })], ['G', clip('zz99')]]);
     // a delta likewise
     const since = new Date(now).toISOString();
     send(KEY_B, clip('ef56'));

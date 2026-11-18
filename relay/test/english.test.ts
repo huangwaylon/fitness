@@ -11,7 +11,7 @@ const KEY_B = 'b'.repeat(64);
 const KEY_C = 'c'.repeat(64);
 const T0 = Date.parse('2026-11-05T03:00:00.000Z'); // 12:00 Tokyo, 2026-11-05
 
-const clip = (g: string, extra: object = {}) => ({ d: '2026-11-05', g, gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 420_000, f: 1, r: [['waitress-q1', 1, 1, 0]], ...extra });
+const clip = (g: string, extra: object = {}) => ({ d: '2026-11-05', g, gm: 'tv', u: 'waitress', ms: 420_000, f: 1, r: [['waitress-q1', 1, 1, 0]], ...extra });
 const flag = { item: 'waitress', q: 1, kind: 'answer', note: '100ドル？', t: 4.2, v: 'k3f9', seen: { stem: 'How much?', answer: '$100', line: 'a *hundred dollar* advance' } };
 
 describe('English Study on the record', () => {
@@ -37,7 +37,7 @@ describe('English Study on the record', () => {
     expect(send(KEY_C, 'listen', clip('tv03')).ok).toBe(true);
     expect(send(KEY_A, 'listen', clip('tv04', { r: [], d: '2026-11-07' })).ok).toBe(false); // (a day after tomorrow)
     expect(send(KEY_A, 'listen', clip('tv05', { gm: 'tile' })).ok).toBe(false); // `f` is English Study's only
-    const base = { d: '2026-11-05', n: 1, gm: 'tv' };
+    const base = { d: '2026-11-05', gm: 'tv' };
     expect(rows(KEY_B, 'listen')).toEqual([['A', { ...base, g: 'tv01', ms: 420_000, f: 1 }], ['A', { ...base, g: 'tv02', ms: 90_000 }], ['G', { ...base, g: 'tv03', ms: 420_000, f: 1 }]]);
     expect(rows(KEY_C, 'listen').map(([w, d]) => [w, d.u ?? null])).toEqual([['A', null], ['A', null], ['G', 'waitress']]);
     expect(rows(KEY_A, 'listen')[0]).toEqual(['A', clip('tv01')]);
