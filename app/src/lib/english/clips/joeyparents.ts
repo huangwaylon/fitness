@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 1, ctx 4, tx 13
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 2, new 1, ctx 4, tx 13, qa 9
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 2, new 0
 // “Monica Calls Joey's Parents | Friends” (the official Friends channel, Best of Season 7): Monica has squeezed Joey's
 // parents into the wedding seating, but they feel invited only for Joey's sake; Joey talks her into calling his mom,
@@ -19,7 +19,7 @@ export const joeyParents: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'n1', skill: 'number', level: 'B1', point: 'tables', seg: [2.3, 13], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'tables', seg: [2.55, 13], keep: true,
       stem: 'How will Monica set up the tables now?',
       ja: 'モニカはテーブルをどう並べ直す？',
       choices: ['2 tables of 6', '2 tables of 8', '3 tables of 6', '3 tables of 8'], a: 2,
@@ -31,14 +31,14 @@ export const joeyParents: Clip = {
       trap: 'into のあとを聞く。「スリー」なら3つ、「トゥー」なら2つ。最後が「シックス」なら6人席、「エイト」なら8人席。',
       use: 'A table for six, please.（6人席をお願いします）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtogo', seg: [7.9, 14.3],
+    { id: 'f1', skill: 'phrase', level: 'B1', point: 'goodtogo', seg: [8.15, 14.3],
       stem: 'What does Monica mean by “We are good to go”?',
       ja: 'モニカの「We are good to go」はどういう意味？',
       choices: ['Everything is ready now', 'It is time to leave now', 'We did a good job'], a: 0,
       choicesJa: ['もう準備ができた', 'もう出かける時間だ', 'よくやった'],
       cue: '最後の数語。',
       line: 'I call the caterer, I added two extra meals, *we are good to go*.',
-      said: '「業者に電話して2人分の食事を足した。これで準備完了」と言う。',
+      said: '「業者に電話して2人分の食事を足した。これで準備万端」と言う。',
       mean: 'good to go ＝ 準備ができた、いつでもいける。',
       trap: 'go から「出かける」と思いやすい。good to go でひとまとまり。',
       use: 'Your car is fixed. You’re good to go.（車は直りました。もう大丈夫です）' },
@@ -79,11 +79,11 @@ export const joeyParents: Clip = {
       trap: 'too bad（お気の毒）が2回聞こえて、同情だけと考えがち。決め手は but の前の It’s true。',
       use: 'That’s too bad. I hope you feel better.（それはお気の毒に。早くよくなるといいね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'unwanted', reveals: ['owe'], seg: [27.5, 42.9],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'callmom', reveals: ['owe'], seg: [27.5, 42.9],
       stem: 'What does Joey want Monica to tell his mom?',
       ja: 'ジョーイはモニカに、母親に何を伝えてほしい？',
-      choices: ['She really wants them there', 'She is sorry they feel hurt', 'There are seats for them'], a: 0,
-      choicesJa: ['本当に来てほしいと思っている', '傷つけて申し訳ない', '二人の席がある'],
+      choices: ['She’d love them to come', 'She is sorry they feel hurt', 'There are seats for them'], a: 0,
+      choicesJa: ['二人にぜひ来てほしい', '傷つけて申し訳ない', '二人の席がある'],
       cue: '「just let her know」のあと',
       line: 'Look, Mon, if you could just call my mom… just let her know that you *really want them to be there*.',
       said: '「母さんに電話して、本当に来てほしいって伝えて」と頼む。',
@@ -149,11 +149,11 @@ export const joeyParents: Clip = {
       trap: '席の並べ方の話が前にあったので迷いやすい。mix-up with のあとを聞く。',
       use: 'Sorry, there was a mix-up with your order.（すみません、ご注文に手違いがありました）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.4, 49.8],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'hate', reveals: ['postoffice'], seg: [45.65, 49.8],
       stem: 'Why does Joey say the post office story will work?',
       ja: 'ジョーイは、郵便局の話がうまくいくのはなぜだと言う？',
-      choices: ['His parents hate the post office', 'Their mail often goes missing', 'They believe Monica'], a: 0,
-      choicesJa: ['両親が郵便局を大嫌いだから', '両親の郵便がよくなくなるから', '両親がモニカを信じるから'],
+      choices: ['His parents really dislike it', 'Their mail often goes missing', 'They always trust Monica'], a: 0,
+      choicesJa: ['両親が郵便局を大嫌いだから', '両親の郵便がよくなくなるから', '両親はいつもモニカを信じるから'],
       cue: '「blame it on」のあとの一文',
       line: '*They hate the post office*.',
       said: '「うちの親は郵便局が大嫌いなんだ」と、その言い訳を選んだ理由を言う。',
@@ -235,7 +235,7 @@ export const joeyParents: Clip = {
       choicesJa: ['ほんとそれ、分かる', 'もっと話して', 'ご迷惑をおかけしました'],
       cue: '相手の文句（聞こえない）のあと',
       line: '*Tell me about it.* Yeah, yeah, the US Post Office?',
-      said: '電話の向こうの郵便局への文句に、「ほんとそれ」と返す。',
+      said: '電話の向こうの郵便局への文句に、「本当にそうですよね」と返す。',
       mean: 'Tell me about it ＝ 文字どおりは「それについて話して」。もう知ってるよ、の気持ちから「ほんとそれ、同感」。',
       trap: '文字どおり「もっと話して」と考えがち。文句への返事なら「同感」。',
       use: 'It’s so hot! — Tell me about it.（暑いね！—ほんとそれ）' },

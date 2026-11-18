@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 0, new 2, ctx 8, tx 9, qa 15, qa 1 (q30: EXCLUDE poopy verse, g2 moved off it)
+// R4 REVIEW 2026-11-18: keep 9, rewrite 11, retire 0, new 2, ctx 8, tx 9, qa 15, qa 1 (q30: EXCLUDE poopy verse, g2 moved off it), qa 1 (q33: g2 off the end card → the CD plan 158.9–179.9)
 // A2 REVIEW 2026-11-17: keep 6, rewrite 11, retire 6, new 2
 // “Ron and Leslie get down to business | Parks and Recreation” (the official Parks and Recreation channel, Season 7):
 // locked in a room until they talk, Leslie and Ron first plot a fake make-up for Ben, then she tries everything to
@@ -145,7 +145,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'of と the が小さく短く、「アウラダ」のようにひと続きになる。blue だけはっきり聞こえる。',
       use: 'He called me out of the blue.（彼から突然電話が来た）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [77.0, 88.0],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'imean', seg: [77.0, 88.7],
       stem: 'What comes after Leslie’s “I mean”?',
       ja: 'レスリーの「I mean」のあとには何が来る？',
       choices: ['Some examples of the changes', 'The opposite of what she said', 'A doubt about her own words'], a: 0,
@@ -157,18 +157,6 @@ export const ronLeslieLocked: Clip = {
       trap: 'I mean は言い直しにも使うので、反対の話と勘違いしやすい。続く例を聞く。',
       use: 'It’s all new. I mean, the menu, the chairs…（全部新しいね。ほら、メニューとか、いすとか）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'notice', ctx: true, seg: [88.0, 97.0],
-      stem: 'Ron says, “Did he?” What does he mean?',
-      ja: 'ロンの「Did he?」はどういう意味？',
-      choices: ['I didn’t notice that', 'I don’t believe you', 'I’m angry about that'], a: 0,
-      choicesJa: ['気づかなかった', '信じられない', 'それに怒っている'],
-      cue: '「Did he?」のあとの一文。',
-      line: 'Leslie: Craig changed everything. / Ron: Did he? *I tried not to notice anything* when I worked here.',
-      said: '「クレイグが全部変えたのよ」に「そうか？ここで働いてた時は、何にも気づかないようにしてたからな」。',
-      mean: 'Did he? ＝「そうなの？」。本当の質問ではなく、知らなかったという軽いあいづち。',
-      trap: '質問の形なので、疑っているように聞こえやすい。続く文が答え。',
-      use: 'She moved? — Did she? I had no idea.（引っこしたって？—そうなの？知らなかった）' },
-
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'lauren', seg: [88.4, 100.4], retired: true,
       stem: 'Why does Ron call Leslie by the wrong name at the end?',
       choices: ['To prove, as a joke, he never learned names', 'He mixes her up with someone at the new office',
@@ -179,6 +167,18 @@ export const ronLeslieLocked: Clip = {
       mean: '一番よく知る相手の名前をわざと違えて、言ったことを実演している。you of all people がその合図。',
       trap: '言いまちがいや愛称に聞こえやすい。直前の言葉を実演していないかを聞く。',
       use: 'You of all people should get this.（あなたこそ分かるはずでしょ）' },
+
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'notice', ctx: true, seg: [88.7, 97.0],
+      stem: 'Ron says, “Did he?” What does he mean?',
+      ja: 'ロンの「Did he?」はどういう意味？',
+      choices: ['I didn’t notice that', 'I don’t believe you', 'I’m angry about that'], a: 0,
+      choicesJa: ['気づかなかった', '信じられない', 'それに怒っている'],
+      cue: '「Did he?」のあとの一文。',
+      line: 'Leslie: Craig changed everything. / Ron: Did he? *I tried not to notice anything* when I worked here.',
+      said: '「クレイグが全部変えたのよ」に「そうか？ここで働いてた時は、何にも気づかないようにしてたからな」。',
+      mean: 'Did he? ＝「そうなの？」。本当の質問ではなく、知らなかったという軽いあいづち。',
+      trap: '質問の形なので、疑っているように聞こえやすい。続く文が答え。',
+      use: 'She moved? — Did she? I had no idea.（引っこしたって？—そうなの？知らなかった）' },
 
     { id: 'nt2', skill: 'dict', level: 'C2', point: 'choose', seg: [105.85, 109.8], retired: true,
       stem: 'Type Ron’s answer to her two options: “___.” (4 words)', answer: 'i choose sit here',
@@ -224,7 +224,7 @@ export const ronLeslieLocked: Clip = {
       trap: '単語が難しく、迷っているように聞こえやすい。any が何度も続くのは強い自信。',
       use: 'I bet you can do it.（きっと君ならできるよ）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'bait', seg: [132.4, 143.5],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'bait', seg: [133.0, 143.5],
       stem: 'Why does Leslie say “wood is stupid”?',
       ja: 'レスリーはなぜ「wood is stupid」と言う？',
       choices: ['To get Ron to talk', 'She really thinks so', 'To tell the others about Ron'], a: 0,
@@ -260,6 +260,18 @@ export const ronLeslieLocked: Clip = {
       trap: 'barbecue から料理を、song から歌うことを思いやすい。to のあとの動詞を聞く。',
       use: 'Everyone, please choose one song.（みなさん、1曲ずつ選んでください）' },
 
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'jerrysong', reveals: ['mix'], seg: [158.9, 179.9],
+      stem: 'What is Leslie going to do with the CD?',
+      ja: 'レスリーはそのCDで何をするつもり？',
+      choices: ['Play Jerry’s song and sing', 'Play the song Ron chose', 'Ask Ron to choose a song'], a: 0,
+      choicesJa: ['ジェリーの曲をかけて歌う', 'ロンが選んだ曲をかける', 'ロンに曲を選ばせる'],
+      cue: '「not going to play your choice」のあと。',
+      line: 'I am *not* going to play *your choice*. I’m gonna play *Jerry’s choice*. And I’m gonna *sing along*.',
+      said: '「あなたの曲はかけない。ジェリーの曲をかけて、一緒に歌う」と言う。',
+      mean: 'choice ＝ 選んだもの（ここでは曲）。sing along ＝ 曲に合わせて歌う。ロンがいやがる曲で攻める作戦。',
+      trap: '先に You chose “Buddy” と聞こえ、ロンの曲と考えがち。決め手は Jerry’s choice。',
+      use: 'Let’s play your song next.（次はあなたの曲をかけよう）' },
+
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'trap', seg: [162.0, 170.0],
       stem: 'Leslie says her mind is a “steel trap.” What does that mean?',
       ja: 'レスリーの頭が「steel trap」とはどういう意味？',
@@ -272,7 +284,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'trap（わな）から、秘密を閉じこめる話を連想しやすい。直前の remember が手がかり。',
       use: 'My memory is like a steel trap.（記憶力はばっちりなんだ）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', seg: [169.5, 180.9],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'jerry', reveals: ['jerrysong'], seg: [169.5, 180.9],
       stem: 'What will Leslie do while she sings along?',
       ja: '一緒に歌いながら、レスリーは何をすると言う？',
       choices: ['Look Ron in the eye', 'Play the music very loud', 'Jump up and down'], a: 0,
@@ -284,7 +296,7 @@ export const ronLeslieLocked: Clip = {
       trap: 'あとで jumping up and down（跳ねる）も聞こえるが、それは歌の中のこと。',
       use: 'Try to keep eye contact when you talk.（話すときは目を合わせてね）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'words', seg: [178.5, 184.0],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'words', reveals: ['jerrysong'], seg: [178.5, 184.0],
       stem: 'What does Leslie say about Jerry’s song?',
       ja: 'ジェリーの曲について、レスリーは何と言う？',
       choices: ['She doesn’t know the words', 'She has lost the song list', 'The music is too quiet'], a: 0,
@@ -308,19 +320,7 @@ export const ronLeslieLocked: Clip = {
       trap: '答えがないので、あきらめると考えがち。決め手は Okay のあとの next verse。',
       use: 'Do you want tea or coffee?（紅茶とコーヒー、どっちがいい？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'end', reveals: ['minutes'], seg: [209.3, 224.5],
-      stem: 'How does it end for Ron and Leslie?',
-      ja: 'ロンとレスリーはどうなる？',
-      choices: ['Ron agrees to talk a little', 'They talk about everything', 'Leslie gives up and stops'], a: 0,
-      choicesJa: ['ロンが少し話すことにする', '何もかも話し合う', 'レスリーがあきらめてやめる'],
-      cue: '最後のロンの一言。',
-      line: '*I will speak with you* for three minutes. — Great!',
-      said: 'レスリーの変な歌に負けて、ロンが「3分だけ話してやる」と同意する。レスリーは「やった！」。',
-      mean: '完全に折れたのではなく、時間を決めて少しだけ話す、という譲歩。',
-      trap: '長く黙っていたので、レスリーがあきらめると考えがち。最後のロンの一言で決まる。',
-      use: 'Okay, okay, I’ll talk.（分かった、分かった、話すよ）' },
-
-    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', reveals: ['end'], seg: [212, 217.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'minutes', seg: [212, 217.5], keep: true,
       stem: 'How long does Ron agree to talk with Leslie?',
       ja: 'ロンはレスリーとどのくらい話すと言う？',
       choices: ['Three minutes', 'Ten minutes', 'Thirteen minutes', 'Thirty minutes'], a: 0,

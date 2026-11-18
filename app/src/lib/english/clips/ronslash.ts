@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 7, ctx 6, tx 11
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 7, ctx 6, tx 11, qa 7
 // A2 REVIEW 2026-11-17: keep 6, rewrite 6, retire 6, new 2
 // “Ron Helps Slash the Budget | Parks and Recreation” (the official Parks and Recreation channel, Season 2): at a
 // budget-cutting meeting Ron pushes for deep cuts until the cuts reach Leslie; then he argues for her, offers himself
@@ -19,13 +19,13 @@ export const ronSlash: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'pct', seg: [0, 7.3], keep: true,
       stem: 'By how much must spending be cut?',
       ja: '支出をどのくらい減らす必要がある？',
-      choices: ['23%', '32%', '40%'], a: 1,
-      choicesJa: ['23パーセント', '32パーセント', '40パーセント'],
+      choices: ['23%', '30%', '32%', '40%'], a: 2,
+      choicesJa: ['23パーセント', '30パーセント', '32パーセント', '40パーセント'],
       cue: '「expenditures by」のあと。',
       line: 'we need to cut expenditures by *32%*.',
       said: '「支出を32パーセント削る必要があります」と言う。',
       mean: 'thirty-two percent ＝ 32%。expenditures ＝ 支出。',
-      trap: '「サーティ・トゥー」なら32、「トゥエンティ・スリー」なら23。40 はロンが言い足した数。',
+      trap: '「サーティ・トゥー」なら32、「サーティ」だけなら30、「トゥエンティ・スリー」なら23。40 はロンが言い足した数。',
       use: 'Prices went up by ten percent.（値段が10パーセント上がった）' },
 
     { id: 'g3', skill: 'gist', level: 'B1', point: 'meeting', seg: [0, 16.8],
@@ -146,7 +146,7 @@ export const ronSlash: Clip = {
       trap: 'thanks to Ron から、ロンが人を減らせと言ったと勘違いしやすい。理由は So の前の文。',
       use: 'Thanks to you, we finished early.（あなたのおかげで早く終わった）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', seg: [62.8, 80.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', seg: [63.0, 80.0],
       stem: 'What does Ron think about firing Leslie?',
       ja: 'レスリーをクビにすることを、ロンはどう思っている？',
       choices: ['He is strongly against it', 'He thinks it’s a good idea', 'He doesn’t really care'], a: 0,
@@ -170,7 +170,7 @@ export const ronSlash: Clip = {
       trap: '削減好きのロンなので、本当に閉めたいと思いやすい。直前の no の連続を聞く。',
       use: 'Then we might as well stay home.（それなら家にいたほうがいいね）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'runout', seg: [73.6, 79.3],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'runout', seg: [73.9, 79.3],
       stem: 'Fill the gap: “But ___ options.”',
       ja: '空所を埋める：「But ___ options.」',
       choices: ['we run out of', 'we’ve run out of', 'we ran out of'], a: 1,
@@ -228,7 +228,7 @@ export const ronSlash: Clip = {
       trap: 'second は短く弱いので、highest だけ残りやすい。最上級の前の順番を聞く。',
       use: 'It’s the second-biggest city in Japan.（日本で2番目に大きい都市です）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'option', ctx: true, reveals: ['runout'], seg: [89.0, 95.1],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'option', ctx: true, reveals: ['runout'], seg: [89.0, 95.6],
       stem: 'What does Ron mean by “it’s just *not an option*”?',
       ja: 'ロンの「it’s just not an option」はどういう意味？',
       choices: ['It cannot happen', 'There are no other ideas', 'He has not decided yet'], a: 0,
@@ -261,7 +261,7 @@ export const ronSlash: Clip = {
       trap: '「ギミ」で一語に聞こえやすい。間の a も小さく短いので落としやすい。',
       use: 'Give me a sec, I’ll be right there.（ちょっと待って、すぐ行く）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'share', seg: [97.6, 101.8], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'share', seg: [97.6, 102.6], keep: true,
       stem: 'How much of the work does Ron say Leslie does?',
       ja: 'ロンは、仕事のどのくらいをレスリーがしていると言う？',
       choices: ['5%', '59%', '90%', '95%'], a: 3,
@@ -284,7 +284,7 @@ export const ronSlash: Clip = {
       trap: '政府ぎらいの Ron なので、市への皮肉と聞きやすい。主語の my と me を追えば、ずっと自分の話。',
       use: 'Thanks to my cooking, we eat out.（私の料理のおかげで外食が多い）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'proud', seg: [101.8, 107.0],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'proud', seg: [102.6, 107.62],
       stem: 'How does Ron feel about losing his own job?',
       ja: '自分がクビになることを、ロンはどう思っている？',
       choices: ['Glad to do it', 'Afraid of it', 'Angry about it'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 1, new 7, ctx 5, tx 35
+// R4 REVIEW 2026-11-18: keep 4, rewrite 13, retire 1, new 7, ctx 5, tx 35, qa 17
 // A2 REVIEW 2026-11-17: keep 4, rewrite 12, retire 7, new 2
 // “Donna uncovers her anonymous bully | Parks and Recreation” (the official Parks and Recreation channel, Season 6):
 // Donna's new boss can't bring herself to tell Donna off, so she takes Ron's "be direct" advice by posting an
@@ -58,7 +58,7 @@ export const donnaBully: Clip = {
       trap: 'mature（大人の）から、やさしく言うことと考えがち。続く direct と firm が答えの決め手。',
       use: 'Just tell him directly.（彼に直接言えばいいよ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B2', point: 'indirect', reveals: ['slammed'], seg: [15.7, 37.0],
+    { id: 'g1', skill: 'gist', level: 'B2', point: 'indirect', reveals: ['slammed', 'advice'], seg: [15.7, 36.7],
       stem: 'What does Donna’s boss do instead of talking to Donna?',
       ja: 'ドナの上司は、ドナと話す代わりに何をする？',
       choices: ['Posts a review without her name', 'Leaves a note on Donna’s desk', 'Asks Ron to talk to Donna'], a: 0,
@@ -128,7 +128,7 @@ export const donnaBully: Clip = {
       trap: 'hunt you がつながり「ハンチュ」に聞こえる。down まで3語で書く。',
       use: 'I’ll track down that recipe.（あのレシピ、探し出すよ）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B1', point: 'building', ctx: true, seg: [63.3, 69.4],
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'building', ctx: true, seg: [63.1, 69.2],
       stem: 'How does Donna take the news?',
       ja: 'ドナはこの知らせをどう受けとめる？',
       choices: ['She gets very angry', 'She feels relieved', 'She thinks it’s funny'], a: 0,
@@ -140,7 +140,7 @@ export const donnaBully: Clip = {
       trap: 'In this building?（この建物の中？）が質問なので、驚いているだけと考えがち。決め手は hell no。',
       use: 'Cut in line? Oh, no way.（割り込み？冗談じゃない）' },
 
-    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [71.7, 77.6],
+    { id: 'p2', skill: 'phrase', level: 'B2', point: 'hammer', seg: [71.9, 77.6],
       stem: 'What does “come down on this dude” mean?',
       ja: '「come down on this dude」はどういう意味？',
       choices: ['Punish him very hard', 'Go down to his floor', 'Ask him to say sorry'], a: 0,
@@ -188,7 +188,7 @@ export const donnaBully: Clip = {
       trap: '「味が最悪」や愛称に取りやすい。すぐあとの「アイスになれ」が、何のまねかを示す。',
       use: 'Decaf is the celery of coffee.（カフェインレスはコーヒー界のセロリだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'stars', seg: [110.7, 118.0],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'stars', seg: [110.4, 118.0],
       stem: 'How many stars does Ron give the yogurt bar?',
       ja: 'ロンはヨーグルト店に星をいくつつける？',
       choices: ['0', '1', '2', '5'], a: 0,
@@ -212,16 +212,16 @@ export const donnaBully: Clip = {
       trap: 'このあと You’re fired と言うので、クビの話と思いやすい。それは結果で、理由ではない。',
       use: 'You’re still mad about last week?（まだ先週のことで怒ってるの？）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [123.8, 130.0],
+    { id: 'n1', skill: 'number', level: 'B1', point: 'cats', seg: [123.8, 129.8],
       stem: 'How many cats does Donna say he’d have?',
       ja: 'ドナは、彼の猫が何匹になると言う？',
-      choices: ['6', '16', '60'], a: 0, keep: true,
-      choicesJa: ['6匹', '16匹', '60匹'],
+      choices: ['2', '6', '16', '60'], a: 1, keep: true,
+      choicesJa: ['2匹', '6匹', '16匹', '60匹'],
       cue: '「too sad for you」のあと',
       line: 'it was too sad for you to have *six cats*.',
       said: '「あなたが猫を6匹も飼うなんて、悲しすぎると思った」と言う。',
-      mean: 'six ＝ 6。six cats ＝ 猫6匹。too sad for you to 〜 ＝「あなたが〜するのは悲しすぎる」。',
-      trap: 'sixteen は「ティーン」が長く、sixty は「ティ」で終わる。ここは短い「スィクス」。',
+      mean: 'six cats ＝ 猫6匹。too sad for you to 〜 ＝「あなたが〜するのは悲しすぎる」。',
+      trap: '直前の to（〜すること）は two と同じ音。sixteen は「ティーン」が長く、sixty は「ティ」で終わる。ここは短い「スィクス」。',
       use: 'Six is plenty, thanks.（6つで十分です）' },
 
     // retired (A2): “blow up my spot” is slang this learner shouldn’t use
@@ -283,7 +283,7 @@ export const donnaBully: Clip = {
       trap: 'help（手伝う）から、何かを代わりにやる申し出と考えがち。用件を聞いている。',
       use: 'Hi, can I help you?（いらっしゃいませ、ご用件は？）' },
 
-    { id: 'i3', skill: 'detail', level: 'B1', point: 'reconsider', seg: [159.6, 165.2],
+    { id: 'i3', skill: 'detail', level: 'B1', point: 'reconsider', seg: [159.1, 165.2],
       stem: 'What does Ron’s letter tell the owner to do?',
       ja: 'ロンの手紙は、店主に何をしろと言っている？',
       choices: ['Think again about his life', 'Close his restaurant', 'Start eating meat'], a: 0,
@@ -343,11 +343,11 @@ export const donnaBully: Clip = {
       trap: '前に IP アドレスの話があるので、住所で分かったと考えがち。I checked のあとを聞く。',
       use: 'I checked his other posts.（彼のほかの投稿を見てみた）' },
 
-    { id: 'p4', skill: 'phrase', level: 'B2', point: 'clean', seg: [206.9, 212.8],
+    { id: 'p4', skill: 'phrase', level: 'B2', point: 'clean', seg: [206.9, 212.55],
       stem: 'What does “come clean” mean?',
       ja: '「come clean」はどういう意味？',
-      choices: ['Tell the truth by herself', 'Delete the review', 'Tidy her desk at last'], a: 0,
-      choicesJa: ['自分から本当のことを言う', '口コミを消す', 'やっと机を片付ける'],
+      choices: ['Tell the truth herself', 'Delete the review', 'Tidy up her desk'], a: 0,
+      choicesJa: ['自分から本当のことを言う', '口コミを消す', '机を片付ける'],
       cue: '「to see if you would」のあと',
       line: '…to see if *you would come clean*.',
       said: '「あなたが正直に言うか見たくて、カイルをここで犯人扱いしてみた」と言う。',
@@ -367,15 +367,15 @@ export const donnaBully: Clip = {
       trap: 'クビの直後なので同情の告白に見えやすい。直前の You do? から、ばれたとも知らなかった。',
       use: 'Not for him. For us.（彼のためじゃない。私たちのため）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'blunt', seg: [212.8, 231.2],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'blunt', seg: [212.55, 230.95],
       stem: 'What do Donna and her boss agree on at the end?',
       ja: '最後に、ドナと上司は何を決める？',
-      choices: ['To say what they feel', 'To hide their feelings', 'To get Kyle’s job back'], a: 0,
-      choicesJa: ['思ったことを言い合う', '気持ちを隠す', 'カイルの仕事を戻す'],
+      choices: ['To be honest with each other', 'To hide their feelings', 'To get Kyle’s job back'], a: 0,
+      choicesJa: ['おたがい正直に話す', '気持ちを隠す', 'カイルの仕事を戻す'],
       cue: '「From now on」のあと',
       line: 'From now on, *we say what we feel*. Cool? — Cool.',
       said: '「これからは、思ったことを言い合おう」と決める。',
-      mean: 'from now on ＝「これからは」。say what we feel ＝「思ったことを言う」。Cool? ＝「いい？」。',
+      mean: 'from now on ＝「これからは」。say what we feel ＝「思ったことを言う」→ おたがい正直に話す。Cool? ＝「いい？」。',
       trap: 'カイルの名前が出るので、彼の話と考えがち。決め手は From now on のあとの約束。',
       use: 'From now on, just tell me.（これからは、ただ言ってね）' },
 

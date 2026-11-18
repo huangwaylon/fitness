@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 13, retire 1, new 6, ctx 5, tx 8
+// R4 REVIEW 2026-11-18: keep 8, rewrite 13, retire 1, new 6, ctx 5, tx 8, qa 11
 // A2 REVIEW 2026-11-17: keep 9, rewrite 8, retire 6, new 2
 // “Jim Works in the Back | The Office US” (the official The Office channel, Best of Season 2): Michael takes Jim's
 // desk while his own carpet is changed, so Jim moves to the back next to Kelly; she talks nonstop, gets him to sound
@@ -22,7 +22,7 @@ export const jimBack: Clip = {
     { id: 'd1', skill: 'detail', level: 'B1', point: 'carpet', seg: [9.5, 15.3],
       stem: 'Why does Michael want to sit with Jim?',
       ja: 'マイケルはなぜ、ジムと一緒に座りたい？',
-      choices: ['His carpet is being changed', 'His computer has stopped working', 'His room is being painted'], a: 0,
+      choices: ['His office is getting new carpet', 'His computer has stopped working', 'His room is being painted'], a: 0,
       choicesJa: ['自分の部屋のカーペットを替えるから', 'パソコンが動かないから', '部屋のペンキをぬるから'],
       cue: '「desk buddies」のあと',
       line: 'I thought that we would be desk buddies *while they changed my carpet*.',
@@ -44,8 +44,8 @@ export const jimBack: Clip = {
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'onecomp', ctx: true, reveals: ['might'], seg: [10.3, 18.6],
       stem: 'Michael wants to share Jim’s desk. How does Jim answer?',
       ja: 'マイケルはジムの机を一緒に使いたい。ジムの答えは？',
-      choices: ['It won’t work, he hints', 'Yes, with a second computer', 'Yes, but it may be slow'], a: 0,
-      choicesJa: ['無理だと、遠回しに言う', 'パソコンがもう1台あればいい', 'いいけど、おそくなるかも'],
+      choices: ['No, in a soft way', 'Yes, if he gets a computer', 'Yes, but it may be slow'], a: 0,
+      choicesJa: ['やんわり断る', 'パソコンがもう1台あればいい', 'いいけど、おそくなるかも'],
       cue: 'ジムの返事、「with the one computer」まで。',
       line: 'Michael: I thought that we would be *desk buddies*… / Jim: That might be *a little difficult* with *the one computer*.',
       said: '「机仲間になれると思ってたんだ」に、ジムは「パソコンが1台だと、ちょっと難しいかもしれませんね」と答える。',
@@ -91,11 +91,11 @@ export const jimBack: Clip = {
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'which', reveals: ['back'], seg: [22.0, 31.3],
       stem: 'How does Jim feel about moving to the back?',
       ja: 'うしろの席に移ることを、ジムはどう思っている？',
-      choices: ['He doesn’t really want to', 'He is happy to go there', 'He wants Michael to come'], a: 0,
-      choicesJa: ['本当は移りたくない', '喜んで移る', 'マイケルにも来てほしい'],
+      choices: ['He doesn’t really want to', 'He is happy to go there', 'He doesn’t care at all'], a: 0,
+      choicesJa: ['本当は移りたくない', '喜んで移る', 'まったく気にしていない'],
       cue: '長い間のあとの「Which」',
       line: '*Which I guess* I’ll be taking.',
-      said: '間をおいて「…で、それをぼくが使うってことね」と言う。',
+      said: '間をおいて「…で、それを僕が使うってことですね」と言う。',
       mean: 'I guess ＝「まあ、しかたない」。言われていない結論を、自分で言っている。',
       trap: '自分から移るので、喜んでいると思いやすい。I guess に「しかたない」が出ている。',
       use: 'Which I guess means I’m driving.（つまり運転はぼくってことね）' },
@@ -159,7 +159,7 @@ export const jimBack: Clip = {
       trap: 'will not（どうしても〜しない）だけ聞くと、開かない話と考えがち。shut は close と同じ「閉まる」。',
       use: 'The window won’t shut.（窓が閉まらないんです）' },
 
-    { id: 'd7', skill: 'detail', level: 'B1', point: 'piles', seg: [64.8, 71.0],
+    { id: 'd7', skill: 'detail', level: 'B1', point: 'piles', seg: [64.8, 70.8],
       stem: 'What does Kelly do with her clothes now?',
       ja: 'ケリーは今、服をどうしている？',
       choices: ['Leaves them on the floor', 'Hangs them on the door', 'Keeps them at work'], a: 0,
@@ -230,8 +230,8 @@ export const jimBack: Clip = {
       use: 'What’s up? — Not much, you?（どう？—別に、そっちは？）' },
 
     { id: 'c3', skill: 'pragma', level: 'B1', point: 'totally', ctx: true, seg: [128.5, 135.0],
-      stem: 'Jim asks if he likes Kelly. What does he answer?',
-      ja: 'ジムは「ケリーに興味ある？」と聞く。答えは？',
+      stem: 'Jim asks if the new guy likes Kelly. His answer?',
+      ja: 'ジムは新入りに「ケリーに興味ある？」と聞く。答えは？',
       choices: ['Yes, very much', 'No, not really', 'He doesn’t know yet'], a: 0,
       choicesJa: ['うん、すごく', 'いや、あまり', 'まだ分からない'],
       cue: '「Are you interested in her?」への返事。',
@@ -267,8 +267,8 @@ export const jimBack: Clip = {
     { id: 'd5', skill: 'detail', level: 'B1', point: 'longterm', reveals: ['anything'], seg: [151.9, 160.6],
       stem: 'What does Kelly say she wants?',
       ja: 'ケリーは何を望んでいると言う？',
-      choices: ['To fall in love, have babies', 'To keep things casual for now', 'To wait and see'], a: 0,
-      choicesJa: ['恋をして、子どもを持つ', '今は気軽な関係のまま', '彼の気持ちを見てから'],
+      choices: ['A serious relationship with him', 'To keep things casual for now', 'To wait and see'], a: 0,
+      choicesJa: ['彼との真剣な付き合い', '今は気軽な関係のまま', '彼の気持ちを見てから'],
       cue: '「Oh」のあとの一言',
       line: 'Oh, *long-term, definitely*. Fall in love, have babies…',
       said: '「長い付き合いに決まってる。恋して、子どもを作って…」と言う。',
@@ -345,7 +345,7 @@ export const jimBack: Clip = {
       use: 'Please return said item by Friday.（前述の品を金曜までにご返却ください）', retired: true },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'email', seg: [181, 189.9],
-      stem: 'Where else can she find Jim’s number, he says?',
+      stem: 'Where else can she get Jim’s number?',
       ja: 'ほかにどこでジムの番号が分かると、ジムは言う？',
       choices: ['In an email he just sent', 'In a text he just sent', 'In an email he’ll send later'], a: 0,
       choicesJa: ['今送ったメールの中', '今送ったメッセージの中', 'あとで送るメールの中'],
