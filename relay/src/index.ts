@@ -4,7 +4,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, roleOfKey, subprotocolOf, TICKET_HEADER } from './auth.ts';
-import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music } from './room.ts';
+import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music, type SgKept } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
@@ -63,6 +63,8 @@ export interface Env {
 export type WxHealth = ReturnType<typeof wxHealth>;
 
 const RING = 'ring';
+/** 英語すごろく's moves, a row each (room.ts sgKey: `sg:<game>:<i>`, `sg:<game>:e`). */
+const SG = 'sg:';
 /** The day's claims and nests (room.ts DayIndex): apart from the ring, which trims. */
 const DAY = 'day';
 /** The record's last change (welcome `rec`), the last the guest heard of (room.ts guestNotice: no member's ingest), and
@@ -117,6 +119,7 @@ export class IslandRoom extends DurableObject<Env> {
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
       const music = (await ctx.storage.get<Music>(MUSIC)) ?? {};
+      const sg = [...(await ctx.storage.list<SgKept>({ prefix: SG })).values()];
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -134,6 +137,10 @@ export class IslandRoom extends DurableObject<Env> {
         hold: (h) => void this.put(HELD, h),
         saveGone: (g) => void this.put(GONE, g),
         saveMusic: (m) => void this.put(MUSIC, m),
+        saveSg: (k, e) => void this.put(k, e),
+        dropSg: (keys) => {
+          for (let i = 0; i < keys.length; i += 128) void this.ctx.storage.delete(keys.slice(i, i + 128));
+        },
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
@@ -144,7 +151,7 @@ export class IslandRoom extends DurableObject<Env> {
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music);
+      }, ring, this.marks.rec, held, gone, this.wx.wx, day, this.marks.recG, acked, music, sg);
     });
   }
 

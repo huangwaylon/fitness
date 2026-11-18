@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicAt, pickMaySend, musicBeats, musicLive, isStored, scopeMaySend, otherVersion, parseClient, tokyoDayNum, type ClientMsg, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type SgIntent, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { AHEAD_MS } from '../../app/src/lib/contract/ops.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
@@ -54,6 +54,9 @@ export interface RoomIO<S extends Sock> {
   saveMusic?(music: Music): void;
   /** Persist the day's claims and nests (fire and forget): they outlive the ring's trimming and a restart. */
   saveDay?(d: DayIndex): void;
+  /** Persist one すごろく move (fire and forget), a storage row of its own (sgKey), and let a game's rows go. */
+  saveSg?(key: string, e: SgKept): void;
+  dropSg?(keys: string[]): void;
   /** When the runtime last answered this socket's heartbeat (ms; the auto-response's timestamp: HB_PING never reaches
    *  the room), or null. */
   heardAt?(s: S): number | null;
@@ -85,6 +88,30 @@ export interface DayIndex {
 /** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again) and the
  *  socket it came on (`sk`: a walk's numbers are compared on one socket only). Neither goes out again. */
 export type Kept = Relayed & { c?: number; sk?: string };
+/** A すごろく move as the room keeps it. */
+export type SgKept = Extract<Kept, { kind: 'sg' }>;
+
+/** 英語すごろく's games (docs/backend.md "すごろく"), apart from the day's ring (a long game is ~250 moves: in the ring
+ *  they were the first trimmed, and every move rewrote it): each game's moves in order (`moves[i]`, the first of each
+ *  `i`), its earliest end (`end`: its `i` the moves it follows), and its last move's stamp. One storage row a move
+ *  (`sg:<g>:<i>`, the end `sg:<g>:e`); a game goes SG_KEEP_MS after its last move, and past SG_GAMES the oldest. */
+interface SgGame {
+  moves: SgKept[];
+  end?: SgKept;
+  last: number;
+}
+const SG_KEEP_MS = 2 * 86_400_000;
+const SG_GAMES = 12;
+/** A move's storage row. */
+const sgKey = (e: Pick<SgIntent, 'g' | 'i' | 'a'>): string => `sg:${e.g}:${e.a === 'end' ? 'e' : e.i}`;
+/** Whether a game takes a move: a start for a game the room hasn't; a move at the game's next `i`; an end after the
+ *  start, at most at the next `i`, before any end it has (an end ahead of a move at its `i` beats it on every phone:
+ *  lib/sugoroku/online.ts heard). Nothing at or past the game's end. */
+function sgTakes(game: SgGame | undefined, m: SgIntent): boolean {
+  if (m.a === 'start') return !game;
+  if (!game || m.i < 1 || (game.end && m.i >= game.end.i)) return false;
+  return m.a === 'end' ? m.i <= game.moves.length : m.i === game.moves.length;
+}
 
 /** A socket whose hello said `beat` (its phone sends something, the heartbeat at least, whenever it has sent nothing
  *  for 20 s) and that the room heard nothing from this long (no message, no heartbeat: three beats missed) is a ghost:
@@ -132,6 +159,8 @@ export class RoomCore<S extends Sock> {
    *  and its stamp, so a resend after a reconnect is acked again, not delivered twice. Kept in storage (saveAcked:
    *  a wake from hibernation remembers it; 2026-11-05, relay review R2). */
   private acked: Map<string, { same: string; t: number }>;
+  /** 英語すごろく's games by id (SgGame). */
+  private games = new Map<string, SgGame>();
   /** When each person's last phrase went out (presence only: not kept). */
   private said = new Map<Who, number>();
 
@@ -142,8 +171,18 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}, sg: SgKept[] = []) {
     this.music = { ...music };
+    // the games as kept (rows in no order): each in its order, up to a gap
+    const rows = [...sg].sort((a, b) => (a.a === 'end' ? 1 : 0) - (b.a === 'end' ? 1 : 0) || a.i - b.i);
+    for (const e of rows) this.takeSg(e);
+    // (2026-11-18) the moves the day's ring held from before: into their games, out of the ring
+    const old = ring.filter((e): e is SgKept => e.kind === 'sg');
+    if (old.length) {
+      this.ring = ring.filter((e) => e.kind !== 'sg');
+      for (const e of old) if (this.takeSg(e)) this.io.saveSg?.(sgKey(e), e);
+      this.io.save(this.ring);
+    }
     this.acked = new Map(Array.isArray(acked) ? acked.slice(-ACKED_MAX) : []);
     this.wx = wx;
     this.held = { ...held };
@@ -268,6 +307,7 @@ export class RoomCore<S extends Sock> {
     if (intent.kind === 'decor' && (!scopeMaySend(who, intent.sc, intent.id) || intent.at > now + AHEAD_MS)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     // a goal tree's fruit its owner's alone (live-protocol.ts pickMaySend: credited to the tree's owner, 2026-11-16)
     if (intent.kind === 'pick' && !pickMaySend(who, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    if (intent.kind === 'sg') return this.sgMove(s, who, c, intent);
     const stored = isStored(intent);
     if (stored && c !== undefined) {
       // a resend (after a reconnect) of one the room has, the same intent with the same number: acked again, not
@@ -379,7 +419,8 @@ export class RoomCore<S extends Sock> {
     }
     if (since !== undefined) {
       // the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back)
-      const day = this.fresh().filter((e) => e.t > since);
+      // (the games' moves after the day's world: each game's in its order)
+      const day = [...this.fresh().filter((e) => e.t > since), ...this.sgSince(since).sort((a, b) => a.t - b.t)];
       for (const es of chunks(day.map(strip))) this.send(s, { v: LIVE_V, kind: 'replay', es, t });
     }
     // the high-fives held for me while I was away, one from each (a day old: let go); each goes once my phone says `got`
@@ -531,6 +572,8 @@ export class RoomCore<S extends Sock> {
     const carried = this.ring.filter((e) => e.kind === 'walk' && !walked.has(e.who) && tokyoDayNum(e.t) !== today).map((e) => ({ ...e, t: this.stamp() }));
     this.ring = [...ring, ...carried];
     if (carried.length) this.io.save(this.ring);
+    // the games left two days: gone
+    for (const [g, x] of this.games) if (this.io.now() - x.last > SG_KEEP_MS) this.dropGame(g);
     this.claims.clear();
     this.nests.clear();
     for (const e of this.ring) this.index(e);
@@ -564,6 +607,53 @@ export class RoomCore<S extends Sock> {
       claims: [...this.claims].map(([k, x]) => [k, x.who, x.t, x.c ?? null]),
       nests: [...this.nests]
     };
+  }
+
+  /** A すごろく move (sgTakes): relayed to the others and kept, acked; refused (`ok` false) when the game doesn't take
+   *  it (a race lost: the phone takes the winner it hears, lib/sugoroku/online.ts). A resend of one the game has (the
+   *  same move from the same person, after a reconnect) is acked again, not relayed twice. */
+  private sgMove(s: S, who: Who, c: number | undefined, m: SgIntent): void {
+    const game = this.games.get(m.g);
+    const had = m.a === 'end' ? game?.end : game?.moves[m.i];
+    if (had && had.who === who && JSON.stringify(bare(had)) === JSON.stringify(m)) return c !== undefined ? this.ack(s, c, had.t, true) : undefined;
+    if (!sgTakes(game, m)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
+    const out: SgKept = { ...m, v: LIVE_V, who, t: this.stamp(), ...(c !== undefined ? { c } : {}) };
+    for (const p of this.others(who)) this.send(p, strip(out));
+    this.takeSg(out);
+    this.io.saveSg?.(sgKey(out), out);
+    // past SG_GAMES, the game left longest goes
+    if (this.games.size > SG_GAMES) this.dropGame([...this.games].reduce((a, b) => (b[1].last < a[1].last ? b : a))[0]);
+    if (c !== undefined) this.ack(s, c, out.t, true);
+  }
+
+  /** Take a move into its game (sgTakes); true when it did. */
+  private takeSg(e: SgKept): boolean {
+    const game = this.games.get(e.g);
+    if (!sgTakes(game, e)) return false;
+    const x = game ?? { moves: [], last: 0 };
+    if (e.a === 'end') x.end = e;
+    else x.moves.push(e);
+    x.last = Math.max(x.last, e.t);
+    this.lastT = Math.max(this.lastT, e.t);
+    this.games.set(e.g, x);
+    return true;
+  }
+
+  private dropGame(g: string): void {
+    const x = this.games.get(g);
+    if (!x) return;
+    this.games.delete(g);
+    this.io.dropSg?.([...x.moves, ...(x.end ? [x.end] : [])].map(sgKey));
+  }
+
+  /** The games' moves after `since` (a hello's), the moves from an end on left out. */
+  private sgSince(since: number): SgKept[] {
+    const out: SgKept[] = [];
+    for (const x of this.games.values()) {
+      for (const e of x.moves) if (e.t > since && !(x.end && e.i >= x.end.i)) out.push(e);
+      if (x.end && x.end.t > since) out.push(x.end);
+    }
+    return out;
   }
 
   /** Whether the day's world takes a change: false when it refuses it (claimed already, a nest too soon, a walk sent

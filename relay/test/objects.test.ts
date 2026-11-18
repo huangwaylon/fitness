@@ -67,7 +67,8 @@ function fakeState(o: { sockets?: () => unknown[] } = {}) {
     transactionSync: db.tx,
     get: (k: string) => Promise.resolve(kv.get(k)),
     put: (k: string, v: unknown) => (kv.set(k, structuredClone(v)), Promise.resolve()),
-    delete: (k: string) => Promise.resolve(kv.delete(k)),
+    delete: (k: string | string[]) => Promise.resolve(Array.isArray(k) ? k.filter((x) => kv.delete(x)).length : kv.delete(k)),
+    list: ({ prefix }: { prefix: string }) => Promise.resolve(new Map([...kv].filter(([k]) => k.startsWith(prefix)))),
     getAlarm: () => Promise.resolve(alarm),
     setAlarm: (t: number) => ((alarm = t), Promise.resolve()),
     getCurrentBookmark: () => Promise.resolve('bm-now'),
@@ -364,6 +365,33 @@ describe('IslandRoom', () => {
     await settle();
     // since the hello: the weather's failure, the close's `gone` and the two marks
     expect(added().find((e) => e.e === 'room.close')).toMatchObject({ d: { rw: 4 } });
+  });
+
+  it('すごろく: a move a row of its own (never the ring), the ring’s old moves moved out, the game back after a restart', async () => {
+    let meta: unknown = { who: null, opened: NOW };
+    const sent: string[] = [];
+    const ws = { deserializeAttachment: () => meta, serializeAttachment: (m: unknown) => void (meta = m), send: (d: string) => void sent.push(d), close() {} };
+    const st = fakeState({ sockets: () => [ws] });
+    const old = { kind: 'sg', g: 'abcdefghij', i: 0, a: 'start', s: 'A2B1', l: 's', v: LIVE_V, who: 'B', t: NOW - 1000 };
+    st.kv.set('ring', [old]);
+    const r = new IslandRoom(st.state, envOf());
+    await settle();
+    expect([st.kv.get('ring'), st.kv.get('sg:abcdefghij:0')]).toEqual([[], old]);
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('offline')));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_A }));
+    r.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'sg', g: 'abcdefghij', i: 1, a: 'roll', c: 1 }));
+    await settle();
+    expect(st.kv.get('sg:abcdefghij:1')).toMatchObject({ a: 'roll', who: 'A', c: 1 });
+    expect(st.kv.get('ring')).toEqual([]);
+    meta = { who: null, opened: NOW };
+    sent.length = 0;
+    const again = new IslandRoom(st.state, envOf());
+    await settle();
+    again.webSocketMessage(ws as unknown as WebSocket, JSON.stringify({ v: LIVE_V, kind: 'hello', key: KEY_B, since: 0 }));
+    await ticks();
+    const replay = sent.map((d) => JSON.parse(d) as { kind: string; es?: { a: string }[] }).find((m) => m.kind === 'replay');
+    expect(replay?.es?.map((e) => e.a)).toEqual(['start', 'roll']);
   });
 
   it('a closing socket is logged as `room.close` and closed with a clean code', async () => {

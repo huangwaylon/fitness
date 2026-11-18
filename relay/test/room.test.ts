@@ -1209,3 +1209,83 @@ describe('the music stages (docs/sound-sync.md)', () => {
     expect(Object.keys(kept)).toEqual(['u']);
   });
 });
+
+describe('英語すごろく’s games, kept apart from the day’s ring', () => {
+  /** The sg rows as the room's storage holds them (saveSg / dropSg). */
+  let rows: Map<string, unknown>;
+  const sgIo = (): RoomIO<FakeSock> => ({ ...io(), saveSg: (k, e) => void rows.set(k, structuredClone(e)), dropSg: (ks) => ks.forEach((k) => rows.delete(k)) });
+  beforeEach(() => {
+    rows = new Map();
+    room = new RoomCore(sgIo());
+  });
+  const G = 'abcdefghij';
+  const start = { kind: 'sg', g: G, i: 0, a: 'start', s: 'A2B1', l: 's' };
+  const acks = (s: FakeSock) => s.sent.filter((m) => m.kind === 'ack').map((m) => (m as { c: number; ok: boolean }).ok);
+  const moves = (s: FakeSock) => s.sent.filter((m) => m.kind === 'sg').map((m) => { const x = m as { i: number; a: string; who: string }; return `${x.i}${x.a}${x.who}`; });
+
+  it('takes a game’s moves in order, the first of each i only; a resend is acked again, not relayed twice', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    say(a, { ...start, c: 1 });
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 });
+    say(b, { kind: 'sg', g: G, i: 1, a: 'roll', c: 1 }); // the race lost
+    say(a, { kind: 'sg', g: G, i: 3, a: 'roll', c: 3 }); // past one the room hasn't
+    say(a, { kind: 'sg', g: G, i: 1, a: 'roll', c: 2 }); // a resend
+    say(a, { kind: 'sg', g: 'zzzzzzzzzz', i: 1, a: 'roll', c: 4 }); // no start
+    expect(acks(a)).toEqual([true, true, false, true, false]);
+    expect(acks(b)).toEqual([false]);
+    expect(moves(b)).toEqual(['0startA', '1rollA']);
+    expect([...rows.keys()]).toEqual([`sg:${G}:0`, `sg:${G}:1`]);
+    // never in the ring
+    expect(saved).toEqual([]);
+  });
+
+  it('an end races a move at its i: the end stands, the moves from it on count for nothing (and the earliest end wins)', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    say(a, { ...start, c: 1 });
+    for (let i = 1; i <= 3; i++) say(a, { kind: 'sg', g: G, i, a: 'roll', c: 1 + i });
+    say(b, { kind: 'sg', g: G, i: 2, a: 'end', c: 1 }); // B had heard two
+    say(a, { kind: 'sg', g: G, i: 4, a: 'roll', c: 5 }); // after the end: refused
+    say(a, { kind: 'sg', g: G, i: 4, a: 'end', c: 6 }); // a later end: refused
+    say(b, { kind: 'sg', g: G, i: 5, a: 'end', c: 2 }); // past the moves: refused
+    expect(acks(a)).toEqual([true, true, true, true, false, false]);
+    expect(acks(b)).toEqual([true, false]);
+    // a phone opening later hears the game up to its end, and the end
+    const a2 = join(KEY_A, 0);
+    expect(moves(a2)).toEqual(['0startA', '1rollA', '2endB']);
+  });
+
+  it('a 250-move game outlasts a busy day’s 400 world changes; a wake rebuilds it from its rows; it goes two days on', () => {
+    const a = join(KEY_A);
+    say(a, { ...start, c: 1 });
+    for (let i = 1; i < 250; i++) {
+      now += 100;
+      say(a, { kind: 'sg', g: G, i, a: 'roll', c: 1 + i });
+      if (i % 2) say(a, { kind: 'world', op: 'watered', id: `w${i}` });
+    }
+    for (let i = 0; i < RING_MAX; i++) {
+      now += 60;
+      say(a, { kind: 'world', op: 'watered', id: `x${i}` });
+    }
+    expect(rows.size).toBe(250);
+    room = new RoomCore(sgIo(), saved.at(-1) as never, null, {}, {}, null, null, null, [], {}, [...rows.values()].reverse() as never);
+    const b = join(KEY_B, 0);
+    expect(b.sent.filter((m) => m.kind === 'sg')).toHaveLength(250);
+    expect(b.sent.filter((m) => m.kind === 'world')).toHaveLength(RING_MAX);
+    // replayed after `since` only, in the room's order
+    const b2 = join(KEY_B, (b.sent.find((m) => m.kind === 'sg' && (m as { i: number }).i === 200) as { t: number }).t);
+    expect(moves(b2)[0]).toBe('201rollA');
+    now += 2 * 86_400_000 + 1;
+    say(a, { kind: 'world', op: 'watered', id: 'next' }); // (the day turns)
+    expect(rows.size).toBe(0);
+    expect(moves(join(KEY_B, 0))).toEqual([]);
+  });
+
+  it('moves the day’s ring kept from before go into their games (by the same rule: an end at a move’s i beats it), out of the ring', () => {
+    const old = (i: number, a: string, who: string, t: number) => ({ kind: 'sg', g: G, i, a, ...(a === 'start' ? { s: 'A2B1', l: 's' } : {}), v: 3, who, t });
+    const ring = [old(0, 'start', 'A', 10), { kind: 'world', op: 'watered', id: 'w', v: 3, who: 'A', t: 11 }, old(1, 'roll', 'A', 12), old(1, 'end', 'B', 13), old(2, 'roll', 'A', 14)];
+    room = new RoomCore(sgIo(), ring as never);
+    expect([...rows.keys()]).toEqual([`sg:${G}:0`, `sg:${G}:1`, `sg:${G}:e`]);
+    expect((saved.at(-1) as { kind: string }[]).map((e) => e.kind)).toEqual(['world']);
+    expect(moves(join(KEY_B, 0))).toEqual(['0startA', '1endB']);
+  });
+});
