@@ -1,11 +1,15 @@
+// R4 REVIEW 2026-11-18: keep 7, rewrite 12, retire 2, new 5, ctx 6, tx 13
 // A2 REVIEW 2026-11-17: keep 5, rewrite 14, retire 3, new 2
 // “Rent-A-Swag: Origin Story | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Tom opens
 // a clothes-rental store for teens and runs it on a painfully tight budget, until a friend at breakfast tells him he
 // needs a little of his old swagger, and the friends chip in money for the store.
-// Segments from the captions, words from whisper (2026-11-16). Untested: 18–19 s, 43 s, 55–58 s and 79–82 s (visual
-// gags), 91–94 s, 104–108 s, 128–136 s, 160–161 s and 176–178 s, 216–220 s, 222 s (who orders the bacon), 245–252 s, 261 s.
-// a1 names Ron from the turn ("Ron, my woodworking project" follows).
+// Segments from the captions, words from whisper (2026-11-16; whole-second times). Whisper's last lines (271–273 s,
+// "I'll see you next time") are a hallucination over the closing music. Who says "Take this" and "in return" isn't named.
+// a1 and pr2 name Ron from the turn ("Ron, my woodworking project" follows).
 // EAR CHECK: 77.2 s p1 f4 — Jerry: whisper “the rehab is grueling”, captions “the rehab is great”; p1 needs only “rehab”
+// EXCLUDE 26–29 (“dope-ass cravats”)
+// EXCLUDE 91–94 (“pimp myself out to hot older ladies”)
+// EXCLUDE 106–108 (the mannequin suicide joke)
 import type { Clip } from '../types.ts';
 
 export const rentASwag: Clip = {
@@ -14,15 +18,15 @@ export const rentASwag: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'teens', seg: [11.1, 29.2],
-      stem: 'Who is Tom’s new business for?', ja: 'トムの新しい商売は、誰のため？',
-      choices: ['Teens who rent his clothes', 'Parents who rent his clothes', 'Teens who sell old clothes'], a: 0,
-      choicesJa: ['彼の服を借りる10代', '彼の服を借りる親', '古着を売る10代'],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'teens', seg: [11.0, 26.0],
+      stem: 'What is Tom’s new business?', ja: 'トムの新しい商売は何？',
+      choices: ['Lending clothes to young people', 'Selling clothes to parents', 'Buying old clothes from kids'], a: 0,
+      choicesJa: ['若い子に服を貸す', '親に服を売る', '子どもから古着を買う'],
       cue: '「I started a business」のあと',
       line: 'I *rent my fancy clothes to teens*… nice things they’ll just *grow out of*.',
       said: 'ぜいたくな服を10代に貸す商売を始めた。すぐ着られなくなる服を、親が買わずに済む。',
-      mean: 'rent ＝ お金を取って貸す。grow out of ＝ 大きくなって着られなくなる。',
-      trap: 'parents が聞こえると、親が客だと思いやすい。親は「買わずに済む」側。',
+      mean: 'rent ＝ お金を取って貸す。grow out of ＝ 体が大きくなって着られなくなる。',
+      trap: 'parents が聞こえると、親が客だと考えがち。親は「買わずに済む」側。',
       use: 'Can I rent a suit for the weekend?（週末にスーツを借りられますか）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'needswork', seg: [33.8, 38.8],
@@ -31,39 +35,33 @@ export const rentASwag: Clip = {
       choicesJa: ['完璧じゃないけど、いい', 'このままで完璧', 'ひどいので手伝って'],
       cue: '「Look,」のあと',
       line: 'Look, the place *needs some work, but* this is a *great location*.',
-      said: '「手を入れる必要はあるけど、場所は最高なんだ」と言う。',
-      mean: 'needs some work ＝ 少し手を入れる必要がある。弱いところを先に認めて、but のあとで良さを言う。',
+      said: '「いいかい、少し手直しは必要だけど、ここは最高の立地なんだ」と言う。',
+      mean: 'needs some work ＝ 少し手直しが必要。弱いところを先に認めて、but のあとで良さを言う。',
       trap: 'needs some work だけ聞くと、あきらめたと思いやすい。but のあとが言いたいこと。',
       use: 'It needs some work, but it’s cheap.（手直しは要るけど安いよ）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'location', seg: [35, 45],
-      stem: 'What is good about the location, says Tom?', ja: 'トムによると、この場所のいいところは？',
+      stem: 'Why does Tom like the location?', ja: 'トムはなぜこの場所を気に入っている？',
       choices: ['Lots of people walk by', 'Lots of cars drive by', 'It is close to a station'], a: 0,
       choicesJa: ['人がたくさん通る', '車がたくさん通る', '駅が近い'],
       cue: '「great location」のあと',
       line: 'Lots of *foot traffic*, *no metered parking*…',
-      said: '「人通りが多いし、駐車にメーターがない」と言う。',
-      mean: 'foot traffic ＝ 歩いて通る人の流れ。no metered parking ＝ 駐車がタダ。',
-      trap: 'traffic から車だと思いやすい。foot（足）が付くと、歩く人のこと。',
+      said: '「人通りは多いし、駐車料金はかからない」と言う。',
+      mean: 'foot traffic ＝ 歩いて通る人の流れ。no metered parking ＝ 駐車メーターがない＝駐車がタダ。',
+      trap: 'traffic から車を連想しやすい。foot（足）が付くと、歩く人のこと。',
       use: 'This street gets a lot of foot traffic.（この通りは人通りが多い）' },
 
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'reinvent', seg: [46.9, 57.8],
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'reinvent', seg: [46.9, 54.9],
       stem: 'What does Tom mean by “Tommy Timberlake is dead”?', ja: 'トムの “Tommy Timberlake is dead” はどういう意味？',
       choices: ['He has changed', 'He feels very sick', 'He lost a friend'], a: 0,
       choicesJa: ['自分は変わった', 'とても具合が悪い', '友だちを亡くした'],
       cue: '「Long live」のあと',
       line: '*Tommy Timberlake is dead*. *Long live* Thomas M. Haverford, *responsible tycoon*.',
       said: '「トミー・ティンバーレイクは死んだ。責任ある実業家トーマス万歳」と言う。',
-      mean: '昔の派手な自分は終わり、まじめな経営者に生まれ変わったという宣言。responsible ＝ 責任感のある。',
-      trap: 'dead から、本当に誰かが死んだと思いやすい。どちらもトム自身の呼び名。',
+      mean: 'トミー・ティンバーレイク＝歌手をまねた昔のあだ名。派手な自分は終わり、まじめな経営者に生まれ変わった宣言。',
+      trap: 'dead から、本当に誰かが死んだと考えがち。どちらもトム自身の呼び名。',
       use: 'The old me is gone.（昔の自分はもういない）' },
 
-    // R fix: V2 (blind 55 %: the running joke was a filler). New near miss: a habit from a boss, as "Lee Iacocca"
-    //   sounds like a person he knew if "autobiography" is lost.
-    // why: sees their work ← "Wow, genuine praise" taken as proof he means it (sincerity at face value); a boss ←
-    //   "picked up from Lee Iacocca's…" with the last word lost: the right mechanism, the wrong source
-    // anchor: 58.6–66.3 s the praise round and "Wow, genuine praise"; then to camera 67.0–73.1 s "It's a tip I
-    //   picked up from… autobiography. A small connection… helps build loyalty."
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'praise', seg: [58.1, 73.2], retired: true,
       stem: 'After Tom’s comment to the camera, how should we hear his praise?',
       choices: ['As a method he read about for keeping staff loyal', 'As a sign he finally sees how hard they all work',
@@ -75,22 +73,28 @@ export const rentASwag: Clip = {
       trap: '「本物のほめ言葉ね」の反応で本心と思いやすい。この形式では、カメラへの一言が答え合わせ。',
       use: 'I read it in a management book.（経営の本で読んだんだ）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B1', point: 'ticker', seg: [70.1, 79.7],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'organize', seg: [59.0, 66.8],
+      stem: 'What does Tom praise Ann for?', ja: 'トムはアンの何をほめる？',
+      choices: ['Keeping things in order', 'Looking beautiful today', 'Working very late'], a: 0,
+      choicesJa: ['物をきちんと整理すること', '今日きれいなこと', '遅くまで働くこと'],
+      cue: 'Donna のあと、Ann への一言',
+      line: 'Donna, you and your work are *ravishing* as usual. Ann, great *organizational skills*.',
+      said: 'ドナには「うっとりするほど」、アンには「整理整頓の腕前が素晴らしい」とほめる。',
+      mean: 'organizational skills ＝ 整理して段取りよく進める力。organize（整理する）から。仕事のほめ言葉の定番。',
+      trap: 'ravishing（うっとりするほど美しい）はドナへの言葉。アンには organizational とほめる。',
+      use: 'You have great organizational skills.（段取りがすごく上手ですね）' },
+
+    { id: 'p1', skill: 'phrase', level: 'B1', point: 'ticker', ctx: true, seg: [70.1, 79.7],
       stem: 'What is “the old ticker”?', ja: '“the old ticker” とは何？',
       choices: ['Jerry’s heart', 'Jerry’s watch', 'Jerry’s job'], a: 0,
       choicesJa: ['ジェリーの心臓', 'ジェリーの時計', 'ジェリーの仕事'],
       cue: 'ジェリーの答え',
-      line: 'Jerry, how’s *the old ticker*? — Oh, uh, well, *the rehab* is grueling.',
+      line: 'Tom: Jerry, how’s *the old ticker*? / Jerry: Oh, uh, well, *the rehab* is grueling.',
       said: '「心臓の調子はどう？」と聞かれ、「リハビリがきつくて」と答える。',
-      mean: 'the old ticker ＝ 心臓のくだけた言い方。時計のようにカチカチ打つから。',
-      trap: 'ticker から時計だと思いやすい。答えの rehab（リハビリ）で体の話だと分かる。',
+      mean: 'the old ticker ＝ 心臓のくだけた言い方。時計のようにカチカチ（tick）打つから。old は親しみ。',
+      trap: 'ticker から時計を連想しやすい。答えの rehab（リハビリ）で体の話だと分かる。',
       use: 'How’s your back doing?（腰の調子はどう？）' },
 
-    // R fix: V2 (blind 55 %: the rude-word distractor was weak). New near sound: the captions themselves hear "the
-    //   rehab is great", so "good news" is the partial listener's reading. On the ear-check list for that reason.
-    // why: stops him ← "Great" comes fast on the heels of Jerry's answer; cheers ← "grueling" heard as "great"
-    // retired: the ear-check policy: the key needs “grueling” (whisper; the captions have “great”, 77.2 s); back after
-    //   the ear check
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ticker', seg: [73.1, 79.3], retired: true,
       stem: 'Why does Tom’s reply to Jerry get a laugh?',
       choices: ['He replies to bad news as if it were good', 'He stops Jerry before he can finish his answer',
@@ -108,20 +112,31 @@ export const rentASwag: Clip = {
       choicesJa: ['それはよかった', '聞こえない', 'もう一度言って'],
       cue: 'ジェリーの答えのあと',
       line: 'the rehab is grueling. — Great. *Glad to hear it*.',
-      said: '「リハビリがきつい」と聞いても、トムは「いいね。よかった」と返す。',
+      said: '「リハビリがきつい」と聞いても、トムは「いいね。それはよかった」と返す。',
       mean: 'Glad to hear it ＝ それはよかった。いい知らせに言う。トムは話を聞いていないので、悪い知らせに言っている。',
-      trap: 'hear から「聞こえない」と思いやすい。I’m glad to hear it の短い形。',
+      trap: 'hear から「聞こえない」と勘違いしやすい。I’m glad to hear it の短い形。',
       use: 'You passed? Glad to hear it!（受かったの？よかった！）' },
 
-    { id: 'pr2', skill: 'attitude', level: 'B1', point: 'dodge', seg: [106.5, 115.2],
-      stem: 'What does Ron really think of the store?', ja: 'ロンは、本当は店をどう思っている？',
-      choices: ['It’s quite terrible', 'It’s really great', 'It’s just okay'], a: 0,
-      choicesJa: ['かなりひどい', 'すごくいい', 'まあまあ'],
+    { id: 'd3', skill: 'phrase', level: 'B2', point: 'flames', seg: [85.6, 90.9],
+      stem: 'What does “goes down in flames” mean?', ja: '「goes down in flames」はどういう意味？',
+      choices: ['Fails completely', 'Burns in a real fire', 'Makes a lot of money'], a: 0,
+      choicesJa: ['完全に失敗する', '本当の火事で燃える', '大もうけする'],
+      cue: 'last chance のあとの if',
+      line: 'This is my *last chance*. If this *goes down in flames*, I will have nothing except my looks.',
+      said: '「これが最後のチャンス。これが大失敗したら、残るのはこの顔だけ」と言う。',
+      mean: 'go down in flames ＝ 文字どおりは「炎に包まれて落ちる」。撃たれた飛行機のように→「派手に大失敗する」。',
+      trap: 'flames（炎）から本当の火事を連想しやすい。直前の last chance で、店の成否の話と分かる。',
+      use: 'If the plan goes down in flames, we’ll try again.（計画が大失敗したら、またやろう）' },
+
+    { id: 'pr2', skill: 'attitude', level: 'B1', point: 'dodge', ctx: true, seg: [108.0, 115.2],
+      stem: 'What does Ron think of the store?', ja: 'ロンは店をどう思っている？',
+      choices: ['He doesn’t like it at all', 'He thinks it’s great', 'He thinks it’s just okay'], a: 0,
+      choicesJa: ['まったく気に入っていない', 'すごくいいと思う', 'まあまあだと思う'],
       cue: '「So you like the place?」への返事',
-      line: 'I think *what’s important is* we all had a goal… — So you like the place? — *Oh, no. It’s quite terrible.*',
+      line: 'Ron: I think *what’s important is* we all had a goal, and we achieved it. / So you like the place? / Ron: *Oh, no. It’s quite terrible.*',
       said: '店の感想に「大事なのは、みんなで目標を達成したこと」と答え、念を押されると「いや、かなりひどい」。',
       mean: 'quite terrible ＝ かなりひどい。最初は感想を言わずにかわし、聞き直されて本音を言う。',
-      trap: 'goal や achieved（達成した）は前向きなので、ほめていると思いやすい。最後の Oh, no を聞く。',
+      trap: 'goal や achieved（達成した）は前向きなので、ほめていると考えがち。最後の Oh, no を聞く。',
       use: 'Honestly? It’s quite bad.（正直に言うと？かなりひどいね）' },
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'budget', seg: [113.4, 122.8], keep: true,
@@ -135,10 +150,10 @@ export const rentASwag: Clip = {
       trap: '「フォーティシックス」と最後まで聞けば46、「フォーティ」で終われば40、「フォーティーン」なら14、「シックスティ」なら60。',
       use: 'We came in under budget.（予算内で済みました）' },
 
-    { id: 'i4', skill: 'detail', level: 'B1', point: 'cheap', seg: [118.7, 130.5],
+    { id: 'i4', skill: 'detail', level: 'B1', point: 'cheap', seg: [118.7, 128.2],
       stem: 'What is Tom’s “pizza party”?', ja: 'トムの「ピザパーティー」はどんなもの？',
-      choices: ['One small plain pizza', 'A pizza for each person', 'Two big pizzas'], a: 0,
-      choicesJa: ['具なしの小さいピザ1枚', '一人1枚のピザ', '大きいピザ2枚'],
+      choices: ['A tiny pizza to share', 'A pizza for each person', 'Pizza and drinks for all'], a: 0,
+      choicesJa: ['みんなで分ける小さいピザ', '一人1枚のピザ', '全員にピザと飲み物'],
       cue: '「Pizza party!」のあと',
       line: 'a small treat for you guys for all your hard work… *One small pizza for all of us, with no toppings*.',
       said: '「頑張ったごほうびにピザパーティー！」と言うが、全員で小さいピザ1枚、具なし。',
@@ -157,7 +172,7 @@ export const rentASwag: Clip = {
       trap: 'nineteen なら「ティーン」、ninety なら「ティ」が付く。「ナイン」だけなら9。five は「ファイヴ」。',
       use: 'I went over the numbers again.（数字をもう一度確かめた）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'lawsuit', seg: [143.1, 150.8],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'lawsuit', seg: [143.1, 150.8], retired: true,
       stem: 'Fill the gap: “Now, ___ at whoever took it.”', ja: '空所に入るのは？ “Now, ___ at whoever took it.”',
       choices: ['I’m not angry', 'I’m angry', 'I’m so angry'], a: 0,
       choicesJa: ['怒っていない', '怒っている', 'すごく怒っている'],
@@ -168,8 +183,6 @@ export const rentASwag: Clip = {
       trap: 'angry だけ強く聞こえ、否定を落としやすい。I’m のあとの短い「ナッ」を聞く。so なら「ソウ」と伸びる。',
       use: 'I’m not angry, just tired.（怒ってないよ、疲れてるだけ）' },
 
-    // why: fired ← the boss script (a thief gets fired), with "move on with our lives" heard as letting the person go;
-    //   whole team ← "whoever" said to a room full of staff
     { id: 'h4', skill: 'humor', level: 'C1', point: 'lawsuit', reveals: ['missing'], seg: [147.45, 154.95], retired: true,
       stem: 'Why does Tom’s speech about the missing money get a laugh?',
       choices: ['His “no hard feelings” offer ends with a lawsuit', 'His calm offer ends with firing the person',
@@ -181,34 +194,28 @@ export const rentASwag: Clip = {
       trap: 'クビではない。served with a lawsuit ＝ 訴えられる。前置きのあとを聞く。',
       use: 'No hard feelings. Let’s move on.（恨みっこなし。前に進もう）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'pays', seg: [155, 162.9],
+    { id: 'd5', skill: 'who', level: 'B1', point: 'pays', ctx: true, seg: [155, 162.9],
       stem: 'Who does Tom say will pay for breakfast?', ja: '朝ごはん代は誰が払うと、トムは言う？',
       choices: ['His friend', 'They each pay', 'Tom himself'], a: 0,
       choicesJa: ['友だち', 'それぞれが払う', 'トム自身'],
       cue: '「Fine.」のあと',
-      line: 'It was *your idea, so you’re paying*. You’re driving.',
-      said: '「君の提案なんだから、君のおごり。運転も君ね」と言う。',
+      line: 'Let’s go get some breakfast, okay? / Tom: Fine. It was *your idea, so you’re paying*.',
+      said: '朝食に誘われ「いいよ。言い出したのはそっちだから、そっちのおごりな」と言う。',
       mean: 'you’re paying ＝ 君が払う。誘いは受けるが、お金は出さないという宣言。',
-      trap: 'You’re driving を交換条件だと思うと、トムが払うように聞こえやすい。you’re paying の you を聞く。',
+      trap: 'Fine（いいよ）で誘いを受けるので、トムが払うと勘違いしやすい。決め手は so のあとの you’re paying。',
       use: 'Your idea, so you’re paying.（言い出したのは君だから、君のおごりね）' },
 
-    { id: 'i5', skill: 'detail', level: 'B2', point: 'groceries', seg: [164.1, 176.9],
+    { id: 'i5', skill: 'detail', level: 'B2', point: 'groceries', seg: [164.1, 176.6],
       stem: 'What does Tom order besides pancakes?', ja: 'トムはパンケーキのほかに何を頼む？',
-      choices: ['Raw eggs and bread', 'Sausage and a cup of coffee', 'Fruit and juice'], a: 0,
-      choicesJa: ['生卵とパン', 'ソーセージとコーヒー1杯', 'フルーツとジュース'],
+      choices: ['Raw eggs and bread', 'Sausage and a coffee', 'Fruit and juice'], a: 0,
+      choicesJa: ['生卵とパン', 'ソーセージとコーヒー', 'フルーツとジュース'],
       cue: '「let me also get」のあと',
       line: '*12 eggs, uncooked*… 20 slices, untoasted… in a bag. — You want *a carton of eggs and a loaf of bread*?',
       said: 'パンケーキに加え、生卵12個と焼く前のパン20枚を袋で頼む。店員が聞き返す。',
-      mean: 'uncooked ＝ 料理していない。a carton of eggs ＝ 卵1パック。a loaf of bread ＝ パン1本。',
-      trap: 'toast が聞こえて、ふつうの朝食だと思いやすい。uncooked、untoasted は「生のまま」。',
+      mean: 'uncooked ＝ 生の。a carton of eggs ＝ 卵1パック。a loaf of bread ＝ 食パン1袋。',
+      trap: 'toast が聞こえて、ふつうの朝食と考えがち。uncooked、untoasted は「生のまま」。',
       use: 'Can I get a carton of eggs?（卵を1パックください）' },
 
-    // R fix: V2 (blind 70 %). The money offer is replaced by the list of the old Tom's faults, which does come, but
-    //   only after the "but" (189 s), so it's a near miss the `then` settles.
-    // why: praise ← "that's great" heard as the start of more praise (the Japanese frame: agreement ends the turn);
-    //   faults ← "the mistakes of Entertainment 720" just said, and the list does follow a few seconds later
-    // retired: for the levels: with h1 out C1 was 4/21 (19 %, under 20 %); r1 is the B2 whose predict cut is still an
-    //   ear check (182.6 s)
     { id: 'r1', skill: 'predict', level: 'B2', point: 'turn', seg: [176.4, 182.6], retired: true, then: [182.6, 186.15],
       stem: 'After “…and that’s great”, what kind of move is his friend about to make?',
       choices: ['A turn to what Tom shouldn’t give up', 'More praise for how Tom has changed',
@@ -230,7 +237,7 @@ export const rentASwag: Clip = {
       trap: 'of と the が小さく短く、消えやすい。5語あるので of と the を探す。',
       use: 'Add a little bit of salt.（塩をほんの少し足して）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ruined', seg: [184.4, 189.4],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'ruined', seg: [184.4, 189.4], retired: true,
       stem: 'How does Tom feel about bringing back his old self?', ja: '昔の自分を戻すことを、トムはどう思う？',
       choices: ['Firmly against it', 'Unsure, but curious', 'Quietly pleased'], a: 0,
       choicesJa: ['きっぱり反対', '迷っているが、興味はある', 'ひそかにうれしい'],
@@ -241,11 +248,6 @@ export const rentASwag: Clip = {
       trap: 'old Tom はほめ言葉ではなく、失敗した昔の自分。最初の No で立場が決まる。',
       use: 'No way. Never again.（絶対いや。二度とごめんだ）' },
 
-    // R new: replaces nt2 as the second C2 (who the joke is on / a broken script). Blind read: 40 %.
-    // why: ironic ← the friend does go on to praise his swagger, so "Yes, he did" can sound like mock agreement; new
-    //   Tom ← "he did" heard as about Tom now, the cheap boss of the last scenes (scope shift)
-    // anchor: 186.2–194.8 s "No. That Tom ruined everything. — Yes, he did. And that Tom made you a horrible
-    //   boyfriend… and drove you to bankruptcy": the past tense and the earnest list settle it
     { id: 'nt3', skill: 'humor', level: 'C2', point: 'ruined', seg: [185.5, 196.6], retired: true,
       stem: 'When Tom says the old Tom “ruined everything”, why is his friend’s reply funny?',
       choices: ['He agrees in earnest, then adds more faults', 'He says it ironically, as he admires the old Tom',
@@ -257,16 +259,16 @@ export const rentASwag: Clip = {
       trap: 'Yes, he did を皮肉と取りやすいが、続く列挙は本気で、過去形。he は昔の Tom。',
       use: 'You’re right, I did mess that up.（確かに、あれは僕の失敗だ）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'point', seg: [189.2, 196.7],
+    { id: 'pr4', skill: 'pragma', level: 'B2', point: 'point', ctx: true, seg: [189.2, 196.7],
       stem: 'What does Tom mean by “Are we nearing the point?”', ja: 'トムの “Are we nearing the point?” はどういう意味？',
-      choices: ['Get to what you mean', 'Please keep going', 'I agree with all that'], a: 0,
-      choicesJa: ['早く本題に入って', 'どうぞ続けて', '全部そのとおり'],
+      choices: ['Please say your main point', 'Please keep going slowly', 'I agree with all of that'], a: 0,
+      choicesJa: ['早く本題を言って', 'どうぞゆっくり続けて', '全部そのとおり'],
       cue: '悪い点が並んだあとの短い質問',
-      line: 'drove you to bankruptcy. — *Are we nearing the point?*',
+      line: '…and drove you to bankruptcy. / Tom: *Are we nearing the point?*',
       said: '昔のトムの悪い所を次々に挙げられ、「そろそろ本題？」と聞く。',
-      mean: 'the point ＝ 本題、言いたいこと。「で、何が言いたいの」とせかす言い方。',
-      trap: '質問の形なので、ていねいに「続けて」と言っていると思いやすい。本当はもうやめてほしい。',
-      use: 'Can we get to the point?（本題に入ってもらえる？）' },
+      mean: 'near ＝ 近づく。the point ＝ 本題、言いたいこと。「本題に近づいてる？」→「で、何が言いたいの」とせかす。',
+      trap: '質問の形なので、ていねいに「続けて」と言っているように聞こえるが、本当はもうやめてほしい。',
+      use: 'Sorry, what’s the main point?（すみません、要点は何ですか）' },
 
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'dose', seg: [195.3, 204.7],
       stem: 'What does “in small doses” mean?', ja: '“in small doses” はどういう意味？',
@@ -274,12 +276,12 @@ export const rentASwag: Clip = {
       choicesJa: ['少しずつなら', 'たくさんなら', '週末だけなら'],
       cue: '「part of you」のあと',
       line: 'your swagger… is part of you, and *in small doses, it can help*.',
-      said: '「自信や派手さも君の一部。少しなら役に立つ」と言う。',
+      said: '「派手さも自信も、お前の一部。少しずつなら役に立つ」と言う。',
       mean: 'in small doses ＝ 少しずつなら。薬の量にたとえて「やりすぎなければ」と伝える。',
       trap: 'doses（薬の量）だけだと、量を増やす話だと思いやすい。small が量を少なくする。',
       use: 'Coffee is fine in small doses.（コーヒーは少しなら大丈夫）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'cash', seg: [201.8, 210.6],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'cash', seg: [202.0, 208.6],
       stem: 'Fill the gap: “I ___ enough cash to get everything set up.”', ja: '空所に入るのは？ “I ___ enough cash to get everything set up.”',
       choices: ['barely have', 'rarely have', 'really have'], a: 0,
       choicesJa: ['ぎりぎりしか持っていない', 'めったに持っていない', '本当に持っている'],
@@ -290,29 +292,51 @@ export const rentASwag: Clip = {
       trap: 'rarely は「レア」、really は「リー」で始まる。「ベア」と b の音で始まれば barely。',
       use: 'I barely made the train.（電車にぎりぎり間に合った）' },
 
-    { id: 'f5', skill: 'phrase', level: 'B2', point: 'chipin', seg: [204.6, 212.5],
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'chipin', ctx: true, seg: [205.2, 212.5],
       stem: 'What does “We all chipped in” mean?', ja: '“We all chipped in” はどういう意味？',
       choices: ['We each gave some money', 'We all said yes', 'We all worked hard'], a: 0,
       choicesJa: ['みんなで少しずつお金を出した', 'みんなが賛成した', 'みんなでよく働いた'],
       cue: '「Take this.」のあと',
-      line: 'I know. Take this. *We all chipped in*.',
-      said: '「分かってる。これを。みんなで出し合ったんだ」と言う。',
+      line: 'Tom: …enough cash to get everything set up. / I know. Take this. *We all chipped in*.',
+      said: '「お金がぎりぎり」に「分かってる。これを。みんなで出し合ったんだ」と返す。',
       mean: 'chip in ＝ みんなで少しずつお金を出し合う。プレゼントや食事代でよく使う。',
-      trap: 'chip（かけら、ポテトチップ）から、食べ物の話だと思いやすい。chip in で「出し合う」。',
+      trap: 'chip（かけら、ポテトチップ）から、食べ物の話を連想しやすい。chip in で「出し合う」。',
       use: 'Let’s all chip in for her gift.（みんなで彼女へのプレゼント代を出し合おう）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'change', seg: [227, 264],
-      stem: 'How has Tom changed by the end?', ja: '最後に、トムはどう変わった？',
-      choices: ['Adds flair but still saves', 'Spends like the old Tom', 'Keeps it plain and cheap'], a: 0,
-      choicesJa: ['華やかにしたが、まだ節約している', '昔のトムのように使いまくる', '地味で安いまま'],
-      cue: '2回目のピザパーティー',
-      line: 'I used the money… to *add a little flair*… — Two pizzas. — And toppings. — *Only on half*.',
-      said: 'もらったお金で店を華やかにし、2回目のピザは2枚で具付き。ただし半分だけ。',
-      mean: 'flair ＝ 華やかさ。昔の派手さを少し戻しつつ、節約も続けている。',
-      trap: '30% more swag や具付きピザで、昔に戻ったと思いやすい。Only on half が節約のなごり。',
-      use: 'Let’s spend a little, but not too much.（少しぜいたくしよう、ほどほどに）' },
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'share', seg: [210.2, 219.0],
+      stem: 'What do the friends want in return?', ja: '友だちは、その代わりに何がほしい？',
+      choices: ['A small part of the company', 'Free clothes from the store', 'All the money back later'], a: 0,
+      choicesJa: ['会社のほんの一部（株）', '店の服をただで', 'あとでお金を全部返す'],
+      cue: 'in return のあと',
+      line: 'And *in return*, you can give us, like, *one share of stock* in the company.',
+      said: '「その代わり、会社の株を1株くれればいい」と言う。',
+      mean: 'in return ＝ その代わりに、お返しに。one share of stock ＝ 株1株。お金を出したので、会社の一部をもらう。',
+      trap: 'お金を渡す場面なので、返してほしいと思いやすい。in return のあとは「株1株」。',
+      use: 'I’ll help you, and in return you buy lunch.（手伝うから、代わりにランチおごってね）' },
 
-    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hate', seg: [239.4, 247.3],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'flair', seg: [226.4, 241.6],
+      stem: 'What did Tom do with his friends’ money?', ja: 'トムは友だちのお金で何をした？',
+      choices: ['Made the store look nicer', 'Paid his old debts', 'Saved it in the bank'], a: 0,
+      choicesJa: ['店を華やかにした', '昔の借金を返した', '銀行に預けた'],
+      cue: '新しい店の紹介',
+      line: 'Welcome to the new, new Rent-A-Swag… I used the money you guys gave me to *add a little flair*',
+      said: '「新しい新しいレンタ・スワッグへようこそ」と、もらったお金で店を華やかにしたと話す。',
+      mean: 'flair ＝ 華やかさ、センス。add a little flair ＝ 少し華やかにする。昔の派手さを少し戻した。',
+      trap: 'お金を受け取った話なので、借金返しに使ったと考えがち。use the money to のあとが使い道。',
+      use: 'Let’s add a little color to the room.（部屋に少し色を足そう）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'basically', seg: [237.0, 241.3],
+      stem: 'What does “basically” mean in “I basically live here now”?', ja: '「I basically live here now」の basically はどういう意味？',
+      choices: ['Almost', 'Sometimes', 'Not yet'], a: 0,
+      choicesJa: ['ほとんど', 'ときどき', 'まだ〜ない'],
+      cue: 'Except for my bed のあと',
+      line: 'Except for my bed. I *basically* live here now.',
+      said: '家の物を全部店に持ってきた。「ベッド以外ね。もう、ほぼここに住んでる」と言う。',
+      mean: 'basically ＝ 文字どおりは「基本的に」。話し言葉では「ほぼ、実質」。ベッドはないのに住んでいる、と大げさに言う。',
+      trap: '「基本的に」と訳すとかたい話に聞こえるが、会話では「ほぼ」くらいの軽い言い方。',
+      use: 'I basically live at the office.（ほぼ会社に住んでるよ）' },
+
+    { id: 'a1', skill: 'attitude', level: 'B2', point: 'hate', seg: [239.6, 245.6],
       stem: 'Ron hates the store. What does he think that means?', ja: 'ロンは店が大嫌い。それは何を意味すると思っている？',
       choices: ['It will sell well', 'It will not sell', 'Tom should change it'], a: 0,
       choicesJa: ['よく売れる', '売れない', 'トムは変えるべき'],
@@ -320,7 +344,18 @@ export const rentASwag: Clip = {
       line: '*I hate all of this*, *which probably means it’s good for your business*.',
       said: '「全部嫌いだ。ということは、たぶん商売にはいい」と言う。',
       mean: 'which probably means 〜 ＝ ということは、たぶん〜。自分の好みは客と逆だと分かっている。',
-      trap: 'hate だけ聞くと、悪口だと思いやすい。which のあとで、いい評価に変わる。',
+      trap: 'hate だけ聞くと、悪口に聞こえるが、which のあとで、いい評価に変わる。',
       use: 'Not my style, but people will love it.（私の好みじゃないけど、受けると思う）' },
+
+    { id: 'd6', skill: 'infer', level: 'B2', point: 'half', ctx: true, seg: [255.5, 262.3],
+      stem: 'Why are there toppings on only half?', ja: 'なぜ具は半分だけ？',
+      choices: ['Tom still wants to save money', 'Half the team hates toppings', 'The shop ran out of cheese'], a: 0,
+      choicesJa: ['トムはまだ節約したい', '半分の人は具が嫌い', '店のチーズがなくなった'],
+      cue: 'Only on half のあとの一言',
+      line: 'Two pizzas. And toppings. / Tom: Only on half. *I’m not Zuckerberg.*',
+      said: '「ピザ2枚、しかも具付き」と喜ばれ、「半分だけな。俺はザッカーバーグじゃない」と返す。',
+      mean: 'ザッカーバーグ ＝ フェイスブックを作った大金持ち。「俺は大金持ちじゃない」→まだ節約している。',
+      trap: '具付きピザ2枚で、ぜいたくに戻ったと考えがち。決め手は「ザッカーバーグじゃない」の一言。',
+      use: 'I’m not made of money.（お金がわいてくるわけじゃないよ）' },
   ]
 };
