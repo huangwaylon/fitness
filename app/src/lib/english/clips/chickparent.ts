@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 2, new 3, ctx 5, tx 4
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 2, new 3, ctx 5, tx 4, qa 12
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 9, new 2
 // “Joey and Chandler Co-Parent a Chick | Friends” (the official Friends channel, Best of Season 3): Joey wants a night
 // out with the cast, Chandler has been home with the chick all day, and they fight like new parents, then give up.
@@ -41,8 +41,8 @@ export const chickParent: Clip = {
       use: 'How’s your mom doing?（お母さん、元気？）' },
 
     { id: 'girl', skill: 'detail', level: 'B2', point: 'girl', ctx: true, seg: [15.8, 22.8],
-      stem: 'Is the chick a girl? What’s the answer?',
-      ja: 'ひよこは女の子？ 答えは？',
+      stem: 'Asked if the chick is a girl, what does he answer?',
+      ja: 'ひよこは女の子かと聞かれて、何と答える？',
       choices: ['He doesn’t know', 'Yes, she’s a girl', 'No, he’s a boy'], a: 0,
       choicesJa: ['分からない', 'はい、女の子', 'いいえ、男の子'],
       cue: '「Don’t you think…?」への短い返事。',
@@ -85,7 +85,7 @@ export const chickParent: Clip = {
       line: 'I stayed home from work today… *I’m stuck here all day.*',
       said: '飲みに行くと聞いて、自分は仕事を休んで世話をし、一日中家にいたと不満をぶつける。',
       mean: '世話の負担が自分にばかり来ている、という不満。新米の親のけんかの形。',
-      trap: 'friends が聞こえるので、誘われなかった話と勘違いしやすい。文句の中身は世話。',
+      trap: '飲みに行く話が出るので、誘われなかった話と勘違いしやすい。文句の中身は世話。',
       use: 'I feel like I’m doing everything here.（私ばかりやってる気がする）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'drinks', seg: [35.5, 41.1], retired: true,
@@ -137,7 +137,7 @@ export const chickParent: Clip = {
       use: 'I was up until three last night.（昨夜は3時まで起きてた）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'getup', ctx: true, seg: [50, 59.1],
-      stem: 'What is the reply to “Who was up with her?”',
+      stem: 'What does the reply to “Who was up…?” mean?',
       ja: '「夜中に起きてたのは誰だ」への返事の意味は？',
       choices: ['I get up too, every time', 'I sleep through the night', 'I get up before you'], a: 0,
       choicesJa: ['毎回、自分も起きている', '朝までぐっすり寝ている', '君より先に起きる'],
@@ -211,7 +211,7 @@ export const chickParent: Clip = {
       choicesJa: ['仕事のあとでリラックスしたい', '劇の仲間に行くと約束した', '自分も一日中家にいた'],
       cue: '「Hey」で始まる返事。',
       line: 'Hey, *I need to relax*, okay? *I was working all day*.',
-      said: '「リラックスしたいんだ。一日中働いてたんだから」と返す。',
+      said: '「僕だって息抜きが必要なんだ。一日中働いてたんだから」と返す。',
       mean: 'I need to relax ＝ 息抜きが必要。仕事で疲れた、という言い分。',
       trap: 'stuck here all day（一日中家）は相手の言葉。それぞれの「一日中」を分けて聞く。',
       use: 'I need to relax after work.（仕事のあとは息抜きしたい）' },
