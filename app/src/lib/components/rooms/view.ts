@@ -3,6 +3,7 @@
 // and the two-finger pan on the camera (roomView: rooms/pan.ts's range, offset, way home and the gesture's pixel
 // ratio). Pure but for three's camera, and no allocation per call (the bubbles ask every frame).
 import { Vector2, Vector3, type Camera, type PerspectiveCamera, type Raycaster } from 'three';
+import { wrapAngle } from '#lib/math.ts';
 import { roomPan, type PanBox } from './pan.ts';
 
 /** A villager's height in the rooms (model units: a little over a tile and a half, NH's proportions against its beds). */
@@ -12,6 +13,8 @@ export const VILLAGER_H = 16;
 export const PACE = 45;
 /** The longest a room's first frame waits for the villagers' models (ms): its engine's holding. */
 export const ENTRY_HOLD_MS = 1500;
+/** The rooms' camera tilt's range (radians down from the horizontal). */
+export const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180;
 /** What covers a room's canvas at its top and foot (px): the room fits between. */
 export interface Insets { top: number; bottom: number }
 
@@ -38,6 +41,20 @@ export function walkLens(from: Pt, pts: readonly Pt[]): { lens: number[]; total:
     a = p;
   }
   return { lens, total };
+}
+
+/** A walk along `pts` from `from`, set off `ago` ms ago (and `wait` ms later), over `o.ms` or at PACE; `ms` that
+ *  length as asked (the walk's own at least 1). */
+export function walkOf(from: Pt, pts: readonly Pt[], o: { ago?: number; ms?: number }, wait = 0): { path: Walk; ms: number } {
+  const { lens, total } = walkLens(from, pts);
+  const ms = o.ms ?? (total / PACE) * 1000;
+  return { path: { from, pts: [...pts], t0: performance.now() - (o.ago ?? 0) + wait, ms: Math.max(1, ms), lens, total }, ms };
+}
+
+/** A room's camera `d` from `target`, turned `az` round it and tilted `pitch` down (radians), looking at it. */
+export function orbitAt(camera: Camera, target: Vector3, az: number, pitch: number, d: number): void {
+  camera.position.set(target.x + Math.sin(az) * Math.cos(pitch) * d, target.y + Math.sin(pitch) * d, target.z + Math.cos(az) * Math.cos(pitch) * d);
+  camera.lookAt(target);
 }
 
 /** Where a walk has a villager at `t` (ms), which way its leg heads, and whether it's over. (A walk heard before it
@@ -114,7 +131,7 @@ interface Aim { az: number; pitch: number; k: number }
 const AT_DEF = 0.02;
 /** At the default turn, tilt and zoom (the turn the shortest way round), the pan aside. */
 export const atAim = (v: Aim, d: Aim) =>
-  Math.abs(Math.atan2(Math.sin(v.az - d.az), Math.cos(v.az - d.az))) < AT_DEF && Math.abs(v.pitch - d.pitch) < AT_DEF && Math.abs(v.k - d.k) < AT_DEF;
+  Math.abs(wrapAngle(v.az - d.az)) < AT_DEF && Math.abs(v.pitch - d.pitch) < AT_DEF && Math.abs(v.k - d.k) < AT_DEF;
 /** The way home (ms: the recentre button's ease, the turn's and the pan's alike). */
 export const HOME_MS = 420;
 /** How long after a gesture a room keeps its lighter pixel ratio (ms): one buffer resize at the start and one at the

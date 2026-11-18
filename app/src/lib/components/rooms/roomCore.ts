@@ -1,0 +1,159 @@
+// What the room engines (tent/engine.ts: the tent, the homes, the shop; museum/engine.ts) run alike: the entry hold,
+// the frames' count and cost, the still faces' blink timer, the warm-up's timer (paused while the page is hidden), and
+// a 3D villager's pose step and head. Each engine keeps what's its own: what it warms, when a face is due, the walkers.
+import { Vector3 } from 'three';
+import type { Villager3D } from '../villager3d/villager3d.ts';
+import { EYE_MARGIN, clampEye, headAnchor, type FirstPerson, type Rect } from './firstPerson.ts';
+import { COST_FRAMES, ENTRY_HOLD_MS, type Walk } from './view.ts';
+
+const now = () => performance.now();
+
+/** The first frame waits for the villagers' models asked for by then (`track`), up to ENTRY_HOLD_MS: their programs
+ *  (skinned, ~6) compile with the room's in that one frame, behind the door's black; drawn in a frame of their own once
+ *  the room showed, they froze it (the iOS Simulator, cold: the tent 1039 ms after its first frame's 654, the museum
+ *  768). A frame is asked for once the hold runs out. */
+export function entryHold(invalidate: () => void) {
+  let pending = 0;
+  const born = now(), t = setTimeout(invalidate, ENTRY_HOLD_MS + 20);
+  return {
+    track<T>(p: Promise<T>): Promise<T> {
+      pending++;
+      return p.finally(() => pending--);
+    },
+    holding: (frames: number) => !frames && pending > 0 && now() - born < ENTRY_HOLD_MS,
+    dispose: () => clearTimeout(t)
+  };
+}
+
+/** The frames drawn, the last COST_FRAMES frames' cost (ms: the budget checks), and `ready` once the first is. */
+export function frameLog() {
+  let readyFn: () => void = () => {};
+  const log = {
+    frames: 0,
+    cost: [] as number[],
+    ready: new Promise<void>((r) => (readyFn = r)),
+    drew(ms: number) {
+      log.cost.push(ms);
+      if (log.cost.length > COST_FRAMES) log.cost.shift();
+      if (++log.frames === 1) readyFn();
+    }
+  };
+  return log;
+}
+
+/** One timer to the next time a still face changes (a blink's start or end, a snore: villager3d nextBlink), `fire` then:
+ *  not a check at a frame rate for as long as they stand. */
+export function blinkTimer(fire: () => void) {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  return {
+    /** In `next` ms (Infinity: none), the one before dropped. */
+    soon(next: number) {
+      clearTimeout(t);
+      t = next < Infinity ? setTimeout(() => ((t = undefined), fire()), next + 2) : undefined;
+    },
+    clear: () => clearTimeout(t)
+  };
+}
+
+/** The warm-up's timer: `run` `ms` after the last `soon` (while `can`: drawing, not disposed); `later` its steps on the
+ *  same timer. Hidden mid-way, a step `hold`s: taken up again when shown (`resume`), not a timer every few ms the whole
+ *  time (a frame asked for while hidden never comes). */
+export function warmer(ms: number, run: () => void, can: () => boolean) {
+  let t: ReturnType<typeof setTimeout> | undefined, held = false;
+  const w = {
+    /** Whether it's due. */
+    soon(): boolean {
+      clearTimeout(t);
+      if (!can()) return false;
+      t = setTimeout(run, ms);
+      return true;
+    },
+    later(fn: () => void, after: number) {
+      t = setTimeout(fn, after);
+    },
+    hold() {
+      held = true;
+    },
+    resume() {
+      if (held) (held = false), w.soon();
+    },
+    dispose: () => clearTimeout(t)
+  };
+  return w;
+}
+
+/** `fn` each time the page is shown again; the listener's removal. */
+export function onShown(fn: () => void): () => void {
+  const f = () => void (!document.hidden && fn());
+  document.addEventListener('visibilitychange', f);
+  return () => document.removeEventListener('visibilitychange', f);
+}
+
+/** What a room's walker has that the core's steps read. */
+interface Stepped {
+  pos: [number, number];
+  was: [number, number];
+  path: Walk | null;
+  posing: boolean;
+}
+
+/** How far a walker went since the last frame (its `was` then moved on). */
+export function stride(w: Stepped): number {
+  const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
+  w.was = [w.pos[0], w.pos[1]];
+  return moved;
+}
+
+/** A 3D villager's state (a change: posed till it settles). */
+export function stateTo(v: Villager3D, w: Stepped, state: Parameters<Villager3D['set']>[0]): void {
+  if (v.state() !== state) w.posing = true;
+  v.set(state);
+}
+
+/** A 3D villager's frame: posed while it moves (`busy`: a walk, a turn, a hop), settles (a state's crossfade, an action,
+ *  once more after it stops) or the camera moves, its stride in its own units (`scale`: the room's units over the
+ *  island's); else only its face (a blink). True while it wants frames. */
+export function poseStep(v: Villager3D, w: Stepped, t: number, dt: number, moved: number, scale: number, busy: boolean, camMoved: boolean): boolean {
+  if (busy || w.posing || camMoved) {
+    const going = v.step(t, moved / scale, w.path ? (moved / scale / Math.max(1, dt)) * 1000 : 0);
+    w.posing = busy || going;
+    return w.posing;
+  }
+  v.blink(t);
+  return false;
+}
+
+const headV = new Vector3();
+/** Over a 3D villager's head bone as it moves now, `up` above it (NH's head joint is at the head's base), or null:
+ *  no model, or none with a head. */
+export function modelHead(v: Villager3D | null | undefined, up: number): [number, number, number] | null {
+  const hb = v?.head();
+  if (!hb) return null;
+  v!.group.updateMatrixWorld(true);
+  const p = hb.getWorldPosition(headV);
+  return [p.x, p.y + up, p.z];
+}
+
+/** The first person's eye at a villager's: its model's eyes, else `guess` (written into the vector it's given), held
+ *  once it's still (headAnchor: `rest` its still state's key, null walking: its idle never moves the camera), kept
+ *  off the walls (`floors`: the eye stays over them) and what stands in its way (`solids`). One vector, reused. */
+export function eyeFollow() {
+  const eye = new Vector3(), xz: [number, number] = [0, 0], anchor = headAnchor();
+  const head = (v3: Villager3D | null, guess: (out: Vector3) => Vector3) => {
+    if (v3) {
+      v3.group.updateMatrixWorld(true);
+      if (v3.eyes(eye)) return eye;
+    }
+    return guess(eye);
+  };
+  return (t: number, rest: readonly number[] | null, v3: Villager3D | null, guess: (out: Vector3) => Vector3, floors: readonly Rect[], solids: readonly Rect[]): Vector3 => {
+    eye.copy(anchor(t, rest, () => head(v3, guess)));
+    clampEye(eye.x, eye.z, floors, solids, EYE_MARGIN, xz);
+    eye.x = xz[0];
+    eye.z = xz[1];
+    return eye;
+  };
+}
+
+/** The first-person view now (the e2e's `fpv`). */
+export const fpvOf = (fp: FirstPerson) => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] as [number, number, number] });

@@ -11,6 +11,7 @@
 // middle inside. A bottom walker (the crawfish, the mitten crab: NH's, on the sand) walks instead (stepWalker). Plain
 // arrays and numbers, no allocation in a step (the frames call it for every fish on show).
 import type { Box } from './tanks.ts';
+import { wrapAngle } from '#lib/math.ts';
 
 export interface Swimmer {
   /** Where (x, y, z) and its velocity (u/s). */
@@ -217,14 +218,14 @@ export function stepSchool(fish: Swimmer[], water: Box, dt: number, t: number): 
     }
     // turned toward its way at no more than its own rate, eased in and out (a turn round toward the side with room)
     let err = Math.atan2(dx, dz) - s.yaw;
-    err = Math.atan2(Math.sin(err), Math.cos(err));
+    err = wrapAngle(err);
     if (Math.abs(err) > 2.6) {
       const side = ((b.x0 + b.x1) / 2 - x) * fz - ((b.z0 + b.z1) / 2 - z) * fx;
       err = side >= 0 ? Math.abs(err) : -Math.abs(err);
     }
     const want = Math.max(-w, Math.min(w, err * 1.4));
     s.turn += Math.max(-w * 1.5 * h, Math.min(w * 1.5 * h, want - s.turn));
-    s.yaw = Math.atan2(Math.sin(s.yaw + s.turn * h), Math.cos(s.yaw + s.turn * h));
+    s.yaw = wrapAngle(s.yaw + s.turn * h);
     // its speed: its pace's, slower turning round, slowed with the glass ahead (its turn's room shrinking) and behind
     // another; eased (a glide's start brisk, its slowing gentle)
     const ahead = rayOut(x, z, fx, fz, b);
@@ -294,9 +295,9 @@ export function stepWalker(s: Swimmer, water: Box, dt: number, t: number, sidewa
   let want = way;
   if (sideways) {
     const l = way + Math.PI / 2, r = way - Math.PI / 2;
-    want = Math.abs(wrap(l - s.face)) < Math.abs(wrap(r - s.face)) ? l : r;
+    want = Math.abs(wrapAngle(l - s.face)) < Math.abs(wrapAngle(r - s.face)) ? l : r;
   }
-  const turn = wrap(want - s.face);
+  const turn = wrapAngle(want - s.face);
   s.face += Math.sign(turn) * Math.min(Math.abs(turn), 3 * h);
   // (a walker that isn't a crab sets off once it's turned most of the way)
   let go = sideways || Math.abs(turn) < 0.6 ? step : 0;
@@ -311,4 +312,3 @@ export function stepWalker(s: Swimmer, water: Box, dt: number, t: number, sidewa
   s.v[1] = 0;
   s.v[2] = h ? ((dz / d) * go) / h : 0;
 }
-const wrap = (a: number): number => Math.atan2(Math.sin(a), Math.cos(a));

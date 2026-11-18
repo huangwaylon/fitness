@@ -8,6 +8,7 @@
 // (it walks, it acts, the camera moves); its blinks are a texture's offset, so the island idles as it did. What it
 // wears (a birthday hat, the party glasses: assets.json `joint` models, their origin NH's head joint) rides its head bone.
 import { Matrix4, Vector3 as V3, type Vector3, type Material, type Mesh, type MeshStandardMaterial, type Object3D } from 'three';
+import { turn, wrapAngle } from '#lib/math.ts';
 import { keyModel, MODELS } from './models3d.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import { villager3, type Person3 } from '../person3d/person3d.ts';
@@ -17,7 +18,7 @@ import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
 import { nhLambert, withMaps } from './blank.ts';
 import { overHead } from './biteMark.ts';
-import { faceFloat, FACE_FLOAT_K, rodTarget, turn } from './facing.ts';
+import { faceFloat, FACE_FLOAT_K, rodTarget } from './facing.ts';
 import { anchorsOf, shapeOf, type Anchor } from '../villager3d/seats3d.ts';
 import ISLAND_MODELS from '#lib/world/models.json' with { type: 'json' };
 import { DECOR_SLOTS, DECOR_U, SCENERY, seatAt } from '#lib/world/world.ts';
@@ -452,7 +453,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       const to = anchor ? anchor.yaw : s.seat !== null ? (s.yaw ?? 0) : want;
       w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : FACE_K);
       // (the last 2° snapped: ~0.3 s of frames a turn that no one could see)
-      const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > SNAP;
+      const turning = Math.abs(wrapAngle(to - w.yaw)) > SNAP;
       if (!turning) w.yaw = to;
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep

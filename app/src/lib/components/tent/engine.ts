@@ -10,7 +10,7 @@ import {
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
   SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, type MeshStandardMaterial
 } from 'three';
-import { cubicOut } from '#lib/math.ts';
+import { cubicOut, turn, wrapAngle } from '#lib/math.ts';
 import { FULL, HALF, TILE, centreOf, emitterOf, isCeiling, isSurface, isWallItem, onTop, rectOf, wallMid, wallSpot, type Bounds, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, freeTexUrl, glowUrl, ITEMS, modelBytes, modelUrl, texUrl } from './items.ts';
 import { VILLAGER_S, createVillager, type Villager3D } from '../villager3d/villager3d.ts';
@@ -25,8 +25,9 @@ import { glbLoader } from '../world3d/gltf.ts';
 import { softDisc } from '../world3d/cards.ts';
 import { FPS } from '#lib/store/frameRate.ts';
 import { pacer } from '../world3d/pace.ts';
-import { COST_FRAMES, ENTRY_HOLD_MS, HOME_MS, PACE, VILLAGER_H, along, atAim, roomScreen, roomView, walkLens, type Insets, type Walk } from '../rooms/view.ts';
-import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
+import { HOME_MS, PITCH_MAX, PITCH_MIN, VILLAGER_H, along, atAim, orbitAt, roomScreen, roomView, walkOf, type Insets, type Walk } from '../rooms/view.ts';
+import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer } from '../rooms/roomCore.ts';
+import { camAz, firstPerson as createFirstPerson, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
 const WALL_H = 40;
@@ -665,7 +666,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       (isWallItem(s.item) ? walls[s.f]?.g ?? scene : scene).add(root);
       pending++;
       void model(s.item).then((g) => {
-        if (!--pending) warmSoon();
+        if (!--pending) warmUp.soon();
         if (disposed || live.get(s.id) !== l || !g) return;
         const body = g.scene.clone(true);
         // a lamp's own material, so one lamp turns on or off alone
@@ -879,8 +880,8 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     // a quarter turn eases round (the shortest way), the footprint already where it lands
     const to = ghostRoot.rotation.y;
-    if (same && Math.abs(Math.atan2(Math.sin(to - was), Math.cos(to - was))) > 0.01) {
-      ghostTurn = { from: was, to: was + Math.atan2(Math.sin(to - was), Math.cos(to - was)), t0: now() };
+    if (same && Math.abs(wrapAngle(to - was)) > 0.01) {
+      ghostTurn = { from: was, to: was + wrapAngle(to - was), t0: now() };
       ghostRoot.rotation.y = was;
     }
     if (ghostKey !== g.item) {
@@ -1134,8 +1135,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   function model3(who: Actor, w: Walker, look: Look) {
     // (staggered: a person's by their letter, the place's own characters each by their name)
     const p = look.person?.create(who.length > 1 ? [...who].reduce((a, c) => a + c.charCodeAt(0), 0) * 0.37 : who.charCodeAt(0) * 0.7);
-    if (p) v3Pending++;
-    if (p) void p.finally(() => v3Pending--).then((v) => {
+    if (p) void hold.track(p).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       if (w.v3) w.v3.dispose();
       else w.yaw = az + w.face * 0.5;
@@ -1284,12 +1284,11 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     const w = villagers.get(who);
     if (!w || !pts.length) return 0;
     const from: [number, number] = o.from ? [o.from[0], o.from[1]] : [...w.pos];
-    const { lens, total } = walkLens(from, pts);
-    const ms = o.ms ?? (total / PACE) * 1000;
     // (a lid over it opens first: the walk starts once it has)
     const wait = rise(w);
     if (!wait) w.pose = null;
-    w.path = { from, pts: [...pts], t0: now() - (o.ago ?? 0) + wait, ms: Math.max(1, ms), lens, total };
+    const { path, ms } = walkOf(from, pts, o, wait);
+    w.path = path;
     invalidate();
     return ms;
   }
@@ -1319,14 +1318,9 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   function headPoint(who: Actor): [number, number, number] | null {
     const w = villagers.get(who);
     if (!w) return null;
-    // a 3D villager: over its head bone as it moves now (NH's head joint is at the head's base: its top is about half
-    // the villager's height above), upright whatever its pose
-    const hb = w.v3?.head();
-    if (hb) {
-      w.v3!.group.updateMatrixWorld(true);
-      const p = hb.getWorldPosition(headV);
-      return [p.x, p.y + (w.pose?.lie ? VILLAGER_H * 0.2 : VILLAGER_H * 0.5), p.z];
-    }
+    // a 3D villager: over its head bone (its top about half the villager's height above), upright whatever its pose
+    const top = modelHead(w.v3, w.pose?.lie ? VILLAGER_H * 0.2 : VILLAGER_H * 0.5);
+    if (top) return top;
     // the card's top middle as it stands now (a hop, a seat, the camera's turn): its geometry is 0…1 up
     w.card.updateMatrixWorld();
     const p = w.card.localToWorld(headV.set(0, 1, 0));
@@ -1337,7 +1331,6 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   //      what the controls leave of the screen), then the player's to turn round that middle, tilt and zoom, within
   //      limits (the walls never clip: the near ones cut away); the limits are soft under a pinch and eased back to ----
   const DEF = { az: 0, pitch: (PITCH * Math.PI) / 180, k: sh?.follow?.k ?? 1 };
-  const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180;
   /** Zoom (× the fitted distance): in to about two and a half tiles across, out to a little past the whole room. */
   const K_MIN = 0.3, K_MAX = 1.6;
   const view = { ...DEF };
@@ -1356,12 +1349,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     // a corner-on view of the square room is wider than a side-on one: the camera steps back to keep it in
     const corner = Math.abs(Math.cos(view.az)) + Math.abs(Math.sin(view.az));
     const d = baseD * view.k * (1 + (corner - 1) * 0.85);
-    camera.position.set(
-      target.x + Math.sin(view.az) * Math.cos(view.pitch) * d,
-      target.y + Math.sin(view.pitch) * d,
-      target.z + Math.cos(view.az) * Math.cos(view.pitch) * d
-    );
-    camera.lookAt(target);
+    orbitAt(camera, target, view.az, view.pitch, d);
     camera.fov = FOV;
     // near enough to see one piece well: the near plane comes in with it
     camera.near = orbitNear = Math.max(1, d * 0.05);
@@ -1442,7 +1430,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     aim();
     // (the shadow map stays: the key light and its camera are fixed, only the furniture casts; setSize cleared the
     // canvas: drawn again now, not at the next due frame)
-    if (frames) redraw();
+    if (log.frames) redraw();
     invalidate();
   }
   /** The scene drawn now, between frames: every resize of the canvas's buffer (setSize, setPixelRatio: a gesture's
@@ -1465,7 +1453,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   const clampView = (hard = false) => {
     view.pitch = hard ? Math.min(PITCH_MAX, Math.max(PITCH_MIN, view.pitch)) : soft(view.pitch, PITCH_MIN, PITCH_MAX, 0.06);
     view.k = hard ? Math.min(K_MAX, Math.max(K_MIN, view.k)) : soft(view.k, K_MIN, K_MAX, 0.06);
-    view.az = Math.atan2(Math.sin(view.az), Math.cos(view.az));
+    view.az = wrapAngle(view.az);
   };
   function orbit(dAz: number, dPitch: number) {
     easing = null;
@@ -1539,7 +1527,6 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
 
   // ---- the first person's eye: my villager's (its model's eyes, else its card's), kept off the walls and the tall ----
-  const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
   /** A card's eyes (a render has no bones), and a piece taller than this stands in the eye's way. */
   const EYE_H = VILLAGER_H * 0.7;
   /** The floor a wall's depth in from each wall (what hangs on one stands out of it), and the pieces taller than the eye. */
@@ -1554,26 +1541,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       tall.push({ x0, x1: x0 + w * TILE, z0, z1: z0 + d * TILE });
     }
   }
-  function headOf(w: Walker): Vector3 {
-    if (w.v3) {
-      w.v3.group.updateMatrixWorld(true);
-      if (w.v3.eyes(eyeT)) return eyeT;
-    }
-    const P = w.pose;
-    if (P) eyeT.set(P.at[0], P.lie ? P.y + 3 : P.y + VILLAGER_H * 0.45, P.at[1]);
-    else eyeT.set(w.pos[0], EYE_H, w.pos[1]);
-    return eyeT;
-  }
-  /** The eye's anchor (rooms/firstPerson.ts headAnchor): held once my villager is still (its idle never moves the camera). */
-  const anchor = headAnchor();
+  const eyeAt = eyeFollow();
   function eyeOf(w: Walker, t: number): Vector3 {
     const P = w.pose;
-    eyeT.copy(anchor(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, P ? P.at[0] : -1e9, P ? P.at[1] : -1e9], () => headOf(w)));
-    // (seated, the seat is under it: only the walls)
-    clampEye(eyeT.x, eyeT.z, roomIn(), w.pose ? NONE : tall, EYE_MARGIN, eyeXZ);
-    eyeT.x = eyeXZ[0];
-    eyeT.z = eyeXZ[1];
-    return eyeT;
+    // (a card's: its seat's or its standing height; seated, the seat is under it: only the walls)
+    return eyeAt(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, P ? P.at[0] : -1e9, P ? P.at[1] : -1e9], w.v3,
+      (e) => (P ? e.set(P.at[0], P.lie ? P.y + 3 : P.y + VILLAGER_H * 0.45, P.at[1]) : e.set(w.pos[0], EYE_H, w.pos[1])), roomIn(), P ? NONE : tall);
   }
   /** The villager whose eyes the camera is at (wanted on). */
   const eyes = () => (fpWho && fp.on ? villagers.get(fpWho) : undefined);
@@ -1703,18 +1676,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
 
   // ---- the frames: on demand ----
-  let frames = 0, shadowPasses = 0, disposed = false, shadowsDirty = true;
+  let shadowPasses = 0, disposed = false, shadowsDirty = true;
+  const log = frameLog();
   // (the frames: a change's at the next display frame, at most FPS a second: world3d/pace.ts, the island's and the museum's)
   const pace = pacer((vsync) => frame(vsync));
-  /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
-   *  ~6) compile with the room's in that one frame, behind the door's black; drawn in a frame of their own once the
-   *  iris had opened, they froze it (the iOS Simulator, cold: 1039 ms, after the room's own first frame of 654 ms). */
-  let v3Pending = 0;
-  const born = now(), holding = () => !frames && v3Pending > 0 && now() - born < ENTRY_HOLD_MS;
-  const holdT = setTimeout(() => invalidate(), ENTRY_HOLD_MS + 20);
-  const cost: number[] = [];
-  let readyFn: () => void = () => {};
-  const ready = new Promise<void>((r) => (readyFn = r));
+  /** The first frame waits for the villagers' models (rooms/roomCore.ts entryHold). */
+  const hold = entryHold(() => invalidate());
   function invalidate() {
     if (!disposed) pace.kick();
   }
@@ -1730,10 +1697,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       w.pos = a.p;
       if (Math.hypot(a.d[0], a.d[1]) > 0.01) {
         w.heading = Math.atan2(a.d[0], a.d[1]);
-        let d = w.heading - w.yaw;
-        while (d > Math.PI) d -= Math.PI * 2;
-        while (d < -Math.PI) d += Math.PI * 2;
-        w.yaw += d * Math.min(1, (14 * dt) / 1000);
+        w.yaw = turn(w.yaw, w.heading, dt, 14);
       }
       const side = screenSide(a.d[0], a.d[1]);
       if (side) setFace(w, side);
@@ -1742,38 +1706,25 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     }
     else if (!w.pose) {
       // standing: it turns to the camera, a little to the side it last faced (NH's); at its own eyes, to where it looks
-      let d = (w === eyes() ? fp.yaw : az + w.face * 0.45) - w.yaw;
-      while (d > Math.PI) d -= Math.PI * 2;
-      while (d < -Math.PI) d += Math.PI * 2;
-      if (Math.abs(d) > 0.01) {
-        w.yaw += d * Math.min(1, (6 * dt) / 1000);
+      const to = w === eyes() ? fp.yaw : az + w.face * 0.45;
+      if (Math.abs(wrapAngle(to - w.yaw)) > 0.01) {
+        w.yaw = turn(w.yaw, to, dt, 6);
         busy = true;
       }
     }
-    const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
-    w.was = [w.pos[0], w.pos[1]];
-    const state = w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle';
-    if (v.state() !== state) w.posing = true;
-    v.set(state);
+    const moved = stride(w);
+    stateTo(v, w, w.pose ? (w.pose.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
     if (w.hop && t - w.hop < 1400) busy = true;
     else w.hop = 0;
     place(w);
-    if (busy || w.posing || cameraMoving) {
-      // (its stride in its own units: the room's are V3_SCALE of the island's)
-      // (posed till it settles: a state's crossfade, an action, and once more after it stops)
-      const going = v.step(t, moved / V3_SCALE, w.path ? (moved / V3_SCALE / Math.max(1, dt)) * 1000 : 0);
-      w.posing = busy || going;
-      return w.posing;
-    }
-    v.blink(t);
-    return false;
+    return poseStep(v, w, t, dt, moved, V3_SCALE, busy, cameraMoving);
   }
   /** The camera moved since the last frame (the 3D villagers are posed while it does). */
   let cameraMoving = false, camRev = '';
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     // (the first frame's programs made ready while it holds for the villagers too)
-    if (disposed || (!frames && (!primed() || holding())) || !pace.due(vsync, FPS)) return;
+    if (disposed || (!log.frames && (!primed() || hold.holding(log.frames))) || !pace.due(vsync, FPS)) return;
     const t = now();
     let more = false;
     const rv = `${view.az}:${view.pitch}:${view.k}`;
@@ -1882,7 +1833,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (easing) {
       // back to NH's view, or back inside the limits
       const k = Math.min(1, (t - easing.t0) / (easing.to ? 240 : 420)), e = cubicOut(k), f = easing.from, to = easing.to ?? DEF;
-      const dAz = Math.atan2(Math.sin(to.az - f.az), Math.cos(to.az - f.az));
+      const dAz = wrapAngle(to.az - f.az);
       view.az = f.az + dAz * e;
       view.pitch = f.pitch + (to.pitch - f.pitch) * e;
       view.k = f.k + (to.k - f.k) * e;
@@ -1961,10 +1912,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     if (!noDraw) renderer.render(scene, camera);
     drawn?.();
     // the frame's own cost (the CPU side: three's work and the GL calls), for the budget checks
-    cost.push(now() - t);
-    if (cost.length > COST_FRAMES) cost.shift();
-    frames++;
-    if (frames === 1) readyFn();
+    log.drew(now() - t);
     lastT3 = t;
     if (more) invalidate();
     else blinkSoon();
@@ -2021,25 +1969,18 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   // ---- the warm-up: what the room hasn't drawn yet made ready once it's in and still (the first person's ceiling
   //      and door, the edit mode's grid and footprints: in the scene, hidden), so turning them on compiles nothing:
   //      a program a tick (primeNext), only while no frame is wanted ----
-  let warmT: ReturnType<typeof setTimeout> | undefined;
-  function warmSoon() {
-    clearTimeout(warmT);
-    if (!noDraw && !disposed) warmT = setTimeout(warm, 400);
-  }
-  /** Hidden mid-way: taken up again when shown (a frame asked for while hidden never comes, and the warm-up waited on
-   *  it, a timer every 100-400 ms the whole time). */
-  let warmHeld = false;
+  const warmUp = warmer(400, warm, () => !noDraw && !disposed);
   function warm() {
     if (disposed) return;
-    if (document.hidden) return void (warmHeld = true);
-    if (pending || pace.queued() || !frames) return warmSoon();
+    if (document.hidden) return warmUp.hold();
+    if (pending || pace.queued() || !log.frames) return void warmUp.soon();
     const meshes = meshesOf(false);
     const step = () => {
       if (disposed) return;
-      if (document.hidden) return void (warmHeld = true);
-      if (pace.queued()) return void (warmT = setTimeout(step, 100));
+      if (document.hidden) return warmUp.hold();
+      if (pace.queued()) return warmUp.later(step, 100);
       primeNext(meshes);
-      if (meshes.length) warmT = setTimeout(step, 20);
+      if (meshes.length) warmUp.later(step, 20);
     };
     step();
   }
@@ -2047,17 +1988,14 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   // the 3D villagers' blinks while the room is still: a timer to the next time a face changes (a blink's start or end,
   // a snore: villager3d nextBlink), a frame only when one did (a texture's offset); asked again after every frame (it
   // was a check 8 times a second)
-  let blinkT: ReturnType<typeof setTimeout> | undefined;
+  const blink = blinkTimer(blinks);
   function blinkSoon() {
-    clearTimeout(blinkT);
-    if (disposed) return;
     const t = now();
     let next = Infinity;
-    for (const w of villagers.values()) if (w.v3) next = Math.min(next, w.v3.nextBlink(t));
-    if (next < Infinity) blinkT = setTimeout(blinks, next + 2);
+    if (!disposed) for (const w of villagers.values()) if (w.v3) next = Math.min(next, w.v3.nextBlink(t));
+    blink.soon(next);
   }
   function blinks() {
-    blinkT = undefined;
     if (disposed) return;
     // (hidden: no timer till it's shown again, onVis; a frame coming: its own step shows the face, and asks again)
     if (document.hidden) return;
@@ -2069,13 +2007,12 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   }
 
   // (shown again: the faces' timer from now, a frame for what changed meanwhile)
-  const onVis = () => {
-    if (document.hidden || disposed) return;
+  const offShown = onShown(() => {
+    if (disposed) return;
     invalidate();
     blinkSoon();
-    if (warmHeld) (warmHeld = false), warmSoon();
-  };
-  document.addEventListener('visibilitychange', onVis);
+    warmUp.resume();
+  });
   // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
   const unwatchGL = watchContext(canvas, o.shell ? 'shop' : 'tent', () => {
     shadowsDirty = true;
@@ -2085,7 +2022,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
   shell(FULL);
   fit();
   night(0);
-  warmSoon();
+  warmUp.soon();
 
   return {
     resize, still, surfaces, size, warn, pieces, hide, held, pick, wallAt, ghost, onHeld, nudge, flash, surfacePoint, grid, bump, room, pose, night, villager,
@@ -2094,7 +2031,7 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
-    fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),
+    fpv: () => fpvOf(fp),
     at: (who) => (villagers.get(who)?.pos.slice() as [number, number] | undefined) ?? null,
     npc(id, m, at) {
       const key = `n:${id}` as const;
@@ -2158,22 +2095,22 @@ export function createTent(canvas: HTMLCanvasElement, o: { shell?: Shell } = {})
     upIn: (who) => Math.max(0, (villagers.get(who)?.upAt ?? 0) - now()),
     lid: (id) => ((l) => (l ? lidK(l.run, now()) : null))(live.get(id)?.lid), hop, headPoint, hit, floorAt, client, orbit, zoom, pinch, fling, resetView, isDefault, moving, centre,
     loading: () => pending,
-    stats: () => ({ frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: cost.slice(), queued: pace.queued(),
+    stats: () => ({ frames: log.frames, shadows: shadowPasses, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: log.cost.slice(), queued: pace.queued(),
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0], models: furniture.stats() }),
-    ready,
+    ready: log.ready,
     dispose() {
       // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
       if (disposed) return;
       disposed = true;
       pace.stop();
       rview.dispose();
-      clearTimeout(blinkT);
-      clearTimeout(holdT);
+      blink.clear();
+      hold.dispose();
       clearTimeout(primeT);
       clearTimeout(sweepT);
-      document.removeEventListener('visibilitychange', onVis);
+      offShown();
       unwatchGL();
-      clearTimeout(warmT);
+      warmUp.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
       freeModel(scene, false, seen);

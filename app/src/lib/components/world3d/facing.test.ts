@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { faceFloat, FACE_FLOAT_K, rodTarget, turn } from './facing.ts';
+import { faceFloat, FACE_FLOAT_K, rodTarget } from './facing.ts';
+import { turn } from '#lib/math.ts';
 
 const deg = (r: number) => (r * 180) / Math.PI;
 /** The heading in plan (world x/z) from a to b. */

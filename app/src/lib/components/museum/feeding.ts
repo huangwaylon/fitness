@@ -7,6 +7,7 @@
 // ends in a bite. A cosmetic, each phone its own (a local seed): nothing shared, nothing allocated in a step, nothing
 // stepped while the tank is off screen (the caller's clock), never a feeder in a tank without a predator.
 import { CHASE, LUNGE, STALK, endChase, swimBox, type Swimmer } from './boids.ts';
+import { wrapAngle } from '#lib/math.ts';
 import type { Box } from './tanks.ts';
 import { mulberry32 } from '#lib/random.ts';
 
@@ -308,7 +309,7 @@ function stepFeeders(f: Feeding, b: Box, h: number): void {
     dx += soft(qx - b.x0) - soft(b.x1 - qx);
     dz += soft(qz - b.z0) - soft(b.z1 - qz);
     let err = Math.atan2(dx, dz) - x.yaw;
-    err = Math.atan2(Math.sin(err), Math.cos(err));
+    err = wrapAngle(err);
     x.yaw += Math.max(-TURN * h, Math.min(TURN * h, err * 3 * h));
     const sp = Math.sqrt(x.v[0] * x.v[0] + x.v[2] * x.v[2]), want = CRUISE + (FLEE - CRUISE) * Math.min(1, fear * 2) * x.dash;
     x.dash = fear > 0 ? Math.max(0, x.dash - h / 2.5) : Math.min(1, x.dash + h / 6);

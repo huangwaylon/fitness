@@ -7,6 +7,7 @@
 // look); at rest no frame is even asked for till its next blink (a timer); everything let go of on dispose
 // (world3d/stage.ts: one renderer lifecycle).
 import { Box3, DirectionalLight, Group, HemisphereLight, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { wrapAngle } from '#lib/math.ts';
 import { createPlayer, createShooter } from '../player3d/player3d.ts';
 import type { PlayerLook } from '#lib/contract/look.ts';
 import { createStage } from '../world3d/stage.ts';
@@ -78,7 +79,7 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
       else if (t - letGo < BACK_MS) {
         spin = 0;
         if (yaw !== 0) wait = letGo + BACK_MS - t;
-      } else if (Math.abs(yaw) > 0.002) yaw += Math.atan2(Math.sin(-yaw), Math.cos(-yaw)) * 0.12;
+      } else if (Math.abs(yaw) > 0.002) yaw += wrapAngle(-yaw) * 0.12;
       else yaw = 0;
     }
     if (pivot.rotation.y !== yaw) (pivot.rotation.y = yaw), (moved = true);

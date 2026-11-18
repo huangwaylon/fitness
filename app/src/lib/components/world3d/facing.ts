@@ -2,14 +2,6 @@
 // where it is, its float and its seat, so every phone, given the same steps, turns it the same way. Headings in plan,
 // radians, as world3d/villagers.ts's yaw: atan2(dx, −dz) in the world's x/z (three's rotation.y; three's z is −z).
 
-/** Turned from `a` toward `b` the short way round, a `k`-per-second ease over `dt` ms (never past it). */
-export function turn(a: number, b: number, dt: number, k: number): number {
-  let d = b - a;
-  while (d > Math.PI) d -= Math.PI * 2;
-  while (d < -Math.PI) d += Math.PI * 2;
-  return a + d * Math.min(1, (k * dt) / 1000);
-}
-
 /** How fast a standing angler turns to its float (per second: NH's quick, smooth turn, ~0.2 s to face it). */
 export const FACE_FLOAT_K = 12;
 

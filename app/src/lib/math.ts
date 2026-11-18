@@ -22,6 +22,14 @@ export const smoothstep = (a: number, b: number, v: number): number => (a === b 
 /** Ease out, cubic: quick, then settling (k in [0, 1]). */
 export const cubicOut = (k: number): number => 1 - (1 - k) ** 3;
 
+/** Turned from `a` toward `b` the short way round, a `k`-per-second ease over `dt` ms (never past it). */
+export function turn(a: number, b: number, dt: number, k: number): number {
+  let d = b - a;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return a + d * Math.min(1, (k * dt) / 1000);
+}
+
 /** Ease in and out, cubic (k in [0, 1]). */
 export const cubicInOut = (k: number): number => (k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2);
 

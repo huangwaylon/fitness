@@ -16,7 +16,7 @@ import {
 } from 'three';
 import { swallowed } from '#lib/quiet.ts';
 import { staticUrl } from '#lib/staticUrl.ts';
-import { cubicOut, wrapAngle } from '#lib/math.ts';
+import { cubicOut, turn, wrapAngle } from '#lib/math.ts';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
@@ -34,8 +34,9 @@ import { softDisc } from '../world3d/cards.ts';
 import { modelCache } from '../world3d/modelCache.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
-import { COST_FRAMES, ENTRY_HOLD_MS, HOME_MS, PACE, VILLAGER_H, along, atAim, roomScreen, roomView, walkLens, type Insets, type Walk } from '../rooms/view.ts';
-import { EYE_MARGIN, clampEye, firstPerson as createFirstPerson, headAnchor } from '../rooms/firstPerson.ts';
+import { HOME_MS, PITCH_MAX, PITCH_MIN, VILLAGER_H, along, atAim, orbitAt, roomScreen, roomView, walkOf, type Insets, type Walk } from '../rooms/view.ts';
+import { blinkTimer, entryHold, eyeFollow, fpvOf, frameLog, modelHead, onShown, poseStep, stateTo, stride, warmer } from '../rooms/roomCore.ts';
+import { firstPerson as createFirstPerson } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, CARPETS, CORNICE, DESK, DOOR_H, DOOR_HALF, DOORMAT, ENTRANCE, G1, HALL, HALL_H, HALL_PLANTS, ISLAND_RUG, OPENING, OPENINGS, PLAQUE, PLAQUE_H, PLAQUE_W, ROOMS, TILE, WALLS, WALL_T, WING_H, doorTop, inRect,
   boundsOf, navOf, roomHeld, roomIdAt, roomOf, walkable, wallDistance, wallEnds, wingOfRoom, type Nav, type Opening, type Pt, type Rect, type RoomId, type Wall, type Wing
@@ -971,7 +972,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const shadowGeo = new CircleGeometry(4.6, 20);
   const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
   disposables.push(shadowGeo, shadowMat);
-  let followed: Who = 'A', v3Pending = 0;
+  let followed: Who = 'A';
   const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0), cardTex = new TextureLoader();
   disposables.push(cardGeo);
   /** Its card (a villager with no model: `look.card`, its render) put up, or the one it had taken down. */
@@ -1000,8 +1001,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *  place, the walk and the seat going on with the new model). */
   function model3(who: Who, w: Walker, look: Look) {
     const p = look.create(who.charCodeAt(0) * 0.7);
-    if (p) v3Pending++;
-    if (p) void p.finally(() => v3Pending--).then((v) => {
+    if (p) void hold.track(p).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       w.v3?.dispose();
       w.v3 = v;
@@ -1079,25 +1079,16 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   function walk(who: Who, pts: readonly Pt[], p: { from?: Pt; ago?: number; ms?: number } = {}): number {
     const w = villagers.get(who);
     if (!w || !pts.length) return 0;
-    const from: Pt = p.from ?? [w.pos[0], w.pos[1]];
-    const { lens, total } = walkLens(from, pts);
-    const ms = p.ms ?? (total / PACE) * 1000;
+    const { path, ms } = walkOf(p.from ?? [w.pos[0], w.pos[1]], pts, p);
     w.seat = null;
-    w.path = { from, pts: [...pts], t0: now() - (p.ago ?? 0), ms: Math.max(1, ms), lens, total };
+    w.path = path;
     invalidate();
     return ms;
   }
-  const headV = new Vector3();
   function headPoint(who: Who): [number, number, number] | null {
     const w = villagers.get(who);
     if (!w) return null;
-    const hb = w.v3?.head();
-    if (hb) {
-      w.v3!.group.updateMatrixWorld(true);
-      const p = hb.getWorldPosition(headV);
-      return [p.x, p.y + VILLAGER_H * 0.5, p.z];
-    }
-    return [w.pos[0], VILLAGER_H, w.pos[1]];
+    return modelHead(w.v3, VILLAGER_H * 0.5) ?? [w.pos[0], VILLAGER_H, w.pos[1]];
   }
   let lastV = 0;
   function stepVillager(w: Walker, t: number, camMoved: boolean): boolean {
@@ -1106,38 +1097,28 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (w.path) {
       const a = along(w.path!, t);
       w.pos = a.p;
-      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle(Math.atan2(a.d[0], a.d[1]) - w.yaw) * Math.min(1, (14 * dt) / 1000);
+      if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw = turn(w.yaw, Math.atan2(a.d[0], a.d[1]), dt, 14);
       if (a.done) w.path = null;
       busy = true;
     } else if (!w.seat && fp.on && w === villagers.get(followed) && Math.abs(wrapAngle(fp.yaw - w.yaw)) > 0.01) {
       // at its eyes, standing: its (hidden) body turns to where it looks (seated, only its head: the seat holds the body);
       // never the other way round (the head is the finger's alone: rooms/firstPerson.ts)
-      w.yaw += wrapAngle(fp.yaw - w.yaw) * Math.min(1, (6 * dt) / 1000);
+      w.yaw = turn(w.yaw, fp.yaw, dt, 6);
       busy = true;
     }
-    const moved = Math.hypot(w.pos[0] - w.was[0], w.pos[1] - w.was[1]);
-    w.was = [w.pos[0], w.pos[1]];
+    const moved = stride(w);
     if (w.hop && t - w.hop < 1400) busy = true;
     else w.hop = 0;
     place(w);
     const v = w.v3;
     if (!v) return busy;
-    const state = w.seat ? (w.seat.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle';
-    if (v.state() !== state) w.posing = true;
-    v.set(state);
-    if (busy || w.posing || camMoved) {
-      const going = v.step(t, moved / V3_SCALE, w.path ? (moved / V3_SCALE / Math.max(1, dt)) * 1000 : 0);
-      w.posing = busy || going;
-      return w.posing;
-    }
-    v.blink(t);
-    return false;
+    stateTo(v, w, w.seat ? (w.seat.lie ? 'lie' : 'sit') : w.path ? 'walk' : 'idle');
+    return poseStep(v, w, t, dt, moved, V3_SCALE, busy, camMoved);
   }
 
   // ---- the camera: NH's room view, each room framed for the phone (camera.ts: its view's width, the target's range in
   //      it, a dead zone either side), following my villager ----
   const DEF = { az: 0, pitch: (PITCH * Math.PI) / 180, k: 1 };
-  const PITCH_MIN = (28 * Math.PI) / 180, PITCH_MAX = (78 * Math.PI) / 180;
   const K_MIN = 0.45, K_MAX = 1.8;
   const view = { ...DEF };
   const target = new Vector3(ENTRANCE[0], 8, ENTRANCE[1]);
@@ -1172,7 +1153,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     offset();
     aim();
     // (setSize cleared the canvas: drawn again now, not at the next due frame; see draw)
-    if (frames) draw();
+    if (log.frames) draw();
     invalidate();
   }
   /** The two-finger pan (rooms/view.ts roomView), its range the room drawn: its floor and its walls' tops. */
@@ -1189,12 +1170,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const orbitPos = new Vector3();
   function aim() {
     const d = baseD * view.k;
-    camera.position.set(
-      target.x + Math.sin(view.az) * Math.cos(view.pitch) * d,
-      target.y + Math.sin(view.pitch) * d,
-      target.z + Math.cos(view.az) * Math.cos(view.pitch) * d
-    );
-    camera.lookAt(target);
+    orbitAt(camera, target, view.az, view.pitch, d);
     // the depth range only as deep as the museum: the near plane just over its tallest top (everything lies below the
     // camera, at least ~its drop away in depth), the far one past its farthest corner; at the default view ~40× the
     // depth buffer's precision of a fixed near of 4, so floors and what lies on them never fight. At the eyes (the
@@ -1547,28 +1523,15 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const DORMAT_PAD: Rect = { x0: DOORMAT.x0 - 2, x1: DOORMAT.x1 + 2, z0: DOORMAT.z0, z1: DOORMAT.z1 + 4 };
 
   // ---- the first person's eye: my villager's (its model's eyes), kept off the walls and what stands on the floors ----
-  const eyeT = new Vector3(), eyeXZ: [number, number] = [0, 0];
   /** The floors the eye may be over: the rooms and their doorways. */
   const FLOORS: Rect[] = [
     ...ROOMS.map(({ r }) => r),
     ...OPENINGS.map((o) => (o.axis === 'x' ? { x0: o.at - 10, x1: o.at + 10, z0: o.from, z1: o.to } : { x0: o.from, x1: o.to, z0: o.at - 10, z1: o.at + 10 }))
   ];
-  function headOf(w: Walker): Vector3 {
-    if (w.v3) {
-      w.v3.group.updateMatrixWorld(true);
-      if (w.v3.eyes(eyeT)) return eyeT;
-    }
-    return eyeT.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]);
-  }
-  /** The eye's anchor (rooms/firstPerson.ts headAnchor): held once my villager is still (its idle never moves the camera). */
-  const anchor = headAnchor();
+  const eyeAt = eyeFollow();
   function eyeOf(w: Walker, t: number): Vector3 {
     const S = w.seat;
-    eyeT.copy(anchor(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, S ? S.yaw : -1e9], () => headOf(w)));
-    clampEye(eyeT.x, eyeT.z, FLOORS, w.seat ? solidsSeated : solids, EYE_MARGIN, eyeXZ);
-    eyeT.x = eyeXZ[0];
-    eyeT.z = eyeXZ[1];
-    return eyeT;
+    return eyeAt(t, w.path ? null : [w.pos[0], w.pos[1], w.yaw, w.posing ? 1 : 0, S ? S.yaw : -1e9], w.v3, (e) => e.set(w.pos[0], VILLAGER_H * 0.7, w.pos[1]), FLOORS, S ? solidsSeated : solids);
   }
   function firstPerson(on: boolean, snap = false) {
     if (on === fp.on) return;
@@ -1587,21 +1550,19 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
    *  model in, a visitor, a wing rebuilt) used to kill the chain with the rest of its textures already marked, which
    *  then uploaded mid-frame at first sight. */
   const warmed = new WeakSet<Texture>(), warmQ = new Set<Texture>();
-  let warmT: ReturnType<typeof setTimeout> | undefined, stepT: ReturnType<typeof setTimeout> | undefined;
+  let stepT: ReturnType<typeof setTimeout> | undefined;
   /** The compile poll's cancel (warmup.ts pollReady). */
   let stopCompile = () => {};
   /** A warm-up is due or under way (the e2e's: the programs settled once it's done). */
   let warming = false;
+  // (a little after the last model: its exhibit's meshes made from it; hidden mid-way: taken up again when shown)
+  const warmUp = warmer(250, warm, () => !noDraw && !disposed);
   function warmSoon() {
-    clearTimeout(warmT);
-    // (a little after the last model: its exhibit's meshes made from it)
-    if (!noDraw && !disposed) (warmT = setTimeout(warm, 250)), (warming = true);
+    if (warmUp.soon()) warming = true;
   }
-  /** Hidden mid-way: taken up again when shown (onVis; the tent's way), not a timer every 32 ms the whole time. */
-  let warmHeld = false;
   function warm() {
     if (disposed || pending) return void (warming = !!pending);
-    if (document.hidden) return void (warmHeld = true);
+    if (document.hidden) return warmUp.hold();
     scene.traverse((n) => {
       const ms = (n as Mesh).material;
       if (!ms) return;
@@ -1615,7 +1576,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     stepT = undefined;
     if (disposed) return;
     // (the rest when shown: the queue kept)
-    if (document.hidden) return void (warmHeld = true);
+    if (document.hidden) return warmUp.hold();
     let n = 0;
     for (const t of warmQ) {
       warmQ.delete(t);
@@ -1667,12 +1628,11 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   }
 
   // (shown again: a frame for what changed meanwhile, the warm-up taken up)
-  const onVis = () => {
-    if (document.hidden || disposed) return;
+  const offShown = onShown(() => {
+    if (disposed) return;
     invalidate();
-    if (warmHeld) (warmHeld = false), warmSoon();
-  };
-  document.addEventListener('visibilitychange', onVis);
+    warmUp.resume();
+  });
   // a lost context (iOS taking a backgrounded room's memory back): three restores what it can, drawn again once back
   const unwatchGL = watchContext(canvas, 'museum', () => {
     invalidate();
@@ -1680,16 +1640,10 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- the frame loop ----
   const frustum = new Frustum(), projScreen = new Matrix4();
-  let frames = 0, lastT = 0;
-  const cost: number[] = [];
-  let ambientOn = 0;
-  /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
-   *  ~6) compile with the hall's in that one frame, before anything shows; drawn in a frame of their own after the
-   *  hall's first, they froze the room just shown (the iOS Simulator, cold: 768 ms). */
-  const born = now(), holding = () => !frames && v3Pending > 0 && now() - born < ENTRY_HOLD_MS;
-  const holdT = setTimeout(() => invalidate(), ENTRY_HOLD_MS + 20);
-  let readyRes: () => void;
-  const ready = new Promise<void>((r) => (readyRes = r));
+  let lastT = 0, ambientOn = 0;
+  const log = frameLog();
+  /** The first frame waits for the villagers' models (rooms/roomCore.ts entryHold). */
+  const hold = entryHold(() => invalidate());
   /** The last frame's view, rounded (frame: whether the camera moved): its angles and zoom to 4 places, its target 2. */
   const camRev = new Float64Array(5).fill(NaN);
   let snapWalls = true;
@@ -1711,17 +1665,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let drawn: (() => void) | null = null;
   // the still faces' blinks while nothing else moves (my villager's, the curator's, the visitors'): a timer to the next
   // (villager3d nextBlink) and one frame then, as the tent does; not the ambient rate's for as long as they stand
-  let blinkT: ReturnType<typeof setTimeout> | undefined;
+  const blink = blinkTimer(() => invalidate());
   function blinkSoon(t: number) {
     let next = Infinity;
     for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing) next = Math.min(next, w.v3.nextBlink(t));
     for (const e of exhibits) if (e.group.visible && e.nextBlink) next = Math.min(next, e.nextBlink(t));
-    if (next < Infinity) blinkT = setTimeout(() => ((blinkT = undefined), invalidate()), next + 2);
+    blink.soon(next);
   }
   function frame(vsync = now()) {
     // (the frame rate's pacing, せってい's, a gesture's too; the ambience's own time)
-    if (disposed || holding() || !pace.due(vsync, FPS)) return;
-    clearTimeout(blinkT);
+    if (disposed || hold.holding(log.frames) || !pace.due(vsync, FPS)) return;
+    blink.clear();
     const t = now(), dt = lastT ? Math.min(100, t - lastT) : 16;
     let full = false;
     // the camera: eased back to NH's view, following my villager
@@ -1769,7 +1723,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const camMoved = r[0] !== a4 || r[1] !== p4 || r[2] !== k4 || r[3] !== x2 || r[4] !== z2 || fpMoved;
     r[0] = a4, r[1] = p4, r[2] = k4, r[3] = x2, r[4] = z2;
     // (at once on the way in and after a jump: only a wall going as one moves fades)
-    if (wallFade(dt, frames === 0 || snapWalls)) full = true;
+    if (wallFade(dt, log.frames === 0 || snapWalls)) full = true;
     snapWalls = false;
     for (const [who, w] of villagers) {
       if (stepVillager(w, t, camMoved)) full = true;
@@ -1796,15 +1750,13 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const dpr = rview.ratio(dprFull);
     if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     // (the floors' first bakes: rebake)
-    if (!frames) bakesDue();
+    if (!log.frames) bakesDue();
     const c0 = now();
     draw();
-    cost.push(now() - c0);
+    const c = now() - c0;
     drawn?.();
-    if (cost.length > COST_FRAMES) cost.shift();
-    frames++;
+    log.drew(c);
     lastT = t;
-    if (frames === 1) readyRes();
     if (full) invalidate();
     // (one ambient timer at a time, and a frame for anything else in between — a tap, a load — brings it forward: two
     // chains side by side ran on together at 60 a second)
@@ -1891,7 +1843,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
-    fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),
+    fpv: () => fpvOf(fp),
     inView,
     orbit(dAz, dPitch) {
       touched();
@@ -1970,23 +1922,23 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     },
     kit,
     screensCut: () => screens().map((sc) => (stateOf(sc).fade < 0.5 ? '1' : '0')).join(''),
-    stats: () => ({ frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...cost], queued: pace.asked(), ambient: ambientOn, loading: pending, warming,
+    stats: () => ({ frames: log.frames, draws, calls: renderer.info.render.calls, tris: renderer.info.render.triangles, dpr: renderer.getPixelRatio(), cost: [...log.cost], queued: pace.asked(), ambient: ambientOn, loading: pending, warming,
       mem: [renderer.info.memory.geometries, renderer.info.memory.textures, renderer.info.programs?.length ?? 0] }),
-    ready,
+    ready: log.ready,
     dispose() {
-      clearTimeout(blinkT);
+      blink.clear();
       // (once: a second call ended an ended renderer, and the room's failure path may follow its own)
       if (disposed) return;
       disposed = true;
       pace.stop();
-      document.removeEventListener('visibilitychange', onVis);
+      offShown();
       unwatchGL();
-      clearTimeout(warmT);
+      warmUp.dispose();
       clearTimeout(stepT);
       stopCompile();
       clearTimeout(bakeT);
       rview.dispose();
-      clearTimeout(holdT);
+      hold.dispose();
       clearTimeout(dipT);
       for (const e of [...exhibits, ...retired]) e.dispose();
       for (const w of villagers.values()) w.v3?.dispose();
