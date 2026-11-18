@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 3, rewrite 13, retire 0, new 5, ctx 7, tx 13
+// R4 REVIEW 2026-11-18: keep 3, rewrite 13, retire 0, new 5, ctx 7, tx 13, qa 15
 // A2 REVIEW 2026-11-17: keep 13, rewrite 5, retire 5, new 1 (nt3 stays retired)
 // “The only time Ron fought against nature | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): with Jerry retired, Ron says the office will pick a new person to tease; Tom's stumble over words makes
@@ -26,7 +26,7 @@ export const jerryBack: Clip = {
       trap: 'sad day（悲しい日）で、ジェリーが好きだったと思いやすい。make fun of を聞く。',
       use: 'Don’t make fun of me.（からかわないで）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'nature', reveals: ['one'], seg: [15.3, 30.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'nature', reveals: ['one'], seg: [15.95, 31.5],
       stem: 'What does Ron say will happen now?', ja: 'ロンはこれから何が起きると言う？',
       choices: ['Someone new will be the joke', 'A new worker will be hired', 'The teasing will end'], a: 0,
       choicesJa: ['別の誰かがからかわれ役になる', '新しい人が雇われる', 'からかいがなくなる'],
@@ -35,9 +35,9 @@ export const jerryBack: Clip = {
       said: 'ロンが「一人去れば、職場が自然に次のジェリーを選ぶ。すぐにお前たちの誰かがそうなる」と言う。',
       mean: 'select ＝ 選ぶ。ridicule ＝ 笑いものにする。one of you ＝ お前たちのうちの誰か。',
       trap: 'select（選ぶ）から、新しく人を雇う話と考えがち。決め手は one of you。',
-      use: 'No need to worry.（心配いらないよ）' },
+      use: 'Can one of you help me?（どなたか一人、手伝ってもらえますか）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'year', seg: [39.2, 47.6],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'year', seg: [38.8, 47.6],
       stem: 'How did Leslie want the reports put in order?', ja: 'レスリーは報告書をどう並べてほしかった？',
       choices: ['By year', 'By month', 'By animal'], a: 0,
       choicesJa: ['年ごと', '月ごと', '動物ごと'],
@@ -201,7 +201,7 @@ export const jerryBack: Clip = {
       trap: 'big（大きい）から体の大きさに聞こえるが、ここは「大物」。',
       use: 'It’s no big deal.（大したことないよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'shelter', seg: [187, 198.4],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'shelter', seg: [187, 197.95],
       stem: 'Why did Taylor quit football?', ja: 'テイラーはなぜフットボールをやめた？',
       choices: ['To help run a homeless shelter', 'To help on his family’s farm', 'To spend more time with Natalie'], a: 0,
       choicesJa: ['ホームレス施設を手伝うため', '家の農場を手伝うため', 'ナタリーともっと過ごすため'],
@@ -209,7 +209,7 @@ export const jerryBack: Clip = {
       line: 'I quit football senior year so I could help my pastor *run a homeless shelter*.',
       said: 'テイラーが「牧師さんのホームレス施設を手伝うために、やめた」と言う。',
       mean: 'so I could 〜 ＝ 〜できるように。shelter ＝ 保護施設。',
-      trap: 'Natalie（姉の名前）が前に出たので、彼女のためだと思いやすい。',
+      trap: 'すぐ前にドナの妹ナタリーの名前が出たので、彼女のためと勘違いしやすい。決め手は so I could のあと。',
       use: 'I quit so I could study.（勉強できるようにやめた）' },
 
     { id: 'm1', skill: 'marker', level: 'B2', point: 'actually', ctx: true, seg: [187.5, 194.5],
@@ -286,7 +286,7 @@ export const jerryBack: Clip = {
       line: 'I’m going to go buy some sweatpants and a Nicholas Sparks novel. *Might as well lean into it.*',
       said: 'トムが「スウェットと恋愛小説を買ってくる。どうせならとことんなりきってやる」と言う。',
       mean: 'lean into 〜 ＝ 文字どおりは「〜に体を預ける」→「逆らわず受け入れる」。might as well ＝「どうせなら」。',
-      trap: 'lean（寄りかかる）から、戦う話と考えがち。スウェットを買う＝ジェリーになりきる、が手がかり。',
+      trap: 'lean into（体重をかける）を「押し返す」と取ると戦う話に聞こえる。手がかりはスウェットを買う話。',
       use: 'It’s raining. Might as well stay home.（雨だし、家にいようか）' },
 
     { id: 'd4', skill: 'detail', level: 'B1', point: 'himself', seg: [248.7, 254.5],

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 12, retire 1, new 2, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 6, rewrite 12, retire 1, new 2, ctx 4, tx 5, qa 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 3, new 2
 // “Parks and Recreation | Leslie Sets the World Straight (Episode Highlight)” (the official Parks and Recreation
 // channel, Season 6): at Ben's campaign event Leslie starts a statement about her choice, Ben stops her and defends
@@ -82,7 +82,7 @@ export const setStraight: Clip = {
       trap: '失言を字面どおりに取りやすい。came out wrong のあとの The point is が答え合わせ。',
       use: 'You don’t owe anyone an explanation.（誰にも説明する義務はない）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'tired', seg: [38.9, 50.9],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'tired', seg: [39.1, 50.9],
       stem: 'What is Ben tired of?', ja: 'ベンは何にうんざりしている？',
       choices: ['People saying Leslie chose wrong', 'People asking her to choose jobs', 'Leslie choosing without asking him'], a: 0,
       choicesJa: ['レスリーの選択はよくないと言う人たち', '仕事を選べと言う人たち', '相談せずに決めるレスリー'],
@@ -104,7 +104,7 @@ export const setStraight: Clip = {
       trap: 'less（より少なく）から「少しは気にする」に聞こえるが、意味はゼロ。',
       use: 'I couldn’t care less what they think.（どう思われようと全然平気）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', ctx: true, seg: [50.3, 64.0],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', ctx: true, seg: [48.7, 63.0],
       stem: 'What is the first thing Leslie says sorry for?', ja: 'レスリーが最初に謝ることは？',
       choices: ['People look at her, not Ben', 'Ben had to stop his speech', 'She was late getting to the event'], a: 0,
       choicesJa: ['ベンでなく自分が注目されている', 'ベンが演説を止めた', 'イベントに遅れた'],
@@ -126,10 +126,10 @@ export const setStraight: Clip = {
       trap: 'sorry が聞こえると、批判を受け入れたと取りやすい。謝罪の向きは that のあとで決まる。',
       use: 'I’m sorry you feel that way.（そう感じさせたならごめんね）' },
 
-    { id: 'q1', skill: 'detail', level: 'B1', point: 'silly', seg: [70.5, 78.0],
+    { id: 'q1', skill: 'detail', level: 'B1', point: 'silly', seg: [70.5, 78.25],
       stem: 'What is Leslie going to answer now?', ja: 'レスリーはこれから何に答える？',
-      choices: ['Silly questions women get', 'Questions about Ben’s plans', 'Questions about the city'], a: 0,
-      choicesJa: ['女性がよく聞かれるくだらない質問', 'ベンの計画についての質問', '町についての質問'],
+      choices: ['Questions women always get', 'Questions about Ben’s plans', 'Questions about the city'], a: 0,
+      choicesJa: ['女性がいつも聞かれる質問', 'ベンの計画についての質問', '町についての質問'],
       cue: '「Third」のあと、「answers to」の先',
       line: 'Third, I’m now going to give you permanent answers to *all the silly questions* that you’re going to end up asking me and every other woman…',
       said: '「3つ目。皆さんが私やほかの女性候補にいずれ聞く、くだらない質問全部に、決定版の答えを出します」と言う。',
@@ -137,7 +137,7 @@ export const setStraight: Clip = {
       trap: 'ベンの選挙イベントなので、政策の質問を予想しやすい。answers to のあとが中身。',
       use: 'Sorry for the silly question.（くだらない質問でごめんね）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'gum', seg: [78.3, 84.0],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'gum', seg: [78.25, 84.0],
       stem: 'Type her second answer: “Or my kids ___.” (4 words)', ja: '2つめの答えを書こう：「Or my kids ___.」（4語）',
       answer: 'got gum in it',
       cue: '「look better」のあと', line: 'I just thought it would look better. Or my kids *got gum in it*.',
@@ -159,8 +159,8 @@ export const setStraight: Clip = {
 
     { id: 'a3', skill: 'attitude', level: 'B1', point: 'stupidq', seg: [84.0, 89.4],
       stem: 'How does Leslie feel about that question?', ja: 'その質問について、レスリーはどう思っている？',
-      choices: ['Fed up with hearing it', 'Hurt by what it suggests', 'Amused by how silly it is'], a: 0,
-      choicesJa: ['聞き飽きてうんざり', '言われていることに傷ついている', 'ばかばかしくておもしろい'],
+      choices: ['Annoyed that people ask it', 'Hurt by what it says', 'Amused by how silly it is'], a: 0,
+      choicesJa: ['聞かれることにいらいらしている', '言われていることに傷ついている', 'ばかばかしくておもしろがっている'],
       cue: '質問のあとの短い文',
       line: 'That question *makes no sense*. It’s a *stupid question*. *Stop asking it.*',
       said: '「その質問は意味が分かりません。ばかな質問です。聞くのはやめて」とたたみかける。',
@@ -179,18 +179,18 @@ export const setStraight: Clip = {
       trap: '最後の否定を本音の逆転と取りやすい。sometimes は打ち消しではなく、言い過ぎを直す語。',
       use: 'I love my job. Well, most days.（仕事は好き。まあ、たいていの日はね）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'doyou', seg: [89.0, 95.1],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'doyou', seg: [89.45, 95.1],
       stem: 'Fill the gap: “___ miss your kids while you’re at work?”', ja: '空所に入るのは？「___ miss your kids while you’re at work?」',
-      choices: ['Do you', 'Don’t you', 'Did you'], a: 0,
-      choicesJa: ['〜する？', '〜しないの？', '〜した？'],
+      choices: ['Do you', 'Don’t you', 'Would you'], a: 0,
+      choicesJa: ['〜する？', '〜しないの？', '〜するだろうか？'],
       cue: '3つめの質問の最初',
       line: '*Do you* miss your kids while you’re at work? — Yes, of course I do.',
       said: '「仕事中、子どもが恋しくなる？」と読み上げ、「ええ、もちろん」と自分で答える。',
       mean: 'Do you は小さく短く「ドゥユ」と言う。答えも I do と do で返している。',
-      trap: '「ドゥユ」なら Do you、「ドンチュ」と「ン」が残れば Don’t you、「ディジュ」なら Did you。',
+      trap: '「ドゥユ」なら Do you、「ドンチュ」と「ン」が残れば Don’t you、「ウッジュ」なら Would you。',
       use: 'Do you ever miss home?（家が恋しくなることある？）' },
 
-    { id: 'k1', skill: 'infer', level: 'B1', point: 'sometimes', seg: [92.0, 97.0],
+    { id: 'k1', skill: 'infer', level: 'B1', point: 'sometimes', seg: [92.0, 96.85],
       stem: 'Does Leslie always miss her kids at work?', ja: 'レスリーは、仕事中いつも子どもが恋しい？',
       choices: ['No, not every time', 'Yes, every single day', 'No, never at all'], a: 0,
       choicesJa: ['いいえ、いつもではない', 'はい、毎日ずっと', 'いいえ、まったくない'],
@@ -201,7 +201,7 @@ export const setStraight: Clip = {
       trap: 'of course から「いつも」と考えがち。決め手は最後の sometimes I don’t。',
       use: 'I love my job. Well, sometimes I don’t.（仕事は好き。まあ、そうでもない日もある）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'double', seg: [96.6, 103.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'double', seg: [96.8, 102.78],
       stem: 'What is Ben’s point about these questions?', ja: 'こうした質問について、ベンが言いたいことは？',
       choices: ['Only women get asked them', 'Only men get asked them', 'Only parents get asked them'], a: 0,
       choicesJa: ['女性だけが聞かれる', '男性だけが聞かれる', '親だけが聞かれる'],
@@ -278,10 +278,10 @@ export const setStraight: Clip = {
       trap: 'Or neither は短く速く、聞き落としやすい。both のすぐあとの「オア」を聞く。',
       use: 'Tea or coffee? — Neither, thanks.（紅茶かコーヒー？—どちらも結構です）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'split', seg: [131.6, 138.2], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'split', seg: [134.5, 140.2], keep: true,
       stem: 'How does someone describe the crowd’s reaction?', ja: '観客の反応を、ある人はどう言う？',
-      choices: ['Mostly boos', 'Half boos, half cheers', 'Mostly cheers'], a: 1,
-      choicesJa: ['ほとんどブーイング', 'ブーイングと歓声が半々', 'ほとんど歓声'],
+      choices: ['Mostly boos', 'Half boos, half cheers', 'Mostly cheers', 'Only cheers'], a: 1,
+      choicesJa: ['ほとんどブーイング', 'ブーイングと歓声が半々', 'ほとんど歓声', '歓声だけ'],
       cue: '「boos and cheers」の前',
       line: 'Say that’s *50/50* boos and cheers. — That seems about right.',
       said: '「ブーイングと歓声が半々ってところね」「まあ、そんなところだね」と言い合う。',
@@ -289,7 +289,7 @@ export const setStraight: Clip = {
       trap: 'boos が先に聞こえるので、ほとんどブーイングに聞こえる。決め手は前の数字。',
       use: 'The chance is fifty-fifty.（確率は五分五分だ）' },
 
-    { id: 'h4', skill: 'phrase', level: 'B1', point: 'late', ctx: true, seg: [142.2, 149.0],
+    { id: 'h4', skill: 'phrase', level: 'B1', point: 'late', ctx: true, seg: [143.25, 149.4],
       stem: 'The man says, “*My bad*.” What does it mean?', ja: '男性の「My bad」はどういう意味？',
       choices: ['Sorry, my mistake', 'I feel a little sick', 'That’s too bad'], a: 0,
       choicesJa: ['ごめん、私のミス', '少し気分が悪い', 'それはお気の毒に'],

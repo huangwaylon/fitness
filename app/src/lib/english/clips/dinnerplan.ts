@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5, qa 5
+// R4 REVIEW 2026-11-18: keep 9, rewrite 2, retire 3, new 3, ctx 3, tx 5, qa 6
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 4, new 0
 // “Michael's Cunning Dinner Party Plan - The Office US” (the official The Office channel, BEST OF SEASON 4 - The Office
 // US): the staff are kept late on a Friday; Michael stages an angry call to corporate, sends everyone home, then holds
@@ -8,6 +8,7 @@
 // Untested: 27–28.5 s (captions "I'm— it's— God", whisper "I'm Scott"); 61.5 s ("mi casa": captions "me castle");
 // 93.9 s (captions "him and Jim", whisper "ham and Jim"); 97.8 s ("Hello"/"Hey": speaker not named); the pause at
 // 64.8–68 s (the captions have a gap, whisper's timings don't, so no pause item).
+// EXCLUDE 20.8–22.6 (“This is B.S.”, a disguised swear)
 // SKIP 102–130: music (Dwight's silence, then the end card).
 import type { Clip } from '../types.ts';
 
@@ -41,7 +42,7 @@ export const dinnerplan: Clip = {
       trap: 'least（いちばん少ない）から「気にしない」と思いやすい。否定のあとなら「特に〜は」。',
       use: 'Nobody wants to wait. Least of all me.（誰も待ちたくない。私は特に）' },
 
-    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', ctx: true, seg: [8.8, 16.5],
+    { id: 'i1', skill: 'detail', level: 'B1', point: 'plans', ctx: true, seg: [8.8, 17],
       stem: 'Michael asks if Jim has plans tonight. What does Jim say?',
       ja: 'マイケルはジムに今夜の予定を聞く。ジムの答えは？',
       choices: ['No, he has none', 'Yes, dinner with Pam', 'He isn’t sure yet'], a: 0,
@@ -53,7 +54,7 @@ export const dinnerplan: Clip = {
       trap: 'あとでパムと夕食に誘われるので、パムとの予定と考えがち。最初の返事は短い No。',
       use: 'Do you have plans tonight? — No, I’m free.（今夜予定ある？—ないよ、空いてる）' },
 
-    { id: 't1', skill: 'attitude', level: 'B1', point: 'mad', seg: [21.2, 33.2],
+    { id: 't1', skill: 'attitude', level: 'B1', point: 'mad', seg: [22.6, 33.2],
       stem: 'How does Michael sound before the phone call?',
       ja: '電話の前、マイケルはどんな様子？',
       choices: ['Angry and ready to fight', 'Tired and ready to go home', 'Calm and happy to wait'], a: 0,
@@ -77,7 +78,7 @@ export const dinnerplan: Clip = {
       trap: '残業の話なので、疲れの話と考えがち。決め手は These people are のあと。',
       use: 'It’s not fair to the others.（ほかの人に不公平だよ）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'gohome', reveals: ['horn'], seg: [40.6, 56.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'gohome', reveals: ['horn'], seg: [40.6, 56.5],
       stem: 'What news does Michael give everybody?',
       ja: 'マイケルはみんなにどんな知らせを伝える？',
       choices: ['Everyone can go home now', 'Everyone must finish the work', 'Everyone gets extra pay'], a: 0,
@@ -111,7 +112,7 @@ export const dinnerplan: Clip = {
       trap: 'where を文字どおり取ると「送り先」に、文句の調子だけだと渋々の承知に聞こえる。',
       use: 'He told them where to stick it.（あいつ、きっぱり突っぱねたよ）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'celebrate', ctx: true, seg: [54.5, 64.7],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'celebrate', ctx: true, seg: [55.2, 64.7],
       stem: 'Jim is glad. What does Michael suggest next?',
       ja: 'ジムはほっとする。マイケルが次に言い出すのは？',
       choices: ['Dinner at his house', 'Going home to rest', 'More work on Monday'], a: 0,
@@ -204,7 +205,7 @@ export const dinnerplan: Clip = {
       trap: 'out の t と of が消えやすく、get out it と書きやすい。of を入れて4語。',
       use: 'Can I get out of it?（それ、断れるかな）' },
 
-    { id: 't2', skill: 'attitude', level: 'B2', point: 'credit', seg: [75.5, 87.5],
+    { id: 't2', skill: 'attitude', level: 'B2', point: 'credit', seg: [75.5, 88.3],
       stem: 'How does Jim feel about Michael’s trick?',
       ja: 'マイケルのやり方を、ジムはどう思っている？',
       choices: ['He has to admire it', 'He is hurt and angry', 'He is glad to go'], a: 0,
@@ -299,7 +300,7 @@ export const dinnerplan: Clip = {
       trap: '「フォー」なら4、「シックスティーン」と後ろを伸ばせば16。短く「シックス」で止まれば6。',
       use: 'I only have two tickets.（チケットは2枚しかない）' },
 
-    { id: 'c3', skill: 'detail', level: 'B1', point: 'bother', seg: [97.1, 104.0],
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'bother', seg: [97.5, 104.0],
       stem: 'What is Dwight asked about?',
       ja: 'ドワイトは何について聞かれている？',
       choices: ['Not being invited to dinner', 'Working late on a Friday', 'Breaking a wine glass'], a: 0,
