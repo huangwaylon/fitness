@@ -26,6 +26,8 @@ export interface Deal {
   lander: Who;
   /** The game's pictures and lines already used (not dealt again). */
   used: { pictures: ReadonlySet<string>; lines: ReadonlySet<string> };
+  /** The game's rules (wire.ts RULES; none: a game from before '3'): a deal that changed since goes by them. */
+  rules?: string;
 }
 /** Something a mini-game made, for the results (みんなで覚えたことば, each one's good thing). */
 export interface MiniMade { who: Who; kind: 'word' | 'sentence' | 'picture'; text: string; ja: string; stars: number }

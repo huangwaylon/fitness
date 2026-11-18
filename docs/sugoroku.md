@@ -96,7 +96,7 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
 
 ## みんなで！ (mini-games)
 
-**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '2'. The logic is `lib/sugoroku/mini/` (pure,
+**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '3'. The logic is `lib/sugoroku/mini/` (pure,
 tested), the screens `components/mini/`; design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
 なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered
 (`mini/offer.ts OFFERED`: adding one changes what a landing deals, so it goes with a RULES bump).
@@ -123,7 +123,10 @@ tested), the screens `components/mini/`; design: the 11-18 proposal (user-approv
   tick: the `mg`'s room stamp (`Move.t`, `miniOpenedAt`) + 3 s countdown + the game's length; any phone sends `mc` 1 s
   after the end; the first closes, later ones and plays after it are nothing. A game's own end (every count in, the
   rounds or lines done) closes it in the fold. A dropped phone's plays already in stand; back, it folds the same.
-- **Rules:** RULES '2' (GEN 2 boards, the mini-games); '1' still folded, so an older game plays on as it was.
+- **Rules:** RULES '3' (GEN 2 boards, the mini-games, nothing dealt solved: みんなで一文's weakest seat the first word
+  only, the rest dealt apart (a word's neighbours in other hands where the counts allow), each hand shown shuffled and
+  never in the line's order while it holds two words; the market's rack never reads its word); '2' (hands in the line's
+  order) and '1' still folded, so an older game plays on as it was (the game's `rules`, mini-games' `Deal.rules`).
 - **The screen** (`MiniTurn`, in the turn's sheet opened tall; the 3D board idle): the pick, a 3-2-1, one bar drained by
   a CSS animation (yuzu with 「あと5秒！」), the game, then `MiniResults` on every phone till 次へ (what it made in
   TurnResult with the team's stars, each seat's part in seat order, a seat with none お休み). Online every seat dealt

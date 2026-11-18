@@ -15,11 +15,13 @@ export type Move = Omit<SgIntent, 'kind'> & { who: Who; t?: number };
  *  update (otherRules). Bump it with any change to what a fold makes of the moves: game.ts's rules, the cards, the
  *  pictures, the board generator (family.ts GEN), the word or line lists (online.test's pins fail until it is). '1' the
  *  games before mini-games (GEN 1 boards), '2' with them (GEN 2: みんなで！ stones), started once they're on
- *  (mini/flag.ts); a game keeps the rules it started on, so an older one plays on as it was. */
-export const RULES = MINIS ? '2' : '1';
+ *  (mini/flag.ts), '3' their deal unsolved (みんなで一文's hands apart and shuffled, the market's word never on its rack
+ *  to read: the game's `rules`, mini/types.ts Deal); a game keeps the rules it started on, so an older one plays on as
+ *  it was. */
+export const RULES = MINIS ? '3' : '1';
 /** The rules this build folds, and each one's board generator. */
-const PLAYS: readonly string[] = MINIS ? ['1', '2'] : ['1'];
-export const genOfRules = (r: string | undefined): Gen => (r === '2' ? 2 : 1);
+const PLAYS: readonly string[] = MINIS ? ['1', '2', '3'] : ['1'];
+export const genOfRules = (r: string | undefined): Gen => (r === '2' || r === '3' ? 2 : 1);
 export const playsRules = (r: string | undefined): boolean => r !== undefined && PLAYS.includes(r);
 /** Whether the game held was started on rules this build doesn't play (or before they were sent): it can't be played here. */
 export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && !playsRules(log[0].r);

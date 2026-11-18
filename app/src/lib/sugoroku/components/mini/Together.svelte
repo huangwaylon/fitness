@@ -22,8 +22,12 @@
 
   const line = $derived(s.lines[s.l] ?? null);
   const shared = $derived(mode === 'local');
-  /** The cards not placed, by seat (a freed seat's anyone's). */
-  const hands = $derived(line ? s.seats.map((x) => ({ who: x.who, cards: line.words.map((w, k) => ({ w, k })).filter(({ k }) => line.owner[k] === x.who && !s.row.includes(k)), free: s.free.includes(x.who) })) : []);
+  /** The cards not placed, by seat, as dealt (shuffled; RULES '2': in the line's order); a freed seat's anyone's. */
+  const hands = $derived.by(() => {
+    if (!line) return [];
+    const order = line.order ?? line.words.map((_, k) => k);
+    return s.seats.map((x) => ({ who: x.who, cards: order.filter((k) => line.owner[k] === x.who && !s.row.includes(k)).map((k) => ({ w: line.words[k], k })), free: s.free.includes(x.who) }));
+  });
   const mine = $derived(hands.filter((h) => h.who === seat || (h.free && !!seat)));
   const others = $derived(hands.filter((h) => h.who !== seat && !h.free));
   function place(k: number) {

@@ -29,13 +29,15 @@ export interface MarketState {
 const SEEDS = seeds as { e: number; w: string[] };
 
 /** The rack: a 6–7 letter common word (an everyday one 6 times in 10) and letters from a fresh bag to MARKET_TILES,
- *  shuffled. */
-function rackOf(r: () => number): { rack: string[]; base: string } {
+ *  shuffled; `apart` (RULES '3'), never with the word there to read (turned round a tile till it isn't). */
+function rackOf(r: () => number, apart: boolean): { rack: string[]; base: string } {
   const pool = (r() < 0.6 ? SEEDS.w.slice(0, SEEDS.e) : SEEDS.w).filter((w) => w.length === 6 || w.length === 7);
   const base = pool[Math.floor(r() * pool.length)];
   const bag = newBag(r);
   for (const l of base) bag.splice(bag.indexOf(l), 1);
-  return { rack: shuffle([...base, ...bag.slice(0, MARKET_TILES - base.length)], r), base };
+  const rack = shuffle([...base, ...bag.slice(0, MARKET_TILES - base.length)], r);
+  for (let k = 0; apart && k < rack.length && rack.join('').includes(base); k++) rack.push(rack.shift()!);
+  return { rack, base };
 }
 
 /** A word's points for a seat: as a ことば's (no lucky letters, no ×2), the seat's level's everyday bonus. */
@@ -65,7 +67,7 @@ export function marketHint(s: MarketState, who: Who, k: number, ctx: Ctx): strin
 
 export const market: MiniGame<MarketState> = {
   deal(d: Deal): MarketState {
-    return { seats: [...d.seats], ...rackOf(seeded(`${d.seed}:market`)), found: [] };
+    return { seats: [...d.seats], ...rackOf(seeded(`${d.seed}:market`), Number(d.rules ?? 0) >= 3), found: [] };
   },
   play(s, who, p: Play, ctx) {
     const w = p.w;

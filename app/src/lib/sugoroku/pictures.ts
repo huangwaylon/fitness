@@ -32,7 +32,18 @@ export const pictureSrc = (p: Picture): string => `https://fonts.gstatic.com/s/e
 /** A picture spelt: first try, after a nudge, after 答えはこれ. */
 export const PICTURE_STARS = [5, 3, 2];
 
-/** The letters a seat spells a picture with (level 2: its own letters; 3: and two more), shuffled by `r`. */
+/** Whether the tiles read the word (or, at ふつう, what's left once its first letter is given: the first such tile;
+ *  never for a rest of one letter: egg, bee). */
+function reads(tiles: readonly string[], w: string, level: number): boolean {
+  if (tiles.join('').includes(w)) return true;
+  if (level !== 2 || new Set(w.slice(1)).size < 2) return false;
+  const rest = [...tiles];
+  rest.splice(rest.indexOf(w[0]), 1);
+  return rest.join('').includes(w.slice(1));
+}
+
+/** The letters a seat spells a picture with (level 2: its own letters; 3: and two more), shuffled by `r`, never there
+ *  to read (turned round a tile till they aren't). */
 export function lettersFor(p: Picture, level: number, r: () => number): string[] {
   const extra = level >= 3 ? ['e', 'a', 'r', 's', 't', 'o', 'n', 'l'].filter((l) => !p.w.includes(l)).slice(0, 8) : [];
   const pool = extra.length ? extra : ['k', 'm'];
@@ -42,6 +53,7 @@ export function lettersFor(p: Picture, level: number, r: () => number): string[]
     const j = Math.floor(r() * (i + 1));
     [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
   }
+  for (let k = 0; k < tiles.length && reads(tiles, p.w, level); k++) tiles.push(tiles.shift()!);
   return tiles;
 }
 

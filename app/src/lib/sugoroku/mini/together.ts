@@ -5,7 +5,9 @@
 // at the table's lowest seat's level. A line's stars, to everyone present: ぶん's (6, 4 after a nudge, 2 with 答えはこれ:
 // `op` 'show'), +2 when no tile came back, +1 at むずかしい (the Japanese only after the line).
 // A seat gone quiet: anyone may make its tiles everyone's (`op` 'free', `k` its seat: the sheet's after 15 s).
-import { seeded } from '#lib/random.ts';
+// RULES '3' on: the tiles past the opener dealt apart (hands.ts `apart`: a word's neighbours in other hands, so the
+// table has to talk), each hand shown shuffled and never in the line's order while it holds two (`order`).
+import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import type { Line } from '../sentences.ts';
 import { dealHands } from './hands.ts';
@@ -19,7 +21,11 @@ const CLEAN = 2, UNSEEN = 1;
 /** The words hard to place, the strongest seat's (articles, prepositions, the common verbs and helpers). */
 const HARD = new Set(['a', 'an', 'the', 'to', 'in', 'on', 'at', 'of', 'for', 'with', 'from', 'by', 'about', 'is', 'are', 'am', 'was', 'were', 'be', 'do', 'does', 'did', 'have', 'has', 'can', 'will', 'would', 'should']);
 
-interface TogetherLine { en: string; ja: string; words: string[]; owner: Who[] }
+interface TogetherLine {
+  en: string; ja: string; words: string[]; owner: Who[];
+  /** The tiles as the hands show them (word indices, seat by seat); none (RULES '2'): in the line's order. */
+  order?: number[];
+}
 export interface TogetherState {
   seats: Hand[];
   lander: Who;
@@ -41,6 +47,19 @@ export interface TogetherState {
 /** The fewest words a line needs for the seats (2 tiles each at 3 seats). */
 const minWords = (seats: number): number => (seats >= 3 ? 5 : seats === 2 ? 4 : 3);
 const bare = (w: string): string => w.toLowerCase().replace(/[^a-z']/g, '');
+
+/** Each seat's tiles shuffled, its last two (in the line, by word) the other way round: as the tiles go down in order,
+ *  what's left of a hand never reads in the line's order while it holds two different words. */
+function handOrder(words: readonly string[], owner: readonly Who[], seats: readonly Hand[], r: () => number): number[] {
+  return seats.flatMap(({ who }) => {
+    const mine = owner.flatMap((o, i) => (o === who ? [i] : []));
+    const out = shuffle([...mine], r), last = mine.at(-1)!;
+    const before = mine.findLast((i) => words[i] !== words[last]);
+    const [b, l] = [out.indexOf(before ?? -1), out.indexOf(last)];
+    if (b >= 0 && b < l) [out[b], out[l]] = [last, before!];
+    return out;
+  });
+}
 
 /** The table's lines: the lowest seat's level (then the nearest), long enough for the seats, not used yet. */
 function pickLines(lines: readonly Line[], level: number, seats: number, used: ReadonlySet<string>, r: () => number): Line[] {
@@ -69,10 +88,13 @@ function lineStars(res: { nudges: number; shown: boolean }, unseen: boolean): nu
 export const together: MiniGame<TogetherState> = {
   deal(d: Deal, ctx: Ctx): TogetherState {
     const r = seeded(`${d.seed}:together`), level = Math.min(...d.seats.map((s) => s.level));
-    const lines = pickLines(ctx.lines, level, d.seats.length, d.used.lines, r).map(([en, ja]) => {
+    const apart = Number(d.rules ?? 0) >= 3;
+    const lines = pickLines(ctx.lines, level, d.seats.length, d.used.lines, r).map(([en, ja]): TogetherLine => {
       const words = en.split(' ');
       const hard = words.map((w, i) => (HARD.has(bare(w)) ? i : -1)).filter((i) => i >= 0);
-      return { en, ja, words, owner: dealHands(words.length, d.seats, r, { first: words.length >= 2 * d.seats.length ? 2 : 1, hard }) };
+      // (apart: the weakest the first word only, else a long line's first two: its whole hand at two seats)
+      const owner = dealHands(words.length, d.seats, r, { first: !apart && words.length >= 2 * d.seats.length ? 2 : 1, hard, apart });
+      return { en, ja, words, owner, ...(apart ? { order: handOrder(words, owner, d.seats, r) } : {}) };
     });
     return { seats: [...d.seats], lander: d.lander, lines, l: 0, row: [], nudges: 0, shown: false, free: [], results: [], unseen: level >= 3 };
   },

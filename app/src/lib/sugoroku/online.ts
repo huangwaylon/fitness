@@ -33,7 +33,7 @@ export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: r
     // (a start on another build's rules: nothing here, wire.ts otherRules)
     if (g || !m.s || !playsRules(m.r)) return g;
     const seats: Seat[] = seatsOf(m.s).map((x) => ({ who: x.who, name: ctx.name(x.who), level: x.level }));
-    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g, m.r));
+    return newGame(seats, m.g, LENGTH[m.l ?? 'n'], layoutOfId(m.g, m.r), m.r);
   }
   if (!g) return null;
   if (m.a === 'end') return g.players.some((p) => p.who === m.who) ? finish(g) : g;

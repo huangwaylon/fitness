@@ -326,6 +326,14 @@ describe('words and sentences', () => {
       expect(c).toContain(p.w);
       expect(lettersFor(p, 2, seeded(p.w)).sort().join('')).toBe([...p.w].sort().join(''));
       expect(lettersFor(p, 3, seeded(p.w))).toHaveLength(p.w.length + 2);
+      // never there to read: the word in a row, nor at ふつう what's left once its first letter is given (egg's gg aside)
+      for (let k = 0; k < 6; k++) {
+        const two = lettersFor(p, 2, seeded(`${p.w}${k}`)), rest = [...two];
+        rest.splice(rest.indexOf(p.w[0]), 1);
+        expect(two.join('')).not.toBe(p.w);
+        if (new Set(p.w.slice(1)).size > 1) expect(rest.join(''), p.w).not.toBe(p.w.slice(1));
+        expect(lettersFor(p, 3, seeded(`${p.w}${k}`)).join(''), p.w).not.toContain(p.w);
+      }
     }
   });
   it('the copy is in the font', () => {

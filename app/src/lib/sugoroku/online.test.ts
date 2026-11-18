@@ -49,7 +49,7 @@ function playMoves(n = 400, id = 'game01'): Move[] {
 function rulesHash(moves: readonly Move[]): string {
   const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
   const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
-  const { v: _v, ...played } = foldMoves(moves, { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })!;
+  const { v: _v, rules: _r, ...played } = foldMoves(moves, { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })!;
   return fnv1a(JSON.stringify([g0.content, GEN, lists, fnv1a(JSON.stringify(played))])).toString(36);
 }
 
@@ -179,7 +179,7 @@ describe('online: two phones racing (S1), the same game on both', () => {
 describe('online: the rules’ version', () => {
   // What a fold makes of the moves on this build: the content (game.ts CONTENT: the classic board, the cards, the
   // pictures), the board generator's version, the word and line lists, and a whole game played (the save's version
-  // `v` aside: a shape, not a play). A change to any fails here until RULES (wire.ts) is bumped and this pin set to the
+  // `v` and the game's `rules` label aside: a shape, not a play). A change to any fails here until RULES (wire.ts) is bumped and this pin set to the
   // new hash: a phone on the old build then asks for the update rather than folding another game. (Re-pinned
   // 2026-11-18 without `v` for the save's v7: '1' folds as it did. '2', the mini-games' rules: mini/online.test.ts.)
   const PIN: Record<string, string> = { '1': 'tgoc8' };
@@ -191,7 +191,8 @@ describe('online: the rules’ version', () => {
   it('an old game (RULES 1) folds as it did before the save’s v7: the pin before it, `v` put back', () => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
-    const played = fnv1a(JSON.stringify({ ...foldMoves(playMoves(400, 'abcdefghij'), { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) }), v: 6 }));
+    const { rules: _r, ...g } = foldMoves(playMoves(400, 'abcdefghij'), { ...ctx, words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))) })!;
+    const played = fnv1a(JSON.stringify({ ...g, v: 6 }));
     expect(fnv1a(JSON.stringify([6, g0.content, GEN, lists, played])).toString(36)).toBe('kbdj53');
   });
 });

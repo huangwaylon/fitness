@@ -24,7 +24,7 @@ export function openMini(g: Game, b: 0 | 1, here: readonly Who[] | null, ctx: Ct
     pictures: new Set(g.made.filter((m) => m.kind === 'picture').map((m) => m.text)),
     lines: new Set(g.made.filter((m) => m.kind === 'sentence').map((m) => m.text))
   };
-  const s = gameOf(id).deal({ seed: `${g.seed}:${g.n}:mini`, seats, lander, used }, ctx);
+  const s = gameOf(id).deal({ seed: `${g.seed}:${g.n}:mini`, seats, lander, used, ...(g.rules ? { rules: g.rules } : {}) }, ctx);
   const on = { id, s, here: seats.map((x) => x.who), ...(at !== undefined ? { at } : {}) } as MiniOn;
   const out: Game = { ...g, n: g.n + 1, phase: { ...ph, on } };
   return gameOf(id).done(s) ? closeMini(out) : out;

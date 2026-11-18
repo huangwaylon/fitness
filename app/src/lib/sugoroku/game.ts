@@ -95,6 +95,8 @@ export interface Game {
   seed: string;
   /** The board's layout key (layout.ts boardOf); none: the classic board (a game from before layouts). */
   layout?: string;
+  /** The rules it started on (wire.ts RULES: the mini-games' deal goes by them); none: a game from before '3'. */
+  rules?: string;
   length: Length;
   /** The steps taken (the next random's salt). */
   n: number;
@@ -152,8 +154,8 @@ const rnd = (g: Game) => seeded(`${g.seed}:${g.n}`);
 export const boardFor = (g: Pick<Game, 'layout'>): Board => boardOf(g.layout) ?? CLASSIC;
 const copy = (g: Game) => g.players.map((p) => ({ ...p }));
 
-/** A new game; `layout` its board's key (layout.ts layoutKey; none: the classic board). */
-export function newGame(seats: readonly Seat[], seed: string, length: Length = 'normal', layout?: string): Game {
+/** A new game; `layout` its board's key (layout.ts layoutKey; none: the classic board), `rules` wire.ts's. */
+export function newGame(seats: readonly Seat[], seed: string, length: Length = 'normal', layout?: string, rules?: string): Game {
   const r = seeded(seed), board = boardOf(layout) ?? CLASSIC;
   let bag = newBag(r);
   const players = seats.map((s) => {
@@ -171,7 +173,7 @@ export function newGame(seats: readonly Seat[], seed: string, length: Length = '
   const a = LUCKY_FROM[Math.floor(r() * LUCKY_FROM.length)];
   const rest = LUCKY_FROM.filter((l) => l !== a);
   const lucky = [a, rest[Math.floor(r() * rest.length)]];
-  return { v: V, content: CONTENT, seed, ...(layout ? { layout } : {}), length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [], letters };
+  return { v: V, content: CONTENT, seed, ...(layout ? { layout } : {}), ...(rules ? { rules } : {}), length, n: 0, turn: 0, round: 1, players, bag, lucky, phase: { k: 'spin' }, made: [], cards: [], letters };
 }
 
 /** How far ahead on the route a lead counts as too far (steps to あがり). */
@@ -433,7 +435,7 @@ export const finish = (g: Game): Game => ({ ...g, phase: { k: 'end' } });
 export function isGame(x: unknown): x is Game {
   const g = x as Game;
   const b = !!g && (g.layout === undefined || typeof g.layout === 'string') ? boardOf(g.layout) : null;
-  return !!b && g.v === V && g.content === CONTENT && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
+  return !!b && g.v === V && g.content === CONTENT && (g.rules === undefined || typeof g.rules === 'string') && (g.length === 'short' || g.length === 'normal' || g.length === 'long') && Array.isArray(g.players) && g.players.length >= MIN_PLAYERS && typeof g.phase?.k === 'string'
     && Number.isInteger(g.turn) && g.turn >= 0 && g.turn < g.players.length && Array.isArray(g.bag) && Array.isArray(g.made) && Array.isArray(g.cards) && typeof g.letters === 'object' && !!g.letters
     && g.players.every((p) => (p.who === 'A' || p.who === 'B' || p.who === 'G') && Array.isArray(p.rack) && Array.isArray(p.pocket) && typeof p.pos === 'number' && p.pos >= 0
       && p.pos <= b.goal && p.level >= 1 && p.level <= 3 && !!p.ways && typeof p.ways === 'object' && Object.keys(p.ways).every((f) => b.forks.includes(Number(f))))
