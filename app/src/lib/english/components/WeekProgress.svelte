@@ -1,6 +1,6 @@
 <script lang="ts">
   // English Study's progress block (docs/english.md "Progress"), one component so it can change alone: this week's
-  // three dots (k/3日, then 「今週の3日、達成」), Monday's 「新しい週です」, the run of 3-day weeks or their count, the
+  // three dots (k/3日, then 「今週の3日、達成」), Monday's 「新しい週だよ」, the run of 3-day weeks or their count, the
   // clips finished, this week's minutes (information only), the partner's line and 「今週はふたりとも達成」. Never a 0日,
   // a break or a miss.
   import type { WeekView } from '../progress.ts';

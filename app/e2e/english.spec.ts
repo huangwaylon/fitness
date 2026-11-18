@@ -130,11 +130,11 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
   // the stem as written, its *key words* underlined, never the stars
   await expect(card.locator('.stem')).toHaveText(q0.stem.replaceAll('*', ''));
   // question 1 says what to do (its question is English) till the first pick
-  await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから選びましょう。何回聞いてもOK');
+  await expect(card.locator('[data-en-howto]')).toHaveText('聞いてから選ぼう。何回聞いてもOK');
   const n0 = (await ytCommands(page)).length;
   await card.locator(`[data-choice="${miss1}"]`).click();
   await expect(card.locator('[data-en-howto]')).toHaveCount(0);
-  await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみましょう。');
+  await expect(card.locator('[data-en-nudge]')).toContainText('もう一度聞いてみよう。');
   await expect(card.locator('[data-en-nudge]')).toContainText(q0.cue);
   // brought up only as far as it takes: the question and its choices stay on screen for the retry
   await expect(card.locator('[data-en-nudge]')).toBeInViewport();
@@ -173,7 +173,7 @@ test('a miss: the segment again with the cue, one retry, then 答えはこれ; n
     if (how === 'shown') await cardAt(page, i).locator('[data-en-show]').click();
     else await cardAt(page, i).locator(`[data-choice="${x.a}"]`).click();
     await expect(cardAt(page, i)).toHaveAttribute('data-result', how);
-    if (how !== 'shown') await expect(cardAt(page, i).locator('[data-en-reveal]')).toContainText(how === 'first' ? '◎ 聞き取れました' : '○ 聞き取れました');
+    if (how !== 'shown') await expect(cardAt(page, i).locator('[data-en-reveal]')).toContainText(how === 'first' ? '◎ 聞き取れた！' : '○ 聞き取れた！');
     // くわしく: closed on a first try (a tap opens it), open after a miss
     const said = cardAt(page, i).locator('[data-en-said]');
     if (how === 'first') {
@@ -205,17 +205,17 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
     await expect(c.locator('[data-en-reveal] .rhead')).toHaveText('答えはこれ');
     await c.locator('[data-en-dict]').fill(x.answer.split(' ').slice(1).join(' '));
     await c.locator('[data-en-dict-go]').click();
-    await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all}語を聞き取れました`);
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all}語を聞き取れたよ`);
     // the words apart, as typed
     expect((await c.locator('[data-en-reveal] .words').textContent())!.trim().split(/\s+/)).toHaveLength(all);
     await c.locator('[data-en-dict]').fill(x.answer.toUpperCase() + '.');
     await c.locator('[data-en-dict-go]').click();
-    await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all}語を聞き取れました`);
+    await expect(c.locator('[data-en-reveal]')).toContainText(`${all}/${all}語を聞き取れたよ`);
   }
   expect(await at(page)).toBe(String(n));
   // every scene not heard in full the first time (the unanswered too): all but the first and a full dictation
   await expect(lesson(page).locator('[data-en-again]')).toHaveCount(n - 1 - (dict ? 1 : 0));
-  await expect(lesson(page).locator('[data-en-end]')).toContainText('この動画は完了です');
+  await expect(lesson(page).locator('[data-en-end]')).toContainText('この動画は完了だよ');
   // an again row says the line heard there (its stars dropped), not the phrase to use
   const lines = waitress.questions.flatMap((x) => (x.line ? [x.line.replaceAll('*', '')] : []));
   expect(lines).toContain((await lesson(page).locator('[data-en-again] .ph').first().textContent())!.trim());
@@ -311,7 +311,7 @@ test('a play that doesn’t start (iOS wants a tap on the video): the hint; none
   await open(page);
   await start(page);
   await lesson(page).locator('[data-en-watch-all]').click();
-  await expect(lesson(page).locator('[data-yt-stuck]')).toContainText('動画を一度タップしてください');
+  await expect(lesson(page).locator('[data-yt-stuck]')).toContainText('動画を一度タップしてね');
 });
 
 test('the controls: play / pause on from where it stopped, −5 秒, the scrubber, 0.75× only when offered; a question’s part from its card only', async ({ page }) => {
@@ -738,7 +738,7 @@ test('この動画のセリフと解説: from ツール (which says it holds the
   const page2 = lesson(page).locator('[data-en-phrases]');
   await lesson(page).locator('[data-en-tools]').click();
   const row = page.locator('dialog[open] [data-en-tools-sheet] [data-en-phrases-open]');
-  await expect(row).toContainText('質問の答えと解説を含みます');
+  await expect(row).toContainText('質問の答えと解説が入っているよ');
   await row.click();
   await expect(page.locator('dialog[open] [data-en-tools-sheet]')).toHaveCount(0);
   await expect(page.locator('dialog[open] [data-en-lesson] .navbar h2')).toHaveText('この動画のセリフと解説');
@@ -883,7 +883,7 @@ test('a lesson plays on the silent switch: iOS audio session “playback” whil
   await expect.poll(async () => (await sessions()).at(-1)).toBe('ambient');
 });
 
-test('a bank that doesn’t load: the player and the watch card all the same, 質問を読み込めませんでした with もう一度, then its questions', async ({ page }) => {
+test('a bank that doesn’t load: the player and the watch card all the same, 質問を読み込めなかったよ with もう一度, then its questions', async ({ page }) => {
   await fakeYoutube(page);
   let fail = true;
   await page.route(/\/english\/c\/[\w-]+\.\w+\.json$/, (r) => (fail ? r.fulfill({ status: 503, body: '' }) : r.fallback()));
@@ -893,7 +893,7 @@ test('a bank that doesn’t load: the player and the watch card all the same, �
   await lesson(page).locator('[data-en-to-q]').click();
   const bank = lesson(page).locator('[data-en-bank]');
   await expect(bank).toHaveAttribute('data-en-bank', 'failed');
-  await expect(bank).toContainText('質問を読み込めませんでした');
+  await expect(bank).toContainText('質問を読み込めなかったよ');
   await expect(lesson(page).locator('[data-en-next]')).toHaveCount(0);
   fail = false;
   await bank.locator('[data-en-bank-retry]').click();
@@ -1074,7 +1074,7 @@ test('フレーズ: one embed a set — 5 cards, one frame throughout, each next
   await expect.poll(() => live(page)).toEqual(base);
 });
 
-test('フレーズ: the same card face down after a lesson; ☆ 復習に入れる saves it apart from its schedule, home’s review has a saved one the next day; 5 a set, never two of one clip, then 5枚見ました with もう5枚 / ホームへ', async ({ page }) => {
+test('フレーズ: the same card face down after a lesson; ☆ 復習に入れる saves it apart from its schedule, home’s review has a saved one the next day; 5 a set, never two of one clip, then 5枚見たよ with もう5枚 / ホームへ', async ({ page }) => {
   await fakeYoutube(page, { dur: 3000 });
   // a phrase saved yesterday, never met: due today on home; one whose question is gone since: out of the list
   const q = waitress.questions.find((x) => !x.retired && x.use && x.line)!;
@@ -1102,7 +1102,7 @@ test('フレーズ: the same card face down after a lesson; ☆ 復習に入れ�
   const mine = () => page.evaluate(() => JSON.parse(localStorage.getItem('island.english.phrases') ?? '{}').A);
   await star.click();
   await expect(star).toHaveAttribute('aria-pressed', 'true');
-  await expect(star).toHaveText('★ 復習に入れました');
+  await expect(star).toHaveText('★ 復習に入れたよ');
   expect(await mine()).toEqual({ s: {}, k: { [`waitress/${q.id}`]: '2026-11-03', [first.k]: '2026-11-04' } });
   await star.click();
   await expect(star).toHaveText('☆ 復習に入れる');
@@ -1118,7 +1118,7 @@ test('フレーズ: the same card face down after a lesson; ☆ 復習に入れ�
   }
   expect(new Set(keys.map((x) => x.split('/')[0])).size).toBe(5);
   const end = sheet(page).locator('[data-en-deck-end]');
-  await expect(end).toContainText('5枚見ました · これまで 5フレーズ');
+  await expect(end).toContainText('5枚見たよ · これまで 5フレーズ');
   // kept on this phone: the end again after a reload; ホームへ, then もう5枚 a new card
   await open(page);
   await tabOf(page, 'phrases').click();

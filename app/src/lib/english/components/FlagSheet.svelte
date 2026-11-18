@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ⚑ 報告's sheet (docs/english.md "Flags"): 「どこが気になりましたか？」, the kind chips (その他 by default), an optional
+  // ⚑ 報告's sheet (docs/english.md "Flags"): 「どこが気になった？」, the kind chips (その他 by default), an optional
   // note, 送る; then 「ありがとう！」. Nothing is required. Over the lesson, a paper sheet.
   import Sheet from '#lib/components/ui/Sheet.svelte';
   import { EFLAG_KINDS, EFLAG_NOTE, type EflagKind } from '#lib/contract/eflag.ts';

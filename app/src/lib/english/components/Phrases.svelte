@@ -1,7 +1,7 @@
 <script lang="ts">
   // フレーズ (docs/english.md "フレーズ"): English Study's second tab, the deck (deck.ts) one card at a time, SET a set.
   // The card is PhraseCard's: its head the clip's thumbnail with 1/5 and show · title; on its back a say-it hint, then
-  // ☆ 復習に入れる beside 次へ ›. After SET: 「5枚見ました · これまで N」, もう5枚 / ホームへ.
+  // ☆ 復習に入れる beside 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ.
   // Never a score. The place is this phone's (deck.ts), so the tab comes back to the same card, face down.
   import { onMount, untrack } from 'svelte';
   import NavBar from '#lib/components/ui/NavBar.svelte';

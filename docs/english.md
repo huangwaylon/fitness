@@ -3,6 +3,8 @@
 The leaf menu's 英語 pill opens **English Study**: one real TV clip a day, about 15 minutes. Watch it whole, answer
 6–8 questions with replays of the exact segment, read short Japanese notes. Solo; the guest has their own progress.
 Code: `app/src/lib/english/` (content, logic, strings in `i18n.ts`, the sheet in `components/`).
+The sheet's Japanese UI copy is casual, as すごろく's (〜よう, 〜だよ, 〜してね; never です/ます), kanji and the term list as
+every sheet (design.md "Copy"; linebreaks.test reads `i18n.ts`); the clips' notes keep their own register.
 
 ## Content
 
@@ -125,7 +127,7 @@ swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
   card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (before the
   choices) while answering, 次へ once answered, 完了 at まとめ (もう一度、通して見る a small paper button). A question
   card is tight, so its choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts`
-  checks): the player's one control row (no speed chip: 再生速度 is in ツール), its meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
+  checks): the player's one control row (no speed chip: 再生速度 is in ツール), its meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選ぼう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
 - **ツール** (an icon-only button in the lesson bar, aria-label ツール, `StudySheet.svelte`; the sheet titled ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
@@ -142,8 +144,8 @@ swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
 - **The reveal:** the result, the line (key words underlined), 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under
   「くわしく」 (a `<details>`), open by itself after a miss (anything not heard in full the first time), closed on ◎. It
   scrolls up with the answered choice on top, so the ○ and the notes' head are both in view.
-- **書き取り:** the words heard are counted (「k/n 語 聞き取れました」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
-- **まとめ:** 「この動画は完了です」, the scenes worth hearing again (anything not ◎; each row its segment and the line heard there, else the phrase), the clip's phrases, 通して見る. It finishes the clip once
+- **書き取り:** the words heard are counted (「k/n語を聞き取れたよ」; none: 「答えはこれ」, never a 0), the rest shown in the answer colour.
+- **まとめ:** 「この動画は完了だよ」, the scenes worth hearing again (anything not ◎; each row its segment and the line heard there, else the phrase), the clip's phrases, 通して見る. It finishes the clip once
   six questions (all, if fewer) are answered or shown; else it says how many are left and goes to the first.
 - Leaving keeps the place on this phone: the clip, the question, the answers. A play whose まとめ was reached is
   finished, even if gone back from it: its next opening draws the next.
@@ -271,13 +273,13 @@ in the last 60 s, at most 90 s a question. Its owner gets it whole, everyone els
 
 - **A day** (Tokyo) counts when a まとめ is reached. Weeks start on Monday.
 - **今週:** three dots (`●●○ 2/3日`), then 「今週の3日、達成」 (past three, 「4日」). Monday before any study:
-  「新しい週です」. Nothing is said for no days: never 0日, 途切れた, リセット, 残念.
+  「新しい週だよ」. Nothing is said for no days: never 0日, 途切れた, リセット, 残念.
 - **The run, 「3日の週」:** a week of 3+ days adds one; 1–2 days hold it; one empty week holds it (a rest week); two
   empty weeks in a row end it silently. A run of 2+ reads 「3日の週が N週つづいています」, else the lifetime count
   「3日の週 これまで N回」 (none before the first). The week in progress counts once it has its 3 days.
-- **これまで N本:** distinct clips finished; ✓ in the library. 「今週 約N分」 in small grey, rounded to 5 min:
+- **これまで N本:** distinct clips finished; ✓ in the library. 「今週は約N分」 in small grey, rounded to 5 min:
   information only (no minutes goal, no daily figure).
-- **After 7+ days away**, once: 「おかえりなさい。今日の1本からどうぞ」 (the gap never named).
+- **After 7+ days away**, once: 「おかえり！今日の1本から始めよう」 (the gap never named).
 - **The partner** (members only): their today's clip done and their week's dots; 「今週はふたりとも達成」 on both cards
   once both have 3 days. Never the run or minutes. The guest has their own progress and no partner line. Others get a
   row's summary only (`d`, `gm`, `f`, `ms`), never the clip or the answers.
