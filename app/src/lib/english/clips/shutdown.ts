@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 2, new 1, ctx 6, tx 15
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 2, new 1, ctx 6, tx 15, qa 9
 // A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 3, new 0
 // “Just Saying that Gave Me a Semi | Parks and Recreation” (the official Parks and Recreation channel, Season 2): the
 // city government shuts down; Ron is delighted, the townspeople ask what the park closures mean for their kids and the
@@ -94,8 +94,8 @@ export const shutdown: Clip = {
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'onething', ctx: true, seg: [37.5, 45.2],
       stem: 'What does “One thing at a time” mean here?',
       ja: 'ここでの「One thing at a time」はどういう意味？',
-      choices: ['Let’s not talk about that now', 'Let’s talk about that next', 'Please speak one by one'], a: 0,
-      choicesJa: ['それは今は話さないでおこう', 'それは次に話そう', '一人ずつ話して'],
+      choices: ['Let’s not talk about that now', 'That’s a very good question', 'Please speak one by one'], a: 0,
+      choicesJa: ['それは今は話さないでおこう', 'とてもいい質問ですね', '一人ずつ話して'],
       cue: '大きすぎる心配のあと、短い返事。',
       line: 'Man: With the government shut down, who’s gonna stop al-Qaeda? / Official: *One thing at a time*.',
       said: '「役所が閉鎖されたら、誰がアルカイダ（テロ組織）を止めるんだ？」に「一つずつ片付けましょう」と返す。',
@@ -175,7 +175,7 @@ export const shutdown: Clip = {
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'even', reveals: ['pct'], ctx: true, seg: [65.6, 72.6],
       stem: 'How does Ron feel about the cuts?',
       ja: '支出を減らすことについて、ロンはどう感じている？',
-      choices: ['He wants even more cuts', 'He thinks they’re too big', 'He doesn’t care at all'], a: 0,
+      choices: ['He wants to cut much more', 'He thinks they’re too big', 'He doesn’t care at all'], a: 0,
       choicesJa: ['もっと減らしたい', '大きすぎると思う', 'まったく気にしていない'],
       cue: '相手の「必要ない」への、くり返しの返事。',
       line: 'Ron: Let’s make it *an even 40*. / Official: Oh, that’s not necessary. / Ron: *Slash it. Slash it.*',
@@ -203,7 +203,7 @@ export const shutdown: Clip = {
       choicesJa: ['やんわり断る', '条件つきで賛成する', '賛成して、もっと求める'],
       cue: 'ほめ言葉のあと、But に続く話。',
       line: 'Ron: Let somebody turn it into a large gas station… / Official: Ron, that is a *very creative idea*. *But* we don’t want to sell…',
-      said: '「ガソリンスタンドにでも」に「とても独創的なアイデアですね。でも、大きな財産は売りたくないんです」。',
+      said: '「ガソリンスタンドにでも」に「とても独創的なアイデアですね。でも、主な財産は売りたくないんです」。',
       mean: 'ほめてから but で断る、ていねいな「ノー」。creative（独創的）は遠回しに「現実的でない」。',
       trap: 'ほめ言葉だけ聞くと賛成と考えがち。決め手は But のあと。',
       use: 'Interesting idea, but let’s keep it simple.（面白い案だけど、シンプルにいこう）' },
@@ -226,7 +226,7 @@ export const shutdown: Clip = {
       choicesJa: ['これから入るお金を失う', '働く場所がなくなる', '安くしか売れない'],
       cue: 'because のあと、失いたくないもの。',
       line: 'because we don’t want to lose out on any *future revenue streams*.',
-      said: '「将来の収入源を失いたくないので、大きな資産は売りたくない」と説明する。',
+      said: '「将来の収入源を逃したくないので、主な財産は売りたくない」と説明する。',
       mean: 'revenue ＝ 収入。future revenue streams ＝ これから入るお金。売るとそれがなくなる。',
       trap: '市役所を売ると働く場所がなくなる、と考えがち。理由は because のあと。future まで聞く。',
       use: 'We can’t afford to lose that income.（その収入を失うわけにはいかない）' },
@@ -258,7 +258,7 @@ export const shutdown: Clip = {
     { id: 'i3', skill: 'pragma', level: 'B2', point: 'without', seg: [97.0, 106.7],
       stem: 'What does Ron mean by “Don’t cut anything without me”?',
       ja: 'ロンの「Don’t cut anything without me」はどういう意味？',
-      choices: ['Wait for me to cut', 'Don’t cut anything at all', 'Cut more while I’m out'], a: 0,
+      choices: ['Wait for me before cutting', 'Don’t cut anything at all', 'Cut more while I’m out'], a: 0,
       choicesJa: ['私が戻るまで削るのを待って', '何も削らないで', '私がいない間にもっと削って'],
       cue: 'without me で終わる、短い命令。',
       line: 'So sorry. New ringtone. *Don’t cut anything without me*.',
@@ -280,10 +280,10 @@ export const shutdown: Clip = {
       use: 'I’m excited enough for both of us.（二人分ワクワクしてるから）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'defy', reveals: ['canceled'], ctx: true, seg: [106.5, 121.5],
-      stem: 'How does the final phone call end?',
-      ja: '最後の電話はどう終わる？',
-      choices: ['Leslie will do the concert anyway', 'Leslie gives up the concert', 'Ron agrees to help Leslie'], a: 0,
-      choicesJa: ['レスリーはそれでもコンサートをやる', 'レスリーはコンサートをあきらめる', 'ロンがレスリーを手伝うと言う'],
+      stem: 'What does Leslie tell Ron on the phone?',
+      ja: '電話でレスリーはロンに何と言う？',
+      choices: ['She’ll do the concert anyway', 'She’s giving up the concert', 'She needs Ron’s help with it'], a: 0,
+      choicesJa: ['それでもコンサートをやる', 'コンサートをあきらめる', 'コンサートにロンの助けがほしい'],
       cue: 'You can’t do that への短い返事。',
       line: 'Leslie: We’re gonna put on the Freddy Spaghetti concert today… / Ron: You can’t do that. / Leslie: *Watch me.*',
       said: 'レスリーはコンサートを今日5時に開くと言い、「できない」と言われて「見てなさい」と返す。',
