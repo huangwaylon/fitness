@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 2, new 2, ctx 5, tx 3
+// R4 REVIEW 2026-11-18: keep 8, rewrite 7, retire 2, new 2, ctx 5, tx 3, qa 23
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 4, new 0
 // “Parks and Recreation | Meet Bobby Newport (Episode Highlight)” (the official Parks and Recreation channel, Season 4):
 // Bobby Newport, heir to a candy fortune, opens his council campaign with jokes and free candy bars; Leslie tells the
@@ -28,7 +28,7 @@ export const bobbyMeet: Clip = {
       trap: '選挙と聞くと政策の話を想像しやすい。最後は free Bobby bars のさそい。',
       use: 'Why don’t we line up over here?（こちらに並びましょうか）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [12.7, 21.6], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'days', seg: [12.7, 21.2], keep: true,
       stem: 'How long has the campaign been going?',
       ja: '選挙運動が始まって、どのくらい？',
       choices: ['2 days', '10 days', '2 weeks', '12 days'], a: 0,
@@ -40,7 +40,7 @@ export const bobbyMeet: Clip = {
       trap: 'two だけ聞いて単位を落としやすい。数のすぐあとの days まで聞く。ten なら「テン」。',
       use: 'We’re three days into the trip.（旅行は3日目です）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B1', point: 'sofar', seg: [15.2, 21.2],
+    { id: 'f4', skill: 'phrase', level: 'B1', point: 'sofar', seg: [15.4, 21.2],
       stem: 'What does “so far” mean here?',
       ja: 'ここでの「so far」はどういう意味？',
       choices: ['Up to now', 'Very much', 'From far away'], a: 0,
@@ -49,7 +49,7 @@ export const bobbyMeet: Clip = {
       line: '…and *so far* it’s going great.',
       said: '「今のところ順調だよ」と話す。',
       mean: 'so far ＝ 文字どおりは「そこまで遠く」。今いる所まで来た範囲では→「今のところ」。この先は分からない。',
-      trap: 'far（遠い）から「遠く」を連想しやすい。直後の up until now（今までは）も同じ意味。',
+      trap: 'far（遠い）から「遠く」を連想しやすい。「遠く」では文が通らない。it’s going great（順調）と続く。',
       use: 'So far, so good.（今のところ順調）' },
 
     { id: 'h1', skill: 'humor', level: 'C1', point: 'camp', seg: [18.4, 24.3], retired: true,
@@ -63,7 +63,7 @@ export const bobbyMeet: Clip = {
       trap: '前半だけで不満と取りやすい。because のあとにオチが来る。',
       use: 'Honestly, it’s been a breeze.（正直、楽勝だった）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'heir', seg: [28.9, 34.2],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'heir', seg: [30.3, 34.2],
       stem: 'What does “heir to the candy fortune” mean?',
       ja: '「heir to the candy fortune」はどういう意味？',
       choices: ['He will get his family’s money', 'He runs the candy company', 'He is in the candy ads'], a: 0,
@@ -75,7 +75,7 @@ export const bobbyMeet: Clip = {
       trap: 'heir は air（エア）と同じ音で聞きのがしやすい。fortune（財産）とセットで聞く。',
       use: 'She’s heir to the family business.（彼女は家業の跡つぎだ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'polls', seg: [34.1, 40.4], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'polls', seg: [34.1, 39.2], keep: true,
       stem: 'How far ahead in the polls is Bobby?',
       ja: 'ボビーは世論調査で何ポイントリードしている？',
       choices: ['7 points', '17 points', '70 points', '77 points'], a: 2,
@@ -86,18 +86,6 @@ export const bobbyMeet: Clip = {
       mean: 'points up ＝ 〜ポイントのリード。already（もう）で勢いを強める。',
       trap: 'seventeen なら後ろの「ティーン」が強い。seven なら短い。ここは前が強い「セヴンティ」。',
       use: 'We’re ten points up.（10点リードしてる）' },
-
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'sowhat', seg: [37.4, 44.3],
-      stem: 'What does Leslie mean by “so what?”',
-      ja: 'レスリーの「so what?」はどういう意味？',
-      choices: ['It doesn’t matter', 'That is very good', 'I don’t know why'], a: 0,
-      choicesJa: ['それは関係ない', 'それはすごくいい', 'なぜか分からない'],
-      cue: 'リストの最後の短い問いかけ。',
-      line: 'He is attractive and charming… *but so what?*',
-      said: '「彼は魅力的で感じもいい。家の会社も大きい。でも、だから何？」と言う。',
-      mean: 'so what? ＝ だから何？それがどうした。並べた長所を「関係ない」と切りすてる。',
-      trap: 'ライバルの長所を並べるので弱気に聞こえやすい。but のあとが本音。',
-      use: 'It’s raining. So what? Let’s go.（雨？だから何、行こう）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'employs', retired: true, seg: [38.7, 44.3],
       stem: 'What does Leslie say about Bobby’s family?',
@@ -111,17 +99,17 @@ export const bobbyMeet: Clip = {
       trap: 'half the town だけ聞くと土地や人気の話に思える。直前の employs で決まる。',
       use: 'The factory employs most of the town.（町の大半があの工場で働いている）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'versed', seg: [43.5, 53.7],
-      stem: 'What does “well-versed in the issues” mean?',
-      ja: '「well-versed in the issues」はどういう意味？',
-      choices: ['She knows them very well', 'She talks about them well', 'She has always loved them'], a: 0,
-      choicesJa: ['問題にとてもくわしい', '問題について話すのがうまい', 'ずっと問題が好きだった'],
-      cue: 'bureaucrat のあと。',
-      line: 'a lifelong government bureaucrat who’s *well-versed in* the issues',
-      said: '「私は一生役所づとめで、政治の問題にくわしい」と話す。',
-      mean: 'well-versed in ～ ＝ 〜にくわしい。自分の強みは知識だと言っている。',
-      trap: 'verse（詩）から「話がうまい」と思いやすい。well-versed in は知識の深さ。',
-      use: 'She’s well-versed in local history.（彼女は地元の歴史にくわしい）' },
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'sowhat', seg: [39.2, 44.3],
+      stem: 'What does Leslie mean by “so what?”',
+      ja: 'レスリーの「so what?」はどういう意味？',
+      choices: ['It doesn’t matter', 'That is very good', 'I don’t know why'], a: 0,
+      choicesJa: ['それは関係ない', 'それはすごくいい', 'なぜか分からない'],
+      cue: 'リストの最後の短い問いかけ。',
+      line: 'He is attractive and charming… *but so what?*',
+      said: '「彼は魅力的で感じもいい。家の会社も大きい。でも、だから何？」と言う。',
+      mean: 'so what? ＝ だから何？それがどうした。並べた長所を「関係ない」と切りすてる。',
+      trap: 'ライバルの長所を並べるので弱気に聞こえやすい。but のあとが本音。',
+      use: 'It’s raining. So what? Let’s go.（雨？だから何、行こう）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'sexy', reveals: ['versed'], seg: [43.9, 52.4], retired: true,
       stem: 'In Leslie’s comment to the camera, who is the joke on?',
@@ -133,6 +121,18 @@ export const bobbyMeet: Clip = {
       mean: 'ふつう sexy と呼ばない地味な経歴を、本人は本気でそう呼ぶ。笑いの的は話し手の思い込み。',
       trap: '直前に相手の長所が並ぶので、相手への皮肉と聞きやすい。主語の I と those が誰の話かを追う。',
       use: 'Paperwork is my idea of a fun night.（書類仕事こそ楽しい夜）' },
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'versed', seg: [44.3, 52.4],
+      stem: 'What does “well-versed in the issues” mean?',
+      ja: '「well-versed in the issues」はどういう意味？',
+      choices: ['She knows them very well', 'She talks about them well', 'She has always loved them'], a: 0,
+      choicesJa: ['問題にとてもくわしい', '問題について話すのがうまい', 'ずっと問題が好きだった'],
+      cue: 'bureaucrat のあと。',
+      line: 'a lifelong government bureaucrat who’s *well-versed in* the issues',
+      said: '「私は一生役所づとめで、政治の問題にくわしい」と話す。',
+      mean: 'well-versed in ～ ＝ 〜にくわしい。自分の強みは知識だと言っている。',
+      trap: 'verse（詩）から「話がうまい」と思いやすい。well-versed in は知識の深さ。',
+      use: 'She’s well-versed in local history.（彼女は地元の歴史にくわしい）' },
 
     { id: 'i1', skill: 'infer', level: 'B2', point: 'knew', retired: true, seg: [51.9, 57.4],
       stem: 'What does “you probably knew that already” show?',
@@ -146,7 +146,7 @@ export const bobbyMeet: Clip = {
       trap: '日本語の「ご存じかと思いますが」のような遠りょと思いやすい。ここは自信。',
       use: 'You’ve probably heard this one before.（たぶん聞いたことある話だけど）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B1', point: 'atlast', seg: [53.5, 58.5],
+    { id: 'f3', skill: 'phrase', level: 'B1', point: 'atlast', seg: [55.65, 58.6],
       stem: 'What does “we meet at last” mean?',
       ja: '「we meet at last」はどういう意味？',
       choices: ['We finally meet', 'This is our last meeting', 'We meet once again'], a: 0,
@@ -158,7 +158,7 @@ export const bobbyMeet: Clip = {
       trap: 'last を「最後」と思いやすい。at last は「やっと」で、待っていた気持ち。',
       use: 'At last, the weekend!（やっと週末だ！）' },
 
-    { id: 'i2', skill: 'infer', level: 'B2', point: 'sign', ctx: true, seg: [56.9, 63.0],
+    { id: 'i2', skill: 'infer', level: 'B2', point: 'sign', ctx: true, seg: [57.5, 64.0],
       stem: 'What does Bobby think Leslie wants?',
       ja: 'ボビーは、レスリーが何をほしいと思っている？',
       choices: ['His autograph', 'A photo with him', 'His name on a form'], a: 0,
@@ -170,10 +170,10 @@ export const bobbyMeet: Clip = {
       trap: 'sign は書類の署名にも使うが、to Miss（〜さんへ）と宛名を聞くのはファンへのサイン。',
       use: 'Could you sign it to Emma?（エマさんへ、とサインしてもらえますか）' },
 
-    { id: 'f5', skill: 'pragma', level: 'B2', point: 'lesliefine', ctx: true, seg: [60.0, 66.3],
+    { id: 'f5', skill: 'pragma', level: 'B2', point: 'lesliefine', ctx: true, seg: [59.8, 66.1],
       stem: 'What does Leslie mean by “Leslie’s fine”?',
       ja: '「Leslie’s fine.」で、レスリーは何を伝えている？',
-      choices: ['Call her just Leslie', 'She is feeling well', 'She likes his idea'], a: 0,
+      choices: ['Just call her Leslie', 'She is feeling well', 'She likes his idea'], a: 0,
       choicesJa: ['レスリーとだけ呼べばいい', '体調がいい', '彼の案が気に入った'],
       cue: '「What? No.」のあと。',
       line: 'Bobby: …sign that to Miss Lope or just Nesney? / Leslie: What? No. *Leslie’s fine*.',
@@ -182,7 +182,7 @@ export const bobbyMeet: Clip = {
       trap: 'fine は「元気」に聞こえるが、ここは「それでいい」。体調の話ではない。',
       use: 'Ken’s fine. No need for “Mr.”（ケンでいいですよ。「さん」はなしで）' },
 
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'debate', seg: [65.5, 73.8],
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'debate', seg: [65.7, 71.25],
       stem: 'Why has Leslie’s side been calling Bobby’s office?',
       ja: 'レスリーたちはなぜボビーの事務所に電話していた？',
       choices: ['To plan a debate', 'To plan a meeting', 'To plan an interview'], a: 0,
@@ -194,16 +194,16 @@ export const bobbyMeet: Clip = {
       trap: 'office が聞こえると打ち合わせの話に思える。set up のあとの debate を聞く。',
       use: 'I’ve been trying to set up a meeting.（打ち合わせを入れようとしてたんだ）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'unopposed', ctx: true, seg: [69.2, 78.5],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'unopposed', ctx: true, seg: [68.9, 76.0],
       stem: 'Why does Bobby say they are wrong?',
       ja: 'ボビーは、なぜ二人が勘違いしていると言う？',
-      choices: ['He thinks he has no rival', 'He thinks they never called', 'He thinks he already won'], a: 0,
-      choicesJa: ['対立候補はいないと思っている', '電話なんてなかったと思っている', 'もう勝ったと思っている'],
+      choices: ['He thinks he has no rival', 'He thinks they never called', 'He thinks they have the wrong man'], a: 0,
+      choicesJa: ['対立候補はいないと思っている', '電話なんてなかったと思っている', '人ちがいだと思っている'],
       cue: '「you guys are wrong」のあと。',
       line: 'I’ve been calling your office… / Bobby: Oh, no, you guys are wrong. *I’m running unopposed*. … right?',
       said: '「対立候補なしで出てるんだ。…なしのはずだよね？」とまわりに確かめる。',
       mean: 'unopposed ＝ 対立候補がいない（un ＋ opposed＝反対される）。討論の相手などいないと思っている。',
-      trap: 'wrong は「電話の相手ちがい」にも聞こえるが、決め手は unopposed。最後の right? で自信のなさも分かる。',
+      trap: 'wrong は「人ちがい」にも聞こえるが、決め手は unopposed。最後の right? で自信のなさも分かる。',
       use: 'I’m pretty sure it’s this way, right?（たぶんこっちだよね？）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['terrific', 'bar', 'unopposed', 'whatdo', 'told'], seg: [71.4, 92.6],
@@ -229,7 +229,7 @@ export const bobbyMeet: Clip = {
       trap: '似た語が続くので言い違いに聞こえやすい。わざと相手の語を拾って返している。',
       use: 'Not so fast. You’ve got competition.（ちょっと待って。ライバルがいるよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrific', reveals: ['unopposed'], ctx: true, seg: [76.7, 84.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'terrific', reveals: ['unopposed'], ctx: true, seg: [76.1, 83.6],
       stem: 'How does Bobby take the news about Leslie?',
       ja: 'レスリーが対立候補だと聞いて、ボビーはどう反応する？',
       choices: ['He is happy about it', 'He is worried about it', 'He is angry about it'], a: 0,
@@ -241,7 +241,7 @@ export const bobbyMeet: Clip = {
       trap: 'ライバル宣言のあとなので、怒りや心配を予想しがち。続くのは I love meeting people だけ。',
       use: 'Great, the more the merrier!（いいね、多いほど楽しい）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'whatdo', seg: [82, 88],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'whatdo', seg: [82.55, 85.9],
       stem: 'Fill the gap: “___ guys do?”',
       ja: '空所を埋める：「___ guys do?」',
       choices: ['What do you', 'What did you', 'What would you'], a: 0,
@@ -253,7 +253,7 @@ export const bobbyMeet: Clip = {
       trap: 'did なら「ディジュ」、would なら「ウッジュ」。ここは短い「ワダユ」。',
       use: 'So, what do you do?（で、お仕事は？）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'told', seg: [84.1, 89.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'told', seg: [84.1, 87.65],
       stem: 'Type the reply: “We ___.” (3 words)', answer: 'just told you',
       ja: '返事を書き取る：「We ___.」（3語）',
       cue: '質問のすぐあと。We のあとの3語。',
