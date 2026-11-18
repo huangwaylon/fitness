@@ -1,18 +1,18 @@
 # 英語すごろく
 
-A board game for 2–4 people at one table, passed round one phone: spin, move along a route through the island, and
-do the English the space asks for. For A1–A2 learners; never "incorrect". English Study's third tab, すごろく (its own
-chunk, loaded on the tab; the tab bar shows on its menu only). Code: `app/src/lib/sugoroku/` (pure rules beside their tests, the sheet in `components/`, strings in
-`i18n.ts`). No ベル; かいがら for playing (below). Players are their own characters (the island's look): the one sheet
+A team board game for 2–3 of us, passed round one phone (1台を回して) or each on their own (それぞれのスマホで): roll,
+move along a route through the island, and do the English the space asks for. For A1–A2 learners; never "incorrect".
+English Study's third tab, すごろく (its own chunk, loaded on the tab). Code: `app/src/lib/sugoroku/` (pure rules
+beside their tests, the screens in `components/`, strings in `i18n.ts`: kanji, one spelling per term). No ベル; かいがら for playing (below). Players are their own characters (the island's look): the one sheet
 with characters in it, since they are the pieces. A team game: one team total toward a goal, never a ranking.
 
 ## Rules
 
 - **Seats** (だれが遊ぶ？): 2–3 of us (the members and the guest), each as their own character (the island's look),
   turns in the order picked, each an English **level** (`game.ts LEVEL`): what its spaces ask, not what they pay, so a
-  mixed table stays close. A **length**: みじかい (by round 7), ふつう (the round someone's home), ながい (everyone home, 20 rounds at most).
+  mixed table stays close. A **length**: 短い (by round 7), 普通 (the round someone's home), 長い (everyone home, 20 rounds at most).
 
-  | | やさしい | ふつう | むずかしい |
+  | | やさしい | 普通 | 難しい |
   |---|---|---|---|
   | shortest word | 3 | 3 | 4 |
   | everyday word | +3 | +2 | +1 |
@@ -31,12 +31,12 @@ with characters in it, since they are the pieces. A team game: one team total to
   and ぶん 2; stones apart, links 40–100 (a crossing's 150), nothing on another's link, links crossing only at a
   crossroads, the river under one bridge link (two bridges at most), signs, the house and trees off the route, no
   more scenery than the classic (6 signs, 22 trees, one house). A layout breaking one is tried again with the next
-  sub-seed. A fork's buttons read its ways: 「森の近道」 / 「広場の遠回り」, steps and what's on it (「4マス・ダブル2」);
+  sub-seed. A golden hash of pinned seeds' boards (`layout.test`) is tied to `GEN` (`family.ts`): change the
+  generator, bump GEN. A fork's buttons read its ways: 「森の近道」 / 「広場の遠回り」, steps and what's on it (「4マス・ダブル2」);
   each way's sign in 3D says 近道 / 遠回り and its steps. Two games in a row are of different families (local: the
-  last game's; online: the last id's). A game without a layout (a save or online game from before) plays the
-  **classic** board: 47 stones, one fork after 広場 (川の近道 4 / 博物館の遠回り 7). A tall map: the board is a window
-  onto it that follows whose turn it is (and scrolls by hand), full-bleed under the play screen's overlays like the 3D
-  board (its fallback).
+  last game's; online: the last id's). A game without a layout (an older save or game id) plays the
+  **classic** board: 47 stones, one fork after 広場 (川の近道 4 / 博物館の遠回り 7). The 2D map (the 3D board's
+  fallback) is a tall map, a window following whose turn it is (and scrolling by hand), full-bleed like the 3D board.
 - **A turn** (`game.ts`, a pure reducer seeded by the game's seed and step count, every step moving it on): roll 1–6
   and walk; each fork stops the walk for its choice (`ways`: the way taken at each). The table kept together (`rollMode`): the one 6+ steps behind
   whoever's furthest on rolls two dice and keeps the higher; the one 6+ steps ahead of whoever's
@@ -55,21 +55,21 @@ with characters in it, since they are the pieces. A team game: one team total to
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
     it), its effect as a chip: good or neutral only; a move walks on like a roll (letters picked up, the fork asks) and the stone it lands on is
     played in the same turn (an イベント there plays as ことば: no chain). The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
-  - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), after
-    `MAX_ROUNDS` (16, 14 by seats), or 終了.
+  - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), at the
+    length's cap (`ROUND_CAP`), or 終了.
 - **Results** (a team game: never a ranking or a winner): おつかれさま, the team's stars against its goal (`teamGoal`:
   45/60/65 a seat by the length; 「前回より…」 only when beaten), each one's good thing (their longest word, pictures, lines),
-  **みんなで覚えたことば**, and the かいがら: a game played (someone home, or 3 rounds) pays everyone at the table 500 (750
-  with the goal) once (`rewardOf`; the record's `sg_reward`: one game pays each of us once, whichever phone sends it; no
-  daily cap) (up to five of the game's things with Japanese, each Japanese once, to match
-  English ↔ Japanese; a mismatch just lets go), and 今日のことば.
+  **みんなで覚えたことば** (up to five of the game's things with Japanese, each Japanese once, to match English ↔
+  Japanese; a mismatch just lets go), 今日のことば, and the かいがら: a game played (someone home, or 3 rounds) pays
+  everyone at the table 500 (750 with the goal) once (`rewardOf`; the record's `sg_reward`: one game pays each of us
+  once, whichever phone sends it; no daily cap).
 
 ## The 3D board
 
 `components/sugoroku3d/` (engine.ts `createBoard3D(canvas, board)`, the pure part in plan.ts): the game's board as a minimal island (one
 mesh of vertex colours, one of water, one atlas of marks and signs: three draws whatever the layout; built once a game): a few flat low-poly
 shapes (grass, the river with its bridges, the beach and sea, a few trees, the sandy path), the stones in their kind's
-colours with their marks, signs, at 1.5× pixels (an iPhone's memory: the island-model version, 2026-11-18, was too heavy), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
+colours with their marks, signs, at 1.5× pixels (kept this light for an iPhone's memory), the players as their own characters (person3d) hopping stone to stone, a pip die tumbling onto its face, a 3/4
 camera following whose turn it is; a celebration never sad (joy, a small hop, a wave). Drawn only while something
 moves; pawns and no draws in logic mode. Previewed at /dev/sugoroku3d (dev only; `?layout=<seed>` a generated board).
 
@@ -77,10 +77,12 @@ A game plays on its **own screen**, `/sugoroku` (`?m=local` this phone's, `?m=on
 kept), like the museum: the island isn't drawn meanwhile (one WebGL context on the phone). Starting or resuming in the
 tab goes there; ‹ goes back to the island with English Study open on the tab; a reload there resumes the game. The
 board (`Board3D.svelte`) covers the whole screen and is never resized by a phase: the heads hop a stone at a time (260
-ms), the die tumbles before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). No WebGL: the 2D map in its place.
+ms), the die tumbles before the move, a ★ 6+ or あがり gets a jump of joy (else a hop). It watches its WebGL context like the island (`watchContext`, `gl.lost`
+where `sugoroku`): a lost context is drawn again once back; one not back in 3 s, refused twice, or no WebGL at all
+puts the 2D map in its place.
 
 **The play screen** (iPhone 15's 393 × 659 the target): over the board, a top overlay (the NavBar on a clear ground: ‹,
-⋯ then ✕, the team's ★ pill in the title's place; under it the players' chips, whose turn yuzu, their pocket letters)
+⋯ then ✕, the team's ★ pill in the title's place; under it the players' pills: name, level `.tag`, pocket letters, whose turn yuzu and `aria-current`)
 and the turn's bottom sheet (cream, its content's height up to what leaves the board 160 px, then it scrolls; its action
 the last row, full width). The engine frames only the part between (`setInsets`: `setViewOffset` on the visible part,
 plan.ts `visibleOf` / `cameraFor`): whose turn it is in the lower third with the stones ahead, x kept to the land (only
@@ -88,13 +90,13 @@ the beach at the sides), the horizon never shown (the bottom inset given back fi
 ways. Two exceptions to design.md's kit, for the board's room: the team pill in the title bar's place, and this
 sheet's handle (a tap or a drag down) folding it to a 56 px bar (the phase ▲) to see the board; every new phase
 opens it again; a walk shows the die and 「3マス」 in that bar. A check's note is a toast pill over the sheet. ⋯ holds 遊び方
-and 終了する (「ゲームを終了しますか？」 [キャンセル][終了する]); ↻入れかえ asks inline (「星なしで入れかえる？」).
+and 終了する (「ゲームを終了しますか？」 [キャンセル][終了する]: passed round 「ここまでの星で結果を見ます」, online the danger
+button and 「全員のゲームが終わります」). The fork and stretch signs read at the default camera; ↻入れかえ asks inline (「星なしで入れかえる？」).
 
 ## Speaking
 
 **Off** (`game.ts SPEAK = false`) until the real-phone checks pass; `?speak=1` turns it on for a page (the tests, a
-trial). Off, the game is exactly as before. The design and its evidence: /tmp/grade/plan.md; the relay's `POST /grade`:
-relay/src/gradeRoute.ts.
+trial); off, no step shows. The relay's `POST /grade`: relay/src/gradeRoute.ts ([backend](backend.md)).
 
 - **Where:** after a 絵 turn's answer, before 次へ: 「この絵で一文言ってみよう」 (+2), optional, 次へ skips it at no
   cost. やさしい sees two frames (I like ___. / There is a ___.), むずかしい a nudge for 6+ words (shorter: the stars and
@@ -128,7 +130,7 @@ relay/src/gradeRoute.ts.
 新しいゲーム's **それぞれのスマホで**: each player on their own phone (me among them). A game is its moves (`contract/live-protocol.ts` SgIntent `sg`: game id `g`, index `i`, the move
 `a` and its few fields, ≤ 256 bytes; a game id of 10 letters is its board's layout seed, an older 6–8 the classic board), sent to the relay and kept by the room per game
 ([backend](backend.md#shared-world): a row a move, apart from the day's ring), so a phone that opens later or reloads
-gets them again (its own too); each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
+gets them again (its own too); the room keeps a game 2 days after its last move, 12 games at most. Each phone also keeps them (`DEVICE.sugorokuOnline`). Every phone folds them in order
 through the same pure rules (`online.ts` foldMoves; the words and lines must be in: an everyday word's bonus and a
 ぶん's line are the fold's), so all show the same game. A move counts only from whose turn it is (the start, and 終了
 from anyone at the table). The phone whose turn it isn't watches (whose turn, the last move).
@@ -143,7 +145,7 @@ from anyone at the table). The phone whose turn it isn't watches (whose turn, th
   cards, pictures, the board generator, the word and line lists): `online.test`'s pin fails until it is.
 - **Logged:** `sg.sync` once per game and reason (gap, wait, clash, refused, version), never a move each.
 - **Loading:** the app listens from the start (`online.svelte.ts`, light: `wire.ts` only); the rules, words and
-  lines load when an invitation may ask or a game opens.
+  lines load when an invitation is checked or a game opens.
 
 A game started with me in it comes as an invitation, wherever the phone is (the island, any sheet, other
 screens, the museum; listening starts with the app, `routes/+layout.svelte`): a banner with the starter's head,
@@ -158,7 +160,7 @@ first, 「Xが始めたゲーム」 [参加]. In-app only: no Web Push. After a 
 
 About 10 ことば stones hold a letter (`game.ts` letters: scoring letters, a rare one now and then); whoever walks over
 one (or lands on it) picks it up into their **pocket** (3 at most): extra tiles any word may use (`tilesFor`: the rack's
-first, then the pocket's). At the start of my turn I may send a pocket letter as an **おくりもの** (`giveLetter`) to
+first, then the pocket's). At the start of my turn I may send a pocket letter as a **贈り物** (`giveLetter`) to
 someone on the way who has none waiting (whoever's furthest back offered first): their next word must use it, +3 for
 the team; a swap clears it (never a penalty), and their ヒント finds a word with it. Online: the `gift` move.
 
@@ -168,7 +170,7 @@ the team; a swap clears it (never a penalty), and their ヒント finds a word w
 (`seeds.json`, `npm run sugoroku:words`): a common word of 5–8 letters the bag can spell (lengths 5 and 6 likeliest, 8
 least; an everyday word 6 times in 10), its missing letters taken from the bag, the rest as they come, shuffled; so every
 rack holds a real 5–8 letter word (and the shorter ones in it). No seed fits (a short bag): a friendly draw (2–4
-vowels) as before.
+vowels).
 
 ## Words
 
@@ -188,7 +190,8 @@ Curated by cross-reference (`scripts/sugoroku-wordlist.py`, then `SUGOROKU_LISTS
   Japanese reader's fixes from `line-overrides.json` (0 drops a line; a line the deck adds later gets a guess: ≤ 4
   everyday words 1, ≤ 5 and 80 % 2, else 3).
 
-Each is its own chunk, loaded with the tab (precached: a game night works offline). Credits: SCOWL (Kevin Atkinson,
+They load with a game, as the carried feature chunk `sg` (vite.config.ts FEATURE_CHUNK: not in the install
+precache; kept by the service worker after the first online game, so a game night works offline). Credits: SCOWL (Kevin Atkinson,
 MIT-like), wordfreq data (Robyn Speer, CC BY-SA 4.0), NGSL and NGSL-Spoken (Browne, Culligan & Phillips, CC BY-SA 4.0),
 CEFR-J (Tono Lab, free with citation), Norvig's count_1w (MIT); the derived lists are shared under CC BY-SA 4.0 as they
 must be.

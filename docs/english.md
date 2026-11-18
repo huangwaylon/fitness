@@ -2,26 +2,22 @@
 
 The leaf menu's 英語 pill opens **English Study**: one real TV clip a day, about 15 minutes. Watch it whole, answer
 6–8 questions with replays of the exact segment, read short Japanese notes. Solo; the guest has their own progress.
-Code: `app/src/lib/english/` (content, logic, strings in `i18n.ts`, the sheet in `components/`; the progress block one component, so it can change alone).
+Code: `app/src/lib/english/` (content, logic, strings in `i18n.ts`, the sheet in `components/`).
 
 ## Content
 
 A clip (`lib/english/types.ts` Clip) is an official YouTube video and our lesson over it: segments `[from, to]` s,
 English questions, Japanese notes (言っていること / 意味 / 迷いやすい点 / 使えるフレーズ) and a one-line `cue` for a
 second listen. A question quotes one short line at most (*key words* starred); no audio is ours to ship (the
-transcript is, since 2026-11-16: Transcripts).
+transcript is: Transcripts).
 `clips/index.ts` lists them; one file a clip, each checked by the unit tests.
 A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choicesJa` (one a choice, in `choices`' order,
 ≤ 40 each), trimmed, Japanese, every character in the trimmed font (`clips.test.ts`); without them nothing is shown.
 
 - A question has an `id` (≤ 8 of a-z0-9, never reused: the listen answers' and flags' key), a `skill` (its card
-  label: 大意 詳細 数字 誰が 本当の意味 気持ち 一言のねらい 笑いどころ 次の一言 つなぎ言葉 フレーズ 音の聞き分け 書き取り), a `level` (B1/B2/C1), a
-  `point` and the points it `reveals`. A bank is 16–24 items; `clips.test.ts` runs the review rubric's mechanical checks
-  (a lesson under 16 only the schema, segments, wording, dictations and draws). A bank whose file has the line
-  `// A2 REVIEW` (reviewed for the A1–A2 learner, 2026-11-17) has the A2 rules: 12–24 live, gist ≥ 2, L ≥ 4, F ≥ 4
-  (phrase ≥ 1, sound + dict ≥ 1), I 2 to 40 %, humor and predict ≤ 1, each skill ≤ 5, C2 0–2; B1 45–65 %, B2 25–45 %,
-  C1 ≤ 15 %; a key-length tell with 6 characters of slack; said + mean + trap 60–160 characters; a gist's segment ≤ 45 s;
-  3 choices an item (a number 3–4). The others keep the older rules until their review.
+  label: 大意 詳細 数字 誰が 本当の意味 気持ち 一言のねらい 笑いどころ 次の一言 つなぎ言葉 フレーズ 音の聞き分け 書き取り), a `level` (B1/B2/C1/C2), a
+  `point`, the points it `reveals`, and `ctx` for a context item. `retired` takes a question out (never deleted, its id
+  never reused). Every bank is held by `clips.test.ts` to the rules in **Content rules** below.
 - **The draw** (`draw.ts`, pure, seeded by player, clip and play): 6 items under 90 s, 7 under 180 s, else 8. A gist
   first (unseen, a set-up one: starting in the first 40 %), then the best set of the rest (a bounded search): the
   unseen before any repeat, then the group quotas (L I F: n 6 2 1 2, play 2+ 2 2 1; n 7 2 1 3 / 2 2 2; n 8 3 1 3 / 2 2
@@ -29,32 +25,63 @@ A question may carry its Japanese: `ja` (the stem, ≤ 60 characters) and `choic
   parts: the most parts hit, no two segments overlapping by over half), new points first, a B1 opening; always ≤ 1 C1,
   ≤ 1 dictation, humor and predict, one gist, one item a point, nothing that reveals a chosen point; then clip order.
   A play's ids are kept with its place; choices are shuffled per player unless `keep`.
-- **The native tier (C2):** 0 or 2–4 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
-  dict, notes 90–140 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) ships `retired` until
-  its ear check (an A2-reviewed bank: 0–2). The draw takes none unless `{ harder: true }` (the ⚙ 難しめ opt-in),
+- **The native tier (C2):** 0–2 items a bank, ≤ 1 a point, skills infer / attitude / pragma / humor / sound /
+  dict, notes 90–160 characters, not counted in the B1/B2/C1 shares; a stress item (a C2 `sound`) stays `retired` until
+  its ear check. The draw takes none unless `{ harder: true }` (the ⚙ 難しめ opt-in),
   then ≤ 1 a play, one while one is unseen.
 - Speed: `wpm` is words a minute over speech time from the captions, one measure for every clip
   (`npm run english:wpm -- <captions dir> [--write]`). Bands are the library's thirds by it: ゆっくり, ふつう, 速い =
   the slowest, middle and fastest third (`bandsOf`, rewritten by the script, held by the test).
-- Segments: from YouTube's word timings (the same captions; whisper's punctuation for the sentence ends):
+- Segments: from YouTube's json3 word timings (whisper's punctuation for the sentence ends):
   `npm run english:segs -- <captions dir> [--write [left.md]]` finds each item's line and plays it whole, from its
   sentence's start and ≥ 1.5 s before it to its sentence's end and ≥ 1 s after; ≥ 5 s, ≤ 12 s where it can (a gist
   ≤ 45 s, a dictation ≤ 8 s), never shorter than one that held the line already; a line it can't find is left and listed.
 - **The plan** (`plan.ts`): one order every phone offers the clips in, so both members meet the same clip most days
-  without seeing each other's. A slow ramp by ease (wpm's rank 0.8, the rank of the bank's non-B1 share among live non-C2 items 0.2; a bank
-  under 16 the mean; since 2026-11-17, for the A1–A2 learner), a bank with a `// A2 LATE:` line after all the others (as planned: a written place stays till a `--fresh` run),
-  with variety: each pick the one of the nearest five that avoids three of a show or a situation in a row and
+  without seeing each other's. A slow ramp by ease (wpm's rank 0.8, the rank of the bank's non-B1 share among live non-C2 items 0.2), a bank
+  with a `// A2 LATE:` line after all the others, with variety: each pick the one of the nearest five that avoids three of a show or a situation in a row and
   keeps the shows near their share. `plan-order.ts` keeps it as written (`npm run english:plan`; `-- --fresh` only
-  while nobody is part-way); a clip added since goes after it. Last `--fresh`: 2026-11-17, for the A2 learner. The build orders the index by it.
+  while nobody is part-way); a clip added since goes after it. The build orders the index by it.
+
+## Content rules
+
+What a bank must be (`clips.test.ts` holds every bank to the countable ones; the ranges sit in the bank's header):
+
+- **Size and mix:** 12–24 live items; gist ≥ 2, L ≥ 4, F ≥ 4 (phrase ≥ 1, sound + dict ≥ 1), I 2 to 40 %, humor and
+  predict ≤ 1, each skill ≤ 5, C2 0–2; of the rest B1 45–65 %, B2 25–45 %, C1 ≤ 15 %. ≥ 60 % of items turn on a chunk
+  the learner could use this week; a stock reply in the clip (Not at all, Fair enough, I'm good…) gets an item.
+- **Questions:** stems ≤ 12 words, wh-first, names not roles, no position words ("at the start"). 3 choices (a number
+  3–4), parallel, ≤ 6 A2 words, no idioms, phrasal verbs, brand names or swears; the key's length within 6 characters
+  of the others' and not a word-match of the line; every distractor something a careless listener could believe. Two
+  items never share an answer; one quoting another's answer lists its point in `reveals`. No answer rests on a
+  gesture or tone alone.
+- **Notes:** said + mean + trap 60–160 characters (C2 90–160), cue ≤ 40, `use` with its Japanese in （…）; never
+  不正解, 間違い, 残念 or ×; the trap opener 「思いやすい」 in ≤ ⌈live / 3⌉ traps.
+- **Segments:** cut on the captions' json3 word times (whisper's segments are rounded): a seg never cuts a word or
+  plays another item's key, and its key line is inside it.
+- **Coverage:** the speech span (first to last transcript line) in four quarters, each with ≥ 2 non-gist item starts;
+  ≤ 3 starts in any 10 s (≤ 4 when the span is under 80 s); every scene with usable talk gets an item. A stretch of
+  ≥ 25 s with no item start needs `// SKIP a–b: why` covering ≥ 80 % of it (why: credits, music, crosstalk, an
+  excluded joke); a SKIP over half a quarter exempts that quarter.
+- **Gists:** events, not moods; one whose seg starts in the clip's first 40 % (the draw opens with it); 15–30 s where
+  possible, 45 at most; one late in the clip never gives away a later item's answer (else `reveals`).
+- **Context items** (`ctx: true`): the answer needs two turns (what X asks and Y answers, why Y says no, what they
+  decide); ≥ 3 a bank and ≥ 15 % of live; seg 6–15 s (18 allowed for caption timing); `line` quotes both turns
+  split by ` / ` (`Ross: Can you *help*? / Rachel: I can't…`).
+- **EXCLUDE** (`// EXCLUDE a–b`, clip seconds; no live seg may overlap one, edges on json3 word times): slurs,
+  racial or ethnic jokes, explicit sexual lines, suicide, crude bodily lines and childish potty talk, and swears
+  (bitch, ass / asshole / jackass, shit, bastard, dick, f\*\*\*, son of a b…, goddamn, piss, screw you; bleeped ones
+  too). These may play: mild innuendo, damn / hell / crap / sucks, screwed / screw it / screw up, a plain mention of
+  a bodily need, a playful bathroom euphemism. No `line` quotes a swear; `// SWEAR-OK a–b: why` clears a name
+  (Moby Dick).
 
 ## Data
 
 `clips/` stays the source. The build makes two things of it (vite.config.ts `english-data`):
 
-- **The index**, in the plan's order (`catalog.ts` ClipMeta: id, video, title, show, length, band, tags, the play's
-  size, the clip's version `v` = `hash.ts clipHash`, credit), the module `clips/index.ts?english-index`, in the
+- **The index**, in the plan's order (`catalog.ts` ClipMeta; the clip's version `v` = `hash.ts clipHash`), the module `clips/index.ts?english-index`, in the
   sheet's chunk: home, the library and ⚙ need nothing else. Nothing in the app imports `clips/` itself (`deps.test.ts`).
-- **A bank a clip**, `english/c/<id>.<v>.json` (the clip as authored), fetched when its lesson opens; home fetches
+- **A bank a clip**, `english/c/<id>.<v>.json` (the clip as authored, its retired questions cut to what
+  この動画のセリフと解説 shows: `catalog.ts bankOf`), fetched when its lesson opens; home fetches
   today's ahead while idle. The service worker keeps them (`island-english-v1`, cache first: the name carries the
   version), never precached. A lesson shows its player and watch card at once; its questions say 読み込み中… till the
   bank is in, or 質問を読み込めませんでした / offline with もう一度 (failing again online: a reload into the newer build).
@@ -67,12 +94,10 @@ One sheet: three tabs, **ホーム · フレーズ · すごろく** (the kit's 
 pushed over them, with no tab bar: the library, a clip's lesson (‹ back to where it was opened) and ⚙
 (難しめの質問を増やす, 報告した内容).
 
-**Back (2026-11-17), as 設定's levels:** every pushed level has ‹ at the NavBar's top left and goes back exactly one
-level: ⚙, the library → home; a 場面 → the library; a lesson → where it was opened (home, the library with its chip, or
-the 場面); セリフ and この動画のセリフと解説 → what opened them (ツール, or まとめ). A paper sheet opened from ツール's row
-(場面のあらすじ's list, ⚑ この動画を報告) closes and reopens ツール on its ‹ (as 図鑑's ‹ to 設定); opened from elsewhere (the
-場面のあらすじ band, a question's ⚑) it has ✕ only. ✕ is always top right: on English Study's levels it closes the sheet, on a
-paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
+**Back, as 設定's levels:** every pushed level's ‹ (top left) goes back exactly one level, to what opened it (a
+lesson to home, the library with its chip, or the 場面). A paper sheet opened from ツール's row reopens ツール on its ‹;
+opened elsewhere (the 場面のあらすじ band, a question's ⚑) it has ✕ only. ✕ (top right) closes the sheet it is on. No
+swipe, no in-page 戻る (まとめ's 完了 is the lesson's ‹).
 
 - **Home**, three cards: 今日の動画 (the thumbnail, Friends · band · situation · N問, one button: 始める / 続きから /
   もう一度（新しい質問）), 今週, and ライブラリ, at most five rows: the latest play left part-way, もう一度 (below), the
@@ -97,21 +122,21 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
   carries a 難しめ tag. Nothing is locked either way.
 - **Lesson:** the player stays pinned on top. Watching first is a suggestion: 質問へ and ‹ 前へ / 次へ › always work, a
   question can be left unanswered, and まとめ is always reachable. One primary action a state: ▶ 全部見る on the watch
-  card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (sky, before the
-  choices) while answering, 次へ (green) once answered, 完了 at まとめ (green; もう一度、通して見る a small paper button with ▶). A question card is tight, so its
-  choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts` checks): one control row, its
-  meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
+  card (質問へ paper till the clip has played or ended, green after; never disabled), この部分を聞く (before the
+  choices) while answering, 次へ once answered, 完了 at まとめ (もう一度、通して見る a small paper button). A question
+  card is tight, so its choices and ⚑ fit above the fold at 393×852 (two at least at 375×667: `english.spec.ts`
+  checks): the player's one control row (no speed chip: 再生速度 is in ツール), its meta 「質問 1/6 · 大意」 (question 1, open: 「聞いてから選びましょう。何回聞いてもOK」 under the stem); the stem's `ja` under
   it in grey; a 訳 chip by the meta shows the choices' `choicesJa` before answering (this lesson's; none for a form item:
   marker, phrase, sound), and the reveal shows them under every choice; its ⚑ 報告 a quiet link at its foot. The credit shows on the watch card, at まとめ and in ツール.
-- **ツール** (the lesson bar's tool icon, labelled ツール, `StudySheet.svelte`; ‹, the title with an ellipsis, ツール, ✕;
-  the sheet's title ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
+- **ツール** (an icon-only button in the lesson bar, aria-label ツール, `StudySheet.svelte`; the sheet titled ツール): 字幕 オフ / 英語 / 日本語, 字幕の大きさ and 再生速度 1× / 0.75× (The player; `ui/Segmented`
   each), the 場面のあらすじ switch, then its list (場面のあらすじ · 全部の場面を一覧で), セリフ（全文） (a bank with
   lines only) and この動画のセリフと解説 (「質問の答えと解説を含みます」), then ⚑ この動画を報告 and the credit.
 - **この動画のセリフと解説** (ツール's row, never locked, and まとめ's; `phrases.ts`, `ClipPhrases.svelte`): a
   level under the same pinned player, ‹ back to where it was. The bank's quoted lines (every question's `line`, the
   retired too), once each, in time order; lines starting within a second are one moment, a card each: ▶ m:ss plays it,
-  then each line (key words underlined), 言っていること, 意味 and the phrase. Only the questions' own short quotes,
-  never a transcript.
+  then each line, 言っていること, 意味 and the phrase. Only the questions' own short quotes, never a transcript.
+  Every keyed line (the stem, the reveal, まとめ's rows, these, the phrase cards) is one `KeyedText`: key words
+  underlined.
 - **A miss:** the segment plays again by itself, a nudge with the `cue`, the choices as they were, and a quiet 答えを見る.
   A second miss shows 「答えはこれ」. Never red, ×, a sound or a percentage; ◎ first try, ○ second.
 - **The reveal:** the result, the line (key words underlined), 意味 and 使えるフレーズ; 言っていること and 迷いやすい点 under
@@ -125,14 +150,14 @@ paper sheet that sheet. No swipe, no in-page 戻る (まとめ's 完了 is the l
 
 ## Phrase review
 
-フレーズの復習 (approved 2026-11-17; `phrase-review.ts`, `PhraseReview.svelte`): a card above 今日の動画 on home, only
+フレーズの復習 (`phrase-review.ts`, `PhraseReview.svelte`): a card above 今日の動画 on home, only
 when phrases are due. The phrases are the `use` of the questions in my finished plays (`listen` rows with `f`) and
 those フレーズ's ☆ saved (`k`, the day; never pruned but once its question or clip is retired, un-☆ leaves the rest as it was); each comes back 1, 3, 7, 14,
 then every 30 days after it was last met in a play, saved or shown here. At most 3 a day: those shown
 before first (the longest overdue first), then the never shown (the latest met first), one per English phrase.
 
-- One at a time: the English, 意味を見る → its Japanese, the clip's line (key words underlined) and the clip's player,
-  この場面を聞く playing the question's segment; then もう一度 (tomorrow again) or 覚えた (a step on). These only space
+- One at a time, on the deck's `PhraseCard` (below): the English, 意味を見る → its Japanese, the clip's line and its
+  player, この場面を聞く playing the question's segment; then もう一度 (tomorrow again) or 覚えた (a step on). These only space
   it: never a score, a percentage, red or ×. 今日はスキップ ends today's (the steps as they were).
 - Kept per player on this phone (`island.english.phrases`). Banks it needs are fetched (at most 4); one that doesn't
   load is passed over, and the card never holds up today's clip. Counted: `act:english.phrase.<show | kept | again | skip>`.
@@ -150,7 +175,7 @@ whole library; ~2,800 cards, ~28 KB gzipped a file), their versions the index's 
 as the banks (an older version of a file goes), never precached; `load-budget.ts` holds them to 12, each ≤ 32 KB
 gzipped.
 
-**The page** (`deck.ts`, `Phrases.svelte`): one card at a time, 5 a set. The order is seeded per player (the shards
+**The page** (`deck.ts`, `Phrases.svelte`, the card `PhraseCard.svelte`, shared with フレーズの復習): one card at a time, 5 a set. The order is seeded per player (the shards
 in a seeded order, each shard's cards too; each round a new order), the place kept on this phone
 (`island.english.deck`), so the tab comes back to the same card, face down. Passed over (back next round): a card of
 a clip already in this set, of today's clip and of the next 2 open ones in the plan (their lessons stay fresh).
@@ -176,13 +201,13 @@ target: one row, play / pause (on from where it stopped), the scrubber with the 
 question card a second, −5秒 and 0.75× (only when the frame's `availablePlaybackRates` offer more than 1; ツール's 再生速度
 too). A question's segment is its card's この部分を聞く, not a control. A drag seeks once a frame. States: offline (a note, nothing loaded), unavailable (an error 100/101/150/153: a note and a link to
 YouTube), a play that doesn't start (iOS wants a tap on the video itself: a hint). The player is edge to edge (393 pt on an
-iPhone 15). The quality can't be set (setPlaybackQuality is a no-op since YouTube's 2019-10-24 revision): YouTube picks
-it by the frame's device pixels, so the edge-to-edge width is what drives it. Captions are unloaded at ready and at each play, unless 字幕 is on.
+iPhone 15). The quality can't be set (setPlaybackQuality is a no-op): YouTube picks
+it by the frame's device pixels, so the edge-to-edge width drives it. Captions are unloaded at ready and at each play, unless 字幕 is on.
 字幕 cycles オフ → 英語 → 日本語 in one tap, the clip playing on, オフ by default and again in each lesson (the player's, not saved); turned on, counted
 once a play (`act:english.cc`). 英語: YouTube's own English track (`loadModule` captions, `setOption` captions track en,
 again at each play). 日本語: `setOption` track `{ languageCode: 'en', translationLanguage: { languageCode: 'ja' } }`
 (YouTube's auto-translation), or `{ languageCode: 'ja' }` once the frame has listed a Japanese track (its `tracklist`,
-read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented). Unverified on the iPhone: if the embed ignores it, the captions stay
+read from infoDelivery or apiInfoDelivery wherever nested: the shape is undocumented); if the embed ignores it, the captions stay
 English or off. YouTube shows one caption track only, and the dialogue is never ours to render, so there are never two
 tracks. ツール (The page) holds 字幕 too (the chip's choice) and
 **字幕の大きさ** 小 / 中 / 大 / 特大 = `setOption` captions `fontSize` −1 / 0 / 1 / 2 (大 by default: the user found
@@ -203,7 +228,7 @@ gaps ≤ 5 s; `ja` ≤ 40 characters, no 「」『』 or quotation marks, no Eng
 The build adds `scenes` to the clip's bank (its file name carries their version too: `catalog.ts withScenes`); nothing
 more is precached.
 
-**Beats** (optional, the user 2026-11-16): the same clip in shorter steps, each categorized, in the same file:
+**Beats** (optional): the same clip in shorter steps, each categorized, in the same file:
 `"beats": [{ "t": [from, to], "ja", "k" }]`. `k` is the beat's main move, one of ask 頼む・誘う, decline 断る, suggest
 提案, explain 説明, feeling 気持ち, joke 冗談, irony 皮肉, argue 言い合い, action 動作 (`scenes.ts BEAT_KINDS`, i18n
 `beat.<k>`). The test holds them too: each 2–10 s, time order, no overlaps, gaps ≤ 5 s, each inside one scene's span,
@@ -221,8 +246,8 @@ without scenes shows none of them.
 
 ## Transcripts
 
-セリフ: the clip's full English text, with our Japanese translation when written (the user, 2026-11-16: the
-transcripts ship, the audio still never does). One file a video: `app/src/lib/english/transcripts/<YouTube video id>.en.json`,
+セリフ: the clip's full English text, with our Japanese translation when written (the transcripts ship, the audio
+never does). One file a video: `app/src/lib/english/transcripts/<YouTube video id>.en.json`,
 `{ "video", "lines": [{ "t": [from, to], "en" }] }`: the local whisper pass's segments (0.1 s; noise that is mostly not
 Latin letters dropped; a run of 3+ identical lines, its loop over music or a talking head, cut; a line over 200
 characters split at a sentence end), written by `npm run english:transcripts -- <out dir> [--ids a,b] --write` from
@@ -241,8 +266,7 @@ holds the follow 6 s), one tapped plays from there, the Japanese under its Engli
 A `listen` row (`gm` 'tv', `u` the clip's id, contract/listen.ts) once a play, when its まとめ is reached (`f: 1`, every
 answer so far; もう一度 the same day is a play of its own), and one without `f` when a clip is left part-way with a minute or more not yet sent. `ms` is
 the active study time the row adds: the video playing with the page visible, plus a question card's time with input
-in the last 60 s, at most 90 s a question. It is the only `listen` row the record takes (the retired ききみみ's
-were deleted); its owner gets it whole, everyone else `{d, g, n, ms, gm, f?}`.
+in the last 60 s, at most 90 s a question. Its owner gets it whole, everyone else `{d, g, ms, gm, f?}`.
 
 - **A day** (Tokyo) counts when a まとめ is reached. Weeks start on Monday.
 - **今週:** three dots (`●●○ 2/3日`), then 「今週の3日、達成」 (past three, 「4日」). Monday before any study:

@@ -59,7 +59,7 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `sell`, `buy`, `buy_starts` | `shop.ts`, `stock.ts` | [The shop](design.md#the-shop), no slot, the guest's too: the pocket and かいがら are derived (`shopLedger`); past them `pocket short` / `wallet short`; never which pieces a stock holds (each person's own, the phones': `shop/stock.ts`) |
 | `sg_reward` | `shop.ts rewardOf` | [英語すごろく](sugoroku.md)'s かいがら for a game, anyone's (the guest's too): `{g, v, to, d}`, `g` the game's id (`/^[a-z0-9:.-]{6,40}$/`), `v` 1–1000 each, `to` a unique set of A/B/G, `d` the record's day or yesterday; a row of **each recipient's** ledger (`rowConcerns`), added as a sale's (never ベル); a game pays each once, no daily cap; kept while it pays one of them, else `reward paid` (no toast); `rewardGame` on the phone |
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
-| `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, n, ms, gm, f?}`) |
+| `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
@@ -245,7 +245,9 @@ never data of record: the record still catches an offline phone up.
   `src/room.ts`) at `wss://island-fund-relay.island-fund-relay.workers.dev/room`; a test copy,
   `island-fund-relay-test`, with its own secrets, for the smoke test. `GET /health` → `{ok, v, versions, sha, t, wx}`
   (`sha`: the deployed commit); `POST /api`, `/admin`, `/log`
-  ([observability](ops/observability.md)).
+  ([observability](ops/observability.md)). Workers AI (the `AI` binding), a person's key only, nothing kept, spend
+  counted per person a day in IslandLog: `POST /stt` (whisper, ≤ 10 s WAV, `STT_DAY_MAX`: [speech-test.md](speech-test.md))
+  and `POST /grade` (one すごろく sentence, `GRADE_DAY_MAX`: [sugoroku.md](sugoroku.md#speaking), `gradeRoute.ts`).
 - **Admission:** `/room` upgrades only from `ALLOWED_ORIGINS` and localhost, with the subprotocols `island-v1` and a
   short-lived HMAC ticket under the person's key (`contract/ticket.ts`, `auth.ts admission`), else 403; a ticketed
   hello must be that person's. A phone clock over 5 minutes off has no live socket.
