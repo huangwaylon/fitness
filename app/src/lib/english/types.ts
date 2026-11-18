@@ -85,7 +85,7 @@ export interface Clip {
   show: 'Friends' | 'The Office' | 'Parks and Recreation' | 'iCarly';
   /** Whose video (the channel), shown under the player. */
   credit: string;
-  /** The bank (16–24 once written; a lesson of 8 before), in clip order. */
+  /** The bank (16–24 live items), in clip order. */
   questions: readonly Question[];
 }
 

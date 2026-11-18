@@ -14,16 +14,12 @@ type PlanClip = Pick<Clip, 'id' | 'wpm' | 'tags' | 'show' | 'questions'>;
 /** How far ahead of the ramp a clip may come for variety (clips). */
 const WINDOW = 5;
 
-/** A bank this big or more says how hard its clip is (a lesson of 8 not yet). */
-const FULL_BANK = 16;
-
 /** Each clip's ease, 0 (easiest) to 1: its wpm's rank (0.8) and the rank of its live non-C2 items' non-B1 share
- *  (0.2) in `clips` (a bank not yet full counts as the full banks' mean). */
+ *  (0.2) in `clips` (one with no live non-C2 item counts as the others' mean). */
 function easeOf(clips: readonly PlanClip[]): Map<string, number> {
   const share = (c: PlanClip) => {
-    const live = c.questions.filter((q) => !q.retired);
-    const core = live.filter((q) => q.level !== 'C2');
-    return live.length >= FULL_BANK && core.length ? core.filter((q) => q.level !== 'B1').length / core.length : null;
+    const core = c.questions.filter((q) => !q.retired && q.level !== 'C2');
+    return core.length ? core.filter((q) => q.level !== 'B1').length / core.length : null;
   };
   const full = clips.map(share).filter((x) => x !== null);
   const mean = full.length ? full.reduce((a, b) => a + b, 0) / full.length : 0;

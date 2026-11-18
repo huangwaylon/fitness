@@ -53,7 +53,7 @@ function clash(a: Question, b: Question): boolean {
 
 /**
  * The questions of play `play` (1-based) of `clip`, given what was seen before (`seen`), drawn with `seed`. Fewer
- * than the size only when the bank has fewer that fit together (a lesson before its bank: every item, in order).
+ * than the size only when the bank has fewer that fit together.
  */
 export function draw(clip: Clip, seen: History, play: number, seed: string, opts: { harder?: boolean } = {}): Question[] {
   const all = clip.questions.filter((q) => !q.retired);
