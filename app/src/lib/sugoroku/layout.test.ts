@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CLASSIC, routesFrom, waysAt } from './board.ts';
 import { FAMILIES, STEPS, boardOf, familyOf, familyOfKey, generate, layoutKey, problems } from './layout.ts';
+import { GEN } from './family.ts';
+import { fnv1a } from '#lib/random.ts';
 
 /** Pinned seeds: the generator's rules over many boards. */
 const SEEDS = Array.from({ length: 240 }, (_, i) => `t${i}`);
@@ -22,6 +24,12 @@ describe('layouts', () => {
     expect(familyOfKey(layoutKey('t1'))).toBe(familyOf('t1'));
     expect(familyOfKey(undefined)).toBeNull();
   });
+  it('a change to the generator bumps GEN: a few pinned seeds’ boards, hashed, pinned to it', () => {
+    // (another phone on the same GEN builds the board from the same seed: a change without the bump splits a game)
+    const GOLDEN: Record<number, string> = { 1: '1qmjkf8' };
+    const hash = fnv1a(JSON.stringify(['a1', 'b2', 'c3', 'd4', 'e5', 'f6'].map((s) => generate(s)))).toString(36);
+    expect(hash, `bump GEN in family.ts (and wire.ts RULES) and pin '${hash}' to it`).toBe(GOLDEN[GEN]);
+  });
   it('every route from ふりだし reaches あがり in the band of steps, about as long as the others', () => {
     for (const b of boards) {
       const steps = routesFrom(b).map((r) => r.length - 1);
@@ -35,8 +43,9 @@ describe('layouts', () => {
   it('variety: every family, 1–3 forks, crossroads, new stretches, mirrored; two seeds in a row different', () => {
     const fams = new Set(boards.map((b) => b.family)), forks = new Set(boards.map((b) => b.forks.length));
     expect([...fams].sort()).toEqual([...FAMILIES].sort());
-    expect([...forks].sort()).toEqual([1, 2, 3, 4].filter((n) => forks.has(n)));
-    expect(forks.has(1) && forks.has(3)).toBe(true);
+    // (4: a crossroads' two and a lane's split, 十字路 only)
+    expect([...forks].sort()).toEqual([1, 2, 3, 4]);
+    for (const b of boards) if (b.forks.length === 4) expect(b.crossing?.length, b.key).toBeTruthy();
     expect(boards.some((b) => b.crossing?.length)).toBe(true);
     const areas = new Set(boards.flatMap((b) => b.spaces.map((s) => s.area)));
     for (const a of ['forest', 'hill', 'station', 'park', 'museum', 'river']) expect(areas.has(a as never), a).toBe(true);
