@@ -1,9 +1,11 @@
+// R4 REVIEW 2026-11-18: keep 14, rewrite 1, retire 2, new 3, ctx 7, tx 2
 // A2 REVIEW 2026-11-17: keep 7, rewrite 12, retire 4, new 1
 // “Chandler Is Desperate and Needy | Friends” (the official Friends channel, Best of Season 1): Chandler waits all day
 // for Danielle to return his call, refuses to call her, calls her anyway, and finds his phone was off the whole time;
 // when she turns up to check on him, he calls her needy. Segments from the captions, words from whisper (2026-11-16):
 // whisper runs the clip together in long chunks, so all timings are the captions'. The friends are never named: stems
-// say "a friend". Left out: 40–52 s (who holds which phone), 177–192 s (the Mr. Peanut aside), 219 s and 230.7 s.
+// say "a friend". Left out: 40–52 s (who holds which phone), 181–192 s (the Mr. Peanut joke), 230.7 s.
+// EAR CHECK: 216–224 s who says "maybe we could get together later" and who "I'll call you. Or you call me" (c3 says A/B).
 import type { Clip } from '../types.ts';
 
 export const needyCall: Clip = {
@@ -21,8 +23,9 @@ export const needyCall: Clip = {
       line: 'Oh, Danielle… Give me a call when you get a chance. Bye-bye.',
       said: 'ダニエルの留守電に伝言を残し、そのあとは電話が来るのをずっと待っている。',
       mean: '何気ない伝言に見せて、実は電話を待ちわびている。',
-      trap: 'dishes（食器）の話も出るので、料理の話と思いやすい。それは音の演出。',
+      trap: 'dishes（食器）の話も出るので、料理の話と考えがち。それは音の演出。',
       use: 'I’m waiting for a call.（電話を待ってるんだ）' },
+
     { id: 'f6', skill: 'phrase', level: 'B1', point: 'chance', seg: [0.7, 14.5],
       stem: 'What does “Give me a call when you get a chance” mean?',
       ja: '「Give me a call when you get a chance」はどういう意味？',
@@ -32,9 +35,10 @@ export const needyCall: Clip = {
       line: 'Oh, Danielle. I wasn’t expecting the machine. *Give me a call when you get a chance.* Bye-bye.',
       said: '「あ、ダニエル。留守電だと思わなかった。時間があるときに電話ちょうだい」と言う。',
       mean: 'give me a call ＝ 電話して。when you get a chance ＝ 時間ができたら。軽いお願い。',
-      trap: 'chance ＝「チャンス、機会」から、急いでいると思いやすい。「手があいたら」の意味。',
+      trap: 'chance ＝「チャンス、機会」から、急いでいると勘違いしやすい。「手があいたら」の意味。',
       use: 'Call me when you get a chance.（時間があるときに電話して）' },
-    { id: 'i1', skill: 'infer', level: 'B2', point: 'rehearse', reveals: ['hours'], seg: [5.8, 21.9],
+
+    { id: 'i1', skill: 'infer', level: 'B2', point: 'rehearse', reveals: ['hours'], seg: [5.8, 21.9], retired: true,
       stem: '“That’s what you’ve been working on?” What does it show?',
       ja: '「That’s what you’ve been working on?」から何がわかる？',
       choices: ['He worked long on it', 'He left a very long message', 'He called her two times'], a: 0,
@@ -45,6 +49,7 @@ export const needyCall: Clip = {
       mean: '軽く聞こえた留守電は、実は練りに練ったもの。短さと時間の差がおかしい。',
       trap: '2時間と聞くと、長い伝言と思いやすい。聞こえた伝言はとても短い。',
       use: 'Oh, I didn’t think you’d pick up!（あ、出ると思わなかった！）' },
+
     { id: 'n1', skill: 'number', level: 'B1', point: 'hours', reveals: ['rehearse'], seg: [16.5, 21.9], keep: true,
       stem: 'How long has Chandler been working on the message?',
       ja: 'チャンドラーは伝言にどのくらいかけていた？',
@@ -56,7 +61,8 @@ export const needyCall: Clip = {
       mean: 'for the past 〜 ＝ この〜のあいだずっと。短い留守電に2時間、という差。',
       trap: 'twenty（20）や twelve（12）も「トゥ」で始まる。two のあとに音が続かなければ2。',
       use: 'I’ve been here for the past hour.（この1時間ずっとここにいたよ）' },
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'honing', seg: [19.6, 24.6],
+
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'honing', seg: [19.6, 24.6], retired: true,
       stem: 'What does “I’ve been honing it” mean?',
       ja: '「I’ve been honing it」はどういう意味？',
       choices: ['I’ve been polishing it', 'I’ve been phoning her', 'I’ve been timing it closely'], a: 0,
@@ -67,28 +73,31 @@ export const needyCall: Clip = {
       mean: 'hone ＝ 刃物をとぐ → 文や技にみがきをかける。短い留守電には大げさな語。',
       trap: 'phoning（電話する）と1音しか違わず、迷いやすい。「ホウ」と h で始まる。',
       use: 'I’m honing my speech for Friday.（金曜のスピーチを練ってるところ）' },
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'dishes', seg: [23.1, 30.6],
+
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'dishes', ctx: true, seg: [23.1, 30.6],
       stem: 'Why did Chandler make dish noises on the message?',
       ja: 'チャンドラーはなぜ伝言で食器の音を立てた？',
       choices: ['To sound like he’s out', 'To sound like he’s cooking', 'To sound like he has guests'], a: 0,
       choicesJa: ['外にいるように聞こえるように', '料理しているように聞こえるように', 'お客がいるように聞こえるように'],
       cue: '「I want her to think」のあと',
-      line: 'What was with the dishes? — Oh, I want her to think I might be *in a restaurant*.',
+      line: 'Friend: *What was with the dishes?* / Chandler: Oh, I want her to think I might be *in a restaurant*.',
       said: '「食器の音は何？」に「レストランにいると思わせたかったんだ」と答える。',
       mean: 'I want her to think 〜 ＝ 彼女に〜と思わせたい。家で待っていると思われたくない。',
-      trap: '食器の音から、料理と思いやすい。I want her to think のあとが理由。',
+      trap: '食器の音から、料理と考えがち。I want her to think のあとが理由。',
       use: 'I want them to think I’m busy.（忙しいと思われたいんだ）' },
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'future', seg: [38.9, 47.7],
+
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'future', ctx: true, seg: [38.9, 47.7],
       stem: 'What does “for future reference” mean?',
       ja: '「for future reference」はどういう意味？',
       choices: ['Just so you know next time', 'Just for the record now', 'Just this once, as a favor'], a: 0,
       choicesJa: ['次のために言っておくと', '今の記録のために', '今回だけ、特別に'],
       cue: '「Yeah, but」のあと',
-      line: 'Can I use your phone? — Yeah. But *for future reference*, that thing in your hand can also be used as a phone.',
+      line: 'Chandler: Can I use your phone? / Friend: Yeah. But *for future reference*, that thing in your hand can also be used as a phone.',
       said: '「電話借りていい？」「いいけど、今後のために言うと、手に持ってるそれも電話だよ」と返す。',
       mean: 'for future reference ＝ 今後のために（言っておくと）。軽い皮肉の前置きにも使う。',
-      trap: 'reference（参考、記録）から、記録の話と思いやすい。future（これから）が大事。',
+      trap: 'reference（参考、記録）から、記録の話と勘違いしやすい。future（これから）が大事。',
       use: 'For future reference, I take my coffee black.（今後のために、コーヒーはブラックで）' },
+
     { id: 'd2', skill: 'detail', level: 'B1', point: 'beeps', seg: [57, 65.4],
       stem: 'What would “a lot of beeps” on her machine mean?',
       ja: '彼女の留守電に「ピー」が多かったら、どういうこと？',
@@ -98,8 +107,9 @@ export const needyCall: Clip = {
       line: 'if she has a lot of beeps, that means she *probably didn’t get her messages yet*.',
       said: '「ピーが多ければ、まだ伝言を聞いていないってことだよ」と言う。',
       mean: 'that means 〜 ＝ ってことは〜。返事がないのは無視ではないかも、と安心させる。',
-      trap: 'ピーが多い＝電話が多い、と考えて、ほかの男の話と思いやすい。that means のあとを聞く。',
+      trap: 'ピーが多い＝電話が多いと考え、ほかの男の話を連想しやすい。that means のあとを聞く。',
       use: 'That means she’s probably still at work.（ってことは、たぶんまだ仕事中だね）' },
+
     { id: 'h1', skill: 'humor', level: 'C1', point: 'ad', reveals: ['needy'], seg: [65.2, 72], retired: true,
       stem: 'Why does the line about a “personal ad” get a laugh?',
       choices: ['Those three words sound like his own dating ad', 'Those words are what Danielle wrote in her ad',
@@ -110,17 +120,19 @@ export const needyCall: Clip = {
       mean: '自分の欠点3つを、広告の自己紹介文に見立てた自虐。',
       trap: 'ad を彼女の広告や、のぞき見の話と取りやすい。my ad と、直前の3語を指していると聞く。',
       use: 'Clearly, you’ve read my résumé.（さては僕の履歴書を読んだね）' },
-    { id: 'd3', skill: 'detail', level: 'B1', point: 'answered', seg: [73.7, 78.7],
+
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'answered', ctx: true, seg: [72.5, 79.0],
       stem: 'What happened when Chandler called her machine?',
       ja: 'チャンドラーが留守電にかけたら、どうなった？',
       choices: ['She answered herself', 'The machine cut him off', 'Her line was busy'], a: 0,
       choicesJa: ['本人が出た', '留守電が途中で切れた', '話し中だった'],
       cue: '「How many beeps?」の答え',
-      line: 'How many beeps? — *She answered.*',
+      line: 'Friend: *How many beeps?* / Chandler: *She answered.*',
       said: '「ピーはいくつ？」「本人が出ちゃった」と答える。',
       mean: 'answer ＝ （電話に）出る。機械ではなく、本人が出てしまった。',
-      trap: 'beeps の話なので、留守電の話が続くと思いやすい。answer は電話では「出る」。',
+      trap: 'beeps の話なので、留守電の話が続くと勘違いしやすい。answer は電話では「出る」。',
       use: 'I called, and she actually answered.（電話したら、本人が出たんだ）' },
+
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'hello', reveals: ['answered'], seg: [75.3, 84.3],
       stem: 'Why does Chandler’s friend say “that hello word”?',
       ja: 'チャンドラーの友だちは、なぜ「that hello word」と言う？',
@@ -132,6 +144,7 @@ export const needyCall: Clip = {
       mean: '何も言えずに切ったのを、子どもに教えるような言い方でからかっている。',
       trap: 'You see（いいかい）がやさしく聞こえ、なぐさめと思いやすい。もう終わったことへの一言。',
       use: 'This is where you say thank you.（ここで「ありがとう」って言うところだよ）' },
+
     { id: 'nt1', skill: 'pragma', level: 'C2', point: 'hello', reveals: ['answered'], seg: [75.3, 83.6], retired: true,
       stem: 'Taken literally, what would the friend’s remark say about Chandler?',
       choices: ['That he had to be taught to say hello', 'That they had agreed on a secret code word',
@@ -142,6 +155,7 @@ export const needyCall: Clip = {
       mean: '本気なら「挨拶の仕方を教わった人」になる。ありえない前提で、固まった彼を子ども扱いする冗談。',
       trap: 'we talked about から、二人で決めた合図を想像しやすい。誰でも知っている語に付けた点がおかしさ。',
       use: 'Remember that “no” word? Try it sometime.（「ノー」って言葉、たまには使ってみて）' },
+
     { id: 'f3', skill: 'phrase', level: 'B2', point: 'snubbed', seg: [83.7, 91],
       stem: 'What does “snubbed” mean here?',
       ja: 'ここでの「snubbed」はどういう意味？',
@@ -153,6 +167,7 @@ export const needyCall: Clip = {
       mean: 'snub ＝ わざと無視する。choosing not to（あえて〜しない）がその説明。',
       trap: '電話が来ないので、忘れられたと思いやすい。choosing（選んで）なので、わざと。',
       use: 'I said hi, and he totally snubbed me.（あいさつしたのに、完全に無視された）' },
+
     { id: 's1', skill: 'sound', level: 'B1', point: 'cant', seg: [101.4, 109.4],
       stem: 'Which words do you hear: “I ___ her. I left a message”?',
       ja: '「I ___ her. I left a message」どれが聞こえる？',
@@ -164,6 +179,7 @@ export const needyCall: Clip = {
       mean: 'can’t は t がほぼ聞こえず、「キャーン」と長く強い。can は「クン」と短い。',
       trap: 'could は「クッド」と短い。長く強い「キャーン」なら can’t。',
       use: 'I can’t talk now. Call you later?（今話せないんだ。あとでかけていい？）' },
+
     { id: 'h5', skill: 'humor', level: 'C1', point: 'pride', seg: [102.8, 110.5], retired: true,
       stem: 'Why does Chandler’s one-word answer at the end get a laugh?',
       choices: ['He gives up his pride the moment it’s doubted', 'He firmly refuses the idea of calling her',
@@ -174,6 +190,7 @@ export const needyCall: Clip = {
       mean: '言った直後に自分で認めてしまう落差が笑い。このあと彼は電話をかける。',
       trap: 'No を「電話しない」や打ち切りと取りやすい。No は直前の Do you? への答え。',
       use: 'I have some self-control. Okay, I don’t.（自制心はある。…うそ、ない）' },
+
     { id: 'i6', skill: 'infer', level: 'B2', point: 'shutoff', seg: [122.2, 131.1],
       stem: 'Why does Chandler tell Danielle he shut off his phone?',
       ja: 'チャンドラーはなぜダニエルに「電源を切っていた」と言う？',
@@ -185,6 +202,7 @@ export const needyCall: Clip = {
       mean: 'I don’t know if 〜 ＝ 〜かどうかわからないけど。自分からかけた気まずさをごまかす作り話。',
       trap: '謝っているように聞こえやすい。if you tried（もしかけてくれたなら）と仮定の話。',
       use: 'If you tried to call, my phone died.（もし電話くれてたら、電池切れで）' },
+
     { id: 'x2', skill: 'dict', level: 'B2', point: 'shutoff', seg: [123.1, 131.1],
       stem: 'Type what he says: “I accidentally ___.” (4 words)', answer: 'shut off my phone',
       ja: '彼の言葉を書こう：「I accidentally ___.」（4語）',
@@ -194,6 +212,7 @@ export const needyCall: Clip = {
       mean: 'shut off ＝ （電源を）切る。shut off が「シャロフ」とつながる。',
       trap: 't が軽い「ラ」の音になり、shut と off が1語に聞こえやすい。4語ある。',
       use: 'Don’t forget to shut off the lights.（電気を消すのを忘れないでね）' },
+
     { id: 'f5', skill: 'phrase', level: 'B1', point: 'otherline', seg: [137, 141.2],
       stem: 'Why can’t Danielle talk right now, Chandler says?',
       ja: 'チャンドラーによると、ダニエルはなぜ今話せない？',
@@ -205,17 +224,19 @@ export const needyCall: Clip = {
       mean: 'on the other line ＝ 別の電話に出ている（キャッチホン）。call 〜 back ＝ かけ直す。',
       trap: 'line（回線）から、つながりが悪いと思いやすい。the other line で「もう1本の電話」。',
       use: 'Sorry, I’m on the other line.（ごめん、別の電話に出てるの）' },
-    { id: 'h3', skill: 'humor', level: 'B2', point: 'ring', seg: [148.6, 156.3],
-      stem: 'Why is “Ring, damn it, ring” funny?',
-      ja: '「Ring, damn it, ring」はなぜおかしい？',
-      choices: ['Ring is also the clue’s answer', 'He is angry at his friend', 'He got the crossword clue wrong'], a: 0,
-      choicesJa: ['ring がクロスワードの答えでもある', '友だちに怒っている', 'クロスワードの答えをまちがえた'],
-      cue: '「Four letters」のヒント',
-      line: 'Four letters, circle or hoop. — *Ring, damn it, ring.* — *Thanks.*',
-      said: 'クロスワードの「4文字、円か輪」に、電話への「鳴ってくれ」が答えになる。',
-      mean: 'ring ＝ 輪、そして（電話が）鳴る。電話への言葉を、友だちは答えと受け取る。',
-      trap: 'damn it（くそっ）で、友だちに怒っていると思いやすい。Thanks は答えへのお礼。',
-      use: 'Come on, ring already!（ほら、早く鳴ってよ！）' },
+
+    { id: 'h3', skill: 'humor', level: 'B2', point: 'ring', ctx: true, seg: [148.6, 156.3],
+      stem: 'What is the answer to the crossword clue?',
+      ja: 'クロスワードのヒントの答えは？',
+      choices: ['Ring', 'Loop', 'Bell'], a: 0,
+      choicesJa: ['リング（輪）', 'ループ（輪）', 'ベル（鈴）'],
+      cue: '「Four letters」のあとの、チャンドラーの叫び',
+      line: 'Friend: Four letters, *circle or hoop*. / Chandler: *Ring*, … *ring*. / Friend: *Thanks.*',
+      said: '「4文字、円か輪」に、チャンドラーが電話へ「鳴れ（ring）」と叫び、友だちは「どうも」。',
+      mean: 'ring ＝ 輪、そして（電話が）鳴る。電話に向けた言葉を、友だちはヒントの答えと受け取ってお礼を言う。',
+      trap: 'loop も4文字の「輪」で迷いやすい。チャンドラーの叫びと Thanks で ring と決まる。',
+      use: 'Can you give me a ring later?（あとで電話くれる？）' },
+
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'turnedoff', seg: [160.9, 172.9],
       stem: 'How does Chandler feel when he finds his phone was off?',
       ja: '電話の電源が切れていたとわかって、チャンドラーはどんな気持ち？',
@@ -227,6 +248,19 @@ export const needyCall: Clip = {
       mean: 'Mother of God ＝ なんてことだ。強いおどろき。電話を逃したかもと気づいた。',
       trap: '原因がわかって安心、とも思いやすい。I turned it off は自分のせいだという気づき。',
       use: 'Oh no, I left it at home.（しまった、家に置いてきた）' },
+
+    { id: 'c1', skill: 'infer', level: 'B2', point: 'irony', ctx: true, seg: [165.5, 176.5],
+      stem: 'Chandler’s phone was off. What does his friend point out?',
+      ja: 'チャンドラーの電話は切れていた。友だちは何を指摘する？',
+      choices: ['He told Danielle the same thing', 'He always loses his phone', 'The phone is broken again'], a: 0,
+      choicesJa: ['ダニエルに言ったのと同じだ', 'いつも電話をなくす', 'また電話が壊れた'],
+      cue: '「I turned it off」のあと',
+      line: 'Chandler: *I turned it off.* Mother of God, I turned it off. / Friend: *Just like you told her you did.* … Just pointing out the irony.',
+      said: '「切ってたんだ」に、「彼女に言ったとおりにね。皮肉だなって言ってるだけ」と返す。',
+      mean: 'just like 〜 ＝ ちょうど〜のように。うそのつもりの言い訳が本当だった。irony ＝ 皮肉なめぐり合わせ。',
+      trap: 'phone から、壊れた話と考えがち。決め手は told her（彼女に言った）。',
+      use: 'Just like you said!（あなたが言ったとおりだ！）' },
+
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'shutoff', reveals: ['turnedoff'], seg: [165.8, 176], retired: true,
       stem: 'What irony is the friend pointing out?',
       choices: ['The excuse he made up for her turned out true', 'He asked her to call, then made calling impossible',
@@ -237,6 +271,19 @@ export const needyCall: Clip = {
       mean: 'さっき電話でついた作り話が、本当になっていた。you did は「切った」を受ける。',
       trap: '「電話して」と頼んだ点も皮肉に見えるが、言われたのは told her you did。最後の did を聞く。',
       use: 'Ironically, I was early for once.（皮肉にも、その日に限って早く着いた）' },
+
+    { id: 'c2', skill: 'phrase', level: 'B2', point: 'givethis', seg: [176.5, 181.5],
+      stem: 'What does “I’ll give you this” mean here?',
+      ja: 'ここでの「I’ll give you this」はどういう意味？',
+      choices: ['I’ll admit this much', 'Here, take this from me', 'I will pay you for this'], a: 0,
+      choicesJa: ['ここは認めるよ', 'はい、これあげる', 'これの代金を払う'],
+      cue: '「All right」のあと',
+      line: 'All right, *I’ll give you this*. Mr. Peanut is a better dresser.',
+      said: '「まあいい、認めるよ。ミスター・ピーナッツのほうがおしゃれだ」と言う。',
+      mean: 'I’ll give you this ＝ 文字どおりは「これをあげる」→相手の言い分の一部を「そこは認める」。ミスター・ピーナッツはお菓子のキャラ。',
+      trap: 'give（あげる）から、物を渡すと考えがち。続く文が、認める中身。',
+      use: 'I’ll give you this: it’s cheap.（そこは認める、安いね）' },
+
     { id: 'g2', skill: 'gist', level: 'B1', point: 'visit', reveals: ['calling', 'wrongnum'], seg: [194.2, 226.7],
       stem: 'Why does Danielle come to see Chandler?',
       ja: 'ダニエルはなぜチャンドラーに会いに来た？',
@@ -248,6 +295,7 @@ export const needyCall: Clip = {
       mean: 'make sure 〜 ＝ 〜を確かめる。心配して、わざわざ来てくれた。',
       trap: '友だちに紹介される場面なので、友だちに会いに来たと思いやすい。so のあとが理由。',
       use: 'I just wanted to make sure you’re okay.（無事か確かめたかっただけ）' },
+
     { id: 'd4', skill: 'detail', level: 'B1', point: 'wrongnum', reveals: ['calling'], seg: [201.7, 213.4],
       stem: 'Why couldn’t Danielle reach Chandler at first?',
       ja: 'ダニエルは最初、なぜチャンドラーに電話がつながらなかった？',
@@ -259,17 +307,31 @@ export const needyCall: Clip = {
       mean: 'it turns out 〜 ＝ 実は〜だった（あとでわかった）。返事がなかった本当の理由。',
       trap: 'no answer（出ない）から、話し中と思いやすい。話し中は busy。前半は番号の話。',
       use: 'It turns out I had the wrong address.（実は住所をまちがえてた）' },
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'end', seg: [228.2, 243.1],
+
+    { id: 'c3', skill: 'detail', level: 'B1', point: 'later', ctx: true, seg: [215.5, 224.5],
+      stem: 'They plan to meet later. Who will call?',
+      ja: 'あとで会うことになる。電話するのはだれ？',
+      choices: ['Either one of them', 'Only Chandler', 'Only Danielle'], a: 0,
+      choicesJa: ['どちらでもいい', 'チャンドラーだけ', 'ダニエルだけ'],
+      cue: '「That sounds good」のあと',
+      line: 'A: Listen, maybe we could *get together later*. / B: That sounds good. *I’ll call you. Or you call me.* Whatever, you know. / A: You got it.',
+      said: '「あとで会えないかな」に「いいね。僕がかけるか、君がかけるか。どっちでも」と答える。',
+      mean: 'get together ＝ 会う・集まる。Whatever ＝ どっちでもいい。You got it ＝ 了解。',
+      trap: '最初に I’ll call you と言うので、片方だけと考えがち。すぐ Or you call me と足す。',
+      use: 'Let’s get together later. I’ll call you.（あとで会おう。電話するね）' },
+
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'end', ctx: true, seg: [228.2, 243.1],
       stem: 'How does Chandler feel about a second date?',
       ja: '2回目のデートについて、チャンドラーはどう思っている？',
       choices: ['Not so sure now', 'Very, very excited', 'Happy but shy'], a: 0,
       choicesJa: ['今はあまり乗り気でない', 'とてもワクワクしている', 'うれしいけど照れている'],
       cue: 'みんなの歓声のあとの短い答え',
-      line: 'There you go, second date. — *I don’t know.* — You don’t know? — Oh, well, she seems very nice and everything, *but*…',
+      line: 'Friend: There you go, *second date*. / Chandler: *I don’t know.* / Friend: You don’t know? / Chandler: Oh, well, she seems very nice and everything, *but*…',
       said: '「2回目のデートだね」と言われ、「どうかな。いい人だけど…」と言う。',
       mean: 'nice and everything, but… ＝ いい人なんだけど…。ほめてから本音に入る形。',
       trap: 'みんなが盛り上がっているので、喜んでいると思いやすい。but のあとが本音。',
       use: 'He’s nice and everything, but…（いい人なんだけどね…）' },
+
     { id: 'h4', skill: 'humor', level: 'C1', point: 'needy', reveals: ['end'], seg: [235.4, 243.6], retired: true,
       stem: 'Why does Chandler’s last question get such a big laugh?',
       choices: ['He has been much needier than her all day', 'He is quoting what she said about herself',
