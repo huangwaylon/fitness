@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 0, new 0, ctx 6, tx 2
+// R4 REVIEW 2026-11-18: keep 6, rewrite 8, retire 0, new 0, ctx 6, tx 2, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 9, retire 3, new 0
 // “Does Cat want to be with Freddie?!” (NickRewind, Best of iCarly 📲): Freddie rushes to Sam's place after a call
 // saying Sam was badly hurt; Cat answers the door, contradicts herself about where Sam is, keeps sliding off the
@@ -6,7 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-17). Named in the audio: Freddie (2.6 s), Cat (34.9 s),
 // Sam (4.8 s on). Two voices only: Freddie asks about Sam, Cat answers.
 // Untested on purpose: 27.2 s (captions "Say beans", whisper "Share beans"), 32.4 s (captions "you're Cat", whisper
-// "you're a cat?"), 46.2–48.6 s (captions "She added me to her contacts", whisper "Did you add me to your
+// "you're a cat?"; i1 quotes it as set-up only), 46.2–48.6 s (captions "She added me to her contacts", whisper "Did you add me to your
 // contacts?"), 106.8 s (captions "Hanging", whisper "Hang it").
 // EAR CHECK: 91.3 s s1 — captions "You want to hang out with me today?", whisper "You wanna hang out…": the reduction
 //   to "wanna" is really there
@@ -21,12 +21,12 @@ export const catFreddie: Clip = {
     { id: 'g1', skill: 'gist', level: 'B1', point: 'visit', reveals: ['roommate'], seg: [0, 26.0],
       stem: 'Why has Freddie come to Sam’s place?',
       ja: 'フレディはなぜサムの家に来た？',
-      choices: ['He heard Sam was hurt', 'To take Sam home', 'Sam asked him to come'], a: 0,
-      choicesJa: ['サムがけがをしたと聞いたから', 'サムを家に連れて帰るため', 'サムに来てと頼まれたから'],
+      choices: ['He heard Sam was hurt', 'He came to take Sam home', 'Sam asked him to come'], a: 0,
+      choicesJa: ['サムがけがをしたと聞いたから', 'サムを家に連れて帰りに来た', 'サムに来てと頼まれたから'],
       cue: 'ドアが開いてすぐの、フレディの2つの質問。',
       line: 'Hi, is Sam okay? Is she in the *hospital*? … Look, I’m really *worried* about my friend Sam…',
       said: '「サムは大丈夫？入院してるの？」と聞き、「サムが心配なんだ」とくり返す。',
-      mean: 'be worried about 〜 ＝ 〜が心配。ゆうべの電話でサムがけがをしたと聞き、心配して来た。',
+      mean: 'be worried about 〜 ＝ 〜が心配。サムがけがをしたと聞き、心配して来た。',
       trap: 'サムに呼ばれて来たと考えがちだが、本人には会えていない。決め手は Is she in the hospital?（入院してる？）。',
       use: 'Is everything okay? I came right over.（大丈夫？すぐ来たよ）' },
 
@@ -49,7 +49,7 @@ export const catFreddie: Clip = {
       choicesJa: ['サムはいない', 'サムは今出かけた', 'サムは2階にいる'],
       cue: 'フレディがサムを呼んだあとの一言。',
       line: 'Freddie: Sam? Sam, where are you? Sam? / Cat: Oh, *Sam’s not here*.',
-      said: 'サムを呼ぶフレディに、さっき「中にいる」と言ったキャットが「サムはいないよ」とさらっと言う。',
+      said: 'サムを呼ぶフレディに、さっき「中にいる」と言ったキャットが「サムはここにいないよ」とさらっと言う。',
       mean: 'Sam’s not here ＝ サムはここにいない。数秒前と反対のことを平気で言うのが笑い。',
       trap: 'not here から「今出かけた」と考えがちだが、そうは言っていない。ただ「いない」だけ。',
       use: 'Wait, didn’t you just say she was home?（待って、家にいるって言わなかった？）' },
@@ -69,12 +69,12 @@ export const catFreddie: Clip = {
     { id: 'i1', skill: 'infer', level: 'B2', point: 'cats', seg: [30.3, 41.5],
       stem: 'Why does Cat ask “You like cats?”',
       ja: 'キャットはなぜ「猫が好きなの？」と聞く？',
-      choices: ['She thinks he means the animal', 'She thinks he hates her name', 'She has a pet for him'], a: 0,
-      choicesJa: ['動物の猫のことだと思ったから', '名前を嫌っていると思ったから', '彼にあげるペットがいるから'],
+      choices: ['Her name is like the animal', 'She thinks he hates her name', 'She has a pet cat at home'], a: 0,
+      choicesJa: ['名前が動物の猫と同じだから', '名前を嫌っていると思ったから', '家でペットの猫を飼っているから'],
       cue: '名前を言ったあとの Why? と、その次の質問。',
       line: 'So, you’re Cat? – Yeah. Cat Valentine. Why? *You like cats?*',
       said: '名前を確かめられ、キャットは「なんで？猫が好きなの？」と聞き返す。',
-      mean: '名前の Cat を、動物の cat（猫）の話だと受け取っている。そのずれが笑い。',
+      mean: '名前の Cat から、動物の cat（猫）の話にすぐ飛ぶ。話がずれていくのがキャットらしい笑い。',
       trap: 'Why?（なんで？）は名前への不満に聞こえるが、続く You like cats? は明るい質問。',
       use: 'Why? Do you like dogs?（なんで？犬が好きなの？）' },
 
@@ -126,8 +126,8 @@ export const catFreddie: Clip = {
       use: 'Watch out, you’ll get run over!（危ない、ひかれるよ！）' },
 
     { id: 'w1', skill: 'detail', level: 'B2', point: 'source', ctx: true, seg: [61.0, 68.4],
-      stem: 'By Freddie’s account, who said Sam was badly hurt?',
-      ja: 'フレディによると、サムが大けがしたと言ったのは誰？',
+      stem: 'Who told Freddie that Sam was hurt, and when?',
+      ja: 'サムがけがをしたとフレディに言ったのは誰？いつ？',
       choices: ['Cat, last night', 'Sam, last night', 'Cat, earlier today'], a: 0,
       choicesJa: ['キャットが、ゆうべ', 'サムが、ゆうべ', 'キャットが、今日の朝'],
       cue: 'Says who? と When? への短い答え。',
@@ -140,18 +140,18 @@ export const catFreddie: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'sorry', reveals: ['front'], ctx: true, seg: [72.0, 82.0],
       stem: 'Why does Freddie say sorry after listing Sam’s injuries?',
       ja: 'サムのけがを並べたあと、フレディはなぜ謝る？',
-      choices: ['He said a rude word', 'He gave too much detail', 'He shouted at her'], a: 0,
-      choicesJa: ['失礼な言葉を言った', 'くわしく言いすぎた', '彼女にどなった'],
+      choices: ['He said an embarrassing word', 'He gave too much detail', 'He shouted at her'], a: 0,
+      choicesJa: ['恥ずかしい言葉を言った', 'くわしく言いすぎた', '彼女にどなった'],
       cue: 'Why? のあと、’Cause に続く理由。',
       line: 'Freddie: I am so sorry. / Cat: Why? / Freddie: ’Cause I’ve *never said buttocks in front of a girl* before.',
-      said: '「女の子の前で buttocks（おしり）と言ったことがないから」と謝る。',
-      mean: 'buttocks ＝ おしり（少し硬い言葉）。女の子の前で言うのが照れくさい。フレディのまじめさ。',
+      said: '「女の子の前で buttocks（お尻）と言ったことがないから」と謝る。',
+      mean: 'buttocks ＝ お尻（医者が使うような硬い言葉）。女の子の前で言うのが照れくさい。フレディのまじめさ。',
       trap: '直前のけがの話がひどいので、言いすぎて謝ったと考えがち。決め手は ’Cause のあと。',
       use: 'Sorry, I didn’t mean to say that.（ごめん、そんなこと言うつもりじゃなかった）' },
 
     { id: 'x1', skill: 'dict', level: 'B2', point: 'front', reveals: ['sorry'], seg: [77, 84.9],
       stem: 'Type: “I’ve never said buttocks ___ girl before.” (4 words)', answer: 'in front of a',
-      ja: '彼の言葉を書こう：「___ 女の子（の前で）言ったことがない」（4語）',
+      ja: '「I’ve never said buttocks ___ girl before.」の空所を書こう（4語）',
       cue: 'buttocks のあと、短い4語。',
       line: 'I’ve never said buttocks *in front of a* girl before.',
       said: '「女の子の前で言ったことがない」と言う。',
@@ -171,15 +171,15 @@ export const catFreddie: Clip = {
       use: 'Relax, it’s not a big deal.（落ち着いて、大したことじゃないよ）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'outcome', reveals: ['hangout', 'wanna', 'fluster'], seg: [80.0, 106.6],
-      stem: 'What does Cat do at the end of the scene?',
-      ja: '場面の最後に、キャットは何をする？',
-      choices: ['She asks Freddie to hang out', 'She tells Freddie where Sam is', 'She asks Freddie to leave'], a: 0,
-      choicesJa: ['フレディを遊びに誘う', 'サムの居場所をフレディに教える', 'フレディに帰ってと言う'],
+      stem: 'What does Cat ask Freddie to do?',
+      ja: 'キャットはフレディに何をしようと言う？',
+      choices: ['To hang out with her', 'To find Sam with her', 'To leave her house now'], a: 0,
+      choicesJa: ['一緒に遊ぶ', '一緒にサムを探す', 'もう家から帰る'],
       cue: '最後の質問と「me and you」。',
       line: 'You wanna hang out with me today? … *Just me and you.* Couple of friends.',
       said: 'サムの話ははっきりしないまま、キャットは「今日、私と遊ばない？二人だけで」と誘う。',
       mean: 'サムが無事かどうかは分からないまま、話はキャットの誘いへ移る。',
-      trap: 'サムの話で来たので、居場所が分かると考えがち。キャットは最後まで答えていない。',
+      trap: 'サムの話で来たので、サム探しの誘いと考えがち。決め手は Just me and you（二人だけで）。',
       use: 'So, is she okay or not?（で、彼女は大丈夫なの？）' },
 
     { id: 'ph1', skill: 'phrase', level: 'B1', point: 'hangout', reveals: ['wanna'], seg: [89.6, 104.3],

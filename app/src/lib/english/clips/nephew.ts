@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 0, new 3, ctx 7, tx 7
+// R4 REVIEW 2026-11-18: keep 10, rewrite 7, retire 0, new 3, ctx 7, tx 7, qa 14
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 1
 // “Michael's Nephew - The Office US” (the official The Office channel, Best of Season 7): Michael's new assistant, his
 // nephew Luke, botches the coffee run and the samples; the staff want him fired and Michael waves it off, explains to
@@ -6,7 +6,7 @@
 // and punishes him, to the staff's delight.
 // Segments from the captions, words from whisper (2026-11-16). Whisper's timings are 2 s blocks, so segments follow the
 // captions. Luke and Michael are named in the audio; the other staff are never named, so stems say "someone" or "a
-// coworker". Talk ends at ≈ 265 s (music after). Untested on purpose: 0–2 s, 4–12 s (Luke's nicknames for coworkers),
+// coworker". Talk ends at ≈ 265 s (music after). Untested on purpose: 4–12 s (Luke's nicknames for coworkers),
 // 16 s, 30–39 s (an unnamed talking head), 46–52 s (the Nard Dog nickname: captions garble it), 52–57 s (Luke's
 // favourite films), 77–79 s, 88–90 s ("Venus": a jab at looks), 99–108 s ("scram, twerp": rude), 114 s, 159 s ("lost him
 // in a forest"), 195–201 s, 212–220 s (the punishment itself: shown, not said), 245–247 s ("Texas justice"), 255 s.
@@ -113,7 +113,7 @@ export const michaelsNephew: Clip = {
       trap: 'though は文の最後に来ると気づきにくい。but と同じで、前の話を少し打ち消す。',
       use: 'Nice place. Kind of pricey, though.（いい店。ちょっと高いけどね）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', seg: [73.0, 99.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'staff', reveals: ['gotto'], seg: [73.0, 99.6],
       stem: 'What is the staff’s main problem with Luke?',
       ja: 'みんなは、ルークの何がいちばん困る？',
       choices: ['He gets simple jobs wrong', 'He talks about movies too much', 'He comes in late every day'], a: 0,
@@ -140,7 +140,7 @@ export const michaelsNephew: Clip = {
     { id: 'ph1', skill: 'phrase', level: 'B1', point: 'lookinto', ctx: true, seg: [77.6, 85],
       stem: 'What does Michael promise to do?',
       ja: 'マイケルは何をすると約束する？',
-      choices: ['Check on the problem', 'Keep a close eye on Luke', 'Let Luke go soon'], a: 0,
+      choices: ['Check on the problem', 'Watch Luke very closely', 'Let Luke go soon'], a: 0,
       choicesJa: ['問題を調べる', 'ルークをよく見はる', 'すぐルークをやめさせる'],
       cue: '「But yeah」のあと',
       line: 'He’s got to go, Mike. / Michael: It’s just coffee, guys. But yeah, *I’ll look into it*, okay?',
@@ -150,10 +150,10 @@ export const michaelsNephew: Clip = {
       use: 'I’ll look into it and get back to you.（確認して折り返します）' },
 
     { id: 'i2', skill: 'infer', level: 'B2', point: 'ifasked', ctx: true, seg: [90.7, 99.6],
-      stem: 'Does Luke remember sending the samples?',
-      ja: 'ルークは見本を送ったことを覚えている？',
-      choices: ['No, he isn’t really sure', 'Yes, he remembers it well', 'He says nobody asked him'], a: 0,
-      choicesJa: ['いや、はっきりは覚えていない', 'うん、よく覚えている', 'だれにもたのまれていないと言う'],
+      stem: 'How sure is Luke that he sent the samples?',
+      ja: 'ルークは、見本を送ったことにどのくらい自信がある？',
+      choices: ['Not really sure', 'Completely sure', 'He says no one asked'], a: 0,
+      choicesJa: ['あまり自信がない', '完全に自信がある', 'たのまれていないと言う'],
       cue: '答えの最初の「if」',
       line: 'Did you send those samples…? He didn’t get them. / Luke: If you asked me to do it, *I’m sure I did it*.',
       said: '「見本、送った？届いてないって」に「たのまれたなら、きっと送ったはず」と答える。',
@@ -186,13 +186,13 @@ export const michaelsNephew: Clip = {
     { id: 'g2', skill: 'gist', level: 'B2', point: 'family', reveals: ['years'], seg: [131.0, 156.0],
       stem: 'Why is having Luke there a big deal for Michael?',
       ja: 'ルークがいることは、なぜマイケルにとって大事？',
-      choices: ['His family cut him off before', 'His sister asked him to do it', 'Luke is a great worker'], a: 0,
-      choicesJa: ['前に家族に縁を切られた', '姉にたのまれた', 'ルークは仕事ができる'],
+      choices: ['His family stopped seeing him', 'His sister asked him to do it', 'Luke is a great worker'], a: 0,
+      choicesJa: ['家族に縁を切られていた', '姉にたのまれた', 'ルークは仕事ができる'],
       cue: '「Because his mother」のあと',
       line: '…his mother… kind of *cut me off* from that side of the family',
-      said: 'ルークの母（異母姉）に、15年前に家族の縁を切られた話をする。',
+      said: 'ルークの母（異母姉妹）に、15年前に家族の縁を切られた話をする。',
       mean: 'cut 人 off ＝ 人との縁を切る。甥をやとって、切れた家族とのつながりを取りもどしたい。',
-      trap: 'half-sister（異母姉）が出るので、姉にたのまれたと考えがち。cut me off は「縁を切った」。',
+      trap: 'half-sister（異母姉妹）が出るので、姉にたのまれたと考えがち。cut me off は「縁を切った」。',
       use: 'It means a lot to have you here.（来てくれて本当にうれしい）' },
 
     { id: 'nt1', skill: 'infer', level: 'C2', point: 'forest', reveals: ['years', 'family'], seg: [133.75, 158.7],
@@ -255,7 +255,7 @@ export const michaelsNephew: Clip = {
       ja: 'ルークの言葉を入力：「I’m just gonna ___ it.」（4語）',
       cue: '「unclear here」のすぐあと',
       line: 'I’m just gonna *go ahead and move* it.',
-      said: '「じゃあ、勝手に動かしちゃうね」と言う。',
+      said: '「じゃあ、かまわず動かしちゃうね」と言う。',
       mean: 'go ahead and 〜 ＝「かまわず〜する」。and は小さく「ン」だけになる。',
       trap: 'ahead と and がつながり、1語に聞こえやすい。4語あるか数える。',
       use: 'I’ll go ahead and order for us.（先に注文しておくね）' },
@@ -279,7 +279,7 @@ export const michaelsNephew: Clip = {
       choicesJa: ['本気だよ', 'ぼくは子どもじゃない', '怒っていない'],
       cue: '「Four」のあと',
       line: 'I am going to count down from five. Five. Four. *I’m not kidding.*',
-      said: '「5から数えるぞ。5、4。本気だぞ」と言う。',
+      said: '「5から数えるぞ。5、4。冗談じゃないぞ」と言う。',
       mean: 'kid ＝ ここは「冗談を言う」。I’m not kidding ＝「冗談じゃない、本気だ」。',
       trap: 'kid から「子ども」と思いやすい。動詞の kidding は「冗談を言う」。',
       use: 'I’m not kidding. It’s really expensive.（冗談じゃなくて、本当に高いよ）' },
@@ -296,8 +296,8 @@ export const michaelsNephew: Clip = {
       use: 'Last chance. I mean it this time.（最後のチャンス。今度は本気）', retired: true },
 
     { id: 'k3', skill: 'detail', level: 'B1', point: 'hadto', ctx: true, seg: [221.5, 230.5],
-      stem: 'What does Michael say when asked about it?',
-      ja: '今のは何かと聞かれて、マイケルは何と言う？',
+      stem: 'What does Michael say when asked “What was that?”',
+      ja: '「今の何？」と聞かれて、マイケルは何と言う？',
       choices: ['He had to do it', 'It was only a joke', 'He is very sorry'], a: 0,
       choicesJa: ['ああするしかなかった', 'ただの冗談だった', '本当にすまない'],
       cue: '「What … was that?」の返事',
