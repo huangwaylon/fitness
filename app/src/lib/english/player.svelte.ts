@@ -7,6 +7,9 @@
 // is full width. Captions off, unless the lesson's 字幕 choice turns YouTube's own on (`setCaptions`; this player's, so a
 // lesson's: off again at the next): English, or Japanese (a Japanese track if the video has one, else YouTube's
 // auto-translation of the English).
+import type { CcSize } from './prefs.ts';
+// (字幕の大きさ's sizes live with its store, prefs.ts: a plain module, no runes)
+export { CC_SIZES, type CcSize } from './prefs.ts';
 
 export const YT_ORIGIN = 'https://www.youtube-nocookie.com';
 
@@ -41,9 +44,6 @@ export function readMessage(data: unknown): { event: string; info: unknown } | n
 
 /** The 字幕 choice: none, YouTube's English track, or Japanese (its track, or the English auto-translated). */
 export type CcMode = 'off' | 'en' | 'ja';
-/** 字幕の大きさ 小 / 中 / 大 / 特大: YouTube's captions fontSize (−1 … 3 accepted; 0 its default). */
-export const CC_SIZES = [-1, 0, 1, 2] as const;
-export type CcSize = (typeof CC_SIZES)[number];
 /** What the frame reports of its captions (the module's tracklist and track), as language codes. */
 export interface CcInfo {
   tracks?: string[];

@@ -5,7 +5,6 @@
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { perPlayer } from './per-player.ts';
 import { daysBetween } from '#lib/time/dates.ts';
-import { CC_SIZES, type CcSize } from './player.svelte.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 
 export const harderOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishHard) === true;
@@ -13,6 +12,9 @@ export const setHarder = (on: boolean): void => void writeJson(localKV(), DEVICE
 /** 場面のあらすじ's strip under the player (the lesson's あらすじ chip; shown by default). */
 export const scenesOn = (): boolean => readJson<boolean>(localKV(), DEVICE.englishScenes) !== false;
 export const setScenes = (on: boolean): void => void writeJson(localKV(), DEVICE.englishScenes, on);
+/** 字幕の大きさ 小 / 中 / 大 / 特大: YouTube's captions fontSize (−1 … 3 accepted; 0 its default). */
+export const CC_SIZES = [-1, 0, 1, 2] as const;
+export type CcSize = (typeof CC_SIZES)[number];
 /** 字幕の大きさ (YouTube's captions fontSize; 大 by default: the user found YouTube's own small). */
 export function ccSizeOf(): CcSize {
   const n = readJson<number>(localKV(), DEVICE.englishCcSize);
