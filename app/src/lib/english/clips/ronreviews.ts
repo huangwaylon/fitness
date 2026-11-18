@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 3, ctx 4, tx 11
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 2, new 3, ctx 4, tx 11, qa 5
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 5, new 1
 // “Ron's Reviews | Parks and Recreation” (the official Parks and Recreation channel, Season 6): inspired by Yelp, Ron
 // mails strongly worded letters to places he dislikes; Donna fires a “troll” who isn't hers to fire; a vegan restaurant
@@ -64,8 +64,8 @@ export const ronsReviews: Clip = {
       use: 'I sent them a strongly worded email.（きつめのメールを送った）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'yogurt', reveals: ['celery'], seg: [26.5, 36.7],
-      stem: 'Who is Ron’s letter to?',
-      ja: 'ロンが読む手紙はだれあて？',
+      stem: 'Ron reads one letter. Who is it to?',
+      ja: 'ロンは手紙を1通読む。だれあて？',
       choices: ['A frozen yogurt bar', 'An ice cream parlor', 'A vegetable farm'], a: 0,
       choicesJa: ['フローズンヨーグルトの店', 'アイスクリーム店', '野菜農場'],
       cue: '読む手紙の最初の呼びかけ。',
@@ -214,7 +214,7 @@ export const ronsReviews: Clip = {
       said: 'ロンは理由を一言で言い切り、「では、失礼」と話を終わらせる。',
       mean: 'Good day ＝ 文字どおりは「よい一日を」。ここでは「話は終わり、お帰りください」。古風で改まった言い方。',
       trap: 'そのまま「よい一日を」と思いやすい。理由を言い切った直後なら、話を打ち切る一言。',
-      use: 'That’s all I have to say. Good day.（以上です。では失礼）' },
+      use: 'Thank you for coming. Good day.（来てくれてありがとう。では、これで）' },
 
     { id: 't2', skill: 'attitude', level: 'B2', point: 'carnivores', retired: true, seg: [85.9, 91],
       stem: 'How does the owner feel about Ron at the end?',
@@ -275,8 +275,8 @@ export const ronsReviews: Clip = {
     { id: 'm1', skill: 'marker', level: 'B1', point: 'importantly', reveals: ['signname', 'realname'], seg: [102.9, 114.5],
       stem: 'What does Ron mean by “But more importantly”?',
       ja: 'ロンの「But more importantly」はどういう意味？',
-      choices: ['The main point comes next', 'He takes back what he said', 'A small side point comes next'], a: 0,
-      choicesJa: ['ここから本題', '言ったことを取り消す', 'ちょっとした話が来る'],
+      choices: ['The main point comes next', 'He says he was wrong', 'A small side point comes next'], a: 0,
+      choicesJa: ['ここから本題', '自分がまちがっていたと言う', 'ちょっとした話が来る'],
       cue: '「glass」のあと。',
       line: '*But more importantly*, if you believe in something, you sign your name to it',
       said: '「でももっと大事なのは、信じることには名前を書くことだ」と言う。',
@@ -297,9 +297,9 @@ export const ronsReviews: Clip = {
       use: 'I stand by my words. Even about pizza.（言ったことは曲げない。ピザのことでも）' },
 
     { id: 'w1', skill: 'who', level: 'B1', point: 'soda', reveals: ['outcome'], seg: [108, 114.5],
-      stem: 'Who will hear from Ron next?',
+      stem: 'Who will get Ron’s next letter?',
       ja: '次にロンの手紙を受け取るのはだれ？',
-      choices: ['The makers of fizzy water', 'The vegan restaurant owner', 'The frozen yogurt bar'], a: 0,
+      choices: ['The makers of soda water', 'The vegan restaurant owner', 'The frozen yogurt bar'], a: 0,
       choicesJa: ['炭酸水のメーカー', 'ビーガンレストランの店主', 'フローズンヨーグルトの店'],
       cue: '「Which is why」のあと。',
       line: 'Which is why *the makers of carbonated water* will soon know exactly where to find me.',
