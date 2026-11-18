@@ -1,10 +1,11 @@
-// R4 REVIEW 2026-11-18: keep 16, rewrite 3, retire 0, new 5, ctx 5, tx 4, qa 7
+// R4 REVIEW 2026-11-18: keep 16, rewrite 3, retire 0, new 5, ctx 5, tx 4
 // A2 REVIEW 2026-11-17: keep 14, rewrite 3, retire 6, new 1
 // “Dwight Hits on Amy Adams - The Office US” (the official The Office channel, Best of Season 1): Michael bans a
 // handbag seller until he meets her, then hands her the conference room; the seller explains who buys from her; Dwight
 // is coached into "buying a purse" and goes straight to it; Jim chats with Katie, then has an awkward weekend talk.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 274 s; whisper's lines after that are a
 // loop. 12.7 s and 251 s: sources differ.
+// EXCLUDE 26.6–34 (the "henhouse" innuendo)
 // EXCLUDE 81.9–96.3 (Dwight's checklist talking head, sexual)
 // EAR CHECK: 108–135 s pr1 — who coaches Dwight (Jim?); the bank says only "Dwight is told"
 // EAR CHECK: 138–144 s a2 — who says "this is going to be good" (Jim to Pam?)
@@ -40,7 +41,7 @@ export const dwightAmyAdams: Clip = {
       trap: 'I’m busy を「すみません」の遠慮と考えがち。come on と just tell her は突き放し。',
       use: 'Come on, I’m in the middle of something.（ちょっと、今取りこみ中なんだ）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'rule', reveals: ['ykw', 'decisive', 'meeting'], seg: [34.0, 73.6],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'rule', reveals: ['ykw', 'decisive'], seg: [34.0, 73.6],
       stem: 'What does Michael decide about Katie?',
       ja: 'マイケルはケイティについてどう決める？',
       choices: ['She can sell in the office', 'She has to leave the office', 'She can sell until 11:30'], a: 0,
@@ -192,7 +193,7 @@ export const dwightAmyAdams: Clip = {
       use: 'I’m just gonna grab a coffee.（ちょっとコーヒー買ってくる）' },
 
     { id: 'a2', skill: 'attitude', level: 'B2', point: 'good', seg: [137.5, 144.4],
-      stem: 'Someone says “this is going to be good.” How do they feel?',
+      stem: 'How does the one saying “this is going to be good” feel?',
       ja: '「this is going to be good」と言う人はどんな気持ち？',
       choices: ['Excited to watch him fail', 'Hopeful that it goes well', 'Worried about trouble'], a: 0,
       choicesJa: ['失敗を見るのが楽しみ', 'うまくいくといいと思う', 'もめないか心配'],
@@ -222,7 +223,7 @@ export const dwightAmyAdams: Clip = {
       choicesJa: ['じょうぶか確かめる', 'ストレスを減らす', '値段の価値があるか確かめる'],
       cue: '「test it」のあと。',
       line: 'I want to *stress test it*, you know, *in case anything happens*.',
-      said: '「何かあったときのために、耐久テスト（ストレステスト）をしたい」と言う。',
+      said: '「何かあったときのために、ストレステストしたい」と言う。',
       mean: 'stress test ＝ 力をかけてこわれないか試すこと。in case 〜 ＝ 〜のときのために。',
       trap: 'カタカナのストレスから気分の話だと思いやすい。in case のあとが目的。',
       use: 'Let’s test it before the trip.（旅行の前に試してみよう）' },
@@ -295,7 +296,7 @@ export const dwightAmyAdams: Clip = {
       trap: '文法どおり do や have を足したくなる。書き取りは、言われた音のとおりに書く。',
       use: 'You got a minute?（ちょっといい？）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'weekend', seg: [232.5, 262.9],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'weekend', seg: [232.5, 273.7],
       stem: 'What do Jim and Pam find out about the weekend?',
       ja: 'ジムとパムは週末について何が分かる？',
       choices: ['Both have other plans', 'Both are free, so they meet', 'Both will help Roy’s cousin'], a: 0,
@@ -318,7 +319,7 @@ export const dwightAmyAdams: Clip = {
       trap: '四つ並ぶと計画的に聞こえる。最後に極端な一つが来たら、全部を冗談にする合図。',
       use: 'Dinner, a movie, maybe a wedding.（食事、映画、たぶん結婚式）' },
 
-    { id: 'cz', skill: 'infer', level: 'B1', point: 'truck', reveals: ['weekend'], ctx: true, seg: [253.8, 262.9],
+    { id: 'cz', skill: 'infer', level: 'B1', point: 'truck', ctx: true, seg: [253.8, 262.9],
       stem: 'Why will they help Roy’s cousin move?',
       ja: 'ロイのいとこの引っ越しを手伝うのはなぜ？',
       choices: ['Roy has a truck', 'The cousin is sick', 'Roy has the day off'], a: 0,
@@ -341,16 +342,16 @@ export const dwightAmyAdams: Clip = {
       trap: 'cool をほめ言葉とも皮肉とも取りやすい。同じ返事が続いたら、中身の量を聞く。',
       use: 'Cool, cool. So… anyway.（そっか、そっか。で…まあ）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'monday', reveals: ['weekend'], seg: [264.8, 271.4],
+    { id: 'n2', skill: 'number', level: 'B1', point: 'monday', seg: [264.8, 271.4],
       stem: 'When will they see each other next?',
       ja: '二人が次に会うのはいつ？',
-      choices: ['On Monday', 'On Sunday', 'This weekend', 'Tonight'], a: 0,
-      choicesJa: ['月曜日', '日曜日', '今週末', '今夜'],
+      choices: ['On Monday', 'This weekend', 'Tonight'], a: 0,
+      choicesJa: ['月曜日', '今週末', '今夜'],
       cue: '「But I’ll see you」のあと。',
       line: 'That is cool. — But *I’ll see you Monday*, though, right?',
       said: '「いいね」のあと、「でも月曜には会えるよね？」と聞く。',
       mean: 'I’ll see you Monday ＝ 月曜に会おう。週末はそれぞれ予定があるので、次は月曜。',
-      trap: 'weekend の話のあとなので週末と考えがち。「マンデー」は月曜、「サンデー」なら日曜。',
+      trap: 'weekend の話をしていたので週末だと思いやすい。週末は別々で、次は Monday。',
       use: 'See you Monday!（また月曜日に！）' },
     { id: 'hb', skill: 'phrase', level: 'B1', point: 'headback', seg: [268.2, 273.9],
       stem: 'What does “I’m gonna head back” mean?',

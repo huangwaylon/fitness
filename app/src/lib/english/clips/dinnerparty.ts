@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 6, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 3, new 6, ctx 4, tx 5, qa 13
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 3, new 1
 // “The Dinner Party From Hell - The Office US” (the official The Office channel, BEST OF SEASON 4): at Michael and
 // Jan's dinner party the hosts snipe at each other and at Pam, a guest says she only wants to eat, Jim tells the camera
@@ -6,13 +6,14 @@
 // Segments from the captions, words from whisper (2026-11-16). Names in the audio: Michael and Jan (130.4 s, in the
 // talking head), Pam (71.8 s, 149.5 s), Jim (165.4 s "Oh, Jim", 209.5 s); the one who leaves is Jim, answered by name.
 // The talking head after the fax remark (77–87 s) is never named, so no stem names its speaker. Left out on purpose:
-// the toast's crude wine remark (11 s), Hunter's song (30–65 s, innuendo), the first guessing game (87–106 s: a state
+// the toast's crude wine remark (11.3–13.3 s, 'afterbirth', excluded), Hunter's song (30–65 s, music; its mild
+// innuendo may play since 2026-11-18), the first guessing game (87–106 s: a state
 // capital and a quarterback, world knowledge), 106–130 s (overlapping argument), "Wait till you hear this" (whisper
 // only), "No rhyming" (captions "Riley") and the celebrity clues after 199 s (world knowledge; captions garbled).
 // Whisper-only lines now tested: "No, I was making people laugh" (120 s, n3) and "Michael, you're up" (186 s, n4; the
 // captions read "hi"). EAR CHECK both.
-// EXCLUDE 29.9–65.3 (Hunter's song, innuendo)
-// SKIP 27.6–65.4: Hunter's song (excluded) and its whisper-only intro
+// EXCLUDE 11.3–13.3 (crude 'afterbirth' wine remark)
+// SKIP 27.6–65.4: Hunter's song (sung lyrics, no usable talk) and its whisper-only intro
 // SKIP 211.5–238.8: clues that need world knowledge (Schwarzenegger, Terminator, Tom Cruise), garbled captions, shouting
 // EAR CHECK: 1.9 s s1 — “Here’s to” with a weak “to” (≈ タ, same as “two”); both sources agree on the words
 import type { Clip } from '../types.ts';
@@ -23,18 +24,6 @@ export const dinnerParty: Clip = {
   show: 'The Office',
   credit: 'The Office (official YouTube channel)',
   questions: [
-    { id: 'n7', skill: 'gist', level: 'B1', point: 'hunter', reveals: ['songwriter'], seg: [0, 29],
-      stem: 'What does Jan want everyone to hear?',
-      ja: 'ジャンはみんなに何を聞かせたい？',
-      choices: ['A song by her old assistant', 'A toast to good friends', 'A story about her job'], a: 0,
-      choicesJa: ['前の助手が作った曲', 'いい友だちへの乾杯', '仕事の話'],
-      cue: '乾杯のあと、ジャンの質問',
-      line: 'Do you guys remember *my old assistant, Hunter*? He is an *excellent songwriter*.',
-      said: '乾杯のあと、ジャンが「前の助手のハンター、覚えてる？すばらしい作曲家なの」と言い、曲をかける。',
-      mean: 'Do you guys remember 〜? ＝「〜覚えてる？」と話を切り出す形。songwriter ＝ 曲を作る人。',
-      trap: '最初に乾杯があるので、乾杯の話と考えがち。ジャンが聞かせたいのは助手の曲。',
-      use: 'Do you guys remember my friend Ken?（友だちのケン、覚えてる？）' },
-
     { id: 's1', skill: 'sound', level: 'B2', point: 'toast', seg: [0, 6.2],
       stem: 'Fill the gap: “___ good friends.”',
       ja: '空いている所に入る語は？「___ good friends.」',
@@ -47,7 +36,19 @@ export const dinnerParty: Clip = {
       trap: 'すぐあとの Cheers につられやすい。最初は「ヒアズ」で始まる。',
       use: 'Here’s to a great trip!（楽しい旅に乾杯！）' },
 
-    { id: 'm1', skill: 'marker', level: 'B1', point: 'music', seg: [9.8, 20.3],
+    { id: 'n7', skill: 'gist', level: 'B1', point: 'hunter', reveals: ['songwriter'], seg: [13.4, 29],
+      stem: 'What does Jan want everyone to hear?',
+      ja: 'ジャンはみんなに何を聞かせたい？',
+      choices: ['A song by her old assistant', 'A toast to good friends', 'A story about her job'], a: 0,
+      choicesJa: ['前の助手が作った曲', 'いい友だちへの乾杯', '仕事の話'],
+      cue: '乾杯のあと、ジャンの質問',
+      line: 'Do you guys remember *my old assistant, Hunter*? He is an *excellent songwriter*.',
+      said: '乾杯のあと、ジャンが「前の助手のハンター、覚えてる？すばらしい作曲家なの」と言い、曲をかける。',
+      mean: 'Do you guys remember 〜? ＝「〜覚えてる？」と話を切り出す形。songwriter ＝ 曲を作る人。',
+      trap: '最初に乾杯があるので、乾杯の話と考えがち。ジャンが聞かせたいのは助手の曲。',
+      use: 'Do you guys remember my friend Ken?（友だちのケン、覚えてる？）' },
+
+    { id: 'm1', skill: 'marker', level: 'B1', point: 'music', seg: [13.4, 20.3],
       stem: 'What does “So, music?” mean here?',
       ja: 'ここでの「So, music?」はどういう意味？',
       choices: ['Anyway, shall we have music?', 'Is that why there’s music?', 'Was that sound the music?'], a: 0,
@@ -74,8 +75,8 @@ export const dinnerParty: Clip = {
     { id: 'd2', skill: 'detail', level: 'B1', point: 'fired', seg: [65.4, 77.2],
       stem: 'Why did Hunter lose his job, says Michael?',
       ja: 'マイケルによると、ハンターはなぜクビになった？',
-      choices: ['He was a terrible assistant', 'He spent work time on songs', 'He didn’t get along with Ryan'], a: 0,
-      choicesJa: ['ひどい助手だった', '仕事中に曲を作っていた', 'ライアンと合わなかった'],
+      choices: ['He was bad at his job', 'He spent work time on songs', 'He didn’t get along with Ryan'], a: 0,
+      choicesJa: ['仕事ができなかった', '仕事中に曲を作っていた', 'ライアンと合わなかった'],
       cue: '「That is why」の前の文。',
       line: 'Hunter was a *terrible assistant*. That is why Ryan fired him.',
       said: '「ハンターはひどい助手だった。だからライアンがクビにした」と言い返す。',
@@ -121,8 +122,8 @@ export const dinnerParty: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'faxes', seg: [69.6, 77.9],
       stem: '“She *holds on to* faxes.” What does Jan mean?',
       ja: '「She holds on to faxes」とはどういう意味？',
-      choices: ['She keeps them, not passing them', 'She sends them without checking', 'She loses them on her desk'], a: 0,
-      choicesJa: ['渡さずに持ったままにする', '確かめずに送る', '机の上でなくす'],
+      choices: ['She keeps them too long', 'She sends them without checking', 'She loses them on her desk'], a: 0,
+      choicesJa: ['渡さずに長く持ったままにする', '確かめずに送る', '机の上でなくす'],
       cue: '「holds」のあと。',
       line: 'Sometimes I think she *holds on to* faxes.',
       said: '「彼女、ファックスを止めてるんじゃないかと思う」と付け足す。',
@@ -155,12 +156,12 @@ export const dinnerParty: Clip = {
     { id: 'i2', skill: 'infer', level: 'B2', point: 'nofood', seg: [78.7, 90.7],
       stem: 'Why does the guest say she just wants to eat?',
       ja: 'その客はなぜ「ただ食べたい」と言う？',
-      choices: ['It hasn’t been served yet', 'It isn’t very good', 'There isn’t much of it'], a: 0,
+      choices: ['The food hasn’t come yet', 'The food isn’t very good', 'There isn’t enough food'], a: 0,
       choicesJa: ['まだ出てきていない', 'あまりおいしくない', '量が少ない'],
       cue: '「just want to」のあと。',
       line: 'I just *want to eat*, which I realize is a lot to ask for at a dinner party.',
-      said: '「何を言われてもいい。ただ食べたい。食事会でそれは高望みみたいね」と言う。',
-      mean: '食事が出ていないので、「食べる」こと自体が願いになっている。',
+      said: '「何を言われてもかまわない。ただ食べたいだけ。食事会でそれは無理な話だろうけど」と言う。',
+      mean: 'a lot to ask for ＝ 無理なお願い。食事会で食べたいのは当然なのに「無理な話」と言うのは皮肉（本当は逆の意味）。まだ料理が出ていない。',
       trap: '乾杯のときの妙な感想から「まずい」と思いやすい。味の話は一言もない。',
       use: 'When do we eat?（ごはんはいつ？）' },
 
@@ -234,7 +235,7 @@ export const dinnerParty: Clip = {
       said: '「だから、逃げ出すことにする」と言う。',
       mean: 'make a run for it ＝（すきを見て）逃げ出す。本当に走るとは限らない。',
       trap: 'run を「走る」と思いやすい。for it が付くと「逃げ出す」の決まり文句。',
-      use: 'It’s raining. Let’s make a run for it.（雨だ、走って逃げよう）' },
+      use: 'Nobody’s looking. Let’s make a run for it.（だれも見てない。今のうちに抜け出そう）' },
 
     // retired (R4): too many starts at 138–150 s; the ear-check dictation goes
     { id: 'x1', skill: 'dict', level: 'B2', point: 'guess', seg: [141.9, 148.3], retired: true,
@@ -250,7 +251,7 @@ export const dinnerParty: Clip = {
     { id: 'd3', skill: 'detail', level: 'B1', point: 'flood', seg: [142.7, 149],
       stem: 'What does Jim say happened to his apartment?',
       ja: 'ジムは部屋に何が起きたと言う？',
-      choices: ['It flooded with water', 'It got broken into', 'It lost all its power'], a: 0,
+      choices: ['It flooded with water', 'It was robbed', 'It lost all its power'], a: 0,
       choicesJa: ['水びたしになった', '泥棒に入られた', '停電した'],
       cue: '「apparently」のあと。',
       line: 'Apparently my apartment *flooded*.',
@@ -296,13 +297,13 @@ export const dinnerParty: Clip = {
     { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thanks', seg: [158.7, 168.1],
       stem: 'Why does Jim say “It was a great night” here?',
       ja: 'ジムは、なぜここで「It was a great night」と言う？',
-      choices: ['To say goodbye politely', 'To ask for more food', 'To start a new game'], a: 0,
-      choicesJa: ['ていねいに帰りのあいさつをするため', 'もっと料理を頼むため', '新しいゲームを始めるため'],
+      choices: ['To say goodbye politely', 'To say he’ll stay longer', 'To ask Pam to come along'], a: 0,
+      choicesJa: ['ていねいに帰りのあいさつをするため', 'もっと長くいると伝えるため', 'パムに一緒に来てと頼むため'],
       cue: '「That’s true」のあと。',
       line: 'Um, *dinner sounded delicious*. Pam, I’ll see you at home. *Thank you so much. It was a great night.*',
       said: '「夕食、おいしそうだったよ。ありがとう、いい夜だった」と帰ろうとする。',
       mean: 'Thank you so much. It was a great night. ＝ 帰るときのお礼の決まり文句。',
-      trap: 'delicious から料理の話と思いやすい。sounded（おいしそうだった）は食べていない合図。',
+      trap: 'Pam の名前から、パムを誘っていると勘違いしやすい。I’ll see you at home ＝「家でね」。一人で帰るあいさつ。',
       use: 'Thank you so much. It was a great night.（本当にありがとう。いい夜でした）' },
 
     { id: 'p3', skill: 'pragma', level: 'B2', point: 'abandon', seg: [163.2, 173.7],
@@ -348,8 +349,8 @@ export const dinnerParty: Clip = {
       choicesJa: ['名前を言った', '時間がかかりすぎた', '始めるのが早すぎた'],
       cue: '「Tom」のすぐあと',
       line: 'Michael: First name is *Tom*. / No, no, no. *No names.* No names. No rhyming. No sound-alike.',
-      said: '「名前はトム」と言ったとたん、「だめだめ、名前は禁止。韻も、似た音も禁止」と止められる。',
-      mean: 'No names ＝ 名前は禁止。No 〜 で「〜はだめ」と短くルールを言う形（No smoking と同じ）。',
+      said: '「名前はトム」と言ったとたん、「だめだめ、名前はだめ。韻も似た音もだめ」と止められる。',
+      mean: 'No names ＝ 名前はだめ（禁止）。No 〜 で「〜はだめ」と短くルールを言う形（No smoking と同じ）。',
       trap: '止められたのは時間のせいと考えがち。決め手は No names。',
       use: 'No phones at the table, please.（食事中はスマホ禁止ね）' },
 

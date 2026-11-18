@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 7, ctx 5, tx 20
+// R4 REVIEW 2026-11-18: keep 7, rewrite 6, retire 5, new 7, ctx 5, tx 20, qa 6
 // A2 REVIEW 2026-11-17: keep 7, rewrite 10, retire 4, new 1
 // “Nothing matters and I'm always tired | Parks and Recreation” (the official Parks and Recreation channel, Season 5):
 // Ben needs his friends' help to pick his foundation's first charity; Andy, low since failing the police exam, finds a
@@ -129,14 +129,14 @@ export const charity: Clip = {
 
     { id: 'n1', skill: 'number', level: 'B1', point: 'tomorrow', seg: [34.5, 44], keep: true,
       stem: 'By when does Ben have to choose the charity?',
-      ja: 'ベンはいつまでに支援先を決めないといけない？',
-      choices: ['By tonight', 'By tomorrow', 'By next week'], a: 1,
-      choicesJa: ['今夜まで', '明日まで', '来週まで'],
+      ja: 'ベンはいつまでに寄付先を決めないといけない？',
+      choices: ['By today', 'By tonight', 'By tomorrow', 'By next week'], a: 2,
+      choicesJa: ['今日まで', '今夜まで', '明日まで', '来週まで'],
       cue: '「first charity」のあと。',
       line: 'I have to pick our first charity *by tomorrow*…',
-      said: '「明日までに最初の支援先を決めないと。応募は山ほど」と言う。',
+      said: '「明日までに最初の寄付先を選ばなきゃ。申し込みは山ほど」と言う。',
       mean: 'by ＝ 〜までに（期限）。a million は「すごく多い」という大げさな言い方。',
-      trap: '「トゥナイ」で切れれば tonight、「トゥモロウ」と「モ」が続けば tomorrow、「ネクスト」で始まれば next week。',
+      trap: '「トゥデイ」なら today、「トゥナイ」で切れれば tonight、「トゥモロウ」と「モ」が続けば tomorrow、「ネクスト」で始まれば next week。',
       use: 'I need it by tomorrow.（明日までに必要です）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'sort', seg: [39.9, 46.7],

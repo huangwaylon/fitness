@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 12, retire 0, new 2, ctx 8, tx 6 (9 of the rewrites restored retired items)
+// R4 REVIEW 2026-11-18: keep 10, rewrite 12, retire 0, new 2, ctx 8, tx 6, qa 10 (9 of the rewrites restored retired items)
 // A2 REVIEW 2026-11-17: keep 7, rewrite 6, retire 10, new 3 · sweep: cross-bank twins retired or rewritten
 // “Andy Dwyer Investigates | Parks and Recreation” (the official Parks and Recreation channel, Season 5): Andy finds
 // his computer gone and takes it for the practice theft he asked the office for; he grills co-workers until Chris
@@ -8,6 +8,7 @@
 // / Gary, Chris Traeger, "officer" / "the policeman". The other speakers aren't named, so stems don't name them. The
 // sources differ at 14.5 s, 30.8 s, 125 s, 147 s and 162.6 s; no key rests on those words. Untested: the glasses
 // (30–35 s), 82–85 s, the carpet-store suspect (171–183 s) and the shirt (197–202 s).
+// EAR CHECK: 141.1 s pr1 — who says 'Andy, I love your enthusiasm, but…' (the officer or Chris); no stem names them
 // EAR CHECK: 93.0 s s1, 128.7 s x1 — "doesn't come up" (the t of doesn't nearly lost before "come"); "what's the play here"
 import type { Clip } from '../types.ts';
 
@@ -32,13 +33,13 @@ export const andyInvestigates: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'month', reveals: ['practice'], seg: [21.95, 27.4], keep: true,
       stem: 'How long ago did Andy ask the office to steal from him?',
       ja: 'アンディが「盗んで」と頼んだのはどのくらい前？',
-      choices: ['About a week', 'About a month', 'About a year'], a: 1,
-      choicesJa: ['1週間くらい', '1か月くらい', '1年くらい'],
+      choices: ['About a week', 'About a month', 'About two months', 'About a year'], a: 1,
+      choicesJa: ['1週間くらい', '1か月くらい', '2か月くらい', '1年くらい'],
       cue: '「So about」のあと。',
       line: 'So *about a month ago*, I told everyone in the office…',
       said: '「1か月くらい前、オフィスのみんなに頼んでおいた」と言う。',
       mean: 'about a month ago ＝ 1か月くらい前。about ＝ だいたい。',
-      trap: 'a のあとは短く流れる。「マンス」なら month、「ウィーク」なら week、「イヤ」なら year。',
+      trap: 'about のあとは「ア」だけで two ではない。「マンス」なら month、「ウィーク」なら week、「イヤ」なら year。',
       use: 'I moved here about a month ago.（1か月くらい前に引っ越してきた）' },
 
     { id: 'dothis', skill: 'phrase', level: 'B1', point: 'dothis', seg: [22, 30.6],
@@ -66,13 +67,13 @@ export const andyInvestigates: Clip = {
     { id: 'n2', skill: 'number', level: 'B1', point: 'bucks', ctx: true, seg: [40.5, 53.2], keep: true,
       stem: 'Andy asks about Miami. For how much does Jerry say he sold it?',
       ja: 'マイアミのことを聞くアンディ。ジェリーはいくらで売ったと言う？',
-      choices: ['$15', '$50', '$150'], a: 2,
-      choicesJa: ['15ドル', '50ドル', '150ドル'],
+      choices: ['$15', '$50', '$115', '$150'], a: 3,
+      choicesJa: ['15ドル', '50ドル', '115ドル', '150ドル'],
       cue: '「black market for」のあと。',
       line: 'Andy: Maybe fencing stolen computers? / Jerry: Yes, I took your government computer… to sell it on the black market *for 150 bucks*.',
       said: '「盗んだパソコンでも売ってるのか？」に、「ああ、闇市場で150ドルで売ったよ」と返す。',
       mean: 'bucks ＝ ドルのくだけた言い方。150 は one fifty と読むことが多い。',
-      trap: '「フィフティーン」と伸びれば15、「フィフティ」だけなら50、前に「ワン」や hundred があれば150。',
+      trap: '15 と 115 は最後が「ティーン」と伸びる。50 は前に「ワン」がない。「ワン・フィフティ」なら150。',
       use: 'It’s about fifty bucks.（50ドルくらいだよ）' },
 
     { id: 'a1', skill: 'attitude', level: 'C1', point: 'sarcasm', reveals: ['bucks'], seg: [43.2, 56.0], retired: true,
@@ -172,8 +173,8 @@ export const andyInvestigates: Clip = {
     { id: 'a2', skill: 'attitude', level: 'B1', point: 'better', seg: [122.8, 130.1],
       stem: 'How does Andy take the news that the crime is real?',
       ja: '本物の事件だと聞いて、アンディはどう感じる？',
-      choices: ['Even more excited', 'Less excited than before', 'Calm and serious'], a: 0,
-      choicesJa: ['もっとわくわくしている', '前ほどやる気がない', '落ち着いてまじめ'],
+      choices: ['Happier than before', 'Less excited than before', 'Calm and serious'], a: 0,
+      choicesJa: ['前よりうれしい', '前ほどやる気がない', '落ち着いてまじめ'],
       cue: '「real crime?」のあと。',
       line: 'Like a real crime? *That’s even better.*',
       said: '「本物の事件？もっといいじゃん」と言う。',
@@ -192,12 +193,12 @@ export const andyInvestigates: Clip = {
       use: 'So what’s the plan here?（で、ここではどうするの？）' },
 
     { id: 'pr1', skill: 'pragma', level: 'B2', point: 'enthusiasm', reveals: ['money'], ctx: true, seg: [139.5, 146.3],
-      stem: 'Andy pitches a plan. Why does the officer praise him?',
-      ja: '作戦を出すアンディ。警官はなぜほめる？',
+      stem: 'Andy pitches a plan. Why is he praised first?',
+      ja: '作戦を出すアンディ。なぜ先にほめられる？',
       choices: ['To say no kindly', 'To say yes to the plan', 'To ask Andy to work harder'], a: 0,
       choicesJa: ['やさしく断るため', '計画に賛成するため', 'もっとがんばれと言うため'],
       cue: 'ほめ言葉のあとの but。',
-      line: 'Andy: …fill it with explosives first, boom. / Officer: Yeah, we’re not doing any of that. Andy, *I love your enthusiasm, but*…',
+      line: 'Andy: …fill it with explosives first, boom. / Yeah, we’re not doing any of that. / Andy, *I love your enthusiasm, but*…',
       said: '「やる気は大好きだけど、大がかりな捜査をするお金はない」と言う。',
       mean: 'enthusiasm ＝ やる気、熱意。ほめてから断る、よくある言い方。本題は but のあと。',
       trap: 'I love（大好き）から賛成と思いやすい。I love 〜, but は断りの前置き。直前に not doing any of that とも言う。',
@@ -218,8 +219,8 @@ export const andyInvestigates: Clip = {
     { id: 'd6', skill: 'detail', level: 'B1', point: 'letgo', seg: [146.8, 156.5],
       stem: 'What does Andy say he can’t do as a future cop?',
       ja: 'アンディは、未来の警官として何ができないと言う？',
-      choices: ['Let this guy go', 'Fill out the report', 'Pay for the search'], a: 0,
-      choicesJa: ['この犯人を見のがす', '報告書を書く', '捜査のお金を払う'],
+      choices: ['Stop chasing this thief', 'Write the report', 'Pay for the search'], a: 0,
+      choicesJa: ['この犯人を追うのをやめる', '報告書を書く', '捜査のお金を払う'],
       cue: '「As a future cop」のあと',
       line: 'As a future cop, you have to understand, *I cannot let this guy go*.',
       said: '「未来の警官として、この犯人を見のがすわけにはいかない」と言う。',
@@ -290,8 +291,8 @@ export const andyInvestigates: Clip = {
     { id: 'p3', skill: 'phrase', level: 'B2', point: 'bail', seg: [203.6, 207.9],
       stem: 'What does “bail on being a cop” mean?',
       ja: '「bail on being a cop」の意味は？',
-      choices: ['Give up on it', 'Pay to get out', 'Take a short break'], a: 0,
-      choicesJa: ['あきらめる', 'お金を払ってやめる', '少し休む'],
+      choices: ['Quit trying to be one', 'Pay to leave jail', 'Take a short break'], a: 0,
+      choicesJa: ['なろうとするのをやめる', 'お金を払って留置場を出る', '少し休む'],
       cue: '「maybe I should」のあと。',
       line: 'You know what, maybe I should *bail on* being a cop.',
       said: '「あのさ、警官になるのはやめたほうがいいのかも」と言う。',
