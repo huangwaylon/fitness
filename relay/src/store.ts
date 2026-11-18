@@ -1147,7 +1147,7 @@ export class StoreCore {
       const raw = this.meta(`shop|${who}`);
       const fold = shopStateJson(this.shopFold(who, field));
       const same = raw === null ? null : raw === fold;
-      out[who] = same === null ? 'none' : same ? 'same' : 'differs';
+      out[who] = same === null ? 'none' : same ? 'same' : ledgerDiff(raw!, fold);
       if (o.fix === true && same === false) this.setMeta(`shop|${who}`, fold);
     }
     return { ok: true, ...out };
@@ -1661,6 +1661,34 @@ function shopStateOf(raw: string): ShopState | null {
   } catch {
     return null;
   }
+}
+
+/** Where a running ledger (meta JSON) and its fold differ (shopcheck's detail): `differs`, the fields that do (`h` the
+ *  かいがら; `c` caught, `b` given back, `s` sold, `v` what they fetched, `o` owed: each key `[stored, fold]`; `w` the
+ *  pieces, `g` the games: what only one side holds). */
+function ledgerDiff(stored: string, fold: string): Record<string, unknown> {
+  let a: Record<string, unknown>, b: Record<string, unknown>;
+  try {
+    a = JSON.parse(stored) as Record<string, unknown>;
+    b = JSON.parse(fold) as Record<string, unknown>;
+  } catch {
+    return { differs: ['unreadable'] };
+  }
+  const out: Record<string, unknown> = {};
+  const differs: string[] = [];
+  if (a.h !== b.h) differs.push('h'), (out.h = [a.h, b.h]);
+  for (const k of ['c', 'b', 's', 'v', 'o']) {
+    const x = new Map(Array.isArray(a[k]) ? (a[k] as [string, number][]) : []), y = new Map(Array.isArray(b[k]) ? (b[k] as [string, number][]) : []);
+    const d: Record<string, [number, number]> = {};
+    for (const key of new Set([...x.keys(), ...y.keys()])) if ((x.get(key) ?? 0) !== (y.get(key) ?? 0)) d[key] = [x.get(key) ?? 0, y.get(key) ?? 0];
+    if (Object.keys(d).length) differs.push(k), (out[k] = d);
+  }
+  for (const k of ['w', 'g']) {
+    const x = Array.isArray(a[k]) ? (a[k] as string[]) : [], y = Array.isArray(b[k]) ? (b[k] as string[]) : [];
+    const only = { stored: x.filter((i) => !y.includes(i)), fold: y.filter((i) => !x.includes(i)) };
+    if (only.stored.length || only.fold.length || x.length !== y.length) differs.push(k), (out[k] = only);
+  }
+  return { differs: differs.length ? differs : ['order'], ...out };
 }
 
 /** A page's place (contract/api.ts CURSOR_RE): the last row's `at`, its table and its seq. */

@@ -154,7 +154,9 @@ scripts/record.ts <command>` (`--test`: the test relay, with `KEYS_FILE=.smoke-k
   row, held values too; keep it off the repo); `load <file>` into an empty record.
 - **`rev`**: a new epoch (§4).
 - **`shopcheck [fix]`, `decorcheck [fix]`**: the running field, shop ledgers and decor caps' counts against a full
-  fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused.
+  fold of the rows; `fix` takes the fold's. For a sale or placement wrongly refused. A ledger that differs says
+  which fields (`h` かいがら; `c` caught, `b` given back, `s` sold, `v` fetched, `o` owed per key `[stored, fold]`;
+  `w` pieces, `g` games).
 - **`adjust <A|B|G> <v> <note>`**: a correction of one person's かいがら, only on the user's word: a `shop_adjust` row
   of `v` (either sign; [backend](../backend.md#shop-adjust)), its id printed; backup first. **`unadjust <id>`** deletes
   it (a new epoch).

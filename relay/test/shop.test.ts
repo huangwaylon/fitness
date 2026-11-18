@@ -282,8 +282,9 @@ describe('the shop’s running ledger (O5)', () => {
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
     // a ledger gone wrong (by hand) is found and mended
     db.db.prepare("UPDATE meta SET v = replace(v, '\"h\":', '\"h\":1') WHERE k = 'shop|A'").run();
-    expect(store.shopCheck()).toMatchObject({ A: 'differs' });
-    expect(store.shopCheck({ fix: true })).toMatchObject({ A: 'differs' });
+    const h = JSON.parse((db.db.prepare(`SELECT v FROM meta WHERE k = 'shop|A'`).get() as { v: string }).v).h as number;
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['h'], h: [h, Number(String(h).slice(1))] } });
+    expect(store.shopCheck({ fix: true })).toMatchObject({ A: { differs: ['h'] } });
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
   });
 
@@ -292,7 +293,7 @@ describe('the shop’s running ledger (O5)', () => {
     batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 5 } }]);
     // the running ledger as the record kept it before 2026-11-16's conversion: the old fruit under its own key
     db.db.prepare(`UPDATE meta SET v = replace(v, 'goods:goal-apple', 'goods:apple') WHERE k = 'shop|A'`).run();
-    expect(store.shopCheck()).toMatchObject({ A: 'differs' });
+    expect(store.shopCheck()).toMatchObject({ A: { differs: ['c', 's', 'v'], c: { 'goods:apple': [2, 0], 'goods:goal-apple': [0, 2] } } });
     expect(batch([{ type: 'sell', data: { species: 'goods:goal-apple', n: 1, v: 60 } }]).results[0].ok).toBe(true);
     expect(batch([{ type: 'sell', data: { species: 'goods:apple', n: 1, v: 60 } }]).results[0]).toMatchObject({ ok: false, detail: 'pocket short' });
     expect(store.shopCheck()).toMatchObject({ A: 'same' });
