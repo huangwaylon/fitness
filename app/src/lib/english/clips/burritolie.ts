@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 4
+// R4 REVIEW 2026-11-18: keep 9, rewrite 6, retire 1, new 2, ctx 4, tx 4, qa 7
 // A2 REVIEW 2026-11-17: keep 14, rewrite 2, retire 5, new 1
 // “Leslie Discovers Jerry's Burrito Lie | Parks and Recreation” (the official Parks and Recreation channel, Season 2):
 // Leslie uses a TV news spot about Jerry's “mugging” to shame City Hall into funding park security; her boss Paul is
@@ -90,7 +90,7 @@ export const jerryBurritoLie: Clip = {
       cue: '「money from City Hall」のあと',
       line: 'We need money from City Hall, and *it’s not coming through*.',
       said: 'レスリーが「市からのお金が要るのに、出てこない」と言う。',
-      mean: 'come through ＝ （お金や約束が）実際に届く。not coming through ＝ 出てこない。',
+      mean: '文字どおりは「通って来る」。→ come through ＝ （お金や許可が）実際に届く。not ＝ まだ出てこない。',
       trap: 'coming（来ている）から、遅れて来ると思いやすい。not がある。',
       use: 'My visa came through.（ビザが下りた）' },
 
@@ -185,13 +185,13 @@ export const jerryBurritoLie: Clip = {
     { id: 'pr2', skill: 'pragma', level: 'B2', point: 'respect', ctx: true, seg: [85.8, 92.2],
       stem: 'How does Leslie answer Paul’s rude name for Jerry?',
       ja: 'ジェリーへのポールの失礼な呼び方に、レスリーはどう返す？',
-      choices: ['They respect everyone here', 'She agrees with what Paul says', 'She will bring him later'], a: 0,
-      choicesJa: ['ここではみんなを尊重している', 'ポールの言うことに同意する', 'あとで連れてくる'],
+      choices: ['She pretends not to know who', 'She really doesn’t know who', 'She agrees with Paul’s name'], a: 0,
+      choicesJa: ['知らないふりをする', '本当に誰か分からない', 'ポールの呼び方に賛成する'],
       cue: 'ポールの「doofus」のあと。',
       line: 'Paul: …make sure you bring *the doofus*… / Leslie: I don’t know who you’re referring to. *We treat everyone with respect* around here.',
       said: '「あのまぬけ」に、レスリーは「誰のことでしょう。ここではみんなを尊重してます」と返す。',
       mean: 'doofus ＝ まぬけ（失礼な呼び方）。refer to 〜 ＝ 〜のことを言う。知らないふりで、たしなめている。',
-      trap: 'I don’t know から、本当に分からないと考えがち。決め手は続く with respect。',
+      trap: 'I don’t know だけだと、本当に分からないと考えがち。続く with respect で、わざとだと分かる。',
       use: 'We treat everyone with respect.（ここではみんなを大切に扱います）' },
 
     { id: 'f3', skill: 'phrase', level: 'B1', point: 'heart', seg: [102.5, 109],
@@ -203,7 +203,7 @@ export const jerryBurritoLie: Clip = {
       line: 'Just talk about how hard it was for you. *Speak from the heart*. You’ll be fine.',
       said: 'レスリーが「つらかったことを話して。心から話して。大丈夫」と励ます。',
       mean: 'Speak from the heart ＝ 文字どおりは「心から話す」。原稿でなく、本当の気持ちを自分の言葉で。You’ll be fine ＝ 大丈夫。',
-      trap: 'nervous（緊張）の話なので、話し方のコツと考えがち。heart（心）は気持ちのこと。',
+      trap: '原稿を読む話と考えがち。heart（心）＝気持ち。つらさを自分の言葉で話す。',
       use: 'Just speak from the heart. You’ll be fine.（気持ちを話せばいいよ。大丈夫）' },
 
     { id: 'd4', skill: 'detail', level: 'B2', point: 'mute', seg: [122.5, 132.5],
@@ -215,7 +215,7 @@ export const jerryBurritoLie: Clip = {
       line: 'He can’t talk right now because he has *hysterical muteness from trauma*.',
       said: 'レスリーが「彼は事件のショックで、今は声が出ないんです」と言う。',
       mean: 'trauma ＝ 心の傷、ショック。muteness ＝ 声が出ないこと。hysterical はここでは「心の動揺による」。',
-      trap: 'hysterical をカタカナの「ヒステリー」（怒りっぽい）と考えがち。原因は from trauma（ショック）。',
+      trap: 'かぜで声が出ないと考えがち。原因は from trauma（ショック）。ヒステリーとは別の意味。',
       use: 'He can’t talk right now.（彼は今、話せません）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'shoulder', ctx: true, seg: [134.8, 141],
@@ -283,7 +283,7 @@ export const jerryBurritoLie: Clip = {
       trap: 'did you なら「ン」がない。don’t you なら「ドンチュ」。ここは「ディンチュ」。',
       use: 'Why didn’t you call me?（どうして電話してくれなかったの？）' },
 
-    { id: 'i3', skill: 'infer', level: 'B2', point: 'tom', reveals: ['didnt'], ctx: true, seg: [157.5, 165],
+    { id: 'i3', skill: 'infer', level: 'B2', point: 'tom', reveals: ['didnt'], ctx: true, seg: [157.5, 164.2],
       stem: 'Why didn’t Jerry tell the truth?',
       ja: 'ジェリーはなぜ本当のことを言わなかった？',
       choices: ['Tom would make fun of him', 'He might lose his job', 'He wanted to help Leslie out'], a: 0,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 3, tx 5
+// R4 REVIEW 2026-11-18: keep 6, rewrite 4, retire 5, new 2, ctx 3, tx 5, qa 9
 // Built for speech 0–47.5 s: quarters ≥ 2 and ≤ 40 %, ≤ 3 starts in any 10 s.
 // A2 REVIEW 2026-11-17: keep 5, rewrite 7, retire 4, new 3 (nt1, nt2 stay retired)
 // “Ross Lies to Mona About Living with Rachel | Friends” (the official Friends channel, Best of Season 8): Ross tells
@@ -49,11 +49,11 @@ export const rossMona: Clip = {
     { id: 'p2', skill: 'detail', level: 'B1', point: 'exciting', reveals: ['kick'], ctx: true, seg: [2.6, 9.5],
       stem: 'What does Mona say to Ross’s news?', ja: 'ロスの知らせに、モナは何と言う？',
       choices: ['How exciting!', 'How strange!', 'How sad!'], a: 0,
-      choicesJa: ['すてき！', '変なの！', '悲しいね！'],
+      choicesJa: ['すごいね！', '変なの！', '悲しいね！'],
       cue: '「started kicking」のあと',
       line: 'Ross: Actually, the baby started kicking. / Mona: *How exciting.* / Ross: Yeah, I know.',
       said: '「赤ちゃんがけり始めた」に、モナが「すごいね」と言い、ロスが「でしょ」と返す。',
-      mean: 'How exciting! ＝ わくわくするね、すてき。いい知らせへの返事。How ＋ 形容詞で「なんて〜」。',
+      mean: 'How exciting! ＝ すごいね、わくわくするね。いい知らせへの返事。How ＋ 形容詞で「なんて〜」。',
       trap: 'How（どう）から、質問と勘違いしやすい。How ＋ 形容詞は「なんて〜なの」という感想。',
       use: 'You got the job? How exciting!（受かったの？すてき！）' },
 
@@ -97,7 +97,7 @@ export const rossMona: Clip = {
       cue: '「for the first time」のあと',
       line: 'Ross: The only sad thing is *I wasn’t around* when it happened for the first time. / Mona: *Oh, no.*',
       said: '「初めてけった時、そばにいられなかった」に、モナが「あら、かわいそう」と言う。',
-      mean: 'be around ＝ そばにいる。Oh, no ＝ まあ、かわいそうに。悪い知らせへの、気持ちをこめた返事。',
+      mean: 'be around ＝ そばにいる。Oh, no ＝ あら、かわいそう。悪い知らせへの、気持ちをこめた返事。',
       trap: 'no から「いいえ」と断っていると考えがち。悪い話へのあいづち。',
       use: 'You lost your phone? Oh, no!（携帯なくしたの？うわ、大変）' },
 
@@ -144,12 +144,12 @@ export const rossMona: Clip = {
 
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'cracks', seg: [19.8, 26.4],
       stem: 'What does “Joey *cracks me up*” mean?', ja: '「Joey cracks me up」の意味は？',
-      choices: ['Joey makes me laugh', 'Joey drives me crazy', 'Joey makes me sad'], a: 0,
-      choicesJa: ['ジョーイは笑わせてくれる', 'ジョーイにはいらいらする', 'ジョーイは悲しくさせる'],
+      choices: ['Joey makes me laugh', 'Joey makes me angry', 'Joey makes me sad'], a: 0,
+      choicesJa: ['ジョーイは笑わせてくれる', 'ジョーイには腹が立つ', 'ジョーイは悲しくさせる'],
       cue: '「What?」のあと',
       line: 'What? — Joey *cracks me up*.',
-      said: 'ロスが「ジョーイって、ほんと笑えるよね」と言う。',
-      mean: 'crack 〜 up ＝ 〜を大笑いさせる。ここでは案を冗談にしてしまう言い方。',
+      said: 'ロスが「ジョーイには笑っちゃうよ」と言う。',
+      mean: 'crack ＝ ひびが入る。笑いで顔がくずれる→ crack 人 up ＝ 人を大笑いさせる。ここは案を笑い飛ばす。',
       trap: 'crack（割れる、ひびが入る）から、悪い意味を連想しやすい。crack up は大笑い。',
       use: 'You crack me up!（あなたって、ほんと笑える！）' },
 
@@ -167,10 +167,10 @@ export const rossMona: Clip = {
     { id: 's1', skill: 'sound', level: 'B2', point: 'whydont', seg: [22, 28.1],
       stem: 'Fill the gap: “Yeah, ___ have your ex-wife move in?”', ja: '空所に入るのは？',
       choices: ['why don’t you', 'why would you', 'why do you'], a: 0,
-      choicesJa: ['〜したら？', 'なぜ〜するの？', 'なぜ〜するの？（ふだん）'],
+      choicesJa: ['〜したら？', 'なんで〜させるわけ？', 'なんで〜させてるの？'],
       cue: '「Yeah,」のあと',
       line: 'Yeah, *why don’t you* have your ex-wife move in with you?',
-      said: '「元奥さんと一緒に住めばいいじゃん」と言う。',
+      said: '「元妻を家に住まわせればいいじゃん」と言う。',
       mean: 'Why don’t you 〜? ＝ 〜したら？（すすめる言い方）。don’t you が「ドンチュ」とつながる。',
       trap: 'would なら「ウッジュ」、do you なら「ドゥユ」。ここは「ドン」の n が聞こえる。',
       use: 'Why don’t you come with us?（一緒に来たら？）' },
@@ -239,7 +239,7 @@ export const rossMona: Clip = {
       line: 'and my boyfriend is living with *some woman he got pregnant*.',
       said: '「帰ってきたら、彼氏が自分の子を妊娠した女の人と住んでるのよ」と言う。',
       mean: 'get 人 pregnant ＝ 人を妊娠させる。モナは、ロスとレイチェルの話だと気づかずに例えている。',
-      trap: 'ex-wife（元妻）の話のあとなので、元妻と考えがち。決め手は pregnant。',
+      trap: 'some woman（ある女性）だけだと、だれでもよく聞こえる。決め手はあとの he got pregnant。',
       use: 'My sister is pregnant.（姉が妊娠しています）' },
 
     { id: 'x2', skill: 'dict', level: 'B2', point: 'whatd', seg: [41.9, 46.3],
