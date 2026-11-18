@@ -1,13 +1,14 @@
+// R4 REVIEW 2026-11-18: keep 8, rewrite 8, retire 0, new 3, ctx 6, tx 5
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 8, new 0
 // “Leslie Receives A Passive-Aggresive City Key | Parks and Recreation” (the official Parks and Recreation channel,
 // Season 5): Leslie stands in for Ben, home sick with kidney stones, at a Partridge key ceremony that turns out to mock
 // him ("Ice Clown", a key of ice); she ends up telling the town off.
-// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 164 s (whisper loops one line from
-// 175 s). Leslie is named (82 s, 90.7 s); Ben is the voice on the video and the phone (he's in the hospital, 9 s, 30 s).
+// Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 164 s. Leslie is named (82 s, 90.7 s); Ben is the voice on the video and the phone (he's in the hospital, 9 s, 30 s).
 // The Partridge men are never named, so stems say "the official" (0–25 s, 126–147 s) and "the host" (51–110 s).
 // Untested on purpose: 34.4 s (captions "baby Smurf", whisper "baby smear"), 78–82 s (who is taken for "his sister"),
-// 124.6 s (captions "going to find it in your heart to be able to", whisper "gonna finally be able to"), 128.5–132.7 s
-// (the medical detail of Ben's kidney stone).
+// 124.6 s (captions "going to find it in your heart to be able to", whisper "gonna finally be able to").
+// EXCLUDE 130.2–133.1 (the crude detail of where Ben's kidney stone is lodged)
+// SKIP 165–185: music and the end card; whisper's lone "You're good." at 184 s
 import type { Clip } from '../types.ts';
 
 export const iceClown: Clip = {
@@ -16,18 +17,17 @@ export const iceClown: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'absent', seg: [0, 25.5],
-      stem: 'What do they argue about at the start?',
-      ja: '最初、何について言い合っている？',
-      choices: ['If Ben is really sick', 'If the party can start', 'If Leslie can take the key'], a: 0,
-      choicesJa: ['ベンが本当に病気か', 'パーティーを始められるか', 'レスリーが鍵を受け取れるか'],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'absent', reveals: ['stones'], seg: [0, 25.5],
+      stem: 'What does the official not believe?',
+      ja: '町の役人は、何を信じない？',
+      choices: ['That Ben is really sick', 'That the party can start', 'That Leslie can take the key'], a: 0,
+      choicesJa: ['ベンが本当に病気だと', 'パーティーを始められると', 'レスリーが鍵を受け取れると'],
       cue: '最初の「believe that?」のあと。',
       line: 'Sick. *Do you really expect me to believe that?* — No, he has kidney stones. *We have proof.*',
       said: '町の人が「病気？そんなの信じると思う？」と疑い、レスリーたちは動画を証拠に出す。',
       mean: 'expect me to believe 〜 ＝ 私が〜を信じると思う？ proof ＝ 証拠。',
-      trap: 'あとの on his behalf（彼の代わりに）が耳に残るが、言い合いは最初の believe that?。',
+      trap: 'あとの on his behalf（彼の代わりに）が耳に残るが、疑っているのは最初の Sick（病気？）。',
       use: 'Do you really expect me to believe that?（そんなの信じると思う？）' },
-
     { id: 'f1', skill: 'phrase', level: 'C1', point: 'wimp', reveals: ['stones'], seg: [1.3, 6.6], retired: true,
       stem: 'What does the official suggest with his made-up illness, “acute wimping out”?',
       choices: ['Ben is too scared to show up', 'Ben has a sudden, serious illness', 'Ben is too weak to make the trip'],
@@ -38,19 +38,17 @@ export const iceClown: Clip = {
       mean: 'wimp out ＝ おじけづいて逃げる。acute（急性）を付けて病名のようにからかう。',
       trap: 'acute は本物の医学用語なので、深刻な病気に聞こえやすい。後ろの wimp が本題。',
       use: 'Don’t wimp out on me now.（今さら逃げないでよ）' },
-
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'stones', seg: [1.7, 6.7],
-      stem: 'What does Leslie say is wrong with Ben?',
-      ja: 'ベンはどこが悪い、とレスリーは言う？',
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'stones', ctx: true, seg: [1.5, 7.5],
+      stem: 'What do they say is wrong with Ben?',
+      ja: 'ベンはどこが悪いと言う？',
       choices: ['He has bad nerves', 'He has kidney stones', 'He has a kidney infection'], a: 1,
       choicesJa: ['神経が弱い', '腎臓結石がある', '腎臓に感染症がある'],
       cue: '「No, he has」のあと。',
-      line: 'No, he has *kidney stones*. We have proof.',
-      said: '「違う、腎臓結石なの。証拠もある」と言い返す。',
+      line: 'What has he got, acute wimping-out? / No, he has *kidney stones*. We have proof.',
+      said: '「急性おじけづき症か？」とからかわれ、「いいえ、腎臓結石です。証拠もあります」と返す。',
       mean: 'kidney stones ＝ 腎臓結石。強い痛みで入院することもある病気。',
       trap: 'kidney（腎臓）は2つの選択肢にある。stones（石）まで聞く。',
       use: 'He’s home sick with the flu.（彼はインフルで家で寝てる）' },
-
     { id: 'n1', skill: 'number', level: 'B1', point: 'hour', seg: [5.9, 14.5], keep: true,
       stem: 'When was the hospital video taken?',
       ja: '病院の動画はいつ撮られた？',
@@ -62,7 +60,6 @@ export const iceClown: Clip = {
       mean: 'an hour ago ＝ 1時間前。an と hour がつながり「アナワー」。',
       trap: '「ハーフ」は聞こえない。two hours なら「トゥー」、a day なら「デイ」。ここは an hour。',
       use: 'I called an hour ago.（1時間前に電話しました）' },
-
     { id: 's1', skill: 'sound', level: 'B2', point: 'hadto', seg: [18.8, 25.5],
       stem: 'Fill the gap: “It’s just a real shame it ___ happen today.”',
       ja: '空所に入る語は？「よりによって今日 ___ とは、惜しい」',
@@ -70,11 +67,10 @@ export const iceClown: Clip = {
       choicesJa: ['起きてしまった', '起きなければならない', '起きるだろう'],
       cue: '「shame it」のあと、短い2語。',
       line: 'it’s just a real shame it *had to* happen today…',
-      said: '「よりによって今日こうなるとは、本当に惜しい」と言う。',
+      said: '「いやあ、こんなことが起きるとは、本当に惜しい」と言う。',
       mean: 'had to が「ハットゥ」と短くつながる。もう起きたことなので過去の形。',
       trap: 'has to なら「ハストゥ」と「ス」が入る。would なら「ウッド」で to がない。',
       use: 'It had to rain on our day off.（よりによって休みの日に雨とは）' },
-
     { id: 'nt1', skill: 'attitude', level: 'C2', point: 'shame', reveals: ['hadto', 'ofall'], seg: [19.6, 25.0], retired: true,
       stem: 'When the official calls it “a real shame”, what is he not saying?',
       choices: ['That he wanted Ben there to be mocked', 'That he is truly sorry Ben is unwell',
@@ -85,7 +81,6 @@ export const iceClown: Clip = {
       mean: '同情に見えて、惜しいのは Ben を目の前で笑いものにできないこと。Again が答え合わせになる。',
       trap: 'real shame と damn it は同情に聞こえる。後半の一言が本音を明かすこともある。',
       use: 'What a shame you can’t make it.（来られないなんて惜しいな）' },
-
     { id: 'x1', skill: 'dict', level: 'B1', point: 'ofall', reveals: ['hadto'], seg: [19.9, 26.2],
       stem: 'Type what he says: “…it had to happen today, ___.” (3 words)', answer: 'of all days',
       ja: '彼の言葉を書こう：「今日、___ 起きるとは」（3語）',
@@ -95,7 +90,17 @@ export const iceClown: Clip = {
       mean: 'of all days ＝ よりによって（この日に）。of all people（よりによってあの人が）と同じ形。',
       trap: 'of と all がつながり「オヴォール」になる。days の s まで書く。',
       use: 'He called me, of all people.（よりによって私に電話してきた）' },
-
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'thing', ctx: true, seg: [27.3, 33.4],
+      stem: 'What does Ben tell Leslie to do?',
+      ja: 'ベンはレスリーに何をしてと言う？',
+      choices: ['Stay at the event', 'Come back to him', 'Bring him some food'], a: 0,
+      choicesJa: ['式典に残る', '彼のところに戻る', '食べ物を持ってくる'],
+      cue: '「hospital?」への返事',
+      line: 'Leslie: You want me to come back to the hospital? / Ben: Nah, I’m goody-goody. *You just do your thing*.',
+      said: '「病院に戻ってほしい？」に「いや、ごきげんだよ。君は君のことをしてて」と答える。',
+      mean: 'do your thing ＝ 文字どおりは「君のことをする」→「気にせず、やるべきことをやって」。Nah ＝ No のくだけた形。',
+      trap: 'come back が耳に残り、戻ってほしいと勘違いしやすい。返事の最初の Nah（いや）を聞く。',
+      use: 'Don’t worry about me. Just do your thing.（私のことは気にしないで、やることやって）' },
     { id: 'i1', skill: 'infer', level: 'C1', point: 'loopy', seg: [38.2, 51.1], retired: true,
       stem: 'What does Ben’s talk on the phone suggest about his state?',
       choices: ['He is dreamy and not quite himself', 'He is sad to be missing her big day',
@@ -106,7 +111,17 @@ export const iceClown: Clip = {
       mean: '大げさで夢見心地の言葉と、子どもへのような注意。頭がぼんやりしている。',
       trap: 'wish you were here は Leslie の言葉。結石＝痛みと考えがちだが Ben は上機嫌。',
       use: 'You’re not making sense. Get some rest.（話がおかしいよ。少し休んで）' },
-
+    { id: 'a1', skill: 'attitude', level: 'B1', point: 'touched', ctx: true, seg: [38.5, 47.6],
+      stem: 'How does Ben feel when he hears about the mascot?',
+      ja: 'マスコットの話を聞いて、ベンはどんな気持ち？',
+      choices: ['Touched and happy', 'Sad to miss it', 'Worried about her'], a: 0,
+      choicesJa: ['感激して、うれしい', '見られなくてさびしい', '彼女が心配'],
+      cue: '「special occasions」への返事',
+      line: 'Leslie: Town mascot is here. … They only bring him out for special occasions. / Ben: *I can’t believe they’re doing all this for me.*',
+      said: '「マスコットも来てる」と聞き、「ぼくのためにこんなことまで。信じられない」と言う。',
+      mean: 'I can’t believe 〜 ＝「〜なんて信じられない」。ここはうれしい驚き。all this for me ＝「ぼくのためにこんなに」。',
+      trap: 'I can’t believe を「疑っている」と考えがち。ここは感激の言い方。',
+      use: 'I can’t believe you did all this for me!（私のためにこんなに！信じられない）' },
     { id: 'nt2', skill: 'infer', level: 'C2', point: 'forme', seg: [40.0, 47.3], retired: true,
       stem: 'After the banner is read out, how should we hear Ben’s “all this for me”?',
       choices: ['As sincere, but the show is really a mockery', 'As sincere, and the town really is honoring him',
@@ -117,7 +132,6 @@ export const iceClown: Clip = {
       mean: '本人は名誉と思っているが、横断幕で、確かに全部「彼のため」の皮肉だったと分かる。知らずに当たっている。',
       trap: '本人の喜び方だけ聞くと、本当に歓迎されていると取りやすい。皮肉と取るのは知っている側の見方。',
       use: 'Little did he know…（彼は知るよしもなかった…）' },
-
     { id: 'n2', skill: 'number', level: 'B1', point: 'twenty', seg: [49, 59.6], keep: true,
       stem: 'How many years later is it now?',
       ja: '今は、それから何年後？',
@@ -129,7 +143,6 @@ export const iceClown: Clip = {
       mean: '20 years later ＝ 20年後。あとでレスリーも「20年前」と言う。',
       trap: 'ten は「テン」、twelve は最後が「ルヴ」、thirty は「サー」。「トゥエンティ」なら20。',
       use: 'Twenty years later, we met again.（20年後、また会った）' },
-
     { id: 't1', skill: 'attitude', level: 'C1', point: 'possible', seg: [59.2, 70.2], retired: true,
       stem: 'When the host introduces Ben, what is he really doing?',
       choices: ['Blaming Ben in words that sound like praise', 'Thanking Ben for helping the town heal',
@@ -140,7 +153,6 @@ export const iceClown: Clip = {
       mean: 'made possible はふつうほめ言葉。ここの「それ」はつらい記憶なので、ほめる形で責めている。',
       trap: '紹介の決まり文句に聞こえやすい。that が指すのは痛い記憶。',
       use: 'Thanks for making this possible.（実現させてくれてありがとう）' },
-
     { id: 'i2', skill: 'infer', level: 'B2', point: 'typo', seg: [71, 80.1],
       stem: 'What does Leslie realize about the banner?',
       ja: '横断幕について、レスリーは何に気づく？',
@@ -152,7 +164,6 @@ export const iceClown: Clip = {
       mean: 'typo ＝ 打ちまちがい。Icetown を Ice Clown（氷のピエロ）にした、わざとの悪口。',
       trap: 'typo が3回聞こえるので、つづりの話に思いやすい。最後の not a typo で決まる。',
       use: 'Sorry, that’s a typo.（すみません、打ちまちがいです）' },
-
     { id: 't2', skill: 'phrase', level: 'B2', point: 'conveniently', reveals: ['absent'], seg: [82.6, 92.1],
       stem: 'What does the host mean by “conveniently ill”?',
       ja: '司会の言う「conveniently ill」はどういう意味？',
@@ -164,8 +175,7 @@ export const iceClown: Clip = {
       mean: 'conveniently ＝ 都合よく。conveniently ill ＝ 都合よく病気＝仮病だろう、という皮肉。',
       trap: 'convenient は「便利」なので、よい意味に思いやすい。病気に付くと「都合のいい言いわけ」。',
       use: 'He conveniently forgot his wallet.（彼は都合よく財布を忘れた）' },
-
-    { id: 'h3', skill: 'humor', level: 'B1', point: 'icekey', seg: [97.1, 106.8],
+    { id: 'h3', skill: 'detail', level: 'B1', point: 'icekey', seg: [97.1, 106.8],
       stem: 'What happened to the key?',
       ja: '鍵はどうなった？',
       choices: ['It melted away', 'It broke in half', 'It got lost'], a: 0,
@@ -176,7 +186,6 @@ export const iceClown: Clip = {
       mean: 'made of ice ＝ 氷でできた。melt away ＝ 溶けてなくなる。氷の町で失敗した市長への、いやみ。',
       trap: 'And it’s water（もう水）で溶けたと分かる。much like 以下は町の夢のたとえ。',
       use: 'My ice cream melted in the sun.（アイスが日なたで溶けた）' },
-
     { id: 'p1', skill: 'pragma', level: 'C1', point: 'class', seg: [109.6, 118.3], retired: true,
       stem: 'What does Leslie do by adding “by the way” after naming her city?',
       choices: ['Slips in a dig at Partridge', 'Adds a fun fact about Pawnee',
@@ -187,7 +196,6 @@ export const iceClown: Clip = {
       mean: '「うちは品がある」＝「ここにはない」。ついでのふりの当てこすり。',
       trap: 'by the way は話題を変える語だが、ここはついでのふりの皮肉。ほめる対象の裏を考える。',
       use: 'I made dinner, by the way. Again.（ちなみに夕飯作ったのは私。また）' },
-
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'sure', reveals: ['twenty'], seg: [117.2, 128.8],
       stem: 'Why does Leslie say “sure” before “but”?',
       ja: 'レスリーはなぜ「but」の前に「sure」と言う？',
@@ -199,43 +207,28 @@ export const iceClown: Clip = {
       mean: 'sure 〜, but … ＝ 確かに〜、でも…。相手の言い分を一度認めてから、自分の意見を言う形。',
       trap: 'sure（確かに）だけ聞くと、全部認めたように聞こえやすい。but のあとが言いたいこと。',
       use: 'Sure, it’s expensive. But it’s worth it.（確かに高い。でも価値はある）' },
-
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared'], seg: [118.8, 162.0],
-      stem: 'How does Leslie end her talk?',
-      ja: 'レスリーは話をどう終える？',
-      choices: ['She gets angry at the town', 'She says sorry for Ben', 'She thanks the town'], a: 0,
-      choicesJa: ['町に腹を立てる', 'ベンのことで謝る', '町にお礼を言う'],
-      cue: '最後の数語。',
-      line: '…because he cared about this town and he tried to help it. You know, *screw you*, Partridge.',
-      said: 'ベンをかばって町と言い合い、最後は「もう知らない、パートリッジ」と言い返す。',
-      mean: 'screw you ＝ 失礼な「ふざけるな」。丁寧な代理のあいさつが、夫を守る怒りに変わる。',
-      trap: '最初は sure と認めているので、謝る話に思いやすい。最後の言葉で怒りと分かる。',
-      use: 'I tried to be nice. Enough is enough.（優しくしたけど、もう限界）' },
-
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', seg: [122.4, 130.3],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'whereis', ctx: true, seg: [122.4, 130.0],
       stem: 'What does the official mean by “then where is he?”',
       ja: '「then where is he?」で、町の人は何を言いたい？',
       choices: ['Ben doesn’t really care', 'He wants the hospital name', 'Ben is hiding close by'], a: 0,
       choicesJa: ['ベンは本当は気にしていない', '病院の名前を知りたい', 'ベンが近くに隠れている'],
       cue: '「so meaningful」のあと。',
-      line: '*If it’s so meaningful to him*, then where is he?',
+      line: 'Leslie: it was very meaningful that you were gonna finally be able to forgive him. / *If it’s so meaningful to him*, then where is he?',
       said: '「そんなに大事なことなら、なぜ本人がいないんだ？」と言い返す。',
       mean: 'If it’s so 〜, then …? ＝ そんなに〜なら、なぜ…？ 居場所でなく「本気なら来るはず」という反論。',
-      trap: 'where（どこ）から、居場所を聞く質問に思いやすい。相手の言葉を使った切り返し。',
+      trap: 'where（どこ）から、居場所を聞く質問に聞こえるが、レスリーの meaningful を使った切り返し。',
       use: 'If you’re so hungry, then eat something.（そんなにお腹すいたなら何か食べなよ）' },
-
-    { id: 'i5', skill: 'infer', level: 'B2', point: 'garland', seg: [132.9, 141.2],
+    { id: 'i5', skill: 'infer', level: 'B2', point: 'garland', ctx: true, seg: [133.3, 141.2],
       stem: 'Why does the official say “What about Judy Garland?”',
       ja: '町の人はなぜ「What about Judy Garland?」と言う？',
       choices: ['To name someone even better', 'To talk about old famous movies', 'To agree with Leslie'], a: 0,
       choicesJa: ['もっとすごい人の名前を出すため', '昔の有名な映画の話をするため', 'レスリーに賛成するため'],
       cue: '「best thing」への返事。',
-      line: 'Ben Wyatt is the *best thing to ever come out of* this crap town. — Oh, yeah? *What about* Judy Garland?',
+      line: 'Leslie: Ben Wyatt is the *best thing to ever come out of* this crap town. / Oh, yeah? *What about* Judy Garland?',
       said: '「ベンはこの町の一番の誇り」と言うと、「じゃあジュディ・ガーランドは？」と返る。',
       mean: 'What about 〜? ＝ 〜はどうなの？ ここは「もっとすごい人がいる」という反論。',
       trap: 'What about は話題を変える時にも使うが、ここは「一番」への反論。Oh, yeah? も反論の合図。',
       use: 'Oh yeah? What about last time?（へえ、じゃあこの前は？）' },
-
     { id: 's2', skill: 'sound', level: 'B2', point: 'shed', seg: [137.4, 144.5],
       stem: 'Fill the gap: “___ here for a while.”',
       ja: '空所に入る語は？「___ しばらくここに」',
@@ -247,19 +240,27 @@ export const iceClown: Clip = {
       mean: 'She’d ＝ She had。出身ではなく、住んだことがあるだけ。',
       trap: 'She’s なら「ズ」が聞こえる。She lived なら She のあとに音がない。「ド」なら She’d。',
       use: 'I’d never been there before.（それまで一度も行ったことがなかった）' },
-
-    { id: 'h1', skill: 'phrase', level: 'B1', point: 'jansen', seg: [142.5, 149.5],
+    { id: 'h1', skill: 'phrase', level: 'B1', point: 'jansen', ctx: true, seg: [143.5, 149.5],
       stem: 'What does “He’s pretty good” mean here?',
       ja: 'ここでの「He’s pretty good」はどういう意味？',
       choices: ['He’s quite good', 'He’s very handsome', 'He’s the very best'], a: 0,
       choicesJa: ['けっこううまい', 'とてもかっこいい', '最高にうまい'],
       cue: '「He’s a golfer」のあと。',
-      line: 'Who’s Lee Jansen? — He’s a golfer. *He’s pretty good.*',
+      line: 'Leslie: Who’s Lee Jansen? / He’s a golfer. *He’s pretty good.*',
       said: '「リー・ジャンセンもいる」「誰？」「ゴルファーだ。けっこううまい」。',
       mean: 'pretty good ＝ けっこういい、まあまあ。pretty は「かなり」。大スターの次にしては弱いのが笑い。',
-      trap: 'pretty から「かわいい、きれい」を思いやすい。good の前の pretty は「けっこう」。',
+      trap: 'pretty から「かわいい、きれい」を連想しやすい。good の前の pretty は「けっこう」。',
       use: 'The food here is pretty good.（ここの料理、けっこうおいしい）' },
-
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'arc', reveals: ['cared', 'sled'], seg: [144.0, 165.0],
+      stem: 'How does Leslie end her talk?',
+      ja: 'レスリーは話をどう終える？',
+      choices: ['She gets angry at the town', 'She says sorry for Ben', 'She thanks the town'], a: 0,
+      choicesJa: ['町に腹を立てる', 'ベンのことで謝る', '町にお礼を言う'],
+      cue: '最後の数語',
+      said: 'ベンは町の有名人の誰よりも上だと言いはり、最後は「ふざけないでよ、パートリッジ」と言い放つ。',
+      mean: 'screw you ＝ とても失礼な「ふざけるな」。自分では使わない言葉。夫を守るために町に怒っている。',
+      trap: '最初は sure（確かに）と認めていたので、謝る話と考えがち。最後の言葉で怒りと分かる。',
+      use: 'I tried to be nice. Enough is enough.（優しくしたけど、もう限界）' },
     { id: 'nt3', skill: 'humor', level: 'C2', point: 'crazy', seg: [147.0, 158.1], retired: true,
       stem: 'Who is Leslie’s “That’s crazy” aimed at?',
       choices: ['Herself, for ranking Ben above Judy Garland', 'The official, for claiming Garland for Partridge',
@@ -270,7 +271,6 @@ export const iceClown: Clip = {
       mean: '言いすぎた自分に、自分でつっこむ。but のあと比べる相手を町の人へ下げた。',
       trap: '口論中なので相手への反論に聞こえやすい。but のあとの比べる相手の変化で決まる。',
       use: 'Okay, that’s crazy. Let me take that back.（いや、それは言いすぎ。取り消す）' },
-
     { id: 'd2', skill: 'detail', level: 'B1', point: 'cared', seg: [151.1, 160.2],
       stem: 'Why does Leslie say Ben is better than them?',
       ja: 'ベンのほうが町の人より上だ、とレスリーはなぜ言う？',
@@ -282,7 +282,6 @@ export const iceClown: Clip = {
       mean: 'care about 〜 ＝ 〜を大切に思う。try to 〜 ＝ 〜しようとする。',
       trap: 'ベンは病院にいて、今日は来ていない。理由は because のあと。',
       use: 'She tried to help, and that matters.（彼女は助けようとした。それが大事）' },
-
     { id: 'h2', skill: 'humor', level: 'B2', point: 'mascot', seg: [157.9, 164.6], retired: true,
       stem: 'Why does Leslie’s very last line get a laugh?',
       choices: ['It shrinks a big speech down to a petty jab', 'It tops her speech with its harshest insult',
@@ -293,5 +292,16 @@ export const iceClown: Clip = {
       mean: '大きな演説の締めに、マスコットへの小さな悪口。落差が笑い。',
       trap: '最後の一言は本題に思えるが、ここは小さな付け足し。And のあとの話題に注目。',
       use: 'And another thing: your coffee is terrible.（それと、ここのコーヒーまずい）' },
+    { id: 'd3', skill: 'detail', level: 'B1', point: 'sled', seg: [160.5, 165.0],
+      stem: 'What does Leslie say about the town’s mascot?',
+      ja: 'レスリーは、町のマスコットについて何と言う？',
+      choices: ['It’s a silly mascot', 'It’s a cute mascot', 'It’s a scary mascot'], a: 0,
+      choicesJa: ['ばかみたいなマスコット', 'かわいいマスコット', 'こわいマスコット'],
+      cue: '「screw you」のあとの And',
+      line: 'You know, screw you, Partridge. *And a sled is a stupid mascot.*',
+      said: '「ふざけないでよ、パートリッジ」のあと、「それに、そりなんてばかみたいなマスコットよ」と付け足す。',
+      mean: 'sled ＝ そり。stupid ＝ ばかみたいな、くだらない。And で最後にもう一つ悪口を足している。',
+      trap: '前に「特別な時にしか出てこない」と聞いたので、ほめていると考えがち。stupid を聞く。',
+      use: 'And another thing: the coffee here is bad.（それともう一つ、ここのコーヒーはまずい）' },
   ]
 };
