@@ -1,14 +1,13 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 6, rewrite 9, retire 1, new 2, ctx 4, tx 5, qa 8
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 4, new 0
 // “Michael and Dwight Rock Up to the Party Early - The Office US” (the official The Office channel, Best of Season 3):
 // on the drive, Jan calls on speakerphone; at the house, one of them is dressed like the staff and they swap shirts;
 // a to-camera case for arriving early; a potato salad that has sat in a hot car all day.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 130 s. The captions drop most of
-// 14.8–38 s and 41–51 s. Untested on purpose: 14.8–17.3 s and 30–36 s (sexual), 26.6–28.8 s, 38–41 s, 54–59 s, 78–85 s,
+// 14.8–38 s and 41–51 s. Untested on purpose: 30–36 s (sexual), 14.8–17.3 s (mild “That's what she said”, may play), 26.6–28.8 s, 38–41 s, 54–59 s, 78–85 s,
 // 102–103.8 s, 129.9 s on. The caller is Jan (24.1–24.8 s, both sources). Who says "I am on my way… about 15" (Michael
 // or Jan) isn't settled, and the host and the speakers at the house are never named, so no item asks who says what there.
 // R4: a1 retired (the same point as f1); new g3 (the set-up gist) and c1 on the end of the call.
-// EXCLUDE 14.8–17.3 (“blow this party off” / “That's what she said”)
 // EXCLUDE 30–36.8 (the motel line)
 import type { Clip } from '../types.ts';
 
@@ -53,13 +52,13 @@ export const partyEarly: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'fifteen', seg: [10.9, 14.8], keep: true,
       stem: 'On the phone, how soon will someone be there?',
       ja: '電話で、あとどのくらいで着くと言う？',
-      choices: ['In about 5', 'In about 15', 'In about 50'], a: 1,
-      choicesJa: ['5分くらい', '15分くらい', '50分くらい'],
+      choices: ['In about 5', 'In about 15', 'In about 50', 'In about 16'], a: 1,
+      choicesJa: ['5分くらい', '15分くらい', '50分くらい', '16分くらい'],
       cue: '「on my way」のあと、最後の数。',
       line: 'I am on my way. Should be there… about *15*—',
       said: '電話で「今向かってる。15分くらいで着く」と言いかけて切れる。',
       mean: 'on my way ＝ 向かっている途中。fifteen は後ろの「ティーン」が強く長い。',
-      trap: 'fifty なら前の「フィフ」が強い。five なら「ファイヴ」で終わる。ここは「フィフティーン」。',
+      trap: 'fifty なら前の「フィフ」が強い。five なら「ファイヴ」、sixteen なら「シクス」で始まる。ここは「フィフティーン」。',
       use: 'I’ll be there in fifteen.（15分で着くよ）' },
 
 
@@ -89,8 +88,8 @@ export const partyEarly: Clip = {
     { id: 'g3', skill: 'gist', level: 'B1', point: 'bigstep', reveals: ['still'], seg: [36.8, 53.0],
       stem: 'What does Michael tell Jan about the party?',
       ja: 'マイケルはジャンに、パーティーについて何と言う？',
-      choices: ['It’s a big step for them', 'It will be very boring', 'He wants to skip it'], a: 0,
-      choicesJa: ['二人にとって大きな一歩だ', 'すごく退屈だろう', '行きたくない'],
+      choices: ['It matters a lot to them', 'It will be very boring', 'He wants to skip it'], a: 0,
+      choicesJa: ['二人にとってとても大事', 'すごく退屈だろう', '行きたくない'],
       cue: 'Jan, Jan と呼びかけたあとの文。',
       line: 'Okay, Jan, Jan, this party is actually *a very big step for us*, so I— … Okay, see you soon.',
       said: '「このパーティーは、僕たちにとってすごく大きな一歩なんだ」と言い、電話を切る。',
@@ -99,10 +98,10 @@ export const partyEarly: Clip = {
       use: 'This is a big step for me.（これは私にとって大きな一歩なの）' },
 
     { id: 'c1', skill: 'pragma', level: 'B1', point: 'still', ctx: true, seg: [40.4, 49.0],
-      stem: 'Jan asks a question. What does Michael answer?',
-      ja: 'ジャンが質問する。マイケルはどう答える？',
-      choices: ['He doesn’t know', 'Yes, she still is', 'No, not anymore'], a: 0,
-      choicesJa: ['分からない', 'うん、まだそうだ', 'いや、もう違う'],
+      stem: 'What is Michael’s answer to “Still on speaker?”',
+      ja: '「Still on speaker?」に、マイケルは何と答える？',
+      choices: ['He isn’t sure', 'Yes, she still is', 'No, not anymore'], a: 0,
+      choicesJa: ['よく分からない', 'うん、まだそうだ', 'いや、もう違う'],
       cue: 'Still on speaker? のあとの返事。',
       line: 'Jan: *Still on speaker?* / Michael: Um, I, I *don’t know*. / Jan: The camera’s there? / Michael: Maybe.',
       said: '「まだスピーカーなの？」と聞かれ、「えっと、さあ、どうかな」とはぐらかす。',
@@ -173,8 +172,8 @@ export const partyEarly: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'crisis', seg: [84.3, 91.0],
       stem: 'What does “crisis averted” mean?',
       ja: '「crisis averted」はどういう意味？',
-      choices: ['The problem was avoided', 'The problem is still coming', 'Just ignore the problem'], a: 0,
-      choicesJa: ['問題はさけられた', '問題はまだやってくる', '問題は気にしないで'],
+      choices: ['The problem was avoided', 'The problem is still coming', 'The problem was ignored'], a: 0,
+      choicesJa: ['問題はさけられた', '問題はまだやってくる', '問題は見ないふりをされた'],
       cue: '「Yes」のあとの2語。',
       line: 'Yes, *crisis averted*.',
       said: '「恥ずかしいことになるところだった」に「はい、危機回避です」と返す。',
@@ -185,8 +184,8 @@ export const partyEarly: Clip = {
     { id: 'g2', skill: 'gist', level: 'B1', point: 'early', reveals: ['polite'], seg: [91.1, 108],
       stem: 'Why is arriving early good, he says?',
       ja: '早く着くのはなぜいい、と彼は言う？',
-      choices: ['You become a good friend', 'You help the host get ready', 'You get the best food'], a: 0,
-      choicesJa: ['いい友だちになれる', '主人の準備を手伝える', 'いちばんいい料理が食べられる'],
+      choices: ['You get closer to the host', 'You help the host get ready', 'You get the best food'], a: 0,
+      choicesJa: ['主人と仲よくなれる', '主人の準備を手伝える', 'いちばんいい料理が食べられる'],
       cue: '「only」で始まる文と、最後の部分。',
       line: 'Only really good friends show up early. … go to a party early, *become a really good friend*.',
       said: '「早く来るのは本当の友だちだけ。だから早く行けば本当の友だちになれる」と話す。',
@@ -229,11 +228,11 @@ export const partyEarly: Clip = {
       use: 'Actually, that one’s just from me.（実はそれ、私からだけなの）' },
 
     { id: 'p2', skill: 'pragma', level: 'B2', point: 'cover', reveals: ['mayo'], seg: [115.3, 123.3],
-      stem: 'How does he use “You probably want to…”?',
-      ja: '彼は「You probably want to…」をどう使っている？',
-      choices: ['To give gentle advice', 'To ask what she wants', 'To give a strict order'], a: 0,
-      choicesJa: ['やんわりアドバイスする', '相手の希望を聞く', 'きびしく命令する'],
-      cue: '「you probably want to」の言い方。',
+      stem: 'What does he mean by “You probably want to…”?',
+      ja: '彼の「You probably want to…」はどういう意味？',
+      choices: ['You should keep it covered', 'Do you want it covered?', 'You must never open it'], a: 0,
+      choicesJa: ['ふたをしておいたほうがいい', 'ふたをしておきたい？', '絶対に開けてはだめ'],
+      cue: 'probably のあとの want to。',
       line: '*You probably want to* leave the cover on until the guests get here.',
       said: '「ゲストが来るまで、ふたはしておいたほうがいいかも」と言う。',
       mean: 'You probably want to ～ ＝ 〜したほうがいいよ。やわらかい忠告の形。',
@@ -264,8 +263,8 @@ export const partyEarly: Clip = {
     { id: 'i3', skill: 'infer', level: 'B2', point: 'mayo', seg: [117.9, 129.9],
       stem: 'Why does he talk about the sun and the mayonnaise?',
       ja: '彼はなぜ日差しとマヨネーズの話をする？',
-      choices: ['The salad may have gone bad', 'The salad is still warm', 'He worked very hard to make it'], a: 0,
-      choicesJa: ['サラダがいたんでいるかも', 'サラダはまだ温かい', 'がんばって作った'],
+      choices: ['The salad may make people sick', 'The salad is still warm', 'He worked very hard to make it'], a: 0,
+      choicesJa: ['サラダで具合が悪くなるかも', 'サラダはまだ温かい', 'がんばって作った'],
       cue: '「all day」のあと、何に日が照っていたか。',
       line: 'It’s been sitting in my car *all day*. The sun beating down on the *mayonnaise*.',
       said: '「一日じゅう車に置いてあった。マヨネーズに日が照りつけて」と言う。',
