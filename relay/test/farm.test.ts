@@ -16,7 +16,7 @@ const KEY_C = 'c'.repeat(64);
 const T0 = Date.parse('2026-11-04T03:00:00.000Z');
 const DAY = 86_400_000;
 const D = '2026-11-04', D1 = '2026-11-05', D2 = '2026-11-06', D3 = '2026-11-07';
-const K = sellPrice('bug:tarantula')!;
+const K = sellPrice('bug:common-butterfly')!;
 const P1 = 'fd:field-A.0.0', P2 = 'fd:field-A.1.0';
 
 describe('the fields in the record', () => {
@@ -34,11 +34,11 @@ describe('the fields in the record', () => {
   type W = 'A' | 'B' | 'G';
   let n = 0;
   const send = (who: W, type: string, data: object, id = `e${++n}`) => store.handle({ key: keyOf[who], action: 'event', id, type, data }, 100) as Record<string, unknown>;
-  /** `who` gets at least `k` かいがら by selling tarantulas (a koi's 2,000 since the fish × 10 bought more starts than one buy takes): how many. */
+  /** `who` gets at least `k` かいがら by selling common butterflies (the cheapest catch: a dearer one, since the × 10, buys more starts than one buy takes): how many. */
   const shells = (who: W, k: number): number => {
     const fish = Math.ceil(k / K);
-    send(who, 'tally', { date: D, counts: { 'bug:tarantula': fish } });
-    expect(send(who, 'sell', { species: 'bug:tarantula', n: fish, v: fish * K })).toEqual({ ok: true });
+    send(who, 'tally', { date: D, counts: { 'bug:common-butterfly': fish } });
+    expect(send(who, 'sell', { species: 'bug:common-butterfly', n: fish, v: fish * K })).toEqual({ ok: true });
     return fish * K;
   };
   const starts = (who: W, crop: string, k: number) => send(who, 'buy_starts', { crop, n: k, v: k * FARM.startBuy });

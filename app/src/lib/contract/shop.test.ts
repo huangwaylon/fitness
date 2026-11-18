@@ -12,11 +12,11 @@ import { FOSSILS, FRAGMENTS, SHELLS } from '#lib/world/beach.ts';
 import { GOODS } from './pocket.ts';
 
 describe('the price list (scripts/shop-prices.ts)', () => {
-  it('sells a catch and prices a piece at NH’s Bells ÷ 20 (a fish or sea creature × 10), nothing selling for under 3', () => {
+  it('sells a catch and prices a piece at NH’s Bells ÷ 20 (a catch or beach find × 10), nothing selling for under 3', () => {
     expect(sellPrice('fish:sea-bass')).toBe(200); // 400 Bells, × 10
     expect(sellPrice('fish:koi')).toBe(2000); // 4,000
     expect(sellPrice('fish:whale-shark')).toBe(6500); // 13,000
-    expect(sellPrice('bug:tarantula')).toBe(400); // 8,000
+    expect(sellPrice('bug:tarantula')).toBe(4000); // 8,000, × 10
     expect(sellPrice('sea:octopus')).toBe(600); // 1,200, × 10
     expect(sellPrice('fish:bitterling')).toBe(450); // 900
     expect(Math.min(...Object.values(SELL))).toBe(3);
@@ -41,13 +41,13 @@ describe('the price list (scripts/shop-prices.ts)', () => {
 });
 
 describe('the pocket’s table (contract/pocket.ts)', () => {
-  it('prices everything the island lets us keep: every shell, fossil, star fragment and good, at NH’s ÷ 20', () => {
+  it('prices everything the island lets us keep: every shell, fossil, star fragment and good, at NH’s ÷ 20 (× 10 but the goods)', () => {
     const keys = [...SHELLS.map(([id]) => `shell:${id}`), 'shell:pearl', ...FOSSILS.map((id) => `fossil:${id}`), ...FRAGMENTS.map((id) => `fragment:${id}`),
       ...Object.keys(GOODS).map((id) => `goods:${id}`)];
     expect(keys.filter((k) => !isSellable(k) || !sellOf({ species: k, n: 1, v: sellPrice(k)! }))).toEqual([]);
-    // NH's sell prices ÷ 20: wood 60 Bells (3, the floor), a branch 5 (3), a coral 500, a T. rex skull 6,000, a pearl 10,000
+    // NH's sell prices ÷ 20: wood 60 Bells (3, the floor), a branch 5 (3), a coconut 250; × 10: a coral 500, a T. rex skull 6,000, a pearl 10,000, a star fragment 250
     expect(['goods:wood', 'goods:softwood', 'goods:hardwood', 'goods:tree-branch', 'shell:coral', 'fossil:t-rex-skull', 'shell:pearl', 'goods:coconut', 'fragment:star-fragment']
-      .map(sellPrice)).toEqual([3, 3, 3, 3, 25, 300, 500, 13, 13]);
+      .map(sellPrice)).toEqual([3, 3, 3, 3, 250, 3000, 5000, 13, 130]);
   });
 });
 
