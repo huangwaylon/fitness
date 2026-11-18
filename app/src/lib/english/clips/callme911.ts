@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 3, new 4, ctx 7, tx 6
+// R4 REVIEW 2026-11-18: keep 12, rewrite 6, retire 3, new 4, ctx 7, tx 6, qa 13
 // A2 REVIEW 2026-11-17: keep 6, rewrite 10, retire 7, new 4
 // “911 CALL ME  - The Office US” (the official The Office channel, BEST OF SEASON 5 - The Office US): Michael phones
 // David Wallace to get rid of Toby, who is back at work; David refuses and tells him to get along with Toby. Michael then
@@ -20,8 +20,8 @@ export const callMe911: Clip = {
     { id: 'c1', skill: 'phrase', level: 'B1', point: 'online', seg: [22.5, 27.5],
       stem: 'What does “on the line for you” mean here?',
       ja: 'ここでの「on the line for you」はどういう意味？',
-      choices: ['Waiting for you on the phone', 'Standing in a line for you', 'Waiting for you at the front door'], a: 0,
-      choicesJa: ['電話であなたを待っている', 'あなたのために列に並んでいる', '玄関前であなたを待っている'],
+      choices: ['Waiting for you on the phone', 'Standing in a line for you', 'Waiting at the front door'], a: 0,
+      choicesJa: ['電話であなたを待っている', 'あなたのために列に並んでいる', '玄関で待っている'],
       cue: '「David Wallace is」のあと。',
       line: 'David Wallace is *on the line for you*.',
       said: '「デビッド・ウォレスさんからお電話です」と取りつぐ。',
@@ -29,11 +29,11 @@ export const callMe911: Clip = {
       trap: 'line から「列に並ぶ」を連想しやすい。直後に Hello と電話の会話が始まる。',
       use: 'Ms. Sato is on the line for you.（佐藤さんからお電話です）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', seg: [23.0, 49.0],
-      stem: 'Why does Michael call David?',
-      ja: 'マイケルはなぜデビッドに電話する？',
-      choices: ['To get help with Toby', 'To report that someone is hurt', 'To ask for a day off'], a: 0,
-      choicesJa: ['トビーのことで助けてほしい', 'けが人が出たと知らせたい', '休みがほしい'],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'call', reveals: ['surface'], seg: [23.0, 49.0],
+      stem: 'What does Michael want from David?',
+      ja: 'マイケルはデビッドに何をしてほしい？',
+      choices: ['Help with Toby', 'Help for a hurt worker', 'A day off work'], a: 0,
+      choicesJa: ['トビーのことで助けてほしい', 'けがをした社員を助けてほしい', '仕事を休ませてほしい'],
       cue: '電話に出た直後。',
       line: 'Hello, *we need your help*. … *Toby Flenderson* of HR has made a sudden reappearance.',
       said: '「助けてほしい」と言い、「人事のトビーが突然戻ってきた」と告げる。',
@@ -103,8 +103,8 @@ export const callMe911: Clip = {
     { id: 'p1', skill: 'pragma', level: 'B2', point: 'decided', seg: [62.7, 73],
       stem: 'What does David mean by “And that’s that”?',
       ja: 'デビッドの「And that’s that.」はどういう意味？',
-      choices: ['It’s decided, no more talk', 'Please tell me if it’s okay', 'Those are all my reasons'], a: 0,
-      choicesJa: ['もう決まり、話は終わり', 'いいかどうか教えて', '理由はこれで全部'],
+      choices: ['It’s decided, no more talk', 'Please tell me if it’s okay', 'Now it’s your turn to talk'], a: 0,
+      choicesJa: ['もう決まり、話は終わり', 'いいかどうか教えて', '次は君が話す番だ'],
       cue: '理由のあと、Okay に続く一言。',
       line: 'Okay? And *that’s that*.',
       said: '理由を三つ並べてから「いいね？それで決まりだ」と付け足す。',
@@ -119,7 +119,7 @@ export const callMe911: Clip = {
       choicesJa: ['ていねいに反対するため', '手助けにお礼を言うため', 'もう一度言ってと頼むため'],
       cue: '前置きのあとに続く文の中身。',
       line: '*With all due respect*, David, this hardly seems like a dialogue.',
-      said: '「お言葉ですが、これは話し合いとは言えません」と返す。',
+      said: '「お言葉ですが、これはとても話し合いとは言えないね」と返す。',
       mean: 'With all due respect ＝「お言葉ですが」。目上の人に反対する前の前置き。',
       trap: 'respect から尊敬やお礼を連想しやすい。この前置きのあとには、ほぼ反論が来る。',
       use: 'With all due respect, I disagree.（お言葉ですが、反対です）' },
@@ -255,7 +255,7 @@ export const callMe911: Clip = {
       use: 'Welcome! Great to have you back.（おかえり！戻ってくれてうれしい）' },
 
     { id: 't1', skill: 'attitude', level: 'B1', point: 'sweet', seg: [133.8, 143.8],
-      stem: 'How does Toby take Michael’s welcome?',
+      stem: 'How does Toby feel about Michael’s welcome?',
       ja: 'トビーはマイケルの歓迎をどう受け取る？',
       choices: ['Happy and touched', 'Sure it is a joke', 'Cold and doubtful'], a: 0,
       choicesJa: ['うれしくて感動している', '冗談だと思っている', '冷たく疑っている'],
@@ -281,13 +281,13 @@ export const callMe911: Clip = {
     { id: 'c3', skill: 'detail', level: 'B1', point: 'amazing', ctx: true, seg: [145.0, 156.0],
       stem: 'Michael asks about Costa Rica. What does Toby say?',
       ja: 'マイケルはコスタリカのことを聞く。トビーの答えは？',
-      choices: ['It was amazing', 'It was too hot', 'It was boring'], a: 0,
-      choicesJa: ['最高だった', '暑すぎた', '退屈だった'],
+      choices: ['It was great', 'It was too hot', 'It was boring'], a: 0,
+      choicesJa: ['すごくよかった', '暑すぎた', '退屈だった'],
       cue: '「Did you have fun?」の返事。',
       line: 'Michael: So Costa Rica… *Did you have fun?* / Toby: Well, *it was amazing*. It really was. *Thanks for asking.*',
       said: '「楽しかった？」に、「最高だったよ。聞いてくれてありがとう」と答える。',
       mean: 'amazing ＝ 最高の。Thanks for asking ＝ 聞いてくれてありがとう。様子を聞かれたときの感じのいい返し。',
-      trap: 'あとで This was hot（暑かった）とも言うので迷いやすい。最初の返事は amazing。',
+      trap: '南の国なので「暑すぎた」を選びたくなるが、返事は amazing（最高）と pristine（きれい）。',
       use: 'How was your trip? — Great, thanks for asking.（旅行どうだった？—最高、聞いてくれてありがとう）' },
 
     { id: 'f3', retired: true, skill: 'phrase', level: 'C1', point: 'cathartic', seg: [158.4, 161.6],
@@ -343,7 +343,7 @@ export const callMe911: Clip = {
       line: '*Are you alright*, Mike? / Michael: *I am. I am.*',
       said: '「大丈夫、マイク？」に、「大丈夫。大丈夫だ」と2回答える。',
       mean: 'I am ＝ I am all right の略。質問の動詞だけで短く答える形。このあとカメラに本音を言う。',
-      trap: 'すぐ後で dying inside（つらい）と言うので迷いやすい。質問への返事そのものは「大丈夫」。',
+      trap: 'I am だけでは何のことか分かりにくい。質問の all right を受けて I am (all right)＝「大丈夫」。',
       use: 'Are you okay? — I am, thanks.（大丈夫？—うん、ありがとう）' },
 
     { id: 't2', skill: 'attitude', level: 'B1', point: 'dying', seg: [179.1, 193.0],

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 4, retire 1, new 2, ctx 4, tx 1
+// R4 REVIEW 2026-11-18: keep 12, rewrite 4, retire 1, new 2, ctx 4, tx 1, qa 9
 // A2 REVIEW 2026-11-17: keep 5, rewrite 11, retire 3, new 1
 // “Ron Swanson's Self-Defense Class | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Ron
 // opens a self-defense class that promises "maximum damage", turns a classmate's headlock idea back on them, teaches a
@@ -53,14 +53,14 @@ export const ronSelfDefense: Clip = {
     { id: 'f1', skill: 'phrase', level: 'B2', point: 'laidout', reveals: ['pervert'], seg: [13.4, 23.9],
       stem: 'What does “the scenario you just laid out” mean?',
       ja: '「the scenario you just laid out」はどういう意味？',
-      choices: ['The plan you just told us', 'The plan you just acted out', 'The plan you just put aside'], a: 0,
-      choicesJa: ['今あなたが説明した設定', '今あなたが演じた設定', '今あなたがやめた設定'],
+      choices: ['The plan you just told us', 'The plan you just tried', 'The plan you just stopped'], a: 0,
+      choicesJa: ['今あなたが説明した設定', '今あなたが試した設定', '今あなたがやめた設定'],
       cue: '「scenario」のあと',
       line: 'Uh, in the scenario you just *laid out*, you’re the pervert. You understand that, right?',
       said: '「君が今説明した設定だと、変質者は君のほうだ。分かってるな？」と言う。',
 
       mean: 'lay out ＝ 順を追って説明する。案を目の前に並べて見せるイメージ。',
-      trap: 'lay（置く）から、わきに置いたと勘違いしやすい。plan や scenario と組むと「説明する」。',
+      trap: 'lay（置く）から、わきに置いた（やめた）と勘違いしやすい。scenario と組むと「説明する」。',
       use: 'Let me lay out the plan.（計画を説明させて）' },
 
     { id: 'x1', skill: 'dict', level: 'B1', point: 'simple', seg: [22.8, 30.5],
@@ -82,7 +82,7 @@ export const ronSelfDefense: Clip = {
       line: 'demonstrate how to extract oneself from a *wrist grab*.',
       said: '「手首をつかまれたときの抜け方を見せる」と言う。',
       mean: 'wrist ＝ 手首。grab ＝ つかむこと。extract oneself ＝ 抜け出す（かたい言い方）。',
-      trap: '直前の headlock が耳に残りやすい。from a のあとを聞く。',
+      trap: 'ヘッドロックや腕のおさえこみもよくある技なので迷いやすい。from a のあとの wrist（手首）を聞く。',
       use: 'Let me demonstrate how it works.（どう動くか、やって見せるね）' },
 
     { id: 'g2', skill: 'gist', level: 'B1', point: 'reason', seg: [31.5, 46.9],
@@ -93,7 +93,7 @@ export const ronSelfDefense: Clip = {
       cue: '話の最初の一文',
       line: '*I watch a lot of “Lifetime” movies.* There was this one… her therapist was obsessed with her…',
       said: '「テレビ映画をよく見るの。ある作品で、セラピストが女性を襲ったの」と話す。',
-      mean: 'There was this one 〜 ＝ こういうのがあってね。怖い映画を見て、身を守りたくなった。',
+      mean: 'Lifetime ＝ 女性向けのテレビ映画が多いアメリカのチャンネル。There was this one 〜 ＝ こういうのがあってね。',
       trap: 'this woman や her から、知り合いの話と思いやすい。最初の movies が手がかり。',
       use: 'There was this one movie where…（こんな映画があってね…）' },
 
@@ -158,9 +158,9 @@ export const ronSelfDefense: Clip = {
       use: 'When we win, dinner’s on me.（勝ったら夕食はおごる）' },
 
     { id: 'd3', skill: 'detail', level: 'B2', point: 'counter', ctx: true, seg: [82.5, 91.3],
-      stem: 'Andy asks if he can hit back. What does Ron say?',
+      stem: 'Andy asks about hitting Ron. What does Ron say?',
       ja: 'アンディは反撃していいか聞く。ロンの答えは？',
-      choices: ['Yes, once he gets out', 'No, he must not hit back', 'Only if Ron gets hurt'], a: 0,
+      choices: ['Yes, once he is free', 'No, he must not hit Ron', 'Only if Ron gets hurt'], a: 0,
       choicesJa: ['いい、抜け出したらね', 'だめ、反撃はなし', 'ロンがけがをしたらだけ'],
       cue: '「counter-strike?」への返事',
       line: 'Andy: Now, when I get out, *am I allowed to counter-strike*? / Ron: *Sure.* When you get out, you may counter-attack.',
@@ -176,7 +176,7 @@ export const ronSelfDefense: Clip = {
       choicesJa: ['楽に勝てると思っている', 'けがをするのが怖い', '戦うか迷っている'],
       cue: 'アンディが心配しているのは誰か',
       line: 'But just promise me you’ll *be ready*, because, I mean, I don’t want to *destroy you*.',
-      said: 'ロンに「準備しておいてよ。本気でつぶしたくないから」と言う。',
+      said: 'ロンに「準備はしておいてよ。ぶっ倒したくないからさ」と言う。',
       mean: 'destroy ＝ こわす、たたきのめす。心配しているのはロンの身。勝つのは自分だと思っている。',
       trap: 'destroy you を逆に聞くと、怖がっていると思いやすい。誰が誰を、を聞く。',
       use: 'Don’t worry, I’ll go easy on you.（心配しないで、手加減するから）' },
