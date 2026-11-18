@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 1, new 2, ctx 5, tx 14
+// R4 REVIEW 2026-11-18: keep 6, rewrite 15, retire 1, new 2, ctx 5, tx 14, qa 26
 // A2 REVIEW 2026-11-17: keep 8, rewrite 9, retire 6, new 1
 // “Ann can buy herself flowers now | Parks and recreation” (the official Parks and Recreation channel, Season 4): debate
 // night spin room. Ann and Chris spin Leslie's on-stage mishap; Chris asks Ann to date him again, citing that he may lose
@@ -10,7 +10,8 @@
 // the first "What about us?"; "acting like an ass"), 172–176 s (who says "he looks sad"), 188–193 s (captions "just like
 // you won't", whisper "just like you want").
 // EXCLUDE 4–7: the fart line
-// EXCLUDE 101–107: the sexual "lady parks" line
+// EXCLUDE 101.2–107: the sexual "lady parks" line
+// EXCLUDE 123–125.7: "acting like an ass"
 // EAR CHECK: 71.0 s s1 — "Would you" said as one blended "wuja" (both sources have "would you like that")
 // EAR CHECK: 159.8 s x1 — "worth a" linked into one sound (both sources have "it was worth a shot")
 import type { Clip } from '../types.ts';
@@ -21,19 +22,19 @@ export const annFlowers: Clip = {
   show: 'Parks and Recreation',
   credit: 'Parks and Recreation (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'spin', seg: [7, 22],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'spin', seg: [7, 23.8],
       stem: 'What does Ann ask Chris to do?',
       ja: 'アンはクリスに何を頼む？',
       choices: ['Make Leslie’s mistake sound good', 'Help Leslie practice for the debate', 'Explain why Leslie got sick'], a: 0,
       choicesJa: ['レスリーの失敗を良い話に聞こえさせる', 'レスリーの討論の練習を手伝う', 'レスリーが具合を悪くした理由を説明する'],
       cue: 'アンの話の最後の一語と、クリスの答え方。',
       line: 'then threw up. *Spin.*',
-      said: 'アンが討論会でのレスリーの失敗を伝え、「言い換えて（スピン）」と頼む。クリスはすぐ良い話にする。',
+      said: 'アンが練習として「レスリーが吐いた」という仮の失敗を出し、「言い換えて（スピン）」と頼む。クリスはすぐ良い話にする。',
       mean: 'spin ＝ 文字どおりは「回す」。話をくるっと回して、悪い出来事を良い話に見せること。二人はその係。',
       trap: 'threw up（吐いた）だけ聞くと、体調の説明を頼むと考えがち。最後の一語 Spin が仕事の中身。',
       use: 'How should we spin this?（これ、どう言い換えようか？）' },
 
-    { id: 'h1', skill: 'marker', level: 'B2', point: 'speakingof', reveals: ['spin'], seg: [9.1, 17.5],
+    { id: 'h1', skill: 'marker', level: 'B2', point: 'speakingof', reveals: ['spin'], seg: [8.7, 17.5],
       stem: '“*Speaking of* methane, have you heard…” What does “speaking of” mean?',
       ja: '「Speaking of methane」の「speaking of」はどういう意味？',
       choices: ['As we’re talking about', 'Not wanting to talk about', 'To be honest about'], a: 0,
@@ -68,7 +69,7 @@ export const annFlowers: Clip = {
       trap: 'silly が聞こえると失言の反省に聞こえる。決まり文句の型より、後ろに続く文で意味を決める。',
       use: 'Saying it out loud, I knew I was ready.（口に出して、準備ができてると分かった）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'tom', ctx: true, seg: [27.7, 38.0],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'tom', ctx: true, seg: [26.8, 37.7],
       stem: 'What does Ann say about dating Tom?',
       ja: 'トムと付き合っていたことについて、アンは何と言う？',
       choices: ['She can’t believe they ever dated', 'She can’t believe they broke up', 'She hopes they’ll get back together'], a: 0,
@@ -80,7 +81,7 @@ export const annFlowers: Clip = {
       trap: 'broke up が直前なので「別れが信じられない」と勘違いしやすい。ever が目印。',
       use: 'I can’t believe I ever said that.（あんなこと言ったなんて信じられない）' },
 
-    { id: 'a1', skill: 'phrase', level: 'B1', point: 'feelings', reveals: ['decision'], seg: [39.0, 47.0],
+    { id: 'a1', skill: 'phrase', level: 'B1', point: 'feelings', reveals: ['decision'], seg: [39.0, 46.7],
       stem: '“I still *have feelings for* you.” What does Chris mean?',
       ja: '「I still have feelings for you」でクリスは何を言っている？',
       choices: ['He still loves her', 'He feels sorry for her', 'He is worried about her'], a: 0,
@@ -92,19 +93,19 @@ export const annFlowers: Clip = {
       trap: 'feel から「気の毒に思う」と考えがち。それは feel sorry for。',
       use: 'I think I have feelings for him.（彼のこと、好きかも）' },
 
-    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [50.3, 58.8], keep: true,
+    { id: 'n1', skill: 'number', level: 'B1', point: 'months', seg: [50.3, 54.95], keep: true,
       stem: 'How long did Ann and Chris go out?',
       ja: 'アンとクリスはどのくらい付き合っていた？',
-      choices: ['About 3 weeks', 'About 3 months', 'About a year'], a: 1,
-      choicesJa: ['3週間くらい', '3か月くらい', '1年くらい'],
+      choices: ['About 3 weeks', 'About 3 months', 'About 6 months', 'About a year'], a: 1,
+      choicesJa: ['3週間くらい', '3か月くらい', '6か月くらい', '1年くらい'],
       cue: '「like」のあとの数と単位。',
       line: 'we dated for, like, *three months* a year ago.',
       said: '「付き合ってたのは3か月くらい、それも1年前」と言う。',
       mean: 'like ＝ ここでは「〜くらい」。短い交際だった、と強めている。',
-      trap: '「スリーマンス」なら3か月、「スリーウィークス」なら3週間。a year ago は「いつ」の話で、長さではない。',
+      trap: '「スリー」のあとが「マンス」なら3か月、「ウィークス」なら3週間。a year ago は「いつ」の話で、長さではない。',
       use: 'We talked for, like, an hour.（1時間くらい話した）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'built', seg: [53.7, 58.7],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'built', seg: [54.9, 58.6],
       stem: '“You’ve *built this into something that it wasn’t*.” Meaning?',
       ja: '「You’ve built this into something that it wasn’t」とはどういう意味？',
       choices: ['He makes it sound much bigger', 'He makes the breakup sound worse', 'He wants to build something new'], a: 0,
@@ -128,7 +129,7 @@ export const annFlowers: Clip = {
       trap: '断る理由なので「忙しい」などを思いやすい。because のあとの you’re my boss を聞く。',
       use: 'According to the rules, that’s not allowed.（決まりでは、それはだめです）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'notlong', ctx: true, seg: [58.0, 66.5],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'notlong', ctx: true, seg: [58.6, 66.28],
       stem: 'Why might Chris not be Ann’s boss for long?',
       ja: 'クリスはなぜ長くはアンの上司でいないかもしれない？',
       choices: ['He might be replaced', 'He plans to quit his job', 'Ann will change jobs'], a: 0,
@@ -151,7 +152,7 @@ export const annFlowers: Clip = {
       trap: 'replace me を「辞める」と取りやすい。that は If の条件を指す。',
       use: 'Wouldn’t that be nice?（そうなったら良くない？）' },
 
-    { id: 's1', skill: 'sound', level: 'B1', point: 'likethat', reveals: ['decision'], seg: [66.0, 73.0],
+    { id: 's1', skill: 'sound', level: 'B1', point: 'likethat', reveals: ['decision'], seg: [66.28, 73.0],
       stem: 'Fill the gap: “___ like that?”',
       ja: '空いている所に入る語は？「___ like that?」',
       choices: ['Would you', 'Did you', 'Do you'], a: 0,
@@ -163,7 +164,7 @@ export const annFlowers: Clip = {
       trap: '「ウジュ」と「ウ」で始まれば Would you、「ディジュ」なら Did you、「ドゥユ」なら Do you。',
       use: 'Would you like some help?（手伝いましょうか？）' },
 
-    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thinkabout', reveals: ['likethat'], seg: [69.5, 77.4],
+    { id: 'pr4', skill: 'pragma', level: 'B1', point: 'thinkabout', reveals: ['likethat'], seg: [70.5, 77.4],
       stem: '“Don’t answer. *Just think about it*.” What does Chris want?',
       ja: '「Don’t answer. Just think about it.」でクリスは何を望んでいる？',
       choices: ['Ann to take time to decide', 'Ann to say yes right now', 'Ann to forget what he said'], a: 0,
@@ -187,19 +188,19 @@ export const annFlowers: Clip = {
       trap: 'probably vote for him から意外ではないと分かる。決め手は because のあと。',
       use: 'There’s no justice in the world.（世の中、不公平だよね）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [96.2, 100.9], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'pct', seg: [95.85, 101.2], keep: true,
       stem: 'What share of people call the parks “pristine”?',
       ja: '公園を「とてもきれい」と言う人は何％？',
-      choices: ['70%', '78%', '87%'], a: 1,
-      choicesJa: ['70パーセント', '78パーセント', '87パーセント'],
+      choices: ['68%', '70%', '78%', '87%'], a: 2,
+      choicesJa: ['68パーセント', '70パーセント', '78パーセント', '87パーセント'],
       cue: '「of Pawneans」の直前の数。',
       line: '*78%* of Pawneans label our parks pristine.',
       said: '「ポーニー市民の78％が、公園はとてもきれいと言っています」と答える。',
-      mean: 'seventy-eight percent。pristine ＝ 新品のようにきれい。直前の claim は「主張」で、クレーム（苦情）ではない。',
-      trap: '「セヴンティ」で止まれば70、「セヴンティエイト」と続けば78、「エイティ」で始まれば87。',
+      mean: 'pristine ＝ 新品のようにきれい。直前の claim は「主張」で、クレーム（苦情）ではない。',
+      trap: '「セヴンティ」で止まれば70、「セヴンティエイト」なら78、「シックスティ」なら68、「エイティ」で始まれば87。',
       use: 'Ninety percent of people agree.（9割の人が賛成している）' },
 
-    { id: 'f3', skill: 'phrase', level: 'B2', point: 'lives', seg: [107.7, 113.0],
+    { id: 'f3', skill: 'phrase', level: 'B2', point: 'lives', seg: [107.7, 113.1],
       stem: '“We’re *fighting for our lives* out there.” What does it mean?',
       ja: '「We’re fighting for our lives out there」とはどういう意味？',
       choices: ['They might lose the race', 'They might get badly hurt', 'They are about to win'], a: 0,
@@ -211,7 +212,7 @@ export const annFlowers: Clip = {
       trap: '文字どおり命の危険と考えがち。でもここは討論会、だれもけがをしていない。',
       use: 'Our team is fighting for its life.（うちのチーム、崖っぷちなんだ）' },
 
-    { id: 'f4', skill: 'infer', level: 'B2', point: 'train', ctx: true, reveals: ['decision'], seg: [113.5, 121.0],
+    { id: 'f4', skill: 'infer', level: 'B2', point: 'train', ctx: true, reveals: ['decision'], seg: [113.5, 120.4],
       stem: 'What does Tom think Ann is doing?',
       ja: 'トムは、アンが何をしていると思っている？',
       choices: ['Dating Chris again', 'Laughing at him', 'Planning to leave the team'], a: 0,
@@ -223,8 +224,8 @@ export const annFlowers: Clip = {
       trap: 'train（電車）から、どこかへ行く話を連想しやすい。決め手は次の I saw の文。',
       use: 'Are you two getting back together?（二人、よりを戻すの？）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'nervous', seg: [125.7, 137.5],
-      stem: 'Why does Tom act badly, he says?',
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'nervous', seg: [126.0, 137.2],
+      stem: 'Why does Tom say he acts that way?',
       ja: 'トムによると、なぜひどい態度を取ってしまう？',
       choices: ['Ann is too good for him', 'Ann likes Chris much more', 'The job is too much work'], a: 0,
       choicesJa: ['アンは自分にはもったいない', 'アンはクリスのほうがずっと好き', '仕事が大変すぎる'],
@@ -257,7 +258,7 @@ export const annFlowers: Clip = {
       trap: '応援側の発言なので Leslie と補いやすい。名前は一度も出ていない。',
       use: 'Let’s just say one of us was right.（どっちが正しかったかは言わないでおく）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', seg: [149.9, 172.5],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'ending', seg: [150.05, 172.0],
       stem: 'How do things end between Ann and Chris?',
       ja: 'アンとクリスの話はどう終わる？',
       choices: ['She says no; he takes it well', 'She says maybe, after the race', 'She says no; he asks again'], a: 0,
@@ -269,7 +270,7 @@ export const annFlowers: Clip = {
       trap: '先の think about it から、保留と考えがち。sorry で始まる返事は断り。',
       use: 'Thanks, but I don’t think it’s a good idea.（ありがとう、でもやめておく）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'flatter', reveals: ['ending'], seg: [151.1, 158.0],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'flatter', reveals: ['ending'], seg: [151.4, 158.0],
       stem: 'Ann says, “It’s very flattering.” What is she doing?',
       ja: 'アンは「It’s very flattering」と言って、何をしている？',
       choices: ['Saying no in a kind way', 'Saying yes, with thanks', 'Saying she’s not that great'], a: 0,
@@ -281,7 +282,7 @@ export const annFlowers: Clip = {
       trap: 'flattering（うれしい）で yes に聞こえるが、sorry が先、just が後なら断り。',
       use: 'I’m flattered, but I have to say no.（光栄ですが、お断りします）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'shot', seg: [156.1, 161.1],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'shot', seg: [157.9, 161.1],
       stem: 'Type what Chris says: “It was ___.” (3 words)', answer: 'worth a shot',
       ja: 'クリスの言葉を書こう：「It was ___.」（3語）',
       cue: '断られた直後の一言。',
@@ -291,7 +292,7 @@ export const annFlowers: Clip = {
       trap: 'worth a が1語に聞こえ、shot だけ残りやすい。3語を数えて聞く。',
       use: 'Ask her. It’s worth a shot.（聞いてみなよ、だめもとで）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notnow', ctx: true, seg: [177.5, 185.0],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'notnow', ctx: true, seg: [177.77, 184.55],
       stem: 'How does Ann feel about dating Tom again?',
       ja: 'トムとまた付き合うことを、アンはどう思っている？',
       choices: ['Not ready for it now', 'Happy to start again', 'Angry that he asked'], a: 0,
@@ -303,7 +304,7 @@ export const annFlowers: Clip = {
       trap: 'No が2回あるので、怒って断ったと思いやすい。間の I don’t know で迷いが分かる。',
       use: 'Not right now. Maybe later.（今はちょっと。またあとで）' },
 
-    { id: 'p3', skill: 'phrase', level: 'B2', point: 'takeit', ctx: true, seg: [182.0, 188.0],
+    { id: 'p3', skill: 'phrase', level: 'B2', point: 'takeit', ctx: true, seg: [181.52, 188.0],
       stem: 'Tom answers, “*I’ll take it*.” What does he mean?',
       ja: 'トムの「I’ll take it」はどういう意味？',
       choices: ['That’s good enough for him', 'He is giving up on her', 'He doesn’t believe what she says'], a: 0,
@@ -315,7 +316,7 @@ export const annFlowers: Clip = {
       trap: 'take を「あきらめて受け入れる」と勘違いしやすい。彼はまだあきらめていない。',
       use: 'A B-plus? I’ll take it.（Bプラス？ それで十分）' },
 
-    { id: 'k1', skill: 'pragma', level: 'B1', point: 'gotit', seg: [193.0, 197.0],
+    { id: 'k1', skill: 'pragma', level: 'B1', point: 'gotit', seg: [192.75, 196.0],
       stem: '“Just get out there and spin.” — “*You got it*.” Meaning?',
       ja: '「Just get out there and spin.」への「You got it」はどういう意味？',
       choices: ['Sure, I’ll do it', 'You understand me', 'You can have it'], a: 0,

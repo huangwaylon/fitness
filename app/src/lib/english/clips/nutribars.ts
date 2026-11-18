@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 10, retire 1, new 1, ctx 5, tx 6
+// R4 REVIEW 2026-11-18: keep 6, rewrite 10, retire 1, new 1, ctx 5, tx 6, qa 16
 // A2 REVIEW 2026-11-17: keep 5, rewrite 12, retire 1, new 0
 // “Ann's First Public Forum | Parks and Recreation” (the official Parks and Recreation channel, Season 2): Ann, a
 // nurse, warns a town forum that the energy bars are unhealthy; Ron tells the camera Leslie should butt out because
@@ -29,7 +29,7 @@ export const nutribars: Clip = {
       trap: 'ロンがレスリーに反対するので、「バーは悪くない」と言っていると考えがち。eat garbage と認めている。',
       use: 'It’s your choice.（それはあなたが決めることだよ）' },
 
-    { id: 'd1', skill: 'detail', level: 'B1', point: 'syrup', seg: [0.9, 12.9],
+    { id: 'd1', skill: 'detail', level: 'B1', point: 'syrup', seg: [0.9, 10.6],
       stem: 'What makes the energy bars unhealthy, says Ann?', ja: 'アンによると、エナジーバーが体に悪いのはなぜ？',
       choices: ['Corn syrup and fatty oils', 'Corn syrup and added salt', 'Corn flour and added salt'], a: 0,
       choicesJa: ['コーンシロップと脂っこい油', 'コーンシロップと塩', 'コーンの粉と塩'],
@@ -40,7 +40,7 @@ export const nutribars: Clip = {
       trap: 'corn だけ拾うと、残りをよくある材料で埋めやすい。and の前後の二つを最後まで聞く。',
       use: 'This soup is loaded with salt.（このスープ、塩がすごく多い）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slice', seg: [1, 12.9],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'slice', seg: [1, 10.6],
       stem: 'What does “any way you slice it” mean?', ja: '“any way you slice it” はどういう意味？',
       choices: ['However you look at it', 'However you cut them', 'However much you eat'], a: 0,
       choicesJa: ['どう考えても', 'どう切っても', 'どれだけ食べても'],
@@ -51,7 +51,7 @@ export const nutribars: Clip = {
       trap: 'slice は「切る」なので、食べ方の話を連想しやすい。結論（unhealthy）の前に来る決まり文句。',
       use: 'Any way you slice it, we’re late.（どう考えても遅刻だね）' },
 
-    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buttout', seg: [7.6, 12.6],
+    { id: 'f2', skill: 'phrase', level: 'B2', point: 'buttout', seg: [8.1, 12.6],
       stem: 'What does Ron want Leslie to do?', ja: 'ロンはレスリーにどうしてほしい？',
       choices: ['Stop getting involved', 'Help the town more', 'Listen to everyone here'], a: 0,
       choicesJa: ['口を出すのをやめる', 'もっと町を助ける', 'ここのみんなの話を聞く'],
@@ -105,7 +105,7 @@ export const nutribars: Clip = {
       trap: '「フォーティスリー」なら43。「フォーティ」で止まれば40、「サーティ」で始まれば33、「シックスティ」なら60。',
       use: 'I had my first kid at thirty-three.（33歳で最初の子が生まれた）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'doso', seg: [16.6, 24.6],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'doso', seg: [19.6, 24.6],
       stem: 'Type what Ron says: “You are ___.” (4 words)', ja: '書こう：“You are ___.”（4語）',
       answer: 'free to do so',
       cue: '「you can」のあと',
@@ -126,7 +126,7 @@ export const nutribars: Clip = {
       trap: '一つひとつの質問だけで決めがち。砂糖、ラザニア、看護師、友だち…と全体の流れで見る。',
       use: 'Does anyone have any questions?（何か質問はありますか）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'uhyes', ctx: true, seg: [26.4, 39],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'uhyes', ctx: true, seg: [26.4, 34.52],
       stem: 'What does Ann do with the sugar question?', ja: 'アンは砂糖の質問をどうする？',
       choices: ['She doesn’t answer it', 'She says sugar is bad', 'She agrees with it'], a: 0,
       choicesJa: ['答えない', '砂糖は体に悪いと言う', 'そのとおりだと言う'],
@@ -137,7 +137,7 @@ export const nutribars: Clip = {
       trap: 'yes を質問への「はい、そのとおり」と考えがち。すぐ別の人が But isn’t… と次の質問を始める。',
       use: 'Yes, you in the back?（はい、後ろの方どうぞ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B1', point: 'lasagna', seg: [31.8, 42.1],
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'lasagna', seg: [31.8, 39.8],
       stem: 'After 40 years of lasagna, how does this person feel?', ja: '40年ラザニアを食べてきたこの人は、体調はどう？',
       choices: ['Terrible', 'Just fine', 'Very healthy'], a: 0,
       choicesJa: ['最悪', 'まあ元気', 'とても健康'],
@@ -148,10 +148,10 @@ export const nutribars: Clip = {
       trap: 'every day for 40 years と聞くと、自慢だと思いやすい。最後の terrible を聞く。',
       use: 'I feel terrible today.（今日は体調が最悪）' },
 
-    { id: 't2', skill: 'attitude', level: 'B1', point: 'ohboy', seg: [39, 48.9],
+    { id: 't2', skill: 'attitude', level: 'B1', point: 'ohboy', seg: [39, 48.6],
       stem: 'How does Ann feel after the corn syrup question?', ja: 'コーンシロップの質問のあと、アンはどんな気持ち？',
-      choices: ['Worried by what he said', 'Happy that he asked', 'Laughing with him'], a: 0,
-      choicesJa: ['彼の話に困っている', '聞いてくれてうれしい', '一緒に笑っている'],
+      choices: ['Bothered by what he said', 'Happy that he asked', 'Laughing with him'], a: 0,
+      choicesJa: ['彼の話にうんざりしている', '聞いてくれてうれしい', '一緒に笑っている'],
       cue: '「bush」のあとの短い一言',
       line: 'Corn’s a fruit. Syrup comes from a bush. — *Oh, boy.*',
       said: '「コーンは果物、シロップは茂みから取れる」と言われ、アンは「やれやれ」とつぶやく。',
@@ -159,7 +159,7 @@ export const nutribars: Clip = {
       trap: 'Oh boy は喜ぶときにも使うので、明るい声と考えがち。直前の話がおかしいことが手がかり。',
       use: 'Oh, boy. This is going to be hard.（やれやれ、これは大変だ）' },
 
-    { id: 'i2', skill: 'detail', level: 'B1', point: 'pretext', ctx: true, seg: [46.1, 56.3],
+    { id: 'i2', skill: 'detail', level: 'B1', point: 'pretext', ctx: true, seg: [46.1, 55.95],
       stem: 'What does this man really want from Ann?', ja: 'この男性が、本当にアンにほしいものは？',
       choices: ['Her phone number', 'Proof she’s a nurse', 'Her advice on food'], a: 0,
       choicesJa: ['電話番号', '看護師だという証拠', '食べ物のアドバイス'],
@@ -170,7 +170,7 @@ export const nutribars: Clip = {
       trap: 'St. Joe’s（病院）が出るので、仕事の確認と考えがち。決め手は the point is のあと。',
       use: 'Anyway, the point is, I need help.（とにかく、要は手伝ってほしいの）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B1', point: 'refuse', ctx: true, reveals: ['pretext'], seg: [50.8, 58.3],
+    { id: 'p2', skill: 'pragma', level: 'B1', point: 'refuse', ctx: true, reveals: ['pretext'], seg: [50.93, 57.98],
       stem: 'What does Ann say to the man’s request?', ja: '男性の頼みに、アンは何と答える？',
       choices: ['No, never', 'Maybe later', 'Yes, for your friend'], a: 0,
       choicesJa: ['絶対いや', 'またあとでね', 'いいよ、友だちのためなら'],
@@ -181,7 +181,7 @@ export const nutribars: Clip = {
       trap: '文の頭の Yeah で「いいよ」と勘違いしやすい。Yeah のあとに not が来たら断り。',
       use: 'Yeah, that’s not gonna happen.（うん、それは無理）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'email', seg: [55.8, 61],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'email', seg: [57.95, 61],
       stem: 'What does the next person ask Ann for?', ja: '次の人は、アンに何を聞く？',
       choices: ['Her email address', 'Her home address', 'Her work number'], a: 0,
       choicesJa: ['メールアドレス', '家の住所', '職場の電話番号'],
@@ -203,7 +203,7 @@ export const nutribars: Clip = {
       trap: 'out が弱く、bars and eat がつながって聞こえやすい。throw のあとの out まで聞く。',
       use: 'Let’s throw out the old milk.（古い牛乳は捨てよう）' },
 
-    { id: 's2', skill: 'sound', level: 'B2', point: 'ought', seg: [59.1, 66.9],
+    { id: 's2', skill: 'sound', level: 'B2', point: 'ought', seg: [60.9, 64.2],
       stem: 'Fill the gap: “I think we ___ throw those bars out.”', ja: '空所に入るのは？ “I think we ___ throw those bars out.”',
       choices: ['ought to', 'got to', 'want to'], a: 0,
       choicesJa: ['〜したほうがいい', '〜しなきゃ', '〜したい'],
@@ -214,7 +214,7 @@ export const nutribars: Clip = {
       trap: 'got to なら「ガラ」、want to なら「ワナ」。頭が「オー」なら ought to。',
       use: 'We ought to leave soon.（そろそろ出たほうがいいね）' },
 
-    { id: 'c1', skill: 'pragma', level: 'B1', point: 'notgood', ctx: true, reveals: ['ought'], seg: [60.8, 69.2],
+    { id: 'c1', skill: 'pragma', level: 'B1', point: 'notgood', ctx: true, reveals: ['ought'], seg: [60.9, 69.6],
       stem: 'Someone wants ham sandwiches instead. What does Ann think?', ja: 'ハムのサンドイッチにしようと言う人に、アンはどう思う？',
       choices: ['She is against it', 'She thinks it’s fine', 'She wants to try it'], a: 0,
       choicesJa: ['反対する', 'いいと思う', '試してみたい'],
@@ -248,7 +248,7 @@ export const nutribars: Clip = {
       trap: '終わった会の話なので did と書きたくなる。every week ならくり返しの do。',
       use: 'I can’t believe you made this yourself!（これ自分で作ったなんて！）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'usual', seg: [73.1, 86.6],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'usual', seg: [73.5, 86.6],
       stem: 'Leslie says “more relevant than usual.” What are usual questions like?', ja: 'レスリーは「いつもより的を射ていた」と言う。いつもの質問は？',
       choices: ['Even worse', 'Much better', 'About the same'], a: 0,
       choicesJa: ['もっとひどい', 'ずっといい', 'だいたい同じ'],
