@@ -1,13 +1,17 @@
+// R4 REVIEW 2026-11-18: keep 11, rewrite 4, retire 2, new 9, ctx 7, tx 10
 // A2 REVIEW 2026-11-17: keep 3, rewrite 13, retire 6, new 1
+// EXCLUDE 275.8–283.4
+// SKIP 79.5–104: a long pause, then Harper's Legally Blonde speech (a film in-joke, "bend and snap somebody's neck")
 // “Carly and Spencer's Audition DISASTER! 🎭 Full Scene | iCarly | NickRewind” (NickRewind, Best of iCarly): Harper
 // sends her drag-queen friends off in the outfits she made, only to hear their night was canceled (21–103 s); Carly and
 // Spencer ride to a reality-show audition in a limo with Raul, a driver on his first day, and keep overruling the GPS
 // and each other until a raised bridge stops them (107–214 s); they're disqualified, let back in, and given a melon
 // challenge (221–342 s).
 // Segments from the captions, words from whisper (2026-11-17); whisper's timings drift after ~100 s, so times here
-// are the captions'. Named in the audio: Harper, Carly, Spencer, Raul; the show's staff aren't named. Untested on
-// purpose: 0–20 s, 42–46 s, 78.6 s, 91–103 s, 129.5 s, 180.6 s, 194.6 s, 231.5 s, 243.8–247.6 s, 275.8–283.4 s,
-// 315–342 s.
+// are the captions'. Named in the audio: Harper, Carly, Spencer, Raul; the show's staff aren't named. The race-
+// training bit (0–21 s) asks Carly (“Pee as you run, Carly!”); “I hate to say it, Carly” is Spencer, and “You ignored
+// the GPS” answers him (Spencer overruled it). Kept out: the staffer's “I want you in my bed” (275.8–283.4 s).
+// Untested: 129.5 s, 180.6 s, 194.6 s, 231.5 s, who says “Thank you for apologizing” (≈ 245 s), 315–320 s.
 // EAR CHECK: 153.8–154.4 s s1 — "Hang a left up here" (both sources): "hang a" really runs together
 import type { Clip } from '../types.ts';
 
@@ -17,6 +21,18 @@ export const auditionDisaster: Clip = {
   show: 'iCarly',
   credit: 'iCarly (NickRewind, official YouTube channel)',
   questions: [
+    { id: 'b1', skill: 'pragma', level: 'B1', point: 'bathroom', ctx: true, seg: [14, 21],
+      stem: 'What is Carly told when she asks about the bathroom?',
+      ja: 'トイレのことを聞いたカーリーは、何と言われる？',
+      choices: ['There’s no time at all', 'She can go after this', 'It’s just over there'], a: 0,
+      choicesJa: ['時間はまったくない', 'これが終わったら行っていい', 'すぐそこにある'],
+      cue: '質問のすぐあとの一語',
+      line: 'Carly: *Do I have time to use the bathroom?* / *None!* Pee as you run, Carly!',
+      said: '「トイレに行く時間ある？」に、「ゼロ！走りながらしろ！」と返る。',
+      mean: 'Do I have time to 〜? ＝「〜する時間ある？」。旅行でも使える聞き方。None! ＝「（時間は）ゼロ！」。',
+      trap: 'run（走る）が聞こえるので、走って行けと考えがち。None ＝ 時間はまったくない。',
+      use: 'Do I have time to use the bathroom?（トイレに行く時間はありますか？）' },
+
     { id: 'g1', skill: 'gist', level: 'B1', point: 'canceled', seg: [33, 78],
       stem: 'What goes wrong for Harper’s friends?',
       ja: 'ハーパーの友だちに何が起きる？',
@@ -37,8 +53,8 @@ export const auditionDisaster: Clip = {
       cue: '「Whoever said Harper」のあと',
       line: 'Whoever said Harper couldn’t *pull this off* was seriously misguided.',
       said: '「ハーパーにはできないと言った人は、見当違いだった」と自分をほめる。',
-      mean: 'pull 〜 off ＝ 難しいことをやってのける。自分の名前で自分をほめている冗談。',
-      trap: '服の場面なので「着こなす」と思いやすい。主語は服を作ったハーパー。',
+      mean: 'pull 〜 off ＝ 文字どおりは「引きはがす」。そこから「難しいことをやってのける」。自分の名前で自分をほめる冗談。',
+      trap: '服の場面なので「着こなす」と考えがち。主語は服を作ったハーパー。',
       use: 'I can’t believe we pulled it off!（やりとげたなんて信じられない！）' },
 
     { id: 'd1', skill: 'detail', level: 'B1', point: 'sold', reveals: ['canceled'], seg: [67.1, 74.8],
@@ -50,19 +66,32 @@ export const auditionDisaster: Clip = {
       line: 'the emcee called two hours ago. *The club was sold.*',
       said: '「司会者から2時間前に電話があった。クラブが売られたの」と言う。',
       mean: 'was sold ＝ 売られた。会場そのものがなくなった。',
-      trap: 'emcee called（司会者が電話してきた）から、病気で休みと思いやすい。理由は次の文。',
+      trap: 'emcee called（司会者が電話してきた）から、病気で休みを連想しやすい。理由は次の文。',
       use: 'The shop was sold last month.（その店、先月売られたんだ）' },
 
-    { id: 'h1', skill: 'humor', level: 'C1', point: 'limo', seg: [107.2, 114.1], retired: true,
-      stem: 'Why does the answer to “in a limo?” get a laugh?',
-      choices: ['It treats a longer car as a faster one', 'It treats a slower ride as a better one',
-                'It treats a fancy car as a famous one'], a: 0,
-      cue: 'リムジンの理由と、最後の「math」。',
-      line: 'That way we get there *faster*. *It’s a longer car.* The math works.',
-      said: 'リムジンで行く理由を「速く着く。長い車だから。計算は合ってる」と説明する。',
-      mean: '車の長さとスピードは関係ない。自信満々のでたらめな理屈が笑い。',
-      trap: 'limo から「見栄」や「楽しさ」を想像しやすいが、口にした理由は長さ＝速さだけ。',
-      use: 'Trust me, the math works.（任せて、計算は合ってる）' },
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'fornothing', seg: [74.2, 79.5],
+      stem: 'What does “all this work was for nothing” mean?',
+      ja: '「all this work was for nothing」はどういう意味？',
+      choices: ['All the work was wasted', 'All the work was free', 'All the work was easy'], a: 0,
+      choicesJa: ['苦労が全部むだになった', '全部ただでやった', '全部かんたんだった'],
+      cue: '「So all this work」のあと',
+      line: 'So *all this work was for nothing*?',
+      said: 'クラブが売られたと聞いて、「じゃあ、この苦労は全部むだだったの？」と言う。',
+      mean: 'for nothing ＝ 文字どおりは「何のためでもなく」。→ 何にもならない＝「むだに」。衣装作りが全部むだに。',
+      trap: 'for nothing には「ただで」の意味もあり、無料と勘違いしやすい。中止の直後なので「むだ」。',
+      use: 'I came all this way for nothing.（はるばる来たのに、むだ足だった）' },
+
+    { id: 'h1', skill: 'detail', level: 'B1', point: 'limo', ctx: true, seg: [104, 114.1],
+      stem: 'What reason is given for taking a limo?',
+      ja: 'リムジンで行く理由は何だと言われる？',
+      choices: ['It will get them there faster', 'It looks good for the show', 'There is more room inside'], a: 0,
+      choicesJa: ['そのほうが早く着く', '番組の見ばえがいい', '中が広い'],
+      cue: '「Yeah.」のあと、That way の文',
+      line: 'We’re going to the audition *in a limo*? / Yeah. *That way we get there faster.* It’s a longer car.',
+      said: '「オーディションにリムジンで行くの？」に、「そのほうが早く着く。車が長いから」と返る。',
+      mean: 'That way ＝「そうすれば」。faster ＝ もっと速く。長い車ほど速い、というでたらめな理屈が笑いどころ。',
+      trap: 'limo から、見ばえのためと考えがち。口にした理由は「速いから」だけ。',
+      use: 'Let’s take the train. That way we’ll get there faster.（電車にしよう。そのほうが早く着く）' },
 
     { id: 'nt1', skill: 'humor', level: 'C2', point: 'limo', seg: [109.3, 118.7], retired: true,
       stem: 'By the speaker’s reasoning, how do the front seats get them there sooner?',
@@ -123,7 +152,7 @@ export const auditionDisaster: Clip = {
       trap: 'right なら「ライト」、take a なら「テイカ」。「ハンガ・レフト」なら hang a left。',
       use: 'Hang a right at the next light.（次の信号を右に）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'route', reveals: ['bridge', 'hangleft', 'thirtyone', 'makeup', 'foronce'], seg: [152.5, 197.0],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'route', reveals: ['bridge', 'hangleft', 'makeup', 'foronce'], seg: [152.5, 197.0],
       stem: 'Why does the trip take so long?',
       ja: 'なぜ移動にこんなに時間がかかる？',
       choices: ['They keep arguing about the way', 'The driver doesn’t know the way', 'The driver stops for lunch'], a: 0,
@@ -135,7 +164,7 @@ export const auditionDisaster: Clip = {
       trap: '運転手が初日なので、道を知らないと思いやすい。ラウルは言われたとおり曲がっているだけ。',
       use: 'Let’s just follow the GPS.（ナビどおりに行こうよ）' },
 
-    { id: 'i2', skill: 'attitude', level: 'B1', point: 'moretime', seg: [158.2, 166.9],
+    { id: 'i2', skill: 'attitude', level: 'B1', point: 'moretime', seg: [158.2, 166.9], retired: true,
       stem: 'How does Spencer feel about the longer trip?',
       ja: '移動が長くなって、スペンサーはどう思う？',
       choices: ['Happy, more limo time', 'Angry about the delay', 'Sorry for his mistake'], a: 0,
@@ -147,7 +176,7 @@ export const auditionDisaster: Clip = {
       trap: 'Ooh を驚きや反省と思いやすい。続く more time in the limo で、喜んでいると分かる。',
       use: 'Ooh, more time at the beach!（やった、ビーチにいられる時間が増えた！）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'thirtyone', seg: [166.3, 173.6], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'thirtyone', seg: [166.3, 173.6], retired: true,
       stem: 'After the right turn, what arrival time does the GPS give?',
       ja: '右に曲がったあと、カーナビは何分と言う？',
       choices: ['13 minutes', '23 minutes', '31 minutes'], a: 2,
@@ -192,15 +221,15 @@ export const auditionDisaster: Clip = {
       use: 'Let’s take a taxi to make up time.（タクシーで遅れを取り戻そう）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'foronce', seg: [189.2, 195.1],
-      stem: 'What does “for once” show in “listen to me for once”?',
-      ja: '「listen to me for once」の「for once」から何が分かる？',
+      stem: 'What does “for once” mean here?',
+      ja: 'ここでの「for once」はどういう意味？',
       choices: ['You never listen to me', 'Only this one time, please', 'Listen again later'], a: 0,
       choicesJa: ['あなたはいつも聞いてくれない', 'この一回だけ', 'あとでもう一度聞いて'],
       cue: '「Turn left」のあと',
       line: 'Could you just listen to me *for once*?',
       said: '「たまには私の言うことを聞いてくれない？」と言う。',
       mean: 'for once ＝ たまには。いつも聞いてくれない、という不満がこもる。',
-      trap: 'once（一回）から、今回だけと思いやすい。for once は不満を言う決まり文句。',
+      trap: 'once（一回）から、今回だけと勘違いしやすい。for once は不満を言う決まり文句。',
       use: 'Can you be on time for once?（たまには時間どおりに来てくれない？）' },
 
     { id: 'd2', skill: 'detail', level: 'B1', point: 'bridge', seg: [200.2, 207],
@@ -237,16 +266,53 @@ export const auditionDisaster: Clip = {
       trap: 'acknowledge は謝罪の前置きにも聞こえるが、sorry は続かない。認める＝謝る、ではない。',
       use: 'Fair point. I acknowledge that.（もっともだね。それは認める）' },
 
-    { id: 'h2', skill: 'humor', level: 'C1', point: 'gpsknows', seg: [248.2, 255.6], retired: true,
-      stem: 'Why does the answer “Everything!” get a laugh?',
-      choices: ['A rhetorical question gets a straight answer', 'The GPS seems to answer the question itself',
-                'A real question gets a teasing answer'], a: 0,
-      cue: '質問の形と、それへの返事の勢い。',
-      line: 'Yeah, *what does a GPS know that I don’t?* — *Everything!* It knows everything!',
-      said: '「ナビが俺の知らないことを知ってる？」と返すと、「全部！」。',
-      mean: '「何も知らない」のつもりの反語に、まともに答えて言い負かしている。',
-      trap: 'what does ～ know? は本当の質問ではなく「知るわけない」の意味。そこに答えるのが笑い。',
+    { id: 'p3', skill: 'pragma', level: 'B1', point: 'fault', ctx: true, seg: [242.4, 249],
+      stem: 'Whose fault does Carly say it is?',
+      ja: 'カーリーは、だれのせいだと言う？',
+      choices: ['Spencer’s, for ignoring the GPS', 'Her own, for taking too long', 'Raul’s, for driving slowly'], a: 0,
+      choicesJa: ['ナビを無視したスペンサー', '時間をかけすぎた自分', 'ゆっくり運転したラウル'],
+      cue: '「My fault?」のあと',
+      line: 'Spencer: I hate to say it, Carly, but *it’s all your fault*. / Carly: *My fault? You ignored the GPS.*',
+      said: '「全部お前のせい」に、「私のせい？ナビを無視したのはそっちでしょ」と返す。',
+      mean: 'I hate to say it, but 〜 ＝「言いにくいけど〜」。批判の前置き。My fault? と聞き返し、責任を投げ返す。',
+      trap: '最初の your fault だけ聞くと、カーリーのせいと考えがち。決め手は My fault? のあと。',
+      use: 'I hate to say it, but we’re lost.（言いにくいけど、道に迷ったみたい）' },
+
+    { id: 'h2', skill: 'pragma', level: 'B2', point: 'gpsknows', ctx: true, seg: [248.2, 255.6],
+      stem: 'How does Carly answer Spencer’s question about the GPS?',
+      ja: 'ナビについてのスペンサーの質問に、カーリーはどう答える？',
+      choices: ['It knows everything', 'It knows nothing', 'It knows a little'], a: 0,
+      choicesJa: ['ナビは全部知っている', 'ナビは何も知らない', 'ナビは少し知っている'],
+      cue: '質問のすぐあとの一語',
+      line: 'Spencer: Yeah, *what does a GPS know that I don’t?* / Carly: *Everything!* It knows everything!',
+      said: '「ナビが知ってて、俺が知らないことなんてある？」に、「全部よ！」と返す。',
+      mean: '文字どおりは「ナビが知ってて俺が知らないことは何？」。本当は「知るわけない」という反語。そこにまともに答えて言い負かす。',
+      trap: '反語なので、答えは「何もない」と考えがち。Everything! と本気で答えている。',
       use: 'Who doesn’t love pizza?（ピザが嫌いな人なんている？）' },
+
+    { id: 'i3', skill: 'infer', level: 'B1', point: 'rivalry', seg: [268, 275.6],
+      stem: 'Why does the show want them back?',
+      ja: '番組は、なぜ2人を呼び戻す？',
+      choices: ['They love the brother-sister fight', 'They feel sorry for the two', 'They need more people to play'], a: 0,
+      choicesJa: ['兄妹げんかが気に入った', '2人がかわいそうになった', '出る人が足りない'],
+      cue: '「Guys, guys, guys!」のあと',
+      line: 'Guys, guys, guys! *We are loving this sibling rivalry.* We want you back in the challenge.',
+      said: 'けんかに割って入り、「この兄妹げんか、すごくいい。課題に戻ってほしい」と言う。',
+      mean: 'sibling rivalry ＝ きょうだいの張り合い。We are loving 〜 ＝「〜がすごくいい」。けんかが番組にはおいしい。',
+      trap: 'Guys, guys, guys! で、けんかを止めに来たと考えがち。けんかを気に入っている。',
+      use: 'We want you back on the team.（チームに戻ってきてほしい）' },
+
+    { id: 'f5', skill: 'phrase', level: 'B2', point: 'dealwith', seg: [283.5, 290.5],
+      stem: 'What does “I can’t deal with him anymore” mean?',
+      ja: '「I can’t deal with him anymore」はどういう意味？',
+      choices: ['I’m tired of him now', 'I can’t find him now', 'I can’t pay him now'], a: 0,
+      choicesJa: ['もう彼にはうんざり', 'もう彼が見つからない', 'もう彼に払えない'],
+      cue: '「You can take him」のあと',
+      line: 'You know what? You can take him. *I can’t deal with him anymore.*',
+      said: '「ねえ、彼を連れていっていいよ。もう彼の相手はできない」と兄を押しつける。',
+      mean: 'deal with 〜 ＝ 文字どおりは「〜を扱う・処理する」。人なら「〜の相手をする」。もう相手しきれない＝うんざり。くだけた言い方。',
+      trap: 'deal を「取引」と考えがち。deal with ＋人 ＝ その人の相手をする。',
+      use: 'I can’t deal with this right now.（今はこれ、手に負えない）' },
 
     { id: 'nt2', skill: 'pragma', level: 'C2', point: 'cameras', seg: [284.3, 294.3], retired: true,
       stem: 'How does “I know this is painful” work in this turn?',
@@ -259,13 +325,13 @@ export const auditionDisaster: Clip = {
       trap: 'I know ～ painful を慰めと取ると、休ませる話に聞こえる。共感のあとの do に本題が来る。',
       use: 'I know it’s hard, but I need this.（大変なのは分かるけど、必要なの）' },
 
-    { id: 'p2', skill: 'pragma', level: 'B2', point: 'followers', seg: [297.9, 308.7],
+    { id: 'p2', skill: 'pragma', level: 'B2', point: 'followers', ctx: true, seg: [297.9, 308.7],
       stem: 'Why does the person from the show bring up followers?',
       ja: '番組の人がフォロワーの話をするのはなぜ？',
       choices: ['To get them back in the game', 'To warn them about viewers', 'To ask how many they have'], a: 0,
       choicesJa: ['二人をゲームに戻すため', '見る人の多さを注意するため', '何人いるか聞くため'],
       cue: '「content creator, right?」のあと',
-      line: 'Some contestants on our show get *more than a million new followers*. — *Let’s do a challenge*, bro.',
+      line: 'Some contestants on our show get *more than a million new followers*. / *Let’s do a challenge*, bro.',
       said: '「新しいフォロワーが100万人以上つく人もいる」と言うと、「やろう」と返る。',
       mean: 'more than a million ＝ 100万以上。フォロワーという見返りで、やめかけた人を引き戻す。',
       trap: 'right? を質問と思うと「数を聞く」に見える。すぐあとの Let’s do a challenge が効き目。',
@@ -282,5 +348,29 @@ export const auditionDisaster: Clip = {
       mean: 'knock over ＝ 倒す。slingshot ＝ （ゴムで）飛ばす。qualify ＝ 出場資格を得る。',
       trap: 'slingshot と melon だけだと、受け取る話にも聞こえる。to knock over a target が目的。',
       use: 'Knock over three cans to win a prize.（缶を3つ倒したら景品）' },
+
+    { id: 'p4', skill: 'pragma', level: 'B1', point: 'later', ctx: true, seg: [321, 329.6],
+      stem: 'How does the other one answer “I am”?',
+      ja: '「I am（私）」に、もう1人はどう答える？',
+      choices: ['He lets her do it', 'He wants to throw too', 'He says she will miss'], a: 0,
+      choicesJa: ['妹にゆずる', '自分も投げたがる', '妹は外すと言う'],
+      cue: '「Fine!」のあと',
+      line: 'So, which one of you is flinging fruit? / *I am.* / *Fine!* I’ll *save my melon skills for later*.',
+      said: '「どっちが投げる？」「私」に、「わかったよ！メロンの腕はあとに取っておく」としぶしぶゆずる。',
+      mean: 'Fine! ＝ ここでは「わかったよ」としぶしぶ引く言い方。save 〜 for later ＝ あとに取っておく。食べ物にもよく使う。',
+      trap: 'Fine を「元気」と考えがち。ここは「もういいよ」。決め手は for later。',
+      use: 'I’ll save this cake for later.（このケーキはあとに取っておこう）' },
+
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'coworker', ctx: true, seg: [336, 342.8],
+      stem: 'What did the melon hit?',
+      ja: 'メロンは何に当たった？',
+      choices: ['A man who works there', 'The target, after all', 'A camera on the set'], a: 0,
+      choicesJa: ['そこで働く男の人', '結局、的に当たった', '撮影のカメラ'],
+      cue: '「No!」のあと',
+      line: 'Did I hit a target? / No! *You hit my coworker, Benjamin!*',
+      said: '「的に当たった？」に、「いいえ！同僚のベンジャミンに当たったのよ！」と返る。',
+      mean: 'Did I hit 〜? ＝「〜に当たった？」。coworker ＝ 同僚（同じ職場の人）。的ではなく、スタッフの同僚に当たった。',
+      trap: 'hit a target だけ聞くと、的に当たったと考えがち。決め手は No のあと。',
+      use: 'This is my coworker, Ben.（こちら、同僚のベンです）' },
   ]
 };
