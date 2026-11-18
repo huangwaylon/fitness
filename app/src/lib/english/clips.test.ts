@@ -1,13 +1,7 @@
-// Every clip's bank (docs/english.md "Content"; the review rubric's automated checks, review-rubric.md §4): the schema
-// and ids, segments, the option-length and echo tells, duplicate stems, the banned words, the notes' lengths, a cue
-// that leaks the key, dictations, coverage per bank, reveals, and draws over five plays. A lesson from before the
-// banks (under 16 items) is held to the schema, segments, banned words, dictations and the draws only. A bank whose
-// file has the line `// A2 REVIEW` (reviewed for the A1–A2 learner) is held to the A2 rules for size, coverage and
-// levels (and a looser key-length tell); the others to the older ones until their review. No live item plays a header
-// `// EXCLUDE a–b` range; a bank with the line `// R4 REVIEW` is held to the R4 rubric's coverage (quarters of the
-// speech span, gaps under `// SKIP a–b: why`), density, context items (`ctx`, lines `A: … / B: …`), trap openers and
-// swears (a transcript line with one is under EXCLUDE, whole or from the swear's end, or `// SWEAR-OK a–b: why` for a
-// name like Moby Dick).
+// Every clip's bank against the rules in docs/english.md "Content" (the A2 rules, the R4 rubric's coverage, density,
+// context items, trap openers and swears, the review rubric's mechanical checks §4): schema, segments, tells, notes,
+// coverage, levels, reveals, EXCLUDE/SKIP/SWEAR-OK header ranges, and that each bank gives five full, valid plays.
+// The draw's own rules are tested once, on made-up banks, in draw.test.ts.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -30,10 +24,8 @@ describe('SWEAR regex', () => {
   });
 });
 const JA = /[぀-ヿ㐀-鿿]/;
-/** A bank, not a lesson from before them. */
-const isBank = (c: Clip) => c.questions.length >= 16;
 
-// the echo tell (kikimimi/tells.ts's contentWords): a choice's content words, stemmed
+// the echo tell: a choice's content words, stemmed
 const STOP = new Set(('a an the and or but so if of to in on at for with from by up out off over about into as is am are was were be been being do does did done have has had i me my you your he him his she her it its we us our they them their this that these those there here what which who when where why how not no yes just very really too also then than can could will would should may might must oh um uh well okay yeah all some any one get got go going want like now right').split(' '));
 const stem = (w: string) => w.replace(/'s$/, '').replace(/(ies)$/, 'y').replace(/(ing|ed|es|s)$/, '') || w;
 const content = (t: string) => new Set((t.toLowerCase().replace(/[’‘]/g, "'").match(/[a-z0-9][a-z0-9']*/g) ?? []).filter((w) => !STOP.has(w) && w.length > 2).map(stem));
@@ -68,12 +60,7 @@ function fitting(items: Question[], head: Question): number {
     if (q.level !== 'C2' && !took.some((t) => t === q || clashes(t, q)) && n((t) => t.skill === q.skill) < (['dict', 'humor', 'predict'].includes(q.skill) ? 1 : 2) && !(q.level === 'C1' && n((t) => t.level === 'C1') >= 1)) took.push(q);
   return took.length - 1;
 }
-/** The clips reviewed for the A2 learner: their files' `// A2 REVIEW` line. */
 const DIR = join(import.meta.dirname, 'clips');
-const A2 = new Set(readdirSync(DIR).filter((f) => f.endsWith('.ts')).flatMap((f) => {
-  const src = readFileSync(join(DIR, f), 'utf8');
-  return /^\/\/ A2 REVIEW\b/m.test(src) ? [...src.matchAll(/^\s*id: '([^']+)'/gm)].map((m) => m[1]) : [];
-}));
 /** Each clip file's source, by its video. */
 const SRC = new Map(readdirSync(DIR).filter((f) => f.endsWith('.ts')).flatMap((f) => {
   const src = readFileSync(join(DIR, f), 'utf8'), v = src.match(/video: '([\w-]{11})'/)?.[1];
@@ -97,8 +84,41 @@ const overlaps = (s: Span, spans: readonly Span[]) => spans.some(([x, y]) => s[0
 const f1 = (n: number) => +n.toFixed(1);
 /** A context item's line: its turns, `A: … / B: …` (rubric R4 §3). */
 const turns = (line: string) => line.split(' / ').filter((t) => t.trim()).length;
-/** The clips in the R4 review (the 2026-11-18 rubric): their files' `// R4 REVIEW` line. */
-const R4 = new Set(CLIPS.filter((c) => /^\/\/ R4 REVIEW\b/m.test(SRC.get(c.video) ?? '')).map((c) => c.id));
+
+/** Five plays over five seeds of a clip's draw (`harder`: with the C2 tier), each checked against the bank. */
+function plays(c: Clip, harder: boolean) {
+  const live = c.questions.filter((q) => !q.retired), c2s = live.filter((q) => q.level === 'C2');
+  const size = c.dur < 90 ? 6 : c.dur < 180 ? 7 : 8;
+  for (let s = 0; s < 5; s++) {
+    const seen: History = {};
+    let prev: Question[] = [];
+    for (let play = 1; play <= 5; play++) {
+      const d = draw(c, seen, play, seedOf('A', c.id, play) + s, { harder });
+      const at = `${c.id} play ${play} seed ${s}`;
+      expect(d.length >= Math.min(size, 1 + fitting(live, d[0])) && d.length <= size, `${at}: ${d.length} items`).toBe(true);
+      if (c.questions.some((q) => q.skill === 'gist')) expect(d[0].skill, at).toBe('gist');
+      expect(d.slice(1).map((q) => q.seg[0]), at).toEqual(d.slice(1).map((q) => q.seg[0]).sort((a, b) => a - b));
+      for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(1);
+      for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);
+      expect(new Set(d.map((q) => q.point)).size, at).toBe(d.length);
+      for (const a of d) for (const b of d) if (a !== b) expect(a.reveals?.includes(b.point) ?? false, `${at}: ${a.id} reveals ${b.id}`).toBe(false);
+      expect(d.filter((q) => q.level === 'C1').length, `${at}: C1`).toBeLessThanOrEqual(1);
+      const n2 = d.filter((q) => q.level === 'C2').length;
+      if (!harder) expect(n2, `${at}: C2`).toBe(0);
+      else {
+        expect(n2, `${at}: C2`).toBeLessThanOrEqual(1);
+        if (c2s.some((q) => !seen[q.id] && !clashes(q, d[0]))) expect(n2, `${at}: an unseen C2`).toBe(1);
+      }
+      if (play === 2) {
+        // the unseen that may join this gist (no C2, one C1): a repeat beyond one only when too few
+        const room = fitting(live.filter((q) => !seen[q.id] && q.skill !== 'gist'), d[0]);
+        expect(d.filter((q) => prev.includes(q) && q.skill !== 'gist').length, `${at}: repeats`).toBeLessThanOrEqual(1 + Math.max(0, d.length - 1 - room));
+      }
+      for (const q of d) seen[q.id] = { play, ok: true };
+      prev = d;
+    }
+  }
+}
 
 describe('the clips', () => {
   it('ids unique and short; the order a plain list', () => {
@@ -140,7 +160,7 @@ describe('the clips', () => {
             if (q.line) expect(words(starred(q.line)).join(' '), at).toBe(q.answer);
           } else {
             expect(q.answer, at).toBeUndefined();
-            expect(q.choices && q.choices.length >= (isBank(c) ? 3 : 2) && q.choices.length <= 4, at).toBe(true);
+            expect(q.choices && q.choices.length >= 3 && q.choices.length <= 4, at).toBe(true);
             expect(new Set(q.choices).size, at).toBe(q.choices!.length);
             expect(q.a !== undefined && q.a >= 0 && q.a < q.choices!.length, at).toBe(true);
           }
@@ -167,13 +187,11 @@ describe('the clips', () => {
             expect(q.then[0], at).toBe(q.seg[1]);
             expect(q.then[1] - q.then[0], at).toBeLessThanOrEqual(10);
           }
-          if (isBank(c)) {
-            const d = q.seg[1] - q.seg[0];
-            if (q.skill === 'gist') expect(d, at).toBeGreaterThanOrEqual(15);
-            else if (q.skill === 'dict') expect(d >= 2 && d <= 8, `${at} ${d} s`).toBe(true);
-          }
+          const d = q.seg[1] - q.seg[0];
+          if (q.skill === 'gist') expect(d, at).toBeGreaterThanOrEqual(15);
+          else if (q.skill === 'dict') expect(d >= 2 && d <= 8, `${at} ${d} s`).toBe(true);
         }
-        if (isBank(c)) expect(qs.map((q) => q.seg[0]), 'clip order').toEqual([...qs].map((q) => q.seg[0]).sort((a, b) => a - b));
+        expect(qs.map((q) => q.seg[0]), 'clip order').toEqual([...qs].map((q) => q.seg[0]).sort((a, b) => a - b));
       });
 
       it('never says incorrect; no Japanese in the English; stems unique', () => {
@@ -213,15 +231,14 @@ describe('the clips', () => {
         }
       });
 
-      const a2 = A2.has(c.id);
-      it.runIf(isBank(c))(`a bank: the tells, the notes, coverage and levels${a2 ? ' (A2 rules)' : ''}`, () => {
+      it('a bank: the tells, the notes, coverage and levels (the A2 rules)', () => {
         const sets = qs.filter((q) => sentence(q) && !q.retired);
         let longest = 0, shortest = 0, least = 0;
         for (const q of sets) {
           const key = q.choices![q.a!], ds = q.choices!.filter((_, i) => i !== q.a);
           const L = Math.max(...ds.map(len)), S = Math.min(...ds.map(len));
           // A2 choices are ≤ 6 words, where a ratio is a word or two: 6 characters of slack either way
-          const ok = a2 ? len(key) <= Math.max(1.25 * L, L + 6) && len(key) >= Math.min(0.8 * S, S - 6) : len(key) <= 1.25 * L && len(key) >= 0.8 * S;
+          const ok = len(key) <= Math.max(1.25 * L, L + 6) && len(key) >= Math.min(0.8 * S, S - 6);
           expect(ok, `${q.id}: the key's length`).toBe(true);
           if (len(key) > L) longest++;
           if (len(key) < S) shortest++;
@@ -236,7 +253,7 @@ describe('the clips', () => {
         for (const q of qs) {
           const n = len(q.said) + len(q.mean) + len(q.trap);
           // A2 notes spell an idiom out (literal, then here): room up to 160
-          const [lo, hi] = q.level === 'C2' ? [90, a2 ? 160 : 140] : [a2 ? 60 : 80, a2 ? 160 : 120];
+          const [lo, hi] = q.level === 'C2' ? [90, 160] : [60, 160];
           expect(n >= lo && n <= hi, `${q.id}: said + mean + trap ${n}`).toBe(true);
           expect(len(q.cue), `${q.id}: cue`).toBeLessThanOrEqual(40);
           expect(q.use, `${q.id}: use`).toMatch(/（.+）/);
@@ -246,57 +263,32 @@ describe('the clips', () => {
         const c2 = live.filter((q) => q.level === 'C2');
         const core = live.filter((q) => q.level !== 'C2');
         const share = (l: string) => core.filter((q) => q.level === l).length / core.length;
-        if (a2) {
-          // the A2 rules (the 2026-11-17 panel): 12–24 live, form-heavy, little interpretation, C2 0–2, B1 the bulk
-          expect(live.length >= 12 && live.length <= 24, `bank size ${live.length}`).toBe(true);
-          // a gist's segment ≤ 45 s; 3 choices (a number 3–4)
-          for (const q of live) {
-            if (q.skill === 'gist') expect(q.seg[1] - q.seg[0], `${q.id}: a gist's segment`).toBeLessThanOrEqual(45);
-            const n = q.choices?.length;
-            if (n !== undefined) expect(q.skill === 'number' ? n >= 3 && n <= 4 : n === 3, `${q.id}: ${n} choices`).toBe(true);
-          }
-          expect(by((q) => q.skill === 'gist'), 'gist').toBeGreaterThanOrEqual(2);
-          expect(by((q) => GROUP_OF[q.skill] === 'L'), 'L').toBeGreaterThanOrEqual(4);
-          expect(by((q) => GROUP_OF[q.skill] === 'F'), 'F').toBeGreaterThanOrEqual(4);
-          expect(by((q) => q.skill === 'phrase'), 'phrase').toBeGreaterThanOrEqual(1);
-          expect(by((q) => q.skill === 'sound' || q.skill === 'dict'), 'sound + dict').toBeGreaterThanOrEqual(1);
-          const i = by((q) => GROUP_OF[q.skill] === 'I');
-          expect(i >= 2 && i <= 0.4 * live.length, `I ${i}/${live.length}`).toBe(true);
-          expect(by((q) => q.skill === 'humor'), 'humor').toBeLessThanOrEqual(1);
-          expect(by((q) => q.skill === 'predict'), 'predict').toBeLessThanOrEqual(1);
-          for (const sk of SKILLS) expect(by((q) => q.skill === sk), sk).toBeLessThanOrEqual(5);
-          expect(c2.length, `C2 ${c2.length}`).toBeLessThanOrEqual(2);
-          expect(new Set(c2.map((q) => q.point)).size, 'C2 a point').toBe(c2.length);
-          for (const q of c2) expect(C2_SKILLS, `${q.id}: a C2 skill`).toContain(q.skill);
-          for (const q of c2) if (q.skill === 'sound') expect(HEARD.has(`${c.id} ${q.id}`), `${q.id}: a stress item, not ear-checked`).toBe(true);
-          if (LEVELS_RELAXED[c.id]) return;
-          expect(share('B1') >= 0.45 && share('B1') <= 0.65, `B1 ${share('B1')}`).toBe(true);
-          expect(share('B2') >= 0.25 && share('B2') <= 0.45, `B2 ${share('B2')}`).toBe(true);
-          expect(share('C1') <= 0.15, `C1 ${share('C1')}`).toBe(true);
-          return;
+        // the A2 rules (the 2026-11-17 panel): 12–24 live, form-heavy, little interpretation, C2 0–2, B1 the bulk
+        expect(live.length >= 12 && live.length <= 24, `bank size ${live.length}`).toBe(true);
+        // a gist's segment ≤ 45 s; 3 choices (a number 3–4)
+        for (const q of live) {
+          if (q.skill === 'gist') expect(q.seg[1] - q.seg[0], `${q.id}: a gist's segment`).toBeLessThanOrEqual(45);
+          const n = q.choices?.length;
+          if (n !== undefined) expect(q.skill === 'number' ? n >= 3 && n <= 4 : n === 3, `${q.id}: ${n} choices`).toBe(true);
         }
-        expect(live.length >= 16 && live.length <= 24, 'bank size').toBe(true);
-        // the native tier (native-level.md §5): 0 or 2–4, ≤ 1 a point, its skills only; a stress item (a C2 sound) ships
-        // retired until its ear check, then goes in HEARD
-        expect(c2.length === 0 || (c2.length >= 2 && c2.length <= 4), `C2 ${c2.length}`).toBe(true);
+        expect(by((q) => q.skill === 'gist'), 'gist').toBeGreaterThanOrEqual(2);
+        expect(by((q) => GROUP_OF[q.skill] === 'L'), 'L').toBeGreaterThanOrEqual(4);
+        expect(by((q) => GROUP_OF[q.skill] === 'F'), 'F').toBeGreaterThanOrEqual(4);
+        expect(by((q) => q.skill === 'phrase'), 'phrase').toBeGreaterThanOrEqual(1);
+        expect(by((q) => q.skill === 'sound' || q.skill === 'dict'), 'sound + dict').toBeGreaterThanOrEqual(1);
+        const i = by((q) => GROUP_OF[q.skill] === 'I');
+        expect(i >= 2 && i <= 0.4 * live.length, `I ${i}/${live.length}`).toBe(true);
+        expect(by((q) => q.skill === 'humor'), 'humor').toBeLessThanOrEqual(1);
+        expect(by((q) => q.skill === 'predict'), 'predict').toBeLessThanOrEqual(1);
+        for (const sk of SKILLS) expect(by((q) => q.skill === sk), sk).toBeLessThanOrEqual(5);
+        expect(c2.length, `C2 ${c2.length}`).toBeLessThanOrEqual(2);
         expect(new Set(c2.map((q) => q.point)).size, 'C2 a point').toBe(c2.length);
         for (const q of c2) expect(C2_SKILLS, `${q.id}: a C2 skill`).toContain(q.skill);
         for (const q of c2) if (q.skill === 'sound') expect(HEARD.has(`${c.id} ${q.id}`), `${q.id}: a stress item, not ear-checked`).toBe(true);
-        for (const sk of SKILLS) expect(by((q) => q.skill === sk), sk).toBeLessThanOrEqual(4);
-        expect(by((q) => q.skill === 'gist')).toBeGreaterThanOrEqual(2);
-        expect(by((q) => GROUP_OF[q.skill] === 'L')).toBeGreaterThanOrEqual(4);
-        expect(by((q) => GROUP_OF[q.skill] === 'I')).toBeGreaterThanOrEqual(6);
-        expect(by((q) => q.skill === 'infer')).toBeGreaterThanOrEqual(2);
-        expect(by((q) => q.skill === 'attitude')).toBeGreaterThanOrEqual(2);
-        expect(by((q) => q.skill === 'pragma')).toBeGreaterThanOrEqual(1);
-        expect(by((q) => GROUP_OF[q.skill] === 'F')).toBeGreaterThanOrEqual(4);
-        for (const sk of ['phrase', 'sound', 'dict']) expect(by((q) => q.skill === sk), sk).toBeGreaterThanOrEqual(1);
-        expect(by((q) => q.skill === 'predict')).toBeLessThanOrEqual(2);
         if (LEVELS_RELAXED[c.id]) return;
-        // B1/B2/C1 shares over the items below the native tier
-        expect(share('B1') >= 0.2 && share('B1') <= 0.35, `B1 ${share('B1')}`).toBe(true);
-        expect(share('B2') >= 0.4 && share('B2') <= 0.55, `B2 ${share('B2')}`).toBe(true);
-        expect(share('C1') >= 0.2 && share('C1') <= 0.35, `C1 ${share('C1')}`).toBe(true);
+        expect(share('B1') >= 0.45 && share('B1') <= 0.65, `B1 ${share('B1')}`).toBe(true);
+        expect(share('B2') >= 0.25 && share('B2') <= 0.45, `B2 ${share('B2')}`).toBe(true);
+        expect(share('C1') <= 0.15, `C1 ${share('C1')}`).toBe(true);
       });
 
       const src = SRC.get(c.video) ?? '';
@@ -307,9 +299,8 @@ describe('the clips', () => {
         expect(bad.length, `${c.id}: segments over EXCLUDE ${ex.map((s) => s.join('–')).join(', ')}: ${bad.join('; ')}`).toBe(0);
       });
 
-      // the R4 rules (rubric-r4.md §2–§5) for a bank whose file has the line `// R4 REVIEW`
-      const r4 = R4.has(c.id);
-      describe.runIf(r4)('R4 rules', () => {
+      // the R4 rules (rubric-r4.md §2–§5)
+      describe('R4 rules', () => {
         const skips = ranges(src, 'SKIP');
         const skip = skips.flatMap((r) => r.spans);
         /** The speech span: the transcript's first spoken line to its last (music-only ♪ lines aside), within the clip. */
@@ -383,53 +374,9 @@ describe('the clips', () => {
         });
       });
 
-      it('draws: five plays × 20 seeds, each well-formed; play 2 new when the bank allows', () => {
-        for (let s = 0; s < 20; s++) {
-          const seen: History = {};
-          let prev: Question[] = [];
-          for (let play = 1; play <= 5; play++) {
-            const d = draw(c, seen, play, seedOf('A', c.id, play) + s);
-            const at = `${c.id} play ${play} seed ${s}`;
-            const size = c.dur < 90 ? 6 : c.dur < 180 ? 7 : 8, live = qs.filter((q) => !q.retired);
-            if (!isBank(c)) expect(d.length, at).toBe(Math.min(live.length, size));
-            else expect(d.length >= Math.min(size, 1 + fitting(live, d[0])) && d.length <= size, `${at}: ${d.length} items`).toBe(true);
-            if (qs.some((q) => q.skill === 'gist')) expect(d[0].skill, at).toBe('gist');
-            expect(d.slice(1).map((q) => q.seg[0]), at).toEqual(d.slice(1).map((q) => q.seg[0]).sort((a, b) => a - b));
-            expect(d.filter((q) => q.skill === 'dict').length, at).toBeLessThanOrEqual(1);
-            expect(d.filter((q) => q.skill === 'humor').length, at).toBeLessThanOrEqual(1);
-            expect(d.filter((q) => q.skill === 'predict').length, at).toBeLessThanOrEqual(1);
-            expect(new Set(d.map((q) => q.point)).size, at).toBe(d.length);
-            for (const a of d) for (const b of d) if (a !== b) expect(a.reveals?.includes(b.point) ?? false, `${at}: ${a.id} reveals ${b.id}`).toBe(false);
-            if (isBank(c)) for (const sk of SKILLS) expect(d.filter((q) => q.skill === sk).length, `${at} ${sk}`).toBeLessThanOrEqual(2);
-            if (isBank(c) && play === 2) {
-              // the unseen that may join this gist (no C2, one C1): a repeat beyond one only when too few
-              const room = fitting(live.filter((q) => !seen[q.id] && q.skill !== 'gist'), d[0]);
-              expect(d.filter((q) => prev.includes(q) && q.skill !== 'gist').length, `${at}: repeats`).toBeLessThanOrEqual(1 + Math.max(0, d.length - 1 - room));
-            }
-            expect(d.filter((q) => q.level === 'C1').length, `${at}: C1`).toBeLessThanOrEqual(1);
-            for (const q of d) seen[q.id] = { play, ok: true };
-            prev = d;
-          }
-        }
-      });
+      // a bank the draw can't fill shows up in a few seeds; the draw's own rules are draw.test.ts's
+      it('draws: five plays × 5 seeds, each full and well-formed, no C2; play 2 new when the bank allows', () => plays(c, false));
+      if (qs.some((q) => !q.retired && q.level === 'C2'))
+        it('draws, harder: the same, and the C2 tier ≤ 1 a play, one while one is unseen', () => plays(c, true));
     });
-
-  for (const c of CLIPS)
-    for (const harder of [false, true])
-      it(`${c.id} draws${harder ? ', harder' : ''}: the C2 tier per play (none unless harder; then ≤ 1, one while one is unseen)`, () => {
-        const has = c.questions.filter((q) => !q.retired && q.level === 'C2');
-        for (let s = 0; s < 20; s++) {
-          const seen: History = {};
-          for (let play = 1; play <= 5; play++) {
-            const d = draw(c, seen, play, seedOf('A', c.id, play) + s, { harder });
-            const n = d.filter((q) => q.level === 'C2').length, at = `${c.id} play ${play} seed ${s}`;
-            if (!harder) expect(n, at).toBe(0);
-            else {
-              expect(n, at).toBeLessThanOrEqual(1);
-              if (has.some((q) => !seen[q.id] && !clashes(q, d[0]))) expect(n, at).toBe(1);
-            }
-            for (const q of d) seen[q.id] = { play, ok: true };
-          }
-        }
-      });
 });

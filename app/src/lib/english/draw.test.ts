@@ -1,5 +1,5 @@
 // The draw (draw.ts) over a made-up bank of 20: the size by length, the gist first then clip order, the quotas (play
-// 1 L2 I1 F2; play 2+ L2 I2 F1), ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first,
+// 1 L2 I1 F2; play 2+ L2 I2 F1), ≤ 2 of a skill, ≤ 1 C1 a play, C2 only when harder, the unseen before any repeat, new points first,
 // ≤ 1 dict, points and reveals, a predict's continuation, spread over the clip, a context item, a set-up gist and
 // one a play, the same draw for the same seed; the history from listen rows; the choices' order.
 import { describe, expect, it } from 'vitest';
@@ -77,6 +77,14 @@ describe('draw', () => {
         expect(d.some((x) => x.id === 'g1') && d.some((x) => x.id === 'n1')).toBe(false);
         for (const sk of ['dict', 'humor', 'predict']) expect(d.filter((x) => x.skill === sk).length).toBeLessThanOrEqual(1);
       }
+  });
+  it('≤ 2 of a skill while another fits, past two only to fill', () => {
+    // four details where the quotas want L: a number and the other groups first
+    const c: Clip = { ...clip, questions: [q('g0', 'gist', 'B1'), ...['d1', 'd2', 'd3', 'd4'].map((id) => q(id, 'detail', 'B1')), q('n0', 'number', 'B1'), q('i0', 'infer', 'B2'), q('m0', 'marker', 'B2'), q('p0', 'phrase', 'B2')] };
+    for (let s = 0; s < 30; s++)
+      for (const play of [1, 2, 3]) expect(draw(c, {}, play, String(s)).filter((x) => x.skill === 'detail').length).toBeLessThanOrEqual(2);
+    const only: Clip = { ...clip, questions: [q('g0', 'gist', 'B1'), ...['d1', 'd2', 'd3', 'd4', 'd5', 'd6'].map((id) => q(id, 'detail', 'B1'))] };
+    expect(draw(only, {}, 1, 'x')).toHaveLength(6);
   });
   it('a predict never after an item whose segment holds its continuation', () => {
     const k = q('k9', 'predict', 'B2', { seg: [40, 44], then: [44, 50] });
