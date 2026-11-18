@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 10, rewrite 3, retire 5, new 0, ctx 4, tx 5
+// R4 REVIEW 2026-11-18: keep 10, rewrite 3, retire 5, new 0, ctx 4, tx 5, qa 4
 // A2 REVIEW 2026-11-17: keep 7, rewrite 9, retire 4, new 2
 // “Rachel Is a Bad Waitress | Friends” (the official Friends channel, Best of Season 1): Rachel asks her boss Terry
 // for an advance on her pay, and he tells her how her work really is. Rachel asks the café “Does anybody need coffee?”.
@@ -20,7 +20,7 @@ export const waitress: Clip = {
       choices: ['A day off for Thanksgiving', 'Part of her pay early', 'A raise in her pay'], a: 1,
       choicesJa: ['感謝祭の休み', '給料の一部を先にもらう', '昇給'],
       cue: '「salary」の少し前', line: 'if I got a *hundred dollar advance* on my salary?',
-      said: '「給料を少し前借りできないかな」と店長のテリーに頼む。',
+      said: '「給料を前借りできないでしょうか」と店長のテリーにていねいに頼む。',
       mean: 'advance ＝ 前払い・前借り。昇給（raise）とは別の話。I know 〜, but で弱みを認めてから頼む。',
       trap: 'Thanksgiving（感謝祭）が聞こえて「休み」の話と考えがち。頼んでいるのはお金。',
       use: 'Could I get an advance on my pay?（給料を前借りできますか）' },
@@ -214,7 +214,7 @@ export const waitress: Clip = {
     { id: 'r1', skill: 'predict', level: 'B2', point: 'hear', reveals: ['reply'], seg: [37.2, 42.3], then: [42.3, 50.6],
       stem: 'What will Rachel say after “I’m with you”?',
       ja: '「I’m with you」のあと、レイチェルは何を言う？',
-      choices: ['She gives her side', 'She says sorry', 'She thanks Terry'], a: 0,
+      choices: ['She defends herself', 'She says sorry', 'She thanks Terry'], a: 0,
       choicesJa: ['自分の言い分を言う', '謝る', 'テリーにお礼を言う'],
       cue: '「I hear what…」の言い方',
       line: 'Okay, I hear what you’re saying, I’m with you. *But* I’m trying really hard',
