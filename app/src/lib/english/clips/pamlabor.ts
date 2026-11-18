@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 4, rewrite 14, retire 1, new 3, ctx 5, tx 8
+// R4 REVIEW 2026-11-18: keep 4, rewrite 14, retire 1, new 3, ctx 5, tx 8, qa 19
 // A2 REVIEW 2026-11-17: keep 5, rewrite 10, retire 10, new 4
 // “Pam Goes into Labor - The Office US” (the official The Office channel, Best of Season 6): Pam's contractions start
 // at the office; she stalls, admits she's scared, is talked round, and the office scrambles to get her and Jim out.
@@ -11,6 +11,8 @@
 // EAR CHECK: 199.7 s keys — “I can't find my keys” and “Found them” (speaker unnamed)
 // R4: w1 retired (d2's exchange names the ambulance order); new n5 (menu theme) and n3 (let's do this) fill 45–100 s,
 // n4 (Michael, focus) the car ride; d1, d2, a2 turned into exchanges; p3 restored as one (149–162 s).
+// EAR CHECK: 174.2 s actual — whisper has “…ourselves, actually”, the captions stop at “ourselves”
+// EAR CHECK: 249 s n4 — whisper has “Okay, Michael, focus”, the captions “Michael. Okay, go go go”
 // EXCLUDE 15–21.5
 import type { Clip } from '../types.ts';
 
@@ -43,7 +45,7 @@ export const pamLabor: Clip = {
       trap: 'made it を「着いた」と取ると病院の話になる。何に間に合うのかを聞く。',
       use: 'We made it, just in time!（ギリギリ間に合った！）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'stall', reveals: ['feast'], seg: [21.5, 49.1],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'stall', reveals: ['feast', 'norush', 'ultra'], seg: [21.5, 49.1],
       stem: 'What does Pam do at first about the hospital?',
       ja: 'パムは、最初は病院のことをどうする？',
       choices: ['She keeps saying not yet', 'She goes there right away', 'She calls her doctor'], a: 0,
@@ -89,7 +91,7 @@ export const pamLabor: Clip = {
       trap: 'ceremony だけだと伝統行事に聞こえる。in the name of は「本音は別」の合図。',
       use: 'It’s a “meeting,” but we just eat.（「会議」と言っても食べるだけ）' },
 
-    { id: 'f1', skill: 'phrase', level: 'B2', point: 'ultra', seg: [32.7, 39.7],
+    { id: 'f1', skill: 'phrase', level: 'B2', point: 'ultra', seg: [32.7, 39.33],
       stem: 'What does “pig out” mean?',
       ja: '「pig out」の意味は？',
       choices: ['Eat way too much', 'Buy a lot of food', 'Cook some pork'], a: 0,
@@ -101,7 +103,7 @@ export const pamLabor: Clip = {
       trap: 'pig（ぶた）から、豚肉の話と勘違いしやすい。pig out は人がぶたのように食べること。',
       use: 'Let’s pig out on pizza tonight.（今夜はピザを思いきり食べよう）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'norush', seg: [37.5, 45],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'norush', seg: [37.72, 45],
       stem: 'Type what Pam says: “There’s ___ to get to the hospital.” (2 words)', answer: 'no rush',
       ja: '「There’s」のあとの2語を書こう。',
       cue: '「There’s」のすぐあと。',
@@ -124,14 +126,14 @@ export const pamLabor: Clip = {
       trap: '直前の宴会の話や、職場への遠慮に結びつけやすい。平気だと強く言うほど、裏の気持ちを疑う。',
       use: 'Whatever happens, happens.（なるようになるさ）' },
 
-    { id: 'n5', skill: 'detail', level: 'B1', point: 'theme', seg: [51.2, 62.4],
+    { id: 'n5', skill: 'detail', level: 'B1', point: 'theme', seg: [50.0, 62.4],
       stem: 'What is the theme of the Ultra Feast menu?',
       ja: 'ウルトラ・フィーストのメニューのテーマは？',
       choices: ['Hollywood movies', 'Food from India', 'Famous chefs'], a: 0,
       choicesJa: ['ハリウッド映画', 'インド料理', '有名シェフ'],
       cue: '「menu’s theme」のすぐあと。',
       line: 'Our Ultra Feast menu’s theme, *Hollywood*. We have Ratatouille from *Ratatouille*…',
-      said: '「今年のテーマはハリウッド。映画のラタトゥイユと…」と料理を紹介する。',
+      said: '「メニューのテーマはハリウッド。映画のラタトゥイユと…」と料理を紹介する。',
       mean: 'theme ＝ テーマ。料理はどれも映画にちなむ（Ratatouille ＝ 映画『レミーのおいしいレストラン』）。',
       trap: 'Tandoori Chicken（インド料理）が聞こえるので、インド料理と考えがち。最初の theme のあとが答え。',
       use: 'The party’s theme is the 80s.（パーティーのテーマは80年代）' },
@@ -161,7 +163,7 @@ export const pamLabor: Clip = {
       trap: '直前まで料理の話なので、食べ物のせいと考えがち。理由は医者の言葉の中。',
       use: 'It’s nothing serious, just a headache.（大したことない、ただの頭痛）' },
 
-    { id: 'n3', skill: 'phrase', level: 'B1', point: 'dothis', seg: [81.1, 87.3],
+    { id: 'n3', skill: 'phrase', level: 'B1', point: 'dothis', seg: [80.3, 86.3],
       stem: 'What does “let’s do this” mean here?',
       ja: 'ここでの「let’s do this」はどういう意味？',
       choices: ['Come on, we’re ready to go', 'Let’s make the food now', 'Let’s stop and rest'], a: 0,
@@ -186,7 +188,7 @@ export const pamLabor: Clip = {
       trap: 'I を強めると「私は」の対比、am なら言い返し。くり返しは2回目で何を強めたかを聞く。',
       use: 'I am not eating that.（それは絶対食べない）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'convince', reveals: ['fear', 'scared'], seg: [102.5, 135.4],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'convince', reveals: ['fear', 'scared', 'anyone', 'haveit'], seg: [102.5, 135.4],
       stem: 'What finally gets Pam to go?',
       ja: '最後にパムが行く気になったのは、なぜ？',
       choices: ['Jim says he is scared too', 'Michael calls an ambulance', 'The doctor calls her'], a: 0,
@@ -209,7 +211,7 @@ export const pamLabor: Clip = {
       trap: '怒りや冗談にも使う表現。どれかは後ろの一文で決まる。決まり文句は次の文とセットで。',
       use: 'Are you kidding? You were great!（何言ってるの、最高だったよ！）' },
 
-    { id: 'f2', skill: 'pragma', level: 'B2', point: 'anyone', seg: [114.4, 120.6],
+    { id: 'f2', skill: 'pragma', level: 'B2', point: 'anyone', seg: [114.56, 120.6],
       stem: 'What does “If anyone can…, you can” mean?',
       ja: '「If anyone can…, you can」とはどういう意味？',
       choices: ['You are the best for this', 'It is very easy for anyone', 'You should just try it'], a: 0,
@@ -244,7 +246,7 @@ export const pamLabor: Clip = {
       trap: 'head out to は「ヘ」で始まる。have it in なら最後が「イン」。ここは「ハヴィラッ」。',
       use: 'Let’s have lunch at the station.（駅でお昼にしよう）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'apart', seg: [135.2, 141], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'apart', seg: [135.2, 140.6], keep: true,
       stem: 'How far apart are the contractions now?',
       ja: '今、陣痛は何分おき？',
       choices: ['Two minutes', 'Three minutes', 'Four minutes', 'Five minutes'], a: 0,
@@ -280,7 +282,7 @@ export const pamLabor: Clip = {
       trap: '頼みごとが早口で並ぶので、となりの頼みと混ざりやすい。名前と動詞の組で聞く。',
       use: 'Ken, grab the bags. Amy, call a taxi.（ケンは荷物、エイミーはタクシーを）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'ambulance', ctx: true, reveals: ['stations'], seg: [167.3, 173.5],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'ambulance', ctx: true, reveals: ['stations'], seg: [167.45, 173.5],
       stem: 'Why does Dwight say no to an ambulance?',
       ja: 'ドワイトはなぜ救急車に反対する？',
       choices: ['It’s only for emergencies', 'Jim wants to drive her there', 'It would cost too much'], a: 0,
@@ -303,7 +305,7 @@ export const pamLabor: Clip = {
       trap: '分担に聞こえるが、直前の No, no, no が反対の合図。対になった文は脅しのことも。',
       use: 'You touch my fries, I eat your cake.（私のポテトに手を出したら、ケーキ食べるよ）' },
 
-    { id: 'actual', skill: 'marker', level: 'B2', point: 'actually', seg: [171.2, 176.2],
+    { id: 'actual', skill: 'marker', level: 'B2', point: 'actually', seg: [171.5, 174.62],
       stem: 'What does “actually” show in “We’re driving ourselves, actually”?',
       ja: '「We’re driving ourselves, actually」の actually の働きは？',
       choices: ['A change of plan', 'A very big surprise', 'A strong no'], a: 0,
@@ -315,7 +317,7 @@ export const pamLabor: Clip = {
       trap: 'actually を「実際に」と訳すと、意味がつかみにくい。前の案を変えるときの一言。',
       use: 'I’ll have tea, actually.（やっぱり紅茶にします）' },
 
-    { id: 'f4', skill: 'phrase', level: 'B2', point: 'condition', seg: [173.1, 179.6],
+    { id: 'f4', skill: 'phrase', level: 'B2', point: 'condition', seg: [174.62, 179.6],
       stem: 'What does “in no condition to drive” mean?',
       ja: '「in no condition to drive」の意味は？',
       choices: ['Too nervous to drive safely', 'Has no car to drive', 'Does not have a license'], a: 0,
@@ -327,7 +329,7 @@ export const pamLabor: Clip = {
       trap: 'condition を「条件」と勘違いしやすい。ここは体や心の「状態」。',
       use: 'You’re in no condition to work today.（今日は働ける状態じゃないよ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B2', point: 'gobag', ctx: true, seg: [182.3, 188.6],
+    { id: 'a2', skill: 'attitude', level: 'B2', point: 'gobag', ctx: true, reveals: ['keys'], seg: [180.0, 186.6],
       stem: 'The go bag is empty. How does the reply sound?',
       ja: 'バッグは空っぽ。それへの返事はどんな気持ち？',
       choices: ['Annoyed', 'Pleased', 'Relaxed'], a: 0,
@@ -339,7 +341,7 @@ export const pamLabor: Clip = {
       trap: 'great から「うれしい」に聞こえるが、悪い知らせの直後の great は皮肉。',
       use: 'Oh, great. The train is late again.（あーあ、また電車が遅れてる）' },
 
-    { id: 'keys', skill: 'detail', level: 'B1', point: 'keys', seg: [196.7, 204.5],
+    { id: 'keys', skill: 'detail', level: 'B1', point: 'keys', seg: [197.0, 204.0],
       stem: 'What can’t they find before leaving?',
       ja: '出かける前に、何が見つからない？',
       choices: ['The keys', 'The wallet', 'The phone'], a: 0,
@@ -351,7 +353,7 @@ export const pamLabor: Clip = {
       trap: '少し前に I have my wallet（さいふは持った）と聞こえるので選びやすい。',
       use: 'I can’t find my keys.（かぎが見つからない）' },
 
-    { id: 'luck', skill: 'phrase', level: 'B1', point: 'luck', seg: [204.5, 211],
+    { id: 'luck', skill: 'phrase', level: 'B1', point: 'luck', seg: [204.0, 211],
       stem: 'What does “Wish me luck” mean?',
       ja: '「Wish me luck」の意味は？',
       choices: ['Hope it goes well for me', 'Thank you for the nice gift', 'See you again very soon'], a: 0,

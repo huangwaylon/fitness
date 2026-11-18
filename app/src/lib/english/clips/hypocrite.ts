@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 3, new 1, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 7, rewrite 8, retire 3, new 1, ctx 4, tx 8, qa 20
 // A2 REVIEW 2026-11-17: keep 5, rewrite 9, retire 8, new 4
 // “Rachel Is a Hypocrite at Work | Friends” (the official Friends channel, Best of Season 9): Rachel apologizes to Gavin
 // for misjudging him, catches him eyeing a coworker mid-apology, and lectures him, until he brings up her own fling with
@@ -6,6 +6,7 @@
 // Segments from the captions, words from whisper (2026-11-16). Gavin and Heather are named in the audio; Rachel isn't,
 // but the title names her. Whisper loops “He didn't have a last name” from 105.6 s to the end: nothing after 106 s.
 // EAR CHECK: 41.9–42.8 s s1 — “I wasn't”: the item claims the t of n't drops and only the n is left
+// EAR CHECK: 103.4–104.4 s s2 — json3 hears “He did… he did…” before “He didn’t”; the trap names the restart
 // EAR CHECK: 81.0–83.6 s c3 — “that you knew that” in well under a second, the first “that” weak
 // Open: s1 stays about 50 % blind (whoever is accused tends to deny it).
 // EXCLUDE 32.1–34.6 (“Heather's ass…”)
@@ -20,7 +21,7 @@ export const hypocrite: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'apology', seg: [0, 21.4],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'apology', reveals: ['owe'], seg: [0, 21.4],
       stem: 'Why does Rachel say sorry to Gavin?',
       ja: 'レイチェルはなぜギャビンに謝る？',
       choices: ['She was wrong about him', 'She was rude to Heather', 'She forgot his last name'], a: 0,
@@ -56,9 +57,9 @@ export const hypocrite: Clip = {
       trap: '悪口を「正直さ」と喜んだと取りやすい。短い聞き返しはツッコミが多い。',
       use: 'Is that your idea of an apology?（それで謝ってるつもり？）' },
 
-    { id: 'p2', skill: 'marker', level: 'B2', point: 'impressions', ctx: true, seg: [7.4, 15.5],
-      stem: 'Gavin asks if this is her apology. What does Rachel do?',
-      ja: '「それが謝罪？」と聞かれ、レイチェルはどうする？',
+    { id: 'p2', skill: 'marker', level: 'B2', point: 'impressions', ctx: true, seg: [7.88, 15.5],
+      stem: 'Gavin asks, “Is this your first apology?” What does Rachel do?',
+      ja: '「Is this your first apology?」と聞かれ、レイチェルはどうする？',
       choices: ['Says it in other words', 'Asks Gavin what he means', 'Says she was right before'], a: 0,
       choicesJa: ['別の言葉で言い直す', 'ギャビンに意味を聞く', '前の考えが正しかったと言う'],
       cue: '「first apology?」のあと、No のあと',
@@ -97,7 +98,7 @@ export const hypocrite: Clip = {
       choicesJa: ['今日から新しく出直す', '今日も仕事に戻る', '仕事を休む日'],
       cue: '「Hey,」のあと',
       line: 'Hey, *new day, new leaf*. I am just really, really happy.',
-      said: '「新しい日、新しい自分。本当にすごく幸せ」と言う。',
+      said: '「ほら、新しい一日、心を入れかえて。本当に、本当に幸せなの」と言う。',
       mean: 'turn over a new leaf（出直す）を短くした形。leaf は本のページ。',
       trap: 'leaf（葉）や new day から、仕事や休みの話と思いやすい。「出直す」の決まり文句。',
       use: 'I’m turning over a new leaf.（心を入れかえるよ）' },
@@ -114,7 +115,7 @@ export const hypocrite: Clip = {
       trap: 'I’m sorry を毎回「ごめん」と取るとずれる。Obviously が続いたら皮肉の合図。',
       use: 'Sorry, am I keeping you?（ごめん、お邪魔だった？）' },
 
-    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'checking', reveals: ['trigger'], seg: [37.3, 44.7],
+    { id: 'ph1', skill: 'phrase', level: 'B2', point: 'checking', reveals: ['trigger'], seg: [37.3, 41.85],
       stem: 'What does “checking her out” mean here?',
       ja: '「checking her out」は、ここではどういう意味？',
       choices: ['Looking at her with interest', 'Checking her work for errors', 'Chatting with her a lot'], a: 0,
@@ -138,7 +139,7 @@ export const hypocrite: Clip = {
       trap: '服に詳しくない、と取りやすい。笑いは言い訳が自分で崩れる所。',
       use: 'Wait, that came out wrong.（待って、今の言い方はまずかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'wasnt', reveals: ['checking'], seg: [38.5, 44.7],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'wasnt', reveals: ['checking'], seg: [38.5, 43.62],
       stem: 'Fill the gap in Gavin’s line: “___ checking her out.”',
       ja: 'ギャビンのセリフ「___ checking her out.」の空所は？',
       choices: ['I was', 'I wasn’t', 'I’m not'], a: 1,
@@ -150,7 +151,7 @@ export const hypocrite: Clip = {
       trap: 'I was に聞こえやすい。「ワズ」のあとに「ン」があれば否定。I’m not は「アイム」で始まる。',
       use: 'I wasn’t sleeping, I was thinking.（寝てたんじゃなくて、考えてたの）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'fashion', seg: [40.8, 45.8],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'fashion', seg: [42.97, 45.8],
       stem: 'In Gavin’s excuse, what was he looking at?',
       ja: 'ギャビンの言いわけでは、何を見ていた？',
       choices: ['Her shirt', 'Her skirt', 'Her shoes'], a: 1,
@@ -162,7 +163,7 @@ export const hypocrite: Clip = {
       trap: 'skirt と shirt は出だしの差。「スカート」なら skirt、「シャート」なら shirt、「シューズ」なら shoes。',
       use: 'I’m in sales.（営業の仕事をしています）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creep', seg: [49.7, 57.2],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'creep', seg: [49.7, 56.6],
       stem: 'What does Rachel think of Gavin now?',
       ja: 'レイチェルは今、ギャビンをどう思っている？',
       choices: ['He’s horrible', 'He’s funny', 'He’s sweet'], a: 0,
@@ -210,7 +211,7 @@ export const hypocrite: Clip = {
       trap: 'mean を「意味する」と取ると質問、一語の言い直しと取ると訂正に聞こえる。中身の変化で判断する。',
       use: 'I mean, it’s up to you.（まあ、つまり、君しだいだよ）' },
 
-    { id: 'd3', skill: 'detail', level: 'B2', point: 'subordinate', seg: [65.8, 74.0],
+    { id: 'd3', skill: 'detail', level: 'B2', point: 'subordinate', seg: [65.8, 73.7],
       stem: 'What does Rachel say about Heather’s place at work?',
       ja: 'レイチェルは、ヘザーの職場での立場をどう言う？',
       choices: ['She is his boss', 'She is under him', 'She is at his level'], a: 1,
@@ -222,7 +223,7 @@ export const hypocrite: Clip = {
       trap: '長くて堅い語は「上司」に聞こえやすい。sub- は「下」。subway の sub と同じ。',
       use: 'She works under me.（彼女は私の部下です）' },
 
-    { id: 'd4', skill: 'detail', level: 'B2', point: 'tag', reveals: ['subordinate'], ctx: true, seg: [70.6, 77.0],
+    { id: 'd4', skill: 'detail', level: 'B2', point: 'tag', reveals: ['subordinate'], ctx: true, seg: [70.42, 77.0],
       stem: 'What does Gavin say Rachel did before?',
       ja: 'ギャビンは、レイチェルが前に何をしたと言う？',
       choices: ['Dated her old assistant', 'Fired her old assistant', 'Stared at her assistant'], a: 0,
@@ -261,13 +262,13 @@ export const hypocrite: Clip = {
     { id: 'n1', skill: 'number', level: 'B1', point: 'reasons', seg: [76.3, 85.5],
       stem: 'How many reasons does Rachel say make her case different?',
       ja: 'レイチェルは、自分の場合が違う理由はいくつあると言う？',
-      choices: ['One', 'Two', 'Three'], a: 1, keep: true,
-      choicesJa: ['1つ', '2つ', '3つ'],
+      choices: ['One', 'Two', 'Three', 'Four'], a: 1, keep: true,
+      choicesJa: ['1つ', '2つ', '3つ', '4つ'],
       cue: '「totally different」のすぐあと',
       line: 'That is totally different *for two reasons*. One, …',
       said: '「全然違うわ。理由は2つ」と言い、「1つ目、あなたが知ってたなんて知らなかった」と数え始める。',
       mean: 'for two reasons ＝ 理由が2つ。One, … And two, … と数える。',
-      trap: 'すぐ One, と数え始めるので1と勘違いしやすい。reasons の前は「トゥー」。',
+      trap: 'for は「フォー」で4に聞こえやすく、すぐ One, と数え始めるので1とも勘違いしやすい。reasons の前は「トゥー」。',
       use: 'No, for two reasons.（いや、理由は2つあって）' },
 
     // retired (A2): a “why does it get a laugh” item
@@ -292,7 +293,7 @@ export const hypocrite: Clip = {
       trap: '最初の that は省ける語なので、聞こえても書き落としやすい。4語全部書く。',
       use: 'I didn’t know that you cooked.（料理するなんて知らなかった）' },
 
-    { id: 'i3', skill: 'infer', level: 'C1', point: 'lastname', reveals: ['tag'], ctx: true, seg: [89.9, 98.5],
+    { id: 'i3', skill: 'infer', level: 'C1', point: 'lastname', reveals: ['tag'], ctx: true, seg: [90.38, 98.5],
       stem: 'Why does Gavin ask for Tag’s last name?',
       ja: 'ギャビンはなぜタグの名字を聞く？',
       choices: ['To test her story about Tag', 'To find Tag and call him', 'To check Tag still works here'], a: 0,
@@ -304,14 +305,14 @@ export const hypocrite: Clip = {
       trap: '名字を聞くので、タグに用があると考えがち。直前の「深い関係」への質問。',
       use: 'Oh yeah? Then what’s his name?（へえ、じゃあ彼の名前は？）' },
 
-    { id: 'g3', skill: 'gist', level: 'B1', point: 'tagend', reveals: ['lastname'], seg: [89.9, 106.0],
+    { id: 'g3', skill: 'gist', level: 'B1', point: 'tagend', reveals: ['lastname'], seg: [90.38, 106.0],
       stem: 'How does the talk about Tag end?',
       ja: 'タグの話は、どう終わる？',
       choices: ['She can’t say his last name', 'She starts to cry about him', 'She tells Gavin his full name'], a: 0,
       choicesJa: ['彼の名字が言えない', '彼のことで泣き出す', 'ギャビンにフルネームを教える'],
       cue: '名前を聞かれたあとの「It was…」。',
       line: 'What was Tag’s last name? — It was… Oh, my God. *He didn’t have a last name.*',
-      said: '「深い関係だった」と言うが、「名字は？」と聞かれて「えっと…うそでしょ」と詰まる。',
+      said: '「深い関係だった」と言うが、「名字は？」と聞かれて「えっと…やだ、どうしよう」と詰まる。',
       mean: '深い関係のはずが、名字も知らなかった。It was… で止まり、苦しい言い訳で終わる。',
       trap: 'Oh, my God を泣き出したと勘違いしやすい。続く言い訳で、答えられないと分かる。',
       use: 'His name was… sorry, I forgot.（彼の名前は…ごめん、忘れた）' },
@@ -335,9 +336,9 @@ export const hypocrite: Clip = {
       choicesJa: ['〜なかった', '（本当に）〜た', '（今）〜ない'],
       cue: '「Oh, my God」のあと',
       line: 'Oh, my God. He *didn’t* have a last name.',
-      said: '「うそでしょ。彼、名字がなかったのよ」と言い出す。',
+      said: '「やだ、どうしよう。彼、名字がなかったのよ」と言い出す。',
       mean: 'didn’t は「ディドゥン」。最後の t はほぼ消えて、「ン」が残る。',
-      trap: 'did に聞こえやすい。「ディ」のあとに「ドゥン」が続けば didn’t。doesn’t は「ダズン」。',
+      trap: '一度 He did… と言いかけて言い直す。最後まで言うのは「ディドゥン」の didn’t。doesn’t は「ダズン」。',
       use: 'I didn’t have time for lunch.（お昼を食べる時間がなかった）' },
   ]
 };

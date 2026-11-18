@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 0, rewrite 8, retire 8, new 10, ctx 6, tx 8, qa 21
+// R4 REVIEW 2026-11-18: keep 0, rewrite 8, retire 8, new 10, ctx 6, tx 8, qa 22
 // A2 REVIEW 2026-11-17: keep 4, rewrite 15, retire 5, new 0
 // “Andy Fails his Eye Test | Parks and Recreation” (the official Parks and Recreation channel, Season 4): Andy comes
 // to Ann with a long list of complaints, learns what insurance is (or isn't), and sees Dr. Harris, who can only fix
@@ -6,8 +6,9 @@
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈ 169.5 s. Andy, Ann and Dr. Harris are
 // named in the audio; Andy's wife (April) is never named. Same doctor-visit scene as medicalmess (its 0–110 s ≈ 71–178 s
 // here): the points it tests (I bet you are, sounds about right, I wouldn't worry, I mean, the gum, on the way over
-// here, the thumb and referrals, thanks for nothing, you drove us here, 100 million / 10 years, I like his face, too
-// handsome) are left to it; this bank tests the Ann scene and the rash, tongue, fuzzy, glasses and No offense lines.
+// here, the thumb and referrals, thanks for nothing, you drove us here, 100 million / 10 years, too handsome) are left
+// to it; this bank tests the Ann scene and the rash, tongue, fuzzy, glasses (refusal + I like his face) and No offense
+// lines.
 // Untested: 57–74 s ("we used to live together", the drug jab), 135.6–147.3 s (the eye chart, visual).
 // EXCLUDE 0–4.0
 // EXCLUDE 48–51.5: swear (“Hey, smart ass” twice)
@@ -388,8 +389,8 @@ export const andyEyeTest: Clip = {
       cue: '「need glasses」のあとの返事',
       line: 'Dr. Harris: Well, you definitely need glasses. / Wife: *No, he’s not getting glasses.*',
       said: '「絶対にメガネが必要だね」に、妻は「だめ、メガネはかけさせない」と言う。',
-      mean: 'he’s not getting 〜 ＝ 彼は〜を手に入れない。be 〜ing で決まった予定を言い、「絶対させない」と強く断っている。',
-      trap: 'お金の話が前にあったので、値段の話と考えがち。妻はすぐ No と言い、今の顔が好きだからと言う。',
+      mean: 'he’s not getting 〜 ＝ 彼は〜を手に入れない。be 〜ing で強く断る。理由は次の I like his face the way it is（今の顔が好き）。',
+      trap: '前にお金の話があり、値段の話と考えがち。妻はすぐ No と言う。',
       use: 'I’m not getting a new phone this year.（今年は新しい携帯は買わない）' },
 
     { id: 'a1', skill: 'attitude', level: 'B2', point: 'divorce', seg: [159.4, 167], retired: true,

@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 17, retire 0, new 4, ctx 4, tx 8
+// R4 REVIEW 2026-11-18: keep 1, rewrite 17, retire 0, new 4, ctx 4, tx 8, qa 22
 // A2 REVIEW 2026-11-17: keep 3, rewrite 14, retire 7, new 1
 // “April Becomes Leslie Knope | Parks and Recreation” (the official Parks and Recreation channel, Season 5): April,
 // who hates talking to people, runs the Pawnee Commons forums dressed and acting as Leslie; the first goes badly, the
@@ -42,7 +42,7 @@ export const aprilLeslie: Clip = {
       trap: '人名に聞こえるが「誰か知らない」と言っている。たとえで気持ちをつかむ。',
       use: 'This tie makes me feel like a principal.（このネクタイ、校長みたいな気分）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', reveals: ['hate', 'daily'], seg: [20, 36.7],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'why', reveals: ['hate', 'daily', 'old'], seg: [20, 36.4],
       stem: 'Why will April act like Leslie?',
       ja: 'エイプリルはなぜレスリーのまねをする？',
       choices: ['To survive a hard week', 'To make the crowd like her', 'To learn Leslie’s job'], a: 0,
@@ -66,7 +66,7 @@ export const aprilLeslie: Clip = {
       trap: 'this week だけ聞くと、一回だけと思いやすい。前の every day まで聞く。',
       use: 'I have meetings every day this week.（今週は毎日会議だ）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'hate', seg: [22.5, 26.8],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'hate', seg: [22.7, 26.8],
       stem: 'Type what April says: “…this week, and ___.” (5 words)', answer: 'i hate talking to people',
       ja: '「…this week, and ___.」の空所を書こう（5語）',
       cue: '「every day this week」のあと',
@@ -76,7 +76,7 @@ export const aprilLeslie: Clip = {
       trap: 'hate to talk と書きたくなるかも。意味は同じでも、聞こえた talking の形で書く。',
       use: 'I hate talking on the phone.（電話で話すのが苦手）' },
 
-    { id: 'i1', skill: 'infer', level: 'B1', point: 'old', reveals: ['1995'], seg: [31.5, 36.7],
+    { id: 'i1', skill: 'infer', level: 'B1', point: 'old', reveals: ['1995'], seg: [31.5, 36.4],
       stem: 'What does “She still wears this” tell us?',
       ja: '「She still wears this」から何が分かる？',
       choices: ['Leslie wears it even now', 'Leslie wore it long ago', 'Leslie never wore it'], a: 0,
@@ -112,7 +112,7 @@ export const aprilLeslie: Clip = {
       trap: 'terrible（ひどい）が強く残りやすい。決め手は but のあとの less（より少なく）。',
       use: 'It’s the least bad choice.（いちばんましな選択だね）' },
 
-    { id: 'n3', skill: 'pragma', level: 'B1', point: 'intro', seg: [61.9, 70.2],
+    { id: 'n3', skill: 'pragma', level: 'B1', point: 'intro', seg: [61.9, 69.8],
       stem: 'How does April begin the forum?',
       ja: 'エイプリルは説明会をどう始める？',
       choices: ['With her name and department', 'With a joke about Leslie', 'With a question for everyone'], a: 0,
@@ -124,7 +124,7 @@ export const aprilLeslie: Clip = {
       trap: 'レスリーのまねをしているので、レスリーの話と考えがち。最初はふつうの自己紹介。',
       use: 'Hello, everyone. I’m Ken from the sales team.（皆さん、こんにちは。営業部のケンです）' },
 
-    { id: 'n4', skill: 'phrase', level: 'B1', point: 'chairs', seg: [78, 88.3],
+    { id: 'n4', skill: 'phrase', level: 'B1', point: 'chairs', seg: [77.3, 90.4],
       stem: 'What does “if you all would kindly” mean here?',
       ja: 'ここでの「if you all would kindly」はどういう意味？',
       choices: ['A very polite “please”', 'A question about kindness', 'An order to be kind'], a: 0,
@@ -136,7 +136,7 @@ export const aprilLeslie: Clip = {
       trap: 'kindly を「親切に」と取ると、やさしさの話に聞こえるが、ここは please をていねいにした形。',
       use: 'If you would kindly wait here.（こちらでお待ちいただけますか）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'taxes', seg: [96.6, 101.5],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'taxes', seg: [96.6, 101.1],
       stem: 'Fill the gap: “I’m afraid this park ___ my taxes.”',
       ja: '「I’m afraid this park ___ my taxes.」の空所は？',
       choices: ['will raise', 'would raise', 'has raised'], a: 0,
@@ -159,7 +159,7 @@ export const aprilLeslie: Clip = {
       trap: '最初の税金の話で決めない。リストは最後の項目まで聞く。',
       use: 'I’m also a little scared of the dark.（それに、暗いのもちょっと怖い）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'fearnot', reveals: ['taxes'], seg: [98, 104.3],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'fearnot', reveals: ['taxes'], seg: [99.42, 104.28],
       stem: 'What does “fear not” mean?',
       ja: '「fear not」はどういう意味？',
       choices: ['Don’t worry about it', 'I am not afraid of it', 'Let’s not talk now'], a: 0,
@@ -171,7 +171,7 @@ export const aprilLeslie: Clip = {
       trap: '一語ずつ訳すと「私は怖くない」になりやすい。相手を安心させる決まり文句。',
       use: 'Fear not, I brought snacks.（ご心配なく、おやつ持ってきた）' },
 
-    { id: 'i4', skill: 'attitude', level: 'B2', point: 'fine', seg: [105.3, 115.4],
+    { id: 'i4', skill: 'attitude', level: 'B2', point: 'fine', seg: [104.93, 115.2],
       stem: 'How does Walter seem to feel?',
       ja: 'ウォルターは、どんな気持ちに見える？',
       choices: ['Nervous and worried', 'Calm and relaxed', 'Bored and tired'], a: 0,
@@ -183,7 +183,7 @@ export const aprilLeslie: Clip = {
       trap: 'fine が何度も聞こえるので、落ち着いていると考えがち。前の scared of a lot of stuff が本音。',
       use: 'I’m fine. Totally fine. Really.（大丈夫。全然平気。ほんとに）' },
 
-    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [144.5, 151.5], keep: true,
+    { id: 'n2', skill: 'number', level: 'B1', point: 'four', seg: [144.58, 151.5], keep: true,
       stem: 'How many signatures did the first forum get?',
       ja: '最初の説明会で集まった署名はいくつ？',
       choices: ['2', '4', '14', '40'], a: 1,
@@ -229,7 +229,7 @@ export const aprilLeslie: Clip = {
       trap: '名前だけで止まるのを、怖さや怒りと取りやすい。babe と軽い返事が続くかで、関係の温度を見る。',
       use: 'Babe. — Okay, okay, I’ll stop.（ちょっと。—はいはい、やめるよ）' },
 
-    { id: 'p1', skill: 'pragma', level: 'B2', point: 'andy1', ctx: true, seg: [166.1, 173.0],
+    { id: 'p1', skill: 'pragma', level: 'B2', point: 'andy1', ctx: true, seg: [166.1, 174.25],
       stem: 'What does April mean by just saying “Andy.”?',
       ja: 'エイプリルが「Andy.」とだけ言うのはどういう意味？',
       choices: ['Stop it, be serious', 'Please help me choose', 'Say that one more time'], a: 0,
@@ -253,7 +253,7 @@ export const aprilLeslie: Clip = {
       trap: 'got（手に入れた）から「もう持ってる」と勘違いしやすい。can you 〜? への返事。',
       use: 'Two coffees, please. — You got it.（コーヒー2つください。—かしこまりました）' },
 
-    { id: 'd5', skill: 'detail', level: 'B1', point: 'bag', seg: [185.9, 196],
+    { id: 'd5', skill: 'detail', level: 'B1', point: 'bag', seg: [185.9, 196.38],
       stem: 'What is in the wrong bag?',
       ja: '間違えたかばんには何が入っている？',
       choices: ['Snacks and baseball cards', 'Her Leslie suit and notes', 'Her headband and a wig'], a: 0,
@@ -265,7 +265,7 @@ export const aprilLeslie: Clip = {
       trap: 'suit や notes も聞こえるが、don’t have（持っていない）のあと。full of のあとが答え。',
       use: 'I think I grabbed the wrong bag.（かばんを間違えたみたい）' },
 
-    { id: 'g2', skill: 'gist', level: 'B2', point: 'self', reveals: ['bag', 'math', 'extra'], seg: [203.3, 233.2],
+    { id: 'g2', skill: 'gist', level: 'B2', point: 'self', reveals: ['bag', 'math', 'extra', 'goodq'], seg: [202.86, 233.38],
       stem: 'How does April run the second forum?',
       ja: 'エイプリルは2回目の説明会をどう進める？',
       choices: ['As herself, short and direct', 'As Leslie, with her notes', 'Nervously, with Andy’s help'], a: 0,
@@ -277,7 +277,7 @@ export const aprilLeslie: Clip = {
       trap: 'メモはかばんに入っていなかった。Next question などの短い答え方で分かる。',
       use: 'Just be yourself up there.（壇上では、いつものあなたで）' },
 
-    { id: 'n5', skill: 'pragma', level: 'B2', point: 'goodq', ctx: true, seg: [207.3, 215.0],
+    { id: 'n5', skill: 'pragma', level: 'B2', point: 'goodq', ctx: true, seg: [207.3, 215.17],
       stem: 'How does April first answer the cost question?',
       ja: '費用の質問に、エイプリルは最初にどう答える？',
       choices: ['She praises the question', 'She says she has no idea', 'She asks Andy to answer'], a: 0,
@@ -289,7 +289,7 @@ export const aprilLeslie: Clip = {
       trap: 'Uh（あー）で詰まるので、分からないと答えたと考えがち。そのあと割合の説明を始める。',
       use: 'Good question. Let me check.（いい質問ですね。確認します）' },
 
-    { id: 'p3', skill: 'pragma', level: 'B2', point: 'math', seg: [215, 221.7],
+    { id: 'p3', skill: 'pragma', level: 'B2', point: 'math', seg: [215.17, 221.68],
       stem: 'What does “Excuse me, ma’am” mean here?',
       ja: 'ここでの「Excuse me, ma’am」はどういう意味？',
       choices: ['Please stop talking', 'I’m sorry about that', 'Can you say that again?'], a: 0,
@@ -323,7 +323,7 @@ export const aprilLeslie: Clip = {
       trap: '前の 40% が耳に残ると割合で答えたと思いやすい。Look は断りではなく、要点を言う前置き。',
       use: 'Short version: it won’t cost you a thing.（要するに、一銭もかからないよ）' },
 
-    { id: 'd6', skill: 'detail', level: 'B1', point: 'extra', ctx: true, reveals: ['math'], seg: [221.5, 231.9],
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'extra', ctx: true, reveals: ['math'], seg: [221.68, 232.25],
       stem: 'How much extra will the citizen have to pay?',
       ja: 'その市民は、いくら余分に払うことになる？',
       choices: ['No extra money at all', 'A little extra money', 'Twice as much money'], a: 0,
@@ -335,7 +335,7 @@ export const aprilLeslie: Clip = {
       trap: 'pay と money が聞こえるので、払うと思いやすい。won’t have to と any で「ゼロ」。',
       use: 'You won’t have to pay anything extra.（追加料金はかかりません）' },
 
-    { id: 'a3', skill: 'attitude', level: 'B2', point: 'dig', seg: [244.1, 255.5],
+    { id: 'a3', skill: 'attitude', level: 'B2', point: 'dig', seg: [244.1, 255.2],
       stem: 'How does Harris feel about April?',
       ja: 'ハリスはエイプリルをどう思っている？',
       choices: ['He likes that she’s tough', 'He is scared and gives up', 'He is angry with her'], a: 0,

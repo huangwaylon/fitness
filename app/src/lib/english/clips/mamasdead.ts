@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 5, new 1, ctx 4, tx 3
+// R4 REVIEW 2026-11-18: keep 1, rewrite 13, retire 5, new 1, ctx 4, tx 3, qa 15
 // A2 REVIEW 2026-11-17: keep 8, rewrite 8, retire 4, new 2
 // “"Well hey, your Mama's dead" - The Office US” (the official The Office channel, Best of Season 4): Toby asks
 // Michael to deal with Stanley's outburst; Michael insists it was a joke, then dodges Toby's challenge to go and ask.
@@ -8,7 +8,7 @@
 // "Michael" (71.2 s). R4: whisper runs ≈ 1 s behind the captions here. The "black man" and "so white" lines are
 // EXCLUDEd; the "your mama's dead" joke (43.4–49.8 s) stays untested. Q1 and 61–76 s were crowded: d1, a1 (folded into
 // p2's exchange), s2 (pr1's twin), d3 and i2 (i1's twin) retired; p2 and h1 restored as context items; f0 new.
-// EXCLUDE 31.6–38.9
+// EXCLUDE 32.3–39.5
 // EXCLUDE 49.8–52.9
 import type { Clip } from '../types.ts';
 
@@ -41,7 +41,7 @@ export const mamasDead: Clip = {
       trap: 'second を「2番目」と勘違いしやすい。ここは時間の「秒」で、ほんの少しのこと。',
       use: 'Can I talk to you a second?（ちょっといいですか）' },
 
-    { id: 'p1', skill: 'phrase', level: 'B2', point: 'address', seg: [3.7, 12.9],
+    { id: 'p1', skill: 'phrase', level: 'B2', point: 'address', seg: [4.4, 12.5],
       stem: 'What does “address” mean here?',
       ja: 'ここでの「address」はどういう意味？',
       choices: ['Deal with it', 'Give a speech', 'Write a letter'], a: 0,
@@ -74,7 +74,7 @@ export const mamasDead: Clip = {
       trap: '質問の形なので本当に分からないと思いやすい。すぐあとで「何もない」と言い切る。',
       use: 'What are you talking about?（何言ってるの？）' },
 
-    { id: 'p2', skill: 'detail', level: 'B2', point: 'insub', ctx: true, seg: [10.0, 16.8],
+    { id: 'p2', skill: 'detail', level: 'B2', point: 'insub', ctx: true, seg: [10.7, 16.8],
       stem: 'How does Toby answer “Nothing happened”?',
       ja: '「Nothing happened」に、トビーはどう答える？',
       choices: ['Stanley did not obey Michael', 'Stanley said sorry later', 'Stanley was only joking'], a: 0,
@@ -86,7 +86,7 @@ export const mamasDead: Clip = {
       trap: 'joking はマイケルの言い分。トビーの答えは Well のあとの openly insubordinate。',
       use: 'Well, you know, it was a big problem.（いや、あれは大きな問題でしたよ）' },
 
-    { id: 'd2', skill: 'detail', level: 'B1', point: 'room', seg: [13.4, 19.1],
+    { id: 'd2', skill: 'detail', level: 'B1', point: 'room', seg: [13.58, 19.05],
       stem: 'Where did the trouble with Stanley happen?',
       ja: 'スタンリーとのもめごとはどこで起きた？',
       choices: ['In the conference room', 'In the break room', 'In Michael’s own office'], a: 0,
@@ -107,7 +107,7 @@ export const mamasDead: Clip = {
       trap: 'josh を知らないと雑談と取りやすい。〜ing around は「〜して遊ぶ・ふざける」。',
       use: 'We were just kidding around.（ただふざけてただけ）' },
 
-    { id: 'a2', skill: 'attitude', level: 'B1', point: 'doubt', ctx: true, reveals: ['seem'], seg: [24.5, 31.6],
+    { id: 'a2', skill: 'attitude', level: 'B1', point: 'doubt', ctx: true, reveals: ['seem'], seg: [24.5, 32.3],
       stem: 'Does Toby agree that Stanley was joking?',
       ja: 'スタンリーは冗談を言っただけ、にトビーは賛成する？',
       choices: ['No, he doesn’t', 'Yes, he does', 'He thinks it’s funny'], a: 0,
@@ -119,7 +119,7 @@ export const mamasDead: Clip = {
       trap: '強い言葉がないので、受け入れたと考えがち。seem の前の didn’t を聞く。',
       use: 'He didn’t seem happy.（彼はうれしそうに見えなかった）' },
 
-    { id: 's1', skill: 'sound', level: 'B2', point: 'seem', seg: [26.7, 31.6],
+    { id: 's1', skill: 'sound', level: 'B2', point: 'seem', seg: [26.7, 32.3],
       stem: 'Fill the gap: “He ___ seem like he was joking.”',
       ja: '「He ___ seem like he was joking.」の空所は？',
       choices: ['didn’t', 'did', 'doesn’t'], a: 0,
@@ -141,7 +141,7 @@ export const mamasDead: Clip = {
       trap: 'if の文はやわらかく聞こえやすい。でも中身は「友だちがいない」という悪口。',
       use: 'If I had time, I would go.（時間があれば行くのに）' },
 
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [38.9, 43.4],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'friends', seg: [39.5, 43.9],
       stem: 'What do friends do, says Michael?',
       ja: '友だちは何をするものだとマイケルは言う？',
       choices: ['Make jokes with each other', 'Help each other at work', 'Eat lunch with each other'], a: 0,
@@ -152,7 +152,7 @@ export const mamasDead: Clip = {
       trap: 'friends が何度も出るので、助け合う話を連想しやすい。動詞 joke を聞く。',
       use: 'We help one another at work.（職場ではおたがい助け合う）' },
 
-    { id: 'g2', skill: 'gist', level: 'B1', point: 'dodge', reveals: ['excuse', 'office'], seg: [52.9, 82.8],
+    { id: 'g2', skill: 'gist', level: 'B1', point: 'dodge', reveals: ['excuse', 'office', 'ask', 'though'], seg: [52.9, 82.8],
       stem: 'How does the talk end?',
       ja: '話はどう終わる？',
       choices: ['Michael doesn’t go to Stanley', 'Michael and Toby go to Stanley', 'Toby goes to Stanley alone'], a: 0,
@@ -206,9 +206,9 @@ export const mamasDead: Clip = {
       said: '「今から聞きに行きませんか？」に「よし、行くよ」と答え、すぐ具合が悪いと言い出す。',
       mean: 'タイミングが良すぎる。スタンリーと向き合うのを避ける口実。',
       trap: '体の話をそのまま信じやすい。直前に何を頼まれたかと並べて聞く。',
-      use: 'That’s convenient timing.（ずいぶん都合のいいタイミングだね）' },
+      use: 'Sorry, I don’t feel well today.（すみません、今日は具合が悪くて）' },
 
-    { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['excuse', 'stomach'], seg: [63.4, 67],
+    { id: 'm1', skill: 'marker', level: 'B2', point: 'though', reveals: ['excuse'], seg: [62.95, 66.45],
       stem: 'What does “though” at the end mean here?',
       ja: '文の最後の「though」はここでどういう意味？',
       choices: ['But', 'So', 'Also'], a: 0,
@@ -230,7 +230,7 @@ export const mamasDead: Clip = {
       trap: '具合が悪いと聞くと、どこでもありそうに思える。so の前の体の部分を聞く。',
       use: 'My stomach hurts a little.（ちょっとおなかが痛い）' },
 
-    { id: 'x1', skill: 'dict', level: 'B1', point: 'home', reveals: ['stomach', 'excuse'], seg: [66, 71],
+    { id: 'x1', skill: 'dict', level: 'B1', point: 'home', reveals: ['stomach', 'excuse'], seg: [66, 70.0],
       stem: 'Type what you hear: “so I may be ___ today.” (3 words)', answer: 'going home early',
       ja: '「so I may be ___ today.」の空所を書こう（3語）',
       cue: '「may be」のあと、3語。', line: 'My stomach hurts, so I may be *going home early* today',
@@ -250,7 +250,7 @@ export const mamasDead: Clip = {
       trap: 'mean girl（意地悪な子）をマイケルのことと思いやすい。痛くなるのは娘の方。',
       use: 'Are you just nervous?（ただ緊張してるだけじゃない？）' },
 
-    { id: 'w1', skill: 'who', level: 'B1', point: 'daughter', reveals: ['stomach'], seg: [70.5, 75.5],
+    { id: 'w1', skill: 'who', level: 'B1', point: 'daughter', reveals: ['stomach'], seg: [70.5, 74.95],
       stem: 'Whose daughter gets stomachaches?',
       ja: 'おなかが痛くなるのは誰の娘？',
       choices: ['Toby’s daughter', 'Michael’s daughter', 'Stanley’s daughter'], a: 0,
@@ -261,7 +261,7 @@ export const mamasDead: Clip = {
       trap: 'Michael から、マイケルの娘と勘違いしやすい。呼びかけの名前は聞き手。',
       use: 'You know, my son does that too.（うちの息子もそうなんだよ）' },
 
-    { id: 'h1', skill: 'detail', level: 'B2', point: 'office', ctx: true, reveals: ['daughter', 'stomach'], seg: [73.6, 82.0],
+    { id: 'h1', skill: 'detail', level: 'B2', point: 'office', ctx: true, reveals: ['daughter', 'stomach'], seg: [73.48, 82.0],
       stem: 'What does Michael say makes his stomach hurt?',
       ja: 'マイケルは、何のせいでおなかが痛くなると言う？',
       choices: ['Toby visiting his office', 'A mean girl at his school', 'Something he ate today'], a: 0,

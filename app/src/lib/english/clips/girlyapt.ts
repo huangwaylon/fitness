@@ -1,4 +1,4 @@
-// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 0, new 5, ctx 6, tx 25
+// R4 REVIEW 2026-11-18: keep 12, rewrite 5, retire 0, new 5, ctx 6, tx 25, qa 32
 // A2 REVIEW 2026-11-17: keep 10, rewrite 7, retire 6, new 0
 // “Joey’s New Girly Apartment | Friends” (the official Friends channel, Best of Season 6): Chandler warns Joey that
 // his new roommate Janine's things are taking over, Joey tries to push back and gives in on each point, and by the end
@@ -16,7 +16,7 @@ export const girlyApt: Clip = {
   show: 'Friends',
   credit: 'Friends (official YouTube channel)',
   questions: [
-    { id: 'd4', skill: 'detail', level: 'B1', point: 'dance', seg: [0.5, 5.5],
+    { id: 'd4', skill: 'detail', level: 'B1', point: 'dance', seg: [0.5, 3.75],
       stem: 'Where is Janine right now?',
       ja: 'ジャニーンは今どこにいる？',
       choices: ['At a dance class', 'Asleep in her room', 'At her new job'], a: 0,
@@ -24,14 +24,14 @@ export const girlyApt: Clip = {
       cue: '「no」のすぐあと。', line: 'Uh, no. She’s at *dance class*.',
       said: 'ジャニーンはいるかと聞かれ、「いや、ダンスのレッスン中」と答える。',
       mean: 'She’s at 〜 ＝ 〜に行っている。今は留守なので、部屋をのぞきに行ける。',
-      trap: 'すぐあとの my room に引かれやすい。no のすぐあとの場所が答え。',
+      trap: 'no だけ聞いて、部屋で寝ていると考えがち。決め手は no のあとの at。',
       use: 'She’s at work right now.（彼女は今仕事中）' },
 
-    { id: 'x1', skill: 'dict', level: 'B2', point: 'checkout', seg: [1.8, 7.2],
+    { id: 'x1', skill: 'dict', level: 'B2', point: 'checkout', seg: [3.6, 6.88],
       stem: 'Type: “Can I ___ with my room?” (5 words)', answer: 'check out what she did',
       ja: '「Can I ___ with my room?」の空所を書こう（5語）',
       cue: '「Can I」のあと。', line: 'Can I *check out what she did* with my room?',
-      said: '「僕の前の部屋をどうしたか、見てもいい？」と聞く。',
+      said: '「俺の部屋を彼女がどうしたか、見てもいい？」と聞く。',
       mean: 'check out ＝ 見てみる。「チェッカウ」。what she did は「ワッシディッ」。',
       trap: '速くつながるので語が抜けやすい。5語を数える。',
       use: 'Can I check out the view?（景色を見てもいい？）' },
@@ -58,7 +58,7 @@ export const girlyApt: Clip = {
       trap: '「Joey の物には小さすぎる」と取りやすい。anything は「何も」、つまり使い道がない。',
       use: 'It’s cute, but what’s it for?（かわいいけど、何に使うの？）' },
 
-    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'letgo', seg: [34.3, 42.4],
+    { id: 'ph2', skill: 'phrase', level: 'B2', point: 'letgo', seg: [34.6, 42.4],
       stem: 'What does “If you let this go” mean here?',
       ja: 'ここでの「If you let this go」はどういう意味？',
       choices: ['If you do nothing about it', 'If you give her the room', 'If you get angry with her'], a: 0,
@@ -69,7 +69,7 @@ export const girlyApt: Clip = {
       trap: 'let go から「手放す」と思うと、部屋をゆずる話に聞こえる。ここは「見のがす」。',
       use: 'I’ll let it go this time.（今回は見のがすよ）' },
 
-    { id: 'c1', skill: 'detail', level: 'B1', point: 'willtalk', ctx: true, seg: [38, 46],
+    { id: 'c1', skill: 'detail', level: 'B1', point: 'willtalk', ctx: true, seg: [38.45, 45.95],
       stem: 'What does Joey agree to do?',
       ja: 'ジョーイは何をすると言う？',
       choices: ['Talk with Janine about it', 'Find a new apartment', 'Throw out all her stuff'], a: 0,
@@ -115,7 +115,7 @@ export const girlyApt: Clip = {
       trap: 'right から「正しい」を連想しやすい。right there は「すぐそこ」。',
       use: 'Be right there! Just a second.（すぐ行きます！少々お待ちを）' },
 
-    { id: 'i1', skill: 'phrase', level: 'B2', point: 'cute', seg: [71.1, 81.1],
+    { id: 'i1', skill: 'phrase', level: 'B2', point: 'cute', seg: [70.98, 81.1],
       stem: 'What does “That’s what I was afraid of” mean?',
       ja: '「That’s what I was afraid of」はどういう意味？',
       choices: ['Just as I feared', 'I am scared of her', 'The kid scares me'], a: 0,
@@ -137,7 +137,7 @@ export const girlyApt: Clip = {
       trap: 'relative（親せき）が耳に残りやすい。答えは No から始まっている。',
       use: 'I just thought it was nice.（いいなと思っただけ）' },
 
-    { id: 'c3', skill: 'pragma', level: 'B1', point: 'athome', seg: [80, 91.5],
+    { id: 'c3', skill: 'pragma', level: 'B1', point: 'athome', seg: [80, 90.8],
       stem: 'Why does Joey first say “I want you to feel at home”?',
       ja: 'ジョーイはなぜ先に「I want you to feel at home」と言う？',
       choices: ['To be kind before a complaint', 'To ask her to stay longer', 'To say sorry for his room'], a: 0,
@@ -149,7 +149,7 @@ export const girlyApt: Clip = {
       trap: 'feel at home だけ聞くと歓迎の話と考えがち。決め手は but のあと。',
       use: 'I love your idea, but it’s too expensive.（いい案だけど、高すぎる）' },
 
-    { id: 'c4', skill: 'infer', level: 'B2', point: 'artist', ctx: true, seg: [91, 104],
+    { id: 'c4', skill: 'infer', level: 'B2', point: 'artist', ctx: true, seg: [90.8, 103.85],
       stem: 'Why does Janine say the baby picture is okay?',
       ja: 'ジャニーンは、赤ちゃんの写真はなぜいいと言う？',
       choices: ['A famous artist took it', 'The baby is her niece', 'Joey gave it to her'], a: 0,
@@ -161,7 +161,7 @@ export const girlyApt: Clip = {
       trap: 'cute babies we don’t know から、身内の子かと考えがち。決め手は famous artist。',
       use: 'It’s by a famous photographer.（有名な写真家の作品なんだ）' },
 
-    { id: 'nt4', skill: 'dict', level: 'C1', point: 'nicer', seg: [108.1, 115],
+    { id: 'nt4', skill: 'dict', level: 'C1', point: 'nicer', seg: [109.3, 114.75],
       stem: 'Type: “I just thought ___ the place a little nicer.” (4 words)',
       answer: "i'd try and make",
       ja: '「I just thought ___ the place a little nicer.」の空所を書こう（4語）',
@@ -197,7 +197,7 @@ export const girlyApt: Clip = {
     { id: 'pr1', skill: 'pragma', level: 'B1', point: 'curling', ctx: true, seg: [129.26, 143.9],
       stem: 'What does Joey mean by “Well, that’s okay then”?',
       ja: 'ジョーイの「Well, that’s okay then」はどういう意味？',
-      choices: ['Then it’s fine', 'It’s still not okay', 'Show it to me'], a: 0,
+      choices: ['It’s fine now', 'It’s still not okay', 'Show it to me'], a: 0,
       choicesJa: ['それならいい', 'やっぱりだめ', '見せて'],
       cue: '名前を聞いたあとの短い返事。', line: 'Joey: What is with the *really hot stick* in the bathroom? / Janine: It’s a curling iron. / Joey: Oh, well, *that’s okay then*.',
       said: '「ヘアアイロンよ」と聞くと、「ああ、それならいいや」と引き下がる。',
@@ -211,27 +211,27 @@ export const girlyApt: Clip = {
       choices: ['On the floor', 'Up on a hook', 'Over the bathtub'], a: 0,
       choicesJa: ['床の上', 'フックの上', 'バスタブの上'],
       cue: '「where I keep it」の直前。', line: 'my towel is not *on the floor where I keep it*.',
-      said: '「僕のタオルが、いつも置いてる床の上にない」と言う。',
+      said: '「俺のタオルが、いつも置いてる床の上にない」と言う。',
       mean: 'where I keep it ＝ いつも置いている所。ジャニーンがフックにかけ直した。',
       trap: 'hook があとに出るので選びやすい。not は「今はそこにない」ということ。',
       use: 'That’s where I keep my keys.（鍵はいつもそこに置いてる）' },
 
-    { id: 'i4', skill: 'infer', level: 'B1', point: 'clean', ctx: true, seg: [154.5, 162],
+    { id: 'i4', skill: 'infer', level: 'B1', point: 'clean', ctx: true, seg: [154.7, 162],
       stem: 'Why does the towel feel different?',
       ja: 'タオルはなぜ感じが違う？',
-      choices: ['It’s clean and dry', 'Janine used it', 'It’s a brand-new towel'], a: 0,
-      choicesJa: ['きれいで乾いている', 'ジャニーンが使った', '新品のタオルだ'],
+      choices: ['It’s washed and dry', 'Janine used it', 'It’s a brand-new towel'], a: 0,
+      choicesJa: ['洗って乾かしてある', 'ジャニーンが使った', '新品のタオルだ'],
       cue: '「different」のたびに返る一語。', line: 'Joey: And it smells different. / Janine: It’s *clean*. / Joey: Yeah, but it feels different. / Janine: It’s *dry*.',
       said: '「においが違う」には「洗ったから」、「感じが違う」には「乾いてる」と返す。',
       mean: '違和感の正体は、清潔で乾いていること。文句が実は改善の証拠。',
       trap: 'smells different から「誰かが使った」と勘違いしやすい。ジャニーンの短い答えが理由。',
       use: 'It’s not different. It’s just clean.（違うんじゃなくて、きれいなだけ）' },
 
-    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'peace', reveals: ['clean'], seg: [162.8, 169.6],
+    { id: 'ph3', skill: 'phrase', level: 'B2', point: 'peace', reveals: ['clean'], seg: [162.8, 169.2],
       stem: 'What does “I can make my peace with” the towels mean?',
       ja: 'タオルについての「I can make my peace with」はどういう意味？',
-      choices: ['I can accept them now', 'I can thank her for them', 'I can make up with her'], a: 0,
-      choicesJa: ['もう受け入れられる', 'タオルのお礼を言える', '彼女と仲直りできる'],
+      choices: ['I can accept them now', 'I can thank her for them', 'We can be friends again'], a: 0,
+      choicesJa: ['もう受け入れられる', 'タオルのお礼を言える', 'また仲よくできる'],
       cue: '「All right」のあと。', line: 'All right, *I can make my peace with* the clean, dry towels.',
       said: '「わかった、洗って乾いたタオルは受け入れるよ」と言う。',
       mean: 'make peace with 〜 ＝ 気は進まないが〜を受け入れる。ここで一つゆずった。',
@@ -261,7 +261,7 @@ export const girlyApt: Clip = {
       trap: 'girl と聞くと Janine を思い浮かべやすい。花の話をしていたのは誰か。',
       use: 'Can I talk to the birthday boy?（誕生日の主役と話せる？）' },
 
-    { id: 'c5', skill: 'pragma', level: 'B1', point: 'excuseus', seg: [195.5, 203.5],
+    { id: 'c5', skill: 'pragma', level: 'B1', point: 'excuseus', seg: [195.5, 203.2],
       stem: 'What does Chandler ask Monica to do?',
       ja: 'チャンドラーはモニカに何を頼む？',
       choices: ['Leave them alone for a bit', 'Say sorry to Joey', 'Help with the flowers'], a: 0,
@@ -273,7 +273,7 @@ export const girlyApt: Clip = {
       trap: 'excuse から「許す・謝る」を連想しやすい。excuse us は「私たちだけにして」。',
       use: 'Could you excuse us for a minute?（少し席を外してもらえますか）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['curling', 'peace'], seg: [217, 259.2],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'turn', reveals: ['curling', 'peace', 'mean', 'ive', 'wayyousaid'], seg: [216.65, 259.2],
       stem: 'How does the talk with Chandler end?',
       ja: 'チャンドラーとの話はどう終わる？',
       choices: ['Joey sees he has changed', 'Chandler moves back in', 'Janine moves out'], a: 0,
@@ -305,7 +305,7 @@ export const girlyApt: Clip = {
       said: '「違うよ。なんでそんなこと言うの？ひどいよ」と返す。',
       mean: 'mean ＝ 意地悪な。言い返すより傷ついている。その反応自体が笑い。',
       trap: 'Why would you から、怒っていると思いやすい。最後の just mean（ひどい）が気持ち。',
-      use: 'That’s just mean. Take it back.（ひどいよ、取り消して）' },
+      use: 'Hey, that’s a little mean.（ちょっと、それはひどいよ）' },
 
     { id: 's1', skill: 'sound', level: 'B2', point: 'ive', seg: [247.7, 254.8],
       stem: 'Fill the gap: “Now ___ upset you.”',
@@ -313,7 +313,7 @@ export const girlyApt: Clip = {
       choices: ['I', 'I’ve', 'I’d'], a: 1,
       choicesJa: ['私は', '私は（〜してしまった）', '私なら'],
       cue: 'Now のすぐあと。', line: 'Now *I’ve* upset you. What did I say?',
-      said: '「あーあ、傷つけちゃった。何て言った？」と言う。',
+      said: '「あーあ、傷つけちゃった。俺、何言っちゃった？」と言う。',
       mean: 'I’ve upset you ＝ 傷つけてしまった（今もそう）。’ve は小さく「アイヴ」。',
       trap: '小さな「ヴ」があれば I’ve、「ド」と止まれば I’d、「アイ」からすぐ upset なら I。',
       use: 'Sorry, I’ve kept you waiting.（お待たせしました）' },

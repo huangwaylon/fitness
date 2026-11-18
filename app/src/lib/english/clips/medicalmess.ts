@@ -1,13 +1,13 @@
-// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 1, new 6, ctx 5, tx 10, qa 19
+// R4 REVIEW 2026-11-18: keep 6, rewrite 11, retire 1, new 6, ctx 5, tx 10, qa 21
 // A2 REVIEW 2026-11-17: keep 8, rewrite 10, retire 5, new 0
 // “April and Andy Are a Medical Mess - Parks and Recreation” (the official Parks and Recreation channel, Season 4):
 // Andy and April cram a week of doctor's visits into their new insurance: Andy lists every odd symptom he has, fails an
 // eye test, and when the desk asks for a $500 deductible the two run off, crash, and swear off doctors.
 // Segments from the captions, words from whisper (2026-11-16). Talk ends at ≈198 s. Andy is named at 8.6 s and Dr. Harris
 // at 67 s; April is named (by Andy) at 118 s. Same doctor visit as eyetest (its 71–178 s ≈ 0–110 s here): eyetest tests
-// the sneeze, rash, tongue, fuzzy, Twix, glasses refusal and No offense lines, so this bank leaves them alone
-// (a2's reason, I like his face, is in both).
-// Untested: 103–111 s (needles), 185–190 s (crosstalk), the eye-chart words (visual).
+// the sneeze, rash, tongue, fuzzy, Twix, glasses exchange (refusal + I like his face) and No offense lines, so this
+// bank leaves them alone (a2, the face, retired for it).
+// Untested: 106.7–111 s (needles), 185–190 s (crosstalk), the eye-chart words (visual).
 // EXCLUDE 121.2–125.9
 // EAR CHECK: 130.1 s x1 — “get you home” runs together as “getcha home” (both sources have the words)
 import type { Clip } from '../types.ts';
@@ -160,7 +160,7 @@ export const medicalMess: Clip = {
       trap: 'drive の話なので、帰りのことと考えがち。drove と here で、来るときの話。',
       use: 'Wait, you walked here? In this rain?（待って、歩いてきたの？この雨で？）' },
 
-    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', seg: [83.38, 112.0],
+    { id: 'g1', skill: 'gist', level: 'B1', point: 'plan', reveals: ['fewdays'], seg: [83.38, 112.0],
       stem: 'What is Andy and April’s plan this week?',
       ja: 'アンディとエイプリルの今週の計画は？',
       choices: ['Do all their doctor visits', 'Get Andy new glasses', 'Find April’s food allergy'], a: 0,
@@ -207,7 +207,7 @@ export const medicalMess: Clip = {
       trap: '妻の命令に夫が従う型で聞きやすい。返事がほめ言葉を言い直していたら、おどしは愛情表現。',
       use: 'You heard her. I’m too cute to cook.（聞いたでしょ。私、料理するには可愛すぎるって）' },
 
-    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [94.0, 99.9],
+    { id: 'a2', skill: 'detail', level: 'B1', point: 'divorce', seg: [94.0, 99.9], retired: true,
       stem: 'Why doesn’t April want Andy to get glasses?',
       ja: 'エイプリルはなぜアンディに眼鏡をかけてほしくない？',
       choices: ['She loves how he looks now', 'Glasses cost too much', 'The doctor got it wrong'], a: 0,
@@ -229,6 +229,18 @@ export const medicalMess: Clip = {
       mean: '針で赤くなるのは当たり前。それを医者の口ぶりで「アレルギー」と言う冗談。',
       trap: '直前の food に引かれやすい。何へのアレルギーかは、最後の needles で決まる。',
       use: 'Based on the smell, I think dinner’s ready.（においからして、夕飯できたかな）' },
+
+    { id: 'd6', skill: 'detail', level: 'B1', point: 'fewdays', seg: [102.95, 106.6],
+      stem: 'When will they know about any food allergy?',
+      ja: '食べ物のアレルギーがあるかどうか、いつ分かる？',
+      choices: ['In a few days', 'In a few hours', 'In a few weeks'], a: 0,
+      choicesJa: ['数日で', '数時間で', '数週間で'],
+      cue: '「allergic to any food」のあと',
+      line: 'Okay, if you’re allergic to any food, *we’ll know in a few days*.',
+      said: '「食べ物のアレルギーがあれば、数日で分かります」と言われる。',
+      mean: 'in ＋ 時間 ＝ 「〜たったら」。in a few days ＝ 2、3日したら。',
+      trap: '最後の単位を聞き逃しやすい。決め手は days（デイズ）。hours なら「アワーズ」、weeks は「ウィークス」。',
+      use: 'I’ll let you know in a few days.（数日したら連絡します）' },
 
     { id: 'g2', skill: 'pragma', level: 'B2', point: 'correct', seg: [110.45, 121.2],
       stem: 'Why does someone say “X-rayed” after Andy?',
