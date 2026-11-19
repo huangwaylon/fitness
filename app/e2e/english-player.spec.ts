@@ -21,6 +21,7 @@ test('the player offline: a note in its place, the embed once back online; today
   await sheet(page).locator('[data-en-start]').click();
   await expect(lesson(page).locator('[data-yt-offline]')).toContainText('オフライン');
   await expect(lesson(page).locator('[data-yt-frame]')).toHaveCount(0);
+  await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
   // the questions work offline all the same
   await lesson(page).locator('[data-en-to-q]').click();
   await lesson(page).locator(`[data-en-q="0"] [data-choice="${(await questionAt(page, 0)).a}"]`).click();
@@ -37,6 +38,8 @@ test('a video that can’t be embedded: the note, YouTube’s link, もう一度
   await expect(note).toHaveAttribute('data-yt-unavailable', '150');
   await expect(note.locator('a')).toHaveAttribute('href', 'https://www.youtube.com/watch?v=lm2MpPpkGL8');
   await expect(note.locator('[data-yt-retry]')).toBeVisible();
+  // no 場面のあらすじ line to seek a player that can't play (the clip has scenes: shown once it plays, the test above)
+  await expect(lesson(page).locator('[data-en-scene]')).toHaveCount(0);
 });
 
 test('a play that doesn’t start (iOS wants a tap on the video): the hint; none once one has played', async ({ page }) => {

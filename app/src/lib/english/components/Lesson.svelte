@@ -114,8 +114,8 @@
   const q = $derived<Question | null>(at >= 0 && at < len ? qs[at] : null);
   /** まとめ (the bank in: till then a place past the watch card is its loading card). */
   const end = $derived(bank === 'ready' && at === len);
-  /** 場面のあらすじ's line: on the watch card, at まとめ and in a level, never on a question. */
-  const strip = $derived(showScenes && (at === -1 || end || !!study));
+  /** 場面のあらすじ's line: on the watch card, at まとめ and in a level, never on a question, nor with nothing to play. */
+  const strip = $derived(showScenes && !noPlay && (at === -1 || end || !!study));
   const cur = $derived(q ? st[at] : null);
   const today = () => localDateAt(week.model?.now ?? Date.now());
 
