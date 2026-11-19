@@ -159,9 +159,8 @@ person at a time, computed on read; its code and strings load with the first ope
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
 - **体** (`BodyCard`): 「68.9 kg 11/4 (BMI's category) [6日で +0.2 kg]」 (last − first), dots, notes. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
-  card's quiet chip opens a tray under the header (any note, −/＋ by the step, the range, clear where clearable,
-  キャンセル, 決定), one open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the
-  ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
+  card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
+  one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
   least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
