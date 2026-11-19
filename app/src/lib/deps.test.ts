@@ -198,11 +198,11 @@ const SHEETS = ['panel', 'health', 'food', 'wallet', 'board', 'kiroku', 'bots', 
 const RENDERER_READS = ['look/portraits.svelte.ts'];
 /** Sheet → sheet, on purpose: ごはん on けんこう's kit (its pager, range, cards, whose) and けんこう hosting ごはん, 登山
  *  on 旅行's guide kit (and its packing) and 旅行's day opening a trail, the layout editor and the world editor's shared
- *  pieces, the panel's own pages (すがた, けんこう, the wallet), the harvest overlay's fill (the wallet's), anyone's
+ *  pieces, the panel's own pages (すがた, けんこう, the wallet; the menu's order asks ボット's tabs), the harvest overlay's fill (the wallet's), anyone's
  *  きろく formatters. */
 const SHEET_EDGES: Record<string, string[]> = {
   food: ['health'], health: ['food'], hiking: ['travel'], travel: ['hiking'], layoutEdit: ['editor'], editor: ['layoutEdit'],
-  panel: ['look', 'health', 'wallet', 'kiroku'], sheets: ['wallet']
+  panel: ['look', 'health', 'wallet', 'kiroku', 'bots'], sheets: ['wallet']
 };
 const subOf = (f: string) => relative(join(LIB, 'components'), f).split('/');
 const componentEdges = [...graph].flatMap(([f, to]) => {

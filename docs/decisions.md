@@ -98,6 +98,12 @@ One stage, six tabs (コーデ · 顔 · 髪 · 服 · 小物 · 住民; [player
 garment, and `villager` and `look` are sent once on leaving (no 決定; 元に戻す and a 5 s 取り消す cover regret). Why: one
 commit model on one screen, as NH's wardrobe.
 
+### The menu's order: each person's, in 設定
+`pref menuOrder` on the record ([design](design.md#island)), so it follows a person across phones; the guest has
+its own. Null = the default, so a new pill lands in its default place; the record takes known ids only (append-only
+`MENU_IDS`), a phone drops the ones it lacks. Reordering lives in 設定 (a grip drag, ↑ / ↓ by keyboard), never a long
+press in the menu: its taps stay instant. ベル and 設定 stay put: the coins land on one, the other is the way back.
+
 ## Health and meals
 
 ### Health trends (健康)

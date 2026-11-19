@@ -47,16 +47,14 @@ test('folded by default; the leaf unfolds it and folds it again; a tap elsewhere
   await hudMenu(page).click();
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(settings(page)).toBeVisible();
-  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then 旅行, 結婚式, 登山, 英語
-  // (English Study), 設定 (the user's order, in kanji: 2026-11-08), each a 44px pill, on screen, the same width (no ずかん:
-  // 設定's since 2026-11-08; ボット, a paired member's between 英語 and 設定, isn't in demo: its.spec.ts, bots.spec.ts)
+  // the pills hang under the leaf, right-aligned to it, 「ベル 121」 first (no icon), then by default 旅行, 結婚式, 登山, 英語
+  // (English Study), 設定 (in kanji), each a 44px pill, on screen, the same width (no ずかん: 設定's; ボット, a paired
+  // member's between 英語 and 設定, isn't in demo: its.spec.ts, bots.spec.ts). Each found by its data-hud-* (a person's
+  // own order moves them: menu-order.spec.ts)
   await expect(pills(page)).toHaveCount(6);
   await expect(page.locator('[data-hud-zukan]')).toHaveCount(0);
-  await expect(pills(page).nth(1)).toHaveAttribute('data-hud-travel', '');
-  await expect(pills(page).nth(2)).toHaveAttribute('data-hud-wedding', '');
-  await expect(pills(page).nth(3)).toHaveAttribute('data-hud-hiking', '');
-  await expect(pills(page).nth(4)).toHaveAttribute('data-hud-english', '');
-  await expect(pills(page).nth(5)).toHaveAttribute('data-hud-settings', '');
+  const ids = await pills(page).evaluateAll((bs) => bs.map((b) => b.getAttributeNames().find((a) => /^data-hud-(?!bells-)/.test(a))));
+  expect(ids).toEqual(['data-hud-bells', 'data-hud-travel', 'data-hud-wedding', 'data-hud-hiking', 'data-hud-english', 'data-hud-settings']);
   await expect(page.locator('[data-hud-bots]')).toHaveCount(0);
   await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '旅行', '結婚式', '登山', '英語', '設定']);
   await expect(pills(page).first()).toHaveAttribute('data-hud-bells', '');
@@ -177,4 +175,20 @@ test('English after a sheet’s strings came in Japanese: its strings English to
   await dlg.locator('.titlebar .close').click();
   await fromMenu(page, 'travel');
   await expect(dlg.locator('.navbar')).toContainText('Trips');
+});
+
+test('in a person’s own order (設定 → メニュー): the pills move, each still found by its data-hud-* and opening its sheet', async ({ page }) => {
+  await open(page);
+  await fromMenu(page, 'settings');
+  await page.locator('dialog[open] [data-push="menu"]').click();
+  // 英語 up three places by its grip's ↑ (the drag: menu-order.spec.ts)
+  await page.locator('dialog[open] [data-menu-grip="english"]').focus();
+  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Escape');
+  await unfoldMenu(page);
+  await expect(pills(page).locator('.lbl')).toHaveText(['ベル', '英語', '旅行', '結婚式', '登山', '設定']);
+  await expect(pills(page).nth(1)).toHaveAttribute('data-hud-english', '');
+  await fromMenu(page, 'english');
+  await page.keyboard.press('Escape');
+  await fromMenu(page, 'settings');
 });

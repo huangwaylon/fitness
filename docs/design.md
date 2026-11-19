@@ -48,7 +48,7 @@ on empty ground walks my villager there.
   [daily checks](#daily-checks); 朝 / 昼 / 夜; P · F · C. No ベル.
 - **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
   apart; nothing else in the sky.
-- **Menu** (`island/HudMenu.svelte`), the single home of the menu's order: a 44px cream disc
+- **Menu** (`island/HudMenu.svelte`): a 44px cream disc
   with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow, the leaf tipped −40°) into seven cream pills
   (the guest's six), right-aligned under the leaf, the same width, 44px tall, its name then its icon or number:
   1. **ベル 121** (my wallet's balance, both members' on the guest's phone; the number is the picture) →
@@ -60,9 +60,9 @@ on empty ground walks my villager there.
   6. **ボット** (a robot's head; a dot while a bot needs a person) → [ボット](bots.md)
   7. **設定** (a gear) → [設定](#settings)
 
-  Labels are kanji ([Copy](#copy)). No "+N" badge on the leaf (it reads as a notice). It folds back on a second
-  tap of the leaf, a tap elsewhere (which still does what it would), Esc, any sheet opening, and a pick; folded, the
-  pills are `inert`. The icons are one drawn set: the gear's soft brown (#A88B68), details cream.
+  2–6 in each person's own order (設定 → メニュー; the guest too): a 44px grip drags a row (↑ / ↓ too), saved per
+  drop; 元に戻す restores this default, where new pills land. No "+N" badge on the leaf (a notice). It
+  folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded, pills are `inert`. The icons: one drawn set, soft brown (#A88B68), details cream.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
   kept sheet; ごはん mounts the first time its tab shows.
@@ -94,10 +94,10 @@ the menu's ベル row opens it at once, full height, no tabs, its own chunk, at 
 
 ### Settings
 
-**設定** (`panel/SettingsSheet.svelte`): the menu's 設定 pill → its own full-height sheet: **プロフィール**
-([Profile](#profile)), **姿** (the look's portrait, the よびな and what's worn → [the 姿 level](#sugata)), **サウンド** ([Sound
-settings](#sound-settings)), **言語** (日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is
-[Weather](#weather)'s switch too) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
+**設定** (`panel/SettingsSheet.svelte`): the 設定 pill → a full-height sheet: **プロフィール** ([Profile](#profile)),
+**姿** (the portrait, the よびな → [the 姿 level](#sugata)), **サウンド** ([Sound settings](#sound-settings)), **言語**
+(日本語 / English), **季節** ([Seasonal look](#seasonal-look); its 天気 is [Weather](#weather)'s switch too),
+**メニュー** (並び順: [Island](#island)) and **図鑑** (設定 closes, [the 図鑑](#zukan) opens). The guest's says it's visiting.
 
 ### Bots
 
@@ -579,10 +579,10 @@ person, ゲスト: a visitor to our island, NH's way, with its own key (pairing:
 phone"](ops/runbook.md#10-pair-a-phone)). Tests: `?demo&as=G`.
 
 - **What it sees:** our island, the trees and their popups, the menu's ベル row (both wallets) and ごほうび view-only
-  (`guest.jarNote` in place of the rewards), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
+  (`guest.jarNote`), the 図鑑, 健康's 活動 (either member's, goals read-only) and everyone's meals.
   Never a 体 figure: the record leaves them out of its snapshot. 設定 as ours, no ボット ([Bots](bots.md)).
-  English Study: its own progress, no partner line. Its island opens at its own villager (far up the island; only the
-  open position, `IslandScene` `GUEST_OPEN_BACK`).
+  English Study: its own progress, no partner line. Its island opens at its own villager
+  (`GUEST_OPEN_BACK`).
 - **What it does:** everything on the island a member does (walks, catches, digs, shakes, phrases, high-fives, every
   home's room and its own house's look, the editor, watering, wishes, the weather, the shop, the museum, K.K., the
   board, English Study), its finds credited in the shared 図鑑. It earns and spends no ベル, sets none of our goals and writes
@@ -1061,7 +1061,7 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   once closed) and the app's own (offline, a failed save) kanji and 取り消す.
 - **Register:** English Study, すごろく: casual (〜だよ).
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
-  キャンセル · 閉じる · 戻る · 元に戻す (restore; undo: 取り消す) · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 ·
+  キャンセル · 閉じる · 戻る · 元に戻す (restore; undo: 取り消す) · もう一度 · 今日 · 変更 · 並び順 · 同期 · オフライン · 住民 ·
   ゲスト (the guest player; お客さん only for NH's visitors) · 姿 · 模様替え · 片付ける · 季節 · 天気 · 図鑑 · 捕まえた ·
   作る · 資料 · a range with 〜; a day `11/4（水）` (when.ts), alone `11月4日（水）`; the game's own words stay (ベル, かいがら, がんばり, ふたりで全部, いつもの, ごはん, ごほうび) and official names as NH
   writes them. A sheet's title may differ from its button (英語 → English Study). linebreaks.test checks the sheets'
