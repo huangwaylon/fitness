@@ -169,8 +169,10 @@ test('まとめ: the scenes to hear again, the clip’s row: ✓ in the library,
     await c.locator('[data-en-dict]').fill('zzz');
     await c.locator('[data-en-dict-go]').click();
     await expect(c.locator('[data-en-reveal] .rhead')).toHaveText('答えはこれ');
+    // (Return answers too, and the field lets go)
     await c.locator('[data-en-dict]').fill(x.answer.split(' ').slice(1).join(' '));
-    await c.locator('[data-en-dict-go]').click();
+    await c.locator('[data-en-dict]').press('Enter');
+    await expect(c.locator('[data-en-dict]')).not.toBeFocused();
     await expect(c.locator('[data-en-reveal]')).toContainText(`${all - 1}/${all}語を聞き取れたよ`);
     // the words apart, as typed
     expect((await c.locator('[data-en-reveal] .words').textContent())!.trim().split(/\s+/)).toHaveLength(all);

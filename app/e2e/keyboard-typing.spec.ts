@@ -65,12 +65,23 @@ for (const size of [{ width: 393, height: 659 }, { width: 375, height: 667 }]) {
       await expect(field).toHaveValue('more coffee');
       await expectAbove(page, 'dialog[open] [data-en-dict]', 'dialog[open] [data-en-dict-go]');
       await shot(page, 'english');
-      // 答える tapped with the keyboard still up: the answer shown
+      // 前へ / 次へ hidden while it's up (the room above it the question's)
+      await expect(lesson.locator('[data-en-next]')).toBeHidden();
+      // 答える tapped with the keyboard still up: the answer shown, the field let go (iOS then drops its keyboard)
       await lesson.locator('[data-en-dict-go]').tap();
       await expect(lesson.locator('[data-en-reveal]')).toBeVisible();
-      // the keyboard down: the sheet back in place (its title bar at the top)
+      await expect(field).not.toBeFocused();
+      // the keyboard down: the sheet back in place (its title bar at the top), 前へ / 次へ back
       await keyboard(page, 0);
       await expect.poll(() => page.locator('dialog[open]').evaluate((d) => Math.round(d.getBoundingClientRect().top))).toBe(0);
+      await expect(lesson.locator('[data-en-next]')).toBeVisible();
+      // again by Return: the field focused, the keyboard up, Return answers and lets go
+      await field.tap();
+      await keyboard(page, KEYBOARD_PX);
+      await page.keyboard.type(' please');
+      await expect(field).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(field).not.toBeFocused();
     });
 
     test('すごろく: 文を打つ’s field and これでOK above the keyboard', async ({ page }) => {

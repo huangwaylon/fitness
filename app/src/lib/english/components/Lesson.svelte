@@ -210,6 +210,13 @@
     heardThen(q);
   }
   const heardThen = (x: Question) => x.then && player?.play(x.then[0], x.then[1]);
+  /** 答える (or Return): the typed words checked, and the field let go (the keyboard down: its hidden 前へ / 次へ back). */
+  function answerTyped(form: HTMLFormElement): void {
+    if (!q || !cur) return;
+    fresh = 'reveal';
+    st[at] = dictate(q, cur, typed);
+    (form.querySelector('input') as HTMLInputElement | null)?.blur();
+  }
 
   // the embed's failures and a play that doesn't start (the first a lesson: iOS asks a tap on the video once), logged
   let stuckTold = false;
@@ -305,10 +312,11 @@
             </div>
           {:else}
             <!-- (field + 答える kept above the keyboard together: ui/keyboardInset.svelte.ts) -->
-            <div class="dict" data-kb-scroll>
-              <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" lang="en" data-en-dict />
-              <button type="button" class="btn small" class:paper={!typed.trim()} data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
-            </div>
+            <!-- (Return answers too; answered, the field lets go: the keyboard down, 前へ / 次へ back) -->
+            <form class="dict" data-kb-scroll onsubmit={(e) => (e.preventDefault(), answerTyped(e.currentTarget))}>
+              <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" enterkeyhint="done" lang="en" data-en-dict />
+              <button type="submit" class="btn small" class:paper={!typed.trim()} data-sfx="tick" data-en-dict-go>{cur.r ? s('answerAgain') : s('answer')}</button>
+            </form>
           {/if}
           {#if !cur.r && cur.miss === 1}
             <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
