@@ -76,15 +76,15 @@
   /** Whether a tap at client (px, py) is the deck's (no side effect: SceneTaps' claims, the 3D pick's oracle): on its
    *  radio's art (`src` dom) or its 3D model (3d) grown to MIN_HIT, 6 px round it. */
   export function claims(px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): boolean {
-    const r = src === '3d' ? drawn3(w, 'tape-deck') : el?.querySelector('.radio')?.getBoundingClientRect();
+    const r = (src === '3d' && drawn3(w, 'tape-deck')) || el?.querySelector('.radio')?.getBoundingClientRect();
     // (out of view its node is hidden but keeps its last box: no tap there)
     if (!r || !enabled() || !w.inView(spot[0], spot[1]) || !seen(spot[0], spot[1])) return false;
     return inside(grow(r, MIN_HIT, 6), px, py);
   }
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
    *  layout's deck, every day): a line saying why. */
-  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    if (!claims(px, py, seen)) return false;
+  export function tap(px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): boolean {
+    if (!claims(px, py, seen, src)) return false;
     if (playing) return true;
     if (ready) request('isl', SONG, { ms: STRETCH_MS });
     else if (el) {

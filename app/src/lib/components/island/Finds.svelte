@@ -431,11 +431,11 @@
     const t = performance.now();
     const waiting = (uid: string) => t < (washes.get(uid)?.t0 ?? -Infinity);
     const el = (uid: string, x: number, z: number) => (w.inView(x, z, 20) && !waiting(uid) ? scene?.querySelector(`[data-find][data-uid="${uid}"]`) : null);
-    // (`src` 3d: its model's silhouette, by its thing's id)
+    // (`src` 3d: its model's silhouette, by its thing's id; till its model is in, its art's, as drawn then)
     const one = (kind: string, it: { uid: string; x: number; y: number }, id: string, go: () => void) => {
       if (src === '3d') {
         const r = w.inView(it.x, it.y, 20) && !waiting(it.uid) ? drawn3(w, `${id}-${it.uid}`) : null;
-        return { box: hitRect(r), body: bareRect(r), x: it.x, z: it.y, kind, uid: it.uid, go };
+        if (r) return { box: hitRect(r), body: bareRect(r), x: it.x, z: it.y, kind, uid: it.uid, go };
       }
       const e = el(it.uid, it.x, it.y);
       return { box: hitOf(e), body: bareOf(e), x: it.x, z: it.y, kind, uid: it.uid, go };
@@ -461,8 +461,8 @@
     const at = w.worldAtClient(px, py), k = at && hitWorld(at.x, at.z).kind, wet = k === 'sea' || k === 'pond' || k === 'river';
     return pick(targets(src).filter((t) => seen(t.x, t.z)), px, py, wet);
   }
-  export function tap(px: number, py: number, seen: Seen = SHOWN): boolean {
-    const best = hit(px, py, seen, 'dom');
+  export function tap(px: number, py: number, seen: Seen = SHOWN, src: Src = 'dom'): boolean {
+    const best = hit(px, py, seen, src);
     if (!best) return false;
     best.go();
     return true;

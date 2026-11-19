@@ -20,7 +20,7 @@
   import { eachV3, model3, models3 } from './mirror3.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
   import { uiBoxes } from '../island/placement.ts';
-  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, tapsNow } from './pick3d.ts';
+  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, route3d, tapsNow } from './pick3d.ts';
   import { watchPicks } from './pick3dWatch.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
@@ -299,7 +299,7 @@
     let v = vilTaps.get(slot);
     if (!at) return void (v?.off(), vilTaps.delete(slot));
     if (!v) {
-      const t: Tap3 = { kind: 'villager', id: slot, x: 0, z: 0, always: true, h: VILLAGER.h, l: 0, r: 0, b: 0, t: 0, round: [0.4, 0.2] };
+      const t: Tap3 = { kind: 'villager', id: slot, x: 0, z: 0, always: true, h: VILLAGER.h, l: 0, r: 0, b: 0, t: 0, round: [0.4, 0.2], act: () => things3(world).onVillager?.(slot) };
       vilTaps.set(slot, (v = { t, off: tap3(world, [t])() }));
     }
     const t = v.t, px = 1 / world.view.s, drop = 2 * px + (seat ? SEAT_DROP : 0);
@@ -1078,6 +1078,8 @@
     // (the switch: standsClear and the balloon's present keep clear of the tap areas' boxes, not the DOM's buttons)
     const reg3 = things3(world), g3 = pick3dOn() ? (skip?: Parameters<typeof guards3>[1]) => guards3(world, skip) : undefined;
     reg3.guards3 = g3;
+    // (the switch: the canvas router taps by the 3D pick, SceneTaps; the tree popup's touch-down asks it too)
+    reg3.route = pick3dOn() ? (x, y) => route3d(world, document, x, y) : undefined;
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1286,6 +1288,7 @@
       offRest();
       offPicks?.();
       if (reg3.guards3 === g3) reg3.guards3 = undefined;
+      reg3.route = undefined;
       boot = timed = null;
       offLayout();
       listen3d(null);

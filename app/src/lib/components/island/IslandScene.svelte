@@ -213,8 +213,10 @@
         closedBy = e;
         return;
       }
-      // a tree's own buttons toggle it themselves
-      if (e.target instanceof Element && e.target.closest('.canopy, .row-btn')) return;
+      // a tree's own buttons toggle it themselves (with the pick3d switch, its tap areas: the canvas router's)
+      const r3 = things3(world).route?.(e.clientX, e.clientY);
+      const own = r3 === undefined || r3 === 'dom' ? e.target instanceof Element && !!e.target.closest('.canopy, .row-btn') : r3 !== 'rush' && (r3.under?.kind === 'goal' || r3.under?.kind === 'row');
+      if (own) return;
       openTree = null;
       closedBy = e;
     };
@@ -300,6 +302,18 @@
     }
     cue('emote-joy');
   }
+  /** A tap on a villager (its button, or the canvas router's: things3 onVillager): mine squishes (now and then a flea
+   *  hops off it), another's is a high five. */
+  function vilTap(id: VillagerActor) {
+    if (id !== 'mine') return highFiveTap(id);
+    sceneTaps?.villagerTap();
+    life.tapMine();
+  }
+  $effect(() => {
+    const r = things3(world);
+    r.onVillager = (id) => (VILLAGERS as readonly string[]).includes(id) && vilTap(id as VillagerActor);
+    return () => void (r.onVillager = undefined);
+  });
   function highFiveTap(id: VillagerActor = 'partner') {
     if (covered || fiving.has(id) || inTent(id)) return;
     fiving.add(id);
@@ -530,8 +544,8 @@
     if (covered || actors.mine.asleep) return false;
     // only empty ground walks: water ripples and a building's footprint knocks at its door where my villager stands
     if (hit.kind !== 'grass' && hit.kind !== 'sand') return false;
-    const b0 = buildingAt(x, z), door = b0 && sceneEl?.querySelector<HTMLElement>(`[data-building="${b0}"] .door`);
-    if (b0 && door) return building(b0, door), true;
+    const b0 = buildingAt(x, z);
+    if (b0) return building(b0), true;
     // a seat's foot (a 3D piece with no tap area of its own: an iron chair): up to it and on
     const sp = site.layout && seatPieceAt(site.layout, x, z);
     if (sp && sitOn(sp.id)) return true;
@@ -1010,7 +1024,7 @@
   // tap on something acts in place" (the user: "we have to walk up to it before we enter it"): my villager walks up to
   // the door first (the walk goes over the relay like any), unless it's there already; a tap on anything else on the
   // way (it steers my villager anew) is the end of going in.
-  function building(id: BuildingId, _el: HTMLElement) {
+  function building(id: BuildingId) {
     if (covered || entering || (id !== 'campsite' && !BUILDINGS.some((b) => b.id === id))) return;
     const door = doorAt(id), at = livePos('mine');
     const goIn = () => goInto(id);
@@ -1233,12 +1247,7 @@
                 ? t('island.highfive', { name: sd.person.villagerName })
                 : sd.person.bells === null ? sd.person.villagerName
                 : t('island.me', { name: sd.person.villagerName, bells: formatBells(sd.person.bells) })}
-              onclick={(e) => {
-                if (id === 'mine') {
-                  sceneTaps?.villagerTap(e.currentTarget);
-                  life.tapMine();
-                } else highFiveTap(id);
-              }}>
+              onclick={() => vilTap(id)}>
               <Villager person={sd.person.person} villager={sd.person.villager} size={u(VILLAGER.h)} eager
                 actor={id} side={sd.side} emoteSize="var(--emote-size)" shadow animate tricked={id === 'mine' && faces.tricked} swollen={faces.swollen[id]} hat={hatOf(id, sd.person)} />
             </button>

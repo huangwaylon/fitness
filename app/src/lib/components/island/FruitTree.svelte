@@ -38,7 +38,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { tap as tap3, thing, type Tap3 } from '../world3d/things3.ts';
   import { GOLD_ART, fruitDay, fruitFilter, fruitGoods, fruitId, fruitMet, markDropped, markPicked, stageOf, type TreeFruit } from '#lib/world/fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { shakeTap } from './treeShake.ts';
@@ -229,6 +229,17 @@
   const rowR = $derived(x + lean + off[0] + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U);
   /** The fruit row's middle in depth (its button stands there, in front of whoever stands at the trunk). */
   const rowZ = $derived(z + off[1] + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2);
+  /** Its tap areas (things3 Tap3: the 3D pick's and the canvas router's, world3d/pick3d.ts), as its buttons: the trunk
+   *  and its base (≥ 45 × 48 px), the canopy, the fruit row (≥ 44 px tall, a pill). */
+  const taps3 = $derived.by((): Tap3[] => {
+    const id = person.person, goal = () => tap(null);
+    return [
+      { kind: 'goal', id, part: 'trunk', x, z, h: H, model: true, l: -W * 0.21, r: W * 0.21, b: -4, t: H * 0.5 - 4, min: [45, 48, 'bottom'], round: [0.4, 0.3], act: goal },
+      { kind: 'goal', id, part: 'canopy', x, z, h: H, dz: -14, model: true, l: -W / 2, r: W / 2, b: H * 0.38, t: H, round: [0.45, 0.45], act: goal },
+      { kind: 'row', id, x: (rowL + rowR) / 2, z: rowZ, h: 30, dz: -40, l: -(rowR - rowL) / 2, r: (rowR - rowL) / 2, b: FRUIT_U / 2 - 15, t: FRUIT_U / 2 + 15, min: [0, 44, 'mid'], radius: 22,
+        act: (px, _py, a) => rowAt(px, a.l, a.r) }
+    ];
+  });
   /** Fallen fruit, waiting to be picked up (by the tree's owner alone: `pickable`). */
   const ground = $derived(spots.filter((s) => s.stage === 'ground'));
   const pickable = $derived(week.view?.viewer === person.person ? ground : []);
@@ -357,8 +368,13 @@
     const btn = e.currentTarget as HTMLElement | null;
     if (!e.detail || !btn) return pickable.length ? collect(pickable[0].f) : tap(null, false);
     const r = btn.getBoundingClientRect();
-    const k = r.width / (rowR - rowL);
-    const px = rowL + (e.clientX - r.left) / k;
+    rowAt(e.clientX, r.left, r.right);
+  }
+  /** A tap on the fruit row at client x, the row from l to r on screen: the fallen fruit nearest it picked up, else the
+   *  tree's tap (counting toward a shake). */
+  function rowAt(cx: number, l: number, r: number) {
+    const k = (r - l) / (rowR - rowL);
+    const px = rowL + (cx - l) / k;
     const near = <T extends { gx: number }>(list: T[]) => list.reduce((a, b) => (Math.abs(b.gx - px) < Math.abs(a.gx - px) ? b : a));
     if (pickable.length) {
       const g = near(pickable);
@@ -430,7 +446,7 @@
 </script>
 
 <!-- the tree: its trunk and its canopy, two world nodes (one art, clipped) -->
-<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H, inv: true, model: true })}>
+<div class="node" data-tree-node={person.person} {@attach w.at({ x, z, h: H, inv: true, model: true })} {@attach tap3(w, taps3)}>
   <div class="tree" bind:this={treeEl} style:width={u(W)} style:height={u(H)} style:clip-path={TRUNK}
     onanimationend={(e) => e.animationName === 'if-shake' && treeEl?.classList.remove('shaking')}>
     <span class="oak"><OfficialArt key={treeArt(foliage)} size={u(H)} priority /></span>

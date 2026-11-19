@@ -6,11 +6,9 @@
 import type { World } from '../island/camera.svelte.ts';
 import { pickOf, type Box, type Picked } from '../island/probe.ts';
 import type { At } from './engine.ts';
-import { things3, type Claim, type Tap3 } from './things3.ts';
+import { things3, type Claim, type Route, type Tap3 } from './things3.ts';
 import { hull, zIndexAt } from '#lib/world/geom.ts';
-import { GOAL_TREES, PLAN, offBuildingsAt } from '#lib/world/world.ts';
-import { FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, fruitLean } from '../island/scene.ts';
-import { site } from '../island/site.svelte.ts';
+import { PLAN } from '#lib/world/world.ts';
 import { uiBoxes } from '../island/placement.ts';
 
 /** A tap area on screen (client px): its box, or a body's outline; rounded corners (px radii, the top's and bottom's). */
@@ -32,27 +30,10 @@ export interface Area {
 const Q: At = { sx: 0, sy: 0, k: 0, up: 0, ground: 0, depth: 0, visible: false };
 const C: At[] = Array.from({ length: 8 }, () => ({ ...Q }));
 
-/** The goal trees' tap areas (FruitTree's: its trunk and canopy buttons, its fruit row), worked out as it does. */
-function goalTaps(): Tap3[] {
-  const H = TREE.h, W = TREE.h * OAK_AR, out: Tap3[] = [];
-  for (const id of ['A', 'B'] as const) {
-    const [x, z] = GOAL_TREES[id], lean = fruitLean(x, site.midX);
-    const mx = x + lean, mz = z + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2;
-    const [ox, oz] = offBuildingsAt(mx, mz, FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U / 2);
-    const rowL = ox + FRUIT_SPOTS[0][0] - FRUIT_U, rowR = ox + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U, rowZ = oz;
-    out.push(
-      { kind: 'goal', id, part: 'trunk', x, z, h: H, model: true, l: -W * 0.21, r: W * 0.21, b: -4, t: H * 0.5 - 4, min: [45, 48, 'bottom'], round: [0.4, 0.3] },
-      { kind: 'goal', id, part: 'canopy', x, z, h: H, dz: -14, model: true, l: -W / 2, r: W / 2, b: H * 0.38, t: H, round: [0.45, 0.45] },
-      { kind: 'row', id, x: (rowL + rowR) / 2, z: rowZ, h: 30, dz: -40, l: -(rowR - rowL) / 2, r: (rowR - rowL) / 2, b: FRUIT_U / 2 - 15, t: FRUIT_U / 2 + 15, min: [0, 44, 'mid'], radius: 22 }
-    );
-  }
-  return out;
-}
-
-/** Every tap area now (things3's and the goal trees'), top first: by the World's stacking (its depth, else its own
- *  order), a later one on top of an equal one (the DOM's order). */
+/** Every tap area now (things3's), top first: by the World's stacking (its depth, else its own order), a later one on
+ *  top of an equal one (the DOM's order). */
 export function tapsNow(w: World, extra: readonly Tap3[] = []): Tap3[] {
-  const list = [...things3(w).taps.values(), ...goalTaps(), ...extra];
+  const list = [...things3(w).taps.values(), ...extra];
   const z = new Map<Tap3, number>();
   list.forEach((t, i) => {
     const [x, tz] = t.live ? t.live() : [t.x, t.z];
@@ -134,13 +115,19 @@ export function onArea(a: Area, x: number, y: number, pad = 0): boolean {
   return ((x - cx) / (rx + pad)) ** 2 + ((y - cy) / (ry + pad)) ** 2 <= 1;
 }
 
-/** What a tap at client (x, y) goes to by the tap areas (`taps`: tapsNow's, top first), or null (the ground, the sky). */
-export function pickTaps(w: World, taps: readonly Tap3[], x: number, y: number): Picked | null {
+/** The tap area a tap at client (x, y) is on (`taps`: tapsNow's, top first), and where it is, or null. */
+export function pickTap(w: World, taps: readonly Tap3[], x: number, y: number): Area | null {
   for (const t of taps) {
     const a = areaOf(w, t);
-    if (a && onArea(a, x, y, a.slop)) return { kind: t.kind as Picked['kind'], id: t.id, also: (t.also ?? []).map((r) => ({ kind: r.kind as Picked['kind'], id: r.id })) };
+    if (a && onArea(a, x, y, a.slop)) return a;
   }
   return null;
+}
+const pickedOf = (t: Tap3): Picked => ({ kind: t.kind as Picked['kind'], id: t.id, also: (t.also ?? []).map((r) => ({ kind: r.kind as Picked['kind'], id: r.id })) });
+/** What a tap at client (x, y) goes to by the tap areas (`taps`: tapsNow's, top first), or null (the ground, the sky). */
+export function pickTaps(w: World, taps: readonly Tap3[], x: number, y: number): Picked | null {
+  const a = pickTap(w, taps, x, y);
+  return a ? pickedOf(a.tap) : null;
 }
 
 /** The kinds whose box has a foot (probe.ts areaOf's `node`). */
@@ -193,11 +180,28 @@ export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 
 /** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */
 const KEEP = '[data-tree-pop], [data-fx], [data-say], [data-mumble], [data-bite], [data-catch-stack]';
 
+/** Whether the DOM keeps a tap on `el` (off the stage, an overlay, the HUD's and the sheets' buttons, the speech
+ *  balloon), and the DOM's answer there. */
+function domKeeps(el: Element | null): { keep: boolean; dom: Picked | null } {
+  const dom = pickOf(el);
+  return { keep: !!el && (!el.closest('.stage') || !!el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk'), dom };
+}
+
+/** What the canvas router acts on at client (x, y) (things3 Route): the DOM's where it stays, nothing in a rush, else
+ *  the tap area under it and, a building's, its body. */
+export function route3d(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Route {
+  if (domKeeps(doc.elementFromPoint(x, y)).keep) return 'dom';
+  if (w.three?.rushing?.()) return 'rush';
+  const taps = tapsNow(w), a = pickTap(w, taps, x, y), t = a?.tap ?? null;
+  const body = t?.kind === 'building' ? (t.body ? a : ((b) => b && areaOf(w, b))(taps.find((o) => o.kind === 'building' && o.id === t.id && o.body))) : null;
+  return { under: t && pickedOf(t), tap: t, area: a, onHouse: body ? (px, py) => onArea(body, px, py) : undefined };
+}
+
 /** What a tap at client (x, y) goes to with the switch on: the DOM's answer where the DOM stays (off the stage, an
  *  overlay, the HUD's and the sheets' buttons), else the tap areas' (null in a rush: a touch on a fling only stops it). */
 export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null {
-  const el = doc.elementFromPoint(x, y), dom = pickOf(el);
-  if (el && (!el.closest('.stage') || el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk')) return dom;
+  const el = doc.elementFromPoint(x, y), { keep, dom } = domKeeps(el);
+  if (keep) return dom;
   if (w.three?.rushing?.()) return null;
   return pickTaps(w, tapsNow(w), x, y);
 }
@@ -207,13 +211,11 @@ export function pick3dAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: n
  *  `pick` says takes it). `src` 3d: under it the tap areas' answer and the modules' boxes from the 3D island (models'
  *  silhouettes, figures' spots); dom: the DOM's node and art (the oracle). Off the island (the HUD, an overlay): null. */
 export function claimAt(w: World, doc: Pick<Document, 'elementFromPoint'>, x: number, y: number, src: 'dom' | '3d'): Claim | null {
-  const chain = things3(w).claims, el = doc.elementFromPoint(x, y), dom = pickOf(el);
-  if (!chain || !el || !el.closest('.stage') || el.closest(KEEP) || dom?.kind === 'ui' || dom?.kind === 'talk') return null;
+  const chain = things3(w).claims, el = doc.elementFromPoint(x, y), { keep, dom } = domKeeps(el);
+  if (!chain || !el || keep) return null;
   if (src === 'dom') return chain(x, y, dom, 'dom');
-  if (w.three?.rushing?.()) return null;
-  const taps = tapsNow(w), under = pickTaps(w, taps, x, y);
-  const body = under?.kind === 'building' ? taps.find((t) => t.kind === 'building' && t.id === under.id && t.body) : undefined, house = body && areaOf(w, body);
-  return chain(x, y, under, '3d', house ? (px, py) => onArea(house, px, py) : undefined);
+  const r = route3d(w, doc, x, y);
+  return typeof r === 'string' ? null : chain(x, y, r.under, '3d', r.onHouse);
 }
 
 /** The island's controls a guard stands for (the balloon's is never one: placement.ts). */

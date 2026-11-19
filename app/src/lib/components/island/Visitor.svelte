@@ -838,10 +838,10 @@
       : (seen(now[0], now[1]) && inside(fig)) || (seen(spot.x, spot.z) && inside(box(spot.x, spot.z)));
     return on ? id : null;
   }
-  export function tap(px: number, py: number, body = false): boolean {
+  export function tap(px: number, py: number, body = false, src: Src = 'dom'): boolean {
     const id = shown;
     if (!id || !art() || !spot || phase === 'leave' || !enabled()) return false;
-    if (!claims(px, py, body)) {
+    if (!claims(px, py, body, src)) {
       const at = body ? null : w.worldAtClient(px, py), now = where();
       if (at && w.inView(now[0], now[1]) && phase === 'here' && !sleeping && !speaking() && !st.walking && Date.now() - lastGlance > 3000 && Math.random() < 0.5) {
         lastGlance = Date.now();

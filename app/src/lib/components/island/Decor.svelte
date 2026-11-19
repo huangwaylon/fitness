@@ -71,10 +71,11 @@
     for (const a of el.getAnimations()) if (a.id === 'jiggle') a.cancel();
     el.animate([{ scale: '1 1' }, { scale: '1.08 .9', offset: 0.25 }, { scale: '.96 1.06', offset: 0.55 }, { scale: '1 1' }], { duration: 380, easing: 'ease-out', id: 'jiggle' });
   }
-  function tap(e: MouseEvent, id: string, x: number) {
+  function tap(id: string, x: number) {
     // a seat or a gym piece: walked up to and on (all taken: its boop)
     if (sit?.(id)) return;
-    jiggle(e.currentTarget as Element);
+    const el = document.querySelector(`[data-decor="${CSS.escape(id)}"]`);
+    if (el) jiggle(el);
     cue('tick');
     turnTo(x);
   }
@@ -103,7 +104,7 @@
   <div class="spr" data-decor-node={p.id} data-scenery-id={p.id} {@attach w.at({ x: p.x, z: p.z, lift: p.lift, h: l.h, inv: true })} {@attach tap3(w, areas(p, l))}>
     <button type="button" class="deco" data-decor={p.id} data-item={p.item} data-x={p.x} data-z={p.z} data-f={p.f} data-sfx="self" aria-label={nameOf(p.item)}
       style={l.style} style:height="calc({l.h} * var(--u))" style:width="calc({l.wd} * var(--u))"
-      onclick={(e) => tap(e, p.id, p.x)}>
+      onclick={() => tap(p.id, p.x)}>
       <OfficialArt key={l.key} size="calc({l.h} * var(--u))" />
     </button>
   </div>

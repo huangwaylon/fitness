@@ -31,7 +31,7 @@
     foliage: Foliage;
     month: number;
     /** The campsite's door was tapped (the art's element, for a balloon's tail). */
-    onbuilding?: (id: BuildingId, el: HTMLElement) => void;
+    onbuilding?: (id: BuildingId) => void;
     /** At dusk and night the campfire burns. */
     tod?: Tod;
     /** The Tokyo date and hour: the decor's seasonal pieces (fixedDecor.ts). */
@@ -200,9 +200,9 @@
   <!-- its tap area: its whole body as the camera sees it (its model's silhouette; a house built of parts, or before
        its model is in: its footprint up to its height), nothing past it -->
   <div class="building" data-building={b.id} {@attach w.at({ x: b.x, z: b.z, h: b.h, mode: 'body', box: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1 }, shape: HOME_OF[b.id] })}
-    {@attach tap(w, [{ kind: 'building', id: b.id, x: b.x, z: b.z, l: 0, r: 0, b: 0, t: 0, body: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1, h: b.h, shape: HOME_OF[b.id] } }])}>
+    {@attach tap(w, [{ kind: 'building', id: b.id, x: b.x, z: b.z, l: 0, r: 0, b: 0, t: 0, body: { x0: f.x0, x1: f.x1, z0: f.y0, z1: f.y1, h: b.h, shape: HOME_OF[b.id] }, act: () => onbuilding?.(b.id) }])}>
     <button type="button" class="door" data-sfx="self" data-scenery data-look={sceneryKey(b.key, season, month)} aria-label={t(`world.building.${b.id}`)}
-      onclick={(e) => onbuilding?.(b.id, e.currentTarget)}></button>
+      onclick={() => onbuilding?.(b.id)}></button>
   </div>
 {/each}
 

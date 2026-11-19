@@ -35,6 +35,7 @@
   import { ARCH, DECOR_SLOTS, FLOWERS, HEDGE_XS, HEDGE_Z, SCENERY, flowerById, type BuildingId, type Flower } from '#lib/world/world.ts';
   import { hitWorld, petalOf, sceneSfx, type SceneHit } from './sceneTaps.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { pickOf } from './probe.ts';
   import { thing, things3, type Claim } from '../world3d/things3.ts';
   import { SHOWN, notBehind, type Seen, type Src } from './hitbox.ts';
   import { footprint } from '#lib/world/nav.ts';
@@ -142,12 +143,12 @@
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
-  type Vis = { tap(px: number, py: number, body?: boolean): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
-  type Prop = { tap(px: number, py: number, seen?: Seen): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
+  type Vis = { tap(px: number, py: number, body?: boolean, src?: Src): boolean; claims(px: number, py: number, body?: boolean, src?: Src): string | null };
+  type Prop = { tap(px: number, py: number, seen?: Seen, src?: Src): boolean; claims(px: number, py: number, seen?: Seen, src?: Src): boolean };
   let visitor = $state<Vis>();
   /** The day's guest (Visitor.svelte's other slot: visitorRoles.ts, at the guest spot). */
   let guest = $state<Vis>();
-  let kk = $state<{ tap(px: number, py: number): boolean; claims(px: number, py: number, src?: Src): boolean }>();
+  let kk = $state<{ tap(px: number, py: number, src?: Src): boolean; claims(px: number, py: number, src?: Src): boolean }>();
   let deck = $state<Prop>();
   let cakeEl = $state<Prop>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
@@ -233,8 +234,8 @@
   }
 
   /** A tap on my villager (IslandScene's button): now and then a flea hops off it (Critters). */
-  export function villagerTap(el: Element) {
-    if (enabled()) critters?.fromVillager(el);
+  export function villagerTap() {
+    if (enabled()) critters?.fromVillager();
   }
 
   /** A bush by its scenery id (world.ts SCENERY, or the river-bank hedge's `hedge-<i>`): its feet and height. */
@@ -255,18 +256,6 @@
     downSwallowed = !!swallowed && e === swallowed();
   }
 
-  /** A plot under a goal tree's canopy or trunk button or a villager's (their tap areas reach over a field beside them):
-   *  the plot's, farmed where it is (capture phase: before the button's own handler); a bug in front keeps its tap. */
-  function onPlotUnder(e: MouseEvent) {
-    const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
-    if (downSwallowed || e.button > 0 || !enabled() || !(t instanceof Element) || !stage?.contains(t) || !t.closest('.canopy, .trunk-btn, .vil')) return;
-    if (critters?.lineOut() || critters?.onCritter(e.clientX, e.clientY)) return;
-    const ground = e.clientY - stage.getBoundingClientRect().top < w.view.horizon ? null : w.worldAtClient(e.clientX, e.clientY);
-    if (!ground || !farmAt(ground.x, ground.z)) return;
-    e.stopPropagation();
-    e.preventDefault();
-  }
-
   /** The plot under world (x, z) that farmAt farms (its tile's), or null. */
   function plotUnder(x: number, z: number): string | null {
     const layout = site.layout ?? layoutStore.current, [c, r] = tileAt(x, z), plot = layout ? plotAt(layout, c, r) : undefined;
@@ -276,39 +265,54 @@
    *  a bug in front. */
   const CONTROL_KINDS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui']);
   const SCENERY_KINDS: ReadonlySet<string> = new Set(['tree', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
+  /** What a tap hit-tests to (probe.ts Picked: a control or a scenery thing, and what else the same area is). */
+  type Under = { kind: string; id: string; also?: readonly { kind: string; id: string }[] };
   /**
-   * What a tap at client (cx, cy) on the stage goes to before the scenery and the ground (R4 step 5: a dry run of
-   * onPlotUnder + onClick's chain, no side effect: the figure layer of the 3D pick and its oracle). `under`: what the
-   * tap hit-tests to (probe.ts pickOf the DOM's node, or the 3D pick's tap areas: world3d/pick3d.ts); `src`: the modules'
-   * boxes from their DOM art or from the 3D island; `onHouse`: whether a point is on that building's body (3d; the DOM
-   * reads its door). Null: the control or the scenery `under` takes it, else the ground or the sky. Kinds: plot (id
-   * its plot), visitor (who), reel, critter (its species), chase, bubbles, deck, cake, find (its uid), care (a weed's
-   * uid, rock), kk, fish (the water's kind). Kept in step with onClick till the canvas router (step 6) acts on it.
+   * The scene's chain, the tap's and its dry run's (R4 step 6: one chain): what a tap at client (cx, cy) on the stage
+   * goes to before the controls, the scenery and the ground, given what it hit-tests to (`under`: probe.ts pickOf the
+   * DOM's node, or the 3D pick's tap areas: world3d/pick3d.ts); `src`: the modules' boxes from their DOM art or from the
+   * 3D island; `onHouse`: whether a point is on that building's body (3d; the DOM reads its door). `run`: each module's
+   * tap() acts (its claim's id then ''), else their claims() (no side effect: the 3D pick's oracle). Null: the control or
+   * the scenery `under` takes it, else the ground or the sky. Kinds: plot (id its plot), visitor (who), reel, critter
+   * (its species), chase, bubbles, deck, cake, find (its uid), care (a weed's uid, rock), kk, fish (the water's kind).
    */
-  export function claims(cx: number, cy: number, under: { kind: string; id: string } | null, src: Src = 'dom', onHouse?: (px: number, py: number) => boolean): Claim | null {
+  function chain(cx: number, cy: number, under: Under | null, src: Src, onHouse: ((px: number, py: number) => boolean) | undefined, run: boolean): Claim | null {
     const stage = scene?.querySelector<HTMLElement>('.stage');
     if (!enabled() || !stage) return null;
     const k = under?.kind ?? null, top = stage.getBoundingClientRect().top;
-    const vis = (body: boolean): Claim | null => ((v) => (v ? { kind: 'visitor', id: v } : null))(visitor?.claims(cx, cy, body, src) ?? guest?.claims(cx, cy, body, src) ?? null);
-    const plot = (): Claim | null => {
-      const g = cy - top < w.view.horizon ? null : w.worldAtClient(cx, cy), p = g && plotUnder(g.x, g.z);
-      return p ? { kind: 'plot', id: p } : null;
+    const step = (kind: string, dry: () => string | boolean | null | undefined, act: () => boolean | undefined): Claim | null =>
+      run ? (act() ? { kind, id: '' } : null) : ((v) => (v ? { kind, id: v === true ? '' : v } : null))(dry());
+    const bug = (seen: Seen, reel: boolean): Claim | null =>
+      run ? (critters?.tap(cx, cy, seen, reel, src) ? { kind: 'critter', id: '' } : null) : (critters?.claims(cx, cy, seen, reel, src) ?? null);
+    const vis = (body: boolean) => step('visitor', () => visitor?.claims(cx, cy, body, src) ?? guest?.claims(cx, cy, body, src), () => visitor?.tap(cx, cy, body, src) || guest?.tap(cx, cy, body, src));
+    const kk_ = () => step('kk', () => kk?.claims(cx, cy, src), () => kk?.tap(cx, cy, src));
+    const plot = () => {
+      const g = cy - top < w.view.horizon ? null : w.worldAtClient(cx, cy);
+      return step('plot', () => g && plotUnder(g.x, g.z), () => !!g && farmAt(g.x, g.z));
     };
-    const finds_ = (seen: Seen): Claim | null => ((u) => (u ? { kind: 'find', id: u } : null))(finds?.claims(cx, cy, seen, src) ?? null);
-    const care_ = (seen: Seen): Claim | null => ((u) => (u ? { kind: 'care', id: u } : null))(care?.claims(cx, cy, seen, src) ?? null);
-    const fish = (seen: Seen): Claim | null => ((wt) => (wt ? { kind: 'fish', id: wt } : null))(critters?.fishClaims(cx, cy, seen) ?? null);
-    const prop = (p: Prop | undefined, kind: string, seen: Seen): Claim | null => (p?.claims(cx, cy, seen, src) ? { kind, id: '' } : null);
-    // (onPlotUnder: a plot under a goal tree's canopy or trunk, or a villager; a bug in front keeps its tap)
+    const prop = (p: Prop | undefined, kind: string, seen: Seen) => step(kind, () => p?.claims(cx, cy, seen, src), () => p?.tap(cx, cy, seen, src));
+    const finds_ = (seen: Seen) => step('find', () => finds?.claims(cx, cy, seen, src), () => finds?.tap(cx, cy, seen, src));
+    const care_ = (seen: Seen) => step('care', () => care?.claims(cx, cy, seen, src), () => care?.tap(cx, cy, seen, src));
+    const fish = (seen: Seen) => step('fish', () => critters?.fishClaims(cx, cy, seen), () => critters?.fish(cx, cy, seen));
+    // a plot under a goal tree's canopy or trunk, or a villager (their tap areas reach over a field beside them): the
+    // plot's, farmed where it is; a bug in front keeps its tap
     if ((k === 'goal' || k === 'villager') && !critters?.lineOut() && !critters?.onCritter(cx, cy, src)) {
       const p = plot();
       if (p) return p;
     }
+    // a visitor standing in front of a building (K.K. and Jack at night before the campsite) over its door: theirs (the
+    // 3D island's camera shows the door small behind them)
     if (k === 'building') {
-      const v = vis(false) ?? (kk?.claims(cx, cy, src) ? { kind: 'kk', id: '' } : null);
+      const v = vis(false) ?? kk_();
       if (v) return v;
     }
-    if (critters?.lineOut() && k !== 'building') return { kind: 'reel', id: '' };
+    // my line out: a tap anywhere on the island is its reel (NH's A button: my villager, a tree, a seat, the water), but
+    // a building's door, which one goes through with it (the line ends there)
+    if (critters?.lineOut() && k !== 'building') return step('reel', () => true, () => critters?.tap(cx, cy));
     if (k === 'building') {
+      // what the island tests by position in front of a building's body (its tap area: the model's silhouette), a
+      // present lying before it, a fish in the pond before it, a bug by its wall: theirs, not the door's; what's behind
+      // it is hidden, but where some of it is off the building's area on screen
       const before = notBehind(footprint(under!.id as BuildingId)), door = scene?.querySelector(`[data-building="${under!.id}"] .door`);
       const off = onHouse ? (px: number, py: number) => !onHouse(px, py) : (px: number, py: number) => !door || !document.elementsFromPoint(px, py).includes(door);
       const seen: Seen = (x, z, r = 0) => {
@@ -316,100 +320,99 @@
         const [px, py] = w.clientAt(x, z);
         return r > 0 && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].some(([dx, dy]) => off(px + dx, py + dy));
       };
-      const c = critters?.claims(cx, cy, seen, false, src) ?? prop(deck, 'deck', seen) ?? prop(cakeEl, 'cake', seen) ?? finds_(seen) ?? care_(seen) ?? fish(seen);
+      const c = bug(seen, false) ?? prop(deck, 'deck', seen) ?? prop(cakeEl, 'cake', seen) ?? finds_(seen) ?? care_(seen) ?? fish(seen);
       if (c) return c;
     }
-    if (k && CONTROL_KINDS.has(k)) return critters?.onCritter(cx, cy, src) ? (critters.claims(cx, cy, SHOWN, true, src) ?? null) : null;
-    return critters?.claims(cx, cy, SHOWN, true, src) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
-      ?? (kk?.claims(cx, cy, src) ? { kind: 'kk', id: '' } : null) ?? (k && SCENERY_KINDS.has(k) ? null : fish(SHOWN));
+    // a bug in front of the island's own controls (flying past my villager, a tree's canopy, a door): the bug's (it was
+    // in view; the net is what the tap was for), else theirs
+    if (k && CONTROL_KINDS.has(k)) return critters?.onCritter(cx, cy, src) ? bug(SHOWN, true) : null;
+    // the critters (hit-tested against their live boxes; a cast bobber takes any tap), group stretching's tape deck
+    // (small and exact, before the visitor's wider reach), a birthday's cake; then what's exactly under the finger: a
+    // visitor's figure, a plot (a field's tile, docs/farming.md: farmed where it is, before a weed's or a find's slack
+    // round them reaches over it, never walked to), the day's finds (a shell, a fragment, the bottle, a dig spot, a
+    // present) and the island's care (a weed, the rock) on their own boxes; the visitor's reach (a finger's slack round
+    // it); K.K. on his stool (his figure's box is wider than he is: a shell by his stool is the shell's); the water under
+    // the finger with nothing of the island's over it (a canopy over the pond shakes its tree): a cast, however far
+    return bug(SHOWN, true) ?? prop(deck, 'deck', SHOWN) ?? prop(cakeEl, 'cake', SHOWN) ?? vis(true) ?? plot() ?? finds_(SHOWN) ?? care_(SHOWN) ?? vis(false)
+      ?? kk_() ?? (k && SCENERY_KINDS.has(k) ? null : fish(SHOWN));
   }
+  /** The chain's dry run (things3 claims: the 3D pick's figure layer and its oracle, world3d/pick3d.ts claimAt). */
+  export const claims = (cx: number, cy: number, under: Under | null, src: Src = 'dom', onHouse?: (px: number, py: number) => boolean): Claim | null =>
+    chain(cx, cy, under, src, onHouse, false);
   $effect(() => {
     const r = things3(w);
     r.claims = claims;
     return () => void (r.claims === claims && (r.claims = undefined));
   });
 
+  /** A tap on the island, as the DOM hit-tests it (the island's buttons are the DOM's: theirs act after this, on the
+   *  root): the chain on the DOM's answer, else the scenery or the ground. */
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);
-    if (e.button > 0 || !enabled()) return;
-    const t = e.target;
-    // a visitor standing in front of the campsite (K.K. and Jack at night) over its door: theirs, not the door's (the
-    // door's handler is delegated to the root, after this one; the 3D island's camera shows the door small behind them)
-    if (t instanceof Element && t.closest('[data-building] .door') && (visitor?.tap(e.clientX, e.clientY) || guest?.tap(e.clientX, e.clientY) || kk?.tap(e.clientX, e.clientY))) return void e.stopPropagation();
-    // my line out: a tap anywhere on the island is its reel (NH's A button: my villager, a tree, a seat, the water), but
-    // a building's door, which one goes through with it (the line ends there)
-    if (critters?.lineOut() && t instanceof Element && scene?.querySelector('.stage')?.contains(t) && !t.closest('[data-building] .door')) {
-      critters.tap(e.clientX, e.clientY);
-      return void e.stopPropagation();
+    const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
+    if (e.button > 0 || !enabled() || !(t instanceof Element) || !stage) return;
+    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), under = on ? pickOf(t) : null, control = !!under && CONTROL_KINDS.has(under.kind);
+    // (a field, a label, the HUD's buttons: theirs; my line out still reels on the island)
+    if (!control && t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) {
+      if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
+      return;
     }
-    // what the island tests by position in front of a building's body (its tap area: the model's silhouette), a present
-    // lying before it, a fish in the pond before it, a bug by its wall: theirs, not the door's; what's behind it is hidden
-    const house = t instanceof Element ? t.closest<HTMLElement>('[data-building]') : null;
-    if (house) {
-      const before = notBehind(footprint(house.dataset.building as BuildingId)), door = house.querySelector('.door');
-      // (behind it, it shows where some of it is off the building's area on screen)
-      const off = (px: number, py: number) => !door || !document.elementsFromPoint(px, py).includes(door);
-      const seen: Seen = (x, z, r = 0) => {
-        if (before(x, z)) return true;
-        const [px, py] = w.clientAt(x, z);
-        return r > 0 && [[0, 0], [r, 0], [-r, 0], [0, r], [0, -r]].some(([dx, dy]) => off(px + dx, py + dy));
-      };
-      const [cx, cy] = [e.clientX, e.clientY];
-      if (critters?.tap(cx, cy, seen, false) || deck?.tap(cx, cy, seen) || cakeEl?.tap(cx, cy, seen) || finds?.tap(cx, cy, seen) || care?.tap(cx, cy, seen) || critters?.fish(cx, cy, seen))
-        return void e.stopPropagation();
+    const c = chain(cx, cy, under, 'dom', undefined, true);
+    if (c) {
+      // (before the control's own handler: delegated to the root, after this one)
+      if (control || c.kind === 'reel') e.stopPropagation();
+      if (control && c.kind === 'plot') e.preventDefault();
+      return;
     }
-    const stage = scene?.querySelector<HTMLElement>('.stage');
-    // a bug in front of the island's own buttons (flying past my villager, a tree's canopy, a door): the bug's (it was in
-    // view; the net is what the tap was for), else theirs
-    if (t instanceof Element && stage?.contains(t) && t.closest('button, [role="button"]') && critters?.onCritter(e.clientX, e.clientY) && critters.tap(e.clientX, e.clientY))
-      return void e.stopPropagation();
-    if (!(t instanceof Element) || t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) return;
-    if (!stage) return;
-    const r = stage.getBoundingClientRect();
-    const cx = e.clientX, cy = e.clientY;
-    // the critters move: they're hit-tested against their live boxes, and a cast bobber takes any tap (NH's A button)
-    if (critters?.tap(cx, cy)) return;
-    // group stretching's tape deck (when it's out: small and exact, before the visitor's wider reach)
-    if (deck?.tap(cx, cy)) return;
-    // a birthday's cake: a music box, the candles out
-    if (cakeEl?.tap(cx, cy)) return;
-    // what's exactly under the finger wins: a tap on a visitor's figure answers with a line; then the day's finds (a
-    // shell, a fragment, the bottle, a dig spot, a present) and the island's care (a weed to pull, the rock) on their
-    // own boxes; then the visitor's reach (a finger's slack round it, its spot); then K.K. on his stool with a chat or a
-    // song (his figure's box is wider than he is: a shell by his stool is the shell's)
-    if (visitor?.tap(cx, cy, true) || guest?.tap(cx, cy, true)) return;
-    // a plot under the finger (a field's tile, docs/farming.md): farmed where it is, before a weed's or a find's slack
-    // round them reaches over it (and never walked to)
-    const ground = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
-    if (ground && farmAt(ground.x, ground.z)) return;
-    if (finds?.tap(cx, cy)) return;
-    if (care?.tap(cx, cy)) return;
-    if (visitor?.tap(cx, cy) || guest?.tap(cx, cy)) return;
-    if (kk?.tap(cx, cy)) return;
-    // the water under the finger, nothing of the island's over it (a canopy over the pond shakes its tree): a cast from
-    // where my villager stands (NH), however far
-    if (!t.closest('[data-tree], [data-bush], [data-campfire], [data-sit], [data-fixture], [data-flower]') && critters?.fish(cx, cy)) return;
-    // the tapped element: a tree (Scenery's canopy), a bush (Scenery's art) or a flower (Flowers)
+    if (!control) scenery(cx, cy, under);
+  }
+
+  /** The canvas router (R4 step 6, with the pick3d switch: things3 route, Island3D's): a tap on the island goes by the
+   *  3D pick, never to the DOM island's buttons (stopped here, on the stage in the capture phase, before them): the chain
+   *  on the 3D boxes, else the control's own act (its tap area's), else the scenery or the ground. Where the DOM stays
+   *  (route's 'dom': an overlay, the HUD's buttons, the speech balloon) and a click with no point (a keyboard's: detail
+   *  0), the DOM's (onClick). A touch on a fling only stops it. */
+  function onRoute(e: MouseEvent) {
+    const route = things3(w).route;
+    if (!route || e.button > 0 || !e.detail) return;
+    const cx = e.clientX, cy = e.clientY, r = route(cx, cy);
+    if (r === 'dom') return;
+    e.stopPropagation();
+    e.preventDefault();
+    const swallowed = downSwallowed;
+    downSwallowed = false;
+    if (r === 'rush') return;
+    const control = !!r.under && CONTROL_KINDS.has(r.under.kind), act = () => void (control && r.tap?.act?.(cx, cy, r.area!, e));
+    // (the touch that closed a tree's popup only closes it, as onClick, but on a control: its button's own, as the DOM's)
+    if (swallowed || !enabled()) return act();
+    if (chain(cx, cy, r.under, '3d', r.onHouse, true)) return;
+    if (control) return act();
+    scenery(cx, cy, r.under);
+  }
+
+  /** A tap the chain and the controls left: the scenery thing `under` is (by its id: a tree, a bush, the campfire, a
+   *  seat, the fixed decor, a flower), else the sky above the horizon or the ground under the finger. */
+  function scenery(cx: number, cy: number, under: Under | null) {
+    const r = scene!.querySelector<HTMLElement>('.stage')!.getBoundingClientRect();
+    const idOf = (kind: string) => (under?.kind === kind ? under.id : under?.also?.find((o) => o.kind === kind)?.id);
+    const elOf = (attr: string, id: string) => scene?.querySelector<HTMLElement>(`[${attr}="${CSS.escape(id)}"]`) ?? null;
     // (a tree top reaching into the sky leaves the sun, the moon and the clouds theirs)
-    const treeEl = t.closest<HTMLElement>('[data-tree]');
-    if (treeEl && !(cy - r.top < w.view.horizon && inSky(cx, cy)) && tree?.(treeEl.dataset.tree ?? '')) return;
-    const bushEl = t.closest<HTMLElement>('[data-bush]');
-    const b = bushEl && bushAt(bushEl.dataset.bush ?? '');
-    if (bushEl && b) return bush(bushEl, b);
-    const fireEl = t.closest<HTMLElement>('[data-campfire]');
-    const fire = fireEl && SCENERY.find((s) => s.id === fireEl.dataset.campfire);
-    if (fireEl && fire) return poke(fireEl, fire);
+    const treeId = idOf('tree');
+    if (treeId !== undefined && !(cy - r.top < w.view.horizon && inSky(cx, cy)) && tree?.(treeId)) return;
+    const bushId = idOf('bush'), b = bushId !== undefined && bushAt(bushId);
+    if (b) return bush(bushId!, b);
+    const fireId = idOf('campfire'), fire = fireId !== undefined && SCENERY.find((s) => s.id === fireId);
+    if (fire) return poke(elOf('data-campfire', fireId!), fire);
     // a seat: walked up to and sat or lain on (the one exception, with the doors, to "it answers where it stands")
-    const sitEl = t.closest<HTMLElement>('[data-sit]');
-    if (sitEl && sit?.(sitEl.dataset.sit ?? '')) return;
-    const fxEl = t.closest<HTMLElement>('[data-fixture]');
-    if (fxEl) return fixture(fxEl, fxEl.dataset.fixture ?? '', fxEl.dataset.look ?? '');
-    const flowerEl = t.closest<HTMLElement>('[data-flower]');
-    const fl = flowerEl && flowerById(flowerEl.dataset.flower ?? '');
-    if (flowerEl && fl) return flower(flowerEl, fl);
+    const sitId = idOf('sit');
+    if (sitId !== undefined && sit?.(sitId)) return;
+    const fxId = idOf('fixture');
+    if (fxId !== undefined) return fixture(elOf('data-fixture', fxId), fxId);
+    const fl = ((id) => id !== undefined && flowerById(id))(idOf('flower'));
+    if (fl) return flower(elOf('data-flower', fl.id), fl);
     // the sky: above the horizon (where the ground's inverse projection finds nothing)
     const at = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
-    if (!at) return sky(e, r, cx - r.left, cy - r.top);
+    if (!at) return sky(cx, cy, r);
     const { x, z } = at;
     const hit = hitWorld(x, z);
     // tap-to-walk (spec §4): my villager sets off there (to the nearest bank for water); on land its tap ring is the
@@ -440,9 +443,9 @@
   }
 
   /** A bush: my villager turns to it (avatar.ts) and THAT bush rustles and sheds (and on the partner's phone too). */
-  function bush(el: HTMLElement, b: { x: number; z: number; h: number }) {
-    const id = el.dataset.bush;
-    if (id) shared.share({ kind: 'act', act: 'bush', id, pt: [Math.round(b.x), Math.round(b.z)] });
+  function bush(id: string, b: { x: number; z: number; h: number }) {
+    const el = scene?.querySelector<HTMLElement>(`[data-bush="${CSS.escape(id)}"]`);
+    shared.share({ kind: 'act', act: 'bush', id, pt: [Math.round(b.x), Math.round(b.z)] });
     turnTo(b.x);
     jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
     spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
@@ -451,7 +454,7 @@
   }
 
   /** The campfire poked (where it is: nobody walks): its logs shift, sparks fly up, a soft crackle. */
-  function poke(el: HTMLElement, f: { x: number; z: number; h: number }) {
+  function poke(el: HTMLElement | null, f: { x: number; z: number; h: number }) {
     turnTo(f.x);
     jiggle(el, RUSTLE, 420, BUSH_ORIGIN);
     spawn({ kind: 'fire', x: f.x, y: f.z, lift: f.h * 0.3 });
@@ -473,7 +476,8 @@
     if (near.length) later(() => sceneSfx('water'), 420);
   }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
-  function fixture(el: HTMLElement, id: string, look: string) {
+  function fixture(el: HTMLElement | null, id: string) {
+    const look = el?.dataset.look ?? '';
     const slot = DECOR_SLOTS.find((d) => d.id === id);
     const [x, z] = slot ? [slot.x, slot.z] : ARCH;
     turnTo(x);
@@ -491,7 +495,7 @@
     if (/snowboy/.test(look)) {
       // the snowboy's line, in its voice (melting: a little smaller)
       const melt = Number(look.slice(-1)) >= 2;
-      say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), el, { colour: '#DDEBFA' });
+      if (el) say?.(t('world.snowboy'), t(melt ? 'world.snowboy.melt' : `world.snowboy.${snowLine++ % 3}`), el, { colour: '#DDEBFA' });
     }
     if (id === 'sandcastle' || /snowboy/.test(look)) {
       spawn({ kind: id === 'sandcastle' ? 'sand' : 'grass', x, y: z, v: id === 'sandcastle' ? undefined : 'snow', flip: roll(2) });
@@ -501,7 +505,7 @@
   }
 
   /** A wild flower: my villager waters it. */
-  function flower(el: HTMLElement, f: Flower) {
+  function flower(el: HTMLElement | null, f: Flower) {
     const color = petalOf(wildFlower(f, season));
     // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
     const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
@@ -634,11 +638,11 @@
   const harvestSparkle = (x: number, z: number) => fx3d('sparkle', x, z, 6, { size: 0.6, v: '#FFE27A' });
 
   /** A tap in the sky (x, y: px from the stage's top-left). */
-  function sky(e: MouseEvent, r: DOMRect, x: number, y: number) {
-    const s = scene!;
+  function sky(cx: number, cy: number, r: DOMRect) {
+    const s = scene!, x = cx - r.left, y = cy - r.top;
     const orb = s.querySelector('.orb');
     const o = orb?.getBoundingClientRect();
-    if (orb && o && near(o, e.clientX, e.clientY, 0.7)) {
+    if (orb && o && near(o, cx, cy, 0.7)) {
       const ox = o.left + o.width / 2 - r.left, oy = o.top + o.height / 2 - r.top;
       jiggle(orb, POP, 600);
       if (night) {
@@ -650,10 +654,10 @@
     }
     for (const c of s.querySelectorAll('.cloud')) {
       const b = c.getBoundingClientRect();
-      if (!near(b, e.clientX, e.clientY)) continue;
+      if (!near(b, cx, cy)) continue;
       jiggle(c, SQUISH, 620);
       // the wisps break off the cloud's edge on the tapped side (white on white would vanish inside it)
-      const dir = e.clientX < b.left + b.width / 2 ? -1 : 1;
+      const dir = cx < b.left + b.width / 2 ? -1 : 1;
       const ex = (dir < 0 ? b.left + b.width * 0.1 : b.right - b.width * 0.1) - r.left;
       spawn({ kind: 'cloud', x: ex, y: b.top + b.height * 0.55 - r.top, dir });
       return sceneSfx('cloud');
@@ -665,9 +669,9 @@
       spawn({ kind: 'wish', x, y });
       sceneSfx('wish');
       // a star the preview brought (せってい's きせつ) brings no fragment: the island's finds are the real day's
-      return scenePreview().on ? undefined : finds?.wish(e.clientX, e.clientY);
+      return scenePreview().on ? undefined : finds?.wish(cx, cy);
     }
-    if (skyTap?.(e.clientX, e.clientY)) return;
+    if (skyTap?.(cx, cy)) return;
     if (!night) return;
     spawn({ kind: 'star', x, y });
     sceneSfx('star');
@@ -787,13 +791,14 @@
     const el = scene;
     if (!el) return;
     el.addEventListener('pointerdown', onDown);
-    el.addEventListener('click', onPlotUnder, true);
     el.addEventListener('click', onClick);
+    const stage = el.querySelector<HTMLElement>('.stage');
+    stage?.addEventListener('click', onRoute, true);
     el.addEventListener('island:present', present);
     return () => {
       el.removeEventListener('pointerdown', onDown);
-      el.removeEventListener('click', onPlotUnder, true);
       el.removeEventListener('click', onClick);
+      stage?.removeEventListener('click', onRoute, true);
       el.removeEventListener('island:present', present);
     };
   });

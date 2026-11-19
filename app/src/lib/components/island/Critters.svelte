@@ -839,7 +839,7 @@
 
   /** A tap on my villager (IslandScene via SceneTaps): now and then a flea hops off it (NH's fleas) into the grass
    *  round its feet. */
-  export function fromVillager(_el?: Element) {
+  export function fromVillager() {
     if (bugs.length >= MAX_BUGS || !(forceFlea || fleaJumps(jst(now()).month, rand))) return;
     flea();
   }
@@ -1066,7 +1066,7 @@
     }
     const dv = diving;
     if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until && seen(dv.x, dv.z)) {
-      const r = src === '3d' ? drawn3(w, `dive-${dv.n}`) : chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
+      const r = (src === '3d' && drawn3(w, `dive-${dv.n}`)) || chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
       if (r && Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) return { kind: 'chase', id: '' };
     }
     const at = w.worldAtClient(px, py);
@@ -1087,7 +1087,7 @@
   }
   /** A tap on the scene (client px), before SceneTaps' own flourishes: true when a critter took it; only what shows there
    *  (`seen`); a line out reels in (`reel`: not on a building's door, which one goes through with it out). */
-  export function tap(px: number, py: number, seen: Seen = SHOWN, reel = true): boolean {
+  export function tap(px: number, py: number, seen: Seen = SHOWN, reel = true, src: Src = 'dom'): boolean {
     if (line) {
       if (!reel) return false;
       reelIn();
@@ -1096,10 +1096,10 @@
     const g = geo();
     if (!g) return false;
     // (the partner has it already, their villager on the way: it's theirs, the tap goes on to whatever else is there)
-    const b = nearestBug(px, py, seen), bugEl = b && bugEls[b.n];
+    const b = nearestBug(px, py, seen, src), bugEl = b && bugEls[b.n];
     if (b && bugEl) {
       // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
-      const r = bugBox(b, bugEl);
+      const r = bugBox(b, bugEl, src);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       // (a percher on a trunk: a wider box, 56px, over the tree's own: the critters answer a tap first)
       const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
@@ -1177,7 +1177,7 @@
     }
     const dv = diving;
     if (dv?.chase && !dv.gone && chaseEl && performance.now() <= dv.until && seen(dv.x, dv.z)) {
-      const r = chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
+      const r = (src === '3d' && drawn3(w, `dive-${dv.n}`)) || chaseEl.getBoundingClientRect(), reach = Math.max((S?.DIVE_U ?? 30) * w.scaleAt(dv.x, dv.z) * w.view.s, 22);
       if (Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2)) <= reach * 1.2) {
         turnTo(dv.x); // no walk: the chase is a timing game
         sceneSfx('splash');
@@ -1230,12 +1230,12 @@
    *  off the model as a percher flies in, so a tap on what's drawn startled it), its sprite's size round it; else the
    *  sprite's own box. */
   function bugBox(b: Bug, el: HTMLElement, src: Src = 'dom'): DOMRect {
-    if (src === '3d') {
-      // (its model's silhouette, at least 20 px each way about its middle: a bug's thin legs and wings)
-      const r = drawn3(w, bugId(b));
-      if (!r) return new DOMRect(-1e4, -1e4, 0, 0);
-      const bw = Math.max(r.width, 20), bh = Math.max(r.height, 20);
-      return new DOMRect(r.left + r.width / 2 - bw / 2, r.top + r.height / 2 - bh / 2, bw, bh);
+    // (3d: its model's silhouette, at least 20 px each way about its middle: a bug's thin legs and wings; till its model
+    // is in, its sprite's, as drawn then)
+    const r3 = src === '3d' ? drawn3(w, bugId(b)) : null;
+    if (r3) {
+      const bw = Math.max(r3.width, 20), bh = Math.max(r3.height, 20);
+      return new DOMRect(r3.left + r3.width / 2 - bw / 2, r3.top + r3.height / 2 - bh / 2, bw, bh);
     }
     const r = bodyRect(el) ?? el.getBoundingClientRect(), m = w.rest.three ? mos.get(bugId(b)) : undefined;
     if (!m) return r;

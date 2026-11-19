@@ -138,7 +138,15 @@ export interface Tap3 {
   zi?: number;
   /** A building's body (camera.svelte.ts `body`): its footprint and height, its model's silhouette once built. */
   body?: { x0: number; x1: number; z0: number; z1: number; h: number; shape?: string };
+  /** What a tap on it does (a control's: the canvas router's, SceneTaps; R4 step 6), given the tap (client px), its area
+   *  on screen and the click (its target the DOM's node there). */
+  act?: (x: number, y: number, a: { l: number; t: number; r: number; b: number }, e: MouseEvent) => void;
 }
+/** What the canvas router acts on at a client point (world3d/pick3d.ts route3d): the tap area under it (`under`, null:
+ *  the ground or the sky) and that area, and (a building) whether a point is on its body; 'dom' where the DOM stays (off
+ *  the stage, an overlay, the HUD's buttons, the speech balloon), 'rush' on a fling (a touch only stops it). */
+export type Route = 'dom' | 'rush' | { under: Picked3 | null; tap: Tap3 | null; area: { l: number; t: number; r: number; b: number } | null; onHouse?: (px: number, py: number) => boolean };
+type Picked3 = { kind: string; id: string; also: { kind: string; id: string }[] };
 /** What a tap goes to in the scene's own chain, before the scenery and the ground (SceneTaps claims: a plot, a visitor,
  *  a critter, a find, …): its kind and id. */
 export type Claim = { kind: string; id: string };
@@ -158,6 +166,11 @@ export interface Registry {
   /** With the pick3d switch (Island3D): placement.ts' guards (client px, 6 px round each) with the island's controls'
    *  boxes from the tap areas, the HUD's and the overlays' still the DOM's; `skip` leaves some of the island's out. */
   guards3?: (skip?: (c: Claim) => boolean) => { x0: number; x1: number; y0: number; y1: number }[];
+  /** With the pick3d switch (Island3D): what a tap at a client point goes to by the 3D tap areas (the canvas router's,
+   *  SceneTaps, and the tree popup's touch-down: IslandScene). */
+  route?: (x: number, y: number) => Route;
+  /** A tap on a villager (IslandScene's: my villager's squish, a high five), by its actor. */
+  onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
   arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
 }

@@ -227,9 +227,9 @@
     const pad = 8; // (a finger's slack round the figure, px)
     return px >= r.left - pad && px <= r.right + pad && py >= r.top - pad && py <= r.bottom + pad;
   }
-  export function tap(px: number, py: number): boolean {
+  export function tap(px: number, py: number, src: Src = 'dom'): boolean {
     const s = spot;
-    if (!s || !claims(px, py)) return false;
+    if (!s || !claims(px, py, src)) return false;
     // in place (only a tap on empty ground walks): my villager turns to him, he looks up (a nod; a start, asleep)
     if (talkTimer) return true;
     turnTo(s.x);

@@ -180,7 +180,7 @@
   {@const bh = RIG.balloon + RIG.string + RIG.gift + 8}
   {@const mid = (RIG.balloon - RIG.string - RIG.gift) / 2}
   <div class="flier" {@attach w.at({ x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, inv: true })}
-    {@attach tap3(w, [{ kind: 'balloon', id: '', x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, l: -bw / 2, r: bw / 2, b: mid - bh / 2, t: mid + bh / 2, min: [48, 48, 'mid'] }])}>
+    {@attach tap3(w, [{ kind: 'balloon', id: '', x: flight.x0, z: flight.z, h: RIG.balloon + RIG.string + RIG.gift, live: knot, always: true, l: -bw / 2, r: bw / 2, b: mid - bh / 2, t: mid + bh / 2, min: [48, 48, 'mid'], act: tap }])}>
     <button type="button" class="balloon" data-sfx="self" aria-label={t('island.balloon')} bind:this={btn} onclick={tap}
       style:--bh={RIG.balloon} style:--hang={RIG.string + RIG.gift}></button>
   </div>
