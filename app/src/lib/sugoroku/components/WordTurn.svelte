@@ -178,7 +178,9 @@
   .head .chip :global(svg) { color: var(--text-soft); }
   /* the slots: full width, 52 tall, ⌫ at the right end */
   .slots { display: flex; align-items: center; padding-left: 6px; }
-  .in-row { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 3px; padding: 4px 0; }
+  /* one row always: 7 tiles at 37 wide, an 8th or a pocket 9th shrink them all to fit (it wrapped, the panel jumped) */
+  .in-row { flex: 1; min-width: 0; display: flex; gap: 3px; padding: 4px 0; }
+  .in-row .sg-tile.in { flex: 0 1 37px; width: auto; min-width: 0; }
   .empty { padding-left: 6px; font: 500 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .del { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: 0 2px; padding: 0; appearance: none; border: 0; border-radius: var(--r-chip);
     background: none; cursor: pointer; color: var(--c-ink); -webkit-tap-highlight-color: transparent; }
