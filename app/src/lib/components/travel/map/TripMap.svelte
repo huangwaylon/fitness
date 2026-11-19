@@ -162,24 +162,24 @@
     width: 0; height: 0; margin-top: -2px; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #FFFFFF;
     filter: drop-shadow(0 2px 0 rgba(74, 58, 44, .22));
   }
-  :global(.tm-pin[aria-pressed='true'] .tm-head) { transform: translateY(-4px) scale(1.18); border-color: var(--c-yuzu, #FFD84D); box-shadow: 0 0 0 2px var(--c-edge, #937047), 0 4px 10px rgba(74, 58, 44, .3); }
-  :global(.tm-pin[aria-pressed='true'] .tm-tail) { border-top-color: var(--c-yuzu, #FFD84D); }
+  :global(.tm-pin[aria-pressed='true'] .tm-head) { transform: translateY(-4px) scale(1.18); border-color: var(--c-yuzu); box-shadow: 0 0 0 2px var(--c-edge), 0 4px 10px rgba(74, 58, 44, .3); }
+  :global(.tm-pin[aria-pressed='true'] .tm-tail) { border-top-color: var(--c-yuzu); }
   /* the selected pin's name: a small NH tag over its head */
   :global(.tm-tag) {
     display: none; position: absolute; left: 50%; bottom: calc(100% + 2px); translate: -50% 0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    padding: 4px 10px; border-radius: var(--r-pill, 999px); background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C);
-    font: 700 13px/1.2 var(--font-ui); box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 2px 0 var(--c-edge, #937047); pointer-events: none;
+    padding: 4px 10px; border-radius: var(--r-pill); background: var(--c-cream); color: var(--c-ink);
+    font: 700 13px/1.2 var(--font-ui); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); pointer-events: none;
   }
   :global(.tm-pin[aria-pressed='true'] .tm-tag) { display: block; }
   :global(.tm-pin:active .tm-head) { transform: translateY(1px) scale(.96); }
   :global(.tm-pin:focus-visible) { outline: none; }
-  :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus, #4A3A2C); outline-offset: 2px; }
+  :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus); outline-offset: 2px; }
   .cand { width: var(--hit); height: var(--hit); border: 0; border-radius: 50%; background: #FFFFFF; }
 
   /* the attribution (ODbL): small, cream, in the corner */
   .tm :global(.maplibregl-ctrl-attrib) {
-    margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill, 999px); background: rgba(255, 249, 227, .82);
-    font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft, #6B5544);
+    margin: 0 0 6px 6px; padding: 1px 7px; border-radius: var(--r-pill); background: rgba(255, 249, 227, .82);
+    font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft);
   }
   .tm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
   .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1001; }
@@ -191,7 +191,7 @@
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .locate::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
-  .locate[aria-pressed='true'] { color: var(--c-ink, #4A3A2C); }
+  .locate[aria-pressed='true'] { color: var(--c-ink); }
   .locate[aria-pressed='true']::before { background: var(--ctl-sel); }
   .locate[data-locate='asking'] svg { animation: tm-spin 1.2s linear infinite; }
   .locate[data-locate='denied'], .locate[data-locate='unavailable'] { color: var(--text-soft); }
