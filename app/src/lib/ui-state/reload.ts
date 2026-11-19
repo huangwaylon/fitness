@@ -28,6 +28,10 @@ export function safeReload(now = Date.now(), why: Why = 'other'): boolean {
   return true;
 }
 
+/** A retry that failed again (`tries` > 0: the player's もう一度) while online reloads the page (WebKit keeps a failed
+ *  module import for the page's life, so asking again can't help): true when it did. The one rule for every もう一度. */
+export const reloadOnRepeat = (tries: number): boolean => tries > 0 && navigator.onLine && safeReload(Date.now(), 'chunk');
+
 type Why = 'update' | 'stale' | 'chunk' | 'other';
 /** The page reloaded now, no loop guard, `why` logged first. */
 function reloadNow(why: Why): void {

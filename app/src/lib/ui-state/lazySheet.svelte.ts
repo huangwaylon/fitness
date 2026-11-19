@@ -9,7 +9,7 @@
 // this opening should show (トレイル's trail, ごはん on someone's day), kept in `ask` (a new object each time: an ask
 // while it's open moves it), which the sheet reads on its mount and each change.
 import type { Component } from 'svelte';
-import { lazy, safeReload } from './reload.ts';
+import { lazy, reloadOnRepeat } from './reload.ts';
 import { toasts } from './toast.svelte.ts';
 import { t } from '#lib/i18n/index.ts';
 
@@ -37,7 +37,7 @@ export function lazySheet<A = never>(load: () => Promise<{ default: SheetCompone
   const up = (again: boolean): void => void (s.Sheet || !unreachable() ? get() : Promise.reject(new Error('offline'))).then(
     (m) => { s.Sheet = m.default; s.open = true; },
     () => {
-      if (again && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
+      if (reloadOnRepeat(+again)) return;
       toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('panel.sheetRetry'), run: () => up(true) } });
     });
   const s: LazySheet<A> = $state({ Sheet: null, open: false, ask: null, show: (...a: [A?]) => {

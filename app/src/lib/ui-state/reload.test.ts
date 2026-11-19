@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isChunkError, lazy, newWorker, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
+import { isChunkError, lazy, newWorker, reloadOnRepeat, reloadUnlessLeaving, RELOAD_WINDOW_MS, safeReload } from './reload.ts';
 import { configureLog, markLeaving } from '#lib/sync/log.ts';
 
 const reload = vi.fn();
@@ -30,6 +30,17 @@ describe('safeReload', () => {
     vi.stubGlobal('sessionStorage', { getItem: () => { throw new Error('denied'); }, setItem: () => {} });
     expect(safeReload()).toBe(false);
     expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('reloadOnRepeat (a もう一度 that failed again)', () => {
+  it('reloads on a retry online only, never on the first failure or offline', () => {
+    vi.stubGlobal('navigator', { onLine: false });
+    expect(reloadOnRepeat(1)).toBe(false);
+    vi.stubGlobal('navigator', { onLine: true });
+    expect(reloadOnRepeat(0)).toBe(false);
+    expect(reloadOnRepeat(2)).toBe(true);
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 });
 

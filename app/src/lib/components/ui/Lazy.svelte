@@ -7,7 +7,7 @@
   // `floating`: a whole sheet's (the HUD's): its failure is lazySheet's, the island's toast with もう一度 (it goes by
   // itself), nothing left over the island.
   import type { Snippet } from 'svelte';
-  import { lazy, safeReload } from '#lib/ui-state/reload.ts';
+  import { lazy, reloadOnRepeat } from '#lib/ui-state/reload.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import LoadError from './LoadError.svelte';
@@ -18,7 +18,7 @@
   let tries = $state(0);
   const attempt = (n: number) =>
     get().catch((e: unknown) => {
-      if (n > 0 && navigator.onLine && safeReload(Date.now(), 'chunk')) throw e;
+      if (reloadOnRepeat(n)) throw e;
       if (floating) toasts.show(t(navigator.onLine ? 'common.loadFailed' : 'panel.sheetOffline'), 6000, { action: { label: t('panel.sheetRetry'), run: () => tries++ } });
       throw e;
     });

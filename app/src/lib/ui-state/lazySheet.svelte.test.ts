@@ -4,7 +4,7 @@ const show = vi.fn();
 vi.mock('./toast.svelte.ts', () => ({ toasts: { show } }));
 // (reload.ts's lazy without its reload: a failed import forgotten, as there)
 vi.mock('./reload.ts', () => ({
-  safeReload: () => false,
+  reloadOnRepeat: () => false,
   lazy: <T>(load: () => Promise<T>) => {
     let p: Promise<T> | null = null;
     return () => (p ??= load().catch((e: unknown) => ((p = null), Promise.reject(e))));
