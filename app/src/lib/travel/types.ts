@@ -9,7 +9,7 @@ import type { L, PackSeed } from '#lib/contract/pack.ts';
  *  "Private values"). */
 export type { L };
 
-export type TripId = 'okinawa' | 'seattle' | 'nz';
+export type TripId = 'okinawa' | 'seattle' | 'nz' | 'zao';
 
 /** An outside link (Maps, a trail map, an operator). `href` is https, or a `{p:key}` token for a private URL. */
 export interface Link { label: L; href: string }

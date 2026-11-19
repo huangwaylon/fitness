@@ -8,12 +8,13 @@ import { parseTokens, privateKeys } from './tokens.ts';
 import { okinawa } from './trips/okinawa.ts';
 import { seattle } from './trips/seattle.ts';
 import { nz } from './trips/nz.ts';
+import { zao } from './trips/zao.ts';
 import { loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
 import { isIcon } from '../components/ui/Icon.svelte';
 import { catIcon } from '../components/travel/packView.ts';
 
-const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz };
+const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz, zao };
 const TRIP_IDS = Object.keys(TRIPS) as TripId[];
 const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
 
@@ -21,7 +22,8 @@ const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
 const NOTE_KEYS: Record<TripId, string[]> = {
   okinawa: ['flightRef', 'ticket', 'carRef', 'onboardingUrl', 'traveller1'],
   seattle: [],
-  nz: ['flightRef', 'expediaRef', 'traveller1', 'traveller2']
+  nz: ['flightRef', 'expediaRef', 'traveller1', 'traveller2'],
+  zao: []
 };
 
 /** Every L in a value, with where it is. */
@@ -70,7 +72,7 @@ describe('the trips', () => {
     expect(t.places.filter((p) => p.kind === 'stop').every((p) => t.days.some((d) => d.n === p.day))).toBe(true);
   });
   it.each(TRIP_IDS)('%s: the packing seed’s categories and items, with stable ids', (id) => {
-    const prefix = { okinawa: 'ok', seattle: 'se', nz: 'nz' }[id];
+    const prefix = { okinawa: 'ok', seattle: 'se', nz: 'nz', zao: 'za' }[id];
     TRIPS[id].packing.cats.forEach((c, ci) => {
       expect(c.id).toBe(`${prefix}-${ci}`);
       c.items.forEach((it, ii) => expect(it.id).toBe(`${prefix}-${ci}-${ii}`));

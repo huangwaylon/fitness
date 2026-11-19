@@ -1,6 +1,6 @@
 # 旅行 (trips)
 
-The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Documents/other/travel-plans` into 「旅行」. The
+The travel guides (Okinawa, Seattle, New Zealand; Zao written here), ported from `~/Documents/other/travel-plans` into 「旅行」. The
 UI is [design.md §Trips](design.md#trips); this file is the data, the relay's part and the map.
 
 ## Decisions
@@ -31,6 +31,7 @@ past go by the trip's own calendar and rows.
 | okinawa (ja + en) | 2026-10-10 → 10-12 | Asia/Tokyo | 3 | logistics, map (23 stops; candidates 26 camp / 9 nature / 11 food), 35 campsites, packing 6 / 35 |
 | seattle (en only) | 2026-07-02 → 07-19 | America/Los_Angeles | 18 (8 hikes) | packing 4 / 19; no map |
 | nz (en + ja) | 2027-02-11 → 02-16 (flight out 02-17 00:10) | Pacific/Auckland | 6 | logistics, map (39 stops), packing 6 / 29 |
+| zao (ja + en) | 2027-01-30 → 02-01 (up the eve, 01-29 20:00) | Asia/Tokyo | 3 | logistics, map (3 stops, no legs), packing 3 / 15 |
 
 `trips.test.ts` pins these counts. "Trip facts" below binds every edit.
 
@@ -154,3 +155,8 @@ corrected claims, the Evertrail campsites.
 
 In `trips/nz.ts`'s header: the flights, the New Lynn base, why Taranaki is days 3–4 and Taupō an unscheduled card, the
 tarns' sunrise timing, drive times, spellings, verified, unverified and still to book, the border facts.
+
+### Zao 2027 (Jan 30 – Feb 1, ja with en)
+
+In `trips/zao.ts`'s header: the dates and the peak season, who rents what, prices and cancellation, hours, the
+places' source, what stays out of the repo, still open and unverified.
