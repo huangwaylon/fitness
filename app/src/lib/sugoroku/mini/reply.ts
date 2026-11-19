@@ -46,9 +46,11 @@ function dealRounds(d: Deal, EXCHANGES: readonly Exchange[]): ReplyRound[] {
   const r = seeded(`${d.seed}:reply`), n = d.seats.length;
   const from = Math.max(0, d.seats.findIndex((s) => s.who === d.lander));
   const low = Math.min(...d.seats.map((s) => s.level));
-  const fresh = EXCHANGES.map((_, i) => i).filter((i) => !d.used.lines.has(EXCHANGES[i].q[0]));
-  const ok = fresh.filter((i) => EXCHANGES[i].lv === 1 || low >= 2);
-  const picks = shuffle(ok.length >= REPLY_ROUNDS ? ok : EXCHANGES.map((_, i) => i), r).slice(0, REPLY_ROUNDS);
+  // (the table's level's lines not yet played; all played: its level's again, never an A2 line at a やさしい table. A
+  // game plays ≤ 6 stones × 4, under the 63 A1 lines: the fallback never changed a deal, so no RULES bump)
+  const mine = EXCHANGES.map((_, i) => i).filter((i) => EXCHANGES[i].lv === 1 || low >= 2);
+  const ok = mine.filter((i) => !d.used.lines.has(EXCHANGES[i].q[0]));
+  const picks = shuffle(ok.length >= REPLY_ROUNDS ? ok : mine, r).slice(0, REPLY_ROUNDS);
   return picks.map((ex, k) => {
     const asker = d.seats[(from + k) % n];
     const repliers = n === 1 ? [asker] : d.seats.filter((s) => s.who !== asker.who);

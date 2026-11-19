@@ -752,6 +752,31 @@ describe('返事はどれ？', () => {
     expect(cardLine(EXCHANGES[0], 0)).toEqual(EXCHANGES[0].a);
     expect(cardLine(EXCHANGES[0], 1)).toEqual(EXCHANGES[0].x[0]);
   });
+  it('every round at every table (1–3 seats, every level mix): the one reply that fits dealt once, to a replier (alone: the asker); a やさしい table A1 lines, its played lines all used up too', () => {
+    const tables: Hand[][] = [];
+    for (const a of [1, 2, 3] as const) {
+      tables.push([H('A', a)]);
+      for (const b of [1, 2, 3] as const) {
+        tables.push([H('A', a), H('B', b)]);
+        for (const g of [1, 2, 3] as const) tables.push([H('A', a), H('B', b), H('G', g)]);
+      }
+    }
+    const a1 = EXCHANGES.filter((e) => e.lv === 1);
+    // (all but two A1 lines played)
+    const spent = new Set(a1.slice(2).map((e) => e.q[0]));
+    for (const seats of tables) for (let k = 0; k < 12; k++) {
+      const low = Math.min(...seats.map((x) => x.level));
+      const fresh = reply.deal(deal(seats, `all${k}`, seats[k % seats.length].who), ctx);
+      const tired = reply.deal({ ...deal(seats, `all${k}`), used: { pictures: new Set(), lines: spent } }, ctx);
+      for (const s of [fresh, tired]) for (const round of s.rounds) {
+        const holders = Object.entries(round.hands).filter(([, h]) => h!.includes(0));
+        expect(holders).toHaveLength(1);
+        expect(round.hands[holders[0][0] as Who]!.filter((c) => c === 0)).toHaveLength(1);
+        expect(holders[0][0] === round.asker).toBe(seats.length === 1);
+        if (low === 1) expect(round.ex.lv).toBe(1);
+      }
+    }
+  });
   it('the fitting card: the round over, its finder; one that doesn’t: おしい (once a card); the asker holds none; the timer shows it', () => {
     const [who, hand] = holder(s0);
     const wrongK = hand!.findIndex((c) => c !== 0);

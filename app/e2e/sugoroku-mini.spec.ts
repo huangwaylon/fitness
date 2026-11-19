@@ -255,7 +255,7 @@ test.describe('みんなで！ passed round', () => {
     await expect(s.locator('[data-sg-shop-role]')).toHaveAttribute('data-sg-shop-role', 'ask');
     const list = await askFor(page, true);
     if (list.some((l) => l.n > 1)) {
-      await expect(s.locator('[data-sg-nudge]')).toContainText('-s がつくよ');
+      await expect(s.locator('[data-sg-nudge]')).toContainText('-s をつけよう');
       await shot(page, 'shopping-2-play');
       await askFor(page);
     }

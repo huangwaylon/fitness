@@ -162,9 +162,11 @@ describe('online with mini-games on: the rules', () => {
     expect(JSON.stringify(foldMoves(log, ctx))).toBe(JSON.stringify(foldMoves(log.map(({ t: _t, ...m }) => m), ctx)));
   });
   // (online.test's pin for '1'; these for the mini-games' rules, `v` and the game's `rules` label aside: '2' over a
-  // game of 伝えて当てて, '3' over three playing all four games, '4' over five playing all eight)
+  // game of 伝えて当てて, '3' over three playing all four games, '4' over five playing all eight; a deal copies its
+  // exchange's text into the state, so an edit to data/*.json that a pinned game deals re-pins without a RULES bump:
+  // '4' re-pinned 11-19 for 返事はどれ？'s fixed lines, the deal the same)
   const PIN: Record<string, readonly [string, string]> = {
-    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['19u41wy', 'minigame00 minigame08 minigame21 minigame28 minigame35']
+    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['1qcczf9', 'minigame00 minigame08 minigame21 minigame28 minigame35']
   };
   const hashOf = (rules: string, ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
