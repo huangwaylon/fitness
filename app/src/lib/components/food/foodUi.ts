@@ -2,7 +2,7 @@
 // catalog has it, for its portions; else its own portion), a row's tile, picture box and everyday name, a food's
 // states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
 // (マイレシピ: its portions). The catalog itself: dbHold.svelte.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
-import { FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { recipePortions, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { entryPfc, pfcTint, type PfcOf, type PfcTint, type Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { imgOf, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
@@ -21,6 +21,8 @@ const DRY = /ざる|もり|(?<!鍋)焼|まぜ|油そば|つけ麺|冷やし|ぶ�
 /** A soup, a 鍋 or a stew by its name (not 果汁, 回鍋肉, お汁粉). */
 const SOUP = /スープ|汁|鍋|チゲ|スンドゥブ|ポトフ|おでん/;
 const NOT_SOUP = /果汁|回鍋肉|汁粉|汁なし|つけ汁/;
+/** Never in a broth whatever else the name holds: a salad (ラーメンサラダ), a base to make one with (鍋用スープの素). */
+const NOT_BROTH = /サラダ|の素/;
 /**
  * Whether a food is eaten in a broth one may leave some of (スープ半分, the dietitian's 「スープは半分」: most of a
  * noodle's or a 鍋's salt is in it): 汁物, a soup, a 鍋 or a stew by name, or a noodle in its broth. Drinks and MEXT's
@@ -30,6 +32,7 @@ export function isBroth(it: Pick<Item, 'id' | 'name' | 'cat'>): boolean {
   if (it.cat === '飲料' || it.cat === '酒') return false;
   if (it.cat === '汁物') return true;
   const n = it.name;
+  if (NOT_BROTH.test(n)) return false;
   if (SOUP.test(n) && !NOT_SOUP.test(n)) return true;
   return !it.id.startsWith('mext:') && NOODLE.test(n) && !DRY.test(n);
 }
@@ -326,11 +329,7 @@ export function daysText(w: number): string {
  *  100 g (FoodAmount's `serving` mode: recipeServing), ぜんぶ its servings × 100. */
 export function recipeItem(r: Recipe): Item {
   const f = recipeSnap(r);
-  const one = recipePortion(r);
-  const portions: Portion[] = [{ label: one.label, g: one.g }];
-  const all = f.sv ? one.g * r.sv : r.total.g;
-  if (r.sv > 1 && all <= FOOD_GRAMS.max) portions.push({ label: '全部', g: all });
-  return { id: f.id, name: f.n, ...snapValues(f), portions };
+  return { id: f.id, name: f.n, ...snapValues(f), portions: recipePortions(r) };
 }
 
 /** Whether a recipe logs by the serving (an ingredient of no known weight: its snapshot `sv`). */

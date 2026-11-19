@@ -4,6 +4,7 @@
 // food-data/data_src/suspect_ok.json). food-data/scripts/off.py mirrors `plausible` (the shared cases:
 // data_src/plausible_cases.json). Pure, node alone (lib/food/nodeAlone.test.ts).
 import type { Item, Portion } from './types.ts';
+import { LOW_PROTEIN_CATS, PROTEIN_FOOD, SALTY } from './words.ts';
 
 interface Checked {
   /** The item fixed, or null: drop it (a chain menu's name_density only). */
@@ -27,8 +28,6 @@ const SALT_CAP: Record<string, number> = {
   調味料: 100, 飲料: 1.5, 酒: 2, 乳製品: 2, '菓子・デザート': 5, パン: 3, 果物: 1, 'ナッツ・種': 3, 主食: 7, 麺: 8, 肉: 4, 卵: 2,
   '大豆・豆': 3, いも: 3, 野菜: 4, 主菜: 5, 副菜: 5, '丼・定食': 4, 寿司: 4, 魚介: 6, 油脂: 3, 汁物: 20
 };
-/** Seasonings, soup bases and salty foods, whose salt can equal a macro by chance (a dashi powder's 40 g). */
-const SALTY = /たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|\u9846粒|シーズニング|seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|たらこ|塩辛|酒盗|梅|生ハム|ジャーキー/i;
 const known = (v: number | null | undefined): v is number => typeof v === 'number';
 
 /** A chain menu (Kalori): values per serving, its weight unknown. */
@@ -121,9 +120,6 @@ export function plausible(it: Item): Checked {
  *  smaller one, or a pack's (1個), matches by chance (fried chicken 200 kcal, 200 g). */
 const portionIsKcal = (q: Portion, kcal: number): boolean => q.label === '1食分' && q.g >= 300 && Math.abs(q.g - kcal) <= 1;
 
-/** Protein foods, where protein over 35 % of the energy is genuine. */
-const PROTEIN_FOOD = /プロテイン|protein|ホエイ|whey|wp[ci]|\biso|カゼイン|casein|ザバス|savas|ビーレジェンド|be ?legend|アルプロン|alpron|huel|shake|replacement|ちりめん|めんたい|明太|もめん|豆乳|茶豆|枝豆|だんご|団子|骨|いわし|イワシ|あじ|\u9bf5|きす|キス|ししゃも|あなご|穴子|すじ|カニカマ|パンガシウス|fish|tuna|salmon|squid|chicken|beef|pork|ham\b|jerky|seitan|cottage|\u0442\u0432\u043e\u0440\u043e\u0433|skyr|tofu|ソイ|大豆|soy|たんぱく|タンパク|蛋白|ささみ|サラダチキン|チキン|鶏|肉|ハム|ジャーキー|魚|鮭|さけ|サーモン|まぐろ|ツナ|かつお|\u9c39|いか|イカ|たこ|えび|海老|ほたて|帆立|貝|かに|蟹|ちくわ|かまぼこ|蒲\u927e|はんぺん|しらす|じゃこ|煮干|あたりめ|するめ|さきいか|干|チーズ|ヨーグルト|豆腐|とうふ|納豆|おから|ゆば|湯葉|高野|卵|たまご|エッグ|egg|bcaa|eaa|アミノ|コラーゲン|ゼラチン|酵母|きな粉|きなこ|ピーナッツ|落花生|ナッツ/i;
-const SWEET_CATS = new Set(['菓子・デザート', '飲料', 'パン', '主食', '麺']);
 /** Categories whose energy legitimately sits away from 4P+9F+4C (fibre, alcohol). */
 const ATWATER_FREE = new Set(['酒', '海藻', 'きのこ', '野菜', '果物', '大豆・豆', 'ナッツ・種', 'いも']);
 /** Fibre or sugar alcohols counted as 4 kcal/g carbohydrate: energy under 4P+9F+4C. */
@@ -152,7 +148,7 @@ export function suspect(it: Item): string[] {
     const free = ATWATER_FREE.has(it.cat ?? '') || LOW_KCAL_OK.test(nm) || CREATINE.test(nm);
     if (kcal >= 80 && !free && Math.abs(kcal - est) >= 30 && Math.abs(off(kcal, est)) > 0.25 && Math.abs(off(kcal, lo)) > 0.25
         && !(kcal < est && FIBRE.test(nm)) && !(kcal > est && ALCOHOL.test(nm))) out.push('atwater25');
-    if (label(it) && kcal >= 50 && (4 * p) / kcal > 0.35 && SWEET_CATS.has(it.cat ?? '') && !PROTEIN_FOOD.test(nm)) out.push('protein35');
+    if (label(it) && kcal >= 50 && (4 * p) / kcal > 0.35 && LOW_PROTEIN_CATS.has(it.cat ?? '') && !PROTEIN_FOOD.test(nm)) out.push('protein35');
   }
   if (((it.portions?.[0]?.g ?? 0) * kcal) / 100 > PORTION_KCAL_MAX) out.push('portion1500');
   return out;

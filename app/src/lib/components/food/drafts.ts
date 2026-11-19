@@ -3,6 +3,7 @@
 import { CUSTOM, customDensityOk, customPortions, customSnap, round1, type FoodCustom, type FoodSnap } from '#lib/contract/food.ts';
 import { parseTyped } from '#lib/math.ts';
 import type { Item } from '#lib/food/index.ts';
+import { SEASONING } from '#lib/food/words.ts';
 import { t } from '#lib/i18n/index.ts';
 import { snapValues } from './foodUi.ts';
 import { gramsText, portionText } from './portions.ts';
@@ -61,8 +62,7 @@ export function byJan(customs: readonly FoodCustom[], who: string): Map<string, 
 
 /** A name that reads as a seasoning, a soup or its base (〜の素, スープ, たれ, だし, ソース, つゆ, ドレッシング, 醤油, 味噌,
  *  ルウ, コンソメ, ポン酢, ふりかけ): salty by the gram, so its editor asks gently for 塩分 while that is blank. */
-const SALTY = /の素|のもと|スープ|たれ|タレ|だし|ダシ|出汁|ソース|つゆ|ドレッシング|醤油|しょうゆ|しょう油|味噌|みそ|ルウ|カレールー|シチュールー|ブイヨン|コンソメ|ポン酢|ぽん酢|ふりかけ|調味料/;
-export const seasoningLike = (name: string): boolean => SALTY.test(name.normalize('NFKC'));
+export const seasoningLike = (name: string): boolean => SEASONING.test(name.normalize('NFKC'));
 
 /** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
  *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */

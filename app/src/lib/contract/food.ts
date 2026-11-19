@@ -358,21 +358,17 @@ export function round1(v: number): number {
 
 const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, round1(g)));
 
-/** Whether a recipe logs by the serving: no ingredient has a weight (`sv`: a custom food's, a chain menu's), or its
- *  weighed ones are too few grams to carry the rest (per 100 g past a food's limits: KCAL_MAX, NUTRIENT_MAX). Until
- *  2026-11-20 any ingredient with no weight made it so (its nominal 100 g counted): such a recipe now logs by weight. */
-function bySv(it: readonly RepeatItem[], t: RecipeTotals): boolean {
-  if (!it.some((x) => x.f.sv === true)) return false;
-  return t.g <= 0 || (t.k * 100) / t.g > KCAL_MAX || SNAP_NUTRIENTS.some((k) => ((t[k] ?? 0) * 100) / t.g > NUTRIENT_MAX);
-}
+/** Whether a recipe logs by the serving: an ingredient has no weight (`sv`: a custom food's, a chain menu's) until
+ *  it is weighed (the editor asks: recipeFlow weighItem). By weight its values would spread over the weighed grams only
+ *  (60 g of rice and a 400 kcal sauce: 796 kcal per 100 g, a plate's grams counted far over: review 2026-11-20). */
+const bySv = (it: readonly RepeatItem[]): boolean => it.some((x) => x.f.sv === true);
 
 /** A recipe as a food per 100 g (its id `recipe:<recipe id>`, its name, `u` the portion label given): its totals over
- *  its weighed grams (an ingredient of no known weight, `sv`, adds its values, not its nominal grams), kcal to one
- *  decimal and each nutrient to two (in range: snapOf takes it). With none weighed, or too few grams (bySv): one
- *  serving (its totals over its servings) per a nominal 100 g, an `sv` snapshot (recipePortion: 1人前 = 100). */
+ *  its grams, kcal to one decimal and each nutrient to two (in range: snapOf takes it). With an ingredient of no known
+ *  weight (bySv): one serving (its totals over its servings) per a nominal 100 g, an `sv` snapshot (1人前 = 100). */
 export function recipeSnap(r: { id: string; n: string; sv: number; it: readonly RepeatItem[] }, u?: string): FoodSnap {
   const t = recipeTotals(r.it);
-  const sv = bySv(r.it, t);
+  const sv = bySv(r.it);
   const per = (v: number, by: number): number => Math.round((sv ? v / r.sv : (v * 100) / t.g) * by) / by;
   const nut = (v: number | null): number | null => (v === null ? null : per(v, 100));
   const f: FoodSnap = withOptional({ id: `recipe:${r.id}`, n: r.n, k: per(t.k, 10), p: nut(t.p), fa: nut(t.fa), c: nut(t.c), s: nut(t.s) }, t, nut);
@@ -381,12 +377,18 @@ export function recipeSnap(r: { id: string; n: string; sv: number; it: readonly 
   return f;
 }
 
-/** One serving of a recipe: 「1人前」, its grams (its weighed total over its servings, to one decimal, within a `food`
- *  entry's grams; a nominal 100 when it logs by the serving: recipeSnap). */
-export function recipePortion(r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number } {
-  const t = recipeTotals(r.it);
-  return { label: '1人前', g: bySv(r.it, t) ? NOMINAL_G : clampGrams(t.g / r.sv) };
+/** A recipe's portions: 「1人前」, its grams (its total over its servings, to one decimal, within a `food` entry's
+ *  grams; a nominal 100 when it logs by the serving: recipeSnap), and 「全部」 when it makes more (all its servings,
+ *  within an entry's grams). */
+export function recipePortions(r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number }[] {
+  const sv = bySv(r.it);
+  const t = sv ? 0 : recipeTotals(r.it).g;
+  const one = { label: '1人前', g: sv ? NOMINAL_G : clampGrams(t / r.sv) };
+  const all = sv ? NOMINAL_G * r.sv : round1(t);
+  return r.sv > 1 && all <= FOOD_GRAMS.max ? [one, { label: '全部', g: all }] : [one];
 }
+/** One serving of a recipe (recipePortions' first). */
+export const recipePortion = (r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number } => recipePortions(r)[0];
 
 // ---- My foods (マイ食品, `food_custom`): a food not in the food data, typed in by someone as one serving (`u` its label,
 // `g` its grams when known) and what that serving holds. Shared like a recipe: its owner's alone to edit or remove

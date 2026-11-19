@@ -2,7 +2,7 @@
 // logged, and offer the foods as they are now. On `?demo` (its meal rows: store/demo/rows.ts), the shipped data
 // route-mocked with a later fix: a いつもの's food changed → 「いつものを更新」 from today, the days before as they were;
 // a portion whose weight changed → 最新の値にする takes its grams now; a recipe's ingredient of no known weight asks for
-// its weight instead of making the dish by the serving.
+// its weight (the dish by the serving till then).
 import { expect, test, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 
@@ -37,7 +37,7 @@ test('いつものを更新: a いつもの whose food changed offers it; a tap 
   const natto = b.locator('[data-entry][data-rep]').nth(1); // (rice, then natto)
   await expect(natto).toContainText('88');
   const rf = b.locator('[data-rep-fresh=b]');
-  await expect(rf).toContainText('食品の値が新しくなりました', { timeout: 15_000 });
+  await expect(rf).toHaveText('食品の値が新しくなりました · いつものを更新（322→342 kcal）', { timeout: 15_000 }); // one line
   await expect(rf.locator('[data-rep-fresh-go]')).toHaveText('いつものを更新（322→342 kcal）');
   await expect(b.locator('[data-fresh]')).toHaveCount(0); // a いつもの's entry: its repeat's, not its own
   await rf.locator('[data-rep-fresh-go]').tap();
@@ -66,7 +66,7 @@ test('最新の値にする: a portion whose weight changed takes its grams now 
   await expect(fresh).toHaveCount(0);
 });
 
-test('マイレシピ: an ingredient of no known weight asks for its weight; the dish stays by weight', async ({ page }) => {
+test('マイレシピ: an ingredient of no known weight asks for its weight; the total says so till then', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   const h2 = s.locator('.navbar h2');
@@ -84,13 +84,13 @@ test('マイレシピ: an ingredient of no known weight asks for its weight; the
   await expect(h2).toHaveText('材料を追加');
   await s.locator('[data-food-finish]').tap();
   await expect(h2).toHaveText('新しいレシピ');
-  // its values counted, never a nominal 100 g: 234 + 650 kcal over the rice's 150 g
-  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（150g）');
+  // its values counted, never a nominal 100 g: 234 + 650 kcal, the rice's 150 g and one of no weight
+  await expect(lv.locator('[data-recipe-live-total]')).toHaveText('全部で 884 kcal（150g＋重さ不明 1品）');
   const w = lv.locator('[data-recipe-weigh="1"]');
-  await expect(w).toContainText('重さ不明');
+  await expect(w).toContainText('この材料の重さ（1個あたり）');
   await w.locator('[data-recipe-weigh-g]').fill('10'); // 6,500 kcal per 100 g: no food is that dense
   await w.locator('[data-recipe-weigh-set]').tap();
-  await expect(w.locator('[data-recipe-weigh-bad]')).toHaveText('その重さでは値が大きすぎます');
+  await expect(w.locator('[data-recipe-weigh-bad]')).toHaveText('この重さだと栄養が多すぎるようです。重さを確かめてください');
   await w.locator('[data-recipe-weigh-g]').fill('400');
   await w.locator('[data-recipe-weigh-set]').tap();
   await expect(lv.locator('[data-recipe-weigh]')).toHaveCount(0);

@@ -3,6 +3,7 @@
 // 50 g of protein a cone). Never a block, never a fix by itself: the user compares with the package and, if it differs,
 // makes the food their own (マイ食品, prefilled). Pure; a few rules, each tested on a real case (portionCheck.test.ts).
 import type { Item } from './types.ts';
+import { LOW_PROTEIN_CATS, PROTEIN_FOOD, SALTY_CATS } from './words.ts';
 
 /** Why an amount looks off: protein over PROTEIN_G (not a protein food); protein over P_SHARE of the energy (a sweet,
  *  a drink, bread, a staple, noodles, not a protein food); kcal over KCAL_MAX; salt over SALT_G (not a soup, a sauce,
@@ -25,12 +26,6 @@ const LABELLED = /^(off|jbfd):/;
 
 /** Protein foods by category (their protein share is the point). */
 const PROTEIN_CATS: ReadonlySet<string> = new Set(['肉', '魚介', '卵', '大豆・豆']);
-/** Protein foods by name, whatever their category (whey filed under 菓子, fish senbei, jerky): kept short. */
-const PROTEIN_WORDS = /プロテイン|ホエイ|whey|protein|ささみ|鶏むね|むね肉|サラダチキン|ジャーキー|jerky|魚|いか|イカ|えび|エビ|たこ|タコ|かつお|しらす|ちくわ|かまぼこ|ソイ|大豆|豆乳|たんぱく|タンパク|蛋白|WPC|WPI/i;
-/** Where protein is a surprise (the cone was 菓子・デザート): the protein-share rule looks only here. */
-const LOW_PROTEIN_CATS: ReadonlySet<string> = new Set(['菓子・デザート', '飲料', 'パン', '主食', '麺']);
-/** Salty by nature at a whole pack (soups and their noodles, sauces): the salt rule leaves them be. */
-const SALTY_CATS: ReadonlySet<string> = new Set(['調味料', '汁物', '麺']);
 /** Energy not from 4P + 9F + 4C as typed: alcohol (by category or name), sweeteners (sugar alcohols), fibre
  *  (seaweed, mushrooms, fibre powders: unknown on most). */
 const OWN_ENERGY_CATS: ReadonlySet<string> = new Set(['酒', '海藻', 'きのこ']);
@@ -47,7 +42,7 @@ export function portionCheck(it: Item, g: number): CheckWhy[] {
   const at = (v: number | null | undefined): number | null => (typeof v === 'number' ? v * by : null);
   const k = it.kcal * by, p = at(it.p), f = at(it.f), c = at(it.c), s = at(it.salt);
   const out: CheckWhy[] = [];
-  const protein = (it.cat !== undefined && PROTEIN_CATS.has(it.cat)) || PROTEIN_WORDS.test(it.name);
+  const protein = (it.cat !== undefined && PROTEIN_CATS.has(it.cat)) || PROTEIN_FOOD.test(it.name.normalize('NFKC'));
   if (p !== null && p > PROTEIN_G && !protein) out.push('p');
   if (p !== null && k >= MIN_KCAL && !protein && it.cat !== undefined && LOW_PROTEIN_CATS.has(it.cat) && (4 * p) / k > P_SHARE) out.push('pshare');
   if (k > KCAL_MAX) out.push('kcal');

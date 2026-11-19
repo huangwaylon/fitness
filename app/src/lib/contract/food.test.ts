@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipeSnap, recipeTotals, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
+  recipePortion, recipePortions, recipeSnap, recipeTotals, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
 import { isGoalValue } from './goals.ts';
@@ -263,17 +263,19 @@ describe('food_custom', () => {
     expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'l', g: 100, f })).toMatchObject({ f });
     // without one, nothing changes
     expect(recipeSnap({ ...r, it: [{ g: 150, f: RICE }] }).sv).toBeUndefined();
-    // (two bentos are too much for 150 g to carry: by the serving still, as above); a light one with no weight adds its
-    // values, never its nominal 100 g: the dish stays by weight (food review 11/19: しおこんぶ in oats)
+    // a light one with no weight too: by the serving until it is weighed (by weight its values would spread over the
+    // oats' 45 g alone, the dish's grams then meaning something else: review 11/20); its nominal 100 g never counted
     const kombu = customSnap({ id: 'mkombu01', n: 'しおこんぶ', u: 'ひとつまみ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1 });
     const oats = { g: 45, f: { ...RICE, id: 'mext:01004', k: 350 } };
-    const mix = { id: 'cabcdef3', n: '朝のオート', sv: 1, it: [oats, { g: 100, f: kombu }] };
+    const mix = { id: 'cabcdef3', n: '朝のオート', sv: 2, it: [oats, { g: 100, f: kombu }] };
     expect(recipeTotals(mix.it)).toMatchObject({ g: 45, k: 167.5 });
-    expect(recipeSnap(mix)).toMatchObject({ k: 372.2, s: 2.22 });
-    expect(recipeSnap(mix).sv).toBeUndefined();
-    expect(recipePortion(mix)).toEqual({ label: '1人前', g: 45 });
+    expect(recipeSnap(mix)).toMatchObject({ k: 83.8, s: 0.5, sv: true });
+    expect(recipePortions(mix)).toEqual([{ label: '1人前', g: 100 }, { label: '全部', g: 200 }]);
+    // weighed (5 g a pinch): by weight, over 50 g
+    expect(recipeSnap({ ...mix, it: [oats, { g: 5, f: { ...kombu, k: 200, sv: undefined } }] })).toMatchObject({ k: 335 });
+    expect(recipePortions({ ...mix, it: [oats, { g: 5, f: { ...kombu, k: 200, sv: undefined } }] })).toEqual([{ label: '1人前', g: 25 }, { label: '全部', g: 50 }]);
     // none weighed: by the serving
-    expect(recipeSnap({ ...mix, it: [{ g: 200, f: kombu }] })).toMatchObject({ k: 20, sv: true });
+    expect(recipeSnap({ ...mix, it: [{ g: 200, f: kombu }] })).toMatchObject({ k: 10, sv: true });
     expect(recipePortion({ ...mix, it: [{ g: 200, f: kombu }] }).g).toBe(100);
   });
 });

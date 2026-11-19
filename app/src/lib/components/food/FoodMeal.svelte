@@ -10,13 +10,14 @@
   // mealProteinTarget). On my day an empty meal offers its copies (`copies`), small links of いつものに する's weight:
   // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
   // copies it in. An entry of mine whose food has changed since (fresh.ts) has a small 「最新の値にする」 under its
-  // row (with the kcal it goes from and to): a tap re-snapshots it; a いつもの whose foods changed, one line under its
-  // entries (why: 「レシピが変わりました」, and 「いつものを更新」 with the kcal), a tap makes it the foods now from today. A
+  // row (with what changes most: fresh.ts freshChange, kcal, else salt or fibre): a tap re-snapshots it; a いつもの whose
+  // foods changed, one line under its entries (「食品の値が新しくなりました · いつものを更新（…）」), a tap makes it the foods
+  // now from today. A
   // chain menu's entry whose values Kalori guessed (its snapshot's `est` e or p) says 推定 after its amount, quietly. An entry logged from a recipe still there
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
-  import type { Fresh } from './fresh.ts';
+  import { freshChange, type Fresh, type FreshChange } from './fresh.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
@@ -49,8 +50,8 @@
     /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
     fresh?: ReadonlyMap<string, Fresh>;
     onfresh?: (e: FoodEntry, x: Fresh) => void;
-    /** This meal's いつもの with foods changed since it was set (my day, today on): why, its kcal from and to, the update. */
-    repfresh?: { why: string; from: number; to: number; run: () => void } | null;
+    /** This meal's いつもの with foods changed since it was set (my day, today on): why, what changes most, the update. */
+    repfresh?: { why: string; change: FreshChange | null; run: () => void } | null;
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
@@ -64,6 +65,15 @@
   // the total rounds the sum once: a row each rounded may differ from it by ±1 (itemsKcal)
   const total = $derived(itemsKcal(entries));
   const label = $derived(t(`food.meal.${meal}`));
+  /** An update's button: plain (`key`), or with what changes most (`key`K: 「（塩分 3.1→1.4 g）」). */
+  function freshText(key: string, c: FreshChange | null): string {
+    if (!c) return t(key);
+    const what = t(`food.${c.k}`);
+    const one = (n: number) => n.toFixed(1);
+    const text = c.k === 'k' ? t('food.fresh.chgK', { from: formatNum(c.from!), to: formatNum(c.to) })
+      : c.from === null ? t('food.fresh.chgNew', { what, to: one(c.to) }) : t('food.fresh.chg', { what, from: one(c.from), to: one(c.to) });
+    return t(`${key}K`, { c: text });
+  }
   /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   const db = $derived(held.db), imgs = $derived(held.images);
@@ -109,9 +119,8 @@
             </button>
             {@const x = fresh?.get(e.id)}
             {#if x && onfresh}
-              {@const k1 = entryKcal(x)}
               <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, x)}>
-                {k1 === kcalOf(e) ? t('food.fresh.act') : t('food.fresh.actK', { from: formatNum(kcalOf(e)), to: formatNum(k1) })}
+                {freshText('food.fresh.act', freshChange([e], [x]))}
               </button>
             {/if}
           {:else if r && onrecipe}
@@ -128,11 +137,7 @@
     </ul>
   {/if}
   {#if repfresh}
-    <p class="rf" data-rep-fresh={meal}><span>{repfresh.why}</span>
-      <button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>
-        {repfresh.from === repfresh.to ? t('food.fresh.rep') : t('food.fresh.repK', { from: formatNum(repfresh.from), to: formatNum(repfresh.to) })}
-      </button>
-    </p>
+    <p class="rf" data-rep-fresh={meal}>{repfresh.why} · <button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>{freshText('food.fresh.rep', repfresh.change)}</button></p>
   {/if}
   {#if mine && !entries.length && copies.length}
     <div class="copies" data-copies={meal}>
@@ -205,9 +210,9 @@
   .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
   .est { font-weight: 500; }
-  /* いつものを更新: why, soft, then the link (最新の値にする's) */
-  .rf { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .rf .fresh { margin: 0 0 0 -4px; }
+  /* いつものを更新: one line of text, why soft, then the link (最新の値にする's look), its 44px target inline */
+  .rf { margin: -2px 0 0; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
+  .rf .fresh { display: inline-flex; align-items: center; margin: 0 -6px; vertical-align: middle; }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {
     display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);

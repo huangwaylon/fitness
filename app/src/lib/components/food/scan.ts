@@ -41,8 +41,8 @@ async function productsIn(db: FoodDb, loading?: () => void): Promise<boolean> {
 const asked = new Map<string, Item>();
 
 /**
- * A code read or typed (`raw`, `format` the decoder's) as a food. `db` the catalog (null: it can't load, offline), its
- * products waited for here; `note` an OFF item's trust line; `loading` a long wait for the products begun. Null for
+ * A code read or typed (`raw`, `format` the decoder's) as a food. `db` the catalog (null: it can't load, offline: no
+ * drop list, so OFF isn't asked either), its products waited for here; `note` an OFF item's trust line; `loading` a long wait for the products begun. Null for
  * what isn't a code (its check digit wrong: the sheet asks again), counted as nothing.
  */
 export async function lookupCode(raw: string, db: FoodDb | null, note: string, format?: Format, ask: (code: string) => Promise<OffAnswer> = (c) => offLookup(c, note), loading?: () => void): Promise<ScanHit | null> {
@@ -63,6 +63,8 @@ export async function lookupCode(raw: string, db: FoodDb | null, note: string, f
   const code = keys[0];
   const had = asked.get(code);
   if (had) return counted({ k: 'off', item: had });
+  // (the catalog not in, so neither its drop list: OFF never asked, it could give a dropped code's bad values)
+  if (!db) return counted({ k: 'offline' });
   const a = await ask(code);
   if (a.k === 'item') {
     asked.set(code, a.item);

@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
 import { forgetShards } from '#lib/food/load.ts';
 import type { FoodCustom, FoodSnap } from '#lib/contract/food.ts';
-import { latestFood, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
+import { freshChange, latestFood, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
+import { weighItem } from './recipeFlow.svelte.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
 const REIMEN: FoodSnap = { id: 'dishes:reimen', n: '冷麺', k: 89.9, p: 3.1, fa: 1, c: 17, s: 0.6, u: '1人前' };
@@ -59,11 +60,14 @@ describe('最新の値にする: an entry’s food as it is now', () => {
   it('a recipe now by weight that was by the serving (or back): its grams its 1人前’s now, with the label; without, none', () => {
     const SALT_KOMBU: FoodSnap = { id: 'custom:mkombu01', n: 'しおこんぶ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1, fi: 0.6, u: '1食', sv: true };
     const OATS: FoodSnap = { id: 'mext:01004', n: 'オートミール', k: 350, p: 13.7, fa: 5.7, c: 69.1, s: 0, fi: 9.4 };
-    const r = { id: 'cmix0001', n: '朝のオート', sv: 1, it: [{ g: 45, f: OATS }, { g: 100, f: SALT_KOMBU }] };
+    // logged while the しおこんぶ had no weight (by the serving), weighed since (a pinch, 5 g: recipeFlow weighItem)
+    const r = { id: 'cmix0001', n: '朝のオート', sv: 1, it: [{ g: 45, f: OATS }, weighItem({ g: 100, f: SALT_KOMBU }, 5)!] };
     const src = { db: null, recipes: [r], customs: [] };
     const was: FoodSnap = { id: 'recipe:cmix0001', n: '朝のオート', k: 167.5, p: 7, fa: 2.6, c: 33, s: 1, fi: 4.8, u: '1人前', sv: true };
-    expect(latestFood({ g: 100, f: was }, src)).toEqual({ g: 45, f: { id: 'recipe:cmix0001', n: '朝のオート', k: 372.2, p: 15.48, fa: 5.7, c: 73.32, s: 2.22, fi: 10.73, u: '1人前' } });
+    expect(latestFood({ g: 100, f: was }, src)).toEqual({ g: 50, f: { id: 'recipe:cmix0001', n: '朝のオート', k: 335, p: 13.93, fa: 5.13, c: 65.99, s: 2, fi: 9.66, u: '1人前' } });
     expect(latestFood({ g: 100, f: { ...was, u: undefined } }, src)).toBeNull();
+    // still unweighed: by the serving, as logged
+    expect(latestFood({ g: 100, f: was }, { ...src, recipes: [{ ...r, it: [{ g: 45, f: OATS }, { g: 100, f: SALT_KOMBU }] }] })).toBeNull();
   });
   it('スープ半分 (`hs`) is kept: never offered as a change, carried onto the food now', async () => {
     const db = await dbOf([{ id: 'dishes:reimen', name: '冷麺', kcal: 114, p: 3.5, f: 1.2, c: 21.5, salt: 1.0, fib: 0.9 }]);
@@ -101,5 +105,23 @@ describe('最新の値にする: an entry’s food as it is now', () => {
       expect(await shardsFor(off, [CONE.id])).toBe(false);
       expect(await shardsFor(emptyDb({ version: 'x', datasets: [] }), [CONE.id])).toBe(false);
     });
+  });
+});
+
+describe('freshChange: what an update’s button says', () => {
+  const OATS: FoodSnap = { id: 'mext:01004', n: 'オートミール', k: 350, p: 13.7, fa: 5.7, c: 69.1, s: 6.2 };
+  it('kcal from 5 % on, else salt, else fibre (newly known: from null), else kcal at all; nothing shown: none', () => {
+    const one = (f: FoodSnap, g = 50) => [{ g, f }];
+    expect([
+      freshChange(one(OATS), one({ ...OATS, k: 380 })), // 175 → 190: 8.6 %
+      freshChange(one(OATS), one({ ...OATS, k: 360, s: 2.8 })), // 175 → 180 under 5 %: the salt, 3.1 → 1.4 g
+      freshChange(one(OATS), one({ ...OATS, fi: 9.4 })), // fibre newly known
+      freshChange(one(OATS), one({ ...OATS, k: 352 })), // 175 → 176, nothing else
+      freshChange(one(OATS), one({ ...OATS, p: 14 })), // protein only: plain
+      freshChange([{ g: 50, f: OATS }, { g: 100, f: RICE }], [{ g: 40, f: OATS }, { g: 100, f: RICE }]) // a いつもの's items
+    ]).toEqual([
+      { k: 'k', from: 175, to: 190 }, { k: 's', from: 3.1, to: 1.4 }, { k: 'fi', from: null, to: 4.7 }, { k: 'k', from: 175, to: 176 }, null,
+      { k: 'k', from: 331, to: 296 }
+    ]);
   });
 });

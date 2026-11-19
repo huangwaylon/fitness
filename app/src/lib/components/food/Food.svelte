@@ -47,7 +47,7 @@
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
-  import { latestFood, shardsFor, type Fresh } from './fresh.ts';
+  import { freshChange, latestFood, shardsFor, type Fresh, type FreshChange } from './fresh.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -444,7 +444,7 @@
   // (a barcode-only product logged (its shard's, not in products.json): its shard too, once the products are in)
   $effect(() => {
     const db = catalog;
-    const ids = mine ? (day?.entries.filter((e) => !e.rep).map((e) => e.f.id) ?? []) : [];
+    const ids = mine ? (day?.entries.map((e) => e.f.id) ?? []) : []; // (a いつもの's items too: いつものを更新)
     if (!db || !ids.some((id) => id.startsWith('off:'))) return;
     let live = true;
     void shardsFor(db, ids).then((got) => void (live && got && db === held.db && catalogRev++));
@@ -472,11 +472,11 @@
     if (refreshFood(e.id, x.f, x.g).ok) said('food.fresh.done', { name: x.f.n }), count('act:food.fresh');
   }
   /** 「いつものを更新」: on my day from today on, a meal's live いつもの whose items' foods changed since it was set (a
-   *  recipe or マイ食品 edited, the data fixed): why (the first changed item's kind), the kcal it goes from and to, and the
+   *  recipe or マイ食品 edited, the data fixed): why (the first changed item's kind), what changes most (freshChange), and the
    *  update (it ends yesterday and starts again today with the foods now: store/meals.ts refreshRepeat). */
   const repFresh = $derived.by(() => {
     void catalogRev;
-    const out = new Map<Meal, { why: string; from: number; to: number; run: () => void }>();
+    const out = new Map<Meal, { why: string; change: FreshChange | null; run: () => void }>();
     if (!mine || !m || date < today) return out;
     const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
     for (const k of MEALS) {
@@ -488,7 +488,7 @@
       const it = r.it.map((x, i) => now[i] ?? x);
       const kind = first.f.id.startsWith('recipe:') ? 'recipe' : first.f.id.startsWith('custom:') ? 'custom' : 'food';
       out.set(k, {
-        why: t(`food.fresh.why.${kind}`), from: itemsKcal(r.it), to: itemsKcal(it),
+        why: t(`food.fresh.why.${kind}`), change: freshChange(r.it, it),
         run: () => void (refreshRepeat(r.id, it).ok && said('food.fresh.repDone', { meal: mealName(k) }))
       });
     }

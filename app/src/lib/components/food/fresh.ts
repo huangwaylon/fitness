@@ -7,9 +7,10 @@
 // (Food.svelte 「いつものを更新」, store/meals.ts refreshRepeat). Nothing is ever updated by itself: the owner taps it
 // (store/meals.ts refreshFood, an ordinary edit).
 import {
-  customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, recipeTotals, round1, type FoodCustom, type FoodSnap, type RepeatItem
+  customPortions, customSnap, FOOD_GRAMS, recipePortions, recipeSnap, round1, snapSalt, type FoodCustom, type FoodSnap,
+  type RepeatItem
 } from '#lib/contract/food.ts';
-import { itemById, janItem, portionsOf, toSnap, type FoodDb, type Portion } from '#lib/food/index.ts';
+import { itemById, itemsKcal, janItem, portionsOf, toSnap, type FoodDb, type Portion } from '#lib/food/index.ts';
 
 /** Differences within these are rounding (kcal: the data's whole kcal, a recipe's or custom food's tenth; grams: a
  *  tenth), not a fix. */
@@ -39,10 +40,7 @@ function sourceOf(f: FoodSnap, src: FoodSources): { now: FoodSnap; ps: readonly 
   if (f.id.startsWith('recipe:')) {
     const r = src.recipes.find((x) => `recipe:${x.id}` === f.id);
     if (!r) return null;
-    const now = recipeSnap(r, f.u), one = recipePortion(r);
-    // (the recipe's own item's: 1人前, and 全部 when it makes more: foodUi.ts recipeItem)
-    const all = now.sv ? one.g * r.sv : round1(recipeTotals(r.it).g);
-    return { now, ps: r.sv > 1 ? [one, { label: '全部', g: all }] : [one] };
+    return { now: recipeSnap(r, f.u), ps: recipePortions(r) };
   }
   if (f.id.startsWith('custom:')) {
     const c = src.customs.find((x) => `custom:${x.id}` === f.id);
@@ -93,4 +91,28 @@ export async function shardsFor(db: FoodDb, ids: Iterable<string>): Promise<bool
   await db.wantMore(['off']).catch(() => {});
   const got = await Promise.all(want.filter((id) => !itemById(db, id) && !db.shard.has(id)).map((id) => janItem(db, id.slice(4)).catch(() => null)));
   return got.some((it) => !!it);
+}
+
+/** What an update changes most, for its button (「最新の値にする（塩分 3.1→1.4 g）」): kcal by KCAL_SHARE and more, else
+ *  salt, else fibre (g, one decimal; `from` null: newly known), else kcal at all; null: nothing shown changes. */
+export interface FreshChange { k: 'k' | 's' | 'fi'; from: number | null; to: number }
+const KCAL_SHARE = 0.05;
+type Items = readonly { g: number; f: FoodSnap }[];
+function sumOf(xs: Items, of: (f: FoodSnap) => number | null | undefined): number | null {
+  let t: number | null = null;
+  for (const { g, f } of xs) {
+    const v = of(f);
+    if (v !== null && v !== undefined) t = (t ?? 0) + (v * g) / 100;
+  }
+  return t === null ? null : round1(t);
+}
+export function freshChange(was: Items, now: Items): FreshChange | null {
+  const k0 = itemsKcal(was), k1 = itemsKcal(now);
+  if (Math.abs(k1 - k0) >= KCAL_SHARE * Math.max(k0, 1)) return { k: 'k', from: k0, to: k1 };
+  for (const k of ['s', 'fi'] as const) {
+    const of = k === 's' ? snapSalt : (f: FoodSnap) => f.fi;
+    const a = sumOf(was, of), b = sumOf(now, of);
+    if (b !== null && a !== b) return { k, from: a, to: b };
+  }
+  return k0 === k1 ? null : { k: 'k', from: k0, to: k1 };
 }

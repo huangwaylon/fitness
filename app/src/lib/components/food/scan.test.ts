@@ -35,13 +35,16 @@ describe('lookupCode: ours, then Open Food Facts, then nothing', () => {
     expect(ask).toHaveBeenCalledWith('4902102072618');
     expect(counted).toEqual(['act:scan.fallback', 'act:scan.fallback']);
   });
-  it('OFF without it: miss; OFF unreached: offline (asked again next time); the catalog not in: OFF straight away', async () => {
+  it('OFF without it: miss; OFF unreached: offline (asked again next time); the catalog not in: offline, OFF never asked (no drop list)', async () => {
     expect(await lookupCode('4902102072618', db, '?', undefined, async () => ({ k: 'none' }))).toEqual({ k: 'miss' });
     const ask = vi.fn(async () => ({ k: 'off' as const }));
-    expect(await lookupCode('4902102072618', null, '?', undefined, ask)).toEqual({ k: 'offline' });
-    expect(await lookupCode('4902102072618', null, '?', undefined, ask)).toEqual({ k: 'offline' });
+    expect(await lookupCode('4902102072618', db, '?', undefined, ask)).toEqual({ k: 'offline' });
+    expect(await lookupCode('4902102072618', db, '?', undefined, ask)).toEqual({ k: 'offline' });
     expect(ask).toHaveBeenCalledTimes(2);
-    expect(counted).toEqual(['act:scan.miss', 'act:scan.offline', 'act:scan.offline']);
+    const dropAsk = vi.fn(async () => ({ k: 'item' as const, item: { id: `off:${dropped}`, name: 'ice cream', kcal: 753 } }));
+    expect(await lookupCode(dropped, null, '?', 'EAN-13', dropAsk)).toEqual({ k: 'offline' });
+    expect(dropAsk).not.toHaveBeenCalled();
+    expect(counted).toEqual(['act:scan.miss', 'act:scan.offline', 'act:scan.offline', 'act:scan.offline']);
   });
   it('a code the reviewed fixes drop (index.json `drop`): not found at once, OFF never asked (its values the same bad ones)', async () => {
     const ask = vi.fn(async () => ({ k: 'item' as const, item: { id: `off:${dropped}`, name: 'ice cream', kcal: 753 } }));

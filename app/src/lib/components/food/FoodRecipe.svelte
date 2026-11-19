@@ -7,9 +7,9 @@
   // ついか」. Deleted while open (by its owner, from either phone): the same read-only view, 「削除されました」, its copy
   // still offered. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
   // 2 × 2 (one alone: itself, 160 px); none: nothing. An ingredient of no known weight (a マイ食品's serving, a chain
-  // menu's) counts its values, never a weight: under its row (mine) 「重さ不明（全体の重さに含めません）」, a
-  // grams field for one serving's weight and the food data's nearest food with one as a chip (weighHint), so the dish
-  // keeps logging by weight (contract/food.ts recipeSnap).
+  // menu's) counts its values, never a weight, and makes the dish log by the serving (contract/food.ts recipeSnap):
+  // under its row (mine) a grams field for its portion's weight (「この材料の重さ（ひとつまみあたり）」) and the food
+  // data's nearest food with one as a chip (weighHint); the total says how many have none (「150g＋重さ不明 1品」).
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -51,6 +51,13 @@
   const per = (v: number | null) => (v === null ? '–' : (v / draft.sv).toFixed(1));
   const kcalOf = entryKcal;
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
+  /** The ingredients of no known weight. */
+  const unweighed = $derived(draft.it.filter((x) => servingOnly(x.f)).length);
+  const allText = $derived.by(() => {
+    const k = formatNum(Math.round(tot.k)), g = formatNum(Math.round(tot.g));
+    if (!unweighed) return tot.g > 0 ? t('food.rcp.allOf', { k, g }) : t('food.rcp.all', { k });
+    return t(tot.g > 0 ? 'food.rcp.allMixed' : 'food.rcp.allNone', { k, g, n: unweighed });
+  });
   let removing = $state(false);
   /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's), and the pictures. */
   const db = $derived(held.db), imgs = $derived(held.images);
@@ -127,11 +134,10 @@
               {#if servingOnly(it.f) && onweigh}
                 {@const hint = weighHint(db, it.f)}
                 <div class="wt" data-recipe-weigh={i}>
-                  <p class="note">{t('food.rcp.noWeight')}</p>
+                  <label class="wl" for="rw-{i}">{t('food.rcp.weighOne', { label: it.f.u ?? t('food.rcp.oneServing') })}</label>
                   <div class="wrow">
-                    <label class="wf"><span>{t('food.rcp.weighOne')}</span>
-                      <input type="text" inputmode="decimal" data-sfx="none" data-recipe-weigh-g={i} bind:value={wts[i]} placeholder="g" autocomplete="off" enterkeyhint="done"
-                        aria-invalid={wbad[i] || undefined} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); weigh(i, Number(wts[i])); } }} /><span>g</span></label>
+                    <span class="wf"><input id="rw-{i}" type="text" inputmode="decimal" data-sfx="none" data-recipe-weigh-g={i} bind:value={wts[i]} placeholder="g" autocomplete="off" enterkeyhint="done"
+                        aria-invalid={wbad[i] || undefined} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); weigh(i, Number(wts[i])); } }} /><span>g</span></span>
                     <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-weigh-set={i} aria-disabled={!(Number(wts[i]) > 0)}
                       onclick={() => Number(wts[i]) > 0 && weigh(i, Number(wts[i]))}>{t('food.rcp.weighSet')}</button>
                   </div>
@@ -160,7 +166,7 @@
         <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}</dd></div>
       {/each}
     </dl>
-    <p class="all money" data-recipe-live-total>{tot.g <= 0 ? t('food.rcp.all', { k: formatNum(Math.round(tot.k)) }) : t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
+    <p class="all money" data-recipe-live-total>{allText}</p>
   </section>
 
   <div class="acts level-acts">
@@ -235,7 +241,8 @@
   .wt { display: grid; gap: 4px; padding: 0 2px 8px 50px; }
   .wrow { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .wrow .btn { flex: none; white-space: nowrap; }
-  .wf { display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .wl, .wf { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .wf { display: flex; align-items: center; gap: 6px; }
   .wf input {
     width: 4em; min-height: var(--hit); padding: 4px 8px; border: 0; border-radius: var(--r-btn); box-sizing: border-box;
     font: 700 var(--fs-input)/1.1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);

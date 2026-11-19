@@ -1,6 +1,6 @@
 // マイレシピ's editing (Food.svelte's recipe level): the draft of mine it edits, kept here under the search and the
 // amount it opens; its ingredients' trip (each with an id of its own while it's in the draft); save, remove, copy, log.
-import { customDensityOk, FOOD_GRAMS, RECIPE, round1, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { customDensityOk, customSnap, FOOD_GRAMS, RECIPE, round1, withHalf, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
 import { findFoods, portionsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
@@ -36,17 +36,16 @@ export interface FoodFlowEnv {
 export const mealName = (k: string): string => t(`food.meal.${k}`);
 
 /** A recipe's ingredient of no known weight (`sv`: its values per serving, `g` a nominal 100 per serving) weighed: `w`
- *  grams a serving, its values then per 100 g and its grams its servings' (its label kept), or null: not such an
- *  ingredient, no weight, or one no food is that dense (customDensityOk). */
+ *  grams a serving, its values then per 100 g as a custom food's with that weight (customSnap) and its grams its
+ *  servings' (its id, label and trust kept), or null: not such an ingredient, no weight, or one no food is that dense
+ *  (customDensityOk). */
 export function weighItem(x: RepeatItem, w: number): RepeatItem | null {
   const g = round1(w), n = x.g / 100;
   if (!servingOnly(x.f) || !(g >= FOOD_GRAMS.min) || round1(g * n) > FOOD_GRAMS.max) return null;
-  const { sv: _sv, ...f } = x.f;
-  if (!customDensityOk({ g, k: f.k, p: f.p, fa: f.fa, c: f.c, s: f.s, fi: f.fi })) return null;
-  const by = (v: number) => Math.round(((v * 100) / g) * 100) / 100;
-  const out: FoodSnap = { ...f, k: round1((f.k * 100) / g), p: f.p === null ? null : by(f.p), fa: f.fa === null ? null : by(f.fa), c: f.c === null ? null : by(f.c), s: f.s === null ? null : by(f.s) };
-  if (typeof f.fi === 'number') out.fi = by(f.fi);
-  return { g: Math.max(FOOD_GRAMS.min, round1(g * n)), f: out };
+  const { sv: _sv, fi: _fi, ...f } = x.f;
+  const one = { id: '', n: f.n, u: f.u ?? '', g, k: f.k, p: f.p, fa: f.fa, c: f.c, s: f.s, fi: x.f.fi };
+  if (!customDensityOk(one)) return null;
+  return { g: Math.max(FOOD_GRAMS.min, round1(g * n)), f: { ...f, ...customSnap(one, f.u), id: f.id } };
 }
 
 /** A weight to suggest for an ingredient of no known weight: the food data's best match by its name that has one
@@ -96,7 +95,7 @@ export class RecipeFlow {
   /** A new ingredient from the ingredient search (its amount's 追加, a custom food made for it) comes back to that
    *  search, its field focused, for the next (as a meal's trip); a changed one, to the recipe. */
   itemDone(l: LevelOf<'ritem'>, v: { g: number; u: string | null }): void {
-    const x = { g: v.g, f: this.#e.snapOf(l, v.u) };
+    const x = { g: v.g, f: this.#snap(l, v.u) };
     if (l.i === undefined) this.draft.it.push(x);
     else this.draft.it[l.i] = x;
     const i = this.#e.levels.stack.findIndex((s) => s.k === 'rsearch');
@@ -110,7 +109,11 @@ export class RecipeFlow {
   itemNow(item: Item, g?: number, u?: string, f?: FoodSnap): void {
     if (this.draft.it.length >= RECIPE.items) return;
     const { p, gg, uu } = this.#e.asItComes(item, g, u, f);
-    this.draft.it.push({ g: gg, f: this.#e.snapOf(p, uu) });
+    this.draft.it.push({ g: gg, f: this.#snap(p, uu) });
+  }
+  /** An ingredient's snapshot: a recent entry's without its スープ半分 (how that bowl was eaten, not the food). */
+  #snap(p: Picked, u: string | null): FoodSnap {
+    return withHalf(this.#e.snapOf(p, u), false);
   }
   #tripId(x: RepeatItem): string {
     let id = this.#tripIds.get(x);
@@ -174,9 +177,9 @@ export class RecipeFlow {
     lv.stack = [...lv.stack.slice(0, -1), { k: 'recipe', id: res.id, who: this.#e.me() }];
     this.#e.said('food.rcp.copied');
   }
-  /** A recipe logged as a meal of mine on the day shown. */
-  log(l: LevelOf<'rlog'>, v: { m: LevelOf<'rlog'>['meal']; g: number; u: string | null }): void {
-    const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined });
+  /** A recipe logged as a meal of mine on the day shown (スープ半分 as chosen: a 豚汁's). */
+  log(l: LevelOf<'rlog'>, v: { m: LevelOf<'rlog'>['meal']; g: number; u: string | null; half: boolean }): void {
+    const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined, half: v.half });
     if (r.ok) this.#e.said('food.added', { meal: mealName(v.m) }), count('act:food.add.recipe');
     this.#e.logged(r.id);
   }
