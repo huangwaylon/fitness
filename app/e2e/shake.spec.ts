@@ -4,7 +4,7 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { canopyAt, is3d, islandUp, quiet, shakeTree as shake, villager, type W3 } from './island.ts';
+import { canopyAt, fxSince, is3d, islandUp, pageNow, quiet, shakeTree as shake, villager, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -230,6 +230,7 @@ test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wid
   await page.waitForTimeout(1400);
   await expect(page.locator('button[data-branch]')).toHaveCount(0);
   const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
+  const t0 = await pageNow(page);
   for (let i = 0; i < 3; i++) {
     await page.mouse.click(p.x, p.y);
     await page.waitForTimeout(120);
@@ -237,5 +238,5 @@ test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wid
   await expect(page.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
   // a tap on the tree is no walk
   expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);
-  await expect(page.locator('.tap-ring')).toHaveCount(0);
+  expect(await fxSince(page, 'ring', t0)).toBe(0);
 });

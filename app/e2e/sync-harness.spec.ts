@@ -8,7 +8,7 @@
 //                                                         one at a time: each person's key opens one socket)
 import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { roomUp } from './rooms.ts';
-import { islandUp, lawnTap, oku, tapOn, quiet, villager, watchComings } from './island.ts';
+import { fxSince, islandUp, lawnTap, oku, pageNow, tapOn, quiet, villager, watchComings } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
 
@@ -135,8 +135,8 @@ const settledAs = (x: Page, y: Page) =>
     return a.day === b.day && a.decor === b.decor && who.every((k) => !a.villagers[k].walking && !b.villagers[k].walking &&
       Math.hypot(a.villagers[k].x - b.villagers[k].x, a.villagers[k].z - b.villagers[k].z) <= 1 && a.villagers[k].asleep === b.villagers[k].asleep);
   }, { timeout: 10_000 }).toBe(true).catch(() => undefined); // (`same` then says what differs)
-/** A tap-walk's ring, if the tap took (a short wait: it comes at once or not at all). */
-const ringed = (p: Page) => p.locator('[data-ring="mine"]').first().waitFor({ state: 'attached', timeout: 300 }).then(() => true, () => false);
+/** A tap-walk's ring (mine) since page time `since`, if the tap took (a short wait: it comes at once or not at all). */
+const ringed = (p: Page, since: number) => expect.poll(() => fxSince(p, 'ring', since, null), { timeout: 300 }).toBeGreaterThan(0).then(() => true, () => false);
 
 test.skip(!!RELAY && !existsSync(KEYS_FILE), 'RELAY_E2E needs relay/.smoke-keys');
 // against the real relay: its socket is the network (e2e/fixtures.ts), and its day is today's (no pinned clock)
@@ -177,9 +177,9 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
       const before = await w<[number, number]>(tapper, 'mine');
       if (Math.hypot(before[0] - x, before[1] - z) < 30) continue;
       const off = setsOff(watcher);
-      const t0 = Date.now();
+      const r0 = await pageNow(tapper), t0 = Date.now();
       await tapper.mouse.click(cx, cy);
-      if (!(await ringed(tapper))) continue;
+      if (!(await ringed(tapper, r0))) continue;
       const t1 = await off;
       note('tap → walk starts', t1 && t1 - t0);
       await tapper.waitForTimeout(400);
@@ -444,7 +444,7 @@ test('a high-five over the relay: the partner plays the same moment, its banner 
   // B watches for the moment, in its page from before the tap: each thing's comings (it showing after it wasn't), so a
   // transient sparkle is seen however late a loaded runner reads it, and a second coming is counted
   const came = await watchComings(b, {
-    zap: '[data-zap]',
+    zap: { fx: 'zap' },
     hearts: { actor: 'mine', is: 'fx:hearts' },
     sparklesMine: { actor: 'mine', is: 'fx:sparkles' },
     sparklesPartner: { actor: 'partner', is: 'fx:sparkles' },

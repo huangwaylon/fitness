@@ -38,7 +38,10 @@ const FORBIDDEN: Record<string, RegExp[]> = {
     /data-(visitor|kk|cake|arch|toy|veg-ask|veg-want|treat|heart-float|halloween|pumpkin|asleep|way|popper|motion|slot)(?![\w-])/,
     /data-stretch="(on|ready|idle)"|\[data-stretch\]( \.|:not)/, /data-phase="(arrive|here|leave)"/,
     /\.(pumpkin|candy|radio)(?![\w-])/, /\.fxa\.zzz/, /\] \.art(?![\w-])/, /\.(emote|glow)['"`\s:]/
-  ]
+  ],
+  // fxLog(): the tap's ring (mine v null, a partner's '#ddefff') and the high five's zap as they fired (fxSince, pageNow;
+  // watchComings' { fx, v })
+  rings: [/data-(zap|ring)(?![\w-])/, /\.tap-ring/]
 };
 
 const files = [

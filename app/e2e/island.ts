@@ -3,7 +3,7 @@
 // island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
-import { CONTROLS, type Actor, type Box, type BoxKind, type Care, type Critter, type Find, type Picked, type PickKind, type Piece, type Props, type Shakes, type Visitor } from '../src/lib/components/island/probe.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Care, type Critter, type Find, type FxSeen, type Picked, type PickKind, type Piece, type Props, type Shakes, type Visitor } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -77,6 +77,9 @@ export type W3 = {
   care(): Care[];
   /** The day's dig spots and weeds wherever they are, shown or not (world x, z). */
   spots(): { digs: [number, number][]; weeds: [number, number][] };
+  /** The 3D island's effects as they fired, oldest first, the last 200 (a tap's `ring`: mine v null, a partner's
+   *  '#ddefff'; the high five's `zap`; …): `at` the page's performance.now(). */
+  fxLog(): FxSeen[];
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
@@ -333,6 +336,12 @@ export const visitorsOut = async (page: Page, slot?: string): Promise<Visitor[]>
   (await ready3d(page), page.evaluate((slot) => (window as unknown as { __world3d: W3 }).__world3d.visitors().filter((v) => v.id !== 'kk' && (!slot || v.slot === slot)), slot ?? null));
 /** The day's props out (`__world3d.props`: the cake, the arch, the toys, Halloween's pumpkins, the tape deck). */
 export const propsOut = async (page: Page): Promise<Props> => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.props()));
+/** The page's clock now (performance.now(): `fxLog`'s `at`), to count effects from. */
+export const pageNow = (page: Page) => page.evaluate(() => performance.now());
+/** How many effects of `kind` fired after page time `since` (`__world3d.fxLog`: a tap's `ring`, the high five's `zap`),
+ *  only those of colour `v` if given (a ring: mine null, a partner's '#ddefff'). However brief, a hidden tab's too. */
+export const fxSince = async (page: Page, kind: string, since = 0, v?: string | null) =>
+  (await ready3d(page), page.evaluate(([k, s, v, any]) => (window as unknown as { __world3d: W3 }).__world3d.fxLog().filter((e) => e.kind === k && e.at > s && (any || e.v === v)).length, [kind, since, v ?? null, v === undefined] as const));
 
 /** Thing (`kind`, `id`)'s foot on screen (its node's origin, `box`) against where a world point projects (px apart). */
 export const offFrom = async (page: Page, kind: BoxKind, id: string, x: number, z: number) =>
@@ -672,21 +681,25 @@ const poppedIn = (page: Page) =>
  *  `each`: every node of the selector added, counted (two overlapping at once are two: a shooting star's streak), or
  *  `actor`: villager `actor` as the island's probe shows it (`__world3d.actor`) doing `is`: walking, an act (`act:hop`),
  *  a flourish (`fx:hearts`). */
-export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs;
+export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs | FxIs;
 /** Villager `actor` (a slot; `watchFor`: `*` any) doing `is`, as the island's probe shows it (`__world3d.actor`). */
 export type ActorIs = { actor: string; is: 'walking' | `act:${string}` | `fx:${string}` };
 /** Visitor `visitor` (its id) in a phase of its visit (arrive, here, leave), as `__world3d.visitors` shows it. */
 export type VisitorIs = { visitor: string; is: `phase:${string}` };
+/** An effect the 3D island fired (`__world3d.fxLog`: a tap's `ring`, mine `v` null, a partner's '#ddefff'; the high
+ *  five's `zap`), only colour `v` if given: counted off the log, a hidden tab's too. */
+type FxIs = { fx: string; v?: string | null };
 /** Watches, from now, for each thing's comings (it there after it wasn't): a transient effect (a sparkle, the tap's
  *  ring, hearts, a banner) seen however late a loaded runner looks, and a second coming counted. One watch a page: a
  *  new one stops the last (whose `came` throws then). Returns how many came of `k` (a key not watched throws). (Read
  *  at each change of the DOM: the probe's source, for now.) */
 export async function watchComings(page: Page, things: Record<string, Coming>) {
-  await page.evaluate((things) => {
+  const t0 = await page.evaluate((things) => {
     const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver; __world3d?: W3 };
     W.__comingsMO?.disconnect();
     const there = (t: Coming) => {
       if (typeof t === 'string') return !!document.querySelector(t);
+      if ('fx' in t) return false;
       if ('actor' in t) {
         const a = W.__world3d?.actor(t.actor);
         return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));
@@ -699,6 +712,7 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
     W.__comingsMO = new MutationObserver((ms) => {
       for (const k in things) {
         const t = things[k];
+        if (typeof t !== 'string' && 'fx' in t) continue;
         if (typeof t !== 'string' && 'each' in t) {
           for (const m of ms) for (const n of m.addedNodes) if (n instanceof Element) W.__came[k] += (n.matches(t.sel) ? 1 : 0) + n.querySelectorAll(t.sel).length;
           continue;
@@ -712,14 +726,16 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
       childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-act'], // (data-act: a villager's motion)
       characterData: Object.values(things).some((t) => typeof t !== 'string' && 'text' in t)
     });
+    return performance.now();
   }, things);
   return (k: string) => {
     if (!(k in things)) throw new Error(`watchComings: '${k}' isn't watched (${Object.keys(things).join(', ')})`);
-    return page.evaluate((k) => {
-      const c = (window as unknown as { __came: Record<string, number> }).__came;
-      if (!(k in c)) throw new Error(`watchComings: '${k}' no longer watched (a later watch on this page replaced it)`);
-      return c[k];
-    }, k);
+    const t = things[k];
+    return page.evaluate(([k, fx, t0]) => {
+      const W = window as unknown as { __came: Record<string, number>; __world3d: W3 };
+      if (!(k in W.__came)) throw new Error(`watchComings: '${k}' no longer watched (a later watch on this page replaced it)`);
+      return fx ? W.__world3d.fxLog().filter((e) => e.kind === fx.fx && e.at > t0 && (fx.v === undefined || e.v === fx.v)).length : W.__came[k];
+    }, [k, typeof t !== 'string' && 'fx' in t ? t : null, t0] as const);
   };
 }
 /** The page's installed clock paused about now: a moment ahead of the page's time, which runs on during the round

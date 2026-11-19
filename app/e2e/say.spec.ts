@@ -6,7 +6,7 @@
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from './fixtures.ts';
-import { feetOf, islandUp, lawnTap, quiet, tapOn, villager, w3, watchComings } from './island.ts';
+import { feetOf, fxSince, islandUp, lawnTap, pageNow, quiet, tapOn, villager, w3, watchComings } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells } from './hud.ts';
 import { sayOwn } from './say.ts';
@@ -133,9 +133,10 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); th
   await expect(picker(page)).toHaveCount(0);
   await sayBtn(page).click();
   // open lawn (found before the picker was up)
+  const t0 = await pageNow(page);
   await page.mouse.click(lawn.x, lawn.y);
   await expect(picker(page)).toHaveCount(0);
-  await expect(page.locator('[data-ring="mine"]')).toHaveCount(0);
+  expect(await fxSince(page, 'ring', t0, null)).toBe(0);
   await page.waitForTimeout(500);
   expect(await feet(page)).toEqual(home);
   await sayBtn(page).click();

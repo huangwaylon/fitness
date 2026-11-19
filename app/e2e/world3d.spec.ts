@@ -3,7 +3,7 @@
 // POC's address) opens it.
 import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
-import { islandUp, islandURL, lawnTap, loaded3d, tapOn, type W3 as W3Probe } from './island.ts';
+import { fxSince, islandUp, islandURL, lawnTap, loaded3d, pageNow, tapOn, type W3 as W3Probe } from './island.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -408,13 +408,13 @@ test('one source for screen ↔ world: at the default, zoomed in panned sideways
     });
     // (the island at rest: no moment of the opening's under way, which would take my villager its own way)
     await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 20_000 }).toBe(true);
-    const rings = () => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity));
+    const rings = () => page.evaluate(() => [...document.querySelectorAll('.tap-ring')].map((e) => +getComputedStyle(e).opacity)); // r4-dom: the DOM ring's own opacity (hidden under the 3D's), gone with it (step 7)
     // (the first that walks: a flower, a find or a weed there takes the tap instead)
     let target: (typeof targets)[number] | null = null;
     for (const t of targets.slice(0, 8)) {
-      const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fxShown: number } }).stats().fxShown);
+      const fx0 = await w3(page, (w) => (w as unknown as { stats(): { fxShown: number } }).stats().fxShown), t0 = await pageNow(page);
       await page.mouse.click(t.cx, t.cy);
-      if (await expect.poll(async () => (await rings()).length, { timeout: 1500 }).toBeGreaterThan(0).then(() => true, () => false)) {
+      if (await expect.poll(() => fxSince(page, 'ring', t0, null), { timeout: 1500 }).toBeGreaterThan(0).then(() => true, () => false)) {
         // (its 3D ring: polled, its model's part comes in a moment after the tap; counted as it comes, the ambient ones
         // coming and going meanwhile)
         await expect.poll(() => w3(page, (w) => (w as unknown as { stats(): { fxShown: number } }).stats().fxShown), { timeout: 3000 }).toBeGreaterThan(fx0);

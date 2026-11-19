@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, feetOf, float, geo, islandUp, lawnTap, oku, piece, pointOn, tapOn } from './island.ts';
+import { camTo, feetOf, float, fxSince, geo, islandUp, lawnTap, oku, pageNow, piece, pointOn, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The island is up (its first paint: now and then over 5 s under CI's load). */
@@ -46,17 +46,18 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   const url = page.url();
 
   // (open lawn is a walk: my villager runs there, its tap ring on the ground instead of a dust puff)
-  const taps: [string, () => Promise<{ x: number; y: number }>, string][] = [
+  const taps: [string, () => Promise<{ x: number; y: number }>, string | { fx: string }][] = [
     ['bush', async () => (await pointOn(page, 'bush', 'plumeria-w'))!, '[data-fx="bush"]'], // the white plumeria at the beach's edge
     // (one of the front lawn's: in view at まえ)
     ['flower', async () => (await pointOn(page, 'flower', (await geo(page)).FLOWERS.filter((f) => f.z < 600).sort((a, b) => a.z - b.z)[0].id))!, '[data-fx="flower"]'],
-    ['grass', () => lawn(page), '.if-scene .tap-ring'],
+    ['grass', () => lawn(page), { fx: 'ring' }],
     ['sun', () => orb(page), '[data-fx="sun"]']
   ];
   for (const [name, at, sel] of taps) {
-    const { x, y } = await at();
+    const t0 = await pageNow(page), { x, y } = await at();
     await page.mouse.click(x, y);
-    await expect(page.locator(sel), name).toHaveCount(1);
+    if (typeof sel === 'string') await expect(page.locator(sel), name).toHaveCount(1);
+    else await expect.poll(() => fxSince(page, sel.fx, t0), { message: name }).toBe(1);
     await expect(page.locator('dialog[open]'), name).toHaveCount(0);
   }
   // the sea casts the line there (any water: no reach), and the next tap reels it in

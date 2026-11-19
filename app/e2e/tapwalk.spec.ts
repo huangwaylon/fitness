@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, feetOf, float, geo, lawnTap, openNear, quiet, tapOn, watchComings } from './island.ts';
+import { camTo, campDoor, feetOf, float, fxSince, geo, lawnTap, openNear, pageNow, quiet, tapOn, watchComings } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -65,7 +65,7 @@ test('a tap by the campsite runs my villager up the path, never through the wate
   const to = await openNear(page, door[0], door[1] - 108, 45, true);
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), to);
   // (the ring shows ~400 ms: watched for from before the tap, a poll after a loaded runner's round trip can miss it)
-  const came = await watchComings(page, { ring: '.tap-ring' });
+  const came = await watchComings(page, { ring: { fx: 'ring' } });
   await page.mouse.click(x, y);
   await expect.poll(() => came('ring'), { message: 'a ring marks the spot' }).toBe(1);
   await shot(page, 'tap-ring');
@@ -86,10 +86,11 @@ test('a tap on the pond casts from where my villager stands and walks nowhere; t
   await camTo(page, POND.z - 212, false);
   const home = await call(page, (w) => w.mine());
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [POND.x, POND.z]);
+  const t0 = await pageNow(page);
   await page.mouse.click(x, y);
   // any water casts (fishing has no reach): the line out to it, my villager where it stood
   await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toContain('scene-cast');
-  await expect(page.locator('.tap-ring')).toHaveCount(0);
+  expect(await fxSince(page, 'ring', t0)).toBe(0);
   expect((await track(page, 1500)).at(-1)).toEqual(home);
   // the first tap on the grass is the reel (NH reels in to move): it stays put
   // (well off its bank: a tap within a finger's slack of the water casts)
@@ -114,7 +115,7 @@ test('the camera never moves for a walk: a run up the island leaves it where the
   const [front] = await call(page, (w) => w.stops());
   expect(await call(page, (w) => w.cam())).toBe(front);
   const { at, x, y } = await lawnTap(page, 230, 500);
-  const came = await watchComings(page, { ring: '.tap-ring' });
+  const came = await watchComings(page, { ring: { fx: 'ring' } });
   await page.mouse.click(x, y);
   await expect.poll(() => came('ring'), { message: 'a walk: its ring' }).toBe(1);
   // there (the run over, however long a loaded runner took), the camera still where the finger left it
@@ -127,7 +128,7 @@ test('the campsite: a tap from far off walks my villager up to the door (no ring
   await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   const home = await call(page, (w) => w.mine());
-  const came = await watchComings(page, { ring: '.tap-ring', walking: { actor: 'mine', is: 'walking' } });
+  const came = await watchComings(page, { ring: { fx: 'ring' }, walking: { actor: 'mine', is: 'walking' } });
   await tapTent(page);
   // on its way (not in yet): it walks
   await expect.poll(() => came('walking'), { message: 'my villager walks to the door' }).toBeGreaterThan(0);
@@ -180,7 +181,8 @@ test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)
   await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' }); // r4-dom: the ground under the door's tap area, till the canvas router (step 6)
   const b = (await geo(page)).BUILDINGS.find((b) => b.id === 'campsite')!;
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [b.x - 26, b.z + 16]);
+  const t0 = await pageNow(page);
   await page.mouse.click(x, y);
-  await expect(page.locator('.tap-ring')).toHaveCount(0);
+  expect(await fxSince(page, 'ring', t0)).toBe(0);
   await expect(page).toHaveURL(/\/tent\?/, { timeout: 8000 });
 });

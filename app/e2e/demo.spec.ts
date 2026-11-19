@@ -418,7 +418,7 @@ test('partner: a tap is a high-five in place, no card: a sparkle flies between t
   const home = await feet();
   // (each effect watched for from before the tap: they're transient, over before a loaded runner's look)
   const came = await watchComings(page, {
-    zap: '[data-zap]', sparklesMine: { actor: 'mine', is: 'fx:sparkles' }, sparklesPartner: { actor: 'partner', is: 'fx:sparkles' },
+    zap: { fx: 'zap' }, sparklesMine: { actor: 'mine', is: 'fx:sparkles' }, sparklesPartner: { actor: 'partner', is: 'fx:sparkles' },
     hearts: { actor: 'partner', is: 'fx:hearts' }, walking: { actor: 'mine', is: 'walking' }
   });
   await tapOn(page, 'villager', 'partner');
