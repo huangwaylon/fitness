@@ -1,0 +1,3 @@
+{
+  "off:4901005312005": {"set":{"kcal":176,"p":2.6,"f":9.3,"c":19.7,"salt":0.1},"why":"the per-cone label (140 ml) entered as per 100 g, P 3.6 typed 36, only C scaled","src":"label: 1 cone 247 kcal, P 3.6, F 13, C 27.6, salt 0.18 (the user, 2026-11-19); over 140 g"}
+}

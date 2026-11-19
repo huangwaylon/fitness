@@ -90,7 +90,7 @@ class Convert(unittest.TestCase):
         self.assertEqual([it['id'] for it in doc['items']], ['kal:7'])
         self.assertEqual(rep['dropped'], {'no_values': 3, 'long_name': 0, 'range': 4, 'implausible': 0,
                                           'off_product': 0, 'duplicate': 1, 'near_duplicate': 0, 'takeout_twin': 0,
-                                          'retired': 0})
+                                          'retired': 0, 'name_density': 0})
 
     def test_off_same_product_only(self):
         # row: 500 kcal, P 20, F 10, C 60 a serving; the label per 100 g at 250 g a serving agrees, at 1.5x apart not
@@ -300,6 +300,14 @@ class Convert(unittest.TestCase):
         doc, rep = self.conv(rows)
         self.assertEqual({it['id'] for it in doc['items']}, {'kal:2', 'kal:3', 'kal:4', 'kal:5', 'kal:6', 'kal:9', 'kal:10'})
         self.assertEqual(rep['dropped']['implausible'], 3)
+
+    def test_name_density(self):   # over 9.1 kcal a gram its name states (plausible.ts nameGrams, the same names)
+        rows = [kc(1, 'ペペロンチーノソース 30g', 520), kc(2, 'ベルフィン チョコメルト 26g', 240), kc(3, 'ナッツ 30ｇ', 180),
+                kc(4, 'サガリステーキ＆ハンバーグ 100g', 1477), kc(5, 'コーンパフスナック4バッグ 16g', 340), kc(6, '天津飯(肉100g)', 1500)]
+        doc, rep = self.conv(rows)
+        self.assertEqual(sorted(it['id'] for it in doc['items']), ['kal:3', 'kal:4', 'kal:5', 'kal:6'])
+        self.assertEqual(rep['dropped']['name_density'], 2)
+        self.assertEqual([K.name_grams(n) for n in ('塩レモン 30g', 'x 1.5g', '2個入 30g', 'ハンバーグ120g', 'no')], [30, 1.5, None, None, None])
 
     def test_name_cleanup(self):
         ikari = {'shop': 'ikari-super'}

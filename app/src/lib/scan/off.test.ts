@@ -44,6 +44,14 @@ describe('offItem: an Open Food Facts product as our item', () => {
     expect(offItem('1', { brands: 'Suntory', nutriments: { 'energy-kcal_100g': 120 } }, NO)).toBeNull();
     expect(offItem('1', { product_name: 'X', nutriments: { 'energy-kcal_100g': '120' } }, NO)).toMatchObject({ kcal: 120 });
   });
+  it('through the shipped data\'s rules (lib/food/plausible.ts), never dropped: kJ as kcal fixed, a copied salt or impossible macros unknown, a serving of the kcal\'s grams gone', () => {
+    const kj = offItem('1', { product_name: 'Viande hachée', nutriments: { 'energy-kcal_100g': 801, proteins_100g: 19, fat_100g: 14 } }, NO)!;
+    expect(kj.kcal).toBe(191);
+    const udon = offItem('1', { product_name: 'さぬきうどん', serving_quantity: 180, nutriments: { 'energy-kcal_100g': 129, proteins_100g: 2.5, fat_100g: 0.4, carbohydrates_100g: 29.1, salt_100g: 28.6 } }, NO)!;
+    expect([udon.salt, udon.c, udon.portions]).toEqual([null, 29.1, [{ label: '1食分', g: 180 }]]);
+    expect(offItem('1', { product_name: 'X', nutriments: { 'energy-kcal_100g': 45, proteins_100g: 10, fat_100g: 15, carbohydrates_100g: 20 } }, NO)).toMatchObject({ kcal: 45, p: null, f: null, c: null });
+    expect(offItem('1', { product_name: 'Oil', serving_quantity: 899, nutriments: { 'energy-kcal_100g': 899, fat_100g: 99.9 } }, NO)!.portions).toBeUndefined();
+  });
 });
 
 describe('gramsOf', () => {

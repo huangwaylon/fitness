@@ -3,6 +3,7 @@
 // serving a 1食分 portion) (ODbL, as products.json's header). Pure but for `offLookup`'s fetch.
 import { FOOD_NAME_CHARS } from '#lib/contract/food.ts';
 import { cleanLine } from '#lib/contract/text.ts';
+import { plausible } from '#lib/food/plausible.ts';
 import type { Item, Portion } from '#lib/food/types.ts';
 
 /** The API's product page for a code, with only the fields mapped (`OFF_FIELDS`). CSP connect-src names this path. */
@@ -50,7 +51,9 @@ const firstText = (...xs: unknown[]): string | undefined => xs.map((x) => cleanL
  * from kJ if only that, ÷ 4.184); else per serving: by its weight when known, else as a serving (`sv`, values per
  * serving, as a chain menu's). A nutrient out of a snapshot's range: unknown (null), never clamped. The name: its
  * Japanese one, else its own, else its generic one; the brand its first. Its serving's weight a 1食分 portion (none:
- * 100 g only; never the pack's, often several servings).
+ * 100 g only; never the pack's, often several servings). Per 100 g, through the shipped data's rules (lib/food/plausible.ts:
+ * kJ as kcal fixed, a salt copying a macro or energy far from 4P+9F+4C unknown, a serving of the kcal's grams gone; never
+ * dropped).
  */
 export function offItem(code: string, p: OffProduct, note: string): Item | null {
   const n = p.nutriments ?? {};
@@ -82,11 +85,12 @@ export function offItem(code: string, p: OffProduct, note: string): Item | null 
   const fib = val('fiber');
   const brand = firstText(p.brands?.split(',')[0]);
   const portions: Portion[] = serving && !sv ? [{ label: '1食分', g: serving }] : [];
-  return {
+  const item: Item = {
     id: `off:${code}`, name, ...(brand && brand !== name ? { brand } : {}),
     kcal, p: val('proteins'), f: val('fat'), c: val('carbohydrates'), salt, ...(fib !== null ? { fib } : {}),
     ...(portions.length ? { portions } : {}), ...(sv ? { sv: true as const } : {}), note
   };
+  return sv ? item : (plausible(item).item ?? item);
 }
 
 /** What OFF said of a code: its item; `none` (not there, or nothing usable); `off` (unreached: offline, slow, an error). */

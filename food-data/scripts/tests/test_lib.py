@@ -430,11 +430,42 @@ class OffPlausibility(unittest.TestCase):
         vals, flags = self.check(500, 30, 30, 60, 1)             # P+F+C > 105: macros nulled, kcal kept
         self.assertEqual((vals[:4], flags), ((500, None, None, None), ['pfc_sum']))
 
-    def test_fixes(self):   # a hand correction passes the checks as it is, its energy within 15 % of 4P+9F+4C
-        for jan, v in off.FIXES.items():
-            vals, flags = self.check(*(v[k] for k in ('kcal', 'p', 'f', 'c', 'salt')), '菓子・デザート', jan)
-            self.assertEqual(flags, [], jan)
-            self.assertLess(abs(v['kcal'] - (4 * v['p'] + 9 * v['f'] + 4 * v['c'])), 0.15 * v['kcal'], jan)
+    def test_fixes(self):   # a correction's full values pass the checks as they are, the energy within 15 % of 4P+9F+4C
+        self.assertIn('4901005312005', off.FIXES)   # the Giant Cone, in the file food-data.ts applies too
+        for jan, fx in off.FIXES.items():
+            v = fx.get('set', {})
+            self.assertTrue(fx.get('drop') or v, jan)
+            self.assertTrue(fx.get('why') and fx.get('src'), jan)
+            if all(k in v for k in off.FIX_NUTS) and None not in (v[k] for k in off.FIX_NUTS):
+                self.assertEqual(self.check(*(v[k] for k in off.FIX_NUTS), '菓子・デザート', jan)[1], [], jan)
+                self.assertLess(abs(v['kcal'] - (4 * v['p'] + 9 * v['f'] + 4 * v['c'])), 0.15 * v['kcal'], jan)
+
+    def test_shared_cases(self):   # data_src/plausible_cases.json: the same flags as app/src/lib/food/plausible.ts
+        with open(os.path.join(off.DATA_SRC, 'plausible_cases.json'), encoding='utf-8') as f:
+            cases = json.load(f)
+        for cs in cases:
+            vals, flags = self.check(*(cs[k] for k in off.FIX_NUTS), cs['cat'], cs['name'])
+            flags += ['portion_kcal'] * any(off.portion_is_kcal(x, cs['kcal']) for x in cs.get('portions', []))
+            self.assertEqual(flags, cs['flags'], cs['why'])
+            self.assertEqual(vals is None, cs.get('py_drop', False), cs['why'])
+            for k, v in cs.get('out', {}).items() if vals else ():
+                if k in off.FIX_NUTS:
+                    got = vals[off.FIX_NUTS.index(k)]
+                    self.assertEqual(round(got) if k == 'kcal' else got, v, cs['why'])
+
+    def test_partial_scaling(self):   # some fields scaled by the serving, others not, the energy off: the Cone's class
+        cone = {'serving_quantity': 140, 'nutriments': {'salt_100g': 0.18, 'sodium_100g': 0.18 / 2.5 / 1.4}}
+        self.assertEqual(off.partial_scaling(cone, 247, 36, 13, 19.71), 'salt')
+        self.assertIsNone(off.partial_scaling(cone, 176, 2.6, 9.3, 19.7))   # the energy fits: no evidence
+        kj = {'serving_quantity': '80', 'nutriments': {'energy-kcal_100g': 677.5, 'energy-kj_100g': 677.5 * 4.184 * 0.8}}
+        self.assertEqual(off.partial_scaling(kj, 677.5, 9, 27, 66), 'kj')
+        self.assertIsNone(off.partial_scaling(dict(kj, serving_quantity=100), 677.5, 9, 27, 66))   # no factor
+
+    def test_review_band(self):   # off_review.tsv's rows: listed each build, never corrected
+        self.assertTrue(off.atwater_review(433, 5, 0, 75, 'その他', 'ぽたぽた焼'))
+        self.assertFalse(off.atwater_review(250, 10, 10, 30, 'パン', '食パン'))
+        self.assertFalse(off.atwater_review(300, 10, 5, 70, '菓子・デザート', '糖質オフ クッキー'))   # fibre / polyols
+        self.assertEqual(off.review_tsv([('1', 'その他', 'x', 433, 5, 0, 75)]), 'jan\tcat\tname\tkcal\tp\tf\tc\n1\tその他\tx\t433\t5\t0\t75\n')
 
     def test_atwater(self):
         self.assertIsNone(self.check(45, 10, 15, 20, 1)[0])                       # gross: per-serving typo, dropped

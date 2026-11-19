@@ -228,12 +228,18 @@ def read_nutriments(n):
     return kcal, p, f, c, salt
 
 
-# Hand corrections, per 100 g, by barcode: entries whose label slips no check (each value plausible, the energy
-# within plausible()'s band). Glico ジャイアントコーン クッキー&チョコ: OFF has the label's per-cone (140 ml) kcal, P (3.6
-# typed 36) and F as per 100 g, only the carbs scaled; the cone's label 247 kcal, P 3.6, F 13, C 27.6, salt 0.18.
-FIXES = {
-    '4901005312005': {'kcal': 247 / 1.4, 'p': 3.6 / 1.4, 'f': 13 / 1.4, 'c': 27.6 / 1.4, 'salt': 0.18 / 1.4},
-}
+DATA_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data_src')
+
+
+def load_fixes(path=os.path.join(DATA_SRC, 'food_fixes.json')):
+    """The reviewed corrections (data_src/food_fixes.json, one file with app/scripts/food-data.ts, which applies them
+    to what ships): {jan: {'set': {field: value}} | {'drop': True}}, the products' (`off:<jan>`) only."""
+    with open(path, encoding='utf-8') as f:
+        return {k[4:]: v for k, v in json.load(f).items() if k.startswith('off:')}
+
+
+FIXES = load_fixes()
+FIX_NUTS = ('kcal', 'p', 'f', 'c', 'salt')
 
 
 # ---------------------------------------------------------------- plausibility (all values per 100 g)
@@ -255,7 +261,7 @@ SALTY_OK = re.compile(r'塩|漬|梅|みそ|味噌|醤|しょうゆ|醤油|だし
                       r'口$|うすくち|こいくち|こしょう|胡椒|キューブ|あさげ|ゆうげ', re.I)
 # energy below 4P+9F+4C is legitimate for sugar alcohols / sweeteners and fibre-rich foods (however far below: a
 # fibre's carbohydrate is ~2 kcal/g or none, イージーファイバー, 寒天パウダー)
-LOW_KCAL_OK = re.compile(r'(?i:lakan?to)|甘味料|エリスリ|ラカント|パルスイート|シュガーカット|キシリトール|ゼロ|ノンカロリー|カロリーオフ|'
+LOW_KCAL_OK = re.compile(r'(?i:lakan?to|zero)|甘味料|エリスリ|ラカント|パルスイート|シュガーカット|キシリトール|ゼロ|ノンカロリー|カロリーオフ|'
                          r'糖質(?:ゼロ|オフ|0)|こんにゃく|蒟蒻|寒天|ところてん|食物繊維|難消化|ファイバー|わかめ|昆布|こんぶ|'
                          r'ひじき|海藻|もずく|めかぶ|きのこ|しいたけ|ガム')
 # Protein supplements (powders, bars, drinks): the salty-food allow-list (パウダー, soy ...) does not apply, and the
@@ -290,6 +296,73 @@ DRY_SNACK_NOT = re.compile(r'(?i:bar)|クリーム|バニラ|豆乳|飲料|ア�
 RICE_BALL = re.compile(r'おにぎり|おむすび')
 FLOORS = ((DRY_SNACK, DRY_SNACK_NOT, 200, 'snack_floor'), (RICE_BALL, re.compile(r'の具|具材|ふりかけ|用'), 120, 'onigiri_floor'))
 
+# The rules app/src/lib/food/plausible.ts shares (data_src/plausible_cases.json checks both): salt copying a macro
+# (OFF's salt field holding C or P, often C x0.98), in a seasoning or salty food only when 100 g can't hold it
+SALTY_COPY = re.compile(r'たれ|タレ|だれ|ダレ|だし|ダシ|出汁|スープ|soup|pho|素|もと|ルー|ルウ|みそ|味噌|粉末|パウダー|顆粒|シーズニング|'
+                        r'seasoning|ソース|sauce|醤|しょうゆ|ナンプラー|ふりかけ|furikake|コンソメ|ブイヨン|つゆ|調味|ペースト|明太|'
+                        r'たらこ|塩辛|酒盗|梅|生ハム|ジャーキー', re.I)
+
+
+def salt_copy(salt, p, f, c, cat, name):
+    """Salt >= 5 g a copy of C or P (x0.96-1.02) that 100 g can't hold with the macros, or over its category's cap
+    in no seasoning or salty food."""
+    if salt < 5 or not any(v and 0.96 <= salt / v <= 1.02 for v in (c, p)):
+        return False
+    return (p or 0) + (f or 0) + (c or 0) + salt > 100 or (
+        salt > SALT_CAP.get(cat, SALT_CAP_DEFAULT) and not SALTY_COPY.search(name))
+
+
+def portion_is_kcal(por, kcal):
+    """A 1食分 whose grams are the kcal (the serving field holding the energy), 300 g and up (below, or a pack's 1個,
+    it matches by chance)."""
+    return por['label'] == '1食分' and por['g'] >= 300 and abs(por['g'] - kcal) <= 1
+
+
+def serving_factor(p):
+    """100 / the serving's grams, when it is a weight away from 100 g."""
+    sq = to_num(p.get('serving_quantity'))
+    return 100 / sq if sq and 5 <= sq <= 2000 and abs(sq - 100) > 10 else None
+
+
+def partial_scaling(p, kcal, pr, f, c):
+    """'salt' | 'kj' when OFF scaled some per-100 g fields by the serving and not others (salt / 2.5 sodium or kJ / 4.184
+    kcal at the serving factor, ±4 %) and the energy is off 4P+9F+4C (> 12 % and >= 15 kcal): the values are a mix of
+    per serving and per 100 g (the Giant Cone's class), dropped."""
+    k = serving_factor(p)
+    if not k or None in (kcal, pr, f, c):
+        return None
+    est = 4 * pr + 9 * f + 4 * c
+    if abs(kcal - est) < 15 or abs(kcal - est) <= 0.12 * max(kcal, est):
+        return None
+    n = p.get('nutriments') or {}
+    for kind, a, b, unit in (('salt', 'salt_100g', 'sodium_100g', 2.5), ('kj', 'energy-kj_100g', 'energy-kcal_100g', 4.184)):
+        x, y = to_num(n.get(a)), to_num(n.get(b))
+        if x and y and x >= 0.02:
+            q = x / y / unit
+            if abs(q * k - 1) < 0.04 or abs(q / k - 1) < 0.04:
+                return kind
+    return None
+
+
+# The review band (plausible.ts suspect's atwater25, not corrected: off_review.tsv each build): kcal over 25 % and 30
+# kcal off 4P+9F+4C, fibre at 2 kcal/g, 80 kcal and up, not a category or name whose energy is off by nature
+ATWATER_FREE = {'酒', '海藻', 'きのこ', '野菜', '果物', '大豆・豆', 'ナッツ・種', 'いも'}
+FIBRE_NAME = re.compile(r'糖質|ロカボ|低糖|carb|ファイバー|fib(?:er|re)|ブラン|bran|豆(?!乳)|bean|野菜|サラダ|salad|めかぶ|ごぼう|オクラ|'
+                        r'スパイス|spice|抹茶|matcha|ココア|cocoa|カカオ|cacao|胡麻|ごま|sesame|おから|オートミール|oat|チアシード|'
+                        r'chia|雑穀|玄米|全粒|whole|ライ麦|rye|ナッツ|nut|アーモンド|almond|漬|キムチ|kimchi|昆布|シリアル|cereal|'
+                        r'グラノーラ|granola|keto|ケト|シュガーレス|ノンシュガー|sugar.?free', re.I)
+ALCOHOL_NAME = re.compile(r'酒|みりん|味醂|ビール|beer|ワイン|wine|サワー|チューハイ|ハイボール|ほろよい|氷結|リキュール|liqueur|焼酎|'
+                          r'ウイスキー|whisk|\d\s*%', re.I)
+
+
+def atwater_review(kcal, p, f, c, cat, name, fib=0):
+    if None in (p, f, c) or kcal < 80 or cat in ATWATER_FREE or LOW_KCAL_OK.search(name) or CREATINE_RE.search(name):
+        return False
+    est = 4 * p + 9 * f + 4 * c
+    off = lambda k, e: (k - e) / max(k, e, 1)
+    return abs(kcal - est) >= 30 and abs(off(kcal, est)) > 0.25 and abs(off(kcal, est - 2 * fib)) > 0.25 \
+        and not (kcal < est and FIBRE_NAME.search(name)) and not (kcal > est and ALCOHOL_NAME.search(name))
+
 
 def protein_kind(name, kcal):
     """'bar' | 'powder' | 'drink' for a protein supplement name, else None."""
@@ -310,11 +383,12 @@ CREATINE_RE = re.compile(r'クレアチン|クレアルカリン|creatine', re.I
 
 def plausible(kcal, p, f, c, salt, cat='その他', name='', liquid=False):
     """-> (kcal, p, f, c, salt) with implausible values corrected/nulled, or None to drop the product; + flags.
-    Order: kJ typed as kcal -> /4.184; kcal outside 0-900 (oils <= 950), every value 0 on a food, a dry snack or rice
+    Order: kJ typed as kcal (a macro unknown: kcal more than the rest of the 100 g could hold) -> /4.184; kcal outside 0-900 (oils <= 950), every value 0 on a food, a dry snack or rice
     ball under its floor -> drop; a macro outside 0-100 -> null it; P+F+C > 105 -> null P/F/C; kcal grossly under
     4P+9F+4C (per-serving typos; not sweeteners/fibre) -> drop; grossly over it -> null P/F/C (over 600 kcal: drop);
     moderately off (> 1.35x+25 or < 0.65x-25, not 酒/sweeteners/fibre foods) -> null P/F/C; fried chicken under 120
-    kcal -> drop; salt above the category cap (protein supplements: their own caps) / 60 g -> null salt."""
+    kcal -> drop; salt copying C or P (salt_copy), above the category cap (protein supplements: their own caps) / 60 g
+    -> null salt. app/src/lib/food/plausible.ts mirrors it (never dropping: a live scan keeps its product)."""
     flags = []
     nm = name or ''
     if kcal == 0 and ALCOHOL_RE.search(nm) and not NON_ALCOHOL_RE.search(nm):
@@ -331,6 +405,14 @@ def plausible(kcal, p, f, c, salt, cat='その他', name='', liquid=False):
         if est > 30 and kcal > 1.6 * est and abs(kcal - 4.184 * est) < 0.08 * 4.184 * est:
             kcal = kcal / 4.184
             flags.append('kj_as_kcal')
+    elif cat != '酒' and (p, f, c) != (None, None, None):
+        # a macro unknown: more energy than the known ones and the rest of the 100 g could hold (fat's 9 kcal/g if F
+        # is unknown), its kJ fitting them
+        a = 4 * (p or 0) + 9 * (f or 0) + 4 * (c or 0)
+        most = a + max(0, 100 - (p or 0) - (f or 0) - (c or 0) - (salt or 0)) * (4 if f is not None else 9)
+        if a > 30 and kcal > most and 0.9 * a <= kcal / 4.184 <= most:
+            kcal = kcal / 4.184
+            flags.append('kj_as_kcal')
     if not 0 <= kcal <= (950 if (f or 0) >= 95 else 900):
         return None, ['kcal_range']
     for pat, nott, floor, flag in FLOORS:
@@ -339,6 +421,7 @@ def plausible(kcal, p, f, c, salt, cat='その他', name='', liquid=False):
     if kcal < FRIED_MIN_KCAL and cat not in ('調味料', '飲料', '酒') and FRIED_CHICKEN_RE.search(nm) \
             and not FRIED_NOT.search(nm):
         return None, flags + ['fried_low']
+    p0, f0, c0 = p, f, c
     vals = []
     for v in (p, f, c):
         if v is not None and not 0 <= v <= 100:
@@ -364,6 +447,9 @@ def plausible(kcal, p, f, c, salt, cat='その他', name='', liquid=False):
                 return None, flags + ['atwater_snack']
             p = f = c = None
             flags.append('atwater')
+    if salt is not None and salt_copy(salt, p0, f0, c0, cat, nm):
+        salt = None
+        flags.append('salt_copy')
     if salt is not None:
         if salt < 0 or salt > 100 or (salt > 60 and cat != '調味料'):
             salt = None
@@ -464,7 +550,8 @@ def dump_len(obj):
 
 
 def build(indir):
-    """-> (products doc, {shard: {jan: item}}, stats). Shards hold every valid product; products.json (name
+    """-> (products doc, {shard: {jan: item}}, stats, review rows: atwater_review's, for off_review.tsv). Each code's
+    reviewed fix (FIXES) first, then partial_scaling and plausible. Shards hold every valid product; products.json (name
     search) every one with a Japanese name and P/F/C on its label, identical ones (same name, brand and nutrients)
     collapsed, under MAX_PRODUCTS_BYTES."""
     raw = load(indir)
@@ -479,20 +566,28 @@ def build(indir):
         old = best.get(jan)
         if old is None or (raw[code].get('last_modified_t') or 0) > (raw[old].get('last_modified_t') or 0):
             best[jan] = code
-    items = []
+    items, review = [], []
     for jan in sorted(best):
         p = raw[best[jan]]
-        kcal, pr, f, c, salt = read_nutriments(p.get('nutriments'))
-        if jan in FIXES:
-            kcal, pr, f, c, salt = (FIXES[jan][k] for k in ('kcal', 'p', 'f', 'c', 'salt'))
+        fix = FIXES.get(jan, {})
+        if fix.get('drop'):
+            stats['fix:drop'] += 1
+            continue
+        fset = fix.get('set', {})
+        kcal, pr, f, c, salt = (fset[k] if k in fset else v for k, v in zip(FIX_NUTS, read_nutriments(p.get('nutriments'))))
+        stats['fix:set'] += bool(fset)
         if kcal is None:
             stats['no_kcal'] += 1
             continue
+        if not fset and partial_scaling(p, kcal, pr, f, c):
+            stats['flag:partial_scaling'] += 1
+            continue
         name, has_ja = pick_name(p)
+        name = fset.get('name', name)
         if not name:
             stats['no_name'] += 1
             continue
-        cat = pick_cat(p.get('categories_tags'), name, kcal)
+        cat = fset.get('cat') or pick_cat(p.get('categories_tags'), name, kcal)
         if bad_serving(p):
             stats['flag:serving_cup_kcal'] += 1
             continue
@@ -513,9 +608,14 @@ def build(indir):
         it.update(nutrients(dict(zip(NUTS, vals))))
         if 'creatine' in flags:
             it['note'] = CREATINE_NOTE
-        por = portions(p, cat, vals[0])
+        por = fset['portions'] if 'portions' in fset else portions(p, cat, vals[0])
+        if any(portion_is_kcal(x, vals[0]) for x in por):
+            por = [x for x in por if not portion_is_kcal(x, vals[0])]
+            stats['flag:portion_kcal'] += 1
         if por:
             it['portions'] = por
+        if atwater_review(*vals[:4], cat, unicodedata.normalize('NFKC', name)):
+            review.append((jan, cat, name, *(round(v, 1) for v in vals[:4])))
         items.append((it, has_ja and None not in (pr, f, c)))   # searchable: a Japanese name, P/F/C on the label
     rank = {it['jan']: (it['jan'][:2] not in ('45', '49'), -(raw[best[it['jan']]].get('last_modified_t') or 0), it['jan'])
             for it, _ in items}
@@ -546,4 +646,10 @@ def build(indir):
     for it, _ in items:
         shards.setdefault(shard_key(it['jan']), {})[it['jan']] = it
     stats.update({'valid': len(items), 'products_json_items': len(sel), 'shard_files': len(shards)})
-    return dict(meta, items=sel), {k: shards[k] for k in sorted(shards)}, dict(sorted(stats.items()))
+    stats['atwater_review'] = len(review)
+    return dict(meta, items=sel), {k: shards[k] for k in sorted(shards)}, dict(sorted(stats.items())), review
+
+
+def review_tsv(rows):
+    """atwater_review's rows as off_review.tsv (build.py writes it beside products.json; never corrected)."""
+    return 'jan\tcat\tname\tkcal\tp\tf\tc\n' + ''.join('\t'.join(map(str, r)) + '\n' for r in rows)

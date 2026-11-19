@@ -579,9 +579,12 @@ def build_jbfd(b):
 
 
 # ---------------------------------------------------------------- Open Food Facts
+OFF_REVIEW = 'off_review.tsv'   # the products in the Atwater review band (off.atwater_review), each build
+
+
 def build_off(b):
     import off
-    doc, b.shards, b.reports['off'] = off.build(os.path.join(RAW, 'off'))
+    doc, b.shards, b.reports['off'], b.review = off.build(os.path.join(RAW, 'off'))
     return doc
 
 
@@ -864,7 +867,7 @@ class Builder:
     """Builds targets on demand (memoized). A target whose raw inputs are missing falls back to out/."""
 
     def __init__(self):
-        self.docs, self.skipped, self.reports, self.shards = {}, [], {}, None
+        self.docs, self.skipped, self.reports, self.shards, self.review = {}, [], {}, None, None
 
     @functools.cached_property
     def mext_rows(self):
@@ -955,6 +958,9 @@ def write_outputs(b, names, out):
             continue
         write_json(os.path.join(out, fname), doc)
         if name == 'off':
+            import off
+            with open(os.path.join(out, OFF_REVIEW), 'w', encoding='utf-8') as f:   # (not shipped: by hand, never corrected)
+                f.write(off.review_tsv(b.review))
             for k, shard in b.shards.items():
                 check('jan/%s.json' % k, lib.validate(shard, 'shard'))
                 write_json(os.path.join(out, 'jan', k + '.json'), shard)
@@ -1002,6 +1008,8 @@ def main(argv):
                 shutil.copy2(previous(TARGETS[n][1], n), stage)
                 if n == 'off':
                     shutil.copytree(previous('jan', n), os.path.join(stage, 'jan'))
+                    if os.path.exists(os.path.join(OUT, OFF_REVIEW)):
+                        shutil.copy2(os.path.join(OUT, OFF_REVIEW), stage)
         if 'verify' in extra:
             if all(os.path.exists(p) for p in VERIFY_INPUTS):
                 v = build_verify(b)

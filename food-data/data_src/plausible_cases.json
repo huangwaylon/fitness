@@ -1,0 +1,18 @@
+[
+  {"why": "the Giant Cone as OFF had it (per cone as per 100 g, P 3.6 typed 36): no rule can tell; data_src/food_fixes.json corrects it; the CI guard's atwater25 and protein35 would flag it", "name": "ジャイアントコーン", "cat": "菓子・デザート", "kcal": 247, "p": 36, "f": 13, "c": 19.7, "salt": 0.18, "flags": [], "suspect": ["atwater25", "protein35"]},
+  {"why": "the Giant Cone as fixed", "name": "ジャイアントコーン", "cat": "菓子・デザート", "kcal": 176, "p": 2.6, "f": 9.3, "c": 19.7, "salt": 0.1, "flags": [], "suspect": []},
+  {"why": "kJ typed as kcal", "name": "クッキー", "cat": "菓子・デザート", "kcal": 1255.2, "p": 10, "f": 10, "c": 42.5, "salt": 0.5, "flags": ["kj_as_kcal"], "out": {"kcal": 300}},
+  {"why": "kJ typed as kcal, P unknown: 900 kcal more than 1.1 g F, 45.5 g C and 53.4 g of anything could hold", "name": "Must põrandaleib", "cat": "その他", "kcal": 900, "p": null, "f": 1.1, "c": 45.5, "salt": null, "flags": ["kj_as_kcal"], "out": {"kcal": 215}},
+  {"why": "C unknown: the rest of the 100 g can hold 435 kcal", "name": "柿の種", "cat": "菓子・デザート", "kcal": 435, "p": 9.1, "f": 10.7, "c": null, "salt": 1.0, "flags": []},
+  {"why": "salt a copy of C (x0.985) and more than 100 g with the macros", "name": "幌加内そば", "cat": "麺", "kcal": 275, "p": 12.6, "f": 1.8, "c": 52.3, "salt": 51.5, "flags": ["salt_copy"], "out": {"salt": null}},
+  {"why": "salt a copy of P, over 魚介's cap, no salty food", "name": "あじ開き干", "cat": "魚介", "kcal": 168, "p": 20.2, "f": 8.8, "c": 0.1, "salt": 19.9, "flags": ["salt_copy"], "out": {"salt": null}},
+  {"why": "a dashi's salt equal to its C by chance: a seasoning that fits in 100 g", "name": "讃岐・丸亀うどんだし", "cat": "麺", "kcal": 253, "p": 18.7, "f": 2.7, "c": 37.3, "salt": 36.7, "flags": []},
+  {"why": "a 1食分 of 899 g at 899 kcal: the serving field held the energy", "name": "Kernel solsikkeolje", "cat": "その他", "kcal": 899, "p": null, "f": 99.9, "c": null, "salt": null, "portions": [{"label": "1食分", "g": 899}], "flags": ["portion_kcal"], "out": {"portions": null}},
+  {"why": "200 g at 200 kcal: chance, kept", "name": "華味鳥つくね", "cat": "主菜", "kcal": 200, "p": 10.3, "f": 12.3, "c": 11.9, "salt": 1.6, "portions": [{"label": "1食分", "g": 200}], "flags": []},
+  {"why": "kcal grossly under 4P+9F+4C (off.py drops it; a scan keeps it, P/F/C unknown)", "name": "", "cat": "その他", "kcal": 45, "p": 10, "f": 15, "c": 20, "salt": 1, "flags": ["atwater_gross"], "py_drop": true, "out": {"p": null, "f": null, "c": null}},
+  {"why": "kcal grossly over it: P/F/C unknown", "name": "干しいも", "cat": "いも", "kcal": 328, "p": 3.9, "f": 0.7, "c": 18.3, "salt": 0.1, "flags": ["atwater_high"], "out": {"p": null, "f": null, "c": null}},
+  {"why": "kcal moderately off: P/F/C unknown", "name": "カマの照焼", "cat": "魚介", "kcal": 150, "p": 22.9, "f": 1.2, "c": 62.6, "salt": 1.6, "flags": ["atwater"], "out": {"p": null, "f": null, "c": null}},
+  {"why": "a sweetener under its carbs' energy", "name": "スイートゼロ", "cat": "その他", "kcal": 0, "p": 0, "f": 0, "c": 11, "salt": 0, "flags": []},
+  {"why": "a zero-sugar bar's polyols (LOW_KCAL_OK's zero)", "name": "Zero sugar bar", "cat": "菓子・デザート", "kcal": 100, "p": 10, "f": 5, "c": 40, "salt": 0.2, "flags": []},
+  {"why": "P+F+C over 105 g", "name": "", "cat": "その他", "kcal": 500, "p": 30, "f": 30, "c": 60, "salt": 1, "flags": ["pfc_sum"], "out": {"p": null, "f": null, "c": null}}
+]

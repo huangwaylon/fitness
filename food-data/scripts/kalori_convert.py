@@ -15,7 +15,8 @@ would (lib.tidy, lib.validate), for CI with no other out/ files (then `npm run f
 Values are per serving (one 1食 portion of a nominal 100 g); a nutrient the page doesn't show is unknown (null;
 fibre absent), never 0. Names are cleaned (tidy, uncoded, undecorated, unsuffixed, short). A row is dropped with no
 name or kcal, values over the custom-food limits (kcal 5000, nutrients 500 g, fibre 100 g: lib.validate; a platter for
-N ships per person: per_person), kcal far from Atwater (implausible; an official kcal ships with P, F, C unknown), the
+N ships per person: per_person), kcal far from Atwater (implausible; an official kcal ships with P, F, C unknown), over
+9.1 kcal a gram its name states (name_density: a Kaldi sauce's 「30g」 at 520 kcal; app/src/lib/food/plausible.ts too), the
 same product as an Open Food Facts one (off_product: the same name, the shop its brand, a retail shop, the label's
 serving), a near-duplicate (the shop's same name but for width or spaces: the current, latest, higher-id one stays;
 both official and apart: both, named with their kcal), a takeout copy with its eat-in item's values (takeout_twins),
@@ -267,6 +268,18 @@ def implausible(r, name, cat):
     # (and 0 kcal over 10 kcal of protein and fat: くら寿司's チキンサラダ at 0 kcal for 3.5/2 g; a 0 kcal jelly or
     # zero drink whose carbs are fibre or sweetener, 寒天ゼリー at 6 g, is a real zero)
     return abs(kcal - atw) > max(atw / 2, 50) or kcal <= 0 and 4 * p + 9 * f >= 10
+
+
+# The grams a name states as its own (「ペペロンチーノソース 30g」, its end), none when they may be a part's or one of several
+# (a set's 「ステーキ＆ハンバーグ 100g」, 「4バッグ 16g」): over 9.1 kcal a gram (fat's 9) the energy is not the name's (plausible.ts nameGrams)
+NAME_GRAMS = re.compile(r'(?<![\d.])(\d+(?:\.\d+)?)\s*g$', re.I)
+NAME_PART = re.compile(r'\d\s*x|[×*+&・()]|\d\s*(?:個|本|枚|袋|入|食|バッグ|パック)|ステーキ|バーグ|ビフテキ|肉|セット|付|ランチ|弁当|定食|丼', re.I)
+
+
+def name_grams(name):
+    nm = unicodedata.normalize('NFKC', name).strip()
+    m = NAME_GRAMS.search(nm)
+    return float(m.group(1)) if m and not NAME_PART.search(nm[:m.start()]) else None
 
 
 # Name cleanup, from the real names: half-width kana (ﾈｷﾞ), control characters, newlines and doubled spaces, a trailing
@@ -634,7 +647,7 @@ def convert(rows, aliases=None, off=None, names=None):
     (read_shops), off = off_names."""
     aliases, off, our_names = aliases or {}, off or {}, names or {}
     drop = {'no_values': 0, 'long_name': 0, 'range': 0, 'implausible': 0, 'off_product': 0, 'duplicate': 0,
-            'near_duplicate': 0, 'takeout_twin': 0, 'retired': 0}
+            'near_duplicate': 0, 'takeout_twin': 0, 'retired': 0, 'name_density': 0}
     fixed = {'per_person': 0, 'pfc_unknown': 0, 'apart_kept': 0}
     kept, seen, unknown, shop_names = {}, set(), {}, {}
     asof = as_of(rows)
@@ -667,6 +680,10 @@ def convert(rows, aliases=None, off=None, names=None):
                 continue
             r = {**r, 'nutrients': {k: v for k, v in r['nutrients'].items() if k not in ('p', 'f', 'c')}}
             fixed['pfc_unknown'] += 1
+        g = name_grams(name)
+        if g and val(r, 'kcal') / g > 9.1:
+            drop['name_density'] += 1
+            continue
         shop_name = (r.get('shop_name') or '').strip() or r['shop']
         if off_product(r, {raw, name}, off, {norm(w) for w in [shop_name, *aliases.get(r['shop'], [])]}):
             drop['off_product'] += 1
