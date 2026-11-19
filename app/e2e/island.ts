@@ -720,6 +720,7 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
   const t0 = await page.evaluate((things) => {
     const W = window as unknown as { __came: Record<string, number>; __comingsMO?: MutationObserver; __world3d?: W3 };
     W.__comingsMO?.disconnect();
+    const t0 = performance.now();
     const there = (t: Coming) => {
       if (typeof t === 'string') return !!document.querySelector(t);
       if ('fx' in t) return false;
@@ -736,7 +737,11 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
     W.__comingsMO = new MutationObserver((ms) => {
       for (const k in things) {
         const t = things[k];
-        if (typeof t !== 'string' && 'fx' in t) continue;
+        // (an effect's count kept too: read after the island has gone, a page moved on to the tent, it's the last seen)
+        if (typeof t !== 'string' && 'fx' in t) {
+          if (W.__world3d) W.__came[k] = W.__world3d.fxLog().filter((e) => e.kind === t.fx && e.at > t0 && (t.v === undefined || e.v === t.v)).length;
+          continue;
+        }
         if (typeof t !== 'string' && 'each' in t) {
           for (const m of ms) for (const n of m.addedNodes) if (n instanceof Element) W.__came[k] += (n.matches(t.sel) ? 1 : 0) + n.querySelectorAll(t.sel).length;
           continue;
@@ -750,15 +755,15 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
       childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-act'], // (data-act: a villager's motion)
       characterData: Object.values(things).some((t) => typeof t !== 'string' && 'text' in t)
     });
-    return performance.now();
+    return t0;
   }, things);
   return (k: string) => {
     if (!(k in things)) throw new Error(`watchComings: '${k}' isn't watched (${Object.keys(things).join(', ')})`);
     const t = things[k];
     return page.evaluate(([k, fx, t0]) => {
-      const W = window as unknown as { __came: Record<string, number>; __world3d: W3 };
+      const W = window as unknown as { __came: Record<string, number>; __world3d?: W3 };
       if (!(k in W.__came)) throw new Error(`watchComings: '${k}' no longer watched (a later watch on this page replaced it)`);
-      return fx ? W.__world3d.fxLog().filter((e) => e.kind === fx.fx && e.at > t0 && (fx.v === undefined || e.v === fx.v)).length : W.__came[k];
+      return fx && W.__world3d ? W.__world3d.fxLog().filter((e) => e.kind === fx.fx && e.at > t0 && (fx.v === undefined || e.v === fx.v)).length : W.__came[k];
     }, [k, typeof t !== 'string' && 'fx' in t ? t : null, t0] as const);
   };
 }
