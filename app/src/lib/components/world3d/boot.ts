@@ -54,6 +54,11 @@ export interface BootReport {
    *  since the navigation's start): a gap is the parse, the textures, the queue, not the network. */
   lateF?: number;
   lateA?: number;
+  /** The last card's art in after `loaded` up to `shown` (`lastC`: its key, what a step held back by cards waited for),
+   *  its fetch end and its arrival (ms since the navigation's start; cards.ts arrivals). */
+  lastC?: string;
+  cardF?: number;
+  cardA?: number;
   /** The KTX2 textures transcoded by the report (ktx2.ts ktx2Stats.made: not read back from the texture cache). */
   tx?: number;
   /** The WebP fallbacks (ktx2.ts ktx2Stats) by the report: textures whose KTX2 couldn't be had (a fetch or transcode
@@ -107,6 +112,16 @@ export function lateModels(ins: readonly (readonly [string, number, string?])[],
   if (!last) return { late };
   const f = last[2] ? end(last[2]) : undefined;
   return { late, lastM: last[0].slice(0, 40), lateA: Math.round(last[1]), ...(f ? { lateF: Math.round(f) } : {}) };
+}
+
+/** Of the cards' arts in (cards.ts arrivals: URL, time), the last after `loaded` up to `shown`: its key (the path
+ *  under art/ less its extension, at most 40 characters), its arrival and its file's fetch end. */
+export function lateCards(ins: readonly (readonly [string, number])[], loaded: number, shown: number, end = fetchEnd): Pick<BootReport, 'lastC' | 'cardF' | 'cardA'> {
+  let last: (typeof ins)[number] | undefined;
+  for (const a of ins) if (a[1] > loaded && a[1] <= shown) last = a;
+  if (!last) return {};
+  const url = new URL(last[0], globalThis.location?.href ?? 'http://x/'), f = end(url.href);
+  return { lastC: url.pathname.replace(/^.*?\/art\//, '').replace(/\.\w+$/, '').slice(0, 40), cardA: Math.round(last[1]), ...(f ? { cardF: Math.round(f) } : {}) };
 }
 
 const SHELLS = ['net', 'same', 'skip', 'cache'] as const;
@@ -220,7 +235,7 @@ export const bootReport = (): BootReport | null => report;
  * WATCH_MAX_MS. A later mount (`back`: from a room, another screen) is watched the same way once a page load, its marks
  * from the mount (`perf.back`: the return's worst frame); null after that.
  */
-export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'tx' | 'txFail' | 'txWebp' | 'txOff' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
+export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fieldsMs' | 'fields' | 'late' | 'lastM' | 'lateF' | 'lateA' | 'lastC' | 'cardF' | 'cardA' | 'tx' | 'txFail' | 'txWebp' | 'txOff' | 'data' | 'garden' | 'farm'>, paused: () => boolean): { clock: BootClock; stop(): void; back: boolean } | null {
   if (returned || typeof requestAnimationFrame === 'undefined') return null;
   const back = launched;
   if (back) returned = true;

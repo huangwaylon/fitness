@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { cleanData } from '#lib/contract/log.ts';
-import { bootReport, createBootClock, lateModels, modelFetches, shellFrom, swFetches, swState, watchBoot } from './boot.ts';
+import { bootReport, createBootClock, lateCards, lateModels, modelFetches, shellFrom, swFetches, swState, watchBoot } from './boot.ts';
 
 describe('the launch clock (perf.boot)', () => {
   it('times the first frame, the models in, the island whole and the frames meanwhile', () => {
@@ -99,6 +99,15 @@ describe('the launch clock (perf.boot)', () => {
     expect(lateModels(ins, 950, 1000)).toEqual({ late: 0 });
     // (an effect's model, the stream's maple leaf: `shown` never waits for it, so it's never the one waited for)
     expect(lateModels([...ins, ['fx/maple-leaf', 650, 'u/leaf']], 500, 700, end).lastM).toBe('room:outdoor-a-very-long-catalogue-piece');
+  });
+
+  it('the last card\'s art in after loaded up to shown: its key, arrival and fetch end (perf.boot lastC)', () => {
+    const ins = [['https://x/art/villagers/goldie.webp', 300], ['https://x/art/decor/illumi-tree-0.v3.webp?x=1', 640.4], ['/art/villagers/judy.webp', 900]] as const;
+    const end = (u: string) => ({ 'https://x/art/decor/illumi-tree-0.v3.webp?x=1': 590.6 })[u];
+    expect(lateCards(ins, 500, 700, end)).toEqual({ lastC: 'decor/illumi-tree-0.v3', cardA: 640, cardF: 591 });
+    expect(lateCards(ins, 800, 1000, end).lastC).toBe('villagers/judy');
+    expect(lateCards(ins, 200, 250)).toEqual({});
+    expect(cleanData('perf.boot', lateCards(ins, 500, 700, end))).toEqual({ lastC: 'decor/illumi-tree-0.v3', cardA: 640, cardF: 591 });
   });
 
   it('the log keeps every field of the report, numbers and closed sets only', () => {

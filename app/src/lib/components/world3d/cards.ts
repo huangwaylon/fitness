@@ -51,6 +51,8 @@ export interface Cards {
   tint(hex: number): void;
   /** The cards waiting on their art (a card gone, or one whose art failed, waits on nothing). */
   pending(): number;
+  /** Each art's arrival (its URL, ms on the page's clock: in, or failed), first loads only, in order (perf.boot lastC). */
+  arrivals(): readonly (readonly [string, number])[];
   dispose(): void;
 }
 
@@ -105,6 +107,8 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
     n: number;
   }
   const texs = new Map<string, Tex>();
+  const ins: [string, number][] = [];
+  const arrived = (url: string) => void ins.push([url, performance.now()]);
   let tintHex = 0xffffff, disposed = false;
   const load = (url: string, img?: Promise<HTMLImageElement>): Tex => {
     let e = texs.get(url);
@@ -117,8 +121,9 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
         t.anisotropy = 4;
         entry.got = t;
         entry.done = true;
+        arrived(url);
         return t;
-      }, () => ((entry.done = true), null));
+      }, () => ((entry.done = true), arrived(url), null));
       texs.set(url, (e = entry));
     }
     return e;
@@ -251,6 +256,7 @@ export function createCards(scene: Scene, changed: (shadows: boolean, added?: bo
       tintHex = hex;
       for (const c of cards.values()) if (!c.spec.lit) c.mat.color.set(hex);
     },
+    arrivals: () => ins,
     pending() {
       let n = 0;
       for (const c of cards.values()) if (!c.art.done) n++;

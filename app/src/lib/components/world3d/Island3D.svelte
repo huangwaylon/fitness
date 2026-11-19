@@ -59,7 +59,7 @@
   import { fieldsFrom, primeFields } from '#lib/layout/fieldsPrime.ts';
   import { hasFields } from '#lib/layout/fields.ts';
   import { meshKeyOf } from '#lib/layout/mesh.ts';
-  import { bootReport, lateModels, watchBoot, type BootClock, type BootReport } from './boot.ts';
+  import { bootReport, lateCards, lateModels, watchBoot, type BootClock, type BootReport } from './boot.ts';
   import { watchRest } from './rest.ts';
   import { NoWebGL } from './stage.ts';
   import { ktx2Stats } from './ktx2.ts';
@@ -1064,7 +1064,7 @@
     eng = e;
     fittedLayout = -1;
     // (the launch timed: the page's first mount; the first return to it, perf.back)
-    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), tx: ktx2Stats.made, txFail: ktx2Stats.fail, txWebp: ktx2Stats.webp, txOff: ktx2Stats.off, data: week.dataAt, ...firstPlace }), () => e.isPaused());
+    const watch = watchBoot((m) => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields, ...lateModels(e.things.arrivals(), m.loaded, m.shown), ...lateCards(e.cards.arrivals(), m.loaded, m.shown), tx: ktx2Stats.made, txFail: ktx2Stats.fail, txWebp: ktx2Stats.webp, txOff: ktx2Stats.off, data: week.dataAt, ...firstPlace }), () => e.isPaused());
     timed = watch?.clock ?? null;
     boot = watch && !watch.back ? watch.clock : null;
     timed?.mount(mountAt);
