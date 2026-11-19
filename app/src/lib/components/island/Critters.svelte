@@ -54,6 +54,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from '#lib/world/sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
+  import { thing, type Thing3 } from '../world3d/things3.ts';
   import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from '#lib/world/world.ts';
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
@@ -76,6 +77,12 @@
   }
   let { scene, tod, enabled }: Props = $props();
   const w = useWorld();
+  /** A critter's model on the 3D island (world3d/things3.ts: what it draws), by its id: `{@attach t3(…)}` on its `.m3n`
+   *  (the element only times it: it's in while the element is). */
+  const t3 = (th: Thing3 & { m3: { id: string } }) => {
+    const add = thing(w, th.m3.id, th);
+    return () => add();
+  };
 
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
@@ -1448,34 +1455,34 @@
 <!-- world nodes (camera.svelte.ts): no wrapper with a stacking order of its own, so each sits at its depth among the
      island's things -->
 <div class="critters" aria-hidden="true">
-  <!-- the 3D island's (world3d/Island3D: camera.svelte.ts m3): each critter NH's model where it is, moving as its
+  <!-- the 3D island's (world3d/things3.ts, Island3D's mirror draws them): each critter NH's model where it is, moving as its
        sprite does (the sprite stays as its tap box, invisible) -->
   {#if w.rest.three}
   {#each Object.entries(fishes) as [pk, f] (pk)}
     {#if f}
       <!-- (its moves, its heading and its nose at the float: fish3, each frame; it fades in and out: world3d/things.ts) -->
-      <i class="m3n" {@attach w.at({ bare: true, x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, wet: () => fishMid(f), get off() { return f.gone; }, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
+      <i class="m3n" {@attach t3({ x: f.ax, z: f.az, lift: -2.5, h: 4, always: true, live: () => fish3(f), m3: { key: f.shape ? `shadow/${f.shape}` : `shadow/${f.water === 'sea' ? 'sea' : 'fresh'}-${Math.max(1, Math.min(6, Math.round(f.size)))}`, id: fishId(f), water: true, wet: () => fishMid(f), get off() { return f.gone; }, get yaw() { return fishYaw(f); }, art: () => fishEls[f.pool] } })} {@attach mirrorFish(f)}></i>
     {/if}
   {/each}
   {#if diving?.chase}
     {@const d = diving}
-    <i class="m3n" {@attach w.at({ bare: true, x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', water: true, off: d.gone, art: () => chaseEl } })}></i>
+    <i class="m3n" {@attach t3({ x: d.x, z: d.z, h: 4, always: true, m3: { key: 'shadow/dive', id: `dive-${d.n}`, ms: d.ms, face: 'move', water: true, off: d.gone, art: () => chaseEl } })}></i>
   {/if}
   {#if bubbles}
-    <i class="m3n" {@attach w.at({ bare: true, x: bubbles.x, z: bubbles.z, h: 4, always: true, m3: { key: '', water: true, emit: { kind: 'bubbles', every: 420 }, art: () => scene?.querySelector('[data-bubbles]') } })}></i>
+    <i class="m3n" {@attach t3({ x: bubbles.x, z: bubbles.z, h: 4, always: true, m3: { key: '', id: `bubbles-${bubbles.n}`, water: true, emit: { kind: 'bubbles', every: 420 }, art: () => scene?.querySelector('[data-bubbles]') } })}></i>
   {/if}
   <!-- each nibble's small ring on the water at a float, and the bite's splash and big ring (once each: a node of its own) -->
   {#snippet ring(x: number, z: number, id: string, n: number, under: boolean)}
     {#key n}
       {#if n > 1}
-        <i class="m3n" {@attach w.at({ bare: true, x, z, h: 4, always: true, m3: { key: '', id: `ring-${id}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
+        <i class="m3n" {@attach t3({ x, z, h: 4, always: true, m3: { key: '', id: `ring-${id}`, water: true, emit: under ? { kind: 'splash', every: 60_000 } : { kind: 'ripple', every: 60_000, size: 0.7 } } })}></i>
       {/if}
     {/key}
   {/snippet}
   {#each Object.values(lines) as l (l.n)}
     {#if l}
       <!-- another's float and the line from their villager's rod (or the bank) to it (their phone's steps) -->
-      <i class="m3n" {@attach w.at({ bare: true, x: l.x, z: l.z, h: 4, always: true, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
+      <i class="m3n" {@attach t3({ x: l.x, z: l.z, h: 4, always: true, live: () => floatOf(l), m3: { key: 'tools/bobber', id: `bobber-${l.slot}`, water: true, off: !l.landed && !l.under,
         emit: l.landed && !l.under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined, line: () => [l.sx, l.sz, 4] as const } })}></i>
       {@render ring(l.x, l.z, `${l.slot}-${l.rings}`, l.rings, l.under)}
     {/if}
@@ -1488,7 +1495,7 @@
          feet till its model holds the rod) -->
     <!-- (its bob, a nibble's dip and the bite's plunge: fishing3d.ts floatLift, each frame; a soft ring now and then while
          it waits) -->
-    <i class="m3n" {@attach w.at({ bare: true, x: l.x, z: l.z, h: 4, always: true, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out, art: () => scene?.querySelector('[data-bobber]'),
+    <i class="m3n" {@attach t3({ x: l.x, z: l.z, h: 4, always: true, live: () => floatAt(l), m3: { key: 'tools/bobber', id: 'bobber', water: true, off: !out, art: () => scene?.querySelector('[data-bobber]'),
       emit: out && !under ? { kind: 'ripple', every: 2600, size: 0.45 } : undefined,
       line: () => {
         // (a hand's reach toward the float, however far it is)
@@ -1499,13 +1506,13 @@
   {/if}
   {#each bugs as b (b.n)}
     <!-- (its moves and its turns: bug3, each frame; it fades in where it comes, and out over its leave's end) -->
-    <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEls[b.n],
+    <i class="m3n" {@attach t3({ x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => bug3(b), m3: { key: `critters/${b.id}`, id: bugId(b), get yaw() { return bugYaw(b); }, get flap() { return mos.get(srcBug(b).id)?.flap ?? 0; }, get off() { return bugOff(b); }, art: () => bugEls[b.n],
       // perched on a trunk: flat on its bark, its back to the camera (read each frame, as its yaw: a turn or a perch
       // read here made the attach build its node again)
       get pitch() { return b.sat && (b.place === 'trunk' || b.place === 'palm') ? (b.flip ? -1 : 1) * Math.PI / 2 : 0; } } })} {@attach mirrorBug(b)}></i>
     {#if b.id === 'dung-beetle'}
       <!-- NH's dung beetle rolls a snowball before it (critterMotion3d.ts ball3) -->
-      <i class="m3n" {@attach w.at({ bare: true, x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => ball3(b), m3: { key: 'critters/dung-beetle-ball', id: `ball-${b.n}`, get yaw() { return bugYaw(b); }, get pitch() { return ballRoll(b); }, get off() { return ballOff(b); } } })}></i>
+      <i class="m3n" {@attach t3({ x: b.ax, z: b.az, lift: 0, h: 4, always: true, live: () => ball3(b), m3: { key: 'critters/dung-beetle-ball', id: `ball-${b.n}`, get yaw() { return bugYaw(b); }, get pitch() { return ballRoll(b); }, get off() { return ballOff(b); } } })}></i>
     {/if}
   {/each}
   {/if}

@@ -83,7 +83,7 @@ export interface V3 {
   /** Asleep (dozing where it sits), read each frame. */
   asleep?: () => boolean;
 }
-interface M3 {
+export interface M3 {
   key: string;
   yaw?: number;
   /** Tipped about its own x (radians): a bug flat on a trunk's bark. */
@@ -122,13 +122,13 @@ interface M3 {
   art?: () => Element | null | undefined;
 }
 /** A node the 3D island draws as a model: its id, its art key, where it is now. */
-interface Model3 {
+export interface Model3 {
   id: string;
   m3: M3;
   x: number;
   z: number;
   lift: number;
-  el: HTMLElement;
+  el: HTMLElement | null;
   shown: boolean;
 }
 
@@ -302,7 +302,8 @@ export class World {
    *  `nodes:` the latest move's tag, perf.rest's nd1). */
   going: 'walk' | `nodes:${string}` | null = null;
   private lastCam = NaN;
-  private win: [number, number] = [-Infinity, Infinity];
+  /** The world z window nodes are placed in (BEHIND … AHEAD of the camera; things3.ts reads it too). */
+  win: [number, number] = [-Infinity, Infinity];
   private hook: ((ts: number) => boolean | 'ambient') | null = null;
   /** The game's own clock under the 3D island (docs/decisions.md "The island in 3D"): the engine steps the World in
    *  its frames (the DOM in step with the picture), and this steps it whenever no frame has for SIM_MS while anything

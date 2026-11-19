@@ -28,7 +28,7 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
   treat; his mode, playing), `props()` the day's cake, arch, toys, pumpkins and tape deck, `shakes()` a shake's drops, nests, swarm and dangling bug, `board()` its 「！」, and `goal(tree)`, `fruit(tree)`, `fxLog()` the
   rest (island/probe.ts: read off the DOM island for now, held to it by probe.spec; my float is `__fish.line()`;
   e2e/island.ts's `villager`, `walking`, `feetOf`, `pointOn`, `goalTree`, `fruitOn`, `piece`, `watered`, `critter`,
-  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, `shakesOut`, `dropsOut`, `boardUnseen`, `tapBoard`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). A new interaction comes with its hook; a spec reaching
+  `isOut`, `float`, `diveNow`, `findsOut`, `findCount`, `careOut`, `daySpots`, `visitorOut`, `visitorsOut`, `propsOut`, `shakesOut`, `dropsOut`, `boardUnseen`, `tapBoard`, and watchComings'/watchFor's `{ actor, is }` (watchFor's `{ visitor, is }` too) on top). `__world3d.twins()` is the things3 check (world3d/things3.ts: what the 3D island draws, by id; a DOM `m3` node and a thing sharing an id are compared each frame while a group of models moves over). A new interaction comes with its hook; a spec reaching
   for `elementFromPoint`, a DOM island selector or a fixed coordinate means a hook is missing: island/specSelectors.test
   fails a spec naming a moved family's selectors (`// r4-dom:` marks the few left for the 3D pick's steps).
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's

@@ -17,6 +17,7 @@
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
   import { actors, livePos } from '../motion/director.svelte.ts';
   import type { Proj3, V3, World } from '../island/camera.svelte.ts';
+  import { checkTwins, model3, models3, twinFrame, twins } from './things3.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
@@ -610,7 +611,7 @@
   function nodeModels(): Set<string> {
     const winter = season === 'winter', out = new Set<string>(), { hour, minute } = jst(minuteNow());
     const keys = date ? dayFindKeys(date, (hour * 60 + minute) * 60_000, season, islandSeed()) : new Set<string>();
-    for (const node of world.models3()) if (node.m3?.key) keys.add(node.m3.key);
+    for (const node of models3(world)) if (node.m3?.key) keys.add(node.m3.key);
     for (const k of keys) {
       const a = keyModel(k, winter);
       if (a) out.add(a.m);
@@ -624,8 +625,8 @@
     let moving: boolean | 'ambient' = false;
     fishing = false;
     emitting = false;
-    for (const node of world.models3()) {
-      const n = world.model3(node);
+    for (const node of models3(world)) {
+      const n = model3(world, node);
       const a = n.m3.key ? keyModel(n.m3.key, winter) : null, drawn = !!a || !!n.m3.emit;
       const art = n.m3.art ? n.m3.art() : n.el;
       if (art && marked.get(art) !== drawn) {
@@ -1092,6 +1093,7 @@
       // (the sky's clouds behind the canvas and the island's CSS loops step in its frames: island/clouds.ts)
       stepHeld(t);
       const more = world.step(t);
+      twinFrame(world);
       const camMoved = e.rev() !== revWas;
       revWas = e.rev();
       const moving = mirror(e, t);
@@ -1155,7 +1157,10 @@
     });
     ro.observe(canvas);
     // the e2e's and the console's hooks (testMode.ts testHooks: never on a live phone, a hook holds the engine)
+    if (testHooks()) checkTwins(world);
     if (testHooks()) window.__world3d = {
+      /** The things3 twin check (R4 step 4): nodes and things of one id compared each frame, and what differed. */
+      twins: () => twins(world),
       stats: () => e.stats(), swaps: () => swaps.slice(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
       zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx),
