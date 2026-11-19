@@ -15,6 +15,7 @@
   import { folder, lengthCode, seatsCode } from '../online.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, type Line } from '../sentences.ts';
+  import { loadMiniData, type MiniData } from '../mini/data.ts';
   import { listen, nameOf, online, startOnline, updateNeeded } from '../online.svelte.ts';
   import { newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
   import { s } from '../i18n.ts';
@@ -42,16 +43,17 @@
   // (raw: never proxied, each asked for once: an effect setting them again on every run looped in WebKit)
   let words = $state.raw<Words | null>(null);
   let lines = $state.raw<readonly Line[] | null>(null);
+  let mini = $state.raw<MiniData | null>(null);
   const held = $derived(online.cur.log.length > 0 && !online.cur.log.some((m) => m.a === 'end'));
   let asking = false;
   $effect(() => {
-    if (!active || !held || asking || untrack(() => words && lines)) return;
+    if (!active || !held || asking || untrack(() => words && lines && mini)) return;
     asking = true;
-    Promise.all([loadWords(), loadSentences()]).then(([w, l]) => ((words = w), (lines = l)), () => (asking = false));
+    Promise.all([loadWords(), loadSentences(), loadMiniData()]).then(([w, l, m]) => ((words = w), (lines = l), (mini = m)), () => (asking = false));
   });
   const fold = folder();
   const running = $derived.by(() => {
-    const g = held && words && lines ? fold(online.cur.log, { words, lines, name: nameOf }) : null;
+    const g = held && words && lines && mini ? fold(online.cur.log, { words, lines, mini, name: nameOf }) : null;
     return !!g && g.phase.k !== 'end';
   });
 

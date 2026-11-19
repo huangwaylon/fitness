@@ -99,7 +99,10 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
 **On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '3'. The logic is `lib/sugoroku/mini/` (pure,
 tested), the screens `components/mini/`; design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
 なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered
-(`mini/offer.ts OFFERED`: adding one changes what a landing deals, so it goes with a RULES bump).
+(`mini/offer.ts OFFERED`: adding one changes what a landing deals, so it goes with a RULES bump). The written content
+(`mini/data/*.json`: おつかい's, 返事はどれ？'s) is lazy (`lib/sugoroku/mini/data.ts`, the `sg` chunks, cached on first
+use, not precached), loaded with the words and lines into the fold's `Ctx.mini`; a deal copies what its rounds use
+into the state.
 
 - **The stone** (GEN 2 boards): a ことば stone with the みんなで！ mark (`Space.mini`), 2–3 a route, 6 apart, none in a
   route's first 5 steps or last 3, never a fork or a join, play 1.5 in the routes' balance (a fork's short way may carry

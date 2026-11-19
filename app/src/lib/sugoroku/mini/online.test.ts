@@ -22,6 +22,7 @@ import { MINI_IDS, type MiniId } from './registry.ts';
 import { OFFERED } from './offer.ts';
 import { chainCheck, chainTurn, letterOf } from './chain.ts';
 import { requestCode, rightSlots } from './shopping.ts';
+import { loadMiniData } from './data.ts';
 
 vi.mock('./flag.ts', () => ({ MINIS: true }));
 // (a game without its screen yet is never offered: its tables' games offer every game, this file's switch)
@@ -34,7 +35,7 @@ afterEach(() => void (hook.all = false));
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt')));
-const ctx = { words, lines: linesJson as unknown as Line[], name: (w: Who) => w };
+const ctx = { words, lines: linesJson as unknown as Line[], mini: await loadMiniData(), name: (w: Who) => w };
 const G = 'minigame01';
 type Body = Omit<Move, 'g' | 'i' | 'who'>;
 

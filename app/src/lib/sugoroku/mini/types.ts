@@ -7,14 +7,16 @@ import type { Who } from '#lib/types.ts';
 import type { Level } from '../game.ts';
 import type { Words } from '../words.ts';
 import type { Line } from '../sentences.ts';
+import type { MiniData } from './data.ts';
 
 export type { MiniId } from './registry.ts';
 
 /** A play's fields (the wire's `mp`: contract/live-protocol.ts): a word, an index (0–63), a count (0–99), a flag, a
  *  chip or control code (`op`: [a-z0-9]{1,16}). */
 export interface Play { w?: string; k?: number; n?: number; y?: 1; op?: string }
-/** What a game reads besides its state: the words (accept, everyday Japanese) and the ぶん lines. */
-export interface Ctx { words: Words; lines: readonly Line[] }
+/** What a game reads besides its state: the words (accept, everyday Japanese), the ぶん lines and the written content
+ *  (data.ts: a deal's, copied into its state). */
+export interface Ctx { words: Words; lines: readonly Line[]; mini: MiniData }
 /** A seat present (in seat order), its English level. */
 export interface Hand { who: Who; level: Level }
 export interface Deal {

@@ -1,12 +1,13 @@
 // 英語すごろく on several phones (docs/sugoroku.md "Online"): a game is its moves (contract/live-protocol.ts SgIntent),
 // each phone folding them in order through the same pure rules (game.ts), so every phone shows the same game. A move
 // counts only from whose turn it is (the start and 終了 from anyone at the table); one that changes nothing is a no-op.
-// The words and lines must be in (an everyday word's bonus, a ぶん's line are the fold's too). How the moves are kept
+// The words, lines and mini-games' content (mini/data.ts) must be in (an everyday word's bonus, a ぶん's line are the fold's too). How the moves are kept
 // and heard (the races) is wire.ts's.
 import type { Who } from '#lib/types.ts';
 import { choose, eventDone, giveLetter, finish, homeDone, newGame, pictureDone, playWord, sentenceAsWord, sentenceDone, spin, swap, tried, type Game, type Length, type Seat } from './game.ts';
 import { pickSentence, type Line } from './sentences.ts';
 import type { Words } from './words.ts';
+import type { MiniData } from './mini/data.ts';
 import { layoutKey } from './family.ts';
 import { ID_LEN, genOfRules, playsRules, seatsOf, type Move } from './wire.ts';
 import { closeMini, openMini, playMini } from './mini/turn.ts';
@@ -28,7 +29,7 @@ function lineFor(g: Game, lines: readonly Line[]) {
 }
 
 /** One move on a game (null: the start's, to make one). */
-export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; name: (w: Who) => string }): Game | null {
+export function applyMove(g: Game | null, m: Move, ctx: { words: Words; lines: readonly Line[]; mini: MiniData; name: (w: Who) => string }): Game | null {
   if (m.a === 'start') {
     // (a start on another build's rules: nothing here, wire.ts otherRules)
     if (g || !m.s || !playsRules(m.r)) return g;
@@ -80,7 +81,7 @@ export const foldMoves = (moves: readonly Move[], ctx: Ctx): Game | null => fold
 export function folder(): (moves: readonly Move[], ctx: Ctx) => Game | null {
   let done: Move[] = [], g: Game | null = null, key: unknown[] = [];
   return (moves, ctx) => {
-    const k = [ctx.words, ctx.lines, moves[0], ...seatsOf(moves[0]?.s ?? '').map((x) => ctx.name(x.who))];
+    const k = [ctx.words, ctx.lines, ctx.mini, moves[0], ...seatsOf(moves[0]?.s ?? '').map((x) => ctx.name(x.who))];
     const grew = k.length === key.length && k.every((x, i) => x === key[i]) && done.length <= moves.length && done.every((m, i) => m === moves[i]);
     if (!grew) (done = []), (g = null), (key = k);
     for (let i = done.length; i < moves.length && moves[i].i === i; i++) (g = applyMove(g, moves[i], ctx)), done.push(moves[i]);

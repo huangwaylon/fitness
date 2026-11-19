@@ -9,7 +9,6 @@
 // sheet's). Stars to everyone present: 2 a reply found, +2 when all four were found with no おしい.
 import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
-import data from './data/replies.json';
 import { isStage } from './hands.ts';
 import { capStars } from './stars.ts';
 import type { Deal, Hand, MiniGame, MiniMade, Play, Result } from './types.ts';
@@ -17,7 +16,6 @@ import type { Deal, Hand, MiniGame, MiniMade, Play, Result } from './types.ts';
 /** An exchange: a line, the reply that fits, three that don't (the closest first), each [English, Japanese]; its
  *  level (1 A1, 2 A2), topic, and the フレーズ card it came from (`clip/qid`), when it did. */
 export interface Exchange { id: string; t: string; lv: 1 | 2; q: [string, string]; a: [string, string]; x: [string, string][]; src?: string }
-export const EXCHANGES: readonly Exchange[] = data as Exchange[];
 
 export const REPLY_ROUNDS = 4;
 export const REPLY_TURN_MS = 15_000;
@@ -25,8 +23,8 @@ const FOUND = 2, CLEAN = 2;
 
 interface ReplyRound {
   asker: Who;
-  /** EXCHANGES' index. */
-  ex: number;
+  /** Its exchange (data.ts: the deal's). */
+  ex: Exchange;
   /** Each replier's cards: 0 the reply that fits, 1–3 the exchange's `x` (1 the closest). */
   hands: Partial<Record<Who, number[]>>;
 }
@@ -44,7 +42,7 @@ export interface ReplyState {
 /** A card's line [English, Japanese]. */
 export const cardLine = (ex: Exchange, card: number): [string, string] => (card === 0 ? ex.a : ex.x[card - 1]);
 
-function dealRounds(d: Deal): ReplyRound[] {
+function dealRounds(d: Deal, EXCHANGES: readonly Exchange[]): ReplyRound[] {
   const r = seeded(`${d.seed}:reply`), n = d.seats.length;
   const from = Math.max(0, d.seats.findIndex((s) => s.who === d.lander));
   const low = Math.min(...d.seats.map((s) => s.level));
@@ -66,12 +64,12 @@ function dealRounds(d: Deal): ReplyRound[] {
       while (h.length < size && wrong.length) h.push(s.level === 1 ? wrong.pop()! : wrong.shift()!);
     }
     for (const s of order) hands[s.who] = shuffle(hands[s.who]!, r);
-    return { asker: asker.who, ex, hands };
+    return { asker: asker.who, ex: EXCHANGES[ex], hands };
   });
 }
 
 /** The round's exchange, or null when all are played. */
-export const replyOn = (s: ReplyState): Exchange | null => (s.r < s.rounds.length ? EXCHANGES[s.rounds[s.r].ex] : null);
+export const replyOn = (s: ReplyState): Exchange | null => s.rounds[s.r]?.ex ?? null;
 
 function nextRound(s: ReplyState, by: Who | null): ReplyState {
   const misses = Object.values(s.tried).reduce((n, t) => n + (t?.length ?? 0), 0);
@@ -79,7 +77,7 @@ function nextRound(s: ReplyState, by: Who | null): ReplyState {
 }
 
 export const reply: MiniGame<ReplyState> = {
-  deal: (d) => ({ seats: [...d.seats], rounds: dealRounds(d), r: 0, stage: 0, tried: {}, results: [] }),
+  deal: (d, ctx) => ({ seats: [...d.seats], rounds: dealRounds(d, ctx.mini.replies), r: 0, stage: 0, tried: {}, results: [] }),
   play(s, who, p: Play) {
     const round = s.rounds[s.r];
     if (!round) return s;
@@ -95,7 +93,7 @@ export const reply: MiniGame<ReplyState> = {
     const clean = s.results.length === REPLY_ROUNDS && s.results.every((x) => x.by !== null && x.misses === 0);
     const each = FOUND * found.length + (clean ? CLEAN : 0);
     const made: MiniMade[] = s.results.flatMap((res, k) => {
-      const ex = EXCHANGES[s.rounds[k].ex];
+      const ex = s.rounds[k].ex;
       return res.by ? [{ who: res.by, kind: 'sentence' as const, text: `${ex.q[0]} — ${ex.a[0]}`, ja: `${ex.q[1]}—${ex.a[1]}`, stars: FOUND }] : [];
     });
     return { stars: capStars(Object.fromEntries(s.seats.map((x) => [x.who, each])), s.seats), made };

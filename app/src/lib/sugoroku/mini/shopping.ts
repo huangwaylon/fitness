@@ -14,10 +14,9 @@
 import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import { PICTURES } from '../pictures.ts';
-import data from './data/shopping.json';
 import { isStage } from './hands.ts';
 import { capStars } from './stars.ts';
-import type { Deal, Hand, MiniGame, MiniMade, Play, Result } from './types.ts';
+import type { Ctx, Deal, Hand, MiniGame, MiniMade, Play, Result } from './types.ts';
 
 export interface ShopItem {
   /** Its picture (pictures.json `w`). */
@@ -32,10 +31,7 @@ export interface ShopItem {
   ctr: string;
 }
 /** A list: its title, then each line's item and count. */
-type ListRow = [string, ...(string | number)[]];
-export const SHOP_ITEMS: readonly ShopItem[] = data.items as ShopItem[];
-export const SHOP_LISTS: readonly ListRow[] = data.lists as ListRow[];
-const ITEM = new Map(SHOP_ITEMS.map((i) => [i.w, i]));
+export type ShopList = [string, ...(string | number)[]];
 
 /** The containers' chips (むずかしい), in their order on the wire (the code's digit, 1-based); and their plurals. */
 export const BOXES = ['carton', 'loaf', 'jar', 'bar', 'bag', 'bottle', 'pack', 'bunch'] as const;
@@ -53,13 +49,14 @@ export const SHOP_FILL_MS = 20_000;
 const LINE_STARS = 2, FIRST_TRY = 2;
 
 interface Line { w: string; n: number }
-interface ShopRound {
+export interface ShopRound {
   /** The お客さん. */
   asker: Who;
   title: string;
   lines: Line[];
-  /** The word chips (the lines' words and two others), as the code's indices. */
+  /** The word chips (the lines' words and two others), as the code's indices; each one's thing (data.ts: the deal's). */
   words: string[];
+  items: ShopItem[];
   /** The shelf (PICTURES' indices). */
   shelf: number[];
 }
@@ -81,17 +78,20 @@ export interface ShoppingState {
   results: { first: boolean; right: number; of: number }[];
 }
 
-const isBoxed = (i: ShopItem): boolean => !!i.box;
-/** A line's level: やさしい・ふつう countable things only, むずかしい lists with a container. */
-const listsFor = (level: number): number[] => SHOP_LISTS.map((_, k) => k).filter((k) => lineOf(k).some((l) => isBoxed(ITEM.get(l.w)!)) === (level >= 3));
-function lineOf(k: number): Line[] {
-  const row = SHOP_LISTS[k], out: Line[] = [];
+/** A list's lines. */
+function linesOf(row: ShopList): Line[] {
+  const out: Line[] = [];
   for (let i = 1; i < row.length; i += 2) out.push({ w: row[i] as string, n: row[i + 1] as number });
   return out;
 }
 const pictureOf = (w: string): number => PICTURES.findIndex((p) => p.w === w);
+/** A round's chip's thing. */
+const itemOf = (round: Pick<ShopRound, 'words' | 'items'>, w: string): ShopItem => round.items[round.words.indexOf(w)];
 
-function dealRounds(d: Deal): ShopRound[] {
+function dealRounds(d: Deal, { items: ITEMS, lists: LISTS }: Ctx['mini']['shop']): ShopRound[] {
+  const ITEM = new Map(ITEMS.map((i) => [i.w, i]));
+  // (a list's level: やさしい・ふつう countable things only, むずかしい lists with a container)
+  const listsFor = (level: number): number[] => LISTS.map((_, k) => k).filter((k) => linesOf(LISTS[k]).some((l) => !!ITEM.get(l.w)!.box) === (level >= 3));
   const r = seeded(`${d.seed}:shopping`), n = d.seats.length;
   const from = Math.max(0, d.seats.findIndex((s) => s.who === d.lander));
   const taken = new Set<number>(), rounds: ShopRound[] = [];
@@ -100,30 +100,30 @@ function dealRounds(d: Deal): ShopRound[] {
     const pool = listsFor(asker.level).filter((x) => !taken.has(x));
     const pick = pool[Math.floor(r() * pool.length)];
     taken.add(pick);
-    const lines = lineOf(pick).slice(0, asker.level === 1 ? 2 : 3);
+    const lines = linesOf(LISTS[pick]).slice(0, asker.level === 1 ? 2 : 3);
     // the shop's: its lowest level (alone: the asker's own)
     const shop = d.seats.filter((s) => s.who !== asker.who);
     const level = Math.min(...(shop.length ? shop : [asker]).map((s) => s.level));
     const mine = new Set(lines.map((l) => l.w)), sets = new Set(lines.map((l) => PICTURES[pictureOf(l.w)].set));
-    const others = SHOP_ITEMS.filter((i) => !mine.has(i.w));
+    const others = ITEMS.filter((i) => !mine.has(i.w));
     const close = others.filter((i) => sets.has(PICTURES[pictureOf(i.w)].set));
     const fill = level >= 3 ? [...shuffle(close, r), ...shuffle(others, r)] : shuffle([...others], r);
     const extra = [...new Set(fill.map((i) => i.w))].slice(0, SHOP_SHELF - lines.length);
     const shelf = shuffle([...lines.map((l) => l.w), ...extra], r).map(pictureOf);
     const words = shuffle([...lines.map((l) => l.w), ...extra.slice(0, 2)], r);
-    rounds.push({ asker: asker.who, title: SHOP_LISTS[pick][0], lines, words, shelf });
+    rounds.push({ asker: asker.who, title: LISTS[pick][0], lines, words, items: words.map((w) => ITEM.get(w)!), shelf });
   }
   return rounds;
 }
 
 /** A line in the list's Japanese: 「りんご2つ」. */
-export const lineJa = (l: Line): string => `${ITEM.get(l.w)!.ja}${l.n}${ITEM.get(l.w)!.ctr}`;
+export const lineJa = (round: ShopRound, l: Line): string => `${itemOf(round, l.w).ja}${l.n}${itemOf(round, l.w).ctr}`;
 /** The list as the お客さん reads it: 「りんご2つ、バナナ3本」. */
-export const listJa = (round: ShopRound): string => round.lines.map(lineJa).join('、');
+export const listJa = (round: ShopRound): string => round.lines.map((l) => lineJa(round, l)).join('、');
 
-/** A slot in English: "two apples", "an egg", "a loaf of bread", "two bars of chocolate". */
-export function slotText(s: Slot, words: readonly string[]): string {
-  const item = ITEM.get(words[s.word]);
+/** A slot in English: "two apples", "an egg", "a loaf of bread", "two bars of chocolate" (the round's chips). */
+export function slotText(s: Slot, round: Pick<ShopRound, 'items'>): string {
+  const item = round.items[s.word];
   if (!item) return '';
   const box = BOXES[s.box];
   const noun = box ? `${s.many ? BOX_MANY[box] : box} of ${item.of ?? item.w}` : s.many ? item.many ?? item.w : item.w;
@@ -131,8 +131,8 @@ export function slotText(s: Slot, words: readonly string[]): string {
   return `${num} ${noun}`;
 }
 /** The whole request: the frame round its slots ("Can I have two apples, a banana and an orange, please?"). */
-export function requestText(frame: number, slots: readonly Slot[], words: readonly string[]): string {
-  const parts = slots.map((s) => slotText(s, words));
+export function requestText(frame: number, slots: readonly Slot[], round: Pick<ShopRound, 'items'>): string {
+  const parts = slots.map((s) => slotText(s, round));
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0] ?? '';
   const text = (FRAMES[frame] ?? FRAMES[0]).replace('…', list);
   return text[0].toUpperCase() + text.slice(1);
@@ -140,7 +140,7 @@ export function requestText(frame: number, slots: readonly Slot[], words: readon
 /** The right slots for the round's list. */
 export function rightSlots(round: ShopRound): Slot[] {
   return round.lines.map((l) => {
-    const item = ITEM.get(l.w)!;
+    const item = itemOf(round, l.w);
     return { word: round.words.indexOf(l.w), n: l.n, many: l.n > 1, box: item.box ? BOXES.indexOf(item.box as (typeof BOXES)[number]) : -1 };
   });
 }
@@ -174,7 +174,7 @@ export function requestCheck(round: ShopRound, code: string): { slot: number; pa
 export function shopRequest(s: ShoppingState): string | null {
   const round = s.rounds[s.r];
   if (!round || (s.frame === null && !s.shown)) return null;
-  return requestText(s.frame ?? 0, rightSlots(round), round.words);
+  return requestText(s.frame ?? 0, rightSlots(round), round);
 }
 /** The lines the basket has right (each its count exactly). */
 export function basketRight(s: ShoppingState): number {
@@ -192,7 +192,7 @@ function nextRound(s: ShoppingState): ShoppingState {
 const sent = (s: ShoppingState): boolean => s.frame !== null || s.shown;
 
 export const shopping: MiniGame<ShoppingState> = {
-  deal: (d) => ({ seats: [...d.seats], rounds: dealRounds(d), r: 0, stage: 0, tries: 0, frame: null, shown: false, basket: Array(SHOP_SHELF).fill(0), pays: 0, results: [] }),
+  deal: (d, ctx) => ({ seats: [...d.seats], rounds: dealRounds(d, ctx.mini.shop), r: 0, stage: 0, tries: 0, frame: null, shown: false, basket: Array(SHOP_SHELF).fill(0), pays: 0, results: [] }),
   play(s, who, p: Play) {
     const round = s.rounds[s.r];
     if (!round) return s;
@@ -220,7 +220,7 @@ export const shopping: MiniGame<ShoppingState> = {
     const each = all.reduce((n, res) => n + LINE_STARS * res.right + (res.first ? FIRST_TRY : 0), 0);
     const made: MiniMade[] = all.flatMap((res, k) => {
       const round = s.rounds[k];
-      return res.first ? [{ who: round.asker, kind: 'sentence' as const, text: requestText(0, rightSlots(round), round.words), ja: listJa(round), stars: FIRST_TRY }] : [];
+      return res.first ? [{ who: round.asker, kind: 'sentence' as const, text: requestText(0, rightSlots(round), round), ja: listJa(round), stars: FIRST_TRY }] : [];
     });
     return { stars: capStars(Object.fromEntries(s.seats.map((x) => [x.who, each])), s.seats), made };
   }

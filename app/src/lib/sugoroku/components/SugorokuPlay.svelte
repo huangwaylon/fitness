@@ -30,6 +30,7 @@
   import { fnv1a } from '#lib/random.ts';
   import { loadWords, type Words } from '../words.ts';
   import { loadSentences, type Line } from '../sentences.ts';
+  import { loadMiniData, type MiniData } from '../mini/data.ts';
   import { clearGame, loadGame, saveGame } from '../save.ts';
   import { s } from '../i18n.ts';
   import type { Who } from '#lib/types.ts';
@@ -61,13 +62,14 @@
   // an effect that set them again on every run looped in WebKit, the words arriving before the lines)
   let words = $state.raw<Words | null>(null);
   let lines = $state.raw<readonly Line[] | null>(null);
+  let mini = $state.raw<MiniData | null>(null);
   let failed = $state(false);
   let asking = false;
   function load() {
     if (asking) return;
     asking = true;
     failed = false;
-    Promise.all([words ?? loadWords().then((w) => (words = w)), lines ?? loadSentences().then((l) => (lines = l))])
+    Promise.all([words ?? loadWords().then((w) => (words = w)), lines ?? loadSentences().then((l) => (lines = l)), mini ?? loadMiniData().then((m) => (mini = m))])
       .catch(() => (failed = true))
       .finally(() => (asking = false));
   }
@@ -121,7 +123,7 @@
   }
   /** The online game: its moves folded (with the words and lines in: a word's bonus and a ぶん's line are the fold's). */
   const fold = folder();
-  const onlineGame = $derived(words && lines && online.cur.g ? fold(online.cur.log, { words, lines, name: nameOf }) : null);
+  const onlineGame = $derived(words && lines && mini && online.cur.g ? fold(online.cur.log, { words, lines, mini, name: nameOf }) : null);
   const g = $derived(mode === 'online' ? onlineGame : game);
   // the 3D board's die and joy (Board3D): a roll's face; stars made (6+: a jump of joy, else a hop), あがり a jump
   let roll3 = $state<{ n: number; key: number } | null>(null);
@@ -165,9 +167,10 @@
   type Act = Omit<Move, 'g' | 'i' | 'who'>;
   /** A move as this phone's game folds it (passed round: whose turn it is plays it, or a mini-game's seat playing). */
   const applied = (x: Game, m: Act, who = x.players[x.turn].who): Game =>
-    applyMove(x, { ...m, g: '', i: 0, who } as Move, { words: words ?? NO_WORDS, lines: lines ?? [], name: nameOf }) ?? x;
+    applyMove(x, { ...m, g: '', i: 0, who } as Move, { words: words ?? NO_WORDS, lines: lines ?? [], mini: mini ?? NO_MINI, name: nameOf }) ?? x;
   /** (only a word asks the words, and a ことば waits for them) */
   const NO_WORDS: Words = { has: () => false, ja: () => '', from: () => [] };
+  const NO_MINI: MiniData = { shop: { items: [], lists: [] }, replies: [] };
   /** One action, one move: online sent (every phone, this one too, folds it), passed round applied here (`who`: a
    *  mini-game's seat playing; its pick stamped with this phone's clock, mini/clock.ts). */
   function act(m: Act, who?: Who): void {
@@ -406,7 +409,7 @@
               {#if miniResult && Mini}
                 <Mini.Results {g} last={lastOn} onnext={() => (miniResult = false)} />
               {:else if ph.k === 'mini' && Mini}
-                <Mini.Turn {g} {mode} {me} {words} {lines} opened={miniOpened} now={clockNow} here={online.here} views={miniViews} onact={act}
+                <Mini.Turn {g} {mode} {me} {words} {lines} {mini} opened={miniOpened} now={clockNow} here={online.here} views={miniViews} onact={act}
                   onview={viewing ? (v) => sendView({ p: 'mini', v }) : undefined} />
               {:else if ph.k === 'mini' || miniResult}
                 <p class="note centre">{s('loading')}</p>

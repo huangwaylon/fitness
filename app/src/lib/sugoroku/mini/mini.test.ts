@@ -21,14 +21,16 @@ import { LONG_BONUS, MARKET_FINDS, MARKET_TILES, market, marketCheck, marketHint
 import { SORT_STREAM, binOf, sort, sortStream } from './sort.ts';
 import { SPELL_ROUNDS, spell, spellWord, type SpellState } from './spell.ts';
 import { mayPlace, nextWord, together, type TogetherState } from './together.ts';
-import { BOXES, FRAMES, SHOP_ASK_MS, SHOP_FILL_MS, SHOP_ITEMS, SHOP_LISTS, SHOP_ROUNDS, SHOP_SHELF, basketRight, lineJa, listJa, readCode, requestCheck, requestCode, requestText, rightSlots, shopRequest, shopping, slotText, type ShoppingState } from './shopping.ts';
-import { EXCHANGES, REPLY_ROUNDS, REPLY_TURN_MS, cardLine, reply, replyOn, type ReplyState } from './reply.ts';
+import { BOXES, FRAMES, SHOP_ASK_MS, SHOP_FILL_MS, SHOP_ROUNDS, SHOP_SHELF, basketRight, lineJa, listJa, readCode, requestCheck, requestCode, requestText, rightSlots, shopRequest, shopping, slotText, type ShoppingState } from './shopping.ts';
+import { REPLY_ROUNDS, REPLY_TURN_MS, cardLine, reply, replyOn, type ReplyState } from './reply.ts';
 import { NUMBER_STREAM, inWords, numberStream, numbers, yearWords, type NumberPrompt } from './numbers.ts';
 import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
+import { loadMiniData } from './data.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
-const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[] };
+const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[], mini: await loadMiniData() };
+const { shop: { items: SHOP_ITEMS, lists: SHOP_LISTS }, replies: EXCHANGES } = ctx.mini;
 const H = (who: Who, level: 1 | 2 | 3 = 2): Hand => ({ who, level });
 const deal = (seats: Hand[], seed = 'd', lander: Who = seats[0].who): Deal => ({ seed, seats, lander, used: { pictures: new Set(), lines: new Set() } });
 const run = <S>(g: MiniGame<S>, s: S, plays: readonly [Who, Play][]): S => plays.reduce((x, [w, p]) => g.play(x, w, p, ctx), s);
@@ -584,20 +586,21 @@ describe('おつかい', () => {
     }
   });
   it('the list in Japanese and the request in English: counters, a / an, plurals, containers, and', () => {
-    const round = { asker: 'A' as Who, title: 't', lines: [{ w: 'apple', n: 2 }, { w: 'egg', n: 1 }, { w: 'bread', n: 2 }], words: ['bread', 'apple', 'egg'], shelf: [] };
+    const item = (w: string) => SHOP_ITEMS.find((i) => i.w === w)!, chips = (...ws: string[]) => ({ words: ws, items: ws.map(item) });
+    const round = { asker: 'A' as Who, title: 't', lines: [{ w: 'apple', n: 2 }, { w: 'egg', n: 1 }, { w: 'bread', n: 2 }], ...chips('bread', 'apple', 'egg'), shelf: [] };
     expect(listJa(round)).toBe('りんご2つ、卵1個、食パン2袋');
-    expect(requestText(0, rightSlots(round), round.words)).toBe('Can I have two apples, an egg and two loaves of bread, please?');
-    expect(requestText(3, rightSlots(round), round.words)).toBe('Two apples, an egg and two loaves of bread, please.');
-    expect(requestText(1, rightSlots(round).slice(0, 1), round.words)).toBe('I’d like two apples, please.');
-    expect(slotText({ word: 0, n: 1, many: false, box: BOXES.indexOf('loaf') }, round.words)).toBe('a loaf of bread');
-    expect(slotText({ word: 0, n: 3, many: true, box: -1 }, ['tomato'])).toBe('three tomatoes');
-    expect(slotText({ word: 0, n: 2, many: true, box: BOXES.indexOf('pack') }, ['strawberry'])).toBe('two packs of strawberries');
-    expect(lineJa({ w: 'grapes', n: 1 })).toBe('ぶどう1房');
+    expect(requestText(0, rightSlots(round), round)).toBe('Can I have two apples, an egg and two loaves of bread, please?');
+    expect(requestText(3, rightSlots(round), round)).toBe('Two apples, an egg and two loaves of bread, please.');
+    expect(requestText(1, rightSlots(round).slice(0, 1), round)).toBe('I’d like two apples, please.');
+    expect(slotText({ word: 0, n: 1, many: false, box: BOXES.indexOf('loaf') }, round)).toBe('a loaf of bread');
+    expect(slotText({ word: 0, n: 3, many: true, box: -1 }, chips('tomato'))).toBe('three tomatoes');
+    expect(slotText({ word: 0, n: 2, many: true, box: BOXES.indexOf('pack') }, chips('strawberry'))).toBe('two packs of strawberries');
+    expect(lineJa({ ...round, ...chips('grapes') }, { w: 'grapes', n: 1 })).toBe('ぶどう1房');
     // every list's request reads
     for (const k of SHOP_LISTS.keys()) {
       const lines = [1, 3, 5].map((i) => ({ w: SHOP_LISTS[k][i] as string, n: SHOP_LISTS[k][i + 1] as number }));
-      const r2 = { ...round, lines, words: lines.map((l) => l.w) };
-      expect(requestText(2, rightSlots(r2), r2.words)).toMatch(/^Could I get (?:an? |two |three |four |five |six )[a-z ,]+ and (?:an? |two |three |four |five |six )[a-z ]+, please\?$/);
+      const r2 = { ...round, lines, ...chips(...lines.map((l) => l.w)) };
+      expect(requestText(2, rightSlots(r2), r2)).toMatch(/^Could I get (?:an? |two |three |four |five |six )[a-z ,]+ and (?:an? |two |three |four |five |six )[a-z ]+, please\?$/);
     }
     expect(FRAMES).toHaveLength(4);
   });
@@ -615,13 +618,13 @@ describe('おつかい', () => {
     // only the お客さん's, once
     expect(shopping.play(s0, 'A', { op: code }, ctx)).toBe(s0);
     const sent = shopping.play(s0, 'B', { op: code }, ctx);
-    expect([sent.frame, shopRequest(sent)]).toEqual([2, requestText(2, right, round.words)]);
+    expect([sent.frame, shopRequest(sent)]).toEqual([2, requestText(2, right, round)]);
     expect(shopping.play(sent, 'B', { op: code }, ctx)).toBe(sent);
     const miss = wrong((sl) => ({ many: !sl.many }));
     const once = shopping.play(s0, 'B', { op: miss }, ctx);
     expect([once.tries, shopRequest(once)]).toEqual([1, null]);
     const twice = shopping.play(once, 'B', { op: miss }, ctx);
-    expect([twice.shown, shopRequest(twice)]).toEqual([true, requestText(0, right, round.words)]);
+    expect([twice.shown, shopRequest(twice)]).toEqual([true, requestText(0, right, round)]);
   });
   it('the shop fills the basket (the お客さん can’t; alone, they do), hands it over: right, the round over; else one more go', () => {
     const round = s0.rounds[0];
@@ -712,10 +715,10 @@ describe('返事はどれ？', () => {
     expect(MINIS.reply.ms / REPLY_TURN_MS).toBe(REPLY_ROUNDS);
     for (let k = 0; k < 50; k++) {
       const s = reply.deal(deal(seats, `re${k}`), ctx);
-      expect(new Set(s.rounds.map((r) => r.ex)).size).toBe(REPLY_ROUNDS);
+      expect(new Set(s.rounds.map((r) => r.ex.id)).size).toBe(REPLY_ROUNDS);
       for (const round of s.rounds) {
         // (a table with a やさしい seat: A1 lines)
-        expect(EXCHANGES[round.ex].lv).toBe(1);
+        expect(round.ex.lv).toBe(1);
         expect(round.hands[round.asker]).toBeUndefined();
         const cards = Object.values(round.hands).flat();
         expect(cards.sort()).toEqual([0, 1, 2, 3]);
@@ -728,7 +731,7 @@ describe('返事はどれ？', () => {
     const two = reply.deal(deal([H('A', 3), H('B', 2)], 'two'), ctx);
     for (const round of two.rounds) expect(Object.values(round.hands).map((h) => h!.slice().sort())).toEqual([[0, 1, 2]]);
     const strong = reply.deal(deal([H('A', 2), H('B', 3)], 'lv'), ctx);
-    expect(strong.rounds.some((r) => EXCHANGES[r.ex].lv === 2)).toBe(true);
+    expect(strong.rounds.some((r) => r.ex.lv === 2)).toBe(true);
     const solo = reply.deal(deal([H('A', 1)], 'solo'), ctx);
     expect(solo.rounds[0].hands.A).toHaveLength(3);
     expect(cardLine(EXCHANGES[0], 0)).toEqual(EXCHANGES[0].a);
@@ -745,7 +748,7 @@ describe('返事はどれ？', () => {
     if (wrongK >= 0) s = reply.play(s, who as Who, { k: wrongK }, ctx);
     s = reply.play(s, who as Who, { k: hand!.indexOf(0) }, ctx);
     expect([s.r, s.results[0].by, s.results[0].misses]).toEqual([1, who, wrongK >= 0 ? 2 : 1]);
-    expect(replyOn(s)).toBe(EXCHANGES[s.rounds[1].ex]);
+    expect(replyOn(s)).toBe(s.rounds[1].ex);
     const next = { op: 'next', k: s.stage };
     const t = reply.play(s, 'A', next, ctx);
     expect([t.r, t.results[1].by]).toEqual([2, null]);
@@ -761,7 +764,7 @@ describe('返事はどれ？', () => {
     const res = reply.close(s);
     expect(res.stars).toEqual({ A: 10, B: 10, G: 10 });
     expect(res.made).toHaveLength(4);
-    expect(res.made[0].text).toBe(`${EXCHANGES[s.rounds[0].ex].q[0]} — ${EXCHANGES[s.rounds[0].ex].a[0]}`);
+    expect(res.made[0].text).toBe(`${s.rounds[0].ex.q[0]} — ${s.rounds[0].ex.a[0]}`);
     expect(reply.close(s0)).toEqual({ stars: {}, made: [] });
     const one = reply.play(s0, holder(s0)[0] as Who, { k: holder(s0)[1]!.indexOf(0) }, ctx);
     expect(reply.close(one).stars).toEqual({ A: 2, B: 2, G: 2 });

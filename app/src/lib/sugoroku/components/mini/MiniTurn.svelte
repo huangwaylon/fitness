@@ -16,6 +16,7 @@
   import { MINIS, type MiniId } from '../../mini/registry.ts';
   import type { MiniTimes } from '../../mini/clock.ts';
   import { stagePlay } from '../../mini/hands.ts';
+  import type { MiniData } from '../../mini/data.ts';
   import type { Ctx, Play } from '../../mini/types.ts';
   import type { Game, MiniOn } from '../../game.ts';
   import type { Words } from '../../words.ts';
@@ -33,6 +34,7 @@
     me: Who;
     words: Words | null;
     lines: readonly Line[] | null;
+    mini: MiniData | null;
     /** Online: the pick's room stamp (wire.ts miniOpenedAt). */
     opened?: number;
     /** The clock the times are on (online the relay's, passed round the phone's). */
@@ -46,17 +48,17 @@
     /** Online: my live frame, for the others. */
     onview?: (v: string) => void;
   }
-  let { g, mode, me, words, lines, opened, now, here, views, onact, onview }: Props = $props();
+  let { g, mode, me, words, lines, mini, opened, now, here, views, onact, onview }: Props = $props();
 
   const ph = $derived(g.phase.k === 'mini' ? g.phase : null);
   const on = $derived<MiniOn | null>(ph?.on ?? null);
   const lander = $derived(g.players[g.turn]);
   const nameOf = (w: Who) => g.players.find((p) => p.who === w)?.name ?? w;
-  const ctx = $derived<Ctx | null>(words && lines ? { words, lines } : null);
+  const ctx = $derived<Ctx | null>(words && lines && mini ? { words, lines, mini } : null);
   const local = $derived(mode === 'local');
 
   // ---- the pick
-  const canPick = $derived(local || lander.who === me);
+  const canPick = $derived((local || lander.who === me) && !!ctx);
   /** The seats this phone sees here (the lander's and those present): only they are dealt in. */
   const present = $derived(g.players.map((p) => p.who).filter((w) => w === me || here.includes(w)).join(''));
   const timeOf = (id: MiniId) => {

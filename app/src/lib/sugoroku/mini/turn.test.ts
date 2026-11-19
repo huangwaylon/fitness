@@ -15,9 +15,10 @@ import { closeMini, miniOn, openMini, playMini } from './turn.ts';
 import { sortStream, binOf } from './sort.ts';
 import type { Ctx } from './types.ts';
 import { OFFERED } from './offer.ts';
+import { loadMiniData } from './data.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
-const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[] };
+const ctx: Ctx = { words: wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt'))), lines: linesJson as unknown as Line[], mini: await loadMiniData() };
 const seat = (who: Who, level: Level) => ({ who, name: who, level });
 
 /** A game walked until its lander stands on a みんなで！ stone (its options up), on a GEN 2 board. */
@@ -122,7 +123,7 @@ describe('a みんなで！ stone, passed round', () => {
     // (not played: its options)
     expect(landOn({ ...back, minis: [] }, pos)?.phase.k).toBe('mini');
   });
-  it('whole games on GEN 2 boards: every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
+  it('whole games on GEN 2 boards every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
     const seen = new Set<string>();
     for (let k = 0; k < 24; k++) {
       let g = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2));

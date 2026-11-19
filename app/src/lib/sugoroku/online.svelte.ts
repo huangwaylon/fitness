@@ -23,6 +23,7 @@ import { OUTBOX, RULES, answered, beaten, heard, invited, isMiniMove, newGameId,
 import { invite, readAnswered } from './invite.svelte.ts';
 import type { Words } from './words.ts';
 import type { Line } from './sentences.ts';
+import type { MiniData } from './mini/data.ts';
 import { s } from './i18n.ts';
 import { encode, fit, type View } from './view.ts';
 
@@ -134,13 +135,13 @@ function unsend(i: Intent, why: 'refused' | 'drop'): void {
 // the invitation's fold (is the game over?): the rules, words and lines, asked for only when one may ask; kept up
 // move by move (online.ts folder: the effect runs on every model change and every move heard)
 type Fold = ReturnType<typeof import('./online.ts').folder>;
-let ctx = $state.raw<{ fold: Fold; words: Words; lines: readonly Line[] } | null>(null);
+let ctx = $state.raw<{ fold: Fold; words: Words; lines: readonly Line[]; mini: MiniData } | null>(null);
 let asking = false;
 function loadCtx(): void {
   if (asking) return;
   asking = true;
-  Promise.all([import('./online.ts'), import('./words.ts').then((w) => w.loadWords()), import('./sentences.ts').then((x) => x.loadSentences())])
-    .then(([o, words, lines]) => (ctx = { fold: o.folder(), words, lines }), () => (asking = false));
+  Promise.all([import('./online.ts'), import('./words.ts').then((w) => w.loadWords()), import('./sentences.ts').then((x) => x.loadSentences()), import('./mini/data.ts').then((x) => x.loadMiniData())])
+    .then(([o, words, lines, mini]) => (ctx = { fold: o.folder(), words, lines, mini }), () => (asking = false));
 }
 /** The invitation, kept up with the game held (a minute's tick while one shows: a game left goes stale). */
 function watchInvite(): void {
@@ -150,7 +151,7 @@ function watchInvite(): void {
     const cur = online.cur, model = week.model;
     const ask = invited({ log: cur.log, me: model?.me ?? null, at: cur.at ?? 0, now: clock(), answered: invite.answered, over: false });
     if (ask && !ctx) loadCtx();
-    const g = ask && ctx ? ctx.fold(cur.log, { words: ctx.words, lines: ctx.lines, name: nameOf }) : null;
+    const g = ask && ctx ? ctx.fold(cur.log, { words: ctx.words, lines: ctx.lines, mini: ctx.mini, name: nameOf }) : null;
     const who = cur.log[0]?.who;
     invite.cur = g && g.phase.k !== 'end' && who ? { g: cur.g, who, text: s('invite', { name: nameOf(who) }), join: s('join') } : null;
   });

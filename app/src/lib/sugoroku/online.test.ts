@@ -14,11 +14,12 @@ import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import type { Line } from './sentences.ts';
 import type { Who } from '#lib/types.ts';
+import { loadMiniData } from './mini/data.ts';
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday);
 const lines = linesJson as unknown as Line[];
-const ctx = { words, lines, name: (w: Who) => w };
+const ctx = { words, lines, mini: await loadMiniData(), name: (w: Who) => w };
 
 /** Play a game as its phones would: each turn's player makes the move its screen offers. */
 function playMoves(n = 400, id = 'game01'): Move[] {

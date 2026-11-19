@@ -275,8 +275,9 @@ const FEATURE_CHUNK: [RegExp, (m: RegExpExecArray) => string][] = [
   // ごはん's barcode scanner: its level (FoodScan, its lookup scan.ts, lib/scan/) and its decoder (zxing-wasm, its wasm
   // beside it as assets/zxing_reader.<hash>.wasm: lib/scan/decode.ts)
   [/\/src\/lib\/scan\/|\/src\/lib\/components\/food\/(?:FoodScan\.svelte|scan\.ts)$/, () => 'scan'],
-  // 英語すごろく's word lists (lib/sugoroku/words.ts, sentences.ts: imported when a game opens)
-  [/\/src\/lib\/sugoroku\/(?:words\.txt|accept\.txt|everyday\.json|sentences\.json)$/, () => 'sg']
+  // 英語すごろく's word lists and mini-games' content (lib/sugoroku/words.ts, sentences.ts, mini/data.ts: imported when a
+  // game opens)
+  [/\/src\/lib\/sugoroku\/(?:words\.txt|accept\.txt|everyday\.json|sentences\.json|mini\/data\/[\w-]+\.json)$/, () => 'sg']
 ];
 /** A chunk's feature: all its modules one feature's (or a package's only it uses: svelte/transition with the board). */
 const featureOf = (ids: readonly string[]): string | null => {
