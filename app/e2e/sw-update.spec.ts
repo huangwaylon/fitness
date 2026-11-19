@@ -228,6 +228,10 @@ const fresh = (page: Page) => page.evaluate(async () => {
 // (the phones, 11-11..11-14: a cold open into a waiting deploy showed the old build's HUD ~3 s, then reloaded under the
 // player; now the launch's page is the deploy's when it's in time, no reload into it)
 test('a launch after a deploy is the deploy\'s page, its lazy sheets loading under the older worker; no deploy: the cached shell (same, then skip); late or offline: the cached shell (service-worker/caches.ts raceShell)', { tag: '@chromium' }, async ({ page, context }) => {
+  // (a first install, its ~500 files, then seven launches, the last racing the deploy's install: ~16 s in CI, past 30 s
+  // on a loaded shard (gate run 44550628706, at the deploy's islandUp; here under load 3-30 s, smooth, every launch
+  // `net`/`cache` as due, the boot watchdog never in): the budget its siblings with an install have)
+  test.setTimeout(90_000);
   // (the page's own version checks kept from the worker from the start: noOwnChecks; here unfresh() too would lose
   // to the claim's: CI's `skip` for `same`)
   await noOwnChecks(context);
