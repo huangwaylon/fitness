@@ -146,7 +146,7 @@
   /** The share of a bar the fill takes: the track is 0 to 150 % of the goal, the goal's tick at two thirds. */
   const PFC_SPAN = 150;
   /** A row item's place on the rows' grid (.rows): its label's track and its status's, column `i` of three. */
-  const col = (i: number) => `${i * 3 + 1} / span 2`;
+  const col = (i: number) => `${i + 1}`;
   /** The meals row's name: what a tap does, then each meal's state. */
   const mealsAria = $derived(meals ? `${t(mine ? 'tree.meals.logLabel' : 'tree.meals.seeLabel', { name: person.villagerName })}: ${MAIN_MEALS.map((m) => t(meals[m] ? 'tree.meal.logged' : 'tree.meal.empty', { meal: t(`tree.meal.${m}`) })).join('、')}` : '');
   /** The meals row's and P · F · C's button: けんこう and ごはん's sheet on ごはん, today, on this tree's person's day
@@ -730,14 +730,14 @@
   .ok.star { position: relative; width: 28px; height: 28px; padding: 0; background: none; border-radius: 0; }
   .star svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: var(--c-yuzu); stroke: var(--c-yuzu-lip); stroke-width: 1.6; stroke-linejoin: round; }
   .star .bn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font: 800 var(--fs-s)/1 var(--font-num); color: var(--c-ink); letter-spacing: -.04em; }
-  /* the three rows: one grid (each row a subgrid of it), as wide as the 2 × 2, its left edge the fruit's; three columns
+  /* the three rows: one grid (each row a subgrid of it), its own 3 × 3 (not the 2 × 2's edges), even 12px side margins inside the popup's padding; three equal columns
      of a label track (13px bold, soft ink, right-aligned against its status) and a status track (the goals' ring / ✓ at
      18px, a P · F · C bar, grams or 「あと Ng」 in the same type), so every status of a column starts on one line; spacers ≥ 8px between
      the columns; every row a 44px box with the cells' padding, 4px apart */
   /* (a status track at least 25px: a one-character label's 19 and it make a check's 44px box) */
-  .rows { --st: minmax(25px, auto); display: grid; grid-template-columns: auto var(--st) minmax(8px, 1fr) auto var(--st) minmax(8px, 1fr) auto var(--st); row-gap: 4px; margin-top: 4px; }
+  .rows { --st: minmax(25px, auto); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 8px; row-gap: 4px; margin: 4px 12px 0; width: 0; min-width: calc(100% - 24px); /* (the 2 × 2 sizes the popup, not the widest item × 3) */ }
   .row {
-    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; min-height: var(--hit); padding: 0 4px 0 2px;
+    grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; min-height: var(--hit); padding: 0;
     position: relative; appearance: none; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
     border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
@@ -746,14 +746,15 @@
   .row.tap:focus-visible, .it.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
   .it {
     position: relative; appearance: none; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
-    display: grid; grid-template-columns: subgrid; align-items: center; min-width: var(--hit); min-height: var(--hit);
+    display: grid; grid-template-columns: auto auto; justify-content: start; column-gap: 6px; align-items: center; min-width: var(--hit); min-height: var(--hit);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .v { display: flex; align-items: center; gap: 4px; }
+  /* a bar over its 「あと Ng」, so a P item fits a third of the row */
+  .v { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
   /* my checks: each its own box, its column's width (≥ 44px, ≥ 8px from the next: the spacer) */
   button.it { border-radius: var(--r-chip); cursor: pointer; }
   .it.tap:active .mk { transform: scale(.88); }
-  .lb { justify-self: end; padding-right: 6px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
+  .lb { justify-self: start; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
   .mk { position: relative; justify-self: start; line-height: 0; transition: transform 120ms var(--ease-soft); }
   .mk .ok { width: 18px; height: 18px; padding: 3px; }
   .it[data-done] .lb, .it[data-logged] .lb { color: var(--c-leaf-text); }

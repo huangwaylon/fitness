@@ -155,18 +155,21 @@ async function rows(p: ReturnType<Page['locator']>) {
   }));
 }
 /** One system: the same left and right edges as the 2 × 2's cells, the same height (≥ 44) 4px apart, three items each
- *  whose statuses start on one line per column (±2px), labels hugging them, every label the same size. */
+ *  equal columns, each label at its column's start with its status right after, every label the same size. */
 async function oneGrid(page: Page) {
   const p = pop(page), rs = await rows(p);
-  const apple = await box(p.locator('[data-row=apple]')), pear = await box(p.locator('[data-row=pear]'));
+  const pop0 = await box(p);
   for (const r of rs) {
     expect(r.items, r.sel).toHaveLength(3);
-    expect(Math.abs(r.box.x - apple.x), `${r.sel} left`).toBeLessThanOrEqual(2);
-    expect(Math.abs(r.box.x + r.box.width - (pear.x + pear.width)), `${r.sel} right`).toBeLessThanOrEqual(2);
+    // its own grid: even side margins in the popup (not the 2 × 2's edges), the same for every row
+    expect(Math.abs((r.box.x - pop0.x) - (pop0.x + pop0.width - (r.box.x + r.box.width))), `${r.sel} even margins`).toBeLessThanOrEqual(2);
+    expect(Math.abs(r.box.x - rs[0].box.x), `${r.sel} left`).toBeLessThanOrEqual(1);
     expect(Math.abs(r.box.height - rs[0].box.height), `${r.sel} height`).toBeLessThanOrEqual(1);
     expect(r.box.height).toBeGreaterThanOrEqual(44);
     for (const [i, it] of r.items.entries()) {
-      expect(Math.abs(it.st.x - rs[0].items[i].st.x), `${r.sel} ${i}: status column`).toBeLessThanOrEqual(2);
+      // every column's label starts at the same offset from its column's left edge, all three columns, all rows
+      expect(Math.abs((it.lb.x - it.it.x) - (rs[0].items[0].lb.x - rs[0].items[0].it.x)), `${r.sel} ${i}: label offset in its column`).toBeLessThanOrEqual(2);
+      expect(Math.abs(it.it.width - rs[0].items[0].it.width), `${r.sel} ${i}: equal columns`).toBeLessThanOrEqual(2);
       expect(Math.abs(it.it.x - rs[0].items[i].it.x), `${r.sel} ${i}: column`).toBeLessThanOrEqual(2);
       expect(it.st.x - (it.lb.x + it.lb.width), `${r.sel} ${i}: label to status`).toBeLessThanOrEqual(8);
       expect(it.fs, `${r.sel} ${i}: label size`).toBe(rs[0].items[0].fs);
