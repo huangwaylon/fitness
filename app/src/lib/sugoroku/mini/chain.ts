@@ -6,7 +6,7 @@
 // phone; free at やさしい, else that word's everyday +1 goes). The turn's timer: anyone's `next` for its stage skips the
 // seat (gone, or just slow). A whole round of passes: a new start word. Stars: 1 a link, +1 an everyday word, each
 // maker's own (CHAIN_SEAT_MAX a seat at most); the chain's longest word the results'.
-import { seeded } from '#lib/random.ts';
+import { seeded, shuffle } from '#lib/random.ts';
 import type { Who } from '#lib/types.ts';
 import { LEVEL } from '../game.ts';
 import { PICTURES, tierOf } from '../pictures.ts';
@@ -85,6 +85,19 @@ export function chainHint(s: ChainState, ctx: Ctx): string | null {
   const seat = s.seats[s.at];
   const ok = (ctx.words.starting?.(letterOf(s)) ?? []).filter((w) => w.length >= Math.max(3, LEVEL[seat.level].minLen) && w.length <= CHAIN_MAX_LEN && !s.chain.some((l) => l.w === w));
   return ok.length ? ok[s.stage % Math.min(ok.length, 8)] : null;
+}
+
+/** A turn's letter tiles after its fixed first letter. */
+export const CHAIN_RACK = 8;
+/** The turn's tiles (the sheet's, UI only: any real word from the letter counts): ヒント's word's letters after its first
+ *  (so one always fits), the rest common letters, shuffled by the turn (the same on every phone) and never reading the
+ *  hint's word in order. */
+export function chainRack(s: ChainState, ctx: Ctx): string[] {
+  const r = seeded(`${s.seed}:rack:${s.stage}`), h = chainHint(s, ctx) ?? '';
+  const tiles = [...h.slice(1)];
+  while (tiles.length < CHAIN_RACK) tiles.push((tiles.length % 2 ? 'aeiou' : 'tnrslhdm')[Math.floor(r() * (tiles.length % 2 ? 5 : 8))]);
+  for (let k = 0; k < 6; k++) if (!shuffle(tiles, r).join('').startsWith(h.slice(1))) break;
+  return tiles;
 }
 
 /** The turn over: the next seat's, its stage on; a whole round passed, a new start word. */

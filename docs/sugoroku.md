@@ -96,10 +96,11 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
 
 ## みんなで！ (mini-games)
 
-**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '3'. The logic is `lib/sugoroku/mini/` (pure,
+**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '4'. The logic is `lib/sugoroku/mini/` (pure,
 tested), the screens `components/mini/`; design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
-なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered
-(`mini/offer.ts OFFERED`: adding one changes what a landing deals, so it goes with a RULES bump). The written content
+なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered, by the
+game's rules (`mini/offer.ts`: '2' and '3' the ★ four, '4' all eight; adding one changes what a landing deals, so it
+goes with a RULES bump). The written content
 (`mini/data/*.json`: おつかい's, 返事はどれ？'s) is lazy (`lib/sugoroku/mini/data.ts`, the `sg` chunks, cached on first
 use, not precached), loaded with the words and lines into the fold's `Ctx.mini`; a deal copies what its rounds use
 into the state.
@@ -118,7 +119,7 @@ into the state.
   6 / 4 / 2 + 2 clean, +1 むずかしい; a quiet seat's tiles freed by anyone), なかま分け (two bins by level band,
   `categories.ts`, 30 s, one count a seat, stars by the level's pace 8/10/12). Passed round: hot-seat turns (20 s
   each) or one shared phone (`registry.ts`).
-- **The next wave** (not a game's first pick): しりとり (`chain.ts`: an everyday picture to start, each seat in turn a
+- **The next wave** (on from RULES '4'; never a game's first pick): しりとり (`chain.ts`: an everyday picture to start, each seat in turn a
   word from the last letter (x z q: the one before), the level's minLen to 8 letters, 10 s a turn (the timer's `next`
   skips), パス free, ヒント two letters (free at やさしい, else no everyday +1); a round all passed: a new start; 1 a link
   +1 everyday, ≤ 10 a seat); 数字キャッチ (`numbers.ts`: a number, time or price in words, four to tap with the classic
@@ -140,10 +141,10 @@ into the state.
   tick: the `mg`'s room stamp (`Move.t`, `miniOpenedAt`) + 3 s countdown + the game's length; any phone sends `mc` 1 s
   after the end; the first closes, later ones and plays after it are nothing. A game's own end (every count in, the
   rounds or lines done) closes it in the fold. A dropped phone's plays already in stand; back, it folds the same.
-- **Rules:** RULES '3' (GEN 2 boards, the mini-games, nothing dealt solved: みんなで一文's weakest seat the first word
+- **Rules:** RULES '4' (all eight offered), '3' (GEN 2 boards, the mini-games, nothing dealt solved: みんなで一文's weakest seat the first word
   only, the rest dealt apart (a word's neighbours in other hands where the counts allow), each hand shown shuffled and
   never in the line's order while it holds two words; the market's rack never reads its word); '2' (hands in the line's
-  order) and '1' still folded, so an older game plays on as it was (the game's `rules`, mini-games' `Deal.rules`).
+  order) and '1' still folded (pinned: mini/online.test), so an older game plays on as it was (the game's `rules`, mini-games' `Deal.rules`).
 - **The screen** (`MiniTurn`, in the turn's sheet opened tall; the 3D board idle): the pick, a 3-2-1, one bar drained by
   a CSS animation (yuzu with 「あと5秒！」), the game, then `MiniResults` on every phone till 次へ (what it made in
   TurnResult with the team's stars, each seat's part in seat order, a seat with none お休み). Online every seat dealt
@@ -154,9 +155,21 @@ into the state.
   market and the sort a 20 s turn each, 伝えて当てて a step each (the speller's, each finder's; a seat going on, no
   cover); みんなで一文 on the one phone, every hand in its seat's colour (A sky, B rose, G lilac, its head beside it).
   Online, みんなで一文 frees a quiet seat's cards after 15 s once its word is next (2 s if it left).
+- **The next wave's screens:** しりとり: the chain a ribbon (each word in its maker's colour), whose turn and its letter,
+  the turn's own bar; the turn's seat makes a word from 8 tiles after the fixed letter (`chainRack`: the hint's word
+  always among them; any real word counts, no keyboard), パス, ヒント; passed round the one phone goes round. 数字キャッチ:
+  each seat's stream, 4 big choices, a miss shows the answer (`nu<n>` live counts); passed round 20 s each behind the
+  cover. おつかい: the お客さん's Japanese list, a line at a time from chips (frame, number, ＋s, container, thing: the
+  request read back), おしい naming the line and part (「2つ目は2つ以上だから、-s がつくよ」); the shop's 3×3 shelf,
+  the basket (− one back), わたす (おしい: missing, extra, how many); passed round a step each behind the cover (the
+  list, then the next seat's basket). 返事はどれ？: the chat (each round's line, then the reply found or 答えはこれ), the
+  asker reads aloud, each replier's cards with これ！ (やさしい the Japanese under); passed round every hand on the one
+  phone in its seat's colour. The turn and round timers (10 s, 15 s, 25 + 20 s) send the stage's `next` from any phone
+  (online the seats 1.5 s apart).
 - **Log:** `sg.mini` (open, close with its ms here; the game, the seats, the mode), never a play.
 - **Tests:** `?sgMini=<id>` forces the game's first landing (that game first), `?sgMiniMs=<ms>` every length (a 1 s
-  countdown), dev/test only; e2e/sugoroku-mini.spec (each game passed round, two online with a phone gone and back).
+  countdown), dev/test only; e2e/sugoroku-mini.spec (each game passed round; ことばの市場, 伝えて当てて, しりとり and
+  返事はどれ？ online with a phone gone and back).
   The demo's tab relay keeps the first move at each index and answers each (`onAck`, after the other tabs' ping).
 
 ## Speaking

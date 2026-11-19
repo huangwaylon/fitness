@@ -123,10 +123,10 @@ describe('a みんなで！ stone, passed round', () => {
     // (not played: its options)
     expect(landOn({ ...back, minis: [] }, pos)?.phase.k).toBe('mini');
   });
-  it('whole games on GEN 2 boards every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
+  it('whole games on GEN 2 boards (RULES 4): every mini-game picked and closed, each stone once, the same game from the same seeds; saves mid-way read back', () => {
     const seen = new Set<string>();
     for (let k = 0; k < 24; k++) {
-      let g = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2));
+      let g = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2), '4');
       let saved = 0;
       for (let i = 0; i < 900 && g.phase.k !== 'end'; i++) {
         g = step(g);
@@ -139,7 +139,7 @@ describe('a みんなで！ stone, passed round', () => {
       for (const m of g.minis ?? []) seen.add(m.id);
       for (const p of g.players) expect(p.stars).toBeGreaterThanOrEqual(0);
       if (k < 3) {
-        let again = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2));
+        let again = newGame([seat('A', 1), seat('B', 3), seat('G', 2)], `w${k}`, 'normal', layoutKey(`w${k}`, 2), '4');
         for (let i = 0; i < 900 && again.phase.k !== 'end'; i++) again = step(again);
         expect(JSON.stringify(again)).toBe(JSON.stringify(g));
       }

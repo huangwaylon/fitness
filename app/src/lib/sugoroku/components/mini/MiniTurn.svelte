@@ -1,11 +1,12 @@
 <script lang="ts">
   // 英語すごろく's みんなで！ in the turn's sheet (docs/sugoroku.md "みんなで！"): the lander's pick of the two options (each
-  // its name, one line and its time), then the game picked (Market, Spell, Together, Sort: each its own screen) on its
-  // clock (mini/clock.ts: the 3-2-1, one bar drained by a CSS animation, 「あと5秒！」), till its close. Online, every seat
-  // dealt in plays on its own phone at once (a seat back after the open watches); the close (`mc`) goes from the
-  // lander's phone 1 s after the end, from the others a moment later if it hasn't come. Passed round: a game with private
-  // info goes seat by seat behind a cover (「スマホをBに渡してね」 [見る]), each its own turn's bar (`turnMs`; 伝えて当てて
-  // a step each: the speller's, then each finder's); みんなで一文 on the one phone, every hand in its seat's colour.
+  // its name, one line and its time), then the game picked (each its own screen) on its clock (mini/clock.ts: the 3-2-1,
+  // one bar drained by a CSS animation, 「あと5秒！」), till its close. Online, every seat dealt in plays on its own phone
+  // at once (a seat back after the open watches); the close (`mc`) goes from the lander's phone 1 s after the end, from
+  // the others a moment later if it hasn't come. Passed round: a game with private info goes seat by seat behind a cover
+  // (「スマホをBに渡してね」 [見る]): the races (ことばの市場, なかま分け, 数字キャッチ) a turn's bar each (`turnMs`), the
+  // stepped ones a step each (伝えて当てて the speller's, then each finder's; おつかい the お客さん's list, then the shop's
+  // basket); the shared ones (みんなで一文, しりとり, 返事はどれ？) on the one phone, every hand in its seat's colour.
   // `?sgMiniMs=` (dev/test only) is every one of these lengths.
   import { untrack } from 'svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
@@ -13,9 +14,16 @@
   import Spell from './Spell.svelte';
   import Together from './Together.svelte';
   import Sort from './Sort.svelte';
+  import Chain from './Chain.svelte';
+  import Numbers from './Numbers.svelte';
+  import Shopping from './Shopping.svelte';
+  import Reply from './Reply.svelte';
   import { MINIS, type MiniId } from '../../mini/registry.ts';
   import type { MiniTimes } from '../../mini/clock.ts';
   import { stagePlay } from '../../mini/hands.ts';
+  import { CHAIN_TURN_MS } from '../../mini/chain.ts';
+  import { SHOP_ASK_MS, SHOP_FILL_MS } from '../../mini/shopping.ts';
+  import { REPLY_TURN_MS } from '../../mini/reply.ts';
   import type { MiniData } from '../../mini/data.ts';
   import type { Ctx, Play } from '../../mini/types.ts';
   import type { Game, MiniOn } from '../../game.ts';
@@ -82,26 +90,41 @@
     const k = Math.max(0, on.here.indexOf(lander.who));
     return [...on.here.slice(k), ...on.here.slice(0, k)];
   });
-  /** 伝えて当てて passed round: whose step the game is at (the speller till the word's in, then each finder). */
-  const actor = $derived.by((): Who | null => {
-    if (!on || on.id !== 'spell') return null;
-    const sp = on.s, round = sp.rounds[sp.r];
-    if (!round) return null;
-    if (!sp.gave && !sp.shown) return round.giver;
-    return (Object.keys(round.grids) as Who[]).find((w) => sp.picks[w]?.got === undefined) ?? null;
+  /** A game played in steps passed round (伝えて当てて, おつかい), or a race (なかま分け, 数字キャッチ: a count a seat). */
+  const stepped = $derived(on?.id === 'spell' || on?.id === 'shopping');
+  const race = $derived(on?.id === 'sort' || on?.id === 'numbers');
+  /** A stepped game passed round: whose step it is at (伝えて当てて the speller till the word's in, then each finder;
+   *  おつかい the お客さん till the list's in, then the next seat as the shop), and the step's key. */
+  const actor = $derived.by((): { who: Who; id: string } | null => {
+    if (!on) return null;
+    if (on.id === 'spell') {
+      const sp = on.s, round = sp.rounds[sp.r];
+      if (!round) return null;
+      const gave = sp.gave || sp.shown;
+      const who = !gave ? round.giver : (Object.keys(round.grids) as Who[]).find((w) => sp.picks[w]?.got === undefined);
+      return who ? { who, id: `${who}:${sp.r}:${gave ? 1 : 0}` } : null;
+    }
+    if (on.id === 'shopping') {
+      const sh = on.s, round = sh.rounds[sh.r];
+      if (!round) return null;
+      const sent = sh.frame !== null || sh.shown, k = sh.seats.findIndex((x) => x.who === round.asker);
+      const who = sent ? sh.seats[(k + 1) % sh.seats.length].who : round.asker;
+      return { who, id: `${who}:${sh.r}:${sent ? 1 : 0}` };
+    }
+    return null;
   });
   // the hot seat's next step: a sort count in (or a spell step taken) moves it on
   $effect(() => {
     if (!hotseat || !on) return void (step = null);
     const was = untrack(() => step);
-    if (on.id === 'spell') {
-      const sp = on.s, id = actor ? `${actor}:${sp.r}:${sp.gave || sp.shown ? 1 : 0}` : null;
-      if (actor && id && was?.id !== id) step = { k: (was?.k ?? -1) + 1, who: actor, id, at: was?.who === actor && was.at !== null ? now() : null };
+    if (stepped) {
+      const a = actor;
+      if (a && was?.id !== a.id) step = { k: (was?.k ?? -1) + 1, who: a.who, id: a.id, at: was?.who === a.who && was.at !== null ? now() : null };
       return;
     }
     if (!was) {
       // (a game resumed: the seats with a count in have played)
-      const k = Math.max(0, order.findIndex((w) => on.id !== 'sort' || on.s.counts[w] === undefined));
+      const k = Math.max(0, order.findIndex((w) => !(on.id === 'sort' || on.id === 'numbers') || on.s.counts[w] === undefined));
       step = { k, who: order[k], at: null };
     }
   });
@@ -110,9 +133,9 @@
     if (!on) return null;
     if (hotseat) {
       if (!step || step.at === null) return null;
-      const ms = len(on.id === 'spell' ? ROUND_MS : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
-      // (a spell step plays at once: no 3-2-1 between a speller and a finder)
-      return on.id === 'spell' ? { start: step.at, end: step.at + ms, close: step.at + ms } : timesOf(step.at, ms);
+      const ms = len(on.id === 'spell' ? ROUND_MS : on.id === 'shopping' ? (step.id?.endsWith(':1') ? SHOP_FILL_MS : SHOP_ASK_MS) : (MINIS[on.id].turnMs ?? MINIS[on.id].ms));
+      // (a step plays at once: no 3-2-1 between a speller and a finder, an お客さん and the shop)
+      return stepped ? { start: step.at, end: step.at + ms, close: step.at + ms } : timesOf(step.at, ms);
     }
     const at = local ? on.at : opened;
     return at === undefined ? null : timesOf(at, len(MINIS[on.id].ms));
@@ -150,11 +173,11 @@
     if (hotseat && step) {
       if (closed === key) return;
       closed = key;
-      if (on.id === 'spell') return play(stagePlay(on.s.stage), step.who);
-      // (Sort sends its count as its `over` comes; the next seat, or the game's close)
+      if (on.id === 'spell' || on.id === 'shopping') return play(stagePlay(on.s.stage), step.who);
+      // (a race sends its count as its `over` comes; the next seat, or the game's close)
       const next = step.k + 1;
       if (next < order.length) queueMicrotask(() => (step = { k: next, who: order[next], at: null }));
-      else if (on.id !== 'sort') onact({ a: 'mc' });
+      else if (!race) onact({ a: 'mc' });
       return;
     }
     if (tnow < closeAt || closed === key) return;
@@ -194,10 +217,11 @@
   {:else if hotseat && step && step.at === null}
     <!-- passed round: the next seat's turn behind a cover -->
     <div class="cover" data-sg-mini-cover={step.who}>
-      {#if step.k > 0 && on.id !== 'spell'}<p class="soft">{s('miniStop')}</p>{/if}
+      {#if step.k > 0 && !stepped}<p class="soft">{s('miniStop')}</p>{/if}
       <Avatar person={step.who} worn size={56} />
       <p class="pass">{s('passTo', { name: nameOf(step.who) })}</p>
       {#if on.id === 'spell'}<span class="tag">{on.s.rounds[on.s.r]?.giver === step.who ? s('spGiver') : s('spPicker')}</span>{/if}
+      {#if on.id === 'shopping'}<span class="tag">{step.id?.endsWith(':0') ? s('shAsker') : s('shShop')}</span>{/if}
       <button type="button" class="btn" data-sfx="confirm" data-sg-mini-look onclick={() => step && (step = { ...step, at: now() })}>{s('miniLook')}</button>
     </div>
   {:else}
@@ -217,7 +241,11 @@
       {#if on.id === 'market'}<Market s={on.s} {ctx} {seat} {live} {nameOf} {play} />
       {:else if on.id === 'spell'}<Spell s={on.s} {seat} {live} {mode} {nameOf} {play} {views} {onview} {seatIdx} roundMs={lenRound} />
       {:else if on.id === 'together'}<Together s={on.s} {seat} {live} {mode} {nameOf} {play} {here} {me} />
-      {:else if on.id === 'sort'}<Sort s={on.s} {seat} {live} {over} {nameOf} {play} {views} {onview} />{/if}
+      {:else if on.id === 'sort'}<Sort s={on.s} {seat} {live} {over} {nameOf} {play} {views} {onview} />
+      {:else if on.id === 'chain'}<Chain s={on.s} {ctx} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={len(CHAIN_TURN_MS)} />
+      {:else if on.id === 'numbers'}<Numbers s={on.s} {seat} {live} {over} {play} {views} {onview} />
+      {:else if on.id === 'shopping'}<Shopping s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} askMs={len(SHOP_ASK_MS)} fillMs={len(SHOP_FILL_MS)} />
+      {:else if on.id === 'reply'}<Reply s={on.s} {seat} {live} {mode} {nameOf} {play} {seatIdx} turnMs={len(REPLY_TURN_MS)} />{/if}
     {:else}<p class="note">{s('loading')}</p>{/if}
   {/if}
 </section>

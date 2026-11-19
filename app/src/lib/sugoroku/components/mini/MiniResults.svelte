@@ -1,7 +1,7 @@
 <script lang="ts">
   // A みんなで！'s result (docs/sugoroku.md "みんなで！"), on every phone once it closes, till 次へ (this phone's: the game
   // has gone on): the game, what the table made (the longest word, the lines, the pictures got across, the cards
-  // sorted) as TurnResult with the team's stars, then each seat's share in seat order (never ranked: a seat with none
+  // sorted, the chain's longest word, a request asked right, a reply found) as TurnResult with the team's stars, then each seat's share in seat order (never ranked: a seat with none
   // お休み), and 「みんなで星N個！」.
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import TurnResult from '../TurnResult.svelte';
@@ -32,6 +32,15 @@
     if (!st) return '';
     if (st.id === 'market') return tr('mkWords', { n: st.s.found.filter((f) => f.who === w).length });
     if (st.id === 'sort') return st.s.counts[w] !== undefined ? tr('soCount', { n: st.s.counts[w]! }) : '';
+    if (st.id === 'numbers') return st.s.counts[w] !== undefined ? tr('nuCount', { n: st.s.counts[w]! }) : '';
+    if (st.id === 'chain') {
+      const n = st.s.chain.filter((l) => l.who === w).length;
+      return n ? tr('chLinks', { n }) : '';
+    }
+    if (st.id === 'reply') {
+      const n = st.s.results.filter((x) => x.by === w).length;
+      return n ? tr('reCount', { n }) : '';
+    }
     if (st.id === 'spell') {
       const gave = made.filter((m) => m.p === g.players.findIndex((p) => p.who === w)).length;
       return gave ? tr('spGot', { n: gave }) : '';
@@ -41,7 +50,10 @@
   const headline = $derived.by((): { text: string; kind: 'word' | 'line'; ja: string } | null => {
     if (!res) return null;
     if (res.id === 'together') return made[0] ? { text: made.map((m) => m.text).join(' / '), kind: 'line', ja: made.map((m) => m.ja).join(' / ') } : null;
-    if (res.id === 'sort') return null;
+    if (res.id === 'sort' || res.id === 'numbers') return null;
+    // (the chain's longest word; the last request asked right, the last reply found)
+    if (res.id === 'chain') return made[0] ? { text: made[0].text, kind: 'word', ja: made[0].ja } : null;
+    if (res.id === 'shopping' || res.id === 'reply') return made.length ? { text: made.at(-1)!.text, kind: 'line', ja: made.at(-1)!.ja } : null;
     const m = res.id === 'market' ? made[0] : made.at(-1);
     return m ? { text: res.id === 'spell' ? made.map((x) => x.text).join(', ') : m.text, kind: res.id === 'spell' && made.length > 1 ? 'line' : 'word', ja: res.id === 'spell' ? made.map((x) => x.ja).join('、') : m.ja } : null;
   });
@@ -50,7 +62,7 @@
 {#if res}
   <section class="mres" data-sg-mini-result={res.id} data-sg-mini-team={team}>
     <div class="head"><span class="tag mtag">{tr('miniTitle')}</span><b class="name">{tr(`mini.${res.id}`)}</b></div>
-    {#if res.id === 'market' && headline}<p class="soft">{tr('mkLongest')}</p>{/if}
+    {#if (res.id === 'market' || res.id === 'chain') && headline}<p class="soft">{tr('mkLongest')}</p>{/if}
     {#if headline}
       <TurnResult answer={false} text={headline.text} stars={team} kind={headline.kind} />
       {#if headline.ja}<p class="ja">{headline.ja}</p>{/if}

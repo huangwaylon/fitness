@@ -24,7 +24,7 @@ import { mayPlace, nextWord, together, type TogetherState } from './together.ts'
 import { BOXES, FRAMES, SHOP_ASK_MS, SHOP_FILL_MS, SHOP_ROUNDS, SHOP_SHELF, basketRight, lineJa, listJa, readCode, requestCheck, requestCode, requestText, rightSlots, shopRequest, shopping, slotText, type ShoppingState } from './shopping.ts';
 import { REPLY_ROUNDS, REPLY_TURN_MS, cardLine, reply, replyOn, type ReplyState } from './reply.ts';
 import { NUMBER_STREAM, inWords, numberStream, numbers, yearWords, type NumberPrompt } from './numbers.ts';
-import { CHAIN_MAX_LEN, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
+import { CHAIN_MAX_LEN, CHAIN_RACK, CHAIN_SEAT_MAX, CHAIN_TURN_MS, chain, chainCheck, chainHint, chainRack, chainLetter, chainTurn, letterOf, type ChainState } from './chain.ts';
 import type { Ctx, Deal, Hand, MiniGame, Play } from './types.ts';
 import { loadMiniData } from './data.ts';
 
@@ -385,6 +385,21 @@ describe('しりとり', () => {
     expect(MINIS.chain.ms / CHAIN_TURN_MS).toBe(6);
     expect(chain.deal(deal(seats, 'ch', 'B'), ctx)).toEqual(s0);
     expect([chainLetter('apple'), chainLetter('box'), chainLetter('quiz'), chainLetter('xx')]).toEqual(['e', 'o', 'i', 'x']);
+  });
+  it('the turn’s tiles: the hint’s word makes from them after the letter, never in its order; the same on every phone, new each turn', () => {
+    let s = s0;
+    for (let k = 0; k < 12; k++) {
+      const rack = chainRack(s, ctx), h = chainHint(s, ctx)!;
+      expect(rack).toHaveLength(CHAIN_RACK);
+      const left = [...rack];
+      for (const l of h.slice(1)) {
+        expect(left, h).toContain(l);
+        left.splice(left.indexOf(l), 1);
+      }
+      expect(rack.join('').startsWith(h.slice(1)), h).toBe(false);
+      expect(chainRack(s, ctx)).toEqual(rack);
+      s = chain.play(s, chainTurn(s), { op: 'pass' }, ctx);
+    }
   });
   it('a word: whose turn only, the last letter, the level’s length to 8, a real word, not used; then the next seat', () => {
     const w = ok(s0);

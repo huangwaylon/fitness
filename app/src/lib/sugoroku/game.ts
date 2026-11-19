@@ -239,7 +239,7 @@ function land(g: Game, spun: number, r: () => number, card = false): Game {
   // a card's move ending on an イベント: no second card, a ことば instead
   if (card && kind === 'event') return { ...g, phase: { k: 'word', mult: 1, spun, rested: true } };
   // a みんなで！ not played yet: the lander picks a mini-game (played: its ことば); a test's forced one anywhere
-  if ((sp.mini && !g.minis?.some((m) => m.stone === me.pos)) || forcedHere(g.minis)) return { ...g, phase: { k: 'mini', spun, opts: offer((g.minis ?? []).map((m) => m.id), r) } };
+  if ((sp.mini && !g.minis?.some((m) => m.stone === me.pos)) || forcedHere(g.minis)) return { ...g, phase: { k: 'mini', spun, opts: offer((g.minis ?? []).map((m) => m.id), r, g.rules) } };
   if (kind === 'goal') {
     const place = g.players.filter((p) => p.home !== null).length;
     me.home = place;

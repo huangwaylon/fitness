@@ -18,20 +18,20 @@ import { newGame, wordScore, type Game } from '../game.ts';
 import { applyMove, foldMoves } from '../online.ts';
 import { OUTBOX, RULES, answered, beaten, heard, miniOpenedAt, otherRules, playsRules, queued, sameMove, toSend, type Move, type Outbox } from '../wire.ts';
 import { miniOn } from './turn.ts';
-import { MINI_IDS, type MiniId } from './registry.ts';
+import { MINIS, MINI_IDS, type MiniId } from './registry.ts';
 import { OFFERED } from './offer.ts';
 import { chainCheck, chainTurn, letterOf } from './chain.ts';
 import { requestCode, rightSlots } from './shopping.ts';
 import { loadMiniData } from './data.ts';
 
 vi.mock('./flag.ts', () => ({ MINIS: true }));
-// (a game without its screen yet is never offered: its tables' games offer every game, this file's switch)
-const hook = vi.hoisted(() => ({ all: false }));
+// (a table for a later wave's game: every landing offers it, this file's switch, so one is found at the first stone)
+const hook = vi.hoisted(() => ({ force: null as MiniId | null }));
 vi.mock('./offer.ts', async (load) => {
-  const o = await load<typeof import('./offer.ts')>(), { miniOptions } = await import('./registry.ts');
-  return { ...o, offer: (played: MiniId[], r: () => number) => (hook.all ? miniOptions(played, r) : o.offer(played, r)) };
+  const o = await load<typeof import('./offer.ts')>();
+  return { ...o, offer: (played: MiniId[], r: () => number, rules?: string): [MiniId, MiniId] => (hook.force ? [hook.force, hook.force] : o.offer(played, r, rules)) };
 });
-afterEach(() => void (hook.all = false));
+afterEach(() => void (hook.force = null));
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt')));
@@ -119,15 +119,16 @@ function playMoves(id = G, n = 900, rules = RULES): Move[] {
 }
 
 describe('online with mini-games on: the rules', () => {
-  it('new games carry RULES 3 (GEN 2 boards, the deal unsolved); this build folds 1–3 (an old game plays on as it was), nothing else', () => {
-    expect([RULES, GEN]).toEqual(['3', 2]);
-    expect([playsRules('1'), playsRules('2'), playsRules('3'), playsRules('4'), playsRules(undefined)]).toEqual([true, true, true, false, false]);
+  it('new games carry RULES 4 (GEN 2 boards, the deal unsolved, all eight games offered); this build folds 1–4 (an old game plays on as it was), nothing else', () => {
+    expect([RULES, GEN]).toEqual(['4', 2]);
+    expect([playsRules('1'), playsRules('2'), playsRules('3'), playsRules('4'), playsRules('5'), playsRules(undefined)]).toEqual([true, true, true, true, false, false]);
     const start = (r: string) => ({ g: 'abcdefghij', i: 0, a: 'start', s: 'A2B2', l: 'n', r, who: 'A' }) as Move;
+    expect(foldMoves([start('4')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '4' });
     expect(foldMoves([start('3')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '3' });
     expect(foldMoves([start('2')], ctx)?.layout).toBe(layoutKey('abcdefghij', 2));
     expect(foldMoves([start('1')], ctx)?.layout).toBe(layoutKey('abcdefghij', 1));
-    expect([otherRules([start('1')]), otherRules([start('2')]), otherRules([start('3')]), otherRules([start('4')])]).toEqual([false, false, false, true]);
-    expect(foldMoves([start('4')], ctx)).toBeNull();
+    expect([otherRules([start('1')]), otherRules([start('3')]), otherRules([start('4')]), otherRules([start('5')])]).toEqual([false, false, false, true]);
+    expect(foldMoves([start('5')], ctx)).toBeNull();
   });
   it('a whole game: mini-games picked, played from every seat, closed; the same on every phone; every move fits the wire', () => {
     const moves = playMoves();
@@ -161,8 +162,10 @@ describe('online with mini-games on: the rules', () => {
     expect(JSON.stringify(foldMoves(log, ctx))).toBe(JSON.stringify(foldMoves(log.map(({ t: _t, ...m }) => m), ctx)));
   });
   // (online.test's pin for '1'; these for the mini-games' rules, `v` and the game's `rules` label aside: '2' over a
-  // game of 伝えて当てて, '3' over three playing all four games)
-  const PIN: Record<string, readonly [string, string]> = { '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'] };
+  // game of 伝えて当てて, '3' over three playing all four games, '4' over five playing all eight)
+  const PIN: Record<string, readonly [string, string]> = {
+    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['19u41wy', 'minigame00 minigame08 minigame21 minigame28 minigame35']
+  };
   const hashOf = (rules: string, ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
@@ -177,7 +180,9 @@ describe('online with mini-games on: the rules', () => {
     expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]?.[0]);
     expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(OFFERED));
   });
-  it('an old game (RULES 2: みんなで一文 dealt in order) folds as it did; on 3 its hands are dealt anew', () => {
+  it('an old game folds as it did: RULES 3 (the ★ four offered), RULES 2 (みんなで一文 dealt in order; on 3 its hands dealt anew)', () => {
+    expect(hashOf('3', PIN['3'][1])).toBe(PIN['3'][0]);
+    expect(new Set(PIN['3'][1].split(' ').flatMap((id) => foldMoves(playMoves(id, 900, '3'), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(['market', 'spell', 'together', 'sort']));
     expect(hashOf('2', PIN['2'][1])).toBe(PIN['2'][0]);
     // (the dealt hands: the game closed, the same either way)
     const dealt = (r: string) => {
@@ -273,20 +278,20 @@ class Phone {
 
 /** A table at a mini-game's open (its log so far the same on every phone and in the room), the room: the first game
  *  from `seed` with a pick of `id` (a game's first pick is a ★ one: the others at a later stone; none given: the first).
- *  One not offered yet: the games offer every game (`hook`, till the test's end: the phones fold the same). */
+ *  One not a first pick: every landing offers it (`hook`, till the test's end: the phones fold the same). */
 const opens = new Map<string, { id: MiniId; base: Move[] }[]>();
 function table(seed: string, id?: MiniId): { phones: Phone[]; room: Room; at: number } {
-  hook.all = !!id && !OFFERED.includes(id);
+  hook.force = id && !MINIS[id].star ? id : null;
   for (let k = 0; k < 200; k++) {
     const gid = `${seed}x${k}`.padEnd(10, '0').slice(0, 12);
-    const picks = opens.get(`${gid}${hook.all}`) ?? opens.set(`${gid}${hook.all}`, ((all) => {
+    const picks = opens.get(`${gid}${hook.force}`) ?? opens.set(`${gid}${hook.force}`, ((all) => {
       // (folded once along the log: each pick's game as it opens)
       let g: Game | null = null;
       return all.flatMap((m, i) => {
         g = i === 0 ? foldMoves([m], ctx) : applyMove(g, m, ctx);
         return m.a === 'mg' ? [{ id: miniOn(g!)!.id, base: all.slice(0, i + 1) }] : [];
       });
-    })(playMoves(gid))).get(`${gid}${hook.all}`)!;
+    })(playMoves(gid))).get(`${gid}${hook.force}`)!;
     const hit = picks.find((p) => !id || p.id === id);
     if (!hit) continue;
     const base = hit.base, at = base.length - 1;
