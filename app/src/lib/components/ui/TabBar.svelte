@@ -6,10 +6,12 @@
   // corner (ボット's status dots), on a cream plate (`--plate`); a tab's `name`: its whole name to VoiceOver (「ジム、順調」),
   // `attrs` its more data-*. `panel`: the id of the one panel the tabs switch (ボット, 旅行's list): a tablist then
   // (role tab, aria-selected, aria-controls; ← → Home End move the focus, Enter or Space picks), else a nav whose
-  // shown tab is aria-current.
+  // shown tab is aria-current. While the on-screen keyboard is up it hides (its 70 px were a fifth of what's left above
+  // the keyboard: 結婚式's, 旅行's and ボット's forms), back as the keyboard goes.
   //   <TabBar items={[{ id: 'days', label: '日程', icon: 'calendar' }, …]} value={tab} label="ページ" attr="trip-tab" onpick={…} />
   import type { Snippet } from 'svelte';
   import Icon, { type IconName } from './Icon.svelte';
+  import { keyboardInset } from './keyboardInset.svelte.ts';
 
   interface Props {
     items: readonly { id: T; label: string; icon: IconName; name?: string; attrs?: Record<string, string | undefined> }[];
@@ -25,6 +27,7 @@
   }
   let { items, value, label, attr, onpick, panel, mark }: Props = $props();
   let bar: HTMLElement | undefined = $state();
+  const kb = $derived(keyboardInset.current.open);
 
   /** A tab's id (the panel's aria-labelledby: `${attr}-${id}`). */
   const tid = (id: T) => `${attr}-${id}`;
@@ -49,7 +52,7 @@
 {/snippet}
 
 {#if panel}
-  <div class="tabbar" role="tablist" aria-label={label} bind:this={bar} tabindex="-1" onkeydown={key}>
+  <div class="tabbar" class:kb role="tablist" aria-label={label} bind:this={bar} tabindex="-1" onkeydown={key}>
     {#each items as it (it.id)}
       <button type="button" class="it" role="tab" id={tid(it.id)} aria-selected={value === it.id} aria-controls={panel} tabindex={value === it.id ? 0 : -1}
         aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
@@ -58,7 +61,7 @@
     {/each}
   </div>
 {:else}
-  <nav class="tabbar" aria-label={label}>
+  <nav class="tabbar" class:kb aria-label={label}>
     {#each items as it (it.id)}
       <button type="button" class="it" aria-current={value === it.id ? 'page' : undefined}
         aria-label={it.name} {...it.attrs} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'} onclick={() => onpick(it.id)}>
@@ -75,6 +78,7 @@
     background: var(--card); box-shadow: 0 -2px 0 var(--lip);
   }
   .tabbar:focus { outline: none; }
+  .tabbar.kb { display: none; }
   .tabbar::before { content: ''; position: absolute; top: 3px; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); pointer-events: none; }
   .it {
     appearance: none; border: 0; background: none; cursor: pointer; flex: 1; min-width: 0; min-height: 56px; padding: 4px 0 0;

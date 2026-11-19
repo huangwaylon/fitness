@@ -108,3 +108,18 @@ for (const size of [{ width: 393, height: 659 }, { width: 375, height: 667 }]) {
     });
   });
 }
+
+test('a sheet\'s tab bar hides while the keyboard is up (結婚式\'s task form), back once it goes', async ({ page }) => {
+  await fakeKeyboard(page);
+  await page.goto('?demo');
+  await islandUp(page);
+  await fromMenu(page, 'wedding', 'tap');
+  const bar = page.locator('dialog[open] .tabbar').first();
+  await expect(bar).toBeVisible();
+  await page.locator('dialog[open] [data-wed-add]').tap();
+  await page.locator('dialog[open] [data-wed-field="title"]').focus();
+  await keyboard(page, KEYBOARD_PX);
+  await expect(bar).toBeHidden();
+  await keyboard(page, 0);
+  await expect(bar).toBeVisible();
+});
