@@ -108,8 +108,8 @@
   let failed = $state(false);
   /** Bumped when a dataset comes in after the load (the products, one fetched again): search again. */
   let more = $state(0);
-  /** Bumped only when a dataset lands (not as wantMore settles, at once for one come back to): the rows' anchor. */
-  let landed = $state(0);
+  /** This search's lazy datasets all in, or given up on (wantMore settled). */
+  let settled = $state(false);
   let text = $state(untrack(() => keep?.q ?? ''));
   /** The committed query (never mid-composition). */
   let q = $state(untrack(() => keep?.q ?? ''));
@@ -125,8 +125,8 @@
       if (!live) return;
       db = d;
       // (the products with it: a search's, never the sheet's open; search again as each comes in)
-      stop = d.onAdd(() => (more++, landed++));
-      void d.wantMore().then(() => live && more++);
+      stop = d.onAdd(() => more++);
+      void d.wantMore().then(() => live && (settled = true, more++));
     }, () => live && (failed = true));
     return () => {
       live = false;
@@ -204,31 +204,13 @@
     if (!db) return [];
     return q.trim() ? shopChips(found.shops) : recentShops(mine, db, since);
   });
-  /** A dataset coming in (the chain menus: their shop chips over the rows) never moves the rows on the screen: what
-   *  follows the field (the row open, if one is) is kept where it was, the sheet scrolled by what came in over it. A tap under way would otherwise
-   *  lift over another row, or nothing, its click lost (the chips' 44 px land a second or so into a search, rows held at
-   *  the sheet's top too, where the browsers' own scroll anchoring never holds them: food.spec). */
-  let root: HTMLDivElement | undefined = $state();
-  let anchor: { el: Element; y: number; q: string } | null = null;
-  const below = () => root?.querySelector('[data-food-open]')?.closest('li') ?? [...(root?.children ?? [])].find((e) => e !== box && !e.classList.contains('shops'));
-  $effect.pre(() => {
-    void landed;
-    untrack(() => {
-      const el = below();
-      anchor = el ? { el, y: el.getBoundingClientRect().top, q } : null;
-    });
-  });
-  $effect(() => {
-    void landed;
-    untrack(() => {
-      const a = anchor;
-      anchor = null;
-      const sc = root?.closest<HTMLElement>('[data-food-sheet]');
-      if (!a || !sc || a.q !== q || !a.el.isConnected) return;
-      const dy = a.el.getBoundingClientRect().top - a.y;
-      if (Math.abs(dy) >= 1) sc.scrollTop += dy;
-    });
-  });
+  /** The shop chips' line held for the query (`slot`: as typed, trimmed) while the chain menus are still to come, so
+   *  their chips land in it and never push the rows down (a press under way lifted over another row, or nothing, its
+   *  tap lost: food.spec); kept, empty, till the next query if none came. Nothing typed: only if I've logged a chain
+   *  menu lately (よく行く店's). */
+  const often = $derived(mine.some((e) => e.d >= since && e.f.id.startsWith('kal:')));
+  const slotOf = (v: string) => !db?.shopKeys.size && !settled && (v.trim() || often) ? v.trim() : null;
+  let slot = $state<string | null>(untrack(() => slotOf(q)));
   /** A shop chip's tap: its name written into the query, before what's typed (no filter kept anywhere else: ✕ clears
    *  it), the field kept focused (the keyboard stays up). */
   function toShop(name: string) {
@@ -248,6 +230,7 @@
   function setQ(v: string) {
     if (v === q) return;
     q = v;
+    slot = slotOf(v);
     if (keep) Object.assign(keep, { q: v, all: false });
     open = null;
     closing = false;
@@ -384,7 +367,7 @@
 
 <svelte:window onkeydown={onEsc} />
 
-<div class="search" bind:this={root}>
+<div class="search">
   <form class="box" bind:this={box} role="search" onsubmit={(e) => { e.preventDefault(); input?.blur(); }}>
     <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15 L20 20" /></svg>
     <input bind:this={input} bind:value={text} type="search" data-sfx="none" data-food-q enterkeyhint="search" autocomplete="off"
@@ -405,6 +388,8 @@
         {/each}
       </ChipRow>
     </div>
+  {:else if slot === q.trim()}
+    <div class="shops slot" aria-hidden="true"></div>
   {/if}
 
   {#if onfinish && added.length}
@@ -567,6 +552,7 @@
   .x { display: flex; margin-right: -2px; }
   /* the shop chips: ChipRow's line, its sides at the field's */
   .shops { margin: -6px -12px; min-width: 0; }
+  .slot { height: var(--hit); }
   .sl { flex: none; margin-right: 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .lh { margin: 4px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }

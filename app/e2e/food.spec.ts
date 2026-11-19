@@ -2106,7 +2106,8 @@ test('tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a kon
 
 // The lazy datasets (the products, the chain menus) land a second or so into a search, the shop chips (44 px) over the
 // rows: a press on 追加 then lifted over another row or nothing and its tap was lost (WebKit under load: the row-opened
-// test red now and then). What follows the field stays where it was (FoodSearch's anchor), so the tap lands.
+// test red now and then). The chips land in their line, held for them under the field (FoodSearch's `slot`), so the
+// tap lands.
 test('a press on an open row’s 追加 while the chain menus come in still lands: the row stays where it was', async ({ page }) => {
   let release!: () => void;
   const held = new Promise<void>((r) => (release = r));
@@ -2128,4 +2129,36 @@ test('a press on an open row’s 追加 while the chain menus come in still land
   expect(Math.abs((await add.boundingBox())!.y - b.y)).toBeLessThan(b.height / 4);
   await page.mouse.up();
   await expect(s.locator('[data-food-added] [data-added]')).toHaveCount(1);
+});
+
+// The same on a short list (the user's tap a moment into a search): the chain menus' chips land over the rows, which
+// had no scroll to make up for them (the sheet scrolled by them before: 44 px down under the finger, the tap lost or
+// on another row). The products held all along (their rows would make the list long), the chain menus a fixture's
+// two for ハンバーガー, at two shops: the chips in their held line, the menus' rows under the generic ones.
+test('a tap on a short list while the chain menus come in still lands: the rows stay where they were', async ({ page }) => {
+  let release!: () => void;
+  const held = new Promise<void>((r) => (release = r));
+  const DATA = readFileSync(new URL('./fixtures/kalori.json', import.meta.url), 'utf8').replace('ためしカレー', 'ためしハンバーガー').replace('みほんカレー', 'みほんハンバーガー');
+  await page.route(/\/food\/products\.json(\?|$)/, () => new Promise(() => {}));
+  await page.route(/\/food\/kalori\.json(\?|$)/, async (r) => { await held; await r.fulfill({ status: 200, contentType: 'application/json', body: DATA }); });
+  await openFood(page);
+  const s = sheet(page);
+  await s.locator('[data-add=d]').click();
+  await s.locator('[data-food-q]').fill('ハンバーガー');
+  const rows = s.locator('[data-food-results] > li > button.it');
+  await expect(rows).toHaveCount(2);
+  await s.locator('[data-food-q]').blur();
+  await settled(page);
+  const id = await rows.last().getAttribute('data-item');
+  const row = s.locator(`[data-food-results] [data-item="${id}"]`), li = row.locator('xpath=..');
+  const b = (await li.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down();
+  release();
+  await expect(s.locator('[data-shop-chip]')).toHaveCount(2); // (the chips over the rows, the menus' two rows under them)
+  await expect(rows).toHaveCount(4);
+  await settled(page);
+  expect(Math.abs((await li.boundingBox())!.y - b.y)).toBeLessThan(1); // (its li: the button pressed is 2 px lower, :active)
+  await page.mouse.up();
+  await expect(row).toHaveAttribute('aria-expanded', 'true');
 });
