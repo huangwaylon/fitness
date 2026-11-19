@@ -163,9 +163,9 @@
   }
   .disc img { display: block; width: 86%; height: 86%; user-select: none; -webkit-user-drag: none; pointer-events: none; }
   .rv:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
-  .rv[aria-checked='true'] { box-shadow: 0 0 0 4px var(--c-leaf-edge); }
+  .rv[aria-checked='true'] { box-shadow: 0 0 0 3px var(--ctl-sel), 0 0 0 5px var(--c-edge); }
   .ck {
     position: absolute; right: -4px; bottom: -4px; width: 20px; height: 20px; padding: 3px; border-radius: 50%;
-    background: var(--c-leaf); color: var(--c-ink);
+    background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-edge);
   }
 </style>

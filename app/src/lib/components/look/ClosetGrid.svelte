@@ -132,7 +132,8 @@
     font: 700 var(--fs-s)/1 var(--font-num); transition: transform var(--dur-base) var(--ease-bounce);
   }
   .tile:active { transform: scale(1.06, .92); transition-duration: var(--dur-tap); }
-  .tile[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 0 0 3px var(--c-leaf-edge); }
+  /* selected: the kit's yuzu with its edge, 3px (never green: docs/design.md 'Shape') */
+  .tile[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 3px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   /* the catalogue's icon, one per line in one of its colours: another colour tints it (grey, brightened so its
      main colour is near white, times the swatch, masked to the icon's shape) */
   .ico { position: relative; width: 86%; height: 86%; isolation: isolate; pointer-events: none; }

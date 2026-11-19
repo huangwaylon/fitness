@@ -550,7 +550,7 @@
   .dot { appearance: none; cursor: pointer; border: 0; padding: 0; width: 44px; height: 44px; flex: none; border-radius: 50%; position: relative; background: none; }
   .dot::before { content: ''; position: absolute; inset: 8px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16); }
   .big .dot { width: 52px; height: 52px; }
-  .dot[aria-checked='true']::before { box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16), 0 0 0 3px var(--c-cream), 0 0 0 6px var(--c-leaf-edge); }
+  .dot[aria-checked='true']::before { box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16), 0 0 0 3px var(--ctl-sel), 0 0 0 5px var(--c-edge); }
   .dot:focus-visible { outline-offset: -2px; }
   .shapes { justify-content: center; padding: 8px 0; }
 
@@ -562,7 +562,7 @@
     color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); border-radius: var(--r-card); position: relative;
   }
   .pick :global(.av), .pick :global(.pt) { box-shadow: 0 0 0 3px transparent; transition: box-shadow var(--dur-quick); }
-  .coord.on .pick :global(.av), .coord.on .pick :global(.pt) { box-shadow: 0 0 0 4px var(--c-leaf-edge); }
+  .coord.on .pick :global(.av), .coord.on .pick :global(.pt) { box-shadow: 0 0 0 3px var(--ctl-sel), 0 0 0 5px var(--c-edge); }
   .pick:active { transform: scale(1.04, .96); }
   .cn { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .star { color: var(--c-yuzu-lip); margin-right: 1px; }
