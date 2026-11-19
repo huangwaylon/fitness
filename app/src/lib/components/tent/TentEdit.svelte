@@ -771,10 +771,11 @@
 
 <Sheet bind:open={savesOpen} name="tent.saves" label={t('tent.saves')} title={saving.k === 'save' ? t('tent.saveTitle') : t('tent.saves')}>
   {#if saving.k === 'list'}
-    <div class="slots" data-tent-slots>
+    <!-- one dense card, a row a slot: the name (or 空き) and its date, the buttons on the right -->
+    <div class="slots card dense" data-tent-slots>
       {#each Array.from({ length: SAVE_SLOTS }, (_, i) => i + 1) as n (n)}
         {@const sv = saves[n - 1]}
-        <div class="slot card dense" data-tent-slot={n} data-filled={sv ? 'true' : 'false'}>
+        <div class="row slot" data-tent-slot={n} data-filled={sv ? 'true' : 'false'}>
           <div class="who"><span class="nm">{sv ? sv.name : t('tent.saveEmpty')}</span>{#if sv}<span class="dt">{savedAt(sv.at)} · {t('tent.savePieces', { n: sv.pieces.length })}</span>{/if}</div>
           <div class="acts">
             <button type="button" class="btn paper small" data-slot-act="save" data-sfx="tick" onclick={() => ask('save', n)}>{t('common.save')}</button>
@@ -823,13 +824,14 @@
   /* the tray's look is the editors' one (theme.css .edit-tray); the tent's own bits: */
   .say.hint { color: var(--c-ink-soft); white-space: normal; font-size: var(--fs-s); line-height: 1.3; padding-left: 2px; }
   .act[aria-disabled='true'] { opacity: .4; }
-  .slots { display: grid; gap: 8px; padding-bottom: 4px; }
-  .slot { display: grid; gap: 8px; padding: 12px; }
-  .slot .who { display: grid; gap: 2px; }
-  .slot .nm { font-weight: 700; }
+  .slots { margin-bottom: 4px; }
+  /* a saved slot's three buttons drop under its name when the row is too narrow for both */
+  .slot { flex-wrap: wrap; row-gap: 8px; }
+  .slot .who { flex: 1 1 7em; min-width: 0; display: grid; gap: 2px; }
+  .slot .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .slot[data-filled='false'] .nm { color: var(--text-soft); }
-  .slot .dt { font-size: var(--fs-xs); color: var(--text-soft); }
-  .slot .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .slot .dt { font-size: var(--fs-s); color: var(--text-soft); }
+  .slot .acts { display: flex; gap: 6px; flex: none; margin-left: auto; }
   .ask { display: grid; gap: 10px; padding: 0 0 8px; text-align: center; }
   .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
   .field { display: grid; gap: 4px; text-align: left; }
