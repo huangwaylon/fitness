@@ -116,6 +116,11 @@ test('two kinds held: an empty plot opens the picker; a tap on another plot whil
     await expect.poll(() => picker.locator('img').evaluateAll((is) => is.length > 0 && is.every((i) => (i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth > 0))).toBe(true);
     await page.screenshot({ path: `${SHOTS}/picker.png` });
   }
+  // its ✕ shuts it (a floating card's, top right); the plot opens it again
+  await page.locator('[data-farm-close]').click();
+  await expect(picker).toHaveCount(0);
+  await tapWorld(page, wide(2).x, wide(2).z);
+  await expect(picker).toBeVisible();
   expect(await farmRows(page)).toEqual([]);
   await page.locator('[data-farm-pick="start:tomato"]').click();
   await expect(picker).toHaveCount(0);

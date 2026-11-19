@@ -8,6 +8,7 @@
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { camTo, islandUp, lawnTap, tapOn, w3, walking } from './island.ts';
 import { GOAL_TREES } from '../src/lib/world/world.ts';
+import { lowContrast } from './contrast.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
 
@@ -252,4 +253,14 @@ test.describe('at 375 × 667 (iPhone SE)', () => {
     expect(b!.left + b!.width / 2 - (r.x + r.width)).toBeGreaterThanOrEqual(22);
     await oneGrid(page);
   });
+});
+
+test('the popup’s text is 4.5:1 or more on its plate, night and day (the goal, a check’s label, grams with no goal)', async ({ page }) => {
+  for (const at of ['22:00', '12:00']) {
+    await page.goto(`?demo&date=2026-11-03T${at}`);
+    await islandUp(page);
+    await tapOn(page, 'goal', 'A');
+    await settle(page);
+    expect((await lowContrast(page, { min: 4.5, root: '.detail' })).map((l) => `${l.text} ${l.ratio.toFixed(2)}`), at).toEqual([]);
+  }
 });

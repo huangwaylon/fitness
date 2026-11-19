@@ -2,9 +2,10 @@
   // The picker (docs/farming.md "Playing"): what I hold to plant, a small cream card at the island's bottom left. Each
   // cell is its crop's own art and name, a start with NH's seedling on it (the six starts' art is one seedling), and how
   // many; the last pick first and lit (kept on this phone). Opened by a tap on my empty plot with two or more kinds held
-  // and no crop chosen this planting run; its pick plants that plot's 3 × 3 (SceneTaps). It shuts on a pick, a tap
-  // outside it (a tap on another empty plot opens it again, for that plot), Esc or a sheet opening.
+  // and no crop chosen this planting run; its pick plants that plot's 3 × 3 (SceneTaps). It shuts on a pick, its ✕, a
+  // tap outside it (a tap on another empty plot opens it again, for that plot), Esc or a sheet opening.
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import { CROPS, seedKey, type Crop, type FarmSrc } from '#lib/contract/farm.ts';
   import { shopView } from '#lib/model/shop.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -49,8 +50,12 @@
 </script>
 
 <div class="picker" role="dialog" aria-label={t('world.farm.pick')} data-farm-picker bind:this={root}>
+  <!-- (the floating cards' ✕, top right: NavButton) -->
+  <div class="head">
+    <p class="ph" data-farm-noseed={seeds.length ? undefined : ''}>{t(seeds.length ? 'world.farm.pick' : 'world.farm.noSeed')}</p>
+    <NavButton kind="close" onclick={closePicker} data-farm-close />
+  </div>
   {#if seeds.length}
-    <p class="ph">{t('world.farm.pick')}</p>
     <div class="grid" style:--n={Math.min(4, seeds.length)}>
       {#each seeds as s (s.src + s.c)}
         <button type="button" class="cell" data-sfx="tick" class:on={seed.pick?.c === s.c && seed.pick?.src === s.src} data-farm-pick="{s.src}:{s.c}" aria-label={name(s.c, s.src)}
@@ -62,8 +67,6 @@
         </button>
       {/each}
     </div>
-  {:else}
-    <p class="ph" data-farm-noseed>{t('world.farm.noSeed')}</p>
   {/if}
 </div>
 
@@ -73,7 +76,8 @@
     padding: 10px 12px 12px; border-radius: var(--r-card, 18px); background: var(--c-cream); color: var(--c-ink);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(60 40 20 / .18);
   }
-  .ph { margin: 0 0 8px; font: 700 var(--fs-s)/1.4 var(--font-ui); word-break: keep-all; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -6px -8px 4px 0; }
+  .ph { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); word-break: keep-all; }
   /* up to four across, the card as wide as what I hold (one crop: no empty room beside it) */
   .grid { display: grid; grid-template-columns: repeat(var(--n), 58px); gap: 8px; }
   .cell {

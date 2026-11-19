@@ -736,7 +736,8 @@
   /* today's amount, bold, over 「/ the goal」 in a smaller soft line (both right-aligned, tabular) */
   .amt { margin-left: 4px; display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
   .amt .n { font: 700 var(--fs-body)/1.1 var(--font-num); }
-  .amt .of { font: 600 var(--fs-s)/1.2 var(--font-num); color: color-mix(in srgb, var(--plate-ink) 60%, transparent); }
+  /* (the plate's soft ink, ≥ 4.5:1 on its cream day and night) */
+  .amt .of { font: 600 var(--fs-s)/1.2 var(--font-num); color: var(--c-ink-soft); }
   .amt.met .n { color: var(--c-leaf-text); }
   .ok { width: 22px; height: 22px; flex: none; padding: 4px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); display: block; }
   /* not met yet: the ✓'s place as a faint dashed ring, so an early morning's popup shows where the ✓ will come */
@@ -775,7 +776,7 @@
   /* my checks: each its own box, its column's width (≥ 44px, ≥ 8px from the next: the spacer) */
   button.it { border-radius: var(--r-chip); cursor: pointer; }
   .it.tap:active .mk { transform: scale(.88); }
-  .lb { justify-self: center; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
+  .lb { justify-self: center; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   .mk { position: relative; justify-self: center; line-height: 0; transition: transform 120ms var(--ease-soft); }
   .mk .ok { width: 18px; height: 18px; padding: 3px; }
   .it[data-done] .lb, .it[data-logged] .lb { color: var(--c-leaf-text); }
@@ -785,7 +786,7 @@
   /* P · F · C: 0 to 150 % of the goal, the goal a tick at two thirds: soft ink while under, leaf once met, coral past a
      ceiling (the plate is cream at every time of day, so its own inks) */
   .g, .left { flex: none; font: 700 var(--fs-s)/1 var(--font-num); color: var(--plate-ink); }
-  .g { color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
+  .g { color: var(--c-ink-soft); }
   .left svg { display: block; width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
   .tr { position: relative; flex: none; width: 36px; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--plate-ink) 14%, transparent); }
   /* no goal: an empty dotted track, no fill and no tick, so the bars still line up without implying a goal */
