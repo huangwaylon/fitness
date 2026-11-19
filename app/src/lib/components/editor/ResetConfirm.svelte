@@ -40,7 +40,7 @@
     <p class="soft">地形や木・家具の配置の変更が消えます（家の見た目は残ります）。</p>
     <label>
       <span>確認のため「{WORD}」と入力してください</span>
-      <input type="text" bind:value={typed} autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-reset-word data-sfx="none" />
+      <input class="input" type="text" bind:value={typed} autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" data-reset-word data-sfx="none" />
     </label>
     <div class="two">
       <button type="submit" class="btn danger" disabled={!ok} data-confirm-reset>リセットする</button>
@@ -58,11 +58,7 @@
   p { margin: 0; font: 700 var(--fs-talk)/1.45 var(--font-ui); }
   .soft { font: 400 var(--fs-body)/1.45 var(--font-ui); color: var(--text-soft); }
   label { display: grid; gap: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  input {
-    width: 100%; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn);
-    font: 700 max(var(--fs-input), var(--fs-talk))/1.1 var(--font-ui); color: var(--text); background: var(--ctl);
-    box-shadow: inset 0 0 0 2px var(--edge);
-  }
+  input { font-size: max(var(--fs-input), var(--fs-talk)); }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; min-height: max(44px, var(--cta-h)); }
 </style>

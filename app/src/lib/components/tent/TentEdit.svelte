@@ -798,7 +798,7 @@
       {#if saves[n - 1]}<p>{t('tent.saveOver', { name: saves[n - 1]!.name })}</p>{/if}
       <label class="field"><span>{t('tent.saveName', { n: SAVE_NAME_CHARS })}</span>
         <!-- svelte-ignore a11y_autofocus -->
-        <input type="text" maxlength={SAVE_NAME_CHARS} data-tent-save-name data-sfx="none" bind:value={saveDraft} autofocus enterkeyhint="done" />
+        <input class="input" type="text" maxlength={SAVE_NAME_CHARS} data-tent-save-name data-sfx="none" bind:value={saveDraft} autofocus enterkeyhint="done" />
       </label>
     </form>
   {:else}
@@ -839,10 +839,6 @@
   .ask .miss { font-size: var(--fs-s); color: var(--text-soft); }
   .field { display: grid; gap: 4px; text-align: left; }
   .field span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .field input {
-    width: 100%; min-height: 48px; border-radius: var(--r-btn); border: 0; font: 700 var(--fs-input)/1.2 var(--font-ui);
-    background: var(--c-card); color: var(--c-ink); padding: 0 14px; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
-  }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .te { z-index: 3; }
   .bar { animation: up .2s var(--ease-soft) both; }

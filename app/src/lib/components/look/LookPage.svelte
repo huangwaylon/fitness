@@ -462,7 +462,7 @@
       <label class="namefield">
         <span>{card === 'nick' ? t('panel.nickname') : t('look.name')}</span>
         <!-- svelte-ignore a11y_autofocus -->
-        <input class="name" type="text" maxlength={card === 'nick' ? 12 : LOOK_LIMITS.nameMaxChars} data-look-name data-sfx="none" bind:value={cardName} autofocus enterkeyhint="done" />
+        <input class="input" type="text" maxlength={card === 'nick' ? 12 : LOOK_LIMITS.nameMaxChars} data-look-name data-sfx="none" bind:value={cardName} autofocus enterkeyhint="done" />
       </label>
     </form>
   {/if}
@@ -591,11 +591,6 @@
   .ask p { margin: 0; font-weight: 700; line-height: 1.6; }
   .namefield { width: 100%; text-align: left; display: grid; gap: 4px; }
   .namefield span { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  /* 16px so Safari doesn't zoom */
-  .name {
-    width: 100%; min-height: 48px; border-radius: var(--r-btn); border: 0; font-size: var(--fs-input);
-    background: var(--c-card); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
-  }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; }
 </style>

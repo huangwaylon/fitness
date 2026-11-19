@@ -214,7 +214,7 @@
 <Sheet bind:open={formOpen} title={formTitle} focusField name="pack.form">
   {#if form}
     <form id="pack-form" onsubmit={submit}>
-      <input class="field" type="text" data-sfx="none" data-pack-field maxlength={PACK_NAME} enterkeyhint="done" autocomplete="off" aria-label={formTitle}
+      <input class="input" type="text" data-sfx="none" data-pack-field maxlength={PACK_NAME} enterkeyhint="done" autocomplete="off" aria-label={formTitle}
         placeholder={form.kind === 'cat' ? t('travel.pack.addCat') : t('travel.pack.addItem')} bind:value={form.text} />
     </form>
   {/if}
@@ -274,9 +274,4 @@
   .reset { color: var(--text-soft); gap: 8px; }
   .none { margin: 0; font-size: var(--fs-s); color: var(--text-soft); }
   form { display: grid; padding-top: 4px; }
-  .field {
-    width: 100%; box-sizing: border-box; min-height: var(--hit); padding: 10px 12px; border: 0; border-radius: var(--r-chip);
-    background: var(--card); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--edge); font: 400 var(--fs-input)/1.4 var(--font-body);
-  }
-  .field:focus { outline-offset: 1px; }
 </style>

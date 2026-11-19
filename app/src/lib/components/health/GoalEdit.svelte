@@ -124,7 +124,7 @@
       <button type="button" class="nb" data-sfx="tick" data-goal-step="-1" aria-label={t('goal.less')} onclick={() => step(-1)}>−</button>
       <label class="fld">
         <span class="sr-only">{spec.head()}</span>
-        <input type="text" inputmode={spec.decimals ? 'decimal' : 'numeric'} data-sfx="none" autocomplete="off" enterkeyhint="done" maxlength="7" size="6"
+        <input class="input num" type="text" inputmode={spec.decimals ? 'decimal' : 'numeric'} data-sfx="none" autocomplete="off" enterkeyhint="done" maxlength="7" size="6"
           placeholder={goalField(spec, start ?? spec.start)} bind:value={field} aria-invalid={bad} aria-describedby="goal-{id}-hint" oninput={() => (tried = false)} />
         <span class="u" aria-hidden="true">{spec.unit()}</span>
       </label>
@@ -181,13 +181,7 @@
   }
   .nb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .fld { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; }
-  input {
-    flex: 1; min-width: 0; width: 100%; min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); text-align: right;
-    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl);
-    box-shadow: inset 0 0 0 2px var(--edge); font-variant-numeric: tabular-nums;
-  }
-  input::placeholder { color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
-  input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
+  input { flex: 1; }
   .u { flex: none; white-space: nowrap; font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
   .hint { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--text); }

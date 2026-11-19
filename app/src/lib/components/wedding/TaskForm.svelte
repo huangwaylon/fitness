@@ -102,7 +102,7 @@
   <form class="form" id="{uid}-f" data-wed-form onsubmit={submit}>
     <label class="f">
       <span class="fl">{t('wed.field.title')}<b class="req">{t('wed.field.required')}</b></span>
-      <input class="fld" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} aria-required="true" data-wed-field="title" data-sfx="none"
+      <input class="input" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} aria-required="true" data-wed-field="title" data-sfx="none"
         aria-invalid={errors.title || undefined} aria-describedby={errors.title ? `${uid}-t` : undefined} />
       {#if errors.title}<span class="err" id="{uid}-t" role="alert" data-wed-error="title">{t('wed.needTitle')}</span>{/if}
     </label>
@@ -112,13 +112,13 @@
         <label class="f">
           <span class="fl">{t('wed.field.start')}</span>
           <span class="pair">
-            <input class="fld" type="date" bind:value={draft.start} data-wed-field="start" data-sfx="none" />
+            <input class="input" type="date" bind:value={draft.start} data-wed-field="start" data-sfx="none" />
             {#if draft.start}<button type="button" class="chip s clear" data-sfx="tick" onclick={() => (draft.start = '')}>{t('wed.clear')}</button>{/if}
           </span>
         </label>
         <label class="f">
           <span class="fl">{t('wed.field.due')}<b class="req">{t('wed.field.required')}</b></span>
-          <input class="fld" type="date" bind:value={draft.due} aria-required="true" data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
+          <input class="input" type="date" bind:value={draft.due} aria-required="true" data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
             aria-describedby={errors.due ? `${uid}-d` : undefined} />
           {#if errors.due}<span class="err" id="{uid}-d" role="alert" data-wed-error="due">{t('wed.needDue')}</span>{/if}
         </label>
@@ -175,12 +175,6 @@
   .f { display: grid; gap: 6px; min-width: 0; }
   .fl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .03em; padding-left: 4px; }
   .req { margin-left: 6px; color: var(--coral-text); }
-  /* a field: the cream control with the edge, 16px (no iOS zoom) */
-  .fld {
-    width: 100%; min-width: 0; min-height: var(--hit); box-sizing: border-box; padding: 8px 12px; border: 0; border-radius: var(--r-btn);
-    font: 400 var(--fs-input)/1.3 var(--font-body); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .fld[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .pair { display: flex; gap: 6px; align-items: center; min-width: 0; }
   .pair input { flex: 1; min-width: 0; }

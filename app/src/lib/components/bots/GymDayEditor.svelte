@@ -157,10 +157,10 @@
             <div class="when">
               <label class="lbl" for="gym-from-date">{t('gym.editor.fromDate')}</label>
               <label class="lbl" for="gym-from-time">{t('gym.editor.fromPick')}</label>
-              <select id="gym-from-date" class="pick" data-gym-from-date data-sfx="none" value={fromDate} onchange={setFromDate}>
+              <select id="gym-from-date" class="input pick" data-gym-from-date data-sfx="none" value={fromDate} onchange={setFromDate}>
                 {#each dates as d (d)}<option value={d}>{dateLabel(d, row.day)}</option>{/each}
               </select>
-              <select id="gym-from-time" class="pick" data-gym-from-time data-sfx="none"
+              <select id="gym-from-time" class="input pick" data-gym-from-time data-sfx="none"
                 value={row.from !== null && localDateAt(row.from) === fromDate ? String(row.from) : ''} onchange={setFrom}>
                 <option value="" disabled>{t('gym.editor.fromChoose')}</option>
                 {#each times as c (c.at)}<option value={String(c.at)} disabled={!c.ok}>{c.clock}</option>{/each}
@@ -193,11 +193,7 @@
   /* the start day and time side by side, each under its label */
   .when { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
   .when .lbl { margin-top: 0; }
-  /* 16px so Safari doesn't zoom; the app's field look */
-  .pick {
-    min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); appearance: none;
-    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
+  .pick { font-family: var(--font-num); }
   .reset { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
   .reset .btn { margin: 0; }
   .reset small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

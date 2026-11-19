@@ -67,7 +67,7 @@
         {#snippet head()}<p class="note">PhraseCard · head</p>{/snippet}
         {#snippet actions()}<button type="button" class="quiet" data-sfx="tick">actions</button>{/snippet}
       </PhraseCard>
-      <div class="card form"><label class="fld">.card.form<input type="text" /></label><label class="fld">メモ<input type="text" /></label></div>
+      <div class="card form"><label class="fld">.card.form · .input<input class="input" type="text" placeholder="メモ" /></label><label class="fld">.input.num<span class="u"><input class="input num" type="text" inputmode="numeric" value="8,000" />歩</span></label><label class="fld">aria-invalid<input class="input" type="text" aria-invalid="true" /></label></div>
       <hr class="stitch" />
       <p class="grain note">Body text in --font-body 15/1.45; a note in --fs-s.</p>
     </div>
@@ -78,7 +78,7 @@
 <ActionSheet name="kit.acts" bind:open={acts} title="現金" groups={[[{ id: 'edit', label: '編集', icon: 'edit' }, { id: 'up', label: '上へ', icon: 'up', off: true }], [{ id: 'rm', label: '削除', icon: 'trash', danger: true }]]} onpick={() => {}} />
 
 <Sheet name="kit.form" bind:open={form} label="タスク" title="タスク" focusField>
-  <label class="fld">タイトル<input type="text" /></label>
+  <label class="fld">タイトル<input class="input" type="text" /></label>
   {#snippet footer()}<button type="button" class="btn" data-sfx="confirm" onclick={() => (form = false)}>保存</button>{/snippet}
 </Sheet>
 
@@ -92,5 +92,5 @@
   .icons { display: flex; flex-wrap: wrap; gap: 8px; color: var(--text); }
   .note { margin: 0; padding: 12px; border-radius: var(--r-row); }
   .fld { display: grid; gap: 6px; }
-  .fld input { min-height: var(--hit); padding: 0 12px; border: 0; border-radius: var(--r-chip); background: var(--card); box-shadow: inset 0 0 0 1.5px var(--edge); }
+  .u { display: flex; align-items: center; gap: 6px; }
 </style>
