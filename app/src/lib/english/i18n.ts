@@ -119,7 +119,7 @@ const S = {
   mean: { ja: '意味', en: 'Meaning' },
   trap: { ja: '迷いやすい点', en: 'Easy to mix up' },
   use: { ja: '使えるフレーズ', en: 'A phrase to use' },
-  details: { ja: 'くわしく', en: 'More' },
+  details: { ja: '詳しく', en: 'More' },
   endHead: { ja: 'おつかれさま！', en: 'Nice work' },
   endDone: { ja: 'この動画は完了だよ', en: 'This clip is done' },
   endAgain: { ja: 'もう一度聞きたい場面', en: 'Scenes to hear again' },
