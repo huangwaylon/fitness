@@ -35,6 +35,7 @@
   "food.pfc.label": "Protein {p}%, fat {fa}%, carbs {c}%",
   "food.pfc.labelAl": ", alcohol {al}%",
   "food.mealP": "Protein {n}g",
+  "food.pfcHigh": "high",
   "food.mealPAim": " (aim {goal}g)",
   "food.fresh.act": "Use the latest values",
   "food.fresh.actK": "Use the latest values ({from}→{to} kcal)",

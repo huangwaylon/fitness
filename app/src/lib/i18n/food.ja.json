@@ -35,6 +35,7 @@
   "food.pfc.label": "たんぱく質 {p}%、脂質 {fa}%、炭水化物 {c}%",
   "food.pfc.labelAl": "、アルコール {al}%",
   "food.mealP": "たんぱく質 {n}g",
+  "food.pfcHigh": "多め",
   "food.mealPAim": "（目安 {goal}g）",
   "food.fresh.act": "最新の値にする",
   "food.fresh.actK": "最新の値にする（{from}→{to} kcal）",

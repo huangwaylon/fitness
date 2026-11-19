@@ -4,7 +4,7 @@
   // over: goalChip; the goal at the upper right, GoalEdit, set there on my own day), then protein, fat, carbs and salt,
   // each with its goal and its direction when there is one (「目標 110 g 以上」: グラフ sets them; protein's default
   // 1.6 g × the latest weigh-in, a member's with a weight) and a small bar, coral once past a ceiling (salt and fat at
-  // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, a row of four, then fibre (データなし while no
+  // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, P · F · C a row, then salt, fibre (データなし while no
   // entry knows it) and alcohol (on a day with any); then the PFC balance (PfcBar: the shares of energy against the
   // 食事摂取基準's ranges). A day with nothing logged: 「きろく
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
@@ -123,12 +123,13 @@
   .tg { flex: none; display: inline-flex; align-items: center; gap: 2px; color: var(--text-soft); }
   .tg svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 160ms var(--ease-soft); }
   .more[open] .tg svg { rotate: 180deg; }
-  .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; }
+  /* three a row: protein, fat and carbs on the first, salt, fibre (and alcohol) on the second (the user 2026-11-19) */
+  .cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; }
   dd.unknown { color: var(--text-soft); }
-  .cell { min-width: 0; padding: 8px 4px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
+  .cell { min-width: 0; padding: 8px 8px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }
   /* 「目標 110 g 以上」 wraps in a narrow tile rather than running past it, only at its spaces (keep-all: never 「目 / 標」);
-     「一部不明・」 its own line before it (the 4px sides fit 「目標 7.5 g 以下」 at 393) */
+     「一部不明・」 its own line before it */
   dd small { display: block; margin-top: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: normal; text-wrap: balance; word-break: keep-all; }
 </style>

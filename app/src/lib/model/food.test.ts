@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { copySources, customs, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { copySources, customs, entryPfc, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -45,6 +45,35 @@ describe('foodDay: a day’s meals and their totals', () => {
     const s = foldEvents(base, [ev('G', T + 1000, { id: 'fmeal010', at: T + 1000, rm: true }), set('G', 'fmeal011', T + 2000, { m: 's' })], null)!;
     expect(foodDay(s, 'G', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal011']);
     expect(foodDay(base, 'G', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal010']); // the base untouched
+  });
+});
+
+describe('entryPfc: an entry’s P / F / C as eaten, and the day’s totals as their sum', () => {
+  const CURRY = { id: 'kal:123', n: 'カレー', k: 729, p: 20.1, fa: 24.3, c: 106.7, s: 3.1, sv: true as const }; // per serving
+  const BAR = { id: '4901234567890', n: 'バー', k: 180, p: 15, fa: null, c: 18.25, s: null }; // a label without fat
+  it('scales by the grams eaten: a portion, ½ steps, typed grams, an sv item’s servings; unknown stays null', () => {
+    const near = (got: Record<string, number | null>, want: Record<string, number | null>) =>
+      Object.entries(want).forEach(([k, v]) => (v === null ? expect(got[k]).toBeNull() : expect(got[k]).toBeCloseTo(v, 10)));
+    near(entryPfc({ g: 150, f: RICE }), { p: 3.75, fa: 0.45, c: 55.65 }); // 茶碗1杯
+    near(entryPfc({ g: 75, f: RICE }), { p: 1.875, fa: 0.225, c: 27.825 }); // ½杯
+    expect(entryPfc({ g: 37, f: NATTO }).p).toBeCloseTo(6.105, 10); // 37 g typed
+    near(entryPfc({ g: 100, f: CURRY }), { p: 20.1, fa: 24.3, c: 106.7 }); // 1食
+    expect(entryPfc({ g: 150, f: CURRY }).fa).toBeCloseTo(36.45, 10); // 1.5食
+    expect(entryPfc({ g: 50, f: CURRY }).c).toBeCloseTo(53.35, 10); // ½食
+    near(entryPfc({ g: 40, f: BAR }), { p: 6, fa: null, c: 7.3 }); // fat unknown: null, not 0
+  });
+
+  it('the day’s P, F and C are the unrounded sum of its entries’, rounded once (not the rows’ rounded values added)', () => {
+    const items = [[150, RICE], [75, RICE], [45, NATTO], [150, CURRY], [50, CURRY], [40, BAR], [33, NATTO]] as const;
+    const s = reduce({ metrics: [], events: items.map(([g, f], i) => ev('A', T + i * 1000, { id: `fmeal2${i}0`, at: T + i * 1000, d: '2026-11-03', m: 'l', g, f })) });
+    const day = foodDay(s, 'A', '2026-11-03');
+    expect(day.entries).toHaveLength(items.length);
+    for (const k of ['p', 'fa', 'c'] as const) {
+      const sum = day.entries.reduce((a, e) => a + (entryPfc(e)[k] ?? 0), 0);
+      expect(day[k]).toBe(Math.round(sum * 10) / 10);
+    }
+    // by hand: 55.65 + 27.825 + 5.445 + 160.05 + 53.35 + 7.3 + 3.993; protein 64.695, its rows whole adding to 64
+    expect(day).toMatchObject({ p: 64.7, c: 313.6, fa: 57.1 }); // 0.45 + 0.225 + 4.5 + 36.45 + 12.15 + 3.3 (the bar’s unknown fat as none)
   });
 });
 

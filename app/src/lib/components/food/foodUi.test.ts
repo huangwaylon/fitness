@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { DAYS, daysText, entryPfcCells, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -379,5 +379,18 @@ describe('keptRows: a dataset coming in never reshuffles the rows shown', () => 
     // and again (another dataset, two new products): a kept row ranked high in the top stays, a low one makes room
     const again = keptRows(full, [...full.slice(0, 24), full[79], ...Array.from({ length: 2 }, (_, i) => it(i, `new:${i}`)), ...full.slice(24, 77)], db);
     expect([again.length, again.includes(full[79]), again.slice(-2).map((x) => x.id)]).toEqual([KEPT_MAX, true, ['new:0', 'new:1']]);
+  });
+});
+
+describe('entryPfcCells: a row’s P · F · C as eaten', () => {
+  const f = { p: 16.5, fa: 10, c: 0.4 };
+  const cells = (g: number, snap: { p: number | null; fa: number | null; c: number | null } = f) => entryPfcCells({ g, f: snap }).map((c) => [c.k, c.text, c.high]);
+  it('whole grams, a trace under 1 g to one decimal, unknown 「–」 (never 0), a lot flagged (PFC_HIGH)', () => {
+    expect(cells(100)).toEqual([['p', '17', false], ['fa', '10', false], ['c', '0.4', false]]);
+    expect(cells(150)).toEqual([['p', '25', true], ['fa', '15', true], ['c', '0.6', false]]); // 1.5: P 24.75, F 15
+    expect(cells(50)).toEqual([['p', '8', false], ['fa', '5', false], ['c', '0.2', false]]); // ½
+    expect(cells(100, { p: 0, fa: null, c: 70 })).toEqual([['p', '0', false], ['fa', '–', false], ['c', '70', true]]);
+    expect(cells(150, { p: 0.3, fa: 0.3, c: 0.3 }).map((c) => c[1])).toEqual(['0.5', '0.5', '0.5']); // 0.45 half up, not 0.4 (0.3 × 1.5 is 0.4499…)
+    expect(cells(100, { p: 0.96, fa: 0.94, c: 0 })).toEqual([['p', '1', false], ['fa', '0.9', false], ['c', '0', false]]);
   });
 });

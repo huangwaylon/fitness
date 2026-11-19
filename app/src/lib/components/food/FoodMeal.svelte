@@ -1,6 +1,6 @@
 <script lang="ts">
   // One meal of a person's day (朝ごはん · 昼ごはん · 夜ごはん · おやつ): its kcal, then a row per entry (the food,
-  // its amount, its kcal; on its left the food's picture box, FoodThumb at 40px: its picture, else its category's tile,
+  // its amount, its P · F · C as eaten (a lot of one tinted: foodUi.ts entryPfcCells), its kcal; on its left the food's picture box, FoodThumb at 40px: its picture, else its category's tile,
   // the user 2026-11-07: "show the images in the main lists in kiroku"). On my own day ＋ opens the search for this meal, and an entry opens its amount to change or
   // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
   // chip in the header (my day: a tap manages it; else only shown), its entries marked 🔁 (a day taken out of it shows
@@ -15,7 +15,7 @@
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
   import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { daysText, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
+  import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -68,6 +68,7 @@
   <span class="nm">{e.f.n}</span>
   <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
+  <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e) as c (c.k)}<span class="m m-{c.k}" class:hi={c.high} data-pfc-of={c.k} data-high={c.high || undefined}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.high}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
 {/snippet}
 
 <section class="card meal" data-meal={meal} aria-labelledby="fm-{meal}">
@@ -159,7 +160,7 @@
   li + li { border-top: 1.5px dashed var(--stitch); }
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;
-    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th amt kc'; align-items: center;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th amt kc' 'th pfc kc'; align-items: center;
     column-gap: 10px; min-height: var(--row-obj); padding: 6px 2px;
   }
   button.row { cursor: pointer; border-radius: var(--r-chip); }
@@ -169,6 +170,15 @@
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .kc { grid-area: kc; font-size: var(--fs-body); }
+  /* the entry's P · F · C (g, as eaten): soft, small; one that's a lot (model/food.ts PFC_HIGH) in ink on a tint of its
+     PFC colour (PfcBar's: leaf, yuzu, mint), so a plate heavy in one reads at a glance */
+  .pfc { grid-area: pfc; display: flex; flex-wrap: wrap; gap: 0 4px; margin-top: 2px; font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); }
+  .m { white-space: nowrap; padding: 1px 5px; border-radius: var(--r-pill); }
+  .m.hi { color: var(--text); font-weight: 800; }
+  .m-p.hi { background: color-mix(in srgb, var(--c-leaf) 38%, transparent); }
+  .m-fa.hi { background: color-mix(in srgb, var(--c-yuzu) 45%, transparent); }
+  .m-c.hi { background: color-mix(in srgb, var(--c-mint) 42%, transparent); }
+  .m:first-child { margin-left: -5px; }
   .rm { display: inline-flex; }
   /* 最新の値にする: a text link's weight under its row (as いつものに する), a 44px target all the same */
   .fresh {

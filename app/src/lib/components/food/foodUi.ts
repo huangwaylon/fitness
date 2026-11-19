@@ -3,7 +3,7 @@
 // states, the さいきん list and the shops, the goal's chip, a repeat's weekdays in words, and a recipe as a food
 // (マイレシピ: its portions). The catalog itself: dbHold.svelte.ts; portions: portions.ts; マイ食品 and クイック: drafts.ts.
 import { FOOD_GRAMS, recipePortion, recipeSnap, round1, type FoodEntry, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
-import type { Recipe } from '#lib/model/food.ts';
+import { entryPfc, PFC_HIGH, type PfcOf, type Recipe } from '#lib/model/food.ts';
 import { itemById, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { imgOf, type FoodImageIndex, type FoodImg } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
@@ -341,3 +341,14 @@ export function keptRows(shown: readonly Item[], found: readonly Item[], db: Foo
   const stay = rest.filter((it) => inTop.has(it) || (!ids.has(it.id) && room-- > 0));
   return [...kept.slice(0, KEPT_HEAD), ...stay, ...fresh];
 }
+
+/** An entry's P, F and C for its row on きろく (model/food.ts entryPfc, PFC_HIGH): each one's grams as shown (whole; under
+ *  1 g one decimal, so a trace isn't 「0」; 「–」 unknown, never 0) and whether it's a lot. */
+export function entryPfcCells(e: { g: number; f: Pick<FoodSnap, PfcOf> }): { k: PfcOf; text: string; high: boolean }[] {
+  const m = entryPfc(e);
+  return PFC_KEYS.map((k) => {
+    const v = m[k];
+    return { k, text: v === null ? t('food.unknown') : v > 0 && v < 0.95 ? round1(v).toFixed(1) : String(Math.round(v)), high: v !== null && v >= PFC_HIGH[k] };
+  });
+}
+const PFC_KEYS = ['p', 'fa', 'c'] as const;

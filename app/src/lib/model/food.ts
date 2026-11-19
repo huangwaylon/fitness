@@ -231,9 +231,10 @@ const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, al
 function addTo(t: Totals, g: number, f: FoodSnap): void {
   const x = g / 100;
   t.k += f.k * x;
-  t.p += (f.p ?? 0) * x;
-  t.fa += (f.fa ?? 0) * x;
-  t.c += (f.c ?? 0) * x;
+  const m = entryPfc({ g, f });
+  t.p += m.p ?? 0;
+  t.fa += m.fa ?? 0;
+  t.c += m.c ?? 0;
   t.s += (f.s ?? 0) * x;
   t.al += (f.al ?? 0) * x;
   if (f.fi !== undefined && f.fi !== null) t.fi = (t.fi ?? 0) + f.fi * x;
@@ -355,6 +356,22 @@ export function pfcShare(g: { p: number; fa: number; c: number; al?: number }): 
   };
   return { ...out, at: { p: at('p'), fa: at('fa'), c: at('c') } };
 }
+
+/**
+ * An entry's protein, fat and carbs (g), unrounded: its grams over 100 times its snapshot's per 100 g (an `sv` item's
+ * grams are its servings × 100, so ½ a serving is 50; a recipe's snapshot is per 100 g of it too). Null where the
+ * snapshot doesn't know it (shown 「–」, never 0). A day's totals add these very values (addTo), rounding once.
+ */
+export function entryPfc(e: { g: number; f: Pick<FoodSnap, PfcOf> }): Record<PfcOf, number | null> {
+  const x = e.g / 100;
+  const of = (v: number | null | undefined) => (v === null || v === undefined ? null : v * x);
+  return { p: of(e.f.p), fa: of(e.f.fa), c: of(e.f.c) };
+}
+
+/** An entry's P, F or C counts as a lot from about a quarter of a 2,000 kcal day's (the PFC_RANGES' midpoints: protein
+ *  16.5 %E ≈ 83 g, fat 25 %E ≈ 56 g, carbohydrate 57.5 %E ≈ 288 g, a quarter each, rounded): its value stands out on
+ *  きろく's row. */
+export const PFC_HIGH: Record<PfcOf, number> = { p: 20, fa: 15, c: 70 };
 
 /** What a meal's entries hold of protein (g, one decimal; an unknown one as none): its chip on きろく. */
 export const mealProtein = (entries: readonly { g: number; f: FoodSnap }[]): number => round1(entries.reduce((s, { g, f }) => s + ((f.p ?? 0) * g) / 100, 0));

@@ -184,8 +184,8 @@ loads with the first search, or at idle, in a worker); kept mounted between open
   own cards. **Defaults** while unset: kcal from the daily energy, protein and salt by the profile ([Profile](#profile));
   fibre by sex and age; alcohol 20 g ([decisions](decisions.md#fibre-and-alcohol)); none for fat and carbs. **Warn,
   allow** ([decisions](decisions.md#low-kcal-goals-warn-allow)): a low kcal goal gets a note, never a block.
-- **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry. On my day ＋ opens the search (the
-  keyboard up in the same tap); anyone else's day is read-only. An entry keeps its food as logged (mine offers a
+- **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry, its P·F·C. On my day ＋ opens the
+  search (keyboard up in the same tap); anyone else's is read-only. An entry keeps its food as logged (mine offers a
   changed food's latest values); an empty meal offers yesterday's and another person's, copied as mine with 取り消す;
   **quick** (⚡, or a kcal typed) logs one serving.
 - **Search** (`FoodSearch`'s header; the ranking `food/search.ts`, its golden queries `food/load.test.ts`): my recent
