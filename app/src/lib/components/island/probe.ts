@@ -340,16 +340,25 @@ export function propsOf(root: Pick<ParentNode, 'querySelector' | 'querySelectorA
 }
 export type Props = ReturnType<typeof propsOf>;
 
-/** A tree shake's leavings: what fell (to pick up), the nests, the swarms. */
+/** A tree shake's leavings: what fell to pick up (`what`: branch (`id` its tree), coconut, wood (`item` its kind:
+ *  softwood, …), dangler (`id` the bug: its net's tap area, there while it dangles)), the nests, the swarms (`side`: the
+ *  villager they charge), the bug dangling on its thread (`up`: climbing back into the tree). */
 export const shakesOf = (root: Root) => ({
   drops: all(root, DROPS.map((a) => `[${a}]`).join(', ')).map((n) => {
     const a = DROPS.find((a) => n.hasAttribute(a))!;
-    return { what: a.replace(/^data-|-id$/g, ''), id: n.getAttribute(a) ?? '', box: rect(n) };
+    return { what: a.replace(/^data-|-id$/g, ''), id: n.getAttribute(a) ?? '', item: n.getAttribute('data-wood'), box: rect(n) };
   }),
   nests: all(root, '[data-nest]').map((n) => ({ tree: n.getAttribute('data-nest') ?? '', fading: hasClass(n, 'fading') })),
-  swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') }))
+  swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') })),
+  dangles: all(root, '[data-dangle]').map((n) => ({ bug: n.getAttribute('data-dangle') ?? '', up: hasClass(n, 'up') }))
 });
 export type Shakes = ReturnType<typeof shakesOf>;
+
+/** The bulletin board as shown (Board.svelte): `unseen`, its 「！」 up (a note I haven't read), or null (not out). */
+export function boardOf(root: Pick<ParentNode, 'querySelector'>): { unseen: boolean } | null {
+  const b = root.querySelector('[data-board]');
+  return b ? { unseen: b.hasAttribute('data-unseen') } : null;
+}
 
 /** A goal tree's fruit (`tree`: its person): each fruit's id, its stage (tree, fall, ground), up in the canopy or
  *  down, its drop playing, its grey (fruitDay.ts greyAt: 1 at 0 %, 0 once met); `box('fruit', 'tree:f')` where. */

@@ -8,7 +8,7 @@
 // keyboard and its bar) and checks the field and its controls lie in the visible part, the face above them;
 // `SHOTS=<dir>` writes `board-keyboard.png`.
 import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { boardUnseen, islandUp, tapBoard } from './island.ts';
 import { RELAY } from './relay.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { hudMenu } from './hud.ts';
@@ -26,13 +26,12 @@ async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   return page;
 }
 
-const boardButton = (p: Page) => p.getByRole('button', { name: 'けいじばんを みる' });
 const view = (p: Page) => p.getByRole('dialog', { name: 'けいじばん' });
 const note = (p: Page, text: string) => view(p).getByRole('button', { name: new RegExp(`「${text}」$`) });
 
 async function openBoard(p: Page) {
   await p.bringToFront();
-  await boardButton(p).click();
+  await tapBoard(p);
   await expect(view(p)).toBeVisible({ timeout: 10_000 });
 }
 async function write(p: Page, text: string) {
@@ -54,7 +53,6 @@ test('a tap walks my villager up to the board, it opens, and a note written ther
   void page;
   const a = await open(context, 'A');
   const before = await a.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
-  await boardButton(a).scrollIntoViewIfNeeded();
   await openBoard(a);
   // my villager walked up to it first (it stands in front of the board's face, on the beach)
   const after = await a.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
@@ -78,7 +76,7 @@ test('a tap walks my villager up to the board, it opens, and a note written ther
   await expect(view(a).locator('[data-board-read] b')).toHaveText('ウェイ');
   await close(a);
   // my own notes put no 「！」 over the board
-  await expect(a.locator('[data-board][data-unseen]')).toHaveCount(0);
+  await expect.poll(() => boardUnseen(a)).toBe(false);
 });
 
 test('a second phone sees the note at once; an author edits and takes down their own, a member anyone’s', async ({ browser }) => {
@@ -88,11 +86,11 @@ test('a second phone sees the note at once; an author edits and takes down their
   await write(a, 'つりたいかい 3じから');
   // うめ's phone: the 「！」 over the board, then the note on it
   await b.bringToFront();
-  await expect(b.locator('[data-board][data-unseen]')).toHaveCount(1, { timeout: 10_000 });
+  await expect.poll(() => boardUnseen(b), { timeout: 10_000 }).toBe(true);
   await openBoard(b);
   await expect(note(b, 'つりたいかい 3じから')).toBeVisible();
   await close(b);
-  await expect(b.locator('[data-board][data-unseen]')).toHaveCount(0);
+  await expect.poll(() => boardUnseen(b)).toBe(false);
   // ウェイ edits it: うめ sees the new text
   await a.bringToFront();
   await note(a, 'つりたいかい 3じから').click();
@@ -217,7 +215,7 @@ async function pairedWithPost(page: Page) {
 test('a note in the record’s snapshot is on the board when it opens', async ({ page }) => {
   test.setTimeout(60_000);
   await pairedWithPost(page);
-  await expect(page.locator('[data-board][data-unseen]')).toHaveCount(1, { timeout: 10_000 });
+  await expect.poll(() => boardUnseen(page), { timeout: 10_000 }).toBe(true);
   await openBoard(page);
   await expect(note(page, 'Hi!!')).toBeVisible();
   expect(await drawn(page)).toEqual(['Hi!!']);

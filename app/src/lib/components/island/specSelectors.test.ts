@@ -42,6 +42,13 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   // fxLog(): the tap's ring (mine v null, a partner's '#ddefff') and the high five's zap as they fired (fxSince, pageNow;
   // watchComings' { fx, v })
   rings: [/data-(zap|ring)(?![\w-])/, /\.tap-ring/],
+  // shakes(): the drops to pick up (what: branch, coconut, wood (item its kind), dangler; id; box), nests, swarms (side,
+  // stung), the dangling bug (up) (shakesOut, dropsOut; watchComings' { shake }); box('drop' | 'swarm', id), pick's kinds
+  // (and never their buttons' labels: decision 3 drops them)
+  shakes: [/data-(wood|wood-id|dangle|dangler|nest|swarm|branch|coconut)(?![\w-])/, /(button|['"` ])\.(swarm|dangle|nest|pick|thread|dbug)(?![\w(`-])/, /(木のえだ|ヤシのみ|もくざい)を ひろう|(ハチ|むし)を つかまえる/],
+  // board(): its 「！」 up (boardUnseen); tapBoard (pick's and box's 'board'), never its button's label or class. (The
+  // board's sheet, data-board-read / -write / -view / -older…, is an overlay: it stays.)
+  board: [/data-(board|unseen)(?![\w-])/, /けいじばんを みる/, /(button|['"` ])\.board(?![\w-])/],
   // the bridge's markers (what the 3D island draws instead of a node's art): what().hidden, things(id), modelAt(id)
   bridge: [/data-(m3art|v3)(?![\w-])/, /\.m3(on|off)(?![\w-])/]
 };

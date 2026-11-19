@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, careOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, sceneryAll, sceneryOf, spotsOf, visitorsOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boardOf, boxOf, careOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, findsOf, fruitOf, fxLog, goalOf, pickOf, propsOf, sceneryAll, sceneryOf, shakesOf, spotsOf, visitorsOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -316,5 +316,36 @@ describe('controls', () => {
       { kind: 'building', id: 'museum', box: { left: 5, top: 6, width: 7, height: 8 } },
       { kind: 'ui', id: 'メニュー', box: { left: 1, top: 2, width: 3, height: 4 } }
     ]);
+  });
+});
+
+describe('shakes and the board', () => {
+  it("reads a shake's leavings: each drop (a branch by its tree, a coconut, wood and its kind, the dangler), nests, swarms, the dangling bug", () => {
+    const drops = [
+      el('button', { 'data-branch': 'oak-m1' }, [], {}, [1, 2, 3, 4]), el('button', { 'data-coconut': 'c7' }, [], {}, [0, 0, 5, 5]),
+      el('button', { 'data-wood': 'softwood', 'data-wood-id': 'wd:oak-m1:0' }, [], {}, [0, 0, 6, 6]), el('button', { 'data-dangler': 'bagworm' }, [], {}, [0, 0, 7, 7])
+    ];
+    const lists: Record<string, Fake[]> = {
+      '[data-coconut], [data-wood-id], [data-branch], [data-dangler]': drops,
+      '[data-nest]': [el('span', { 'data-nest': 'goal-A', class: 'drop nest fading' })],
+      '[data-swarm]': [el('button', { 'data-swarm': 'mine', class: 'swarm stung' })],
+      '[data-dangle]': [el('span', { 'data-dangle': 'spider', class: 'dangle spider up' })]
+    };
+    const root = { querySelectorAll: (s: string) => lists[s] ?? [] } as unknown as ParentNode;
+    expect(shakesOf(root)).toEqual({
+      drops: [
+        { what: 'branch', id: 'oak-m1', item: null, box: { left: 1, top: 2, width: 3, height: 4 } },
+        { what: 'coconut', id: 'c7', item: null, box: { left: 0, top: 0, width: 5, height: 5 } },
+        { what: 'wood', id: 'wd:oak-m1:0', item: 'softwood', box: { left: 0, top: 0, width: 6, height: 6 } },
+        { what: 'dangler', id: 'bagworm', item: null, box: { left: 0, top: 0, width: 7, height: 7 } }
+      ],
+      nests: [{ tree: 'goal-A', fading: true }], swarms: [{ side: 'mine', stung: true }], dangles: [{ bug: 'spider', up: true }]
+    });
+    expect(shakesOf(el('div'))).toEqual({ drops: [], nests: [], swarms: [], dangles: [] });
+  });
+  it('the board: its 「！」 up or not; not out: null', () => {
+    expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '', 'data-unseen': '' }) }))).toEqual({ unseen: true });
+    expect(boardOf(el('div', {}, [], { '[data-board]': el('button', { 'data-board': '' }) }))).toEqual({ unseen: false });
+    expect(boardOf(el('div'))).toBeNull();
   });
 });

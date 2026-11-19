@@ -5,7 +5,7 @@
 // lost its own record of the day gets my claims back in the relay's replay; what I had opened lay there again on my
 // phone and a tap did nothing (my claim was the day's already: it can't be made twice). Now a claim, mine too, is gone.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, findCount, findsOut, geo, type Aim, type Geo, islandUp, openNear, quiet, tapAt } from './island.ts';
+import { camTo, dropsOut, findCount, findsOut, geo, type Aim, type Geo, islandUp, openNear, quiet, tapAt, tapBox } from './island.ts';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';
 import { defaultLayout, layoutOf } from '../src/lib/layout/model.ts';
 import { navOf, type LayoutNav } from '../src/lib/layout/nav.ts';
@@ -83,14 +83,8 @@ test('presents and wood are collected where they’re drawn: a tree’s present 
     { kind: 'put', id: 'pbpond', what: 'present', at: byWater, who: 'B', t: T + 30 }
   ]);
   await tapGift(page, `tf:${tree.id}`, nearTree[1]);
-  // the wood beside it: a button of its own, under the finger
-  await camTo(page, woodAt[1] - 114);
-  const wood = page.locator(`[data-wood-id="wd:${tree.id}:0"]`);
-  await expect(wood).toHaveCount(1);
-  const b = (await wood.boundingBox())!;
-  await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
-  await expect.poll(() => pickedBy(page, `wd:${tree.id}:0`)).toEqual(['A:wood']);
-  await expect(wood).toHaveCount(0);
+  // the wood beside it: a tap area of its own, under the finger
+  await tapWood(page, `wd:${tree.id}:0`, woodAt[1]);
   await tapGift(page, 'pbshop', beforeShop[1]);
   await tapGift(page, 'pbpond', byWater[1]);
 });
@@ -119,7 +113,7 @@ test('a phone that lost its own record of the day: what I opened (the relay’s 
   await camTo(page, z - 114);
   await expect.poll(() => findCount(page, 'present')).toBe(1);
   expect((await findsOut(page, 'present')).map((f) => f.uid)).toEqual(['pafresh']);
-  await expect(page.locator('[data-wood-id]')).toHaveCount(0);
+  expect(await dropsOut(page, 'wood')).toEqual([]);
   await tapGift(page, 'pafresh', left[1]);
   await expect.poll(() => findCount(page, 'present')).toBe(0);
 });
@@ -145,15 +139,15 @@ async function offTheBuildings(page: Page, id: string, g: LayoutNav, put: readon
   expect(onBuilding(g, at[0], at[1], 0), `${id} drawn at ${at}`).toBe(false);
   return at;
 }
-/** A finger's tap on a piece of wood, where it's drawn: picked up by A, gone. */
+/** How many pieces of wood `id` lie out (`__world3d.shakes`' drops). */
+const woodOut = async (page: Page, id: string) => (await dropsOut(page, 'wood')).filter((d) => d.id === id).length;
+/** A finger's tap on a piece of wood (its tap area's middle, `box('drop', id)`), where it's drawn: picked up by A, gone. */
 async function tapWood(page: Page, id: string, z: number) {
   await camTo(page, z - 114);
-  const wood = page.locator(`[data-wood-id="${id}"]`);
-  await expect(wood).toHaveCount(1);
-  const b = (await wood.boundingBox())!;
-  await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
+  await expect.poll(() => woodOut(page, id)).toBe(1);
+  await tapBox(page, 'drop', id, { clear: null });
   await expect.poll(() => pickedBy(page, id)).toEqual(['A:wood']);
-  await expect(wood).toHaveCount(0);
+  await expect.poll(() => woodOut(page, id)).toBe(0);
 }
 
 test('what lay on a building’s ground (behind the shop, on the museum’s steps) is drawn off it and collected by touch', async ({ page }) => {

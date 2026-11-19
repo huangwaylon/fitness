@@ -4,7 +4,7 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { canopyAt, fxSince, is3d, islandUp, pageNow, quiet, shakeTree as shake, villager, type W3 } from './island.ts';
+import { canopyAt, dropsOut, fxSince, is3d, islandUp, mid, pageNow, quiet, shakesOut, shakeTree as shake, tapBox, tapOn, villager, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -23,6 +23,11 @@ async function open(page: Page, q = '') {
 /** Whether any villager shows a sting's fright. */
 const stungAny = async (page: Page) => (await Promise.all(['mine', 'partner', 'third'].map((s) => villager(page, s)))).some((a) => !!a?.stung);
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
+/** How many of a shake's leavings of a kind are out (`__world3d.shakes`). */
+const nests = async (page: Page) => (await shakesOut(page)).nests.length;
+const swarms = async (page: Page) => (await shakesOut(page)).swarms.length;
+const dangles = async (page: Page, bug?: string) => (await shakesOut(page)).dangles.filter((d) => !bug || d.bug === bug).length;
+const drops = async (page: Page, what: string, id?: string) => (await dropsOut(page, what)).filter((d) => !id || d.id === id).length;
 test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   let c = await canopyAt(page);
@@ -32,10 +37,10 @@ test('one tap opens the popup and drops nothing; two close it; the third quick t
   c = await canopyAt(page);
   await page.mouse.click(c.x, c.y);
   await expect(page.locator('.detail')).toHaveCount(0);
-  await expect(page.locator('[data-nest]')).toHaveCount(0);
+  expect(await nests(page)).toBe(0);
   await shake(page, { onClock: true });
   await expect(page.locator('.detail')).toHaveCount(0); // the shake closes it
-  await expect(page.locator('[data-nest]')).toHaveCount(1);
+  await expect.poll(() => nests(page)).toBe(1);
   expect(await cues(page)).toContain('tree-shake');
 });
 
@@ -43,19 +48,19 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
   await open(page, '&shake=nest');
   const bells = await hudBells(page).getAttribute('aria-label');
   await shake(page, { onClock: true });
-  await expect(page.locator('[data-nest]')).toHaveCount(1);
-  const swarm = page.locator('button[data-swarm]');
-  await expect(swarm).toBeVisible({ timeout: 2000 });
-  await expect(swarm).toHaveAttribute('data-sfx', 'self');
+  await expect.poll(() => nests(page)).toBe(1);
+  // (polled every 100 ms: they come out 1.2 s after the nest and sting 1.5 s later)
+  await expect.poll(async () => (await shakesOut(page)).swarms.map((s) => s.side), { timeout: 3000, intervals: [100] }).toEqual(['mine']);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-nest', 'scene-buzz']));
-  const b = (await swarm.boundingBox())!;
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  // (its box's middle at the tap: the swarm flies)
+  await tapBox(page, 'swarm', 'mine', { clear: null, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText('ハチを つかまえた！', { timeout: 3000 });
+  // the net's and the catch's own cues (no other tap sound: the scene plays them)
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
-  await expect(swarm).toHaveCount(0);
+  expect(await swarms(page)).toBe(0);
   await page.waitForTimeout(1800);
   await expect.poll(() => stungAny(page)).toBe(false);
-  await expect(page.locator('[data-nest]')).toHaveCount(0); // the nest goes once the wasps are out
+  await expect.poll(() => nests(page)).toBe(0); // the nest goes once the wasps are out
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   // the shared day keeps the nest (one per tree an hour, on both phones): my tree's
   const day = JSON.parse((await page.evaluate(() => localStorage.getItem('island-demo.world.A')))!) as { events: { kind: string; tree?: string; drop?: string }[] };
@@ -65,17 +70,17 @@ test('a nest falls; its wasps charge my villager; a tap in time nets one: NH’s
 test('too late: the wasps sting the villager on that side (a fright, a sweat drop, the swollen eye) and fly off', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   await shake(page, { onClock: true });
-  await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
+  await expect.poll(() => swarms(page), { timeout: 3000, intervals: [100] }).toBe(1);
   // the left tree's wasps go for the villager on the left, at its face where it stands
   await expect.poll(async () => !!(await villager(page))?.stung, { timeout: 2500 }).toBe(true);
   // (both boxes at one moment: the swarm flies off after the sting, and read a round trip apart it had moved on)
   const [v, w] = await page.evaluate(() => {
-    const w3 = (window as unknown as { __world3d: W3 & { shakes(): { swarms: { side: string }[] } } }).__world3d;
+    const w3 = (window as unknown as { __world3d: W3 }).__world3d;
     return [w3.box('villager', 'mine')!, w3.box('swarm', w3.shakes().swarms[0].side)!];
   });
   expect(Math.abs(w.left + w.width / 2 - (v.left + v.width / 2))).toBeLessThan(v.width);
   expect(await cues(page)).toContain('scene-sting');
-  await expect(page.locator('button[data-swarm]')).toHaveCount(0, { timeout: 2000 });
+  await expect.poll(() => swarms(page), { timeout: 2000 }).toBe(0);
   // NH's swollen eye (the 3D villager's own: the next test), and it stays after the fright
   await expect.poll(async () => (await villager(page))?.swollen).toBe(true);
   await page.waitForTimeout(3000);
@@ -103,12 +108,11 @@ test('stung on the 3D island: the swollen eye is the 3D villager’s own (its lu
 test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=branch');
   await shake(page, { onClock: true });
-  const twig = page.locator('button[data-branch]');
-  await expect(twig).toHaveCount(1);
-  await expect(twig).toHaveAttribute('aria-label', '木のえだを ひろう');
+  await expect.poll(() => drops(page, 'branch')).toBe(1);
+  const [{ id }] = await dropsOut(page, 'branch');
   await page.waitForTimeout(700);
-  await twig.click();
-  await expect(twig).toHaveCount(0);
+  await tapOn(page, 'drop', id);
+  await expect.poll(() => drops(page, 'branch')).toBe(0);
   expect(await cues(page)).toContain('scene-twig');
   await expect(page.locator('.detail')).toHaveCount(0);
 });
@@ -116,27 +120,25 @@ test('a shaken branch lies beside the trunk until a tap picks it up', { tag: '@l
 test('no piles: while its branch lies under it, a tree’s shakes only rustle it (no wood, no bug, no nest, no second branch)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=branch');
   await shake(page, { onClock: true });
-  const twig = page.locator('button[data-branch]');
-  await expect(twig).toHaveCount(1);
+  await expect.poll(() => drops(page, 'branch')).toBe(1);
   for (let i = 0; i < 4; i++) {
     await page.clock.runFor(1300); // (a new run of taps)
     await shake(page, { onClock: true });
   }
   await page.clock.runFor(900); // (what would fall has fallen)
-  await expect(twig).toHaveCount(1);
-  await expect(page.locator('button[data-wood], [data-dangle], [data-nest], [data-swarm]')).toHaveCount(0);
+  const left = await shakesOut(page);
+  expect(left.drops.map((d) => d.what)).toEqual(['branch']);
+  expect([left.nests, left.swarms, left.dangles]).toEqual([[], [], []]);
 });
 
 test('a shake knocks out a piece of wood; picked up, it is in my pocket’s しげん at the shop and sells for かいがら', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=wood');
   await shake(page, { onClock: true });
-  const wood = page.locator('button[data-wood]');
-  await expect(wood).toHaveCount(1);
-  await expect(wood).toHaveAttribute('aria-label', 'もくざいを ひろう');
-  const what = (await wood.getAttribute('data-wood'))!;
+  await expect.poll(() => drops(page, 'wood')).toBe(1);
+  const [{ id, item: what }] = await dropsOut(page, 'wood');
   await page.waitForTimeout(700);
-  await wood.click();
-  await expect(wood).toHaveCount(0);
+  await tapOn(page, 'drop', id);
+  await expect.poll(() => drops(page, 'wood')).toBe(0);
   await expect(page.locator('.detail')).toHaveCount(0);
   await page.goto('shop?demo&date=2026-11-04T12:00');
   // the counter's うる list over the 3D shop
@@ -157,18 +159,14 @@ test('a shake drops a bagworm on its thread beside the trunk; a tap nets it (NH�
   await open(page, '&shake=bagworm');
   const bells = await hudBells(page).getAttribute('aria-label');
   await shake(page, { onClock: true });
-  await expect(page.locator('[data-dangle="bagworm"]')).toBeAttached();
-  const btn = page.locator('button[data-dangler="bagworm"]');
-  await expect(btn).toHaveAttribute('data-sfx', 'self');
-  await expect(btn).toHaveAttribute('aria-label', 'むしを つかまえる');
+  await expect.poll(() => dangles(page, 'bagworm')).toBe(1);
   await page.waitForTimeout(700); // down its thread
-  // its tap target is its own: clear of the canopy and the fruit row
-  const b = (await btn.boundingBox())!;
-  const under = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.getAttribute('data-dangler'), { x: b.x + b.width / 2, y: b.y + b.height / 2 });
-  expect(under).toBe('bagworm');
-  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  // its tap target is its own: clear of the canopy and the fruit row (a tap at its middle nets it)
+  const b = mid((await page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.box('drop', 'bagworm')))!);
+  expect(await page.evaluate(({ x, y }) => (window as unknown as { __world3d: W3 }).__world3d.pick(x, y), b)).toMatchObject({ kind: 'drop', id: 'bagworm' });
+  await page.mouse.click(b.x, b.y);
   await expect(page.locator('[data-fx="catch"]')).toContainText('ミノムシを つかまえた！', { timeout: 3000 });
-  await expect(page.locator('[data-dangle]')).toHaveCount(0);
+  expect(await dangles(page)).toBe(0);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-net', 'scene-catch']));
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
@@ -183,9 +181,9 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await is3d(page);
   await page.waitForTimeout(2600);
   await shake(page, { onClock: true });
-  await expect(page.locator('[data-dangle="spider"]')).toBeAttached();
+  await expect.poll(() => dangles(page, 'spider')).toBe(1);
   await page.clock.fastForward(11_500); // left alone (the page's clock, run on at once: its timers, not its every frame)
-  await expect(page.locator('[data-dangle]')).toHaveCount(0);
+  await expect.poll(() => dangles(page)).toBe(0);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
 });
 
@@ -216,7 +214,7 @@ test('a goal tree’s trunk and base answer a tap as its leaves do: the popup op
     await page.waitForTimeout(120);
   }
   await expect(page.locator('.detail')).toHaveCount(0);
-  await expect(page.locator('button[data-branch]')).toHaveCount(1, { timeout: 3000 });
+  await expect.poll(() => drops(page, 'branch'), { timeout: 3000 }).toBe(1);
 });
 
 test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wide); one only rustles', async ({ page }) => {
@@ -228,14 +226,14 @@ test('a plain tree’s trunk and base shake it on three quick taps (≥ 44px wid
   expect(p.w).toBeGreaterThanOrEqual(44);
   await page.mouse.click(p.x, p.y);
   await page.waitForTimeout(1400);
-  await expect(page.locator('button[data-branch]')).toHaveCount(0);
+  expect(await drops(page, 'branch')).toBe(0);
   const home = await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine());
   const t0 = await pageNow(page);
   for (let i = 0; i < 3; i++) {
     await page.mouse.click(p.x, p.y);
     await page.waitForTimeout(120);
   }
-  await expect(page.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
+  await expect.poll(() => drops(page, 'branch', 'oak-m1'), { timeout: 3000 }).toBe(1);
   // a tap on the tree is no walk
   expect(await page.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine())).toEqual(home);
   expect(await fxSince(page, 'ring', t0)).toBe(0);

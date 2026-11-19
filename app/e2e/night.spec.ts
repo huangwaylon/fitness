@@ -3,7 +3,7 @@
 // (~1.1:1) unless it carries .obj-cream and its own colour; a day-only ink on the themed navy reads ~1.3:1. Each test
 // opens sheets at night and holds every visible text at 3:1 or more on what it sits on (e2e/contrast.ts). The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { islandUp, tapBoard } from './island.ts';
 import { fromMenu, openKenkou } from './hud.ts';
 import { lowContrast } from './contrast.ts';
 import { fakeYoutube } from './youtube.ts';
@@ -108,7 +108,7 @@ test('英語すごろく’s results read at night (the team’s stars and か�
 test('the board’s cream pager keeps the day’s sunk ‹ › at night (not night’s navy on cream)', async ({ page }, info) => {
   const how = howOf(info.project.name);
   await island(page);
-  await page.getByRole('button', { name: 'けいじばんを みる' })[how]();
+  await tapBoard(page, { mouse: how === 'click' });
   const view = page.getByRole('dialog', { name: 'けいじばん' });
   await expect(view).toBeVisible({ timeout: 10_000 });
   const older = view.locator('[data-board-older]');

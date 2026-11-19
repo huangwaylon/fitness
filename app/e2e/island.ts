@@ -68,8 +68,11 @@ export type W3 = {
   /** The day's props out: the cake (out), the arch, Toy Day's presents, Halloween and its pumpkins (lit), the tape deck
    *  (state, hint); each shown and its art's box. */
   props(): Props;
-  /** A tree shake's leavings: what fell to pick up (what, id, box), the nests (fading), the swarms (stung). */
+  /** A tree shake's leavings: what fell to pick up (what: branch, coconut, wood, dangler; id; item: the wood's kind;
+   *  box), the nests (fading), the swarms (side, stung), the bug dangling (bug, up: climbing back). */
   shakes(): Shakes;
+  /** The bulletin board: its 「！」 up (`unseen`: a note I haven't read); null: not out. */
+  board(): { unseen: boolean } | null;
   /** The day's finds lying out: kind (fossil, mushroom, present, shell, fragment, bottle), item id, uid, a present's
    *  tree and its fall, shown (drawn now), foot (the point it lies on), its art's box. */
   finds(): Find[];
@@ -131,7 +134,7 @@ export async function is3d(page: Page): Promise<boolean> {
 /** A tap on thing (`kind`, `id`) at the first point of its box (`__world3d.box`, row by row from the top) a tap there
  *  goes to (`pick`: it, or the same tap area as another thing, a bench's seat): never through something standing in
  *  front of it (polled: a villager in front may still be walking). Frame-locked (tapAt), the mouse's. */
-export const tapOn = (page: Page, kind: BoxKind, id = '') =>
+export const tapOn = (page: Page, kind: BoxKind, id = '', { mouse = true }: { mouse?: boolean } = {}) =>
   tapAt(page, (w, [kind, id]) => {
     const r = w.__world3d.box(kind, id);
     if (!r?.width) return null;
@@ -141,7 +144,7 @@ export const tapOn = (page: Page, kind: BoxKind, id = '') =>
         if (p && [p, ...p.also].some((t: { kind: string; id: string }) => t.kind === kind && t.id === id)) return [x, y];
       }
     return null;
-  }, [kind, id] as const, { clear: null, mouse: true, message: `a point of ${kind} ${id} not covered by anything in front of it` });
+  }, [kind, id] as const, { clear: null, mouse, message: `a point of ${kind} ${id} not covered by anything in front of it` });
 
 /** A point of thing (`kind`, `id`)'s box a tap there goes to (`pick`: it, or the same tap area as another thing), its
  *  middle first, then out from it (`fy`: up its middle from `fy` of the way down instead, null when none: a trunk's
@@ -336,6 +339,24 @@ export const visitorsOut = async (page: Page, slot?: string): Promise<Visitor[]>
   (await ready3d(page), page.evaluate((slot) => (window as unknown as { __world3d: W3 }).__world3d.visitors().filter((v) => v.id !== 'kk' && (!slot || v.slot === slot)), slot ?? null));
 /** The day's props out (`__world3d.props`: the cake, the arch, the toys, Halloween's pumpkins, the tape deck). */
 export const propsOut = async (page: Page): Promise<Props> => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.props()));
+/** A tree shake's leavings now (`__world3d.shakes`: the drops to pick up, nests, swarms, the dangling bug). */
+export const shakesOut = async (page: Page): Promise<Shakes> => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.shakes()));
+/** The drops lying out to pick up (`what`: branch, its id the tree's; coconut; wood; dangler, the bug's), only `what`'s if given. */
+export const dropsOut = async (page: Page, what?: string) => (await shakesOut(page)).drops.filter((d) => !what || d.what === what);
+/** The bulletin board's 「！」 up (a note I haven't read: `__world3d.board`). */
+export const boardUnseen = async (page: Page) => (await ready3d(page), page.evaluate(() => !!(window as unknown as { __world3d: W3 }).__world3d.board()?.unseen));
+/** A tap on the bulletin board (`tapOn` its tap area: pick's `board`; `mouse` false: a finger's), the camera brought to
+ *  it first when it isn't wholly on the screen (its 3D model's spot: `where('board')`). */
+export async function tapBoard(page: Page, { mouse = true }: { mouse?: boolean } = {}) {
+  await islandUp(page);
+  const off = () => w3(page, (w) => { const b = w.box('board'); return !b || b.top < 0 || b.top + b.height > innerHeight; });
+  if (await off()) {
+    await expect.poll(() => w3(page, (w) => !!w.where('board')), { timeout: 20_000, message: 'the board’s model in' }).toBe(true);
+    const z = await w3(page, (w) => -w.where('board')!.z);
+    await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 114);
+  }
+  await tapOn(page, 'board', '', { mouse });
+}
 /** The page's clock now (performance.now(): `fxLog`'s `at`), to count effects from. */
 export const pageNow = (page: Page) => page.evaluate(() => performance.now());
 /** How many effects of `kind` fired after page time `since` (`__world3d.fxLog`: a tap's `ring`, the high five's `zap`),
@@ -681,11 +702,13 @@ const poppedIn = (page: Page) =>
  *  `each`: every node of the selector added, counted (two overlapping at once are two: a shooting star's streak), or
  *  `actor`: villager `actor` as the island's probe shows it (`__world3d.actor`) doing `is`: walking, an act (`act:hop`),
  *  a flourish (`fx:hearts`). */
-export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs | FxIs;
+export type Coming = string | { sel: string; text: string } | { sel: string; each: true } | ActorIs | FxIs | ShakeIs;
 /** Villager `actor` (a slot; `watchFor`: `*` any) doing `is`, as the island's probe shows it (`__world3d.actor`). */
 export type ActorIs = { actor: string; is: 'walking' | `act:${string}` | `fx:${string}` };
 /** Visitor `visitor` (its id) in a phase of its visit (arrive, here, leave), as `__world3d.visitors` shows it. */
 export type VisitorIs = { visitor: string; is: `phase:${string}` };
+/** A tree shake's leavings of a kind out (`__world3d.shakes`: a swarm, a nest, a drop, a dangling bug). */
+type ShakeIs = { shake: 'drops' | 'nests' | 'swarms' | 'dangles' };
 /** An effect the 3D island fired (`__world3d.fxLog`: a tap's `ring`, mine `v` null, a partner's '#ddefff'; the high
  *  five's `zap`), only colour `v` if given: counted off the log, a hidden tab's too. */
 type FxIs = { fx: string; v?: string | null };
@@ -700,6 +723,7 @@ export async function watchComings(page: Page, things: Record<string, Coming>) {
     const there = (t: Coming) => {
       if (typeof t === 'string') return !!document.querySelector(t);
       if ('fx' in t) return false;
+      if ('shake' in t) return !!W.__world3d?.shakes()[t.shake].length;
       if ('actor' in t) {
         const a = W.__world3d?.actor(t.actor);
         return !!a && (t.is === 'walking' ? a.walking : t.is.startsWith('act:') ? a.act === t.is.slice(4) : a.fx.includes(t.is.slice(3)));

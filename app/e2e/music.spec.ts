@@ -53,7 +53,7 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await tapSky(page);
   await expect.poll(() => audio).toContain('music/hour-12.m4a');
   // the swarm seen as it comes out (watched from before the shake: it's gone once they sting, 1.5 s on)
-  const came = await watchComings(page, { swarm: 'button[data-swarm]' });
+  const came = await watchComings(page, { swarm: { shake: 'swarms' } });
   // (where the popup leaves the canopy open: the first tap opens it over the canopy's middle)
   await shakeTree(page, { onClock: true });
   await expect.poll(() => came('swarm'), { message: 'the wasps came out' }).toBeGreaterThan(0);

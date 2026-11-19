@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { critter, findCount, findsOut, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, visitorOut, w3, walking, watered, type W3 } from './island.ts';
+import { critter, dropsOut, findCount, findsOut, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, tapOn, villager, visitorOut, w3, walking, watered, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -15,6 +15,8 @@ const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as
 const atRest = (...ps: Page[]) =>
   Promise.all(ps.map((p) => expect.poll(() => p.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 5000 }).toBe(true)));
 const DATE = '2026-11-04T12:00';
+/** How many drops of `what` lie out to pick up (`__world3d.shakes`; a branch's id its tree's), only `id`'s if given. */
+const drops = async (page: Page, what: string, id?: string) => (await dropsOut(page, what)).filter((d) => !id || d.id === id).length;
 
 async function open(page: Page, q = '', o: { clock?: boolean } = {}) {
   // (`clock`: the page's own clock, running, for shake's taps on it)
@@ -51,29 +53,27 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
   const p = await leaves(page, 'oak-m1');
   await page.mouse.click(p.x, p.y);
   await page.waitForTimeout(1400); // a run has to be quick: this one is over (proving no branch comes)
-  await expect(page.locator('button[data-branch]')).toHaveCount(0);
+  expect(await drops(page, 'branch')).toBe(0);
   await shake(page, 'oak-m1');
-  const twig = page.locator('button[data-branch="oak-m1"]');
-  await expect(twig).toHaveCount(1, { timeout: 3000 });
+  await expect.poll(() => drops(page, 'branch', 'oak-m1'), { timeout: 3000 }).toBe(1);
   await page.waitForTimeout(700); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
-  await twig.click();
-  await expect(twig).toHaveCount(0, { timeout: 3000 });
+  await tapOn(page, 'drop', 'oak-m1');
+  await expect.poll(() => drops(page, 'branch'), { timeout: 3000 }).toBe(0);
   // a reload finds today's island as it was: the branch is gone, and stays gone
   await page.reload();
   await islandUp(page);
   await page.waitForTimeout(800); // (proving the branch doesn't come back)
-  await expect(page.locator('button[data-branch]')).toHaveCount(0);
+  expect(await drops(page, 'branch')).toBe(0);
 });
 
 test('a palm drops its two coconuts, once a day: a tap picks one up (NH’s line)', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=coconut', { clock: true });
   await shake(page, 'palm-3');
-  const nuts = page.locator('button[data-coconut]');
-  await expect(nuts).toHaveCount(2, { timeout: 3000 });
+  await expect.poll(() => drops(page, 'coconut'), { timeout: 3000 }).toBe(2);
   await page.waitForTimeout(700); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
-  await nuts.last().click(); // (the two lie side by side, the later one on top)
+  await tapOn(page, 'drop', (await dropsOut(page, 'coconut'))[1].id); // (the two lie side by side, the later one on top)
   await expect(page.locator('[data-fx="catch"]')).toContainText('ヤシのみを ひろった！', { timeout: 4000 });
-  await expect(nuts).toHaveCount(1);
+  expect(await drops(page, 'coconut')).toBe(1);
 });
 
 test('two players see the same island, not mirrored: A (ウェイ) on the left, B (うめ) on the right on both tabs', async ({ browser }) => {
@@ -220,14 +220,15 @@ test('two players: a shake on one tab plays on the other (their villager stays w
   for (const p of [a, b]) await toTree(p, 'oak-m1');
   await atRest(a, b);
   await shake(a, 'oak-m1');
-  await expect(a.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 3000 });
+  await expect.poll(() => drops(a, 'branch', 'oak-m1'), { timeout: 3000 }).toBe(1);
   // B's tab: the oak shakes and the branch falls beside it; A's villager (B's partner) doesn't run over
-  await expect(b.locator('button[data-branch="oak-m1"]')).toHaveCount(1, { timeout: 6000 });
+  await expect.poll(() => drops(b, 'branch', 'oak-m1'), { timeout: 6000 }).toBe(1);
   expect(await walking(b, 'partner')).toBe(false);
   await b.waitForTimeout(800); // (the fall: a tap mid-fall isn't a pick-up, and no hook says it has landed)
-  await b.locator('button[data-branch="oak-m1"]').click();
-  await expect(b.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
-  await expect(a.locator('button[data-branch]')).toHaveCount(0, { timeout: 3000 });
+  await b.bringToFront(); // (tapOn holds the page's frames: a tab behind another runs none)
+  await tapOn(b, 'drop', 'oak-m1');
+  await expect.poll(() => drops(b, 'branch'), { timeout: 3000 }).toBe(0);
+  await expect.poll(() => drops(a, 'branch'), { timeout: 3000 }).toBe(0);
   await ctx.close();
 });
 
