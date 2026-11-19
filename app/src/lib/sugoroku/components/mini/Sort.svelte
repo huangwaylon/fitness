@@ -46,7 +46,7 @@
 </script>
 
 <div class="so" data-sg-sort={race.count}>
-  <p class="team" data-sg-sort-team={race.team}>{tr('soTeam', { n: race.team })}{#if seat}<small>（{tr('soMine', { n: race.count })}）</small>{/if}</p>
+  <p class="team" data-sg-sort-team={race.team}>{tr('soTeam', { n: race.team })}{#if seat}<small> · {tr('soMine', { n: race.count })}</small>{/if}</p>
   {#if seat && pair && item !== null}
     {@const p = PICTURES[item]}
     <div class="card" class:ok={flash?.right} data-sg-sort-item={p.w}>
