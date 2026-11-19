@@ -175,6 +175,39 @@ for (const [name, q, views, want] of FIGURES)
     for (const [kd, n] of Object.entries(want)) expect(seen[kd] ?? 0, `${kd} on screen`).toBeGreaterThanOrEqual(n);
   });
 
+// A figure lying in front of the island's fixtures (Gulliver washed up on the beach, the board and the day's finds up
+// the sand behind him): every point of his body is his (the chain's figure layer before the tap areas behind), and the
+// world layer can't be scrolled off the canvas under it (a balloon's focus or scrollIntoView scrolled the stage 46 px:
+// the router's 3D boxes and the DOM's then disagreed, dialogue.spec's tap after his introduction found a find instead).
+test('a figure lying in front of the fixtures takes every tap on his body; the stage never scrolls off the 3D canvas', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver');
+  expect(await is3d(page)).toBe(true);
+  await quiet(page);
+  const read = () => page.evaluate(() => {
+    const w = (window as unknown as { __world3d: W3 }).__world3d, g = w.box('visitor', 'gulliver')!, miss: string[] = [];
+    for (let y = g.top + 3; y < g.top + g.height - 3; y += 4)
+      for (let x = g.left + 3; x < g.left + g.width - 3; x += 4) {
+        const c = w.claim(x, y);
+        if (c?.kind !== 'visitor') miss.push(`${Math.round(x)},${Math.round(y)} ${c?.kind ?? w.pick(x, y)?.kind ?? 'none'}`);
+      }
+    return { lying: g.width > g.height, miss };
+  });
+  expect(await read()).toEqual({ lying: true, miss: [] });
+  const scrolled = await page.evaluate(() => {
+    const stage = document.querySelector<HTMLElement>('.stage')!;
+    stage.scrollLeft = 46;
+    stage.scrollTop = 30;
+    const end = document.createElement('i');
+    end.style.cssText = 'position:absolute;left:600px;top:10px;width:2px;height:2px';
+    stage.append(end);
+    end.scrollIntoView();
+    end.remove();
+    return [stage.scrollLeft, stage.scrollTop];
+  });
+  expect(scrolled).toEqual([0, 0]);
+  expect((await read()).miss).toEqual([]);
+});
+
 test("the phones' watch (?pick3d=1): a tap on the island flashes the 3D pick's box, green where it agrees with the DOM's", async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&awake&pick3d=1');
   expect(await is3d(page)).toBe(true);

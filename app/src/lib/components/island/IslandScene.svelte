@@ -1368,8 +1368,10 @@
   .scene[data-r3] :global(.actor[data-v3] [data-swollen]) { opacity: 0 !important; --art3d: off; }
   .track { position: relative; }
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
+  /* (overflow clip, not hidden: no scroll container, so nothing scrolls the world layer off the 3D canvas under it,
+     a focus or scrollIntoView of a balloon near its edge (a click on the Talk box shifted it 46 px: R4 step 7)) */
   .stage {
-    position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;
+    position: sticky; top: 0; width: 100%; overflow: clip; container-type: inline-size; contain: layout paint;
     /* the island's layers stand over every world thing (depths run to ~21M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */
