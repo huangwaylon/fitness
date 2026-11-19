@@ -604,7 +604,7 @@
   .x:focus-visible { border-radius: 8px; }
   /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }
-  .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
+  .fresh-banner { display: flex; align-items: center; gap: 8px; background: var(--ok-bg); }
   .fresh-banner .btn { flex: none; margin: 0; }
 
   /* 施設's parts: 探す (h4, its regions h5), 日程に合わない and 除外 folded */

@@ -135,7 +135,7 @@
 
 <style>
   .status { display: grid; gap: 2px; }
-  .status.good { background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
+  .status.good { background: var(--ok-bg); }
   .status.warn { background: var(--warn-soft); }
   .status.bad { background: color-mix(in srgb, var(--c-coral) 24%, var(--card)); }
   /* night: only warn and bad filled (warn the night's amber, its cells edged in ink); good, busy and idle plain */

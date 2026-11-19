@@ -33,6 +33,13 @@ describe('the theme’s readability', () => {
     expect(rule).toMatch(/--sh-ctl:\s*var\(--sh-obj\)/);
   });
 
+  it('an ok card (--ok-bg) keeps the text 4.5:1, day and night', () => {
+    expect(contrast(tok(night, '--text'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(tok(night, '--text-soft'), tok(tokens, '--n-ok'))).toBeGreaterThanOrEqual(4.5);
+    expect(tokens).toMatch(/--ok-bg: color-mix\(in srgb, var\(--c-leaf\) 22%, var\(--c-card\)\)/);
+    expect(night).toMatch(/--ok-bg: var\(--n-ok\)/);
+  });
+
   it('reads at 4.5:1: night soft text on the night card, the day ink-soft on cream, a sunk control’s soft text', () => {
     expect(contrast(tok(night, '--text-soft'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(night, '--coral-text'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
