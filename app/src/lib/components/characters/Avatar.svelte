@@ -1,13 +1,13 @@
 <script lang="ts">
   // A person's round head on a round chip (yuzu A, mint B, lilac the guest): a villager's official icon (silhouette
   // fallback), or, `worn`, the head of the look the person wears now (store/look.ts lookOf): a human player's portrait
-  // (look/portraits.svelte.ts: drawn by the すがた preview or the island's renderer, kept by the look; the flat stand-in
-  // till then), or their villager's icon.
+  // (look/portraits.svelte.ts: drawn by the すがた preview or the island's renderer, kept by the look; while one is being
+  // drawn the plain chip, so the face never swaps; the flat stand-in when none will be), or their villager's icon.
   import type { Who } from '#lib/types.ts';
   import type { PlayerLook } from '#lib/contract/look.ts';
   import Villager from './Villager.svelte';
   import PlayerFigure from '../look/PlayerFigure.svelte';
-  import { portraitOf } from '../look/portraits.svelte.ts';
+  import { portraitDue, portraitOf } from '../look/portraits.svelte.ts';
   import { lookOf } from '#lib/store/look.ts';
 
   interface Props {
@@ -23,11 +23,13 @@
   const look = $derived(worn ? lookOf(person) : null);
   const player = $derived(look?.kind === 'player' ? (look as PlayerLook) : null);
   const shot = $derived(player ? portraitOf(player) : null);
+  const due = $derived(!!player && !shot && portraitDue(player));
 </script>
 
 <span class="av" class:pl={!!player} class:shot style:--s="{size}px" style:--tag={person === 'A' ? 'var(--c-yuzu)' : person === 'B' ? 'var(--c-mint)' : 'var(--c-lilac)'}
-  data-portrait={player ? (shot ? '3d' : 'figure') : undefined}>
+  data-portrait={player ? (shot ? '3d' : due ? 'wait' : 'figure') : undefined}>
   {#if shot}<img src={shot} alt="" draggable="false" />
+  {:else if due}<!-- its 3D head on the way: the chip alone -->
   {:else if player}<PlayerFigure look={player} head />
   {:else}<Villager {person} villager={villager ?? undefined} size={icon} head />{/if}
 </span>

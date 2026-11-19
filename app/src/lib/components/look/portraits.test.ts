@@ -15,7 +15,7 @@ vi.stubGlobal('localStorage', {
     return kv.size;
   }
 });
-const { portraitOf, usePainter } = await import('./portraits.svelte.ts');
+const { portraitDue, portraitOf, usePainter } = await import('./portraits.svelte.ts');
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
@@ -28,6 +28,7 @@ describe('the players’ portraits', () => {
     const asked: string[] = [];
     const a = DEFAULT_LOOKS.A, b = { ...DEFAULT_LOOKS.A, glasses: null }, c = { ...DEFAULT_LOOKS.B, hairColor: '#123456' };
     expect(portraitOf(a)).toBeNull(); // no painter yet: waits
+    expect(portraitDue(a)).toBe(false); // (no one to draw it: the caller's stand-in)
     // (the first ask split the old list: each head under its own key, the list the hashes)
     expect(kv.get('look.portrait.old1')).toBe('data:image/png;base64,OLD');
     expect(JSON.parse(kv.get('look.portraits')!)).toEqual(['old1']);
@@ -41,12 +42,14 @@ describe('the players’ portraits', () => {
     });
     expect(portraitOf(b)).toBeNull();
     expect(portraitOf(c)).toBeNull();
+    expect([a, b, c].map(portraitDue)).toEqual([true, true, true]); // on their way: the callers hold a plain chip
     for (let i = 0; i < 5; i++) await tick();
     flushSync();
     expect(portraitOf(a)).toBe(`data:image/png;base64,${a.glasses}`);
     expect(portraitOf(b)).toBe('data:image/png;base64,none');
     expect(portraitOf({ ...b })).toBe('data:image/png;base64,none'); // by its hash, not the object
     expect(portraitOf(c)).toBeNull();
+    expect(portraitDue(c)).toBe(false); // none drawn: the stand-in from now on
     await tick();
     expect(asked).toHaveLength(3); // c not asked again
     const keys = JSON.parse(kv.get('look.portraits')!) as string[];

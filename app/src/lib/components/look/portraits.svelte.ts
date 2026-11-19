@@ -143,6 +143,8 @@ const wanted = new Map<string, PlayerLook>();
 /** Looks the painter drew nothing for this session (the logic mode, a missing part): not asked again. */
 const missed = new Set<string>();
 let busy = false;
+/** The head being drawn now. */
+let drawing: string | null = null;
 
 async function drain() {
   if (busy) return;
@@ -150,18 +152,22 @@ async function drain() {
   try {
     for (let p = painter ?? fallback; p && wanted.size; p = painter ?? fallback) {
       const [key, look] = wanted.entries().next().value!;
+      drawing = key;
       wanted.delete(key);
       if (kept(key)) continue;
       const url = await p(look, PORTRAIT_PX).catch(() => null);
+      drawing = null;
       if (!url) missed.add(key);
       else {
         remember(key, url);
         save(key, url);
-        drawn++;
       }
+      // (a miss too: a caller holding a placeholder for it shows the stand-in now)
+      drawn++;
     }
   } finally {
     busy = false;
+    drawing = null;
   }
 }
 
@@ -177,6 +183,15 @@ export function portraitOf(look: PlayerLook): string | null {
     queueMicrotask(drain);
   }
   return null;
+}
+
+/** Whether a look's head is on its way (asked for and not drawn yet, someone there to draw it): its caller holds a
+ *  plain placeholder meanwhile rather than the flat stand-in, so a face isn't swapped for another a moment later (すごろく's
+ *  setup: a look seen for the first time). Reactive, as portraitOf; call it after portraitOf. */
+export function portraitDue(look: PlayerLook): boolean {
+  void drawn;
+  const key = lookHash(look);
+  return !!(painter ?? fallback) && (wanted.has(key) || drawing === key);
 }
 
 /** Set (or clear, null) who draws the portraits: the すがた preview while it's open. */
