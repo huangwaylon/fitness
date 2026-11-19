@@ -14,9 +14,10 @@
 //   - `keyboard`: the keyboard's height, its suggestions bar included (0 when none; a pinch zoom is not a keyboard).
 // `keyboardInset.current` is reactive (one listener for everyone); `readKeyboardInset()` reads it once,
 // `onKeyboardInset(fn)` calls back on each change (the keyboard coming and going, iOS's scroll, a rotation).
-// `{@attach withKeyboardInset}` sets `--kb` (= bottom) on a node and scrolls a focused field above the keyboard (Sheet,
-// the pair page): fields get `scroll-margin-bottom: --kb` (styles/theme.css); a `[data-kb-scroll]` ancestor (the pair
-// form: field + button) is scrolled into view as a whole, its bottom just above the keyboard.
+// `{@attach withKeyboardInset}` sets `--kb` (= bottom) on a node and keeps a focused field above the keyboard (Sheet,
+// the pair page, すごろく's screen): fields get `scroll-margin-bottom: --kb` (styles/theme.css); a `[data-kb-scroll]`
+// ancestor (field + its button: the pair form, a dictation, すごろく's 聞こえた文) is kept in view as a whole; what
+// scrolling can't bring up, lifting the node does (iOS doesn't move a fixed sheet's field above the keyboard itself).
 import { createSubscriber } from 'svelte/reactivity';
 import type { Attachment } from 'svelte/attachments';
 
@@ -81,28 +82,69 @@ export const keyboardInset = {
   }
 };
 
-/** `--kb` on the node (the keyboard's cover of the layout viewport), and a focused field scrolled above it. */
+/** The lift a keyboard root needs (px, ≥ 0) so `box` (a client rect, measured with the root lifted by `lift`) sits
+ *  `margin` above the keyboard, its top kept `margin` inside the visible part; 0 with no keyboard. Pure (the unit tests). */
+export function liftFor(box: { top: number; bottom: number }, lift: number, kb: Pick<KeyboardInset, 'clientTop' | 'height' | 'open'>, margin = 12): number {
+  if (!kb.open) return 0;
+  const want = lift + box.bottom + margin - (kb.clientTop + kb.height);
+  const most = lift + box.top - (kb.clientTop + margin);
+  return Math.max(0, Math.round(Math.min(want, most)));
+}
+
+/** The keyboard roots on the page (a field belongs to the innermost: a paper sheet opened inside English Study's). */
+const roots = new WeakSet<Element>();
+const rootOf = (el: Element) => {
+  for (let n: Element | null = el; n; n = n.parentElement) if (roots.has(n)) return n;
+  return null;
+};
+
+/** `--kb` on the node (the keyboard's cover of the layout viewport), and a focused field in it kept above the keyboard,
+ *  on its focus and on each change of the keyboard: scrolled into view (its `[data-kb-scroll]` box, field + button, as
+ *  a whole), and when its scrollers can't bring it up far enough (a lesson's title bar, video and controls fill most of
+ *  what's left above the keyboard), the node itself lifted (`translate`) by the rest, until the keyboard goes down. */
 export const withKeyboardInset: Attachment<HTMLElement> = (node) => {
-  const update = () => node.style.setProperty('--kb', `${readKeyboardInset().bottom}px`);
+  let lift = 0;
+  const setLift = (px: number) => {
+    if (px === lift) return;
+    lift = px;
+    node.style.translate = px ? `0 ${-px}px` : '';
+  };
+  /** The focused field when it's this root's, else null. */
+  const field = () => {
+    const el = document.activeElement as HTMLElement | null;
+    return el?.matches('input, textarea, select') && rootOf(el) === node ? el : null;
+  };
+  const keep = (el: HTMLElement) => {
+    const kb = readKeyboardInset();
+    if (!kb.open) return setLift(0);
+    const box = el.closest<HTMLElement>('[data-kb-scroll]') ?? el;
+    if (liftFor(box.getBoundingClientRect(), 0, kb) > 0) box.scrollIntoView({ block: box === el ? 'nearest' : 'end', behavior: 'instant' });
+    setLift(liftFor(box.getBoundingClientRect(), lift, kb));
+  };
+  const update = () => {
+    node.style.setProperty('--kb', `${readKeyboardInset().bottom}px`);
+    const el = field();
+    if (el) keep(el);
+    else if (!readKeyboardInset().open) setLift(0);
+  };
   const timers = new Set<ReturnType<typeof setTimeout>>();
   const focusin = (e: FocusEvent) => {
     const el = e.target as HTMLElement;
-    if (!el.matches('input, textarea, select')) return;
-    const box = el.closest<HTMLElement>('[data-kb-scroll]');
-    const t = setTimeout(() => {
-      timers.delete(t);
-      // (only while it's still the one focused: a row tapped meanwhile, the field blurred, keeps its own scroll)
-      if (document.activeElement === el) (box ?? el).scrollIntoView({ block: box ? 'end' : 'center', behavior: 'smooth' });
-    }, 300);
+    if (!el.matches('input, textarea, select') || rootOf(el) !== node) return;
+    // (once the keyboard is up; only while it's still the one focused: a row tapped meanwhile keeps its own scroll)
+    const t = setTimeout(() => (timers.delete(t), field() === el && keep(el)), 300);
     timers.add(t);
   };
+  roots.add(node);
   update();
   const off = onKeyboardInset(update);
   node.addEventListener('focusin', focusin);
   return () => {
     off();
+    roots.delete(node);
     node.removeEventListener('focusin', focusin);
     for (const t of timers) clearTimeout(t);
     node.style.removeProperty('--kb');
+    node.style.translate = '';
   };
 };

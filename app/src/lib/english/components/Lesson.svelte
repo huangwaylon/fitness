@@ -295,8 +295,11 @@
               {/each}
             </div>
           {:else}
-            <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" lang="en" data-en-dict />
-            <button type="button" class="btn small paper" data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
+            <!-- (field + 答える kept above the keyboard together: ui/keyboardInset.svelte.ts) -->
+            <div class="dict" data-kb-scroll>
+              <input type="text" bind:value={typed} placeholder={s('typeHere')} autocapitalize="off" autocomplete="off" spellcheck="false" lang="en" data-en-dict />
+              <button type="button" class="btn small paper" data-sfx="tick" data-en-dict-go onclick={() => ((fresh = 'reveal'), (st[at] = dictate(q, cur, typed)))}>{cur.r ? s('answerAgain') : s('answer')}</button>
+            </div>
           {/if}
           {#if !cur.r && cur.miss === 1}
             <div class="nudge" data-en-nudge {@attach (el) => untrack(() => intoView(el, 'nudge'))}><p>{s('nudge')}</p><p class="meta">{q.cue}</p>
@@ -371,7 +374,8 @@
   .lead b { display: block; }
   .stem { font-size: var(--fs-body); line-height: 1.45; }
   /* a question card: as tight as it reads, so the choices and ⚑ are above the fold (393×852 all; 375×667 two at least) */
-  .q { gap: 6px; }
+  .q, .dict { gap: 6px; }
+  .dict { display: grid; }
   .qhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   /* (訳 drawn over the card's padding: the row as tall as its meta, the chip's hit 44 all the same) */
   .qhead .chip { margin: -7px 0; }

@@ -9,6 +9,7 @@
   import { english } from '#lib/english/open.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { s } from '#lib/sugoroku/i18n.ts';
+  import { withKeyboardInset } from '#lib/components/ui/keyboardInset.svelte.ts';
 
   const m = $derived(page.url.searchParams.get('m') === 'online' ? 'online' : 'local');
   const leave = () => {
@@ -18,8 +19,9 @@
   };
 </script>
 
-<!-- (.kit: the unified kit's scope, as English Study's sheet gives the tab) -->
-<div class="screen kit">
+<!-- (.kit: the unified kit's scope, as English Study's sheet gives the tab; withKeyboardInset: a typed sentence, 聞こえた文,
+     and its これでOK kept above the keyboard) -->
+<div class="screen kit" {@attach withKeyboardInset}>
   {#if week.view}{#key m}<SugorokuPlay screen={m} onclose={leave} />{/key}{:else}<p class="wait" data-sg-wait>{s('loading')}</p>{/if}
 </div>
 
