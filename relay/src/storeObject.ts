@@ -10,8 +10,7 @@ import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';
 import { apiWithMeta, countingSql, type ReqMeta } from './reqMeta.ts';
 import { roleOfKey } from './auth.ts';
-import { relaySink } from './logRoute.ts';
-import type { RelayEvent } from './log.ts';
+import { logDo, room, sinkOf } from './objects.ts';
 import { isToken } from '../../app/src/lib/contract/log.ts';
 import { errName } from './log.ts';
 import { after, backoff, due, NO_STATE, retryAt, runArchive, type ArchiveRun, type ArchiveState } from './archive.ts';
@@ -53,21 +52,13 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     });
   }
 
-  private logObj() {
-    return this.env.LOG.get(this.env.LOG.idFromName('log'));
-  }
-
-  /** The record's own events to the log (logRoute.ts relaySink: best effort, off the reply's path). */
-  private log(evs: RelayEvent[]): void {
-    if (this.env.LOG_OFF === '1') return;
-    relaySink(() => this.logObj(), (p) => this.ctx.waitUntil(p), Date.now)(evs);
-  }
+  /** The record's own events to the log (objects.ts sinkOf: best effort, off the reply's path). */
+  private readonly log = sinkOf(this.env, (p) => this.ctx.waitUntil(p));
 
   /** The record changed: the room passes `changed` to the open phones (after the commit, off the reply's path; once
    *  more, on a fresh stub, if the first call fails: a phone's push is otherwise only caught up by its next poll). */
   private tellRoom(n: Notice, guest?: boolean): void {
-    const room = () => this.env.ROOM.get(this.env.ROOM.idFromName('island'));
-    this.ctx.waitUntil(twice(() => Promise.resolve(room().notify(n, guest))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
+    this.ctx.waitUntil(twice(() => Promise.resolve(room(this.env).notify(n, guest))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
   }
 
   /** RPC from the room's alarm after a restore (index.ts restoring): this is the restored record's first session, so
@@ -196,7 +187,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     switch (o.op) {
       // the real weather, the room's (index.ts wxAdmin): a fetch now, a fixture timeline, or how it is
       case 'wx':
-        return this.env.ROOM.get(this.env.ROOM.idFromName('island')).wxAdmin(o);
+        return room(this.env).wxAdmin(o);
       case 'backup': {
         const r = await this.archive((await storage.get<ArchiveState>(ARCHIVE)) ?? NO_STATE, true);
         return { ...r, ok: r.ok, state: await storage.get<ArchiveState>(ARCHIVE) };
@@ -220,7 +211,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         }
         // the room calls `restored` a few seconds after the restart (a new epoch: every phone refetches); its own
         // storage, since this object's is about to be the bookmark's
-        const told = await this.env.ROOM.get(this.env.ROOM.idFromName('island')).restoring().then(() => true, (e) => (console.warn('restoring', errName(e)), false));
+        const told = await room(this.env).restoring().then(() => true, (e) => (console.warn('restoring', errName(e)), false));
         setTimeout(() => this.ctx.abort('restoring a bookmark'), 200); // after the reply
         return { ok: true, restoring: o.bookmark, note: told ? 'a new epoch follows by itself in a few seconds (counts shows the rev)' : 'the room was not told: after it restarts, run {op:"rev"} so the phones refetch' };
       }
@@ -262,11 +253,11 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.compactOp(o);
       // the log (docs/ops/observability.md): its own object's
       case 'logs':
-        return { ok: true, ...(await this.logObj().query(o)) };
+        return { ok: true, ...(await logDo(this.env).query(o)) };
       case 'logstats':
-        return { ...(await this.logObj().stats()) };
+        return { ...(await logDo(this.env).stats()) };
       case 'logpurge':
-        return { ...(await this.logObj().purge(o)) };
+        return { ...(await logDo(this.env).purge(o)) };
       default:
         return { ok: false, error: 'bad_request' };
     }

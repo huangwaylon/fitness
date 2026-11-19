@@ -10,7 +10,8 @@ import { isCompactTick } from './store.ts';
 import { ARCHIVE_CRON } from './archive.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
-import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
+import { logHealthRoute, logRoute } from './logRoute.ts';
+import { logDo, record, room, sinkOf } from './objects.ts';
 import { sttRoute, type SttAi } from './sttRoute.ts';
 import { gradeRoute, type GradeAi } from './gradeRoute.ts';
 import { errName, type RelayEvent } from './log.ts';
@@ -228,11 +229,8 @@ export class IslandRoom extends DurableObject<Env> {
     this.core.close(ws);
   }
 
-  /** The room's events to the log (logRoute.ts relaySink: best effort). */
-  private log(evs: RelayEvent[]): void {
-    if (this.env.LOG_OFF === '1') return;
-    relaySink(() => this.env.LOG.get(this.env.LOG.idFromName('log')), (p) => this.ctx.waitUntil(p), Date.now)(evs);
-  }
+  /** The room's events to the log (objects.ts sinkOf: best effort). */
+  private readonly log = sinkOf(this.env, (p) => this.ctx.waitUntil(p));
 
   /** RPC from the record: pass the change to the connected phones. */
   notify(n: Notice, guest?: boolean): number {
@@ -294,7 +292,7 @@ export class IslandRoom extends DurableObject<Env> {
       let due: number | null = r.due;
       if (r.due <= Date.now()) {
         try {
-          const { rev } = await this.env.STORE.get(this.env.STORE.idFromName('record')).restored();
+          const { rev } = await record(this.env).restored();
           console.log('restored', rev);
           due = null;
         } catch (e) {
@@ -319,35 +317,26 @@ export default {
    *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
-    const log = sinkOf(env, ctx);
-    // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick); nothing else
+    const log = sinkOf(env, (p) => ctx.waitUntil(p));
+    /** A record call off the tick's path; its failure the log's do.error `where`. */
+    const kick = (where: string, p: Promise<unknown>) => p.then(
+      () => {},
+      (e) => {
+        console.warn(`${where}-fail`, errName(e));
+        log([{ e: 'do.error', l: 3, d: { where, name: errName(e) } }]);
+      }
+    );
+    // 03:00 Tokyo: the record's backup, on its own alarm (archive.ts; storeObject.ts archiveKick), and the daily
+    // walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed); nothing else
     if (ev.cron === ARCHIVE_CRON) {
-      const store = env.STORE.get(env.STORE.idFromName('record'));
-      ctx.waitUntil(store.archiveKick().then(
-        () => {},
-        (e) => {
-          console.warn('backup-kick-fail', errName(e));
-          log([{ e: 'do.error', l: 3, d: { where: 'backup', name: errName(e) } }]);
-        }
-      ));
-      // and the daily walletcheck (store.ts walletCheck: a drift is logged `wallet.drift`, never fixed)
-      ctx.waitUntil(store.walletTick().then(
-        () => {},
-        (e) => log([{ e: 'do.error', l: 3, d: { where: 'walletcheck', name: errName(e) } }])
-      ));
+      const store = record(env);
+      ctx.waitUntil(kick('backup', store.archiveKick()));
+      ctx.waitUntil(kick('walletcheck', store.walletTick()));
       return;
     }
-    if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) {
-      ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
-        () => {},
-        (e) => {
-          console.warn('compact-fail', errName(e));
-          log([{ e: 'do.error', l: 3, d: { where: 'compact', name: errName(e) } }]);
-        }
-      ));
-    }
+    if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) ctx.waitUntil(kick('compact', record(env).compactTick()));
     ctx.waitUntil(
-      env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
+      room(env).weatherTick().then(
         (r) => {
           // the log's `cron.wx`: a fetch that failed, and the weather's health once a Tokyo day (00:15; 46 ok fetches a
           // day said nothing a reader used)
@@ -355,13 +344,7 @@ export default {
             log([{ e: 'cron.wx', l: r.ok ? 1 : 2, d: { ok: r.ok, fetched: r.fetched, fail: r.fail, hours: r.health.hours, age: r.health.age, fails: r.health.fails, ms: Date.now() - t0 } }]);
           }
           // the wet days into the record (the fields' rain: store.ts wetTick), every tick (the game mode's too)
-          return env.STORE.get(env.STORE.idFromName('record')).wetTick(r.wet).then(
-            (kept) => kept.length && console.log('wet', kept.join(',')),
-            (e) => {
-              console.warn('wet-fail', errName(e));
-              log([{ e: 'do.error', l: 3, d: { where: 'wet', name: errName(e) } }]);
-            }
-          );
+          return kick('wet', record(env).wetTick(r.wet).then((kept) => void (kept.length && console.log('wet', kept.join(',')))));
         },
         (e) => {
           console.warn('wx-fail', errName(e));
@@ -372,32 +355,30 @@ export default {
   },
   async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
-    const logObj = () => env.LOG.get(env.LOG.idFromName('log'));
+    const logObj = () => logDo(env);
+    const log = sinkOf(env, (p) => ctx.waitUntil(p));
     if (url.pathname === '/health') {
       // the real weather's age (the runbook, the smoke test): never in the way of the health itself; asked of the room
       // at most once a minute per isolate (an anonymous URL: a flood spends Worker requests, not the room's)
       const now = Date.now();
-      if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) wxSeen = { at: now, wx: await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null) };
+      if (!wxSeen || now - wxSeen.at > WX_HEALTH_MS) wxSeen = { at: now, wx: await room(env).wxHealth().catch(() => null) };
       const wx = wxSeen.wx;
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, sha: env.COMMIT ?? null, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
-    if (url.pathname === '/api') {
-      const log = sinkOf(env, ctx);
-      return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
-    }
+    if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => record(env), (m, ms) => log([reqEvent(m, ms)]), { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C });
     if (url.pathname === '/log') {
       return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => roleOfKey(k, env), now: Date.now }, logObj);
     }
-    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 100), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
-    if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log: sinkOf(env, ctx), now: Date.now });
+    if (url.pathname === '/stt') return sttRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.STT_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`stt:${r}`, Number(env.STT_DAY_MAX) || 100), ai: env.AI, log, now: Date.now });
+    if (url.pathname === '/grade') return gradeRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.GRADE_OFF === '1', roleOf: (k) => roleOfKey(k, env), spend: (r) => logObj().spend(`grade:${r}`, Number(env.GRADE_DAY_MAX) || 250), ai: env.AI, log, now: Date.now });
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
-    if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
+    if (url.pathname === '/admin') return adminRoute(req, () => record(env), { KEY_A: env.KEY_A, KEY_B: env.KEY_B });
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
     const adm = await admission(req, env, Date.now());
     if (!adm) return new Response('forbidden', { status: 403 });
-    return env.ROOM.get(env.ROOM.idFromName('island')).fetch(adm);
+    return room(env).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
 
@@ -407,12 +388,6 @@ const isWxDaily = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) 
 /** `/health`'s weather as the room last said it (per isolate), and how long that holds. */
 let wxSeen: { at: number; wx: WxHealth | null } | null = null;
 const WX_HEALTH_MS = 60_000;
-
-/** The relay's events to the log from a request or the cron (none with the off switch). */
-function sinkOf(env: Env, ctx: ExecutionContext): (evs: RelayEvent[]) => void {
-  if (env.LOG_OFF === '1') return () => {};
-  return relaySink(() => env.LOG.get(env.LOG.idFromName('log')), (p) => ctx.waitUntil(p), Date.now);
-}
 
 /** An `/api` request as the log's `req` (reqMeta.ts): warn when refused, error when the record failed. */
 function reqEvent(m: ReqMeta, ms: number): RelayEvent {
