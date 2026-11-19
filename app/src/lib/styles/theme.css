@@ -51,7 +51,8 @@ button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: var(--r-chip); }
+/* the one focus ring (no component restates it; one inset or offset at most: outline-offset) */
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-chip); }
 /* after a touch, a programmatic focus (‹ back, an edit saved, a sheet opened) shows no ring (ui/modality.ts) */
 html[data-input='pointer'] :focus-visible:not(input, textarea, select),
 html[data-input='pointer'] :focus-visible .screen { outline: none !important; }
@@ -345,7 +346,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .edit-tray .act.ok[aria-disabled='true'] { background: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); color: var(--c-ink-soft); box-shadow: none; transform: translateY(var(--lip-h)); }
 .edit-tray .done { width: 68px; padding: 6px 4px; gap: 2px; display: flex; flex-direction: column; justify-content: center; border-radius: var(--r-btn); margin-bottom: var(--lip-h); }
 .edit-tray :is(.it, .act:not([aria-disabled='true']), .done):active { transform: translateY(2px); }
-.edit-tray :is(.it, .act, .done, .tab):focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 
 /* ---------- 島 ⇄ テント (ui-state/doorTransition.ts) ----------

@@ -77,5 +77,5 @@
   /* a soft word in the stat line, its tap area 44 px tall without growing the line */
   .est { all: unset; position: relative; cursor: pointer; color: var(--text-soft); font: inherit; white-space: nowrap; }
   .est::after { content: ''; position: absolute; inset: -14px -8px; }
-  .est:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: var(--r-chip); }
+  .est:focus-visible { border-radius: var(--r-chip); }
 </style>

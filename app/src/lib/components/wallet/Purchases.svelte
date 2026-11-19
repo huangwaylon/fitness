@@ -116,7 +116,6 @@
     border-radius: var(--r-chip); -webkit-tap-highlight-color: transparent;
   }
   .toggle:active { background: var(--hl); }
-  .toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .count { padding: 2px 8px 1px; border-radius: var(--r-pill); background: var(--ctl); font-size: var(--fs-s); color: var(--text); }
   .chev { margin-left: auto; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 240ms var(--ease-soft); }
   .expanded .chev { rotate: 180deg; }

@@ -843,7 +843,6 @@
     width: 100%; min-height: 48px; border-radius: var(--r-btn); border: 0; font: 700 var(--fs-input)/1.2 var(--font-ui);
     background: var(--c-card); color: var(--c-ink); padding: 0 14px; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
   }
-  .field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .te { z-index: 3; }
   .bar { animation: up .2s var(--ease-soft) both; }
@@ -869,7 +868,6 @@
   }
   .sz[aria-pressed='true'] { box-shadow: inset 0 0 0 3px var(--c-leaf-edge); background: color-mix(in srgb, var(--c-leaf) 14%, var(--c-card)); }
   .sz:active { transform: translateY(2px); }
-  .sz:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .sz svg { width: 52px; height: 56px; }
   .sz .all { fill: none; stroke: var(--c-edge); stroke-width: .12; stroke-dasharray: .3 .25; }
   .sz .mine { fill: color-mix(in srgb, var(--c-lip) 55%, var(--c-cream)); stroke: var(--c-ink-soft); stroke-width: .18; }

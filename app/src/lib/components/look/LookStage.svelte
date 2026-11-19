@@ -109,7 +109,6 @@
   }
   .plate::after { content: ''; position: absolute; inset: -4px -2px; }
   .plate:active { transform: rotate(-3deg) translateY(2px); box-shadow: 0 1px 0 var(--c-yuzu-lip); }
-  .plate:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* a 12-character 呼び名 whole: two lines beside いつもの (review 11/10 r3: 「ウェイウェ…」 at 140 px) */
   .pn { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; line-height: 1.25; text-align: left; }
   .plate svg { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--c-ink); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }

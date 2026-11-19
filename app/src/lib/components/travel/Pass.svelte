@@ -55,7 +55,6 @@
     -webkit-tap-highlight-color: transparent; transition: transform var(--dur-base) var(--ease-bounce);
   }
   .pass:active { transform: translateY(1px) scale(.99); }
-  .pass:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .main { display: grid; min-width: 0; }
   .cover { position: relative; display: block; height: 104px; overflow: hidden; border-radius: var(--r-row) 0 0 0; background: var(--ctl-off); }
   .cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }

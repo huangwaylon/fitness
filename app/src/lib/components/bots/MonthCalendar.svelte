@@ -93,7 +93,7 @@
     box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--edge) 55%, transparent); -webkit-touch-callout: none; user-select: none; touch-action: manipulation;
   }
   :where(.monthcal) :global(.cell.today .d) { padding: 1px 4px; border-radius: var(--r-pill); background: var(--text); color: var(--card); }
-  :where(.monthcal) :global(.cell:focus-visible), .wdbtn:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; z-index: 1; }
+  :where(.monthcal) :global(.cell:focus-visible), .wdbtn:focus-visible { outline-offset: 1px; z-index: 1; }
   :where(.monthcal) :global(.cell:not(.out):active) { transform: translateY(1px); }
   /* passed: faint (in ジム's, the date where a cell's is); not settable yet: no fill, a dashed edge ("not yet", not
      "gone"); another month's: nothing */

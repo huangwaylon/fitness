@@ -187,7 +187,6 @@
     box-shadow: inset 0 0 0 2px var(--edge); font-variant-numeric: tabular-nums;
   }
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 55%, transparent); }
-  input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .u { flex: none; white-space: nowrap; font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
   .hint { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }

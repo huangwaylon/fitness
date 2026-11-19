@@ -140,7 +140,6 @@
     font: 400 var(--fs-input)/30px var(--font-body); box-shadow: inset 0 0 0 2px var(--edge), 0 var(--lip-s) 0 var(--c-lip);
     background-image: repeating-linear-gradient(transparent 0 28.5px, var(--rose-soft) 28.5px 30px); background-origin: content-box; background-attachment: local;
   }
-  textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* the tools: the tab bar's dock plate in its place */
   .tools {
     flex: none; position: relative; display: flex; align-items: center; gap: 2px; min-height: 56px; margin-bottom: var(--kb, 0px);

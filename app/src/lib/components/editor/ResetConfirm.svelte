@@ -63,7 +63,6 @@
     font: 700 max(var(--fs-input), var(--fs-talk))/1.1 var(--font-ui); color: var(--text); background: var(--ctl);
     box-shadow: inset 0 0 0 2px var(--edge);
   }
-  input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; min-height: max(44px, var(--cta-h)); }
 </style>

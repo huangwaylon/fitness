@@ -51,7 +51,6 @@
     box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   .pickable:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .pickable:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .on .pickable { background: var(--ctl-sel); color: var(--c-ink); }
   .owned .pickable { background: var(--ctl-off); }
   .owned .ic { opacity: .55; }

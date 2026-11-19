@@ -495,7 +495,6 @@
   .sign::before { content: ''; position: absolute; left: 50%; top: 100%; width: 6px; height: 12px; translate: -50% 0; background: #7A512A; }
   .sign::after { content: ''; position: absolute; inset: -6px -4px -16px; }
   .sign:active { translate: -50% calc(-100% - 10px); }
-  .sign:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   /* the twins' balloon: over まめきち's head, its tail down to him, a speech balloon's size; hidden (still there for its
      line) when quiet */

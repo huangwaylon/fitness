@@ -87,7 +87,6 @@
   .info svg { width: 14px; height: 14px; fill: currentColor; }
   .info:active { transform: scale(.88); }
   .info[aria-expanded='true'] { background: var(--c-yuzu-lip); color: var(--c-ink); }
-  .info:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   /* the examples: a small cream speech bubble hanging from the ⓘ (its tail under the disc), over the tiles' art,
      as wide as the two tiles (a short line each: at 320px a tile's width broke them after every ・), growing from its

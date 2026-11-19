@@ -77,7 +77,7 @@
   /* the whole card is the button (its name read out), over everything drawn */
   .hit { position: absolute; inset: 0; z-index: 1; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer; border-radius: inherit; -webkit-tap-highlight-color: transparent; }
   .hit:active { background: var(--hl); }
-  .hit:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+  .hit:focus-visible { outline-offset: -3px; }
   /* the hardest level: a coral sticker that reads on a photo (the coral stamp is an outline) */
   .sticker.hot { background: var(--c-coral); box-shadow: 0 2px 0 var(--c-coral-text); }
 </style>

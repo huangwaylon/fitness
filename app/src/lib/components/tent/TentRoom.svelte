@@ -830,7 +830,6 @@
   }
   .edit svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .edit:active { transform: translateY(2px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); }
-  .edit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .switch {
     position: absolute; right: calc(var(--side) + var(--safe-right) + 62px); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
@@ -839,7 +838,6 @@
   .switch.off { background: #5A4A3A; color: #F5E4BC; }
   .switch svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   .switch:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .switch:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .hha {
     position: absolute; right: calc(var(--side) + var(--safe-right) + 124px); top: calc(var(--ui-top) + 8px); z-index: 2;
     width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
@@ -849,5 +847,4 @@
   .hha svg path { fill: #D08A52; stroke: #8C5326; stroke-width: 3; stroke-linejoin: round; }
   .hha svg ellipse { fill: #8C5326; }
   .hha:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .hha:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 </style>

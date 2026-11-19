@@ -89,7 +89,6 @@
   /* (under a wide top row) */
   .reset.low { top: calc(var(--ui-top) + 64px); }
   .reset:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .reset:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   @keyframes pop { from { scale: .6; opacity: 0; } }
   .fail { position: absolute; left: 16px; right: 16px; top: 40%; text-align: center; color: #F5E4BC; font-weight: 700; }
 </style>

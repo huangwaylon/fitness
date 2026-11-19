@@ -104,7 +104,7 @@
     appearance: none; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; flex: 1; min-width: 0;
     min-height: var(--hit); padding: 0; display: flex; align-items: center; gap: 8px; text-align: left; -webkit-tap-highlight-color: transparent;
   }
-  .toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-chip); }
+  .toggle:focus-visible { border-radius: var(--r-chip); }
   .sum { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chev { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 240ms var(--ease-soft); }
   .open .chev { rotate: 180deg; }

@@ -500,7 +500,7 @@
   .tab svg .fill { fill: currentColor; stroke: none; }
   .tab[aria-selected='true'] { background: var(--c-yuzu); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); }
   .tab:active { transform: translateY(1px); }
-  .tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+  .tab:focus-visible { outline-offset: 1px; }
 
   .panel {
     margin: 0 -8px; padding: 4px 8px var(--body-pad);
@@ -528,7 +528,7 @@
   }
   .sb::after { content: ''; position: absolute; inset: -4px 0; }
   .sb[aria-checked='true'] { background: var(--c-card); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--c-edge), 0 2px 0 var(--c-edge); }
-  .sb:focus-visible { outline: 3px solid var(--focus); outline-offset: -1px; }
+  .sb:focus-visible { outline-offset: -1px; }
 
   /* the colour filter: すべて, then the nine hues, sideways; the end fades when there's more */
   .hues {
@@ -555,7 +555,7 @@
   .dot::before { content: ''; position: absolute; inset: 8px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16); }
   .big .dot { width: 52px; height: 52px; }
   .dot[aria-checked='true']::before { box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16), 0 0 0 3px var(--c-cream), 0 0 0 6px var(--c-leaf-edge); }
-  .dot:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+  .dot:focus-visible { outline-offset: -2px; }
   .shapes { justify-content: center; padding: 8px 0; }
 
   /* the コーデ: a 4-column grid of 64px portraits, names under them */
@@ -568,7 +568,6 @@
   .pick :global(.av), .pick :global(.pt) { box-shadow: 0 0 0 3px transparent; transition: box-shadow var(--dur-quick); }
   .coord.on .pick :global(.av), .coord.on .pick :global(.pt) { box-shadow: 0 0 0 4px var(--c-leaf-edge); }
   .pick:active { transform: scale(1.04, .96); }
-  .pick:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .cn { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .star { color: var(--c-yuzu-lip); margin-right: 1px; }
   .ed { position: absolute; top: 2px; right: calc(50% - 36px); width: 14px; height: 14px; border-radius: 50%; background: #ff8f7a; box-shadow: 0 0 0 2px var(--surface); }
@@ -597,7 +596,6 @@
     width: 100%; min-height: 48px; border-radius: var(--r-btn); border: 0; font-size: var(--fs-input);
     background: var(--c-card); color: var(--c-ink); padding: 0 14px; font-weight: 700; box-shadow: inset 0 0 0 2px var(--c-edge), inset 0 4px 0 var(--c-lip);
   }
-  .name:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; }
 </style>

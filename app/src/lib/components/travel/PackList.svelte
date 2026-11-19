@@ -278,5 +278,5 @@
     width: 100%; box-sizing: border-box; min-height: var(--hit); padding: 10px 12px; border: 0; border-radius: var(--r-chip);
     background: var(--card); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--edge); font: 400 var(--fs-input)/1.4 var(--font-body);
   }
-  .field:focus { outline: 3px solid var(--focus); outline-offset: 1px; }
+  .field:focus { outline-offset: 1px; }
 </style>

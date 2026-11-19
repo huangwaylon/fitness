@@ -180,7 +180,6 @@
     width: 100%; min-width: 0; min-height: var(--hit); box-sizing: border-box; padding: 8px 12px; border: 0; border-radius: var(--r-btn);
     font: 400 var(--fs-input)/1.3 var(--font-body); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
   }
-  .fld:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .fld[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .pair { display: flex; gap: 6px; align-items: center; min-width: 0; }

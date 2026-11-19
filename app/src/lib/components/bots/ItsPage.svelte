@@ -571,7 +571,7 @@
     appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 4px 0; text-align: left;
     color: var(--text); font: inherit; display: flex; align-items: center; gap: 8px;
   }
-  .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .night:focus-visible, .more:focus-visible, .psum:focus-visible, .hsw:focus-visible { border-radius: 8px; }
   .nn { flex: none; font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); font-variant-numeric: tabular-nums; }
   .night[aria-expanded='true'] .chev { rotate: 225deg; margin-top: 4px; }
   /* a part's swatch in the night's list */
@@ -604,7 +604,7 @@
   .drow > .night, .drow > .dtxt { flex: 1; min-width: 0; }
   .x { appearance: none; border: 0; background: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); margin-right: -10px; }
   .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
-  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .x:focus-visible { border-radius: 8px; }
   /* (the chevrons: theme.css, the bots' sheet) */
   .hbody { display: grid; gap: 14px; }
   .fresh-banner { display: flex; align-items: center; gap: 8px; background: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }

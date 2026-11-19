@@ -62,6 +62,6 @@
     width: 30px; height: 30px; border-radius: 50%; border: 0;
     background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge), 0 3px 0 var(--c-edge);
   }
-  input[type='range']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--r-pill); }
+  input[type='range']:focus-visible { border-radius: var(--r-pill); }
 
 </style>

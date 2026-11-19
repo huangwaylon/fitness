@@ -193,7 +193,6 @@
   /* the start day and time side by side, each under its label */
   .when { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
   .when .lbl { margin-top: 0; }
-  .pick:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* 16px so Safari doesn't zoom; the app's field look */
   .pick {
     min-height: var(--hit); padding: 6px 12px; border: 0; border-radius: var(--r-btn); appearance: none;

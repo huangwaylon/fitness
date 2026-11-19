@@ -27,6 +27,5 @@
   }
   .slot.on { background: color-mix(in srgb, var(--c-mint) 75%, var(--card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .slot .ok { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; background: var(--c-gold); color: var(--c-ink); }
-  .slot:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .slot:active { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
 </style>

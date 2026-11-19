@@ -118,7 +118,7 @@
     -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
   }
   .lift .grip { cursor: grabbing; color: var(--text); }
-  .grip:focus-visible { outline: 3px solid var(--focus); outline-offset: -4px; border-radius: var(--r-row); }
+  .grip:focus-visible { outline-offset: -4px; border-radius: var(--r-row); }
   .hint { margin: -6px 4px 0; font-size: var(--fs-s); color: var(--text-soft); line-height: var(--lh); text-wrap: pretty; }
   .foot { display: flex; justify-content: flex-end; }
 </style>
