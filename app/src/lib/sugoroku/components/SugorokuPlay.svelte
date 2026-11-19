@@ -41,7 +41,7 @@
   import { miniOpenedAt } from '../wire.ts';
   import { log } from '#lib/sync/log.ts';
   import type { MiniOn } from '../game.ts';
-  import { hookStart, newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
+  import { hookStart, newLocal, peopleFor, seatsFor } from '../start.ts';
   import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
   interface Props {
@@ -359,7 +359,7 @@
 
   <div class="sg" data-sugoroku data-level={view}>
     {#if view === 'setup'}
-      <Setup people={peopleFor(me)} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onspeech={() => (close(), void toSpeech())} onback={() => (view = 'results')} onclose={close} />
+      <Setup people={peopleFor(me)} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onback={() => (view = 'results')} onclose={close} />
     {:else if view === 'play' && g && cur && ph && board}
       <!-- the board full-bleed, never resized by a phase: the top overlay and the turn's sheet are its insets -->
       <div class="play" data-sg-turn={g.turn} data-sg-phase={ph.k} style:--hud="{hudH}px">

@@ -18,11 +18,10 @@
     length: Length;
     playMode: 'local' | 'online';
     onstart: () => void;
-    onspeech: () => void;
     onback: () => void;
     onclose: () => void;
   }
-  let { people, me, nameOf, picked = $bindable(), levels = $bindable(), length = $bindable(), playMode = $bindable(), onstart, onspeech, onback, onclose }: Props = $props();
+  let { people, me, nameOf, picked = $bindable(), levels = $bindable(), length = $bindable(), playMode = $bindable(), onstart, onback, onclose }: Props = $props();
   // (the kit's Segmented: 36 drawn in a 44 hit, docs/design.md "Sizes")
   const LEVELS = ([1, 2, 3] as const).map((lv) => ({ id: String(lv) as '1' | '2' | '3', label: s(`level.${lv}`) }));
   const LENGTHS = (['short', 'normal', 'long'] as const).map((id) => ({ id, label: s(`length.${id}`) }));
@@ -61,8 +60,6 @@
   <h3 class="sec-label">{s('length')}</h3>
   <Segmented items={LENGTHS} value={length} label={s('length')} attr="sg-length" onpick={(id) => (length = id)} />
   <button type="button" class="btn" data-sfx="confirm" data-sg-start disabled={!canStart} onclick={onstart}>{s('start')}</button>
-  <!-- the relay's Whisper on trial (docs/speech-test.md) -->
-  <button type="button" class="quiet" data-sfx="tick" data-sg-speech onclick={onspeech}>{s('speechTest')}</button>
 </div>
 
 <style>
@@ -87,5 +84,4 @@
   .lrow .nm { flex: 1 0 auto; min-width: 4.5em; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   /* (a row's level switch: its own line on a narrow phone) */
   .lseg { flex: 1 1 13.5em; min-width: 0; margin-left: auto; padding: 4px 0; }
-  .quiet { align-self: center; margin-top: 4px; }
 </style>

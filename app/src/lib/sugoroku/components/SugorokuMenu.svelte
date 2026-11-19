@@ -19,7 +19,7 @@
   import { loadSentences, type Line } from '../sentences.ts';
   import { loadMiniData, type MiniData } from '../mini/data.ts';
   import { listen, nameOf, online, startOnline, updateNeeded } from '../online.svelte.ts';
-  import { newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
+  import { newLocal, peopleFor, seatsFor } from '../start.ts';
   import { s } from '../i18n.ts';
 
   interface Props {
@@ -84,7 +84,6 @@
     else saveGame(newLocal(seats, length, saved));
     onscreen(playMode);
   }
-  const speech = () => (onclose(), void toSpeech());
 </script>
 
 <div class="sg" data-sugoroku data-level={view}>
@@ -117,7 +116,7 @@
     <div class="top"><NavBar pad title={s('howTo')} onback={() => (view = 'menu')} {onclose} /></div>
     <div class="body sheet-scroll"><div class="card pad"><HowTo /></div></div>
   {:else}
-    <Setup {people} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onspeech={speech} onback={() => (view = 'menu')} {onclose} />
+    <Setup {people} {me} {nameOf} bind:picked bind:levels bind:length bind:playMode onstart={start} onback={() => (view = 'menu')} {onclose} />
   {/if}
 </div>
 

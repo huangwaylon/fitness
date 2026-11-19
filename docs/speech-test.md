@@ -6,7 +6,7 @@ it and waits for this page's results. Safari's own recogniser is out: it needs S
 
 ## The page
 
-`/speech`, from English Study's ⚙ (音声認識テスト ›) or すごろく's new-game screen; ‹ goes back there. Pick one of eight everyday sentences (short to long, a few
+`/speech`, from English Study's ⚙ (音声認識テスト ›); ‹ goes back to English Study. Pick one of eight everyday sentences (short to long, a few
 with joins like "want to", "got to", "did you"), or say anything. Tap to record, tap again to stop (10 s at most).
 The page shows:
 

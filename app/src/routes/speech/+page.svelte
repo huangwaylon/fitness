@@ -1,6 +1,6 @@
 <script lang="ts">
   // The speech test (docs/speech-test.md): read a sentence (or say anything), the relay's Whisper writes it down, and
-  // the page shows what was heard, each word matched, and each step's time. ‹ goes back to where it was opened (English Study's ⚙ or すごろく's tab).
+  // the page shows what was heard, each word matched, and each step's time. ‹ goes back to English Study (its ⚙ opens it).
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
@@ -84,10 +84,10 @@
   }
 
   function leave() {
-    // (back to where it was opened: English Study's ⚙ row (?from=en) opens its home, すごろく's link its tab)
-    const q = new URLSearchParams(location.search), fromEn = q.get('from') === 'en';
+    // (back to English Study's home: its ⚙ row opens this page, ?from=en)
+    const q = new URLSearchParams(location.search);
     q.delete('from');
-    void goto(`${resolve('/')}${q.size ? `?${q}` : ''}`).then(() => english.show(fromEn ? undefined : 'game'));
+    void goto(`${resolve('/')}${q.size ? `?${q}` : ''}`).then(() => english.show());
   }
   const step = (d: number) => {
     if (rec.phase !== 'idle') return;

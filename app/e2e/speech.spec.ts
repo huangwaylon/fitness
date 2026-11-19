@@ -1,5 +1,5 @@
-// The speech test (docs/speech-test.md): reached from English Study's すごろく tab (the new game's screen), its sentences
-// stepped through to 自由に話す and round, ‹ back to the tab (the demo has no key: 録音 off with its note). Paired, with
+// The speech test (docs/speech-test.md): reached from English Study's ⚙, its sentences stepped through to 自由に話す
+// and round, ‹ back to English Study's home (the demo has no key: 録音 off with its note). Paired, with
 // the island's sound on (its audio session 'ambient', which WebKit refuses the mic under) and the mic stood in
 // (e2e/mic.ts): a take recorded, sent as a 16 kHz WAV and shown; a refusal says why. The logic tier.
 import { expect, test, type Page } from './fixtures.ts';
@@ -10,29 +10,7 @@ import { heldFor, liveTracks, micAsks, standInMic } from './mic.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
 
-test('the speech test: from すごろく, its sentences, back to the tab', async ({ page }) => {
-  await page.goto('?demo');
-  await islandUp(page);
-  await fromMenu(page, 'english');
-  await page.locator('dialog[open] [data-en-tab="game"]').click();
-  await page.locator('[data-sugoroku] [data-sg-new]').click();
-  await page.locator('[data-sugoroku] [data-sg-speech]').click();
-
-  const sp = page.locator('[data-speech]');
-  await expect(sp).toBeVisible();
-  await expect(page).toHaveURL(/\/speech\?demo/);
-  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', '0');
-  await expect(sp.locator('[data-speech-mic]')).toHaveAttribute('aria-disabled', 'true');
-  await sp.getByRole('button', { name: '前の文' }).click();
-  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', 'free');
-  await sp.getByRole('button', { name: '次の文' }).click();
-  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', '0');
-
-  await sp.getByRole('button', { name: '戻る' }).click();
-  await expect(page.locator('[data-sugoroku]')).toBeVisible();
-});
-
-test('the speech test from English Study’s ⚙: 音声認識テスト opens it, ‹ back to English Study’s home', async ({ page }) => {
+test('the speech test from English Study’s ⚙: 音声認識テスト opens it, its sentences, ‹ back to English Study’s home', async ({ page }) => {
   await page.goto('?demo');
   await islandUp(page);
   await fromMenu(page, 'english', 'tap');
@@ -41,6 +19,12 @@ test('the speech test from English Study’s ⚙: 音声認識テスト opens it
   const sp = page.locator('[data-speech]');
   await expect(sp).toBeVisible();
   await expect(page).toHaveURL(/\/speech\?demo=?&from=en$/);
+  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', '0');
+  await expect(sp.locator('[data-speech-mic]')).toHaveAttribute('aria-disabled', 'true');
+  await sp.getByRole('button', { name: '前の文' }).tap();
+  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', 'free');
+  await sp.getByRole('button', { name: '次の文' }).tap();
+  await expect(sp.locator('[data-speech-at]')).toHaveAttribute('data-speech-at', '0');
   await sp.getByRole('button', { name: '戻る' }).tap();
   await expect(page.locator('dialog[open] [data-english] [data-en-home]')).toBeVisible();
   expect(new URL(page.url()).searchParams.has('from')).toBe(false);

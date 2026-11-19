@@ -1,7 +1,5 @@
 // A game started from だれが遊ぶ？ (Setup), the tab's (SugorokuMenu) and the results' もう一度遊ぶ (SugorokuPlay): the
-// table's seats, and a passed-round game's board of another family than the last game's; the speech test's page.
-import { goto } from '$app/navigation';
-import { resolve } from '$app/paths';
+// table's seats, and a passed-round game's board of another family than the last game's.
 import { now } from '#lib/time/clock.ts';
 import { hook } from '#lib/world/devHooks.ts';
 import type { Who } from '#lib/types.ts';
@@ -37,6 +35,3 @@ export function hookStart(screen: 'local' | 'online', held: boolean): Game | nul
   }
   return newLocal(seatsOf(seats).map((x) => ({ who: x.who, name: nameOf(x.who), level: x.level })), 'normal', null);
 }
-
-/** The speech test's page (docs/speech-test.md), the page's own query kept (?demo, the e2e's hooks). */
-export const toSpeech = (): Promise<void> => goto(`${resolve('/speech')}${location.search}`);
