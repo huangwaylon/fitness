@@ -97,10 +97,9 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
       a, b: [b.bmr, b.tdee, b.active],
       kcal: [kcalDefault(s, 'A', T), kcalDefault(s, 'B', T), kcalDefault(losing, 'A', T)],
       salt: [saltDefault(s, 'A', T), saltDefault(s, 'B', T), saltDefault(s, 'G', T)],
-      // fibre: the 目標量 by sex and age (A 36: 22; B: 18; the guest: no profile); alcohol 20 g for everyone until set
+      // fibre: the 目標量 by sex and age (A 36: 22; B: 18; the guest: no profile)
       fibre: [fibreDefault(s, 'A', T), fibreDefault(s, 'B', T), fibreDefault(s, 'G', T), foodGoal(s, 'B', 'fi', T)],
       fibreAges: [fibreTarget('m', 29), fibreTarget('m', 30), fibreTarget('m', 64), fibreTarget('m', 65), fibreTarget('m', null), fibreTarget('f', 40)],
-      alcohol: [foodGoal(s, 'A', 'al', T), foodGoal(s, 'G', 'al', T), foodGoal(reduce({ metrics, events: [...profile, pref('A', T - 1, { key: 'alcoholGoal', value: 10 })] }), 'A', 'al', T)],
       // a goal that's set always wins over the default; none set: the default
       goals: [foodGoal(set, 'A', 'k', T), foodGoal(set, 'B', 's', T), foodGoal(set, 'B', 'k', T), foodGoal(s, 'A', 's', T), foodGoal(s, 'A', 'fa', T)],
       protein: [proteinDefault(s, 'A', T), proteinDefault(s, 'B', T)]
@@ -114,7 +113,6 @@ describe('the profile: age, height, energy, the BMI category, the defaults', () 
       salt: [7.5, 6.5, null],
       fibre: [22, 18, null, 18],
       fibreAges: [20, 22, 22, 20, 20, 18],
-      alcohol: [20, 20, 10],
       goals: [2600, 8, 1700, 7.5, null],
       // 1.6 g per kg (69.6 → 111), never under the 推奨量 (B: 84 over 50)
       protein: [111, 84]

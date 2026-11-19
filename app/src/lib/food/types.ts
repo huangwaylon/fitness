@@ -45,10 +45,8 @@ export interface Item {
   f?: number | null;
   c?: number | null;
   salt?: number | null;
-  /** Fibre (食物繊維総量) and alcohol, g; absent or null when unknown (most products, the city sets; alcohol only on
-   *  drinks). */
+  /** Fibre (食物繊維総量), g; absent or null when unknown (most products, the city sets). */
   fib?: number | null;
-  alc?: number | null;
   /** One food in its states (MEXT): its group's default item's id, and its state as the chip says it (生, 焼き, ゆで …). */
   vg?: string;
   st?: string;

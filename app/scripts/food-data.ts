@@ -85,11 +85,13 @@ function option(name: string): string | undefined {
 }
 
 /** A dataset's items as shipped (checked): a core one's with their search keys, a lazy one's without; a product's
- * barcode dropped when its id has it. */
+ * barcode dropped when its id has it; no alcohol. */
 function ship(f: string, d: Dataset, lazy: boolean): Dataset {
   d.items = d.items.flatMap((raw) => checked(raw) ?? []).map((it) => {
     const keys = keysOf(it);
     if (keys.some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
+    // (alcohol, no longer tracked (2026-11-19): never shipped, an older build's `alc` dropped here)
+    if ('alc' in it) delete (it as Item & { alc?: unknown }).alc;
     const { jan, ...rest } = it;
     const item = jan !== undefined && it.id === `off:${jan}` ? rest : it;
     return lazy ? item : { ...item, keys: keys.join(' ') };

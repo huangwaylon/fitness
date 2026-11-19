@@ -15,7 +15,7 @@ const near = (a: number, b: number, eps: number) => Math.abs(a - b) <= eps + 1e-
 
 /**
  * Whether snapshot `now` (the food as it is now) differs from `was` (as logged) beyond rounding: kcal, or protein,
- * fat, carbs or salt (a value become unknown, or known, counts); fibre and alcohol only when both know them (an entry
+ * fat, carbs or salt (a value become unknown, or known, counts); fibre only when both know it (an entry
  * from before them, 2026-11-05, has neither: that alone is no fix). The name and the portion label are not values.
  */
 export function snapDiffers(was: FoodSnap, now: FoodSnap): boolean {
@@ -24,8 +24,8 @@ export function snapDiffers(was: FoodSnap, now: FoodSnap): boolean {
     const a = was[k], b = now[k];
     if ((a === null) !== (b === null) || (a !== null && b !== null && !near(a, b, EPS.g))) return true;
   }
-  for (const k of ['fi', 'al'] as const) {
-    const a = was[k], b = now[k];
+  {
+    const a = was.fi, b = now.fi;
     if (typeof a === 'number' && typeof b === 'number' && !near(a, b, EPS.g)) return true;
   }
   return false;

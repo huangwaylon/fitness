@@ -14,7 +14,7 @@ async function dbOf(items: object[]) {
 }
 
 describe('最新の値にする: an entry’s food as it is now', () => {
-  it('a snapshot differs beyond rounding: kcal, P/F/C/salt (known ↔ unknown too), fibre and alcohol only when both know them', () => {
+  it('a snapshot differs beyond rounding: kcal, P/F/C/salt (known ↔ unknown too), fibre only when both know it', () => {
     const got = [
       snapDiffers(RICE, { ...RICE }), snapDiffers(RICE, { ...RICE, k: 156.4 }), snapDiffers(RICE, { ...RICE, k: 157 }),
       snapDiffers(RICE, { ...RICE, p: 2.54 }), snapDiffers(RICE, { ...RICE, p: 2.6 }), snapDiffers(RICE, { ...RICE, s: null }),

@@ -22,10 +22,10 @@ import { addDays, daysBetween } from '#lib/time/dates.ts';
 import { goalFallback, GOALS, goalMet, type LatestGoalKey } from '#lib/contract/goals.ts';
 import type { DaySeries } from './health.ts';
 
-/** A day's entries and what they add up to: kcal (whole), protein, fat, carbs, salt and alcohol (g, one decimal; an
+/** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an
  *  unknown nutrient counts as none), and fibre (g, one decimal; null when no entry knows its fibre: an older snapshot
  *  has none, and most products' labels don't say). */
-export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
+export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null }
 
 /** Protein to aim for per kg of body weight a day (g). */
 const PROTEIN_PER_KG = 1.6;
@@ -200,7 +200,7 @@ export function foodDay(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: L
   const entries = MEALS.flatMap((m) => [...reps.filter((r) => r.m === m).flatMap((r) => repeatEntries(r, date)), ...real.filter((e) => e.m === m)]);
   const t = emptyTotals();
   for (const { g, f } of entries) addTo(t, g, f);
-  return { entries, kcal: Math.round(t.k), p: round1(t.p), fa: round1(t.fa), c: round1(t.c), s: round1(t.s), fi: t.fi === null ? null : round1(t.fi), al: round1(t.al) };
+  return { entries, kcal: Math.round(t.k), p: round1(t.p), fa: round1(t.fa), c: round1(t.c), s: round1(t.s), fi: t.fi === null ? null : round1(t.fi) };
 }
 
 /** A meal as it was eaten: `who`'s `meal` on `date` (a いつもの's items too), each its grams and snapshot, to log afresh
@@ -226,7 +226,7 @@ export function copySources(s: Pick<State, 'food' | 'foodRepeat'>, me: Who, othe
 
 /** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys; fibre null while no entry knows it. */
 type Totals = Record<Exclude<FoodGoalOf, 'fi'>, number> & { fi: number | null };
-const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, al: 0 });
+const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null });
 /** `g` grams of `f` into a day's totals (an unknown nutrient as none; fibre known once any entry knows it). */
 function addTo(t: Totals, g: number, f: FoodSnap): void {
   const x = g / 100;
@@ -236,7 +236,6 @@ function addTo(t: Totals, g: number, f: FoodSnap): void {
   t.fa += m.fa ?? 0;
   t.c += m.c ?? 0;
   t.s += (f.s ?? 0) * x;
-  t.al += (f.al ?? 0) * x;
   if (f.fi !== undefined && f.fi !== null) t.fi = (t.fi ?? 0) + f.fi * x;
 }
 const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, Totals>>>();
@@ -300,7 +299,7 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
 
 /** A range's daily averages (グラフ's average card): `from`…`to` the days it covers, `days` those with a meal (記録 n日),
  *  kcal (whole) and each nutrient (g, one decimal) over them; fibre over the days that know it (null: none does). */
-export interface FoodAverage { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
+export interface FoodAverage { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null }
 
 /**
  * `who`'s average day over from..to (a day with nothing logged left out, as グラフ's averages: 記録なし, never a 0; a
@@ -316,14 +315,14 @@ export function foodAverage(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, fro
     const t = totals.get(d);
     if (!t) continue;
     days += 1;
-    for (const k of ['k', 'p', 'fa', 'c', 's', 'al'] as const) sum[k] += t[k];
+    for (const k of ['k', 'p', 'fa', 'c', 's'] as const) sum[k] += t[k];
     if (t.fi !== null) (sum.fi = (sum.fi ?? 0) + t.fi), (fiDays += 1);
   }
   if (!days) return null;
   const avg = (v: number) => round1(v / days);
   return {
     from, to, days, kcal: Math.round(sum.k / days), p: avg(sum.p), fa: avg(sum.fa), c: avg(sum.c), s: avg(sum.s),
-    fi: sum.fi === null ? null : round1(sum.fi / fiDays), al: avg(sum.al)
+    fi: sum.fi === null ? null : round1(sum.fi / fiDays)
   };
 }
 
@@ -331,25 +330,25 @@ export function foodAverage(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, fro
  *  15 from 65: the adults' here), fat 20–30, carbohydrate 50–65. */
 export const PFC_RANGES = { p: [13, 20], fa: [20, 30], c: [50, 65] } as const;
 export type PfcOf = keyof typeof PFC_RANGES;
-/** kcal per gram: protein and carbohydrate 4, fat 9 (Atwater), alcohol 7. */
-const ATWATER = { p: 4, fa: 9, c: 4, al: 7 } as const;
+/** kcal per gram: protein and carbohydrate 4, fat 9 (Atwater). */
+const ATWATER = { p: 4, fa: 9, c: 4 } as const;
 
 /** Each one's share of the energy (%E, unrounded) and where it sits against PFC_RANGES (as rounded to a whole %: −1
- *  under, 0 within, 1 over); alcohol's share too (no range: it's no nutrient to aim for). */
-interface PfcShare { p: number; fa: number; c: number; al: number; at: Record<PfcOf, -1 | 0 | 1> }
+ *  under, 0 within, 1 over). */
+interface PfcShare { p: number; fa: number; c: number; at: Record<PfcOf, -1 | 0 | 1> }
 
 /**
- * Protein, fat and carbohydrate as shares of energy, from their grams (and alcohol's): each one's Atwater energy over
+ * Protein, fat and carbohydrate as shares of energy, from their grams: each one's Atwater energy over
  * their sum, so the shares add up to 100 and a bar of them is whole (a source's kcal is measured otherwise, and fibre
- * in the carbohydrate is counted at 4: close enough for a share). Alcohol is its own share, never P, F or C's. Null
+ * in the carbohydrate is counted at 4: close enough for a share). Null
  * with no energy from any.
  */
-export function pfcShare(g: { p: number; fa: number; c: number; al?: number }): PfcShare | null {
-  const e = { p: g.p * ATWATER.p, fa: g.fa * ATWATER.fa, c: g.c * ATWATER.c, al: (g.al ?? 0) * ATWATER.al };
-  const all = e.p + e.fa + e.c + e.al;
+export function pfcShare(g: { p: number; fa: number; c: number }): PfcShare | null {
+  const e = { p: g.p * ATWATER.p, fa: g.fa * ATWATER.fa, c: g.c * ATWATER.c };
+  const all = e.p + e.fa + e.c;
   if (!(all > 0)) return null;
   const pct = (v: number) => (v * 100) / all;
-  const out = { p: pct(e.p), fa: pct(e.fa), c: pct(e.c), al: pct(e.al) };
+  const out = { p: pct(e.p), fa: pct(e.fa), c: pct(e.c) };
   const at = (n: PfcOf): -1 | 0 | 1 => {
     const v = Math.round(out[n]), [lo, hi] = PFC_RANGES[n];
     return v < lo ? -1 : v > hi ? 1 : 0;
@@ -435,7 +434,7 @@ export function setGoal(s: Pick<State, 'prefs'>, who: Who, n: FoodGoalOf): numbe
 }
 
 /** `who`'s daily goal of `n`: theirs as set, else its default: protein's (proteinDefault), with a profile kcal's, salt's
- *  and fibre's (model/profile.ts kcalDefault, saltDefault, fibreDefault), alcohol's 20 g; fat and carbs have none until set (docs/design.md "Gohan":
+ *  and fibre's (model/profile.ts kcalDefault, saltDefault, fibreDefault); fat and carbs have none until set (docs/design.md "Gohan":
  *  what they should be depends on the plan). A default never overrides a goal that's set. */
 export function foodGoal(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
   return setGoal(s, who, n) ?? foodDefault(s, who, n, t);
@@ -446,7 +445,7 @@ export function foodGoals(m: { state: State; now: number } | null, who: Who): Re
 }
 
 /** `who`'s default goal of `n` (shown while none is set): the registry's computed one (contract/goals.ts `derived`), else
- *  its fixed one (`fallback`: alcohol's 20 g), or null. */
+ *  its fixed one (`fallback`), or null. */
 function foodDefault(s: State, who: Who, n: FoodGoalOf, t: number): number | null {
   const d = GOALS[n].derived;
   return d === 'protein' ? proteinDefault(s, who, t) : d === 'energy' ? kcalDefault(s, who, t) : d === 'salt' ? saltDefault(s, who, t)

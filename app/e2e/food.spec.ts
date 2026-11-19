@@ -385,7 +385,7 @@ test('グラフ on the guest’s phone: its own kcal only, a member’s too', as
   await openFood(page, '&as=G');
   await sheet(page).locator('[data-tab=chart]').click();
   // nothing logged yet: each intake card says so under its goal (the guest's own, set there)
-  await expect(sheet(page).locator('[data-food-chart] [data-food-empty]')).toHaveCount(7);
+  await expect(sheet(page).locator('[data-food-chart] [data-food-empty]')).toHaveCount(6);
   await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-metric]')).toHaveCount(0);
   await sheet(page).locator('select[data-pick=who]').selectOption('A');
@@ -446,15 +446,17 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(sheet(page).locator('[data-nutrient=s] small')).toHaveText(/^目標 7\.5\sg\s以下$/);
   await expect(sheet(page).locator('[data-nutrient=fa] small, [data-nutrient=c] small')).toHaveCount(0);
 
-  // グラフ: a card each, kcal, protein, fat, carbs, salt, fibre, alcohol; each with its goal's chip
+  // グラフ: a card each, kcal, protein, fat, carbs, salt, fibre (no alcohol: not tracked); each with its goal's chip
   await sheet(page).locator('[data-tab=chart]').click();
   const cards = sheet(page).locator('[data-food-chart]');
-  await expect(cards).toHaveCount(7);
-  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's', 'fi', 'al']);
-  await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['食べたカロリー', 'たんぱく質', '脂質', '炭水化物', '塩分', '食物繊維', 'アルコール']);
+  await expect(cards).toHaveCount(6);
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's', 'fi']);
+  await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['食べたカロリー', 'たんぱく質', '脂質', '炭水化物', '塩分', '食物繊維']);
+  // protein's and carbs' icons: ごはん's own pictures (a fried egg, a bowl of rice), loaded at 3× the 24 px icon
+  for (const k of ['p', 'c']) expect(await sheet(page).locator(`[data-food-chart=${k}] img[data-nutrient-pic=${k}]`).evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(72);
   // each its direction: kcal near a value, protein at least, fat at most, carbs near a value, salt at most, fibre at
-  // least, alcohol at most
-  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost', 'atLeast', 'atMost']);
+  // least
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost', 'atLeast']);
   await expect(sheet(page).locator('[data-food-chart=k] [data-goal-line]')).toHaveCount(0); // (the chip says it)
   await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal 前後');
   const protein = sheet(page).locator('[data-food-chart=p]');
@@ -495,7 +497,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await sheet(page).locator('select[data-pick=who]').selectOption('B');
   await expect(sheet(page).locator('span[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal 前後');
   await sheet(page).locator('[data-tab=chart]').click();
-  await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(7);
+  await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(6);
   await expect(sheet(page).locator('[data-food-chart] button[data-goal]')).toHaveCount(0);
 });
 
@@ -1855,8 +1857,8 @@ for (const late of [false, true]) test(`‹ from くわしく: the chain menus c
 
 // The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at
 // a third of the day's goal), the day's PFC balance against the 食事摂取基準's ranges, グラフ's average day over its range, and the fibre
-// and alcohol cards with their goals (fibre from the profile: ウェイ, a man of 35, 22 g; alcohol 20 g until set).
-test('the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre and alcohol with their goals', async ({ page }) => {
+// card with its goal (from the profile: ウェイ, a man of 35, 22 g).
+test('the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre with its goal', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   // each entry of the day with its 40px picture box (its picture, else its category's tile), the row no taller for it
@@ -1901,12 +1903,12 @@ test('the balance views: a meal’s protein chip, the PFC bar, the period’s av
   await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/\d+〜11\/3 · \d+日分$/);
   await expect(avg.locator('[data-avg-range]')).not.toHaveText(/^10\/29〜/);
   await s.locator('select[data-pick=period]').selectOption('week');
-  // fibre at least its default, alcohol at most 20 g
+  // fibre at least its default; no alcohol card (not tracked)
   const fi = s.locator('[data-food-chart=fi]');
   await expect(fi.locator('button[data-goal]')).toHaveText('目標 22 g 以上');
   await expect(fi.locator('path.bar')).toHaveCount(4);
   await expect(fi.locator('path.goal')).toHaveCount(1);
-  await expect(s.locator('[data-food-chart=al] button[data-goal]')).toHaveText('目標 20 g 以下');
+  await expect(s.locator('[data-food-chart=al]')).toHaveCount(0);
   // fibre's goal set in place: whole grams, 5–60
   await fi.locator('button[data-goal]').click();
   const tray = fi.locator('form.tray');

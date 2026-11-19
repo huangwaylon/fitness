@@ -63,7 +63,7 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
  */
 export const GOAL_PREF_KEYS: readonly string[] = [
   'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal',
-  'fibreGoal', 'alcoholGoal'
+  'fibreGoal'
 ];
 
 /**
@@ -75,7 +75,7 @@ export const GOAL_PREF_KEYS: readonly string[] = [
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'goalMuscle', 'goalSmm', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook', 'menuOrder'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'weatherMode', 'sex', 'birth', 'look', 'savedLooks', 'seasonLook', 'menuOrder'
 ];
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): locked, the

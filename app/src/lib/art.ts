@@ -101,16 +101,13 @@ export const BODY_ART: Record<'weight' | 'body_fat_pct' | 'bmi' | 'lean_kg' | 'm
 };
 
 /** ごはん's グラフ cards: the kcal eaten NH's dinner set, then a catalogue item per nutrient (decorative; the heading
- *  names it): protein the barbecue grill (meat), fat the cream and sugar, carbs the sticky rice, salt the spice rack, fibre the
- *  veggie plate, alcohol the green bottles. */
-export const NUTRIENT_ART: Record<'k' | 'p' | 'fa' | 'c' | 's' | 'fi' | 'al', string> = {
+ *  names it): fat the cream and sugar, salt the spice rack, fibre the veggie plate. Protein and carbs show ごはん's own
+ *  pictures instead (a fried egg, a bowl of rice: components/food/pics, ChartCard). */
+export const NUTRIENT_ART: Record<'k' | 'fa' | 's' | 'fi', string> = {
   k: 'items/dinner',
-  p: 'finds/items/barbecue',
   fa: 'finds/items/cream-and-sugar',
-  c: 'finds/items/sticky-rice',
   s: 'finds/items/revolving-spice-rack',
-  fi: 'finds/items/veggie-plate-meal',
-  al: 'finds/items/decorative-bottles'
+  fi: 'finds/items/veggie-plate-meal'
 };
 
 

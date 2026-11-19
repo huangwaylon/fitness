@@ -36,7 +36,6 @@ describe('表示値を確認: an amount a label rarely says', () => {
     expect(portionCheck(of({ kcal: 40, p: 0.3, f: 0, c: 3 }), 350)).toEqual(['energy']);
     expect(portionCheck(of({ name: 'プレミアムビール', kcal: 40, p: 0.3, f: 0, c: 3 }), 350)).toEqual([]);
     expect(portionCheck(of({ cat: '酒', kcal: 40, p: 0.3, f: 0, c: 3 }), 350)).toEqual([]);
-    expect(portionCheck(of({ kcal: 40, p: 0.3, f: 0, c: 3, alc: 4 }), 350)).toEqual([]);
     expect(portionCheck(of({ name: 'シュガーレスキャンディ', kcal: 230, p: 0, f: 0, c: 98 }), 20)).toEqual([]);
     expect(portionCheck(of({ c: null }), 100)).toEqual([]);
   });

@@ -5,7 +5,7 @@
   // each with its goal and its direction when there is one (「目標 110 g 以上」: グラフ sets them; protein's default
   // 1.6 g × the latest weigh-in, a member's with a weight) and a small bar, coral once past a ceiling (salt and fat at
   // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, P · F · C a row, then salt, fibre (データなし while no
-  // entry knows it) and alcohol (on a day with any); then the PFC balance (PfcBar: the shares of energy against the
+  // entry knows it); then the PFC balance (PfcBar: the shares of energy against the
   // 食事摂取基準's ranges). A day with nothing logged: 「きろく
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
   import type { Who } from '#lib/types.ts';
@@ -41,11 +41,8 @@
   /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」, its tile
    *  saying 一部不明 in words on its 目標 line (「一部不明・目標 7.5 g 以下」, no hover on a phone) and its bar hatched. */
   const partial = (k: string): boolean => (k === 'p' || k === 'fa' || k === 'c' || k === 's') && day.entries.some((e) => e.f[k] === null);
-  /** The tiles: the four, fibre, and alcohol on a day with some. */
-  const cells = $derived([
-    ...(['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })),
-    ...(day.al > 0 ? [{ k: 'al' as const, v: day.al, goal: goals.al }] : [])
-  ]);
+  /** The tiles: the four, then fibre. */
+  const cells = $derived((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })));
   const LINE = ['p', 'fa', 'c', 's'] as const;
   const over = (k: (typeof LINE)[number]) => goals[k] !== null && goalOver(k, day[k], goals[k]!);
 </script>
@@ -87,7 +84,7 @@
       </div>
     {/each}
   </dl>
-  <PfcBar id="day" p={day.p} fa={day.fa} c={day.c} al={day.al} /></details>{/if}
+  <PfcBar id="day" p={day.p} fa={day.fa} c={day.c} /></details>{/if}
 </section>
 
 <style>
@@ -123,7 +120,7 @@
   .tg { flex: none; display: inline-flex; align-items: center; gap: 2px; color: var(--text-soft); }
   .tg svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: rotate 160ms var(--ease-soft); }
   .more[open] .tg svg { rotate: 180deg; }
-  /* three a row: protein, fat and carbs on the first, salt, fibre (and alcohol) on the second (the user 2026-11-19) */
+  /* three a row: protein, fat and carbs on the first, salt and fibre on the second (the user 2026-11-19) */
   .cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; }
   dd.unknown { color: var(--text-soft); }
   .cell { min-width: 0; padding: 8px 8px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }

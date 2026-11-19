@@ -11,6 +11,11 @@
   import { METRIC_FRUIT, type Metric } from '#lib/model/health.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import GoalEdit from './GoalEdit.svelte';
+  // protein's and carbs' icons: ごはん's own generated pictures (the egg sheet's 目玉焼き, mext:12021; the rice sheet's
+  // ごはん, mext:01088), cut from their 384 px cells to 72 px (3× the 24 px icon), inlined by the build (~2 KB each)
+  import egg from '../food/pics/egg.webp';
+  import rice from '../food/pics/rice.webp';
+  const PICS: Partial<Record<GoalId | 'bmr', string>> = { p: egg, c: rice };
   import { GOAL_SPECS, goalLabel } from './goals.ts';
 
   interface Props {
@@ -48,7 +53,7 @@
 <section class="card hcard {tone === 'soft' ? 'mc' : 'bc'}" data-metric={kind === 'metric' ? id : undefined} data-food-chart={kind === 'food' ? id : undefined}
   data-person={p} data-goal-dir={spec?.dir} aria-labelledby={hid}>
   <header>
-    <span class="ic"><OfficialArt key={art} size={24} /></span>
+    <span class="ic">{#if PICS[id]}<img class="pic" src={PICS[id]} alt="" width="24" height="24" data-nutrient-pic={id} />{:else}<OfficialArt key={art} size={24} />{/if}</span>
     <h3 id={hid}>{title}</h3>
     {#if spec}<GoalEdit id="{id}-goal" {spec} label={goalLabel(spec.id, goal)} value={cur} {onsave} {start} {warn} {tone} />{/if}
   </header>
@@ -58,3 +63,8 @@
     {@render children()}
   {/if}
 </section>
+
+<style>
+  /* a picture on its own warm paper (ごはん's): a small rounded tile, as the food rows' thumbnails */
+  .pic { display: block; width: 24px; height: 24px; border-radius: 6px; }
+</style>

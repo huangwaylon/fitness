@@ -164,7 +164,7 @@ person at a time, computed on read; its code and strings load with the first ope
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
   one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
-  least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
+  least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
 - **Rules:** a day's value is Health's latest; a day without a record has no row (from the first activity record);
   today is drawn, not counted; the previous period is as long, just before.
@@ -182,9 +182,9 @@ loads with the first search, or at idle, in a worker); kept mounted between open
 - **Summary card:** the day's kcal with its goal chip and bar (coral only past 20 % over); P · F · C · 塩分 (coral past a
   ceiling), a fold with every nutrient, and the **PFC balance** (Atwater 4/9/4) against 食事摂取基準 2025 (never coral).
   A past day with nothing logged says so, not 0.
-- **Goals** (the registry; [Goal directions](#goal-directions)): kcal, protein, fat, carbs, salt, fibre, alcohol, on my
+- **Goals** (the registry; [Goal directions](#goal-directions)): kcal, protein, fat, carbs, salt, fibre, on my
   own cards. **Defaults** while unset: kcal from the daily energy, protein and salt by the profile ([Profile](#profile));
-  fibre by sex and age; alcohol 20 g ([decisions](decisions.md#fibre-and-alcohol)); none for fat and carbs. **Warn,
+  fibre by sex and age ([decisions](decisions.md#fibre-no-alcohol)); none for fat and carbs. **Warn,
   allow** ([decisions](decisions.md#low-kcal-goals-warn-allow)): a low kcal goal gets a note, never a block.
 - **Meals:** breakfast · lunch · dinner · おやつ, a card each, a row per entry, its P·F·C tinted by its share of the
   day. On my day ＋ opens the search; anyone else's is read-only. An entry keeps its food as logged (mine offers a

@@ -47,9 +47,8 @@ export const itemsKcal = (list: readonly { g: number; f: Pick<FoodSnap, 'k'> }[]
  *  / 100 g logs 650 kcal; `u` the portion it was picked by; an `sv` item's per serving, `sv` set. */
 export function toSnap(item: Item, portionLabel?: string): FoodSnap {
   const snap: FoodSnap = { id: item.id, n: cleanLine(item.name, FOOD_NAME_CHARS), k: item.kcal, p: item.p ?? null, fa: item.f ?? null, c: item.c ?? null, s: item.salt ?? null };
-  // fibre and alcohol only when known (an older snapshot has neither: the same as unknown)
+  // fibre only when known (an older snapshot has none: the same as unknown)
   if (typeof item.fib === 'number') snap.fi = item.fib;
-  if (typeof item.alc === 'number') snap.al = item.alc;
   const u = cleanLine(portionLabel, FOOD_PORTION_CHARS);
   if (u) snap.u = u;
   if (item.sv) snap.sv = true;

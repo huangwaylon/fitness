@@ -3,7 +3,7 @@
   // foodAverage: the range's finished days, to yesterday when it holds today; a day with nothing logged left out, n日分),
   // so a day over or under reads against the period, compact (the user 2026-11-19): its kcal with a chip against the
   // goal (within its band: 目標の範囲; else 目標より N kcal 少なめ / 多め), the PFC bar with each one's grams and % (PfcBar
-  // `grams`), then salt, fibre and any alcohol on one line. Read-only. None with nothing logged in those days.
+  // `grams`), then salt and fibre on one line. Read-only. None with nothing logged in those days.
   import type { FoodAverage } from '#lib/model/food.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { goalMet } from '#lib/contract/goals.ts';
@@ -18,7 +18,7 @@
   const kGoal = $derived(goals.k);
   const chip = $derived(kGoal === null ? null : goalMet('k', avg.kcal, kGoal) ? { text: t('food.avg.ok'), over: false, ok: true } : { ...goalChip(avg.kcal, kGoal, false), ok: false });
   const grams = (v: number | null) => (v === null ? t('food.unknown') : t('food.g', { n: v.toFixed(1) }));
-  const rest = $derived((['s', 'fi', ...(avg.al > 0 ? ['al' as const] : [])] as const).map((k) => ({ k, v: avg[k] })));
+  const rest = $derived((['s', 'fi'] as const).map((k) => ({ k, v: avg[k] })));
 </script>
 
 <section class="card wk" data-food-avg aria-labelledby="fw-h">
@@ -30,7 +30,7 @@
     <b class="total money" data-avg-kcal>{kcalText(avg.kcal)}</b>
     {#if chip}<span class="chg" class:over={chip.over} class:ok={chip.ok} data-avg-chip>{chip.text}</span>{/if}
   </p>
-  <PfcBar id="avg" p={avg.p} fa={avg.fa} c={avg.c} al={avg.al} {grams} />
+  <PfcBar id="avg" p={avg.p} fa={avg.fa} c={avg.c} {grams} />
   <p class="rest">
     {#each rest as r (r.k)}<span data-avg-nutrient={r.k}>{t(`food.${r.k}`)} <b class="money">{grams(r.v)}</b></span>{/each}
   </p>

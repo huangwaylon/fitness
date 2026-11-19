@@ -265,14 +265,14 @@ const aCustom = (id: string) => {
 
 /**
  * Save a custom food of mine: `n` its name, `u` its serving's label, `g` the serving's grams (absent: unknown), `k`
- * kcal and `p`/`fa`/`c`/`s`, and `fi`/`al` fibre and alcohol (g; null or absent: unknown) in one serving, `jan` the
+ * kcal and `p`/`fa`/`c`/`s`, and `fi` fibre (g; null or absent: unknown) in one serving, `jan` the
  * barcode of the product it was made from (表示値を確認's 直す). With `id`, an edit of mine (someone else's
  * isn't mine to change); without, a new one, which is also how another's is copied to mine. `{ok:false}` when it isn't
  * one the record takes (contract/food.ts foodCustomOp: limits, customDensityOk). The custom food's id.
  */
 export function saveCustom(e: {
   id?: string; n: string; u: string; g?: number | null; k: number; p?: number | null; fa?: number | null; c?: number | null; s?: number | null;
-  fi?: number | null; al?: number | null; jan?: string;
+  fi?: number | null; jan?: string;
 }): SendResult & { id?: string } {
   const me = week.model?.me;
   if (!me) return { ok: false };
@@ -281,7 +281,7 @@ export function saveCustom(e: {
   const at = foodNow(held?.at);
   const id = held?.id ?? newCustomId(at);
   const g = e.g === undefined || e.g === null ? undefined : Math.round(e.g * 10) / 10;
-  const r = sendCustom({ id, at, n: e.n, u: e.u, g, k: e.k, p: e.p ?? null, fa: e.fa ?? null, c: e.c ?? null, s: e.s ?? null, fi: e.fi ?? undefined, al: e.al ?? undefined, jan: e.jan });
+  const r = sendCustom({ id, at, n: e.n, u: e.u, g, k: e.k, p: e.p ?? null, fa: e.fa ?? null, c: e.c ?? null, s: e.s ?? null, fi: e.fi ?? undefined, jan: e.jan });
   return r.ok ? { ...r, id } : r;
 }
 

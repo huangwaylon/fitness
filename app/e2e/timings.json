@@ -311,7 +311,7 @@
  "food.spec.ts › tap counts: the same meal as yesterday in 1, a new 3-item meal in 5, a konbini lunch in 7, a meal out by kcal in 3": 9471,
  "food.spec.ts › the amount: the compact card while there are no pictures, its 「これは…」 line, none without a gloss or a description": 16737,
  "food.spec.ts › the amount: 豚ロース fits on the screen, kcal（g） in the head, 100gあたりの栄養 closed, the meal in the foot but while typing": 11509,
- "food.spec.ts › the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre and alcohol with their goals": 5384,
+ "food.spec.ts › the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre with its goal": 5384,
  "food.spec.ts › the day, the search and the amount all fit the sheet’s width": 6353,
  "food.spec.ts › the goals: set in place on my cards (kcal, protein, salt), shown on the day's summary; anyone else's read-only": 9356,
  "food.spec.ts › the summary folds its details: every meal’s ＋ on screen at 393 × 852; くわしく opens the tiles and the PFC": 4846,

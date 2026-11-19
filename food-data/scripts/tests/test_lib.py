@@ -70,9 +70,9 @@ class MextReader(unittest.TestCase):
         self.assertEqual(recs[0]['note'], '別名：めし')
         foods = lib.mext_foods(recs)
         self.assertEqual(foods['01088'], {'name': 'こめ［水稲めし］精白米', 'kcal': 156.0, 'p': 2.5, 'f': 0.3,
-                                          'c': 37.1, 'salt': 0.0, 'fib': 1.5, 'alc': None})
-        # fibre (FIB-, 食物繊維総量) and alcohol (ALC): the beer's alcohol, salt's '(0)' fibre a zero
-        self.assertEqual([foods['16006']['fib'], foods['16006']['alc'], foods['17012']['fib']], [0.0, 3.7, 0.0])
+                                          'c': 37.1, 'salt': 0.0, 'fib': 1.5})
+        # fibre (FIB-, 食物繊維総量): the beer's and salt's '(0)' a zero; alcohol (ALC) not read (not tracked)
+        self.assertEqual([foods['16006']['fib'], 'alc' in foods['16006'], foods['17012']['fib']], [0.0, False, 0.0])
         self.assertIsNone(foods['17012']['p'])
         self.assertEqual(foods['17012']['c'], 0.0)
 
@@ -104,20 +104,16 @@ class Numbers(unittest.TestCase):
         per, _ = lib.per100([('water', 100)], FOODS)
         self.assertEqual(per['kcal'], 0.0)
 
-    def test_fibre_and_alcohol(self):
-        foods = {'A': dict(FOODS['A'], fib=2.0, alc=None), 'B': dict(FOODS['B'], fib=None, alc=10.0), 'C': dict(FOODS['A'])}
+    def test_fibre(self):
+        foods = {'A': dict(FOODS['A'], fib=2.0), 'B': dict(FOODS['B'], fib=None), 'C': dict(FOODS['A'])}
         per, _ = lib.per100([('A', 100), ('B', 50), ('water', 50)], foods)
-        self.assertEqual([per['fib'], per['alc']], [1.0, 2.5])   # one lacking counts as 0, as the others
-        per, _ = lib.per100([('C', 100)], foods)                  # no fibre or alcohol known at all (_typical.json's)
-        self.assertEqual([per['fib'], per['alc']], [None, None])
-        # an item has them only when known; the five always
+        self.assertEqual([per['fib'], 'alc' in per], [1.0, False])   # one lacking counts as 0, as the others
+        per, _ = lib.per100([('C', 100)], foods)                      # no fibre known at all (_typical.json's)
+        self.assertIsNone(per['fib'])
+        # an item has fibre only when known, never alcohol (not tracked); the five always
         self.assertEqual(lib.nutrients({'kcal': 39.4, 'p': 0.3, 'f': 0, 'c': 3.14, 'salt': None, 'fib': None, 'alc': 3.66}),
-                         {'kcal': 39, 'p': 0.3, 'f': 0.0, 'c': 3.1, 'salt': None, 'alc': 3.7})
+                         {'kcal': 39, 'p': 0.3, 'f': 0.0, 'c': 3.1, 'salt': None})
         self.assertEqual(sorted(lib.nutrients({'kcal': 1, 'p': 1, 'f': 1, 'c': 1, 'salt': 1})), ['c', 'f', 'kcal', 'p', 'salt'])
-        # alcohol only on a drink: a dish's or a seasoning's (みりん, 奈良漬) cooks off or is no drinking
-        drink = lib.tidy({'id': 'x:1', 'name': 'ビール', 'cat': '酒', 'alc': 3.7})
-        dish = lib.tidy({'id': 'x:2', 'name': '肉じゃが', 'cat': '主菜', 'alc': 0.4, 'fib': 1.2})
-        self.assertEqual([drink.get('alc'), dish.get('alc'), dish.get('fib')], [3.7, None, 1.2])
 
     def test_split_portion_and_kana(self):
         self.assertEqual(lib.split_portion('焼き餃子（5個）'), ('焼き餃子', '5個'))
@@ -345,7 +341,7 @@ class Validation(unittest.TestCase):
                     item(portions=[{'label': '', 'g': 1}]), item(portions=[]), item(aliases=['米']), item(pop=4),
                     item(ingredients=[]), item(name=''), item(jan='123'), item(fib=100.5), item(fib=None), item(alc='1', cat='酒'),
                     item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x']), item(gloss=''), item(gloss='あ' * 21),
-                    item(gloss='西洋ねぎ', desc='西洋ねぎとも呼ぶねぎ'), item(desc='ふつうの' + item()['name'])):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
+                    item(gloss='西洋ねぎ', desc='西洋ねぎとも呼ぶねぎ'), item(desc='ふつうの' + item()['name'])):   # fibre: absent when unknown, 0-100; alcohol: no such field
             self.assertEqual(len(lib.validate(self.doc(bad))), 1, bad)
         self.assertEqual(len(lib.validate(self.doc(item(), item()))), 1)          # duplicate id
         self.assertIn('missing url', lib.validate(dict(self.doc(item()), url='')))

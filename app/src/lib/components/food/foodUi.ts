@@ -213,9 +213,9 @@ export function inState(db: FoodDb | null, it: Item): Item {
   return d ? stateItem(d, it) : it;
 }
 
-/** A snapshot's values as an item's (fibre and alcohol only when known). */
-export function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
-  return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}), ...(typeof f.al === 'number' ? { alc: f.al } : {}) };
+/** A snapshot's values as an item's (fibre only when known). */
+export function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib'> {
+  return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}) };
 }
 /** The portion an entry's label and grams name (「茶碗1杯×2」 of 300 g → 茶碗1杯 of 150 g); none for 100 g or typed grams. */
 function snapPortion(u: string | undefined, g: number | undefined): Portion | null {

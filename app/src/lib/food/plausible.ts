@@ -18,7 +18,7 @@ const LOW_KCAL_OK = /lakan?to|zero|甘味料|エリスリ|ラカント|パルス
  *  UI font lacks: styles/fonts.test.ts.) */
 const ALCOHOL = /酒|みりん|味\u9187|ビール|beer|ワイン|wine|サワー|チューハイ|ハイボール|ほろよい|氷結|リキュール|liqueur|焼酎|ウイスキー|whisk|\d\s*%/i;
 
-const atwater = (p: number, f: number, c: number, alc = 0): number => 4 * p + 9 * f + 4 * c + 7 * alc;
+const atwater = (p: number, f: number, c: number): number => 4 * p + 9 * f + 4 * c;
 const nameOf = (it: Item): string => it.name.normalize('NFKC');
 /** A product's label values (Open Food Facts), not a recipe's or MEXT's. */
 const label = (it: Item): boolean => it.id.startsWith('off:');
@@ -68,7 +68,8 @@ export function plausible(it: Item): Checked {
   }
   const out: Item = { ...it };
   const nm = nameOf(it);
-  const alcoholic = it.cat === '酒' || (known(it.alc) && it.alc > 0);
+  // (an alcoholic drink, its energy partly alcohol's 7 kcal/g, is 酒: the only category alcohol was ever kept on)
+  const alcoholic = it.cat === '酒';
   const { p, f, c } = out;
   if (!alcoholic) {
     if (known(p) && known(f) && known(c)) {
@@ -88,11 +89,11 @@ export function plausible(it: Item): Checked {
       }
     }
   }
-  if (known(p) && known(f) && known(c) && it.cat !== '酒') {   // (MEXT's alcohol counted at 7 kcal/g)
-    const est = atwater(p, f, c, it.alc ?? 0);
+  if (known(p) && known(f) && known(c) && !alcoholic) {
+    const est = atwater(p, f, c);
     const flag = p + f + c > 105 ? 'pfc_sum'
       : est > 2 * out.kcal + 60 && !LOW_KCAL_OK.test(nm) ? 'atwater_gross'
-      : est > 0 && out.kcal > est + Math.max(80, 0.6 * out.kcal) && !ALCOHOL.test(nm) ? 'atwater_high'   // (みりん: no alc given)
+      : est > 0 && out.kcal > est + Math.max(80, 0.6 * out.kcal) && !ALCOHOL.test(nm) ? 'atwater_high'   // (みりん: alcohol by its name)
       : label(it) && (out.kcal > 1.35 * est + 25 || (out.kcal < 0.65 * est - 25 && !LOW_KCAL_OK.test(nm) && it.cat !== '海藻' && it.cat !== 'きのこ')) ? 'atwater'
       : null;
     if (flag) {
@@ -133,7 +134,7 @@ const PORTION_KCAL_MAX = 1500;
 
 /**
  * The CI guard's stricter checks (no fix: a hit is reviewed, then fixed in data_src/food_fixes.json or listed in
- * data_src/suspect_ok.json): `atwater25`, kcal over 25 % (and 30 kcal) from 4P+9F+4C+7A, fibre counted at 2 kcal/g,
+ * data_src/suspect_ok.json): `atwater25`, kcal over 25 % (and 30 kcal) from 4P+9F+4C, fibre counted at 2 kcal/g,
  * 80 kcal and up, not a category or name whose energy is off by nature; `protein35`, protein over 35 % of the energy
  * of a product's sweet, drink, bread or staple not named as a protein food; `portion1500`, a default portion over
  * 1,500 kcal (a pack as the serving).
@@ -145,7 +146,7 @@ export function suspect(it: Item): string[] {
   const { kcal, p, f, c } = it;
   const nm = nameOf(it);
   if (known(p) && known(f) && known(c)) {
-    const est = atwater(p, f, c, it.alc ?? 0);
+    const est = atwater(p, f, c);
     const lo = est - 2 * (it.fib ?? 0);
     const off = (k: number, e: number): number => (k - e) / Math.max(k, e, 1);
     const free = ATWATER_FREE.has(it.cat ?? '') || LOW_KCAL_OK.test(nm) || CREATINE.test(nm);

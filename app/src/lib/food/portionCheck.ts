@@ -6,7 +6,7 @@ import type { Item } from './types.ts';
 
 /** Why an amount looks off: protein over PROTEIN_G (not a protein food); protein over P_SHARE of the energy (a sweet,
  *  a drink, bread, a staple, noodles, not a protein food); kcal over KCAL_MAX; salt over SALT_G (not a soup, a sauce,
- *  noodles); the energy far (ATWATER of the larger) from 4P + 9F + 4C (fibre 2, alcohol 7 when known). */
+ *  noodles); the energy far (ATWATER of the larger) from 4P + 9F + 4C (fibre 2 when known). */
 export type CheckWhy = 'p' | 'pshare' | 'kcal' | 'salt' | 'energy';
 
 const PROTEIN_G = 40;
@@ -31,7 +31,7 @@ const PROTEIN_WORDS = /プロテイン|ホエイ|whey|protein|ささみ|鶏む�
 const LOW_PROTEIN_CATS: ReadonlySet<string> = new Set(['菓子・デザート', '飲料', 'パン', '主食', '麺']);
 /** Salty by nature at a whole pack (soups and their noodles, sauces): the salt rule leaves them be. */
 const SALTY_CATS: ReadonlySet<string> = new Set(['調味料', '汁物', '麺']);
-/** Energy not from 4P + 9F + 4C as typed: alcohol (unknown on most products), sweeteners (sugar alcohols), fibre
+/** Energy not from 4P + 9F + 4C as typed: alcohol (by category or name), sweeteners (sugar alcohols), fibre
  *  (seaweed, mushrooms, fibre powders: unknown on most). */
 const OWN_ENERGY_CATS: ReadonlySet<string> = new Set(['酒', '海藻', 'きのこ']);
 const OWN_ENERGY_WORDS = /ゼロ|シュガーレス|ノンシュガー|糖質|カロリーオフ|sugar.?free|zero|ビール|beer|lager|ワイン|wine|ハイボール|チューハイ|サワー|ファイバー|fiber|食物繊維/i;
@@ -54,8 +54,8 @@ export function portionCheck(it: Item, g: number): CheckWhy[] {
   if (s !== null && s > SALT_G && !(it.cat !== undefined && SALTY_CATS.has(it.cat))) out.push('salt');
   const own = (it.cat !== undefined && OWN_ENERGY_CATS.has(it.cat)) || OWN_ENERGY_WORDS.test(it.name);
   if (p !== null && f !== null && c !== null && !own) {
-    const fib = at(it.fib) ?? 0, alc = at(it.alc) ?? 0;
-    const atw = 4 * p + 9 * f + 4 * Math.max(0, c - fib) + 2 * fib + 7 * alc;
+    const fib = at(it.fib) ?? 0;
+    const atw = 4 * p + 9 * f + 4 * Math.max(0, c - fib) + 2 * fib;
     if (Math.max(k, atw) >= MIN_KCAL && Math.abs(k - atw) > ATWATER * Math.max(k, atw)) out.push('energy');
   }
   return out;

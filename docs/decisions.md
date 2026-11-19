@@ -147,9 +147,10 @@ change's past never changes. Why: a calorie tracker whose history never rewrites
 whole ones after; 作る量 stays whole. Why: half an apple or 1½ slices is what people eat and estimate by eye; finer
 than ½ is the grams field's job, and a counted ×1 → ×5 is five taps, not eight.
 
-### Fibre and alcohol
-食物繊維 and アルコール are optional snapshot keys (`fi`, `al`), kept only when the source says; default goals from the
-食事摂取基準 2025 and 健康日本21 (alcohol at most 20 g). Why: unknown never reads as zero, and one plain national line.
+### Fibre, no alcohol
+食物繊維 is an optional snapshot key (`fi`), kept only when the source says; its default goal from the 食事摂取基準
+2025. Alcohol is not tracked (nobody here drinks): an older row's `al` or `alcoholGoal` is read and ignored. Why:
+unknown never reads as zero; no field for what nobody logs.
 
 ### Kalori as a lazy dataset
 kalori.jp's chain and konbini menus ship as `kalori.json` in `static/food/`, a lazy secondary dataset like the products:

@@ -37,7 +37,7 @@ describe('foodDay: a day’s meals and their totals', () => {
     // 156 × 1.5 + 190 × 0.5; salt: natto's unknown
     expect(day).toMatchObject({ kcal: 329, p: 12, fa: 5.5, c: 61.7, s: 0 });
     expect(foodDay(s, 'B', '2026-11-03').entries.map((e) => e.id)).toEqual(['fmeal005']);
-    expect(foodDay(s, 'G', '2026-11-03')).toEqual({ entries: [], kcal: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, al: 0 });
+    expect(foodDay(s, 'G', '2026-11-03')).toEqual({ entries: [], kcal: 0, p: 0, fa: 0, c: 0, s: 0, fi: null });
   });
 
   it('shows a queued op at once (foldEvents), the guest’s own too', () => {
@@ -418,16 +418,15 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
       mealProteinTarget(null), mealProteinTarget(111), mealProteinTarget(45), mealProteinTarget(60)
     ]).toEqual([12, 0, 25, 37, 20, 20]);
   });
-  it('protein, fat and carbs as shares of energy (4/9/4, alcohol 7 its own share), each against the DRI’s range', () => {
-    const r = (x: ReturnType<typeof pfcShare>) => x && { p: Math.round(x.p), fa: Math.round(x.fa), c: Math.round(x.c), al: Math.round(x.al), at: x.at };
+  it('protein, fat and carbs as shares of energy (4/9/4), each against the DRI’s range', () => {
+    const r = (x: ReturnType<typeof pfcShare>) => x && { p: Math.round(x.p), fa: Math.round(x.fa), c: Math.round(x.c), at: x.at };
     expect([
-      r(pfcShare({ p: 30, fa: 20, c: 100 })), r(pfcShare({ p: 30, fa: 20, c: 100, al: 20 })), r(pfcShare({ p: 10, fa: 40, c: 50 })),
-      pfcShare({ p: 0, fa: 0, c: 0 }), pfcShare({ p: 0, fa: 0, c: 0, al: 10 })?.al
+      r(pfcShare({ p: 30, fa: 20, c: 100 })), r(pfcShare({ p: 10, fa: 40, c: 50 })),
+      pfcShare({ p: 0, fa: 0, c: 0 })
     ]).toEqual([
-      { p: 17, fa: 26, c: 57, al: 0, at: { p: 0, fa: 0, c: 0 } },
-      { p: 14, fa: 21, c: 48, al: 17, at: { p: 0, fa: 0, c: -1 } },
-      { p: 7, fa: 60, c: 33, al: 0, at: { p: -1, fa: 1, c: -1 } },
-      null, 100
+      { p: 17, fa: 26, c: 57, at: { p: 0, fa: 0, c: 0 } },
+      { p: 7, fa: 60, c: 33, at: { p: -1, fa: 1, c: -1 } },
+      null
     ]);
   });
   it('a week’s average: the 7 days to the end given, a day with nothing logged left out, fibre over the days that know it', () => {
@@ -442,13 +441,13 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
         day('B', 'fwk00006', '2026-11-01', RICE, 900)
       ]
     });
-    // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2, alcohol 7.4
+    // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2 (an older snapshot's alcohol left out)
     expect([
       foodAverage(s, 'A', '2026-10-28', '2026-11-03'), foodAverage(s, 'A', '2026-10-20', '2026-10-26'),
       foodAverage(s, 'B', '2026-10-28', '2026-11-03')?.days, foodAverage(s, 'A', '2026-11-03', '2026-11-02'),
       foodAverage(s, 'A', '2026-10-27', '2026-11-04')?.days
     ]).toEqual([
-      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2, al: 3.7 }, null, 1, null, 4
+      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2 }, null, 1, null, 4
     ]);
   });
 });
