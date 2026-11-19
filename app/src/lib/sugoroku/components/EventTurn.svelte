@@ -2,7 +2,7 @@
   // An イベント turn (docs/sugoroku.md "Rules"): the card (its villager's head, the English with its key word marked,
   // the Japanese: むずかしい's on a tap), its effect's chip and OK. RULES '5', a card that only gave stars asks about its
   // key word (quiz.ts): やさしい / ふつう its Japanese from 3 / 4, むずかしい the gap's English from 4; a miss 「おしい！」
-  // (that choice dimmed), a second 答えはこれ; then the English, the Japanese, its stars and 次へ. Never red, never ×.
+  // (that choice dimmed, only it), a second 答えはこれ; then the English, the Japanese, its stars and 次へ. Never red, never ×.
   // The Japanese of a quiz card shows once it's answered. Online, the panel as it is goes to the others (view.ts).
   import { untrack } from 'svelte';
   import Avatar from '#lib/components/characters/Avatar.svelte';
@@ -68,9 +68,10 @@
   {#if q && !answered}
     {#if v.quiz?.misses && stage === 'miss'}<Nudge text={s('quizMiss')} />{/if}
     <p class="ask">{q.kind === 'meaning' ? s('quizMeaning', { w: keyOf(c) }) : s('quizCloze')}</p>
-    <div class="choices" lang={q.kind === 'cloze' ? 'en' : 'ja'}>
+    <!-- (during 「おしい！」 only the choice tried dims; the rest wait, untappable, at full strength) -->
+    <div class="choices" class:wait={stage !== 'try'} lang={q.kind === 'cloze' ? 'en' : 'ja'}>
       {#each q.choices as ch, k (ch)}
-        <button type="button" class="sg-wt" disabled={v.quiz?.tried.includes(k) || stage !== 'try'} data-sfx="tick" data-sg-quiz-choice={ch} data-right={k === q.answer ? '' : undefined} onclick={() => pick(k)}>{ch}</button>
+        <button type="button" class="sg-wt" disabled={v.quiz?.tried.includes(k)} data-sfx="tick" data-sg-quiz-choice={ch} data-right={k === q.answer ? '' : undefined} onclick={() => pick(k)}>{ch}</button>
       {/each}
     </div>
   {:else if q}
@@ -96,6 +97,7 @@
   .ask { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
   .choices { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
   .choices .sg-wt { padding: 0 14px; font-size: 18px; }
+  .choices.wait { pointer-events: none; }
   .actrow { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; }
   .chip-eff { flex: none; padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .actrow .btn { flex: 1; min-width: 0; }

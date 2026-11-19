@@ -131,6 +131,8 @@ test('an イベント that only gave stars asks its key word: a miss 「おし�
   await wrong.tap();
   await expect(s.locator('[data-sg-nudge]')).toContainText('おしい');
   await expect(wrong).toBeDisabled();
+  // (only the one tried dims: the others never disabled, 「おしい！」 or not)
+  await expect(s.locator('[data-sg-quiz-choice]:disabled')).toHaveCount(1);
   await expect(s.locator('[data-sg-event]')).toHaveAttribute('data-sg-stage', 'try');
   await s.locator('[data-sg-quiz-choice][data-right]').tap();
   await expect(s.locator('[data-sg-answer]')).toHaveText('fish = 魚');
