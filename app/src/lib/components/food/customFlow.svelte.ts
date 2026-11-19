@@ -28,6 +28,14 @@ export class CustomFlow {
     this.#started = JSON.stringify(this.draft);
     this.#e.levels.go({ k: 'custom', id: c?.id ?? null, then, who: c?.who }, focus);
   }
+  /** A new custom food from a draft made elsewhere (a product's amount: drafts.ts draftOf), opened untouched (its ✕
+   *  asks nothing till a field changes). */
+  openDraft(d: CustomDraft, then: Then, focus: string): void {
+    this.draft = d;
+    this.savedAs = null;
+    this.#started = JSON.stringify(d);
+    this.#e.levels.go({ k: 'custom', id: null, then }, focus);
+  }
   save(l: LevelOf<'custom'>): void {
     const e = this.#e, v = customOf(this.draft);
     const res = saveCustom({ id: l.id ?? undefined, ...v });

@@ -17,12 +17,15 @@
   // then 追加 with the kcal (a new entry) or 保存 / 削除 (my entry). For a recipe's ingredient (`pick`): no meal, the recipe's words.
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
+  // A packaged product whose amount holds what a label rarely says (food/portionCheck.ts: 50 g of protein in a cone)
+  // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
   // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { MEALS } from '#lib/contract/food.ts';
-  import { g1, itemById, verifyOf, type Item } from '#lib/food/index.ts';
+  import { g1, itemById, portionCheck, verifyOf, type Item } from '#lib/food/index.ts';
+  import { count } from '#lib/sync/log.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, kaloriImg } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
@@ -54,8 +57,10 @@
     once?: boolean;
     /** Another state of the food picked (じょうたい): log that one instead. */
     onitem?: (it: Item) => void;
+    /** 表示値を確認's 直す: this amount as a new custom food (its grams, its portion's label). */
+    onfix?: (g: number, u: string | null) => void;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, once = false }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, onfix, once = false }: Props = $props();
 
   /** The picker (状態, 量, ×n, grams: amount.svelte.ts, its controls FoodPortion). */
   const a = new AmountPick(() => ({ item, g0, u0, serving, onitem }));
@@ -93,6 +98,17 @@
   const note = $derived(trust ? null : (itemById(a.db, item.id) ?? item).note ?? null);
   const fib = $derived(fibreAt(item, a.ok ? a.g : 0));
 
+  /** Whether this amount looks off for a label (portionCheck): the hint, counted once an open (never which food). */
+  const check = $derived(a.ok && portionCheck(item, a.g).length > 0);
+  let checkSeen = false;
+  $effect(() => {
+    if (check && !checkSeen) (checkSeen = true), count('act:food.check.shown');
+  });
+  function fix() {
+    count('act:food.check.fix');
+    onfix?.(a.g, a.u);
+  }
+
   function done() {
     if (a.ok) ondone({ m, g: a.g, u: a.u });
   }
@@ -124,6 +140,12 @@
       <div><dt>{t('food.s')}</dt><dd class="money" data-salt>{g1(n.s)}{#if n.s !== null}<small>g</small>{/if}</dd></div>
       {#if fib !== null}<div data-food-fib><dt>{t('food.fi')}</dt><dd class="money">{fib.toFixed(1)}<small>g</small></dd></div>{/if}
     </dl>
+    {#if check}
+      <div class="chk" data-food-check>
+        <p><b>{t('food.check.head')}</b>{' '}<Phrases text={t('food.check.text')} /></p>
+        {#if onfix}<button type="button" class="fix" data-food-fix data-sfx="page" onclick={fix}>{t('food.check.fix')}<span aria-hidden="true"> ›</span></button>{/if}
+      </div>
+    {/if}
     <div class="per-row">
       <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
         {serving ? t('food.perOneNut', { u: a.ps[0].label }) : t('food.per100Head', { u: a.unit })}<span class="caret" aria-hidden="true">▾</span>
@@ -176,6 +198,15 @@
   .per-row .per-t { margin: 0; }
   .kl { display: inline-flex; align-items: center; min-height: var(--hit); font-size: var(--fs-s); font-weight: 700; color: var(--text); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
   .kl:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
+  /* 表示値を確認: quiet (the soft text, no colour of alarm), its 直す a link-like 44 px target at the line's end */
+  .chk { display: flex; align-items: center; gap: 10px; margin: -4px 0 -6px; }
+  .chk p { margin: 0; flex: 1; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
+  .chk b { color: var(--text); }
+  .fix {
+    appearance: none; border: 0; background: none; padding: 0; cursor: pointer; min-height: var(--hit); flex: none;
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap;
+  }
+  .fix:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's

@@ -33,6 +33,18 @@ export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
   return { n: c.n, u: c.u, g: num1(c.g), k: String(c.k), p: num1(c.p), fa: num1(c.fa), c: num1(c.c), s: num1(c.s), fi: num1(c.fi), al: num1(c.al) };
 }
 
+/** A food's amount as a new custom food's fields (表示値を確認's 直す, FoodAmount): its name, the portion picked as the
+ *  serving (`u` its label, none: the field's 1食; its grams, none for a serving with no weight), its values in it. The
+ *  user compares them with the package and corrects what differs. */
+export function draftOf(it: Item, g: number, u: string | null): CustomDraft {
+  const by = g / 100;
+  const v = (x: number | null | undefined): string => (typeof x === 'number' ? gramsText(x * by) : '');
+  return {
+    n: it.name.trim().slice(0, CUSTOM.nameChars), u: (u ?? '').slice(0, CUSTOM.labelChars), g: it.sv ? '' : gramsText(g), k: String(Math.round(it.kcal * by)),
+    p: v(it.p), fa: v(it.f), c: v(it.c), s: v(it.salt), fi: v(it.fib), al: v(it.alc)
+  };
+}
+
 /** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
  *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {

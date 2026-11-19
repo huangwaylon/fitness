@@ -46,7 +46,7 @@
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
-  import { latestSnap } from './fresh.ts';
+  import { latestSnap, shardsFor } from './fresh.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -63,7 +63,7 @@
   import { pickWhose, whose } from '../health/whose.svelte.ts';
   import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
-  import { customItem, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
+  import { customItem, draftOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
@@ -414,6 +414,15 @@
     const want = lazySources(day?.entries.map((e) => e.f.id) ?? []);
     if (catalog && want.length) void catalog.wantMore(want);
   });
+  // (a barcode-only product logged (its shard's, not in products.json): its shard too, once the products are in)
+  $effect(() => {
+    const db = catalog;
+    const ids = mine ? (day?.entries.filter((e) => !e.rep).map((e) => e.f.id) ?? []) : [];
+    if (!db || !ids.some((id) => id.startsWith('off:'))) return;
+    let live = true;
+    void shardsFor(db, ids).then((got) => void (live && got && db === held.db && catalogRev++));
+    return () => void (live = false);
+  });
   // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {
     if (!open || catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
@@ -469,7 +478,7 @@
         {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
         {@const r = l.entry && recipeOfEntry(recipeById, l.entry)}
         <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} once={!!l.entry?.rep} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
-          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
+          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)} onfix={l.entry ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { meal: l.meal }, '[data-food-fix]')}
           open={c ? { label: t('food.my.open'), run: () => cf.open(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => rf.open(r) } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
@@ -503,6 +512,7 @@
       {#key l}
         <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => rf.itemDone(l, v)}
           onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
+          onfix={l.i !== undefined ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { ingredient: true }, '[data-food-fix]')}
           onremove={() => l.i !== undefined && rf.itemRemove(l.i)} />
       {/key}
     {:else if top?.k === 'rlog'}

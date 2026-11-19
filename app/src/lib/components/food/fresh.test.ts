@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { addDataset, emptyDb } from '#lib/food/db.ts';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
+import { forgetShards } from '#lib/food/load.ts';
 import type { FoodCustom, FoodSnap } from '#lib/contract/food.ts';
-import { latestSnap, snapDiffers } from './fresh.ts';
+import { latestSnap, shardsFor, snapDiffers } from './fresh.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
 const REIMEN: FoodSnap = { id: 'dishes:reimen', n: '冷麺', k: 89.9, p: 3.1, fa: 1, c: 17, s: 0.6, u: '1人前' };
@@ -46,5 +47,30 @@ describe('最新の値にする: an entry’s food as it is now', () => {
     const old: FoodSnap = { id: 'kal:1', n: '牛丼', k: 700, p: 22.9, fa: 25, c: 104.1, s: 2.9, u: '1食', sv: true };
     const src = { db, recipes: [], customs: [] };
     expect([latestSnap(old, src), latestSnap({ ...old, k: 733 }, src), latestSnap({ ...old, sv: undefined }, src)]).toEqual([{ ...old, k: 733 }, null, null]);
+  });
+  describe('a barcode-only product (a shard’s, not in products.json): its shard fetched for it', () => {
+    afterEach(() => (vi.unstubAllGlobals(), forgetShards()));
+    // the cone as logged on 11-19 (P 36 a 100 g) and as its shard has it now
+    const CONE: FoodSnap = { id: 'off:4901005312005', n: 'Giant - Cookies And Chocolate', k: 176, p: 36, fa: 9.3, c: 19.7, s: 0.1, u: '1袋' };
+    const shard = JSON.stringify(toColumns({ source: 'off', items: [{ id: CONE.id, name: CONE.n, kcal: 176, p: 2.6, f: 9.3, c: 19.7, salt: 0.1, portions: [{ label: '1袋', g: 140 }] }] }));
+    it('after the products, once: offered its values now; a product OFF gave online (in no shard) or offline: none', async () => {
+      const asked: string[] = [];
+      vi.stubGlobal('fetch', async (href: string) => (asked.push(href.replace(/^.*\/food\//, '')), href.includes('/05.json') ? new Response(shard) : new Response(null, { status: 404 })));
+      const db = emptyDb({ version: 'x', datasets: [], jan: 'j1' });
+      let products = 0;
+      db.wantMore = async () => void products++;
+      const src = { db, recipes: [], customs: [] };
+      expect(latestSnap(CONE, src)).toBeNull();
+      expect(await shardsFor(db, [CONE.id, 'off:4902102072618', 'mext:01088', 'custom:mabc1234'])).toBe(true);
+      expect(products).toBe(1);
+      expect(latestSnap(CONE, src)).toEqual({ ...CONE, p: 2.6 });
+      // (asked again, as each render of the day may: nothing fetched twice, nothing new)
+      expect(await shardsFor(db, [CONE.id, 'off:4902102072618'])).toBe(false);
+      expect(asked).toEqual(['jan/05.json?v=j1', 'jan/18.json?v=j1']);
+      vi.stubGlobal('fetch', async () => { throw new TypeError('offline'); });
+      const off = emptyDb({ version: 'x', datasets: [], jan: 'j2' });
+      expect(await shardsFor(off, [CONE.id])).toBe(false);
+      expect(await shardsFor(emptyDb({ version: 'x', datasets: [] }), [CONE.id])).toBe(false);
+    });
   });
 });

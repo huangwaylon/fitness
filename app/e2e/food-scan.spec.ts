@@ -5,7 +5,7 @@
 // the network) → its amount, marked as OFF's; nowhere →
 // 名前で探す; the camera refused → typed numbers. The camera's tracks stop on a read, on ‹, on ✕, on a hide and after a
 // minute without a read (タップして再開).
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { openKenkou } from './hud.ts';
 import { hideAndShow } from './memory.ts';
 
@@ -77,8 +77,8 @@ async function camera(page: Page, cam: { code: string } | 'deny') {
 const live = (page: Page) => page.evaluate(() => (window as unknown as { __scanTracks: MediaStreamTrack[] }).__scanTracks.filter((t) => t.readyState === 'live').length);
 
 /** ‹the meal's search› → バーコードで探す; `opened` runs on ごはん's open, before the search. */
-async function openScanner(page: Page, opened?: () => Promise<void>) {
-  await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+async function openScanner(page: Page, opened?: () => Promise<void>, date = DATE) {
+  await page.goto(`?demo&date=${date}&critter=none&visitor=none`);
   await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
   await openKenkou(page, 'food');
   await opened?.();
@@ -167,6 +167,7 @@ test('in a barcode shard (beyond products.json): its jan/<last 2>.json fetched, 
   const amount = sheet(page).locator('.amt');
   await expect(amount.locator('h3')).toHaveText('ためしのコーラ', { timeout: 20_000 });
   await expect(amount.locator('[data-food-note]')).toHaveCount(0);
+  await expect(amount.locator('[data-food-check]'), 'a cola’s values: no 表示値を確認').toHaveCount(0);
   expect(got.map((p) => p.replace(/^.*\/food\//, ''))).toEqual(['jan/18.json']);
   await amount.locator('[data-done]').click();
   await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ためしのコーラ/]);
@@ -282,3 +283,61 @@ test('a minute without a read: the camera stops, タップして再開 in the bo
   await expect(scanLv(page)).toHaveAttribute('data-phase', 'reading');
   await expect.poll(() => live(page), { message: 'resumed: live again' }).toBe(1);
 });
+
+/** A tap on the phone (WebKit's iPhone 15), a click on the desktop's Chromium. */
+const press = (l: Locator, browserName: string) => (browserName === 'webkit' ? l.tap() : l.click());
+/** The cone as Open Food Facts had it till 2026-11-19 (P 3.6 typed 36 a 100 g): 50 g of protein a cone. */
+const CONE = '4901005312005';
+const BAD = { id: CONE, name: 'ジャイアントコーン', brand: 'Glico', cat: '菓子・デザート', kcal: 176, p: 36, f: 9.3, c: 19.7, salt: 0.1, portions: [{ label: '1袋', g: 140 }] };
+
+for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
+  test(`表示値を確認 (${tod}): a shard’s product with 50 g of protein a cone, said quietly; 直す → マイ食品 prefilled, saved and added`, async ({ page, browserName }, info) => {
+    test.skip(tod === 'night' && !process.env.SHOTS, 'SHOTS=<dir> only: the night’s pictures');
+    // (the sheet's slides over: its finite animations, never the island's endless ones)
+    const settled = () => page.locator('dialog[open]').evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).filter((a) => a.effect?.getTiming().iterations !== Infinity).map((a) => a.finished.catch(() => {}))));
+    // (a level's slide finished first)
+    const shot = async (name: string) => {
+      if (!process.env.SHOTS) return;
+      await settled();
+      await page.screenshot({ path: `${process.env.SHOTS}/${name}-${tod}-${info.project.name}.png` });
+    };
+    await camera(page, { code: CONE });
+    await page.route(OFF, (r) => r.abort());
+    await shards(page, [BAD]);
+    await openScanner(page, undefined, `2026-11-04T${time}`);
+    await expect(page.locator('html')).toHaveAttribute('data-tod', tod);
+    const amount = sheet(page).locator('.amt');
+    await expect(amount.locator('h3')).toHaveText('ジャイアントコーン', { timeout: 20_000 });
+    const check = amount.locator('[data-food-check]');
+    await expect(check).toContainText('表示値を確認');
+    await expect(check).toContainText('パッケージの表示と違うときは、マイ食品で直せます');
+    await expect(check).not.toContainText(/誤|正しくありません/);
+    // (inside the card: nothing past its right edge)
+    const [box, card] = await Promise.all([check.boundingBox(), amount.locator('.head').boundingBox()]);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(card!.x + card!.width + 0.5);
+    await shot('check');
+    await press(check.locator('[data-food-fix]'), browserName);
+    const lv = sheet(page).locator('[data-custom-level=edit]');
+    await expect(lv.locator('[data-custom-n]')).toHaveValue('ジャイアントコーン');
+    await expect(lv.locator('[data-custom-u]')).toHaveValue('1袋');
+    await expect(lv.locator('[data-custom-g]')).toHaveValue('140');
+    await expect(lv.locator('[data-custom-k]')).toHaveValue('246');
+    const nut = (k: string) => lv.locator(`[data-custom-nut=${k}]`);
+    expect(await Promise.all(['p', 'fa', 'c', 's'].map((k) => nut(k).inputValue()))).toEqual(['50.4', '13', '27.6', '0.1']);
+    // (the editor in place once its slide is over: every card and its 保存 inside the screen, as a マイ食品 opened anew)
+    await settled();
+    const inside = await lv.evaluate((f) => {
+      return [...f.querySelectorAll('.card, [data-custom-save]')].map((e) => { const r = e.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 0.5; });
+    });
+    expect(inside.length).toBeGreaterThan(1);
+    expect(inside.every(Boolean), 'the editor’s cards inside the screen').toBe(true);
+    await shot('fix');
+    await nut('p').fill('3.6'); // the package's
+    const save = lv.locator('[data-custom-save]');
+    await expect(save).toHaveText('保存して追加');
+    await press(save, browserName);
+    await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
+    await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/ジャイアントコーン/]);
+    await expect(sheet(page).locator('[data-food-added] [data-added] .meta')).toHaveText('1袋（140g）');
+  });
+}

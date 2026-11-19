@@ -9,7 +9,7 @@ vi.mock('#lib/sync/log.ts', () => ({ count: (k: string) => counted.push(k) }));
 
 const chips: Item = { id: 'off:4901330502881', name: 'ポテトチップス', kcal: 554 };
 const upc: Item = { id: 'off:0036000291452', name: 'Imported', kcal: 100 };
-const db = { byId: new Map([chips, upc].map((i) => [i.id, i])), wantMore: () => Promise.resolve() } as unknown as FoodDb;
+const db = { byId: new Map([chips, upc].map((i) => [i.id, i])), shard: new Map(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
 const offItem: Item = { id: 'off:4902102072618', name: 'Coca-Cola', kcal: 45 };
 
 beforeEach(() => {
@@ -162,7 +162,7 @@ describe('lookupCode: our products (lazy) waited for before anything else', () =
     expect(counted).toEqual(['act:scan.late', 'act:scan.late', 'act:scan.fallback']);
   });
   it('the products failed to load (wantMore settles without them): no wait, OFF unreached is offline', async () => {
-    const failed = { byId: new Map(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
+    const failed = { byId: new Map(), shard: new Map(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
     expect(await lookupCode('4901330502881', failed, '?', 'EAN-13', async () => ({ k: 'off' }))).toEqual({ k: 'offline' });
   });
 });

@@ -7,7 +7,7 @@ import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import { DAYS, daysText, entryPfcCells, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
-import { customDraft, customErrors, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
+import { customDraft, customErrors, draftOf, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';
@@ -202,6 +202,16 @@ describe('daysText', () => {
 describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
   const bento: FoodCustom = { id: 'mabc1234', at: 1, who: 'A', n: '会社の弁当', u: '1食', k: 650, p: null, fa: null, c: null, s: null };
   const bar: FoodCustom = { id: 'mabc5678', at: 1, who: 'B', n: 'プロテインバー', u: '1本', g: 120, k: 240, p: 20, fa: 8, c: 22, s: 0.4 };
+  it('a product’s amount as a new one (表示値を確認’s 直す): its name, the portion as the serving, its values in it', () => {
+    const cone: Item = { id: 'off:4901005312005', name: 'Giant - Cookies And Chocolate', cat: '菓子・デザート', kcal: 176, p: 36, f: 9.3, c: 19.7, salt: 0.1 };
+    const d = draftOf(cone, 140, '1袋');
+    expect(d).toEqual({ n: 'Giant - Cookies And Chocolate', u: '1袋', g: '140', k: '246', p: '50.4', fa: '13', c: '27.6', s: '0.1', fi: '', al: '' });
+    expect(customErrors(d).size).toBe(0);
+    expect(customOf({ ...d, p: '3.6' })).toEqual({ n: 'Giant - Cookies And Chocolate', u: '1袋', g: 140, k: 246, p: 3.6, fa: 13, c: 27.6, s: 0.1 });
+    // (grams typed: no label, the field's 1食; a serving with no weight: none; a long name cut to the field's)
+    expect(draftOf({ ...cone, name: 'あ'.repeat(40) }, 75, null)).toMatchObject({ n: 'あ'.repeat(30), u: '', g: '75' });
+    expect(draftOf({ ...cone, sv: true }, 200, '1食×2')).toMatchObject({ u: '1食×2', g: '', k: '352', p: '72' });
+  });
   it('reads amounts as typed: full-width, a decimal comma, a unit; blank is null, nonsense undefined', () => {
     expect(parseAmount('６５０', 0, 5000)).toBe(650);
     expect(parseAmount('１２．５ g', 0, 500)).toBe(12.5);

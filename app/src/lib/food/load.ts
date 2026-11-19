@@ -121,8 +121,8 @@ const shards = new Map<string, Promise<Map<string, Item>>>();
 /** A shard's fetch waited for at most (a slow network: on to Open Food Facts, which says offline, never a hang). */
 export const JAN_TIMEOUT_MS = 6000;
 
-/** A code's food in the barcode shards (static/food/jan/: the codes beyond products.json), `db`'s version of them;
- *  null when its shard hasn't it (or there are none). A fetch that fails (offline, or past JAN_TIMEOUT_MS) throws, and
+/** A code's food in the barcode shards (static/food/jan/: the codes beyond products.json), `db`'s version of them (kept
+ *  in its `shard`); null when its shard hasn't it (or there are none). A fetch that fails (offline, or past JAN_TIMEOUT_MS) throws, and
  *  is asked again next time. */
 export async function janItem(db: FoodDb, code: string): Promise<Item | null> {
   if (!db.jan || !/^\d{8,13}$/.test(code)) return null;
@@ -137,7 +137,9 @@ export async function janItem(db: FoodDb, code: string): Promise<Item | null> {
     shards.set(href, p);
     p.catch(() => shards.delete(href));
   }
-  return (await p).get(code) ?? null;
+  const it = (await p).get(code) ?? null;
+  if (it) db.shard.set(it.id, it);
+  return it;
 }
 
 /** Forget the shards fetched (tests). */

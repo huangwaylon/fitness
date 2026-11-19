@@ -1,10 +1,11 @@
 // 「最新の値にする」 (docs/design.md "Gohan"): an entry keeps the food as it was logged (a snapshot per 100 g), so a later
 // fix of the food data, or an edit of the recipe or custom food it came from, never changes it. When its food has
 // since changed beyond rounding, the entry offers the food's values now: the catalogue item with the same id
-// (toSnap), the recipe (recipeSnap) or the custom food (customSnap) as it is now, its portion label kept. Nothing is
-// ever updated by itself: the owner taps it (store/actions.ts refreshFood, an ordinary edit).
+// (toSnap; a barcode-only product's from its shard, fetched for it: shardsFor), the recipe (recipeSnap) or the custom
+// food (customSnap) as it is now, its portion label kept. Nothing is ever updated by itself: the owner taps it
+// (store/actions.ts refreshFood, an ordinary edit).
 import { customSnap, recipeSnap, type FoodCustom, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
-import { itemById, toSnap, type FoodDb } from '#lib/food/index.ts';
+import { itemById, janItem, toSnap, type FoodDb } from '#lib/food/index.ts';
 
 /** Differences within these are rounding (kcal: the data's whole kcal, a recipe's or custom food's tenth; grams: a
  *  tenth), not a fix. */
@@ -45,9 +46,21 @@ export function latestSnap(f: FoodSnap, src: FoodSources): FoodSnap | null {
     const c = src.customs.find((x) => `custom:${x.id}` === f.id);
     now = c ? customSnap(c, f.u) : null;
   } else {
-    const it = itemById(src.db, f.id);
+    const it = itemById(src.db, f.id) ?? src.db?.shard.get(f.id);
     now = it ? toSnap(it, f.u) : null;
   }
   if (!now || (now.sv === true) !== (f.sv === true)) return null;
   return snapDiffers(f, now) ? now : null;
+}
+
+/** The barcode shards' items of `ids` that our products haven't (a scan's barcode-only product, the 2026-11-19 cone's
+ *  kind), fetched into `db.shard` once the products are in (theirs come first, as a scan's); true when any came. A
+ *  shard that won't load (offline): none, asked again next time. A product Open Food Facts gave online is in neither:
+ *  no fresher values to offer. */
+export async function shardsFor(db: FoodDb, ids: Iterable<string>): Promise<boolean> {
+  const want = [...new Set(ids)].filter((id) => /^off:\d{8,13}$/.test(id));
+  if (!want.length || !db.jan) return false;
+  await db.wantMore(['off']).catch(() => {});
+  const got = await Promise.all(want.filter((id) => !itemById(db, id) && !db.shard.has(id)).map((id) => janItem(db, id.slice(4)).catch(() => null)));
+  return got.some((it) => !!it);
 }

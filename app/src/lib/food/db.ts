@@ -14,6 +14,9 @@ export interface FoodDb {
   verify: Verify | null;
   /** Each item by its id (the first dataset's, should two hold one): an entry's food in O(1), never a scan of 20k. */
   byId: Map<string, Item>;
+  /** The barcode shards' items asked for (load.ts janItem: a scan, an entry's 最新の値にする), by id: not searchable,
+   *  so apart from byId (a scan's lookup tells ours from the shards'). */
+  shard: Map<string, Item>;
   /** Each food in its states (`vg` → its items, in the chips' order: variantsOf). */
   variants: Map<string, Item[]>;
   /** The chain menus' shops (Kalori's header `shops`): each name's and alias's key → the shop's id (a query naming
@@ -32,7 +35,7 @@ export interface FoodDb {
   close(): void;
 }
 
-export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
 const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };
