@@ -19,6 +19,8 @@
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A packaged product whose amount holds what a label rarely says (food/portionCheck.ts: 50 g of protein in a cone)
   // has a quiet 「表示値を確認」 under its values, and with `onfix` a 直す: the amount as a new マイ食品, prefilled.
+  // A food in a broth (foodUi.ts isBroth: ラーメン, 鍋, スープ, 汁物…) has 「スープ半分」 under the controls: on, its salt
+  // counts half (the snapshot's `hs`; kcal as it is, said under it), shown so in the values above.
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
   // by half servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
@@ -33,7 +35,7 @@
   import FoodPortion from './FoodPortion.svelte';
   import Phrases from '../ui/Phrases.svelte';
   import { AmountPick } from './amount.svelte.ts';
-  import { fibreAt, glossOf, kaloriPage, kaloriTrust } from './foodUi.ts';
+  import { fibreAt, glossOf, isBroth, kaloriPage, kaloriTrust } from './foodUi.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
   import ShopMark from './ShopMark.svelte';
 
@@ -49,7 +51,9 @@
     pick?: boolean;
     /** A serving with no known weight (FoodSnap `sv`): half servings and up, no grams. */
     serving?: boolean;
-    ondone: (v: { m: Meal; g: number; u: string | null }) => void;
+    ondone: (v: { m: Meal; g: number; u: string | null; half: boolean }) => void;
+    /** スープ半分 on to start with (an entry's `hs`). */
+    half0?: boolean;
     onremove?: () => void;
     /** What the food came from, to open (a recipe, a custom food). */
     open?: { label: string; run: () => void } | null;
@@ -60,13 +64,16 @@
     /** 表示値を確認's 直す: this amount as a new custom food (its grams, its portion's label). */
     onfix?: (g: number, u: string | null) => void;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, onfix, once = false }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, onfix, once = false, half0 = false }: Props = $props();
 
   /** The picker (状態, 量, ×n, grams: amount.svelte.ts, its controls FoodPortion). */
   const a = new AmountPick(() => ({ item, g0, u0, serving, onitem }));
   // (the level is keyed: a new food or entry mounts a new one, so the meal is read once)
   let m = $state<Meal>(untrack(() => meal));
-  const n = $derived(a.n);
+  /** スープ半分: offered for a food in a broth (never a recipe's ingredient), its salt then counted half. */
+  const broth = $derived(!pick && isBroth(item));
+  let half = $state(untrack(() => half0));
+  const n = $derived(broth && half && a.n.s !== null ? { ...a.n, s: a.n.s / 2 } : a.n);
   const imgs = $derived(held.images);
   $effect(wantImages);
   /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
@@ -110,7 +117,7 @@
   }
 
   function done() {
-    if (a.ok) ondone({ m, g: a.g, u: a.u });
+    if (a.ok) ondone({ m, g: a.g, u: a.u, half: broth && half });
   }
 </script>
 
@@ -156,6 +163,12 @@
   </section>
 
   <section class="card form ctl"><FoodPortion {a} bind:typing /></section>
+  {#if broth}
+    <div class="half">
+      <button type="button" class="hb" aria-pressed={half} data-food-half data-sfx="tick" onclick={() => (half = !half)}>{t('food.half')}</button>
+      <small data-food-half-note>{t('food.halfNote')}</small>
+    </div>
+  {/if}
 
   {#if once}<p class="once" data-once><Phrases text={t('food.rep.once')} /></p>{/if}
   <div class="acts level-acts">
@@ -208,6 +221,16 @@
   }
   .fix:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
+  /* スープ半分: a toggle chip, what it does beside it */
+  .half { display: flex; align-items: center; gap: 10px; margin: -2px 2px 0; }
+  .hb {
+    appearance: none; border: 0; cursor: pointer; flex: none; min-height: var(--hit); padding: 0 14px; margin-bottom: var(--lip-h); border-radius: var(--r-pill);
+    font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl); white-space: nowrap;
+  }
+  .hb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
+  .hb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .hb:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .half small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: 1.35; }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) and the amount it's for at the name column's
      foot, the four nutrients under the picture's row (label over value), the per-100 g toggle under them */

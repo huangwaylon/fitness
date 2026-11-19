@@ -6,7 +6,7 @@ import { world } from './world.svelte.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import {
-  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, round1,
+  customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, round1, withHalf,
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
 import { nextDay, prevDay } from '#lib/contract/tokyo.ts';
@@ -62,12 +62,13 @@ const myFood = (id: string) => {
 
 /** Change one of my entries: its day, meal, grams, portion label (`u`: null drops it) or food (`f`: another state of it,
  *  ごはん's じょうたい). The op is its whole state. */
-export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; u?: string | null; f?: FoodSnap }): SendResult {
+export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; u?: string | null; f?: FoodSnap; half?: boolean }): SendResult {
   const e0 = myFood(id);
   if (!e0) return { ok: false };
   const e = ch.f ? { ...e0, f: ch.f } : e0;
   const { u: _u, ...rest } = e.f;
-  const f: FoodSnap = ch.u === undefined ? e.f : ch.u === null ? rest : { ...rest, u: ch.u };
+  const f0: FoodSnap = ch.u === undefined ? e.f : ch.u === null ? rest : { ...rest, u: ch.u };
+  const f = ch.half === undefined ? f0 : withHalf(f0, ch.half);
   const g = ch.g === undefined ? e.g : Math.round(ch.g * 10) / 10;
   return sendFood({ id, at: foodNow(e.at), d: ch.d ?? e.d, m: ch.m ?? e.m, g, f });
 }
@@ -311,8 +312,8 @@ export function removeCustom(id: string): SendResult {
 
 /** Log a custom food, anyone's, as a meal of mine: `g` grams of it (customPortions: its serving's, a nominal 100 with no
  *  weight) on day `d` at meal `m`, `u` the portion it was picked by (default: its serving's label). */
-export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: number; u?: string }): SendResult & { id?: string } {
+export function logCustom(e: { customId: string; d: LocalDate; m: Meal; g: number; u?: string; half?: boolean }): SendResult & { id?: string } {
   const c = aCustom(e.customId);
-  return c ? logFood({ d: e.d, m: e.m, g: e.g, f: customSnap(c, e.u ?? c.u) }) : { ok: false };
+  return c ? logFood({ d: e.d, m: e.m, g: e.g, f: withHalf(customSnap(c, e.u ?? c.u), !!e.half) }) : { ok: false };
 }
 

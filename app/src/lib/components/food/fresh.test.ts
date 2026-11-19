@@ -65,6 +65,12 @@ describe('最新の値にする: an entry’s food as it is now', () => {
     expect(latestFood({ g: 100, f: was }, src)).toEqual({ g: 45, f: { id: 'recipe:cmix0001', n: '朝のオート', k: 372.2, p: 15.48, fa: 5.7, c: 73.32, s: 2.22, fi: 10.73, u: '1人前' } });
     expect(latestFood({ g: 100, f: { ...was, u: undefined } }, src)).toBeNull();
   });
+  it('スープ半分 (`hs`) is kept: never offered as a change, carried onto the food now', async () => {
+    const db = await dbOf([{ id: 'dishes:reimen', name: '冷麺', kcal: 114, p: 3.5, f: 1.2, c: 21.5, salt: 1.0, fib: 0.9 }]);
+    const src = { db, recipes: [], customs: [] };
+    const same: FoodSnap = { ...REIMEN, k: 114, p: 3.5, fa: 1.2, c: 21.5, s: 1, fi: 0.9, hs: 0.5 };
+    expect([latestSnap(same, src), latestSnap({ ...REIMEN, hs: 0.5 }, src)?.hs, latestSnap(REIMEN, src)?.hs]).toEqual([null, 0.5, undefined]);
+  });
   it('a catalog item by the serving (sv, a chain menu’s): its snapshot per serving, kept so, updated as one', async () => {
     const db = await dbOf([{ id: 'kal:1', name: '牛丼', kcal: 733, p: 22.9, f: 25, c: 104.1, salt: 2.9, sv: true, est: 'e', portions: [{ label: '1食', g: 100 }] }]);
     const old: FoodSnap = { id: 'kal:1', n: '牛丼', k: 700, p: 22.9, fa: 25, c: 104.1, s: 2.9, u: '1食', sv: true };

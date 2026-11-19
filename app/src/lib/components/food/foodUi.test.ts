@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
-import { DAYS, daysText, entryPfcCells, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
+import { DAYS, daysText, entryPfcCells, glossOf, goalChip, isBroth, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
@@ -451,5 +451,24 @@ describe('a recipe’s ingredient of no known weight weighed (recipeFlow weighIt
     });
     expect(weighHint(db, KOMBU)).toEqual({ n: '塩昆布', label: '大さじ1', g: 5 });
     expect([weighHint(null, KOMBU), weighHint(db, { ...KOMBU, n: 'ぜんぜんちがう' })]).toEqual([null, null]);
+  });
+});
+
+describe('isBroth: スープ半分 offered for a food in a broth', () => {
+  const b = (name: string, cat?: string, id = 'dishes:x') => isBroth({ id, name, cat });
+  it('soups, 鍋, stews and noodles in their broth; never a dry noodle, a drink or MEXT’s raw noodles', () => {
+    const yes = [
+      ['味噌汁（豆腐とわかめ）', '汁物'], ['コーンスープ', '汁物'], ['担々鍋（1人前）', '主菜'], ['坦々鍋用スープ'], ['スンドゥブスープ'], ['スンドゥブチゲ'],
+      ['冷麺（盛岡風）', '麺'], ['ラーメン（醤油）', '麺'], ['カップラーメン（しょうゆ）', '麺'], ['かけそば', '麺'], ['きつねうどん', '麺'],
+      ['鍋焼きうどん', '麺'], ['ちゃんぽん', '麺'], ['担々麺', '麺'], ['餃子スープ'], ['おでん'], ['豚汁', '汁物']
+    ];
+    const no = [
+      ['ざるそば', '麺'], ['もりそば', '麺'], ['焼きうどん', '麺'], ['ソース焼きそば', '麺'], ['油そば（まぜそば）', '麺'], ['つけ麺', '麺'],
+      ['冷やし中華', '麺'], ['ぶっかけうどん', '麺'], ['釜玉うどん', '麺'], ['汁なし担々麺', '麺'], ['スパゲッティ ナポリタン', '麺'], ['明太子うどん', '麺'],
+      ['回鍋肉', '主菜'], ['オレンジ果汁', '飲料'], ['ぜんざい（お汁粉）', '菓子・デザート'], ['ごはん（精白米）', '主食'], ['コンソメスープ', '飲料']
+    ];
+    expect(yes.filter(([n, c]) => !b(n, c))).toEqual([]);
+    expect(no.filter(([n, c]) => b(n, c))).toEqual([]);
+    expect([b('うどん ゆで', undefined, 'mext:01039'), b('即席みそ汁', undefined, 'mext:17000')]).toEqual([false, true]);
   });
 });

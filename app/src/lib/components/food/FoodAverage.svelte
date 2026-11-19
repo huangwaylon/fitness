@@ -5,7 +5,7 @@
   // goal (within its band: 目標の範囲; else 目標より N kcal 少なめ / 多め), the PFC bar with each one's grams and % (PfcBar
   // `grams`), then salt and fibre, each a line with its goal (「目標 7.5 g 以下」, the day card's words, no colour: an
   // average over is no fault) and how far its entries know it (model/food.ts Coverage: 「≥」, 一部不明 / わかった分だけ, as
-  // the day card's tiles), salt's with the food that gave the most of it (「多いのは …（n回）」). Read-only. None with no
+  // the day card's tiles), salt's with the food that gave the most of it (「多いのは …・n回」). Read-only. None with no
   // recorded day in them (a いつもの's items alone aren't one).
   import type { FoodAverage } from '#lib/model/food.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';

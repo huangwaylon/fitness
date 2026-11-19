@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CUSTOM, customDensityOk, customGrams, customPortions, customSnap, foodCustomFold, foodCustomOp, newCustomId,
   foodAccept, foodFold, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, newFoodId, newRecipeId, newRepeatId,
-  recipePortion, recipeSnap, recipeTotals, snapSalt, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
+  recipePortion, recipeSnap, recipeTotals, snapSalt, withHalf, repeatAccept, repeatCovers, repeatNext, weekdayBit, WEEKDAYS, type CustomOp, type FoodOp, type RecipeOp, type RepeatOp
 } from './food.ts';
 import { cleanLine } from './text.ts';
 import { isGoalValue } from './goals.ts';
@@ -35,6 +35,7 @@ describe('foodOp', () => {
     expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: soup })).toMatchObject({ f: soup });
     expect([snapSalt(soup), snapSalt({ s: 1.2 }), snapSalt({ s: null, hs: 0.5 })]).toEqual([0.6, 1.2, null]);
     expect(recipeTotals([{ g: 200, f: soup }, { g: 100, f: { ...RICE, s: 1 } }]).s).toBeCloseTo(2.2);
+    expect([withHalf(RICE, true), withHalf(soup, false), withHalf(soup, true)]).toEqual([{ ...RICE, hs: 0.5 }, { ...RICE, s: 1.2 }, soup]);
   });
   it('refuses anything malformed', () => {
     const ok = { id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: RICE };

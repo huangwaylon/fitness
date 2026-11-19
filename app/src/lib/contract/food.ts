@@ -41,6 +41,11 @@ const SNAP_HALF = 0.5;
 type SnapHalf = typeof SNAP_HALF;
 /** A snapshot's salt per 100 g as eaten (`s` × `hs`), null: unknown. */
 export const snapSalt = (f: Pick<FoodSnap, 's' | 'hs'>): number | null => (f.s === null ? null : f.hs === SNAP_HALF ? f.s * SNAP_HALF : f.s);
+/** A snapshot with its broth half left (スープ半分: `hs`) or all eaten. */
+export function withHalf(f: FoodSnap, half: boolean): FoodSnap {
+  const { hs: _, ...rest } = f;
+  return half ? { ...rest, hs: SNAP_HALF } : rest;
+}
 
 export type FoodOp =
   | { id: string; at: number; d: string; m: Meal; g: number; f: FoodSnap; rm?: undefined }

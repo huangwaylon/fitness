@@ -149,5 +149,70 @@ test('a past day of いつもの alone: a soft note on its day, out of グラフ
   expect(await days()).toBe(before + 1);
   const salt = s.locator('[data-avg-nutrient=s]');
   await expect(salt.locator('[data-avg-note]')).toContainText(/目標\s[\d.]+\sg\s以下$/);
-  await expect(salt.locator('[data-avg-salty]')).toHaveText(/^多いのは .+（\d+回）$/);
+  await expect(salt.locator('[data-avg-salty]')).toHaveText(/^多いのは .+・\d+回$/);
+});
+
+/** The open sheet's animations finished and its scroll still (a tap lands where it was aimed). */
+async function settled(page: Page) {
+  await page.locator('dialog[open]').evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))));
+  let last = -1;
+  await expect.poll(async () => {
+    const v = await sheet(page).evaluate((e) => e.scrollTop);
+    const still = v === last;
+    last = v;
+    return still;
+  }).toBe(true);
+}
+/** A meal search's first row named `name` → its amount level (the row opened in place, then its くわしく ›). */
+async function amountOf(page: Page, browserName: string, q: string, name: RegExp) {
+  const s = sheet(page);
+  await s.locator('[data-food-q]').fill(q);
+  const row = s.locator('[data-food-results]').getByRole('button', { name }).first();
+  await row.waitFor({ timeout: 20_000 });
+  await settled(page);
+  await press(row, browserName);
+  await settled(page);
+  await press(s.locator('[data-food-open-more]'), browserName);
+  await expect(s.locator('[data-food-live]')).toBeVisible();
+}
+
+// スープ半分 (contract/food.ts FoodSnap `hs`): a food in a broth (foodUi.ts isBroth) has the chip on its amount level; on,
+// the salt shown and logged is half (kcal as it is), the entry says so, and reopening it has the chip on; off again, all.
+test('スープ半分: a broth’s amount counts half its salt, the entry says so and keeps it; ごはん has no chip', async ({ page, browserName }) => {
+  await openFood(page, browserName, 393, 852);
+  const s = sheet(page);
+  const num = (x: string | null) => Number(x!.replace(/[^\d.]/g, ''));
+  const salt = () => s.locator('[data-food-summary] [data-line=s]').textContent().then(num);
+  const before = await salt();
+  await press(s.locator('[data-add=d]'), browserName);
+  await amountOf(page, browserName, 'かけそば', /^かけそば/);
+  const chip = s.locator('[data-food-half]');
+  await expect(chip).toHaveAttribute('aria-pressed', 'false');
+  await expect(s.locator('[data-food-half-note]')).toHaveText('塩分だけ半分に数えます');
+  const live = s.locator('[data-food-live]');
+  const shown = () => live.locator('[data-salt]').textContent().then(num);
+  const kcal = await live.locator('.k').textContent();
+  const all = await shown();
+  expect(all).toBeGreaterThan(0);
+  await press(chip, browserName);
+  await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(shown).toBeCloseTo(all / 2, 1);
+  await expect(live.locator('.k')).toHaveText(kcal!);
+  await press(s.locator('[data-done]'), browserName);
+  await press(s.locator('[data-food-finish]'), browserName);
+  const e = s.locator('[data-meal=d] [data-entry]').last();
+  await expect(e.locator('[data-entry-half]')).toHaveText(' · スープ半分');
+  await expect.poll(salt).toBeCloseTo(before + all / 2, 0);
+  // reopened: on; off and saved: all of it
+  await press(e, browserName);
+  await expect(chip).toHaveAttribute('aria-pressed', 'true');
+  await press(chip, browserName);
+  await press(s.locator('[data-done]'), browserName);
+  await expect(s.locator('[data-meal=d] [data-entry-half]')).toHaveCount(0);
+  await expect.poll(salt).toBeCloseTo(before + all, 0);
+
+  // ごはん: no broth, no chip
+  await press(s.locator('[data-add=d]'), browserName);
+  await amountOf(page, browserName, 'ごはん', /^ごはん/);
+  await expect(chip).toHaveCount(0);
 });

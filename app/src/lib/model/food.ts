@@ -8,7 +8,7 @@
 // logs its own. Pure; the economy never imports this (deps.test.ts): a meal is worth no ベル.
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
-  entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
+  entryOrder, foodAccept, snapSalt, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
   recipeTotals, repeatCovers, round1, FOOD_GOAL_OF, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
@@ -23,7 +23,7 @@ import { goalFallback, GOALS, goalMet, type LatestGoalKey } from '#lib/contract/
 import type { DaySeries } from './health.ts';
 
 /** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an
- *  unknown nutrient counts as none), and fibre (g, one decimal; null when no entry knows its fibre: an older snapshot
+ *  unknown nutrient counts as none; salt as eaten: スープ半分's half, contract/food.ts snapSalt), and fibre (g, one decimal; null when no entry knows its fibre: an older snapshot
  *  has none, and most products' labels don't say). */
 export interface FoodDay { entries: FoodEntry[]; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null }
 
@@ -241,7 +241,7 @@ function addTo(t: Totals, g: number, f: FoodSnap): void {
   t.p += m.p ?? 0;
   t.fa += m.fa ?? 0;
   t.c += m.c ?? 0;
-  t.s += (f.s ?? 0) * x;
+  t.s += (snapSalt(f) ?? 0) * x;
   if (f.fi !== undefined && f.fi !== null) t.fi = (t.fi ?? 0) + f.fi * x;
   t.n += 1;
   for (const k of NUTRIENTS) if (knows(f, k)) t.kn[k] += 1;
@@ -373,11 +373,12 @@ export function foodAverage(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, fro
   // the saltiest food: the recorded days' items summed by food
   const salt = new Map<string, { n: string; times: number; s: number }>();
   eachItem(s, who, from, to, (d, g, f) => {
-    if (!f.s || !totals.has(d)) return;
+    const fs = snapSalt(f);
+    if (!fs || !totals.has(d)) return;
     const x = salt.get(f.id) ?? salt.set(f.id, { n: f.n, times: 0, s: 0 }).get(f.id)!;
     x.n = f.n;
     x.times += 1;
-    x.s += (f.s * g) / 100;
+    x.s += (fs * g) / 100;
   });
   let salty: FoodAverage['salty'] = null;
   for (const x of salt.values()) if (!salty || x.s > salty.s) salty = x;

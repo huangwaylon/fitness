@@ -14,6 +14,25 @@ import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 /** The summary's くわしく open or not, kept for the session (whose day: health/whose.svelte.ts). */
 export const foodLast: { more: boolean } = { more: false };
 
+/** A noodle in its broth (a dish's, a shop's, a product's or my own: not MEXT's raw noodles), unless served without
+ *  one: ざる, もり, 焼き (鍋焼き has one), まぜ, 油そば, つけ麺, 冷やし, ぶっかけ, 釜玉, 汁なし, a pasta. */
+const NOODLE = /ラーメン|らーめん|拉麺|中華そば|麺|うどん|そば|ちゃんぽん|タンメン|にゅうめん|フォー/;
+const DRY = /ざる|もり|(?<!鍋)焼|まぜ|油そば|つけ麺|冷やし|ぶっかけ|釜玉|汁なし|替え玉|皿うどん|そうめん|スパゲッティ|パスタ|ナポリタン|カルボナーラ|ペペロンチーノ|ボンゴレ|明太子うどん/;
+/** A soup, a 鍋 or a stew by its name (not 果汁, 回鍋肉, お汁粉). */
+const SOUP = /スープ|汁|鍋|チゲ|スンドゥブ|ポトフ|おでん/;
+const NOT_SOUP = /果汁|回鍋肉|汁粉|汁なし|つけ汁/;
+/**
+ * Whether a food is eaten in a broth one may leave some of (スープ半分, the dietitian's 「スープは半分」: most of a
+ * noodle's or a 鍋's salt is in it): 汁物, a soup, a 鍋 or a stew by name, or a noodle in its broth. Drinks and MEXT's
+ * raw foods never.
+ */
+export function isBroth(it: Pick<Item, 'id' | 'name' | 'cat'>): boolean {
+  if (it.cat === '飲料' || it.cat === '酒') return false;
+  if (it.cat === '汁物') return true;
+  const n = it.name;
+  if (SOUP.test(n) && !NOT_SOUP.test(n)) return true;
+  return !it.id.startsWith('mext:') && NOODLE.test(n) && !DRY.test(n);
+}
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {

@@ -498,6 +498,13 @@ describe('いつものだけ: a repeat’s items alone are no recorded day', () 
     expect(foodAverage(reduce({ metrics: [], events: [eat('fslaaaa5', '2026-11-01', 'b', { ...OATS, s: null }, 40)] }), 'A', '2026-11-01', '2026-11-01')?.salty).toBeNull();
   });
 
+  it('スープ半分 (`hs`): a day’s and the average’s salt count half of it, the saltiest food too; kcal as it is', () => {
+    const NABE = { id: 'dishes:tantan-nabe', n: '担々鍋', k: 60, p: 3, fa: 3, c: 4, s: 1 };
+    const s = reduce({ metrics: [], events: [eat('fhsaaaa1', '2026-11-01', 'd', { ...NABE, hs: 0.5 }, 400), eat('fhsaaaa2', '2026-11-01', 'l', MISO, 100)] });
+    expect(foodDay(s, 'A', '2026-11-01')).toMatchObject({ kcal: 270, s: 3.5 });
+    expect(foodAverage(s, 'A', '2026-11-01', '2026-11-01')).toMatchObject({ s: 3.5, salty: { n: '担々鍋', s: 2 } });
+  });
+
   it('coverage: all, most (70 % and up: 一部不明) or few (わかった分だけ) of the entries know a nutrient', () => {
     expect([coverageOf(3, 3), coverageOf(7, 10), coverageOf(6, 10), coverageOf(0, 1), coverageOf(0, 0)]).toEqual(['all', 'most', 'few', 'few', 'all']);
     const es = [{ f: OATS }, { f: MISO }, { f: { ...MISO, s: null } }];

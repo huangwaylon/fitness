@@ -29,7 +29,7 @@
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
   import { flushSync, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
-  import { customSnap, MEALS, newFoodId, RECIPE, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
+  import { customSnap, MEALS, newFoodId, RECIPE, withHalf, type FoodEntry, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
@@ -236,8 +236,8 @@
    *  picked: a catalog row's ＋ (`row`), opened in place (`open`), the amount level (`amount`), さいきん's (`recent`). */
   const addedVia = (p: Picked, how: 'row' | 'open' | 'amount' | 'recent') => count(`act:food.add.${p.cid ? 'custom' : how}`);
   /** A picked food logged as a new entry of mine (a custom food still there afresh, by logCustom). */
-  const logPicked = (p: Picked, meal: Meal, g: number, u: string | null) =>
-    p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g, u: u ?? undefined }) : logFood({ d: date, m: meal, g, f: snapOf(p, u) });
+  const logPicked = (p: Picked, meal: Meal, g: number, u: string | null, half = false) =>
+    p.cid ? logCustom({ customId: p.cid, d: date, m: meal, g, u: u ?? undefined, half }) : logFood({ d: date, m: meal, g, f: withHalf(snapOf(p, u), half) });
   /** Logged from the search itself (a row's ＋, a row opened in place): its banner, and on this trip's list. */
   function tripLog(p: Picked, meal: Meal, g: number, u: string | null, how: 'row' | 'open' | 'recent') {
     const r = logPicked(p, meal, g, u);
@@ -352,15 +352,15 @@
     const id = detachDay(v.rep, date)?.[v.id];
     return (id && m && foodEntries(m.state, me).find((e) => e.id === id)) || null;
   }
-  function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
+  function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null; half: boolean }) {
     const e = l.entry && real(l.entry);
     if (l.entry) {
       // another state of it picked (じょうたい): its food too
       const f = e && l.item.id !== e.f.id ? snapOf(l, v.u) : undefined;
-      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, ...(f ? { f } : {}) }).ok) said('food.saved'), count('act:food.edit');
+      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, half: v.half, ...(f ? { f } : {}) }).ok) said('food.saved'), count('act:food.edit');
       return home();
     }
-    const r = logPicked(l, v.m, v.g, v.u);
+    const r = logPicked(l, v.m, v.g, v.u, v.half);
     if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) }), addedVia(l, 'amount');
     logged(r.id);
   }
@@ -528,7 +528,7 @@
       {#key l}
         {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
         {@const r = l.entry && recipeOfEntry(recipeById, l.entry)}
-        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} once={!!l.entry?.rep} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
+        <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} once={!!l.entry?.rep} half0={!!l.entry?.f.hs} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
           onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)} onfix={l.entry ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { meal: l.meal }, '[data-food-fix]', janOf(l.item))}
           open={c ? { label: t('food.my.open'), run: () => cf.open(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => rf.open(r) } : null} />
       {/key}

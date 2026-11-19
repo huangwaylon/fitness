@@ -20,7 +20,7 @@ const near = (a: number, b: number, eps: number) => Math.abs(a - b) <= eps + 1e-
 /**
  * Whether snapshot `now` (the food as it is now) differs from `was` (as logged) beyond rounding: kcal, or protein,
  * fat, carbs, salt or fibre (a value become unknown, or known, counts: fibre newly known on an entry from before it,
- * 2026-11-05, too). The name, the portion label and the values' trust (`est`) are not values.
+ * 2026-11-05, too). The name, the portion label the values' trust (`est`) and スープ半分 (`hs`, how it was eaten) are not values.
  */
 export function snapDiffers(was: FoodSnap, now: FoodSnap): boolean {
   if (!near(was.k, now.k, EPS.k)) return true;
@@ -78,7 +78,9 @@ export function latestFood(x: { g: number; f: FoodSnap }, src: FoodSources): Fre
   const lg = labelGrams(x.f.u, s.ps);
   if (lg === null && (s.now.sv === true) !== (x.f.sv === true)) return null;
   const g = lg ?? x.g;
-  return snapDiffers(x.f, s.now) || !near(g, x.g, EPS.g) ? { g, f: s.now } : null;
+  // スープ半分 is how it was eaten, not a value: kept
+  const now = x.f.hs === undefined ? s.now : { ...s.now, hs: x.f.hs };
+  return snapDiffers(x.f, now) || !near(g, x.g, EPS.g) ? { g, f: now } : null;
 }
 
 /** The barcode shards' items of `ids` that our products haven't (a scan's barcode-only product, the 2026-11-19 cone's

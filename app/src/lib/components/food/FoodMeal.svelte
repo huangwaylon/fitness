@@ -73,7 +73,7 @@
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}
   <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} plate={r ? plateOf(r, imgs, db, 40) : null} /></span>
   <span class="nm">{e.f.n}</span>
-  <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}{#if e.f.est === 'e' || e.f.est === 'p'}<span class="est" data-entry-est={e.f.est}>{' · '}{t('food.kal.estShort')}</span>{/if}</small>
+  <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}{#if e.f.hs}<span data-entry-half>{' · '}{t('food.half')}</span>{/if}{#if e.f.est === 'e' || e.f.est === 'p'}<span class="est" data-entry-est={e.f.est}>{' · '}{t('food.kal.estShort')}</span>{/if}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
   <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e, pgoals) as c (c.k)}<span class="m m-{c.k} t{c.tint}" data-pfc-of={c.k} data-tint={c.tint}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.tint === 2}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
 {/snippet}
