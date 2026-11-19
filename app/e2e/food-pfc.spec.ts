@@ -112,3 +112,40 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']]) {
     for (const c of cs) expect(c).toBeGreaterThanOrEqual(4.5);
   });
 }
+
+// いつものだけ (model/food.ts onlyRepeats): the demo's ウェイ has a 毎日 breakfast いつもの and meals logged to 11/4; two
+// days on, 11/5 holds the breakfast alone. That day says so softly in the goal bar's place (no 少なめ chip, every ＋ still
+// on screen), and グラフ's average leaves it out of its n日分; salt there reads against the goal, with the food that gave
+// the most.
+test('a past day of いつもの alone: a soft note on its day, out of グラフ’s average; salt’s average with its biggest source', async ({ page, browserName }) => {
+  await page.clock.install({ time: new Date('2026-11-04T23:40:00+09:00') });
+  await page.clock.resume();
+  await page.setViewportSize({ width: 393, height: 852 });
+  await page.goto('?demo&critter=none&visitor=none');
+  await press(page.getByRole('button', { name: 'けんこう', exact: true }), browserName);
+  await press(page.locator('dialog[open] [data-kenkou-tab=food]'), browserName);
+  const s = sheet(page);
+  await expect(s.locator('[data-food-summary]')).toBeVisible();
+  await expect(s.locator('[data-food-rep-only]')).toHaveCount(0); // 11/4: logged
+  const days = async () => Number((await s.locator('[data-avg-range]').textContent())!.match(/(\d+)日分/)![1]);
+  await press(s.locator('[data-tab=chart]'), browserName);
+  await expect(s.locator('[data-avg-range]')).toHaveText(/〜11\/3 · \d+日分$/);
+  const before = await days();
+  await page.clock.fastForward('48:00:00');
+  await press(s.locator('[data-tab=log]'), browserName);
+  await expect(s.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-06');
+  await expect(s.locator('[data-food-rep-only]')).toHaveCount(0); // today: still going
+  await press(s.locator('[data-nav=back]'), browserName);
+  await expect(s.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-05');
+  await expect(s.locator('[data-food-rep-only]')).toHaveText('いつものだけ・ほかも足すと平均に入ります');
+  await expect(s.locator('[data-food-chip]')).toHaveCount(0);
+  for (const k of ['b', 'l', 'd', 's']) await expect(s.locator(`[data-add=${k}]`)).toBeInViewport({ ratio: 1 });
+
+  // グラフ: to 11/5 now, 11/4 in, 11/5 not
+  await press(s.locator('[data-tab=chart]'), browserName);
+  await expect(s.locator('[data-avg-range]')).toHaveText(/〜11\/5 · \d+日分$/);
+  expect(await days()).toBe(before + 1);
+  const salt = s.locator('[data-avg-nutrient=s]');
+  await expect(salt.locator('[data-avg-note]')).toContainText(/目標\s[\d.]+\sg\s以下$/);
+  await expect(salt.locator('[data-avg-salty]')).toHaveText(/^多いのは .+（\d+回）$/);
+});

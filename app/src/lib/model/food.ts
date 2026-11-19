@@ -224,9 +224,15 @@ export function copySources(s: Pick<State, 'food' | 'foodRepeat'>, me: Who, othe
   return out;
 }
 
-/** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys; fibre null while no entry knows it. */
-type Totals = Record<Exclude<FoodGoalOf, 'fi'>, number> & { fi: number | null };
-const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null });
+/** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys; fibre null while no entry knows it; `n`
+ *  its entries, `kn` how many know each nutrient (Coverage); `own` whether one was logged that day (not a repeat's),
+ *  `rep` the main meals a repeat fills (MAIN_BIT). */
+type Totals = Record<Exclude<FoodGoalOf, 'fi'>, number> & { fi: number | null; n: number; kn: Record<Nutrient, number>; own: boolean; rep: number };
+const emptyTotals = (): Totals => ({ k: 0, p: 0, fa: 0, c: 0, s: 0, fi: null, n: 0, kn: { p: 0, fa: 0, c: 0, s: 0, fi: 0 }, own: false, rep: 0 });
+/** The nutrients a snapshot may not know (kcal it always does). */
+export type Nutrient = Exclude<FoodGoalOf, 'k'>;
+const NUTRIENTS = ['p', 'fa', 'c', 's', 'fi'] as const satisfies readonly Nutrient[];
+const knows = (f: FoodSnap, k: Nutrient): boolean => f[k] !== null && f[k] !== undefined;
 /** `g` grams of `f` into a day's totals (an unknown nutrient as none; fibre known once any entry knows it). */
 function addTo(t: Totals, g: number, f: FoodSnap): void {
   const x = g / 100;
@@ -237,13 +243,55 @@ function addTo(t: Totals, g: number, f: FoodSnap): void {
   t.c += m.c ?? 0;
   t.s += (f.s ?? 0) * x;
   if (f.fi !== undefined && f.fi !== null) t.fi = (t.fi ?? 0) + f.fi * x;
+  t.n += 1;
+  for (const k of NUTRIENTS) if (knows(f, k)) t.kn[k] += 1;
 }
+
+/** 朝, 昼 and 夜 as bits (おやつ none): a day whose repeats fill all three (ALL_MAIN) is a recorded day by itself. */
+const MAIN_BIT: Record<Meal, number> = { b: 1, l: 2, d: 4, s: 0 };
+const ALL_MAIN = 7;
+/**
+ * Whether a day counts as recorded (グラフ: its bars, ticks, averages and n日分): something logged that day, or repeats
+ * that fill 朝, 昼 and 夜 (a whole day set up to repeat). A day of a repeat's items alone (the usual breakfast, filled in
+ * whether or not the rest was logged: the review of 2026-11-19 found weeks of 248 kcal days) is いつものだけ: shown on
+ * its day (FoodSummary's note), never counted, so an average is of days logged.
+ */
+const recorded = (own: boolean, rep: number): boolean => own || (rep & ALL_MAIN) === ALL_MAIN;
+/** A day's entries (foodDay's) that are a repeat's alone, not a recorded day (`recorded`): いつものだけ. None: false. */
+export function onlyRepeats(entries: readonly Pick<FoodEntry, 'm' | 'rep'>[]): boolean {
+  let rep = 0;
+  for (const e of entries) {
+    if (!e.rep) return false;
+    rep |= MAIN_BIT[e.m];
+  }
+  return entries.length > 0 && !recorded(false, rep);
+}
+
+/** How much of a total its entries know (a nutrient): `all` of them, `most` (KNOWN_MOST of them and up: the total
+ *  shown 「≥」, 一部不明) or `few` (under it: 「≥」, わかった分だけ, the total a floor only). */
+export type Coverage = 'all' | 'most' | 'few';
+const KNOWN_MOST = 0.7;
+export const coverageOf = (known: number, n: number): Coverage => (known >= n ? 'all' : known >= KNOWN_MOST * n ? 'most' : 'few');
+/** A day's entries' coverage of nutrient `k` (Coverage). */
+export const entriesCoverage = (entries: readonly { f: FoodSnap }[], k: Nutrient): Coverage =>
+  coverageOf(entries.filter((e) => knows(e.f, k)).length, entries.length);
 const totalsMemo = new WeakMap<object, Map<string, Map<LocalDate, Totals>>>();
+
+/** Each of `who`'s items eaten from `from` (null: their first) to `to`, a day's logged entries and its repeats' items
+ *  alike (`rep` true for these), by day only where it matters (the callers sum). */
+function eachItem(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate | null, to: LocalDate, fn: (d: LocalDate, g: number, f: FoodSnap, m: Meal, rep: boolean) => void): void {
+  for (const e of entriesOf(s)) if (e.who === who && e.d <= to && (from === null || e.d >= from)) fn(e.d, e.g, e.f, e.m, false);
+  for (const r of repeatsOf(s)) {
+    if (r.who !== who || !r.it.length) continue;
+    const last = r.to && r.to < to ? r.to : to;
+    for (let d = from !== null && from > r.from ? from : r.from; d <= last; d = addDays(d, 1)) if (repeatCovers(r, d)) for (const { g, f } of r.it) fn(d, g, f, r.m, true);
+  }
+}
 
 /**
  * `who`'s kcal and nutrients per day up to `today`, in one pass (グラフ reads a year at once: no foodDay per day): each
- * day with something in it (a logged entry, or a repeat's items on a day it covers; a 0 kcal item counts) → its
- * unrounded totals, as foodDay adds them up (an unknown nutrient as none). Future days (a repeat fills them too) are
+ * recorded day (`recorded`: something logged, a 0 kcal item too, or repeats filling 朝昼夜; a repeat's items alone are
+ * not) → its unrounded totals (a repeat's items in them), as foodDay adds them up (an unknown nutrient as none). Future days (a repeat fills them too) are
  * left out. Memoised per State, person and day.
  */
 function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: LocalDate): Map<LocalDate, Totals> {
@@ -253,17 +301,14 @@ function dayTotals(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, today: Local
   let out = byKey.get(key);
   if (out) return out;
   const totals = new Map<LocalDate, Totals>();
-  const add = (d: LocalDate, g: number, f: FoodSnap) => {
+  eachItem(s, who, null, today, (d, g, f, m, rep) => {
     let t = totals.get(d);
     if (!t) totals.set(d, (t = emptyTotals()));
     addTo(t, g, f);
-  };
-  for (const e of entriesOf(s)) if (e.who === who && e.d <= today) add(e.d, e.g, e.f);
-  for (const r of repeatsOf(s)) {
-    if (r.who !== who || !r.it.length) continue;
-    const last = r.to && r.to < today ? r.to : today;
-    for (let d = r.from; d <= last; d = addDays(d, 1)) if (repeatCovers(r, d)) for (const { g, f } of r.it) add(d, g, f);
-  }
+    if (rep) t.rep |= MAIN_BIT[m];
+    else t.own = true;
+  });
+  for (const [d, t] of totals) if (!recorded(t.own, t.rep)) totals.delete(d);
   byKey.set(key, (out = totals));
   return out;
 }
@@ -272,8 +317,8 @@ const seriesMemo = new WeakMap<object, Map<string, Omit<DaySeries, 'goal'>>>();
 
 /**
  * `who`'s kcal (`n` 'k') or a nutrient (g) per day for ごはん's グラフ, as けんこう's metrics (health.ts DaySeries, so
- * its bucket and stat rules apply: seriesBuckets, seriesStats): from their first day with a meal (logged, or a
- * repeat's) to `today`, each day's total as foodDay rounds it (repeats included); a day with nothing in it is null
+ * its bucket and stat rules apply: seriesBuckets, seriesStats): from their first recorded day (dayTotals) to `today`,
+ * each day's total as foodDay rounds it (repeats included); a day with nothing in it, or a repeat's items alone, is null
  * (記録なし, never a 0), while a 0 kcal entry is a record. The goal: theirs as of `t` (foodGoal; one for every day;
  * none: null), met the goal's way (contract/goals.ts goalMet: protein at least, salt at most, kcal near it). The days memoised per State, person, day and what.
  */
@@ -297,32 +342,51 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
   return { ...hit, goal: () => goal, met: goal === null ? undefined : (v) => goalMet(n, v, goal) };
 }
 
-/** A range's daily averages (グラフ's average card): `from`…`to` the days it covers, `days` those with a meal (記録 n日),
- *  kcal (whole) and each nutrient (g, one decimal) over them; fibre over the days that know it (null: none does). */
-export interface FoodAverage { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null }
+/** A range's daily averages (グラフ's average card): `from`…`to` the days it covers, `days` its recorded days (記録 n日:
+ *  dayTotals'), kcal (whole) and each nutrient (g, one decimal) over them, an unknown one as none (fibre null: no entry
+ *  knows it); `known` each nutrient's coverage over their entries (Coverage: 「≥」 and why); `salty` the food that gave
+ *  the most salt over them (by its id, named as last logged; `times` how often), null with no salt known. */
+export interface FoodAverage {
+  from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null;
+  known: Record<Nutrient, Coverage>; salty: { n: string; times: number; s: number } | null;
+}
 
 /**
- * `who`'s average day over from..to (a day with nothing logged left out, as グラフ's averages: 記録なし, never a 0; a
- * day's repeats counted), or null with no meal in them. グラフ's average card passes its range, ended at yesterday when
- * it holds today: today is never finished.
+ * `who`'s average day over from..to (a day with nothing logged, or a repeat's items alone, left out, as グラフ's
+ * averages: 記録なし, never a 0; a recorded day's repeats counted), or null with no recorded day in them. グラフ's average
+ * card passes its range, ended at yesterday when it holds today: today is never finished.
  */
 export function foodAverage(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate, to: LocalDate): FoodAverage | null {
   if (to < from) return null;
   const totals = dayTotals(s, who, to);
   const sum = emptyTotals();
-  let days = 0, fiDays = 0;
-  for (let d = from; d <= to; d = addDays(d, 1)) {
-    const t = totals.get(d);
-    if (!t) continue;
+  let days = 0;
+  for (const [d, t] of totals) {
+    if (d < from) continue;
     days += 1;
     for (const k of ['k', 'p', 'fa', 'c', 's'] as const) sum[k] += t[k];
-    if (t.fi !== null) (sum.fi = (sum.fi ?? 0) + t.fi), (fiDays += 1);
+    if (t.fi !== null) sum.fi = (sum.fi ?? 0) + t.fi;
+    sum.n += t.n;
+    for (const k of NUTRIENTS) sum.kn[k] += t.kn[k];
   }
   if (!days) return null;
+  // the saltiest food: the recorded days' items summed by food
+  const salt = new Map<string, { n: string; times: number; s: number }>();
+  eachItem(s, who, from, to, (d, g, f) => {
+    if (!f.s || !totals.has(d)) return;
+    const x = salt.get(f.id) ?? salt.set(f.id, { n: f.n, times: 0, s: 0 }).get(f.id)!;
+    x.n = f.n;
+    x.times += 1;
+    x.s += (f.s * g) / 100;
+  });
+  let salty: FoodAverage['salty'] = null;
+  for (const x of salt.values()) if (!salty || x.s > salty.s) salty = x;
   const avg = (v: number) => round1(v / days);
   return {
     from, to, days, kcal: Math.round(sum.k / days), p: avg(sum.p), fa: avg(sum.fa), c: avg(sum.c), s: avg(sum.s),
-    fi: sum.fi === null ? null : round1(sum.fi / fiDays)
+    fi: sum.fi === null ? null : avg(sum.fi),
+    known: Object.fromEntries(NUTRIENTS.map((k) => [k, coverageOf(sum.kn[k], sum.n)])) as Record<Nutrient, Coverage>,
+    salty: salty && { ...salty, s: round1(salty.s) }
   };
 }
 

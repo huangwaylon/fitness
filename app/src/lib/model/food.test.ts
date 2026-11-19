@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { copySources, customs, entryPfc, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, pfcTint, pfcTintGoals, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { copySources, coverageOf, customs, entriesCoverage, entryPfc, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, onlyRepeats, pfcShare, pfcTint, pfcTintGoals, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -258,7 +258,8 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
   const TODAY = '2026-11-03';
   const WATER = { id: 'mext:16103', n: '水', k: 0, p: 0, fa: 0, c: 0, s: 0 };
   // A: 10-28 rice (234), 10-30 natto 50 g (95), 10-29 and 10-31 nothing; a 毎日 breakfast from 11-01 (rice 150 g +
-  // natto 45 g = 320), today with a rice more (554); 11-02 a glass of water besides (0 kcal: still the repeat's 320)
+  // natto 45 g = 320: alone, いつものだけ, no record), today with a rice more (554); 11-02 a glass of water besides (0
+  // kcal: something logged, so a recorded day of the repeat's 320)
   const events = [
     set('A', 'fmeal100', T, { d: '2026-10-28' }),
     set('A', 'fmeal101', T, { d: '2026-10-30', f: NATTO, g: 50 }),
@@ -270,17 +271,17 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
   ];
   const s = reduce({ metrics: [], events });
 
-  it('a day’s total from foodDay (repeats included) from the first meal to today; nothing logged is null, 0 kcal is a record', () => {
+  it('a day’s total from foodDay (repeats included) from the first meal to today; nothing logged or a repeat alone is null, 0 kcal is a record', () => {
     const ds = foodSeries(s, 'A', TODAY);
-    expect(ds).toMatchObject({ from: '2026-10-28', to: TODAY, first: '2026-10-28', vals: [234, null, 95, null, 320, 320, 554] });
+    expect(ds).toMatchObject({ from: '2026-10-28', to: TODAY, first: '2026-10-28', vals: [234, null, 95, null, null, 320, 554] });
     expect(ds.goal(0)).toBeNull();
     expect(foodSeries(s, 'A', TODAY).vals).toBe(ds.vals); // memoised
     // one pass over the record, the same totals as foodDay's day by day; the repeat's days after today aren't read
     ds.vals.forEach((v, i) => {
       const day = foodDay(s, 'A', addDays(ds.from, i));
-      expect(v).toBe(day.entries.length ? day.kcal : null);
+      expect(v).toBe(day.entries.length && !onlyRepeats(day.entries) ? day.kcal : null);
     });
-    expect(foodSeries(s, 'A', '2026-11-05').vals.slice(-2)).toEqual([320, 320]);
+    expect(foodSeries(s, 'A', '2026-11-05').vals.slice(-2)).toEqual([null, null]); // the repeat alone
     const b = foodSeries(s, 'B', TODAY);
     expect(b).toMatchObject({ from: '2026-11-01', vals: [0, null, null] });
     expect(b.goal(2)).toBe(2000);
@@ -293,7 +294,7 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
       expect(ds.from).toBe('2026-10-28');
       ds.vals.forEach((v, i) => {
         const day = foodDay(s, 'A', addDays(ds.from, i));
-        expect(v, `${n} ${i}`).toBe(day.entries.length ? day[n] : null);
+        expect(v, `${n} ${i}`).toBe(day.entries.length && !onlyRepeats(day.entries) ? day[n] : null);
       });
       expect(ds.goal(0)).toBeNull();
     }
@@ -305,9 +306,9 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     const ds = foodSeries(s, 'A', TODAY);
     const r = rangeFor('week', TODAY);
     expect(seriesBuckets(ds, r).map((x) => [x.v, x.today])).toEqual([
-      [234, false], [null, false], [95, false], [null, false], [320, false], [320, false], [554, true]
+      [234, false], [null, false], [95, false], [null, false], [null, false], [320, false], [554, true]
     ]);
-    expect(seriesStats(ds, r.from, r.to)).toMatchObject({ avg: 969 / 4, days: 4, missing: 2 });
+    expect(seriesStats(ds, r.from, r.to)).toMatchObject({ avg: 649 / 3, days: 3, missing: 3 });
     // B's 0 kcal day is a record, its days without one aren't 0s
     const b = foodSeries(s, 'B', TODAY);
     expect(seriesStats(b, r.from, r.to)).toMatchObject({ avg: 0, days: 1, missing: 1 });
@@ -318,12 +319,12 @@ describe('foodSeries: kcal per day for グラフ, by けんこう’s bucket and
     const ds = foodSeries(s, 'A', TODAY);
     const q = seriesBuckets(ds, rangeFor('quarter', TODAY));
     expect(q).toHaveLength(13);
-    expect(q.at(-1)).toMatchObject({ v: 969 / 4, days: 4, today: false });
+    expect(q.at(-1)).toMatchObject({ v: 649 / 3, days: 3, today: false });
     expect(q.slice(0, -1).every((x) => x.v === null && x.days === 0)).toBe(true);
     const y = seriesBuckets(ds, rangeFor('year', TODAY));
-    expect(y.slice(-2).map((x) => [x.v, x.days])).toEqual([[(234 + 95) / 2, 2], [320, 2]]);
+    expect(y.slice(-2).map((x) => [x.v, x.days])).toEqual([[(234 + 95) / 2, 2], [320, 1]]);
     const yr = rangeFor('year', TODAY);
-    expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 969 / 4, days: 4, missing: 2 });
+    expect(seriesStats(ds, yr.from, yr.to)).toMatchObject({ avg: 649 / 3, days: 3, missing: 3 });
   });
 });
 
@@ -429,7 +430,7 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
       null
     ]);
   });
-  it('a week’s average: the 7 days to the end given, a day with nothing logged left out, fibre over the days that know it', () => {
+  it('a week’s average: the 7 days to the end given, a day with nothing logged left out, an unknown nutrient as none with its coverage', () => {
     const day = (who: 'A' | 'B', id: string, d: string, f: object, g: number) => ev(who, T, { id, at: T, d, m: 'l', g, f });
     const s = reduce({
       metrics: [],
@@ -441,14 +442,67 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
         day('B', 'fwk00006', '2026-11-01', RICE, 900)
       ]
     });
-    // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2 (an older snapshot's alcohol left out)
+    // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2 (an older
+    // snapshot's alcohol left out): fibre ≥ 5.1 a day, 1 of its 3 entries knowing it (わかった分だけ)
     expect([
       foodAverage(s, 'A', '2026-10-28', '2026-11-03'), foodAverage(s, 'A', '2026-10-20', '2026-10-26'),
       foodAverage(s, 'B', '2026-10-28', '2026-11-03')?.days, foodAverage(s, 'A', '2026-11-03', '2026-11-02'),
       foodAverage(s, 'A', '2026-10-27', '2026-11-04')?.days
     ]).toEqual([
-      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2 }, null, 1, null, 4
+      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 5.1, known: { p: 'all', fa: 'all', c: 'all', s: 'all', fi: 'few' }, salty: null },
+      null, 1, null, 4
     ]);
+  });
+});
+
+describe('いつものだけ: a repeat’s items alone are no recorded day', () => {
+  const OATS = { id: 'mext:01006', n: 'オートミール', k: 350, p: 13.7, fa: 5.7, c: 69.1, s: 0, fi: 9.4 };
+  const MISO = { id: 'dishes:miso', n: 'みそ汁', k: 30, p: 2, fa: 1, c: 3, s: 1.5 };
+  const rep = (id: string, m: string, extra: object = {}) =>
+    ev('A', T, { id, at: T, m, it: [{ g: 40, f: OATS }], w: 127, from: '2026-11-01', ...extra }, 'food_repeat');
+  const eat = (id: string, d: string, m: string, f: object, g: number) => ev('A', T, { id, at: T, d, m, g, f });
+
+  it('onlyRepeats: a repeat’s items alone, unless they fill 朝, 昼 and 夜; anything logged makes the day; none: no', () => {
+    const r = (m: 'b' | 'l' | 'd' | 's') => ({ m, rep: 'r1' });
+    expect([
+      onlyRepeats([r('b')]), onlyRepeats([r('b'), r('s')]), onlyRepeats([r('b'), r('l')]), onlyRepeats([r('b'), r('l'), r('d')]),
+      onlyRepeats([r('b'), { m: 's' }]), onlyRepeats([])
+    ]).toEqual([true, true, true, false, false, false]);
+  });
+
+  it('グラフ: a repeat-only day is out of the series, the stats, the average and its n日分; a logged snack brings it in', () => {
+    // a 毎日 breakfast from 11-01 (140 kcal); 11-02 a snack logged too; 11-03 dinner; 11-04 the breakfast alone again
+    const s = reduce({ metrics: [], events: [rep('rwkaaaa1', 'b'), eat('fwkaaaa1', '2026-11-02', 's', MISO, 100), eat('fwkaaaa2', '2026-11-03', 'd', MISO, 300)] });
+    expect(onlyRepeats(foodDay(s, 'A', '2026-11-01').entries)).toBe(true);
+    expect(foodSeries(s, 'A', '2026-11-04').vals).toEqual([170, 230, null]); // from the first recorded day
+    const a = foodAverage(s, 'A', '2026-11-01', '2026-11-04')!;
+    expect([a.days, a.kcal, a.s]).toEqual([2, 200, 3]);
+    // a whole day set up to repeat counts by itself
+    const all = reduce({ metrics: [], events: [rep('rwkaaaa2', 'b'), rep('rwkaaaa3', 'l'), rep('rwkaaaa4', 'd')] });
+    expect(foodAverage(all, 'A', '2026-11-01', '2026-11-02')?.days).toBe(2);
+    // the breakfast alone: no average at all
+    expect(foodAverage(reduce({ metrics: [], events: [rep('rwkaaaa5', 'b')] }), 'A', '2026-11-01', '2026-11-07')).toBeNull();
+  });
+
+  it('the period’s saltiest food: by food, over its recorded days only, how often; none with no salt known', () => {
+    const SOUP = { id: 'custom:soup', n: '坦々鍋用スープ', k: 43, p: 1.7, fa: 2, c: 4, s: 2.4 };
+    const s = reduce({
+      metrics: [], events: [
+        rep('rslaaaa1', 'b', { it: [{ g: 100, f: MISO }] }), // 1.5 g a day, on the 4 days logged besides (11-05, alone: out)
+        eat('fslaaaa1', '2026-11-01', 'd', SOUP, 214), eat('fslaaaa2', '2026-11-03', 'd', SOUP, 107),
+        eat('fslaaaa3', '2026-11-02', 'l', OATS, 40), eat('fslaaaa4', '2026-11-04', 'l', OATS, 40)
+      ]
+    });
+    expect(foodAverage(s, 'A', '2026-11-01', '2026-11-05')?.salty).toEqual({ n: '坦々鍋用スープ', times: 2, s: 7.7 });
+    expect(foodAverage(s, 'A', '2026-11-02', '2026-11-02')?.salty).toEqual({ n: 'みそ汁', times: 1, s: 1.5 });
+    expect(foodAverage(reduce({ metrics: [], events: [eat('fslaaaa5', '2026-11-01', 'b', { ...OATS, s: null }, 40)] }), 'A', '2026-11-01', '2026-11-01')?.salty).toBeNull();
+  });
+
+  it('coverage: all, most (70 % and up: 一部不明) or few (わかった分だけ) of the entries know a nutrient', () => {
+    expect([coverageOf(3, 3), coverageOf(7, 10), coverageOf(6, 10), coverageOf(0, 1), coverageOf(0, 0)]).toEqual(['all', 'most', 'few', 'few', 'all']);
+    const es = [{ f: OATS }, { f: MISO }, { f: { ...MISO, s: null } }];
+    expect([entriesCoverage(es, 'p'), entriesCoverage(es, 's'), entriesCoverage(es, 'fi')]).toEqual(['all', 'few', 'few']);
+    expect(entriesCoverage([...es, { f: OATS }, { f: OATS }], 's')).toBe('most'); // 4 of 5 salt: 80 %
   });
 });
 

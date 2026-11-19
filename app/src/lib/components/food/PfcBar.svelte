@@ -8,7 +8,7 @@
   import { PFC_RANGES, pfcShare, type PfcOf } from '#lib/model/food.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { p, fa, c, id, grams = null }: { p: number; fa: number; c: number; id: string; grams?: ((v: number) => string) | null } = $props();
+  let { p, fa, c, id, grams = null }: { p: number; fa: number; c: number; id: string; grams?: ((v: number, n: PfcOf) => string) | null } = $props();
 
   const share = $derived(pfcShare({ p, fa, c }));
   const ORDER = ['p', 'fa', 'c'] as const;
@@ -37,7 +37,7 @@
           <i class="sw s-{n}" aria-hidden="true"></i>
           <span class="nm">{t(`food.${n}`)}</span>
           {#if grams}
-            <span class="gv"><b class="money">{grams({ p, fa, c }[n])}</b> <small class:ok={at === 0}>{pct(share[n])}%{#if at === 0}<span aria-hidden="true"> ✓</span>{:else} {t(at < 0 ? 'food.pfc.low' : 'food.pfc.high')}{/if}</small></span>
+            <span class="gv"><b class="money">{grams({ p, fa, c }[n], n)}</b> <small class:ok={at === 0}>{pct(share[n])}%{#if at === 0}<span aria-hidden="true"> ✓</span>{:else} {t(at < 0 ? 'food.pfc.low' : 'food.pfc.high')}{/if}</small></span>
           {:else}
             <b class="money">{pct(share[n])}%</b>
             <small class:ok={at === 0}>{#if at === 0}<span aria-hidden="true">✓ </span>{rangeText(n)}{:else}{t(at < 0 ? 'food.pfc.under' : 'food.pfc.over', { r: rangeText(n) })}{/if}</small>

@@ -3,13 +3,17 @@
   // foodAverage: the range's finished days, to yesterday when it holds today; a day with nothing logged left out, n日分),
   // so a day over or under reads against the period, compact (the user 2026-11-19): its kcal with a chip against the
   // goal (within its band: 目標の範囲; else 目標より N kcal 少なめ / 多め), the PFC bar with each one's grams and % (PfcBar
-  // `grams`), then salt and fibre on one line. Read-only. None with nothing logged in those days.
+  // `grams`), then salt and fibre, each a line with its goal (「目標 7.5 g 以下」, the day card's words, no colour: an
+  // average over is no fault) and how far its entries know it (model/food.ts Coverage: 「≥」, 一部不明 / わかった分だけ, as
+  // the day card's tiles), salt's with the food that gave the most of it (「多いのは …（n回）」). Read-only. None with no
+  // recorded day in them (a いつもの's items alone aren't one).
   import type { FoodAverage } from '#lib/model/food.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { goalMet } from '#lib/contract/goals.ts';
   import { md } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
+  import { goalLabel } from '../health/goals.ts';
   import { goalChip } from './foodUi.ts';
   import PfcBar from './PfcBar.svelte';
 
@@ -18,7 +22,13 @@
   const kGoal = $derived(goals.k);
   const chip = $derived(kGoal === null ? null : goalMet('k', avg.kcal, kGoal) ? { text: t('food.avg.ok'), over: false, ok: true } : { ...goalChip(avg.kcal, kGoal, false), ok: false });
   const grams = (v: number | null) => (v === null ? t('food.unknown') : t('food.g', { n: v.toFixed(1) }));
-  const rest = $derived((['s', 'fi'] as const).map((k) => ({ k, v: avg[k] })));
+  /** A nutrient's grams, 「≥」 when some entry doesn't know it. */
+  const atLeast = (k: keyof FoodAverage['known'], v: number | null) => (v !== null && avg.known[k] !== 'all' ? '≥' : '') + grams(v);
+  const rest = $derived((['s', 'fi'] as const).map((k) => {
+    const v = avg[k], known = avg.known[k], goal = goals[k];
+    const why = v === null || known === 'all' ? null : t(known === 'few' ? 'food.fewKnown' : 'food.partial');
+    return { k, v, known, note: [why, goal === null ? null : goalLabel(k, goal)].filter((x) => x !== null).join('・') };
+  }));
 </script>
 
 <section class="card wk" data-food-avg aria-labelledby="fw-h">
@@ -30,10 +40,16 @@
     <b class="total money" data-avg-kcal>{kcalText(avg.kcal)}</b>
     {#if chip}<span class="chg" class:over={chip.over} class:ok={chip.ok} data-avg-chip>{chip.text}</span>{/if}
   </p>
-  <PfcBar id="avg" p={avg.p} fa={avg.fa} c={avg.c} {grams} />
-  <p class="rest">
-    {#each rest as r (r.k)}<span data-avg-nutrient={r.k}>{t(`food.${r.k}`)} <b class="money">{grams(r.v)}</b></span>{/each}
-  </p>
+  <PfcBar id="avg" p={avg.p} fa={avg.fa} c={avg.c} grams={(v, n) => atLeast(n, v)} />
+  <dl class="rest">
+    {#each rest as r (r.k)}
+      <div data-avg-nutrient={r.k} data-known={r.known}>
+        <dt>{t(`food.${r.k}`)}</dt>
+        <dd><b class="money">{atLeast(r.k, r.v)}</b>{#if r.note}<small data-avg-note>{r.note}</small>{/if}</dd>
+        {#if r.k === 's' && avg.salty}<dd class="salty" data-avg-salty>{t('food.avg.salty', { n: avg.salty.n, times: avg.salty.times })}</dd>{/if}
+      </div>
+    {/each}
+  </dl>
 </section>
 
 <style>
@@ -49,6 +65,10 @@
   }
   .chg.ok { color: var(--leaf-text); background: color-mix(in srgb, var(--c-leaf) 22%, transparent); }
   .chg.over { background: color-mix(in srgb, var(--c-coral) 25%, transparent); }
-  .rest { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .rest b { color: var(--text); font-size: var(--fs-s); }
+  .rest { display: grid; gap: 4px; margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .rest div { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); column-gap: 8px; }
+  .rest dd { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; }
+  .rest b { color: var(--text); font-size: var(--fs-s); white-space: nowrap; }
+  .rest small { font: inherit; word-break: keep-all; }
+  .rest .salty { grid-column: 2; font-weight: 400; overflow-wrap: anywhere; }
 </style>

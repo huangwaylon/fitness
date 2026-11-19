@@ -5,11 +5,15 @@
   // each with its goal and its direction when there is one (「目標 110 g 以上」: グラフ sets them; protein's default
   // 1.6 g × the latest weigh-in, a member's with a weight) and a small bar, coral once past a ceiling (salt and fat at
   // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, P · F · C a row, then salt, fibre (データなし while no
-  // entry knows it); then the PFC balance (PfcBar: the shares of energy against the
+  // entry knows it); a total some entry doesn't know 「≥」 with why (model/food.ts Coverage: 一部不明, or わかった分だけ
+  // under 70 % of the entries); then the PFC balance (PfcBar: the shares of energy against the
   // 食事摂取基準's ranges). A day with nothing logged: 「きろく
-  // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
+  // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way. A day of a
+  // past いつもの's items alone (model/food.ts onlyRepeats: not a recorded day, グラフ leaves it out) says so in the
+  // goal bar's row (no bar nor 少なめ chip: the day isn't whole), softly: on my own day inviting the rest, never as a
+  // fault. Today is still going: none.
   import type { Who } from '#lib/types.ts';
-  import type { FoodDay } from '#lib/model/food.ts';
+  import { entriesCoverage, onlyRepeats, type FoodDay } from '#lib/model/food.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { kcalText } from '../kiroku/fmt.ts';
@@ -39,8 +43,13 @@
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
   const gText = (n: number) => t('food.g', { n: n.toFixed(1) });
   /** A total some entry doesn't know (a product's salt, unknown on its label): the known ones' sum, shown 「≥」, its tile
-   *  saying 一部不明 in words on its 目標 line (「一部不明・目標 7.5 g 以下」, no hover on a phone) and its bar hatched. */
-  const partial = (k: string): boolean => (k === 'p' || k === 'fa' || k === 'c' || k === 's') && day.entries.some((e) => e.f[k] === null);
+   *  saying why in words on its 目標 line (「一部不明・目標 7.5 g 以下」, no hover on a phone; わかった分だけ when under
+   *  70 % of the entries know it) and its bar hatched. Fibre too, once some entry knows it (none: データなし). */
+  const known = $derived(Object.fromEntries((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => [k, entriesCoverage(day.entries, k)])));
+  const partial = (k: string): boolean => known[k] !== 'all';
+  const why = (k: string) => t(known[k] === 'few' ? 'food.fewKnown' : 'food.partial');
+  /** A past day of a いつもの's items alone. */
+  const repOnly = $derived(when === 'past' && onlyRepeats(day.entries));
   /** The tiles: the four, then fibre. */
   const cells = $derived((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })));
   const LINE = ['p', 'fa', 'c', 's'] as const;
@@ -59,7 +68,8 @@
     {/if}
     <GoalEdit id="kcal-goal" spec={GOAL_SPECS.k} label={goalLabel('k', goal)} value={goal} onsave={onsavegoal} warn={warngoal} />
   </header>
-  {#if goal !== null && !(empty && when === 'past')}
+  {#if repOnly}<p class="rep" data-food-rep-only>{t(onsavegoal ? 'food.repOnly.mine' : 'food.repOnly')}</p>
+  {:else if goal !== null && !(empty && when === 'past')}
     <div class="brow">
       <div class="bar" role="presentation"><i style:width="{share * 100}%"></i></div>
       {#if chip}<span class="chg" class:over={chip.over} data-food-chip>{chip.text}</span>{/if}
@@ -68,7 +78,7 @@
   {#if !empty}<details class="more" bind:open={foodLast.more} data-food-more>
   <!-- folded: one line of P · F · C · 塩分 (a value past its ceiling coral), so the meals' ＋ show on opening; open: the tiles and the PFC balance -->
   <summary data-sfx="tick">
-    <span class="line money">{#each LINE as k (k)}<span class="nv" class:over={over(k)} data-line={k}><span aria-hidden="true">{k === 's' ? t('food.s') : k === 'fa' ? 'F' : k.toUpperCase()}</span><span class="sr-only">{t(`food.${k}`)}</span> {#if partial(k)}<span data-partial title={t('food.partial')}>≥</span><span class="sr-only">{t('food.partial')}</span>{/if}{t('food.g', { n: day[k].toFixed(1) })}</span>{/each}</span>
+    <span class="line money">{#each LINE as k (k)}<span class="nv" class:over={over(k)} data-line={k}><span aria-hidden="true">{k === 's' ? t('food.s') : k === 'fa' ? 'F' : k.toUpperCase()}</span><span class="sr-only">{t(`food.${k}`)}</span> {#if partial(k)}<span data-partial title={why(k)}>≥</span><span class="sr-only">{why(k)}</span>{/if}{t('food.g', { n: day[k].toFixed(1) })}</span>{/each}</span>
     <span class="tg">{t('food.details')}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg></span>
   </summary>
   <dl class="cells">
@@ -78,7 +88,7 @@
         {#if c.v === null}
           <dd class="money unknown" data-unknown>{t('food.unknown')}<small>{t('food.fiNone')}</small></dd>
         {:else}
-          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k) || c.goal !== null}<small>{#if partial(c.k)}<span data-partial>{t('food.partial')}</span>{#if c.goal !== null}・<wbr />{/if}{/if}{#if c.goal !== null}{goalLabel(c.k, c.goal)}{/if}</small>{/if}</dd>
+          <dd class="money">{#if partial(c.k)}<span aria-hidden="true">≥</span>{/if}{gText(c.v)}{#if partial(c.k) || c.goal !== null}<small>{#if partial(c.k)}<span data-partial={known[c.k]}>{why(c.k)}</span>{#if c.goal !== null}・<wbr />{/if}{/if}{#if c.goal !== null}{goalLabel(c.k, c.goal)}{/if}</small>{/if}</dd>
           {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} class:partial={partial(c.k)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
         {/if}
       </div>
@@ -99,6 +109,7 @@
   .brow .bar { flex: 1; }
   .chg { white-space: nowrap; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .chg.over { color: var(--coral-text); }
+  .rep { margin: 0; font: 700 var(--fs-s)/var(--lh) var(--font-ui); color: var(--text-soft); }
   .bar { height: 10px; border-radius: 5px; overflow: hidden; background: color-mix(in srgb, var(--lip) 45%, transparent); }
   .bar i { display: block; height: 100%; border-radius: inherit; background: var(--pc); transition: width 240ms var(--ease-soft); }
   .bar.mini { height: 5px; margin-top: 4px; }
