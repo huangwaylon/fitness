@@ -5,17 +5,17 @@
   // お休み), and 「みんなで星N個！」.
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import TurnResult from '../TurnResult.svelte';
-  import type { Game, MiniOn } from '../../game.ts';
+  import type { Game } from '../../game.ts';
   import type { Who } from '#lib/types.ts';
   import { s as tr } from '../../i18n.ts';
 
   interface Props {
     g: Game;
-    /** The mini-game as it closed (its state's last fold, for each seat's part), if seen here. */
-    last: MiniOn | null;
     onnext: () => void;
   }
-  let { g, last, onnext }: Props = $props();
+  let { g, onnext }: Props = $props();
+  /** The mini-game as it closed (its last play in), for each seat's part. */
+  const last = $derived(g.lastMini ?? null);
   const res = $derived(g.minis?.at(-1) ?? null);
   /** What it made: the game's made at the end of the list. */
   const made = $derived.by(() => {

@@ -162,8 +162,8 @@ describe('online: the rules', () => {
     expect(sameMove(log[1], { ...log[1], t: 9 })).toBe(true);
     expect(JSON.stringify(foldMoves(log, ctx))).toBe(JSON.stringify(foldMoves(log.map(({ t: _t, ...m }) => m), ctx)));
   });
-  // (what a fold makes of the moves, over five games playing all eight mini-games, `v` and the game's `rules` label
-  // aside; a deal copies its exchange's text into the state, so an edit to data/*.json that a pinned game deals
+  // (what a fold makes of the moves, over five games playing all eight mini-games, `v`, the game's `rules` label and
+  // the results' `lastMini` aside; a deal copies its exchange's text into the state, so an edit to data/*.json that a pinned game deals
   // re-pins without a RULES bump. Re-pinned 2026-11-20 without a RULES bump: the save's CONTENT lost the classic
   // board, the fold otherwise the same: 'rrc1ft' with the old CONTENT put back)
   const PIN: Record<string, readonly [string, string]> = { '5': ['10radj7', 'minigame00 minigame08 minigame21 minigame28 minigame35'] };
@@ -171,7 +171,7 @@ describe('online: the rules', () => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
     const lists = [file('words.txt'), file('accept.txt'), JSON.stringify(everyday), JSON.stringify(linesJson)].map((x) => fnv1a(x));
     const played = ids.split(' ').map((id) => {
-      const { v: _v, rules: _r, ...g } = foldMoves(playMoves(id), ctx)!;
+      const { v: _v, rules: _r, lastMini: _l, ...g } = foldMoves(playMoves(id), ctx)!;
       return fnv1a(JSON.stringify(g));
     });
     return fnv1a(JSON.stringify([g0.content, GEN, lists, played.length > 1 ? played : played[0]])).toString(36);

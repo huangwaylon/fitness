@@ -41,7 +41,8 @@ export function playMini(g: Game, who: Who, p: Play, ctx: Ctx): Game {
   return game.done(s) ? closeMini(out) : out;
 }
 
-/** The close: each seat's stars, what it made, the stone played, the lander's turn over. */
+/** The close: each seat's stars, what it made, the stone played, the lander's turn over; the game as it closed kept for
+ *  the results (`lastMini`: the play that closed it in). */
 export function closeMini(g: Game): Game {
   const on = miniOn(g);
   if (!on) return g;
@@ -50,5 +51,5 @@ export function closeMini(g: Game): Game {
   const idx = (w: Who) => Math.max(0, g.players.findIndex((p) => p.who === w));
   const made = [...g.made, ...res.made.map((m) => ({ p: idx(m.who), kind: m.kind, text: m.text, ja: m.ja, stars: m.stars, mini: on.id }))];
   const minis = [...(g.minis ?? []), { stone: g.players[g.turn].pos, id: on.id, stars: res.stars }];
-  return next({ ...g, n: g.n + 1, players, made, minis });
+  return next({ ...g, n: g.n + 1, players, made, minis, lastMini: on });
 }

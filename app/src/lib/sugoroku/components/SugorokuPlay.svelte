@@ -238,9 +238,8 @@
   const askMini = () => !miniAsked && ((miniAsked = true), Promise.all([import('./mini/MiniTurn.svelte'), import('./mini/MiniResults.svelte')])
     .then(([t, r]) => (Mini = { Turn: t.default, Results: r.default }), () => (miniAsked = false)));
   const on = $derived(g ? miniOn(g) : null);
-  /** The mini-games closed so far (seen here), the last one's state as it closed, its result shown till 次へ. */
+  /** The mini-games closed so far (seen here), the last one's result shown till 次へ. */
   let minisSeen = -1;
-  let lastOn = $state.raw<MiniOn | null>(null);
   let miniResult = $state(false);
   let miniLog: { key: string; at: number; on: MiniOn } | null = null;
   $effect(() => {
@@ -248,7 +247,6 @@
     if (!x) return;
     untrack(() => {
       if (x.phase.k === 'mini' || miniResult) askMini();
-      if (o) lastOn = o;
       const n = x.minis?.length ?? 0;
       if (o && miniLog?.key !== `${x.seed}:${n}`) {
         miniLog = { key: `${x.seed}:${n}`, at: Date.now(), on: o };
@@ -408,7 +406,7 @@
             {/if}
             <div class="sbody" hidden={folded}>
               {#if miniResult && Mini}
-                <Mini.Results {g} last={lastOn} onnext={() => (miniResult = false)} />
+                <Mini.Results {g} onnext={() => (miniResult = false)} />
               {:else if ph.k === 'mini' && Mini}
                 <Mini.Turn {g} {mode} {me} {words} {lines} {mini} opened={miniOpened} now={clockNow} here={online.here} views={miniViews} onact={act}
                   onview={viewing ? (v) => sendView({ p: 'mini', v }) : undefined} />

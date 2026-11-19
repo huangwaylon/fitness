@@ -109,6 +109,9 @@ describe('a みんなで！ stone, passed round', () => {
     // its game's own end closes it at once: every count in
     const all = playMini(o, 'G', { n: 12 }, ctx);
     expect([all.phase.k, all.minis?.[0].stars]).toEqual(['spin', { A: 4, B: 4, G: 4 }]);
+    // (the game as it closed kept for the results, the closing play in; the clock's close: the counts sent)
+    expect(all.lastMini).toMatchObject({ id: 'sort', s: { counts: { A: 8, B: 10, G: 12 } } });
+    expect(closed.lastMini).toMatchObject({ id: 'sort', s: { counts: { A: 8, B: 10 } } });
     // the stone again: a ことば
     const from = boardFor(closed).spaces.findIndex((s) => s.next.length === 1 && s.next[0] === pos);
     const back = { ...closed, turn, phase: { k: 'spin' as const }, players: closed.players.map((p, i) => (i === turn ? { ...p, pos: from } : p)) };

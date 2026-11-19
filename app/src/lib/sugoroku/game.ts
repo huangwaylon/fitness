@@ -117,6 +117,9 @@ export interface Game {
   /** The みんなで！ stones played (each then a ことば for the rest of the game), their mini-games and stars; none yet:
    *  absent (a board without them, a game from before them). */
   minis?: { stone: number; id: MiniId; stars: Partial<Record<Who, number>> }[];
+  /** The last mini-game as it closed, its final play in (the results' each seat's part: mini/turn.ts closeMini). The
+   *  screen's only: nothing reads it in the fold. */
+  lastMini?: MiniOn;
 }
 
 export const MIN_PLAYERS = 2;
