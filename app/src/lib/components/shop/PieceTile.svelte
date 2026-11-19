@@ -34,7 +34,7 @@
 {/snippet}
 
 <li class="tile" class:on class:owned class:short={short > 0}>
-  <button type="button" class="pickable" data-sfx="self" {...rest} {onclick}>
+  <button type="button" class="pickable press" data-sfx="self" {...rest} {onclick}>
     <span class="ic">{@render icon()}</span>
     {@render nm(name)}
     {#if owned}<span class="price owned-tag">{t('shop.owned')}</span>
@@ -50,7 +50,6 @@
     display: grid; justify-items: center; align-content: start; gap: 4px; background: var(--ctl); color: var(--text);
     box-shadow: var(--sh-ctl); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .pickable:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .on .pickable { background: var(--ctl-sel); color: var(--c-ink); }
   .owned .pickable { background: var(--ctl-off); }
   .owned .ic { opacity: .55; }

@@ -230,7 +230,7 @@
       <h3 class="sec-label">{t('homes.door')}</h3>
       <div class="doors">
         {#each cat.doors as d (d.style)}
-          <button type="button" data-sfx="tick" class="door" data-door={d.style} aria-pressed={door?.style === d.style} onclick={() => setDoor(d.style, door?.shape ?? 'R', door?.colour ?? 'A')}>
+          <button type="button" data-sfx="tick" class="door press" data-door={d.style} aria-pressed={door?.style === d.style} onclick={() => setDoor(d.style, door?.shape ?? 'R', door?.colour ?? 'A')}>
             <span class="ico" style={icon(`door-${kebab(d.style)}-${(door?.style === d.style ? door.shape : d.shapes[0]).toLowerCase()}`, 44)}></span>
             <span>{named(DOOR, d.style)}</span>
           </button>
@@ -292,7 +292,6 @@
     padding: 6px 4px 8px; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
   .door[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); }
-  .door:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .door .ico { width: 44px; height: 44px; }
   .foot { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
   .why { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text); text-align: center; }

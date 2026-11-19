@@ -155,7 +155,7 @@
           {@const f = finds.has(findKey(kind, e.id))}
           <li>
             {#if f}
-              <button type="button" class="tile" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={named ? bare(t(e.name)) : ''} onclick={() => open(e)}>
+              <button type="button" class="tile press" class:on={pick?.id === e.id} data-sfx="tick" data-entry={e.id} aria-label={named ? bare(t(e.name)) : ''} onclick={() => open(e)}>
                 <OfficialArt key={e.art} size={40} />
                 <span class="nm">{named ? bare(t(e.name)) : ''}</span>
                 <b class="n" data-times>{t('zukan.times', { n: times(e.id) })}</b>
@@ -226,7 +226,6 @@
     display: grid; justify-items: center; align-content: start; gap: 2px; background: var(--card); box-shadow: var(--sh-lip); line-height: 0;
   }
   button.tile { cursor: pointer; box-shadow: var(--sh-ctl); }
-  button.tile:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .tile.on { background: var(--ctl-sel); color: var(--c-ink); }
   .tile .nm { font-size: .6875rem; font-weight: 700; line-height: 1.25; text-align: center; overflow-wrap: anywhere; word-break: keep-all; }
   /* the count, NH's 「×12」, in the tile's corner */

@@ -17,7 +17,7 @@
 
 <div class="seg" class:s={size === 's'} role="group" aria-label={label}>
   {#each items as it (it.id)}
-    <button type="button" class="sb" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
+    <button type="button" class="sb press" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
       onclick={() => onpick(it.id)}>{#if it.emoji}<span class="gi" aria-hidden="true" data-emoji={it.emoji}></span>{/if}{it.label}</button>
   {/each}
 </div>
@@ -32,7 +32,6 @@
   /* 36px drawn in the 44px hit (docs/design.md "Sizes") */
   .sb::after { content: ''; position: absolute; inset: -4px -2px; }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
-  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .s { gap: 4px; }
   .s .sb { flex: none; min-height: 32px; min-width: 40px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
   .s .sb::after { inset: -6px -2px; }

@@ -121,14 +121,14 @@
     onsubmit={(e) => { e.preventDefault(); ok(); }}>
     {#if spec.note}<p class="th">{spec.note()}</p>{/if}
     <div class="row">
-      <button type="button" class="nb" data-sfx="tick" data-goal-step="-1" aria-label={t('goal.less')} onclick={() => step(-1)}>−</button>
+      <button type="button" class="btn-step" data-sfx="tick" data-goal-step="-1" aria-label={t('goal.less')} onclick={() => step(-1)}>−</button>
       <label class="fld">
         <span class="sr-only">{spec.head()}</span>
         <input class="input num" type="text" inputmode={spec.decimals ? 'decimal' : 'numeric'} data-sfx="none" autocomplete="off" enterkeyhint="done" maxlength="7" size="6"
           placeholder={goalField(spec, start ?? spec.start)} bind:value={field} aria-invalid={bad} aria-describedby="goal-{id}-hint" oninput={() => (tried = false)} />
         <span class="u" aria-hidden="true">{spec.unit()}</span>
       </label>
-      <button type="button" class="nb" data-sfx="tick" data-goal-step="1" aria-label={t('goal.more')} onclick={() => step(1)}>＋</button>
+      <button type="button" class="btn-step" data-sfx="tick" data-goal-step="1" aria-label={t('goal.more')} onclick={() => step(1)}>＋</button>
     </div>
     <p id="goal-{id}-hint" class="hint" class:bad>{spec.hint()}</p>
     {#if note}<p class="warn" data-goal-warn role="status">{note}</p>{/if}
@@ -175,11 +175,6 @@
   @keyframes tray-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } to { opacity: 1; transform: none; } }
   .th { position: relative; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .row { display: flex; align-items: center; gap: 8px; }
-  .nb {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); min-height: var(--hit); flex: none; border-radius: var(--r-pill);
-    font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
-  }
-  .nb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .fld { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 6px; }
   input { flex: 1; }
   .u { flex: none; white-space: nowrap; font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }

@@ -30,7 +30,7 @@
   const name = $derived(person ? `${label}：${options.find((o) => o.id === value)?.label ?? ''}${note ? `（${note}）` : ''}` : label);
 </script>
 
-<label class="dd {kind}" class:compact class:only class:away {...{ [`data-${kind}`]: value }}>
+<label class="dd press {kind}" class:compact class:only class:away {...{ [`data-${kind}`]: value }}>
   <span class="sr-only">{name}</span>
   {#if person}<span class="av" aria-hidden="true"><Avatar worn person={person.p} villager={person.villager} size={compact ? 24 : 28} /></span>{/if}
   <select data-pick={kind} class:withav={!!person} {value} data-sfx="none" onchange={(e) => onpick(e.currentTarget.value as T)}>
@@ -45,7 +45,6 @@
     position: relative; display: flex; align-items: center; min-width: 0; min-height: var(--hit);
     border-radius: var(--r-pill); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
   }
-  .dd:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .dd:has(select:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* the native select fills the pill (its whole face is the tap target); the avatar, the swatch and the chevron are
      drawn over it and let taps through */

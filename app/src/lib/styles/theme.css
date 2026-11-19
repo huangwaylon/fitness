@@ -146,6 +146,16 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .two-cta { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 .two-cta .btn { margin: 0; }
 
+/* ---------- the press: a control drawn with the edge (--sh-ctl: a tile, a segment, a picker) sinks 2px onto its lip while
+   held, never while it can't (`.press` on it; .chip and .prow have it built in) ---------- */
+:is(.press, .btn-step):active:not(:disabled, [aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+/* a stepper's − / ＋ (a goal, ごはん's amount): a round 44 control beside its field; sunk while it can't */
+.btn-step {
+  appearance: none; border: 0; cursor: pointer; flex: none; width: var(--hit); min-height: var(--hit); padding: 0; border-radius: var(--r-pill);
+  font: 700 var(--fs-talk)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
+}
+.btn-step[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
+
 /* ---------- .input, a text field (one look: docs/design.md "Forms and confirms"): the control's cream with the edge, 16px (no
    iOS zoom); focused, the edge turns green and thickens (no ring over it); invalid, coral. `.num`: a number, right-aligned
    in the number font (its unit sits beside it as text, never in the placeholder too). In the info sheets (.kit) user text

@@ -12,7 +12,7 @@
 <div class="slots" role="group" aria-label={t('gym.editor.slotsLabel')} data-gym-slots>
   {#each SLOTS as s (s)}
     {@const st = slotState(s, range, announced)}
-    <button type="button" class="slot" class:on={st.watched} aria-pressed={st.watched} data-gym-slot={s} data-sfx="tick"
+    <button type="button" class="slot press" class:on={st.watched} aria-pressed={st.watched} data-gym-slot={s} data-sfx="tick"
       aria-label={st.announced ? t('gym.editor.slotAnnounced', { time: s }) : s} onclick={() => onpick(s)}>
       {s}{#if st.announced}<span class="ok" aria-hidden="true"><Icon name="check" size={11} stroke={3} /></span>{/if}
     </button>
@@ -27,5 +27,4 @@
   }
   .slot.on { background: color-mix(in srgb, var(--c-mint) 75%, var(--card)); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
   .slot .ok { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; background: var(--c-gold); color: var(--c-ink); }
-  .slot:active { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
 </style>
