@@ -578,7 +578,8 @@ test('a tap on an open tree popup closes it and reaches nothing under it (the ot
   await expect(popup).toHaveCount(1);
   // where it stands once the camera has eased up the island to make room for it (a short screen)
   await page.waitForTimeout(1000);
-  const box = (await popup.boundingBox())!;
+  // (on a goal row: the popup's own buttons, the daily checks and ごはん, act in it instead)
+  const box = (await popup.locator('[data-row]').first().boundingBox())!;
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   await expect(popup).toHaveCount(0);
   await expect(page.locator('dialog[open]')).toHaveCount(0);

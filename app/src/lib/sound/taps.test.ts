@@ -36,7 +36,7 @@ const SELF: Record<string, string> = {
   'lib/components/shop/ShopRoom.svelte': 'a piece → tick; the card\'s 買う → purchase, or the boop when it can\'t be had; ‹ 島へ → scene-bench (out of the door)',
   'lib/components/shop/Counter.svelte': 'うる / かう → purchase, or the boop when nothing is picked or it can\'t be had',
   'lib/components/shop/PieceTile.svelte': 'a catch, a start or a piece → tick (its list\'s handler)',
-  'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button → its sheet plays panel-open',
+  'lib/components/island/FruitTree.svelte': 'canopy → tree-shake; the fruit row and closing the popup → tick; the popup\'s ごはん button → its sheet plays panel-open; a daily check → toggle-on / toggle-off, emote-joy as all three are done',
   'lib/components/island/TreeShakes.svelte': 'a branch → scene-twig; the wasps → scene-net, then scene-catch (too late: nothing)',
   'lib/components/island/Balloon.svelte': 'scene-balloon',
   'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',

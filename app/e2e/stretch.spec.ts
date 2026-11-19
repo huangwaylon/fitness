@@ -18,7 +18,8 @@ async function open(page: Page, date: string) {
 }
 /** A tap where an element is (a world node: Playwright's own click would scroll the island's sticky stage to it). */
 async function tap(page: Page, l: ReturnType<Page['locator']>) {
-  const r = (await l.boundingBox())!;
+  // (on a goal row: the popup's own buttons, the daily checks and ごはん, act in it instead)
+  const r = (await l.locator('[data-row]').first().boundingBox())!;
   await page.mouse.click(r.x + r.width / 2, r.y + r.height / 2);
 }
 async function popup(page: Page, tree: 'A' | 'B') {

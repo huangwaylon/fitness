@@ -57,6 +57,10 @@ export function newRecord() {
     event(who: Who, type: string, data: Record<string, unknown>) {
       return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${sent.length}-${++events}`, type, data }, 100);
     },
+    /** A Shortcut's health body to the record as `who`'s (relay/src/parse.ts): the record's reply. */
+    ingest(who: 'A' | 'B', body: Record<string, unknown>) {
+      return store.handle({ key: KEY_OF[who], action: 'ingest', ...body }, 100);
+    },
     /** A row the record kept before a rule refused its kind (the locked profile): written as a restore keeps it. */
     kept(who: Who, type: string, data: Record<string, unknown>) {
       store.handle({ key: KEY_OF[who], action: 'health' }, 100); // (the tables)

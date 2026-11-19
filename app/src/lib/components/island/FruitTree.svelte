@@ -12,7 +12,7 @@
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
   // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
   // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
-  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts; its button → ごはん on that day: health/open.svelte.ts); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
+  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts; its button → ごはん on that day: health/open.svelte.ts); then the daily checks (顔 / HIIT / Core: model/checks.ts, my own tree's tappable); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
   // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
@@ -54,6 +54,9 @@
   import { askFood } from '../health/open.svelte.ts';
   import { prefetchSheet } from './sheetChunks.ts';
   import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
+  import { CHECK_KINDS, type CheckKind } from '#lib/contract/checks.ts';
+  import { allChecked, dayChecks, FACE_VIDEO, toggleValue } from '#lib/model/checks.ts';
+  import { setCheck } from '#lib/store/actions.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -142,6 +145,28 @@
     sheetTap();
     askFood(person.person);
   }
+  /** Today's daily checks (docs/design.md "Daily checks": 顔, HIIT, Core; model/checks.ts), read only while the popup
+   *  is open; seen by all three (activity, not からだ), set only on my own tree. */
+  const checks = $derived(open && week.model && week.view ? dayChecks(week.model.state, person.person, week.view.today) : null);
+  const checksAll = $derived(checks ? allChecked(checks) : false);
+  /** Bumped as my tap completes all three: the chip's sparkles (RULES.checks ベル, 0 for now: nothing else). */
+  let checksDone = $state(0);
+  /** A tap on one of my checks: flips it (a flip back to what the workouts say hands it back to them); ticking 顔 opens
+   *  its video (FACE_VIDEO). */
+  function toggleCheck(k: CheckKind) {
+    if (!checks || !mine || !week.view) return;
+    const c = checks[k], next = !c.done;
+    // ticking 顔 opens its video, straight from the tap (iOS blocks a later open); un-ticking only un-ticks
+    if (k === 'face' && next) window.open(FACE_VIDEO, '_blank', 'noopener');
+    if (!setCheck(week.view.today, k, toggleValue(c))) return;
+    const all = CHECK_KINDS.every((j) => (j === k ? next : checks[j].done));
+    cue(all ? 'emote-joy' : next ? 'toggle-on' : 'toggle-off');
+    if (all) checksDone++;
+  }
+  const checkLabel = (k: CheckKind) => {
+    const c = checks![k], item = t(`tree.check.${k}`);
+    return t(c.done ? (c.auto && !c.manual ? 'tree.check.auto' : 'tree.check.on') : c.auto ? 'tree.check.unset' : 'tree.check.off', { item });
+  };
   /** The fruit row leans out from the island's middle (left tree left, right tree right). */
   const lean = $derived(fruitLean(x, site.midX));
   /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
@@ -519,6 +544,25 @@
           </span>
         </span>
       {/if}
+      <!-- today's daily checks: 顔, HIIT, Core as pills (HIIT and Core from the day's workouts, a dot; my tap overrides either way) -->
+      {#if checks}
+        <span class="row checks" data-checks>
+          <span class="ic"><OfficialArt key="items/nook-yoga-mat" size="20px" eager /></span>
+          <span class="lbl">{t('tree.checks')}</span>
+          <span class="mls">
+            {#each CHECK_KINDS as k (k)}
+              {@const c = checks[k]}
+              <svelte:element this={mine ? 'button' : 'span'} role={mine ? undefined : 'img'} type={mine ? 'button' : undefined} class="pill" class:on={c.done} class:tap={mine}
+                data-check={k} data-done={c.done || null} data-src={c.manual ? 'hand' : c.auto ? 'workout' : null} data-sfx={mine ? 'self' : undefined}
+                aria-pressed={mine ? c.done : undefined} aria-label={checkLabel(k)}
+                onpointerdown={mine ? (e: PointerEvent) => e.stopPropagation() : undefined} onclick={mine ? () => toggleCheck(k) : undefined}>
+                {t(`tree.check.${k}`)}{#if c.auto}<i class="src" class:off={!c.done} aria-hidden="true"></i>{/if}
+              </svelte:element>
+            {/each}
+          </span>
+          <span class="gbc">{#if checksAll}<span class="chip all" role="img" aria-label={t('tree.check.allLabel')}>{t('tree.checks.all')}{#key checksDone}{#if checksDone}<span class="fxa"><Fx kind="sparkles" spread="26px" /></span>{/if}{/key}</span>{:else}<span class="ghost" aria-hidden="true">{t('tree.checks.all')}</span>{/if}</span>
+        </span>
+      {/if}
       <!-- the day's ledger: goals, がんばり (上限 when more were reached), this person's total; then ふたりでぜんぶ (shared) -->
       <span class="sum" data-sum>
         <span class="k">{t('tree.sum.goals')}</span><b class="v money" class:zero={!goalBells} data-v="goals">{signed(goalBells)}</b>
@@ -671,6 +715,24 @@
   .mls { grid-column: 3 / -2; display: flex; align-items: center; gap: 8px; }
   .ml { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
   .ml.on { color: var(--c-leaf-text); }
+  /* today's daily checks: pills, dashed until done, leaf once done (the ✓'s colours); mine are buttons, 44px tall tap
+     areas over the rows around */
+  .pill {
+    position: relative; appearance: none; margin: 0; padding: 2px 7px; border-radius: var(--r-pill); background: none;
+    border: 1.5px dashed color-mix(in srgb, var(--plate-ink) 28%, transparent); color: color-mix(in srgb, var(--plate-ink) 55%, transparent);
+    font: 700 var(--fs-s)/1.2 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform 120ms var(--ease-soft);
+  }
+  .pill.on { border: 1.5px solid var(--c-leaf); background: var(--c-leaf); color: var(--c-ink); }
+  .pill.tap { cursor: pointer; }
+  .pill.tap::after { content: ''; position: absolute; left: -3px; right: -3px; top: 50%; height: var(--hit); translate: 0 -50%; }
+  .pill.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .pill.tap:active { transform: scale(.92); }
+  /* Health's workout says done: a small dot at the pill's top right (faint once unset by hand) */
+  .src { position: absolute; right: -2px; top: -2px; width: 7px; height: 7px; border-radius: 50%; background: var(--c-leaf-text); box-shadow: 0 0 0 1.5px var(--plate); }
+  .src.off { background: color-mix(in srgb, var(--plate-ink) 35%, transparent); }
+  .checks .mls { gap: 5px; }
+  .chip.all { position: relative; min-height: 0; }  /* (theme.css .chip: a 32px choice) */
   /* the day's ledger: word left, ベル right; this person's total under a hairline */
   .sum {
     grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px;
@@ -715,7 +777,13 @@
   }
   @media (max-height: 600px) {
     .detail { padding: 13px 6px 4px; }
-    .row { padding-block: 1px; }
+    /* (the 4 goals, meals and daily checks: 16px marks and no row padding, so the popup still fits over the canopies) */
+    .row { padding-block: 0; }
+    .detail { grid-template-columns: 16px 16px auto auto; }
+    .ic, .ic :global(*) { width: 16px; height: 16px; }
+    .ok { width: 16px; height: 16px; padding: 2px; }
+    /* when the data last arrived: only once it's late (the line that explains a low tree) */
+    .sync:not(.late) { display: none; }
     .duo, .sum { margin-top: 2px; padding-top: 3px; }
   }
 </style>

@@ -15,6 +15,7 @@ import { shopPrice } from '#lib/contract/rules.ts';
 import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import { newOpId } from '#lib/contract/ops.ts';
 import type { RoomSaveOp } from '#lib/contract/roomSave.ts';
+import type { CheckKind } from '#lib/contract/checks.ts';
 import { sellPrice, SG_REWARD_MAX, shopRowOf } from '#lib/contract/shop.ts';
 import { isGoods } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
@@ -253,6 +254,11 @@ export function recordFind(kind: FindKind, id: string, claim?: string): boolean 
   countOne(findKey(kind, id), claim);
   if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
+}
+
+/** My daily check on `date` (the tree popup: contract/checks.ts): true / false by hand, null back to the workouts. */
+export function setCheck(date: LocalDate, k: CheckKind, v: boolean | null): boolean {
+  return week.send('check', { d: date, k, v }).ok;
 }
 
 /** Record a pick-up the ずかん has no page for (contract/pocket.ts GOODS and GOAL_GOODS: wood, a branch, fruit, a weed…): one more in

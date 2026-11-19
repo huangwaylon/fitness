@@ -6,6 +6,9 @@ import { CHECK_KINDS, CHECK_METRIC, type CheckKind } from '#lib/contract/checks.
 import { metricAsOf } from './inputs.ts';
 import type { State } from './state.ts';
 
+/** 顔's video (the user, 2026-11-19): a tap that ticks 顔 opens it (iOS hands it to the YouTube app or Safari). */
+export const FACE_VIDEO = 'https://youtu.be/vfifXKeHzOI';
+
 export interface Check {
   /** Shown as done. */
   done: boolean;

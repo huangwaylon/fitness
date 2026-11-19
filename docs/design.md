@@ -497,7 +497,7 @@ with **fog** as an hour's extra.
 ### Daily checks
 
 `model/checks.ts`. The popup's row under the meals: 顔, HIIT, Core today. HIIT and Core tick from Health workouts (a
-dot); the owner's tap overrides. All three: 「ぜんぶ」 and sparkles; `RULES.checks` ベル, 0 (shown nowhere).
+dot); the owner's tap overrides; ticking 顔 opens its video. All three: 「ぜんぶ」, sparkles, `RULES.checks` (0) ベル.
 
 ### Shaking a tree
 
