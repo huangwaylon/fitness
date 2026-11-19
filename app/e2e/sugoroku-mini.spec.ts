@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { DEMO_CTX, newIsland } from './liveRoom.ts';
 import seeds from '../src/lib/sugoroku/seeds.json' with { type: 'json' };
 import linesJson from '../src/lib/sugoroku/sentences.json' with { type: 'json' };
 import shopJson from '../src/lib/sugoroku/mini/data/shopping.json' with { type: 'json' };
@@ -127,10 +128,10 @@ async function look(p: Page, who: 'A' | 'B') {
 }
 const playing = (p: Page) => expect(stage(p)).toHaveAttribute('data-sg-mini-stage', 'play', { timeout: 8_000 });
 /** The result: its game, the team's stars (and each seat's), 次へ to B's turn. */
-async function result(p: Page, id: string, next = true): Promise<string> {
+async function result(p: Page, id: string, next = true, seats = 2): Promise<string> {
   const r = sheet(p).locator('[data-sg-mini-result]');
   await expect(r).toHaveAttribute('data-sg-mini-result', id, { timeout: 15_000 });
-  await expect(r.locator('[data-sg-mini-seat]')).toHaveCount(2);
+  await expect(r.locator('[data-sg-mini-seat]')).toHaveCount(seats);
   await expect(r).not.toContainText('位');
   await shot(p, `${id}-3-result`);
   const team = (await r.getAttribute('data-sg-mini-team'))!;
@@ -297,19 +298,148 @@ test.describe('みんなで！ passed round', () => {
 /** A's and B's phones (two tabs), the game online for the two: A starts it, B joins from the invitation. */
 async function table(ctx: BrowserContext, id: string, q: string) {
   const a = await ctx.newPage(), b = await ctx.newPage();
-  await newGame(a, `sgId=${id}&${q}`, 'online');
-  await b.goto(`?demo&as=B&${q}`);
-  await islandUp(b);
-  await b.getByRole('button', { name: '参加' }).tap();
-  await expect(sheet(b)).toHaveAttribute('data-level', 'play');
-  // (B's here on A's phone before the pick: only seats present are dealt in)
+  const others = [[b, 'B']] as [Page, string][];
+  // (the islands up at once: the others' listen from the app's start, the invitation comes as A starts)
+  await Promise.all([
+    (async () => {
+      await a.goto(`?demo&sgId=${id}&${q}`);
+      await islandUp(a);
+    })(),
+    ...others.map(async ([p, who]) => {
+      await p.goto(`?demo&as=${who}&${q}`);
+      await islandUp(p);
+    })
+  ]);
+  await fromMenu(a, 'english', 'tap');
+  await a.locator('dialog[open] [data-en-tab="game"]').tap();
+  await sheet(a).locator('[data-sg-new]').tap();
+  await sheet(a).locator('[data-sg-mode="online"]').tap();
+  await sheet(a).locator('[data-sg-start]').tap();
+  await expect(sheet(a)).toHaveAttribute('data-level', 'play');
+  for (const [p] of others) {
+    await p.getByRole('button', { name: '参加' }).tap();
+    await expect(sheet(p)).toHaveAttribute('data-level', 'play');
+  }
+  // (the others here on A's phone before the pick: only seats present are dealt in)
   await a.locator('[data-sg-spin]').tap();
   await expect(sheet(a).locator('[data-sg-mini-here]')).toHaveAttribute('data-sg-mini-here', 'AB', { timeout: 15_000 });
   await landAndPick(a, q.match(/sgMini=(\w+)/)![1], false);
   return { a, b };
 }
+/** A race's count on a phone: `n` taps, the right bin or choice. */
+async function race(p: Page, n: number) {
+  const s = sheet(p);
+  for (let k = 0; k < n; k++) {
+    if (await s.locator('[data-sg-sort]').count()) {
+      const before = await s.locator('[data-sg-sort]').getAttribute('data-sg-sort');
+      await s.locator('[data-sg-bin]').first().tap();
+      await expect.poll(async () => (await s.locator('[data-sg-sort]').getAttribute('data-sg-sort')) !== before || (await s.locator('.bin.hint').count()) > 0).toBe(true);
+      await expect(s.locator('.bin.hint')).toHaveCount(0);
+    } else {
+      const text = await s.locator('[data-sg-nu-text]').getAttribute('data-sg-nu-text');
+      await s.locator('[data-sg-nu-choice][data-right]').tap();
+      await expect(s.locator('[data-sg-nu-text]')).not.toHaveAttribute('data-sg-nu-text', text!);
+    }
+  }
+}
 
 test.describe('みんなで！ online', () => {
+  // (each of the eight on phones of its own: these four here, the rest below; a game's second mini-game too, the
+  // 2026-11-19 bug: なかま分け after another closed as it opened, nothing played)
+  test('なかま分け second in a game, on two phones: after ことばの市場 it opens with its 3-2-1, both sort, the same result', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
+    const { a, b } = await table(ctx, 'e2esort001', 'sgMini=market,sort&sgMiniMs=3000');
+    for (const p of [a, b]) await result(p, 'market');
+    await sheet(b).locator('[data-sg-spin]').tap();
+    await expect(sheet(b).locator('[data-sg-mini-opt]').first()).toHaveAttribute('data-sg-mini-opt', 'sort', { timeout: 15_000 });
+    await sheet(b).locator('[data-sg-mini-opt="sort"]').tap();
+    for (const p of [a, b]) await playing(p);
+    await race(a, 3);
+    await race(b, 3);
+    const [ta, tb] = [await result(a, 'sort', false), await result(b, 'sort', false)];
+    expect(ta).toBe(tb);
+    await ctx.close();
+  });
+
+  test('数字キャッチ on three phones through the relay’s room: each its own stream at once, three counts in, the same result on each', async ({ browser }) => {
+    // (the relay's real room in the test's process, e2e/liveRoom.ts: the demo's tab relay can't play a third tab's
+    // races as the room does)
+    const island = newIsland(), q = 'sgMini=numbers&sgMiniMs=6000';
+    const phones = await Promise.all((['A', 'B', 'G'] as const).map(async (who) => {
+      const context = await browser.newContext({ ...DEMO_CTX, viewport: { width: 393, height: 852 }, hasTouch: true, serviceWorkers: 'block' });
+      // (the logic tier: nothing drawn, so three phones open in time)
+      await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+      await island.demo(context, who);
+      const p = await context.newPage();
+      await p.goto(island.demoUrl(who, `&${who === 'A' ? 'sgId=e2enum0001&' : ''}${q}`));
+      await islandUp(p);
+      return p;
+    }));
+    const [a, b, c] = phones;
+    // (with a test relay a phone listens from the tab's opening: B's and G's open first, then the invitation)
+    await Promise.all(phones.map(async (p) => {
+      await fromMenu(p, 'english', 'tap');
+      await p.locator('dialog[open] [data-en-tab="game"]').tap();
+    }));
+    await expect.poll(() => island.sockets('B') + island.sockets('G')).toBe(2);
+    await sheet(a).locator('[data-sg-new]').tap();
+    await sheet(a).locator('[data-sg-mode="online"]').tap();
+    await sheet(a).locator('[data-sg-seat="G"]').tap();
+    await sheet(a).locator('[data-sg-start]').tap();
+    await Promise.all([b, c].map(async (p) => {
+      await p.locator('[data-sg-invite] [data-toast-act]').tap();
+      await expect(sheet(p)).toHaveAttribute('data-level', 'play');
+    }));
+    await a.locator('[data-sg-spin]').tap();
+    await expect(sheet(a).locator('[data-sg-mini-here]')).toHaveAttribute('data-sg-mini-here', 'ABG', { timeout: 15_000 });
+    await landAndPick(a, 'numbers', false);
+    await Promise.all(phones.map(async (p) => (await playing(p), await race(p, 2))));
+    const ts = await Promise.all(phones.map((p) => result(p, 'numbers', false, 3)));
+    // (the same game on every phone, the counts in: stars made)
+    expect([new Set(ts).size, Number(ts[0]) > 0]).toEqual([1, true]);
+    for (const w of ['A', 'B', 'G']) expect(await sheet(a).locator(`[data-sg-mini-seat="${w}"]`).getAttribute('data-stars')).toBe(await sheet(b).locator(`[data-sg-mini-seat="${w}"]`).getAttribute('data-stars'));
+    for (const p of phones) await p.context().close();
+  });
+
+  test('みんなで一文 on two phones: each phone its own cards, the line put together across them, both lines', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
+    const { a, b } = await table(ctx, 'e2etog0001', 'sgMini=together&sgMiniMs=20000');
+    for (const p of [a, b]) await playing(p);
+    for (let l = 0; l < 2; l++) {
+      const ja = (await sheet(a).locator('.ja').first().textContent())!.trim();
+      const cards = [...(await sheet(a).locator('[data-sg-to-card]').evaluateAll((els) => els.map((e) => e.getAttribute('data-sg-to-card')!))),
+        ...(await sheet(b).locator('[data-sg-to-card]').evaluateAll((els) => els.map((e) => e.getAttribute('data-sg-to-card')!)))].sort().join(' ');
+      const en = LINES.find(([e, j]) => j === ja && [...e.split(' ')].sort().join(' ') === cards)![0];
+      const ws = en.split(' ');
+      for (const [k, w] of ws.entries()) {
+        const mine = sheet(a).locator(`[data-sg-to-card="${w}"]:not([disabled])`);
+        await ((await mine.count()) ? mine : sheet(b).locator(`[data-sg-to-card="${w}"]:not([disabled])`)).first().tap();
+        // (on both phones: the row as it grows, then the next line)
+        for (const p of [a, b]) {
+          if (k < ws.length - 1) await expect(sheet(p).locator('[data-sg-to-row]')).toHaveAttribute('data-sg-to-row', ws.slice(0, k + 1).join(' '));
+          else if (!l) await expect(sheet(p).locator('[data-sg-together]')).toHaveAttribute('data-sg-together', '1');
+        }
+      }
+    }
+    const [ta, tb] = [await result(a, 'together', false), await result(b, 'together', false)];
+    expect([ta, Number(tb) > 0]).toEqual([tb, true]);
+    await ctx.close();
+  });
+
+  test('おつかい on two phones: the お客さん’s list on theirs, the shop fills the basket on the other; two lists, the roles turning', async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
+    const { a, b } = await table(ctx, 'e2eshop001', 'sgMini=shopping&sgMiniMs=15000');
+    for (const [asker, shop] of [[a, b], [b, a]] as const) {
+      await expect(sheet(asker).locator('[data-sg-shop-role]')).toHaveAttribute('data-sg-shop-role', 'ask', { timeout: 8_000 });
+      const list = await askFor(asker);
+      await expect(sheet(shop).locator('[data-sg-shop-request]')).toHaveAttribute('data-sg-shop-request', /please[.?]$/);
+      await fillBasket(shop, list);
+    }
+    const [ta, tb] = [await result(a, 'shopping', false), await result(b, 'shopping', false)];
+    expect([ta, Number(tb) >= 10]).toEqual([tb, true]);
+    await ctx.close();
+  });
+
   test('ことばの市場 on two phones at once: each one’s words on both; B gone mid-game and back: the same result', async ({ browser }) => {
     const ctx = await browser.newContext({ viewport: { width: 393, height: 852 }, hasTouch: true });
     const { a, b } = await table(ctx, 'e2emarket1', 'sgMini=market&sgMiniMs=6000');

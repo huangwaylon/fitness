@@ -3,6 +3,7 @@
 // game, or an invitation's check.
 import type { SgIntent } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
+import { seeded } from '#lib/random.ts';
 import { familyOf, type Gen } from './family.ts';
 import type { Level } from './game.ts';
 import { MINIS } from './mini/flag.ts';
@@ -17,11 +18,12 @@ export type Move = Omit<SgIntent, 'kind'> & { who: Who; t?: number };
  *  games before mini-games (GEN 1 boards), '2' with them (GEN 2: みんなで！ stones), started once they're on
  *  (mini/flag.ts), '3' their deal unsolved (みんなで一文's hands apart and shuffled, the market's word never on its rack
  *  to read: the game's `rules`, mini/types.ts Deal), '4' the next wave offered too (しりとり, 数字キャッチ, おつかい,
- *  返事はどれ？: mini/offer.ts); a game keeps the rules it started on, so an older one plays on as it was. */
-export const RULES = MINIS ? '4' : '1';
+ *  返事はどれ？: mini/offer.ts), '5' the イベント cards that only gave stars a quiz on their key word (quiz.ts); a game
+ *  keeps the rules it started on, so an older one plays on as it was. */
+export const RULES = MINIS ? '5' : '1';
 /** The rules this build folds, and each one's board generator. */
-const PLAYS: readonly string[] = MINIS ? ['1', '2', '3', '4'] : ['1'];
-export const genOfRules = (r: string | undefined): Gen => (r === '2' || r === '3' || r === '4' ? 2 : 1);
+const PLAYS: readonly string[] = MINIS ? ['1', '2', '3', '4', '5'] : ['1'];
+export const genOfRules = (r: string | undefined): Gen => (r === '2' || r === '3' || r === '4' || r === '5' ? 2 : 1);
 export const playsRules = (r: string | undefined): boolean => r !== undefined && PLAYS.includes(r);
 /** Whether the game held was started on rules this build doesn't play (or before they were sent): it can't be played here. */
 export const otherRules = (log: readonly Move[]): boolean => log[0]?.a === 'start' && !playsRules(log[0].r);
@@ -40,6 +42,14 @@ export function newGameId(last: string, rnd: () => number = Math.random): string
 export const seatsOf = (s: string): { who: Who; level: Level }[] =>
   (s.match(/[ABG][123]/g) ?? []).map((x) => ({ who: x[0] as Who, level: Number(x[1]) as Level }));
 export const seatsCode = (seats: readonly { who: Who; level: Level }[]): string => seats.map((x) => `${x.who}${x.level}`).join('');
+
+/** Who goes first (docs/sugoroku.md "Rules"): a seat drawn from the game's seed (online its id), the table's order
+ *  kept from there: the start's seats (and a passed-round game's) begin with it, so the fold is as ever and every phone
+ *  the same. `pinned` (an e2e's `sgSeed` / `sgId`): `?sgFirst=<k>`, else the first picked. */
+export function firstSeat<T>(seats: readonly T[], seed: string, pinned?: string | null): T[] {
+  const k = pinned !== undefined && pinned !== null ? Math.min(Math.max(0, Math.floor(Number(pinned)) || 0), seats.length - 1) : Math.floor(seeded(`${seed}:first`)() * seats.length);
+  return [...seats.slice(k), ...seats.slice(0, k)];
+}
 
 /** Two moves the same (their fields in any order, the stamp aside). */
 const key = ({ t: _t, ...m }: Move) => JSON.stringify(Object.entries(m).sort(([a], [b]) => (a < b ? -1 : 1)));

@@ -12,7 +12,7 @@ import type { Line } from '../sentences.ts';
 import { PICTURES, tierOf } from '../pictures.ts';
 import { spellable } from '../tiles.ts';
 import { MINIS, MINI_IDS, miniMs, miniOptions, type MiniId } from './registry.ts';
-import { COUNTDOWN_MS, GRACE_MS, mayClose, miniTimes, playing } from './clock.ts';
+import { COUNTDOWN_MS, GRACE_MS, mayClose, miniTimes, openedAt, playing } from './clock.ts';
 import { CAP_PER_SEAT, capStars, raceStars } from './stars.ts';
 import { dealHands, isStage, stagePlay } from './hands.ts';
 import { PAIRS, SETS } from './categories.ts';
@@ -58,6 +58,9 @@ describe('mini-games: the building blocks', () => {
     expect(t).toEqual({ start: 1_000_000 + COUNTDOWN_MS, end: 1_000_000 + COUNTDOWN_MS + 60_000, close: 1_000_000 + COUNTDOWN_MS + 60_000 + GRACE_MS });
     expect([playing(t, t.start - 1), playing(t, t.start), playing(t, t.end - 1), playing(t, t.end)]).toEqual([false, true, true, false]);
     expect([mayClose(t, t.end), mayClose(t, t.close)]).toEqual([false, true]);
+    // (online: seen before its stamp, from then; a time seen for an earlier mini-game never: it made the next one over
+    // as it opened, 2026-11-19)
+    expect([openedAt(9000, { key: 'g:1', at: 8000 }, 'g:1'), openedAt(9000, { key: 'g:1', at: 9500 }, 'g:1'), openedAt(900_000, { key: 'g:0', at: 8000 }, 'g:1'), openedAt(9000, null, 'g:0')]).toEqual([8000, 9000, 900_000, 9000]);
     expect([miniMs('market', 3, false), miniMs('market', 3, true), miniMs('together', 3, true), miniMs('sort', 2, true)]).toEqual([60_000, 60_000, 90_000, 40_000]);
     for (const id of MINI_IDS) expect(MINIS[id].ms).toBeLessThanOrEqual(90_000);
   });

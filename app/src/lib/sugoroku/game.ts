@@ -9,6 +9,7 @@ import { newBag, refill, scoreOf, without, type Score } from './tiles.ts';
 import { CARDS, type Card } from './cards.ts';
 import { PICTURES, PICTURE_STARS, TIERS, tierOf } from './pictures.ts';
 import { isMiniId, type MiniId } from './mini/registry.ts';
+import { QUIZ_STARS, isQuiz, keyOf } from './quiz.ts';
 import { forcedHere, offer } from './mini/offer.ts';
 import type { MiniState } from './mini/games.ts';
 
@@ -76,7 +77,8 @@ type Phase =
   | ({ k: 'sentence'; spun: number; r: number } & Tries)
   /** `item`: PICTURES' index (none collected yet in this game). */
   | ({ k: 'picture'; item: number; spun: number; r: number } & Tries)
-  | { k: 'event'; card: number; spun: number }
+  /** (RULES '5': a quiz card's misses kept, quiz.ts) */
+  | ({ k: 'event'; card: number; spun: number } & Pick<Tries, 'misses'>)
   /** A みんなで！ stone: the two mini-games the lander picks between, then the one picked (`on`). */
   | { k: 'mini'; spun: number; opts: readonly [MiniId, MiniId]; on?: MiniOn }
   | { k: 'home'; spun: number; place: number }
@@ -87,7 +89,7 @@ type Phase =
 const V = 7;
 // (the structure only: a copy fix or a stone moved on the drawing never drops a game in play; a game's own board is its
 // `layout`, versioned by layout.ts's key)
-const CONTENT = fnv1a(JSON.stringify([CLASSIC.spaces.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
+const CONTENT = fnv1a(JSON.stringify([CLASSIC.spaces.map((b) => [b.kind, b.next]), CARDS.map(({ en: _e, ja: _j, who: _w, kw: _k, pos: _p, qen: _qe, qja: _qj, ...fx }) => fx), PICTURES.map((p) => p.w)])).toString(36);
 
 export interface Game {
   v: typeof V;
@@ -270,6 +272,7 @@ function land(g: Game, spun: number, r: () => number, card = false): Game {
 /** A turn's English so far, kept (a miss, ヒント, 意味を見る). */
 export function tried(g: Game, t: Tries): Game {
   const ph = g.phase;
+  if (ph.k === 'event') return isQuiz(g.rules, ph.card) && t.misses !== undefined ? { ...g, phase: { ...ph, misses: t.misses } } : g;
   return ph.k === 'word' || ph.k === 'sentence' || ph.k === 'picture' ? { ...g, phase: { ...ph, ...t } } : g;
 }
 
@@ -384,12 +387,18 @@ export function pictureDone(g: Game, misses: number, said = 0): Game {
   return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'picture', text: pic.w, ja: pic.ja, stars }] });
 }
 
-/** The card's effect, then the turn on (or another spin); a move walks on and plays the stone it lands on. */
-export function eventDone(g: Game): Game {
+/** The card's effect, then the turn on (or another spin); a move walks on and plays the stone it lands on. RULES '5':
+ *  a quiz card (quiz.ts) its stars by the `misses` (2: after 答えはこれ) instead, its key word kept, no gift. */
+export function eventDone(g: Game, misses = 0): Game {
   if (g.phase.k !== 'event') return g;
   const c: Card = CARDS[g.phase.card];
   const players = copy(g);
   const me = players[g.turn];
+  if (isQuiz(g.rules, g.phase.card)) {
+    const stars = QUIZ_STARS[Math.max(0, Math.min(Math.floor(misses) || 0, 2))];
+    me.stars += stars;
+    return next({ ...g, n: g.n + 1, players, made: [...g.made, { p: g.turn, kind: 'word', text: keyOf(c).toLowerCase(), ja: c.kw!, stars }] });
+  }
   if (c.stars) me.stars += c.stars;
   if (c.gift) for (const [i, p] of players.entries()) {
     if (i === g.turn) continue;

@@ -29,7 +29,8 @@ export interface SpeakView {
 }
 /** The 絵 turn: the letters placed (or the spellings tried, やさしい), the stage, the misses, the speaking step if on. */
 export interface PictureView { placed: number[]; tried: number[]; stage: Stage; misses: number; speak: SpeakView | null }
-interface EventView { ja: boolean }
+/** The イベント card: its Japanese opened; RULES 5's quiz (quiz.ts) its choices tried, stage and misses. */
+export interface EventView { ja: boolean; quiz?: { tried: number[]; stage: Stage; misses: number } }
 export type View =
   | { p: 'word'; v: WordView }
   | { p: 'sentence'; v: SentenceView }
@@ -68,8 +69,10 @@ export function encode(view: View): Pick<SgView, 'p' | 's' | 'x'> {
       const x = sp.phase === 'confirm' ? [sp.text] : sp.phase === 'feedback' ? [sp.text, sp.recast, sp.tip, sp.also] : undefined;
       return { p: 'picture', s: `${s}.${more}`, ...(x ? { x } : {}) };
     }
-    case 'event':
-      return { p: 'event', s: bits(view.v.ja) };
+    case 'event': {
+      const qz = view.v.quiz;
+      return { p: 'event', s: qz ? `${bits(view.v.ja)}.${ids(qz.tried)}.${STAGES.indexOf(qz.stage)}.${qz.misses}` : bits(view.v.ja) };
+    }
     case 'mini':
       return { p: 'mini', s: view.v };
     default:
@@ -107,8 +110,12 @@ export function decode(p: SgPanel, s: string, x: readonly string[] = []): View |
         }
       };
     }
-    case 'event':
-      return digit(s, 1) === null ? null : { p, v: { ja: bit(s, 0) } };
+    case 'event': {
+      if (f.length === 1) return digit(s, 1) === null ? null : { p, v: { ja: bit(s, 0) } };
+      const tried = unids(f[1] ?? ''), stage = at(STAGES, f[2] ?? ''), misses = digit(f[3] ?? '', 2);
+      if (f.length !== 4 || digit(f[0], 1) === null || !tried || stage === null || misses === null) return null;
+      return { p, v: { ja: bit(f[0], 0), quiz: { tried, stage, misses } } };
+    }
     case 'mini':
       return { p, v: s };
     default:

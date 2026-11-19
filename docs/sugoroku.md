@@ -9,7 +9,9 @@ with characters in it, since they are the pieces. A team game: one team total to
 ## Rules
 
 - **Seats** (だれが遊ぶ？): 2–3 of us (the members and the guest), each as their own character (the island's look),
-  turns in the order picked, each an English **level** (`game.ts LEVEL`): what its spaces ask, not what they pay, so a
+  turns in the order picked from a seat drawn at random (`wire.ts firstSeat`, from the game's seed: online its id,
+  in the start's seats, so every phone agrees; an e2e's pinned `sgSeed` / `sgId` starts with the first picked, or
+  `?sgFirst=<k>`), each an English **level** (`game.ts LEVEL`): what its spaces ask, not what they pay, so a
   mixed table stays close. A **length**: 短い (by round 7), 普通 (the round someone's home), 長い (everyone home, 20 rounds at most).
 
   | | やさしい | 普通 | 難しい |
@@ -54,7 +56,12 @@ with characters in it, since they are the pieces. A team game: one team total to
     260 everyday, 242 B1, 204 B2+ such as hedgehog or stethoscope; names up to 12 letters), its English to spell by the level: 5 stars, 3 after 「おしい！」, 2 with
     「答えはこれ」 (each once a game).
   - **イベント** (`cards.ts`): an A1 card (English, its key word marked, then Japanese; a villager's head when one says
-    it), its effect as a chip: good or neutral only; a move walks on like a roll (letters picked up, the fork asks) and the stone it lands on is
+    it). From RULES '5' no card is a free tap: the 14 that only gave stars (or a gift, stars moved between seats: none
+    made for the team) ask about their key word (`quiz.ts`, `EventTurn.svelte`): やさしい its Japanese from 3, ふつう from
+    4, むずかしい the card with the word gone, the English that fits from 4 (the others another part of speech); 3 stars,
+    2 after 「おしい！」 (that choice dimmed), 1 with 答えはこれ; the Japanese once answered; the word kept with the game's
+    words (`made`). Online the `ev` move carries the misses (`m`), a miss kept by `try`. The rest (a move, another roll)
+    keep their effect as a chip: good or neutral only; a move walks on like a roll (letters picked up, the fork asks) and the stone it lands on is
     played in the same turn (an イベント there plays as ことば: no chain). The lucky letters are common consonants (D G H L M N P R S T), so racks hold them.
   - **あがり**: +4 for the team, whoever's home first. The game ends with the round someone got home in (equal turns), at the
     length's cap (`ROUND_CAP`), or 終了.
@@ -96,7 +103,7 @@ button and 「全員のゲームが終わるよ」). The fork and stretch signs 
 
 ## みんなで！ (mini-games)
 
-**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '4'. The logic is `lib/sugoroku/mini/` (pure,
+**On** (`mini/flag.ts MINIS`): new games are GEN 2 boards on RULES '5'. The logic is `lib/sugoroku/mini/` (pure,
 tested), the screens `components/mini/`; design: the 11-18 proposal (user-approved: ことばの市場, 伝えて当てて, みんなで一文,
 なかま分け first; しりとり, 数字キャッチ, おつかい, 返事はどれ？ next). Only games with a screen are offered, by the
 game's rules (`mini/offer.ts`: '2' and '3' the ★ four, '4' all eight; adding one changes what a landing deals, so it
@@ -141,7 +148,7 @@ into the state.
   tick: the `mg`'s room stamp (`Move.t`, `miniOpenedAt`) + 3 s countdown + the game's length; any phone sends `mc` 1 s
   after the end; the first closes, later ones and plays after it are nothing. A game's own end (every count in, the
   rounds or lines done) closes it in the fold. A dropped phone's plays already in stand; back, it folds the same.
-- **Rules:** RULES '4' (all eight offered), '3' (GEN 2 boards, the mini-games, nothing dealt solved: みんなで一文's weakest seat the first word
+- **Rules:** RULES '5' (the イベント quiz, above; the mini-games as '4'), '4' (all eight offered), '3' (GEN 2 boards, the mini-games, nothing dealt solved: みんなで一文's weakest seat the first word
   only, the rest dealt apart (a word's neighbours in other hands where the counts allow), each hand shown shuffled and
   never in the line's order while it holds two words; the market's rack never reads its word); '2' (hands in the line's
   order) and '1' still folded (pinned: mini/online.test), so an older game plays on as it was (the game's `rules`, mini-games' `Deal.rules`).
@@ -167,9 +174,14 @@ into the state.
   phone in its seat's colour. The turn and round timers (10 s, 15 s, 25 + 20 s) send the stage's `next` from any phone
   (online the seats 1.5 s apart).
 - **Log:** `sg.mini` (open, close with its ms here; the game, the seats, the mode), never a play.
-- **Tests:** `?sgMini=<id>` forces the game's first landing (that game first), `?sgMiniMs=<ms>` every length (a 1 s
-  countdown), dev/test only; e2e/sugoroku-mini.spec (each game passed round; ことばの市場, 伝えて当てて, しりとり and
-  返事はどれ？ online with a phone gone and back).
+- **Tests:** `?sgMini=<id>[,<id>…]` forces the game's first landings (each the list's next game first), `?sgMiniMs=<ms>` every length (a 1 s
+  countdown), dev/test only; e2e/sugoroku-mini.spec (each game passed round; each online on two phones, ことばの市場,
+  しりとり and 返事はどれ？ with a phone gone and back, なかま分け as a game's second; 数字キャッチ on three phones through the
+  relay's real room, e2e/liveRoom.ts: the demo's tab relay can't settle a third tab's races). mini/online.test 'every
+  mini-game plays to its end': each game first and second in a game, passed round and online, 2 and 3 seats.
+- **The open's time** (online, `clock.ts openedAt`): the `mg`'s stamp, or when this phone first saw that same
+  mini-game if earlier. (2026-11-19: the seen time was kept from the game's previous mini-game, so a second one was over
+  as it opened: every phone sent its count and the close at once, nothing played; seen as なかま分け.)
   The demo's tab relay keeps the first move at each index and answers each (`onAck`, after the other tabs' ping).
 
 ## Speaking

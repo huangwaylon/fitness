@@ -17,6 +17,7 @@ const VIEWS: View[] = [
   { p: 'picture', v: { placed: [], tried: [], stage: 'right', misses: 0, speak: { ...speak, phase: 'confirm', text: 'I like apple.', recast: '', tip: '' } } },
   { p: 'picture', v: { placed: [], tried: [], stage: 'right', misses: 0, speak: { ...speak, cheer: 2, also: 'I love red apples.' } } },
   { p: 'event', v: { ja: true } },
+  { p: 'event', v: { ja: false, quiz: { tried: [2, 0], stage: 'miss', misses: 1 } } },
   { p: 'fork', v: null },
   { p: 'home', v: null },
   { p: 'mini', v: 'w3.a0b2' }
@@ -57,7 +58,7 @@ describe('すごろく live view (view.ts)', () => {
   });
 
   it('a view of another build’s shape reads as none', () => {
-    for (const [p, s] of [['word', '01.1'], ['word', '01.z.0'], ['sentence', '0.9.0.0'], ['picture', '0..0'], ['picture', '0..0.0.9.0.0.0.0.0'], ['event', '5'], ['fork', '1']] as const)
+    for (const [p, s] of [['word', '01.1'], ['word', '01.z.0'], ['sentence', '0.9.0.0'], ['picture', '0..0'], ['picture', '0..0.0.9.0.0.0.0.0'], ['event', '5'], ['event', '1.0.9.0'], ['event', '1.0.0.3'], ['fork', '1']] as const)
       expect(decode(p, s), `${p} ${s}`).toBeNull();
   });
 

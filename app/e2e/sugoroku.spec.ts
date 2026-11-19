@@ -116,6 +116,32 @@ test('a game for two at two levels: the board, turns, 終了, the results', asyn
   await expect(sheet(page).locator('[data-sg-resume]')).toHaveCount(0);
 });
 
+test('an イベント that only gave stars asks its key word: a miss 「おしい！」 (dimmed), the right one, its Japanese and stars, 次へ', async ({ page }) => {
+  // (the seed's: A's first roll lands on 「You catch a big *fish*!」; ふつう, the word's Japanese from four)
+  await start(page, 'e2e-ev58');
+  await sheet(page).locator('[data-sg-start]').tap();
+  const s = sheet(page);
+  await s.locator('[data-sg-spin]').tap();
+  await expect(s.locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', 'event', { timeout: 15_000 });
+  await expect(s.locator('[data-sg-event]')).toHaveAttribute('data-sg-quiz', 'meaning');
+  await expect(s.locator('[data-sg-quiz-choice]')).toHaveCount(4);
+  // (no effect chip, no OK: the question is the turn)
+  await expect(s.locator('[data-sg-effect], [data-sg-next]')).toHaveCount(0);
+  const wrong = s.locator('[data-sg-quiz-choice]:not([data-right])').first();
+  await wrong.tap();
+  await expect(s.locator('[data-sg-nudge]')).toContainText('おしい');
+  await expect(wrong).toBeDisabled();
+  await expect(s.locator('[data-sg-event]')).toHaveAttribute('data-sg-stage', 'try');
+  await s.locator('[data-sg-quiz-choice][data-right]').tap();
+  await expect(s.locator('[data-sg-answer]')).toHaveText('fish = 魚');
+  await expect(s.locator('[data-sg-event] .ja')).toHaveText('大きな魚を釣った！');
+  await s.locator('[data-sg-next]').tap();
+  // (2 stars after one おしい, B's turn)
+  await expect(s.locator('[data-sg-team]')).toHaveAttribute('data-sg-team', '2');
+  await expect(s.locator('[data-sg-phase]')).toHaveAttribute('data-sg-phase', 'spin');
+  await expect(s.locator('[data-sg-turn]')).toHaveAttribute('data-sg-turn', '1');
+});
+
 test('a game left half-way resumes after a reload (続きから), where it was', async ({ page }) => {
   await start(page, 'e2e-1');
   await sheet(page).locator('[data-sg-start]').tap();

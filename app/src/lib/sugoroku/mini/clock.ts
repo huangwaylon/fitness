@@ -21,3 +21,9 @@ export const miniTimes = (opened: number, ms: number): MiniTimes => {
 /** Whether a play now still counts on the clock (the fold takes any till the close: this is the sheet's gate). */
 export const playing = (t: MiniTimes, now: number): boolean => now >= t.start && now < t.end;
 export const mayClose = (t: MiniTimes, now: number): boolean => now >= t.close;
+
+/** When the mini-game on opened, for this phone (online): its pick's stamp `t`, or when this phone first saw it if
+ *  that's earlier (a clock behind the room's: never later than seen). `seen` counts only for this mini-game (`key`:
+ *  the game's and how many it has closed): an earlier one's time made the next one over as it opened, every phone
+ *  sending its count and the close at once (2026-11-19, なかま分け played second). */
+export const openedAt = (t: number, seen: { key: string; at: number } | null, key: string): number => (seen?.key === key ? Math.min(t, seen.at) : t);

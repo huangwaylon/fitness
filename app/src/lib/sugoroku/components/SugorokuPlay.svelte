@@ -37,6 +37,7 @@
   import { applyMove, folder, lengthCode, seatsCode, type Move } from '../online.ts';
   import { dropMiniPlays, listen, nameOf, online, relayNow, sendMove, sendView, startOnline, updateNeeded } from '../online.svelte.ts';
   import { miniOn } from '../mini/turn.ts';
+  import { openedAt } from '../mini/clock.ts';
   import { miniOpenedAt } from '../wire.ts';
   import { log } from '#lib/sync/log.ts';
   import type { MiniOn } from '../game.ts';
@@ -251,7 +252,7 @@
       const n = x.minis?.length ?? 0;
       if (o && miniLog?.key !== `${x.seed}:${n}`) {
         miniLog = { key: `${x.seed}:${n}`, at: Date.now(), on: o };
-        miniSeenAt = clockNow();
+        miniSeen = { key: miniLog.key, at: clockNow() };
         log('sg.mini', { act: 'open', game: o.id, seats: o.here.length, mode }, 1);
       }
       if (minisSeen >= 0 && n > minisSeen) {
@@ -278,12 +279,12 @@
       if (v && v.p === 'mini' && v.g === online.cur.g && v.i > from && miniViews[v.who] !== v.s) miniViews = { ...miniViews, [v.who]: v.s };
     });
   });
-  /** When this phone first saw the mini-game on (its clock): a pick stamped ahead of it (a clock behind) counts from
-   *  then, never later. */
-  let miniSeenAt = $state(Infinity);
+  /** When this phone first saw the mini-game on (its clock): the open's time is the pick's stamp, or this if earlier
+   *  (mini/clock.ts openedAt: this mini-game's only). */
+  let miniSeen = $state.raw<{ key: string; at: number } | null>(null);
   const miniOpened = $derived.by(() => {
-    const t = mode === 'online' && on ? miniOpenedAt(online.cur.log) : undefined;
-    return t === undefined ? undefined : Math.min(t, miniSeenAt);
+    const t = mode === 'online' && on && g ? miniOpenedAt(online.cur.log) : undefined;
+    return t === undefined ? undefined : openedAt(t, miniSeen, `${g!.seed}:${g!.minis?.length ?? 0}`);
   });
   const clockNow = () => (mode === 'online' ? relayNow() : Date.now());
   /** The board's みんなで！ stones played (a ことば's mark from then). */

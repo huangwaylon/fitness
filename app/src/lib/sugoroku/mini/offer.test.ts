@@ -35,7 +35,7 @@ describe('the offer', () => {
     // (the first pick the same on either: a ★ one)
     expect(offer([], seeded('y'), '3')).toEqual(offer([], seeded('y'), '4'));
   });
-  it('the test hook: its game first, on the first landing only; one not offered is none', () => {
+  it('the test hook: its game first, on the first landing only (a list: the first landings, in turn); one not offered is none', () => {
     expect(forcedHere(undefined)).toBe(false);
     forceMini('sort');
     expect(forcedHere(undefined) && forcedHere([])).toBe(true);
@@ -50,6 +50,12 @@ describe('the offer', () => {
     expect([offer([], seeded('f'), '4')[0], offer([], seeded('f'), '3')[0]]).toEqual(['reply', offer([], seeded('f'), '3')[0]]);
     expect(offer([], seeded('f'), '3')).not.toContain('reply');
     forceMini('dance' as MiniId);
+    expect(forcedHere([])).toBe(false);
+    // a list: each landing its next, till they're played
+    forceMini('sort,numbers');
+    expect([forcedHere([]), forcedHere(['sort']), forcedHere(['sort', 'numbers'])]).toEqual([true, true, false]);
+    expect([offer([], seeded('g'), '5')[0], offer(['sort'], seeded('g'), '5')[0]]).toEqual(['sort', 'numbers']);
+    forceMini('sort,dance');
     expect(forcedHere([])).toBe(false);
   });
 });

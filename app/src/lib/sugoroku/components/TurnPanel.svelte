@@ -9,8 +9,9 @@
   import WordTurn from './WordTurn.svelte';
   import SentenceTurn from './SentenceTurn.svelte';
   import PictureTurn from './PictureTurn.svelte';
+  import EventTurn from './EventTurn.svelte';
+  import { isQuiz } from '../quiz.ts';
   import { PICTURES } from '../pictures.ts';
-  import { CARDS } from '../cards.ts';
   import { HOME_BONUS, LEVEL, rollMode, wordScore, type Game } from '../game.ts';
   import { toGoal, waysAt, type Board } from '../board.ts';
   import { pickSentence, type Line, type Sentence } from '../sentences.ts';
@@ -65,12 +66,8 @@
     const m = rollMode(g);
     return m === 'fast' ? s('twice') : m === 'slow' ? s('slowRoll') : '';
   });
-  /** むずかしい's event cards: the Japanese on a tap. */
-  let cardJa = $state(false);
-  $effect(() => void (ph.k === 'event' && (cardJa = false)));
-  // the panels with no state of their own: the fork's, the card's (its Japanese opened), あがり
-  $effect(() => void (onview && (ph.k === 'fork' || ph.k === 'home' ? onview({ p: ph.k, v: null }) : ph.k === 'event' && onview({ p: 'event', v: { ja: cardJa } }))));
-  $effect.pre(() => void (watch?.p === 'event' && (cardJa = watch.v.ja)));
+  // the panels with no state of their own: the fork's, あがり
+  $effect(() => void (onview && (ph.k === 'fork' || ph.k === 'home') && onview({ p: ph.k, v: null })));
   const mirrorOf = <P extends View['p']>(p: P) => (watch?.p === p ? (watch.v as Extract<View, { p: P }>['v']) : null);
 
   /** The line for this ぶん space: the seat's level's, none used twice (its pick kept in the phase; online.ts lineFor). */
@@ -79,21 +76,11 @@
     const used = new Set(g.made.filter((m) => m.kind === 'sentence').map((m) => m.text));
     return pickSentence(lines, cur.level, ph.r, used);
   });
-  const card = $derived(ph.k === 'event' ? CARDS[ph.card] : null);
   /** おくりもの: the pocket letter being sent, and who may get one (on the way, none waiting; whoever's furthest back first). */
   let giving = $state<string | null>(null);
   const takers = $derived(g.players.filter((p, i) => i !== g.turn && p.home === null && !p.forced)
     .sort((a, b) => toGoal(board, b.pos, b.ways) - toGoal(board, a.pos, a.ways)));
   $effect(() => void (g.turn, (giving = null)));
-  /** A card's effect as its chip says it. */
-  function effectOf(c: (typeof CARDS)[number]): string {
-    if (c.stars) return s('effStars', { n: c.stars });
-    if (c.gift) return s('effGift', { n: c.gift });
-    if (c.move) return s('effMove', { n: c.move });
-    if (c.again) return s('effAgain');
-    return '';
-  }
-  const cardParts = (en: string) => en.split(/\*([^*]+)\*/g).map((t, i) => ({ t, key: i % 2 === 1 }));
 </script>
 
 {#if watch}
@@ -174,17 +161,10 @@
   {#key ph.item}<PictureTurn pic={PICTURES[ph.item]} level={cur.level} seed={g.seed} misses0={ph.misses} ontry={(tr) => onact({ a: 'try', m: tr.misses })} speak={speakable ? { tipKey: `${g.seed}:${g.turn}` } : null}
     ondone={(m, y = 0) => onact({ a: 'pic', m, ...(y ? { y: Math.min(y, 3) as 1 | 2 | 3 } : {}) })}
     mirror={mirrorOf('picture')} onview={onview ? (v) => onview({ p: 'picture', v }) : undefined} />{/key}
-{:else if ph.k === 'event' && card}
-  <div class="event" data-sg-event={ph.card}>
-    <span class="tagrow">{#if card.who}<Avatar person="G" villager={card.who} size={32} />{/if}<span class="tag">{s('eventTitle')}</span></span>
-    <p class="en" lang="en">{#each cardParts(card.en) as part, i (i)}{#if part.key}<b>{part.t}</b>{:else}{part.t}{/if}{/each}</p>
-    {#if cur.level < 3 || cardJa}<p class="ja">{card.ja}</p>
-    {:else}<button type="button" class="chip big" data-sfx="tick" data-sg-card-ja onclick={() => (cardJa = true)}>{s('peek')}</button>{/if}
-    <div class="actrow">
-      <span class="chip-eff" data-sg-effect>{effectOf(card)}</span>
-      <button type="button" class="btn" data-sfx="confirm" data-sg-next onclick={() => onact({ a: 'ev' })}>{s('ok')}</button>
-    </div>
-  </div>
+{:else if ph.k === 'event'}
+  {#key `${g.n}`}<EventTurn card={ph.card} level={cur.level} seed={`${g.seed}:${g.n}`} quiz={isQuiz(g.rules, ph.card)} misses0={ph.misses}
+    ontry={(m) => onact({ a: 'try', m })} ondone={(m) => onact({ a: 'ev', ...(m ? { m } : {}) })}
+    mirror={mirrorOf('event')} onview={onview ? (v) => onview({ p: 'event', v }) : undefined} />{/key}
 {:else if ph.k === 'home'}
   <div class="event" data-sg-home>
     <span class="tagrow"><Avatar person={cur.who} worn size={32} /><span class="tag">{s('homeTitle')}</span></span>
@@ -216,11 +196,5 @@
   .way small { font-weight: 500; font-size: var(--fs-s); color: var(--text-soft); }
   .event { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
   .tagrow { display: flex; align-items: center; gap: 6px; height: 32px; align-self: flex-start; }
-  .event .en { margin: 0; font: 500 20px/1.35 var(--font-body); text-wrap: pretty; }
-  .event .en b { background: color-mix(in srgb, var(--c-yuzu) 60%, transparent); border-radius: 4px; padding: 0 2px; }
-  .event .ja { margin: 0; font-size: var(--fs-s); line-height: 18px; color: var(--text-soft); }
   .event .ja.big { font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--c-ink); }
-  .actrow { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 2px; }
-  .chip-eff { flex: none; padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .actrow .btn { flex: 1; min-width: 0; }
 </style>

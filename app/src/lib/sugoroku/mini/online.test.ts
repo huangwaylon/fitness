@@ -19,7 +19,7 @@ import { applyMove, foldMoves } from '../online.ts';
 import { OUTBOX, RULES, answered, beaten, heard, miniOpenedAt, otherRules, playsRules, queued, sameMove, toSend, type Move, type Outbox } from '../wire.ts';
 import { miniOn } from './turn.ts';
 import { MINIS, MINI_IDS, type MiniId } from './registry.ts';
-import { OFFERED } from './offer.ts';
+import { OFFERED, forceMini } from './offer.ts';
 import { chainCheck, chainTurn, letterOf } from './chain.ts';
 import { requestCode, rightSlots } from './shopping.ts';
 import { loadMiniData } from './data.ts';
@@ -31,7 +31,7 @@ vi.mock('./offer.ts', async (load) => {
   const o = await load<typeof import('./offer.ts')>();
   return { ...o, offer: (played: MiniId[], r: () => number, rules?: string): [MiniId, MiniId] => (hook.force ? [hook.force, hook.force] : o.offer(played, r, rules)) };
 });
-afterEach(() => void (hook.force = null));
+afterEach(() => void ((hook.force = null), forceMini(null)));
 
 const file = (f: string) => readFileSync(join(import.meta.dirname, '..', f), 'utf8');
 const words = wordsOf(file('words.txt'), everyday, decodeAccept(file('accept.txt')));
@@ -107,8 +107,11 @@ function playMoves(id = G, n = 900, rules = RULES): Move[] {
       push(w ? { a: 'word', w } : { a: 'swap' });
     } else if (ph.k === 'sentence') push({ a: 'sent', m: 1 });
     else if (ph.k === 'picture') push({ a: 'pic', m: 0 });
-    else if (ph.k === 'event') push({ a: 'ev' });
-    else if (ph.k === 'home') push({ a: 'home' });
+    else if (ph.k === 'event') {
+      // (RULES 5's quiz: a miss kept, then the card with its misses; an older game's card the same whatever they say)
+      if (k % 3) push({ a: 'try', m: 1 });
+      push({ a: 'ev', ...(k % 3 ? { m: k % 3 } : {}) });
+    } else if (ph.k === 'home') push({ a: 'home' });
     else if (ph.k === 'mini' && !ph.on) push({ a: 'mg', b: (k % 2) as 0 | 1, s: k % 3 ? 'ABG' : 'AB' });
     else if (ph.k === 'mini') {
       for (const who of ['A', 'B', 'G'] as const) for (const p of playsOf(g, who, r)) if (g.phase.k === 'mini') push(p, who);
@@ -119,16 +122,17 @@ function playMoves(id = G, n = 900, rules = RULES): Move[] {
 }
 
 describe('online with mini-games on: the rules', () => {
-  it('new games carry RULES 4 (GEN 2 boards, the deal unsolved, all eight games offered); this build folds 1–4 (an old game plays on as it was), nothing else', () => {
-    expect([RULES, GEN]).toEqual(['4', 2]);
-    expect([playsRules('1'), playsRules('2'), playsRules('3'), playsRules('4'), playsRules('5'), playsRules(undefined)]).toEqual([true, true, true, true, false, false]);
+  it('new games carry RULES 5 (GEN 2 boards, the deal unsolved, all eight games offered, the stars-only cards a quiz); this build folds 1–5 (an old game plays on as it was), nothing else', () => {
+    expect([RULES, GEN]).toEqual(['5', 2]);
+    expect([playsRules('1'), playsRules('2'), playsRules('3'), playsRules('4'), playsRules('5'), playsRules('6'), playsRules(undefined)]).toEqual([true, true, true, true, true, false, false]);
     const start = (r: string) => ({ g: 'abcdefghij', i: 0, a: 'start', s: 'A2B2', l: 'n', r, who: 'A' }) as Move;
+    expect(foldMoves([start('5')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '5' });
     expect(foldMoves([start('4')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '4' });
     expect(foldMoves([start('3')], ctx)).toMatchObject({ layout: layoutKey('abcdefghij', 2), rules: '3' });
     expect(foldMoves([start('2')], ctx)?.layout).toBe(layoutKey('abcdefghij', 2));
     expect(foldMoves([start('1')], ctx)?.layout).toBe(layoutKey('abcdefghij', 1));
-    expect([otherRules([start('1')]), otherRules([start('3')]), otherRules([start('4')]), otherRules([start('5')])]).toEqual([false, false, false, true]);
-    expect(foldMoves([start('5')], ctx)).toBeNull();
+    expect([otherRules([start('1')]), otherRules([start('3')]), otherRules([start('5')]), otherRules([start('6')])]).toEqual([false, false, false, true]);
+    expect(foldMoves([start('6')], ctx)).toBeNull();
   });
   it('a whole game: mini-games picked, played from every seat, closed; the same on every phone; every move fits the wire', () => {
     const moves = playMoves();
@@ -164,9 +168,10 @@ describe('online with mini-games on: the rules', () => {
   // (online.test's pin for '1'; these for the mini-games' rules, `v` and the game's `rules` label aside: '2' over a
   // game of 伝えて当てて, '3' over three playing all four games, '4' over five playing all eight; a deal copies its
   // exchange's text into the state, so an edit to data/*.json that a pinned game deals re-pins without a RULES bump:
-  // '4' re-pinned 11-19 for 返事はどれ？'s fixed lines, the deal the same)
+  // '4' re-pinned 11-19 for 返事はどれ？'s fixed lines, the deal the same; '5' the quiz cards, over the same five)
   const PIN: Record<string, readonly [string, string]> = {
-    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['1qcczf9', 'minigame00 minigame08 minigame21 minigame28 minigame35']
+    '2': ['wm0khk', 'abcdefghij'], '3': ['1htig6s', 'abcdefghij minigame03 minigame06'], '4': ['1qcczf9', 'minigame00 minigame08 minigame21 minigame28 minigame35'],
+    '5': ['rrc1ft', 'minigame00 minigame08 minigame21 minigame28 minigame35']
   };
   const hashOf = (rules: string, ids: string) => {
     const g0 = newGame([{ who: 'A', name: 'A', level: 1 }, { who: 'B', name: 'B', level: 2 }], 'x', 'normal');
@@ -182,7 +187,8 @@ describe('online with mini-games on: the rules', () => {
     expect(hash, `bump RULES in wire.ts and pin '${hash}' to it`).toBe(PIN[RULES]?.[0]);
     expect(new Set(PIN[RULES][1].split(' ').flatMap((id) => foldMoves(playMoves(id), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(OFFERED));
   });
-  it('an old game folds as it did: RULES 3 (the ★ four offered), RULES 2 (みんなで一文 dealt in order; on 3 its hands dealt anew)', () => {
+  it('an old game folds as it did: RULES 4 (the cards as they were), 3 (the ★ four offered), 2 (みんなで一文 dealt in order; on 3 its hands dealt anew)', () => {
+    expect(hashOf('4', PIN['4'][1])).toBe(PIN['4'][0]);
     expect(hashOf('3', PIN['3'][1])).toBe(PIN['3'][0]);
     expect(new Set(PIN['3'][1].split(' ').flatMap((id) => foldMoves(playMoves(id, 900, '3'), ctx)!.minis!.map((m) => m.id)))).toEqual(new Set(['market', 'spell', 'together', 'sort']));
     expect(hashOf('2', PIN['2'][1])).toBe(PIN['2'][0]);
@@ -201,6 +207,78 @@ describe('online with mini-games on: the rules', () => {
       if (shown.includes(' ')) expect(shown).not.toBe(l.words.filter((_, k) => l.owner[k] === who).join(' '));
     }
   });
+});
+
+describe('every mini-game plays to its end', () => {
+  // (2026-11-19: なかま分け online, a game's second mini-game, closed as it opened with nothing played: the sheet's
+  // clock, mini/clock.ts openedAt. Here every game, first and second in a game, passed round and online, 2 and 3 seats:
+  // dealt, each seat's plays counted, closed with stars)
+  /** A game to its `nth` mini-game (each landing offers `id`), picked; `local` passed round (no seats sent). */
+  function upTo(id: MiniId, seats: string, nth: number, local: boolean, gid: string): { moves: Move[]; g: Game } {
+    // (the first two landings, whatever stone: offer.ts's test hook)
+    forceMini(`${id},${id}`);
+    const moves: Move[] = [{ g: gid, i: 0, a: 'start', s: seats, l: 'l', r: RULES, who: seats[0] as Who }];
+    let g = foldMoves(moves, ctx)!;
+    const push = (m: Body, who: Who = g.players[g.turn].who) => {
+      const mv = { ...m, g: gid, i: moves.length, who } as Move;
+      expect(parseClient(JSON.stringify({ v: 3, kind: 'sg', ...m, g: gid, i: mv.i })), JSON.stringify(m)).not.toBeNull();
+      moves.push(mv);
+      g = applyMove(g, mv, ctx)!;
+    };
+    for (let k = 0; k < 900 && g.phase.k !== 'end'; k++) {
+      const ph: Game['phase'] = g.phase;
+      if (ph.k === 'mini' && !ph.on && (g.minis?.length ?? 0) === nth) {
+        push(local ? { a: 'mg', b: 0 } : { a: 'mg', b: 0, s: seats.replace(/\d/g, '') });
+        return { moves, g };
+      }
+      if (ph.k === 'spin') push({ a: 'roll' });
+      else if (ph.k === 'fork') push({ a: 'fork', b: 0 });
+      else if (ph.k === 'word') push({ a: 'swap' });
+      else if (ph.k === 'sentence') push({ a: 'sent', m: 2 });
+      else if (ph.k === 'picture') push({ a: 'pic', m: 2 });
+      else if (ph.k === 'event') push({ a: 'ev' });
+      else if (ph.k === 'home') push({ a: 'home' });
+      else if (ph.k === 'mini' && !ph.on) push({ a: 'mg', b: 0 });
+      else if (ph.k === 'mini') push({ a: 'mc' });
+    }
+    throw new Error(`no mini-game ${nth} in ${gid}`);
+  }
+  for (const id of OFFERED) for (const seats of ['A2B2', 'A1B2G3']) for (const local of [true, false]) {
+    it(`${id}: ${seats.length / 2} seats ${local ? 'passed round' : 'online'}, first and second in a game`, () => {
+      for (const nth of [0, 1]) {
+        const { moves, g: open } = upTo(id, seats, nth, local, `playable${nth}${seats.length}`);
+        const on = miniOn(open)!;
+        expect([on.id, on.here.join('')]).toEqual([id, seats.replace(/\d/g, '')]);
+        let g = open;
+        const counted = new Set<Who>(), r = seeded(`${id}${seats}${nth}`);
+        const play = (p: Body, who: Who): boolean => {
+          if (g.phase.k !== 'mini') return false;
+          const mv = { ...p, g: moves[0].g, i: moves.length, who } as Move, next = applyMove(g, mv, ctx)!;
+          moves.push(mv);
+          const took = next !== g;
+          g = next;
+          return took;
+        };
+        // every seat's plays (the seats in turn, the order turning), a timer's `next` only when none took; till the game
+        // ends itself or the clock would: then the close
+        for (let round = 0; round < 24 && g.phase.k === 'mini'; round++) {
+          let took = false;
+          const order = round % 2 ? [...on.here].reverse() : on.here;
+          // (おつかい's hand-over last: every shop seat's basket in first)
+          const plays = order.map((who) => [who, playsOf(g, who, r).filter((x) => x.op !== 'next' && x.op !== 'pass')] as const);
+          for (const [who, ps] of plays) for (const p of ps) if (p.op !== 'pay' && play(p, who)) (took = true), counted.add(who);
+          for (const [who, ps] of plays) for (const p of ps) if (p.op === 'pay' && play(p, who)) (took = true), counted.add(who);
+          if (!took) for (const p of playsOf(g, on.here[0], r).filter((x) => x.op === 'next').slice(0, 1)) play(p, on.here[0]);
+        }
+        if (g.phase.k === 'mini') g = applyMove(g, { a: 'mc', g: moves[0].g, i: moves.length, who: 'A' }, ctx)!;
+        expect([...counted].sort(), `${id} ${nth}: every seat played`).toEqual([...on.here].sort());
+        expect(g.minis?.length).toBe(nth + 1);
+        expect(Object.values(g.minis!.at(-1)!.stars).reduce((a, b) => a + (b ?? 0), 0), `${id} ${nth}: stars`).toBeGreaterThan(0);
+        // (every phone folds the same)
+        expect(JSON.stringify(foldMoves(JSON.parse(JSON.stringify(moves)), ctx))).toBe(JSON.stringify(foldMoves(moves, ctx)));
+      }
+    });
+  }
 });
 
 // ---- phones and a room ----

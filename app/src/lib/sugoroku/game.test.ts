@@ -16,6 +16,8 @@ import everyday from './everyday.json';
 import linesJson from './sentences.json';
 import { s } from './i18n.ts';
 import { PICTURES, choicesFor, lettersFor, pictureSrc } from './pictures.ts';
+import { QUIZ_STARS, isQuiz, keyOf, quizOf } from './quiz.ts';
+import { firstSeat } from './wire.ts';
 
 const lines = linesJson as unknown as Line[];
 const BOARD = CLASSIC.spaces, FORK = CLASSIC.forks[0], GOAL = CLASSIC.goal;
@@ -262,6 +264,56 @@ describe('game', () => {
     expect(['word', 'sentence', 'picture', 'home', 'fork']).toContain(after.phase.k);
   });
   it('finish ends at once', () => expect(finish(newGame(seats, 'f')).phase.k).toBe('end'));
+  it('RULES 5: no card only gives stars; those ask about their key word, 3 / 2 / 1 by the tries, no gift; an older game’s as before', () => {
+    // (every card a quiz, a move or another roll: none a free tap)
+    for (const c of CARDS) expect(!!c.kw || !!c.move || !!c.again, c.en).toBe(true);
+    for (const c of CARDS.filter((x) => x.kw)) expect([keyOf(c).length > 1, notInTrimmedFont(c.kw!)]).toEqual([true, []]);
+    const gift = CARDS.findIndex((c) => c.gift === 3), cat = CARDS.findIndex((c) => c.en.includes('*cat*'));
+    const at = (card: number, rules?: string): Game => {
+      const g = newGame(seats, 'qz', 'normal', undefined, rules);
+      return { ...g, players: g.players.map((p) => ({ ...p, stars: 10 })), phase: { k: 'event', card, spun: 1 } };
+    };
+    for (const [m, want] of [[0, 3], [1, 2], [2, 1], [5, 1]] as const) {
+      const after = eventDone(tried(at(gift, '5'), { misses: Math.min(m, 2) }), m);
+      expect(after.players.map((p) => p.stars)).toEqual([10 + want, 10]);
+      expect(after.made.at(-1)).toMatchObject({ kind: 'word', text: 'birthday', ja: '誕生日', stars: want });
+      expect(after.phase.k).toBe('spin');
+    }
+    // the misses kept in the save (a resumed turn as it was); not on an older game's card
+    expect(tried(at(cat, '5'), { misses: 1 }).phase).toMatchObject({ misses: 1 });
+    expect(tried(at(cat, '4'), { misses: 1 })).toEqual(at(cat, '4'));
+    expect(eventDone(at(gift, '4'), 2).players.map((p) => p.stars)).toEqual([13, 7]);
+    expect(eventDone(at(cat), 2).players.map((p) => p.stars)).toEqual([12, 10]);
+    expect([isQuiz('5', cat), isQuiz('4', cat), isQuiz('5', CARDS.findIndex((c) => c.move))]).toEqual([true, false, false]);
+  });
+  it('the quiz: the key word’s Japanese from 3 (やさしい) or 4, むずかしい the gap’s English from 4 of another part of speech; the same for the same seed', () => {
+    for (const [card, c] of CARDS.entries()) {
+      if (!c.kw) continue;
+      for (const level of [1, 2, 3] as const) for (const seed of ['a:1', 'b:7', 'c:30']) {
+        const q = quizOf(card, level, seed);
+        expect(q).toEqual(quizOf(card, level, seed));
+        expect(new Set(q.choices).size).toBe(q.choices.length);
+        expect(q.choices.length).toBe(level === 1 ? 3 : 4);
+        if (level < 3) expect([q.kind, q.choices[q.answer], q.en]).toEqual(['meaning', c.kw, c.qen ?? c.en]);
+        else {
+          expect([q.kind, q.choices[q.answer], q.en.includes('___'), q.en.includes('*')]).toEqual(['cloze', keyOf(c), true, false]);
+          for (const w of q.choices) if (w !== keyOf(c)) expect(CARDS.find((x) => x.kw && keyOf(x) === w)!.pos).not.toBe(c.pos);
+        }
+      }
+    }
+    expect(QUIZ_STARS).toEqual([3, 2, 1]);
+  });
+  it('who goes first: drawn from the seed (every seat over the seeds), the table’s order kept round from there; pinned: the one asked', () => {
+    const abc = ['A', 'B', 'G'];
+    const firsts = new Set(Array.from({ length: 60 }, (_, k) => firstSeat(abc, `id${k}`)[0]));
+    expect([...firsts].sort()).toEqual(abc);
+    for (let k = 0; k < 20; k++) {
+      const s = firstSeat(abc, `id${k}`);
+      expect(s).toEqual(firstSeat(abc, `id${k}`));
+      expect(`${s.join('')}${s.join('')}`).toContain('ABG');
+    }
+    expect([firstSeat(abc, 'x', '0'), firstSeat(abc, 'x', '2'), firstSeat(['A', 'B'], 'x', '7')]).toEqual([abc, ['G', 'A', 'B'], ['B', 'A']]);
+  });
 });
 
 describe('words and sentences', () => {

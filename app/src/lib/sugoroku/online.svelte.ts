@@ -13,13 +13,12 @@ import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { log } from '#lib/sync/log.ts';
 import { roomRelay } from '#lib/components/rooms/roomRelay.ts';
-import { hook, hookOneOf } from '#lib/world/devHooks.ts';
+import { hook } from '#lib/world/devHooks.ts';
 import { forceMini } from './mini/offer.ts';
-import { MINI_IDS } from './mini/registry.ts';
 import { now } from '#lib/time/clock.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
-import { OUTBOX, RULES, answered, beaten, heard, invited, isMiniMove, newGameId, otherRules, queued, sameMove, seatsOf, toSend, type Heard, type Move, type Outbox } from './wire.ts';
+import { OUTBOX, RULES, answered, beaten, firstSeat, heard, invited, isMiniMove, newGameId, otherRules, queued, sameMove, seatsCode, seatsOf, toSend, type Heard, type Move, type Outbox } from './wire.ts';
 import { invite, readAnswered } from './invite.svelte.ts';
 import type { Words } from './words.ts';
 import type { Line } from './sentences.ts';
@@ -168,7 +167,7 @@ let started = false;
  *  listens). */
 export function listen(eager = false): void {
   // (the e2e's forced みんなで！, dev/test only: mini/offer.ts)
-  forceMini(hookOneOf('sgMini', MINI_IDS));
+  forceMini(hook('sgMini'));
   if (started || typeof window === 'undefined' || (eager && week.demo && hook('relay'))) return;
   started = true;
   online.cur = read();
@@ -199,8 +198,10 @@ export function listen(eager = false): void {
 export function startOnline(seats: string, l: 's' | 'n' | 'l'): void {
   listen();
   // (an e2e's pinned id: `?demo&sgId=<10 letters>`, test mode only)
-  const g = hook('sgId') || newGameId(untrack(() => online.cur.g));
-  const move: Move = { g, i: 0, a: 'start', s: seats, l, r: RULES, who: me() };
+  const pinned = hook('sgId'), g = pinned || newGameId(untrack(() => online.cur.g));
+  // (who goes first: from the id, in the start's seats)
+  const s = seatsCode(firstSeat(seatsOf(seats), g, pinned ? (hook('sgFirst') ?? '0') : null));
+  const move: Move = { g, i: 0, a: 'start', s, l, r: RULES, who: me() };
   keep({ g, log: [move], held: [], at: clock() });
   outbox = OUTBOX;
   send(move);
