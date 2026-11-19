@@ -51,10 +51,10 @@ export const TRIP_META: readonly TripMeta[] = [
     code: 'ZAO',
     title: { ja: '蔵王', en: 'Zao' },
     eyebrow: { ja: '樹氷合宿 · 3日間', en: 'Snow monster camp · 3 days' },
-    start: '2027-01-30',
-    end: '2027-02-01',
+    start: '2027-01-29',
+    end: '2027-01-31',
     tz: 'Asia/Tokyo',
     cover: { src: 'travel/zao/cover.webp', w: 560, h: 240 },
-    days: [{ n: 1, date: '2027-01-30', title: L0, rows: [{ t: '20:00', text: L0, dd: -1 }] }]
+    days: [{ n: 1, date: '2027-01-29', title: L0, rows: [{ t: '22:00', text: L0, dd: -1 }] }]
   }
 ];
