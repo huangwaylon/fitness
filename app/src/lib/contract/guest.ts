@@ -29,8 +29,8 @@ type Rec = Record<string, unknown>;
  * contract/pack.ts; its own `pack_chk` and `pack_reset`) and its own cosmetic `pref`, meal-log goal or the
  * island's weather and look (no `person`). Never the economy (a ベル buy `spend`, a `spend_void`, a `harvest`), a goal of the
  * members' (or any `person`), a trip's notes (`trip_note`) or the wedding board (`wtask`, `wdone`, `wconf`, `wnote`):
- * the members' real-world records, read by all three; nor the tree popup's daily checks (`check`: the guest has no tree):
- * the record answers `forbidden`.
+ * the members' real-world records, read by all three; nor the tree popup's daily checks (`check`: the guest has no tree)
+ * or a からだ value (`body_in`): the record answers `forbidden`.
  * @public (relay/src/store.ts)
  */
 export function guestMayWrite(type: string, d: Rec): boolean {
@@ -90,8 +90,10 @@ function profileSeen(r: EventRow, d: Rec): boolean {
   return isPersonId(subject) || (subject === 'G' && r[1] === 'G');
 }
 
-/** Whether an event row reaches the guest: all but the からだ goals; everyone's profile and every meal do. */
+/** Whether an event row reaches the guest: all but the からだ goals and the からだ values typed in (`body_in`,
+ *  contract/bodyIn.ts); everyone's profile and every meal do. */
 function guestSeesEvent(r: EventRow): boolean {
+  if (r[3] === 'body_in') return false;
   const d = prefData(r);
   return d === null || (d !== false && !BODY_GOAL_KEYS.includes(d.key) && profileSeen(r, d));
 }
@@ -99,7 +101,7 @@ function guestSeesEvent(r: EventRow): boolean {
 /**
  * The rows the guest's phone gets: the activity metrics (steps, Move, Exercise, Stand: the trees, today's ベル, きろく)
  * and every event but the からだ goals (everyone's profile included), the members' English
- * Study rows as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass.
+ * Study rows as their summaries (listenFor, as a member gets the other's). Never a からだ row: weight, body fat, BMI, lean mass, nor a typed-in 筋肉量 or 骨格筋量 (`body_in`).
  */
 export function guestRows(rows: SnapshotRows): SnapshotRows {
   const events: EventRow[] = [];

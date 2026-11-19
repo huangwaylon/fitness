@@ -25,6 +25,7 @@ import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { localDateAt, nextDay, prevDay } from './tokyo.ts';
 import { farmOf } from './farm.ts';
 import { CHECK_PAST_DAYS, checkOf, checkSlot } from './checks.ts';
+import { bodyInOf } from './bodyIn.ts';
 import type { LocalDate, ShopItemId, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
@@ -145,6 +146,11 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // a member's own daily check on the tree's popup (contract/checks.ts), its day from CHECK_PAST_DAYS back to tomorrow
       const op = checkOf(d), today = localDateAt(now);
       return op !== null && op.d <= nextDay(today) && op.d >= localDateAt(now - CHECK_PAST_DAYS * 86_400_000);
+    }
+    case 'body_in': {
+      // a からだ value typed in (contract/bodyIn.ts; a member's: contract/guest.ts), its day not after tomorrow
+      const b = bodyInOf(d);
+      return b !== null && b.date <= nextDay(localDateAt(now));
     }
     default:
       return true;

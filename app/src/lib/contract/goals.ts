@@ -15,7 +15,7 @@ export const GOAL_DIRS = ['atLeast', 'atMost', 'target'] as const satisfies read
 type GoalGroup = 'activity' | 'body' | 'food';
 
 /** Every goal, in the screens' order: かつどう, からだ, then ごはん (kcal and the nutrients: a snapshot's keys). */
-export const GOAL_IDS = ['steps', 'move', 'exercise', 'stand', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'k', 'p', 'fa', 'c', 's', 'fi', 'al'] as const;
+export const GOAL_IDS = ['steps', 'move', 'exercise', 'stand', 'weight', 'body_fat_pct', 'bmi', 'lean_kg', 'muscle_kg', 'smm_kg', 'k', 'p', 'fa', 'c', 's', 'fi', 'al'] as const;
 export type GoalId = (typeof GOAL_IDS)[number];
 
 interface GoalDef {
@@ -53,7 +53,7 @@ interface GoalDef {
  * The registry. Directions (docs/decisions.md "Goal directions" says why each):
  * - かつどう: all four at least (more movement is the point); steps and Move are the ベル's.
  * - からだ: 体重 and BMI near a value (a cut and a bulk both aim at a number: neither side of it is "good", and a lower
- *   weight is never rewarded: *Weight never earns*); 体脂肪率 at most; 除脂肪体重 (muscle) at least.
+ *   weight is never rewarded: *Weight never earns*); 体脂肪率 at most; 除脂肪体重, 筋肉量 and 骨格筋量 (muscle, typed in: contract/bodyIn.ts) at least.
  * - ごはん: kcal near a value (±10 %: a low day is no win, the lifter's surplus no fault); protein at least; fat at most;
  *   carbs near a value (±15 %: fuel for training, less on a cut); salt at most; fibre at least (食事摂取基準's 目標量 is
  *   a floor); alcohol at most (20 g until set: 厚労省's 節度ある適度な飲酒, docs/decisions.md "Fibre and alcohol").
@@ -67,6 +67,8 @@ const DEFS = {
   body_fat_pct: { group: 'body', key: 'goalBodyFat', dir: 'atMost', min: 3, max: 60, step: 0.1, history: 'latest', clearable: true, fallback: null },
   bmi: { group: 'body', key: 'goalBmi', dir: 'target', min: 15, max: 40, step: 0.1, history: 'latest', clearable: true, fallback: null, band: 0.04 },
   lean_kg: { group: 'body', key: 'goalLean', dir: 'atLeast', min: 10, max: 150, step: 0.1, history: 'latest', clearable: true, fallback: null },
+  muscle_kg: { group: 'body', key: 'goalMuscle', dir: 'atLeast', min: 10, max: 100, step: 0.1, history: 'latest', clearable: true, fallback: null },
+  smm_kg: { group: 'body', key: 'goalSmm', dir: 'atLeast', min: 5, max: 60, step: 0.1, history: 'latest', clearable: true, fallback: null },
   k: { group: 'food', key: 'kcalGoal', dir: 'target', min: 1000, max: 5000, step: 50, history: 'latest', clearable: true, fallback: null, band: 0.1, derived: 'energy' },
   p: { group: 'food', key: 'proteinGoal', dir: 'atLeast', min: 10, max: 400, step: 5, history: 'latest', clearable: true, fallback: null, derived: 'protein' },
   fa: { group: 'food', key: 'fatGoal', dir: 'atMost', min: 10, max: 300, step: 5, history: 'latest', clearable: true, fallback: null },

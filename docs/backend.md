@@ -62,11 +62,12 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 | `farm`, `wet` | `farm.ts` | [farming.md](farming.md#rules-the-records): ops judged against the field and the pocket (`farmStep`); `wet` the record's own, from the weather cron (`wetTick`) |
 | `listen` | `listen.ts` | English Study's clip (`gm` 'tv', [english.md](english.md#progress)): finished (`f`) or part-way; **private** (`rowsFor`): whole to its owner, a summary to the others (`{d, g, ms, gm, f?}`) |
 | `eflag`, `eflag_done` | `eflag.ts` | [English Study's flags](english.md#flags): anyone's flag, a member's review of one; seen by all |
+| `body_in` | `bodyIn.ts` | a typed-in 筋肉量 / 骨格筋量 (not in Health): `{date, m, v, person?}`, `v: null` clears; no slot; members only, never sent to the guest |
 | `pack`, `pack_chk`, `pack_reset`, `trip_note` | `pack.ts` | the packing list ([travel.md](travel.md#packing-list-relay)): items anyone's (the guest's own only), ticks each person's; `trip_note` a trip's [private values](travel.md#private-values), never in the repo |
 | `wtask`, `wdone`, `wconf`, `wnote` | `wedding.ts` | [the wedding board](wedding.md#the-record-relay) |
 | `check` | `checks.ts` | [the daily checks](design.md#daily-checks): a member's own, a slot per sender, day and check |
 
-The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
+The wedding types, `trip_note` and `body_in` are the members' only (the guest's are `forbidden`).
 
 <a id="pref"></a>**`pref`** `{key, value, person?}`:
 - Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)).
