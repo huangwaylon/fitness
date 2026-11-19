@@ -87,7 +87,6 @@ const S = {
   sent: { ja: '{name}に{l}を送った', en: 'Sent {l} to {name}' },
   picked: { ja: '{l}を拾った！', en: 'Picked up {l}!' },
   hasForced: { ja: '贈り物：{l}が届いた。次のことばで使おう', en: 'A gift: {l}. Use it in your next word' },
-  invite: { ja: '{name}が英語すごろくを始めたよ', en: '{name} started English Sugoroku' },
   join: { ja: '参加', en: 'Join' },
   mode: { ja: 'つなぎ方', en: 'How we play' },
   'mode.local': { ja: '1台を回して', en: 'Pass one phone' },

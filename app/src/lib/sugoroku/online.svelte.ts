@@ -19,11 +19,10 @@ import { now } from '#lib/time/clock.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { GUEST, PEOPLE } from '#lib/config/rules.ts';
 import { OUTBOX, RULES, answered, beaten, firstSeat, heard, invited, isMiniMove, newGameId, otherRules, queued, sameMove, seatsCode, seatsOf, toSend, type Heard, type Move, type Outbox } from './wire.ts';
-import { invite, readAnswered } from './invite.svelte.ts';
+import { invite, inviteWords, readAnswered } from './invite.svelte.ts';
 import type { Words } from './words.ts';
 import type { Line } from './sentences.ts';
 import type { MiniData } from './mini/data.ts';
-import { s } from './i18n.ts';
 import { encode, fit, type View } from './view.ts';
 
 /** The game's id, its moves in order and those waiting for a gap, and its last move's time (`at`: the relay's clock). */
@@ -152,7 +151,7 @@ function watchInvite(): void {
     if (ask && !ctx) loadCtx();
     const g = ask && ctx ? ctx.fold(cur.log, { words: ctx.words, lines: ctx.lines, mini: ctx.mini, name: nameOf }) : null;
     const who = cur.log[0]?.who;
-    invite.cur = g && g.phase.k !== 'end' && who ? { g: cur.g, who, text: s('invite', { name: nameOf(who) }), join: s('join') } : null;
+    invite.cur = g && g.phase.k !== 'end' && who ? { g: cur.g, who, ...inviteWords(nameOf(who)) } : null;
   });
   $effect(() => {
     if (!invite.cur) return;

@@ -6,9 +6,17 @@ import { resolve } from '$app/paths';
 import type { Who } from '#lib/types.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { closeSheets } from '#lib/ui-state/lazySheet.svelte.ts';
+import { i18n } from '#lib/i18n/index.ts';
 
 /** The game asking (its id), who started it, and the banner's words. */
 export interface Invitation { g: string; who: Who; text: string; join: string }
+
+/** The banner's words: here, not in the game's string table (i18n.ts), which then stays out of every launch. */
+const WORDS = { text: { ja: '{name}が英語すごろくを始めたよ', en: '{name} started English Sugoroku' }, join: { ja: '参加', en: 'Join' } } as const;
+export function inviteWords(name: string): Pick<Invitation, 'text' | 'join'> {
+  const l = i18n.locale === 'en' ? 'en' : 'ja';
+  return { text: WORDS.text[l].replace('{name}', name), join: WORDS.join[l] };
+}
 
 export const invite = $state<{ cur: Invitation | null; answered: string[] }>({ cur: null, answered: [] });
 
