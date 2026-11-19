@@ -3,7 +3,7 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, islandUp, quiet, reelOnBite, type W3 } from './island.ts';
+import { castIn, float, islandUp, isOut, mid, quiet, reelOnBite, w3, type W3 } from './island.ts';
 
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
@@ -63,12 +63,12 @@ for (const [w, h] of [[390, 844]] as const)
 
     test('the catch plate and its first-find page', async ({ page }) => {
       await open(page, 'date=2026-11-04T21:00&critter=sea-bass');
-      await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+      await expect.poll(() => isOut(page, 'fish')).toBe(true);
       // from the beach by the shadow (NH casts from where it stands)
       await castIn(page, 'sea');
       // the reel, the moment it bites (the bobber's where the cast put it)
-      await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
-      const b = await centre(page, '[data-bobber]');
+      await expect.poll(() => float(page), { timeout: 4000 }).toBe('wait'); // landed
+      const b = mid((await w3(page, (w) => w.box('bobber')))!);
       // (on the bobber itself, open water: at 320 a point 20 px from the side can be a control's, no reel)
       await reelOnBite(page, b.x, b.y);
       await expect(page.locator(plate)).toBeVisible();

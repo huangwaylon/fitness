@@ -3,7 +3,7 @@
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, feetOf, geo, lawnTap, openNear, quiet, tapOn, watchComings } from './island.ts';
+import { camTo, campDoor, feetOf, float, geo, lawnTap, openNear, quiet, tapOn, watchComings } from './island.ts';
 import { mkdirSync } from 'node:fs';
 
 /** A tap on the tent where it is the tent's (a villager may stand in front of its door). */
@@ -95,7 +95,7 @@ test('a tap on the pond casts from where my villager stands and walks nowhere; t
   // (well off its bank: a tap within a finger's slack of the water casts)
   const { at: grass, x: gx, y: gy } = await lawnTap(page, POND.x + 80, POND.z - 60);
   await page.mouse.click(gx, gy);
-  await expect(page.locator('[data-bobber]')).toHaveCount(0);
+  await expect.poll(() => float(page)).toBeNull();
   expect((await track(page, 600)).at(-1)).toEqual(home);
   // the next walks there, and it's still there after a reload
   // (on this screen with nothing over it: lawnTap; open ground off screen or under a thumb's tap area took the tap elsewhere)

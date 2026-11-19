@@ -162,8 +162,8 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   // where its 3D model is (taps go by the model's spot, not the sprite's box), in one step in the page
   await expect.poll(async () => {
     const at = await g.evaluate(() => {
-      if (!document.querySelector('[data-critter="common-butterfly"].sat')) return null;
-      type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; modelAt(id: string, lift?: number): [number, number] | null };
+      type W3 = { where(id: string): { x: number; y: number; z: number; hidden?: boolean } | null; modelAt(id: string, lift?: number): [number, number] | null; critters(): { id: string; sat: boolean }[] };
+      if (!(window as unknown as { __world3d: W3 }).__world3d.critters().some((c) => c.id === 'common-butterfly' && c.sat)) return null;
       const w = (window as unknown as { __world3d: W3 }).__world3d;
       for (let n = 0; n < 60; n++) {
           const at = w.modelAt(`bug-${n}`);

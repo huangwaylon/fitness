@@ -1516,7 +1516,7 @@
         <!-- a flat ground mark at its spawn point; it swims inside the node (local x = across, local y = −z) -->
         <div class="node" data-shadow-of={wt} data-ax={Math.round(f.ax)} data-az={Math.round(f.az)} {@attach w.at({ x: f.ax, z: f.az, mode: 'flat', h: 10 })}>
           <span class="mover shadow {f.shape ? `is-${f.shape}` : ''} {wt}" class:gone={f.gone} class:dash={f.dash} class:spurt={f.spurt}
-            data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} data-pool={pk} bind:this={fishEls[f.pool]}
+            data-critter={wt === 'sea' ? 'fish' : 'pond'} data-water={wt} data-pool={pk} data-shape={f.shape} bind:this={fishEls[f.pool]}
             style:translate={fishLoc(f)} style:transition-duration="{f.ms}ms" style:--w="calc({sizeU(f).toFixed(1)} * var(--u))">
             <i class="turn" style:rotate="{f.rot.toFixed(1)}deg"><i class="fin" class:flip={f.flip}>{@render teardrop()}</i></i>
           </span>
@@ -1577,7 +1577,7 @@
   {/if}
   {#each bugs as b (b.n)}
       <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, light: night })}>
-        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} bind:this={bugEls[b.n]}
+        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} data-flight={b.flight} bind:this={bugEls[b.n]}
           style:translate={b.freeze ?? bugLoc(b)} style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
           <span class="hopper" bind:this={hopEls[b.n]}>
             <span class="face" class:flip={b.flip}>

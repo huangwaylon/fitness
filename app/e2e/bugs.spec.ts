@@ -3,7 +3,7 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, geo, islandUp, loaded3d, quiet, tapAt, tapBox, type W3 as World3 } from './island.ts';
+import { BUTTONS, critter, geo, islandUp, isOut, loaded3d, mid, quiet, tapAt, tapBox, type W3 as World3 } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/world/critters.ts';
 import { hudBells } from './hud.ts';
@@ -17,11 +17,9 @@ async function open(page: Page, q: string) {
   await islandUp(page);
   return hudBells(page).getAttribute('aria-label');
 }
-const at = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
+/** Critter `id`'s middle on screen now (client px). */
+const at = async (page: Page, id: string) => mid((await critter(page, id))!.box);
+const stalk = async (page: Page, id: string) => (await critter(page, id))?.stalk ?? null;
 /** No control under the point (a critter must never sit on a button). */
 const clear = (page: Page, p: { x: number; y: number }) => page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.className ?? '', p);
 /** A frame-locked tap on the critter where its sprite is at the tap, once no control is over it (a villager walking
@@ -33,13 +31,12 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 
 test('a tarantula at night: the first tap makes it rear up, it settles, then a tap nets it', async ({ page }) => {
   const bells = await open(page, '&date=2026-01-10T22:00&critter=tarantula');
-  const t = page.locator('[data-critter="tarantula"]');
-  await expect(t).toBeAttached();
+  await expect.poll(() => isOut(page, 'tarantula')).toBe(true);
   await quiet(page);
   await tapBug(page, 'tarantula');
-  await expect(page.locator('[data-stalk="rear"]')).toBeAttached();
+  await expect.poll(() => stalk(page, 'tarantula')).toBe('rear');
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
-  await expect(page.locator('[data-stalk="settled"]')).toBeAttached({ timeout: REAR_MS + 1000 });
+  await expect.poll(() => stalk(page, 'tarantula'), { timeout: REAR_MS + 1000 }).toBe('settled');
   await tapBug(page, 'tarantula');
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('tarantula'));
   expect(await finds(page)).toEqual([{ kind: 'bug', id: 'tarantula' }]);
@@ -48,12 +45,12 @@ test('a tarantula at night: the first tap makes it rear up, it settles, then a t
 
 test('a scorpion: a second tap while it is reared up and it charges off (gone, nothing caught)', async ({ page }) => {
   await open(page, '&date=2026-07-10T22:00&critter=scorpion');
-  await expect(page.locator('[data-critter="scorpion"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'scorpion')).toBe(true);
   await quiet(page);
   await tapBug(page, 'scorpion');
-  await expect(page.locator('[data-stalk="rear"]')).toBeAttached();
+  await expect.poll(() => stalk(page, 'scorpion')).toBe('rear');
   await tapBug(page, 'scorpion');
-  await expect(page.locator('[data-critter="scorpion"]')).toHaveCount(0, { timeout: 3000 });
+  await expect.poll(() => isOut(page, 'scorpion'), { timeout: 3000 }).toBe(false);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
   expect(await cues(page)).toContain('scene-bug-flee');
   expect(await finds(page)).toEqual([]);
@@ -61,7 +58,7 @@ test('a scorpion: a second tap while it is reared up and it charges off (gone, n
 
 test('a mole cricket chirps under a mound in the grass; a tap digs it up', async ({ page }) => {
   await open(page, '&date=2026-02-10T12:00&critter=mole-cricket');
-  await expect(page.locator('[data-critter="mole-cricket"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'mole-cricket')).toBe(true);
   await quiet(page);
   await tapBug(page, 'mole-cricket');
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('mole-cricket'));
@@ -72,8 +69,7 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
   await open(page, '&date=2026-07-10T12:00&flea'); // (no visiting bug: one out takes the flea's place)
   await quiet(page); // the opening beats are over
   await tapBox(page, 'villager', 'mine', { clear: null, mouse: true });
-  const flea = page.locator('[data-critter="flea"]');
-  await expect(flea).toBeAttached();
+  await expect.poll(() => isOut(page, 'flea')).toBe(true);
   // the tap opens no phrase picker (that's the say button's: e2e/say.spec.ts)
   await expect(page.locator('[data-say-picker]')).toHaveCount(0);
   await page.waitForTimeout(2600); // its first hop lands in the grass
@@ -85,7 +81,7 @@ test('a tap on my villager sends a flea hopping off into the grass; a tap on it 
 test('a stink bug on the flowers is netted, clear of every control', async ({ page }) => {
   const id = 'man-faced-stink-bug';
   await open(page, `&date=2026-05-10T21:00&critter=${id}`);
-  await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
+  await expect.poll(() => isOut(page, id)).toBe(true);
   await page.waitForTimeout(1800);
   await tapBug(page, id);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said(id));
@@ -106,31 +102,29 @@ const onFlowerHead = (page: Page, p: { x: number; y: number }) =>
 test('NH’s flower bugs: a mantis sits still on a flower’s head (and is netted there)', async ({ page }) => {
   const id = 'orchid-mantis';
   await open(page, `&date=2026-05-10T12:00&critter=${id}`);
-  await expect(page.locator(`[data-critter="${id}"]`)).toBeAttached();
+  await expect.poll(() => isOut(page, id)).toBe(true);
   await page.waitForTimeout(900);
-  const p = await at(page, `[data-critter="${id}"]`);
+  const p = await at(page, id);
   expect(await onFlowerHead(page, p), id).toBe(true);
   // clear of every control (a wandering villager may pass in front of it for a moment)
   await expect.poll(() => clear(page, p), { timeout: 8000 }).toBe('');
   await page.waitForTimeout(1500);
-  const q = await at(page, `[data-critter="${id}"]`);
+  const q = await at(page, id);
   expect(Math.hypot(q.x - p.x, q.y - p.y), 'it sits still (a 1u bob)').toBeLessThan(3);
   await tapBug(page, id);
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('orchid-mantis').slice(0, 6), { timeout: 4000 });
 });
 
-test('fireflies: a little cloud of lights blinking out of step', async ({ page }) => {
+// (the 2D sprite's cloud of lights blinking out of step, hidden under the 3D model, goes with the DOM island)
+test('fireflies: out on a summer night, drifting', async ({ page }) => {
   await open(page, '&date=2026-07-10T21:00&critter=firefly');
-  const lights = page.locator('[data-critter="firefly"] .glow');
-  await expect(lights).toHaveCount(4);
-  const delays = await lights.evaluateAll((els) => els.map((e) => getComputedStyle(e).animationDelay.split(',')[0]));
-  expect(new Set(delays).size).toBe(4);
+  await expect.poll(async () => (await critter(page, 'firefly'))?.flight).toBe('drift');
 });
 
 test('a butterfly lands on a flower now and then (its wings slowly opening and closing)', async ({ page }) => {
   await open(page, '&date=2026-05-10T12:00&critter=common-butterfly');
   await loaded3d(page);
-  await expect(page.locator('[data-critter="common-butterfly"].sat')).toBeAttached({ timeout: 15_000 });
+  await expect.poll(async () => (await critter(page, 'common-butterfly'))?.sat, { timeout: 15_000 }).toBe(true);
   // landed: its model over a flower's foot, by the world's points (the island's flowers as the page has them; DOM
   // boxes are a few px either way at the whole island's zoom)
   const m = await page.evaluate(() => {
@@ -147,10 +141,9 @@ test('a butterfly lands on a flower now and then (its wings slowly opening and c
 
 test('a dragonfly darts near the water (NH: flying near water), clear of every control', async ({ page }) => {
   await open(page, '&date=2026-08-10T12:00&critter=darner-dragonfly');
-  await expect(page.locator('[data-critter="darner-dragonfly"]')).toBeAttached();
-  await expect(page.locator('[data-critter="darner-dragonfly"]')).toHaveAttribute('data-place', 'water-air');
+  await expect.poll(async () => (await critter(page, 'darner-dragonfly'))?.place).toBe('water-air');
   await page.waitForTimeout(2500);
-  const p = await at(page, '[data-critter="darner-dragonfly"]');
+  const p = await at(page, 'darner-dragonfly');
   expect(p.y).toBeGreaterThan(0), expect(p.y).toBeLessThan(844);
   expect(await clear(page, p)).toBe('');
 });
@@ -163,8 +156,8 @@ test('on the 3D island a bug perched on a trunk sits on its bark, in view under 
   for (const [date, id, palm] of [['2026-07-10T12:00', 'robust-cicada', false], ['2026-07-10T22:00', 'horned-atlas', true]] as const) {
     await open(page, `&date=${date}&critter=${id}`);
     await loaded3d(page);
-    await expect(page.locator(`[data-critter="${id}"]`)).toHaveAttribute('data-place', palm ? 'palm' : 'trunk');
-    await expect(page.locator(`[data-critter="${id}"].sat`)).toBeAttached({ timeout: 5000 });
+    await expect.poll(async () => (await critter(page, id))?.place).toBe(palm ? 'palm' : 'trunk');
+    await expect.poll(async () => (await critter(page, id))?.sat, { timeout: 5000 }).toBe(true);
     // its model, and the trunk it's on: on the bark's front (out of the trunk toward the camera), under the canopy
     const m = await page.evaluate(() => {
       for (let n = 1; n < 40; n++) {

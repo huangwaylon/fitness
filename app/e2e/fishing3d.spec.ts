@@ -5,7 +5,8 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, geo, groundUnder, loaded3d, onWater, pauseNow, tapAt, toTheWater, walking } from './island.ts';
+import { camTo, castIn, float, geo, groundUnder, isOut, loaded3d, onWater, pauseNow, tapAt, toTheWater, walking, type W3 as World3 } from './island.ts';
+import type { BoxKind } from '../src/lib/components/island/probe.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -27,27 +28,29 @@ const SHOTS = process.env.SHOTS;
 type Fx3 = { log(): { kind: string; t: number; size?: number }[] };
 const fx3 = <R,>(page: Page, fn: (f: Fx3) => R) => page.evaluate(`(${fn.toString()})(window.__fx3)`) as Promise<R>;
 
-/** A DOM node's middle and, through the 3D camera, where the island draws the model of the same id (client px). */
-const drawnAt = (page: Page, sel: string, prefix: string) => page.evaluate(([sel, prefix]) => {
-  const w = (window as unknown as { __world3d: W3 }).__world3d, el = document.querySelector(sel);
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
+/** A thing's tap area's middle (`__world3d.box`: a critter by id, the float) and, through the 3D camera, where the island
+ *  draws the model of the same id (client px). */
+const drawnAt = (page: Page, [kind, id]: readonly [BoxKind, string], prefix: string) => page.evaluate(([kind, id, prefix]) => {
+  const w = (window as unknown as { __world3d: W3 & { box(kind: string, id?: string): { left: number; top: number; width: number; height: number } | null } }).__world3d, r = w.box(kind, id);
+  if (!r) return null;
   for (let n = 0; n < 200; n++) {
     const model = w.modelAt(prefix.endsWith('-') ? `${prefix}${n}` : prefix);
     if (model) return { dom: [r.left + r.width / 2, r.top + r.height / 2], model };
     if (!prefix.endsWith('-')) break;
   }
   return null;
-}, [sel, prefix] as const);
+}, [kind, id, prefix] as const);
 const apart = (a: { dom: number[]; model: number[] } | null) => (a ? Math.hypot(a.dom[0] - a.model[0], a.dom[1] - a.model[1]) : Infinity);
 
-for (const [water, q, cam, sel, miss] of [
-  ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', false],
-  ['river', '&critter=river&date=2026-11-04T21:00', 'oku', '[data-critter="pond"][data-water="river"]', false],
-  ['pond', '&critter=pond&date=2026-11-04T21:00', 'oku', '[data-critter="pond"][data-water="pond"]', false],
+for (const [water, q, cam, miss] of [
+  ['sea', '&critter=fish&date=2026-11-04T12:00', null, false],
+  ['river', '&critter=river&date=2026-11-04T21:00', 'oku', false],
+  ['pond', '&critter=pond&date=2026-11-04T21:00', 'oku', false],
   // no tap in the bite's window: it gets away, and the 「！」 goes with it
-  ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', true]
+  ['sea', '&critter=fish&date=2026-11-04T12:00', null, true]
 ] as const) {
+  /** Its shadow: the sea's `fish`, a fresh water's `pond` (one out: the pinned one). */
+  const shadow = [water === 'sea' ? 'fish' : 'pond', water] as const;
   test(`3D fishing in the ${water}: cast, the rod and its line, the bite, ${miss ? 'too late: it gets away' : 'the catch'}`, async ({ page }) => {
     test.setTimeout(90_000);
     // TODO(3D engine): on CI's drawn tier (software GL) the rod and the line-up pass, but the bite's 「！」 or the reel's
@@ -58,7 +61,7 @@ for (const [water, q, cam, sel, miss] of [
     await loaded3d(page);
     // (the river's: おく as the page's island has it, the layout's, held there)
     if (cam === 'oku') await camTo(page, (await geo(page)).CAMS.oku, false);
-    await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
+    await expect.poll(() => isOut(page, ...shadow), { timeout: 10_000 }).toBe(true);
     // my villager on its bank (NH casts from where it stands), the camera on the shadow; the reel's tap
     // later where the cast's was (open water: no door, nothing over it)
     // (a float out past the rod's tip: under it the line has no direction to line up)
@@ -68,12 +71,12 @@ for (const [water, q, cam, sel, miss] of [
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
     // head (Critters' fish3: the body trails behind it), half its length from the tap area's middle
-    const half = () => page.locator(`${sel} .fin`).evaluate((el) => { const r = el.getBoundingClientRect(); return Math.max(r.width, r.height) / 2; });
-    await expect.poll(async () => apart(await drawnAt(page, sel, `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
+    const half = () => page.evaluate((id) => { const r = (window as unknown as { __world3d: World3 }).__world3d.drawn('critter', id); return r ? Math.max(r.width, r.height) / 2 : 0; }, shadow[0]);
+    await expect.poll(async () => apart(await drawnAt(page, ['critter', shadow[0]], `fish-${water}-`)) - (await half()), { timeout: 8000 }).toBeLessThan(16);
     // a tap by the shadow (on open water by where it's drawn, a real touch): the cast, in place, the float where the
     // tap was (pulled in off the bank a little at most; the ground under the finger, not the shadow's spot: it swims)
     const { x: rx, y: ry, ground } = await tapAt(page, onWater, [spot.x, spot.z, water] as const), tapped = ground!;
-    await expect(page.locator('[data-bobber]')).toBeAttached({ timeout: 3000 });
+    await expect.poll(() => float(page), { timeout: 3000 }).not.toBeNull();
     const cast = (await page.evaluate(() => (window as unknown as { __fish: { line(): { x: number; z: number } | null } }).__fish.line()))!;
     expect(Math.hypot(cast.x - tapped.x, cast.z - tapped.z)).toBeLessThan(40);
     await expect.poll(() => walking(page)).toBe(false);
@@ -89,9 +92,9 @@ for (const [water, q, cam, sel, miss] of [
       return Math.max(d(a.facing, a.rod), d(a.rod, a.line), d(a.facing, a.line));
     });
     await expect.poll(lineUp, { timeout: 5000 }).toBeLessThan(5);
-    await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
-    // the float on the water where its node is
-    await expect.poll(async () => apart(await drawnAt(page, '[data-bobber]', 'bobber')), { timeout: 4000 }).toBeLessThan(16);
+    await expect.poll(() => float(page), { timeout: 4000 }).toBe('wait');
+    // the float on the water where its tap area is
+    await expect.poll(async () => apart(await drawnAt(page, ['bobber', ''], 'bobber')), { timeout: 4000 }).toBeLessThan(16);
     // waiting: the float bobs on the water (its height changes from frame to frame) and a soft ring spreads now and then
     {
       const y = () => page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.where('bobber')?.y ?? NaN);
@@ -110,10 +113,10 @@ for (const [water, q, cam, sel, miss] of [
     // villager's head, every nibble before it) and the reel at once, in the page (NH's short window: world/fishing.ts
     // BITE_WINDOW_MS); a look at each in turn from here took past it on a loaded runner
     const bite = await page.evaluate(([miss, rx, ry]) => new Promise<{ text: string; nibbles: number; mark: Mark }>((ok, no) => {
-      const W = window as unknown as { __fx3: Fx3; __world3d: { bite(slot: string): Mark | null } };
+      const W = window as unknown as { __fx3: Fx3; __world3d: { bite(slot: string): Mark | null }; __fish: { line(): { under: boolean } | null } };
       const t0 = performance.now();
       const look = () => {
-        const el = document.querySelector('[data-bobber="bite"]'), l = W.__fx3.log(), mark = W.__world3d.bite('mine');
+        const el = W.__fish.line()?.under, l = W.__fx3.log(), mark = W.__world3d.bite('mine');
         const nibbled = l.findLast((e) => e.kind === 'ripple' && e.size === 0.7), splash = !!nibbled && l.some((e) => e.kind === 'splash' && e.t >= nibbled.t);
         if (el && splash && mark?.shown) {
           // the reel: a tap anywhere (a click on the island, as a finger's)
@@ -132,12 +135,12 @@ for (const [water, q, cam, sel, miss] of [
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/fish3d-${water}${miss ? '-miss' : ''}-bite.png` });
     if (miss) {
       // it got away (it darts off), the 「！」 with it; the float stays out bobbing (NH), till a tap reels it in
-      await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 });
+      await expect.poll(() => float(page), { timeout: 4000 }).toBe('wait');
       await expect.poll(() => markShown(page), { timeout: 2000 }).toBe(false);
       await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? [])).toContain('scene-flee');
       await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
       await page.mouse.click(rx, ry);
-      await expect(page.locator('[data-bobber]')).toHaveCount(0);
+      await expect.poll(() => float(page)).toBeNull();
       return;
     }
     await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
@@ -226,7 +229,7 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   }
   // (the shadow drifts: cast by where it is now, on open water)
   await castIn(page, 'sea');
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  await expect.poll(() => float(page), { timeout: 8000 }).toBe('wait');
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   type V = V3 & { last(slot: string): { x: number; z: number }; unbent(slot: string): string[] };
   /** The rod's tip against the villager's feet (three's space: the feet's world z turned), and what's drawn unbent. */
@@ -274,7 +277,7 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
   }), { timeout: 5000 }).toBeLessThan(5);
   // the tip steady against the feet at every zoom (the villagers' bound and flow: at sea), the float out on the water
   if (water !== 'sea') return;
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  await expect.poll(() => float(page), { timeout: 8000 }).toBe('wait');
   type V = V3 & { last(slot: string): { x: number; z: number } };
   const tipNow = () => page.evaluate(() => {
     const v = (window as unknown as { __villagers3: V }).__villagers3, t = v.tip('mine'), l = v.last('mine');
@@ -301,7 +304,7 @@ test('3D fishing: the line stays drawn as a pinch or a scroll takes the float of
   await page.goto('?demo&critter=fish&date=2026-11-04T12:00');
   await loaded3d(page);
   await castIn(page, 'sea');
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  await expect.poll(() => float(page), { timeout: 8000 }).toBe('wait');
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
   await pauseNow(page);

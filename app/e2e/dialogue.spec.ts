@@ -1,7 +1,7 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { castIn, islandUp, reelOnBite, tapAt, tapBox } from './island.ts';
+import { castIn, float, islandUp, isOut, reelOnBite, tapAt, tapBox, w3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -75,13 +75,12 @@ test('the catch plate pages NH’s catch line (two lines a page) and, on a first
   await page.clock.install();
   await page.goto('?demo&date=2026-07-04T12:00&critter=olive-flounder');
   await islandUp(page);
-  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'fish')).toBe(true);
   // from the beach by the shadow (NH casts from where it stands)
   await castIn(page, 'sea');
-  const bobber = page.locator('[data-bobber]');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
-  const b = await bobber.evaluate((el) => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top }; });
+  await expect.poll(() => float(page), { timeout: 4000 }).toBe('wait'); // landed
+  const b = await w3(page, (w) => { const r = w.box('bobber')!; return { x: r.left, y: r.top }; });
   await reelOnBite(page, b.x < 195 ? 366 : 24, b.y);
   const plate = page.locator('[data-fx="catch"].placed .catch-plate');
   await holdTyping(page, plate);

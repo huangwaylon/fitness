@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
-import { type Aim, BUTTONS, castIn, islandUp, loaded3d, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, type W3 } from './island.ts';
+import { type Aim, BUTTONS, castIn, critter, float, islandUp, isOut, loaded3d, mid, plateOnly, reelOnBite, tapAt, tapBox, tapFigure, toTheWater, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -28,13 +28,6 @@ async function unchanged(page: Page, before: { bells: string | null; url: string
   expect(page.url()).toBe(before.url);
   await expect(hudBells(page)).toHaveAttribute('aria-label', before.bells!);
 }
-
-/** The centre of an element (critters are 0 × 0 anchors: their box is the point). */
-const at = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
 
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
@@ -200,7 +193,7 @@ for (const c of POPS)
  *  just above, with no control over it: the float low on the screen put 366 on the say button (its sheet opened, the
  *  line stayed out: 4 in 20 under load). */
 const awayAim: Aim<null> = (w) => {
-  const r = document.querySelector('[data-bobber]')?.getBoundingClientRect();
+  const r = w.__world3d.box('bobber');
   if (!r) return null;
   const bx = r.left + r.width / 2, by = r.top + r.height / 2;
   for (let dy = 0; dy <= 160; dy += 8)
@@ -223,9 +216,9 @@ async function seaTap(page: Page) {
 }
 /** My villager on the beach by the shadow and a cast beside it (NH casts from where it stands): the float out. */
 async function castBy(page: Page) {
-  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'fish')).toBe(true);
   await castIn(page, 'sea');
-  await expect(page.locator('[data-bobber]')).toBeAttached();
+  await expect.poll(() => float(page)).not.toBeNull();
 }
 /** The fish has noticed the float (it swims up to it: world/fishing.ts). */
 const noticed = (page: Page) =>
@@ -233,9 +226,8 @@ const noticed = (page: Page) =>
 
 test('fishing: react to the 「！」 and a tap anywhere on the sea catches the fish', async ({ page }) => {
   const before = await open(page, '&critter=fish');
-  const fish = page.locator('[data-critter="fish"]');
-  await expect(fish).toBeAttached();
-  const f = await at(page, '[data-critter="fish"]');
+  await expect.poll(() => isOut(page, 'fish')).toBe(true);
+  const f = mid((await critter(page, 'fish'))!.box);
   // the shadow swims in the sea in front of the front beach (nearer than the shoreline, seen from まえ)
   const shore = await page.evaluate(() => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(195, 0)[1]);
   expect(f.y).toBeGreaterThan(shore);
@@ -250,7 +242,7 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
       if (!document.querySelector('[data-bite]')) return requestAnimationFrame(look);
       setTimeout(() => {
         const r = document.querySelector('[data-bite]')!.getBoundingClientRect();
-        const seen = { x: r.x, width: r.width, under: !!document.querySelector('[data-bobber="bite"]'), walking: (window as unknown as { __world3d: W3 }).__world3d.actor('mine')?.walking ? 1 : 0 };
+        const seen = { x: r.x, width: r.width, under: !!(window as unknown as { __fish: { line(): { under: boolean } | null } }).__fish.line()?.under, walking: (window as unknown as { __world3d: W3 }).__world3d.actor('mine')?.walking ? 1 : 0 };
         document.elementFromPoint(x, y)?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y }));
         clearTimeout(t);
         ok(seen);
@@ -267,9 +259,9 @@ test('fishing: react to the 「！」 and a tap anywhere on the sea catches the 
   const caught = page.locator('[data-fx="catch"]');
   await expect(caught).toHaveCount(1);
   await expect(caught).toContainText('釣'); // every sea fish's line says it (釣り上げた, 一本釣りだ…), whichever came
-  await expect(page.locator('[data-bobber]')).toHaveCount(0);
+  await expect.poll(() => float(page)).toBeNull();
   await expect(page.locator('[data-bite]')).toHaveCount(0);
-  await expect(fish).toHaveCount(0);
+  await expect.poll(() => isOut(page, 'fish')).toBe(false);
   const heard = await cues(page);
   expect(heard).toEqual(expect.arrayContaining(['scene-cast', 'scene-bite', 'scene-reel', 'scene-catch']));
   expect(heard).not.toContain('scene-flee');
@@ -281,8 +273,8 @@ test('fishing: a tap while the fish swims up or nibbles scares it away (NH’s e
   await castBy(page);
   await noticed(page);
   await seaTap(page);
-  await expect(page.locator('[data-bobber]')).toHaveCount(0);
-  await expect(page.locator('[data-critter="fish"]')).toHaveCount(0, { timeout: 2000 });
+  await expect.poll(() => float(page)).toBeNull();
+  await expect.poll(() => isOut(page, 'fish'), { timeout: 2000 }).toBe(false);
   await expect(page.locator('[data-fx="catch"]')).toHaveCount(0);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-reel', 'scene-flee']));
   expect(await page.evaluate(() => (window as unknown as { __fish: { why(): string } }).__fish.why())).toBe('scared');
@@ -291,7 +283,7 @@ test('fishing: a tap while the fish swims up or nibbles scares it away (NH’s e
 
 test('fishing: a tap while the float is still in the air reels it back in (never a dead tap), and the fish stays', async ({ page }) => {
   await open(page, '&critter=fish');
-  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'fish')).toBe(true);
   const [x, y] = await toTheWater(page, 'sea');
   // the cast and the reel in one go, in the page: the second tap lands while the float flies (world/fishing.ts FLY_MS)
   const phase = await page.evaluate(([x, y]) => {
@@ -304,13 +296,12 @@ test('fishing: a tap while the float is still in the air reels it back in (never
   }, [x, y] as const);
   expect(phase).toEqual(['flying', null]);
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-reel']));
-  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  expect(await isOut(page, 'fish')).toBe(true);
 });
 
 test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ page }) => {
   const before = await open(page, '&critter=great-white-shark');
-  const fish = page.locator('[data-critter="fish"].is-fin');
-  await expect(fish).toBeAttached();
+  await expect.poll(async () => (await critter(page, 'fish'))?.shape).toBe('fin');
   await castBy(page);
   const [x, y] = await awayFromFloat(page);
   await reelOnBite(page, x, y, 15_000);
@@ -320,12 +311,12 @@ test('a shark: a fin cuts the surface (NH), and the catch names it', async ({ pa
 
 test('a tap on a butterfly nets it', async ({ page }) => {
   const before = await open(page, '&critter=common-butterfly');
-  await expect(page.locator('[data-critter="common-butterfly"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'common-butterfly')).toBe(true);
   await page.waitForTimeout(2200); // in over its flowers
   // (frame-locked: it flutters; never under a control)
   await tapBox(page, 'critter', 'common-butterfly', { clear: BUTTONS, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('common-butterfly'));
-  await expect(page.locator('[data-critter]')).toHaveCount(0);
+  expect(await w3(page, (w) => w.critters().length)).toBe(0);
   // the shared ずかん: the first catch is a `find` (the demo keeps its events in localStorage), never ベル
   const finds = await page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? []).filter((e: { type: string }) => e.type === 'find').map((e: { data: unknown }) => e.data));
   expect(finds).toEqual([{ kind: 'bug', id: 'common-butterfly' }]);
@@ -335,8 +326,7 @@ test('a tap on a butterfly nets it', async ({ page }) => {
 
 test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', async ({ page }) => {
   await open(page, '&critter=robust-cicada');
-  const c = page.locator('[data-critter="robust-cicada"].sat');
-  await expect(c).toBeAttached({ timeout: 5000 });
+  await expect.poll(async () => (await critter(page, 'robust-cicada'))?.sat, { timeout: 5000 }).toBe(true);
   // (frame-locked, once no control is over it: not on the canopy or the fruit row, nor a villager walking by)
   await tapBox(page, 'critter', 'robust-cicada', { clear: BUTTONS, mouse: true });
   await expect(page.locator('[data-fx="catch"]')).toContainText(said('robust-cicada'));
@@ -346,8 +336,7 @@ test('a hermit crab crawls on the beach at night, clear of every control, and a 
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T21:00&critter=hermit-crab');
   await islandUp(page);
-  const crab = page.locator('[data-critter="hermit-crab"]');
-  await expect(crab).toBeAttached();
+  await expect.poll(() => isOut(page, 'hermit-crab')).toBe(true);
   await page.waitForTimeout(1000);
   // (frame-locked: it crawls; clear of every control)
   await tapBox(page, 'critter', 'hermit-crab', { clear: BUTTONS, mouse: true });
@@ -372,12 +361,12 @@ test.describe(() => {
   });
 });
 
-test('fish shadows: one teardrop each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {
+test('fish shadows: one each, NH’s sizes reading apart (a clownfish tiny, a whale shark huge)', async ({ page }) => {
   const len = async (id: string) => {
     await open(page, `&critter=${id}`);
-    await expect(page.locator('[data-critter=fish] .fin svg')).toHaveCount(1);
-    // (its own width: its box on screen turns with its heading and wags)
-    return page.locator('[data-critter=fish] .fin').evaluate((el) => parseFloat(getComputedStyle(el).width));
+    // (its length in world units: its box on screen turns with its heading and wags)
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __fish: { fish(): unknown[] } }).__fish.fish().length)).toBe(1);
+    return page.evaluate(() => (window as unknown as { __fish: { fish(): { len: number }[] } }).__fish.fish()[0].len);
   };
   const small = await len('clownfish'), big = await len('whale-shark');
   expect(big / small).toBeGreaterThan(2.8); // 46u against 14u

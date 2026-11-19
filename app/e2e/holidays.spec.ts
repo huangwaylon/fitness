@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, controlsUnder, fossilOnScreen, islandUp, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
+import { camTo, castIn, controlsUnder, float, fossilOnScreen, islandUp, isOut, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { hudBells } from './hud.ts';
 
@@ -34,10 +34,10 @@ test('Turkey Day: Franklin at centre stage clear of every control asks for a fis
   await readAll(page);
   await camTo(page, 114, false);
   // fish one: from the beach by the shadow (NH casts from where it stands), cast beside it, reel in on the bite
-  await expect(page.locator('[data-critter="fish"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'fish')).toBe(true);
   const [fx, fy] = await castIn(page, 'sea');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
+  await expect.poll(() => float(page), { timeout: 4000 }).toBe('wait'); // landed
   // (where it cast: a fixed point by the screen's side may be a door or off the island once the camera zoomed in to
   // the shadow)
   await reelOnBite(page, fx, fy);

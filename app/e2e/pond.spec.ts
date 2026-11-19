@@ -4,7 +4,7 @@
 // the first of each is a ずかん find. `?critter=pond|river|mouth|clifftop|<fresh fish id>` (with ?demo) brings one now;
 // the camera goes to where it lives (window.__world.go).
 import { expect, test, type Page } from './fixtures.ts';
-import { islandUp } from './island.ts';
+import { critter, float, islandUp, isOut, mid } from './island.ts';
 import { CATCH_LINES } from '../src/lib/world/catchLines.ts';
 import { FISH } from '../src/lib/world/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/world/pondFish.ts';
@@ -12,11 +12,8 @@ import { camTo, castIn, geo, reelOnBite, type Geo } from './island';
 import { fromMenu, hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
-const at = (page: Page, sel: string) =>
-  page.locator(sel).first().evaluate((el) => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-  });
+/** The fresh-water shadow in `water`: its middle on screen now (client px). */
+const at = async (page: Page, water: string) => mid((await critter(page, 'pond', water))!.box);
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 const finds = (page: Page) =>
   page.evaluate(() => (JSON.parse(localStorage.getItem('island-demo.events') ?? '{}').events ?? [])
@@ -47,7 +44,7 @@ async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
  *  out a door goes in, and the bite was missed). */
 async function fish(page: Page, water: string) {
   const [x, y] = await castIn(page, water);
-  await expect(page.locator('[data-bobber]')).toBeAttached();
+  await expect.poll(() => float(page)).not.toBeNull();
   // any tap is the reel, the moment it bites (e2e/island.ts reelOnBite)
   await reelOnBite(page, x, y, 15_000);
 }
@@ -57,12 +54,11 @@ for (const vp of [{ width: 390, height: 844 }]) {
   test(`pond fishing at ${vp.width}: cast in the pond, the bite, a tap catches it, a ずかん find (no ベル)`, async ({ page }) => {
     await page.setViewportSize(vp);
     const before = await open(page, '&critter=carp');
-    const shadow = page.locator('[data-critter="pond"][data-water="pond"]');
-    await expect(shadow).toBeAttached();
-    await expect(page.locator('[data-critter="fish"]')).toHaveCount(0); // the sea's own stays away while one is pinned
+    await expect.poll(() => isOut(page, 'pond', 'pond')).toBe(true);
+    expect(await isOut(page, 'fish')).toBe(false); // the sea's own stays away while one is pinned
     await page.waitForTimeout(600);
     // the shadow swims in the pond, under no control
-    const p = await pond(page), f = await at(page, '[data-critter="pond"]');
+    const p = await pond(page), f = await at(page, 'pond');
     expect(Math.abs(f.x - p.x)).toBeLessThan(p.w / 2);
     expect(Math.abs(f.y - p.y)).toBeLessThan(p.h / 2);
     expect(await page.evaluate(({ x, y }) => !document.elementFromPoint(x, y)?.closest('button'), f)).toBe(true);
@@ -71,7 +67,7 @@ for (const vp of [{ width: 390, height: 844 }]) {
     // (in place: the line runs from the bank)
     const plate = page.locator('[data-fx="catch"]');
     await expect(plate).toContainText(said('carp'));
-    await expect(shadow).toHaveCount(0);
+    await expect.poll(() => isOut(page, 'pond', 'pond')).toBe(false);
     expect(await cues(page)).toEqual(expect.arrayContaining(['scene-cast', 'scene-bite', 'scene-reel', 'scene-catch']));
     expect(await finds(page)).toEqual([{ kind: 'fish', id: 'carp' }]);
     // the plate's next page: it's in the ずかん now
@@ -89,10 +85,9 @@ for (const vp of [{ width: 390, height: 844 }]) {
 test('the stream at おく: a river fish (NH: River) in its reach, cast from the bank, caught with its line', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, '&critter=river');
-  const shadow = page.locator('[data-critter="pond"][data-water="river"]');
-  await expect(shadow).toBeAttached();
+  await expect.poll(() => isOut(page, 'pond', 'river')).toBe(true);
   // (in view as it swims its reach: by the screen's foot it may be just under it a moment, the hunt's WebKit red)
-  await expect.poll(async () => { const f = await at(page, '[data-water="river"]'); return f.x > 0 && f.x < 390 && f.y < 844; }, { timeout: 8000, message: 'the river fish on the screen' }).toBe(true);
+  await expect.poll(async () => { const f = await at(page, 'river'); return f.x > 0 && f.x < 390 && f.y < 844; }, { timeout: 8000, message: 'the river fish on the screen' }).toBe(true);
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-river.png` });
   await fish(page, 'river');
   await expect(page.locator('[data-fx="catch"]')).toContainText('釣', { timeout: 4000 });
@@ -108,10 +103,9 @@ test("NH's own waters: the salmon at the river mouth, the char on the clifftop, 
     expect(POND_FISH[id].water).toBe(water);
     await open(page, `&critter=${id}`, end);
     const z = await stop(page, end);
-    const s = page.locator(`[data-critter="pond"][data-water="${water}"]`);
-    await expect(s, id).toBeAttached();
+    await expect.poll(() => isOut(page, 'pond', water), { message: id }).toBe(true);
     await cam(page, z);
-    const p = await at(page, `[data-water="${water}"]`);
+    const p = await at(page, water);
     expect(p.x, id).toBeGreaterThan(-20), expect(p.x, id).toBeLessThan(410);
     expect(p.y, id).toBeGreaterThan(0), expect(p.y, id).toBeLessThan(844);
     if (process.env.SHOTS && water === 'clifftop') await page.screenshot({ path: `${process.env.SHOTS}/critters-clifftop.png` });
@@ -129,8 +123,8 @@ test.describe(() => {
     // within a couple of visits a shadow swims in a fresh water: the one its seed picks, the same on both phones, in
     // view or not (the camera shows it when it sees that water: docs/backend.md#shared-world)
     // (the first: by then more than one fresh water may have its shadow, one a water at most)
-    await expect(page.locator('[data-critter="pond"]').first()).toBeAttached({ timeout: 40_000 });
-    const water = await page.locator('[data-critter="pond"]').first().getAttribute('data-water');
+    await expect.poll(() => isOut(page, 'pond'), { timeout: 40_000 }).toBe(true);
+    const water = (await critter(page, 'pond'))!.water;
     expect(['pond', 'river', 'mouth', 'clifftop']).toContain(water);
   });
 });
@@ -157,8 +151,7 @@ test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets
   await islandUp(page, { timeout: 15_000 });
   // (the camera stays where it opened: the skater comes on a fresh water in view then, the pond from まえ; a camera
   // moved to おく as it came left it off screen, its model faded out, and no bug-<n> was ever found shown)
-  const bug = page.locator('[data-critter="pondskater"]');
-  await expect(bug).toBeAttached();
+  await expect.poll(() => isOut(page, 'pondskater')).toBe(true);
   await page.waitForTimeout(800);
   // its 3D model (taps go by the model's spot, not the sprite's box): the world point and where it's drawn
   const model = () => page.evaluate(() => {

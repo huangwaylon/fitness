@@ -23,6 +23,9 @@ const FORBIDDEN: Record<string, RegExp[]> = {
   trees: [/(?<!__world3d|\?)\.(canopy|glints?|fruit)(?![\w-])/, /(trunk|row)-btn|hit-trunk/, /data-tree(-node|-row|-part)?(?![\w-])/, /data-fruit(?![\w-])/, /data-stage="(tree|fall|ground)"/],
   // scenery(id): look, sit, fixture, tipped, lit, watered (piece, watered); drawn(kind, id) what it draws; pick's and
   // box's 'bush' | 'campfire' | 'sit' | 'fixture' | 'flower' | 'decor'; tapOn, pointOn. (The sheets' data-look-* stay.)
+  // critters(): id, place, flight, stalk, sat, water, pool, shape, box (critter, isOut, mid); box('critter' | 'bobber' |
+  // 'bubbles' | 'chase'); dive(): bubbles, dive (diveNow); my float off __fish.line() (float), the others' __fish.lines()
+  critters: [/data-(critter|place|water|pool|shadow-of|stalk|bobber|bubbles|dive|angler|flight)(?![\w-])/, /is-fin|\.fin(?![\w-])/, /\]\.sat(?![\w-])/, /data-line="?(bite|wait|cast)/],
   scenery: [/data-(bush|campfire|sit|fixture|tipped|flower|watered|lit|scenery-id|decor)(?![\w-])/, /data-part="(canopy|trunk|body)"/, /\] \[data-look\]/, /'data-look', 'deco\//, /\.tongue|\.deco(?![\w-])/]
 };
 

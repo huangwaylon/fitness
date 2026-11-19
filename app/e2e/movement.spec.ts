@@ -3,7 +3,7 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { BUTTONS, camTo, feetOf, islandUp, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
+import { BUTTONS, camTo, feetOf, islandUp, isOut, openNear, plateOnly, quiet, sawIt, tapAt, tapBox, tapWorld, w3, walking, watchFor, type ActorIs, type W3 } from './island.ts';
 import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
@@ -90,18 +90,17 @@ test('a netted bug holds still under the net, swung where it is (no walk); the c
   const SQUISH: ActorIs = { actor: 'mine', is: 'act:squish' };
   await watchFor(page, [SQUISH]);
   await open(page, '&critter=common-butterfly');
-  const bug = page.locator('[data-critter="common-butterfly"]');
-  await expect(bug).toBeAttached();
+  await expect.poll(() => isOut(page, 'common-butterfly')).toBe(true);
   await page.waitForTimeout(1600); // it has flown in
   const home = await feet(page);
   // (frame-locked: it flutters)
   const p = await tapBox(page, 'critter', 'common-butterfly', { clear: BUTTONS, mouse: true });
   // held still where it was under the net
   const still = await page.evaluate(() => {
-    const el = document.querySelector('[data-critter="common-butterfly"]')!;
-    const at = () => JSON.stringify(el.getBoundingClientRect());
+    const w = (window as unknown as { __world3d: W3 }).__world3d;
+    const at = () => { const c = w.critters().find((c) => c.id === 'common-butterfly'); return c ? JSON.stringify(c.box) : null; };
     const a = at();
-    return new Promise<boolean>((done) => setTimeout(() => done(!el.isConnected || at() === a), 100));
+    return new Promise<boolean>((done) => setTimeout(() => { const b = at(); done(b === null || b === a); }, 100));
   });
   expect(still).toBe(true);
   // the net floats and swings where the bug is; my villager stays where it stood

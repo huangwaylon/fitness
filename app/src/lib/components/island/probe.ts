@@ -14,9 +14,10 @@ type Ref = { kind: PickKind; id: string };
 /** A pick: the thing a tap goes to, and the other things the same tap area is (a bench is a seat and a fixture). */
 export type Picked = Ref & { also: Ref[] };
 /** What `box` finds: a tap area (PickKind), or a figure the scene hit-tests itself (a visitor's, K.K.'s, the cake,
- *  the arch, a toy, the tape deck) or a critter or a find, or a goal tree's fruit (id `tree:fruit`, `A:apple`), or a
+ *  the arch, a toy, the tape deck) or a critter (`id` its species, or `fish` / `pond`: a shadow) or a find, my float
+ *  (`bobber`), the dive spot's bubbles, the shadow a dive chases (`chase`), or a goal tree's fruit (id `tree:fruit`, `A:apple`), or a
  *  tree's trunk (a goal tree's, `A`, or the scenery's, `oak-m1`: its own tap area, ≥ 45 px wide, a part of the tree's). */
-export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find' | 'fruit' | 'trunk';
+export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'deck' | 'critter' | 'find' | 'fruit' | 'trunk' | 'bobber' | 'bubbles' | 'chase';
 /** A tap area's box (client px) and its node's foot (the world point it stands on, on screen), if it has one. */
 export type Box = { left: number; top: number; width: number; height: number; foot: [number, number] | null };
 
@@ -108,6 +109,9 @@ export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string |
     case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
     case 'deck': return { area: ['[data-stretch] .radio'], node: '[data-stretch]' };
     case 'critter': return { area: [`[data-critter="${v}"]`], node: null };
+    case 'bobber': return { area: ['[data-bobber]'], node: null };
+    case 'bubbles': return { area: ['[data-bubbles]'], node: null };
+    case 'chase': return { area: ['[data-dive="chase"]'], node: null };
     // (a find's item is a 0 × 0 anchor's child: its art, the box)
     case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) > *`], node: null };
     case 'flower': return { area: [`[data-flower="${v}"]`], node: null, min: [44, 44, 'mid'] };
@@ -233,12 +237,23 @@ export const controlsOf = (root: Root) =>
     .map((n) => ({ ...controlOf(n), box: rect(n) }))
     .filter((c) => c.box.width && c.box.height);
 
-/** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). */
+/** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). A bug's
+ *  `place` (a flower, a trunk, the water's air…), `flight` (drift, dart, stalk…), a stalker's `stalk` (rear, settled);
+ *  a shadow's `shape` (`fin`: a shark's), or null. `gone`/`fled`: on its way out; `sat`: landed. */
 export const crittersOf = (root: Root) =>
   all(root, '[data-critter]').map((n) => ({
     id: n.getAttribute('data-critter') ?? '', place: n.getAttribute('data-place'), water: n.getAttribute('data-water'), pool: n.getAttribute('data-pool'),
+    flight: n.getAttribute('data-flight'), stalk: n.querySelector('[data-stalk]')?.getAttribute('data-stalk') ?? null, shape: n.getAttribute('data-shape') || null,
     gone: hasClass(n, 'gone'), fled: hasClass(n, 'fled'), sat: hasClass(n, 'sat'), box: rect(n)
   }));
+
+export type Critter = ReturnType<typeof crittersOf>[number];
+
+/** The dive spot out (its bubbles: the item under them, or null) and a dive on (the splash, or the shadow it chases). */
+export const diveOf = (root: Pick<ParentNode, 'querySelector'>) => ({
+  bubbles: root.querySelector('[data-bubbles]')?.getAttribute('data-bubbles') ?? null,
+  dive: (root.querySelector('[data-dive]')?.getAttribute('data-dive') ?? null) as 'splash' | 'chase' | null
+});
 
 /** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle). */
 export const findsOf = (root: Root) =>

@@ -3,7 +3,7 @@
 // island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type BrowserContext, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
-import { CONTROLS, type Actor, type Box, type BoxKind, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
+import { CONTROLS, type Actor, type Box, type BoxKind, type Critter, type Picked, type PickKind, type Piece } from '../src/lib/components/island/probe.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -57,6 +57,11 @@ export type W3 = {
   goal(tree: string): { open: boolean; glints: boolean } | null;
   /** Goal tree `tree`'s fruit: id, stage (tree, fall, ground), up in the canopy, dropping, grey (1 at 0 %, 0 once met). */
   fruit(tree: string): { f: string; stage: string | null; up: boolean; dropping: boolean; grey: number }[];
+  /** The critters out: a bug (`id` its species: its place, flight, a stalker's stalk, sat on something) or a shadow (`id`
+   *  fish or pond: its water, pool, shape `fin`); `gone`/`fled` on the way out. */
+  critters(): Critter[];
+  /** The dive spot's bubbles (the item under them) and a dive on (the splash, the shadow it chases). */
+  dive(): { bubbles: string | null; dive: 'splash' | 'chase' | null };
   /** The visitors out (K.K.'s id `kk`). */
   visitors(): { id: string; slot: string | null; stage: string | null; phase: string | null; asleep: string | null; motion: string | null; vegAsk: string | null; walking: boolean }[];
 };
@@ -582,6 +587,22 @@ export const goalTree = async (page: Page, who: string) => (await ready3d(page),
 /** Goal tree `who`'s fruit (`__world3d.fruit`). */
 export const fruitOn = async (page: Page, who: string) => (await ready3d(page), page.evaluate((who) => (window as unknown as { __world3d: W3 }).__world3d.fruit(who), who));
 /** Scenery piece `id` as shown (`__world3d.scenery`: look, sit, fixture, tipped, lit, watered), or null: not there. */
+/** Critter `id` out (a bug's species; `fish`, or `pond` in `water`: a shadow), the first; null: none (gone ones count
+ *  till they're off: `gone`). Its `box`'s middle: `mid`. */
+export const critter = async (page: Page, id: string, water?: string): Promise<Critter | null> =>
+  (await ready3d(page), page.evaluate(([id, water]) => (window as unknown as { __world3d: W3 }).__world3d.critters().find((c) => c.id === id && (!water || c.water === water)) ?? null, [id, water] as const));
+/** Critter `id` (in `water`) out (`critter`), polled: `expect.poll(() => isOut(page, 'fish')).toBe(true)`. */
+export const isOut = async (page: Page, id: string, water?: string) => !!(await critter(page, id, water));
+/** A box's middle (client px). */
+export const mid = (b: { left: number; top: number; width: number; height: number }) => ({ x: b.left + b.width / 2, y: b.top + b.height / 2 });
+/** My float (__fish.line()): flying out (`cast`), on the water (`wait`), under (`bite`); null: no line out. */
+export const float = (page: Page) =>
+  page.evaluate(() => {
+    const l = (window as unknown as { __fish?: { line(): { landed: boolean; under: boolean } | null } }).__fish?.line();
+    return l ? (l.under ? 'bite' : l.landed ? 'wait' : 'cast') : null;
+  });
+/** The dive spot's bubbles and a dive on (`__world3d.dive()`). */
+export const diveNow = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.dive()));
 export const piece = async (page: Page, id: string) => (await ready3d(page), page.evaluate((id) => (window as unknown as { __world3d: W3 }).__world3d.scenery(id), id));
 /** The flowers watered today (their ids). */
 export const watered = async (page: Page) => (await ready3d(page), page.evaluate(() => (window as unknown as { __world3d: W3 }).__world3d.scenery().filter((p) => p.watered).map((p) => p.id)));

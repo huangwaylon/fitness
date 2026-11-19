@@ -1,7 +1,7 @@
 // The island on its editable layout (docs/island-layout.md "How the 3D island reads it"; island/site.svelte.ts):
 // the gameplay reads the long layout: the doors, the homes, the walk, the waters.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, geo, is3d, openNear, quiet, reelOnBite, settled, tapOn, tapWorld, villager } from './island';
+import { castIn, float, geo, is3d, isOut, openNear, quiet, reelOnBite, settled, tapOn, tapWorld, villager } from './island';
 
 type Site = { on: boolean; doors: Record<string, [number, number]>; homes: { A: [number, number]; B: [number, number] }; stage: [number, number]; named: Record<string, [number, number]>; grass: [number, number][] };
 const site = (page: Page) => page.evaluate(() => (window as unknown as { __world: { site(): Site } }).__world.site());
@@ -63,9 +63,10 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
     test.slow();
     await page.goto(`${ISLAND.replace('', '')}&critter=${water === 'sea' ? 'fish' : water}`);
     await page.waitForFunction(() => (window as unknown as { __world?: { site?(): { on: boolean } } }).__world?.site?.().on);
-    const node = page.locator(`[data-shadow-of="${water}"]`);
-    await expect(node, water).toBeAttached({ timeout: 30_000 });
-    const [x, z] = await node.evaluate((el) => [Number((el as HTMLElement).dataset.ax), Number((el as HTMLElement).dataset.az)]);
+    // (where its shadow is: __fish, the critters' own)
+    const shadow = () => page.evaluate((water) => (window as unknown as { __fish?: { fish(): { water: string; x: number; z: number }[] } }).__fish?.fish().find((f) => f.water === water) ?? null, water);
+    await expect.poll(shadow, { timeout: 30_000, message: water }).not.toBeNull();
+    const { x, z } = (await shadow())!;
     const g = await ground(page, x, z);
     if (water === 'sea') expect(g.surface, `${water} at ${x}, ${z}`).toBe('sea');
     else {
@@ -78,12 +79,12 @@ for (const water of ['sea', 'pond', 'river', 'mouth', 'clifftop'] as const)
 test('a pond fish on the long layout: cast beside it, the bite, a tap catches it', async ({ page }) => {
   await page.goto(`${ISLAND}&critter=carp`);
   expect(await is3d(page)).toBe(true);
-  await expect(page.locator('[data-shadow-of="pond"]')).toBeAttached();
+  await expect.poll(() => isOut(page, 'pond', 'pond')).toBe(true);
   // beside it on the layout's pond from its bank (e2e/island.ts castIn: my villager put there, the camera on it, the
   // point checked clear and tapped in one step, again where the shadow swam: a fixed offset from where it was drawn
   // landed on the bank now and then, no cast, 1 in 20 under load)
   const [x, y] = await castIn(page, 'pond');
-  await expect(page.locator('[data-bobber]')).toBeAttached();
+  await expect.poll(() => float(page)).not.toBeNull();
   // the reel the moment it bites, where it cast (a tap before it scares it off: e2e/island.ts reelOnBite)
   await reelOnBite(page, x, y);
   await expect(page.locator('[data-fx="catch"]')).toBeAttached({ timeout: 5000 });

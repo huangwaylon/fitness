@@ -4,7 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, islandUp, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
+import { critter, geo, islandUp, isOut, mid, openNear, pauseNow, piece, plateOnly, pointOn, quiet, slotOf, tapAt, villager, walking, watered, type W3 } from './island.ts';
 import { SPEED } from '../src/lib/world/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -239,16 +239,13 @@ test('two players: a bug netted on one tab is gone on the other, where their pla
     await p.goto(`?demo&date=2026-05-10T12:00&critter=ladybug${as}`);
     await islandUp(p);
   }
-  for (const p of [a, b]) await expect(p.locator('[data-critter="ladybug"]')).toBeAttached({ timeout: 6000 });
+  for (const p of [a, b]) await expect.poll(() => isOut(p, 'ladybug'), { timeout: 6000 }).toBe(true);
   await a.waitForTimeout(900);
-  const r = await a.locator('[data-critter="ladybug"]').evaluate((el) => {
-    const x = el.getBoundingClientRect();
-    return { x: x.left + x.width / 2, y: x.top + x.height / 2 };
-  });
+  const r = mid((await critter(a, 'ladybug'))!.box);
   await a.mouse.click(r.x, r.y);
   await expect(a.locator('[data-fx="catch"]')).toContainText('テントウムシ', { timeout: 4000 });
   // B: gone, and A's (B's partner's) plate in the stack: 「〇〇が テントウムシを つかまえた！」
-  await expect(b.locator('[data-critter="ladybug"]')).toHaveCount(0, { timeout: 5000 });
+  await expect.poll(() => isOut(b, 'ladybug'), { timeout: 5000 }).toBe(false);
   await expect(b.locator('[data-fx="catch"]').first()).toContainText('テントウムシを つかまえた！', { timeout: 5000 });
   await plateOnly(b, 'critters/ladybug');
   // the shared day has it as A's

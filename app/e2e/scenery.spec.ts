@@ -1,7 +1,7 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, feetOf, geo, islandUp, lawnTap, oku, piece, pointOn, tapOn } from './island.ts';
+import { camTo, feetOf, float, geo, islandUp, lawnTap, oku, piece, pointOn, tapOn } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The island is up (its first paint: now and then over 5 s under CI's load). */
@@ -62,10 +62,10 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // the sea casts the line there (any water: no reach), and the next tap reels it in
   const s = await sea(page);
   await page.mouse.click(s.x, s.y);
-  await expect(page.locator('[data-bobber]'), 'sea').toBeAttached();
+  await expect.poll(() => float(page), { message: 'sea' }).not.toBeNull();
   await page.waitForTimeout(400);
   await page.mouse.click(s.x, s.y);
-  await expect(page.locator('[data-bobber]'), 'reeled').toHaveCount(0);
+  await expect.poll(() => float(page), { message: 'reeled' }).toBeNull();
   await expect(page.locator('dialog[open]'), 'sea').toHaveCount(0);
   // a flourish is gone within ~1 s, and nothing else moved
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 4000 }); // a flourish waits for my villager's walk (≤ 0.9 s)

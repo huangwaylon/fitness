@@ -5,7 +5,7 @@
 // to the float and each nibble is its nose touching it; scared, it darts off fast and fades as it goes. The game's state
 // says where each model is (__world3d.where: its spot, its fade, its scale), sampled every frame in the page.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, is3d, w3 } from './island.ts';
+import { castIn, float, is3d, w3 } from './island.ts';
 import { FPS } from '../src/lib/store/frameRate.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -27,7 +27,7 @@ const sample = (page: Page, id: string, ms: number) => page.evaluate(([id, ms]) 
   let drawn = -1;
   const frame = () => {
     const p = w.where(id), n = w.stats().frames;
-    if (n !== drawn) out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!document.querySelector('[data-bobber="bite"]') });
+    if (n !== drawn) out.push(p && { t: performance.now() - t0, x: p.x, z: p.z, fade: p.fade, scale: p.scale, hidden: p.hidden, line: !!(window as unknown as { __fish: { line(): { under: boolean } | null } }).__fish.line()?.under });
     drawn = n;
     if (performance.now() - t0 < ms) requestAnimationFrame(frame);
     else ok(out);
@@ -201,7 +201,7 @@ async function castAtFish(page: Page): Promise<string> {
   const id = await modelId(page, 'fish-sea-');
   // my villager on the beach by the shadow (NH casts from where it stands), and a tap by it
   await castIn(page, 'sea');
-  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 5000 });
+  await expect.poll(() => float(page), { timeout: 5000 }).toBe('wait');
   return id;
 }
 
@@ -223,7 +223,8 @@ async function baited(page: Page): Promise<boolean> {
       const f = w.where(id), b = w.where('bobber'), n = w.stats().frames, fresh = n !== drawn;
       drawn = n;
       if (fresh && f && b && !f.hidden && !b.hidden) out.push({ t: performance.now(), d: Math.hypot(f.x - b.x, f.z - b.z) });
-      if (document.querySelector('[data-bobber="bite"]') || !document.querySelector('[data-bobber]')) ok(out);
+      const l = (window as unknown as { __fish: { line(): { under: boolean } | null } }).__fish.line();
+      if (!l || l.under) ok(out);
       else requestAnimationFrame(frame);
     };
     frame();
@@ -248,7 +249,7 @@ async function baited(page: Page): Promise<boolean> {
 test('a missed bite: the fish darts away fast with a wiggle, fading as it goes', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: frame-by-frame smoothness, and drawn under software GL the ambience runs at 2 frames a second' } }, async ({ page }) => {
   test.setTimeout(60_000);
   const id = await castAtFish(page);
-  await expect(page.locator('[data-bobber="bite"]')).toBeAttached({ timeout: 15_000 });
+  await expect.poll(() => float(page), { timeout: 15_000 }).toBe('bite');
   // no tap: once the bite's window is over it's scared off (the float back up, waiting: NH): every frame from the bite on
   const all = await sample(page, id, 3400);
   const from = all.findIndex((p) => !!p && !p.line);

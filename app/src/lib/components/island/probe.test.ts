@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, drawnOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, type BoxKind } from './probe.ts';
+import { actorOf, areaOf, boxOf, CONTROLS, controlsOf, crittersOf, diveOf, drawnOf, fruitOf, fxLog, goalOf, pickOf, sceneryAll, sceneryOf, type BoxKind } from './probe.ts';
 
 /** A stand-in element: its tag, attributes and children (parentElement, previousElementSibling wired), and what its
  *  querySelector answers (`q`: selector → element). */
@@ -109,7 +109,7 @@ describe('box: where a thing is', () => {
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'fruit', 'trunk'];
+    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -186,6 +186,26 @@ describe('actor: a villager as shown', () => {
     const root = el('div', {}, [], { '[data-actor="mine"]': actor });
     expect(actorOf(root, 'mine')).toEqual({ act: 'hop', walking: true, inside: false, hat: true, stung: null, swollen: false, tricked: false, seat: 'bench-1', gym: null, who: 'B', fx: ['sparkles'], v3: true });
     expect(actorOf(root, 'third')).toBeNull();
+  });
+});
+
+describe('critters: the bugs and shadows out, the dive spot', () => {
+  it("reads a bug's place, flight, stalk and landing, a shadow's water, pool and shape", () => {
+    const stalker = el('span', { class: 'mover bug stalk tarantula sat', 'data-critter': 'tarantula', 'data-place': 'grass', 'data-flight': 'stalk' }, [], { '[data-stalk]': el('span', { 'data-stalk': 'rear' }) }, [10, 20, 8, 6]);
+    const shark = el('span', { class: 'mover shadow is-fin sea gone', 'data-critter': 'fish', 'data-water': 'sea', 'data-pool': 'sea', 'data-shape': 'fin' });
+    const carp = el('span', { class: 'mover shadow pond', 'data-critter': 'pond', 'data-water': 'pond', 'data-pool': 'pond', 'data-shape': '' });
+    const root = { querySelectorAll: (s: string) => (s === '[data-critter]' ? [stalker, shark, carp] : []) } as unknown as ParentNode;
+    const off = { place: null, water: null, pool: null, flight: null, stalk: null, shape: null, gone: false, fled: false, sat: false, box: { left: 0, top: 0, width: 0, height: 0 } };
+    expect(crittersOf(root)).toEqual([
+      { ...off, id: 'tarantula', place: 'grass', flight: 'stalk', stalk: 'rear', sat: true, box: { left: 10, top: 20, width: 8, height: 6 } },
+      { ...off, id: 'fish', water: 'sea', pool: 'sea', shape: 'fin', gone: true },
+      { ...off, id: 'pond', water: 'pond', pool: 'pond' }
+    ]);
+  });
+
+  it('the bubbles (their item) and a dive on; nothing out: nulls', () => {
+    expect(diveOf(el('div', {}, [], { '[data-bubbles]': el('span', { 'data-bubbles': 'pearl' }), '[data-dive]': el('span', { 'data-dive': 'chase' }) }))).toEqual({ bubbles: 'pearl', dive: 'chase' });
+    expect(diveOf(el('div'))).toEqual({ bubbles: null, dive: null });
   });
 });
 
