@@ -430,6 +430,12 @@ class OffPlausibility(unittest.TestCase):
         vals, flags = self.check(500, 30, 30, 60, 1)             # P+F+C > 105: macros nulled, kcal kept
         self.assertEqual((vals[:4], flags), ((500, None, None, None), ['pfc_sum']))
 
+    def test_fixes(self):   # a hand correction passes the checks as it is, its energy within 15 % of 4P+9F+4C
+        for jan, v in off.FIXES.items():
+            vals, flags = self.check(*(v[k] for k in ('kcal', 'p', 'f', 'c', 'salt')), '菓子・デザート', jan)
+            self.assertEqual(flags, [], jan)
+            self.assertLess(abs(v['kcal'] - (4 * v['p'] + 9 * v['f'] + 4 * v['c'])), 0.15 * v['kcal'], jan)
+
     def test_atwater(self):
         self.assertIsNone(self.check(45, 10, 15, 20, 1)[0])                       # gross: per-serving typo, dropped
         vals, flags = self.check(150, 22.9, 1.2, 62.6, 1.6, '魚介', 'カマの照焼')   # moderate: macros nulled

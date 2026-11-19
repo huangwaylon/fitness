@@ -228,6 +228,14 @@ def read_nutriments(n):
     return kcal, p, f, c, salt
 
 
+# Hand corrections, per 100 g, by barcode: entries whose label slips no check (each value plausible, the energy
+# within plausible()'s band). Glico ジャイアントコーン クッキー&チョコ: OFF has the label's per-cone (140 ml) kcal, P (3.6
+# typed 36) and F as per 100 g, only the carbs scaled; the cone's label 247 kcal, P 3.6, F 13, C 27.6, salt 0.18.
+FIXES = {
+    '4901005312005': {'kcal': 247 / 1.4, 'p': 3.6 / 1.4, 'f': 13 / 1.4, 'c': 27.6 / 1.4, 'salt': 0.18 / 1.4},
+}
+
+
 # ---------------------------------------------------------------- plausibility (all values per 100 g)
 # Salt caps by app category (g/100 g). Above the cap the salt value is nulled unless the name is a known salty
 # food; above 60 g it is nulled outside 調味料 regardless; extended to meat/fish/
@@ -475,6 +483,8 @@ def build(indir):
     for jan in sorted(best):
         p = raw[best[jan]]
         kcal, pr, f, c, salt = read_nutriments(p.get('nutriments'))
+        if jan in FIXES:
+            kcal, pr, f, c, salt = (FIXES[jan][k] for k in ('kcal', 'p', 'f', 'c', 'salt'))
         if kcal is None:
             stats['no_kcal'] += 1
             continue
