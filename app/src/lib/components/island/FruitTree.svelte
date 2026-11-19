@@ -746,16 +746,16 @@
   .row.tap:focus-visible, .it.tap:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
   .it {
     position: relative; appearance: none; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left;
-    display: grid; grid-template-columns: auto auto; justify-content: start; column-gap: 6px; align-items: center; min-width: var(--hit); min-height: var(--hit);
+    display: grid; grid-template-columns: auto auto; justify-content: center; column-gap: 6px; align-items: center; min-width: var(--hit); min-height: var(--hit);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
   /* a bar over its 「あと Ng」, so a P item fits a third of the row */
-  .v { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .v { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   /* my checks: each its own box, its column's width (≥ 44px, ≥ 8px from the next: the spacer) */
   button.it { border-radius: var(--r-chip); cursor: pointer; }
   .it.tap:active .mk { transform: scale(.88); }
-  .lb { justify-self: start; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
-  .mk { position: relative; justify-self: start; line-height: 0; transition: transform 120ms var(--ease-soft); }
+  .lb { justify-self: center; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 70%, transparent); }
+  .mk { position: relative; justify-self: center; line-height: 0; transition: transform 120ms var(--ease-soft); }
   .mk .ok { width: 18px; height: 18px; padding: 3px; }
   .it[data-done] .lb, .it[data-logged] .lb { color: var(--c-leaf-text); }
   /* Health's workout says done: a small dot at the mark's top right (faint once unset by hand) */

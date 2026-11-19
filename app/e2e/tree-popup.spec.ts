@@ -155,7 +155,7 @@ async function rows(p: ReturnType<Page['locator']>) {
   }));
 }
 /** One system: the same left and right edges as the 2 × 2's cells, the same height (≥ 44) 4px apart, three items each
- *  equal columns, each label at its column's start with its status right after, every label the same size. */
+ *  equal columns, each cell’s label + status group centred in its column, every label the same size. */
 async function oneGrid(page: Page) {
   const p = pop(page), rs = await rows(p);
   const pop0 = await box(p);
@@ -167,8 +167,9 @@ async function oneGrid(page: Page) {
     expect(Math.abs(r.box.height - rs[0].box.height), `${r.sel} height`).toBeLessThanOrEqual(1);
     expect(r.box.height).toBeGreaterThanOrEqual(44);
     for (const [i, it] of r.items.entries()) {
-      // every column's label starts at the same offset from its column's left edge, all three columns, all rows
-      expect(Math.abs((it.lb.x - it.it.x) - (rs[0].items[0].lb.x - rs[0].items[0].it.x)), `${r.sel} ${i}: label offset in its column`).toBeLessThanOrEqual(2);
+      // each cell's item group (label + status) centred in its column, every cell of all three rows
+      const gl = Math.min(it.lb.x, it.st.x), gr = Math.max(it.lb.x + it.lb.width, it.st.x + it.st.width);
+      expect(Math.abs((gl - it.it.x) - (it.it.x + it.it.width - gr)), `${r.sel} ${i}: group centred in its column`).toBeLessThanOrEqual(2);
       expect(Math.abs(it.it.width - rs[0].items[0].it.width), `${r.sel} ${i}: equal columns`).toBeLessThanOrEqual(2);
       expect(Math.abs(it.it.x - rs[0].items[i].it.x), `${r.sel} ${i}: column`).toBeLessThanOrEqual(2);
       expect(it.st.x - (it.lb.x + it.lb.width), `${r.sel} ${i}: label to status`).toBeLessThanOrEqual(8);
