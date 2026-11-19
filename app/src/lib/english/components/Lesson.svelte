@@ -415,10 +415,10 @@
   :global(:root[data-tod='night']) .nudge { background: var(--n-off); box-shadow: inset 0 0 0 2px var(--c-sky); }
   /* the answer: the kit's ok card (its green text the ink: the night's leaf text is 4.3:1 on --n-ok) */
   .reveal { display: grid; gap: 6px; padding: 12px; border-radius: var(--r-row); background: var(--ok-bg); box-shadow: inset 0 0 0 2px var(--ok-edge); color: var(--text); }
-  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  .rhead { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--leaf-text); }
   .line { font-style: italic; }
   .words .hit { text-decoration: underline 2px var(--c-leaf); text-underline-offset: 3px; }
-  .words .gap { font-weight: 700; }
+  .words .gap { color: var(--leaf-text); font-weight: 700; }
   .why { margin: 0; display: grid; gap: 2px; font-size: var(--fs-body); }
   .why dt { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .why dd { margin: 0 0 4px; }
