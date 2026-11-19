@@ -13,6 +13,11 @@ export interface Entry {
   pen: number;
   /** The name's head as a key (headOf), built on its first prefix hit. */
   hd?: string;
+  /** The name's key without its 〜subtitles〜 (subless), built on its first substring hit. */
+  sb?: string;
+  /** Its name's marks, read on its first hit: the LOOKALIKE it is (its index + 1; 0: none), a RARE_PART (1, else 0). */
+  lk?: number;
+  rp?: number;
   /** Its brand's keys, whole then each word (brandKeys): a query word matches a brand only from the start of one, never
    *  inside it (「ラテ」 is not 天ぷ「らて」んや's); `h` holds no brand. */
   b?: readonly string[];
@@ -69,17 +74,25 @@ export function entryOf(it: Item, pen = 0, brands?: Map<string, readonly string[
 
 /** A name up to its first bracket or space, as a key (「水（ミネラルウォーター）」 → 水, 「鮭（しろさけ） 生」 → 鮭). */
 export const headOf = (name: string): string => searchKey(name.split(/[（(［[【\s　]/)[0]);
+/** A menu's 〜subtitle〜 (「大戸屋アイス 〜五穀米のアイスとわらびもち〜」, 「中華風漬けまぐろ～秘醤ソース～」): what it's made
+ *  with, said; never 「2〜3人前」. */
+const SUBTITLE = /[〜～~][^〜～~\d]+[〜～~]/g;
+/** A name's key without its subtitles (the name's own key when it has none). */
+const subless = (e: Entry): string => (/[〜～~]/.test(e.it.name) ? searchKey(e.it.name.replace(SUBTITLE, ' ')) : e.n);
+/** A query held only in a name's 〜subtitle〜: under a name's substring, over an alias's prefix (五穀米 finds 雑穀ごはん,
+ *  then 十五穀米おかゆ before 大戸屋's ice cream 〜五穀米の…〜). */
+const IN_SUBTITLE = 3.5;
 /** An alias exact: level with a name's prefix, a hair under it (鶏むね: 鶏むね肉 before サラダチキン, whose alias it is). */
 const ALIAS_EXACT = 1.05;
 
 /** Lower is better: the name exact (or its head: 水 finds 水（ミネラルウォーター）), then its prefix or an alias exact
- *  (level: たまご finds 卵 as ごはん finds ごはん（精白米）), a substring of the name, then an alias's prefix, a substring
- *  of one, then any other field. */
+ *  (level: たまご finds 卵 as ごはん finds ごはん（精白米）), a substring of the name (in its 〜subtitle〜 alone: a little
+ *  lower), then an alias's prefix, a substring of one, then any other field. */
 export function tierOf(e: Entry, q: string): number {
   if (e.n === q) return 0;
   if (e.n.startsWith(q)) return (e.hd ??= headOf(e.it.name)) === q ? 0 : 1;
   if (e.al.includes(q)) return ALIAS_EXACT;
-  if (e.n.includes(q)) return 2;
+  if (e.n.includes(q)) return (e.sb ??= subless(e)).includes(q) ? 2 : IN_SUBTITLE;
   if (e.al.some((a) => a.startsWith(q))) return 4;
   if (e.al.some((a) => a.includes(q))) return 5;
   return 6;
@@ -95,26 +108,40 @@ const LOOKALIKE: readonly [RegExp, readonly string[]][] = [
 ];
 /** Parts seldom eaten alone (a meat's 脂身 by itself, a 皮): a tier under the usual cuts. */
 const RARE_PART = /(^|\s)皮(\s|$)|(^|[\s（])脂身(\s|$)/;
-const lookalike = (it: Item, q: string): boolean => LOOKALIKE.some(([re, words]) => re.test(it.name) && !words.some((w) => q.includes(searchKey(w))));
-const rare = (it: Item): number => (RARE_PART.test(it.name) && (it.cat === '肉' || /(^|\s)皮(\s|$)/.test(it.name)) ? 1 : 0);
+const lookalike = (e: Entry, q: string): boolean => {
+  const k = (e.lk ??= LOOKALIKE.findIndex(([re]) => re.test(e.it.name)) + 1);
+  return k > 0 && !LOOKALIKE[k - 1][1].some((w) => q.includes(searchKey(w)));
+};
+const rare = (e: Entry): number => (e.rp ??= RARE_PART.test(e.it.name) && (e.it.cat === '肉' || /(^|\s)皮(\s|$)/.test(e.it.name)) ? 1 : 0);
+
+/** A query's words as keys (split on spaces, empty ones dropped). */
+export const tokensOf = (query: string): string[] => query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
+
+/** The entries holding every word of `tokens`, in order. */
+export const holding = (entries: readonly Entry[], tokens: readonly string[]): Entry[] => entries.filter((e) => tokens.every((t) => holds(e, t)));
+
+/** Whether every entry holding `now`'s words holds `was`'s: each of `was` the start of one of `now` (a word typed on, a
+ *  word added). */
+export const narrows = (now: readonly string[], was: readonly string[]): boolean => was.every((t) => now.some((u) => u.startsWith(t)));
 
 /** Every query token (split on spaces) in an item's text, best first. One row per normalized name + kcal, one per
  *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
  *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
  *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). With
  *  `shop`, the entries are one shop's menu (db.ts searchFoods): an empty query finds all of it, and no entry's `ex` is
- *  taken; `onHit`, told each entry found (db.ts findFoods' shop chips, from this pass: never a second one). */
-export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, shop = false, onHit?: (e: Entry) => void): Item[] {
-  const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
+ *  taken; `onHit`, told each entry found (db.ts findFoods' shop chips, from this pass: never a second one); `held`, the
+ *  entries all hold the query's words already (holding: db.ts candidates). */
+export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, shop = false, onHit?: (e: Entry) => void, held = false): Item[] {
+  const tokens = tokensOf(query);
   if (!tokens.length && !shop) return [];
   const q = tokens.join('');
   type Hit = { e: Entry; s: number; i: number; x: number };
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (tokens.every((t) => holds(e, t)) && !lookalike(e.it, q)) {
+    if ((held || tokens.every((t) => holds(e, t))) && !lookalike(e, q)) {
       const x = shop ? 0 : (e.ex ?? 0);
-      hits.push({ e, s: tierOf(e, q) + e.pen + x - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i, x });
+      hits.push({ e, s: tierOf(e, q) + e.pen + x - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e), i, x });
       onHit?.(e);
     }
   }
@@ -213,7 +240,7 @@ export function nearby(entries: readonly Entry[], query: string, limit = 8): Ite
   for (const e of entries) {
     const c = covered([e.n, ...e.al], q);
     if (e.pen > 0) c.n *= SECONDARY_NEAR;
-    if (c.n >= 9 && !lookalike(e.it, q)) hits.push({ e, c });
+    if (c.n >= 9 && !lookalike(e, q)) hits.push({ e, c });
   }
   hits.sort((a, b) => b.c.n - a.c.n || a.c.at - b.c.at || a.e.pen - b.e.pen || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
   const seen = new Set<string>();

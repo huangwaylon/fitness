@@ -12,7 +12,7 @@ import { kalShard, kalShards } from './kal.ts';
 import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, toColumns, itemById, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
-import { entryOf, holds, keysOf, tierOf, type Entry } from './search.ts';
+import { entryOf, holds, keysOf, search, tierOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 
 const DIR = join(import.meta.dirname, '../../../static/food');
@@ -287,6 +287,24 @@ describe('loadFoodDb', () => {
     expect(first('豚ロース 焼き')?.st).toBe('焼き');
     expect(first('スパゲッティ')?.st).toBe('ゆで');
     expect(searchFoods(db, '焼きいも', 1)[0].name).toBe('焼きいも');
+  });
+
+  it('a query typed on is searched among the last one’s hits: the same rows as over everything, a dataset come in since found', async () => {
+    const all = (q: string) => search(db.entries, q, 40, (id) => db.verify?.byId[id]).map((x) => x.id);
+    const typed = ['ら', 'らー', 'らーめ', 'らーめん', 'らーめん ', 'らーめん み', 'らーめん みそ', 'らーめ', 'ら', 'みそ らーめん', 'ﾗｰﾒﾝ', 'ラーメン 大', 'ご', 'ごは', 'ごはん', 'ごはん 大盛', 'ごはん', 'k', 'ka', 'kar', '4', '49', '4902102'];
+    expect(typed.filter((q) => JSON.stringify(searchFoods(db, q, 40).map((x) => x.id)) !== JSON.stringify(all(q)))).toEqual([]);
+    const d = emptyDb(index);
+    await addDataset(d, index.datasets[0], fromFile(JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Shipped));
+    expect(searchFoods(d, 'ほげ').length).toBe(0);
+    await addDataset(d, { file: 'x.json', source: 'x', badge: 'x', secondary: true, lazy: true }, { source: 'x', items: [{ id: 'x:1', name: 'ほげふが', kcal: 1 }] });
+    expect(searchFoods(d, 'ほげふ').map((x) => x.id)).toEqual(['x:1']);
+  });
+
+  it('a word in a menu’s 〜subtitle〜 alone is a lesser match: 五穀米 finds 雑穀ごはん, then 十五穀米おかゆ, before 大戸屋’s ice cream', () => {
+    const names = searchFoods(db, '五穀米', 8).map((x) => x.name);
+    expect(names[0]).toBe('雑穀ごはん');
+    const ice = names.findIndex((n) => /〜五穀米.*〜/.test(n));
+    expect([ice > names.findIndex((n) => n.includes('十五穀米おかゆ')), ice]).toEqual([true, names.length - 1]);
   });
 
   it('lookalikes out unless asked for (豚 中型種, 親鶏, 交雑牛); a meat’s 脂身 alone under its cuts', () => {

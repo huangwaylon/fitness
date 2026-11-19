@@ -1,6 +1,6 @@
 // The food catalog in memory: the datasets as they load (index.json's order), their search index and the
 // cross-source verify groups, with the lookups the food sheet uses. Pure: load.ts fetches.
-import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY, type Entry } from './search.ts';
+import { entryOf, headOf, holding, narrows, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY, tokensOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 import type { Credit, Dataset, FoodIndex, Item, Shipped, Verify, VerifyGroup } from './types.ts';
 
@@ -296,6 +296,19 @@ export function variantsOf(db: FoodDb | null, it: Item): Item[] {
  *  (the shop's name alone: its whole menu); nothing there: the query as it is, over everything. */
 export const searchFoods = (db: FoodDb, query: string, limit = 60): Item[] => findFoods(db, query, limit).items;
 
+/** Each catalog's last query's words and the entries holding them (of its `n` entries then): a query typed on from it
+ *  (narrows) is searched among those alone, not the 90k. */
+const lastHits = new WeakMap<FoodDb, { tokens: string[]; n: number; hits: Entry[] }>();
+function candidates(db: FoodDb, query: string): readonly Entry[] {
+  const tokens = tokensOf(query);
+  if (!tokens.length) return [];
+  const last = lastHits.get(db);
+  const from = last && last.n === db.entries.length && narrows(tokens, last.tokens) ? last.hits : db.entries;
+  const hits = holding(from, tokens);
+  lastHits.set(db, { tokens, n: db.entries.length, hits });
+  return hits;
+}
+
 /** searchFoods' items and, from the same pass (a keystroke's one scan of the catalog), the shops its hits are on
  *  (shopsFor's chips: none once a shop is named, nor without the chain menus). */
 export function findFoods(db: FoodDb, query: string, limit = 60): { items: Item[]; shops: ShopHit[] } {
@@ -311,7 +324,7 @@ export function findFoods(db: FoodDb, query: string, limit = 60): { items: Item[
     const k = e.it.vg ?? e.it.id;
     if (!t.seen.has(k)) t.seen.add(k), t.n++;
   };
-  const items = search(db.entries, query, limit, groupOf, false, s || !db.shopKeys.size ? undefined : tally);
+  const items = search(candidates(db, query), query, limit, groupOf, false, s || !db.shopKeys.size ? undefined : tally, true);
   const shops = [...by.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'ja')).map(({ shop, name, n }) => ({ shop, name, n }));
   return { items, shops };
 }
