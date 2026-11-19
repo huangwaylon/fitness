@@ -30,11 +30,11 @@ const S = {
     en: 'The mic isn’t allowed. If you chose Don’t Allow, close and reopen the app to be asked again, and check Settings › Apps › Safari › Microphone.'
   },
   'miss.nomic': { ja: 'マイクが見つからなかったよ', en: 'No mic found' },
-  'miss.busy': { ja: 'マイクをほかのアプリが使っているよ。通話や録音を終えてから、もう一度どうぞ。', en: 'Another app is using the mic. End the call or recording, then try again.' },
+  'miss.busy': { ja: 'マイクをほかのアプリが使っているよ。通話や録音を終えてから、もう一度録音してね。', en: 'Another app is using the mic. End the call or recording, then try again.' },
   'miss.session': { ja: 'アプリの音とマイクがぶつかったみたい。もう一度録音してね。', en: 'The app’s sound got in the mic’s way. Record once more.' },
   'miss.insecure': { ja: 'このページではマイクが使えないよ', en: 'The mic can’t be used on this page' },
   'miss.empty': { ja: '録音が短すぎたみたい。もう少し長く話してね。', en: 'That take was too short. Speak a little longer.' },
-  'miss.silent': { ja: '音が録れていなかったよ（マイクが止まっていたみたい）。もう一度どうぞ。', en: 'Nothing was recorded (the mic seemed off). Try again.' },
+  'miss.silent': { ja: '音が録れていなかったよ（マイクが止まっていたみたい）。もう一度録音してね。', en: 'Nothing was recorded (the mic seemed off). Try again.' },
   'miss.off': { ja: 'サーバーの音声認識が止まっているよ', en: 'The server’s speech recognition is off' },
   'miss.capped': { ja: '今日の回数を使い切ったよ', en: 'Today’s takes are used up' },
   'miss.network': { ja: 'つながらなかったよ', en: 'Couldn’t connect' },

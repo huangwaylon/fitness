@@ -1186,10 +1186,10 @@ test('フレーズ: the same card face down after a lesson; ☆ 復習に入れ�
   const mine = () => page.evaluate(() => JSON.parse(localStorage.getItem('island.english.phrases') ?? '{}').A);
   await star.click();
   await expect(star).toHaveAttribute('aria-pressed', 'true');
-  await expect(star).toHaveText('★ 復習に入れたよ');
+  await expect(star).toHaveText('復習に入れたよ');
   expect(await mine()).toEqual({ s: {}, k: { [`waitress/${q.id}`]: '2026-11-03', [first.k]: '2026-11-04' } });
   await star.click();
-  await expect(star).toHaveText('☆ 復習に入れる');
+  await expect(star).toHaveText('復習に入れる');
   expect((await mine()).k).toEqual({ [`waitress/${q.id}`]: '2026-11-03' });
   // the set: 5 cards, no two of one clip
   const keys = [first.k];

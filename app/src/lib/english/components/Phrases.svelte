@@ -1,7 +1,7 @@
 <script lang="ts">
   // フレーズ (docs/english.md "フレーズ"): English Study's second tab, the deck (deck.ts) one card at a time, SET a set.
   // The card is PhraseCard's: its head the clip's thumbnail with 1/5 and show · title; on its back a say-it hint, then
-  // ☆ 復習に入れる beside 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ.
+  // ☆ (ui/Icon) 復習に入れる beside 次へ ›. After SET: 「5枚見たよ · これまで N」, もう5枚 / ホームへ.
   // Never a score. The place is this phone's (deck.ts), so the tab comes back to the same card, face down.
   import { onMount, untrack } from 'svelte';
   import LoadError from '#lib/components/ui/LoadError.svelte';
@@ -134,7 +134,7 @@
         {#snippet actions()}
           <p class="say">{s('deckSay')}</p>
           <div class="pair save">
-            <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}>{isSaved ? s('deckSaved') : s('deckSave')}</button>
+            <button type="button" class="btn paper" data-sfx="tick" data-en-deck-save aria-pressed={isSaved} onclick={save}><Icon name="star" size={20} soft={isSaved} />{isSaved ? s('deckSaved') : s('deckSave')}</button>
             <button type="button" class="btn" data-sfx="page" data-en-deck-next onclick={next}>{s('next')}<Icon name="chevron-right" /></button>
           </div>
         {/snippet}

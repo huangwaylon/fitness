@@ -1,6 +1,6 @@
 <script lang="ts">
   // English Study's progress block (docs/english.md "Progress"), one component so it can change alone: this week's
-  // three dots (k/3日, then 「今週の3日、達成」), Monday's 「新しい週だよ」, the run of 3-day weeks or their count, the
+  // three dots (k/3日, then 「今週の3日、達成」; before the first day ever 「週3日見たら達成」 says what they mean), Monday's 「新しい週だよ」, the run of 3-day weeks or their count, the
   // clips finished, this week's minutes (information only), the partner's line and 「今週はふたりとも達成」. Never a 0日,
   // a break or a miss.
   import type { WeekView } from '../progress.ts';
@@ -21,7 +21,8 @@
     {:else if view.days > 0 && !met}<span class="n" aria-hidden="true" data-en-week-n>{s('weekDays', { k: view.days })}</span>{/if}
   </p>
   {#if met}<p class="line met" data-en-met>{s('weekMet')}</p>
-  {:else if view.fresh}<p class="line" data-en-fresh>{s('weekNew')}</p>{/if}
+  {:else if view.fresh}<p class="line" data-en-fresh>{s('weekNew')}</p>
+  {:else if view.days === 0 && view.ever === 0 && view.clips === 0}<p class="soft" data-en-week-hint>{s('weekHint')}</p>{/if}
   {#if view.run >= 2}<p class="line" data-en-run>{s('run', { n: view.run })}</p>
   {:else if view.ever > 0}<p class="line" data-en-run>{s('runEver', { n: view.ever })}</p>{/if}
   {#if view.clips > 0}<p class="line" data-en-clips>{s('clips', { n: view.clips })}</p>{/if}
