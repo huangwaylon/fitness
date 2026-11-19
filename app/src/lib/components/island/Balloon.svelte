@@ -97,12 +97,16 @@
     const v = w.view, nav = site.nav, lay = site.layout, [z0, z1] = w.zRange();
     // the controls on screen (scene px): the HUD, the bottom controls, the catch stack, a visitor (a tap there is theirs), the trees' and the rest's tap
     // areas (the villagers only pass by: it lies behind them)
-    // (with the pick3d switch the island's controls from their 3D tap areas and the visitors from their spots: things3)
+    // (with the pick3d switch the island's controls from their 3D tap areas, the villagers' too: the canvas router gives
+    // a tap on a villager's area to the villager, so a present under one standing still couldn't be had; the visitors
+    // from their spots: things3)
     const reg = things3(w), g3 = reg.guards3;
-    const extra = [...document.querySelectorAll(g3 ? '.ribbon-wrap, [data-catch-stack]' : '.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect())
+    // (and the tape deck and the cake, padded to their tap reach: a tap by them is theirs, the scene's chain's first)
+    const props = [...document.querySelectorAll('[data-stretch] .radio, [data-cake] .official')].filter(shownNow).map((el) => ((r) => new DOMRect(r.left - 12, r.top - 12, r.width + 24, r.height + 24))(el.getBoundingClientRect()));
+    const extra = [...document.querySelectorAll(g3 ? '.ribbon-wrap, [data-catch-stack]' : '.ribbon-wrap, [data-catch-stack], [data-visitor] .art')].filter(shownNow).map((el) => el.getBoundingClientRect()).concat(props)
       .concat(g3 ? [...reg.arts.values()].flatMap((f) => ((r) => (r ? [new DOMRect(r.left, r.top, r.right - r.left, r.bottom - r.top)] : []))(f())) : [])
       .filter((b) => b.width && b.height).map((b) => ({ x0: b.left, x1: b.right, y0: b.top, y1: b.bottom }));
-    const guards = [...(g3 ? g3((c) => c.kind === 'villager') : uiBoxes((el) => !!el.closest('[data-actor]'))), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
+    const guards = [...(g3 ? g3() : uiBoxes((el) => !!el.closest('[data-actor]'))), ...extra].map((b) => ({ x0: b.x0 - v.left, x1: b.x1 - v.left, y0: b.y0 - v.top, y1: b.y1 - v.top }));
     const view: LandView = {
       screen: (x, z) => {
         const p = w.screenAt(x, z);

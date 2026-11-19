@@ -13,26 +13,25 @@ const TAP_AREAS = 'button, a, [role="button"], [data-bush], [data-tree], [data-f
 const disagree = (page: Page) =>
   page.evaluate((areas) => {
     type Box = { left: number; top: number; width: number; height: number };
-    const w = (window as unknown as { __world3d: { pick(x: number, y: number): { kind: string; id: string } | null; box(k: string, id: string): Box | null } }).__world3d;
+    const w = (window as unknown as { __world3d: { pickDom(x: number, y: number): { kind: string; id: string } | null; boxDom(k: string, id: string): Box | null } }).__world3d;
     const out: string[] = [];
     let hits = 0;
     for (let y = 4; y < innerHeight; y += 12)
       for (let x = 4; x < innerWidth; x += 12) {
-        const el = document.elementFromPoint(x, y), dom = el?.closest(areas), p = w.pick(x, y);
+        const el = document.elementFromPoint(x, y), dom = el?.closest(areas), p = w.pickDom(x, y);
         if (!!dom !== !!p) out.push(`${x},${y}: dom ${dom?.outerHTML.slice(0, 60)} pick ${JSON.stringify(p)}`);
         if (!p) continue;
         hits++;
         if (p.kind === 'ui' || p.kind === 'talk') continue;
         // (its box holds the point, 2 px's slack: WebKit hit-tests a scaled node's tap target a px or two past its box)
-        const b = w.box(p.kind, p.id);
+        const b = w.boxDom(p.kind, p.id);
         if (!b || x < b.left - 2 || x > b.left + b.width + 2 || y < b.top - 2 || y > b.top + b.height + 2) out.push(`${x},${y}: ${p.kind}:${p.id} outside its box ${JSON.stringify(b)}`);
       }
     return { out, hits };
   }, TAP_AREAS);
 
 test('pick and box agree with the DOM island over the screen (a visitor, villagers, trees, doors, the HUD)', async ({ page }) => {
-  // (the DOM's pick itself: with the pick3d switch pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
-  test.skip(!!process.env.E2E_PICK3D, "the DOM pick's oracle: the 3D pick's is probe3d.spec");
+  // (the DOM's pick itself, pickDom and boxDom: pick and box answer from the 3D tap areas, held to the DOM's by probe3d.spec)
   await page.goto('?demo&date=2026-11-04T12:00&visitor=redd&awake');
   expect(await is3d(page)).toBe(true);
   await quiet(page);

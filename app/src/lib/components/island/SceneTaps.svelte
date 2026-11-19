@@ -370,11 +370,11 @@
   /** The canvas router (R4 step 6, with the pick3d switch: things3 route, Island3D's): a tap on the island goes by the
    *  3D pick, never to the DOM island's buttons (stopped here, on the stage in the capture phase, before them): the chain
    *  on the 3D boxes, else the control's own act (its tap area's), else the scenery or the ground. Where the DOM stays
-   *  (route's 'dom': an overlay, the HUD's buttons, the speech balloon) and a click with no point (a keyboard's: detail
-   *  0), the DOM's (onClick). A touch on a fling only stops it. */
+   *  (route's 'dom': an overlay, the HUD's buttons, the speech balloon) and a click with no point (a keyboard's, an
+   *  el.click(): no detail, at 0, 0), the DOM's (onClick). A touch on a fling only stops it. */
   function onRoute(e: MouseEvent) {
     const route = things3(w).route;
-    if (!route || e.button > 0 || !e.detail) return;
+    if (!route || e.button > 0 || (!e.detail && !e.clientX && !e.clientY)) return;
     const cx = e.clientX, cy = e.clientY, r = route(cx, cy);
     if (r === 'dom') return;
     e.stopPropagation();

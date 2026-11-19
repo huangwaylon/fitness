@@ -1,4 +1,4 @@
-// The 3D pick (world3d/pick3d.ts, behind `?pick3d=1`; the R4 plan's step 5) held to the DOM island's (island/probe.ts,
+// The 3D pick (world3d/pick3d.ts: the canvas router's, the default since the R4 plan's step 6) held to the DOM island's (island/probe.ts,
 // the oracle): over a grid of points, what a tap goes to by the 3D tap areas is what the DOM's says, and each thing's
 // box is the DOM's, a few px's slack at the edges. Agreed differences are let be, each with its reason.
 import { expect, test, type Page } from './fixtures.ts';
@@ -11,8 +11,8 @@ type W3 = {
   box(k: string, id: string): Box | null; boxDom(k: string, id: string): Box | null;
 };
 
-/** Px a tap may move for the two to agree: the 3D pick's own slop (pick3d.ts SLOP: 2 px and a px of a scaled node's,
- *  up to ~6 px zoomed in, where WebKit hit-tests the DOM's area past its box) and a rounded corner's curve. */
+/** Px a tap may move for the two to agree: the 3D pick's own slop (pick3d.ts SLOP, 2 px), WebKit hit-testing the DOM's
+ *  area past its box (a scaled node's, up to ~6 px zoomed in) and a rounded corner's curve. */
 const SLACK = 7;
 
 /** Each grid point where the 3D pick and the DOM's disagree (neither's answer found by the other within SLACK px of

@@ -172,19 +172,19 @@ for (const c of POPS)
     await expect.poll(() => findCount(page, 'present'), { timeout: 5000 }).toBe(1);
     const g = (await findsOut(page, 'present'))[0].box;
     expect(Math.hypot(g.left + g.width / 2 - px, g.top + g.height - py)).toBeLessThan(40);
-    // (frame-locked: a point of it no villager stands over, its middle first: one wandering past, or zoomed in the
-    // partner standing by, lies in front of it, and a tap there is theirs; then its edges, the 3D pick's few px of
-    // slop round a villager (pick3d.ts SLOP) taking the inner points)
+    // (frame-locked: a point the scene's chain takes for it, its middle first: a villager wandering past, or zoomed in
+    // the partner standing by, lies in front of it, and a tap there is theirs)
     await tapAt(page, (w) => {
       const r = w.__world3d.finds().find((f: { kind: string }) => f.kind === 'present')?.box;
       if (!r) return null;
-      const rim = [0.1, 0.5, 0.9].flatMap((a) => [[a, 0.1], [a, 0.9], [0.1, a], [0.9, a]]);
-      for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.75], [0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75], ...rim]) {
+      // (a grid over it and a little past it, nearest its middle first: its 3D tap box is its model's, ≥ 44 px)
+      const at = Array.from({ length: 13 * 13 }, (_, i) => [(i % 13) / 10 - 0.1, Math.floor(i / 13) / 10 - 0.1]).sort((a, b) => Math.hypot(a[0] - 0.5, a[1] - 0.5) - Math.hypot(b[0] - 0.5, b[1] - 0.5));
+      for (const [fx, fy] of at) {
         const x = r.left + r.width * fx, y = r.top + r.height * fy;
-        if (w.__world3d.pick(x, y)?.kind !== 'villager') return [x, y] as const;
+        if (w.__world3d.claim(x, y)?.kind === 'find') return [x, y] as const;
       }
       return null;
-    }, null, { clear: ['villager'], mouse: true, timeout: 10_000 });
+    }, null, { clear: ['villager'], mouse: true, timeout: 15_000 });
     await expect(page.locator('[data-fx="present-open"]')).toHaveCount(1, { timeout: 3000 });
   });
 

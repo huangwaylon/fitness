@@ -79,7 +79,7 @@
   import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
-  import { drawOff, pick3dOn, testHooks } from '#lib/ui-state/testMode.ts';
+  import { drawOff, pick3dFlash, pick3dOn, testHooks } from '#lib/ui-state/testMode.ts';
   import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { timers } from '../island/timers.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
@@ -1073,8 +1073,9 @@
     e.onDrawn((t0, t1, wait, island) => (timed?.frame(t0, t1, wait), island && !scene.hasAttribute('data-island3') && scene.toggleAttribute('data-island3', true)));
     // (the island at rest, counted all the time and logged at each hide: perf.rest)
     const offRest = watchRest({ stats: () => e.stats(), ok: () => loaded && !document.hidden && !e.isPaused() });
-    // (`?pick3d=1`: each tap picked by the 3D tap areas too, timed against the DOM's answer: perf.pick)
-    const offPicks = pick3dOn() ? watchPicks(world, scene) : null;
+    // (the switch: each tap picked by the 3D tap areas, timed against the DOM island's answer: perf.pick; `?pick3d=1`
+    // flashes its box)
+    const offPicks = pick3dOn() ? watchPicks(world, scene, pick3dFlash()) : null;
     // (the switch: standsClear and the balloon's present keep clear of the tap areas' boxes, not the DOM's buttons)
     const reg3 = things3(world), g3 = pick3dOn() ? (skip?: Parameters<typeof guards3>[1]) => guards3(world, skip) : undefined;
     reg3.guards3 = g3;

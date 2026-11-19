@@ -23,7 +23,7 @@ export interface Area {
   ry: [number, number];
   clip: { l: number; t: number; r: number; b: number } | null;
   foot: [number, number];
-  /** How far past it a DOM tap still lands on it (px): SLOP, and a px of its node's own (WebKit, a scaled node). */
+  /** How far past it a tap still lands on it (px): SLOP. */
   slop: number;
 }
 
@@ -64,7 +64,7 @@ export function areaOf(w: World, t: Tap3): Area | null {
   return {
     tap: t, l, t: tp, r, b, poly: null,
     rx: px === null ? [rd[0] * (r - l), rd[1] * (r - l)] : [px, px], ry: px === null ? [rd[0] * (b - tp), rd[1] * (b - tp)] : [px, px],
-    clip: c ? { l: sx + c.l * k, r: sx + c.r * k, t: sy - c.t * ky, b: sy - c.b * ky } : null, foot: [sx, sy], slop: SLOP + k / v.s
+    clip: c ? { l: sx + c.l * k, r: sx + c.r * k, t: sy - c.t * ky, b: sy - c.b * ky } : null, foot: [sx, sy], slop: SLOP
   };
 }
 
@@ -98,8 +98,8 @@ function inPoly(pts: readonly (readonly [number, number])[], x: number, y: numbe
   return lo >= -pad || hi <= pad;
 }
 
-/** WebKit hit-tests a node's area a px or two past its box, and a scaled node's a px of its own more (the DOM island's
- *  taps, till the canvas router: a point the 3D pick calls empty must be empty to a tap too), px. */
+/** A tap this far past an area is on it (px): a finger's edge (the canvas router's taps; WebKit hit-tested the DOM
+ *  island's areas a px or two past their boxes, a scaled node's a px of its own more, ~3–6 px zoomed in). */
 const SLOP = 2;
 
 /** Whether a tap at (x, y) is on area `a`, or within `pad` px of it (its rounded corners and its clip as the DOM
@@ -116,7 +116,7 @@ export function onArea(a: Area, x: number, y: number, pad = 0): boolean {
 }
 
 /** The tap area a tap at client (x, y) is on (`taps`: tapsNow's, top first), and where it is, or null. */
-export function pickTap(w: World, taps: readonly Tap3[], x: number, y: number): Area | null {
+function pickTap(w: World, taps: readonly Tap3[], x: number, y: number): Area | null {
   for (const t of taps) {
     const a = areaOf(w, t);
     if (a && onArea(a, x, y, a.slop)) return a;
