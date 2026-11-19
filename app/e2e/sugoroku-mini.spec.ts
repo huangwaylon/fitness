@@ -385,7 +385,8 @@ test.describe('みんなで！ online', () => {
     await sheet(a).locator('[data-sg-seat="G"]').tap();
     await sheet(a).locator('[data-sg-start]').tap();
     await Promise.all([b, c].map(async (p) => {
-      await p.locator('[data-sg-invite] [data-toast-act]').tap();
+      // (on the tab its card's 参加: the banner waits while the tab shows it)
+      await sheet(p).locator('[data-sg-online-card] [data-sg-resume-online]').tap();
       await expect(sheet(p)).toHaveAttribute('data-level', 'play');
     }));
     await a.locator('[data-sg-spin]').tap();
