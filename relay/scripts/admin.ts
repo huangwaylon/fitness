@@ -1,6 +1,7 @@
 // The signed `/admin` requests of the relay's tools (record.ts, logs.ts): the relay, the two person keys, the signature.
 // Keys from the environment (KEY_A, KEY_B), else a KEY=value file: KEYS_FILE, else the test relay's
-// `relay/.smoke-keys` (--test) or ~/.config/island-fund/keys (production). Never printed.
+// `relay/.smoke-keys` (--test) or ~/.config/island-fund/keys (production). With --test the file comes first (this Mac's
+// shell exports the production keys: the test relay answered `unauthorized`). Never printed.
 import { createHmac } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -17,12 +18,12 @@ function keysFile(): string | null {
 
 /** The two members' keys (lower case), or exit. */
 function keys(): { a: string; b: string } {
-  const file = !process.env.KEY_A || !process.env.KEY_B ? keysFile() : null;
+  const file = TEST || !process.env.KEY_A || !process.env.KEY_B ? keysFile() : null;
   const fileKeys: Record<string, string> = file
     ? Object.fromEntries(readFileSync(file, 'utf8').trim().split('\n').map((l) => l.split('=') as [string, string]))
     : {};
-  const a = (process.env.KEY_A ?? fileKeys.KEY_A)?.trim().toLowerCase() ?? '';
-  const b = (process.env.KEY_B ?? fileKeys.KEY_B)?.trim().toLowerCase() ?? '';
+  const a = ((TEST && fileKeys.KEY_A) || process.env.KEY_A || fileKeys.KEY_A)?.trim().toLowerCase() ?? '';
+  const b = ((TEST && fileKeys.KEY_B) || process.env.KEY_B || fileKeys.KEY_B)?.trim().toLowerCase() ?? '';
   if (!a || !b) {
     console.error('set KEY_A and KEY_B in the environment, or KEYS_FILE');
     process.exit(1);

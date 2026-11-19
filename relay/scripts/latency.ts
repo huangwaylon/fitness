@@ -5,7 +5,7 @@
 // (how long, how many messages, how many bytes); and, when the relay acks (`c`), A's send → A's ack.
 //   npm run latency                      (the test copy; N=30 each)
 //   RELAY_URL=wss://… N=50 npm run latency
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
 
 const URL_ = process.env.RELAY_URL ?? 'wss://island-fund-relay-test.island-fund-relay.workers.dev/room';
@@ -14,8 +14,10 @@ const N = Number(process.env.N ?? 30);
 const V = 3;
 
 function keys(): { KEY_A: string; KEY_B: string } {
-  if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B };
-  const kv = Object.fromEntries(readFileSync(`${import.meta.dirname}/../.smoke-keys`, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
+  // (.smoke-keys first, as smoke.ts: the environment's keys are this Mac's production ones)
+  const file = `${import.meta.dirname}/../.smoke-keys`;
+  if (process.env.KEY_A && process.env.KEY_B && (process.env.RELAY_URL || !existsSync(file))) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B };
+  const kv = Object.fromEntries(readFileSync(file, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
   return kv as { KEY_A: string; KEY_B: string };
 }
 

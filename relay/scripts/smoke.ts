@@ -3,7 +3,7 @@
 //   npm run smoke                       (the test copy)
 //   RELAY_URL=wss://… npm run smoke     (another deployment with those keys)
 import { createHmac } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { makeTicket, ROOM_PROTOCOL, TICKET_TTL_MS } from '../../app/src/lib/contract/ticket.ts';
 import { SIGN_LABEL, SIG_HEADER, TIME_HEADER } from '../src/sign.ts';
 
@@ -13,10 +13,13 @@ const ORIGIN = 'https://island-fund.pages.dev';
 const OLD_ORIGIN = 'https://huangwaylon.github.io';
 const N = Number(process.env.N ?? 30);
 
-/** The test copy's keys (KEY_C, the guest's, optional: its checks run when it's there). */
+/** The test copy's keys (KEY_C, the guest's, optional: its checks run when it's there): .smoke-keys first, the
+ *  environment's only for another deployment (RELAY_URL) or with no file (this Mac's shell exports the production keys,
+ *  which the test copy refuses: its first ticketed socket failed, 2026-11-19). */
 function keys(): { KEY_A: string; KEY_B: string; KEY_C?: string } {
-  if (process.env.KEY_A && process.env.KEY_B) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B, KEY_C: process.env.KEY_C };
-  const kv = Object.fromEntries(readFileSync(`${import.meta.dirname}/../.smoke-keys`, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
+  const file = `${import.meta.dirname}/../.smoke-keys`;
+  if (process.env.KEY_A && process.env.KEY_B && (process.env.RELAY_URL || !existsSync(file))) return { KEY_A: process.env.KEY_A, KEY_B: process.env.KEY_B, KEY_C: process.env.KEY_C };
+  const kv = Object.fromEntries(readFileSync(file, 'utf8').trim().split('\n').map((l: string) => l.split('=')));
   return kv as { KEY_A: string; KEY_B: string; KEY_C?: string };
 }
 
