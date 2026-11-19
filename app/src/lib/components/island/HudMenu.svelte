@@ -36,6 +36,7 @@
   import { myMenuOrder } from '#lib/store/menu.ts';
   import { MENU_LABEL } from '#lib/ui-state/menuOrder.ts';
   import type { MenuId } from '#lib/contract/menu.ts';
+  import { dismiss } from '../ui/dismiss.ts';
 
   interface Props {
     /** My wallet's balance, the guest's both members' (the ベル row's number). */
@@ -76,24 +77,6 @@
     if (ui.sheets.length) open = false;
   });
 
-  // open: a tap outside folds it (capture, so it folds whatever the tap lands on; the tap itself goes on), Esc too
-  $effect(() => {
-    if (!open) return;
-    const down = (e: PointerEvent) => {
-      if (!(e.target instanceof Node) || !root?.contains(e.target)) open = false;
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      open = false;
-      toggleEl?.focus({ preventScroll: true });
-    };
-    document.addEventListener('pointerdown', down, true);
-    document.addEventListener('keydown', key);
-    return () => {
-      document.removeEventListener('pointerdown', down, true);
-      document.removeEventListener('keydown', key);
-    };
-  });
 
   // The pill goes inert as it folds, so the sheet it opened gives the focus back to nothing on close (the page's body:
   // a keyboard or VoiceOver user would start again from the top): once that sheet is gone, the leaf takes it. Not by
@@ -200,7 +183,8 @@
   {#if flash}{#key flash.k}<span class="flash money" data-bells-flash aria-hidden="true">+{formatNum(flash.n)}</span>{/key}{/if}
 {/snippet}
 
-<div class="hud-menu" class:open bind:this={root}>
+<!-- open: a tap outside folds it (it folds whatever the tap lands on; the tap itself goes on), Esc too, the leaf focused -->
+<div class="hud-menu" class:open bind:this={root} {@attach open && dismiss(() => (open = false), { onesc: () => toggleEl?.focus({ preventScroll: true }) })}>
   <button type="button" class="more" bind:this={toggleEl} aria-label={t('island.menu')} aria-expanded={open} aria-controls="hud-menu-items"
     data-hud-menu data-sfx={open ? 'toggle-off' : 'toggle-on'} onclick={() => (open = !open)}>
     <span class="leaf" data-guard onanimationend={(e) => e.currentTarget.classList.remove('catch')}>

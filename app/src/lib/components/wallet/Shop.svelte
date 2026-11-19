@@ -8,35 +8,17 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { itemArt } from './icons.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
+  import { dismiss } from '../ui/dismiss.ts';
 
   let { balance, prices, onbuy }: { balance: number; prices: Record<ShopItemId, number>; onbuy: (item: ShopItemId) => void } = $props();
 
   /** The reward whose examples are shown. */
   let info = $state<ShopItemId | null>(null);
 
-  // shown: a tap outside the bubble and its ⓘ folds it (capture: the tap still goes where it was aimed), Esc too
-  $effect(() => {
-    if (!info) return;
-    const down = (e: PointerEvent) => {
-      if (!(e.target instanceof Element) || !e.target.closest('[data-info], [data-info-tip]')) info = null;
-    };
-    const key = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      // only the bubble closes (the panel stays)
-      e.stopPropagation();
-      e.preventDefault();
-      info = null;
-    };
-    document.addEventListener('pointerdown', down, true);
-    document.addEventListener('keydown', key, true);
-    return () => {
-      document.removeEventListener('pointerdown', down, true);
-      document.removeEventListener('keydown', key, true);
-    };
-  });
 </script>
 
-<section class="shop" aria-label={t('wallet.title')}>
+<!-- shown: a tap outside the bubble and its ⓘ folds it, Esc too (only the bubble: the panel stays) -->
+<section class="shop" aria-label={t('wallet.title')} {@attach info && dismiss(() => (info = null), { inside: '[data-info], [data-info-tip]', stopEsc: true })}>
   {#each SHOP as item (item.id)}
     {@const price = prices[item.id]}
     {@const short = price - balance}
