@@ -33,15 +33,22 @@ import { dailyGoalOn, latestAt, type State } from './state.ts';
 import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
+import { bodyInOf, inbodyBmr, BODY_IN, type BodyInMetric } from '#lib/contract/bodyIn.ts';
+import { eventSubject, isPersonId } from '#lib/contract/api.ts';
+import { rowAt } from './snapshot.ts';
 
 /** The four activity metrics (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
 const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
 /** The body metrics' cards (からだ, after 体重): body fat %, BMI, lean body mass. */
 const BODY = ['body_fat_pct', 'bmi', 'lean_kg'] as const satisfies readonly BodyMetric[];
-/** からだ's cards: 体重, then the body metrics (each a sparse series with an optional goal). */
-const BODY_IDS = ['weight', ...BODY] as const;
+/** からだ's cards: 体重, the body metrics, the two typed in (筋肉量, 骨格筋量: contract/bodyIn.ts), then 基礎代謝量 worked
+ *  out from 除脂肪体重 (InBody's formula: inbodyBmr); each a sparse series, all but 基礎代謝量 with an optional goal. */
+const BODY_IDS = ['weight', ...BODY, ...BODY_IN, 'bmr'] as const;
 export type BodyId = (typeof BODY_IDS)[number];
+/** The からだ cards with a goal (基礎代謝量 follows 除脂肪体重, whose goal it is). */
+type BodyGoalId = Exclude<BodyId, 'bmr'>;
+const hasBodyGoal = (id: BodyId): id is BodyGoalId => id !== 'bmr';
 /** けんこう's two card groups, picked under the period: かつどう (activity) and からだ (body). */
 export const GROUPS = ['activity', 'body'] as const;
 export type Group = (typeof GROUPS)[number];
@@ -66,7 +73,8 @@ interface PersonSeries {
   goals: Record<Metric, number[]>;
   /** That day's weigh-in (kg) and body metrics (latest row), null without one. */
   dots: Record<BodyId, (number | null)[]>;
-  /** The からだ goals (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`; shown only), null: none. */
+  /** The からだ goals (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, `goalMuscle`, `goalSmm`; shown only), null:
+   *  none (基礎代謝量 never has one). */
   bodyGoals: Record<BodyId, number | null>;
 }
 
@@ -98,6 +106,35 @@ export function activityOn(s: State, p: PersonId, d: LocalDate, t: number): Reco
   return v;
 }
 
+/**
+ * The からだ values typed in (`body_in`, contract/bodyIn.ts) as of `t`: per member and metric, each day's latest row's
+ * value (by the record's `at`; a later row of the day replaces it, `v: null` clears the day). A row the record would
+ * refuse (the guest's, a bad value, a `person` but A or B) is skipped.
+ */
+function bodyInDays(s: State, t: number): Record<PersonId, Record<BodyInMetric, Map<LocalDate, number>>> {
+  const latest = new Map<string, { at: number; v: number | null; p: PersonId; m: BodyInMetric; d: LocalDate }>();
+  for (const row of s.bodyIn) {
+    const at = rowAt(row);
+    if (at === null || at > t || !isPersonId(row[1])) continue; // a member's (the record refuses the guest's)
+    let raw: unknown;
+    try {
+      raw = JSON.parse(row[4] || '{}');
+    } catch {
+      continue;
+    }
+    if (!raw || typeof raw !== 'object') continue;
+    const b = bodyInOf(raw as Record<string, unknown>);
+    const p = b && eventSubject('body_in', raw as Record<string, unknown>, row[1]);
+    if (!b || !isPersonId(p)) continue;
+    const k = `${p}|${b.m}|${b.date}`;
+    const was = latest.get(k);
+    if (!was || at >= was.at) latest.set(k, { at, v: b.v, p, m: b.m, d: b.date });
+  }
+  const out = { A: { muscle_kg: new Map(), smm_kg: new Map() }, B: { muscle_kg: new Map(), smm_kg: new Map() } } as Record<PersonId, Record<BodyInMetric, Map<LocalDate, number>>>;
+  for (const x of latest.values()) if (x.v !== null) out[x.p][x.m].set(x.d, x.v);
+  return out;
+}
+
 const memo = new WeakMap<State, Map<LocalDate, HealthSeries>>();
 
 /** Both people's daily series from the first record to today. Memoised per State and day (a State is never mutated). */
@@ -118,13 +155,15 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     for (const d of s.weights[p].keys()) if (d < from) from = d;
     for (const b of BODY) for (const d of s.body[p][b].keys()) if (d < from) from = d;
   }
-  const any = from < to || (['A', 'B'] as PersonId[]).some((p) => s.metrics[p].has(to) || s.weights[p].has(to) || BODY.some((b) => s.body[p][b].has(to)));
+  const typed = bodyInDays(s, now);
+  for (const p of ['A', 'B'] as PersonId[]) for (const m of BODY_IN) for (const d of typed[p][m].keys()) if (d < from) from = d;
+  const any = from < to || (['A', 'B'] as PersonId[]).some((p) => s.metrics[p].has(to) || s.weights[p].has(to) || BODY.some((b) => s.body[p][b].has(to)) || BODY_IN.some((m) => typed[p][m].has(to)));
   const n = daysBetween(from, to) + 1;
   const person = (p: PersonId): PersonSeries => {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
     const goals = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, number[]>;
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
-    const dots = { weight: [], body_fat_pct: [], bmi: [], lean_kg: [] } as Record<BodyId, (number | null)[]>;
+    const dots = Object.fromEntries(BODY_IDS.map((b) => [b, []])) as unknown as Record<BodyId, (number | null)[]>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       const day = activityOn(s, p, d, now);
       for (const m of METRICS) {
@@ -133,8 +172,11 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
       }
       dots.weight.push(kgBy.get(d) ?? null);
       for (const b of BODY) dots[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
+      for (const m of BODY_IN) dots[m].push(typed[p][m].get(d) ?? null);
+      const lean = dots.lean_kg.at(-1);
+      dots.bmr.push(lean == null ? null : inbodyBmr(lean));
     }
-    const bodyGoals = Object.fromEntries(BODY_IDS.map((b) => [b, s.prefs[p][GOALS[b].key as LatestGoalKey] ?? null])) as Record<BodyId, number | null>;
+    const bodyGoals = Object.fromEntries(BODY_IDS.map((b) => [b, hasBodyGoal(b) ? (s.prefs[p][GOALS[b].key as LatestGoalKey] ?? null) : null])) as Record<BodyId, number | null>;
     return { values, goals, dots, bodyGoals };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
@@ -353,6 +395,10 @@ interface DotStats {
   n: number;
   /** Their average. */
   avg: number | null;
+  /** The period's last measurement (null: none). */
+  latest: WeighIn | null;
+  /** Since its first (InBody's 「17日前より」): the last measurement − the first, and the days between; null under two. */
+  since: { d: number; days: number } | null;
   /** The plain change over the period (null under two measurements). */
   change: PlainChange | null;
   /** With a goal and a change: reached (the goal's way: under a ceiling, over a floor, near a value), the month at the
@@ -365,6 +411,8 @@ export function dotStats(hs: HealthSeries, p: PersonId, id: BodyId, r: Range): D
   const days = dotDays(hs, hs.people[p].dots[id], r);
   const change = plainChange(days);
   const goal = hs.people[p].bodyGoals[id];
-  const g = GOALS[id];
-  return { n: days.length, avg: avg1(days), change, projection: goal === null || !change ? null : project(change, goal, g.dir, g.band) };
+  const first = days[0], latest = days.at(-1) ?? null;
+  const since = latest && days.length > 1 ? { d: Math.round((latest.kg - first.kg) * 10) / 10, days: daysBetween(first.date, latest.date) } : null;
+  const projection = goal === null || !change || !hasBodyGoal(id) ? null : project(change, goal, GOALS[id].dir, GOALS[id].band);
+  return { n: days.length, avg: avg1(days), latest, since, change, projection };
 }

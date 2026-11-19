@@ -153,21 +153,21 @@ person at a time, computed on read; its code and strings load with the first ope
   last member picked, and says so.
 - **The selectors:** 活動 · 体 and the period (1週 · 1か月 · 3か月 · 1年; ごはん's グラフ's too), 1週 and 活動 on every
   opening, the guest 活動 only; a sticky ‹ the range › and 今日.
-- **Cards** (`model/health.ts` CARDS): 活動 歩数, ムーブ, エクササイズ, スタンド; 体 体重, 体脂肪率, BMI, 除脂肪体重. Each
+- **Cards** (`model/health.ts` CARDS): 活動 歩数, ムーブ, エクササイズ, スタンド; 体 体重 … 除脂肪体重, 筋肉量, 骨格筋量, 基礎代謝量. Each
   card (`ChartCard`): its goal chip ([Goals in place](#goals-in-place)), or a note while nothing is recorded.
   **Activity** (`BarCard`): the daily average and its change against the previous period, goal days n/N, the best and the
   days without a record, the chart.
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
   was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; 1週 shows
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
-- **体重 · 体脂肪率 · BMI · 除脂肪体重** (`BodyCard`, `DotChart`; their headers): each its own optional goal, the average
-  (BMI with its category by the person's standard), the change, the dot chart and the goal month at that pace. No good / bad colours; no ベル.
+- **体** (`BodyCard`): a goal each (not 基礎代謝量), two equal boxes 最新 (BMI's category) and 「N日前より」 (last −
+  first), dots, goal month. 筋肉量 / 骨格筋量 typed in (`body_in`); 基礎代謝量 = 370 + 21.6 × 除脂肪体重. No ベル.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's chip opens a tray under the header (−/＋ by the step, the range, clear where clearable, キャンセル, 決定), one
   open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the
   ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
 - <a id="goal-directions"></a>**Goal directions** (GOALS `dir`; why: [decisions](decisions.md#goal-directions)): at
-  least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
+  least 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, 筋肉量, たんぱく質, 食物繊維; at most 体脂肪率, 脂質, 塩分, アルコール; near a
   value: 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). Every chip, shading, goal day and tile follows it.
 - **Rules:** a day's value is Health's latest; a day without a record has no row (from the first activity record);
   today is drawn, not counted; the previous period is as long, just before.
@@ -348,7 +348,7 @@ Each person's wallet runs from the economy's first day: a day's ベル count in 
 
 ## Weight
 
-`model/weight.ts`, for けんこう's 期間の変化 and goal month; never earns (`deps.test.ts`). Plain arithmetic, no
+`model/weight.ts`, for けんこう's goal month; never earns (`deps.test.ts`). Plain arithmetic, no
 smoothing: over the visible period, the first week's average weigh-in → the last week's when the weigh-ins span 14
 days or more, else the first weigh-in → the last; under two, none (–). Per week: that change over the days between the
 two weeks' middles, shown from 7 days apart. Goal month: from the last week's average at that pace, only when it heads

@@ -323,7 +323,7 @@ test('けんこう: the body fat goal, set on its card (3–60 %), a solid line 
   // BMI and lean mass have their own (none set in the demo): a chip each, no line
   await expect(goalChip(page, 'bmi-goal')).toHaveText('目標なし');
   await expect(goalChip(page, 'lean_kg-goal')).toHaveText('目標なし');
-  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
+  await expect(sheet(page).locator('.bc[data-metric=bmi] path.goal, .bc[data-metric=lean_kg] path.goal')).toHaveCount(0);
   const chip = goalChip(page, 'body_fat_pct-goal');
   await chip.click();
   const input = tray(page).getByRole('textbox');
@@ -339,11 +339,10 @@ test('けんこう: the body fat goal, set on its card (3–60 %), a solid line 
   await expect(saved).toContainText('体脂肪率の目標を変更しました');
   await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
-  // drawn on the body fat chart as the weight goal is: the solid line, the key and the chart's words (its own words
-  // are the chip's, never in the plot: health plan C3)
+  // drawn on the body fat chart as the weight goal is: the solid line and the chart's words (its own words are the
+  // chip's, never in the plot or a legend: health plan C3)
   await expect(fat.locator('path.goal')).toHaveCount(1);
   await expect(fat.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 19\.5/);
-  await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
   await chip.click();
   await tray(page).getByRole('button', { name: '目標を外す' }).click();
@@ -362,7 +361,7 @@ test('けんこう: each からだ card wears its own NH item, as かつどう w
   await openPanel(page);
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
-  const art = { weight: 'analog-kitchen-scale', body_fat_pct: 'protein-shaker-bottle', bmi: 'exercise-bike', lean_kg: 'weight-bench' };
+  const art = { weight: 'analog-kitchen-scale', body_fat_pct: 'protein-shaker-bottle', bmi: 'exercise-bike', lean_kg: 'weight-bench', muscle_kg: 'punching-bag', smm_kg: 'anatomical-model', bmr: 'camp-stove' };
   for (const [metric, item] of Object.entries(art)) {
     const img = sheet(page).locator(`[data-metric=${metric}][data-person=A] header .ic img`);
     await expect(img, metric).toHaveCount(1);

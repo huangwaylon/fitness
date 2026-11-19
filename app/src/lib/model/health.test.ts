@@ -151,7 +151,7 @@ describe('edge cases', () => {
     expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, met: 0, best: null, change: null });
     expect(bucketValues(hs, 'B', 'move', r).every((b) => b.v === null)).toBe(true);
     expect(canShift(r, hs.from, TODAY).back).toBe(false);
-    expect(dotStats(hs, 'A', 'weight', r)).toEqual({ n: 0, avg: null, change: null, projection: null });
+    expect(dotStats(hs, 'A', 'weight', r)).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
   });
 
   it('one person only: the other has no record anywhere', () => {
@@ -173,6 +173,8 @@ describe('edge cases', () => {
     expect(s.avg).toBe(68.5);
     // 09-01 is outside the period and doesn't count; two days apart: no weekly pace
     expect(s.change).toMatchObject({ basis: 'ends', from: 69, to: 68, change: -1, perWeek: null });
+    // the card's row: the last weigh-in and InBody's 「2日前より」 (the last − the first, the days between)
+    expect([s.latest, s.since]).toEqual([{ date: '2026-10-22', kg: 68 }, { d: -1, days: 2 }]);
     expect(s.projection).toBeNull(); // no goal
     // weight alone isn't a missing activity day
     expect(hs.activityFrom).toBe(TODAY);
@@ -181,8 +183,8 @@ describe('edge cases', () => {
     expect(b[0]).toEqual({ v: null, n: 0 });
     expect(b.find((x) => x.v === 69)).toBeTruthy();
     // a period with no weigh-in says nothing; one weigh-in has no change
-    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-20'))).toEqual({ n: 0, avg: null, change: null, projection: null });
-    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-03'))).toMatchObject({ n: 1, avg: 70, change: null });
+    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-20'))).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
+    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-03'))).toMatchObject({ n: 1, avg: 70, since: null, change: null });
     expect(dotStats(hs, 'B', 'weight', r).n).toBe(0);
   });
 
@@ -328,10 +330,44 @@ describe('one person at a time', () => {
   });
 });
 
+describe('the からだ values typed in (筋肉量, 骨格筋量) and 基礎代謝量 from the lean mass', () => {
+  const bi = (who: 'A' | 'B' | 'G', date: string, time: string, d: object) => [jst(date, time), who, `bi${date}${time}${who}${JSON.stringify(d).length}`, 'body_in', JSON.stringify({ date, ...d })] as EventRow;
+  it('a day’s latest entry, either member’s for either; null clears the day; the guest’s, a bad row or one after now: skipped', () => {
+    const hs = series(rows([], [
+      bi('A', '2026-10-20', '08:00', { m: 'muscle_kg', v: 36.7, person: 'B' }),
+      bi('B', '2026-10-20', '09:00', { m: 'muscle_kg', v: 36.9 }), // later the same day: replaces it
+      bi('B', '2026-10-22', '09:00', { m: 'smm_kg', v: 20.4 }),
+      bi('A', '2026-10-24', '08:00', { m: 'smm_kg', v: 30.1 }),
+      bi('A', '2026-10-24', '09:00', { m: 'smm_kg', v: null }), // cleared
+      bi('G', '2026-10-25', '08:00', { m: 'muscle_kg', v: 30, person: 'A' }), // the guest's: never
+      bi('A', '2026-10-26', '08:00', { m: 'muscle_kg', v: 300 }), // out of range
+      bi('A', '2026-10-27', '08:00', { m: 'lean_kg', v: 40 }), // not typed in
+      bi('B', '2026-10-31', '23:00', { m: 'muscle_kg', v: 35.1 }) // after `now`
+    ]));
+    expect(hs.from).toBe('2026-10-20');
+    expect(hs.people.B.dots.muscle_kg.slice(0, 3)).toEqual([36.9, null, null]);
+    expect(hs.people.B.dots.smm_kg[2]).toBe(20.4);
+    expect(hs.people.A.dots.smm_kg.every((v) => v === null)).toBe(true);
+    expect(hs.people.A.dots.muscle_kg.every((v) => v === null)).toBe(true);
+    expect(hs.people.B.dots.muscle_kg.at(-1)).toBeNull();
+    const s = dotStats(hs, 'B', 'muscle_kg', rangeFor('month', TODAY));
+    expect([s.n, s.latest, s.since]).toEqual([1, { date: '2026-10-20', kg: 36.9 }, null]);
+  });
+
+  it('基礎代謝量 = InBody’s 370 + 21.6 × the day’s lean mass, a day with one (2026-11-19’s sheet: 37.3 kg → 1,176 kcal); no goal', () => {
+    const goal = [jst('2026-10-01', '08:00'), 'A', 'gm', 'pref', JSON.stringify({ key: 'goalMuscle', value: 40 })] as EventRow;
+    const hs = series(rows([m('B', '2026-10-20', 'lean_kg', 39.2, '08:00'), m('B', '2026-10-30', 'lean_kg', 37.3, '08:00')], [goal]));
+    const d = hs.people.B.dots.bmr;
+    expect([d[0], d[1], d[10]]).toEqual([1217, null, 1176]);
+    expect(dotStats(hs, 'B', 'bmr', rangeFor('month', TODAY))).toMatchObject({ latest: { date: '2026-10-30', kg: 1176 }, since: { d: -41, days: 10 }, projection: null });
+    expect([hs.people.A.bodyGoals.muscle_kg, hs.people.A.bodyGoals.bmr]).toEqual([40, null]);
+  });
+});
+
 describe('the body metrics (body fat %, BMI, lean body mass)', () => {
   it('けんこう’s groups: かつどう (steps, then the rings), からだ (weight first, then the body metrics)', () => {
     expect(GROUPS).toEqual(['activity', 'body']);
-    expect(CARDS).toEqual({ activity: ['steps', 'move', 'exercise', 'stand'], body: ['weight', 'body_fat_pct', 'bmi', 'lean_kg'] });
+    expect(CARDS).toEqual({ activity: ['steps', 'move', 'exercise', 'stand'], body: ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'muscle_kg', 'smm_kg', 'bmr'] });
   });
 
   it('a day’s value is its latest row, one decimal; out of bounds is ignored; sparse like weight, per person', () => {
@@ -350,8 +386,8 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     expect(hs.people.B.dots.lean_kg.slice(4, 6)).toEqual([41.2, null]);
     expect(hs.people.A.dots.lean_kg.every((v) => v === null)).toBe(true);
     const r = rangeFor('month', TODAY);
-    expect(dotStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, change: null, projection: null });
-    expect(dotStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, change: null, projection: null });
+    expect(dotStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, latest: { date: '2026-10-24', kg: 41.2 }, since: null, change: null, projection: null });
+    expect(dotStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
   });
 
   it('the period’s average and plain change (first week → last week), weekly buckets average their measurements', () => {
@@ -373,7 +409,7 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     const goal = (key: string, g: number | null, who: 'A' | 'B' = 'A') => [jst('2026-10-01', '08:00'), who, `${key}${g}${who}`, 'pref', JSON.stringify({ key, value: g })] as EventRow;
     const hs = series(rows(metrics, [goal('goalBodyFat', 22), goal('goalBodyFat', 30, 'B')]));
     expect([hs.people.A.bodyGoals.body_fat_pct, hs.people.B.bodyGoals.body_fat_pct]).toEqual([22, 30]);
-    expect(hs.people.A.bodyGoals).toEqual({ weight: null, body_fat_pct: 22, bmi: null, lean_kg: null });
+    expect(hs.people.A.bodyGoals).toEqual({ weight: null, body_fat_pct: 22, bmi: null, lean_kg: null, muscle_kg: null, smm_kg: null, bmr: null });
     // the last week's average 23.7 at about −0.35 a week: 5 weeks on (35 days after 10-28)
     expect(dotStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'date', date: '2026-12-02' });
     expect(dotStats(hs, 'A', 'bmi', rangeFor('month', TODAY)).projection).toBeNull();

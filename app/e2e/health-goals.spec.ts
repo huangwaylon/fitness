@@ -26,7 +26,7 @@ test('no Health data yet (a new couple): every card is there with its goal, sayi
   await sheet(page).locator('#goal-steps-goal button[type=submit]').click();
   await expect(steps).toHaveText(/8,500歩\s以上/);
   await sheet(page).locator('[data-group=body]').click();
-  await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
+  await expect(cards.locator('[data-health-empty]')).toHaveCount(7);
   await expect(sheet(page).locator('button[data-goal=weight-goal]')).toHaveText(/66\.0\skg\s前後/); // the demo's goal, kept without a weigh-in
   await expect(sheet(page).locator('button[data-goal=body_fat_pct-goal]')).toBeVisible();
 });

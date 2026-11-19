@@ -8,12 +8,12 @@ import { isLocalDate, isPersonId } from './api.ts';
 import type { PersonId } from '../types.ts';
 
 /** The metrics typed in: 筋肉量 (soft lean mass), 骨格筋量 (skeletal muscle mass). */
-const BODY_IN = ['muscle_kg', 'smm_kg'] as const;
+export const BODY_IN = ['muscle_kg', 'smm_kg'] as const;
 export type BodyInMetric = (typeof BODY_IN)[number];
-const isBodyIn = (v: unknown): v is BodyInMetric => v === 'muscle_kg' || v === 'smm_kg';
+export const isBodyIn = (v: unknown): v is BodyInMetric => v === 'muscle_kg' || v === 'smm_kg';
 
 /** What the record takes (inclusive, kg): an adult's range on InBody's sheets with room either side. */
-const BODY_IN_BOUNDS: Record<BodyInMetric, { min: number; max: number }> = {
+export const BODY_IN_BOUNDS: Record<BodyInMetric, { min: number; max: number }> = {
   muscle_kg: { min: 10, max: 100 },
   smm_kg: { min: 5, max: 60 }
 };

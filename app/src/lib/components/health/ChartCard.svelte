@@ -14,7 +14,8 @@
   import { GOAL_SPECS, goalLabel } from './goals.ts';
 
   interface Props {
-    id: GoalId;
+    /** Its goal's id; `bmr` (基礎代謝量, worked out from 除脂肪体重) has none: no chip. */
+    id: GoalId | 'bmr';
     /** Its name (the heading). */
     title: string;
     /** Whose data (`data-person`). */
@@ -41,14 +42,15 @@
   const art = $derived(id in NUTRIENT_ART ? NUTRIENT_ART[id as keyof typeof NUTRIENT_ART] : id in BODY_ART ? BODY_ART[id as keyof typeof BODY_ART] : fruitArt(METRIC_FRUIT[id as Metric]));
   const cur = $derived(now === undefined ? goal : now);
   const hid = $derived(`${kind === 'food' ? 'fi' : 'mc'}-${id}`);
+  const spec = $derived(id === 'bmr' ? null : GOAL_SPECS[id]);
 </script>
 
 <section class="card hcard {tone === 'soft' ? 'mc' : 'bc'}" data-metric={kind === 'metric' ? id : undefined} data-food-chart={kind === 'food' ? id : undefined}
-  data-person={p} data-goal-dir={GOAL_SPECS[id].dir} aria-labelledby={hid}>
+  data-person={p} data-goal-dir={spec?.dir} aria-labelledby={hid}>
   <header>
     <span class="ic"><OfficialArt key={art} size={24} /></span>
     <h3 id={hid}>{title}</h3>
-    <GoalEdit id="{id}-goal" spec={GOAL_SPECS[id]} label={goalLabel(id, goal)} value={cur} {onsave} {start} {warn} {tone} />
+    {#if spec}<GoalEdit id="{id}-goal" {spec} label={goalLabel(spec.id, goal)} value={cur} {onsave} {start} {warn} {tone} />{/if}
   </header>
   {#if empty}
     <p class="none" data-health-empty={kind === 'metric' ? '' : undefined} data-food-empty={kind === 'food' ? '' : undefined}>{t('kiroku.empty')}</p>

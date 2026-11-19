@@ -202,6 +202,12 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
         [iso(syncAt), p, d, 'bmi', Math.round((kg / c.height ** 2) * 10) / 10],
         [iso(syncAt), p, d, 'lean_kg', Math.round(kg * (1 - fat / 100) * 10) / 10]
       );
+      // B types in InBody's 筋肉量 and 骨格筋量 every few weigh-ins of the last 8 weeks (A never: the empty card)
+      if (p === 'B' && i % 4 === 0 && d >= addDays(today, -56)) {
+        const lean = kg * (1 - fat / 100);
+        ev(syncAt + 60_000, 'B', 'body_in', { date: d, m: 'muscle_kg', v: Math.round(lean * 0.94 * 10) / 10 });
+        ev(syncAt + 61_000, 'B', 'body_in', { date: d, m: 'smm_kg', v: Math.round(lean * 0.547 * 10) / 10 });
+      }
     }
   }
   ev(at(wStart, 21, 0), 'A', 'pref', { key: 'goalWeight', value: WEIGHT_DEMO.A.goal });
@@ -280,7 +286,7 @@ type DemoHealth = 'some' | 'none';
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`; no Health rows with `?demo&health=none`). */
 export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK, health: DemoHealth = 'some'): SnapshotCache {
   const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
-  const all = health !== 'none' ? made : { ...made, metrics: [] };
+  const all = health !== 'none' ? made : { metrics: [], events: made.events.filter((e) => e[3] !== 'body_in') };
   // what the record would send this key (contract/guest.ts rowsFor): the guest's (`?demo&as=G`) without the からだ rows
   const rows = rowsFor(me, all);
   return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: true };
