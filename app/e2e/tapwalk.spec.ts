@@ -177,7 +177,7 @@ test('a tap at the tent’s foot goes in too (the footprint is the campsite’s)
   await open(page, '&date=2026-07-01T10:00');
   await oku(page);
   // the ground just inside the tent's footprint (taps on the art itself are the door button's)
-  await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' });
+  await page.addStyleTag({ content: '[data-building] .door { pointer-events: none !important; }' }); // r4-dom: the ground under the door's tap area, till the canvas router (step 6)
   const b = (await geo(page)).BUILDINGS.find((b) => b.id === 'campsite')!;
   const [x, y] = await call(page, (w, [x, z]) => w.at(x, z), [b.x - 26, b.z + 16]);
   await page.mouse.click(x, y);

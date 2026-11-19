@@ -26,7 +26,7 @@ async function open(page: Page, cam: number | ((g: Geo) => number)) {
 async function topAt(page: Page, x: number, z: number, fy: number) {
   await call(page, (w, [x, z]) => w.put(x, z), [x, z]);
   // the scenery's art lets taps through (pointer-events: none): make it hit-testable for the probe
-  await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' });
+  await page.addStyleTag({ content: '[data-scenery-id] .art, [data-building] .door { pointer-events: auto !important; }' }); // r4-dom: the DOM's stacking, till the 3D pick (step 5)
   await settled(page);
   // (its figure: its tap area, its model's own box: actor().v3)
   const r = (await w3(page, (w) => w.box('villager', 'mine')))!;
@@ -37,8 +37,7 @@ async function topAt(page: Page, x: number, z: number, fy: number) {
     if (p?.kind === 'villager' && p.id === 'mine') return 'mine';
     const tree = e.closest('[data-scenery-id]');
     if (tree) return `${(tree as HTMLElement).dataset.sceneryId}:${(tree as HTMLElement).dataset.part}`;
-    const b = e.closest('[data-building]');
-    if (b) return `building:${(b as HTMLElement).dataset.building}`;
+    if (p?.kind === 'building') return `building:${p.id}`;
     return e.className.toString() || e.tagName;
   }, [r.left + r.width / 2, r.top + r.height * fy]);
 }
@@ -65,9 +64,8 @@ test('behind a building it is hidden, in front of it it covers it', async ({ pag
 test('a tap on a sprite far up near the horizon lands on it (hit-testing follows the transforms)', async ({ page }) => {
   await open(page, (g) => g.BUILDINGS.find((b) => b.id === 'campsite')!.z - 684);
   // the campsite, far up the island: its door is a button, small near the horizon
-  const door = page.locator('[data-building="campsite"] button');
-  const r = (await door.boundingBox())!;
+  const r = (await w3(page, (w) => w.box('building', 'campsite')))!;
   expect(r.height).toBeGreaterThan(10);
-  const hit = await page.evaluate(([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-building="campsite"]'), [r.x + r.width / 2, r.y + r.height * 0.8]);
+  const hit = await page.evaluate(([x, y]) => ((p) => p?.kind === 'building' && p.id === 'campsite')((window as unknown as { __world3d: W3 }).__world3d.pick(x, y)), [r.left + r.width / 2, r.top + r.height * 0.8]);
   expect(hit).toBe(true);
 });

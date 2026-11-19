@@ -15,7 +15,9 @@ const HOOKS = new Set(['island.ts', 'probe.spec.ts']);
 const FORBIDDEN: Record<string, RegExp[]> = {
   // actor(slot): walking, act, fx, hat, stung, swollen, tricked, inside, seat, gym, who, v3; box('villager', slot);
   // tapOn/tapBox; feetOf, walking, villager, slotOf; watchComings' and watchFor's { actor, is }; controls()
-  villagers: [/data-actor(?![\w-])/, /\.vil(?![\w-])/, /\.actor[[:.\s'"]/, /data-(stung|swollen|tricked|hat|inside|gym|seat|v3)(?![\w-])/, /\.body\[data-act/, /\.fxa?\.(confetti|hearts|sparkles)/]
+  villagers: [/data-actor(?![\w-])/, /\.vil(?![\w-])/, /\.actor[[:.\s'"]/, /data-(stung|swollen|tricked|hat|inside|gym|seat|v3)(?![\w-])/, /\.body\[data-act/, /\.fxa?\.(confetti|hearts|sparkles)/],
+  // pick(x, y)'s kind 'building' and box('building', id) (its door's tap area); the ids from __world.geo().BUILDINGS
+  buildings: [/data-building(?![\w-])/, /(?<!dataset)\.door(?![\w-])/]
 };
 
 const files = [

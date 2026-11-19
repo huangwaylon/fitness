@@ -40,26 +40,25 @@ function feetOf(ops: object[]): Record<string, Box> {
 }
 const FEET = feetOf(USER_LAYOUT);
 type Hooks = {
-  __world3d: { go(z: number, k?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null };
-  __world: { ground(x: number, z: number): { surface: string } };
+  __world3d: { go(z: number, k?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; pick(cx: number, cy: number): { kind: string; id: string } | null; box(kind: 'building', id: string): { left: number; top: number; width: number; height: number } | null };
+  __world: { ground(x: number, z: number): { surface: string }; geo(): { BUILDINGS: { id: string }[] } };
 };
 
 /** The screen's water points (every 6 px) that a building's tap area takes though it can't stand in front of them (the
- *  water before it, or beside it at its own depth): (x, y) → the building and the ground under it. Only the points
- *  inside a tap area's boxes are looked at (each [data-building]'s and its descendants' client rects, 8 px round them:
- *  a child or a transform reaching past its box too), the rest can't be a building's. */
+ *  water before it, or beside it at its own depth): (x, y) → the building (`__world3d.pick`) and the ground under it. */
 const strayWater = (page: Page, feet: Record<string, Box>) =>
   page.evaluate((feet) => {
     const h = window as unknown as Hooks;
     // (its eaves and roof reach a little past its footprint: 20u either side)
+    // (only the points within 8 px of a building's tap area (`box`) asked: the rest can't be one's)
     const MARGIN = 20, PAD = 8;
-    const boxes = [...document.querySelectorAll('[data-building], [data-building] *')].flatMap((e) => [...e.getClientRects()]).filter((r) => r.width || r.height);
-    const near = (x: number, y: number) => boxes.some((r) => x >= r.left - PAD && x <= r.right + PAD && y >= r.top - PAD && y <= r.bottom + PAD);
+    const boxes = h.__world.geo().BUILDINGS.flatMap((b) => ((r) => (r?.width ? [r] : []))(h.__world3d.box('building', b.id)));
+    const near = (x: number, y: number) => boxes.some((r) => x >= r.left - PAD && x <= r.left + r.width + PAD && y >= r.top - PAD && y <= r.top + r.height + PAD);
     const out: string[] = [];
     for (let y = 0; y < innerHeight; y += 6)
       for (let x = 0; x < innerWidth; x += 6) {
         if (!near(x, y)) continue;
-        const b = document.elementFromPoint(x, y)?.closest('[data-building]')?.getAttribute('data-building');
+        const p = h.__world3d.pick(x, y), b = p?.kind === 'building' ? p.id : null;
         if (!b) continue;
         const g = h.__world3d.ground(x, y);
         if (!g || h.__world.ground(g.x, g.z).surface !== 'water') continue;
@@ -105,7 +104,7 @@ test('on the user’s island the shop’s tap area covers its roof and walls, as
     const w = (window as unknown as { __world3d: { client(x: number, z: number, lift?: number): [number, number] } }).__world3d;
     return w.client((f.x0 + f.x1) / 2, f.y0 + (f.y1 - f.y0) * 0.6, 100);
   }, FEET.shop);
-  await expect.poll(() => page.evaluate(([x, y]) => document.elementFromPoint(x, y)?.closest('[data-building]')?.getAttribute('data-building') ?? null, roof)).toBe('shop');
+  await expect.poll(() => page.evaluate(([x, y]) => ((p) => (p?.kind === 'building' ? p.id : null))((window as unknown as Hooks).__world3d.pick(x, y)), roof)).toBe('shop');
   // (a real touch: exactTaps.ts sends its click to the finger's own point; my villager walks up to it first)
   await page.touchscreen.tap(roof[0], roof[1]);
   await expect(page).toHaveURL(/\/shop/, { timeout: 30_000 });

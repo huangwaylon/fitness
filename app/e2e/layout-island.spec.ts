@@ -116,10 +116,10 @@ test('the editor moves うめ’s home: the phone’s door, walk and tap area fo
   // how far the door's tap area stands from where the camera draws the door (px): its node's foot against the door's
   // point on the layout's ground
   const off = () => phone.evaluate(() => {
-    const w = window as unknown as { __world: { site(): Site }; __world3d: { client(x: number, z: number): [number, number] } };
+    const w = window as unknown as { __world: { site(): Site }; __world3d: { client(x: number, z: number): [number, number]; box(kind: 'building', id: string): { left: number; top: number; width: number; height: number } | null } };
     const [x, z] = w.__world.site().doors['home-B'], [sx, sy] = w.__world3d.client(x, z + 16);
-    const r = document.querySelector('[data-building="home-B"] .door')!.getBoundingClientRect();
-    return Math.hypot(r.left + r.width / 2 - sx, r.bottom - sy);
+    const r = w.__world3d.box('building', 'home-B')!;
+    return Math.hypot(r.left + r.width / 2 - sx, r.top + r.height - sy);
   });
   await expect.poll(off).toBeLessThan(30);
   await editor.goto(`editor/?demo&preview=0&date=${DATE}`);

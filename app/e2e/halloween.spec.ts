@@ -3,7 +3,7 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, islandUp, stageCam, tapFigure, villager, w3 } from './island.ts';
+import { camTo, geo, islandUp, stageCam, tapFigure, villager, w3, type W3 } from './island.ts';
 import { hudBells } from './hud.ts';
 
 /** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
@@ -13,7 +13,11 @@ const under = (page: Page, sel: string, hud = false) =>
     return [...document.querySelectorAll(s)].filter((el) => getComputedStyle(el).visibility !== 'hidden').flatMap((el) => {
       const b = el.getBoundingClientRect();
       const pts = [[b.left + 2, b.top + 2], [b.right - 2, b.top + 2], [b.left + 2, b.bottom - 2], [b.right - 2, b.bottom - 2], [(b.left + b.right) / 2, (b.top + b.bottom) / 2]];
-      return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !e.closest('[data-building]') && !(hud && e.closest('.stage'))).map((e) => e.className));
+      // the HUD's: the stage's own left out; else every control stacked there (`controls`), a building's door behind the
+      // figure (the world's, not a control over it) and the talk balloon left out
+      if (hud) return pts.flatMap(([x, y]) => document.elementsFromPoint(x, y).filter((e) => e.closest('button') && !e.closest('[data-fx]') && !e.closest('.stage')).map((e) => e.className));
+      const controls = (window as unknown as { __world3d: W3 }).__world3d.controls().filter((c) => c.kind !== 'building' && c.kind !== 'talk');
+      return pts.flatMap(([x, y]) => controls.filter((c) => x >= c.box.left && x <= c.box.left + c.box.width && y >= c.box.top && y <= c.box.top + c.box.height).map((c) => `${c.kind}:${c.id}`));
     });
   }, [sel, hud] as const);
 /** The camera to a world z (まえ, おく: the campsite's clearing), held there and the island at rest (camTo: the pumpkins

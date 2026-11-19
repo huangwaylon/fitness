@@ -19,8 +19,8 @@ const USER_LAYOUT = [
 ];
 type Hooks = {
   __fish: { why(): string; line(): object | null };
-  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean };
-  __world: { ground(x: number, z: number): { surface: string } };
+  __world3d: { pick(cx: number, cy: number): { kind: string; id: string } | null; go(z: number, k?: number, x?: number): void; limits(): { min: number; max: number }; ground(cx: number, cy: number): { x: number; z: number } | null; camStill(): boolean; box(kind: 'building', id: string): { left: number; top: number; width: number; height: number } | null };
+  __world: { ground(x: number, z: number): { surface: string }; geo(): { BUILDINGS: { id: string }[] } };
   __cues: string[];
 };
 const hooks = <R,>(page: Page, fn: (h: Hooks) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
@@ -56,11 +56,12 @@ const waterBeside = (page: Page, near: 'building' | 'find') => page.evaluate((ne
   const memo = new Map<string, boolean>();
   const onBuilding = (x: number, y: number) => {
     const gx = Math.round(x / 2) * 2, gy = Math.round(y / 2) * 2, k = `${gx},${gy}`;
-    if (!memo.has(k)) memo.set(k, !!document.elementFromPoint(gx, gy)?.closest('[data-building]'));
+    if (!memo.has(k)) memo.set(k, h.__world3d.pick(gx, gy)?.kind === 'building');
     return memo.get(k)!;
   };
   const hits = near === 'building' ? onBuilding : (x: number, y: number) => onArt(x, y, 0);
-  const boxes = near === 'building' ? [...document.querySelectorAll('[data-building] .door')].map((e) => e.getBoundingClientRect()).filter((r) => r.width) : art;
+  const doors = h.__world.geo().BUILDINGS.flatMap((b) => ((r) => (r?.width ? [new DOMRect(r.left, r.top, r.width, r.height)] : []))(h.__world3d.box('building', b.id)));
+  const boxes = near === 'building' ? doors : art;
   const seen = new Set<string>();
   for (const b of boxes)
     for (let y = Math.max(120, Math.round(b.top) - 20); y < Math.min(innerHeight - 120, b.bottom + 20); y += 4)
@@ -159,12 +160,12 @@ for (const layout of ['default', 'user'] as const) {
     // (from the far stop on down: on the default island it stands lower down)
     // (the door's own tap area, read at the tap: frame-locked, a villager walking in front of it waited out)
     const door: Aim<null> = (w) => {
-      const el = w.document.querySelector('[data-building="shop"] .door'), r = el?.getBoundingClientRect();
+      const r = w.__world3d.box('building', 'shop');
       if (!r?.width) return null;
       for (let fy = 0.3; fy < 0.9; fy += 0.1)
         for (const fx of [0.5, 0.4, 0.6]) {
-          const x = r.left + r.width * fx, y = r.top + r.height * fy;
-          if (y > 120 && w.document.elementFromPoint(x, y) === el) return [x, y];
+          const x = r.left + r.width * fx, y = r.top + r.height * fy, p = w.__world3d.pick(x, y);
+          if (y > 120 && p?.kind === 'building' && p.id === 'shop') return [x, y];
         }
       return null;
     };

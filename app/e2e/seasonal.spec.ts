@@ -16,7 +16,7 @@ async function open(page: Page, date: string) {
 // (which days: ui-state/season.test's windows, scenery.test's sceneryKey (the campsite's snow in winter only) and
 // clock.test's eventsAt (cherry-blossom and maple weeks, neither on an ordinary day); here a day of each on the island)
 test('snow on the campsite’s tent in winter', async ({ page }) => {
-  const tent = page.locator('[data-building="campsite"] [data-look]');
+  const tent = page.locator('[data-building="campsite"] [data-look]'); // r4-dom: its look, with the scenery family's data-look
   await open(page, '2027-01-12T10:00');
   await expect(tent).toHaveAttribute('data-look', 'deco/campsite-winter');
 });
