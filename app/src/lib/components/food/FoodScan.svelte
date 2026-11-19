@@ -4,7 +4,8 @@
   // field with 検索 always under it (every camera failure's way on). The camera opens with the level (the tap that
   // pushed it: no screen before iOS's own prompt); a frame's band is read every TICK_MS (lib/scan: camera.ts, the
   // decoder decode.ts in its own chunk; this level is a chunk of its own too: Food's Lazy), never per frame. A read: the
-  // frame frozen, the corners leaf for FLASH_MS, the camera off at once, then what the code is (scan.ts lookupCode: our
+  // frame frozen, the corners leaf for FLASH_MS, the camera off at once, then what the code is (a マイ食品 of mine made
+  // from it first: scan.ts ownFood; then lookupCode: our
   // products, waited for, else Open Food Facts online; the code and the wait on one line): found, `onfound` (Food swaps
   // this level for the amount); not found or unreached, a line and もう一度 · 名前で探す. The products (lazy) are asked
   // for with the decoder, so a read soon after the open waits less. A code whose check digit fails never reads
@@ -23,15 +24,17 @@
   import { ScanTiming } from '#lib/scan/timing.ts';
   import { log } from '#lib/sync/log.ts';
   import { foodDb, held } from './dbHold.svelte.ts';
-  import { lookupCode } from './scan.ts';
+  import { lookupCode, ownFood } from './scan.ts';
 
   interface Props {
     /** A code's food (ours or Open Food Facts'): its amount. */
     onfound: (item: Item) => void;
     /** 名前で探す: back to the search, its field focused. */
     onbyname: () => void;
+    /** A code's マイ食品 of mine made from that product (表示値を確認's 直す), found first: Food's byJan. */
+    mine?: (code: string) => Item | undefined;
   }
-  let { onfound, onbyname }: Props = $props();
+  let { onfound, onbyname, mine }: Props = $props();
 
   /** A frame read this often (ms): ~5 a second, enough to read within a second of aiming, a fraction of the battery
    *  and the main thread a per-frame read would take. */
@@ -173,8 +176,9 @@
     flash = seen;
     clearTimeout(flashT);
     if (seen) flashT = setTimeout(() => (flash = false), FLASH_MS);
-    const db = held.db ?? (await foodDb().catch(() => null));
-    const hit = await lookupCode(raw, db, t('food.scan.offTrust'), format, (c) => {
+    const own = ownFood(raw, mine, format);
+    const db = own ? null : (held.db ?? (await foodDb().catch(() => null)));
+    const hit = own ? { k: 'ours' as const, item: own } : await lookupCode(raw, db, t('food.scan.offTrust'), format, (c) => {
       look = 'online';
       return offLookup(c, t('food.scan.offTrust'));
     }, () => (look = 'loading'));

@@ -342,7 +342,11 @@ service worker once used (`caches.ts` carried, the name `scan`: never precached,
   データの出典 covers it.
 - **Stored** as any food: the `food` op's snapshot carries the name and the values inline (`contract/food.ts`
   FoodSnap), so the entry shows the same on every phone and offline. There was no contract change.
-- **Logged** as one usage counter per outcome: `act:scan.found` · `found.jan` · `fallback` · `miss` · `offline` · `late`, and
+- **Blocked and mine**: a code `food_fixes.json` drops (index.json `drop`, written by `food-data.ts`; the guard
+  checks it lists every drop) is not found at once, never asked of OFF; a live answer part per serving
+  (`off.ts partialScaling`, `off.py`'s rule) is not found either. A マイ食品 made from a product by 表示値を確認's 直す
+  keeps its barcode (`food_custom` `jan`): its owner's scan opens it first, and their search shows it in that product's row.
+- **Logged** as one usage counter per outcome: `act:scan.mine` · `found` · `found.jan` · `fallback` · `miss` · `dropped` · `offline` · `late`, and
   once a scanner session `perf.scan` (open → first frame and → read, decode p50/max, band grab p50, ms; how it ended),
   never the code or the name.
 

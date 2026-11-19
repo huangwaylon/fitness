@@ -7,7 +7,7 @@ import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import { DAYS, daysText, entryPfcCells, glossOf, goalChip, itemOf, keptRows, KEPT_MAX, recentOf, sameItems, stateItem, catOf, kaloriPage, kaloriTrust, plateOf, recipeIdOf, recipePlate, recentShops, shopChips, stateGroups, stemName } from './foodUi.ts';
 import { amountText, defaultPortion, matchPortion, portionLabel, portionText, startOf, stepOf, nextMult } from './portions.ts';
-import { customDraft, customErrors, draftOf, customItem, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
+import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
 import { unitOf } from '#lib/food/index.ts';
@@ -211,6 +211,13 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
     // (grams typed: no label, the field's 1食; a serving with no weight: none; a long name cut to the field's)
     expect(draftOf({ ...cone, name: 'あ'.repeat(40) }, 75, null)).toMatchObject({ n: 'あ'.repeat(30), u: '', g: '75' });
     expect(draftOf({ ...cone, sv: true }, 200, '1食×2')).toMatchObject({ u: '1食×2', g: '', k: '352', p: '72' });
+  });
+  it('a product’s barcode for its マイ食品 (its jan, else an off: id’s), and mine by barcode, the latest first', () => {
+    expect([janOf({ id: 'off:4901005312005' }), janOf({ id: 'jbfd:x1', jan: '4901234567894' }), janOf({ id: 'jbfd:x2' }), janOf({ id: 'off:abc' }), janOf({ id: 'mext:01001' })])
+      .toEqual(['4901005312005', '4901234567894', undefined, undefined, undefined]);
+    const mine = { ...bar, who: 'A' as const, jan: '4901005312005' };
+    const m = byJan([{ ...mine, id: 'mnew0001' }, mine, { ...bento, jan: '4901234567894', who: 'B' }, bento], 'A');
+    expect([...m].map(([j, c]) => [j, c.id])).toEqual([['4901005312005', 'mnew0001']]);
   });
   it('reads amounts as typed: full-width, a decimal comma, a unit; blank is null, nonsense undefined', () => {
     expect(parseAmount('６５０', 0, 5000)).toBe(650);

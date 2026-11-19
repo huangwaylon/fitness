@@ -12,6 +12,8 @@ export class CustomFlow {
   savedAs = $state<string | null>(null);
   readonly clean = $derived(this.savedAs !== null && this.savedAs === JSON.stringify(this.draft));
   #started = '';
+  /** The barcode of the product the food being edited was made from (openDraft's, or its own: CustomOp `jan`). */
+  #jan: string | undefined;
   readonly #e: FoodFlowEnv;
 
   constructor(env: FoodFlowEnv) {
@@ -24,21 +26,23 @@ export class CustomFlow {
 
   open(c: FoodCustom | null, then: Then, focus: string, name = ''): void {
     this.draft = customDraft(c, name);
+    this.#jan = c?.jan;
     this.savedAs = c ? JSON.stringify(this.draft) : null;
     this.#started = JSON.stringify(this.draft);
     this.#e.levels.go({ k: 'custom', id: c?.id ?? null, then, who: c?.who }, focus);
   }
-  /** A new custom food from a draft made elsewhere (a product's amount: drafts.ts draftOf), opened untouched (its ✕
-   *  asks nothing till a field changes). */
-  openDraft(d: CustomDraft, then: Then, focus: string): void {
+  /** A new custom food from a draft made elsewhere (a product's amount: drafts.ts draftOf; `jan` its barcode, kept
+   *  with it), opened untouched (its ✕ asks nothing till a field changes). */
+  openDraft(d: CustomDraft, then: Then, focus: string, jan?: string): void {
     this.draft = d;
+    this.#jan = jan;
     this.savedAs = null;
     this.#started = JSON.stringify(d);
     this.#e.levels.go({ k: 'custom', id: null, then }, focus);
   }
   save(l: LevelOf<'custom'>): void {
     const e = this.#e, v = customOf(this.draft);
-    const res = saveCustom({ id: l.id ?? undefined, ...v });
+    const res = saveCustom({ id: l.id ?? undefined, ...v, jan: this.#jan });
     if (!res.ok || !res.id) return;
     e.said('food.my.saved', { name: v.n });
     if (!l.then) return e.levels.backOver('search');
@@ -58,7 +62,7 @@ export class CustomFlow {
   }
   /** Someone else's (or one deleted) → a custom food of mine with the same values, opened in the editor. */
   copy(l: LevelOf<'custom'>): void {
-    const res = saveCustom(customOf(this.draft));
+    const res = saveCustom({ ...customOf(this.draft), jan: this.#jan });
     if (!res.ok || !res.id) return;
     this.savedAs = this.#started = JSON.stringify(this.draft);
     this.#e.levels.swap({ k: 'custom', id: res.id, then: l.then, who: this.#e.me() });

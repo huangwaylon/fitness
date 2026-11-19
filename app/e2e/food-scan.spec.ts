@@ -218,6 +218,22 @@ test('nowhere: この商品はデータにありません, もう一度 reads ag
   await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
 });
 
+test('a code the reviewed fixes drop (index.json `drop`): not found at once, Open Food Facts never asked for its bad values', async ({ page }) => {
+  // Lady Borden at 753 kcal a 100 g (food_fixes.json): OFF still has it so
+  const DROPPED = '4953823080093';
+  await camera(page, { code: DROPPED });
+  await shards(page);
+  const asked: string[] = [];
+  await page.route(OFF, (r) => (asked.push(r.request().url()), r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 1, product: { product_name: 'Lady Borden', nutriments: { 'energy-kcal_100g': 753, fat_100g: 47.6 } } }) })));
+  await openScanner(page);
+  await expect(status(page)).toHaveText('この商品はデータにありません', { timeout: 20_000 });
+  await expect(scanLv(page).locator('[data-scan-code]')).toHaveText(DROPPED);
+  expect(asked).toEqual([]);
+  // the not-found way on: 名前で探す → the search, where its マイ食品 can be made
+  await scanLv(page).locator('[data-scan-byname]').click();
+  await expect(sheet(page).locator('[data-food-q]')).toBeFocused();
+});
+
 test('the camera refused: said in the box, a typed number still finds it (13 digits search at once, a wrong 13 said at once); a wrong one says so', async ({ page }) => {
   await camera(page, 'deny');
   await openScanner(page);
@@ -341,3 +357,34 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']] as const) {
     await expect(sheet(page).locator('[data-food-added] [data-added] .meta')).toHaveText('1袋（140g）');
   });
 }
+
+test('直す keeps the product’s barcode: scanned again, my マイ食品 comes first; searched, it stands in the product’s row', async ({ page, browserName }) => {
+  await camera(page, { code: CONE });
+  await page.route(OFF, (r) => r.abort());
+  await shards(page);
+  // the cone in products.json (searchable, unlike a shard's), as it shipped before its fix
+  const cols = Object.fromEntries(Object.keys(BAD).map((k) => [k, [(BAD as Record<string, unknown>)[k]]]));
+  await page.route('**/food/products.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ label: 'Open Food Facts', source: 'off', idPrefix: 'off:', cols }) }));
+  await openScanner(page);
+  const amount = sheet(page).locator('.amt');
+  await expect(amount.locator('[data-food-check]')).toContainText('表示値を確認', { timeout: 20_000 });
+  await expect(amount.locator('[data-amount-open]'), 'the product: no マイ食品 to open').toHaveCount(0);
+  await press(amount.locator('[data-food-fix]'), browserName);
+  const lv = sheet(page).locator('[data-custom-level=edit]');
+  await lv.locator('[data-custom-n]').fill('コーン（箱の値）');
+  await lv.locator('[data-custom-nut=p]').fill('3.6');
+  await press(lv.locator('[data-custom-save]'), browserName);
+  await expect(sheet(page).locator('[data-food-added] [data-added]')).toHaveText([/コーン（箱の値）/]);
+  // scanned again: mine, not the product (its values mine, its editor a tap away)
+  await press(sheet(page).getByRole('button', { name: 'バーコードで探す' }), browserName);
+  await expect(amount.locator('h3')).toHaveText('コーン（箱の値）', { timeout: 20_000 });
+  await expect(amount.locator('[data-amount-open]')).toBeVisible();
+  await expect(amount.locator('[data-food-check]'), 'mine: no hint').toHaveCount(0);
+  await press(sheet(page).locator('.navbar').getByRole('button', { name: '戻る' }), browserName);
+  await expect(sheet(page).locator('.navbar h2')).toHaveText('朝ごはん');
+  // searched by the product's name: its row gone, mine in its place (whatever my food is called)
+  await sheet(page).locator('[data-food-q]').fill('ジャイアント');
+  await expect(sheet(page).locator('[data-food-customs] [data-custom]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-food-customs]')).toContainText('コーン（箱の値）');
+  await expect(sheet(page).locator(`[data-item="off:${CONE}"]`)).toHaveCount(0);
+});

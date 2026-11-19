@@ -45,9 +45,28 @@ export function gramsOf(s: string | undefined): number | null {
  *  zero-width and bidi characters gone, one line, FOOD_NAME_CHARS at most). */
 const firstText = (...xs: unknown[]): string | undefined => xs.map((x) => cleanLine(x, FOOD_NAME_CHARS)).find((x) => !!x);
 
+/** Whether OFF scaled some per-100 g fields by the serving and not others (off.py partial_scaling: salt / 2.5 sodium
+ *  or kJ / 4.184 kcal at the serving factor ±4 %) while the energy is off 4P+9F+4C (> 12 % and ≥ 15 kcal): a mix of
+ *  per serving and per 100 g (the Giant Cone's class), which the shipped data drops; so does the scan (not found). */
+export function partialScaling(p: OffProduct, kcal: number, pr: number | null, f: number | null, c: number | null): boolean {
+  const sq = num(p.serving_quantity);
+  const k = sq !== null && sq >= 5 && sq <= 2000 && Math.abs(sq - 100) > 10 ? 100 / sq : null;
+  if (!k || pr === null || f === null || c === null) return false;
+  const est = 4 * pr + 9 * f + 4 * c;
+  if (Math.abs(kcal - est) < 15 || Math.abs(kcal - est) <= 0.12 * Math.max(kcal, est)) return false;
+  const n = p.nutriments ?? {};
+  return ([['salt_100g', 'sodium_100g', 2.5], ['energy-kj_100g', 'energy-kcal_100g', 4.184]] as const).some(([a, b, unit]) => {
+    const x = num(n[a]), y = num(n[b]);
+    if (!x || !y || x < 0.02) return false;
+    const q = x / y / unit;
+    return Math.abs(q * k - 1) < 0.04 || Math.abs(q / k - 1) < 0.04;
+  });
+}
+
 /**
  * An OFF product as an item (id `off:<code>`, as a product of ours: a later products.json holding it matches it), `note`
- * its trust line; null when it has no name (none left once cleaned: firstText) or no usable energy (the sheet: not found). Per 100 g when OFF has it (kcal
+ * its trust line; null when it has no name (none left once cleaned: firstText), no usable energy, or its fields part
+ * per serving (partialScaling) (the sheet: not found). Per 100 g when OFF has it (kcal
  * from kJ if only that, ÷ 4.184); else per serving: by its weight when known, else as a serving (`sv`, values per
  * serving, as a chain menu's). A nutrient out of a snapshot's range: unknown (null), never clamped. The name: its
  * Japanese one, else its own, else its generic one; the brand its first. Its serving's weight a 1食分 portion (none:
@@ -76,6 +95,7 @@ export function offItem(code: string, p: OffProduct, note: string): Item | null 
   const [kMax, nMax] = sv ? [SERVING_KCAL_MAX, SERVING_NUTRIENT_MAX] : [KCAL_MAX, NUTRIENT_MAX];
   const kcal = Math.round(kcalOf(per)! * scale);
   if (!(kcal >= 0 && kcal <= kMax)) return null;
+  if (per === '100g' && partialScaling(p, kcalOf('100g')!, get('proteins', '100g'), get('fat', '100g'), get('carbohydrates', '100g'))) return null;
   const val = (k: string): number | null => {
     const v = get(k, per);
     return v === null || v * scale < 0 || v * scale > nMax ? null : r1(v * scale);

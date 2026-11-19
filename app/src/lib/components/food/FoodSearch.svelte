@@ -8,7 +8,7 @@
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
   // マイ食品 (everyone's custom foods) likewise from both a meal and a recipe's ingredient: all of them after さいきん, the
-  // matching ones above the catalog's; one opens its amount. Under the field, side by side: ＋ レシピを つくる (a meal's
+  // matching ones above the catalog's (a product mine was made from by 直す: its row gone, mine there instead); one opens its amount. Under the field, side by side: ＋ レシピを つくる (a meal's
   // search: the recipe editor) and ＋ 食品を つくる (the custom food editor, the typed text its name); nothing matching,
   // a card says so, with じぶんで つくる (the same editor). From a meal's ＋ (`onquick`), each food row has a ＋ of its
   // own beside it: one tap logs it as it comes (its default portion; a recent one as I had it), the field cleared and
@@ -42,7 +42,7 @@
   import ChipRow from '../ui/ChipRow.svelte';
   import { catOf, keptRows, recentShops, shopChips, stemName, glossOf, itemOf, snapGloss, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText, defaultPortion } from './portions.ts';
-  import { customItem, servingText, typedKcal } from './drafts.ts';
+  import { customItem, janOf, servingText, typedKcal } from './drafts.ts';
   import { foodDb, held as kept, wantImages } from './dbHold.svelte.ts';
   import type { Kept } from './levels.svelte.ts';
   import { warmScanner } from './scanner.ts';
@@ -63,6 +63,9 @@
     onnewrecipe?: () => void;
     /** マイ食品 to offer (everyone's), one picked, and じぶんで つくる (the name typed so far). */
     customs?: readonly FoodCustom[];
+    /** My マイ食品 made from a product (表示値を確認's 直す), by its barcode (Food's byJan): that product's row gives way
+     *  to it (the マイ食品 rows, above the catalog's, whatever its name). */
+    linked?: ReadonlyMap<string, FoodCustom>;
     oncustom?: (c: FoodCustom) => void;
     oncreate?: (name: string) => void;
     /** One tap, no amount (a meal's search): a food logged as it comes (a recent one as I had it), a custom food by
@@ -97,7 +100,7 @@
     pick: () => void; quick?: (() => void) | undefined;
   };
   let {
-    recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
+    recent, mine = [], since = '', onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], linked, oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
     onfinish, onquicknew, onquicklog, inline, keep, onscan
   }: Props = $props();
 
@@ -154,11 +157,14 @@
     const query = q.trim(), again = shown.q === query && shown.items.length > 0;
     return { query, again, ...(db && query ? findFoods(db, q, again ? 80 : 40) : { items: [], shops: [] }) };
   });
-  const results = $derived.by(() => {
+  const ranked = $derived.by(() => {
     const { query, again, items } = found;
     if (!again) return (shown = { q: query, items }).items;
     return (shown.items = keptRows(shown.items, items, db));
   });
+  /** The barcodes of the products found that a マイ食品 of mine was made from (`linked`): those rows give way to it. */
+  const mineFor = $derived(linked?.size ? new Set(ranked.map((it) => janOf(it)).filter((j): j is string => !!j && linked.has(j))) : null);
+  const results = $derived(mineFor?.size ? ranked.filter((it) => !mineFor.has(janOf(it) ?? '')) : ranked);
   // (as listed, on the level: come back to, the rows are where they were)
   $effect(() => {
     const ids = results.map((it) => it.id);
@@ -222,7 +228,7 @@
   const hits = (n: string) => words.every((w) => searchKey(n).includes(w));
   const recipeById = $derived(new Map(recipes.map((r) => [r.id, r])));
   const myRecipes = $derived(onrecipe ? recipes.filter((r) => hits(r.n)) : []);
-  const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n)) : []);
+  const myFoods = $derived(oncustom ? customs.filter((c) => hits(c.n) || (!!c.jan && !!mineFor?.has(c.jan) && linked?.get(c.jan) === c)) : []);
   /** Nothing of ours matches what was typed (the catalog's own say so after). */
   const noneOfOurs = $derived(!myRecipes.length && !myFoods.length);
 

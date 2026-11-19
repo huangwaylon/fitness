@@ -63,7 +63,7 @@
   import { pickWhose, whose } from '../health/whose.svelte.ts';
   import { DAYS, inState, itemOf, recentOf, recipeItem, recipeOfEntry, recipeServing, sameItems } from './foodUi.ts';
   import { portionLabel, servingOnly } from './portions.ts';
-  import { customItem, draftOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
+  import { byJan, customItem, draftOf, janOf, quickDraft, quickSnap, type CustomDraft } from './drafts.ts';
   import { foodDb, foodDbSoon, held, holdFoodDb, letGoFoodDb } from './dbHold.svelte.ts';
   import { Levels, newKept, type Level, type Picked } from './levels.svelte.ts';
   import { mealName, RecipeFlow, type FoodFlowEnv } from './recipeFlow.svelte.ts';
@@ -391,6 +391,8 @@
   const allRecipes = $derived(m ? recipes(m.state) : []);
   const recipeById = $derived(new Map(allRecipes.map((r) => [r.id, r])));
   const allCustoms = $derived(m ? customs(m.state) : []);
+  /** My custom foods made from a product (表示値を確認's 直す), by its barcode: my scan and search offer them first. */
+  const myJans = $derived(byJan(allCustoms, me));
   const ownerOf = (who: Who) => ({ who, name: names[who], villager: villagerOf(who) });
   const env: FoodFlowEnv = {
     levels, me: () => me, date: () => date, recipes: () => allRecipes, said: (k, v, sad) => void said(k, v, sad), logged, focusQ, snapOf, asItComes, openSnap
@@ -458,7 +460,7 @@
     {#if top?.k === 'search'}
       {@const meal = top.meal}
       <FoodSearch {recent} mine={myEntries} {since} onpick={(item, g, u, f) => add(item, meal, g, u, f)} recipes={allRecipes} {names} onrecipe={(r) => go({ k: 'rlog', r, meal })}
-        onnewrecipe={() => rf.open(null)} customs={allCustoms} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
+        onnewrecipe={() => rf.open(null)} customs={allCustoms} linked={myJans} oncustom={(c) => go({ k: 'amount', meal, ...pickOf(customItem(c)) })}
         oncreate={(n) => cf.open(null, { meal }, '[data-custom-new]', n)} onquick={(item, g, u, f) => quick(item, meal, g, u, f)}
         oncustomquick={(c) => quick(customItem(c), meal)} added={addedOf(top.added)} onunadd={unadd} onfinish={home}
         onquicknew={(k) => openQuick(meal, k)} onquicklog={(k) => quickNow(meal, k)} inline={inlineOf(meal)} keep={top.s}
@@ -467,7 +469,7 @@
       {@const meal = top.meal}
       <!-- (a code's food: the amount in this level's place, so its ‹ goes back to the search) -->
       <Lazy load={scanner}>{#snippet children(FoodScan)}
-        <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} />
+        <FoodScan onfound={(item) => levels.swap({ k: 'amount', meal, ...pickOf(item) })} onbyname={byName} mine={(code) => { const c = myJans.get(code); return c && customItem(c); }} />
       {/snippet}</Lazy>
     {:else if top?.k === 'quick'}
       {@const l = top}
@@ -478,7 +480,7 @@
         {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
         {@const r = l.entry && recipeOfEntry(recipeById, l.entry)}
         <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} once={!!l.entry?.rep} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
-          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)} onfix={l.entry ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { meal: l.meal }, '[data-food-fix]')}
+          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)} onfix={l.entry ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { meal: l.meal }, '[data-food-fix]', janOf(l.item))}
           open={c ? { label: t('food.my.open'), run: () => cf.open(c, null, '[data-amount-open]') } : r ? { label: t('food.rcp.open'), run: () => rf.open(r) } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
@@ -493,7 +495,7 @@
       {/key}
     {:else if top?.k === 'rsearch'}
       {@const room = rf.draft.it.length < RECIPE.items}
-      <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u }, `[data-item="${CSS.escape(item.id)}"]`)} {names} recipes={allRecipes} customs={allCustoms}
+      <FoodSearch {recent} onpick={(item, g, u, f) => go({ k: 'ritem', ...pickOf(item, f), g0: g, u0: u }, `[data-item="${CSS.escape(item.id)}"]`)} {names} recipes={allRecipes} customs={allCustoms} linked={myJans}
         oncustom={(c) => go({ k: 'ritem', ...pickOf(customItem(c)) })} oncreate={(n) => cf.open(null, { ingredient: true }, '[data-custom-new]', n)}
         onquick={room ? (item, g, u, f) => rf.itemNow(item, g, u, f) : undefined} oncustomquick={room ? (c) => rf.itemNow(customItem(c)) : undefined}
         added={rf.tripOf(top.from)} onunadd={(id) => rf.untrip(id)} addedHead="food.rcp.addedHead" onfinish={() => rf.toRecipe()} keep={top.s} />
@@ -512,7 +514,7 @@
       {#key l}
         <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => rf.itemDone(l, v)}
           onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
-          onfix={l.i !== undefined ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { ingredient: true }, '[data-food-fix]')}
+          onfix={l.i !== undefined ? undefined : (g, u) => cf.openDraft(draftOf(l.item, g, u), { ingredient: true }, '[data-food-fix]', janOf(l.item))}
           onremove={() => l.i !== undefined && rf.itemRemove(l.i)} />
       {/key}
     {:else if top?.k === 'rlog'}

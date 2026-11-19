@@ -88,6 +88,9 @@ export interface FoodIndex {
   version: string;
   /** The barcode shards' version (jan/<last 2 digits>.json?v=…: lib/food/jan.ts); none: no shards shipped. */
   jan?: string;
+  /** The barcodes food_fixes.json drops (docs/food-data.md "Data checks"), sorted: the scanner's not found, never Open
+   *  Food Facts' same bad values (components/food/scan.ts). */
+  drop?: string[];
   /** The layout (db.ts FOOD_SCHEMA). */
   schema?: number;
   files: Record<string, string>;

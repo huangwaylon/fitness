@@ -51,6 +51,9 @@ const PRODUCTS = { file: 'products.json', source: 'off', badge: '商品', second
 
 /** The reviewed corrections by item id (docs/food-data.md "Data checks"). */
 const FIXES = JSON.parse(readFileSync(join(APP, '..', 'food-data', 'data_src', 'food_fixes.json'), 'utf8')) as Record<string, Fix>;
+/** The barcodes the fixes drop (index.json `drop`: the scanner's not found, never live OFF's same values), sorted. */
+const dropCodes = (fixes: Record<string, Fix>): string[] =>
+  Object.keys(fixes).flatMap((id) => (fixes[id].drop ? /^off:(\d{8,14})$/.exec(id)?.[1] ?? [] : [])).sort();
 /** What the checks did, by fix or rule: printed at the end. */
 const tally: Record<string, number> = {};
 
@@ -154,9 +157,10 @@ function writeIndex(index: object, files: string[]): string {
     versions[f] = hex(createHash('sha256').update(b));
   }
   const version = hex(hash);
-  const { jan: _j, schema: _s, ...head } = index as { jan?: unknown; schema?: unknown };
+  const { jan: _j, drop: _d, schema: _s, ...head } = index as { jan?: unknown; drop?: unknown; schema?: unknown };
   const jan = janVersion();
-  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...head, version, files: versions, ...(jan ? { jan } : {}), schema: FOOD_SCHEMA }));
+  const drop = dropCodes(FIXES);
+  writeFileSync(join(OUT, 'index.json'), JSON.stringify({ ...head, version, files: versions, ...(jan ? { jan } : {}), ...(drop.length ? { drop } : {}), schema: FOOD_SCHEMA }));
   return version;
 }
 

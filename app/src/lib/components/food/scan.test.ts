@@ -2,14 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FoodDb, Item } from '#lib/food/index.ts';
 import { toColumns } from '#lib/food/db.ts';
 import { forgetShards, JAN_TIMEOUT_MS } from '#lib/food/load.ts';
-import { forgetAsked, lookupCode, LOADING_MS, PRODUCTS_WAIT_MS } from './scan.ts';
+import { forgetAsked, lookupCode, LOADING_MS, ownFood, PRODUCTS_WAIT_MS } from './scan.ts';
 
 const counted: string[] = [];
 vi.mock('#lib/sync/log.ts', () => ({ count: (k: string) => counted.push(k) }));
 
 const chips: Item = { id: 'off:4901330502881', name: 'ポテトチップス', kcal: 554 };
 const upc: Item = { id: 'off:0036000291452', name: 'Imported', kcal: 100 };
-const db = { byId: new Map([chips, upc].map((i) => [i.id, i])), shard: new Map(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
+const dropped = '4953823080093';
+const db = { byId: new Map([chips, upc].map((i) => [i.id, i])), shard: new Map(), drop: new Set([dropped]), wantMore: () => Promise.resolve() } as unknown as FoodDb;
 const offItem: Item = { id: 'off:4902102072618', name: 'Coca-Cola', kcal: 45 };
 
 beforeEach(() => {
@@ -41,6 +42,18 @@ describe('lookupCode: ours, then Open Food Facts, then nothing', () => {
     expect(await lookupCode('4902102072618', null, '?', undefined, ask)).toEqual({ k: 'offline' });
     expect(ask).toHaveBeenCalledTimes(2);
     expect(counted).toEqual(['act:scan.miss', 'act:scan.offline', 'act:scan.offline']);
+  });
+  it('a code the reviewed fixes drop (index.json `drop`): not found at once, OFF never asked (its values the same bad ones)', async () => {
+    const ask = vi.fn(async () => ({ k: 'item' as const, item: { id: `off:${dropped}`, name: 'ice cream', kcal: 753 } }));
+    expect(await lookupCode(dropped, db, '?', 'EAN-13', ask)).toEqual({ k: 'miss' });
+    expect(ask).not.toHaveBeenCalled();
+    expect(counted).toEqual(['act:scan.dropped']);
+  });
+  it('a マイ食品 of mine made from the product (直す): offered first, by any of its code’s forms; counted `mine`', () => {
+    const mine = new Map([['0036000291452', 'my upc'], [dropped, 'my ice cream']]);
+    expect([ownFood('036000291452', (c) => mine.get(c), 'UPC-A'), ownFood(dropped, (c) => mine.get(c)), ownFood('4901330502881', (c) => mine.get(c)), ownFood(dropped, undefined)])
+      .toEqual(['my upc', 'my ice cream', undefined, undefined]);
+    expect(counted).toEqual(['act:scan.mine', 'act:scan.mine']);
   });
   it('not a code (a wrong check digit): null, nothing asked or counted', async () => {
     const ask = vi.fn();
@@ -121,7 +134,7 @@ describe('lookupCode: our products (lazy) waited for before anything else', () =
     const byId = new Map<string, Item>();
     let p: Promise<void> | undefined;
     const wantMore = vi.fn(() => (p ??= new Promise<void>((ok) => setTimeout(() => (byId.set(chips.id, chips), ok()), ms))));
-    return { sets: [{ source: 'off' }], byId, wantMore } as unknown as FoodDb & { wantMore: typeof wantMore };
+    return { sets: [{ source: 'off' }], byId, drop: new Set(), wantMore } as unknown as FoodDb & { wantMore: typeof wantMore };
   };
 
   it('a read while the products load: it waits (読み込み中 past LOADING_MS), then finds ours; no shard or OFF asked', async () => {
@@ -162,7 +175,7 @@ describe('lookupCode: our products (lazy) waited for before anything else', () =
     expect(counted).toEqual(['act:scan.late', 'act:scan.late', 'act:scan.fallback']);
   });
   it('the products failed to load (wantMore settles without them): no wait, OFF unreached is offline', async () => {
-    const failed = { byId: new Map(), shard: new Map(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
+    const failed = { byId: new Map(), shard: new Map(), drop: new Set(), wantMore: () => Promise.resolve() } as unknown as FoodDb;
     expect(await lookupCode('4901330502881', failed, '?', 'EAN-13', async () => ({ k: 'off' }))).toEqual({ k: 'offline' });
   });
 });

@@ -45,6 +45,20 @@ export function draftOf(it: Item, g: number, u: string | null): CustomDraft {
   };
 }
 
+/** A product's barcode (its `jan`, or a product id's `off:<code>`), or undefined: what a マイ食品 made from it by 直す
+ *  keeps (contract/food.ts CustomOp `jan`), its owner's scan and search then offering it first (byJan). */
+export function janOf(it: Pick<Item, 'id' | 'jan'>): string | undefined {
+  const j = it.jan ?? (it.id.startsWith('off:') ? it.id.slice(4) : undefined);
+  return j && /^\d{8,14}$/.test(j) ? j : undefined;
+}
+
+/** `who`'s custom foods made from a product, by its barcode (the latest changed, should two share one). */
+export function byJan(customs: readonly FoodCustom[], who: string): Map<string, FoodCustom> {
+  const m = new Map<string, FoodCustom>();
+  for (const c of customs) if (c.who === who && c.jan && !m.has(c.jan)) m.set(c.jan, c);
+  return m;
+}
+
 /** A typed amount (math.ts parseTyped: full-width digits, 1,200, a decimal comma, a trailing g, ml or kcal) → a number
  *  to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {

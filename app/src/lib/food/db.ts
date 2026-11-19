@@ -7,6 +7,8 @@ import type { Credit, Dataset, FoodIndex, Item, Shipped, Verify, VerifyGroup } f
 export interface FoodDb {
   /** index.json's `jan`: the barcode shards' `?v=` (none: no shards). */
   jan?: string;
+  /** index.json's `drop`: the barcodes the reviewed fixes drop (the scanner: not found, never asked of OFF). */
+  drop: ReadonlySet<string>;
   /** The datasets loaded so far, each with its badge (「MEXT」, 「給食」) and credit line. */
   sets: (Partial<Credit> & { source: string; badge: string })[];
   /** Grows when a lazy dataset (products, the chain menus) is in. */
@@ -35,7 +37,7 @@ export interface FoodDb {
   close(): void;
 }
 
-export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
+export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
 const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { gramsOf, offItem, offLookup, offUrl, type OffProduct } from './off.ts';
+import { gramsOf, offItem, offLookup, offUrl, partialScaling, type OffProduct } from './off.ts';
 
 const NO = 'Open Food Factsの値（オンライン）';
 const cola: OffProduct = {
@@ -23,6 +23,17 @@ describe('offItem: an Open Food Facts product as our item', () => {
     expect(offItem('1', { product_name_ja: '\u200b\u202e', product_name: ' お\u200bちゃ\n ', brands: '\u2066伊藤園\u2069, X', nutriments: n }, NO)).toMatchObject({ name: 'おちゃ', brand: '伊藤園' });
     expect(offItem('1', { product_name: 'あ'.repeat(80), nutriments: n }, NO)!.name).toHaveLength(60);
     expect(offItem('1', { product_name: '\u200b\u200f', generic_name: '\u202a\u202c', nutriments: n }, NO)).toBeNull();
+  });
+  it('fields part per serving (off.py partial_scaling, its test cases): not found, as the shipped data drops it', () => {
+    const cone: OffProduct = { serving_quantity: 140, nutriments: { salt_100g: 0.18, sodium_100g: 0.18 / 2.5 / 1.4 } };
+    expect(partialScaling(cone, 247, 36, 13, 19.71)).toBe(true);
+    expect(partialScaling(cone, 176, 2.6, 9.3, 19.7)).toBe(false); // the energy fits: no evidence
+    const kj: OffProduct = { serving_quantity: '80', nutriments: { 'energy-kcal_100g': 677.5, 'energy-kj_100g': 677.5 * 4.184 * 0.8 } };
+    expect(partialScaling(kj, 677.5, 9, 27, 66)).toBe(true);
+    expect(partialScaling({ ...kj, serving_quantity: 100 }, 677.5, 9, 27, 66)).toBe(false); // no factor
+    const n = { 'energy-kcal_100g': 247, proteins_100g: 36, fat_100g: 13, carbohydrates_100g: 19.71, ...cone.nutriments };
+    expect(offItem('4901234567894', { product_name: 'Giant Cone', serving_quantity: 140, nutriments: n }, NO)).toBeNull();
+    expect(offItem('4901234567894', { product_name: 'Giant Cone', serving_quantity: 140, nutriments: { ...n, 'energy-kcal_100g': 176, proteins_100g: 2.6, fat_100g: 9.3 } }, NO)).not.toBeNull();
   });
   it('kcal from kJ when only that; salt from sodium when only that; a missing nutrient unknown (null)', () => {
     const it = offItem('1', { product_name: 'X', nutriments: { energy_100g: 1000, sodium_100g: 0.4, proteins_100g: 5 } }, NO)!;

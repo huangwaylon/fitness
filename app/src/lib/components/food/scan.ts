@@ -1,7 +1,8 @@
 // ごはん's barcode scan, what a code is (docs/food-data.md "Barcodes"): our products first (products.json, its ids
 // the codes: barcode.ts barcodeKeys; lazy, so waited for: PRODUCTS_WAIT_MS), then the barcode shards
-// (static/food/jan/: load.ts janItem), else Open Food Facts online (off.ts), else nothing. Each outcome is one usage
-// counter (`act:scan.<outcome>`: found, found.jan, fallback, miss, offline, late), never the code or the food
+// (static/food/jan/: load.ts janItem), else Open Food Facts online (off.ts), else nothing; a code the reviewed fixes
+// drop (index.json `drop`) is nothing at once; a マイ食品 of the user's made from the product (ownFood) comes first. Each outcome is one usage counter (`act:scan.<outcome>`: found,
+// mine, found.jan, fallback, miss, dropped, offline, late), never the code or the food
 // (docs/ops/observability.md).
 import { itemById, janItem, type FoodDb, type Item } from '#lib/food/index.ts';
 import { barcodeKeys, type Format } from '#lib/scan/barcode.ts';
@@ -47,6 +48,8 @@ const asked = new Map<string, Item>();
 export async function lookupCode(raw: string, db: FoodDb | null, note: string, format?: Format, ask: (code: string) => Promise<OffAnswer> = (c) => offLookup(c, note), loading?: () => void): Promise<ScanHit | null> {
   const keys = barcodeKeys(raw, format);
   if (!keys.length) return null;
+  // (a code the reviewed fixes drop, its values no product's: not found, never OFF's same values; index.json `drop`)
+  if (db && keys.some((k) => db.drop.has(k))) return counted({ k: 'miss' }, 'dropped');
   const inTime = !db || (await productsIn(db, loading));
   for (const k of keys) {
     const it = itemById(db, `off:${k}`);
@@ -67,6 +70,14 @@ export async function lookupCode(raw: string, db: FoodDb | null, note: string, f
   }
   // (our products not in yet: OFF's none or silence says nothing of them)
   return counted({ k: !inTime ? 'late' : a.k === 'none' ? 'miss' : 'offline' });
+}
+
+/** A code read or typed as a food of the user's own made from that product (表示値を確認's 直す: `mine` by barcode,
+ *  Food's byJan), offered before ours or OFF's, counted `mine`; undefined when none is (or it isn't a code). */
+export function ownFood<T>(raw: string, mine: ((code: string) => T | undefined) | undefined, format?: Format): T | undefined {
+  const own = mine && barcodeKeys(raw, format).map(mine).find((x) => x !== undefined);
+  if (own !== undefined) count('act:scan.mine');
+  return own;
 }
 
 const counted = (h: ScanHit, as?: string): ScanHit => (count(`act:scan.${as ?? (h.k === 'ours' ? 'found' : h.k === 'off' ? 'fallback' : h.k)}`), h);

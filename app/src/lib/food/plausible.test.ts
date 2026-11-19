@@ -83,4 +83,10 @@ describe('static/food passes the data checks (the CI guard)', () => {
     }
     expect(off).toEqual([]);
   });
+
+  it("lists every dropped product's barcode in index.json `drop` (the scanner's not found, never live OFF's values), nothing else", () => {
+    const codes = Object.keys(fixes).filter((id) => fixes[id].drop && id.startsWith('off:')).map((id) => id.slice(4)).sort();
+    expect(codes.every((c) => /^\d{8,14}$/.test(c))).toBe(true);
+    expect(index.drop ?? []).toEqual(codes);
+  });
 });
