@@ -70,14 +70,15 @@ removal's row is kept for good. **Never ベル:** everything but `spend`, `spend
 The wedding types and `trip_note` are the members' only (the guest's are `forbidden`).
 
 <a id="pref"></a>**`pref`** `{key, value, person?}`:
-- Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)).
+- Cosmetic: `locale`, `villagerName`, `villager`, the look ([The look](#the-look)), `menuOrder`
+  (`menu.ts`).
 - Goals, one key per charted metric (`goals.ts` GOALS). **Per day:** `stepsGoal`, `moveGoal`, `exerciseGoal`,
   `standGoal`, each with an optional `day` (`goalDay`). **Latest only** (or null): the からだ goals and the meal log's.
 - The profile (`profile.ts`, [design](design.md#profile)): `sex`, `birth`. **Shared by all three** (`rowsFor`):
   every person's reaches every phone; a row naming anyone else (the guest's sent by a member) reaches none.
   **Locked:** the record refuses any profile pref from anyone (`forbidden`, `profile locked`); a change takes a code change.
-  A `load` too: it skips a `pref` of a key not in `PREF_KEYS` (an old dump's `bmiStd`) and a profile row whose slot
-  holds one (`refused` in its reply, logged `load refused`); an empty slot it restores.
+  A `load` too: it skips a `pref` of a key not in `PREF_KEYS` and a profile row whose slot
+  holds one (`refused` in its reply, logged `load refused`); an empty slot, restored.
 - Island-wide: `weatherMode` and `seasonLook` ([The real weather](#the-real-weather)).
 
 **Subjects and new keys:** `person` (whose goal; absent = the sender) only on the goal and profile prefs
