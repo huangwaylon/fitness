@@ -20,7 +20,7 @@ export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
   const c = itemById(db, f.id);
   const it = c && inState(db, c);
   const own = it ? null : snapPortion(f.u, g);
-  return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
+  return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f), ...(f.est ? { est: f.est } : {}) };
 }
 
 /** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`, or as logged `recipe:c…`),

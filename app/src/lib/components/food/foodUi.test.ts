@@ -10,6 +10,7 @@ import { amountSteps, amountText, defaultPortion, matchPortion, portionLabel, po
 import { byJan, customDraft, customErrors, draftOf, customItem, janOf, customOf, parseAmount, quickDraft, quickErrors, quickSnap, seasoningLike, servingText, typedKcal } from './drafts.ts';
 import { addDataset, emptyDb } from '#lib/food/db.ts';
 import type { FoodImageIndex } from '#lib/food/images.ts';
+import { weighHint, weighItem } from './recipeFlow.svelte.ts';
 import { unitOf } from '#lib/food/index.ts';
 import { foodOp } from '#lib/contract/food.ts';
 
@@ -434,5 +435,21 @@ describe('the search’s trip: an entry just added, its amount switched in place
   it('quickDraft: a query nothing matched as its name (cut to the field’s), the kcal as typed', () => {
     expect(quickDraft('', 'ラーメン屋')).toMatchObject({ n: 'ラーメン屋', k: '' });
     expect(quickDraft('650', 'あ'.repeat(40)).n).toHaveLength(30);
+  });
+});
+
+describe('a recipe’s ingredient of no known weight weighed (recipeFlow weighItem, weighHint)', () => {
+  const KOMBU: FoodSnap = { id: 'custom:mkombu01', n: 'しおこんぶ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1, fi: 0.6, u: 'ひとつまみ', sv: true };
+  it('per 100 g of its weight, its grams its servings’; a food too light for its values, or a weighed one, not', () => {
+    expect(weighItem({ g: 150, f: KOMBU }, 4)).toEqual({ g: 6, f: { id: 'custom:mkombu01', n: 'しおこんぶ', k: 250, p: 20, fa: 0, c: 47.5, s: 25, fi: 15, u: 'ひとつまみ' } });
+    expect([weighItem({ g: 100, f: KOMBU }, 0.5), weighItem({ g: 100, f: KOMBU }, 0), weighItem({ g: 100, f: { ...KOMBU, sv: undefined } }, 5)]).toEqual([null, null, null]);
+  });
+  it('the food data’s nearest food with a weight, its default portion', async () => {
+    const db = emptyDb({ version: 'x', datasets: [] });
+    await addDataset(db, { file: 'f.json', source: 'mext', badge: 'MEXT', secondary: false, lazy: false }, {
+      source: 'mext', items: [{ id: 'mext:09022', name: '塩昆布', aliases: ['しおこんぶ'], kcal: 193, p: 16.9, f: 0.4, c: 37, salt: 18, portions: [{ label: '大さじ1', g: 5 }] }] as never
+    });
+    expect(weighHint(db, KOMBU)).toEqual({ n: '塩昆布', label: '大さじ1', g: 5 });
+    expect([weighHint(null, KOMBU), weighHint(db, { ...KOMBU, n: 'ぜんぜんちがう' })]).toEqual([null, null]);
   });
 });

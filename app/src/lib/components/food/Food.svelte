@@ -33,7 +33,7 @@
   import { copySources, customs, foodDay, foodEntries, foodGoals, pfcTintGoals, recipes, repeatOn, repeats, type CopySource } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
-    copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, removeFood, startRepeat, stopRepeat, updateRepeat
+    copyMeal, detachDay, editFood, logCustom, logFood, refreshFood, refreshRepeat, removeFood, startRepeat, stopRepeat, updateRepeat
   } from '#lib/store/meals.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -47,7 +47,7 @@
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
   import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
-  import { latestSnap, shardsFor } from './fresh.ts';
+  import { latestFood, shardsFor, type Fresh } from './fresh.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -455,21 +455,45 @@
     if (!open || catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
     return foodDbSoon();
   });
-  /** Entry id → its food as it is now, for my day's entries whose food changed. */
+  /** Entry id → its food as it is now (and its grams), for my day's real entries whose food changed (a いつもの's: its
+   *  repeat's, below). */
   const fresh = $derived.by(() => {
     void catalogRev;
-    const out = new Map<string, FoodSnap>();
+    const out = new Map<string, Fresh>();
     if (!mine || !day) return out;
     const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
     for (const e of day.entries) {
-      const f = e.rep ? null : latestSnap(e.f, src);
-      if (f) out.set(e.id, f);
+      const x = e.rep ? null : latestFood(e, src);
+      if (x) out.set(e.id, x);
     }
     return out;
   });
-  function refresh(e: FoodEntry, f: FoodSnap) {
-    if (refreshFood(e.id, f).ok) said('food.fresh.done', { name: f.n }), count('act:food.fresh');
+  function refresh(e: FoodEntry, x: Fresh) {
+    if (refreshFood(e.id, x.f, x.g).ok) said('food.fresh.done', { name: x.f.n }), count('act:food.fresh');
   }
+  /** 「いつものを更新」: on my day from today on, a meal's live いつもの whose items' foods changed since it was set (a
+   *  recipe or マイ食品 edited, the data fixed): why (the first changed item's kind), the kcal it goes from and to, and the
+   *  update (it ends yesterday and starts again today with the foods now: store/meals.ts refreshRepeat). */
+  const repFresh = $derived.by(() => {
+    void catalogRev;
+    const out = new Map<Meal, { why: string; from: number; to: number; run: () => void }>();
+    if (!mine || !m || date < today) return out;
+    const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
+    for (const k of MEALS) {
+      const r = liveRepeat(k);
+      if (!r) continue;
+      const now = r.it.map((x) => latestFood(x, src));
+      const first = r.it.find((_, i) => now[i]);
+      if (!first) continue;
+      const it = r.it.map((x, i) => now[i] ?? x);
+      const kind = first.f.id.startsWith('recipe:') ? 'recipe' : first.f.id.startsWith('custom:') ? 'custom' : 'food';
+      out.set(k, {
+        why: t(`food.fresh.why.${kind}`), from: itemsKcal(r.it), to: itemsKcal(it),
+        run: () => void (refreshRepeat(r.id, it).ok && said('food.fresh.repDone', { meal: mealName(k) }))
+      });
+    }
+    return out;
+  });
 </script>
 
 {#snippet whoPill()}
@@ -515,7 +539,7 @@
       {@const gone = !!id && !recipeById.has(id)}
       {#key id}
         <FoodRecipe bind:draft={rf.draft} owner={theirs ? ownerOf(top.who!) : null} saved={!!id && !theirs && !gone} {gone} clean={rf.clean} onadd={() => rf.addItem()}
-          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
+          andLog={!!rf.madeFor(id)} onitem={(i) => rf.editItem(i)} onweigh={(i, g) => rf.weigh(i, g)} onsave={() => rf.save(id)} onremove={() => id && rf.remove(id)} oncopy={() => rf.copy()}
           onlog={levels.stack.at(-2)?.k === 'rlog' ? up : undefined} />
       {/key}
     {:else if top?.k === 'rsearch'}
@@ -579,7 +603,7 @@
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} {open} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} {pgoals}
-            {fresh} onfresh={refresh} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
+            {fresh} onfresh={refresh} repfresh={repFresh.get(k) ?? null} recipes={recipeById} onrecipe={mine ? undefined : (r, e) => rf.open(r, `[data-entry="${e.id}"]`)} />
         {/each}
         <FoodCredits bind:open={credits} />
       {/if}

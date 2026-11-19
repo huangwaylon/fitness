@@ -74,8 +74,11 @@ test('a member’s search has the chain menus (fetched with no key): the shop on
   await openRow(row);
   await a.sheet.locator('[data-food-open-add]').click();
   await expect.poll(() => rec.sent.filter((e) => e.type === 'food').map((e) => [e.ok, e.data.g, e.data.f])).toEqual([
-    [true, 100, { id: 'kal:900001', n: 'ためし丼 並盛', k: 1180, p: 31.5, fa: 28, c: 190.2, s: 3.4, u: '1食', sv: true }]
+    [true, 100, { id: 'kal:900001', n: 'ためし丼 並盛', k: 1180, p: 31.5, fa: 28, c: 190.2, s: 3.4, u: '1食', sv: true, est: 'p' }]
   ]);
+  // its values' trust kept on the entry (PFC estimated): the day's row says 推定, quietly
+  await a.sheet.locator('[data-food-finish]').click();
+  await expect(a.sheet.locator('[data-entry] [data-entry-est=p]')).toHaveText(' · 推定');
 });
 
 test('the chain menus still coming: 読み込み中, never 見つかりませんでした; arriving, they go under the rows shown', async ({ browser }) => {

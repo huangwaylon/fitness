@@ -9,7 +9,7 @@ import {
   customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers, round1,
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
-import { nextDay } from '#lib/contract/tokyo.ts';
+import { nextDay, prevDay } from '#lib/contract/tokyo.ts';
 import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
 
 // ---- The meal log (ごはん, docs/backend.md#events `food`): each change of mine is one op carrying the entry's whole
@@ -72,12 +72,12 @@ export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; 
   return sendFood({ id, at: foodNow(e.at), d: ch.d ?? e.d, m: ch.m ?? e.m, g, f });
 }
 
-/** 「最新の値にする」: one of my entries re-snapshotted, `f` its food as it is now (components/food/fresh.ts latestSnap);
- *  its day, meal and grams kept. An ordinary edit (the owner's only). */
-export function refreshFood(id: string, f: FoodSnap): SendResult {
+/** 「最新の値にする」: one of my entries re-snapshotted, `f` its food as it is now and `g` its grams then (its portion's
+ *  now: components/food/fresh.ts latestFood); its day and meal kept. An ordinary edit (the owner's only). */
+export function refreshFood(id: string, f: FoodSnap, g: number): SendResult {
   const e = myFood(id);
   if (!e) return { ok: false };
-  return sendFood({ id, at: foodNow(e.at), d: e.d, m: e.m, g: e.g, f });
+  return sendFood({ id, at: foodNow(e.at), d: e.d, m: e.m, g: Math.round(g * 10) / 10, f });
 }
 
 /** Remove one of my entries (final). */
@@ -190,6 +190,23 @@ export function updateRepeat(repeatId: string, ch: { w?: number; itemsFromDate?:
   // the shown meal's real entries, on a day the new one fills (tomorrow's), are what it stands for
   const sent = sendNewRepeat(op, ch.itemsFromDate ?? from, shown && ch.itemsFromDate! >= from ? shown.filter((e) => !e.rep) : []);
   return sent.ok && endRepeat(r, now, op.id).ok ? sent : { ok: false };
+}
+
+/**
+ * 「いつものを更新」: my repeat with items `it` (its foods as they are now: components/food/fresh.ts latestFood) from today
+ * on (from its first day, if later); the days before stay as they were. It ends yesterday and a new one starts today,
+ * its weekdays, last day and skipped days carried over (one not started yet is replaced). The new repeat's id.
+ */
+export function refreshRepeat(repeatId: string, it: RepeatItem[]): SendResult & { id?: string } {
+  const r = myRepeat(repeatId);
+  const now = today();
+  if (!r || (r.to !== undefined && r.to < now)) return { ok: false };
+  const from = r.from > now ? r.from : now;
+  const op = repeatOf({ m: r.m, it, w: r.w, from, to: r.to, sk: r.sk?.filter((d) => d >= from) });
+  if (!op) return { ok: false };
+  // (as updateRepeat: the new one first, then the old one's end naming it)
+  const sent = sendNewRepeat(op, from, []);
+  return sent.ok && endRepeat(r, prevDay(from), op.id).ok ? sent : { ok: false };
 }
 
 /** Stop my repeat: it ends today (tomorrow on, nothing; past days unchanged), or is removed if it hadn't started. */

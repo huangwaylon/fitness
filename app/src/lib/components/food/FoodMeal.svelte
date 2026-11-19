@@ -10,10 +10,13 @@
   // mealProteinTarget). On my day an empty meal offers its copies (`copies`), small links of いつものに する's weight:
   // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
   // copies it in. An entry of mine whose food has changed since (fresh.ts) has a small 「最新の値にする」 under its
-  // row (with the kcal it goes from and to): a tap re-snapshots it. An entry logged from a recipe still there
+  // row (with the kcal it goes from and to): a tap re-snapshots it; a いつもの whose foods changed, one line under its
+  // entries (why: 「レシピが変わりました」, and 「いつものを更新」 with the kcal), a tap makes it the foods now from today. A
+  // chain menu's entry whose values Kalori guessed (its snapshot's `est` e or p) says 推定 after its amount, quietly. An entry logged from a recipe still there
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
   // takes a tap all the same: the recipe, read-only (`onrecipe`).
-  import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
+  import type { FoodEntry, Meal } from '#lib/contract/food.ts';
+  import type { Fresh } from './fresh.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { daysText, entryPfcCells, loggedCat, plateOf, recipeOfEntry } from './foodUi.ts';
   import { amountText } from './portions.ts';
@@ -44,15 +47,17 @@
     /** Meals to copy into this one (shown while it is empty on my day): their words, what they hold, the copy. */
     copies?: readonly { key: string; label: string; meta: string; run: () => void }[];
     /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
-    fresh?: ReadonlyMap<string, FoodSnap>;
-    onfresh?: (e: FoodEntry, f: FoodSnap) => void;
+    fresh?: ReadonlyMap<string, Fresh>;
+    onfresh?: (e: FoodEntry, x: Fresh) => void;
+    /** This meal's いつもの with foods changed since it was set (my day, today on): why, its kcal from and to, the update. */
+    repfresh?: { why: string; from: number; to: number; run: () => void } | null;
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
     /** ごはん open: the pictures asked for (closed, kept mounted: never, so a let-go index isn't loaded again). */
     open?: boolean;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, pgoals, copies = [], fresh, onfresh, recipes, onrecipe, open = true }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, pgoals, copies = [], fresh, onfresh, repfresh = null, recipes, onrecipe, open = true }: Props = $props();
   const recipeOf = (e: FoodEntry) => recipeOfEntry(recipes, e);
   const protein = $derived(mealProtein(entries));
   const kcalOf = entryKcal;
@@ -68,7 +73,7 @@
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}
   <span class="th"><FoodThumb cat={loggedCat(db, e.f.id)} size={40} img={imgOf(imgs, e.f.id, 40)} plate={r ? plateOf(r, imgs, db, 40) : null} /></span>
   <span class="nm">{e.f.n}</span>
-  <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}</small>
+  <small class="amt">{#if e.rep}<i class="rm" role="img" aria-label={t('food.rep.mark')}><RepeatMark size={12} /></i>{/if}{amountText(e)}{#if e.f.est === 'e' || e.f.est === 'p'}<span class="est" data-entry-est={e.f.est}>{' · '}{t('food.kal.estShort')}</span>{/if}</small>
   <b class="kc money">{formatNum(kcalOf(e))}<span class="sr-only"> kcal</span></b>
   <small class="pfc money" data-entry-pfc>{#each entryPfcCells(e, pgoals) as c (c.k)}<span class="m m-{c.k} t{c.tint}" data-pfc-of={c.k} data-tint={c.tint}><span aria-hidden="true">{c.k === 'fa' ? 'F' : c.k.toUpperCase()}</span><span class="sr-only">{t(`food.${c.k}`)}</span> {c.text}{#if c.tint === 2}<span class="sr-only">{t('food.pfcHigh')}</span>{/if}</span>{/each}</small>
 {/snippet}
@@ -102,10 +107,10 @@
             <button type="button" class="row" data-entry={e.id} data-rep={e.rep} data-sfx="page" onclick={() => onpick(e)}>
               {@render cells(e, r)}
             </button>
-            {@const f = fresh?.get(e.id)}
-            {#if f && onfresh}
-              {@const k1 = entryKcal({ g: e.g, f })}
-              <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, f)}>
+            {@const x = fresh?.get(e.id)}
+            {#if x && onfresh}
+              {@const k1 = entryKcal(x)}
+              <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, x)}>
                 {k1 === kcalOf(e) ? t('food.fresh.act') : t('food.fresh.actK', { from: formatNum(kcalOf(e)), to: formatNum(k1) })}
               </button>
             {/if}
@@ -121,6 +126,13 @@
         </li>
       {/each}
     </ul>
+  {/if}
+  {#if repfresh}
+    <p class="rf" data-rep-fresh={meal}><span>{repfresh.why}</span>
+      <button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>
+        {repfresh.from === repfresh.to ? t('food.fresh.rep') : t('food.fresh.repK', { from: formatNum(repfresh.from), to: formatNum(repfresh.to) })}
+      </button>
+    </p>
   {/if}
   {#if mine && !entries.length && copies.length}
     <div class="copies" data-copies={meal}>
@@ -192,6 +204,10 @@
   }
   .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
+  .est { font-weight: 500; }
+  /* いつものを更新: why, soft, then the link (最新の値にする's) */
+  .rf { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .rf .fresh { margin: 0 0 0 -4px; }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {
     display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);

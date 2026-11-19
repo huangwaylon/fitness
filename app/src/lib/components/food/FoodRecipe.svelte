@@ -6,7 +6,10 @@
   // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and, opened from its amount, 「ごはんに
   // ついか」. Deleted while open (by its owner, from either phone): the same read-only view, 「削除されました」, its copy
   // still offered. On top, its picture: four of its ingredients that have one, the most grams first (foodUi.ts recipePlate),
-  // 2 × 2 (one alone: itself, 160 px); none: nothing.
+  // 2 × 2 (one alone: itself, 160 px); none: nothing. An ingredient of no known weight (a マイ食品's serving, a chain
+  // menu's) counts its values, never a weight: under its row (mine) 「重さ不明（全体の重さに含めません）」, a
+  // grams field for one serving's weight and the food data's nearest food with one as a chip (weighHint), so the dish
+  // keeps logging by weight (contract/food.ts recipeSnap).
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -18,6 +21,7 @@
   import { catOf, recipePlate, snapGloss, type RecipeDraft } from './foodUi.ts';
   import { amountText, servingOnly } from './portions.ts';
   import { held, wantImages } from './dbHold.svelte.ts';
+  import { weighHint } from './recipeFlow.svelte.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -35,10 +39,12 @@
     onremove?: () => void;
     oncopy?: () => void;
     onlog?: () => void;
+    /** An ingredient of no known weight given one serving's grams (false: refused, too dense). */
+    onweigh?: (i: number, g: number) => boolean;
     /** A new recipe made from a meal's search: 保存して追加 (saved, and one serving logged to that meal). */
     andLog?: boolean;
   }
-  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, andLog = false }: Props = $props();
+  let { draft = $bindable(), owner = null, saved = false, gone = false, clean = false, onadd, onitem, onsave, onremove, oncopy, onlog, onweigh, andLog = false }: Props = $props();
 
   const ro = $derived(owner !== null || gone);
   const tot = $derived(recipeTotals(draft.it));
@@ -54,6 +60,14 @@
     const img = imgOf(imgs, id, 160);
     return img ? [{ id, img }] : [];
   }));
+
+  /** Each weightless ingredient's grams field (by index) and whether its last try was refused. */
+  let wts = $state<Record<number, string>>({});
+  let wbad = $state<Record<number, boolean>>({});
+  function weigh(i: number, g: number) {
+    wbad[i] = !onweigh?.(i, g);
+    if (!wbad[i]) delete wts[i];
+  }
 
   function servings(d: -1 | 1) {
     draft.sv = Math.max(RECIPE.servings.min, Math.min(RECIPE.servings.max, draft.sv + d));
@@ -109,7 +123,23 @@
         {#each draft.it as it, i (it)}
           <li>
             {#if ro}<div class="row">{@render cells(it)}</div>
-            {:else}<button type="button" class="row" data-sfx="page" data-recipe-item={i} onclick={() => onitem?.(i)}>{@render cells(it)}</button>{/if}
+            {:else}<button type="button" class="row" data-sfx="page" data-recipe-item={i} onclick={() => onitem?.(i)}>{@render cells(it)}</button>
+              {#if servingOnly(it.f) && onweigh}
+                {@const hint = weighHint(db, it.f)}
+                <div class="wt" data-recipe-weigh={i}>
+                  <p class="note">{t('food.rcp.noWeight')}</p>
+                  <div class="wrow">
+                    <label class="wf"><span>{t('food.rcp.weighOne')}</span>
+                      <input type="text" inputmode="decimal" data-sfx="none" data-recipe-weigh-g={i} bind:value={wts[i]} placeholder="g" autocomplete="off" enterkeyhint="done"
+                        aria-invalid={wbad[i] || undefined} onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); weigh(i, Number(wts[i])); } }} /><span>g</span></label>
+                    <button type="button" class="btn paper small" data-sfx="confirm" data-recipe-weigh-set={i} aria-disabled={!(Number(wts[i]) > 0)}
+                      onclick={() => Number(wts[i]) > 0 && weigh(i, Number(wts[i]))}>{t('food.rcp.weighSet')}</button>
+                  </div>
+                  {#if hint}<button type="button" class="hint" data-sfx="confirm" data-recipe-weigh-hint={i} onclick={() => weigh(i, hint.g)}>{t('food.rcp.weighHint', { n: hint.n, label: hint.label, g: formatNum(hint.g) })}</button>{/if}
+                  {#if wbad[i]}<p class="note bad" role="status" data-recipe-weigh-bad>{t('food.rcp.weighBad')}</p>{/if}
+                </div>
+              {/if}
+            {/if}
           </li>
         {/each}
       </ul>
@@ -130,7 +160,7 @@
         <div><dt>{t(`food.${k}`)}</dt><dd class="money">{per(v)}</dd></div>
       {/each}
     </dl>
-    <p class="all money" data-recipe-live-total>{draft.it.some((x) => servingOnly(x.f)) ? t('food.rcp.all', { k: formatNum(Math.round(tot.k)) }) : t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
+    <p class="all money" data-recipe-live-total>{tot.g <= 0 ? t('food.rcp.all', { k: formatNum(Math.round(tot.k)) }) : t('food.rcp.allOf', { k: formatNum(Math.round(tot.k)), g: formatNum(Math.round(tot.g)) })}</p>
   </section>
 
   <div class="acts level-acts">
@@ -201,5 +231,20 @@
   .cells dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cells dd { margin: 3px 0 0; font-size: var(--fs-body); }
   .all { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  /* an ingredient of no known weight: a quiet line, a small grams field and a suggestion under its row */
+  .wt { display: grid; gap: 4px; padding: 0 2px 8px 50px; }
+  .wrow { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .wrow .btn { flex: none; white-space: nowrap; }
+  .wf { display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .wf input {
+    width: 4em; min-height: var(--hit); padding: 4px 8px; border: 0; border-radius: var(--r-btn); box-sizing: border-box;
+    font: 700 var(--fs-input)/1.1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
+  }
+  .wf input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .hint {
+    appearance: none; border: 0; background: none; cursor: pointer; justify-self: start; min-height: var(--hit); padding: 0 4px; margin-left: -4px;
+    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-align: left;
+  }
+  .note.bad { color: var(--text); }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

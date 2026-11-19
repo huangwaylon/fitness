@@ -320,14 +320,14 @@ export function foodRecipeFold(ops: Iterable<RecipeOpBy>): FoodRecipe[] {
   return out.sort((a, b) => b.at - a.at || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
-/** What some ingredients add up to: `g` grams, kcal, protein, fat, carbs, salt and fibre (g), unrounded; a
- *  nutrient null when no ingredient knows it, else an unknown one counts as none (as a day's totals count it:
- *  model/food.ts). */
+/** What some ingredients add up to: `g` grams (of those with a weight: a serving with none, `sv`, has only a nominal
+ *  100 g, never counted since 2026-11-20), kcal, protein, fat, carbs, salt and fibre (g), unrounded; a nutrient null
+ *  when no ingredient knows it, else an unknown one counts as none (as a day's totals count it: model/food.ts). */
 interface RecipeTotals { g: number; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi: number | null }
 export function recipeTotals(it: readonly RepeatItem[]): RecipeTotals {
   const t: RecipeTotals = { g: 0, k: 0, p: null, fa: null, c: null, s: null, fi: null };
   for (const { g, f } of it) {
-    t.g += g;
+    if (f.sv !== true) t.g += g;
     t.k += (f.k * g) / 100;
     for (const k of SNAP_NUTRIENTS) {
       const v = k === 's' ? snapSalt(f) : f[k];
@@ -353,16 +353,21 @@ export function round1(v: number): number {
 
 const clampGrams = (g: number): number => Math.min(FOOD_GRAMS.max, Math.max(FOOD_GRAMS.min, round1(g)));
 
-/** Whether some ingredients include a serving with no known weight (`sv`: a custom food's). */
-const anySv = (it: readonly RepeatItem[]): boolean => it.some((x) => x.f.sv === true);
+/** Whether a recipe logs by the serving: no ingredient has a weight (`sv`: a custom food's, a chain menu's), or its
+ *  weighed ones are too few grams to carry the rest (per 100 g past a food's limits: KCAL_MAX, NUTRIENT_MAX). Until
+ *  2026-11-20 any ingredient with no weight made it so (its nominal 100 g counted): such a recipe now logs by weight. */
+function bySv(it: readonly RepeatItem[], t: RecipeTotals): boolean {
+  if (!it.some((x) => x.f.sv === true)) return false;
+  return t.g <= 0 || (t.k * 100) / t.g > KCAL_MAX || SNAP_NUTRIENTS.some((k) => ((t[k] ?? 0) * 100) / t.g > NUTRIENT_MAX);
+}
 
 /** A recipe as a food per 100 g (its id `recipe:<recipe id>`, its name, `u` the portion label given): its totals over
- *  its grams, kcal to one decimal and each nutrient to two (a mean of foods in range stays in range: snapOf takes it).
- *  With an ingredient of no known weight (`sv`) its grams mean nothing: then one serving (its totals over its
- *  servings) per a nominal 100 g, an `sv` snapshot (recipePortion: 1人前 = 100). */
+ *  its weighed grams (an ingredient of no known weight, `sv`, adds its values, not its nominal grams), kcal to one
+ *  decimal and each nutrient to two (in range: snapOf takes it). With none weighed, or too few grams (bySv): one
+ *  serving (its totals over its servings) per a nominal 100 g, an `sv` snapshot (recipePortion: 1人前 = 100). */
 export function recipeSnap(r: { id: string; n: string; sv: number; it: readonly RepeatItem[] }, u?: string): FoodSnap {
   const t = recipeTotals(r.it);
-  const sv = anySv(r.it);
+  const sv = bySv(r.it, t);
   const per = (v: number, by: number): number => Math.round((sv ? v / r.sv : (v * 100) / t.g) * by) / by;
   const nut = (v: number | null): number | null => (v === null ? null : per(v, 100));
   const f: FoodSnap = withOptional({ id: `recipe:${r.id}`, n: r.n, k: per(t.k, 10), p: nut(t.p), fa: nut(t.fa), c: nut(t.c), s: nut(t.s) }, t, nut);
@@ -371,10 +376,11 @@ export function recipeSnap(r: { id: string; n: string; sv: number; it: readonly 
   return f;
 }
 
-/** One serving of a recipe: 「1人前」, its grams (its total over its servings, to one decimal, within a `food` entry's
- *  grams; a nominal 100 with an ingredient of no known weight: recipeSnap). */
+/** One serving of a recipe: 「1人前」, its grams (its weighed total over its servings, to one decimal, within a `food`
+ *  entry's grams; a nominal 100 when it logs by the serving: recipeSnap). */
 export function recipePortion(r: { sv: number; it: readonly RepeatItem[] }): { label: string; g: number } {
-  return { label: '1人前', g: anySv(r.it) ? NOMINAL_G : clampGrams(recipeTotals(r.it).g / r.sv) };
+  const t = recipeTotals(r.it);
+  return { label: '1人前', g: bySv(r.it, t) ? NOMINAL_G : clampGrams(t.g / r.sv) };
 }
 
 // ---- My foods (マイ食品, `food_custom`): a food not in the food data, typed in by someone as one serving (`u` its label,

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { addDataset, emptyDb, toColumns } from '#lib/food/db.ts';
 import { forgetShards } from '#lib/food/load.ts';
 import type { FoodCustom, FoodSnap } from '#lib/contract/food.ts';
-import { latestSnap, shardsFor, snapDiffers } from './fresh.ts';
+import { latestFood, shardsFor, snapDiffers, type FoodSources } from './fresh.ts';
 
 const RICE: FoodSnap = { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' };
 const REIMEN: FoodSnap = { id: 'dishes:reimen', n: '冷麺', k: 89.9, p: 3.1, fa: 1, c: 17, s: 0.6, u: '1人前' };
@@ -14,18 +14,20 @@ async function dbOf(items: object[]) {
 }
 
 describe('最新の値にする: an entry’s food as it is now', () => {
-  it('a snapshot differs beyond rounding: kcal, P/F/C/salt (known ↔ unknown too), fibre only when both know it', () => {
+  /** An entry's food now, at `g` grams (its snapshot only). */
+  const latestSnap = (f: FoodSnap, src: FoodSources, g = 100) => latestFood({ g, f }, src)?.f ?? null;
+  it('a snapshot differs beyond rounding: kcal, P/F/C/salt/fibre (known ↔ unknown too: fibre newly known counts)', () => {
     const got = [
       snapDiffers(RICE, { ...RICE }), snapDiffers(RICE, { ...RICE, k: 156.4 }), snapDiffers(RICE, { ...RICE, k: 157 }),
       snapDiffers(RICE, { ...RICE, p: 2.54 }), snapDiffers(RICE, { ...RICE, p: 2.6 }), snapDiffers(RICE, { ...RICE, s: null }),
       snapDiffers({ ...RICE, s: null }, RICE), snapDiffers(RICE, { ...RICE, fi: 1.5 }), snapDiffers({ ...RICE, fi: 1.5 }, { ...RICE, fi: 1.6 }),
-      snapDiffers(RICE, { ...RICE, n: 'ごはん', u: undefined })
+      snapDiffers(RICE, { ...RICE, n: 'ごはん', u: undefined }), snapDiffers({ ...RICE, fi: null }, RICE), snapDiffers(RICE, { ...RICE, est: 'e' })
     ];
-    expect(got).toEqual([false, false, true, false, true, true, true, false, true, false]);
+    expect(got).toEqual([false, false, true, false, true, true, true, true, true, false, false, false]);
   });
   it('from the catalogue, the recipe or the custom food now, its label kept; none when gone, the same, or not loaded', async () => {
     const db = await dbOf([
-      { id: 'mext:01088', name: 'ごはん（精白米）', kcal: 156, p: 2.5, f: 0.3, c: 37.1, salt: 0, fib: 1.5 },
+      { id: 'mext:01088', name: 'ごはん（精白米）', kcal: 156, p: 2.5, f: 0.3, c: 37.1, salt: 0 },
       { id: 'dishes:reimen', name: '冷麺', kcal: 114, p: 3.5, f: 1.2, c: 21.5, salt: 1.0, fib: 0.9 }
     ]);
     const recipe = { id: 'cabc1234', n: 'おうち丼', sv: 2, it: [{ g: 300, f: RICE }] };
@@ -35,18 +37,39 @@ describe('最新の値にする: an entry’s food as it is now', () => {
     const oldCustom: FoodSnap = { id: 'custom:mabc1234', n: '弁当', k: 600, p: 20, fa: null, c: null, s: null, u: '1食', sv: true };
     expect([
       latestSnap(RICE, src), latestSnap({ ...REIMEN, u: '1人前×2' }, src), latestSnap(REIMEN, { ...src, db: null }), latestSnap({ ...RICE, id: 'mext:99999' }, src),
-      latestSnap(oldRecipe, src), latestSnap(oldCustom, src), latestSnap({ ...oldCustom, sv: undefined }, src)
+      latestSnap(oldRecipe, src, 150), latestSnap(oldCustom, src), latestSnap({ ...oldCustom, sv: undefined, u: undefined }, src)
     ]).toEqual([
       null, { id: 'dishes:reimen', n: '冷麺', k: 114, p: 3.5, fa: 1.2, c: 21.5, s: 1, fi: 0.9, u: '1人前×2' }, null, null,
       { id: 'recipe:cabc1234', n: 'おうち丼', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '1人前' },
       { id: 'custom:mabc1234', n: '弁当', k: 650, p: 20, fa: null, c: null, s: null, u: '1食', sv: true }, null
     ]);
   });
+  it('fibre newly known is fresher values; a portion whose weight changed takes its grams now (冷麺 1杯 606 → 556 g)', async () => {
+    const db = await dbOf([
+      { id: 'mext:01088', name: 'ごはん（精白米）', kcal: 156, p: 2.5, f: 0.3, c: 37.1, salt: 0, fib: 1.5 },
+      { id: 'eatout:reimen', name: '冷麺', kcal: 94, p: 3.4, f: 1.1, c: 17.8, salt: 1.1, fib: 0.6, portions: [{ label: '1杯', g: 556 }] }
+    ]);
+    const src = { db, recipes: [], customs: [] };
+    const REI: FoodSnap = { id: 'eatout:reimen', n: '冷麺', k: 94, p: 3.4, fa: 1.1, c: 17.8, s: 1.1, fi: 0.6, u: '1杯' };
+    expect([
+      latestFood({ g: 150, f: RICE }, src), latestFood({ g: 606, f: REI }, src), latestFood({ g: 1212, f: { ...REI, u: '1杯×2' } }, src),
+      latestFood({ g: 556, f: REI }, src), latestFood({ g: 606, f: { ...REI, u: undefined } }, src), latestFood({ g: 606, f: { ...REI, u: '大盛' } }, src)
+    ]).toEqual([{ g: 150, f: { ...RICE, fi: 1.5 } }, { g: 556, f: REI }, { g: 1112, f: { ...REI, u: '1杯×2' } }, null, null, null]);
+  });
+  it('a recipe now by weight that was by the serving (or back): its grams its 1人前’s now, with the label; without, none', () => {
+    const SALT_KOMBU: FoodSnap = { id: 'custom:mkombu01', n: 'しおこんぶ', k: 10, p: 0.8, fa: 0, c: 1.9, s: 1, fi: 0.6, u: '1食', sv: true };
+    const OATS: FoodSnap = { id: 'mext:01004', n: 'オートミール', k: 350, p: 13.7, fa: 5.7, c: 69.1, s: 0, fi: 9.4 };
+    const r = { id: 'cmix0001', n: '朝のオート', sv: 1, it: [{ g: 45, f: OATS }, { g: 100, f: SALT_KOMBU }] };
+    const src = { db: null, recipes: [r], customs: [] };
+    const was: FoodSnap = { id: 'recipe:cmix0001', n: '朝のオート', k: 167.5, p: 7, fa: 2.6, c: 33, s: 1, fi: 4.8, u: '1人前', sv: true };
+    expect(latestFood({ g: 100, f: was }, src)).toEqual({ g: 45, f: { id: 'recipe:cmix0001', n: '朝のオート', k: 372.2, p: 15.48, fa: 5.7, c: 73.32, s: 2.22, fi: 10.73, u: '1人前' } });
+    expect(latestFood({ g: 100, f: { ...was, u: undefined } }, src)).toBeNull();
+  });
   it('a catalog item by the serving (sv, a chain menu’s): its snapshot per serving, kept so, updated as one', async () => {
-    const db = await dbOf([{ id: 'kal:1', name: '牛丼', kcal: 733, p: 22.9, f: 25, c: 104.1, salt: 2.9, sv: true, portions: [{ label: '1食', g: 100 }] }]);
+    const db = await dbOf([{ id: 'kal:1', name: '牛丼', kcal: 733, p: 22.9, f: 25, c: 104.1, salt: 2.9, sv: true, est: 'e', portions: [{ label: '1食', g: 100 }] }]);
     const old: FoodSnap = { id: 'kal:1', n: '牛丼', k: 700, p: 22.9, fa: 25, c: 104.1, s: 2.9, u: '1食', sv: true };
     const src = { db, recipes: [], customs: [] };
-    expect([latestSnap(old, src), latestSnap({ ...old, k: 733 }, src), latestSnap({ ...old, sv: undefined }, src)]).toEqual([{ ...old, k: 733 }, null, null]);
+    expect([latestSnap(old, src), latestSnap({ ...old, k: 733 }, src), latestSnap({ ...old, sv: undefined, u: undefined }, src)]).toEqual([{ ...old, k: 733, est: 'e' }, null, null]);
   });
   describe('a barcode-only product (a shard’s, not in products.json): its shard fetched for it', () => {
     afterEach(() => (vi.unstubAllGlobals(), forgetShards()));

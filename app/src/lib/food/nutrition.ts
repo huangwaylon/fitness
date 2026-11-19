@@ -52,5 +52,7 @@ export function toSnap(item: Item, portionLabel?: string): FoodSnap {
   const u = cleanLine(portionLabel, FOOD_PORTION_CHARS);
   if (u) snap.u = u;
   if (item.sv) snap.sv = true;
+  // a chain menu's values' trust (Kalori's), so the entry can say 推定
+  if (item.est) snap.est = item.est;
   return snap;
 }

@@ -577,6 +577,30 @@ describe('recurring meals (いつもの)', () => {
     expect(repeats(reduce({ metrics: [], events: kept as never }), 'A').map((x) => [x.id, x.to, x.w])).toEqual([[id, undefined, 127]]);
   });
 
+  it('refreshRepeat (いつものを更新): ends yesterday, the same days from today with the foods now; past days as they were', async () => {
+    const { detachDay, refreshRepeat, startRepeat } = await import('./meals.ts');
+    await breakfast('2026-11-16');
+    const { id } = startRepeat({ meal: 'b', date: '2026-11-16', w: 127 });
+    await model();
+    detachDay(id!, '2026-11-19');
+    await model();
+    const NATTO2 = { ...NATTO, k: 184, fi: 6.7 };
+    const r = refreshRepeat(id!, [{ g: 150, f: RICE }, { g: 40, f: NATTO2 }]);
+    expect(r).toMatchObject({ ok: true });
+    const [next, old] = reps().slice(-2);
+    expect(old).toMatchObject({ id, to: '2026-11-17', nx: r.id });
+    expect(next).toMatchObject({ id: r.id, from: '2026-11-18', w: 127, sk: ['2026-11-19'], it: [{ g: 150, f: RICE }, { g: 40, f: NATTO2 }] });
+    await model();
+    expect(await day('2026-11-17')).toEqual([['b', 'ごはん', 150, id], ['b', '納豆', 45, id]]); // history as it was
+    expect(await day('2026-11-18')).toEqual([['b', 'ごはん', 150, r.id], ['b', '納豆', 40, r.id]]);
+    expect((await day('2026-11-19')).map((e) => e[3])).toEqual([null, null]); // detached, not doubled
+    expect(await day('2026-11-20')).toEqual([['b', 'ごはん', 150, r.id], ['b', '納豆', 40, r.id]]);
+    // one that starts today is replaced (removed, naming the new one)
+    const again = refreshRepeat(r.id!, [{ g: 150, f: RICE }]);
+    expect(reps().at(-1)).toMatchObject({ id: r.id, rm: true, nx: again.id });
+    expect(refreshRepeat('rnope0000', [{ g: 1, f: RICE }]).ok).toBe(false);
+  });
+
   it('stopRepeat: ends today (past days kept, tomorrow on nothing); one that starts tomorrow is removed', async () => {
     const { startRepeat, stopRepeat, updateRepeat } = await import('./meals.ts');
     await breakfast('2026-11-16');

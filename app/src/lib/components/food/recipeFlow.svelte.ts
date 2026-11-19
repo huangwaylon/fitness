@@ -1,7 +1,7 @@
 // マイレシピ's editing (Food.svelte's recipe level): the draft of mine it edits, kept here under the search and the
 // amount it opens; its ingredients' trip (each with an id of its own while it's in the draft); save, remove, copy, log.
-import { RECIPE, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
-import type { Item } from '#lib/food/index.ts';
+import { customDensityOk, FOOD_GRAMS, RECIPE, round1, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
+import { findFoods, portionsOf, type FoodDb, type Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
@@ -34,6 +34,29 @@ export interface FoodFlowEnv {
 }
 
 export const mealName = (k: string): string => t(`food.meal.${k}`);
+
+/** A recipe's ingredient of no known weight (`sv`: its values per serving, `g` a nominal 100 per serving) weighed: `w`
+ *  grams a serving, its values then per 100 g and its grams its servings' (its label kept), or null: not such an
+ *  ingredient, no weight, or one no food is that dense (customDensityOk). */
+export function weighItem(x: RepeatItem, w: number): RepeatItem | null {
+  const g = round1(w), n = x.g / 100;
+  if (!servingOnly(x.f) || !(g >= FOOD_GRAMS.min) || round1(g * n) > FOOD_GRAMS.max) return null;
+  const { sv: _sv, ...f } = x.f;
+  if (!customDensityOk({ g, k: f.k, p: f.p, fa: f.fa, c: f.c, s: f.s, fi: f.fi })) return null;
+  const by = (v: number) => Math.round(((v * 100) / g) * 100) / 100;
+  const out: FoodSnap = { ...f, k: round1((f.k * 100) / g), p: f.p === null ? null : by(f.p), fa: f.fa === null ? null : by(f.fa), c: f.c === null ? null : by(f.c), s: f.s === null ? null : by(f.s) };
+  if (typeof f.fi === 'number') out.fi = by(f.fi);
+  return { g: Math.max(FOOD_GRAMS.min, round1(g * n)), f: out };
+}
+
+/** A weight to suggest for an ingredient of no known weight: the food data's best match by its name that has one
+ *  (しおこんぶ → 塩昆布 大さじ1, 5 g), its name and default portion; null with no catalogue or none. */
+export function weighHint(db: FoodDb | null, f: FoodSnap): { n: string; label: string; g: number } | null {
+  if (!db) return null;
+  const it = findFoods(db, f.n, 5).items.find((x) => !x.sv && x.portions?.length);
+  const p = it && portionsOf(it)[0];
+  return it && p ? { n: it.name, label: p.label, g: p.g } : null;
+}
 
 export class RecipeFlow {
   draft = $state<RecipeDraft>({ n: '', sv: 2, it: [] });
@@ -101,6 +124,14 @@ export class RecipeFlow {
   untrip(id: string): void {
     const i = this.draft.it.findIndex((x) => this.#tripIds.get(x) === id);
     if (i >= 0) this.draft.it.splice(i, 1);
+  }
+  /** An ingredient of no known weight given its weight a serving (weighItem); false when it can't take it. */
+  weigh(i: number, w: number): boolean {
+    const x = this.draft.it[i];
+    const y = x && weighItem(x, w);
+    if (!y) return false;
+    this.draft.it[i] = y;
+    return true;
   }
   itemRemove(i: number): void {
     this.draft.it.splice(i, 1);
