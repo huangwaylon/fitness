@@ -1186,6 +1186,11 @@
     });
     ro.observe(canvas);
     // the e2e's and the console's hooks (testMode.ts testHooks: never on a live phone, a hook holds the engine)
+    /** A kind's box from the 3D island (things3 boxes: the kinds whose 2D art is gone, R4 step 7), as probe.ts' Box. */
+    const box3 = (kind: string, id = '', node?: Element) => {
+      const r = things3(world).boxes.get(kind)?.(id, node);
+      return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: null } : null;
+    };
     if (testHooks()) window.__world3d = {
       stats: () => e.stats(), swaps: () => swaps.slice(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
@@ -1258,13 +1263,13 @@
        *  visitors, the day's props (the cake, the arch, the pumpkins, the tape deck…), a tree shake's leavings, the board (its 「！」), a goal tree's fruit and state (popup open, glints); the effects as they fired (island/probe.ts: read off
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
       pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy)),
-      box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : boxOf(document, kind, id)),
+      box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
       drawn: (kind: BoxKind, id?: string) => drawnOf(document, kind, id),
       scenery: (id?: string) => (id === undefined ? sceneryAll(document) : sceneryOf(document, id)),
       actor: (slot = 'mine') => actorOf(document, slot),
       controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : controlsOf(document)),
       /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
-      pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => boxOf(document, kind, id),
+      pickDom: (cx: number, cy: number) => pickAt(document, cx, cy), boxDom: (kind: BoxKind, id?: string) => box3(kind, id) ?? boxOf(document, kind, id),
       /** What the scene's own chain takes a tap at client (cx, cy) for, before the scenery and the ground (SceneTaps
        *  claims: plot, visitor, kk, reel, critter, chase, bubbles, deck, cake, find, care, fish), or null: the 3D boxes
        *  with the switch on, else (and claimDom) the DOM's. */
@@ -1272,7 +1277,7 @@
       /** What an overlay or a figure keeps clear of (placement.ts' guards, client px): with the switch the island's controls
        *  from their tap areas (guards3: standsClear's, the balloon's present's), else (and guardsDom) the DOM's buttons. */
       guards: () => (things3(world).guards3 ?? (() => uiBoxes()))(), guardsDom: () => uiBoxes(),
-      critters: () => crittersOf(document), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
+      critters: () => crittersOf(document, (n, id) => box3('critter', id, n)), dive: () => diveOf(document), finds: () => findsOf(document), care: () => careOf(document), spots: () => spotsOf(document), visitors: () => visitorsOf(document), props: () => propsOf(document), shakes: () => shakesOf(document), board: () => boardOf(document),
       fruit: (tree: string) => fruitOf(document, tree), goal: (tree: string) => goalOf(document, tree), fxLog: () => fxFired?.list() ?? [],
       programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };

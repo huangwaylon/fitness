@@ -242,11 +242,11 @@ export const controlsOf = (root: Root) =>
 /** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). A bug's
  *  `place` (a flower, a trunk, the water's air…), `flight` (drift, dart, stalk…), a stalker's `stalk` (rear, settled);
  *  a shadow's `shape` (`fin`: a shark's), or null. `gone`/`fled`: on its way out; `sat`: landed. */
-export const crittersOf = (root: Root) =>
+export const crittersOf = (root: Root, box3?: (n: Element, id: string) => Box | null) =>
   all(root, '[data-critter]').map((n) => ({
     id: n.getAttribute('data-critter') ?? '', place: n.getAttribute('data-place'), water: n.getAttribute('data-water'), pool: n.getAttribute('data-pool'),
-    flight: n.getAttribute('data-flight'), stalk: n.querySelector('[data-stalk]')?.getAttribute('data-stalk') ?? null, shape: n.getAttribute('data-shape') || null,
-    gone: hasClass(n, 'gone'), fled: hasClass(n, 'fled'), sat: hasClass(n, 'sat'), box: rect(n)
+    flight: n.getAttribute('data-flight'), stalk: n.getAttribute('data-stalk'), shape: n.getAttribute('data-shape') || null,
+    gone: hasClass(n, 'gone'), fled: hasClass(n, 'fled'), sat: hasClass(n, 'sat'), box: box3?.(n, n.getAttribute('data-critter') ?? '') ?? rect(n)
   }));
 
 export type Critter = ReturnType<typeof crittersOf>[number];

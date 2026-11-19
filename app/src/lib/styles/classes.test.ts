@@ -1,7 +1,7 @@
 // A data id is never a global class: Visitor once rendered `class="visitor {id}"`, so Chip's day gave the beaver's node
 // theme.css's `.chip` (a 32 px cream pill by him all day) and Toast's `:root:has(.island .chip)` (the banner as low as
 // for the sync chip). Visitor and guest ids go in data-visitor (Chip's is one of the global classes); the ids still
-// rendered as classes (bugs: Critters, BugSprite, TreeShakes) must not meet one.
+// rendered as classes (bugs: Critters, TreeShakes) must not meet one.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';

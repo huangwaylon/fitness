@@ -21,7 +21,7 @@ const centreDist = (b: HitBox, x: number, y: number): number => Math.hypot(x - (
 
 /** What an item draws (client px): the union of its art (img, svg) under `el`, or its own box; null when nothing has a
  *  size (not drawn). A world node's anchor is a 0 × 0 point at its foot: its art hangs off it. */
-export function bodyRect(el: Element | null | undefined): DOMRect | null {
+function bodyRect(el: Element | null | undefined): DOMRect | null {
   if (!el) return null;
   let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
   const add = (x: DOMRect) => {

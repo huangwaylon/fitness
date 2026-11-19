@@ -28,7 +28,7 @@
   import type { Sky } from '#lib/world/weather.ts';
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { SHOWN, bodyRect, drawn3, grow, hitSources, inside, type Seen, type Src } from './hitbox.ts';
+  import { SHOWN, drawn3, grow, hitSources, inside, type Seen, type Src } from './hitbox.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -54,7 +54,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { DiveItem } from '#lib/world/sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
-  import { thing } from '../world3d/things3.ts';
+  import { thing, things3 } from '../world3d/things3.ts';
   import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from '#lib/world/world.ts';
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
@@ -140,8 +140,7 @@
   let seq = 0;
   $effect(() => {
     const list = () => bugs.flatMap((b) => {
-      const el = bugEls[b.n];
-      return !b.gone && el ? [{ box: grow(bugBox(b, el)), kind: 'bug' }] : [];
+      return !b.gone ? [{ box: grow(bugBox(b)), kind: 'bug' }] : [];
     });
     hitSources.add(list);
     return () => void hitSources.delete(list);
@@ -215,9 +214,6 @@
     ? a.tiles.some(([x, z], i) => i % 3 === 0 && w.inView(x, z, -16))
     : [0, -0.7, 0.7].some((s) => [0, -0.8, 0.8].some((t) => { const p = swimAt(a, s, t); return w.inView(p.x, p.z, -16); }));
 
-  /** The bugs' sprites (BugSprite.svelte): loaded with the first bug of a session, out of the island's first load. */
-  let Sprite = $state<typeof import('./BugSprite.svelte').default | null>(null);
-  const loadSprite = once(() => import('./BugSprite.svelte').then((m) => (Sprite = m.default)));
 
   function preload(key: string) {
     const url = artUrl(key);
@@ -659,7 +655,6 @@
   function spawnBug(id: BugId | null, o: { from?: P3; area?: Patch; avoid?: Patch[]; taken?: P3[]; stay?: boolean | number; pinned?: boolean; keep?: BugOpts['keep'] } & Shared = {}): boolean {
     const { area, stay = true, pinned = false } = o;
     if (!id || bugs.length >= MAX_BUGS) return bugs.length > 0;
-    void loadSprite().catch(() => {});
     preload(critterArt(id));
     void loadLines().catch(() => {});
     if (o.path) return placeBug(id, o, o.path);
@@ -1052,9 +1047,9 @@
   export function claims(px: number, py: number, seen: Seen = SHOWN, reel = true, src: Src = 'dom'): { kind: 'reel' | 'critter' | 'chase' | 'bubbles'; id: string } | null {
     if (line) return reel ? { kind: 'reel', id: '' } : null;
     if (!geo()) return null;
-    const b = nearestBug(px, py, seen, src), bugEl = b && bugEls[b.n];
-    if (b && bugEl) {
-      const r = bugBox(b, bugEl, src);
+    const b = nearestBug(px, py, seen);
+    if (b) {
+      const r = bugBox(b);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
       if (b.flight === 'stalk' && b.stalk) {
@@ -1096,10 +1091,10 @@
     const g = geo();
     if (!g) return false;
     // (the partner has it already, their villager on the way: it's theirs, the tap goes on to whatever else is there)
-    const b = nearestBug(px, py, seen, src), bugEl = b && bugEls[b.n];
-    if (b && bugEl) {
-      // what it draws (its mover is a 0 × 0 point): on its tap box (hitbox.ts, at least 44px) it's caught
-      const r = bugBox(b, bugEl, src);
+    const b = nearestBug(px, py, seen), bugEl = b && bugEls[b.n];
+    if (b) {
+      // what it draws: on its tap box (hitbox.ts, at least 44px) it's caught
+      const r = bugBox(b);
       const d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       // (a percher on a trunk: a wider box, 56px, over the tree's own: the critters answer a tap first)
       const swing = inside(grow(r, b.flight === 'perch' ? 56 : undefined), px, py) ? 'catch' : netSwing(d, Math.max(r.width, r.height));
@@ -1154,7 +1149,7 @@
         offLegs(b); // (netted where it's drawn)
         if (!claim(b.cid, b.id, b.x, b.z, 'net')) return true;
         // it holds still where it is (mid-flight included) under the net, swung where it is (my villager turns to it)
-        const cs = getComputedStyle(bugEl).translate;
+        const cs = bugEl ? getComputedStyle(bugEl).translate : '';
         Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
         turnTo(b.x);
         const p = (bugEl && stageOf(bugEl)) ?? at;
@@ -1225,40 +1220,44 @@
     const p = fishNow(f) ?? f, [cx, cy] = w.clientAt(p.x, p.z);
     return { p, cx, cy, half: ((w.rest.three ? Math.max(len3(f), sizeU(f)) : sizeU(f)) / 2) * w.scaleAt(p.x, p.z) * w.view.s, shown: w.inView(p.x, p.z) };
   }
-  /** Where a bug is drawn (client px): on the 3D island its model's spot (bug3's: the true x, z and lift, by the 3D
-   *  island's curves; its invisible sprite moves by its own transition from a flat offset at its spot's scale, 30–110 px
-   *  off the model as a percher flies in, so a tap on what's drawn startled it), its sprite's size round it; else the
-   *  sprite's own box. */
-  function bugBox(b: Bug, el: HTMLElement, src: Src = 'dom'): DOMRect {
-    // (3d: its model's silhouette, at least 20 px each way about its middle: a bug's thin legs and wings; till its model
-    // is in, its sprite's, as drawn then)
-    const r3 = src === '3d' ? drawn3(w, bugId(b)) : null;
+  /** Where a bug is drawn (client px): its 3D model's silhouette, at least 20 px each way about its middle (a bug's thin
+   *  legs and wings); till its model is in, 24 px round its spot (bug3's, the 3D island's curve, once it moves; else
+   *  its itinerary's start). The same for the DOM's taps and the 3D's (R4 step 7: no 2D sprite left). */
+  function bugBox(b: Bug): DOMRect {
+    const r3 = drawn3(w, bugId(b));
     if (r3) {
       const bw = Math.max(r3.width, 20), bh = Math.max(r3.height, 20);
       return new DOMRect(r3.left + r3.width / 2 - bw / 2, r3.top + r3.height / 2 - bh / 2, bw, bh);
     }
-    const r = bodyRect(el) ?? el.getBoundingClientRect(), m = w.rest.three ? mos.get(bugId(b)) : undefined;
-    if (!m) return r;
-    const [cx, cy] = w.clientAt(m.xyz[0], m.xyz[1], m.xyz[2]), bw = Math.max(r.width, 20), bh = Math.max(r.height, 20);
-    return new DOMRect(cx - bw / 2, cy - bh / 2, bw, bh);
+    const m = mos.get(bugId(b)), [x, z, lift] = m?.g.started ? m.xyz : [b.x, b.z, 0];
+    const [cx, cy] = w.clientAt(x, z, lift);
+    return new DOMRect(cx - 12, cy - 12, 24, 24);
   }
+  // (the critters' boxes for the e2e's box('critter') and critters(): a bug's is bugBox, by its node or the first of
+  // its species; a fish's shadow still its DOM node's)
+  $effect(() => {
+    const m = things3(w).boxes, f = (id: string, node?: Element) => {
+      const b = node ? bugs.find((b) => bugEls[b.n] === node) : bugs.find((b) => b.id === id && !b.gone);
+      return b ? bugBox(b) : null;
+    };
+    m.set('critter', f);
+    return () => void (m.get('critter') === f && m.delete('critter'));
+  });
   /** Whether a tap at client (px, py) is on my bug as drawn: SceneTaps gives it the tap over the island's buttons (a bug
    *  flies or crawls in front of my villager, a canopy, a door). A fish's shadow lies on the water, behind them all: a
    *  button over it hides it, and the button keeps its tap (a canopy over the pond shakes its tree). */
-  export function onCritter(px: number, py: number, src: Src = 'dom'): boolean {
+  export function onCritter(px: number, py: number): boolean {
     if (line) return false;
     return bugs.some((b) => {
-      const el = bugEls[b.n];
-      return !b.gone && !!el && !theirs(b.cid) && inside(grow(bugBox(b, el, src), 0, 0), px, py);
+      return !b.gone && !theirs(b.cid) && inside(grow(bugBox(b), 0, 0), px, py);
     });
   }
   /** The bug a tap is for: of those mine to catch and shown, the one nearest it as drawn (null: none about). */
-  function nearestBug(px: number, py: number, seen: Seen, src: Src = 'dom'): Bug | null {
+  function nearestBug(px: number, py: number, seen: Seen): Bug | null {
     let best: Bug | null = null, bd = Infinity;
     for (const b of bugs) {
-      const el = bugEls[b.n];
-      if (b.gone || !el || theirs(b.cid) || !seen(b.x, b.z)) continue;
-      const r = bugBox(b, el, src), d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
+      if (b.gone || theirs(b.cid) || !seen(b.x, b.z)) continue;
+      const r = bugBox(b), d = Math.hypot(px - (r.left + r.width / 2), py - (r.top + r.height / 2));
       if (d < bd) (best = b), (bd = d);
     }
     return best;
@@ -1625,12 +1624,10 @@
   {/if}
   {#each bugs as b (b.n)}
       <div class="node" {@attach w.at({ x: b.ax, z: b.az, h: 80, dz: -16, light: night })}>
-        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} data-flight={b.flight} bind:this={bugEls[b.n]}
+        <span class="mover bug {b.flight} {b.id}" class:night class:gone={b.gone} class:fled={b.fled} class:sat={b.sat} data-critter={b.id} data-place={b.place} data-flight={b.flight} data-stalk={b.flight === 'stalk' ? b.stalk : undefined} bind:this={bugEls[b.n]}
           style:translate={b.freeze ?? bugLoc(b)} style:transition-duration={b.fled ? null : `${b.ms}ms`} style:--ms="{b.ms}ms">
           <span class="hopper" bind:this={hopEls[b.n]}>
-            <span class="face" class:flip={b.flip}>
-              {#if Sprite}<Sprite id={b.id} flight={b.flight} sat={b.sat} stalk={b.stalk} />{/if}
-            </span>
+            <span class="face" class:flip={b.flip}></span>
           </span>
         </span>
       </div>
@@ -1749,7 +1746,7 @@
   .ripple.big { width: calc(28 * var(--u)); height: calc(9 * var(--u)); margin: calc(-4.5 * var(--u)) 0 0 calc(-14 * var(--u)); }
   @keyframes ripple { from { transform: scale(.2); opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
 
-  /* bugs: the motion (the sprites are BugSprite.svelte, loaded with the first bug) */
+  /* bugs: the motion (the 3D island draws them: no 2D sprite) */
   .bug.gone { opacity: 0; }
   /* startled: seen all the way up and away, fading only over the last 40% */
   .bug.fled { transition-duration: var(--ms), calc(var(--ms) * .4); transition-delay: 0s, calc(var(--ms) * .6); transition-timing-function: cubic-bezier(.3, .6, .4, 1), linear; }

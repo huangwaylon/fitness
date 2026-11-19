@@ -160,7 +160,6 @@
     ["src/lib/components/island/KKSlider*", ["kk-sync", "music"]],
     ["src/lib/components/island/kkSlider*", ["kk-sync", "music"]],
     ["src/lib/components/island/TapeDeck*", ["radio"]],
-    ["src/lib/components/island/BugSprite*", ["bugs", "bug-taps", "bugs-nh2"]],
     ["src/lib/components/island/Birthday*", ["birthday"]],
     ["src/lib/components/island/Cake*", ["birthday"]],
     ["src/lib/components/island/ambient*", ["ambience"]],

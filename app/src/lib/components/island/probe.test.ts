@@ -191,7 +191,7 @@ describe('actor: a villager as shown', () => {
 
 describe('critters: the bugs and shadows out, the dive spot', () => {
   it("reads a bug's place, flight, stalk and landing, a shadow's water, pool and shape", () => {
-    const stalker = el('span', { class: 'mover bug stalk tarantula sat', 'data-critter': 'tarantula', 'data-place': 'grass', 'data-flight': 'stalk' }, [], { '[data-stalk]': el('span', { 'data-stalk': 'rear' }) }, [10, 20, 8, 6]);
+    const stalker = el('span', { class: 'mover bug stalk tarantula sat', 'data-critter': 'tarantula', 'data-place': 'grass', 'data-flight': 'stalk', 'data-stalk': 'rear' }, [], {}, [10, 20, 8, 6]);
     const shark = el('span', { class: 'mover shadow is-fin sea gone', 'data-critter': 'fish', 'data-water': 'sea', 'data-pool': 'sea', 'data-shape': 'fin' });
     const carp = el('span', { class: 'mover shadow pond', 'data-critter': 'pond', 'data-water': 'pond', 'data-pool': 'pond', 'data-shape': '' });
     const root = { querySelectorAll: (s: string) => (s === '[data-critter]' ? [stalker, shark, carp] : []) } as unknown as ParentNode;

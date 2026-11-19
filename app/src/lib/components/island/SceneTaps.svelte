@@ -296,7 +296,7 @@
     const fish = (seen: Seen) => step('fish', () => critters?.fishClaims(cx, cy, seen), () => critters?.fish(cx, cy, seen));
     // a plot under a goal tree's canopy or trunk, or a villager (their tap areas reach over a field beside them): the
     // plot's, farmed where it is; a bug in front keeps its tap
-    if ((k === 'goal' || k === 'villager') && !critters?.lineOut() && !critters?.onCritter(cx, cy, src)) {
+    if ((k === 'goal' || k === 'villager') && !critters?.lineOut() && !critters?.onCritter(cx, cy)) {
       const p = plot();
       if (p) return p;
     }
@@ -325,7 +325,7 @@
     }
     // a bug in front of the island's own controls (flying past my villager, a tree's canopy, a door): the bug's (it was
     // in view; the net is what the tap was for), else theirs
-    if (k && CONTROL_KINDS.has(k)) return critters?.onCritter(cx, cy, src) ? bug(SHOWN, true) : null;
+    if (k && CONTROL_KINDS.has(k)) return critters?.onCritter(cx, cy) ? bug(SHOWN, true) : null;
     // the critters (hit-tested against their live boxes; a cast bobber takes any tap), group stretching's tape deck
     // (small and exact, before the visitor's wider reach), a birthday's cake; then what's exactly under the finger: a
     // visitor's figure, a plot (a field's tile, docs/farming.md: farmed where it is, before a weed's or a find's slack

@@ -126,8 +126,7 @@ interface AssetJob {
 
 const DECOR_U = 3;
 /** The villagers' scale: an NH villager is 14.9 model units, the island's 80u (engine.ts VILLAGER_H). The critters and
- *  the visitors (villager3d) are drawn at it, in NH's proportions to the villagers (the 2D island's bugs are about as big: 1.6× the
- *  furniture's scale, BugSprite.svelte). */
+ *  the visitors (villager3d) are drawn at it, in NH's proportions to the villagers (a bug about 1.6× the furniture's scale). */
 const VILLAGER_S = 5.4;
 /** The 2D island's night looks (`<key>-lit`): in 3D the same model, its emissive lit. */
 const LIT = new Set(['streetlamp', 'garden-lantern', 'garden-lantern-white', 'campfire', 'bamboo-shoot-lamp', 'mushroom-lamp', 'nut-lamp', 'illumi-tree']);

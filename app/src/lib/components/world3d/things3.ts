@@ -173,12 +173,15 @@ export interface Registry {
   onVillager?: (id: string) => void;
   /** Each visitor figure's .art box worked out from its spot (client px, Visitor's figBox 3d), by its slot. */
   arts: Map<string, () => { left: number; top: number; right: number; bottom: number } | null>;
+  /** A figure kind's box on screen from the 3D island (client px), by its id or its DOM node (the e2e's box() and the
+   *  modules' hooks; R4 step 7: the kinds whose 2D art is gone), by kind: 'critter' (a bug: Critters' bugBox). */
+  boxes: Map<string, (id: string, node?: Element) => { left: number; top: number; width: number; height: number } | null>;
 }
 const regs = new WeakMap<World, Registry>();
 /** A World's things (made on first use: per World, gone with it). */
 export function things3(w: World): Registry {
   let r = regs.get(w);
-  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0, arts: new Map() }));
+  if (!r) regs.set(w, (r = { map: new Map(), figs: new Map(), taps: new Map(), rev: 0, arts: new Map(), boxes: new Map() }));
   return r;
 }
 
