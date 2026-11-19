@@ -67,7 +67,7 @@ After a deploy, never holding one back:
 | *e2e logic full* (`e2e-logic-full.yml`) · `e2e-logic` ×6 | **the full logic tier**: every test the gate's way, the auto-quarantined too, on the deployed commit after each green *Deploy UI* run (and on demand). A failure is an `::error` on its spec and the workflow red: the next push's to fix first |
 | · `e2e-render` | **the drawn smoke**: `@render` and `@smoke` with software GL; advisory |
 | · `coverage` | line coverage per file (`npm run coverage`): every file under `contract/` and `sync/`, and `store/actions.ts` and `store/meals.ts`, at 85 % or its ratchet floor (`scripts/coverage-floors.ts`); red under it |
-| · `timings` | test times folded into `e2e/timings.json` (the `e2e-timings` artifact; when the shards' spread drifts, `npm run e2e:timings` and commit it), and **what the gate missed** (`scripts/e2e-missed.ts`): each failing spec the gate didn't run, with the `e2e/impact.json` rule to add |
+| · `timings` | test times folded into `e2e/timings.json` (the `e2e-timings` artifact; when the shards' spread drifts, `npm run e2e:timings` and commit it; `src/lib/e2e-timings.test.ts` fails past 5 % untimed or 2 % stale keys), and **what the gate missed** (`scripts/e2e-missed.ts`): each failing spec the gate didn't run, with the `e2e/impact.json` rule to add |
 | *e2e full tier* (`e2e-full.yml`) ×10 | **everything drawn**, on demand only (SwiftShader's timings made it red nightly): the whole suite with real GL, `E2E_SLOW=1` (a test 90 s, an expect 20 s) |
 
 - **Red main never deploys, never older over newer, and the newest green does.** Runs overlap, never cancelled; only
@@ -79,7 +79,7 @@ After a deploy, never holding one back:
   specs its files **reach**: a changed e2e helper's importers (over `MAX_IMPORTERS`, 10, and fixtures.ts: the gate set instead), a src or content file's by
   `e2e/impact.json` (path globs to spec names; else the file's own name), and a changed i18n catalog's every spec that
   spells one of its old strings (a value changed or dropped: copy a spec clicks by). Changes count from the commit live on the
-  site (an unusable base: the gate set and more up to the budget, with a warning). Over the budget (`CAP_MS`, ~1300 s of
+  site (an unusable base: the gate set and more up to the budget, with a warning). Over the budget (`CAP_MS`, ~1550 s of
   tests) the reached specs drop out first, then the changed run once each (so do over `MAX_CHANGED`, 8, changed specs: a sweep). Every directory under `src/` and `content/`
   maps to a spec or is in `impact.json`'s `unmapped` with why, and every spec opening `/editor/?view=phone` is in the
   editor/ and layoutEdit/ rules (src/lib/e2e-impact.test.ts).

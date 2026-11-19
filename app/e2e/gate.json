@@ -1,5 +1,5 @@
 {
-  "//": "The gate's core e2e (docs/ops/testing.md \"The gate\"): these spec files run on every push before the deploy, with the specs the push changed (×3) and those its files reach (e2e/impact.json); the full logic tier runs everything after the deploy. Fast and stable files that cover the core flows, ~490 s of tests (e2e/timings.json). A file, not its tests: a renamed test stays in.",
+  "//": "The gate's core e2e (docs/ops/testing.md \"The gate\"): these spec files run on every push before the deploy, with the specs the push changed (×3) and those its files reach (e2e/impact.json); the full logic tier runs everything after the deploy. Fast and stable files that cover the core flows, ~910 s of tests on 11-20 (e2e/timings.json; english 240 s, sw-update 145 s). A file, not its tests: a renamed test stays in.",
   "specs": {
     "boot.spec.ts": "the app boots: /pair unpaired, the demo's island",
     "logic-mode.spec.ts": "the logic mode the gate runs in: the island's game without drawing, the test API",

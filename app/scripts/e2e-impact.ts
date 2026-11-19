@@ -2,7 +2,7 @@
 // the push changed, each test 3× and never retried (playwright.config.ts E2E_X3), and the specs its other files
 // reach: a changed e2e helper, its importers; a src or content file, e2e/impact.json's rules (else its own name). A
 // file nothing maps (a store, the config, a fixture, the package) adds nothing: the gate set, and the full logic tier
-// after the deploy. Over the budget (CAP_MS of tests by e2e/timings.json, ~110 s a gate shard) the reached ones drop
+// after the deploy. Over the budget (CAP_MS of tests by e2e/timings.json, ~130 s for each of a gate run's 12 workers; raised from 1300 s on 11-20, when the refreshed times counted the gate set 190 s more) the reached ones drop
 // out first, then the changed specs run once each; a changed spec always runs, but in a sweep (over 8): cheapest first
 // up to the budget. A base thousands of files away (over 500) or meeting HEAD only at the first commit (a rewritten
 // history) is no base.
@@ -21,7 +21,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const CAP_MS = 1_300_000, MAX_CHANGED = 8, MAX_IMPORTERS = 10, UNTIMED_MS = 60_000, MAX_FILES = 500;
+const CAP_MS = 1_550_000, MAX_CHANGED = 8, MAX_IMPORTERS = 10, UNTIMED_MS = 60_000, MAX_FILES = 500;
 type Rule = [glob: string, specs: string[]];
 export type Ctx = {
   /** every spec file's name (tent.spec.ts) */
