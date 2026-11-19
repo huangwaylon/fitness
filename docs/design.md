@@ -39,14 +39,14 @@ and clamping `lib/math.ts`, a static file's URL `staticUrl()`, the synced last-w
 ### Island
 
 Top to bottom: the HUD row (below); a sync
-chip only when sync isn't ok; the scene; しずえ's box only with news; the say button at the bottom right. The island is in 3D under
+chip only when sync isn't ok; the scene; しずえ's box only with news. The island is in 3D under
 them ([World](#world)): one finger scrolls it from まえ (home, the health lawn) to おく, two pinch the zoom, a tap
 on empty ground walks my villager there.
 
 - **Trees:** one per person, today's four fruits in the canopy ([Trees](#trees)). A tap opens a popup: a nameplate
   (name, last sync, a dot past 6 h); the four goals a 2 × 2, amount / goal and a mark ([Trees](#trees));
   [daily checks](#daily-checks); 朝 / 昼 / 夜; P · F · C. No ベル.
-- **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top` (10px under the safe area), 6px
+- **HUD row:** [the health button] [the menu] in the top-right corner at `--hud-top`, 6px
   apart; nothing else in the sky.
 - **Menu** (`island/HudMenu.svelte`): a 44px cream disc
   with NH's leaf mark, folded by default. A tap unfolds it (the disc yellow, the leaf tipped −40°) into seven cream pills
@@ -61,7 +61,7 @@ on empty ground walks my villager there.
   7. **設定** (a gear) → [設定](#settings)
 
   2–6 in each person's own order (設定 → メニュー; the guest too): a 44px grip drags a row (↑ / ↓ too), saved per
-  drop; 元に戻す restores this default, where new pills land. No "+N" badge on the leaf (a notice). It
+  drop; 元に戻す restores this default, where new pills land. It
   folds on a second leaf tap, a tap elsewhere (still acted on), Esc, a sheet opening or a pick; folded, pills are `inert`. The icons: one drawn set, soft brown (#A88B68), details cream.
 - **Health button** (`island/HudHealth.svelte`): a cream pill, NH's red dumbbell across it, no number. Tap → the
   villagers glance up and the health popup opens at once on the tab shown last: [健康](#kenkou) or [ごはん](#gohan). One
@@ -77,7 +77,7 @@ on empty ground walks my villager there.
 ### Wallet
 
 <a id="panel"></a>ごほうび, the island panel (`panel/IslandPanel.svelte`, `wallet/Wallet.svelte`, `wallet/Shop.svelte`):
-the menu's ベル row opens it at once, full height, no tabs, its own chunk, at its top; a ledger day pushes a level with ‹
+the menu's ベル row opens it at once, full height, its own chunk; a ledger day pushes a level with ‹
 (the wallet stays mounted under it). Top to bottom:
 
 - **The wallets:** side by side, mine first: each a jar (`Jar.svelte`, filling as it grows: `walletFill`), its owner's
@@ -216,9 +216,8 @@ loads with the first search, or at idle, in a worker).
 
 ### Sheets and harvest
 
-- One sheet skin (`ui/Sheet.svelte`, a native `<dialog>`): tan paper, cream cards (navy at night), sticky title bar
-  ([Navigation](#navigation)), one CTA in a sticky footer above the keyboard; the kit's sizes and type: [Unified
-  kit](#unified-kit).
+- One sheet skin (`ui/Sheet.svelte`, a `<dialog>`): tan paper, cream cards (navy at night), a sticky title bar, one CTA
+  in a sticky footer above the keyboard ([Unified kit](#unified-kit)).
 - **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, the week's recap: each
   person's ベル, the ふたりでぜんぶ days and the total; 受け取る → the coins fall into the jars (ceremony only). ✕ = later.
 - **Pair** (`routes/pair`): paste the key, or open a `#key=` link in the installed app.
@@ -230,9 +229,9 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **The title bar** is `ui/NavBar` on every sheet, panel and level: 48px, the title centred (18, `--font-ui` 700). ✕
   top-right closes the whole sheet from any level; ‹ top-left only on a level (or a sheet opened in place of its
   parent's row: 図鑑, ‹ back to 設定; English Study's ツール rows, ‹ back to ツール: `Sheet onback`); they never swap or move. Backdrop tap and Esc also close.
-- **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (結婚式's task form,
-  ごはん's recipe / custom food / quick editors), ✕, the backdrop, Esc and the editor's ‹ ask to discard
-  (「入力した内容を破棄しますか？」 [破棄する] [編集を続ける]). Untouched, they close at once.
+- **A half-filled form asks first** (`ui/discard.svelte.ts`): while a form holds unsaved input (a task form, ごはん's
+  editors), ✕, the backdrop, Esc and the editor's ‹ ask to discard
+  (「入力した内容を破棄しますか？」, a confirm: 編集を続ける · 破棄する). Untouched, they close at once.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc in the 44px hit, one look everywhere,
   over a photo or a map too (‹ grown into a pill: ‹ しまへ in a room, ‹ 戻る on the board). No other ✕ or ‹. Floating
   cards put the same ✕ at their top-right corner.
@@ -242,16 +241,15 @@ One rule app-wide; `ui/nav.test.ts` enforces it.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存), no キャンセル.
   An edit mode inside a sheet or the world (a memo, a board note, a goal's tray) has キャンセル then its action. A confirm
   asks 「…を削除しますか？」 and answers with the verb, never はい / いいえ: a list's is an `ActionSheet` (the coral 削除
-  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a `Sheet confirm`:
-  no ✕, キャンセル + the verb (`.two-cta`, `.btn.danger` if it loses something). An undoable delete acts at once,
-  取り消す on its banner.
+  row); one with a picture (a buy, a saved look) or one that ends something (全部片付ける) a `Sheet confirm={{ verb,
+  onyes }}`: no ✕, it draws キャンセル + the verb. An undoable delete acts at once, 取り消す on its banner.
 - The island's full-height sheets (健康, the panel, 旅行, 結婚式, 登山, English Study, ボット, 設定) open and close at once:
   no zoom, slide or fade; a form sheet rises over 240 ms; a level slides in over 240 ms.
 
 ### Unified kit
 
-<a id="sizes"></a>**Sizes:** one scope, `:is(dialog, .sheet-copy)` in theme.css (every sheet, panel, level, pairing, the
-board, the trays, the shop's menu): the small edge and lip, cards `--r-row`, the title bar 48 (title 18) and its 32px
+<a id="sizes"></a>**Sizes:** one scope, `:is(dialog, .sheet-copy)` in theme.css (every sheet, level, pairing, the board, the
+trays): the small edge and lip, cards `--r-row`, the title bar 48 (title 18) and its 32px
 discs, controls drawn 32–36px in a 44px hit (a `ChipRow` 44 high so its scroll never clips a hit), rows 44–52. The world
 (the HUD, the leaf menu, the rooms, dialogue) keeps the game's sizes: the 2px edge and the 4px lip.
 
@@ -261,15 +259,16 @@ stay trip data).
 
 - **Type:** titles, labels, numbers in `--font-ui` 700 (Zen Maru Gothic) / `--font-num` 600 (Fredoka, tabular); body
   and notes `--font-body` (the system font). Sheet title 18 · card title 15 · row text 15 (lists) / 14 (timeline) ·
-  note, meta 13 · tab label, axis 11; a tag (`.tag`, a sunk pill, 13; `.tag.new` the one gold NEW). Paragraphs `text-wrap: pretty`. Sheets are normal Japanese with kanji; the
-  island world keeps spaced kana ([Copy](#copy)).
+  note, meta 13 · tab label, axis 11; a tag (`.tag`, a sunk pill, 13; `.tag.new` the one gold NEW). Paragraphs `text-wrap: pretty`.
 - **Shape:** cards with a small lip, no hairline; rows split by an inset stitch; selected = yuzu (never green); the
   action = the leaf `.btn`. One control row per view, under the header.
 - **Components** (ui/): `Sheet variant="full"` · `NavBar` · `NavButton` · `TabBar` (`panel`: a tablist) · `Chip` in `ChipRow` ·
   `Segmented` · `Tick` · `StatStrip` · `PhotoBand` · `ProgressBar` · `ActionSheet` · `LoadError` (any failed load);
-  theme.css's small classes (`.prow` + `.sw`, `.card.pad` / `.form`, `.sheet-scroll`, `.btn.small` / `.yuzu` / `.sky`, `.quiet`, `.tag`): `/dev/kit`.
-- **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.prow` + `.sw` on/off · `.btn` a verb, never a
-  status; a card's acts behind one ⋯.
+  `ui/dismiss`; theme.css's `.prow` + `.sw`, `.card.pad` / `.form`, `.btn.small` / `.yuzu` / `.sky`, `.quiet`, `.tag`,
+  `.input` (`.num`, its unit beside it), `.btn-step`, `.press`, `.text-link`, `.hit44`, `.readonly`:
+  `/dev/kit`.
+- **Controls:** `Segmented` one of ≤ 6 · `.chip` many or a preset · `.chip.big` + `aria-pressed` a toggle · `.prow` +
+  `.sw` on/off · `.btn` a verb, never a status; a card's acts behind one ⋯.
 - **Icons:** `ui/Icon` only: our own drawing on a 24 grid, a 2px round stroke in `currentColor`. No emoji in chrome but
   the health sheet's switches (💪 🍙 👟 🧸 📝 📊, `data-emoji`).
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills; packing
@@ -1030,17 +1029,17 @@ while anything is). **天気** is one group for both the look and [Weather](#wea
 ## Chrome and tokens
 
 - **Dialogue** (`ui/Bubble.svelte`, the box's rules: [Dialogue](#dialogue)): an `aria-live` mirror. **Banner**
-  (`ui/Toast.svelte`, one at a time): the whole message, wrapped by phrase (`i18n/phrases.ts`: keep-all with a `<wbr>`
-  after a particle or 。, as WebKit has no `auto-phrase`), a number never cut; a long one grows it. Sheet hints and
-  notes use the same `ui/Phrases.svelte`.
+  (`ui/Toast.svelte`, one at a time): the whole message, wrapped by phrase (`i18n/phrases.ts`, as WebKit has no
+  `auto-phrase`), a number never cut; a long one grows it. A sheet's lead, hint and
+  note use the same `ui/Phrases.svelte` (linebreaks.test); English in Japanese copy has `lang="en"`.
 - **Buttons:** every tappable has an edge, static cards only a soft lip ([Sizes](#sizes)). Primary leaf, secondary
-  cream, selected yuzu, disabled sunk; "can't now" = `aria-disabled` ([Taps](#taps)). The shared skins:
-  `styles/theme.css`.
-- **Text colours by surface:** themed surfaces take `--text`, `--text-soft`, `--leaf-text`, `--coral-text`; an
+  cream, selected yuzu, disabled sunk; "can't now" = `aria-disabled` ([Taps](#taps)).
+- **Text colours by surface** (an answer card: `--ok-bg`, navy leaf at night): themed surfaces take `--text`, `--text-soft`, `--leaf-text`, `--coral-text`; an
   always-cream object (a bubble, a cream button, a ticket) carries `.obj-cream`, the day colours back inside it. Content
   text ≥ 13px (`--fs-s`); `styles/contrast.test.ts` holds the palettes at 4.5:1.
-- **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
-- **Tokens:** `styles/tokens.css` is the one source, block by block (`styles/vars.test.ts`: every `var(--x)`
+- **Focus:** one ring (`:focus-visible`; a field's edge turns green instead), none after a pointer input
+  (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
+- **Tokens:** `styles/tokens.css` is the one source (`styles/vars.test.ts`: every `var(--x)`
   is defined). Coral is for errors only; the chart pair `--person-a` / `--person-b` is CVD-checked.
 - **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome the `--n-*`
   primitives. The HUD, plate, dialogue and choices stay cream/yellow.
@@ -1057,6 +1056,7 @@ Two zones, by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the wo
   is keep-all wherever it is.
 - **A banner** takes its act's zone: a world act's spaced kana and 「とりけす」 (`undoBanner` `world`); a sheet's (even
   once closed) and the app's own (offline, a failed save) kanji and 取り消す.
+- **Dots:** 「・」 joins words in a phrase (朝・昼・夜); 「 · 」 separates items on a meta line (12 kcal · 3 g · 2人前).
 - **Register:** English Study, すごろく: casual (〜だよ).
 - **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
   キャンセル · 閉じる · 戻る · 元に戻す (restore; undo: 取り消す) · もう一度 · 今日 · 変更 · 並び順 · 同期 · オフライン · 住民 ·
