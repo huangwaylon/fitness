@@ -137,15 +137,19 @@ function report(rows: Row[], since: number): void {
   // (a launch hidden before ready, `hid`, counts its time away: left out, its count in the label)
   const readyAll = phone('app.ready'), ready = readyAll.filter((r) => r.d.hid !== true).map((r) => Number(r.d.ms));
   const frames = phone('perf.frames');
-  // the island's launches (perf.boot: app/src/lib/components/world3d/boot.ts), warm (every model from a cache) and cold
-  const boots = phone('perf.boot');
+  // the island's launches (perf.boot: app/src/lib/components/world3d/boot.ts), warm (every model from a cache) and cold;
+  // a page loaded out of sight (`hid`, or its session's app.open `vis: hidden` for builds before it: a deploy's reload
+  // at a hide) is no launch: left out, its count in the label
+  const outOfSight = new Set(phone('app.open').filter((r) => r.d.vis === 'hidden' && r.sid).map((r) => r.sid));
+  const bootsAll = phone('perf.boot'), boots = bootsAll.filter((r) => r.d.hid !== true && !outOfSight.has(r.sid));
   const bootRows = ([true, false] as const).flatMap((w) => {
     const bs = boots.filter((r) => (r.d.warm === true) === w), k = w ? 'warm' : 'cold';
     const p = (f: string): [number, string, string] => {
       const v = bs.map((r) => Number(r.d[f])).filter(Number.isFinite);
       return [v.length, ms(pct(v, 0.5)), ms(pct(v, 0.95))];
     };
-    return [[`${k} launch: first frame (ms)`, ...p('first')], [`${k} launch: island whole (ms)`, ...p('shown')], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
+    const out = bootsAll.length - boots.length, hid = out ? `; ${out} out of sight left out` : '';
+    return [[`${k} launch: first frame (ms${hid})`, ...p('first')], [`${k} launch: island whole (ms${hid})`, ...p('shown')], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
   });
   table('Performance (phones)', ['metric', 'n', 'p50', 'p95'], [
     [`cold load to the island (ms; ${readyAll.length - ready.length} hidden left out)`, ready.length, ms(pct(ready, 0.5)), ms(pct(ready, 0.95))],
@@ -157,9 +161,9 @@ function report(rows: Row[], since: number): void {
   ].filter((r) => Number(r[1]) > 0));
   // the launches that drew WebP fallbacks (perf.boot txFail/txWebp/txOff: world3d/ktx2.ts ktx2Stats; a session's later
   // ones: swallow:ktx2.fail and ktx2.off in the counters below)
-  const fell = boots.filter((r) => Number(r.d.txFail) > 0 || Number(r.d.txWebp) > 0 || r.d.txOff === true);
+  const fell = bootsAll.filter((r) => Number(r.d.txFail) > 0 || Number(r.d.txWebp) > 0 || r.d.txOff === true);
   const total = (f: string) => fell.reduce((n, r) => n + (Number(r.d[f]) || 0), 0);
-  if (boots.length) console.log(`\nKTX2 fallbacks: ${fell.length} of ${boots.length} launches drew WebPs${fell.length ? ` (${total('txFail')} KTX2s not had, ${total('txWebp')} WebPs drawn, ${fell.filter((r) => r.d.txOff === true).length} gave the transcoder up)` : ''}`);
+  if (bootsAll.length) console.log(`\nKTX2 fallbacks: ${fell.length} of ${bootsAll.length} launches drew WebPs${fell.length ? ` (${total('txFail')} KTX2s not had, ${total('txWebp')} WebPs drawn, ${fell.filter((r) => r.d.txOff === true).length} gave the transcoder up)` : ''}`);
   // the newest 10 builds (by their last event), the rest summed
   const builds = countBy(rows.filter((r) => r.src === 'c'), (r) => r.build ?? '-').map(([b, xs]) => ({ b, xs, last: Math.max(...xs.map((x) => x.ts)) })).sort((a, b) => b.last - a.last);
   table(`Builds (the newest 10 of ${builds.length})`, ['build', 'sessions', 'events', 'errors', 'os', 'last (Tokyo)'], builds.slice(0, 10).map(({ b, xs, last }) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' '), tokyo(last)]));

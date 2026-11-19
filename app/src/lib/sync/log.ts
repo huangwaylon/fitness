@@ -516,8 +516,12 @@ function frames(ms: number): Promise<{ p50: number; p95: number; fps: number; lo
 
 /** localStorage: when this phone last hid the app (ms; gone once it's shown again): app.open's `coldS`. */
 const HIDDEN_AT = 'island.hiddenAt';
+/** The page hidden at some point since it loaded (startLog on: perf.boot's `hid`, a reload out of sight). */
+let hidOnce = false;
+export const pageHid = (): boolean => hidOnce;
 /** The last hide's time kept (hidden) or let go (shown). */
 function markHidden(hidden: boolean) {
+  hidOnce ||= hidden;
   try {
     if (hidden) localStorage.setItem(HIDDEN_AT, String(env.now()));
     else localStorage.removeItem(HIDDEN_AT);

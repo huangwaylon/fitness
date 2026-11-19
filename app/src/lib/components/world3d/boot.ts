@@ -3,7 +3,7 @@
 // with nothing held back: no model loading but an effect's (fx/, the stream's floats: ambience), no program linking, no
 // texture still to upload), the longest display frame meanwhile and the engine's longest frame, and how the launch was
 // served (the service worker, the network). Real iPhones' numbers, not the Simulator's. No three.js here (Island3D and the engine feed it).
-import { log } from '#lib/sync/log.ts';
+import { log, pageHid } from '#lib/sync/log.ts';
 
 /** After `shown`, the frames are watched this much longer (the follow-up frames: the shadows, the flourishes' warm-up). */
 const SETTLE_MS = 1000;
@@ -59,6 +59,9 @@ export interface BootReport {
   lastC?: string;
   cardF?: number;
   cardA?: number;
+  /** The page was hidden before the island's mount (sync/log.ts pageHid: a deploy's reload out of sight, its marks
+   *  counting time away, not a launch in front of the player: the logs report leaves it out). */
+  hid?: boolean;
   /** The KTX2 textures transcoded by the report (ktx2.ts ktx2Stats.made: not read back from the texture cache). */
   tx?: number;
   /** The WebP fallbacks (ktx2.ts ktx2Stats) by the report: textures whose KTX2 couldn't be had (a fetch or transcode
@@ -240,7 +243,8 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
   const back = launched;
   if (back) returned = true;
   launched = true;
-  const clock = createBootClock(), sw = swState();
+  // (hidden before the mount: a reload out of sight, its marks time away; the watch itself ends at a hide)
+  const clock = createBootClock(), sw = swState(), hid = pageHid() || document.hidden;
   let raf = 0;
   const stop = () => {
     cancelAnimationFrame(raf);
@@ -264,7 +268,7 @@ export function watchBoot(extra: (m: Clocked) => Pick<BootReport, 'progs' | 'fie
       return;
     }
     const { n, net } = modelFetches(performance.getEntriesByType?.('resource') ?? []);
-    const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell };
+    const shell = shellFrom(), base = { ...clock.marks(), ...extra(clock.marks()), sw, warm: n > 0 && net === 0, net, ...shell, ...(hid ? { hid } : {}) };
     // (since the worker's fetch event: on WebKit before the page's clock)
     void swFetches(performance.timeOrigin - Math.max(0, shell.pre ?? 0)).then((swn) => {
       report = { ...base, ...swn, warm: base.warm && !swn.swRoom };
