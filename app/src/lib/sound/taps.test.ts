@@ -126,6 +126,9 @@ function scan(): Tap[] {
       const sfx = !v ? [] : v[1] !== undefined ? [v[1]] : [...v[2].matchAll(/(?:^|[?:])\s*'([^']*)'/g)].map((x) => x[1]); // the branches of a ternary
       out.push({ file, line: markup.slice(0, m.index).split('\n').length, tag: tag.split('\n')[0].slice(0, 90), sfx });
     }
+    // a Sheet confirm's verb (Sheet draws the button: its sound is the caller's `sfx`, else confirm)
+    for (const m of markup.matchAll(/\sconfirm=\{[^]*?\}\}/g))
+      out.push({ file, line: markup.slice(0, m.index).split('\n').length, tag: '<Sheet confirm>', sfx: [/\bsfx: '([^']*)'/.exec(m[0])?.[1] ?? 'confirm'] });
   }
   return out;
 }
