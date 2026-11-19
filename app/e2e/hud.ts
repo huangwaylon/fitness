@@ -44,7 +44,11 @@ export async function fromMenu(page: Page, which: keyof typeof SHEET, how: 'clic
   const pill = page.locator(PILL[which]);
   await expect(pill).toBeVisible();
   await pill[how]();
-  await expect(page.locator(SHEET[which])).toBeVisible();
+  // (a miss says which: the tap lost, the menu still unfolded, or the sheet late, a WebKit-under-load flake's question)
+  await expect(page.locator(SHEET[which])).toBeVisible().catch(async (e: Error) => {
+    const why = await page.evaluate(() => ({ menu: document.querySelector('[data-hud-menu]')?.getAttribute('aria-expanded'), dialogs: document.querySelectorAll('dialog[open]').length, focus: document.activeElement?.outerHTML.slice(0, 80) })).catch((x: Error) => x.message);
+    throw new Error(`${e.message}\n${JSON.stringify(why)}`);
+  });
 }
 
 /** けんこう and ごはん's sheet, from the HUD's dumbbell, on that tab (it opens on the one shown last). */

@@ -108,6 +108,8 @@
   let failed = $state(false);
   /** Bumped when a dataset comes in after the load (the products, one fetched again): search again. */
   let more = $state(0);
+  /** Bumped only when a dataset lands (not as wantMore settles, at once for one come back to): the rows' anchor. */
+  let landed = $state(0);
   let text = $state(untrack(() => keep?.q ?? ''));
   /** The committed query (never mid-composition). */
   let q = $state(untrack(() => keep?.q ?? ''));
@@ -123,7 +125,7 @@
       if (!live) return;
       db = d;
       // (the products with it: a search's, never the sheet's open; search again as each comes in)
-      stop = d.onAdd(() => more++);
+      stop = d.onAdd(() => (more++, landed++));
       void d.wantMore().then(() => live && more++);
     }, () => live && (failed = true));
     return () => {
@@ -210,14 +212,14 @@
   let anchor: { el: Element; y: number; q: string } | null = null;
   const below = () => root?.querySelector('[data-food-open]')?.closest('li') ?? [...(root?.children ?? [])].find((e) => e !== box && !e.classList.contains('shops'));
   $effect.pre(() => {
-    void more;
+    void landed;
     untrack(() => {
       const el = below();
       anchor = el ? { el, y: el.getBoundingClientRect().top, q } : null;
     });
   });
   $effect(() => {
-    void more;
+    void landed;
     untrack(() => {
       const a = anchor;
       anchor = null;
