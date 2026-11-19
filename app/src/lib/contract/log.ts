@@ -90,6 +90,10 @@ export const LOG_EVENTS = {
   // the read, the decode's p50 and max and the band grab's p50 (ms a frame read), the frames read, how it ended (a
   // read, a typed number, the idle stop, none); never the code or the food
   "perf.scan": { src: 'c', f: { frame: 'n', read: 'n', dec50: 'n', decMax: 'n', grab: 'n', n: 'n', end: ['read', 'typed', 'idle', 'none'] } },
+  // ごはん's catalog loading (lib/food/load.ts, dbHold.svelte.ts): ms to searchable of the core datasets (`core`, from
+  // index.json), a lazy one (`off` products.json, `kalori` the chain menus, from being asked for) or a barcode shard's
+  // fetch (`jan`); each once a load, never what was searched or scanned
+  "perf.food": { src: 'c', f: { set: ['core', 'off', 'kalori', 'jan', 'other'], ms: 'n' } },
   "perf.back": { src: 'c', f: { first: 'n', loaded: 'n', shown: 'n', long: 'n', appear: 'n', steps: 'n', progs: 'n' } },
   // the 3D pick tried on a phone (`?pick3d=1`, world3d/pick3dWatch.ts), at each hide: the island's taps, the pick's ms
   // (median, p95, max), how many disagreed with the DOM's answer and the first three as `dom/3d` kinds; no point, no id

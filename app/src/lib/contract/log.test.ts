@@ -68,6 +68,8 @@ describe('cleanData', () => {
     expect(cleanData('perf.sheet', { sheet: 'food', first: true, chunk: 12.34, long: 48, title: 'ごはん', sheetName: 'x' })).toEqual({ sheet: 'food', first: true, chunk: 12.3, long: 48 });
     expect(cleanData('perf.sheet', { sheet: 'island.food' })).toEqual({});
     expect(cleanData('perf.scan', { frame: 412.3, dec50: 1.84, end: 'read', code: '4902102072618', name: 'コーラ' })).toEqual({ frame: 412.3, dec50: 1.8, end: 'read' });
+    expect(cleanData('perf.food', { set: 'off', ms: 2345.67, file: 'products.json', q: 'ラテ' })).toEqual({ set: 'off', ms: 2345.7 });
+    expect(cleanData('perf.food', { set: 'foods.json' })).toEqual({});
     // a graded sentence: closed sets and counts only, never the sentence (`s`) or the tip
     expect(cleanData('sg.grade', { layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout', s: 'I like apple.', tip: 'リンゴ' })).toEqual({ layer: 'ai', verdict: 'tip', ms: 1234, takes: 2, edited: true, resaid: false, err: 'timeout' });
     expect(cleanData('sg.grade', { layer: 'rule', verdict: 'wrong' })).toEqual({});
