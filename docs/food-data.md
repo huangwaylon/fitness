@@ -75,6 +75,8 @@ them (`food-data.ts`). `secondary` datasets rank
 slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked
 for (`db.wantMore`: the search's first keystroke, or a day with a product logged), parsed in a worker; a late dataset calls
 `db.onAdd` and the search runs again. A day's (or さいきん's) chain menu comes from its id shard instead (`db.wantIds`).
+No file ships search keys: the parsing worker builds them (`search.ts keysOf`), and keeps a core dataset's in IndexedDB
+(`island-food-keys`, `keysCache.ts`: by the file's path, under its `?v=` and the worker's hashed URL) for the next open.
 
 **`verify.json`**: `{ "sources": {src: { "label", "license", "url", "attribution" }}, "groups": [{ "n", "kcal": {src:
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every

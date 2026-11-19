@@ -1,7 +1,10 @@
 // ごはん's open never waits on the food catalog: the day renders from its entries' snapshots, the
 // catalog (index.json, then the datasets, parsed in a worker) comes at idle once ごはん has shown 600 ms (foodUi.ts
 // foodDbSoon), never while the sheet shows 健康 alone, and the search works the moment it's opened.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from './fixtures.ts';
+import { openKenkou } from './hud.ts';
 
 test('opening ごはん renders the day with no catalog fetch on the open path (none at all under 健康); the search still finds ごはん', async ({ page }) => {
   // the page's own fetch of index.json (the catalog's first request) and the ごはん tab's tap, on the page's clock
@@ -68,4 +71,64 @@ test('the dumbbell opens on the tab shown last; 健康 again hides ごはん (ke
   await dumbbell.click();
   await expect(tab('food')).toHaveAttribute('aria-current', 'page');
   await expect(sheet.locator('[data-food-summary]')).toBeVisible();
+});
+
+test('the core datasets’ search keys are kept (IndexedDB) for the next open and read back there; a damaged record is built again', async ({ page }) => {
+  /** The kept records, by file: each whole (as many keys as its count) or not. */
+  const kept = () => page.evaluate(() => new Promise<Record<string, boolean>>((ok) => {
+    const r = indexedDB.open('island-food-keys');
+    r.onerror = () => ok({});
+    r.onsuccess = () => {
+      const db = r.result;
+      if (!db.objectStoreNames.contains('keys')) return (db.close(), ok({}));
+      const out: Record<string, boolean> = {};
+      const c = db.transaction('keys').objectStore('keys').openCursor();
+      c.onsuccess = () => {
+        if (!c.result) return (db.close(), ok(out));
+        const v = c.result.value as { n: number; keys: string };
+        out[String(c.result.key).replace(/^.*\//, '')] = v.keys.split('\n').length === v.n;
+        c.result.continue();
+      };
+    };
+  }));
+  /** foods.json's record's keys, rewritten (one per line). */
+  const rewrite = (to: 'first' | 'short') => page.evaluate((to) => new Promise<void>((ok) => {
+    const r = indexedDB.open('island-food-keys');
+    r.onsuccess = () => {
+      const c = r.result.transaction('keys', 'readwrite').objectStore('keys').openCursor();
+      c.onsuccess = () => {
+        if (!c.result) return (r.result.close(), ok());
+        const v = c.result.value as { keys: string };
+        const keys = to === 'first' ? v.keys.replace(/^[^\n]*/, 'ぴよぴよ') : 'ごはん';
+        if (String(c.result.key).endsWith('/food/foods.json')) c.result.update({ ...v, keys });
+        c.result.continue();
+      };
+    };
+  }), to);
+  /** A search for `q`, its row `id` drawn. */
+  const search = async (q: string, id: string) => {
+    await page.goto('?demo&date=2026-11-04T12:30&critter=none&visitor=none');
+    await expect(page.getByRole('button', { name: 'けんこう', exact: true })).toBeVisible({ timeout: 15_000 });
+    await openKenkou(page, 'food');
+    const sheet = page.locator('dialog[open]');
+    await sheet.locator('[data-add=b]').click();
+    await sheet.locator('[data-food-q]').fill(q);
+    await expect(sheet.locator(`[data-food-results] [data-item="${id}"]`).first()).toBeVisible({ timeout: 15_000 });
+  };
+  await search('ごはん', 'mext:01088');
+  // every core dataset's, whole; never a lazy one's (the search's first keystroke asked for those)
+  await expect.poll(async () => Object.keys(await kept()).length).toBe(10);
+  const first = await kept();
+  expect(Object.values(first).every(Boolean)).toBe(true);
+  expect(first['products.json']).toBeUndefined();
+  expect(first['kalori.json']).toBeUndefined();
+  // read back: foods.json's first item under a key of the test's own is found by it
+  const f = JSON.parse(readFileSync(join(import.meta.dirname, '../static/food/foods.json'), 'utf8')) as { idPrefix?: string; cols: { id: string[] } };
+  await rewrite('first');
+  await search('ぴよぴよ', `${f.idPrefix ?? ''}${f.cols.id[0]}`);
+  // damaged (cut short): the next open builds them, the search the same, and keeps them whole again
+  await rewrite('short');
+  expect((await kept())['foods.json']).toBe(false);
+  await search('ごはん', 'mext:01088');
+  await expect.poll(async () => (await kept())['foods.json']).toBe(true);
 });

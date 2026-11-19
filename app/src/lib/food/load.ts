@@ -82,15 +82,18 @@ function startParser(): Worker | null {
 }
 
 /** A dataset file, fetched and parsed in the worker (its items' barcodes and search keys in), or here without one;
- *  `mine`: its catalog's parses in flight (by id), for its close. */
-function fetchDataset(href: string, mine: Set<number>): Promise<Dataset> {
+ *  `mine`: its catalog's parses in flight (by id), for its close; `keep`: its keys kept for the next open
+ *  (dataset.worker.ts), a core dataset's: the core's ready to search waits on the worker (WebKit on a Mac, a reopen:
+ *  ~55 → ~32 ms). Not a lazy one's: it waits on the page's indexing, so kept it came no sooner, and its first open
+ *  wrote 1-1.5 MB (+190 ms). */
+function fetchDataset(href: string, mine: Set<number>, keep: boolean): Promise<Dataset> {
   const w = startParser();
   if (!w) return json<Shipped>(href).then((f) => fromFile(byColumn(f, href)));
   const id = nextId++;
   mine.add(id);
   return new Promise<Dataset>((ok, no) => {
     parsing.set(id, { items: [], pool: new Map(), ok, no });
-    w.postMessage({ id, href: new URL(href, location.href).href });
+    w.postMessage({ id, href: new URL(href, location.href).href, keep });
   }).finally(() => mine.delete(id));
 }
 
@@ -158,12 +161,21 @@ export class NewerFoodData extends Error {}
  *  a failed one never), kept on the catalog for the shards. */
 export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: Timed): Promise<FoodDb> {
   const t0 = performance.now();
-  const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
-  if (typeof index.schema === 'number' && index.schema > FOOD_SCHEMA) {
-    swallowed('food.schema');
-    throw new NewerFoodData(`food data schema ${index.schema}, this app reads ${FOOD_SCHEMA}`);
+  // (the worker started under index.json's fetch: its module and its kept keys' database opened by the time the
+  // datasets are asked for; let go again if the load stops here)
+  startParser();
+  let index: FoodIndex;
+  try {
+    index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
+    if (typeof index.schema === 'number' && index.schema > FOOD_SCHEMA) {
+      swallowed('food.schema');
+      throw new NewerFoodData(`food data schema ${index.schema}, this app reads ${FOOD_SCHEMA}`);
+    }
+    if (!index.files || typeof index.files !== 'object') throw new Error('food index.json without files');
+  } catch (e) {
+    cancelParses([]);
+    throw e;
   }
-  if (!index.files || typeof index.files !== 'object') throw new Error('food index.json without files');
   const db = emptyDb(index);
   db.timed = timed;
   // (its close: what's still loading dropped, never retried or added)
@@ -189,7 +201,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
   // (the log: once an incident, its first failure and, the retries spent, its giving up: `swallow:food.load` /
   // `food.gaveup`)
   const get = (meta: FoodIndex['datasets'][number]) =>
-    closed ? Promise.reject(new Error('food load let go')) : fetchDataset(url(meta.file, fileV(index, meta.file)), mine);
+    closed ? Promise.reject(new Error('food load let go')) : fetchDataset(url(meta.file, fileV(index, meta.file)), mine, !meta.lazy);
   const again = (meta: FoodIndex['datasets'][number], n: number): void =>
     void chance?.(n).then(() => closed ? undefined : get(meta).then((d) => void add(meta, d), () => {
       if (closed) return;
