@@ -1,6 +1,6 @@
 // 英語すごろく's invitation (docs/sugoroku.md "Online"): A starts a game for A and B on their own phones; B's phone
 // shows the lasting banner on the island and over English Study's ホーム, 参加 goes straight into the game's screen;
-// ✕ hides it for good (a reload too) and すごろく's tab still offers the game. Two phones: two tabs on the demo's local
+// ✕ hides it for good (a reload too) and すごろく's tab still offers the game. On that tab, its card is the one 参加. Two phones: two tabs on the demo's local
 // relay. WebKit with taps.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -40,6 +40,13 @@ test('B sees the invitation on the island and in English Study, 参加 goes stra
   // it stays over English Study's ホーム (inside its dialog)
   await fromMenu(b, 'english', how);
   await expect(b.locator('dialog[open] [data-english]')).toHaveAttribute('data-level', 'home');
+  await expect(b.locator('dialog[open] [data-sg-invite]')).toBeVisible();
+  // すごろく's tab: its card is the one 参加 (the banner waits; 新しいゲーム paper), back on ホーム the banner again
+  await b.locator('dialog[open] [data-en-tab="game"]')[how]();
+  await expect(sheet(b).locator('[data-sg-online-card]')).toBeVisible();
+  await expect(banner(b)).toHaveCount(0);
+  await expect(sheet(b).locator('[data-sg-new]')).toHaveClass(/\bpaper\b/);
+  await b.locator('dialog[open] [data-en-tab="home"]')[how]();
   await expect(b.locator('dialog[open] [data-sg-invite]')).toBeVisible();
   await b.locator('[data-sg-invite] [data-toast-act]')[how]();
   await expect(b).toHaveURL(/\/sugoroku\?.*m=online/);

@@ -8,6 +8,7 @@
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Setup from './Setup.svelte';
   import HowTo from './HowTo.svelte';
+  import { covered } from './InviteBanner.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import type { Who } from '#lib/types.ts';
   import type { Length, Level } from '../game.ts';
@@ -56,6 +57,14 @@
     const g = held && words && lines && mini ? fold(online.cur.log, { words, lines, mini, name: nameOf }) : null;
     return !!g && g.phase.k !== 'end';
   });
+  // its card shown: the one 参加 (the lasting banner for the same game waits; 続きから / 新しいゲーム paper under it)
+  const card = $derived(active && view === 'menu' && running && !!online.cur.log[0]);
+  $effect(() => {
+    if (!card) return;
+    const g = online.cur.g;
+    covered.g = g;
+    return () => void (covered.g === g && (covered.g = null));
+  });
 
   // ---- だれが遊ぶ？
   const me = $derived<Who>(week.model?.me ?? 'A');
@@ -81,7 +90,7 @@
   {#if view === 'menu'}
     <div class="top"><NavBar pad title={s('title')} {onclose} /></div>
     <div class="body sheet-scroll">
-      {#if running && online.cur.log[0]}
+      {#if card && online.cur.log[0]}
         <!-- the online game running with me in it: its card first, 参加 back into its screen -->
         {@const by = online.cur.log[0].who}
         <div class="card pad live" data-sg-online-card>
@@ -97,9 +106,9 @@
         <p class="lead">{s('how2')}</p>
         <p class="note">{s('teamLine')}</p>
         {#if saved}
-          <button type="button" class="btn" data-sfx="open" data-sg-resume onclick={() => onscreen('local')}>{s('resume')}</button>
+          <button type="button" class="btn" class:paper={card} data-sfx="open" data-sg-resume onclick={() => onscreen('local')}>{s('resume')}</button>
         {/if}
-        <button type="button" class="btn" class:paper={!!saved} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
+        <button type="button" class="btn" class:paper={!!saved || card} data-sfx="open" data-sg-new onclick={setup}>{s('newGame')}</button>
         <button type="button" class="btn small paper" data-sfx="page" data-sg-how onclick={() => (view = 'how')}>{s('howTo')}</button>
       </div>
     </div>
