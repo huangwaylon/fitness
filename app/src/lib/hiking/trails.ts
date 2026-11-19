@@ -163,7 +163,7 @@ export const TRAILS: readonly Trail[] = [
     },
     tips: [
       { en: 'Dogs are not allowed — this is a National Park trail.', ja: '犬は同伴できません。国立公園内のコースです。' },
-      { en: 'Oct–May the route requires spikes, snowshoes, and poles.', ja: '10月～5月は、スパイク・スノーシュー・ストックが必要です。' },
+      { en: 'Oct–May the route requires spikes, snowshoes, and poles.', ja: '10月〜5月は、スパイク・スノーシュー・ストックが必要です。' },
       { en: "Don't attempt in winter without snow/ice experience.", ja: '雪氷の経験がなければ、冬の挑戦は避けましょう。' },
       { en: 'Steep loose rock near Panorama Point — some scrambling.', ja: 'パノラマ・ポイント付近は急な浮き石。軽い岩登りがあります。' }
     ]

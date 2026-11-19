@@ -55,7 +55,6 @@ export const S = {
   locate: { ja: '現在地', en: 'My location' },
   locDenied: { ja: '位置情報がオフです。設定 → プライバシーとセキュリティ → 位置情報サービス → Safari で許可してください。', en: 'Location is off. Allow it in Settings → Privacy & Security → Location Services → Safari.' },
   trackFailed: { ja: 'このコースの地図データを読み込めませんでした。', en: "Couldn't load this trail's map data." },
-  retry: { ja: 'もう一度', en: 'Try again' },
   locked: { ja: 'オンラインで開くと表示されます', en: 'Shows when opened online' }
 } satisfies Record<string, Required<L>>;
 
@@ -69,14 +68,14 @@ export const DOGS: Record<Dogs, Required<L>> = { leashed: { ja: 'リード必須
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** 'Apr – Nov' → '4月～11月' (ja); as written in English. */
+/** 'Apr – Nov' → '4月〜11月' (ja); as written in English. */
 export function fmtSeason(s: string, l: Locale): string {
   if (l !== 'ja') return s;
-  return s.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g, (m) => `${MON.indexOf(m) + 1}月`).replace(/\s*[–-]\s*/g, '～');
+  return s.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g, (m) => `${MON.indexOf(m) + 1}月`).replace(/\s*[–-]\s*/g, '〜');
 }
 
 /** A trail's time, one precision on every card: a single time is an estimate to 5 min (約): '3 h 17 min' → '約3時間15分'
- *  (ja), '~3h 15m' (en); '6 h 1 min' → '約6時間'; a range as written: '10 – 13 h' → '10～13時間' / '10–13h'. */
+ *  (ja), '~3h 15m' (en); '6 h 1 min' → '約6時間'; a range as written: '10 – 13 h' → '10〜13時間' / '10–13h'. */
 export function fmtTime(s: string, l: Locale): string {
   const one = s.match(/^~?\s*(?:(\d+)\s*h)?\s*(?:(\d+)\s*min)?$/);
   if (one && (one[1] || one[2])) {
@@ -84,7 +83,7 @@ export function fmtTime(s: string, l: Locale): string {
     return l === 'ja' ? `約${h ? `${h}時間` : ''}${m ? `${m}分` : ''}` : `~${[h ? `${h}h` : '', m ? `${m}m` : ''].filter(Boolean).join(' ')}`;
   }
   if (l !== 'ja') return s.replace(/\s*–\s*/g, '–').replace(/\s*h\b/g, 'h').replace(/\s*min\b/g, 'm');
-  return s.replace(/~/g, '約').replace(/(\d+)\s*min/g, '$1分').replace(/(\d+)\s*h/g, '$1時間').replace(/\s*[–-]\s*/g, '～').replace(/ /g, '');
+  return s.replace(/~/g, '約').replace(/(\d+)\s*min/g, '$1分').replace(/(\d+)\s*h/g, '$1時間').replace(/\s*[–-]\s*/g, '〜').replace(/ /g, '');
 }
 
 /** Minutes → '2時間' / '39分' (ja), '2 h' / '39 min' (en). */
@@ -92,14 +91,6 @@ export function fmtDur(min: number, l: Locale): string {
   const h = Math.floor(min / 60), m = min % 60;
   if (l === 'ja') return (h ? `${h}時間` : '') + (m ? `${m}分` : '') || '0分';
   return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ') || '0 min';
-}
-
-/** '2026-06-27' → '2026年6月27日（土）' (ja), 'Sat, Jun 27, 2026' (en): the date's own weekday (no time zone). */
-export function fmtPlanDate(iso: string, l: Locale): string {
-  const [y, m, d] = iso.split('-').map(Number);
-  const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
-  if (l === 'ja') return `${y}年${m}月${d}日（${'日月火水木金土'[wd]}）`; // (formatDate's form)
-  return `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][wd]}, ${MON[m - 1]} ${d}, ${y}`;
 }
 
 /** 'h:mm' → minutes after midnight. */

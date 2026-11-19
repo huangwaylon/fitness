@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { TRAILS, WPT_JA, hikeSlugOf, trailOf } from './trails.ts';
-import { fmtDur, fmtParty, fmtPlanDate, fmtSeason, fmtTime, span } from './strings.ts';
+import { fmtDur, fmtParty, fmtSeason, fmtTime, span } from './strings.ts';
 import { prepare } from './track.ts';
 import { parseTokens } from '#lib/travel/tokens.ts';
 import type { TrackFile } from './types.ts';
@@ -71,18 +71,16 @@ describe('formats', () => {
     expect(fmtTime('~3 h 30 min', 'ja')).toBe('約3時間30分');
     expect(fmtTime('6 h 1 min', 'ja')).toBe('約6時間');
     expect(fmtTime('1 h 58 min', 'ja')).toBe('約2時間');
-    expect(fmtTime('10 – 13 h', 'ja')).toBe('10～13時間');
+    expect(fmtTime('10 – 13 h', 'ja')).toBe('10〜13時間');
     expect(fmtTime('3 h 17 min', 'en')).toBe('~3h 15m');
     expect(fmtTime('10 – 13 h', 'en')).toBe('10–13h');
   });
-  it('fmtSeason, fmtDur, fmtPlanDate (its own weekday), span (past midnight), fmtParty', () => {
-    expect(fmtSeason('Apr – Nov', 'ja')).toBe('4月～11月');
+  it('fmtSeason, fmtDur, span (past midnight), fmtParty', () => {
+    expect(fmtSeason('Apr – Nov', 'ja')).toBe('4月〜11月');
     expect(fmtSeason('Apr – Nov', 'en')).toBe('Apr – Nov');
     expect(fmtDur(120, 'ja')).toBe('2時間');
     expect(fmtDur(39, 'en')).toBe('39 min');
     expect(fmtDur(0, 'ja')).toBe('0分');
-    expect(fmtPlanDate('2026-06-27', 'ja')).toBe('2026年6月27日（土）');
-    expect(fmtPlanDate('2026-06-27', 'en')).toBe('Sat, Jun 27, 2026');
     expect(span('9:20', '11:20')).toBe(120);
     expect(span('23:30', '0:10')).toBe(40);
     expect(fmtParty('7', 'ja')).toBe('7人');

@@ -4,10 +4,11 @@
   // The plan's link, party and planner are the `hiking` trip note's (`{p:key}`), locked until it's in (docs/hiking.md).
   import Icon from '../ui/Icon.svelte';
   import type { Plan } from '#lib/hiking/types.ts';
-  import { S, fmtDur, fmtParty, fmtPlanDate, span } from '#lib/hiking/strings.ts';
+  import { S, fmtDur, fmtParty, span } from '#lib/hiking/strings.ts';
   import { fmtM, hrefOf, pick, render } from '../travel/text.ts';
   import { fmtKm } from '../travel/units.ts';
   import { i18n } from '#lib/i18n/index.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
   import { dayKey } from '#lib/time/clock.ts';
 
   let { plan, note }: { plan: Plan; note: Record<string, string> | null } = $props();
@@ -35,7 +36,7 @@
       <a class="yamap" {href} target="_blank" rel="noopener noreferrer" aria-label={pick(S.planYamapAria, L)} data-sfx="open" data-plan-link>{pick(S.planYamap, L)}<Icon name="arrow-up-right" size={14} /></a>
     {/if}
   </div>
-  <div class="date">{fmtPlanDate(plan.dateISO, L)}</div>
+  <div class="date">{formatDate(plan.dateISO, { year: true })}</div>
   <div class="figs">
     <span class="tag"><Icon name="users" size={14} />{#if party}{fmtParty(party, L)}{:else}{@render lock()}{/if}</span>
     {#if past}<span class="actual" data-plan-actual>{pick(S.planActual, L)}</span>{/if}

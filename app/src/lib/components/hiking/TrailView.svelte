@@ -12,6 +12,7 @@
   import NavBar from '../ui/NavBar.svelte';
   import Icon from '../ui/Icon.svelte';
   import StatStrip from '../ui/StatStrip.svelte';
+  import LoadError from '../ui/LoadError.svelte';
   import ElevCard from './ElevCard.svelte';
   import PlanCard from './PlanCard.svelte';
   import TrailMap from './TrailMap.svelte';
@@ -24,9 +25,10 @@
   import { trailStats } from './stats.ts';
   import { loadTrack } from '#lib/hiking/load.ts';
   import { pointAt, prepare, type Prepared } from '#lib/hiking/track.ts';
-  import { DOGS, ROUTE, S, fmtDur, fmtPlanDate, fmtSeason, span } from '#lib/hiking/strings.ts';
+  import { DOGS, ROUTE, S, fmtDur, fmtSeason, span } from '#lib/hiking/strings.ts';
   import type { Trail } from '#lib/hiking/types.ts';
   import { i18n } from '#lib/i18n/index.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
 
   let { trail, onback, onclose }: { trail: Trail; onback: () => void; onclose: () => void } = $props();
   const L = $derived(i18n.locale);
@@ -65,7 +67,7 @@
   function measure() {
     barH = bar?.offsetHeight ?? 0;
     topH = Math.max(barH, ...ctl.map((c) => c.offsetTop + c.offsetHeight)) + 8;
-    const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg');
+    const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg, [data-track-failed]');
     const fallback = Math.round(vh * 0.16);
     if (!card) return void (peekH = fallback);
     // layout offsets from the sheet (the card's offsetParent), not the screen's rects: the sheet's opening zoom scales those
@@ -166,10 +168,7 @@
       {#if track === 'ok' && prep}
         <ElevCard {prep} bind:held />
       {:else if track === 'failed'}
-        <div class="card dense track-msg err" role="alert" data-track-failed>
-          <p>{pick(S.trackFailed, L)}</p>
-          <button type="button" class="btn small paper" data-sfx="tick" onclick={load}>{pick(S.retry, L)}</button>
-        </div>
+        <LoadError text={pick(S.trackFailed, L)} onretry={load} data-track-failed />
       {:else}
         <div class="card dense track-msg" aria-busy="true"></div>
       {/if}
@@ -191,7 +190,7 @@
         <div class="row kv"><dt>{pick(S.factLocation, L)}</dt><dd>{pick(trail.area, L)}</dd></div>
         {#if trail.walked}
           {@const w = trail.walked}
-          <div class="row kv" data-walked><dt>{pick(S.factWalked, L)}</dt><dd>{fmtPlanDate(w.dateISO, L)}</dd></div>
+          <div class="row kv" data-walked><dt>{pick(S.factWalked, L)}</dt><dd>{formatDate(w.dateISO, { year: true })}</dd></div>
           <div class="row kv"><dt>{pick(S.factUpDown, L)}</dt><dd>{fmtM(trail.gainM)} ／ {fmtM(w.downM)}</dd></div>
           <div class="row kv"><dt>{pick(S.factStandard, L)}</dt><dd>{fmtDur(span('0:00', w.standard), L)}</dd></div>
           <div class="row kv"><dt>{pick(S.planCourse, L)}</dt><dd>{w.constant}</dd></div>
@@ -259,9 +258,6 @@
   .body > * { flex: none; }
   .body > .sec-label.head { margin: 8px 4px -2px; }
   .card.track-msg { min-height: 132px; }
-  .card.track-msg.err { min-height: 0; display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: var(--coral-text); }
-  .track-msg p { flex: 1; margin: 0; font-size: var(--fs-s); }
-  .track-msg .btn { flex: none; }
   .card.txt { margin: 0; padding: 12px; line-height: 1.65; }
   .tips { list-style: none; margin: 0; }
   .tips .row { align-items: flex-start; font-size: var(--fs-s); line-height: 1.5; }
