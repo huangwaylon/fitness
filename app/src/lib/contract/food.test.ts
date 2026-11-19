@@ -28,9 +28,12 @@ describe('foodOp', () => {
       id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 12.3, f: { ...RICE, p: null, u: '1杯' }
     });
     expect(foodOp({ id: 'fabcdef1', at: T, rm: true })).toEqual({ id: 'fabcdef1', at: T, rm: true });
+    // a chain menu's trust (`est`) kept as sent
+    for (const est of ['p', 's', 'e'] as const) expect(foodOp({ id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: { ...RICE, est } })).toMatchObject({ f: { ...RICE, est } });
   });
   it('refuses anything malformed', () => {
     const ok = { id: 'fabcdef1', at: T, d: '2026-11-03', m: 'b', g: 100, f: RICE };
+    for (const est of ['x', '', 1, null, true]) expect(foodOp({ ...ok, f: { ...RICE, est } })).toBeNull();
     for (const bad of [
       { ...ok, id: 'babcdef1' }, { ...ok, id: 'fabc' }, { ...ok, at: 5 }, { ...ok, d: '2026-13-01' }, { ...ok, m: 'x' },
       { ...ok, g: 0.05 }, { ...ok, g: 5001 }, { ...ok, g: 1.25 }, { ...ok, x: 1 }, { ...ok, f: { ...RICE, k: -1 } },

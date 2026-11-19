@@ -27,8 +27,13 @@ export const MEALS: readonly Meal[] = ['b', 'l', 'd', 's'];
  *  unknown), `fi` fibre (食物繊維総量; g, absent or null: unknown, since 2026-11-05: the record keeps it only when known;
  *  an older snapshot's `al`, alcohol, no longer tracked, read and left out), `u` the portion it was picked by (a label: 「1杯」). `sv`: a serving with no known weight (a custom food's:
  *  `customSnap`), its values per serving and an entry's grams a nominal 100 per serving (shown as servings, never
- *  grams); within a custom food's per-serving limits (CUSTOM) rather than a food's per 100 g. */
-export interface FoodSnap { id: string; n: string; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; u?: string; sv?: true }
+ *  grams); within a custom food's per-serving limits (CUSTOM) rather than a food's per 100 g. `est`: a chain menu's
+ *  values' trust as Kalori gave it (food/types.ts Item `est`: `p` PFC estimated, `s` fibre/salt, `e` all; absent:
+ *  official or not a chain menu's; since 2026-11-20), so the entry can say 推定. */
+export interface FoodSnap { id: string; n: string; k: number; p: number | null; fa: number | null; c: number | null; s: number | null; fi?: number | null; u?: string; sv?: true; est?: SnapEst }
+/** A snapshot's `est`. */
+type SnapEst = 'p' | 's' | 'e';
+const SNAP_EST: readonly unknown[] = ['p', 's', 'e'];
 
 export type FoodOp =
   | { id: string; at: number; d: string; m: Meal; g: number; f: FoodSnap; rm?: undefined }
@@ -95,10 +100,10 @@ export const newFoodId = (at: number, p = 'f'): string => newOpId(p, at);
 export const newRepeatId = (at: number): string => newFoodId(at, 'r');
 
 /** A food snapshot, its known keys only, each well-formed (the name and the label cleaned, a missing nutrient null;
- *  fibre kept only when known; an older one's alcohol left out), or null. */
+ *  fibre kept only when known; an older one's alcohol left out; `est` one of SNAP_EST), or null. */
 function snapOf(f: unknown): FoodSnap | null {
-  if (!isRec(f) || Object.keys(f).some((k) => f[k] !== undefined && !['id', 'n', 'k', 'p', 'fa', 'c', 's', 'fi', LEGACY, 'u', 'sv'].includes(k))) return null;
-  if (f.sv !== undefined && f.sv !== true) return null;
+  if (!isRec(f) || Object.keys(f).some((k) => f[k] !== undefined && !['id', 'n', 'k', 'p', 'fa', 'c', 's', 'fi', LEGACY, 'u', 'sv', 'est'].includes(k))) return null;
+  if ((f.sv !== undefined && f.sv !== true) || (f.est !== undefined && !SNAP_EST.includes(f.est))) return null;
   const sv = f.sv === true;
   const [kMax, nMax] = sv ? [CUSTOM.kcalMax, CUSTOM.nutrientMax] : [KCAL_MAX, NUTRIENT_MAX];
   if (typeof f.id !== 'string' || !f.id || f.id.length > SNAP_ID_CHARS || !inRange(f.k, 0, kMax)) return null;
@@ -116,6 +121,7 @@ function snapOf(f: unknown): FoodSnap | null {
     if (u) out.u = u;
   }
   if (sv) out.sv = true;
+  if (f.est !== undefined) out.est = f.est as SnapEst;
   return out;
 }
 

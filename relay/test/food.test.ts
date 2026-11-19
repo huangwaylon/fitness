@@ -62,13 +62,17 @@ describe('the meal log in the record', () => {
     const { p: _p, ...noProtein } = RICE;
     expect(log('B', 'fmeal003', { f: { ...noProtein, n: 'あ'.repeat(80) } })).toMatchObject({ ok: true });
     expect(entries().find((e) => e.id === 'fmeal003')?.f).toMatchObject({ n: 'あ'.repeat(60), p: null });
+    // a chain menu's trust (`est`, 2026-11-20) kept; an older snapshot without it as it was
+    expect(log('B', 'fmeal004', { f: { ...RICE, est: 'e' } })).toMatchObject({ ok: true });
+    expect(entries().find((e) => e.id === 'fmeal004')?.f).toEqual({ ...RICE, est: 'e' });
+    expect(entries().find((e) => e.id === 'fmeal002')?.f).not.toHaveProperty('est');
   });
 
   // (the ops' shapes are the contract's: contract/food.test.ts; here, what the record adds)
   it('refuses a malformed op, a day after tomorrow (the record’s Tokyo date), an `at` over a day ahead of its clock', () => {
     const ok = { id: 'fmeal010', at: now, d: '2026-11-03', m: 'l', g: 150, f: RICE };
     const bad = [
-      { ...ok, g: 0 }, { ...ok, f: { ...RICE, html: '<b>' } }, { ...ok, person: 'B' },
+      { ...ok, g: 0 }, { ...ok, f: { ...RICE, html: '<b>' } }, { ...ok, f: { ...RICE, est: 'x' } }, { ...ok, person: 'B' },
       { ...ok, d: '2026-11-05' }, // after tomorrow
       { ...ok, at: now + 86_400_001 }, { id: 'fmeal010', at: now + 86_400_001, rm: true } // a clock far ahead
     ];
