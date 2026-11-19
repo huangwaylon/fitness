@@ -12,8 +12,8 @@
   //   <SceneTaps scene={el} {season} {tod} enabled={() => live && !covered} />   (inside .stage, before the tint)
   // One `click` listener on the scene (a native scroll swallows the click: a drag scrolls, a tap acts; docs/design.md
   // "World"): anything inside a control (trees, fruit row, villagers, buildings, the balloon) is theirs; then the
-  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush, a flower: Flowers'
-  // data-flower); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
+  // critters and the island's things; then the tapped element (a bush: Scenery's data-bush; a flower by its 3D tap
+  // area: flowers.svelte.ts); then the sky (above the horizon: the sun / moon / clouds against their live boxes) or the ground under
   // the finger (the camera's inverse projection → sceneTaps.ts hitWorld). A ground flourish is a world node where the tap
   // landed (a mark flat on the ground, a puff upright), so it stays put while the camera scrolls; the sky's stay in the
   // fixed sky. Cheap: transforms and opacity only (the shakes are Web Animations on the art's own element), ≤ 4
@@ -215,8 +215,6 @@
   const POP: Keyframe[] = [{ scale: '1' }, { scale: '1.18', offset: 0.3 }, { scale: '.96', offset: 0.65 }, { scale: '1' }];
   /** A bush's art stands on its foot (translate −50% 0, its bottom at the node): it rustles about its foot. */
   const BUSH_ORIGIN = '50% 100%';
-  /** A flower is drawn at translate(−50%, −96%): this origin is its stem's foot. */
-  const FLOWER_ORIGIN = '0% 4%';
 
   const shed = (s: Season): string => (s === 'spring' ? 'petal' : s === 'autumn' ? 'maple-leaf' : s === 'winter' ? 'snow' : 'leaf');
 
@@ -346,12 +344,13 @@
   });
 
   /** A tap on the island, as the DOM hit-tests it (the island's buttons are the DOM's: theirs act after this, on the
-   *  root): the chain on the DOM's answer, else the scenery or the ground. */
+   *  root; a kind whose nodes are gone, a flower, by its tap area: things3 gone): the chain on the DOM's answer, else
+   *  the scenery or the ground. */
   function onClick(e: MouseEvent) {
     if (downSwallowed) return void (downSwallowed = false);
     const t = e.target, stage = scene?.querySelector<HTMLElement>('.stage');
     if (e.button > 0 || !enabled() || !(t instanceof Element) || !stage) return;
-    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), under = on ? pickOf(t) : null, control = !!under && CONTROL_KINDS.has(under.kind);
+    const cx = e.clientX, cy = e.clientY, on = stage.contains(t), under = on ? (pickOf(t) ?? things3(w).gone?.(cx, cy) ?? null) : null, control = !!under && CONTROL_KINDS.has(under.kind);
     // (a field, a label, the HUD's buttons: theirs; my line out still reels on the island)
     if (!control && t.closest('button, a, input, select, textarea, label, dialog, [role="button"], [tabindex]')) {
       if (on && critters?.lineOut()) (critters.tap(cx, cy), e.stopPropagation());
@@ -409,7 +408,7 @@
     const fxId = idOf('fixture');
     if (fxId !== undefined) return fixture(elOf('data-fixture', fxId), fxId);
     const fl = ((id) => id !== undefined && flowerById(id))(idOf('flower'));
-    if (fl) return flower(elOf('data-flower', fl.id), fl);
+    if (fl) return flower(fl);
     // the sky: above the horizon (where the ground's inverse projection finds nothing)
     const at = cy - r.top < w.view.horizon ? null : w.worldAtClient(cx, cy);
     if (!at) return sky(cx, cy, r);
@@ -505,7 +504,7 @@
   }
 
   /** A wild flower: my villager waters it. */
-  function flower(el: HTMLElement | null, f: Flower) {
+  function flower(f: Flower) {
     const color = petalOf(wildFlower(f, season));
     // NH: butterflies by day among the flowers (not in winter); fireflies on summer nights
     const rare = night ? (season === 'summer' && roll(2) ? 'firefly' : undefined) : season !== 'winter' && roll(8) ? 'butterfly' : undefined;
@@ -514,7 +513,7 @@
     shared.share({ kind: 'world', op: 'watered', id: f.id });
     // my villager turns to it; the watering can floats over the bloom
     turnTo(f.x);
-    jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+    echo3d(f.id);
     // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
     spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > site.midX });
     sceneSfx('water');
@@ -752,9 +751,8 @@
         if (e.id.startsWith('fd:')) return plotsWatered(e.who, e.id, e.t);
         const f = flowerById(e.id);
         if (!f) return;
-        const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
         partnerTurnTo(f.x, e.who, e.t);
-        jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
+        echo3d(f.id);
         spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
         sceneSfx('water', [f.x, f.z]);
       }

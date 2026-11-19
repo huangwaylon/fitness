@@ -21,7 +21,7 @@ import { testHooks } from '#lib/ui-state/testMode.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap' | 'glint';
 export interface FxOpts {
   /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), a
    *  villager's `mark` (sparkle, heart, note, zzz, bang, sweat), or a tint (#rrggbb). */
@@ -75,6 +75,8 @@ interface Part {
   kind?: FxKind;
   /** Fades out over its last 40 % (else holds, then a quick end). */
   fade: boolean;
+  /** Swells in and back out to nothing over its life (s1 its size at the middle: a glint). */
+  twinkle?: boolean;
   /** NH's pop (a quick overshoot in, a little hop now and then) and, once `held` says no more, a quick pop out from
    *  `end` (its age, ms). */
   pop?: boolean;
@@ -116,6 +118,8 @@ const SCALE: Record<string, number> = {
 /** The high five's star flying between the two, u across at its full size (the DOM zap's, IslandScene's .zap). */
 const ZAP_U = 26;
 /** A villager's mark over its head (NH's float: about a third of its head across), world units across. */
+/** A watered flower's glint across (u: the 2D island's was 8 u). */
+const GLINT_U = 8;
 const MARK_U: Record<string, number> = { sparkle: 16, heart: 15, note: 14, zzz: 15, bang: 14, sweat: 11 };
 /** A 「！」's hop's height (u: a bug's rear; the bite's is biteMark.ts's, its pop the same). */
 const HOP_U = 1.6;
@@ -297,7 +301,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       parts.push({
         name: p.name ?? name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, calm: p.calm, kind: p.kind, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
+        blink: p.blink ?? false, tag: p.tag, calm: p.calm, kind: p.kind, fade: p.fade ?? true, twinkle: p.twinkle, pop: p.pop, held: p.held, follow: p.follow
       });
       if (!p.tag) shown++;
       onLoad?.();
@@ -437,6 +441,14 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         part('star', x, y, z, { name: 'zap', life: o.ms ?? 520, s0: s * 0.5, s1: s * 1.1, spin: Math.PI / ((o.ms ?? 520) / 1000), follow: o.follow });
         return;
       }
+      case 'glint': {
+        // a watered flower's glint (NH: it glitters for the rest of the day): a small pale star swelling in and out as
+        // it turns a quarter, a soft blue glow round it; ambient (`glint`: no full rate, one every few seconds a flower)
+        const s = (GLINT_U / ((SCALE.star ?? 6) * 2)) * k, life = 700;
+        part('star', x, y, z, { life, s1: s, twinkle: true, spin: Math.PI / 2 / (life / 1000), tint: '#fffbe8', fade: false, tag: 'glint' });
+        part('glow', x, y, z, { life, s1: 0.45 * k, twinkle: true, tint: '#bfe6ff', fade: false, tag: 'glint' });
+        return;
+      }
       case 'firefly':
         part('glow', x, y, z, { life: o.ms ?? rnd(5000, 8000), vx: rnd(-4, 4), vy: rnd(-1, 1), vz: rnd(-3, 3), sway: rnd(3, 6), s0: k, s1: k, blink: true, tag: o.tag });
         return;
@@ -474,7 +486,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         const out = p.end === undefined ? 1 : Math.max(0, 1 - (age - p.end) / POP_OUT_MS);
         p.obj.scale.setScalar(p.s1 * popIn(age / POP_IN_MS) * out);
         if (age > POP_IN_MS) p.obj.position.y += HOP_U * Math.max(0, Math.sin(((age - POP_IN_MS) / HOP_MS) * Math.PI * 2)) ** 2;
-      } else p.obj.scale.setScalar(p.s0 + (p.s1 - p.s0) * Math.sin(Math.min(1, k * 1.4) * Math.PI * 0.5));
+      } else if (p.twinkle) p.obj.scale.setScalar(p.s1 * Math.sin(k * Math.PI));
+      else p.obj.scale.setScalar(p.s0 + (p.s1 - p.s0) * Math.sin(Math.min(1, k * 1.4) * Math.PI * 0.5));
       if (p.face) {
         p.obj.quaternion.copy(q);
         if (p.spin) p.obj.rotateZ(p.spin * s);

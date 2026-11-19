@@ -17,7 +17,7 @@ function el(tag: string, attrs: Record<string, string> = {}, kids: Fake[] = [], 
 const each = (n: Fake): Fake[] => [n, ...n.kids.flatMap(each)];
 
 /** e2e/island.ts's TAP_AREAS (what the specs' taps kept clear of) as a match on a stand-in. */
-const ATTRS = ['data-bush', 'data-tree', 'data-flower', 'data-sit', 'data-fixture', 'data-campfire', 'data-building', 'data-decor', 'data-actor', 'data-visitor'];
+const ATTRS = ['data-bush', 'data-tree', 'data-sit', 'data-fixture', 'data-campfire', 'data-building', 'data-decor', 'data-actor', 'data-visitor'];
 const tapArea = (n: Fake) => /^(BUTTON|A)$/.test(n.tagName) || n.getAttribute('role') === 'button' || ATTRS.some((a) => n.hasAttribute(a)) || n.getAttribute('data-fx') === 'talk';
 const underTapArea = (n: Fake | null): boolean => !!n && (tapArea(n) || underTapArea(n.parentElement as Fake | null));
 
@@ -45,7 +45,6 @@ const stage = el('div', { class: 'stage' }, [
   el('div', { class: 'spr' }, [el('span', { class: 'art' }, [cedar])]),
   el('div', { class: 'spr' }, [bench]),
   el('span', { class: 'art bush', 'data-bush': 'b1' }),
-  el('span', { class: 'fl', 'data-flower': 'f2' }),
   el('span', { class: 'visitor', 'data-visitor': 'redd' }, [el('span', { class: 'art' })]),
   el('a', { href: '/x' }), el('div', { role: 'button', 'aria-label': '設定' }), el('button', { class: 'ribbon x', 'aria-label': 'メニュー' }),
   el('div', { class: 'ground' }, [el('span')])
@@ -61,7 +60,7 @@ describe('pick: what a tap goes to', () => {
     const kinds = stage.kids.map((n) => pickOf(each(n).at(-1)!)).map((p) => p && `${p.kind}:${p.id}`);
     expect(kinds).toEqual([
       'villager:mine', 'building:museum', 'decor:d3', 'goal:A', 'goal:A', 'row:A', 'talk:', 'board:', 'balloon:', 'swarm:mine', 'drop:c7',
-      'tree:cedar-2', 'sit:bench-mae-1', 'bush:b1', 'flower:f2', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
+      'tree:cedar-2', 'sit:bench-mae-1', 'bush:b1', 'visitor:redd', 'ui:a', 'ui:設定', 'ui:メニュー', null
     ]);
   });
 
@@ -99,17 +98,15 @@ describe('box: where a thing is', () => {
     expect(boxOf(root, 'villager', 'partner')).toBeNull();
   });
 
-  it("a flower's and the decor's least tap target (44 px round its middle; 45 up from its foot)", () => {
+  it("the decor's least tap target (45 up from its foot)", () => {
     const root = el('div', {}, [], {
-      '[data-flower="f1"]': el('span', {}, [], {}, [100, 100, 20, 16]),
       '[data-decor="d1"]': el('button', {}, [], {}, [200, 100, 30, 60])
     });
-    expect(boxOf(root, 'flower', 'f1')).toEqual({ left: 88, top: 86, width: 44, height: 44, foot: null });
     expect(boxOf(root, 'decor', 'd1')).toEqual({ left: 192.5, top: 100, width: 45, height: 60, foot: null });
   });
 
   it('every kind has a tap area; ids are quoted', () => {
-    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'flower', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'care', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
+    const kinds: BoxKind[] = ['villager', 'building', 'decor', 'goal', 'row', 'talk', 'board', 'balloon', 'swarm', 'drop', 'tree', 'bush', 'campfire', 'sit', 'fixture', 'visitor', 'kk', 'cake', 'arch', 'toy', 'deck', 'critter', 'find', 'care', 'fruit', 'trunk', 'bobber', 'bubbles', 'chase'];
     for (const k of kinds) expect(areaOf(k, 'x').area.length, k).toBeGreaterThan(0);
     expect(areaOf('sit', 'a"b').area).toEqual(['[data-sit="a\\"b"]']);
     expect(areaOf('fruit', 'B:apple').area).toEqual(['.fruit[data-tree="B"][data-fruit="apple"]']);
@@ -125,9 +122,8 @@ describe('scenery: a piece as shown', () => {
   const decor = el('div', { class: 'spr', 'data-scenery-id': 'd1', 'data-decor-node': 'd1' }, [], { '[data-decor]': el('button', { 'data-item': 'deco/lantern' }) });
   const camp = el('div', { class: 'building', 'data-building': 'campsite' }, [], { '[data-look]': el('button', { class: 'door', 'data-look': 'deco/campsite-winter' }) });
   const fire = el('div', { class: 'spr', 'data-scenery-id': 'campfire', 'data-kind': 'prop' }, [], { '[data-look]': look({ 'data-look': 'deco/campfire' }) });
-  const flower = el('span', { class: 'fl', 'data-flower': 'fl:3', 'data-look': 'flowers/black-cosmos' }, [], { '[data-watered]': el('svg') });
-  const nodes = [oakTrunk, oakLeaves, shishi, bench, decor, camp, fire, flower];
-  const byId = (s: string) => nodes.find((n) => [`[data-flower="${n.getAttribute('data-flower')}"]`, `[data-building="${n.getAttribute('data-building')}"]`, `.spr[data-scenery-id="${n.getAttribute('data-scenery-id')}"]`].some((x) => s.split(', ').includes(x)));
+  const nodes = [oakTrunk, oakLeaves, shishi, bench, decor, camp, fire];
+  const byId = (s: string) => nodes.find((n) => [`[data-building="${n.getAttribute('data-building')}"]`, `.spr[data-scenery-id="${n.getAttribute('data-scenery-id')}"]`].some((x) => s.split(', ').includes(x)));
   const root = { querySelector: (s: string) => (s === '[data-lit="campfire"]' ? el('div') : (byId(s) ?? null)), querySelectorAll: () => nodes } as unknown as ParentNode;
   const off = { sit: null, fixture: null, tipped: false, lit: false, watered: false };
 
@@ -137,12 +133,11 @@ describe('scenery: a piece as shown', () => {
     expect(sceneryOf(root, 'd1')).toEqual({ ...off, id: 'd1', kind: 'decor', look: 'deco/lantern' });
     expect(sceneryOf(root, 'campsite')).toEqual({ ...off, id: 'campsite', kind: 'building', look: 'deco/campsite-winter' });
     expect(sceneryOf(root, 'campfire')).toMatchObject({ kind: 'prop', lit: true });
-    expect(sceneryOf(root, 'fl:3')).toEqual({ ...off, id: 'fl:3', kind: 'flower', look: 'flowers/black-cosmos', watered: true });
     expect(sceneryOf(root, 'nope')).toBeNull();
   });
 
   it('lists every piece once (an oak\'s two parts: one)', () => {
-    expect(sceneryAll(root).map((p) => `${p.kind}:${p.id}`)).toEqual(['oak:oak-m1', 'fixture:shishi', 'fixture:bench-mae', 'decor:d1', 'building:campsite', 'prop:campfire', 'flower:fl:3']);
+    expect(sceneryAll(root).map((p) => `${p.kind}:${p.id}`)).toEqual(['oak:oak-m1', 'fixture:shishi', 'fixture:bench-mae', 'decor:d1', 'building:campsite', 'prop:campfire']);
   });
 
   it("drawn: its pictures' box, not its tap area; a tree's leaves, its trunk's own; null when not there", () => {
@@ -151,11 +146,11 @@ describe('scenery: a piece as shown', () => {
     const r = el('div', {}, [], {
       '.spr[data-scenery-id="oak-m1"][data-part="canopy"] .art, .spr[data-scenery-id="oak-m1"][data-part="body"] .art': art([0, 0, 200, 200], [img([10, 20, 80, 60])]),
       '.spr[data-scenery-id="oak-m1"][data-part="trunk"] .art, .spr[data-scenery-id="oak-m1"][data-part="body"] .art': art([0, 0, 200, 200], [img([40, 70, 20, 40])]),
-      '[data-flower="f1"]': art([100, 100, 20, 16], [img([102, 100, 16, 16]), img([0, 0, 0, 0])])
+      '[data-bush="b1"]': art([100, 100, 20, 16], [img([102, 100, 16, 16]), img([0, 0, 0, 0])])
     });
     expect(drawnOf(r, 'tree', 'oak-m1')).toEqual({ left: 10, top: 20, width: 80, height: 60 });
     expect(drawnOf(r, 'trunk', 'oak-m1')).toEqual({ left: 40, top: 70, width: 20, height: 40 });
-    expect(drawnOf(r, 'flower', 'f1')).toEqual({ left: 102, top: 100, width: 16, height: 16 });
+    expect(drawnOf(r, 'bush', 'b1')).toEqual({ left: 102, top: 100, width: 16, height: 16 });
     expect(drawnOf(r, 'bush', 'b9')).toBeNull();
   });
 });

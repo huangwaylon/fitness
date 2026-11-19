@@ -29,6 +29,7 @@
   import { onMount, untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { SHOWN, drawn3, grow, hitSources, inside, type Seen, type Src } from './hitbox.ts';
+  import { flowersOf } from './flowers.svelte.ts';
   import { artUrl } from '#lib/art.ts';
   import { jst, now } from '#lib/time/clock.ts';
   import { bugRivals, crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
@@ -55,7 +56,7 @@
   import type { DiveItem } from '#lib/world/sea.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
   import { thing, things3 } from '../world3d/things3.ts';
-  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, flowerById, offBuildingsAt } from '#lib/world/world.ts';
+  import { GOAL_TREES, ROCK, SEA_BOX, SHORE_Z, offBuildingsAt } from '#lib/world/world.ts';
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
     bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
@@ -615,20 +616,10 @@
 
   // ---------- bugs ----------
   // (what they are and how they move: critterPath.ts)
-  /** The wild flowers' heads (world, lift measured from the flower as drawn): where a ladybug or a mantis sits and a
-   *  butterfly rests. The orchid mantis prefers white flowers. */
-  function flowerHeads(): (P3 & { fid: string; white: boolean })[] {
-    const out: (P3 & { fid: string; white: boolean })[] = [];
-    const s = w.view.s;
-    for (const el of scene?.querySelectorAll<HTMLElement>('[data-flower]') ?? []) {
-      const f = flowerById(el.dataset.flower ?? '');
-      const r = el.getBoundingClientRect();
-      if (!f || !r.width) continue;
-      const foot = w.clientAt(f.x, f.z)[1], k = w.scaleAt(f.x, f.z) * s;
-      out.push({ fid: f.id, x: f.x, z: f.z, lift: Math.max(6, (foot - (r.top + r.height * 0.16)) / k), white: el.dataset.white !== undefined });
-    }
-    return out;
-  }
+  /** The wild flowers' heads (world; the 3D island's flower is 0.8 of its height, objects.ts: its head near the top):
+   *  where a ladybug or a mantis sits and a butterfly rests. The orchid mantis prefers white flowers. */
+  const flowerHeads = (): (P3 & { fid: string; white: boolean })[] =>
+    flowersOf(w).map((f) => ({ fid: f.id, x: f.x, z: f.z, lift: Math.max(6, f.h * 0.68), white: f.white }));
   /** A trunk spot for a percher, on screen and clear of the tree's own buttons (the canopy, the fruit row): up the
    *  trunk, then a little lower or higher where a button covers it. */
   function perchSpot(palm: boolean, keep: Box[], pinned: boolean): P3 | null {

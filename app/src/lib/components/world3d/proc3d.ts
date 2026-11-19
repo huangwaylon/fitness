@@ -59,7 +59,7 @@ export function procScene(name: string): Group | null {
       return g;
     }
     case 'proc/snow-cap': {
-      // a winter flower's little cap of snow (Flowers.svelte's 2D one): a flattened dome, unit wide (scaled by the
+      // a winter flower's little cap of snow: a flattened dome, unit wide (scaled by the
       // flower's size); in the world, not a DOM node over the canvas (28 of them, each its own layer under the wet
       // sky's url() tint, held a snowy scroll at ~35 fps on the iOS Simulator)
       part(g, new SphereGeometry(1, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2), mat(0xffffff), 0, 0, 0).scale.set(1, 0.45, 1);

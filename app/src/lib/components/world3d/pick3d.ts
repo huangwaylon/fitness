@@ -175,6 +175,11 @@ export function controlTaps(w: World, taps: readonly Tap3[], kinds: ReadonlySet<
 /** The island's controls the tap areas stand for (probe.ts CONTROLS less the HUD's `ui` and the speech balloon's
  *  `talk`, which stay the DOM's). */
 export const ISLAND_CONTROLS: ReadonlySet<string> = new Set(['villager', 'building', 'decor', 'goal', 'row', 'board', 'balloon', 'swarm', 'drop']);
+/** The kinds whose DOM nodes are gone (R4 step 7): with the switch off (`?pick3d=0`, the DOM's answer) their tap areas
+ *  answer where the DOM has nothing. */
+export const GONE: ReadonlySet<string> = new Set(['flower']);
+/** What a tap at client (x, y) is of the GONE kinds by their tap areas, or null (the DOM's path's fallback). */
+export const pickGone = (w: World, x: number, y: number): Picked | null => pickTaps(w, tapsNow(w).filter((t) => GONE.has(t.kind)), x, y);
 /** The box kinds the tap areas answer (the rest, the figures the scene hit-tests itself, are the DOM's for now). */
 export const PICKED: ReadonlySet<string> = new Set([...ISLAND_CONTROLS, 'tree', 'trunk', 'bush', 'campfire', 'sit', 'fixture', 'flower']);
 /** What stays the DOM's over the island (an overlay drawn over the canvas): the tree's popup, a speech balloon, a mark. */

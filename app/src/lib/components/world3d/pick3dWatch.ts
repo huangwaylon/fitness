@@ -6,7 +6,7 @@
 import { log } from '#lib/sync/log.ts';
 import type { World } from '../island/camera.svelte.ts';
 import { pickAt } from '../island/probe.ts';
-import { boxTaps, claimAt, pick3dAt, tapsNow } from './pick3d.ts';
+import { GONE, boxTaps, claimAt, pick3dAt, tapsNow } from './pick3d.ts';
 
 const FLASH_MS = 900;
 const pctl = (a: readonly number[], p: number) => [...a].sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))];
@@ -35,7 +35,8 @@ export function watchPicks(w: World, scene: HTMLElement, show: boolean): () => v
     const t0 = performance.now(), x = e.clientX, y = e.clientY, p = pick3dAt(w, document, x, y), c = claimAt(w, document, x, y, '3d');
     ms.push(performance.now() - t0);
     const dom = claimAt(w, document, x, y, 'dom') ?? pickAt(document, x, y), p3 = c ?? p, key = (r: { kind: string; id: string } | null) => (r ? `${r.kind}:${r.id}` : '');
-    const ok = key(dom) === key(p3);
+    // (a kind whose DOM nodes are gone, a flower: the 3D's alone, nothing to compare)
+    const ok = key(dom) === key(p3) || (!!p3 && GONE.has(p3.kind));
     if (!ok) dis.push(`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`);
     if (show) flash(!c && p ? boxTaps(w, tapsNow(w), p.kind, p.id) : null, x, y, ok, p3?.kind ?? '');
   };

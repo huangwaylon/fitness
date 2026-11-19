@@ -258,7 +258,7 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         const m = own ?? FLOWER_MODEL[kind] ?? 'flower-cosmos';
         const fh = FLOWER_U * 0.8 * flowerScale(fid as Parameters<typeof flowerScale>[0]);
         thing(m, fh / modelH(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: m === own ? undefined : (COLOUR[colour] ?? 0xffffff) });
-        // winter: a little cap of snow on its top (proc3d.ts; the 2D island's is Flowers.svelte's .cap)
+        // winter: a little cap of snow on its top (proc3d.ts)
         if (season === 'winter') out.push({ id: `${o.id}:snow-cap`, model: 'proc/snow-cap' as ModelName, x, z, lift: fh * SNOW_CAP[0], scale: fh * SNOW_CAP[1] });
         break;
       }

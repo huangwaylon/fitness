@@ -8,12 +8,11 @@ export function listen3d(fn: ((id: string, strength: number) => void) | null): v
   sink = fn;
 }
 
-/** What the 3D island calls a DOM thing: its scenery id, a flower's, a goal tree's, a decoration's. */
+/** What the 3D island calls a DOM thing: its scenery id, a goal tree's, a decoration's (a flower's is its id:
+ *  flowers.svelte.ts has no node). */
 function thingOf(el: Element): string | null {
   const s = el.closest<HTMLElement>('[data-scenery-id]')?.dataset.sceneryId;
   if (s) return s;
-  const f = el.closest<HTMLElement>('[data-flower]')?.dataset.flower;
-  if (f) return f;
   const d = el.closest<HTMLElement>('[data-decor]')?.dataset.decor;
   if (d) return `d:${d}`;
   return null;

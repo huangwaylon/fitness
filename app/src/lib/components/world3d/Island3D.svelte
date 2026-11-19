@@ -20,8 +20,10 @@
   import { eachV3, model3, models3 } from './mirror3.ts';
   import { tap as tap3, things3, type Tap3, type V3 } from './things3.ts';
   import { uiBoxes } from '../island/placement.ts';
-  import { ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, route3d, tapsNow } from './pick3d.ts';
+  import { GONE, ISLAND_CONTROLS, PICKED, boxTaps, claimAt, controlTaps, guards3, pick3dAt, pickGone, route3d, tapsNow } from './pick3d.ts';
   import { watchPicks } from './pick3dWatch.ts';
+  import { drawn3 } from '../island/hitbox.ts';
+  import { flowersOf } from '../island/flowers.svelte.ts';
   import { CAMPSITE, GOAL_TREES, SEAT_DROP, TREE_H } from '#lib/world/world.ts';
   import { charInView, GLOW_AT, VILLAGER, type Tod } from '../island/scene.ts';
   import { stepHeld } from '../island/clouds.ts';
@@ -1081,6 +1083,9 @@
     reg3.guards3 = g3;
     // (the switch: the canvas router taps by the 3D pick, SceneTaps; the tree popup's touch-down asks it too)
     reg3.route = pick3dOn() ? (x, y) => route3d(world, document, x, y) : undefined;
+    // (the switch off: the deleted kinds' taps by their tap areas where the DOM has nothing)
+    const gone = (x: number, y: number) => pickGone(world, x, y);
+    reg3.gone = gone;
     e.onSwap((on, set, frame) => void (swaps.push([on, set, frame]) > 20 && swaps.shift()));
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
@@ -1186,11 +1191,22 @@
     });
     ro.observe(canvas);
     // the e2e's and the console's hooks (testMode.ts testHooks: never on a live phone, a hook holds the engine)
+    /** A flower's tap area where the projector puts it (in the camera's window or not: client px, ≥ 44 px round its
+     *  middle; flowers.svelte.ts has no node). */
+    const flowerBox = (id: string) => {
+      const f = flowersOf(world).find((f) => f.id === id);
+      if (!f) return null;
+      const [cx, cy] = world.clientAt(f.x, f.z), k = world.scaleAt(f.x, f.z) * world.view.s;
+      const wd = Math.max(44, f.wd * k), ht = Math.max(44, f.h * k), my = cy - 0.46 * f.h * k;
+      return { left: cx - wd / 2, top: my - ht / 2, width: wd, height: ht };
+    };
     /** A kind's box from the 3D island (things3 boxes: the kinds whose 2D art is gone, R4 step 7), as probe.ts' Box. */
     const box3 = (kind: string, id = '', node?: Element) => {
-      const r = things3(world).boxes.get(kind)?.(id, node);
+      const r = kind === 'flower' ? flowerBox(id) : things3(world).boxes.get(kind)?.(id, node);
       return r ? { left: r.left, top: r.top, width: r.width, height: r.height, foot: null } : null;
     };
+    /** (the switch off) the deleted kinds' tap areas where the DOM's pick has nothing on the stage */
+    const goneAt = (x: number, y: number) => (document.elementFromPoint(x, y)?.closest('.stage') ? pickGone(world, x, y) : null);
     if (testHooks()) window.__world3d = {
       stats: () => e.stats(), swaps: () => swaps.slice(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
@@ -1262,10 +1278,13 @@
        *  scenery's pieces (one by id, or all: look, seat, fixture, tipped, lit, watered); the critters, the dive spot, finds, care things, the day's dig spots and weeds,
        *  visitors, the day's props (the cake, the arch, the pumpkins, the tape deck…), a tree shake's leavings, the board (its 「！」), a goal tree's fruit and state (popup open, glints); the effects as they fired (island/probe.ts: read off
        *  the DOM island for now, the 3D pick's and the registry's oracle). */
-      pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy)),
+      pick: (cx: number, cy: number) => (pick3dOn() ? pick3dAt(world, document, cx, cy) : pickAt(document, cx, cy) ?? goneAt(cx, cy)),
       box: (kind: BoxKind, id?: string) => (pick3dOn() && PICKED.has(kind) ? boxTaps(world, tapsNow(world), kind, id) : box3(kind, id) ?? boxOf(document, kind, id)),
-      drawn: (kind: BoxKind, id?: string) => drawnOf(document, kind, id),
-      scenery: (id?: string) => (id === undefined ? sceneryAll(document) : sceneryOf(document, id)),
+      drawn: (kind: BoxKind, id?: string) => (GONE.has(kind) ? ((r) => r && { left: r.left, top: r.top, width: r.width, height: r.height })(drawn3(world, id ?? '')) : drawnOf(document, kind, id)),
+      scenery: (id?: string) => {
+        const fl = flowersOf(world).map((f) => ({ id: f.id, kind: 'flower', look: f.key, sit: null, fixture: null, tipped: false, lit: false, watered: f.watered }));
+        return id === undefined ? [...sceneryAll(document), ...fl] : (fl.find((p) => p.id === id) ?? sceneryOf(document, id));
+      },
       actor: (slot = 'mine') => actorOf(document, slot),
       controls: () => (pick3dOn() ? [...controlsOf(document).filter((c) => !ISLAND_CONTROLS.has(c.kind)), ...controlTaps(world, tapsNow(world), ISLAND_CONTROLS)] : controlsOf(document)),
       /** The DOM's answers (the 3D pick's oracle), whatever the switch. */
@@ -1295,6 +1314,7 @@
       offPicks?.();
       if (reg3.guards3 === g3) reg3.guards3 = undefined;
       reg3.route = undefined;
+      if (reg3.gone === gone) reg3.gone = undefined;
       boot = timed = null;
       offLayout();
       listen3d(null);

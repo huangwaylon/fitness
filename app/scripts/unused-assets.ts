@@ -258,7 +258,7 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^art\/season\//, 'used', 'the falling petals, leaves and snowflakes the DOM still draws over the 3D island (a tapped bush’s rustle, a shaken tree: seen drawn in the probe), and the 3D floats’ cards'],
   [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
   // kept by hand though the scan calls them safe (the DOM over the 3D island still shows or measures them):
-  [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (Flowers’ .fl, Scenery’s oak layers)'],
+  [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (a flower’s width: flowers.svelte.ts; Scenery’s oak layers)'],
   [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'drawn by the DOM over the 3D island (Jack’s treat, the birthday popper)'],
   [/^art\/deco\/birthday-cake\.webp$/, 'used', 'the cake’s tap box is its art’s (Cake.svelte)'],
   [/^art\/deco\/(bamboo-shoot-lamp|bulletin-board-winter|egg-arch|illumi-tree|kadomatsu|mushroom-lamp|nut-lamp|picnic-set|pond-stone-(maple|sakura)|present|pumpkin|shishiodoshi-tip|snowboy-\d|spooky-lantern|wedding-arch)\.webp$/, 'used', 'the event and seasonal pieces: hidden under their 3D models, but the specs read their nodes’ art (a later cleanup: check their models instead)']

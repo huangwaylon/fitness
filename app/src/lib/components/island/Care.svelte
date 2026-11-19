@@ -2,7 +2,7 @@
   // Island care (docs/design.md "Island care"), after NH: weeds sprout on the lawn over the day (one every 30–60
   // minutes, the newest three); a tap pulls one (it pops out of the ground with a puff of earth). The rock by the hedge
   // answers a tap with a clonk (it jolts), 1 in 4 a sparkle, 1 in 8 a pill bug or a centipede crawls out from under it.
-  // (Watering a flower and the next day's hybrid live with the flowers: SceneTaps, Flowers.) No ベル, no find; a pulled
+  // (Watering a flower and the next day's hybrid live with the flowers: SceneTaps, flowers.svelte.ts.) No ベル, no find; a pulled
   // weed goes into my pocket (NH's clump of weeds: the shop's しげん).
   // The weeds derive from the Tokyo date (care.ts), so both phones see the same; a weed either of us pulls is gone on
   // both (the shared day's `pick`, first wins; docs/backend.md#shared-world), and the partner's pulls and rock taps play

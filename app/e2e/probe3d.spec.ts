@@ -32,9 +32,9 @@ const compare = (page: Page) =>
         if (key(dom) === key(p3)) continue;
         // (within the slack of the other's answer: an edge)
         if (round((a, b) => w.pick(a, b), x, y).has(key(dom)) || round((a, b) => w.pickDom(a, b), x, y).has(key(p3))) continue;
-        // (agreed: a flower's tap target a true 44 px on screen either way, where the DOM's ring follows its node's
-        // squash and is ~36–40 px tall: the 3D's flower reaches past it, over the ground or the scenery behind it)
-        if (p3?.kind === 'flower' && (!dom || ['flower', 'tree', 'bush', 'campfire', 'sit', 'fixture'].includes(dom.kind))) continue;
+        // (agreed: a flower is the 3D's only, its nodes gone (R4 step 7): its true 44 px tap area over the ground, the
+        // scenery or a building's door behind it, where the DOM's pick has that)
+        if (p3?.kind === 'flower' && (!dom || ['tree', 'bush', 'campfire', 'sit', 'fixture', 'building'].includes(dom.kind))) continue;
         (out[`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`] ??= []).push(`${x},${y} ${key(dom)} ${key(p3)}`);
       }
     return { out, hits };
@@ -56,8 +56,8 @@ const compareClaims = (page: Page, only?: readonly number[][]) =>
         if (dom) kinds[dom.kind] = (kinds[dom.kind] ?? 0) + 1;
         if (key(dom) === key(p3)) continue;
         if (round((a, b) => w.claim(a, b), x, y).has(key(dom)) || round((a, b) => w.claimDom(a, b), x, y).has(key(p3))) continue;
-        // (agreed, as compare's: the 3D flower's true 44 px takes a tap the DOM's ~36-40 px ring left to the chain)
-        if (!p3 && w.pick(x, y)?.kind === 'flower' && w.pickDom(x, y)?.kind !== 'flower') continue;
+        // (agreed, as compare's: the 3D flower takes a tap the DOM's pick, with no flower, leaves to the chain)
+        if (!p3 && w.pick(x, y)?.kind === 'flower') continue;
         (out[`${dom?.kind ?? 'none'}/${p3?.kind ?? 'none'}`] ??= []).push(`${x},${y} ${key(dom)} ${key(p3)}`);
       }
     return { out, kinds };

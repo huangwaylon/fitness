@@ -30,7 +30,7 @@
   import Sky from './Sky.svelte';
   import Scenery from './Scenery.svelte';
   import FruitTree from './FruitTree.svelte';
-  import Flowers from './Flowers.svelte';
+  import { useFlowers } from './flowers.svelte.ts';
   import Particles from './Particles.svelte';
   import { raining, weather } from './weatherNow.svelte.ts';
   import { WET } from '#lib/world/weather.ts';
@@ -412,6 +412,7 @@
   // (camera.svelte.ts).
   const world = new World();
   provideWorld(world);
+  useFlowers(world, { season: () => season, hybrid: () => hybrid });
   let scroller = $state<HTMLElement>();
   let vh = $state(844), s = $state(1), horizonPx = $state(135);
 
@@ -1232,8 +1233,6 @@
             onshake={(down) => shakeTree(pid, down)} />
         {/each}
 
-        <Flowers {season} {hybrid} />
-
         <Decor sit={sitOn} />
         <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
         <Board enabled={() => !covered && !life.hidden} night={tod === 'night'} {season} />
@@ -1330,10 +1329,7 @@
   .scene[data-r3] { touch-action: none; }
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
-  /* (a winter flower's snow cap is the canvas's too, world3d/objects.ts: the DOM's, 28 painted layers riding every
-     scroll under the wet sky's url() tint, held a snowy scroll at ~35 fps) */
-  .scene[data-r3] :global(.fl > .cap) { display: none; }
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }
@@ -1349,10 +1345,10 @@
   .scene[data-r3] :global(.mover.shadow.m3on), .scene[data-r3] :global(.mover.shadow.m3on *) { transition: none !important; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on) *) { filter: none !important; }
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
-  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on) *) { filter: none !important; }
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on)),
+  .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .tree > .oak, .m3on [data-m3art], [data-m3]:not(.m3off) [data-m3art], .in3d, .notes.m3on) *) { animation: none !important; }
   .scene[data-r3] :global(.in3d) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.notes.m3on) { opacity: 0 !important; --art3d: off; }
   /* the characters' flourishes are the canvas's (world3d/Island3D actorFx); a sweat drop stays on the face */
@@ -1419,8 +1415,8 @@
      tapped bush or tree flashed untinted at night for its shake. Specificity 0: a leaf's own filter wins and takes the
      tint first (`filter: var(--leaf-tint,) drop-shadow(…)`); day: no --tod-filter, no filter. */
   :where(.stage) :global(:where(.wn) :where(svg, :not(svg *, button, .hit, .hit-trunk):not(:has(*)))) { --leaf-tint: var(--tod-filter); filter: var(--leaf-tint); }
-  :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::before),
-  :where(.stage) :global(:where(.wn) :where(:not(svg *, [data-hit-min]):has(*))::after) { filter: var(--tod-filter); }
+  :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::before),
+  :where(.stage) :global(:where(.wn) :where(:not(svg *):has(*))::after) { filter: var(--tod-filter); }
   .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
   /* villager contact shadow: radial, surface-coloured, 0.30h × 0.06h, +6% right and down; dusk: stretched to the right */
   .vil :global(.shadow) {
