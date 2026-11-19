@@ -20,8 +20,11 @@ aren't worth it: GitHub's are paid, and its macOS VMs draw in software too.
 - **The game clock.** Every position is a function of the time, and the World steps itself every 33 ms while anything
   moves when no drawn frame has (camera.svelte.ts `simTick`), so a slow or undrawn picture never slows the game.
 - **The test API.** Specs act and query by id through hooks (`__world3d`, `__world`, `__villagers3`, `__tent`, wrapped
-  by e2e/island.ts), not pixels. A new interaction comes with its hook and a `data-*` on its DOM node; a spec reaching
-  for `elementFromPoint` or a fixed coordinate means a hook is missing.
+  by e2e/island.ts), not pixels. On the island, `__world3d.pick(cx, cy)` says what a tap there goes to (`{kind, id}`),
+  `box(kind, id)` where a thing is on screen, `actor(slot)` a villager as shown, and `critters()`, `finds()`,
+  `visitors()`, `shakes()`, `fruit(tree)`, `fxLog()` the rest (island/probe.ts: read off the DOM island for now, held
+  to it by probe.spec). A new interaction comes with its hook; a spec reaching for `elementFromPoint`, a DOM island
+  selector or a fixed coordinate means a hook is missing.
 - **Two phones** are two tabs of one context, synced through `sync/live-local.ts` (a BroadcastChannel plays the relay's
   room): no network, deterministic, neither tab drawing. Never two drawn 3D tabs in one test. The real relay: on demand
   (`RELAY_E2E=1`, `e2e/sync-harness.spec.ts`).

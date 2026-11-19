@@ -1,0 +1,208 @@
+// The island's test probe (window.__world3d's pick, box, actor and the state hooks; docs/ops/testing.md "The test
+// API"): what a tap at a client point goes to, where a thing's tap area is, and what the island shows, as plain data,
+// so the specs ask by kind and id, never by the DOM island's selectors. For now it reads the DOM island (its tap areas'
+// nodes and data-* attributes): the oracle the 3D pick and the models' registry take over from (the R4 plan,
+// /tmp/review-1118/r4-dom-island-plan.md), the specs' contract unchanged. Test hooks only (testMode.ts testHooks).
+
+/** What a tap goes to: a control (a villager, a door, the decor, a goal tree, a balloon, the board, a tree shake's
+ *  pick or swarm, any other button: `ui`), else a scenery thing (SceneTaps' order: tree, bush, campfire, sit,
+ *  fixture, flower). */
+export type PickKind =
+  | 'villager' | 'building' | 'decor' | 'goal' | 'talk' | 'board' | 'balloon' | 'swarm' | 'drop' | 'ui'
+  | 'tree' | 'bush' | 'campfire' | 'sit' | 'fixture' | 'flower' | 'visitor';
+type Ref = { kind: PickKind; id: string };
+/** A pick: the thing a tap goes to, and the other things the same tap area is (a bench is a seat and a fixture). */
+export type Picked = Ref & { also: Ref[] };
+/** What `box` finds: a tap area (PickKind), or a figure the scene hit-tests itself (a visitor's, K.K.'s, the cake,
+ *  the arch, a toy) or a critter or a find. */
+export type BoxKind = Exclude<PickKind, 'ui'> | 'kk' | 'cake' | 'arch' | 'toy' | 'critter' | 'find';
+/** A tap area's box (client px) and its node's foot (the world point it stands on, on screen), if it has one. */
+export type Box = { left: number; top: number; width: number; height: number; foot: [number, number] | null };
+
+/** The kinds a tap's button is (a tap under one is the control's, SceneTaps' first rule). */
+export const CONTROLS: readonly PickKind[] = ['villager', 'building', 'decor', 'goal', 'talk', 'board', 'balloon', 'swarm', 'drop', 'ui'];
+
+const SCENERY: readonly (readonly [PickKind, string])[] = [
+  ['tree', 'data-tree'], ['bush', 'data-bush'], ['campfire', 'data-campfire'], ['sit', 'data-sit'], ['fixture', 'data-fixture'], ['flower', 'data-flower']
+];
+/** A tap area inside none of the above (none hit-tests today: the oracle's completeness). */
+const HOLDERS: readonly (readonly [PickKind, string])[] = [['villager', 'data-actor'], ['building', 'data-building'], ['visitor', 'data-visitor'], ['decor', 'data-decor']];
+/** A tree shake's pick-up: its button's attribute naming it. */
+const DROPS = ['data-coconut', 'data-wood-id', 'data-branch', 'data-dangler'];
+
+function* up(el: Element | null): Generator<Element> {
+  for (let n = el; n; n = n.parentElement) yield n;
+}
+const closest = (el: Element, attr: string): Element | null => {
+  for (const n of up(el)) if (n.hasAttribute(attr)) return n;
+  return null;
+};
+const hasClass = (n: Element, c: string) => ` ${n.getAttribute('class') ?? ''} `.includes(` ${c} `);
+const isControl = (n: Element) => /^(button|a)$/i.test(n.tagName) || n.getAttribute('role') === 'button';
+
+/** The button `b`'s thing. */
+function controlOf(b: Element): Ref {
+  for (const [kind, attr] of [['villager', 'data-actor'], ['building', 'data-building'], ['decor', 'data-decor'], ['swarm', 'data-swarm']] as const) {
+    const n = closest(b, attr);
+    if (n) return { kind, id: n.getAttribute(attr) ?? '' };
+  }
+  if (b.getAttribute('data-fx') === 'talk') return { kind: 'talk', id: '' };
+  if (b.hasAttribute('data-board')) return { kind: 'board', id: '' };
+  if (hasClass(b, 'balloon')) return { kind: 'balloon', id: '' };
+  const drop = DROPS.find((a) => b.hasAttribute(a));
+  if (drop) return { kind: 'drop', id: b.getAttribute(drop) ?? '' };
+  // a goal tree (FruitTree): the trunk's button in the tree's node, the canopy's in the node after it
+  const p = b.parentElement, tree = p?.getAttribute('data-tree-node') ?? p?.previousElementSibling?.getAttribute('data-tree-node');
+  if (tree && (hasClass(b, 'trunk-btn') || hasClass(b, 'canopy'))) return { kind: 'goal', id: tree };
+  return { kind: 'ui', id: b.getAttribute('aria-label') ?? b.getAttribute('class')?.split(' ')[0] ?? b.tagName.toLowerCase() };
+}
+
+/** What a tap on `el` (the topmost node at the point) goes to, or null (the ground, the sky: `ground`). Non-null
+ *  exactly where `el.closest(TAP_AREAS)` is (e2e/pick.spec.ts holds it to that). */
+export function pickOf(el: Element | null): Picked | null {
+  if (!el) return null;
+  for (const n of up(el)) if (isControl(n)) return { ...controlOf(n), also: [] };
+  for (const [kind, attr] of SCENERY) {
+    const n = closest(el, attr);
+    if (n) return { kind, id: n.getAttribute(attr) ?? '', also: SCENERY.filter(([k, a]) => k !== kind && n.hasAttribute(a)).map(([k, a]) => ({ kind: k, id: n.getAttribute(a) ?? '' })) };
+  }
+  for (const [kind, attr] of HOLDERS) {
+    const n = closest(el, attr);
+    if (n) return { kind, id: n.getAttribute(attr) ?? '', also: [] };
+  }
+  return null;
+}
+
+/** What a tap at client (x, y) goes to (`pickOf` the topmost node there). */
+export const pickAt = (doc: Pick<Document, 'elementFromPoint'>, x: number, y: number): Picked | null => pickOf(doc.elementFromPoint(x, y));
+
+const q = (id: string) => id.replace(/["\\]/g, '\\$&');
+/** Each kind's tap area (the selectors whose boxes it unites: a tree's canopy and trunk), its node (the foot), and the
+ *  least size its tap target has on screen round its middle or up from its bottom (a flower's, the decor's ::after). */
+export function areaOf(kind: BoxKind, id = ''): { area: string[]; node: string | null; min?: readonly [number, number, 'mid' | 'bottom'] } {
+  const v = q(id);
+  switch (kind) {
+    case 'villager': return { area: [`[data-actor="${v}"] .vil`], node: `[data-actor="${v}"]` };
+    case 'building': return { area: [`[data-building="${v}"] .door`], node: null };
+    case 'decor': return { area: [`[data-decor="${v}"]`], node: null, min: [45, 45, 'bottom'] };
+    case 'goal': return { area: [`[data-tree-node="${v}"] + .node .canopy`, `[data-tree-node="${v}"] .trunk-btn`], node: `[data-tree-node="${v}"]` };
+    case 'tree': return { area: [`.hit[data-tree="${v}"]`, `.hit-trunk[data-tree="${v}"]`], node: null };
+    case 'talk': return { area: ['[data-fx="talk"]'], node: null };
+    case 'board': return { area: ['[data-board]'], node: null };
+    case 'balloon': return { area: ['.if-scene .balloon'], node: null };
+    case 'swarm': return { area: [`[data-swarm="${v}"]`], node: null };
+    case 'drop': return { area: [DROPS.map((a) => `[${a}="${v}"]`).join(', ')], node: null };
+    case 'visitor': return { area: [`[data-visitor="${v}"] .art`], node: `[data-visitor="${v}"]` };
+    case 'kk': return { area: ['[data-kk] .art'], node: '[data-kk]' };
+    case 'cake': return { area: ['[data-cake] .official'], node: '[data-cake]' };
+    case 'arch': return { area: ['[data-arch] .official'], node: '[data-arch]' };
+    case 'toy': return { area: ['[data-toy] .art'], node: '[data-toy]' };
+    case 'critter': return { area: [`[data-critter="${v}"]`], node: null };
+    // (a find's item is a 0 × 0 anchor's child: its art, the box)
+    case 'find': return { area: [`:is([data-find="${v}"], [data-find][data-uid="${v}"]) > *`], node: null };
+    case 'flower': return { area: [`[data-flower="${v}"]`], node: null, min: [44, 44, 'mid'] };
+    default: {
+      const attr = SCENERY.find(([k]) => k === kind)?.[1];
+      return { area: attr ? [`[${attr}="${v}"]`] : [], node: null };
+    }
+  }
+}
+
+/** Where thing (`kind`, `id`) is on screen (the first one: a critter's id is its species), or null (not there). A box
+ *  may be 0 × 0 (an anchor: its point). */
+export function boxOf(root: Pick<ParentNode, 'querySelector'>, kind: BoxKind, id = ''): Box | null {
+  const { area, node, min } = areaOf(kind, id);
+  const rs = area.map((s) => root.querySelector(s)?.getBoundingClientRect()).filter((r): r is DOMRect => !!r);
+  if (!rs.length) return null;
+  let left = Math.min(...rs.map((r) => r.left)), top = Math.min(...rs.map((r) => r.top));
+  let width = Math.max(...rs.map((r) => r.left + r.width)) - left, height = Math.max(...rs.map((r) => r.top + r.height)) - top;
+  if (min && (width < min[0] || height < min[1])) {
+    const [w, h] = [Math.max(width, min[0]), Math.max(height, min[1])];
+    [left, top] = [left + (width - w) / 2, min[2] === 'mid' ? top + (height - h) / 2 : top + height - h];
+    [width, height] = [w, h];
+  }
+  const n = node ? root.querySelector(node)?.getBoundingClientRect() : null;
+  return { left, top, width, height, foot: n ? [n.left, n.top] : null };
+}
+
+/** A villager as the island shows it (`slot`: mine, partner, third). */
+export type Actor = {
+  /** Its motion now (Villager's data-act: hop, squish, …), or null. */
+  act: string | null;
+  walking: boolean; inside: boolean; hat: boolean; stung: string | null; swollen: boolean; tricked: boolean;
+  seat: string | null; gym: string | null; who: string | null;
+  /** Drawn by the 3D island (its tap area its model's core). */
+  v3: boolean;
+};
+export function actorOf(root: Pick<ParentNode, 'querySelector'>, slot: string): Actor | null {
+  const n = root.querySelector(`[data-actor="${q(slot)}"]`);
+  if (!n) return null;
+  const has = (s: string) => !!n.querySelector(s);
+  return {
+    act: n.querySelector('.vil .body')?.getAttribute('data-act') ?? null,
+    walking: hasClass(n, 'walking'), inside: n.hasAttribute('data-inside'), hat: has('[data-hat]'), stung: n.getAttribute('data-stung'),
+    swollen: has('[data-swollen]'), tricked: has('[data-tricked]'), seat: n.getAttribute('data-seat'), gym: n.getAttribute('data-gym'),
+    who: n.getAttribute('data-who'), v3: n.hasAttribute('data-v3')
+  };
+}
+
+type Root = Pick<ParentNode, 'querySelectorAll'>;
+const all = (root: Root, sel: string) => [...root.querySelectorAll(sel)];
+const rect = (n: Element): Omit<Box, 'foot'> => {
+  const r = n.getBoundingClientRect();
+  return { left: r.left, top: r.top, width: r.width, height: r.height };
+};
+
+/** The critters out: a bug (`id` its species) or a fish's shadow (`id` fish or pond, its water and pool). */
+export const crittersOf = (root: Root) =>
+  all(root, '[data-critter]').map((n) => ({
+    id: n.getAttribute('data-critter') ?? '', place: n.getAttribute('data-place'), water: n.getAttribute('data-water'), pool: n.getAttribute('data-pool'),
+    gone: hasClass(n, 'gone'), fled: hasClass(n, 'fled'), sat: hasClass(n, 'sat'), box: rect(n)
+  }));
+
+/** The day's finds lying out (a dig spot `fossil`, a mushroom, a present, a shell, a fragment, the bottle). */
+export const findsOf = (root: Root) =>
+  all(root, '[data-find]').map((n) => ({
+    kind: n.getAttribute('data-find') ?? '', id: n.getAttribute('data-id'), uid: n.getAttribute('data-uid') ?? '', tree: n.getAttribute('data-tree-gift'),
+    box: rect(n.firstElementChild ?? n)
+  }));
+
+/** The visitors out (the day's, a guest; K.K. as `kk`): where each stands, what it's doing. */
+export const visitorsOf = (root: Root) => [
+  ...all(root, '[data-visitor]').map((n) => ({
+    id: n.getAttribute('data-visitor') ?? '', slot: n.getAttribute('data-slot'), stage: n.getAttribute('data-stage'), phase: n.getAttribute('data-phase'),
+    asleep: n.getAttribute('data-asleep'), motion: n.getAttribute('data-motion'), vegAsk: n.getAttribute('data-veg-ask'), walking: hasClass(n, 'walking')
+  })),
+  ...all(root, '[data-kk]').map((n) => ({
+    id: 'kk', slot: n.getAttribute('data-kk'), stage: null, phase: hasClass(n, 'show') ? 'show' : null, asleep: null,
+    motion: n.getAttribute('data-motion'), vegAsk: null, walking: false
+  }))
+];
+
+/** A tree shake's leavings: what fell (to pick up), the nests, the swarms. */
+export const shakesOf = (root: Root) => ({
+  drops: all(root, DROPS.map((a) => `[${a}]`).join(', ')).map((n) => {
+    const a = DROPS.find((a) => n.hasAttribute(a))!;
+    return { what: a.replace(/^data-|-id$/g, ''), id: n.getAttribute(a) ?? '', box: rect(n) };
+  }),
+  nests: all(root, '[data-nest]').map((n) => ({ tree: n.getAttribute('data-nest') ?? '', fading: hasClass(n, 'fading') })),
+  swarms: all(root, '[data-swarm]').map((n) => ({ side: n.getAttribute('data-swarm') ?? '', stung: hasClass(n, 'stung') }))
+});
+
+/** A goal tree's fruit (`tree`: its person): each fruit's id, its stage, up in the canopy or dropped. */
+export const fruitOf = (root: Root, tree: string) =>
+  all(root, `.fruit[data-tree="${q(tree)}"]`).map((n) => ({ f: n.getAttribute('data-fruit') ?? '', stage: n.getAttribute('data-stage'), up: hasClass(n, 'up') }));
+
+/** The 3D island's effects as they fired (fx3d.ts: a tap's ring, the high five's zap, a splash, …), oldest first, the
+ *  last `max`: what a spec waits for, however briefly it showed. `at`: the page's clock (ms). */
+export type FxSeen = { kind: string; x: number; z: number; v: string | null; at: number };
+export function fxLog(max = 200) {
+  const seen: FxSeen[] = [];
+  return {
+    add: (kind: string, x: number, z: number, v: string | null | undefined, at: number) => {
+      seen.push({ kind, x, z, v: v ?? null, at });
+      if (seen.length > max) seen.shift();
+    },
+    list: (): FxSeen[] => seen.slice()
+  };
+}
