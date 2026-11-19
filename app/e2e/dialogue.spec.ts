@@ -59,11 +59,18 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
   await page.waitForTimeout(300); // a person's pause between taps
   // the next tap on him: one of his lines, one page
   await expect.poll(async () => {
-    // his head (the balloon may sit over the rest of him), frame-locked
+    // his head (the balloon may sit over the rest of him), frame-locked: the topmost point of his figure the scene's
+    // chain takes for him (`claim`: on the 3D island his box from his spot, not his DOM art's)
     if (!(await page.locator('[data-fx="talk"]').count()))
       await tapAt(page, (w) => {
         const g = w.__world3d.box('visitor', 'gulliver');
-        return g?.width ? [g.left + g.width / 2, g.top + g.height * 0.12] : null;
+        if (!g?.width) return null;
+        for (let fy = 0.08; fy < 1; fy += 0.04) {
+          const x = g.left + g.width / 2, y = g.top + g.height * fy;
+          if (w.__world3d.claim(x, y)?.kind === 'visitor') return [x, y];
+        }
+        // (none just now: a moment after his last line he takes no tap; tapped anyway, the poll taps again)
+        return [g.left + g.width / 2, g.top + g.height * 0.12];
       }, null, { clear: null, mouse: true, message: 'his head' });
     return page.locator('[data-fx="talk"].placed').getAttribute('data-pages').catch(() => null);
   }, { timeout: 8000 }).toBe('1');

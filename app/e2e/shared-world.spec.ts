@@ -85,9 +85,10 @@ test('two players see the same island, not mirrored: A (ウェイ) on the left, 
   /** Where each person's villager and goal tree and two wild flowers stand on a tab (screen x of their middles, the same camera). */
   const { FLOWERS } = await geo(a);
   const layout = (p: Page) => p.evaluate((flowers) => {
-    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 }).__world3d;
+    const out: Record<string, number> = {}, w3 = (window as unknown as { __world3d: W3 & { boxDom: W3['box'] } }).__world3d;
     const mid = (kind: 'goal' | 'flower', id: string) => {
-      const r = w3.box(kind, id)!;
+      // (where the projector puts it, in view or not: a flower past the camera's window has no 3D tap area)
+      const r = w3.boxDom(kind, id)!;
       return Math.round(r.left + r.width / 2);
     };
     for (const who of ['A', 'B']) {

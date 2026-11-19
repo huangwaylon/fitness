@@ -41,6 +41,9 @@ export type W3 = {
   /** What a tap at client (cx, cy) goes to (a villager, a door, a tree, a seat, …: island/probe.ts), or null: the
    *  ground or the sky. */
   pick(cx: number, cy: number): Picked | null;
+  /** What the scene's own chain takes a tap at client (cx, cy) for before the controls and the scenery (SceneTaps claims: a
+   *  visitor, a find, a plot…), or null. */
+  claim(cx: number, cy: number): { kind: string; id: string } | null;
   /** Where thing (`kind`, `id`) is on screen (client px, and its node's foot), or null: not there. */
   box(kind: BoxKind, id?: string): Box | null;
   /** What thing (`kind`, `id`) draws on screen (its art, not its tap area; a tree's leaves, a `trunk`'s trunk), or null. */

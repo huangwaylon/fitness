@@ -51,10 +51,10 @@
     const wd = a ? (h * a.w) / a.h : p?.mu ? (h * p.mu[0]) / p.mu[1] : h;
     return { key, h, wd, l: p ? -p.ax * wd : 0, b: p ? -(1 - p.ay) * h : 0, style: p ? `left:calc(${-p.ax * wd} * var(--u));bottom:calc(${-(1 - p.ay) * h} * var(--u))` : '' };
   }
-  /** Its tap areas for the 3D pick (things3 Tap3): the button's box, and its ::after: its middle down to 4u under it, at
-   *  least 45 px either way. */
+  /** Its tap areas for the 3D pick and the canvas router (things3 Tap3): the button's box, and its ::after: its middle
+   *  down to 4u under it, at least 45 px either way. */
   function areas(p: { id: string; x: number; z: number; lift: number }, l: ReturnType<typeof look>): Tap3[] {
-    const n = { kind: 'decor', id: p.id, x: p.x, z: p.z, lift: p.lift, h: l.h }, mid = l.l + l.wd / 2;
+    const n = { kind: 'decor', id: p.id, x: p.x, z: p.z, lift: p.lift, h: l.h, act: () => tap(p.id, p.x) }, mid = l.l + l.wd / 2;
     return [
       { ...n, part: 'art', l: l.l, r: l.l + l.wd, b: l.b, t: l.b + l.h },
       { ...n, part: 'reach', l: mid - l.wd / 2, r: mid + l.wd / 2, b: l.b - 4, t: l.b + l.h, min: [45, 45, 'bottom'] }
