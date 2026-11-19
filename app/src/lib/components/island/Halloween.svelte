@@ -8,6 +8,7 @@
   import { clearAt, guardsU, stageGeo } from './placement.ts';
   import { PUMPKIN_U, su } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { CAMPSITE, onLayout, type Pt } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { nearestWalkable, walkGeo } from '#lib/world/walkGraph.ts';
@@ -63,7 +64,7 @@
   {#if night}<div class="wash"></div>{/if}
   {#each SPOTS as [x, z], i (i)}
     {#if !hidden.has(`${x},${z}`)}
-    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night, m3: { key: night ? 'deco/spooky-lantern' : 'deco/pumpkin' } })}>
+    <span class="pumpkin" data-pumpkin style:--i={i} {@attach w.at({ x, z, h: PUMPKIN_U + 20, light: night })} {@attach thing(w, { x, z, h: PUMPKIN_U + 20, m3: { key: night ? 'deco/spooky-lantern' : 'deco/pumpkin', id: `pumpkin-${i}` } })}>
       {#if night}<span class="glow"></span>{/if}
       <span class="art"><OfficialArt key={night ? 'deco/spooky-lantern' : 'deco/pumpkin'} size={su(PUMPKIN_U)} /></span>
     </span>

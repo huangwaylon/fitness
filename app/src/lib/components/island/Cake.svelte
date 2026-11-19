@@ -13,6 +13,7 @@
   import { CAKE } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { blowOut, candlesOut } from '#lib/world/birthday.ts';
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
 
@@ -53,7 +54,7 @@
 </script>
 
 {#if on}
-  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: at[0], z: at[1], h: CAKE_U + 20, m3: { key: 'deco/birthday-cake' } })}>
+  <span class="party" bind:this={el} data-cake={out ? 'out' : 'lit'} aria-hidden="true" {@attach w.at({ x: at[0], z: at[1], h: CAKE_U + 20 })} {@attach thing(w, { x: at[0], z: at[1], h: CAKE_U + 20, m3: { key: 'deco/birthday-cake', id: 'cake' } })}>
     <span class="cake"><OfficialArt key="deco/birthday-cake" size={su(CAKE_U)} /></span>
     {#if !out}
       <!-- the candles' flames, over the five candles of NH's cake -->

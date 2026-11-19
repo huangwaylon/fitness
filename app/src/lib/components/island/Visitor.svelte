@@ -50,6 +50,7 @@
   import { BUILDINGS, CENTRE_STAGE } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { figure } from '../world3d/things3.ts';
   import { beachedAt, dayVisitor, guestNow, onBeach, visitorLine, visitorNow, type VisitorId } from '#lib/world/visitors.ts';
   import { besideStage, guestSpot } from '#lib/layout/spots.ts';
   import { ROLES, fortuneOf, giftOf, isGuest, npcIcon, type GuestId } from '#lib/world/visitorRoles.ts';
@@ -914,8 +915,8 @@
 {#if ShopSheet && shopFor}<ShopSheet bind:open={shopOpen} {...shopFor} />{/if}
 {#if shown && spot}
   <!-- one world node at the feet (camera.svelte.ts): its live position is the director's while it walks; the 3D island
-       draws its model there (v3), the node's .art its tap area and its balloon's anchor -->
-  <span class="visitor" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos(A), always: true, inv: true,
+       draws its model there (a things3 figure), the node's .art its tap area and its balloon's anchor -->
+  <span class="visitor" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos(A), always: true, inv: true })} {@attach figure(w, { x: spot.x, z: spot.z, h: spot.h + 40, live: () => livePos(A), always: true,
         v3: { id: shown, actor: A, lift: liftNow, prone: proneNow, away: awayNow, also: shown === 'reese' ? { id: 'cyrus', dx: spot.h * PAIR_DX } : undefined } })}
       class:walking={st.walking} data-visitor={shown} data-slot={A} data-veg-ask={ask?.crop} data-stage={spot.stage || undefined}
       data-phase={phase} data-way={way} data-asleep={sleeping ? (spot.lie ? 'lie' : 'stand') : undefined} data-motion={st.motion ?? undefined} bind:this={el}

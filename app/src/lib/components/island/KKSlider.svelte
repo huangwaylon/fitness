@@ -38,6 +38,7 @@
   import { su, VILLAGER } from './scene.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { figure, thing } from '../world3d/things3.ts';
   import { KK_MODES, KK_SEAT, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot, type KKMode } from './kkSlider.ts';
   import type { Choice } from '#lib/world/pager.ts';
 
@@ -237,11 +238,10 @@
 </script>
 
 {#if spot}
-  <!-- one world node at his feet (camera.svelte.ts): the 3D island draws his model sitting on the stool there (v3), the
+  <!-- one world node at his feet (camera.svelte.ts): the 3D island draws his model sitting on the stool there (a things3 figure), the
        node's .art his tap area and his balloon's anchor -->
-  <span class="kk" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: TOP + 40, inv: true,
-        m3: playing ? { key: '', emit: { kind: 'notes', every: 1100, lift: TOP * 0.9 }, art: () => el?.querySelector('.notes') } : null,
-        v3: { id: ID, actor: 'kk', seat: KK_SEAT, yaw: spot.yaw, lift: () => 0, prone: () => false, away: () => false, asleep: () => dozing } })}
+  <span class="kk" aria-hidden="true" {@attach w.at({ x: spot.x, z: spot.z, h: TOP + 40, inv: true })} {@attach playing && thing(w, { x: spot.x, z: spot.z, h: TOP + 40, m3: { key: '', id: 'kk-notes', emit: { kind: 'notes', every: 1100, lift: TOP * 0.9 }, art: () => el?.querySelector('.notes') } })}
+      {@attach figure(w, { x: spot.x, z: spot.z, h: TOP + 40, v3: { id: ID, actor: 'kk', seat: KK_SEAT, yaw: spot.yaw, lift: () => 0, prone: () => false, away: () => false, asleep: () => dozing } })}
       class:show={!!playing} data-kk={mode} data-motion={st.motion ?? undefined} bind:this={el} style:--h={su(TOP)}>
       <span class="art"></span>
       <!-- emotes and fx over the head -->

@@ -15,6 +15,7 @@
   import { TAPE_DECK } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -90,7 +91,7 @@
   }
 </script>
 
-<div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: up + 22, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: up * 0.8 } : undefined } })}>
+<div class="node" aria-hidden="true" {@attach w.at({ x: spot[0], z: spot[1], h: up + 22 })} {@attach thing(w, { x: spot[0], z: spot[1], h: up + 22, m3: { key: 'deco/tape-deck', id: 'tape-deck', emit: playing ? { kind: 'notes', every: 1300, lift: up * 0.8 } : undefined } })}>
   <span class="deck" class:playing data-stretch={playing ? 'on' : ready ? 'ready' : 'idle'} bind:this={el} style:--up={up}>
     <span class="radio"><OfficialArt key="deco/tape-deck" size={su(up)} /></span>
     {#if playing}

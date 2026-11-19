@@ -10,6 +10,7 @@
   import { ARCH } from '#lib/world/world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
+  import { thing } from '../world3d/things3.ts';
   import { SCENE, firstOn } from '#lib/sync/storage.ts';
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -41,7 +42,7 @@
 </script>
 
 {#if arch}
-  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: arch3[0], z: arch3[1], h: ARCH_U, m3: { key: 'deco/wedding-arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
+  <span class="arch" data-arch aria-hidden="true" {@attach w.at({ x: arch3[0], z: arch3[1], h: ARCH_U })} {@attach thing(w, { x: arch3[0], z: arch3[1], h: ARCH_U, m3: { key: 'deco/wedding-arch', id: 'arch' } })}><OfficialArt key="deco/wedding-arch" size={su(ARCH_U)} /></span>
 {/if}
 
 <style>
