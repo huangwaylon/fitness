@@ -472,11 +472,11 @@
     if (refreshFood(e.id, x.f, x.g).ok) said('food.fresh.done', { name: x.f.n }), count('act:food.fresh');
   }
   /** 「いつものを更新」: on my day from today on, a meal's live いつもの whose items' foods changed since it was set (a
-   *  recipe or マイ食品 edited, the data fixed): why (the first changed item's kind), what changes most (freshChange), and the
+   *  recipe or マイ食品 edited, the data fixed): its link's words (by the first changed item's kind), what changes most (freshChange), and the
    *  update (it ends yesterday and starts again today with the foods now: store/meals.ts refreshRepeat). */
   const repFresh = $derived.by(() => {
     void catalogRev;
-    const out = new Map<Meal, { why: string; change: FreshChange | null; run: () => void }>();
+    const out = new Map<Meal, { key: string; change: FreshChange | null; run: () => void }>();
     if (!mine || !m || date < today) return out;
     const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
     for (const k of MEALS) {
@@ -486,9 +486,9 @@
       const first = r.it.find((_, i) => now[i]);
       if (!first) continue;
       const it = r.it.map((x, i) => now[i] ?? x);
-      const kind = first.f.id.startsWith('recipe:') ? 'recipe' : first.f.id.startsWith('custom:') ? 'custom' : 'food';
+      const key = first.f.id.startsWith('recipe:') ? 'food.fresh.repRecipe' : first.f.id.startsWith('custom:') ? 'food.fresh.repCustom' : 'food.fresh.rep';
       out.set(k, {
-        why: t(`food.fresh.why.${kind}`), change: freshChange(r.it, it),
+        key, change: freshChange(r.it, it),
         run: () => void (refreshRepeat(r.id, it).ok && said('food.fresh.repDone', { meal: mealName(k) }))
       });
     }

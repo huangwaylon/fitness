@@ -37,10 +37,12 @@ test('いつものを更新: a いつもの whose food changed offers it; a tap 
   const natto = b.locator('[data-entry][data-rep]').nth(1); // (rice, then natto)
   await expect(natto).toContainText('88');
   const rf = b.locator('[data-rep-fresh=b]');
-  await expect(rf).toHaveText('食品の値が新しくなりました · いつものを更新（322→342 kcal）', { timeout: 15_000 }); // one line
-  await expect(rf.locator('[data-rep-fresh-go]')).toHaveText('いつものを更新（322→342 kcal）');
+  const go = rf.locator('[data-rep-fresh-go]');
+  await expect(rf).toHaveText('新しい値でいつものを更新（322→342 kcal）', { timeout: 15_000 }); // the link alone
+  await expect(go).toHaveText('新しい値でいつものを更新（322→342 kcal）');
+  expect(await go.evaluate((el) => el.getClientRects().length)).toBe(1); // one line at 393 px
   await expect(b.locator('[data-fresh]')).toHaveCount(0); // a いつもの's entry: its repeat's, not its own
-  await rf.locator('[data-rep-fresh-go]').tap();
+  await go.tap();
   await expect(dlg(page).getByRole('status')).toContainText('朝ごはんのいつものを今日から更新しました');
   await expect(natto).toContainText('108');
   await expect(rf).toHaveCount(0);

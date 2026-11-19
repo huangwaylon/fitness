@@ -11,7 +11,7 @@
   // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
   // copies it in. An entry of mine whose food has changed since (fresh.ts) has a small 「最新の値にする」 under its
   // row (with what changes most: fresh.ts freshChange, kcal, else salt or fibre): a tap re-snapshots it; a いつもの whose
-  // foods changed, one line under its entries (「食品の値が新しくなりました · いつものを更新（…）」), a tap makes it the foods
+  // foods changed, one link under its entries (by what changed: 「新しい値でいつものを更新（…）」, 「レシピの変更をいつものに反映（…）」, 「マイ食品の変更をいつものに反映（…）」), a tap makes it the foods
   // now from today. A
   // chain menu's entry whose values Kalori guessed (its snapshot's `est` e or p) says 推定 after its amount, quietly. An entry logged from a recipe still there
   // (マイレシピ) shows its ingredients' pictures and the recipe's pot (FoodThumb `plate`); on anyone else's day its row
@@ -50,8 +50,8 @@
     /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
     fresh?: ReadonlyMap<string, Fresh>;
     onfresh?: (e: FoodEntry, x: Fresh) => void;
-    /** This meal's いつもの with foods changed since it was set (my day, today on): why, what changes most, the update. */
-    repfresh?: { why: string; change: FreshChange | null; run: () => void } | null;
+    /** This meal's いつもの with foods changed since it was set (my day, today on): its link's words (i18n key), what changes most, the update. */
+    repfresh?: { key: string; change: FreshChange | null; run: () => void } | null;
     /** The recipes still there, by id (an entry logged from one: its pictures), and one opened from anyone else's day. */
     recipes?: ReadonlyMap<string, Recipe>;
     onrecipe?: (r: Recipe, e: FoodEntry) => void;
@@ -137,7 +137,7 @@
     </ul>
   {/if}
   {#if repfresh}
-    <p class="rf" data-rep-fresh={meal}>{repfresh.why} · <button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>{freshText('food.fresh.rep', repfresh.change)}</button></p>
+    <p class="rf" data-rep-fresh={meal}><button type="button" class="fresh" data-sfx="confirm" data-rep-fresh-go={meal} onclick={repfresh.run}>{freshText(repfresh.key, repfresh.change)}</button></p>
   {/if}
   {#if mine && !entries.length && copies.length}
     <div class="copies" data-copies={meal}>
@@ -210,10 +210,11 @@
   .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
   .est { font-weight: 500; }
-  /* いつものを更新: one line of text, why soft, then the link (最新の値にする's look), its 44px target inline */
-  .rf { margin: 4px 0 6px; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  /* (inline, so the line wraps inside the link; its padding the 44px target, the line box unchanged) */
-  .rf .fresh { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; color: var(--leaf-text); }
+  /* いつものを更新: one link (最新の値にする's look), its 44px target inline */
+  .rf { margin: 4px 0 6px; font: 700 var(--fs-s)/1.6 var(--font-ui); }
+  /* (inline, so a narrow screen wraps inside the link, before its （…） (keep-all: the words whole); its padding the 44px
+     target, the line box unchanged) */
+  .rf .fresh { display: inline; min-height: 0; margin: 0; padding: 12px 0; font: inherit; color: var(--leaf-text); word-break: keep-all; overflow-wrap: anywhere; }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {
     display: inline-flex; align-items: center; gap: 4px; min-width: 0; padding: 4px 10px; border-radius: var(--r-pill);
