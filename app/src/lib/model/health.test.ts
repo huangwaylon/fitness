@@ -1,6 +1,6 @@
 // けんこう's numbers (model/health.ts): Apple Health's values as is (nothing cut off), only a missing row (or a watch metric
 // on a day without the Watch: 0/0/0) is no record, today
-// left out of the stats, weekly and monthly buckets, the change against the previous period, goal-met counts, the
+// left out of the stats, weekly and monthly buckets, the change against the previous period, the
 // ranges and their navigation, and the edge cases (no data, one person only, sparse weight).
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
@@ -17,8 +17,8 @@ import { weekKeyOf } from '#lib/time/dates.ts';
 /** One person's metric: each bucket's value, a period's numbers (what the charts read through metricSeries). */
 const bucketValues = (hs: HealthSeries, p: PersonId, m: Metric, r: Range) => seriesBuckets(metricSeries(hs, p, m), r);
 const metricStats = (hs: HealthSeries, p: PersonId, m: Metric, r: Range) => {
-  const { avg, days, met, missing, change } = periodStats(metricSeries(hs, p, m), r);
-  return { avg, days, missing, met, change };
+  const { avg, days, missing, change } = periodStats(metricSeries(hs, p, m), r);
+  return { avg, days, missing, change };
 };
 
 const jst = (date: string, hm = '22:00') => new Date(`${date}T${hm}:00+09:00`).toISOString();
@@ -60,12 +60,9 @@ describe('as reported, and days with no record', () => {
     expect(steps.days).toBe(5);
     expect(steps.avg).toBe(32066 / 5);
     expect(steps.missing).toBe(1);
-    expect(steps.met).toBe(2); // 9000, 11000
     const ex = metricStats(hs, 'A', 'exercise', week);
     // 70, 0, –, 0, –, 50 → 120 / 4
-    expect(ex).toMatchObject({ days: 4, avg: 30, met: 1, missing: 2 });
-    const stand = metricStats(hs, 'A', 'stand', week);
-    expect(stand.met).toBe(2); // 130, 125
+    expect(ex).toMatchObject({ days: 4, avg: 30, missing: 2 });
   });
 
   it('the Move goal is the one in force each day', () => {
@@ -74,8 +71,8 @@ describe('as reported, and days with no record', () => {
       ...day('B', '2026-10-30', { steps: 1, kcal: 420, ex: 1, stand: 1 })
     ], [[jst('2026-10-29', '08:00'), 'B', 'g1', 'pref', JSON.stringify({ key: 'moveGoal', value: 450 })]]);
     const h = series(r2);
-    const s = metricStats(h, 'B', 'move', rangeFor('week', TODAY));
-    expect(s.met).toBe(1); // 420 ≥ 400 on 10-28; 420 < 450 on 10-30
+    const b = bucketValues(h, 'B', 'move', rangeFor('week', TODAY)).filter((x) => x.days); // 420 ≥ 400 on 10-28; 420 < 450 on 10-30
+    expect(b.map((x) => x.met)).toEqual([1, 0]);
   });
 
   it('day bars: the 66-step day is its bar, today shows its running value, flagged; a missing day has no bar', () => {
@@ -147,7 +144,7 @@ describe('edge cases', () => {
     expect(hs.any).toBe(false);
     expect(hs.from).toBe(TODAY);
     const r = rangeFor('month', TODAY);
-    expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, met: 0, change: null });
+    expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, change: null });
     expect(bucketValues(hs, 'B', 'move', r).every((b) => b.v === null)).toBe(true);
     expect(canShift(r, hs.from, TODAY).back).toBe(false);
     expect(dotStats(hs, 'A', 'weight', r)).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
@@ -243,8 +240,8 @@ describe('a day without the Watch (Move, Exercise and Stand all 0 or absent)', (
     check('steps values', hs.people.A.values.steps, [9000, 8200, 3000, 4000, 10000, null]);
     check('move bars', bucketValues(hs, 'A', 'move', r).slice(1, 6).map((b) => b.v), [650, null, 0, null, 700]);
     // the averages, goal days and 記録なし: the worn days only (10/26, 10/28, 10/30); steps over all five
-    check('move', metricStats(hs, 'A', 'move', r), { avg: 1350 / 3, days: 3, missing: 2, met: 2, change: null });
-    check('exercise', metricStats(hs, 'A', 'exercise', r), { avg: 130 / 3, days: 3, missing: 2, met: 2, change: null });
+    check('move', metricStats(hs, 'A', 'move', r), { avg: 1350 / 3, days: 3, missing: 2, change: null });
+    check('exercise', metricStats(hs, 'A', 'exercise', r), { avg: 130 / 3, days: 3, missing: 2, change: null });
     check('stand days', metricStats(hs, 'A', 'stand', r).days, 3);
     check('steps', metricStats(hs, 'A', 'steps', r).days, 5);
     // the record is untouched: the stored rows still hold the zeros
@@ -282,8 +279,8 @@ describe('nothing cut off', () => {
     const r = week();
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: (66 + 7000 + 4963 + 12268 + 3404) / 5, days: 5, missing: 0 });
     // A's first three days and B's 10/28 are Move 0, Exercise 0, Stand 0: the Watch off, so no Move / Stand that day
-    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 2, days: 2, missing: 3, met: 1 });
-    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 4, days: 4, missing: 1, met: 0 });
+    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 2, days: 2, missing: 3 });
+    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 4, days: 4, missing: 1 });
     expect(metricStats(hs, 'B', 'stand', r)).toMatchObject({ avg: (22 + 0 + 4 + 36) / 4, days: 4 });
     expect(bucketValues(hs, 'A', 'steps', r).slice(1, 6).map((b) => b.v)).toEqual([66, 7000, 4963, 12268, 3404]);
     expect(bucketValues(hs, 'B', 'move', r).slice(1, 6).map((b) => b.v)).toEqual([89, 3, null, 26, 141]);
@@ -296,7 +293,7 @@ describe('nothing cut off', () => {
     const now = Date.parse(jst('2026-11-01', '12:00'));
     const hs = series(rows(metrics), now);
     const s = metricStats(hs, 'A', 'steps', rangeFor('month', '2026-11-01')); // 10-03..10-31 finished
-    expect(s).toMatchObject({ days: 29, missing: 0, met: 25, avg: (25 * 9000 + 168 + 140 + 100 + 66) / 29 });
+    expect(s).toMatchObject({ days: 29, missing: 0, avg: (25 * 9000 + 168 + 140 + 100 + 66) / 29 });
   });
 });
 
@@ -314,8 +311,8 @@ describe('one person at a time', () => {
     expect(b.slice(0, 6).map((x) => x.v)).toEqual([300, 300, 300, 300, 300, 300]);
     expect(a.map((x) => x.goal).every((g) => g === a[0].goal)).toBe(true);
     expect(b.map((x) => x.goal)).toEqual([400, 400, 400, 250, 250, 250, 250]); // 250 from 10-28;
-    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: 300, met: 3, days: 6 });
-    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 6 });
+    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: 300, days: 6 });
+    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000 });
   });
 
   it('the steps goal line and goal days follow each day’s steps goal (8,000 until set)', () => {
@@ -325,7 +322,7 @@ describe('one person at a time', () => {
     const r = rangeFor('week', TODAY);
     expect(bucketValues(hs, 'A', 'steps', r).map((x) => x.goal)).toEqual([8000, 8000, 12000, 12000, 12000, 12000, 12000]); // 12,000 from 10-27 on
     expect(bucketValues(hs, 'B', 'steps', r).map((x) => x.goal)).toEqual(Array(7).fill(8000));
-    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, met: 2, days: 6 }); // 10-25 and 10-26 (today isn't counted)
+    expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: 10000, days: 6 }); // 10-25 and 10-26 (today isn't counted)
   });
 });
 

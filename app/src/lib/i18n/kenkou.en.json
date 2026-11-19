@@ -16,7 +16,6 @@
   "health.unit.week": "Weekly, daily average",
   "health.unit.month": "Monthly, daily average",
   "health.avgHead": "Daily average",
-  "health.met": "Met {n}/{d} days",
   "health.noData": "No data",
   "health.todaySoFar": "today, so far",
   "health.tipDays": "goal {n}/{d} days",

@@ -56,12 +56,12 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2〜10/31'); // 1か月 = the 30 days to today
   const move = sheet(page).locator('.mc[data-metric=move]');
-  // one stat line (the user 2026-11-19: charts first): the average, its caption, the goal days, the change as a chip; no key
+  // one stat line (the user 2026-11-19: charts first): the average, its caption, the change as a chip; no key
   await expect(move.locator('.sl')).toHaveCount(1);
   await expect(move.locator('.sl .cap')).toHaveText('1日平均');
   await expect(move.locator('.sl .v')).toHaveText(/^[\d,]+ kcal$/);
   await expect(move.locator('[data-change]')).toHaveText(/^前より [+−±]\d+%$/);
-  await expect(move.locator('[data-met]')).toHaveText(/^達成 \d+\/\d+日$/);
+  await expect(move.locator('[data-met]')).toHaveCount(0); // no met-days count: the bars show it
   await expect(move.locator('.key')).toHaveCount(0);
   const line = (await move.locator('.sl').boundingBox())!;
   expect(line.height).toBeLessThan(32); // one line at 393

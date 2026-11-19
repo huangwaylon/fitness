@@ -310,8 +310,6 @@ interface MetricStats {
   days: number;
   /** Finished days in the period with no row for this metric, since the first activity record. */
   missing: number;
-  /** Recorded days the goal was met. */
-  met: number;
   /** Average vs the previous period's: (avg − prev) / prev; null without both. */
   change: number | null;
 }
@@ -324,7 +322,7 @@ export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): Seri
   const lo = Math.max(0, idx(ds, from));
   const hi = Math.min(idx(ds, to), idx(ds, ds.to) - 1); // finished days only
   const counted = idx(ds, ds.first);
-  let sum = 0, days = 0, met = 0, missing = 0;
+  let sum = 0, days = 0, missing = 0;
   for (let i = lo; i <= hi; i++) {
     const v = vals[i];
     if (v === null || v === undefined) {
@@ -333,9 +331,8 @@ export function seriesStats(ds: DaySeries, from: LocalDate, to: LocalDate): Seri
     }
     sum += v;
     days++;
-    if (ds.met?.(v, i)) met++;
   }
-  return { avg: days ? sum / days : null, days, met, missing };
+  return { avg: days ? sum / days : null, days, missing };
 }
 
 /** A period's numbers of a series, with the change of its average against the previous period's. */

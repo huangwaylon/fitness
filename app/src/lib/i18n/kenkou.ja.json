@@ -16,7 +16,6 @@
   "health.unit.week": "1週ごとの1日平均",
   "health.unit.month": "1か月ごとの1日平均",
   "health.avgHead": "1日平均",
-  "health.met": "達成 {n}/{d}日",
   "health.noData": "記録なし",
   "health.todaySoFar": "今日（途中）",
   "health.tipDays": "目標 {n}/{d}日",

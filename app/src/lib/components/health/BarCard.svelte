@@ -2,7 +2,7 @@
   // A daily series' card (けんこう's かつどう, ごはん's グラフ), for the chosen person, in ChartCard: one stat line (the
   // user 2026-11-19: charts first, the stats a small summary): the daily average over the finished days with a record
   // (Apple Health's values, or what was logged, as is) with its caption (ごはん's: its days, a dashed swatch as the
-  // chart's average line), the goal met n/N days (the goal's way), and activity's change against the previous period
+  // chart's average line), and activity's change against the previous period
   // as a chip at the right; then the bar chart (in the person's colour; ごはん's with the flat average line). No key:
   // the goal chip carries the goal line's swatch, the caption the average's, a bar's tap its numbers.
   import type { LocalDate, Who } from '#lib/types.ts';
@@ -56,7 +56,6 @@
   <p class="sl">
     <b class="v" data-intake-avg={food ? '' : undefined}>{s.avg === null ? '–' : fmt(s.avg)}</b>
     <span class="cap" data-intake-basis={food ? '' : undefined}>{#if food}<i class="k-avg" aria-hidden="true"></i>{/if}{food && s.days ? t('food.chart.avgHead', { n: s.days }) : t('health.avgHead')}</span>
-    {#if s.days && goal !== null}<span data-met>{t('health.met', { n: s.met, d: s.days })}</span>{/if}
     {#if !food && s.change !== null}<span class="dc" data-change>{t('health.vsPrev', { v: pctText(s.change) })}</span>{/if}
   </p>
 
