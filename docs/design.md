@@ -157,7 +157,9 @@ person at a time, computed on read; its code and strings load with the first ope
 - **Chart** (`BarChart`, SVG; its header): a bar per day, week or month in the person's colour, solid when the goal
   was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; 1週 shows
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
-- **体** (`BodyCard`): 「68.9 kg 11/4 (BMI's category) [6日で +0.2 kg]」 (last − first), dots, notes. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
+- **体** (`BodyCard`): 「68.9 kg (BMI's category) [6日で +0.2 kg]」 (last − first; the day only when it isn't the
+  period's last), dots on an axis from grid line to grid line (a goal far off it: the chip only). Data only: no coaching,
+  forecast or chart words. 計算 ⓘ / 推定 ⓘ unfold how on a tap. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's quiet chip opens a tray under the header (any note, −/＋, the range, clear where clearable, キャンセル, 決定),
   one open at a time; either person sets either's; ごはん's too. 活動's goals hold from today on; the ベル keep Exercise and Stand at 60 / 120 ([Goals](#goals)), and the editor says so. The guest's chips are read-only.
@@ -344,15 +346,12 @@ Each person's wallet runs from the economy's first day: a day's ベル count in 
 
 ## Weight
 
-`model/weight.ts`, for けんこう's goal month; never earns (`deps.test.ts`). Plain arithmetic, no
-smoothing: over the visible period, the first week's average weigh-in → the last week's when the weigh-ins span 14
-days or more, else the first weigh-in → the last; under two, none (–). Per week: that change over the days between the
-two weeks' middles, shown from 7 days apart. Goal month: from the last week's average at that pace, only when it heads
-to the goal at ≥ 0.05 kg a week within 156 weeks (else 「焦らず、ゆっくりいきましょう」; at the goal 「目標に届いています」).
+`model/weight.ts`: a day's weight is its latest row; never earns (`deps.test.ts`). けんこう shows the period's last
+weigh-in and the change since its first (`model/health.ts` dotStats), no smoothing, no forecast or coaching line.
 
 The body metrics (`body_fat_pct` %, `bmi`, `lean_kg` kg; `State.body`) are read the same way: a day's latest row, one
 decimal, within their bounds (body fat 2–70 %, BMI 10–60, lean 10–150 kg). Each has a goal (`goalBodyFat`, `goalBmi`,
-`goalLean`; the registry, `contract/goals.ts`), its goal month worked out as weight's, the goal's way. They never earn,
+`goalLean`; the registry, `contract/goals.ts`), drawn the goal's way. They never earn,
 and the cache keeps only their newest row per day once the week has locked, like weight.
 
 ## Island scene

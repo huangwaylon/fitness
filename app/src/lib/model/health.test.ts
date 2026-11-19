@@ -147,7 +147,7 @@ describe('edge cases', () => {
     expect(metricStats(hs, 'A', 'steps', r)).toEqual({ avg: null, days: 0, missing: 0, change: null });
     expect(bucketValues(hs, 'B', 'move', r).every((b) => b.v === null)).toBe(true);
     expect(canShift(r, hs.from, TODAY).back).toBe(false);
-    expect(dotStats(hs, 'A', 'weight', r)).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
+    expect(dotStats(hs, 'A', 'weight', r)).toEqual({ n: 0, latest: null, since: null });
   });
 
   it('one person only: the other has no record anywhere', () => {
@@ -157,7 +157,7 @@ describe('edge cases', () => {
     expect(metricStats(hs, 'B', 'steps', r)).toMatchObject({ avg: null, days: 0, missing: 1 });
   });
 
-  it('sparse weight: buckets average their weigh-ins; the change is plain, first weigh-in to last, inside the period', () => {
+  it('sparse weight: buckets average their weigh-ins; the change is the first weigh-in to the last, inside the period', () => {
     const hs = series(rows([
       m('A', '2026-09-01', 'weight', 70, '08:00'),
       m('A', '2026-10-20', 'weight', 69, '08:00'),
@@ -166,12 +166,8 @@ describe('edge cases', () => {
     const r = rangeFor('month', TODAY); // 10-02..10-31
     const s = dotStats(hs, 'A', 'weight', r);
     expect(s.n).toBe(2);
-    expect(s.avg).toBe(68.5);
-    // 09-01 is outside the period and doesn't count; two days apart: no weekly pace
-    expect(s.change).toMatchObject({ basis: 'ends', from: 69, to: 68, change: -1, perWeek: null });
-    // the card's row: the last weigh-in and InBody's 「2日前より」 (the last − the first, the days between)
+    // 09-01 is outside the period and doesn't count. The card's row: the last weigh-in and InBody's 「2日前より」 (the last − the first, the days between)
     expect([s.latest, s.since]).toEqual([{ date: '2026-10-22', kg: 68 }, { d: -1, days: 2 }]);
-    expect(s.projection).toBeNull(); // no goal
     // weight alone isn't a missing activity day
     expect(hs.activityFrom).toBe(TODAY);
     expect(metricStats(hs, 'A', 'steps', r).missing).toBe(0);
@@ -179,28 +175,9 @@ describe('edge cases', () => {
     expect(b[0]).toEqual({ v: null, n: 0 });
     expect(b.find((x) => x.v === 69)).toBeTruthy();
     // a period with no weigh-in says nothing; one weigh-in has no change
-    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-20'))).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
-    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-03'))).toMatchObject({ n: 1, avg: 70, since: null, change: null });
+    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-20'))).toEqual({ n: 0, latest: null, since: null });
+    expect(dotStats(hs, 'A', 'weight', rangeFor('week', '2026-09-03'))).toMatchObject({ n: 1, since: null });
     expect(dotStats(hs, 'B', 'weight', r).n).toBe(0);
-  });
-
-  it('weight over a month: the first week’s average → the last week’s, per week, and the goal month at that pace', () => {
-    // 10-02..10-31: 72.0 then 0.1 kg lower every day
-    const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'weight', Math.round((72 - 0.1 * i) * 10) / 10, '08:00'));
-    const goal = (g: number) => [[jst('2026-10-01', '08:00'), 'A', `g${g}`, 'pref', JSON.stringify({ key: 'goalWeight', value: g })] as EventRow];
-    const hs = series(rows(metrics, goal(66)));
-    const s = dotStats(hs, 'A', 'weight', rangeFor('month', TODAY));
-    // 10-02..10-08 average 71.7 (mean day 10-05); 10-25..10-31 average 69.4 (mean day 10-28): 23 days apart
-    expect(s.change).toMatchObject({ basis: 'weeks', from: 71.7, to: 69.4, at: '2026-10-28', change: -2.3, perWeek: -0.7 });
-    // (66 − 69.4) / −0.7 = 4.86 weeks → 35 days after 10-28
-    expect(s.projection).toEqual({ kind: 'date', date: '2026-12-02' });
-    // the 1週 period: first weigh-in → last, too short for a pace or a date
-    const w = dotStats(hs, 'A', 'weight', rangeFor('week', TODAY));
-    expect(w.change).toMatchObject({ basis: 'ends', from: 69.7, to: 69.1, change: -0.6, perWeek: null });
-    expect(w.projection).toEqual({ kind: 'none' });
-    // moving away from the goal: none; already past it: reached
-    expect(dotStats(series(rows(metrics, goal(75))), 'A', 'weight', rangeFor('month', TODAY)).projection).toEqual({ kind: 'none' });
-    expect(dotStats(series(rows(metrics, goal(70))), 'A', 'weight', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
   });
 
   it('is memoised per State and day', () => {
@@ -365,7 +342,7 @@ describe('筋肉量 and 骨格筋量 estimated from the lean mass, 基礎代謝�
     const hs = series(rows([m('B', '2026-10-20', 'lean_kg', 39.2, '08:00'), m('B', '2026-10-30', 'lean_kg', 37.3, '08:00')], [goal]));
     const d = hs.people.B.dots.bmr;
     expect([d[0], d[1], d[10]]).toEqual([1217, null, 1176]);
-    expect(dotStats(hs, 'B', 'bmr', rangeFor('month', TODAY))).toMatchObject({ latest: { date: '2026-10-30', kg: 1176 }, since: { d: -41, days: 10 }, projection: null });
+    expect(dotStats(hs, 'B', 'bmr', rangeFor('month', TODAY))).toMatchObject({ latest: { date: '2026-10-30', kg: 1176 }, since: { d: -41, days: 10 } });
     expect([hs.people.A.bodyGoals.muscle_kg, hs.people.A.bodyGoals.bmr]).toEqual([40, null]);
   });
 });
@@ -392,46 +369,36 @@ describe('the body metrics (body fat %, BMI, lean body mass)', () => {
     expect(hs.people.B.dots.lean_kg.slice(4, 6)).toEqual([41.2, null]);
     expect(hs.people.A.dots.lean_kg.every((v) => v === null)).toBe(true);
     const r = rangeFor('month', TODAY);
-    expect(dotStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, avg: 41.2, latest: { date: '2026-10-24', kg: 41.2 }, since: null, change: null, projection: null });
-    expect(dotStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, avg: null, latest: null, since: null, change: null, projection: null });
+    expect(dotStats(hs, 'B', 'lean_kg', r)).toEqual({ n: 1, latest: { date: '2026-10-24', kg: 41.2 }, since: null });
+    expect(dotStats(hs, 'B', 'bmi', r)).toEqual({ n: 0, latest: null, since: null });
   });
 
-  it('the period’s average and plain change (first week → last week), weekly buckets average their measurements', () => {
+  it('the period’s last measurement and the change since its first; weekly buckets average their measurements', () => {
     // 10-02..10-31: 25.0 % then 0.05 lower every day
     const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'body_fat_pct', Math.round((25 - 0.05 * i) * 10) / 10, '08:00'));
     const hs = series(rows(metrics));
     const s = dotStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY));
     expect(s.n).toBe(30);
-    expect(s.change).toMatchObject({ basis: 'weeks', change: -1.1, perWeek: -0.35 });
-    const w = dotStats(hs, 'A', 'body_fat_pct', rangeFor('week', TODAY));
-    expect(w.change).toMatchObject({ basis: 'ends' });
+    expect([s.latest, s.since]).toEqual([{ date: '2026-10-31', kg: 23.6 }, { d: -1.4, days: 29 }]);
+    expect(dotStats(hs, 'A', 'body_fat_pct', rangeFor('week', TODAY)).since).toEqual({ d: -0.3, days: 6 });
     const q = dotSeries(hs, 'A', 'body_fat_pct', rangeFor('quarter', TODAY));
     expect(q.at(-1)).toEqual({ v: 23.7, n: 7 }); // 10-25..10-31
     expect(q[0]).toEqual({ v: null, n: 0 });
   });
 
-  it('each body metric has its own goal (per person, shown only): the month at the pace, the goal’s way', () => {
+  it('each body metric has its own goal (per person, shown only)', () => {
     const metrics = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'body_fat_pct', Math.round((25 - 0.05 * i) * 10) / 10, '08:00'));
     const goal = (key: string, g: number | null, who: 'A' | 'B' = 'A') => [jst('2026-10-01', '08:00'), who, `${key}${g}${who}`, 'pref', JSON.stringify({ key, value: g })] as EventRow;
     const hs = series(rows(metrics, [goal('goalBodyFat', 22), goal('goalBodyFat', 30, 'B')]));
     expect([hs.people.A.bodyGoals.body_fat_pct, hs.people.B.bodyGoals.body_fat_pct]).toEqual([22, 30]);
     expect(hs.people.A.bodyGoals).toEqual({ weight: null, body_fat_pct: 22, bmi: null, lean_kg: null, muscle_kg: null, smm_kg: null, bmr: null });
-    // the last week's average 23.7 at about −0.35 a week: 5 weeks on (35 days after 10-28)
-    expect(dotStats(hs, 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'date', date: '2026-12-02' });
-    expect(dotStats(hs, 'A', 'bmi', rangeFor('month', TODAY)).projection).toBeNull();
-    // past it: reached; no goal (or one cleared): none
-    expect(dotStats(series(rows(metrics, [goal('goalBodyFat', 24)])), 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
+    // a goal cleared: none
     const cleared = series(rows(metrics, [goal('goalBodyFat', 22), [jst('2026-10-02', '08:00'), 'A', 'gx', 'pref', JSON.stringify({ key: 'goalBodyFat', value: null })] as EventRow]));
     expect(cleared.people.A.bodyGoals.body_fat_pct).toBeNull();
-    expect(dotStats(cleared, 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toBeNull();
-    // under a ceiling is reached, whichever side the period started on (body fat at most: 23.7 under 25)
-    expect(dotStats(series(rows(metrics, [goal('goalBodyFat', 25)])), 'A', 'body_fat_pct', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
-    // a floor (lean mass at least) heading away from it: no date; BMI and lean mass now have goals too
+    // BMI and lean mass have goals too
     const lean = Array.from({ length: 30 }, (_, i) => m('A', addDays('2026-10-02', i), 'lean_kg', Math.round((55 - 0.05 * i) * 10) / 10, '08:00'));
     const hl = series(rows(lean, [goal('goalLean', 56), goal('goalBmi', 22)]));
     expect([hl.people.A.bodyGoals.lean_kg, hl.people.A.bodyGoals.bmi]).toEqual([56, 22]);
-    expect(dotStats(hl, 'A', 'lean_kg', rangeFor('month', TODAY)).projection).toEqual({ kind: 'none' });
-    expect(dotStats(series(rows(lean, [goal('goalLean', 50)])), 'A', 'lean_kg', rangeFor('month', TODAY)).projection).toEqual({ kind: 'reached' });
     // the weight goal is another key
     expect(series(rows(metrics, [goal('goalWeight', 60)])).people.A.bodyGoals.body_fat_pct).toBeNull();
   });

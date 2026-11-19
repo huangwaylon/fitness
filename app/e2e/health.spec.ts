@@ -142,7 +142,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
   await expect(chart.locator('.tip .trow')).toHaveText(/^\s*記録なし\s*$/);
 });
 
-test('体重: one stat line, the latest (its day) and a chip with InBody’s 「N日で」 change (the last − the first weigh-in of the period); no boxes, no legend', async ({ page }) => {
+test('体重: one stat line, the latest (its day, unless the period’s last) and a chip with InBody’s 「N日で」 change (the last − the first weigh-in of the period); no boxes, no legend', async ({ page }) => {
   await openHealth(page);
   await sheet(page).locator('[data-group=body]').click();
   const card = sheet(page).locator('.bc[data-metric=weight]');
@@ -162,6 +162,15 @@ test('体重: one stat line, the latest (its day) and a chip with InBody’s 「
   // the goal is said once, on its chip: no boxes, legend, count or basis lines
   await expect(card.locator('.stats, .key, .k-goal, .basis')).toHaveCount(0);
   await expect(card).not.toContainText('回の記録');
+  // data only: no coaching or forecast line, no goal words in the chart (the demo's 66.0 kg goal is off the axis)
+  await expect(card.locator('.foot, [data-goal-line]')).toHaveCount(0);
+  expect((await card.textContent())!.split('目標')).toHaveLength(2); // the chip's, once
+  // 10/31 (土) has no weigh-in: its day said; a period ending on a weigh-in: the axis's last label says it, the line doesn't
+  await expect(card.locator('[data-stat=date]')).toHaveText('10/30');
+  await sheet(page).locator('.health .nav button').first().click(); // ‹ 10/18〜10/24
+  await expect(range(page)).toHaveText('10/18〜10/24');
+  const last = await card.locator('[data-stat=date]').count();
+  expect(last).toBe(0);
 });
 
 test('the body cards: each its latest and its change in its unit, its own chart, per person; a tap shows a day', async ({ page }) => {
@@ -350,10 +359,10 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
       await pickPeriod(page, per);
       await sheet(page).locator(`[data-group=${g}]`).click();
       const m = await page.evaluate(() => {
-        // (a Segmented pill: 36 drawn, its ::after the 44 hit: ごはん's きろく · グラフ's size)
+        // (a Segmented pill: 36 drawn, its ::after the 44 hit: ごはん's きろく · グラフ's size; 体's 推定 ⓘ the same way)
         const hit = (b: Element) => {
           const r = b.getBoundingClientRect();
-          if (!b.matches('.seg .sb')) return r;
+          if (!b.matches('.seg .sb, .est')) return r;
           const a = getComputedStyle(b, '::after');
           return { width: r.width - 2 * parseFloat(a.left), height: r.height - 2 * parseFloat(a.top) };
         };

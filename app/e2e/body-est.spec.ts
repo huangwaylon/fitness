@@ -25,12 +25,20 @@ test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so;
   for (const [m, ratio] of [['muscle_kg', 0.94], ['smm_kg', 0.57]] as const) {
     const card = sheet(page).locator(`.bc[data-metric=${m}]`);
     await card.scrollIntoViewIfNeeded();
-    // ウェイ has no InBody sheet: the man's ratio, a dot for every lean mass
+    // ウェイ has no InBody sheet: the man's ratio, a dot for every lean mass. Said by a quiet 「推定 ⓘ」 in the stat
+    // line, its how under the chart on a tap (again: folded)
+    await expect(card.locator('.note')).toHaveCount(0);
+    const est = card.locator('button.est');
+    await expect(est).toHaveText('推定 ⓘ');
+    await press(est, browserName);
+    await expect(est).toHaveAttribute('aria-expanded', 'true');
     await expect(card.locator('.note')).toHaveText('除脂肪体重から推定（平均的な比率）');
     await expect(card.locator('[data-stat=latest]')).toHaveText(`${(Math.round(lean * ratio * 10) / 10).toFixed(1)} kg`);
     await expect(card.locator('circle.dot.pA')).toHaveCount(leanDots);
     expect((await card.locator('.sl').boundingBox())!.height).toBeLessThan(32); // the one stat line every card has
     await expect(card.locator('.note')).toHaveClass(/foot/); // a small footnote under the chart
+    await press(est, browserName);
+    await expect(card.locator('.note')).toHaveCount(0);
   }
 });
 
@@ -40,11 +48,14 @@ test('うめ’s estimates fitted to her InBody sheet; 基礎代謝量 from 除�
   await sheet(page).locator('.health select[data-pick=period]').selectOption('month');
   const smm = sheet(page).locator('.bc[data-metric=smm_kg][data-person=B]');
   await smm.scrollIntoViewIfNeeded();
+  await press(smm.locator('button.est'), browserName);
   await expect(smm.locator('.note')).toHaveText('除脂肪体重から推定（InBodyの記録で補正）');
   expect(await smm.locator('circle.dot.pB').count()).toBeGreaterThan(3);
   await expect(smm.locator('[data-stat=since]')).toHaveText(/^[+−±]\d+\.\d kg$/);
   const bmr = sheet(page).locator('.bc[data-metric=bmr][data-person=B]');
   await bmr.scrollIntoViewIfNeeded();
+  await expect(bmr.locator('button.est')).toHaveText('計算 ⓘ');
+  await press(bmr.locator('button.est'), browserName);
   await expect(bmr.locator('.note')).toHaveText('除脂肪体重から計算（InBodyと同じ式）');
   await expect(bmr.locator('button[data-goal]')).toHaveCount(0);
   // 370 + 21.6 × the latest lean mass, whole kcal

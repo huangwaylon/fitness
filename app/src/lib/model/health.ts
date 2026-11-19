@@ -14,11 +14,9 @@
 // - No record: a day with no row for that metric (nothing received: before the first sync, a day the Shortcut didn't
 //   cover), or a watch metric on a no-watch day. It has no bar (a short faint stub at the axis instead), stays out of
 //   the stats and is counted as 記録なし.
-// - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
-//   average → the last week's, else the first weigh-in → the last), and from it the goal month.
-// - Body fat %, BMI, lean body mass (the body metrics): like weight, a day's latest row, sparse; the period's
-//   measurements, their average and the same plain change. Each からだ card has its own optional goal (`goalWeight`,
-//   `goalBodyFat`, `goalBmi`, `goalLean`), shown and projected the goal's way (contract/goals.ts GOALS dir).
+// - Weight (model/weight.ts weighIns) and the body metrics (body fat %, BMI, lean body mass): a day's latest row,
+//   sparse; over a period its last measurement and the change since the first (dotStats). Each からだ card has its own
+//   optional goal (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`), drawn the goal's way (contract/goals.ts GOALS).
 // - Today is still running (a partial day): it is drawn (an outlined bar) but stays out of the stats.
 // - A goal is met the goal's way (contract/goals.ts goalMet; every activity goal at least: whole Stand minutes, as the
 //   stamp card) against that day's goal (dailyGoalOn: steps 8,000, Move the member's, Exercise 60, Stand 120 until
@@ -32,7 +30,7 @@ import type { ActivityMetric, BodyMetric } from '#lib/contract/api.ts';
 import { dailyGoalOn, latestAt, type State } from './state.ts';
 import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
-import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
+import { weighIns, type WeighIn } from './weight.ts';
 import { estimateKg, estimateRatio, inbodyBmr, inbodyOf, BODY_EST, type BodyEstMetric, type InBody } from '#lib/contract/bodyEst.ts';
 import { isPersonId } from '#lib/contract/api.ts';
 import { rowAt } from './snapshot.ts';
@@ -366,7 +364,7 @@ function dotBuckets(hs: HealthSeries, vals: (number | null)[], r: Range): DotBuc
 /** A からだ card's buckets: the average of each one's measurements. */
 export const dotSeries = (hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotBucket[] => dotBuckets(hs, hs.people[p].dots[id], r);
 
-/** A sparse series' measurements in the period (today's included), ascending; `kg` holds the value (plainChange's shape). */
+/** A sparse series' measurements in the period (today's included), ascending; `kg` holds the value. */
 function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[] {
   const lo = Math.max(0, idx(hs, r.from));
   const hi = Math.min(idx(hs, r.to), idx(hs, hs.to));
@@ -377,31 +375,20 @@ function dotDays(hs: HealthSeries, vals: (number | null)[], r: Range): WeighIn[]
   }
   return days;
 }
-const avg1 = (days: WeighIn[]): number | null => (days.length ? Math.round((days.reduce((a, d) => a + d.kg, 0) / days.length) * 10) / 10 : null);
 
 interface DotStats {
   /** Measurements in the period. */
   n: number;
-  /** Their average. */
-  avg: number | null;
   /** The period's last measurement (null: none). */
   latest: WeighIn | null;
   /** Since its first (InBody's 「17日前より」): the last measurement − the first, and the days between; null under two. */
   since: { d: number; days: number } | null;
-  /** The plain change over the period (null under two measurements). */
-  change: PlainChange | null;
-  /** With a goal and a change: reached (the goal's way: under a ceiling, over a floor, near a value), the month at the
-   *  period's pace, or none. */
-  projection: WeightProjection | null;
 }
 
-/** A からだ card's numbers over a period: weight's or a body metric's, the same rules (model/weight.ts plainChange). */
+/** A からだ card's numbers over a period: weight's or a body metric's, the same rules. */
 export function dotStats(hs: HealthSeries, p: PersonId, id: BodyId, r: Range): DotStats {
   const days = dotDays(hs, hs.people[p].dots[id], r);
-  const change = plainChange(days);
-  const goal = hs.people[p].bodyGoals[id];
   const first = days[0], latest = days.at(-1) ?? null;
   const since = latest && days.length > 1 ? { d: Math.round((latest.kg - first.kg) * 10) / 10, days: daysBetween(first.date, latest.date) } : null;
-  const projection = goal === null || !change || !hasBodyGoal(id) ? null : project(change, goal, GOALS[id].dir, GOALS[id].band);
-  return { n: days.length, avg: avg1(days), latest, since, change, projection };
+  return { n: days.length, latest, since };
 }

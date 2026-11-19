@@ -12,10 +12,8 @@
 <script lang="ts">
   // The frame every chart in けんこう and ごはん's グラフ is drawn in (BarChart, DotChart): the measured SVG, the
   // horizontal grid with its numbers, the dates under it (days: their weekdays under those, 土 sky and 日 coral, today's in
-  // the text colour), the goal (its solid line on a card underlay, stepped where it changed; its words
-  // are the card's chip and legend, never over the bars, but when it is far off the axis: 「目標 66.0 kg 前後 ↑」 at the
-  // top or bottom edge), the page's
-  // slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
+  // the text colour), the goal (its solid line on a card underlay, stepped where it changed; its words the card's chip,
+  // never in the plot), the page's slide and drag, the picked bucket's band and its callout (inside the plot's top, on the half away from it, so the
   // bucket stays in sight). A tap picks the bucket under it (again: closes) and scrolls the chart fully into view; a
   // horizontal drag turns the page (gestures.ts). The caller draws its marks (`plot`) and the callout's lines (`tip`).
   import { untrack, type Snippet } from 'svelte';
@@ -36,9 +34,8 @@
     label: string;
     /** The y grid: each line's value, height and number. */
     ticks: readonly { v: number; y: number; text: string }[];
-    /** The goal: its height per bucket (stepped where it changed; null: none there, no line while `off`), its words
-     *  (shown only while it is far off past an edge, `off`), and its colour. */
-    goal: { ys: readonly (number | null)[]; text: string; off: 'above' | 'below' | null; tone: 'soft' | 'yuzu' } | null;
+    /** The goal: its height per bucket (stepped where it changed; null: none there) and its colour. */
+    goal: { ys: readonly (number | null)[]; tone: 'soft' | 'yuzu' } | null;
     selected: number | null;
     onselect: (i: number | null) => void;
     onswipe: (dir: -1 | 1) => void;
@@ -77,7 +74,7 @@
   const base = $derived(H - pad.b);
   /** The goal's line: flat across each bucket, a step where it changed. */
   const goalD = $derived.by(() => {
-    if (!goal || goal.off) return '';
+    if (!goal) return '';
     let d = '';
     goal.ys.forEach((yy, i) => {
       if (yy === null) return;
@@ -95,8 +92,6 @@
   }
   const sel = $derived(selected !== null && selected >= 0 && selected < n ? selected : null);
   const tipLeftSide = $derived(sel !== null && geo.cx(sel) > pad.l + plotW / 2);
-  /** A goal far off the axis: its words at the edge it is off past (with ↑ / ↓), kept inside the plot. */
-  const goalY = $derived(goal?.off === 'below' ? base - 5 : pad.t + 8);
 </script>
 
 <div class="chart" bind:this={box} bind:clientWidth={() => w, (v) => v > 0 && (w = v)} style:height="{H}px" use:chartGestures={{ tap, swipe: onswipe, drag: (d) => (dx = d) }}>
@@ -120,9 +115,6 @@
           </g>
         {/key}
       </g>
-      {#if goal?.off}
-        <text class="gtext" data-goal-line x={w - pad.r - 2} y={goalY} text-anchor="end">{goal.text}{goal.off === 'below' ? ' ↓' : ' ↑'}</text>
-      {/if}
       {#each xl as l (l.i)}
         {@const lx = Math.min(Math.max(geo.cx(l.i), pad.l + 14), w - pad.r - 14)}
         {#if l.text}<text class="ax" data-x-date class:now={l.now} x={lx} y={wdRow ? H - 21 : H - 6} text-anchor="middle">{l.text}</text>{/if}
@@ -150,7 +142,6 @@
   /* the weekend as GymCalendar's, on the labels only (never the bars); over today's text colour */
   .wd.sat { fill: var(--sky-text); }
   .wd.sun { fill: var(--coral-text); }
-  .gtext { fill: var(--text-soft); font: 700 var(--fs-xs)/1 var(--font-num); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
   .plot.turned { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
   .plot:not(.dragging) { transition: transform 200ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: .2; translate: var(--slide) 0; } to { opacity: 1; translate: 0 0; } }

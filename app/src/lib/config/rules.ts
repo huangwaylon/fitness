@@ -55,10 +55,3 @@ export const CUTOFFS = {
   provisional: { hour: 19, minute: 30 },
   final: { hour: 4, minute: 0 }
 } as const;
-
-/**
- * Body weight (けんこう). Shown only: weight never earns ベル and nothing in the economy reads it.
- * - The goal month extends the period's plain weekly pace (model/weight.ts); none under `minPacePerWeek` kg a week or
- *   further out than `projectMaxWeeks`.
- */
-export const WEIGHT = { minPacePerWeek: 0.05, projectMaxWeeks: 156 } as const;

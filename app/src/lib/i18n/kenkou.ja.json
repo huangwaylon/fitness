@@ -31,6 +31,8 @@
   "health.body.bmr": "基礎代謝量",
   "health.body.since": "{n}日で",
   "health.body.chartLabel": "{name}の{what} {range}。最新 {v}。{goal}",
+  "health.bmr.tag": "計算",
+  "health.est.tag": "推定",
   "health.bmr.note": "除脂肪体重から計算（InBodyと同じ式）",
   "health.est.calibrated": "除脂肪体重から推定（InBodyの記録で補正）",
   "health.est.default": "除脂肪体重から推定（平均的な比率）",

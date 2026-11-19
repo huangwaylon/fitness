@@ -24,7 +24,7 @@
     first: LocalDate;
     today: LocalDate;
     label: string;
-    /** The goal's words for its line (goals.ts goalLabel), or null: none. */
+    /** Non-null: draw the goal line (its words, goals.ts goalLabel, are the chip's, not the plot's); null: none. */
     goalText: string | null;
     selected: number | null;
     onselect: (i: number | null) => void;
@@ -64,7 +64,7 @@
   const goal = $derived.by(() => {
     if (goalText === null) return null;
     const ys = vals.map((b) => (b.goal === null ? null : y(b.goal)));
-    return ys.every((v) => v === null) ? null : { ys, text: goalText, off: null, tone: 'soft' as const };
+    return ys.every((v) => v === null) ? null : { ys, tone: 'soft' as const };
   });
 
   const missing = (i: number) => {

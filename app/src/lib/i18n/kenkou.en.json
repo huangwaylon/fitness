@@ -31,6 +31,8 @@
   "health.body.bmr": "Basal metabolic rate",
   "health.body.since": "In {n} days",
   "health.body.chartLabel": "{name}'s {what}, {range}. Latest {v}. {goal}",
+  "health.bmr.tag": "Calculated",
+  "health.est.tag": "Estimate",
   "health.bmr.note": "Worked out from lean body mass (InBody's formula)",
   "health.est.calibrated": "Estimated from lean body mass (fitted to InBody readings)",
   "health.est.default": "Estimated from lean body mass (typical ratio)",

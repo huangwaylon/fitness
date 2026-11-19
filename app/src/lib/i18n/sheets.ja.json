@@ -17,7 +17,6 @@
   "goal.change": "{what}を変更（現在 {g}）",
   "goal.less": "減らす",
   "goal.more": "増やす",
-  "goal.title": "目標",
   "goal.weight": "体重",
   "goal.notSet": "未設定",
   "goal.head.steps": "歩数の目標（1日）",

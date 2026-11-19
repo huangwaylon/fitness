@@ -1,4 +1,4 @@
-// body weight (a day's value, the plain change over a period, its weekly pace, the goal month), and weight never earns.
+// body weight (a day's value) and weight never earns.
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import type { PersonId } from '#lib/types.ts';
@@ -8,7 +8,7 @@ import { buildWeekView } from './week.ts';
 import { bellsLedger } from './bells.ts';
 import { dayDetail } from './history.ts';
 import { compactRows } from './compact.ts';
-import { plainChange, project, weighIns, type PlainChange } from './weight.ts';
+import { weighIns } from './weight.ts';
 
 const jst = (date: string, hm: string) => new Date(`${date}T${hm}:00+09:00`).toISOString();
 const ms = (date: string, hm: string) => Date.parse(jst(date, hm));
@@ -34,68 +34,6 @@ describe('a day’s weight: the latest row, not the max', () => {
     }));
     expect(weighIns(s, 'A', ms(D, '23:00'))).toEqual([]);
     expect(weighIns(s, 'B', ms(D, '23:00'))).toEqual([{ date: D, kg: 55.2 }]);
-  });
-
-});
-
-describe('plainChange: the first week’s average → the last week’s, else the first weigh-in → the last', () => {
-  const D0 = '2026-08-03';
-  /** One weigh-in on each of these days after D0. */
-  const at = (pairs: [number, number][]) => pairs.map(([d, kg]) => ({ date: addDays(D0, d), kg }));
-
-  it('under two weigh-ins: nothing to compare', () => {
-    expect(plainChange([])).toBeNull();
-    expect(plainChange(at([[0, 70]]))).toBeNull();
-  });
-
-  it('under two weeks apart: first → last; a weekly pace only from 7 days apart', () => {
-    expect(plainChange(at([[0, 70], [3, 70.4], [5, 69]]))).toEqual({ basis: 'ends', from: 70, to: 69, at: addDays(D0, 5), change: -1, perWeek: null });
-    expect(plainChange(at([[0, 70], [10, 69]]))).toMatchObject({ basis: 'ends', change: -1, perWeek: -0.7 });
-    // 12 days apart: the two weeks would overlap
-    expect(plainChange(at([[0, 70], [12, 69]]))?.basis).toBe('ends');
-  });
-
-  it('from 13 days apart: the two weeks’ averages, over the days between their middles', () => {
-    // days 0..6 vs 7..13, each week averaging its own weigh-ins
-    const c = plainChange(at([[0, 70], [2, 71], [7, 69], [13, 68]]))!;
-    expect(c).toEqual({ basis: 'weeks', from: 70.5, to: 68.5, at: addDays(D0, 10), change: -2, perWeek: -1.56 }); // −2 over 9 days
-  });
-
-  it('a steady loss of 0.5 kg a week reads as −0.5 a week; a noisy flat stretch reads as flat', () => {
-    const steady = at(Array.from({ length: 84 }, (_, i) => [i, 72 - (0.5 * i) / 7] as [number, number]));
-    const c = plainChange(steady)!;
-    expect(c.basis).toBe('weeks');
-    expect(c.perWeek!).toBeCloseTo(-0.5, 2);
-    expect(c.change).toBeCloseTo(-5.5, 1); // 77 days between the weeks' middles
-    const noisy = at(Array.from({ length: 28 }, (_, i) => [i, 70 + (i % 2 ? 0.6 : -0.6)] as [number, number]));
-    // a ±0.6 kg daily swing: 0.2 at most (its first and last weigh-ins alone would say +1.2)
-    expect(Math.abs(plainChange(noisy)!.change)).toBeLessThanOrEqual(0.2);
-  });
-
-  it('sparse weigh-ins: a week of one is that weigh-in', () => {
-    expect(plainChange(at([[0, 70], [30, 69], [60, 67]]))).toMatchObject({ basis: 'weeks', from: 70, to: 67, change: -3, perWeek: -0.35 });
-  });
-});
-
-describe('project(): the goal month at the period’s pace', () => {
-  const c = (o: Partial<PlainChange>): PlainChange => ({ basis: 'weeks', from: 71, to: 70, at: '2026-11-01', change: -1, perWeek: -0.5, ...o });
-
-  it('a goal ahead: a date from the last week at that pace', () => {
-    expect(project(c({}), 69)).toEqual({ kind: 'date', date: '2026-11-15' });
-    expect(project(c({ from: 60, to: 61, change: 1, perWeek: 0.5 }), 62)).toEqual({ kind: 'date', date: '2026-11-15' });
-  });
-
-  it('at or past the goal (seen from the start) is reached', () => {
-    expect(project(c({}), 70)).toEqual({ kind: 'reached' });
-    expect(project(c({ to: 69.5 }), 70)).toEqual({ kind: 'reached' });
-  });
-
-  it('none: moving away, too slow, too far out, or first → last only', () => {
-    expect(project(c({}), 75)).toEqual({ kind: 'none' });
-    expect(project(c({ perWeek: -0.01 }), 60)).toEqual({ kind: 'none' });
-    expect(project(c({ perWeek: null }), 60)).toEqual({ kind: 'none' });
-    expect(project(c({ perWeek: -0.2 }), 25)).toEqual({ kind: 'none' }); // 225 weeks
-    expect(project(c({ basis: 'ends' }), 69)).toEqual({ kind: 'none' });
   });
 });
 
