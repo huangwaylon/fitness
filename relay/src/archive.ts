@@ -194,10 +194,9 @@ export interface ArchiveRun {
   events?: number;
   kept?: number;
   del?: number;
-  /** Wall ms: the whole, the dump (and its gzip), the encryption, GitHub's calls. */
+  /** Wall ms: the whole, and GitHub's calls (a Worker's clock stands still while it computes: the dump and the
+   *  encryption read as 0). */
   ms: number;
-  dumpMs?: number;
-  encMs?: number;
   upMs?: number;
 }
 
@@ -219,15 +218,14 @@ export async function runArchive(io: ArchiveIO): Promise<ArchiveRun> {
   let step = 'dump';
   try {
     const d = io.dump();
-    if (!d.metrics || !d.events) return end({ ok: false, st: 'empty', metrics: d.metrics, events: d.events, dumpMs: io.now() - t0 });
+    if (!d.metrics || !d.events) return end({ ok: false, st: 'empty', metrics: d.metrics, events: d.events });
     const z = await gzip(d.pieces);
-    const t1 = io.now();
     step = 'encrypt';
     const bytes = await encrypt(z.bytes, io.recipient);
     const t2 = io.now();
     step = 'github';
     const u = await upload({ ...io.gh, token: io.gh.token }, assetName(slot), bytes);
-    return end({ ok: true, st: 'ok', kB: Math.round(bytes.length / 1024), rawkB: Math.round(z.raw / 1024), metrics: d.metrics, events: d.events, kept: u.kept, del: u.del, dumpMs: t1 - t0, encMs: t2 - t1, upMs: io.now() - t2 });
+    return end({ ok: true, st: 'ok', kB: Math.round(bytes.length / 1024), rawkB: Math.round(z.raw / 1024), metrics: d.metrics, events: d.events, kept: u.kept, del: u.del, upMs: io.now() - t2 });
   } catch (e) {
     if (e instanceof ArchiveError) return end({ ok: false, st: 'github', step: e.step, http: e.http });
     return end({ ok: false, st: e instanceof Error && /^\w{1,40}$/.test(e.name) ? e.name : 'Error', step });
