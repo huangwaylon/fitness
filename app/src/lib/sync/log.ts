@@ -123,6 +123,7 @@ export function configureLog(o: Partial<Env> & { reset?: boolean; on?: boolean }
     if (st.idle) clearTimeout(st.idle);
     st.timer = st.idle = null;
     isLeaving.now = false;
+    early.length = 0;
   }
   if (on !== undefined) st.on = on;
 }
@@ -224,6 +225,17 @@ function logChunk(err: unknown): void {
 export function chunkSheet(sheet: LogSheet): void {
   const ev = st.chunk;
   if (ev && st.ring.includes(ev) && ev.d?.sheet === undefined && env.now() - st.chunkAt < CHUNK_ERR_MS) ev.d = { ...ev.d, sheet };
+}
+
+const early: (() => void)[] = [];
+/** SvelteKit's handleError (src/hooks.client.ts): a route's crash (Kit's `unknown`), shown as +error.svelte's
+ *  「開けませんでした」, a js.error from `kit` (Kit catches it, so the window's listeners never see it); Kit's own or an
+ *  `error()`'s (a 404) only a `route:<status>` count. Before startLog (on the first load, under the layout's mount),
+ *  held and logged once it starts. */
+export function routeError(err: unknown, path: string, known?: number | 'app'): void {
+  const go = () => (known !== undefined ? count(`route:${known}`) : logError('error', err, { route: logRoute(path), tag: 'kit' }));
+  if (st.on) go();
+  else if (early.length < 4) early.push(go);
 }
 
 /** A usage counter (`sheet:<id>`, `route:<route>`, `act:<what>`, `swallow:<tag>`): summed, sent as one `use` a flush. */
@@ -551,6 +563,7 @@ export function startLog(o: LogStart): () => void {
   st.build = /^[\w.-]{1,40}$/.test(o.build) ? o.build : 'dev';
   st.os = osOf(navigator.userAgent);
   restoreLog();
+  for (const go of early.splice(0)) go();
   const route = () => logRoute(o.route());
   st.route = o.route;
   let stop = false;

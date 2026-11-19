@@ -2,7 +2,7 @@
 // rate from the median gap, a page error, hidden (the keepalive flush) and shown again, and the stop. A browser's
 // globals stubbed; the timers, Date and performance faked.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureLog, flushLog, log, markLeaving, noteHiddenReload, setDrawnFps, startLog } from './log.ts';
+import { configureLog, flushLog, log, markLeaving, noteHiddenReload, routeError, setDrawnFps, startLog } from './log.ts';
 import type { LogBatch } from '#lib/contract/log.ts';
 
 const KEY = '3f9a'.repeat(16);
@@ -241,5 +241,16 @@ describe('the log started on a phone', () => {
     vi.stubGlobal('navigator', { webdriver: true, userAgent: '' });
     start()();
     expect(sent).toEqual([]);
+  });
+
+  it("a route's crash (hooks.client.ts): a js.error from kit with its route, held from before the start; a 404 counted", async () => {
+    routeError(new TypeError('a is undefined'), '/shop/deep');
+    const stop = start();
+    routeError(null, '/nope', 404);
+    await flushLog();
+    stop();
+    const errs = evs().filter((e) => e.e === 'js.error');
+    expect(errs.map((e) => [e.d?.src, e.d?.route, e.d?.kind, String(e.d?.msg).startsWith('TypeError')])).toEqual([['kit', '/shop', 'error', true]]);
+    expect(evs().find((e) => e.e === 'use')?.d).toMatchObject({ 'route:404': 1 });
   });
 });

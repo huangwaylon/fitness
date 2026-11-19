@@ -78,3 +78,36 @@ test('a forced error reaches the log, scrubbed, with the session, the role and t
   expect(bad).toEqual([]);
   await context.close();
 });
+
+test("a route's crash behind 開けませんでした reaches the log (hooks.client.ts handleError)", async ({ browser }) => {
+  const logs = new LogCore({ sql: memSql().sql, tx: (fn) => fn(), keys: KEYS, now: () => Date.now() });
+  const db = memSql();
+  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now: () => Date.now(), notify: () => {} });
+  const batches: { es: { e: string; d?: Record<string, unknown> }[] }[] = [];
+  const context = await browser.newContext({ viewport: { width: 393, height: 659 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await context.addInitScript((key) => {
+    localStorage.setItem('island.key', key);
+    localStorage.setItem('e2e.render', 'none');
+  }, KEYS.KEY_A);
+  await context.routeWebSocket(/\/room/, () => {});
+  await context.route(`${RELAY}/**`, (route) => {
+    const req = route.request(), text = req.postData() ?? '', isLog = new URL(req.url()).pathname === '/log';
+    if (isLog) batches.push(JSON.parse(text));
+    return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: isLog ? JSON.stringify(logs.ingestText(text)) : store.handleText(text) });
+  });
+  const page = await context.newPage();
+  await page.goto('?log=on');
+  await islandUp(page);
+  // a route's own chunk throws as it loads (Kit's nodes: 0 the layout, 1 the error page, the rest a page each)
+  await context.route(/\/_app\/immutable\/nodes\/(?![01]\.)\d+\.[\w-]+\.js$/, (route) =>
+    route.fulfill({ status: 200, contentType: 'text/javascript', body: "throw new TypeError('forced route crash');" }));
+  await page.evaluate(() => {
+    const a = Object.assign(document.createElement('a'), { href: 'shop' });
+    document.body.append(a);
+    a.click();
+  });
+  await expect(page.locator('main.err')).toBeVisible();
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide')));
+  await expect.poll(() => batches.flatMap((b) => b.es).filter((e) => e.e === 'js.error').map((e) => [e.d?.src, e.d?.route, e.d?.msg])).toEqual([['kit', '/shop', 'TypeError: forced route crash']]);
+  await context.close();
+});

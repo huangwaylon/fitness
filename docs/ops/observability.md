@@ -65,6 +65,8 @@ than the 30 days.
   errors only until midnight UTC.
 - An error event (`js.error`, `chunk.fail`, `gl.lost`, `api.fail`, `sync.fail`) carries `sheet`, the topmost open timed
   sheet (Sheet.svelte's `timed`), and `js.error` the route.
+- A route's crash behind +error.svelte (Kit catches it): `js.error` from `src` `kit` (src/hooks.client.ts); Kit's own (a 404)
+  counts `route:<status>`.
 - Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
   pairing as someone else clears them.
 - `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
