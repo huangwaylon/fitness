@@ -35,8 +35,8 @@ export const SECONDARY_PENALTY = 1.5;
 export const PRODUCT_PENALTY = 0.5;
 
 /** An item's searchable fields as keys, in this order: its name, `full`, each alias, `en`, `brand`, the barcode
- *  (`jan`), `cat`. scripts/food-data.ts ships them joined by a space (`keys`: no key holds one, nor a query token),
- *  so loading the catalog builds none. */
+ *  (`jan`), `cat`. The parsing worker builds them (dataset.worker.ts), joined by a space (`keys`: no key holds one,
+ *  nor a query token: scripts/food-data.ts checks), so the page's slices build none. */
 export function keysOf(it: Item): string[] {
   return [searchKey(it.name), searchKey(it.full), ...(it.aliases ?? []).map(searchKey), searchKey(it.en), searchKey(it.brand), it.jan ?? '', searchKey(it.cat)];
 }
@@ -56,12 +56,12 @@ export const holds = (e: Entry, t: string): boolean => e.h.includes(t) || (e.b?.
 
 export function entryOf(it: Item, pen = 0, brands?: Map<string, readonly string[]>): Entry {
   const na = it.aliases?.length ?? 0;
-  const shipped = typeof it.keys === 'string' ? it.keys.split(' ') : null;
-  // the shipped keys, unless missing or not this item's (data cached before they were): built here then
-  const keys = shipped?.length === na + 6 ? shipped : keysOf(it);
+  // the worker's keys (dataset.worker.ts), else built here (no worker, the tests)
+  const built = typeof it.keys === 'string';
+  const keys = built ? it.keys!.split(' ') : keysOf(it);
   // (the brand's key out of `h`: matched by `b` alone)
   const bi = na + 3;
-  const h = keys[bi] ? keys.filter((_, i) => i !== bi).join(' ') : keys === shipped ? it.keys! : keys.join(' ');
+  const h = keys[bi] ? keys.filter((_, i) => i !== bi).join(' ') : built ? it.keys! : keys.join(' ');
   const e: Entry = { it, n: keys[0], al: na ? keys.slice(2, 2 + na) : [], h, pop: it.pop ?? 0, pen };
   if (keys[bi] && it.brand) e.b = brandKeys(it.brand, brands);
   return e;

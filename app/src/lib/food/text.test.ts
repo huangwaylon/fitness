@@ -16,3 +16,12 @@ describe('searchKey: the long vowel', () => {
     expect(searchKey('T-shirt')).toBe('tsirt');
   });
 });
+
+describe('searchKey: a key already', () => {
+  it('hiragana, ー, kanji, 々 and digits come back as they are; anything else folded as before', () => {
+    for (const s of ['ごはん', 'らーめん', '鶏むね肉', '佐々木の1番']) expect(searchKey(s)).toBe(s);
+    expect(searchKey('ごはん（大盛）')).toBe('ごはん大盛');
+    expect(searchKey('ごはんｶﾚｰ')).toBe('ごはんかれー');
+    expect(searchKey('なっとうnattou')).toBe('なっとうnatto');
+  });
+});

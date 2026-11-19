@@ -17,8 +17,8 @@
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too. Every item of every
 // file, the shards' too, goes through food-data/data_src/food_fixes.json's reviewed correction for its id, then
 // lib/food/plausible.ts's rules (docs/food-data.md "Data checks"); what each fired is printed.
-// Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
-// dataset's (products: 239 KB gzipped of keys) are built on load, in db.ts's slices. A product's barcode is dropped
+// No dataset ships its search keys (lib/food/search.ts keysOf: the parsing worker builds them, ~20 ms for the core
+// sets; shipped, they were 132 KB of the core's 448 KB gzipped); each item's are checked here. A product's barcode is dropped
 // when the id has it (`off:<jan>`: load.ts puts it back). Every dataset ships by column (`cols`, types.ts Shipped;
 // db.ts decodeItems), its ids without the prefix they share (`idPrefix`): 30k products 4.1 MB, 0.8 MB gzipped, against
 // 5.8 MB and 1.1 MB as objects; Kalori's 54k items 7.4 MB, 1.19 MB gzipped, against 10.0 MB and 1.62 MB.
@@ -84,25 +84,23 @@ function option(name: string): string | undefined {
   return v ?? fail(`${name} needs a value`);
 }
 
-/** A dataset's items as shipped (checked): a core one's with their search keys, a lazy one's without; a product's
- * barcode dropped when its id has it; no alcohol. */
-function ship(f: string, d: Dataset, lazy: boolean): Dataset {
+/** A dataset's items as shipped (checked; their search keys, built on load, hold no space); a product's barcode dropped
+ * when its id has it; no alcohol. */
+function ship(f: string, d: Dataset): Dataset {
   d.items = d.items.flatMap((raw) => checked(raw) ?? []).map((it) => {
-    const keys = keysOf(it);
-    if (keys.some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
+    if (keysOf(it).some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
     // (alcohol, no longer tracked (2026-11-19): never shipped, an older build's `alc` dropped here)
     if ('alc' in it) delete (it as Item & { alc?: unknown }).alc;
     const { jan, ...rest } = it;
-    const item = jan !== undefined && it.id === `off:${jan}` ? rest : it;
-    return lazy ? item : { ...item, keys: keys.join(' ') };
+    return jan !== undefined && it.id === `off:${jan}` ? rest : it;
   });
   return d;
 }
 
 /** A dataset file's bytes as shipped: by column (db.ts toColumns). */
-function shipped(f: string, d: Dataset, lazy: boolean): string {
+function shipped(f: string, d: Dataset): string {
   try {
-    return JSON.stringify(toColumns(ship(f, d, lazy)));
+    return JSON.stringify(toColumns(ship(f, d)));
   } catch (e) {
     fail(`${f}: ${(e as Error).message}`);
   }
@@ -129,7 +127,7 @@ function shipJan(src: string, products: Dataset): number {
   for (const [k, items] of groups) {
     items.sort((a, b) => (a.jan! < b.jan! ? -1 : 1));
     n += items.length;
-    writeFileSync(join(OUT, 'jan', `${k}.json`), shipped(`jan/${k}.json`, { source: 'off', items: items.map(({ aliases: _a, ...it }) => it) }, true));
+    writeFileSync(join(OUT, 'jan', `${k}.json`), shipped(`jan/${k}.json`, { source: 'off', items: items.map(({ aliases: _a, ...it }) => it) }));
   }
   return n;
 }
@@ -176,11 +174,11 @@ function readDataset(path: string, f: string): Dataset {
 /** What the checks did (tally), one line. */
 const checks = (): string => `checks: ${Object.entries(tally).sort().map(([k, n]) => `${k} ${n}`).join(', ') || 'none fired'}`;
 
-/** A shipped file back to build.py's layout (its items as objects, without their search keys). */
+/** A shipped file back to build.py's layout (its items as objects). */
 function unship(path: string): Dataset {
   const s = JSON.parse(readFileSync(path, 'utf8')) as Shipped;
   if (!s.cols) fail(`${path} is not by column (schema ${FOOD_SCHEMA})`);
-  return { ...headerOf(s), items: decodeItems(s).map(({ keys: _k, ...it }) => it) } as Dataset;
+  return { ...headerOf(s), items: decodeItems(s) } as Dataset;
 }
 
 if (RESHIP) {
@@ -188,10 +186,10 @@ if (RESHIP) {
   if (!existsSync(join(OUT, 'index.json'))) fail(`no index.json in ${OUT}`);
   const index = JSON.parse(readFileSync(join(OUT, 'index.json'), 'utf8')) as { datasets: { file: string; lazy?: boolean }[] };
   const files = index.datasets.map((d) => d.file);
-  for (const d of index.datasets) writeFileSync(join(OUT, d.file), shipped(d.file, unship(join(OUT, d.file)), d.lazy === true));
+  for (const d of index.datasets) writeFileSync(join(OUT, d.file), shipped(d.file, unship(join(OUT, d.file))));
   for (const f of existsSync(join(OUT, 'jan')) ? readdirSync(join(OUT, 'jan')).filter((f) => f.endsWith('.json')) : []) {
     const d = unship(join(OUT, 'jan', f));
-    const bytes = shipped(`jan/${f}`, d, true);
+    const bytes = shipped(`jan/${f}`, d);
     if (d.items.length) writeFileSync(join(OUT, 'jan', f), bytes);
     else rmSync(join(OUT, 'jan', f));
   }
@@ -221,7 +219,7 @@ if (ONLY !== undefined) {
   const rows = files.filter((f) => f !== entry.file && !(JSON.parse(readFileSync(join(OUT, f), 'utf8')) as { cols?: unknown }).cols);
   if (rows.length) fail(`not by column in ${OUT} (schema ${FOOD_SCHEMA}): ${rows.join(', ')}`);
   const data = readDataset(join(SRC, entry.file), entry.file);
-  writeFileSync(join(OUT, entry.file), shipped(entry.file, data, true));
+  writeFileSync(join(OUT, entry.file), shipped(entry.file, data));
   // (the products' shards with them, when the data dir has them: which codes ship depends on products.json)
   if (ONLY === 'products' && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, data)} barcodes beyond the products into jan/`);
   const version = writeIndex({ ...index, datasets }, files);
@@ -252,8 +250,7 @@ mkdirSync(OUT, { recursive: true });
 if (keptJan) renameSync(join(keptJan, 'jan'), join(OUT, 'jan')), rmSync(keptJan, { recursive: true });
 let bytes = 0;
 copyFileSync(join(SRC, 'verify.json'), join(OUT, 'verify.json'));
-const lazy = new Set((index.datasets ?? []).filter((d) => (d as { lazy?: unknown }).lazy === true).map((d) => d.file));
-for (const [f, d] of data) writeFileSync(join(OUT, f), shipped(f, d, lazy.has(f)));
+for (const [f, d] of data) writeFileSync(join(OUT, f), shipped(f, d));
 const products = data.get(PRODUCTS.file);
 if (products && existsSync(join(SRC, 'jan'))) console.log(`food:data: ${shipJan(SRC, products)} barcodes beyond the products into jan/`);
 const version = writeIndex(index, files);

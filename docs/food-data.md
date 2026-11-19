@@ -6,7 +6,7 @@ by `food-data/` and shipped in `app/static/food/`. All values are estimates.
 ## Rebuild
 ```sh
 python3 -I food-data/scripts/build.py all       # rebuild every file into food-data/out/, validate, install
-cd app && npm run food:data                     # copy out/ into static/food/ (adds core search keys; the barcode shards)
+cd app && npm run food:data                     # copy out/ into static/food/ (by column; the barcode shards)
 cd app && npm run food:data -- --reship         # static/food/ through the data checks again, from itself (a new fix)
 python3 -I food-data/scripts/build.py check     # rebuild into a temp dir and byte-compare with out/
 python3 -I food-data/scripts/build.py toyonaka  # one or more targets (see the docstring in build.py)
@@ -216,7 +216,7 @@ it (alerts, pausing, a held update, undoing): [runbook "Refresh Kalori"](ops/run
 - **Build:** `fetch.py kalori` (the pinned release's tarball, checked against `SHA256SUMS`, refused unless
   `coverage.json` is complete, into `raw/kalori/`), then `build.py kalori`
   (or `all`) → `out/kalori.json` (`kalori_convert.py`, its counts printed; alone: `python3 -I
-  food-data/scripts/kalori_convert.py food-data/raw/kalori`), then `npm run food:data` (lazy: no search keys added). A
+  food-data/scripts/kalori_convert.py food-data/raw/kalori`), then `npm run food:data`. A
   partial input fails the build and writes nothing: one of `data_src/kalori_shops.json`'s shops with no items, or under
   45,000 items (a whole fetch ships ~54,000); `KALORI_ALLOW_PARTIAL=1` writes it anyway.
 - **A refresh** (`kalori-scrape.yml`, weekly and by hand): incremental, seeded from the accepted release's data and

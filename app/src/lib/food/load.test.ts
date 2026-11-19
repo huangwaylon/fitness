@@ -7,10 +7,10 @@ import { join } from 'node:path';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb, NewerFoodData } from './load.ts';
 import { janShard, janShips } from './jan.ts';
-import { addDataset, countOf, credits, decodeItems, emptyDb, fillIn, findFoods, FOOD_SCHEMA, toColumns, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, toColumns, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
-import { entryOf, holds, tierOf, type Entry } from './search.ts';
+import { entryOf, holds, keysOf, tierOf, type Entry } from './search.ts';
 import { searchKey } from './text.ts';
 
 const DIR = join(import.meta.dirname, '../../../static/food');
@@ -208,14 +208,16 @@ describe('loadFoodDb', () => {
     expect(verifyOf(db, mabo.id)?.n).toBeGreaterThanOrEqual(2);
   });
 
-  it('searches exactly as with keys built on load (a core dataset’s shipped `keys`, none in a lazy one; a product’s barcode from its id)', async () => {
+  it('searches exactly as with the worker’s keys (no file ships any, an older file’s left out; a product’s barcode from its id)', async () => {
     const ref = emptyDb(index);
     for (const d of index.datasets) {
-      const data = fromFile(JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped);
-      expect(data.items.every((it) => typeof it.keys === (d.lazy ? 'undefined' : 'string')), d.file).toBe(true);
-      // the data as it was: no keys, every barcode (a chain menu's brand: its shop's, fromFile)
-      const items = data.items.map(({ keys: _k, ...it }) => it);
-      await addDataset(ref, d, fillIn({ ...data, items }));
+      const file = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Shipped;
+      expect(file.cols.keys, d.file).toBeUndefined();
+      // (each item's keys as the worker builds them: dataset.worker.ts; a chain menu's brand its shop's, fromFile)
+      const data = fromFile({ ...file, cols: { ...file.cols, keys: file.cols.id!.map(() => 'stale') } });
+      expect(data.items.some((it) => it.keys !== undefined), d.file).toBe(false);
+      for (const it of data.items) it.keys = keysOf(it).join(' ');
+      await addDataset(ref, d, data);
     }
     ref.verify = db.verify;
     // the same order as loadFoodDb's (datasets in the order they came): the same ties

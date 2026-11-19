@@ -172,8 +172,8 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
     closed = true;
     cancelParses(mine);
   };
-  // One dataset indexed at a time, in slices, in the order they arrive: a core one's keys come built
-  // (scripts/food-data.ts), a lazy one's in the worker (or here, in its slices: db.ts entryOf), its barcodes first.
+  // One dataset indexed at a time, in slices, in the order they arrive: its keys built in the worker (or here, in its
+  // slices: search.ts entryOf), its barcodes first.
   let indexing = Promise.resolve();
   // (a dataset that fails is fetched again at its next chance, a few times, and added when it comes; the load itself
   // never waits for it)

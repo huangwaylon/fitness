@@ -204,10 +204,10 @@ export function headerOf(d: Shipped): Omit<Dataset, 'items'> {
 }
 
 /** A file's items `from` to `to` (types.ts Shipped), as objects: a slice at a time in the worker, so the whole file is
- *  never twice in memory. */
+ *  never twice in memory. An older file's `keys` (shipped till 2026-11-20) are left out: built on load. */
 export function decodeItems(d: Shipped, from = 0, to = countOf(d)): Item[] {
   if (!countOf(d)) return [];
-  const cols = Object.entries(d.cols) as [string, unknown[]][];
+  const cols = (Object.entries(d.cols) as [string, unknown[]][]).filter(([k]) => k !== 'keys');
   const prefix = d.idPrefix ?? '';
   const out: Item[] = [];
   for (let i = from; i < Math.min(to, countOf(d)); i++) {

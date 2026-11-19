@@ -31,7 +31,7 @@ export interface Item {
   /** Values per serving, not per 100 g (a chain menu's: no weight known): logged as FoodSnap `sv`, its portion a nominal
    *  100 g serving. */
   sv?: true;
-  /** The barcode; not shipped when it is the id's (`off:<jan>`): `keys` has it. */
+  /** The barcode; not shipped when it is the id's (`off:<jan>`: put back on load, db.ts fillIn). */
   jan?: string;
   /** How the values were derived. */
   note?: string;
@@ -53,7 +53,7 @@ export interface Item {
   /** A curated search boost, 1–3; -1 ranks a rare or novelty item lower. */
   pop?: number;
   portions?: Portion[];
-  /** The search keys, precomputed by scripts/food-data.ts (search.ts keysOf, joined by a space). */
+  /** The search keys, built by the parsing worker (search.ts keysOf, joined by a space); never shipped. */
   keys?: string;
 }
 
