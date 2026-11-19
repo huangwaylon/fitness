@@ -123,7 +123,7 @@
         <button type="button" class="chip" aria-pressed="true" data-sfx="confirm" data-sg-swap-yes onclick={onswap}>{s('swapYes')}</button>
       {:else}
         {#if mult > 1}<span class="tag new">{s('doubleTag')}</span>{/if}
-        <span class="lucky">{s('lucky')}{#each lucky as l (l)}<b class="lt" lang="en">{l.toUpperCase()}</b>{/each}<span class="soft">{s('luckyNote')}</span></span>
+        <span class="luck">{s('lucky')}{#each lucky as l (l)}<b class="lt" lang="en">{l.toUpperCase()}</b>{/each}<span class="soft">{s('luckyNote')}</span></span>
         <button type="button" class="chip" data-sfx="tick" data-sg-swap onclick={() => (v.asking = true)}><Icon name="refresh" size={16} />{s('swap')}</button>
       {/if}
     </div>
@@ -167,7 +167,8 @@
   /* the header: 32 tall, its chips (the kit's) 32 drawn in a 44 hit */
   .head { display: flex; align-items: center; gap: 6px; min-height: 32px; }
   .ttl { margin: 0 2px 0 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); white-space: nowrap; }
-  .lucky { display: flex; align-items: center; gap: 4px; min-width: 0; font: 700 var(--fs-s)/1 var(--font-ui); white-space: nowrap; }
+  /* (not .lucky: that's the yuzu tile's class, and this row's flex and 13 px font shrank its letter to the left) */
+  .luck { display: flex; align-items: center; gap: 4px; min-width: 0; font: 700 var(--fs-s)/1 var(--font-ui); white-space: nowrap; }
   .lt { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--c-yuzu);
     box-shadow: 0 2px 0 var(--c-yuzu-lip); font: 600 14px/1 var(--font-num); }
   .soft { color: var(--text-soft); font: 600 var(--fs-s)/1 var(--font-num); }

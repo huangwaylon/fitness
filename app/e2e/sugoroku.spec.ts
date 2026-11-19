@@ -219,6 +219,17 @@ test('the turn’s sheet shows its last row whole (tiles’ and buttons’ lips 
   await expect(play).toHaveAttribute('data-sg-phase', 'word');
   await check();
   await expect(s.locator('[data-sg-hint]')).toBeInViewport({ ratio: 1 });
+  // every tile's letter the same size and centred: a lucky (yuzu) one too (the header's .lucky row once matched it: tiny, at the left)
+  const tileLooks = () => s.locator('.sg-tile').evaluateAll((els) => els.map((el) => {
+    const r = document.createRange();
+    r.selectNodeContents(el.firstChild!);
+    const a = r.getBoundingClientRect(), b = el.getBoundingClientRect();
+    return { lucky: el.classList.contains('lucky'), in: el.classList.contains('in'), size: getComputedStyle(el).fontSize,
+      off: Math.max(Math.abs(a.x + a.width / 2 - (b.x + b.width / 2)), Math.abs(a.y + a.height / 2 - (b.y + b.height / 2))) <= 1.5 ? 0 : 1 };
+  }));
+  const looks = await tileLooks();
+  expect(looks.filter((t) => t.lucky).length).toBeGreaterThan(0); // (the seed's rack has a lucky letter)
+  for (const t of looks) expect(t, JSON.stringify(t)).toMatchObject({ size: t.in ? '19px' : '20px', off: 0 });
   // ⌫ takes back one letter at a time (the last placed), never the whole word
   const rack = s.locator('.rack [data-sg-tile]:not([disabled])');
   const letters: string[] = [];
