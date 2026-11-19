@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { searchKey } from './text.ts';
 import { entryOf, headOf, nearby, PRODUCT_PENALTY, search, SECONDARY_PENALTY } from './search.ts';
 import { g1, nutrientsFor, portionsOf, toSnap } from './nutrition.ts';
-import { addDataset, credits, emptyDb, searchFoods, verifyOf } from './db.ts';
+import { addDataset, chainPenalty, credits, emptyDb, EST_PENALTY, fillIn, IMPLAUSIBLE_PENALTY, searchFoods, verifyOf } from './db.ts';
 import type { Item } from './types.ts';
 
 const item = (id: string, name: string, extra: Partial<Item> = {}): Item => ({ id, name, kcal: 100, ...extra });
@@ -128,5 +128,71 @@ describe('the catalog', () => {
       { label: '豊中', attribution: '', license: '', url: '' },
       { label: 'USDA', attribution: '', license: '', url: 'x' }
     ]);
+  });
+});
+
+// Kalori's estimates (86 % of its rows) under the published foods off their shop (review 11/19: 味噌汁 494 kcal, バナナ
+// 344, 餃子 1,400, ミックスナッツ 1,500 ranked #1–5 on the generic word)
+describe('a chain menu’s estimates', () => {
+  const meta = (source: string, secondary = false) => ({ file: `${source}.json`, source, badge: source, secondary, lazy: secondary });
+  const kal = (n: number, name: string, shop: string, kcal: number, est?: Item['est']): Item => ({ ...item(`kal:${n}`, name, { shop, kcal, sv: true }), ...(est ? { est } : {}) });
+  const shops = { seico: { name: 'セイコーマート' }, kushi: { name: '串カツ田中' }, pub: { name: 'バナナ屋' }, ajihei: { name: 'あじへい' }, doma: { name: '土間土間' }, gusto: { name: 'ガスト' } };
+  const db = emptyDb({ version: 'abc', datasets: [] });
+  addDataset(db, meta('mext'), { source: 'mext', items: [item('mext:07107', 'バナナ', { kcal: 93, portions: [{ label: '1本', g: 100 }] })] });
+  addDataset(db, meta('dishes'), {
+    source: 'dishes',
+    items: [item('dishes:gyoza', '焼き餃子（6個）', { kcal: 168, aliases: ['餃子'], portions: [{ label: '1人前', g: 176 }] }), item('dishes:miso', '味噌汁（豆腐とわかめ）', { kcal: 22, portions: [{ label: '1人前', g: 207 }] })]
+  });
+  addDataset(db, meta('off', true), { source: 'off', items: [item('off:1', 'バナナ', { kcal: 70, brand: 'スミフル' }), item('off:2', '餃子', { kcal: 206, brand: '無印' })] });
+  addDataset(
+    db,
+    meta('kalori', true),
+    fillIn({
+      source: 'kalori',
+      shops,
+      items: [
+        kal(1, 'バナナ', 'seico', 344, 'e'),
+        kal(2, 'バナナ', 'kushi', 110, 'e'),
+        kal(3, 'バナナ', 'pub', 100),
+        kal(4, 'バナナジュース', 'kushi', 200),
+        kal(5, '餃子', 'ajihei', 1400, 'e'),
+        kal(6, '餃子（6個）', 'kushi', 300, 'e'),
+        kal(7, '味噌汁', 'doma', 494, 'e'),
+        kal(8, '味噌汁', 'gusto', 28, 'p'),
+        kal(9, '味噌汁', 'seico', 5, 's'),
+        { ...kal(10, 'ためし丼 並盛', 'kushi', 700, 'e'), vg: 'kal:10' },
+        { ...kal(11, 'ためし丼 大盛', 'kushi', 900), vg: 'kal:10' }
+      ]
+    })
+  );
+  const ids = (q: string) => searchFoods(db, q).map((i) => i.id);
+  const ex = (id: string) => db.entries.find((e) => e.it.id === id)?.ex;
+
+  it('ranks an estimated one under a product and a generic of its name; a published one keeps its place', () => {
+    expect(ids('バナナ')).toEqual(['mext:07107', 'kal:3', 'off:1', 'kal:4', 'kal:2', 'kal:1']);
+    expect(ids('餃子')).toEqual(['dishes:gyoza', 'off:2', 'kal:6', 'kal:5']);
+  });
+  it('a serving past 3× or under ⅓ of the generic’s default portion: under every generic match (any estimate)', () => {
+    expect([ex('kal:1'), ex('kal:2'), ex('kal:3')]).toEqual([IMPLAUSIBLE_PENALTY, EST_PENALTY, undefined]);
+    // 味噌汁 46 kcal a bowl: 494 and 5 out, ガスト's 28 in (its PFC alone estimated: its place kept)
+    expect([ex('kal:7'), ex('kal:8'), ex('kal:9')]).toEqual([IMPLAUSIBLE_PENALTY, undefined, IMPLAUSIBLE_PENALTY]);
+    // a 6-piece plate (296 kcal) by its alias 餃子; 餃子（6個）'s head is 餃子 too
+    expect([ex('kal:5'), ex('kal:6')]).toEqual([IMPLAUSIBLE_PENALTY, EST_PENALTY]);
+    expect(ids('味噌汁')).toEqual(['dishes:miso', 'kal:8', 'kal:7', 'kal:9']);
+  });
+  it('a shop named (typed, or its chip writes it): that shop’s menu as it is, its estimates leading', () => {
+    expect(ids('セイコーマート バナナ')).toEqual(['kal:1']);
+    expect(ids('串カツ田中 バナナ')).toEqual(['kal:2', 'kal:4']);
+    expect(ids('あじへい')).toEqual(['kal:5']);
+  });
+  it('a food in its states shows its default state, its values’ trust aside (並盛 estimated, 大盛 published)', () => {
+    expect(ids('ためし丼')).toEqual(['kal:10']);
+  });
+  it('chainPenalty: none for a published row, whatever its kcal; one per 100 g by its default portion', () => {
+    const generic = new Map([['ばなな', [93, 93] as const]]);
+    const pen = (it: Item) => chainPenalty(it, entryOf(it), generic);
+    expect(pen(kal(1, 'バナナ', 's', 9999))).toBe(0);
+    expect(pen(item('kal:2', 'バナナ', { shop: 's', kcal: 150, est: 'e', portions: [{ label: '1本', g: 200 }] }))).toBe(IMPLAUSIBLE_PENALTY);
+    expect(pen(kal(3, 'バナナパフェ', 's', 9999, 'e'))).toBe(EST_PENALTY);
   });
 });

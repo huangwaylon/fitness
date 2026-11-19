@@ -258,8 +258,13 @@ describe('loadFoodDb', () => {
     const sortAll = (query: string, limit: number): Item[] => {
       const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
       const q = tokens.join('');
-      const hits: { e: Entry; s: number }[] = [];
-      for (const e of db.entries) if (tokens.every((t) => holds(e, t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -2.5 : e.pop * 0.6) + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
+      const hits: { e: Entry; s: number; b: number }[] = [];
+      for (const e of db.entries) {
+        if (!tokens.every((t) => holds(e, t)) || /（中型種）|^親鶏|^交雑牛/.test(e.it.name)) continue;
+        // (b: the match alone, without a chain's estimate penalty, ex)
+        const b = tierOf(e, q) + e.pen - (e.pop < 0 ? -2.5 : e.pop * 0.6) + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0);
+        hits.push({ e, b, s: b + (e.ex ?? 0) });
+      }
       hits.sort((a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
       const rep = new Map<number, Entry>();
       for (const { e } of hits) {
@@ -268,11 +273,11 @@ describe('loadFoodDb', () => {
         const r = rep.get(g);
         if (!r || (r.pen > 0 && e.pen <= 0)) rep.set(g, e);
       }
-      // a food in its states: its best hit, its default at a tie
-      const state = new Map<string, { e: Entry; s: number }>();
+      // a food in its states: its best hit by its match (not its values' trust: ex), its default at a tie
+      const state = new Map<string, { e: Entry; s: number; b: number }>();
       for (const h of hits) {
         const v = h.e.it.vg, r = v && state.get(v);
-        if (v && (!r || (h.s === r.s && h.e.it.id === v && r.e.it.id !== v))) state.set(v, h);
+        if (v && (!r || h.b < r.b || (h.b === r.b && h.e.it.id === v && r.e.it.id !== v))) state.set(v, h);
       }
       const seen = new Set<string | number>();
       const out: Item[] = [];
@@ -385,14 +390,28 @@ describe('the golden queries', () => {
     expect(top('卵').filter((n) => /素揚げ/.test(n))).toEqual([]);
   });
 
-  it('a packaged product never ranks above a generic food in the top three', () => {
+  it('a packaged product never ranks above a generic food in the top three (a chain’s menu is neither: バナナ finds スミフル’s before a shop’s バナナマンゴー)', () => {
     const fails: string[] = [];
     for (const [q] of GOLDEN) {
       const ids = searchFoods(db, q, 3).map((x) => x.id);
       const firstProduct = ids.findIndex(isProduct);
-      if (firstProduct >= 0 && ids.slice(firstProduct).some((id) => !isProduct(id))) fails.push(`${q}: ${ids.join(' ')}`);
+      if (firstProduct >= 0 && ids.slice(firstProduct).some((id) => !isProduct(id) && !id.startsWith('kal:'))) fails.push(`${q}: ${ids.join(' ')}`);
     }
     expect(fails).toEqual([]);
+  });
+
+  it('no chain menu’s guessed kcal (Kalori `est` e) in the top three, unless its shop is named: then that shop leads (db.ts EST_PENALTY)', () => {
+    const fails: string[] = [];
+    for (const q of [...new Set(['味噌汁', 'バナナ', '餃子', 'ミックスナッツ', 'ごはん', '納豆', ...GOLDEN.map(([g]) => g)])]) {
+      const top = searchFoods(db, q, 3);
+      if (top.some((x) => x.est === 'e')) fails.push(`${q}: ${top.map((x) => `${x.id} ${x.name} ${x.est ?? ''}`).join(' / ')}`);
+    }
+    expect(fails).toEqual([]);
+    for (const [q, shop] of [['すき家 牛丼', 'すき家'], ['セイコーマート バナナ', 'セイコーマート'], ['土間土間 味噌汁', '居酒屋 土間土間']]) {
+      const top = searchFoods(db, q, 3);
+      expect([top.length > 0, top.every((x) => x.brand === shop)], q).toEqual([true, true]);
+    }
+    expect(searchFoods(db, '土間土間 味噌汁', 1)[0].name).toBe('味噌汁');
   });
 });
 

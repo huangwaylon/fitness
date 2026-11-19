@@ -16,6 +16,9 @@ export interface Entry {
   /** Its brand's keys, whole then each word (brandKeys): a query word matches a brand only from the start of one, never
    *  inside it (「ラテ」 is not 天ぷ「らて」んや's); `h` holds no brand. */
   b?: readonly string[];
+  /** A chain menu's rank penalty off its shop (db.ts chainPenalty: its values estimated, its serving far from the
+   *  generic food's): taken over the whole catalog, never within its shop's menu (a shop named, its chip). */
+  ex?: number;
 }
 
 /** Each curated pop level (1–3) outweighs a little over half a match tier, so 食パン (substring, pop 3) beats パン粉
@@ -99,18 +102,19 @@ const rare = (it: Item): number => (RARE_PART.test(it.name) && (it.cat === '肉'
  *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
  *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
  *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). With
- *  `all`, an empty query finds every entry (a shop's whole menu: db.ts searchFoods); `onHit`, told each entry found
- *  (db.ts findFoods' shop chips, from this pass: never a second one). */
-export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, all = false, onHit?: (e: Entry) => void): Item[] {
+ *  `shop`, the entries are one shop's menu (db.ts searchFoods): an empty query finds all of it, and no entry's `ex` is
+ *  taken; `onHit`, told each entry found (db.ts findFoods' shop chips, from this pass: never a second one). */
+export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined, shop = false, onHit?: (e: Entry) => void): Item[] {
   const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
-  if (!tokens.length && !all) return [];
+  if (!tokens.length && !shop) return [];
   const q = tokens.join('');
-  type Hit = { e: Entry; s: number; i: number };
+  type Hit = { e: Entry; s: number; i: number; x: number };
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     if (tokens.every((t) => holds(e, t)) && !lookalike(e.it, q)) {
-      hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i });
+      const x = shop ? 0 : (e.ex ?? 0);
+      hits.push({ e, s: tierOf(e, q) + e.pen + x - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i, x });
       onHit?.(e);
     }
   }
@@ -128,14 +132,16 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
       if (h.e.pen <= 0 && (!r.core || before(h, r.core) < 0)) r.core = h;
     }
   }
-  // Each food's state to show: its best hit, the default (its own vg) at a tie.
+  // Each food's state to show: its best hit, the default (its own vg) at a tie; by its match, not its values' trust (`x`:
+  // a chain's 並盛 estimated, its 大盛 published, shows 並盛).
   const state = new Map<string, Hit>();
   for (const h of hits) {
     const v = h.e.it.vg;
     if (!v) continue;
     const r = state.get(v);
     const dh = h.e.it.id === v, dr = r?.e.it.id === v;
-    if (!r || (h.s !== r.s ? h.s < r.s : dh !== dr ? dh : before(h, r) < 0)) state.set(v, h);
+    const hs = h.s - h.x, rs = r ? r.s - r.x : 0;
+    if (!r || (hs !== rs ? hs < rs : dh !== dr ? dh : before(h, r) < 0)) state.set(v, h);
   }
   // Ranked a score at a time (scores are a few discrete values): only as many hits sorted as the top `limit` need.
   const byScore = new Map<number, Hit[]>();

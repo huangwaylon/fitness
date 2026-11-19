@@ -61,6 +61,48 @@ const PRODUCT_SOURCES: ReadonlySet<string> = new Set(['off', 'jbfd']);
  *  牛丼（並盛） before a chain's. */
 const KALORI_PENALTY = 0.25;
 
+/** A chain menu whose kcal Kalori estimated (`est` `e`: all its values guessed), off its shop (search.ts Entry `ex`):
+ *  1.25 tiers down, under a product of its name (味噌汁 finds the dishes' and a published one before 土間土間's guessed
+ *  494 kcal). Only its PFC, fibre or salt estimated (`p`, `s`): its kcal the shop's own, its place kept (ラテ finds the
+ *  chains' lattes among 30k products'). */
+export const EST_PENALTY = 1.25;
+/** An estimated one (any `est`) whose name is a core food's (its name, head or an alias: バナナ, 餃子) with a serving
+ *  past 3× or under ⅓ of every such food's default portion (セイコーマート's バナナ 344 kcal to MEXT's 1本 93, あじへい's
+ *  餃子 1,400 to a 6-piece plate's 328): 3 tiers down, under every generic match. */
+export const IMPLAUSIBLE_PENALTY = 3;
+const IMPLAUSIBLE_RATIO = 3;
+/** Where a name's head ends (search.ts headOf). */
+const HEAD_END = /[（(［[【\s　]/;
+
+/** An item's kcal at its default portion (nutrition.ts portionsOf's first: its own, else 100 g; a serving's, `sv`, its
+ *  kcal). */
+const defaultKcal = (it: Item): number => (it.sv ? it.kcal : (it.kcal * (it.portions?.[0]?.g ?? 100)) / 100);
+
+/** Each core food's keys (its name, head, aliases) → the lowest and highest default-portion kcal among them. */
+function genericKcal(entries: readonly Entry[]): Map<string, [number, number]> {
+  const out = new Map<string, [number, number]>();
+  for (const e of entries) {
+    if (e.pen > 0) continue;
+    const kcal = defaultKcal(e.it);
+    for (const k of [e.n, headOf(e.it.name), ...e.al]) {
+      const r = out.get(k);
+      if (!r) out.set(k, [kcal, kcal]);
+      else (r[0] = Math.min(r[0], kcal)), (r[1] = Math.max(r[1], kcal));
+    }
+  }
+  return out;
+}
+
+/** A chain menu's penalty off its shop (Entry `ex`; none for one the shop published whole): IMPLAUSIBLE_PENALTY for a
+ *  serving (its kcal: Kalori's are per serving) far from its generic food's, else EST_PENALTY for a guessed kcal. */
+export function chainPenalty(it: Item, e: Entry, generic: ReadonlyMap<string, readonly [number, number]>): number {
+  if (!it.est) return 0;
+  // (a head only for a name with one: no key built for the rest)
+  const r = generic.get(e.n) ?? (HEAD_END.test(it.name) ? generic.get(headOf(it.name)) : undefined);
+  const kcal = defaultKcal(it);
+  return r && (kcal > IMPLAUSIBLE_RATIO * r[1] || kcal * IMPLAUSIBLE_RATIO < r[0]) ? IMPLAUSIBLE_PENALTY : it.est === 'e' ? EST_PENALTY : 0;
+}
+
 /** A dataset into the catalog: its items searchable (a `secondary` one's ranked lower, a product's or a chain menu's
  *  lower still), its header credited. With `pause`, a slice at a time, awaiting it in between (the slices stay in order and together). */
 export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number], data: Dataset, pause?: () => Promise<void>): Promise<void> {
@@ -70,11 +112,16 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
   if (data.shops) addShops(db, data.shops);
   const items = data.items;
   const brands = new Map<string, readonly string[]>();
+  // (the core foods' default kcal, for a chain menu's: the core datasets are in before a lazy one)
+  const generic = meta.source === 'kalori' ? genericKcal(db.entries) : null;
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();
     for (let j = i; j < Math.min(items.length, i + SLICE); j++) {
       const it = items[j];
-      db.entries.push(entryOf(it, pen, brands));
+      const e = entryOf(it, pen, brands);
+      const x = generic && it.est ? chainPenalty(it, e, generic) : 0;
+      if (x) e.ex = x;
+      db.entries.push(e);
       if (!db.byId.has(it.id)) db.byId.set(it.id, it);
       if (it.vg) (db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!).push(it);
     }
