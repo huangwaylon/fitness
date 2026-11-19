@@ -37,7 +37,7 @@
   .mk { position: absolute; top: 3px; right: 3px; width: 11px; height: 11px; }
   .mk, .sw { border-radius: 50%; font: 700 9px/11px var(--font-ui); font-style: normal; text-align: center; }
   .sw { width: 11px; height: 11px; }
-  .action { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 1px rgb(74 58 44 / .55), 0 0 0 1.5px var(--card); }
+  .action { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 55%, transparent), 0 0 0 1.5px var(--card); }
   .hold { box-shadow: inset 0 0 0 2px var(--c-yuzu-lip); }
   .booked { color: var(--leaf-text); }
   .mk.booked { width: auto; height: auto; }
