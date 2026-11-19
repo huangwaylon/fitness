@@ -2,7 +2,7 @@
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names each file's version, fileV), then the core datasets and verify.json
 // together; the lazy ones (the products, 30k by column, 4 MB; the chain menus, Kalori) only once asked for
-// (`db.wantMore`: all at the search's open, a logged entry's own for its day). A dataset that fails to load is left
+// (`db.wantMore`: all at the search's first keystroke, a day's products; a chain menu's id shard: `db.wantIds`). A dataset that fails to load is left
 // out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.

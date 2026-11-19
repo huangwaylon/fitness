@@ -132,14 +132,23 @@
     foodDb().then((d) => {
       if (!live) return;
       db = d;
-      // (the products with it: a search's, never the sheet's open; search again as each comes in)
+      // (search again as each dataset comes in; さいきん's chain menus by their id shards: their pictures and shops)
       stop = d.onAdd(() => more++);
-      void d.wantMore().then(() => live && (settled = true, more++));
+      void d.wantIds([...recent, ...mine].map((e) => e.f.id).filter((id) => id.startsWith('kal:')));
     }, () => live && (failed = true));
     return () => {
       live = false;
       stop();
     };
+  });
+  // (the products and the chain menus, 2 MB: at the first thing typed (a kana mid-composition too), never for a pick
+  // from さいきん or いつもの)
+  let wanted: FoodDb | null = null;
+  $effect(() => {
+    const d = db;
+    if (!d || !text.trim() || wanted === d) return;
+    wanted = d;
+    void d.wantMore().then(() => d === db && (settled = true, more++));
   });
   $effect(() => {
     if (!back && matchMedia('(hover: hover)').matches) input?.focus();

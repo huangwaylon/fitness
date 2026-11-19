@@ -25,9 +25,9 @@ export interface FoodDb {
   /** The chain menus' shops (Kalori's header `shops`): each name's and alias's key → the shop's id (a query naming
    *  one: shopIn). */
   shopKeys: Map<string, string>;
-  /** The lazy datasets (products, the chain menus) fetched now, each once: all for the search's open, only `sources`'
-   *  (index.json's `source`: lazySources) for a day with one logged; never the sheet's open. Settles once they're in
-   *  (or failed): search again then. */
+  /** The lazy datasets (products, the chain menus) fetched now, each once: all at the search's first keystroke, only
+   *  `sources`' (index.json's `source`) for a scan or a day's (wantIds); never the sheet's or the search's open. Settles
+   *  once they're in (or failed): search again then. */
   wantMore(sources?: readonly string[]): Promise<void>;
   /** The foods of these ids (a day's entries, さいきん's rows) without a search's datasets where it can: a chain menu's
    *  from its id shard (~11 KB of the 1.2 MB file; the file when the index has none) into `shard`, a product's the

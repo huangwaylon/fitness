@@ -239,6 +239,29 @@ test('a day with a chain menu logged: its id shard (kal/, ~11 KB), never the 1.2
   expect(asked[0]).toMatch(/^kal\/\d+\.json$/);
 });
 
+test('the search’s open asks for neither big dataset: さいきん’s chain menu from its id shard (its shop), the first kana typed brings both', async ({ browser }) => {
+  const rec = newRecord();
+  const a = await search(browser, rec, 'A');
+  await a.sheet.locator('[data-food-q]').fill('みほんカレー');
+  await a.sheet.locator('[data-food-results] li:has([data-item="kal:900005"]) [data-quick]').click({ timeout: 15_000 });
+  await expect.poll(() => rec.sent.filter((e) => e.type === 'food' && e.ok).length).toBe(1);
+  // the next launch, at 夕ごはん's search
+  const asked: string[] = [];
+  a.page.on('request', (r) => {
+    const f = /\/food\/(products\.json|kalori\.json|kal\/\d+\.json)/.exec(r.url())?.[1];
+    if (f) asked.push(f.replace(/\d+/, 'n'));
+  });
+  await a.page.context().route(/\/food\/kal\/\d+\.json(\?|$)/, (route) => route.fulfill({ status: 200, contentType: 'application/json', body: DATA }));
+  await a.page.reload();
+  await islandUp(a.page);
+  await openKenkou(a.page, 'food');
+  await a.sheet.locator('[data-add=d]').click();
+  await expect(a.sheet.locator('[data-food-recent] [data-item="kal:900005"] [data-brand]')).toHaveText('みほん珈琲', { timeout: 15_000 });
+  expect(asked).toEqual(['kal/n.json']);
+  await a.sheet.locator('[data-food-q]').pressSequentially('み');
+  await expect.poll(() => [...asked].sort()).toEqual(['kal/n.json', 'kalori.json', 'products.json']);
+});
+
 test('the guest’s phone has the chain menus too: the same file, its rows and their pictures', async ({ browser }) => {
   const g = await search(browser, newRecord(), 'G');
   await expect(g.sheet.locator('[data-food-results] [data-item="kal:900001"]')).toBeVisible({ timeout: 15_000 });

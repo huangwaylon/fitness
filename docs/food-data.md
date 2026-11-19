@@ -72,7 +72,7 @@ fetch; it asks for the deployed build). `files` (required):
 each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its bytes; `version`: the same over all of
 them (`food-data.ts`). `secondary` datasets rank
 slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked
-for (`db.wantMore`: the search open, or a day with a product logged), parsed in a worker; a late dataset calls
+for (`db.wantMore`: the search's first keystroke, or a day with a product logged), parsed in a worker; a late dataset calls
 `db.onAdd` and the search runs again. A day's (or さいきん's) chain menu comes from its id shard instead (`db.wantIds`).
 
 **`verify.json`**: `{ "sources": {src: { "label", "license", "url", "attribution" }}, "groups": [{ "n", "kcal": {src:
