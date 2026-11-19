@@ -16,8 +16,9 @@ export interface FoodDb {
   verify: Verify | null;
   /** Each item by its id (the first dataset's, should two hold one): an entry's food in O(1), never a scan of 20k. */
   byId: Map<string, Item>;
-  /** The barcode shards' items asked for (load.ts janItem: a scan, an entry's 最新の値にする), by id: not searchable,
-   *  so apart from byId (a scan's lookup tells ours from the shards'). */
+  /** The shards' items asked for, by id: the barcode shards' (load.ts janItem: a scan, an entry's 最新の値にする), the
+   *  chain menus' id shards' (wantIds); not searchable, so apart from byId (a scan's lookup tells ours from the
+   *  shards'). itemById reads both. */
   shard: Map<string, Item>;
   /** Each food in its states (`vg` → its items, in the chips' order: variantsOf). */
   variants: Map<string, Item[]>;
@@ -28,6 +29,10 @@ export interface FoodDb {
    *  (index.json's `source`: lazySources) for a day with one logged; never the sheet's open. Settles once they're in
    *  (or failed): search again then. */
   wantMore(sources?: readonly string[]): Promise<void>;
+  /** The foods of these ids (a day's entries, さいきん's rows) without a search's datasets where it can: a chain menu's
+   *  from its id shard (~11 KB of the 1.2 MB file; the file when the index has none) into `shard`, a product's the
+   *  products' file. Settles once they're in, or failed (asked again next time); `onAdd`'s told when shard items came. */
+  wantIds(ids: Iterable<string>): Promise<void>;
   /** The lazy datasets asked for and not yet in (or failed): a search says 読み込み中, never 見つかりませんでした. */
   pending: boolean;
   /** `f` called each time a dataset is added after the load (a lazy one, one fetched again): search again; the stop. */
@@ -41,19 +46,7 @@ export interface FoodDb {
 /** A load's ms to searchable: `core` (index.json and the core datasets), a lazy dataset's source, `jan` a shard. */
 export type Timed = (set: string, ms: number) => void;
 
-export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
-
-/** The lazy datasets' sources by their ids' prefix: a product's (`off:`) or a chain menu's (`kal:`). */
-const LAZY_PREFIX: Record<string, string> = { 'off:': 'off', 'kal:': 'kalori' };
-/** The lazy datasets (index.json `source`) foods with these ids come from: what a day's entries need (wantMore). */
-export const lazySources = (ids: Iterable<string>): string[] => {
-  const out = new Set<string>();
-  for (const id of ids) {
-    const s = LAZY_PREFIX[id.slice(0, 4)];
-    if (s) out.add(s);
-  }
-  return [...out];
-};
+export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), wantIds: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;
@@ -127,9 +120,18 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
       if (x) e.ex = x;
       db.entries.push(e);
       if (!db.byId.has(it.id)) db.byId.set(it.id, it);
-      if (it.vg) (db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!).push(it);
+      addVariant(db, it);
     }
   }
+}
+
+/** An item into its food's states (`vg`), in place of a copy of it already there (an id shard's, before its dataset). */
+export function addVariant(db: FoodDb, it: Item): void {
+  if (!it.vg) return;
+  const vs = db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!;
+  const at = vs.findIndex((x) => x.id === it.id);
+  if (at < 0) vs.push(it);
+  else vs[at] = it;
 }
 
 /** A chain menu's shops into the catalog, each by its name (セブン-イレブン typed with or without its dash) and our
@@ -241,8 +243,8 @@ export function fillIn(d: Dataset): Dataset {
   return d;
 }
 
-/** The catalog's item of an id, if the catalog is in and has it. */
-export const itemById = (db: FoodDb | null, id: string): Item | undefined => db?.byId.get(id);
+/** The catalog's item of an id (a shard's when only it has it: `shard`), if the catalog is in and has it. */
+export const itemById = (db: FoodDb | null, id: string): Item | undefined => db?.byId.get(id) ?? db?.shard.get(id);
 
 /** The states a food's chips offer (food-data's variant_groups), in process order; `st` the chip's label. */
 const STATES = ['乾', '生', 'ゆで', '水煮', '蒸し', '焼き', 'レンジ', 'いため', 'ソテー'] as const;

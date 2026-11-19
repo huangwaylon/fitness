@@ -73,7 +73,7 @@ each shipped file's own cache key (`?v=`), 12 hex digits of the sha256 of its by
 them (`food-data.ts`). `secondary` datasets rank
 slightly below the core ones (mext, dishes, eatout) on equal matches. `lazy` ones (`products.json`, `kalori.json`) load only when asked
 for (`db.wantMore`: the search open, or a day with a product logged), parsed in a worker; a late dataset calls
-`db.onAdd` and the search runs again.
+`db.onAdd` and the search runs again. A day's (or さいきん's) chain menu comes from its id shard instead (`db.wantIds`).
 
 **`verify.json`**: `{ "sources": {src: { "label", "license", "url", "attribution" }}, "groups": [{ "n", "kcal": {src:
 kcal per 100 g} }], "byId": {item id: group index} }`. `src` is a dataset `source` (the item id prefix) or `usda`; every
@@ -84,6 +84,11 @@ src used in a group is in `sources`. See [Verification](#verification).
 `source: off`, no aliases) with only the codes beyond `products.json`, no store code (GS1 02, 20–29) or name under 2
 letters (`lib/food/jan.ts`), under index.json's `jan` (one `?v=` for every shard; ODbL 1.0 as the products). Keys are JAN/EAN-13 or
 JAN-8 with a valid check digit (`lib.py` `norm_jan`); UPC-A is zero-padded to 13, UPC-E and GTIN-14 dropped.
+
+**`kal/<n>.json`**, made at each build from the shipped `kalori.json` (`scripts/food-shards.ts`, `lib/food/kal.ts`;
+never committed): its items in id order cut into 100 runs, the build's kal/at.json each run's first id, by column without
+aliases, its shops' names in `shops`; an item of a `vg` group sits in its group's shard, named in its own shard's
+`with` (id → group id). ~11 KB brotli each, under kalori.json's `?v=`: a day's chain menu without the 1.2 MB file.
 
 ## Sources
 

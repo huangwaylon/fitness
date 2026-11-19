@@ -113,12 +113,15 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
 }
 /** The meal log's food data (static/food/, lib/food/load.ts): ~14 MB (3 MB of the core, the
  *  lazy products' 4 and chain menus' 7), fetched when the food sheet first opens and kept in
- *  a cache of its own that outlives builds; a barcode shard (jan/, ~5 KB gzipped) only once a scan asks for it, kept while the
- *  index's `jan` names its version. Each file carries its own version (`?v=`: index.json's `files`), so a refresh
+ *  a cache of its own that outlives builds; a barcode shard (jan/, ~5 KB gzipped) only once a scan asks for it, a chain
+ *  menu's id shard (kal/, ~11 KB, made at the build) once a day or さいきん shows one of its foods, each kept while the
+ *  index names its version (`jan`; kalori.json's). Each file carries its own version (`?v=`: index.json's `files`), so a refresh
  *  of one (Kalori's, weekly) refetches that one; index.json, which names them, doesn't. v2 since schema 2 (every file by
  *  column): the activate's sweep deletes v1, so this build never meets a file of the old layout. */
 export const FOOD_CACHE = 'island-food-v2';
-export const isFoodData = (path: string): boolean => /\/food\/(jan\/)?[\w-]+\.json$/.test(path);
+export const isFoodData = (path: string): boolean => /\/food\/((jan|kal)\/)?[\w-]+\.json$/.test(path);
+/** A shard's folder (jan/, kal/) in a food file's path, its index.json the folder's above; none for the rest. */
+const SHARD_DIR = /\/food\/(jan|kal)\/[^/]+$/;
 /** English Study's banks (`english/c/<id>.<v>.json`, written by the build: lib/english/data.ts, catalog.ts bankPath):
  *  ~12 KB on the wire, ~35 KB as stored (the Cache API keeps the decoded body), fetched when a lesson opens or home prefetches it, never precached; served cache first in a cache of
  *  their own that outlives builds (the name carries the clip's version, so a copy is never stale). フレーズ's deck files
@@ -206,14 +209,15 @@ export function foodImgStale(keys: readonly string[], index: string): string[] {
   });
 }
 /** The cached food files (`keys`: their URLs) that are not one of `keep` (the URLs a whole index names: foodFiles): a
- *  file's other versions, a dataset dropped; a barcode shard (jan/, cached on use) unless under the index's `jan`.
- *  index.json (no `?v=`) never. */
-export function staleFood(keys: readonly string[], keep: readonly string[], jan?: unknown): string[] {
+ *  file's other versions, a dataset dropped; a shard (jan/, kal/: cached on use) unless under its folder's version
+ *  (`shards`: the index's `jan`, kalori.json's for kal/). index.json (no `?v=`) never. */
+export function staleFood(keys: readonly string[], keep: readonly string[], shards: { jan?: unknown; kal?: unknown } = {}): string[] {
   const named = new Set(keep);
   return keys.filter((k) => {
     const u = new URL(k, 'https://x/');
     const v = u.searchParams.get('v');
-    return v !== null && !named.has(k) && !(u.pathname.includes('/food/jan/') && v === jan);
+    const dir = SHARD_DIR.exec(u.pathname)?.[1] as 'jan' | 'kal' | undefined;
+    return v !== null && !named.has(k) && !(dir && v === shards[dir]);
   });
 }
 /** index.json waits this long for the network (a basement, one bar), then its cached copy answers (NAV_TIMEOUT_MS's
@@ -254,8 +258,8 @@ async function promoteFood(cache: FoodCacheLike, indexUrl: string): Promise<void
   }
   await cache.put(indexUrl, keep());
   await cache.delete(indexUrl + NEXT);
-  const jan = (JSON.parse(text) as { jan?: unknown }).jan;
-  for (const old of staleFood((await cache.keys()).map((k) => k.url), files, jan)) await cache.delete(old);
+  const x = JSON.parse(text) as { jan?: unknown; files: Record<string, unknown> };
+  for (const old of staleFood((await cache.keys()).map((k) => k.url), files, { jan: x.jan, kal: x.files['kalori.json'] })) await cache.delete(old);
 }
 
 /**
@@ -265,8 +269,8 @@ async function promoteFood(cache: FoodCacheLike, indexUrl: string): Promise<void
  */
 export async function foodFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = FOOD_INDEX_TIMEOUT_MS): Promise<Response> {
   const url = new URL(req.url);
-  // (a barcode shard's index is the folder's above)
-  const indexUrl = new URL(url.pathname.includes('/food/jan/') ? '../index.json' : 'index.json', url).href;
+  // (a shard's index is the folder's above)
+  const indexUrl = new URL(SHARD_DIR.test(url.pathname) ? '../index.json' : 'index.json', url).href;
   if (url.searchParams.get('v') === null && url.href.split('?')[0] !== indexUrl) return net(req);
   if (url.searchParams.get('v') === null) {
     // `after` (waitUntil) while the answer is still pending: the store may outlast it (a cached copy answered first)

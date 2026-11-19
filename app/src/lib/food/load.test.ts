@@ -4,10 +4,12 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { foodOp } from '#lib/contract/food.ts';
 import { loadFoodDb, NewerFoodData } from './load.ts';
 import { janShard, janShips } from './jan.ts';
-import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, toColumns, lazySources, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
+import { kalShard, kalShards } from './kal.ts';
+import { addDataset, countOf, credits, decodeItems, emptyDb, findFoods, FOOD_SCHEMA, toColumns, itemById, nearFoods, searchFoods, shopIn, shopsFor, SLICE, verifyOf, fromFile, type FoodDb } from './db.ts';
 import { portionsOf, toSnap } from './nutrition.ts';
 import type { Dataset, FoodIndex, Item, Shipped } from './types.ts';
 import { entryOf, holds, keysOf, tierOf, type Entry } from './search.ts';
@@ -38,6 +40,23 @@ describe('static/food', () => {
     // the lazy ones: the products and the chain menus (Kalori), both secondary
     expect(index.datasets.filter((d) => d.lazy).map((d) => d.file).sort()).toEqual(['kalori.json', 'products.json']);
     expect(index.datasets.find((d) => d.file === 'kalori.json')).toMatchObject({ source: 'kalori', secondary: true, lazy: true });
+  });
+
+  it('cuts the chain menus into id shards (kal.ts, at the build): each item in its run or its group’s (`with`), as kalori.json has it but its aliases', () => {
+    const file = JSON.parse(readFileSync(join(DIR, 'kalori.json'), 'utf8')) as Shipped;
+    const all = fromFile(file).items;
+    const { at, shards } = kalShards(file);
+    expect([at.length, shards.length, at.every((n, i) => !i || n > at[i - 1])]).toEqual([100, 100, true]);
+    const runs = shards.map((f) => ({ items: new Map(fromFile(f).items.map((it) => [it.id, it])), with: f.with }));
+    const bad = all.filter(({ aliases: _a, ...it }) => {
+      const own = runs[kalShard(at, it.id)];
+      const home = own.with[it.id] ? runs[kalShard(at, own.with[it.id])] : own;
+      return !isDeepStrictEqual(home.items.get(it.id), it);
+    });
+    expect([bad.map((it) => it.id), runs.reduce((n, r) => n + r.items.size, 0)]).toEqual([[], all.length]);
+    // (a shard ~545 items, its shops' names alone)
+    expect(Math.max(...runs.map((r) => r.items.size))).toBeLessThan(1200);
+    expect(Object.values(shards[0].shops ?? {}).every((s) => Object.keys(s).join() === 'name')).toBe(true);
   });
 
   it('ships the barcode shards beyond the products by column (jan/<last 2>.json), no store code or weak name, under index.json’s jan', () => {
@@ -171,30 +190,56 @@ describe('loadFoodDb', () => {
     expect(db.sets.length).toBe(index.datasets.length);
   });
 
-  it('fetches a lazy dataset once, when wanted: a logged entry’s alone (lazySources), the rest at a search’s want', async () => {
+  it('fetches a lazy dataset once, when wanted: a day’s products alone, a chain menu by its id shard (wantIds), the rest at a search’s want', async () => {
     const asked: string[] = [];
-    const idx: FoodIndex = { version: 'v0', files: {}, datasets: index.datasets.filter((d) => d.lazy) };
+    // (kal:5 is kept with its group's kal:9, in the second shard)
+    const kal = [{ id: 'kal:1', name: 'たこ丼', shop: 's', kcal: 500 }, { id: 'kal:9', name: 'いか 並', shop: 's', kcal: 300, vg: 'kal:9' }, { id: 'kal:5', name: 'いか 大', shop: 's', kcal: 400, vg: 'kal:9' }] as Item[];
+    const shard = (items: Item[], w = {}) => ({ ...toColumns({ source: 'kalori', shops: { s: { name: 'すし屋' } }, items }), with: w });
+    const files: Record<string, unknown> = { 'kal/at.json': { at: [1, 6] }, 'kal/0.json': shard([kal[0]], { 'kal:5': 'kal:9' }), 'kal/1.json': shard([kal[1], kal[2]]) };
+    const idx: FoodIndex = { version: 'v0', files: { 'kalori.json': 'k1' }, datasets: index.datasets.filter((d) => d.lazy) };
     const empty = (source: string): Dataset => ({ source, label: source, items: [] });
     vi.stubGlobal('fetch', async (href: string) => {
-      const file = href.match(/\/food\/([\w-]+\.json)/)![1];
+      const file = href.match(/\/food\/((kal\/)?[\w-]+\.json)/)![1];
       asked.push(file);
       if (file === 'index.json') return new Response(JSON.stringify(idx));
+      if (file.startsWith('kal/')) expect(href).toContain('?v=k1');
+      if (files[file]) return new Response(JSON.stringify(files[file]));
       return file === 'verify.json' ? new Response(null, { status: 404 }) : new Response(JSON.stringify(toColumns(empty(file))));
     });
     try {
       const got = await loadFoodDb();
+      let told = 0;
+      got.onAdd(() => told++);
       expect(asked).toEqual(['index.json', 'verify.json']);
-      expect(lazySources(['mext:01088', 'kal:1', 'kal:2', 'recipe:x'])).toEqual(['kalori']);
-      expect(lazySources(['off:4901', 'kal:1']).sort()).toEqual(['kalori', 'off']);
-      const kal = got.wantMore(lazySources(['kal:1']));
-      expect(got.pending).toBe(true);
-      await kal;
-      expect([asked.slice(2), got.pending]).toEqual([['kalori.json'], false]);
-      await got.wantMore(['kalori']);
+      await got.wantIds(['mext:01088', 'kal:1', 'kal:5', 'recipe:x']);
+      expect([asked.slice(2), got.pending, told]).toEqual([['kal/at.json', 'kal/0.json', 'kal/1.json'], false, 1]);
+      expect([itemById(got, 'kal:5')?.brand, got.variants.get('kal:9')?.map((it) => it.id), got.entries.length]).toEqual(['すし屋', ['kal:9', 'kal:5'], 0]);
+      // (each shard once; a product: the products' file)
+      await got.wantIds(['kal:1', 'kal:9', 'off:4901']);
+      expect(asked.slice(5)).toEqual(['products.json']);
       await got.wantMore();
-      expect(asked.slice(2)).toEqual(['kalori.json', 'products.json']);
-      await got.wantMore();
-      expect(asked).toHaveLength(4);
+      expect(asked.slice(6)).toEqual(['kalori.json']);
+      // (the file in: the search's items, never its shard again)
+      await got.wantIds(['kal:2']);
+      expect(asked).toHaveLength(7);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('a chain menu’s id with no shards to be had (the dev server’s build): its file', async () => {
+    const asked: string[] = [];
+    const idx: FoodIndex = { version: 'v0', files: { 'kalori.json': 'k1' }, datasets: index.datasets.filter((d) => d.lazy) };
+    vi.stubGlobal('fetch', async (href: string) => {
+      const file = href.match(/\/food\/((kal\/)?[\w-]+\.json)/)![1];
+      asked.push(file);
+      if (file.startsWith('kal/')) return new Response(null, { status: 404 });
+      return file === 'index.json' ? new Response(JSON.stringify(idx)) : new Response(JSON.stringify(toColumns({ source: file, items: [] })));
+    });
+    try {
+      const got = await loadFoodDb();
+      await got.wantIds(['kal:1']);
+      expect([asked.slice(2), got.pending]).toEqual([['kal/at.json', 'kalori.json'], false]);
     } finally {
       vi.unstubAllGlobals();
     }

@@ -46,7 +46,7 @@ function sourceOf(f: FoodSnap, src: FoodSources): { now: FoodSnap; ps: readonly 
     const c = src.customs.find((x) => `custom:${x.id}` === f.id);
     return c ? { now: customSnap(c, f.u), ps: customPortions(c) } : null;
   }
-  const it = itemById(src.db, f.id) ?? src.db?.shard.get(f.id);
+  const it = itemById(src.db, f.id);
   return it ? { now: toSnap(it, f.u), ps: portionsOf(it) } : null;
 }
 
@@ -89,7 +89,7 @@ export async function shardsFor(db: FoodDb, ids: Iterable<string>): Promise<bool
   const want = [...new Set(ids)].filter((id) => /^off:\d{8,13}$/.test(id));
   if (!want.length || !db.jan) return false;
   await db.wantMore(['off']).catch(() => {});
-  const got = await Promise.all(want.filter((id) => !itemById(db, id) && !db.shard.has(id)).map((id) => janItem(db, id.slice(4)).catch(() => null)));
+  const got = await Promise.all(want.filter((id) => !itemById(db, id)).map((id) => janItem(db, id.slice(4)).catch(() => null)));
   return got.some((it) => !!it);
 }
 

@@ -6,8 +6,9 @@
 // out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
-import { addDataset, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb, type Timed } from './db.ts';
+import { addDataset, addVariant, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb, type Timed } from './db.ts';
 import { janShard } from './jan.ts';
+import { kalShard, type KalShard } from './kal.ts';
 import type { Dataset, FoodIndex, Item, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
 import { quiet, swallowed } from '#lib/quiet.ts';
@@ -221,6 +222,49 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: 
       asked.set(d.file, load(d).then((ok) => void (ok && !closed && timed?.(d.source, performance.now() - t1))).then(done, done));
     }
     return Promise.all(sets.map((d) => asked.get(d.file))).then(() => {});
+  };
+  // (a chain menu by its id: its id shard (kal/, ~11 KB; kal.ts), all under kalori.json's version: the runs' first ids
+  // (at.json), then each shard, once for this catalog (one that fails: asked again next time), its items into `shard`
+  // and their states into `variants`; `with`, the ones kept in another)
+  const kalori = lazy.find((d) => d.source === 'kalori');
+  const kalV = kalori && fileV(index, kalori.file);
+  let kalAt: Promise<readonly number[]> | null = null;
+  const kalShards = new Map<number, Promise<void>>();
+  const kept = new Map<string, string>();
+  const once = <T,>(p: Promise<T>, forget: () => void): Promise<T> => (p.catch(forget), p);
+  const kalFetch = (n: number): Promise<void> => {
+    const href = url(`kal/${n}.json`, kalV);
+    const p = kalShards.get(n) ?? once(json<KalShard>(href).then((f) => {
+      if (closed) return;
+      for (const it of fromFile(byColumn(f, href)).items) {
+        if (db.byId.has(it.id)) continue;
+        db.shard.set(it.id, it);
+        addVariant(db, it);
+      }
+      for (const [id, vg] of Object.entries(f.with ?? {})) kept.set(id, vg);
+    }), () => kalShards.delete(n));
+    kalShards.set(n, p);
+    return p;
+  };
+  const missing = (ids: readonly string[]) => ids.filter((id) => !db.byId.has(id) && !db.shard.has(id));
+  const chain = async (ids: readonly string[]): Promise<void> => {
+    const t1 = performance.now();
+    const at = await (kalAt ??= once(json<{ at: number[] }>(url('kal/at.json', kalV)).then((x) => x.at), () => (kalAt = null)));
+    const shards = (of: readonly string[]) => Promise.all([...new Set(of.map((id) => kalShard(at, id)))].map(kalFetch));
+    await shards(ids);
+    // (one kept with its group in another shard: that one)
+    await shards(missing(ids).flatMap((id) => kept.get(id) ?? []));
+    if (closed) return;
+    timed?.('kal', performance.now() - t1);
+    listeners.forEach((f) => f());
+  };
+  db.wantIds = async (ids) => {
+    const list = [...new Set(ids)];
+    const kal = missing(list.filter((id) => id.startsWith('kal:')));
+    // (the chain menus' file asked for already, or no shards (the dev server's build has none): the file)
+    const byFile = kal.length > 0 && (!kalV || asked.has(kalori!.file));
+    const sets = [...(list.some((id) => id.startsWith('off:')) ? ['off'] : []), ...(byFile ? ['kalori'] : [])];
+    await Promise.allSettled([sets.length ? db.wantMore(sets) : null, kal.length && !byFile ? chain(kal).catch(() => db.wantMore(['kalori'])) : null]);
   };
   return db;
 }

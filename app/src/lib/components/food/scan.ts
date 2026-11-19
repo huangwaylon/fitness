@@ -4,7 +4,7 @@
 // drop (index.json `drop`) is nothing at once; a マイ食品 of the user's made from the product (ownFood) comes first. Each outcome is one usage counter (`act:scan.<outcome>`: found,
 // mine, found.jan, fallback, miss, dropped, offline, late), never the code or the food
 // (docs/ops/observability.md).
-import { itemById, janItem, type FoodDb, type Item } from '#lib/food/index.ts';
+import { janItem, type FoodDb, type Item } from '#lib/food/index.ts';
 import { barcodeKeys, type Format } from '#lib/scan/barcode.ts';
 import { offLookup, type OffAnswer } from '#lib/scan/off.ts';
 import { count } from '#lib/sync/log.ts';
@@ -52,7 +52,7 @@ export async function lookupCode(raw: string, db: FoodDb | null, note: string, f
   if (db && keys.some((k) => db.drop.has(k))) return counted({ k: 'miss' }, 'dropped');
   const inTime = !db || (await productsIn(db, loading));
   for (const k of keys) {
-    const it = itemById(db, `off:${k}`);
+    const it = db?.byId.get(`off:${k}`);
     if (it) return counted({ k: 'ours', item: it });
   }
   // (a shard that won't load, offline: on to OFF, which says offline)

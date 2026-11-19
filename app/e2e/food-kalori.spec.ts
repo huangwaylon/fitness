@@ -216,6 +216,29 @@ test('a chain menu’s sizes and milks: two chip groups, a pick keeps the ×n; a
   await expect(kcal).toHaveText('645 kcal');
 });
 
+test('a day with a chain menu logged: its id shard (kal/, ~11 KB), never the 1.2 MB file; 最新の値にする from it', async ({ browser }) => {
+  const rec = newRecord();
+  const a = await search(browser, rec, 'A');
+  await a.sheet.locator('[data-food-results] li:has([data-item="kal:900001"]) [data-quick]').click({ timeout: 15_000 });
+  await expect.poll(() => rec.sent.filter((e) => e.type === 'food' && e.ok).length).toBe(1);
+  // the next launch: the chain menu's kcal fixed since (its shard: here the fixture's items, 1180 → 1200 kcal)
+  const asked: string[] = [];
+  const fixed = JSON.parse(DATA) as { cols: Record<string, unknown[]> };
+  fixed.cols.kcal[fixed.cols.id.indexOf('900001')] = 1200;
+  await a.page.context().route(/\/food\/(kalori\.json|kal\/\d+\.json)(\?|$)/, (route) => {
+    const f = /\/food\/([^?]+)/.exec(route.request().url())![1];
+    asked.push(f);
+    return route.fulfill({ status: 200, contentType: 'application/json', body: f === 'kalori.json' ? DATA : JSON.stringify(fixed) });
+  });
+  await a.page.reload();
+  await islandUp(a.page);
+  await openKenkou(a.page, 'food');
+  const fresh = a.sheet.locator('section[data-meal=l] [data-fresh]');
+  await expect(fresh).toContainText('最新の値にする（1,180→1,200 kcal）', { timeout: 15_000 });
+  expect(asked).toHaveLength(1);
+  expect(asked[0]).toMatch(/^kal\/\d+\.json$/);
+});
+
 test('the guest’s phone has the chain menus too: the same file, its rows and their pictures', async ({ browser }) => {
   const g = await search(browser, newRecord(), 'G');
   await expect(g.sheet.locator('[data-food-results] [data-item="kal:900001"]')).toBeVisible({ timeout: 15_000 });

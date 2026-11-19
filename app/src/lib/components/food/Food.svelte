@@ -46,7 +46,7 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { itemsKcal, lazySources, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
+  import { itemsKcal, portionsOf, toSnap, type Item } from '#lib/food/index.ts';
   import { freshChange, latestFood, shardsFor, type Fresh, type FreshChange } from './fresh.ts';
   import { shortDay } from '#lib/i18n/when.ts';
   import FoodSummary from './FoodSummary.svelte';
@@ -436,10 +436,10 @@
     const db = catalog;
     if (db) return db.onAdd(() => db === held.db && catalogRev++);
   });
-  // (the products or the chain menus only for a day with one of theirs logged, each alone: never for the open, 4–7 MB)
+  // (a day's products and chain menus, never for the open: the products' file, a chain menu's id shard)
   $effect(() => {
-    const want = lazySources(day?.entries.map((e) => e.f.id) ?? []);
-    if (catalog && want.length) void catalog.wantMore(want);
+    const ids = day?.entries.map((e) => e.f.id) ?? [];
+    if (catalog) void catalog.wantIds(ids);
   });
   // (a barcode-only product logged (its shard's, not in products.json): its shard too, once the products are in)
   $effect(() => {
