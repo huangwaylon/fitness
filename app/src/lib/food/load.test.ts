@@ -648,4 +648,27 @@ describe('a dataset that fails to load', () => {
       vi.useRealTimers();
     }
   });
+
+  it('times each load (perf.food): the core once, a lazy dataset once it is in, never a failed one', async () => {
+    const real = fromFile(JSON.parse(readFileSync(join(DIR, index.datasets[0].file), 'utf8')) as Shipped);
+    const small = toColumns({ ...real, items: real.items.slice(0, 5) });
+    const idx: FoodIndex = { version: 'v1', files: {}, datasets: [{ ...index.datasets[0], file: 'a.json', lazy: false },
+      { ...index.datasets[0], file: 'p.json', source: 'off', lazy: true }, { ...index.datasets[0], file: 'k.json', source: 'kalori', lazy: true }] };
+    vi.stubGlobal('fetch', async (href: string) => {
+      if (href.includes('index.json')) return new Response(JSON.stringify(idx));
+      if (href.includes('k.json')) throw new TypeError('offline');
+      return href.includes('verify.json') ? new Response(null, { status: 404 }) : new Response(JSON.stringify(small));
+    });
+    try {
+      const times: [string, number][] = [];
+      const got = await loadFoodDb(undefined, (set, ms) => void times.push([set, ms]));
+      expect(times.map(([s]) => s)).toEqual(['core']);
+      await got.wantMore();
+      await got.wantMore();
+      expect(times.map(([s]) => s)).toEqual(['core', 'off']);
+      expect(times.every(([, ms]) => ms >= 0)).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

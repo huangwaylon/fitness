@@ -32,6 +32,9 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 
 ### What we log
 Every event, its level, fields, kinds and when it is logged: the registry, `app/src/lib/contract/log.ts` `LOG_EVENTS`.
+ごはん's counters (how, never what): `act:food.add.<row|open|recent|amount|custom|recipe|quick|copy>`, `act:food.unadd`,
+`trip.amount`, `edit`, `remove`, `fresh`, `search.none`, `tab.chart`; the scanner's `act:scan.*` ([food-data.md](../food-data.md#barcodes));
+the catalog's load times `perf.food`; the health sheet opened on ごはん is `perf.sheet` / `sheet:` `food`.
 
 ### Naming and levels
 - Names are `area.verb` / `area.noun` (app, perf, api, sync, queue, ws, gl, chunk, storage, log, cron, room, admin,

@@ -9,6 +9,7 @@
   // opening on it, or its tab) it starts on 記録, today, the day at its top (Food's `open`: its reset, and its
   // catalogue's idle load while it shows). A tree popup's ごはん button (open.svelte.ts askFood) opens it on ごはん, today, on the
   // tree's owner's day (the one whose); a goal's cell there (askActivity) on 健康's 活動, that person's, at the goal's card.
+  // The log names it by its tab (Sheet's `timed`: perf.sheet and `sheet:` say food when it opens on ごはん, an error the tab shown).
   import { untrack, type Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -90,7 +91,7 @@
 
 {#snippet pages()}<KenkouSwitch items={TABS} value={tab} label={t('health.tabs')} onpick={pick} />{/snippet}
 
-<Sheet bind:this={sheet} bind:open tunes label={t('title.health')} variant="pop" onclose={closed} timed="health" keep>
+<Sheet bind:this={sheet} bind:open tunes label={t('title.health')} variant="pop" onclose={closed} timed={tab === 'food' ? 'food' : 'health'} keep>
   <div class="titlebar">
     {#if tab === 'food' && back}
       <NavBar title={foodTitle} onback={back} onclose={close} sfx="self" />

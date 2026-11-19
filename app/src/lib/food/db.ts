@@ -35,7 +35,11 @@ export interface FoodDb {
   /** The catalog let go (dbHold's drop): a dataset still loading for it is dropped, its parse in the worker cancelled
    *  (the chain menus' items, ~35 MB as they arrive, would stay alive till that parse ended), never retried or added. */
   close(): void;
+  /** How long a load took (load.ts loadFoodDb's `timed`: the log's perf.food): a barcode shard's fetch says it here. */
+  timed?: Timed;
 }
+/** A load's ms to searchable: `core` (index.json and the core datasets), a lazy dataset's source, `jan` a shard. */
+export type Timed = (set: string, ms: number) => void;
 
 export const emptyDb = (index: Partial<FoodIndex>): FoodDb => ({ jan: index.jan, drop: new Set(Array.isArray(index.drop) ? index.drop : []), sets: [], entries: [], verify: null, byId: new Map(), shard: new Map(), variants: new Map(), shopKeys: new Map(), pending: false, wantMore: () => Promise.resolve(), onAdd: () => () => {}, close: () => {} });
 

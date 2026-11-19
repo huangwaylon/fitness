@@ -6,6 +6,11 @@ import { quiet } from '#lib/quiet.ts';
 import { loadFoodDb, NewerFoodData, type FoodDb } from '#lib/food/index.ts';
 import { dropFoodImages, loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
+import { log } from '#lib/sync/log.ts';
+
+/** The log's perf.food: each load's ms to searchable (lib/food/load.ts `timed`), by what it loaded. */
+const SETS = new Set(['core', 'off', 'kalori', 'jan']);
+const timed = (set: string, ms: number): void => log('perf.food', { set: SETS.has(set) ? set : 'other', ms: Math.round(ms) });
 
 /** The catalog and the pictures' index while held (null: not in yet, or let go): what ごはん's components read. A load
  *  let go before it came in never lands here (the next one does: one catalog at a time). */
@@ -18,7 +23,7 @@ let dbP: Promise<FoodDb> | null = null;
 /** The food catalog, fetched when the search or an amount first needs it, or at idle once a day is up (foodDbSoon); a
  *  failure lets the next call try again. */
 export function foodDb(): Promise<FoodDb> {
-  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance).then(
+  const p: Promise<FoodDb> = (dbP ??= loadFoodDb(nextChance, timed).then(
     (db) => {
       if (dbP === p) held.db = db;
       return db;

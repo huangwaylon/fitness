@@ -5,6 +5,7 @@ import type { Item } from '#lib/food/index.ts';
 import { t } from '#lib/i18n/index.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { logRecipe, removeRecipe, saveRecipe } from '#lib/store/meals.ts';
+import { count } from '#lib/sync/log.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import { itemOf, recipeItem, type RecipeDraft } from './foodUi.ts';
 import { servingOnly } from './portions.ts';
@@ -126,7 +127,7 @@ export class RecipeFlow {
     // 保存して追加: one serving (1人前) logged too, back to the meal's search
     const one = recipeItem(r).portions![0];
     const lr = logRecipe({ recipeId: r.id, d: e.date(), m: meal, g: one.g, u: one.label });
-    if (lr.ok) e.said('food.added', { meal: mealName(meal) });
+    if (lr.ok) e.said('food.added', { meal: mealName(meal) }), count('act:food.add.recipe');
     e.logged(lr.id);
   }
   remove(id: string): void {
@@ -145,7 +146,7 @@ export class RecipeFlow {
   /** A recipe logged as a meal of mine on the day shown. */
   log(l: LevelOf<'rlog'>, v: { m: LevelOf<'rlog'>['meal']; g: number; u: string | null }): void {
     const r = logRecipe({ recipeId: l.r.id, d: this.#e.date(), m: v.m, g: v.g, u: v.u ?? undefined });
-    if (r.ok) this.#e.said('food.added', { meal: mealName(v.m) });
+    if (r.ok) this.#e.said('food.added', { meal: mealName(v.m) }), count('act:food.add.recipe');
     this.#e.logged(r.id);
   }
 }

@@ -6,7 +6,7 @@
 // out (its items unsearchable) till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts
 // nextChance; none: no retry; `db.onAdd` says when one comes in, the search searching again); only a missing
 // index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
-import { addDataset, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb } from './db.ts';
+import { addDataset, emptyDb, FOOD_SCHEMA, fromFile, type FoodDb, type Timed } from './db.ts';
 import { janShard } from './jan.ts';
 import type { Dataset, FoodIndex, Item, Shipped, Verify } from './types.ts';
 import type { Parsed } from './dataset.worker.ts';
@@ -129,10 +129,13 @@ export async function janItem(db: FoodDb, code: string): Promise<Item | null> {
   const href = url(`jan/${janShard(code)}.json`, db.jan);
   let p = shards.get(href);
   if (!p) {
+    const t0 = performance.now();
     p = fetch(href, { signal: AbortSignal.timeout(JAN_TIMEOUT_MS) }).then(async (res) => {
       if (res.status === 404) return new Map<string, Item>();
       if (!res.ok) throw new Error(`${href}: ${res.status}`);
-      return new Map(fromFile((await res.json()) as Shipped).items.map((it) => [it.jan ?? it.id.slice(4), it]));
+      const m = new Map(fromFile((await res.json()) as Shipped).items.map((it) => [it.jan ?? it.id.slice(4), it]));
+      db.timed?.('jan', performance.now() - t0);
+      return m;
     });
     shards.set(href, p);
     p.catch(() => shards.delete(href));
@@ -149,8 +152,11 @@ export const forgetShards = (): void => shards.clear();
  *  deployed build reads it (dbHold asks Kit for it). */
 export class NewerFoodData extends Error {}
 
-/** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
-export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
+/** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. `timed`: each load's ms to
+ *  searchable (the core datasets from index.json's fetch, a lazy one from being asked for, a barcode shard's fetch;
+ *  a failed one never), kept on the catalog for the shards. */
+export async function loadFoodDb(chance?: (n: number) => Promise<void>, timed?: Timed): Promise<FoodDb> {
+  const t0 = performance.now();
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
   if (typeof index.schema === 'number' && index.schema > FOOD_SCHEMA) {
     swallowed('food.schema');
@@ -158,6 +164,7 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
   }
   if (!index.files || typeof index.files !== 'object') throw new Error('food index.json without files');
   const db = emptyDb(index);
+  db.timed = timed;
   // (its close: what's still loading dropped, never retried or added)
   const mine = new Set<number>();
   let closed = false;
@@ -186,17 +193,20 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
       if (n < RETRIES) again(meta, n + 1);
       else swallowed('food.gaveup');
     }));
+  // (true: in, false: failed, to come again at its next chance)
   const load = (meta: FoodIndex['datasets'][number]) =>
-    get(meta).then((d) => add(meta, d), () => {
-      if (closed) return;
+    get(meta).then((d) => add(meta, d)).then(() => true, () => {
+      if (closed) return false;
       swallowed('food.load');
       again(meta, 0);
+      return false;
     });
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)
   const [verify] = await Promise.all([quiet(json<Verify>(url('verify.json', fileV(index, 'verify.json'))), 'food.verify', null), ...core.map((d) => load(d))]);
   db.verify = verify;
+  timed?.('core', performance.now() - t0);
   // (each lazy dataset fetched once, when first wanted: all of them for a search, an entry's alone for a day with it)
   const asked = new Map<string, Promise<void>>();
   let waiting = 0;
@@ -206,8 +216,9 @@ export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise
       if (asked.has(d.file)) continue;
       waiting++;
       db.pending = true;
+      const t1 = performance.now();
       const done = () => void (db.pending = --waiting > 0);
-      asked.set(d.file, load(d).then(done, done));
+      asked.set(d.file, load(d).then((ok) => void (ok && !closed && timed?.(d.source, performance.now() - t1))).then(done, done));
     }
     return Promise.all(sets.map((d) => asked.get(d.file))).then(() => {});
   };

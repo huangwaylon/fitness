@@ -26,7 +26,7 @@
   // too). The sheet resets what each opening resets itself.
   // `tunes`: its open and close tunes (panel-open / panel-close; mounted already open, on the first tap: that is an open too).
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts), and the `sheet` of an error while
-  // it's the topmost; `name` (else `timed`): its usage counter's id (`sheet:<name>`, a stable token, never the title's
+  // it's the topmost (a sheet of tabs: the shown one's, 健康 | ごはん); `name` (else `timed` as it opened): its usage counter's id (`sheet:<name>`, a stable token, never the title's
   // i18n key: a rename split the series).
   // A full-height sheet (top, pop, full) joins ui.up once its first frame is out: the island hides under it then; its
   // close ends the banner (an undo held by it goes out).
@@ -115,12 +115,11 @@
       // the log's usage counter, by a stable id (never its text: sync/log.ts)
       if (logOn()) count(`sheet:${name ?? timed ?? 'other'}`);
     });
-    const shown = timed ? sheetShown(timed) : null;
-    return () =>
-      untrack(() => {
-        ui.sheets = ui.sheets.filter((x) => x !== id);
-        shown?.();
-      });
+    return () => untrack(() => void (ui.sheets = ui.sheets.filter((x) => x !== id)));
+  });
+  // (apart: a tab switched while open moves the error events' `sheet`, never counts an opening)
+  $effect(() => {
+    if (open && timed) return sheetShown(timed);
   });
 
   $effect(() => {
