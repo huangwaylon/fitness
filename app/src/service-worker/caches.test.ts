@@ -143,6 +143,9 @@ describe('precache', () => {
     const keys = ['https://x/fitness/food-img/t-meat-0-1a2b3c4d.webp', 'https://x/fitness/food-img/t-meat-0-99999999.webp', 'https://x/fitness/food-img/index.json'];
     expect(foodImgStale(keys, JSON.stringify({ sheets: ['t-meat-0-1a2b3c4d.webp'] }))).toEqual([keys[1]]);
     expect([foodImgStale(keys, 'not json'), foodImgStale(keys, '{}')]).toEqual([[], []]);
+    // the products' ids (off.json, the build's cut): only its index's version kept
+    const off = ['https://x/fitness/food-img/off.json?v=o1', 'https://x/fitness/food-img/off.json?v=o2'];
+    expect(foodImgStale(off, JSON.stringify({ sheets: [], off: 'o2' }))).toEqual([off[0]]);
   });
   it('leaves the layout’s 2D art and the world’s winter and night looks out (the 3D island draws models): cached on first use', () => {
     for (const p of ['art/deco/resident-services-winter.webp', 'art/trees/cedar-winter.webp', 'art/deco/airport-lit.webp',

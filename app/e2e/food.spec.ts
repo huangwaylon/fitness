@@ -1188,6 +1188,22 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成のイメージ');
 });
 
+// The build cuts the products' ids out of the pictures' index (scripts/food-shards.ts: index.json 772 → 308 KB): their
+// part (off.json) comes once a product's row is drawn, never for a day without one.
+test('pictures: a product’s from the index’s products part, asked for once a product’s row is drawn, not for the day', async ({ page }) => {
+  const asked: string[] = [];
+  page.on('request', (r) => void (/\/food-img\/(index|off)\.json/.test(r.url()) && asked.push(/(index|off)\.json/.exec(r.url())![0])));
+  await openFood(page);
+  await expect.poll(() => asked).toContain('index.json');
+  await sheet(page).locator('[data-add=s]').click();
+  await expect(sheet(page).locator('[data-food-q]')).toBeVisible();
+  expect(asked).not.toContain('off.json');
+  await sheet(page).locator('[data-food-q]').fill('四川豆板醤');
+  const th = sheet(page).locator('[data-food-results] [data-item="off:0078895138771"] [data-thumb]');
+  await expect(th).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
+  expect(asked.filter((f) => f === 'off.json')).toHaveLength(1);
+});
+
 // While the amount's picture (a detail sheet) is on its way, the row's thumbnail (in already) stands in, scaled up: never
 // the category's tile with an イメージ badge, then a swap.
 test('pictures: the amount shows the row’s thumbnail until its own picture is in, the badge only on a picture', async ({ page }) => {

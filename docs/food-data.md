@@ -207,8 +207,9 @@ sheet layout):
   `FI_CHECKS=1` runs a vision model against vetted reference photos, then a by-eye contact sheet.
 - **Pack:** webp sprite sheets in `app/static/food-img/` (thumbnails per search neighbourhood, details per category),
   append-only and content-hashed (cached for a year); `index.json` maps each food id to its cells
-  (`lib/food/images.ts` `imgOf`); a products.json rebuild re-matches only at the next pack (needs PIL). The service
-  worker caches sheets on first use, never at install.
+  (`lib/food/images.ts` `imgOf`); a products.json rebuild re-matches only at the next pack (needs PIL). The build
+  cuts the products' ids out of it into `off.json` (`scripts/food-shards.ts`; the index's `off` its `?v=`), fetched
+  once a product's row is drawn (`loadProductImages`). The service worker caches sheets on first use, never at install.
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,100 files and 90 MB in food-img/, ≤ 400 KB a sheet, a common search's
   top 20 ≤ 128 KB of thumbnails on average, and every generic food in a table row.
 

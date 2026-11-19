@@ -155,7 +155,8 @@
   });
   /** The pictures (a food without one: its category's tile). */
   const imgs = $derived(kept.images);
-  $effect(wantImages);
+  // (a product's picture, with one among the rows: さいきん's, the results')
+  $effect(() => wantImages([...recent.map((e) => e.f.id), ...results.map((it) => it.id)]));
 
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);

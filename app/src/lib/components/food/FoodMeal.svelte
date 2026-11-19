@@ -77,7 +77,7 @@
   /** The pictures (loaded once a meal holds an entry) and, for the tiles, the catalog once it is in (never loaded here:
    *  Food.svelte's foodDbSoon, after the open; till then each row's category as this phone remembers it, loggedCat). */
   const db = $derived(held.db), imgs = $derived(held.images);
-  $effect(() => void (entries.length && open && wantImages()));
+  $effect(() => void (entries.length && open && wantImages(entries.map((e) => e.f.id))));
 </script>
 
 {#snippet cells(e: FoodEntry & { rep?: string }, r?: Recipe)}

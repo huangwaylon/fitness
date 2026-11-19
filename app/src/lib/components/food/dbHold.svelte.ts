@@ -4,7 +4,7 @@
 // is let go everywhere at once.
 import { quiet } from '#lib/quiet.ts';
 import { loadFoodDb, NewerFoodData, type FoodDb } from '#lib/food/index.ts';
-import { dropFoodImages, loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
+import { dropFoodImages, loadFoodImages, loadProductImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
 import { log } from '#lib/sync/log.ts';
 
@@ -61,7 +61,7 @@ function dropFoodDb() {
   else void dbP?.then((db) => db.close(), () => {});
   dbP = null;
   held.db = held.images = null;
-  imagesP = null;
+  imagesP = offP = null;
   dropFoodImages();
 }
 /** After the sheet's open (its 90 ms wait and 280 ms zoom) and once the page is idle (Safari: no requestIdleCallback),
@@ -78,8 +78,15 @@ export function foodDbSoon(): () => void {
   };
 }
 let imagesP: Promise<unknown> | null = null;
+let offP: Promise<unknown> | null = null;
 /** The pictures' index asked for, into `held.images` once in (none: every food keeps its tile); a component's $effect.
- *  Like the catalog, one let go mid-load never lands. */
-export function wantImages(): void {
+ *  With a product among `ids` (the rows it draws), the products' part too (images.ts loadProductImages). Like the
+ *  catalog, one let go mid-load never lands. */
+export function wantImages(ids?: Iterable<string>): void {
   const p = (imagesP ??= loadFoodImages().then((ix) => void (imagesP === p && ix && (held.images = ix)), () => void (imagesP === p && (imagesP = null))));
+  if (offP || !ids || ![...ids].some((id) => id.startsWith('off:'))) return;
+  const q: Promise<unknown> = (offP = p.then(() => held.images && loadProductImages(held.images)).then(
+    (ix) => void (offP === q && ix && imagesP === p && (held.images = ix)),
+    () => void (offP === q && (offP = null))
+  ));
 }

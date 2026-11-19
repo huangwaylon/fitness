@@ -76,7 +76,7 @@
   let half = $state(untrack(() => half0));
   const n = $derived(broth && half && a.n.s !== null ? { ...a.n, s: a.n.s / 2 } : a.n);
   const imgs = $derived(held.images);
-  $effect(wantImages);
+  $effect(() => wantImages([item.id]));
   /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
   const PIC = 104;
   const pic = $derived(imgOf(imgs, item.id, 160));

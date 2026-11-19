@@ -158,7 +158,8 @@ export async function englishFetch(req: Request, cache: FoodCacheLike, net: (r: 
   }
   return res;
 }
-/** ごはん's pictures (static/food-img/, lib/food/images.ts): content-hashed sprite sheets, cached on first use in a cache
+/** ごはん's pictures (static/food-img/, lib/food/images.ts): content-hashed sprite sheets (and the products' part of the
+ *  index, off.json, under its version), cached on first use in a cache
  *  of their own that outlives builds; index.json, which names them, from the network first (its last copy offline).
  *  Once a new index is in, the sheets it no longer names go (foodImgStale). */
 export const FOOD_IMG_CACHE = 'island-food-img-v1';
@@ -193,19 +194,20 @@ export function artEvict(index: RoomIndex, now: number, cap = ART_CAP_BYTES, kee
   });
   return [...gone, ...bytesEvict(without(index, gone), now, cap, keepMs)];
 }
-/** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names. */
+/** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names, and the products' ids
+ *  (off.json, the build's cut) of another version than its `off`. */
 export function foodImgStale(keys: readonly string[], index: string): string[] {
-  let sheets: unknown;
+  let x: { sheets?: unknown; off?: unknown };
   try {
-    sheets = (JSON.parse(index) as { sheets?: unknown }).sheets;
+    x = JSON.parse(index) as typeof x;
   } catch {
     return [];
   }
-  if (!Array.isArray(sheets)) return [];
-  const named = new Set(sheets);
+  if (!Array.isArray(x.sheets)) return [];
+  const named = new Set(x.sheets);
   return keys.filter((k) => {
-    const p = new URL(k, 'https://x/').pathname;
-    return p.endsWith('.webp') && !named.has(p.slice(p.lastIndexOf('/') + 1));
+    const u = new URL(k, 'https://x/'), p = u.pathname;
+    return p.endsWith('.webp') ? !named.has(p.slice(p.lastIndexOf('/') + 1)) : p.endsWith('/off.json') && u.searchParams.get('v') !== x.off;
   });
 }
 /** The cached food files (`keys`: their URLs) that are not one of `keep` (the URLs a whole index names: foodFiles): a

@@ -61,7 +61,7 @@
   let removing = $state(false);
   /** The catalog (each ingredient's category tile and everyday name), in once it loads (as FoodMeal's), and the pictures. */
   const db = $derived(held.db), imgs = $derived(held.images);
-  $effect(wantImages);
+  $effect(() => wantImages(draft.it.map((x) => x.f.id)));
   /** The collage: up to four of the ingredients' pictures, the most grams first (a food once: recipePlate). */
   const hero = $derived(recipePlate(draft.it, (id) => !!imgOf(imgs, id, 160)).flatMap(({ id }) => {
     const img = imgOf(imgs, id, 160);

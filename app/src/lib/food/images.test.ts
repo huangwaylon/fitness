@@ -5,7 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { imgOf, kaloriImg, loadFoodImages, type FoodImageIndex } from './images.ts';
+import { imgOf, kaloriImg, loadFoodImages, loadProductImages, type FoodImageIndex } from './images.ts';
 import { addDataset, emptyDb, searchFoods, fromFile } from './db.ts';
 import type { FoodIndex, Shipped } from './types.ts';
 import { STATIC_MAX_FILES } from '../static-budget.ts';
@@ -59,6 +59,23 @@ describe('loadFoodImages', () => {
       expect(await loadFoodImages()).toEqual(fixture);
       expect(await loadFoodImages()).toEqual(fixture);
       expect(fetch.mock.calls.map(([href]) => href)).toEqual(['/food-img/index.json', '/food-img/index.json']);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('loadProductImages (the build cuts the products’ ids out of index.json: scripts/food-shards.ts)', () => {
+  it('fetches off.json under the index’s `off` once wanted: a product’s cell then; an index without the cut as it is', async () => {
+    const cut: FoodImageIndex = { ...fixture, off: 'o1' };
+    const fetch = vi.fn<(href: string) => Promise<Response>>().mockResolvedValue(new Response(JSON.stringify({ ids: { 'off:4902705126558': 0 } })));
+    vi.stubGlobal('fetch', fetch);
+    try {
+      expect(imgOf(cut, 'off:4902705126558', 48)).toBeNull();
+      const all = await loadProductImages(cut);
+      expect(imgOf(all, 'off:4902705126558', 48)).toEqual(imgOf(fixture, 'mext:01088', 48));
+      expect([await loadProductImages(all), await loadProductImages(fixture)]).toEqual([all, fixture]);
+      expect(fetch.mock.calls.map(([href]) => href)).toEqual(['/food-img/off.json?v=o1']);
     } finally {
       vi.unstubAllGlobals();
     }

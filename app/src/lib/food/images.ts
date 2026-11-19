@@ -28,6 +28,11 @@ export interface FoodImageIndex {
   keys: [number, number, number, number, number, number][];
   /** Food id → picture. */
   ids: Record<string, number>;
+  /** The build's cut (scripts/food-shards.ts): the products' ids are in `off.json?v=<off>` (loadProductImages), not
+   *  `ids`; none: `ids` holds them (the dev server). */
+  off?: string;
+  /** The products' ids, once loadProductImages has them. */
+  offIds?: Record<string, number>;
 }
 
 /** Up to this displayed size, the thumbnail cell (≥ 2× of it); above, the detail cell. */
@@ -47,13 +52,22 @@ export function loadFoodImages(): Promise<FoodImageIndex | null> {
   return loading;
 }
 
+/** The index with the products' ids (off.json, ~90 KB brotli of the 147 KB the whole index was), fetched for a
+ *  product's row (a day's, さいきん's, the search's); the index as it was without a cut, or when they won't load. */
+export async function loadProductImages(ix: FoodImageIndex): Promise<FoodImageIndex> {
+  if (!ix.off || ix.offIds) return ix;
+  const res = await fetch(fileUrl(`off.json?v=${encodeURIComponent(ix.off)}`));
+  if (!res.ok) throw new Error(`food-img/off.json: ${res.status}`);
+  return { ...ix, offIds: ((await res.json()) as { ids: Record<string, number> }).ids };
+}
+
 /** The index let go of (~2 MB of JS heap: ごはん unmounted, components/food/dbHold.svelte.ts holdFoodDb); fetched again next. */
 export const dropFoodImages = (): void => void (loading = null);
 
 /** A food's picture for a box of `px` CSS px, or null (its tile). Every picture is generated: show the イメージ badge
  *  where the design asks for one (the enlarged view). */
 export function imgOf(index: FoodImageIndex | null | undefined, id: string, px: number): FoodImg | null {
-  const k = index?.ids[id];
+  const k = index?.ids[id] ?? index?.offIds?.[id];
   if (k === undefined || !index) return null;
   const c = index.keys[k];
   const [s, x, y] = px <= THUMB_MAX ? c.slice(0, 3) : c.slice(3, 6);
