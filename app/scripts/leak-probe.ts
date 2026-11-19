@@ -11,8 +11,8 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる, as うめ), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), english (English Study's tabs, closed, hidden), sugoroku (a game's board
-// at /sugoroku from its tab, ‹ back to the island, closed, hidden), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (a seeded field's plots tapped: water, a 3 × 3 planted, ほる), walls (もようがえ's
+// time; DWELL: ms in a room, default 1500), english (English Study's tabs, closed, hidden), sugoroku (a new game
+// at /sugoroku from its tab: a roll, a みんなで！ played out; ‹ back to the island, closed, hidden), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells), buy (the shop's stock scrolled, closed), farm (a seeded field's plots tapped: water, a 3 × 3 planted, ほる), walls (もようがえ's
 // catalogue tried in the room; TABS='[["wall",8],["floor",8],["rugs",4]]'), foodkeep (ごはん searched, closed: base, searched, closed, +65 s, hidden). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
@@ -30,7 +30,7 @@ const flow = process.argv[2] ?? 'shop';
 const N = Number(process.argv[3] ?? 6);
 const SNAP = process.argv.includes('--snap');
 const WK = process.argv.includes('--webkit');
-const Q = `?demo&date=2026-11-04T12:00${flow === 'fpv' ? '&fpv=1' : ''}${process.env.Q ?? ''}`;
+const Q = `?demo&date=2026-11-04T12:00${flow === 'fpv' ? '&fpv=1' : ''}${flow === 'sugoroku' ? '&sgMini=together' : ''}${process.env.Q ?? ''}`;
 
 const browser = WK ? await webkit.launch() : await chromium.launch({ channel: 'chrome', args: ['--enable-unsafe-swiftshader', '--js-flags=--expose-gc'] });
 const ctx = await browser.newContext({ ...(WK ? devices['iPhone 15'] : devices['iPhone 13']), locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
@@ -635,10 +635,23 @@ const cycle = async () => {
     await closeAll(); await vis('hidden'); await page.waitForTimeout(300); await vis('visible'); await page.waitForTimeout(800);
   } else if (flow === 'sugoroku') {
     await english('game');
-    if (await page.evaluate(() => !!document.querySelector('[data-sugoroku] [data-sg-resume]'))) await press('[data-sugoroku] [data-sg-resume]');
-    else (await press('[data-sugoroku] [data-sg-new]'), await press('[data-sugoroku] [data-sg-start]'));
+    // a new game each cycle: a roll (the die, the hops), its first landing a みんなで！ (Q's &sgMini) picked, its clock
+    // run out step by step (the e2e's __sgMini.end(), each seat's cover looked under), the results' 次へ
+    await press('[data-sugoroku] [data-sg-new]'); await press('[data-sugoroku] [data-sg-start]');
     await until(`location.pathname.endsWith('/sugoroku') && (window.__sugoroku3d?.frames?.() ?? 0) >= 1`, 30_000);
-    await page.waitForTimeout(2500);
+    await press('[data-sugoroku] [data-sg-spin]');
+    await until(`document.querySelector('[data-sugoroku] [data-sg-phase]')?.getAttribute('data-sg-phase') === 'mini'`, 15_000);
+    await press('[data-sugoroku] [data-sg-mini-opt]');
+    // (end() once a step: each call moves the close on)
+    const stage = `document.querySelector('[data-sugoroku] [data-sg-mini-stage]')?.getAttribute('data-sg-mini-stage')`;
+    for (const t0 = Date.now(); !(await page.evaluate(`!!document.querySelector('[data-sugoroku] [data-sg-mini-next]')`)); await page.waitForTimeout(200)) {
+      if (Date.now() - t0 > 30_000) throw new Error('the みんなで！ never closed');
+      if (await page.evaluate(`${stage} === 'cover'`)) await press('[data-sugoroku] [data-sg-mini-look]');
+      else if (await page.evaluate(`${stage} === 'play'`)) (await page.evaluate('window.__sgMini?.end()'), await page.waitForTimeout(2000));
+    }
+    await page.waitForTimeout(1000);
+    await press('[data-sugoroku] [data-sg-mini-next]');
+    await page.waitForTimeout(1500);
     await press('[data-sugoroku] .navbar button');
     await islandUp(); await page.waitForTimeout(800);
     await closeAll(); await vis('hidden'); await page.waitForTimeout(300); await vis('visible'); await page.waitForTimeout(1200);

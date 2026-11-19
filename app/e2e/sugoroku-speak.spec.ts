@@ -2,11 +2,11 @@
 // at a 絵 stone (the save made here, so the stone is certain), the picture spelt, then 「この絵で一文言ってみよう」.
 // The mic is stood in (e2e/mic.ts: a real stream of a quiet tone, so lib/speech/stt.ts captures as on a phone),
 // and the relay's /stt and /grade are route mocks: speak → 聞こえた文 → the feedback and its stars (the tip, saying the
-// recast again +1); an edit graded again; no answer in 4 s → praise only; the word or a verb nudged; skipped; the switch
-// off → no step. Run in WebKit too, with taps (Chromium-only once missed an iPhone freeze).
+// recast again +1); an edit graded again; no answer in 4 s → praise only; the word or a verb nudged; skipped; left mid-take (the mic
+// let go, nothing sent); the switch off → no step. Run in WebKit too, with taps (Chromium-only once missed an iPhone freeze).
 import { expect, test, type Page } from './fixtures.ts';
 import { RELAY } from './relay.ts';
-import { heldFor, standInMic } from './mic.ts';
+import { heldFor, liveTracks, micAsks, standInMic } from './mic.ts';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -158,6 +158,19 @@ test('skipped: 次へ at once, the picture’s stars only, nothing asked of the 
   await expect(s.locator('[data-sg-speak="ask"]')).toBeVisible();
   await s.locator('[data-sg-next]').tap();
   await expect(team(page)).toHaveAttribute('data-sg-team', '5');
+  expect([asked.length, stt.length]).toEqual([0, 0]);
+});
+
+test('left mid-take (the game’s ✕): the mic closed, nothing sent; a double tap asks the mic once', async ({ page }) => {
+  const { s, asked, stt } = await phone(page);
+  const asks0 = (await micAsks(page)).asks;
+  await s.locator('[data-sg-say]').evaluate((b: HTMLElement) => (b.click(), b.click()));
+  await heldFor(s.locator('[data-sg-stop]'));
+  expect((await micAsks(page)).asks - asks0).toBe(1);
+  expect(await liveTracks(page)).toBe(1);
+  await s.locator('.navbar button.close').tap();
+  await expect(s).toHaveCount(0);
+  await expect.poll(() => liveTracks(page)).toBe(0);
   expect([asked.length, stt.length]).toEqual([0, 0]);
 });
 
