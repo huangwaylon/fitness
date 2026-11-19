@@ -17,8 +17,17 @@ async function open(page: Page, q = '') {
   await islandUp(page);
   if (q.includes('as=G')) await camTo(page, GOAL_TREES.A[1]); // (the guest's phone opens at its own villager)
   await tapOn(page, 'goal', 'A');
+  await settle(page);
+}
+/** The popup is shown and still: its animations (pop-in) finished, then its box and every descendant's unchanged across 3 polls in a row. */
+async function settle(page: Page) {
   await expect(pop(page)).toBeVisible();
-  await pop(page).evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished))); // its pop-in
+  const snap = () => pop(page).evaluate(async (e) => {
+    await Promise.all(e.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {})));
+    return [e, ...e.querySelectorAll('*')].map((n) => { const r = n.getBoundingClientRect(); return `${r.x},${r.y},${r.width},${r.height}`; }).join('|');
+  });
+  let prev = '', same = 0;
+  await expect.poll(async () => { const cur = await snap(); same = cur === prev ? same + 1 : 0; prev = cur; return same; }, { intervals: [50], timeout: 10_000 }).toBeGreaterThanOrEqual(3);
 }
 const box = async (l: ReturnType<Page['locator']>) => (await l.boundingBox())!;
 
@@ -78,6 +87,7 @@ test('a goal not set: grams only, nothing to go (うめ); the guest sees what th
   await tapOn(page, 'goal', 'B');
   const row = pop(page).locator('[data-tree-pfc=B]');
   await expect(row.locator('[data-pfc]')).toHaveCount(3);
+  await settle(page);
   for (const k of ['p', 'fa', 'c']) await expect(row.locator(`[data-pfc=${k}]`)).toHaveAttribute('data-state', 'none');
   await expect(row.locator('.tk, [data-left]')).toHaveCount(0);
   await pfcAligned(row);
