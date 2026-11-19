@@ -1,7 +1,9 @@
 // `POST /stt` (docs/speech-test.md): one utterance to text through Workers AI, for the speech test. Free of the Workers runtime, so it is unit-testable (test/stt.test.ts).
 // - Auth: a person's key in `Authorization: Bearer <key>` (never in the URL); CORS for our origins, preflight answered
 //   (audio/wav is not a simple request).
-// - Body: a WAV (16 kHz 16-bit mono, ≤ 10 s), at most STT_MAX bytes; else 413.
+// - Body: a WAV (16 kHz 16-bit mono, ≤ 10 s), at most STT_MAX bytes; else 413. An empty body is a warm-up (the speech
+//   page and すごろく's speaking step as they open: the connection and the preflight ready before the take): 204, after
+//   the key's check, never logged or counted.
 // - Caps: STT_DAY_MAX calls a role a UTC day (the log object's `caps` table), then 429. `off`: 503 (the STT_OFF switch).
 // - **Nothing kept:** the audio and its text are never written anywhere (no Durable Object, R2, KV, log or console);
 //   they live for the request only. The log's `stt` event carries sizes, the time, the model and the outcome.
@@ -41,11 +43,12 @@ function heard(out: unknown): { text: string; words?: { w: string; t0: number; t
 }
 
 export function sttRoute(req: Request, env: SttEnv): Promise<Response> {
-  return aiRoute(req, env, 'stt', async ({ ai, role, done }) => {
+  return aiRoute(req, env, 'stt', async ({ ai, role, done, warm }) => {
     const log = (st: number, inB: number, err?: Parameters<typeof done>[2], body?: object) => done(st, { inB, model: 'turbo' }, err, body);
     if (Number(req.headers.get('Content-Length') ?? 0) > STT_MAX) return log(413, Number(req.headers.get('Content-Length')), 'too_large');
     const bytes = await readCapped(req, STT_MAX);
     if (!bytes) return log(413, STT_MAX + 1, 'too_large');
+    if (!bytes.length) return warm();
     if (!isWav(bytes)) return log(400, bytes.length, 'bad_request');
     if (!(await env.spend(role).catch(() => false))) return log(429, bytes.length, 'capped');
     try {

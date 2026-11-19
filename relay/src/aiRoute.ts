@@ -25,6 +25,8 @@ export interface AiCall<A> {
   role: Who;
   /** The answer (`body`, else `{ok: false, error}`), its status, and the route's log event with `d` and the time. */
   done(status: number, d: Record<string, unknown>, err?: AiErr, body?: object): Response;
+  /** A bare 204, unlogged (/stt's warm-up: an empty body). */
+  warm(): Response;
 }
 
 export async function aiRoute<A>(req: Request, env: AiEnv<A>, event: 'stt' | 'grade', body: (c: AiCall<A>) => Promise<Response>): Promise<Response> {
@@ -42,6 +44,7 @@ export async function aiRoute<A>(req: Request, env: AiEnv<A>, event: 'stt' | 'gr
     done: (status, d, err, out = { ok: false, error: err }) => {
       env.log([{ e: event, l: err && err !== 'capped' ? 2 : 1, role, d: { ms: env.now() - t0, ...d, ok: !err, ...(err ? { err } : {}) } }]);
       return json(out, status);
-    }
+    },
+    warm: () => new Response(null, { status: 204, headers })
   });
 }

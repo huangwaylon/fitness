@@ -130,8 +130,13 @@ export const LOG_EVENTS = {
   // the speech test (routes/speech, docs/speech-test.md): times and the match only, never the audio or what was heard
   // and why the mic failed: getUserMedia's error (`gum` its name, `msg`), the mic's permission, the home-screen app,
   // the island's audio context and audio session as the page opened and as the mic was asked for; a take's recording
-  // (its KB and type, whether it decoded, the loudest sample ×1000, a muted track). `denied`: builds before 2026-11-19
-  "speech.test": { src: 'c', f: { audS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'refused', 'nomic', 'busy', 'session', 'insecure', 'empty', 'silent', 'off', 'capped', 'network', 'ai', 'other'], gum: 't', msg: 'msg', perm: ['granted', 'denied', 'prompt', 'none'], pwa: 'b', md: 'b', ctx: 't', sess: 't', sessNow: 't', recKB: 'n', type: 't', decoded: 'b', peak: 'n', muted: 'b' } },
+  // (its KB and type, whether it decoded, the loudest sample ×1000, a muted track); sentS: the seconds sent, the take's
+  // silence at either end cut (speech/match.ts trimSilence). `denied`: builds before 2026-11-19
+  "speech.test": { src: 'c', f: { audS: 'n', sentS: 'n', kb: 'n', encMs: 'n', netMs: 'n', aiMs: 'n', totMs: 'n', match: 'n', lvl: 'n', ok: 'b', err: ['denied', 'refused', 'nomic', 'busy', 'session', 'insecure', 'empty', 'silent', 'off', 'capped', 'network', 'ai', 'other'], gum: 't', msg: 'msg', perm: ['granted', 'denied', 'prompt', 'none'], pwa: 'b', md: 'b', ctx: 't', sess: 't', sessNow: 't', recKB: 'n', type: 't', decoded: 'b', peak: 'n', muted: 'b' } },
+  // an /stt upload that didn't reach the relay, sent once more (speech/stt.ts transcribe): the first try's time to its
+  // error and its message (WebKit's mostly "Load failed"), the phone online, the page shown, a service worker in
+  // control; and how the second went (ok, or why not: keyed.ts)
+  "stt.retry": { src: 'c', f: { ms: 'n', msg: 'msg', on: 'b', vis: ['visible', 'hidden'], sw: 'b', ok: 'b', why: ['unreached', 'timeout', 'refused', 'failed', 'aborted', 'unpaired'] } },
   // 英語すごろく's spoken sentence (lib/sugoroku): what decided the feedback (the phone's task check, the wasei list, the
   // relay's AI, none), its verdict, the time to it, the takes, edited before grading, re-said after a tip, why not.
   // Never the sentence

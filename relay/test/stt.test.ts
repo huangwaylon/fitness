@@ -68,6 +68,18 @@ describe('POST /stt', () => {
     expect(logged).toEqual([]);
   });
 
+  it('an empty body is a warm-up: 204 with CORS, after the key, nothing run, logged or counted', async () => {
+    for (const body of [null, new Uint8Array(0)]) {
+      const r = await sttRoute(post(body), env());
+      expect([r.status, r.headers.get('Access-Control-Allow-Origin'), await r.text()]).toEqual([204, ORIGIN, '']);
+    }
+    expect((await sttRoute(post(null, { Authorization: '' }), env())).status).toBe(401);
+    expect(ai.run).not.toHaveBeenCalled();
+    expect(logged).toEqual([]);
+    // (the day's 3 calls all still there)
+    for (let i = 0; i < 3; i++) expect((await sttRoute(post(), env())).status).toBe(200);
+  });
+
   it('too large is 413, not a WAV 400, both before the model', async () => {
     expect((await sttRoute(post(wav(STT_MAX)), env())).status).toBe(413);
     expect((await sttRoute(post(new TextEncoder().encode(SAID.repeat(4))), env())).status).toBe(400);
