@@ -8,7 +8,8 @@
   // stepped ones a step each (伝えて当てて the speller's, then each finder's; おつかい the お客さん's list, then the shop's
   // basket); the shared ones (みんなで一文, しりとり, 返事はどれ？) on the one phone, every hand in its seat's colour.
   // `?sgMiniMs=` (dev/test only) is every one of these lengths.
-  import { untrack } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
+  import { testHooks } from '#lib/ui-state/testMode.ts';
   import Avatar from '#lib/components/characters/Avatar.svelte';
   import Market from './Market.svelte';
   import Spell from './Spell.svelte';
@@ -129,7 +130,18 @@
     }
   });
   const len = (base: number) => lenOf(base);
+  // (the e2e's `__sgMini.end()`, test mode only: the clock's step or game over now, its close's grace kept, as if its
+  // time ran out; a step after it on its own clock)
+  let cut = $state(-Infinity);
+  if (testHooks()) {
+    (window as { __sgMini?: unknown }).__sgMini = { end: () => (tnow = cut = now()) };
+    onDestroy(() => delete (window as { __sgMini?: unknown }).__sgMini);
+  }
   const times = $derived.by((): MiniTimes | null => {
+    const t = clockOf();
+    return t && cut >= t.start && cut < t.end ? { start: t.start, end: cut, close: cut + (t.close - t.end) } : t;
+  });
+  function clockOf(): MiniTimes | null {
     if (!on) return null;
     if (hotseat) {
       if (!step || step.at === null) return null;
@@ -139,7 +151,7 @@
     }
     const at = local ? on.at : opened;
     return at === undefined ? null : timesOf(at, len(MINIS[on.id].ms));
-  });
+  }
   const seatIdx = $derived(Math.max(0, g.players.findIndex((p) => p.who === me)));
   /** When this phone sends the close: the lander's at once, the others a moment after (only if none came). */
   const closeAt = $derived(times ? times.close + (local ? 0 : ((g.players.findIndex((p) => p.who === me) - g.turn + g.players.length) % g.players.length) * 1500) : Infinity);

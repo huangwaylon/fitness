@@ -41,7 +41,7 @@
   import { miniOpenedAt } from '../wire.ts';
   import { log } from '#lib/sync/log.ts';
   import type { MiniOn } from '../game.ts';
-  import { newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
+  import { hookStart, newLocal, peopleFor, seatsFor, toSpeech } from '../start.ts';
   import { decode, isCurrent, type View as TurnView } from '../view.ts';
 
   interface Props {
@@ -352,10 +352,10 @@
   // the game: passed round, the save's (none: back to the tab); online, the moves held, folded as they come
   listen();
   if (untrack(() => screen) === 'local') {
-    const saved = loadGame();
+    const saved = loadGame() ?? hookStart('local', false);
     if (saved) set(saved);
     else queueMicrotask(close);
-  }
+  } else hookStart('online', !!untrack(() => online.cur.g));
 </script>
 
   <div class="sg" data-sugoroku data-level={view}>
