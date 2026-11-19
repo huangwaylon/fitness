@@ -126,8 +126,6 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // never any key's, the guest's included
     case 'inbody':
       // an InBody sheet (contract/bodyEst.ts): the admin's only (relay/src/store.ts inbody), as a correction
-    case 'body_in':
-      // a からだ value typed in: no more (the user, 2026-11-19), its rows made `inbody` sheets (relay migration 5)
       return false;
     case 'room_save': {
       // a room's saved arrangement or its slot emptied (contract/roomSave.ts: its name already clean), its `at` as decor's

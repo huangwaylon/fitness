@@ -8,7 +8,7 @@ import { isRec } from './guards.ts';
 export type { PersonId, Who };
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
-export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet', 'room_save', 'eflag', 'eflag_done', 'sg_reward', 'shop_adjust', 'check', 'body_in', 'inbody'] as const;
+export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'tally_back', 'listen', 'pack', 'pack_chk', 'pack_reset', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'farm', 'buy_starts', 'wet', 'room_save', 'eflag', 'eflag_done', 'sg_reward', 'shop_adjust', 'check', 'inbody'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
 /**
@@ -106,14 +106,13 @@ export const isPersonId = (v: unknown): v is PersonId => v === 'A' || v === 'B';
 export const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === 'G';
 
 /**
- * Whose data an event changes: `data.person` when present (only on a goal or profile `pref` or a `body_in`, and it must be `A` or `B`), else the
+ * Whose data an event changes: `data.person` when present (only on a goal or profile `pref`, and it must be `A` or `B`), else the
  * sender. Null for a `person` that is invalid or on an event that doesn't take one (the record refuses it; the model
  * ignores the event). Shared by the record and the model.
  */
 export function eventSubject(type: string, d: Record<string, unknown>, sender: Who): Who | null {
   if (d.person === undefined) return sender;
   if (!isPersonId(d.person)) return null;
-  if (type === 'body_in') return d.person;
   if (type !== 'pref' || !(GOAL_PREF_KEYS.includes(d.key as string) || PROFILE_PREF_KEYS.includes(d.key as string))) return null;
   return d.person;
 }

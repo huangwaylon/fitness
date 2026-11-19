@@ -33,8 +33,8 @@ import { dailyGoalOn, latestAt, type State } from './state.ts';
 import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
-import { bodyInOf, estimateKg, estimateRatio, inbodyBmr, BODY_IN, type BodyInMetric } from '#lib/contract/bodyIn.ts';
-import { eventSubject, isPersonId } from '#lib/contract/api.ts';
+import { estimateKg, estimateRatio, inbodyBmr, inbodyOf, BODY_EST, type BodyEstMetric, type InBody } from '#lib/contract/bodyEst.ts';
+import { isPersonId } from '#lib/contract/api.ts';
 import { rowAt } from './snapshot.ts';
 
 /** The four activity metrics (🍎 Steps, 🍐 Move, 🍑 Exercise, 🍒 Stand; the island keeps the rings' order). */
@@ -43,9 +43,9 @@ export type Metric = (typeof METRICS)[number];
 /** The body metrics' cards (からだ, after 体重): body fat %, BMI, lean body mass. */
 const BODY = ['body_fat_pct', 'bmi', 'lean_kg'] as const satisfies readonly BodyMetric[];
 /** からだ's cards: 体重, the body metrics, then three worked out from 除脂肪体重: 筋肉量 and 骨格筋量 estimated
- *  (contract/bodyIn.ts estimateRatio) and 基礎代謝量 (InBody's formula: inbodyBmr); each a sparse series, all but
+ *  (contract/bodyEst.ts estimateRatio) and 基礎代謝量 (InBody's formula: inbodyBmr); each a sparse series, all but
  *  基礎代謝量 with an optional goal. */
-const BODY_IDS = ['weight', ...BODY, ...BODY_IN, 'bmr'] as const;
+const BODY_IDS = ['weight', ...BODY, ...BODY_EST, 'bmr'] as const;
 export type BodyId = (typeof BODY_IDS)[number];
 /** The からだ cards with a goal (基礎代謝量 follows 除脂肪体重, whose goal it is). */
 type BodyGoalId = Exclude<BodyId, 'bmr'>;
@@ -77,8 +77,8 @@ interface PersonSeries {
   /** The からだ goals (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, `goalMuscle`, `goalSmm`; shown only), null:
    *  none (基礎代謝量 never has one). */
   bodyGoals: Record<BodyId, number | null>;
-  /** 筋肉量 / 骨格筋量: whether the person's InBody readings calibrate the estimate (else the sex's ratio). */
-  calibrated: Record<BodyInMetric, boolean>;
+  /** 筋肉量 / 骨格筋量: whether the person's InBody sheets calibrate the estimate (else the sex's ratio). */
+  calibrated: Record<BodyEstMetric, boolean>;
 }
 
 export interface HealthSeries {
@@ -109,32 +109,22 @@ export function activityOn(s: State, p: PersonId, d: LocalDate, t: number): Reco
   return v;
 }
 
-/**
- * The InBody readings (`body_in`, contract/bodyIn.ts) as of `t`: per member and metric, each day's latest row's
- * value (by the record's `at`; a later row of the day replaces it, `v: null` clears the day). A row the record would
- * refuse (the guest's, a bad value, a `person` but A or B) is skipped.
- */
-function bodyInDays(s: State, t: number): Record<PersonId, Record<BodyInMetric, Map<LocalDate, number>>> {
-  const latest = new Map<string, { at: number; v: number | null; p: PersonId; m: BodyInMetric; d: LocalDate }>();
-  for (const row of s.bodyIn) {
+/** Each member's InBody sheets (`inbody`, contract/bodyEst.ts) as of `t`: a day's latest row (by the record's `at`). */
+function inbodySheets(s: State, t: number): Record<PersonId, Map<LocalDate, InBody>> {
+  const out: Record<PersonId, Map<LocalDate, InBody & { at: number }>> = { A: new Map(), B: new Map() };
+  for (const row of s.inbody) {
     const at = rowAt(row);
-    if (at === null || at > t || !isPersonId(row[1])) continue; // a member's (the record refuses the guest's)
+    if (at === null || at > t || !isPersonId(row[1])) continue;
     let raw: unknown;
     try {
       raw = JSON.parse(row[4] || '{}');
     } catch {
       continue;
     }
-    if (!raw || typeof raw !== 'object') continue;
-    const b = bodyInOf(raw as Record<string, unknown>);
-    const p = b && eventSubject('body_in', raw as Record<string, unknown>, row[1]);
-    if (!b || !isPersonId(p)) continue;
-    const k = `${p}|${b.m}|${b.date}`;
-    const was = latest.get(k);
-    if (!was || at >= was.at) latest.set(k, { at, v: b.v, p, m: b.m, d: b.date });
+    const b = raw && typeof raw === 'object' ? inbodyOf(raw as Record<string, unknown>) : null;
+    const was = b && out[row[1]].get(b.date);
+    if (b && (!was || at >= was.at)) out[row[1]].set(b.date, { ...b, at });
   }
-  const out = { A: { muscle_kg: new Map(), smm_kg: new Map() }, B: { muscle_kg: new Map(), smm_kg: new Map() } } as Record<PersonId, Record<BodyInMetric, Map<LocalDate, number>>>;
-  for (const x of latest.values()) if (x.v !== null) out[x.p][x.m].set(x.d, x.v);
   return out;
 }
 
@@ -158,9 +148,8 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     for (const d of s.weights[p].keys()) if (d < from) from = d;
     for (const b of BODY) for (const d of s.body[p][b].keys()) if (d < from) from = d;
   }
-  const typed = bodyInDays(s, now);
-  for (const p of ['A', 'B'] as PersonId[]) for (const m of BODY_IN) for (const d of typed[p][m].keys()) if (d < from) from = d;
-  const any = from < to || (['A', 'B'] as PersonId[]).some((p) => s.metrics[p].has(to) || s.weights[p].has(to) || BODY.some((b) => s.body[p][b].has(to)) || BODY_IN.some((m) => typed[p][m].has(to)));
+  const sheets = inbodySheets(s, now);
+  const any = from < to || (['A', 'B'] as PersonId[]).some((p) => s.metrics[p].has(to) || s.weights[p].has(to) || BODY.some((b) => s.body[p][b].has(to)));
   const n = daysBetween(from, to) + 1;
   const person = (p: PersonId): PersonSeries => {
     const values = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, (number | null)[]>;
@@ -168,10 +157,10 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const dots = Object.fromEntries(BODY_IDS.map((b) => [b, []])) as unknown as Record<BodyId, (number | null)[]>;
     const leanOn = (d: LocalDate): number | null => latestAt(s.body[p].lean_kg.get(d), now) ?? null;
-    const est = Object.fromEntries(BODY_IN.map((m) => {
-      const readings = [...typed[p][m]].flatMap(([d, v]) => { const lean = leanOn(d); return lean === null ? [] : [{ lean, v }]; });
+    const est = Object.fromEntries(BODY_EST.map((m) => {
+      const readings = [...sheets[p]].flatMap(([d, sh]) => { const lean = leanOn(d); return lean === null ? [] : [{ lean, v: sh[m] }]; });
       return [m, estimateRatio(m, s.prefs[p].sex ?? null, readings)];
-    })) as Record<BodyInMetric, { ratio: number; calibrated: boolean }>;
+    })) as Record<BodyEstMetric, { ratio: number; calibrated: boolean }>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       const day = activityOn(s, p, d, now);
       for (const m of METRICS) {
@@ -181,8 +170,8 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
       dots.weight.push(kgBy.get(d) ?? null);
       for (const b of BODY) dots[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
       const lean = dots.lean_kg.at(-1);
-      // a reading on its day, else the estimate from the day's lean mass
-      for (const m of BODY_IN) dots[m].push(typed[p][m].get(d) ?? (lean == null ? null : estimateKg(lean, est[m].ratio)));
+      // the estimate from the day's lean mass (a sheet's day too: the sheets only set the ratio)
+      for (const m of BODY_EST) dots[m].push(lean == null ? null : estimateKg(lean, est[m].ratio));
       dots.bmr.push(lean == null ? null : inbodyBmr(lean));
     }
     const bodyGoals = Object.fromEntries(BODY_IDS.map((b) => [b, hasBodyGoal(b) ? (s.prefs[p][GOALS[b].key as LatestGoalKey] ?? null) : null])) as Record<BodyId, number | null>;

@@ -331,38 +331,37 @@ describe('one person at a time', () => {
 });
 
 describe('筋肉量 and 骨格筋量 estimated from the lean mass, 基礎代謝量 worked out from it', () => {
-  const bi = (who: 'A' | 'B' | 'G', date: string, time: string, d: object) => [jst(date, time), who, `bi${date}${time}${who}${JSON.stringify(d).length}`, 'body_in', JSON.stringify({ date, ...d })] as EventRow;
+  const ib = (who: 'A' | 'B' | 'G', date: string, time: string, muscle_kg: number, smm_kg: number) => [jst(date, time), who, `ib${date}${time}${who}`, 'inbody', JSON.stringify({ date, muscle_kg, smm_kg })] as EventRow;
   const sex = (p: 'A' | 'B', v: 'm' | 'f') => [jst('2026-09-01', '08:00'), p, `sx${p}`, 'pref', JSON.stringify({ key: 'sex', value: v })] as EventRow;
   const lean = (p: 'A' | 'B') => [m(p, '2026-10-20', 'lean_kg', 39.2, '08:00'), m(p, '2026-10-25', 'lean_kg', 38.0, '08:00'), m(p, '2026-10-30', 'lean_kg', 37.3, '08:00')];
 
-  it('every day with a lean mass, by the sex’s ratio without readings (A a man, B a woman); none without one', () => {
+  it('every day with a lean mass, by the sex’s ratio without an InBody sheet (A a man, B a woman); none without one', () => {
     const hs = series(rows([...lean('A'), ...lean('B')], [sex('A', 'm'), sex('B', 'f')]));
     expect([hs.people.A.dots.smm_kg[0], hs.people.A.dots.smm_kg[1], hs.people.A.dots.smm_kg[10]]).toEqual([22.3, null, 21.3]); // × 0.57
     expect([hs.people.B.dots.smm_kg[0], hs.people.B.dots.muscle_kg[10]]).toEqual([21.2, 35.1]); // × 0.54, × 0.94
     expect(hs.people.B.calibrated).toEqual({ muscle_kg: false, smm_kg: false });
     expect(dotStats(hs, 'B', 'smm_kg', rangeFor('month', TODAY))).toMatchObject({ n: 3, latest: { date: '2026-10-30', kg: 20.1 }, since: { d: -1.1, days: 10 } });
-    // the guest's snapshot has no lean mass (nor readings): nothing to estimate
+    // the guest's snapshot has no lean mass (nor sheets): nothing to estimate
     const none = series(rows([], [sex('A', 'm')]));
     expect(none.people.A.dots.muscle_kg.every((v) => v === null)).toBe(true);
   });
 
-  it('InBody readings on the record calibrate the person’s ratio and show on their day; a day’s latest, either member’s for either; null clears; the guest’s, a bad row or one after now: skipped', () => {
+  it('the InBody sheets (`inbody`, the admin’s) set the person’s ratio; every dot is the estimate, a sheet’s day too; a day’s latest sheet; the guest’s, a bad one or one after now: skipped', () => {
     const hs = series(rows(lean('B'), [
       sex('B', 'f'),
-      bi('A', '2026-10-20', '08:00', { m: 'smm_kg', v: 20.0, person: 'B' }),
-      bi('B', '2026-10-20', '09:00', { m: 'smm_kg', v: 21.1 }), // later the same day: replaces it
-      bi('B', '2026-10-30', '09:00', { m: 'smm_kg', v: 20.4 }),
-      bi('B', '2026-10-25', '08:00', { m: 'muscle_kg', v: 35.0 }),
-      bi('B', '2026-10-25', '09:00', { m: 'muscle_kg', v: null }), // cleared
-      bi('G', '2026-10-25', '10:00', { m: 'muscle_kg', v: 30, person: 'B' }), // the guest's: never
-      bi('B', '2026-10-26', '08:00', { m: 'muscle_kg', v: 300 }), // out of range
-      bi('B', '2026-10-31', '23:00', { m: 'muscle_kg', v: 30.0 }) // after `now`
+      ib('B', '2026-10-20', '08:00', 36.0, 20.0),
+      ib('B', '2026-10-20', '09:00', 36.7, 21.1), // later the same day: replaces it
+      ib('B', '2026-10-30', '09:00', 35.1, 20.4),
+      ib('G', '2026-10-25', '10:00', 30.0, 15.0), // the guest's: never
+      ib('B', '2026-10-25', '08:00', 300, 20.0), // out of range
+      ib('B', '2026-10-31', '23:00', 30.0, 15.0) // after `now`
     ]));
     const d = hs.people.B.dots;
-    expect([d.smm_kg[0], d.smm_kg[5], d.smm_kg[10]]).toEqual([21.1, 20.6, 20.4]); // readings on their days, 38.0 × 0.5426 between
-    expect([d.muscle_kg[5], d.muscle_kg[10], d.muscle_kg.at(-1)]).toEqual([35.7, 35.1, null]); // no reading left: × 0.94
-    expect(hs.people.B.calibrated).toEqual({ muscle_kg: false, smm_kg: true });
-    expect(hs.people.A.dots.smm_kg.every((v) => v === null)).toBe(true);
+    // ratios: 筋肉量 (36.7 / 39.2 + 35.1 / 37.3) / 2 = 0.9386, 骨格筋量 (21.1 / 39.2 + 20.4 / 37.3) / 2 = 0.5426
+    expect([d.smm_kg[0], d.smm_kg[5], d.smm_kg[10]]).toEqual([21.3, 20.6, 20.2]);
+    expect([d.muscle_kg[0], d.muscle_kg[10], d.muscle_kg.at(-1)]).toEqual([36.8, 35.0, null]);
+    expect(hs.people.B.calibrated).toEqual({ muscle_kg: true, smm_kg: true });
+    expect(hs.people.A.calibrated).toEqual({ muscle_kg: false, smm_kg: false });
   });
 
   it('基礎代謝量 = InBody’s 370 + 21.6 × the day’s lean mass, a day with one (2026-11-19’s sheet: 37.3 kg → 1,176 kcal); no goal', () => {

@@ -203,13 +203,12 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
         [iso(syncAt), p, d, 'bmi', Math.round((kg / c.height ** 2) * 10) / 10],
         [iso(syncAt), p, d, 'lean_kg', Math.round(kg * (1 - fat / 100) * 10) / 10]
       );
-      // one InBody reading of B's (her first weigh-in of the last three weeks) calibrates her estimates (A has none:
-      // the sex's ratio)
+      // one InBody sheet of B's (the admin's `inbody`, on her first weigh-in of the last three weeks) calibrates her
+      // estimates (A has none: the sex's ratio)
       if (p === 'B' && !inbody && d >= addDays(today, -21)) {
         inbody = true;
         const lean = kg * (1 - fat / 100);
-        ev(syncAt + 60_000, 'B', 'body_in', { date: d, m: 'muscle_kg', v: Math.round(lean * 0.935 * 10) / 10 });
-        ev(syncAt + 61_000, 'B', 'body_in', { date: d, m: 'smm_kg', v: Math.round(lean * 0.55 * 10) / 10 });
+        ev(syncAt + 60_000, 'B', 'inbody', { date: d, muscle_kg: Math.round(lean * 0.935 * 10) / 10, smm_kg: Math.round(lean * 0.55 * 10) / 10 });
       }
     }
   }
@@ -289,7 +288,7 @@ type DemoHealth = 'some' | 'none';
 /** A snapshot cache for the demo store (me = A, or B with `?demo&as=B`; no Health rows with `?demo&health=none`). */
 export function demoCache(now: number, me: Who = 'A', weeks = DEMO_WEEKS_BACK, health: DemoHealth = 'some'): SnapshotCache {
   const made = demoRows(now, Math.max(1, Math.min(260, Math.round(weeks))));
-  const all = health !== 'none' ? made : { metrics: [], events: made.events.filter((e) => e[3] !== 'body_in') };
+  const all = health !== 'none' ? made : { metrics: [], events: made.events.filter((e) => e[3] !== 'inbody') };
   // what the record would send this key (contract/guest.ts rowsFor): the guest's (`?demo&as=G`) without the からだ rows
   const rows = rowsFor(me, all);
   return { v: 1, me, rows, since: maxAt(rows), skewMs: 0, fetchedAt: now, demo: true };

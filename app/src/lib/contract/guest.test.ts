@@ -7,8 +7,8 @@ import { guestMayWrite, rowsFor } from './guest.ts';
 describe('guestMayWrite', () => {
   it('takes every island event type a member writes, and refuses the economy and the members’ records', () => {
     const island = ['find', 'tally', 'tally_back', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy', 'buy_starts', 'sg_reward', 'farm', 'listen', 'pack', 'pack_chk', 'pack_reset', 'room_save', 'eflag'];
-    // (and `wet`, `shop_adjust`: the record's and the admin's own, never a phone's)
-    const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet', 'eflag_done', 'shop_adjust', 'check', 'body_in', 'inbody'];
+    // (and `wet`, `shop_adjust`, `inbody`: the record's and the admin's own, never a phone's)
+    const members = ['spend', 'spend_void', 'harvest', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote', 'wet', 'eflag_done', 'shop_adjust', 'check', 'inbody'];
     // every type is one or the other (pref apart): a new type has to be placed here
     expect([...island, ...members, 'pref'].sort()).toEqual([...EVENT_TYPES].sort());
     for (const t of island) expect(guestMayWrite(t, {}), t).toBe(true);
@@ -50,19 +50,19 @@ describe('rowsFor the guest', () => {
       e('A', 'e12', 'pref', { key: 'weatherMode', value: 'game' }),
       e('B', 'e13', 'listen', { d: '2026-11-06', g: 'ab12', gm: 'tv', u: 'waitress', lv: 7, n: 1, ms: 60_000, r: [['w1', 1, 0, 0]] }),
       e('G', 'e14', 'food', { id: 'f123456', at: 1 }),
-      e('A', 'e15', 'body_in', { date: '2026-11-06', m: 'muscle_kg', v: 35.1, person: 'B' }),
+      e('B', 'e15', 'inbody', { date: '2026-11-06', muscle_kg: 35.1, smm_kg: 20.4 }),
       e('B', 'e16', 'pref', { key: 'goalSmm', value: 21 })
     ]
   };
 
-  it('every row but the からだ ones: no weight, body fat, BMI or lean mass, no typed-in muscle, no からだ goal; everyone’s profile', () => {
+  it('every row but the からだ ones: no weight, body fat, BMI or lean mass, no InBody sheet, no からだ goal; everyone’s profile', () => {
     const g = rowsFor('G', rows);
     expect(g.metrics.map((r) => r[3])).toEqual(['steps', 'exercise_min', 'move_kcal', 'stand_min']);
     expect(g.events.map((r) => r[2])).toEqual(['e1', 'e2', 'e3', 'e4', 'e9', 'e10', 'e11', 'e12', 'e13', 'e14']);
     // a member's English Study row as its summary, as the other member gets it
     expect(JSON.parse(g.events.find((r) => r[2] === 'e13')![4])).toEqual({ d: '2026-11-06', g: 'ab12', ms: 60_000, gm: 'tv' });
     const text = JSON.stringify(g);
-    for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'body_in', 'muscle_kg', 'goalSmm']) expect(text, k).not.toContain(k);
+    for (const k of ['weight', 'body_fat_pct', 'bmi', 'lean_kg', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'inbody', 'muscle_kg', 'smm_kg', 'goalSmm']) expect(text, k).not.toContain(k);
   });
 
   it('a member gets everything (the guest’s profile too)', () => {

@@ -6,7 +6,7 @@
   // period, N the days between, as InBody's sheet says it; 変化 – under two). Then the dot chart (the goal solid on it,
   // the chip its only words), and in the current period with a goal the month it may be reached at that pace (the
   // goal's way). 基礎代謝量 says it is worked out (InBody's formula from 除脂肪体重); 筋肉量 and 骨格筋量, which Apple
-  // Health lacks, say they are estimated from it (contract/bodyIn.ts: calibrated by the person's InBody readings, else
+  // Health lacks, say they are estimated from it (contract/bodyEst.ts: calibrated by the person's InBody sheets, else
   // the sex's ratio). Nothing is typed in here. Never earns, no good / bad colours.
   import type { PersonId } from '#lib/types.ts';
   import { dotSeries, dotStats, type BodyId, type HealthSeries, type Range } from '#lib/model/health.ts';
@@ -14,7 +14,7 @@
   import '#lib/i18n/sheets.ts';
   import { bmiCategory } from '#lib/model/profile.ts';
   import { md, monthLabel } from '#lib/i18n/format.ts';
-  import { isBodyIn } from '#lib/contract/bodyIn.ts';
+  import { isBodyEst } from '#lib/contract/bodyEst.ts';
   import ChartCard from './ChartCard.svelte';
   import DotChart from './DotChart.svelte';
   import { goalLabel, goalName, valueText } from './goals.ts';
@@ -47,8 +47,8 @@
   /** BMI's category for the latest measurement. */
   const cat = $derived(id === 'bmi' && s.latest ? bmiCategory(s.latest.kg) : null);
 
-  /** 筋肉量 / 骨格筋量: how the estimate is made (the person's InBody readings, else the sex's ratio). */
-  const note = $derived(id === 'bmr' ? t('health.bmr.note') : isBodyIn(id) ? t(hs.people[p].calibrated[id] ? 'health.est.calibrated' : 'health.est.default') : '');
+  /** 筋肉量 / 骨格筋量: how the estimate is made (the person's InBody sheets, else the sex's ratio). */
+  const note = $derived(id === 'bmr' ? t('health.bmr.note') : isBodyEst(id) ? t(hs.people[p].calibrated[id] ? 'health.est.calibrated' : 'health.est.default') : '');
 </script>
 
 <ChartCard {id} {title} {p} {goal} start={s.latest?.kg ?? null} {onsave} tone="yuzu" empty={!hs.any} kind="metric">

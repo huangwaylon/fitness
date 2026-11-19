@@ -147,9 +147,9 @@ export interface State {
   /** English Study's flags and their reviews (`eflag`, `eflag_done`: contract/eflag.ts) as raw rows (RAW_EVENTS),
    *  everyone's; read by its sheet only (lib/english/flags.ts). Never read by the economy. */
   eflag: EventRow[];
-  /** The からだ values typed in (`body_in`: 筋肉量, 骨格筋量, contract/bodyIn.ts) as raw rows (RAW_EVENTS), in the
-   *  order given; read by けんこう (model/health.ts bodyInOn). Never read by the economy. */
-  bodyIn: EventRow[];
+  /** The InBody sheets (`inbody`, the admin's: contract/bodyEst.ts) as raw rows (RAW_EVENTS), in the order given;
+   *  read by けんこう's estimates (model/health.ts inbodySheets). Never read by the economy. */
+  inbody: EventRow[];
   /** The shop's rows (`sell`, `buy`, `buy_starts`, `sg_reward`, `shop_adjust`: contract/shop.ts), each with its sender (the guest's
    *  too; a reward is its recipients': rowConcerns), in server order,
    *  a queued one marked `queued`; the pockets and かいがら are their fold over the tallies (model/shop.ts). Never read
@@ -267,10 +267,10 @@ const weekOf = (d: LocalDate): WeekKey => {
  * memoised per row and per list (model/food.ts opOf, entriesOf). A new such type is one entry here, a list in State
  * and its reader.
  */
-const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom' | 'listen' | 'eflag' | 'bodyIn'>([
-  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom'], ['listen', 'listen'], ['eflag', 'eflag'], ['eflag_done', 'eflag'], ['body_in', 'bodyIn']
+const RAW_EVENTS = new Map<string, 'food' | 'foodRepeat' | 'foodRecipe' | 'foodCustom' | 'listen' | 'eflag' | 'inbody'>([
+  ['food', 'food'], ['food_repeat', 'foodRepeat'], ['food_recipe', 'foodRecipe'], ['food_custom', 'foodCustom'], ['listen', 'listen'], ['eflag', 'eflag'], ['eflag_done', 'eflag'], ['inbody', 'inbody']
 ]);
-type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom' | 'listen' | 'eflag' | 'eflag_done' | 'body_in';
+type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom' | 'listen' | 'eflag' | 'eflag_done' | 'inbody';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
@@ -341,7 +341,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     listen: [],
     eflag: [],
     checks: [],
-    bodyIn: [],
+    inbody: [],
     shop: [],
     farm: [],
     wet: [],
@@ -624,7 +624,6 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   sg_reward: shopRow('sg_reward'),
   // (the admin's correction of its person's かいがら: contract/shop.ts adjustOf)
   shop_adjust: shopRow('shop_adjust'),
-  inbody: () => {}, // (the admin's InBody sheets: read from the next build on)
   farm(s, person, at, d) {
     const data = farmOf(d);
     if (data) put(s, 'farm', { at, person, data });

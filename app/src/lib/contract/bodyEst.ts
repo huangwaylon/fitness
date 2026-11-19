@@ -9,8 +9,9 @@ import { isLocalDate } from './api.ts';
 import type { Sex } from './profile.ts';
 
 /** The metrics estimated (an InBody sheet calibrates them): 筋肉量 (soft lean mass), 骨格筋量 (skeletal muscle mass). */
-const BODY_EST = ['muscle_kg', 'smm_kg'] as const;
+export const BODY_EST = ['muscle_kg', 'smm_kg'] as const;
 export type BodyEstMetric = (typeof BODY_EST)[number];
+export const isBodyEst = (v: unknown): v is BodyEstMetric => v === 'muscle_kg' || v === 'smm_kg';
 
 /** What a sheet may say (inclusive, kg): an adult's range on InBody's sheets with room either side. */
 const BOUNDS: Record<BodyEstMetric, { min: number; max: number }> = {

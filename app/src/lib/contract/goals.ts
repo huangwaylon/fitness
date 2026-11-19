@@ -53,7 +53,7 @@ interface GoalDef {
  * The registry. Directions (docs/decisions.md "Goal directions" says why each):
  * - かつどう: all four at least (more movement is the point); steps and Move are the ベル's.
  * - からだ: 体重 and BMI near a value (a cut and a bulk both aim at a number: neither side of it is "good", and a lower
- *   weight is never rewarded: *Weight never earns*); 体脂肪率 at most; 除脂肪体重, 筋肉量 and 骨格筋量 (muscle, typed in: contract/bodyIn.ts) at least.
+ *   weight is never rewarded: *Weight never earns*); 体脂肪率 at most; 除脂肪体重, 筋肉量 and 骨格筋量 (muscle, estimated: contract/bodyEst.ts) at least.
  * - ごはん: kcal near a value (±10 %: a low day is no win, the lifter's surplus no fault); protein at least; fat at most;
  *   carbs near a value (±15 %: fuel for training, less on a cut); salt at most; fibre at least (食事摂取基準's 目標量 is
  *   a floor); alcohol at most (20 g until set: 厚労省's 節度ある適度な飲酒, docs/decisions.md "Fibre and alcohol").

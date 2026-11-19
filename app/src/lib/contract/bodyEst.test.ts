@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { estimateKg, estimateRatio, inbodyBmr, inbodyOf, PER_FFM } from './bodyEst.ts';
 import { validEventData } from './record.ts';
-import { eventSubject } from './api.ts';
+import { EVENT_TYPES, eventSubject } from './api.ts';
 
 describe('inbodyBmr', () => {
   it("InBody's own figures (a 2026-11-19 sheet): 54.6 kg at 17.3 kg fat → FFM 37.3 kg → 1,176 kcal; 56.9 − 17.7 = 39.2 kg → 1,217 (InBody printed 1,216 from its unrounded FFM)", () => {
@@ -61,5 +61,6 @@ describe('inbodyOf', () => {
     const now = Date.parse('2026-11-19T03:00:00Z');
     expect(validEventData('inbody', { date: '2026-11-19', muscle_kg: 35.1, smm_kg: 20.4 }, now)).toBe(false);
     expect(eventSubject('inbody', { person: 'B' }, 'A')).toBeNull();
+    expect((EVENT_TYPES as readonly string[]).includes('body_in')).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
-// けんこう's estimated からだ values (design.md "Kenkou", contract/bodyIn.ts): InBody's 筋肉量 and 骨格筋量, which Apple
-// Health can't carry, estimated every day from 除脂肪体重 (うめ's InBody reading calibrates hers, ウェイ the sex's
-// ratio), nothing typed in; 基礎代謝量 worked out from 除脂肪体重. On `?demo`, tapped as on the phones.
+// けんこう's estimated からだ values (design.md "Kenkou", contract/bodyEst.ts): InBody's 筋肉量 and 骨格筋量, which Apple
+// Health can't carry, estimated every day from 除脂肪体重 (うめ's InBody sheet, the admin's, calibrates hers, ウェイ the
+// sex's ratio), nothing typed in; 基礎代謝量 worked out from 除脂肪体重. On `?demo`, tapped as on the phones.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
@@ -16,7 +16,7 @@ async function openBody(page: Page, browserName: string) {
   await expect(sheet(page).locator('.health .bc')).toHaveCount(7);
 }
 
-test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so, no entry chip; the same stat row as every card', async ({ page, browserName }) => {
+test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so; the same stat row as every card', async ({ page, browserName }) => {
   await openBody(page, browserName);
   await expect(sheet(page).locator('.bc h3')).toHaveText(['体重', '体脂肪率', 'BMI', '除脂肪体重', '筋肉量', '骨格筋量', '基礎代謝量']);
   const leanCard = sheet(page).locator('.bc[data-metric=lean_kg]');
@@ -25,18 +25,17 @@ test('筋肉量 / 骨格筋量: every weigh-in’s lean mass estimated, said so,
   for (const [m, ratio] of [['muscle_kg', 0.94], ['smm_kg', 0.57]] as const) {
     const card = sheet(page).locator(`.bc[data-metric=${m}]`);
     await card.scrollIntoViewIfNeeded();
-    // ウェイ has no InBody reading: the man's ratio, a dot for every lean mass
+    // ウェイ has no InBody sheet: the man's ratio, a dot for every lean mass
     await expect(card.locator('.note')).toHaveText('除脂肪体重から推定（平均的な比率）');
     await expect(card.locator('[data-stat=latest]')).toHaveText(`${(Math.round(lean * ratio * 10) / 10).toFixed(1)} kg`);
     await expect(card.locator('circle.dot.pA')).toHaveCount(leanDots);
-    await expect(card.locator('button[data-goal$="-in"], form.tray')).toHaveCount(0);
     const boxes = card.locator('.stats > div');
     const [l, r] = [(await boxes.first().boundingBox())!, (await boxes.last().boundingBox())!];
     expect(Math.abs(l.width - r.width)).toBeLessThan(1);
   }
 });
 
-test('うめ’s estimates fitted to her InBody reading; 基礎代謝量 from 除脂肪体重 (InBody’s formula), no goal', async ({ page, browserName }) => {
+test('うめ’s estimates fitted to her InBody sheet; 基礎代謝量 from 除脂肪体重 (InBody’s formula), no goal', async ({ page, browserName }) => {
   await openBody(page, browserName);
   await sheet(page).locator('.navbar select[data-pick=who]').selectOption('B');
   await sheet(page).locator('.health select[data-pick=period]').selectOption('month');
