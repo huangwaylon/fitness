@@ -41,6 +41,14 @@ describe('plausible: the shared cases (data_src/plausible_cases.json, off.py tes
   });
 });
 
+describe('protein35: a protein food by name, in kana or katakana alike (words.ts PROTEIN_FOOD)', () => {
+  const sus = (name: string) => suspect({ id: 'off:1', name, cat: '菓子・デザート', kcal: 200, p: 30, f: 2, c: 13, salt: 1 });
+  it('exempts エビ, タコ, サバ… as their hiragana; タコス and タコライス stay sweets', () => {
+    expect(['えびせん', 'エビせん', 'たこせん', 'タコせん', 'サバのおやつ', 'ホタテ貝ひも', 'マグロジャーキー', 'サバス ミルクプロテイン'].filter((n) => sus(n).includes('protein35'))).toEqual([]);
+    expect(['タコス チップ', 'タコライス', 'クッキー'].map((n) => sus(n).includes('protein35'))).toEqual([true, true, true]);
+  });
+});
+
 describe('static/food passes the data checks (the CI guard)', () => {
   const index = read<FoodIndex>(join(DIR, 'index.json'));
   const files = [...index.datasets.map((d) => d.file), ...readdirSync(join(DIR, 'jan')).sort().map((f) => `jan/${f}`)];

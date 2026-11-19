@@ -95,7 +95,6 @@
   "off:4902720160926": {"checks":["protein35"],"why":"a protein food (fish, meat, dairy, tofu) filed under a sweet, drink or staple"},
   "off:4902720167284": {"checks":["protein35"],"why":"a protein food (fish, meat, dairy, tofu) filed under a sweet, drink or staple"},
   "off:4902750725621": {"checks":["atwater25"],"why":"unverified: no label to check; in off_review.tsv, not corrected"},
-  "off:4902777308609": {"checks":["protein35"],"why":"unverified: P fits the energy, no label to check"},
   "off:4902885010548": {"checks":["portion1500"],"why":"genuine: the 超超超大盛り pack is one serving (~2,100 kcal)"},
   "off:4903041030509": {"checks":["protein35"],"why":"a protein supplement or protein-enriched food, named by its flavour"},
   "off:4904520654087": {"checks":["protein35"],"why":"a protein food (fish, meat, dairy, tofu) filed under a sweet, drink or staple"},
