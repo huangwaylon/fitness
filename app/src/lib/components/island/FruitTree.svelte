@@ -590,9 +590,12 @@
                 <span class="it" style:grid-column={col(i)} data-pfc={m.k} data-state={m.state} data-pct={m.pct}>
                   <span class="lb" aria-hidden="true">{m.k === 'fa' ? 'F' : m.k.toUpperCase()}</span>
                   <span class="v" aria-hidden="true">
-                    {#if m.goal === null}<span class="g">{formatNum(Math.round(m.g))}g</span>
+                    {#if m.goal === null}<i class="tr empty"></i>
                     {:else}<i class="tr"><i class="fl" style:width="{Math.min(PFC_SPAN, m.pct ?? 0) / PFC_SPAN * 100}%"></i><i class="tk"></i></i>{/if}
-                    {#if m.left !== null}<span class="left" class:met={!m.left} data-left={m.left}>{#if m.left}{t('tree.pfc.left', { n: formatNum(m.left) })}{:else}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>{/if}
+                    <span class="st">
+                      {#if m.left !== null}<span class="left" class:met={!m.left} data-left={m.left}>{#if m.left}{t('tree.pfc.left', { n: formatNum(m.left) })}{:else}<svg viewBox="0 0 24 24"><use href="#i-check" /></svg>{/if}</span>
+                      {:else}<span class="g">{formatNum(Math.round(m.g))}g</span>{/if}
+                    </span>
                   </span>
                 </span>
               {/each}
@@ -751,6 +754,8 @@
   }
   /* a bar over its 「あと Ng」, so a P item fits a third of the row */
   .v { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  /* line 2 of a P · F · C cell: one 18px line (the ✓'s height), so the bars and the statuses each sit on one y across P, F, C */
+  .st { display: flex; align-items: center; justify-content: center; height: 18px; }
   /* my checks: each its own box, its column's width (≥ 44px, ≥ 8px from the next: the spacer) */
   button.it { border-radius: var(--r-chip); cursor: pointer; }
   .it.tap:active .mk { transform: scale(.88); }
@@ -767,6 +772,8 @@
   .g { color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
   .left svg { display: block; width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: var(--c-leaf); color: var(--c-ink); }
   .tr { position: relative; flex: none; width: 36px; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--plate-ink) 14%, transparent); }
+  /* no goal: an empty dotted track, no fill and no tick, so the bars still line up without implying a goal */
+  .tr.empty { background: none; border: 1.5px dotted color-mix(in srgb, var(--plate-ink) 35%, transparent); box-sizing: border-box; }
   .fl { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in srgb, var(--plate-ink) 45%, transparent); }
   .it[data-state='met'] .fl { background: var(--c-leaf); }
   .it[data-state='over'] .fl { background: var(--c-coral); }

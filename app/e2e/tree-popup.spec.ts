@@ -5,7 +5,7 @@
 // sync time on the straight nameplate, no ベル; and its one closing rule (IslandScene): a tap inside its box never closes
 // it, a tap outside does. The demo's 2026-11-03 at 22:00: ウェイ ate three meals, set protein 110 g, no fat or carbs goal;
 // うめ set none. Taps, not clicks (iPhone Safari).
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { camTo, islandUp, lawnTap, tapOn, w3, walking } from './island.ts';
 import { GOAL_TREES } from '../src/lib/world/world.ts';
 
@@ -50,6 +50,7 @@ test('the popup: checks, meals, P · F · C in that order; the sync time on the 
     await expect(row.locator(`[data-pfc=${k}]`)).toHaveAttribute('data-state', 'none');
     await expect(row.locator(`[data-pfc=${k}] .g`)).toHaveText(/^\d+g$/);
   }
+  await pfcAligned(row);
   await expect(row).toHaveAccessibleName(/^ウェイの きょうの えいよう: たんぱくしつ \d+ \/ 110g（\d+%）(たっせい| あと \d+g)、ししつ \d+g（もくひょう なし）、たんすいかぶつ \d+g（もくひょう なし）$/);
   expect((await box(row)).height).toBeGreaterThanOrEqual(16);
   await row.tap();
@@ -59,6 +60,15 @@ test('the popup: checks, meals, P · F · C in that order; the sync time on the 
   await expect(sheet.locator('.titlebar [data-who]')).toHaveAttribute('data-who', 'A');
   await expect.poll(() => walking(page)).toBe(false);
 });
+
+/** P, F, C: the three bars on one y (±1) and the three status texts on one y (±2), goals set or not. */
+async function pfcAligned(row: Locator) {
+  const mid = async (sel: string) => Promise.all(['p', 'fa', 'c'].map(async (k) => { const b = await box(row.locator(`[data-pfc=${k}] ${sel}`)); return b.y + b.height / 2; }));
+  const bars = await mid('.tr'), sts = await mid('.st > *');
+  expect(Math.max(...bars) - Math.min(...bars)).toBeLessThanOrEqual(1);
+  expect(Math.max(...sts) - Math.min(...sts)).toBeLessThanOrEqual(2);
+  for (const k of ['p', 'fa', 'c']) expect((await box(row.locator(`[data-pfc=${k}] .st > *`))).y).toBeGreaterThan((await box(row.locator(`[data-pfc=${k}] .tr`))).y);
+}
 
 test('a goal not set: grams only, nothing to go (うめ); the guest sees what the members see (ごはん goals aren’t からだ)', async ({ page }) => {
   await open(page, '&as=G');
@@ -70,6 +80,7 @@ test('a goal not set: grams only, nothing to go (うめ); the guest sees what th
   await expect(row.locator('[data-pfc]')).toHaveCount(3);
   for (const k of ['p', 'fa', 'c']) await expect(row.locator(`[data-pfc=${k}]`)).toHaveAttribute('data-state', 'none');
   await expect(row.locator('.tk, [data-left]')).toHaveCount(0);
+  await pfcAligned(row);
 });
 
 test('a tap inside the popup never closes it nor reaches what’s under it; a tap outside closes it', async ({ page }) => {
