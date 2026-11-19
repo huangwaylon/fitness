@@ -115,7 +115,7 @@ for (const [time, tod] of [['12:30', 'day'], ['22:30', 'night']]) {
   });
 }
 
-// いつものだけ (model/food.ts onlyRepeats): the demo's ウェイ has a 毎日 breakfast いつもの and meals logged to 11/4; two
+// いつものだけ (model/food.ts uncounted): the demo's ウェイ has a 毎日 breakfast いつもの and meals logged to 11/4; two
 // days on, 11/5 holds the breakfast alone. That day says so softly in the goal bar's place (no 少なめ chip, every ＋ still
 // on screen), and グラフ's average leaves it out of its n日分; salt there reads against the goal, with the food that gave
 // the most.
@@ -139,7 +139,7 @@ test('a past day of いつもの alone: a soft note on its day, out of グラフ
   await expect(s.locator('[data-food-rep-only]')).toHaveCount(0); // today: still going
   await press(s.locator('[data-nav=back]'), browserName);
   await expect(s.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-05');
-  await expect(s.locator('[data-food-rep-only]')).toHaveText('いつものだけ・ほかも足すと平均に入ります');
+  await expect(s.locator('[data-food-rep-only]')).toHaveText('いつものだけなので平均に入りません');
   await expect(s.locator('[data-food-chip]')).toHaveCount(0);
   for (const k of ['b', 'l', 'd', 's']) await expect(s.locator(`[data-add=${k}]`)).toBeInViewport({ ratio: 1 });
 

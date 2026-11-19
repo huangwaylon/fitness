@@ -1,4 +1,4 @@
-// ごはん's summary cards, rendered (svelte/server): the day card's いつものだけ note and 「≥」 with why (一部不明 /
+// ごはん's summary cards, rendered (svelte/server): the day card's not-counted note and 「≥」 with why (一部不明 /
 // わかった分だけ), and グラフ's average card's salt and fibre lines (the goal, the coverage, the saltiest food).
 import { describe, expect, it } from 'vitest';
 import { render } from 'svelte/server';
@@ -17,21 +17,22 @@ const day = (entries: FoodEntry[], mine = true, when: 'past' | 'today' | 'next' 
   render(FoodSummary, { props: { day: dayOf(entries), who: 'A', goals, when, onsavegoal: mine ? () => {} : null } }).body;
 
 describe('FoodSummary', () => {
-  it('a past day of いつもの alone: a soft note in the goal bar’s place, mine inviting the rest; none today, on tomorrow’s preview or once something is logged', () => {
+  it('a past day not counted: a soft note in the goal bar’s place (いつものだけ, or under two meals); none today, on tomorrow’s preview or once two meals are logged', () => {
     const rep = [entry(OATS, { rep: 'rabcdef1' })];
-    expect(day(rep)).toMatch(/data-food-rep-only[^>]*>いつものだけ・ほかも足すと平均に入ります</);
+    expect(day(rep)).toMatch(/data-food-rep-only="rep"[^>]*>いつものだけなので平均に入りません</);
     expect(day(rep)).not.toContain('data-food-chip'); // no 少なめ: the day isn't whole
-    expect(day(rep, false)).toMatch(/data-food-rep-only[^>]*>いつものだけの日（平均には入りません）</);
+    expect(day(rep, false)).toMatch(/data-food-rep-only="rep"[^>]*>いつものだけなので平均に入りません</); // the same words for anyone's
     expect(day(rep, true, 'today')).not.toContain('data-food-rep-only'); // still going
     expect(day(rep, true, 'next')).not.toContain('data-food-rep-only');
-    expect(day([...rep, entry(OATS, { m: 's' })])).not.toContain('data-food-rep-only');
+    expect(day([...rep, entry(OATS, { m: 's' })])).toMatch(/data-food-rep-only="few"[^>]*>朝・昼・夜の2食から平均に入ります</); // a snack doesn't make it
+    expect(day([...rep, entry(OATS, { m: 'l' }), entry(OATS, { m: 'd' })])).not.toContain('data-food-rep-only');
   });
 
-  it('「≥」 with why: 一部不明 when most entries know it, わかった分だけ under 70 %; fibre too', () => {
-    const most = day([entry(BAR), ...Array.from({ length: 3 }, (_, i) => entry(OATS, { id: `o${i}` }))]); // salt 3 of 4, fibre 3 of 4
+  it('「≥」 with why: 一部不明 when most of the kcal know it, わかった分だけ under 70 %; fibre too', () => {
+    const most = day([entry(BAR), ...Array.from({ length: 3 }, (_, i) => entry(OATS, { id: `o${i}` }))]); // salt and fibre 1050 of 1450 kcal
     expect(most).toMatch(/data-nutrient="s"[\s\S]*?data-partial="most"[^>]*>一部不明/);
     expect(most).toMatch(/data-nutrient="fi"[\s\S]*?data-partial="most"[^>]*>一部不明/);
-    const few = day([entry(BAR), entry(BAR, { id: 'b2' }), entry(OATS)]); // 1 of 3
+    const few = day([entry(BAR), entry(BAR, { id: 'b2' }), entry(OATS)]); // 350 of 1150 kcal
     expect(few).toMatch(/data-nutrient="s"[\s\S]*?data-partial="few"[^>]*>わかった分だけ/);
     expect(few).toMatch(/data-line="s"[\s\S]*?title="わかった分だけ"/);
     expect(few).not.toMatch(/data-nutrient="p"[^]*?data-partial[^]*?data-nutrient="fa"/);

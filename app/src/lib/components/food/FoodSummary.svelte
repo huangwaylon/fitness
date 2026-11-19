@@ -9,11 +9,10 @@
   // under 70 % of the entries); then the PFC balance (PfcBar: the shares of energy against the
   // 食事摂取基準's ranges). A day with nothing logged: 「きろく
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way. A day of a
-  // past いつもの's items alone (model/food.ts onlyRepeats: not a recorded day, グラフ leaves it out) says so in the
-  // goal bar's row (no bar nor 少なめ chip: the day isn't whole), softly: on my own day inviting the rest, never as a
-  // fault. Today is still going: none.
+  // past day short of a recorded one (model/food.ts uncounted: いつものだけ, or under two main meals; グラフ leaves it
+  // out) says so in the goal bar's row (no bar nor 少なめ chip: the day isn't whole), softly, never as a fault. Today is still going: none.
   import type { Who } from '#lib/types.ts';
-  import { entriesCoverage, onlyRepeats, type FoodDay } from '#lib/model/food.ts';
+  import { entriesCoverage, uncounted, type FoodDay } from '#lib/model/food.ts';
   import { t } from '#lib/i18n/index.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { kcalText } from '../kiroku/fmt.ts';
@@ -48,8 +47,8 @@
   const known = $derived(Object.fromEntries((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => [k, entriesCoverage(day.entries, k)])));
   const partial = (k: string): boolean => known[k] !== 'all';
   const why = (k: string) => t(known[k] === 'few' ? 'food.fewKnown' : 'food.partial');
-  /** A past day of a いつもの's items alone. */
-  const repOnly = $derived(when === 'past' && onlyRepeats(day.entries));
+  /** A past day that isn't counted: why. */
+  const short = $derived(when === 'past' ? uncounted(day.entries) : null);
   /** The tiles: the four, then fibre. */
   const cells = $derived((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })));
   const LINE = ['p', 'fa', 'c', 's'] as const;
@@ -68,7 +67,7 @@
     {/if}
     <GoalEdit id="kcal-goal" spec={GOAL_SPECS.k} label={goalLabel('k', goal)} value={goal} onsave={onsavegoal} warn={warngoal} />
   </header>
-  {#if repOnly}<p class="rep" data-food-rep-only>{t(onsavegoal ? 'food.repOnly.mine' : 'food.repOnly')}</p>
+  {#if short}<p class="rep" data-food-rep-only={short}>{t(short === 'rep' ? 'food.repOnly' : 'food.fewMeals')}</p>
   {:else if goal !== null && !(empty && when === 'past')}
     <div class="brow">
       <div class="bar" role="presentation"><i style:width="{share * 100}%"></i></div>

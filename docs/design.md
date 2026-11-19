@@ -209,7 +209,7 @@ loads with the first search, or at idle, in a worker).
 - **いつもの (a repeat):** a meal eaten the same way on set weekdays fills each day it covers (🔁), counting like any
   entry; changes apply from tomorrow, stopping keeps past days; editing one of its items changes that day only.
 - **グラフ:** what was eaten only (burned is 健康's ムーブ): 1日平均 (kcal vs the goal, PFC bar, grams), then kcal and
-  each nutrient as 健康's activity cards (a day with nothing logged has no record).
+  each nutrient as 健康's activity cards (a day short of two meals has no record).
 - **My recipes and my foods:** everyone's, in a meal's search after the recent ones. A recipe logs as a food (servings
   1–20); a custom food is one serving typed in (kcal needed). Others' are read-only, copied to edit; deletes asked twice.
 - **Sources** at the foot: the AI-image note and each dataset's attribution and licence.
