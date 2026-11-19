@@ -76,7 +76,12 @@ test('scenery taps play a flourish and change nothing; trees, villagers and the 
   // the trees: a canopy tap opens its popup; a tap on the scenery then only closes it (no flourish)
   await tapOn(page, 'goal', 'A');
   await expect(page.locator('.detail')).toHaveCount(1);
-  const g = await lawn(page);
+  // (lawn outside the popup's box, once the camera is still: a tap inside it never closes it, IslandScene)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { camStill(): boolean } }).__world3d.camStill())).toBe(true);
+  const pop = (await page.locator('.detail').boundingBox())!;
+  const below = await page.evaluate((y) => (window as unknown as { __world3d: { ground(x: number, y: number): { x: number; z: number } } }).__world3d.ground(205, y), Math.min(page.viewportSize()!.height - 60, pop.y + pop.height + 70));
+  const g = await lawnTap(page, below.x, below.z);
+  expect(g.y, 'the lawn under the popup').toBeGreaterThan(pop.y + pop.height);
   await page.mouse.click(g.x, g.y);
   await expect(page.locator('.detail')).toHaveCount(0);
   await expect(page.locator('[data-fx]')).toHaveCount(0);
