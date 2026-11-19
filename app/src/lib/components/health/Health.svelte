@@ -17,7 +17,7 @@
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import { untrack, type Snippet } from 'svelte';
-  import type { LocalDate, PersonId } from '#lib/types.ts';
+  import type { PersonId } from '#lib/types.ts';
   import { CARDS, GROUPS, healthSeries, metricSeries, PERIODS, type Group, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -30,9 +30,6 @@
   import BarCard from './BarCard.svelte';
   import BodyCard from './BodyCard.svelte';
   import { goalName, saveGoal } from './goals.ts';
-  import { isBodyIn, type BodyInMetric } from '#lib/contract/bodyIn.ts';
-  import { setBodyIn } from '#lib/store/actions.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
   import { pickWhose, whose } from './whose.svelte.ts';
@@ -105,11 +102,6 @@
   $effect(() => () => void (lead = null));
   /** The shown person's goal setter: either member sets either member's; the guest's phone none (read-only chips). */
   const saver = (k: Parameters<typeof saveGoal>[0]) => (guest ? null : (v: number | null) => saveGoal(k, who, v));
-  /** The shown person's typed-in 筋肉量 / 骨格筋量 setter (a member's phone only), with its banner. */
-  const entry = (m: BodyInMetric) => (guest ? null : (date: LocalDate, v: number | null) => {
-    if (!setBodyIn(m, who, date, v).ok) return;
-    toasts.show(v === null ? t('health.bodyIn.cleared') : t('health.bodyIn.saved', { what: goalName(m) }), 2500, { reaction: 'pleased' });
-  });
   /** An activity goal in force today (the editor starts from it). */
   const nowGoal = (k: Metric) => hs?.people[who].goals[k].at(-1) ?? null;
 </script>
@@ -148,7 +140,7 @@
       {:else if !guest}
         <!-- からだ: never on the guest's phone -->
         <BodyCard id={k} {hs} {range} p={who} name={names[who]} slide={pager.slide} onswipe={pager.swipe}
-          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={k === 'bmr' ? null : saver(k)} onentry={isBodyIn(k) ? entry(k) : null} />
+          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={k === 'bmr' ? null : saver(k)} />
       {/if}
     {/each}
   {/if}

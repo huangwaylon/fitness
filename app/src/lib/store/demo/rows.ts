@@ -185,6 +185,7 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
   };
   const wWeeks = Math.max(12, weeksBack);
   const wStart = addDays(cur, -7 * wWeeks);
+  let inbody = false;
   for (let d = wStart, i = 0; d <= today; d = addDays(d, 1), i++) {
     for (const p of ['A', 'B'] as PersonId[]) {
       const c = WEIGHT_DEMO[p];
@@ -202,11 +203,13 @@ function demoRows(now: number, weeksBack: number): SnapshotRows {
         [iso(syncAt), p, d, 'bmi', Math.round((kg / c.height ** 2) * 10) / 10],
         [iso(syncAt), p, d, 'lean_kg', Math.round(kg * (1 - fat / 100) * 10) / 10]
       );
-      // B types in InBody's 筋肉量 and 骨格筋量 every few weigh-ins of the last 8 weeks (A never: the empty card)
-      if (p === 'B' && i % 4 === 0 && d >= addDays(today, -56)) {
+      // one InBody reading of B's (her first weigh-in of the last three weeks) calibrates her estimates (A has none:
+      // the sex's ratio)
+      if (p === 'B' && !inbody && d >= addDays(today, -21)) {
+        inbody = true;
         const lean = kg * (1 - fat / 100);
-        ev(syncAt + 60_000, 'B', 'body_in', { date: d, m: 'muscle_kg', v: Math.round(lean * 0.94 * 10) / 10 });
-        ev(syncAt + 61_000, 'B', 'body_in', { date: d, m: 'smm_kg', v: Math.round(lean * 0.547 * 10) / 10 });
+        ev(syncAt + 60_000, 'B', 'body_in', { date: d, m: 'muscle_kg', v: Math.round(lean * 0.935 * 10) / 10 });
+        ev(syncAt + 61_000, 'B', 'body_in', { date: d, m: 'smm_kg', v: Math.round(lean * 0.55 * 10) / 10 });
       }
     }
   }

@@ -33,7 +33,7 @@ import { dailyGoalOn, latestAt, type State } from './state.ts';
 import { goalMet, GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { metricAsOf } from './inputs.ts';
 import { plainChange, project, weighIns, type PlainChange, type WeighIn, type WeightProjection } from './weight.ts';
-import { bodyInOf, inbodyBmr, BODY_IN, type BodyInMetric } from '#lib/contract/bodyIn.ts';
+import { bodyInOf, estimateKg, estimateRatio, inbodyBmr, BODY_IN, type BodyInMetric } from '#lib/contract/bodyIn.ts';
 import { eventSubject, isPersonId } from '#lib/contract/api.ts';
 import { rowAt } from './snapshot.ts';
 
@@ -42,8 +42,9 @@ const METRICS = ['steps', 'move', 'exercise', 'stand'] as const;
 export type Metric = (typeof METRICS)[number];
 /** The body metrics' cards (からだ, after 体重): body fat %, BMI, lean body mass. */
 const BODY = ['body_fat_pct', 'bmi', 'lean_kg'] as const satisfies readonly BodyMetric[];
-/** からだ's cards: 体重, the body metrics, the two typed in (筋肉量, 骨格筋量: contract/bodyIn.ts), then 基礎代謝量 worked
- *  out from 除脂肪体重 (InBody's formula: inbodyBmr); each a sparse series, all but 基礎代謝量 with an optional goal. */
+/** からだ's cards: 体重, the body metrics, then three worked out from 除脂肪体重: 筋肉量 and 骨格筋量 estimated
+ *  (contract/bodyIn.ts estimateRatio) and 基礎代謝量 (InBody's formula: inbodyBmr); each a sparse series, all but
+ *  基礎代謝量 with an optional goal. */
 const BODY_IDS = ['weight', ...BODY, ...BODY_IN, 'bmr'] as const;
 export type BodyId = (typeof BODY_IDS)[number];
 /** The からだ cards with a goal (基礎代謝量 follows 除脂肪体重, whose goal it is). */
@@ -76,6 +77,8 @@ interface PersonSeries {
   /** The からだ goals (`goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`, `goalMuscle`, `goalSmm`; shown only), null:
    *  none (基礎代謝量 never has one). */
   bodyGoals: Record<BodyId, number | null>;
+  /** 筋肉量 / 骨格筋量: whether the person's InBody readings calibrate the estimate (else the sex's ratio). */
+  calibrated: Record<BodyInMetric, boolean>;
 }
 
 export interface HealthSeries {
@@ -107,7 +110,7 @@ export function activityOn(s: State, p: PersonId, d: LocalDate, t: number): Reco
 }
 
 /**
- * The からだ values typed in (`body_in`, contract/bodyIn.ts) as of `t`: per member and metric, each day's latest row's
+ * The InBody readings (`body_in`, contract/bodyIn.ts) as of `t`: per member and metric, each day's latest row's
  * value (by the record's `at`; a later row of the day replaces it, `v: null` clears the day). A row the record would
  * refuse (the guest's, a bad value, a `person` but A or B) is skipped.
  */
@@ -164,6 +167,11 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     const goals = { move: [], exercise: [], stand: [], steps: [] } as Record<Metric, number[]>;
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const dots = Object.fromEntries(BODY_IDS.map((b) => [b, []])) as unknown as Record<BodyId, (number | null)[]>;
+    const leanOn = (d: LocalDate): number | null => latestAt(s.body[p].lean_kg.get(d), now) ?? null;
+    const est = Object.fromEntries(BODY_IN.map((m) => {
+      const readings = [...typed[p][m]].flatMap(([d, v]) => { const lean = leanOn(d); return lean === null ? [] : [{ lean, v }]; });
+      return [m, estimateRatio(m, s.prefs[p].sex ?? null, readings)];
+    })) as Record<BodyInMetric, { ratio: number; calibrated: boolean }>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
       const day = activityOn(s, p, d, now);
       for (const m of METRICS) {
@@ -172,12 +180,13 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
       }
       dots.weight.push(kgBy.get(d) ?? null);
       for (const b of BODY) dots[b].push(latestAt(s.body[p][b].get(d), now) ?? null);
-      for (const m of BODY_IN) dots[m].push(typed[p][m].get(d) ?? null);
       const lean = dots.lean_kg.at(-1);
+      // a reading on its day, else the estimate from the day's lean mass
+      for (const m of BODY_IN) dots[m].push(typed[p][m].get(d) ?? (lean == null ? null : estimateKg(lean, est[m].ratio)));
       dots.bmr.push(lean == null ? null : inbodyBmr(lean));
     }
     const bodyGoals = Object.fromEntries(BODY_IDS.map((b) => [b, hasBodyGoal(b) ? (s.prefs[p][GOALS[b].key as LatestGoalKey] ?? null) : null])) as Record<BodyId, number | null>;
-    return { values, goals, dots, bodyGoals };
+    return { values, goals, dots, bodyGoals, calibrated: { muscle_kg: est.muscle_kg.calibrated, smm_kg: est.smm_kg.calibrated } };
   };
   return { from, to, activityFrom, any, people: { A: person('A'), B: person('B') } };
 }

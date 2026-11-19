@@ -14,7 +14,6 @@ import { localDateAt } from '#lib/time/dates.ts';
 import { shopPrice } from '#lib/contract/rules.ts';
 import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import { newOpId } from '#lib/contract/ops.ts';
-import { bodyInOf, type BodyInMetric } from '#lib/contract/bodyIn.ts';
 import type { RoomSaveOp } from '#lib/contract/roomSave.ts';
 import { sellPrice, SG_REWARD_MAX, shopRowOf } from '#lib/contract/shop.ts';
 import { isGoods } from '#lib/contract/pocket.ts';
@@ -85,15 +84,6 @@ export function setGoal(id: GoalId, who: Who, v: number | null): SendResult {
   // the record after midnight is still that day's
   const day = g.history === 'daily' ? { day: localDateAt(week.model?.now ?? world.now()) } : {};
   return week.send('pref', who === 'G' ? { key: g.key, value, ...day } : { person: who, key: g.key, value, ...day });
-}
-
-/** A からだ value typed in (けんこう's 筋肉量 / 骨格筋量 cards, contract/bodyIn.ts): `who`'s value of `m` on `date`, one
- *  decimal (null clears the day). A member's only, for either member. */
-export function setBodyIn(m: BodyInMetric, who: Who, date: LocalDate, v: number | null): SendResult {
-  if (who === 'G' || !week.model || week.model.me === 'G') return { ok: false };
-  const data = { date, m, v: v === null ? null : Math.round(v * 10) / 10, person: who };
-  if (!bodyInOf(data) || date > localDateAt(week.model.now)) return { ok: false };
-  return week.send('body_in', data);
 }
 
 export function setLanguage(locale: Locale) {

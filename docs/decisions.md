@@ -62,7 +62,7 @@ Each iPhone runs one built-in Shortcut posting daily totals when an everyday app
 app, nothing manual; Health is the truth, up or down.
 
 ### No manual input
-The app never enters health data and asks nothing day to day; the meal log is the one exception. Why: the daily loop
+The app never enters health data and asks nothing day to day; the meal log is the one exception (InBody readings are set once from the Mac). Why: the daily loop
 needs no taps, and a second source would conflict with Health.
 
 ### No notifications
@@ -107,6 +107,18 @@ smoothing ([design](design.md#kenkou)). Why: exact numbers anyone can check agai
 <a id="no-watch-days"></a>A day with Move, Exercise and Stand all 0 or absent is no data for those three outside the
 ベル (`model/health.ts activityOn`); rows are never rewritten. Why: the Shortcut sends 0 for a day without samples,
 which dragged TDEEs and averages down; for the ベル a 0 and a missing value earn alike.
+
+### 筋肉量 and 骨格筋量 estimated
+Health carries InBody's weight, body fat, BMI and lean mass (its fat-free mass, FFM) but not 筋肉量 (soft lean mass =
+FFM − bone mineral) or 骨格筋量 (SMM), which InBody measures by impedance we never get. Both are estimated daily as
+FFM × a ratio (`contract/bodyIn.ts`): 筋肉量 0.94 (bone mineral ≈ 6 % of FFM: Wang et al. 1992, Am J Clin Nutr 56:19);
+骨格筋量 0.57 men, 0.54 women (InBody's SMM is DXA-calibrated, Kim et al. 2002, Am J Clin Nutr 76:378; MRI norms:
+Janssen et al. 2000, J Appl Physiol 89:81). A person's InBody readings on the record (`body_in`, set from the Mac:
+`record.ts inbody`) replace the ratio with their own, and show on their day; nothing is typed on a phone. The
+equations that need resistance (Janssen, Kim, Lee) can't run. Accuracy: against one member's two-week InBody chart,
+calibrated within 0.25 kg, the default ratio within 0.35 kg; across people the default ratio's spread is roughly
+±0.02–0.03 (≈ ±1 kg of 骨格筋量). Labelled 「除脂肪体重から推定」; members only; trends, never ベル. Why: no typing,
+and the trend follows Health's lean mass, which is what InBody's own two move with.
 
 ### Goal directions
 One registry (`contract/goals.ts` GOALS) holds every chart's goal and its direction (at least, at most, or near a

@@ -41,13 +41,8 @@
     warn?: ((v: number) => string | null) | null;
     /** A hook for tests and the focus: `data-goal`. */
     id: string;
-    /** Another use of the same editor (けんこう's typed-in values, BodyCard): the chip's spoken name, the clear button's
-     *  words, and no goal swatch. */
-    aria?: string;
-    clearText?: string;
-    swatch?: boolean;
   }
-  let { spec = null, label, value, onsave = null, tone = 'soft', start = null, warn = null, id, aria, clearText, swatch = true }: Props = $props();
+  let { spec = null, label, value, onsave = null, tone = 'soft', start = null, warn = null, id }: Props = $props();
 
   const me = nextId++;
   const open = $derived(openId === me && !!onsave && !!spec);
@@ -112,8 +107,8 @@
 
 {#if onsave && spec}
   <button type="button" class="gchip" class:open data-goal={id} data-sfx={open ? 'back' : 'page'} aria-expanded={open} aria-controls="goal-{id}"
-    aria-label={aria ?? t('goal.change', { what: spec.head(), g: value === null ? t('goal.notSet') : label })} bind:this={chip} onclick={show}>
-    <span class="pill">{#if swatch}<i class="gl {tone}" aria-hidden="true"></i>{/if}<span>{label}</span><Glyph kind="pen" size={14} /></span>
+    aria-label={t('goal.change', { what: spec.head(), g: value === null ? t('goal.notSet') : label })} bind:this={chip} onclick={show}>
+    <span class="pill"><i class="gl {tone}" aria-hidden="true"></i><span>{label}</span><Glyph kind="pen" size={14} /></span>
   </button>
 {:else}
   <span class="gchip ro" data-goal={id}><i class="gl {tone}" aria-hidden="true"></i>{label}</span>
@@ -136,7 +131,7 @@
     <p id="goal-{id}-hint" class="hint" class:bad>{spec.hint()}</p>
     {#if note}<p class="warn" data-goal-warn role="status">{note}</p>{/if}
     <div class="acts">
-      {#if spec.clearable && value !== null}<button type="button" class="clr" data-sfx="undo" onclick={clear}>{clearText ?? t('weight.clearGoal')}</button>{/if}
+      {#if spec.clearable && value !== null}<button type="button" class="clr" data-sfx="undo" onclick={clear}>{t('weight.clearGoal')}</button>{/if}
       <button type="button" class="btn paper small" data-sfx="back" onclick={() => close()}>{t('common.cancel')}</button>
       <button type="submit" class="btn small" class:off={v === null} data-sfx="confirm">{t('kiroku.ok')}</button>
     </div>

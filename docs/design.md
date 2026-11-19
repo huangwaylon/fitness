@@ -161,7 +161,7 @@ person at a time, computed on read; its code and strings load with the first ope
   was met its way ([Goal directions](#goal-directions)); the goal solid, the average dashed; 1週 shows
   weekdays (土 sky, 日 coral), 1か月 a date a week; a tap shows one value, a drag pages (right = older).
 - **体** (`BodyCard`): a goal each (not 基礎代謝量), two equal boxes 最新 (BMI's category) and 「N日前より」 (last −
-  first), dots, goal month. 筋肉量 / 骨格筋量 typed in (`body_in`); 基礎代謝量 = 370 + 21.6 × 除脂肪体重. No ベル.
+  first), dots, goal month. 筋肉量 / 骨格筋量 estimated ([decisions](decisions.md)); 基礎代謝量 = 370 + 21.6 × 除脂肪体重.
 - <a id="goals-in-place"></a>**Goals in place** (`GoalEdit` over the registry `contract/goals.ts` GOALS): a tap on a
   card's chip opens a tray under the header (−/＋ by the step, the range, clear where clearable, キャンセル, 決定), one
   open at a time; either person sets either's; the same control sets ごはん's. 活動's goals hold from today on; the

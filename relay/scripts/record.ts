@@ -32,12 +32,16 @@
 //   walletcheck         the wallets that differ from their fold (the 03:00 cron's, logged wallet.drift)
 //   walletset <A|B|G> <h> <note>   that person's かいがら made h, with a correction row of what the rows lack for it
 //                       (the user's call only; backup first)
+//   inbody <A|B> <date> <muscle_kg> <smm_kg>   an InBody sheet's 筋肉量 and 骨格筋量 for that day, as `body_in` rows
+//                       (contract/bodyIn.ts): they calibrate that person's estimates; the day needs its lean mass row.
+//                       Values only on the record, never in the repo or a log
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { signed, TEST } from './admin.ts';
+import { asMember, signed, TEST } from './admin.ts';
+import { bodyInOf } from '../../app/src/lib/contract/bodyIn.ts';
 import { openDump } from '../src/archive.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test' && a !== '--dry-run');
@@ -176,6 +180,17 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'walletset', id: `walletset-${randomUUID()}`, who, h: Number(h), note: note.join(' ') })));
     break;
   }
+  case 'inbody': {
+    const [, person, date, muscle, smm] = args;
+    const rows = [bodyInOf({ date, m: 'muscle_kg', v: Number(muscle), person }), bodyInOf({ date, m: 'smm_kg', v: Number(smm), person })];
+    if (rows.some((r) => !r)) throw new Error('usage: inbody <A|B> <YYYY-MM-DD> <muscle_kg> <smm_kg> (kg, one decimal)');
+    for (const data of rows) {
+      const r = await asMember({ action: 'event', id: `inbody-${randomUUID()}`, type: 'body_in', data });
+      if (r.ok !== true) throw new Error(`body_in: ${String(r.error)}`);
+    }
+    console.log(`✓ ${person} ${date}: 2 readings`);
+    break;
+  }
   case 'verify-dump':
     await verifyDump(arg);
     break;
@@ -183,6 +198,6 @@ switch (cmd) {
     await load((await readDump(readFileSync(arg))).rows);
     break;
   default:
-    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | wallet | walletcheck | walletset <who> <h> <note>  [--test]');
+    console.error('commands: counts | backup | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | verify-dump [date] | held [person] | promote <person> <date> <metric> [value] | shopcheck [fix] | decorcheck [fix] | adjust <who> <v> <note> | unadjust <id> | wallet | walletcheck | walletset <who> <h> <note> | inbody <person> <date> <muscle_kg> <smm_kg>  [--test]');
     process.exit(1);
 }

@@ -1,6 +1,7 @@
-// The からだ values typed in (contract/bodyIn.ts): InBody's BMR from the lean mass, and what a `body_in` may carry.
+// InBody's metrics from the lean mass (contract/bodyIn.ts): its BMR, the 筋肉量 / 骨格筋量 estimates, and what a
+// `body_in` reading may carry.
 import { describe, expect, it } from 'vitest';
-import { bodyInOf, bodyInValue, inbodyBmr } from './bodyIn.ts';
+import { bodyInOf, bodyInValue, estimateKg, estimateRatio, inbodyBmr, PER_FFM } from './bodyIn.ts';
 import { validEventData } from './record.ts';
 import { eventSubject } from './api.ts';
 
@@ -9,6 +10,39 @@ describe('inbodyBmr', () => {
     expect(inbodyBmr(37.3)).toBe(1176);
     expect(inbodyBmr(54.6 - 17.3)).toBe(1176);
     expect(Math.abs(inbodyBmr(56.9 - 17.7) - 1216)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe('estimateRatio / estimateKg', () => {
+  // an InBody sheet's (2026-11-19, 17 days): FFM (from its BMR) → 筋肉量, 骨格筋量; the first and last two calibrate, the
+  // chart's peak and trough check
+  const sheet = [{ lean: 39.2, slm: 36.7, smm: 21.1 }, { lean: 37.3, slm: 35.1, smm: 20.4 }];
+  const checks = [...sheet, { lean: 39.4, slm: 37.1, smm: 21.5 }, { lean: 36.7, slm: 34.6, smm: 20.1 }];
+  const off = (m: 'muscle_kg' | 'smm_kg', ratio: number) => Math.max(...checks.map((c) => Math.abs(estimateKg(c.lean, ratio) - (m === 'muscle_kg' ? c.slm : c.smm))));
+
+  it('calibrated by two readings: within 0.25 kg of every InBody value on the sheet', () => {
+    const slm = estimateRatio('muscle_kg', 'f', sheet.map((c) => ({ lean: c.lean, v: c.slm })));
+    const smm = estimateRatio('smm_kg', 'f', sheet.map((c) => ({ lean: c.lean, v: c.smm })));
+    expect([slm.calibrated, smm.calibrated]).toEqual([true, true]);
+    expect(slm.ratio).toBeCloseTo(0.9386, 3);
+    expect(smm.ratio).toBeCloseTo(0.5426, 3);
+    expect(off('muscle_kg', slm.ratio)).toBeLessThanOrEqual(0.25);
+    expect(off('smm_kg', smm.ratio)).toBeLessThanOrEqual(0.25);
+  });
+
+  it('without readings the sex’s ratio (筋肉量 0.94 either; 骨格筋量 0.57 men, 0.54 women, 0.555 unknown): the same sheet within 0.35 kg', () => {
+    expect(estimateRatio('muscle_kg', 'm', [])).toEqual({ ratio: 0.94, calibrated: false });
+    expect(estimateRatio('smm_kg', 'm', [])).toEqual({ ratio: 0.57, calibrated: false });
+    expect(estimateRatio('smm_kg', 'f', [])).toEqual({ ratio: 0.54, calibrated: false });
+    expect(estimateRatio('smm_kg', null, []).ratio).toBe(PER_FFM.smm_kg.x);
+    expect(off('muscle_kg', PER_FFM.muscle_kg.f)).toBeLessThanOrEqual(0.35);
+    expect(off('smm_kg', PER_FFM.smm_kg.f)).toBeLessThanOrEqual(0.35);
+  });
+
+  it('a reading off the plausible ratios (a typo, another scale’s) is ignored; one decimal', () => {
+    expect(estimateRatio('smm_kg', 'm', [{ lean: 60, v: 55 }])).toEqual({ ratio: 0.57, calibrated: false });
+    expect(estimateRatio('muscle_kg', 'f', [{ lean: 40, v: 20 }, { lean: 40, v: 37.2 }])).toMatchObject({ ratio: 0.93, calibrated: true });
+    expect(estimateKg(37.3, 0.54)).toBe(20.1);
   });
 });
 
