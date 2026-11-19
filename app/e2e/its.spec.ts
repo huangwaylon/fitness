@@ -1,7 +1,7 @@
 // ボット's 保養所 tab (docs/bots.md): a member's menu shows ボット with a dot while the bot needs a person
 // (要対応), and its sheet opens on 保養所, which reads the its-bot Worker's GET /its/status (lib/its/client.ts, mocked
 // here: the contract's example moved to the pinned time) and shows the status card with its strip and ⋯, the hold that
-// needs a person in 確認が必要 (its deadline, the mail), 直近1時間 in the card, 最近の動き in くわしく, 設定's folded rows and くわしく;
+// needs a person in the card under its act (its deadline, the mail), 直近1時間 in the card, 最近の動き in くわしく, 設定's folded rows and くわしく;
 // ジム's tab leaves it. ⋯'s 開始 goes out at once (it needs a stay), its 停止 asks first; the settings are one draft: 保存 sends one PUT (its body checked: the allow-list `search` too), ✕, Esc and a tab switch
 // ask before dropping it, and a 409 (the
 // bare status) or a poll seeing someone else's save says so in the save bar, with 読み込み直す, 保存 turning 上書き保存
@@ -134,7 +134,7 @@ test('ボット opens on 保養所 (its tab yuzu 「!」: 要対応): the card (
   expect(await y('[data-its-verdict]')).toBeLessThan(await y('[data-its-settings]'));
   // くわしく: everything else, folded (not drawn until opened); the mode and the version, no foot
   await expect(its.locator('[data-its-fact="phase"]')).toHaveCount(0);
-  await expect(its.locator('[data-its-more] summary')).toHaveText('くわしく最近の動き 2件'); // its rows named while folded
+  await expect(its.locator('[data-its-more] summary')).toHaveText('詳しく最近の動き 2件'); // its rows named while folded
   await its.locator('[data-its-more] summary').click();
   await expect(its.locator('[data-its-fact="phase"]')).toContainText('空室を確認中');
   await expect(its.locator('[data-its-fact="scan"]')).toContainText('11:59（120回）');
